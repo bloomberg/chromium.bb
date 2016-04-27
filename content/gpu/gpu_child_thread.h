@@ -96,7 +96,7 @@ class GpuChildThread : public ChildThreadImpl,
   void GpuMemoryUmaStats(const gpu::GPUMemoryUmaStats& params) override;
 #if defined(OS_MACOSX)
   void SendAcceleratedSurfaceBuffersSwapped(
-      int32_t surface_id,
+      gpu::SurfaceHandle surface_handle,
       CAContextID ca_context_id,
       const gfx::ScopedRefCountedIOSurfaceMachPort& io_surface,
       const gfx::Size& size,

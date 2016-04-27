@@ -43,7 +43,7 @@ void TestGpuChannelManagerDelegate::StoreShaderToDisk(
 
 #if defined(OS_MACOSX)
 void TestGpuChannelManagerDelegate::SendAcceleratedSurfaceBuffersSwapped(
-    int32_t surface_id,
+    gpu::SurfaceHandle surface_handle,
     CAContextID ca_context_id,
     const gfx::ScopedRefCountedIOSurfaceMachPort& io_surface,
     const gfx::Size& size,

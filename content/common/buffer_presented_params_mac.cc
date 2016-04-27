@@ -6,7 +6,8 @@
 
 namespace content {
 
-BufferPresentedParams::BufferPresentedParams() : surface_id(0) {}
+BufferPresentedParams::BufferPresentedParams()
+    : surface_handle(gpu::kNullSurfaceHandle) {}
 
 BufferPresentedParams::~BufferPresentedParams() {}
 

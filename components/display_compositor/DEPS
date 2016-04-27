@@ -4,6 +4,7 @@ include_rules = [
   "+gpu/GLES2",
   "+gpu/command_buffer/client",
   "+gpu/command_buffer/common",
+  "+gpu/ipc/common",
   "+third_party/khronos/GLES2",
   "+third_party/skia",
   "+ui/gfx",

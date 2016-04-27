@@ -30,7 +30,7 @@ namespace content {
 namespace {
 
 void HostCreateGpuMemoryBuffer(
-    int surface_id,
+    gpu::SurfaceHandle surface_handle,
     GpuProcessHost* host,
     gfx::GpuMemoryBufferId id,
     const gfx::Size& size,
@@ -38,8 +38,8 @@ void HostCreateGpuMemoryBuffer(
     gfx::BufferUsage usage,
     int client_id,
     const BrowserGpuMemoryBufferManager::CreateCallback& callback) {
-  host->CreateGpuMemoryBuffer(id, size, format, usage, client_id, surface_id,
-                              callback);
+  host->CreateGpuMemoryBuffer(id, size, format, usage, client_id,
+                              surface_handle, callback);
 }
 
 void HostCreateGpuMemoryBufferFromHandle(
@@ -134,20 +134,20 @@ struct BrowserGpuMemoryBufferManager::CreateGpuMemoryBufferRequest {
                                gfx::BufferFormat format,
                                gfx::BufferUsage usage,
                                int client_id,
-                               int surface_id)
+                               gpu::SurfaceHandle surface_handle)
       : event(true, false),
         size(size),
         format(format),
         usage(usage),
         client_id(client_id),
-        surface_id(surface_id) {}
+        surface_handle(surface_handle) {}
   ~CreateGpuMemoryBufferRequest() {}
   base::WaitableEvent event;
   gfx::Size size;
   gfx::BufferFormat format;
   gfx::BufferUsage usage;
   int client_id;
-  int surface_id;
+  gpu::SurfaceHandle surface_handle;
   std::unique_ptr<gfx::GpuMemoryBuffer> result;
 };
 
@@ -162,7 +162,7 @@ struct BrowserGpuMemoryBufferManager::CreateGpuMemoryBufferFromHandleRequest
                                      format,
                                      gfx::BufferUsage::GPU_READ,
                                      client_id,
-                                     0),
+                                     gpu::kNullSurfaceHandle),
         handle(handle) {}
   ~CreateGpuMemoryBufferFromHandleRequest() {}
   gfx::GpuMemoryBufferHandle handle;
@@ -237,11 +237,12 @@ uint32_t BrowserGpuMemoryBufferManager::GetImageTextureTarget(
 }
 
 std::unique_ptr<gfx::GpuMemoryBuffer>
-BrowserGpuMemoryBufferManager::AllocateGpuMemoryBuffer(const gfx::Size& size,
-                                                       gfx::BufferFormat format,
-                                                       gfx::BufferUsage usage,
-                                                       int32_t surface_id) {
-  return AllocateGpuMemoryBufferForSurface(size, format, usage, surface_id);
+BrowserGpuMemoryBufferManager::AllocateGpuMemoryBuffer(
+    const gfx::Size& size,
+    gfx::BufferFormat format,
+    gfx::BufferUsage usage,
+    gpu::SurfaceHandle surface_handle) {
+  return AllocateGpuMemoryBufferForSurface(size, format, usage, surface_handle);
 }
 
 std::unique_ptr<gfx::GpuMemoryBuffer>
@@ -281,9 +282,9 @@ void BrowserGpuMemoryBufferManager::AllocateGpuMemoryBufferForChildProcess(
 
   // Use service side allocation for native configurations.
   if (IsNativeGpuMemoryBufferConfiguration(format, usage)) {
-    CreateGpuMemoryBufferOnIO(base::Bind(&HostCreateGpuMemoryBuffer, 0), id,
-                              size, format, usage, child_client_id, false,
-                              callback);
+    CreateGpuMemoryBufferOnIO(
+        base::Bind(&HostCreateGpuMemoryBuffer, gpu::kNullSurfaceHandle), id,
+        size, format, usage, child_client_id, false, callback);
     return;
   }
 
@@ -413,11 +414,11 @@ BrowserGpuMemoryBufferManager::AllocateGpuMemoryBufferForSurface(
     const gfx::Size& size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
-    int32_t surface_id) {
+    gpu::SurfaceHandle surface_handle) {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   CreateGpuMemoryBufferRequest request(size, format, usage, gpu_client_id_,
-                                       surface_id);
+                                       surface_handle);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(
@@ -445,7 +446,7 @@ void BrowserGpuMemoryBufferManager::HandleCreateGpuMemoryBufferOnIO(
     // Note: Unretained is safe as this is only used for synchronous allocation
     // from a non-IO thread.
     CreateGpuMemoryBufferOnIO(
-        base::Bind(&HostCreateGpuMemoryBuffer, request->surface_id), new_id,
+        base::Bind(&HostCreateGpuMemoryBuffer, request->surface_handle), new_id,
         request->size, request->format, request->usage, request->client_id,
         false,
         base::Bind(

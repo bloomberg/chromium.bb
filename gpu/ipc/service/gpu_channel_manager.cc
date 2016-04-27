@@ -117,25 +117,26 @@ void GpuChannelManager::RemoveChannel(int client_id) {
 
 #if defined(OS_MACOSX)
 void GpuChannelManager::AddBufferPresentedCallback(
-    int32_t surface_id,
+    gpu::SurfaceHandle surface_handle,
     const BufferPresentedCallback& callback) {
-  DCHECK(buffer_presented_callback_map_.find(surface_id) ==
+  DCHECK(buffer_presented_callback_map_.find(surface_handle) ==
          buffer_presented_callback_map_.end());
-  buffer_presented_callback_map_[surface_id] = callback;
+  buffer_presented_callback_map_[surface_handle] = callback;
 }
 
-void GpuChannelManager::RemoveBufferPresentedCallback(int32_t surface_id) {
-  auto it = buffer_presented_callback_map_.find(surface_id);
+void GpuChannelManager::RemoveBufferPresentedCallback(
+    gpu::SurfaceHandle surface_handle) {
+  auto it = buffer_presented_callback_map_.find(surface_handle);
   DCHECK(it != buffer_presented_callback_map_.end());
   buffer_presented_callback_map_.erase(it);
 }
 
-void GpuChannelManager::BufferPresented(int32_t surface_id,
+void GpuChannelManager::BufferPresented(gpu::SurfaceHandle surface_handle,
                                         const base::TimeTicks& vsync_timebase,
                                         const base::TimeDelta& vsync_interval) {
-  auto it = buffer_presented_callback_map_.find(surface_id);
+  auto it = buffer_presented_callback_map_.find(surface_handle);
   if (it != buffer_presented_callback_map_.end())
-    it->second.Run(surface_id, vsync_timebase, vsync_interval);
+    it->second.Run(surface_handle, vsync_timebase, vsync_interval);
 }
 #endif
 

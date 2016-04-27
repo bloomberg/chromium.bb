@@ -33,11 +33,12 @@ ChildGpuMemoryBufferManager::~ChildGpuMemoryBufferManager() {
 }
 
 std::unique_ptr<gfx::GpuMemoryBuffer>
-ChildGpuMemoryBufferManager::AllocateGpuMemoryBuffer(const gfx::Size& size,
-                                                     gfx::BufferFormat format,
-                                                     gfx::BufferUsage usage,
-                                                     int32_t surface_id) {
-  DCHECK_EQ(0, surface_id);
+ChildGpuMemoryBufferManager::AllocateGpuMemoryBuffer(
+    const gfx::Size& size,
+    gfx::BufferFormat format,
+    gfx::BufferUsage usage,
+    gpu::SurfaceHandle surface_handle) {
+  DCHECK_EQ(gpu::kNullSurfaceHandle, surface_handle);
   TRACE_EVENT2("renderer",
                "ChildGpuMemoryBufferManager::AllocateGpuMemoryBuffer",
                "width",

@@ -14,10 +14,11 @@ MojoGpuMemoryBufferManager::MojoGpuMemoryBufferManager() {}
 MojoGpuMemoryBufferManager::~MojoGpuMemoryBufferManager() {}
 
 std::unique_ptr<gfx::GpuMemoryBuffer>
-MojoGpuMemoryBufferManager::AllocateGpuMemoryBuffer(const gfx::Size& size,
-                                                    gfx::BufferFormat format,
-                                                    gfx::BufferUsage usage,
-                                                    int32_t surface_id) {
+MojoGpuMemoryBufferManager::AllocateGpuMemoryBuffer(
+    const gfx::Size& size,
+    gfx::BufferFormat format,
+    gfx::BufferUsage usage,
+    gpu::SurfaceHandle surface_handle) {
   return MojoGpuMemoryBufferImpl::Create(size, format, usage);
 }
 

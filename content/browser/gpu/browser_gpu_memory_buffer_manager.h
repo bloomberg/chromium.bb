@@ -18,6 +18,7 @@
 #include "base/trace_event/memory_dump_provider.h"
 #include "content/common/content_export.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
+#include "gpu/ipc/common/surface_handle.h"
 
 namespace content {
 
@@ -67,7 +68,7 @@ class CONTENT_EXPORT BrowserGpuMemoryBufferManager
       const gfx::Size& size,
       gfx::BufferFormat format,
       gfx::BufferUsage usage,
-      int32_t surface_id) override;
+      gpu::SurfaceHandle surface_handle) override;
   std::unique_ptr<gfx::GpuMemoryBuffer> CreateGpuMemoryBufferFromHandle(
       const gfx::GpuMemoryBufferHandle& handle,
       const gfx::Size& size,
@@ -139,7 +140,7 @@ class CONTENT_EXPORT BrowserGpuMemoryBufferManager
       const gfx::Size& size,
       gfx::BufferFormat format,
       gfx::BufferUsage usage,
-      int32_t surface_id);
+      gpu::SurfaceHandle surface_handle);
 
   // Functions that handle synchronous buffer creation requests.
   void HandleCreateGpuMemoryBufferOnIO(CreateGpuMemoryBufferRequest* request);

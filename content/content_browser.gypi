@@ -2207,5 +2207,11 @@
         'browser/vr/android/cardboard/cardboard_vr_device_provider.h',
       ],
     }],
+    ['OS != "mac" and OS != "android"', {
+      'sources!': [
+        'browser/gpu/gpu_surface_tracker.cc',
+        'browser/gpu/gpu_surface_tracker.h',
+      ],
+    }],
   ],
 }

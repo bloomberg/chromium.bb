@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "content/browser/compositor/gpu_browser_compositor_output_surface.h"
+#include "gpu/ipc/common/surface_handle.h"
 
 namespace gpu {
 class GpuMemoryBufferManager;
@@ -26,7 +27,7 @@ class GpuSurfacelessBrowserCompositorOutputSurface
   GpuSurfacelessBrowserCompositorOutputSurface(
       const scoped_refptr<ContextProviderCommandBuffer>& context,
       const scoped_refptr<ContextProviderCommandBuffer>& worker_context,
-      int surface_id,
+      gpu::SurfaceHandle surface_handle,
       const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager,
       base::SingleThreadTaskRunner* task_runner,
       std::unique_ptr<BrowserCompositorOverlayCandidateValidator>

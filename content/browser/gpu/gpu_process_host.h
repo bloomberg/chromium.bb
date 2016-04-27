@@ -135,7 +135,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
                              gfx::BufferFormat format,
                              gfx::BufferUsage usage,
                              int client_id,
-                             int32_t surface_id,
+                             gpu::SurfaceHandle surface_handle,
                              const CreateGpuMemoryBufferCallback& callback);
 
   // Tells the GPU process to create a new GPU memory buffer from an existing

@@ -61,10 +61,10 @@ class StubGpuMemoryBufferManager : public cc::TestGpuMemoryBufferManager {
       const gfx::Size& size,
       gfx::BufferFormat format,
       gfx::BufferUsage usage,
-      int32_t surface_id) override {
-    if (!surface_id) {
+      gpu::SurfaceHandle surface_handle) override {
+    if (!surface_handle) {
       return TestGpuMemoryBufferManager::AllocateGpuMemoryBuffer(
-          size, format, usage, surface_id);
+          size, format, usage, surface_handle);
     }
     if (allocate_succeeds_)
       return base::WrapUnique<gfx::GpuMemoryBuffer>(
@@ -75,6 +75,13 @@ class StubGpuMemoryBufferManager : public cc::TestGpuMemoryBufferManager {
  private:
   bool allocate_succeeds_;
 };
+
+#if defined(OS_WIN)
+const gpu::SurfaceHandle kFakeSurfaceHandle =
+    reinterpret_cast<gpu::SurfaceHandle>(1);
+#else
+const gpu::SurfaceHandle kFakeSurfaceHandle = 1;
+#endif
 
 class MockBufferQueue : public BufferQueue {
  public:
@@ -87,7 +94,7 @@ class MockBufferQueue : public BufferQueue {
                     internalformat,
                     nullptr,
                     gpu_memory_buffer_manager,
-                    1) {}
+                    kFakeSurfaceHandle) {}
   MOCK_METHOD4(CopyBufferDamage,
                void(int, int, const gfx::Rect&, const gfx::Rect&));
 };
@@ -242,7 +249,7 @@ std::unique_ptr<BufferQueue> CreateOutputSurfaceWithMock(
   context_provider->BindToCurrentThread();
   std::unique_ptr<BufferQueue> buffer_queue(
       new BufferQueue(context_provider, target, GL_RGBA, nullptr,
-                      gpu_memory_buffer_manager, 1));
+                      gpu_memory_buffer_manager, kFakeSurfaceHandle));
   buffer_queue->Initialize();
   return buffer_queue;
 }
@@ -302,9 +309,9 @@ TEST(BufferQueueStandaloneTest, CheckBoundFramebuffer) {
   gl_helper.reset(new GLHelper(context_provider->ContextGL(),
                                context_provider->ContextSupport()));
 
-  output_surface.reset(new BufferQueue(context_provider, GL_TEXTURE_2D, GL_RGBA,
-                                       gl_helper.get(),
-                                       gpu_memory_buffer_manager.get(), 1));
+  output_surface.reset(
+      new BufferQueue(context_provider, GL_TEXTURE_2D, GL_RGBA, gl_helper.get(),
+                      gpu_memory_buffer_manager.get(), kFakeSurfaceHandle));
   output_surface->Initialize();
   output_surface->Reshape(screen_size, 1.0f);
   // Trigger a sub-buffer copy to exercise all paths.

@@ -42,7 +42,7 @@ void GpuServiceMus::StoreShaderToDisk(int32_t client_id,
 
 #if defined(OS_MACOSX)
 void GpuServiceMus::SendAcceleratedSurfaceBuffersSwapped(
-    int32_t surface_id,
+    gpu::SurfaceHandle surface_handle,
     CAContextID ca_context_id,
     const gfx::ScopedRefCountedIOSurfaceMachPort& io_surface,
     const gfx::Size& size,

@@ -26,7 +26,6 @@
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
-#include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/gpu/shader_disk_cache.h"
 #include "content/browser/mojo/mojo_application_host.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -79,6 +78,10 @@
 
 #if defined(OS_MACOSX)
 #include "content/browser/renderer_host/render_widget_resize_helper_mac.h"
+#endif
+
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
+#include "content/browser/gpu/gpu_surface_tracker.h"
 #endif
 
 namespace content {
@@ -450,8 +453,10 @@ GpuProcessHost::~GpuProcessHost() {
   if (g_gpu_process_hosts[kind_] == this)
     g_gpu_process_hosts[kind_] = NULL;
 
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
   UMA_HISTOGRAM_COUNTS_100("GPU.AtExitSurfaceCount",
                            GpuSurfaceTracker::Get()->GetSurfaceCount());
+#endif
   UMA_HISTOGRAM_BOOLEAN("GPU.AtExitReceivedMemoryStats",
                         uma_memory_stats_received_);
 
@@ -725,7 +730,7 @@ void GpuProcessHost::CreateGpuMemoryBuffer(
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
     int client_id,
-    int32_t surface_id,
+    gpu::SurfaceHandle surface_handle,
     const CreateGpuMemoryBufferCallback& callback) {
   TRACE_EVENT0("gpu", "GpuProcessHost::CreateGpuMemoryBuffer");
 
@@ -737,10 +742,7 @@ void GpuProcessHost::CreateGpuMemoryBuffer(
   params.format = format;
   params.usage = usage;
   params.client_id = client_id;
-  params.surface_handle =
-      surface_id
-          ? GpuSurfaceTracker::GetInstance()->GetSurfaceHandle(surface_id)
-          : gpu::kNullSurfaceHandle;
+  params.surface_handle = surface_handle;
   if (Send(new GpuMsg_CreateGpuMemoryBuffer(params))) {
     create_gpu_memory_buffer_requests_.push(callback);
   } else {

@@ -6,6 +6,7 @@
 #define CONTENT_COMMON_BUFFER_PRESENTED_PARAMS_MAC_H_
 
 #include "base/time/time.h"
+#include "gpu/ipc/common/surface_handle.h"
 
 namespace content {
 
@@ -13,7 +14,7 @@ struct BufferPresentedParams {
   BufferPresentedParams();
   ~BufferPresentedParams();
 
-  int32_t surface_id;
+  gpu::SurfaceHandle surface_handle;
   base::TimeTicks vsync_timebase;
   base::TimeDelta vsync_interval;
 };

@@ -12,7 +12,6 @@
 #include "components/display_compositor/gl_helper.h"
 #include "content/browser/compositor/browser_compositor_overlay_candidate_validator.h"
 #include "content/browser/compositor/reflector_impl.h"
-#include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -23,7 +22,7 @@ GpuSurfacelessBrowserCompositorOutputSurface::
     GpuSurfacelessBrowserCompositorOutputSurface(
         const scoped_refptr<ContextProviderCommandBuffer>& context,
         const scoped_refptr<ContextProviderCommandBuffer>& worker_context,
-        int surface_id,
+        gpu::SurfaceHandle surface_handle,
         const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager,
         base::SingleThreadTaskRunner* task_runner,
         std::unique_ptr<BrowserCompositorOverlayCandidateValidator>
@@ -53,7 +52,7 @@ GpuSurfacelessBrowserCompositorOutputSurface::
       context_provider_->ContextGL(), context_provider_->ContextSupport()));
   output_surface_.reset(new display_compositor::BufferQueue(
       context_provider_, target, internalformat_, gl_helper_.get(),
-      gpu_memory_buffer_manager_, surface_id));
+      gpu_memory_buffer_manager_, surface_handle));
   output_surface_->Initialize();
 }
 

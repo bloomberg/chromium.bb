@@ -25,7 +25,7 @@ BufferQueue::BufferQueue(scoped_refptr<cc::ContextProvider> context_provider,
                          unsigned int internalformat,
                          GLHelper* gl_helper,
                          gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-                         int surface_id)
+                         gpu::SurfaceHandle surface_handle)
     : context_provider_(context_provider),
       fbo_(0),
       allocated_count_(0),
@@ -33,7 +33,7 @@ BufferQueue::BufferQueue(scoped_refptr<cc::ContextProvider> context_provider,
       internal_format_(internalformat),
       gl_helper_(gl_helper),
       gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
-      surface_id_(surface_id) {}
+      surface_handle_(surface_handle) {}
 
 BufferQueue::~BufferQueue() {
   FreeAllSurfaces();
@@ -222,7 +222,7 @@ std::unique_ptr<BufferQueue::AllocatedSurface> BufferQueue::GetNextSurface() {
   std::unique_ptr<gfx::GpuMemoryBuffer> buffer(
       gpu_memory_buffer_manager_->AllocateGpuMemoryBuffer(
           size_, gpu::DefaultBufferFormatForImageFormat(internal_format_),
-          gfx::BufferUsage::SCANOUT, surface_id_));
+          gfx::BufferUsage::SCANOUT, surface_handle_));
   if (!buffer.get()) {
     gl->DeleteTextures(1, &texture);
     DLOG(ERROR) << "Failed to allocate GPU memory buffer";

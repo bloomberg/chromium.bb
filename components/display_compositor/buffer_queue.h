@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/display_compositor/display_compositor_export.h"
+#include "gpu/ipc/common/surface_handle.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -44,7 +45,7 @@ class DISPLAY_COMPOSITOR_EXPORT BufferQueue {
               unsigned int internalformat,
               GLHelper* gl_helper,
               gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-              int surface_id);
+              gpu::SurfaceHandle surface_handle);
   virtual ~BufferQueue();
 
   void Initialize();
@@ -116,7 +117,7 @@ class DISPLAY_COMPOSITOR_EXPORT BufferQueue {
   std::deque<std::unique_ptr<AllocatedSurface>> in_flight_surfaces_;
   GLHelper* gl_helper_;
   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager_;
-  int surface_id_;
+  gpu::SurfaceHandle surface_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(BufferQueue);
 };

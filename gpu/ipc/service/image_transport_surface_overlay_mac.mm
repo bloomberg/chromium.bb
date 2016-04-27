@@ -126,7 +126,7 @@ void ImageTransportSurfaceOverlayMac::SetLatencyInfo(
 }
 
 void ImageTransportSurfaceOverlayMac::BufferPresented(
-    int32_t surface_id,
+    gpu::SurfaceHandle surface_handle,
     const base::TimeTicks& vsync_timebase,
     const base::TimeDelta& vsync_interval) {
   vsync_timebase_ = vsync_timebase;
@@ -142,7 +142,7 @@ void ImageTransportSurfaceOverlayMac::BufferPresented(
 }
 
 void ImageTransportSurfaceOverlayMac::SendAcceleratedSurfaceBuffersSwapped(
-    int32_t surface_id,
+    gpu::SurfaceHandle surface_handle,
     CAContextID ca_context_id,
     const gfx::ScopedRefCountedIOSurfaceMachPort& io_surface,
     const gfx::Size& size,
@@ -152,10 +152,8 @@ void ImageTransportSurfaceOverlayMac::SendAcceleratedSurfaceBuffersSwapped(
   TRACE_EVENT_INSTANT2("test_gpu", "SwapBuffers", TRACE_EVENT_SCOPE_THREAD,
                        "GLImpl", static_cast<int>(gfx::GetGLImplementation()),
                        "width", size.width());
-  // On mac, handle_ is a surface id. See
-  // GpuProcessTransportFactory::CreatePerCompositorData
   manager_->delegate()->SendAcceleratedSurfaceBuffersSwapped(
-      surface_id, ca_context_id, io_surface, size, scale_factor,
+      surface_handle, ca_context_id, io_surface, size, scale_factor,
       std::move(latency_info));
 }
 

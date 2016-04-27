@@ -12,6 +12,7 @@
 #include "build/build_config.h"
 #include "cc/surfaces/surface_id_allocator.h"
 #include "content/common/content_export.h"
+#include "gpu/ipc/common/surface_handle.h"
 #include "ui/events/latency_info.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -91,7 +92,7 @@ class CONTENT_EXPORT ImageTransportFactory {
 
 #if defined(OS_MACOSX)
   virtual void OnGpuSwapBuffersCompleted(
-      int surface_id,
+      gpu::SurfaceHandle surface_handle,
       const std::vector<ui::LatencyInfo>& latency_info,
       gfx::SwapResult result) = 0;
 
@@ -106,7 +107,7 @@ class CONTENT_EXPORT ImageTransportFactory {
   // Used by GpuProcessHostUIShim to determine if a frame should not be
   // displayed because it is targetted to an NSView that has been disconnected.
   virtual bool SurfaceShouldNotShowFramesAfterSuspendForRecycle(
-      int surface_id) const = 0;
+      gpu::SurfaceHandle surface_handle) const = 0;
 #endif
 };
 

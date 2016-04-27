@@ -81,7 +81,7 @@ IPC_STRUCT_TRAITS_END()
 
 #if defined(OS_MACOSX)
 IPC_STRUCT_TRAITS_BEGIN(content::AcceleratedSurfaceBuffersSwappedParams)
-  IPC_STRUCT_TRAITS_MEMBER(surface_id)
+  IPC_STRUCT_TRAITS_MEMBER(surface_handle)
   // Only one of ca_context_id or io_surface may be non-0.
   IPC_STRUCT_TRAITS_MEMBER(ca_context_id)
   IPC_STRUCT_TRAITS_MEMBER(io_surface)
@@ -92,7 +92,7 @@ IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::BufferPresentedParams)
   // The vsync parameters, to synchronize presentation with the display.
-  IPC_STRUCT_TRAITS_MEMBER(surface_id)
+  IPC_STRUCT_TRAITS_MEMBER(surface_handle)
   IPC_STRUCT_TRAITS_MEMBER(vsync_timebase)
   IPC_STRUCT_TRAITS_MEMBER(vsync_interval)
 IPC_STRUCT_TRAITS_END()

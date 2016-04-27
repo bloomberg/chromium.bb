@@ -6,7 +6,9 @@
 
 namespace content {
 AcceleratedSurfaceBuffersSwappedParams::AcceleratedSurfaceBuffersSwappedParams()
-    : surface_id(0), ca_context_id(0), scale_factor(1.f) {}
+    : surface_handle(gpu::kNullSurfaceHandle),
+      ca_context_id(0),
+      scale_factor(1.f) {}
 
 AcceleratedSurfaceBuffersSwappedParams::
     ~AcceleratedSurfaceBuffersSwappedParams() {}

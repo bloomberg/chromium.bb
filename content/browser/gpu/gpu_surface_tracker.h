@@ -10,31 +10,33 @@
 #include <map>
 
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
 #include "gpu/ipc/common/gpu_surface_lookup.h"
 #include "gpu/ipc/common/surface_handle.h"
-#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace content {
 
-// This class is responsible for managing rendering surfaces exposed to the
-// GPU process. Every surface gets registered to this class, and gets an ID.
-// All calls to and from the GPU process, with the exception of
-// CreateViewCommandBuffer, refer to the rendering surface by its ID.
+// This class is used on Android and Mac, and is responsible for tracking native
+// window surfaces exposed to the GPU process. Every surface gets registered to
+// this class, and gets a handle.  The handle can be passed to
+// GpuChannelHost::CreateCommandBuffer or to
+// GpuMemoryBufferManager::AllocateGpuMemoryBuffer.
+// On Android, the handle is used in the GPU process to get a reference to the
+// ANativeWindow, using GpuSurfaceLookup (implemented by
+// SurfaceTextureManagerImpl).
+// On Mac, the handle just passes through the GPU process, and is sent back via
+// GpuHostMsg_AcceleratedSurfaceBuffersSwapped to reference the surface.
 // This class is thread safe.
-//
-// Note: The ID can exist before the actual native handle for the surface is
-// created, for example to allow giving a reference to it to a renderer, so that
-// it is unamibiguously identified.
 class CONTENT_EXPORT GpuSurfaceTracker : public gpu::GpuSurfaceLookup {
  public:
   // GpuSurfaceLookup implementation:
-  // Returns the native widget associated with a given surface_id.
-  gfx::AcceleratedWidget AcquireNativeWidget(int surface_id) override;
+  // Returns the native widget associated with a given surface_handle.
+  // On Android, this adds a reference on the ANativeWindow.
+  gfx::AcceleratedWidget AcquireNativeWidget(
+      gpu::SurfaceHandle surface_handle) override;
 
 #if defined(OS_ANDROID)
   gfx::ScopedJavaSurface AcquireJavaSurface(int surface_id) override;
@@ -47,11 +49,7 @@ class CONTENT_EXPORT GpuSurfaceTracker : public gpu::GpuSurfaceLookup {
   int AddSurfaceForNativeWidget(gfx::AcceleratedWidget widget);
 
   // Removes a given existing surface.
-  void RemoveSurface(int surface_id);
-
-  // Gets the native handle for the given surface.
-  // Note: This is an O(log N) lookup.
-  gpu::SurfaceHandle GetSurfaceHandle(int surface_id);
+  void RemoveSurface(gpu::SurfaceHandle surface_handle);
 
   // Returns the number of surfaces currently registered with the tracker.
   std::size_t GetSurfaceCount();
@@ -61,7 +59,7 @@ class CONTENT_EXPORT GpuSurfaceTracker : public gpu::GpuSurfaceLookup {
   static GpuSurfaceTracker* GetInstance();
 
  private:
-  typedef std::map<int, gfx::AcceleratedWidget> SurfaceMap;
+  typedef std::map<gpu::SurfaceHandle, gfx::AcceleratedWidget> SurfaceMap;
 
   friend struct base::DefaultSingletonTraits<GpuSurfaceTracker>;
 
@@ -70,7 +68,7 @@ class CONTENT_EXPORT GpuSurfaceTracker : public gpu::GpuSurfaceLookup {
 
   base::Lock lock_;
   SurfaceMap surface_map_;
-  int next_surface_id_;
+  int next_surface_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuSurfaceTracker);
 };

@@ -5,6 +5,7 @@
 #ifndef CONTENT_COMMON_ACCELERATED_SURFACE_BUFFERS_SWAPPED_PARAMS_MAC_H_
 #define CONTENT_COMMON_ACCELERATED_SURFACE_BUFFERS_SWAPPED_PARAMS_MAC_H_
 
+#include "gpu/ipc/common/surface_handle.h"
 #include "ui/base/cocoa/remote_layer_api.h"
 #include "ui/events/latency_info.h"
 #include "ui/gfx/mac/io_surface.h"
@@ -15,7 +16,7 @@ struct AcceleratedSurfaceBuffersSwappedParams {
   AcceleratedSurfaceBuffersSwappedParams();
   ~AcceleratedSurfaceBuffersSwappedParams();
 
-  int32_t surface_id;
+  gpu::SurfaceHandle surface_handle;
   CAContextID ca_context_id;
   gfx::ScopedRefCountedIOSurfaceMachPort io_surface;
   gfx::Size size;

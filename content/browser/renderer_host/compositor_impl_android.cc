@@ -285,7 +285,7 @@ CompositorImpl::CompositorImpl(CompositorClient* client,
       has_transparent_background_(false),
       device_scale_factor_(1),
       window_(NULL),
-      surface_id_(0),
+      surface_handle_(gpu::kNullSurfaceHandle),
       client_(client),
       root_window_(root_window),
       needs_animate_(false),
@@ -335,11 +335,11 @@ void CompositorImpl::SetSurface(jobject surface) {
   if (window_) {
     // Shut down GL context before unregistering surface.
     SetVisible(false);
-    tracker->RemoveSurface(surface_id_);
+    tracker->RemoveSurface(surface_handle_);
     ANativeWindow_release(window_);
     window_ = NULL;
-    UnregisterViewSurface(surface_id_);
-    surface_id_ = 0;
+    UnregisterViewSurface(surface_handle_);
+    surface_handle_ = gpu::kNullSurfaceHandle;
   }
 
   ANativeWindow* window = NULL;
@@ -354,9 +354,9 @@ void CompositorImpl::SetSurface(jobject surface) {
   if (window) {
     window_ = window;
     ANativeWindow_acquire(window);
-    surface_id_ = tracker->AddSurfaceForNativeWidget(window);
+    surface_handle_ = tracker->AddSurfaceForNativeWidget(window);
     // Register first, SetVisible() might create an OutputSurface.
-    RegisterViewSurface(surface_id_, j_surface.obj());
+    RegisterViewSurface(surface_handle_, j_surface.obj());
     SetVisible(true);
     ANativeWindow_release(window);
   }
@@ -538,7 +538,7 @@ void CompositorImpl::CreateOutputSurface() {
   pending_swapbuffers_ = 0;
 
   DCHECK(window_);
-  DCHECK(surface_id_);
+  DCHECK_NE(surface_handle_, gpu::kNullSurfaceHandle);
 
   BrowserGpuChannelHostFactory* factory =
       BrowserGpuChannelHostFactory::instance();
@@ -549,8 +549,6 @@ void CompositorImpl::CreateOutputSurface() {
   scoped_refptr<gpu::GpuChannelHost> gpu_channel_host(factory->GetGpuChannel());
 
   GURL url("chrome://gpu/CompositorImpl::CreateOutputSurface");
-  gpu::SurfaceHandle surface_handle =
-      GpuSurfaceTracker::Get()->GetSurfaceHandle(surface_id_);
   constexpr bool share_resources = false;
   constexpr bool automatic_flushes = false;
 
@@ -575,7 +573,7 @@ void CompositorImpl::CreateOutputSurface() {
   scoped_refptr<ContextProviderCommandBuffer> context_provider(
       new ContextProviderCommandBuffer(
           base::WrapUnique(new WebGraphicsContext3DCommandBufferImpl(
-              surface_handle, url, gpu_channel_host.get(), attributes,
+              surface_handle_, url, gpu_channel_host.get(), attributes,
               gfx::PreferIntegratedGpu, share_resources, automatic_flushes,
               nullptr)),
           limits, DISPLAY_COMPOSITOR_ONSCREEN_CONTEXT));

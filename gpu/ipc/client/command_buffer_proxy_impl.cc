@@ -466,7 +466,7 @@ int32_t CommandBufferProxyImpl::CreateGpuMemoryBufferImage(
       channel_->gpu_memory_buffer_manager()->AllocateGpuMemoryBuffer(
           gfx::Size(width, height),
           gpu::DefaultBufferFormatForImageFormat(internal_format),
-          gfx::BufferUsage::SCANOUT, 0 /* surface_id */));
+          gfx::BufferUsage::SCANOUT, gpu::kNullSurfaceHandle));
   if (!buffer)
     return -1;
 

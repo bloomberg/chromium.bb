@@ -55,7 +55,7 @@ class GpuChannelManagerDelegate {
 #if defined(OS_MACOSX)
   // Tells the delegate that an accelerated surface has swapped.
   virtual void SendAcceleratedSurfaceBuffersSwapped(
-      int32_t surface_id,
+      gpu::SurfaceHandle surface_handle,
       CAContextID ca_context_id,
       const gfx::ScopedRefCountedIOSurfaceMachPort& io_surface,
       const gfx::Size& size,

@@ -319,14 +319,14 @@ void GpuChildThread::GpuMemoryUmaStats(const gpu::GPUMemoryUmaStats& params) {
 
 #if defined(OS_MACOSX)
 void GpuChildThread::SendAcceleratedSurfaceBuffersSwapped(
-    int32_t surface_id,
+    gpu::SurfaceHandle surface_handle,
     CAContextID ca_context_id,
     const gfx::ScopedRefCountedIOSurfaceMachPort& io_surface,
     const gfx::Size& size,
     float scale_factor,
     std::vector<ui::LatencyInfo> latency_info) {
   AcceleratedSurfaceBuffersSwappedParams params;
-  params.surface_id = surface_id;
+  params.surface_handle = surface_handle;
   params.ca_context_id = ca_context_id;
   params.io_surface = io_surface;
   params.size = size;
@@ -520,7 +520,7 @@ void GpuChildThread::OnGpuSwitched() {
 void GpuChildThread::OnBufferPresented(const BufferPresentedParams& params) {
   if (gpu_channel_manager_) {
     gpu_channel_manager_->BufferPresented(
-        params.surface_id, params.vsync_timebase, params.vsync_interval);
+        params.surface_handle, params.vsync_timebase, params.vsync_interval);
   }
 }
 #endif

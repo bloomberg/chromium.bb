@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "gpu/gpu_export.h"
+#include "gpu/ipc/common/surface_handle.h"
 #include "ui/gfx/native_widget_types.h"
 
 #if defined(OS_ANDROID)
@@ -25,7 +26,8 @@ class GPU_EXPORT GpuSurfaceLookup {
   static GpuSurfaceLookup* GetInstance();
   static void InitInstance(GpuSurfaceLookup* lookup);
 
-  virtual gfx::AcceleratedWidget AcquireNativeWidget(int surface_id) = 0;
+  virtual gfx::AcceleratedWidget AcquireNativeWidget(
+      gpu::SurfaceHandle surface_handle) = 0;
 
 #if defined(OS_ANDROID)
   virtual gfx::ScopedJavaSurface AcquireJavaSurface(int surface_id) = 0;

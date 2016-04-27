@@ -18,7 +18,6 @@
 #include "build/build_config.h"
 #include "content/browser/compositor/image_transport_factory.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
-#include "gpu/ipc/common/surface_handle.h"
 #include "ui/compositor/compositor.h"
 
 namespace base {
@@ -74,13 +73,13 @@ class GpuProcessTransportFactory
   void RemoveObserver(ImageTransportFactoryObserver* observer) override;
 #if defined(OS_MACOSX)
   void OnGpuSwapBuffersCompleted(
-      int surface_id,
+      gpu::SurfaceHandle surface_handle,
       const std::vector<ui::LatencyInfo>& latency_info,
       gfx::SwapResult result) override;
   void SetCompositorSuspendedForRecycle(ui::Compositor* compositor,
                                         bool suspended) override;
   bool SurfaceShouldNotShowFramesAfterSuspendForRecycle(
-      int surface_id) const override;
+      gpu::SurfaceHandle surface_handle) const override;
 #endif
 
  private:
@@ -117,9 +116,13 @@ class GpuProcessTransportFactory
   std::unique_ptr<OutputDeviceBacking> software_backing_;
 #endif
 
+#if defined(OS_MACOSX)
   // The contents of this map and its methods may only be used on the compositor
-  // thread.
+  // thread. This is used on Mac to lookup the output surface based on the
+  // surface_handle, in response to the
+  // GpuHostMsg_AcceleratedSurfaceBuffersSwapped message.
   IDMap<BrowserCompositorOutputSurface> output_surface_map_;
+#endif
 
   base::WeakPtrFactory<GpuProcessTransportFactory> callback_factory_;
 

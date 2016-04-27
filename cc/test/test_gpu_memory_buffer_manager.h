@@ -26,7 +26,7 @@ class TestGpuMemoryBufferManager : public gpu::GpuMemoryBufferManager {
       const gfx::Size& size,
       gfx::BufferFormat format,
       gfx::BufferUsage usage,
-      int32_t surface_id) override;
+      gpu::SurfaceHandle surface_handle) override;
   std::unique_ptr<gfx::GpuMemoryBuffer> CreateGpuMemoryBufferFromHandle(
       const gfx::GpuMemoryBufferHandle& handle,
       const gfx::Size& size,

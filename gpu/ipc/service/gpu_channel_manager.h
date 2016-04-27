@@ -29,6 +29,7 @@
 #if defined(OS_MACOSX)
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
+#include "gpu/ipc/common/surface_handle.h"
 #endif
 
 namespace base {
@@ -110,7 +111,7 @@ class GPU_EXPORT GpuChannelManager {
   void AddBufferPresentedCallback(int32_t routing_id,
                                   const BufferPresentedCallback& callback);
   void RemoveBufferPresentedCallback(int32_t routing_id);
-  void BufferPresented(int32_t surface_id,
+  void BufferPresented(gpu::SurfaceHandle surface_handle,
                        const base::TimeTicks& vsync_timebase,
                        const base::TimeDelta& vsync_interval);
 #endif
@@ -193,7 +194,7 @@ class GPU_EXPORT GpuChannelManager {
 
   GpuChannelManagerDelegate* const delegate_;
 #if defined(OS_MACOSX)
-  base::hash_map<int32_t, BufferPresentedCallback>
+  base::hash_map<gpu::SurfaceHandle, BufferPresentedCallback>
       buffer_presented_callback_map_;
 #endif
 

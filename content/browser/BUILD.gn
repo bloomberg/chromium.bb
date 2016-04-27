@@ -529,6 +529,13 @@ source_set("browser") {
   if (use_ozone) {
     deps += [ "//ui/ozone" ]
   }
+
+  if (!is_mac && !is_android) {
+    sources -= [
+      "gpu/gpu_surface_tracker.cc",
+      "gpu/gpu_surface_tracker.h",
+    ]
+  }
 }
 
 # See comment at the top of //content/BUILD.gn for how this works.

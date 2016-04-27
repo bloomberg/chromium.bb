@@ -221,8 +221,8 @@ RendererGpuVideoAcceleratorFactories::AllocateGpuMemoryBuffer(
     gfx::BufferFormat format,
     gfx::BufferUsage usage) {
   std::unique_ptr<gfx::GpuMemoryBuffer> buffer =
-      gpu_memory_buffer_manager_->AllocateGpuMemoryBuffer(size, format, usage,
-                                                          0 /* surface_id */);
+      gpu_memory_buffer_manager_->AllocateGpuMemoryBuffer(
+          size, format, usage, gpu::kNullSurfaceHandle);
   return buffer;
 }
 bool RendererGpuVideoAcceleratorFactories::

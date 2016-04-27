@@ -37,7 +37,6 @@
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
-#include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
@@ -78,6 +77,9 @@
 #include "ui/base/cocoa/remote_layer_api.h"
 #elif defined(OS_ANDROID)
 #include "content/browser/compositor/browser_compositor_overlay_candidate_validator_android.h"
+#endif
+#if !defined(GPU_SURFACE_HANDLE_IS_ACCELERATED_WINDOW)
+#include "content/browser/gpu/gpu_surface_tracker.h"
 #endif
 
 #if defined(ENABLE_VULKAN)
@@ -134,12 +136,15 @@ CreateContextCommon(scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
 namespace content {
 
 struct GpuProcessTransportFactory::PerCompositorData {
-  int surface_id;
+  gpu::SurfaceHandle surface_handle;
   BrowserCompositorOutputSurface* surface;
   ReflectorImpl* reflector;
   std::unique_ptr<cc::OnscreenDisplayClient> display_client;
 
-  PerCompositorData() : surface_id(0), surface(nullptr), reflector(nullptr) {}
+  PerCompositorData()
+      : surface_handle(gpu::kNullSurfaceHandle),
+        surface(nullptr),
+        reflector(nullptr) {}
 };
 
 GpuProcessTransportFactory::GpuProcessTransportFactory()
@@ -250,9 +255,11 @@ void GpuProcessTransportFactory::CreateOutputSurface(
   if (!data) {
     data = CreatePerCompositorData(compositor.get());
   } else {
+#if defined(OS_MACOSX)
     // TODO(piman): Use GpuSurfaceTracker to map ids to surfaces instead of an
     // output_surface_map_ here.
-    output_surface_map_.Remove(data->surface_id);
+    output_surface_map_.Remove(data->surface_handle);
+#endif
     data->surface = nullptr;
   }
 
@@ -336,16 +343,11 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
     if (!gpu_channel_host) {
       shared_worker_context_provider_ = nullptr;
     } else {
-      GpuSurfaceTracker* tracker = GpuSurfaceTracker::Get();
-      gpu::SurfaceHandle surface_handle =
-          data->surface_id ? tracker->GetSurfaceHandle(data->surface_id)
-                           : gpu::kNullSurfaceHandle;
-
       // This context is used for both the browser compositor and the display
       // compositor.
       constexpr bool share_resources = true;
       context_provider = new ContextProviderCommandBuffer(
-          CreateContextCommon(gpu_channel_host, surface_handle,
+          CreateContextCommon(gpu_channel_host, data->surface_handle,
                               share_resources),
           gpu::SharedMemoryLimits(), DISPLAY_COMPOSITOR_ONSCREEN_CONTEXT);
       if (!context_provider->BindToCurrentThread())
@@ -405,7 +407,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
     } else {
       DCHECK(context_provider);
       const auto& capabilities = context_provider->ContextCapabilities();
-      if (!data->surface_id) {
+      if (data->surface_handle == gpu::kNullSurfaceHandle) {
         surface = base::WrapUnique(new OffscreenBrowserCompositorOutputSurface(
             context_provider, shared_worker_context_provider_,
             compositor->vsync_manager(), compositor->task_runner().get(),
@@ -420,7 +422,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
         surface =
             base::WrapUnique(new GpuSurfacelessBrowserCompositorOutputSurface(
                 context_provider, shared_worker_context_provider_,
-                data->surface_id, compositor->vsync_manager(),
+                data->surface_handle, compositor->vsync_manager(),
                 compositor->task_runner().get(),
                 CreateOverlayCandidateValidator(compositor->widget()), target,
                 format, BrowserGpuMemoryBufferManager::current()));
@@ -438,9 +440,11 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
     }
   }
 
+#if defined(OS_MACOSX)
   // TODO(piman): Use GpuSurfaceTracker to map ids to surfaces instead of an
   // output_surface_map_ here.
-  output_surface_map_.AddWithID(surface.get(), data->surface_id);
+  output_surface_map_.AddWithID(surface.get(), data->surface_handle);
+#endif
   data->surface = surface.get();
   if (data->reflector)
     data->reflector->OnSourceSurfaceReady(data->surface);
@@ -507,12 +511,16 @@ void GpuProcessTransportFactory::RemoveCompositor(ui::Compositor* compositor) {
     return;
   PerCompositorData* data = it->second;
   DCHECK(data);
+#if defined(OS_MACOSX)
   // TODO(piman): Use GpuSurfaceTracker to map ids to surfaces instead of an
   // output_surface_map_ here.
   if (data->surface)
-    output_surface_map_.Remove(data->surface_id);
-  if (data->surface_id)
-    GpuSurfaceTracker::Get()->RemoveSurface(data->surface_id);
+    output_surface_map_.Remove(data->surface_handle);
+#endif
+#if !defined(GPU_SURFACE_HANDLE_IS_ACCELERATED_WINDOW)
+  if (data->surface_handle)
+    GpuSurfaceTracker::Get()->RemoveSurface(data->surface_handle);
+#endif
   delete data;
   per_compositor_data_.erase(it);
   if (per_compositor_data_.empty()) {
@@ -611,11 +619,11 @@ void GpuProcessTransportFactory::RemoveObserver(
 
 #if defined(OS_MACOSX)
 void GpuProcessTransportFactory::OnGpuSwapBuffersCompleted(
-    int surface_id,
+    gpu::SurfaceHandle surface_handle,
     const std::vector<ui::LatencyInfo>& latency_info,
     gfx::SwapResult result) {
   BrowserCompositorOutputSurface* surface = output_surface_map_.Lookup(
-      surface_id);
+      surface_handle);
   if (surface)
     surface->OnGpuSwapBuffersCompleted(latency_info, result);
 }
@@ -628,16 +636,15 @@ void GpuProcessTransportFactory::SetCompositorSuspendedForRecycle(
     return;
   PerCompositorData* data = it->second;
   DCHECK(data);
-  BrowserCompositorOutputSurface* surface =
-      output_surface_map_.Lookup(data->surface_id);
-  if (surface)
-    surface->SetSurfaceSuspendedForRecycle(suspended);
+  if (data->surface)
+    data->surface->SetSurfaceSuspendedForRecycle(suspended);
 }
 
 bool GpuProcessTransportFactory::
-    SurfaceShouldNotShowFramesAfterSuspendForRecycle(int surface_id) const {
+    SurfaceShouldNotShowFramesAfterSuspendForRecycle(
+        gpu::SurfaceHandle surface_handle) const {
   BrowserCompositorOutputSurface* surface =
-      output_surface_map_.Lookup(surface_id);
+      output_surface_map_.Lookup(surface_handle);
   if (surface)
     return surface->SurfaceShouldNotShowFramesAfterSuspendForRecycle();
   return false;
@@ -681,11 +688,15 @@ GpuProcessTransportFactory::CreatePerCompositorData(
   gfx::AcceleratedWidget widget = compositor->widget();
 
   PerCompositorData* data = new PerCompositorData;
-  if (compositor->widget() == gfx::kNullAcceleratedWidget) {
-    data->surface_id = 0;
+  if (widget == gfx::kNullAcceleratedWidget) {
+    data->surface_handle = gpu::kNullSurfaceHandle;
   } else {
+#if defined(GPU_SURFACE_HANDLE_IS_ACCELERATED_WINDOW)
+    data->surface_handle = widget;
+#else
     GpuSurfaceTracker* tracker = GpuSurfaceTracker::Get();
-    data->surface_id = tracker->AddSurfaceForNativeWidget(widget);
+    data->surface_handle = tracker->AddSurfaceForNativeWidget(widget);
+#endif
   }
 
   per_compositor_data_[compositor] = data;

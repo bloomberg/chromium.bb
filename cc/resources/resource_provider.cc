@@ -1078,7 +1078,7 @@ ResourceProvider::ScopedWriteLockGpuMemoryBuffer::GetGpuMemoryBuffer() {
     gpu_memory_buffer_ =
         resource_provider_->gpu_memory_buffer_manager_->AllocateGpuMemoryBuffer(
             resource_->size, BufferFormat(resource_->format),
-            gfx::BufferUsage::GPU_READ_CPU_READ_WRITE, 0 /* surface_id */);
+            gfx::BufferUsage::GPU_READ_CPU_READ_WRITE, gpu::kNullSurfaceHandle);
   }
   return gpu_memory_buffer_.get();
 }
@@ -1780,7 +1780,7 @@ void ResourceProvider::LazyAllocate(Resource* resource) {
     resource->gpu_memory_buffer =
         gpu_memory_buffer_manager_->AllocateGpuMemoryBuffer(
             size, BufferFormat(format),
-            gfx::BufferUsage::GPU_READ_CPU_READ_WRITE, 0 /* surface_id */);
+            gfx::BufferUsage::GPU_READ_CPU_READ_WRITE, gpu::kNullSurfaceHandle);
     LazyCreateImage(resource);
     resource->dirty_image = true;
     resource->is_overlay_candidate = true;

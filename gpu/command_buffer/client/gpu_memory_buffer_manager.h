@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "gpu/gpu_export.h"
+#include "gpu/ipc/common/surface_handle.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
@@ -24,7 +25,7 @@ class GPU_EXPORT GpuMemoryBufferManager {
       const gfx::Size& size,
       gfx::BufferFormat format,
       gfx::BufferUsage usage,
-      int32_t surface_id) = 0;
+      gpu::SurfaceHandle surface_handle) = 0;
 
   // Creates a GpuMemoryBuffer from existing handle.
   virtual std::unique_ptr<gfx::GpuMemoryBuffer> CreateGpuMemoryBufferFromHandle(

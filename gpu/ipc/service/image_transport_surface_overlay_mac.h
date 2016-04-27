@@ -72,11 +72,11 @@ class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
   ~ImageTransportSurfaceOverlayMac() override;
 
   void SetLatencyInfo(const std::vector<ui::LatencyInfo>& latency_info);
-  void BufferPresented(int32_t surface_id,
+  void BufferPresented(gpu::SurfaceHandle surface_handle,
                        const base::TimeTicks& vsync_timebase,
                        const base::TimeDelta& vsync_interval);
   void SendAcceleratedSurfaceBuffersSwapped(
-      int32_t surface_id,
+      gpu::SurfaceHandle surface_handle,
       CAContextID ca_context_id,
       const gfx::ScopedRefCountedIOSurfaceMachPort& io_surface,
       const gfx::Size& size,

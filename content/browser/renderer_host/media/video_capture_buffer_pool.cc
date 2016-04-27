@@ -131,7 +131,8 @@ class VideoCaptureBufferPool::GpuMemoryBufferTracker final : public Tracker {
       gpu_memory_buffers_.push_back(
           BrowserGpuMemoryBufferManager::current()->AllocateGpuMemoryBuffer(
               size, gfx::BufferFormat::R_8,
-              gfx::BufferUsage::GPU_READ_CPU_READ_WRITE, 0 /* surface_id */));
+              gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
+              gpu::kNullSurfaceHandle));
 
       DLOG_IF(ERROR, !gpu_memory_buffers_[i]) << "Allocating GpuMemoryBuffer";
       if (!gpu_memory_buffers_[i] || !gpu_memory_buffers_[i]->Map())

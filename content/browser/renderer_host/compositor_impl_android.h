@@ -20,6 +20,7 @@
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/public/browser/android/compositor.h"
 #include "gpu/command_buffer/common/capabilities.h"
+#include "gpu/ipc/common/surface_handle.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/android/resources/resource_manager_impl.h"
 #include "ui/android/resources/ui_resource_provider.h"
@@ -140,7 +141,7 @@ class CONTENT_EXPORT CompositorImpl
   float device_scale_factor_;
 
   ANativeWindow* window_;
-  int surface_id_;
+  gpu::SurfaceHandle surface_handle_;
 
   CompositorClient* client_;
 

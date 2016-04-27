@@ -17,7 +17,6 @@
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
-#include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_helper.h"
@@ -28,6 +27,7 @@
 #include "ui/gfx/swap_result.h"
 
 #if defined(OS_MACOSX)
+#include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/common/accelerated_surface_buffers_swapped_params_mac.h"
 #include "ui/accelerated_widget_mac/accelerated_widget_mac.h"
 #endif
@@ -234,18 +234,19 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceBuffersSwapped(
   // On Mac with delegated rendering, accelerated surfaces are not necessarily
   // associated with a RenderWidgetHostViewBase.
   BufferPresentedParams ack_params;
-  ack_params.surface_id = params.surface_id;
+  ack_params.surface_handle = params.surface_handle;
 
   // If the frame was intended for an NSView that the gfx::AcceleratedWidget is
   // no longer attached to, do not pass the frame along to the widget. Just ack
   // it to the GPU process immediately, so we can proceed to the next frame.
   bool should_not_show_frame =
       content::ImageTransportFactory::GetInstance()
-          ->SurfaceShouldNotShowFramesAfterSuspendForRecycle(params.surface_id);
+          ->SurfaceShouldNotShowFramesAfterSuspendForRecycle(
+              params.surface_handle);
   if (!should_not_show_frame) {
     gfx::AcceleratedWidget native_widget =
         content::GpuSurfaceTracker::Get()->AcquireNativeWidget(
-            params.surface_id);
+            params.surface_handle);
     base::ScopedCFTypeRef<IOSurfaceRef> io_surface;
     CAContextID ca_context_id = params.ca_context_id;
 
@@ -264,7 +265,7 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceBuffersSwapped(
   }
 
   content::ImageTransportFactory::GetInstance()->OnGpuSwapBuffersCompleted(
-      params.surface_id, params.latency_info, gfx::SwapResult::SWAP_ACK);
+      params.surface_handle, params.latency_info, gfx::SwapResult::SWAP_ACK);
 
   Send(new AcceleratedSurfaceMsg_BufferPresented(ack_params));
 }

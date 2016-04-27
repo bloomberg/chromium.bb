@@ -102,11 +102,13 @@ BlimpGpuMemoryBufferManager::BlimpGpuMemoryBufferManager() {}
 BlimpGpuMemoryBufferManager::~BlimpGpuMemoryBufferManager() {}
 
 std::unique_ptr<gfx::GpuMemoryBuffer>
-BlimpGpuMemoryBufferManager::AllocateGpuMemoryBuffer(const gfx::Size& size,
-                                                     gfx::BufferFormat format,
-                                                     gfx::BufferUsage usage,
-                                                     int32_t surface_id) {
-  DCHECK_EQ(0, surface_id) << "Blimp should not be allocating scanout buffers";
+BlimpGpuMemoryBufferManager::AllocateGpuMemoryBuffer(
+    const gfx::Size& size,
+    gfx::BufferFormat format,
+    gfx::BufferUsage usage,
+    gpu::SurfaceHandle surface_handle) {
+  DCHECK_EQ(gpu::kNullSurfaceHandle, surface_handle)
+      << "Blimp should not be allocating scanout buffers";
   std::unique_ptr<base::SharedMemory> shared_memory(new base::SharedMemory);
   const size_t buffer_size = gfx::BufferSizeForBufferFormat(size, format);
   if (!shared_memory->CreateAnonymous(buffer_size))
