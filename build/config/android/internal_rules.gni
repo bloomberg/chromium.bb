@@ -1618,7 +1618,9 @@ template("java_library_impl") {
   _run_findbugs = defined(invoker.run_findbugs) && invoker.run_findbugs
   assert(_run_findbugs || true)  # Mark as used.
 
-  _chromium_code = true
+  # Don't enable coverage, lint, findbugs unless the target has some
+  # non-generated files.
+  _chromium_code = defined(invoker.java_files) && invoker.java_files != []
   if (defined(invoker.chromium_code)) {
     _chromium_code = invoker.chromium_code
   }

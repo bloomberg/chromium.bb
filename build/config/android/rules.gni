@@ -1552,23 +1552,18 @@ template("android_apk") {
 
   java_target = "${_template_name}__java"
   java_library_impl(java_target) {
-    forward_variables_from(invoker, [ "run_findbugs" ])
+    forward_variables_from(invoker,
+                           [
+                             "chromium_code",
+                             "java_files",
+                             "run_findbugs",
+                           ])
     supports_android = true
     requires_android = true
     override_build_config = _build_config
     deps = _android_manifest_deps + [ ":$build_config_target" ]
 
     android_manifest = _android_manifest
-    chromium_code = true
-    if (defined(invoker.chromium_code)) {
-      chromium_code = invoker.chromium_code
-    }
-
-    if (defined(invoker.java_files)) {
-      java_files = invoker.java_files
-    } else {
-      java_files = []
-    }
     srcjar_deps = _srcjar_deps
     jar_path = _jar_path
     dex_path = _lib_dex_path
@@ -2131,12 +2126,7 @@ template("unittest_apk") {
     final_apk_path = "$root_build_dir/${apk_name}_apk/${apk_name}-debug.apk"
 
     if (!defined(use_default_launcher) || use_default_launcher) {
-      java_files = [
-        "//testing/android/native_test/java/src/org/chromium/native_test/NativeBrowserTestActivity.java",
-        "//testing/android/native_test/java/src/org/chromium/native_test/NativeTestActivity.java",
-        "//testing/android/native_test/java/src/org/chromium/native_test/NativeUnitTestActivity.java",
-        "//testing/android/native_test/java/src/org/chromium/native_test/NativeTestInstrumentationTestRunner.java",
-      ]
+      deps += [ "//testing/android/native_test:native_test_java" ]
     }
     native_libs = [ unittests_binary ]
     deps += [
