@@ -91,15 +91,16 @@ private:
 
     IntRect windowRect() override
     {
-        return m_popup->m_windowRectInScreen;
+        return m_popup->windowRectInScreen();
     }
 
     IntRect viewportToScreen(const IntRect& rect, const Widget* widget) const override
     {
         WebRect rectInScreen(rect);
+        WebRect windowRect = m_popup->windowRectInScreen();
         m_popup->widgetClient()->convertViewportToWindow(&rectInScreen);
-        rectInScreen.x += m_popup->m_windowRectInScreen.x;
-        rectInScreen.y += m_popup->m_windowRectInScreen.y;
+        rectInScreen.x += windowRect.x;
+        rectInScreen.y += windowRect.y;
         return rectInScreen;
     }
 
@@ -337,8 +338,7 @@ AXObject* WebPagePopupImpl::rootAXObject()
 
 void WebPagePopupImpl::setWindowRect(const IntRect& rectInScreen)
 {
-    m_windowRectInScreen = rectInScreen;
-    widgetClient()->setWindowRect(m_windowRectInScreen);
+    widgetClient()->setWindowRect(rectInScreen);
 }
 
 void WebPagePopupImpl::setRootGraphicsLayer(GraphicsLayer* layer)
@@ -416,7 +416,15 @@ void WebPagePopupImpl::resize(const WebSize& newSizeInViewport)
     WebRect newSize(0, 0, newSizeInViewport.width, newSizeInViewport.height);
     widgetClient()->convertViewportToWindow(&newSize);
 
-    setWindowRect(WebRect(m_windowRectInScreen.x, m_windowRectInScreen.y, newSize.width, newSize.height));
+    WebRect windowRect = windowRectInScreen();
+
+    if (windowRect.width != newSize.width
+        && windowRect.height != newSize.height) {
+        windowRect.width = newSize.width;
+        windowRect.height = newSize.height;
+        setWindowRect(windowRect);
+    }
+
     if (m_page) {
         toLocalFrame(m_page->mainFrame())->view()->resize(newSizeInViewport);
         m_page->frameHost().visualViewport().setSize(newSizeInViewport);
@@ -467,7 +475,8 @@ bool WebPagePopupImpl::isViewportPointInWindow(int x, int y)
 {
     WebRect pointInWindow(x, y, 0, 0);
     widgetClient()->convertViewportToWindow(&pointInWindow);
-    return IntRect(0, 0, m_windowRectInScreen.width, m_windowRectInScreen.height).contains(IntPoint(pointInWindow.x, pointInWindow.y));
+    WebRect windowRect = windowRectInScreen();
+    return IntRect(0, 0, windowRect.width, windowRect.height).contains(IntPoint(pointInWindow.x, pointInWindow.y));
 }
 
 WebInputEventResult WebPagePopupImpl::handleInputEvent(const WebInputEvent& event)
@@ -547,14 +556,20 @@ void WebPagePopupImpl::compositeAndReadbackAsync(WebCompositeAndReadbackAsyncCal
 
 WebPoint WebPagePopupImpl::positionRelativeToOwner()
 {
-    WebRect windowRect = m_webView->client()->rootWindowRect();
-    return WebPoint(m_windowRectInScreen.x - windowRect.x, m_windowRectInScreen.y - windowRect.y);
+    WebRect rootWindowRect = m_webView->client()->rootWindowRect();
+    WebRect windowRect = windowRectInScreen();
+    return WebPoint(windowRect.x - rootWindowRect.x, windowRect.y - rootWindowRect.y);
 }
 
 void WebPagePopupImpl::cancel()
 {
     if (m_popupClient)
         m_popupClient->closePopup();
+}
+
+WebRect WebPagePopupImpl::windowRectInScreen() const
+{
+    return widgetClient()->windowRect();
 }
 
 // WebPagePopup ----------------------------------------------------------------

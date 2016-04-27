@@ -147,7 +147,7 @@ class PepperWidget : public WebWidget {
   WebSize size() override { return size_; }
 
   void resize(const WebSize& size) override {
-    if (!widget_->plugin())
+    if (!widget_->plugin() || size_ == size)
       return;
 
     size_ = size;

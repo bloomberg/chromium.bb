@@ -103,8 +103,9 @@ private:
     void setRootGraphicsLayer(GraphicsLayer*);
     void setIsAcceleratedCompositingActive(bool enter);
 
+    WebRect windowRectInScreen() const;
+
     WebWidgetClient* m_widgetClient;
-    WebRect m_windowRectInScreen;
     WebViewImpl* m_webView;
     Persistent<Page> m_page;
     Persistent<PagePopupChromeClient> m_chromeClient;

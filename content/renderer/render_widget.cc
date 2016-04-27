@@ -677,6 +677,8 @@ void RenderWidget::OnWasShown(bool needs_repainting,
 void RenderWidget::OnRequestMoveAck() {
   DCHECK(pending_window_rect_count_);
   pending_window_rect_count_--;
+  if (!pending_window_rect_count_)
+    view_screen_rect_ = pending_window_rect_;
 }
 
 GURL RenderWidget::GetURLForGraphicsContext3D() {
@@ -1134,9 +1136,6 @@ void RenderWidget::Resize(const ResizeParams& params) {
   if (compositor_)
     compositor_->setViewportSize(params.physical_backing_size);
 
-  bool resized = size_ != params.new_size ||
-                 physical_backing_size_ != params.physical_backing_size;
-
   size_ = params.new_size;
   physical_backing_size_ = params.physical_backing_size;
 
@@ -1154,17 +1153,16 @@ void RenderWidget::Resize(const ResizeParams& params) {
   webwidget_->setTopControlsHeight(params.top_controls_height,
                                    top_controls_shrink_blink_size_);
 
-  if (resized) {
-    gfx::Size new_widget_size = size_;
-    if (IsUseZoomForDSFEnabled()) {
-      new_widget_size = gfx::ScaleToCeiledSize(new_widget_size,
-                                               GetOriginalDeviceScaleFactor());
-    }
-    // When resizing, we want to wait to paint before ACK'ing the resize.  This
-    // ensures that we only resize as fast as we can paint.  We only need to
-    // send an ACK if we are resized to a non-empty rect.
-    webwidget_->resize(new_widget_size);
+  gfx::Size new_widget_size = size_;
+  if (IsUseZoomForDSFEnabled()) {
+    new_widget_size = gfx::ScaleToCeiledSize(new_widget_size,
+                                             GetOriginalDeviceScaleFactor());
   }
+  // When resizing, we want to wait to paint before ACK'ing the resize.  This
+  // ensures that we only resize as fast as we can paint.  We only need to
+  // send an ACK if we are resized to a non-empty rect.
+  webwidget_->resize(new_widget_size);
+
   WebSize visual_viewport_size;
 
   if (IsUseZoomForDSFEnabled()) {
