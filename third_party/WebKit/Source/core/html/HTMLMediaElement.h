@@ -558,9 +558,6 @@ private:
     // data has not been loaded since sending a "stalled" event
     bool m_sentStalledEvent : 1;
 
-    // time has not changed since sending an "ended" event
-    bool m_sentEndEvent : 1;
-
     bool m_ignorePreloadNone : 1;
 
     bool m_textTracksVisible : 1;

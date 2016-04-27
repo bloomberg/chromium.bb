@@ -412,7 +412,6 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
     , m_paused(true)
     , m_seeking(false)
     , m_sentStalledEvent(false)
-    , m_sentEndEvent(false)
     , m_ignorePreloadNone(false)
     , m_textTracksVisible(false)
     , m_shouldPerformAutomaticTrackSelection(true)
@@ -716,7 +715,6 @@ void HTMLMediaElement::invokeLoadAlgorithm()
     cancelDeferredLoad();
     // FIXME: Figure out appropriate place to reset LoadTextTrackResource if necessary and set m_pendingActionFlags to 0 here.
     m_pendingActionFlags &= ~LoadMediaResource;
-    m_sentEndEvent = false;
     m_sentStalledEvent = false;
     m_haveFiredLoadedData = false;
     m_displayMode = Unknown;
@@ -1566,7 +1564,6 @@ void HTMLMediaElement::setReadyState(ReadyState state)
             initialPlaybackPosition = 0;
 
         if (!jumped && initialPlaybackPosition > 0) {
-            m_sentEndEvent = false;
             UseCounter::count(document(), UseCounter::HTMLMediaElementSeekToFragmentStart);
             seek(initialPlaybackPosition);
             jumped = true;
@@ -1732,7 +1729,6 @@ void HTMLMediaElement::seek(double time)
         addPlayedRange(m_lastSeekTime, now);
 
     m_lastSeekTime = time;
-    m_sentEndEvent = false;
 
     // 10 - Queue a task to fire a simple event named seeking at the element.
     scheduleEvent(EventTypeNames::seeking);
@@ -2840,7 +2836,6 @@ void HTMLMediaElement::timeChanged()
     if (!std::isnan(dur) && dur && now >= dur && getDirectionOfPlayback() == Forward) {
         // If the media element has a loop attribute specified
         if (loop()) {
-            m_sentEndEvent = false;
             //  then seek to the earliest possible position of the media resource and abort these steps.
             seek(0);
         } else {
@@ -2852,16 +2847,10 @@ void HTMLMediaElement::timeChanged()
                 scheduleEvent(EventTypeNames::pause);
             }
             // Queue a task to fire a simple event named ended at the media element.
-            if (!m_sentEndEvent) {
-                m_sentEndEvent = true;
-                scheduleEvent(EventTypeNames::ended);
-            }
+            scheduleEvent(EventTypeNames::ended);
             Platform::current()->recordAction(UserMetricsAction("Media_Playback_Ended"));
         }
-    } else {
-        m_sentEndEvent = false;
     }
-
     updatePlayState();
 }
 
