@@ -627,6 +627,8 @@ RenderViewImpl::RenderViewImpl(CompositorDependencies* compositor_deps,
 #if defined(OS_ANDROID)
       top_controls_constraints_(TOP_CONTROLS_STATE_BOTH),
 #endif
+      top_controls_shrink_blink_size_(false),
+      top_controls_height_(0.f),
       has_focus_(false),
       has_scrolled_focused_editable_node_into_rect_(false),
       main_render_frame_(nullptr),
@@ -2575,6 +2577,12 @@ void RenderViewImpl::OnMoveOrResizeStarted() {
     webview()->hidePopups();
 }
 
+void RenderViewImpl::ResizeWebWidget() {
+    webview()->resizeWithTopControls(GetSizeForWebWidget(),
+                                     top_controls_height_,
+                                     top_controls_shrink_blink_size_);
+}
+
 void RenderViewImpl::OnResize(const ResizeParams& params) {
   TRACE_EVENT0("renderer", "RenderViewImpl::OnResize");
   if (webview()) {
@@ -2591,6 +2599,9 @@ void RenderViewImpl::OnResize(const ResizeParams& params) {
   }
 
   gfx::Size old_visible_viewport_size = visible_viewport_size_;
+
+  top_controls_shrink_blink_size_ = params.top_controls_shrink_blink_size;
+  top_controls_height_ = params.top_controls_height;
 
   RenderWidget::OnResize(params);
 

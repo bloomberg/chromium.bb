@@ -565,7 +565,7 @@ DoublePoint VisualViewport::maximumScrollPositionDouble() const
     if (!mainFrame())
         return IntPoint();
 
-    // FIXME: We probably shouldn't be storing the bounds in a float. crbug.com/422331.
+    // TODO(bokan): We probably shouldn't be storing the bounds in a float. crbug.com/470718.
     FloatSize frameViewSize(contentsSize());
 
     if (m_topControlsAdjustment) {
@@ -577,7 +577,7 @@ DoublePoint VisualViewport::maximumScrollPositionDouble() const
     frameViewSize = FloatSize(flooredIntSize(frameViewSize));
 
     FloatSize viewportSize(m_size);
-    viewportSize.expand(0, m_topControlsAdjustment);
+    viewportSize.expand(0, ceilf(m_topControlsAdjustment));
 
     FloatSize maxPosition = frameViewSize - viewportSize;
     maxPosition.scale(1 / m_scale);

@@ -230,11 +230,6 @@ WebPagePopup* WebViewFrameWidget::pagePopup() const
     return m_webView->pagePopup();
 }
 
-void WebViewFrameWidget::setTopControlsHeight(float height, bool topControlsShrinkLayoutSize)
-{
-    return m_webView->setTopControlsHeight(height, topControlsShrinkLayoutSize);
-}
-
 void WebViewFrameWidget::updateTopControlsState(WebTopControlsState constraints, WebTopControlsState current, bool animate)
 {
     return m_webView->updateTopControlsState(constraints, current, animate);

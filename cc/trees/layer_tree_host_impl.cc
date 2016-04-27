@@ -123,8 +123,8 @@ class ViewportAnchor {
     gfx::Vector2dF delta =
         viewport_in_content_coordinates_.DeltaFrom(viewport_location);
 
-    delta = outer_->ScrollBy(delta);
-    inner_->ScrollBy(delta);
+    delta = inner_->ScrollBy(delta);
+    outer_->ScrollBy(delta);
   }
 
  private:

@@ -239,10 +239,6 @@ public:
     // but not the select popup.
     virtual WebPagePopup* pagePopup() const { return 0; }
 
-    // Notification about the top controls height.  If the boolean is true, then
-    // the embedder shrunk the WebView size by the top controls height.
-    virtual void setTopControlsHeight(float height, bool topControlsShrinkLayoutSize) { }
-
     // Updates top controls constraints and current state. Allows embedder to
     // control what are valid states for top controls and if it should animate.
     virtual void updateTopControlsState(WebTopControlsState constraints, WebTopControlsState current, bool animate) { }

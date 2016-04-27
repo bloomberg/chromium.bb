@@ -87,7 +87,6 @@ public:
     void didChangeWindowResizerRect() override;
     WebColor backgroundColor() const override;
     WebPagePopup* pagePopup() const override;
-    void setTopControlsHeight(float height, bool topControlsShrinkLayoutSize) override;
     void updateTopControlsState(WebTopControlsState constraints, WebTopControlsState current, bool animate) override;
     void setVisibilityState(WebPageVisibilityState, bool isInitialState) override;
     bool isTransparent() const override;

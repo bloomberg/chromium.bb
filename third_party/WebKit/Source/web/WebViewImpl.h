@@ -175,6 +175,10 @@ public:
     void setDomainRelaxationForbidden(bool, const WebString& scheme) override;
     void setWindowFeatures(const WebWindowFeatures&) override;
     void setOpenedByDOM() override;
+    void resizeWithTopControls(
+        const WebSize&,
+        float topControlsHeight,
+        bool topControlsShrinkLayout) override;
     WebFrame* mainFrame() override;
     WebFrame* findFrameByName(
         const WebString& name, WebFrame* relativeToFrame) override;
@@ -489,7 +493,6 @@ public:
 
     bool matchesHeuristicsForGpuRasterizationForTesting() const { return m_matchesHeuristicsForGpuRasterization; }
 
-    void setTopControlsHeight(float height, bool topControlsShrinkLayoutSize) override;
     void updateTopControlsState(WebTopControlsState constraint, WebTopControlsState current, bool animate) override;
 
     TopControls& topControls();
@@ -534,7 +537,7 @@ private:
     IntSize contentsSize() const;
 
     void performResize();
-    void resizeViewWhileAnchored(FrameView*);
+    void resizeViewWhileAnchored(FrameView*, float topControlsHeight, bool topControlsShrinkLayout);
 
     friend class WebView;  // So WebView::Create can call our constructor
     friend class WTF::RefCounted<WebViewImpl>;

@@ -410,6 +410,9 @@ class CONTENT_EXPORT RenderWidget
   void DoDeferredClose();
   void NotifyOnClose();
 
+  gfx::Size GetSizeForWebWidget() const;
+  virtual void ResizeWebWidget();
+
   // Close the underlying WebWidget.
   virtual void Close();
 
@@ -598,14 +601,6 @@ class CONTENT_EXPORT RenderWidget
 
   // The size of the view's backing surface in non-DPI-adjusted pixels.
   gfx::Size physical_backing_size_;
-
-  // Whether or not Blink's viewport size should be shrunk by the height of the
-  // URL-bar (always false on platforms where URL-bar hiding isn't supported).
-  bool top_controls_shrink_blink_size_;
-
-  // The height of the top controls (always 0 on platforms where URL-bar hiding
-  // isn't supported).
-  float top_controls_height_;
 
   // The size of the visible viewport in DPI-adjusted pixels.
   gfx::Size visible_viewport_size_;

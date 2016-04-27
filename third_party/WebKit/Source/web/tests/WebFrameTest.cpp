@@ -6420,8 +6420,7 @@ TEST_F(WebFrameTest, FrameViewScrollAccountsForTopControls)
     FrameView* frameView = webViewHelper.webViewImpl()->mainFrameImpl()->frameView();
 
     float topControlsHeight = 40;
-    webView->setTopControlsHeight(topControlsHeight, false);
-    webViewHelper.resize(WebSize(100, 100));
+    webView->resizeWithTopControls(WebSize(100, 100), topControlsHeight, false);
     webView->setPageScaleFactor(2.0f);
     webView->updateAllLifecyclePhases();
 
@@ -6446,8 +6445,7 @@ TEST_F(WebFrameTest, FrameViewScrollAccountsForTopControls)
     // the top controls and Blink's view of the top controls matches that of
     // the CC
     webView->applyViewportDeltas(WebFloatSize(), WebFloatSize(), WebFloatSize(), 1.0f, 30.0f / topControlsHeight);
-    webView->setTopControlsHeight(40.0f, true);
-    webViewHelper.resize(WebSize(100, 60));
+    webView->resizeWithTopControls(WebSize(100, 60), 40.0f, true);
     webView->updateAllLifecyclePhases();
     EXPECT_POINT_EQ(IntPoint(0, 1940), frameView->maximumScrollPosition());
 
@@ -6457,8 +6455,7 @@ TEST_F(WebFrameTest, FrameViewScrollAccountsForTopControls)
 
     // Reset to original state: 100px widget height, top controls fully hidden.
     webView->applyViewportDeltas(WebFloatSize(), WebFloatSize(), WebFloatSize(), 1.0f, -30.0f / topControlsHeight);
-    webView->setTopControlsHeight(topControlsHeight, false);
-    webViewHelper.resize(WebSize(100, 100));
+    webView->resizeWithTopControls(WebSize(100, 100), topControlsHeight, false);
     webView->updateAllLifecyclePhases();
     EXPECT_POINT_EQ(IntPoint(0, 1900), frameView->maximumScrollPosition());
 

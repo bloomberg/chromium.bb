@@ -1817,11 +1817,6 @@ void WebViewImpl::performResize()
     }
 }
 
-void WebViewImpl::setTopControlsHeight(float height, bool topControlsShrinkLayoutSize)
-{
-    topControls().setHeight(height, topControlsShrinkLayoutSize);
-}
-
 void WebViewImpl::updateTopControlsState(WebTopControlsState constraint, WebTopControlsState current, bool animate)
 {
     topControls().updateConstraints(constraint);
@@ -1845,11 +1840,24 @@ void WebViewImpl::didUpdateTopControls()
         return;
 
     VisualViewport& visualViewport = page()->frameHost().visualViewport();
-    float topControlsViewportAdjustment = topControls().layoutHeight() - topControls().contentOffset();
-    visualViewport.setTopControlsAdjustment(topControlsViewportAdjustment);
 
-    // Shrink the FrameView by the amount that will maintain the aspect-ratio with the VisualViewport.
-    view->setTopControlsViewportAdjustment(topControlsViewportAdjustment / minimumPageScaleFactor());
+    {
+        // This object will save the current visual viewport offset w.r.t. the
+        // document and restore it when the object goes out of scope. It's
+        // needed since the top controls adjustment will change the maximum
+        // scroll offset and we may need to reposition them to keep the user's
+        // apparent position unchanged.
+        ResizeViewportAnchor anchor(*view, visualViewport);
+
+        float topControlsViewportAdjustment =
+            topControls().layoutHeight() - topControls().contentOffset();
+        visualViewport.setTopControlsAdjustment(topControlsViewportAdjustment);
+
+        // Since the FrameView is sized to be the visual viewport at minimum
+        // scale, its adjustment must also be scaled by the minimum scale.
+        view->setTopControlsViewportAdjustment(
+            topControlsViewportAdjustment / minimumPageScaleFactor());
+    }
 }
 
 TopControls& WebViewImpl::topControls()
@@ -1857,10 +1865,13 @@ TopControls& WebViewImpl::topControls()
     return page()->frameHost().topControls();
 }
 
-void WebViewImpl::resizeViewWhileAnchored(FrameView* view)
+void WebViewImpl::resizeViewWhileAnchored(
+    FrameView* view, float topControlsHeight, bool topControlsShrinkLayout)
 {
     DCHECK(mainFrameImpl());
     DCHECK(mainFrameImpl()->frame()->isLocalFrame());
+
+    topControls().setHeight(topControlsHeight, topControlsShrinkLayout);
 
     {
         // Avoids unnecessary invalidations while various bits of state in TextAutosizer are updated.
@@ -1875,9 +1886,14 @@ void WebViewImpl::resizeViewWhileAnchored(FrameView* view)
     updateAllLifecyclePhases();
 }
 
-void WebViewImpl::resize(const WebSize& newSize)
+void WebViewImpl::resizeWithTopControls(const WebSize& newSize, float topControlsHeight, bool topControlsShrinkLayout)
 {
-    if (m_shouldAutoResize || m_size == newSize)
+    if (m_shouldAutoResize)
+        return;
+
+    if (m_size == newSize
+        && topControls().height() == topControlsHeight
+        && topControls().shrinkViewport() == topControlsShrinkLayout)
         return;
 
     if (page()->mainFrame() && !page()->mainFrame()->isLocalFrame()) {
@@ -1908,12 +1924,21 @@ void WebViewImpl::resize(const WebSize& newSize)
     FloatSize viewportAnchorCoords(viewportAnchorCoordX, viewportAnchorCoordY);
     if (isRotation) {
         RotationViewportAnchor anchor(*view, visualViewport, viewportAnchorCoords, pageScaleConstraintsSet());
-        resizeViewWhileAnchored(view);
+        resizeViewWhileAnchored(view, topControlsHeight, topControlsShrinkLayout);
     } else {
         ResizeViewportAnchor anchor(*view, visualViewport);
-        resizeViewWhileAnchored(view);
+        resizeViewWhileAnchored(view, topControlsHeight, topControlsShrinkLayout);
     }
     sendResizeEventAndRepaint();
+}
+
+void WebViewImpl::resize(const WebSize& newSize)
+{
+    if (m_shouldAutoResize || m_size == newSize)
+        return;
+
+    resizeWithTopControls(
+        newSize, topControls().height(), topControls().shrinkViewport());
 }
 
 void WebViewImpl::didEnterFullScreen()
@@ -4016,9 +4041,6 @@ void WebViewImpl::layoutUpdated(WebLocalFrameImpl* webframe)
     if (view->needsLayout())
         view->layout();
 
-    // In case we didn't have a size when the top controls were updated.
-    didUpdateTopControls();
-
     m_client->didUpdateLayout();
 }
 
@@ -4276,24 +4298,31 @@ void WebViewImpl::applyViewportDeltas(
     if (!frameView)
         return;
 
+    ScrollableArea* layoutViewport = frameView->layoutViewportScrollableArea();
+    VisualViewport& visualViewport = page()->frameHost().visualViewport();
+
+    // Store the desired offsets for visual and layout viewports before setting
+    // the top controls ratio since doing so will change the bounds and move the
+    // viewports to keep the offsets valid. The compositor may have already done
+    // that so we don't want to double apply the deltas here.
+    FloatPoint visualViewportOffset = visualViewport.visibleRect().location();
+    visualViewportOffset.move(
+        visualViewportDelta.width,
+        visualViewportDelta.height);
+    DoublePoint layoutViewportPosition = layoutViewport->scrollPositionDouble()
+        + DoubleSize(layoutViewportDelta.width, layoutViewportDelta.height);
+
     topControls().setShownRatio(topControls().shownRatio() + topControlsShownRatioDelta);
 
-    FloatPoint visualViewportOffset = page()->frameHost().visualViewport().visibleRect().location();
-    visualViewportOffset.move(visualViewportDelta.width, visualViewportDelta.height);
     setPageScaleFactorAndLocation(pageScaleFactor() * pageScaleDelta, visualViewportOffset);
 
     if (pageScaleDelta != 1) {
         m_doubleTapZoomPending = false;
-        page()->frameHost().visualViewport().userDidChangeScale();
+        visualViewport.userDidChangeScale();
     }
 
     m_elasticOverscroll += elasticOverscrollDelta;
     frameView->didUpdateElasticOverscroll();
-
-    ScrollableArea* layoutViewport = frameView->layoutViewportScrollableArea();
-
-    DoublePoint layoutViewportPosition = layoutViewport->scrollPositionDouble()
-        + DoubleSize(layoutViewportDelta.width, layoutViewportDelta.height);
 
     if (layoutViewport->scrollPositionDouble() != layoutViewportPosition) {
         layoutViewport->setScrollPosition(layoutViewportPosition, CompositorScroll);

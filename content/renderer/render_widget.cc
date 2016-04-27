@@ -245,8 +245,6 @@ RenderWidget::RenderWidget(CompositorDependencies* compositor_deps,
       webwidget_(nullptr),
       owner_delegate_(nullptr),
       opener_id_(MSG_ROUTING_NONE),
-      top_controls_shrink_blink_size_(false),
-      top_controls_height_(0.f),
       next_paint_flags_(0),
       auto_resize_mode_(false),
       need_update_rect_for_auto_resize_(false),
@@ -542,8 +540,6 @@ void RenderWidget::SetWindowRectSynchronously(
   params.new_size = new_window_rect.size();
   params.physical_backing_size =
       gfx::ScaleToCeiledSize(new_window_rect.size(), device_scale_factor_);
-  params.top_controls_shrink_blink_size = top_controls_shrink_blink_size_;
-  params.top_controls_height = top_controls_height_;
   params.visible_viewport_size = new_window_rect.size();
   params.resizer_rect = gfx::Rect();
   params.is_fullscreen_granted = is_fullscreen_granted_;
@@ -611,9 +607,6 @@ void RenderWidget::OnEnableDeviceEmulation(
     resize_params.new_size = size_;
     resize_params.physical_backing_size = physical_backing_size_;
     resize_params.visible_viewport_size = visible_viewport_size_;
-    resize_params.top_controls_shrink_blink_size =
-        top_controls_shrink_blink_size_;
-    resize_params.top_controls_height = top_controls_height_;
     resize_params.resizer_rect = resizer_rect_;
     resize_params.is_fullscreen_granted = is_fullscreen_granted_;
     resize_params.display_mode = display_mode_;
@@ -1115,6 +1108,17 @@ void RenderWidget::Redraw() {
     compositor_->SetNeedsRedrawRect(gfx::Rect(size_));
 }
 
+void RenderWidget::ResizeWebWidget() {
+  webwidget_->resize(GetSizeForWebWidget());
+}
+
+gfx::Size RenderWidget::GetSizeForWebWidget() const {
+  if (IsUseZoomForDSFEnabled())
+    return gfx::ScaleToCeiledSize(size_, GetOriginalDeviceScaleFactor());
+
+  return size_;
+}
+
 void RenderWidget::Resize(const ResizeParams& params) {
   bool orientation_changed =
       screen_info_.orientationAngle != params.screen_info.orientationAngle ||
@@ -1136,11 +1140,6 @@ void RenderWidget::Resize(const ResizeParams& params) {
   if (compositor_)
     compositor_->setViewportSize(params.physical_backing_size);
 
-  size_ = params.new_size;
-  physical_backing_size_ = params.physical_backing_size;
-
-  top_controls_shrink_blink_size_ = params.top_controls_shrink_blink_size;
-  top_controls_height_ = params.top_controls_height;
   visible_viewport_size_ = params.visible_viewport_size;
   resizer_rect_ = params.resizer_rect;
 
@@ -1150,18 +1149,10 @@ void RenderWidget::Resize(const ResizeParams& params) {
   is_fullscreen_granted_ = params.is_fullscreen_granted;
   display_mode_ = params.display_mode;
 
-  webwidget_->setTopControlsHeight(params.top_controls_height,
-                                   top_controls_shrink_blink_size_);
+  size_ = params.new_size;
+  physical_backing_size_ = params.physical_backing_size;
 
-  gfx::Size new_widget_size = size_;
-  if (IsUseZoomForDSFEnabled()) {
-    new_widget_size = gfx::ScaleToCeiledSize(new_widget_size,
-                                             GetOriginalDeviceScaleFactor());
-  }
-  // When resizing, we want to wait to paint before ACK'ing the resize.  This
-  // ensures that we only resize as fast as we can paint.  We only need to
-  // send an ACK if we are resized to a non-empty rect.
-  webwidget_->resize(new_widget_size);
+  ResizeWebWidget();
 
   WebSize visual_viewport_size;
 
@@ -1175,6 +1166,9 @@ void RenderWidget::Resize(const ResizeParams& params) {
 
   webwidget()->resizeVisualViewport(visual_viewport_size);
 
+  // When resizing, we want to wait to paint before ACK'ing the resize.  This
+  // ensures that we only resize as fast as we can paint.  We only need to
+  // send an ACK if we are resized to a non-empty rect.
   if (params.new_size.IsEmpty() || params.physical_backing_size.IsEmpty()) {
     // In this case there is no paint/composite and therefore no
     // ViewHostMsg_UpdateRect to send the resize ack with. We'd need to send the

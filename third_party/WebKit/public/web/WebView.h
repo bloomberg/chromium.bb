@@ -285,6 +285,14 @@ public:
     virtual void setDeviceColorProfile(const WebVector<char>&) = 0;
     virtual void resetDeviceColorProfileForTesting() = 0;
 
+    // Resize the view at the same time as changing the state of the top
+    // controls. If |topControlsShrinkLayout| is true, the embedder shrunk the
+    // WebView size by the top controls height.
+    virtual void resizeWithTopControls(
+        const WebSize&,
+        float topControlsHeight,
+        bool topControlsShrinkLayout) = 0;
+
     // Auto-Resize -----------------------------------------------------------
 
     // In auto-resize mode, the view is automatically adjusted to fit the html

@@ -472,6 +472,7 @@ class CONTENT_EXPORT RenderViewImpl
   void DidCommitCompositorFrame() override;
   void DidCompletePageScaleAnimation() override;
   void OnDeviceScaleFactorChanged() override;
+  void ResizeWebWidget() override;
 
   RenderViewImpl(CompositorDependencies* compositor_deps,
                  const ViewMsg_New_Params& params);
@@ -853,6 +854,13 @@ class CONTENT_EXPORT RenderViewImpl
   // current value only without altering the constraints.
   TopControlsState top_controls_constraints_;
 #endif
+
+  // Whether or not Blink's viewport size should be shrunk by the height of the
+  // URL-bar.
+  bool top_controls_shrink_blink_size_;
+
+  // The height of the top controls.
+  float top_controls_height_;
 
   // Indicates whether this page has been focused/unfocused by the browser.
   bool has_focus_;
