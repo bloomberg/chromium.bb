@@ -14,9 +14,7 @@ namespace blink {
 void ClipDisplayItem::replay(GraphicsContext& context) const
 {
     context.save();
-    // TODO(chrishtr): make this AntiAliased. Not anti-aliasing here is a workaround for a PDF rendering issue.
-    // See crbug.com/590971.
-    context.clipRect(m_clipRect, NotAntiAliased);
+    context.clipRect(m_clipRect, AntiAliased);
 
     for (const FloatRoundedRect& roundedRect : m_roundedRectClips)
         context.clipRoundedRect(roundedRect);
