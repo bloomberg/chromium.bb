@@ -1,10 +1,10 @@
 Tests that a line-level CPU profile is shown in the text editor.
 .../inspector/tracing/resources/timeline-data.js
+99 performance 10.0 ms rgba(255, 187, 0, 0.262745)
+101 performance 1900.0 ms rgba(255, 187, 0, 0.717647)
 0 performance 100.0 ms rgba(255, 187, 0, 0.462745)
 1 performance 200.0 ms rgba(255, 187, 0, 0.521569)
 2 performance 300.0 ms rgba(255, 187, 0, 0.556863)
 3 performance 400.0 ms rgba(255, 187, 0, 0.580392)
-99 performance 10.0 ms rgba(255, 187, 0, 0.262745)
-101 performance 1900.0 ms rgba(255, 187, 0, 0.717647)
 54 performance 220.0 ms rgba(255, 187, 0, 0.529412)
 

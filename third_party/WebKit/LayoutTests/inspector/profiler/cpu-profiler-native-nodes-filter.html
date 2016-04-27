@@ -113,7 +113,7 @@ function test()
     function printTree(padding, node)
     {
         InspectorTest.addResult(`${padding}${node.functionName} id:${node.id} total:${node.total} self:${node.self} depth:${node.depth}`);
-        node.children.forEach(printTree.bind(null, padding + "  "));
+        node.children.sort((a, b) => a.id - b.id).forEach(printTree.bind(null, padding + "  "));
     }
     InspectorTest.addResult(model.samples.join(", "));
     InspectorTest.completeTest();
