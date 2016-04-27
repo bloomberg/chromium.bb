@@ -282,8 +282,10 @@ source_set("test_support") {
 
   deps = [
     ":web",
+    "//base/test:test_support",
     "//ios/testing:ocmock_support",
     "//ios/third_party/gcdwebserver",
+    "//net:test_support",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/ocmock",
@@ -302,6 +304,10 @@ source_set("test_support") {
     "public/test/response_providers/file_based_response_provider.mm",
     "public/test/response_providers/file_based_response_provider_impl.h",
     "public/test/response_providers/file_based_response_provider_impl.mm",
+    "public/test/response_providers/html_response_provider.h",
+    "public/test/response_providers/html_response_provider.mm",
+    "public/test/response_providers/html_response_provider_impl.h",
+    "public/test/response_providers/html_response_provider_impl.mm",
     "public/test/response_providers/response_provider.h",
     "public/test/response_providers/response_provider.mm",
     "public/test/response_providers/string_response_provider.h",
