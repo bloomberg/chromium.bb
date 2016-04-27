@@ -918,12 +918,6 @@ void InProcessCommandBuffer::SetLock(base::Lock*) {
   NOTREACHED();
 }
 
-bool InProcessCommandBuffer::IsGpuChannelLost() {
-  // There is no such channel to lose for in-process contexts. This only
-  // makes sense for out-of-process command buffers.
-  return false;
-}
-
 void InProcessCommandBuffer::EnsureWorkVisible() {
   // This is only relevant for out-of-process command buffers.
 }

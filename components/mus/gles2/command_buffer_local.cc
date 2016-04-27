@@ -334,12 +334,6 @@ void CommandBufferLocal::SetLock(base::Lock* lock) {
   NOTIMPLEMENTED();
 }
 
-bool CommandBufferLocal::IsGpuChannelLost() {
-  DCHECK(CalledOnValidThread());
-  // This is only possible for out-of-process command buffers.
-  return false;
-}
-
 void CommandBufferLocal::EnsureWorkVisible() {
   // This is only relevant for out-of-process command buffers.
 }

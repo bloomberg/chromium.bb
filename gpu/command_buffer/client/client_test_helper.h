@@ -114,7 +114,6 @@ class MockClientGpuControl : public GpuControl {
                void(uint32_t query, const base::Closure& callback));
   MOCK_METHOD1(CreateStreamTexture, uint32_t(uint32_t));
   MOCK_METHOD1(SetLock, void(base::Lock*));
-  MOCK_METHOD0(IsGpuChannelLost, bool());
   MOCK_METHOD0(EnsureWorkVisible, void());
   MOCK_CONST_METHOD0(GetNamespaceID, CommandBufferNamespace());
   MOCK_CONST_METHOD0(GetCommandBufferID, CommandBufferId());

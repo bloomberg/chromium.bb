@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/memory/shared_memory.h"
+#include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
@@ -105,26 +106,12 @@ void CommandBufferProxyImpl::OnChannelError() {
     if (last_state_.error == gpu::error::kLostContext)
       context_lost_reason = last_state_.context_lost_reason;
   }
-  OnDestroyed(context_lost_reason, gpu::error::kLostContext);
+  OnLostContextNoReentrancy(context_lost_reason, gpu::error::kLostContext);
 }
 
 void CommandBufferProxyImpl::OnDestroyed(gpu::error::ContextLostReason reason,
                                          gpu::error::Error error) {
-  CheckLock();
-
-  // When the client sees that the context is lost, they should delete this
-  // CommandBufferProxyImpl and create a new one.
-  last_state_.error = error;
-  last_state_.context_lost_reason = reason;
-
-  // Prevent any further messages from being sent, and ensure we only call
-  // the client for lost context a single time.
-  if (channel_) {
-    channel_->DestroyCommandBuffer(this);
-    channel_ = nullptr;
-    if (gpu_control_client_)
-      gpu_control_client_->OnGpuControlLostContext();
-  }
+  OnLostContextNoReentrancy(reason, error);
 }
 
 void CommandBufferProxyImpl::OnConsoleMessage(
@@ -506,10 +493,6 @@ void CommandBufferProxyImpl::SetLock(base::Lock* lock) {
   lock_ = lock;
 }
 
-bool CommandBufferProxyImpl::IsGpuChannelLost() {
-  return !channel_ || channel_->IsLost();
-}
-
 void CommandBufferProxyImpl::EnsureWorkVisible() {
   if (channel_)
     channel_->ValidateFlushIDReachedServer(stream_id_, true);
@@ -704,25 +687,62 @@ void CommandBufferProxyImpl::OnUpdateVSyncParameters(base::TimeTicks timebase,
 
 void CommandBufferProxyImpl::InvalidGpuMessage() {
   LOG(ERROR) << "Received invalid message from the GPU process.";
-  OnDestroyed(gpu::error::kInvalidGpuMessage, gpu::error::kLostContext);
+  OnLostContextNoReentrancy(gpu::error::kInvalidGpuMessage,
+                            gpu::error::kLostContext);
 }
 
 void CommandBufferProxyImpl::InvalidGpuReply() {
-  CheckLock();
   LOG(ERROR) << "Received invalid reply from the GPU process.";
-  last_state_.error = gpu::error::kLostContext;
-  last_state_.context_lost_reason = gpu::error::kInvalidGpuMessage;
+  // This method may be inside a callstack from the GpuControlClient (we got a
+  // bad reply to something we are sending to the GPU process). So avoid
+  // re-entering the GpuControlClient here.
+  OnLostContextAvoidReentrancy(gpu::error::kInvalidGpuMessage,
+                               gpu::error::kLostContext);
+}
+
+void CommandBufferProxyImpl::OnLostContextAvoidReentrancy(
+    gpu::error::ContextLostReason reason,
+    gpu::error::Error error) {
+  CheckLock();
+  // Set the error and reason immediately, in case clients want to query them
+  // as we unwind the stack.
+  last_state_.error = error;
+  last_state_.context_lost_reason = reason;
+  // Create a fresh call stack to call back to the GpuControlClient. For
+  // cases where we're inside a method that the GpuControlClient called
+  // on us and we don't want to re-enter it.
   callback_thread_->PostTask(
       FROM_HERE,
-      base::Bind(&CommandBufferProxyImpl::InvalidGpuReplyOnClientThread,
+      base::Bind(&CommandBufferProxyImpl::OnLostContextImplFromAvoidReentrancy,
                  weak_this_));
 }
 
-void CommandBufferProxyImpl::InvalidGpuReplyOnClientThread() {
-  std::unique_ptr<base::AutoLock> lock;
+void CommandBufferProxyImpl::OnLostContextNoReentrancy(
+    gpu::error::ContextLostReason reason,
+    gpu::error::Error error) {
+  last_state_.error = error;
+  last_state_.context_lost_reason = reason;
+  OnLostContextImpl();
+}
+
+void CommandBufferProxyImpl::OnLostContextImplFromAvoidReentrancy() {
+  // This is a fresh call stack so we need to grab the lock.
+  base::Optional<base::AutoLock> hold;
   if (lock_)
-    lock.reset(new base::AutoLock(*lock_));
-  OnDestroyed(gpu::error::kInvalidGpuMessage, gpu::error::kLostContext);
+    hold.emplace(*lock_);
+  OnLostContextImpl();
+}
+
+void CommandBufferProxyImpl::OnLostContextImpl() {
+  CheckLock();
+  // Prevent any further messages from being sent, and ensure we only call
+  // the client for lost context a single time.
+  if (!channel_)
+    return;
+  channel_->DestroyCommandBuffer(this);
+  channel_ = nullptr;
+  if (gpu_control_client_)
+    gpu_control_client_->OnGpuControlLostContext();
 }
 
 }  // namespace gpu

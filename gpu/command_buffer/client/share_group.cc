@@ -374,7 +374,17 @@ ShareGroup::ShareGroup(bool bind_generates_resource, uint64_t tracing_guid)
   }
 }
 
-void ShareGroup::set_program_info_manager(ProgramInfoManager* manager) {
+void ShareGroup::Lose() {
+  base::AutoLock hold(lost_lock_);
+  lost_ = true;
+}
+
+bool ShareGroup::IsLost() const {
+  base::AutoLock hold(lost_lock_);
+  return lost_;
+}
+
+void ShareGroup::SetProgramInfoManagerForTesting(ProgramInfoManager* manager) {
   program_info_manager_.reset(manager);
 }
 
