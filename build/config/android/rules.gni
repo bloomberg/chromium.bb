@@ -2055,6 +2055,13 @@ template("instrumentation_test_apk") {
       public_deps += [ invoker.apk_under_test ]
     }
   }
+
+  # TODO(GYP): Delete once recipes no longer use this target.
+  group("${target_name}_run") {
+    public_deps = [
+      ":${invoker.target_name}",
+    ]
+  }
   group("${target_name}_incremental") {
     public_deps = [
       ":${_apk_target_name}_dist_ijar",
