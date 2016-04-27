@@ -91,6 +91,11 @@ class _FirstEventLens(_UserSatisfiedLens):
   # pylint: disable=abstract-method
 
   @classmethod
+  def _CheckCategory(cls, tracing_track, category):
+    assert category in tracing_track.Categories(), (
+        'The "%s" category must be enabled.' % category)
+
+  @classmethod
   def _ExtractFirstTiming(cls, times):
     if not times:
       return float('inf')
@@ -106,9 +111,11 @@ class FirstTextPaintLens(_FirstEventLens):
 
   This event is taken directly from a trace.
   """
+  _EVENT_CATEGORY = 'blink.user_timing'
   def _CalculateTimes(self, tracing_track):
+    self._CheckCategory(tracing_track, self._EVENT_CATEGORY)
     first_paints = [e.start_msec for e in tracing_track.GetEvents()
-                    if e.Matches('blink.user_timing', 'firstPaint')]
+                    if e.Matches(self._EVENT_CATEGORY, 'firstPaint')]
     self._satisfied_msec = self._event_msec = \
         self._ExtractFirstTiming(first_paints)
 
@@ -119,9 +126,11 @@ class FirstContentfulPaintLens(_FirstEventLens):
   This event is taken directly from a trace. Internally to chrome it's computed
   by filtering out things like background paint from firstPaint.
   """
+  _EVENT_CATEGORY = 'blink.user_timing'
   def _CalculateTimes(self, tracing_track):
+    self._CheckCategory(tracing_track, self._EVENT_CATEGORY)
     first_paints = [e.start_msec for e in tracing_track.GetEvents()
-                    if e.Matches('blink.user_timing', 'firstContentfulPaint')]
+                    if e.Matches(self._EVENT_CATEGORY, 'firstContentfulPaint')]
     self._satisfied_msec = self._event_msec = \
        self._ExtractFirstTiming(first_paints)
 
@@ -133,22 +142,22 @@ class FirstSignificantPaintLens(_FirstEventLens):
   been loaded to compute the layout. Our event time is that of the next paint as
   that is the observable event.
   """
-  FIRST_LAYOUT_COUNTER = 'LayoutObjectsThatHadNeverHadLayout'
-
+  _FIRST_LAYOUT_COUNTER = 'LayoutObjectsThatHadNeverHadLayout'
+  _EVENT_CATEGORY = 'disabled-by-default-blink.debug.layout'
   def _CalculateTimes(self, tracing_track):
+    self._CheckCategory(tracing_track, self._EVENT_CATEGORY)
     sync_paint_times = []
     layouts = []  # (layout item count, msec).
     for e in tracing_track.GetEvents():
       # TODO(mattcary): is this the right paint event? Check if synchronized
       # paints appear at the same time as the first*Paint events, above.
-      if e.Matches('blink', 'FrameView::SynchronizedPaint'):
+      if e.Matches('blink', 'FrameView::synchronizedPaint'):
         sync_paint_times.append(e.start_msec)
       if ('counters' in e.args and
-          self.FIRST_LAYOUT_COUNTER in e.args['counters']):
-        layouts.append((e.args['counters'][self.FIRST_LAYOUT_COUNTER],
+          self._FIRST_LAYOUT_COUNTER in e.args['counters']):
+        layouts.append((e.args['counters'][self._FIRST_LAYOUT_COUNTER],
                         e.start_msec))
-    assert layouts, ('No layout events, was the disabled-by-default-blink'
-                     '.debug.layout category enabled?')
+    assert layouts, 'No layout events'
     layouts.sort(key=operator.itemgetter(0), reverse=True)
     self._satisfied_msec = layouts[0][1]
     self._event_msec = self._ExtractFirstTiming([

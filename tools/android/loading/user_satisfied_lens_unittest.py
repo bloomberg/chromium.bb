@@ -88,13 +88,13 @@ class UserSatisfiedLensTestCase(unittest.TestCase):
                        'name': 'firstPaint'},
                       {'ts': 9 * self.MILLI_TO_MICRO, 'ph': 'I',
                        'cat': 'blink.user_timing',
-                       'name': 'FrameView::SynchronizedPaint'},
+                       'name': 'FrameView::synchronizedPaint'},
                       {'ts': 18 * self.MILLI_TO_MICRO, 'ph': 'I',
                        'cat': 'blink',
-                       'name': 'FrameView::SynchronizedPaint'},
+                       'name': 'FrameView::synchronizedPaint'},
                       {'ts': 22 * self.MILLI_TO_MICRO, 'ph': 'I',
                        'cat': 'blink',
-                       'name': 'FrameView::SynchronizedPaint'},
+                       'name': 'FrameView::synchronizedPaint'},
 
                       {'ts': 5 * self.MILLI_TO_MICRO, 'ph': 'I',
                        'cat': 'foobar', 'name': 'biz',
@@ -114,3 +114,7 @@ class UserSatisfiedLensTestCase(unittest.TestCase):
     lens = user_satisfied_lens.FirstSignificantPaintLens(loading_trace)
     self.assertEqual(set(['0.1', '0.2']), lens.CriticalRequests())
     self.assertEqual(7, lens.PostloadTimeMsec())
+
+
+if __name__ == '__main__':
+  unittest.main()

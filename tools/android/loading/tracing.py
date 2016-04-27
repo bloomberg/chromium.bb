@@ -14,9 +14,9 @@ import devtools_monitor
 
 _DISABLED_CATEGORIES = ('cc',) # Contains a lot of events, none of which we use.
 INITIAL_CATEGORIES = (
-    'toplevel', 'blink', 'v8', 'java', 'devtools.timeline',
-    'blink.user_timing', 'blink.net') + tuple(
-        '-' + cat for cat in _DISABLED_CATEGORIES)
+    ('toplevel', 'blink', 'v8', 'java', 'devtools.timeline',
+     'blink.user_timing', 'blink.net', 'disabled-by-default-blink.debug.layout')
+    + tuple('-' + cat for cat in _DISABLED_CATEGORIES))
 
 
 class TracingTrack(devtools_monitor.Track):
