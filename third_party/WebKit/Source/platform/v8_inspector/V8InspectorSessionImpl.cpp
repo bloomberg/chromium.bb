@@ -5,7 +5,6 @@
 #include "platform/v8_inspector/V8InspectorSessionImpl.h"
 
 #include "platform/v8_inspector/InjectedScript.h"
-#include "platform/v8_inspector/InjectedScriptHost.h"
 #include "platform/v8_inspector/InspectedContext.h"
 #include "platform/v8_inspector/RemoteObjectId.h"
 #include "platform/v8_inspector/V8DebuggerAgentImpl.h"
@@ -27,7 +26,6 @@ V8InspectorSessionImpl::V8InspectorSessionImpl(V8DebuggerImpl* debugger, int con
     : m_contextGroupId(contextGroupId)
     , m_debugger(debugger)
     , m_client(nullptr)
-    , m_injectedScriptHost(InjectedScriptHost::create(debugger))
     , m_customObjectFormatterEnabled(false)
     , m_instrumentationCounter(0)
     , m_runtimeAgent(adoptPtr(new V8RuntimeAgentImpl(this)))
@@ -107,7 +105,7 @@ InjectedScript* V8InspectorSessionImpl::findInjectedScript(ErrorString* errorStr
 
     InspectedContext* context = contexts->get(contextId);
     if (!context->getInjectedScript()) {
-        context->createInjectedScript(m_injectedScriptHost.get());
+        context->createInjectedScript();
         if (!context->getInjectedScript()) {
             *errorString = "Cannot access specified execution context";
             return nullptr;

@@ -19,7 +19,6 @@
 namespace blink {
 
 class InjectedScript;
-class InjectedScriptHost;
 class RemoteObjectIdBase;
 class V8DebuggerAgentImpl;
 class V8DebuggerImpl;
@@ -66,7 +65,6 @@ private:
     int m_contextGroupId;
     V8DebuggerImpl* m_debugger;
     V8InspectorSessionClient* m_client;
-    OwnPtr<InjectedScriptHost> m_injectedScriptHost;
     bool m_customObjectFormatterEnabled;
     int m_instrumentationCounter;
 

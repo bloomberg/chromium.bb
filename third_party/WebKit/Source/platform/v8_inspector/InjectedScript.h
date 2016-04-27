@@ -42,7 +42,6 @@
 
 namespace blink {
 
-class InjectedScriptHost;
 class RemoteObjectId;
 class V8FunctionCall;
 class V8InspectorSessionImpl;
@@ -56,7 +55,7 @@ using protocol::Maybe;
 class InjectedScript final {
     PROTOCOL_DISALLOW_COPY(InjectedScript);
 public:
-    static PassOwnPtr<InjectedScript> create(InspectedContext*, InjectedScriptHost*);
+    static PassOwnPtr<InjectedScript> create(InspectedContext*);
     ~InjectedScript();
 
     InspectedContext* context() const { return m_context; }

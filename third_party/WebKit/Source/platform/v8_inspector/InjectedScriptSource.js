@@ -127,7 +127,7 @@ function bind(func, thisObject, var_args)
      */
     function bound(var_args)
     {
-        return InjectedScriptHost.callFunction(func, thisObject, concat(args, slice(arguments)));
+        return InjectedScriptHost.suppressWarningsAndCallFunction(func, thisObject, concat(args, slice(arguments)));
     }
     bound.toString = function()
     {
@@ -734,13 +734,12 @@ InjectedScript.prototype = {
             return className;
         }
 
-        // NodeList in JSC is a function, check for array prior to this.
         if (typeof obj === "function")
             return toString(obj);
 
         if (isSymbol(obj)) {
             try {
-                return /** @type {string} */ (InjectedScriptHost.callFunction(Symbol.prototype.toString, obj)) || "Symbol";
+                return /** @type {string} */ (InjectedScriptHost.suppressWarningsAndCallFunction(Symbol.prototype.toString, obj)) || "Symbol";
             } catch (e) {
                 return "Symbol";
             }

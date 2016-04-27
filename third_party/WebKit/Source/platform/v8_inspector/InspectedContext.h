@@ -37,7 +37,7 @@ public:
     V8DebuggerImpl* debugger() const { return m_debugger; }
 
     InjectedScript* getInjectedScript() { return m_injectedScript.get(); }
-    void createInjectedScript(InjectedScriptHost*);
+    void createInjectedScript();
     void discardInjectedScript();
 
 private:

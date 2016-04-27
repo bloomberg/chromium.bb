@@ -33,7 +33,6 @@
 #include "platform/inspector_protocol/Parser.h"
 #include "platform/inspector_protocol/String16.h"
 #include "platform/inspector_protocol/Values.h"
-#include "platform/v8_inspector/InjectedScriptHost.h"
 #include "platform/v8_inspector/InjectedScriptNative.h"
 #include "platform/v8_inspector/InjectedScriptSource.h"
 #include "platform/v8_inspector/InspectedContext.h"
@@ -69,7 +68,7 @@ static bool hasInternalError(ErrorString* errorString, bool hasError)
     return hasError;
 }
 
-PassOwnPtr<InjectedScript> InjectedScript::create(InspectedContext* inspectedContext, InjectedScriptHost* injectedScriptHost)
+PassOwnPtr<InjectedScript> InjectedScript::create(InspectedContext* inspectedContext)
 {
     v8::Isolate* isolate = inspectedContext->isolate();
     v8::HandleScope handles(isolate);
@@ -77,18 +76,7 @@ PassOwnPtr<InjectedScript> InjectedScript::create(InspectedContext* inspectedCon
     v8::Context::Scope scope(context);
 
     OwnPtr<InjectedScriptNative> injectedScriptNative = adoptPtr(new InjectedScriptNative(isolate));
-    String16 injectedScriptSource(reinterpret_cast<const char*>(InjectedScriptSource_js), sizeof(InjectedScriptSource_js));
-
-    v8::Local<v8::FunctionTemplate> wrapperTemplate = injectedScriptHost->wrapperTemplate(isolate);
-    if (wrapperTemplate.IsEmpty()) {
-        wrapperTemplate = V8InjectedScriptHost::createWrapperTemplate(isolate);
-        injectedScriptHost->setWrapperTemplate(wrapperTemplate, isolate);
-    }
-
-    v8::Local<v8::Object> scriptHostWrapper = V8InjectedScriptHost::wrap(wrapperTemplate, context, injectedScriptHost);
-    if (scriptHostWrapper.IsEmpty())
-        return nullptr;
-
+    v8::Local<v8::Object> scriptHostWrapper = V8InjectedScriptHost::create(context, inspectedContext->debugger());
     injectedScriptNative->setOnInjectedScriptHost(scriptHostWrapper);
 
     // Inject javascript into the context. The compiled script is supposed to evaluate into
@@ -96,6 +84,7 @@ PassOwnPtr<InjectedScript> InjectedScript::create(InspectedContext* inspectedCon
     // inspector's stuff) the function is called a few lines below with InjectedScriptHost wrapper,
     // injected script id and explicit reference to the inspected global object. The function is expected
     // to create and configure InjectedScript instance that is going to be used by the inspector.
+    String16 injectedScriptSource(reinterpret_cast<const char*>(InjectedScriptSource_js), sizeof(InjectedScriptSource_js));
     v8::Local<v8::Value> value;
     if (!inspectedContext->debugger()->compileAndRunInternalScript(context, toV8String(isolate, injectedScriptSource)).ToLocal(&value))
         return nullptr;

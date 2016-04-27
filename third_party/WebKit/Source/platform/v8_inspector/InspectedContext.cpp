@@ -71,7 +71,7 @@ v8::Isolate* InspectedContext::isolate() const
     return m_debugger->isolate();
 }
 
-void InspectedContext::createInjectedScript(InjectedScriptHost* injectedScriptHost)
+void InspectedContext::createInjectedScript()
 {
     ASSERT(!m_injectedScript);
     v8::HandleScope handles(isolate());
@@ -79,7 +79,7 @@ void InspectedContext::createInjectedScript(InjectedScriptHost* injectedScriptHo
     v8::Local<v8::Context> callingContext = isolate()->GetCallingContext();
     if (!callingContext.IsEmpty() && !m_debugger->client()->callingContextCanAccessContext(callingContext, localContext))
         return;
-    m_injectedScript = InjectedScript::create(this, injectedScriptHost);
+    m_injectedScript = InjectedScript::create(this);
 }
 
 void InspectedContext::discardInjectedScript()

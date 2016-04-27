@@ -61,14 +61,6 @@ InjectedScriptHostClass.prototype.getEventListeners = function(target) {}
  * @param {!Array.<*>=} argv
  * @return {*}
  */
-InjectedScriptHostClass.prototype.callFunction = function(fn, receiver, argv) {}
-
-/**
- * @param {!Function} fn
- * @param {*} receiver
- * @param {!Array.<*>=} argv
- * @return {*}
- */
 InjectedScriptHostClass.prototype.suppressWarningsAndCallFunction = function(fn, receiver, argv) {}
 
 /**
