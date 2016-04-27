@@ -77,10 +77,6 @@ class PasswordManagerPresenter
  private:
   friend class PasswordManagerPresenterTest;
 
-  // Returns true if the user needs to be authenticated before a plaintext
-  // password is revealed or exported.
-  bool IsAuthenticationRequired();
-
   // Sets the password and exception list of the UI view.
   void SetPasswordList();
   void SetPasswordExceptionList();
