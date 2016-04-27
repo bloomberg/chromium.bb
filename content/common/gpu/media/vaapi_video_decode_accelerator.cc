@@ -768,8 +768,7 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
         buffers[i].texture_ids()[0], requested_pic_size_));
 
     scoped_refptr<gl::GLImage> image = picture->GetImageToBind();
-    if (image) {
-      DCHECK_LE(1u, buffers[i].internal_texture_ids().size());
+    if (image && buffers[i].internal_texture_ids().size() > 0) {
       RETURN_AND_NOTIFY_ON_FAILURE(
           bind_image_cb_.Run(buffers[i].internal_texture_ids()[0],
                              VaapiPicture::GetGLTextureTarget(), image, true),
