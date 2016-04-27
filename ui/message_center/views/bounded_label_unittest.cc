@@ -23,10 +23,10 @@ namespace test {
 class BoundedLabelTest : public views::ViewsTestBase {
  public:
   BoundedLabelTest() {
-    digit_pixels_ = gfx::GetStringWidth(base::UTF8ToUTF16("0"), font_list_);
-    space_pixels_ = gfx::GetStringWidth(base::UTF8ToUTF16(" "), font_list_);
-    ellipsis_pixels_ = gfx::GetStringWidth(base::UTF8ToUTF16("\xE2\x80\xA6"),
-                                           font_list_);
+    digit_pixels_ = gfx::GetStringWidthF(base::UTF8ToUTF16("0"), font_list_);
+    space_pixels_ = gfx::GetStringWidthF(base::UTF8ToUTF16(" "), font_list_);
+    ellipsis_pixels_ =
+        gfx::GetStringWidthF(base::UTF8ToUTF16("\xE2\x80\xA6"), font_list_);
   }
 
   ~BoundedLabelTest() override {}
@@ -52,9 +52,9 @@ class BoundedLabelTest : public views::ViewsTestBase {
   // font, that this width is greater than the width of spaces, and that the
   // width of 3 digits is greater than the width of ellipses.
   int ToPixels(int width) {
-    return digit_pixels_ * width / 100 +
-           space_pixels_ * (width % 100) / 10 +
-           ellipsis_pixels_ * (width % 10);
+    return std::ceil(digit_pixels_ * (width / 100) +
+                     space_pixels_ * ((width % 100) / 10) +
+                     ellipsis_pixels_ * (width % 10));
   }
 
   // Exercise BounderLabel::GetWrappedText() using the fixture's test label.
@@ -81,9 +81,9 @@ class BoundedLabelTest : public views::ViewsTestBase {
  private:
   // The default font list, which will be used for tests.
   gfx::FontList font_list_;
-  int digit_pixels_;
-  int space_pixels_;
-  int ellipsis_pixels_;
+  float digit_pixels_;
+  float space_pixels_;
+  float ellipsis_pixels_;
   std::unique_ptr<BoundedLabel> label_;
   int lines_;
 };

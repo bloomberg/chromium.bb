@@ -556,11 +556,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"ignore-gpu-blacklist", IDS_FLAGS_IGNORE_GPU_BLACKLIST_NAME,
      IDS_FLAGS_IGNORE_GPU_BLACKLIST_DESCRIPTION, kOsAll,
      SINGLE_VALUE_TYPE(switches::kIgnoreGpuBlacklist)},
-#if defined(OS_WIN)
-    {"disable-direct-write", IDS_FLAGS_DIRECT_WRITE_NAME,
-     IDS_FLAGS_DIRECT_WRITE_DESCRIPTION, kOsWin,
-     SINGLE_DISABLE_VALUE_TYPE(switches::kDisableDirectWrite)},
-#endif
     {"enable-experimental-canvas-features",
      IDS_FLAGS_EXPERIMENTAL_CANVAS_FEATURES_NAME,
      IDS_FLAGS_EXPERIMENTAL_CANVAS_FEATURES_DESCRIPTION, kOsAll,

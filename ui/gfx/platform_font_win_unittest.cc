@@ -99,9 +99,6 @@ TEST(PlatformFontWinTest, DeriveFontWithHeight_TooSmall) {
 //    font sizes DirectWrite font heights/baselines/cap height are equal/larger
 //    by 1 point.
 TEST(PlatformFontWinTest, Metrics_SkiaVersusGDI) {
-  if (!gfx::win::IsDirectWriteEnabled())
-    return;
-
   // Describes the font being tested.
   struct FontInfo {
     base::string16 font_name;
@@ -166,9 +163,6 @@ TEST(PlatformFontWinTest, Metrics_SkiaVersusGDI) {
 // For random fonts which are not substitutes, DirectWrite should fallback
 // to Arial on a properly configured machine.
 TEST(PlatformFontWinTest, DirectWriteFontSubstitution) {
-  if (!gfx::win::IsDirectWriteEnabled())
-    return;
-
   // Describes the font being tested.
   struct FontInfo {
     base::string16 font_name;

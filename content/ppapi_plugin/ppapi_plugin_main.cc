@@ -60,18 +60,6 @@ void* g_target_services = 0;
 
 namespace content {
 
-namespace {
-
-#if defined(OS_WIN)
-// Windows-only skia sandbox support
-void SkiaPreCacheFont(const LOGFONT& logfont) {
-  ppapi::proxy::PluginGlobals::Get()->PreCacheFontForFlash(
-      reinterpret_cast<const void*>(&logfont));
-}
-#endif
-
-}  // namespace
-
 // Main function for starting the PPAPI plugin process.
 int PpapiPluginMain(const MainFunctionParams& parameters) {
   const base::CommandLine& command_line = parameters.command_line;
@@ -148,14 +136,8 @@ int PpapiPluginMain(const MainFunctionParams& parameters) {
 #if defined(OS_WIN)
   if (!base::win::IsUser32AndGdi32Available())
     gfx::win::MaybeInitializeDirectWrite();
-  bool use_direct_write = gfx::win::IsDirectWriteEnabled();
-  if (use_direct_write) {
-    InitializeDWriteFontProxy();
-  } else {
-    SkTypeface_SetEnsureLOGFONTAccessibleProc(SkiaPreCacheFont);
-  }
+  InitializeDWriteFontProxy();
 
-  blink::WebFontRendering::setUseDirectWrite(use_direct_write);
   blink::WebFontRendering::setDeviceScaleFactor(display::win::GetDPIScale());
 #endif
 

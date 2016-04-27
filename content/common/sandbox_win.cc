@@ -703,11 +703,6 @@ base::Process StartSandboxedProcess(
       sandbox::MITIGATION_NONSYSTEM_FONT_DISABLE |
       sandbox::MITIGATION_IMAGE_LOAD_NO_REMOTE |
       sandbox::MITIGATION_IMAGE_LOAD_NO_LOW_LABEL;
-#if !defined(NACL_WIN64)
-  // Don't block font loading with GDI.
-  if (!gfx::win::ShouldUseDirectWrite())
-    mitigations ^= sandbox::MITIGATION_NONSYSTEM_FONT_DISABLE;
-#endif
 
   if (policy->SetProcessMitigations(mitigations) != sandbox::SBOX_ALL_OK)
     return base::Process();
@@ -735,18 +730,10 @@ base::Process StartSandboxedProcess(
   }
 
 #if !defined(NACL_WIN64)
-  // NOTE: This is placed at function scope so that it stays alive through
-  // process launch.
-  base::SharedMemory direct_write_font_cache_section;
   if (type_str == switches::kRendererProcess ||
       type_str == switches::kPpapiPluginProcess) {
-    if (gfx::win::ShouldUseDirectWrite()) {
-      AddDirectory(base::DIR_WINDOWS_FONTS,
-                  NULL,
-                  true,
-                  sandbox::TargetPolicy::FILES_ALLOW_READONLY,
-                  policy);
-    }
+    AddDirectory(base::DIR_WINDOWS_FONTS, NULL, true,
+                 sandbox::TargetPolicy::FILES_ALLOW_READONLY, policy);
   }
 #endif
 

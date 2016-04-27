@@ -58,17 +58,15 @@ class GfxTestSuite : public base::TestSuite {
 
 #if defined(OS_WIN)
     gfx::win::MaybeInitializeDirectWrite();
-    if (gfx::win::IsDirectWriteEnabled()) {
-      // Force antialiasing to true if DirectWrite is enabled for font metrics.
-      // With antialiasing off, Skia returns GDI compatible metrics which are
-      // larger by 1-2 points which cause some tests to fail.
-      // TODO(ananta): Investigate and fix.
-      BOOL antialiasing = TRUE;
-      SystemParametersInfo(SPI_GETFONTSMOOTHING, 0, &antialiasing, 0);
-      if (!antialiasing) {
-        SystemParametersInfo(SPI_SETFONTSMOOTHING, TRUE, NULL, 0);
-        reset_antialiasing_on_shutdown_ = true;
-      }
+    // Force antialiasing to true if DirectWrite is enabled for font metrics.
+    // With antialiasing off, Skia returns GDI compatible metrics which are
+    // larger by 1-2 points which cause some tests to fail.
+    // TODO(ananta): Investigate and fix.
+    BOOL antialiasing = TRUE;
+    SystemParametersInfo(SPI_GETFONTSMOOTHING, 0, &antialiasing, 0);
+    if (!antialiasing) {
+      SystemParametersInfo(SPI_SETFONTSMOOTHING, TRUE, NULL, 0);
+      reset_antialiasing_on_shutdown_ = true;
     }
 #endif
   }

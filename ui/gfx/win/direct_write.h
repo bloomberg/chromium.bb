@@ -12,15 +12,9 @@
 namespace gfx {
 namespace win {
 
-// Returns whether DirectWrite font rendering should be used.
-GFX_EXPORT bool ShouldUseDirectWrite();
-
 GFX_EXPORT void MaybeInitializeDirectWrite();
 
-// Returns true if we are using DirectWrite for font metrics and rendering.
-GFX_EXPORT bool IsDirectWriteEnabled();
-
-// Creates a DirectWrite factory, if using DirectWrite.
+// Creates a DirectWrite factory.
 GFX_EXPORT void CreateDWriteFactory(IDWriteFactory** factory);
 
 }  // namespace win

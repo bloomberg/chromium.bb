@@ -17,36 +17,7 @@
 namespace gfx {
 namespace win {
 
-namespace {
-
-static bool dwrite_enabled = false;
-
-}
-
-bool ShouldUseDirectWrite() {
-  // If the flag is currently on, and we're on Win7 or above, we enable
-  // DirectWrite. Skia does not require the additions to DirectWrite in QFE
-  // 2670838, but a simple 'better than XP' check is not enough.
-  if (base::win::GetVersion() < base::win::VERSION_WIN7)
-    return false;
-
-  base::win::OSInfo::VersionNumber os_version =
-      base::win::OSInfo::GetInstance()->version_number();
-  if ((os_version.major == 6) && (os_version.minor == 1)) {
-    // We can't use DirectWrite for pre-release versions of Windows 7.
-    if (os_version.build < 7600)
-      return false;
-  }
-  // If forced off, don't use it.
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  return !command_line.HasSwitch(switches::kDisableDirectWrite);
-}
-
 void CreateDWriteFactory(IDWriteFactory** factory) {
-  if (!ShouldUseDirectWrite())
-    return;
-
   using DWriteCreateFactoryProc = decltype(DWriteCreateFactory)*;
   HMODULE dwrite_dll = LoadLibraryW(L"dwrite.dll");
   if (!dwrite_dll)
@@ -94,13 +65,8 @@ void MaybeInitializeDirectWrite() {
   SkFontMgr* direct_write_font_mgr = SkFontMgr_New_DirectWrite(factory.get());
   if (!direct_write_font_mgr)
     return;
-  dwrite_enabled = true;
   SetDefaultSkiaFactory(direct_write_font_mgr);
   gfx::PlatformFontWin::SetDirectWriteFactory(factory.get());
-}
-
-bool IsDirectWriteEnabled() {
-  return dwrite_enabled;
 }
 
 }  // namespace win

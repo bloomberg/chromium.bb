@@ -183,9 +183,7 @@ PassRefPtr<SkTypeface> FontCache::createTypeface(const FontDescription& fontDesc
     }
 
     if (m_fontManager) {
-        return adoptRef(useDirectWrite()
-            ? m_fontManager->matchFamilyStyle(name.data(), fontDescription.skiaFontStyle())
-            : m_fontManager->legacyCreateTypeface(name.data(), fontDescription.skiaFontStyle()));
+        return adoptRef(m_fontManager->matchFamilyStyle(name.data(), fontDescription.skiaFontStyle()));
     }
 #endif
 

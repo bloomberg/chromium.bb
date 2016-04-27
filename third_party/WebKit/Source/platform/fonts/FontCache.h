@@ -104,11 +104,9 @@ public:
 
 #if OS(WIN)
     bool useSubpixelPositioning() const { return s_useSubpixelPositioning; }
-    static bool useDirectWrite() { return s_useDirectWrite; }
     static bool antialiasedTextEnabled() { return s_antialiasedTextEnabled; }
     static bool lcdTextEnabled() { return s_lcdTextEnabled; }
     static float deviceScaleFactor() { return s_deviceScaleFactor; }
-    static void setUseDirectWrite(bool useDirectWrite) { s_useDirectWrite = useDirectWrite; }
     static void setAntialiasedTextEnabled(bool enabled) { s_antialiasedTextEnabled = enabled; }
     static void setLCDTextEnabled(bool enabled) { s_lcdTextEnabled = enabled; }
     static void setDeviceScaleFactor(float deviceScaleFactor) { s_deviceScaleFactor = deviceScaleFactor; }
@@ -189,7 +187,6 @@ private:
     static SkFontMgr* s_fontManager;
 
 #if OS(WIN)
-    static bool s_useDirectWrite;
     static bool s_antialiasedTextEnabled;
     static bool s_lcdTextEnabled;
     static float s_deviceScaleFactor;

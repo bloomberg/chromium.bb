@@ -15,7 +15,6 @@ namespace blink {
 
 class WebFontRendering {
 public:
-    BLINK_EXPORT static void setUseDirectWrite(bool);
     BLINK_EXPORT static void setSkiaFontManager(SkFontMgr*);
     BLINK_EXPORT static void setDeviceScaleFactor(float);
     BLINK_EXPORT static void addSideloadedFontForTesting(SkTypeface*);

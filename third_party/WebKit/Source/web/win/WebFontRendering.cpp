@@ -9,12 +9,6 @@
 namespace blink {
 
 // static
-void WebFontRendering::setUseDirectWrite(bool useDirectWrite)
-{
-    FontCache::setUseDirectWrite(useDirectWrite);
-}
-
-// static
 void WebFontRendering::setSkiaFontManager(SkFontMgr* fontMgr)
 {
     WTF::adopted(fontMgr);

@@ -1544,7 +1544,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableSandboxLogging,
 #endif
 #if defined(OS_WIN)
-    switches::kDisableDirectWrite,
     switches::kDisableWin32kRendererLockDown,
     switches::kTrySupportedChannelLayouts,
     switches::kTraceExportEventsToETW,

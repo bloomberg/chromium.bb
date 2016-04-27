@@ -98,16 +98,11 @@ void FontCache::setStatusFontMetrics(const wchar_t* familyName, int32_t fontHeig
 FontCache::FontCache()
     : m_purgePreventCount(0)
 {
-    if (s_fontManager) {
-        m_fontManager = s_fontManager;
-    } else if (s_useDirectWrite) {
+    m_fontManager = s_fontManager;
+    if (!m_fontManager.get())
         m_fontManager = adoptRef(SkFontMgr_New_DirectWrite());
-    } else {
-        m_fontManager = adoptRef(SkFontMgr_New_GDI());
-    }
 
-    // Subpixel text positioning is only supported by the DirectWrite backend (not GDI).
-    s_useSubpixelPositioning = s_useDirectWrite;
+    s_useSubpixelPositioning = true;
 
     ASSERT(m_fontManager.get());
 }

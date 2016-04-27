@@ -169,9 +169,7 @@ void EnableRendererLayoutTestMode() {
   RenderThreadImpl::current()->set_layout_test_mode(true);
 
 #if defined(OS_WIN)
-  if (gfx::win::ShouldUseDirectWrite()) {
-    RegisterSideloadedTypefaces(SkFontMgr_New_DirectWrite());
-  }
+  RegisterSideloadedTypefaces(SkFontMgr_New_DirectWrite());
 #endif
 }
 

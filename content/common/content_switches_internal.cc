@@ -13,7 +13,6 @@
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
-#include "ui/gfx/win/direct_write.h"
 #endif
 
 namespace content {
@@ -38,8 +37,6 @@ bool IsPinchToZoomEnabled() {
 
 bool IsWin32kRendererLockdownEnabled() {
   if (base::win::GetVersion() < base::win::VERSION_WIN8)
-    return false;
-  if (!gfx::win::ShouldUseDirectWrite())
     return false;
   const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   if (cmd_line->HasSwitch(switches::kDisableWin32kRendererLockDown))

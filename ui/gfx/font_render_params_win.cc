@@ -68,8 +68,7 @@ class CachedFontRenderParams {
     BOOL enabled = false;
     if (SystemParametersInfo(SPI_GETFONTSMOOTHING, 0, &enabled, 0) && enabled) {
       params_->antialiasing = true;
-      // GDI does not support subpixel positioning.
-      params_->subpixel_positioning = win::IsDirectWriteEnabled();
+      params_->subpixel_positioning = true;
 
       UINT type = 0;
       if (SystemParametersInfo(SPI_GETFONTSMOOTHINGTYPE, 0, &type, 0) &&
