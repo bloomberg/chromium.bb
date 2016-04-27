@@ -229,6 +229,32 @@ static const UChar32 isUprightInMixedVerticalRanges[] = {
     0x100000, 0x10FFFD,
 };
 
+// https://html.spec.whatwg.org/multipage/scripting.html#prod-potentialcustomelementname
+static const UChar32 isPotentialCustomElementNameCharArray[] = {
+    '-',
+    '.',
+    '_',
+    0xB7,
+};
+
+static const UChar32 isPotentialCustomElementNameCharRanges[] = {
+    '0', '9',
+    'a', 'z',
+    0xC0, 0xD6,
+    0xD8, 0xF6,
+    0xF8, 0x2FF,
+    0x300, 0x37D,
+    0x37F, 0x1FFF,
+    0x200C, 0x200D,
+    0x203F, 0x2040,
+    0x2070, 0x218F,
+    0x2C00, 0x2FEF,
+    0x3001, 0xD7FF,
+    0xF900, 0xFDCF,
+    0xFDF0, 0xFFFD,
+    0x10000, 0xEFFFF,
+};
+
 } // namespace blink
 
 #endif

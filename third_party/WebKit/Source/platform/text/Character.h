@@ -80,6 +80,9 @@ public:
 
     static bool isUprightInMixedVertical(UChar32 character);
 
+    // https://html.spec.whatwg.org/multipage/scripting.html#prod-potentialcustomelementname
+    static bool isPotentialCustomElementNameChar(UChar32 character);
+
     static bool treatAsSpace(UChar32 c)
     {
         return c == spaceCharacter

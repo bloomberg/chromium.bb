@@ -11,6 +11,7 @@ using CharacterPropertyType = uint8_t;
 enum class CharacterProperty : CharacterPropertyType {
     isCJKIdeographOrSymbol = 0x0001,
     isUprightInMixedVertical = 0x0002,
+    isPotentialCustomElementNameChar = 0x0004,
 };
 
 inline CharacterProperty operator | (

@@ -84,6 +84,7 @@ static void generate(FILE* fp)
 
     SET(isCJKIdeographOrSymbol);
     SET(isUprightInMixedVertical);
+    SET(isPotentialCustomElementNameChar);
 
     // Create a trie from the value array.
     UErrorCode error = U_ZERO_ERROR;

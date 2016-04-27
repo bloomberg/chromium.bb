@@ -243,6 +243,11 @@ bool Character::isCJKIdeographOrSymbol(UChar32 c)
     RETURN_HAS_PROPERTY(c, isCJKIdeographOrSymbol)
 }
 
+bool Character::isPotentialCustomElementNameChar(UChar32 character)
+{
+    RETURN_HAS_PROPERTY(character, isPotentialCustomElementNameChar);
+}
+
 unsigned Character::expansionOpportunityCount(const LChar* characters, size_t length, TextDirection direction, bool& isAfterExpansion, const TextJustify textJustify)
 {
     unsigned count = 0;
