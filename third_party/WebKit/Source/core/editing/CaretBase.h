@@ -38,7 +38,7 @@ class CullRect;
 class LocalFrame;
 class GraphicsContext;
 class LayoutBlock;
-class LayoutView;
+class LayoutViewItem;
 
 enum class CaretVisibility { Visible, Hidden };
 
@@ -56,7 +56,7 @@ public:
     bool updateCaretRect(const VisiblePosition& caretPosition);
     IntRect absoluteBoundsForLocalRect(Node*, const LayoutRect&) const;
     bool shouldRepaintCaret(Node&) const;
-    bool shouldRepaintCaret(const LayoutView*) const;
+    bool shouldRepaintCaret(const LayoutViewItem) const;
     void paintCaret(Node*, GraphicsContext&, const LayoutPoint&) const;
 
     const LayoutRect& localCaretRectWithoutUpdate() const { return m_caretLocalRect; }

@@ -721,7 +721,7 @@ void FrameSelection::invalidateCaretRect()
         && m_caretBase->getCaretVisibility() == m_previousCaretVisibility)
         return;
 
-    LayoutView* view = m_frame->document()->layoutView();
+    LayoutViewItem view = m_frame->document()->layoutViewItem();
     if (m_previousCaretNode && (m_caretBase->shouldRepaintCaret(*m_previousCaretNode) || m_caretBase->shouldRepaintCaret(view)))
         m_caretBase->invalidateLocalCaretRect(m_previousCaretNode.get(), m_previousCaretRect);
     if (newNode && (m_caretBase->shouldRepaintCaret(*newNode) || m_caretBase->shouldRepaintCaret(view)))

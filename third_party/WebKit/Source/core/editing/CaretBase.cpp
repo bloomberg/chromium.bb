@@ -155,10 +155,10 @@ bool CaretBase::shouldRepaintCaret(Node& node) const
     return node.isContentEditable() || (node.parentNode() && node.parentNode()->isContentEditable());
 }
 
-bool CaretBase::shouldRepaintCaret(const LayoutView* view) const
+bool CaretBase::shouldRepaintCaret(const LayoutViewItem view) const
 {
     DCHECK(view);
-    if (FrameView* frameView = view->frameView()) {
+    if (FrameView* frameView = view.frameView()) {
         LocalFrame& frame = frameView->frame(); // The frame where the selection started
         return frame.settings() && frame.settings()->caretBrowsingEnabled();
     }
@@ -170,7 +170,7 @@ void CaretBase::invalidateCaretRect(Node* node, bool caretRectChanged)
     if (caretRectChanged)
         return;
 
-    if (LayoutView* view = node->document().layoutView()) {
+    if (LayoutViewItem view = node->document().layoutViewItem()) {
         if (node->isContentEditable(Node::UserSelectAllIsAlwaysNonEditable) || shouldRepaintCaret(view))
             invalidateLocalCaretRect(node, localCaretRectWithoutUpdate());
     }
