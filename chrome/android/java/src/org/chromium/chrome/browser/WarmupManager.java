@@ -7,12 +7,14 @@ package org.chromium.chrome.browser;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.view.ContextThemeWrapper;
+import android.view.InflateException;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewStub;
 import android.widget.FrameLayout;
 
+import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.chrome.R;
@@ -37,6 +39,8 @@ import java.util.Set;
  * This class is not thread-safe and must only be used on the UI thread.
  */
 public final class WarmupManager {
+    private static final String TAG = "WarmupManager";
+
     private static WarmupManager sWarmupManager;
 
     private final Set<String> mDnsRequestsInFlight;
@@ -156,6 +160,10 @@ public final class WarmupManager {
                 stub.setLayoutResource(toolbarContainerId);
                 stub.inflate();
             }
+        } catch (InflateException e) {
+            // See crbug.com/606715.
+            Log.e(TAG, "Inflation exception.", e);
+            mMainView = null;
         } finally {
             TraceEvent.end("WarmupManager.initializeViewHierarchy");
         }
