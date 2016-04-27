@@ -10,7 +10,6 @@
 
 #include "cc/output/filter_operation.h"
 #include "cc/output/filter_operations.h"
-#include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
 #include "third_party/skia/include/effects/SkAlphaThresholdFilter.h"
 #include "third_party/skia/include/effects/SkBlurImageFilter.h"
@@ -145,130 +144,125 @@ void GetSepiaMatrix(float amount, SkScalar matrix[20]) {
   matrix[18] = 1.f;
 }
 
-skia::RefPtr<SkImageFilter> CreateMatrixImageFilter(
-    const SkScalar matrix[20],
-    const skia::RefPtr<SkImageFilter>& input) {
-  sk_sp<SkColorFilter> color_filter =
-      SkColorFilter::MakeMatrixFilterRowMajor255(matrix);
-  return skia::AdoptRef(
-      SkColorFilterImageFilter::Create(color_filter.get(), input.get()));
+sk_sp<SkImageFilter> CreateMatrixImageFilter(const SkScalar matrix[20],
+                                             sk_sp<SkImageFilter> input) {
+  return SkColorFilterImageFilter::Make(
+      SkColorFilter::MakeMatrixFilterRowMajor255(matrix), std::move(input));
 }
 
 }  // namespace
 
-skia::RefPtr<SkImageFilter> RenderSurfaceFilters::BuildImageFilter(
+sk_sp<SkImageFilter> RenderSurfaceFilters::BuildImageFilter(
     const FilterOperations& filters,
     const gfx::SizeF& size) {
-  skia::RefPtr<SkImageFilter> image_filter;
+  sk_sp<SkImageFilter> image_filter;
   SkScalar matrix[20];
   for (size_t i = 0; i < filters.size(); ++i) {
     const FilterOperation& op = filters.at(i);
     switch (op.type()) {
       case FilterOperation::GRAYSCALE:
         GetGrayscaleMatrix(1.f - op.amount(), matrix);
-        image_filter = CreateMatrixImageFilter(matrix, image_filter);
+        image_filter = CreateMatrixImageFilter(matrix, std::move(image_filter));
         break;
       case FilterOperation::SEPIA:
         GetSepiaMatrix(1.f - op.amount(), matrix);
-        image_filter = CreateMatrixImageFilter(matrix, image_filter);
+        image_filter = CreateMatrixImageFilter(matrix, std::move(image_filter));
         break;
       case FilterOperation::SATURATE:
         GetSaturateMatrix(op.amount(), matrix);
-        image_filter = CreateMatrixImageFilter(matrix, image_filter);
+        image_filter = CreateMatrixImageFilter(matrix, std::move(image_filter));
         break;
       case FilterOperation::HUE_ROTATE:
         GetHueRotateMatrix(op.amount(), matrix);
-        image_filter = CreateMatrixImageFilter(matrix, image_filter);
+        image_filter = CreateMatrixImageFilter(matrix, std::move(image_filter));
         break;
       case FilterOperation::INVERT:
         GetInvertMatrix(op.amount(), matrix);
-        image_filter = CreateMatrixImageFilter(matrix, image_filter);
+        image_filter = CreateMatrixImageFilter(matrix, std::move(image_filter));
         break;
       case FilterOperation::OPACITY:
         GetOpacityMatrix(op.amount(), matrix);
-        image_filter = CreateMatrixImageFilter(matrix, image_filter);
+        image_filter = CreateMatrixImageFilter(matrix, std::move(image_filter));
         break;
       case FilterOperation::BRIGHTNESS:
         GetBrightnessMatrix(op.amount(), matrix);
-        image_filter = CreateMatrixImageFilter(matrix, image_filter);
+        image_filter = CreateMatrixImageFilter(matrix, std::move(image_filter));
         break;
       case FilterOperation::CONTRAST:
         GetContrastMatrix(op.amount(), matrix);
-        image_filter = CreateMatrixImageFilter(matrix, image_filter);
+        image_filter = CreateMatrixImageFilter(matrix, std::move(image_filter));
         break;
       case FilterOperation::BLUR:
-        image_filter = skia::AdoptRef(SkBlurImageFilter::Create(
-            op.amount(), op.amount(), image_filter.get()));
+        image_filter = SkBlurImageFilter::Make(op.amount(), op.amount(),
+                                               std::move(image_filter));
         break;
       case FilterOperation::DROP_SHADOW:
-        image_filter = skia::AdoptRef(SkDropShadowImageFilter::Create(
+        image_filter = SkDropShadowImageFilter::Make(
             SkIntToScalar(op.drop_shadow_offset().x()),
             SkIntToScalar(op.drop_shadow_offset().y()),
-            SkIntToScalar(op.amount()),
-            SkIntToScalar(op.amount()),
+            SkIntToScalar(op.amount()), SkIntToScalar(op.amount()),
             op.drop_shadow_color(),
             SkDropShadowImageFilter::kDrawShadowAndForeground_ShadowMode,
-            image_filter.get()));
+            std::move(image_filter));
         break;
       case FilterOperation::COLOR_MATRIX:
-        image_filter = CreateMatrixImageFilter(op.matrix(), image_filter);
+        image_filter =
+            CreateMatrixImageFilter(op.matrix(), std::move(image_filter));
         break;
       case FilterOperation::ZOOM: {
-        skia::RefPtr<SkImageFilter> zoom_filter =
-            skia::AdoptRef(SkMagnifierImageFilter::Create(
-                SkRect::MakeXYWH(
-                    (size.width() - (size.width() / op.amount())) / 2.f,
-                    (size.height() - (size.height() / op.amount())) / 2.f,
-                    size.width() / op.amount(),
-                    size.height() / op.amount()),
-                op.zoom_inset()));
-        if (image_filter.get()) {
+        sk_sp<SkImageFilter> zoom_filter(SkMagnifierImageFilter::Make(
+            SkRect::MakeXYWH(
+                (size.width() - (size.width() / op.amount())) / 2.f,
+                (size.height() - (size.height() / op.amount())) / 2.f,
+                size.width() / op.amount(), size.height() / op.amount()),
+            op.zoom_inset(), nullptr));
+        if (image_filter) {
           // TODO(ajuma): When there's a 1-input version of
           // SkMagnifierImageFilter, use that to handle the input filter
           // instead of using an SkComposeImageFilter.
-          image_filter = skia::AdoptRef(SkComposeImageFilter::Create(
-              zoom_filter.get(), image_filter.get()));
+          image_filter = SkComposeImageFilter::Make(std::move(zoom_filter),
+                                                    std::move(image_filter));
         } else {
-          image_filter = zoom_filter;
+          image_filter = std::move(zoom_filter);
         }
         break;
       }
       case FilterOperation::SATURATING_BRIGHTNESS:
         GetSaturatingBrightnessMatrix(op.amount(), matrix);
-        image_filter = CreateMatrixImageFilter(matrix, image_filter);
+        image_filter = CreateMatrixImageFilter(matrix, std::move(image_filter));
         break;
       case FilterOperation::REFERENCE: {
         if (!op.image_filter())
           break;
 
-        skia::RefPtr<SkColorFilter> cf;
+        sk_sp<SkColorFilter> cf;
 
         {
           SkColorFilter* colorfilter_rawptr = NULL;
           op.image_filter()->asColorFilter(&colorfilter_rawptr);
-          cf = skia::AdoptRef(colorfilter_rawptr);
+          cf.reset(colorfilter_rawptr);
         }
 
         if (cf && cf->asColorMatrix(matrix) &&
             !op.image_filter()->getInput(0)) {
-          image_filter = CreateMatrixImageFilter(matrix, image_filter);
+          image_filter =
+              CreateMatrixImageFilter(matrix, std::move(image_filter));
         } else if (image_filter) {
-          image_filter = skia::AdoptRef(SkComposeImageFilter::Create(
-              op.image_filter().get(), image_filter.get()));
+          image_filter = SkComposeImageFilter::Make(op.image_filter(),
+                                                    std::move(image_filter));
         } else {
           image_filter = op.image_filter();
         }
         break;
       }
       case FilterOperation::ALPHA_THRESHOLD: {
-        skia::RefPtr<SkImageFilter> alpha_filter = skia::AdoptRef(
-            SkAlphaThresholdFilter::Create(
-                op.region(), op.amount(), op.outer_threshold()));
-        if (image_filter.get()) {
-          image_filter = skia::AdoptRef(SkComposeImageFilter::Create(
-              alpha_filter.get(), image_filter.get()));
+        sk_sp<SkImageFilter> alpha_filter = SkAlphaThresholdFilter::Make(
+            op.region(), op.amount(), op.outer_threshold(), nullptr);
+        if (image_filter) {
+          image_filter = SkComposeImageFilter::Make(std::move(alpha_filter),
+                                                    std::move(image_filter));
         } else {
-          image_filter = alpha_filter;
+          image_filter = std::move(alpha_filter);
         }
         break;
       }

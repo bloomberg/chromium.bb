@@ -16,6 +16,8 @@
 #include "content/public/common/common_param_traits.h"
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkFlattenableSerialization.h"
+#include "third_party/skia/include/core/SkImageFilter.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 
 namespace IPC {
 
@@ -121,12 +123,12 @@ bool ParamTraits<cc::FilterOperation>::Read(const base::Pickle* m,
       }
       break;
     case cc::FilterOperation::REFERENCE: {
-      skia::RefPtr<SkImageFilter> filter;
+      sk_sp<SkImageFilter> filter;
       if (!ReadParam(m, iter, &filter)) {
         success = false;
         break;
       }
-      r->set_image_filter(filter);
+      r->set_image_filter(std::move(filter));
       success = true;
       break;
     }
@@ -219,8 +221,8 @@ void ParamTraits<cc::FilterOperations>::Log(
   l->append(")");
 }
 
-void ParamTraits<skia::RefPtr<SkImageFilter>>::Write(base::Pickle* m,
-                                                     const param_type& p) {
+void ParamTraits<sk_sp<SkImageFilter>>::Write(base::Pickle* m,
+                                              const param_type& p) {
   SkImageFilter* filter = p.get();
   if (filter) {
     sk_sp<SkData> data(SkValidatingSerializeFlattenable(filter));
@@ -230,9 +232,9 @@ void ParamTraits<skia::RefPtr<SkImageFilter>>::Write(base::Pickle* m,
   }
 }
 
-bool ParamTraits<skia::RefPtr<SkImageFilter>>::Read(const base::Pickle* m,
-                                                    base::PickleIterator* iter,
-                                                    param_type* r) {
+bool ParamTraits<sk_sp<SkImageFilter>>::Read(const base::Pickle* m,
+                                             base::PickleIterator* iter,
+                                             param_type* r) {
   const char* data = 0;
   int length = 0;
   if (!iter->ReadData(&data, &length))
@@ -240,14 +242,14 @@ bool ParamTraits<skia::RefPtr<SkImageFilter>>::Read(const base::Pickle* m,
   if (length > 0) {
     SkFlattenable* flattenable = SkValidatingDeserializeFlattenable(
         data, length, SkImageFilter::GetFlattenableType());
-    *r = skia::AdoptRef(static_cast<SkImageFilter*>(flattenable));
+    *r = sk_sp<SkImageFilter>(static_cast<SkImageFilter*>(flattenable));
   } else {
-    r->clear();
+    r->reset();
   }
   return true;
 }
 
-void ParamTraits<skia::RefPtr<SkImageFilter> >::Log(
+void ParamTraits<sk_sp<SkImageFilter> >::Log(
     const param_type& p, std::string* l) {
   l->append("(");
   LogParam(p.get() ? p->countInputs() : 0, l);

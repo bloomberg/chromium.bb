@@ -38,9 +38,7 @@ TEST(PictureImageLayerTest, PaintContentsToDisplayList) {
   image_canvas->drawRectCoords(0.f, 0.f, 100.f, 100.f, blue_paint);
   image_canvas->drawRectCoords(100.f, 100.f, 200.f, 200.f, blue_paint);
 
-  skia::RefPtr<const SkImage> image =
-      skia::AdoptRef(image_surface->newImageSnapshot());
-  layer->SetImage(std::move(image));
+  layer->SetImage(image_surface->makeImageSnapshot());
   layer->SetBounds(gfx::Size(layer_rect.width(), layer_rect.height()));
 
   scoped_refptr<DisplayItemList> display_list =

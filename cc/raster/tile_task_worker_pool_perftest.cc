@@ -86,9 +86,8 @@ class PerfContextProvider : public ContextProvider {
     if (gr_context_)
       return gr_context_.get();
 
-    skia::RefPtr<const GrGLInterface> null_interface =
-        skia::AdoptRef(GrGLCreateNullInterface());
-    gr_context_ = skia::AdoptRef(GrContext::Create(
+    sk_sp<const GrGLInterface> null_interface(GrGLCreateNullInterface());
+    gr_context_ = sk_sp<class GrContext>(GrContext::Create(
         kOpenGL_GrBackend,
         reinterpret_cast<GrBackendContext>(null_interface.get())));
     return gr_context_.get();
@@ -106,7 +105,7 @@ class PerfContextProvider : public ContextProvider {
   ~PerfContextProvider() override {}
 
   std::unique_ptr<PerfGLES2Interface> context_gl_;
-  skia::RefPtr<class GrContext> gr_context_;
+  sk_sp<class GrContext> gr_context_;
   TestContextSupport support_;
   base::Lock context_lock_;
 };

@@ -22,7 +22,6 @@
 #include "cc/proto/display_item.pb.h"
 #include "cc/test/fake_image_serialization_processor.h"
 #include "cc/test/skia_common.h"
-#include "skia/ext/refptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -47,12 +46,12 @@ void AppendFirstSerializationTestPicture(scoped_refptr<DisplayItemList> list,
                                          const gfx::Size& layer_size) {
   gfx::PointF offset(2.f, 3.f);
   SkPictureRecorder recorder;
-  skia::RefPtr<SkCanvas> canvas;
+  sk_sp<SkCanvas> canvas;
 
   SkPaint red_paint;
   red_paint.setColor(SK_ColorRED);
 
-  canvas = skia::SharePtr(recorder.beginRecording(SkRect::MakeXYWH(
+  canvas = sk_ref_sp(recorder.beginRecording(SkRect::MakeXYWH(
       offset.x(), offset.y(), layer_size.width(), layer_size.height())));
   canvas->translate(offset.x(), offset.y());
   canvas->drawRectCoords(0.f, 0.f, 4.f, 4.f, red_paint);
@@ -64,12 +63,12 @@ void AppendSecondSerializationTestPicture(scoped_refptr<DisplayItemList> list,
                                           const gfx::Size& layer_size) {
   gfx::PointF offset(2.f, 2.f);
   SkPictureRecorder recorder;
-  skia::RefPtr<SkCanvas> canvas;
+  sk_sp<SkCanvas> canvas;
 
   SkPaint blue_paint;
   blue_paint.setColor(SK_ColorBLUE);
 
-  canvas = skia::SharePtr(recorder.beginRecording(SkRect::MakeXYWH(
+  canvas = sk_ref_sp(recorder.beginRecording(SkRect::MakeXYWH(
       offset.x(), offset.y(), layer_size.width(), layer_size.height())));
   canvas->translate(offset.x(), offset.y());
   canvas->drawRectCoords(3.f, 3.f, 7.f, 7.f, blue_paint);
@@ -256,7 +255,7 @@ TEST(DisplayItemListTest, SerializeTransformItem) {
 TEST(DisplayItemListTest, SingleDrawingItem) {
   gfx::Rect layer_rect(100, 100);
   SkPictureRecorder recorder;
-  skia::RefPtr<SkCanvas> canvas;
+  sk_sp<SkCanvas> canvas;
   SkPaint blue_paint;
   blue_paint.setColor(SK_ColorBLUE);
   SkPaint red_paint;
@@ -268,8 +267,8 @@ TEST(DisplayItemListTest, SingleDrawingItem) {
 
   gfx::PointF offset(8.f, 9.f);
   gfx::RectF recording_rect(offset, gfx::SizeF(layer_rect.size()));
-  canvas = skia::SharePtr(
-      recorder.beginRecording(gfx::RectFToSkRect(recording_rect)));
+  canvas =
+      sk_ref_sp(recorder.beginRecording(gfx::RectFToSkRect(recording_rect)));
   canvas->translate(offset.x(), offset.y());
   canvas->drawRectCoords(0.f, 0.f, 60.f, 60.f, red_paint);
   canvas->drawRectCoords(50.f, 50.f, 75.f, 75.f, blue_paint);
@@ -298,7 +297,7 @@ TEST(DisplayItemListTest, SingleDrawingItem) {
 TEST(DisplayItemListTest, ClipItem) {
   gfx::Rect layer_rect(100, 100);
   SkPictureRecorder recorder;
-  skia::RefPtr<SkCanvas> canvas;
+  sk_sp<SkCanvas> canvas;
   SkPaint blue_paint;
   blue_paint.setColor(SK_ColorBLUE);
   SkPaint red_paint;
@@ -311,7 +310,7 @@ TEST(DisplayItemListTest, ClipItem) {
 
   gfx::PointF first_offset(8.f, 9.f);
   gfx::RectF first_recording_rect(first_offset, gfx::SizeF(layer_rect.size()));
-  canvas = skia::SharePtr(
+  canvas = sk_ref_sp(
       recorder.beginRecording(gfx::RectFToSkRect(first_recording_rect)));
   canvas->translate(first_offset.x(), first_offset.y());
   canvas->drawRectCoords(0.f, 0.f, 60.f, 60.f, red_paint);
@@ -325,7 +324,7 @@ TEST(DisplayItemListTest, ClipItem) {
   gfx::PointF second_offset(2.f, 3.f);
   gfx::RectF second_recording_rect(second_offset,
                                    gfx::SizeF(layer_rect.size()));
-  canvas = skia::SharePtr(
+  canvas = sk_ref_sp(
       recorder.beginRecording(gfx::RectFToSkRect(second_recording_rect)));
   canvas->translate(second_offset.x(), second_offset.y());
   canvas->drawRectCoords(50.f, 50.f, 75.f, 75.f, blue_paint);
@@ -358,7 +357,7 @@ TEST(DisplayItemListTest, ClipItem) {
 TEST(DisplayItemListTest, TransformItem) {
   gfx::Rect layer_rect(100, 100);
   SkPictureRecorder recorder;
-  skia::RefPtr<SkCanvas> canvas;
+  sk_sp<SkCanvas> canvas;
   SkPaint blue_paint;
   blue_paint.setColor(SK_ColorBLUE);
   SkPaint red_paint;
@@ -371,7 +370,7 @@ TEST(DisplayItemListTest, TransformItem) {
 
   gfx::PointF first_offset(8.f, 9.f);
   gfx::RectF first_recording_rect(first_offset, gfx::SizeF(layer_rect.size()));
-  canvas = skia::SharePtr(
+  canvas = sk_ref_sp(
       recorder.beginRecording(gfx::RectFToSkRect(first_recording_rect)));
   canvas->translate(first_offset.x(), first_offset.y());
   canvas->drawRectCoords(0.f, 0.f, 60.f, 60.f, red_paint);
@@ -385,7 +384,7 @@ TEST(DisplayItemListTest, TransformItem) {
   gfx::PointF second_offset(2.f, 3.f);
   gfx::RectF second_recording_rect(second_offset,
                                    gfx::SizeF(layer_rect.size()));
-  canvas = skia::SharePtr(
+  canvas = sk_ref_sp(
       recorder.beginRecording(gfx::RectFToSkRect(second_recording_rect)));
   canvas->translate(second_offset.x(), second_offset.y());
   canvas->drawRectCoords(50.f, 50.f, 75.f, 75.f, blue_paint);
@@ -427,8 +426,7 @@ TEST(DisplayItemListTest, FilterItem) {
   sk_sp<SkSurface> source_surface = SkSurface::MakeRasterN32Premul(50, 50);
   SkCanvas* source_canvas = source_surface->getCanvas();
   source_canvas->clear(SkColorSetRGB(128, 128, 128));
-  skia::RefPtr<SkImage> source_image =
-      skia::AdoptRef(source_surface->newImageSnapshot());
+  sk_sp<SkImage> source_image = source_surface->makeImageSnapshot();
 
   // For most SkImageFilters, the |dst| bounds computed by computeFastBounds are
   // dependent on the provided |src| bounds. This means, for example, that
@@ -441,8 +439,7 @@ TEST(DisplayItemListTest, FilterItem) {
   // incorrect clipping of filter output. To test for this, we include an
   // SkImageSource filter in |filters|. Here, |src| is |filter_bounds|, defined
   // below.
-  skia::RefPtr<SkImageFilter> image_filter =
-      skia::AdoptRef(SkImageSource::Create(source_image.get()));
+  sk_sp<SkImageFilter> image_filter = SkImageSource::Make(source_image);
   filters.Append(FilterOperation::CreateReferenceFilter(image_filter));
   filters.Append(FilterOperation::CreateBrightnessFilter(0.5f));
   gfx::RectF filter_bounds(10.f, 10.f, 50.f, 50.f);
@@ -469,7 +466,7 @@ TEST(DisplayItemListTest, FilterItem) {
 TEST(DisplayItemListTest, CompactingItems) {
   gfx::Rect layer_rect(100, 100);
   SkPictureRecorder recorder;
-  skia::RefPtr<SkCanvas> canvas;
+  sk_sp<SkCanvas> canvas;
   SkPaint blue_paint;
   blue_paint.setColor(SK_ColorBLUE);
   SkPaint red_paint;
@@ -484,8 +481,8 @@ TEST(DisplayItemListTest, CompactingItems) {
   scoped_refptr<DisplayItemList> list_without_caching =
       DisplayItemList::Create(layer_rect, no_caching_settings);
 
-  canvas = skia::SharePtr(
-      recorder.beginRecording(gfx::RectFToSkRect(recording_rect)));
+  canvas =
+      sk_ref_sp(recorder.beginRecording(gfx::RectFToSkRect(recording_rect)));
   canvas->translate(offset.x(), offset.y());
   canvas->drawRectCoords(0.f, 0.f, 60.f, 60.f, red_paint);
   canvas->drawRectCoords(50.f, 50.f, 75.f, 75.f, blue_paint);
@@ -511,14 +508,13 @@ TEST(DisplayItemListTest, CompactingItems) {
 TEST(DisplayItemListTest, IsSuitableForGpuRasterizationWithCachedPicture) {
   gfx::Rect layer_rect(1000, 1000);
   SkPictureRecorder recorder;
-  skia::RefPtr<SkCanvas> canvas;
+  sk_sp<SkCanvas> canvas;
 
   DisplayItemListSettings settings;
   settings.use_cached_picture = true;
   scoped_refptr<DisplayItemList> list =
       DisplayItemList::Create(layer_rect, settings);
-  canvas =
-      skia::SharePtr(recorder.beginRecording(gfx::RectToSkRect(layer_rect)));
+  canvas = sk_ref_sp(recorder.beginRecording(gfx::RectToSkRect(layer_rect)));
 
   SkPath path;
   path.moveTo(0, 0);
@@ -548,8 +544,7 @@ TEST(DisplayItemListTest, IsSuitableForGpuRasterizationWithCachedPicture) {
   EXPECT_TRUE(list->IsSuitableForGpuRasterization());
 
   list = DisplayItemList::Create(layer_rect, settings);
-  canvas =
-      skia::SharePtr(recorder.beginRecording(gfx::RectToSkRect(layer_rect)));
+  canvas = sk_ref_sp(recorder.beginRecording(gfx::RectToSkRect(layer_rect)));
   for (int i = 0; i < 10; ++i)
     canvas->drawPath(path, paint);
   sk_sp<SkPicture> unsuitable_picture = recorder.finishRecordingAsPicture();
@@ -572,15 +567,14 @@ TEST(DisplayItemListTest, IsSuitableForGpuRasterizationWithCachedPicture) {
 TEST(DisplayItemListTest, IsSuitableForGpuRasterizationWithoutCachedPicture) {
   gfx::Rect layer_rect(1000, 1000);
   SkPictureRecorder recorder;
-  skia::RefPtr<SkCanvas> canvas;
-  skia::RefPtr<SkPicture> picture;
+  sk_sp<SkCanvas> canvas;
+  sk_sp<SkPicture> picture;
 
   DisplayItemListSettings settings;
   settings.use_cached_picture = false;
   scoped_refptr<DisplayItemList> list =
       DisplayItemList::Create(layer_rect, settings);
-  canvas =
-      skia::SharePtr(recorder.beginRecording(gfx::RectToSkRect(layer_rect)));
+  canvas = sk_ref_sp(recorder.beginRecording(gfx::RectToSkRect(layer_rect)));
 
   SkPath path;
   path.moveTo(0, 0);
@@ -603,8 +597,7 @@ TEST(DisplayItemListTest, IsSuitableForGpuRasterizationWithoutCachedPicture) {
   EXPECT_TRUE(list->IsSuitableForGpuRasterization());
 
   list = DisplayItemList::Create(layer_rect, settings);
-  canvas =
-      skia::SharePtr(recorder.beginRecording(gfx::RectToSkRect(layer_rect)));
+  canvas = sk_ref_sp(recorder.beginRecording(gfx::RectToSkRect(layer_rect)));
   for (int i = 0; i < 10; ++i)
     canvas->drawPath(path, paint);
   list->CreateAndAppendItem<DrawingDisplayItem>(
@@ -617,8 +610,7 @@ TEST(DisplayItemListTest, IsSuitableForGpuRasterizationWithoutCachedPicture) {
 
   list = DisplayItemList::Create(layer_rect, settings);
   for (int i = 0; i < 10; ++i) {
-    canvas =
-        skia::SharePtr(recorder.beginRecording(gfx::RectToSkRect(layer_rect)));
+    canvas = sk_ref_sp(recorder.beginRecording(gfx::RectToSkRect(layer_rect)));
     canvas->drawPath(path, paint);
     list->CreateAndAppendItem<DrawingDisplayItem>(
         kVisualRect, recorder.finishRecordingAsPicture());

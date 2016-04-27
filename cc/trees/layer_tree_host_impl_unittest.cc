@@ -7757,10 +7757,9 @@ TEST_F(LayerTreeHostImplTest, CreateETC1UIResource) {
   // correct width/height are passed directly to UIResourceBitmap.
   SkImageInfo info =
       SkImageInfo::Make(4, 2, kAlpha_8_SkColorType, kPremul_SkAlphaType);
-  skia::RefPtr<SkPixelRef> pixel_ref =
-      skia::AdoptRef(SkMallocPixelRef::NewAllocate(info, 0, 0));
+  sk_sp<SkPixelRef> pixel_ref(SkMallocPixelRef::NewAllocate(info, 0, 0));
   pixel_ref->setImmutable();
-  UIResourceBitmap bitmap(pixel_ref, size);
+  UIResourceBitmap bitmap(std::move(pixel_ref), size);
   UIResourceId ui_resource_id = 1;
   host_impl_->CreateUIResource(ui_resource_id, bitmap);
   EXPECT_EQ(1u, context3d->NumTextures());

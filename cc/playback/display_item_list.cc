@@ -89,7 +89,10 @@ DisplayItemList::DisplayItemList(gfx::Rect layer_rect,
   if (settings_.use_cached_picture) {
     SkRTreeFactory factory;
     recorder_.reset(new SkPictureRecorder());
-    canvas_ = skia::SharePtr(recorder_->beginRecording(
+
+    // TODO(fmalita): this is fragile, we should drop canvas_ and use
+    // recorder_->getCanvas() instead.
+    canvas_ = sk_ref_sp(recorder_->beginRecording(
         layer_rect_.width(), layer_rect_.height(), &factory));
     canvas_->translate(-layer_rect_.x(), -layer_rect_.y());
     canvas_->clipRect(gfx::RectToSkRect(layer_rect_));
@@ -189,7 +192,7 @@ void DisplayItemList::Finalize() {
     picture_memory_usage_ =
         SkPictureUtils::ApproximateBytesUsed(picture_.get());
     recorder_.reset();
-    canvas_.clear();
+    canvas_.reset();
     is_suitable_for_gpu_rasterization_ =
         picture_->suitableForGpuRasterization(nullptr);
   }

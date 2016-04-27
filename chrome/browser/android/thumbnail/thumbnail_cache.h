@@ -21,6 +21,7 @@
 #include "chrome/browser/android/thumbnail/scoped_ptr_expiring_cache.h"
 #include "chrome/browser/android/thumbnail/thumbnail.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "ui/android/resources/ui_resource_provider.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
@@ -99,7 +100,7 @@ class ThumbnailCache : ThumbnailDelegate {
   void RemoveFromDisk(TabId tab_id);
   static void RemoveFromDiskTask(TabId tab_id);
   void WriteThumbnailIfNecessary(TabId tab_id,
-                                 skia::RefPtr<SkPixelRef> compressed_data,
+                                 sk_sp<SkPixelRef> compressed_data,
                                  float scale,
                                  const gfx::Size& content_size);
   void CompressThumbnailIfNecessary(TabId tab_id,
@@ -110,7 +111,7 @@ class ThumbnailCache : ThumbnailDelegate {
   void MakeSpaceForNewItemIfNecessary(TabId tab_id);
   void RemoveFromReadQueue(TabId tab_id);
   static void WriteTask(TabId tab_id,
-                        skia::RefPtr<SkPixelRef> compressed_data,
+                        sk_sp<SkPixelRef> compressed_data,
                         float scale,
                         const gfx::Size& content_size,
                         const base::Callback<void()>& post_write_task);
@@ -118,27 +119,27 @@ class ThumbnailCache : ThumbnailDelegate {
   static void CompressionTask(
       SkBitmap raw_data,
       gfx::Size encoded_size,
-      const base::Callback<void(skia::RefPtr<SkPixelRef>, const gfx::Size&)>&
+      const base::Callback<void(sk_sp<SkPixelRef>, const gfx::Size&)>&
           post_compression_task);
   void PostCompressionTask(TabId tab_id,
                            const base::Time& time_stamp,
                            float scale,
-                           skia::RefPtr<SkPixelRef> compressed_data,
+                           sk_sp<SkPixelRef> compressed_data,
                            const gfx::Size& content_size);
   static void DecompressionTask(
       const base::Callback<void(bool, SkBitmap)>&
           post_decompress_callback,
-          skia::RefPtr<SkPixelRef> compressed_data,
+          sk_sp<SkPixelRef> compressed_data,
           float scale,
           const gfx::Size& encoded_size);
   static void ReadTask(
       bool decompress,
       TabId tab_id,
       const base::Callback<
-          void(skia::RefPtr<SkPixelRef>, float, const gfx::Size&)>&
+          void(sk_sp<SkPixelRef>, float, const gfx::Size&)>&
           post_read_task);
   void PostReadTask(TabId tab_id,
-                    skia::RefPtr<SkPixelRef> compressed_data,
+                    sk_sp<SkPixelRef> compressed_data,
                     float scale,
                     const gfx::Size& content_size);
   void NotifyObserversOfThumbnailRead(TabId tab_id);

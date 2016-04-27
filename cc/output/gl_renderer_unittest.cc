@@ -1432,12 +1432,10 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
   matrix[13] = matrix[14] = 0;
   matrix[15] = matrix[16] = matrix[17] = matrix[19] = 0;
   matrix[18] = 1;
-  sk_sp<SkColorFilter> color_filter =
-      SkColorFilter::MakeMatrixFilterRowMajor255(matrix);
-  skia::RefPtr<SkImageFilter> filter = skia::AdoptRef(
-      SkColorFilterImageFilter::Create(color_filter.get(), NULL));
   FilterOperations filters;
-  filters.Append(FilterOperation::CreateReferenceFilter(filter));
+  filters.Append(
+      FilterOperation::CreateReferenceFilter(SkColorFilterImageFilter::Make(
+          SkColorFilter::MakeMatrixFilterRowMajor255(matrix), nullptr)));
 
   gfx::Transform transform_causing_aa;
   transform_causing_aa.Rotate(20.0);

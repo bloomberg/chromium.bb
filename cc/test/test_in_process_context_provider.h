@@ -13,7 +13,6 @@
 #include "cc/output/context_provider.h"
 #include "cc/test/test_gpu_memory_buffer_manager.h"
 #include "cc/test/test_image_factory.h"
-#include "skia/ext/refptr.h"
 
 class GrContext;
 

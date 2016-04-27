@@ -39,7 +39,7 @@ class MaskContentLayerClient : public ContentLayerClient {
   scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
       PaintingControlSetting picture_control) override {
     SkPictureRecorder recorder;
-    skia::RefPtr<SkCanvas> canvas = skia::SharePtr(
+    sk_sp<SkCanvas> canvas = sk_ref_sp(
         recorder.beginRecording(gfx::RectToSkRect(gfx::Rect(bounds_))));
 
     SkPaint paint;
@@ -110,9 +110,7 @@ TEST_P(LayerTreeHostMasksPixelTest, ImageMaskOfLayer) {
       client.PaintContentsToDisplayList(
           ContentLayerClient::PAINTING_BEHAVIOR_NORMAL);
   mask_display_list->Raster(canvas, nullptr, gfx::Rect(mask_bounds), 1.0f);
-  skia::RefPtr<const SkImage> image =
-      skia::AdoptRef(surface->newImageSnapshot());
-  mask->SetImage(std::move(image));
+  mask->SetImage(surface->makeImageSnapshot());
 
   scoped_refptr<SolidColorLayer> green = CreateSolidColorLayerWithBorder(
       gfx::Rect(25, 25, 50, 50), kCSSGreen, 1, SK_ColorBLACK);
@@ -307,7 +305,7 @@ class CheckerContentLayerClient : public ContentLayerClient {
   scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
       PaintingControlSetting picture_control) override {
     SkPictureRecorder recorder;
-    skia::RefPtr<SkCanvas> canvas = skia::SharePtr(
+    sk_sp<SkCanvas> canvas = sk_ref_sp(
         recorder.beginRecording(gfx::RectToSkRect(gfx::Rect(bounds_))));
 
     SkPaint paint;
@@ -351,7 +349,7 @@ class CircleContentLayerClient : public ContentLayerClient {
   scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
       PaintingControlSetting picture_control) override {
     SkPictureRecorder recorder;
-    skia::RefPtr<SkCanvas> canvas = skia::SharePtr(
+    sk_sp<SkCanvas> canvas = sk_ref_sp(
         recorder.beginRecording(gfx::RectToSkRect(gfx::Rect(bounds_))));
 
     SkPaint paint;

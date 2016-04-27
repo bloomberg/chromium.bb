@@ -594,19 +594,19 @@ void GLRenderer::DrawDebugBorderQuad(const DrawingFrame* frame,
   gl_->DrawElements(GL_LINE_LOOP, 4, GL_UNSIGNED_SHORT, 0);
 }
 
-static skia::RefPtr<SkImage> ApplyImageFilter(
+static sk_sp<SkImage> ApplyImageFilter(
     std::unique_ptr<GLRenderer::ScopedUseGrContext> use_gr_context,
     ResourceProvider* resource_provider,
     const gfx::RectF& src_rect,
     const gfx::RectF& dst_rect,
     const gfx::Vector2dF& scale,
-    SkImageFilter* filter,
+    sk_sp<SkImageFilter> filter,
     ScopedResource* source_texture_resource) {
   if (!filter)
-    return skia::RefPtr<SkImage>();
+    return nullptr;
 
   if (!use_gr_context)
-    return skia::RefPtr<SkImage>();
+    return nullptr;
 
   ResourceProvider::ScopedReadLockGL lock(resource_provider,
                                           source_texture_resource->id());
@@ -624,13 +624,13 @@ static skia::RefPtr<SkImage> ApplyImageFilter(
       skia::GrGLTextureInfoToGrBackendObject(texture_info);
   backend_texture_description.fOrigin = kBottomLeft_GrSurfaceOrigin;
 
-  skia::RefPtr<SkImage> srcImage = skia::AdoptRef(SkImage::NewFromTexture(
-      use_gr_context->context(), backend_texture_description));
-  if (!srcImage.get()) {
+  sk_sp<SkImage> src_image = SkImage::MakeFromTexture(
+      use_gr_context->context(), backend_texture_description);
+  if (!src_image) {
     TRACE_EVENT_INSTANT0("cc",
                          "ApplyImageFilter wrap background texture failed",
                          TRACE_EVENT_SCOPE_THREAD);
-    return skia::RefPtr<SkImage>();
+    return nullptr;
   }
 
   // Create surface to draw into.
@@ -641,7 +641,7 @@ static skia::RefPtr<SkImage> ApplyImageFilter(
   if (!surface) {
     TRACE_EVENT_INSTANT0("cc", "ApplyImageFilter surface allocation failed",
                          TRACE_EVENT_SCOPE_THREAD);
-    return skia::RefPtr<SkImage>();
+    return nullptr;
   }
 
   SkMatrix local_matrix;
@@ -650,16 +650,16 @@ static skia::RefPtr<SkImage> ApplyImageFilter(
   SkPaint paint;
   paint.setImageFilter(filter->makeWithLocalMatrix(local_matrix));
   surface->getCanvas()->translate(-dst_rect.x(), -dst_rect.y());
-  surface->getCanvas()->drawImage(srcImage.get(), src_rect.x(), src_rect.y(),
+  surface->getCanvas()->drawImage(src_image, src_rect.x(), src_rect.y(),
                                   &paint);
   // Flush the drawing before source texture read lock goes out of scope.
   // Skia API does not guarantee that when the SkImage goes out of scope,
   // its externally referenced resources would force the rendering to be
   // flushed.
   surface->getCanvas()->flush();
-  skia::RefPtr<SkImage> image = skia::AdoptRef(surface->newImageSnapshot());
+  sk_sp<SkImage> image = surface->makeImageSnapshot();
   if (!image || !image->isTextureBacked()) {
-    return skia::RefPtr<SkImage>();
+    return nullptr;
   }
 
   CHECK(image->isTextureBacked());
@@ -848,18 +848,18 @@ std::unique_ptr<ScopedResource> GLRenderer::GetBackdropTexture(
   return device_background_texture;
 }
 
-skia::RefPtr<SkImage> GLRenderer::ApplyBackgroundFilters(
+sk_sp<SkImage> GLRenderer::ApplyBackgroundFilters(
     DrawingFrame* frame,
     const RenderPassDrawQuad* quad,
     ScopedResource* background_texture,
     const gfx::RectF& rect) {
   DCHECK(ShouldApplyBackgroundFilters(quad));
-  skia::RefPtr<SkImageFilter> filter = RenderSurfaceFilters::BuildImageFilter(
+  sk_sp<SkImageFilter> filter = RenderSurfaceFilters::BuildImageFilter(
       quad->background_filters, gfx::SizeF(background_texture->size()));
 
-  skia::RefPtr<SkImage> background_with_filters = ApplyImageFilter(
+  sk_sp<SkImage> background_with_filters = ApplyImageFilter(
       ScopedUseGrContext::Create(this, frame), resource_provider_, rect, rect,
-      quad->filters_scale, filter.get(), background_texture);
+      quad->filters_scale, std::move(filter), background_texture);
   return background_with_filters;
 }
 
@@ -925,7 +925,7 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
       settings_->force_blending_with_shaders;
 
   std::unique_ptr<ScopedResource> background_texture;
-  skia::RefPtr<SkImage> background_image;
+  sk_sp<SkImage> background_image;
   GLuint background_image_id = 0;
   gfx::Rect background_rect;
   if (use_shaders_for_blending) {
@@ -985,13 +985,13 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
 
   // TODO(senorblanco): Cache this value so that we don't have to do it for both
   // the surface and its replica.  Apply filters to the contents texture.
-  skia::RefPtr<SkImage> filter_image;
+  sk_sp<SkImage> filter_image;
   GLuint filter_image_id = 0;
   SkScalar color_matrix[20];
   bool use_color_matrix = false;
   gfx::RectF rect = gfx::RectF(quad->rect);
   if (!quad->filters.IsEmpty()) {
-    skia::RefPtr<SkImageFilter> filter = RenderSurfaceFilters::BuildImageFilter(
+    sk_sp<SkImageFilter> filter = RenderSurfaceFilters::BuildImageFilter(
         quad->filters, gfx::SizeF(contents_texture->size()));
     if (filter) {
       SkColorFilter* colorfilter_rawptr = NULL;
@@ -1024,9 +1024,9 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
         if (dst_rect.IsEmpty()) {
           return;
         }
-        filter_image = ApplyImageFilter(ScopedUseGrContext::Create(this, frame),
-                                        resource_provider_, rect, dst_rect,
-                                        scale, filter.get(), contents_texture);
+        filter_image = ApplyImageFilter(
+            ScopedUseGrContext::Create(this, frame), resource_provider_, rect,
+            dst_rect, scale, std::move(filter), contents_texture);
         if (filter_image) {
           filter_image_id = skia::GrBackendObjectToGrGLTextureInfo(
                                 filter_image->getTextureHandle(true))

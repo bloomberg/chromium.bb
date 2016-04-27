@@ -173,11 +173,10 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
       const gfx::Rect& bounding_rect);
 
   static bool ShouldApplyBackgroundFilters(const RenderPassDrawQuad* quad);
-  skia::RefPtr<SkImage> ApplyBackgroundFilters(
-      DrawingFrame* frame,
-      const RenderPassDrawQuad* quad,
-      ScopedResource* background_texture,
-      const gfx::RectF& rect);
+  sk_sp<SkImage> ApplyBackgroundFilters(DrawingFrame* frame,
+                                        const RenderPassDrawQuad* quad,
+                                        ScopedResource* background_texture,
+                                        const gfx::RectF& rect);
 
   void DrawRenderPassQuad(DrawingFrame* frame,
                           const RenderPassDrawQuad* quadi,

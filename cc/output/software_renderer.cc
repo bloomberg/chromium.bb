@@ -98,7 +98,7 @@ void SoftwareRenderer::BeginDrawingFrame(DrawingFrame* frame) {
 void SoftwareRenderer::FinishDrawingFrame(DrawingFrame* frame) {
   TRACE_EVENT0("cc", "SoftwareRenderer::FinishDrawingFrame");
   current_framebuffer_lock_ = nullptr;
-  current_framebuffer_canvas_.clear();
+  current_framebuffer_canvas_.reset();
   current_canvas_ = NULL;
   root_canvas_ = NULL;
 
@@ -138,7 +138,7 @@ void SoftwareRenderer::Finish() {}
 void SoftwareRenderer::BindFramebufferToOutputSurface(DrawingFrame* frame) {
   DCHECK(!output_surface_->HasExternalStencilTest());
   current_framebuffer_lock_ = nullptr;
-  current_framebuffer_canvas_.clear();
+  current_framebuffer_canvas_.reset();
   current_canvas_ = root_canvas_;
 }
 
@@ -154,7 +154,7 @@ bool SoftwareRenderer::BindFramebufferToTexture(
       base::WrapUnique(new ResourceProvider::ScopedWriteLockSoftware(
           resource_provider_, texture->id()));
   current_framebuffer_canvas_ =
-      skia::AdoptRef(new SkCanvas(current_framebuffer_lock_->sk_bitmap()));
+      sk_make_sp<SkCanvas>(current_framebuffer_lock_->sk_bitmap());
   current_canvas_ = current_framebuffer_canvas_.get();
   return true;
 }
@@ -498,9 +498,9 @@ void SoftwareRenderer::DrawRenderPassQuad(const DrawingFrame* frame,
 
   const SkBitmap* content = lock.sk_bitmap();
 
-  skia::RefPtr<SkImage> filter_image;
+  sk_sp<SkImage> filter_image;
   if (!quad->filters.IsEmpty()) {
-    skia::RefPtr<SkImageFilter> filter = RenderSurfaceFilters::BuildImageFilter(
+    sk_sp<SkImageFilter> filter = RenderSurfaceFilters::BuildImageFilter(
         quad->filters, gfx::SizeF(content_texture->size()));
     // TODO(ajuma): Apply the filter in the same pass as the content where
     // possible (e.g. when there's no origin offset). See crbug.com/308201.
@@ -628,7 +628,7 @@ bool SoftwareRenderer::ShouldApplyBackgroundFilters(
   return true;
 }
 
-skia::RefPtr<SkImage> SoftwareRenderer::ApplyImageFilter(
+sk_sp<SkImage> SoftwareRenderer::ApplyImageFilter(
     SkImageFilter* filter,
     const RenderPassDrawQuad* quad,
     const SkBitmap* to_filter) const {
@@ -648,7 +648,7 @@ skia::RefPtr<SkImage> SoftwareRenderer::ApplyImageFilter(
   paint.setImageFilter(filter->makeWithLocalMatrix(localM));
   surface->getCanvas()->drawBitmap(*to_filter, 0, 0, &paint);
 
-  return skia::AdoptRef(surface->newImageSnapshot());
+  return surface->makeImageSnapshot();
 }
 
 SkBitmap SoftwareRenderer::GetBackdropBitmap(
@@ -708,10 +708,10 @@ sk_sp<SkShader> SoftwareRenderer::GetBackgroundFilterShader(
   // Draw what's behind, and apply the filter to it.
   SkBitmap backdrop_bitmap = GetBackdropBitmap(backdrop_rect);
 
-  skia::RefPtr<SkImageFilter> filter = RenderSurfaceFilters::BuildImageFilter(
+  sk_sp<SkImageFilter> filter = RenderSurfaceFilters::BuildImageFilter(
       quad->background_filters,
       gfx::SizeF(backdrop_bitmap.width(), backdrop_bitmap.height()));
-  skia::RefPtr<SkImage> filter_backdrop_image =
+  sk_sp<SkImage> filter_backdrop_image =
       ApplyImageFilter(filter.get(), quad, &backdrop_bitmap);
 
   if (!filter_backdrop_image)

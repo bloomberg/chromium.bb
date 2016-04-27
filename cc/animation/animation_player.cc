@@ -4,6 +4,8 @@
 
 #include "cc/animation/animation_player.h"
 
+#include <algorithm>
+
 #include "cc/animation/animation_delegate.h"
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_timeline.h"

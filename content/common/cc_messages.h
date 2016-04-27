@@ -67,8 +67,8 @@ struct ParamTraits<cc::FilterOperations> {
 };
 
 template <>
-struct ParamTraits<skia::RefPtr<SkImageFilter> > {
-  typedef skia::RefPtr<SkImageFilter> param_type;
+struct ParamTraits<sk_sp<SkImageFilter> > {
+  typedef sk_sp<SkImageFilter> param_type;
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,

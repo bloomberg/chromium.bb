@@ -116,8 +116,8 @@ class BlueYellowClient : public ContentLayerClient {
         DisplayItemList::Create(PaintableRegion(), settings);
 
     SkPictureRecorder recorder;
-    skia::RefPtr<SkCanvas> canvas = skia::SharePtr(
-        recorder.beginRecording(gfx::RectToSkRect(gfx::Rect(size_))));
+    sk_sp<SkCanvas> canvas =
+        sk_ref_sp(recorder.beginRecording(gfx::RectToSkRect(gfx::Rect(size_))));
     gfx::Rect top(0, 0, size_.width(), size_.height() / 2);
     gfx::Rect bottom(0, size_.height() / 2, size_.width(), size_.height() / 2);
 

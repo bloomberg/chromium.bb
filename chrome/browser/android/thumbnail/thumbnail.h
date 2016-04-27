@@ -10,6 +10,7 @@
 #include "base/time/time.h"
 #include "cc/resources/ui_resource_bitmap.h"
 #include "cc/resources/ui_resource_client.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "ui/gfx/geometry/size_f.h"
 
 namespace base {
@@ -52,7 +53,7 @@ class Thumbnail : public cc::UIResourceClient {
   const gfx::SizeF& scaled_data_size() const { return scaled_data_size_; }
 
   void SetBitmap(const SkBitmap& bitmap);
-  void SetCompressedBitmap(skia::RefPtr<SkPixelRef> compressed_bitmap,
+  void SetCompressedBitmap(sk_sp<SkPixelRef> compressed_bitmap,
                            const gfx::Size& content_size);
   void CreateUIResource();
 

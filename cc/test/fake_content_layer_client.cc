@@ -101,7 +101,6 @@ FakeContentLayerClient::PaintContentsToDisplayList(
     }
   }
 
-
   display_list->Finalize();
   return display_list;
 }

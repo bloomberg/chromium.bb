@@ -8,7 +8,7 @@
 
 #include "base/macros.h"
 #include "cc/base/cc_export.h"
-#include "skia/ext/refptr.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 
 class GrContext;
 class SkBitmap;
@@ -30,9 +30,8 @@ class CC_EXPORT RenderSurfaceFilters {
                         GrContext* gr_context);
   static FilterOperations Optimize(const FilterOperations& filters);
 
-  static skia::RefPtr<SkImageFilter> BuildImageFilter(
-      const FilterOperations& filters,
-      const gfx::SizeF& size);
+  static sk_sp<SkImageFilter> BuildImageFilter(const FilterOperations& filters,
+                                               const gfx::SizeF& size);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(RenderSurfaceFilters);

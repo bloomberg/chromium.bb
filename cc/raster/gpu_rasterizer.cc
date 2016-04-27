@@ -49,7 +49,7 @@ void GpuRasterizer::RasterizeSource(
   SkPictureRecorder recorder;
   const gfx::Size size = write_lock->GetResourceSize();
   const int flags = SkPictureRecorder::kComputeSaveLayerInfo_RecordFlag;
-  skia::RefPtr<SkCanvas> canvas = skia::SharePtr(
+  sk_sp<SkCanvas> canvas = sk_ref_sp(
       recorder.beginRecording(size.width(), size.height(), NULL, flags));
   canvas->save();
   raster_source->PlaybackToCanvas(canvas.get(), raster_full_rect, playback_rect,

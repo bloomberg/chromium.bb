@@ -26,8 +26,8 @@ SolidColorContentLayerClient::PaintContentsToDisplayList(
     PaintingControlSetting painting_control) {
   SkPictureRecorder recorder;
   gfx::Rect clip(PaintableRegion());
-  skia::RefPtr<SkCanvas> canvas =
-      skia::SharePtr(recorder.beginRecording(gfx::RectToSkRect(clip)));
+  sk_sp<SkCanvas> canvas =
+      sk_ref_sp(recorder.beginRecording(gfx::RectToSkRect(clip)));
 
   SkPaint paint;
   paint.setStyle(SkPaint::kFill_Style);

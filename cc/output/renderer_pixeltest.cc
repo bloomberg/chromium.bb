@@ -1391,12 +1391,10 @@ TYPED_TEST(RendererPixelTest, FastPassColorFilterAlpha) {
   matrix[13] = matrix[14] = 0;
   matrix[15] = matrix[16] = matrix[17] = matrix[19] = 0;
   matrix[18] = 1;
-  sk_sp<SkColorFilter> color_filter =
-      SkColorFilter::MakeMatrixFilterRowMajor255(matrix);
-  skia::RefPtr<SkImageFilter> filter = skia::AdoptRef(
-      SkColorFilterImageFilter::Create(color_filter.get(), NULL));
   FilterOperations filters;
-  filters.Append(FilterOperation::CreateReferenceFilter(filter));
+  filters.Append(
+      FilterOperation::CreateReferenceFilter(SkColorFilterImageFilter::Make(
+          SkColorFilter::MakeMatrixFilterRowMajor255(matrix), nullptr)));
 
   RenderPassDrawQuad* render_pass_quad =
       root_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
@@ -1630,12 +1628,10 @@ TYPED_TEST(RendererPixelTest, FastPassColorFilterAlphaTranslation) {
   matrix[14] = 1.5f;
   matrix[15] = matrix[16] = matrix[17] = matrix[19] = 0;
   matrix[18] = 1;
-  sk_sp<SkColorFilter> color_filter =
-      SkColorFilter::MakeMatrixFilterRowMajor255(matrix);
-  skia::RefPtr<SkImageFilter> filter = skia::AdoptRef(
-      SkColorFilterImageFilter::Create(color_filter.get(), NULL));
   FilterOperations filters;
-  filters.Append(FilterOperation::CreateReferenceFilter(filter));
+  filters.Append(
+      FilterOperation::CreateReferenceFilter(SkColorFilterImageFilter::Make(
+          SkColorFilter::MakeMatrixFilterRowMajor255(matrix), nullptr)));
 
   RenderPassDrawQuad* render_pass_quad =
       root_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();

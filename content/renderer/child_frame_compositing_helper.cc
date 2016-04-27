@@ -129,9 +129,7 @@ void ChildFrameCompositingHelper::ChildFrameGone() {
         web_layer_->bounds().height > sad_bitmap->height()) {
       scoped_refptr<cc::PictureImageLayer> sad_layer =
           cc::PictureImageLayer::Create();
-      skia::RefPtr<SkImage> image =
-          skia::AdoptRef(SkImage::NewFromBitmap(*sad_bitmap));
-      sad_layer->SetImage(image);
+      sad_layer->SetImage(SkImage::MakeFromBitmap(*sad_bitmap));
       sad_layer->SetBounds(
           gfx::Size(sad_bitmap->width(), sad_bitmap->height()));
       sad_layer->SetPosition(gfx::PointF(

@@ -63,14 +63,13 @@ void FilterDisplayItem::Raster(SkCanvas* canvas,
   canvas->save();
   canvas->translate(bounds_.x(), bounds_.y());
 
-  skia::RefPtr<SkImageFilter> image_filter =
-      RenderSurfaceFilters::BuildImageFilter(
-          filters_, gfx::SizeF(bounds_.width(), bounds_.height()));
+  sk_sp<SkImageFilter> image_filter = RenderSurfaceFilters::BuildImageFilter(
+      filters_, gfx::SizeF(bounds_.width(), bounds_.height()));
   SkRect boundaries = SkRect::MakeWH(bounds_.width(), bounds_.height());
 
   SkPaint paint;
   paint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
-  paint.setImageFilter(image_filter.get());
+  paint.setImageFilter(std::move(image_filter));
   canvas->saveLayer(&boundaries, &paint);
 
   canvas->translate(-bounds_.x(), -bounds_.y());

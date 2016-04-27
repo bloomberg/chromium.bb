@@ -111,9 +111,8 @@ class GrContext* TestContextProvider::GrContext() {
   if (gr_context_)
     return gr_context_.get();
 
-  skia::RefPtr<const GrGLInterface> gl_interface =
-      skia::AdoptRef(GrGLCreateNullInterface());
-  gr_context_ = skia::AdoptRef(GrContext::Create(
+  sk_sp<const GrGLInterface> gl_interface(GrGLCreateNullInterface());
+  gr_context_ = sk_sp<::GrContext>(GrContext::Create(
       kOpenGL_GrBackend,
       reinterpret_cast<GrBackendContext>(gl_interface.get())));
 

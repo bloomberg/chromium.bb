@@ -86,15 +86,14 @@ FilterOperation::FilterOperation(FilterType type, float amount, int inset)
   memset(matrix_, 0, sizeof(matrix_));
 }
 
-FilterOperation::FilterOperation(
-    FilterType type,
-    const skia::RefPtr<SkImageFilter>& image_filter)
+FilterOperation::FilterOperation(FilterType type,
+                                 sk_sp<SkImageFilter> image_filter)
     : type_(type),
       amount_(0),
       outer_threshold_(0),
       drop_shadow_offset_(0, 0),
       drop_shadow_color_(0),
-      image_filter_(image_filter),
+      image_filter_(std::move(image_filter)),
       zoom_inset_(0) {
   DCHECK_EQ(type_, REFERENCE);
   memset(matrix_, 0, sizeof(matrix_));
@@ -164,8 +163,7 @@ static FilterOperation CreateNoOpFilter(FilterOperation::FilterType type) {
     case FilterOperation::SATURATING_BRIGHTNESS:
       return FilterOperation::CreateSaturatingBrightnessFilter(0.f);
     case FilterOperation::REFERENCE:
-      return FilterOperation::CreateReferenceFilter(
-          skia::RefPtr<SkImageFilter>());
+      return FilterOperation::CreateReferenceFilter(nullptr);
     case FilterOperation::ALPHA_THRESHOLD:
       return FilterOperation::CreateAlphaThresholdFilter(SkRegion(), 1.f, 0.f);
   }

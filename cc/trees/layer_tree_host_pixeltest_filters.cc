@@ -246,12 +246,11 @@ class ImageFilterClippedPixelTest : public LayerTreeHostFiltersPixelTest {
     matrix[2] = matrix[6] = matrix[10] = matrix[18] = SK_Scalar1;
     // We filter only the bottom 200x100 pixels of the foreground.
     SkImageFilter::CropRect crop_rect(SkRect::MakeXYWH(0, 100, 200, 100));
-    sk_sp<SkColorFilter> color_filter =
-        SkColorFilter::MakeMatrixFilterRowMajor255(matrix);
-    skia::RefPtr<SkImageFilter> filter = skia::AdoptRef(
-        SkColorFilterImageFilter::Create(color_filter.get(), NULL, &crop_rect));
     FilterOperations filters;
-    filters.Append(FilterOperation::CreateReferenceFilter(filter));
+    filters.Append(
+        FilterOperation::CreateReferenceFilter(SkColorFilterImageFilter::Make(
+            SkColorFilter::MakeMatrixFilterRowMajor255(matrix), nullptr,
+            &crop_rect)));
 
     // Make the foreground layer's render surface be clipped by the background
     // layer.
@@ -561,9 +560,8 @@ class EnlargedTextureWithCropOffsetFilter
 
     FilterOperations filters;
     SkImageFilter::CropRect cropRect(SkRect::MakeXYWH(10, 10, 80, 80));
-    skia::RefPtr<SkImageFilter> filter(
-        skia::AdoptRef(SkOffsetImageFilter::Create(0, 0, nullptr, &cropRect)));
-    filters.Append(FilterOperation::CreateReferenceFilter(filter));
+    filters.Append(FilterOperation::CreateReferenceFilter(
+        SkOffsetImageFilter::Make(0, 0, nullptr, &cropRect)));
     filter_layer->SetFilters(filters);
 
     background->AddChild(filter_layer);
@@ -607,12 +605,10 @@ class FilterWithGiantCropRectPixelTest : public LayerTreeHostFiltersPixelTest {
     FilterOperations filters;
     SkImageFilter::CropRect cropRect(
         SkRect::MakeXYWH(-40000, -40000, 80000, 80000));
-    sk_sp<SkColorFilter> color_filter =
-        SkColorFilter::MakeMatrixFilterRowMajor255(matrix);
-    skia::RefPtr<SkImageFilter> filter(
-        skia::AdoptRef(SkColorFilterImageFilter::Create(color_filter.get(),
-                                                        nullptr, &cropRect)));
-    filters.Append(FilterOperation::CreateReferenceFilter(filter));
+    filters.Append(
+        FilterOperation::CreateReferenceFilter((SkColorFilterImageFilter::Make(
+            SkColorFilter::MakeMatrixFilterRowMajor255(matrix), nullptr,
+            &cropRect))));
     filter_layer->SetFilters(filters);
     background->SetMasksToBounds(masks_to_bounds);
     background->AddChild(filter_layer);

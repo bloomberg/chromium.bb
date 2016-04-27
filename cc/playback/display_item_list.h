@@ -19,7 +19,6 @@
 #include "cc/playback/discardable_image_map.h"
 #include "cc/playback/display_item.h"
 #include "cc/playback/display_item_list_settings.h"
-#include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -129,7 +128,7 @@ class CC_EXPORT DisplayItemList
   sk_sp<SkPicture> picture_;
 
   std::unique_ptr<SkPictureRecorder> recorder_;
-  skia::RefPtr<SkCanvas> canvas_;
+  sk_sp<SkCanvas> canvas_;
   const DisplayItemListSettings settings_;
   bool retain_individual_display_items_;
 

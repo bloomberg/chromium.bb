@@ -90,8 +90,7 @@ void CompositingDisplayItem::ToProtobuf(
     RectFToProto(gfx::SkRectToRectF(bounds_), details->mutable_bounds());
 
   if (color_filter_) {
-    skia::RefPtr<SkData> data =
-        skia::AdoptRef(SkValidatingSerializeFlattenable(color_filter_.get()));
+    sk_sp<SkData> data(SkValidatingSerializeFlattenable(color_filter_.get()));
     if (data->size() > 0)
       details->set_color_filter(data->data(), data->size());
   }

@@ -35,7 +35,7 @@ UIResourceBitmap::UIResourceFormat SkColorTypeToUIResourceFormat(
 
 }  // namespace
 
-void UIResourceBitmap::Create(const skia::RefPtr<SkPixelRef>& pixel_ref,
+void UIResourceBitmap::Create(sk_sp<SkPixelRef> pixel_ref,
                               const gfx::Size& size,
                               UIResourceFormat format) {
   DCHECK(size.width());
@@ -44,7 +44,7 @@ void UIResourceBitmap::Create(const skia::RefPtr<SkPixelRef>& pixel_ref,
   DCHECK(pixel_ref->isImmutable());
   format_ = format;
   size_ = size;
-  pixel_ref_ = pixel_ref;
+  pixel_ref_ = std::move(pixel_ref);
 
   // Default values for secondary parameters.
   opaque_ = (format == ETC1);
@@ -54,9 +54,9 @@ UIResourceBitmap::UIResourceBitmap(const SkBitmap& skbitmap) {
   DCHECK_EQ(skbitmap.width(), skbitmap.rowBytesAsPixels());
   DCHECK(skbitmap.isImmutable());
 
-  skia::RefPtr<SkPixelRef> pixel_ref = skia::SharePtr(skbitmap.pixelRef());
+  sk_sp<SkPixelRef> pixel_ref = sk_ref_sp(skbitmap.pixelRef());
   const SkImageInfo& info = pixel_ref->info();
-  Create(pixel_ref, gfx::Size(info.width(), info.height()),
+  Create(std::move(pixel_ref), gfx::Size(info.width(), info.height()),
          SkColorTypeToUIResourceFormat(skbitmap.colorType()));
 
   SetOpaque(skbitmap.isOpaque());
@@ -66,16 +66,16 @@ UIResourceBitmap::UIResourceBitmap(const gfx::Size& size, bool is_opaque) {
   SkAlphaType alphaType = is_opaque ? kOpaque_SkAlphaType : kPremul_SkAlphaType;
   SkImageInfo info =
       SkImageInfo::MakeN32(size.width(), size.height(), alphaType);
-  skia::RefPtr<SkPixelRef> pixel_ref = skia::AdoptRef(
+  sk_sp<SkPixelRef> pixel_ref(
       SkMallocPixelRef::NewAllocate(info, info.minRowBytes(), NULL));
   pixel_ref->setImmutable();
-  Create(pixel_ref, size, UIResourceBitmap::RGBA8);
+  Create(std::move(pixel_ref), size, UIResourceBitmap::RGBA8);
   SetOpaque(is_opaque);
 }
 
-UIResourceBitmap::UIResourceBitmap(const skia::RefPtr<SkPixelRef>& pixel_ref,
+UIResourceBitmap::UIResourceBitmap(sk_sp<SkPixelRef> pixel_ref,
                                    const gfx::Size& size) {
-  Create(pixel_ref, size, UIResourceBitmap::ETC1);
+  Create(std::move(pixel_ref), size, UIResourceBitmap::ETC1);
 }
 
 UIResourceBitmap::UIResourceBitmap(const UIResourceBitmap& other) = default;
