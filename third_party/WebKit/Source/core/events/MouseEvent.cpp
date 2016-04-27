@@ -294,6 +294,10 @@ DispatchEventResult MouseEventDispatchMediator::dispatchEvent(EventDispatcher& d
     if (mouseEvent.type() != EventTypeNames::click || mouseEvent.detail() != 2)
         return dispatchResult;
 
+    // Do not send dblclick event for non-primary button clicks.
+    if (mouseEvent.button() != MouseButton::LeftButton)
+        return dispatchResult;
+
     // Special case: If it's a double click event, we also send the dblclick event. This is not part
     // of the DOM specs, but is used for compatibility with the ondblclick="" attribute. This is treated
     // as a separate event in other DOM-compliant browsers like Firefox, and so we do the same.

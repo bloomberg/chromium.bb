@@ -2632,28 +2632,6 @@ IN_PROC_BROWSER_TEST_F(ClickModifierTest, WindowOpenControlShiftClickTest) {
   RunTest(browser(), GetWindowOpenURL(), modifiers, button, disposition);
 }
 
-// Middle-clicks open in a background tab.
-#if defined(OS_LINUX)
-// http://crbug.com/396347
-#define MAYBE_WindowOpenMiddleClickTest DISABLED_WindowOpenMiddleClickTest
-#else
-#define MAYBE_WindowOpenMiddleClickTest WindowOpenMiddleClickTest
-#endif
-IN_PROC_BROWSER_TEST_F(ClickModifierTest, MAYBE_WindowOpenMiddleClickTest) {
-  int modifiers = 0;
-  blink::WebMouseEvent::Button button = blink::WebMouseEvent::ButtonMiddle;
-  WindowOpenDisposition disposition = NEW_BACKGROUND_TAB;
-  RunTest(browser(), GetWindowOpenURL(), modifiers, button, disposition);
-}
-
-// Shift-middle-clicks open in a foreground tab.
-IN_PROC_BROWSER_TEST_F(ClickModifierTest, WindowOpenShiftMiddleClickTest) {
-  int modifiers = blink::WebInputEvent::ShiftKey;
-  blink::WebMouseEvent::Button button = blink::WebMouseEvent::ButtonMiddle;
-  WindowOpenDisposition disposition = NEW_FOREGROUND_TAB;
-  RunTest(browser(), GetWindowOpenURL(), modifiers, button, disposition);
-}
-
 // Tests for clicking on normal links.
 
 IN_PROC_BROWSER_TEST_F(ClickModifierTest, HrefBasicClickTest) {
