@@ -2,9 +2,23 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/ios/ios_sdk.gni")
-import("//build/config/mac/rules.gni")
+import("//build/config/mac/base_rules.gni")
 
+# Generates Info.plist files for Mac apps and frameworks.
+#
+# Arguments
+#
+#     info_plist:
+#         string, the path to an plist file that will be included in the final
+#         Info.plist generated.
+#
+#     executable_name:
+#         string, name of the generated target used for the product
+#         and executable name as specified in the output Info.plist.
+#
+#     extra_substitutions:
+#         (optional) string array, 'key=value' pairs for extra fields which are
+#         specified in a source Info.plist template.
 template("ios_info_plist") {
   info_plist(target_name) {
     extra_substitutions = []
@@ -222,7 +236,7 @@ template("bundle_data_xib") {
 # merely built when targets depend on it, or whether it is linked as well:
 # "$target_name" and "$target_name+link".
 #
-# See the //build/config/mac/rules.gni:framework_bundle for a discussion
+# See the //build/config/mac/base_rules.gni:framework_bundle for a discussion
 # and examples.
 #
 # Arguments
