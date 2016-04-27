@@ -811,13 +811,13 @@ def RunPylint(input_api, *args, **kwargs):
   return input_api.RunTests(GetPylint(input_api, *args, **kwargs), False)
 
 
-# TODO(dpranke): Get the host_url from the input_api instead
-def CheckRietveldTryJobExecution(dummy_input_api, dummy_output_api,
+def CheckRietveldTryJobExecution(dummy_input_api, output_api,
                                  dummy_host_url, dummy_platforms,
                                  dummy_owner):
-  # Temporarily 'fix' the check while the Rietveld API is being upgraded to
-  # something sensible.
-  return []
+  return [
+    output_api.PresubmitNotifyResult(
+        'CheckRietveldTryJobExecution is deprecated, please remove it.')
+  ]
 
 
 def CheckBuildbotPendingBuilds(input_api, output_api, url, max_pendings,
