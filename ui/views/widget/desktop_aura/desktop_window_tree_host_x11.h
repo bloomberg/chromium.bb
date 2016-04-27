@@ -184,13 +184,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   // Called when |xwindow_|'s _NET_FRAME_EXTENTS property is updated.
   void OnFrameExtentsUpdated();
 
-  // Called when |xwindow_| is mapped, either directly (in the case of
-  // override-redirect windows) or in response to a MapNotify event.
-  void OnX11WindowMapped();
-
-  // Called when |xwindow_| is unmapped.
-  void OnX11WindowUnmapped();
-
   // Updates |xwindow_|'s minimum and maximum size.
   void UpdateMinAndMaxSize();
 
@@ -295,9 +288,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
 
   // True if the window should stay on top of most other windows.
   bool is_always_on_top_;
-
-  // True if the window has the override_redirect bit set.
-  bool is_override_redirect_;
 
   // True if the window has title-bar / borders provided by the window manager.
   bool use_native_frame_;
