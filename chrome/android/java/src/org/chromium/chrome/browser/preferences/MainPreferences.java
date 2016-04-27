@@ -63,7 +63,11 @@ public class MainPreferences extends PreferenceFragment implements SignInStateOb
     public void onResume() {
         super.onResume();
         SigninManager.get(getActivity()).addSignInStateObserver(this);
+
+        // updatePreferences() must be called before setupSignInPref as updatePreferences loads
+        // the SignInPreference.
         updatePreferences();
+        setupSignInPref();
 
         if (mShowSearchEnginePicker) {
             mShowSearchEnginePicker = false;
@@ -75,32 +79,12 @@ public class MainPreferences extends PreferenceFragment implements SignInStateOb
     public void onPause() {
         super.onPause();
         SigninManager.get(getActivity()).removeSignInStateObserver(this);
-        unregisterSignInPref();
+        clearSignInPref();
     }
 
     private void updatePreferences() {
         if (getPreferenceScreen() != null) getPreferenceScreen().removeAll();
         addPreferencesFromResource(R.xml.main_preferences);
-
-        registerSignInPref();
-        mSignInPreference.setOnPreferenceClickListener(new OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-                if (ChromeSigninController.get(getActivity()).isSignedIn()) return false;
-                if (!SigninManager.get(getActivity()).isSignInAllowed()) {
-                    if (SigninManager.get(getActivity()).isSigninDisabledByPolicy()) {
-                        ManagedPreferencesUtils.showManagedByAdministratorToast(getActivity());
-                    }
-                    return false;
-                }
-
-                mSignInPreference.setEnabled(false);
-                SigninManager.logSigninStartAccessPoint(SigninAccessPoint.SETTINGS);
-                startActivity(new Intent(getActivity(), AccountSigninActivity.class));
-                return true;
-            }
-        });
-        mSignInPreference.setEnabled(true);
 
         ChromeBasePreference autofillPref =
                 (ChromeBasePreference) findPreference(PREF_AUTOFILL_SETTINGS);
@@ -140,15 +124,35 @@ public class MainPreferences extends PreferenceFragment implements SignInStateOb
         pref.setSummary(getResources().getString(isOn ? R.string.text_on : R.string.text_off));
     }
 
-    private void registerSignInPref() {
-        unregisterSignInPref();
+    private void setupSignInPref() {
         mSignInPreference = (SignInPreference) findPreference(PREF_SIGN_IN);
         mSignInPreference.registerForUpdates();
+
+        mSignInPreference.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                if (ChromeSigninController.get(getActivity()).isSignedIn()) return false;
+                if (!SigninManager.get(getActivity()).isSignInAllowed()) {
+                    if (SigninManager.get(getActivity()).isSigninDisabledByPolicy()) {
+                        ManagedPreferencesUtils.showManagedByAdministratorToast(getActivity());
+                    }
+                    return false;
+                }
+
+                mSignInPreference.setEnabled(false);
+                SigninManager.logSigninStartAccessPoint(SigninAccessPoint.SETTINGS);
+                startActivity(new Intent(getActivity(), AccountSigninActivity.class));
+                return true;
+            }
+        });
+        mSignInPreference.setEnabled(true);
     }
 
-    private void unregisterSignInPref() {
+    private void clearSignInPref() {
         if (mSignInPreference != null) {
             mSignInPreference.unregisterForUpdates();
+            // Set the setOnPreferenceClickListener since it uses mSignInPreference
+            mSignInPreference.setOnPreferenceClickListener(null);
             mSignInPreference = null;
         }
     }
