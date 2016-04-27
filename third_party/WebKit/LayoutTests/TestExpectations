@@ -18,12 +18,7 @@ crbug.com/420008 virtual/threaded/inspector/tracing/worker-js-frames.html [ Pass
 crbug.com/596940 inspector-protocol/runtime/runtime-execution-contexts-events.html [ Pass Timeout ]
 crbug.com/597572 [ Debug ] http/tests/inspector/resource-tree/resource-tree-reload.html [ Pass Failure ]
 
-crbug.com/569901 crbug.com/24182 [ Debug ] jquery/manipulation.html [ Timeout Failure Pass ]
-crbug.com/569901 [ Debug ] fast/dom/minor-dom-gc.html [ Timeout Failure ]
-crbug.com/569901 [ Debug ] virtual/pointerevent/fast/events/touch/gesture/pad-gesture-fling.html [ Timeout Failure ]
-crbug.com/569901 [ Debug ] fast/dom/StyleSheet/stylesheet-move-between-documents-crash.html [ Timeout ]
-crbug.com/569901 [ Debug ] fast/frames/cached-frame-counter.html [ Timeout ]
-crbug.com/569901 [ Debug ] http/tests/security/w3c/cross-origin-objects.html [ Timeout ]
+crbug.com/569901 crbug.com/24182 [ Debug ] jquery/manipulation.html [ Timeout Pass ]
 
 crbug.com/299010 [ Win Linux ] fast/forms/text/text-font-height-mismatch.html [ Pass Failure ]
 crbug.com/581990 [ Win ] fast/writing-mode/english-lr-text.html [ Pass Failure ]
