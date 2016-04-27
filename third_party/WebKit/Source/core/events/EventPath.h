@@ -44,7 +44,7 @@ class TouchEvent;
 class TouchList;
 class TreeScope;
 
-class CORE_EXPORT EventPath final : public GarbageCollected<EventPath> {
+class CORE_EXPORT EventPath final : public GarbageCollectedFinalized<EventPath> {
     WTF_MAKE_NONCOPYABLE(EventPath);
 public:
     explicit EventPath(Node&, Event* = nullptr);

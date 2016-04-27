@@ -22,7 +22,7 @@ class ScriptState;
 
 // BluetoothRemoteGATTServer provides a way to interact with a connected bluetooth peripheral.
 class BluetoothRemoteGATTServer final
-    : public GarbageCollected<BluetoothRemoteGATTServer>
+    : public GarbageCollectedFinalized<BluetoothRemoteGATTServer>
     , public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:

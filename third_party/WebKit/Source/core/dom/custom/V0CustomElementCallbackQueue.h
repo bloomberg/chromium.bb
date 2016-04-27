@@ -40,7 +40,7 @@ namespace blink {
 
 // FIXME: Rename this because it contains resolution and upgrade as
 // well as callbacks.
-class V0CustomElementCallbackQueue : public GarbageCollected<V0CustomElementCallbackQueue> {
+class V0CustomElementCallbackQueue : public GarbageCollectedFinalized<V0CustomElementCallbackQueue> {
     WTF_MAKE_NONCOPYABLE(V0CustomElementCallbackQueue);
 public:
     static V0CustomElementCallbackQueue* create(Element*);

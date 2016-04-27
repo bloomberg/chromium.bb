@@ -37,7 +37,7 @@
 
 namespace blink {
 
-class CORE_EXPORT V0CustomElementProcessingStack : public GarbageCollected<V0CustomElementProcessingStack> {
+class CORE_EXPORT V0CustomElementProcessingStack : public GarbageCollectedFinalized<V0CustomElementProcessingStack> {
     WTF_MAKE_NONCOPYABLE(V0CustomElementProcessingStack);
 public:
     // This is stack allocated in many DOM callbacks. Make it cheap.

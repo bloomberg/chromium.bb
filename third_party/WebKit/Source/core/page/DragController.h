@@ -49,9 +49,11 @@ class Node;
 class Page;
 class PlatformMouseEvent;
 
-class CORE_EXPORT DragController final : public GarbageCollected<DragController> {
+class CORE_EXPORT DragController final : public GarbageCollectedFinalized<DragController> {
     WTF_MAKE_NONCOPYABLE(DragController);
 public:
+    ~DragController();
+
     static DragController* create(Page*);
 
     DragSession dragEntered(DragData*);

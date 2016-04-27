@@ -69,6 +69,10 @@ InputMethodController::InputMethodController(LocalFrame& frame)
 {
 }
 
+InputMethodController::~InputMethodController()
+{
+}
+
 bool InputMethodController::hasComposition() const
 {
     return m_hasComposition;

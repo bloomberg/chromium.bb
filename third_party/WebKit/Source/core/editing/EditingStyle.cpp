@@ -387,6 +387,10 @@ EditingStyle::EditingStyle(CSSPropertyID propertyID, const String& value)
     setProperty(propertyID, value);
 }
 
+EditingStyle::~EditingStyle()
+{
+}
+
 static Color cssValueToColor(CSSValue* colorValue)
 {
     if (!colorValue || (!colorValue->isColorValue() && !colorValue->isPrimitiveValue()))

@@ -77,7 +77,7 @@ namespace {
 
 class CreateFileHelper final : public AsyncFileSystemCallbacks {
 public:
-    class CreateFileResult : public GarbageCollected<CreateFileResult> {
+    class CreateFileResult : public GarbageCollectedFinalized<CreateFileResult> {
       public:
         static CreateFileResult* create()
         {

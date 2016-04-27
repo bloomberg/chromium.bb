@@ -33,7 +33,7 @@ namespace blink {
 class SourceGraphic;
 class FilterEffect;
 
-class PLATFORM_EXPORT Filter final : public GarbageCollected<Filter> {
+class PLATFORM_EXPORT Filter final : public GarbageCollectedFinalized<Filter> {
     WTF_MAKE_NONCOPYABLE(Filter);
 public:
     enum UnitScaling {
@@ -44,6 +44,7 @@ public:
     static Filter* create(const FloatRect& referenceBox, const FloatRect& filterRegion, float scale, UnitScaling);
     static Filter* create(float scale);
 
+    ~Filter();
     DECLARE_TRACE();
 
     float scale() const { return m_scale; }

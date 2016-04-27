@@ -97,10 +97,11 @@ namespace blink {
 
 ${forward_list}
 
-class CORE_EXPORT InstrumentingAgents : public GarbageCollected<InstrumentingAgents> {
+class CORE_EXPORT InstrumentingAgents : public GarbageCollectedFinalized<InstrumentingAgents> {
     WTF_MAKE_NONCOPYABLE(InstrumentingAgents);
 public:
     InstrumentingAgents();
+    ~InstrumentingAgents() { }
     DECLARE_TRACE();
 
 ${accessor_list}

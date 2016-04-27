@@ -141,6 +141,10 @@ DragController::DragController(Page* page)
 {
 }
 
+DragController::~DragController()
+{
+}
+
 DragController* DragController::create(Page* page)
 {
     return new DragController(page);

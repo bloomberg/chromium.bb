@@ -13,6 +13,8 @@ namespace blink {
 
 NodeIntersectionObserverData::NodeIntersectionObserverData() { }
 
+NodeIntersectionObserverData::~NodeIntersectionObserverData() { }
+
 IntersectionObservation* NodeIntersectionObserverData::getObservationFor(IntersectionObserver& observer)
 {
     auto i = m_intersectionObservations.find(&observer);

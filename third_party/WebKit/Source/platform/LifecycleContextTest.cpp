@@ -47,7 +47,7 @@ public:
     }
 };
 
-class TestingObserver final : public GarbageCollected<TestingObserver>, public LifecycleObserver<DummyContext, TestingObserver, DummyContext> {
+class TestingObserver final : public GarbageCollectedFinalized<TestingObserver>, public LifecycleObserver<DummyContext, TestingObserver, DummyContext> {
     USING_GARBAGE_COLLECTED_MIXIN(TestingObserver);
 public:
     static TestingObserver* create(DummyContext* context)

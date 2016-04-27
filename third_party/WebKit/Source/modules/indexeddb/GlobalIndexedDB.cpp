@@ -15,7 +15,7 @@ namespace blink {
 namespace {
 
 template <typename T>
-class GlobalIndexedDBImpl final : public GarbageCollected<GlobalIndexedDBImpl<T>>, public Supplement<T> {
+class GlobalIndexedDBImpl final : public GarbageCollectedFinalized<GlobalIndexedDBImpl<T>>, public Supplement<T> {
     USING_GARBAGE_COLLECTED_MIXIN(GlobalIndexedDBImpl);
 public:
     static GlobalIndexedDBImpl& from(T& supplementable)

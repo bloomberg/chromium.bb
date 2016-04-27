@@ -13,10 +13,11 @@ class Node;
 class IntersectionObservation;
 class IntersectionObserver;
 
-class NodeIntersectionObserverData : public GarbageCollected<NodeIntersectionObserverData> {
+class NodeIntersectionObserverData : public GarbageCollectedFinalized<NodeIntersectionObserverData> {
 public:
     DECLARE_TRACE();
     NodeIntersectionObserverData();
+    ~NodeIntersectionObserverData();
 
     IntersectionObservation* getObservationFor(IntersectionObserver&);
     void addObservation(IntersectionObservation&);

@@ -44,6 +44,10 @@ Filter::Filter(const FloatRect& referenceBox, const FloatRect& filterRegion, flo
 {
 }
 
+Filter::~Filter()
+{
+}
+
 Filter* Filter::create(const FloatRect& referenceBox, const FloatRect& filterRegion, float scale, UnitScaling unitScaling)
 {
     return new Filter(referenceBox, filterRegion, scale, unitScaling);

@@ -31,7 +31,7 @@
 
 namespace blink {
 
-class FilterData final : public GarbageCollected<FilterData> {
+class FilterData final : public GarbageCollectedFinalized<FilterData> {
 public:
     /*
      * The state transitions should follow the following:

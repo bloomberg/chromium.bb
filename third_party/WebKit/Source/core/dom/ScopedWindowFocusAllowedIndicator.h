@@ -25,7 +25,7 @@ public:
     }
 
 private:
-    class Observer final : public GarbageCollected<Observer>, public ContextLifecycleObserver {
+    class Observer final : public GarbageCollectedFinalized<Observer>, public ContextLifecycleObserver {
         USING_GARBAGE_COLLECTED_MIXIN(Observer);
     public:
         explicit Observer(ExecutionContext* executionContext)
@@ -39,6 +39,11 @@ private:
         {
             if (getExecutionContext())
                 getExecutionContext()->consumeWindowInteraction();
+        }
+
+        DEFINE_INLINE_TRACE()
+        {
+            ContextLifecycleObserver::trace(visitor);
         }
     };
 

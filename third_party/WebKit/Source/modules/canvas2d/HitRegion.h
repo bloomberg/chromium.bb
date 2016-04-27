@@ -45,10 +45,11 @@ private:
     WindRule m_fillRule;
 };
 
-class HitRegionManager final : public GarbageCollected<HitRegionManager> {
+class HitRegionManager final : public GarbageCollectedFinalized<HitRegionManager> {
     WTF_MAKE_NONCOPYABLE(HitRegionManager);
 public:
     static HitRegionManager* create() { return new HitRegionManager; }
+    ~HitRegionManager() { }
 
     void addHitRegion(HitRegion*);
 

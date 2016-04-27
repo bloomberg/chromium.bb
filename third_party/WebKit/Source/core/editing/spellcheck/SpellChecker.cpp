@@ -103,6 +103,10 @@ SpellChecker::SpellChecker(LocalFrame& frame)
 {
 }
 
+SpellChecker::~SpellChecker()
+{
+}
+
 bool SpellChecker::isContinuousSpellCheckingEnabled() const
 {
     return spellCheckerClient().isContinuousSpellCheckingEnabled();
