@@ -13,6 +13,9 @@ import android.view.LayoutInflater;
 import org.chromium.android_webview.AwContents;
 import org.chromium.base.annotations.SuppressFBWarnings;
 
+import java.lang.ref.WeakReference;
+import java.util.WeakHashMap;
+
 /**
  * This class allows us to wrap the application context so that the WebView implementation can
  * correctly reference both org.chromium.* and application classes which is necessary to properly
@@ -21,12 +24,28 @@ import org.chromium.base.annotations.SuppressFBWarnings;
 public class ResourcesContextWrapperFactory {
     private ResourcesContextWrapperFactory() {}
 
+    // Note WeakHashMap only guarantees that keys are weakly held, and ContextWrapper holds a strong
+    // reference to the wrapped context. So need a WeakReference here to ensure the Context does not
+    // leak.
+    private static final WeakHashMap<Context, WeakReference<WebViewContextWrapper>> sCtxToWrapper =
+            new WeakHashMap<>();
+    private static final Object sLock = new Object();
+
     public static Context get(Context ctx) {
         // Avoid double-wrapping a context.
         if (ctx instanceof WebViewContextWrapper) {
             return ctx;
         }
-        return new WebViewContextWrapper(ctx);
+        WebViewContextWrapper wrapper = null;
+        synchronized (sLock) {
+            WeakReference<WebViewContextWrapper> ref = sCtxToWrapper.get(ctx);
+            wrapper = (ref == null) ? null : ref.get();
+            if (wrapper == null) {
+                wrapper = new WebViewContextWrapper(ctx);
+                sCtxToWrapper.put(ctx, new WeakReference<>(wrapper));
+            }
+        }
+        return wrapper;
     }
 
     private static class WebViewContextWrapper extends ContextWrapper {
