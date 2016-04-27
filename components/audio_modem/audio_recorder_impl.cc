@@ -15,8 +15,8 @@
 #include "base/synchronization/waitable_event.h"
 #include "components/audio_modem/public/audio_modem_types.h"
 #include "content/public/browser/browser_thread.h"
+#include "media/audio/audio_device_description.h"
 #include "media/audio/audio_manager.h"
-#include "media/audio/audio_manager_base.h"
 #include "media/base/audio_bus.h"
 
 namespace audio_modem {
@@ -103,7 +103,7 @@ void AudioRecorderImpl::InitializeOnAudioThread() {
     params = *params_for_testing_;
   } else {
     params = media::AudioManager::Get()->GetInputStreamParameters(
-        media::AudioManagerBase::kDefaultDeviceId);
+        media::AudioDeviceDescription::kDefaultDeviceId);
     params.set_effects(media::AudioParameters::NO_EFFECTS);
   }
 
@@ -114,7 +114,7 @@ void AudioRecorderImpl::InitializeOnAudioThread() {
   stream_ = input_stream_for_testing_
                 ? input_stream_for_testing_.get()
                 : media::AudioManager::Get()->MakeAudioInputStream(
-                      params, media::AudioManagerBase::kDefaultDeviceId);
+                      params, media::AudioDeviceDescription::kDefaultDeviceId);
 
   if (!stream_ || !stream_->Open()) {
     LOG(ERROR) << "Failed to open an input stream.";

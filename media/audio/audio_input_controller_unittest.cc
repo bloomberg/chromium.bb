@@ -7,8 +7,8 @@
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
+#include "media/audio/audio_device_description.h"
 #include "media/audio/audio_input_controller.h"
-#include "media/audio/audio_manager_base.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -97,9 +97,9 @@ TEST_F(AudioInputControllerTest, CreateAndClose) {
   AudioParameters params(AudioParameters::AUDIO_FAKE, kChannelLayout,
                          kSampleRate, kBitsPerSample, kSamplesPerPacket);
 
-  scoped_refptr<AudioInputController> controller =
-      AudioInputController::Create(audio_manager_.get(), &event_handler, params,
-                                   AudioManagerBase::kDefaultDeviceId, NULL);
+  scoped_refptr<AudioInputController> controller = AudioInputController::Create(
+      audio_manager_.get(), &event_handler, params,
+      AudioDeviceDescription::kDefaultDeviceId, NULL);
   ASSERT_TRUE(controller.get());
 
   // Wait for OnCreated() to fire.
@@ -132,9 +132,9 @@ TEST_F(AudioInputControllerTest, RecordAndClose) {
                          kSampleRate, kBitsPerSample, kSamplesPerPacket);
 
   // Creating the AudioInputController should render an OnCreated() call.
-  scoped_refptr<AudioInputController> controller =
-      AudioInputController::Create(audio_manager_.get(), &event_handler, params,
-                                   AudioManagerBase::kDefaultDeviceId, NULL);
+  scoped_refptr<AudioInputController> controller = AudioInputController::Create(
+      audio_manager_.get(), &event_handler, params,
+      AudioDeviceDescription::kDefaultDeviceId, NULL);
   ASSERT_TRUE(controller.get());
 
   // Start recording and trigger one OnRecording() call.
@@ -181,9 +181,9 @@ TEST_F(AudioInputControllerTest, DISABLED_RecordAndError) {
                          kSampleRate, kBitsPerSample, kSamplesPerPacket);
 
   // Creating the AudioInputController should render an OnCreated() call.
-  scoped_refptr<AudioInputController> controller =
-      AudioInputController::Create(audio_manager_.get(), &event_handler, params,
-                                   AudioManagerBase::kDefaultDeviceId, NULL);
+  scoped_refptr<AudioInputController> controller = AudioInputController::Create(
+      audio_manager_.get(), &event_handler, params,
+      AudioDeviceDescription::kDefaultDeviceId, NULL);
   ASSERT_TRUE(controller.get());
 
   // Start recording and trigger one OnRecording() call.
@@ -215,9 +215,9 @@ TEST_F(AudioInputControllerTest, SamplesPerPacketTooLarge) {
                          kSampleRate,
                          kBitsPerSample,
                          kSamplesPerPacket * 1000);
-  scoped_refptr<AudioInputController> controller =
-      AudioInputController::Create(audio_manager_.get(), &event_handler, params,
-                                   AudioManagerBase::kDefaultDeviceId, NULL);
+  scoped_refptr<AudioInputController> controller = AudioInputController::Create(
+      audio_manager_.get(), &event_handler, params,
+      AudioDeviceDescription::kDefaultDeviceId, NULL);
   ASSERT_FALSE(controller.get());
 }
 
@@ -237,9 +237,9 @@ TEST_F(AudioInputControllerTest, CloseTwice) {
                          kSampleRate,
                          kBitsPerSample,
                          kSamplesPerPacket);
-  scoped_refptr<AudioInputController> controller =
-      AudioInputController::Create(audio_manager_.get(), &event_handler, params,
-                                   AudioManagerBase::kDefaultDeviceId, NULL);
+  scoped_refptr<AudioInputController> controller = AudioInputController::Create(
+      audio_manager_.get(), &event_handler, params,
+      AudioDeviceDescription::kDefaultDeviceId, NULL);
   ASSERT_TRUE(controller.get());
 
   controller->Record();

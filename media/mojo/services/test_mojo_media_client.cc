@@ -7,7 +7,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
-#include "media/audio/audio_manager_base.h"
+#include "media/audio/audio_device_description.h"
+#include "media/audio/audio_manager.h"
 #include "media/audio/audio_output_stream_sink.h"
 #include "media/base/audio_hardware_config.h"
 #include "media/base/media.h"
@@ -38,7 +39,7 @@ void TestMojoMediaClient::Initialize() {
 
   audio_hardware_config_.reset(new AudioHardwareConfig(
       audio_manager->GetInputStreamParameters(
-          AudioManagerBase::kDefaultDeviceId),
+          AudioDeviceDescription::kDefaultDeviceId),
       audio_manager->GetDefaultOutputStreamParameters()));
 }
 

@@ -10,7 +10,7 @@
 #include "base/bind_helpers.h"
 #include "build/build_config.h"
 #include "content/renderer/media/audio_device_factory.h"
-#include "media/audio/audio_manager_base.h"
+#include "media/audio/audio_device_description.h"
 #include "media/base/audio_hardware_config.h"
 #include "media/base/audio_renderer_mixer.h"
 #include "media/base/audio_renderer_mixer_input.h"
@@ -37,9 +37,8 @@ media::AudioRendererMixerInput* AudioRendererMixerManager::CreateInput(
                  source_render_frame_id),
       base::Bind(&AudioRendererMixerManager::RemoveMixer,
                  base::Unretained(this), source_render_frame_id),
-      // TODO(olka) remove the dependency on AudioManagerBase,
-      // https://crbug.com/02581
-      media::AudioManagerBase::UseSessionIdToSelectDevice(session_id, device_id)
+      media::AudioDeviceDescription::UseSessionIdToSelectDevice(session_id,
+                                                                device_id)
           ? AudioDeviceFactory::GetOutputDeviceInfo(
                 source_render_frame_id, session_id, device_id, security_origin)
                 .device_id()

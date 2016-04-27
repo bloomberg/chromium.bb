@@ -152,7 +152,7 @@ class MEDIA_EXPORT WASAPIAudioInputStream
   uint32_t endpoint_buffer_size_frames_;
 
   // Contains the unique name of the selected endpoint device.
-  // Note that AudioManagerBase::kDefaultDeviceId represents the default
+  // Note that AudioDeviceDescription::kDefaultDeviceId represents the default
   // device role and is not a valid ID as such.
   std::string device_id_;
 

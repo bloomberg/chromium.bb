@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
+#include "media/audio/audio_device_description.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_manager_base.h"
 #include "media/audio/audio_unittest_util.h"
@@ -132,8 +133,8 @@ class MacAudioInputTest : public testing::Test {
     int samples_per_packet = fs / 100;
     AudioInputStream* ais = audio_manager_->MakeAudioInputStream(
         AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY,
-        CHANNEL_LAYOUT_STEREO, fs, 16, samples_per_packet),
-        AudioManagerBase::kDefaultDeviceId);
+                        CHANNEL_LAYOUT_STEREO, fs, 16, samples_per_packet),
+        AudioDeviceDescription::kDefaultDeviceId);
     EXPECT_TRUE(ais);
     return ais;
   }
@@ -144,9 +145,9 @@ class MacAudioInputTest : public testing::Test {
     int fs = static_cast<int>(AUAudioInputStream::HardwareSampleRate());
     int samples_per_packet = fs / 100;
     AudioInputStream* ais = audio_manager_->MakeAudioInputStream(
-        AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY,
-        channel_layout, fs, 16, samples_per_packet),
-        AudioManagerBase::kDefaultDeviceId);
+        AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY, channel_layout,
+                        fs, 16, samples_per_packet),
+        AudioDeviceDescription::kDefaultDeviceId);
     EXPECT_TRUE(ais);
     return ais;
   }

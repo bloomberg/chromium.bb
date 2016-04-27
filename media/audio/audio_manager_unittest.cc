@@ -14,7 +14,8 @@
 #include "base/test/test_message_loop.h"
 #include "base/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "media/audio/audio_manager_base.h"
+#include "media/audio/audio_device_description.h"
+#include "media/audio/audio_manager.h"
 #include "media/audio/audio_output_proxy.h"
 #include "media/audio/audio_unittest_util.h"
 #include "media/audio/fake_audio_log_factory.h"
@@ -89,7 +90,7 @@ class AudioManagerTest : public ::testing::Test {
     // Closing this stream will put it up for reuse.
     stream->Close();
     stream = audio_manager_->MakeAudioOutputStreamProxy(
-        params, AudioManagerBase::kDefaultDeviceId);
+        params, AudioDeviceDescription::kDefaultDeviceId);
 
     // Verify both streams are created with the same dispatcher (which is unique
     // per device).
@@ -157,8 +158,10 @@ class AudioManagerTest : public ::testing::Test {
       AudioDeviceNames::const_iterator it = device_names.begin();
 
       // The first device in the list should always be the default device.
-      EXPECT_EQ(AudioManager::GetDefaultDeviceName(), it->device_name);
-      EXPECT_EQ(std::string(AudioManagerBase::kDefaultDeviceId), it->unique_id);
+      EXPECT_EQ(AudioDeviceDescription::GetDefaultDeviceName(),
+                it->device_name);
+      EXPECT_EQ(std::string(AudioDeviceDescription::kDefaultDeviceId),
+                it->unique_id);
       ++it;
 
       // Other devices should have non-empty name and id and should not contain
@@ -168,8 +171,9 @@ class AudioManagerTest : public ::testing::Test {
         EXPECT_FALSE(it->unique_id.empty());
         DVLOG(2) << "Device ID(" << it->unique_id
                  << "), label: " << it->device_name;
-        EXPECT_NE(AudioManager::GetDefaultDeviceName(), it->device_name);
-        EXPECT_NE(std::string(AudioManagerBase::kDefaultDeviceId),
+        EXPECT_NE(AudioDeviceDescription::GetDefaultDeviceName(),
+                  it->device_name);
+        EXPECT_NE(std::string(AudioDeviceDescription::kDefaultDeviceId),
                   it->unique_id);
         ++it;
       }

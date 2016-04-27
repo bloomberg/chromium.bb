@@ -24,6 +24,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/win/windows_version.h"
+#include "media/audio/audio_device_description.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/win/audio_device_listener_win.h"
 #include "media/audio/win/audio_low_latency_input_win.h"
@@ -280,16 +281,11 @@ void AudioManagerWin::GetAudioDeviceNamesImpl(
   }
 
   if (!device_names->empty()) {
-    AudioDeviceName name;
-    if (enumeration_type() == kMMDeviceEnumeration) {
-      name.device_name = AudioManager::GetCommunicationsDeviceName();
-      name.unique_id = AudioManagerBase::kCommunicationsDeviceId;
-      device_names->push_front(name);
-    }
+    if (enumeration_type() == kMMDeviceEnumeration)
+      device_names->push_front(AudioDeviceName::CreateCommunications());
+
     // Always add default device parameters as first element.
-    name.device_name = AudioManager::GetDefaultDeviceName();
-    name.unique_id = AudioManagerBase::kDefaultDeviceId;
-    device_names->push_front(name);
+    device_names->push_front(AudioDeviceName::CreateDefault());
   }
 }
 
@@ -365,7 +361,7 @@ AudioOutputStream* AudioManagerWin::MakeLowLatencyOutputStream(
   if (!core_audio_supported()) {
     // Fall back to Windows Wave implementation on Windows XP or lower.
     DLOG_IF(ERROR, !device_id.empty() &&
-        device_id != AudioManagerBase::kDefaultDeviceId)
+                       device_id != AudioDeviceDescription::kDefaultDeviceId)
         << "Opening by device id not supported by PCMWaveOutAudioOutputStream";
     DVLOG(1) << "Using WaveOut since WASAPI requires at least Vista.";
     return new PCMWaveOutAudioOutputStream(
@@ -375,12 +371,14 @@ AudioOutputStream* AudioManagerWin::MakeLowLatencyOutputStream(
   // Pass an empty string to indicate that we want the default device
   // since we consistently only check for an empty string in
   // WASAPIAudioOutputStream.
-  bool communications = device_id == AudioManagerBase::kCommunicationsDeviceId;
-  return new WASAPIAudioOutputStream(this,
-      communications || device_id == AudioManagerBase::kDefaultDeviceId ?
-          std::string() : device_id,
-      params,
-      communications ? eCommunications : eConsole);
+  bool communications =
+      device_id == AudioDeviceDescription::kCommunicationsDeviceId;
+  return new WASAPIAudioOutputStream(
+      this,
+      communications || device_id == AudioDeviceDescription::kDefaultDeviceId
+          ? std::string()
+          : device_id,
+      params, communications ? eCommunications : eConsole);
 }
 
 // Factory for the implementations of AudioInputStream for AUDIO_PCM_LINEAR
@@ -520,7 +518,7 @@ AudioInputStream* AudioManagerWin::CreatePCMWaveInAudioInputStream(
     const AudioParameters& params,
     const std::string& device_id) {
   std::string xp_device_id = device_id;
-  if (device_id != AudioManagerBase::kDefaultDeviceId &&
+  if (device_id != AudioDeviceDescription::kDefaultDeviceId &&
       enumeration_type_ == kMMDeviceEnumeration) {
     xp_device_id = ConvertToWinXPInputDeviceId(device_id);
     if (xp_device_id.empty()) {

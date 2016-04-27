@@ -13,6 +13,7 @@
 #if defined(USE_ALSA)
 #include "media/audio/alsa/audio_manager_alsa.h"
 #endif
+#include "media/audio/audio_device_description.h"
 #include "media/audio/pulse/pulse_input.h"
 #include "media/audio/pulse/pulse_output.h"
 #include "media/audio/pulse/pulse_util.h"
@@ -114,11 +115,8 @@ void AudioManagerPulse::GetAudioDeviceNames(
   WaitForOperationCompletion(input_mainloop_, operation);
 
   // Prepend the default device if the list is not empty.
-  if (!device_names->empty()) {
-    device_names->push_front(
-        AudioDeviceName(AudioManager::GetDefaultDeviceName(),
-                        AudioManagerBase::kDefaultDeviceId));
-  }
+  if (!device_names->empty())
+    device_names->push_front(AudioDeviceName::CreateDefault());
 }
 
 void AudioManagerPulse::GetAudioInputDeviceNames(
@@ -146,16 +144,16 @@ AudioParameters AudioManagerPulse::GetInputStreamParameters(
 AudioOutputStream* AudioManagerPulse::MakeLinearOutputStream(
     const AudioParameters& params) {
   DCHECK_EQ(AudioParameters::AUDIO_PCM_LINEAR, params.format());
-  return MakeOutputStream(params, AudioManagerBase::kDefaultDeviceId);
+  return MakeOutputStream(params, AudioDeviceDescription::kDefaultDeviceId);
 }
 
 AudioOutputStream* AudioManagerPulse::MakeLowLatencyOutputStream(
     const AudioParameters& params,
     const std::string& device_id) {
   DCHECK_EQ(AudioParameters::AUDIO_PCM_LOW_LATENCY, params.format());
-  return MakeOutputStream(
-      params,
-      device_id.empty() ? AudioManagerBase::kDefaultDeviceId : device_id);
+  return MakeOutputStream(params, device_id.empty()
+                                      ? AudioDeviceDescription::kDefaultDeviceId
+                                      : device_id);
 }
 
 AudioInputStream* AudioManagerPulse::MakeLinearInputStream(

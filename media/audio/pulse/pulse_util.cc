@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "media/audio/audio_manager_base.h"
+#include "media/audio/audio_device_description.h"
 #include "media/base/audio_parameters.h"
 
 namespace media {
@@ -170,7 +170,7 @@ bool CreateInputStream(pa_threaded_mainloop* mainloop,
                        void* user_data) {
   DCHECK(mainloop);
   DCHECK(context);
-  DCHECK_NE(device_id, AudioManagerBase::kDefaultDeviceId);
+  DCHECK_NE(device_id, AudioDeviceDescription::kDefaultDeviceId);
 
   // Set sample specifications.
   pa_sample_spec sample_specifications;
@@ -240,7 +240,7 @@ bool CreateOutputStream(pa_threaded_mainloop* mainloop,
                         void* user_data) {
   DCHECK(mainloop);
   DCHECK(context);
-  DCHECK(device_id != AudioManagerBase::kDefaultDeviceId);
+  DCHECK(device_id != AudioDeviceDescription::kDefaultDeviceId);
 
   // Set sample specifications.
   pa_sample_spec sample_specifications;

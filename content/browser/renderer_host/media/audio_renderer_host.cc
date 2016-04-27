@@ -31,8 +31,7 @@
 #include "content/public/browser/media_observer.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/content_switches.h"
-#include "media/audio/audio_device_name.h"
-#include "media/audio/audio_manager_base.h"
+#include "media/audio/audio_device_description.h"
 #include "media/audio/audio_streams_tracker.h"
 #include "media/base/audio_bus.h"
 #include "media/base/limits.h"
@@ -65,8 +64,8 @@ bool IsValidDeviceId(const std::string& device_id) {
   static const std::string::size_type kValidLength = 64;
 
   if (device_id.empty() ||
-      device_id == media::AudioManagerBase::kDefaultDeviceId ||
-      device_id == media::AudioManagerBase::kCommunicationsDeviceId) {
+      device_id == media::AudioDeviceDescription::kDefaultDeviceId ||
+      device_id == media::AudioDeviceDescription::kCommunicationsDeviceId) {
     return true;
   }
 
@@ -85,8 +84,8 @@ AudioOutputDeviceInfo GetDefaultDeviceInfoOnDeviceThread(
     media::AudioManager* audio_manager) {
   DCHECK(audio_manager->GetTaskRunner()->BelongsToCurrentThread());
   AudioOutputDeviceInfo default_device_info = {
-      media::AudioManagerBase::kDefaultDeviceId,
-      audio_manager->GetDefaultDeviceName(),
+      media::AudioDeviceDescription::kDefaultDeviceId,
+      media::AudioDeviceDescription::GetDefaultDeviceName(),
       audio_manager->GetDefaultOutputStreamParameters()};
 
   return default_device_info;
@@ -422,8 +421,8 @@ void AudioRendererHost::OnRequestDeviceAuthorization(
 
   // If |session_id should be used for output device selection and such output
   // device is found, reuse the input device permissions.
-  if (media::AudioManagerBase::UseSessionIdToSelectDevice(session_id,
-                                                          device_id)) {
+  if (media::AudioDeviceDescription::UseSessionIdToSelectDevice(session_id,
+                                                                device_id)) {
     const StreamDeviceInfo* info =
         media_stream_manager_->audio_input_device_manager()
             ->GetOpenedDeviceInfoById(session_id);
@@ -480,7 +479,7 @@ void AudioRendererHost::OnDeviceAuthorized(int stream_id,
   // device is requested, since no device ID translation is needed.
   // If enumerator caching is enabled, it is better to use its cache, even
   // for the default device.
-  if (media::AudioManagerBase::IsDefaultDeviceId(device_id) &&
+  if (media::AudioDeviceDescription::IsDefaultDevice(device_id) &&
       !media_stream_manager_->audio_output_device_enumerator()
            ->IsCacheEnabled()) {
     base::PostTaskAndReplyWithResult(
@@ -754,7 +753,7 @@ void AudioRendererHost::CheckOutputDeviceAccess(
 
   // Check security origin if nondefault device is requested.
   // Ignore check for default device, which is always authorized.
-  if (!media::AudioManagerBase::IsDefaultDeviceId(device_id) &&
+  if (!media::AudioDeviceDescription::IsDefaultDevice(device_id) &&
       !ChildProcessSecurityPolicyImpl::GetInstance()->CanRequestURL(
           render_process_id_, gurl_security_origin)) {
     content::bad_message::ReceivedBadMessage(this,
@@ -797,7 +796,8 @@ void AudioRendererHost::TranslateDeviceID(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   for (const AudioOutputDeviceInfo& device_info : enumeration.devices) {
     if (device_id.empty()) {
-      if (device_info.unique_id == media::AudioManagerBase::kDefaultDeviceId) {
+      if (device_info.unique_id ==
+          media::AudioDeviceDescription::kDefaultDeviceId) {
         callback.Run(true, device_info);
         return;
       }

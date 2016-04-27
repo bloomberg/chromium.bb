@@ -108,7 +108,7 @@ class PCMWaveInAudioInputStream : public AudioInputStream {
   const int channels_;
 
   // Contains the unique name of the selected endpoint device.
-  // Note that AudioManagerBase::kDefaultDeviceId represents the default
+  // Note that AudioDeviceDescription::kDefaultDeviceId represents the default
   // device role and is not a valid ID as such.
   std::string device_id_;
 

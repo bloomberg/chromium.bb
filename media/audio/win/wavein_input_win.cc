@@ -5,6 +5,7 @@
 #include "media/audio/win/wavein_input_win.h"
 
 #include "base/logging.h"
+#include "media/audio/audio_device_description.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/win/audio_manager_win.h"
 #include "media/audio/win/device_enumeration_win.h"
@@ -245,7 +246,7 @@ void PCMWaveInAudioInputStream::QueueNextPacket(WAVEHDR *buffer) {
 bool PCMWaveInAudioInputStream::GetDeviceId(UINT* device_index) {
   // Deliver the default input device id (WAVE_MAPPER) if the default
   // device has been selected.
-  if (device_id_ == AudioManagerBase::kDefaultDeviceId) {
+  if (device_id_ == AudioDeviceDescription::kDefaultDeviceId) {
     *device_index = WAVE_MAPPER;
     return true;
   }

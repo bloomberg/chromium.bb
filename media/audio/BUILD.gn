@@ -54,6 +54,8 @@ source_set("audio") {
   visibility = [ "//media/*" ]
   sources = [
     "agc_audio_stream.h",
+    "audio_device_description.cc",
+    "audio_device_description.h",
     "audio_device_name.cc",
     "audio_device_name.h",
     "audio_device_thread.cc",

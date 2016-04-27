@@ -22,7 +22,7 @@
 #include "content/common/media/media_stream_options.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "media/audio/audio_manager_base.h"
+#include "media/audio/audio_device_description.h"
 #include "media/audio/fake_audio_log_factory.h"
 #include "media/base/media_switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -83,10 +83,9 @@ class MockAudioManager : public AudioManagerPlatform {
     DCHECK(device_names->empty());
 
     // AudioManagers add a default device when there is at least one real device
-    if (num_input_devices_ > 0) {
-      device_names->push_back(media::AudioDeviceName(
-          "Default", AudioManagerBase::kDefaultDeviceId));
-    }
+    if (num_input_devices_ > 0)
+      device_names->push_back(media::AudioDeviceName::CreateDefault());
+
     for (size_t i = 0; i < num_input_devices_; i++) {
       device_names->push_back(media::AudioDeviceName(
           std::string("fake_device_name_") + base::SizeTToString(i),
@@ -99,10 +98,9 @@ class MockAudioManager : public AudioManagerPlatform {
     DCHECK(device_names->empty());
 
     // AudioManagers add a default device when there is at least one real device
-    if (num_output_devices_ > 0) {
-      device_names->push_back(media::AudioDeviceName(
-          "Default", AudioManagerBase::kDefaultDeviceId));
-    }
+    if (num_output_devices_ > 0)
+      device_names->push_back(media::AudioDeviceName::CreateDefault());
+
     for (size_t i = 0; i < num_output_devices_; i++) {
       device_names->push_back(media::AudioDeviceName(
           std::string("fake_device_name_") + base::SizeTToString(i),
@@ -314,7 +312,7 @@ TEST_F(MediaStreamManagerTest, MakeAndCancelMultipleRequests) {
 TEST_F(MediaStreamManagerTest, DeviceID) {
   GURL security_origin("http://localhost");
   const std::string unique_default_id(
-      media::AudioManagerBase::kDefaultDeviceId);
+      media::AudioDeviceDescription::kDefaultDeviceId);
   const std::string hashed_default_id =
       MediaStreamManager::GetHMACForMediaDeviceID(
           GetMockSaltCallback(), security_origin, unique_default_id);
@@ -324,7 +322,7 @@ TEST_F(MediaStreamManagerTest, DeviceID) {
   EXPECT_EQ(unique_default_id, hashed_default_id);
 
   const std::string unique_communications_id(
-      media::AudioManagerBase::kCommunicationsDeviceId);
+      media::AudioDeviceDescription::kCommunicationsDeviceId);
   const std::string hashed_communications_id =
       MediaStreamManager::GetHMACForMediaDeviceID(
           GetMockSaltCallback(), security_origin, unique_communications_id);

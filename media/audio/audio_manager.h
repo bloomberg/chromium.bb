@@ -97,13 +97,6 @@ class MEDIA_EXPORT AudioManager {
   // like src/chrome.
   static AudioManager* Get();
 
-  // Returns the localized name of the generic "default" device.
-  static std::string GetDefaultDeviceName();
-
-  // Returns the localized name of the generic default communications device.
-  // This device is not supported on all platforms.
-  static std::string GetCommunicationsDeviceName();
-
   // Returns true if the OS reports existence of audio devices. This does not
   // guarantee that the existing devices support all formats and sample rates.
   virtual bool HasAudioOutputDevices() = 0;

@@ -19,7 +19,7 @@
 #include "base/win/scoped_propvariant.h"
 #include "base/win/scoped_variant.h"
 #include "base/win/windows_version.h"
-#include "media/audio/audio_manager_base.h"
+#include "media/audio/audio_device_description.h"
 #include "media/base/media_switches.h"
 
 using base::win::ScopedCoMem;
@@ -149,7 +149,8 @@ static std::string GetDeviceID(IMMDevice* device) {
 }
 
 static bool IsDefaultDeviceId(const std::string& device_id) {
-  return device_id.empty() || device_id == AudioManagerBase::kDefaultDeviceId;
+  return device_id.empty() ||
+         device_id == AudioDeviceDescription::kDefaultDeviceId;
 }
 
 static bool IsDeviceActive(IMMDevice* device) {
@@ -440,8 +441,8 @@ std::string CoreAudioUtil::GetMatchingOutputDeviceID(
   // correct, but the user experience would be that any audio played out to
   // the matched device, would get ducked since it's not the default comms
   // device.  So here, we go with the user's configuration.
-  if (input_device_id == AudioManagerBase::kCommunicationsDeviceId)
-    return AudioManagerBase::kCommunicationsDeviceId;
+  if (input_device_id == AudioDeviceDescription::kCommunicationsDeviceId)
+    return AudioDeviceDescription::kCommunicationsDeviceId;
 
   ScopedComPtr<IMMDevice> input_device;
   if (IsDefaultDeviceId(input_device_id)) {
@@ -743,13 +744,13 @@ HRESULT CoreAudioUtil::GetPreferredAudioParameters(const std::string& device_id,
   DCHECK(IsSupported());
 
   ScopedComPtr<IMMDevice> device;
-  if (device_id == AudioManagerBase::kDefaultDeviceId) {
+  if (device_id == AudioDeviceDescription::kDefaultDeviceId) {
     device = CoreAudioUtil::CreateDefaultDevice(
         is_output_device ? eRender : eCapture, eConsole);
-  } else if (device_id == AudioManagerBase::kLoopbackInputDeviceId) {
+  } else if (device_id == AudioDeviceDescription::kLoopbackInputDeviceId) {
     DCHECK(!is_output_device);
     device = CoreAudioUtil::CreateDefaultDevice(eRender, eConsole);
-  } else if (device_id == AudioManagerBase::kCommunicationsDeviceId) {
+  } else if (device_id == AudioDeviceDescription::kCommunicationsDeviceId) {
     device = CoreAudioUtil::CreateDefaultDevice(
         is_output_device ? eRender : eCapture, eCommunications);
   } else {

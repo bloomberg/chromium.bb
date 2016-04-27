@@ -17,6 +17,7 @@
 #include "base/stl_util.h"
 #include "chromeos/audio/audio_device.h"
 #include "chromeos/audio/cras_audio_handler.h"
+#include "media/audio/audio_device_description.h"
 #include "media/audio/cras/cras_input.h"
 #include "media/audio/cras/cras_unified.h"
 #include "media/base/channel_layout.h"
@@ -68,8 +69,7 @@ void AddDefaultDevice(AudioDeviceNames* device_names) {
   DCHECK(device_names->empty());
 
   // Cras will route audio from a proper physical device automatically.
-  device_names->push_back(AudioDeviceName(AudioManager::GetDefaultDeviceName(),
-                                          AudioManagerBase::kDefaultDeviceId));
+  device_names->push_back(AudioDeviceName::CreateDefault());
 }
 
 // Returns a mic positions string if the machine has a beamforming capable
@@ -101,7 +101,7 @@ void AudioManagerCras::AddBeamformingDevices(AudioDeviceNames* device_names) {
   if (IsBeamformingDefaultEnabled()) {
     // The first device in the list is expected to have a "default" device ID.
     // Web apps may depend on this behavior.
-    beamforming_on_device_id_ = AudioManagerBase::kDefaultDeviceId;
+    beamforming_on_device_id_ = AudioDeviceDescription::kDefaultDeviceId;
     beamforming_off_device_id_ = kBeamformingOffDeviceId;
 
     // Users in the experiment will have the "beamforming on" device appear
@@ -111,7 +111,7 @@ void AudioManagerCras::AddBeamformingDevices(AudioDeviceNames* device_names) {
     device_names->push_back(
         AudioDeviceName(beamforming_off_name, beamforming_off_device_id_));
   } else {
-    beamforming_off_device_id_ = AudioManagerBase::kDefaultDeviceId;
+    beamforming_off_device_id_ = AudioDeviceDescription::kDefaultDeviceId;
     beamforming_on_device_id_ = kBeamformingOnDeviceId;
 
     device_names->push_back(

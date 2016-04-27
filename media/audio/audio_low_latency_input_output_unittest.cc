@@ -16,8 +16,8 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "media/audio/audio_device_description.h"
 #include "media/audio/audio_io.h"
-#include "media/audio/audio_manager_base.h"
 #include "media/audio/audio_unittest_util.h"
 #include "media/audio/fake_audio_log_factory.h"
 #include "media/base/seekable_buffer.h"
@@ -280,13 +280,13 @@ class AudioInputStreamTraits {
   static AudioParameters GetDefaultAudioStreamParameters(
       AudioManager* audio_manager) {
     return audio_manager->GetInputStreamParameters(
-        AudioManagerBase::kDefaultDeviceId);
+        AudioDeviceDescription::kDefaultDeviceId);
   }
 
   static StreamType* CreateStream(AudioManager* audio_manager,
       const AudioParameters& params) {
-    return audio_manager->MakeAudioInputStream(params,
-      AudioManagerBase::kDefaultDeviceId);
+    return audio_manager->MakeAudioInputStream(
+        params, AudioDeviceDescription::kDefaultDeviceId);
   }
 };
 

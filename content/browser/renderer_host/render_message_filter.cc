@@ -55,8 +55,8 @@
 #include "gpu/ipc/client/gpu_memory_buffer_impl.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_platform_file.h"
+#include "media/audio/audio_device_description.h"
 #include "media/audio/audio_manager.h"
-#include "media/audio/audio_manager_base.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/media_log_event.h"
 #include "net/base/io_buffer.h"
@@ -318,7 +318,7 @@ void RenderMessageFilter::OnGetAudioHardwareConfig(
 
   // TODO(henrika): add support for all available input devices.
   *input_params = audio_manager_->GetInputStreamParameters(
-      media::AudioManagerBase::kDefaultDeviceId);
+      media::AudioDeviceDescription::kDefaultDeviceId);
 }
 
 #if defined(OS_MACOSX)

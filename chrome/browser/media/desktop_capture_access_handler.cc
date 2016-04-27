@@ -32,7 +32,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/switches.h"
-#include "media/audio/audio_manager_base.h"
+#include "media/audio/audio_device_description.h"
 #include "net/base/url_util.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capture_types.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -184,7 +184,8 @@ std::unique_ptr<content::MediaStreamUI> GetDevicesForDesktopCapture(
       // Use the special loopback device ID for system audio capture.
       devices->push_back(content::MediaStreamDevice(
           content::MEDIA_DESKTOP_AUDIO_CAPTURE,
-          media::AudioManagerBase::kLoopbackInputDeviceId, "System Audio"));
+          media::AudioDeviceDescription::kLoopbackInputDeviceId,
+          "System Audio"));
     }
   }
 

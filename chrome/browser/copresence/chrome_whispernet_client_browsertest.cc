@@ -23,6 +23,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/audio_modem/public/audio_modem_types.h"
 #include "components/audio_modem/public/whispernet_client.h"
+#include "media/audio/audio_device_description.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/audio_manager_base.h"
 #include "media/base/audio_bus.h"
@@ -101,7 +102,7 @@ class ChromeWhispernetClientTest : public ExtensionBrowserTest,
     // initializing Whispernet also creates our AudioManager. Initializing from
     // the test instead causes issues.
     default_params_ = media::AudioManager::Get()->GetInputStreamParameters(
-        media::AudioManagerBase::kDefaultDeviceId);
+        media::AudioDeviceDescription::kDefaultDeviceId);
 
     coder_params_ = media::AudioParameters(
         default_params_.format(), audio_modem::kDefaultChannelLayout,

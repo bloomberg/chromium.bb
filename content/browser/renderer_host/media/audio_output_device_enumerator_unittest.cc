@@ -15,7 +15,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "media/audio/audio_manager_base.h"
+#include "media/audio/audio_device_description.h"
 #include "media/audio/fake_audio_log_factory.h"
 #include "media/audio/fake_audio_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -44,9 +44,7 @@ class MockAudioManager : public media::FakeAudioManager {
     DCHECK(device_names->empty());
     MockGetAudioOutputDeviceNames(device_names);
     if (num_devices_ > 0) {
-      device_names->push_back(
-          media::AudioDeviceName(AudioManager::GetDefaultDeviceName(),
-                                 AudioManagerBase::kDefaultDeviceId));
+      device_names->push_back(media::AudioDeviceName::CreateDefault());
       for (size_t i = 0; i < num_devices_; i++) {
         device_names->push_back(
             media::AudioDeviceName("FakeDeviceName_" + base::IntToString(i),
@@ -70,9 +68,7 @@ class OnlyDefaultDeviceAudioManager : public MockAudioManager {
       media::AudioDeviceNames* device_names) override {
     DCHECK(device_names->empty());
     MockGetAudioOutputDeviceNames(device_names);
-    device_names->push_front(
-        media::AudioDeviceName(AudioManager::GetDefaultDeviceName(),
-                               AudioManagerBase::kDefaultDeviceId));
+    device_names->push_front(media::AudioDeviceName::CreateDefault());
   }
 
  private:

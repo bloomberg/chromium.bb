@@ -9,7 +9,8 @@
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner_util.h"
 #include "base/thread_task_runner_handle.h"
-#include "media/audio/audio_manager_base.h"
+#include "media/audio/audio_device_description.h"
+#include "media/audio/audio_manager.h"
 
 namespace content {
 
@@ -28,8 +29,8 @@ AudioOutputDeviceEnumeration EnumerateDevicesOnDeviceThread(
   // If no devices in enumeration, return a list with a default device
   if (!snapshot.has_actual_devices) {
     snapshot.devices.push_back(
-        {media::AudioManagerBase::kDefaultDeviceId,
-         media::AudioManager::GetDefaultDeviceName(),
+        {media::AudioDeviceDescription::kDefaultDeviceId,
+         media::AudioDeviceDescription::GetDefaultDeviceName(),
          audio_manager->GetDefaultOutputStreamParameters()});
     return snapshot;
   }
@@ -37,7 +38,7 @@ AudioOutputDeviceEnumeration EnumerateDevicesOnDeviceThread(
   for (const media::AudioDeviceName& name : device_names) {
     snapshot.devices.push_back(
         {name.unique_id, name.device_name,
-         name.unique_id == media::AudioManagerBase::kDefaultDeviceId
+         name.unique_id == media::AudioDeviceDescription::kDefaultDeviceId
              ? audio_manager->GetDefaultOutputStreamParameters()
              : audio_manager->GetOutputStreamParameters(name.unique_id)});
   }

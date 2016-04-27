@@ -48,7 +48,8 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/media_stream_request.h"
 #include "crypto/hmac.h"
-#include "media/audio/audio_manager_base.h"
+#include "media/audio/audio_device_description.h"
+#include "media/audio/audio_manager.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/channel_layout.h"
 #include "media/base/media_switches.h"
@@ -2128,8 +2129,8 @@ std::string MediaStreamManager::GetHMACForMediaDeviceID(
     const std::string& raw_unique_id) {
   DCHECK(security_origin.is_valid());
   DCHECK(!raw_unique_id.empty());
-  if (raw_unique_id == media::AudioManagerBase::kDefaultDeviceId ||
-      raw_unique_id == media::AudioManagerBase::kCommunicationsDeviceId) {
+  if (raw_unique_id == media::AudioDeviceDescription::kDefaultDeviceId ||
+      raw_unique_id == media::AudioDeviceDescription::kCommunicationsDeviceId) {
     return raw_unique_id;
   }
 

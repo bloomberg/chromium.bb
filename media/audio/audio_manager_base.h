@@ -29,36 +29,6 @@ class AudioOutputDispatcher;
 // AudioManagerBase provides AudioManager functions common for all platforms.
 class MEDIA_EXPORT AudioManagerBase : public AudioManager {
  public:
-  // TODO(ajm): Move these strings to AudioManager.
-  // Unique Id of the generic "default" device. Associated with the localized
-  // name returned from GetDefaultDeviceName().
-  static const char kDefaultDeviceId[];
-
-  // Unique Id of the generic default communications device. Associated with
-  // the localized name returned from GetCommunicationsDeviceName().
-  static const char kCommunicationsDeviceId[];
-
-  // Input device ID used to capture the default system playback stream. When
-  // this device ID is passed to MakeAudioInputStream() the returned
-  // AudioInputStream will be capturing audio currently being played on the
-  // default playback device. At the moment this feature is supported only on
-  // some platforms. AudioInputStream::Intialize() will return an error on
-  // platforms that don't support it. GetInputStreamParameters() must be used
-  // to get the parameters of the loopback device before creating a loopback
-  // stream, otherwise stream initialization may fail.
-  static const char kLoopbackInputDeviceId[];
-
-  // Returns true if |device_id| corresponds to the default device.
-  static bool IsDefaultDeviceId(const std::string& device_id);
-
-  // If |device_id| is not empty, |session_id| should be ignored and the output
-  // device should be selected basing on |device_id|.
-  // If |device_id| is empty and |session_id| is nonzero, output device
-  // associated with the opened input device designated by |session_id| should
-  // be used.
-  static bool UseSessionIdToSelectDevice(int session_id,
-                                         const std::string& device_id);
-
   ~AudioManagerBase() override;
 
   // AudioManager:

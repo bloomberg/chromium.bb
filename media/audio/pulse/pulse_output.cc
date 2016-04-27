@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "base/single_thread_task_runner.h"
+#include "media/audio/audio_device_description.h"
 #include "media/audio/audio_manager_base.h"
 #include "media/audio/pulse/pulse_util.h"
 
@@ -150,7 +151,7 @@ bool PulseAudioOutputStream::Open() {
   AutoPulseLock auto_lock(pa_mainloop_);
 
   std::string device_name_to_use = device_id_;
-  if (device_id_ == AudioManagerBase::kDefaultDeviceId) {
+  if (device_id_ == AudioDeviceDescription::kDefaultDeviceId) {
     GetSystemDefaultOutputDevice();
     device_name_to_use = default_system_device_name_;
   }

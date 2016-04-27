@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/renderer/media/audio_device_factory.h"
-#include "media/audio/audio_manager_base.h"
+#include "media/audio/audio_device_description.h"
 #include "media/base/audio_capturer_source.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/audio_renderer_mixer.h"
@@ -30,7 +30,7 @@ static const media::ChannelLayout kChannelLayout = media::CHANNEL_LAYOUT_STEREO;
 static const media::ChannelLayout kAnotherChannelLayout =
     media::CHANNEL_LAYOUT_2_1;
 static const char* const kDefaultDeviceId =
-    media::AudioManagerBase::kDefaultDeviceId;
+    media::AudioDeviceDescription::kDefaultDeviceId;
 static const char kAnotherDeviceId[] = "another-device-id";
 static const char kMatchedDeviceId[] = "matched-device-id";
 static const char kNonexistentDeviceId[] = "nonexistent-device-id";

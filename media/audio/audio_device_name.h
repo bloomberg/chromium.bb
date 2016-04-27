@@ -16,6 +16,12 @@ struct MEDIA_EXPORT AudioDeviceName {
   AudioDeviceName(const std::string& device_name,
                   const std::string& unique_id);
 
+  // Creates default device representation.
+  static AudioDeviceName CreateDefault();
+
+  // Creates communications device representation.
+  static AudioDeviceName CreateCommunications();
+
   std::string device_name;  // Friendly name of the device.
   std::string unique_id;    // Unique identifier for the device.
 };

@@ -12,6 +12,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "media/audio/audio_device_description.h"
 #include "media/audio/audio_output_dispatcher_impl.h"
 #include "media/audio/audio_output_proxy.h"
 #include "media/audio/audio_output_resampler.h"
@@ -35,10 +36,6 @@ const int kDefaultMaxInputStreams = 16;
 const int kMaxInputChannels = 3;
 
 }  // namespace
-
-const char AudioManagerBase::kDefaultDeviceId[] = "default";
-const char AudioManagerBase::kCommunicationsDeviceId[] = "communications";
-const char AudioManagerBase::kLoopbackInputDeviceId[] = "loopback";
 
 struct AudioManagerBase::DispatcherParams {
   DispatcherParams(const AudioParameters& input,
@@ -76,18 +73,6 @@ class AudioManagerBase::CompareByParams {
  private:
   const DispatcherParams* dispatcher_;
 };
-
-// static
-bool AudioManagerBase::IsDefaultDeviceId(const std::string& device_id) {
-  return device_id.empty() || device_id == AudioManagerBase::kDefaultDeviceId;
-}
-
-// static
-bool AudioManagerBase::UseSessionIdToSelectDevice(
-    int session_id,
-    const std::string& device_id) {
-  return session_id && device_id.empty();
-}
 
 AudioManagerBase::AudioManagerBase(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
@@ -145,7 +130,7 @@ AudioOutputStream* AudioManagerBase::MakeAudioOutputStream(
   AudioOutputStream* stream;
   switch (params.format()) {
     case AudioParameters::AUDIO_PCM_LINEAR:
-      DCHECK(IsDefaultDeviceId(device_id))
+      DCHECK(AudioDeviceDescription::IsDefaultDevice(device_id))
           << "AUDIO_PCM_LINEAR supports only the default device.";
       stream = MakeLinearOutputStream(params);
       break;
@@ -225,7 +210,9 @@ AudioOutputStream* AudioManagerBase::MakeAudioOutputStreamProxy(
   // NOTE: Implementations that don't yet support opening non-default output
   // devices may return an empty string from GetDefaultOutputDeviceID().
   std::string output_device_id =
-      IsDefaultDeviceId(device_id) ? GetDefaultOutputDeviceID() : device_id;
+      AudioDeviceDescription::IsDefaultDevice(device_id)
+          ? GetDefaultOutputDeviceID()
+          : device_id;
 
   // If we're not using AudioOutputResampler our output parameters are the same
   // as our input parameters.

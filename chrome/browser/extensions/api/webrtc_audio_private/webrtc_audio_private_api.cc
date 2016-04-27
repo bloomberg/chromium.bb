@@ -19,7 +19,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/permissions/permissions_data.h"
-#include "media/audio/audio_manager_base.h"
+#include "media/audio/audio_device_description.h"
 #include "media/audio/audio_output_controller.h"
 
 namespace extensions {
@@ -195,8 +195,8 @@ std::string WebrtcAudioPrivateFunction::CalculateHMACImpl(
   // that transforms "default" to the empty string, and code in
   // GetActiveSink that ensures we return "default" if we get the
   // empty string as the current device ID.
-  if (raw_id.empty() || raw_id == media::AudioManagerBase::kDefaultDeviceId)
-    return media::AudioManagerBase::kDefaultDeviceId;
+  if (media::AudioDeviceDescription::IsDefaultDevice(raw_id))
+    return media::AudioDeviceDescription::kDefaultDeviceId;
 
   GURL security_origin(source_url().GetOrigin());
   return content::GetHMACForMediaDeviceID(device_id_salt(), security_origin,
@@ -297,7 +297,7 @@ void WebrtcAudioPrivateGetActiveSinkFunction::OnHMACCalculated(
   std::string result = hmac_id;
   if (result.empty()) {
     DVLOG(2) << "Received empty ID, replacing with default ID.";
-    result = media::AudioManagerBase::kDefaultDeviceId;
+    result = media::AudioDeviceDescription::kDefaultDeviceId;
   }
   results_.reset(wap::GetActiveSink::Results::Create(result).release());
   SendResponse(true);
@@ -368,7 +368,7 @@ void WebrtcAudioPrivateSetActiveSinkFunction::OnOutputDeviceNames(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   std::string raw_sink_id;
-  if (sink_id_ == media::AudioManagerBase::kDefaultDeviceId) {
+  if (sink_id_ == media::AudioDeviceDescription::kDefaultDeviceId) {
     DVLOG(2) << "Received default ID, replacing with empty ID.";
     raw_sink_id = "";
   } else {
@@ -491,7 +491,7 @@ void WebrtcAudioPrivateGetAssociatedSinkFunction::OnHMACCalculated(
     const std::string& associated_sink_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (associated_sink_id == media::AudioManagerBase::kDefaultDeviceId) {
+  if (associated_sink_id == media::AudioDeviceDescription::kDefaultDeviceId) {
     DVLOG(2) << "Got default ID, replacing with empty ID.";
     results_.reset(wap::GetAssociatedSink::Results::Create("").release());
   } else {

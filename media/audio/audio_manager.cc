@@ -21,7 +21,6 @@
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "media/audio/fake_audio_log_factory.h"
-#include "media/base/media_resources.h"
 #include "media/base/media_switches.h"
 
 #if defined(OS_WIN)
@@ -358,26 +357,6 @@ const std::string& AudioManager::GetGlobalAppName() {
 // static
 AudioManager* AudioManager::Get() {
   return g_last_created;
-}
-
-// static
-std::string AudioManager::GetDefaultDeviceName() {
-#if !defined(OS_IOS)
-  return GetLocalizedStringUTF8(DEFAULT_AUDIO_DEVICE_NAME);
-#else
-  NOTREACHED();
-  return "";
-#endif
-}
-
-// static
-std::string AudioManager::GetCommunicationsDeviceName() {
-#if defined(OS_WIN)
-  return GetLocalizedStringUTF8(COMMUNICATIONS_AUDIO_DEVICE_NAME);
-#else
-  NOTREACHED();
-  return "";
-#endif
 }
 
 }  // namespace media

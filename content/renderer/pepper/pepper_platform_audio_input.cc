@@ -17,7 +17,7 @@
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
-#include "media/audio/audio_manager_base.h"
+#include "media/audio/audio_device_description.h"
 #include "ppapi/shared_impl/ppb_audio_config_shared.h"
 #include "url/gurl.h"
 
@@ -176,7 +176,8 @@ bool PepperPlatformAudioInput::Initialize(
   // initializing.
   pending_open_device_id_ = GetMediaDeviceManager()->OpenDevice(
       PP_DEVICETYPE_DEV_AUDIOCAPTURE,
-      device_id.empty() ? media::AudioManagerBase::kDefaultDeviceId : device_id,
+      device_id.empty() ? media::AudioDeviceDescription::kDefaultDeviceId
+                        : device_id,
       document_url,
       base::Bind(&PepperPlatformAudioInput::OnDeviceOpened, this));
   pending_open_device_ = true;

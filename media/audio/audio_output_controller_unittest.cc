@@ -16,7 +16,7 @@
 #include "base/run_loop.h"
 #include "base/test/test_message_loop.h"
 #include "base/thread_task_runner_handle.h"
-#include "media/audio/audio_manager_base.h"
+#include "media/audio/audio_device_description.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_parameters.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -207,8 +207,9 @@ class AudioOutputControllerTest : public testing::Test {
       EXPECT_CALL(mock_event_handler_, OnPlaying());
     }
 
-    controller_->SwitchOutputDevice(AudioManager::GetDefaultDeviceName(),
-                                    base::Bind(&base::DoNothing));
+    controller_->SwitchOutputDevice(
+        AudioDeviceDescription::GetDefaultDeviceName(),
+        base::Bind(&base::DoNothing));
     base::RunLoop().RunUntilIdle();
   }
 

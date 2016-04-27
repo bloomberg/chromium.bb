@@ -18,8 +18,8 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_system.h"
 #include "grit/browser_resources.h"
+#include "media/audio/audio_device_description.h"
 #include "media/audio/audio_manager.h"
-#include "media/audio/audio_manager_base.h"
 #include "media/base/audio_parameters.h"
 
 using audio_modem::AUDIBLE;
@@ -50,7 +50,7 @@ namespace {
 AudioParamData GetDefaultAudioConfig() {
   media::AudioParameters params =
       media::AudioManager::Get()->GetInputStreamParameters(
-          media::AudioManagerBase::kDefaultDeviceId);
+          media::AudioDeviceDescription::kDefaultDeviceId);
 
   AudioParamData config_data = {};
 

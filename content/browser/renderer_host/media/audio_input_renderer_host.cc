@@ -25,7 +25,7 @@
 #include "content/browser/renderer_host/media/audio_input_sync_writer.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/public/browser/web_contents_media_capture_id.h"
-#include "media/audio/audio_manager_base.h"
+#include "media/audio/audio_device_description.h"
 #include "media/base/audio_bus.h"
 
 namespace content {
@@ -385,7 +385,7 @@ void AudioInputRendererHost::DoCreateStream(
   // Check if we have the permission to open the device and which device to use.
   MediaStreamType type = MEDIA_NO_SERVICE;
   std::string device_name;
-  std::string device_id = media::AudioManagerBase::kDefaultDeviceId;
+  std::string device_id = media::AudioDeviceDescription::kDefaultDeviceId;
   if (audio_params.format() != media::AudioParameters::AUDIO_FAKE) {
     const StreamDeviceInfo* info = media_stream_manager_->
         audio_input_device_manager()->GetOpenedDeviceInfoById(session_id);
@@ -468,7 +468,7 @@ void AudioInputRendererHost::DoCreateStream(
     // Only count for captures from desktop media picker dialog and system loop
     // back audio.
     if (entry->controller.get() && type == MEDIA_DESKTOP_AUDIO_CAPTURE &&
-        device_id == media::AudioManagerBase::kLoopbackInputDeviceId) {
+        device_id == media::AudioDeviceDescription::kLoopbackInputDeviceId) {
       IncrementDesktopCaptureCounter(SYSTEM_LOOPBACK_AUDIO_CAPTURER_CREATED);
     }
   }

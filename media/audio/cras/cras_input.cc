@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "media/audio/audio_device_description.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/cras/audio_manager_cras.h"
 
@@ -26,7 +27,8 @@ CrasInputStream::CrasInputStream(const AudioParameters& params,
       stream_id_(0),
       stream_direction_(CRAS_STREAM_INPUT),
       pin_device_(NO_DEVICE),
-      is_loopback_(device_id == AudioManagerBase::kLoopbackInputDeviceId) {
+      is_loopback_(device_id ==
+                   AudioDeviceDescription::kLoopbackInputDeviceId) {
   DCHECK(audio_manager_);
   audio_bus_ = AudioBus::Create(params_);
 }

@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
+#include "media/audio/audio_device_description.h"
 #include "media/audio/win/audio_manager_win.h"
 #include "media/audio/win/avrt_wrapper_win.h"
 #include "media/audio/win/core_audio_util_win.h"
@@ -461,16 +462,16 @@ HRESULT WASAPIAudioInputStream::SetCaptureDevice() {
   // Retrieve the IMMDevice by using the specified role or the specified
   // unique endpoint device-identification string.
 
-  if (device_id_ == AudioManagerBase::kDefaultDeviceId) {
+  if (device_id_ == AudioDeviceDescription::kDefaultDeviceId) {
     // Retrieve the default capture audio endpoint for the specified role.
     // Note that, in Windows Vista, the MMDevice API supports device roles
     // but the system-supplied user interface programs do not.
     hr = enumerator->GetDefaultAudioEndpoint(eCapture, eConsole,
                                              endpoint_device_.Receive());
-  } else if (device_id_ == AudioManagerBase::kCommunicationsDeviceId) {
+  } else if (device_id_ == AudioDeviceDescription::kCommunicationsDeviceId) {
     hr = enumerator->GetDefaultAudioEndpoint(eCapture, eCommunications,
                                              endpoint_device_.Receive());
-  } else if (device_id_ == AudioManagerBase::kLoopbackInputDeviceId) {
+  } else if (device_id_ == AudioDeviceDescription::kLoopbackInputDeviceId) {
     // Capture the default playback stream.
     hr = enumerator->GetDefaultAudioEndpoint(eRender, eConsole,
                                              endpoint_device_.Receive());
@@ -571,7 +572,7 @@ HRESULT WASAPIAudioInputStream::InitializeAudioEngine() {
   // Use event-driven mode only fo regular input devices. For loopback the
   // EVENTCALLBACK flag is specified when intializing
   // |audio_render_client_for_loopback_|.
-  if (device_id_ == AudioManagerBase::kLoopbackInputDeviceId) {
+  if (device_id_ == AudioDeviceDescription::kLoopbackInputDeviceId) {
     flags = AUDCLNT_STREAMFLAGS_LOOPBACK | AUDCLNT_STREAMFLAGS_NOPERSIST;
   } else {
     flags = AUDCLNT_STREAMFLAGS_EVENTCALLBACK | AUDCLNT_STREAMFLAGS_NOPERSIST;
@@ -584,13 +585,11 @@ HRESULT WASAPIAudioInputStream::InitializeAudioEngine() {
   // that glitches do not occur between the periodic processing passes.
   // This setting should lead to lowest possible latency.
   HRESULT hr = audio_client_->Initialize(
-      AUDCLNT_SHAREMODE_SHARED,
-      flags,
+      AUDCLNT_SHAREMODE_SHARED, flags,
       0,  // hnsBufferDuration
-      0,
-      &format_,
-      device_id_ == AudioManagerBase::kCommunicationsDeviceId ?
-          &kCommunicationsSessionId : nullptr);
+      0, &format_, device_id_ == AudioDeviceDescription::kCommunicationsDeviceId
+                       ? &kCommunicationsSessionId
+                       : nullptr);
 
   if (FAILED(hr))
     return hr;
@@ -647,7 +646,7 @@ HRESULT WASAPIAudioInputStream::InitializeAudioEngine() {
   //   samples from the capture endpoint buffer.
   //
   // http://msdn.microsoft.com/en-us/library/windows/desktop/dd316551(v=vs.85).aspx
-  if (device_id_ == AudioManagerBase::kLoopbackInputDeviceId) {
+  if (device_id_ == AudioDeviceDescription::kLoopbackInputDeviceId) {
     hr = endpoint_device_->Activate(
         __uuidof(IAudioClient), CLSCTX_INPROC_SERVER, NULL,
         audio_render_client_for_loopback_.ReceiveVoid());

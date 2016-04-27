@@ -17,6 +17,7 @@
 #include "media/audio/android/audio_record_input.h"
 #include "media/audio/android/opensles_input.h"
 #include "media/audio/android/opensles_output.h"
+#include "media/audio/audio_device_description.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/fake_audio_input_stream.h"
 #include "media/base/audio_parameters.h"
@@ -33,8 +34,7 @@ namespace {
 
 void AddDefaultDevice(AudioDeviceNames* device_names) {
   DCHECK(device_names->empty());
-  device_names->push_front(AudioDeviceName(AudioManager::GetDefaultDeviceName(),
-                                           AudioManagerBase::kDefaultDeviceId));
+  device_names->push_front(AudioDeviceName::CreateDefault());
 }
 
 // Maximum number of output streams that can be open simultaneously.
@@ -363,9 +363,8 @@ bool AudioManagerAndroid::SetAudioDevice(const std::string& device_id) {
   // if the default device is selected.
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jstring> j_device_id = ConvertUTF8ToJavaString(
-      env,
-      device_id == AudioManagerBase::kDefaultDeviceId ?
-          std::string() : device_id);
+      env, device_id == AudioDeviceDescription::kDefaultDeviceId ? std::string()
+                                                                 : device_id);
   return Java_AudioManagerAndroid_setDevice(
       env, j_audio_manager_.obj(), j_device_id.obj());
 }

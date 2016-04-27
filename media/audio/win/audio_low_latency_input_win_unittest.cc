@@ -18,8 +18,9 @@
 #include "base/path_service.h"
 #include "base/test/test_timeouts.h"
 #include "base/win/scoped_com_initializer.h"
+#include "media/audio/audio_device_description.h"
 #include "media/audio/audio_io.h"
-#include "media/audio/audio_manager_base.h"
+#include "media/audio/audio_manager.h"
 #include "media/audio/audio_unittest_util.h"
 #include "media/audio/win/core_audio_util_win.h"
 #include "media/base/seekable_buffer.h"
@@ -169,7 +170,7 @@ class AudioInputStreamWrapper {
   explicit AudioInputStreamWrapper(AudioManager* audio_manager)
       : audio_man_(audio_manager) {
     EXPECT_TRUE(SUCCEEDED(CoreAudioUtil::GetPreferredAudioParameters(
-        AudioManagerBase::kDefaultDeviceId, false, &default_params_)));
+        AudioDeviceDescription::kDefaultDeviceId, false, &default_params_)));
     EXPECT_EQ(format(), AudioParameters::AUDIO_PCM_LOW_LATENCY);
     frames_per_buffer_ = default_params_.frames_per_buffer();
   }
@@ -201,7 +202,7 @@ class AudioInputStreamWrapper {
     AudioParameters params = default_params_;
     params.set_frames_per_buffer(frames_per_buffer_);
     AudioInputStream* ais = audio_man_->MakeAudioInputStream(
-        params, AudioManagerBase::kDefaultDeviceId);
+        params, AudioDeviceDescription::kDefaultDeviceId);
     EXPECT_TRUE(ais);
     return ais;
   }
@@ -430,7 +431,7 @@ TEST_F(WinAudioInputTest, WASAPIAudioInputStreamLoopback) {
                           CoreAudioUtil::IsSupported());
 
   AudioParameters params = audio_manager_->GetInputStreamParameters(
-      AudioManagerBase::kLoopbackInputDeviceId);
+      AudioDeviceDescription::kLoopbackInputDeviceId);
   EXPECT_EQ(params.effects(), 0);
 
   AudioParameters output_params =
@@ -439,7 +440,7 @@ TEST_F(WinAudioInputTest, WASAPIAudioInputStreamLoopback) {
   EXPECT_EQ(params.channel_layout(), output_params.channel_layout());
 
   ScopedAudioInputStream stream(audio_manager_->MakeAudioInputStream(
-      params, AudioManagerBase::kLoopbackInputDeviceId));
+      params, AudioDeviceDescription::kLoopbackInputDeviceId));
   ASSERT_TRUE(stream->Open());
   FakeAudioInputCallback sink;
   stream->Start(&sink);

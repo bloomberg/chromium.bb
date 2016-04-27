@@ -25,8 +25,8 @@
 #include "content/public/browser/speech_recognition_session_context.h"
 #include "content/public/common/speech_recognition_error.h"
 #include "content/public/common/speech_recognition_result.h"
+#include "media/audio/audio_device_description.h"
 #include "media/audio/audio_manager.h"
-#include "media/audio/audio_manager_base.h"
 
 #if defined(OS_ANDROID)
 #include "content/browser/speech/speech_recognizer_impl_android.h"
@@ -562,7 +562,7 @@ void SpeechRecognitionManagerImpl::SessionStart(const Session& session) {
     // From the ask_user=false path, use the default device.
     // TODO(xians): Abort the session after we do not need to support this path
     // anymore.
-    device_id = media::AudioManagerBase::kDefaultDeviceId;
+    device_id = media::AudioDeviceDescription::kDefaultDeviceId;
   } else {
     // From the ask_user=true path, use the selected device.
     DCHECK_EQ(1u, devices.size());

@@ -16,6 +16,7 @@
 #include "base/nix/xdg_util.h"
 #include "base/process/launch.h"
 #include "base/stl_util.h"
+#include "media/audio/audio_device_description.h"
 #include "media/audio/audio_output_dispatcher.h"
 #if defined(USE_CRAS)
 #include "media/audio/cras/audio_manager_cras.h"
@@ -172,11 +173,8 @@ void AudioManagerAlsa::GetAlsaDevicesInfo(
     // no duplicate counting here since it is only done if the list is
     // still empty.  Note, pulse has exclusively opened the default
     // device, so we must open the device via the "default" moniker.
-    if (device_names->empty()) {
-      device_names->push_front(
-          media::AudioDeviceName(AudioManager::GetDefaultDeviceName(),
-                                 AudioManagerBase::kDefaultDeviceId));
-    }
+    if (device_names->empty())
+      device_names->push_front(media::AudioDeviceName::CreateDefault());
 
     // Get the unique device name for the device.
     std::unique_ptr<char, base::FreeDeleter> unique_device_name(
@@ -354,8 +352,10 @@ AudioOutputStream* AudioManagerAlsa::MakeOutputStream(
 
 AudioInputStream* AudioManagerAlsa::MakeInputStream(
     const AudioParameters& params, const std::string& device_id) {
-  std::string device_name = (device_id == AudioManagerBase::kDefaultDeviceId) ?
-      AlsaPcmInputStream::kAutoSelectDevice : device_id;
+  std::string device_name =
+      (device_id == AudioDeviceDescription::kDefaultDeviceId)
+          ? AlsaPcmInputStream::kAutoSelectDevice
+          : device_id;
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAlsaInputDevice)) {
     device_name = base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(

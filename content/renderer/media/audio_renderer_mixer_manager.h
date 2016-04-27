@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
-#include "media/audio/audio_manager_base.h"
+#include "media/audio/audio_device_description.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/output_device_info.h"
 #include "url/origin.h"
@@ -106,8 +106,8 @@ class CONTENT_EXPORT AudioRendererMixerManager {
       if (a.params.channel_layout() != b.params.channel_layout())
         return a.params.channel_layout() < b.params.channel_layout();
 
-      if (media::AudioManagerBase::IsDefaultDeviceId(a.device_id) &&
-          media::AudioManagerBase::IsDefaultDeviceId(b.device_id)) {
+      if (media::AudioDeviceDescription::IsDefaultDevice(a.device_id) &&
+          media::AudioDeviceDescription::IsDefaultDevice(b.device_id)) {
         // Both device IDs represent the same default device => do not compare
         // them; the default device is always authorized => ignoring security
         // origin.

@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include "base/logging.h"
+#include "media/audio/audio_device_description.h"
 #include "media/audio/pulse/audio_manager_pulse.h"
 #include "media/audio/pulse/pulse_util.h"
 
@@ -52,7 +53,7 @@ bool PulseAudioInputStream::Open() {
   DCHECK(thread_checker_.CalledOnValidThread());
   AutoPulseLock auto_lock(pa_mainloop_);
   std::string device_name_to_use = device_name_;
-  if (device_name_ == AudioManagerBase::kDefaultDeviceId) {
+  if (device_name_ == AudioDeviceDescription::kDefaultDeviceId) {
     GetSystemDefaultInputDevice();
     device_name_to_use = default_system_device_name_;
   }

@@ -16,6 +16,7 @@
 #include "base/power_monitor/power_observer.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/thread_checker.h"
+#include "media/audio/audio_device_description.h"
 #include "media/audio/mac/audio_auhal_mac.h"
 #include "media/audio/mac/audio_input_mac.h"
 #include "media/audio/mac/audio_low_latency_input_mac.h"
@@ -209,10 +210,7 @@ static void GetAudioDeviceInfo(bool is_input,
     // Prepend the default device to the list since we always want it to be
     // on the top of the list for all platforms. There is no duplicate
     // counting here since the default device has been abstracted out before.
-    media::AudioDeviceName name;
-    name.device_name = AudioManager::GetDefaultDeviceName();
-    name.unique_id = AudioManagerBase::kDefaultDeviceId;
-    device_names->push_front(name);
+    device_names->push_front(media::AudioDeviceName::CreateDefault());
   }
 }
 
@@ -228,7 +226,7 @@ static AudioDeviceID GetAudioDeviceIdByUId(bool is_input,
   UInt32 device_size = sizeof(audio_device_id);
   OSStatus result = -1;
 
-  if (device_id == AudioManagerBase::kDefaultDeviceId || device_id.empty()) {
+  if (AudioDeviceDescription::IsDefaultDevice(device_id)) {
     // Default Device.
     property_address.mSelector = is_input ?
         kAudioHardwarePropertyDefaultInputDevice :
@@ -630,7 +628,7 @@ AudioOutputStream* AudioManagerMac::MakeLowLatencyOutputStream(
   // listener.
   if (device_listener_first_init) {
     // Only set the current output device for the default device.
-    if (device_id == AudioManagerBase::kDefaultDeviceId || device_id.empty())
+    if (AudioDeviceDescription::IsDefaultDevice(device_id))
       current_output_device_ = device;
     // Just use the current sample rate since we don't allow non-native sample
     // rates on OSX.

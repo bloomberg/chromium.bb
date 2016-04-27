@@ -20,8 +20,8 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "media/audio/android/audio_manager_android.h"
+#include "media/audio/audio_device_description.h"
 #include "media/audio/audio_io.h"
-#include "media/audio/audio_manager_base.h"
 #include "media/audio/audio_unittest_util.h"
 #include "media/audio/mock_audio_source_callback.h"
 #include "media/base/decoder_buffer.h"
@@ -106,8 +106,9 @@ void CheckDeviceNames(const AudioDeviceNames& device_names) {
   AudioDeviceNames::const_iterator it = device_names.begin();
 
   // The first device in the list should always be the default device.
-  EXPECT_EQ(AudioManager::GetDefaultDeviceName(), it->device_name);
-  EXPECT_EQ(std::string(AudioManagerBase::kDefaultDeviceId), it->unique_id);
+  EXPECT_EQ(AudioDeviceDescription::GetDefaultDeviceName(), it->device_name);
+  EXPECT_EQ(std::string(AudioDeviceDescription::kDefaultDeviceId),
+            it->unique_id);
   ++it;
 
   // Other devices should have non-empty name and id and should not contain
@@ -117,8 +118,9 @@ void CheckDeviceNames(const AudioDeviceNames& device_names) {
     EXPECT_FALSE(it->unique_id.empty());
     DVLOG(2) << "Device ID(" << it->unique_id
              << "), label: " << it->device_name;
-    EXPECT_NE(AudioManager::GetDefaultDeviceName(), it->device_name);
-    EXPECT_NE(std::string(AudioManagerBase::kDefaultDeviceId), it->unique_id);
+    EXPECT_NE(AudioDeviceDescription::GetDefaultDeviceName(), it->device_name);
+    EXPECT_NE(std::string(AudioDeviceDescription::kDefaultDeviceId),
+              it->unique_id);
     ++it;
   }
 }
@@ -684,13 +686,13 @@ class AudioAndroidInputTest : public AudioAndroidOutputTest,
   void GetDefaultInputStreamParameters() {
     DCHECK(audio_manager()->GetTaskRunner()->BelongsToCurrentThread());
     audio_input_parameters_ = audio_manager()->GetInputStreamParameters(
-        AudioManagerBase::kDefaultDeviceId);
+        AudioDeviceDescription::kDefaultDeviceId);
   }
 
   void MakeInputStream(const AudioParameters& params) {
     DCHECK(audio_manager()->GetTaskRunner()->BelongsToCurrentThread());
     audio_input_stream_ = audio_manager()->MakeAudioInputStream(
-        params, AudioManagerBase::kDefaultDeviceId);
+        params, AudioDeviceDescription::kDefaultDeviceId);
     EXPECT_TRUE(audio_input_stream_);
   }
 

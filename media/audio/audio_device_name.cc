@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "media/audio/audio_device_name.h"
+#include "media/audio/audio_device_description.h"
 
 namespace media {
 
@@ -14,5 +15,16 @@ AudioDeviceName::AudioDeviceName(const std::string& device_name,
       unique_id(unique_id) {
 }
 
-}  // namespace media
+// static
+AudioDeviceName AudioDeviceName::CreateDefault() {
+  return AudioDeviceName(AudioDeviceDescription::GetDefaultDeviceName(),
+                         AudioDeviceDescription::kDefaultDeviceId);
+}
 
+// static
+AudioDeviceName AudioDeviceName::CreateCommunications() {
+  return AudioDeviceName(AudioDeviceDescription::GetCommunicationsDeviceName(),
+                         AudioDeviceDescription::kCommunicationsDeviceId);
+}
+
+}  // namespace media

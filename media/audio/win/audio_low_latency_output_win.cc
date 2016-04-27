@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "base/win/scoped_propvariant.h"
+#include "media/audio/audio_device_description.h"
 #include "media/audio/win/audio_manager_win.h"
 #include "media/audio/win/avrt_wrapper_win.h"
 #include "media/audio/win/core_audio_util_win.h"
@@ -76,8 +77,8 @@ WASAPIAudioOutputStream::WASAPIAudioOutputStream(AudioManagerWin* manager,
   // The empty string is used to indicate a default device and the
   // |device_role_| member controls whether that's the default or default
   // communications device.
-  DCHECK_NE(device_id_, AudioManagerBase::kDefaultDeviceId);
-  DCHECK_NE(device_id_, AudioManagerBase::kCommunicationsDeviceId);
+  DCHECK_NE(device_id_, AudioDeviceDescription::kDefaultDeviceId);
+  DCHECK_NE(device_id_, AudioDeviceDescription::kCommunicationsDeviceId);
 
   DVLOG(1) << "WASAPIAudioOutputStream::WASAPIAudioOutputStream()";
   DVLOG_IF(1, share_mode_ == AUDCLNT_SHAREMODE_EXCLUSIVE)
