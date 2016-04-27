@@ -201,8 +201,9 @@ class MediaCodecUtil {
         // *** DO NOT ADD ANY NEW CODECS WITHOUT UPDATING MIME_UTIL. ***
         // *************************************************************
         if (mime.equals("video/x-vnd.on2.vp8")) {
-            // Some Samsung devices cannot render VP8 video directly to the surface.
             if (Build.MANUFACTURER.toLowerCase(Locale.getDefault()).equals("samsung")) {
+                // Some Samsung devices cannot render VP8 video directly to the surface.
+
                 // Samsung Galaxy S4.
                 // Only GT-I9505G with Android 4.3 and SPH-L720 (Sprint) with Android 5.0.1
                 // were tested. Only the first device has the problem.
@@ -219,7 +220,23 @@ class MediaCodecUtil {
                 if (Build.MODEL.startsWith("GT-I9190") || Build.MODEL.startsWith("GT-I9195")) {
                     return false;
                 }
+
+                // Some Samsung devices have problems with WebRTC.
+                // We copy blacklisting patterns from software_renderin_list_json.cc
+                // although they are broader than the bugs they refer to.
+
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
+                    // Samsung Galaxy Note 2, http://crbug.com/308721.
+                    if (Build.MODEL.startsWith("GT-")) return false;
+
+                    // Samsung Galaxy S4, http://crbug.com/329072.
+                    if (Build.MODEL.startsWith("SCH-")) return false;
+
+                    // Samsung Galaxy Tab, http://crbug.com/408353.
+                    if (Build.MODEL.startsWith("SM-T")) return false;
+                }
             }
+
             // MediaTek decoders do not work properly on vp8. See http://crbug.com/446974 and
             // http://crbug.com/597836.
             if (Build.HARDWARE.startsWith("mt")) return false;

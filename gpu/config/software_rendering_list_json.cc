@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "10.19",
+  "version": "10.20",
   "entries": [
     {
       "id": 1,
@@ -826,38 +826,6 @@ LONG_STRING_CONST(
       ]
     },
     {
-      "id": 83,
-      "description": "Samsung Galaxy NOTE is too buggy to use for video decoding",
-      "cr_bugs": [308721],
-      "os": {
-        "type": "android",
-        "version": {
-          "op": "<",
-          "value": "4.4"
-        }
-      },
-      "machine_model_name": ["GT-.*"],
-      "features": [
-        "accelerated_video_decode"
-      ]
-    },
-    {
-      "id": 85,
-      "description": "Samsung Galaxy S4 is too buggy to use for video decoding",
-      "cr_bugs": [329072],
-      "os": {
-        "type": "android",
-        "version": {
-          "op": "<",
-          "value": "4.4"
-        }
-      },
-      "machine_model_name": ["SCH-.*"],
-      "features": [
-        "accelerated_video_decode"
-      ]
-    },
-    {
       "id": 86,
       "description": "Intel Graphics Media Accelerator 3150 causes the GPU process to hang running WebGL",
       "cr_bugs": [305431],
@@ -1077,22 +1045,6 @@ LONG_STRING_CONST(
       "features": [
         "gpu_rasterization",
         "accelerated_2d_canvas"
-      ]
-    },
-    {
-      "id": 101,
-      "description": "Samsung Galaxy Tab is too buggy to use for video decoding",
-      "cr_bugs": [408353],
-      "os": {
-        "type": "android",
-        "version": {
-          "op": "<",
-          "value": "4.4"
-        }
-      },
-      "machine_model_name": ["SM-.*"],
-      "features": [
-        "accelerated_video_decode"
       ]
     },
     {
