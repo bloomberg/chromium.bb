@@ -39,6 +39,7 @@
 #include "gpu/ipc/service/image_transport_surface.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_image.h"
+#include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_switches.h"
 
 #if defined(OS_WIN)
@@ -563,7 +564,7 @@ void GpuCommandBufferStub::OnInitialize(
     context = share_group->GetSharedContext();
     if (!context.get()) {
       context = gfx::GLContext::CreateGLContext(
-          channel_->share_group(),
+          share_group,
           channel_->gpu_channel_manager()->GetDefaultOffscreenSurface(),
           gpu_preference_);
       if (!context.get()) {
@@ -571,10 +572,16 @@ void GpuCommandBufferStub::OnInitialize(
         OnInitializeFailed(reply_message);
         return;
       }
-      channel_->share_group()->SetSharedContext(context.get());
+      // Ensure that context creation did not lose track of the intended
+      // share_group.
+      DCHECK(context->share_group() == share_group);
+      share_group->SetSharedContext(context.get());
     }
-    // This should be a non-virtual GL context.
-    DCHECK(context->GetHandle());
+    // This should be either:
+    // (1) a non-virtual GL context, or
+    // (2) a mock context.
+    DCHECK(context->GetHandle() ||
+           gfx::GetGLImplementation() == gfx::kGLImplementationMockGL);
     context = new GLContextVirtual(
         share_group, context.get(), decoder_->AsWeakPtr());
     if (!context->Initialize(surface_.get(), gpu_preference_)) {

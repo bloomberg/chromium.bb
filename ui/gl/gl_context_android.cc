@@ -78,7 +78,7 @@ scoped_refptr<GLContext> GLContext::CreateGLContext(
   scoped_refptr<GLContext> context;
   switch (GetGLImplementation()) {
     case kGLImplementationMockGL:
-      return scoped_refptr<GLContext>(new GLContextStub());
+      return scoped_refptr<GLContext>(new GLContextStub(share_group));
     case kGLImplementationOSMesaGL:
       context = new GLContextOSMesa(share_group);
       break;

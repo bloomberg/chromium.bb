@@ -10,10 +10,13 @@
 
 namespace gfx {
 
+class GLShareGroup;
+
 // A GLContext that does nothing for unit tests.
 class GL_EXPORT GLContextStub : public GLContextReal {
  public:
   GLContextStub();
+  explicit GLContextStub(GLShareGroup* share_group);
 
   // Implement GLContext.
   bool Initialize(GLSurface* compatible_surface,

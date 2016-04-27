@@ -45,7 +45,7 @@ scoped_refptr<GLContext> GLContext::CreateGLContext(
       return context;
     }
     case kGLImplementationMockGL:
-      return new GLContextStub;
+      return new GLContextStub(share_group);
     default:
       NOTREACHED();
       return NULL;

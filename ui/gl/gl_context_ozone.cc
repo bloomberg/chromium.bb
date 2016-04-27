@@ -24,7 +24,7 @@ scoped_refptr<GLContext> GLContext::CreateGLContext(
 
   switch (GetGLImplementation()) {
     case kGLImplementationMockGL:
-      return scoped_refptr<GLContext>(new GLContextStub());
+      return scoped_refptr<GLContext>(new GLContextStub(share_group));
     case kGLImplementationOSMesaGL: {
       scoped_refptr<GLContext> context(new GLContextOSMesa(share_group));
       if (!context->Initialize(compatible_surface, gpu_preference))
@@ -44,4 +44,3 @@ scoped_refptr<GLContext> GLContext::CreateGLContext(
 }
 
 }  // namespace gfx
-
