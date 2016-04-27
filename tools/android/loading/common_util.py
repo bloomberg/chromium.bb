@@ -89,3 +89,10 @@ def TemporaryDirectory():
     yield name
   finally:
     shutil.rmtree(name)
+
+
+def EnsureParentDirectoryExists(path):
+  """Verifies that the parent directory exists or creates it if missing."""
+  parent_directory_path = os.path.abspath(os.path.dirname(path))
+  if not os.path.isdir(parent_directory_path):
+    os.makedirs(parent_directory_path)

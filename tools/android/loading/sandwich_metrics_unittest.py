@@ -13,6 +13,7 @@ import unittest
 import loading_trace
 import page_track
 import sandwich_metrics as puller
+import sandwich_runner
 import request_track
 import tracing
 
@@ -46,7 +47,8 @@ _MINIMALIST_TRACE_EVENTS = [
 def TracingTrack(events):
   return tracing.TracingTrack.FromJsonDict({
       'events': events,
-      'categories': tracing.INITIAL_CATEGORIES + puller.ADDITIONAL_CATEGORIES})
+      'categories': (tracing.INITIAL_CATEGORIES +
+          sandwich_runner.ADDITIONAL_CATEGORIES)})
 
 
 def LoadingTrace(events):
@@ -105,7 +107,7 @@ class PageTrackTest(unittest.TestCase):
         {'pid': 354, 'ts': 11000, 'cat': 'whatever0', 'ph': 'R'},
         {'pid': 672, 'ts': 12000, 'cat': _MEM_CAT, 'ph': 'v', 'name': NAME}]
 
-    self.assertTrue(_MEM_CAT in puller.ADDITIONAL_CATEGORIES)
+    self.assertTrue(_MEM_CAT in sandwich_runner.ADDITIONAL_CATEGORIES)
 
     bump_events = RunHelper(TRACE_EVENTS, 123)
     self.assertEquals(2, len(bump_events))
@@ -232,7 +234,7 @@ class PageTrackTest(unittest.TestCase):
     for dirname in ['1', '2', 'whatever']:
       os.mkdir(os.path.join(tmp_dir, dirname))
       LoadingTrace(_MINIMALIST_TRACE_EVENTS).ToJsonFile(
-          os.path.join(tmp_dir, dirname, 'trace.json'))
+          os.path.join(tmp_dir, dirname, sandwich_runner.TRACE_FILENAME))
 
     process = subprocess.Popen(['python', puller.__file__, tmp_dir])
     process.wait()

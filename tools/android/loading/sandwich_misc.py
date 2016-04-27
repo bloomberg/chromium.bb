@@ -3,13 +3,23 @@
 # found in the LICENSE file.
 
 import logging
+import json
+import os
 
+import chrome_cache
+import common_util
 from loading_trace import LoadingTrace
 from prefetch_view import PrefetchSimulationView
 from request_dependencies_lens import RequestDependencyLens
-from user_satisfied_lens import FirstContentfulPaintLens
+import sandwich_runner
 import wpr_backend
 
+
+# Do not prefetch anything.
+EMPTY_CACHE_DISCOVERER = 'empty-cache'
+
+# Prefetches everything to load fully from cache (impossible in practice).
+FULL_CACHE_DISCOVERER = 'full-cache'
 
 # Prefetches the first resource following the redirection chain.
 REDIRECTED_MAIN_DISCOVERER = 'redirected-main'
@@ -21,6 +31,8 @@ PARSER_DISCOVERER = 'parser'
 HTML_PRELOAD_SCANNER_DISCOVERER = 'html-scanner'
 
 SUBRESOURCE_DISCOVERERS = set([
+  EMPTY_CACHE_DISCOVERER,
+  FULL_CACHE_DISCOVERER,
   REDIRECTED_MAIN_DISCOVERER,
   PARSER_DISCOVERER,
   HTML_PRELOAD_SCANNER_DISCOVERER
@@ -85,7 +97,11 @@ def ExtractDiscoverableUrls(loading_trace_path, subresource_discoverer):
 
   # Build the list of discovered requests according to the desired simulation.
   discovered_requests = []
-  if subresource_discoverer == REDIRECTED_MAIN_DISCOVERER:
+  if subresource_discoverer == EMPTY_CACHE_DISCOVERER:
+    pass
+  elif subresource_discoverer == FULL_CACHE_DISCOVERER:
+    discovered_requests = trace.request_track.GetEvents()
+  elif subresource_discoverer == REDIRECTED_MAIN_DISCOVERER:
     discovered_requests = \
         [dependencies_lens.GetRedirectChain(first_resource_request)[-1]]
   elif subresource_discoverer == PARSER_DISCOVERER:
@@ -100,7 +116,6 @@ def ExtractDiscoverableUrls(loading_trace_path, subresource_discoverer):
   # Prune out data:// requests.
   whitelisted_urls = set()
   logging.info('white-listing %s' % first_resource_request.url)
-  whitelisted_urls.add(first_resource_request.url)
   for request in discovered_requests:
     # Work-around where the protocol may be none for an unclear reason yet.
     # TODO(gabadie): Follow up on this with Clovis guys and possibly remove
@@ -114,3 +129,147 @@ def ExtractDiscoverableUrls(loading_trace_path, subresource_discoverer):
     logging.info('white-listing %s' % request.url)
     whitelisted_urls.add(request.url)
   return whitelisted_urls
+
+
+def _PrintUrlSetComparison(ref_url_set, url_set, url_set_name):
+  """Compare URL sets and log the diffs.
+
+  Args:
+    ref_url_set: Set of reference urls.
+    url_set: Set of urls to compare to the reference.
+    url_set_name: The set name for logging purposes.
+  """
+  assert type(ref_url_set) == set
+  assert type(url_set) == set
+  if ref_url_set == url_set:
+    logging.info('  %d %s are matching.' % (len(ref_url_set), url_set_name))
+    return
+  logging.error('  %s are not matching.' % url_set_name)
+  logging.error('    List of missing resources:')
+  for url in ref_url_set.difference(url_set):
+    logging.error('-     ' + url)
+  logging.error('    List of unexpected resources:')
+  for url in url_set.difference(ref_url_set):
+    logging.error('+     ' + url)
+
+
+class _RequestOutcome:
+  All, ServedFromCache, NotServedFromCache = range(3)
+
+
+def _ListUrlRequests(trace, request_kind):
+  """Lists requested URLs from a trace.
+
+  Args:
+    trace: (LoadingTrace) loading trace.
+    request_kind: _RequestOutcome indicating the subset of requests to output.
+
+  Returns:
+    set([str])
+  """
+  urls = set()
+  for request_event in trace.request_track.GetEvents():
+    if request_event.protocol == None:
+      continue
+    if request_event.protocol.startswith('data'):
+      continue
+    if request_event.protocol.startswith('http'):
+      raise RuntimeError('Unknown protocol {}'.format(request_event.protocol))
+    if (request_kind == _RequestOutcome.ServedFromCache and
+        request_event.from_disk_cache):
+      urls.add(request_event.url)
+    elif (request_kind == _RequestOutcome.NotServedFromCache and
+        not request_event.from_disk_cache):
+      urls.add(request_event.url)
+    elif request_kind == _RequestOutcome.All:
+      urls.add(request_event.url)
+  return urls
+
+
+def VerifyBenchmarkOutputDirectory(benchmark_setup_path,
+                                   benchmark_output_directory_path):
+  """Verifies that all run inside the run_output_directory worked as expected.
+
+  Args:
+    benchmark_setup_path: Path of the JSON of the benchmark setup.
+    benchmark_output_directory_path: Path of the benchmark output directory to
+        verify.
+  """
+  # TODO(gabadie): What's the best way of propagating errors happening in here?
+  benchmark_setup = json.load(open(benchmark_setup_path))
+  cache_whitelist = set(benchmark_setup['cache_whitelist'])
+  url_resources = set(benchmark_setup['url_resources'])
+
+  # Verify requests from traces.
+  run_id = -1
+  while True:
+    run_id += 1
+    run_path = os.path.join(benchmark_output_directory_path, str(run_id))
+    if not os.path.isdir(run_path):
+      break
+    trace_path = os.path.join(run_path, sandwich_runner.TRACE_FILENAME)
+    if not os.path.isfile(trace_path):
+      logging.error('missing trace %s' % trace_path)
+      continue
+    trace = LoadingTrace.FromJsonFile(trace_path)
+    logging.info('verifying %s from %s' % (trace.url, trace_path))
+    _PrintUrlSetComparison(url_resources,
+        _ListUrlRequests(trace, _RequestOutcome.All), 'All resources')
+    _PrintUrlSetComparison(url_resources.intersection(cache_whitelist),
+        _ListUrlRequests(trace, _RequestOutcome.ServedFromCache),
+        'Cached resources')
+    _PrintUrlSetComparison(url_resources.difference(cache_whitelist),
+        _ListUrlRequests(trace, _RequestOutcome.NotServedFromCache),
+        'Non cached resources')
+
+
+def ReadSubresourceMapFromBenchmarkOutput(benchmark_output_directory_path):
+  """Extracts a map URL-to-subresources for each navigation in benchmark
+  directory.
+
+  Args:
+    benchmark_output_directory_path: Path of the benchmark output directory to
+        verify.
+
+  Returns:
+    {url -> [URLs of sub-resources]}
+  """
+  url_subresources = {}
+  run_id = -1
+  while True:
+    run_id += 1
+    run_path = os.path.join(benchmark_output_directory_path, str(run_id))
+    if not os.path.isdir(run_path):
+      break
+    trace_path = os.path.join(run_path, sandwich_runner.TRACE_FILENAME)
+    if not os.path.isfile(trace_path):
+      continue
+    trace = LoadingTrace.FromJsonFile(trace_path)
+    if trace.url in url_subresources:
+      continue
+    logging.info('lists resources of %s from %s' % (trace.url, trace_path))
+    urls_set = set()
+    for request_event in trace.request_track.GetEvents():
+      if not request_event.protocol.startswith('http'):
+        continue
+      if request_event.url not in urls_set:
+        logging.info('  %s' % request_event.url)
+        urls_set.add(request_event.url)
+    url_subresources[trace.url] = [url for url in urls_set]
+  return url_subresources
+
+
+def ValidateCacheArchiveContent(ref_urls, cache_archive_path):
+  """Validates a cache archive content.
+
+  Args:
+    ref_urls: Reference list of urls.
+    cache_archive_path: Cache archive's path to validate.
+  """
+  # TODO(gabadie): What's the best way of propagating errors happening in here?
+  logging.info('lists cached urls from %s' % cache_archive_path)
+  with common_util.TemporaryDirectory() as cache_directory:
+    chrome_cache.UnzipDirectoryContent(cache_archive_path, cache_directory)
+    cached_urls = \
+        chrome_cache.CacheBackend(cache_directory, 'simple').ListKeys()
+  _PrintUrlSetComparison(set(ref_urls), set(cached_urls), 'cached resources')

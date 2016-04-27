@@ -20,8 +20,15 @@ import controller
 import devtools_monitor
 import device_setup
 import loading_trace
-import sandwich_metrics
 
+
+# Standard filenames in the sandwich runner's output directory.
+TRACE_FILENAME = 'trace.json'
+VIDEO_FILENAME = 'video.mp4'
+
+# List of selected trace event categories when running chrome.
+ADDITIONAL_CATEGORIES = (
+    'disabled-by-default-memory-infra',)  # Used by _GetBrowserDumpEvents()
 
 _JOB_SEARCH_PATH = 'sandwich_jobs'
 
@@ -197,24 +204,24 @@ class SandwichRunner(object):
       if run_path is not None and self.record_video:
         device = self._chrome_ctl.GetDevice()
         assert device, 'Can only record video on a remote device.'
-        video_recording_path = os.path.join(run_path, 'video.mp4')
+        video_recording_path = os.path.join(run_path, VIDEO_FILENAME)
         with device_setup.RemoteSpeedIndexRecorder(device, connection,
                                                    video_recording_path):
           trace = loading_trace.LoadingTrace.RecordUrlNavigation(
               url=url,
               connection=connection,
               chrome_metadata=self._chrome_ctl.ChromeMetadata(),
-              additional_categories=sandwich_metrics.ADDITIONAL_CATEGORIES,
+              additional_categories=ADDITIONAL_CATEGORIES,
               timeout_seconds=_DEVTOOLS_TIMEOUT)
       else:
         trace = loading_trace.LoadingTrace.RecordUrlNavigation(
             url=url,
             connection=connection,
             chrome_metadata=self._chrome_ctl.ChromeMetadata(),
-            additional_categories=sandwich_metrics.ADDITIONAL_CATEGORIES,
+            additional_categories=ADDITIONAL_CATEGORIES,
             timeout_seconds=_DEVTOOLS_TIMEOUT)
     if run_path is not None:
-      trace_path = os.path.join(run_path, 'trace.json')
+      trace_path = os.path.join(run_path, TRACE_FILENAME)
       trace.ToJsonFile(trace_path)
 
   def _RunUrl(self, url, run_id):

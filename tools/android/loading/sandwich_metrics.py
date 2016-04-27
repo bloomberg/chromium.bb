@@ -26,12 +26,9 @@ from telemetry.util import image_util
 from telemetry.util import rgba_color
 
 import loading_trace as loading_trace_module
+import sandwich_runner
 import tracing
 
-
-# List of selected trace event categories when running chrome.
-ADDITIONAL_CATEGORIES = (
-    'disabled-by-default-memory-infra',)  # Used by _GetBrowserDumpEvents()
 
 CSV_FIELD_NAMES = [
     'id',
@@ -140,7 +137,7 @@ def _PullMetricsFromLoadingTrace(loading_trace):
   """
   assert all(
       cat in loading_trace.tracing_track.Categories()
-      for cat in ADDITIONAL_CATEGORIES), (
+      for cat in sandwich_runner.ADDITIONAL_CATEGORIES), (
           'This trace was not generated with the required set of categories '
           'to be processed by this script.')
   browser_dump_events = _GetBrowserDumpEvents(loading_trace.tracing_track)
@@ -245,7 +242,7 @@ def PullMetricsFromOutputDirectory(output_directory_path):
     except ValueError:
       continue
     run_path = os.path.join(output_directory_path, node_name)
-    trace_path = os.path.join(run_path, 'trace.json')
+    trace_path = os.path.join(run_path, sandwich_runner.TRACE_FILENAME)
     if not os.path.isfile(trace_path):
       continue
     logging.info('processing \'%s\'' % trace_path)
@@ -254,7 +251,7 @@ def PullMetricsFromOutputDirectory(output_directory_path):
     row_metrics.update(_PullMetricsFromLoadingTrace(loading_trace))
     row_metrics['id'] = page_id
     row_metrics['url'] = loading_trace.url
-    video_path = os.path.join(run_path, 'video.mp4')
+    video_path = os.path.join(run_path, sandwich_runner.VIDEO_FILENAME)
     if os.path.isfile(video_path):
       logging.info('processing \'%s\'' % video_path)
       completeness_record = _ExtractCompletenessRecordFromVideo(video_path)

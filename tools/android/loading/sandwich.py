@@ -35,6 +35,8 @@ import options
 import sandwich_metrics
 import sandwich_misc
 from sandwich_runner import SandwichRunner
+import sandwich_task_builder
+import task_manager
 from trace_test.webserver_test import WebServer
 
 
@@ -48,6 +50,8 @@ def _ArgumentParser():
   common_job_parser = argparse.ArgumentParser(add_help=False)
   common_job_parser.add_argument('--job', required=True,
                                  help='JSON file with job description.')
+
+  task_parser = task_manager.CommandLineParser()
 
   # Plumbing parser to configure OPTIONS.
   plumbing_parser = OPTIONS.GetParentParser('plumbing options')
@@ -166,6 +170,21 @@ def _ArgumentParser():
   record_trace_parser.add_argument('-o', '--output', type=str, required=True,
                                    help='Output path of the generated trace.')
 
+  # Run all subcommand.
+  run_all = subparsers.add_parser('run-all',
+                       parents=[common_job_parser, task_parser],
+                       help='Run all steps using the task manager '
+                            'infrastructure.')
+  run_all.add_argument('-g', '--gen-full', action='store_true',
+                       help='Generate the full graph with all possible'
+                            'benchmarks.')
+  run_all.add_argument('--wpr-archive', default=None, type=str,
+                       dest='wpr_archive_path',
+                       help='WebPageReplay archive to use, instead of '
+                            'generating one.')
+  run_all.add_argument('--url-repeat', default=1, type=int,
+                       help='How many times to repeat the urls.')
+
   return parser
 
 
@@ -240,8 +259,43 @@ def _RecordWebServerTestTrace(args):
       address = server.Address()
       sandwich_runner.urls = ['http://%s/%s' % (address, args.page)]
       sandwich_runner.Run()
-    shutil.copy(os.path.join(out_path, 'run', '0', 'trace.json'), args.output)
+    trace_path = os.path.join(
+        out_path, 'run', '0', sandwich_runner.TRACE_FILENAME)
+    shutil.copy(trace_path, args.output)
   return 0
+
+
+def _RunAllMain(args):
+  builder = sandwich_task_builder.SandwichTaskBuilder(
+      output_directory=args.output,
+      job_path=args.job,
+      url_repeat=args.url_repeat)
+  if args.wpr_archive_path:
+    builder.OverridePathToWprArchive(args.wpr_archive_path)
+  else:
+    builder.PopulateWprRecordingTask()
+  builder.PopulateCommonPipelines()
+
+  runner_transformer_name = 'no-network-emulation'
+  runner_transformer = lambda arg: None
+  builder.PopulateLoadBenchmark(sandwich_misc.EMPTY_CACHE_DISCOVERER,
+                                runner_transformer_name, runner_transformer)
+  builder.PopulateLoadBenchmark(sandwich_misc.FULL_CACHE_DISCOVERER,
+                                runner_transformer_name, runner_transformer)
+
+  if args.gen_full:
+    for subresource_discoverer in sandwich_misc.SUBRESOURCE_DISCOVERERS:
+      if subresource_discoverer == sandwich_misc.FULL_CACHE_DISCOVERER:
+        continue
+      for network_condition in ['Regular4G', 'Regular3G', 'Regular2G']:
+        runner_transformer_name = network_condition.lower()
+        runner_transformer = sandwich_task_builder.NetworkSimulationTransformer(
+            network_condition)
+        builder.PopulateLoadBenchmark(
+            subresource_discoverer, runner_transformer_name, runner_transformer)
+
+  return task_manager.ExecuteWithCommandLine(
+      args, builder.tasks.values(), builder.default_final_tasks)
 
 
 def main(command_line_args):
@@ -266,6 +320,8 @@ def main(command_line_args):
     return _FilterCacheMain(args)
   if args.subcommand == 'record-test-trace':
     return _RecordWebServerTestTrace(args)
+  if args.subcommand == 'run-all':
+    return _RunAllMain(args)
   assert False
 
 

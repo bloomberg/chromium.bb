@@ -19,26 +19,40 @@ class SandwichMiscTest(unittest.TestCase):
   def GetResourceUrl(self, path):
     return urlparse.urljoin('http://l/', path)
 
+  def testNoDiscovererWhitelisting(self):
+    url_set = sandwich_misc.ExtractDiscoverableUrls(
+        self._TRACE_PATH, sandwich_misc.EMPTY_CACHE_DISCOVERER)
+    self.assertEquals(set(), url_set)
+
+  def testFullCacheWhitelisting(self):
+    reference_url_set = set([self.GetResourceUrl('./'),
+                             self.GetResourceUrl('0.png'),
+                             self.GetResourceUrl('1.png'),
+                             self.GetResourceUrl('favicon.ico')])
+    url_set = sandwich_misc.ExtractDiscoverableUrls(
+        self._TRACE_PATH, sandwich_misc.FULL_CACHE_DISCOVERER)
+    self.assertEquals(reference_url_set, url_set)
+
   def testRedirectedMainWhitelisting(self):
-    urls_set_ref = set([self.GetResourceUrl('./')])
-    urls_set = sandwich_misc.ExtractDiscoverableUrls(
+    reference_url_set = set([self.GetResourceUrl('./')])
+    url_set = sandwich_misc.ExtractDiscoverableUrls(
         self._TRACE_PATH, sandwich_misc.REDIRECTED_MAIN_DISCOVERER)
-    self.assertEquals(urls_set_ref, urls_set)
+    self.assertEquals(reference_url_set, url_set)
 
   def testParserDiscoverableWhitelisting(self):
-    urls_set_ref = set([self.GetResourceUrl('./'),
-                        self.GetResourceUrl('0.png'),
-                        self.GetResourceUrl('1.png')])
-    urls_set = sandwich_misc.ExtractDiscoverableUrls(
+    reference_url_set = set([self.GetResourceUrl('./'),
+                             self.GetResourceUrl('0.png'),
+                             self.GetResourceUrl('1.png')])
+    url_set = sandwich_misc.ExtractDiscoverableUrls(
         self._TRACE_PATH, sandwich_misc.PARSER_DISCOVERER)
-    self.assertEquals(urls_set_ref, urls_set)
+    self.assertEquals(reference_url_set, url_set)
 
   def testHTMLPreloadScannerWhitelisting(self):
-    urls_set_ref = set([self.GetResourceUrl('./'),
-                        self.GetResourceUrl('0.png')])
-    urls_set = sandwich_misc.ExtractDiscoverableUrls(
+    reference_url_set = set([self.GetResourceUrl('./'),
+                             self.GetResourceUrl('0.png')])
+    url_set = sandwich_misc.ExtractDiscoverableUrls(
         self._TRACE_PATH, sandwich_misc.HTML_PRELOAD_SCANNER_DISCOVERER)
-    self.assertEquals(urls_set_ref, urls_set)
+    self.assertEquals(reference_url_set, url_set)
 
 
 if __name__ == '__main__':
