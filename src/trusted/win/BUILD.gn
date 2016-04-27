@@ -43,6 +43,14 @@ template("nacl_win_as_toolchain") {
       description = copy_description
     }
 
+    # This is necessary so that certain .gn files with static_libraries (e.g.
+    # //build/config/sanitizers/BUILD.gn) can be loaded in the context of this
+    # toolchain.
+    tool("alink") {
+      command = "fake"
+      outputs = ["fake"]
+    }
+
     toolchain_args() {
       current_os = "win"
       current_cpu = invoker.toolchain_cpu
