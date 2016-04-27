@@ -6,6 +6,7 @@ package org.chromium.base;
 
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
@@ -13,12 +14,12 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Trace;
+import android.preference.PreferenceManager;
 
 import org.chromium.base.annotations.SuppressFBWarnings;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -26,6 +27,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 /**
  * Handles extracting the necessary resources bundled in an APK and moving them to a location on
@@ -37,6 +40,7 @@ public class ResourceExtractor {
     private static final String ICU_DATA_FILENAME = "icudtl.dat";
     private static final String V8_NATIVES_DATA_FILENAME = "natives_blob.bin";
     private static final String V8_SNAPSHOT_DATA_FILENAME = "snapshot_blob.bin";
+    private static final String APP_VERSION_PREF = "org.chromium.base.ResourceExtractor.Version";
 
     private static ResourceEntry[] sResourcesToExtract = new ResourceEntry[0];
 
@@ -71,20 +75,14 @@ public class ResourceExtractor {
                 while ((count = is.read(buffer, 0, BUFFER_SIZE)) != -1) {
                     os.write(buffer, 0, count);
                 }
-                os.flush();
-
-                // Ensure something reasonable was written.
-                if (outFile.length() == 0) {
-                    throw new IOException(outFile + " extracted with 0 length!");
-                }
             } finally {
                 try {
-                    if (is != null) {
-                        is.close();
-                    }
-                } finally {
                     if (os != null) {
                         os.close();
+                    }
+                } finally {
+                    if (is != null) {
+                        is.close();
                     }
                 }
             }
@@ -97,24 +95,30 @@ public class ResourceExtractor {
                 return;
             }
 
-            String timestampFile = null;
             beginTraceSection("checkPakTimeStamp");
-            try {
-                timestampFile = checkPakTimestamp(outputDir);
-            } finally {
-                endTraceSection();
-            }
-            if (timestampFile != null) {
+            long curAppVersion = getApplicationVersion();
+            SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(
+                    mContext.getApplicationContext());
+            long prevAppVersion = sharedPrefs.getLong(APP_VERSION_PREF, 0);
+            boolean versionChanged = curAppVersion != prevAppVersion;
+            endTraceSection();
+
+            if (versionChanged) {
                 deleteFiles();
+                // Use the version only to see if files should be deleted, not to skip extraction.
+                // We've seen files be corrupted, so always attempt extraction.
+                // http://crbug.com/606413
+                sharedPrefs.edit().putLong(APP_VERSION_PREF, curAppVersion).apply();
             }
 
             beginTraceSection("WalkAssets");
             byte[] buffer = new byte[BUFFER_SIZE];
             try {
-                // Extract all files that don't already exist.
                 for (ResourceEntry entry : sResourcesToExtract) {
                     File output = new File(outputDir, entry.extractedFileName);
-                    if (output.exists()) {
+                    // TODO(agrieve): It would be better to check that .length == expectedLength.
+                    //     http://crbug.com/606413
+                    if (output.length() != 0) {
                         continue;
                     }
                     beginTraceSection("ExtractResource");
@@ -136,17 +140,6 @@ public class ResourceExtractor {
                 return;
             } finally {
                 endTraceSection(); // WalkAssets
-            }
-
-            // Finished, write out a timestamp file if we need to.
-            if (timestampFile != null) {
-                try {
-                    new File(outputDir, timestampFile).createNewFile();
-                } catch (IOException e) {
-                    // Worst case we don't write a timestamp, so we'll re-extract the resource
-                    // paks next start up.
-                    Log.w(TAG, "Failed to write resource pak timestamp!");
-                }
             }
         }
 
@@ -189,42 +182,25 @@ public class ResourceExtractor {
         // Note that we do this to avoid adding a BroadcastReceiver on
         // android.content.Intent#ACTION_PACKAGE_CHANGED as that causes process churn
         // on (re)installation of *all* APK files.
-        private String checkPakTimestamp(File outputDir) {
-            final String timestampPrefix = "pak_timestamp-";
+        private long getApplicationVersion() {
             PackageManager pm = mContext.getPackageManager();
-            PackageInfo pi = null;
-
             try {
-                pi = pm.getPackageInfo(mContext.getPackageName(), 0);
-            } catch (PackageManager.NameNotFoundException e) {
-                return timestampPrefix;
-            }
-
-            if (pi == null) {
-                return timestampPrefix;
-            }
-
-            String expectedTimestamp = timestampPrefix + pi.versionCode + "-" + pi.lastUpdateTime;
-
-            String[] timestamps = outputDir.list(new FilenameFilter() {
-                @Override
-                public boolean accept(File dir, String name) {
-                    return name.startsWith(timestampPrefix);
+                PackageInfo pi = pm.getPackageInfo(mContext.getPackageName(), 0);
+                if (pi != null && pi.versionCode > 1) {
+                    return pi.versionCode;
                 }
-            });
-
-            if (timestamps == null || timestamps.length != 1) {
-                // If there's no timestamp, nuke to be safe as we can't tell the age of the files.
-                // If there's multiple timestamps, something's gone wrong so nuke.
-                return expectedTimestamp;
+            } catch (PackageManager.NameNotFoundException e) {
+                throw new RuntimeException(e);
             }
-
-            if (!expectedTimestamp.equals(timestamps[0])) {
-                return expectedTimestamp;
+            // For dev builds, use the APK's CRC-32.
+            try {
+                ZipFile apk = new ZipFile(mContext.getApplicationInfo().sourceDir);
+                ZipEntry manifestEntry = apk.getEntry("META-INF/MANIFEST.MF");
+                apk.close();
+                return manifestEntry.getCrc();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
-
-            // timestamp file is already up-to date.
-            return null;
         }
 
         @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
