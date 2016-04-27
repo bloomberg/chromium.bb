@@ -117,6 +117,15 @@ void WebUIDataSourceImpl::AddLocalizedString(const std::string& name,
 void WebUIDataSourceImpl::AddLocalizedStrings(
     const base::DictionaryValue& localized_strings) {
   localized_strings_.MergeDictionary(&localized_strings);
+
+  for (base::DictionaryValue::Iterator it(localized_strings); !it.IsAtEnd();
+       it.Advance()) {
+    if (it.value().IsType(base::Value::TYPE_STRING)) {
+      std::string value;
+      it.value().GetAsString(&value);
+      replacements_[it.key()] = value;
+    }
+  }
 }
 
 void WebUIDataSourceImpl::AddBoolean(const std::string& name, bool value) {
@@ -210,14 +219,7 @@ void WebUIDataSourceImpl::StartDataRequest(
     std::string locale = GetContentClient()->browser()->GetApplicationLocale();
     base::DictionaryValue defaults;
     webui::SetLoadTimeDataDefaults(locale, &defaults);
-
-    for (base::DictionaryValue::Iterator it(defaults); !it.IsAtEnd();
-         it.Advance()) {
-      std::string load_time_data_default;
-      CHECK(it.value().GetAsString(&load_time_data_default));
-      AddString(it.key(), load_time_data_default);
-    }
-
+    AddLocalizedStrings(defaults);
     add_load_time_data_defaults_ = false;
   }
 
