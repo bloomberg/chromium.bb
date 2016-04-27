@@ -152,6 +152,7 @@ gridTemplateAreas
 gridTemplateColumns
 gridTemplateRows
 height
+hyphens
 imageOrientation
 imageRendering
 isolation

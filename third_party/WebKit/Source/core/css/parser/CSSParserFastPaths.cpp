@@ -658,6 +658,8 @@ bool CSSParserFastPaths::isValidKeywordPropertyAndValue(CSSPropertyID propertyId
         return valueID == CSSValueRow || valueID == CSSValueRowReverse || valueID == CSSValueColumn || valueID == CSSValueColumnReverse;
     case CSSPropertyFlexWrap:
         return valueID == CSSValueNowrap || valueID == CSSValueWrap || valueID == CSSValueWrapReverse;
+    case CSSPropertyHyphens:
+        return valueID == CSSValueAuto || valueID == CSSValueNone || valueID == CSSValueManual;
     case CSSPropertyJustifyContent:
         // FIXME: Per CSS alignment, this property should accept an optional <overflow-position>. We should share this parsing code with 'justify-self'.
         return valueID == CSSValueFlexStart || valueID == CSSValueFlexEnd || valueID == CSSValueCenter || valueID == CSSValueSpaceBetween || valueID == CSSValueSpaceAround;
@@ -742,6 +744,7 @@ bool CSSParserFastPaths::isKeywordPropertyID(CSSPropertyID propertyId)
     case CSSPropertyFloat:
     case CSSPropertyFontStyle:
     case CSSPropertyFontStretch:
+    case CSSPropertyHyphens:
     case CSSPropertyImageRendering:
     case CSSPropertyListStylePosition:
     case CSSPropertyListStyleType:

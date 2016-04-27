@@ -1399,6 +1399,41 @@ template<> inline EFloat CSSPrimitiveValue::convertTo() const
     return NoFloat;
 }
 
+template<> inline CSSPrimitiveValue::CSSPrimitiveValue(Hyphens e)
+    : CSSValue(PrimitiveClass)
+{
+    init(UnitType::ValueID);
+    switch (e) {
+    case HyphensAuto:
+        m_value.valueID = CSSValueAuto;
+        break;
+    case HyphensManual:
+        m_value.valueID = CSSValueManual;
+        break;
+    case HyphensNone:
+        m_value.valueID = CSSValueNone;
+        break;
+    }
+}
+
+template<> inline Hyphens CSSPrimitiveValue::convertTo() const
+{
+    DCHECK(isValueID());
+    switch (m_value.valueID) {
+    case CSSValueAuto:
+        return HyphensAuto;
+    case CSSValueManual:
+        return HyphensManual;
+    case CSSValueNone:
+        return HyphensNone;
+    default:
+        break;
+    }
+
+    NOTREACHED();
+    return HyphensManual;
+}
+
 template<> inline CSSPrimitiveValue::CSSPrimitiveValue(LineBreak e)
     : CSSValue(PrimitiveClass)
 {

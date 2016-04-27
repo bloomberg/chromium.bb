@@ -871,6 +871,7 @@ public:
     EOverflowWrap overflowWrap() const { return static_cast<EOverflowWrap>(rareInheritedData->overflowWrap); }
     LineBreak getLineBreak() const { return static_cast<LineBreak>(rareInheritedData->lineBreak); }
     const AtomicString& highlight() const { return rareInheritedData->highlight; }
+    Hyphens getHyphens() const { return static_cast<Hyphens>(rareInheritedData->hyphens); }
     const AtomicString& hyphenationString() const { return rareInheritedData->hyphenationString; }
     const AtomicString& locale() const { return getFontDescription().locale(false); }
     EResize resize() const { return static_cast<EResize>(rareNonInheritedData->m_resize); }
@@ -1396,6 +1397,7 @@ public:
     void setOverflowWrap(EOverflowWrap b) { SET_VAR(rareInheritedData, overflowWrap, b); }
     void setLineBreak(LineBreak b) { SET_VAR(rareInheritedData, lineBreak, b); }
     void setHighlight(const AtomicString& h) { SET_VAR(rareInheritedData, highlight, h); }
+    void setHyphens(Hyphens h) { SET_VAR(rareInheritedData, hyphens, h); }
     void setHyphenationString(const AtomicString& h) { SET_VAR(rareInheritedData, hyphenationString, h); }
     void setResize(EResize r) { SET_VAR(rareNonInheritedData, m_resize, r); }
     void setColumnWidth(float f) { SET_NESTED_VAR(rareNonInheritedData, m_multiCol, m_autoWidth, false); SET_NESTED_VAR(rareNonInheritedData, m_multiCol, m_width, f); }
@@ -1747,6 +1749,7 @@ public:
     static LineBreak initialLineBreak() { return LineBreakAuto; }
     static const AtomicString& initialHighlight() { return nullAtom; }
     static ESpeak initialSpeak() { return SpeakNormal; }
+    static Hyphens initialHyphens() { return HyphensManual; }
     static const AtomicString& initialHyphenationString() { return nullAtom; }
     static EResize initialResize() { return RESIZE_NONE; }
     static ControlPart initialAppearance() { return NoControlPart; }

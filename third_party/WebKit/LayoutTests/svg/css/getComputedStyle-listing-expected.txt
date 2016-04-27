@@ -176,6 +176,7 @@ grid-template-areas: none
 grid-template-columns: none
 grid-template-rows: none
 height: auto
+hyphens: manual
 image-orientation: 0deg
 image-rendering: auto
 isolation: auto

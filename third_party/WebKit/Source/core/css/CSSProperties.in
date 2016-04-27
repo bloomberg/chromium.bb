@@ -215,6 +215,7 @@ grid-template-areas runtime_flag=CSSGridLayout, custom_all
 grid-template-columns runtime_flag=CSSGridLayout, custom_all
 grid-template-rows runtime_flag=CSSGridLayout, custom_all
 height interpolable, initial=initialSize, converter=convertLengthSizing
+hyphens runtime_flag=CSSHyphens, inherited, type_name=Hyphens
 image-rendering inherited
 image-orientation runtime_flag=ImageOrientation, inherited, name_for_methods=RespectImageOrientation, converter=convertImageOrientation
 isolation

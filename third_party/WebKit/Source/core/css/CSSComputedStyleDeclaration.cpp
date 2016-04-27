@@ -242,6 +242,7 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyGridColumnGap,
     CSSPropertyGridRowGap,
     CSSPropertyWebkitHighlight,
+    CSSPropertyHyphens,
     CSSPropertyWebkitHyphenateCharacter,
     CSSPropertyWebkitLineBreak,
     CSSPropertyWebkitLineClamp,

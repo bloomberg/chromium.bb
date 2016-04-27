@@ -1818,6 +1818,8 @@ CSSValue* ComputedStyleCSSValueMapping::get(CSSPropertyID propertyID, const Comp
         if (style.highlight() == nullAtom)
             return cssValuePool().createIdentifierValue(CSSValueNone);
         return CSSStringValue::create(style.highlight());
+    case CSSPropertyHyphens:
+        return cssValuePool().createValue(style.getHyphens());
     case CSSPropertyWebkitHyphenateCharacter:
         if (style.hyphenationString().isNull())
             return cssValuePool().createIdentifierValue(CSSValueAuto);
