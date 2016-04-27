@@ -48,7 +48,7 @@ struct WrapperTypeInfo;
 class V8DOMWrapper {
     STATIC_ONLY(V8DOMWrapper);
 public:
-    static v8::Local<v8::Object> createWrapper(v8::Isolate*, v8::Local<v8::Object> creationContext, const WrapperTypeInfo*, ScriptWrappable*);
+    static v8::Local<v8::Object> createWrapper(v8::Isolate*, v8::Local<v8::Object> creationContext, const WrapperTypeInfo*);
     static bool isWrapper(v8::Isolate*, v8::Local<v8::Value>);
 
     // Associates the given ScriptWrappable with the given |wrapper| if the

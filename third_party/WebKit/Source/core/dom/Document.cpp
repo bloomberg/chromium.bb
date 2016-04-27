@@ -5796,7 +5796,7 @@ v8::Local<v8::Object> Document::wrap(v8::Isolate* isolate, v8::Local<v8::Object>
             return wrapper;
     }
 
-    v8::Local<v8::Object> wrapper = V8DOMWrapper::createWrapper(isolate, creationContext, wrapperType, this);
+    v8::Local<v8::Object> wrapper = V8DOMWrapper::createWrapper(isolate, creationContext, wrapperType);
     if (UNLIKELY(wrapper.IsEmpty()))
         return wrapper;
 

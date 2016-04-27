@@ -40,7 +40,7 @@
 
 namespace blink {
 
-v8::Local<v8::Object> V8DOMWrapper::createWrapper(v8::Isolate* isolate, v8::Local<v8::Object> creationContext, const WrapperTypeInfo* type, ScriptWrappable* scriptWrappable)
+v8::Local<v8::Object> V8DOMWrapper::createWrapper(v8::Isolate* isolate, v8::Local<v8::Object> creationContext, const WrapperTypeInfo* type)
 {
     ASSERT(!type->equals(&V8Window::wrapperTypeInfo));
     // According to https://html.spec.whatwg.org/multipage/browsers.html#security-location,
