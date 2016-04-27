@@ -310,6 +310,7 @@ MojoShellContext::MojoShellContext() {
 MojoShellContext::~MojoShellContext() {
   if (!IsRunningInMojoShell())
     MojoShellConnectionImpl::Destroy();
+  catalog_.reset();
 }
 
 // static

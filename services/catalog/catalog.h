@@ -19,7 +19,8 @@
 #include "services/shell/public/interfaces/shell_resolver.mojom.h"
 
 namespace base {
-class TaskRunner;
+class SequencedWorkerPool;
+class SingleThreadTaskRunner;
 }
 
 namespace shell {
@@ -40,7 +41,10 @@ class Catalog : public shell::ShellClient,
                 public shell::InterfaceFactory<shell::mojom::ShellResolver> {
  public:
   // |manifest_provider| may be null.
-  Catalog(base::TaskRunner* file_task_runner,
+  Catalog(base::SequencedWorkerPool* worker_pool,
+          std::unique_ptr<Store> store,
+          ManifestProvider* manifest_provider);
+  Catalog(base::SingleThreadTaskRunner* task_runner,
           std::unique_ptr<Store> store,
           ManifestProvider* manifest_provider);
   ~Catalog() override;
@@ -48,6 +52,11 @@ class Catalog : public shell::ShellClient,
   shell::mojom::ShellClientPtr TakeShellClient();
 
  private:
+  explicit Catalog(std::unique_ptr<Store> store);
+
+  // Starts a scane for system packages.
+  void ScanSystemPackageDir();
+
   // shell::ShellClient:
   bool AcceptConnection(shell::Connection* connection) override;
 
@@ -63,7 +72,6 @@ class Catalog : public shell::ShellClient,
 
   void SystemPackageDirScanned();
 
-  base::TaskRunner* const file_task_runner_;
   std::unique_ptr<Store> store_;
 
   shell::mojom::ShellClientPtr shell_client_;

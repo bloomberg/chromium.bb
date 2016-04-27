@@ -476,6 +476,10 @@ Shell::Shell(std::unique_ptr<NativeRunnerFactory> native_runner_factory,
 
 Shell::~Shell() {
   TerminateShellConnections();
+  // Terminate any remaining instances.
+  while (!identity_to_instance_.empty())
+    OnInstanceError(identity_to_instance_.begin()->second);
+  identity_to_resolver_.clear();
   for (auto& runner : native_runners_)
     runner.reset();
 }
@@ -541,6 +545,18 @@ void Shell::InitCatalog(mojom::ShellClientPtr catalog) {
   resolver->ResolveMojoName(kShellName, base::Bind(&EmptyResolverCallback));
 }
 
+mojom::ShellResolver* Shell::GetResolver(const Identity& identity) {
+  auto iter = identity_to_resolver_.find(identity);
+  if (iter != identity_to_resolver_.end())
+    return iter->second.get();
+
+  mojom::ShellResolverPtr resolver_ptr;
+  ConnectToInterface(this, identity, CreateCatalogIdentity(), &resolver_ptr);
+  mojom::ShellResolver* resolver = resolver_ptr.get();
+  identity_to_resolver_[identity] = std::move(resolver_ptr);
+  return resolver;
+}
+
 void Shell::TerminateShellConnections() {
   Instance* instance = GetExistingInstance(CreateShellIdentity());
   DCHECK(instance);
@@ -580,16 +596,13 @@ void Shell::Connect(std::unique_ptr<ConnectParams> params,
   // app so it loads the correct store. Since the catalog is itself run as root
   // when this re-enters Connect() it'll be handled by
   // ConnectToExistingInstance().
-  mojom::ShellResolverPtr resolver;
-  ConnectToInterface(this, Identity(kShellName, params->target().user_id()),
-                     CreateCatalogIdentity(), &resolver);
+  mojom::ShellResolver* resolver =
+      GetResolver(Identity(kShellName, params->target().user_id()));
 
   std::string name = params->target().name();
-  mojom::ShellResolver* resolver_raw = resolver.get();
-  resolver_raw->ResolveMojoName(
+  resolver->ResolveMojoName(
       name, base::Bind(&shell::Shell::OnGotResolvedName,
-                       weak_ptr_factory_.GetWeakPtr(),
-                       base::Passed(std::move(resolver)), base::Passed(&params),
+                       weak_ptr_factory_.GetWeakPtr(), base::Passed(&params),
                        base::Passed(&client)));
 }
 
@@ -685,8 +698,7 @@ void Shell::OnShellClientFactoryLost(const Identity& which) {
   shell_client_factories_.erase(it);
 }
 
-void Shell::OnGotResolvedName(mojom::ShellResolverPtr resolver,
-                              std::unique_ptr<ConnectParams> params,
+void Shell::OnGotResolvedName(std::unique_ptr<ConnectParams> params,
                               mojom::ShellClientPtr client,
                               mojom::ResolveResultPtr result) {
   std::string instance_name = params->target().instance();

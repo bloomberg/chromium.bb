@@ -140,13 +140,23 @@ void DoNothing(shell::mojom::ResolveResultPtr) {}
 
 }  // namespace
 
-Reader::Reader(base::TaskRunner* file_task_runner,
+// A sequenced task runner is used to guarantee requests are serviced in the
+// order requested. To do otherwise means we may run callbacks in an
+// unpredictable order, leading to flake.
+Reader::Reader(base::SequencedWorkerPool* worker_pool,
                ManifestProvider* manifest_provider)
-    : file_task_runner_(file_task_runner),
-      manifest_provider_(manifest_provider),
-      weak_factory_(this) {
-  PathService::Get(base::DIR_MODULE, &system_package_dir_);
+    : Reader(manifest_provider) {
+  file_task_runner_ = worker_pool->GetSequencedTaskRunnerWithShutdownBehavior(
+      base::SequencedWorkerPool::GetSequenceToken(),
+      base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
 }
+
+Reader::Reader(base::SingleThreadTaskRunner* task_runner,
+               ManifestProvider* manifest_provider)
+    : Reader(manifest_provider) {
+  file_task_runner_ = task_runner;
+}
+
 Reader::~Reader() {}
 
 void Reader::Read(const base::FilePath& package_dir,
@@ -172,18 +182,23 @@ void Reader::CreateEntryForName(
     std::unique_ptr<base::Value> manifest_root =
         base::JSONReader::Read(manifest_contents);
     base::PostTaskAndReplyWithResult(
-        file_task_runner_, FROM_HERE,
+        file_task_runner_.get(), FROM_HERE,
         base::Bind(&ProcessManifest, base::Passed(&manifest_root),
                    system_package_dir_),
-        base::Bind(&Reader::OnReadManifest, weak_factory_.GetWeakPtr(),
-                   cache, entry_created_callback));
+        base::Bind(&Reader::OnReadManifest, weak_factory_.GetWeakPtr(), cache,
+                   entry_created_callback));
   } else {
     base::PostTaskAndReplyWithResult(
-        file_task_runner_, FROM_HERE,
+        file_task_runner_.get(), FROM_HERE,
         base::Bind(&ReadManifest, system_package_dir_, mojo_name),
-        base::Bind(&Reader::OnReadManifest, weak_factory_.GetWeakPtr(),
-                   cache, entry_created_callback));
+        base::Bind(&Reader::OnReadManifest, weak_factory_.GetWeakPtr(), cache,
+                   entry_created_callback));
   }
+}
+
+Reader::Reader(ManifestProvider* manifest_provider)
+    : manifest_provider_(manifest_provider), weak_factory_(this) {
+  PathService::Get(base::DIR_MODULE, &system_package_dir_);
 }
 
 void Reader::OnReadManifest(

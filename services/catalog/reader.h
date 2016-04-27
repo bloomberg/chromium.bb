@@ -15,7 +15,8 @@
 #include "services/shell/public/interfaces/shell_resolver.mojom.h"
 
 namespace base {
-class TaskRunner;
+class SequencedWorkerPool;
+class SingleThreadTaskRunner;
 }
 
 namespace catalog {
@@ -30,7 +31,9 @@ class Reader {
   using CreateEntryForNameCallback =
       base::Callback<void(shell::mojom::ResolveResultPtr)>;
 
-  Reader(base::TaskRunner* file_task_runner,
+  Reader(base::SequencedWorkerPool* worker_pool,
+         ManifestProvider* manifest_provider);
+  Reader(base::SingleThreadTaskRunner* task_runner,
          ManifestProvider* manifest_provider);
   ~Reader();
 
@@ -48,12 +51,14 @@ class Reader {
       const CreateEntryForNameCallback& entry_created_callback);
 
  private:
+  explicit Reader(ManifestProvider* manifest_provider);
+
   void OnReadManifest(EntryCache* cache,
                       const CreateEntryForNameCallback& entry_created_callback,
                       std::unique_ptr<Entry> entry);
 
   base::FilePath system_package_dir_;
-  base::TaskRunner* file_task_runner_;
+  scoped_refptr<base::TaskRunner> file_task_runner_;
   ManifestProvider* const manifest_provider_;
   base::WeakPtrFactory<Reader> weak_factory_;
 

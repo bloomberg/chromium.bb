@@ -14,28 +14,41 @@
 
 namespace catalog {
 
-Catalog::Catalog(base::TaskRunner* file_task_runner,
+Catalog::Catalog(base::SequencedWorkerPool* worker_pool,
                  std::unique_ptr<Store> store,
                  ManifestProvider* manifest_provider)
-    : file_task_runner_(file_task_runner),
-      store_(std::move(store)),
-      weak_factory_(this) {
-  shell::mojom::ShellClientRequest request = GetProxy(&shell_client_);
-  shell_connection_.reset(new shell::ShellConnection(this, std::move(request)));
+    : Catalog(std::move(store)) {
+  system_reader_.reset(new Reader(worker_pool, manifest_provider));
+  ScanSystemPackageDir();
+}
 
-  base::FilePath system_package_dir;
-  PathService::Get(base::DIR_MODULE, &system_package_dir);
-  system_package_dir = system_package_dir.AppendASCII(kMojoApplicationsDirName);
-  system_reader_.reset(new Reader(file_task_runner, manifest_provider));
-  system_reader_->Read(system_package_dir, &system_cache_,
-                       base::Bind(&Catalog::SystemPackageDirScanned,
-                                  weak_factory_.GetWeakPtr()));
+Catalog::Catalog(base::SingleThreadTaskRunner* task_runner,
+                 std::unique_ptr<Store> store,
+                 ManifestProvider* manifest_provider)
+    : Catalog(std::move(store)) {
+  system_reader_.reset(new Reader(task_runner, manifest_provider));
+  ScanSystemPackageDir();
 }
 
 Catalog::~Catalog() {}
 
 shell::mojom::ShellClientPtr Catalog::TakeShellClient() {
   return std::move(shell_client_);
+}
+
+Catalog::Catalog(std::unique_ptr<Store> store)
+    : store_(std::move(store)), weak_factory_(this) {
+  shell::mojom::ShellClientRequest request = GetProxy(&shell_client_);
+  shell_connection_.reset(new shell::ShellConnection(this, std::move(request)));
+}
+
+void Catalog::ScanSystemPackageDir() {
+  base::FilePath system_package_dir;
+  PathService::Get(base::DIR_MODULE, &system_package_dir);
+  system_package_dir = system_package_dir.AppendASCII(kMojoApplicationsDirName);
+  system_reader_->Read(system_package_dir, &system_cache_,
+                       base::Bind(&Catalog::SystemPackageDirScanned,
+                                  weak_factory_.GetWeakPtr()));
 }
 
 bool Catalog::AcceptConnection(shell::Connection* connection) {

@@ -81,6 +81,12 @@ class Shell : public ShellClient {
 
   void InitCatalog(mojom::ShellClientPtr catalog);
 
+  // Returns the resolver to use for the specified identity.
+  // NOTE: ShellResolvers are cached to ensure we service requests in order. If
+  // we use a separate ShellResolver for each request ordering is not
+  // guaranteed and can lead to random flake.
+  mojom::ShellResolver* GetResolver(const Identity& identity);
+
   // Destroys all Shell-ends of connections established with Applications.
   // Applications connected by this Shell will observe pipe errors and have a
   // chance to shutdown.
@@ -131,8 +137,7 @@ class Shell : public ShellClient {
   // |client| if provided is a ShellClientPtr which should be used to manage the
   // new application instance. This may be null.
   // |result| contains the result of the resolve operation.
-  void OnGotResolvedName(mojom::ShellResolverPtr resolver,
-                         std::unique_ptr<ConnectParams> params,
+  void OnGotResolvedName(std::unique_ptr<ConnectParams> params,
                          mojom::ShellClientPtr client,
                          mojom::ResolveResultPtr result);
 
@@ -149,6 +154,8 @@ class Shell : public ShellClient {
   std::map<Identity, mojom::ShellClientFactoryPtr> shell_client_factories_;
   // Counter used to assign ids to client factories.
   uint32_t shell_client_factory_id_counter_;
+
+  std::map<Identity, mojom::ShellResolverPtr> identity_to_resolver_;
 
   mojo::InterfacePtrSet<mojom::InstanceListener> instance_listeners_;
 
