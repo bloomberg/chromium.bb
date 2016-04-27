@@ -418,6 +418,11 @@
                 },
               }
             }],
+            ['component!="shared_library" or target_arch!="ia32"', {
+              'dependencies': [
+                '../chrome/installer/mini_installer.gyp:next_version_mini_installer',
+              ],
+            }],
           ],
         }],
         ['chromeos==1', {

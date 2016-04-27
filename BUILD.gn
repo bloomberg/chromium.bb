@@ -575,6 +575,11 @@ group("both_gn_and_gyp") {
       "//crypto:crypto_unittests",  # TODO(GYP)
       "//net:net_unittests",  # TODO(GYP)
     ]
+
+    if (!(is_component_build && is_debug && target_cpu == "x86")) {
+      deps +=
+          [ "//chrome/installer/mini_installer:next_version_mini_installer" ]
+    }
   } else if (!is_android && !is_ios) {
     deps += [ "//breakpad:symupload($host_toolchain)" ]
   }
