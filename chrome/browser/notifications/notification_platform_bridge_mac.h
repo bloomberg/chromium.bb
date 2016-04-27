@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_UI_MANAGER_MAC_H_
-#define CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_UI_MANAGER_MAC_H_
+#ifndef CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_PLATFORM_BRIDGE_MAC_H_
+#define CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_PLATFORM_BRIDGE_MAC_H_
 
 #include <set>
 #include <string>
@@ -17,13 +17,13 @@ class Notification;
 @class NSUserNotificationCenter;
 class PrefService;
 
-// This class is an implementation of NotificationPlatfrormBridge that will
+// This class is an implementation of NotificationPlatformBridge that will
 // send platform notifications to the the MacOSX notification center.
-class NotificationUIManagerMac : public NotificationPlatformBridge {
+class NotificationPlatformBridgeMac : public NotificationPlatformBridge {
  public:
-  explicit NotificationUIManagerMac(
+  explicit NotificationPlatformBridgeMac(
       NSUserNotificationCenter* notification_center);
-  ~NotificationUIManagerMac() override;
+  ~NotificationPlatformBridgeMac() override;
 
   // NotificationPlatformBridge implementation.
   void Display(const std::string& notification_id,
@@ -44,7 +44,7 @@ class NotificationUIManagerMac : public NotificationPlatformBridge {
   // The notification center to use, this can be overriden in tests
   NSUserNotificationCenter* notification_center_;
 
-  DISALLOW_COPY_AND_ASSIGN(NotificationUIManagerMac);
+  DISALLOW_COPY_AND_ASSIGN(NotificationPlatformBridgeMac);
 };
 
-#endif  // CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_UI_MANAGER_MAC_H_
+#endif  // CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_PLATFORM_BRIDGE_MAC_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/notifications/notification_ui_manager_mac.h"
+#include "chrome/browser/notifications/notification_platform_bridge_mac.h"
 
 #include <utility>
 
@@ -55,7 +55,7 @@ NSString* const kNotificationIncognitoKey = @"notification_incognito";
 
 // static
 NotificationPlatformBridge* NotificationPlatformBridge::Create() {
-  return new NotificationUIManagerMac(
+  return new NotificationPlatformBridgeMac(
       [NSUserNotificationCenter defaultUserNotificationCenter]);
 }
 
@@ -68,24 +68,24 @@ NotificationPlatformBridge* NotificationPlatformBridge::Create() {
 
 // /////////////////////////////////////////////////////////////////////////////
 
-NotificationUIManagerMac::NotificationUIManagerMac(
+NotificationPlatformBridgeMac::NotificationPlatformBridgeMac(
     NSUserNotificationCenter* notification_center)
     : delegate_([NotificationCenterDelegate alloc]),
       notification_center_(notification_center) {
   [notification_center_ setDelegate:delegate_.get()];
 }
 
-NotificationUIManagerMac::~NotificationUIManagerMac() {
+NotificationPlatformBridgeMac::~NotificationPlatformBridgeMac() {
   [notification_center_ setDelegate:nil];
 
   // TODO(miguelg) lift this restriction if possible.
   [notification_center_ removeAllDeliveredNotifications];
 }
 
-void NotificationUIManagerMac::Display(const std::string& notification_id,
-                                       const std::string& profile_id,
-                                       bool incognito,
-                                       const Notification& notification) {
+void NotificationPlatformBridgeMac::Display(const std::string& notification_id,
+                                            const std::string& profile_id,
+                                            bool incognito,
+                                            const Notification& notification) {
   base::scoped_nsobject<NSUserNotification> toast(
       [[NSUserNotification alloc] init]);
   [toast setTitle:base::SysUTF16ToNSString(notification.title())];
@@ -133,8 +133,7 @@ void NotificationUIManagerMac::Display(const std::string& notification_id,
 
       [toast setActionButtonTitle:l10n_util::GetNSString(
                                       IDS_NOTIFICATION_BUTTON_OPTIONS)];
-      [toast setValue:@YES
-               forKey:@"_alwaysShowAlternateActionMenu"];
+      [toast setValue:@YES forKey:@"_alwaysShowAlternateActionMenu"];
 
       NSMutableArray* buttons = [NSMutableArray arrayWithCapacity:3];
       for (const auto& action : notification.buttons())
@@ -181,8 +180,8 @@ void NotificationUIManagerMac::Display(const std::string& notification_id,
   [notification_center_ deliverNotification:toast];
 }
 
-void NotificationUIManagerMac::Close(const std::string& profile_id,
-                                     const std::string& notification_id) {
+void NotificationPlatformBridgeMac::Close(const std::string& profile_id,
+                                          const std::string& notification_id) {
   NSString* candidate_id = base::SysUTF8ToNSString(notification_id);
 
   NSString* current_profile_id = base::SysUTF8ToNSString(profile_id);
@@ -201,7 +200,7 @@ void NotificationUIManagerMac::Close(const std::string& profile_id,
   }
 }
 
-bool NotificationUIManagerMac::GetDisplayed(
+bool NotificationPlatformBridgeMac::GetDisplayed(
     const std::string& profile_id,
     bool incognito,
     std::set<std::string>* notifications) const {
@@ -219,7 +218,7 @@ bool NotificationUIManagerMac::GetDisplayed(
   return true;
 }
 
-bool NotificationUIManagerMac::SupportsNotificationCenter() const {
+bool NotificationPlatformBridgeMac::SupportsNotificationCenter() const {
   return true;
 }
 

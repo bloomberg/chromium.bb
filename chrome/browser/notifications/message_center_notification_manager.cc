@@ -44,15 +44,6 @@
 #include "ash/system/web_notification/web_notification_tray.h"
 #endif
 
-// Mac does support native notifications and defines this method
-// in notification_ui_manager_mac.mm
-#if !defined(OS_MACOSX)
-// static
-NotificationUIManager*
-NotificationUIManager::CreateNativeNotificationManager() {
-  return nullptr;
-}
-#endif
 
 MessageCenterNotificationManager::MessageCenterNotificationManager(
     message_center::MessageCenter* message_center,
