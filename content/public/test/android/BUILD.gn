@@ -9,16 +9,25 @@ generate_jni("test_support_content_jni_headers") {
   ]
 }
 
+android_library("layouttest_java_support") {
+  testonly = true
+  deps = [
+    "//base:base_java",
+  ]
+  java_files = [ "javatests/src/org/chromium/content/browser/test/NestedSystemMessageHandler.java" ]
+}
+
 # GYP: //content/content_tests.gypi:content_java_test_support
 android_library("content_java_test_support") {
+  testonly = true
   deps = [
+    ":layouttest_java_support",
     "//base:base_java",
     "//base:base_java_test_support",
     "//content/public/android:content_java",
   ]
   java_files = [
     "javatests/src/org/chromium/content/browser/test/NativeLibraryTestBase.java",
-    "javatests/src/org/chromium/content/browser/test/NestedSystemMessageHandler.java",
     "javatests/src/org/chromium/content/browser/test/util/ApplicationUtils.java",
     "javatests/src/org/chromium/content/browser/test/util/CallbackHelper.java",
     "javatests/src/org/chromium/content/browser/test/util/Criteria.java",

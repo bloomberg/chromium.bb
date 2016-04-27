@@ -322,22 +322,13 @@ static_library("layouttest_support") {
   ]
 
   if (is_android) {
-    deps += [ ":jni" ]
+    deps += [ "//content/public/test/android:test_support_content_jni_headers" ]
   }
 }
 
 if (is_android) {
   import("//build/config/android/rules.gni")
 
-  generate_jni("jni") {
-    sources = [
-      "../public/test/android/javatests/src/org/chromium/content/browser/test/NestedSystemMessageHandler.java",
-    ]
-    jni_package = "content/public/test"
-  }
-}
-
-if (is_android) {
   jinja_template("content_browsertests_manifest") {
     testonly = true
     input =

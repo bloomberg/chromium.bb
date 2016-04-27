@@ -423,6 +423,7 @@ if (!is_ios) {
       sources += [ "test/android/browsertests_apk/components_browser_tests_jni_onload.cc" ]
       sources -= [ "autofill/content/browser/risk/fingerprint_browsertest.cc" ]
       deps += [
+        "//content/public/test/android:layouttest_java_support",
         "//content/test:layouttest_support",
         "//testing/android/native_test:native_test_support",
       ]

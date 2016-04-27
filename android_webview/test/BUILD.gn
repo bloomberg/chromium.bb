@@ -254,6 +254,7 @@ android_assets("android_webview_unittests_assets") {
 
 # GYP: //android_webview/android_webview_tests.gypi:android_webview_unittests_java
 android_library("android_webview_unittests_java") {
+  testonly = true
   deps = [
     "//android_webview:android_webview_java",
     "//base:base_java",

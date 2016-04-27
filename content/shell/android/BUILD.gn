@@ -118,6 +118,7 @@ android_apk("content_shell_apk") {
     ":libcontent_shell_content_view",
     "//base:base_java",
     "//content/public/android:content_java",
+    "//content/public/test/android:layouttest_java_support",
     "//media/capture/video/android:capture_java",
     "//net/android:net_java",
     "//third_party/mesa:osmesa",
