@@ -90,13 +90,7 @@ FloatPoint LayoutSVGResourceMarker::referencePoint() const
 
 float LayoutSVGResourceMarker::angle() const
 {
-    ASSERT(element());
-
-    float angle = -1;
-    if (orientType() == SVGMarkerOrientAngle)
-        angle = toSVGMarkerElement(*element()).orientAngle()->currentValue()->value();
-
-    return angle;
+    return toSVGMarkerElement(element())->orientAngle()->currentValue()->value();
 }
 
 SVGMarkerUnitsType LayoutSVGResourceMarker::markerUnits() const
@@ -111,12 +105,11 @@ SVGMarkerOrientType LayoutSVGResourceMarker::orientType() const
 
 AffineTransform LayoutSVGResourceMarker::markerTransformation(const FloatPoint& origin, float autoAngle, float strokeWidth) const
 {
-    float markerAngle = angle();
     bool useStrokeWidth = markerUnits() == SVGMarkerUnitsStrokeWidth;
 
     AffineTransform transform;
     transform.translate(origin.x(), origin.y());
-    transform.rotate(markerAngle == -1 ? autoAngle : markerAngle);
+    transform.rotate(orientType() == SVGMarkerOrientAngle ? angle() : autoAngle);
     transform = markerContentTransformation(transform, referencePoint(), useStrokeWidth ? strokeWidth : -1);
     return transform;
 }

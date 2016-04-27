@@ -519,7 +519,7 @@ void writeSVGResourceContainer(TextStream& ts, const LayoutObject& object, int i
         writeNameValuePair(ts, "markerUnits", marker->markerUnits());
         ts << " [ref at " << marker->referencePoint() << "]";
         ts << " [angle=";
-        if (marker->angle() == -1)
+        if (marker->orientType() != SVGMarkerOrientAngle)
             ts << marker->orientType() << "]\n";
         else
             ts << marker->angle() << "]\n";
