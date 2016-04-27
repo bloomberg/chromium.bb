@@ -38,6 +38,9 @@ Polymer({
       type: Object,
       notify: true,
     },
+
+    /** @private */
+    showClearBrowsingDataDialog_: Boolean,
   },
 
   ready: function() {
@@ -62,6 +65,15 @@ Polymer({
 
   /** @private */
   onClearBrowsingDataTap_: function() {
-    this.$.pages.querySelector('settings-clear-browsing-data-dialog').open();
+    this.showClearBrowsingDataDialog_ = true;
+  },
+
+  /**
+   * @param {!Event} event
+   * @private
+   */
+  onIronOverlayClosed_: function(event) {
+    if (Polymer.dom(event).rootTarget.tagName == 'SETTINGS-DIALOG')
+      this.showClearBrowsingDataDialog_ = false;
   },
 });

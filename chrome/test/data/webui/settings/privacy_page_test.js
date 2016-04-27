@@ -98,7 +98,6 @@ cr.define('settings_privacy_page', function() {
       teardown(function() { element.remove(); });
 
       test('ClearBrowsingDataTap', function() {
-        element.open();
         assertTrue(element.$.dialog.opened);
 
         var cancelButton = element.$$('.cancel-button');

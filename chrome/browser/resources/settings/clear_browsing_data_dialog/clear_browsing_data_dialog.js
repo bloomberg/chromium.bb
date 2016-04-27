@@ -51,6 +51,7 @@ Polymer({
         this.setAllowDeletingHistory_.bind(this));
     this.browserProxy_ =
         settings.ClearBrowsingDataBrowserProxyImpl.getInstance();
+    this.$.dialog.open();
   },
 
   /**
@@ -64,10 +65,6 @@ Polymer({
       this.set('prefs.browser.clear_data.browsing_history.value', false);
       this.set('prefs.browser.clear_data.download_history.value', false);
     }
-  },
-
-  open: function() {
-    this.$.dialog.open();
   },
 
   /** @private */
