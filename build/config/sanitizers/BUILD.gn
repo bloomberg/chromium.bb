@@ -10,6 +10,9 @@ import("//build/config/sanitizers/sanitizers.gni")
 # shared_libraries. Unconditionally depend upon this target as it is empty if
 # |is_asan|, |is_lsan|, |is_tsan|, |is_msan| and |use_custom_libcxx| are false.
 group("deps") {
+  deps = [
+    ":deps_no_options",
+  ]
   if (using_sanitizer) {
     public_configs = [
       ":sanitizer_options_link_helper",
@@ -19,10 +22,19 @@ group("deps") {
       # to add the ldflags here as well as in default_sanitizer_flags.
       ":default_sanitizer_ldflags",
     ]
-    deps = [
-      ":options_sources",
-    ]
+    deps += [ ":options_sources" ]
+  }
+}
 
+group("deps_no_options") {
+  if (using_sanitizer) {
+    public_configs = [
+      # Even when a target removes default_sanitizer_flags, it may be depending
+      # on a library that did not remove default_sanitizer_flags. Thus, we need
+      # to add the ldflags here as well as in default_sanitizer_flags.
+      ":default_sanitizer_ldflags",
+    ]
+    deps = []
     if (use_prebuilt_instrumented_libraries) {
       deps += [ "//third_party/instrumented_libraries:deps" ]
     }
@@ -40,7 +52,9 @@ config("sanitizer_options_link_helper") {
   }
 }
 
-source_set("options_sources") {
+static_library("options_sources") {
+  # This is a static_library instead of a source_set, as it shouldn't be
+  # unconditionally linked into targets.
   visibility = [
     ":deps",
     "//:gn_visibility",

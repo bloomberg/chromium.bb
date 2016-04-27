@@ -110,7 +110,7 @@ if (is_linux) {
     deps = [
       ":loader",
       "//base",
-      "//build/config/sanitizers:deps",
+      "//build/config/sanitizers:deps_no_options",
       "//components/nacl/common:switches",
       "//components/nacl/loader/sandbox_linux",
       "//content/public/common",
