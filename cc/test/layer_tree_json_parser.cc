@@ -141,7 +141,7 @@ scoped_refptr<Layer> ParseTreeFromValue(base::Value* val,
     new_layer->SetTouchEventHandlerRegion(touch_region);
   }
 
-  success &= dict->GetList("DrawTransform", &list);
+  success &= dict->GetList("Transform", &list);
   double transform[16];
   for (int i = 0; i < 16; ++i)
     success &= list->GetDouble(i, &transform[i]);

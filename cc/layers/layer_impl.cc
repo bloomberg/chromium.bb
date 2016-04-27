@@ -607,13 +607,13 @@ base::DictionaryValue* LayerImpl::LayerTreeAsJson() const {
   list->AppendDouble(position_.y());
   result->Set("Position", list);
 
-  const gfx::Transform& gfx_transform = DrawTransform();
+  const gfx::Transform& gfx_transform = transform();
   double transform[16];
   gfx_transform.matrix().asColMajord(transform);
   list = new base::ListValue;
   for (int i = 0; i < 16; ++i)
     list->AppendDouble(transform[i]);
-  result->Set("DrawTransform", list);
+  result->Set("Transform", list);
 
   result->SetBoolean("DrawsContent", draws_content_);
   result->SetBoolean("Is3dSorted", Is3dSorted());

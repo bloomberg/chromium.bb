@@ -75,6 +75,10 @@ TEST_F(LayerTreeJsonParserSanityCheck, Basic) {
   parent->SetBounds(gfx::Size(50, 50));
   child->SetBounds(gfx::Size(40, 40));
 
+  gfx::Transform translate;
+  translate.Translate(10, 15);
+  child->SetTransform(translate);
+
   parent->SetPosition(gfx::PointF(25.f, 25.f));
 
   parent->AddChild(std::move(child));
