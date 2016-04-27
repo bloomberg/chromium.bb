@@ -21,6 +21,18 @@
             }
           ]
         },
+        "test": "android_webview_test_apk"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_os": "KTU84P",
+              "device_type": "hammerhead"
+            }
+          ]
+        },
         "test": "android_webview_unittests"
       },
       {
@@ -34,6 +46,23 @@
           ]
         },
         "test": "base_unittests"
+      },
+      {
+        "apk_under_test": "Blimp.apk",
+        "override_compile_targets": [
+          "blimp_test_apk"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_os": "KTU84P",
+              "device_type": "hammerhead"
+            }
+          ]
+        },
+        "test": "blimp_test_apk",
+        "test_apk": "BlimpTest.apk"
       },
       {
         "swarming": {
@@ -81,6 +110,30 @@
             }
           ]
         },
+        "test": "chrome_public_test_apk"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_os": "KTU84P",
+              "device_type": "hammerhead"
+            }
+          ]
+        },
+        "test": "chrome_sync_shell_test_apk"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_os": "KTU84P",
+              "device_type": "hammerhead"
+            }
+          ]
+        },
         "test": "components_browsertests"
       },
       {
@@ -106,6 +159,18 @@
           ]
         },
         "test": "content_browsertests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_os": "KTU84P",
+              "device_type": "hammerhead"
+            }
+          ]
+        },
+        "test": "content_shell_test_apk"
       },
       {
         "swarming": {
@@ -286,61 +351,6 @@
           ]
         },
         "test": "unit_tests"
-      }
-    ],
-    "instrumentation_tests": [
-      {
-        "apk_under_test": "Blimp.apk",
-        "override_compile_targets": [
-          "blimp_test_apk"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "device_os": "KTU84P",
-              "device_type": "hammerhead"
-            }
-          ]
-        },
-        "test": "blimp_test_apk",
-        "test_apk": "BlimpTest.apk"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "device_os": "KTU84P",
-              "device_type": "hammerhead"
-            }
-          ]
-        },
-        "test": "chrome_public_test_apk"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "device_os": "KTU84P",
-              "device_type": "hammerhead"
-            }
-          ]
-        },
-        "test": "chrome_sync_shell_test_apk"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "device_os": "KTU84P",
-              "device_type": "hammerhead"
-            }
-          ]
-        },
-        "test": "content_shell_test_apk"
       }
     ]
   },
