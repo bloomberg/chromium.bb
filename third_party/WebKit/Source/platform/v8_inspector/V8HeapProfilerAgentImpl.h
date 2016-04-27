@@ -39,7 +39,7 @@ public:
     void addInspectedHeapObject(ErrorString*, const String16& inspectedHeapObjectId) override;
     void getHeapObjectId(ErrorString*, const String16& objectId, String16* heapSnapshotObjectId) override;
 
-    void startSampling(ErrorString*) override;
+    void startSampling(ErrorString*, const Maybe<double>& samplingInterval) override;
     void stopSampling(ErrorString*, OwnPtr<protocol::HeapProfiler::SamplingHeapProfile>*) override;
 
     void requestHeapStatsUpdate() override;

@@ -216,9 +216,9 @@ bool InspectorHeapProfilerAgent::isInspectableHeapObject(int id)
     return true;
 }
 
-void InspectorHeapProfilerAgent::startSampling(ErrorString* errorString)
+void InspectorHeapProfilerAgent::startSampling(ErrorString* errorString, const Maybe<double>& samplingInterval)
 {
-    m_v8HeapProfilerAgent->startSampling(errorString);
+    m_v8HeapProfilerAgent->startSampling(errorString, samplingInterval);
 }
 
 void InspectorHeapProfilerAgent::stopSampling(ErrorString* errorString, OwnPtr<protocol::HeapProfiler::SamplingHeapProfile>* profile)

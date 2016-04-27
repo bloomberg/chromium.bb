@@ -14,16 +14,17 @@
 
 namespace blink {
 
+namespace {
+
 namespace HeapProfilerAgentState {
 static const char heapProfilerEnabled[] = "heapProfilerEnabled";
 static const char heapObjectsTrackingEnabled[] = "heapObjectsTrackingEnabled";
 static const char allocationTrackingEnabled[] = "allocationTrackingEnabled";
 #if V8_MAJOR_VERSION >= 5
 static const char samplingHeapProfilerEnabled[] = "samplingHeapProfilerEnabled";
+static const char samplingHeapProfilerInterval[] = "samplingHeapProfilerInterval";
 #endif
 }
-
-namespace {
 
 class HeapSnapshotProgress final : public v8::ActivityControl {
 public:
@@ -175,7 +176,9 @@ void V8HeapProfilerAgentImpl::restore()
 #if V8_MAJOR_VERSION >= 5
     if (m_state->booleanProperty(HeapProfilerAgentState::samplingHeapProfilerEnabled, false)) {
         ErrorString error;
-        startSampling(&error);
+        double samplingInterval = m_state->numberProperty(HeapProfilerAgentState::samplingHeapProfilerInterval, -1);
+        DCHECK_GE(samplingInterval, 0);
+        startSampling(&error, Maybe<double>(samplingInterval));
     }
 #endif
 }
@@ -304,7 +307,7 @@ void V8HeapProfilerAgentImpl::stopTrackingHeapObjectsInternal()
     m_state->setBoolean(HeapProfilerAgentState::allocationTrackingEnabled, false);
 }
 
-void V8HeapProfilerAgentImpl::startSampling(ErrorString* errorString)
+void V8HeapProfilerAgentImpl::startSampling(ErrorString* errorString, const Maybe<double>& samplingInterval)
 {
 #if V8_MAJOR_VERSION >= 5
     v8::HeapProfiler* profiler = m_isolate->GetHeapProfiler();
@@ -312,8 +315,11 @@ void V8HeapProfilerAgentImpl::startSampling(ErrorString* errorString)
         *errorString = "Cannot access v8 heap profiler";
         return;
     }
+    const unsigned defaultSamplingInterval = 1 << 15;
+    double samplingIntervalValue = samplingInterval.fromMaybe(defaultSamplingInterval);
+    m_state->setNumber(HeapProfilerAgentState::samplingHeapProfilerInterval, samplingIntervalValue);
     m_state->setBoolean(HeapProfilerAgentState::samplingHeapProfilerEnabled, true);
-    profiler->StartSamplingHeapProfiler();
+    profiler->StartSamplingHeapProfiler(static_cast<uint64_t>(samplingIntervalValue));
 #endif
 }
 
