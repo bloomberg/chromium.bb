@@ -204,8 +204,7 @@ void SetCountryData(const PersonalDataManager& manager,
 
 namespace options {
 
-AutofillOptionsHandler::AutofillOptionsHandler()
-    : personal_data_(nullptr), prior_profile_(nullptr) {}
+AutofillOptionsHandler::AutofillOptionsHandler() : personal_data_(nullptr) {}
 
 AutofillOptionsHandler::~AutofillOptionsHandler() {
   if (personal_data_)
@@ -391,8 +390,8 @@ void AutofillOptionsHandler::LoadAddressEditor(const base::ListValue* args) {
     return;
   }
 
-  prior_profile_ = personal_data_->GetProfileByGUID(guid);
-  if (!prior_profile_) {
+  const AutofillProfile* prior_profile = personal_data_->GetProfileByGUID(guid);
+  if (!prior_profile) {
     // There is a race where a user can click once on the close button and
     // quickly click again on the list item before the item is removed (since
     // the list is not updated until the model tells the list an item has been
@@ -402,7 +401,7 @@ void AutofillOptionsHandler::LoadAddressEditor(const base::ListValue* args) {
   }
 
   base::DictionaryValue address;
-  AutofillProfileToDictionary(*prior_profile_, &address);
+  AutofillProfileToDictionary(*prior_profile, &address);
 
   web_ui()->CallJavascriptFunction("AutofillOptions.editAddress", address);
 }
@@ -480,20 +479,25 @@ void AutofillOptionsHandler::SetAddress(const base::ListValue* args) {
   base::string16 full_name;
   if (args->GetString(arg_counter++, &full_name)) {
     // Although First/Middle/Last are not displayed on the form, we transfer
-    // this information when they match the full name given. This is because it
-    // may not be possible later to correctly tokenize the concatenated full
-    // name; e.g., when the last name contains a space, the first word would be
-    // treated as a middle name.
-    if (prior_profile_ && autofill::data_util::ProfileMatchesFullName(
-                              full_name, *prior_profile_)) {
+    // this information when they match the full name in the old version of the
+    // profile, if one exists. This is because it may not be possible later to
+    // correctly tokenize the concatenated full name; e.g., when the last name
+    // contains a space, the first word would be treated as a middle name.
+    const AutofillProfile* prior_profile =
+        base::IsValidGUID(profile.guid())
+            ? personal_data_->GetProfileByGUID(guid)
+            : nullptr;
+
+    if (prior_profile && autofill::data_util::ProfileMatchesFullName(
+                             full_name, *prior_profile)) {
       profile.SetRawInfo(autofill::NAME_FULL, full_name);
 
       profile.SetRawInfo(autofill::NAME_FIRST,
-                         prior_profile_->GetRawInfo(autofill::NAME_FIRST));
+                         prior_profile->GetRawInfo(autofill::NAME_FIRST));
       profile.SetRawInfo(autofill::NAME_MIDDLE,
-                         prior_profile_->GetRawInfo(autofill::NAME_MIDDLE));
+                         prior_profile->GetRawInfo(autofill::NAME_MIDDLE));
       profile.SetRawInfo(autofill::NAME_LAST,
-                         prior_profile_->GetRawInfo(autofill::NAME_LAST));
+                         prior_profile->GetRawInfo(autofill::NAME_LAST));
     } else {
       // In contrast to SetRawInfo, SetInfo will naively attempt to populate the
       // First/Middle/Last fields by tokenization.
