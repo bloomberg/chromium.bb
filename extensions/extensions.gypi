@@ -1043,6 +1043,8 @@
       'renderer/worker_script_context_set.h',
     ],
     'extensions_renderer_sources_wifi_display': [
+      'renderer/api/display_source/wifi_display/wifi_display_audio_encoder.cc',
+      'renderer/api/display_source/wifi_display/wifi_display_audio_encoder.h',
       'renderer/api/display_source/wifi_display/wifi_display_elementary_stream_descriptor.cc',
       'renderer/api/display_source/wifi_display/wifi_display_elementary_stream_descriptor.h',
       'renderer/api/display_source/wifi_display/wifi_display_elementary_stream_info.cc',
