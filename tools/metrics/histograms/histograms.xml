@@ -2874,16 +2874,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="AutoFill.RequestErrorimcklfaapmppdhilegjoahjbahdgfhcn">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <summary>TBD.</summary>
-</histogram>
-
-<histogram name="AutoFill.RequestSuccessimcklfaapmppdhilegjoahjbahdgfhcn">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <summary>TBD.</summary>
-</histogram>
-
 <histogram name="Autofill.SaveCreditCardPrompt"
     enum="AutofillSaveCreditCardPrompt">
   <owner>jdonnelly@chromium.org</owner>
