@@ -32,9 +32,9 @@ public:
     void setDelay(double);
     void setEndDelay(double);
     void setFill(String);
-    void setIterationStart(double);
-    void setIterations(double);
-    void setDuration(const UnrestrictedDoubleOrString&);
+    void setIterationStart(double, ExceptionState&);
+    void setIterations(double, ExceptionState&);
+    void setDuration(const UnrestrictedDoubleOrString&, ExceptionState&);
     void setPlaybackRate(double);
     void setDirection(String);
     void setEasing(String, ExceptionState&);

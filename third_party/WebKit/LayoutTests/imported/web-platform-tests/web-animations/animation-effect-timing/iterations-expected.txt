@@ -1,13 +1,8 @@
 This is a testharness.js-based test.
 FAIL set iterations 2 anim.effect.getComputedTiming is not a function
 FAIL set iterations Infinity anim.effect.getComputedTiming is not a function
-FAIL set negative iterations assert_throws: function "function () {
-    anim.effect.timing.iterations = -1;
-  }" did not throw
-FAIL set negative infinity iterations  assert_throws: function "function () {
-    anim.effect.timing.iterations = -Infini..." did not throw
-FAIL set NaN iterations assert_throws: function "function () {
-    anim.effect.timing.iterations = NaN;
-  }" did not throw
+PASS set negative iterations 
+PASS set negative infinity iterations  
+PASS set NaN iterations 
 Harness: the test ran to completion.
 

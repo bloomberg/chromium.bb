@@ -3,33 +3,18 @@ FAIL set duration 123.45 anim.effect.getComputedTiming is not a function
 FAIL set duration auto anim.effect.getComputedTiming is not a function
 FAIL set auto duration in animate as object anim.effect.getComputedTiming is not a function
 FAIL set duration Infinity anim.effect.getComputedTiming is not a function
-FAIL set negative duration in animate using a duration parameter assert_throws: function "function () {
-    div.animate({ opacity: [ 0, 1 ] }, -1);..." did not throw
+PASS set negative duration in animate using a duration parameter 
 PASS set negative Infinity duration in animate using a duration parameter 
 PASS set NaN duration in animate using a duration parameter 
-FAIL set negative duration in animate using an options object assert_throws: function "function () {
-    div.animate({ opacity: [ 0, 1 ] }, { du..." did not throw
-FAIL set negative Infinity duration in animate using an options object assert_throws: function "function () {
-    div.animate({ opacity: [ 0, 1 ] }, { du..." did not throw
-FAIL set NaN duration in animate using an options object assert_throws: function "function () {
-    div.animate({ opacity: [ 0, 1 ] }, { du..." did not throw
-FAIL set abc string duration in animate using an options object assert_throws: function "function () {
-    div.animate({ opacity: [ 0, 1 ] }, { du..." did not throw
-FAIL set 100 string duration in animate using an options object assert_throws: function "function () {
-    div.animate({ opacity: [ 0, 1 ] }, { du..." did not throw
-FAIL set negative duration assert_throws: function "function () {
-    anim.effect.timing.duration = -1;
-  }" did not throw
-FAIL set negative Infinity duration assert_throws: function "function () {
-    anim.effect.timing.duration = -Infinity..." did not throw
-FAIL set NaN duration assert_throws: function "function () {
-    anim.effect.timing.duration = NaN;
-  }" did not throw
-FAIL set duration abc assert_throws: function "function () {
-    anim.effect.timing.duration = 'abc';
-  }" did not throw
-FAIL set duration string 100 assert_throws: function "function () {
-    anim.effect.timing.duration = '100';
-  }" did not throw
+PASS set negative duration in animate using an options object 
+PASS set negative Infinity duration in animate using an options object 
+PASS set NaN duration in animate using an options object 
+PASS set abc string duration in animate using an options object 
+PASS set 100 string duration in animate using an options object 
+PASS set negative duration 
+PASS set negative Infinity duration 
+PASS set NaN duration 
+PASS set duration abc 
+PASS set duration string 100 
 Harness: the test ran to completion.
 

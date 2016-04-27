@@ -58,7 +58,10 @@ KeyframeEffect* KeyframeEffect::create(ExecutionContext* executionContext, Eleme
     ASSERT(RuntimeEnabledFeatures::webAnimationsAPIEnabled());
     if (element)
         UseCounter::count(element->document(), UseCounter::AnimationConstructorKeyframeListEffectObjectTiming);
-    return create(element, EffectInput::convert(element, effectInput, executionContext, exceptionState), TimingInput::convert(duration));
+    Timing timing;
+    if (!TimingInput::convert(duration, timing, exceptionState))
+        return nullptr;
+    return create(element, EffectInput::convert(element, effectInput, executionContext, exceptionState), timing);
 }
 
 KeyframeEffect* KeyframeEffect::create(ExecutionContext* executionContext, Element* element, const EffectModelOrDictionarySequenceOrDictionary& effectInput, const KeyframeEffectOptions& timingInput, ExceptionState& exceptionState)
@@ -67,10 +70,8 @@ KeyframeEffect* KeyframeEffect::create(ExecutionContext* executionContext, Eleme
     if (element)
         UseCounter::count(element->document(), UseCounter::AnimationConstructorKeyframeListEffectObjectTiming);
     Timing timing;
-    bool success = TimingInput::convert(timingInput, timing, &element->document(), exceptionState);
-    if (!success || exceptionState.hadException())
+    if (!TimingInput::convert(timingInput, timing, &element->document(), exceptionState))
         return nullptr;
-
     return create(element, EffectInput::convert(element, effectInput, executionContext, exceptionState), timing);
 }
 

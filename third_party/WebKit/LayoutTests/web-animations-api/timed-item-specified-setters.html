@@ -1,51 +1,118 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-
-<body>
-    <div id='e'></div>
-</body>
-
 <script>
-var element = document.getElementById('e');
-var keyframes = [{opacity: '1', offset: 0}, {opacity: '0', offset: 1}];
-
-var specifiedTiming = new KeyframeEffect(element, keyframes).timing;
+var typeError = {name: 'TypeError'};
+var timing = new KeyframeEffect(null, null).timing;
 
 test(function() {
-    specifiedTiming.delay = 2;
-    assert_equals(specifiedTiming.delay, 2);
+    timing.delay = 2;
+    assert_equals(timing.delay, 2);
+    timing.delay = -4;
+    assert_equals(timing.delay, -4);
 
-    specifiedTiming.endDelay = 0.5;
-    assert_equals(specifiedTiming.endDelay, 0.5);
+    assert_throws(typeError, () => timing.delay = NaN);
+    assert_equals(timing.delay, -4);
 
-    specifiedTiming.fill = 'backwards';
-    assert_equals(specifiedTiming.fill, 'backwards');
+    assert_throws(typeError, () => timing.delay = Infinity);
+    assert_equals(timing.delay, -4);
+}, 'AnimationEffectTiming should have a setter for delay.');
 
-    specifiedTiming.iterationStart = 2;
-    assert_equals(specifiedTiming.iterationStart, 2);
+test(function() {
+    timing.endDelay = 0.5;
+    assert_equals(timing.endDelay, 0.5);
 
-    specifiedTiming.iterations = 10;
-    assert_equals(specifiedTiming.iterations, 10);
+    timing.endDelay = -5;
+    assert_equals(timing.endDelay, -5);
 
-    specifiedTiming.duration = 5;
-    assert_equals(specifiedTiming.duration, 5);
-    specifiedTiming.duration = '6';
-    assert_equals(specifiedTiming.duration, 'auto');
-    specifiedTiming.duration = 'auto';
-    assert_equals(specifiedTiming.duration, 'auto');
-    specifiedTiming.duration = 'a';
-    assert_equals(specifiedTiming.duration, 'auto');
-    specifiedTiming.duration = '-1';
-    assert_equals(specifiedTiming.duration, 'auto');
+    assert_throws(typeError, () => timing.endDelay = NaN);
+    assert_equals(timing.endDelay, -5);
 
-    specifiedTiming.playbackRate = 2;
-    assert_equals(specifiedTiming.playbackRate, 2);
+    assert_throws(typeError, () => timing.endDelay = Infinity);
+    assert_equals(timing.endDelay, -5);
+}, 'AnimationEffectTiming should have a setter for endDelay.');
 
-    specifiedTiming.direction = 'reverse';
-    assert_equals(specifiedTiming.direction, 'reverse');
+test(function() {
+    timing.fill = 'backwards';
+    assert_equals(timing.fill, 'backwards');
 
-    specifiedTiming.easing = "step-start";
-    assert_equals(specifiedTiming.easing, 'step-start');
-}, 'TimedItem.timing should have a setter for each member of the underlying Timing object.');
+    timing.fill = 'both';
+    assert_equals(timing.fill, 'both');
+}, 'AnimationEffectTiming should have a setter for fill.');
+
+test(function() {
+    timing.iterationStart = 1.5;
+    assert_equals(timing.iterationStart, 1.5);
+
+    assert_throws(typeError, () => timing.iterationStart = -0.5);
+    assert_equals(timing.iterationStart, 1.5);
+
+    assert_throws(typeError, () => timing.iterationStart = NaN);
+    assert_equals(timing.iterationStart, 1.5);
+
+    assert_throws(typeError, () => timing.iterationStart = Infinity);
+    assert_equals(timing.iterationStart, 1.5);
+}, 'AnimationEffectTiming should have a setter for iterationStart.');
+
+test(function() {
+    timing.iterations = 10;
+    assert_equals(timing.iterations, 10);
+
+    timing.iterations = Infinity;
+    assert_equals(timing.iterations, Infinity);
+
+    assert_throws(typeError, () => timing.iterations = -20);
+    assert_equals(timing.iterations, Infinity);
+
+    assert_throws(typeError, () => timing.iterations = NaN);
+    assert_equals(timing.iterations, Infinity);
+}, 'AnimationEffectTiming should have a setter for iterations.');
+
+test(function() {
+    timing.duration = Infinity;
+    assert_equals(timing.duration, Infinity);
+
+    timing.duration = 1234;
+    assert_equals(timing.duration, 1234);
+
+    assert_throws(typeError, () => timing.duration = -10);
+    assert_equals(timing.duration, 1234);
+
+    assert_throws(typeError, () => timing.duration = NaN);
+    assert_equals(timing.duration, 1234);
+
+    assert_throws(typeError, () => timing.duration = 'very long');
+    assert_equals(timing.duration, 1234);
+}, 'AnimationEffectTiming should have a setter for duration.');
+
+test(function() {
+    timing.playbackRate = 2;
+    assert_equals(timing.playbackRate, 2);
+
+    timing.playbackRate = -2;
+    assert_equals(timing.playbackRate, -2);
+
+    assert_throws(typeError, () => timing.playbackRate = NaN);
+    assert_equals(timing.playbackRate, -2);
+}, 'AnimationEffectTiming should have a setter for playbackRate.');
+
+test(function() {
+    timing.direction = 'reverse';
+    assert_equals(timing.direction, 'reverse');
+
+    timing.direction = 'alternate';
+    assert_equals(timing.direction, 'alternate');
+}, 'AnimationEffectTiming should have a setter for direction.');
+
+test(function() {
+    timing.easing = "step-start";
+    assert_equals(timing.easing, 'step-start');
+
+    timing.easing = "eAse\\2d iN-ouT";
+    assert_equals(timing.easing, 'ease-in-out');
+
+
+    assert_throws(typeError, () => timing.easing = 'ponies');
+    assert_equals(timing.easing, 'ease-in-out');
+}, 'AnimationEffectTiming should have a setter for easing.');
 </script>

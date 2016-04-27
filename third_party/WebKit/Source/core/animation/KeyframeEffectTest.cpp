@@ -127,13 +127,6 @@ TEST_F(AnimationKeyframeEffectV8Test, CanOmitSpecifiedDuration)
     EXPECT_TRUE(std::isnan(animation->specifiedTiming().iterationDuration));
 }
 
-TEST_F(AnimationKeyframeEffectV8Test, NegativeDurationIsAuto)
-{
-    Vector<Dictionary, 0> jsKeyframes;
-    KeyframeEffect* animation = createAnimation(element.get(), jsKeyframes, -2, exceptionState);
-    EXPECT_TRUE(std::isnan(animation->specifiedTiming().iterationDuration));
-}
-
 TEST_F(AnimationKeyframeEffectV8Test, SpecifiedGetters)
 {
     Vector<Dictionary, 0> jsKeyframes;
@@ -219,11 +212,13 @@ TEST_F(AnimationKeyframeEffectV8Test, SpecifiedSetters)
     EXPECT_EQ("backwards", specified->fill());
 
     EXPECT_EQ(0, specified->iterationStart());
-    specified->setIterationStart(2);
+    specified->setIterationStart(2, exceptionState);
+    ASSERT_FALSE(exceptionState.hadException());
     EXPECT_EQ(2, specified->iterationStart());
 
     EXPECT_EQ(1, specified->iterations());
-    specified->setIterations(10);
+    specified->setIterations(10, exceptionState);
+    ASSERT_FALSE(exceptionState.hadException());
     EXPECT_EQ(10, specified->iterations());
 
     EXPECT_EQ(1, specified->playbackRate());
@@ -258,7 +253,8 @@ TEST_F(AnimationKeyframeEffectV8Test, SetSpecifiedDuration)
 
     UnrestrictedDoubleOrString inDuration;
     inDuration.setUnrestrictedDouble(2.5);
-    specified->setDuration(inDuration);
+    specified->setDuration(inDuration, exceptionState);
+    ASSERT_FALSE(exceptionState.hadException());
     UnrestrictedDoubleOrString duration2;
     specified->duration(duration2);
     EXPECT_TRUE(duration2.isUnrestrictedDouble());

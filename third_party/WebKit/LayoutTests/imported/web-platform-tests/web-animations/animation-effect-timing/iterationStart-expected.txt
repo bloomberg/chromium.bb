@@ -2,7 +2,6 @@ This is a testharness.js-based test.
 FAIL Test that changing the iterationStart affects computed timing when backwards-filling anim.effect.getComputedTiming is not a function
 FAIL Test that changing the iterationStart affects computed timing during the active phase anim.effect.getComputedTiming is not a function
 FAIL Test that changing the iterationStart affects computed timing when forwards-filling anim.effect.getComputedTiming is not a function
-FAIL Test invalid iterationStart value assert_throws: function "function () {
-                  anim.effect.timing.iterat..." did not throw
+PASS Test invalid iterationStart value 
 Harness: the test ran to completion.
 

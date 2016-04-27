@@ -333,6 +333,7 @@ void InspectorAnimationAgent::setTiming(ErrorString* errorString, const String& 
         return;
 
     animation = animationClone(animation);
+    NonThrowableExceptionState exceptionState;
 
     String type = m_idToAnimationType.get(animationId);
     if (type == AnimationType::CSSTransition) {
@@ -352,12 +353,12 @@ void InspectorAnimationAgent::setTiming(ErrorString* errorString, const String& 
         AnimationEffectTiming* timing = animation->effect()->timing();
         UnrestrictedDoubleOrString unrestrictedDuration;
         unrestrictedDuration.setUnrestrictedDouble(duration + delay);
-        timing->setDuration(unrestrictedDuration);
+        timing->setDuration(unrestrictedDuration, exceptionState);
     } else {
         AnimationEffectTiming* timing = animation->effect()->timing();
         UnrestrictedDoubleOrString unrestrictedDuration;
         unrestrictedDuration.setUnrestrictedDouble(duration);
-        timing->setDuration(unrestrictedDuration);
+        timing->setDuration(unrestrictedDuration, exceptionState);
         timing->setDelay(delay);
     }
 }

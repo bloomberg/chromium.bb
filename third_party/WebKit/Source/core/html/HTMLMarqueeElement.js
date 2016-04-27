@@ -355,11 +355,14 @@ privateScriptController.installClass('HTMLMarqueeElement', function(HTMLMarqueeE
         var scrollDelay = this.scrollDelay;
         if (scrollDelay < kMinimumScrollDelayMS && !this.trueSpeed)
             scrollDelay = kDefaultScrollDelayMS;
+        var duration = 0;
+        if (this.scrollAmount && !isNaN(parameters.distance))
+            duration = parameters.distance * scrollDelay / this.scrollAmount;
         var player = this.mover_.animate([
             { transform: parameters.transformBegin },
             { transform: parameters.transformEnd },
         ], {
-            duration: this.scrollAmount == 0 ? 0 : parameters.distance * scrollDelay / this.scrollAmount,
+            duration,
             fill: 'forwards',
         });
         player.marquee_ = this;

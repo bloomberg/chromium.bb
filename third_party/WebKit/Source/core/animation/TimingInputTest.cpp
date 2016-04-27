@@ -27,9 +27,10 @@ protected:
         v8::Local<v8::Object> timingInput = v8::Object::New(m_isolate);
         setV8ObjectPropertyAsNumber(m_isolate, timingInput, timingProperty, timingPropertyValue);
         KeyframeEffectOptions timingInputDictionary;
+        TrackExceptionState exceptionState;
         V8KeyframeEffectOptions::toImpl(m_isolate, timingInput, timingInputDictionary, exceptionState);
         Timing result;
-        timingConversionSuccess = TimingInput::convert(timingInputDictionary, result, nullptr, exceptionState);
+        timingConversionSuccess = TimingInput::convert(timingInputDictionary, result, nullptr, exceptionState) && !exceptionState.hadException();
         return result;
     }
 
@@ -38,14 +39,14 @@ protected:
         v8::Local<v8::Object> timingInput = v8::Object::New(m_isolate);
         setV8ObjectPropertyAsString(m_isolate, timingInput, timingProperty, timingPropertyValue);
         KeyframeEffectOptions timingInputDictionary;
+        TrackExceptionState exceptionState;
         V8KeyframeEffectOptions::toImpl(m_isolate, timingInput, timingInputDictionary, exceptionState);
         Timing result;
-        timingConversionSuccess = TimingInput::convert(timingInputDictionary, result, nullptr, exceptionState);
+        timingConversionSuccess = TimingInput::convert(timingInputDictionary, result, nullptr, exceptionState) && !exceptionState.hadException();
         return result;
     }
 
     v8::Isolate* m_isolate;
-    TrackExceptionState exceptionState;
 
 private:
     V8TestingScope m_scope;
@@ -88,45 +89,78 @@ TEST_F(AnimationTimingInputTest, TimingInputFillMode)
 
 TEST_F(AnimationTimingInputTest, TimingInputIterationStart)
 {
-    bool ignoredSuccess;
-    EXPECT_EQ(1.1, applyTimingInputNumber("iterationStart", 1.1, ignoredSuccess).iterationStart);
-    EXPECT_EQ(0, applyTimingInputNumber("iterationStart", -1, ignoredSuccess).iterationStart);
-    EXPECT_EQ(0, applyTimingInputString("iterationStart", "Infinity", ignoredSuccess).iterationStart);
-    EXPECT_EQ(0, applyTimingInputString("iterationStart", "-Infinity", ignoredSuccess).iterationStart);
-    EXPECT_EQ(0, applyTimingInputString("iterationStart", "NaN", ignoredSuccess).iterationStart);
-    EXPECT_EQ(0, applyTimingInputString("iterationStart", "rubbish", ignoredSuccess).iterationStart);
+    bool success;
+    EXPECT_EQ(1.1, applyTimingInputNumber("iterationStart", 1.1, success).iterationStart);
+    EXPECT_TRUE(success);
+
+    applyTimingInputNumber("iterationStart", -1, success);
+    EXPECT_FALSE(success);
+
+    applyTimingInputString("iterationStart", "Infinity", success);
+    EXPECT_FALSE(success);
+
+    applyTimingInputString("iterationStart", "-Infinity", success);
+    EXPECT_FALSE(success);
+
+    applyTimingInputString("iterationStart", "NaN", success);
+    EXPECT_FALSE(success);
+
+    applyTimingInputString("iterationStart", "rubbish", success);
+    EXPECT_FALSE(success);
 }
 
 TEST_F(AnimationTimingInputTest, TimingInputIterationCount)
 {
-    bool ignoredSuccess;
-    EXPECT_EQ(2.1, applyTimingInputNumber("iterations", 2.1, ignoredSuccess).iterationCount);
-    EXPECT_EQ(0, applyTimingInputNumber("iterations", -1, ignoredSuccess).iterationCount);
+    bool success;
+    EXPECT_EQ(2.1, applyTimingInputNumber("iterations", 2.1, success).iterationCount);
+    EXPECT_TRUE(success);
 
-    Timing timing = applyTimingInputString("iterations", "Infinity", ignoredSuccess);
+    Timing timing = applyTimingInputString("iterations", "Infinity", success);
+    EXPECT_TRUE(success);
     EXPECT_TRUE(std::isinf(timing.iterationCount));
     EXPECT_GT(timing.iterationCount, 0);
 
-    EXPECT_EQ(0, applyTimingInputString("iterations", "-Infinity", ignoredSuccess).iterationCount);
-    EXPECT_EQ(1, applyTimingInputString("iterations", "NaN", ignoredSuccess).iterationCount);
-    EXPECT_EQ(1, applyTimingInputString("iterations", "rubbish", ignoredSuccess).iterationCount);
+    applyTimingInputNumber("iterations", -1, success);
+    EXPECT_FALSE(success);
+
+    applyTimingInputString("iterations", "-Infinity", success);
+    EXPECT_FALSE(success);
+
+    applyTimingInputString("iterations", "NaN", success);
+    EXPECT_FALSE(success);
+
+    applyTimingInputString("iterations", "rubbish", success);
+    EXPECT_FALSE(success);
 }
 
 TEST_F(AnimationTimingInputTest, TimingInputIterationDuration)
 {
-    bool ignoredSuccess;
-    EXPECT_EQ(1.1, applyTimingInputNumber("duration", 1100, ignoredSuccess).iterationDuration);
-    EXPECT_TRUE(std::isnan(applyTimingInputNumber("duration", -1000, ignoredSuccess).iterationDuration));
-    EXPECT_TRUE(std::isnan(applyTimingInputString("duration", "1000", ignoredSuccess).iterationDuration));
+    bool success;
+    EXPECT_EQ(1.1, applyTimingInputNumber("duration", 1100, success).iterationDuration);
+    EXPECT_TRUE(success);
 
-    Timing timing = applyTimingInputNumber("duration", std::numeric_limits<double>::infinity(), ignoredSuccess);
+    Timing timing = applyTimingInputNumber("duration", std::numeric_limits<double>::infinity(), success);
+    EXPECT_TRUE(success);
     EXPECT_TRUE(std::isinf(timing.iterationDuration));
     EXPECT_GT(timing.iterationDuration, 0);
 
-    EXPECT_TRUE(std::isnan(applyTimingInputString("duration", "-Infinity", ignoredSuccess).iterationDuration));
-    EXPECT_TRUE(std::isnan(applyTimingInputString("duration", "NaN", ignoredSuccess).iterationDuration));
-    EXPECT_TRUE(std::isnan(applyTimingInputString("duration", "auto", ignoredSuccess).iterationDuration));
-    EXPECT_TRUE(std::isnan(applyTimingInputString("duration", "rubbish", ignoredSuccess).iterationDuration));
+    EXPECT_TRUE(std::isnan(applyTimingInputString("duration", "auto", success).iterationDuration));
+    EXPECT_TRUE(success);
+
+    applyTimingInputString("duration", "1000", success);
+    EXPECT_FALSE(success);
+
+    applyTimingInputNumber("duration", -1000, success);
+    EXPECT_FALSE(success);
+
+    applyTimingInputString("duration", "-Infinity", success);
+    EXPECT_FALSE(success);
+
+    applyTimingInputString("duration", "NaN", success);
+    EXPECT_FALSE(success);
+
+    applyTimingInputString("duration", "rubbish", success);
+    EXPECT_FALSE(success);
 }
 
 TEST_F(AnimationTimingInputTest, TimingInputPlaybackRate)
@@ -199,10 +233,12 @@ TEST_F(AnimationTimingInputTest, TimingInputTimingFunction)
 
 TEST_F(AnimationTimingInputTest, TimingInputEmpty)
 {
+    TrackExceptionState exceptionState;
     Timing controlTiming;
     Timing updatedTiming;
     bool success = TimingInput::convert(KeyframeEffectOptions(), updatedTiming, nullptr, exceptionState);
     EXPECT_TRUE(success);
+    EXPECT_FALSE(exceptionState.hadException());
 
     EXPECT_EQ(controlTiming.startDelay, updatedTiming.startDelay);
     EXPECT_EQ(controlTiming.fillMode, updatedTiming.fillMode);

@@ -91,27 +91,25 @@ void AnimationEffectTiming::setFill(String fill)
     m_parent->updateSpecifiedTiming(timing);
 }
 
-void AnimationEffectTiming::setIterationStart(double iterationStart)
+void AnimationEffectTiming::setIterationStart(double iterationStart, ExceptionState& exceptionState)
 {
     Timing timing = m_parent->specifiedTiming();
-    TimingInput::setIterationStart(timing, iterationStart);
-    m_parent->updateSpecifiedTiming(timing);
+    if (TimingInput::setIterationStart(timing, iterationStart, exceptionState))
+        m_parent->updateSpecifiedTiming(timing);
 }
 
-void AnimationEffectTiming::setIterations(double iterations)
+void AnimationEffectTiming::setIterations(double iterations, ExceptionState& exceptionState)
 {
     Timing timing = m_parent->specifiedTiming();
-    TimingInput::setIterationCount(timing, iterations);
-    m_parent->updateSpecifiedTiming(timing);
+    if (TimingInput::setIterationCount(timing, iterations, exceptionState))
+        m_parent->updateSpecifiedTiming(timing);
 }
 
-void AnimationEffectTiming::setDuration(const UnrestrictedDoubleOrString& durationOrAuto)
+void AnimationEffectTiming::setDuration(const UnrestrictedDoubleOrString& duration, ExceptionState& exceptionState)
 {
-    // Any strings other than "auto" are coerced to "auto".
-    double duration = durationOrAuto.isString() ? std::numeric_limits<double>::quiet_NaN() : durationOrAuto.getAsUnrestrictedDouble();
     Timing timing = m_parent->specifiedTiming();
-    TimingInput::setIterationDuration(timing, duration);
-    m_parent->updateSpecifiedTiming(timing);
+    if (TimingInput::setIterationDuration(timing, duration, exceptionState))
+        m_parent->updateSpecifiedTiming(timing);
 }
 
 void AnimationEffectTiming::setPlaybackRate(double playbackRate)

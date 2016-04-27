@@ -31,6 +31,7 @@
 #ifndef Timing_h
 #define Timing_h
 
+#include "core/style/DataEquivalency.h"
 #include "platform/animation/TimingFunction.h"
 #include "wtf/Allocator.h"
 #include "wtf/MathExtras.h"
@@ -93,11 +94,15 @@ public:
 
     bool operator==(const Timing &other) const
     {
-        return startDelay == other.startDelay && endDelay == other.endDelay
-            && fillMode == other.fillMode && iterationStart == other.iterationStart
-            && iterationCount == other.iterationCount && iterationDuration == other.iterationDuration
-            && playbackRate == other.playbackRate && direction == other.direction
-            && *timingFunction == *other.timingFunction;
+        return startDelay == other.startDelay
+            && endDelay == other.endDelay
+            && fillMode == other.fillMode
+            && iterationStart == other.iterationStart
+            && iterationCount == other.iterationCount
+            && ((std::isnan(iterationDuration) && std::isnan(other.iterationDuration)) || iterationDuration == other.iterationDuration)
+            && playbackRate == other.playbackRate
+            && direction == other.direction
+            && dataEquivalent(timingFunction.get(), other.timingFunction.get());
     }
 
     bool operator!=(const Timing &other) const

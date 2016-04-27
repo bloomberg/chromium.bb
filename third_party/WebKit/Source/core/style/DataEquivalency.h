@@ -10,6 +10,11 @@
 
 namespace blink {
 
+template<typename T>
+class Persistent;
+template<typename T>
+class Member;
+
 template <typename T>
 bool dataEquivalent(const T* a, const T* b)
 {
