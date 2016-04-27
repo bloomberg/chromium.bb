@@ -38,4 +38,13 @@ Polymer({
   closePopupMenu_: function() {
     this.$$('iron-dropdown').close();
   },
+
+  /**
+   * @param {string} url
+   * @return {string} A set of icon URLs.
+   * @private
+   */
+  getIconSet_: function(url) {
+    return getFaviconImageSet(url);
+  },
 });

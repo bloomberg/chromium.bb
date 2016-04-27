@@ -71,4 +71,14 @@ Polymer({
   closePopupMenu_: function() {
     this.$$('iron-dropdown').close();
   },
+
+  /**
+   * @param {?string} url The icon URL if available.
+   * @return {string} A set of icon URLs.
+   * @private
+   */
+  getIconSet_: function(url) {
+    // Force default icon, if no |engine.iconURL| is available.
+    return getFaviconImageSet(url || '');
+  },
 });
