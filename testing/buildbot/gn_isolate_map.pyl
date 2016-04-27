@@ -66,10 +66,6 @@
     "type": "raw",
     "args": [],
   },
-  "android_webview_test_apk": {
-    "label": "//android_webview/test:android_webview_test_apk",
-    "type": "console_test_launcher",
-  },
   "android_webview_unittests": {
     "label": "//android_webview/test:android_webview_unittests",
     "type": "console_test_launcher",
@@ -132,10 +128,6 @@
     "label": "//tools/battor_agent:battor_agent_unittests",
     "type": "console_test_launcher",
   },
-  "blimp_test_apk": {
-    "label": "//blimp/client:blimp_test_apk",
-    "type": "console_test_launcher",
-  },
   "blimp_unittests": {
     "label": "//blimp:blimp_unittests",
     "type": "console_test_launcher",
@@ -191,14 +183,6 @@
     "label": "//chrome_elf:chrome_elf_unittests",
     "type": "raw",
   },
-  "chrome_public_test_apk": {
-    "label": "//chrome/android:chrome_public_test_apk",
-    "type": "console_test_launcher",
-  },
-  "chrome_sync_shell_test_apk": {
-    "label": "//chrome/android:chrome_sync_shell_test_apk",
-    "type": "console_test_launcher",
-  },
   "chromedriver_unittests": {
     "label": "//chrome/test/chromedriver:chromedriver_unittests",
     "type": "windowed_test_launcher",
@@ -229,10 +213,6 @@
     "type": "windowed_test_launcher",
     "executable": "content_browsertests",
     "args": ["--site-per-process", "--test-launcher-filter-file=../../testing/buildbot/filters/site-per-process.content_browsertests.filter"],
-  },
-  "content_shell_test_apk": {
-    "label": "//content/shell/android:content_shell_test_apk",
-    "type": "console_test_launcher",
   },
   "content_unittests": {
     "label": "//content/test:content_unittests",
