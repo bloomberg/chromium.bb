@@ -82,3 +82,6 @@ tests:
         {underline: '     +++++++++++++++++++++++++ '},
       xfail: true}
     # Fails because an emphasized word ending in a symbol that is not emphasized breaks detection of that word.
+  - # Character additions: Copyright symbol, registered trademark symbol, trademark symbol. Not covered by the official specification document, but conventionally marked as (c), (r) and tm.
+    - © ® ™
+    - ⠦⠉⠴ ⠦⠗⠴ ⠞⠍

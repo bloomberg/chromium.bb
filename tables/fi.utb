@@ -103,6 +103,12 @@ sign - 36 Hyphen, not a dash. Hyphens are spaced as in print text.
 sign \x2013 36 – En-dash, not a hyphen.
 sign \x2014 36 – Em-dash, not a hyphen.
 
+# Additional general symbols
+# These are not covered by the specification document, but reflect the conventions.
+sign \x00A9 236-14-356 © Copyright symbol
+sign \x00AE 236-1235-356 ® Registered trademark symbol
+sign \x2122 2345-134 ™ Trademark symbol
+
 # Mathematical symbols - these are ONLY used in mathematical context
 # Thus, these may have special rules
 math \x2212 36 − Minus sign, not a hyphen
