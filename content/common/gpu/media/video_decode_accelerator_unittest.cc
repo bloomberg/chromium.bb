@@ -632,6 +632,10 @@ void GLRenderingVDAClient::CreateAndStartDecoder() {
   decoder_->TryToSetupDecodeOnSeparateThread(
       weak_this_, base::ThreadTaskRunnerHandle::Get());
 
+  weak_vda_ptr_factory_.reset(
+      new base::WeakPtrFactory<VideoDecodeAccelerator>(decoder_.get()));
+  weak_vda_ = weak_vda_ptr_factory_->GetWeakPtr();
+
   SetState(CS_DECODER_SET);
   FinishInitialization();
 }
@@ -888,7 +892,7 @@ void GLRenderingVDAClient::FinishInitialization() {
 void GLRenderingVDAClient::DeleteDecoder() {
   if (decoder_deleted())
     return;
-  weak_vda_ptr_factory_.reset();
+  weak_vda_ptr_factory_->InvalidateWeakPtrs();
   decoder_.reset();
   STLClearObject(&encoded_data_);
   active_textures_.clear();
