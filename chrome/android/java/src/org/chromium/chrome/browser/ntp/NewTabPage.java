@@ -589,7 +589,7 @@ public class NewTabPage
         }
 
         LayoutInflater inflater = LayoutInflater.from(activity);
-        mNewTabPageView = (NewTabPageView) inflater.inflate(R.layout.new_tab_page, null);
+        mNewTabPageView = (NewTabPageView) inflater.inflate(R.layout.new_tab_page_view, null);
         mNewTabPageView.initialize(mNewTabPageManager, mSearchProviderHasLogo,
                 mSnippetsBridge != null);
 
