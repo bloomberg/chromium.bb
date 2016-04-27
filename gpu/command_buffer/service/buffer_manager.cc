@@ -35,7 +35,7 @@ BufferManager::BufferManager(MemoryTracker* memory_tracker,
       allow_fixed_attribs_(false),
       buffer_count_(0),
       primitive_restart_fixed_index_(0),
-      have_context_(true),
+      lost_context_(false),
       use_client_side_arrays_for_stream_buffers_(
           feature_info
               ? feature_info->workarounds()
@@ -57,8 +57,11 @@ BufferManager::~BufferManager() {
       this);
 }
 
-void BufferManager::Destroy(bool have_context) {
-  have_context_ = have_context;
+void BufferManager::MarkContextLost() {
+  lost_context_ = true;
+}
+
+void BufferManager::Destroy() {
   buffers_.clear();
   DCHECK_EQ(0u, memory_type_tracker_->GetMemRepresented());
 }
@@ -128,7 +131,7 @@ Buffer::Buffer(BufferManager* manager, GLuint service_id)
 
 Buffer::~Buffer() {
   if (manager_) {
-    if (manager_->have_context_) {
+    if (!manager_->lost_context_) {
       GLuint id = service_id();
       glDeleteBuffersARB(1, &id);
     }

@@ -119,7 +119,8 @@ TEST_F(VertexAttribManagerTest, SetAttribInfo) {
   // The VertexAttribManager must be destroyed before the BufferManager
   // so it releases its buffers.
   manager_ = NULL;
-  buffer_manager.Destroy(false);
+  buffer_manager.MarkContextLost();
+  buffer_manager.Destroy();
 }
 
 TEST_F(VertexAttribManagerTest, HaveFixedAttribs) {
@@ -180,7 +181,8 @@ TEST_F(VertexAttribManagerTest, CanAccess) {
   // The VertexAttribManager must be destroyed before the BufferManager
   // so it releases its buffers.
   manager_ = NULL;
-  buffer_manager.Destroy(false);
+  buffer_manager.MarkContextLost();
+  buffer_manager.Destroy();
 }
 
 TEST_F(VertexAttribManagerTest, Unbind) {
@@ -217,7 +219,8 @@ TEST_F(VertexAttribManagerTest, Unbind) {
   // The VertexAttribManager must be destroyed before the BufferManager
   // so it releases its buffers.
   manager_ = NULL;
-  buffer_manager.Destroy(false);
+  buffer_manager.MarkContextLost();
+  buffer_manager.Destroy();
 }
 
 // TODO(gman): Test ValidateBindings

@@ -470,8 +470,11 @@ void ContextGroup::Destroy(GLES2Decoder* decoder, bool have_context) {
     return;
   }
 
-  if (buffer_manager_ != NULL) {
-    buffer_manager_->Destroy(have_context);
+  if (buffer_manager_ != nullptr) {
+    if (!have_context) {
+      buffer_manager_->MarkContextLost();
+    }
+    buffer_manager_->Destroy();
     buffer_manager_.reset();
   }
 
@@ -531,6 +534,9 @@ void ContextGroup::LoseContexts(error::ContextLostReason reason) {
     if (decoders_[ii].get()) {
       decoders_[ii]->MarkContextLost(reason);
     }
+  }
+  if (buffer_manager_ != nullptr) {
+    buffer_manager_->MarkContextLost();
   }
 }
 

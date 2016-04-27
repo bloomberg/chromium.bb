@@ -222,8 +222,10 @@ class GPU_EXPORT BufferManager : public base::trace_event::MemoryDumpProvider {
   BufferManager(MemoryTracker* memory_tracker, FeatureInfo* feature_info);
   ~BufferManager() override;
 
+  void MarkContextLost();
+
   // Must call before destruction.
-  void Destroy(bool have_context);
+  void Destroy();
 
   // Creates a Buffer for the given buffer.
   void CreateBuffer(GLuint client_id, GLuint service_id);
@@ -348,7 +350,7 @@ class GPU_EXPORT BufferManager : public base::trace_event::MemoryDumpProvider {
 
   GLuint primitive_restart_fixed_index_;
 
-  bool have_context_;
+  bool lost_context_;
   bool use_client_side_arrays_for_stream_buffers_;
 
   DISALLOW_COPY_AND_ASSIGN(BufferManager);

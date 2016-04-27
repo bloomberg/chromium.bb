@@ -39,7 +39,8 @@ class BufferManagerTestBase : public GpuServiceTest {
   }
 
   void TearDown() override {
-    manager_->Destroy(false);
+    manager_->MarkContextLost();
+    manager_->Destroy();
     manager_.reset();
     error_state_.reset();
     GpuServiceTest::TearDown();
@@ -340,7 +341,7 @@ TEST_F(BufferManagerTest, Destroy) {
   EXPECT_CALL(*gl_, DeleteBuffersARB(1, ::testing::Pointee(kService1Id)))
       .Times(1)
       .RetiresOnSaturation();
-  manager_->Destroy(true);
+  manager_->Destroy();
   // Check the resources were released.
   buffer1 = manager_->GetBuffer(kClient1Id);
   ASSERT_TRUE(buffer1 == NULL);
@@ -569,6 +570,21 @@ TEST_F(BufferManagerTest, BindBufferConflicts) {
       }
     }
   }
+}
+
+TEST_F(BufferManagerTest, DeleteBufferAfterContextLost) {
+  const GLuint kClient1Id = 1;
+  const GLuint kService1Id = 11;
+  manager_->CreateBuffer(kClient1Id, kService1Id);
+  Buffer* buffer1 = manager_->GetBuffer(kClient1Id);
+  ASSERT_TRUE(buffer1 != nullptr);
+  manager_->MarkContextLost();
+  // Removing buffers after MarkContextLost cause no GL calls.
+  manager_->RemoveBuffer(kClient1Id);
+  manager_->Destroy();
+  // Check the resources were released.
+  buffer1 = manager_->GetBuffer(kClient1Id);
+  ASSERT_TRUE(buffer1 == nullptr);
 }
 
 }  // namespace gles2
