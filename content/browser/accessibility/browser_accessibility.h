@@ -130,6 +130,9 @@ class CONTENT_EXPORT BrowserAccessibility {
   BrowserAccessibility* GetPreviousSibling() const;
   BrowserAccessibility* GetNextSibling() const;
 
+  bool IsPreviousSiblingOnSameLine() const;
+  bool IsNextSiblingOnSameLine() const;
+
   // Returns nullptr if there are no children.
   BrowserAccessibility* PlatformDeepestFirstChild() const;
   // Returns nullptr if there are no children.
@@ -160,18 +163,23 @@ class CONTENT_EXPORT BrowserAccessibility {
   // be calculated from the object's inner text.
   virtual base::string16 GetValue() const;
 
-  // Searches in the given text and from the given offset until the start of
-  // the next or previous word is found and returns its position.
+  // Starting at the given character offset, locates the start of the next or
+  // previous line and returns its character offset.
+  int GetLineStartBoundary(int start,
+                           ui::TextBoundaryDirection direction) const;
+
+  // Starting at the given character offset, locates the start of the next or
+  // previous word and returns its character offset.
   // In case there is no word boundary before or after the given offset, it
-  // returns one past the last character, i.e. the text's length.
+  // returns one past the last character.
   // If the given offset is already at the start of a word, returns the start
-  // of the next word if the search is forwards and the given offset if it is
+  // of the next word if the search is forwards, and the given offset if it is
   // backwards.
   // If the start offset is equal to -1 and the search is in the forwards
   // direction, returns the start boundary of the first word.
   // Start offsets that are not in the range -1 to text length are invalid.
-  int GetWordStartBoundary(
-      int start, ui::TextBoundaryDirection direction) const;
+  int GetWordStartBoundary(int start,
+                           ui::TextBoundaryDirection direction) const;
 
   // Returns the deepest descendant that contains the specified point
   // (in global screen coordinates).

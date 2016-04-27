@@ -4246,6 +4246,8 @@ LONG BrowserAccessibilityWin::FindBoundary(
   HandleSpecialTextOffset(text, &start_offset);
   if (ia2_boundary == IA2_TEXT_BOUNDARY_WORD)
     return GetWordStartBoundary(static_cast<int>(start_offset), direction);
+  if (ia2_boundary == IA2_TEXT_BOUNDARY_LINE)
+    return GetLineStartBoundary(static_cast<int>(start_offset), direction);
 
   ui::TextBoundaryType boundary = IA2TextBoundaryToTextBoundary(ia2_boundary);
   const std::vector<int32_t>& line_breaks =

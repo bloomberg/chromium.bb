@@ -436,6 +436,12 @@ std::string AXNodeData::ToString() const {
       case AX_ATTR_ACTIVEDESCENDANT_ID:
         result += " activedescendant=" + value;
         break;
+      case AX_ATTR_NEXT_ON_LINE_ID:
+        result += " next_on_line_id=" + value;
+        break;
+      case AX_ATTR_PREVIOUS_ON_LINE_ID:
+        result += " previous_on_line_id=" + value;
+        break;
       case AX_ATTR_CHILD_TREE_ID:
         result += " child_tree_id=" + value;
         break;

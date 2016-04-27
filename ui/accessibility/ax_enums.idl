@@ -304,6 +304,8 @@
 
     // Relationships between this element and other elements.
     activedescendant_id,
+    next_on_line_id,
+    previous_on_line_id,
 
     // Identifies a child tree which this node hosts.
     child_tree_id,

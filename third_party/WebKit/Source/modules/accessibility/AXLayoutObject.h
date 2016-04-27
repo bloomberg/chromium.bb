@@ -189,7 +189,7 @@ protected:
     // Text metrics. Most of these should be deprecated, needs major cleanup.
     int index(const VisiblePosition&) const override;
     VisiblePosition visiblePositionForIndex(int) const override;
-    void lineBreaks(Vector<int>&) const override;
+    void lineBreaks(Vector<int>&) const final;
 
 private:
     AXObject* treeAncestorDisallowingChild() const;

@@ -1605,6 +1605,32 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
+                       TestParagraphTextAtOffsetWithBoundaryLine) {
+  base::win::ScopedComPtr<IAccessibleText> paragraph_text;
+  SetUpSampleParagraph(&paragraph_text);
+
+  // There should be two lines in this paragraph.
+  const LONG newline_offset = 46;
+  LONG n_characters;
+  ASSERT_HRESULT_SUCCEEDED(paragraph_text->get_nCharacters(&n_characters));
+  ASSERT_LT(0, n_characters);
+  ASSERT_LT(newline_offset, n_characters);
+
+  for (LONG i = 0; i <= newline_offset; ++i) {
+    CheckTextAtOffset(
+        paragraph_text, i, IA2_TEXT_BOUNDARY_LINE, 0, newline_offset + 1,
+        L"Game theory is \"the study of \xFFFC of conflict and\n");
+  }
+
+  for (LONG i = newline_offset + 1; i < n_characters; ++i) {
+    CheckTextAtOffset(
+        paragraph_text, i, IA2_TEXT_BOUNDARY_LINE, newline_offset + 1,
+        n_characters,
+        L"cooperation between intelligent rational decision-makers.\"");
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
                        TestTextAtOffsetWithBoundaryAll) {
   base::win::ScopedComPtr<IAccessibleText> input_text;
   SetUpInputField(&input_text);

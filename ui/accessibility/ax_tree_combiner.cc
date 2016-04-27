@@ -14,6 +14,8 @@ namespace {
 bool IsNodeIdIntAttribute(AXIntAttribute attr) {
   switch (attr) {
     case AX_ATTR_ACTIVEDESCENDANT_ID:
+    case AX_ATTR_NEXT_ON_LINE_ID:
+    case AX_ATTR_PREVIOUS_ON_LINE_ID:
     case AX_ATTR_TABLE_HEADER_ID:
     case AX_ATTR_TABLE_COLUMN_HEADER_ID:
     case AX_ATTR_TABLE_ROW_HEADER_ID:

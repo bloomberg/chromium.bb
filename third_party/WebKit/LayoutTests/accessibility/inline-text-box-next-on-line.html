@@ -1,44 +1,96 @@
-<!DOCTYPE HTML>
+<!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 
-<p id="p">
+<p id="paragraph">
 The <b id="quick">quick</b> brown fox
 <br>
 jumps over the lazy <b id="dog">dog</b>.
 </p>
 
+<div contentEditable="true" id="contentEditable">
+    <div>
+        <span>Line </span><span>one has one trailing space.</span><span> </span>
+    </div>
+    <div>
+        <span>&#9;&#9;</span><span>Line</span><span> two has two leading tabs.</span>
+    </div>
+</div>
+
 <script>
 test(function(t)
 {
-    var axObj = accessibilityController.accessibleElementById("p");
+    var axObj = accessibilityController.accessibleElementById('paragraph');
+    // Find the first inline text box.
     while (axObj.childrenCount > 0)
         axObj = axObj.childAtIndex(0);
-    assert_equals(axObj.role, "AXRole: AXInlineTextBox");
+    assert_equals(axObj.role, 'AXRole: AXInlineTextBox');
 
-    var line = [];
-    var lastObj = axObj;
+    var lineText = [];
+    var lastInlineText = axObj;
     while (axObj && axObj.isValid) {
-        assert_equals(axObj.role, "AXRole: AXInlineTextBox");
-        line.push(axObj.stringValue.replace("AXValue: ", ""));
-        lastObj = axObj;
+        assert_equals(axObj.role, 'AXRole: AXInlineTextBox');
+        lineText.push(axObj.name.replace('AXValue: ', ''));
+        lastInlineText = axObj;
         axObj = axObj.nextOnLine();
     }
-
-    assert_equals(JSON.stringify(line), JSON.stringify(["The ","quick"," brown fox ","\n"]));
+    assert_array_equals(lineText, ['The ', 'quick', ' brown fox ', '\n']);
 
     // Now walk backwards.
-    var line2 = [];
-    axObj = lastObj;
+    lineText = [];
+    axObj = lastInlineText;
     while (axObj && axObj.isValid) {
-        assert_equals(axObj.role, "AXRole: AXInlineTextBox");
-        line2.unshift(axObj.stringValue.replace("AXValue: ", ""));
+        assert_equals(axObj.role, 'AXRole: AXInlineTextBox');
+        lineText.unshift(axObj.name.replace('AXValue: ', ''));
         axObj = axObj.previousOnLine();
     }
+    assert_array_equals(lineText, ['The ', 'quick', ' brown fox ', '\n']);
+}, 'Test |nextOnLine| and |previousOnLine| for |AXInlineTextBox|.');
 
-    assert_equals(JSON.stringify(line2), JSON.stringify(["The ","quick"," brown fox ","\n"]));
-}, "Walk the inline text boxes on a line of text.");
+test(function(t)
+{
+    var axEditable = accessibilityController.accessibleElementById('contentEditable');
+    // There should be two lines in this content editable.
+    assert_equals(axEditable.childrenCount, 2);
+    var lines = [axEditable.childAtIndex(0), axEditable.childAtIndex(1)];
+    var lineText = [
+      ['Line ', 'one has one trailing space.'],
+      ['Line', ' two has two leading tabs.']];
 
-if (window.testRunner)
-    document.getElementById('p').style.display = 'none';
+    for (var i = 0; i < lines.length; ++i) {
+        var currentLine = lines[i];
+        assert_equals(currentLine.nextOnLine(), undefined);
+        assert_equals(currentLine.previousOnLine(), undefined);
+    }
+
+    for (var i = 0; i < lines.length; ++i) {
+        var currentLine = lines[i];
+        var currentLineText = lineText[i];
+        // There should be two spans per line since white space is removed.
+        assert_equals(currentLine.childrenCount, 2);
+
+        var span1 = currentLine.childAtIndex(0);
+        var span2 = currentLine.childAtIndex(1);
+        var inlineText1 = span1.childAtIndex(0);
+        var inlineText2 = span2.childAtIndex(0);
+        var spanText1 = currentLineText[0];
+        var spanText2 = currentLineText[1];
+        assert_equals(span1.role, 'AXRole: AXStaticText');
+        assert_equals(span2.role, 'AXRole: AXStaticText');
+        assert_equals(span1.name, spanText1);
+        assert_equals(span2.name, spanText2);
+
+        // |next/previousOnLine| APIs jump directly to the inline text boxes
+        // skipping the parent span element.
+        assert_equals(span1.nextOnLine(), inlineText2, 'span1 -> inlineText2');
+        assert_equals(inlineText1.nextOnLine(), inlineText2, 'inlineText1 -> inlineText2');
+        assert_equals(span2.previousOnLine(), inlineText1, 'span2 -> inlineText1');
+        assert_equals(inlineText2.previousOnLine(), inlineText1, 'inlineText2 -> inlineText1');
+    }
+}, 'Test |nextOnLine| and |previousOnLine| for |AXLayoutObject|.');
+
+if (window.testRunner) {
+    document.getElementById('paragraph').style.display = 'none';
+    document.getElementById('contentEditable').style.display = 'none';
+}
 </script>
