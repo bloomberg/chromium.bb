@@ -38,7 +38,7 @@ bool LinkHandlerModelImpl::Init(const GURL& url) {
 }
 
 void LinkHandlerModelImpl::AddObserver(Observer* observer) {
-  observer_ = observer;
+  observer_list_.AddObserver(observer);
 }
 
 void LinkHandlerModelImpl::OpenLinkWithHandler(const GURL& url,
@@ -78,15 +78,13 @@ void LinkHandlerModelImpl::OnUrlHandlerList(
 }
 
 void LinkHandlerModelImpl::NotifyObserver() {
-  if (!observer_)
-    return;
   std::vector<ash::LinkHandlerInfo> handlers;
   for (size_t i = 0; i < handlers_.size(); ++i) {
     // Use the handler's index as an ID.
     ash::LinkHandlerInfo handler = {handlers_[i]->name.get(), gfx::Image(), i};
     handlers.push_back(handler);
   }
-  observer_->ModelChanged(handlers);
+  FOR_EACH_OBSERVER(Observer, observer_list_, ModelChanged(handlers));
 }
 
 }  // namespace arc

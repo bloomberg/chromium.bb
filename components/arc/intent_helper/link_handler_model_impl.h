@@ -7,6 +7,7 @@
 
 #include "ash/link_handler_model.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "components/arc/arc_service.h"
 #include "components/arc/common/intent_helper.mojom.h"
 
@@ -31,7 +32,7 @@ class LinkHandlerModelImpl : public ash::LinkHandlerModel {
   void OnUrlHandlerList(mojo::Array<mojom::UrlHandlerInfoPtr> handlers);
   void NotifyObserver();
 
-  Observer* observer_;
+  base::ObserverList<Observer> observer_list_;
   mojo::Array<mojom::UrlHandlerInfoPtr> handlers_;
 
   // Always keep this the last member of this class to make sure it's the
