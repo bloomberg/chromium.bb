@@ -12,6 +12,7 @@
       'browser/about_flags_unittest.cc',
       'browser/after_startup_task_utils_unittest.cc',
       'browser/android/bookmarks/partner_bookmarks_shim_unittest.cc',
+      'browser/android/compositor/layer/tab_layer_unittest.cc',
       'browser/android/contextualsearch/contextual_search_delegate_unittest.cc',
       'browser/android/contextualsearch/contextual_search_field_trial_unittest.cc',
       'browser/android/data_usage/data_use_matcher_unittest.cc',
