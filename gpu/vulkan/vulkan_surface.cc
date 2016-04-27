@@ -54,6 +54,17 @@ class VulkanWSISurface : public VulkanSurface {
       DLOG(ERROR) << "vkCreateXlibSurfaceKHR() failed: " << result;
       return false;
     }
+#elif defined(VK_USE_PLATFORM_ANDROID_KHR)
+    VkAndroidSurfaceCreateInfoKHR surface_create_info = {};
+    surface_create_info.sType =
+        VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR;
+    surface_create_info.window = window_;
+    result = vkCreateAndroidSurfaceKHR(
+        GetVulkanInstance(), &surface_create_info, nullptr, &surface_);
+    if (VK_SUCCESS != result) {
+      DLOG(ERROR) << "vkCreateAndroidSurfaceKHR() failed: " << result;
+      return false;
+    }
 #else
 #error Unsupported Vulkan Platform.
 #endif

@@ -60,6 +60,8 @@ struct VulkanInstance {
 
 #if defined(VK_USE_PLATFORM_XLIB_KHR)
     enabled_ext_names.push_back(VK_KHR_XLIB_SURFACE_EXTENSION_NAME);
+#elif defined(VK_USE_PLATFORM_ANDROID_KHR)
+    enabled_ext_names.push_back(VK_KHR_ANDROID_SURFACE_EXTENSION_NAME);
 #endif
 
     uint32_t num_instance_exts = 0;

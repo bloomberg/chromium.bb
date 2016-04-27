@@ -17,6 +17,10 @@ extern "C" {
 #define VK_USE_PLATFORM_XLIB_KHR
 #endif
 
+#if defined(OS_ANDROID)
+#define VK_USE_PLATFORM_ANDROID_KHR
+#endif
+
 // This section below is taken from <vulkan/vulkan.h>
 #ifdef VK_USE_PLATFORM_XLIB_KHR
 #define VK_KHR_xlib_surface 1
@@ -60,6 +64,37 @@ vkGetPhysicalDeviceXlibPresentationSupportKHR(VkPhysicalDevice physicalDevice,
                                               VisualID visualID);
 #endif
 #endif /* VK_USE_PLATFORM_XLIB_KHR */
+
+#ifdef VK_USE_PLATFORM_ANDROID_KHR
+#define VK_KHR_android_surface 1
+#include <android/native_window.h>
+
+#define VK_KHR_ANDROID_SURFACE_SPEC_VERSION 6
+#define VK_KHR_ANDROID_SURFACE_EXTENSION_NAME "VK_KHR_android_surface"
+
+typedef VkFlags VkAndroidSurfaceCreateFlagsKHR;
+
+typedef struct VkAndroidSurfaceCreateInfoKHR {
+  VkStructureType sType;
+  const void* pNext;
+  VkAndroidSurfaceCreateFlagsKHR flags;
+  ANativeWindow* window;
+} VkAndroidSurfaceCreateInfoKHR;
+
+typedef VkResult(VKAPI_PTR* PFN_vkCreateAndroidSurfaceKHR)(
+    VkInstance instance,
+    const VkAndroidSurfaceCreateInfoKHR* pCreateInfo,
+    const VkAllocationCallbacks* pAllocator,
+    VkSurfaceKHR* pSurface);
+
+#ifndef VK_NO_PROTOTYPES
+VKAPI_ATTR VkResult VKAPI_CALL
+vkCreateAndroidSurfaceKHR(VkInstance instance,
+                          const VkAndroidSurfaceCreateInfoKHR* pCreateInfo,
+                          const VkAllocationCallbacks* pAllocator,
+                          VkSurfaceKHR* pSurface);
+#endif
+#endif /* VK_USE_PLATFORM_ANDROID_KHR */
 
 #ifdef __cplusplus
 }  // extern "C"
