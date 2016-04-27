@@ -173,7 +173,7 @@ def _ListUrlRequests(trace, request_kind):
       continue
     if request_event.protocol.startswith('data'):
       continue
-    if request_event.protocol.startswith('http'):
+    if not request_event.protocol.startswith('http'):
       raise RuntimeError('Unknown protocol {}'.format(request_event.protocol))
     if (request_kind == _RequestOutcome.ServedFromCache and
         request_event.from_disk_cache):

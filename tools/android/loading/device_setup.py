@@ -68,6 +68,16 @@ def GetFirstDevice():
   return devices[0]
 
 
+def GetDeviceFromSerial(android_device_serial):
+  """Returns the DeviceUtils instance."""
+  devices = device_utils.DeviceUtils.HealthyDevices()
+  for device in devices:
+    if device.adb._device_serial == android_device_serial:
+      return device
+  raise DeviceSetupException(
+      'Device {} not found'.format(android_device_serial))
+
+
 def DeviceSubmitShellCommandQueue(device, command_queue):
   """Executes on the device a command queue.
 

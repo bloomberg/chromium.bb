@@ -30,6 +30,7 @@ import devil_chromium
 
 import chrome_cache
 import common_util
+import device_setup
 import emulation
 import options
 import sandwich_metrics
@@ -50,6 +51,9 @@ def _ArgumentParser():
   common_job_parser = argparse.ArgumentParser(add_help=False)
   common_job_parser.add_argument('--job', required=True,
                                  help='JSON file with job description.')
+  common_job_parser.add_argument('--android', default=None, type=str,
+                                 dest='android_device_serial',
+                                 help='Android device\'s serial to use.')
 
   task_parser = task_manager.CommandLineParser()
 
@@ -188,10 +192,18 @@ def _ArgumentParser():
   return parser
 
 
-def _RecordWprMain(args):
+def _CreateSandwichRunner(args):
   sandwich_runner = SandwichRunner()
   sandwich_runner.LoadJob(args.job)
   sandwich_runner.PullConfigFromArgs(args)
+  if args.android_device_serial is not None:
+    sandwich_runner.android_device = \
+        device_setup.GetDeviceFromSerial(args.android_device_serial)
+  return sandwich_runner
+
+
+def _RecordWprMain(args):
+  sandwich_runner = _CreateSandwichRunner(args)
   sandwich_runner.wpr_record = True
   sandwich_runner.PrintConfig()
   if not os.path.isdir(os.path.dirname(args.wpr_archive_path)):
@@ -201,9 +213,7 @@ def _RecordWprMain(args):
 
 
 def _CreateCacheMain(args):
-  sandwich_runner = SandwichRunner()
-  sandwich_runner.LoadJob(args.job)
-  sandwich_runner.PullConfigFromArgs(args)
+  sandwich_runner = _CreateSandwichRunner(args)
   sandwich_runner.cache_operation = 'save'
   sandwich_runner.PrintConfig()
   if not os.path.isdir(os.path.dirname(args.cache_archive_path)):
@@ -213,9 +223,7 @@ def _CreateCacheMain(args):
 
 
 def _RunJobMain(args):
-  sandwich_runner = SandwichRunner()
-  sandwich_runner.LoadJob(args.job)
-  sandwich_runner.PullConfigFromArgs(args)
+  sandwich_runner = _CreateSandwichRunner(args)
   sandwich_runner.PrintConfig()
   sandwich_runner.Run()
   return 0
@@ -266,8 +274,13 @@ def _RecordWebServerTestTrace(args):
 
 
 def _RunAllMain(args):
+  android_device = None
+  if args.android_device_serial:
+    android_device = \
+        device_setup.GetDeviceFromSerial(args.android_device_serial)
   builder = sandwich_task_builder.SandwichTaskBuilder(
       output_directory=args.output,
+      android_device=android_device,
       job_path=args.job,
       url_repeat=args.url_repeat)
   if args.wpr_archive_path:

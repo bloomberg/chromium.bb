@@ -130,6 +130,9 @@ class SandwichRunner(object):
     # Configures whether the WPR archive should be read or generated.
     self.wpr_record = False
 
+    # The android DeviceUtils to run sandwich on or None to run it locally.
+    self.android_device = None
+
     self._chrome_ctl = None
     self._local_cache_directory_path = None
 
@@ -252,9 +255,10 @@ class SandwichRunner(object):
     if self.trace_output_directory:
       self._CleanTraceOutputDirectory()
 
-    # TODO(gabadie): Make sandwich working on desktop.
-    device = device_utils.DeviceUtils.HealthyDevices()[0]
-    self._chrome_ctl = controller.RemoteChromeController(device)
+    if self.android_device:
+      self._chrome_ctl = controller.RemoteChromeController(self.android_device)
+    else:
+      self._chrome_ctl = controller.LocalChromeController()
     self._chrome_ctl.AddChromeArgument('--disable-infobars')
     if self.cache_operation == 'save':
       self._chrome_ctl.SetSlowDeath()

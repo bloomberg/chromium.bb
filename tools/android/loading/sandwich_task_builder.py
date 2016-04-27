@@ -37,16 +37,19 @@ class SandwichTaskBuilder(task_manager.Builder):
   """A builder for a graph of tasks, each prepares or invokes a SandwichRunner.
   """
 
-  def __init__(self, output_directory, job_path, url_repeat):
+  def __init__(self, output_directory, android_device, job_path, url_repeat):
     """Constructor.
 
     Args:
       output_directory: As in task_manager.Builder.__init__
+      android_device: The android DeviceUtils to run sandwich on or None to run
+        it locally.
       job_path: Path of the sandwich's job.
       url_repeat: Non null integer controlling how many times the URLs should be
         repeated in the benchmarks.
     """
     task_manager.Builder.__init__(self, output_directory)
+    self._android_device = android_device
     self._job_path = job_path
     self._url_repeat = url_repeat
     self._default_final_tasks = []
@@ -65,6 +68,7 @@ class SandwichTaskBuilder(task_manager.Builder):
     """Create a runner for non benchmark purposes."""
     runner = sandwich_runner.SandwichRunner()
     runner.LoadJob(self._job_path)
+    runner.android_device = self._android_device
     return runner
 
   def OverridePathToWprArchive(self, original_wpr_path):
