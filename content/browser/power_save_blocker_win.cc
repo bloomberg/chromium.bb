@@ -20,27 +20,11 @@ int g_blocker_count[2];
 
 HANDLE CreatePowerRequest(POWER_REQUEST_TYPE type,
                           const std::string& description) {
-  typedef HANDLE (WINAPI* PowerCreateRequestPtr)(PREASON_CONTEXT);
-  typedef BOOL (WINAPI* PowerSetRequestPtr)(HANDLE, POWER_REQUEST_TYPE);
-
   if (type == PowerRequestExecutionRequired &&
       base::win::GetVersion() < base::win::VERSION_WIN8) {
     return INVALID_HANDLE_VALUE;
   }
 
-  static PowerCreateRequestPtr PowerCreateRequestFn = NULL;
-  static PowerSetRequestPtr PowerSetRequestFn = NULL;
-
-  if (!PowerCreateRequestFn || !PowerSetRequestFn) {
-    HMODULE module = GetModuleHandle(L"kernel32.dll");
-    PowerCreateRequestFn = reinterpret_cast<PowerCreateRequestPtr>(
-        GetProcAddress(module, "PowerCreateRequest"));
-    PowerSetRequestFn = reinterpret_cast<PowerSetRequestPtr>(
-        GetProcAddress(module, "PowerSetRequest"));
-
-    if (!PowerCreateRequestFn || !PowerSetRequestFn)
-      return INVALID_HANDLE_VALUE;
-  }
   base::string16 wide_description = base::ASCIIToUTF16(description);
   REASON_CONTEXT context = {0};
   context.Version = POWER_REQUEST_CONTEXT_VERSION;
@@ -48,11 +32,11 @@ HANDLE CreatePowerRequest(POWER_REQUEST_TYPE type,
   context.Reason.SimpleReasonString =
       const_cast<wchar_t*>(wide_description.c_str());
 
-  base::win::ScopedHandle handle(PowerCreateRequestFn(&context));
+  base::win::ScopedHandle handle(::PowerCreateRequest(&context));
   if (!handle.IsValid())
     return INVALID_HANDLE_VALUE;
 
-  if (PowerSetRequestFn(handle.Get(), type))
+  if (::PowerSetRequest(handle.Get(), type))
     return handle.Take();
 
   // Something went wrong.
@@ -70,16 +54,7 @@ void DeletePowerRequest(POWER_REQUEST_TYPE type, HANDLE handle) {
     return;
   }
 
-  typedef BOOL (WINAPI* PowerClearRequestPtr)(HANDLE, POWER_REQUEST_TYPE);
-  HMODULE module = GetModuleHandle(L"kernel32.dll");
-  PowerClearRequestPtr PowerClearRequestFn =
-      reinterpret_cast<PowerClearRequestPtr>(
-          GetProcAddress(module, "PowerClearRequest"));
-
-  if (!PowerClearRequestFn)
-    return;
-
-  BOOL success = PowerClearRequestFn(request_handle.Get(), type);
+  BOOL success = ::PowerClearRequest(request_handle.Get(), type);
   DCHECK(success);
 }
 
