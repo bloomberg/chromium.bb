@@ -44,6 +44,7 @@
 
 #include "shared/helpers.h"
 #include "compositor.h"
+#include "compositor-fbdev.h"
 #include "launcher-util.h"
 #include "pixman-renderer.h"
 #include "libinput-seat.h"
@@ -58,6 +59,7 @@ struct fbdev_backend {
 	struct udev *udev;
 	struct udev_input input;
 	int use_pixman;
+	uint32_t output_transform;
 	struct wl_listener session_listener;
 };
 
@@ -91,12 +93,6 @@ struct fbdev_output {
 	/* pixman details. */
 	pixman_image_t *hw_surface;
 	uint8_t depth;
-};
-
-struct fbdev_parameters {
-	int tty;
-	char *device;
-	int use_gl;
 };
 
 struct gl_renderer_interface *gl_renderer;
@@ -457,11 +453,8 @@ fbdev_output_create(struct fbdev_backend *backend,
                     const char *device)
 {
 	struct fbdev_output *output;
-	struct weston_config_section *section;
 	int fb_fd;
 	struct wl_event_loop *loop;
-	uint32_t config_transform;
-	char *s;
 
 	weston_log("Creating fbdev output.\n");
 
@@ -506,19 +499,10 @@ fbdev_output_create(struct fbdev_backend *backend,
 	output->base.model = output->fb_info.id;
 	output->base.name = strdup("fbdev");
 
-	section = weston_config_get_section(backend->compositor->config,
-					    "output", "name",
-					    output->base.name);
-	weston_config_section_get_string(section, "transform", &s, "normal");
-	if (weston_parse_transform(s, &config_transform) < 0)
-		weston_log("Invalid transform \"%s\" for output %s\n",
-			   s, output->base.name);
-	free(s);
-
 	weston_output_init(&output->base, backend->compositor,
 	                   0, 0, output->fb_info.width_mm,
 	                   output->fb_info.height_mm,
-	                   config_transform,
+	                   backend->output_transform,
 			   1);
 
 	if (backend->use_pixman) {
@@ -747,7 +731,7 @@ fbdev_restore(struct weston_compositor *compositor)
 static struct fbdev_backend *
 fbdev_backend_create(struct weston_compositor *compositor, int *argc, char *argv[],
                      struct weston_config *config,
-                     struct fbdev_parameters *param)
+                     struct weston_fbdev_backend_config *param)
 {
 	struct fbdev_backend *backend;
 	const char *seat_id = default_seat;
@@ -786,6 +770,7 @@ fbdev_backend_create(struct weston_compositor *compositor, int *argc, char *argv
 
 	backend->prev_state = WESTON_COMPOSITOR_ACTIVE;
 	backend->use_pixman = !param->use_gl;
+	backend->output_transform = param->output_transform;
 
 	weston_setup_vt_switch_bindings(compositor);
 
@@ -830,29 +815,36 @@ out_compositor:
 	return NULL;
 }
 
+static void
+config_init_to_defaults(struct weston_fbdev_backend_config *config)
+{
+	/* TODO: Ideally, available frame buffers should be enumerated using
+	 * udev, rather than passing a device node in as a parameter. */
+	config->tty = 0; /* default to current tty */
+	config->device = "/dev/fb0"; /* default frame buffer */
+	config->use_gl = 0;
+	config->output_transform = WL_OUTPUT_TRANSFORM_NORMAL;
+}
+
 WL_EXPORT int
 backend_init(struct weston_compositor *compositor, int *argc, char *argv[],
-	     struct weston_config *config,
+	     struct weston_config *wc,
 	     struct weston_backend_config *config_base)
 {
 	struct fbdev_backend *b;
-	/* TODO: Ideally, available frame buffers should be enumerated using
-	 * udev, rather than passing a device node in as a parameter. */
-	struct fbdev_parameters param = {
-		.tty = 0, /* default to current tty */
-		.device = "/dev/fb0", /* default frame buffer */
-		.use_gl = 0,
-	};
+	struct weston_fbdev_backend_config config = {{ 0, }};
 
-	const struct weston_option fbdev_options[] = {
-		{ WESTON_OPTION_INTEGER, "tty", 0, &param.tty },
-		{ WESTON_OPTION_STRING, "device", 0, &param.device },
-		{ WESTON_OPTION_BOOLEAN, "use-gl", 0, &param.use_gl },
-	};
+	if (config_base == NULL ||
+	    config_base->struct_version != WESTON_FBDEV_BACKEND_CONFIG_VERSION ||
+	    config_base->struct_size > sizeof(struct weston_fbdev_backend_config)) {
+		weston_log("fbdev backend config structure is invalid\n");
+		return -1;
+	}
 
-	parse_options(fbdev_options, ARRAY_LENGTH(fbdev_options), argc, argv);
+	config_init_to_defaults(&config);
+	memcpy(&config, config_base, config_base->struct_size);
 
-	b = fbdev_backend_create(compositor, argc, argv, config, &param);
+	b = fbdev_backend_create(compositor, argc, argv, wc, &config);
 	if (b == NULL)
 		return -1;
 	return 0;

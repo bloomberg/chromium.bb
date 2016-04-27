@@ -49,6 +49,7 @@
 
 #include "compositor-headless.h"
 #include "compositor-rdp.h"
+#include "compositor-fbdev.h"
 
 static struct wl_list child_process_list;
 static struct weston_compositor *segv_compositor;
@@ -768,6 +769,42 @@ load_rdp_backend(struct weston_compositor *c, char const * backend,
 }
 
 static int
+load_fbdev_backend(struct weston_compositor *c, char const * backend,
+		      int *argc, char **argv, struct weston_config *wc)
+{
+	struct weston_fbdev_backend_config config = {{ 0, }};
+	struct weston_config_section *section;
+	char *s = NULL;
+	int ret = 0;
+
+	const struct weston_option fbdev_options[] = {
+		{ WESTON_OPTION_INTEGER, "tty", 0, &config.tty },
+		{ WESTON_OPTION_STRING, "device", 0, &config.device },
+		{ WESTON_OPTION_BOOLEAN, "use-gl", 0, &config.use_gl },
+	};
+
+	parse_options(fbdev_options, ARRAY_LENGTH(fbdev_options), argc, argv);
+
+	if (!config.device)
+		config.device = strdup("/dev/fb0");
+
+	section = weston_config_get_section(wc, "output", "name", "fbdev");
+	weston_config_section_get_string(section, "transform", &s, "normal");
+	if (weston_parse_transform(s, &config.output_transform) < 0)
+		weston_log("Invalid transform \"%s\" for output fbdev\n", s);
+	free(s);
+
+	config.base.struct_version = WESTON_FBDEV_BACKEND_CONFIG_VERSION;
+	config.base.struct_size = sizeof(struct weston_fbdev_backend_config);
+
+	/* load the actual wayland backend and configure it */
+	ret = load_backend_new(c, backend, &config.base);
+
+	free(config.device);
+	return ret;
+}
+
+static int
 load_backend(struct weston_compositor *compositor, const char *backend,
 	     int *argc, char **argv, struct weston_config *config)
 {
@@ -775,6 +812,8 @@ load_backend(struct weston_compositor *compositor, const char *backend,
 		return load_headless_backend(compositor, backend, argc, argv, config);
 	else if (strstr(backend, "rdp-backend.so"))
 		return load_rdp_backend(compositor, backend, argc, argv, config);
+	else if (strstr(backend, "fbdev-backend.so"))
+		return load_fbdev_backend(compositor, backend, argc, argv, config);
 #if 0
 	else if (strstr(backend, "drm-backend.so"))
 		return load_drm_backend(compositor, backend, argc, argv, config);
@@ -782,8 +821,6 @@ load_backend(struct weston_compositor *compositor, const char *backend,
 		return load_wayland_backend(compositor, backend, argc, argv, config);
 	else if (strstr(backend, "x11-backend.so"))
 		return load_x11_backend(compositor, backend, argc, argv, config);
-	else if (strstr(backend, "fbdev-backend.so"))
-		return load_fbdev_backend(compositor, backend, argc, argv, config);
 	else if (strstr(backend, "rpi-backend.so"))
 		return load_rpi_backend(compositor, backend, argc, argv, config);
 #endif
