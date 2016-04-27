@@ -73,7 +73,6 @@ class Vp9LevelStats {
         current_luma_size_(0),
         max_luma_size_(0),
         max_luma_end_ns_(0),
-        max_frames_in_one_second_(0),
         first_altref(true),
         frames_since_last_altref(0),
         minimum_altref_distance(std::numeric_limits<int>::max()),
@@ -153,7 +152,6 @@ class Vp9LevelStats {
   int64_t current_luma_size_;
   int64_t max_luma_size_;
   int64_t max_luma_end_ns_;
-  size_t max_frames_in_one_second_;
 
   bool first_altref;
   int frames_since_last_altref;
