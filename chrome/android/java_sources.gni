@@ -675,7 +675,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/preferences/website/ContentSetting.java",
   "java/src/org/chromium/chrome/browser/preferences/website/ContentSettingException.java",
   "java/src/org/chromium/chrome/browser/preferences/website/ContentSettingsResources.java",
-  "java/src/org/chromium/chrome/browser/preferences/website/CookieInfo.java",
   "java/src/org/chromium/chrome/browser/preferences/website/FullscreenInfo.java",
   "java/src/org/chromium/chrome/browser/preferences/website/GeolocationInfo.java",
   "java/src/org/chromium/chrome/browser/preferences/website/KeygenInfo.java",

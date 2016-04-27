@@ -406,65 +406,6 @@ static void SetCameraSettingForOrigin(JNIEnv* env,
                       is_incognito);
 }
 
-static scoped_refptr<content_settings::CookieSettings> GetCookieSettings() {
-  // A single cookie setting applies to both incognito and non-incognito.
-  Profile* profile = ProfileManager::GetActiveUserProfile();
-  return CookieSettingsFactory::GetForProfile(profile);
-}
-
-static void GetCookieOrigins(JNIEnv* env,
-                             const JavaParamRef<jclass>& clazz,
-                             const JavaParamRef<jobject>& list,
-                             jboolean managedOnly) {
-  ContentSettingsForOneType all_settings;
-  GetCookieSettings()->GetCookieSettings(&all_settings);
-  const ContentSetting default_setting =
-      GetCookieSettings()->GetDefaultCookieSetting(nullptr);
-  for (const auto& settings_it : all_settings) {
-    if (settings_it.setting == default_setting)
-      continue;
-    if (managedOnly &&
-        HostContentSettingsMap::GetProviderTypeFromSource(settings_it.source) !=
-            HostContentSettingsMap::ProviderType::POLICY_PROVIDER) {
-      continue;
-    }
-    const std::string& origin = settings_it.primary_pattern.ToString();
-    const std::string& embedder = settings_it.secondary_pattern.ToString();
-    ScopedJavaLocalRef<jstring> jorigin = ConvertUTF8ToJavaString(env, origin);
-    ScopedJavaLocalRef<jstring> jembedder;
-    if (embedder != origin)
-      jembedder = ConvertUTF8ToJavaString(env, embedder);
-    Java_WebsitePreferenceBridge_insertCookieInfoIntoList(env, list,
-        jorigin.obj(), jembedder.obj());
-  }
-}
-
-static jint GetCookieSettingForOrigin(JNIEnv* env,
-                                      const JavaParamRef<jclass>& clazz,
-                                      const JavaParamRef<jstring>& origin,
-                                      const JavaParamRef<jstring>& embedder,
-                                      jboolean is_incognito) {
-  return GetSettingForOrigin(env, CONTENT_SETTINGS_TYPE_COOKIES, origin,
-                             embedder, false);
-}
-
-static void SetCookieSettingForOrigin(JNIEnv* env,
-                                      const JavaParamRef<jclass>& clazz,
-                                      const JavaParamRef<jstring>& origin,
-                                      const JavaParamRef<jstring>& embedder,
-                                      jint value,
-                                      jboolean is_incognito) {
-  GURL url(ConvertJavaStringToUTF8(env, origin));
-  ContentSetting setting = static_cast<ContentSetting>(value);
-  if (setting == CONTENT_SETTING_DEFAULT) {
-    GetCookieSettings()->ResetCookieSetting(url);
-  } else {
-    GetCookieSettings()->SetCookieSetting(url, setting);
-  }
-  WebSiteSettingsUmaUtil::LogPermissionChange(CONTENT_SETTINGS_TYPE_COOKIES,
-                                              setting);
-}
-
 static jboolean IsContentSettingsPatternValid(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,

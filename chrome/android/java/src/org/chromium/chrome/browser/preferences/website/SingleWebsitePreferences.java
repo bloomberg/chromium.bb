@@ -205,10 +205,6 @@ public class SingleWebsitePreferences extends PreferenceFragment
         // small because most sites have very few permissions.
         for (Set<Website> websiteSet : websiteSets) {
             for (Website other : websiteSet) {
-                if (merged.getCookieInfo() == null && other.getCookieInfo() != null
-                        && permissionInfoIsForTopLevelOrigin(other.getCookieInfo(), origin)) {
-                    merged.setCookieInfo(other.getCookieInfo());
-                }
                 if (merged.getFullscreenInfo() == null && other.getFullscreenInfo() != null
                         && permissionInfoIsForTopLevelOrigin(other.getFullscreenInfo(), origin)) {
                     merged.setFullscreenInfo(other.getFullscreenInfo());
@@ -267,6 +263,7 @@ public class SingleWebsitePreferences extends PreferenceFragment
                 // TODO(mvanouwerkerk): Merge in PopupExceptionInfo? It uses a pattern, and is never
                 // set on Android.
                 // TODO(mvanouwerkerk): Merge in JavaScriptExceptionInfo? It uses a pattern.
+                // TODO(lshang): Merge in CookieException? It will use patterns.
             }
         }
         return merged;

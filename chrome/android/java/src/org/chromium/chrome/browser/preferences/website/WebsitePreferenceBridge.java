@@ -100,19 +100,6 @@ public abstract class WebsitePreferenceBridge {
         list.add(new MidiInfo(origin, embedder, false));
     }
 
-    public static List<CookieInfo> getCookieInfo() {
-        boolean managedOnly = PrefServiceBridge.getInstance().isAcceptCookiesManaged();
-        ArrayList<CookieInfo> list = new ArrayList<CookieInfo>();
-        nativeGetCookieOrigins(list, managedOnly);
-        return list;
-    }
-
-    @CalledByNative
-    private static void insertCookieInfoIntoList(
-            ArrayList<CookieInfo> list, String origin, String embedder) {
-        list.add(new CookieInfo(origin, embedder, false));
-    }
-
     @CalledByNative
     private static Object createStorageInfoList() {
         return new ArrayList<StorageInfo>();
@@ -302,11 +289,6 @@ public abstract class WebsitePreferenceBridge {
             String origin, int value, boolean isIncognito);
     static native void nativeSetCameraSettingForOrigin(
             String origin, int value, boolean isIncognito);
-    private static native void nativeGetCookieOrigins(Object list, boolean managedOnly);
-    static native int nativeGetCookieSettingForOrigin(
-            String origin, String embedder, boolean isIncognito);
-    static native void nativeSetCookieSettingForOrigin(
-            String origin, String embedder, int setting, boolean isIncognito);
     static native void nativeClearCookieData(String path);
     static native void nativeClearLocalStorageData(String path);
     static native void nativeClearStorageData(String origin, int type, Object callback);

@@ -59,8 +59,8 @@ public class WebsitePermissionsFetcher {
         queue.add(new GeolocationInfoFetcher());
         // Midi sysex access permission is per-origin and per-embedder.
         queue.add(new MidiInfoFetcher());
-        // Cookies are stored per-origin.
-        queue.add(new CookieInfoFetcher());
+        // Cookies are stored per-host.
+        queue.add(new CookieExceptionInfoFetcher());
         // Fullscreen are stored per-origin.
         queue.add(new FullscreenInfoFetcher());
         // Keygen permissions are per-origin.
@@ -84,7 +84,9 @@ public class WebsitePermissionsFetcher {
         queue.add(new MicrophoneCaptureInfoFetcher());
         // Background sync permission is per-origin.
         queue.add(new BackgroundSyncExceptionInfoFetcher());
+
         queue.add(new PermissionsAvailableCallbackRunner());
+
         queue.next();
     }
 
@@ -105,8 +107,8 @@ public class WebsitePermissionsFetcher {
             // Geolocation lookup permission is per-origin and per-embedder.
             queue.add(new GeolocationInfoFetcher());
         } else if (category.showCookiesSites()) {
-            // Cookies are stored per-origin.
-            queue.add(new CookieInfoFetcher());
+            // Cookies exceptions are patterns.
+            queue.add(new CookieExceptionInfoFetcher());
         } else if (category.showStorageSites()) {
             // Local storage info is per-origin.
             queue.add(new LocalStorageInfoFetcher());
@@ -255,6 +257,24 @@ public class WebsitePermissionsFetcher {
         }
     }
 
+    private class CookieExceptionInfoFetcher extends Task {
+        @Override
+        public void run() {
+            for (ContentSettingException exception :
+                    WebsitePreferenceBridge.getContentSettingsExceptions(
+                            ContentSettingsType.CONTENT_SETTINGS_TYPE_COOKIES)) {
+                // The pattern "*" represents the default setting, not a specific website.
+                if (exception.getPattern().equals("*")) continue;
+                WebsiteAddress address = WebsiteAddress.create(exception.getPattern());
+                if (address == null) continue;
+                Set<Website> sites = findOrCreateSitesByHost(address);
+                for (Website site : sites) {
+                    site.setCookieException(exception);
+                }
+            }
+        }
+    }
+
     private class KeygenInfoFetcher extends Task {
         @Override
         public void run() {
@@ -262,17 +282,6 @@ public class WebsitePermissionsFetcher {
                 WebsiteAddress address = WebsiteAddress.create(info.getOrigin());
                 if (address == null) continue;
                 createSiteByOriginAndHost(address).setKeygenInfo(info);
-            }
-        }
-    }
-
-    private class CookieInfoFetcher extends Task {
-        @Override
-        public void run() {
-            for (CookieInfo info : WebsitePreferenceBridge.getCookieInfo()) {
-                WebsiteAddress address = WebsiteAddress.create(info.getOrigin());
-                if (address == null) continue;
-                createSiteByOriginAndHost(address).setCookieInfo(info);
             }
         }
     }
