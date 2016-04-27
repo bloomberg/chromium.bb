@@ -13,9 +13,13 @@
   2010-05-26 - Use a paged array for V and I. The address space may be too
                fragmented for these big arrays to be contiguous.
                  --Stephen Adams <sra@chromium.org>
-  2015-08-03 - Extrat qsufsort to a separate file as template.
+  2015-08-03 - Extract QSufSort to a separate file as template.
                  --Samuel Huang <huangs@chromium.org>
   2015-08-19 - Optimize split() and search(), add comments.
+                 --Samuel Huang <huangs@chromium.org>
+  2016-04-27 - Change split() to use Bentley & McIlroy's pivot selection
+               algorithm, which QSufSort originally used. Reference:
+               http://www.larsson.dogma.net/qsufsort.c
                  --Samuel Huang <huangs@chromium.org>
 */
 
@@ -39,9 +43,19 @@ namespace qsuf {
 // presented in "Faster Suffix Sorting" by N. Jesper Larsson and Kunihiko
 // Sadakane, special cased for bytes.
 
-template <typename T> static void split(T I, T V, int start, int end, int h) {
+namespace {
+
+template <typename T> T median3(const T& a, const T& b, const T& c) {
+  if (a < b)
+    return b < c ? b : (a < c ? c : a);
+  return b > c ? b : (a > c ? c : a);
+}
+
+}  // namespace
+
+template <typename T> void split(T I, T V, int start, int end, int h) {
   // For small interval, apply selection sort.
-  if (end - start < 6) {
+  if (end - start < 16) {
     for (int i = start; i < end; ) {
       int skip = 1;
       int best = V[I[i] + h];
@@ -72,11 +86,24 @@ template <typename T> static void split(T I, T V, int start, int end, int h) {
     return;
   }
 
+  // Select pivot, algorithm by Bentley & McIlroy.
+  int n = end - start;
+  int mid = start + (n >> 1);
+  int pivot = V[I[mid] + h];
+  int p1 = V[I[start] + h];
+  int p2 = V[I[end - 1] + h];
+  if (n > 40) {  // Big array: Pseudomedian of 9.
+    int s = n >> 3;
+    pivot = median3(pivot, V[I[mid - s] + h], V[I[mid + s] + h]);
+    p1 = median3(p1, V[I[start + s] + h], V[I[start + s + s] + h]);
+    p2 = median3(p2, V[I[end - 1 - s] + h], V[I[end - 1 - s - s] + h]);
+  }  // Else medium array: Pseudomedian of 3.
+  pivot = median3(pivot, p1, p2);
+
   // Split [start, end) into 3 intervals:
   //   [start, j) with secondary keys < pivot,
   //   [j, k) with secondary keys == pivot,
   //   [k, end) with secondary keys > pivot.
-  int pivot = V[I[(start + end) / 2] + h];
   int j = start;
   int k = end;
   for (int i = start; i < k; ) {
