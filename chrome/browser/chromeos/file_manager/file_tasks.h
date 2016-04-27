@@ -286,6 +286,10 @@ void FindFileBrowserHandlerTasks(
     const std::vector<GURL>& file_urls,
     std::vector<FullTaskDescriptor>* result_list);
 
+// Callback function type for FindAllTypesOfTasks.
+typedef base::Callback<void(const std::vector<FullTaskDescriptor>& result)>
+    FindTasksCallback;
+
 // Finds all types (drive, file handlers, file browser handlers) of
 // tasks. See the comment at FindDriveAppTasks() about |result_list|.
 // Drive app tasks will be found only if all of the files are on Drive.
@@ -301,7 +305,7 @@ void FindAllTypesOfTasks(Profile* profile,
                          const drive::DriveAppRegistry* drive_app_registry,
                          const std::vector<extensions::EntryInfo>& entries,
                          const std::vector<GURL>& file_urls,
-                         std::vector<FullTaskDescriptor>* result_list);
+                         const FindTasksCallback& callback);
 
 // Chooses the default task in |tasks| and sets it as default, if the default
 // task is found (i.e. the default task may not exist in |tasks|). No tasks

@@ -73,23 +73,11 @@ void OpenFileManagerWithInternalActionId(Profile* profile,
   ExecuteFileTaskForUrl(profile, task, url);
 }
 
-// Opens the file with fetched MIME type and calls the callback.
-void OpenFileWithMimeType(Profile* profile,
-                          const base::FilePath& path,
-                          const GURL& url,
-                          const platform_util::OpenOperationCallback& callback,
-                          const std::string& mime_type) {
-  std::vector<extensions::EntryInfo> entries;
-  entries.push_back(extensions::EntryInfo(path, mime_type, false));
-
-  std::vector<GURL> file_urls;
-  file_urls.push_back(url);
-
-  std::vector<file_tasks::FullTaskDescriptor> tasks;
-  file_tasks::FindAllTypesOfTasks(
-      profile, drive::util::GetDriveAppRegistryByProfile(profile), entries,
-      file_urls, &tasks);
-
+void OpenFileMimeTypeAfterTasksListed(
+    Profile* profile,
+    const GURL& url,
+    const platform_util::OpenOperationCallback& callback,
+    const std::vector<file_tasks::FullTaskDescriptor>& tasks) {
   // Select a default handler. If a default handler is not available, select
   // a non-generic file handler.
   const file_tasks::FullTaskDescriptor* chosen_task = nullptr;
@@ -108,6 +96,24 @@ void OpenFileWithMimeType(Profile* profile,
   } else {
     callback.Run(platform_util::OPEN_FAILED_NO_HANLDER_FOR_FILE_TYPE);
   }
+}
+
+// Opens the file with fetched MIME type and calls the callback.
+void OpenFileWithMimeType(Profile* profile,
+                          const base::FilePath& path,
+                          const GURL& url,
+                          const platform_util::OpenOperationCallback& callback,
+                          const std::string& mime_type) {
+  std::vector<extensions::EntryInfo> entries;
+  entries.push_back(extensions::EntryInfo(path, mime_type, false));
+
+  std::vector<GURL> file_urls;
+  file_urls.push_back(url);
+
+  file_tasks::FindAllTypesOfTasks(
+      profile, drive::util::GetDriveAppRegistryByProfile(profile), entries,
+      file_urls,
+      base::Bind(&OpenFileMimeTypeAfterTasksListed, profile, url, callback));
 }
 
 // Opens the file specified by |url| by finding and executing a file task for

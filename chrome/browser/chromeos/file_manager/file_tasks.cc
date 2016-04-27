@@ -513,29 +513,31 @@ void FindAllTypesOfTasks(Profile* profile,
                          const drive::DriveAppRegistry* drive_app_registry,
                          const std::vector<extensions::EntryInfo>& entries,
                          const std::vector<GURL>& file_urls,
-                         std::vector<FullTaskDescriptor>* result_list) {
+                         const FindTasksCallback& callback) {
   DCHECK(profile);
-  DCHECK(result_list);
+  std::vector<FullTaskDescriptor> result_list;
 
   // Find Drive app tasks, if the drive app registry is present.
   if (drive_app_registry)
-    FindDriveAppTasks(*drive_app_registry, entries, result_list);
+    FindDriveAppTasks(*drive_app_registry, entries, &result_list);
 
   // Find and append file handler tasks. We know there aren't duplicates
   // because Drive apps and platform apps are entirely different kinds of
   // tasks.
-  FindFileHandlerTasks(profile, entries, result_list);
+  FindFileHandlerTasks(profile, entries, &result_list);
 
   // Find and append file browser handler tasks. We know there aren't
   // duplicates because "file_browser_handlers" and "file_handlers" shouldn't
   // be used in the same manifest.json.
-  FindFileBrowserHandlerTasks(profile, file_urls, result_list);
+  FindFileBrowserHandlerTasks(profile, file_urls, &result_list);
 
   // Google documents can only be handled by internal handlers.
   if (ContainsGoogleDocument(entries))
-    KeepOnlyFileManagerInternalTasks(result_list);
+    KeepOnlyFileManagerInternalTasks(&result_list);
 
-  ChooseAndSetDefaultTask(*profile->GetPrefs(), entries, result_list);
+  ChooseAndSetDefaultTask(*profile->GetPrefs(), entries, &result_list);
+
+  callback.Run(result_list);
 }
 
 void ChooseAndSetDefaultTask(const PrefService& pref_service,

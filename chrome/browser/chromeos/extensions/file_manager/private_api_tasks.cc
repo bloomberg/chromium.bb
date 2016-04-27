@@ -183,11 +183,16 @@ void FileManagerPrivateInternalGetFileTasksFunction::
         directory_paths->find(local_paths_[i]) != directory_paths->end()));
   }
 
-  std::vector<file_manager::file_tasks::FullTaskDescriptor> tasks;
   file_manager::file_tasks::FindAllTypesOfTasks(
       GetProfile(), drive::util::GetDriveAppRegistryByProfile(GetProfile()),
-      entries, urls_, &tasks);
+      entries, urls_,
+      base::Bind(
+          &FileManagerPrivateInternalGetFileTasksFunction::OnFileTasksListed,
+          this));
+}
 
+void FileManagerPrivateInternalGetFileTasksFunction::OnFileTasksListed(
+    const std::vector<file_manager::file_tasks::FullTaskDescriptor>& tasks) {
   // Convert the tasks into JSON compatible objects.
   using api::file_manager_private::FileTask;
   std::vector<FileTask> results;

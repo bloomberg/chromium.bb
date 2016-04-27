@@ -8,7 +8,9 @@
 #include <set>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/command_line.h"
+#include "base/run_loop.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
@@ -436,6 +438,31 @@ class FileManagerFileTasksComplexTest : public testing::Test {
         false  /* autoupdate_enabled*/);
   }
 
+  // Helper class for calling FindAllTypesOfTask synchronously.
+  class FindAllTypesOfTasksSynchronousWrapper {
+   public:
+    void Call(Profile* profile,
+              const drive::DriveAppRegistry* drive_app_registry,
+              const std::vector<extensions::EntryInfo>& entries,
+              const std::vector<GURL>& file_urls,
+              std::vector<FullTaskDescriptor>* result) {
+      FindAllTypesOfTasks(
+          profile, drive_app_registry, entries, file_urls,
+          base::Bind(&FindAllTypesOfTasksSynchronousWrapper::OnReply,
+                     base::Unretained(this), result));
+      run_loop_.Run();
+    }
+
+   private:
+    void OnReply(std::vector<FullTaskDescriptor>* out,
+                 const std::vector<FullTaskDescriptor>& result) {
+      *out = result;
+      run_loop_.Quit();
+    }
+
+    base::RunLoop run_loop_;
+  };
+
   content::TestBrowserThreadBundle thread_bundle_;
   chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
   chromeos::ScopedTestCrosSettings test_cros_settings_;
@@ -735,8 +762,8 @@ TEST_F(FileManagerFileTasksComplexTest, FindAllTypesOfTasks) {
   file_urls.push_back(GURL("filesystem:chrome-extension://id/dir/foo.txt"));
 
   std::vector<FullTaskDescriptor> tasks;
-  FindAllTypesOfTasks(&test_profile_, &drive_app_registry, entries, file_urls,
-                      &tasks);
+  FindAllTypesOfTasksSynchronousWrapper().Call(
+      &test_profile_, &drive_app_registry, entries, file_urls, &tasks);
   ASSERT_EQ(3U, tasks.size());
 
   // Sort the app IDs, as the order is not guaranteed.
@@ -837,8 +864,8 @@ TEST_F(FileManagerFileTasksComplexTest, FindAllTypesOfTasks_GoogleDocument) {
   file_urls.push_back(GURL("filesystem:chrome-extension://id/dir/foo.gdoc"));
 
   std::vector<FullTaskDescriptor> tasks;
-  FindAllTypesOfTasks(&test_profile_, &drive_app_registry, entries, file_urls,
-                      &tasks);
+  FindAllTypesOfTasksSynchronousWrapper().Call(
+      &test_profile_, &drive_app_registry, entries, file_urls, &tasks);
   ASSERT_EQ(1U, tasks.size());
   EXPECT_EQ(kFileManagerAppId, tasks[0].task_descriptor().app_id);
 }
