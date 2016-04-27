@@ -5,5 +5,5 @@
 typedef OffscreenCanvasRenderingContext2D OffscreenRenderingContext;
 
 partial interface OffscreenCanvas {
-    [RuntimeEnabled=ExperimentalCanvasFeatures] OffscreenRenderingContext? getContext(DOMString contextId, optional CanvasContextCreationAttributes attributes);
+    [RaisesException, RuntimeEnabled=ExperimentalCanvasFeatures] OffscreenRenderingContext? getContext(DOMString contextId, optional CanvasContextCreationAttributes attributes);
 };

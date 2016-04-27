@@ -40,6 +40,7 @@
 #include "bindings/core/v8/V8ArrayBuffer.h"
 #include "bindings/core/v8/V8ImageBitmap.h"
 #include "bindings/core/v8/V8MessagePort.h"
+#include "bindings/core/v8/V8OffscreenCanvas.h"
 #include "bindings/core/v8/V8SharedArrayBuffer.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMSharedArrayBuffer.h"
@@ -140,6 +141,27 @@ void SerializedScriptValue::transferImageBitmaps(v8::Isolate* isolate, const Ima
     m_imageBitmapContentsArray = contents.release();
 }
 
+void SerializedScriptValue::transferOffscreenCanvas(v8::Isolate* isolate, const OffscreenCanvasArray& offscreenCanvases, ExceptionState& exceptionState)
+{
+    if (!offscreenCanvases.size())
+        return;
+
+    HeapHashSet<Member<OffscreenCanvas>> visited;
+    for (size_t i = 0; i < offscreenCanvases.size(); i++) {
+        if (visited.contains(offscreenCanvases[i].get()))
+            continue;
+        if (offscreenCanvases[i]->isNeutered()) {
+            exceptionState.throwDOMException(DataCloneError, "OffscreenCanvas at index " + String::number(i) + " is already neutered.");
+            return;
+        }
+        if (offscreenCanvases[i]->renderingContext()) {
+            exceptionState.throwDOMException(DataCloneError, "OffscreenCanvas at index " + String::number(i) + " has an associated context.");
+            return;
+        }
+        visited.add(offscreenCanvases[i].get());
+        offscreenCanvases[i].get()->setNeutered();
+    }
+}
 
 void SerializedScriptValue::transferArrayBuffers(v8::Isolate* isolate, const ArrayBufferArray& arrayBuffers, ExceptionState& exceptionState)
 {
@@ -266,6 +288,13 @@ bool SerializedScriptValue::extractTransferables(v8::Isolate* isolate, v8::Local
                 return false;
             }
             transferables.imageBitmaps.append(imageBitmap);
+        } else if (V8OffscreenCanvas::hasInstance(transferableObject, isolate)) {
+            OffscreenCanvas* offscreenCanvas = V8OffscreenCanvas::toImpl(v8::Local<v8::Object>::Cast(transferableObject));
+            if (transferables.offscreenCanvases.contains(offscreenCanvas)) {
+                exceptionState.throwDOMException(DataCloneError, "OffscreenCanvas at index " + String::number(i) + " is a duplicate of an earlier OffscreenCanvas.");
+                return false;
+            }
+            transferables.offscreenCanvases.append(offscreenCanvas);
         } else {
             exceptionState.throwTypeError("Value at index " + String::number(i) + " does not have a transferable type.");
             return false;

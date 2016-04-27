@@ -14,6 +14,7 @@
 #include "bindings/core/v8/V8ImageBitmap.h"
 #include "bindings/core/v8/V8ImageData.h"
 #include "bindings/core/v8/V8MessagePort.h"
+#include "bindings/core/v8/V8OffscreenCanvas.h"
 #include "bindings/core/v8/V8SharedArrayBuffer.h"
 #include "core/dom/CompositorProxy.h"
 #include "core/dom/DOMDataView.h"
@@ -342,6 +343,15 @@ void SerializedScriptValueWriter::writeTransferredImageBitmap(uint32_t index)
     doWriteUint32(index);
 }
 
+void SerializedScriptValueWriter::writeTransferredOffscreenCanvas(uint32_t index, uint32_t width, uint32_t height, uint32_t id)
+{
+    append(OffscreenCanvasTransferTag);
+    doWriteUint32(index);
+    doWriteUint32(width);
+    doWriteUint32(height);
+    doWriteUint32(id);
+}
+
 void SerializedScriptValueWriter::writeTransferredSharedArrayBuffer(uint32_t index)
 {
     ASSERT(RuntimeEnabledFeatures::sharedArrayBufferEnabled());
@@ -665,6 +675,16 @@ static v8::Local<v8::Object> toV8Object(ImageBitmap* impl, v8::Local<v8::Object>
     return wrapper.As<v8::Object>();
 }
 
+static v8::Local<v8::Object> toV8Object(OffscreenCanvas* impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
+{
+    if (!impl)
+        return v8::Local<v8::Object>();
+    v8::Local<v8::Value> wrapper = toV8(impl, creationContext, isolate);
+    if (wrapper.IsEmpty())
+        return v8::Local<v8::Object>();
+    return wrapper.As<v8::Object>();
+}
+
 static v8::Local<v8::Object> toV8Object(DOMArrayBufferBase* impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
 {
     if (!impl)
@@ -728,6 +748,13 @@ void ScriptValueSerializer::copyTransferables(const Transferables& transferables
         if (!m_transferredImageBitmaps.contains(v8ImageBitmap))
             m_transferredImageBitmaps.set(v8ImageBitmap, i);
     }
+
+    const auto& offscreenCanvases = transferables.offscreenCanvases;
+    for (size_t i = 0; i < offscreenCanvases.size(); ++i) {
+        v8::Local<v8::Object> v8OffscreenCanvas = toV8Object(offscreenCanvases[i].get(), creationContext, isolate());
+        if (!m_transferredOffscreenCanvas.contains(v8OffscreenCanvas))
+            m_transferredOffscreenCanvas.set(v8OffscreenCanvas, i);
+    }
 }
 
 ScriptValueSerializer::Status ScriptValueSerializer::serialize(v8::Local<v8::Value> value)
@@ -781,6 +808,7 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::doSerializeValue(v8::Lo
 
         uint32_t arrayBufferIndex;
         uint32_t imageBitmapIndex;
+        uint32_t offscreenCanvasIndex;
         if (V8ArrayBufferView::hasInstance(value, isolate())) {
             return writeAndGreyArrayBufferView(jsObject, next);
         } else if (V8MessagePort::hasInstance(value, isolate())) {
@@ -795,6 +823,8 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::doSerializeValue(v8::Lo
             return writeTransferredImageBitmap(value, imageBitmapIndex, next);
         } else if (V8SharedArrayBuffer::hasInstance(value, isolate()) && m_transferredArrayBuffers.tryGet(jsObject, &arrayBufferIndex)) {
             return writeTransferredSharedArrayBuffer(value, arrayBufferIndex, next);
+        } else if (V8OffscreenCanvas::hasInstance(value, isolate()) && m_transferredOffscreenCanvas.tryGet(jsObject, &offscreenCanvasIndex)) {
+            return writeTransferredOffscreenCanvas(value, offscreenCanvasIndex, next);
         }
 
         greyObject(jsObject);
@@ -1096,6 +1126,19 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::writeTransferredImageBi
         return handleError(DataCloneError, "An ImageBitmap is neutered and could not be cloned.", next);
     m_writer.writeTransferredImageBitmap(index);
     return 0;
+}
+
+ScriptValueSerializer::StateBase* ScriptValueSerializer::writeTransferredOffscreenCanvas(v8::Local<v8::Value> value, uint32_t index, ScriptValueSerializer::StateBase* next)
+{
+    OffscreenCanvas* offscreenCanvas = V8OffscreenCanvas::toImpl(value.As<v8::Object>());
+    if (!offscreenCanvas)
+        return nullptr;
+    if (offscreenCanvas->isNeutered())
+        return handleError(DataCloneError, "An OffscreenCanvas is detached and could not be cloned.", next);
+    if (offscreenCanvas->renderingContext())
+        return handleError(DataCloneError, "An OffscreenCanvas with a context could not be cloned.", next);
+    m_writer.writeTransferredOffscreenCanvas(index, offscreenCanvas->width(), offscreenCanvas->height(), offscreenCanvas->getAssociatedCanvasId());
+    return nullptr;
 }
 
 ScriptValueSerializer::StateBase* ScriptValueSerializer::writeTransferredSharedArrayBuffer(v8::Local<v8::Value> value, uint32_t index, ScriptValueSerializer::StateBase* next)
@@ -1438,6 +1481,22 @@ bool SerializedScriptValueReader::readWithTag(SerializationTag tag, v8::Local<v8
         if (!doReadUint32(&index))
             return false;
         if (!creator.tryGetTransferredImageBitmap(index, value))
+            return false;
+        break;
+    }
+    case OffscreenCanvasTransferTag: {
+        if (!m_version)
+            return false;
+        uint32_t index, width, height, id;
+        if (!doReadUint32(&index))
+            return false;
+        if (!doReadUint32(&width))
+            return false;
+        if (!doReadUint32(&height))
+            return false;
+        if (!doReadUint32(&id))
+            return false;
+        if (!creator.tryGetTransferredOffscreenCanvas(index, width, height, id, value))
             return false;
         break;
     }
@@ -2216,6 +2275,16 @@ bool ScriptValueDeserializer::tryGetTransferredSharedArrayBuffer(uint32_t index,
         m_arrayBuffers[index] = result;
     }
     *object = result;
+    return true;
+}
+
+bool ScriptValueDeserializer::tryGetTransferredOffscreenCanvas(uint32_t index, uint32_t width, uint32_t height, uint32_t id, v8::Local<v8::Value>* object)
+{
+    OffscreenCanvas* offscreenCanvas = OffscreenCanvas::create(width, height);
+    offscreenCanvas->setAssociatedCanvasId(id);
+    *object = toV8(offscreenCanvas, m_reader.getScriptState());
+    if ((*object).IsEmpty())
+        return false;
     return true;
 }
 

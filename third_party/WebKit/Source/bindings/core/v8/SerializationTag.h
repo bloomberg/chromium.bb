@@ -61,6 +61,7 @@ enum SerializationTag {
     ArrayBufferTransferTag = 't', // index:uint32_t -> ArrayBuffer. For ArrayBuffer transfer
     ImageBitmapTag = 'g', // size:uint32_t, data:byte[size] -> ImageBitmap (ref)
     ImageBitmapTransferTag = 'G', // index:uint32_t -> ImageBitmap. For ImageBitmap transfer
+    OffscreenCanvasTransferTag = 'H', // index, width, height, id:uint32_t -> OffscreenCanvas. For OffscreenCanvas transfer
     ArrayBufferViewTag = 'V', // subtag:byte, byteOffset:uint32_t, byteLength:uint32_t -> ArrayBufferView (ref). Consumes an ArrayBuffer from the top of the deserialization stack.
     SharedArrayBufferTransferTag = 'u', // index:uint32_t -> SharedArrayBuffer. For SharedArrayBuffer transfer
     CryptoKeyTag = 'K', // subtag:byte, props, usages:uint32_t, keyDataLength:uint32_t, keyData:byte[keyDataLength]

@@ -13,10 +13,12 @@ namespace blink {
 
 class DOMArrayBufferBase;
 class ImageBitmap;
+class OffscreenCanvas;
 class MessagePort;
 
 using ArrayBufferArray = HeapVector<Member<DOMArrayBufferBase>>;
 using ImageBitmapArray = HeapVector<Member<ImageBitmap>>;
+using OffscreenCanvasArray = HeapVector<Member<OffscreenCanvas>>;
 using MessagePortArray = HeapVector<Member<MessagePort>>;
 
 class CORE_EXPORT Transferables final {
@@ -29,6 +31,7 @@ public:
 
     ArrayBufferArray arrayBuffers;
     ImageBitmapArray imageBitmaps;
+    OffscreenCanvasArray offscreenCanvases;
     MessagePortArray messagePorts;
 };
 

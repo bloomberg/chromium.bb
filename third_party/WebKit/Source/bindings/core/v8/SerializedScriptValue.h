@@ -116,6 +116,7 @@ private:
     void setData(const String& data) { m_data = data; }
     void transferArrayBuffers(v8::Isolate*, const ArrayBufferArray&, ExceptionState&);
     void transferImageBitmaps(v8::Isolate*, const ImageBitmapArray&, ExceptionState&);
+    void transferOffscreenCanvas(v8::Isolate*, const OffscreenCanvasArray&, ExceptionState&);
     ArrayBufferContentsArray* getArrayBufferContentsArray() { return m_arrayBufferContentsArray.get(); }
     ImageBitmapContentsArray* getImageBitmapContentsArray() { return m_imageBitmapContentsArray.get(); }
 

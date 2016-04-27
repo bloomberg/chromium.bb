@@ -114,6 +114,9 @@ void SerializedScriptValueFactory::transferData(SerializedScriptValue* serialize
     if (exceptionState.hadException())
         return;
     serializedValue->transferArrayBuffers(isolate, transferables->arrayBuffers, exceptionState);
+    if (exceptionState.hadException())
+        return;
+    serializedValue->transferOffscreenCanvas(isolate, transferables->offscreenCanvases, exceptionState);
 }
 
 ScriptValueSerializer::Status SerializedScriptValueFactory::doSerialize(v8::Local<v8::Value> value, SerializedScriptValueWriter& writer, Transferables* transferables, WebBlobInfoArray* blobInfo, SerializedScriptValue* serializedValue, v8::TryCatch& tryCatch, String& errorMessage, v8::Isolate* isolate)

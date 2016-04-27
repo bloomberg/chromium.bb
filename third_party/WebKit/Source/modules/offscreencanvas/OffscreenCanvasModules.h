@@ -5,6 +5,7 @@
 #ifndef OffscreenCanvasModules_h
 #define OffscreenCanvasModules_h
 
+#include "bindings/core/v8/ExceptionState.h"
 #include "modules/ModulesExport.h"
 #include "wtf/Allocator.h"
 #include "wtf/text/WTFString.h"
@@ -18,7 +19,7 @@ class OffscreenCanvasRenderingContext2D;
 class MODULES_EXPORT OffscreenCanvasModules {
     STATIC_ONLY(OffscreenCanvasModules)
 public:
-    static OffscreenCanvasRenderingContext2D* getContext(OffscreenCanvas&, const String&, const CanvasContextCreationAttributes&);
+    static OffscreenCanvasRenderingContext2D* getContext(OffscreenCanvas&, const String&, const CanvasContextCreationAttributes&, ExceptionState&);
 };
 
 } // namespace blink

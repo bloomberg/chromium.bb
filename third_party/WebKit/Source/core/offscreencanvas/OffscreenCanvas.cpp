@@ -32,8 +32,20 @@ void OffscreenCanvas::setHeight(unsigned height)
     m_size.setHeight(clampTo<int>(height));
 }
 
+void OffscreenCanvas::setNeutered()
+{
+    ASSERT(!m_context);
+    m_isNeutered = true;
+    m_size.setWidth(0);
+    m_size.setHeight(0);
+}
+
 ImageBitmap* OffscreenCanvas::transferToImageBitmap(ExceptionState& exceptionState)
 {
+    if (m_isNeutered) {
+        exceptionState.throwDOMException(InvalidStateError, "Cannot transfer an ImageBitmap from a detached OffscreenCanvas");
+        return nullptr;
+    }
     if (!m_context) {
         exceptionState.throwDOMException(InvalidStateError, "Cannot transfer an ImageBitmap from an OffscreenCanvas with no context");
         return nullptr;
@@ -93,7 +105,6 @@ void OffscreenCanvas::registerRenderingContextFactory(PassOwnPtr<CanvasRendering
 DEFINE_TRACE(OffscreenCanvas)
 {
     visitor->trace(m_context);
-    visitor->trace(m_canvas);
 }
 
 } // namespace blink

@@ -143,6 +143,7 @@ public:
     void writeTransferredMessagePort(uint32_t index);
     void writeTransferredArrayBuffer(uint32_t index);
     void writeTransferredImageBitmap(uint32_t index);
+    void writeTransferredOffscreenCanvas(uint32_t index, uint32_t width, uint32_t height, uint32_t id);
     void writeTransferredSharedArrayBuffer(uint32_t index);
     void writeObjectReference(uint32_t reference);
     void writeObject(uint32_t numProperties);
@@ -409,6 +410,7 @@ private:
     StateBase* writeArrayBuffer(v8::Local<v8::Value>, StateBase* next);
     StateBase* writeTransferredArrayBuffer(v8::Local<v8::Value>, uint32_t index, StateBase* next);
     StateBase* writeTransferredImageBitmap(v8::Local<v8::Value>, uint32_t index, StateBase* next);
+    StateBase* writeTransferredOffscreenCanvas(v8::Local<v8::Value>, uint32_t index, StateBase* next);
     StateBase* writeTransferredSharedArrayBuffer(v8::Local<v8::Value>, uint32_t index, StateBase* next);
     static bool shouldSerializeDensely(uint32_t length, uint32_t propertyCount);
 
@@ -445,6 +447,7 @@ private:
     ObjectPool m_transferredMessagePorts;
     ObjectPool m_transferredArrayBuffers;
     ObjectPool m_transferredImageBitmaps;
+    ObjectPool m_transferredOffscreenCanvas;
     uint32_t m_nextObjectReference;
     WebBlobInfoArray* m_blobInfo;
     BlobDataHandleMap& m_blobDataHandles;
@@ -465,6 +468,7 @@ public:
     virtual bool tryGetTransferredMessagePort(uint32_t index, v8::Local<v8::Value>*) = 0;
     virtual bool tryGetTransferredArrayBuffer(uint32_t index, v8::Local<v8::Value>*) = 0;
     virtual bool tryGetTransferredImageBitmap(uint32_t index, v8::Local<v8::Value>*) = 0;
+    virtual bool tryGetTransferredOffscreenCanvas(uint32_t index, uint32_t width, uint32_t height, uint32_t id, v8::Local<v8::Value>*) = 0;
     virtual bool tryGetTransferredSharedArrayBuffer(uint32_t index, v8::Local<v8::Value>*) = 0;
     virtual bool newSparseArray(uint32_t length) = 0;
     virtual bool newDenseArray(uint32_t length) = 0;
@@ -613,6 +617,7 @@ public:
     bool tryGetTransferredMessagePort(uint32_t index, v8::Local<v8::Value>*) override;
     bool tryGetTransferredArrayBuffer(uint32_t index, v8::Local<v8::Value>*) override;
     bool tryGetTransferredImageBitmap(uint32_t index, v8::Local<v8::Value>*) override;
+    bool tryGetTransferredOffscreenCanvas(uint32_t index, uint32_t width, uint32_t height, uint32_t id, v8::Local<v8::Value>*) override;
     bool tryGetTransferredSharedArrayBuffer(uint32_t index, v8::Local<v8::Value>*) override;
     bool tryGetObjectFromObjectReference(uint32_t reference, v8::Local<v8::Value>*) override;
     uint32_t objectReferenceCount() override;

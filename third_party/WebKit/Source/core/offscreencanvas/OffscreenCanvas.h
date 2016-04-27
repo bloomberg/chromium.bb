@@ -32,9 +32,12 @@ public:
     ImageBitmap* transferToImageBitmap(ExceptionState&);
 
     IntSize size() const { return m_size; }
-    void setAssociatedCanvas(HTMLCanvasElement* canvas) { m_canvas = canvas; }
-    HTMLCanvasElement* getAssociatedCanvas() const { return m_canvas; }
+    void setAssociatedCanvasId(int canvasId) { m_canvasId = canvasId; }
+    int getAssociatedCanvasId() const { return m_canvasId; }
+    bool isNeutered() const { return m_isNeutered; }
+    void setNeutered();
     CanvasRenderingContext* getCanvasRenderingContext(const String&, const CanvasContextCreationAttributes&);
+    CanvasRenderingContext* renderingContext() { return m_context; }
 
     static void registerRenderingContextFactory(PassOwnPtr<CanvasRenderingContextFactory>);
 
@@ -48,8 +51,9 @@ private:
     static CanvasRenderingContextFactory* getRenderingContextFactory(int);
 
     Member<CanvasRenderingContext> m_context;
-    WeakMember<HTMLCanvasElement> m_canvas;
+    int m_canvasId = -1; // DOMNodeIds starts from 0, using -1 to indicate no associated canvas element.
     IntSize m_size;
+    bool m_isNeutered = false;
 };
 
 } // namespace blink
