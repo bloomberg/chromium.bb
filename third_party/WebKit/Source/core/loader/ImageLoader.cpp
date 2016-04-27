@@ -282,9 +282,6 @@ void ImageLoader::doUpdateFromElement(BypassMainWorldBehavior bypassBehavior, Up
         if (updateBehavior == UpdateForcedReload) {
             resourceRequest.setCachePolicy(WebCachePolicy::BypassingCache);
             resourceRequest.setLoFiState(WebURLRequest::LoFiOff);
-            // ImageLoader defers the load of images when in an ImageDocument.
-            // Don't defer this load on a forced reload.
-            m_loadingImageDocument = false;
         }
 
         if (referrerPolicy != ReferrerPolicyDefault)
@@ -295,18 +292,7 @@ void ImageLoader::doUpdateFromElement(BypassMainWorldBehavior bypassBehavior, Up
         FetchRequest request(resourceRequest, element()->localName(), resourceLoaderOptions);
         configureRequest(request, bypassBehavior, *m_element, document.clientHintsPreferences());
 
-        // Prevent the immediate creation of a ResourceLoader (and therefore a network
-        // request) for ImageDocument loads. In this case, the image contents have already
-        // been requested as a main resource and ImageDocumentParser will take care of
-        // funneling the main resource bytes into the ImageResource.
-        if (m_loadingImageDocument) {
-            request.setDefer(FetchRequest::DeferredByClient);
-            request.setContentSecurityCheck(DoNotCheckContentSecurityPolicy);
-        }
-
         newImage = ImageResource::fetch(request, document.fetcher());
-        if (m_loadingImageDocument && newImage)
-            newImage->setStatus(Resource::Pending);
 
         if (!newImage && !pageIsBeingDismissed(&document)) {
             crossSiteOrCSPViolationOccurred(imageSourceURL);
@@ -374,6 +360,17 @@ void ImageLoader::updateFromElement(UpdateFromElementBehavior updateBehavior, Re
     if (!m_failedLoadURL.isEmpty() && imageSourceURL == m_failedLoadURL)
         return;
 
+    // Prevent the creation of a ResourceLoader (and therefore a network
+    // request) for ImageDocument loads. In this case, the image contents have already
+    // been requested as a main resource and ImageDocumentParser will take care of
+    // funneling the main resource bytes into m_image, so just create an ImageResource
+    // to be populated later.
+    if (m_loadingImageDocument && updateBehavior != UpdateForcedReload) {
+        setImage(ImageResource::create(imageSourceToKURL(m_element->imageSourceURL())));
+        m_image->setStatus(Resource::Pending);
+        return;
+    }
+
     // If we have a pending task, we have to clear it -- either we're
     // now loading immediately, or we need to reset the task's state.
     if (m_pendingTask) {
@@ -432,7 +429,7 @@ bool ImageLoader::shouldLoadImmediately(const KURL& url) const
         if (resource && !resource->errorOccurred())
             return true;
     }
-    return (m_loadingImageDocument || isHTMLObjectElement(m_element) || isHTMLEmbedElement(m_element) || url.protocolIsData());
+    return (isHTMLObjectElement(m_element) || isHTMLEmbedElement(m_element) || url.protocolIsData());
 }
 
 void ImageLoader::imageNotifyFinished(ImageResource* resource)

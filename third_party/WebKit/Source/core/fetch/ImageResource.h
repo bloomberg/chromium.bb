@@ -56,7 +56,6 @@ public:
         return new ImageResource(image, ResourceLoaderOptions());
     }
 
-    // Exposed for testing
     static ImageResource* create(const ResourceRequest& request)
     {
         return new ImageResource(request, ResourceLoaderOptions());

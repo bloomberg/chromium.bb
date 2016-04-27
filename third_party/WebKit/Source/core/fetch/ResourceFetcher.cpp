@@ -257,7 +257,8 @@ bool ResourceFetcher::isControlledByServiceWorker() const
 
 bool ResourceFetcher::resourceNeedsLoad(Resource* resource, const FetchRequest& request, RevalidationPolicy policy)
 {
-    if (FetchRequest::DeferredByClient == request.defer())
+    // Defer a font load until it is actually needed unless this is a preload.
+    if (resource->getType() == Resource::Font && !request.forPreload())
         return false;
     if (resource->isImage() && shouldDeferImageLoad(resource->url()))
         return false;
@@ -660,7 +661,7 @@ ResourceFetcher::RevalidationPolicy ResourceFetcher::determineRevalidationPolicy
     //    affected by m_imagesEnabled but not m_autoLoadImages, in order to
     //    allow for this differing behavior.
     // TODO(japhet): Can we get rid of one of these settings?
-    if (existingResource->isImage() && (FetchRequest::DeferredByClient == fetchRequest.defer() || !context().allowImage(m_imagesEnabled, existingResource->url())))
+    if (existingResource->isImage() && !context().allowImage(m_imagesEnabled, existingResource->url()))
         return Reload;
 
     // Never use cache entries for downloadToFile / useStreamOnResponse

@@ -74,9 +74,6 @@ FontResource* FontResource::fetch(FetchRequest& request, ResourceFetcher* fetche
 {
     ASSERT(request.resourceRequest().frameType() == WebURLRequest::FrameTypeNone);
     request.mutableResourceRequest().setRequestContext(WebURLRequest::RequestContextFont);
-    // Defer the load until the font is actually needed unless this is a preload.
-    if (!request.forPreload())
-        request.setDefer(FetchRequest::DeferredByClient);
     return toFontResource(fetcher->requestResource(request, FontResourceFactory()));
 }
 
