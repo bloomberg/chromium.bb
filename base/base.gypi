@@ -240,8 +240,6 @@
           'gtest_prod_util.h',
           'guid.cc',
           'guid.h',
-          'guid_posix.cc',
-          'guid_win.cc',
           'hash.cc',
           'hash.h',
           'id_map.h',

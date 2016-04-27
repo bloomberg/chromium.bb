@@ -66,7 +66,9 @@ void PushMessagingAppIdentifier::RegisterProfilePrefs(
 PushMessagingAppIdentifier PushMessagingAppIdentifier::Generate(
     const GURL& origin,
     int64_t service_worker_registration_id) {
-  std::string guid = base::GenerateGUID();
+  // Use uppercase GUID for consistency with GUIDs Push has already sent to GCM.
+  // Also allows detecting case mangling; see code commented "crbug.com/461867".
+  std::string guid = base::ToUpperASCII(base::GenerateGUID());
   CHECK(!guid.empty());
   std::string app_id =
       kPushMessagingAppIdentifierPrefix + origin.spec() + kSeparator + guid;
