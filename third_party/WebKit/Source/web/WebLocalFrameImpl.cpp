@@ -136,7 +136,7 @@
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutPart.h"
-#include "core/layout/LayoutView.h"
+#include "core/layout/api/LayoutViewItem.h"
 #include "core/style/StyleInheritedData.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoadRequest.h"
@@ -298,11 +298,11 @@ public:
     float spoolSinglePage(WebCanvas* canvas, int pageNumber)
     {
         dispatchEventsForPrintingOnAllFrames();
-        if (!frame()->document() || !frame()->document()->layoutView())
+        if (!frame()->document() || frame()->document()->layoutViewItem().isNull())
             return 0;
 
         frame()->view()->updateAllLifecyclePhasesExceptPaint();
-        if (!frame()->document() || !frame()->document()->layoutView())
+        if (!frame()->document() || frame()->document()->layoutViewItem().isNull())
             return 0;
 
         IntRect pageRect = m_pageRects[pageNumber];
@@ -317,11 +317,11 @@ public:
     void spoolAllPagesWithBoundaries(WebCanvas* canvas, const FloatSize& pageSizeInPixels)
     {
         dispatchEventsForPrintingOnAllFrames();
-        if (!frame()->document() || !frame()->document()->layoutView())
+        if (!frame()->document() || frame()->document()->layoutViewItem().isNull())
             return;
 
         frame()->view()->updateAllLifecyclePhasesExceptPaint();
-        if (!frame()->document() || !frame()->document()->layoutView())
+        if (!frame()->document() || frame()->document()->layoutViewItem().isNull())
             return;
 
         float pageHeight;
