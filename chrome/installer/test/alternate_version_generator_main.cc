@@ -160,10 +160,8 @@ int wmain(int argc, wchar_t *argv[]) {
   std::wstring original_version;
   std::wstring new_version;
 
-  if (upgrade_test::GenerateAlternateVersion(
-          base::MakeAbsoluteFilePath(mini_installer),
-          base::MakeAbsoluteFilePath(out), direction, &original_version,
-          &new_version)) {
+  if (upgrade_test::GenerateAlternateVersion(mini_installer, out, direction,
+                                             &original_version, &new_version)) {
     fwprintf(stdout, L"Generated version %s from version %s\n",
              new_version.c_str(), original_version.c_str());
     return EXIT_SUCCESS;

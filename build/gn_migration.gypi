@@ -536,13 +536,6 @@
             '../third_party/codesighs/codesighs.gyp:msmap2tsv',
             '../third_party/pdfium/samples/samples.gyp:pdfium_diff',
           ],
-          'conditions': [
-            ['component!="shared_library" or target_arch!="ia32"', {
-              'dependencies': [
-                '../chrome/installer/mini_installer.gyp:next_version_mini_installer',
-              ],
-            }],
-          ],
         }],
         ['chromecast==1', {
           'dependencies': [

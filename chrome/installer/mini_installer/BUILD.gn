@@ -204,27 +204,3 @@ executable("mini_installer") {
     "//build/win:default_exe_manifest",
   ]
 }
-
-# next_version_mini_installer.exe can't be generated in an x86 Debug component
-# build because it requires too much memory.
-if (!(is_component_build && is_debug && target_cpu == "x86")) {
-  action("next_version_mini_installer") {
-    script = "generate_next_version_mini_installer.py"
-    testonly = true
-    inputs = [
-      "$root_out_dir/alternate_version_generator.exe",
-      "$root_out_dir/mini_installer.exe",
-    ]
-    outputs = [
-      "$root_out_dir/$target_name.exe",
-    ]
-    args = [
-      "--out",
-      "$target_name.exe",
-    ]
-    deps = [
-      ":mini_installer",
-      "//chrome/installer/test:alternate_version_generator",
-    ]
-  }
-}
