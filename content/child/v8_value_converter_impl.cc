@@ -230,6 +230,9 @@ v8::Local<v8::Value> V8ValueConverterImpl::ToV8Array(
     const base::ListValue* val) const {
   v8::Local<v8::Array> result(v8::Array::New(isolate, val->GetSize()));
 
+  // TODO(robwu): Callers should pass in the context.
+  v8::Local<v8::Context> context = isolate->GetCurrentContext();
+
   for (size_t i = 0; i < val->GetSize(); ++i) {
     const base::Value* child = NULL;
     CHECK(val->Get(i, &child));
@@ -238,10 +241,10 @@ v8::Local<v8::Value> V8ValueConverterImpl::ToV8Array(
         ToV8ValueImpl(isolate, creation_context, child);
     CHECK(!child_v8.IsEmpty());
 
-    v8::TryCatch try_catch(isolate);
-    result->Set(static_cast<uint32_t>(i), child_v8);
-    if (try_catch.HasCaught())
-      LOG(ERROR) << "Setter for index " << i << " threw an exception.";
+    v8::Maybe<bool> maybe =
+        result->CreateDataProperty(context, static_cast<uint32_t>(i), child_v8);
+    if (!maybe.IsJust() || !maybe.FromJust())
+      LOG(ERROR) << "Failed to set value at index " << i;
   }
 
   return result;
@@ -253,6 +256,9 @@ v8::Local<v8::Value> V8ValueConverterImpl::ToV8Object(
     const base::DictionaryValue* val) const {
   v8::Local<v8::Object> result(v8::Object::New(isolate));
 
+  // TODO(robwu): Callers should pass in the context.
+  v8::Local<v8::Context> context = isolate->GetCurrentContext();
+
   for (base::DictionaryValue::Iterator iter(*val);
        !iter.IsAtEnd(); iter.Advance()) {
     const std::string& key = iter.key();
@@ -260,15 +266,13 @@ v8::Local<v8::Value> V8ValueConverterImpl::ToV8Object(
         ToV8ValueImpl(isolate, creation_context, &iter.value());
     CHECK(!child_v8.IsEmpty());
 
-    v8::TryCatch try_catch(isolate);
-    result->Set(
-        v8::String::NewFromUtf8(
-            isolate, key.c_str(), v8::String::kNormalString, key.length()),
+    v8::Maybe<bool> maybe = result->CreateDataProperty(
+        context,
+        v8::String::NewFromUtf8(isolate, key.c_str(), v8::String::kNormalString,
+                                key.length()),
         child_v8);
-    if (try_catch.HasCaught()) {
-      LOG(ERROR) << "Setter for property " << key.c_str() << " threw an "
-                 << "exception.";
-    }
+    if (!maybe.IsJust() || !maybe.FromJust())
+      LOG(ERROR) << "Failed to set property with key " << key;
   }
 
   return result;

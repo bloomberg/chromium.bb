@@ -104,6 +104,26 @@ class V8ValueConverterImplTest : public testing::Test {
     return std::string(*utf8, utf8.length());
   }
 
+  int32_t GetInt(v8::Local<v8::Object> value, const std::string& key) {
+    v8::Local<v8::Int32> temp =
+        value->Get(v8::String::NewFromUtf8(isolate_, key.c_str()))
+            .As<v8::Int32>();
+    if (temp.IsEmpty()) {
+      ADD_FAILURE();
+      return -1;
+    }
+    return temp->Value();
+  }
+
+  int32_t GetInt(v8::Local<v8::Object> value, uint32_t index) {
+    v8::Local<v8::Int32> temp = value->Get(index).As<v8::Int32>();
+    if (temp.IsEmpty()) {
+      ADD_FAILURE();
+      return -1;
+    }
+    return temp->Value();
+  }
+
   bool IsNull(base::DictionaryValue* value, const std::string& key) {
     base::Value* child = NULL;
     if (!value->Get(key, &child)) {
@@ -318,12 +338,13 @@ TEST_F(V8ValueConverterImplTest, ObjectExceptions) {
   EXPECT_EQ(1u, converted->size());
   EXPECT_EQ("bar", GetString(converted.get(), "bar"));
 
-  // Converting to v8 value should drop the foo property.
+  // Converting to v8 value should not trigger the setter.
   converted->SetString("foo", "foo");
   v8::Local<v8::Object> copy =
       converter.ToV8Value(converted.get(), context).As<v8::Object>();
   EXPECT_FALSE(copy.IsEmpty());
   EXPECT_EQ(2u, copy->GetPropertyNames()->Length());
+  EXPECT_EQ("foo", GetString(copy, "foo"));
   EXPECT_EQ("bar", GetString(copy, "bar"));
 }
 
@@ -359,13 +380,16 @@ TEST_F(V8ValueConverterImplTest, ArrayExceptions) {
   EXPECT_EQ(2u, converted->GetSize());
   EXPECT_TRUE(IsNull(converted.get(), 0));
 
-  // Converting to v8 value should drop the first item and leave a hole.
+  // Converting to v8 value should not be affected by the getter/setter
+  // because the setters/getters are defined on the array instance, not
+  // on the Array's prototype.
   converted.reset(static_cast<base::ListValue*>(
       base::test::ParseJson("[ \"foo\", \"bar\" ]").release()));
   v8::Local<v8::Array> copy =
       converter.ToV8Value(converted.get(), context).As<v8::Array>();
   ASSERT_FALSE(copy.IsEmpty());
   EXPECT_EQ(2u, copy->Length());
+  EXPECT_EQ("foo", GetString(copy, 0));
   EXPECT_EQ("bar", GetString(copy, 1));
 }
 
@@ -422,6 +446,146 @@ TEST_F(V8ValueConverterImplTest, Prototype) {
           converter.FromV8Value(object, context)));
   ASSERT_TRUE(result.get());
   EXPECT_EQ(0u, result->size());
+}
+
+TEST_F(V8ValueConverterImplTest, ObjectPrototypeSetter) {
+  std::unique_ptr<base::Value> original =
+      base::test::ParseJson("{ \"foo\": \"good value\" }");
+
+  v8::HandleScope handle_scope(isolate_);
+  v8::Local<v8::Context> context =
+      v8::Local<v8::Context>::New(isolate_, context_);
+  v8::Context::Scope context_scope(context);
+  v8::MicrotasksScope microtasks(isolate_,
+                                 v8::MicrotasksScope::kDoNotRunMicrotasks);
+
+  const char* source =
+      "var result = { getters: 0, setters: 0 };"
+      "Object.defineProperty(Object.prototype, 'foo', {"
+      "  get() { ++result.getters; return 'bogus'; },"
+      "  set() { ++result.setters; },"
+      "});"
+      "result;";
+
+  const char* source_sanity =
+      "({}).foo = 'Trigger setter';"
+      "({}).foo;";
+
+  v8::Local<v8::Script> script(
+      v8::Script::Compile(v8::String::NewFromUtf8(isolate_, source)));
+  v8::Local<v8::Object> result = script->Run().As<v8::Object>();
+  ASSERT_FALSE(result.IsEmpty());
+
+  // Sanity checks: the getters/setters are normally triggered.
+  v8::Script::Compile(v8::String::NewFromUtf8(isolate_, source_sanity))->Run();
+  EXPECT_EQ(1, GetInt(result, "getters"));
+  EXPECT_EQ(1, GetInt(result, "setters"));
+
+  V8ValueConverterImpl converter;
+  v8::Local<v8::Object> converted =
+      converter.ToV8Value(original.get(), context).As<v8::Object>();
+  EXPECT_FALSE(converted.IsEmpty());
+
+  // Getters/setters shouldn't be triggered.
+  EXPECT_EQ(1, GetInt(result, "getters"));
+  EXPECT_EQ(1, GetInt(result, "setters"));
+
+  EXPECT_EQ(1u, converted->GetPropertyNames()->Length());
+  EXPECT_EQ("good value", GetString(converted, "foo"));
+
+  // Getters/setters shouldn't be triggered while accessing existing values.
+  EXPECT_EQ(1, GetInt(result, "getters"));
+  EXPECT_EQ(1, GetInt(result, "setters"));
+
+  // Repeat the same exercise with a dictionary without the key.
+  base::DictionaryValue missing_key_dict;
+  missing_key_dict.SetString("otherkey", "hello");
+  v8::Local<v8::Object> converted2 =
+      converter.ToV8Value(&missing_key_dict, context).As<v8::Object>();
+  EXPECT_FALSE(converted2.IsEmpty());
+
+  // Getters/setters shouldn't be triggered.
+  EXPECT_EQ(1, GetInt(result, "getters"));
+  EXPECT_EQ(1, GetInt(result, "setters"));
+
+  EXPECT_EQ(1u, converted2->GetPropertyNames()->Length());
+  EXPECT_EQ("hello", GetString(converted2, "otherkey"));
+
+  // Missing key = should trigger getter upon access.
+  EXPECT_EQ("bogus", GetString(converted2, "foo"));
+  EXPECT_EQ(2, GetInt(result, "getters"));
+  EXPECT_EQ(1, GetInt(result, "setters"));
+}
+
+TEST_F(V8ValueConverterImplTest, ArrayPrototypeSetter) {
+  std::unique_ptr<base::Value> original =
+      base::test::ParseJson("[100, 200, 300]");
+
+  v8::HandleScope handle_scope(isolate_);
+  v8::Local<v8::Context> context =
+      v8::Local<v8::Context>::New(isolate_, context_);
+  v8::Context::Scope context_scope(context);
+  v8::MicrotasksScope microtasks(isolate_,
+                                 v8::MicrotasksScope::kDoNotRunMicrotasks);
+
+  const char* source =
+      "var result = { getters: 0, setters: 0 };"
+      "Object.defineProperty(Array.prototype, '1', {"
+      "  get() { ++result.getters; return 1337; },"
+      "  set() { ++result.setters; },"
+      "});"
+      "result;";
+
+  const char* source_sanity =
+      "[][1] = 'Trigger setter';"
+      "[][1];";
+
+  v8::Local<v8::Script> script(
+      v8::Script::Compile(v8::String::NewFromUtf8(isolate_, source)));
+  v8::Local<v8::Object> result = script->Run().As<v8::Object>();
+  ASSERT_FALSE(result.IsEmpty());
+
+  // Sanity checks: the getters/setters are normally triggered.
+  v8::Script::Compile(v8::String::NewFromUtf8(isolate_, source_sanity))->Run();
+  EXPECT_EQ(1, GetInt(result, "getters"));
+  EXPECT_EQ(1, GetInt(result, "setters"));
+
+  V8ValueConverterImpl converter;
+  v8::Local<v8::Array> converted =
+      converter.ToV8Value(original.get(), context).As<v8::Array>();
+  EXPECT_FALSE(converted.IsEmpty());
+
+  // Getters/setters shouldn't be triggered during the conversion.
+  EXPECT_EQ(1, GetInt(result, "getters"));
+  EXPECT_EQ(1, GetInt(result, "setters"));
+
+  EXPECT_EQ(3u, converted->Length());
+  EXPECT_EQ(100, GetInt(converted, 0));
+  EXPECT_EQ(200, GetInt(converted, 1));
+  EXPECT_EQ(300, GetInt(converted, 2));
+
+  // Getters/setters shouldn't be triggered while accessing existing values.
+  EXPECT_EQ(1, GetInt(result, "getters"));
+  EXPECT_EQ(1, GetInt(result, "setters"));
+
+  // Try again, using an array without the index.
+  base::ListValue one_item_list;
+  one_item_list.Append(new base::FundamentalValue(123456));
+  v8::Local<v8::Array> converted2 =
+      converter.ToV8Value(&one_item_list, context).As<v8::Array>();
+  EXPECT_FALSE(converted2.IsEmpty());
+
+  // Getters/setters shouldn't be triggered during the conversion.
+  EXPECT_EQ(1, GetInt(result, "getters"));
+  EXPECT_EQ(1, GetInt(result, "setters"));
+
+  EXPECT_EQ(1u, converted2->Length());
+  EXPECT_EQ(123456, GetInt(converted2, 0));
+
+  // Accessing missing index 1 triggers the getter.
+  EXPECT_EQ(1337, GetInt(converted2, 1));
+  EXPECT_EQ(2, GetInt(result, "getters"));
+  EXPECT_EQ(1, GetInt(result, "setters"));
 }
 
 TEST_F(V8ValueConverterImplTest, StripNullFromObjects) {
