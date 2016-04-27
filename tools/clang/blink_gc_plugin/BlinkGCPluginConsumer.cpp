@@ -665,10 +665,36 @@ void BlinkGCPluginConsumer::CheckUnneededFinalization(RecordInfo* info) {
 
 bool BlinkGCPluginConsumer::HasNonEmptyFinalizer(RecordInfo* info) {
   CXXDestructorDecl* dtor = info->record()->getDestructor();
+
+  // If the destructor is virtual (or one of the bases are by way of the
+  // recursive call below), consider this class as having a non-empty
+  // finalizer. Not doing so runs counter to standard C++ reflexes like
+  //
+  //   class A : public GarbageCollectedMixin {
+  //   public:
+  //     virtual ~A() { };
+  //     virtual void f() = 0;
+  //   };
+  //   class B : public GarbageCollectedFinalized<B>, public A {
+  //     USING_GARBAGE_COLLECTED_MIXIN(B);
+  //   public:
+  //     ~B() override { }
+  //     void f() override { }
+  //   };
+  //
+  // and it is considered a step too far to report a warning for such
+  // explicit usage of empty destructors.
+  if (dtor && dtor->isVirtual())
+      return true;
+
   if (dtor && dtor->isUserProvided()) {
     if (!dtor->hasBody() || !EmptyStmtVisitor::isEmpty(dtor->getBody()))
       return true;
   }
+
+  if (info->GetFinalizeDispatchMethod())
+    return true;
+
   for (auto& base : info->GetBases())
     if (HasNonEmptyFinalizer(base.second.info()))
       return true;
