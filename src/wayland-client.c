@@ -1099,14 +1099,23 @@ static const struct wl_callback_listener sync_listener = {
 WL_EXPORT int
 wl_display_roundtrip_queue(struct wl_display *display, struct wl_event_queue *queue)
 {
+	struct wl_display *display_wrapper;
 	struct wl_callback *callback;
 	int done, ret = 0;
 
 	done = 0;
-	callback = wl_display_sync(display);
+
+	display_wrapper = wl_proxy_create_wrapper(display);
+	if (!display_wrapper)
+		return -1;
+
+	wl_proxy_set_queue((struct wl_proxy *) display_wrapper, queue);
+	callback = wl_display_sync(display_wrapper);
+	wl_proxy_wrapper_destroy(display_wrapper);
+
 	if (callback == NULL)
 		return -1;
-	wl_proxy_set_queue((struct wl_proxy *) callback, queue);
+
 	wl_callback_add_listener(callback, &sync_listener, &done);
 	while (!done && ret >= 0)
 		ret = wl_display_dispatch_queue(display, queue);
