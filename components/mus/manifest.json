@@ -4,6 +4,8 @@
   "display_name": "UI Service",
   "capabilities": {
     "provided": {
+      // A collection of interfaces needed by a generic client of mus.
+      // Additional interfaces may be requested a-la-carte.
       "app": [
         "mus::mojom::DisplayManager",
         "mus::mojom::Gpu",
