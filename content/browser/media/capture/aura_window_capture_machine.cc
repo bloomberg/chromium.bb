@@ -80,8 +80,11 @@ bool AuraWindowCaptureMachine::InternalStart(
   UpdateCaptureSize();
 
   // Start observing compositor updates.
-  if (desktop_window_->GetHost())
-    desktop_window_->GetHost()->compositor()->AddObserver(this);
+  aura::WindowTreeHost* const host = desktop_window_->GetHost();
+  ui::Compositor* const compositor = host ? host->compositor() : nullptr;
+  if (!compositor)
+    return false;
+  compositor->AddAnimationObserver(this);
 
   power_save_blocker_.reset(
       PowerSaveBlocker::Create(
@@ -111,10 +114,10 @@ void AuraWindowCaptureMachine::InternalStop(const base::Closure& callback) {
 
   // Stop observing compositor and window events.
   if (desktop_window_) {
-    aura::WindowTreeHost* window_host = desktop_window_->GetHost();
-    // In the host destructor the compositor is destroyed before the window.
-    if (window_host && window_host->compositor())
-      window_host->compositor()->RemoveObserver(this);
+    if (aura::WindowTreeHost* host = desktop_window_->GetHost()) {
+      if (ui::Compositor* compositor = host->compositor())
+        compositor->RemoveAnimationObserver(this);
+    }
     desktop_window_->RemoveObserver(this);
     desktop_window_ = NULL;
     cursor_renderer_.reset();
@@ -130,7 +133,7 @@ void AuraWindowCaptureMachine::MaybeCaptureForRefresh() {
                  // Use of Unretained() is safe here since this task must run
                  // before InternalStop().
                  base::Unretained(this),
-                 false));
+                 base::TimeTicks()));
 }
 
 void AuraWindowCaptureMachine::SetWindow(aura::Window* window) {
@@ -160,7 +163,7 @@ void AuraWindowCaptureMachine::UpdateCaptureSize() {
   cursor_renderer_->Clear();
 }
 
-void AuraWindowCaptureMachine::Capture(bool dirty) {
+void AuraWindowCaptureMachine::Capture(base::TimeTicks event_time) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Do not capture if the desktop window is already destroyed.
@@ -174,15 +177,20 @@ void AuraWindowCaptureMachine::Capture(bool dirty) {
   // timestamps and damage regions, to leverage the frame timestamp rewriting
   // logic.  http://crbug.com/492839
   const base::TimeTicks start_time = base::TimeTicks::Now();
-  const media::VideoCaptureOracle::Event event =
-      dirty ? media::VideoCaptureOracle::kCompositorUpdate
-            : media::VideoCaptureOracle::kActiveRefreshRequest;
+  media::VideoCaptureOracle::Event event;
+  if (event_time.is_null()) {
+    event = media::VideoCaptureOracle::kActiveRefreshRequest;
+    event_time = start_time;
+  } else {
+    event = media::VideoCaptureOracle::kCompositorUpdate;
+  }
   if (oracle_proxy_->ObserveEventAndDecideCapture(
-          event, gfx::Rect(), start_time, &frame, &capture_frame_cb)) {
+          event, gfx::Rect(), event_time, &frame, &capture_frame_cb)) {
     std::unique_ptr<cc::CopyOutputRequest> request =
         cc::CopyOutputRequest::CreateRequest(base::Bind(
             &AuraWindowCaptureMachine::DidCopyOutput,
-            weak_factory_.GetWeakPtr(), frame, start_time, capture_frame_cb));
+            weak_factory_.GetWeakPtr(), frame, event_time, start_time,
+            capture_frame_cb));
     gfx::Rect window_rect = gfx::Rect(desktop_window_->bounds().width(),
                                       desktop_window_->bounds().height());
     request->set_area(window_rect);
@@ -192,6 +200,7 @@ void AuraWindowCaptureMachine::Capture(bool dirty) {
 
 void AuraWindowCaptureMachine::DidCopyOutput(
     scoped_refptr<media::VideoFrame> video_frame,
+    base::TimeTicks event_time,
     base::TimeTicks start_time,
     const CaptureFrameCallback& capture_frame_cb,
     std::unique_ptr<cc::CopyOutputResult> result) {
@@ -200,9 +209,9 @@ void AuraWindowCaptureMachine::DidCopyOutput(
   static bool first_call = true;
 
   const bool succeeded = ProcessCopyOutputResponse(
-      video_frame, start_time, capture_frame_cb, std::move(result));
+      video_frame, event_time, capture_frame_cb, std::move(result));
 
-  base::TimeDelta capture_time = base::TimeTicks::Now() - start_time;
+  const base::TimeDelta capture_time = base::TimeTicks::Now() - start_time;
 
   // The two UMA_ blocks must be put in its own scope since it creates a static
   // variable which expected constant histogram name.
@@ -227,18 +236,28 @@ void AuraWindowCaptureMachine::DidCopyOutput(
   // If ProcessCopyOutputResponse() failed, it will not run |capture_frame_cb|,
   // so do that now.
   if (!succeeded)
-    capture_frame_cb.Run(video_frame, start_time, false);
+    capture_frame_cb.Run(video_frame, event_time, false);
 }
 
 bool AuraWindowCaptureMachine::ProcessCopyOutputResponse(
     scoped_refptr<media::VideoFrame> video_frame,
-    base::TimeTicks start_time,
+    base::TimeTicks event_time,
     const CaptureFrameCallback& capture_frame_cb,
     std::unique_ptr<cc::CopyOutputResult> result) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (result->IsEmpty() || result->size().IsEmpty() || !desktop_window_)
+  if (!desktop_window_) {
+    VLOG(1) << "Ignoring CopyOutputResult: Capture target has gone away.";
     return false;
+  }
+  if (result->IsEmpty()) {
+    VLOG(1) << "CopyOutputRequest failed: No texture or bitmap in result.";
+    return false;
+  }
+  if (result->size().IsEmpty()) {
+    VLOG(1) << "CopyOutputRequest failed: Zero-area texture/bitmap result.";
+    return false;
+  }
   DCHECK(video_frame);
 
   // Compute the dest size we want after the letterboxing resize. Make the
@@ -253,20 +272,26 @@ bool AuraWindowCaptureMachine::ProcessCopyOutputResponse(
                               region_in_frame.y() & ~1,
                               region_in_frame.width() & ~1,
                               region_in_frame.height() & ~1);
-  if (region_in_frame.IsEmpty())
+  if (region_in_frame.IsEmpty()) {
+    VLOG(1) << "Aborting capture: Computed empty letterboxed content region.";
     return false;
+  }
 
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
   display_compositor::GLHelper* gl_helper = factory->GetGLHelper();
-  if (!gl_helper)
+  if (!gl_helper) {
+    VLOG(1) << "Aborting capture: No GLHelper available for YUV readback.";
     return false;
+  }
 
   cc::TextureMailbox texture_mailbox;
   std::unique_ptr<cc::SingleReleaseCallback> release_callback;
   result->TakeTexture(&texture_mailbox, &release_callback);
   DCHECK(texture_mailbox.IsTexture());
-  if (!texture_mailbox.IsTexture())
+  if (!texture_mailbox.IsTexture()) {
+    VLOG(1) << "Aborting capture: Failed to take texture from mailbox.";
     return false;
+  }
 
   gfx::Rect result_rect(result->size());
   if (!yuv_readback_pipeline_ ||
@@ -289,7 +314,7 @@ bool AuraWindowCaptureMachine::ProcessCopyOutputResponse(
       video_frame->stride(media::VideoFrame::kVPlane),
       video_frame->data(media::VideoFrame::kVPlane), region_in_frame.origin(),
       base::Bind(&CopyOutputFinishedForVideo, weak_factory_.GetWeakPtr(),
-                 start_time, capture_frame_cb, video_frame,
+                 event_time, capture_frame_cb, video_frame,
                  base::Passed(&release_callback)));
   media::LetterboxYUV(video_frame.get(), region_in_frame);
   return true;
@@ -300,7 +325,7 @@ using CaptureFrameCallback =
 
 void AuraWindowCaptureMachine::CopyOutputFinishedForVideo(
     base::WeakPtr<AuraWindowCaptureMachine> machine,
-    base::TimeTicks start_time,
+    base::TimeTicks event_time,
     const CaptureFrameCallback& capture_frame_cb,
     const scoped_refptr<media::VideoFrame>& target,
     std::unique_ptr<cc::SingleReleaseCallback> release_callback,
@@ -316,10 +341,11 @@ void AuraWindowCaptureMachine::CopyOutputFinishedForVideo(
     if (machine->cursor_renderer_ && result)
       machine->cursor_renderer_->RenderOnVideoFrame(target);
   } else {
+    VLOG(1) << "Aborting capture: AuraWindowCaptureMachine has gone away.";
     result = false;
   }
 
-  capture_frame_cb.Run(target, start_time, result);
+  capture_frame_cb.Run(target, event_time, result);
 }
 
 void AuraWindowCaptureMachine::OnWindowBoundsChanged(
@@ -348,7 +374,10 @@ void AuraWindowCaptureMachine::OnWindowAddedToRootWindow(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(window == desktop_window_);
 
-  window->GetHost()->compositor()->AddObserver(this);
+  if (aura::WindowTreeHost* host = window->GetHost()) {
+    if (ui::Compositor* compositor = host->compositor())
+      compositor->AddAnimationObserver(this);
+  }
 }
 
 void AuraWindowCaptureMachine::OnWindowRemovingFromRootWindow(
@@ -357,20 +386,36 @@ void AuraWindowCaptureMachine::OnWindowRemovingFromRootWindow(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(window == desktop_window_);
 
-  window->GetHost()->compositor()->RemoveObserver(this);
+  if (aura::WindowTreeHost* host = window->GetHost()) {
+    if (ui::Compositor* compositor = host->compositor())
+      compositor->RemoveAnimationObserver(this);
+  }
 }
 
-void AuraWindowCaptureMachine::OnCompositingEnded(
+void AuraWindowCaptureMachine::OnAnimationStep(base::TimeTicks timestamp) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(!timestamp.is_null());
+
+  // HACK: The compositor invokes this observer method to step layer animation
+  // forward. Scheduling frame capture was not the intention, and so invoking
+  // this method does not actually indicate the content has changed. However,
+  // this is the only reliable way to ensure all screen changes are captured, as
+  // of this writing.
+  // http://crbug.com/600031
+  //
+  // TODO(miu): Need a better observer callback interface from the compositor
+  // for this use case. The solution here will always capture frames at the
+  // maximum framerate, which means CPU/GPU is being wasted on redundant
+  // captures and quality/smoothness of animating content will suffer
+  // significantly.
+  // http://crbug.com/492839
+  Capture(timestamp);
+}
+
+void AuraWindowCaptureMachine::OnCompositingShuttingDown(
     ui::Compositor* compositor) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  // TODO(miu): The CopyOutputRequest should be made earlier, at WillCommit().
-  // http://crbug.com/492839
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&AuraWindowCaptureMachine::Capture, weak_factory_.GetWeakPtr(),
-                 true));
+  compositor->RemoveAnimationObserver(this);
 }
 
 }  // namespace content

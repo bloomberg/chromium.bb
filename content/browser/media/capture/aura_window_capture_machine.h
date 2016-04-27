@@ -15,6 +15,7 @@
 #include "ui/aura/window_observer.h"
 #include "ui/base/cursor/cursors_aura.h"
 #include "ui/compositor/compositor.h"
+#include "ui/compositor/compositor_animation_observer.h"
 
 namespace cc {
 
@@ -33,7 +34,7 @@ class PowerSaveBlocker;
 class AuraWindowCaptureMachine
     : public media::VideoCaptureMachine,
       public aura::WindowObserver,
-      public ui::CompositorObserver {
+      public ui::CompositorAnimationObserver {
  public:
   AuraWindowCaptureMachine();
   ~AuraWindowCaptureMachine() override;
@@ -54,14 +55,9 @@ class AuraWindowCaptureMachine
   void OnWindowRemovingFromRootWindow(aura::Window* window,
                                       aura::Window* new_root) override;
 
-  // Implements ui::CompositorObserver.
-  void OnCompositingDidCommit(ui::Compositor* compositor) override {}
-  void OnCompositingStarted(ui::Compositor* compositor,
-                            base::TimeTicks start_time) override {}
-  void OnCompositingEnded(ui::Compositor* compositor) override;
-  void OnCompositingAborted(ui::Compositor* compositor) override {}
-  void OnCompositingLockStateChanged(ui::Compositor* compositor) override {}
-  void OnCompositingShuttingDown(ui::Compositor* compositor) override {}
+  // ui::CompositorAnimationObserver implementation.
+  void OnAnimationStep(base::TimeTicks timestamp) override;
+  void OnCompositingShuttingDown(ui::Compositor* compositor) override;
 
   // Sets the window to use for capture.
   void SetWindow(aura::Window* window);
@@ -72,9 +68,9 @@ class AuraWindowCaptureMachine
       const media::VideoCaptureParams& params);
   void InternalStop(const base::Closure& callback);
 
-  // Captures a frame.
-  // |dirty| is false for refresh requests and true for compositor updates.
-  void Capture(bool dirty);
+  // Captures a frame. |event_time| is provided by the compositor, or is null
+  // for refresh requests.
+  void Capture(base::TimeTicks event_time);
 
   // Update capture size. Must be called on the UI thread.
   void UpdateCaptureSize();
@@ -84,6 +80,7 @@ class AuraWindowCaptureMachine
 
   // Response callback for cc::Layer::RequestCopyOfOutput().
   void DidCopyOutput(scoped_refptr<media::VideoFrame> video_frame,
+                     base::TimeTicks event_time,
                      base::TimeTicks start_time,
                      const CaptureFrameCallback& capture_frame_cb,
                      std::unique_ptr<cc::CopyOutputResult> result);
@@ -93,14 +90,14 @@ class AuraWindowCaptureMachine
   // false on error, and |capture_frame_cb| should be run by the caller (with
   // failure status).
   bool ProcessCopyOutputResponse(scoped_refptr<media::VideoFrame> video_frame,
-                                 base::TimeTicks start_time,
+                                 base::TimeTicks event_time,
                                  const CaptureFrameCallback& capture_frame_cb,
                                  std::unique_ptr<cc::CopyOutputResult> result);
 
   // Renders the cursor if needed and then delivers the captured frame.
   static void CopyOutputFinishedForVideo(
       base::WeakPtr<AuraWindowCaptureMachine> machine,
-      base::TimeTicks start_time,
+      base::TimeTicks event_time,
       const CaptureFrameCallback& capture_frame_cb,
       const scoped_refptr<media::VideoFrame>& target,
       std::unique_ptr<cc::SingleReleaseCallback> release_callback,
