@@ -5583,8 +5583,10 @@ void RenderFrameImpl::PrepareRenderViewForNavigation(
 
   MaybeHandleDebugURL(url);
 
-  FOR_EACH_OBSERVER(
-      RenderViewObserver, render_view_->observers_, Navigate(url));
+  if (is_main_frame_) {
+    FOR_EACH_OBSERVER(RenderViewObserver, render_view_->observers_,
+                      Navigate(url));
+  }
 
   render_view_->history_list_offset_ =
       request_params.current_history_list_offset;

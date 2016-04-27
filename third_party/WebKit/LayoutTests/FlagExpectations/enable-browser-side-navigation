@@ -127,30 +127,17 @@
   http/tests/security/xssAuditor/xss-filter-bypass-long-string.html [ Failure ]
   http/tests/security/xssAuditor/xss-protection-parsing-01.html [ Failure ]
   http/tests/serviceworker/appcache-ordering-main.html [ Failure ]
-  http/tests/serviceworker/clients-get.html [ Failure ]
   virtual/pointerevent/fast/events/drag-file-crash.html [ Failure ]
-  virtual/pointerevent/fast/events/frame-tab-focus.html [ Failure ]
   virtual/pointerevent/fast/events/iframe-object-onload.html [ Failure ]
   virtual/trustedeventsdefaultaction/fast/events/drag-file-crash.html [ Failure ]
-  virtual/trustedeventsdefaultaction/fast/events/frame-tab-focus.html [ Failure ]
   virtual/trustedeventsdefaultaction/fast/events/iframe-object-onload.html [ Failure ]
 
 # Regressions: Unexpected image-only failures (5)
-  editing/execCommand/find-after-replace.html [ Failure ]
-  editing/pasteboard/copy-standalone-image.html [ Failure ]
-  editing/selection/4776665.html [ Failure ]
   editing/selection/iframe.html [ Failure ]
 
 # Regressions: Unexpected timeouts (47)
-  bluetooth/disconnect-frame-detached/detach-gc.html [ Timeout ]
-  bluetooth/disconnect-frame-detached/gc-detach.html [ Timeout ]
-  bluetooth/disconnect-frame-detached/hide-detach.html [ Timeout ]
-  bluetooth/iframeRequestDevice.html [ Timeout ]
-  bluetooth/requestDevice-sandboxed-iframe.html [ Timeout ]
   http/tests/appcache/fallback.html [ Timeout ]
   http/tests/appcache/top-frame-2.html [ Timeout ]
-  http/tests/fullscreen/fullscreenelement-different-origin.html [ Timeout ]
-  http/tests/fullscreen/fullscreenelement-same-origin.html [ Timeout ]
   http/tests/history/back-to-post.html [ Timeout ]
   http/tests/inspector/extensions-network-redirect.html [ Timeout ]
   http/tests/misc/window-open-then-write.html [ Timeout ]
@@ -162,26 +149,10 @@
   http/tests/navigation/scrollstate-after-http-equiv-refresh-fragment-identifier.html [ Timeout ]
   http/tests/navigation/scrollstate-after-http-equiv-refresh.html [ Timeout ]
   http/tests/navigation/scrollstate-after-location-reload.html [ Timeout ]
-  http/tests/pointer-lock/iframe-sandboxed-allow-pointer-lock.html [ Timeout ]
-  http/tests/pointer-lock/iframe-sandboxed-nested-allow-pointer-lock.html [ Timeout ]
-  http/tests/pointer-lock/iframe-sandboxed-nested-disallow-then-allow-pointer-lock.html [ Timeout ]
-  http/tests/pointer-lock/iframe-sandboxed.html [ Timeout ]
-  http/tests/pointer-lock/pointerlockelement-different-origin.html [ Timeout ]
-  http/tests/pointer-lock/pointerlockelement-same-origin.html [ Timeout ]
-  http/tests/pointer-lock/requestPointerLock-can-not-transfer-between-documents.html [ Timeout ]
   http/tests/security/contentSecurityPolicy/1.1/child-src/frame-redirect-blocked.html [ Timeout ]
   http/tests/security/contentSecurityPolicy/frame-src-redirect-blocked.html [ Timeout ]
   http/tests/security/contentSecurityPolicy/redirect-does-not-match-paths.html [ Timeout ]
   http/tests/security/mixedContent/nonwebby-scheme-in-iframe-allowed.https.html [ Timeout Failure ]
-  virtual/android/fullscreen/exit-full-screen-iframe.html [ Timeout ]
-  virtual/android/fullscreen/full-screen-fixed-pos-parent.html [ Timeout ]
-  virtual/android/fullscreen/full-screen-frameset.html [ Timeout ]
-  virtual/android/fullscreen/full-screen-iframe-allowed.html [ Timeout ]
-  virtual/android/fullscreen/full-screen-iframe-legacy.html [ Timeout ]
-  virtual/android/fullscreen/full-screen-iframe-not-allowed.html [ Timeout ]
-  virtual/android/fullscreen/full-screen-iframe-zIndex.html [ Timeout ]
-  virtual/android/fullscreen/full-screen-remove-ancestor-during-transition.html [ Timeout ]
-  virtual/android/fullscreen/full-screen-will-change.html [ Timeout ]
 
 # Run 2
 
@@ -262,15 +233,6 @@
 # Regressions: Unexpected timeouts (21)
   fast/forms/xss-auditor-doesnt-crash-on-post-submit.html [ Timeout ]
   fast/history/history-replace-updates-current-item.html [ Timeout ]
-  fullscreen/exit-full-screen-iframe.html [ Timeout ]
-  fullscreen/full-screen-fixed-pos-parent.html [ Timeout ]
-  fullscreen/full-screen-frameset.html [ Timeout ]
-  fullscreen/full-screen-iframe-allowed.html [ Timeout ]
-  fullscreen/full-screen-iframe-legacy.html [ Timeout ]
-  fullscreen/full-screen-iframe-not-allowed.html [ Timeout ]
-  fullscreen/full-screen-iframe-zIndex.html [ Timeout ]
-  fullscreen/full-screen-remove-ancestor-during-transition.html [ Timeout ]
-  fullscreen/full-screen-will-change.html [ Timeout ]
   http/tests/loading/bad-scheme-subframe.html [ Timeout ]
   http/tests/loading/text-content-type-with-binary-extension.html [ Timeout Failure ]
   http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_cross_origin_redirect.html [ Timeout ]
@@ -295,7 +257,6 @@
 # Update on 16-3-16
 
 # Regressions: Unexpected text-only failures (2)
-  http/tests/serviceworker/ServiceWorkerGlobalScope/extendable-message-event.html [ Failure ]
   http/tests/serviceworker/chromium/sandboxed-iframe-navigator-serviceworker.html [ Failure ]
 
 # Regressions: Unexpected crashes (2)
@@ -328,7 +289,6 @@
   plugins/plugin-document-back-forward.html [ Crash ]
 
 # Regressions: Unexpected timeouts (2)
-  http/tests/bluetooth/https/requestDevice/cross-origin-iframe.html [ Timeout ]
   plugins/object-onfocus-mutation-crash.html [ Timeout ]
 
 # Update on 16-4-14
