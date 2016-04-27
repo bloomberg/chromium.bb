@@ -48,4 +48,10 @@
 #define NO_SANITIZE_MEMORY
 #endif
 
+#if defined(THREAD_SANITIZER) && (!OS(WIN) || COMPILER(CLANG))
+#define NO_SANITIZE_THREAD __attribute__((no_sanitize_thread))
+#else
+#define NO_SANITIZE_THREAD
+#endif
+
 #endif // WTF_AddressSanitizer_h

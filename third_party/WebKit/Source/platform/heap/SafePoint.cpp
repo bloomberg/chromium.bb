@@ -4,6 +4,7 @@
 
 #include "platform/heap/SafePoint.h"
 
+#include "platform/heap/Heap.h"
 #include "wtf/Atomics.h"
 #include "wtf/CurrentTime.h"
 
@@ -34,8 +35,8 @@ bool SafePointBarrier::parkOthers()
 
     ThreadState* current = ThreadState::current();
     // Lock threadAttachMutex() to prevent threads from attaching.
-    ThreadState::lockThreadAttachMutex();
-    ThreadState::AttachedThreadStateSet& threads = ThreadState::attachedThreads();
+    current->lockThreadAttachMutex();
+    const ThreadStateSet& threads = current->heap().threads();
 
     MutexLocker locker(m_mutex);
     atomicAdd(&m_unparkedThreadCount, threads.size());
@@ -64,7 +65,8 @@ bool SafePointBarrier::parkOthers()
 
 void SafePointBarrier::resumeOthers(bool barrierLocked)
 {
-    ThreadState::AttachedThreadStateSet& threads = ThreadState::attachedThreads();
+    ThreadState* current = ThreadState::current();
+    const ThreadStateSet& threads = current->heap().threads();
     atomicSubtract(&m_unparkedThreadCount, threads.size());
     releaseStore(&m_canResume, 1);
 
@@ -77,7 +79,7 @@ void SafePointBarrier::resumeOthers(bool barrierLocked)
         m_resume.broadcast();
     }
 
-    ThreadState::unlockThreadAttachMutex();
+    current->unlockThreadAttachMutex();
     ASSERT(ThreadState::current()->isAtSafePoint());
 }
 
