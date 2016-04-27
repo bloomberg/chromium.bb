@@ -5,10 +5,13 @@
 #ifndef BodyStreamBuffer_h
 #define BodyStreamBuffer_h
 
+#include "bindings/core/v8/ScriptPromise.h"
+#include "bindings/core/v8/ScriptValue.h"
 #include "core/dom/DOMException.h"
 #include "core/streams/ReadableByteStream.h"
 #include "core/streams/ReadableByteStreamReader.h"
 #include "core/streams/UnderlyingSource.h"
+#include "core/streams/UnderlyingSourceBase.h"
 #include "modules/ModulesExport.h"
 #include "modules/fetch/FetchDataConsumerHandle.h"
 #include "modules/fetch/FetchDataLoader.h"
@@ -20,68 +23,76 @@
 namespace blink {
 
 class EncodedFormData;
-class ExecutionContext;
+class ScriptState;
 
-class MODULES_EXPORT BodyStreamBuffer final : public GarbageCollectedFinalized<BodyStreamBuffer>, public UnderlyingSource, public WebDataConsumerHandle::Client {
+class MODULES_EXPORT BodyStreamBuffer final : public UnderlyingSourceBase, public UnderlyingSource, public WebDataConsumerHandle::Client {
     WTF_MAKE_NONCOPYABLE(BodyStreamBuffer);
     USING_GARBAGE_COLLECTED_MIXIN(BodyStreamBuffer);
     // Needed because we have to release |m_reader| promptly.
     EAGERLY_FINALIZE();
 public:
     // |handle| cannot be null and cannot be locked.
-    explicit BodyStreamBuffer(PassOwnPtr<FetchDataConsumerHandle> /* handle */);
+    BodyStreamBuffer(ScriptState*, PassOwnPtr<FetchDataConsumerHandle> /* handle */);
 
-    ReadableByteStream* stream() { return m_stream; }
+    ScriptValue stream();
 
     // Callable only when neither locked nor disturbed.
-    PassRefPtr<BlobDataHandle> drainAsBlobDataHandle(ExecutionContext*, FetchDataConsumerHandle::Reader::BlobSizePolicy);
-    PassRefPtr<EncodedFormData> drainAsFormData(ExecutionContext*);
-    void startLoading(ExecutionContext*, FetchDataLoader*, FetchDataLoader::Client* /* client */);
+    PassRefPtr<BlobDataHandle> drainAsBlobDataHandle(FetchDataConsumerHandle::Reader::BlobSizePolicy);
+    PassRefPtr<EncodedFormData> drainAsFormData();
+    void startLoading(FetchDataLoader*, FetchDataLoader::Client* /* client */);
 
     // Callable only when not locked. Returns a non-null handle.
     // There is no means to "return" the handle to the body buffer: Calling
     // this function locks, disturbs and closes the stream and no one will
     // not be able to get any information from the stream and this buffer after
     // that.
-    PassOwnPtr<FetchDataConsumerHandle> releaseHandle(ExecutionContext*);
-
-    bool hasPendingActivity() const;
-    void stop();
+    PassOwnPtr<FetchDataConsumerHandle> releaseHandle();
 
     // UnderlyingSource
     void pullSource() override;
     ScriptPromise cancelSource(ScriptState*, ScriptValue reason) override;
 
+    // UnderlyingSourceBase
+    ScriptPromise pull(ScriptState*) override;
+    ScriptPromise cancel(ScriptState*, ScriptValue reason) override;
+    bool hasPendingActivity() const override;
+    void stop() override;
+
     // WebDataConsumerHandle::Client
     void didGetReadable() override;
 
-    bool isStreamReadable() const;
-    bool isStreamClosed() const;
-    bool isStreamErrored() const;
-    bool isStreamLocked() const;
-    bool isStreamDisturbed() const;
+    bool isStreamReadable();
+    bool isStreamClosed();
+    bool isStreamErrored();
+    bool isStreamLocked();
+    bool isStreamDisturbed();
+    void setDisturbed();
 
     DEFINE_INLINE_TRACE()
     {
         visitor->trace(m_stream);
         visitor->trace(m_loader);
+        UnderlyingSourceBase::trace(visitor);
         UnderlyingSource::trace(visitor);
     }
 
 private:
     class LoaderClient;
+
+    void lockAndDisturb();
     void close();
     void error();
     void processData();
     void endLoading();
     void stopLoading();
 
+    RefPtr<ScriptState> m_scriptState;
     OwnPtr<FetchDataConsumerHandle> m_handle;
     OwnPtr<FetchDataConsumerHandle::Reader> m_reader;
     Member<ReadableByteStream> m_stream;
     // We need this member to keep it alive while loading.
     Member<FetchDataLoader> m_loader;
-    bool m_streamNeedsMore;
+    bool m_streamNeedsMore = false;
 };
 
 } // namespace blink

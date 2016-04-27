@@ -9,7 +9,7 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/ScriptWrappable.h"
-#include "core/dom/ActiveDOMObject.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
 #include "wtf/text/WTFString.h"
@@ -32,7 +32,7 @@ class MODULES_EXPORT Body
     : public GarbageCollectedFinalized<Body>
     , public ScriptWrappable
     , public ActiveScriptWrappable
-    , public ActiveDOMObject {
+    , public ContextLifecycleObserver {
     WTF_MAKE_NONCOPYABLE(Body);
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(Body);
@@ -45,10 +45,9 @@ public:
     ScriptPromise formData(ScriptState*);
     ScriptPromise json(ScriptState*);
     ScriptPromise text(ScriptState*);
-    ReadableByteStream* bodyWithUseCounter();
+    ScriptValue bodyWithUseCounter(ScriptState*);
     virtual BodyStreamBuffer* bodyBuffer() = 0;
     virtual const BodyStreamBuffer* bodyBuffer() const = 0;
-    ScriptValue v8ExtraStreamBody(ScriptState*);
 
     virtual bool bodyUsed();
     bool isBodyLocked();
@@ -58,11 +57,10 @@ public:
 
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
-        ActiveDOMObject::trace(visitor);
+        ContextLifecycleObserver::trace(visitor);
     }
 
 private:
-    ReadableByteStream* body();
     virtual String mimeType() const = 0;
 
     // Body consumption algorithms will reject with a TypeError in a number of

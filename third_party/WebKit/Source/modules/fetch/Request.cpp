@@ -269,7 +269,7 @@ Request* Request::createRequestWithRequestOrString(ScriptState* scriptState, Req
     }
     // "Let |r| be a new Request object associated with |request| and a new
     // Headers object whose guard is "request"."
-    Request* r = Request::create(scriptState->getExecutionContext(), request);
+    Request* r = Request::create(scriptState, request);
     // Perform the following steps:
     // - "Let |headers| be a copy of |r|'s Headers object."
     // - "If |init|'s headers member is present, set |headers| to |init|'s
@@ -344,7 +344,7 @@ Request* Request::createRequestWithRequestOrString(ScriptState* scriptState, Req
         //   contains no header named `Content-Type`, append
         //   `Content-Type`/|Content-Type| to |r|'s Headers object. Rethrow any
         //   exception."
-        temporaryBody = new BodyStreamBuffer(init.body.release());
+        temporaryBody = new BodyStreamBuffer(scriptState, init.body.release());
         if (!init.contentType.isEmpty() && !r->getHeaders()->has(HTTPNames::Content_Type, exceptionState)) {
             r->getHeaders()->append(HTTPNames::Content_Type, init.contentType, exceptionState);
         }
@@ -364,9 +364,9 @@ Request* Request::createRequestWithRequestOrString(ScriptState* scriptState, Req
     // non-null, run these substeps:"
     if (inputRequest && inputRequest->bodyBuffer()) {
         // "Set |input|'s body to an empty byte stream."
-        inputRequest->m_request->setBuffer(new BodyStreamBuffer(createFetchDataConsumerHandleFromWebHandle(createDoneDataConsumerHandle())));
+        inputRequest->m_request->setBuffer(new BodyStreamBuffer(scriptState, createFetchDataConsumerHandleFromWebHandle(createDoneDataConsumerHandle())));
         // "Set |input|'s disturbed flag."
-        inputRequest->bodyBuffer()->stream()->setIsDisturbed();
+        inputRequest->bodyBuffer()->setDisturbed();
     }
 
     // "Return |r|."
@@ -403,33 +403,32 @@ Request* Request::create(ScriptState* scriptState, Request* input, const Diction
     return createRequestWithRequestOrString(scriptState, input, String(), requestInit, exceptionState);
 }
 
-Request* Request::create(ExecutionContext* context, FetchRequestData* request)
+Request* Request::create(ScriptState* scriptState, FetchRequestData* request)
 {
-    return new Request(context, request);
+    return new Request(scriptState, request);
 }
 
-Request::Request(ExecutionContext* context, FetchRequestData* request)
-    : Body(context)
+Request* Request::create(ScriptState* scriptState, const WebServiceWorkerRequest& webRequest)
+{
+    return new Request(scriptState, webRequest);
+}
+
+Request::Request(ScriptState* scriptState, FetchRequestData* request, Headers* headers)
+    : Body(scriptState->getExecutionContext())
     , m_request(request)
-    , m_headers(Headers::create(m_request->headerList()))
+    , m_headers(headers)
+{
+}
+
+Request::Request(ScriptState* scriptState, FetchRequestData* request)
+    : Request(scriptState, request, Headers::create(request->headerList()))
 {
     m_headers->setGuard(Headers::RequestGuard);
 }
 
-Request::Request(ExecutionContext* context, FetchRequestData* request, Headers* headers)
-    : Body(context) , m_request(request) , m_headers(headers) {}
-
-Request* Request::create(ExecutionContext* context, const WebServiceWorkerRequest& webRequest)
+Request::Request(ScriptState* scriptState, const WebServiceWorkerRequest& request)
+    : Request(scriptState, FetchRequestData::create(scriptState, request))
 {
-    return new Request(context, webRequest);
-}
-
-Request::Request(ExecutionContext* context, const WebServiceWorkerRequest& webRequest)
-    : Body(context)
-    , m_request(FetchRequestData::create(context, webRequest))
-    , m_headers(Headers::create(m_request->headerList()))
-{
-    m_headers->setGuard(Headers::RequestGuard);
 }
 
 String Request::method() const
@@ -616,34 +615,28 @@ String Request::integrity() const
     return m_request->integrity();
 }
 
-Request* Request::clone(ExceptionState& exceptionState)
+Request* Request::clone(ScriptState* scriptState, ExceptionState& exceptionState)
 {
     if (isBodyLocked() || bodyUsed()) {
         exceptionState.throwTypeError("Request body is already used");
         return nullptr;
     }
 
-    FetchRequestData* request = m_request->clone(getExecutionContext());
+    FetchRequestData* request = m_request->clone(scriptState);
     Headers* headers = Headers::create(request->headerList());
     headers->setGuard(m_headers->getGuard());
-    return new Request(getExecutionContext(), request, headers);
+    return new Request(scriptState, request, headers);
 }
 
-FetchRequestData* Request::passRequestData()
+FetchRequestData* Request::passRequestData(ScriptState* scriptState)
 {
     ASSERT(!bodyUsed());
-    return m_request->pass(getExecutionContext());
+    return m_request->pass(scriptState);
 }
 
 bool Request::hasBody() const
 {
     return bodyBuffer();
-}
-
-void Request::stop()
-{
-    if (bodyBuffer())
-        bodyBuffer()->stop();
 }
 
 void Request::populateWebServiceWorkerRequest(WebServiceWorkerRequest& webRequest) const

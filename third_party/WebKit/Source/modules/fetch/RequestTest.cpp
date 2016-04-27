@@ -78,7 +78,7 @@ TEST_F(ServiceWorkerRequestTest, FromAndToWebRequest)
         webRequest.setHeader(WebString::fromUTF8(headers[i].key), WebString::fromUTF8(headers[i].value));
     webRequest.setReferrer(referrer, referrerPolicy);
 
-    Request* request = Request::create(getExecutionContext(), webRequest);
+    Request* request = Request::create(getScriptState(), webRequest);
     ASSERT(request);
     EXPECT_EQ(url, request->url());
     EXPECT_EQ(method, request->method());

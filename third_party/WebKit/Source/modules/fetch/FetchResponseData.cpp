@@ -4,6 +4,7 @@
 
 #include "modules/fetch/FetchResponseData.h"
 
+#include "bindings/core/v8/ScriptState.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/fetch/CrossOriginAccessControl.h"
 #include "core/fetch/FetchUtils.h"
@@ -160,7 +161,7 @@ String FetchResponseData::internalMIMEType() const
     return m_mimeType;
 }
 
-FetchResponseData* FetchResponseData::clone(ExecutionContext* executionContext)
+FetchResponseData* FetchResponseData::clone(ScriptState* scriptState)
 {
     FetchResponseData* newResponse = create();
     newResponse->m_type = m_type;
@@ -182,7 +183,7 @@ FetchResponseData* FetchResponseData::clone(ExecutionContext* executionContext)
         ASSERT(m_internalResponse);
         ASSERT(m_buffer == m_internalResponse->m_buffer);
         ASSERT(m_internalResponse->m_type == DefaultType);
-        newResponse->m_internalResponse = m_internalResponse->clone(executionContext);
+        newResponse->m_internalResponse = m_internalResponse->clone(scriptState);
         m_buffer = m_internalResponse->m_buffer;
         newResponse->m_buffer = newResponse->m_internalResponse->m_buffer;
         break;
@@ -190,9 +191,9 @@ FetchResponseData* FetchResponseData::clone(ExecutionContext* executionContext)
         ASSERT(!m_internalResponse);
         if (m_buffer) {
             OwnPtr<WebDataConsumerHandle> handle1, handle2;
-            DataConsumerTee::create(executionContext, m_buffer->releaseHandle(executionContext), &handle1, &handle2);
-            m_buffer = new BodyStreamBuffer(createFetchDataConsumerHandleFromWebHandle(handle1.release()));
-            newResponse->m_buffer = new BodyStreamBuffer(createFetchDataConsumerHandleFromWebHandle(handle2.release()));
+            DataConsumerTee::create(scriptState->getExecutionContext(), m_buffer->releaseHandle(), &handle1, &handle2);
+            m_buffer = new BodyStreamBuffer(scriptState, createFetchDataConsumerHandleFromWebHandle(handle1.release()));
+            newResponse->m_buffer = new BodyStreamBuffer(scriptState, createFetchDataConsumerHandleFromWebHandle(handle2.release()));
         }
         break;
     }
@@ -205,7 +206,7 @@ FetchResponseData* FetchResponseData::clone(ExecutionContext* executionContext)
         ASSERT(m_internalResponse);
         ASSERT(!m_buffer);
         ASSERT(m_internalResponse->m_type == DefaultType);
-        newResponse->m_internalResponse = m_internalResponse->clone(executionContext);
+        newResponse->m_internalResponse = m_internalResponse->clone(scriptState);
         break;
     }
     return newResponse;

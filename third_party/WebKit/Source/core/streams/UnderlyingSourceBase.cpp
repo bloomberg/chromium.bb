@@ -67,8 +67,10 @@ bool UnderlyingSourceBase::hasPendingActivity() const
 
 void UnderlyingSourceBase::stop()
 {
-    m_controller->noteHasBeenCanceled();
-    m_controller.clear();
+    if (m_controller) {
+        m_controller->noteHasBeenCanceled();
+        m_controller.clear();
+    }
 }
 
 DEFINE_TRACE(UnderlyingSourceBase)
