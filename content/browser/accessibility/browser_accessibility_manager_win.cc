@@ -155,16 +155,6 @@ void BrowserAccessibilityManagerWin::NotifyAccessibilityEvent(
   if (node->GetRole() == ui::AX_ROLE_INLINE_TEXT_BOX)
     return;
 
-  // Don't fire focus, blur, or load complete notifications if the
-  // window isn't focused, because that can confuse screen readers into
-  // entering their "browse" mode.
-  if ((event_type == ui::AX_EVENT_FOCUS ||
-       event_type == ui::AX_EVENT_BLUR ||
-       event_type == ui::AX_EVENT_LOAD_COMPLETE) &&
-      !NativeViewHasFocus()) {
-    return;
-  }
-
   LONG event_id = EVENT_MIN;
   switch (event_type) {
     case ui::AX_EVENT_ACTIVEDESCENDANTCHANGED:
