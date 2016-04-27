@@ -343,8 +343,10 @@ void FromGWSPageLoadMetricsObserver::OnStart(
 
 void FromGWSPageLoadMetricsObserver::OnCommit(
     content::NavigationHandle* navigation_handle) {
+  // We'd like to also check navigation_handle->HasUserGesture() here, however
+  // this signal is not carried forward for navigations that open links in new
+  // tabs, so we look only at PAGE_TRANSITION_LINK.
   logger_.set_navigation_initiated_via_link(
-      navigation_handle->HasUserGesture() &&
       ui::PageTransitionCoreTypeIs(navigation_handle->GetPageTransition(),
                                    ui::PAGE_TRANSITION_LINK));
 }
