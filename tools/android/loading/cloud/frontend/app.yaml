@@ -2,8 +2,18 @@ runtime: python27
 api_version: 1
 threadsafe: yes
 
+builtins:
+- deferred: on
+
 handlers:
+
+- url: /_ah/queue/deferred
+  # For the deferred API (https://cloud.google.com/appengine/articles/deferred).
+  script: google.appengine.ext.deferred.deferred.application
+  login: admin
+
 - url: /static
+  # Static content.
   static_dir: static
 
 - url: .*

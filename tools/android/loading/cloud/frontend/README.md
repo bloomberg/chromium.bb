@@ -24,6 +24,9 @@ following keys:
     ComputeEngine instances. This parameter should not be set in general, as it
     is mostly exposed for development purposes. If this parameter is not
     specified, a unique tag will be generated.
+-   `timeout_hours` (int, optional): if workers are still alive after this
+    delay, they will be forcibly killed, to avoid wasting Compute Engine
+    resources. Defaults to `5`.
 
 ### Parameters for the `trace` action
 

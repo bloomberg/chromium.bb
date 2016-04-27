@@ -5,9 +5,11 @@
 import logging
 import os
 import sys
+import time
 
 import flask
 from google.appengine.api import (app_identity, taskqueue)
+from google.appengine.ext import deferred
 from oauth2client.client import GoogleCredentials
 
 from common.clovis_task import ClovisTask
@@ -31,6 +33,41 @@ def Render(message, memory_logs):
       'log.html', body=message, log=memory_logs.Flush().split('\n'))
 
 
+def PollWorkers(tag, start_time, timeout_hours):
+  """Checks if there are workers associated with tag, by polling the instance
+  group. When all workers are finished, the instance group and the instance
+  template are destroyed.
+  After some timeout delay, the instance group is destroyed even if there are
+  still workers associated to it, which has the effect of killing all these
+  workers.
+
+  Args:
+    tag (string): Tag of the task that is polled.
+    start_time (float): Time when the polling started, as returned by
+                        time.time().
+    timeout_hours (int): Timeout after which workers are terminated.
+  """
+  if (time.time() - start_time) > (3600 * timeout_hours):
+    clovis_logger.error('Worker timeout for tag %s, shuting down.' % tag)
+    deferred.defer(DeleteInstanceGroup, tag)
+    return
+
+  clovis_logger.info('Polling workers for tag: ' + tag)
+  live_instance_count = instance_helper.GetInstanceCount(tag)
+  clovis_logger.info('%i live instances for tag %s.' % (
+      live_instance_count, tag))
+
+  if live_instance_count > 0 or live_instance_count == -1:
+    clovis_logger.info('Retry later, instances still alive for tag: ' + tag)
+    poll_interval_minutes = 10
+    deferred.defer(PollWorkers, tag, start_time,
+                   _countdown=(60 * poll_interval_minutes))
+    return
+
+  clovis_logger.info('Scheduling instance group destruction for tag: ' + tag)
+  deferred.defer(DeleteInstanceGroup, tag)
+
+
 def CreateInstanceTemplate(task):
   """Create the Compute Engine instance template that will be used to create the
   instances.
@@ -48,7 +85,7 @@ def CreateInstanceTemplate(task):
 
 
 def CreateInstances(task):
-  """Creates the Compute engine requested by the task"""
+  """Creates the Compute engine requested by the task."""
   backend_params = task.BackendParams()
   instance_count = backend_params.get('instance_count', 0)
   if instance_count <= 0:
@@ -57,8 +94,36 @@ def CreateInstances(task):
   return instance_helper.CreateInstances(backend_params['tag'], instance_count)
 
 
+def DeleteInstanceGroup(tag, try_count=0):
+  """Deletes the instance group associated with tag, and schedules the deletion
+  of the instance template."""
+  clovis_logger.info('Instance group destruction for tag: ' + tag)
+  if not instance_helper.DeleteInstanceGroup(tag):
+    clovis_logger.info('Instance group destruction failed for: ' + tag)
+    if try_count <= 5:
+      deferred.defer(DeleteInstanceGroup, tag, try_count + 1, _countdown=60)
+      return
+    clovis_logger.error('Giving up group destruction for: ' + tag)
+  clovis_logger.info('Scheduling instance template destruction for tag: ' + tag)
+  # Wait a little before deleting the instance template, because it may still be
+  # considered in use, causing failures.
+  deferred.defer(DeleteInstanceTemplate, tag, _countdown=30)
+
+
+def DeleteInstanceTemplate(tag, try_count=0):
+  """Deletes the instance template associated with tag."""
+  clovis_logger.info('Instance template destruction for tag: ' + tag)
+  if not instance_helper.DeleteTemplate(tag):
+    clovis_logger.info('Instance template destruction failed for: ' + tag)
+    if try_count <= 5:
+      deferred.defer(DeleteInstanceTemplate, tag, try_count + 1, _countdown=60)
+      return
+    clovis_logger.error('Giving up template destruction for: ' + tag)
+  clovis_logger.info('Cleanup complete for tag: ' + tag)
+
+
 def StartFromJsonString(http_body_str):
-  """Main function handling a JSON task posted by the user"""
+  """Main function handling a JSON task posted by the user."""
   # Set up logging.
   memory_logs = MemoryLogs(clovis_logger)
   memory_logs.Start()
@@ -85,11 +150,18 @@ def StartFromJsonString(http_body_str):
     return Render(error_string, memory_logs)
 
   if not EnqueueTasks(sub_tasks, task_tag):
-    return Render('Task creation failed', memory_logs)
+    return Render('Task creation failed.', memory_logs)
 
   # Start the instances if required.
   if not CreateInstances(task):
-    return Render('Instance creation failed', memory_logs)
+    return Render('Instance creation failed.', memory_logs)
+
+  # Start polling the progress.
+  clovis_logger.info('Creating worker polling task.')
+  first_poll_delay_minutes = 10
+  timeout_hours = task.BackendParams().get('timeout_hours', 5)
+  deferred.defer(PollWorkers, task_tag, time.time(), timeout_hours,
+                 _countdown=(60 * first_poll_delay_minutes))
 
   return Render('Success', memory_logs)
 
@@ -139,7 +211,7 @@ def EnqueueTasks(tasks, task_tag):
   except Exception as e:
     clovis_logger.error('Exception:' + type(e).__name__ + ' ' + str(e.args))
     return False
-  clovis_logger.info('Pushed %i tasks with tag: %s' % (len(tasks), task_tag))
+  clovis_logger.info('Pushed %i tasks with tag: %s.' % (len(tasks), task_tag))
   return True
 
 
@@ -151,7 +223,7 @@ def Root():
 
 @app.route('/form_sent', methods=['POST'])
 def StartFromForm():
-  """HTML form endpoint"""
+  """HTML form endpoint."""
   data_stream = flask.request.files.get('json_task')
   if not data_stream:
     return 'failed'

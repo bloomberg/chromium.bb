@@ -21,12 +21,16 @@ class GoogleInstanceHelper(object):
     self._logger = logger
 
   def _ExecuteApiRequest(self, request, retry_count=3):
-    """ Executes a Compute API request and returns True on success."""
+    """ Executes a Compute API request and returns True on success.
+
+    Returns:
+      (True, Response) in case of success, or (False, error_content) otherwise.
+    """
     self._logger.info('Compute API request:\n' + request.to_json())
     try:
       response = request.execute()
-      self._logger.info('Compute API response:\n' + response)
-      return True
+      self._logger.info('Compute API response:\n' + str(response))
+      return (True, response)
     except errors.HttpError as err:
       error_content = self._GetErrorContent(err)
       error_reason = self._GetErrorReason(error_content)
@@ -42,7 +46,7 @@ class GoogleInstanceHelper(object):
             error_reason, err))
         if error_content:
           self._logger.error('Error details:\n%s' % error_content)
-        return False
+        return (False, error_content)
 
   def _GetTemplateName(self, tag):
     """Returns the name of the instance template associated with tag."""
@@ -112,16 +116,23 @@ class GoogleInstanceHelper(object):
                 {'key': 'taskqueue-tag', 'value': tag}]}}}
     request = self._compute_api.instanceTemplates().insert(
         project=self._project, body=request_body)
-    return self._ExecuteApiRequest(request)
+    return self._ExecuteApiRequest(request)[0]
 
   def DeleteTemplate(self, tag):
     """Deletes the instance template associated with tag. Returns True if
     successful.
     """
+    template_name = self._GetTemplateName(tag)
     request = self._compute_api.instanceTemplates().delete(
-        project=self._project,
-        instanceTemplate=self._GetTemplateName(tag))
-    return self._ExecuteApiRequest(request)
+        project=self._project, instanceTemplate=template_name)
+    (success, result) = self._ExecuteApiRequest(request)
+    if success:
+      return True
+    if self._GetErrorReason(result) == 'notFound':
+      # The template does not exist, nothing to do.
+      self._logger.warning('Template not found: ' + template_name)
+      return True
+    return False
 
   def CreateInstances(self, tag, instance_count):
     """Creates an instance group associated with tag. The instance template must
@@ -137,10 +148,10 @@ class GoogleInstanceHelper(object):
     request = self._compute_api.instanceGroupManagers().insert(
         project=self._project, zone=self._zone,
         body=request_body)
-    return self._ExecuteApiRequest(request)
+    return self._ExecuteApiRequest(request)[0]
 
   def DeleteInstance(self, tag, instance_hostname):
-    """Deletes one instance from the instance group identified with tag. Returns
+    """Deletes one instance from the instance group identified by tag. Returns
     True if successful.
     """
     # The instance hostname may be of the form <name>.c.<project>.internal but
@@ -152,4 +163,34 @@ class GoogleInstanceHelper(object):
         project=self._project, zone=self._zone,
         instanceGroupManager=self._GetInstanceGroupName(tag),
         body={'instances': [instance_url]})
-    return self._ExecuteApiRequest(request)
+    return self._ExecuteApiRequest(request)[0]
+
+  def DeleteInstanceGroup(self, tag):
+    """Deletes the instance group identified by tag. If instances are still
+    running in this group, they are deleted as well.
+    """
+    group_name = self._GetInstanceGroupName(tag)
+    request = self._compute_api.instanceGroupManagers().delete(
+        project=self._project, zone=self._zone,
+        instanceGroupManager=group_name)
+    (success, result) = self._ExecuteApiRequest(request)
+    if success:
+      return True
+    if self._GetErrorReason(result) == 'notFound':
+      # The group does not exist, nothing to do.
+      self._logger.warning('Instance group not found: ' + group_name)
+      return True
+    return False
+
+  def GetInstanceCount(self, tag):
+    """Returns the number of instances in the instance group identified by
+    tag, or -1 in case of failure.
+    """
+    request = self._compute_api.instanceGroupManagers().listManagedInstances(
+        project=self._project, zone=self._zone,
+        instanceGroupManager=self._GetInstanceGroupName(tag))
+    (success, response) = self._ExecuteApiRequest(request)
+    if not success:
+      return -1
+    return len(response.get('managedInstances', []))
+
