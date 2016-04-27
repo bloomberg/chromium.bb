@@ -62,9 +62,9 @@ class MemoryHealthQuick(_MemoryInfra):
 
   @classmethod
   def ShouldDisable(cls, possible_browser):
-    # Benchmark requires DeskClock app only available on Nexus devices.
-    # See http://crbug.com/546842
-    return 'nexus' not in possible_browser.platform.GetDeviceTypeName().lower()
+    # TODO(crbug.com/586148): Benchmark should not depend on DeskClock app.
+    return not possible_browser.platform.CanLaunchApplication(
+        'com.google.android.deskclock')
 
 
 # Benchmark is disabled by default because it takes too long to run.
