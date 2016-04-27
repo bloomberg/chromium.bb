@@ -230,15 +230,15 @@ def _RunJobMain(args):
 
 
 def _ExtractMetricsMain(args):
-  trace_metrics_list = sandwich_metrics.PullMetricsFromOutputDirectory(
+  run_metrics_list = sandwich_metrics.ExtractMetricsFromRunnerOutputDirectory(
       args.trace_output_directory)
-  trace_metrics_list.sort(key=lambda e: e['id'])
+  run_metrics_list.sort(key=lambda e: e['repeat_id'])
   with open(args.metrics_csv_path, 'w') as csv_file:
     writer = csv.DictWriter(csv_file,
                             fieldnames=sandwich_metrics.CSV_FIELD_NAMES)
     writer.writeheader()
-    for trace_metrics in trace_metrics_list:
-      writer.writerow(trace_metrics)
+    for run_metrics in run_metrics_list:
+      writer.writerow(run_metrics)
   return 0
 
 

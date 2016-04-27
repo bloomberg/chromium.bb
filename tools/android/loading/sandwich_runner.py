@@ -168,17 +168,6 @@ class SandwichRunner(object):
     else:
       _CleanPreviousTraces(self.trace_output_directory)
 
-  def _SaveRunInfos(self, urls):
-    assert self.trace_output_directory
-    run_infos = {
-      'cache-op': self.cache_operation,
-      'job_name': self.job_name,
-      'urls': urls
-    }
-    with open(os.path.join(self.trace_output_directory, 'run_infos.json'),
-              'w') as file_output:
-      json.dump(run_infos, file_output, indent=2)
-
   def _GetEmulatorNetworkCondition(self, emulator):
     if self.network_emulator == emulator:
       return self.network_condition
@@ -285,7 +274,5 @@ class SandwichRunner(object):
       self._local_cache_directory_path = None
     if self.cache_operation == 'save':
       self._PullCacheFromDevice()
-    if self.trace_output_directory:
-      self._SaveRunInfos(ran_urls)
 
     self._chrome_ctl = None

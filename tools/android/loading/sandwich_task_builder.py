@@ -236,9 +236,10 @@ class SandwichTaskBuilder(task_manager.Builder):
     def ExtractMetrics():
       sandwich_misc.VerifyBenchmarkOutputDirectory(
           SetupBenchmark.path, RunBenchmark.path)
-      trace_metrics_list = sandwich_metrics.PullMetricsFromOutputDirectory(
-          RunBenchmark.path)
-      trace_metrics_list.sort(key=lambda e: e['id'])
+      trace_metrics_list = \
+          sandwich_metrics.ExtractMetricsFromRunnerOutputDirectory(
+              RunBenchmark.path)
+      trace_metrics_list.sort(key=lambda e: e['repeat_id'])
       with open(ExtractMetrics.path, 'w') as csv_file:
         writer = csv.DictWriter(csv_file,
                                 fieldnames=sandwich_metrics.CSV_FIELD_NAMES)

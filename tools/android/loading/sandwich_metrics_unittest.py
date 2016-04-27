@@ -188,11 +188,11 @@ class PageTrackTest(unittest.TestCase):
     self.assertEquals(19, trace_events['loadEventEnd'].start_msec)
 
   def testPullMetricsFromLoadingTrace(self):
-    metrics = puller._PullMetricsFromLoadingTrace(LoadingTrace(
+    metrics = puller._ExtractMetricsFromLoadingTrace(LoadingTrace(
         _MINIMALIST_TRACE_EVENTS))
     self.assertEquals(4, len(metrics))
     self.assertEquals(20, metrics['total_load'])
-    self.assertEquals(5, metrics['onload'])
+    self.assertEquals(5, metrics['js_onload_event'])
     self.assertEquals(30971, metrics['browser_malloc_avg'])
     self.assertEquals(55044, metrics['browser_malloc_max'])
 

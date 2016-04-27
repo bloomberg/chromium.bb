@@ -10,6 +10,7 @@ desktop-specific versions.
 """
 
 import contextlib
+import copy
 import datetime
 import errno
 import logging
@@ -70,7 +71,7 @@ class ChromeControllerBase(object):
     self._wpr_attributes = None
     self._metadata = {}
     self._emulated_device = None
-    self._emulated_network = None
+    self._network_name = None
     self._slow_death = False
 
   def AddChromeArgument(self, arg):
@@ -115,10 +116,8 @@ class ChromeControllerBase(object):
       network_name: (str) Key from emulation.NETWORK_CONDITIONS or None to
         disable network emulation.
     """
-    if network_name:
-      self._emulated_network = emulation.NETWORK_CONDITIONS[network_name]
-    else:
-      self._emulated_network = None
+    assert network_name in emulation.NETWORK_CONDITIONS or network_name is None
+    self._network_name = network_name
 
   def PushBrowserCache(self, cache_path):
     """Pushes the HTTP chrome cache to the profile directory.
@@ -177,9 +176,17 @@ class ChromeControllerBase(object):
     if self._emulated_device:
       self._metadata.update(emulation.SetUpDeviceEmulationAndReturnMetadata(
           connection, self._emulated_device))
-    if self._emulated_network:
-      emulation.SetUpNetworkEmulation(connection, **self._emulated_network)
-      self._metadata.update(self._emulated_network)
+    if self._network_name:
+      network_condition = emulation.NETWORK_CONDITIONS[self._network_name]
+      logging.info('Set up network emulation %s (latency=%dms, down=%d, up=%d)'
+          % (self._network_name, network_condition['latency'],
+              network_condition['download'], network_condition['upload']))
+      emulation.SetUpNetworkEmulation(connection, **network_condition)
+      self._metadata['network_emulation'] = copy.copy(network_condition)
+      self._metadata['network_emulation']['name'] = self._network_name
+    else:
+      self._metadata['network_emulation'] = \
+          {k: 'disabled' for k in ['name', 'download', 'upload', 'latency']}
     self._metadata.update(date=datetime.datetime.utcnow().isoformat(),
                           seconds_since_epoch=time.time())
     logging.info('Devtools connection success')

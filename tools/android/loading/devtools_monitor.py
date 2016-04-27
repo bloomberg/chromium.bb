@@ -236,6 +236,7 @@ class DevToolsConnection(object):
                                  self._scoped_states[scoped_state][0])
     self._tearing_down_tracing = False
 
+    logging.info('Navigate to %s' % url)
     self.SendAndIgnoreResponse('Page.navigate', {'url': url})
 
     self._Dispatch(timeout=timeout_seconds)
