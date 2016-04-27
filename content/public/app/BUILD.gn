@@ -59,17 +59,17 @@ if (is_component_build) {
 
   # These all just forward to content, which in turn depends on "both_sources".
   group("browser") {
-    deps = [
+    public_deps = [
       "//content",
     ]
   }
   group("child") {
-    deps = [
+    public_deps = [
       "//content",
     ]
   }
   group("both") {
-    deps = [
+    public_deps = [
       "//content",
     ]
   }
