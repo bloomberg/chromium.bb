@@ -4,13 +4,10 @@ Select ServiceWorkers tree element.
 Register ServiceWorker for scope1
 ==== ServiceWorkersView ====
 127.0.0.1/inspector/service-workers/resources/scope1/
-State
-activated
-Worker
-running
-inspect
-Script URL
+URL
 /inspector/service-workers/resources/service-worker-empty.js
+State
+running
 Updated
 RESPONSE-TIME
 Last-Modified
@@ -23,13 +20,10 @@ RESPONSE-TIME
 Register ServiceWorker for scope2
 ==== ServiceWorkersView ====
 127.0.0.1/inspector/service-workers/resources/scope2/
-State
-activated
-Worker
-running
-inspect
-Script URL
+URL
 /inspector/service-workers/resources/service-worker-empty.js
+State
+running
 Updated
 RESPONSE-TIME
 Last-Modified
@@ -37,13 +31,10 @@ LAST-MODIFIED
 Recent messages
 LAST-MODIFIED
 RESPONSE-TIME
-State
-activated
-Worker
-running
-inspect
-Script URL
+URL
 /inspector/service-workers/resources/service-worker-empty.js
+State
+running
 Updated
 RESPONSE-TIME
 Last-Modified
@@ -56,13 +47,10 @@ RESPONSE-TIME
 Unegister ServiceWorker for scope1
 ==== ServiceWorkersView ====
 127.0.0.1/inspector/service-workers/resources/scope1/ - deleted
-State
-redundant
-Worker
-running
-inspect
-Script URL
+URL
 /inspector/service-workers/resources/service-worker-empty.js
+State
+runninginspect
 Updated
 RESPONSE-TIME
 Last-Modified
@@ -70,13 +58,10 @@ LAST-MODIFIED
 Recent messages
 LAST-MODIFIED
 RESPONSE-TIME
-State
-activated
-Worker
-running
-inspect
-Script URL
+URL
 /inspector/service-workers/resources/service-worker-empty.js
+State
+running
 Updated
 RESPONSE-TIME
 Last-Modified
