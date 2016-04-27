@@ -742,7 +742,8 @@ PP_InputEvent_Class ClassifyInputEvent(WebInputEvent::Type type) {
     case WebInputEvent::TouchMove:
     case WebInputEvent::TouchStart:
       return PP_INPUTEVENT_CLASS_TOUCH;
-    case WebInputEvent::Undefined:
+    case WebInputEvent::TouchScrollStarted:
+      return PP_InputEvent_Class(0);
     default:
       CHECK(WebInputEvent::isGestureEventType(type));
       return PP_InputEvent_Class(0);
