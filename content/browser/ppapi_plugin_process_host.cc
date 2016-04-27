@@ -97,7 +97,7 @@ class PpapiPluginSandboxedProcessLauncherDelegate
       for (const auto& mime_type : info_.mime_types) {
         if (browser_client->IsWin32kLockdownEnabledForMimeType(
                 mime_type.mime_type)) {
-          if (!AddWin32kLockdownPolicy(policy))
+          if (!AddWin32kLockdownPolicy(policy, true))
             return false;
           break;
         }

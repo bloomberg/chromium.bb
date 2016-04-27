@@ -36,7 +36,7 @@ void AddBaseHandleClosePolicy(sandbox::TargetPolicy* policy);
 void AddAppContainerPolicy(sandbox::TargetPolicy* policy, const wchar_t* sid);
 
 // Add the win32k lockdown policy on supported OS.
-bool AddWin32kLockdownPolicy(sandbox::TargetPolicy* policy);
+bool AddWin32kLockdownPolicy(sandbox::TargetPolicy* policy, bool enable_opm);
 
 bool InitBrokerServices(sandbox::BrokerServices* broker_services);
 

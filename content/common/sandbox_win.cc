@@ -576,7 +576,7 @@ void AddAppContainerPolicy(sandbox::TargetPolicy* policy, const wchar_t* sid) {
     policy->SetLowBox(sid);
 }
 
-bool AddWin32kLockdownPolicy(sandbox::TargetPolicy* policy) {
+bool AddWin32kLockdownPolicy(sandbox::TargetPolicy* policy, bool enable_opm) {
 #if !defined(NACL_WIN64)
   if (!IsWin32kRendererLockdownEnabled())
     return true;
@@ -589,10 +589,13 @@ bool AddWin32kLockdownPolicy(sandbox::TargetPolicy* policy) {
 
   sandbox::ResultCode result =
       policy->AddRule(sandbox::TargetPolicy::SUBSYS_WIN32K_LOCKDOWN,
-                      sandbox::TargetPolicy::FAKE_USER_GDI_INIT, nullptr);
+                      enable_opm ? sandbox::TargetPolicy::IMPLEMENT_OPM_APIS
+                                 : sandbox::TargetPolicy::FAKE_USER_GDI_INIT,
+                      nullptr);
   if (result != sandbox::SBOX_ALL_OK)
     return false;
-
+  if (enable_opm)
+    policy->SetEnableOPMRedirection();
   flags |= sandbox::MITIGATION_WIN32K_DISABLE;
   result = policy->SetProcessMitigations(flags);
   if (result != sandbox::SBOX_ALL_OK)
@@ -712,7 +715,7 @@ base::Process StartSandboxedProcess(
 #if !defined(NACL_WIN64)
   if (type_str == switches::kRendererProcess &&
       IsWin32kRendererLockdownEnabled()) {
-    if (!AddWin32kLockdownPolicy(policy))
+    if (!AddWin32kLockdownPolicy(policy, false))
       return base::Process();
   }
 #endif
