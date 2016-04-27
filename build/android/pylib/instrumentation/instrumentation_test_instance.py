@@ -546,9 +546,12 @@ class InstrumentationTestInstance(test_instance.TestInstance):
   def _FilterTests(self, tests):
 
     def gtest_filter(c, m):
-      t = ['%s.%s' % (c['class'].split('.')[-1], m['method'])]
-      return (not self._test_filter
-              or unittest_util.FilterTestNames(t, self._test_filter))
+      if not self._test_filter:
+        return True
+      # Allow fully-qualified name as well as an omitted package.
+      names = ['%s.%s' % (c['class'], m['method']),
+               '%s.%s' % (c['class'].split('.')[-1], m['method'])]
+      return unittest_util.FilterTestNames(names, self._test_filter)
 
     def annotation_filter(all_annotations):
       if not self._annotations:
