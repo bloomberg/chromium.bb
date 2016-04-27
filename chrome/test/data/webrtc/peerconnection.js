@@ -29,13 +29,33 @@ var gHasSeenCryptoInSdp = 'no-crypto-seen';
 /**
  * Creates a peer connection. Must be called before most other public functions
  * in this file.
+ * @param {Object} keygenAlgorithm An |AlgorithmIdentifier| to be used as
+ * parameter to |RTCPeerConnection.generateCertificate|. The resulting
+ * certificate will be used by the peer connection.
  */
-function preparePeerConnection() {
-  if (gPeerConnection != null)
+function preparePeerConnection(keygenAlgorithm = null) {
+  if (gPeerConnection !== null)
     throw failTest('creating peer connection, but we already have one.');
 
-  gPeerConnection = createPeerConnection_();
-  returnToTest('ok-peerconnection-created');
+  if (keygenAlgorithm === null) {
+    gPeerConnection = createPeerConnection_(null);
+    returnToTest('ok-peerconnection-created');
+  } else {
+    webkitRTCPeerConnection.generateCertificate(keygenAlgorithm).then(
+        function(certificate) {
+          if (gPeerConnection !== null) {
+            throw failTest('peer connection already set during certificate ' +
+                + 'generation.');
+          }
+          gPeerConnection = createPeerConnection_(
+              {iceServers:[], certificates:[certificate]});
+          returnToTest('ok-peerconnection-created');
+        },
+        function() {
+          failTest('Certificate generation failed. keygenAlgorithm: ' +
+              JSON.stringify(keygenAlgorithm));
+        });
+  }
 }
 
 /**
@@ -263,9 +283,9 @@ function hasSeenCryptoInSdp() {
 // Internals.
 
 /** @private */
-function createPeerConnection_() {
+function createPeerConnection_(rtcConfig) {
   try {
-    peerConnection = new RTCPeerConnection(null, {});
+    peerConnection = new RTCPeerConnection(rtcConfig, {});
   } catch (exception) {
     throw failTest('Failed to create peer connection: ' + exception);
   }

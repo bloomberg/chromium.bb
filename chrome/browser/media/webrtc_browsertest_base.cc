@@ -55,6 +55,8 @@ const char WebRtcTestBase::kAudioVideoCallConstraints360p[] =
 const char WebRtcTestBase::kAudioVideoCallConstraints720p[] =
    "{audio: true, video: {mandatory: {minWidth: 1280, maxWidth: 1280, "
    " minHeight: 720, maxHeight: 720}}}";
+const char WebRtcTestBase::kUseDefaultCertKeygen[] = "null";
+const char WebRtcTestBase::kUseDefaultVideoCodec[] = "";
 
 namespace {
 
@@ -303,15 +305,19 @@ std::string WebRtcTestBase::ExecuteJavascript(
 }
 
 void WebRtcTestBase::SetupPeerconnectionWithLocalStream(
-    content::WebContents* tab) const {
-  SetupPeerconnectionWithoutLocalStream(tab);
+    content::WebContents* tab,
+    std::string certificate_keygen_algorithm) const {
+  SetupPeerconnectionWithoutLocalStream(tab, certificate_keygen_algorithm);
   EXPECT_EQ("ok-added", ExecuteJavascript("addLocalStream()", tab));
 }
 
 void WebRtcTestBase::SetupPeerconnectionWithoutLocalStream(
-    content::WebContents* tab) const {
+    content::WebContents* tab,
+    std::string certificate_keygen_algorithm) const {
+  std::string javascript = base::StringPrintf(
+      "preparePeerConnection(%s)", certificate_keygen_algorithm.c_str());
   EXPECT_EQ("ok-peerconnection-created",
-            ExecuteJavascript("preparePeerConnection()", tab));
+            ExecuteJavascript(javascript, tab));
 }
 
 std::string WebRtcTestBase::CreateLocalOffer(

@@ -39,6 +39,9 @@ class WebRtcTestBase : public InProcessBrowserTest {
   static const char kFailedWithPermissionDeniedError[];
   static const char kFailedWithPermissionDismissedError[];
 
+  static const char kUseDefaultCertKeygen[];
+  static const char kUseDefaultVideoCodec[];
+
  protected:
   WebRtcTestBase();
   ~WebRtcTestBase() override;
@@ -95,21 +98,31 @@ class WebRtcTestBase : public InProcessBrowserTest {
 
   // Sets up a peer connection in the tab and adds the current local stream
   // (which you can prepare by calling one of the GetUserMedia* methods above).
-  void SetupPeerconnectionWithLocalStream(content::WebContents* tab) const;
+  // Optionally, |certificate_keygen_algorithm| is JavaScript for an
+  // |AlgorithmIdentifier| to be used as parameter to
+  // |RTCPeerConnection.generateCertificate|. The resulting certificate will be
+  // used by the peer connection. Or use |kUseDefaultCertKeygen| to use a
+  // certificate.
+  void SetupPeerconnectionWithLocalStream(
+      content::WebContents* tab,
+      std::string certificate_keygen_algorithm = kUseDefaultCertKeygen) const;
 
   // Same as above but does not add the local stream.
-  void SetupPeerconnectionWithoutLocalStream(content::WebContents* tab) const;
+  void SetupPeerconnectionWithoutLocalStream(
+      content::WebContents* tab,
+      std::string certificate_keygen_algorithm = kUseDefaultCertKeygen) const;
 
   // Exchanges offers and answers between the peer connections in the
   // respective tabs. Before calling this, you must have prepared peer
   // connections in both tabs and configured them as you like (for instance by
   // calling SetupPeerconnectionWithLocalStream).
-  // If |video_codec| is a non-empty string, the SDP offer is modified (and SDP
-  // answer verified) so that the specified video codec (case-sensitive name) is
-  // used during the call instead of the default one.
-  void NegotiateCall(content::WebContents* from_tab,
-                     content::WebContents* to_tab,
-                     const std::string& video_codec = "") const;
+  // If |video_codec| is not |kUseDefaultVideoCodec|, the SDP offer is modified
+  // (and SDP answer verified) so that the specified video codec (case-sensitive
+  // name) is used during the call instead of the default one.
+  void NegotiateCall(
+      content::WebContents* from_tab,
+      content::WebContents* to_tab,
+      const std::string& video_codec = kUseDefaultVideoCodec) const;
 
   // Hangs up a negotiated call.
   void HangUp(content::WebContents* from_tab) const;
@@ -143,11 +156,13 @@ class WebRtcTestBase : public InProcessBrowserTest {
   void CloseInfoBarInTab(content::WebContents* tab_contents,
                          infobars::InfoBar* infobar) const;
 
-  std::string CreateLocalOffer(content::WebContents* from_tab,
-                               std::string default_video_codec = "") const;
-  std::string CreateAnswer(std::string local_offer,
-                           content::WebContents* to_tab,
-                           std::string default_video_codec = "") const;
+  std::string CreateLocalOffer(
+      content::WebContents* from_tab,
+      std::string default_video_codec = kUseDefaultVideoCodec) const;
+  std::string CreateAnswer(
+      std::string local_offer,
+      content::WebContents* to_tab,
+      std::string default_video_codec = kUseDefaultVideoCodec) const;
   void ReceiveAnswer(const std::string& answer,
                      content::WebContents* from_tab) const;
   void GatherAndSendIceCandidates(content::WebContents* from_tab,
