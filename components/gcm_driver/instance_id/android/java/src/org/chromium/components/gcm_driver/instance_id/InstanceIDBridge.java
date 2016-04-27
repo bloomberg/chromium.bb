@@ -22,15 +22,21 @@ import java.util.concurrent.ExecutionException;
  */
 @JNINamespace("instance_id")
 public class InstanceIDBridge {
-    /** Underlying InstanceID. May be shared by multiple InstanceIDBridges. */
-    private final InstanceID mInstanceID;
+    private final Context mContext;
+    private final String mSubtype;
     private long mNativeInstanceIDAndroid;
+    /**
+     * Underlying InstanceID. May be shared by multiple InstanceIDBridges. Must be initialized on
+     * a background thread.
+     */
+    private InstanceID mInstanceID = null;
 
     private static boolean sBlockOnAsyncTasksForTesting = false;
 
     private InstanceIDBridge(
             long nativeInstanceIDAndroid, Context context, String subtype) {
-        mInstanceID = InstanceIDWithSubtype.getInstance(context, subtype);
+        mContext = context.getApplicationContext(); // Storing activity context would leak activity.
+        mSubtype = subtype;
         mNativeInstanceIDAndroid = nativeInstanceIDAndroid;
     }
 
@@ -41,7 +47,6 @@ public class InstanceIDBridge {
     @CalledByNative
     public static InstanceIDBridge create(
             long nativeInstanceIDAndroid, Context context, String subtype) {
-        // TODO(johnme): This should also be async.
         return new InstanceIDBridge(nativeInstanceIDAndroid, context, subtype);
     }
 
@@ -66,18 +71,34 @@ public class InstanceIDBridge {
         return wasBlocked;
     }
 
-    /** Wrapper for {@link InstanceID#getId}. */
+    /** Async wrapper for {@link InstanceID#getId}. */
     @CalledByNative
-    public String getId() {
-        // TODO(johnme): This should also be async.
-        return mInstanceID.getId();
+    public void getId(final int requestId) {
+        new BridgeAsyncTask<String>() {
+            @Override
+            protected String doBackgroundWork() {
+                return mInstanceID.getId();
+            }
+            @Override
+            protected void sendResultToNative(String id) {
+                nativeDidGetID(mNativeInstanceIDAndroid, requestId, id);
+            }
+        }.execute();
     }
 
-    /** Wrapper for {@link InstanceID#getCreationTime}. */
+    /** Async wrapper for {@link InstanceID#getCreationTime}. */
     @CalledByNative
-    public long getCreationTime() {
-        // TODO(johnme): This should also be async.
-        return mInstanceID.getCreationTime();
+    public void getCreationTime(final int requestId) {
+        new BridgeAsyncTask<Long>() {
+            @Override
+            protected Long doBackgroundWork() {
+                return mInstanceID.getCreationTime();
+            }
+            @Override
+            protected void sendResultToNative(Long creationTime) {
+                nativeDidGetCreationTime(mNativeInstanceIDAndroid, requestId, creationTime);
+            }
+        }.execute();
     }
 
     /** Async wrapper for {@link InstanceID#getToken(String, String, Bundle)}. */
@@ -146,6 +167,9 @@ public class InstanceIDBridge {
         }.execute();
     }
 
+    private native void nativeDidGetID(long nativeInstanceIDAndroid, int requestId, String id);
+    private native void nativeDidGetCreationTime(
+            long nativeInstanceIDAndroid, int requestId, long creationTime);
     private native void nativeDidGetToken(
             long nativeInstanceIDAndroid, int requestId, String token);
     private native void nativeDidDeleteToken(
@@ -155,10 +179,11 @@ public class InstanceIDBridge {
 
     /**
      * Custom {@link AsyncTask} wrapper. As usual, this performs work on a background thread, then
-     * sends the result back on the UI thread. There are 3 differences:
-     * 1. sendResultToNative will be skipped if the C++ counterpart has been destroyed.
-     * 2. Tasks run in parallel (using THREAD_POOL_EXECUTOR) to avoid blocking other Chrome tasks.
-     * 3. If setBlockOnAsyncTasksForTesting has been enabled, executing the task will block the UI
+     * sends the result back on the UI thread. Key differences:
+     * 1. Lazily initializes mInstanceID before running doBackgroundWork.
+     * 2. sendResultToNative will be skipped if the C++ counterpart has been destroyed.
+     * 3. Tasks run in parallel (using THREAD_POOL_EXECUTOR) to avoid blocking other Chrome tasks.
+     * 4. If setBlockOnAsyncTasksForTesting has been enabled, executing the task will block the UI
      *    thread, then directly call sendResultToNative. This is a workaround for use in tests
      *    that lack a nested Java message loop (which prevents onPostExecute from running).
      */
@@ -171,6 +196,11 @@ public class InstanceIDBridge {
             AsyncTask<Void, Void, Result> task = new AsyncTask<Void, Void, Result>() {
                 @Override
                 protected Result doInBackground(Void... params) {
+                    synchronized (InstanceIDBridge.this) {
+                        if (mInstanceID == null) {
+                            mInstanceID = InstanceIDWithSubtype.getInstance(mContext, mSubtype);
+                        }
+                    }
                     return doBackgroundWork();
                 }
                 @Override

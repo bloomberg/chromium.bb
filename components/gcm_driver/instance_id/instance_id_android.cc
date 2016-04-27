@@ -77,29 +77,21 @@ InstanceIDAndroid::~InstanceIDAndroid() {
 void InstanceIDAndroid::GetID(const GetIDCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  int32_t request_id = get_id_callbacks_.Add(new GetIDCallback(callback));
+
   JNIEnv* env = AttachCurrentThread();
-  std::string id = ConvertJavaStringToUTF8(
-      Java_InstanceIDBridge_getId(env, java_ref_.obj()));
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                base::Bind(callback, id));
+  Java_InstanceIDBridge_getId(env, java_ref_.obj(), request_id);
 }
 
 void InstanceIDAndroid::GetCreationTime(
     const GetCreationTimeCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  int32_t request_id =
+      get_creation_time_callbacks_.Add(new GetCreationTimeCallback(callback));
+
   JNIEnv* env = AttachCurrentThread();
-  int64_t creation_time_unix_ms =
-      Java_InstanceIDBridge_getCreationTime(env, java_ref_.obj());
-  base::Time creation_time;
-  // If the InstanceID's getId, getToken and deleteToken methods have never been
-  // called, or deleteInstanceID has cleared it since, creation time will be 0.
-  if (creation_time_unix_ms) {
-    creation_time = base::Time::UnixEpoch() +
-                    base::TimeDelta::FromMilliseconds(creation_time_unix_ms);
-  }
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, creation_time));
+  Java_InstanceIDBridge_getCreationTime(env, java_ref_.obj(), request_id);
 }
 
 void InstanceIDAndroid::GetToken(
@@ -147,6 +139,41 @@ void InstanceIDAndroid::DeleteID(const DeleteIDCallback& callback) {
 
   JNIEnv* env = AttachCurrentThread();
   Java_InstanceIDBridge_deleteInstanceID(env, java_ref_.obj(), request_id);
+}
+
+void InstanceIDAndroid::DidGetID(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    jint request_id,
+    const base::android::JavaParamRef<jstring>& jid) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  GetIDCallback* callback = get_id_callbacks_.Lookup(request_id);
+  DCHECK(callback);
+  callback->Run(ConvertJavaStringToUTF8(jid));
+  get_id_callbacks_.Remove(request_id);
+}
+
+void InstanceIDAndroid::DidGetCreationTime(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    jint request_id,
+    jlong creation_time_unix_ms) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  base::Time creation_time;
+  // If the InstanceID's getId, getToken and deleteToken methods have never been
+  // called, or deleteInstanceID has cleared it since, creation time will be 0.
+  if (creation_time_unix_ms) {
+    creation_time = base::Time::UnixEpoch() +
+                    base::TimeDelta::FromMilliseconds(creation_time_unix_ms);
+  }
+
+  GetCreationTimeCallback* callback =
+      get_creation_time_callbacks_.Lookup(request_id);
+  DCHECK(callback);
+  callback->Run(creation_time);
+  get_creation_time_callbacks_.Remove(request_id);
 }
 
 void InstanceIDAndroid::DidGetToken(

@@ -20,8 +20,8 @@ class InstanceIDHandler;
 namespace instance_id {
 
 // Encapsulates Instance ID functionalities that need to be implemented for
-// different platform. One instance is created per application. Life of
-// Instance ID is managed by the InstanceIdDriver.
+// different platforms. One instance is created per application. Life of
+// Instance ID is managed by the InstanceIDDriver.
 class InstanceID {
  public:
   enum Result {
@@ -41,7 +41,8 @@ class InstanceID {
     UNKNOWN_ERROR
   };
 
-  // Asynchronous callbacks.
+  // Asynchronous callbacks. Must not synchronously delete |this| (using
+  // InstanceIDDriver::RemoveInstanceID).
   typedef base::Callback<void(const std::string& app_id,
                               bool update_id)> TokenRefreshCallback;
   typedef base::Callback<void(const std::string& id)> GetIDCallback;

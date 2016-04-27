@@ -54,10 +54,22 @@ public class FakeInstanceIDWithSubtype extends InstanceIDWithSubtype {
 
     private FakeInstanceIDWithSubtype(Context context, String subtype) {
         super(context, subtype);
+
+        // The first call to InstanceIDWithSubtype.getInstance calls InstanceID.getInstance which
+        // triggers a strict mode violation if it's called on the main thread, by reading from
+        // SharedPreferences. Since we can't override those static methods to simulate the strict
+        // mode violation in tests, check the thread here (which is only called from getInstance).
+        if (Looper.getMainLooper() == Looper.myLooper())
+            throw new AssertionError(InstanceID.ERROR_MAIN_THREAD);
     }
 
     @Override
     public String getId() {
+        // InstanceID.getId sometimes triggers a strict mode violation if it's called on the main
+        // thread, by reading from SharedPreferences.
+        if (Looper.getMainLooper() == Looper.myLooper())
+            throw new AssertionError(InstanceID.ERROR_MAIN_THREAD);
+
         if (mId == null) {
             mCreationTime = System.currentTimeMillis();
             mId = randomBase64(11 /* length */);
@@ -67,6 +79,11 @@ public class FakeInstanceIDWithSubtype extends InstanceIDWithSubtype {
 
     @Override
     public long getCreationTime() {
+        // InstanceID.getCreationTime sometimes triggers a strict mode violation if it's called on
+        // the main thread, by reading from SharedPreferences.
+        if (Looper.getMainLooper() == Looper.myLooper())
+            throw new AssertionError(InstanceID.ERROR_MAIN_THREAD);
+
         return mCreationTime;
     }
 
@@ -78,9 +95,11 @@ public class FakeInstanceIDWithSubtype extends InstanceIDWithSubtype {
     @Override
     public String getToken(String authorizedEntity, String scope, Bundle extras)
             throws IOException {
+        // InstanceID.getToken enforces this.
         if (Looper.getMainLooper() == Looper.myLooper()) {
             throw new IOException(InstanceID.ERROR_MAIN_THREAD);
         }
+
         String key = getSubtype() + ',' + authorizedEntity + ',' + scope;
         String token = mTokens.get(key);
         if (token == null) {
@@ -93,9 +112,11 @@ public class FakeInstanceIDWithSubtype extends InstanceIDWithSubtype {
 
     @Override
     public void deleteToken(String authorizedEntity, String scope) throws IOException {
+        // InstanceID.deleteToken enforces this.
         if (Looper.getMainLooper() == Looper.myLooper()) {
             throw new IOException(InstanceID.ERROR_MAIN_THREAD);
         }
+
         String key = getSubtype() + ',' + authorizedEntity + ',' + scope;
         mTokens.remove(key);
         // Calling deleteToken causes ID to be generated; can be observed though getCreationTime.
@@ -106,9 +127,12 @@ public class FakeInstanceIDWithSubtype extends InstanceIDWithSubtype {
     public void deleteInstanceID() throws IOException {
         synchronized (InstanceID.class) {
             sSubtypeInstances.remove(getSubtype());
+
+            // InstanceID.deleteInstanceID calls InstanceID.deleteToken which enforces this.
             if (Looper.getMainLooper() == Looper.myLooper()) {
                 throw new IOException(InstanceID.ERROR_MAIN_THREAD);
             }
+
             mTokens.clear();
             mCreationTime = 0;
             mId = null;
