@@ -7,7 +7,7 @@
 // Implement BluetoothAdvertisingData interface: http://crbug.com/542756
 
 [
-    OriginTrialEnabled=WebBluetooth,
+    RuntimeEnabled=WebBluetooth,
 ] interface BluetoothAdvertisingData {
     // readonly attribute unsigned short? appearance;
     readonly attribute byte? txPower;

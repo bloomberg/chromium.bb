@@ -11,7 +11,6 @@ CONSOLE WARNING: 'webkitIDBDatabase' is deprecated. Please use 'IDBDatabase' ins
 CONSOLE WARNING: 'webkitIDBCursor' is deprecated. Please use 'IDBCursor' instead.
 CONSOLE WARNING: 'webkitIndexedDB' is deprecated. Please use 'indexedDB' instead.
 CONSOLE ERROR: The 'WebUSB' feature is currently enabled in limited trials. Please see https://bit.ly/OriginTrials for information on enabling a trial for your site.
-CONSOLE ERROR: The 'WebBluetooth' feature is currently enabled in limited trials. Please see https://bit.ly/OriginTrials for information on enabling a trial for your site.
 CONSOLE WARNING: 'webkitURL' is deprecated. Please use 'URL' instead.
 This test documents all interface attributes and methods on the global window object and element instances.
 
@@ -3335,7 +3334,6 @@ interface Navigator
     getter appCodeName
     getter appName
     getter appVersion
-    getter bluetooth
     getter cookieEnabled
     getter credentials
     getter doNotTrack
@@ -6431,13 +6429,6 @@ interface webkitURL
     setter search
     setter username
 [GLOBAL OBJECT]
-    attribute BluetoothAdvertisingData
-    attribute BluetoothCharacteristicProperties
-    attribute BluetoothDevice
-    attribute BluetoothRemoteGATTCharacteristic
-    attribute BluetoothRemoteGATTServer
-    attribute BluetoothRemoteGATTService
-    attribute BluetoothUUID
     attribute GCController
     attribute USBAlternateInterface
     attribute USBConfiguration

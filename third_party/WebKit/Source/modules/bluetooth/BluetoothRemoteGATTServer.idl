@@ -7,7 +7,7 @@
 // Implement BluetoothGATTRemoteServer interface: https://crbug.com/476735
 
 [
-    OriginTrialEnabled=WebBluetooth,
+    RuntimeEnabled=WebBluetooth,
 ] interface BluetoothRemoteGATTServer
 {
     readonly attribute BluetoothDevice                   device;

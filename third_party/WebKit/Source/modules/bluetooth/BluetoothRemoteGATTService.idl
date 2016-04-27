@@ -7,7 +7,7 @@
 // Implement BluetoothRemoteGATTService interface: https://crbug.com/483342
 
 [
-    OriginTrialEnabled=WebBluetooth,
+    RuntimeEnabled=WebBluetooth,
 ] interface BluetoothRemoteGATTService { // : ServiceEventHandlers {
     readonly    attribute UUID            uuid;
     readonly    attribute boolean         isPrimary;
