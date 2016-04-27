@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from telemetry.page import page_test
+from telemetry.page import legacy_page_test
 from telemetry.timeline import model
 from telemetry.timeline import tracing_config
 from telemetry.value import scalar
@@ -10,7 +10,7 @@ from telemetry.value import scalar
 from metrics import power
 
 
-class ImageDecoding(page_test.PageTest):
+class ImageDecoding(legacy_page_test.LegacyPageTest):
 
   def __init__(self):
     super(ImageDecoding, self).__init__()

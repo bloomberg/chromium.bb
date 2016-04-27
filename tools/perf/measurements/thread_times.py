@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from telemetry.page import page_test
+from telemetry.page import legacy_page_test
 from telemetry.timeline import tracing_category_filter
 from telemetry.web_perf.metrics import layout
 
@@ -10,7 +10,7 @@ from measurements import timeline_controller
 from metrics import timeline
 
 
-class ThreadTimes(page_test.PageTest):
+class ThreadTimes(legacy_page_test.LegacyPageTest):
 
   def __init__(self, report_silk_details=False):
     super(ThreadTimes, self).__init__()

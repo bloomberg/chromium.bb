@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from telemetry.page import page_test
+from telemetry.page import legacy_page_test
 
 from metrics import cpu
 from metrics import media
@@ -11,7 +11,7 @@ from metrics import power
 from metrics import webrtc_stats
 
 
-class WebRTC(page_test.PageTest):
+class WebRTC(legacy_page_test.LegacyPageTest):
   """Gathers WebRTC-related metrics on a page set."""
 
   def __init__(self):

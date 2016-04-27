@@ -4,7 +4,7 @@
 
 import json
 
-from telemetry.page import page_test
+from telemetry.page import legacy_page_test
 from telemetry.value import histogram_util
 from telemetry.value import scalar
 from telemetry.value import skip
@@ -26,7 +26,7 @@ def _GetMaxDetachedContextAge(tab, data_start):
     return max(x.get('high', x['low']) for x in buckets)
 
 
-class V8DetachedContextAgeInGC(page_test.PageTest):
+class V8DetachedContextAgeInGC(legacy_page_test.LegacyPageTest):
 
   def __init__(self):
     super(V8DetachedContextAgeInGC, self).__init__()

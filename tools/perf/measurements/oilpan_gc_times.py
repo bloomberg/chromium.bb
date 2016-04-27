@@ -4,7 +4,7 @@
 
 import os
 
-from telemetry.page import page_test
+from telemetry.page import legacy_page_test
 from telemetry.timeline.model import TimelineModel
 from telemetry.timeline import tracing_config
 from telemetry.value import list_of_scalar_values
@@ -129,7 +129,7 @@ def _AddTracingResults(thread, results):
   results.AddValue(scalar.ScalarValue(page, 'oilpan_gc', unit, gc_time))
 
 
-class _OilpanGCTimesBase(page_test.PageTest):
+class _OilpanGCTimesBase(legacy_page_test.LegacyPageTest):
 
   def __init__(self, action_name=''):
     super(_OilpanGCTimesBase, self).__init__(action_name)

@@ -13,7 +13,7 @@ Power usage is also measured.
 import time
 
 from telemetry.core import util
-from telemetry.page import page_test
+from telemetry.page import legacy_page_test
 from telemetry.value import histogram
 from telemetry.value import histogram_util
 
@@ -23,7 +23,7 @@ from metrics import power
 # TODO: Revisit this test once multitab support is finalized.
 
 
-class TabSwitching(page_test.PageTest):
+class TabSwitching(legacy_page_test.LegacyPageTest):
 
   # Amount of time to measure, in seconds.
   SAMPLE_TIME = 30

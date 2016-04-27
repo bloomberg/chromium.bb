@@ -5,7 +5,7 @@
 import logging
 
 from telemetry import decorators
-from telemetry.page import page_test
+from telemetry.page import legacy_page_test
 from telemetry.testing import options_for_unittests
 from telemetry.testing import page_test_test_case
 from telemetry.util import wpr_modes
@@ -33,7 +33,7 @@ class RasterizeAndRecordMicroUnitTest(page_test_test_case.PageTestTestCase):
         report_detailed_results=True)
     try:
       results = self.RunMeasurement(measurement, ps, options=self._options)
-    except page_test.TestNotSupportedOnPlatformError as failure:
+    except legacy_page_test.TestNotSupportedOnPlatformError as failure:
       logging.warning(str(failure))
       return
     self.assertEquals(0, len(results.failures))

@@ -6,13 +6,13 @@ from collections import defaultdict
 from itertools import starmap
 from telemetry.core import exceptions
 from telemetry.core import util
-from telemetry.page import page_test
+from telemetry.page import legacy_page_test
 from telemetry.value import scalar
 
 from measurements import timeline_controller
 
 
-class BlinkStyle(page_test.PageTest):
+class BlinkStyle(legacy_page_test.LegacyPageTest):
 
   def __init__(self):
     super(BlinkStyle, self).__init__()

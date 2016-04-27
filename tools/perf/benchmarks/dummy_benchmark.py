@@ -13,12 +13,12 @@ import random
 from core import perf_benchmark
 
 from telemetry.value import scalar
-from telemetry.page import page_test
+from telemetry.page import legacy_page_test
 
 from page_sets import dummy_story_set
 
 
-class _DummyTest(page_test.PageTest):
+class _DummyTest(legacy_page_test.LegacyPageTest):
 
   def __init__(self, avg, std):
     super(_DummyTest, self).__init__()

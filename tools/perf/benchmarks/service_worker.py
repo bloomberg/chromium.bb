@@ -9,7 +9,7 @@ import re
 from core import perf_benchmark
 
 from telemetry.core import util
-from telemetry.page import page_test
+from telemetry.page import legacy_page_test
 from telemetry.timeline import async_slice as async_slice_module
 from telemetry.timeline import slice as slice_module
 from telemetry.value import scalar
@@ -85,7 +85,7 @@ class _ServiceWorkerTimelineMetric(object):
         results.current_page, full_name + '_avg', 'ms', total / len(times)))
 
 
-class _ServiceWorkerMeasurement(page_test.PageTest):
+class _ServiceWorkerMeasurement(legacy_page_test.LegacyPageTest):
   """Measure Speed Index and TRACE_EVENTs"""
 
   def __init__(self):
@@ -142,7 +142,7 @@ class _ServiceWorkerMeasurement(page_test.PageTest):
     self._speed_index.AddResults(tab, results, chart_prefix)
 
 
-class _ServiceWorkerMicroBenchmarkMeasurement(page_test.PageTest):
+class _ServiceWorkerMicroBenchmarkMeasurement(legacy_page_test.LegacyPageTest):
   """Record results reported by the JS microbenchmark."""
 
   def __init__(self):

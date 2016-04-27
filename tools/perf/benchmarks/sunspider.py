@@ -8,7 +8,7 @@ import os
 from core import perf_benchmark
 
 from telemetry import page as page_module
-from telemetry.page import page_test
+from telemetry.page import legacy_page_test
 from telemetry import story
 from telemetry.value import list_of_scalar_values
 
@@ -75,7 +75,7 @@ DESCRIPTIONS = {
 }
 
 
-class _SunspiderMeasurement(page_test.PageTest):
+class _SunspiderMeasurement(legacy_page_test.LegacyPageTest):
 
   def __init__(self):
     super(_SunspiderMeasurement, self).__init__()

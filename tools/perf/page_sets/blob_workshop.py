@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 from telemetry.page import page as page_module
-from telemetry.page import page_test as page_test
+from telemetry.page import legacy_page_test
 from telemetry import story
 
 
@@ -32,7 +32,7 @@ class BlobCreateThenRead(page_module.Page):
 
     errors = action_runner.EvaluateJavaScript('errors')
     if errors:
-      raise page_test.Failure('Errors on page: ' + ', '.join(errors))
+      raise legacy_page_test.Failure('Errors on page: ' + ', '.join(errors))
 
 
 class BlobMassCreate(page_module.Page):
@@ -65,7 +65,7 @@ class BlobMassCreate(page_module.Page):
 
     errors = action_runner.EvaluateJavaScript('errors')
     if errors:
-      raise page_test.Failure('Errors on page: ' + ', '.join(errors))
+      raise legacy_page_test.Failure('Errors on page: ' + ', '.join(errors))
 
 
 class BlobWorkshopPageSet(story.StorySet):

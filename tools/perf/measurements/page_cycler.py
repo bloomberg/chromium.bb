@@ -19,7 +19,7 @@ import collections
 import os
 
 from telemetry.core import util
-from telemetry.page import page_test
+from telemetry.page import legacy_page_test
 from telemetry.value import scalar
 
 from metrics import cpu
@@ -29,7 +29,7 @@ from metrics import power
 from metrics import speedindex
 
 
-class PageCycler(page_test.PageTest):
+class PageCycler(legacy_page_test.LegacyPageTest):
 
   def __init__(self, page_repeat, pageset_repeat, cold_load_percent=50,
                report_speed_index=False, clear_cache_before_each_run=False):

@@ -4,13 +4,13 @@
 
 import logging
 
-from telemetry.page import page_test
+from telemetry.page import legacy_page_test
 
 from metrics import memory
 from metrics import power
 
 
-class Memory(page_test.PageTest):
+class Memory(legacy_page_test.LegacyPageTest):
 
   def __init__(self):
     super(Memory, self).__init__()

@@ -27,7 +27,7 @@ from core import perf_benchmark
 
 from telemetry import page as page_module
 from telemetry import story
-from telemetry.page import page_test
+from telemetry.page import legacy_page_test
 from telemetry.value import scalar
 
 from metrics import memory
@@ -43,7 +43,7 @@ IDB_CATEGORY = 'IndexedDB'
 TIMELINE_REQUIRED_CATEGORY = 'blink.console'
 
 
-class _IndexedDbMeasurement(page_test.PageTest):
+class _IndexedDbMeasurement(legacy_page_test.LegacyPageTest):
 
   def __init__(self):
     super(_IndexedDbMeasurement, self).__init__()

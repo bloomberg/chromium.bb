@@ -7,10 +7,10 @@ import time
 from metrics import network
 from metrics import power
 from telemetry.core import util
-from telemetry.page import page_test
+from telemetry.page import legacy_page_test
 
 
-class Power(page_test.PageTest):
+class Power(legacy_page_test.LegacyPageTest):
   """Measures power draw and idle wakeups during the page's interactions."""
 
   def __init__(self):
@@ -48,7 +48,7 @@ class LoadPower(Power):
     pass
 
 
-class QuiescentPower(page_test.PageTest):
+class QuiescentPower(legacy_page_test.LegacyPageTest):
   """Measures power draw and idle wakeups after the page finished loading."""
 
   # Amount of time to measure, in seconds.

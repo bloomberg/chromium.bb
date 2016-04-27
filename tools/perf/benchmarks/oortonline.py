@@ -6,7 +6,7 @@ import page_sets
 
 from core import perf_benchmark
 from telemetry import benchmark
-from telemetry.page import page_test
+from telemetry.page import legacy_page_test
 from telemetry.value import scalar
 from telemetry.value import improvement_direction
 from telemetry.timeline import tracing_category_filter
@@ -16,7 +16,7 @@ from telemetry.web_perf.metrics import smoothness
 from telemetry.web_perf.metrics import memory_timeline
 
 
-class _OortOnlineMeasurement(page_test.PageTest):
+class _OortOnlineMeasurement(legacy_page_test.LegacyPageTest):
 
   def __init__(self):
     super(_OortOnlineMeasurement, self).__init__()

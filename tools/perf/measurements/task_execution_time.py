@@ -2,14 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from telemetry.page import page_test
+from telemetry.page import legacy_page_test
 from telemetry.timeline.model import TimelineModel
 from telemetry.timeline import tracing_config
 from telemetry.util import statistics
 from telemetry.value import scalar
 
 
-class TaskExecutionTime(page_test.PageTest):
+class TaskExecutionTime(legacy_page_test.LegacyPageTest):
 
   IDLE_SECTION_TRIGGER = 'SingleThreadIdleTaskRunner::RunTask'
   IDLE_SECTION = 'IDLE'

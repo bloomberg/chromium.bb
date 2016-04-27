@@ -16,7 +16,7 @@ import os
 from core import perf_benchmark
 
 from telemetry import page as page_module
-from telemetry.page import page_test
+from telemetry.page import legacy_page_test
 from telemetry import story
 from telemetry.util import statistics
 from telemetry.value import scalar
@@ -67,7 +67,7 @@ DESCRIPTIONS = {
 }
 
 
-class _OctaneMeasurement(page_test.PageTest):
+class _OctaneMeasurement(legacy_page_test.LegacyPageTest):
 
   def __init__(self):
     super(_OctaneMeasurement, self).__init__()

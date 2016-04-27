@@ -5,7 +5,7 @@
 from core import perf_benchmark
 
 from telemetry import benchmark
-from telemetry.page import page_test
+from telemetry.page import legacy_page_test
 from telemetry.value import list_of_scalar_values
 from telemetry.value import scalar
 
@@ -13,7 +13,7 @@ from measurements import media
 import page_sets
 
 
-class _MSEMeasurement(page_test.PageTest):
+class _MSEMeasurement(legacy_page_test.LegacyPageTest):
 
   def __init__(self):
     super(_MSEMeasurement, self).__init__()

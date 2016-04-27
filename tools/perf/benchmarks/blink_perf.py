@@ -9,7 +9,7 @@ from core import perf_benchmark
 
 from telemetry import benchmark
 from telemetry import page as page_module
-from telemetry.page import page_test
+from telemetry.page import legacy_page_test
 from telemetry.page import shared_page_state
 from telemetry import story
 from telemetry.value import list_of_scalar_values
@@ -71,7 +71,7 @@ def CreateStorySetFromPath(path, skipped_file,
   return ps
 
 
-class _BlinkPerfMeasurement(page_test.PageTest):
+class _BlinkPerfMeasurement(legacy_page_test.LegacyPageTest):
   """Tuns a blink performance test and reports the results."""
 
   def __init__(self):

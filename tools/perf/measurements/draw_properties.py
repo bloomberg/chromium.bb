@@ -2,13 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from telemetry.page import page_test
+from telemetry.page import legacy_page_test
 from telemetry.timeline import model
 from telemetry.timeline import tracing_config
 from telemetry.value import scalar
 
 
-class DrawProperties(page_test.PageTest):
+class DrawProperties(legacy_page_test.LegacyPageTest):
 
   def __init__(self):
     super(DrawProperties, self).__init__()

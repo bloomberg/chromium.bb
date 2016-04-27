@@ -4,14 +4,14 @@
 import glob
 import os
 
-from telemetry.page import page_test
+from telemetry.page import legacy_page_test
 from telemetry.value import scalar
 
 
 _JS = 'chrome.gpuBenchmarking.printToSkPicture("{0}");'
 
 
-class SkpicturePrinter(page_test.PageTest):
+class SkpicturePrinter(legacy_page_test.LegacyPageTest):
 
   def __init__(self, skp_outdir):
     super(SkpicturePrinter, self).__init__()
@@ -24,7 +24,7 @@ class SkpicturePrinter(page_test.PageTest):
 
   def ValidateAndMeasurePage(self, page, tab, results):
     if tab.browser.platform.GetOSName() in ['android', 'chromeos']:
-      raise page_test.MeasurementFailure(
+      raise legacy_page_test.MeasurementFailure(
           'SkPicture printing not supported on this platform')
 
     # Replace win32 path separator char '\' with '\\'.

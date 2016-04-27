@@ -12,7 +12,7 @@ from core import perf_benchmark
 
 from telemetry import benchmark
 from telemetry import page as page_module
-from telemetry.page import page_test
+from telemetry.page import legacy_page_test
 from telemetry import story
 from telemetry.value import list_of_scalar_values
 from telemetry.value import scalar
@@ -49,7 +49,7 @@ DESCRIPTIONS = {
 }
 
 
-class _SpaceportMeasurement(page_test.PageTest):
+class _SpaceportMeasurement(legacy_page_test.LegacyPageTest):
 
   def __init__(self):
     super(_SpaceportMeasurement, self).__init__()

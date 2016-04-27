@@ -24,14 +24,14 @@ from benchmarks import v8_helper
 
 from telemetry import benchmark
 from telemetry import page as page_module
-from telemetry.page import page_test
+from telemetry.page import legacy_page_test
 from telemetry import story
 from telemetry.value import list_of_scalar_values
 
 from metrics import keychain_metric
 
 
-class SpeedometerMeasurement(page_test.PageTest):
+class SpeedometerMeasurement(legacy_page_test.LegacyPageTest):
   enabled_suites = [
       'VanillaJS-TodoMVC',
       'EmberJS-TodoMVC',

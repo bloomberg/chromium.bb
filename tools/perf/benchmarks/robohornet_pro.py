@@ -10,14 +10,14 @@ from core import perf_benchmark
 
 from telemetry import benchmark
 from telemetry import page as page_module
-from telemetry.page import page_test
+from telemetry.page import legacy_page_test
 from telemetry import story
 from telemetry.value import scalar
 
 from metrics import power
 
 
-class _RobohornetProMeasurement(page_test.PageTest):
+class _RobohornetProMeasurement(legacy_page_test.LegacyPageTest):
 
   def __init__(self):
     super(_RobohornetProMeasurement, self).__init__()
