@@ -453,6 +453,14 @@ EVENT_TYPE(SOCKS_UNEXPECTED_AUTH)
 EVENT_TYPE(SOCKS_UNKNOWN_ADDRESS_TYPE)
 
 // The start/end of an SSL "connect" (aka client handshake).
+// The following parameters are attached to the END event:
+//
+//  {
+//    "version": <String name of the TLS version negotiated>,
+//    "cipher_suite": <Integer code for the cipher suite>,
+//    "is_resumed": <Whether we resumed a session>,
+//    "next_proto": <The next protocol negotiated via ALPN>,
+//  }
 EVENT_TYPE(SSL_CONNECT)
 
 // The start/end of an SSL server handshake (aka "accept").

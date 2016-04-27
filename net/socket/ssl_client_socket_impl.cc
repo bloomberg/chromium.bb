@@ -45,6 +45,7 @@
 #include "net/http/transport_security_state.h"
 #include "net/ssl/scoped_openssl_types.h"
 #include "net/ssl/ssl_cert_request_info.h"
+#include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_client_session_cache.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/ssl/ssl_failure_state.h"
@@ -182,6 +183,30 @@ std::unique_ptr<base::Value> NetLogChannelIDLookupCompleteCallback(
     }
     dict->SetString("key", key_to_log);
   }
+  return std::move(dict);
+}
+
+std::unique_ptr<base::Value> NetLogSSLInfoCallback(
+    SSLClientSocketImpl* socket,
+    NetLogCaptureMode capture_mode) {
+  SSLInfo ssl_info;
+  if (!socket->GetSSLInfo(&ssl_info))
+    return nullptr;
+
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  const char* version_str;
+  SSLVersionToString(&version_str,
+                     SSLConnectionStatusToVersion(ssl_info.connection_status));
+  dict->SetString("version", version_str);
+  dict->SetBoolean("is_resumed",
+                   ssl_info.handshake_type == SSLInfo::HANDSHAKE_RESUME);
+  dict->SetInteger("cipher_suite", SSLConnectionStatusToCipherSuite(
+                                       ssl_info.connection_status));
+
+  std::string next_proto;
+  socket->GetNextProto(&next_proto);
+  dict->SetString("next_proto", next_proto);
+
   return std::move(dict);
 }
 
@@ -618,7 +643,7 @@ int SSLClientSocketImpl::Connect(const CompletionCallback& callback) {
   // Set up new ssl object.
   int rv = Init();
   if (rv != OK) {
-    net_log_.EndEventWithNetErrorCode(NetLog::TYPE_SSL_CONNECT, rv);
+    LogConnectEndEvent(rv);
     return rv;
   }
 
@@ -630,7 +655,7 @@ int SSLClientSocketImpl::Connect(const CompletionCallback& callback) {
   if (rv == ERR_IO_PENDING) {
     user_connect_callback_ = callback;
   } else {
-    net_log_.EndEventWithNetErrorCode(NetLog::TYPE_SSL_CONNECT, rv);
+    LogConnectEndEvent(rv);
   }
 
   return rv > OK ? OK : rv;
@@ -1436,7 +1461,7 @@ void SSLClientSocketImpl::VerifyCT() {
 void SSLClientSocketImpl::OnHandshakeIOComplete(int result) {
   int rv = DoHandshakeLoop(result);
   if (rv != ERR_IO_PENDING) {
-    net_log_.EndEventWithNetErrorCode(NetLog::TYPE_SSL_CONNECT, rv);
+    LogConnectEndEvent(rv);
     DoConnectCallback(rv);
   }
 }
@@ -2305,6 +2330,16 @@ int SSLClientSocketImpl::TokenBindingParse(const uint8_t* contents,
 
   *out_alert_value = SSL_AD_ILLEGAL_PARAMETER;
   return 0;
+}
+
+void SSLClientSocketImpl::LogConnectEndEvent(int rv) {
+  if (rv != OK) {
+    net_log_.EndEventWithNetErrorCode(NetLog::TYPE_SSL_CONNECT, rv);
+    return;
+  }
+
+  net_log_.EndEvent(NetLog::TYPE_SSL_CONNECT,
+                    base::Bind(&NetLogSSLInfoCallback, base::Unretained(this)));
 }
 
 }  // namespace net

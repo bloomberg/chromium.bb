@@ -239,6 +239,8 @@ class SSLClientSocketImpl : public SSLClientSocket {
                         size_t contents_len,
                         int* out_alert_value);
 
+  void LogConnectEndEvent(int rv);
+
   bool transport_send_busy_;
   bool transport_recv_busy_;
 
