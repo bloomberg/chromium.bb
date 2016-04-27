@@ -524,6 +524,9 @@ public class CustomTabActivity extends ChromeActivity {
 
     @Override
     public void finish() {
+        // Prevent the menu window from leaking.
+        if (getAppMenuHandler() != null) getAppMenuHandler().hideAppMenu();
+
         super.finish();
         if (mIntentDataProvider != null && mIntentDataProvider.shouldAnimateOnFinish()) {
             mShouldOverridePackage = true;

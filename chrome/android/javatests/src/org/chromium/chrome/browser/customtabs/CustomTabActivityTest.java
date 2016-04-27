@@ -50,6 +50,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.TabsOpenedFromExternalAppTest;
+import org.chromium.chrome.browser.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.prerender.ExternalPrerenderHandler;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -139,6 +140,18 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
     @Override
     protected void tearDown() throws Exception {
         mTestServer.stopAndDestroyServer();
+
+        // finish() is called on a non-UI thread by the testing harness. Must hide the menu
+        // first, otherwise the UI is manipulated on a non-UI thread.
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                if (mActivity == null) return;
+                AppMenuHandler handler = mActivity.getAppMenuHandler();
+                if (handler != null) handler.hideAppMenu();
+            }
+        });
+
         super.tearDown();
     }
 
