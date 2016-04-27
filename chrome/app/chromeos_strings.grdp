@@ -6559,8 +6559,8 @@ All users must sign out to continue.
   <message name="IDS_ARC_OPT_IN_DIALOG_PROGRESS_ANDROID" desc="Name of Android loading progress of the opt-in dialog for Android apps.">
     This may take up to a minute or so
   </message>
-  <message name="IDS_ARC_OPT_IN_DIALOG_AUTHORIZATION_FAILED" desc="Error message shown in case when auth code is not returned by server.">
-    Athorization failed
+  <message name="IDS_ARC_OPT_IN_DIALOG_AUTHORIZATION_FAILED" desc="Error message shown when an auth code is not returned by server.">
+    Authorization failed
   </message>
   <message name="IDS_ARC_SIGN_IN_NETWORK_ERROR" desc="Android sign-in error because of network error">
     Network error
