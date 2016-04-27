@@ -56,11 +56,12 @@ class MostVisitedSites : public history::TopSitesObserver,
   // The observer to be notified when the list of most visited sites changes.
   class Observer {
    public:
-    virtual ~Observer() {}
-
     virtual void OnMostVisitedURLsAvailable(
         const SuggestionsVector& suggestions) = 0;
     virtual void OnPopularURLsAvailable(const PopularSitesVector& sites) = 0;
+
+   protected:
+    virtual ~Observer() {}
   };
 
   struct Suggestion {

@@ -69,10 +69,11 @@ void MostVisitedSitesBridge::Observer::OnMostVisitedURLsAvailable(
   std::vector<std::string> whitelist_icon_paths;
   titles.reserve(suggestions.size());
   urls.reserve(suggestions.size());
+  whitelist_icon_paths.reserve(suggestions.size());
   for (const auto& suggestion : suggestions) {
-    titles.push_back(suggestion.title);
-    urls.push_back(suggestion.url.spec());
-    whitelist_icon_paths.push_back(suggestion.whitelist_icon_path.value());
+    titles.emplace_back(suggestion.title);
+    urls.emplace_back(suggestion.url.spec());
+    whitelist_icon_paths.emplace_back(suggestion.whitelist_icon_path.value());
   }
   Java_MostVisitedURLsObserver_onMostVisitedURLsAvailable(
       env, observer_.obj(), ToJavaArrayOfStrings(env, titles).obj(),
