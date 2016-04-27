@@ -103,6 +103,26 @@ void CopyBlinkRequestToStreamControls(const blink::WebUserMediaRequest& request,
   }
 }
 
+bool IsSameDevice(const StreamDeviceInfo& device,
+                  const StreamDeviceInfo& other_device) {
+  return device.device.id == other_device.device.id &&
+         device.device.type == other_device.device.type &&
+         device.session_id == other_device.session_id;
+}
+
+bool IsSameSource(const blink::WebMediaStreamSource& source,
+                  const blink::WebMediaStreamSource& other_source) {
+  MediaStreamSource* const source_extra_data =
+      static_cast<MediaStreamSource*>(source.getExtraData());
+  const StreamDeviceInfo& device = source_extra_data->device_info();
+
+  MediaStreamSource* const other_source_extra_data =
+      static_cast<MediaStreamSource*>(other_source.getExtraData());
+  const StreamDeviceInfo& other_device = other_source_extra_data->device_info();
+
+  return IsSameDevice(device, other_device);
+}
+
 static int g_next_request_id  = 0;
 
 }  // namespace
@@ -566,14 +586,7 @@ void UserMediaClientImpl::OnDeviceStopped(
   // object is valid during the cleanup.
   blink::WebMediaStreamSource source(*source_ptr);
   StopLocalSource(source, false);
-
-  for (LocalStreamSources::iterator device_it = local_sources_.begin();
-       device_it != local_sources_.end(); ++device_it) {
-    if (device_it->id() == source.id()) {
-      local_sources_.erase(device_it);
-      break;
-    }
-  }
+  RemoveLocalSource(source);
 }
 
 void UserMediaClientImpl::InitializeSourceObject(
@@ -879,13 +892,25 @@ const blink::WebMediaStreamSource* UserMediaClientImpl::FindLocalSource(
     MediaStreamSource* const source =
         static_cast<MediaStreamSource*>(it->getExtraData());
     const StreamDeviceInfo& active_device = source->device_info();
-    if (active_device.device.id == device.device.id &&
-        active_device.device.type == device.device.type &&
-        active_device.session_id == device.session_id) {
+    if (IsSameDevice(active_device, device)) {
       return &(*it);
     }
   }
   return NULL;
+}
+
+bool UserMediaClientImpl::RemoveLocalSource(
+    const blink::WebMediaStreamSource& source) {
+  bool device_found = false;
+  for (LocalStreamSources::iterator device_it = local_sources_.begin();
+       device_it != local_sources_.end(); ++device_it) {
+    if (IsSameSource(*device_it, source)) {
+      device_found = true;
+      local_sources_.erase(device_it);
+      break;
+    }
+  }
+  return device_found;
 }
 
 UserMediaClientImpl::UserMediaRequestInfo*
@@ -1007,16 +1032,8 @@ void UserMediaClientImpl::OnLocalSourceStopped(
   DCHECK(CalledOnValidThread());
   DVLOG(1) << "UserMediaClientImpl::OnLocalSourceStopped";
 
-  bool device_found = false;
-  for (LocalStreamSources::iterator device_it = local_sources_.begin();
-       device_it != local_sources_.end(); ++device_it) {
-    if (device_it->id()  == source.id()) {
-      device_found = true;
-      local_sources_.erase(device_it);
-      break;
-    }
-  }
-  CHECK(device_found);
+  const bool some_source_removed = RemoveLocalSource(source);
+  CHECK(some_source_removed);
 
   MediaStreamSource* source_impl =
       static_cast<MediaStreamSource*>(source.getExtraData());

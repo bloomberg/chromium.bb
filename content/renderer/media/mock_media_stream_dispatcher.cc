@@ -22,8 +22,8 @@ MockMediaStreamDispatcher::MockMediaStreamDispatcher()
       request_stream_counter_(0),
       stop_audio_device_counter_(0),
       stop_video_device_counter_(0),
-      session_id_(0) {
-}
+      session_id_(0),
+      test_same_id_(false) {}
 
 MockMediaStreamDispatcher::~MockMediaStreamDispatcher() {}
 
@@ -107,7 +107,8 @@ int MockMediaStreamDispatcher::audio_session_id(const std::string& label,
 void MockMediaStreamDispatcher::AddAudioInputDeviceToArray(
     bool matched_output) {
   StreamDeviceInfo audio;
-  audio.device.id = "audio_input_device_id" + base::IntToString(session_id_);
+  audio.device.id = test_same_id_ ? "test_id" : "audio_input_device_id";
+  audio.device.id = audio.device.id + base::IntToString(session_id_);
   audio.device.name = "microphone";
   audio.device.type = MEDIA_DEVICE_AUDIO_CAPTURE;
   audio.device.video_facing = MEDIA_VIDEO_FACING_NONE;
@@ -131,7 +132,8 @@ void MockMediaStreamDispatcher::AddAudioOutputDeviceToArray() {
 
 void MockMediaStreamDispatcher::AddVideoDeviceToArray(bool facing_user) {
   StreamDeviceInfo video;
-  video.device.id = "video_device_id" + base::IntToString(session_id_);
+  video.device.id = test_same_id_ ? "test_id" : "video_device_id";
+  video.device.id = video.device.id + base::IntToString(session_id_);
   video.device.name = "usb video camera";
   video.device.type = MEDIA_DEVICE_VIDEO_CAPTURE;
   video.device.video_facing = facing_user ? MEDIA_VIDEO_FACING_USER

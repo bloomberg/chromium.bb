@@ -43,6 +43,7 @@ class MockMediaStreamDispatcher : public MediaStreamDispatcher {
   int video_request_id() const { return video_request_id_; }
   int request_stream_counter() const { return request_stream_counter_; }
   void IncrementSessionId() { ++session_id_; }
+  void TestSameId() { test_same_id_ = true; }
 
   int stop_audio_device_counter() const { return stop_audio_device_counter_; }
   int stop_video_device_counter() const { return stop_video_device_counter_; }
@@ -71,6 +72,7 @@ class MockMediaStreamDispatcher : public MediaStreamDispatcher {
 
   std::string stream_label_;
   int session_id_;
+  bool test_same_id_;
   StreamDeviceInfoArray audio_input_array_;
   StreamDeviceInfoArray audio_output_array_;
   StreamDeviceInfoArray video_array_;

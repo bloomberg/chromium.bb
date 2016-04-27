@@ -185,7 +185,6 @@ class CONTENT_EXPORT UserMediaClientImpl
 
  private:
   typedef std::vector<blink::WebMediaStreamSource> LocalStreamSources;
-
   struct MediaDevicesRequestInfo;
   typedef ScopedVector<MediaDevicesRequestInfo> MediaDevicesRequests;
 
@@ -234,6 +233,10 @@ class CONTENT_EXPORT UserMediaClientImpl
   // and |device.device.id|. NULL if such source doesn't exist.
   const blink::WebMediaStreamSource* FindLocalSource(
       const StreamDeviceInfo& device) const;
+
+  // Returns true if we do find and remove the |source|.
+  // Otherwise returns false.
+  bool RemoveLocalSource(const blink::WebMediaStreamSource& source);
 
   void StopLocalSource(const blink::WebMediaStreamSource& source,
                        bool notify_dispatcher);

@@ -638,4 +638,30 @@ TEST_F(UserMediaClientImplTest, RenderToAssociatedSinkConstraint) {
       factory.CreateWebMediaConstraints()));
 }
 
+// This test what happens if the audio stream has same id with video stream.
+TEST_F(UserMediaClientImplTest, AudioVideoWithSameId) {
+  ms_dispatcher_->TestSameId();
+
+  // Generate a stream with both audio and video.
+  blink::WebMediaStream mixed_desc = RequestLocalMediaStream();
+
+  // Remove video track. This should trigger
+  // UserMediaClientImpl::OnLocalSourceStopped, and has video track to be
+  // removed from its |local_sources_|.
+  blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
+  mixed_desc.videoTracks(video_tracks);
+  MediaStreamTrack* video_track = MediaStreamTrack::GetTrack(video_tracks[0]);
+  video_track->Stop();
+  EXPECT_EQ(1, ms_dispatcher_->stop_video_device_counter());
+  EXPECT_EQ(0, ms_dispatcher_->stop_audio_device_counter());
+
+  // Now we close the web frame, if in the above Stop() call,
+  // UserMediaClientImpl accidentally removed audio track, then video track will
+  // be removed again here, which is incorrect.
+  used_media_impl_->FrameWillClose();
+  blink::WebHeap::collectAllGarbageForTesting();
+  EXPECT_EQ(1, ms_dispatcher_->stop_video_device_counter());
+  EXPECT_EQ(1, ms_dispatcher_->stop_audio_device_counter());
+}
+
 }  // namespace content
