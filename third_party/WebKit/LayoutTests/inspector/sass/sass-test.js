@@ -21,7 +21,7 @@ InspectorTest.sassSourceMapFactory = function()
 
 InspectorTest.parseCSS = function(url, text)
 {
-    return WebInspector.SASSSupport.parseCSS(InspectorTest.cssParserService(), url, text);
+    return WebInspector.SASSSupport.parseCSS(url, text);
 }
 
 InspectorTest.parseSCSS = function(url, text)

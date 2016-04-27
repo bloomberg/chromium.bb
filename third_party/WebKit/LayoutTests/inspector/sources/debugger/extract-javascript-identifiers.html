@@ -5,8 +5,6 @@
 
 function test()
 {
-    var worker = WebInspector.SourceMapNamesResolverWorker._instance();
-
     InspectorTest.runTestSuite([
         function testFunctionArguments(next)
         {
@@ -58,13 +56,14 @@ function test()
     {
         InspectorTest.addResult("Text:");
         InspectorTest.addResult("    " + text + "\n");
-        worker.javaScriptIdentifiers(text)
+        WebInspector.formatterWorkerPool.runTask("javaScriptIdentifiers", {content: text})
             .then(onIdentifiers)
             .then(next);
     }
 
-    function onIdentifiers(ids)
+    function onIdentifiers(event)
     {
+        var ids = event ? event.data : [];
         InspectorTest.addResult("Identifiers:");
         for (var id of ids)
             InspectorTest.addResult(`    id: ${id.name}    offset: ${id.offset}`);
