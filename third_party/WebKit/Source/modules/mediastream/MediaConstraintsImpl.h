@@ -47,6 +47,7 @@ WebMediaConstraints create();
 WebMediaConstraints create(ExecutionContext*, const Dictionary&, MediaErrorState&);
 WebMediaConstraints create(ExecutionContext*, const MediaTrackConstraints&, MediaErrorState&);
 
+void convertConstraints(const WebMediaConstraints& input, MediaTrackConstraints& output);
 }
 
 } // namespace blink

@@ -31,6 +31,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/events/Event.h"
 #include "core/frame/Deprecation.h"
+#include "modules/mediastream/MediaConstraintsImpl.h"
 #include "modules/mediastream/MediaStream.h"
 #include "modules/mediastream/MediaStreamTrackSourcesCallback.h"
 #include "modules/mediastream/MediaStreamTrackSourcesRequestImpl.h"
@@ -55,6 +56,8 @@ MediaStreamTrack::MediaStreamTrack(ExecutionContext* context, MediaStreamCompone
     , m_isIteratingRegisteredMediaStreams(false)
     , m_stopped(false)
     , m_component(component)
+    // The source's constraints aren't yet initialized at creation time.
+    , m_constraints()
 {
     m_component->source()->addObserver(this);
 }
@@ -168,6 +171,16 @@ MediaStreamTrack* MediaStreamTrack::clone(ExecutionContext* context)
     MediaStreamTrack* clonedTrack = MediaStreamTrack::create(context, clonedComponent);
     MediaStreamCenter::instance().didCreateMediaStreamTrack(clonedComponent);
     return clonedTrack;
+}
+
+void MediaStreamTrack::getConstraints(MediaTrackConstraints& constraints)
+{
+    MediaConstraintsImpl::convertConstraints(m_constraints, constraints);
+}
+
+void MediaStreamTrack::setConstraints(const WebMediaConstraints& constraints)
+{
+    m_constraints = constraints;
 }
 
 bool MediaStreamTrack::ended() const

@@ -37,9 +37,8 @@
     [CallWith=ExecutionContext, RaisesException, DeprecateAs=MediaStreamTrackGetSources] static void getSources(MediaStreamTrackSourcesCallback callback);
     [ImplementedAs=stopTrack, RaisesException] void stop();
     [CallWith=ExecutionContext] MediaStreamTrack clone();
-
+    [RuntimeEnabled=MediaConstraints] MediaTrackConstraints getConstraints();
     attribute EventHandler onmute;
     attribute EventHandler onunmute;
     attribute EventHandler onended;
 };
-

@@ -3696,6 +3696,7 @@ interface MediaStreamTrack : EventTarget
     getter remote
     method clone
     method constructor
+    method getConstraints
     method stop
     setter enabled
     setter onended

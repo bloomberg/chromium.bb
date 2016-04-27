@@ -97,6 +97,8 @@ public:
     long max() const { return m_max; }
     bool hasExact() const { return m_hasExact; }
     long exact() const { return m_exact; }
+    bool hasIdeal() const { return m_hasIdeal; }
+    long ideal() const { return m_ideal; }
 
 private:
     long m_min;
@@ -152,6 +154,8 @@ public:
     double max() const { return m_max; }
     bool hasExact() const { return m_hasExact; }
     double exact() const { return m_exact; }
+    bool hasIdeal() const { return m_hasIdeal; }
+    double ideal() const { return m_ideal; }
 
 private:
     double m_min;
@@ -191,6 +195,7 @@ public:
     bool hasMandatory() const override;
     WebString toString() const override;
     bool hasExact() const { return !m_exact.isEmpty(); }
+    bool hasIdeal() const { return !m_ideal.isEmpty(); }
     const WebVector<WebString>& exact() const;
     const WebVector<WebString>& ideal() const;
 
@@ -222,6 +227,7 @@ public:
     bool hasMandatory() const override;
     WebString toString() const override;
     bool hasExact() const { return m_hasExact; }
+    bool hasIdeal() const { return m_hasIdeal; }
 
 private:
     unsigned m_ideal : 1;

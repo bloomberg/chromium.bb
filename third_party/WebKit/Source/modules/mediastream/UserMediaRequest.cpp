@@ -168,11 +168,13 @@ void UserMediaRequest::succeed(MediaStreamDescriptor* streamDescriptor)
     MediaStreamTrackVector audioTracks = stream->getAudioTracks();
     for (MediaStreamTrackVector::iterator iter = audioTracks.begin(); iter != audioTracks.end(); ++iter) {
         (*iter)->component()->source()->setConstraints(m_audio);
+        (*iter)->setConstraints(m_audio);
     }
 
     MediaStreamTrackVector videoTracks = stream->getVideoTracks();
     for (MediaStreamTrackVector::iterator iter = videoTracks.begin(); iter != videoTracks.end(); ++iter) {
         (*iter)->component()->source()->setConstraints(m_video);
+        (*iter)->setConstraints(m_video);
     }
 
     m_successCallback->handleEvent(stream);

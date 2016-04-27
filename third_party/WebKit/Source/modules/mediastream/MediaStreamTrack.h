@@ -33,13 +33,14 @@
 #include "modules/mediastream/SourceInfo.h"
 #include "platform/mediastream/MediaStreamDescriptor.h"
 #include "platform/mediastream/MediaStreamSource.h"
+#include "public/platform/WebMediaConstraints.h"
 #include "wtf/Forward.h"
 
 namespace blink {
 
 class AudioSourceProvider;
 class ExceptionState;
-class MediaStreamComponent;
+class MediaTrackConstraints;
 class MediaStreamTrackSourcesCallback;
 
 class MODULES_EXPORT MediaStreamTrack
@@ -69,6 +70,12 @@ public:
     static void getSources(ExecutionContext*, MediaStreamTrackSourcesCallback*, ExceptionState&);
     void stopTrack(ExceptionState&);
     virtual MediaStreamTrack* clone(ExecutionContext*);
+
+    void getConstraints(MediaTrackConstraints&);
+
+    // This function is called when constrains have been successfully applied.
+    // Called from UserMediaRequest when it succeeds. It is not IDL-exposed.
+    void setConstraints(const WebMediaConstraints&);
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(mute);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(unmute);
@@ -109,6 +116,7 @@ private:
     bool m_isIteratingRegisteredMediaStreams;
     bool m_stopped;
     Member<MediaStreamComponent> m_component;
+    WebMediaConstraints m_constraints;
 };
 
 typedef HeapVector<Member<MediaStreamTrack>> MediaStreamTrackVector;
