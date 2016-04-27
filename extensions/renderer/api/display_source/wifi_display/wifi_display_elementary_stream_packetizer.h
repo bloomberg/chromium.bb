@@ -14,7 +14,7 @@ namespace extensions {
 // Stream (PES) packet containing WiFi Display elementary stream unit data.
 class WiFiDisplayElementaryStreamPacket {
  public:
-  using HeaderBuffer = uint8_t[19];
+  using HeaderBuffer = uint8_t[22];
 
   WiFiDisplayElementaryStreamPacket(const HeaderBuffer& header_data,
                                     size_t header_size,

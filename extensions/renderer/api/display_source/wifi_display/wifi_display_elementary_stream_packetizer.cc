@@ -15,13 +15,15 @@ namespace {
 // specification.
 namespace pes {
 
+const size_t kUnitDataAlignment = 4u;
+
 const size_t kOptionalHeaderBaseSize = 3u;
 const size_t kPacketHeaderBaseSize = 6u;
+const size_t kStuffingBytesMaxSize = kUnitDataAlignment - 1u;
 const size_t kTimeStampSize = 5u;
 const size_t kPacketHeaderMaxSize =
-    kPacketHeaderBaseSize + kOptionalHeaderBaseSize + 2u * kTimeStampSize;
-
-const size_t kUnitDataAlignment = 4u;
+    kPacketHeaderBaseSize + kOptionalHeaderBaseSize + 2u * kTimeStampSize +
+    kStuffingBytesMaxSize;
 
 size_t FillInTimeStamp(uint8_t* dst,
                        uint8_t pts_dts_indicator,
@@ -85,6 +87,7 @@ size_t FillInOptionalHeader(uint8_t* dst,
       (kPacketHeaderBaseSize + i + unit_header_size) % kUnitDataAlignment;
   if (remainder) {
     const size_t n = kUnitDataAlignment - remainder;
+    DCHECK_LE(n, kStuffingBytesMaxSize);
     std::memset(&dst[i], 0xFF, n);
     i += n;
   }
@@ -154,13 +157,12 @@ WiFiDisplayElementaryStreamPacket::WiFiDisplayElementaryStreamPacket(
 
 WiFiDisplayElementaryStreamPacket::WiFiDisplayElementaryStreamPacket(
     WiFiDisplayElementaryStreamPacket&& other)
-    : header_(header_buffer_, other.header().size()),
-      unit_header_(other.unit_header().data(), other.unit_header().size()),
-      unit_(other.unit().data(), other.unit().size()) {
-  // Copy the actual header data bytes from |other.header().data()| to
-  // the |header_buffer_| member buffer used in the member initialization list.
-  std::memcpy(header_buffer_, other.header().data(), header_.size());
-}
+    : WiFiDisplayElementaryStreamPacket(other.header_buffer_,
+                                        other.header_.size(),
+                                        other.unit_header_.data(),
+                                        other.unit_header_.size(),
+                                        other.unit_.data(),
+                                        other.unit_.size()) {}
 
 // static
 WiFiDisplayElementaryStreamPacket
@@ -180,6 +182,7 @@ WiFiDisplayElementaryStreamPacketizer::EncodeElementaryStreamUnit(
   uint8_t header_data[pes::kPacketHeaderMaxSize];
   size_t header_size = pes::FillInPacketHeader(header_data, stream_id, pts, dts,
                                                unit_header_size, unit_size);
+  DCHECK_LE(header_size, sizeof(header_data));
   return WiFiDisplayElementaryStreamPacket(header_data, header_size,
                                            unit_header_data, unit_header_size,
                                            unit_data, unit_size);
