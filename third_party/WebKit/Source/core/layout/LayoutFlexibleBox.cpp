@@ -1360,8 +1360,10 @@ LayoutUnit LayoutFlexibleBox::staticMainAxisPositionForPositionedChild(const Lay
 
     ContentPosition position = styleRef().resolvedJustifyContentPosition(normalValueBehavior());
     ContentDistributionType distribution = styleRef().resolvedJustifyContentDistribution(normalValueBehavior());
-    // TODO(cbiesinger): what should row-reverse/column-reverse do? https://lists.w3.org/Archives/Public/www-style/2016Apr/0387.html
-    return initialJustifyContentOffset(availableSpace, position, distribution, 1);
+    LayoutUnit offset = initialJustifyContentOffset(availableSpace, position, distribution, 1);
+    if (styleRef().flexDirection() == FlowRowReverse || styleRef().flexDirection() == FlowColumnReverse)
+        offset = availableSpace - offset;
+    return offset;
 }
 
 LayoutUnit LayoutFlexibleBox::staticCrossAxisPositionForPositionedChild(const LayoutBox& child)
