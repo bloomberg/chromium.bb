@@ -252,9 +252,6 @@ decrease_closure_args_refcount(struct wl_closure *closure)
 	}
 }
 
-void
-proxy_destroy(struct wl_proxy *proxy);
-
 static void
 wl_event_queue_release(struct wl_event_queue *queue)
 {
@@ -404,7 +401,7 @@ wl_proxy_create_for_id(struct wl_proxy *factory,
 	return proxy;
 }
 
-void
+static void
 proxy_destroy(struct wl_proxy *proxy)
 {
 	if (proxy->flags & WL_PROXY_FLAG_ID_DELETED)
