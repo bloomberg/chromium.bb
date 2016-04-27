@@ -44,6 +44,8 @@ enum LatencyComponentType {
   INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT,
   // Timestamp when the UI event is created.
   INPUT_EVENT_LATENCY_UI_COMPONENT,
+  // Timestamp when the event is dispatched on the main thread of the renderer.
+  INPUT_EVENT_LATENCY_RENDERER_MAIN_COMPONENT,
   // This is special component indicating there is rendering scheduled for
   // the event associated with this LatencyInfo on main thread.
   INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_MAIN_COMPONENT,
