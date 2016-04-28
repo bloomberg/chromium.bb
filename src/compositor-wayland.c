@@ -2440,9 +2440,11 @@ backend_init(struct weston_compositor *compositor, int *argc, char *argv[],
 				          MODIFIER_CTRL | MODIFIER_ALT,
 				          fullscreen_binding, b);
 
+	free(new_config.display_name);
 	return 0;
 
 err_outputs:
 	wayland_backend_destroy(b);
+	free(new_config.display_name);
 	return -1;
 }
