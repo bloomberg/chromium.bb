@@ -84,9 +84,7 @@ void VirtualKeyboardTray::HideBubbleWithView(
     const views::TrayBubbleView* bubble_view) {
 }
 
-bool VirtualKeyboardTray::ClickedOutsideBubble() {
-  return false;
-}
+void VirtualKeyboardTray::ClickedOutsideBubble() {}
 
 bool VirtualKeyboardTray::PerformAction(const ui::Event& event) {
   Shell::GetInstance()->keyboard_ui()->Show();

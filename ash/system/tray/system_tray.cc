@@ -653,11 +653,10 @@ void SystemTray::HideBubbleWithView(const TrayBubbleView* bubble_view) {
   }
 }
 
-bool SystemTray::ClickedOutsideBubble() {
+void SystemTray::ClickedOutsideBubble() {
   if (!system_bubble_ || system_bubble_->is_persistent())
-    return false;
+    return;
   HideBubbleWithView(system_bubble_->bubble_view());
-  return true;
 }
 
 void SystemTray::BubbleViewDestroyed() {

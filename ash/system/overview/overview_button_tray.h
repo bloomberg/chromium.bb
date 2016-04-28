@@ -45,7 +45,7 @@ class ASH_EXPORT OverviewButtonTray : public TrayBackgroundView,
   void OnOverviewModeEnded() override;
 
   // TrayBackgroundView:
-  bool ClickedOutsideBubble() override;
+  void ClickedOutsideBubble() override;
   base::string16 GetAccessibleNameForTray() override;
   void HideBubbleWithView(const views::TrayBubbleView* bubble_view) override;
   void SetShelfAlignment(wm::ShelfAlignment alignment) override;

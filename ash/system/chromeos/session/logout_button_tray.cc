@@ -123,9 +123,7 @@ void LogoutButtonTray::HideBubbleWithView(
     const views::TrayBubbleView* bubble_view) {
 }
 
-bool LogoutButtonTray::ClickedOutsideBubble() {
-  return false;
-}
+void LogoutButtonTray::ClickedOutsideBubble() {}
 
 void LogoutButtonTray::OnShowLogoutButtonInTrayChanged(bool show) {
   show_logout_button_in_tray_ = show;

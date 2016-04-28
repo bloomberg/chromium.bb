@@ -108,6 +108,33 @@ class NativeWidgetMusWindowTreeClient : public aura::client::WindowTreeClient {
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetMusWindowTreeClient);
 };
 
+// A screen position client that applies the offset of the mus::Window.
+class ScreenPositionClientMus : public wm::DefaultScreenPositionClient {
+ public:
+  explicit ScreenPositionClientMus(mus::Window* mus_window)
+      : mus_window_(mus_window) {}
+  ~ScreenPositionClientMus() override {}
+
+  // wm::DefaultScreenPositionClient:
+  void ConvertPointToScreen(const aura::Window* window,
+                            gfx::Point* point) override {
+    wm::DefaultScreenPositionClient::ConvertPointToScreen(window, point);
+    gfx::Rect mus_bounds = mus_window_->GetBoundsInRoot();
+    point->Offset(-mus_bounds.x(), -mus_bounds.y());
+  }
+  void ConvertPointFromScreen(const aura::Window* window,
+                              gfx::Point* point) override {
+    gfx::Rect mus_bounds = mus_window_->GetBoundsInRoot();
+    point->Offset(mus_bounds.x(), mus_bounds.y());
+    wm::DefaultScreenPositionClient::ConvertPointFromScreen(window, point);
+  }
+
+ private:
+  mus::Window* mus_window_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScreenPositionClientMus);
+};
+
 // As the window manager renderers the non-client decorations this class does
 // very little but honor the client area insets from the window manager.
 class ClientSideNonClientFrameView : public NonClientFrameView {
@@ -397,7 +424,7 @@ void NativeWidgetMus::InitNativeWidget(const Widget::InitParams& params) {
                                focus_client_.get());
   aura::client::SetActivationClient(window_tree_host_->window(),
                                     focus_client_.get());
-  screen_position_client_.reset(new wm::DefaultScreenPositionClient());
+  screen_position_client_.reset(new ScreenPositionClientMus(window_));
   aura::client::SetScreenPositionClient(window_tree_host_->window(),
                                         screen_position_client_.get());
 

@@ -81,7 +81,7 @@ class ASH_EXPORT WebNotificationTray
   void AnchorUpdated() override;
   base::string16 GetAccessibleNameForTray() override;
   void HideBubbleWithView(const views::TrayBubbleView* bubble_view) override;
-  bool ClickedOutsideBubble() override;
+  void ClickedOutsideBubble() override;
 
   // Overridden from ActionableView.
   bool PerformAction(const ui::Event& event) override;

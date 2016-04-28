@@ -84,11 +84,7 @@ void OverviewButtonTray::OnOverviewModeEnded() {
   SetDrawBackgroundAsActive(false);
 }
 
-bool OverviewButtonTray::ClickedOutsideBubble() {
-  // This class has no bubbles dismiss, but acknowledge that the message was
-  // handled.
-  return true;
-}
+void OverviewButtonTray::ClickedOutsideBubble() {}
 
 base::string16 OverviewButtonTray::GetAccessibleNameForTray() {
   return l10n_util::GetStringUTF16(IDS_ASH_OVERVIEW_BUTTON_ACCESSIBLE_NAME);

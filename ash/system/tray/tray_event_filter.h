@@ -8,33 +8,31 @@
 #include <set>
 
 #include "base/macros.h"
-#include "ui/events/event.h"
-#include "ui/events/event_handler.h"
+#include "ui/views/pointer_watcher.h"
 
-namespace aura {
-class Window;
+namespace ui {
+class LocatedEvent;
 }
 
 namespace ash {
 class TrayBubbleWrapper;
 
-// Handles events for a tray bubble.
-
-class TrayEventFilter : public ui::EventHandler {
+// Handles events for a tray bubble, e.g. to close the system tray bubble when
+// the user clicks outside it.
+class TrayEventFilter : public views::PointerWatcher {
  public:
-  explicit TrayEventFilter();
+  TrayEventFilter();
   ~TrayEventFilter() override;
 
   void AddWrapper(TrayBubbleWrapper* wrapper);
   void RemoveWrapper(TrayBubbleWrapper* wrapper);
 
-  // Overridden from ui::EventHandler.
-  void OnMouseEvent(ui::MouseEvent* event) override;
-  void OnTouchEvent(ui::TouchEvent* event) override;
+  // views::PointerWatcher:
+  void OnMousePressed(const ui::MouseEvent& event) override;
+  void OnTouchPressed(const ui::TouchEvent& event) override;
 
  private:
-  // Returns true if the event is handled.
-  bool ProcessLocatedEvent(ui::LocatedEvent* event);
+  void ProcessLocatedEvent(const ui::LocatedEvent& event);
 
   std::set<TrayBubbleWrapper*> wrappers_;
 

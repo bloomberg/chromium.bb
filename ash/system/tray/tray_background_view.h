@@ -102,8 +102,8 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   virtual void HideBubbleWithView(const views::TrayBubbleView* bubble_view) = 0;
 
   // Called by the bubble wrapper when a click event occurs outside the bubble.
-  // May close the bubble. Returns true if the event is handled.
-  virtual bool ClickedOutsideBubble() = 0;
+  // May close the bubble.
+  virtual void ClickedOutsideBubble() = 0;
 
   // Sets |contents| as a child.
   void SetContents(views::View* contents);

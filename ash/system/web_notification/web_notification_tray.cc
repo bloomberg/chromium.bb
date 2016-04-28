@@ -458,13 +458,12 @@ void WebNotificationTray::UpdateTrayContent() {
   SchedulePaint();
 }
 
-bool WebNotificationTray::ClickedOutsideBubble() {
+void WebNotificationTray::ClickedOutsideBubble() {
   // Only hide the message center
   if (!message_center_bubble())
-    return false;
+    return;
 
   message_center_tray_->HideMessageCenterBubble();
-  return true;
 }
 
 message_center::MessageCenter* WebNotificationTray::message_center() const {

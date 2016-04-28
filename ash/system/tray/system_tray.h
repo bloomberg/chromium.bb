@@ -129,7 +129,7 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
   base::string16 GetAccessibleNameForTray() override;
   void BubbleResized(const views::TrayBubbleView* bubble_view) override;
   void HideBubbleWithView(const views::TrayBubbleView* bubble_view) override;
-  bool ClickedOutsideBubble() override;
+  void ClickedOutsideBubble() override;
 
   // Overridden from message_center::TrayBubbleView::Delegate.
   void BubbleViewDestroyed() override;
