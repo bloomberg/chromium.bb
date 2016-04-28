@@ -1521,9 +1521,9 @@ float LayoutText::width(unsigned from, unsigned len, const Font& f, LayoutUnit x
     return w;
 }
 
-IntRect LayoutText::linesBoundingBox() const
+LayoutRect LayoutText::linesBoundingBox() const
 {
-    IntRect result;
+    LayoutRect result;
 
     ASSERT(!firstTextBox() == !lastTextBox()); // Either both are null or both exist.
     if (firstTextBox() && lastTextBox()) {
@@ -1543,7 +1543,7 @@ IntRect LayoutText::linesBoundingBox() const
         float y = isHorizontal ? firstTextBox()->y().toFloat() : logicalLeftSide;
         float width = isHorizontal ? logicalRightSide - logicalLeftSide : lastTextBox()->logicalBottom() - x;
         float height = isHorizontal ? lastTextBox()->logicalBottom() - y : logicalRightSide - logicalLeftSide;
-        result = enclosingIntRect(FloatRect(x, y, width, height));
+        result = enclosingLayoutRect(FloatRect(x, y, width, height));
     }
 
     return result;

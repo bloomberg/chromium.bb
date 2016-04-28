@@ -123,9 +123,9 @@ FloatRect LayoutSVGInlineText::floatLinesBoundingBox() const
     return boundingBox;
 }
 
-IntRect LayoutSVGInlineText::linesBoundingBox() const
+LayoutRect LayoutSVGInlineText::linesBoundingBox() const
 {
-    return enclosingIntRect(floatLinesBoundingBox());
+    return enclosingLayoutRect(floatLinesBoundingBox());
 }
 
 bool LayoutSVGInlineText::characterStartsNewTextChunk(int position) const

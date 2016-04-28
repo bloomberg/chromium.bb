@@ -1,0 +1,7 @@
+Customer Supportz
+The reported inner width must be the same as the outer width.
+
+This is a testharness.js-based test.
+PASS Test reported width of inline in float 
+Harness: the test ran to completion.
+

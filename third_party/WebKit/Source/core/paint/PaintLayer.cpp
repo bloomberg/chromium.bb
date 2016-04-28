@@ -760,7 +760,7 @@ void PaintLayer::updateLayerPosition()
 
     if (layoutObject()->isInline() && layoutObject()->isLayoutInline()) {
         LayoutInline* inlineFlow = toLayoutInline(layoutObject());
-        IntRect lineBox = inlineFlow->linesBoundingBox();
+        IntRect lineBox = enclosingIntRect(inlineFlow->linesBoundingBox());
         m_size = lineBox.size();
         inlineBoundingBoxOffset = lineBox.location();
         localPoint.moveBy(inlineBoundingBoxOffset);

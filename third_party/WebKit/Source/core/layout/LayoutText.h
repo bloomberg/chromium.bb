@@ -132,7 +132,7 @@ public:
         LayoutUnit& minWidth, LayoutUnit& maxWidth, bool& stripFrontSpaces,
         TextDirection);
 
-    virtual IntRect linesBoundingBox() const;
+    virtual LayoutRect linesBoundingBox() const;
 
     // Returns the bounding box of visual overflow rects of all line boxes.
     LayoutRect visualOverflowRect() const;

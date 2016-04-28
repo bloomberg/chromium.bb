@@ -142,7 +142,7 @@ public:
 
     LayoutSize offsetFromContainer(const LayoutObject*) const final;
 
-    IntRect linesBoundingBox() const;
+    LayoutRect linesBoundingBox() const;
     LayoutRect visualOverflowRect() const final;
 
     InlineFlowBox* createAndAppendInlineFlowBox();
@@ -232,8 +232,8 @@ private:
 
     LayoutUnit offsetLeft() const final;
     LayoutUnit offsetTop() const final;
-    LayoutUnit offsetWidth() const final { return LayoutUnit(linesBoundingBox().width()); }
-    LayoutUnit offsetHeight() const final { return LayoutUnit(linesBoundingBox().height()); }
+    LayoutUnit offsetWidth() const final { return linesBoundingBox().width(); }
+    LayoutUnit offsetHeight() const final { return linesBoundingBox().height(); }
 
     LayoutRect absoluteClippedOverflowRect() const override;
 
@@ -247,7 +247,7 @@ private:
 
     IntRect borderBoundingBox() const final
     {
-        IntRect boundingBox = linesBoundingBox();
+        IntRect boundingBox = enclosingIntRect(linesBoundingBox());
         return IntRect(0, 0, boundingBox.width(), boundingBox.height());
     }
 

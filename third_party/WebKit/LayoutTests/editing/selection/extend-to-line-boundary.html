@@ -11,7 +11,7 @@ function createEditableMultilineDiv(text, numLines) {
     var span = document.createElement("span");
     span.innerHTML = text;
     document.body.appendChild(span);
-    var widthPx = span.offsetWidth;
+    var widthPx = Math.ceil(span.getBoundingClientRect().width);
     document.body.removeChild(span);
 
     // Make div with those dimensions so that the text wraps predictably regardless of platform.

@@ -5,10 +5,10 @@ function testString(s)
 {
     var fast = document.getElementById("fastPath");
     fast.firstChild.data = s;
-    var fastWidth = fast.offsetWidth;
+    var fastWidth = fast.getBoundingClientRect().width;
     var slow = document.getElementById("slowPath");
     slow.firstChild.data = s;
-    var slowWidth = slow.offsetWidth;
+    var slowWidth = slow.getBoundingClientRect().width;
     return fastWidth == slowWidth;
 }
 

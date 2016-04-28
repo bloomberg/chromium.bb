@@ -191,14 +191,15 @@ void LayoutTreeAsText::writeLayoutObject(TextStream& ts, const LayoutObject& o, 
         // FIXME: Would be better to dump the bounding box x and y rather than the first run's x and y, but that would involve updating
         // many test results.
         const LayoutText& text = toLayoutText(o);
-        IntRect linesBox = text.linesBoundingBox();
+        IntRect linesBox = enclosingIntRect(text.linesBoundingBox());
         r = LayoutRect(IntRect(text.firstRunX(), text.firstRunY(), linesBox.width(), linesBox.height()));
         if (adjustForTableCells && !text.hasTextBoxes())
             adjustForTableCells = false;
     } else if (o.isLayoutInline()) {
         // FIXME: Would be better not to just dump 0, 0 as the x and y here.
         const LayoutInline& inlineFlow = toLayoutInline(o);
-        r = LayoutRect(IntRect(0, 0, inlineFlow.linesBoundingBox().width(), inlineFlow.linesBoundingBox().height()));
+        IntRect linesBox = enclosingIntRect(inlineFlow.linesBoundingBox());
+        r = LayoutRect(IntRect(0, 0, linesBox.width(), linesBox.height()));
         adjustForTableCells = false;
     } else if (o.isTableCell()) {
         // FIXME: Deliberately dump the "inner" box of table cells, since that is what current results reflect.  We'd like

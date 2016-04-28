@@ -864,17 +864,17 @@ private:
 
 } // unnamed namespace
 
-IntRect LayoutInline::linesBoundingBox() const
+LayoutRect LayoutInline::linesBoundingBox() const
 {
     if (!alwaysCreateLineBoxes()) {
         ASSERT(!firstLineBox());
         FloatRect floatResult;
         LinesBoundingBoxGeneratorContext context(floatResult);
         generateCulledLineBoxRects(context, this);
-        return enclosingIntRect(floatResult);
+        return enclosingLayoutRect(floatResult);
     }
 
-    IntRect result;
+    LayoutRect result;
 
     // See <rdar://problem/5289721>, for an unknown reason the linked list here is sometimes inconsistent, first is non-zero and last is zero.  We have been
     // unable to reproduce this at all (and consequently unable to figure ot why this is happening).  The assert will hopefully catch the problem in debug
@@ -897,7 +897,7 @@ IntRect LayoutInline::linesBoundingBox() const
         LayoutUnit y = isHorizontal ? firstLineBox()->y() : logicalLeftSide;
         LayoutUnit width = isHorizontal ? logicalRightSide - logicalLeftSide : lastLineBox()->logicalBottom() - x;
         LayoutUnit height = isHorizontal ? lastLineBox()->logicalBottom() - y : logicalRightSide - logicalLeftSide;
-        result = enclosingIntRect(LayoutRect(x, y, width, height));
+        result = LayoutRect(x, y, width, height);
     }
 
     return result;

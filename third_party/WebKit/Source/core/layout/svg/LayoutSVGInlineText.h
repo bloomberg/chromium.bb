@@ -64,7 +64,7 @@ private:
 
     PositionWithAffinity positionForPoint(const LayoutPoint&) override;
     LayoutRect localCaretRect(InlineBox*, int caretOffset, LayoutUnit* extraWidthToEndOfLine = nullptr) override;
-    IntRect linesBoundingBox() const override;
+    LayoutRect linesBoundingBox() const override;
     InlineTextBox* createTextBox(int start, unsigned short length) override;
 
     LayoutRect absoluteClippedOverflowRect() const final;

@@ -917,7 +917,7 @@ bool ContainerNode::getLowerRightCorner(FloatPoint& point) const
             point = FloatPoint();
             if (o->isText()) {
                 LayoutText* text = toLayoutText(o);
-                IntRect linesBox = text->linesBoundingBox();
+                IntRect linesBox = enclosingIntRect(text->linesBoundingBox());
                 if (!linesBox.maxX() && !linesBox.maxY())
                     continue;
                 point.moveBy(linesBox.maxXMaxYCorner());

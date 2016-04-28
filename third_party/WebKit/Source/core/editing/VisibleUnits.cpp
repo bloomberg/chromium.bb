@@ -2159,7 +2159,7 @@ LayoutRect localCaretRectOfPosition(const PositionInFlatTreeWithAffinity& positi
     return localCaretRectOfPositionTemplate<EditingInFlatTreeStrategy>(position, layoutObject);
 }
 
-static int boundingBoxLogicalHeight(LayoutObject *o, const IntRect &rect)
+static LayoutUnit boundingBoxLogicalHeight(LayoutObject *o, const LayoutRect& rect)
 {
     return o->style()->isHorizontalWritingMode() ? rect.height() : rect.width();
 }

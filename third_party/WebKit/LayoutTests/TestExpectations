@@ -1245,6 +1245,17 @@ crbug.com/602193 inspector/extensions/extensions-resources.html [ Pass Failure ]
 
 crbug.com/579493 http/tests/security/xss-DENIED-xsl-document-securityOrigin.xml [ Timeout ]
 
+crbug.com/414264 fast/forms/suggestion-picker/week-suggestion-picker-appearance-with-scroll-bar.html [ NeedsManualRebaseline ]
+crbug.com/414264 fast/sub-pixel/inline-block-with-padding.html [ NeedsManualRebaseline ]
+crbug.com/414264 fast/forms/suggestion-picker/week-suggestion-picker-appearance-rtl.html [ NeedsManualRebaseline ]
+crbug.com/414264 fast/forms/suggestion-picker/date-suggestion-picker-appearance-rtl.html [ NeedsManualRebaseline ]
+crbug.com/414264 fast/forms/suggestion-picker/date-suggestion-picker-appearance-with-scroll-bar.html [ NeedsManualRebaseline ]
+crbug.com/414264 fast/forms/suggestion-picker/time-suggestion-picker-appearance-locale-hebrew.html [ NeedsManualRebaseline ]
+crbug.com/414264 editing/selection/5057506.html [ NeedsManualRebaseline ]
+crbug.com/414264 [ Win ] fast/text/emphasis.html [ NeedsManualRebaseline ]
+crbug.com/414264 [ Win ] fast/text/international/vertical-text-metrics-test.html [ NeedsManualRebaseline ]
+crbug.com/414264 [ Win ] fast/forms/suggestion-picker/month-suggestion-picker-appearance-with-scroll-bar.html [ NeedsManualRebaseline ]
+
 crbug.com/572723 [ Linux Mac10.9 ] inspector/sources/debugger/debugger-disable-enable.html [ Pass Failure Timeout ]
 crbug.com/572723 inspector/sources/debugger/debugger-uncaught-promise-on-pause.html [ Timeout Pass ]
 
