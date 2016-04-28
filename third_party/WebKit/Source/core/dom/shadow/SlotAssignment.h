@@ -24,13 +24,25 @@ public:
     void resolveAssignment(ShadowRoot&);
     void resolveDistribution(ShadowRoot&);
 
+    void didAddSlot() { ++m_descendantSlotCount; }
+    void didRemoveSlot() { DCHECK_GT(m_descendantSlotCount, 0u); --m_descendantSlotCount; }
+    unsigned descendantSlotCount() const { return m_descendantSlotCount; }
+
+    const HeapVector<Member<HTMLSlotElement>>& descendantSlots() const { return m_descendantSlots; }
+
+    void setDescendantSlots(HeapVector<Member<HTMLSlotElement>>& slots) { m_descendantSlots.swap(slots); }
+    void clearDescendantSlots() { m_descendantSlots.clear(); }
+
     DECLARE_TRACE();
 
 private:
-    SlotAssignment() { }
+    SlotAssignment() { };
 
     void assign(Node&, HTMLSlotElement&);
     void distribute(Node&, HTMLSlotElement&);
+
+    unsigned m_descendantSlotCount = 0;
+    HeapVector<Member<HTMLSlotElement>> m_descendantSlots;
     HeapHashMap<Member<Node>, Member<HTMLSlotElement>> m_assignment;
 };
 

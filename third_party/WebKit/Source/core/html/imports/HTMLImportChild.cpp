@@ -83,7 +83,7 @@ void HTMLImportChild::didFinish()
 void HTMLImportChild::didFinishLoading()
 {
     stateWillChange();
-    if (document() && document()->styleSheets()->length() > 0)
+    if (document() && document()->styleSheets().length() > 0)
         UseCounter::count(root()->document(), UseCounter::HTMLImportsHasStyleSheets);
     V0CustomElement::didFinishLoadingImport(*(root()->document()));
 }

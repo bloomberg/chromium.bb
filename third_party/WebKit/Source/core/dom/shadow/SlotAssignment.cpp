@@ -107,6 +107,7 @@ void SlotAssignment::distribute(Node& hostChild, HTMLSlotElement& slot)
 
 DEFINE_TRACE(SlotAssignment)
 {
+    visitor->trace(m_descendantSlots);
     visitor->trace(m_assignment);
 }
 

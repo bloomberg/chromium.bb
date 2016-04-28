@@ -2694,7 +2694,6 @@
             'dom/shadow/SelectRuleFeatureSet.h',
             'dom/shadow/ShadowRoot.cpp',
             'dom/shadow/ShadowRoot.h',
-            'dom/shadow/ShadowRootRareData.h',
             'dom/shadow/ShadowRootRareDataV0.h',
             'dom/shadow/SlotAssignment.cpp',
             'dom/shadow/SlotAssignment.h',

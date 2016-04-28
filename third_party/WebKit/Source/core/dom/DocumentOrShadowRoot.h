@@ -24,12 +24,12 @@ public:
 
     static StyleSheetList* styleSheets(Document& document)
     {
-        return document.styleSheets();
+        return &document.styleSheets();
     }
 
     static StyleSheetList* styleSheets(ShadowRoot& shadowRoot)
     {
-        return shadowRoot.styleSheets();
+        return &shadowRoot.styleSheets();
     }
 
     static DOMSelection* getSelection(TreeScope& treeScope)

@@ -35,10 +35,11 @@
 #include "core/dom/Text.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/InsertionPoint.h"
-#include "core/dom/shadow/ShadowRootRareData.h"
 #include "core/dom/shadow/ShadowRootRareDataV0.h"
+#include "core/dom/shadow/SlotAssignment.h"
 #include "core/editing/serializers/Serialization.h"
 #include "core/html/HTMLShadowElement.h"
+#include "core/html/HTMLSlotElement.h"
 #include "public/platform/Platform.h"
 
 namespace blink {
@@ -55,6 +56,7 @@ ShadowRoot::ShadowRoot(Document& document, ShadowRootType type)
     : DocumentFragment(0, CreateShadowRoot)
     , TreeScope(*this, document)
     , m_numberOfStyles(0)
+    , m_childShadowRootCount(0)
     , m_type(static_cast<unsigned>(type))
     , m_registeredWithParentShadowRoot(false)
     , m_descendantInsertionPointsIsValid(false)
@@ -100,6 +102,19 @@ void ShadowRoot::setOlderShadowRoot(ShadowRoot& root)
 {
     DCHECK_EQ(type(), ShadowRootType::V0);
     ensureShadowRootRareDataV0().setOlderShadowRoot(root);
+}
+
+SlotAssignment& ShadowRoot::ensureSlotAssignment()
+{
+    if (!m_slotAssignment)
+        m_slotAssignment = SlotAssignment::create();
+    return *m_slotAssignment;
+}
+
+HTMLSlotElement* ShadowRoot::assignedSlotFor(const Node& node) const
+{
+    DCHECK(m_slotAssignment);
+    return m_slotAssignment->assignedSlotFor(node);
 }
 
 Node* ShadowRoot::cloneNode(bool, ExceptionState& exceptionState)
@@ -209,15 +224,6 @@ void ShadowRoot::unregisterScopedHTMLStyleChild()
     --m_numberOfStyles;
 }
 
-ShadowRootRareData& ShadowRoot::ensureShadowRootRareData()
-{
-    if (m_shadowRootRareData)
-        return *m_shadowRootRareData;
-
-    m_shadowRootRareData = new ShadowRootRareData;
-    return *m_shadowRootRareData;
-}
-
 ShadowRootRareDataV0& ShadowRoot::ensureShadowRootRareDataV0()
 {
     if (m_shadowRootRareDataV0)
@@ -235,11 +241,6 @@ bool ShadowRoot::containsShadowElements() const
 bool ShadowRoot::containsContentElements() const
 {
     return m_shadowRootRareDataV0 ? m_shadowRootRareDataV0->containsContentElements() : false;
-}
-
-bool ShadowRoot::containsShadowRoots() const
-{
-    return m_shadowRootRareData ? m_shadowRootRareData->containsShadowRoots() : false;
 }
 
 unsigned ShadowRoot::descendantShadowElementCount() const
@@ -271,24 +272,6 @@ void ShadowRoot::didRemoveInsertionPoint(InsertionPoint* insertionPoint)
     invalidateDescendantInsertionPoints();
 }
 
-void ShadowRoot::addChildShadowRoot()
-{
-    ensureShadowRootRareData().didAddChildShadowRoot();
-}
-
-void ShadowRoot::removeChildShadowRoot()
-{
-    // FIXME: Why isn't this an ASSERT?
-    if (!m_shadowRootRareData)
-        return;
-    m_shadowRootRareData->didRemoveChildShadowRoot();
-}
-
-unsigned ShadowRoot::childShadowRootCount() const
-{
-    return m_shadowRootRareData ? m_shadowRootRareData->childShadowRootCount() : 0;
-}
-
 void ShadowRoot::invalidateDescendantInsertionPoints()
 {
     m_descendantInsertionPointsIsValid = false;
@@ -315,56 +298,56 @@ const HeapVector<Member<InsertionPoint>>& ShadowRoot::descendantInsertionPoints(
     return m_shadowRootRareDataV0->descendantInsertionPoints();
 }
 
-StyleSheetList* ShadowRoot::styleSheets()
+StyleSheetList& ShadowRoot::styleSheets()
 {
-    if (!ensureShadowRootRareData().styleSheets())
-        m_shadowRootRareData->setStyleSheets(StyleSheetList::create(this));
-
-    return m_shadowRootRareData->styleSheets();
+    if (!m_styleSheetList)
+        setStyleSheets(StyleSheetList::create(this));
+    return *m_styleSheetList;
 }
 
 void ShadowRoot::didAddSlot()
 {
-    ensureShadowRootRareData().didAddSlot();
+    ensureSlotAssignment().didAddSlot();
     invalidateDescendantSlots();
 }
 
 void ShadowRoot::didRemoveSlot()
 {
-    DCHECK(m_shadowRootRareData);
-    m_shadowRootRareData->didRemoveSlot();
+    DCHECK(m_slotAssignment);
+    m_slotAssignment->didRemoveSlot();
     invalidateDescendantSlots();
 }
 
 void ShadowRoot::invalidateDescendantSlots()
 {
+    DCHECK(m_slotAssignment);
     m_descendantSlotsIsValid = false;
-    m_shadowRootRareData->clearDescendantSlots();
+    m_slotAssignment->clearDescendantSlots();
 }
 
 unsigned ShadowRoot::descendantSlotCount() const
 {
-    return m_shadowRootRareData ? m_shadowRootRareData->descendantSlotCount() : 0;
+    return m_slotAssignment ? m_slotAssignment->descendantSlotCount() : 0;
 }
 
 const HeapVector<Member<HTMLSlotElement>>& ShadowRoot::descendantSlots()
 {
     DEFINE_STATIC_LOCAL(HeapVector<Member<HTMLSlotElement>>, emptyList, (new HeapVector<Member<HTMLSlotElement>>));
     if (m_descendantSlotsIsValid) {
-        DCHECK(m_shadowRootRareData);
-        return m_shadowRootRareData->descendantSlots();
+        DCHECK(m_slotAssignment);
+        return m_slotAssignment->descendantSlots();
     }
     if (descendantSlotCount() == 0)
         return emptyList;
 
-    DCHECK(m_shadowRootRareData);
+    DCHECK(m_slotAssignment);
     HeapVector<Member<HTMLSlotElement>> slots;
     slots.reserveCapacity(descendantSlotCount());
     for (HTMLSlotElement& slot : Traversal<HTMLSlotElement>::descendantsOf(rootNode()))
         slots.append(&slot);
-    m_shadowRootRareData->setDescendantSlots(slots);
+    m_slotAssignment->setDescendantSlots(slots);
     m_descendantSlotsIsValid = true;
-    return m_shadowRootRareData->descendantSlots();
+    return m_slotAssignment->descendantSlots();
 }
 
 void ShadowRoot::assignV1()
@@ -383,9 +366,9 @@ void ShadowRoot::distributeV1()
 
 DEFINE_TRACE(ShadowRoot)
 {
-    visitor->trace(m_shadowRootRareData);
     visitor->trace(m_shadowRootRareDataV0);
     visitor->trace(m_slotAssignment);
+    visitor->trace(m_styleSheetList);
     TreeScope::trace(visitor);
     DocumentFragment::trace(visitor);
 }

@@ -3409,11 +3409,11 @@ bool Document::isSecureContextImpl(String* errorMessage, const SecureContextChec
     return true;
 }
 
-StyleSheetList* Document::styleSheets()
+StyleSheetList& Document::styleSheets()
 {
     if (!m_styleSheetList)
         m_styleSheetList = StyleSheetList::create(this);
-    return m_styleSheetList.get();
+    return *m_styleSheetList;
 }
 
 String Document::preferredStylesheetSet() const

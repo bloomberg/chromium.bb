@@ -234,14 +234,14 @@ bool ElementShadow::hasSameStyles(const ElementShadow* other) const
         if (!root || !otherRoot)
             return false;
 
-        StyleSheetList* list = root->styleSheets();
-        StyleSheetList* otherList = otherRoot->styleSheets();
+        StyleSheetList& list = root->styleSheets();
+        StyleSheetList& otherList = otherRoot->styleSheets();
 
-        if (list->length() != otherList->length())
+        if (list.length() != otherList.length())
             return false;
 
-        for (size_t i = 0; i < list->length(); i++) {
-            if (toCSSStyleSheet(list->item(i))->contents() != toCSSStyleSheet(otherList->item(i))->contents())
+        for (size_t i = 0; i < list.length(); i++) {
+            if (toCSSStyleSheet(list.item(i))->contents() != toCSSStyleSheet(otherList.item(i))->contents())
                 return false;
         }
         root = root->olderShadowRoot();

@@ -378,7 +378,7 @@ public:
     bool isScriptExecutionReady() const { return isRenderingReady(); }
 
     // This is a DOM function.
-    StyleSheetList* styleSheets();
+    StyleSheetList& styleSheets();
 
     StyleEngine& styleEngine() { DCHECK(m_styleEngine.get()); return *m_styleEngine.get(); }
 
