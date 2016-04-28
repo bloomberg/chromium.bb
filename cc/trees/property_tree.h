@@ -668,6 +668,7 @@ class CC_EXPORT PropertyTrees final {
   void SetInnerViewportContainerBoundsDelta(gfx::Vector2dF bounds_delta);
   void SetOuterViewportContainerBoundsDelta(gfx::Vector2dF bounds_delta);
   void SetInnerViewportScrollBoundsDelta(gfx::Vector2dF bounds_delta);
+  void UpdateChangeTracking();
   void PushChangeTrackingTo(PropertyTrees* tree);
   void ResetAllChangeTracking(ResetFlags flag);
 

@@ -154,6 +154,8 @@ class CC_EXPORT LayerTreeImpl {
 
   void PushPropertiesTo(LayerTreeImpl* tree_impl);
 
+  void MoveChangeTrackingToLayers();
+
   LayerListIterator<LayerImpl> begin();
   LayerListIterator<LayerImpl> end();
   LayerListReverseIterator<LayerImpl> rbegin();

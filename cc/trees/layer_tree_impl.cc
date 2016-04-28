@@ -423,6 +423,16 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
   target_tree->has_ever_been_drawn_ = false;
 }
 
+void LayerTreeImpl::MoveChangeTrackingToLayers() {
+  // We need to update the change tracking on property trees before we move it
+  // onto the layers.
+  property_trees_.UpdateChangeTracking();
+  for (auto* layer : *this) {
+    if (layer->LayerPropertyChanged())
+      layer->NoteLayerPropertyChanged();
+  }
+}
+
 LayerListIterator<LayerImpl> LayerTreeImpl::begin() {
   return LayerListIterator<LayerImpl>(root_layer_);
 }

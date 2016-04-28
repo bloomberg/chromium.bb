@@ -466,15 +466,15 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
 
   bool property_trees_changed_on_active_tree =
       sync_tree->IsActiveTree() && sync_tree->property_trees()->changed;
-  // We need to preserve the damage status of property trees on active tree. We
-  // do this by pushing the damage status from active tree property trees to
-  // main thread property trees.
+  // Property trees may store damage status. We preserve the sync tree damage
+  // status by pushing the damage status from sync tree property trees to main
+  // thread property trees or by moving it onto the layers.
   if (root_layer_ && property_trees_changed_on_active_tree) {
     if (property_trees_.sequence_number ==
         sync_tree->property_trees()->sequence_number)
       sync_tree->property_trees()->PushChangeTrackingTo(&property_trees_);
     else
-      sync_tree->root_layer()->PushLayerPropertyChangedForSubtree();
+      sync_tree->MoveChangeTrackingToLayers();
   }
   // Setting property trees must happen before pushing the page scale.
   sync_tree->SetPropertyTrees(property_trees_);

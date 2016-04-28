@@ -664,33 +664,6 @@ void LayerImpl::NoteLayerPropertyChanged() {
   SetNeedsPushProperties();
 }
 
-void LayerImpl::PushLayerPropertyChangedForSubtreeInternal() {
-  if (LayerPropertyChanged())
-    NoteLayerPropertyChanged();
-  for (size_t i = 0; i < children_.size(); ++i)
-    children_[i]->PushLayerPropertyChangedForSubtreeInternal();
-}
-
-void LayerImpl::PushLayerPropertyChangedForSubtree() {
-  // We need to update property trees first as layer property can change
-  // when its corresponsing property tree node changes.
-  PropertyTrees* property_trees = layer_tree_impl()->property_trees();
-  EffectTree& effect_tree = property_trees->effect_tree;
-  TransformTree& transform_tree = property_trees->transform_tree;
-  for (int i = 1; i < static_cast<int>(effect_tree.size()); ++i) {
-    EffectNode* node = effect_tree.Node(i);
-    EffectNode* parent_node = effect_tree.parent(node);
-    effect_tree.UpdateEffectChanged(node, parent_node);
-  }
-  for (int i = 1; i < static_cast<int>(transform_tree.size()); ++i) {
-    TransformNode* node = transform_tree.Node(i);
-    TransformNode* parent_node = transform_tree.parent(node);
-    TransformNode* source_node = transform_tree.Node(node->data.source_node_id);
-    transform_tree.UpdateTransformChanged(node, parent_node, source_node);
-  }
-  PushLayerPropertyChangedForSubtreeInternal();
-}
-
 void LayerImpl::ValidateQuadResourcesInternal(DrawQuad* quad) const {
 #if DCHECK_IS_ON()
   const ResourceProvider* resource_provider =

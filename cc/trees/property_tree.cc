@@ -1914,6 +1914,20 @@ void PropertyTrees::SetInnerViewportScrollBoundsDelta(
   inner_viewport_scroll_bounds_delta_ = bounds_delta;
 }
 
+void PropertyTrees::UpdateChangeTracking() {
+  for (int id = 1; id < static_cast<int>(effect_tree.size()); ++id) {
+    EffectNode* node = effect_tree.Node(id);
+    EffectNode* parent_node = effect_tree.parent(node);
+    effect_tree.UpdateEffectChanged(node, parent_node);
+  }
+  for (int i = 1; i < static_cast<int>(transform_tree.size()); ++i) {
+    TransformNode* node = transform_tree.Node(i);
+    TransformNode* parent_node = transform_tree.parent(node);
+    TransformNode* source_node = transform_tree.Node(node->data.source_node_id);
+    transform_tree.UpdateTransformChanged(node, parent_node, source_node);
+  }
+}
+
 void PropertyTrees::PushChangeTrackingTo(PropertyTrees* tree) {
   for (int id = 1; id < static_cast<int>(effect_tree.size()); ++id) {
     EffectNode* node = effect_tree.Node(id);

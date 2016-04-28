@@ -1962,16 +1962,16 @@ void LayerTreeHostImpl::ActivateSyncTree() {
                                          active_tree_.get());
     }
 
-    // We need to preserve the damage status of property trees on active tree.
-    // We do this by pushing the damage status from active tree property trees
-    // to pending tree property trees.
+    // Property trees may store damage status. We preserve the active tree
+    // damage status by pushing the damage status from active tree property
+    // trees to pending tree property trees or by moving it onto the layers.
     if (active_tree_->property_trees()->changed) {
       if (pending_tree_->property_trees()->sequence_number ==
           active_tree_->property_trees()->sequence_number)
         active_tree_->property_trees()->PushChangeTrackingTo(
             pending_tree_->property_trees());
       else
-        active_tree_->root_layer()->PushLayerPropertyChangedForSubtree();
+        active_tree_->MoveChangeTrackingToLayers();
     }
 
     TreeSynchronizer::PushLayerProperties(pending_tree(), active_tree());

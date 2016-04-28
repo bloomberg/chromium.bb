@@ -546,8 +546,6 @@ class CC_EXPORT LayerImpl {
 
   void NoteLayerPropertyChanged();
 
-  void PushLayerPropertyChangedForSubtree();
-
   void ClearLinksToOtherLayers();
 
  protected:
