@@ -79,33 +79,47 @@
 
 namespace blink {
 
-LocalDOMWindow::WindowFrameObserver::WindowFrameObserver(LocalDOMWindow* window, LocalFrame& frame)
-    : LocalFrameLifecycleObserver(&frame)
-    , m_window(window)
-{
-}
+// Rather than simply inheriting LocalFrameLifecycleObserver like most other
+// classes, LocalDOMWindow hides its LocalFrameLifecycleObserver with
+// composition. This prevents conflicting overloads between DOMWindow, which
+// has a frame() accessor that returns Frame* for bindings code, and
+// LocalFrameLifecycleObserver, which has a frame() accessor that returns a
+// LocalFrame*.
+class LocalDOMWindow::WindowFrameObserver final : public GarbageCollected<LocalDOMWindow::WindowFrameObserver>, public LocalFrameLifecycleObserver {
+    USING_GARBAGE_COLLECTED_MIXIN(WindowFrameObserver);
+public:
+    static WindowFrameObserver* create(LocalDOMWindow* window, LocalFrame& frame)
+    {
+        return new WindowFrameObserver(window, frame);
+    }
 
-LocalDOMWindow::WindowFrameObserver* LocalDOMWindow::WindowFrameObserver::create(LocalDOMWindow* window, LocalFrame& frame)
-{
-    return new WindowFrameObserver(window, frame);
-}
+    DEFINE_INLINE_VIRTUAL_TRACE()
+    {
+        visitor->trace(m_window);
+        LocalFrameLifecycleObserver::trace(visitor);
+    }
 
-DEFINE_TRACE(LocalDOMWindow::WindowFrameObserver)
-{
-    visitor->trace(m_window);
-    LocalFrameLifecycleObserver::trace(visitor);
-}
+    // LocalFrameLifecycleObserver overrides:
+    void willDetachFrameHost() override
+    {
+        m_window->willDetachFrameHost();
+    }
 
-void LocalDOMWindow::WindowFrameObserver::willDetachFrameHost()
-{
-    m_window->willDetachFrameHost();
-}
+    void contextDestroyed() override
+    {
+        m_window->frameDestroyed();
+        LocalFrameLifecycleObserver::contextDestroyed();
+    }
 
-void LocalDOMWindow::WindowFrameObserver::contextDestroyed()
-{
-    m_window->frameDestroyed();
-    LocalFrameLifecycleObserver::contextDestroyed();
-}
+private:
+    WindowFrameObserver(LocalDOMWindow* window, LocalFrame& frame)
+        : LocalFrameLifecycleObserver(&frame)
+        , m_window(window)
+    {
+    }
+
+    Member<LocalDOMWindow> m_window;
+};
 
 class PostMessageTimer final : public GarbageCollectedFinalized<PostMessageTimer>, public SuspendableTimer {
     USING_GARBAGE_COLLECTED_MIXIN(PostMessageTimer);
@@ -122,7 +136,7 @@ public:
         InspectorInstrumentation::asyncTaskScheduled(window.document(), "postMessage", this);
     }
 
-    MessageEvent* event() const { return m_event.get(); }
+    MessageEvent* event() const { return m_event; }
     SecurityOrigin* targetOrigin() const { return m_targetOrigin.get(); }
     ScriptCallStack* stackTrace() const { return m_stackTrace.get(); }
     UserGestureToken* userGestureToken() const { return m_userGestureToken.get(); }
@@ -286,9 +300,6 @@ bool LocalDOMWindow::allowPopUp()
 LocalDOMWindow::LocalDOMWindow(LocalFrame& frame)
     : m_frameObserver(WindowFrameObserver::create(this, frame))
     , m_shouldPrintWhenFinishedLoading(false)
-#if ENABLE(ASSERT)
-    , m_hasBeenReset(false)
-#endif
 {
     ThreadState::current()->registerPreFinalizer(this);
 }
@@ -534,9 +545,6 @@ void LocalDOMWindow::reset()
     m_media = nullptr;
     m_customElements = nullptr;
     m_applicationCache = nullptr;
-#if ENABLE(ASSERT)
-    m_hasBeenReset = true;
-#endif
 
     LocalDOMWindow::notifyContextDestroyed();
 }

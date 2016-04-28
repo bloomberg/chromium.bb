@@ -207,29 +207,7 @@ protected:
     bool removeEventListenerInternal(const AtomicString& eventType, EventListener*, const EventListenerOptions&) override;
 
 private:
-    // Rather than simply inheriting LocalFrameLifecycleObserver like most other
-    // classes, LocalDOMWindow hides its LocalFrameLifecycleObserver with
-    // composition. This prevents conflicting overloads between DOMWindow, which
-    // has a frame() accessor that returns Frame* for bindings code, and
-    // LocalFrameLifecycleObserver, which has a frame() accessor that returns a
-    // LocalFrame*.
-    class WindowFrameObserver final : public GarbageCollected<WindowFrameObserver>, public LocalFrameLifecycleObserver {
-        USING_GARBAGE_COLLECTED_MIXIN(WindowFrameObserver);
-    public:
-        static WindowFrameObserver* create(LocalDOMWindow*, LocalFrame&);
-
-        DECLARE_VIRTUAL_TRACE();
-
-        // LocalFrameLifecycleObserver overrides:
-        void willDetachFrameHost() override;
-        void contextDestroyed() override;
-
-    private:
-        WindowFrameObserver(LocalDOMWindow*, LocalFrame&);
-
-        Member<LocalDOMWindow> m_window;
-    };
-    friend WTF::OwnedPtrDeleter<WindowFrameObserver>;
+    class WindowFrameObserver;
 
     explicit LocalDOMWindow(LocalFrame&);
     void dispose();
@@ -245,9 +223,6 @@ private:
     Member<Document> m_document;
 
     bool m_shouldPrintWhenFinishedLoading;
-#if ENABLE(ASSERT)
-    bool m_hasBeenReset;
-#endif
 
     HeapHashSet<WeakMember<DOMWindowProperty>> m_properties;
 
