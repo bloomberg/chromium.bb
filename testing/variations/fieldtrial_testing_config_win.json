@@ -193,9 +193,15 @@
     ],
     "PreRead": [
         {
-            "group_name": "NoPrefetchArgument",
+            "group_name": "NoPrefetchArgument2",
             "params": {
                 "NoPrefetchArgument": "true"
+            }
+        },
+        {
+            "group_name": "PreReadChromeChildInBrowser",
+            "params": {
+                "PreReadChromeChildInBrowser": "true"
             }
         }
     ],
