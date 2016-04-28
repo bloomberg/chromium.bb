@@ -2229,7 +2229,17 @@ Cluster::Cluster(uint64_t timecode, int64_t cues_pos, uint64_t timecode_scale,
       write_last_frame_with_duration_(write_last_frame_with_duration),
       writer_(NULL) {}
 
-Cluster::~Cluster() {}
+Cluster::~Cluster() {
+  // Delete any stored frames that are left behind. This will happen if the
+  // Cluster was not Finalized for whatever reason.
+  while (!stored_frames_.empty()) {
+    while (!stored_frames_.begin()->second.empty()) {
+      delete stored_frames_.begin()->second.front();
+      stored_frames_.begin()->second.pop_front();
+    }
+    stored_frames_.erase(stored_frames_.begin()->first);
+  }
+}
 
 bool Cluster::Init(IMkvWriter* ptr_writer) {
   if (!ptr_writer) {
