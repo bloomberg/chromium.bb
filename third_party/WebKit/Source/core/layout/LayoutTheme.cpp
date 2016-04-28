@@ -397,7 +397,6 @@ bool LayoutTheme::isControlStyled(const ComputedStyle& style) const
     case SquareButtonPart:
     case ButtonPart:
     case ProgressBarPart:
-    case MeterPart:
         return style.hasAuthorBackground() || style.hasAuthorBorder();
 
     case MenulistPart:
