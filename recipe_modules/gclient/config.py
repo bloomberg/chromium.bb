@@ -167,6 +167,7 @@ def chromium_bare(c):
   p['angle/angle'] = ('src/third_party/angle', None)
   p['blink'] = ('src/third_party/WebKit', None)
   p['pdfium'] = ('src/third_party/pdfium', 'HEAD')
+  p['skia'] = ('src/third_party/skia', 'HEAD')
 
 @config_ctx(includes=['chromium_bare'])
 def chromium_empty(c):
