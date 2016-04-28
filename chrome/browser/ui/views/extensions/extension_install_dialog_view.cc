@@ -771,19 +771,8 @@ void ExpandableContainerView::UpdateArrowToggle(bool expanded) {
   arrow_toggle_->SetImage(views::Button::STATE_NORMAL, &icon);
 }
 
-// On Mac, GetViewsShowDialogCallback is defined in Cocoa code.
-#if !defined(OS_MACOSX)
 // static
 ExtensionInstallPrompt::ShowDialogCallback
 ExtensionInstallPrompt::GetDefaultShowDialogCallback() {
   return base::Bind(&ShowExtensionInstallDialogImpl);
 }
-#endif
-
-#if defined(OS_MACOSX)
-// static
-ExtensionInstallPrompt::ShowDialogCallback
-ExtensionInstallPrompt::GetViewsShowDialogCallback() {
-  return base::Bind(&ShowExtensionInstallDialogImpl);
-}
-#endif
