@@ -22,7 +22,7 @@ namespace {
 class MockSchedulerWorkerThreadDelegate
     : public SchedulerWorkerThread::Delegate {
  public:
-  void OnMainEntry() override {}
+  void OnMainEntry(SchedulerWorkerThread* worker_thread) override {}
   scoped_refptr<Sequence> GetWork(
       SchedulerWorkerThread* worker_thread) override {
     return nullptr;

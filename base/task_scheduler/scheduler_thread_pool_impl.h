@@ -12,6 +12,7 @@
 
 #include "base/base_export.h"
 #include "base/callback.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/condition_variable.h"
@@ -72,16 +73,17 @@ class BASE_EXPORT SchedulerThreadPoolImpl : public SchedulerThreadPool {
   void ReEnqueueSequence(scoped_refptr<Sequence> sequence,
                          const SequenceSortKey& sequence_sort_key) override;
   bool PostTaskWithSequence(std::unique_ptr<Task> task,
-                            scoped_refptr<Sequence> sequence) override;
+                            scoped_refptr<Sequence> sequence,
+                            SchedulerWorkerThread* worker_thread) override;
   void PostTaskWithSequenceNow(std::unique_ptr<Task> task,
-                               scoped_refptr<Sequence> sequence) override;
+                               scoped_refptr<Sequence> sequence,
+                               SchedulerWorkerThread* worker_thread) override;
 
  private:
   class SchedulerWorkerThreadDelegateImpl;
 
-  SchedulerThreadPoolImpl(
-      TaskTracker* task_tracker,
-      DelayedTaskManager* delayed_task_manager);
+  SchedulerThreadPoolImpl(TaskTracker* task_tracker,
+                          DelayedTaskManager* delayed_task_manager);
 
   bool Initialize(
       ThreadPriority thread_priority,
@@ -94,12 +96,22 @@ class BASE_EXPORT SchedulerThreadPoolImpl : public SchedulerThreadPool {
   // Adds |worker_thread| to |idle_worker_threads_stack_|.
   void AddToIdleWorkerThreadsStack(SchedulerWorkerThread* worker_thread);
 
-  // PriorityQueue from which all threads of this thread pool get work.
-  PriorityQueue shared_priority_queue_;
+  // Removes |worker_thread| from |idle_worker_threads_stack_|.
+  void RemoveFromIdleWorkerThreadsStack(SchedulerWorkerThread* worker_thread);
 
   // All worker threads owned by this thread pool. Only modified during
   // initialization of the thread pool.
   std::vector<std::unique_ptr<SchedulerWorkerThread>> worker_threads_;
+
+  // Synchronizes access to |next_worker_thread_index_|.
+  SchedulerLock next_worker_thread_index_lock_;
+
+  // Index of the worker thread that will be assigned to the next single-
+  // threaded TaskRunner returned by this pool.
+  size_t next_worker_thread_index_ = 0;
+
+  // PriorityQueue from which all threads of this thread pool get work.
+  PriorityQueue shared_priority_queue_;
 
   // Synchronizes access to |idle_worker_threads_stack_| and
   // |idle_worker_threads_stack_cv_for_testing_|. Has |shared_priority_queue_|'s
@@ -116,6 +128,11 @@ class BASE_EXPORT SchedulerThreadPoolImpl : public SchedulerThreadPool {
 
   // Signaled once JoinForTesting() has returned.
   WaitableEvent join_for_testing_returned_;
+
+#if DCHECK_IS_ON()
+  // Signaled when all threads have been created.
+  WaitableEvent threads_created_;
+#endif
 
   TaskTracker* const task_tracker_;
   DelayedTaskManager* const delayed_task_manager_;

@@ -17,6 +17,7 @@
 namespace base {
 namespace internal {
 
+class SchedulerWorkerThread;
 struct SequenceSortKey;
 
 // Interface for a thread pool.
@@ -37,16 +38,26 @@ class BASE_EXPORT SchedulerThreadPool {
   virtual void ReEnqueueSequence(scoped_refptr<Sequence> sequence,
                                  const SequenceSortKey& sequence_sort_key) = 0;
 
-  // Posts |task| to be executed as part of |sequence|.  Returns true if |task|
-  // is posted.
+  // Posts |task| to be executed as part of |sequence|. If |worker_thread| is
+  // non-null, |task| will be scheduled to run on it specifically (note:
+  // |worker_thread| must be owned by this SchedulerThreadPool); otherwise,
+  // |task| will be added to the pending shared work. Returns true if |task| is
+  // posted.
   virtual bool PostTaskWithSequence(std::unique_ptr<Task> task,
-                                    scoped_refptr<Sequence> sequence) = 0;
+                                    scoped_refptr<Sequence> sequence,
+                                    SchedulerWorkerThread* worker_thread) = 0;
 
-  // Posts |task| to be executed by this thread pool as part of |sequence|. The
-  // scheduler's TaskTracker must have allowed |task| to be posted before this
-  // is called. This must only be called after |task|'s delayed run time.
-  virtual void PostTaskWithSequenceNow(std::unique_ptr<Task> task,
-                                       scoped_refptr<Sequence> sequence) = 0;
+  // Posts |task| to be executed by this thread pool as part of |sequence|. If
+  // |worker_thread| is non-null, |task| will be scheduled to run on it
+  // specifically (note: |worker_thread| must be owned by this
+  // SchedulerThreadPool); otherwise, |task| will be added to the pending shared
+  // work. The scheduler's TaskTracker must have allowed |task| to be posted
+  // before this is called. This must only be called after |task|'s delayed run
+  // time.
+  virtual void PostTaskWithSequenceNow(
+      std::unique_ptr<Task> task,
+      scoped_refptr<Sequence> sequence,
+      SchedulerWorkerThread* worker_thread) = 0;
 };
 
 }  // namespace internal

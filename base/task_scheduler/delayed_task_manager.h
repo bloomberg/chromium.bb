@@ -24,10 +24,10 @@ namespace base {
 namespace internal {
 
 class SchedulerThreadPool;
+class SchedulerWorkerThread;
 
 // A DelayedTaskManager holds delayed Tasks until they become ripe for
-// execution. When they become ripe for execution, it posts them to their
-// associated Sequence and SchedulerThreadPool. This class is thread-safe.
+// execution. This class is thread-safe.
 class BASE_EXPORT DelayedTaskManager {
  public:
   // |on_delayed_run_time_updated| is invoked when the delayed run time is
@@ -36,14 +36,17 @@ class BASE_EXPORT DelayedTaskManager {
   ~DelayedTaskManager();
 
   // Adds |task| to a queue of delayed tasks. The task will be posted to
-  // |thread_pool| as part of |sequence| the first time that PostReadyTasks() is
-  // called while Now() is passed |task->delayed_run_time|.
+  // |thread_pool| with |sequence| and |worker_thread| the first time that
+  // PostReadyTasks() is called while Now() is passed |task->delayed_run_time|.
+  // |worker_thread| is a SchedulerWorkerThread owned by |thread_pool| or
+  // nullptr.
   //
-  // TODO(robliao): Find a concrete way to manage |thread_pool|'s memory. It is
-  // never deleted in production, but it is better not to spread this assumption
-  // throughout the scheduler.
+  // TODO(robliao): Find a concrete way to manage the memory of |worker_thread|
+  // and |thread_pool|. These objects are never deleted in production, but it is
+  // better not to spread this assumption throughout the scheduler.
   void AddDelayedTask(std::unique_ptr<Task> task,
                       scoped_refptr<Sequence> sequence,
+                      SchedulerWorkerThread* worker_thread,
                       SchedulerThreadPool* thread_pool);
 
   // Posts delayed tasks that are ripe for execution.

@@ -59,7 +59,7 @@ SchedulerWorkerThread::SchedulerWorkerThread(ThreadPriority thread_priority,
 }
 
 void SchedulerWorkerThread::ThreadMain() {
-  delegate_->OnMainEntry();
+  delegate_->OnMainEntry(this);
 
   // A SchedulerWorkerThread starts out sleeping.
   wake_up_event_.Wait();

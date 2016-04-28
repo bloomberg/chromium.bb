@@ -15,10 +15,12 @@ namespace internal {
 struct DelayedTaskManager::DelayedTask {
   DelayedTask(std::unique_ptr<Task> task,
               scoped_refptr<Sequence> sequence,
+              SchedulerWorkerThread* worker_thread,
               SchedulerThreadPool* thread_pool,
               uint64_t index)
       : task(std::move(task)),
         sequence(std::move(sequence)),
+        worker_thread(worker_thread),
         thread_pool(thread_pool),
         index(index) {}
 
@@ -28,10 +30,11 @@ struct DelayedTaskManager::DelayedTask {
 
   DelayedTask& operator=(DelayedTask&& other) = default;
 
-  // |task| will be posted to |thread_pool| as part of |sequence| when it
-  // becomes ripe for execution.
+  // |task| will be posted to |thread_pool| with |sequence| and |worker_thread|
+  // when it becomes ripe for execution.
   std::unique_ptr<Task> task;
   scoped_refptr<Sequence> sequence;
+  SchedulerWorkerThread* worker_thread;
   SchedulerThreadPool* thread_pool;
 
   // Ensures that tasks that have the same |delayed_run_time| are sorted
@@ -52,6 +55,7 @@ DelayedTaskManager::~DelayedTaskManager() = default;
 
 void DelayedTaskManager::AddDelayedTask(std::unique_ptr<Task> task,
                                         scoped_refptr<Sequence> sequence,
+                                        SchedulerWorkerThread* worker_thread,
                                         SchedulerThreadPool* thread_pool) {
   DCHECK(task);
   DCHECK(sequence);
@@ -66,8 +70,8 @@ void DelayedTaskManager::AddDelayedTask(std::unique_ptr<Task> task,
     if (!delayed_tasks_.empty())
       current_delayed_run_time = delayed_tasks_.top().task->delayed_run_time;
 
-    delayed_tasks_.emplace(std::move(task), std::move(sequence), thread_pool,
-                           ++delayed_task_index_);
+    delayed_tasks_.emplace(std::move(task), std::move(sequence), worker_thread,
+                           thread_pool, ++delayed_task_index_);
   }
 
   if (current_delayed_run_time.is_null() ||
@@ -100,7 +104,8 @@ void DelayedTaskManager::PostReadyTasks() {
   // Post delayed tasks that are ready for execution.
   for (auto& delayed_task : ready_tasks) {
     delayed_task.thread_pool->PostTaskWithSequenceNow(
-        std::move(delayed_task.task), std::move(delayed_task.sequence));
+        std::move(delayed_task.task), std::move(delayed_task.sequence),
+        delayed_task.worker_thread);
   }
 }
 

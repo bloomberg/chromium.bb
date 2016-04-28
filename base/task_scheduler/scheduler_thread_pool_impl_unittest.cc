@@ -314,6 +314,9 @@ INSTANTIATE_TEST_CASE_P(Parallel,
 INSTANTIATE_TEST_CASE_P(Sequenced,
                         TaskSchedulerThreadPoolImplTest,
                         ::testing::Values(ExecutionMode::SEQUENCED));
+INSTANTIATE_TEST_CASE_P(SingleThreaded,
+                        TaskSchedulerThreadPoolImplTest,
+                        ::testing::Values(ExecutionMode::SINGLE_THREADED));
 
 }  // namespace internal
 }  // namespace base
