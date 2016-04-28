@@ -243,16 +243,14 @@ void OperationManager::Observe(int type,
       DeleteOperation(content::Details<const Extension>(details).ptr()->id());
       break;
     }
-    case extensions::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE: {
+    case extensions::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE:
+      // Intentional fall-through.
+    case extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED:
+      // Note: |ExtensionHost::extension()| can be null if the extension was
+      // already unloaded, use ExtensionHost::extension_id() instead.
       DeleteOperation(
-        content::Details<ExtensionHost>(details)->extension()->id());
+          content::Details<ExtensionHost>(details)->extension_id());
       break;
-    }
-    case extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED: {
-      DeleteOperation(
-        content::Details<ExtensionHost>(details)->extension()->id());
-      break;
-    }
     default: {
       NOTREACHED();
       break;
