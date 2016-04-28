@@ -7,6 +7,7 @@
 # tool and those that do not. A XIB should be listed in either one or the
 # other, but not both.
 {
+  # GN version: //chrome/app/nibs
   'variables': {
     'mac_translated_xibs': [
       'app/nibs/AppMenu.xib',
@@ -53,7 +54,6 @@
       'app/nibs/DevicePermissionsPrompt.xib',
       'app/nibs/FindBar.xib',
       'app/nibs/GlobalErrorBubble.xib',
-      'app/nibs/HungRendererDialog.xib',
       'app/nibs/InfoBar.xib',
       'app/nibs/Panel.xib',
     ],  # mac_untranslated_xibs
