@@ -104,7 +104,6 @@ void SimpleFontData::platformInit()
 
 #if OS(LINUX) || OS(ANDROID)
     // Manually digging up VDMX metrics is only applicable when bytecode hinting using FreeType.
-    // With GDI, the metrics will already have taken this into account (as needed).
     // With DirectWrite or CoreText, no bytecode hinting is ever done.
     // This code should be pushed into FreeType (hinted font metrics).
     static const uint32_t vdmxTag = SkSetFourByteTag('V', 'D', 'M', 'X');
