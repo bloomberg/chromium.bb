@@ -51,7 +51,7 @@ CompositionEvent::~CompositionEvent()
 
 void CompositionEvent::initCompositionEvent(const AtomicString& type, bool canBubble, bool cancelable, AbstractView* view, const String& data)
 {
-    if (dispatched())
+    if (isBeingDispatched())
         return;
 
     initUIEvent(type, canBubble, cancelable, view, 0);

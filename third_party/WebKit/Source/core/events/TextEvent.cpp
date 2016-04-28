@@ -89,7 +89,7 @@ TextEvent::~TextEvent()
 
 void TextEvent::initTextEvent(const AtomicString& type, bool canBubble, bool cancelable, AbstractView* view, const String& data)
 {
-    if (dispatched())
+    if (isBeingDispatched())
         return;
 
     initUIEvent(type, canBubble, cancelable, view, 0);

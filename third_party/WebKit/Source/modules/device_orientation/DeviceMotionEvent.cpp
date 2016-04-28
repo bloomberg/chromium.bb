@@ -48,7 +48,7 @@ DeviceMotionEvent::DeviceMotionEvent(const AtomicString& eventType, DeviceMotion
 
 void DeviceMotionEvent::initDeviceMotionEvent(const AtomicString& type, bool bubbles, bool cancelable, DeviceMotionData* deviceMotionData)
 {
-    if (dispatched())
+    if (isBeingDispatched())
         return;
 
     initEvent(type, bubbles, cancelable);

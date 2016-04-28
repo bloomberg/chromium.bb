@@ -181,7 +181,7 @@ void MouseEvent::initMouseEvent(ScriptState* scriptState, const AtomicString& ty
                                 bool ctrlKey, bool altKey, bool shiftKey, bool metaKey,
                                 short button, EventTarget* relatedTarget, unsigned short buttons)
 {
-    if (dispatched())
+    if (isBeingDispatched())
         return;
 
     if (scriptState && scriptState->world().isIsolatedWorld())

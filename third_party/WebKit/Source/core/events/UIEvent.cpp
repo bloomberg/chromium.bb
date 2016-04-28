@@ -83,7 +83,7 @@ void UIEvent::initUIEvent(const AtomicString& typeArg, bool canBubbleArg, bool c
 
 void UIEvent::initUIEventInternal(const AtomicString& typeArg, bool canBubbleArg, bool cancelableArg, EventTarget* relatedTarget, AbstractView* viewArg, int detailArg, InputDeviceCapabilities* sourceCapabilitiesArg)
 {
-    if (dispatched())
+    if (isBeingDispatched())
         return;
 
     initEvent(typeArg, canBubbleArg, cancelableArg, relatedTarget);

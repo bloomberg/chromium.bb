@@ -68,7 +68,7 @@ void TouchEvent::initTouchEvent(ScriptState* scriptState, TouchList* touches, To
     int, int, int, int,
     bool ctrlKey, bool altKey, bool shiftKey, bool metaKey)
 {
-    if (dispatched())
+    if (isBeingDispatched())
         return;
 
     if (scriptState->world().isIsolatedWorld())

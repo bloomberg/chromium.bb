@@ -50,7 +50,7 @@ void CustomEvent::initCustomEvent(const AtomicString& type, bool canBubble, bool
 
 void CustomEvent::initCustomEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<SerializedScriptValue> serializedDetail)
 {
-    if (dispatched())
+    if (isBeingDispatched())
         return;
 
     initEvent(type, canBubble, cancelable);

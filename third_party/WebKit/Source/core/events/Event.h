@@ -216,7 +216,6 @@ protected:
     Event(const AtomicString& type, const EventInit&);
 
     virtual void receivedTarget();
-    bool dispatched() const { return m_target; }
 
     void setCanBubble(bool bubble) { m_canBubble = bubble; }
 

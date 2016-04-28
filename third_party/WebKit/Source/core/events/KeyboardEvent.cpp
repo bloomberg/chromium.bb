@@ -113,7 +113,7 @@ KeyboardEvent::~KeyboardEvent()
 void KeyboardEvent::initKeyboardEvent(ScriptState* scriptState, const AtomicString& type, bool canBubble, bool cancelable, AbstractView* view,
     const String& keyIdentifier, unsigned location, bool ctrlKey, bool altKey, bool shiftKey, bool metaKey)
 {
-    if (dispatched())
+    if (isBeingDispatched())
         return;
 
     if (scriptState->world().isIsolatedWorld())

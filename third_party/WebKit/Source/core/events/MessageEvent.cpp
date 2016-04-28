@@ -140,7 +140,7 @@ MessageEvent* MessageEvent::create(const AtomicString& type, const MessageEventI
 
 void MessageEvent::initMessageEvent(const AtomicString& type, bool canBubble, bool cancelable, ScriptValue data, const String& origin, const String& lastEventId, DOMWindow* source, MessagePortArray* ports)
 {
-    if (dispatched())
+    if (isBeingDispatched())
         return;
 
     initEvent(type, canBubble, cancelable);
@@ -156,7 +156,7 @@ void MessageEvent::initMessageEvent(const AtomicString& type, bool canBubble, bo
 
 void MessageEvent::initMessageEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<SerializedScriptValue> data, const String& origin, const String& lastEventId, DOMWindow* source, MessagePortArray* ports)
 {
-    if (dispatched())
+    if (isBeingDispatched())
         return;
 
     initEvent(type, canBubble, cancelable);

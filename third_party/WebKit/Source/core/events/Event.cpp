@@ -114,7 +114,7 @@ void Event::initEvent(const AtomicString& eventTypeArg, bool canBubbleArg, bool 
 
 void Event::initEvent(const AtomicString& eventTypeArg, bool canBubbleArg, bool cancelableArg, EventTarget* relatedTarget)
 {
-    if (dispatched())
+    if (isBeingDispatched())
         return;
 
     m_propagationStopped = false;

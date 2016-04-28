@@ -46,7 +46,7 @@ DeviceOrientationEvent::DeviceOrientationEvent(const AtomicString& eventType, De
 
 void DeviceOrientationEvent::initDeviceOrientationEvent(const AtomicString& type, bool bubbles, bool cancelable, const Nullable<double>& alpha, const Nullable<double>& beta, const Nullable<double>& gamma, bool absolute)
 {
-    if (dispatched())
+    if (isBeingDispatched())
         return;
 
     initEvent(type, bubbles, cancelable);
