@@ -324,6 +324,8 @@ class LocalChromeController(ChromeControllerBase):
        child processes used to run Chrome and XVFB."""
     chrome_cmd = [OPTIONS.local_binary]
     chrome_cmd.extend(self._GetChromeArguments())
+    # Force use of simple cache.
+    chrome_cmd.append('--use-simple-cache-backend=on')
     chrome_cmd.append('--user-data-dir=%s' % self._profile_dir)
     chrome_cmd.extend(['--enable-logging=stderr', '--v=1'])
     # Navigates to about:blank for couples of reasons:
