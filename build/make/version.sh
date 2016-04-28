@@ -9,6 +9,8 @@
 ## PATENTS file, you can obtain it at www.aomedia.org/license/patent.
 ##
 
+
+
 for opt in "$@"; do
     optval="${opt#*=}"
     case "$opt" in
