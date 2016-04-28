@@ -4473,7 +4473,7 @@ error::Error GLES2DecoderImpl::DoCommandsImpl(unsigned int num_commands,
         if (DebugImpl && doing_gpu_trace)
           gpu_tracer_->End(kTraceDecoder);
 
-        if (DebugImpl && debug()) {
+        if (DebugImpl && debug() && !WasContextLost()) {
           GLenum error;
           while ((error = glGetError()) != GL_NO_ERROR) {
             LOG(ERROR) << "[" << logger_.GetLogPrefix() << "] "
