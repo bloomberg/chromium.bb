@@ -36,6 +36,11 @@ class TaskTracker;
 // A pool of threads that run Tasks. This class is thread-safe.
 class BASE_EXPORT SchedulerThreadPoolImpl : public SchedulerThreadPool {
  public:
+  enum class IORestriction {
+    ALLOWED,
+    DISALLOWED,
+  };
+
   // Callback invoked when a Sequence isn't empty after a worker thread pops a
   // Task from it.
   using ReEnqueueSequenceCallback = Callback<void(scoped_refptr<Sequence>)>;
@@ -46,14 +51,17 @@ class BASE_EXPORT SchedulerThreadPoolImpl : public SchedulerThreadPool {
   ~SchedulerThreadPoolImpl() override;
 
   // Creates a SchedulerThreadPool with up to |max_threads| threads of priority
-  // |thread_priority|. |re_enqueue_sequence_callback| will be invoked after a
-  // thread of this thread pool tries to run a Task. |task_tracker| is used to
-  // handle shutdown behavior of Tasks. |delayed_task_manager| handles Tasks
-  // posted with a delay. Returns nullptr on failure to create a thread pool
-  // with at least one thread.
+  // |thread_priority|. |io_restriction| indicates whether Tasks on the
+  // constructed thread pool are allowed to make I/O calls.
+  // |re_enqueue_sequence_callback| will be invoked after a thread of this
+  // thread pool tries to run a Task. |task_tracker| is used to handle shutdown
+  // behavior of Tasks. |delayed_task_manager| handles Tasks posted with a
+  // delay. Returns nullptr on failure to create a thread pool with at least one
+  // thread.
   static std::unique_ptr<SchedulerThreadPoolImpl> Create(
       ThreadPriority thread_priority,
       size_t max_threads,
+      IORestriction io_restriction,
       const ReEnqueueSequenceCallback& re_enqueue_sequence_callback,
       TaskTracker* task_tracker,
       DelayedTaskManager* delayed_task_manager);
@@ -81,7 +89,8 @@ class BASE_EXPORT SchedulerThreadPoolImpl : public SchedulerThreadPool {
  private:
   class SchedulerWorkerThreadDelegateImpl;
 
-  SchedulerThreadPoolImpl(TaskTracker* task_tracker,
+  SchedulerThreadPoolImpl(IORestriction io_restriction,
+                          TaskTracker* task_tracker,
                           DelayedTaskManager* delayed_task_manager);
 
   bool Initialize(
@@ -111,6 +120,9 @@ class BASE_EXPORT SchedulerThreadPoolImpl : public SchedulerThreadPool {
 
   // PriorityQueue from which all threads of this thread pool get work.
   PriorityQueue shared_priority_queue_;
+
+  // Indicates whether Tasks on this thread pool are allowed to make I/O calls.
+  const IORestriction io_restriction_;
 
   // Synchronizes access to |idle_worker_threads_stack_| and
   // |idle_worker_threads_stack_cv_for_testing_|. Has |shared_priority_queue_|'s

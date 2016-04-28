@@ -16,6 +16,7 @@
 #include "base/task_scheduler/delayed_task_manager.h"
 #include "base/task_scheduler/task_tracker.h"
 #include "base/threading/thread_local.h"
+#include "base/threading/thread_restrictions.h"
 
 namespace base {
 namespace internal {
@@ -216,11 +217,13 @@ SchedulerThreadPoolImpl::~SchedulerThreadPoolImpl() {
 std::unique_ptr<SchedulerThreadPoolImpl> SchedulerThreadPoolImpl::Create(
     ThreadPriority thread_priority,
     size_t max_threads,
+    IORestriction io_restriction,
     const ReEnqueueSequenceCallback& re_enqueue_sequence_callback,
     TaskTracker* task_tracker,
     DelayedTaskManager* delayed_task_manager) {
   std::unique_ptr<SchedulerThreadPoolImpl> thread_pool(
-      new SchedulerThreadPoolImpl(task_tracker, delayed_task_manager));
+      new SchedulerThreadPoolImpl(io_restriction, task_tracker,
+                                  delayed_task_manager));
   if (thread_pool->Initialize(thread_priority, max_threads,
                               re_enqueue_sequence_callback)) {
     return thread_pool;
@@ -382,6 +385,9 @@ void SchedulerThreadPoolImpl::SchedulerWorkerThreadDelegateImpl::OnMainEntry(
   DCHECK(!tls_current_thread_pool.Get().Get());
   tls_current_worker_thread.Get().Set(worker_thread);
   tls_current_thread_pool.Get().Set(outer_);
+
+  ThreadRestrictions::SetIOAllowed(outer_->io_restriction_ ==
+                                   IORestriction::ALLOWED);
 }
 
 scoped_refptr<Sequence>
@@ -456,9 +462,11 @@ void SchedulerThreadPoolImpl::SchedulerWorkerThreadDelegateImpl::
 }
 
 SchedulerThreadPoolImpl::SchedulerThreadPoolImpl(
+    IORestriction io_restriction,
     TaskTracker* task_tracker,
     DelayedTaskManager* delayed_task_manager)
-    : idle_worker_threads_stack_lock_(shared_priority_queue_.container_lock()),
+    : io_restriction_(io_restriction),
+      idle_worker_threads_stack_lock_(shared_priority_queue_.container_lock()),
       idle_worker_threads_stack_cv_for_testing_(
           idle_worker_threads_stack_lock_.CreateConditionVariable()),
       join_for_testing_returned_(true, false),
