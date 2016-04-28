@@ -138,6 +138,7 @@
         '<(webrtc_base)/network.h',
         '<(webrtc_base)/networkmonitor.cc',
         '<(webrtc_base)/networkmonitor.h',
+        '<(webrtc_base)/nullsocketserver.cc',
         '<(webrtc_base)/nullsocketserver.h',
         '<(webrtc_base)/openssladapter.cc',
         '<(webrtc_base)/openssldigest.cc',
