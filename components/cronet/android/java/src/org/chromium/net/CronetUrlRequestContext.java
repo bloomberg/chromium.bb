@@ -76,7 +76,7 @@ class CronetUrlRequestContext extends CronetEngine {
             new ObserverList<RequestFinishedListener>();
 
     @UsedByReflection("CronetEngine.java")
-    public CronetUrlRequestContext(final CronetEngine.Builder builder) {
+    public CronetUrlRequestContext(CronetEngine.Builder builder) {
         CronetLibraryLoader.ensureInitialized(builder.getContext(), builder);
         nativeSetMinLogLevel(getLoggingLevel());
         synchronized (mLock) {
@@ -91,7 +91,6 @@ class CronetUrlRequestContext extends CronetEngine {
         Runnable task = new Runnable() {
             @Override
             public void run() {
-                CronetLibraryLoader.ensureInitializedOnMainThread(builder.getContext());
                 synchronized (mLock) {
                     // mUrlRequestContextAdapter is guaranteed to exist until
                     // initialization on main and network threads completes and
