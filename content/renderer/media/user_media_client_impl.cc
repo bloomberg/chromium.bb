@@ -740,16 +740,13 @@ void UserMediaClientImpl::OnDevicesEnumerated(
 
   if (request_id == request->audio_input_request_id) {
     request->has_audio_input_returned = true;
-    DCHECK(request->audio_input_devices.empty());
     request->audio_input_devices = device_array;
   } else if (request_id == request->video_input_request_id) {
     request->has_video_input_returned = true;
-    DCHECK(request->video_input_devices.empty());
     request->video_input_devices = device_array;
   } else {
     DCHECK_EQ(request->audio_output_request_id, request_id);
     request->has_audio_output_returned = true;
-    DCHECK(request->audio_output_devices.empty());
     request->audio_output_devices = device_array;
   }
 
