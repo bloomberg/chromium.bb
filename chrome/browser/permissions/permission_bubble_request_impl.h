@@ -37,7 +37,6 @@ class PermissionBubbleRequestImpl : public PermissionBubbleRequest {
   // PermissionBubbleRequest:
   gfx::VectorIconId GetVectorIconId() const override;
   int GetIconId() const override;
-  base::string16 GetMessageText() const override;
   base::string16 GetMessageTextFragment() const override;
   GURL GetOrigin() const override;
   // Remember to call RegisterActionTaken for these methods if you are

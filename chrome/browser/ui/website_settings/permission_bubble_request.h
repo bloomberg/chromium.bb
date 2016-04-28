@@ -57,11 +57,6 @@ class PermissionBubbleRequest {
   // Must be a valid icon of size 18x18.
   virtual int GetIconId() const = 0;
 
-  // Returns the full prompt text for this permission. This is the only text
-  // that will be shown in the single-permission case and should be phrased
-  // positively as a complete sentence.
-  virtual base::string16 GetMessageText() const = 0;
-
   // Returns the shortened prompt text for this permission.  Must be phrased
   // as a heading, e.g. "Location", or "Camera". The permission bubble may
   // coalesce different requests, and if it does, this text will be displayed

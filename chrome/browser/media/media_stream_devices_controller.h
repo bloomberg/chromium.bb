@@ -39,6 +39,7 @@ class MediaStreamDevicesController : public PermissionBubbleRequest {
   bool IsAllowedForVideo() const;
   bool IsAskingForAudio() const;
   bool IsAskingForVideo() const;
+  base::string16 GetMessageText() const;
 
   // Forces the permissions to be denied (without being persisted) regardless
   // of what the previous state was.  If the user had previously allowed the
@@ -51,7 +52,6 @@ class MediaStreamDevicesController : public PermissionBubbleRequest {
 
   // PermissionBubbleRequest:
   int GetIconId() const override;
-  base::string16 GetMessageText() const override;
   base::string16 GetMessageTextFragment() const override;
   GURL GetOrigin() const override;
   void PermissionGranted() override;

@@ -27,13 +27,11 @@ class CancelledRequest : public PermissionBubbleRequest {
  public:
   explicit CancelledRequest(PermissionBubbleRequest* cancelled)
       : icon_(cancelled->GetIconId()),
-        message_text_(cancelled->GetMessageText()),
         message_fragment_(cancelled->GetMessageTextFragment()),
         origin_(cancelled->GetOrigin()) {}
   ~CancelledRequest() override {}
 
   int GetIconId() const override { return icon_; }
-  base::string16 GetMessageText() const override { return message_text_; }
   base::string16 GetMessageTextFragment() const override {
     return message_fragment_;
   }
@@ -48,7 +46,6 @@ class CancelledRequest : public PermissionBubbleRequest {
 
  private:
   int icon_;
-  base::string16 message_text_;
   base::string16 message_fragment_;
   GURL origin_;
 };

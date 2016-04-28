@@ -36,9 +36,11 @@
 
 namespace {
 
+#if defined(OS_ANDROID)
 // If the site requested larger quota than this threshold, show a different
 // message to the user.
 const int64_t kRequestLargeQuotaThreshold = 5 * 1024 * 1024;
+#endif
 
 // QuotaPermissionRequest ---------------------------------------------
 
@@ -55,7 +57,6 @@ class QuotaPermissionRequest : public PermissionBubbleRequest {
  private:
   // PermissionBubbleRequest:
   int GetIconId() const override;
-  base::string16 GetMessageText() const override;
   base::string16 GetMessageTextFragment() const override;
   GURL GetOrigin() const override;
   void PermissionGranted() override;
@@ -87,14 +88,6 @@ QuotaPermissionRequest::~QuotaPermissionRequest() {}
 int QuotaPermissionRequest::GetIconId() const {
   // TODO(gbillock): get the proper image here
   return IDR_INFOBAR_WARNING;
-}
-
-base::string16 QuotaPermissionRequest::GetMessageText() const {
-  return l10n_util::GetStringFUTF16(
-      (requested_quota_ > kRequestLargeQuotaThreshold
-           ? IDS_REQUEST_LARGE_QUOTA_INFOBAR_QUESTION
-           : IDS_REQUEST_QUOTA_INFOBAR_QUESTION),
-      url_formatter::FormatUrlForSecurityDisplay(origin_url_));
 }
 
 base::string16 QuotaPermissionRequest::GetMessageTextFragment() const {

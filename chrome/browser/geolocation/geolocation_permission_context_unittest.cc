@@ -17,6 +17,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/id_map.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/clock.h"
@@ -391,7 +392,9 @@ base::string16 GeolocationPermissionContextTests::GetPromptText() {
 #if !BUILDFLAG(ANDROID_JAVA_UI)
   PermissionBubbleManager* manager =
       PermissionBubbleManager::FromWebContents(web_contents());
-  return manager->requests_.front()->GetMessageText();
+  PermissionBubbleRequest* request = manager->requests_.front();
+  return base::ASCIIToUTF16(request->GetOrigin().spec()) +
+         request->GetMessageTextFragment();
 #else
   infobars::InfoBar* infobar = infobar_service()->infobar_at(0);
   ConfirmInfoBarDelegate* infobar_delegate =

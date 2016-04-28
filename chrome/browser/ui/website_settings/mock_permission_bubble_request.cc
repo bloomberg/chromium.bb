@@ -61,10 +61,6 @@ int MockPermissionBubbleRequest::GetIconId() const {
   return IDR_INFOBAR_MEDIA_STREAM_CAMERA;
 }
 
-base::string16 MockPermissionBubbleRequest::GetMessageText() const {
-  return text_;
-}
-
 base::string16 MockPermissionBubbleRequest::GetMessageTextFragment() const {
   return text_;
 }

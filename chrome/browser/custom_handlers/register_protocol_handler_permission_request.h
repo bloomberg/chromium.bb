@@ -28,7 +28,6 @@ class RegisterProtocolHandlerPermissionRequest
   // PermissionBubbleRequest:
   gfx::VectorIconId GetVectorIconId() const override;
   int GetIconId() const override;
-  base::string16 GetMessageText() const override;
   base::string16 GetMessageTextFragment() const override;
   GURL GetOrigin() const override;
   void PermissionGranted() override;

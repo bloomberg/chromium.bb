@@ -13913,11 +13913,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       </message>
 
       <!-- Push messaging strings -->
-      <message name="IDS_PUSH_MESSAGES_PERMISSION_QUESTION" desc="Question asked on the info bar whenever a domain wants to send push messages">
-          <ph name="URL">
-            $1<ex>push.google.com</ex>
-          </ph> wants to send you notifications.
-      </message>
       <message name="IDS_PUSH_MESSAGES_TAB_LABEL" desc="Label for the push messages section on Content Settings dialog">
         Push Messages
       </message>

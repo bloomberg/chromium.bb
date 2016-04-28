@@ -233,6 +233,18 @@ bool MediaStreamDevicesController::IsAskingForVideo() const {
   return old_video_setting_ == CONTENT_SETTING_ASK;
 }
 
+base::string16 MediaStreamDevicesController::GetMessageText() const {
+  int message_id = IDS_MEDIA_CAPTURE_AUDIO_AND_VIDEO;
+  if (!IsAskingForAudio())
+    message_id = IDS_MEDIA_CAPTURE_VIDEO_ONLY;
+  else if (!IsAskingForVideo())
+    message_id = IDS_MEDIA_CAPTURE_AUDIO_ONLY;
+  return l10n_util::GetStringFUTF16(
+      message_id,
+      url_formatter::FormatUrlForSecurityDisplay(
+          GetOrigin(), url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC));
+}
+
 void MediaStreamDevicesController::ForcePermissionDeniedTemporarily() {
   base::AutoReset<bool> persist_permissions(
       &persist_permission_changes_, false);
@@ -248,18 +260,6 @@ int MediaStreamDevicesController::GetIconId() const {
     return IDR_INFOBAR_MEDIA_STREAM_CAMERA;
 
   return IDR_INFOBAR_MEDIA_STREAM_MIC;
-}
-
-base::string16 MediaStreamDevicesController::GetMessageText() const {
-  int message_id = IDS_MEDIA_CAPTURE_AUDIO_AND_VIDEO;
-  if (!IsAskingForAudio())
-    message_id = IDS_MEDIA_CAPTURE_VIDEO_ONLY;
-  else if (!IsAskingForVideo())
-    message_id = IDS_MEDIA_CAPTURE_AUDIO_ONLY;
-  return l10n_util::GetStringFUTF16(
-      message_id,
-      url_formatter::FormatUrlForSecurityDisplay(
-          GetOrigin(), url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC));
 }
 
 base::string16 MediaStreamDevicesController::GetMessageTextFragment() const {
