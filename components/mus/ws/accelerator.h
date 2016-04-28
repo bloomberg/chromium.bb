@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "components/mus/public/interfaces/input_event_matcher.mojom.h"
+#include "components/mus/public/interfaces/event_matcher.mojom.h"
 #include "components/mus/ws/event_matcher.h"
 
 namespace ui {

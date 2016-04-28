@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "components/mus/public/interfaces/input_event_matcher.mojom.h"
+#include "components/mus/public/interfaces/event_matcher.mojom.h"
 #include "components/mus/public/interfaces/input_events.mojom.h"
 #include "components/mus/public/interfaces/window_manager_constants.mojom.h"
 
