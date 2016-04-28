@@ -1,14 +1,18 @@
-achuith@chromium.org
 bauerb@chromium.org
 dbeam@chromium.org
-estade@chromium.org
+dpapad@chromium.org
+michaelpg@chromium.org
 pam@chromium.org
 xiyuan@chromium.org
+
+# Emeritus
+estade@chromium.org
 
 per-file devtools_ui*=pfeldman@chromium.org
 per-file inspect_ui*=pfeldman@chromium.org
 per-file md_history_ui*=calamity@chromium.org
 per-file md_history_ui*=tsergeant@chromium.org
+per-file signin_internals_ui*=achuith@chromium.org
 
 # Maintaining ownership from this file's original Chrome OS location.
 per-file device_log_ui*=stevenjb@chromium.org
