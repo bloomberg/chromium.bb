@@ -9,19 +9,20 @@
 
 namespace device {
 
+#if !defined(OS_CHROMEOS) && !defined(OS_LINUX)
+// static
+base::WeakPtr<BluetoothLocalGattCharacteristic>
+BluetoothLocalGattCharacteristic::Create(const BluetoothUUID& uuid,
+                                         Properties properties,
+                                         Permissions permissions,
+                                         BluetoothLocalGattService* service) {
+  NOTIMPLEMENTED();
+  return nullptr;
+}
+#endif
+
 BluetoothLocalGattCharacteristic::BluetoothLocalGattCharacteristic() {}
 
 BluetoothLocalGattCharacteristic::~BluetoothLocalGattCharacteristic() {}
-
-// static
-BluetoothLocalGattCharacteristic* BluetoothLocalGattCharacteristic::Create(
-    const BluetoothUUID& uuid,
-    const std::vector<uint8_t>& value,
-    Properties properties,
-    Permissions permissions,
-    BluetoothLocalGattService* service) {
-  NOTIMPLEMENTED();
-  return NULL;
-}
 
 }  // namespace device

@@ -5,9 +5,7 @@
 #ifndef DEVICE_BLUETOOTH_BLUEZ_BLUETOOTH_GATT_SERVICE_BLUEZ_H_
 #define DEVICE_BLUETOOTH_BLUEZ_BLUETOOTH_GATT_SERVICE_BLUEZ_H_
 
-#include <map>
 #include <string>
-#include <vector>
 
 #include "base/macros.h"
 #include "dbus/object_path.h"
@@ -36,11 +34,9 @@ class BluetoothGattServiceBlueZ : public virtual device::BluetoothGattService {
   BluetoothAdapterBlueZ* GetAdapter() const;
 
  protected:
-  explicit BluetoothGattServiceBlueZ(BluetoothAdapterBlueZ* adapter);
+  BluetoothGattServiceBlueZ(BluetoothAdapterBlueZ* adapter,
+                            dbus::ObjectPath object_path);
   ~BluetoothGattServiceBlueZ() override;
-
-  // Object path of the GATT service.
-  dbus::ObjectPath object_path_;
 
  private:
   friend class BluetoothDeviceBlueZ;
@@ -48,6 +44,9 @@ class BluetoothGattServiceBlueZ : public virtual device::BluetoothGattService {
   // The adapter associated with this service. It's ok to store a raw pointer
   // here since |adapter_| indirectly owns this instance.
   BluetoothAdapterBlueZ* adapter_;
+
+  // Object path of the GATT service.
+  dbus::ObjectPath object_path_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothGattServiceBlueZ);
 };

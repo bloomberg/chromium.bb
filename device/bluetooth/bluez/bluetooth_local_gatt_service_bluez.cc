@@ -2,15 +2,33 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/bluetooth/bluez/bluetooth_local_gatt_service_bluez.h"
+#include <device/bluetooth/bluez/bluetooth_local_gatt_service_bluez.h>
 
-#include "base/callback.h"
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluez/bluetooth_adapter_bluez.h"
+
+namespace device {
+
+// static
+base::WeakPtr<BluetoothLocalGattService> BluetoothLocalGattService::Create(
+    BluetoothAdapter* adapter,
+    const BluetoothUUID& uuid,
+    bool is_primary,
+    BluetoothLocalGattService* included_service,
+    BluetoothLocalGattService::Delegate* delegate) {
+  bluez::BluetoothAdapterBlueZ* adapter_bluez =
+      static_cast<bluez::BluetoothAdapterBlueZ*>(adapter);
+  bluez::BluetoothLocalGattServiceBlueZ* service =
+      new bluez::BluetoothLocalGattServiceBlueZ(adapter_bluez, uuid, is_primary,
+                                                delegate);
+  return service->weak_ptr_factory_.GetWeakPtr();
+}
+
+}  // device
 
 namespace bluez {
 
@@ -19,19 +37,14 @@ BluetoothLocalGattServiceBlueZ::BluetoothLocalGattServiceBlueZ(
     const device::BluetoothUUID& uuid,
     bool is_primary,
     device::BluetoothLocalGattService::Delegate* delegate)
-    : BluetoothGattServiceBlueZ(adapter),
+    : BluetoothGattServiceBlueZ(adapter, AddGuidToObjectPath("/service")),
       uuid_(uuid),
       is_primary_(is_primary),
       delegate_(delegate),
       weak_ptr_factory_(this) {
-  // TODO(rkc): Move this code in a common location. It is used by
-  // BluetoothAdvertisementBlueZ() also.
-  std::string GuidString = base::GenerateGUID();
-  base::RemoveChars(GuidString, "-", &GuidString);
-  object_path_ = dbus::ObjectPath(adapter_->object_path().value() +
-                                  "/service/" + GuidString);
-  VLOG(1) << "Creating local GATT service with identifier: "
-          << object_path_.value();
+  // TODO(rkc): Get base application path from adapter and prefix it here.
+  VLOG(1) << "Creating local GATT service with identifier: " << GetIdentifier();
+  adapter->AddLocalGattService(base::WrapUnique(this));
 }
 
 BluetoothLocalGattServiceBlueZ::~BluetoothLocalGattServiceBlueZ() {}
@@ -44,42 +57,36 @@ bool BluetoothLocalGattServiceBlueZ::IsPrimary() const {
   return is_primary_;
 }
 
-// static
-base::WeakPtr<device::BluetoothLocalGattService>
-BluetoothLocalGattServiceBlueZ::Create(
-    device::BluetoothAdapter* adapter,
-    const device::BluetoothUUID& uuid,
-    bool is_primary,
-    BluetoothLocalGattService* /* included_service */,
-    BluetoothLocalGattService::Delegate* delegate) {
-  BluetoothAdapterBlueZ* adapter_bluez =
-      static_cast<BluetoothAdapterBlueZ*>(adapter);
-  BluetoothLocalGattServiceBlueZ* service = new BluetoothLocalGattServiceBlueZ(
-      adapter_bluez, uuid, is_primary, delegate);
-  adapter_bluez->AddLocalGattService(base::WrapUnique(service));
-  return service->weak_ptr_factory_.GetWeakPtr();
-}
-
 void BluetoothLocalGattServiceBlueZ::Register(
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
-  // TODO(rkc): Call adapter_->RegisterGattService.
+  //  GetAdapter()->RegisterGattService(this, callback, error_callback);
 }
 
 void BluetoothLocalGattServiceBlueZ::Unregister(
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
-  // TODO(rkc): Call adapter_->UnregisterGattService.
+  DCHECK(GetAdapter());
+  //  GetAdapter()->UnregisterGattService(this, callback, error_callback);
 }
 
-void BluetoothLocalGattServiceBlueZ::OnRegistrationError(
-    const ErrorCallback& error_callback,
-    const std::string& error_name,
-    const std::string& error_message) {
-  VLOG(1) << "[Un]Register Service failed: " << error_name
-          << ", message: " << error_message;
-  error_callback.Run(
-      BluetoothGattServiceBlueZ::DBusErrorToServiceError(error_name));
+const std::vector<std::unique_ptr<BluetoothLocalGattCharacteristicBlueZ>>&
+BluetoothLocalGattServiceBlueZ::GetCharacteristics() const {
+  return characteristics_;
+}
+
+// static
+dbus::ObjectPath BluetoothLocalGattServiceBlueZ::AddGuidToObjectPath(
+    const std::string& path) {
+  std::string GuidString = base::GenerateGUID();
+  base::RemoveChars(GuidString, "-", &GuidString);
+
+  return dbus::ObjectPath(path + GuidString);
+}
+
+void BluetoothLocalGattServiceBlueZ::AddCharacteristic(
+    std::unique_ptr<BluetoothLocalGattCharacteristicBlueZ> characteristic) {
+  characteristics_.push_back(std::move(characteristic));
 }
 
 }  // namespace bluez

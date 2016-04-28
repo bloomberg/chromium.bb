@@ -20,11 +20,10 @@ BluetoothRemoteGattServiceBlueZ::BluetoothRemoteGattServiceBlueZ(
     BluetoothAdapterBlueZ* adapter,
     BluetoothDeviceBlueZ* device,
     const dbus::ObjectPath& object_path)
-    : BluetoothGattServiceBlueZ(adapter),
+    : BluetoothGattServiceBlueZ(adapter, object_path),
       device_(device),
       discovery_complete_(false),
       weak_ptr_factory_(this) {
-  object_path_ = object_path;
   VLOG(1) << "Creating remote GATT service with identifier: "
           << object_path.value();
   DCHECK(GetAdapter());

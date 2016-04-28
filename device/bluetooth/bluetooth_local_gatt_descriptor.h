@@ -46,9 +46,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLocalGattDescriptor
   // |kCharacteristicPresentationFormat| are supported for locally hosted
   // descriptors. This method will return NULL if |uuid| is any one of the
   // unsupported predefined descriptor UUIDs.
-  static BluetoothLocalGattDescriptor* Create(
+  static base::WeakPtr<BluetoothLocalGattDescriptor> Create(
       const BluetoothUUID& uuid,
-      const std::vector<uint8_t>& value,
       BluetoothGattCharacteristic::Permissions permissions,
       BluetoothLocalGattCharacteristic* characteristic);
 

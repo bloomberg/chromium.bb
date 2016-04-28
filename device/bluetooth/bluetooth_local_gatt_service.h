@@ -44,7 +44,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLocalGattService
   class Delegate {
    public:
     // Callbacks used for communicating GATT request responses.
-    typedef base::Callback<void(const std::vector<uint8_t>)> ValueCallback;
+    typedef base::Callback<void(const std::vector<uint8_t>&)> ValueCallback;
     typedef base::Closure ErrorCallback;
 
     // Called when a remote device in the central role requests to read the
@@ -74,18 +74,16 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLocalGattService
     // satisfied by the remote device.
     //
     // To respond to the request with success the delegate must invoke
-    // |callback| with the new value of the characteristic. Doing so will
-    // automatically update the value property of |characteristic|. To respond
-    // to the request with failure (e.g. if an invalid offset was given),
-    // delegates must invoke |error_callback|. If neither callback parameter is
-    // invoked, the request will time out and result in an error. Therefore,
-    // delegates MUST invoke either |callback| or |error_callback|.
+    // |callback|. To respond to the request with failure delegates must invoke
+    // |error_callback|. If neither callback parameter is invoked, the request
+    // will time out and result in an error. Therefore, delegates MUST invoke
+    // either |callback| or |error_callback|.
     virtual void OnCharacteristicWriteRequest(
         const BluetoothLocalGattService* service,
         const BluetoothLocalGattCharacteristic* characteristic,
         const std::vector<uint8_t>& value,
         int offset,
-        const ValueCallback& callback,
+        const base::Closure& callback,
         const ErrorCallback& error_callback) = 0;
 
     // Called when a remote device in the central role requests to read the
@@ -115,18 +113,16 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLocalGattService
     // satisfied by the remote device.
     //
     // To respond to the request with success the delegate must invoke
-    // |callback| with the new value of the descriptor. Doing so will
-    // automatically update the value property of |descriptor|. To respond
-    // to the request with failure (e.g. if an invalid offset was given),
-    // delegates must invoke |error_callback|. If neither callback parameter is
-    // invoked, the request will time out and result in an error. Therefore,
-    // delegates MUST invoke either |callback| or |error_callback|.
+    // |callback|. To respond to the request with failure delegates must invoke
+    // |error_callback|. If neither callback parameter is invoked, the request
+    // will time out and result in an error. Therefore, delegates MUST invoke
+    // either |callback| or |error_callback|.
     virtual void OnDescriptorWriteRequest(
         const BluetoothLocalGattService* service,
         const BluetoothLocalGattDescriptor* descriptor,
         const std::vector<uint8_t>& value,
         int offset,
-        const ValueCallback& callback,
+        const base::Closure& callback,
         const ErrorCallback& error_callback) = 0;
   };
 

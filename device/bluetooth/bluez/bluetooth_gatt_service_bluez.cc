@@ -5,26 +5,16 @@
 #include "device/bluetooth/bluez/bluetooth_gatt_service_bluez.h"
 
 #include "base/logging.h"
+#include "device/bluetooth/bluetooth_gatt_service.h"
 #include "device/bluetooth/bluez/bluetooth_adapter_bluez.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace bluez {
 
-namespace {
-
-// TODO(jamuraa) move these to cros_system_api later
-const char kErrorFailed[] = "org.bluez.Error.Failed";
-const char kErrorInProgress[] = "org.bluez.Error.InProgress";
-const char kErrorInvalidValueLength[] = "org.bluez.Error.InvalidValueLength";
-const char kErrorNotAuthorized[] = "org.bluez.Error.NotAuthorized";
-const char kErrorNotPaired[] = "org.bluez.Error.NotPaired";
-const char kErrorNotSupported[] = "org.bluez.Error.NotSupported";
-const char kErrorNotPermitted[] = "org.bluez.Error.NotPermitted";
-
-}  // namespace
-
 BluetoothGattServiceBlueZ::BluetoothGattServiceBlueZ(
-    BluetoothAdapterBlueZ* adapter)
-    : adapter_(adapter) {
+    BluetoothAdapterBlueZ* adapter,
+    dbus::ObjectPath object_path)
+    : adapter_(adapter), object_path_(object_path) {
   DCHECK(adapter_);
 }
 
@@ -38,19 +28,20 @@ std::string BluetoothGattServiceBlueZ::GetIdentifier() const {
 device::BluetoothGattService::GattErrorCode
 BluetoothGattServiceBlueZ::DBusErrorToServiceError(std::string error_name) {
   device::BluetoothGattService::GattErrorCode code = GATT_ERROR_UNKNOWN;
-  if (error_name == kErrorFailed) {
+  if (error_name == bluetooth_gatt_service::kErrorFailed) {
     code = GATT_ERROR_FAILED;
-  } else if (error_name == kErrorInProgress) {
+  } else if (error_name == bluetooth_gatt_service::kErrorInProgress) {
     code = GATT_ERROR_IN_PROGRESS;
-  } else if (error_name == kErrorInvalidValueLength) {
+  } else if (error_name == bluetooth_gatt_service::kErrorInvalidValueLength) {
     code = GATT_ERROR_INVALID_LENGTH;
-  } else if (error_name == kErrorNotPermitted) {
+  } else if (error_name == bluetooth_gatt_service::kErrorReadNotPermitted ||
+             error_name == bluetooth_gatt_service::kErrorWriteNotPermitted) {
     code = GATT_ERROR_NOT_PERMITTED;
-  } else if (error_name == kErrorNotAuthorized) {
+  } else if (error_name == bluetooth_gatt_service::kErrorNotAuthorized) {
     code = GATT_ERROR_NOT_AUTHORIZED;
-  } else if (error_name == kErrorNotPaired) {
+  } else if (error_name == bluetooth_gatt_service::kErrorNotPaired) {
     code = GATT_ERROR_NOT_PAIRED;
-  } else if (error_name == kErrorNotSupported) {
+  } else if (error_name == bluetooth_gatt_service::kErrorNotSupported) {
     code = GATT_ERROR_NOT_SUPPORTED;
   }
   return code;

@@ -7,24 +7,47 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "dbus/object_path.h"
+#include "device/bluetooth/bluetooth_local_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_local_gatt_descriptor.h"
+#include "device/bluetooth/bluetooth_uuid.h"
 #include "device/bluetooth/bluez/bluetooth_gatt_descriptor_bluez.h"
 
 namespace bluez {
 
+class BluetoothLocalGattCharacteristicBlueZ;
+
 // The BluetoothLocalGattDescriptorBlueZ class implements
 // BluetoothRemoteGattDescriptor for remote and local GATT characteristic
-// descriptors
-// for platforms that use BlueZ.
+// descriptors for platforms that use BlueZ.
 class BluetoothLocalGattDescriptorBlueZ
     : public BluetoothGattDescriptorBlueZ,
       public device::BluetoothLocalGattDescriptor {
  public:
- private:
-  explicit BluetoothLocalGattDescriptorBlueZ(
-      const dbus::ObjectPath& object_path);
+  static base::WeakPtr<BluetoothLocalGattDescriptor> Create(
+      const device::BluetoothUUID& uuid,
+      device::BluetoothGattCharacteristic::Permissions permissions,
+      device::BluetoothLocalGattCharacteristic* characteristic);
+
+  BluetoothLocalGattDescriptorBlueZ(
+      const device::BluetoothUUID& uuid,
+      BluetoothLocalGattCharacteristicBlueZ* characteristic);
   ~BluetoothLocalGattDescriptorBlueZ() override;
+
+  // device::BluetoothLocalGattDescriptor overrides.
+  device::BluetoothUUID GetUUID() const override;
+  device::BluetoothGattCharacteristic::Permissions GetPermissions()
+      const override;
+
+  BluetoothLocalGattCharacteristicBlueZ* GetCharacteristic() const;
+
+ private:
+  // Needs access to weak_ptr_factory_.
+  friend class device::BluetoothLocalGattDescriptor;
+  // UUID of this descriptor.
+  device::BluetoothUUID uuid_;
+
+  // Characteristic that contains this descriptor.
+  BluetoothLocalGattCharacteristicBlueZ* characteristic_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

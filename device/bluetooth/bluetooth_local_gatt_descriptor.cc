@@ -8,19 +8,20 @@
 
 namespace device {
 
+#if !defined(OS_CHROMEOS) && !defined(OS_LINUX)
+// static
+base::WeakPtr<BluetoothLocalGattDescriptor>
+BluetoothLocalGattDescriptor::Create(
+    const BluetoothUUID& uuid,
+    BluetoothGattCharacteristic::Permissions permissions,
+    BluetoothLocalGattCharacteristic* characteristic) {
+  NOTIMPLEMENTED();
+  return nullptr;
+}
+#endif
+
 BluetoothLocalGattDescriptor::BluetoothLocalGattDescriptor() {}
 
 BluetoothLocalGattDescriptor::~BluetoothLocalGattDescriptor() {}
-
-// static
-BluetoothLocalGattDescriptor* BluetoothLocalGattDescriptor::Create(
-    const BluetoothUUID& uuid,
-    const std::vector<uint8_t>& value,
-    BluetoothGattCharacteristic::Permissions permissions,
-    BluetoothLocalGattCharacteristic* characteristic) {
-  LOG(ERROR) << "Creating local GATT characteristic descriptors currently not "
-             << "supported.";
-  return NULL;
-}
 
 }  // namespace device

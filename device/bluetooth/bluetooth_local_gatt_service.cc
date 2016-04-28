@@ -6,6 +6,19 @@
 
 namespace device {
 
+#if !defined(OS_CHROMEOS) && !defined(OS_LINUX)
+// static
+base::WeakPtr<BluetoothLocalGattService> BluetoothLocalGattService::Create(
+    BluetoothAdapter* adapter,
+    const BluetoothUUID& uuid,
+    bool is_primary,
+    BluetoothLocalGattService* included_service,
+    BluetoothLocalGattService::Delegate* delegate) {
+  NOTIMPLEMENTED();
+  return nullptr;
+}
+#endif
+
 BluetoothLocalGattService::BluetoothLocalGattService() {}
 
 BluetoothLocalGattService::~BluetoothLocalGattService() {}

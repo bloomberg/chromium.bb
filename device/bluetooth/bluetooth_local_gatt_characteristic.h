@@ -42,9 +42,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLocalGattCharacteristic
   // characteristic.
   // TODO(rkc): Investigate how to handle |PROPERTY_EXTENDED_PROPERTIES|
   // correctly.
-  static BluetoothLocalGattCharacteristic* Create(
+  static base::WeakPtr<BluetoothLocalGattCharacteristic> Create(
       const BluetoothUUID& uuid,
-      const std::vector<uint8_t>& value,
       Properties properties,
       Permissions permissions,
       BluetoothLocalGattService* service);

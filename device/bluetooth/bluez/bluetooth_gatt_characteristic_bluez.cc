@@ -10,7 +10,7 @@
 namespace bluez {
 
 BluetoothGattCharacteristicBlueZ::BluetoothGattCharacteristicBlueZ(
-    const dbus::ObjectPath& object_path)
+    dbus::ObjectPath object_path)
     : object_path_(object_path), weak_ptr_factory_(this) {}
 
 BluetoothGattCharacteristicBlueZ::~BluetoothGattCharacteristicBlueZ() {}

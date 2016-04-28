@@ -7,16 +7,61 @@
 #include <string>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
+#include "device/bluetooth/bluez/bluetooth_local_gatt_characteristic_bluez.h"
+#include "device/bluetooth/bluez/bluetooth_local_gatt_service_bluez.h"
+
+namespace device {
+
+// static
+base::WeakPtr<BluetoothLocalGattDescriptor>
+BluetoothLocalGattDescriptor::Create(
+    const BluetoothUUID& uuid,
+    BluetoothGattCharacteristic::Permissions permissions,
+    BluetoothLocalGattCharacteristic* characteristic) {
+  DCHECK(characteristic);
+  bluez::BluetoothLocalGattCharacteristicBlueZ* characteristic_bluez =
+      static_cast<bluez::BluetoothLocalGattCharacteristicBlueZ*>(
+          characteristic);
+  bluez::BluetoothLocalGattDescriptorBlueZ* descriptor =
+      new bluez::BluetoothLocalGattDescriptorBlueZ(uuid, characteristic_bluez);
+  return descriptor->weak_ptr_factory_.GetWeakPtr();
+}
+
+}  // device
 
 namespace bluez {
 
 BluetoothLocalGattDescriptorBlueZ::BluetoothLocalGattDescriptorBlueZ(
-    const dbus::ObjectPath& object_path)
-    : BluetoothGattDescriptorBlueZ(object_path), weak_ptr_factory_(this) {
+    const device::BluetoothUUID& uuid,
+    BluetoothLocalGattCharacteristicBlueZ* characteristic)
+    : BluetoothGattDescriptorBlueZ(
+          BluetoothLocalGattServiceBlueZ::AddGuidToObjectPath(
+              characteristic->object_path().value() + "/descriptor")),
+      uuid_(uuid),
+      characteristic_(characteristic),
+      weak_ptr_factory_(this) {
+  DCHECK(characteristic->GetService());
   VLOG(1) << "Creating local GATT descriptor with identifier: "
           << GetIdentifier();
+  characteristic->AddDescriptor(base::WrapUnique(this));
 }
 
 BluetoothLocalGattDescriptorBlueZ::~BluetoothLocalGattDescriptorBlueZ() {}
+
+device::BluetoothUUID BluetoothLocalGattDescriptorBlueZ::GetUUID() const {
+  return uuid_;
+}
+
+device::BluetoothGattCharacteristic::Permissions
+BluetoothLocalGattDescriptorBlueZ::GetPermissions() const {
+  NOTIMPLEMENTED();
+  return device::BluetoothGattCharacteristic::Permissions();
+}
+
+BluetoothLocalGattCharacteristicBlueZ*
+BluetoothLocalGattDescriptorBlueZ::GetCharacteristic() const {
+  return characteristic_;
+}
 
 }  // namespace bluez

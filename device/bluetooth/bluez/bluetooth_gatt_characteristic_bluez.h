@@ -27,8 +27,7 @@ class BluetoothGattCharacteristicBlueZ
   const dbus::ObjectPath& object_path() const { return object_path_; }
 
  protected:
-  explicit BluetoothGattCharacteristicBlueZ(
-      const dbus::ObjectPath& object_path);
+  explicit BluetoothGattCharacteristicBlueZ(dbus::ObjectPath object_path);
   ~BluetoothGattCharacteristicBlueZ() override;
 
  private:
