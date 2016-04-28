@@ -166,6 +166,7 @@
     <!-- The Account Signin page appears in the First Run Experience (amongst other places), so uses
     a lot of the fre_* dimensions for consistency. -->
     <dimen name="signin_image_carousel_width">240dp</dimen>
+    <dimen name="signin_chooser_padding">16dp</dimen>
     
     <!-- Autofill card unmasking prompt dimensions -->
     <dimen name="autofill_card_unmask_tooltip_horizontal_padding">16dp</dimen>

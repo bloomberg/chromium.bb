@@ -10,14 +10,10 @@ import android.graphics.Bitmap;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.util.AttributeSet;
-import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -49,8 +45,7 @@ import java.util.List;
  * {@link AccountSigninView#setDelegate(Delegate)} after the view has been inflated.
  */
 
-public class AccountSigninView
-        extends FrameLayout implements AdapterView.OnItemClickListener, ProfileDownloader.Observer {
+public class AccountSigninView extends FrameLayout implements ProfileDownloader.Observer {
     /**
      * Callbacks for various account selection events.
      */
@@ -99,12 +94,9 @@ public class AccountSigninView
 
     private AccountManagerHelper mAccountManagerHelper;
     private List<String> mAccountNames;
-    private View mSigninView;
-    private AccountListAdapter mAccountListAdapter;
-    private ListView mAccountListView;
+    private AccountSigninChooseView mSigninChooseView;
     private ButtonCompat mPositiveButton;
     private Button mNegativeButton;
-    private TextView mTitle;
     private Listener mListener;
     private Delegate mDelegate;
     private String mForcedAccountName;
@@ -131,8 +123,6 @@ public class AccountSigninView
     public void init(ProfileDataCache profileData) {
         mProfileData = profileData;
         mProfileData.setObserver(this);
-        mAccountListAdapter = new AccountListAdapter(getContext(), profileData);
-        mAccountListView.setAdapter(mAccountListAdapter);
         showSigninPage();
     }
 
@@ -140,41 +130,12 @@ public class AccountSigninView
     protected void onFinishInflate() {
         super.onFinishInflate();
 
-        mSigninView = findViewById(R.id.signin_choose_account_view);
-
-        mTitle = (TextView) findViewById(R.id.signin_title);
-
-        mAccountListView = (ListView) findViewById(R.id.signin_account_list);
-        mAccountListView.setOnItemClickListener(this);
-        View signinChoiceDescription =
-                LayoutInflater.from(getContext())
-                        .inflate(R.layout.account_signin_choice_description_view, null, false);
-        signinChoiceDescription.setOnClickListener(null);
-        mAccountListView.addHeaderView(signinChoiceDescription);
-
-        // Once the user has touched this ListView, prevent the parent view from handling touch
-        // events. This allows the ListView to behave reasonably when nested inside a ListView.
-        // TODO(gogerald): Remove this listener after https://crbug.com/583774 has been fixed.
-        mAccountListView.setOnTouchListener(new ListView.OnTouchListener() {
+        mSigninChooseView = (AccountSigninChooseView) findViewById(R.id.account_signin_choose_view);
+        mSigninChooseView.setAddNewAccountObserver(new AccountSigninChooseView.Observer() {
             @Override
-            public boolean onTouch(View view, MotionEvent event) {
-                int action = event.getAction();
-                switch (action) {
-                    case MotionEvent.ACTION_DOWN:
-                        view.getParent().requestDisallowInterceptTouchEvent(true);
-                        break;
-
-                    case MotionEvent.ACTION_UP:
-                        view.performClick();
-                        view.getParent().requestDisallowInterceptTouchEvent(false);
-                        break;
-                    default:
-                        // Ignore.
-                        break;
-                }
-
-                view.onTouchEvent(event);
-                return true;
+            public void onAddNewAccount() {
+                mListener.onNewAccount();
+                RecordUserAction.record("Signin_AddAccountToDevice");
             }
         });
 
@@ -206,23 +167,6 @@ public class AccountSigninView
         mSigninSettingsControl = (TextView) findViewById(R.id.signin_settings_control);
         // For the spans to be clickable.
         mSigninSettingsControl.setMovementMethod(LinkMovementMethod.getInstance());
-    }
-
-    @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        // This assumes that view's layout_width and layout_height are set to match_parent.
-        assert MeasureSpec.getMode(widthMeasureSpec) == MeasureSpec.EXACTLY;
-        assert MeasureSpec.getMode(heightMeasureSpec) == MeasureSpec.EXACTLY;
-
-        int width = MeasureSpec.getSize(widthMeasureSpec);
-        int height = MeasureSpec.getSize(heightMeasureSpec);
-
-        // Sets title aspect ratio to be 16:9.
-        if (height > width) {
-            mTitle.setHeight(width * 9 / 16);
-        }
-
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
 
     @Override
@@ -300,24 +244,18 @@ public class AccountSigninView
                 return false;
             }
         } else {
-            accountToSelect = getIndexOfNewElement(oldAccountNames, mAccountNames,
-                    mAccountListAdapter.getSelectedAccountPosition());
+            accountToSelect = getIndexOfNewElement(
+                    oldAccountNames, mAccountNames, mSigninChooseView.getSelectedAccountPosition());
         }
 
-        mAccountListAdapter.clear();
+        mSigninChooseView.updateAccounts(mAccountNames, accountToSelect, mProfileData);
         if (!mAccountNames.isEmpty()) {
-            mAccountListAdapter.addAll(mAccountNames);
-            mAccountListAdapter.add(getResources().getString(R.string.signin_add_account));
-
             setUpSigninButton(true);
         } else {
             setUpSigninButton(false);
         }
 
         mProfileData.update();
-        updateProfileImages();
-
-        selectAccount(accountToSelect);
 
         return oldAccountNames != null
                 && !(oldAccountNames.size() == mAccountNames.size()
@@ -349,13 +287,7 @@ public class AccountSigninView
     @Override
     public void onProfileDownloaded(String accountId, String fullName, String givenName,
             Bitmap bitmap) {
-        updateProfileImages();
-    }
-
-    private void updateProfileImages() {
-        if (mProfileData == null) return;
-
-        mAccountListAdapter.notifyDataSetChanged();
+        mSigninChooseView.updateAccountProfileImages(mProfileData);
 
         if (mSignedIn) updateSignedInAccountInfo();
     }
@@ -386,7 +318,7 @@ public class AccountSigninView
         mSignedIn = false;
 
         mSigninConfirmationView.setVisibility(View.GONE);
-        mSigninView.setVisibility(View.VISIBLE);
+        mSigninChooseView.setVisibility(View.VISIBLE);
 
         setUpCancelButton();
         updateAccounts();
@@ -397,7 +329,7 @@ public class AccountSigninView
 
         updateSignedInAccountInfo();
 
-        mSigninView.setVisibility(View.GONE);
+        mSigninChooseView.setVisibility(View.GONE);
         mSigninConfirmationView.setVisibility(View.VISIBLE);
 
         setButtonsEnabled(true);
@@ -582,23 +514,6 @@ public class AccountSigninView
         return mForcedAccountName != null;
     }
 
-    // Overrides AdapterView.OnItemClickListener.
-    @Override
-    public void onItemClick(AdapterView<?> adapter, View view, int position, long id) {
-        int positionInAccountListAdapter = position - mAccountListView.getHeaderViewsCount();
-        if (positionInAccountListAdapter == mAccountListAdapter.getCount() - 1) {
-            mListener.onNewAccount();
-            RecordUserAction.record("Signin_AddAccountToDevice");
-        } else {
-            selectAccount(positionInAccountListAdapter);
-        }
-    }
-
-    private void selectAccount(int position) {
-        mAccountListAdapter.setSelectedAccountPosition(position);
-        mAccountListAdapter.notifyDataSetChanged();
-    }
-
     private void setPositiveButtonEnabled() {
         mPositiveButton.setButtonColor(
                 ApiCompatibilityUtils.getColor(getResources(), R.color.light_active_color));
@@ -618,6 +533,6 @@ public class AccountSigninView
     }
 
     private String getSelectedAccountName() {
-        return mAccountNames.get(mAccountListAdapter.getSelectedAccountPosition());
+        return mAccountNames.get(mSigninChooseView.getSelectedAccountPosition());
     }
 }
