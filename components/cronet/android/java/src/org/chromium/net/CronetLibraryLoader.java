@@ -34,7 +34,9 @@ class CronetLibraryLoader {
             if (sInitTaskPosted) {
                 return;
             }
+            ContextUtils.initApplicationContext(context.getApplicationContext());
             builder.loadLibrary();
+            ContextUtils.initApplicationContextForNative();
             if (!Version.CRONET_VERSION.equals(nativeGetCronetVersion())) {
                 throw new RuntimeException(String.format(
                       "Expected Cronet version number %s, "
@@ -44,9 +46,9 @@ class CronetLibraryLoader {
             }
             Log.i(TAG, "Cronet version: %s, arch: %s",
                     Version.CRONET_VERSION, System.getProperty("os.arch"));
-            ContextUtils.initApplicationContext(context.getApplicationContext());
             // Init native Chromium CronetEngine on Main UI thread.
             Runnable task = new Runnable() {
+                @Override
                 public void run() {
                     initOnMainThread(context);
                 }

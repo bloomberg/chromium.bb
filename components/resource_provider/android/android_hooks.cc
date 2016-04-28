@@ -46,7 +46,6 @@ JNI_EXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
 extern "C" JNI_EXPORT void InitApplicationContext(
     const base::android::JavaRef<jobject>& context) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  base::android::InitApplicationContext(env, context);
   resource_provider::Java_Main_init(
       env, base::android::GetApplicationContext());
 }

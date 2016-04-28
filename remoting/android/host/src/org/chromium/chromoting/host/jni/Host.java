@@ -30,8 +30,9 @@ public class Host {
      * @param context The Application context.
      */
     public static void loadLibrary(Context context) {
+        ContextUtils.initApplicationContext(context.getApplicationContext());
         System.loadLibrary("remoting_host_jni");
-        ContextUtils.initApplicationContext(context);
+        ContextUtils.initApplicationContextForNative();
     }
 
     public Host() {

@@ -7,7 +7,6 @@ package org.chromium.content.browser;
 import android.content.Context;
 import android.os.Handler;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ResourceExtractor;
 import org.chromium.base.ThreadUtils;
@@ -292,7 +291,6 @@ public class BrowserStartupController {
                     // TODO(yfriedman): Remove dependency on a command line flag for this.
                     DeviceUtils.addDeviceSpecificUserAgentSwitch(mContext);
 
-                    ContextUtils.initApplicationContext(mContext);
                     nativeSetCommandLineFlags(
                             singleProcess, nativeIsPluginEnabled() ? getPlugins() : null);
                     mPostResourceExtractionTasksCompleted = true;
@@ -319,8 +317,6 @@ public class BrowserStartupController {
         ResourceExtractor resourceExtractor = ResourceExtractor.get(mContext);
         resourceExtractor.startExtractingResources();
         resourceExtractor.waitForCompletion();
-
-        ContextUtils.initApplicationContext(mContext.getApplicationContext());
         nativeSetCommandLineFlags(false, null);
     }
 
