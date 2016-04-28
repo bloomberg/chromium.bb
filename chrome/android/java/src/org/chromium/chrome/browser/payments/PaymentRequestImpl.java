@@ -20,6 +20,7 @@ import org.chromium.chrome.browser.payments.ui.PaymentOption;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestUI;
 import org.chromium.chrome.browser.payments.ui.SectionInformation;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.mojo.system.MojoException;
@@ -93,7 +94,8 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         if (mContext == null) return;
 
         mMerchantName = webContents.getTitle();
-        mOrigin = webContents.getVisibleUrl();
+        // The feature is available only in secure context, so it's OK to not show HTTPS.
+        mOrigin = UrlUtilities.formatUrlForSecurityDisplay(webContents.getVisibleUrl(), false);
 
         final FaviconHelper faviconHelper = new FaviconHelper();
         float scale = mContext.getResources().getDisplayMetrics().density;
