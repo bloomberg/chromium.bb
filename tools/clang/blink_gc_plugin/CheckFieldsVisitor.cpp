@@ -9,9 +9,8 @@
 #include "BlinkGCPluginOptions.h"
 #include "RecordInfo.h"
 
-CheckFieldsVisitor::CheckFieldsVisitor(const BlinkGCPluginOptions& options)
-    : options_(options),
-      current_(0),
+CheckFieldsVisitor::CheckFieldsVisitor()
+    : current_(0),
       stack_allocated_host_(false) {
 }
 

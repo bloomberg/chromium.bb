@@ -10,6 +10,7 @@ set(plugin_sources
   CheckTraceVisitor.cpp
   CollectVisitor.cpp
   Config.cpp
+  DiagnosticsReporter.cpp
   Edge.cpp
   RecordInfo.cpp)
 
