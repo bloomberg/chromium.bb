@@ -1693,6 +1693,7 @@ test("base_unittests") {
     "base64url_unittest.cc",
     "big_endian_unittest.cc",
     "bind_unittest.cc",
+    "bit_cast_unittest.cc",
     "bits_unittest.cc",
     "build_time_unittest.cc",
     "callback_helpers_unittest.cc",

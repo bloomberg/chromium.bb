@@ -379,6 +379,7 @@
         'big_endian_unittest.cc',
         'bind_unittest.cc',
         'bind_unittest.nc',
+        'bit_cast_unittest.cc',
         'bits_unittest.cc',
         'build_time_unittest.cc',
         'callback_helpers_unittest.cc',
