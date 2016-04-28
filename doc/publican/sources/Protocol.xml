@@ -333,7 +333,7 @@
       A seat represents a group of input devices including mice,
       keyboards and touchscreens. It has a keyboard and pointer
       focus. Seats are global objects. Pointer events are delivered
-      in surface local coordinates.
+      in surface-local coordinates.
     </para>
     <para>
       The compositor maintains an implicit grab when a button is

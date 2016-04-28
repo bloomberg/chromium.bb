@@ -114,7 +114,7 @@
       As suggested above, there are a few problems with this
       approach. The X server doesn't have the information to
       decide which window should receive the event, nor can it
-      transform the screen coordinates to window local
+      transform the screen coordinates to window-local
       coordinates. And even though X has handed responsibility for
       the final painting of the screen to the compositing manager,
       X still controls the front buffer and modesetting. Most of
@@ -172,7 +172,7 @@
 	    in the scenegraph. Thus, the
 	    compositor can pick the right window
 	    and transform the screen coordinates
-	    to window local coordinates, by
+	    to window-local coordinates, by
 	    applying the inverse
 	    transformations. The types of
 	    transformation that can be applied
