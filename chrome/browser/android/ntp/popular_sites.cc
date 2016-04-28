@@ -18,8 +18,6 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/google/core/browser/google_util.h"
@@ -48,16 +46,13 @@ const char kPopularSitesVersionPref[] = "popular_sites_version";
 
 // Extract the country from the default search engine if the default search
 // engine is Google.
-std::string GetDefaultSearchEngineCountryCode(Profile* profile) {
-  DCHECK(profile);
+std::string GetDefaultSearchEngineCountryCode(
+    const TemplateURLService* template_url_service) {
+  DCHECK(template_url_service);
 
   base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   if (!cmd_line->HasSwitch(switches::kEnableNTPSearchEngineCountryDetection))
     return std::string();
-
-  const TemplateURLService* template_url_service =
-      TemplateURLServiceFactory::GetForProfile(profile);
-  DCHECK(template_url_service);
 
   const TemplateURL* default_provider =
       template_url_service->GetDefaultSearchProvider();
@@ -93,12 +88,13 @@ std::string GetVariationsServiceCountry() {
 // Google is the default search engine set. If Google is not the default search
 // engine use the country provided by VariationsService. Fallback to a default
 // if we can't make an educated guess.
-std::string GetCountryToUse(Profile* profile,
+std::string GetCountryToUse(const TemplateURLService* template_url_service,
                             const std::string& override_country) {
   if (!override_country.empty())
     return override_country;
 
-  std::string country_code = GetDefaultSearchEngineCountryCode(profile);
+  std::string country_code = GetDefaultSearchEngineCountryCode(
+      template_url_service);
 
   if (country_code.empty())
     country_code = GetVariationsServiceCountry();
@@ -179,32 +175,44 @@ PopularSites::Site::Site(const Site& other) = default;
 
 PopularSites::Site::~Site() {}
 
-PopularSites::PopularSites(Profile* profile,
+PopularSites::PopularSites(PrefService* prefs,
+                           const TemplateURLService* template_url_service,
+                           net::URLRequestContextGetter* download_context,
                            const std::string& override_country,
                            const std::string& override_version,
                            bool force_download,
                            const FinishedCallback& callback)
-    : PopularSites(profile,
-                   GetCountryToUse(profile, override_country),
+    : PopularSites(prefs,
+                   template_url_service,
+                   download_context,
+                   GetCountryToUse(template_url_service, override_country),
                    GetVersionToUse(override_version),
                    GURL(),
                    force_download,
                    callback) {}
 
-PopularSites::PopularSites(Profile* profile,
+PopularSites::PopularSites(PrefService* prefs,
+                           const TemplateURLService* template_url_service,
+                           net::URLRequestContextGetter* download_context,
                            const GURL& url,
                            const FinishedCallback& callback)
-    : PopularSites(profile, std::string(), std::string(), url, true, callback) {
-}
+    : PopularSites(prefs,
+                   template_url_service,
+                   download_context,
+                   std::string(),
+                   std::string(),
+                   url,
+                   true,
+                   callback) {}
 
 PopularSites::~PopularSites() {}
 
 std::string PopularSites::GetCountry() const {
-  return profile_->GetPrefs()->GetString(kPopularSitesCountryPref);
+  return prefs_->GetString(kPopularSitesCountryPref);
 }
 
 std::string PopularSites::GetVersion() const {
-  return profile_->GetPrefs()->GetString(kPopularSitesVersionPref);
+  return prefs_->GetString(kPopularSitesVersionPref);
 }
 
 // static
@@ -215,7 +223,9 @@ void PopularSites::RegisterProfilePrefs(
   user_prefs->RegisterStringPref(kPopularSitesVersionPref, std::string());
 }
 
-PopularSites::PopularSites(Profile* profile,
+PopularSites::PopularSites(PrefService* prefs,
+                           const TemplateURLService* template_url_service,
+                           net::URLRequestContextGetter* download_context,
                            const std::string& country,
                            const std::string& version,
                            const GURL& override_url,
@@ -225,10 +235,12 @@ PopularSites::PopularSites(Profile* profile,
       pending_country_(country),
       pending_version_(version),
       local_path_(GetPopularSitesPath()),
-      profile_(profile),
+      prefs_(prefs),
+      template_url_service_(template_url_service),
+      download_context_(download_context),
       weak_ptr_factory_(this) {
   const base::Time last_download_time = base::Time::FromInternalValue(
-      profile_->GetPrefs()->GetInt64(kPopularSitesLastDownloadPref));
+      prefs_->GetInt64(kPopularSitesLastDownloadPref));
   const base::TimeDelta time_since_last_download =
       base::Time::Now() - last_download_time;
   const base::TimeDelta redownload_interval =
@@ -256,7 +268,7 @@ void PopularSites::FetchPopularSites(const GURL& url,
                                      bool force_download,
                                      bool is_fallback) {
   downloader_.reset(new FileDownloader(
-      url, local_path_, force_download, profile_->GetRequestContext(),
+      url, local_path_, force_download, download_context_,
       base::Bind(&PopularSites::OnDownloadDone, base::Unretained(this),
                  is_fallback)));
 }
@@ -264,13 +276,12 @@ void PopularSites::FetchPopularSites(const GURL& url,
 void PopularSites::OnDownloadDone(bool is_fallback,
                                   FileDownloader::Result result) {
   downloader_.reset();
-  PrefService* prefs = profile_->GetPrefs();
   switch (result) {
     case FileDownloader::DOWNLOADED:
-      prefs->SetInt64(kPopularSitesLastDownloadPref,
+      prefs_->SetInt64(kPopularSitesLastDownloadPref,
                       base::Time::Now().ToInternalValue());
-      prefs->SetString(kPopularSitesCountryPref, pending_country_);
-      prefs->SetString(kPopularSitesVersionPref, pending_version_);
+      prefs_->SetString(kPopularSitesCountryPref, pending_country_);
+      prefs_->SetString(kPopularSitesVersionPref, pending_version_);
       ParseSiteList(local_path_);
       break;
     case FileDownloader::EXISTS:

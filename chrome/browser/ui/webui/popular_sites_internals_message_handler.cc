@@ -14,6 +14,7 @@
 #include "base/values.h"
 #include "chrome/browser/android/ntp/popular_sites.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "components/url_formatter/url_fixer.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_ui.h"
@@ -55,8 +56,12 @@ void PopularSitesInternalsMessageHandler::HandleRegisterForEvents(
 
   std::string country;
   std::string version;
+  Profile* profile = Profile::FromWebUI(web_ui());
   popular_sites_.reset(new PopularSites(
-      Profile::FromWebUI(web_ui()), country, version, false,
+      profile->GetPrefs(),
+      TemplateURLServiceFactory::GetForProfile(profile),
+      profile->GetRequestContext(),
+      country, version, false,
       base::Bind(&PopularSitesInternalsMessageHandler::OnPopularSitesAvailable,
                  base::Unretained(this), false)));
 }
@@ -64,6 +69,7 @@ void PopularSitesInternalsMessageHandler::HandleRegisterForEvents(
 void PopularSitesInternalsMessageHandler::HandleDownload(
     const base::ListValue* args) {
   DCHECK_EQ(3u, args->GetSize());
+  Profile* profile = Profile::FromWebUI(web_ui());
   auto callback =
       base::Bind(&PopularSitesInternalsMessageHandler::OnPopularSitesAvailable,
                  base::Unretained(this), true);
@@ -72,7 +78,9 @@ void PopularSitesInternalsMessageHandler::HandleDownload(
   args->GetString(0, &url);
   if (!url.empty()) {
     popular_sites_.reset(new PopularSites(
-        Profile::FromWebUI(web_ui()),
+        profile->GetPrefs(),
+        TemplateURLServiceFactory::GetForProfile(profile),
+        profile->GetRequestContext(),
         url_formatter::FixupURL(url, std::string()), callback));
     return;
   }
@@ -80,8 +88,11 @@ void PopularSitesInternalsMessageHandler::HandleDownload(
   args->GetString(1, &country);
   std::string version;
   args->GetString(2, &version);
-  popular_sites_.reset(new PopularSites(Profile::FromWebUI(web_ui()), country,
-                                        version, true, callback));
+  popular_sites_.reset(new PopularSites(
+      profile->GetPrefs(),
+      TemplateURLServiceFactory::GetForProfile(profile),
+      profile->GetRequestContext(),
+      country, version, true, callback));
 }
 
 void PopularSitesInternalsMessageHandler::HandleViewJson(

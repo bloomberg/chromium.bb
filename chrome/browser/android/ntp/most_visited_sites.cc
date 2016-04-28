@@ -19,6 +19,7 @@
 #include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/suggestions/suggestions_service_factory.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_url_filter.h"
@@ -203,7 +204,9 @@ void MostVisitedSites::SetMostVisitedURLsObserver(
   if (ShouldShowPopularSites() &&
       NeedPopularSites(profile_->GetPrefs(), num_sites_)) {
     popular_sites_.reset(new PopularSites(
-        profile_,
+        profile_->GetPrefs(),
+        TemplateURLServiceFactory::GetForProfile(profile_),
+        profile_->GetRequestContext(),
         GetPopularSitesCountry(),
         GetPopularSitesVersion(),
         false,
