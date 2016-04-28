@@ -6,8 +6,8 @@ module mus.mojom;
 
 import "components/mus/public/interfaces/quads.mojom";
 import "ui/mojo/geometry/geometry.mojom";
-import "gpu/command_buffer/common/mailbox_holder.mojom";
-import "gpu/command_buffer/common/sync_token.mojom";
+import "gpu/ipc/common/mailbox_holder.mojom";
+import "gpu/ipc/common/sync_token.mojom";
 
 enum ResourceFormat {
   RGBA_8888,

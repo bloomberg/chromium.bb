@@ -2,11 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-mojom = "//gpu/command_buffer/common/sync_token.mojom"
-public_headers = [ "//gpu/command_buffer/common/sync_token.h" ]
+mojom = "//gpu/ipc/common/capabilities.mojom"
+public_headers = [ "//gpu/command_buffer/common/capabilities.h" ]
 traits_headers = [ "//gpu/ipc/common/gpu_command_buffer_traits.h" ]
 deps = [
   "//gpu/ipc/common:command_buffer_traits",
 ]
 
-type_mappings = [ "gpu.mojom.SyncToken=gpu::SyncToken" ]
+type_mappings = [ "gpu.mojom.Capabilities=gpu::Capabilities" ]

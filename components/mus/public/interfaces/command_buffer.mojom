@@ -4,10 +4,10 @@
 
 module mus.mojom;
 
-import "gpu/command_buffer/common/capabilities.mojom";
-import "gpu/command_buffer/common/command_buffer.mojom";
-import "gpu/command_buffer/common/mailbox.mojom";
-import "gpu/command_buffer/common/sync_token.mojom";
+import "gpu/ipc/common/capabilities.mojom";
+import "gpu/ipc/common/command_buffer.mojom";
+import "gpu/ipc/common/mailbox.mojom";
+import "gpu/ipc/common/sync_token.mojom";
 import "ui/mojo/geometry/geometry.mojom";
 
 struct CommandBufferInitializeResult {
