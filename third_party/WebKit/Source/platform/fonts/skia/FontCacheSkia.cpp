@@ -181,16 +181,13 @@ PassRefPtr<SkTypeface> FontCache::createTypeface(const FontDescription& fontDesc
         if (sideloadedFont != s_sideloadedFonts->end())
             return sideloadedFont->value;
     }
-
-    if (m_fontManager) {
-        return adoptRef(m_fontManager->matchFamilyStyle(name.data(), fontDescription.skiaFontStyle()));
-    }
 #endif
 
-#if OS(LINUX)
+#if OS(LINUX) || OS(WIN)
     // On linux if the fontManager has been overridden then we should be calling the embedder
     // provided font Manager rather than calling SkTypeface::CreateFromName which may redirect the
     // call to the default font Manager.
+    // On Windows the font manager is always present.
     if (m_fontManager)
         return adoptRef(m_fontManager->matchFamilyStyle(name.data(), fontDescription.skiaFontStyle()));
 #endif
