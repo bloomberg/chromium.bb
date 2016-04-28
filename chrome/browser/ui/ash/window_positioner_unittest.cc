@@ -21,7 +21,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window_event_dispatcher.h"
-#include "ui/gfx/screen.h"
+#include "ui/display/screen.h"
 
 namespace ash {
 namespace test {
@@ -101,7 +101,7 @@ int AlignToGridRoundDown(int location, int grid_size) {
 
 TEST_F(WindowPositionerTest, cascading) {
   const gfx::Rect work_area =
-      gfx::Screen::GetScreen()->GetPrimaryDisplay().work_area();
+      display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
 
   // First see that the window will cascade down when there is no space.
   window()->SetBounds(work_area);
@@ -162,7 +162,7 @@ TEST_F(WindowPositionerTest, cascading) {
 
 TEST_F(WindowPositionerTest, filling) {
   const gfx::Rect work_area =
-      gfx::Screen::GetScreen()->GetPrimaryDisplay().work_area();
+      display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
   gfx::Rect popup_position(0, 0, 256, 128);
   // Leave space on the left and the right and see if we fill top to bottom.
   window()->SetBounds(gfx::Rect(work_area.x() + popup_position.width(),
@@ -217,7 +217,7 @@ TEST_F(WindowPositionerTest, filling) {
 
 TEST_F(WindowPositionerTest, biggerThenBorder) {
   const gfx::Rect work_area =
-      gfx::Screen::GetScreen()->GetPrimaryDisplay().work_area();
+      display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
 
   gfx::Rect pop_position(0, 0, work_area.width(), work_area.height());
 

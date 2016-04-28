@@ -17,7 +17,6 @@
 #include "chrome/browser/ui/views/ash/tab_scrubber.h"
 #include "chrome/common/chrome_switches.h"
 #include "ui/aura/env.h"
-#include "ui/gfx/screen.h"
 #include "ui/keyboard/content/keyboard.h"
 #include "ui/keyboard/keyboard_controller.h"
 

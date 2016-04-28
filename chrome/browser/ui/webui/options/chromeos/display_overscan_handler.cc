@@ -17,8 +17,8 @@
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/web_ui.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/display.h"
-#include "ui/gfx/screen.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 
 namespace chromeos {
 namespace options {
@@ -31,11 +31,11 @@ const char kOrientationVertical[] = "vertical";
 }
 
 DisplayOverscanHandler::DisplayOverscanHandler() {
-  gfx::Screen::GetScreen()->AddObserver(this);
+  display::Screen::GetScreen()->AddObserver(this);
 }
 
 DisplayOverscanHandler::~DisplayOverscanHandler() {
-  gfx::Screen::GetScreen()->RemoveObserver(this);
+  display::Screen::GetScreen()->RemoveObserver(this);
 }
 
 void DisplayOverscanHandler::GetLocalizedValues(
@@ -81,7 +81,8 @@ void DisplayOverscanHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
-void DisplayOverscanHandler::OnDisplayAdded(const gfx::Display& new_display) {
+void DisplayOverscanHandler::OnDisplayAdded(
+    const display::Display& new_display) {
   if (!overscan_calibrator_)
     return;
 
@@ -89,7 +90,8 @@ void DisplayOverscanHandler::OnDisplayAdded(const gfx::Display& new_display) {
       "options.DisplayOverscan.onOverscanCanceled");
 }
 
-void DisplayOverscanHandler::OnDisplayRemoved(const gfx::Display& old_display) {
+void DisplayOverscanHandler::OnDisplayRemoved(
+    const display::Display& old_display) {
   if (!overscan_calibrator_)
     return;
 
@@ -97,12 +99,11 @@ void DisplayOverscanHandler::OnDisplayRemoved(const gfx::Display& old_display) {
       "options.DisplayOverscan.onOverscanCanceled");
 }
 
-void DisplayOverscanHandler::OnDisplayMetricsChanged(const gfx::Display&,
-                                                     uint32_t) {
-}
+void DisplayOverscanHandler::OnDisplayMetricsChanged(const display::Display&,
+                                                     uint32_t) {}
 
 void DisplayOverscanHandler::HandleStart(const base::ListValue* args) {
-  int64_t display_id = gfx::Display::kInvalidDisplayID;
+  int64_t display_id = display::Display::kInvalidDisplayID;
   std::string id_value;
   if (!args->GetString(0, &id_value)) {
     LOG(ERROR) << "Can't find ID";
@@ -110,12 +111,12 @@ void DisplayOverscanHandler::HandleStart(const base::ListValue* args) {
   }
 
   if (!base::StringToInt64(id_value, &display_id) ||
-      display_id == gfx::Display::kInvalidDisplayID) {
+      display_id == display::Display::kInvalidDisplayID) {
     LOG(ERROR) << "Invalid parameter: " << id_value;
     return;
   }
 
-  const gfx::Display& display =
+  const display::Display& display =
       ash::Shell::GetInstance()->display_manager()->GetDisplayForId(display_id);
   DCHECK(display.is_valid());
   if (!display.is_valid())

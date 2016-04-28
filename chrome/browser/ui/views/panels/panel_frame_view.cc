@@ -15,10 +15,10 @@
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/path.h"
-#include "ui/gfx/screen.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
@@ -592,7 +592,7 @@ bool PanelFrameView::OnMouseDragged(const ui::MouseEvent& event) {
   // Converting the mouse location to screen coordinates returns an incorrect
   // location while the panel is moving. See crbug.com/353393 for more details.
   // TODO(pkotwicz): Fix conversion to screen coordinates
-  gfx::Screen* screen = gfx::Screen::GetScreen();
+  display::Screen* screen = display::Screen::GetScreen();
   gfx::Point mouse_location = screen->GetCursorScreenPoint();
 #else
   // |event.location| is in the view's coordinate system. Convert it to the

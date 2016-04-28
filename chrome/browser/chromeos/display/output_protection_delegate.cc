@@ -11,7 +11,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "ui/gfx/screen.h"
+#include "ui/display/screen.h"
 
 namespace chromeos {
 
@@ -22,10 +22,11 @@ bool GetCurrentDisplayId(content::RenderFrameHost* rfh, int64_t* display_id) {
   DCHECK(rfh);
   DCHECK(display_id);
 
-  gfx::Screen* screen = gfx::Screen::GetScreen();
+  display::Screen* screen = display::Screen::GetScreen();
   if (!screen)
     return false;
-  gfx::Display display = screen->GetDisplayNearestWindow(rfh->GetNativeView());
+  display::Display display =
+      screen->GetDisplayNearestWindow(rfh->GetNativeView());
   *display_id = display.id();
   return true;
 }

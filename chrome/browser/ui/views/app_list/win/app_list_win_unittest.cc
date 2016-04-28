@@ -6,7 +6,7 @@
 
 #include "chrome/browser/ui/app_list/app_list_positioner.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gfx/display.h"
+#include "ui/display/display.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -113,7 +113,7 @@ class AppListWinUnitTest : public testing::Test {
   }
 
  private:
-  gfx::Display display_;
+  display::Display display_;
   gfx::Point cursor_;
   gfx::Rect taskbar_rect_;
   bool center_window_;

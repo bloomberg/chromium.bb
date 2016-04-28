@@ -90,11 +90,11 @@
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/events/event_utils.h"
-#include "ui/gfx/display.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/gfx/screen.h"
 #include "ui/gfx/transform.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_util.h"
@@ -285,7 +285,7 @@ LoginDisplayHostImpl::LoginDisplayHostImpl(const gfx::Rect& background_bounds)
   }
 
   ash::Shell::GetInstance()->delegate()->AddVirtualKeyboardStateObserver(this);
-  gfx::Screen::GetScreen()->AddObserver(this);
+  display::Screen::GetScreen()->AddObserver(this);
 
   // We need to listen to CLOSE_ALL_BROWSERS_REQUEST but not APP_TERMINATING
   // because/ APP_TERMINATING will never be fired as long as this keeps
@@ -391,7 +391,7 @@ LoginDisplayHostImpl::~LoginDisplayHostImpl() {
 
   ash::Shell::GetInstance()->delegate()->
       RemoveVirtualKeyboardStateObserver(this);
-  gfx::Screen::GetScreen()->RemoveObserver(this);
+  display::Screen::GetScreen()->RemoveObserver(this);
 
   if (login_view_ && login_window_)
     login_window_->RemoveRemovalsObserver(this);
@@ -907,17 +907,19 @@ void LoginDisplayHostImpl::OnKeyboardBoundsChanging(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// LoginDisplayHostImpl, gfx::DisplayObserver implementation:
+// LoginDisplayHostImpl, display::DisplayObserver implementation:
 
-void LoginDisplayHostImpl::OnDisplayAdded(const gfx::Display& new_display) {
+void LoginDisplayHostImpl::OnDisplayAdded(const display::Display& new_display) {
 }
 
-void LoginDisplayHostImpl::OnDisplayRemoved(const gfx::Display& old_display) {
-}
+void LoginDisplayHostImpl::OnDisplayRemoved(
+    const display::Display& old_display) {}
 
-void LoginDisplayHostImpl::OnDisplayMetricsChanged(const gfx::Display& display,
-                                                   uint32_t changed_metrics) {
-  gfx::Display primary_display = gfx::Screen::GetScreen()->GetPrimaryDisplay();
+void LoginDisplayHostImpl::OnDisplayMetricsChanged(
+    const display::Display& display,
+    uint32_t changed_metrics) {
+  display::Display primary_display =
+      display::Screen::GetScreen()->GetPrimaryDisplay();
   if (display.id() != primary_display.id() ||
       !(changed_metrics & DISPLAY_METRIC_BOUNDS)) {
     return;

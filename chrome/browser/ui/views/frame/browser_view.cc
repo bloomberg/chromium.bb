@@ -138,12 +138,12 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/content_accelerators/accelerator_util.h"
+#include "ui/display/screen.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/scoped_canvas.h"
-#include "ui/gfx/screen.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -2625,7 +2625,7 @@ gfx::NativeView BrowserView::GetBubbleParentView() const {
 }
 
 gfx::Point BrowserView::GetCursorPointInParent() const {
-  gfx::Point cursor_pos = gfx::Screen::GetScreen()->GetCursorScreenPoint();
+  gfx::Point cursor_pos = display::Screen::GetScreen()->GetCursorScreenPoint();
   views::View::ConvertPointFromScreen(GetWidget()->GetRootView(), &cursor_pos);
   return cursor_pos;
 }

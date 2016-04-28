@@ -20,7 +20,7 @@
 #include "chrome/browser/ui/browser_tab_strip_tracker_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "ui/aura/window_observer.h"
-#include "ui/gfx/display_observer.h"
+#include "ui/display/display_observer.h"
 #include "ui/wm/public/activation_change_observer.h"
 
 namespace aura {
@@ -40,7 +40,7 @@ class BrowserStatusMonitor : public aura::client::ActivationChangeObserver,
                              public aura::WindowObserver,
                              public BrowserTabStripTrackerDelegate,
                              public chrome::BrowserListObserver,
-                             public gfx::DisplayObserver,
+                             public display::DisplayObserver,
                              public TabStripModelObserver {
  public:
   explicit BrowserStatusMonitor(ChromeLauncherController* launcher_controller);
@@ -76,10 +76,10 @@ class BrowserStatusMonitor : public aura::client::ActivationChangeObserver,
   void OnBrowserAdded(Browser* browser) override;
   void OnBrowserRemoved(Browser* browser) override;
 
-  // gfx::DisplayObserver overrides:
-  void OnDisplayAdded(const gfx::Display& new_display) override;
-  void OnDisplayRemoved(const gfx::Display& old_display) override;
-  void OnDisplayMetricsChanged(const gfx::Display& display,
+  // display::DisplayObserver overrides:
+  void OnDisplayAdded(const display::Display& new_display) override;
+  void OnDisplayRemoved(const display::Display& old_display) override;
+  void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t metrics) override;
 
   // TabStripModelObserver overrides:

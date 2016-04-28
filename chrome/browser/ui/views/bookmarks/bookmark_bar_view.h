@@ -143,7 +143,7 @@ class BookmarkBarView : public views::AccessiblePaneView,
 
   // Returns the tooltip text for the specified url and title. The returned
   // text is clipped to fit within the bounds of the monitor. |context| is
-  // used to determine which gfx::Screen is used to retrieve bounds.
+  // used to determine which display::Screen is used to retrieve bounds.
   //
   // Note that we adjust the direction of both the URL and the title based on
   // the locale so that pure LTR strings are displayed properly in RTL locales.

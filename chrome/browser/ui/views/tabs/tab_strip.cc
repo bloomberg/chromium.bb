@@ -49,17 +49,17 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/compositing_recorder.h"
 #include "ui/compositor/paint_recorder.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/animation/animation_container.h"
 #include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/display.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/scoped_canvas.h"
-#include "ui/gfx/screen.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/masked_targeter_delegate.h"
@@ -2365,8 +2365,8 @@ gfx::Rect TabStrip::GetDropBounds(int drop_index,
                         drop_indicator_height);
 
   // If the rect doesn't fit on the monitor, push the arrow to the bottom.
-  gfx::Screen* screen = gfx::Screen::GetScreen();
-  gfx::Display display = screen->GetDisplayMatching(drop_bounds);
+  display::Screen* screen = display::Screen::GetScreen();
+  display::Display display = screen->GetDisplayMatching(drop_bounds);
   *is_beneath = !display.bounds().Contains(drop_bounds);
   if (*is_beneath)
     drop_bounds.Offset(0, drop_bounds.height() + height());

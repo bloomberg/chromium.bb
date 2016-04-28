@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "ui/compositor/layer_delegate.h"
-#include "ui/gfx/display.h"
+#include "ui/display/display.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -23,7 +23,7 @@ namespace chromeos {
 // calibrating display overscan settings.
 class OverscanCalibrator : public ui::LayerDelegate {
  public:
-  OverscanCalibrator(const gfx::Display& target_display,
+  OverscanCalibrator(const display::Display& target_display,
                      const gfx::Insets& initial_insets);
   ~OverscanCalibrator() override;
 
@@ -48,7 +48,7 @@ class OverscanCalibrator : public ui::LayerDelegate {
   base::Closure PrepareForLayerBoundsChange() override;
 
   // The target display.
-  const gfx::Display display_;
+  const display::Display display_;
 
   // The current insets.
   gfx::Insets insets_;

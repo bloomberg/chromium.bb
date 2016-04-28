@@ -29,10 +29,10 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_function_dispatcher.h"
+#include "ui/display/screen.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/gestures/gesture_recognizer.h"
 #include "ui/gfx/geometry/point_conversions.h"
-#include "ui/gfx/screen.h"
 #include "ui/views/event_monitor.h"
 #include "ui/views/focus/view_storage.h"
 #include "ui/views/widget/root_view.h"
@@ -457,7 +457,7 @@ gfx::Point TabDragController::GetWindowCreatePoint(
   // If the cursor is outside the monitor area, move it inside. For example,
   // dropping a tab onto the task bar on Windows produces this situation.
   gfx::Rect work_area =
-      gfx::Screen::GetScreen()->GetDisplayNearestPoint(origin).work_area();
+      display::Screen::GetScreen()->GetDisplayNearestPoint(origin).work_area();
   gfx::Point create_point(origin);
   if (!work_area.IsEmpty()) {
     if (create_point.x() < work_area.x())
@@ -1638,7 +1638,7 @@ gfx::Rect TabDragController::CalculateDraggedBrowserBounds(
   views::View::ConvertPointToWidget(source, &center);
   gfx::Rect new_bounds(source->GetWidget()->GetRestoredBounds());
 
-  gfx::Rect work_area = gfx::Screen::GetScreen()
+  gfx::Rect work_area = display::Screen::GetScreen()
                             ->GetDisplayNearestPoint(last_point_in_screen_)
                             .work_area();
   if (new_bounds.size().width() >= work_area.size().width() &&
@@ -1771,7 +1771,7 @@ gfx::Point TabDragController::GetCursorScreenPoint() {
   }
 #endif
 
-  return gfx::Screen::GetScreen()->GetCursorScreenPoint();
+  return display::Screen::GetScreen()->GetCursorScreenPoint();
 }
 
 gfx::Vector2d TabDragController::GetWindowOffset(

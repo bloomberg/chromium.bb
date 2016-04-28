@@ -15,8 +15,8 @@
 #include "chrome/browser/ui/app_list/app_list_shower_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/views/app_list_view.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/geometry/point.h"
-#include "ui/gfx/screen.h"
 
 AppListShower::AppListShower(AppListShowerDelegate* delegate)
     : delegate_(delegate),
@@ -119,7 +119,7 @@ app_list::AppListView* AppListShower::MakeViewForCurrentProfile() {
     view = new app_list::AppListView(delegate_->GetViewDelegateForCreate());
   }
 
-  gfx::Point cursor = gfx::Screen::GetScreen()->GetCursorScreenPoint();
+  gfx::Point cursor = display::Screen::GetScreen()->GetCursorScreenPoint();
   view->InitAsBubbleAtFixedLocation(NULL,
                                     0,
                                     cursor,

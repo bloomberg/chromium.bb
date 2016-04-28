@@ -28,7 +28,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/screen.h"
+#include "ui/display/screen.h"
 #include "ui/wm/public/activation_client.h"
 
 // This class monitors the WebContent of the all tab and notifies a navigation
@@ -128,7 +128,7 @@ BrowserStatusMonitor::BrowserStatusMonitor(
           aura::client::GetActivationClient(*iter));
       observed_root_windows_.Add(static_cast<aura::Window*>(*iter));
     }
-    gfx::Screen::GetScreen()->AddObserver(this);
+    display::Screen::GetScreen()->AddObserver(this);
   }
 
   browser_tab_strip_tracker_.Init(
@@ -139,7 +139,7 @@ BrowserStatusMonitor::~BrowserStatusMonitor() {
   // This check needs for win7_aura. Without this, all tests in
   // ChromeLauncherController will fail in win7_aura.
   if (ash::Shell::HasInstance())
-    gfx::Screen::GetScreen()->RemoveObserver(this);
+    display::Screen::GetScreen()->RemoveObserver(this);
 
   chrome::SettingsWindowManager::GetInstance()->RemoveObserver(
       settings_window_observer_.get());
@@ -230,7 +230,7 @@ void BrowserStatusMonitor::OnBrowserRemoved(Browser* browser) {
   UpdateBrowserItemState();
 }
 
-void BrowserStatusMonitor::OnDisplayAdded(const gfx::Display& new_display) {
+void BrowserStatusMonitor::OnDisplayAdded(const display::Display& new_display) {
   // Add a new RootWindow and its ActivationClient to observed list.
   aura::Window* root_window = ash::Shell::GetInstance()
                                   ->window_tree_host_manager()
@@ -244,14 +244,15 @@ void BrowserStatusMonitor::OnDisplayAdded(const gfx::Display& new_display) {
   }
 }
 
-void BrowserStatusMonitor::OnDisplayRemoved(const gfx::Display& old_display) {
+void BrowserStatusMonitor::OnDisplayRemoved(
+    const display::Display& old_display) {
   // When this is called, RootWindow of |old_display| is already removed.
   // Instead, we can remove RootWindow and its ActivationClient in the
   // OnWindowRemoved().
   // Do nothing here.
 }
 
-void BrowserStatusMonitor::OnDisplayMetricsChanged(const gfx::Display&,
+void BrowserStatusMonitor::OnDisplayMetricsChanged(const display::Display&,
                                                    uint32_t) {
   // Do nothing here.
 }

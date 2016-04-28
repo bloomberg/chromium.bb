@@ -15,7 +15,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
-#include "ui/gfx/screen.h"
+#include "ui/display/screen.h"
 #endif
 
 using views::FocusManager;
@@ -81,7 +81,7 @@ IN_PROC_BROWSER_TEST_P(BrowserViewTestParam, BrowserRemembersDockedState) {
   window->SetBounds(original_bounds);
   window->Show();
   // Dock the browser window using |kShowStateKey| property.
-  gfx::Rect work_area = gfx::Screen::GetScreen()
+  gfx::Rect work_area = display::Screen::GetScreen()
                             ->GetDisplayNearestPoint(window->bounds().origin())
                             .work_area();
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_DOCKED);

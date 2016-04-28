@@ -10,8 +10,8 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "components/arc/arc_bridge_service.h"
 #include "ui/aura/window.h"
-#include "ui/gfx/display.h"
-#include "ui/gfx/screen.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 
 namespace arc {
 
@@ -82,7 +82,7 @@ class LaunchAppWithoutSize {
     // area. We can therefore ignore the provided left / top offsets.
     aura::Window* root = ash::Shell::GetPrimaryRootWindow();
     gfx::Rect work_area =
-        gfx::Screen::GetScreen()->GetDisplayNearestWindow(root).work_area();
+        display::Screen::GetScreen()->GetDisplayNearestWindow(root).work_area();
 
     // For what Android is concerned, the title bar starts at -TITLE_BAR_HEIGHT.
     // as such we deduct the title bar height simply from the height, but leave

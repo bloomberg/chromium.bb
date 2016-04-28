@@ -15,8 +15,8 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gfx/display.h"
-#include "ui/gfx/screen.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 
 #if defined(USE_AURA)
 #include "ui/aura/window.h"
@@ -24,12 +24,14 @@
 
 namespace {
 
-class TestScreen : public gfx::Screen {
+class TestScreen : public display::Screen {
  public:
-  TestScreen() : previous_screen_(gfx::Screen::GetScreen()) {
-    gfx::Screen::SetScreenInstance(this);
+  TestScreen() : previous_screen_(display::Screen::GetScreen()) {
+    display::Screen::SetScreenInstance(this);
   }
-  ~TestScreen() override { gfx::Screen::SetScreenInstance(previous_screen_); }
+  ~TestScreen() override {
+    display::Screen::SetScreenInstance(previous_screen_);
+  }
 
   // Sets the index of the display returned from GetDisplayNearestWindow().
   // Only used on aura.
@@ -37,7 +39,7 @@ class TestScreen : public gfx::Screen {
     index_of_display_nearest_window_ = index;
   }
 
-  // Overridden from gfx::Screen:
+  // Overridden from display::Screen:
   gfx::Point GetCursorScreenPoint() override {
     NOTREACHED();
     return gfx::Point();
@@ -55,25 +57,28 @@ class TestScreen : public gfx::Screen {
 
   int GetNumDisplays() const override { return displays_.size(); }
 
-  std::vector<gfx::Display> GetAllDisplays() const override {
+  std::vector<display::Display> GetAllDisplays() const override {
     return displays_;
   }
 
-  gfx::Display GetDisplayNearestWindow(gfx::NativeView view) const override {
+  display::Display GetDisplayNearestWindow(
+      gfx::NativeView view) const override {
 #if defined(USE_AURA)
     return displays_[index_of_display_nearest_window_];
 #else
     NOTREACHED();
-    return gfx::Display();
+    return display::Display();
 #endif
   }
 
-  gfx::Display GetDisplayNearestPoint(const gfx::Point& point) const override {
+  display::Display GetDisplayNearestPoint(
+      const gfx::Point& point) const override {
     NOTREACHED();
-    return gfx::Display();
+    return display::Display();
   }
 
-  gfx::Display GetDisplayMatching(const gfx::Rect& match_rect) const override {
+  display::Display GetDisplayMatching(
+      const gfx::Rect& match_rect) const override {
     int max_area = 0;
     size_t max_area_index = 0;
 
@@ -89,23 +94,27 @@ class TestScreen : public gfx::Screen {
     return displays_[max_area_index];
   }
 
-  gfx::Display GetPrimaryDisplay() const override { return displays_[0]; }
+  display::Display GetPrimaryDisplay() const override { return displays_[0]; }
 
-  void AddObserver(gfx::DisplayObserver* observer) override { NOTREACHED(); }
+  void AddObserver(display::DisplayObserver* observer) override {
+    NOTREACHED();
+  }
 
-  void RemoveObserver(gfx::DisplayObserver* observer) override { NOTREACHED(); }
+  void RemoveObserver(display::DisplayObserver* observer) override {
+    NOTREACHED();
+  }
 
   void AddDisplay(const gfx::Rect& bounds,
                   const gfx::Rect& work_area) {
-    gfx::Display display(displays_.size(), bounds);
+    display::Display display(displays_.size(), bounds);
     display.set_work_area(work_area);
     displays_.push_back(display);
   }
 
  private:
-  gfx::Screen* previous_screen_;
+  display::Screen* previous_screen_;
   size_t index_of_display_nearest_window_ = 0u;
-  std::vector<gfx::Display> displays_;
+  std::vector<display::Display> displays_;
 
   DISALLOW_COPY_AND_ASSIGN(TestScreen);
 };
@@ -115,8 +124,8 @@ public:
   TestTargetDisplayProvider() {}
   ~TestTargetDisplayProvider() override {}
 
-  gfx::Display GetTargetDisplay(const gfx::Screen* screen,
-                                const gfx::Rect& bounds) const override {
+  display::Display GetTargetDisplay(const display::Screen* screen,
+                                    const gfx::Rect& bounds) const override {
     // On ash, the bounds is used as a indicator to specify
     // the target display.
     return screen->GetDisplayMatching(bounds);

@@ -12,8 +12,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/win_util.h"
 #include "extensions/common/api/system_display.h"
+#include "ui/display/display.h"
 #include "ui/display/win/dpi.h"
-#include "ui/gfx/display.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace extensions {
@@ -65,7 +65,7 @@ bool DisplayInfoProviderWin::SetInfo(
 }
 
 void DisplayInfoProviderWin::UpdateDisplayUnitInfoForPlatform(
-    const gfx::Display& display,
+    const display::Display& display,
     extensions::api::system_display::DisplayUnitInfo* unit) {
   DisplayUnitInfoList all_displays;
   EnumDisplayMonitors(

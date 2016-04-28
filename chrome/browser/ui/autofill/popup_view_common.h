@@ -14,6 +14,10 @@ class Point;
 class Rect;
 }
 
+namespace display {
+using Display = gfx::Display;
+}
+
 namespace autofill {
 
 // Provides utility functions for popup-style views.
@@ -31,8 +35,9 @@ class PopupViewCommon {
  protected:
   // A helper function to get the display closest to the given point (virtual
   // for testing).
-  virtual gfx::Display GetDisplayNearestPoint(const gfx::Point& point,
-                                              gfx::NativeView container_view);
+  virtual display::Display GetDisplayNearestPoint(
+      const gfx::Point& point,
+      gfx::NativeView container_view);
 };
 
 }  // namespace autofill

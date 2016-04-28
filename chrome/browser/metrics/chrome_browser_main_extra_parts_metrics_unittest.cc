@@ -10,9 +10,9 @@
 #include "base/message_loop/message_loop.h"
 #include "base/test/histogram_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/display/screen.h"
 #include "ui/events/test/device_data_manager_test_api.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/gfx/screen.h"
 #include "ui/gfx/test/test_screen.h"
 
 namespace {
@@ -43,12 +43,12 @@ class ChromeBrowserMainExtraPartsMetricsTest : public testing::Test {
 
 ChromeBrowserMainExtraPartsMetricsTest::ChromeBrowserMainExtraPartsMetricsTest()
     : device_data_manager_test_api_() {
-  gfx::Screen::SetScreenInstance(&test_screen_);
+  display::Screen::SetScreenInstance(&test_screen_);
 }
 
 ChromeBrowserMainExtraPartsMetricsTest::
     ~ChromeBrowserMainExtraPartsMetricsTest() {
-  gfx::Screen::SetScreenInstance(nullptr);
+  display::Screen::SetScreenInstance(nullptr);
 }
 
 // Verify a TouchEventsEnabled value isn't recorded during construction.

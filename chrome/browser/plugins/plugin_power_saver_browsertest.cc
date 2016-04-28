@@ -33,9 +33,9 @@
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/window_open_disposition.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/geometry/point.h"
-#include "ui/gfx/screen.h"
 #include "ui/gfx/switches.h"
 
 namespace {
@@ -291,7 +291,7 @@ class PluginPowerSaverBrowserTest : public InProcessBrowserTest {
     if (PixelTestsEnabled()) {
       gfx::Rect bounds(gfx::Rect(0, 0, kBrowserWidth, kBrowserHeight));
       gfx::Rect screen_bounds =
-          gfx::Screen::GetScreen()->GetPrimaryDisplay().bounds();
+          display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
       ASSERT_GT(screen_bounds.width(), kBrowserWidth);
       ASSERT_GT(screen_bounds.height(), kBrowserHeight);
       browser()->window()->SetBounds(bounds);

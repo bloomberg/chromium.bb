@@ -29,7 +29,6 @@
 #include "net/base/load_flags.h"
 #include "third_party/WebKit/public/platform/WebDisplayMode.h"
 #include "third_party/WebKit/public/platform/modules/app_banner/WebAppBannerPromptReply.h"
-#include "ui/gfx/screen.h"
 
 namespace {
 

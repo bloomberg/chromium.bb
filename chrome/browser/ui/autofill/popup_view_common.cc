@@ -7,21 +7,22 @@
 #include <algorithm>
 #include <utility>
 
-#include "ui/gfx/display.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d.h"
-#include "ui/gfx/screen.h"
 
 namespace autofill {
 
 namespace {
 
-std::pair<int, int> CalculatePopupXAndWidth(const gfx::Display& left_display,
-                                            const gfx::Display& right_display,
-                                            int popup_required_width,
-                                            const gfx::Rect element_bounds,
-                                            bool is_rtl) {
+std::pair<int, int> CalculatePopupXAndWidth(
+    const display::Display& left_display,
+    const display::Display& right_display,
+    int popup_required_width,
+    const gfx::Rect& element_bounds,
+    bool is_rtl) {
   int leftmost_display_x = left_display.bounds().x();
   int rightmost_display_x =
       right_display.GetSizeInPixel().width() + right_display.bounds().x();
@@ -58,10 +59,11 @@ std::pair<int, int> CalculatePopupXAndWidth(const gfx::Display& left_display,
 
 // Calculates the height of the popup and the y position of it. These values
 // will stay on the screen.
-std::pair<int, int> CalculatePopupYAndHeight(const gfx::Display& top_display,
-                                             const gfx::Display& bottom_display,
-                                             int popup_required_height,
-                                             const gfx::Rect element_bounds) {
+std::pair<int, int> CalculatePopupYAndHeight(
+    const display::Display& top_display,
+    const display::Display& bottom_display,
+    int popup_required_height,
+    const gfx::Rect& element_bounds) {
   int topmost_display_y = top_display.bounds().y();
   int bottommost_display_y =
       bottom_display.GetSizeInPixel().height() + bottom_display.bounds().y();
@@ -110,9 +112,9 @@ gfx::Rect PopupViewCommon::CalculatePopupBounds(int desired_width,
       element_bounds.origin() +
       gfx::Vector2d(desired_width, element_bounds.height() + desired_height);
 
-  gfx::Display top_left_display =
+  display::Display top_left_display =
       GetDisplayNearestPoint(top_left_corner_of_popup, container_view);
-  gfx::Display bottom_right_display =
+  display::Display bottom_right_display =
       GetDisplayNearestPoint(bottom_right_corner_of_popup, container_view);
 
   std::pair<int, int> popup_x_and_width =
@@ -125,10 +127,10 @@ gfx::Rect PopupViewCommon::CalculatePopupBounds(int desired_width,
                    popup_x_and_width.second, popup_y_and_height.second);
 }
 
-gfx::Display PopupViewCommon::GetDisplayNearestPoint(
+display::Display PopupViewCommon::GetDisplayNearestPoint(
     const gfx::Point& point,
     gfx::NativeView container_view) {
-  return gfx::Screen::GetScreen()->GetDisplayNearestPoint(point);
+  return display::Screen::GetScreen()->GetDisplayNearestPoint(point);
 }
 
 }  // namespace autofill

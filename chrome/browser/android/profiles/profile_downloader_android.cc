@@ -24,7 +24,6 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/gfx/screen.h"
 
 namespace {
 

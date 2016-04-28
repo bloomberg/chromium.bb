@@ -31,7 +31,7 @@
 #if defined(OS_WIN)
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "ui/aura/test/test_screen.h"
-#include "ui/gfx/screen.h"
+#include "ui/display/screen.h"
 #endif
 
 namespace ash {
@@ -67,7 +67,7 @@ class SigninErrorNotifierTest : public AshTestBase {
     // Set up screen for Windows.
 #if defined(OS_WIN)
     test_screen_.reset(aura::TestScreen::Create(gfx::Size()));
-    gfx::Screen::SetScreenInstance(test_screen_.get());
+    display::Screen::SetScreenInstance(test_screen_.get());
 #endif
 
     error_controller_ = SigninErrorControllerFactory::GetForProfile(
@@ -78,7 +78,7 @@ class SigninErrorNotifierTest : public AshTestBase {
 
   void TearDown() override {
 #if defined(OS_WIN)
-    gfx::Screen::SetScreenInstance(nullptr);
+    display::Screen::SetScreenInstance(nullptr);
     test_screen_.reset();
 #endif
     profile_manager_.reset();
@@ -97,7 +97,7 @@ class SigninErrorNotifierTest : public AshTestBase {
   }
 
 #if defined(OS_WIN)
-  std::unique_ptr<gfx::Screen> test_screen_;
+  std::unique_ptr<display::Screen> test_screen_;
 #endif
   std::unique_ptr<TestingProfileManager> profile_manager_;
   std::unique_ptr<TestingProfile> profile_;

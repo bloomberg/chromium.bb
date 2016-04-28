@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_APP_LIST_POSITIONER_H_
 #define CHROME_BROWSER_UI_APP_LIST_APP_LIST_POSITIONER_H_
 
-#include "ui/gfx/display.h"
+#include "ui/display/display.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace gfx {
@@ -42,7 +42,7 @@ class AppListPositioner {
   // |window_size| is the size of the App List.
   // |min_distance_from_edge| is the minimum distance, in pixels, to position
   // the app list from the shelf or edge of screen.
-  AppListPositioner(const gfx::Display& display,
+  AppListPositioner(const display::Display& display,
                     const gfx::Size& window_size,
                     int min_distance_from_edge);
 
@@ -103,7 +103,7 @@ class AppListPositioner {
   // the work area. Returns the updated anchor point.
   gfx::Point ClampAnchorPoint(gfx::Point anchor) const;
 
-  gfx::Display display_;
+  display::Display display_;
 
   // Size of the App List.
   gfx::Size window_size_;

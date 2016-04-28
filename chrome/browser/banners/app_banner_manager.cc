@@ -13,7 +13,6 @@
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/origin_util.h"
 #include "net/base/load_flags.h"
-#include "ui/gfx/screen.h"
 
 namespace {
 bool gDisableSecureCheckForTesting = false;

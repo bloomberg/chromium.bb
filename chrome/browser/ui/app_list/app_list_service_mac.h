@@ -21,6 +21,10 @@ class Display;
 class Point;
 }
 
+namespace display {
+using Display = gfx::Display;
+}
+
 // AppListServiceMac manages global resources needed for the app list to
 // operate, and controls when and how the app list is opened and closed.
 class AppListServiceMac : public AppListServiceImpl,
@@ -37,7 +41,7 @@ class AppListServiceMac : public AppListServiceImpl,
   // from. Coordinates are for the bottom-left coordinate of the window, in
   // AppKit space (Y positive is up).
   static void FindAnchorPoint(const gfx::Size& window_size,
-                              const gfx::Display& display,
+                              const display::Display& display,
                               int primary_display_height,
                               bool cursor_is_visible,
                               const gfx::Point& cursor,

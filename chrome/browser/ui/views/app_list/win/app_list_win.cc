@@ -7,7 +7,7 @@
 #include "chrome/browser/ui/app_list/app_list_positioner.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/views/app_list_view.h"
-#include "ui/gfx/screen.h"
+#include "ui/display/screen.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
@@ -44,7 +44,7 @@ bool GetTaskbarRect(gfx::Rect* rect) {
 
 // static
 gfx::Point AppListWin::FindAnchorPoint(const gfx::Size& view_size,
-                                       const gfx::Display& display,
+                                       const display::Display& display,
                                        const gfx::Point& cursor,
                                        const gfx::Rect& taskbar_rect,
                                        bool center_window) {
@@ -79,9 +79,9 @@ gfx::Point AppListWin::FindAnchorPoint(const gfx::Size& view_size,
 
 // static
 void AppListWin::MoveNearCursor(app_list::AppListView* view) {
-  gfx::Screen* screen = gfx::Screen::GetScreen();
+  display::Screen* screen = display::Screen::GetScreen();
   gfx::Point cursor = screen->GetCursorScreenPoint();
-  gfx::Display display = screen->GetDisplayNearestPoint(cursor);
+  display::Display display = screen->GetDisplayNearestPoint(cursor);
 
   view->SetBubbleArrow(views::BubbleBorder::FLOAT);
   gfx::Rect taskbar_rect;

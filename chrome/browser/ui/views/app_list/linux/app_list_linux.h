@@ -17,6 +17,10 @@ class Point;
 class Size;
 }  // namespace gfx
 
+namespace display {
+using Display = gfx::Display;
+}
+
 // Responsible for positioning an AppListView on Linux.
 // TODO(tapted): Shouldn't be a class - move the static member functions out.
 class AppListLinux {
@@ -25,7 +29,7 @@ class AppListLinux {
   // the edge of the surface where the user normally launches apps from (so, for
   // example, on Gnome Classic, this is the applications menu, not the taskbar).
   static AppListPositioner::ScreenEdge ShelfLocationInDisplay(
-      const gfx::Display& display);
+      const display::Display& display);
 
   // Finds the position for a window to anchor it to the shelf. This chooses the
   // most appropriate position for the window based on whether the shelf exists,
@@ -33,7 +37,7 @@ class AppListLinux {
   // coordinates for the center of the window. If |shelf_rect| is empty, assumes
   // there is no shelf on the given display.
   static gfx::Point FindAnchorPoint(const gfx::Size& view_size,
-                                    const gfx::Display& display,
+                                    const display::Display& display,
                                     const gfx::Point& cursor,
                                     AppListPositioner::ScreenEdge edge,
                                     bool center_window);

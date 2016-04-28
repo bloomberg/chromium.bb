@@ -49,7 +49,6 @@
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom/dom_code.h"
-#include "ui/gfx/screen.h"
 
 using content::WebContents;
 

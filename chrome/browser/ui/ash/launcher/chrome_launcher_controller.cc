@@ -125,8 +125,8 @@ const char kAppShelfIdPlaceholder[] = "AppShelfIDPlaceholder--------";
 int64_t GetDisplayIDForShelf(ash::Shelf* shelf) {
   aura::Window* root_window =
       shelf->shelf_widget()->GetNativeWindow()->GetRootWindow();
-  gfx::Display display =
-      gfx::Screen::GetScreen()->GetDisplayNearestWindow(root_window);
+  display::Display display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(root_window);
   DCHECK(display.is_valid());
   return display.id();
 }

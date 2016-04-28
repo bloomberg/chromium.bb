@@ -12,7 +12,7 @@
 #include "ash/shell.h"
 #include "base/logging.h"
 #include "chrome/browser/chromeos/ui/focus_ring_layer.h"
-#include "ui/gfx/screen.h"
+#include "ui/display/screen.h"
 
 namespace chromeos {
 
@@ -106,7 +106,8 @@ void AccessibilityFocusRingController::Update() {
 
 ui::Compositor* AccessibilityFocusRingController::CompositorForBounds(
     const gfx::Rect& bounds) {
-  gfx::Display display = gfx::Screen::GetScreen()->GetDisplayMatching(bounds);
+  display::Display display =
+      display::Screen::GetScreen()->GetDisplayMatching(bounds);
   aura::Window* root_window = ash::Shell::GetInstance()
                                   ->window_tree_host_manager()
                                   ->GetRootWindowForDisplayId(display.id());

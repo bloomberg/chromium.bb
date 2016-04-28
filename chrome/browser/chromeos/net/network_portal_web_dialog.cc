@@ -8,9 +8,9 @@
 #include "components/captive_portal/captive_portal_detector.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_types.h"
-#include "ui/gfx/display.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
 #include "url/gurl.h"
 
@@ -20,12 +20,13 @@ const float kNetworkPortalWebDialogWidthFraction = .8;
 const float kNetworkPortalWebDialogHeightFraction = .8;
 
 gfx::Size GetPortalDialogSize() {
-  const gfx::Display display = gfx::Screen::GetScreen()->GetPrimaryDisplay();
+  const display::Display display =
+      display::Screen::GetScreen()->GetPrimaryDisplay();
 
   gfx::Size display_size = display.size();
 
-  if (display.rotation() == gfx::Display::ROTATE_90 ||
-      display.rotation() == gfx::Display::ROTATE_270) {
+  if (display.rotation() == display::Display::ROTATE_90 ||
+      display.rotation() == display::Display::ROTATE_270) {
     display_size = gfx::Size(display_size.height(), display_size.width());
   }
 

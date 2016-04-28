@@ -17,8 +17,8 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/screen.h"
 
 namespace {
 
@@ -99,7 +99,7 @@ void ImeWindow::FollowCursor(const gfx::Rect& cursor_bounds) {
     return;
 
   gfx::Rect screen_bounds =
-      gfx::Screen::GetScreen()->GetPrimaryDisplay().bounds();
+      display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
   gfx::Rect window_bounds = native_window_->GetBounds();
   int screen_width = screen_bounds.width();
   int screen_height = screen_bounds.height();

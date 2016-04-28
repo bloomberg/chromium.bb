@@ -23,7 +23,7 @@ bool DisplayInfoProviderMac::SetInfo(
 }
 
 void DisplayInfoProviderMac::UpdateDisplayUnitInfoForPlatform(
-    const gfx::Display& display,
+    const display::Display& display,
     extensions::api::system_display::DisplayUnitInfo* unit) {
   static bool logged_once = false;
   if (!logged_once) {

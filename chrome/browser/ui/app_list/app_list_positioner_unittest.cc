@@ -115,7 +115,7 @@ class AppListPositionerUnitTest : public testing::Test {
   }
 
  private:
-  gfx::Display display_;
+  display::Display display_;
   std::unique_ptr<AppListPositioner> positioner_;
   gfx::Point cursor_;
 };

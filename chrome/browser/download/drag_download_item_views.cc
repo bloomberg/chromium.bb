@@ -16,10 +16,10 @@
 #include "ui/base/dragdrop/drag_utils.h"
 #include "ui/base/dragdrop/file_info.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/public/drag_drop_client.h"
 #include "url/gurl.h"
@@ -61,7 +61,7 @@ void DragDownloadItem(const content::DownloadItem* download,
   if (!root_window || !aura::client::GetDragDropClient(root_window))
     return;
 
-  gfx::Point location = gfx::Screen::GetScreen()->GetCursorScreenPoint();
+  gfx::Point location = display::Screen::GetScreen()->GetCursorScreenPoint();
   // TODO(varunjain): Properly determine and send DRAG_EVENT_SOURCE below.
   aura::client::GetDragDropClient(root_window)->StartDragAndDrop(
       data,

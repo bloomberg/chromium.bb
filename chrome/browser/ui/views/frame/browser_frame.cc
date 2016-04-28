@@ -26,7 +26,6 @@
 #include "ui/base/hit_test.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/font_list.h"
-#include "ui/gfx/screen.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/widget/native_widget.h"
 

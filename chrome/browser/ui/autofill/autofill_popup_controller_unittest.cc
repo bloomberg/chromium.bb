@@ -26,7 +26,6 @@
 #include "content/public/browser/web_contents.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gfx/display.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/text_utils.h"
 

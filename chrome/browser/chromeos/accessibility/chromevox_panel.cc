@@ -15,6 +15,7 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/view_type_utils.h"
 #include "ui/chromeos/accessibility_types.h"
+#include "ui/display/screen.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
@@ -93,11 +94,11 @@ ChromeVoxPanel::ChromeVoxPanel(content::BrowserContext* browser_context)
   widget_->Init(params);
   SetShadowType(widget_->GetNativeWindow(), wm::SHADOW_TYPE_RECTANGULAR);
 
-  gfx::Screen::GetScreen()->AddObserver(this);
+  display::Screen::GetScreen()->AddObserver(this);
 }
 
 ChromeVoxPanel::~ChromeVoxPanel() {
-  gfx::Screen::GetScreen()->RemoveObserver(this);
+  display::Screen::GetScreen()->RemoveObserver(this);
 }
 
 aura::Window* ChromeVoxPanel::GetRootWindow() {
@@ -163,7 +164,7 @@ views::View* ChromeVoxPanel::GetContentsView() {
   return web_view_;
 }
 
-void ChromeVoxPanel::OnDisplayMetricsChanged(const gfx::Display& display,
+void ChromeVoxPanel::OnDisplayMetricsChanged(const display::Display& display,
                                              uint32_t changed_metrics) {
   UpdateWidgetBounds();
 }

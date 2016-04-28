@@ -19,7 +19,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "components/prefs/pref_service.h"
 #include "ui/base/ui_base_switches.h"
-#include "ui/gfx/screen.h"
+#include "ui/display/screen.h"
 
 #if defined(USE_ASH)
 #include "ash/shell.h"
@@ -151,8 +151,8 @@ class DefaultTargetDisplayProvider : public WindowSizer::TargetDisplayProvider {
   DefaultTargetDisplayProvider() {}
   ~DefaultTargetDisplayProvider() override {}
 
-  gfx::Display GetTargetDisplay(const gfx::Screen* screen,
-                                const gfx::Rect& bounds) const override {
+  display::Display GetTargetDisplay(const display::Screen* screen,
+                                    const gfx::Rect& bounds) const override {
 #if defined(USE_ASH)
     // Use the target display on ash.
     if (chrome::ShouldOpenAshOnStartup()) {
@@ -180,13 +180,13 @@ WindowSizer::WindowSizer(
     const Browser* browser)
     : state_provider_(std::move(state_provider)),
       target_display_provider_(std::move(target_display_provider)),
-      screen_(gfx::Screen::GetScreen()),
+      screen_(display::Screen::GetScreen()),
       browser_(browser) {}
 
 WindowSizer::WindowSizer(
     std::unique_ptr<StateProvider> state_provider,
     std::unique_ptr<TargetDisplayProvider> target_display_provider,
-    gfx::Screen* screen,
+    display::Screen* screen,
     const Browser* browser)
     : state_provider_(std::move(state_provider)),
       target_display_provider_(std::move(target_display_provider)),
@@ -292,7 +292,7 @@ bool WindowSizer::GetSavedWindowBounds(gfx::Rect* bounds,
   return true;
 }
 
-void WindowSizer::GetDefaultWindowBounds(const gfx::Display& display,
+void WindowSizer::GetDefaultWindowBounds(const display::Display& display,
                                          gfx::Rect* default_bounds) const {
   DCHECK(default_bounds);
 #if defined(USE_ASH)
@@ -333,7 +333,7 @@ void WindowSizer::GetDefaultWindowBounds(const gfx::Display& display,
 }
 
 void WindowSizer::AdjustBoundsToBeVisibleOnDisplay(
-    const gfx::Display& display,
+    const display::Display& display,
     const gfx::Rect& saved_work_area,
     gfx::Rect* bounds) const {
   DCHECK(bounds);
@@ -403,7 +403,7 @@ void WindowSizer::AdjustBoundsToBeVisibleOnDisplay(
 #endif  // defined(OS_MACOSX)
 }
 
-gfx::Display WindowSizer::GetTargetDisplay(const gfx::Rect& bounds) const {
+display::Display WindowSizer::GetTargetDisplay(const gfx::Rect& bounds) const {
   return target_display_provider_->GetTargetDisplay(screen_, bounds);
 }
 

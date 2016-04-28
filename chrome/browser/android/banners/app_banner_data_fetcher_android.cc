@@ -16,7 +16,6 @@
 #include "chrome/browser/manifest/manifest_icon_selector.h"
 #include "chrome/browser/ui/android/infobars/app_banner_infobar_android.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/gfx/screen.h"
 
 namespace banners {
 

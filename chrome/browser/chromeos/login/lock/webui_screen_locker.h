@@ -24,7 +24,7 @@
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "ui/gfx/display_observer.h"
+#include "ui/display/display_observer.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
@@ -58,7 +58,7 @@ class WebUIScreenLocker : public WebUILoginView,
                           public PowerManagerClient::Observer,
                           public ash::VirtualKeyboardStateObserver,
                           public keyboard::KeyboardControllerObserver,
-                          public gfx::DisplayObserver,
+                          public display::DisplayObserver,
                           public content::WebContentsObserver {
  public:
   explicit WebUIScreenLocker(ScreenLocker* screen_locker);
@@ -129,10 +129,10 @@ class WebUIScreenLocker : public WebUILoginView,
   // keyboard::KeyboardControllerObserver:
   void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) override;
 
-  // gfx::DisplayObserver:
-  void OnDisplayAdded(const gfx::Display& new_display) override;
-  void OnDisplayRemoved(const gfx::Display& old_display) override;
-  void OnDisplayMetricsChanged(const gfx::Display& display,
+  // display::DisplayObserver:
+  void OnDisplayAdded(const display::Display& new_display) override;
+  void OnDisplayRemoved(const display::Display& old_display) override;
+  void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t changed_metrics) override;
 
   // Returns instance of the OOBE WebUI.

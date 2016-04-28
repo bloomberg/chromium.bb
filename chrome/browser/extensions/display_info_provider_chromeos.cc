@@ -13,8 +13,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/chromeos/display/display_preferences.h"
 #include "extensions/common/api/system_display.h"
+#include "ui/display/display.h"
 #include "ui/display/manager/display_layout.h"
-#include "ui/gfx/display.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -36,19 +36,19 @@ bool IsValidRotationValue(int rotation) {
 }
 
 // Converts integer integer value in degrees to Rotation enum value.
-gfx::Display::Rotation DegreesToRotation(int degrees) {
+display::Display::Rotation DegreesToRotation(int degrees) {
   DCHECK(IsValidRotationValue(degrees));
   switch (degrees) {
     case 0:
-      return gfx::Display::ROTATE_0;
+      return display::Display::ROTATE_0;
     case 90:
-      return gfx::Display::ROTATE_90;
+      return display::Display::ROTATE_90;
     case 180:
-      return gfx::Display::ROTATE_180;
+      return display::Display::ROTATE_180;
     case 270:
-      return gfx::Display::ROTATE_270;
+      return display::Display::ROTATE_270;
     default:
-      return gfx::Display::ROTATE_0;
+      return display::Display::ROTATE_0;
   }
 }
 
@@ -184,7 +184,7 @@ void UpdateDisplayLayout(const gfx::Rect& primary_display_bounds,
 // Returns whether the parameters are valid. On failure |error| is set to the
 // error message.
 bool ValidateParamsForDisplay(const DisplayProperties& info,
-                              const gfx::Display& display,
+                              const display::Display& display,
                               ash::DisplayManager* display_manager,
                               int64_t primary_display_id,
                               std::string* error) {
@@ -198,7 +198,7 @@ bool ValidateParamsForDisplay(const DisplayProperties& info,
     int64_t mirroring_id;
     if (!base::StringToInt64(*info.mirroring_source_id, &mirroring_id) ||
         display_manager->GetDisplayForId(mirroring_id).id() ==
-            gfx::Display::kInvalidDisplayID) {
+            display::Display::kInvalidDisplayID) {
       *error = "Display " + *info.mirroring_source_id + " not found.";
       return false;
     }
@@ -299,7 +299,7 @@ bool ValidateParamsForDisplay(const DisplayProperties& info,
       return false;
     }
 
-    if (!gfx::Display::IsInternalDisplayId(id)) {
+    if (!display::Display::IsInternalDisplayId(id)) {
       // For external displays, show a notification confirming the resolution
       // change.
       ash::Shell::GetInstance()
@@ -312,12 +312,12 @@ bool ValidateParamsForDisplay(const DisplayProperties& info,
 }
 
 // Gets the display with the provided string id.
-gfx::Display GetTargetDisplay(const std::string& display_id_str,
-                              ash::DisplayManager* manager) {
+display::Display GetTargetDisplay(const std::string& display_id_str,
+                                  ash::DisplayManager* manager) {
   int64_t display_id;
   if (!base::StringToInt64(display_id_str, &display_id)) {
     // This should return invalid display.
-    return gfx::Display();
+    return display::Display();
   }
   return manager->GetDisplayForId(display_id);
 }
@@ -328,8 +328,8 @@ extensions::api::system_display::DisplayMode GetDisplayMode(
     const ash::DisplayMode& display_mode) {
   extensions::api::system_display::DisplayMode result;
 
-  bool is_internal = gfx::Display::HasInternalDisplay() &&
-                     gfx::Display::InternalDisplayId() == display_info.id();
+  bool is_internal = display::Display::HasInternalDisplay() &&
+                     display::Display::InternalDisplayId() == display_info.id();
   gfx::Size size_dip = display_mode.GetSizeInDIP(is_internal);
   result.width = size_dip.width();
   result.height = size_dip.height();
@@ -359,15 +359,17 @@ bool DisplayInfoProviderChromeOS::SetInfo(const std::string& display_id_str,
   ash::DisplayConfigurationController* display_configuration_controller =
       ash::Shell::GetInstance()->display_configuration_controller();
 
-  const gfx::Display target = GetTargetDisplay(display_id_str, display_manager);
+  const display::Display target =
+      GetTargetDisplay(display_id_str, display_manager);
 
-  if (target.id() == gfx::Display::kInvalidDisplayID) {
+  if (target.id() == display::Display::kInvalidDisplayID) {
     *error = "Display not found.";
     return false;
   }
 
   int64_t display_id = target.id();
-  const gfx::Display& primary = gfx::Screen::GetScreen()->GetPrimaryDisplay();
+  const display::Display& primary =
+      display::Screen::GetScreen()->GetPrimaryDisplay();
 
   if (!ValidateParamsForDisplay(
           info, target, display_manager, primary.id(), error)) {
@@ -400,7 +402,7 @@ bool DisplayInfoProviderChromeOS::SetInfo(const std::string& display_id_str,
   if (info.rotation) {
     display_configuration_controller->SetDisplayRotation(
         display_id, DegreesToRotation(*info.rotation),
-        gfx::Display::ROTATION_SOURCE_ACTIVE, true /* user_action */);
+        display::Display::ROTATION_SOURCE_ACTIVE, true /* user_action */);
   }
 
   // Process new display origin parameters.
@@ -422,7 +424,7 @@ bool DisplayInfoProviderChromeOS::SetInfo(const std::string& display_id_str,
 }
 
 void DisplayInfoProviderChromeOS::UpdateDisplayUnitInfoForPlatform(
-    const gfx::Display& display,
+    const display::Display& display,
     extensions::api::system_display::DisplayUnitInfo* unit) {
   ash::DisplayManager* display_manager =
       ash::Shell::GetInstance()->display_manager();
@@ -464,14 +466,14 @@ DisplayUnitInfoList DisplayInfoProviderChromeOS::GetAllDisplaysInfo() {
   if (!display_manager->IsInUnifiedMode())
     return DisplayInfoProvider::GetAllDisplaysInfo();
 
-  std::vector<gfx::Display> displays =
+  std::vector<display::Display> displays =
       display_manager->software_mirroring_display_list();
   CHECK_GT(displays.size(), 0u);
 
   // Use first display as primary.
   int64_t primary_id = displays[0].id();
   DisplayUnitInfoList all_displays;
-  for (const gfx::Display& display : displays) {
+  for (const display::Display& display : displays) {
     api::system_display::DisplayUnitInfo unit =
         CreateDisplayUnitInfo(display, primary_id);
     UpdateDisplayUnitInfoForPlatform(display, &unit);

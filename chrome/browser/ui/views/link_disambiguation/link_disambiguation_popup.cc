@@ -6,14 +6,14 @@
 
 #include "base/macros.h"
 #include "ui/aura/client/screen_position_client.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/events/event_processor.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/gesture_event_details.h"
-#include "ui/gfx/display.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/gfx/screen.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/controls/image_view.h"
 
@@ -182,8 +182,8 @@ void LinkDisambiguationPopup::Show(
       target_screen.y() - (zoomed_bitmap.height() / 2),
       zoomed_bitmap.width(),
       zoomed_bitmap.height());
-  const gfx::Display display =
-      gfx::Screen::GetScreen()->GetDisplayNearestWindow(content);
+  const display::Display display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(content);
   window_bounds.AdjustToFit(display.work_area());
   view_->GetWidget()->SetBounds(window_bounds);
   view_->GetWidget()->Show();

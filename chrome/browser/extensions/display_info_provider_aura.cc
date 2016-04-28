@@ -5,7 +5,7 @@
 #include "chrome/browser/extensions/display_info_provider_aura.h"
 
 #include "base/logging.h"
-#include "ui/gfx/screen.h"
+#include "ui/display/screen.h"
 
 namespace extensions {
 
@@ -24,7 +24,7 @@ bool DisplayInfoProviderAura::SetInfo(
 }
 
 void DisplayInfoProviderAura::UpdateDisplayUnitInfoForPlatform(
-    const gfx::Display& display,
+    const display::Display& display,
     extensions::api::system_display::DisplayUnitInfo* unit) {
   static bool logged_once = false;
   if (!logged_once) {

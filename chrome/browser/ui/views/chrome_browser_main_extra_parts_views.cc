@@ -9,7 +9,7 @@
 #include "components/constrained_window/constrained_window_views.h"
 
 #if defined(USE_AURA)
-#include "ui/gfx/screen.h"
+#include "ui/display/screen.h"
 #include "ui/views/widget/desktop_aura/desktop_screen.h"
 #include "ui/wm/core/wm_state.h"
 #endif
@@ -36,6 +36,6 @@ void ChromeBrowserMainExtraPartsViews::ToolkitInitialized() {
 
 void ChromeBrowserMainExtraPartsViews::PreCreateThreads() {
 #if defined(USE_AURA) && !defined(OS_CHROMEOS)
-  gfx::Screen::SetScreenInstance(views::CreateDesktopScreen());
+  display::Screen::SetScreenInstance(views::CreateDesktopScreen());
 #endif
 }

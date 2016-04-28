@@ -61,8 +61,8 @@ void OpenBrowserUsingShelfOnRootWindow(aura::Window* root_window) {
   ui::test::EventGenerator generator(root_window);
   gfx::Point center =
       GetChromeIconBoundsForRootWindow(root_window).CenterPoint();
-  gfx::Display display =
-      gfx::Screen::GetScreen()->GetDisplayNearestWindow(root_window);
+  display::Display display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(root_window);
   const gfx::Point& origin = display.bounds().origin();
   center.Offset(- origin.x(), - origin.y());
   generator.MoveMouseTo(center);

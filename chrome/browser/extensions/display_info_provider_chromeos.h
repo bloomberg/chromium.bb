@@ -20,7 +20,7 @@ class DisplayInfoProviderChromeOS : public DisplayInfoProvider {
                const api::system_display::DisplayProperties& info,
                std::string* error) override;
   void UpdateDisplayUnitInfoForPlatform(
-      const gfx::Display& display,
+      const display::Display& display,
       api::system_display::DisplayUnitInfo* unit) override;
   void EnableUnifiedDesktop(bool enable) override;
   DisplayUnitInfoList GetAllDisplaysInfo() override;

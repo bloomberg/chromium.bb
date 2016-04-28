@@ -11,7 +11,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
-#include "ui/gfx/display_observer.h"
+#include "ui/display/display_observer.h"
 
 namespace base {
 class DictionaryValue;
@@ -25,7 +25,7 @@ namespace options {
 
 // Display options overlay page UI handler.
 class DisplayOverscanHandler : public ::options::OptionsPageUIHandler,
-                               public gfx::DisplayObserver {
+                               public display::DisplayObserver {
  public:
   DisplayOverscanHandler();
   ~DisplayOverscanHandler() override;
@@ -36,10 +36,10 @@ class DisplayOverscanHandler : public ::options::OptionsPageUIHandler,
   // WebUIMessageHandler implementation.
   void RegisterMessages() override;
 
-  // gfx::DisplayObserver implementation.
-  void OnDisplayAdded(const gfx::Display& new_display) override;
-  void OnDisplayRemoved(const gfx::Display& old_display) override;
-  void OnDisplayMetricsChanged(const gfx::Display& display,
+  // display::DisplayObserver implementation.
+  void OnDisplayAdded(const display::Display& new_display) override;
+  void OnDisplayRemoved(const display::Display& old_display) override;
+  void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t metrics) override;
 
  private:

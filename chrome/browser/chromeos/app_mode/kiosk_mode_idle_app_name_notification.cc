@@ -15,8 +15,8 @@
 #include "components/user_manager/user_manager.h"
 #include "extensions/browser/extension_system.h"
 #include "ui/base/user_activity/user_activity_detector.h"
-#include "ui/gfx/display.h"
-#include "ui/gfx/screen.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 
 namespace chromeos {
 
@@ -76,7 +76,8 @@ void KioskModeIdleAppNameNotification::Setup() {
 
 void KioskModeIdleAppNameNotification::OnUserActivity(const ui::Event* event) {
   if (show_notification_upon_next_user_activity_) {
-    gfx::Display display = gfx::Screen::GetScreen()->GetPrimaryDisplay();
+    display::Display display =
+        display::Screen::GetScreen()->GetPrimaryDisplay();
     // Display the notification only on internal display.
     if (display.IsInternal()) {
       base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();

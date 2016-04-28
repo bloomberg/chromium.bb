@@ -30,9 +30,9 @@
 #include "google_apis/google_api_keys.h"
 #include "grit/components_strings.h"
 #include "ui/chromeos/accessibility_types.h"
-#include "ui/gfx/display.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/gfx/screen.h"
 #include "ui/keyboard/keyboard_controller.h"
 
 namespace {
@@ -403,7 +403,8 @@ void CoreOobeHandler::UpdateKeyboardState() {
 }
 
 void CoreOobeHandler::UpdateClientAreaSize() {
-  const gfx::Size& size = gfx::Screen::GetScreen()->GetPrimaryDisplay().size();
+  const gfx::Size& size =
+      display::Screen::GetScreen()->GetPrimaryDisplay().size();
   SetClientAreaSize(size.width(), size.height());
 }
 

@@ -102,7 +102,8 @@ void AccessibilityFocusRingLayer::Set(const AccessibilityFocusRing& ring) {
   int inset = kGradientWidth;
   bounds.Inset(-inset, -inset, -inset, -inset);
 
-  gfx::Display display = gfx::Screen::GetScreen()->GetDisplayMatching(bounds);
+  display::Display display =
+      display::Screen::GetScreen()->GetDisplayMatching(bounds);
   aura::Window* root_window = ash::Shell::GetInstance()
                                   ->window_tree_host_manager()
                                   ->GetRootWindowForDisplayId(display.id());

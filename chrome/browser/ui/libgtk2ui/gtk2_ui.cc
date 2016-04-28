@@ -41,8 +41,8 @@
 #include "third_party/skia/include/core/SkShader.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/display/display.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/display.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
@@ -1382,8 +1382,8 @@ void Gtk2UI::UpdateDeviceScaleFactor(float device_scale_factor) {
 }
 
 float Gtk2UI::GetDeviceScaleFactor() const {
-  if (gfx::Display::HasForceDeviceScaleFactor())
-    return gfx::Display::GetForcedDeviceScaleFactor();
+  if (display::Display::HasForceDeviceScaleFactor())
+    return display::Display::GetForcedDeviceScaleFactor();
   const int kCSSDefaultDPI = 96;
   const float scale = GetDPI() / kCSSDefaultDPI;
 

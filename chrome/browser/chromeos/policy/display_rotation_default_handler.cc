@@ -67,13 +67,14 @@ void DisplayRotationDefaultHandler::RotateDisplays() {
       ash::Shell::GetInstance()->display_manager();
   const size_t num_displays = display_manager->GetNumDisplays();
   for (size_t i = 0; i < num_displays; ++i) {
-    const gfx::Display& display = display_manager->GetDisplayAt(i);
+    const display::Display& display = display_manager->GetDisplayAt(i);
     const int64_t id = display.id();
     if (rotated_displays_.find(id) == rotated_displays_.end()) {
       rotated_displays_.insert(id);
       if (display.rotation() != display_rotation_default_) {
-        display_manager->SetDisplayRotation(id, display_rotation_default_,
-            gfx::Display::ROTATION_SOURCE_ACTIVE);
+        display_manager->SetDisplayRotation(
+            id, display_rotation_default_,
+            display::Display::ROTATION_SOURCE_ACTIVE);
       }
     }
   }
@@ -84,12 +85,13 @@ bool DisplayRotationDefaultHandler::UpdateFromCrosSettings() {
   int new_rotation;
   bool new_policy_enabled = chromeos::CrosSettings::Get()->GetInteger(
       chromeos::kDisplayRotationDefault, &new_rotation);
-  gfx::Display::Rotation new_display_rotation_default = gfx::Display::ROTATE_0;
+  display::Display::Rotation new_display_rotation_default =
+      display::Display::ROTATE_0;
   if (new_policy_enabled) {
-    if (new_rotation >= gfx::Display::ROTATE_0 &&
-        new_rotation <= gfx::Display::ROTATE_270) {
+    if (new_rotation >= display::Display::ROTATE_0 &&
+        new_rotation <= display::Display::ROTATE_270) {
       new_display_rotation_default =
-          static_cast<gfx::Display::Rotation>(new_rotation);
+          static_cast<display::Display::Rotation>(new_rotation);
     } else {
       LOG(ERROR) << "CrosSettings contains invalid value " << new_rotation
                  << " for DisplayRotationDefault. Ignoring setting.";

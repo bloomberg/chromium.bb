@@ -71,8 +71,8 @@ void DrawTriangle(int x_offset,
 
 }  // namespace
 
-OverscanCalibrator::OverscanCalibrator(
-    const gfx::Display& target_display, const gfx::Insets& initial_insets)
+OverscanCalibrator::OverscanCalibrator(const display::Display& target_display,
+                                       const gfx::Insets& initial_insets)
     : display_(target_display),
       insets_(initial_insets),
       initial_insets_(initial_insets),

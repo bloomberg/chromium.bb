@@ -17,7 +17,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
-#include "ui/gfx/screen.h"
+#include "ui/display/screen.h"
 
 namespace ash {
 
@@ -235,7 +235,7 @@ void SetShelfAutoHideBehaviorPref(PrefService* prefs,
     return;
 
   SetPerDisplayPref(prefs, display_id, prefs::kShelfAutoHideBehavior, value);
-  if (display_id == gfx::Screen::GetScreen()->GetPrimaryDisplay().id()) {
+  if (display_id == display::Screen::GetScreen()->GetPrimaryDisplay().id()) {
     // See comment in |kShelfAlignment| about why we have two prefs here.
     prefs->SetString(prefs::kShelfAutoHideBehaviorLocal, value);
     prefs->SetString(prefs::kShelfAutoHideBehavior, value);
@@ -261,7 +261,7 @@ void SetShelfAlignmentPref(PrefService* prefs,
     return;
 
   SetPerDisplayPref(prefs, display_id, prefs::kShelfAlignment, value);
-  if (display_id == gfx::Screen::GetScreen()->GetPrimaryDisplay().id()) {
+  if (display_id == display::Screen::GetScreen()->GetPrimaryDisplay().id()) {
     // See comment in |kShelfAlignment| as to why we consider two prefs.
     prefs->SetString(prefs::kShelfAlignmentLocal, value);
     prefs->SetString(prefs::kShelfAlignment, value);

@@ -31,7 +31,7 @@
 #if defined(OS_WIN)
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "ui/aura/test/test_screen.h"
-#include "ui/gfx/screen.h"
+#include "ui/display/screen.h"
 #endif
 
 using ::testing::NiceMock;
@@ -89,7 +89,7 @@ class SyncErrorNotifierTest : public AshTestBase  {
     // adding desktop widgets (i.e., message center notifications).
 #if defined(OS_WIN)
     test_screen_.reset(aura::TestScreen::Create(gfx::Size()));
-    gfx::Screen::SetScreenInstance(test_screen_.get());
+    display::Screen::SetScreenInstance(test_screen_.get());
 #endif
 
     AshTestBase::SetUp();
@@ -123,7 +123,7 @@ class SyncErrorNotifierTest : public AshTestBase  {
     AshTestBase::TearDown();
 
 #if defined(OS_WIN)
-    gfx::Screen::SetScreenInstance(nullptr);
+    display::Screen::SetScreenInstance(nullptr);
     test_screen_.reset();
 #endif
 
@@ -159,7 +159,7 @@ class SyncErrorNotifierTest : public AshTestBase  {
   }
 
 #if defined(OS_WIN)
-  std::unique_ptr<gfx::Screen> test_screen_;
+  std::unique_ptr<display::Screen> test_screen_;
 #endif
   std::unique_ptr<TestingProfileManager> profile_manager_;
   std::unique_ptr<SyncErrorController> error_controller_;

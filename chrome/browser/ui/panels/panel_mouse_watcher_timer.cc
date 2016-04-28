@@ -6,7 +6,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ui/panels/panel_mouse_watcher.h"
-#include "ui/gfx/screen.h"
+#include "ui/display/screen.h"
 
 // A timer based implementation of PanelMouseWatcher.  Currently used for Gtk
 // and Mac panels implementations.
@@ -66,7 +66,7 @@ bool PanelMouseWatcherTimer::IsActive() const {
 }
 
 gfx::Point PanelMouseWatcherTimer::GetMousePosition() const {
-  return gfx::Screen::GetScreen()->GetCursorScreenPoint();
+  return display::Screen::GetScreen()->GetCursorScreenPoint();
 }
 
 void PanelMouseWatcherTimer::DoWork() {

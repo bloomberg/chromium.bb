@@ -18,6 +18,11 @@ class Display;
 class Screen;
 }
 
+namespace display {
+using Display = gfx::Display;
+using Screen = gfx::Screen;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // WindowSizer
 //
@@ -35,7 +40,7 @@ class WindowSizer {
   class TargetDisplayProvider;
 
   // WindowSizer owns |state_provider| and |target_display_provider|,
-  // and will use the platforms's gfx::Screen.
+  // and will use the platforms's display::Screen.
   WindowSizer(std::unique_ptr<StateProvider> state_provider,
               std::unique_ptr<TargetDisplayProvider> target_display_provider,
               const Browser* browser);
@@ -44,7 +49,7 @@ class WindowSizer {
   // and will use the supplied |screen|. Used only for testing.
   WindowSizer(std::unique_ptr<StateProvider> state_provider,
               std::unique_ptr<TargetDisplayProvider> target_display_provider,
-              gfx::Screen* screen,
+              display::Screen* screen,
               const Browser* browser);
 
   virtual ~WindowSizer();
@@ -78,8 +83,9 @@ class WindowSizer {
   class TargetDisplayProvider {
     public:
       virtual ~TargetDisplayProvider() {}
-      virtual gfx::Display GetTargetDisplay(const gfx::Screen* screen,
-                                            const gfx::Rect& bounds) const = 0;
+      virtual display::Display GetTargetDisplay(
+          const display::Screen* screen,
+          const gfx::Rect& bounds) const = 0;
   };
 
   // Determines the position and size for a window as it is created as well
@@ -137,7 +143,7 @@ class WindowSizer {
   // |display| if there is no last window and no saved window
   // placement in prefs. This function determines the default size
   // based on monitor size, etc.
-  void GetDefaultWindowBounds(const gfx::Display& display,
+  void GetDefaultWindowBounds(const display::Display& display,
                               gfx::Rect* default_bounds) const;
 
   // Adjusts |bounds| to be visible on-screen, biased toward the work area of
@@ -148,15 +154,14 @@ class WindowSizer {
   // monitor configuration has changed. If it has, bounds are repositioned and
   // resized if necessary to make them completely contained in the current work
   // area.
-  void AdjustBoundsToBeVisibleOnDisplay(
-      const gfx::Display& display,
-      const gfx::Rect& saved_work_area,
-      gfx::Rect* bounds) const;
+  void AdjustBoundsToBeVisibleOnDisplay(const display::Display& display,
+                                        const gfx::Rect& saved_work_area,
+                                        gfx::Rect* bounds) const;
 
   // Determine the target display for a new window based on
   // |bounds|. On ash environment, this returns the display containing
   // ash's the target root window.
-  gfx::Display GetTargetDisplay(const gfx::Rect& bounds) const;
+  display::Display GetTargetDisplay(const gfx::Rect& bounds) const;
 
 #if defined(USE_ASH)
   // Ash specific logic for window placement. Returns true if |bounds| and
@@ -183,7 +188,7 @@ class WindowSizer {
   // Providers for persistent storage and monitor metrics.
   std::unique_ptr<StateProvider> state_provider_;
   std::unique_ptr<TargetDisplayProvider> target_display_provider_;
-  gfx::Screen* screen_;  // not owned.
+  display::Screen* screen_;  // not owned.
 
   // Note that this browser handle might be NULL.
   const Browser* browser_;

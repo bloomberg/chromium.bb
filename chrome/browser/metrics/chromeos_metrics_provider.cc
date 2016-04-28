@@ -25,8 +25,8 @@
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_device.h"
+#include "ui/display/display.h"
 #include "ui/events/event_utils.h"
-#include "ui/gfx/screen.h"
 
 #if defined(USE_X11)
 #include "ui/events/devices/x11/touch_factory_x11.h"
@@ -196,10 +196,11 @@ void ChromeOSMetricsProvider::ProvideSystemProfileMetrics(
   metrics::SystemProfileProto::Hardware* hardware =
       system_profile_proto->mutable_hardware();
   hardware->set_hardware_class(hardware_class_);
-  gfx::Display::TouchSupport has_touch = ui::GetInternalDisplayTouchSupport();
-  if (has_touch == gfx::Display::TOUCH_SUPPORT_AVAILABLE)
+  display::Display::TouchSupport has_touch =
+      ui::GetInternalDisplayTouchSupport();
+  if (has_touch == display::Display::TOUCH_SUPPORT_AVAILABLE)
     hardware->set_internal_display_supports_touch(true);
-  else if (has_touch == gfx::Display::TOUCH_SUPPORT_UNAVAILABLE)
+  else if (has_touch == display::Display::TOUCH_SUPPORT_UNAVAILABLE)
     hardware->set_internal_display_supports_touch(false);
   WriteExternalTouchscreensProto(hardware);
 }

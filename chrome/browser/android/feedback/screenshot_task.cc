@@ -13,9 +13,7 @@
 #include "jni/ScreenshotTask_jni.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/android/window_android.h"
-#include "ui/gfx/display.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/screen.h"
 #include "ui/snapshot/snapshot.h"
 
 using base::android::AttachCurrentThread;

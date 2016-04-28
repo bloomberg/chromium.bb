@@ -31,7 +31,7 @@
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/x/x11_util.h"
-#include "ui/gfx/screen.h"
+#include "ui/display/screen.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/views/controls/webview/webview.h"
@@ -70,7 +70,7 @@ WebUIScreenLocker::WebUIScreenLocker(ScreenLocker* screen_locker)
   set_should_emit_login_prompt_visible(false);
   ash::Shell::GetInstance()->lock_state_controller()->AddObserver(this);
   ash::Shell::GetInstance()->delegate()->AddVirtualKeyboardStateObserver(this);
-  gfx::Screen::GetScreen()->AddObserver(this);
+  display::Screen::GetScreen()->AddObserver(this);
   DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
 
   if (keyboard::KeyboardController::GetInstance()) {
@@ -80,7 +80,7 @@ WebUIScreenLocker::WebUIScreenLocker(ScreenLocker* screen_locker)
 }
 
 void WebUIScreenLocker::LockScreen() {
-  gfx::Rect bounds = gfx::Screen::GetScreen()->GetPrimaryDisplay().bounds();
+  gfx::Rect bounds = display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
 
   lock_time_ = base::TimeTicks::Now();
   LockWindow* lock_window = LockWindow::Create();
@@ -164,7 +164,7 @@ void WebUIScreenLocker::ResetAndFocusUserPod() {
 
 WebUIScreenLocker::~WebUIScreenLocker() {
   DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
-  gfx::Screen::GetScreen()->RemoveObserver(this);
+  display::Screen::GetScreen()->RemoveObserver(this);
   ash::Shell::GetInstance()->
       lock_state_controller()->RemoveObserver(this);
 
@@ -407,17 +407,16 @@ void WebUIScreenLocker::OnKeyboardBoundsChanging(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// gfx::DisplayObserver:
+// display::DisplayObserver:
 
-void WebUIScreenLocker::OnDisplayAdded(const gfx::Display& new_display) {
-}
+void WebUIScreenLocker::OnDisplayAdded(const display::Display& new_display) {}
 
-void WebUIScreenLocker::OnDisplayRemoved(const gfx::Display& old_display) {
-}
+void WebUIScreenLocker::OnDisplayRemoved(const display::Display& old_display) {}
 
-void WebUIScreenLocker::OnDisplayMetricsChanged(const gfx::Display& display,
+void WebUIScreenLocker::OnDisplayMetricsChanged(const display::Display& display,
                                                 uint32_t changed_metrics) {
-  gfx::Display primary_display = gfx::Screen::GetScreen()->GetPrimaryDisplay();
+  display::Display primary_display =
+      display::Screen::GetScreen()->GetPrimaryDisplay();
   if (display.id() != primary_display.id() ||
       !(changed_metrics & DISPLAY_METRIC_BOUNDS)) {
     return;

@@ -13,7 +13,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
-#include "ui/gfx/screen.h"
+#include "ui/display/screen.h"
 
 bool WindowSizer::GetBrowserBoundsAsh(gfx::Rect* bounds,
                                       ui::WindowShowState* show_state) const {
@@ -51,7 +51,7 @@ bool WindowSizer::GetBrowserBoundsAsh(gfx::Rect* bounds,
   }
 
   if (browser_->is_type_tabbed() && *show_state == ui::SHOW_STATE_DEFAULT) {
-    gfx::Display display = screen_->GetDisplayMatching(*bounds);
+    display::Display display = screen_->GetDisplayMatching(*bounds);
     gfx::Rect work_area = display.work_area();
     bounds->AdjustToFit(work_area);
     if (*bounds == work_area) {
@@ -78,7 +78,7 @@ void WindowSizer::GetTabbedBrowserBoundsAsh(
   ui::WindowShowState passed_show_state = *show_state;
 
   bool is_saved_bounds = GetSavedWindowBounds(bounds_in_screen, show_state);
-  gfx::Display display;
+  display::Display display;
   if (is_saved_bounds) {
     display = screen_->GetDisplayMatching(*bounds_in_screen);
   } else {

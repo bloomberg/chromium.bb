@@ -26,7 +26,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window_event_dispatcher.h"
-#include "ui/gfx/screen.h"
+#include "ui/display/screen.h"
 #include "ui/wm/public/activation_client.h"
 
 typedef ash::test::AshTestBase WindowSizerAshTest;
@@ -583,7 +583,7 @@ TEST_F(WindowSizerAshTest, MAYBE_PlaceNewBrowserWindowOnEmptyDesktop) {
 TEST_F(WindowSizerAshTest, MAYBE_PlaceNewWindowsOnMultipleDisplays) {
   UpdateDisplay("1600x1200,1600x1200");
   gfx::Rect primary_bounds =
-      gfx::Screen::GetScreen()->GetPrimaryDisplay().bounds();
+      display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
   gfx::Rect secondary_bounds = ash::ScreenUtil::GetSecondaryDisplay().bounds();
 
   ash::Shell::GetInstance()->set_target_root_window(
@@ -633,8 +633,8 @@ TEST_F(WindowSizerAshTest, MAYBE_PlaceNewWindowsOnMultipleDisplays) {
   // Move the window to the right side of the secondary display and create a new
   // window. It should be opened then on the secondary display.
   {
-    gfx::Display second_display =
-        gfx::Screen::GetScreen()->GetDisplayNearestPoint(
+    display::Display second_display =
+        display::Screen::GetScreen()->GetDisplayNearestPoint(
             gfx::Point(1600 + 100, 10));
     browser_window->GetNativeWindow()->SetBoundsInScreen(
         gfx::Rect(secondary_bounds.CenterPoint().x() - 100, 10, 200, 200),
@@ -822,7 +822,7 @@ TEST_F(WindowSizerAshTest, DefaultStateBecomesMaximized) {
       chrome::CreateBrowserWithTestWindowForParams(&native_params));
 
   gfx::Rect display_bounds =
-      gfx::Screen::GetScreen()->GetPrimaryDisplay().bounds();
+      display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
   gfx::Rect specified_bounds = display_bounds;
 
   // Make a window bigger than the display work area.

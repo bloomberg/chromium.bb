@@ -26,9 +26,9 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/content_accelerators/accelerator_util.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/path.h"
-#include "ui/gfx/screen.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/widget/widget.h"
@@ -1012,7 +1012,7 @@ void PanelView::OnWidgetActivationChanged(views::Widget* widget, bool active) {
 #if defined(OS_WIN)
   if (focused_ && panel_->IsMinimized() &&
       panel_->collection()->type() == PanelCollection::DOCKED &&
-      gfx::Screen::GetScreen()->GetWindowUnderCursor() !=
+      display::Screen::GetScreen()->GetWindowUnderCursor() !=
           widget->GetNativeWindow()) {
     panel_->Restore();
   }

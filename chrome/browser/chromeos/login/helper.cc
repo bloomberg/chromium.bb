@@ -27,8 +27,8 @@
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/gfx/screen.h"
 
 namespace chromeos {
 
@@ -87,7 +87,7 @@ content::StoragePartition* GetPartition(content::WebContents* embedder,
 }  // namespace
 
 gfx::Rect CalculateScreenBounds(const gfx::Size& size) {
-  gfx::Rect bounds = gfx::Screen::GetScreen()->GetPrimaryDisplay().bounds();
+  gfx::Rect bounds = display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
   if (!size.IsEmpty()) {
     int horizontal_diff = bounds.width() - size.width();
     int vertical_diff = bounds.height() - size.height();
@@ -100,7 +100,7 @@ int GetCurrentUserImageSize() {
   // The biggest size that the profile picture is displayed at is currently
   // 220px, used for the big preview on OOBE and Change Picture options page.
   static const int kBaseUserImageSize = 220;
-  float scale_factor = gfx::Display::GetForcedDeviceScaleFactor();
+  float scale_factor = display::Display::GetForcedDeviceScaleFactor();
   if (scale_factor > 1.0f)
     return static_cast<int>(scale_factor * kBaseUserImageSize);
   return kBaseUserImageSize * gfx::ImageSkia::GetMaxSupportedScale();

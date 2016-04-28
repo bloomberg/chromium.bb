@@ -8,7 +8,7 @@
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "chrome/browser/fullscreen.h"
-#include "ui/gfx/screen.h"
+#include "ui/display/screen.h"
 
 namespace {
 // The polling interval to check any display settings change, like full-screen
@@ -66,16 +66,16 @@ void DisplaySettingsProvider::RemoveFullScreenObserver(
 
 // TODO(scottmg): This should be moved to ui/.
 gfx::Rect DisplaySettingsProvider::GetPrimaryDisplayArea() const {
-  return gfx::Screen::GetScreen()->GetPrimaryDisplay().bounds();
+  return display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
 }
 
 gfx::Rect DisplaySettingsProvider::GetPrimaryWorkArea() const {
 #if defined(OS_MACOSX)
   // On OSX, panels should be dropped all the way to the bottom edge of the
   // screen (and overlap Dock). And we also want to exclude the system menu
-  // area. Note that the rect returned from gfx::Screen util functions is in
+  // area. Note that the rect returned from display::Screen util functions is in
   // platform-independent screen coordinates with (0, 0) as the top-left corner.
-  gfx::Display display = gfx::Screen::GetScreen()->GetPrimaryDisplay();
+  display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
   gfx::Rect display_area = display.bounds();
   gfx::Rect work_area = display.work_area();
   int system_menu_height = work_area.y() - display_area.y();
@@ -85,19 +85,19 @@ gfx::Rect DisplaySettingsProvider::GetPrimaryWorkArea() const {
   }
   return display_area;
 #else
-  return gfx::Screen::GetScreen()->GetPrimaryDisplay().work_area();
+  return display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
 #endif
 }
 
 gfx::Rect DisplaySettingsProvider::GetDisplayAreaMatching(
     const gfx::Rect& bounds) const {
-  return gfx::Screen::GetScreen()->GetDisplayMatching(bounds).bounds();
+  return display::Screen::GetScreen()->GetDisplayMatching(bounds).bounds();
 }
 
 gfx::Rect DisplaySettingsProvider::GetWorkAreaMatching(
     const gfx::Rect& bounds) const {
-  gfx::Screen* screen = gfx::Screen::GetScreen();
-  gfx::Display display = screen->GetDisplayMatching(bounds);
+  display::Screen* screen = display::Screen::GetScreen();
+  display::Display display = screen->GetDisplayMatching(bounds);
   if (display.bounds() == screen->GetPrimaryDisplay().bounds())
     return GetPrimaryWorkArea();
   return display.work_area();

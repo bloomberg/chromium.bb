@@ -13,7 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/mime_util/mime_util.h"
 #include "content/public/browser/web_contents.h"
-#include "ui/gfx/screen.h"
+#include "ui/display/screen.h"
 
 using content::Manifest;
 
@@ -154,5 +154,5 @@ GURL ManifestIconSelector::FindBestMatchingIcon(
 int ManifestIconSelector::ConvertIconSizeFromDpToPx(int icon_size_in_dp) {
   return static_cast<int>(round(
       icon_size_in_dp *
-      gfx::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor()));
+      display::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor()));
 }

@@ -19,8 +19,8 @@
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/base/theme_provider.h"
-#include "ui/gfx/display.h"
-#include "ui/gfx/screen.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/animation/button_ink_drop_delegate.h"
 #include "ui/views/controls/button/label_button_border.h"
@@ -201,15 +201,15 @@ void ToolbarButton::ShowDropDownMenu(ui::MenuSourceType source_type) {
   // Use the left bound of the display on which
   // the menu button exists.
   gfx::NativeView view = GetWidget()->GetNativeView();
-  gfx::Display display =
-      gfx::Screen::GetScreen()->GetDisplayNearestWindow(view);
+  display::Display display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(view);
   int left_bound = display.bounds().x();
 #else
   // The window might be positioned over the edge between two screens. We'll
   // want to position the dropdown on the screen the mouse cursor is on.
-  gfx::Screen* screen = gfx::Screen::GetScreen();
-  gfx::Display display = screen->GetDisplayNearestPoint(
-      screen->GetCursorScreenPoint());
+  display::Screen* screen = display::Screen::GetScreen();
+  display::Display display =
+      screen->GetDisplayNearestPoint(screen->GetCursorScreenPoint());
   int left_bound = display.bounds().x();
 #endif
   if (menu_position.x() < left_bound)

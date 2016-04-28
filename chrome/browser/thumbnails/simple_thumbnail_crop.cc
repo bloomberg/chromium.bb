@@ -13,7 +13,6 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/gfx/screen.h"
 #include "ui/gfx/scrollbar_size.h"
 #include "ui/gfx/skbitmap_operations.h"
 

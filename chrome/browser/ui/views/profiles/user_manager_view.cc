@@ -30,7 +30,7 @@
 #include "content/public/browser/web_contents.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/screen.h"
+#include "ui/display/screen.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/view.h"
@@ -305,7 +305,7 @@ void UserManagerView::Init(Profile* system_profile, const GURL& url) {
       gfx::NativeView native_view =
           views::Widget::GetWidgetForNativeWindow(
               browser->window()->GetNativeWindow())->GetNativeView();
-      bounds = gfx::Screen::GetScreen()
+      bounds = display::Screen::GetScreen()
                    ->GetDisplayNearestWindow(native_view)
                    .work_area();
       bounds.ClampToCenteredSize(gfx::Size(UserManager::kWindowWidth,

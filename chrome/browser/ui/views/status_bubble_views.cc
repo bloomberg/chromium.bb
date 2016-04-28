@@ -21,13 +21,13 @@
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkRRect.h"
 #include "ui/base/theme_provider.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/linear_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/screen.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/gfx/text_utils.h"
@@ -807,8 +807,9 @@ void StatusBubbleViews::AvoidMouse(const gfx::Point& location) {
     // Check if the bubble sticks out from the monitor or will obscure
     // download shelf.
     gfx::NativeView window = base_view_->GetWidget()->GetNativeView();
-    gfx::Rect monitor_rect =
-        gfx::Screen::GetScreen()->GetDisplayNearestWindow(window).work_area();
+    gfx::Rect monitor_rect = display::Screen::GetScreen()
+                                 ->GetDisplayNearestWindow(window)
+                                 .work_area();
     const int bubble_bottom_y = top_left.y() + position_.y() + size_.height();
 
     if (bubble_bottom_y + offset > monitor_rect.height() ||

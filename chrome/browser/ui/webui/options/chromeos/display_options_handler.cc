@@ -28,12 +28,12 @@
 #include "content/public/browser/web_ui.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/display/display.h"
 #include "ui/display/manager/display_layout.h"
 #include "ui/display/manager/display_layout_builder.h"
-#include "ui/gfx/display.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size_conversions.h"
-#include "ui/gfx/screen.h"
 
 namespace chromeos {
 namespace options {
@@ -50,10 +50,10 @@ ash::DisplayConfigurationController* GetDisplayConfigurationController() {
 int64_t GetDisplayIdFromValue(const base::Value* arg) {
   std::string id_value;
   if (!arg->GetAsString(&id_value))
-    return gfx::Display::kInvalidDisplayID;
-  int64_t display_id = gfx::Display::kInvalidDisplayID;
+    return display::Display::kInvalidDisplayID;
+  int64_t display_id = display::Display::kInvalidDisplayID;
   if (!base::StringToInt64(id_value, &display_id))
-    return gfx::Display::kInvalidDisplayID;
+    return display::Display::kInvalidDisplayID;
   return display_id;
 }
 
@@ -61,10 +61,10 @@ int64_t GetDisplayIdFromArgs(const base::ListValue* args) {
   const base::Value* arg;
   if (!args->Get(0, &arg)) {
     LOG(ERROR) << "No display id arg";
-    return gfx::Display::kInvalidDisplayID;
+    return display::Display::kInvalidDisplayID;
   }
   int64_t display_id = GetDisplayIdFromValue(arg);
-  if (display_id == gfx::Display::kInvalidDisplayID)
+  if (display_id == display::Display::kInvalidDisplayID)
     LOG(ERROR) << "Invalid display id: " << *arg;
   return display_id;
 }
@@ -73,7 +73,7 @@ int64_t GetDisplayIdFromDictionary(const base::DictionaryValue* dictionary,
                                    const std::string& key) {
   const base::Value* arg;
   if (!dictionary->Get(key, &arg))
-    return gfx::Display::kInvalidDisplayID;
+    return display::Display::kInvalidDisplayID;
   return GetDisplayIdFromValue(arg);
 }
 
@@ -146,8 +146,8 @@ bool ConvertValueToDisplayMode(const base::DictionaryValue* dict,
 
 base::DictionaryValue* ConvertDisplayModeToValue(int64_t display_id,
                                                  const ash::DisplayMode& mode) {
-  bool is_internal = gfx::Display::HasInternalDisplay() &&
-                     gfx::Display::InternalDisplayId() == display_id;
+  bool is_internal = display::Display::HasInternalDisplay() &&
+                     display::Display::InternalDisplayId() == display_id;
   base::DictionaryValue* result = new base::DictionaryValue();
   gfx::Size size_dip = mode.GetSizeInDIP(is_internal);
   result->SetInteger("width", size_dip.width());
@@ -290,7 +290,7 @@ void DisplayOptionsHandler::OnDisplayConfigurationChanged() {
 void DisplayOptionsHandler::SendAllDisplayInfo() {
   ash::DisplayManager* display_manager = GetDisplayManager();
 
-  std::vector<gfx::Display> displays;
+  std::vector<display::Display> displays;
   for (size_t i = 0; i < display_manager->GetNumDisplays(); ++i)
     displays.push_back(display_manager->GetDisplayAt(i));
 
@@ -303,9 +303,9 @@ void DisplayOptionsHandler::SendAllDisplayInfo() {
     display_mode = ash::DisplayManager::EXTENDED;
   base::FundamentalValue mode(static_cast<int>(display_mode));
 
-  int64_t primary_id = gfx::Screen::GetScreen()->GetPrimaryDisplay().id();
+  int64_t primary_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
   std::unique_ptr<base::ListValue> js_displays(new base::ListValue);
-  for (const gfx::Display& display : displays) {
+  for (const display::Display& display : displays) {
     const ash::DisplayInfo& display_info =
         display_manager->GetDisplayInfo(display.id());
     base::DictionaryValue* js_display = new base::DictionaryValue();
@@ -343,7 +343,7 @@ void DisplayOptionsHandler::SendAllDisplayInfo() {
       const display::DisplayPlacement placement =
           display_manager->GetCurrentDisplayLayout().FindPlacementById(
               display.id());
-      if (placement.display_id != gfx::Display::kInvalidDisplayID) {
+      if (placement.display_id != display::Display::kInvalidDisplayID) {
         js_display->SetString(
             "parentId", base::Int64ToString(placement.parent_display_id));
         js_display->SetInteger("layoutType", placement.position);
@@ -394,7 +394,7 @@ void DisplayOptionsHandler::HandleMirroring(const base::ListValue* args) {
 void DisplayOptionsHandler::HandleSetPrimary(const base::ListValue* args) {
   DCHECK(!args->empty());
   int64_t display_id = GetDisplayIdFromArgs(args);
-  if (display_id == gfx::Display::kInvalidDisplayID)
+  if (display_id == display::Display::kInvalidDisplayID)
     return;
 
   content::RecordAction(base::UserMetricsAction("Options_DisplaySetPrimary"));
@@ -421,11 +421,11 @@ void DisplayOptionsHandler::HandleSetDisplayLayout(
     }
 
     int64_t parent_id = GetDisplayIdFromDictionary(dictionary, "parentId");
-    if (parent_id == gfx::Display::kInvalidDisplayID)
+    if (parent_id == display::Display::kInvalidDisplayID)
       continue;  // No placement for root (primary) display.
 
     int64_t display_id = GetDisplayIdFromDictionary(dictionary, "id");
-    if (display_id == gfx::Display::kInvalidDisplayID) {
+    if (display_id == display::Display::kInvalidDisplayID) {
       LOG(ERROR) << "Invalud display id in layout dictionary: " << *dictionary;
       continue;
     }
@@ -455,7 +455,7 @@ void DisplayOptionsHandler::HandleSetDisplayMode(const base::ListValue* args) {
   DCHECK(!args->empty());
 
   int64_t display_id = GetDisplayIdFromArgs(args);
-  if (display_id == gfx::Display::kInvalidDisplayID)
+  if (display_id == display::Display::kInvalidDisplayID)
     return;
 
   const base::DictionaryValue* mode_data = nullptr;
@@ -478,7 +478,7 @@ void DisplayOptionsHandler::HandleSetDisplayMode(const base::ListValue* args) {
                << " Mode: " << *mode_data;
     return;
   }
-  if (gfx::Display::IsInternalDisplayId(display_id))
+  if (display::Display::IsInternalDisplayId(display_id))
     return;
   // For external displays, show a notification confirming the resolution
   // change.
@@ -492,7 +492,7 @@ void DisplayOptionsHandler::HandleSetRotation(const base::ListValue* args) {
   DCHECK(!args->empty());
 
   int64_t display_id = GetDisplayIdFromArgs(args);
-  if (display_id == gfx::Display::kInvalidDisplayID)
+  if (display_id == display::Display::kInvalidDisplayID)
     return;
 
   int rotation_value = 0;
@@ -500,27 +500,27 @@ void DisplayOptionsHandler::HandleSetRotation(const base::ListValue* args) {
     LOG(ERROR) << "Can't parse rotation: " << args;
     return;
   }
-  gfx::Display::Rotation new_rotation = gfx::Display::ROTATE_0;
+  display::Display::Rotation new_rotation = display::Display::ROTATE_0;
   if (rotation_value == 90)
-    new_rotation = gfx::Display::ROTATE_90;
+    new_rotation = display::Display::ROTATE_90;
   else if (rotation_value == 180)
-    new_rotation = gfx::Display::ROTATE_180;
+    new_rotation = display::Display::ROTATE_180;
   else if (rotation_value == 270)
-    new_rotation = gfx::Display::ROTATE_270;
+    new_rotation = display::Display::ROTATE_270;
   else if (rotation_value != 0)
     LOG(ERROR) << "Invalid rotation: " << rotation_value << " Falls back to 0";
 
   content::RecordAction(
       base::UserMetricsAction("Options_DisplaySetOrientation"));
   GetDisplayConfigurationController()->SetDisplayRotation(
-      display_id, new_rotation, gfx::Display::ROTATION_SOURCE_USER,
+      display_id, new_rotation, display::Display::ROTATION_SOURCE_USER,
       true /* user_action */);
 }
 
 void DisplayOptionsHandler::HandleSetColorProfile(const base::ListValue* args) {
   DCHECK(!args->empty());
   int64_t display_id = GetDisplayIdFromArgs(args);
-  if (display_id == gfx::Display::kInvalidDisplayID)
+  if (display_id == display::Display::kInvalidDisplayID)
     return;
 
   std::string profile_value;

@@ -23,8 +23,8 @@
 #include "grit/chrome_unscaled_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/screen.h"
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/widget/native_widget.h"
 #include "ui/views/widget/widget.h"
@@ -207,7 +207,7 @@ void ChromeViewsDelegate::SaveWindowPlacement(const views::Widget* window,
   window_preferences->SetBoolean("maximized",
                                  show_state == ui::SHOW_STATE_MAXIMIZED);
   window_preferences->SetBoolean("docked", show_state == ui::SHOW_STATE_DOCKED);
-  gfx::Rect work_area(gfx::Screen::GetScreen()
+  gfx::Rect work_area(display::Screen::GetScreen()
                           ->GetDisplayNearestWindow(window->GetNativeView())
                           .work_area());
   window_preferences->SetInteger("work_area_left", work_area.x());
@@ -248,7 +248,8 @@ bool ChromeViewsDelegate::GetSavedWindowPlacement(
   // On Ash environment, a window won't span across displays.  Adjust
   // the bounds to fit the work area.
   gfx::NativeView window = widget->GetNativeView();
-  gfx::Display display = gfx::Screen::GetScreen()->GetDisplayMatching(*bounds);
+  display::Display display =
+      display::Screen::GetScreen()->GetDisplayMatching(*bounds);
   bounds->AdjustToFit(display.work_area());
   ash::wm::GetWindowState(window)->set_minimum_visibility(true);
 #endif

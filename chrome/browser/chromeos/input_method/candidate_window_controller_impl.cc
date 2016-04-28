@@ -14,7 +14,6 @@
 #include "chrome/browser/chromeos/input_method/mode_indicator_controller.h"
 #include "ui/base/ime/ime_bridge.h"
 #include "ui/chromeos/ime/infolist_window.h"
-#include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
 
 namespace chromeos {

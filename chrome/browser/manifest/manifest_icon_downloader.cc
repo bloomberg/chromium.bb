@@ -15,7 +15,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/console_message_level.h"
 #include "skia/ext/image_operations.h"
-#include "ui/gfx/screen.h"
+#include "ui/display/screen.h"
 
 // DevToolsConsoleHelper is a class that holds a WebContents in order to be able
 // to send a message to the WebContents' main frame. It is used so
@@ -56,7 +56,7 @@ bool ManifestIconDownloader::Download(
     return false;
 
   const float device_scale_factor =
-      gfx::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor();
+      display::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor();
   const int ideal_icon_size_in_px =
       static_cast<int>(round(ideal_icon_size_in_dp * device_scale_factor));
   const int minimum_icon_size_in_px =

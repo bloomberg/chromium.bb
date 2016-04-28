@@ -34,7 +34,7 @@
 #include "extensions/common/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/test/test_screen.h"
-#include "ui/gfx/screen.h"
+#include "ui/display/screen.h"
 
 namespace chromeos {
 
@@ -65,7 +65,7 @@ class ExtensionEventObserverTest : public ::testing::Test {
   void SetUp() override {
     ::testing::Test::SetUp();
 
-    gfx::Screen::SetScreenInstance(test_screen_.get());
+    display::Screen::SetScreenInstance(test_screen_.get());
 
     // Must be called from ::testing::Test::SetUp.
     ASSERT_TRUE(profile_manager_->SetUp());
@@ -82,7 +82,7 @@ class ExtensionEventObserverTest : public ::testing::Test {
   void TearDown() override {
     profile_ = NULL;
     profile_manager_->DeleteAllTestingProfiles();
-    gfx::Screen::SetScreenInstance(nullptr);
+    display::Screen::SetScreenInstance(nullptr);
     ::testing::Test::TearDown();
   }
 

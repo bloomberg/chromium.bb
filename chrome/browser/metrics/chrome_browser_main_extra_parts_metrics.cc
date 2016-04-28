@@ -25,8 +25,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/touch/touch_device.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/display/screen.h"
 #include "ui/events/event_switches.h"
-#include "ui/gfx/screen.h"
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/metrics/first_web_contents_profiler.h"
@@ -310,7 +310,7 @@ ChromeBrowserMainExtraPartsMetrics::ChromeBrowserMainExtraPartsMetrics()
 
 ChromeBrowserMainExtraPartsMetrics::~ChromeBrowserMainExtraPartsMetrics() {
   if (is_screen_observer_)
-    gfx::Screen::GetScreen()->RemoveObserver(this);
+    display::Screen::GetScreen()->RemoveObserver(this);
 }
 
 void ChromeBrowserMainExtraPartsMetrics::PreProfileInit() {
@@ -355,9 +355,9 @@ void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
       base::Bind(&RecordStartupMetricsOnBlockingPool),
       base::TimeDelta::FromSeconds(kStartupMetricsGatheringDelaySeconds));
 
-  display_count_ = gfx::Screen::GetScreen()->GetNumDisplays();
+  display_count_ = display::Screen::GetScreen()->GetNumDisplays();
   UMA_HISTOGRAM_COUNTS_100("Hardware.Display.Count.OnStartup", display_count_);
-  gfx::Screen::GetScreen()->AddObserver(this);
+  display::Screen::GetScreen()->AddObserver(this);
   is_screen_observer_ = true;
 
 #if !defined(OS_ANDROID)
@@ -366,22 +366,21 @@ void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
 }
 
 void ChromeBrowserMainExtraPartsMetrics::OnDisplayAdded(
-    const gfx::Display& new_display) {
+    const display::Display& new_display) {
   EmitDisplaysChangedMetric();
 }
 
 void ChromeBrowserMainExtraPartsMetrics::OnDisplayRemoved(
-    const gfx::Display& old_display) {
+    const display::Display& old_display) {
   EmitDisplaysChangedMetric();
 }
 
 void ChromeBrowserMainExtraPartsMetrics::OnDisplayMetricsChanged(
-    const gfx::Display& display,
-    uint32_t changed_metrics) {
-}
+    const display::Display& display,
+    uint32_t changed_metrics) {}
 
 void ChromeBrowserMainExtraPartsMetrics::EmitDisplaysChangedMetric() {
-  int display_count = gfx::Screen::GetScreen()->GetNumDisplays();
+  int display_count = display::Screen::GetScreen()->GetNumDisplays();
   if (display_count != display_count_) {
     display_count_ = display_count;
     UMA_HISTOGRAM_COUNTS_100("Hardware.Display.Count.OnChange", display_count_);

@@ -10,7 +10,7 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 
-AppListPositioner::AppListPositioner(const gfx::Display& display,
+AppListPositioner::AppListPositioner(const display::Display& display,
                                      const gfx::Size& window_size,
                                      int min_distance_from_edge)
     : display_(display),

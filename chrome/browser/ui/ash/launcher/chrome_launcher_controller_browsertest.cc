@@ -1764,8 +1764,9 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestWithMultiMonitor,
   // Open the app list menu and check that the drag and drop host was set.
   gfx::Rect app_list_bounds =
       test.shelf_view()->GetAppListButtonView()->GetBoundsInScreen();
-  gfx::Display display =
-      gfx::Screen::GetScreen()->GetDisplayNearestWindow(secondary_root_window);
+  display::Display display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(
+          secondary_root_window);
   const gfx::Point& origin = display.bounds().origin();
   app_list_bounds.Offset(-origin.x(), -origin.y());
 

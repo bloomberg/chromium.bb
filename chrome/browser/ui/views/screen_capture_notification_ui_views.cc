@@ -13,7 +13,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/screen.h"
+#include "ui/display/screen.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/blue_button.h"
@@ -195,7 +195,7 @@ gfx::NativeViewId ScreenCaptureNotificationUIViews::OnStarted(
   set_background(views::Background::CreateSolidBackground(GetNativeTheme()->
       GetSystemColor(ui::NativeTheme::kColorId_DialogBackground)));
 
-  gfx::Screen* screen = gfx::Screen::GetScreen();
+  display::Screen* screen = display::Screen::GetScreen();
   // TODO(sergeyu): Move the notification to the display being captured when
   // per-display screen capture is supported.
   gfx::Rect work_area = screen->GetPrimaryDisplay().work_area();

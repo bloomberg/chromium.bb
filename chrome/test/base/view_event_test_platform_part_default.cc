@@ -7,7 +7,7 @@
 #include "base/macros.h"
 #include "chrome/test/base/view_event_test_platform_part.h"
 #include "ui/aura/env.h"
-#include "ui/gfx/screen.h"
+#include "ui/display/screen.h"
 #include "ui/views/widget/desktop_aura/desktop_screen.h"
 
 namespace {
@@ -19,7 +19,7 @@ class ViewEventTestPlatformPartDefault : public ViewEventTestPlatformPart {
       ui::ContextFactory* context_factory) {
 #if defined(USE_AURA)
     screen_.reset(views::CreateDesktopScreen());
-    gfx::Screen::SetScreenInstance(screen_.get());
+    display::Screen::SetScreenInstance(screen_.get());
     env_ = aura::Env::CreateInstance();
     env_->set_context_factory(context_factory);
 #endif
@@ -28,7 +28,7 @@ class ViewEventTestPlatformPartDefault : public ViewEventTestPlatformPart {
   ~ViewEventTestPlatformPartDefault() override {
 #if defined(USE_AURA)
     env_.reset();
-    gfx::Screen::SetScreenInstance(nullptr);
+    display::Screen::SetScreenInstance(nullptr);
 #endif
   }
 
@@ -36,7 +36,7 @@ class ViewEventTestPlatformPartDefault : public ViewEventTestPlatformPart {
   gfx::NativeWindow GetContext() override { return NULL; }
 
  private:
-  std::unique_ptr<gfx::Screen> screen_;
+  std::unique_ptr<display::Screen> screen_;
   std::unique_ptr<aura::Env> env_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewEventTestPlatformPartDefault);

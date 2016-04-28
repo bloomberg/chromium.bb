@@ -27,9 +27,9 @@
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/manifest.h"
 #include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationLockType.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/favicon_size.h"
-#include "ui/gfx/screen.h"
 #include "url/gurl.h"
 
 using content::Manifest;
@@ -193,7 +193,7 @@ void AddToHomescreenDataFetcher::FetchFavicon() {
   // otherwise using the largest icon among all avaliable icons.
   int ideal_icon_size_in_px =
       ideal_icon_size_in_dp_ *
-      gfx::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor();
+      display::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor();
   int threshold_to_get_any_largest_icon = ideal_icon_size_in_px - 1;
   favicon_service->GetLargestRawFaviconForPageURL(
       shortcut_info_.url,

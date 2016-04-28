@@ -14,7 +14,7 @@
 #include "ash/shell_observer.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "ui/gfx/display.h"
+#include "ui/display/display.h"
 
 namespace policy {
 
@@ -56,7 +56,8 @@ class DisplayRotationDefaultHandler
   bool UpdateFromCrosSettings();
 
   bool policy_enabled_ = false;
-  gfx::Display::Rotation display_rotation_default_ = gfx::Display::ROTATE_0;
+  display::Display::Rotation display_rotation_default_ =
+      display::Display::ROTATE_0;
   std::set<int64_t> rotated_displays_;
   bool rotation_in_progress_ = false;
 
