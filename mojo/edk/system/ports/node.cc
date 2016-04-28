@@ -301,6 +301,7 @@ int Node::SendMessage(const PortRef& port_ref, ScopedMessage* message) {
   }
 
   Port* port = port_ref.port();
+  NodeName peer_node_name;
   {
     // We must acquire |ports_lock_| before grabbing any port locks, because
     // WillSendMessage_Locked may need to lock multiple ports out of order.
@@ -322,10 +323,12 @@ int Node::SendMessage(const PortRef& port_ref, ScopedMessage* message) {
     // do to recover. Assume that failure beyond this point must be treated as a
     // transport failure.
 
-    if (port->peer_node_name != name_) {
-      delegate_->ForwardMessage(port->peer_node_name, std::move(m));
-      return OK;
-    }
+    peer_node_name = port->peer_node_name;
+  }
+
+  if (peer_node_name != name_) {
+    delegate_->ForwardMessage(peer_node_name, std::move(m));
+    return OK;
   }
 
   int rv = AcceptMessage(std::move(m));
@@ -367,6 +370,7 @@ int Node::MergePorts(const PortRef& port_ref,
                      const NodeName& destination_node_name,
                      const PortName& destination_port_name) {
   Port* port = port_ref.port();
+  MergePortEventData data;
   {
     // |ports_lock_| must be held for WillSendPort_Locked below.
     base::AutoLock ports_lock(ports_lock_);
@@ -377,15 +381,14 @@ int Node::MergePorts(const PortRef& port_ref,
 
     // Send the port-to-merge over to the destination node so it can be merged
     // into the port cycle atomically there.
-    MergePortEventData data;
     data.new_port_name = port_ref.name();
     WillSendPort_Locked(port, destination_node_name, &data.new_port_name,
                         &data.new_port_descriptor);
-    delegate_->ForwardMessage(
-        destination_node_name,
-        NewInternalMessage(destination_port_name,
-                           EventType::kMergePort, data));
   }
+  delegate_->ForwardMessage(
+      destination_node_name,
+      NewInternalMessage(destination_port_name,
+                         EventType::kMergePort, data));
   return OK;
 }
 
@@ -691,6 +694,9 @@ int Node::OnObserveClosure(const PortName& port_name,
   // ObserveProxyAck.
 
   bool notify_delegate = false;
+  ObserveClosureEventData forwarded_data;
+  NodeName peer_node_name;
+  PortName peer_port_name;
   {
     // We must acquire |ports_lock_| before the port lock because it must be
     // held for MaybeRemoveProxy_Locked.
@@ -709,8 +715,6 @@ int Node::OnObserveClosure(const PortName& port_name,
     // We always forward ObserveClosure, even beyond the receiving port which
     // cares about it. This ensures that any dead-end proxies beyond that port
     // are notified to remove themselves.
-
-    ObserveClosureEventData forwarded_data;
 
     if (port->state == Port::kReceiving) {
       notify_delegate = true;
@@ -741,11 +745,14 @@ int Node::OnObserveClosure(const PortName& port_name,
              << " (last_sequence_num=" << forwarded_data.last_sequence_num
              << ")";
 
-    delegate_->ForwardMessage(
-        port->peer_node_name,
-        NewInternalMessage(port->peer_port_name,
-                           EventType::kObserveClosure, forwarded_data));
+    peer_node_name = port->peer_node_name;
+    peer_port_name = port->peer_port_name;
   }
+  delegate_->ForwardMessage(
+      peer_node_name,
+      NewInternalMessage(peer_port_name, EventType::kObserveClosure,
+                         forwarded_data));
+
   if (notify_delegate) {
     PortRef port_ref(port_name, port);
     delegate_->PortStatusChanged(port_ref);
