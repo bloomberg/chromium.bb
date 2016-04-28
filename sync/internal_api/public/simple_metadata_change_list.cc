@@ -46,7 +46,34 @@ SimpleMetadataChangeList::GetDataTypeStateChange() const {
 void SimpleMetadataChangeList::TransferChanges(
     ModelTypeStore* store,
     ModelTypeStore::WriteBatch* write_batch) {
-  // TODO(skym): Implementation.
+  DCHECK(write_batch);
+  DCHECK(store);
+  for (const auto& pair : metadata_changes_) {
+    const std::string& key = pair.first;
+    const MetadataChange& change = pair.second;
+    switch (change.type) {
+      case UPDATE:
+        store->WriteMetadata(write_batch, key,
+                             change.metadata.SerializeAsString());
+        break;
+      case CLEAR:
+        store->DeleteMetadata(write_batch, key);
+        break;
+    }
+  }
+  metadata_changes_.clear();
+  if (HasDataTypeStateChange()) {
+    switch (state_change_->type) {
+      case UPDATE:
+        store->WriteGlobalMetadata(write_batch,
+                                   state_change_->state.SerializeAsString());
+        break;
+      case CLEAR:
+        store->DeleteGlobalMetadata(write_batch);
+        break;
+    }
+    state_change_.reset();
+  }
 }
 
 }  // namespace syncer_v2

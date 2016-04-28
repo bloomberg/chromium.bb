@@ -141,6 +141,11 @@ void MockModelTypeStore::RegisterWriteMetadataHandler(
   write_metadata_handler_ = handler;
 }
 
+void MockModelTypeStore::RegisterWriteGlobalMetadataHandler(
+    const WriteGlobalMetadataSignature& handler) {
+  write_global_metadata_handler_ = handler;
+}
+
 void MockModelTypeStore::RegisterDeleteDataHandler(
     const DeleteRecordSignature& handler) {
   delete_data_handler_ = handler;
@@ -149,6 +154,11 @@ void MockModelTypeStore::RegisterDeleteDataHandler(
 void MockModelTypeStore::RegisterDeleteMetadataHandler(
     const DeleteRecordSignature& handler) {
   delete_metadata_handler_ = handler;
+}
+
+void MockModelTypeStore::RegisterDeleteGlobalMetadataHandler(
+    const DeleteGlobalMetadataSignature& handler) {
+  delete_global_metadata_handler_ = handler;
 }
 
 }  // namespace syncer_v2

@@ -302,6 +302,11 @@ class DeviceInfoServiceTest : public testing::Test,
     service_.reset();
   }
 
+  void RestartService() {
+    PumpAndShutdown();
+    InitializeAndPump();
+  }
+
   Time GetLastUpdateTime(const DeviceInfoSpecifics& specifics) {
     return DeviceInfoService::GetLastUpdateTime(specifics);
   }
@@ -309,10 +314,7 @@ class DeviceInfoServiceTest : public testing::Test,
  private:
   int change_count_;
 
-  // Although we never use this in this class, the in memory model type store
-  // grabs the current task runner from a static accessor which point at this
-  // message loop. Must be declared/initilized before we call the synchronous
-  // CreateInMemoryStoreForTest.
+  // In memory model type store needs a MessageLoop.
   base::MessageLoop message_loop_;
 
   // Holds the store while the service is not initialized.
@@ -572,18 +574,16 @@ TEST_F(DeviceInfoServiceTest, ApplySyncChangesStore) {
   EXPECT_FALSE(error.IsSet());
   EXPECT_EQ(1, change_count());
 
-  PumpAndShutdown();
-  InitializeAndPump();
+  RestartService();
 
   std::unique_ptr<DeviceInfo> info =
       service()->GetDeviceInfo(specifics.cache_guid());
   ASSERT_TRUE(info);
   AssertEqual(specifics, *info.get());
-  // TODO(skym): Uncomment once SimpleMetadataChangeList::TransferChanges is
-  // implemented.
-  // EXPECT_TRUE(processor()->metadata());
-  // EXPECT_EQ(state.encryption_key_name(),
-  // processor()->metadata()->GetDataTypeState().encryption_key_name());
+
+  EXPECT_TRUE(processor()->metadata());
+  EXPECT_EQ(state.encryption_key_name(),
+            processor()->metadata()->GetDataTypeState().encryption_key_name());
 }
 
 TEST_F(DeviceInfoServiceTest, ApplySyncChangesWithLocalGuid) {
@@ -703,10 +703,9 @@ TEST_F(DeviceInfoServiceTest, MergeWithData) {
   ASSERT_NE(processor()->put_map().end(), it);
   AssertEqual(unique_local, it->second->specifics.device_info());
 
-  // TODO(skym): Uncomment once SimpleMetadataChangeList::TransferChanges is
-  // implemented.
-  // ASSERT_EQ(state.encryption_key_name(),
-  // processor()->metadata()->GetDataTypeState().encryption_key_name());
+  RestartService();
+  ASSERT_EQ(state.encryption_key_name(),
+            processor()->metadata()->GetDataTypeState().encryption_key_name());
 }
 
 TEST_F(DeviceInfoServiceTest, MergeLocalGuid) {

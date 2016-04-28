@@ -324,6 +324,7 @@
         'internal_api/public/data_batch_impl_unittest.cc',
         'internal_api/public/engine/model_safe_worker_unittest.cc',
         'internal_api/public/sessions/sync_session_snapshot_unittest.cc',
+        'internal_api/public/simple_metadata_change_list_unittest.cc',
         'internal_api/public/util/immutable_unittest.cc',
         'internal_api/public/util/proto_value_ptr_unittest.cc',
         'internal_api/public/util/weak_handle_unittest.cc',
