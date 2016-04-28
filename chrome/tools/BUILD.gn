@@ -11,5 +11,9 @@ group("tools") {
     deps = [
       "//chrome/tools/service_discovery_sniffer",
     ]
+  } else if (is_mac) {
+    deps = [
+      "//chrome/tools/mac_helpers",
+    ]
   }
 }
