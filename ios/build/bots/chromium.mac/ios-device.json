@@ -1,0 +1,18 @@
+{
+  "owners": [
+    "smut"
+  ],
+  "comments": [
+    "Builder for 32-bit devices."
+  ],
+  "xcode version": "7.0",
+  "GYP_DEFINES": {
+    "chromium_ios_signing": "0",
+    "target_subarch": "arm32"
+  },
+  "compiler": "ninja",
+  "configuration": "Release",
+  "sdk": "iphoneos9.0",
+  "tests": [
+  ]
+}

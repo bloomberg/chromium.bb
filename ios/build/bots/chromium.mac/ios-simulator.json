@@ -1,0 +1,29 @@
+{
+  "owners": [
+    "smut"
+  ],
+  "comments": [
+    "Tests for 32- and 64-bit iOS 9.0 simulators.",
+    "Tests run on iPhone 5s (64-bit) and iPad Retina (32-bit)."
+  ],
+  "xcode version": "7.0",
+  "GYP_DEFINES": {
+    "chromium_ios_signing": "0",
+    "target_subarch": "both"
+  },
+  "compiler": "ninja",
+  "configuration": "Debug",
+  "sdk": "iphonesimulator9.0",
+  "tests": [
+    {
+      "include": "common_tests.json",
+      "device type": "iPhone 5s",
+      "os": "9.0"
+    },
+    {
+      "include": "common_tests.json",
+      "device type": "iPad Retina",
+      "os": "9.0"
+    }
+  ]
+}
