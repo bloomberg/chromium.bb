@@ -124,32 +124,6 @@ void SynchronizeTreesRecursive(OwnedLayerImplMap* old_layers,
       SynchronizeTreesRecursiveInternal(old_layers, old_root, tree_impl));
 }
 
-#if DCHECK_IS_ON()
-static void CheckScrollAndClipPointersForLayer(Layer* layer) {
-  if (!layer)
-    return;
-
-  if (layer->scroll_children()) {
-    for (std::set<Layer*>::iterator it = layer->scroll_children()->begin();
-         it != layer->scroll_children()->end(); ++it) {
-      DCHECK_EQ((*it)->scroll_parent(), layer);
-    }
-  }
-
-  if (layer->clip_children()) {
-    for (std::set<Layer*>::iterator it = layer->clip_children()->begin();
-         it != layer->clip_children()->end(); ++it) {
-      DCHECK_EQ((*it)->clip_parent(), layer);
-    }
-  }
-}
-
-static void CheckScrollAndClipPointers(LayerTreeHost* host) {
-  for (auto* layer : *host)
-    CheckScrollAndClipPointersForLayer(layer);
-}
-#endif
-
 template <typename LayerType>
 static void PushLayerPropertiesInternal(
     std::unordered_set<LayerType*> layers_that_should_push_properties,
@@ -171,11 +145,6 @@ void TreeSynchronizer::PushLayerProperties(LayerTreeHost* host_tree,
                                            LayerTreeImpl* impl_tree) {
   PushLayerPropertiesInternal(host_tree->LayersThatShouldPushProperties(),
                               impl_tree);
-
-#if DCHECK_IS_ON()
-  if (host_tree->root_layer())
-    CheckScrollAndClipPointers(host_tree);
-#endif
 }
 
 }  // namespace cc

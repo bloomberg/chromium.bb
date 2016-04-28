@@ -1040,6 +1040,27 @@ void BuildPropertyTreesTopLevelInternal(
   property_trees->scroll_tree.set_needs_update(false);
 }
 
+#if DCHECK_IS_ON()
+static void CheckScrollAndClipPointersForLayer(Layer* layer) {
+  if (!layer)
+    return;
+
+  if (layer->scroll_children()) {
+    for (std::set<Layer*>::iterator it = layer->scroll_children()->begin();
+         it != layer->scroll_children()->end(); ++it) {
+      DCHECK_EQ((*it)->scroll_parent(), layer);
+    }
+  }
+
+  if (layer->clip_children()) {
+    for (std::set<Layer*>::iterator it = layer->clip_children()->begin();
+         it != layer->clip_children()->end(); ++it) {
+      DCHECK_EQ((*it)->clip_parent(), layer);
+    }
+  }
+}
+#endif
+
 void PropertyTreeBuilder::BuildPropertyTrees(
     Layer* root_layer,
     const Layer* page_scale_layer,
@@ -1062,6 +1083,10 @@ void PropertyTreeBuilder::BuildPropertyTrees(
       outer_viewport_scroll_layer, overscroll_elasticity_layer,
       elastic_overscroll, page_scale_factor, device_scale_factor, viewport,
       device_transform, property_trees, color);
+#if DCHECK_IS_ON()
+  for (auto* layer : *root_layer->layer_tree_host())
+    CheckScrollAndClipPointersForLayer(layer);
+#endif
 }
 
 void PropertyTreeBuilder::BuildPropertyTrees(
