@@ -28,6 +28,11 @@ class FuzzedDataProvider {
   // must not be used after the FuzzedDataProvider is destroyed.
   base::StringPiece ConsumeBytes(size_t bytes);
 
+  // Returns a StringPiece containing all remaining bytes of the input data.
+  // The data pointed at by the returned StringPiece must not be used after the
+  // FuzzedDataProvider is destroyed.
+  base::StringPiece ConsumeRemainingBytes();
+
   // Returns a value from |min| to |max| inclusive, extracting a value from the
   // input data in some unspecified manner. Value may not be uniformly
   // distributed in the given range. If there's no input data left, always

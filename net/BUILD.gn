@@ -1787,11 +1787,33 @@ fuzzer_test("net_get_domain_and_registry_fuzzer") {
   ]
 }
 
+fuzzer_test("net_cert_verify_name_match_fuzzer") {
+  sources = [
+    "cert/internal/verify_name_match_fuzzer.cc",
+  ]
+  deps = [
+    ":net_fuzzer_test_support",
+    "//base",
+    "//net",
+  ]
+}
+
 fuzzer_test("net_cert_normalize_name_fuzzer") {
   sources = [
     "cert/internal/verify_name_match_normalizename_fuzzer.cc",
   ]
   deps = [
+    "//base",
+    "//net",
+  ]
+}
+
+fuzzer_test("net_cert_verify_name_in_subtree_fuzzer") {
+  sources = [
+    "cert/internal/verify_name_match_verifynameinsubtree_fuzzer.cc",
+  ]
+  deps = [
+    ":net_fuzzer_test_support",
     "//base",
     "//net",
   ]

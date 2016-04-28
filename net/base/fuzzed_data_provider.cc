@@ -23,6 +23,10 @@ base::StringPiece FuzzedDataProvider::ConsumeBytes(size_t length) {
   return result;
 }
 
+base::StringPiece FuzzedDataProvider::ConsumeRemainingBytes() {
+  return ConsumeBytes(remaining_data_.length());
+}
+
 uint32_t FuzzedDataProvider::ConsumeValueInRange(uint32_t min, uint32_t max) {
   CHECK_LE(min, max);
 
