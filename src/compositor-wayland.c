@@ -57,6 +57,8 @@ struct weston_wayland_backend_config {
 	int sprawl;
 	char *display_name;
 	int fullscreen;
+	char *cursor_theme;
+	int cursor_size;
 };
 
 struct wayland_backend {
@@ -2174,24 +2176,18 @@ static const char *left_ptrs[] = {
 };
 
 static void
-create_cursor(struct wayland_backend *b, struct weston_config *config)
+create_cursor(struct wayland_backend *b,
+	      struct weston_wayland_backend_config *config)
 {
-	struct weston_config_section *s;
-	int size;
-	char *theme = NULL;
 	unsigned int i;
 
-	s = weston_config_get_section(config, "shell", NULL, NULL);
-	weston_config_section_get_string(s, "cursor-theme", &theme, NULL);
-	weston_config_section_get_int(s, "cursor-size", &size, 32);
-
-	b->cursor_theme = wl_cursor_theme_load(theme, size, b->parent.shm);
+	b->cursor_theme = wl_cursor_theme_load(config->cursor_theme,
+					       config->cursor_size,
+					       b->parent.shm);
 	if (!b->cursor_theme) {
 		fprintf(stderr, "could not load cursor theme\n");
 		return;
 	}
-
-	free(theme);
 
 	b->cursor = NULL;
 	for (i = 0; !b->cursor && i < ARRAY_LENGTH(left_ptrs); ++i)
@@ -2254,7 +2250,7 @@ wayland_backend_create(struct weston_compositor *compositor,
 	wl_registry_add_listener(b->parent.registry, &registry_listener, b);
 	wl_display_roundtrip(b->parent.wl_display);
 
-	create_cursor(b, config);
+	create_cursor(b, new_config);
 
 	b->use_pixman = new_config->use_pixman;
 
@@ -2366,6 +2362,15 @@ backend_init(struct weston_compositor *compositor, int *argc, char *argv[],
 	parse_options(wayland_options,
 		      ARRAY_LENGTH(wayland_options), argc, argv);
 
+	new_config.cursor_size = 32;
+	new_config.cursor_theme = NULL;
+
+	section = weston_config_get_section(config, "shell", NULL, NULL);
+	weston_config_section_get_string(section, "cursor-theme",
+					 &new_config.cursor_theme, NULL);
+	weston_config_section_get_int(section, "cursor-size",
+				      &new_config.cursor_size, 32);
+
 	b = wayland_backend_create(compositor, &new_config, argc, argv, config);
 
 	if (!b)
@@ -2438,12 +2443,13 @@ backend_init(struct weston_compositor *compositor, int *argc, char *argv[],
 	weston_compositor_add_key_binding(compositor, KEY_F,
 				          MODIFIER_CTRL | MODIFIER_ALT,
 				          fullscreen_binding, b);
-
+	free(new_config.cursor_theme);
 	free(new_config.display_name);
 	return 0;
 
 err_outputs:
 	wayland_backend_destroy(b);
+	free(new_config.cursor_theme);
 	free(new_config.display_name);
 	return -1;
 }
