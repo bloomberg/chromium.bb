@@ -77,8 +77,8 @@ public:
     BLINK_PLATFORM_EXPORT WebString contentType() const;
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebBlobData(const WTF::PassOwnPtr<BlobData>&);
-    BLINK_PLATFORM_EXPORT WebBlobData& operator=(const WTF::PassOwnPtr<BlobData>&);
+    BLINK_PLATFORM_EXPORT WebBlobData(WTF::PassOwnPtr<BlobData>);
+    BLINK_PLATFORM_EXPORT WebBlobData& operator=(WTF::PassOwnPtr<BlobData>);
     BLINK_PLATFORM_EXPORT operator WTF::PassOwnPtr<BlobData>();
 #endif
 

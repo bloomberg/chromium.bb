@@ -244,7 +244,7 @@ void InspectorDebuggerAgent::setAsyncCallStackDepth(ErrorString* errorString, in
 void InspectorDebuggerAgent::setBlackboxPatterns(ErrorString* errorString,
     PassOwnPtr<protocol::Array<String16>> patterns)
 {
-    m_v8DebuggerAgent->setBlackboxPatterns(errorString, patterns);
+    m_v8DebuggerAgent->setBlackboxPatterns(errorString, std::move(patterns));
 }
 
 void InspectorDebuggerAgent::setBlackboxedRanges(

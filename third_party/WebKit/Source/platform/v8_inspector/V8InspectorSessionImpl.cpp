@@ -176,7 +176,7 @@ void V8InspectorSessionImpl::changeInstrumentationCounter(int delta)
 
 void V8InspectorSessionImpl::addInspectedObject(PassOwnPtr<V8RuntimeAgent::Inspectable> inspectable)
 {
-    m_inspectedObjects.prepend(inspectable);
+    m_inspectedObjects.prepend(std::move(inspectable));
     while (m_inspectedObjects.size() > kInspectedObjectBufferSize)
         m_inspectedObjects.removeLast();
 }
@@ -190,7 +190,7 @@ V8RuntimeAgent::Inspectable* V8InspectorSessionImpl::inspectedObject(unsigned nu
 
 void V8InspectorSessionImpl::schedulePauseOnNextStatement(const String16& breakReason, PassOwnPtr<protocol::DictionaryValue> data)
 {
-    m_debuggerAgent->schedulePauseOnNextStatement(breakReason, data);
+    m_debuggerAgent->schedulePauseOnNextStatement(breakReason, std::move(data));
 }
 
 void V8InspectorSessionImpl::cancelPauseOnNextStatement()
@@ -200,12 +200,12 @@ void V8InspectorSessionImpl::cancelPauseOnNextStatement()
 
 void V8InspectorSessionImpl::breakProgram(const String16& breakReason, PassOwnPtr<protocol::DictionaryValue> data)
 {
-    m_debuggerAgent->breakProgram(breakReason, data);
+    m_debuggerAgent->breakProgram(breakReason, std::move(data));
 }
 
 void V8InspectorSessionImpl::breakProgramOnException(const String16& breakReason, PassOwnPtr<protocol::DictionaryValue> data)
 {
-    m_debuggerAgent->breakProgramOnException(breakReason, data);
+    m_debuggerAgent->breakProgramOnException(breakReason, std::move(data));
 }
 
 void V8InspectorSessionImpl::setSkipAllPauses(bool skip)

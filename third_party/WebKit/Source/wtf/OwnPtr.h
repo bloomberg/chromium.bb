@@ -43,9 +43,8 @@ public:
     OwnPtr() : m_ptr(nullptr) {}
     OwnPtr(std::nullptr_t) : m_ptr(nullptr) {}
 
-    // See comment in PassOwnPtr.h for why this takes a const reference.
-    OwnPtr(const PassOwnPtr<T>&);
-    template <typename U> OwnPtr(const PassOwnPtr<U>&, EnsurePtrConvertibleArgDecl(U, T));
+    OwnPtr(PassOwnPtr<T>&&);
+    template <typename U> OwnPtr(PassOwnPtr<U>&&, EnsurePtrConvertibleArgDecl(U, T));
 
     // Hash table deleted values, which are only constructed and never copied or
     // destroyed.
@@ -72,9 +71,9 @@ public:
     bool operator!() const { return !m_ptr; }
     explicit operator bool() const { return m_ptr; }
 
-    OwnPtr& operator=(const PassOwnPtr<T>&);
+    OwnPtr& operator=(PassOwnPtr<T>&&);
     OwnPtr& operator=(std::nullptr_t) { clear(); return *this; }
-    template <typename U> OwnPtr& operator=(const PassOwnPtr<U>&);
+    template <typename U> OwnPtr& operator=(PassOwnPtr<U>&&);
 
     OwnPtr(OwnPtr&&);
     template <typename U> OwnPtr(OwnPtr<U>&&);
@@ -114,13 +113,13 @@ private:
     PtrType m_ptr;
 };
 
-template <typename T> inline OwnPtr<T>::OwnPtr(const PassOwnPtr<T>& o)
+template <typename T> inline OwnPtr<T>::OwnPtr(PassOwnPtr<T>&& o)
     : m_ptr(o.leakPtr())
 {
 }
 
 template <typename T>
-template <typename U> inline OwnPtr<T>::OwnPtr(const PassOwnPtr<U>& o, EnsurePtrConvertibleArgDefn(U, T))
+template <typename U> inline OwnPtr<T>::OwnPtr(PassOwnPtr<U>&& o, EnsurePtrConvertibleArgDefn(U, T))
     : m_ptr(o.leakPtr())
 {
     static_assert(!std::is_array<T>::value, "pointers to array must never be converted");
@@ -155,7 +154,7 @@ template <typename T> inline typename OwnPtr<T>::ValueType& OwnPtr<T>::operator[
     return m_ptr[i];
 }
 
-template <typename T> inline OwnPtr<T>& OwnPtr<T>::operator=(const PassOwnPtr<T>& o)
+template <typename T> inline OwnPtr<T>& OwnPtr<T>::operator=(PassOwnPtr<T>&& o)
 {
     PtrType ptr = m_ptr;
     m_ptr = o.leakPtr();
@@ -165,7 +164,7 @@ template <typename T> inline OwnPtr<T>& OwnPtr<T>::operator=(const PassOwnPtr<T>
 }
 
 template <typename T>
-template <typename U> inline OwnPtr<T>& OwnPtr<T>::operator=(const PassOwnPtr<U>& o)
+template <typename U> inline OwnPtr<T>& OwnPtr<T>::operator=(PassOwnPtr<U>&& o)
 {
     static_assert(!std::is_array<T>::value, "pointers to array must never be converted");
     PtrType ptr = m_ptr;

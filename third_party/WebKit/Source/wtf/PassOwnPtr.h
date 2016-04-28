@@ -47,18 +47,14 @@ public:
     PassOwnPtr() : m_ptr(nullptr) {}
     PassOwnPtr(std::nullptr_t) : m_ptr(nullptr) {}
 
-    // It somewhat breaks the type system to allow transfer of ownership out of
-    // a const PassOwnPtr. However, it makes it much easier to work with
-    // PassOwnPtr temporaries, and we don't have a need to use real const
-    // PassOwnPtrs anyway.
-    PassOwnPtr(const PassOwnPtr& o) : m_ptr(o.leakPtr()) {}
-    template <typename U> PassOwnPtr(const PassOwnPtr<U>&, EnsurePtrConvertibleArgDecl(U, T));
+    PassOwnPtr(PassOwnPtr&& o) : m_ptr(o.leakPtr()) {}
+    template <typename U> PassOwnPtr(PassOwnPtr<U>&&, EnsurePtrConvertibleArgDecl(U, T));
 
     ~PassOwnPtr() { OwnedPtrDeleter<T>::deletePtr(m_ptr); }
 
     PtrType get() const { return m_ptr; }
 
-    PtrType leakPtr() const WARN_UNUSED_RETURN;
+    PtrType leakPtr() WARN_UNUSED_RETURN;
 
     ValueType& operator*() const { ASSERT(m_ptr); return *m_ptr; }
     PtrType operator->() const { ASSERT(m_ptr); return m_ptr; }
@@ -73,6 +69,7 @@ public:
 private:
     explicit PassOwnPtr(PtrType ptr) : m_ptr(ptr) {}
 
+    PassOwnPtr(const PassOwnPtr&) = delete;
     PassOwnPtr& operator=(const PassOwnPtr&) = delete;
 
     // We should never have two OwnPtrs for the same underlying object
@@ -83,17 +80,17 @@ private:
     template <typename U> bool operator==(const OwnPtr<U>&) const = delete;
     template <typename U> bool operator!=(const OwnPtr<U>&) const = delete;
 
-    mutable PtrType m_ptr;
+    PtrType m_ptr;
 };
 
 template <typename T>
-template <typename U> inline PassOwnPtr<T>::PassOwnPtr(const PassOwnPtr<U>& o, EnsurePtrConvertibleArgDefn(U, T))
+template <typename U> inline PassOwnPtr<T>::PassOwnPtr(PassOwnPtr<U>&& o, EnsurePtrConvertibleArgDefn(U, T))
     : m_ptr(o.leakPtr())
 {
     static_assert(!std::is_array<T>::value, "pointers to array must never be converted");
 }
 
-template <typename T> inline typename PassOwnPtr<T>::PtrType PassOwnPtr<T>::leakPtr() const
+template <typename T> inline typename PassOwnPtr<T>::PtrType PassOwnPtr<T>::leakPtr()
 {
     PtrType ptr = m_ptr;
     m_ptr = nullptr;
@@ -130,7 +127,7 @@ template <typename T> inline PassOwnPtr<T[]> adoptArrayPtr(T* ptr)
     return PassOwnPtr<T[]>(ptr);
 }
 
-template <typename T, typename U> inline PassOwnPtr<T> static_pointer_cast(const PassOwnPtr<U>& p)
+template <typename T, typename U> inline PassOwnPtr<T> static_pointer_cast(PassOwnPtr<U>&& p)
 {
     static_assert(!std::is_array<T>::value, "pointers to array must never be converted");
     return adoptPtr(static_cast<T*>(p.leakPtr()));

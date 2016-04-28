@@ -94,14 +94,14 @@ WebString WebBlobData::contentType() const
     return m_private->contentType();
 }
 
-WebBlobData::WebBlobData(const PassOwnPtr<BlobData>& data)
-    : m_private(data)
+WebBlobData::WebBlobData(PassOwnPtr<BlobData> data)
+    : m_private(std::move(data))
 {
 }
 
-WebBlobData& WebBlobData::operator=(const PassOwnPtr<BlobData>& data)
+WebBlobData& WebBlobData::operator=(PassOwnPtr<BlobData> data)
 {
-    m_private.reset(data);
+    m_private.reset(std::move(data));
     return *this;
 }
 

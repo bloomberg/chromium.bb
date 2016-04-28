@@ -59,7 +59,8 @@ public:
     T* get() const { return m_ptr; }
 
 #if INSIDE_BLINK
-    template<typename U> WebPrivateOwnPtr(const PassOwnPtr<U>&, EnsurePtrConvertibleArgDecl(U, T));
+    template <typename U>
+    WebPrivateOwnPtr(PassOwnPtr<U>, EnsurePtrConvertibleArgDecl(U, T));
 
     void reset(T* ptr)
     {
@@ -67,7 +68,7 @@ public:
         m_ptr = ptr;
     }
 
-    void reset(const PassOwnPtr<T>& o)
+    void reset(PassOwnPtr<T> o)
     {
         reset(o.leakPtr());
     }
@@ -97,7 +98,9 @@ private:
 };
 
 #if INSIDE_BLINK
-template<typename T> template<typename U> inline WebPrivateOwnPtr<T>::WebPrivateOwnPtr(const PassOwnPtr<U>& o, EnsurePtrConvertibleArgDefn(U, T))
+template <typename T>
+template <typename U>
+inline WebPrivateOwnPtr<T>::WebPrivateOwnPtr(PassOwnPtr<U> o, EnsurePtrConvertibleArgDefn(U, T))
     : m_ptr(o.leakPtr())
 {
     static_assert(!std::is_array<T>::value, "Pointers to array must never be converted");

@@ -137,7 +137,7 @@ int ThreadDebugger::startRepeatingTimer(double interval, PassOwnPtr<V8DebuggerCl
     int id = ++m_lastTimerId;
     OwnPtr<Timer<ThreadDebugger>> timer = adoptPtr(new Timer<ThreadDebugger>(this, &ThreadDebugger::onTimer));
     Timer<ThreadDebugger>* timerPtr = timer.get();
-    m_timerCallbacks.set(timerPtr, callback);
+    m_timerCallbacks.set(timerPtr, std::move(callback));
     m_timers.set(id, timer.release());
     timerPtr->startRepeating(interval, BLINK_FROM_HERE);
     return id;
