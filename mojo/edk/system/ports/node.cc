@@ -6,6 +6,8 @@
 
 #include <string.h>
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
@@ -269,7 +271,7 @@ int Node::GetMessageIf(const PortRef& port_ref,
     if (!CanAcceptMoreMessages(port))
       return ERROR_PORT_PEER_CLOSED;
 
-    port->message_queue.GetNextMessageIf(selector, message);
+    port->message_queue.GetNextMessageIf(std::move(selector), message);
   }
 
   // Allow referenced ports to trigger PortStatusChanged calls.
