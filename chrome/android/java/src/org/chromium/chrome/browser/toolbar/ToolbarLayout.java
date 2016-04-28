@@ -321,6 +321,11 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
     }
 
     /**
+     * Cleans up any code as necessary.
+     */
+    public void destroy() { }
+
+    /**
      * Sets the FullscreenManager, which controls when the toolbar is shown.
      */
     public void setFullscreenManager(FullscreenManager manager) { }

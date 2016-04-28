@@ -27,6 +27,9 @@ public class TabSwitcherCallout extends TextBubble {
     private static final int TAB_SWITCHER_CALLOUT_DISMISS_MS = 10000;
     private static final float Y_OVERLAP_PERCENTAGE = 0.33f;
 
+    private final Handler mHandler;
+    private final Runnable mDismissRunnable;
+
     /**
      * Show the TabSwitcherCallout, if necessary.
      * @param context           Context to draw resources from.
@@ -39,15 +42,6 @@ public class TabSwitcherCallout extends TextBubble {
 
         final TabSwitcherCallout callout = new TabSwitcherCallout(context);
         callout.show(tabSwitcherButton);
-
-        // Dismiss the popup automatically after a delay.
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                callout.dismiss();
-            }
-        }, TAB_SWITCHER_CALLOUT_DISMISS_MS);
-
         return callout;
     }
 
@@ -85,5 +79,26 @@ public class TabSwitcherCallout extends TextBubble {
     private TabSwitcherCallout(Context context) {
         super(context, Y_OVERLAP_PERCENTAGE);
         setAnimationStyle(R.style.TabSwitcherCalloutAnimation);
+
+        // Dismiss the popup automatically after a delay.
+        mDismissRunnable = new Runnable() {
+            @Override
+            public void run() {
+                if (isShowing()) dismiss();
+            }
+        };
+        mHandler = new Handler();
+    }
+
+    @Override
+    public void show(View anchorView) {
+        super.show(anchorView);
+        mHandler.postDelayed(mDismissRunnable, TAB_SWITCHER_CALLOUT_DISMISS_MS);
+    }
+
+    @Override
+    public void dismiss() {
+        super.dismiss();
+        mHandler.removeCallbacks(mDismissRunnable);
     }
 }
