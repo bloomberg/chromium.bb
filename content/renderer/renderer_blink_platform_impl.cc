@@ -64,6 +64,7 @@
 #include "content/renderer/media/audio_decoder.h"
 #include "content/renderer/media/canvas_capture_handler.h"
 #include "content/renderer/media/html_video_element_capturer_source.h"
+#include "content/renderer/media/image_capture_frame_grabber.h"
 #include "content/renderer/media/media_recorder_handler.h"
 #include "content/renderer/media/renderer_webaudiodevice_impl.h"
 #include "content/renderer/media/renderer_webmidiaccessor_impl.h"
@@ -150,6 +151,7 @@ using blink::WebFileSystem;
 using blink::WebGamepad;
 using blink::WebGamepads;
 using blink::WebIDBFactory;
+using blink::WebImageCaptureFrameGrabber;
 using blink::WebMIDIAccessor;
 using blink::WebMediaPlayer;
 using blink::WebMediaRecorderHandler;
@@ -955,6 +957,17 @@ void RendererBlinkPlatformImpl::createHTMLVideoElementCapturer(
       false,  // is_readonly
       web_media_stream);
 #endif
+}
+
+//------------------------------------------------------------------------------
+
+WebImageCaptureFrameGrabber*
+RendererBlinkPlatformImpl::createImageCaptureFrameGrabber() {
+#if defined(ENABLE_WEBRTC)
+  return new ImageCaptureFrameGrabber();
+#else
+  return nullptr;
+#endif  // defined(ENABLE_WEBRTC)
 }
 
 //------------------------------------------------------------------------------

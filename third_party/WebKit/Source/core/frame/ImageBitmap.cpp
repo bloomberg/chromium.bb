@@ -7,6 +7,7 @@
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/html/ImageData.h"
+#include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/image-decoders/ImageDecoder.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "wtf/RefPtr.h"
@@ -400,6 +401,12 @@ void ImageBitmap::close()
         return;
     m_image.clear();
     m_isNeutered = true;
+}
+
+// static
+ImageBitmap* ImageBitmap::take(ScriptPromiseResolver*, sk_sp<SkImage> image)
+{
+    return ImageBitmap::create(StaticBitmapImage::create(fromSkSp(image)));
 }
 
 PassOwnPtr<uint8_t[]> ImageBitmap::copyBitmapData(AlphaDisposition alphaOp)

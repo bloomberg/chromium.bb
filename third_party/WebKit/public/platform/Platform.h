@@ -78,6 +78,7 @@ class WebGeofencingProvider;
 class WebGestureCurve;
 class WebGraphicsContext3DProvider;
 class WebIDBFactory;
+class WebImageCaptureFrameGrabber;
 class WebInstalledApp;
 class WebMIDIAccessor;
 class WebMIDIAccessorClient;
@@ -499,11 +500,11 @@ public:
 
     // WebRTC ----------------------------------------------------------
 
-    // Creates an WebRTCPeerConnectionHandler for RTCPeerConnection.
+    // Creates a WebRTCPeerConnectionHandler for RTCPeerConnection.
     // May return null if WebRTC functionality is not avaliable or if it's out of resources.
     virtual WebRTCPeerConnectionHandler* createRTCPeerConnectionHandler(WebRTCPeerConnectionHandlerClient*) { return nullptr; }
 
-    // Creates an WebMediaRecorderHandler to record MediaStreams.
+    // Creates a WebMediaRecorderHandler to record MediaStreams.
     // May return null if the functionality is not available or out of resources.
     virtual WebMediaRecorderHandler* createMediaRecorderHandler() { return nullptr; }
 
@@ -513,12 +514,16 @@ public:
     // May return null if WebRTC functionality is not available or out of resources.
     virtual WebMediaStreamCenter* createMediaStreamCenter(WebMediaStreamCenterClient*) { return nullptr; }
 
-    // Creates an WebCanvasCaptureHandler to capture Canvas output.
+    // Creates a WebCanvasCaptureHandler to capture Canvas output.
     virtual WebCanvasCaptureHandler* createCanvasCaptureHandler(const WebSize&, double, WebMediaStreamTrack*) { return nullptr; }
 
     // Fills in the WebMediaStream to capture from the WebMediaPlayer identified
     // by the second parameter.
     virtual void createHTMLVideoElementCapturer(WebMediaStream*, WebMediaPlayer*) {}
+
+    // Creates a WebImageCaptureFrameGrabber to take a snapshot of a Video Tracks.
+    // May return null if the functionality is not available.
+    virtual WebImageCaptureFrameGrabber* createImageCaptureFrameGrabber() { return nullptr; }
 
     // WebWorker ----------------------------------------------------------
 

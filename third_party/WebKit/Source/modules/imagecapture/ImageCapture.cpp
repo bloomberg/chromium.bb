@@ -4,12 +4,16 @@
 
 #include "modules/imagecapture/ImageCapture.h"
 
+#include "bindings/core/v8/CallbackPromiseAdapter.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/frame/ImageBitmap.h"
 #include "modules/EventTargetModules.h"
 #include "modules/mediastream/MediaStreamTrack.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebImageCaptureFrameGrabber.h"
+#include "public/platform/WebMediaStreamTrack.h"
 
 namespace blink {
 
@@ -60,7 +64,21 @@ ScriptPromise ImageCapture::grabFrame(ScriptState* scriptState, ExceptionState& 
         return promise;
     }
 
-    resolver->reject(DOMException::create(NotSupportedError, "Not implemented yet"));
+    // Create |m_frameGrabber| the first time.
+    if (!m_frameGrabber) {
+        m_frameGrabber = adoptPtr(Platform::current()->createImageCaptureFrameGrabber());
+
+    }
+
+    if (!m_frameGrabber) {
+        resolver->reject(DOMException::create(UnknownError, "Couldn't create platform resources"));
+        return promise;
+    }
+
+    // The platform does not know about MediaStreamTrack, so we wrap it up.
+    WebMediaStreamTrack track(m_streamTrack->component());
+    m_frameGrabber->grabFrame(&track, new CallbackPromiseAdapter<ImageBitmap, void>(resolver));
+
     return promise;
 }
 

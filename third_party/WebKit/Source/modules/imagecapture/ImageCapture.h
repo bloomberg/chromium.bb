@@ -17,6 +17,7 @@ namespace blink {
 
 class ExceptionState;
 class MediaStreamTrack;
+class WebImageCaptureFrameGrabber;
 
 // TODO(mcasas): Consideradding a LayoutTest checking that this class is not
 // garbage collected while it has event listeners.
@@ -53,6 +54,7 @@ private:
     bool addEventListenerInternal(const AtomicString& eventType, EventListener*, const EventListenerOptions&) override;
 
     Member<MediaStreamTrack> m_streamTrack;
+    OwnPtr<WebImageCaptureFrameGrabber> m_frameGrabber;
 };
 
 } // namespace blink

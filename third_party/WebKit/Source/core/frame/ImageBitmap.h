@@ -42,6 +42,10 @@ public:
     static ImageBitmap* create(PassRefPtr<StaticBitmapImage>, const IntRect&, const ImageBitmapOptions& = ImageBitmapOptions());
     static PassRefPtr<SkImage> getSkImageFromDecoder(PassOwnPtr<ImageDecoder>);
 
+    // Type and helper function required by CallbackPromiseAdapter:
+    using WebType = sk_sp<SkImage>;
+    static ImageBitmap* take(ScriptPromiseResolver*, sk_sp<SkImage>);
+
     StaticBitmapImage* bitmapImage() const { return (m_image) ? m_image.get() : nullptr; }
     PassOwnPtr<uint8_t[]> copyBitmapData(AlphaDisposition alphaOp = DontPremultiplyAlpha);
     unsigned long width() const;
