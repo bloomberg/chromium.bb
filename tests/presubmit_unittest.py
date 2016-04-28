@@ -1153,7 +1153,7 @@ def CheckChangeOnCommit(input_api, output_api):
     presubmit.DoPresubmitChecks(mox.IgnoreArg(), False, False,
                                 mox.IgnoreArg(),
                                 mox.IgnoreArg(),
-                                None, False, None).AndReturn(output)
+                                None, False, None, None).AndReturn(output)
     self.mox.ReplayAll()
 
     self.assertEquals(
@@ -1197,6 +1197,7 @@ class InputApiUnittest(PresubmitTestsBase):
       'os_walk', 'os_path', 'os_stat', 'owners_db', 'pickle', 'platform',
       'python_executable', 're', 'rietveld', 'subprocess', 'tbr', 'tempfile',
       'time', 'traceback', 'unittest', 'urllib2', 'version', 'verbose',
+      'dry_run',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(
@@ -1853,6 +1854,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
     input_api.host_url = 'http://localhost'
     input_api.is_committing = committing
     input_api.tbr = False
+    input_api.dry_run = None
     input_api.python_executable = 'pyyyyython'
     input_api.platform = sys.platform
     input_api.cpu_count = 2
@@ -2642,7 +2644,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
         cq_dry_run=True,
         rietveld_response=response,
         reviewers=set(["ben@example.com"]),
-        expected_output='This is a CQ dry run, skipping OWNERS check\n')
+        expected_output='This is a dry run, skipping OWNERS check\n')
 
     self.AssertOwnersWorks(approvers=set(['ben@example.com']),
         is_committing=False,

@@ -265,7 +265,7 @@ class InputApi(object):
   )
 
   def __init__(self, change, presubmit_path, is_committing,
-      rietveld_obj, verbose):
+      rietveld_obj, verbose, dry_run=None):
     """Builds an InputApi object.
 
     Args:
@@ -279,6 +279,7 @@ class InputApi(object):
     self.change = change
     self.is_committing = is_committing
     self.rietveld = rietveld_obj
+    self.dry_run = dry_run
     # TBD
     self.host_url = 'http://codereview.chromium.org'
     if self.rietveld:
@@ -1347,7 +1348,8 @@ def DoPostUploadExecuter(change,
 
 
 class PresubmitExecuter(object):
-  def __init__(self, change, committing, rietveld_obj, verbose):
+  def __init__(self, change, committing, rietveld_obj, verbose,
+               dry_run=None):
     """
     Args:
       change: The Change object.
@@ -1358,6 +1360,7 @@ class PresubmitExecuter(object):
     self.committing = committing
     self.rietveld = rietveld_obj
     self.verbose = verbose
+    self.dry_run = dry_run
 
   def ExecPresubmitScript(self, script_text, presubmit_path):
     """Executes a single presubmit script.
@@ -1377,7 +1380,8 @@ class PresubmitExecuter(object):
 
     # Load the presubmit script into context.
     input_api = InputApi(self.change, presubmit_path, self.committing,
-                         self.rietveld, self.verbose)
+                         self.rietveld, self.verbose,
+                         dry_run=self.dry_run)
     context = {}
     try:
       exec script_text in context
@@ -1419,7 +1423,8 @@ def DoPresubmitChecks(change,
                       input_stream,
                       default_presubmit,
                       may_prompt,
-                      rietveld_obj):
+                      rietveld_obj,
+                      dry_run=None):
   """Runs all presubmit checks that apply to the files in the change.
 
   This finds all PRESUBMIT.py files in directories enclosing the files in the
@@ -1438,6 +1443,7 @@ def DoPresubmitChecks(change,
     default_presubmit: A default presubmit script to execute in any case.
     may_prompt: Enable (y/n) questions on warning or error.
     rietveld_obj: rietveld.Rietveld object.
+    dry_run: if true, some Checks will be skipped.
 
   Warning:
     If may_prompt is true, output_stream SHOULD be sys.stdout and input_stream
@@ -1464,7 +1470,8 @@ def DoPresubmitChecks(change,
     if not presubmit_files and verbose:
       output.write("Warning, no PRESUBMIT.py found.\n")
     results = []
-    executer = PresubmitExecuter(change, committing, rietveld_obj, verbose)
+    executer = PresubmitExecuter(change, committing, rietveld_obj, verbose,
+                                 dry_run=dry_run)
     if default_presubmit:
       if verbose:
         output.write("Running default presubmit script.\n")
@@ -1644,8 +1651,11 @@ def main(argv=None):
                     help="A list of checks to skip which appear in "
                     "presubmit_canned_checks. Can be provided multiple times "
                     "to skip multiple canned checks.")
+  parser.add_option("--dry_run", action='store_true',
+                    help=optparse.SUPPRESS_HELP)
   parser.add_option("--gerrit_url", help=optparse.SUPPRESS_HELP)
-  parser.add_option("--gerrit_fetch", help=optparse.SUPPRESS_HELP)
+  parser.add_option("--gerrit_fetch", action='store_true',
+                    help=optparse.SUPPRESS_HELP)
   parser.add_option("--rietveld_url", help=optparse.SUPPRESS_HELP)
   parser.add_option("--rietveld_email", help=optparse.SUPPRESS_HELP)
   parser.add_option("--rietveld_fetch", action='store_true', default=False,
@@ -1730,20 +1740,21 @@ def main(argv=None):
     with canned_check_filter(options.skip_canned):
       results = DoPresubmitChecks(
           change_class(options.name,
-                      options.description,
-                      options.root,
-                      files,
-                      options.issue,
-                      options.patchset,
-                      options.author,
-                      upstream=options.upstream),
+                       options.description,
+                       options.root,
+                       files,
+                       options.issue,
+                       options.patchset,
+                       options.author,
+                       upstream=options.upstream),
           options.commit,
           options.verbose,
           sys.stdout,
           sys.stdin,
           options.default_presubmit,
           options.may_prompt,
-          rietveld_obj)
+          rietveld_obj,
+          options.dry_run)
     return not results.should_continue()
   except NonexistantCannedCheckFilter, e:
     print >> sys.stderr, (

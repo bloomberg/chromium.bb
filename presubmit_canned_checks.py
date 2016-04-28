@@ -859,9 +859,12 @@ def CheckOwners(input_api, output_api, source_file_filter=None):
       return [output_api.PresubmitNotifyResult(
           '--tbr was specified, skipping OWNERS check')]
     if input_api.change.issue:
-      if _GetRietveldIssueProps(input_api, None).get('cq_dry_run', False):
+      if (input_api.dry_run or
+        # TODO(tandrii): clean below once CQ && run_presubmit.py recipe specify
+        # dry_run property. http://crbug.com/605563.
+        _GetRietveldIssueProps(input_api, None).get('cq_dry_run', False)):
         return [output_api.PresubmitNotifyResult(
-            'This is a CQ dry run, skipping OWNERS check')]
+            'This is a dry run, skipping OWNERS check')]
     else:
       return [output_api.PresubmitError("OWNERS check failed: this change has "
           "no Rietveld issue number, so we can't check it for approvals.")]
@@ -875,6 +878,7 @@ def CheckOwners(input_api, output_api, source_file_filter=None):
       input_api.change.AffectedFiles(file_filter=source_file_filter)])
 
   owners_db = input_api.owners_db
+  # TODO(tandrii): this will always return None, set() in case of Gerrit.
   owner_email, reviewers = _RietveldOwnerAndReviewers(
       input_api,
       owners_db.email_regexp,
