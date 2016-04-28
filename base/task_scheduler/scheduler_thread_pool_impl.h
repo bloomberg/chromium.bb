@@ -31,7 +31,6 @@ namespace base {
 namespace internal {
 
 class DelayedTaskManager;
-struct SequenceSortKey;
 class TaskTracker;
 
 // A pool of threads that run Tasks. This class is thread-safe.

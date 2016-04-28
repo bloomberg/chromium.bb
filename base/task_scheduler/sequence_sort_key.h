@@ -12,20 +12,33 @@
 namespace base {
 namespace internal {
 
-// An immutable representation of the priority of a Sequence.
-struct BASE_EXPORT SequenceSortKey final {
+// An immutable but assignable representation of the priority of a Sequence.
+class BASE_EXPORT SequenceSortKey final {
+ public:
   SequenceSortKey(TaskPriority priority, TimeTicks next_task_sequenced_time);
 
   bool operator<(const SequenceSortKey& other) const;
   bool operator>(const SequenceSortKey& other) const { return other < *this; }
 
+  bool operator==(const SequenceSortKey& other) const {
+    return priority_ == other.priority_ &&
+           next_task_sequenced_time_ == other.next_task_sequenced_time_;
+  }
+  bool operator!=(const SequenceSortKey& other) const {
+    return !(other == *this);
+  };
+
+ private:
+  // The private section allows this class to keep its immutable property while
+  // being copy-assignable (i.e. instead of making its members const).
+
   // Highest task priority in the sequence at the time this sort key was
   // created.
-  const TaskPriority priority;
+  TaskPriority priority_;
 
   // Sequenced time of the next task to run in the sequence at the time this
   // sort key was created.
-  const TimeTicks next_task_sequenced_time;
+  TimeTicks next_task_sequenced_time_;
 };
 
 }  // namespace internal

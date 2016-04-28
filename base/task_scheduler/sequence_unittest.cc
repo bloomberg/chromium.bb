@@ -68,13 +68,6 @@ class TaskSchedulerSequenceTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(TaskSchedulerSequenceTest);
 };
 
-void ExpectSortKey(TaskPriority expected_priority,
-                   TimeTicks expected_sequenced_time,
-                   const SequenceSortKey& actual_sort_key) {
-  EXPECT_EQ(expected_priority, actual_sort_key.priority);
-  EXPECT_EQ(expected_sequenced_time, actual_sort_key.next_task_sequenced_time);
-}
-
 }  // namespace
 
 TEST_F(TaskSchedulerSequenceTest, PushPopPeek) {
@@ -133,56 +126,63 @@ TEST_F(TaskSchedulerSequenceTest, GetSortKey) {
   // Push task A in the sequence. The highest priority is from task A
   // (BACKGROUND). Task A is in front of the sequence.
   sequence->PushTask(std::move(task_a_owned_));
-  ExpectSortKey(TaskPriority::BACKGROUND, task_a_->sequenced_time,
-                sequence->GetSortKey());
+  EXPECT_EQ(SequenceSortKey(TaskPriority::BACKGROUND, task_a_->sequenced_time),
+            sequence->GetSortKey());
 
   // Push task B in the sequence. The highest priority is from task B
   // (USER_VISIBLE). Task A is still in front of the sequence.
   sequence->PushTask(std::move(task_b_owned_));
-  ExpectSortKey(TaskPriority::USER_VISIBLE, task_a_->sequenced_time,
-                sequence->GetSortKey());
+  EXPECT_EQ(
+      SequenceSortKey(TaskPriority::USER_VISIBLE, task_a_->sequenced_time),
+      sequence->GetSortKey());
 
   // Push task C in the sequence. The highest priority is from task C
   // (USER_BLOCKING). Task A is still in front of the sequence.
   sequence->PushTask(std::move(task_c_owned_));
-  ExpectSortKey(TaskPriority::USER_BLOCKING, task_a_->sequenced_time,
-                sequence->GetSortKey());
+  EXPECT_EQ(
+      SequenceSortKey(TaskPriority::USER_BLOCKING, task_a_->sequenced_time),
+      sequence->GetSortKey());
 
   // Push task D in the sequence. The highest priority is from tasks C/D
   // (USER_BLOCKING). Task A is still in front of the sequence.
   sequence->PushTask(std::move(task_d_owned_));
-  ExpectSortKey(TaskPriority::USER_BLOCKING, task_a_->sequenced_time,
-                sequence->GetSortKey());
+  EXPECT_EQ(
+      SequenceSortKey(TaskPriority::USER_BLOCKING, task_a_->sequenced_time),
+      sequence->GetSortKey());
 
   // Pop task A. The highest priority is still USER_BLOCKING. The task in front
   // of the sequence is now task B.
   sequence->PopTask();
-  ExpectSortKey(TaskPriority::USER_BLOCKING, task_b_->sequenced_time,
-                sequence->GetSortKey());
+  EXPECT_EQ(
+      SequenceSortKey(TaskPriority::USER_BLOCKING, task_b_->sequenced_time),
+      sequence->GetSortKey());
 
   // Pop task B. The highest priority is still USER_BLOCKING. The task in front
   // of the sequence is now task C.
   sequence->PopTask();
-  ExpectSortKey(TaskPriority::USER_BLOCKING, task_c_->sequenced_time,
-                sequence->GetSortKey());
+  EXPECT_EQ(
+      SequenceSortKey(TaskPriority::USER_BLOCKING, task_c_->sequenced_time),
+      sequence->GetSortKey());
 
   // Pop task C. The highest priority is still USER_BLOCKING. The task in front
   // of the sequence is now task D.
   sequence->PopTask();
-  ExpectSortKey(TaskPriority::USER_BLOCKING, task_d_->sequenced_time,
-                sequence->GetSortKey());
+  EXPECT_EQ(
+      SequenceSortKey(TaskPriority::USER_BLOCKING, task_d_->sequenced_time),
+      sequence->GetSortKey());
 
   // Push task E in the sequence. The highest priority is still USER_BLOCKING.
   // The task in front of the sequence is still task D.
   sequence->PushTask(std::move(task_e_owned_));
-  ExpectSortKey(TaskPriority::USER_BLOCKING, task_d_->sequenced_time,
-                sequence->GetSortKey());
+  EXPECT_EQ(
+      SequenceSortKey(TaskPriority::USER_BLOCKING, task_d_->sequenced_time),
+      sequence->GetSortKey());
 
   // Pop task D. The highest priority is now from task E (BACKGROUND). The
   // task in front of the sequence is now task E.
   sequence->PopTask();
-  ExpectSortKey(TaskPriority::BACKGROUND, task_e_->sequenced_time,
-                sequence->GetSortKey());
+  EXPECT_EQ(SequenceSortKey(TaskPriority::BACKGROUND, task_e_->sequenced_time),
+            sequence->GetSortKey());
 }
 
 }  // namespace internal

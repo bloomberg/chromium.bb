@@ -9,19 +9,20 @@ namespace internal {
 
 SequenceSortKey::SequenceSortKey(TaskPriority priority,
                                  TimeTicks next_task_sequenced_time)
-    : priority(priority), next_task_sequenced_time(next_task_sequenced_time) {}
+    : priority_(priority),
+      next_task_sequenced_time_(next_task_sequenced_time) {}
 
 bool SequenceSortKey::operator<(const SequenceSortKey& other) const {
   // This SequenceSortKey is considered less important than |other| if it has a
   // lower priority or if it has the same priority but its next task was posted
   // later than |other|'s.
   const int priority_diff =
-      static_cast<int>(priority) - static_cast<int>(other.priority);
+      static_cast<int>(priority_) - static_cast<int>(other.priority_);
   if (priority_diff < 0)
     return true;
   if (priority_diff > 0)
     return false;
-  return next_task_sequenced_time > other.next_task_sequenced_time;
+  return next_task_sequenced_time_ > other.next_task_sequenced_time_;
 }
 
 }  // namespace internal

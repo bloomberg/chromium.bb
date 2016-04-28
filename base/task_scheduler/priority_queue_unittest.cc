@@ -52,21 +52,6 @@ class ThreadBeginningTransaction : public SimpleThread {
   DISALLOW_COPY_AND_ASSIGN(ThreadBeginningTransaction);
 };
 
-void ExpectSequenceAndSortKeyEq(
-    const PriorityQueue::SequenceAndSortKey& expected,
-    const PriorityQueue::SequenceAndSortKey& actual) {
-  EXPECT_EQ(expected.sequence, actual.sequence);
-  EXPECT_EQ(expected.sort_key.priority, actual.sort_key.priority);
-  EXPECT_EQ(expected.sort_key.next_task_sequenced_time,
-            actual.sort_key.next_task_sequenced_time);
-}
-
-#define EXPECT_SEQUENCE_AND_SORT_KEY_EQ(expected, actual) \
-  do {                                                    \
-    SCOPED_TRACE("");                                     \
-    ExpectSequenceAndSortKeyEq(expected, actual);         \
-  } while (false)
-
 }  // namespace
 
 TEST(TaskSchedulerPriorityQueueTest, PushPopPeek) {
@@ -98,66 +83,46 @@ TEST(TaskSchedulerPriorityQueueTest, PushPopPeek) {
   // Create a PriorityQueue and a Transaction.
   PriorityQueue pq;
   auto transaction(pq.BeginTransaction());
-  EXPECT_SEQUENCE_AND_SORT_KEY_EQ(PriorityQueue::SequenceAndSortKey(),
-                                  transaction->Peek());
+  EXPECT_TRUE(transaction->IsEmpty());
 
   // Push |sequence_a| in the PriorityQueue. It becomes the sequence with the
   // highest priority.
-  transaction->Push(WrapUnique(
-      new PriorityQueue::SequenceAndSortKey(sequence_a, sort_key_a)));
-  EXPECT_SEQUENCE_AND_SORT_KEY_EQ(
-      PriorityQueue::SequenceAndSortKey(sequence_a, sort_key_a),
-      transaction->Peek());
+  transaction->Push(sequence_a, sort_key_a);
+  EXPECT_EQ(sort_key_a, transaction->PeekSortKey());
 
   // Push |sequence_b| in the PriorityQueue. It becomes the sequence with the
   // highest priority.
-  transaction->Push(WrapUnique(
-      new PriorityQueue::SequenceAndSortKey(sequence_b, sort_key_b)));
-  EXPECT_SEQUENCE_AND_SORT_KEY_EQ(
-      PriorityQueue::SequenceAndSortKey(sequence_b, sort_key_b),
-      transaction->Peek());
+  transaction->Push(sequence_b, sort_key_b);
+  EXPECT_EQ(sort_key_b, transaction->PeekSortKey());
 
   // Push |sequence_c| in the PriorityQueue. |sequence_b| is still the sequence
   // with the highest priority.
-  transaction->Push(WrapUnique(
-      new PriorityQueue::SequenceAndSortKey(sequence_c, sort_key_c)));
-  EXPECT_SEQUENCE_AND_SORT_KEY_EQ(
-      PriorityQueue::SequenceAndSortKey(sequence_b, sort_key_b),
-      transaction->Peek());
+  transaction->Push(sequence_c, sort_key_c);
+  EXPECT_EQ(sort_key_b, transaction->PeekSortKey());
 
   // Push |sequence_d| in the PriorityQueue. |sequence_b| is still the sequence
   // with the highest priority.
-  transaction->Push(WrapUnique(
-      new PriorityQueue::SequenceAndSortKey(sequence_d, sort_key_d)));
-  EXPECT_SEQUENCE_AND_SORT_KEY_EQ(
-      PriorityQueue::SequenceAndSortKey(sequence_b, sort_key_b),
-      transaction->Peek());
+  transaction->Push(sequence_d, sort_key_d);
+  EXPECT_EQ(sort_key_b, transaction->PeekSortKey());
 
   // Pop |sequence_b| from the PriorityQueue. |sequence_c| becomes the sequence
   // with the highest priority.
-  transaction->Pop();
-  EXPECT_SEQUENCE_AND_SORT_KEY_EQ(
-      PriorityQueue::SequenceAndSortKey(sequence_c, sort_key_c),
-      transaction->Peek());
+  EXPECT_EQ(sequence_b, transaction->PopSequence());
+  EXPECT_EQ(sort_key_c, transaction->PeekSortKey());
 
   // Pop |sequence_c| from the PriorityQueue. |sequence_a| becomes the sequence
   // with the highest priority.
-  transaction->Pop();
-  EXPECT_SEQUENCE_AND_SORT_KEY_EQ(
-      PriorityQueue::SequenceAndSortKey(sequence_a, sort_key_a),
-      transaction->Peek());
+  EXPECT_EQ(sequence_c, transaction->PopSequence());
+  EXPECT_EQ(sort_key_a, transaction->PeekSortKey());
 
   // Pop |sequence_a| from the PriorityQueue. |sequence_d| becomes the sequence
   // with the highest priority.
-  transaction->Pop();
-  EXPECT_SEQUENCE_AND_SORT_KEY_EQ(
-      PriorityQueue::SequenceAndSortKey(sequence_d, sort_key_d),
-      transaction->Peek());
+  EXPECT_EQ(sequence_a, transaction->PopSequence());
+  EXPECT_EQ(sort_key_d, transaction->PeekSortKey());
 
   // Pop |sequence_d| from the PriorityQueue. It is now empty.
-  transaction->Pop();
-  EXPECT_SEQUENCE_AND_SORT_KEY_EQ(PriorityQueue::SequenceAndSortKey(),
-                                  transaction->Peek());
+  EXPECT_EQ(sequence_d, transaction->PopSequence());
+  EXPECT_TRUE(transaction->IsEmpty());
 }
 
 // Check that creating Transactions on the same thread for 2 unrelated
@@ -213,15 +178,6 @@ TEST(TaskSchedulerPriorityQueueTest, TwoTransactionsTwoThreads) {
 
   // The other thread should exit after its call to BeginTransaction() returns.
   thread_beginning_transaction.Join();
-}
-
-TEST(TaskSchedulerPriorityQueueTest, SequenceAndSortKeyIsNull) {
-  EXPECT_TRUE(PriorityQueue::SequenceAndSortKey().is_null());
-
-  const PriorityQueue::SequenceAndSortKey non_null_sequence_and_sort_key(
-      make_scoped_refptr(new Sequence),
-      SequenceSortKey(TaskPriority::USER_VISIBLE, TimeTicks()));
-  EXPECT_FALSE(non_null_sequence_and_sort_key.is_null());
 }
 
 }  // namespace internal

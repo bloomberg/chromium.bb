@@ -18,7 +18,7 @@ namespace base {
 namespace internal {
 
 class SchedulerWorkerThread;
-struct SequenceSortKey;
+class SequenceSortKey;
 
 // Interface for a thread pool.
 class BASE_EXPORT SchedulerThreadPool {

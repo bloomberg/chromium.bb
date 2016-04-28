@@ -276,9 +276,8 @@ scoped_refptr<TaskRunner> SchedulerThreadPoolImpl::CreateTaskRunnerWithTraits(
 void SchedulerThreadPoolImpl::ReEnqueueSequence(
     scoped_refptr<Sequence> sequence,
     const SequenceSortKey& sequence_sort_key) {
-  shared_priority_queue_.BeginTransaction()->Push(
-      WrapUnique(new PriorityQueue::SequenceAndSortKey(std::move(sequence),
-                                                       sequence_sort_key)));
+  shared_priority_queue_.BeginTransaction()->Push(std::move(sequence),
+                                                  sequence_sort_key);
 
   // The thread calling this method just ran a Task from |sequence| and will
   // soon try to get another Sequence from which to run a Task. If the thread
@@ -347,9 +346,8 @@ void SchedulerThreadPoolImpl::PostTaskWithSequenceNow(
     // - A worker thread is running a Task from |sequence|. It will insert
     //   |sequence| in a PriorityQueue once it's done running the Task.
     const auto sequence_sort_key = sequence->GetSortKey();
-    priority_queue->BeginTransaction()->Push(
-        WrapUnique(new PriorityQueue::SequenceAndSortKey(std::move(sequence),
-                                                         sequence_sort_key)));
+    priority_queue->BeginTransaction()->Push(std::move(sequence),
+                                             sequence_sort_key);
 
     // Wake up a worker thread to process |sequence|.
     if (worker_thread)
@@ -395,15 +393,11 @@ SchedulerThreadPoolImpl::SchedulerWorkerThreadDelegateImpl::GetWork(
   {
     std::unique_ptr<PriorityQueue::Transaction> shared_transaction(
         outer_->shared_priority_queue_.BeginTransaction());
-    const auto& shared_sequence_and_sort_key = shared_transaction->Peek();
-
     std::unique_ptr<PriorityQueue::Transaction> single_threaded_transaction(
         single_threaded_priority_queue_.BeginTransaction());
-    const auto& single_threaded_sequence_and_sort_key =
-        single_threaded_transaction->Peek();
 
-    if (shared_sequence_and_sort_key.is_null() &&
-        single_threaded_sequence_and_sort_key.is_null()) {
+    if (shared_transaction->IsEmpty() &&
+        single_threaded_transaction->IsEmpty()) {
       single_threaded_transaction.reset();
 
       // |shared_transaction| is kept alive while |worker_thread| is added to
@@ -425,20 +419,18 @@ SchedulerThreadPoolImpl::SchedulerWorkerThreadDelegateImpl::GetWork(
     // True if both PriorityQueues have Sequences and the Sequence at the top of
     // the shared PriorityQueue is more important.
     const bool shared_sequence_is_more_important =
-        !shared_sequence_and_sort_key.is_null() &&
-        !single_threaded_sequence_and_sort_key.is_null() &&
-        shared_sequence_and_sort_key.sort_key >
-            single_threaded_sequence_and_sort_key.sort_key;
+        !shared_transaction->IsEmpty() &&
+        !single_threaded_transaction->IsEmpty() &&
+        shared_transaction->PeekSortKey() >
+            single_threaded_transaction->PeekSortKey();
 
-    if (single_threaded_sequence_and_sort_key.is_null() ||
+    if (single_threaded_transaction->IsEmpty() ||
         shared_sequence_is_more_important) {
-      sequence = shared_sequence_and_sort_key.sequence;
-      shared_transaction->Pop();
+      sequence = shared_transaction->PopSequence();
       last_sequence_is_single_threaded_ = false;
     } else {
-      DCHECK(!single_threaded_sequence_and_sort_key.is_null());
-      sequence = single_threaded_sequence_and_sort_key.sequence;
-      single_threaded_transaction->Pop();
+      DCHECK(!single_threaded_transaction->IsEmpty());
+      sequence = single_threaded_transaction->PopSequence();
       last_sequence_is_single_threaded_ = true;
     }
   }
@@ -455,8 +447,7 @@ void SchedulerThreadPoolImpl::SchedulerWorkerThreadDelegateImpl::
     // PriorityQueue from which it was extracted.
     const SequenceSortKey sequence_sort_key = sequence->GetSortKey();
     single_threaded_priority_queue_.BeginTransaction()->Push(
-        WrapUnique(new PriorityQueue::SequenceAndSortKey(std::move(sequence),
-                                                         sequence_sort_key)));
+        std::move(sequence), sequence_sort_key);
   } else {
     // |re_enqueue_sequence_callback_| will determine in which PriorityQueue
     // |sequence| must be enqueued.

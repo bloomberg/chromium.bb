@@ -23,27 +23,6 @@ namespace internal {
 // A PriorityQueue holds Sequences of Tasks. This class is thread-safe.
 class BASE_EXPORT PriorityQueue {
  public:
-  // An immutable struct combining a Sequence and the sort key that determines
-  // its position in a PriorityQueue.
-  struct BASE_EXPORT SequenceAndSortKey {
-    // Constructs a null SequenceAndSortKey.
-    SequenceAndSortKey();
-
-    // Constructs a SequenceAndSortKey with the given |sequence| and |sort_key|.
-    SequenceAndSortKey(scoped_refptr<Sequence> sequence,
-                       const SequenceSortKey& sort_key);
-    ~SequenceAndSortKey();
-
-    // Returns true if this is a null SequenceAndSortKey.
-    bool is_null() const { return !sequence; }
-
-    const scoped_refptr<Sequence> sequence;
-    const SequenceSortKey sort_key;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(SequenceAndSortKey);
-  };
-
   // A Transaction can perform multiple operations atomically on a
   // PriorityQueue. While a Transaction is alive, it is guaranteed that nothing
   // else will access the PriorityQueue.
@@ -57,17 +36,25 @@ class BASE_EXPORT PriorityQueue {
    public:
     ~Transaction();
 
-    // Inserts |sequence_and_sort_key| in the PriorityQueue.
-    void Push(std::unique_ptr<SequenceAndSortKey> sequence_and_sort_key);
+    // Inserts |sequence| in the PriorityQueue with |sequence_sort_key|.
+    // Note: |sequence_sort_key| is required as a parameter instead of being
+    // extracted from |sequence| in Push() to avoid this Transaction having a
+    // lock interdependency with |sequence|.
+    void Push(scoped_refptr<Sequence> sequence,
+              const SequenceSortKey& sequence_sort_key);
 
-    // Returns the SequenceAndSortKey with the highest priority or a null
-    // SequenceAndSortKey if the PriorityQueue is empty. The reference becomes
-    // invalid the next time that a Sequence is popped from the PriorityQueue.
-    const SequenceAndSortKey& Peek() const;
+    // Returns a reference to the SequenceSortKey representing the priority of
+    // the highest pending task in this PriorityQueue. The reference becomes
+    // invalid the next time that this PriorityQueue is modified.
+    // Cannot be called on an empty PriorityQueue.
+    const SequenceSortKey& PeekSortKey() const;
 
-    // Removes the SequenceAndSortKey with the highest priority from the
-    // PriorityQueue. Cannot be called on an empty PriorityQueue.
-    void Pop();
+    // Removes and returns the highest priority Sequence in this PriorityQueue.
+    // Cannot be called on an empty PriorityQueue.
+    scoped_refptr<Sequence> PopSequence();
+
+    // Returns true if the PriorityQueue is empty.
+    bool IsEmpty() const;
 
    private:
     friend class PriorityQueue;
@@ -100,25 +87,16 @@ class BASE_EXPORT PriorityQueue {
   const SchedulerLock* container_lock() const { return &container_lock_; }
 
  private:
-  struct SequenceAndSortKeyComparator {
-    bool operator()(const std::unique_ptr<SequenceAndSortKey>& left,
-                    const std::unique_ptr<SequenceAndSortKey>& right) const {
-      return left->sort_key < right->sort_key;
-    }
-  };
-  using ContainerType =
-      std::priority_queue<std::unique_ptr<SequenceAndSortKey>,
-                          std::vector<std::unique_ptr<SequenceAndSortKey>>,
-                          SequenceAndSortKeyComparator>;
+  // A class combining a Sequence and the SequenceSortKey that determines its
+  // position in a PriorityQueue.
+  class SequenceAndSortKey;
+
+  using ContainerType = std::priority_queue<SequenceAndSortKey>;
 
   // Synchronizes access to |container_|.
   SchedulerLock container_lock_;
 
   ContainerType container_;
-
-  // A null SequenceAndSortKey returned by Peek() when the PriorityQueue is
-  // empty.
-  const SequenceAndSortKey empty_sequence_and_sort_key_;
 
   DISALLOW_COPY_AND_ASSIGN(PriorityQueue);
 };

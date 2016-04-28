@@ -12,15 +12,50 @@
 namespace base {
 namespace internal {
 
-PriorityQueue::SequenceAndSortKey::SequenceAndSortKey()
-    : sort_key(TaskPriority::LOWEST, TimeTicks()) {}
+// A class combining a Sequence and the SequenceSortKey that determines its
+// position in a PriorityQueue. Instances are only mutable via take_sequence()
+// which can only be called once and renders its instance invalid after the
+// call.
+class PriorityQueue::SequenceAndSortKey {
+ public:
+  SequenceAndSortKey(scoped_refptr<Sequence>&& sequence,
+                     const SequenceSortKey& sort_key)
+      : sequence_(sequence), sort_key_(sort_key) {
+    DCHECK(sequence_);
+  }
 
-PriorityQueue::SequenceAndSortKey::SequenceAndSortKey(
-    scoped_refptr<Sequence> sequence,
-    const SequenceSortKey& sort_key)
-    : sequence(std::move(sequence)), sort_key(sort_key) {}
+  // Note: while |sequence_| should always be non-null post-move (i.e. we
+  // shouldn't be moving an invalid SequenceAndSortKey around), there can't be a
+  // DCHECK(sequence_) on moves as the Windows STL moves elements on pop instead
+  // of overwriting them: resulting in the move of a SequenceAndSortKey with a
+  // null |sequence_| in Transaction::Pop()'s implementation.
+  SequenceAndSortKey(SequenceAndSortKey&& other) = default;
+  SequenceAndSortKey& operator=(SequenceAndSortKey&& other) = default;
 
-PriorityQueue::SequenceAndSortKey::~SequenceAndSortKey() = default;
+  // Extracts |sequence_| from this object. This object is invalid after this
+  // call.
+  scoped_refptr<Sequence> take_sequence() {
+    DCHECK(sequence_);
+    return std::move(sequence_);
+  }
+
+  // Compares this SequenceAndSortKey to |other| based on their respective
+  // |sort_key_|.
+  bool operator<(const SequenceAndSortKey& other) const {
+    return sort_key_ < other.sort_key_;
+  }
+  bool operator>(const SequenceAndSortKey& other) const {
+    return other < *this;
+  }
+
+  const SequenceSortKey& sort_key() const { return sort_key_; }
+
+ private:
+  scoped_refptr<Sequence> sequence_;
+  SequenceSortKey sort_key_;
+
+  DISALLOW_COPY_AND_ASSIGN(SequenceAndSortKey);
+};
 
 PriorityQueue::Transaction::Transaction(PriorityQueue* outer_queue)
     : auto_lock_(outer_queue->container_lock_), outer_queue_(outer_queue) {
@@ -32,29 +67,36 @@ PriorityQueue::Transaction::~Transaction() {
 }
 
 void PriorityQueue::Transaction::Push(
-    std::unique_ptr<SequenceAndSortKey> sequence_and_sort_key) {
+    scoped_refptr<Sequence> sequence,
+    const SequenceSortKey& sequence_sort_key) {
   DCHECK(CalledOnValidThread());
-  DCHECK(!sequence_and_sort_key->is_null());
-
-  outer_queue_->container_.push(std::move(sequence_and_sort_key));
+  outer_queue_->container_.emplace(std::move(sequence), sequence_sort_key);
 }
 
-const PriorityQueue::SequenceAndSortKey& PriorityQueue::Transaction::Peek()
-    const {
+const SequenceSortKey& PriorityQueue::Transaction::PeekSortKey() const {
   DCHECK(CalledOnValidThread());
-
-  // TODO(fdoray): Add an IsEmpty() method to Transaction and require Peek() to
-  // be called on a non-empty PriorityQueue only.
-  if (outer_queue_->container_.empty())
-    return outer_queue_->empty_sequence_and_sort_key_;
-
-  return *outer_queue_->container_.top();
+  DCHECK(!IsEmpty());
+  return outer_queue_->container_.top().sort_key();
 }
 
-void PriorityQueue::Transaction::Pop() {
+scoped_refptr<Sequence> PriorityQueue::Transaction::PopSequence() {
   DCHECK(CalledOnValidThread());
-  DCHECK(!outer_queue_->container_.empty());
+  DCHECK(!IsEmpty());
+
+  // The const_cast on top() is okay since the SequenceAndSortKey is
+  // transactionally being popped from |container_| right after and taking its
+  // Sequence does not alter its sort order (a requirement for the Windows STL's
+  // consistency debug-checks for std::priority_queue::top()).
+  scoped_refptr<Sequence> sequence =
+      const_cast<PriorityQueue::SequenceAndSortKey&>(
+          outer_queue_->container_.top())
+          .take_sequence();
   outer_queue_->container_.pop();
+  return sequence;
+}
+
+bool PriorityQueue::Transaction::IsEmpty() const {
+  return outer_queue_->container_.empty();
 }
 
 PriorityQueue::PriorityQueue() = default;
