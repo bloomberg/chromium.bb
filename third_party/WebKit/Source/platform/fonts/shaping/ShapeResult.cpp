@@ -34,6 +34,7 @@
 #include "platform/fonts/Font.h"
 #include "platform/fonts/shaping/ShapeResultInlineHeaders.h"
 #include "platform/fonts/shaping/ShapeResultSpacing.h"
+#include <hb.h>
 
 namespace blink {
 
@@ -269,6 +270,90 @@ PassRefPtr<ShapeResult> ShapeResult::applySpacingToCopy(
     RefPtr<ShapeResult> result = ShapeResult::create(*this);
     result->applySpacing(spacing, run);
     return result.release();
+}
+
+static inline float harfBuzzPositionToFloat(hb_position_t value)
+{
+    return static_cast<float>(value) / (1 << 16);
+}
+
+void ShapeResult::insertRun(PassOwnPtr<ShapeResult::RunInfo> runToInsert,
+    unsigned startGlyph, unsigned numGlyphs, hb_buffer_t* harfBuzzBuffer)
+{
+    ASSERT(numGlyphs > 0);
+    OwnPtr<ShapeResult::RunInfo> run(std::move(runToInsert));
+    ASSERT(numGlyphs == run->m_glyphData.size());
+
+    const SimpleFontData* currentFontData = run->m_fontData.get();
+    const hb_glyph_info_t* glyphInfos =
+        hb_buffer_get_glyph_infos(harfBuzzBuffer, 0);
+    const hb_glyph_position_t* glyphPositions =
+        hb_buffer_get_glyph_positions(harfBuzzBuffer, 0);
+    const unsigned startCluster =
+        HB_DIRECTION_IS_FORWARD(hb_buffer_get_direction(harfBuzzBuffer))
+        ? glyphInfos[startGlyph].cluster
+        : glyphInfos[startGlyph + numGlyphs - 1].cluster;
+
+    float totalAdvance = 0.0f;
+    FloatPoint glyphOrigin;
+    bool hasVerticalOffsets = !HB_DIRECTION_IS_HORIZONTAL(run->m_direction);
+
+    // HarfBuzz returns result in visual order, no need to flip for RTL.
+    for (unsigned i = 0; i < numGlyphs; ++i) {
+        uint16_t glyph = glyphInfos[startGlyph + i].codepoint;
+        hb_glyph_position_t pos = glyphPositions[startGlyph + i];
+
+        float offsetX = harfBuzzPositionToFloat(pos.x_offset);
+        float offsetY = -harfBuzzPositionToFloat(pos.y_offset);
+
+        // One out of x_advance and y_advance is zero, depending on
+        // whether the buffer direction is horizontal or vertical.
+        float advance = harfBuzzPositionToFloat(pos.x_advance - pos.y_advance);
+
+        // The characterIndex of one ShapeResult run is normalized to the run's
+        // startIndex and length.  TODO crbug.com/542703: Consider changing that
+        // and instead pass the whole run to hb_buffer_t each time.
+        run->m_glyphData[i].characterIndex =
+            glyphInfos[startGlyph + i].cluster - startCluster;
+
+        run->setGlyphAndPositions(i, glyph, advance, offsetX, offsetY);
+        totalAdvance += advance;
+        hasVerticalOffsets |= (offsetY != 0);
+
+        FloatRect glyphBounds = currentFontData->boundsForGlyph(glyph);
+        glyphBounds.move(glyphOrigin.x(), glyphOrigin.y());
+        m_glyphBoundingBox.unite(glyphBounds);
+        glyphOrigin += FloatSize(advance + offsetX, offsetY);
+    }
+
+    run->m_width = std::max(0.0f, totalAdvance);
+    m_width += run->m_width;
+    m_numGlyphs += numGlyphs;
+    ASSERT(m_numGlyphs >= numGlyphs);
+    m_hasVerticalOffsets |= hasVerticalOffsets;
+
+    // The runs are stored in result->m_runs in visual order. For LTR, we place
+    // the run to be inserted before the next run with a bigger character
+    // start index. For RTL, we place the run before the next run with a lower
+    // character index. Otherwise, for both directions, at the end.
+    if (HB_DIRECTION_IS_FORWARD(run->m_direction)) {
+        for (size_t pos = 0; pos < m_runs.size(); ++pos) {
+            if (m_runs.at(pos)->m_startIndex > run->m_startIndex) {
+                m_runs.insert(pos, run.release());
+                break;
+            }
+        }
+    } else {
+        for (size_t pos = 0; pos < m_runs.size(); ++pos) {
+            if (m_runs.at(pos)->m_startIndex < run->m_startIndex) {
+                m_runs.insert(pos, run.release());
+                break;
+            }
+        }
+    }
+    // If we didn't find an existing slot to place it, append.
+    if (run)
+        m_runs.append(run.release());
 }
 
 } // namespace blink

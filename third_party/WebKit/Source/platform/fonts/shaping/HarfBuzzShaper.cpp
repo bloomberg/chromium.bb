@@ -80,11 +80,6 @@ private:
     DestroyFunction m_destroy;
 };
 
-static inline float harfBuzzPositionToFloat(hb_position_t value)
-{
-    return static_cast<float>(value) / (1 << 16);
-}
-
 static void normalizeCharacters(const TextRun& run, unsigned length, UChar* destination, unsigned* destinationLength)
 {
     unsigned position = 0;
@@ -436,14 +431,16 @@ bool HarfBuzzShaper::extractShapeResults(hb_buffer_t* harfBuzzBuffer,
         // When we're getting here with the last resort font, we have no other
         // choice than adding boxes to the ShapeResult.
         if ((currentClusterResult == NotDef && numCharacters) || isLastResort) {
+            hb_direction_t direction = TextDirectionToHBDirection(
+                m_textRun.direction(),
+                m_font->getFontDescription().orientation(), currentFont);
             // Here we need to specify glyph positions.
-            OwnPtr<ShapeResult::RunInfo> run = adoptPtr(new ShapeResult::RunInfo(currentFont,
-                TextDirectionToHBDirection(m_textRun.direction(),
-                m_font->getFontDescription().orientation(), currentFont),
-                ICUScriptToHBScript(currentRunScript),
-                startIndex,
-                numGlyphsToInsert, numCharacters));
-            insertRunIntoShapeResult(shapeResult, run.release(), lastChangePosition, numGlyphsToInsert, harfBuzzBuffer);
+            ShapeResult::RunInfo* run = new ShapeResult::RunInfo(currentFont,
+                direction, ICUScriptToHBScript(currentRunScript),
+                startIndex, numGlyphsToInsert, numCharacters);
+            shapeResult->insertRun(adoptPtr(run), lastChangePosition,
+                numGlyphsToInsert,
+                harfBuzzBuffer);
         }
         lastChangePosition = glyphIndex;
     }
@@ -659,81 +656,6 @@ PassRefPtr<ShapeResult> HarfBuzzShaper::shapeResult()
         }
     }
     return result.release();
-}
-
-// TODO crbug.com/542701: This should be a method on ShapeResult.
-void HarfBuzzShaper::insertRunIntoShapeResult(ShapeResult* result,
-    PassOwnPtr<ShapeResult::RunInfo> runToInsert, unsigned startGlyph, unsigned numGlyphs,
-    hb_buffer_t* harfBuzzBuffer)
-{
-    ASSERT(numGlyphs > 0);
-    OwnPtr<ShapeResult::RunInfo> run(std::move(runToInsert));
-    ASSERT(numGlyphs == run->m_glyphData.size());
-
-    const SimpleFontData* currentFontData = run->m_fontData.get();
-    const hb_glyph_info_t* glyphInfos = hb_buffer_get_glyph_infos(harfBuzzBuffer, 0);
-    const hb_glyph_position_t* glyphPositions = hb_buffer_get_glyph_positions(harfBuzzBuffer, 0);
-    const unsigned startCluster = HB_DIRECTION_IS_FORWARD(hb_buffer_get_direction(harfBuzzBuffer))
-        ? glyphInfos[startGlyph].cluster : glyphInfos[startGlyph + numGlyphs - 1].cluster;
-
-    float totalAdvance = 0.0f;
-    FloatPoint glyphOrigin;
-    bool hasVerticalOffsets = !HB_DIRECTION_IS_HORIZONTAL(run->m_direction);
-
-    // HarfBuzz returns result in visual order, no need to flip for RTL.
-    for (unsigned i = 0; i < numGlyphs; ++i) {
-        uint16_t glyph = glyphInfos[startGlyph + i].codepoint;
-        float offsetX = harfBuzzPositionToFloat(glyphPositions[startGlyph + i].x_offset);
-        float offsetY = -harfBuzzPositionToFloat(glyphPositions[startGlyph + i].y_offset);
-
-        // One out of x_advance and y_advance is zero, depending on
-        // whether the buffer direction is horizontal or vertical.
-        float advance = harfBuzzPositionToFloat(glyphPositions[startGlyph + i].x_advance - glyphPositions[startGlyph + i].y_advance);
-        RELEASE_ASSERT(m_normalizedBufferLength > glyphInfos[startGlyph + i].cluster);
-
-        // The characterIndex of one ShapeResult run is normalized to the run's
-        // startIndex and length.  TODO crbug.com/542703: Consider changing that
-        // and instead pass the whole run to hb_buffer_t each time.
-        run->m_glyphData[i].characterIndex = glyphInfos[startGlyph + i].cluster - startCluster;
-
-        run->setGlyphAndPositions(i, glyph, advance, offsetX, offsetY);
-        totalAdvance += advance;
-        hasVerticalOffsets |= (offsetY != 0);
-
-        FloatRect glyphBounds = currentFontData->boundsForGlyph(glyph);
-        glyphBounds.move(glyphOrigin.x(), glyphOrigin.y());
-        result->m_glyphBoundingBox.unite(glyphBounds);
-        glyphOrigin += FloatSize(advance + offsetX, offsetY);
-    }
-    run->m_width = std::max(0.0f, totalAdvance);
-    result->m_width += run->m_width;
-    result->m_numGlyphs += numGlyphs;
-    ASSERT(result->m_numGlyphs >= numGlyphs); // no overflow
-    result->m_hasVerticalOffsets |= hasVerticalOffsets;
-
-    // The runs are stored in result->m_runs in visual order. For LTR, we place
-    // the run to be inserted before the next run with a bigger character
-    // start index. For RTL, we place the run before the next run with a lower
-    // character index. Otherwise, for both directions, at the end.
-    if (HB_DIRECTION_IS_FORWARD(run->m_direction)) {
-        for (size_t pos = 0; pos < result->m_runs.size(); ++pos) {
-            if (result->m_runs.at(pos)->m_startIndex > run->m_startIndex) {
-                result->m_runs.insert(pos, run.release());
-                break;
-            }
-        }
-    } else {
-        for (size_t pos = 0; pos < result->m_runs.size(); ++pos) {
-            if (result->m_runs.at(pos)->m_startIndex < run->m_startIndex) {
-                result->m_runs.insert(pos, run.release());
-                break;
-            }
-        }
-    }
-    // If we didn't find an existing slot to place it, append.
-    if (run) {
-        result->m_runs.append(run.release());
-    }
 }
 
 PassRefPtr<ShapeResult> ShapeResult::createForTabulationCharacters(const Font* font,

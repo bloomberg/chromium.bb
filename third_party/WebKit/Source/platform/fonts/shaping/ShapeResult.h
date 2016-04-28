@@ -40,6 +40,8 @@
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 
+struct hb_buffer_t;
+
 namespace blink {
 
 class Font;
@@ -89,6 +91,8 @@ protected:
     }
 
     void applySpacing(ShapeResultSpacing&, const TextRun&);
+    void insertRun(PassOwnPtr<ShapeResult::RunInfo>, unsigned startGlyph,
+        unsigned numGlyphs, hb_buffer_t*);
 
     float m_width;
     FloatRect m_glyphBoundingBox;
