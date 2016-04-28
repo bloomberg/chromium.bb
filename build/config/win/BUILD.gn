@@ -320,7 +320,8 @@ incremental_linking_off_switch = [ "/INCREMENTAL:NO" ]
 # https://crbug.com/595702.  Disable incremental linking with clang for now.
 # TODO(thakis): Remove this once that problem is fixed, or when the win_clang
 # bot uses lld.
-if (is_debug && !is_clang) {
+# Disable incremental linking for syzyasan
+if (is_debug && !is_clang && !is_syzyasan) {
   default_incremental_linking_switch = incremental_linking_on_switch
 } else {
   default_incremental_linking_switch = incremental_linking_off_switch
