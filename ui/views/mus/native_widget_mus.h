@@ -73,6 +73,7 @@ class VIEWS_MUS_EXPORT NativeWidgetMus : public internal::NativeWidgetPrivate,
   static void NotifyFrameChanged(mus::WindowTreeConnection* connection);
 
   mus::Window* window() { return window_; }
+  WindowTreeHostMus* window_tree_host() { return window_tree_host_.get(); }
 
   aura::Window* GetRootWindow();
 

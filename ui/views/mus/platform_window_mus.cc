@@ -4,6 +4,7 @@
 
 #include "ui/views/mus/platform_window_mus.h"
 
+#include "base/message_loop/message_loop.h"
 #include "build/build_config.h"
 #include "components/bitmap_uploader/bitmap_uploader.h"
 #include "components/mus/public/cpp/property_type_converters.h"
@@ -14,10 +15,51 @@
 #include "ui/platform_window/platform_window_delegate.h"
 #include "ui/views/mus/window_manager_connection.h"
 
+using mus::mojom::EventResult;
+
 namespace views {
 
 namespace {
+
 static uint32_t accelerated_widget_count = 1;
+
+// Handles acknowledgement of an input event, either immediately when a nested
+// message loop starts, or upon destruction.
+class EventAckHandler : public base::MessageLoop::NestingObserver {
+ public:
+  explicit EventAckHandler(
+      std::unique_ptr<base::Callback<void(EventResult)>> ack_callback)
+      : ack_callback_(std::move(ack_callback)) {
+    DCHECK(ack_callback_);
+    base::MessageLoop::current()->AddNestingObserver(this);
+  }
+
+  ~EventAckHandler() override {
+    base::MessageLoop::current()->RemoveNestingObserver(this);
+    if (ack_callback_) {
+      ack_callback_->Run(handled_ ? EventResult::HANDLED
+                                  : EventResult::UNHANDLED);
+    }
+  }
+
+  void set_handled(bool handled) { handled_ = handled; }
+
+  // base::MessageLoop::NestingObserver:
+  void OnBeginNestedMessageLoop() override {
+    // Acknowledge the event immediately if a nested message loop starts.
+    // Otherwise we appear unresponsive for the life of the nested message loop.
+    if (ack_callback_) {
+      ack_callback_->Run(EventResult::HANDLED);
+      ack_callback_.reset();
+    }
+  }
+
+ private:
+  std::unique_ptr<base::Callback<void(EventResult)>> ack_callback_;
+  bool handled_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(EventAckHandler);
+};
 
 }  // namespace
 
@@ -222,17 +264,17 @@ void PlatformWindowMus::OnRequestClose(mus::Window* window) {
 
 void PlatformWindowMus::OnWindowInputEvent(
     mus::Window* view,
-    const ui::Event& event,
-    std::unique_ptr<base::Callback<void(mus::mojom::EventResult)>>*
-        ack_callback) {
-  // It's possible dispatching the event will spin a nested message loop. Ack
-  // the callback now, otherwise we appear unresponsive for the life of the
-  // nested message loop.
-  (*ack_callback)->Run(mus::mojom::EventResult::HANDLED);
-  ack_callback->reset();
-  // TODO(moshayedi): Avoid cloning after updating PlatformWindowDelegate to
-  // accept constant pointers.
-  delegate_->DispatchEvent(ui::Event::Clone(event).get());
+    const ui::Event& event_in,
+    std::unique_ptr<base::Callback<void(EventResult)>>* ack_callback) {
+  // Take ownership of the callback, indicating that we will handle it.
+  EventAckHandler ack_handler(std::move(*ack_callback));
+
+  std::unique_ptr<ui::Event> event = ui::Event::Clone(event_in);
+  delegate_->DispatchEvent(event.get());
+  // NOTE: |this| may be deleted.
+
+  ack_handler.set_handled(event->handled());
+  // |ack_handler| acks the event on destruction if necessary.
 }
 
 }  // namespace views

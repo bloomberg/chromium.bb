@@ -64,6 +64,8 @@ class VIEWS_MUS_EXPORT PlatformWindowMus
   ui::PlatformImeController* GetPlatformImeController() override;
 
  private:
+  friend class PlatformWindowMusTest;
+
   void SetShowState(mus::mojom::ShowState show_state);
 
   // mus::WindowObserver:

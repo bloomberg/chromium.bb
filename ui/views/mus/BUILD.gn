@@ -151,6 +151,7 @@ test("views_mus_unittests") {
     "../widget/widget_unittest.cc",
     "native_widget_mus_unittest.cc",
     "platform_test_helper_mus.cc",
+    "platform_window_mus_unittest.cc",
     "run_all_unittests_mus.cc",
     "screen_mus_unittest.cc",
   ]

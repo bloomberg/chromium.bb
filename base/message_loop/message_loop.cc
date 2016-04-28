@@ -121,6 +121,8 @@ MessageLoop::TaskObserver::~TaskObserver() {
 MessageLoop::DestructionObserver::~DestructionObserver() {
 }
 
+MessageLoop::NestingObserver::~NestingObserver() {}
+
 //------------------------------------------------------------------------------
 
 MessageLoop::MessageLoop(Type type)
@@ -261,6 +263,16 @@ void MessageLoop::RemoveDestructionObserver(
     DestructionObserver* destruction_observer) {
   DCHECK_EQ(this, current());
   destruction_observers_.RemoveObserver(destruction_observer);
+}
+
+void MessageLoop::AddNestingObserver(NestingObserver* observer) {
+  DCHECK_EQ(this, current());
+  nesting_observers_.AddObserver(observer);
+}
+
+void MessageLoop::RemoveNestingObserver(NestingObserver* observer) {
+  DCHECK_EQ(this, current());
+  nesting_observers_.RemoveObserver(observer);
 }
 
 void MessageLoop::PostTask(
@@ -574,6 +586,11 @@ void MessageLoop::HistogramEvent(int event) {
   if (message_histogram_)
     message_histogram_->Add(event);
 #endif
+}
+
+void MessageLoop::NotifyBeginNestedLoop() {
+  FOR_EACH_OBSERVER(NestingObserver, nesting_observers_,
+                    OnBeginNestedMessageLoop());
 }
 
 bool MessageLoop::DoWork() {
