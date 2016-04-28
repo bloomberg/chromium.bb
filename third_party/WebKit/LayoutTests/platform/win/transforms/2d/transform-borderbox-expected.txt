@@ -5,8 +5,8 @@ layer at (0,0) size 800x304
     LayoutBlockFlow {BODY} at (8,16) size 784x258
       LayoutBlockFlow {P} at (0,0) size 784x0
       LayoutBlockFlow {P} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 683x17
-          text run at (0,0) width 683: "Top box should have gray part extending outside the black outline. Lower box should lie inside the outline"
+        LayoutText {#text} at (0,0) size 682x17
+          text run at (0,0) width 682: "Top box should have gray part extending outside the black outline. Lower box should lie inside the outline"
       LayoutBlockFlow {DIV} at (30,48) size 400x210
 layer at (38,64) size 250x100
   LayoutBlockFlow {DIV} at (0,0) size 250x100 [bgcolor=#008000] [border: none (50px solid #808080) none]
@@ -14,5 +14,5 @@ layer at (38,64) size 250x100
       text run at (0,0) width 104: "box-sizing: auto"
 layer at (38,174) size 200x100
   LayoutBlockFlow {DIV} at (0,110) size 200x100 [bgcolor=#008000] [border: none (50px solid #808080) none]
-    LayoutText {#text} at (0,0) size 148x17
-      text run at (0,0) width 148: "box-sizing: border-box"
+    LayoutText {#text} at (0,0) size 147x17
+      text run at (0,0) width 147: "box-sizing: border-box"
