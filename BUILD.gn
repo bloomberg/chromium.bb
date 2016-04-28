@@ -67,6 +67,14 @@ config("libsrtp_config") {
     # srtp test applications and libjingle.
     defines += [ "CPU_CISC" ]
   }
+  if (current_cpu == "mipsel" || current_cpu == "arm" || current_cpu == "x86") {
+    # Define FORCE_64BIT_ALIGN to avoid alignment-related-crashes like
+    # crbug/414919. Without this, aes_cbc_alloc will allocate an
+    # aes_cbc_ctx_t not 64-bit aligned and the v128_t members of
+    # aes_cbc_ctx_t will not be 64-bit aligned, which breaks the
+    # compiler optimizations that assume 64-bit alignment of v128_t.
+    defines += [ "FORCE_64BIT_ALIGN" ]
+  }
 }
 
 static_library("libsrtp") {
