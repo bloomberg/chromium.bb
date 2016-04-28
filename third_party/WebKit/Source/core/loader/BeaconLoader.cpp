@@ -31,39 +31,126 @@ class Beacon {
 public:
     virtual bool serialize(ResourceRequest&, int, int&) const = 0;
     virtual unsigned long long size() const = 0;
-
-protected:
-    static unsigned long long beaconSize(const String&);
-    static unsigned long long beaconSize(Blob*);
-    static unsigned long long beaconSize(DOMArrayBufferView*);
-    static unsigned long long beaconSize(FormData*);
-
-    static bool serialize(const String&, ResourceRequest&, int, int&);
-    static bool serialize(Blob*, ResourceRequest&, int, int&);
-    static bool serialize(DOMArrayBufferView*, ResourceRequest&, int, int&);
-    static bool serialize(FormData*, ResourceRequest&, int, int&);
 };
 
-template<typename Payload>
-class BeaconData final : public Beacon {
+class BeaconString final : public Beacon {
 public:
-    BeaconData(const Payload& data)
+    BeaconString(const String& data)
         : m_data(data)
     {
     }
 
-    bool serialize(ResourceRequest& request, int allowance, int& payloadLength) const override
+    unsigned long long size() const override
     {
-        return Beacon::serialize(m_data, request, allowance, payloadLength);
+        return m_data.sizeInBytes();
+    }
+
+    bool serialize(ResourceRequest& request, int, int&) const override
+    {
+        RefPtr<EncodedFormData> entityBody = EncodedFormData::create(m_data.utf8());
+        request.setHTTPBody(entityBody);
+        request.setHTTPContentType("text/plain;charset=UTF-8");
+        return true;
+    }
+
+private:
+    const String m_data;
+};
+
+class BeaconBlob final : public Beacon {
+public:
+    BeaconBlob(Blob* data)
+        : m_data(data)
+    {
     }
 
     unsigned long long size() const override
     {
-        return beaconSize(m_data);
+        return m_data->size();
+    }
+
+    bool serialize(ResourceRequest& request, int, int&) const override
+    {
+        ASSERT(m_data);
+        RefPtr<EncodedFormData> entityBody = EncodedFormData::create();
+        if (m_data->hasBackingFile())
+            entityBody->appendFile(toFile(m_data)->path());
+        else
+            entityBody->appendBlob(m_data->uuid(), m_data->blobDataHandle());
+
+        request.setHTTPBody(entityBody.release());
+
+        const String& blobType = m_data->type();
+        if (!blobType.isEmpty() && isValidContentType(blobType))
+            request.setHTTPContentType(AtomicString(blobType));
+
+        return true;
     }
 
 private:
-    const typename WTF::ParamStorageTraits<Payload>::StorageType m_data;
+    const Persistent<Blob> m_data;
+};
+
+class BeaconDOMArrayBufferView final : public Beacon {
+public:
+    BeaconDOMArrayBufferView(DOMArrayBufferView* data)
+        : m_data(data)
+    {
+    }
+
+    unsigned long long size() const override
+    {
+        return m_data->byteLength();
+    }
+
+    bool serialize(ResourceRequest& request, int, int&) const override
+    {
+        ASSERT(m_data);
+        RefPtr<EncodedFormData> entityBody = EncodedFormData::create(m_data->baseAddress(), m_data->byteLength());
+        request.setHTTPBody(entityBody.release());
+
+        // FIXME: a reasonable choice, but not in the spec; should it give a default?
+        AtomicString contentType = AtomicString("application/octet-stream");
+        request.setHTTPContentType(contentType);
+
+        return true;
+    }
+
+private:
+    const Persistent<DOMArrayBufferView> m_data;
+};
+
+class BeaconFormData final : public Beacon {
+public:
+    BeaconFormData(FormData* data)
+        : m_data(data)
+    {
+    }
+
+    unsigned long long size() const override
+    {
+        // FormData's size cannot be determined until serialized.
+        return 0;
+    }
+
+    bool serialize(ResourceRequest& request, int allowance, int& payloadLength) const override
+    {
+        ASSERT(m_data);
+        RefPtr<EncodedFormData> entityBody = m_data->encodeMultiPartFormData();
+        unsigned long long entitySize = entityBody->sizeInBytes();
+        if (allowance > 0 && static_cast<unsigned long long>(allowance) < entitySize)
+            return false;
+
+        AtomicString contentType = AtomicString("multipart/form-data; boundary=") + entityBody->boundary().data();
+        request.setHTTPBody(entityBody.release());
+        request.setHTTPContentType(contentType);
+
+        payloadLength = entitySize;
+        return true;
+    }
+
+private:
+    const Persistent<FormData> m_data;
 };
 
 } // namespace
@@ -106,25 +193,25 @@ public:
 
 bool BeaconLoader::sendBeacon(LocalFrame* frame, int allowance, const KURL& beaconURL, const String& data, int& payloadLength)
 {
-    BeaconData<String> beacon(data);
+    BeaconString beacon(data);
     return Sender::send(frame, allowance, beaconURL, beacon, payloadLength);
 }
 
 bool BeaconLoader::sendBeacon(LocalFrame* frame, int allowance, const KURL& beaconURL, DOMArrayBufferView* data, int& payloadLength)
 {
-    BeaconData<decltype(data)> beacon(data);
+    BeaconDOMArrayBufferView beacon(data);
     return Sender::send(frame, allowance, beaconURL, beacon, payloadLength);
 }
 
 bool BeaconLoader::sendBeacon(LocalFrame* frame, int allowance, const KURL& beaconURL, FormData* data, int& payloadLength)
 {
-    BeaconData<decltype(data)> beacon(data);
+    BeaconFormData beacon(data);
     return Sender::send(frame, allowance, beaconURL, beacon, payloadLength);
 }
 
 bool BeaconLoader::sendBeacon(LocalFrame* frame, int allowance, const KURL& beaconURL, Blob* data, int& payloadLength)
 {
-    BeaconData<decltype(data)> beacon(data);
+    BeaconBlob beacon(data);
     return Sender::send(frame, allowance, beaconURL, beacon, payloadLength);
 }
 
@@ -158,85 +245,5 @@ void BeaconLoader::willFollowRedirect(WebURLLoader*, WebURLRequest& passedNewReq
     // FIXME: http://crbug.com/427429 is needed to correctly propagate
     // updates of Origin: following this successful redirect.
 }
-
-namespace {
-
-unsigned long long Beacon::beaconSize(const String& data)
-{
-    return data.sizeInBytes();
-}
-
-bool Beacon::serialize(const String& data, ResourceRequest& request, int, int&)
-{
-    RefPtr<EncodedFormData> entityBody = EncodedFormData::create(data.utf8());
-    request.setHTTPBody(entityBody);
-    request.setHTTPContentType("text/plain;charset=UTF-8");
-    return true;
-}
-
-unsigned long long Beacon::beaconSize(Blob* data)
-{
-    return data->size();
-}
-
-bool Beacon::serialize(Blob* data, ResourceRequest& request, int, int&)
-{
-    ASSERT(data);
-    RefPtr<EncodedFormData> entityBody = EncodedFormData::create();
-    if (data->hasBackingFile())
-        entityBody->appendFile(toFile(data)->path());
-    else
-        entityBody->appendBlob(data->uuid(), data->blobDataHandle());
-
-    request.setHTTPBody(entityBody.release());
-
-    const String& blobType = data->type();
-    if (!blobType.isEmpty() && isValidContentType(blobType))
-        request.setHTTPContentType(AtomicString(blobType));
-
-    return true;
-}
-
-unsigned long long Beacon::beaconSize(DOMArrayBufferView* data)
-{
-    return data->byteLength();
-}
-
-bool Beacon::serialize(DOMArrayBufferView* data, ResourceRequest& request, int, int&)
-{
-    ASSERT(data);
-    RefPtr<EncodedFormData> entityBody = EncodedFormData::create(data->baseAddress(), data->byteLength());
-    request.setHTTPBody(entityBody.release());
-
-    // FIXME: a reasonable choice, but not in the spec; should it give a default?
-    AtomicString contentType = AtomicString("application/octet-stream");
-    request.setHTTPContentType(contentType);
-
-    return true;
-}
-
-unsigned long long Beacon::beaconSize(FormData*)
-{
-    // FormData's size cannot be determined until serialized.
-    return 0;
-}
-
-bool Beacon::serialize(FormData* data, ResourceRequest& request, int allowance, int& payloadLength)
-{
-    ASSERT(data);
-    RefPtr<EncodedFormData> entityBody = data->encodeMultiPartFormData();
-    unsigned long long entitySize = entityBody->sizeInBytes();
-    if (allowance > 0 && static_cast<unsigned long long>(allowance) < entitySize)
-        return false;
-
-    AtomicString contentType = AtomicString("multipart/form-data; boundary=") + entityBody->boundary().data();
-    request.setHTTPBody(entityBody.release());
-    request.setHTTPContentType(contentType);
-
-    payloadLength = entitySize;
-    return true;
-}
-
-} // namespace
 
 } // namespace blink
