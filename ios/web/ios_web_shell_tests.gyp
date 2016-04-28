@@ -51,6 +51,10 @@
       },
       'xcode_settings': {
         'INFOPLIST_FILE': 'shell/test/Host-Info.plist',
+        'OTHER_LDFLAGS': [
+          '-Xlinker', '-rpath', '-Xlinker', '@executable_path/Frameworks',
+          '-Xlinker', '-rpath', '-Xlinker', '@loader_path/Frameworks'
+        ]
       },
       'dependencies': [
         'ios_web_shell_test_support',
