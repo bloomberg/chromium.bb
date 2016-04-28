@@ -2345,8 +2345,14 @@ You can control the Physical Web in Chrome Settings.
       <message name="IDS_PAYMENTS_SHIPPING_OPTION_LABEL" desc="The title for the section that lets the user select how the product should be shipped.">
         Shipping option
       </message>
+      <message name="IDS_PAYMENTS_SELECT_SHIPPING_PROMPT" desc="The label for the button that presents the user with the list of possible shipping addresses and options.">
+        Select shipping
+      </message>
       <message name="IDS_PAYMENTS_SELECT_SHIPPING_OPTION_PROMPT" desc="The label for the button that presents the user with the list of possible shipping options.">
         Select shipping option
+      </message>
+      <message name="IDS_PAYMENTS_SELECT_SHIPPING_ADDRESS_PROMPT" desc="The label for the button that presents the user with the list of possible shipping addresses.">
+        Select shipping address
       </message>
       <message name="IDS_PAYMENTS_ORDER_SUMMARY_LABEL" desc="The title of the section that shows the summary of the order, including names and prices of individual line items, i.e. the bill.">
         Order summary

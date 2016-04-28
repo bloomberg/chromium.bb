@@ -189,9 +189,10 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
 
         if (addresses.isEmpty()) {
             mShippingAddresses = new SectionInformation();
-        } else {
+        } else if (mShippingOptions.getSelectedItem() != null) {
             mShippingAddresses = new SectionInformation(0, addresses);
-            onShippingAddressChanged(addresses.get(0));
+        } else {
+            mShippingAddresses = new SectionInformation(SectionInformation.NO_SELECTION, addresses);
         }
 
         mPendingApps = new ArrayList<>(mApps);

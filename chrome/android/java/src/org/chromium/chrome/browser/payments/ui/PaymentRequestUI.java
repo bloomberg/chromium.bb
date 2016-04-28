@@ -240,18 +240,27 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
 
                 if (mRequestShipping) {
                     mShippingAddressesSection = result.getShippingAddresses();
-                    String selectedAddressLabel = result.getSelectedShippingAddressLabel();
-                    if (selectedAddressLabel != null) {
-                        mShippingSummaryAddress.setText(selectedAddressLabel);
-                    }
-
                     mShippingOptionsSection = result.getShippingOptions();
+
+                    String selectedAddressLabel = result.getSelectedShippingAddressLabel();
                     String selectedShippingOptionLabel = result.getSelectedShippingOptionLabel();
-                    if (selectedShippingOptionLabel != null) {
-                        mShippingSummaryOption.setText(selectedShippingOptionLabel);
+                    if (selectedAddressLabel == null && selectedShippingOptionLabel == null) {
+                        mShippingSummaryAddress.setText(mContext.getString(
+                                R.string.payments_select_shipping_prompt));
                     } else {
-                        mShippingSummaryOption.setText(mContext.getString(
-                                R.string.payments_select_shipping_option_prompt));
+                        if (selectedAddressLabel == null) {
+                            mShippingSummaryAddress.setText(mContext.getString(
+                                    R.string.payments_select_shipping_address_prompt));
+                        } else {
+                            mShippingSummaryAddress.setText(selectedAddressLabel);
+                        }
+
+                        if (selectedShippingOptionLabel == null) {
+                            mShippingSummaryOption.setText(mContext.getString(
+                                    R.string.payments_select_shipping_option_prompt));
+                        } else {
+                            mShippingSummaryOption.setText(selectedShippingOptionLabel);
+                        }
                     }
                 }
 
