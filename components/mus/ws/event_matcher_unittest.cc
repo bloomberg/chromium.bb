@@ -5,7 +5,7 @@
 #include "components/mus/ws/event_matcher.h"
 
 #include "base/time/time.h"
-#include "components/mus/public/interfaces/event_matcher.mojom.h"
+#include "components/mus/public/interfaces/input_event_matcher.mojom.h"
 #include "components/mus/public/interfaces/input_key_codes.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event.h"

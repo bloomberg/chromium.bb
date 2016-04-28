@@ -8,8 +8,8 @@
 #include <stdint.h>
 
 #include "base/macros.h"
-#include "components/mus/public/interfaces/event_matcher.mojom.h"
 #include "components/mus/public/interfaces/input_event_constants.mojom.h"
+#include "components/mus/public/interfaces/input_event_matcher.mojom.h"
 #include "components/mus/public/interfaces/input_key_codes.mojom.h"
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/rect_f.h"
