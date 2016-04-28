@@ -9,8 +9,9 @@
 #include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
-#include "ash/switchable_windows.h"
 #include "ash/wm/ash_focus_rules.h"
+#include "ash/wm/aura/wm_window_aura.h"
+#include "ash/wm/common/switchable_windows.h"
 #include "ash/wm/common/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace_controller.h"
@@ -58,14 +59,15 @@ MruWindowTracker::WindowList BuildWindowListInternal(
        iter != root_windows.end(); ++iter) {
     if (*iter == active_root)
       continue;
-    for (size_t i = 0; i < kSwitchableWindowContainerIdsLength; ++i)
-      AddTrackedWindows(*iter, kSwitchableWindowContainerIds[i], &windows);
+    for (size_t i = 0; i < wm::kSwitchableWindowContainerIdsLength; ++i)
+      AddTrackedWindows(*iter, wm::kSwitchableWindowContainerIds[i], &windows);
   }
 
   // Add windows in the active root windows last so that the topmost window
   // in the active root window becomes the front of the list.
-  for (size_t i = 0; i < kSwitchableWindowContainerIdsLength; ++i)
-    AddTrackedWindows(active_root, kSwitchableWindowContainerIds[i], &windows);
+  for (size_t i = 0; i < wm::kSwitchableWindowContainerIdsLength; ++i)
+    AddTrackedWindows(active_root, wm::kSwitchableWindowContainerIds[i],
+                      &windows);
 
   // Removes unfocusable windows.
   std::vector<aura::Window*>::iterator itr = windows.begin();
@@ -85,7 +87,7 @@ MruWindowTracker::WindowList BuildWindowListInternal(
          ix != mru_windows->rend(); ++ix) {
       // Exclude windows in non-switchable containers and those which cannot
       // be activated.
-      if (!IsSwitchableContainer((*ix)->parent()) ||
+      if (!wm::IsSwitchableContainer(wm::WmWindowAura::Get((*ix)->parent())) ||
           !should_include_window_predicate.Run(*ix)) {
         continue;
       }

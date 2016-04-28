@@ -5,18 +5,15 @@
 #ifndef ASH_WM_MAXIMIZE_MODE_WORKSPACE_BACKDROP_DELEGATE_H_
 #define ASH_WM_MAXIMIZE_MODE_WORKSPACE_BACKDROP_DELEGATE_H_
 
+#include <memory>
+
 #include "ash/ash_export.h"
 #include "ash/wm/workspace/workspace_layout_manager_backdrop_delegate.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "ui/aura/window_observer.h"
 
 namespace aura {
 class Window;
-}
-
-namespace ui {
-class Layer;
 }
 
 namespace views {
@@ -29,28 +26,24 @@ namespace ash {
 // stacked behind the topmost window (within that container) covering the
 // entire container.
 class ASH_EXPORT WorkspaceBackdropDelegate
-    : public aura::WindowObserver,
-      public WorkspaceLayoutManagerBackdropDelegate {
+    : public WorkspaceLayoutManagerBackdropDelegate {
  public:
   explicit WorkspaceBackdropDelegate(aura::Window* container);
   ~WorkspaceBackdropDelegate() override;
 
-  // WindowObserver overrides:
-  void OnWindowBoundsChanged(aura::Window* window,
-                             const gfx::Rect& old_bounds,
-                             const gfx::Rect& new_bounds) override;
-
   // WorkspaceLayoutManagerBackdropDelegate overrides:
-  void OnWindowAddedToLayout(aura::Window* child) override;
-  void OnWindowRemovedFromLayout(aura::Window* child) override;
-  void OnChildWindowVisibilityChanged(aura::Window* child,
+  void OnWindowAddedToLayout(wm::WmWindow* child) override;
+  void OnWindowRemovedFromLayout(wm::WmWindow* child) override;
+  void OnChildWindowVisibilityChanged(wm::WmWindow* child,
                                       bool visible) override;
-  void OnWindowStackingChanged(aura::Window* window) override;
+  void OnWindowStackingChanged(wm::WmWindow* window) override;
   void OnPostWindowStateTypeChange(wm::WindowState* window_state,
                                    wm::WindowStateType old_type) override;
   void OnDisplayWorkAreaInsetsChanged() override;
 
  private:
+  class WindowObserverImpl;
+
   // Restack the backdrop relatively to the other windows in the container.
   void RestackBackdrop();
 
@@ -62,6 +55,8 @@ class ASH_EXPORT WorkspaceBackdropDelegate
 
   // Show the overlay.
   void Show();
+
+  std::unique_ptr<WindowObserverImpl> container_observer_;
 
   // The background which covers the rest of the screen.
   views::Widget* background_;

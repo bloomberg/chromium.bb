@@ -43,7 +43,7 @@ class ASH_EXPORT WmWindowAura : public WmWindow, public aura::WindowObserver {
   WmGlobals* GetGlobals() const override;
   void SetName(const std::string& name) override;
   void SetShellWindowId(int id) override;
-  int GetShellWindowId() override;
+  int GetShellWindowId() const override;
   WmWindow* GetChildByShellWindowId(int id) override;
   ui::wm::WindowType GetType() const override;
   ui::Layer* GetLayer() override;

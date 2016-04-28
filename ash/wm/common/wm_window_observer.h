@@ -5,6 +5,8 @@
 #ifndef ASH_WM_COMMON_WM_WINDOW_OBSERVER_H_
 #define ASH_WM_COMMON_WM_WINDOW_OBSERVER_H_
 
+#include <stdint.h>
+
 #include "ash/ash_export.h"
 
 namespace gfx {

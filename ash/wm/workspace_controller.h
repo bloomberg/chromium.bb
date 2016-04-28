@@ -57,6 +57,8 @@ class ASH_EXPORT WorkspaceController {
 
   ShelfLayoutManager* shelf_;
   std::unique_ptr<WorkspaceEventHandler> event_handler_;
+
+  // Owned by |viewport_|.
   WorkspaceLayoutManager* layout_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkspaceController);

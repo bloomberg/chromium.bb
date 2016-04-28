@@ -156,7 +156,6 @@ class ASH_EXPORT ShelfLayoutManager
 
   // Overridden from ash::ShellObserver:
   void OnLockStateChanged(bool locked) override;
-  void OnShelfAlignmentChanged(aura::Window* root_window) override;
   void OnShelfAutoHideBehaviorChanged(aura::Window* root_window) override;
 
   // Overriden from aura::client::ActivationChangeObserver:
@@ -216,6 +215,7 @@ class ASH_EXPORT ShelfLayoutManager
 
  private:
   class AutoHideEventFilter;
+  class RootWindowControllerObserverImpl;
   class UpdateShelfObserver;
   friend class AshPopupAlignmentDelegateTest;
   friend class ash::ScreenAsh;
@@ -397,6 +397,9 @@ class ASH_EXPORT ShelfLayoutManager
 
   // The show hide animation duration override or 0 for default.
   int duration_override_in_ms_;
+
+  std::unique_ptr<RootWindowControllerObserverImpl>
+      root_window_controller_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfLayoutManager);
 };

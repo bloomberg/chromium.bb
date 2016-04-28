@@ -89,6 +89,10 @@ bool WmGlobalsAura::IsForceMaximizeOnFirstRun() {
   return Shell::GetInstance()->delegate()->IsForceMaximizeOnFirstRun();
 }
 
+bool WmGlobalsAura::IsScreenLocked() {
+  return Shell::GetInstance()->session_state_delegate()->IsScreenLocked();
+}
+
 void WmGlobalsAura::LockCursor() {
   ash::Shell::GetInstance()->cursor_manager()->LockCursor();
 }

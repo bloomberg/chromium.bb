@@ -25,7 +25,6 @@
 #include "ash/shell_delegate.h"
 #include "ash/shell_factory.h"
 #include "ash/shell_window_ids.h"
-#include "ash/switchable_windows.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
@@ -37,6 +36,8 @@
 #include "ash/wm/aura/wm_shelf_aura.h"
 #include "ash/wm/aura/wm_window_aura.h"
 #include "ash/wm/common/dock/docked_window_layout_manager.h"
+#include "ash/wm/common/fullscreen_window_finder.h"
+#include "ash/wm/common/switchable_windows.h"
 #include "ash/wm/common/window_state.h"
 #include "ash/wm/common/workspace/workspace_layout_manager_delegate.h"
 #include "ash/wm/lock_layout_manager.h"
@@ -623,36 +624,8 @@ void RootWindowController::UpdateShelfVisibility() {
 }
 
 aura::Window* RootWindowController::GetWindowForFullscreenMode() {
-  aura::Window* topmost_window = NULL;
-  aura::Window* active_window = wm::GetActiveWindow();
-  if (active_window && active_window->GetRootWindow() == GetRootWindow() &&
-      IsSwitchableContainer(active_window->parent())) {
-    // Use the active window when it is on the current root window to determine
-    // the fullscreen state to allow temporarily using a panel or docked window
-    // (which are always above the default container) while a fullscreen
-    // window is open. We only use the active window when in a switchable
-    // container as the launcher should not exit fullscreen mode.
-    topmost_window = active_window;
-  } else {
-    // Otherwise, use the topmost window on the root window's default container
-    // when there is no active window on this root window.
-    const aura::Window::Windows& windows =
-        GetContainer(kShellWindowId_DefaultContainer)->children();
-    for (aura::Window::Windows::const_reverse_iterator iter = windows.rbegin();
-         iter != windows.rend(); ++iter) {
-      if (wm::IsWindowUserPositionable(*iter) &&
-          (*iter)->layer()->GetTargetVisibility()) {
-        topmost_window = *iter;
-        break;
-      }
-    }
-  }
-  while (topmost_window) {
-    if (wm::GetWindowState(topmost_window)->IsFullscreen())
-      return topmost_window;
-    topmost_window = ::wm::GetTransientParent(topmost_window);
-  }
-  return NULL;
+  return wm::WmWindowAura::GetAuraWindow(
+      wm::GetWindowForFullscreenMode(wm::WmWindowAura::Get(GetRootWindow())));
 }
 
 void RootWindowController::ActivateKeyboard(
@@ -784,8 +757,8 @@ void RootWindowController::InitLayoutManagers() {
   workspace_controller_.reset(new WorkspaceController(
       default_container, base::WrapUnique(workspace_layout_manager_delegate)));
 
-  aura::Window* always_on_top_container =
-      GetContainer(kShellWindowId_AlwaysOnTopContainer);
+  wm::WmWindow* always_on_top_container =
+      wm::WmWindowAura::Get(GetContainer(kShellWindowId_AlwaysOnTopContainer));
   always_on_top_controller_.reset(
       new AlwaysOnTopController(always_on_top_container));
 

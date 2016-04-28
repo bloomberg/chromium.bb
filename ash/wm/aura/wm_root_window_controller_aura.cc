@@ -79,6 +79,10 @@ WorkspaceWindowState WmRootWindowControllerAura::GetWorkspaceWindowState() {
   return root_window_controller_->workspace_controller()->GetWindowState();
 }
 
+AlwaysOnTopController* WmRootWindowControllerAura::GetAlwaysOnTopController() {
+  return root_window_controller_->always_on_top_controller();
+}
+
 WmShelf* WmRootWindowControllerAura::GetShelf() {
   return root_window_controller_->shelf()
              ? root_window_controller_->shelf()->shelf()->wm_shelf()

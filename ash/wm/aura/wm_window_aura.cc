@@ -67,7 +67,10 @@ class BoundsSetter : public aura::LayoutManager {
 
 }  // namespace
 
-WmWindowAura::WmWindowAura(aura::Window* window) : window_(window) {
+WmWindowAura::WmWindowAura(aura::Window* window)
+    : window_(window),
+      // Mirrors that of aura::Window.
+      observers_(base::ObserverList<WmWindowObserver>::NOTIFY_EXISTING_ONLY) {
   window_->AddObserver(this);
   window_->SetProperty(kWmWindowKey, this);
 }
@@ -100,7 +103,8 @@ std::vector<WmWindow*> WmWindowAura::FromAuraWindows(
 
 // static
 const aura::Window* WmWindowAura::GetAuraWindow(const WmWindow* wm_window) {
-  return static_cast<const WmWindowAura*>(wm_window)->aura_window();
+  return wm_window ? static_cast<const WmWindowAura*>(wm_window)->aura_window()
+                   : nullptr;
 }
 
 const WmWindow* WmWindowAura::GetRootWindow() const {
@@ -124,7 +128,7 @@ void WmWindowAura::SetShellWindowId(int id) {
   window_->set_id(id);
 }
 
-int WmWindowAura::GetShellWindowId() {
+int WmWindowAura::GetShellWindowId() const {
   return window_->id();
 }
 

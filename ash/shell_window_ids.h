@@ -41,7 +41,7 @@ const int kShellWindowId_VirtualKeyboardContainer = 5;
 // kShellWindowId_DefaultContainer = 6;
 
 // The container for top-level windows with the 'always-on-top' flag set.
-const int kShellWindowId_AlwaysOnTopContainer = 7;
+// kShellWindowId_AlwaysOnTopContainer = 7;
 
 // The container for windows docked to either side of the desktop. Defined in
 // wm_shell_window_ids.
@@ -56,8 +56,8 @@ const int kShellWindowId_ShelfBubbleContainer = 10;
 // The container for panel windows. Defined in wm_shell_window_ids.
 // kShellWindowId_PanelContainer = 11;
 
-// The container for the app list.
-const int kShellWindowId_AppListContainer = 12;
+// The container for the app list. Defined in wm_shell_window_ids.
+// kShellWindowId_AppListContainer = 12;
 
 // The container for user-specific modal windows.
 const int kShellWindowId_SystemModalContainer = 13;
@@ -108,6 +108,12 @@ static_assert((kShellWindowId_DefaultContainer - 1 ==
                    kShellWindowId_AlwaysOnTopContainer),
               "default between keyboard and always-on-top");
 
+static_assert((kShellWindowId_AlwaysOnTopContainer - 1 ==
+               kShellWindowId_DefaultContainer) &&
+                  (kShellWindowId_AlwaysOnTopContainer + 1 ==
+                   kShellWindowId_DockedContainer),
+              "always-on-top between default and docked");
+
 static_assert((kShellWindowId_DockedContainer - 1 ==
                kShellWindowId_AlwaysOnTopContainer) &&
                   (kShellWindowId_DockedContainer + 1 ==
@@ -119,6 +125,12 @@ static_assert((kShellWindowId_PanelContainer - 1 ==
                   (kShellWindowId_PanelContainer + 1 ==
                    kShellWindowId_AppListContainer),
               "panel between shelf-bubble and app-list");
+
+static_assert((kShellWindowId_AppListContainer - 1 ==
+               kShellWindowId_PanelContainer) &&
+                  (kShellWindowId_AppListContainer + 1 ==
+                   kShellWindowId_SystemModalContainer),
+              "app-list between panel and system-modal");
 
 }  // namespace ash
 

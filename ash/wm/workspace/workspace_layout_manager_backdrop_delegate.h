@@ -8,13 +8,10 @@
 #include "ash/ash_export.h"
 #include "ash/wm/common/wm_types.h"
 
-namespace aura {
-class Window;
-}
-
 namespace ash {
 namespace wm {
 class WindowState;
+class WmWindow;
 }
 
 // A delegate which can be set to create and control a backdrop which gets
@@ -24,17 +21,17 @@ class ASH_EXPORT WorkspaceLayoutManagerBackdropDelegate {
   virtual ~WorkspaceLayoutManagerBackdropDelegate() {}
 
   // A window got added to the layout.
-  virtual void OnWindowAddedToLayout(aura::Window* child) = 0;
+  virtual void OnWindowAddedToLayout(wm::WmWindow* child) = 0;
 
   // A window got removed from the layout.
-  virtual void OnWindowRemovedFromLayout(aura::Window* child) = 0;
+  virtual void OnWindowRemovedFromLayout(wm::WmWindow* child) = 0;
 
   // The visibility of a window has changed.
-  virtual void OnChildWindowVisibilityChanged(aura::Window* child,
+  virtual void OnChildWindowVisibilityChanged(wm::WmWindow* child,
                                               bool visible) = 0;
 
   // The stacking order of a window has changed.
-  virtual void OnWindowStackingChanged(aura::Window* window) = 0;
+  virtual void OnWindowStackingChanged(wm::WmWindow* window) = 0;
 
   // A window state type has changed.
   virtual void OnPostWindowStateTypeChange(wm::WindowState* window_state,

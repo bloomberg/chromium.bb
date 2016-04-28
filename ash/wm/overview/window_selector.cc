@@ -16,8 +16,8 @@
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
-#include "ash/switchable_windows.h"
 #include "ash/wm/aura/wm_window_aura.h"
+#include "ash/wm/common/switchable_windows.h"
 #include "ash/wm/common/window_state.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/window_grid.h"
@@ -270,9 +270,9 @@ void WindowSelector::Init(const WindowList& windows) {
        iter != root_windows.end(); iter++) {
     // Observed switchable containers for newly created windows on all root
     // windows.
-    for (size_t i = 0; i < kSwitchableWindowContainerIdsLength; ++i) {
-      aura::Window* container = Shell::GetContainer(*iter,
-          kSwitchableWindowContainerIds[i]);
+    for (size_t i = 0; i < wm::kSwitchableWindowContainerIdsLength; ++i) {
+      aura::Window* container =
+          Shell::GetContainer(*iter, wm::kSwitchableWindowContainerIds[i]);
       container->AddObserver(this);
       observed_windows_.insert(container);
     }
@@ -486,8 +486,8 @@ void WindowSelector::OnWindowAdded(aura::Window* new_window) {
   if (!IsSelectable(new_window))
     return;
 
-  for (size_t i = 0; i < kSwitchableWindowContainerIdsLength; ++i) {
-    if (new_window->parent()->id() == kSwitchableWindowContainerIds[i] &&
+  for (size_t i = 0; i < wm::kSwitchableWindowContainerIdsLength; ++i) {
+    if (new_window->parent()->id() == wm::kSwitchableWindowContainerIds[i] &&
         !::wm::GetTransientParent(new_window)) {
       // The new window is in one of the switchable containers, abort overview.
       CancelSelection();

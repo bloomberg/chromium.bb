@@ -24,7 +24,10 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/status_area_widget.h"
+#include "ash/wm/aura/wm_window_aura.h"
 #include "ash/wm/common/window_state.h"
+#include "ash/wm/common/wm_root_window_controller.h"
+#include "ash/wm/common/wm_root_window_controller_observer.h"
 #include "ash/wm/gestures/shelf_gesture_handler.h"
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/mru_window_tracker.h"
@@ -183,6 +186,33 @@ class ShelfLayoutManager::UpdateShelfObserver
   DISALLOW_COPY_AND_ASSIGN(UpdateShelfObserver);
 };
 
+// ShelfLayoutManager::RootWindowControllerObserverImpl ------------------------
+
+// NOTE: Some other layout managers also observe for OnShelfAlignmentChanged()
+// via WmRootWindowControllerObserver instead of via ShellObserver. There are
+// implicit assumptions that these layout managers run in order. In order to
+// preserve the ordering, OnShelfAlignmentChanged() is implemented here in terms
+// of a WmRootWindowControllerObserver instead of a ShellObserver. This gives us
+// a sane ordering (or at least ordering as we've always had it in ash).
+class ShelfLayoutManager::RootWindowControllerObserverImpl
+    : public wm::WmRootWindowControllerObserver {
+ public:
+  explicit RootWindowControllerObserverImpl(
+      ShelfLayoutManager* shelf_layout_manager)
+      : shelf_layout_manager_(shelf_layout_manager) {}
+  ~RootWindowControllerObserverImpl() override {}
+
+  // WmRootWindowControllerObserver:
+  void OnShelfAlignmentChanged() override {
+    shelf_layout_manager_->LayoutShelf();
+  }
+
+ private:
+  ShelfLayoutManager* shelf_layout_manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(RootWindowControllerObserverImpl);
+};
+
 // ShelfLayoutManager ----------------------------------------------------------
 
 ShelfLayoutManager::ShelfLayoutManager(ShelfWidget* shelf)
@@ -199,8 +229,13 @@ ShelfLayoutManager::ShelfLayoutManager(ShelfWidget* shelf)
       gesture_drag_auto_hide_state_(SHELF_AUTO_HIDE_SHOWN),
       update_shelf_observer_(NULL),
       chromevox_panel_height_(0),
-      duration_override_in_ms_(0) {
+      duration_override_in_ms_(0),
+      root_window_controller_observer_(
+          new RootWindowControllerObserverImpl(this)) {
   Shell::GetInstance()->AddShellObserver(this);
+  wm::WmWindowAura::Get(root_window_)
+      ->GetRootWindowController()
+      ->AddObserver(root_window_controller_observer_.get());
   Shell::GetInstance()->lock_state_controller()->AddObserver(this);
   aura::client::GetActivationClient(root_window_)->AddObserver(this);
   Shell::GetInstance()->session_state_delegate()->AddSessionStateObserver(this);
@@ -215,6 +250,9 @@ ShelfLayoutManager::~ShelfLayoutManager() {
   Shell::GetInstance()->lock_state_controller()->RemoveObserver(this);
   Shell::GetInstance()->
       session_state_delegate()->RemoveSessionStateObserver(this);
+  wm::WmWindowAura::Get(root_window_)
+      ->GetRootWindowController()
+      ->RemoveObserver(root_window_controller_observer_.get());
 }
 
 void ShelfLayoutManager::PrepareForShutdown() {
@@ -475,10 +513,6 @@ void ShelfLayoutManager::OnLockStateChanged(bool locked) {
   // the previous alignment otherwise).
   state_.is_screen_locked = locked;
   UpdateShelfVisibilityAfterLoginUIChange();
-}
-
-void ShelfLayoutManager::OnShelfAlignmentChanged(aura::Window* root_window) {
-  LayoutShelf();
 }
 
 void ShelfLayoutManager::OnShelfAutoHideBehaviorChanged(

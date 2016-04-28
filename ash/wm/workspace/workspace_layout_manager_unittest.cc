@@ -18,6 +18,7 @@
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/display_manager_test_api.h"
+#include "ash/wm/aura/wm_window_aura.h"
 #include "ash/wm/common/window_state.h"
 #include "ash/wm/common/wm_event.h"
 #include "ash/wm/maximize_mode/workspace_backdrop_delegate.h"
@@ -824,6 +825,11 @@ TEST_F(WorkspaceLayoutManagerSoloTest, NotResizeWhenScreenIsLocked) {
 
 namespace {
 
+WorkspaceLayoutManager* GetWorkspaceLayoutManager(aura::Window* container) {
+  return static_cast<WorkspaceLayoutManager*>(
+      wm::WmWindowAura::Get(container)->GetLayoutManager());
+}
+
 class WorkspaceLayoutManagerBackdropTest : public test::AshTestBase {
  public:
   WorkspaceLayoutManagerBackdropTest() : default_container_(nullptr) {}
@@ -847,7 +853,7 @@ class WorkspaceLayoutManagerBackdropTest : public test::AshTestBase {
     if (show) {
       backdrop.reset(new ash::WorkspaceBackdropDelegate(default_container_));
     }
-    (static_cast<WorkspaceLayoutManager*>(default_container_->layout_manager()))
+    GetWorkspaceLayoutManager(default_container_)
         ->SetMaximizeBackdropDelegate(std::move(backdrop));
     // Closing and / or opening can be a delayed operation.
     base::MessageLoop::current()->RunUntilIdle();
@@ -1026,8 +1032,7 @@ class WorkspaceLayoutManagerKeyboardTest : public test::AshTestBase {
     UpdateDisplay("800x600");
     aura::Window* default_container = Shell::GetContainer(
         Shell::GetPrimaryRootWindow(), kShellWindowId_DefaultContainer);
-    layout_manager_ = static_cast<WorkspaceLayoutManager*>(
-        default_container->layout_manager());
+    layout_manager_ = GetWorkspaceLayoutManager(default_container);
   }
 
   aura::Window* CreateTestWindow(const gfx::Rect& bounds) {

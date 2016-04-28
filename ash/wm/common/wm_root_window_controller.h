@@ -12,6 +12,9 @@
 #include "ui/views/widget/widget.h"
 
 namespace ash {
+
+class AlwaysOnTopController;
+
 namespace wm {
 
 class WmGlobals;
@@ -31,6 +34,8 @@ class ASH_EXPORT WmRootWindowController {
   virtual WmGlobals* GetGlobals() = 0;
 
   virtual WorkspaceWindowState GetWorkspaceWindowState() = 0;
+
+  virtual AlwaysOnTopController* GetAlwaysOnTopController() = 0;
 
   virtual WmShelf* GetShelf() = 0;
 

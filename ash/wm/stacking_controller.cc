@@ -50,6 +50,13 @@ AlwaysOnTopController* GetAlwaysOnTopController(aura::Window* root_window) {
   return GetRootWindowController(root_window)->always_on_top_controller();
 }
 
+aura::Window* GetContainerFromAlwaysOnTopController(aura::Window* root,
+                                                    aura::Window* window) {
+  return wm::WmWindowAura::GetAuraWindow(
+      GetAlwaysOnTopController(root)->GetContainer(
+          wm::WmWindowAura::Get(window)));
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -84,7 +91,7 @@ aura::Window* StackingController::GetDefaultParent(aura::Window* context,
       else if (HasTransientParentWindow(window))
         return RootWindowController::GetContainerForWindow(
             ::wm::GetTransientParent(window));
-      return GetAlwaysOnTopController(target_root)->GetContainer(window);
+      return GetContainerFromAlwaysOnTopController(target_root, window);
     case ui::wm::WINDOW_TYPE_CONTROL:
       return GetContainerById(target_root,
                               kShellWindowId_UnparentedControlContainer);
@@ -92,7 +99,7 @@ aura::Window* StackingController::GetDefaultParent(aura::Window* context,
       if (wm::GetWindowState(window)->panel_attached())
         return GetContainerById(target_root, kShellWindowId_PanelContainer);
       else
-        return GetAlwaysOnTopController(target_root)->GetContainer(window);
+        return GetContainerFromAlwaysOnTopController(target_root, window);
     case ui::wm::WINDOW_TYPE_MENU:
       return GetContainerById(target_root, kShellWindowId_MenuContainer);
     case ui::wm::WINDOW_TYPE_TOOLTIP:

@@ -6,8 +6,10 @@
 
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/workspace/workspace_layout_manager_backdrop_delegate.h"
 #include "base/auto_reset.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_observer.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/views/background.h"
@@ -23,8 +25,30 @@ const float kBackdropOpacity = 0.5f;
 
 }  // namespace
 
+class WorkspaceBackdropDelegate::WindowObserverImpl
+    : public aura::WindowObserver {
+ public:
+  explicit WindowObserverImpl(WorkspaceBackdropDelegate* delegate)
+      : delegate_(delegate) {}
+  ~WindowObserverImpl() override {}
+
+ private:
+  // WindowObserver overrides:
+  void OnWindowBoundsChanged(aura::Window* window,
+                             const gfx::Rect& old_bounds,
+                             const gfx::Rect& new_bounds) override {
+    // The container size has changed and the layer needs to be adapt to it.
+    delegate_->AdjustToContainerBounds();
+  }
+
+  WorkspaceBackdropDelegate* delegate_;
+
+  DISALLOW_COPY_AND_ASSIGN(WindowObserverImpl);
+};
+
 WorkspaceBackdropDelegate::WorkspaceBackdropDelegate(aura::Window* container)
-    : background_(NULL),
+    : container_observer_(new WindowObserverImpl(this)),
+      background_(nullptr),
       container_(container),
       in_restacking_(false) {
   background_ = new views::Widget;
@@ -48,40 +72,32 @@ WorkspaceBackdropDelegate::WorkspaceBackdropDelegate(aura::Window* container)
   background_->GetNativeView()->layer()->SetBounds(params.bounds);
   Show();
   RestackBackdrop();
-  container_->AddObserver(this);
+  container_->AddObserver(container_observer_.get());
 }
 
 WorkspaceBackdropDelegate::~WorkspaceBackdropDelegate() {
-  container_->RemoveObserver(this);
+  container_->RemoveObserver(container_observer_.get());
   ::wm::ScopedHidingAnimationSettings hiding_settings(
       background_->GetNativeView());
   background_->Close();
   background_->GetNativeView()->layer()->SetOpacity(0.0f);
 }
 
-void WorkspaceBackdropDelegate::OnWindowBoundsChanged(
-    aura::Window* window,
-    const gfx::Rect& old_bounds,
-    const gfx::Rect& new_bounds) {
-  // The container size has changed and the layer needs to be adapt to it.
-  AdjustToContainerBounds();
-}
-
-void WorkspaceBackdropDelegate::OnWindowAddedToLayout(aura::Window* child) {
+void WorkspaceBackdropDelegate::OnWindowAddedToLayout(wm::WmWindow* child) {
   RestackBackdrop();
 }
 
-void WorkspaceBackdropDelegate::OnWindowRemovedFromLayout(aura::Window* child) {
+void WorkspaceBackdropDelegate::OnWindowRemovedFromLayout(wm::WmWindow* child) {
   RestackBackdrop();
 }
 
 void WorkspaceBackdropDelegate::OnChildWindowVisibilityChanged(
-    aura::Window* child,
+    wm::WmWindow* child,
     bool visible) {
   RestackBackdrop();
 }
 
-void WorkspaceBackdropDelegate::OnWindowStackingChanged(aura::Window* window) {
+void WorkspaceBackdropDelegate::OnWindowStackingChanged(wm::WmWindow* window) {
   RestackBackdrop();
 }
 

@@ -38,6 +38,7 @@ class ASH_EXPORT WmRootWindowControllerAura : public WmRootWindowController,
   bool HasShelf() override;
   WmGlobals* GetGlobals() override;
   WorkspaceWindowState GetWorkspaceWindowState() override;
+  AlwaysOnTopController* GetAlwaysOnTopController() override;
   WmShelf* GetShelf() override;
   WmWindow* GetWindow() override;
   void ConfigureWidgetInitParamsForContainer(

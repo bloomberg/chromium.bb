@@ -19,11 +19,18 @@ namespace ash {
 // The container for standard top-level windows.
 const int kShellWindowId_DefaultContainer = 6;
 
+// The container for top-level windows with the 'always-on-top' flag set.
+const int kShellWindowId_AlwaysOnTopContainer = 7;
+
 // The container for windows docked to either side of the desktop.
 const int kShellWindowId_DockedContainer = 8;
 
 // The container for panel windows.
 const int kShellWindowId_PanelContainer = 11;
+
+// TODO(sky): this seems unnecessary. Perhaps it should be injected?
+// The container for the app list.
+const int kShellWindowId_AppListContainer = 12;
 
 }  // namespace ash
 
