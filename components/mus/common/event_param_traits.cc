@@ -9,7 +9,7 @@
 #include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_param_traits.h"
 #include "ui/events/event.h"
-#include "ui/gfx/ipc/gfx_param_traits.h"
+#include "ui/gfx/ipc/geometry/gfx_param_traits.h"
 
 // Generate param traits size methods.
 #include "ipc/param_traits_size_macros.h"

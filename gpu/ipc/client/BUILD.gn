@@ -61,6 +61,7 @@ source_set("ipc_client_sources") {
     "//ipc",
     "//ui/events/ipc",
     "//ui/gfx/ipc",
+    "//ui/gfx/ipc/geometry",
     "//ui/gl",
     "//url/ipc:url_ipc",
   ]

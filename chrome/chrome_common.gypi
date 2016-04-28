@@ -354,6 +354,7 @@
         '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
         '<(DEPTH)/third_party/kasko/kasko.gyp:kasko_features',
         '<(DEPTH)/third_party/zlib/google/zip.gyp:zip',
+        '<(DEPTH)/ui/gfx/ipc/geometry/gfx_ipc_geometry.gyp:gfx_ipc_geometry',
         '<(DEPTH)/ui/gfx/ipc/gfx_ipc.gyp:gfx_ipc',
         '<(DEPTH)/ui/gfx/ipc/skia/gfx_ipc_skia.gyp:gfx_ipc_skia',
         '<(DEPTH)/ui/resources/ui_resources.gyp:ui_resources',

@@ -64,6 +64,7 @@
         '../third_party/re2/re2.gyp:re2',
         '../ui/base/ui_base.gyp:ui_base',
         '../ui/gfx/gfx.gyp:gfx_geometry',
+        '../ui/gfx/ipc/geometry/gfx_ipc_geometry.gyp:gfx_ipc_geometry',
         '../ui/gfx/ipc/gfx_ipc.gyp:gfx_ipc',
         '../ui/gfx/ipc/skia/gfx_ipc_skia.gyp:gfx_ipc_skia',
         '../url/url.gyp:url_lib',

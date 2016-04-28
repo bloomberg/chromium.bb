@@ -11,6 +11,7 @@
     '../ui/events/events.gyp:events_base',
     '../ui/events/events.gyp:events_ipc',
     '../ui/gfx/gfx.gyp:gfx_geometry',
+    '../ui/gfx/ipc/geometry/gfx_ipc_geometry.gyp:gfx_ipc_geometry',
     '../ui/gfx/ipc/gfx_ipc.gyp:gfx_ipc',
     '../ui/gl/gl.gyp:gl',
     '../url/url.gyp:url_lib',

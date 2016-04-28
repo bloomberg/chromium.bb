@@ -2,22 +2,19 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-component("ipc") {
-  output_name = "gfx_ipc"
+component("geometry") {
+  output_name = "gfx_ipc_geometry"
 
   sources = [
     "gfx_param_traits.cc",
     "gfx_param_traits.h",
-    "gfx_param_traits_macros.h",
   ]
 
-  defines = [ "GFX_IPC_IMPLEMENTATION" ]
+  defines = [ "GFX_IPC_GEOMETRY_IMPLEMENTATION" ]
 
   deps = [
     "//base",
     "//ipc",
-    "//ui/gfx:memory_buffer",
     "//ui/gfx/geometry",
-    "//ui/gfx/range",
   ]
 }

@@ -25,7 +25,7 @@ component("mus_common") {
     "//ipc:ipc",
     "//mojo/public/c/system:for_component",
     "//ui/events:events",
-    "//ui/gfx/ipc",
+    "//ui/gfx/ipc/geometry",
   ]
 
   public_deps = [

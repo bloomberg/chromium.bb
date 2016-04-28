@@ -12,6 +12,7 @@
 #include "gpu/ipc/common/gpu_stream_constants.h"
 #include "ipc/ipc_message_macros.h"
 #include "ui/gfx/gpu_memory_buffer.h"
+#include "ui/gfx/ipc/geometry/gfx_param_traits.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
 #include "ui/gfx/swap_result.h"
 #include "ui/gl/gpu_preference.h"

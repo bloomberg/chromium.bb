@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 // Multiply-included message file, hence no include guard here.
+
 #include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/gpu_export.h"

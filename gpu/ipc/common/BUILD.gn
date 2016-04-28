@@ -53,6 +53,8 @@ source_set("command_buffer_traits_sources") {
 
   deps = [
     "//base",
+    "//ui/gfx/ipc",
+    "//ui/gfx/ipc/geometry",
   ]
 }
 
@@ -94,6 +96,7 @@ source_set("ipc_common_sources") {
     "//ipc",
     "//ui/events/ipc",
     "//ui/gfx/ipc",
+    "//ui/gfx/ipc/geometry",
     "//ui/gl",
     "//url/ipc:url_ipc",
   ]
