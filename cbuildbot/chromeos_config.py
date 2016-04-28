@@ -193,8 +193,10 @@ class HWTestList(object):
     Optional arguments may be overridden in `kwargs`, except that
     the `blocking` setting cannot be provided.
     """
+    # Bump up the HWTest timeout by 20 minutes due to the size of test suites
     default_dict = dict(pool=constants.HWTEST_PFQ_POOL, file_bugs=True,
-                        timeout=config_lib.HWTestConfig.ASYNC_HW_TEST_TIMEOUT,
+                        timeout=config_lib.HWTestConfig.ASYNC_HW_TEST_TIMEOUT +
+                        20 * 60,
                         priority=constants.HWTEST_PFQ_PRIORITY,
                         retry=False, max_retries=None, minimum_duts=4)
     # Allows kwargs overrides to default_dict for pfq.
@@ -1113,6 +1115,8 @@ def GetConfig():
       vm_tests=[config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE),
                 config_lib.VMTestConfig(constants.SIMPLE_AU_TEST_TYPE)],
       vm_tests_override=None,
+      # Bump up the build timeout by 40 minutes due to the size of test suites
+      build_timeout=config_lib.HWTestConfig.ASYNC_HW_TEST_TIMEOUT + 40 * 60,
   )
 
   site_config.Add(
@@ -1275,6 +1279,8 @@ def GetConfig():
       'cyan-cheets-chrome-pfq', chrome_pfq,
       _base_configs['cyan-cheets'],
       hw_tests=HWTestList.SharedPoolAndroidPFQ(),
+      # Bump up the build timeout by 40 minutes due to the size of test suites
+      build_timeout=config_lib.HWTestConfig.ASYNC_HW_TEST_TIMEOUT + 40 * 60,
       important=False,
   )
 
@@ -1294,6 +1300,8 @@ def GetConfig():
       'veyron_minnie-cheets-chrome-pfq', chrome_pfq,
       _base_configs['veyron_minnie-cheets'],
       hw_tests=HWTestList.SharedPoolAndroidPFQ(),
+      # Bump up the build timeout by 40 minutes due to the size of test suites
+      build_timeout=config_lib.HWTestConfig.ASYNC_HW_TEST_TIMEOUT + 40 * 60,
       important=False,
   )
 
