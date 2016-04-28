@@ -33,11 +33,6 @@ typedef struct entry {
   int32_t padding[5];              /* 4 * 5 = 20 bytes */
 } nc_thread_memory_block_t;
 
-typedef enum {
-  THREAD_STACK_MEMORY = 0,
-  MAX_MEMORY_TYPE
-} nc_thread_memory_block_type_t;
-
 struct __nc_basic_thread_data;
 
 /* This struct defines the layout of the TDB */

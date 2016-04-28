@@ -87,10 +87,22 @@ pthread_t __nc_initial_thread_id;
 /* Number of threads currently running in this NaCl module. */
 static int __nc_running_threads_counter = 1;
 
-/* We have two queues of memory blocks - one for each type. */
-static STAILQ_HEAD(tailhead, entry) __nc_thread_memory_blocks[1];
-/* We need a counter for each queue to keep track of number of blocks. */
-static int __nc_memory_block_counter[1];
+/*
+ * This is a list of memory blocks that were allocated for use as thread
+ * stacks.  These correspond to threads that have either exited or are just
+ * about to exit.  We maintain this list for two reasons:
+ *
+ *  * The main reason is that pthread_exit() can't deallocate the stack
+ *    itself while it's running on that stack.  The stack can only be freed
+ *    or reused after the "is_used" field gets set to zero by
+ *    thread_exit().
+ *
+ *  * A secondary reason is that avoiding free()ing these blocks might be
+ *    faster or might prevent memory fragmentation.
+ */
+static STAILQ_HEAD(tailhead, entry) __nc_thread_stack_blocks;
+/* Number of entries in __nc_thread_stack_blocks. */
+static int __nc_thread_stack_blocks_count;
 
 /* Internal functions */
 
@@ -128,24 +140,11 @@ static void nc_thread_starter(void) {
 }
 
 static nc_thread_memory_block_t *nc_allocate_memory_block_mu(
-    nc_thread_memory_block_type_t type,
     int required_size) {
   struct tailhead *head;
   nc_thread_memory_block_t *node;
   /* Assume the lock is held!!! */
-  if (type >= MAX_MEMORY_TYPE)
-    return NULL;
-  head = &__nc_thread_memory_blocks[type];
-
-  /* We need to know the size even if we find a free node - to memset it to 0 */
-  switch (type) {
-     case THREAD_STACK_MEMORY:
-       required_size = required_size + kStackAlignment - 1;
-       break;
-     case MAX_MEMORY_TYPE:
-     default:
-       return NULL;
-  }
+  head = &__nc_thread_stack_blocks;
 
   if (!STAILQ_EMPTY(head)) {
     /* Try to get one from queue. */
@@ -166,7 +165,7 @@ static nc_thread_memory_block_t *nc_allocate_memory_block_mu(
        */
       int size = node->size;
       STAILQ_REMOVE_HEAD(head, entries);
-      --__nc_memory_block_counter[type];
+      --__nc_thread_stack_blocks_count;
 
       memset(node, 0,sizeof(*node));
       node->size = size;
@@ -174,7 +173,7 @@ static nc_thread_memory_block_t *nc_allocate_memory_block_mu(
       return node;
     }
 
-    while (__nc_memory_block_counter[type] > __nc_kMaxCachedMemoryBlocks) {
+    while (__nc_thread_stack_blocks_count > __nc_kMaxCachedMemoryBlocks) {
       /*
        * We have too many blocks in the queue - try to release some.
        * The maximum number of memory blocks to keep in the queue
@@ -188,7 +187,7 @@ static nc_thread_memory_block_t *nc_allocate_memory_block_mu(
       nc_thread_memory_block_t *tmp = STAILQ_FIRST(head);
       if (0 == tmp->is_used) {
         STAILQ_REMOVE_HEAD(head, entries);
-        --__nc_memory_block_counter[type];
+        --__nc_thread_stack_blocks_count;
         free(tmp);
       } else {
         /*
@@ -210,12 +209,11 @@ static nc_thread_memory_block_t *nc_allocate_memory_block_mu(
   return node;
 }
 
-static void nc_free_memory_block_mu(nc_thread_memory_block_type_t type,
-                                    nc_thread_memory_block_t *node) {
+static void nc_free_memory_block_mu(nc_thread_memory_block_t *node) {
   /* Assume the lock is held!!! */
-  struct tailhead *head = &__nc_thread_memory_blocks[type];
+  struct tailhead *head = &__nc_thread_stack_blocks;
   STAILQ_INSERT_TAIL(head, node, entries);
-  ++__nc_memory_block_counter[type];
+  ++__nc_thread_stack_blocks_count;
 }
 
 static void nc_release_basic_data_mu(nc_basic_thread_data_t *basic_data) {
@@ -269,7 +267,7 @@ void __nc_initialize_globals(void) {
    */
   ANNOTATE_NOT_HAPPENS_BEFORE_MUTEX(&__nc_thread_management_lock);
 
-  STAILQ_INIT(&__nc_thread_memory_blocks[0]);
+  STAILQ_INIT(&__nc_thread_stack_blocks);
 
   __nc_thread_initialized = 1;
 }
@@ -361,7 +359,7 @@ int pthread_create(pthread_t *thread_id,
     }
 
     /* Allocate the stack for the thread. */
-    stack_node = nc_allocate_memory_block_mu(THREAD_STACK_MEMORY, stacksize);
+    stack_node = nc_allocate_memory_block_mu(stacksize + kStackAlignment - 1);
     if (NULL == stack_node) {
       retval = EAGAIN;
       break;
@@ -430,7 +428,7 @@ ret:
     }
     if (stack_node) {
       stack_node->is_used = 0;
-      nc_free_memory_block_mu(THREAD_STACK_MEMORY, stack_node);
+      nc_free_memory_block_mu(stack_node);
     }
 
     pthread_mutex_unlock(&__nc_thread_management_lock);
@@ -520,7 +518,7 @@ void pthread_exit(void *retval) {
   }
 
   /* Now add the stack to the list but keep it marked as used. */
-  nc_free_memory_block_mu(THREAD_STACK_MEMORY, stack_node);
+  nc_free_memory_block_mu(stack_node);
 
   if (1 == __nc_running_threads_counter) {
     pthread_cond_signal(&__nc_last_thread_cond);
