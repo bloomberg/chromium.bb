@@ -1511,8 +1511,9 @@ Polymer({
       this.currentLaunchingSinkId_ =
           this.pseudoSinkSearchState_.checkForRealSink(this.allSinks);
     }
-    this.pseudoSinks_ =
-        this.allSinks.filter(function(sink) { return sink.isPseudoSink; });
+    this.pseudoSinks_ = this.allSinks.filter(function(sink) {
+      return sink.isPseudoSink && !!sink.domain;
+    });
     this.rebuildSinksToShow_();
     if (this.isUserSearching_) {
       this.filterSinks_(this.searchInputText_);

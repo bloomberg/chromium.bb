@@ -411,6 +411,21 @@ cr.define('media_router_container_search', function() {
         });
       });
 
+      test('pseudo sink with empty domain is not shown', function(done) {
+        pseudoSink.domain = '';
+        container.allSinks = fakeSinkListWithPseudoSink;
+
+        var searchInput = container.$['sink-search-input'];
+        searchInput.value = foundSink.name;
+        setTimeout(function() {
+          var noMatches = container.$$('#no-search-matches');
+          var searchResults = container.$$('#search-results');
+          checkElementVisible(noMatches, true);
+          checkElementVisible(searchResults, false);
+          done();
+        });
+      });
+
       test('pseudo sink search state launching sink id', function() {
         var searchState = new PseudoSinkSearchState(pseudoSink);
 

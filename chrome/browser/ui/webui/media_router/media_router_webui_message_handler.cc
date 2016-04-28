@@ -106,7 +106,7 @@ std::unique_ptr<base::DictionaryValue> SinksAndIdentityToValue(
       // Convert default domains to user domain
       if (sink.domain() == "default") {
         domain = user_domain;
-        if (domain == "NO_HOSTED_DOMAIN") {
+        if (domain == Profile::kNoHostedDomainFound) {
           // Default domain will be empty for non-dasher accounts.
           domain.clear();
         }
