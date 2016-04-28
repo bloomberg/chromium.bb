@@ -15,17 +15,23 @@
 namespace page_load_metrics {
 
 namespace {
+const int kInitialTimerDelayMillis = 50;
 const int kTimerDelayMillis = 1000;
 }  // namespace
 
 PageTimingMetricsSender::PageTimingMetricsSender(
     IPC::Sender* ipc_sender,
     int routing_id,
-    std::unique_ptr<base::Timer> timer)
+    std::unique_ptr<base::Timer> timer,
+    const PageLoadTiming& initial_timing)
     : ipc_sender_(ipc_sender),
       routing_id_(routing_id),
       timer_(std::move(timer)),
-      metadata_(PageLoadMetadata()) {}
+      last_timing_(initial_timing),
+      metadata_(PageLoadMetadata()) {
+  // Send an initial IPC relatively early to help track aborts.
+  EnsureSendTimer(kInitialTimerDelayMillis);
+}
 
 // On destruction, we want to send any data we have if we have a timer
 // currently running (and thus are talking to a browser process)
@@ -41,7 +47,7 @@ void PageTimingMetricsSender::DidObserveLoadingBehavior(
   if (behavior & metadata_.behavior_flags)
     return;
   metadata_.behavior_flags |= behavior;
-  EnsureSendTimer();
+  EnsureSendTimer(kTimerDelayMillis);
 }
 
 void PageTimingMetricsSender::Send(const PageLoadTiming& timing) {
@@ -57,13 +63,13 @@ void PageTimingMetricsSender::Send(const PageLoadTiming& timing) {
   }
 
   last_timing_ = timing;
-  EnsureSendTimer();
+  EnsureSendTimer(kTimerDelayMillis);
 }
 
-void PageTimingMetricsSender::EnsureSendTimer() {
+void PageTimingMetricsSender::EnsureSendTimer(int delay) {
   if (!timer_->IsRunning())
     timer_->Start(
-        FROM_HERE, base::TimeDelta::FromMilliseconds(kTimerDelayMillis),
+        FROM_HERE, base::TimeDelta::FromMilliseconds(delay),
         base::Bind(&PageTimingMetricsSender::SendNow, base::Unretained(this)));
 }
 

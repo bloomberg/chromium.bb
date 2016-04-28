@@ -65,8 +65,10 @@ void MetricsRenderFrameObserver::DidCommitProvisionalLoad(
   // non-null, we will send metrics for the current page at some later time, as
   // those metrics become available.
   if (ShouldSendMetrics()) {
+    PageLoadTiming timing(GetTiming());
+    DCHECK(!timing.navigation_start.is_null());
     page_timing_metrics_sender_.reset(
-        new PageTimingMetricsSender(this, routing_id(), CreateTimer()));
+        new PageTimingMetricsSender(this, routing_id(), CreateTimer(), timing));
   }
 }
 

@@ -28,7 +28,8 @@ class PageTimingMetricsSender {
  public:
   PageTimingMetricsSender(IPC::Sender* ipc_sender,
                           int routing_id,
-                          std::unique_ptr<base::Timer> timer);
+                          std::unique_ptr<base::Timer> timer,
+                          const PageLoadTiming& initial_timing);
   ~PageTimingMetricsSender();
 
   void DidObserveLoadingBehavior(blink::WebLoadingBehaviorFlag behavior);
@@ -38,7 +39,7 @@ class PageTimingMetricsSender {
   base::Timer* timer() const { return timer_.get(); }
 
  private:
-  void EnsureSendTimer();
+  void EnsureSendTimer(int delay);
   void SendNow();
 
   IPC::Sender* const ipc_sender_;

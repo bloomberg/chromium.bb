@@ -35,11 +35,13 @@ class MockIPCSender : public IPC::Sender {
 // MockTimer instance.
 class TestPageTimingMetricsSender : public PageTimingMetricsSender {
  public:
-  explicit TestPageTimingMetricsSender(IPC::Sender* ipc_sender)
+  explicit TestPageTimingMetricsSender(IPC::Sender* ipc_sender,
+                                       const PageLoadTiming& initial_timing)
       : PageTimingMetricsSender(
             ipc_sender,
             MSG_ROUTING_NONE,
-            std::unique_ptr<base::Timer>(new base::MockTimer(false, false))) {}
+            std::unique_ptr<base::Timer>(new base::MockTimer(false, false)),
+            initial_timing) {}
 
   base::MockTimer* mock_timer() const {
     return reinterpret_cast<base::MockTimer*>(timer());
@@ -48,7 +50,8 @@ class TestPageTimingMetricsSender : public PageTimingMetricsSender {
 
 class PageTimingMetricsSenderTest : public testing::Test {
  public:
-  PageTimingMetricsSenderTest() : metrics_sender_(&mock_ipc_sender_) {}
+  PageTimingMetricsSenderTest()
+      : metrics_sender_(&mock_ipc_sender_, PageLoadTiming()) {}
 
  protected:
   testing::StrictMock<MockIPCSender> mock_ipc_sender_;
@@ -133,16 +136,14 @@ TEST_F(PageTimingMetricsSenderTest, MultipleIPCs) {
 TEST_F(PageTimingMetricsSenderTest, SendIPCOnDestructor) {
   PageLoadTiming timing;
   timing.navigation_start = base::Time::FromDoubleT(10);
-  {
-    // This test wants to verify behavior in the PageTimingMetricsSender
-    // destructor, so we create our own instance to make it go out of scope
-    // before the end of the test body.
-    TestPageTimingMetricsSender sender(&mock_ipc_sender_);
+  timing.first_layout = base::TimeDelta::FromMilliseconds(10);
 
-    sender.Send(timing);
-    EXPECT_CALL(mock_ipc_sender_, OnTimingUpdated(timing, PageLoadMetadata()));
-    ASSERT_TRUE(sender.mock_timer()->IsRunning());
-  }
+  // This test wants to verify behavior in the PageTimingMetricsSender
+  // destructor, the EXPECT_CALL will be verified when the test tears down and
+  // |metrics_sender_| goes out of scope.
+  metrics_sender_.Send(timing);
+  EXPECT_CALL(mock_ipc_sender_, OnTimingUpdated(timing, PageLoadMetadata()));
+  ASSERT_TRUE(metrics_sender_.mock_timer()->IsRunning());
 }
 
 }  // namespace page_load_metrics
