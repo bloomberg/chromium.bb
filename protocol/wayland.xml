@@ -828,8 +828,8 @@
       <description summary="initiate drag-and-drop session">
 	This event is sent when an active drag-and-drop pointer enters
 	a surface owned by the client.  The position of the pointer at
-	enter time is provided by the x and y arguments, in surface
-	local coordinates.
+	enter time is provided by the x and y arguments, in surface-local
+	coordinates.
       </description>
 
       <arg name="serial" type="uint"/>
@@ -851,7 +851,7 @@
       <description summary="drag-and-drop session motion">
 	This event is sent when the drag-and-drop pointer moves within
 	the currently focused surface. The new position of the pointer
-	is provided by the x and y arguments, in surface local
+	is provided by the x and y arguments, in surface-local
 	coordinates.
       </description>
       <arg name="time" type="uint" summary="timestamp with millisecond granularity"/>
@@ -1081,7 +1081,7 @@
 
 	The x and y arguments specify the location of the upper left
 	corner of the surface relative to the upper left corner of the
-	parent surface, in surface local coordinates.
+	parent surface, in surface-local coordinates.
 
 	The flags argument controls details of the transient behaviour.
       </description>
@@ -1165,7 +1165,7 @@
 
 	The x and y arguments specify the location of the upper left
 	corner of the surface relative to the upper left corner of the
-	parent surface, in surface local coordinates.
+	parent surface, in surface-local coordinates.
       </description>
 
       <arg name="seat" type="object" interface="wl_seat" summary="the wl_seat whose pointer is used"/>
@@ -1251,7 +1251,7 @@
 	event it received.
 
 	The width and height arguments specify the size of the window
-	in surface local coordinates.
+	in surface-local coordinates.
       </description>
 
       <arg name="edges" type="uint" enum="resize"/>
@@ -1274,8 +1274,8 @@
       It has a location, size and pixel contents.
 
       The size of a surface (and relative positions on it) is described
-      in surface local coordinates, which may differ from the buffer
-      local coordinates of the pixel content, in case a buffer_transform
+      in surface-local coordinates, which may differ from the buffer
+      coordinates of the pixel content, in case a buffer_transform
       or a buffer_scale is used.
 
       A surface without a "role" is fairly useless: a compositor does
@@ -1336,7 +1336,7 @@
 
 	The x and y arguments specify the location of the new pending
 	buffer's upper left corner, relative to the current buffer's upper
-	left corner, in surface local coordinates. In other words, the
+	left corner, in surface-local coordinates. In other words, the
 	x and y, combined with the new surface size define in which
 	directions the surface's size changes.
 
@@ -1382,7 +1382,7 @@
 
 	Damage is double-buffered state, see wl_surface.commit.
 
-	The damage rectangle is specified in surface local coordinates.
+	The damage rectangle is specified in surface-local coordinates.
 
 	The initial value for pending damage is empty: no damage.
 	wl_surface.damage adds pending damage: the new pending damage
@@ -1453,7 +1453,7 @@
 	behaviour, but marking transparent content as opaque will result
 	in repaint artifacts.
 
-	The opaque region is specified in surface local coordinates.
+	The opaque region is specified in surface-local coordinates.
 
 	The compositor ignores the parts of the opaque region that fall
 	outside of the surface.
@@ -1482,7 +1482,7 @@
 	surface in the server surface stack. The compositor ignores the
 	parts of the input region that fall outside of the surface.
 
-	The input region is specified in surface local coordinates.
+	The input region is specified in surface-local coordinates.
 
 	Input region is double-buffered state, see wl_surface.commit.
 
@@ -1633,7 +1633,7 @@
 	damage as it repaints the surface.
 
 	This request differs from wl_surface.damage in only one way - it
-	takes damage in buffer coordinates instead of surface local
+	takes damage in buffer coordinates instead of surface-local
 	coordinates. While this generally is more intuitive than surface
 	coordinates, it is especially desirable when using wp_viewport
 	or when a drawing library (like EGL) is unaware of buffer scale
@@ -1796,8 +1796,8 @@
 	The parameters hotspot_x and hotspot_y define the position of
 	the pointer surface relative to the pointer location. Its
 	top-left corner is always at (x, y) - (hotspot_x, hotspot_y),
-	where (x, y) are the coordinates of the pointer location, in surface
-	local coordinates.
+	where (x, y) are the coordinates of the pointer location, in
+	surface-local coordinates.
 
 	On surface.attach requests to the pointer surface, hotspot_x
 	and hotspot_y are decremented by the x and y parameters
@@ -1817,8 +1817,8 @@
 
       <arg name="serial" type="uint" summary="serial of the enter event"/>
       <arg name="surface" type="object" interface="wl_surface" allow-null="true"/>
-      <arg name="hotspot_x" type="int" summary="x coordinate in surface local coordinates"/>
-      <arg name="hotspot_y" type="int" summary="y coordinate in surface local coordinates"/>
+      <arg name="hotspot_x" type="int" summary="surface-local x coordinate"/>
+      <arg name="hotspot_y" type="int" summary="surface-local y coordinate"/>
     </request>
 
     <event name="enter">
@@ -1833,8 +1833,8 @@
 
       <arg name="serial" type="uint"/>
       <arg name="surface" type="object" interface="wl_surface"/>
-      <arg name="surface_x" type="fixed" summary="x coordinate in surface local coordinates"/>
-      <arg name="surface_y" type="fixed" summary="y coordinate in surface local coordinates"/>
+      <arg name="surface_x" type="fixed" summary="surface-local x coordinate"/>
+      <arg name="surface_y" type="fixed" summary="surface-local y coordinate"/>
     </event>
 
     <event name="leave">
@@ -1857,8 +1857,8 @@
       </description>
 
       <arg name="time" type="uint" summary="timestamp with millisecond granularity"/>
-      <arg name="surface_x" type="fixed" summary="x coordinate in surface local coordinates"/>
-      <arg name="surface_y" type="fixed" summary="y coordinate in surface local coordinates"/>
+      <arg name="surface_x" type="fixed" summary="surface-local x coordinate"/>
+      <arg name="surface_y" type="fixed" summary="surface-local y coordinate"/>
     </event>
 
     <enum name="button_state">
@@ -2214,8 +2214,8 @@
       <arg name="time" type="uint" summary="timestamp with millisecond granularity"/>
       <arg name="surface" type="object" interface="wl_surface"/>
       <arg name="id" type="int" summary="the unique ID of this touch point"/>
-      <arg name="x" type="fixed" summary="x coordinate in surface local coordinates"/>
-      <arg name="y" type="fixed" summary="y coordinate in surface local coordinates"/>
+      <arg name="x" type="fixed" summary="surface-local x coordinate"/>
+      <arg name="y" type="fixed" summary="surface-local y coordinate"/>
     </event>
 
     <event name="up">
@@ -2235,8 +2235,8 @@
       </description>
       <arg name="time" type="uint" summary="timestamp with millisecond granularity"/>
       <arg name="id" type="int" summary="the unique ID of this touch point"/>
-      <arg name="x" type="fixed" summary="x coordinate in surface local coordinates"/>
-      <arg name="y" type="fixed" summary="y coordinate in surface local coordinates"/>
+      <arg name="x" type="fixed" summary="surface-local x coordinate"/>
+      <arg name="y" type="fixed" summary="surface-local y coordinate"/>
     </event>
 
     <event name="frame">
