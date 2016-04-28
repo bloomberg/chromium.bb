@@ -9,9 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/user_metrics_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/extensions/extension_installed_bubble.h"
 #include "chrome/browser/ui/singleton_tabs.h"
@@ -32,20 +30,12 @@
 #include "content/public/browser/user_metrics.h"
 #include "extensions/common/extension.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/render_text.h"
-#include "ui/gfx/text_elider.h"
-#include "ui/resources/grit/ui_resources.h"
+#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
-#include "ui/views/bubble/bubble_frame_view.h"
-#include "ui/views/controls/button/button.h"
-#include "ui/views/controls/button/image_button.h"
-#include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
 
 using extensions::Extension;
@@ -56,62 +46,13 @@ const int kIconSize = 43;
 
 const int kRightColumnWidth = 285;
 
-views::Label* CreateLabel(const base::string16& text,
-                          const gfx::FontList& font) {
-  views::Label* label = new views::Label(text, font);
+views::Label* CreateLabel(const base::string16& text) {
+  views::Label* label = new views::Label(text);
   label->SetMultiLine(true);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  label->SizeToFit(kRightColumnWidth);
   return label;
 }
-
-class HeadingAndCloseButtonView : public views::View {
- public:
-  HeadingAndCloseButtonView(views::Label* heading, views::LabelButton* close)
-      : heading_(heading), close_(close) {
-    AddChildView(heading_);
-    AddChildView(close_);
-  }
-  ~HeadingAndCloseButtonView() override {}
-
-  void Layout() override {
-    gfx::Size close_size = close_->GetPreferredSize();
-    gfx::Size view_size = size();
-
-    // Close button is in the upper right and always gets its full desired size.
-    close_->SetBounds(view_size.width() - close_size.width(),
-                      0,
-                      close_size.width(),
-                      close_size.height());
-    // The heading takes up the remaining room (modulo padding).
-    heading_->SetBounds(
-        0,
-        0,
-        view_size.width() - close_size.width() -
-            views::kUnrelatedControlHorizontalSpacing,
-        view_size.height());
-  }
-
-  gfx::Size GetPreferredSize() const override {
-    gfx::Size heading_size = heading_->GetPreferredSize();
-    gfx::Size close_size = close_->GetPreferredSize();
-    return gfx::Size(kRightColumnWidth,
-                     std::max(heading_size.height(), close_size.height()));
-  }
-
-  int GetHeightForWidth(int width) const override {
-    gfx::Size close_size = close_->GetPreferredSize();
-    int heading_width = width - views::kUnrelatedControlHorizontalSpacing -
-        close_size.width();
-    return std::max(heading_->GetHeightForWidth(heading_width),
-                    close_size.height());
-  }
-
- private:
-  views::Label* heading_;
-  views::LabelButton* close_;
-
-  DISALLOW_COPY_AND_ASSIGN(HeadingAndCloseButtonView);
-};
 
 // Provides feedback to the user upon successful installation of an
 // extension. Depending on the type of extension, the Bubble will
@@ -124,7 +65,6 @@ class HeadingAndCloseButtonView : public views::View {
 //                      specify a default icon.
 class ExtensionInstalledBubbleView : public BubbleSyncPromoDelegate,
                                      public views::BubbleDialogDelegateView,
-                                     public views::ButtonListener,
                                      public views::LinkListener {
  public:
   explicit ExtensionInstalledBubbleView(ExtensionInstalledBubble* bubble);
@@ -139,9 +79,13 @@ class ExtensionInstalledBubbleView : public BubbleSyncPromoDelegate,
   Browser* browser() { return controller_->browser(); }
 
   // views::BubbleDialogDelegateView:
-  void Init() override;
+  base::string16 GetWindowTitle() const override;
+  gfx::ImageSkia GetWindowIcon() override;
+  bool ShouldShowWindowIcon() const override;
+  bool ShouldShowCloseButton() const override;
   View* CreateFootnoteView() override;
   int GetDialogButtons() const override;
+  void Init() override;
 
   // BubbleSyncPromoDelegate:
   void OnSignInLinkClicked() override;
@@ -149,15 +93,12 @@ class ExtensionInstalledBubbleView : public BubbleSyncPromoDelegate,
   // views::LinkListener:
   void LinkClicked(views::Link* source, int event_flags) override;
 
-  // views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+  // Gets the size of the icon, capped at kIconSize.
+  gfx::Size GetIconSize() const;
 
   ExtensionInstalledBubble* controller_;
   ExtensionInstalledBubble::BubbleType type_;
   ExtensionInstalledBubble::AnchorPosition anchor_position_;
-
-  // The button to close the bubble.
-  views::LabelButton* close_;
 
   // The shortcut to open the manage shortcuts page.
   views::Link* manage_shortcut_;
@@ -173,7 +114,6 @@ ExtensionInstalledBubbleView::ExtensionInstalledBubbleView(
                                    ? views::BubbleBorder::TOP_LEFT
                                    : views::BubbleBorder::TOP_RIGHT),
       controller_(controller),
-      close_(nullptr),
       manage_shortcut_(nullptr) {}
 
 ExtensionInstalledBubbleView::~ExtensionInstalledBubbleView() {}
@@ -240,6 +180,26 @@ void ExtensionInstalledBubbleView::CloseBubble() {
   GetWidget()->Close();
 }
 
+base::string16 ExtensionInstalledBubbleView::GetWindowTitle() const {
+  // Add the heading (for all options).
+  base::string16 extension_name =
+      base::UTF8ToUTF16(controller_->extension()->name());
+  base::i18n::AdjustStringForLocaleDirection(&extension_name);
+  return l10n_util::GetStringFUTF16(IDS_EXTENSION_INSTALLED_HEADING,
+                                    extension_name);
+}
+
+gfx::ImageSkia ExtensionInstalledBubbleView::GetWindowIcon() {
+  const SkBitmap& bitmap = controller_->icon();
+  return gfx::ImageSkiaOperations::CreateResizedImage(
+      gfx::ImageSkia::CreateFrom1xBitmap(bitmap),
+      skia::ImageOperations::RESIZE_BEST, GetIconSize());
+}
+
+bool ExtensionInstalledBubbleView::ShouldShowWindowIcon() const {
+  return true;
+}
+
 views::View* ExtensionInstalledBubbleView::CreateFootnoteView() {
   if (!(controller_->options() & ExtensionInstalledBubble::SIGN_IN_PROMO))
     return nullptr;
@@ -253,16 +213,64 @@ int ExtensionInstalledBubbleView::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_NONE;
 }
 
+bool ExtensionInstalledBubbleView::ShouldShowCloseButton() const {
+  return true;
+}
+
+void ExtensionInstalledBubbleView::Init() {
+  gfx::Insets insets = margins();
+  UpdateAnchorView();
+
+  // The Extension Installed bubble takes on various forms, depending on the
+  // type of extension installed. In general, though, they are all similar:
+  //
+  // -------------------------
+  // | Icon | Title      (x) |
+  // |        Info           |
+  // |        Extra info     |
+  // -------------------------
+  //
+  // Icon and Title are always shown (as well as the close button).
+  // Info is shown for browser actions, page actions and Omnibox keyword
+  // extensions and might list keyboard shorcut for the former two types.
+  // Extra info is...
+  // ... for other types, either a description of how to manage the extension
+  //     or a link to configure the keybinding shortcut (if one exists).
+  // Extra info can include a promo for signing into sync.
+
+  // Move explanatory text closer to the title.
+  set_margins(gfx::Insets(0, insets.left(), insets.bottom(), insets.right()));
+
+  std::unique_ptr<views::BoxLayout> layout(
+      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0,
+                           views::kRelatedControlVerticalSpacing));
+  // Indent by the size of the icon.
+  layout->set_inside_border_insets(gfx::Insets(
+      0, GetIconSize().width() + views::kUnrelatedControlHorizontalSpacing, 0,
+      0));
+  SetLayoutManager(layout.release());
+
+  if (controller_->options() & ExtensionInstalledBubble::HOW_TO_USE)
+    AddChildView(CreateLabel(controller_->GetHowToUseDescription()));
+
+  if (controller_->options() & ExtensionInstalledBubble::SHOW_KEYBINDING) {
+    manage_shortcut_ = new views::Link(
+        l10n_util::GetStringUTF16(IDS_EXTENSION_INSTALLED_MANAGE_SHORTCUTS));
+    manage_shortcut_->set_listener(this);
+    manage_shortcut_->SetUnderline(false);
+    AddChildView(manage_shortcut_);
+  }
+
+  if (controller_->options() & ExtensionInstalledBubble::HOW_TO_MANAGE) {
+    AddChildView(CreateLabel(
+        l10n_util::GetStringUTF16(IDS_EXTENSION_INSTALLED_MANAGE_INFO)));
+  }
+}
+
 void ExtensionInstalledBubbleView::OnSignInLinkClicked() {
   chrome::ShowBrowserSignin(
       browser(),
       signin_metrics::AccessPoint::ACCESS_POINT_EXTENSION_INSTALL_BUBBLE);
-  CloseBubble();
-}
-
-void ExtensionInstalledBubbleView::ButtonPressed(views::Button* sender,
-                                                 const ui::Event& event) {
-  DCHECK_EQ(sender, close_);
   CloseBubble();
 }
 
@@ -278,108 +286,13 @@ void ExtensionInstalledBubbleView::LinkClicked(views::Link* source,
   CloseBubble();
 }
 
-void ExtensionInstalledBubbleView::Init() {
-  UpdateAnchorView();
-
-  // The Extension Installed bubble takes on various forms, depending on the
-  // type of extension installed. In general, though, they are all similar:
-  //
-  // -------------------------
-  // |      | Heading    [X] |
-  // | Icon | Info           |
-  // |      | Extra info     |
-  // -------------------------
-  //
-  // Icon and Heading are always shown (as well as the close button).
-  // Info is shown for browser actions, page actions and Omnibox keyword
-  // extensions and might list keyboard shorcut for the former two types.
-  // Extra info is...
-  // ... for other types, either a description of how to manage the extension
-  //     or a link to configure the keybinding shortcut (if one exists).
-  // Extra info can include a promo for signing into sync.
-
-  // The number of rows in the content section of the bubble.
-  int main_content_row_count = 1;
-  if (controller_->options() & ExtensionInstalledBubble::HOW_TO_USE)
-    ++main_content_row_count;
-  if (controller_->options() & ExtensionInstalledBubble::SHOW_KEYBINDING)
-    ++main_content_row_count;
-  if (controller_->options() & ExtensionInstalledBubble::HOW_TO_MANAGE)
-    ++main_content_row_count;
-
-  views::GridLayout* layout = new views::GridLayout(this);
-  SetLayoutManager(layout);
-
-  const int cs_id = 0;
-
-  views::ColumnSet* main_cs = layout->AddColumnSet(cs_id);
-  // Icon column.
-  main_cs->AddColumn(views::GridLayout::CENTER, views::GridLayout::LEADING, 0,
-                     views::GridLayout::USE_PREF, 0, 0);
-  main_cs->AddPaddingColumn(0, views::kUnrelatedControlHorizontalSpacing);
-  // Heading column.
-  main_cs->AddColumn(views::GridLayout::LEADING, views::GridLayout::LEADING, 0,
-                     views::GridLayout::FIXED, kRightColumnWidth, 0);
-
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  const gfx::FontList& font_list = rb.GetFontList(ui::ResourceBundle::BaseFont);
-
+gfx::Size ExtensionInstalledBubbleView::GetIconSize() const {
   const SkBitmap& bitmap = controller_->icon();
-  // Add the icon (for all options).
   // Scale down to 43x43, but allow smaller icons (don't scale up).
   gfx::Size size(bitmap.width(), bitmap.height());
-  if (size.width() > kIconSize || size.height() > kIconSize)
-    size = gfx::Size(kIconSize, kIconSize);
-  views::ImageView* icon = new views::ImageView();
-  icon->SetImageSize(size);
-  icon->SetImage(gfx::ImageSkia::CreateFrom1xBitmap(bitmap));
-
-  layout->StartRow(0, cs_id);
-  layout->AddView(icon, 1, main_content_row_count);
-
-  // Add the heading (for all options).
-  base::string16 extension_name =
-      base::UTF8ToUTF16(controller_->extension()->name());
-  base::i18n::AdjustStringForLocaleDirection(&extension_name);
-  views::Label* heading =
-      CreateLabel(l10n_util::GetStringFUTF16(IDS_EXTENSION_INSTALLED_HEADING,
-                                             extension_name),
-                  rb.GetFontList(ui::ResourceBundle::MediumFont));
-
-  close_ = views::BubbleFrameView::CreateCloseButton(this);
-
-  HeadingAndCloseButtonView* heading_and_close =
-      new HeadingAndCloseButtonView(heading, close_);
-
-  layout->AddView(heading_and_close);
-  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
-
-  auto add_content_view = [&layout, &cs_id](views::View* view) {
-    layout->StartRow(0, cs_id);
-    // Skip the icon column.
-    layout->SkipColumns(1);
-    layout->AddView(view);
-    layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
-  };
-
-  if (controller_->options() & ExtensionInstalledBubble::HOW_TO_USE) {
-    add_content_view(
-        CreateLabel(controller_->GetHowToUseDescription(), font_list));
-  }
-
-  if (controller_->options() & ExtensionInstalledBubble::SHOW_KEYBINDING) {
-    manage_shortcut_ = new views::Link(
-        l10n_util::GetStringUTF16(IDS_EXTENSION_INSTALLED_MANAGE_SHORTCUTS));
-    manage_shortcut_->set_listener(this);
-    manage_shortcut_->SetUnderline(false);
-    add_content_view(manage_shortcut_);
-  }
-
-  if (controller_->options() & ExtensionInstalledBubble::HOW_TO_MANAGE) {
-    add_content_view(CreateLabel(
-        l10n_util::GetStringUTF16(IDS_EXTENSION_INSTALLED_MANAGE_INFO),
-        font_list));
-  }
+  return size.width() > kIconSize || size.height() > kIconSize
+             ? gfx::Size(kIconSize, kIconSize)
+             : size;
 }
 
 // NB: This bubble is using the temporarily-deprecated bubble manager interface
