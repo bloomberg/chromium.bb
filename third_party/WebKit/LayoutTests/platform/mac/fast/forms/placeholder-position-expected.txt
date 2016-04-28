@@ -144,8 +144,8 @@ layer at (416,243) size 125x13
   LayoutBlockFlow {DIV} at (3,6) size 125x13 [color=#A9A9A9]
     LayoutText {#text} at (0,0) size 62x13
       text run at (0,0) width 62: "placeholder"
-layer at (416,243) size 125x13
-  LayoutBlockFlow {DIV} at (3,6) size 125x13
+layer at (416,237) size 125x25
+  LayoutBlockFlow {DIV} at (3,0) size 125x25
 layer at (551,243) size 125x13
   LayoutBlockFlow {DIV} at (3,6) size 125x13 [color=#A9A9A9]
     LayoutText {#text} at (0,0) size 62x13
