@@ -19,7 +19,6 @@ if (current_toolchain == host_toolchain) {
 
       # Does not compile with sanitizers.
       "//build/config/sanitizers:default_sanitizer_flags",
-      "//build/config/sanitizers:default_sanitizer_coverage_flags",
     ]
 
     configs += [

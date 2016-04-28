@@ -67,7 +67,6 @@ static_library("options_sources") {
   # the sanitizer runtimes, so instrumenting these functions could cause
   # recursive calls into the runtime if there is an error.
   configs -= [ "//build/config/sanitizers:default_sanitizer_flags" ]
-  configs -= [ "//build/config/sanitizers:default_sanitizer_coverage_flags" ]
 
   if (is_asan) {
     sources += [ "//build/sanitizers/asan_suppressions.cc" ]
@@ -234,6 +233,26 @@ config("cfi_flags") {
   }
 }
 
+config("coverage_flags") {
+  cflags = []
+
+  if (use_sanitizer_coverage) {
+    cflags += [
+      "-fsanitize-coverage=$sanitizer_coverage_flags",
+      "-mllvm",
+      "-sanitizer-coverage-prune-blocks=1",
+    ]
+    if (target_cpu == "arm") {
+      # http://crbug.com/517105
+      cflags += [
+        "-mllvm",
+        "-sanitizer-coverage-block-threshold=0",
+      ]
+    }
+    defines = [ "SANITIZER_COVERAGE" ]
+  }
+}
+
 config("lsan_flags") {
   if (is_lsan) {
     cflags = [ "-fsanitize=leak" ]
@@ -328,6 +347,20 @@ config("ubsan_vptr_flags") {
   }
 }
 
+all_sanitizer_configs = [
+  ":common_sanitizer_flags",
+  ":coverage_flags",
+  ":default_sanitizer_ldflags",
+  ":asan_flags",
+  ":cfi_flags",
+  ":lsan_flags",
+  ":msan_flags",
+  ":tsan_flags",
+  ":ubsan_flags",
+  ":ubsan_security_flags",
+  ":ubsan_vptr_flags",
+]
+
 # This config is applied by default to all targets. It sets the compiler flags
 # for sanitizer usage, or, if no sanitizer is set, does nothing.
 #
@@ -337,18 +370,7 @@ config("ubsan_vptr_flags") {
 # :deps if any of their dependencies have not opted out of sanitizers.
 # Keep this list in sync with default_sanitizer_flags_but_ubsan_vptr.
 config("default_sanitizer_flags") {
-  configs = [
-    ":common_sanitizer_flags",
-    ":default_sanitizer_ldflags",
-    ":asan_flags",
-    ":cfi_flags",
-    ":lsan_flags",
-    ":msan_flags",
-    ":tsan_flags",
-    ":ubsan_flags",
-    ":ubsan_security_flags",
-    ":ubsan_vptr_flags",
-  ]
+  configs = all_sanitizer_configs
 }
 
 # This config is equivalent to default_sanitizer_flags, but excludes ubsan_vptr.
@@ -356,35 +378,9 @@ config("default_sanitizer_flags") {
 # if some third_party code is required to be compiled without rtti, which
 # is a requirement for ubsan_vptr.
 config("default_sanitizer_flags_but_ubsan_vptr") {
-  configs = [
-    ":common_sanitizer_flags",
-    ":default_sanitizer_ldflags",
-    ":asan_flags",
-    ":cfi_flags",
-    ":lsan_flags",
-    ":msan_flags",
-    ":tsan_flags",
-    ":ubsan_flags",
-    ":ubsan_security_flags",
-  ]
+  configs = all_sanitizer_configs - [ ":ubsan_vptr_flags" ]
 }
 
-config("default_sanitizer_coverage_flags") {
-  cflags = []
-
-  if (use_sanitizer_coverage) {
-    cflags += [
-      "-fsanitize-coverage=$sanitizer_coverage_flags",
-      "-mllvm",
-      "-sanitizer-coverage-prune-blocks=1",
-    ]
-    if (target_cpu == "arm") {
-      # http://crbug.com/517105
-      cflags += [
-        "-mllvm",
-        "-sanitizer-coverage-block-threshold=0",
-      ]
-    }
-    defines = [ "SANITIZER_COVERAGE" ]
-  }
+config("default_sanitizer_flags_but_coverage") {
+  configs = all_sanitizer_configs - [ ":coverage_flags" ]
 }

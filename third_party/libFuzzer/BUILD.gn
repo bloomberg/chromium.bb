@@ -4,7 +4,8 @@
 
 source_set("libfuzzer") {
   # libfuzzer should be compiled without coverage (infinite loop in trace_cmp).
-  configs -= [ "//build/config/sanitizers:default_sanitizer_coverage_flags" ]
+  configs -= [ "//build/config/sanitizers:default_sanitizer_flags" ]
+  configs += [ "//build/config/sanitizers:default_sanitizer_flags_but_coverage" ]
   sources = [
     "src/FuzzerCrossOver.cpp",
     "src/FuzzerDriver.cpp",
