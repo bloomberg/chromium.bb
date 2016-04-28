@@ -3399,6 +3399,7 @@ interface InputEvent : UIEvent
     attribute @@toStringTag
     getter data
     getter inputType
+    getter isComposing
     method constructor
 interface IntersectionObserver
     attribute @@toStringTag

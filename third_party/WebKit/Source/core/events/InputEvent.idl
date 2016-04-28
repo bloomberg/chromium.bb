@@ -10,5 +10,6 @@
 ] interface InputEvent : UIEvent {
     readonly attribute DOMString inputType;
     readonly attribute DOMString data;
-    // TODO(chongz): Add 'isComposing' and 'targetRanges'
+    readonly attribute boolean isComposing;
+    // TODO(chongz): Add 'targetRanges'
 };

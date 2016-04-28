@@ -7,7 +7,10 @@
 #include "core/dom/Element.h"
 #include "core/dom/Range.h"
 #include "core/editing/FrameSelection.h"
+#include "core/events/MouseEvent.h"
+#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/Settings.h"
 #include "core/html/HTMLDocument.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/testing/DummyPageHolder.h"
@@ -188,6 +191,33 @@ TEST_F(InputMethodControllerTest, ConfirmPasswordComposition)
     controller().confirmComposition();
 
     EXPECT_STREQ("foo", input->value().utf8().data());
+}
+
+TEST_F(InputMethodControllerTest, CompositionFireBeforeInput)
+{
+    document().settings()->setScriptEnabled(true);
+    Element* editable = insertHTMLElement("<div id='sample' contentEditable='true'></div>", "sample");
+    Element* script = document().createElement("script", ASSERT_NO_EXCEPTION);
+    script->setInnerHTML(
+        "document.getElementById('sample').addEventListener('beforeinput', function(event) {"
+        "    document.title = `beforeinput.isComposing:${event.isComposing}`;"
+        "});",
+        ASSERT_NO_EXCEPTION);
+    document().body()->appendChild(script, ASSERT_NO_EXCEPTION);
+    document().view()->updateAllLifecyclePhases();
+
+    // Simulate composition in the |contentEditable|.
+    Vector<CompositionUnderline> underlines;
+    underlines.append(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
+    editable->focus();
+
+    document().setTitle(emptyString());
+    controller().setComposition("foo", underlines, 0, 3);
+    EXPECT_STREQ("beforeinput.isComposing:true", document().title().utf8().data());
+
+    document().setTitle(emptyString());
+    controller().confirmComposition();
+    EXPECT_STREQ("beforeinput.isComposing:false", document().title().utf8().data());
 }
 
 } // namespace blink

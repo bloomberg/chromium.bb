@@ -42,10 +42,16 @@ public:
         IsCancelable = true,
     };
 
-    static InputEvent* createBeforeInput(InputType, const String& data, EventCancelable);
+    enum EventIsComposing : bool {
+        NotComposing = false,
+        IsComposing = true,
+    };
+
+    static InputEvent* createBeforeInput(InputType, const String& data, EventCancelable, EventIsComposing);
 
     String inputType() const;
     const String& data() const { return m_data; }
+    bool isComposing() const { return m_isComposing; }
 
     bool isInputEvent() const override;
 
@@ -57,6 +63,7 @@ private:
 
     InputType m_inputType;
     String m_data;
+    bool m_isComposing;
 };
 
 DEFINE_EVENT_TYPE_CASTS(InputEvent);

@@ -1738,7 +1738,7 @@ DispatchEventResult dispatchBeforeInputInsertText(EventTarget* target, const Str
         return DispatchEventResult::NotCanceled;
     if (!target)
         return DispatchEventResult::NotCanceled;
-    InputEvent* beforeInputEvent = InputEvent::createBeforeInput(InputEvent::InputType::InsertText, data, InputEvent::EventCancelable::IsCancelable);
+    InputEvent* beforeInputEvent = InputEvent::createBeforeInput(InputEvent::InputType::InsertText, data, InputEvent::EventCancelable::IsCancelable, InputEvent::EventIsComposing::NotComposing);
     return target->dispatchEvent(beforeInputEvent);
 }
 
@@ -1748,7 +1748,7 @@ DispatchEventResult dispatchBeforeInputFromComposition(EventTarget* target, Inpu
         return DispatchEventResult::NotCanceled;
     if (!target)
         return DispatchEventResult::NotCanceled;
-    InputEvent* beforeInputEvent = InputEvent::createBeforeInput(inputType, data, InputEvent::EventCancelable::NotCancelable);
+    InputEvent* beforeInputEvent = InputEvent::createBeforeInput(inputType, data, InputEvent::EventCancelable::NotCancelable, InputEvent::EventIsComposing::IsComposing);
     return target->dispatchEvent(beforeInputEvent);
 }
 
@@ -1758,7 +1758,7 @@ DispatchEventResult dispatchBeforeInputEditorCommand(EventTarget* target, InputE
         return DispatchEventResult::NotCanceled;
     if (!target)
         return DispatchEventResult::NotCanceled;
-    InputEvent* beforeInputEvent = InputEvent::createBeforeInput(inputType, data, InputEvent::EventCancelable::IsCancelable);
+    InputEvent* beforeInputEvent = InputEvent::createBeforeInput(inputType, data, InputEvent::EventCancelable::IsCancelable, InputEvent::EventIsComposing::NotComposing);
     return target->dispatchEvent(beforeInputEvent);
 }
 

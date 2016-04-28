@@ -9,5 +9,6 @@
 ] dictionary InputEventInit : UIEventInit {
     DOMString inputType = "";
     DOMString data = "";
-    // TODO(chongz): Add 'isComposing' and 'targetRanges'
+    boolean isComposing = false;
+    // TODO(chongz): Add 'targetRanges'
 };

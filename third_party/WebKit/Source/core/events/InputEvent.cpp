@@ -60,10 +60,12 @@ InputEvent::InputEvent(const AtomicString& type, const InputEventInit& initializ
         m_inputType = convertStringToInputType(initializer.inputType());
     if (initializer.hasData())
         m_data = initializer.data();
+    if (initializer.hasIsComposing())
+        m_isComposing = initializer.isComposing();
 }
 
 /* static */
-InputEvent* InputEvent::createBeforeInput(InputType inputType, const String& data, EventCancelable cancelable)
+InputEvent* InputEvent::createBeforeInput(InputType inputType, const String& data, EventCancelable cancelable, EventIsComposing isComposing)
 {
     InputEventInit inputEventInit;
 
@@ -73,6 +75,7 @@ InputEvent* InputEvent::createBeforeInput(InputType inputType, const String& dat
     // See InputEvent::InputEvent() for the second conversion.
     inputEventInit.setInputType(convertInputTypeToString(inputType));
     inputEventInit.setData(data);
+    inputEventInit.setIsComposing(isComposing == IsComposing);
 
     return InputEvent::create(EventTypeNames::beforeinput, inputEventInit);
 }
