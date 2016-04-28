@@ -127,7 +127,11 @@ component("boringssl") {
 
 if (build_with_chromium) {
   create_tests("boringssl_tests") {
-    configs = [ ":internal_config" ]
+    configs_exclude = [ "//build/config/compiler:chromium_code" ]
+    configs = [
+      ":internal_config",
+      "//build/config/compiler:no_chromium_code",
+    ]
     deps = [
       ":boringssl",
     ]

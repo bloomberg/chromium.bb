@@ -110,8 +110,6 @@ crypto_sources = [
   "src/crypto/dh/params.c",
   "src/crypto/digest/digest.c",
   "src/crypto/digest/digests.c",
-  "src/crypto/directory_posix.c",
-  "src/crypto/directory_win.c",
   "src/crypto/dsa/dsa.c",
   "src/crypto/dsa/dsa_asn1.c",
   "src/crypto/ec/ec.c",

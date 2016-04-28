@@ -16,6 +16,9 @@ template("create_tests") {
       "src/crypto/aes/aes_test.cc",
     ]
     sources += _test_support_sources
+    if (defined(invoker.configs_exclude)) {
+      configs -= invoker.configs_exclude
+    }
     configs += invoker.configs
     deps = invoker.deps
   }
@@ -25,6 +28,9 @@ template("create_tests") {
       "src/crypto/asn1/asn1_test.cc",
     ]
     sources += _test_support_sources
+    if (defined(invoker.configs_exclude)) {
+      configs -= invoker.configs_exclude
+    }
     configs += invoker.configs
     deps = invoker.deps
   }
@@ -34,6 +40,9 @@ template("create_tests") {
       "src/crypto/base64/base64_test.cc",
     ]
     sources += _test_support_sources
+    if (defined(invoker.configs_exclude)) {
+      configs -= invoker.configs_exclude
+    }
     configs += invoker.configs
     deps = invoker.deps
   }
@@ -43,6 +52,9 @@ template("create_tests") {
       "src/crypto/bio/bio_test.cc",
     ]
     sources += _test_support_sources
+    if (defined(invoker.configs_exclude)) {
+      configs -= invoker.configs_exclude
+    }
     configs += invoker.configs
     deps = invoker.deps
   }
@@ -52,6 +64,9 @@ template("create_tests") {
       "src/crypto/bn/bn_test.cc",
     ]
     sources += _test_support_sources
+    if (defined(invoker.configs_exclude)) {
+      configs -= invoker.configs_exclude
+    }
     configs += invoker.configs
     deps = invoker.deps
   }
@@ -61,6 +76,9 @@ template("create_tests") {
       "src/crypto/bytestring/bytestring_test.cc",
     ]
     sources += _test_support_sources
+    if (defined(invoker.configs_exclude)) {
+      configs -= invoker.configs_exclude
+    }
     configs += invoker.configs
     deps = invoker.deps
   }
@@ -70,6 +88,9 @@ template("create_tests") {
       "src/crypto/chacha/chacha_test.cc",
     ]
     sources += _test_support_sources
+    if (defined(invoker.configs_exclude)) {
+      configs -= invoker.configs_exclude
+    }
     configs += invoker.configs
     deps = invoker.deps
   }
@@ -79,6 +100,9 @@ template("create_tests") {
       "src/crypto/cipher/aead_test.cc",
     ]
     sources += _test_support_sources
+    if (defined(invoker.configs_exclude)) {
+      configs -= invoker.configs_exclude
+    }
     configs += invoker.configs
     deps = invoker.deps
   }
@@ -88,6 +112,9 @@ template("create_tests") {
       "src/crypto/cipher/cipher_test.cc",
     ]
     sources += _test_support_sources
+    if (defined(invoker.configs_exclude)) {
+      configs -= invoker.configs_exclude
+    }
     configs += invoker.configs
     deps = invoker.deps
   }
@@ -97,6 +124,9 @@ template("create_tests") {
       "src/crypto/cmac/cmac_test.cc",
     ]
     sources += _test_support_sources
+    if (defined(invoker.configs_exclude)) {
+      configs -= invoker.configs_exclude
+    }
     configs += invoker.configs
     deps = invoker.deps
   }
@@ -106,6 +136,9 @@ template("create_tests") {
       "src/crypto/constant_time_test.c",
     ]
     sources += _test_support_sources
+    if (defined(invoker.configs_exclude)) {
+      configs -= invoker.configs_exclude
+    }
     configs += invoker.configs
     deps = invoker.deps
   }
@@ -115,6 +148,9 @@ template("create_tests") {
       "src/crypto/curve25519/ed25519_test.cc",
     ]
     sources += _test_support_sources
+    if (defined(invoker.configs_exclude)) {
+      configs -= invoker.configs_exclude
+    }
     configs += invoker.configs
     deps = invoker.deps
   }
@@ -124,6 +160,9 @@ template("create_tests") {
       "src/crypto/curve25519/spake25519_test.cc",
     ]
     sources += _test_support_sources
+    if (defined(invoker.configs_exclude)) {
+      configs -= invoker.configs_exclude
+    }
     configs += invoker.configs
     deps = invoker.deps
   }
@@ -133,6 +172,9 @@ template("create_tests") {
       "src/crypto/curve25519/x25519_test.cc",
     ]
     sources += _test_support_sources
+    if (defined(invoker.configs_exclude)) {
+      configs -= invoker.configs_exclude
+    }
     configs += invoker.configs
     deps = invoker.deps
   }
@@ -142,6 +184,9 @@ template("create_tests") {
       "src/crypto/dh/dh_test.cc",
     ]
     sources += _test_support_sources
+    if (defined(invoker.configs_exclude)) {
+      configs -= invoker.configs_exclude
+    }
     configs += invoker.configs
     deps = invoker.deps
   }
@@ -151,6 +196,9 @@ template("create_tests") {
       "src/crypto/digest/digest_test.cc",
     ]
     sources += _test_support_sources
+    if (defined(invoker.configs_exclude)) {
+      configs -= invoker.configs_exclude
+    }
     configs += invoker.configs
     deps = invoker.deps
   }
@@ -160,6 +208,9 @@ template("create_tests") {
       "src/crypto/dsa/dsa_test.c",
     ]
     sources += _test_support_sources
+    if (defined(invoker.configs_exclude)) {
+      configs -= invoker.configs_exclude
+    }
     configs += invoker.configs
     deps = invoker.deps
   }
@@ -169,6 +220,9 @@ template("create_tests") {
       "src/crypto/ec/ec_test.cc",
     ]
     sources += _test_support_sources
+    if (defined(invoker.configs_exclude)) {
+      configs -= invoker.configs_exclude
+    }
     configs += invoker.configs
     deps = invoker.deps
   }
@@ -178,6 +232,9 @@ template("create_tests") {
       "src/crypto/ec/example_mul.c",
     ]
     sources += _test_support_sources
+    if (defined(invoker.configs_exclude)) {
+      configs -= invoker.configs_exclude
+    }
     configs += invoker.configs
     deps = invoker.deps
   }
@@ -187,6 +244,9 @@ template("create_tests") {
       "src/crypto/ecdsa/ecdsa_test.cc",
     ]
     sources += _test_support_sources
+    if (defined(invoker.configs_exclude)) {
+      configs -= invoker.configs_exclude
+    }
     configs += invoker.configs
     deps = invoker.deps
   }
@@ -196,6 +256,9 @@ template("create_tests") {
       "src/crypto/err/err_test.cc",
     ]
     sources += _test_support_sources
+    if (defined(invoker.configs_exclude)) {
+      configs -= invoker.configs_exclude
+    }
     configs += invoker.configs
     deps = invoker.deps
   }
@@ -205,6 +268,9 @@ template("create_tests") {
       "src/crypto/evp/evp_extra_test.cc",
     ]
     sources += _test_support_sources
+    if (defined(invoker.configs_exclude)) {
+      configs -= invoker.configs_exclude
+    }
     configs += invoker.configs
     deps = invoker.deps
   }
@@ -214,6 +280,9 @@ template("create_tests") {
       "src/crypto/evp/evp_test.cc",
     ]
     sources += _test_support_sources
+    if (defined(invoker.configs_exclude)) {
+      configs -= invoker.configs_exclude
+    }
     configs += invoker.configs
     deps = invoker.deps
   }
@@ -223,6 +292,9 @@ template("create_tests") {
       "src/crypto/evp/pbkdf_test.cc",
     ]
     sources += _test_support_sources
+    if (defined(invoker.configs_exclude)) {
+      configs -= invoker.configs_exclude
+    }
     configs += invoker.configs
     deps = invoker.deps
   }
@@ -232,6 +304,9 @@ template("create_tests") {
       "src/crypto/hkdf/hkdf_test.c",
     ]
     sources += _test_support_sources
+    if (defined(invoker.configs_exclude)) {
+      configs -= invoker.configs_exclude
+    }
     configs += invoker.configs
     deps = invoker.deps
   }
@@ -241,6 +316,9 @@ template("create_tests") {
       "src/crypto/hmac/hmac_test.cc",
     ]
     sources += _test_support_sources
+    if (defined(invoker.configs_exclude)) {
+      configs -= invoker.configs_exclude
+    }
     configs += invoker.configs
     deps = invoker.deps
   }
@@ -250,6 +328,9 @@ template("create_tests") {
       "src/crypto/lhash/lhash_test.c",
     ]
     sources += _test_support_sources
+    if (defined(invoker.configs_exclude)) {
+      configs -= invoker.configs_exclude
+    }
     configs += invoker.configs
     deps = invoker.deps
   }
@@ -259,6 +340,9 @@ template("create_tests") {
       "src/crypto/modes/gcm_test.c",
     ]
     sources += _test_support_sources
+    if (defined(invoker.configs_exclude)) {
+      configs -= invoker.configs_exclude
+    }
     configs += invoker.configs
     deps = invoker.deps
   }
@@ -268,6 +352,9 @@ template("create_tests") {
       "src/crypto/newhope/newhope_test.c",
     ]
     sources += _test_support_sources
+    if (defined(invoker.configs_exclude)) {
+      configs -= invoker.configs_exclude
+    }
     configs += invoker.configs
     deps = invoker.deps
   }
@@ -277,6 +364,9 @@ template("create_tests") {
       "src/crypto/obj/obj_test.cc",
     ]
     sources += _test_support_sources
+    if (defined(invoker.configs_exclude)) {
+      configs -= invoker.configs_exclude
+    }
     configs += invoker.configs
     deps = invoker.deps
   }
@@ -286,6 +376,9 @@ template("create_tests") {
       "src/crypto/pkcs8/pkcs12_test.cc",
     ]
     sources += _test_support_sources
+    if (defined(invoker.configs_exclude)) {
+      configs -= invoker.configs_exclude
+    }
     configs += invoker.configs
     deps = invoker.deps
   }
@@ -295,6 +388,9 @@ template("create_tests") {
       "src/crypto/pkcs8/pkcs8_test.cc",
     ]
     sources += _test_support_sources
+    if (defined(invoker.configs_exclude)) {
+      configs -= invoker.configs_exclude
+    }
     configs += invoker.configs
     deps = invoker.deps
   }
@@ -304,6 +400,9 @@ template("create_tests") {
       "src/crypto/poly1305/poly1305_test.cc",
     ]
     sources += _test_support_sources
+    if (defined(invoker.configs_exclude)) {
+      configs -= invoker.configs_exclude
+    }
     configs += invoker.configs
     deps = invoker.deps
   }
@@ -313,6 +412,9 @@ template("create_tests") {
       "src/crypto/refcount_test.c",
     ]
     sources += _test_support_sources
+    if (defined(invoker.configs_exclude)) {
+      configs -= invoker.configs_exclude
+    }
     configs += invoker.configs
     deps = invoker.deps
   }
@@ -322,6 +424,9 @@ template("create_tests") {
       "src/crypto/rsa/rsa_test.cc",
     ]
     sources += _test_support_sources
+    if (defined(invoker.configs_exclude)) {
+      configs -= invoker.configs_exclude
+    }
     configs += invoker.configs
     deps = invoker.deps
   }
@@ -331,6 +436,9 @@ template("create_tests") {
       "src/crypto/thread_test.c",
     ]
     sources += _test_support_sources
+    if (defined(invoker.configs_exclude)) {
+      configs -= invoker.configs_exclude
+    }
     configs += invoker.configs
     deps = invoker.deps
   }
@@ -340,6 +448,9 @@ template("create_tests") {
       "src/crypto/x509/pkcs7_test.c",
     ]
     sources += _test_support_sources
+    if (defined(invoker.configs_exclude)) {
+      configs -= invoker.configs_exclude
+    }
     configs += invoker.configs
     deps = invoker.deps
   }
@@ -349,6 +460,9 @@ template("create_tests") {
       "src/crypto/x509/x509_test.cc",
     ]
     sources += _test_support_sources
+    if (defined(invoker.configs_exclude)) {
+      configs -= invoker.configs_exclude
+    }
     configs += invoker.configs
     deps = invoker.deps
   }
@@ -358,6 +472,9 @@ template("create_tests") {
       "src/crypto/x509v3/tab_test.c",
     ]
     sources += _test_support_sources
+    if (defined(invoker.configs_exclude)) {
+      configs -= invoker.configs_exclude
+    }
     configs += invoker.configs
     deps = invoker.deps
   }
@@ -367,6 +484,9 @@ template("create_tests") {
       "src/crypto/x509v3/v3name_test.c",
     ]
     sources += _test_support_sources
+    if (defined(invoker.configs_exclude)) {
+      configs -= invoker.configs_exclude
+    }
     configs += invoker.configs
     deps = invoker.deps
   }
@@ -376,6 +496,9 @@ template("create_tests") {
       "src/ssl/pqueue/pqueue_test.c",
     ]
     sources += _test_support_sources
+    if (defined(invoker.configs_exclude)) {
+      configs -= invoker.configs_exclude
+    }
     configs += invoker.configs
     deps = invoker.deps
   }
@@ -385,6 +508,9 @@ template("create_tests") {
       "src/ssl/ssl_test.cc",
     ]
     sources += _test_support_sources
+    if (defined(invoker.configs_exclude)) {
+      configs -= invoker.configs_exclude
+    }
     configs += invoker.configs
     deps = invoker.deps
   }
