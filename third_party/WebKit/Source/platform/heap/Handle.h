@@ -1159,10 +1159,11 @@ template<typename T> inline T* getPtr(const blink::Persistent<T>& p)
 // For wtf/Functional.h
 template<typename T, bool isGarbageCollected> struct PointerParamStorageTraits;
 
+// The condition of 'T must be fully defined' (except for void) is checked in
+// blink::IsGarbageCollectedType<T>::value.
 template<typename T>
 struct PointerParamStorageTraits<T*, false> {
     STATIC_ONLY(PointerParamStorageTraits);
-    static_assert(sizeof(T), "T must be fully defined");
     using StorageType = T*;
 
     static StorageType wrap(T* value) { return value; }
@@ -1172,7 +1173,6 @@ struct PointerParamStorageTraits<T*, false> {
 template<typename T>
 struct PointerParamStorageTraits<T*, true> {
     STATIC_ONLY(PointerParamStorageTraits);
-    static_assert(sizeof(T), "T must be fully defined");
     using StorageType = blink::CrossThreadPersistent<T>;
 
     static StorageType wrap(T* value) { return value; }
@@ -1182,7 +1182,6 @@ struct PointerParamStorageTraits<T*, true> {
 template<typename T>
 struct ParamStorageTraits<T*> : public PointerParamStorageTraits<T*, blink::IsGarbageCollectedType<T>::value> {
     STATIC_ONLY(ParamStorageTraits);
-    static_assert(sizeof(T), "T must be fully defined");
 };
 
 template<typename T>

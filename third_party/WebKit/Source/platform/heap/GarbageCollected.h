@@ -99,6 +99,11 @@ struct IsGarbageCollectedType {
         || isHeapAllocatedListHashSetNode;
 };
 
+template <>
+struct IsGarbageCollectedType<void> {
+    static const bool value = false;
+};
+
 // The GarbageCollectedMixin interface and helper macro
 // USING_GARBAGE_COLLECTED_MIXIN can be used to automatically define
 // TraceTrait/ObjectAliveTrait on non-leftmost deriving classes

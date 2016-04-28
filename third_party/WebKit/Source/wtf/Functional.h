@@ -214,14 +214,6 @@ struct ParamStorageTraits<RetainPtr<T>> {
     static typename RetainPtr<T>::PtrType unwrap(const StorageType& value) { return value.get(); }
 };
 
-template <>
-struct ParamStorageTraits<void*> {
-    typedef void* StorageType;
-
-    static StorageType wrap(void* value) { return value; }
-    static void* unwrap(const StorageType& value) { return value; }
-};
-
 template <typename T>
 struct ParamStorageTraits<PassedWrapper<T>> {
     typedef PassedWrapper<T> StorageType;
