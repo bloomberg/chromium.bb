@@ -8,14 +8,10 @@
 
 namespace content {
 
-FrameNavigationEntry::FrameNavigationEntry(int frame_tree_node_id)
-    : frame_tree_node_id_(frame_tree_node_id),
-      item_sequence_number_(-1),
-      document_sequence_number_(-1),
-      post_id_(-1) {}
+FrameNavigationEntry::FrameNavigationEntry()
+    : item_sequence_number_(-1), document_sequence_number_(-1), post_id_(-1) {}
 
 FrameNavigationEntry::FrameNavigationEntry(
-    int frame_tree_node_id,
     const std::string& frame_unique_name,
     int64_t item_sequence_number,
     int64_t document_sequence_number,
@@ -24,8 +20,7 @@ FrameNavigationEntry::FrameNavigationEntry(
     const Referrer& referrer,
     const std::string& method,
     int64_t post_id)
-    : frame_tree_node_id_(frame_tree_node_id),
-      frame_unique_name_(frame_unique_name),
+    : frame_unique_name_(frame_unique_name),
       item_sequence_number_(item_sequence_number),
       document_sequence_number_(document_sequence_number),
       site_instance_(std::move(site_instance)),
@@ -38,7 +33,7 @@ FrameNavigationEntry::~FrameNavigationEntry() {
 }
 
 FrameNavigationEntry* FrameNavigationEntry::Clone() const {
-  FrameNavigationEntry* copy = new FrameNavigationEntry(frame_tree_node_id_);
+  FrameNavigationEntry* copy = new FrameNavigationEntry();
   copy->UpdateEntry(frame_unique_name_, item_sequence_number_,
                     document_sequence_number_, site_instance_.get(), url_,
                     referrer_, page_state_, method_, post_id_);
@@ -67,17 +62,14 @@ void FrameNavigationEntry::UpdateEntry(const std::string& frame_unique_name,
 
 void FrameNavigationEntry::set_item_sequence_number(
     int64_t item_sequence_number) {
-  // Once assigned, the item sequence number shouldn't change.
-  DCHECK(item_sequence_number_ == -1 ||
-         item_sequence_number_ == item_sequence_number);
+  // TODO(creis): Assert that this does not change after being assigned, once
+  // location.replace is classified as NEW_PAGE rather than EXISTING_PAGE.
+  // Same for document sequence number.  See https://crbug.com/596707.
   item_sequence_number_ = item_sequence_number;
 }
 
 void FrameNavigationEntry::set_document_sequence_number(
     int64_t document_sequence_number) {
-  // Once assigned, the document sequence number shouldn't change.
-  DCHECK(document_sequence_number_ == -1 ||
-         document_sequence_number_ == document_sequence_number);
   document_sequence_number_ = document_sequence_number;
 }
 

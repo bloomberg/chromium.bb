@@ -435,16 +435,13 @@ bool NavigatorImpl::NavigateNewChildFrame(
   if (!entry)
     return false;
 
+  // TODO(creis): Remove unique_name from the IPC, now that we can rely on the
+  // replication state.
+  DCHECK_EQ(render_frame_host->frame_tree_node()->unique_name(), unique_name);
   FrameNavigationEntry* frame_entry =
-      entry->GetFrameEntryByUniqueName(unique_name);
+      entry->GetFrameEntry(render_frame_host->frame_tree_node());
   if (!frame_entry)
     return false;
-
-  // Update the FrameNavigationEntry's FrameTreeNode ID (which is currently the
-  // ID of the old FrameTreeNode that no longer exists) to be the ID of the
-  // newly created frame.
-  frame_entry->set_frame_tree_node_id(
-      render_frame_host->frame_tree_node()->frame_tree_node_id());
 
   return NavigateToEntry(render_frame_host->frame_tree_node(), *frame_entry,
                          *entry, NavigationControllerImpl::NO_RELOAD, false,

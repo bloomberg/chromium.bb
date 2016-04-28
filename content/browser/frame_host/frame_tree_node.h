@@ -98,6 +98,10 @@ class CONTENT_EXPORT FrameTreeNode {
     return replication_state_.name;
   }
 
+  const std::string& unique_name() const {
+    return replication_state_.unique_name;
+  }
+
   size_t child_count() const {
     return children_.size();
   }

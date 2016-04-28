@@ -2176,9 +2176,10 @@ TEST_F(NavigationControllerTest, NewSubframe) {
   navigation_entry_committed_counter_ = 0;
 
   // Prereq: add a subframe with an initial auto-subframe navigation.
+  std::string unique_name("uniqueName0");
   main_test_rfh()->OnCreateChildFrame(
       process()->GetNextRoutingID(), blink::WebTreeScopeType::Document,
-      std::string(), "uniqueName0", blink::WebSandboxFlags::None,
+      std::string(), unique_name, blink::WebSandboxFlags::None,
       blink::WebFrameOwnerProperties());
   TestRenderFrameHost* subframe = static_cast<TestRenderFrameHost*>(
       contents()->GetFrameTree()->root()->child_at(0)->current_frame_host());
@@ -2187,6 +2188,7 @@ TEST_F(NavigationControllerTest, NewSubframe) {
     FrameHostMsg_DidCommitProvisionalLoad_Params params;
     params.page_id = 1;
     params.nav_entry_id = 0;
+    params.frame_unique_name = unique_name;
     params.did_create_new_entry = false;
     params.url = subframe_url;
     params.transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
@@ -2207,6 +2209,7 @@ TEST_F(NavigationControllerTest, NewSubframe) {
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
   params.page_id = 2;
   params.nav_entry_id = 0;
+  params.frame_unique_name = unique_name;
   params.did_create_new_entry = true;
   params.url = url2;
   params.transition = ui::PAGE_TRANSITION_MANUAL_SUBFRAME;
@@ -2260,9 +2263,10 @@ TEST_F(NavigationControllerTest, AutoSubframe) {
   navigation_entry_committed_counter_ = 0;
 
   // Add a subframe and navigate it.
+  std::string unique_name0("uniqueName0");
   main_test_rfh()->OnCreateChildFrame(
       process()->GetNextRoutingID(), blink::WebTreeScopeType::Document,
-      std::string(), "uniqueName0", blink::WebSandboxFlags::None,
+      std::string(), unique_name0, blink::WebSandboxFlags::None,
       blink::WebFrameOwnerProperties());
   TestRenderFrameHost* subframe = static_cast<TestRenderFrameHost*>(
       contents()->GetFrameTree()->root()->child_at(0)->current_frame_host());
@@ -2271,6 +2275,7 @@ TEST_F(NavigationControllerTest, AutoSubframe) {
     FrameHostMsg_DidCommitProvisionalLoad_Params params;
     params.page_id = 1;
     params.nav_entry_id = 0;
+    params.frame_unique_name = unique_name0;
     params.did_create_new_entry = false;
     params.url = url2;
     params.transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
@@ -2307,9 +2312,10 @@ TEST_F(NavigationControllerTest, AutoSubframe) {
   }
 
   // Add a second subframe and navigate.
+  std::string unique_name1("uniqueName1");
   main_test_rfh()->OnCreateChildFrame(
       process()->GetNextRoutingID(), blink::WebTreeScopeType::Document,
-      std::string(), "uniqueName1", blink::WebSandboxFlags::None,
+      std::string(), unique_name1, blink::WebSandboxFlags::None,
       blink::WebFrameOwnerProperties());
   TestRenderFrameHost* subframe2 = static_cast<TestRenderFrameHost*>(
       contents()->GetFrameTree()->root()->child_at(1)->current_frame_host());
@@ -2318,6 +2324,7 @@ TEST_F(NavigationControllerTest, AutoSubframe) {
     FrameHostMsg_DidCommitProvisionalLoad_Params params;
     params.page_id = 1;
     params.nav_entry_id = 0;
+    params.frame_unique_name = unique_name1;
     params.did_create_new_entry = false;
     params.url = url3;
     params.transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
@@ -2354,9 +2361,10 @@ TEST_F(NavigationControllerTest, AutoSubframe) {
   }
 
   // Add a nested subframe and navigate.
+  std::string unique_name2("uniqueName2");
   subframe->OnCreateChildFrame(process()->GetNextRoutingID(),
                                blink::WebTreeScopeType::Document, std::string(),
-                               "uniqueName2", blink::WebSandboxFlags::None,
+                               unique_name2, blink::WebSandboxFlags::None,
                                blink::WebFrameOwnerProperties());
   TestRenderFrameHost* subframe3 =
       static_cast<TestRenderFrameHost*>(contents()
@@ -2370,6 +2378,7 @@ TEST_F(NavigationControllerTest, AutoSubframe) {
     FrameHostMsg_DidCommitProvisionalLoad_Params params;
     params.page_id = 1;
     params.nav_entry_id = 0;
+    params.frame_unique_name = unique_name2;
     params.did_create_new_entry = false;
     params.url = url4;
     params.transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
@@ -2421,9 +2430,10 @@ TEST_F(NavigationControllerTest, BackSubframe) {
   navigation_entry_committed_counter_ = 0;
 
   // Prereq: add a subframe with an initial auto-subframe navigation.
+  std::string unique_name("uniqueName0");
   main_test_rfh()->OnCreateChildFrame(
       process()->GetNextRoutingID(), blink::WebTreeScopeType::Document,
-      std::string(), "uniqueName0", blink::WebSandboxFlags::None,
+      std::string(), unique_name, blink::WebSandboxFlags::None,
       blink::WebFrameOwnerProperties());
   TestRenderFrameHost* subframe = static_cast<TestRenderFrameHost*>(
       contents()->GetFrameTree()->root()->child_at(0)->current_frame_host());
@@ -2436,6 +2446,7 @@ TEST_F(NavigationControllerTest, BackSubframe) {
     FrameHostMsg_DidCommitProvisionalLoad_Params params;
     params.page_id = 1;
     params.nav_entry_id = 0;
+    params.frame_unique_name = unique_name;
     params.did_create_new_entry = false;
     params.url = subframe_url;
     params.transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
@@ -2458,6 +2469,7 @@ TEST_F(NavigationControllerTest, BackSubframe) {
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
   params.page_id = 2;
   params.nav_entry_id = 0;
+  params.frame_unique_name = unique_name;
   params.did_create_new_entry = true;
   params.url = url2;
   params.transition = ui::PAGE_TRANSITION_MANUAL_SUBFRAME;
@@ -2491,6 +2503,7 @@ TEST_F(NavigationControllerTest, BackSubframe) {
   const GURL url3("http://foo3");
   params.page_id = 3;
   params.nav_entry_id = 0;
+  params.frame_unique_name = unique_name;
   params.did_create_new_entry = true;
   params.url = url3;
   params.transition = ui::PAGE_TRANSITION_MANUAL_SUBFRAME;
@@ -2519,6 +2532,7 @@ TEST_F(NavigationControllerTest, BackSubframe) {
   controller.GoBack();
   params.page_id = 2;
   params.nav_entry_id = entry2->GetUniqueID();
+  params.frame_unique_name = unique_name;
   params.did_create_new_entry = false;
   params.url = url2;
   params.transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
@@ -2538,6 +2552,7 @@ TEST_F(NavigationControllerTest, BackSubframe) {
   controller.GoBack();
   params.page_id = 1;
   params.nav_entry_id = entry1->GetUniqueID();
+  params.frame_unique_name = unique_name;
   params.did_create_new_entry = false;
   params.url = subframe_url;
   params.transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
@@ -3885,9 +3900,10 @@ TEST_F(NavigationControllerTest, SameSubframe) {
   EXPECT_EQ(controller.GetLastCommittedEntryIndex(), 0);
 
   // Add and navigate a subframe that would normally count as in-page.
+  std::string unique_name("uniqueName0");
   main_test_rfh()->OnCreateChildFrame(
       process()->GetNextRoutingID(), blink::WebTreeScopeType::Document,
-      std::string(), "uniqueName0", blink::WebSandboxFlags::None,
+      std::string(), unique_name, blink::WebSandboxFlags::None,
       blink::WebFrameOwnerProperties());
   TestRenderFrameHost* subframe = static_cast<TestRenderFrameHost*>(
       contents()->GetFrameTree()->root()->child_at(0)->current_frame_host());
@@ -3895,6 +3911,7 @@ TEST_F(NavigationControllerTest, SameSubframe) {
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
   params.page_id = 0;
   params.nav_entry_id = 0;
+  params.frame_unique_name = unique_name;
   params.did_create_new_entry = false;
   params.url = subframe_url;
   params.transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
@@ -4053,9 +4070,10 @@ TEST_F(NavigationControllerTest, SubframeWhilePending) {
 
   // Send a subframe update from the first page, as if one had just
   // automatically loaded. Auto subframes don't increment the page ID.
+  std::string unique_name("uniqueName0");
   main_test_rfh()->OnCreateChildFrame(
       process()->GetNextRoutingID(), blink::WebTreeScopeType::Document,
-      std::string(), "uniqueName0", blink::WebSandboxFlags::None,
+      std::string(), unique_name, blink::WebSandboxFlags::None,
       blink::WebFrameOwnerProperties());
   TestRenderFrameHost* subframe = static_cast<TestRenderFrameHost*>(
       contents()->GetFrameTree()->root()->child_at(0)->current_frame_host());
@@ -4063,6 +4081,7 @@ TEST_F(NavigationControllerTest, SubframeWhilePending) {
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
   params.page_id = controller.GetLastCommittedEntry()->GetPageID();
   params.nav_entry_id = 0;
+  params.frame_unique_name = unique_name;
   params.did_create_new_entry = false;
   params.url = url1_sub;
   params.transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;

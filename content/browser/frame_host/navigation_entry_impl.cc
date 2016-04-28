@@ -39,7 +39,7 @@ int GetUniqueIDInConstructor() {
 void RecursivelyGenerateFrameEntries(const ExplodedFrameState& state,
                                      NavigationEntryImpl::TreeNode* node) {
   node->frame_entry = new FrameNavigationEntry(
-      -1, UTF16ToUTF8(state.target.string()), state.item_sequence_number,
+      UTF16ToUTF8(state.target.string()), state.item_sequence_number,
       state.document_sequence_number, nullptr, GURL(state.url_string.string()),
       Referrer(GURL(state.referrer.string()), state.referrer_policy), "GET",
       -1);
@@ -100,22 +100,23 @@ NavigationEntryImpl::TreeNode::TreeNode(FrameNavigationEntry* frame_entry)
 NavigationEntryImpl::TreeNode::~TreeNode() {
 }
 
-bool NavigationEntryImpl::TreeNode::MatchesFrame(
-    FrameTreeNode* frame_tree_node) const {
-  if (frame_tree_node->frame_tree_node_id() ==
-      frame_entry->frame_tree_node_id())
-    return true;
+bool NavigationEntryImpl::TreeNode::MatchesFrame(FrameTreeNode* frame_tree_node,
+                                                 bool is_root_tree_node) const {
+  // The root node is for the main frame whether the unique name matches or not.
+  if (is_root_tree_node)
+    return frame_tree_node->IsMainFrame();
 
-  // For now, we set the root FNE's FrameTreeNode ID to -1.
-  return frame_tree_node->IsMainFrame() &&
-         frame_entry->frame_tree_node_id() == -1;
+  // Otherwise check the unique name for subframes.
+  return !frame_tree_node->IsMainFrame() &&
+         frame_tree_node->unique_name() == frame_entry->frame_unique_name();
 }
 
 std::unique_ptr<NavigationEntryImpl::TreeNode>
 NavigationEntryImpl::TreeNode::CloneAndReplace(
     FrameTreeNode* frame_tree_node,
-    FrameNavigationEntry* frame_navigation_entry) const {
-  if (frame_tree_node && MatchesFrame(frame_tree_node)) {
+    FrameNavigationEntry* frame_navigation_entry,
+    bool is_root_tree_node) const {
+  if (frame_tree_node && MatchesFrame(frame_tree_node, is_root_tree_node)) {
     // Replace this node in the cloned tree and prune its children.
     return base::WrapUnique(
         new NavigationEntryImpl::TreeNode(frame_navigation_entry));
@@ -129,7 +130,7 @@ NavigationEntryImpl::TreeNode::CloneAndReplace(
   // Recursively clone the children.
   for (auto& child : children) {
     copy->children.push_back(
-        child->CloneAndReplace(frame_tree_node, frame_navigation_entry));
+        child->CloneAndReplace(frame_tree_node, frame_navigation_entry, false));
   }
 
   return copy;
@@ -167,8 +168,7 @@ NavigationEntryImpl::NavigationEntryImpl(
     const base::string16& title,
     ui::PageTransition transition_type,
     bool is_renderer_initiated)
-    : frame_tree_(new TreeNode(new FrameNavigationEntry(-1,
-                                                        "",
+    : frame_tree_(new TreeNode(new FrameNavigationEntry("",
                                                         -1,
                                                         -1,
                                                         std::move(instance),
@@ -531,8 +531,8 @@ std::unique_ptr<NavigationEntryImpl> NavigationEntryImpl::CloneAndReplace(
 
   // TODO(creis): Only share the same FrameNavigationEntries if cloning within
   // the same tab.
-  copy->frame_tree_ =
-      frame_tree_->CloneAndReplace(frame_tree_node, frame_navigation_entry);
+  copy->frame_tree_ = frame_tree_->CloneAndReplace(
+      frame_tree_node, frame_navigation_entry, true);
 
   // Copy most state over, unless cleared in ResetForCommit.
   // Don't copy unique_id_, otherwise it won't be unique.
@@ -686,7 +686,6 @@ void NavigationEntryImpl::ResetForCommit() {
 
 void NavigationEntryImpl::AddOrUpdateFrameEntry(
     FrameTreeNode* frame_tree_node,
-    const std::string& frame_unique_name,
     int64_t item_sequence_number,
     int64_t document_sequence_number,
     SiteInstanceImpl* site_instance,
@@ -707,12 +706,12 @@ void NavigationEntryImpl::AddOrUpdateFrameEntry(
   }
 
   // Now check whether we have a TreeNode for the node itself.
-  int frame_tree_node_id = frame_tree_node->frame_tree_node_id();
+  const std::string& unique_name = frame_tree_node->unique_name();
   for (TreeNode* child : parent_node->children) {
-    if (child->frame_entry->frame_tree_node_id() == frame_tree_node_id) {
+    if (child->frame_entry->frame_unique_name() == unique_name) {
       // Update the existing FrameNavigationEntry (e.g., for replaceState).
       child->frame_entry->UpdateEntry(
-          frame_unique_name, item_sequence_number, document_sequence_number,
+          unique_name, item_sequence_number, document_sequence_number,
           site_instance, url, referrer, page_state, method, post_id);
       return;
     }
@@ -722,8 +721,8 @@ void NavigationEntryImpl::AddOrUpdateFrameEntry(
   // Unordered list, since we expect to look up entries by frame sequence number
   // or unique name.
   FrameNavigationEntry* frame_entry = new FrameNavigationEntry(
-      frame_tree_node_id, frame_unique_name, item_sequence_number,
-      document_sequence_number, site_instance, url, referrer, method, post_id);
+      unique_name, item_sequence_number, document_sequence_number,
+      site_instance, url, referrer, method, post_id);
   frame_entry->set_page_state(page_state);
   parent_node->children.push_back(
       new NavigationEntryImpl::TreeNode(frame_entry));
@@ -733,24 +732,6 @@ FrameNavigationEntry* NavigationEntryImpl::GetFrameEntry(
     FrameTreeNode* frame_tree_node) const {
   NavigationEntryImpl::TreeNode* tree_node = FindFrameEntry(frame_tree_node);
   return tree_node ? tree_node->frame_entry.get() : nullptr;
-}
-
-FrameNavigationEntry* NavigationEntryImpl::GetFrameEntryByUniqueName(
-    const std::string& unique_name) const {
-  NavigationEntryImpl::TreeNode* node = nullptr;
-  std::queue<NavigationEntryImpl::TreeNode*> work_queue;
-  work_queue.push(root_node());
-  while (!work_queue.empty()) {
-    node = work_queue.front();
-    work_queue.pop();
-    if (node->frame_entry->frame_unique_name() == unique_name)
-      return node->frame_entry.get();
-
-    // Enqueue any children and keep looking.
-    for (auto& child : node->children)
-      work_queue.push(child);
-  }
-  return nullptr;
 }
 
 void NavigationEntryImpl::SetScreenshotPNGData(
@@ -772,12 +753,9 @@ NavigationEntryImpl::TreeNode* NavigationEntryImpl::FindFrameEntry(
   while (!work_queue.empty()) {
     node = work_queue.front();
     work_queue.pop();
-    if (node->MatchesFrame(frame_tree_node)) {
-      // Only the root TreeNode should have a FTN ID of -1.
-      DCHECK(node->frame_entry->frame_tree_node_id() != -1 ||
-             node == root_node());
+    if (node->MatchesFrame(frame_tree_node, node == root_node()))
       return node;
-    }
+
     // Enqueue any children and keep looking.
     for (auto& child : node->children)
       work_queue.push(child);

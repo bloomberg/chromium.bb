@@ -736,7 +736,7 @@ void NavigationControllerImpl::LoadURLWithParams(const LoadURLParams& params) {
       if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
         entry = GetLastCommittedEntry()->Clone();
         entry->SetPageID(-1);
-        entry->AddOrUpdateFrameEntry(node, "", -1, -1, nullptr, params.url,
+        entry->AddOrUpdateFrameEntry(node, -1, -1, nullptr, params.url,
                                      params.referrer, PageState(), "GET", -1);
       }
     }
@@ -977,7 +977,7 @@ NavigationType NavigationControllerImpl::ClassifyNavigation(
   // NavigationEntry.
   // TODO(creis): Have the renderer classify location.replace as
   // did_create_new_entry for all cases and eliminate this special case.  This
-  // requires updating several test expectations.  See https://crbug.com/317872.
+  // requires updating several test expectations.  See https://crbug.com/596707.
   if (!rfh->GetParent() && GetLastCommittedEntry() &&
       GetLastCommittedEntry()->site_instance() != rfh->GetSiteInstance() &&
       params.should_replace_current_entry) {
@@ -1190,6 +1190,13 @@ void NavigationControllerImpl::RendererDidNavigateToExistingPage(
   frame_entry->set_method(params.method);
   frame_entry->set_post_id(params.post_id);
 
+  // Update the ISN and DSN in case this was a location.replace, which can cause
+  // them to change.
+  // TODO(creis): Classify location.replace as NEW_PAGE instead of EXISTING_PAGE
+  // in https://crbug.com/596707.
+  frame_entry->set_item_sequence_number(params.item_sequence_number);
+  frame_entry->set_document_sequence_number(params.document_sequence_number);
+
   // The redirected to page should not inherit the favicon from the previous
   // page.
   if (ui::PageTransitionIsRedirect(params.transition))
@@ -1268,19 +1275,18 @@ void NavigationControllerImpl::RendererDidNavigateNewSubframe(
 
   std::unique_ptr<NavigationEntryImpl> new_entry;
   if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
-    // Make sure new_entry takes ownership of frame_entry in a scoped_refptr.
-    FrameNavigationEntry* frame_entry = new FrameNavigationEntry(
-        rfh->frame_tree_node()->frame_tree_node_id(), params.frame_unique_name,
-        params.item_sequence_number, params.document_sequence_number,
-        rfh->GetSiteInstance(), params.url, params.referrer, params.method,
-        params.post_id);
+    // Make sure we don't leak frame_entry if new_entry doesn't take ownership.
+    scoped_refptr<FrameNavigationEntry> frame_entry(new FrameNavigationEntry(
+        params.frame_unique_name, params.item_sequence_number,
+        params.document_sequence_number, rfh->GetSiteInstance(), params.url,
+        params.referrer, params.method, params.post_id));
     new_entry = GetLastCommittedEntry()->CloneAndReplace(rfh->frame_tree_node(),
-                                                         frame_entry);
+                                                         frame_entry.get());
 
-    // TODO(creis): Make sure the last committed entry always has the subframe
-    // entry to replace, and CHECK(frame_entry->HasOneRef).  For now, we might
-    // not find the entry to replace, and new_entry will be deleted when it goes
-    // out of scope.  See https://crbug.com/522193.
+    // TODO(creis): Update this to add the frame_entry if we can't find the one
+    // to replace, which can happen due to a unique name change.  See
+    // https://crbug.com/607205.  For now, frame_entry will be deleted when it
+    // goes out of scope if it doesn't get used.
   } else {
     new_entry = GetLastCommittedEntry()->Clone();
   }
@@ -1332,10 +1338,9 @@ bool NavigationControllerImpl::RendererDidNavigateAutoSubframe(
     // it may be a "history auto" case where we update an existing one.
     NavigationEntryImpl* last_committed = GetLastCommittedEntry();
     last_committed->AddOrUpdateFrameEntry(
-        rfh->frame_tree_node(), params.frame_unique_name,
-        params.item_sequence_number, params.document_sequence_number,
-        rfh->GetSiteInstance(), params.url, params.referrer, params.page_state,
-        params.method, params.post_id);
+        rfh->frame_tree_node(), params.item_sequence_number,
+        params.document_sequence_number, rfh->GetSiteInstance(), params.url,
+        params.referrer, params.page_state, params.method, params.post_id);
 
     // Cross-process subframe navigations may leave a pending entry around.
     // Clear it if it's actually for the subframe.
