@@ -52,6 +52,14 @@
 
 #define WINDOW_TITLE "Weston Compositor"
 
+struct weston_wayland_backend_output_config {
+	int width;
+	int height;
+	char *name;
+	uint32_t transform;
+	int32_t scale;
+};
+
 struct weston_wayland_backend_config {
 	int use_pixman;
 	int sprawl;
@@ -1099,61 +1107,68 @@ err_name:
 	return NULL;
 }
 
-static struct wayland_output *
-wayland_output_create_for_config(struct wayland_backend *b,
-				 struct weston_config_section *config_section,
-				 int option_width, int option_height,
-				 int option_scale, int32_t x, int32_t y)
+static void
+wayland_output_init_from_config(struct weston_wayland_backend_output_config *output,
+				struct weston_config_section *config_section,
+				int option_width, int option_height,
+				int option_scale)
 {
-	struct wayland_output *output;
-	char *mode, *t, *name, *str;
-	int width, height, scale;
-	uint32_t transform;
+	char *mode, *t, *str;
 	unsigned int slen;
 
-	weston_config_section_get_string(config_section, "name", &name, NULL);
-	if (name) {
-		slen = strlen(name);
+	weston_config_section_get_string(config_section, "name", &output->name,
+					 NULL);
+	if (output->name) {
+		slen = strlen(output->name);
 		slen += strlen(WINDOW_TITLE " - ");
 		str = malloc(slen + 1);
 		if (str)
-			snprintf(str, slen + 1, WINDOW_TITLE " - %s", name);
-		free(name);
-		name = str;
+			snprintf(str, slen + 1, WINDOW_TITLE " - %s",
+				 output->name);
+		free(output->name);
+		output->name = str;
 	}
-	if (!name)
-		name = strdup(WINDOW_TITLE);
+	if (!output->name)
+		output->name = strdup(WINDOW_TITLE);
 
 	weston_config_section_get_string(config_section,
 					 "mode", &mode, "1024x600");
-	if (sscanf(mode, "%dx%d", &width, &height) != 2) {
+	if (sscanf(mode, "%dx%d", &output->width, &output->height) != 2) {
 		weston_log("Invalid mode \"%s\" for output %s\n",
-			   mode, name);
-		width = 1024;
-		height = 640;
+			   mode, output->name);
+		output->width = 1024;
+		output->height = 640;
 	}
 	free(mode);
 
 	if (option_width)
-		width = option_width;
+		output->width = option_width;
 	if (option_height)
-		height = option_height;
+		output->height = option_height;
 
-	weston_config_section_get_int(config_section, "scale", &scale, 1);
+	weston_config_section_get_int(config_section, "scale", &output->scale, 1);
 
 	if (option_scale)
-		scale = option_scale;
+		output->scale = option_scale;
 
 	weston_config_section_get_string(config_section,
 					 "transform", &t, "normal");
-	if (weston_parse_transform(t, &transform) < 0)
+	if (weston_parse_transform(t, &output->transform) < 0)
 		weston_log("Invalid transform \"%s\" for output %s\n",
-			   t, name);
+			   t, output->name);
 	free(t);
 
-	output = wayland_output_create(b, x, y, width, height, name, 0,
-				       transform, scale);
-	free(name);
+}
+
+static struct wayland_output *
+wayland_output_create_for_config(struct wayland_backend *b,
+				 struct weston_wayland_backend_output_config *oc,
+				 int fullscreen, int32_t x, int32_t y)
+{
+	struct wayland_output *output;
+
+	output = wayland_output_create(b, x, y, oc->width, oc->height, oc->name,
+				       fullscreen, oc->transform, oc->scale);
 
 	return output;
 }
@@ -2336,6 +2351,7 @@ backend_init(struct weston_compositor *compositor, int *argc, char *argv[],
 	struct wayland_parent_output *poutput;
 	struct weston_config_section *section;
 	struct weston_wayland_backend_config new_config;
+	struct weston_wayland_backend_output_config output_config;
 	int x, count, width, height, scale;
 	const char *section_name;
 	char *name;
@@ -2387,8 +2403,14 @@ backend_init(struct weston_compositor *compositor, int *argc, char *argv[],
 	}
 
 	if (new_config.fullscreen) {
-		output = wayland_output_create(b, 0, 0, width, height,
-					       NULL, 1, 0, 1);
+		output_config.width = width;
+		output_config.height = height;
+		output_config.name = NULL;
+		output_config.transform = WL_OUTPUT_TRANSFORM_NORMAL;
+		output_config.scale = 1;
+
+		output = wayland_output_create_for_config(b, &output_config,
+							  1, 0, 0);
 		if (!output)
 			goto err_outputs;
 
@@ -2411,8 +2433,12 @@ backend_init(struct weston_compositor *compositor, int *argc, char *argv[],
 		}
 		free(name);
 
-		output = wayland_output_create_for_config(b, section, width,
-							  height, scale, x, 0);
+		wayland_output_init_from_config(&output_config, section, width,
+						height, scale);
+		output = wayland_output_create_for_config(b, &output_config, 0,
+							  x, 0);
+		free(output_config.name);
+
 		if (!output)
 			goto err_outputs;
 		if (wayland_output_set_windowed(output))
@@ -2429,8 +2455,14 @@ backend_init(struct weston_compositor *compositor, int *argc, char *argv[],
 	if (!scale)
 		scale = 1;
 	while (count > 0) {
-		output = wayland_output_create(b, x, 0, width, height,
-					       NULL, 0, 0, scale);
+		output_config.width = width;
+		output_config.height = height;
+		output_config.name = NULL;
+		output_config.transform = WL_OUTPUT_TRANSFORM_NORMAL;
+		output_config.scale = scale;
+
+		output = wayland_output_create_for_config(b, &output_config,
+							  0, x, 0);
 		if (!output)
 			goto err_outputs;
 		if (wayland_output_set_windowed(output))
