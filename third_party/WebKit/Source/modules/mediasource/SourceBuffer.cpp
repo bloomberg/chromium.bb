@@ -484,10 +484,83 @@ void SourceBuffer::removedFromMediaSource()
     WTF_LOG(Media, "SourceBuffer(%p)::removedFromMediaSource", this);
     abortIfUpdating();
 
+    if (RuntimeEnabledFeatures::audioVideoTracksEnabled()) {
+        ASSERT(m_source);
+        if (m_source->mediaElement()->audioTracks().length() > 0
+            || m_source->mediaElement()->videoTracks().length() > 0) {
+            removeMediaTracks();
+        }
+    }
+
     m_webSourceBuffer->removedFromMediaSource();
     m_webSourceBuffer.clear();
     m_source = nullptr;
     m_asyncEventQueue = nullptr;
+}
+
+void SourceBuffer::removeMediaTracks()
+{
+    ASSERT(RuntimeEnabledFeatures::audioVideoTracksEnabled());
+    // Spec: http://w3c.github.io/media-source/#widl-MediaSource-removeSourceBuffer-void-SourceBuffer-sourceBuffer
+    ASSERT(m_source);
+
+    HTMLMediaElement* mediaElement = m_source->mediaElement();
+    ASSERT(mediaElement);
+    // 3. Let SourceBuffer audioTracks list equal the AudioTrackList object returned by sourceBuffer.audioTracks.
+    // 4. If the SourceBuffer audioTracks list is not empty, then run the following steps:
+    // 4.1 Let HTMLMediaElement audioTracks list equal the AudioTrackList object returned by the audioTracks attribute on the HTMLMediaElement.
+    // 4.2 Let the removed enabled audio track flag equal false.
+    bool removedEnabledAudioTrack = false;
+    // 4.3 For each AudioTrack object in the SourceBuffer audioTracks list, run the following steps:
+    while (audioTracks().length() > 0) {
+        AudioTrack* audioTrack = audioTracks().anonymousIndexedGetter(0);
+        // 4.3.1 Set the sourceBuffer attribute on the AudioTrack object to null.
+        SourceBufferTrackBaseSupplement::setSourceBuffer(*audioTrack, nullptr);
+        // 4.3.2 If the enabled attribute on the AudioTrack object is true, then set the removed enabled audio track flag to true.
+        if (audioTrack->enabled())
+            removedEnabledAudioTrack = true;
+        // 4.3.3 Remove the AudioTrack object from the HTMLMediaElement audioTracks list.
+        // 4.3.4 Queue a task to fire a trusted event named removetrack, that does not bubble and is not cancelable, and that uses the TrackEvent interface, at the HTMLMediaElement audioTracks list.
+        mediaElement->audioTracks().remove(audioTrack->trackId());
+        // 4.3.5 Remove the AudioTrack object from the SourceBuffer audioTracks list.
+        // 4.3.6 Queue a task to fire a trusted event named removetrack, that does not bubble and is not cancelable, and that uses the TrackEvent interface, at the SourceBuffer audioTracks list.
+        audioTracks().remove(audioTrack->trackId());
+    }
+    // 4.4 If the removed enabled audio track flag equals true, then queue a task to fire a simple event named change at the HTMLMediaElement audioTracks list.
+    if (removedEnabledAudioTrack) {
+        Event* event = Event::create(EventTypeNames::change);
+        event->setTarget(&mediaElement->audioTracks());
+        mediaElement->scheduleEvent(event);
+    }
+
+    // 5. Let SourceBuffer videoTracks list equal the VideoTrackList object returned by sourceBuffer.videoTracks.
+    // 6. If the SourceBuffer videoTracks list is not empty, then run the following steps:
+    // 6.1 Let HTMLMediaElement videoTracks list equal the VideoTrackList object returned by the videoTracks attribute on the HTMLMediaElement.
+    // 6.2 Let the removed selected video track flag equal false.
+    bool removedSelectedVideoTrack = false;
+    // 6.3 For each VideoTrack object in the SourceBuffer videoTracks list, run the following steps:
+    while (videoTracks().length() > 0) {
+        VideoTrack* videoTrack = videoTracks().anonymousIndexedGetter(0);
+        // 6.3.1 Set the sourceBuffer attribute on the VideoTrack object to null.
+        SourceBufferTrackBaseSupplement::setSourceBuffer(*videoTrack, nullptr);
+        // 6.3.2 If the selected attribute on the VideoTrack object is true, then set the removed selected video track flag to true.
+        if (videoTrack->selected())
+            removedSelectedVideoTrack = true;
+        // 6.3.3 Remove the VideoTrack object from the HTMLMediaElement videoTracks list.
+        // 6.3.4 Queue a task to fire a trusted event named removetrack, that does not bubble and is not cancelable, and that uses the TrackEvent interface, at the HTMLMediaElement videoTracks list.
+        mediaElement->videoTracks().remove(videoTrack->trackId());
+        // 6.3.5 Remove the VideoTrack object from the SourceBuffer videoTracks list.
+        // 6.3.6 Queue a task to fire a trusted event named removetrack, that does not bubble and is not cancelable, and that uses the TrackEvent interface, at the SourceBuffer videoTracks list.
+        videoTracks().remove(videoTrack->trackId());
+    }
+    // 6.4 If the removed selected video track flag equals true, then queue a task to fire a simple event named change at the HTMLMediaElement videoTracks list.
+    if (removedSelectedVideoTrack) {
+        Event* event = Event::create(EventTypeNames::change);
+        event->setTarget(&mediaElement->videoTracks());
+        mediaElement->scheduleEvent(event);
+    }
+
+    // 7-8. TODO(servolk): Remove text tracks once SourceBuffer has text tracks.
 }
 
 template<class T>

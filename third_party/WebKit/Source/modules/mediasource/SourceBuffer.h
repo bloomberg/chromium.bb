@@ -134,6 +134,8 @@ private:
     void appendStreamDone(bool success);
     void clearAppendStreamState();
 
+    void removeMediaTracks();
+
     // FileReaderLoaderClient interface
     void didStartLoading() override;
     void didReceiveDataForClient(const char* data, unsigned dataLength) override;

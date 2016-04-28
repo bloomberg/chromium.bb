@@ -177,11 +177,8 @@ void MediaSource::removeSourceBuffer(SourceBuffer* buffer, ExceptionState& excep
         return;
     }
 
-    // 2. If the sourceBuffer.updating attribute equals true, then run the following steps: ...
-    buffer->abortIfUpdating();
-
-    // Steps 3-8 are related to updating audioTracks, videoTracks, and textTracks which aren't implmented yet.
-    // FIXME(91649): support track selection
+    // Steps 2-8 are implemented by SourceBuffer::removedFromMediaSource.
+    buffer->removedFromMediaSource();
 
     // 9. If sourceBuffer is in activeSourceBuffers, then remove sourceBuffer from activeSourceBuffers ...
     m_activeSourceBuffers->remove(buffer);
@@ -191,7 +188,7 @@ void MediaSource::removeSourceBuffer(SourceBuffer* buffer, ExceptionState& excep
     m_sourceBuffers->remove(buffer);
 
     // 11. Destroy all resources for sourceBuffer.
-    buffer->removedFromMediaSource();
+    // This should have been done already by SourceBuffer::removedFromMediaSource (steps 2-8) above.
 }
 
 void MediaSource::onReadyStateChange(const AtomicString& oldState, const AtomicString& newState)
@@ -214,6 +211,8 @@ void MediaSource::onReadyStateChange(const AtomicString& oldState, const AtomicS
     for (unsigned long i = 0; i < m_sourceBuffers->length(); ++i)
         m_sourceBuffers->item(i)->removedFromMediaSource();
     m_sourceBuffers->clear();
+
+    m_attachedElement.clear();
 
     scheduleEvent(EventTypeNames::sourceclose);
 }
@@ -450,7 +449,6 @@ void MediaSource::setReadyState(const AtomicString& state)
 
     if (state == closedKeyword()) {
         m_webMediaSource.clear();
-        m_attachedElement.clear();
     }
 
     if (oldState == state)
