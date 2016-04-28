@@ -1825,7 +1825,11 @@ bool LayoutBlockFlow::checkPaginationAndFloatsAtEndLine(LineLayoutState& layoutS
     // See if any floats end in the range along which we want to shift the lines vertically.
     LayoutUnit logicalTop = std::min(logicalHeight(), layoutState.endLineLogicalTop());
 
-    LayoutUnit logicalBottom = lastRootBox()->lineBottomWithLeading() + absoluteValue(lineDelta);
+    RootInlineBox* lastLine = layoutState.endLine();
+    while (RootInlineBox* nextLine = lastLine->nextRootBox())
+        lastLine = nextLine;
+
+    LayoutUnit logicalBottom = lastLine->lineBottomWithLeading() + absoluteValue(lineDelta);
 
     const FloatingObjectSet& floatingObjectSet = m_floatingObjects->set();
     FloatingObjectSetIterator end = floatingObjectSet.end();
