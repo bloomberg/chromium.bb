@@ -219,6 +219,7 @@ fuzzer_test("v8_script_parser_fuzzer") {
     "//v8:parser_fuzzer",
   ]
   dict = "dicts/js.dict"
+  seed_corpus = "//v8/test/mjsunit/regress/"
 }
 
 fuzzer_test("v8_json_parser_fuzzer") {
