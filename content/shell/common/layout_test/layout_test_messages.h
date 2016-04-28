@@ -52,3 +52,6 @@ IPC_MESSAGE_CONTROL1(
 IPC_MESSAGE_CONTROL1(
     LayoutTestMsg_ReplicateLayoutTestRuntimeFlagsChanges,
     base::DictionaryValue /* changed_layout_test_runtime_flags */)
+
+// Sent by secondary test window to notify the test has finished.
+IPC_MESSAGE_CONTROL0(LayoutTestHostMsg_TestFinishedInSecondaryRenderer)

@@ -534,7 +534,8 @@ void BlinkTestRunner::OnLayoutTestRuntimeFlagsChanged(
 
 void BlinkTestRunner::TestFinished() {
   if (!is_main_window_ || !render_view()->GetMainRenderFrame()) {
-    Send(new ShellViewHostMsg_TestFinishedInSecondaryRenderer(routing_id()));
+    RenderThread::Get()->Send(
+        new LayoutTestHostMsg_TestFinishedInSecondaryRenderer());
     return;
   }
   test_runner::WebTestInterfaces* interfaces =
@@ -716,7 +717,8 @@ bool BlinkTestRunner::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(BlinkTestRunner, message)
     IPC_MESSAGE_HANDLER(ShellViewMsg_SessionHistory, OnSessionHistory)
     IPC_MESSAGE_HANDLER(ShellViewMsg_Reset, OnReset)
-    IPC_MESSAGE_HANDLER(ShellViewMsg_NotifyDone, OnNotifyDone)
+    IPC_MESSAGE_HANDLER(ShellViewMsg_TestFinishedInSecondaryRenderer,
+                        OnTestFinishedInSecondaryRenderer)
     IPC_MESSAGE_HANDLER(ShellViewMsg_TryLeakDetection, OnTryLeakDetection)
     IPC_MESSAGE_HANDLER(ShellViewMsg_ReplyBluetoothManualChooserEvents,
                         OnReplyBluetoothManualChooserEvents)
@@ -938,9 +940,9 @@ void BlinkTestRunner::OnReset() {
   Send(new ShellViewHostMsg_ResetDone(routing_id()));
 }
 
-void BlinkTestRunner::OnNotifyDone() {
-  render_view()->GetWebView()->mainFrame()->executeScript(
-      WebScriptSource(WebString::fromUTF8("testRunner.notifyDone();")));
+void BlinkTestRunner::OnTestFinishedInSecondaryRenderer() {
+  DCHECK(is_main_window_ && render_view()->GetMainRenderFrame());
+  TestFinished();
 }
 
 void BlinkTestRunner::OnTryLeakDetection() {

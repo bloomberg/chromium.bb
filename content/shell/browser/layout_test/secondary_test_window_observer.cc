@@ -17,21 +17,6 @@ SecondaryTestWindowObserver::SecondaryTestWindowObserver(
 
 SecondaryTestWindowObserver::~SecondaryTestWindowObserver() {}
 
-bool SecondaryTestWindowObserver::OnMessageReceived(
-    const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(SecondaryTestWindowObserver, message)
-    IPC_MESSAGE_HANDLER(ShellViewHostMsg_TestFinishedInSecondaryRenderer,
-                        OnTestFinishedInSecondaryRenderer)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
-}
-
-void SecondaryTestWindowObserver::OnTestFinishedInSecondaryRenderer() {
-  BlinkTestController::Get()->OnTestFinishedInSecondaryRenderer();
-}
-
 void SecondaryTestWindowObserver::RenderFrameCreated(
     RenderFrameHost* render_frame_host) {
   DCHECK(!BlinkTestController::Get()->IsMainWindow(

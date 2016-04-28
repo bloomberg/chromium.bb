@@ -381,10 +381,10 @@ void BlinkTestController::OpenURL(const GURL& url) {
 }
 
 void BlinkTestController::OnTestFinishedInSecondaryRenderer() {
-  RenderViewHost* render_view_host =
+  RenderViewHost* main_render_view_host =
       main_window_->web_contents()->GetRenderViewHost();
-  render_view_host->Send(
-      new ShellViewMsg_NotifyDone(render_view_host->GetRoutingID()));
+  main_render_view_host->Send(new ShellViewMsg_TestFinishedInSecondaryRenderer(
+      main_render_view_host->GetRoutingID()));
 }
 
 bool BlinkTestController::IsMainWindow(WebContents* web_contents) const {

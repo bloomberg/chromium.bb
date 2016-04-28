@@ -18,17 +18,13 @@ class SecondaryTestWindowObserver
   ~SecondaryTestWindowObserver() override;
 
   // WebContentsObserver implementation.
-  bool OnMessageReceived(const IPC::Message& message) override;
   void RenderFrameCreated(RenderFrameHost* render_frame_host) override;
   void RenderFrameHostChanged(RenderFrameHost* old_host,
                               RenderFrameHost* new_host) override;
 
  private:
   friend class WebContentsUserData<SecondaryTestWindowObserver>;
-
   explicit SecondaryTestWindowObserver(WebContents* web_contents);
-
-  void OnTestFinishedInSecondaryRenderer();
 
   DISALLOW_COPY_AND_ASSIGN(SecondaryTestWindowObserver);
 };

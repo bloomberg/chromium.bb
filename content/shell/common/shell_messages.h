@@ -50,9 +50,9 @@ IPC_MESSAGE_ROUTED1(ShellViewMsg_ReplicateTestConfiguration,
 // main test window) for a layout test.
 IPC_MESSAGE_ROUTED0(ShellViewMsg_SetupSecondaryRenderer)
 
-// Tells the main window that a secondary renderer in a different process thinks
-// the test is finished.
-IPC_MESSAGE_ROUTED0(ShellViewMsg_NotifyDone)
+// Tells the main window that a secondary renderer in a different process asked
+// to finish the test.
+IPC_MESSAGE_ROUTED0(ShellViewMsg_TestFinishedInSecondaryRenderer)
 
 // Pushes a snapshot of the current session history from the browser process.
 // This includes only information about those RenderViews that are in the
@@ -99,8 +99,6 @@ IPC_MESSAGE_ROUTED1(ShellViewHostMsg_AudioDump,
 IPC_MESSAGE_ROUTED0(ShellViewHostMsg_TestFinished)
 
 IPC_MESSAGE_ROUTED0(ShellViewHostMsg_ResetDone)
-
-IPC_MESSAGE_ROUTED0(ShellViewHostMsg_TestFinishedInSecondaryRenderer)
 
 // WebTestDelegate related.
 IPC_MESSAGE_ROUTED1(ShellViewHostMsg_OverridePreferences,

@@ -33,8 +33,14 @@ function iframeLoaded(frameID)
     var iframe = document.getElementById(frameID);
     if (iframe.hasAttribute("submitted")) {
         if (++frameID == testCodes.length) {
-            if (window.testRunner)
-                testRunner.notifyDone();
+            if (window.testRunner) {
+                // Before finishing the test, we have to allow the callstack to
+                // unwind - this enables dumping of pending WebFrameClient
+                // callbacks (i.e. didFinishLoad and/or didHandleOnloadEvents).
+                window.setTimeout(function() {
+                    testRunner.notifyDone();
+                }, 0);
+            }
             return;
         }
         createFrame(frameID);

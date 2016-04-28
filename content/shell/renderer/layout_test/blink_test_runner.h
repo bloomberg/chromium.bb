@@ -176,7 +176,7 @@ class BlinkTestRunner : public RenderViewObserver,
       const std::vector<std::vector<PageState> >& session_histories,
       const std::vector<unsigned>& current_entry_indexes);
   void OnReset();
-  void OnNotifyDone();
+  void OnTestFinishedInSecondaryRenderer();
   void OnTryLeakDetection();
   void OnReplyBluetoothManualChooserEvents(
       const std::vector<std::string>& events);
