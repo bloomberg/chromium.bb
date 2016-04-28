@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.bookmarks;
 
 import android.content.Context;
-import android.graphics.Rect;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
@@ -24,23 +23,6 @@ public class BookmarkRecyclerView extends RecyclerView implements BookmarkUIObse
 
     private BookmarkDelegate mDelegate;
     private View mEmptyView;
-
-    /**
-     * Provides a way to override the default spacing between 2 items in RecyclerView.
-     */
-    private static class VerticalSpaceItemDecoration extends RecyclerView.ItemDecoration {
-        private final int mSpacing;
-
-        public VerticalSpaceItemDecoration(int spacing) {
-            this.mSpacing = spacing;
-        }
-
-        @Override
-        public void getItemOffsets(Rect outRect, View view, RecyclerView parent,
-                RecyclerView.State state) {
-            outRect.bottom = mSpacing;
-        }
-    }
 
     /**
      * Constructs a new instance of bookmark recycler view.

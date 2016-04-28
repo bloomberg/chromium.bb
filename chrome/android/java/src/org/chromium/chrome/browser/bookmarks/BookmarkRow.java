@@ -207,7 +207,10 @@ abstract class BookmarkRow extends FrameLayout implements BookmarkUIObserver,
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
         mIsAttachedToWindow = true;
-        if (mDelegate != null) initialize();
+        if (mDelegate != null) {
+            setChecked(mDelegate.isBookmarkSelected(mBookmarkId));
+            initialize();
+        }
     }
 
     @Override
@@ -215,6 +218,7 @@ abstract class BookmarkRow extends FrameLayout implements BookmarkUIObserver,
         super.onDetachedFromWindow();
         mIsAttachedToWindow = false;
         cleanup();
+        setChecked(false);
     }
 
     // OnClickListener implementation.
