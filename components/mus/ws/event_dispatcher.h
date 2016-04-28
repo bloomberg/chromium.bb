@@ -12,7 +12,7 @@
 
 #include "base/macros.h"
 #include "cc/surfaces/surface_id.h"
-#include "components/mus/public/interfaces/input_event_matcher.mojom.h"
+#include "components/mus/public/interfaces/event_matcher.mojom.h"
 #include "components/mus/ws/server_window_observer.h"
 #include "ui/gfx/geometry/rect_f.h"
 

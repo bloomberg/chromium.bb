@@ -6,8 +6,8 @@ module mus.mojom;
 
 import "components/mus/public/interfaces/compositor_frame.mojom";
 import "components/mus/public/interfaces/cursor.mojom";
+import "components/mus/public/interfaces/event_matcher.mojom";
 import "components/mus/public/interfaces/input_events.mojom";
-import "components/mus/public/interfaces/input_event_matcher.mojom";
 import "components/mus/public/interfaces/mus_constants.mojom";
 import "components/mus/public/interfaces/surface_id.mojom";
 import "components/mus/public/interfaces/window_manager.mojom";
