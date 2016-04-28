@@ -502,6 +502,10 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
   ExecuteJavaScriptAPI(web_contents, kCheckSessionScript);
   std::string session_id(GetStartedConnectionId(web_contents));
 
+  // Wait a few seconds for MediaRouter to receive updates containing the
+  // created route.
+  Wait(base::TimeDelta::FromSeconds(3));
+
   OpenTestPageInNewTab(FILE_PATH_LITERAL("basic_test.html"));
   content::WebContents* new_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -531,6 +535,10 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
   ChooseSink(web_contents, kTestSinkName);
   ExecuteJavaScriptAPI(web_contents, kCheckSessionScript);
   std::string session_id(GetStartedConnectionId(web_contents));
+
+  // Wait a few seconds for MediaRouter to receive updates containing the
+  // created route.
+  Wait(base::TimeDelta::FromSeconds(3));
 
   SetTestData(FILE_PATH_LITERAL("fail_reconnect_session.json"));
   OpenTestPage(FILE_PATH_LITERAL("fail_reconnect_session.html"));
