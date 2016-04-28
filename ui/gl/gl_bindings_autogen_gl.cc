@@ -46,6 +46,7 @@ void DriverGL::InitializeStaticBindings() {
   fn.glBindTextureFn =
       reinterpret_cast<glBindTextureProc>(GetGLProcAddress("glBindTexture"));
   fn.glBindTransformFeedbackFn = 0;
+  fn.glBindUniformLocationCHROMIUMFn = 0;
   fn.glBindVertexArrayOESFn = 0;
   fn.glBlendBarrierKHRFn = 0;
   fn.glBlendColorFn =
@@ -513,6 +514,9 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
       extensions.find("GL_ARB_timer_query ") != std::string::npos;
   ext.b_GL_ARB_vertex_array_object =
       extensions.find("GL_ARB_vertex_array_object ") != std::string::npos;
+  ext.b_GL_CHROMIUM_bind_uniform_location =
+      extensions.find("GL_CHROMIUM_bind_uniform_location ") !=
+      std::string::npos;
   ext.b_GL_CHROMIUM_gles_depth_binding_hack =
       extensions.find("GL_CHROMIUM_gles_depth_binding_hack ") !=
       std::string::npos;
@@ -678,6 +682,13 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
     fn.glBindTransformFeedbackFn =
         reinterpret_cast<glBindTransformFeedbackProc>(
             GetGLProcAddress("glBindTransformFeedback"));
+  }
+
+  debug_fn.glBindUniformLocationCHROMIUMFn = 0;
+  if (ext.b_GL_CHROMIUM_bind_uniform_location) {
+    fn.glBindUniformLocationCHROMIUMFn =
+        reinterpret_cast<glBindUniformLocationCHROMIUMProc>(
+            GetGLProcAddress("glBindUniformLocationCHROMIUM"));
   }
 
   debug_fn.glBindVertexArrayOESFn = 0;
@@ -2198,6 +2209,16 @@ static void GL_BINDING_CALL Debug_glBindTransformFeedback(GLenum target,
                  << "(" << GLEnums::GetStringEnum(target) << ", " << id << ")");
   DCHECK(g_driver_gl.debug_fn.glBindTransformFeedbackFn != nullptr);
   g_driver_gl.debug_fn.glBindTransformFeedbackFn(target, id);
+}
+
+static void GL_BINDING_CALL
+Debug_glBindUniformLocationCHROMIUM(GLuint program,
+                                    GLint location,
+                                    const char* name) {
+  GL_SERVICE_LOG("glBindUniformLocationCHROMIUM"
+                 << "(" << program << ", " << location << ", " << name << ")");
+  DCHECK(g_driver_gl.debug_fn.glBindUniformLocationCHROMIUMFn != nullptr);
+  g_driver_gl.debug_fn.glBindUniformLocationCHROMIUMFn(program, location, name);
 }
 
 static void GL_BINDING_CALL Debug_glBindVertexArrayOES(GLuint array) {
@@ -5580,6 +5601,11 @@ void DriverGL::InitializeDebugBindings() {
     debug_fn.glBindTransformFeedbackFn = fn.glBindTransformFeedbackFn;
     fn.glBindTransformFeedbackFn = Debug_glBindTransformFeedback;
   }
+  if (!debug_fn.glBindUniformLocationCHROMIUMFn) {
+    debug_fn.glBindUniformLocationCHROMIUMFn =
+        fn.glBindUniformLocationCHROMIUMFn;
+    fn.glBindUniformLocationCHROMIUMFn = Debug_glBindUniformLocationCHROMIUM;
+  }
   if (!debug_fn.glBindVertexArrayOESFn) {
     debug_fn.glBindVertexArrayOESFn = fn.glBindVertexArrayOESFn;
     fn.glBindVertexArrayOESFn = Debug_glBindVertexArrayOES;
@@ -6897,6 +6923,12 @@ void GLApiBase::glBindTextureFn(GLenum target, GLuint texture) {
 
 void GLApiBase::glBindTransformFeedbackFn(GLenum target, GLuint id) {
   driver_->fn.glBindTransformFeedbackFn(target, id);
+}
+
+void GLApiBase::glBindUniformLocationCHROMIUMFn(GLuint program,
+                                                GLint location,
+                                                const char* name) {
+  driver_->fn.glBindUniformLocationCHROMIUMFn(program, location, name);
 }
 
 void GLApiBase::glBindVertexArrayOESFn(GLuint array) {
@@ -8805,6 +8837,14 @@ void TraceGLApi::glBindTextureFn(GLenum target, GLuint texture) {
 void TraceGLApi::glBindTransformFeedbackFn(GLenum target, GLuint id) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glBindTransformFeedback")
   gl_api_->glBindTransformFeedbackFn(target, id);
+}
+
+void TraceGLApi::glBindUniformLocationCHROMIUMFn(GLuint program,
+                                                 GLint location,
+                                                 const char* name) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
+                                "TraceGLAPI::glBindUniformLocationCHROMIUM")
+  gl_api_->glBindUniformLocationCHROMIUMFn(program, location, name);
 }
 
 void TraceGLApi::glBindVertexArrayOESFn(GLuint array) {
@@ -11058,6 +11098,15 @@ void NoContextGLApi::glBindTransformFeedbackFn(GLenum target, GLuint id) {
       << "Trying to call glBindTransformFeedback() without current GL context";
   LOG(ERROR)
       << "Trying to call glBindTransformFeedback() without current GL context";
+}
+
+void NoContextGLApi::glBindUniformLocationCHROMIUMFn(GLuint program,
+                                                     GLint location,
+                                                     const char* name) {
+  NOTREACHED() << "Trying to call glBindUniformLocationCHROMIUM() without "
+                  "current GL context";
+  LOG(ERROR) << "Trying to call glBindUniformLocationCHROMIUM() without "
+                "current GL context";
 }
 
 void NoContextGLApi::glBindVertexArrayOESFn(GLuint array) {

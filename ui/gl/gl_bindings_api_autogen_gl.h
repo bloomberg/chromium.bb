@@ -42,6 +42,9 @@ void glBindRenderbufferEXTFn(GLenum target, GLuint renderbuffer) override;
 void glBindSamplerFn(GLuint unit, GLuint sampler) override;
 void glBindTextureFn(GLenum target, GLuint texture) override;
 void glBindTransformFeedbackFn(GLenum target, GLuint id) override;
+void glBindUniformLocationCHROMIUMFn(GLuint program,
+                                     GLint location,
+                                     const char* name) override;
 void glBindVertexArrayOESFn(GLuint array) override;
 void glBlendBarrierKHRFn(void) override;
 void glBlendColorFn(GLclampf red,

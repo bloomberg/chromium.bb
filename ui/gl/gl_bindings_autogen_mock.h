@@ -69,6 +69,10 @@ static void GL_BINDING_CALL Mock_glBindSampler(GLuint unit, GLuint sampler);
 static void GL_BINDING_CALL Mock_glBindTexture(GLenum target, GLuint texture);
 static void GL_BINDING_CALL Mock_glBindTransformFeedback(GLenum target,
                                                          GLuint id);
+static void GL_BINDING_CALL
+Mock_glBindUniformLocationCHROMIUM(GLuint program,
+                                   GLint location,
+                                   const char* name);
 static void GL_BINDING_CALL Mock_glBindVertexArray(GLuint array);
 static void GL_BINDING_CALL Mock_glBindVertexArrayAPPLE(GLuint array);
 static void GL_BINDING_CALL Mock_glBindVertexArrayOES(GLuint array);

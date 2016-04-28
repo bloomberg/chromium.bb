@@ -57,6 +57,10 @@ typedef void(GL_BINDING_CALL* glBindSamplerProc)(GLuint unit, GLuint sampler);
 typedef void(GL_BINDING_CALL* glBindTextureProc)(GLenum target, GLuint texture);
 typedef void(GL_BINDING_CALL* glBindTransformFeedbackProc)(GLenum target,
                                                            GLuint id);
+typedef void(GL_BINDING_CALL* glBindUniformLocationCHROMIUMProc)(
+    GLuint program,
+    GLint location,
+    const char* name);
 typedef void(GL_BINDING_CALL* glBindVertexArrayOESProc)(GLuint array);
 typedef void(GL_BINDING_CALL* glBlendBarrierKHRProc)(void);
 typedef void(GL_BINDING_CALL* glBlendColorProc)(GLclampf red,
@@ -1057,6 +1061,7 @@ struct ExtensionsGL {
   bool b_GL_ARB_texture_storage;
   bool b_GL_ARB_timer_query;
   bool b_GL_ARB_vertex_array_object;
+  bool b_GL_CHROMIUM_bind_uniform_location;
   bool b_GL_CHROMIUM_gles_depth_binding_hack;
   bool b_GL_CHROMIUM_glgetstringi_hack;
   bool b_GL_EXT_blend_func_extended;
@@ -1110,6 +1115,7 @@ struct ProcsGL {
   glBindSamplerProc glBindSamplerFn;
   glBindTextureProc glBindTextureFn;
   glBindTransformFeedbackProc glBindTransformFeedbackFn;
+  glBindUniformLocationCHROMIUMProc glBindUniformLocationCHROMIUMFn;
   glBindVertexArrayOESProc glBindVertexArrayOESFn;
   glBlendBarrierKHRProc glBlendBarrierKHRFn;
   glBlendColorProc glBlendColorFn;
@@ -1459,6 +1465,9 @@ class GL_EXPORT GLApi {
   virtual void glBindSamplerFn(GLuint unit, GLuint sampler) = 0;
   virtual void glBindTextureFn(GLenum target, GLuint texture) = 0;
   virtual void glBindTransformFeedbackFn(GLenum target, GLuint id) = 0;
+  virtual void glBindUniformLocationCHROMIUMFn(GLuint program,
+                                               GLint location,
+                                               const char* name) = 0;
   virtual void glBindVertexArrayOESFn(GLuint array) = 0;
   virtual void glBlendBarrierKHRFn(void) = 0;
   virtual void glBlendColorFn(GLclampf red,
@@ -2352,6 +2361,8 @@ class GL_EXPORT GLApi {
 #define glBindTexture ::gfx::g_current_gl_context->glBindTextureFn
 #define glBindTransformFeedback \
   ::gfx::g_current_gl_context->glBindTransformFeedbackFn
+#define glBindUniformLocationCHROMIUM \
+  ::gfx::g_current_gl_context->glBindUniformLocationCHROMIUMFn
 #define glBindVertexArrayOES ::gfx::g_current_gl_context->glBindVertexArrayOESFn
 #define glBlendBarrierKHR ::gfx::g_current_gl_context->glBlendBarrierKHRFn
 #define glBlendColor ::gfx::g_current_gl_context->glBlendColorFn

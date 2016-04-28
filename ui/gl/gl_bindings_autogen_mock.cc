@@ -194,6 +194,14 @@ MockGLInterface::Mock_glBindTransformFeedback(GLenum target, GLuint id) {
   interface_->BindTransformFeedback(target, id);
 }
 
+void GL_BINDING_CALL
+MockGLInterface::Mock_glBindUniformLocationCHROMIUM(GLuint program,
+                                                    GLint location,
+                                                    const char* name) {
+  MakeFunctionUnique("glBindUniformLocationCHROMIUM");
+  interface_->BindUniformLocationCHROMIUM(program, location, name);
+}
+
 void GL_BINDING_CALL MockGLInterface::Mock_glBindVertexArray(GLuint array) {
   MakeFunctionUnique("glBindVertexArray");
   interface_->BindVertexArrayOES(array);
@@ -2959,6 +2967,8 @@ void* GL_BINDING_CALL MockGLInterface::GetGLProcAddress(const char* name) {
     return reinterpret_cast<void*>(Mock_glBindTexture);
   if (strcmp(name, "glBindTransformFeedback") == 0)
     return reinterpret_cast<void*>(Mock_glBindTransformFeedback);
+  if (strcmp(name, "glBindUniformLocationCHROMIUM") == 0)
+    return reinterpret_cast<void*>(Mock_glBindUniformLocationCHROMIUM);
   if (strcmp(name, "glBindVertexArray") == 0)
     return reinterpret_cast<void*>(Mock_glBindVertexArray);
   if (strcmp(name, "glBindVertexArrayAPPLE") == 0)
