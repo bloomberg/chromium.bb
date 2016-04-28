@@ -294,13 +294,6 @@ void MessageLoop::PostNonNestableTask(
   task_runner_->PostNonNestableTask(from_here, task);
 }
 
-void MessageLoop::PostNonNestableDelayedTask(
-    const tracked_objects::Location& from_here,
-    const Closure& task,
-    TimeDelta delay) {
-  task_runner_->PostNonNestableDelayedTask(from_here, task, delay);
-}
-
 void MessageLoop::Run() {
   DCHECK(pump_);
   RunLoop run_loop;

@@ -24,7 +24,7 @@ namespace web {
 namespace {
 
 // Friendly names for the well-known threads.
-const char* g_web_thread_names[WebThread::ID_COUNT] = {
+const char* const g_web_thread_names[WebThread::ID_COUNT] = {
     "Web_UIThread",                // UI
     "Web_DBThread",                // DB
     "Web_FileThread",              // FILE
@@ -303,9 +303,10 @@ bool WebThreadImpl::PostTaskHelper(WebThread::ID identifier,
                                   : nullptr;
   if (message_loop) {
     if (nestable) {
-      message_loop->PostDelayedTask(from_here, task, delay);
+      message_loop->task_runner()->PostDelayedTask(from_here, task, delay);
     } else {
-      message_loop->PostNonNestableDelayedTask(from_here, task, delay);
+      message_loop->task_runner()->PostNonNestableDelayedTask(from_here, task,
+                                                              delay);
     }
   }
 

@@ -697,8 +697,7 @@ void SleepFunc(TaskList* order, int cookie, TimeDelta delay) {
 }
 
 // Tests that non nestable tasks don't run when there's code in the call stack.
-void RunTest_NonNestableInNestedLoop(MessagePumpFactory factory,
-                                     bool use_delayed) {
+void RunTest_NonNestableInNestedLoop(MessagePumpFactory factory) {
   std::unique_ptr<MessagePump> pump(factory());
   MessageLoop loop(std::move(pump));
 
@@ -707,16 +706,9 @@ void RunTest_NonNestableInNestedLoop(MessagePumpFactory factory,
   MessageLoop::current()->PostTask(
       FROM_HERE,
       Bind(&FuncThatPumps, &order, 1));
-  if (use_delayed) {
-    MessageLoop::current()->PostNonNestableDelayedTask(
-        FROM_HERE,
-        Bind(&OrderedFunc, &order, 2),
-        TimeDelta::FromMilliseconds(1));
-  } else {
-    MessageLoop::current()->PostNonNestableTask(
-        FROM_HERE,
-        Bind(&OrderedFunc, &order, 2));
-  }
+  MessageLoop::current()->PostNonNestableTask(
+      FROM_HERE,
+      Bind(&OrderedFunc, &order, 2));
   MessageLoop::current()->PostTask(FROM_HERE,
                                    Bind(&OrderedFunc, &order, 3));
   MessageLoop::current()->PostTask(
@@ -724,16 +716,9 @@ void RunTest_NonNestableInNestedLoop(MessagePumpFactory factory,
       Bind(&SleepFunc, &order, 4, TimeDelta::FromMilliseconds(50)));
   MessageLoop::current()->PostTask(FROM_HERE,
                                    Bind(&OrderedFunc, &order, 5));
-  if (use_delayed) {
-    MessageLoop::current()->PostNonNestableDelayedTask(
-        FROM_HERE,
-        Bind(&QuitFunc, &order, 6),
-        TimeDelta::FromMilliseconds(2));
-  } else {
-    MessageLoop::current()->PostNonNestableTask(
-        FROM_HERE,
-        Bind(&QuitFunc, &order, 6));
-  }
+  MessageLoop::current()->PostNonNestableTask(
+      FROM_HERE,
+      Bind(&QuitFunc, &order, 6));
 
   MessageLoop::current()->Run();
 

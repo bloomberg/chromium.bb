@@ -33,8 +33,7 @@ void RunTest_RecursiveDenial1(MessagePumpFactory factory);
 void RunTest_RecursiveDenial3(MessagePumpFactory factory);
 void RunTest_RecursiveSupport1(MessagePumpFactory factory);
 void RunTest_NonNestableWithNoNesting(MessagePumpFactory factory);
-void RunTest_NonNestableInNestedLoop(MessagePumpFactory factory,
-                                     bool use_delayed);
+void RunTest_NonNestableInNestedLoop(MessagePumpFactory factory);
 void RunTest_QuitNow(MessagePumpFactory factory);
 void RunTest_RunLoopQuitTop(MessagePumpFactory factory);
 void RunTest_RunLoopQuitNested(MessagePumpFactory factory);
@@ -97,11 +96,8 @@ void RunTest_RecursivePosts(MessagePumpFactory factory);
   TEST(MessageLoopTestType##id, NonNestableWithNoNesting) { \
     base::test::RunTest_NonNestableWithNoNesting(factory); \
   } \
-  TEST(MessageLoopTestType##id, NonNestableInNestedLoop) { \
-    base::test::RunTest_NonNestableInNestedLoop(factory, false); \
-  } \
   TEST(MessageLoopTestType##id, NonNestableDelayedInNestedLoop) { \
-    base::test::RunTest_NonNestableInNestedLoop(factory, true); \
+    base::test::RunTest_NonNestableInNestedLoop(factory); \
   } \
   TEST(MessageLoopTestType##id, QuitNow) { \
     base::test::RunTest_QuitNow(factory); \
