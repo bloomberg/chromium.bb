@@ -1605,7 +1605,7 @@ weston_view_set_transform_parent(struct weston_view *view,
  * motion or touch-downs. Everything inside the rectangle will behave
  * normally. Clients are unaware of clipping.
  *
- * The rectangle is set in the surface local coordinates. Setting a clip
+ * The rectangle is set in surface-local coordinates. Setting a clip
  * mask rectangle does not affect the view position, the view is positioned
  * as it would be without a clip. The clip also does not change
  * weston_surface::width,height.
