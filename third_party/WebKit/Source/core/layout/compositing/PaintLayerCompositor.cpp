@@ -264,7 +264,8 @@ void PaintLayerCompositor::setNeedsCompositingUpdate(CompositingUpdateType updat
 {
     ASSERT(updateType != CompositingUpdateNone);
     m_pendingUpdateType = std::max(m_pendingUpdateType, updateType);
-    page()->animator().scheduleVisualUpdate(m_layoutView.frame());
+    if (Page* page = this->page())
+        page->animator().scheduleVisualUpdate(m_layoutView.frame());
     lifecycle().ensureStateAtMost(DocumentLifecycle::LayoutClean);
 }
 
