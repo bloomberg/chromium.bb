@@ -131,7 +131,7 @@
       'ClangToTLinux':
         'swarming_gyp_clang_tot_linux_dump_symbols_shared_release',
       'ClangToTLinux tester': 'none',
-      'ClangToTLinux (dbg)': 'swarming_gyp_clang_tot_shared_debug',
+      'ClangToTLinux (dbg)': 'swarming_clang_tot_shared_debug',
       'ClangToTLinuxASan': 'swarming_gyp_clang_tot_asan_lsan_static_release',
       'ClangToTLinuxASan tester': 'none',
       'ClangToTLinuxUBSanVptr':
@@ -1593,8 +1593,8 @@
       'swarming', 'gyp', 'clang_tot', 'asan', 'lsan', 'static', 'release',
     ],
 
-    'swarming_gyp_clang_tot_shared_debug': [
-      'swarming', 'gyp', 'clang_tot', 'shared', 'debug',
+    'swarming_clang_tot_shared_debug': [
+      'swarming', 'gn', 'clang_tot', 'shared', 'debug',
     ],
 
     'swarming_gyp_clang_tot_linux_dump_symbols_shared_release': [
