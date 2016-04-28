@@ -14,7 +14,7 @@ namespace blink {
 class CORE_EXPORT CustomElement {
     STATIC_ONLY(CustomElement);
 public:
-    static bool isPotentialCustomElementName(const AtomicString& name);
+    static bool isValidName(const AtomicString& name);
 };
 
 } // namespace blink

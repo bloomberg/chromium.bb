@@ -5,10 +5,11 @@
 #include "core/dom/custom/CustomElement.h"
 
 #include "platform/text/Character.h"
+#include "wtf/text/AtomicStringHash.h"
 
 namespace blink {
 
-bool CustomElement::isPotentialCustomElementName(const AtomicString& name)
+bool CustomElement::isValidName(const AtomicString& name)
 {
     if (!name.length() || name[0] < 'a' || name[0] > 'z')
         return false;
@@ -25,7 +26,23 @@ bool CustomElement::isPotentialCustomElementName(const AtomicString& name)
         else if (!Character::isPotentialCustomElementNameChar(ch))
             return false;
     }
-    return hasHyphens;
+    if (!hasHyphens)
+        return false;
+
+    // https://html.spec.whatwg.org/multipage/scripting.html#valid-custom-element-name
+    DEFINE_STATIC_LOCAL(HashSet<AtomicString>, hyphenContainingElementNames, ());
+    if (hyphenContainingElementNames.isEmpty()) {
+        hyphenContainingElementNames.add("annotation-xml");
+        hyphenContainingElementNames.add("color-profile");
+        hyphenContainingElementNames.add("font-face");
+        hyphenContainingElementNames.add("font-face-src");
+        hyphenContainingElementNames.add("font-face-uri");
+        hyphenContainingElementNames.add("font-face-format");
+        hyphenContainingElementNames.add("font-face-name");
+        hyphenContainingElementNames.add("missing-glyph");
+    }
+
+    return !hyphenContainingElementNames.contains(name);
 }
 
 } // namespace blink

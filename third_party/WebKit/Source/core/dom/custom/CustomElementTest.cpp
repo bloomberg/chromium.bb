@@ -11,11 +11,11 @@ namespace blink {
 static void testIsPotentialCustomElementName(const AtomicString& str, bool expected)
 {
     if (expected) {
-        EXPECT_TRUE(CustomElement::isPotentialCustomElementName(str))
-            << str << " should be PotentialCustomElementName.";
+        EXPECT_TRUE(CustomElement::isValidName(str))
+            << str << " should be a valid custom element name.";
     } else {
-        EXPECT_FALSE(CustomElement::isPotentialCustomElementName(str))
-            << str << " should NOT be PotentialCustomElementName.";
+        EXPECT_FALSE(CustomElement::isValidName(str))
+            << str << " should NOT be a valid custom element name.";
     }
 }
 
@@ -36,7 +36,7 @@ static void testIsPotentialCustomElementNameChar(UChar32 c, bool expected)
     testIsPotentialCustomElementName(str, expected);
 }
 
-TEST(CustomElementTest, TestIsPotentialCustomElementName)
+TEST(CustomElementTest, TestIsValidNamePotentialCustomElementName)
 {
     struct {
         bool expected;
@@ -63,7 +63,7 @@ TEST(CustomElementTest, TestIsPotentialCustomElementName)
         testIsPotentialCustomElementName(test.str, test.expected);
 }
 
-TEST(CustomElementTest, TestIsPotentialCustomElementNameChar)
+TEST(CustomElementTest, TestIsValidNamePotentialCustomElementNameChar)
 {
     struct {
         UChar32 from, to;
@@ -94,7 +94,7 @@ TEST(CustomElementTest, TestIsPotentialCustomElementNameChar)
     }
 }
 
-TEST(CustomElementTest, TestIsPotentialCustomElementNameCharFalse)
+TEST(CustomElementTest, TestIsValidNamePotentialCustomElementNameCharFalse)
 {
     struct {
         UChar32 from, to;
@@ -105,6 +105,20 @@ TEST(CustomElementTest, TestIsPotentialCustomElementNameCharFalse)
         for (UChar32 c = range.from; c <= range.to; ++c)
             testIsPotentialCustomElementNameChar(c, false);
     }
+}
+
+TEST(CustomElementTest, TestIsValidNameHyphenContainingElementNames)
+{
+    EXPECT_TRUE(CustomElement::isValidName("valid-name"));
+
+    EXPECT_FALSE(CustomElement::isValidName("annotation-xml"));
+    EXPECT_FALSE(CustomElement::isValidName("color-profile"));
+    EXPECT_FALSE(CustomElement::isValidName("font-face"));
+    EXPECT_FALSE(CustomElement::isValidName("font-face-src"));
+    EXPECT_FALSE(CustomElement::isValidName("font-face-uri"));
+    EXPECT_FALSE(CustomElement::isValidName("font-face-format"));
+    EXPECT_FALSE(CustomElement::isValidName("font-face-name"));
+    EXPECT_FALSE(CustomElement::isValidName("missing-glyph"));
 }
 
 } // namespace blink
