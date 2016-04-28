@@ -64,6 +64,7 @@ class UserActivityPowerManagerNotifier;
 }
 namespace views {
 class NonClientFrameView;
+class PointerWatcher;
 class Widget;
 namespace corewm {
 class TooltipController;
@@ -119,6 +120,7 @@ class NewWindowDelegate;
 class OverlayEventFilter;
 class PartialMagnificationController;
 class PartialScreenshotController;
+class PointerWatcherDelegate;
 class PowerButtonController;
 class PowerEventObserver;
 class ProjectingObserver;
@@ -336,6 +338,9 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   // Adds/removes observer.
   void AddShellObserver(ShellObserver* observer);
   void RemoveShellObserver(ShellObserver* observer);
+
+  void AddPointerWatcher(views::PointerWatcher* watcher);
+  void RemovePointerWatcher(views::PointerWatcher* watcher);
 
 #if defined(OS_CHROMEOS)
   // Test if MaximizeModeWindowManager is not enabled, and if
@@ -679,6 +684,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   std::unique_ptr<AccessibilityDelegate> accessibility_delegate_;
   std::unique_ptr<NewWindowDelegate> new_window_delegate_;
   std::unique_ptr<MediaDelegate> media_delegate_;
+  std::unique_ptr<PointerWatcherDelegate> pointer_watcher_delegate_;
   std::unique_ptr<ShelfDelegate> shelf_delegate_;
   std::unique_ptr<ShelfItemDelegateManager> shelf_item_delegate_manager_;
   std::unique_ptr<ShelfWindowWatcher> shelf_window_watcher_;

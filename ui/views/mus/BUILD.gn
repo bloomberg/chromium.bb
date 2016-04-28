@@ -154,6 +154,7 @@ test("views_mus_unittests") {
     "platform_window_mus_unittest.cc",
     "run_all_unittests_mus.cc",
     "screen_mus_unittest.cc",
+    "window_manager_connection_unittest.cc",
   ]
 
   deps = [

@@ -29,6 +29,7 @@ class WindowTreeDelegateImpl : public mus::WindowTreeDelegate {
   // mus::WindowTreeDelegate:
   void OnEmbed(mus::Window* root) override {}
   void OnConnectionLost(mus::WindowTreeConnection* connection) override {}
+  void OnEventObserved(const ui::Event& event) override {}
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeDelegateImpl);
 };

@@ -157,6 +157,10 @@ void RootWindowController::OnConnectionLost(
   delete this;
 }
 
+void RootWindowController::OnEventObserved(const ui::Event& event) {
+  // Does not use EventObservers.
+}
+
 void RootWindowController::OnWindowDestroyed(mus::Window* window) {
   DCHECK_EQ(window, root_);
   app_->OnRootWindowDestroyed(this);

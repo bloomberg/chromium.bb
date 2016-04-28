@@ -37,6 +37,7 @@
 #include "ash/magnifier/partial_magnification_controller.h"
 #include "ash/media_delegate.h"
 #include "ash/new_window_delegate.h"
+#include "ash/pointer_watcher_delegate.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_state_delegate.h"
 #include "ash/shelf/app_list_shelf_item_delegate.h"
@@ -491,6 +492,14 @@ void Shell::RemoveShellObserver(ShellObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
+void Shell::AddPointerWatcher(views::PointerWatcher* watcher) {
+  pointer_watcher_delegate_->AddPointerWatcher(watcher);
+}
+
+void Shell::RemovePointerWatcher(views::PointerWatcher* watcher) {
+  pointer_watcher_delegate_->RemovePointerWatcher(watcher);
+}
+
 #if defined(OS_CHROMEOS)
 bool Shell::ShouldSaveDisplaySettings() {
   return !(screen_orientation_controller_
@@ -831,6 +840,7 @@ Shell::~Shell() {
   accessibility_delegate_.reset();
   new_window_delegate_.reset();
   media_delegate_.reset();
+  pointer_watcher_delegate_.reset();
 
   keyboard::KeyboardController::ResetInstance(nullptr);
 
@@ -1069,6 +1079,7 @@ void Shell::Init(const ShellInitParams& init_params) {
   accessibility_delegate_.reset(delegate_->CreateAccessibilityDelegate());
   new_window_delegate_.reset(delegate_->CreateNewWindowDelegate());
   media_delegate_.reset(delegate_->CreateMediaDelegate());
+  pointer_watcher_delegate_ = delegate_->CreatePointerWatcherDelegate();
 
   resize_shadow_controller_.reset(new ResizeShadowController());
   shadow_controller_.reset(

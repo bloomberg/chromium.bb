@@ -12,6 +12,7 @@
 #include "ash/gpu_support_stub.h"
 #include "ash/media_delegate.h"
 #include "ash/new_window_delegate.h"
+#include "ash/pointer_watcher_delegate_aura.h"
 #include "ash/session/session_state_delegate.h"
 #include "ash/shell/context_menu.h"
 #include "ash/shell/example_factory.h"
@@ -251,6 +252,11 @@ ash::NewWindowDelegate* ShellDelegateImpl::CreateNewWindowDelegate() {
 
 ash::MediaDelegate* ShellDelegateImpl::CreateMediaDelegate() {
   return new MediaDelegateImpl;
+}
+
+std::unique_ptr<ash::PointerWatcherDelegate>
+ShellDelegateImpl::CreatePointerWatcherDelegate() {
+  return base::WrapUnique(new PointerWatcherDelegateAura);
 }
 
 ui::MenuModel* ShellDelegateImpl::CreateContextMenu(

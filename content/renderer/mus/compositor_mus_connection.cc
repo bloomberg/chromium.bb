@@ -116,6 +116,10 @@ void CompositorMusConnection::OnEmbed(mus::Window* root) {
   }
 }
 
+void CompositorMusConnection::OnEventObserved(const ui::Event& event) {
+  // Compositor does not use SetEventObserver().
+}
+
 void CompositorMusConnection::OnWindowInputEvent(
     mus::Window* window,
     const ui::Event& event,

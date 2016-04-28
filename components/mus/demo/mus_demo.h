@@ -49,6 +49,7 @@ class MusDemo : public shell::ShellClient,
   void OnEmbed(mus::Window* root) override;
   void OnUnembed(mus::Window* root) override;
   void OnConnectionLost(mus::WindowTreeConnection* connection) override;
+  void OnEventObserved(const ui::Event& event) override;
 
   // WindowManagerDelegate:
   void SetWindowManagerClient(mus::WindowManagerClient* client) override;

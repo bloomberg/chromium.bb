@@ -12,6 +12,7 @@
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_property.h"
 #include "components/mus/public/cpp/window_tree_connection.h"
+#include "components/mus/public/interfaces/input_event_matcher.mojom.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "services/shell/public/cpp/connection.h"
@@ -19,6 +20,7 @@
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/views/mus/native_widget_mus.h"
 #include "ui/views/mus/screen_mus.h"
+#include "ui/views/pointer_watcher.h"
 #include "ui/views/views_delegate.h"
 
 namespace views {
@@ -75,6 +77,27 @@ NativeWidget* WindowManagerConnection::CreateNativeWidgetMus(
                              mus::mojom::SurfaceType::DEFAULT);
 }
 
+void WindowManagerConnection::AddPointerWatcher(PointerWatcher* watcher) {
+  bool had_watcher = HasPointerWatcher();
+  pointer_watchers_.AddObserver(watcher);
+  if (!had_watcher) {
+    // Start a watcher for pointer down.
+    // TODO(jamescook): Extend event observers to handle multiple event types.
+    mus::mojom::EventMatcherPtr matcher = mus::mojom::EventMatcher::New();
+    matcher->type_matcher = mus::mojom::EventTypeMatcher::New();
+    matcher->type_matcher->type = mus::mojom::EventType::POINTER_DOWN;
+    window_tree_connection_->SetEventObserver(std::move(matcher));
+  }
+}
+
+void WindowManagerConnection::RemovePointerWatcher(PointerWatcher* watcher) {
+  pointer_watchers_.RemoveObserver(watcher);
+  if (!HasPointerWatcher()) {
+    // Last PointerWatcher removed, stop the event observer.
+    window_tree_connection_->SetEventObserver(nullptr);
+  }
+}
+
 WindowManagerConnection::WindowManagerConnection(
     shell::Connector* connector,
     const shell::Identity& identity)
@@ -106,10 +129,28 @@ WindowManagerConnection::~WindowManagerConnection() {
   ui::DeviceDataManager::DeleteInstance();
 }
 
+bool WindowManagerConnection::HasPointerWatcher() {
+  // Check to see if we really have any observers left. This doesn't use
+  // base::ObserverList<>::might_have_observers() because that returns true
+  // during iteration over the list even when the last observer is removed.
+  base::ObserverList<PointerWatcher>::Iterator iterator(&pointer_watchers_);
+  return !!iterator.GetNext();
+}
+
 void WindowManagerConnection::OnEmbed(mus::Window* root) {}
 
 void WindowManagerConnection::OnConnectionLost(
     mus::WindowTreeConnection* connection) {}
+
+void WindowManagerConnection::OnEventObserved(const ui::Event& event) {
+  if (event.type() == ui::ET_MOUSE_PRESSED) {
+    FOR_EACH_OBSERVER(PointerWatcher, pointer_watchers_,
+                      OnMousePressed(*event.AsMouseEvent()));
+  } else if (event.type() == ui::ET_TOUCH_PRESSED) {
+    FOR_EACH_OBSERVER(PointerWatcher, pointer_watchers_,
+                      OnTouchPressed(*event.AsTouchEvent()));
+  }
+}
 
 void WindowManagerConnection::OnWindowManagerFrameValuesChanged() {
   if (window_tree_connection_)

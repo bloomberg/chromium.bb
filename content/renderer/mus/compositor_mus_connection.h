@@ -68,6 +68,7 @@ class CONTENT_EXPORT CompositorMusConnection
   // WindowTreeDelegate implementation:
   void OnConnectionLost(mus::WindowTreeConnection* connection) override;
   void OnEmbed(mus::Window* root) override;
+  void OnEventObserved(const ui::Event& event) override;
 
   // InputEventHandler implementation:
   void OnWindowInputEvent(

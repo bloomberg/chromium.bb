@@ -6,10 +6,8 @@
 #define ASH_MUS_SHELL_DELEGATE_MUS_H_
 
 #include <memory>
-#include <string>
 
 #include "ash/shell_delegate.h"
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 
 namespace keyboard {
@@ -48,6 +46,8 @@ class ShellDelegateMus : public ash::ShellDelegate {
   ash::AccessibilityDelegate* CreateAccessibilityDelegate() override;
   ash::NewWindowDelegate* CreateNewWindowDelegate() override;
   ash::MediaDelegate* CreateMediaDelegate() override;
+  std::unique_ptr<PointerWatcherDelegate> CreatePointerWatcherDelegate()
+      override;
   ui::MenuModel* CreateContextMenu(ash::Shelf* shelf,
                                    const ash::ShelfItem* item) override;
   GPUSupport* CreateGPUSupport() override;

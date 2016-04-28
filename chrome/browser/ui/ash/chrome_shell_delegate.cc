@@ -7,9 +7,11 @@
 #include <stddef.h>
 
 #include "ash/content/gpu_support_impl.h"
+#include "ash/pointer_watcher_delegate_aura.h"
 #include "ash/session/session_state_delegate.h"
 #include "ash/wm/common/window_state.h"
 #include "ash/wm/window_util.h"
+#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -152,6 +154,11 @@ ash::ShelfDelegate* ChromeShellDelegate::CreateShelfDelegate(
     shelf_delegate_->Init();
   }
   return shelf_delegate_;
+}
+
+std::unique_ptr<ash::PointerWatcherDelegate>
+ChromeShellDelegate::CreatePointerWatcherDelegate() {
+  return base::WrapUnique(new ash::PointerWatcherDelegateAura);
 }
 
 ui::MenuModel* ChromeShellDelegate::CreateContextMenu(

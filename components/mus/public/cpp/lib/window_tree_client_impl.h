@@ -167,6 +167,7 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   const std::set<Window*>& GetRoots() override;
   Window* GetFocusedWindow() override;
   void ClearFocus() override;
+  void SetEventObserver(mojom::EventMatcherPtr matcher) override;
   Window* NewWindow(const Window::SharedProperties* properties) override;
   Window* NewTopLevelWindow(
       const Window::SharedProperties* properties) override;
@@ -298,6 +299,11 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   std::unique_ptr<mojo::AssociatedBinding<mojom::WindowManager>>
       window_manager_internal_;
   mojom::WindowManagerClientAssociatedPtr window_manager_internal_client_;
+
+  bool has_event_observer_ = false;
+
+  // Monotonically increasing ID for event observers.
+  uint32_t event_observer_id_ = 0u;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeClientImpl);
 };

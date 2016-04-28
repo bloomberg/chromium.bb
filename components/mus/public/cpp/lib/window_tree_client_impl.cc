@@ -551,6 +551,17 @@ void WindowTreeClientImpl::ClearFocus() {
   SetFocus(nullptr);
 }
 
+void WindowTreeClientImpl::SetEventObserver(mojom::EventMatcherPtr matcher) {
+  if (matcher.is_null()) {
+    has_event_observer_ = false;
+    tree_->SetEventObserver(nullptr, 0u);
+  } else {
+    has_event_observer_ = true;
+    event_observer_id_++;
+    tree_->SetEventObserver(std::move(matcher), event_observer_id_);
+  }
+}
+
 Window* WindowTreeClientImpl::NewWindow(
     const Window::SharedProperties* properties) {
   return NewWindowImpl(NewWindowType::CHILD, properties);
@@ -867,8 +878,13 @@ void WindowTreeClientImpl::OnWindowInputEvent(uint32_t event_id,
                                               Id window_id,
                                               mojom::EventPtr event,
                                               uint32_t event_observer_id) {
-  // TODO(jamescook): If event_observer_id is non-zero, also route the event to
-  // PointerWatchers.
+  std::unique_ptr<ui::Event> ui_event = event.To<std::unique_ptr<ui::Event>>();
+
+  // Non-zero event_observer_id means it matched an event observer on the
+  // server.
+  if (event_observer_id != 0 && has_event_observer_ &&
+      event_observer_id == event_observer_id_)
+    delegate_->OnEventObserved(*ui_event);
 
   Window* window = GetWindowByServerId(window_id);
   if (!window || !window->input_event_handler_) {
@@ -889,9 +905,13 @@ void WindowTreeClientImpl::OnWindowInputEvent(uint32_t event_id,
     ack_callback->Run(mojom::EventResult::UNHANDLED);
 }
 
-void WindowTreeClientImpl::OnEventObserved(mojom::EventPtr event_in,
+void WindowTreeClientImpl::OnEventObserved(mojom::EventPtr event,
                                            uint32_t event_observer_id) {
-  // TODO(jamescook): Route the observed event to PointerWatchers.
+  if (has_event_observer_ && event_observer_id == event_observer_id_) {
+    std::unique_ptr<ui::Event> ui_event =
+        event.To<std::unique_ptr<ui::Event>>();
+    delegate_->OnEventObserved(*ui_event);
+  }
 }
 
 void WindowTreeClientImpl::OnWindowFocused(Id focused_window_id) {

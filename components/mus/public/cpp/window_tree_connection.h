@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "components/mus/common/types.h"
+#include "components/mus/public/interfaces/input_event_constants.mojom.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 
@@ -76,6 +77,11 @@ class WindowTreeConnection {
 
   // Sets focus to null. This does nothing if focus is currently null.
   virtual void ClearFocus() = 0;
+
+  // See description in window_tree.mojom. When an existing event observer is
+  // updated or cleared then any future events from the server for that observer
+  // will be ignored.
+  virtual void SetEventObserver(mojom::EventMatcherPtr matcher) = 0;
 
   // Creates and returns a new Window (which is owned by the window server).
   // Windows are initially hidden, use SetVisible(true) to show.

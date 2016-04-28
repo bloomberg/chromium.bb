@@ -5,6 +5,7 @@
 #ifndef ASH_SHELL_DELEGATE_H_
 #define ASH_SHELL_DELEGATE_H_
 
+#include <memory>
 #include <string>
 
 #include "ash/ash_export.h"
@@ -40,6 +41,7 @@ namespace ash {
 class AccessibilityDelegate;
 class MediaDelegate;
 class NewWindowDelegate;
+class PointerWatcherDelegate;
 class SessionStateDelegate;
 class ShelfDelegate;
 class ShelfModel;
@@ -137,6 +139,9 @@ class ASH_EXPORT ShellDelegate {
 
   // Creates a media delegate. Shell takes ownership of the delegate.
   virtual MediaDelegate* CreateMediaDelegate() = 0;
+
+  virtual std::unique_ptr<PointerWatcherDelegate>
+  CreatePointerWatcherDelegate() = 0;
 
   // Creates a menu model for the |shelf| and optional shelf |item|.
   // If |item| is null, this creates a context menu for the desktop or shelf.

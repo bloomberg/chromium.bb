@@ -9,9 +9,11 @@
 #include "ash/gpu_support_stub.h"
 #include "ash/media_delegate.h"
 #include "ash/mus/context_menu_mus.h"
+#include "ash/mus/pointer_watcher_delegate_mus.h"
 #include "ash/mus/shelf_delegate_mus.h"
 #include "ash/session/session_state_delegate.h"
 #include "ash/system/tray/default_system_tray_delegate.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "components/user_manager/user_info_impl.h"
 #include "ui/app_list/presenter/app_list_presenter.h"
@@ -223,6 +225,11 @@ NewWindowDelegate* ShellDelegateMus::CreateNewWindowDelegate() {
 MediaDelegate* ShellDelegateMus::CreateMediaDelegate() {
   NOTIMPLEMENTED() << " Using a stub MediaDelegate implementation";
   return new MediaDelegateStub;
+}
+
+std::unique_ptr<PointerWatcherDelegate>
+ShellDelegateMus::CreatePointerWatcherDelegate() {
+  return base::WrapUnique(new PointerWatcherDelegateMus);
 }
 
 ui::MenuModel* ShellDelegateMus::CreateContextMenu(ash::Shelf* shelf,

@@ -90,6 +90,8 @@ void MusDemo::OnConnectionLost(mus::WindowTreeConnection* connection) {
   timer_.Stop();
 }
 
+void MusDemo::OnEventObserved(const ui::Event& event) {}
+
 void MusDemo::SetWindowManagerClient(mus::WindowManagerClient* client) {}
 
 bool MusDemo::OnWmSetBounds(mus::Window* window, gfx::Rect* bounds) {

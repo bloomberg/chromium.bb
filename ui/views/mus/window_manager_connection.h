@@ -10,6 +10,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "components/mus/public/cpp/window_tree_delegate.h"
 #include "services/shell/public/cpp/identity.h"
 #include "ui/views/mus/mus_export.h"
@@ -22,6 +23,7 @@ class Connector;
 
 namespace views {
 class NativeWidget;
+class PointerWatcher;
 class ScreenMus;
 namespace internal {
 class NativeWidgetDelegate;
@@ -57,14 +59,23 @@ class VIEWS_MUS_EXPORT WindowManagerConnection
       const Widget::InitParams& init_params,
       internal::NativeWidgetDelegate* delegate);
 
+  void AddPointerWatcher(PointerWatcher* watcher);
+  void RemovePointerWatcher(PointerWatcher* watcher);
+
  private:
+  friend class WindowManagerConnectionTest;
+
   WindowManagerConnection(shell::Connector* connector,
                           const shell::Identity& identity);
   ~WindowManagerConnection() override;
 
+  // Returns true if there is one or more pointer watchers for this client.
+  bool HasPointerWatcher();
+
   // mus::WindowTreeDelegate:
   void OnEmbed(mus::Window* root) override;
   void OnConnectionLost(mus::WindowTreeConnection* connection) override;
+  void OnEventObserved(const ui::Event& event) override;
 
   // ScreenMusDelegate:
   void OnWindowManagerFrameValuesChanged() override;
@@ -73,6 +84,8 @@ class VIEWS_MUS_EXPORT WindowManagerConnection
   shell::Identity identity_;
   std::unique_ptr<ScreenMus> screen_;
   std::unique_ptr<mus::WindowTreeConnection> window_tree_connection_;
+  // Must be empty on destruction.
+  base::ObserverList<PointerWatcher, true> pointer_watchers_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowManagerConnection);
 };
