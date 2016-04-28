@@ -62,6 +62,8 @@ def main():
                                'stack',
                                'debug',
                                'build-debug'])
+  parser.add_argument('-d', '--out_dir', action='store',
+                      help='name of the build directory')
   parser.add_argument('-i', '--iphoneos', action='store_true',
                       help='build for physical iphone')
   parser.add_argument('-r', '--release', action='store_true',
@@ -92,13 +94,17 @@ def main():
       'use_errorprone_java_compiler=true use_platform_icu_alternatives=true '+ \
       'disable_brotli_filter=true'
 
-  out_dir = 'out/Debug' + out_dir_suffix
-  release_arg = ''
   extra_options = ' '.join(extra_options_list)
   if options.release:
     out_dir = 'out/Release' + out_dir_suffix
     release_arg = ' --release'
     gn_args += ' is_debug=false '
+  else:
+    out_dir = 'out/Debug' + out_dir_suffix
+    release_arg = ''
+
+  if options.out_dir:
+    out_dir = options.out_dir
 
   if (options.command=='gyp'):
     return run (gyp_defines + ' gclient runhooks')
