@@ -840,6 +840,7 @@ PassOwnPtr<TracedValue> FrameView::analyzerCounters()
         return TracedValue::create();
     OwnPtr<TracedValue> value = m_analyzer->toTracedValue();
     value->setString("host", layoutView()->document().location()->host());
+    value->setString("frame", String::format("0x%" PRIxPTR, reinterpret_cast<uintptr_t>(m_frame.get())));
     return value.release();
 }
 
