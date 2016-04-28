@@ -21,6 +21,9 @@
 // feature can be enabled at runtime on a per-page basis through a signed token for the corresponding feature name.
 // Declaring the origin_trial_feature_name will cause a static method to be generated in OriginTrials.h/cpp. This static
 // method allows the feature implementation to check if it is enabled for the current context.
+//
+// settable_from_internals specifies whether a feature can be set from internals.runtimeFlags, with the default
+// being false.
 
 AppBanner status=stable
 AlwaysUseComplexText status=stable
@@ -174,7 +177,7 @@ SandboxBlocksModals status=stable
 ScreenOrientation status=stable
 ScriptedSpeech status=stable
 // Scrolls to compensate for layout movements (bit.ly/scroll-anchoring).
-ScrollAnchoring
+ScrollAnchoring settable_from_internals=True
 // Implements documentElement.scrollTop/Left and bodyElement.scrollTop/Left
 // as per the spec, matching other Web engines.
 ScrollTopLeftInterop status=experimental

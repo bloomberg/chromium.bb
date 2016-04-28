@@ -49,6 +49,7 @@ class RuntimeFeatureWriter(in_generator.Writer):
         'depends_on': [],
         'custom': False,
         'status': None,
+        'settable_from_internals': False,
     }
 
     def __init__(self, in_file_path):
