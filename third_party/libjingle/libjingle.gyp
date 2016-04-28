@@ -365,7 +365,6 @@
             '<(DEPTH)/third_party/usrsctp/usrsctp.gyp:usrsctplib',
             '<(DEPTH)/third_party/webrtc/modules/modules.gyp:media_file',
             '<(DEPTH)/third_party/webrtc/modules/modules.gyp:video_capture',
-            '<(DEPTH)/third_party/webrtc/modules/modules.gyp:video_render',
             '<(DEPTH)/third_party/webrtc/voice_engine/voice_engine.gyp:voice_engine',
             '<(DEPTH)/third_party/webrtc/webrtc.gyp:webrtc',
             'libjingle',

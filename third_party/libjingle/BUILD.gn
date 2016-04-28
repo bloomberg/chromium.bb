@@ -415,7 +415,6 @@ if (enable_webrtc) {
       "//third_party/webrtc",
       "//third_party/webrtc/modules/media_file",
       "//third_party/webrtc/modules/video_capture",
-      "//third_party/webrtc/modules/video_render",
       "//third_party/webrtc/system_wrappers",
       "//third_party/webrtc/voice_engine",
     ]
