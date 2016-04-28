@@ -262,6 +262,7 @@ ResultExpr GpuProcessPolicy::EvaluateSyscall(int sysno) const {
     case __NR_mprotect:
     // TODO(jln): restrict prctl.
     case __NR_prctl:
+    case __NR_sysinfo:
       return Allow();
 #if !defined(__aarch64__)
     case __NR_access:
