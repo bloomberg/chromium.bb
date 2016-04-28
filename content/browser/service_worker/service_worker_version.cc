@@ -305,6 +305,7 @@ ServiceWorkerVersion::ServiceWorkerVersion(
   DCHECK_NE(kInvalidServiceWorkerVersionId, version_id);
   DCHECK(context_);
   DCHECK(registration);
+  DCHECK(script_url_.is_valid());
   context_->AddLiveVersion(this);
   embedded_worker_ = context_->embedded_worker_registry()->CreateWorker();
   embedded_worker_->AddListener(this);

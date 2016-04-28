@@ -1132,30 +1132,32 @@ TEST_F(ServiceWorkerJobTest, Update_NewVersion) {
   EXPECT_TRUE(update_helper->update_found_);
 }
 
-TEST_F(ServiceWorkerJobTest, Update_NewestVersionChanged) {
+// Test that the update job uses the script URL of the newest worker when the
+// job starts, rather than when it is scheduled.
+TEST_F(ServiceWorkerJobTest, Update_ScriptUrlChanged) {
+  // Create a registration with an active version.
   scoped_refptr<ServiceWorkerRegistration> registration =
       RunRegisterJob(GURL("http://www.example.com/one/"),
                      GURL("http://www.example.com/service_worker.js"));
 
-  ServiceWorkerVersion* active_version = registration->active_version();
-
-  // Queue an Update, it should abort when it starts and sees the new version.
+  // Queue an Update. When this runs, it will use the waiting version's script.
   job_coordinator()->Update(registration.get(), false);
 
-  // Add a waiting version with new script.
-  scoped_refptr<ServiceWorkerVersion> version =
-      new ServiceWorkerVersion(registration.get(),
-                               GURL("http://www.example.com/new_worker.js"),
-                               2L /* dummy version id */,
-                               helper_->context()->AsWeakPtr());
+  // Add a waiting version with a new script.
+  GURL new_script("http://www.example.com/new_worker.js");
+  scoped_refptr<ServiceWorkerVersion> version = new ServiceWorkerVersion(
+      registration.get(), new_script, 2L /* dummy version id */,
+      helper_->context()->AsWeakPtr());
   registration->SetWaitingVersion(version);
 
+  // Run the update job.
   base::RunLoop().RunUntilIdle();
 
-  // Verify the registration was not modified by the Update.
-  EXPECT_EQ(active_version, registration->active_version());
-  EXPECT_EQ(version.get(), registration->waiting_version());
-  EXPECT_EQ(NULL, registration->installing_version());
+  // The update job should have created a new version with the new script,
+  // and promoted it to the active version.
+  EXPECT_EQ(new_script, registration->active_version()->script_url());
+  EXPECT_EQ(nullptr, registration->waiting_version());
+  EXPECT_EQ(nullptr, registration->installing_version());
 }
 
 // Test that update succeeds if the incumbent worker was evicted
