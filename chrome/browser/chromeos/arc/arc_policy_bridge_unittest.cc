@@ -30,6 +30,7 @@ class ArcPolicyBridgeTest : public testing::Test {
     bridge_service_.reset(new FakeArcBridgeService());
     policy_bridge_.reset(
         new ArcPolicyBridge(bridge_service_.get(), &policy_service_));
+    policy_bridge_->OverrideIsManagedForTesting(true);
 
     EXPECT_CALL(policy_service_,
                 GetPolicies(policy::PolicyNamespace(
@@ -69,6 +70,11 @@ class ArcPolicyBridgeTest : public testing::Test {
 
   DISALLOW_COPY_AND_ASSIGN(ArcPolicyBridgeTest);
 };
+
+TEST_F(ArcPolicyBridgeTest, UnmanagedTest) {
+  policy_bridge()->OverrideIsManagedForTesting(false);
+  policy_bridge()->GetPolicies(PolicyStringCallback(nullptr));
+}
 
 TEST_F(ArcPolicyBridgeTest, EmptyPolicyTest) {
   // No policy is set, result should be empty.

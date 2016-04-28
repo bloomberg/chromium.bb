@@ -152,6 +152,10 @@ ArcPolicyBridge::~ArcPolicyBridge() {
   arc_bridge_service()->RemoveObserver(this);
 }
 
+void ArcPolicyBridge::OverrideIsManagedForTesting(bool is_managed) {
+  is_managed_ = is_managed;
+}
+
 void ArcPolicyBridge::OnPolicyInstanceReady() {
   VLOG(1) << "ArcPolicyBridge::OnPolicyInstanceReady";
   if (policy_service_ == nullptr) {
@@ -177,6 +181,10 @@ void ArcPolicyBridge::OnPolicyInstanceClosed() {
 
 void ArcPolicyBridge::GetPolicies(const GetPoliciesCallback& callback) {
   VLOG(1) << "ArcPolicyBridge::GetPolicies";
+  if (!is_managed_) {
+    callback.Run(mojo::String(nullptr));
+    return;
+  }
   const policy::PolicyNamespace policy_namespace(policy::POLICY_DOMAIN_CHROME,
                                                  std::string());
   const policy::PolicyMap& policy_map =
@@ -198,9 +206,10 @@ void ArcPolicyBridge::InitializePolicyService() {
       user_manager::UserManager::Get()->GetPrimaryUser();
   Profile* const profile =
       chromeos::ProfileHelper::Get()->GetProfileByUser(primary_user);
-  policy_service_ =
-      policy::ProfilePolicyConnectorFactory::GetForBrowserContext(profile)
-          ->policy_service();
+  auto profile_policy_connector =
+      policy::ProfilePolicyConnectorFactory::GetForBrowserContext(profile);
+  policy_service_ = profile_policy_connector->policy_service();
+  is_managed_ = profile_policy_connector->IsManaged();
 }
 
 }  // namespace arc

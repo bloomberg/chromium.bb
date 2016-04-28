@@ -27,6 +27,8 @@ class ArcPolicyBridge : public ArcService,
                   policy::PolicyService* policy_service);
   ~ArcPolicyBridge() override;
 
+  void OverrideIsManagedForTesting(bool is_managed);
+
   // ArcBridgeService::Observer overrides.
   void OnPolicyInstanceReady() override;
   void OnPolicyInstanceClosed() override;
@@ -44,6 +46,7 @@ class ArcPolicyBridge : public ArcService,
 
   mojo::Binding<PolicyHost> binding_;
   policy::PolicyService* policy_service_ = nullptr;
+  bool is_managed_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ArcPolicyBridge);
 };
