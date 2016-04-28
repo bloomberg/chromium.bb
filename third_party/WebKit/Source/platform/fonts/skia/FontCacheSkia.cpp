@@ -192,14 +192,11 @@ PassRefPtr<SkTypeface> FontCache::createTypeface(const FontDescription& fontDesc
         return adoptRef(m_fontManager->matchFamilyStyle(name.data(), fontDescription.skiaFontStyle()));
 #endif
 
-    // FIXME: Use m_fontManager, SkFontStyle and matchFamilyStyle instead of
-    // CreateFromName on all platforms.
-    int style = SkTypeface::kNormal;
-    if (fontDescription.weight() >= FontWeight600)
-        style |= SkTypeface::kBold;
-    if (fontDescription.style())
-        style |= SkTypeface::kItalic;
-    return adoptRef(SkTypeface::CreateFromName(name.data(), static_cast<SkTypeface::Style>(style)));
+    // FIXME: Use m_fontManager, matchFamilyStyle instead of
+    // legacyCreateTypeface on all platforms.
+    RefPtr<SkFontMgr> fm = adoptRef(SkFontMgr::RefDefault());
+    return adoptRef(fm->legacyCreateTypeface(name.data(),
+        fontDescription.skiaFontStyle()));
 }
 
 #if !OS(WIN)
@@ -214,7 +211,7 @@ PassOwnPtr<FontPlatformData> FontCache::createFontPlatformData(const FontDescrip
     return adoptPtr(new FontPlatformData(tf,
         name.data(),
         fontSize,
-        (fontDescription.weight() >= FontWeight600 && !tf->isBold()) || fontDescription.isSyntheticBold(),
+        (fontDescription.weight() > 200 + tf->fontStyle().weight()) || fontDescription.isSyntheticBold(),
         ((fontDescription.style() == FontStyleItalic || fontDescription.style() == FontStyleOblique) && !tf->isItalic()) || fontDescription.isSyntheticItalic(),
         fontDescription.orientation()));
 }
