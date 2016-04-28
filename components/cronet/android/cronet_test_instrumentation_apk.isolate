@@ -3,16 +3,12 @@
 # found in the LICENSE file.
 
 {
-  'conditions': [
-    ['OS=="android"', {
-      'variables': {
-        'files': [
-          '<(DEPTH)/net/data/ssl/certificates/quic_test.example.com.crt',
-          '<(DEPTH)/net/data/ssl/certificates/quic_test.example.com.key',
-          '<(DEPTH)/net/data/ssl/certificates/quic_test.example.com.key.pkcs8',
-          '<(DEPTH)/net/data/ssl/certificates/quic_test.example.com.key.sct',
-        ],
-      },
-    }],
-  ],
+  'variables': {
+    'files': [
+      '<(DEPTH)/net/data/ssl/certificates/quic_test.example.com.crt',
+      '<(DEPTH)/net/data/ssl/certificates/quic_test.example.com.key',
+      '<(DEPTH)/net/data/ssl/certificates/quic_test.example.com.key.pkcs8',
+      '<(DEPTH)/net/data/ssl/certificates/quic_test.example.com.key.sct',
+    ],
+  },
 }

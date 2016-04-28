@@ -1593,6 +1593,9 @@ template("android_apk") {
         depfile,
         "${_dist_ijar_path}",
       ]
+      data = [
+        _dist_ijar_path,
+      ]
       args = [
         "--depfile",
         rebase_path(depfile, root_build_dir),
@@ -2048,6 +2051,17 @@ template("instrumentation_test_apk") {
     ]
     if (defined(invoker.apk_under_test)) {
       public_deps += [ invoker.apk_under_test ]
+    }
+    if (defined(invoker.isolate_file)) {
+      isolate_values = exec_script("//build/gypi_to_gn.py",
+                                   [
+                                     rebase_path(invoker.isolate_file),
+                                     "--replace",
+                                     "<(DEPTH)=/",
+                                   ],
+                                   "scope",
+                                   [ invoker.isolate_file ])
+      data = isolate_values.files
     }
   }
 
