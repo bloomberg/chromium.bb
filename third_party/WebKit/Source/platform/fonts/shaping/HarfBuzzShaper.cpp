@@ -588,7 +588,7 @@ PassRefPtr<ShapeResult> HarfBuzzShaper::shapeResult()
                 }
 
                 FontDataForRangeSet nextFontDataForRangeSet = fallbackIterator->next(fallbackCharsHint);
-                currentFont = nextFontDataForRangeSet.fontData().get();
+                currentFont = nextFontDataForRangeSet.fontData();
                 currentFontRangeSet = nextFontDataForRangeSet.ranges();
 
                 if (!currentFont) {

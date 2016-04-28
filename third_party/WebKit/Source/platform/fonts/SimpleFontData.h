@@ -122,7 +122,7 @@ public:
 
     bool canRenderCombiningCharacterSequence(const UChar*, size_t) const;
 
-    PassRefPtr<CustomFontData> customFontData() const { return m_customFontData; }
+    CustomFontData* customFontData() const { return m_customFontData.get(); }
 
     // Implemented by the platform.
     virtual bool fillGlyphPage(GlyphPage* pageToFill, unsigned offset, unsigned length, UChar* buffer, unsigned bufferLength) const;

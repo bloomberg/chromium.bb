@@ -154,9 +154,10 @@ const FontDataForRangeSet FontFallbackIterator::next(const Vector<UChar32>& hint
     }
 
     if (rangeSetContributesForHint(hintList, currentSegmentedFace)) {
-        if (currentSegmentedFace.fontData()->customFontData())
-            currentSegmentedFace.fontData()->customFontData()->beginLoadIfNeeded();
-        if (!currentSegmentedFace.fontData()->isLoading())
+        const SimpleFontData* fontData = currentSegmentedFace.fontData();
+        if (const CustomFontData* customFontData = fontData->customFontData())
+            customFontData->beginLoadIfNeeded();
+        if (!fontData->isLoading())
             return currentSegmentedFace;
         m_trackedLoadingRangeSets.append(currentSegmentedFace);
     }

@@ -278,7 +278,7 @@ void GlyphPageTreeNode::initializePurePage(const FontData* fontData, unsigned pa
                     continue;
                 }
 
-                haveGlyphs |= fill(m_page.get(), from, to - from, buffer + from * (start < 0x10000 ? 1 : 2), (to - from) * (start < 0x10000 ? 1 : 2), fontDataForRangeSet.fontData().get());
+                haveGlyphs |= fill(m_page.get(), from, to - from, buffer + from * (start < 0x10000 ? 1 : 2), (to - from) * (start < 0x10000 ? 1 : 2), fontDataForRangeSet.fontData());
             }
         }
     }

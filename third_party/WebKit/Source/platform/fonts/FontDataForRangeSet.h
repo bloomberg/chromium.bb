@@ -38,17 +38,8 @@ class SimpleFontData;
 
 class FontDataForRangeSet final {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-    explicit FontDataForRangeSet(PassRefPtr<SimpleFontData> fontData)
-        : m_fontData(fontData)
-    {
-    }
 
-    FontDataForRangeSet()
-        : m_fontData(nullptr)
-    {
-    }
-
-    explicit FontDataForRangeSet(PassRefPtr<SimpleFontData> fontData, PassRefPtr<UnicodeRangeSet> rangeSet)
+    explicit FontDataForRangeSet(PassRefPtr<SimpleFontData> fontData = nullptr, PassRefPtr<UnicodeRangeSet> rangeSet = nullptr)
         : m_fontData(fontData)
         , m_rangeSet(rangeSet)
     {
@@ -67,9 +58,9 @@ class FontDataForRangeSet final {
 
     bool contains(UChar32 testChar) const { return m_rangeSet->contains(testChar); }
     bool isEntireRange() const { return m_rangeSet->isEntireRange(); }
-    PassRefPtr<UnicodeRangeSet> ranges() const { return m_rangeSet; }
-    bool hasFontData() const { return fontData(); }
-    PassRefPtr<SimpleFontData> fontData() const { return m_fontData; }
+    UnicodeRangeSet* ranges() const { return m_rangeSet.get(); }
+    bool hasFontData() const { return m_fontData.get(); }
+    const SimpleFontData* fontData() const { return m_fontData.get(); }
 
 private:
     RefPtr<SimpleFontData> m_fontData;
