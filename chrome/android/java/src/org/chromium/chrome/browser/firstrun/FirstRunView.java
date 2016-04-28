@@ -48,12 +48,13 @@ public class FirstRunView extends FrameLayout {
         return true;
     }
 
-    protected boolean isDynamicPaddingEnabled() {
-        return true;
-    }
-
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        // There was a requirement to have the titles and images of all of the first run experience
+        // pages to be vertically aligned so the transitions between pages look nice.
+        // The other requirement is for an alternate layout in horizontal mode for screens of a
+        // certain size. These are why the padding is set manually.
+
         // This assumes that view's layout_width is set to match_parent.
         assert MeasureSpec.getMode(widthMeasureSpec) == MeasureSpec.EXACTLY;
 
@@ -96,12 +97,10 @@ public class FirstRunView extends FrameLayout {
         }
 
         // Add padding to get it roughly centered.
-        if (isDynamicPaddingEnabled()) {
-            int topPadding = Math.max(0, (height / 2) - halfContentHeight);
+        int topPadding = Math.max(0, (height / 2) - halfContentHeight);
 
-            mMainLayout.setPadding(mMainLayout.getPaddingLeft(), topPadding,
-                    mMainLayout.getPaddingRight(), mMainLayout.getPaddingBottom());
-        }
+        mMainLayout.setPadding(mMainLayout.getPaddingLeft(), topPadding,
+                mMainLayout.getPaddingRight(), mMainLayout.getPaddingBottom());
 
         ApiCompatibilityUtils.setPaddingRelative(mImageAndContent,
                 imageAndContentPaddingStart,

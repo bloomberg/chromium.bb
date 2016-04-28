@@ -112,7 +112,6 @@ public class AccountSigninView
     private boolean mSignedIn;
     private int mCancelButtonTextId;
     private boolean mIsChildAccount;
-    private boolean mShowSettingsSpan = true;
 
     private AccountSigninConfirmationView mSigninConfirmationView;
     private ImageView mSigninAccountImage;
@@ -251,8 +250,6 @@ public class AccountSigninView
      * This is currently used in the Recent Tabs Promo and the bookmarks page.
      */
     public void configureForRecentTabsOrBookmarksPage() {
-        mShowSettingsSpan = false;
-
         setBackgroundResource(R.color.ntp_bg);
         mCancelButtonTextId = R.string.cancel;
         setUpCancelButton();
@@ -408,22 +405,15 @@ public class AccountSigninView
         setPositiveButtonDisabled();
         setUpUndoButton();
 
-        if (mShowSettingsSpan) {
-            NoUnderlineClickableSpan settingsSpan = new NoUnderlineClickableSpan() {
-                @Override
-                public void onClick(View widget) {
-                    mListener.onAccountSelected(getSelectedAccountName(), true);
-                }
-            };
-            mSigninSettingsControl.setText(
-                    SpanApplier.applySpans(getSettingsControlDescription(mIsChildAccount),
-                            new SpanInfo(SETTINGS_LINK_OPEN, SETTINGS_LINK_CLOSE, settingsSpan)));
-        } else {
-            // If we aren't showing the span, get rid of the LINK1 annotations.
-            mSigninSettingsControl.setText(getSettingsControlDescription(mIsChildAccount)
-                                                   .replace(SETTINGS_LINK_OPEN, "")
-                                                   .replace(SETTINGS_LINK_CLOSE, ""));
-        }
+        NoUnderlineClickableSpan settingsSpan = new NoUnderlineClickableSpan() {
+            @Override
+            public void onClick(View widget) {
+                mListener.onAccountSelected(getSelectedAccountName(), true);
+            }
+        };
+        mSigninSettingsControl.setText(
+                SpanApplier.applySpans(getSettingsControlDescription(mIsChildAccount),
+                        new SpanInfo(SETTINGS_LINK_OPEN, SETTINGS_LINK_CLOSE, settingsSpan)));
     }
 
     private void showConfirmSigninPageAccountTrackerServiceCheck() {

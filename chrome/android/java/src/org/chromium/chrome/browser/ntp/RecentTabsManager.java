@@ -9,25 +9,20 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.preference.PreferenceManager;
 
-import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
 import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
-import org.chromium.chrome.browser.firstrun.ProfileDataCache;
 import org.chromium.chrome.browser.invalidation.InvalidationController;
 import org.chromium.chrome.browser.metrics.StartupMetrics;
 import org.chromium.chrome.browser.ntp.ForeignSessionHelper.ForeignSession;
 import org.chromium.chrome.browser.ntp.ForeignSessionHelper.ForeignSessionCallback;
 import org.chromium.chrome.browser.ntp.ForeignSessionHelper.ForeignSessionTab;
-import org.chromium.chrome.browser.ntp.RecentTabsPromoView.SyncPromoModel;
 import org.chromium.chrome.browser.ntp.RecentlyClosedBridge.RecentlyClosedCallback;
 import org.chromium.chrome.browser.ntp.RecentlyClosedBridge.RecentlyClosedTab;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.signin.SigninAccessPoint;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
-import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.sync.AndroidSyncSettings;
@@ -40,8 +35,7 @@ import java.util.List;
 /**
  * Provides the domain logic and data for RecentTabsPage and RecentTabsRowAdapter.
  */
-public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInStateObserver,
-        SyncPromoModel {
+public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInStateObserver {
 
     /**
      * Implement this to receive updates when the page contents change.
@@ -60,8 +54,6 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
     private final Profile mProfile;
     private final Tab mTab;
     private final Context mContext;
-    private final ObserverList<AndroidSyncSettingsObserver> mObservers =
-            new ObserverList<AndroidSyncSettingsObserver>();
 
     private FaviconHelper mFaviconHelper;
     private ForeignSessionHelper mForeignSessionHelper;
@@ -71,7 +63,6 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
     private RecentlyClosedBridge mRecentlyClosedBridge;
     private SigninManager mSignInManager;
     private UpdatedCallback mUpdatedCallback;
-    private ProfileDataCache mProfileDataCache;
     private boolean mIsDestroyed;
 
     /**
@@ -123,11 +114,6 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
 
         mNewTabPagePrefs.destroy();
         mNewTabPagePrefs = null;
-
-        if (mProfileDataCache != null) {
-            mProfileDataCache.destroy();
-            mProfileDataCache = null;
-        }
 
         InvalidationController.get(mContext).onRecentTabsPageClosed();
     }
@@ -461,52 +447,11 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
                 if (mIsDestroyed) return;
                 updateForeignSessions();
                 postUpdate();
-                for (AndroidSyncSettingsObserver observer : mObservers) {
-                    observer.androidSyncSettingsChanged();
-                }
             }
         });
     }
 
-    // SyncPromoModel
-    @Override
-    public boolean isSyncEnabled() {
-        return AndroidSyncSettings.isSyncEnabled(mContext);
-    }
-
-    @Override
     public boolean isSignedIn() {
         return ChromeSigninController.get(mContext).isSignedIn();
-    }
-
-    @Override
-    public void enableSync() {
-        ProfileSyncService syncService = ProfileSyncService.get();
-        if (syncService != null) {
-            syncService.requestStart();
-        }
-    }
-
-    @Override
-    public void registerForSyncUpdates(AndroidSyncSettingsObserver changeListener) {
-        mObservers.addObserver(changeListener);
-    }
-
-    @Override
-    public void unregisterForSyncUpdates(AndroidSyncSettingsObserver changeListener) {
-        mObservers.removeObserver(changeListener);
-    }
-
-    @Override
-    public ProfileDataCache getProfileDataCache() {
-        if (mProfileDataCache == null) {
-            mProfileDataCache = new ProfileDataCache(mContext, Profile.getLastUsedProfile());
-        }
-        return mProfileDataCache;
-    }
-
-    @Override
-    public int getAccessPoint() {
-        return SigninAccessPoint.RECENT_TABS;
     }
 }

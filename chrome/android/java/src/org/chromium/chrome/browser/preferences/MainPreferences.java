@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.preferences;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.Preference;
@@ -140,8 +139,8 @@ public class MainPreferences extends PreferenceFragment implements SignInStateOb
                 }
 
                 mSignInPreference.setEnabled(false);
-                SigninManager.logSigninStartAccessPoint(SigninAccessPoint.SETTINGS);
-                startActivity(new Intent(getActivity(), AccountSigninActivity.class));
+                AccountSigninActivity
+                        .startAccountSigninActivity(getActivity(), SigninAccessPoint.SETTINGS);
                 return true;
             }
         });

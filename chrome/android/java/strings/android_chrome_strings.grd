@@ -988,8 +988,39 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_SIGNOUT_DIALOG_POSITIVE_BUTTON" desc="Button to sign out of Chrome">
         Sign out
       </message>
+      <message name="IDS_SIGN_IN_BUTTON" desc="Label for a button to sign in">
+        Sign in
+      </message>
 
       <!-- Sync strings -->
+      <message name="IDS_SYNC_YOUR_BOOKMARKS" desc="Title for the prompt to signin and enable sync to sync their bookmarks">
+        Sync your bookmarks
+      </message>
+      <message name="IDS_BOOKMARK_SIGN_IN_PROMO_DESCRIPTION" desc="Description for bookmark UI sign-in promotion.">
+        To get your bookmarks on all your devices, sign in to Chrome
+      </message>
+      <message name="IDS_RECENT_TABS_SIGN_IN_PROMO_DESCRIPTION" desc="Description for recent tabs UI sign-in promotion.">
+        To get your tabs from all your devices, sign in to Chrome
+      </message>
+      <message name="IDS_ENABLE_SYNC_BUTTON" desc="Text that displayed or button that allows the user to open Chrome settings to enable sync.">
+        Open settings
+      </message>
+      <message name="IDS_OPEN_SETTINGS_BUTTON" desc="Text that displayed or button that allows the open Android settings to enable sync.">
+        Open settings
+      </message>
+      <message name="IDS_BOOKMARKS_SYNC_PROMO_ENABLE_SYNC" desc="Text that displayed in a textview encouraging the user to enable sync.">
+        Bookmarks saved on your other devices will appear here
+      </message>
+      <message name="IDS_RECENT_TABS_SYNC_PROMO_ENABLE_CHROME_SYNC" desc="Text that displayed in a textview encouraging the user to enable sync.">
+        To get your tabs from all your devices, turn on sync
+      </message>
+      <message name="IDS_RECENT_TABS_SYNC_PROMO_ENABLE_ANDROID_SYNC" desc="Text that displayed in a textview encouraging the user to enable sync in the android settings.">
+        To get your tabs from all your devices, turn on "Auto-sync data" in Android account setting
+      </message>
+      <message name="IDS_NTP_RECENT_TABS_SYNC_PROMO_INSTRUCTIONS" desc="Information about sync displayed on the NTP when the user has signed in on mobile but not on desktop">
+        Tabs that you've opened in Chrome on your other devices will appear here
+      </message>
+      
       <message name="IDS_SIGN_IN_SYNC" desc="Sync preference title in signed-in prefs and prefix for notification related to sync [CHAR-LIMIT=32]">
         Sync
       </message>
@@ -1790,17 +1821,6 @@ You are signing in with a managed account and giving its administrator control o
       <message name="IDS_NTP_RECENT_TABS_SYNC_PROMO_TITLE" desc="Header for the promo explaining how users can see the list of tabs open on their other devices">
         Other devices
       </message>
-      <message name="IDS_NTP_RECENT_TABS_SYNC_PROMO_INSTRUCTIONS" desc="Information about sync displayed on the NTP when the user has signed in on mobile but not on desktop">
-        Access the tabs you have open on your computer, right here.
-
-Just open Chrome on your computer, go to the menu, and select “Sign in to Chrome…”
-      </message>
-      <message name="IDS_NTP_RECENT_TABS_SYNC_ENABLE_SYNC" desc="Text that displayed in a textview encouraging the user to enable sync.">
-        Tabs you have opened in Chrome on your other devices will appear here.
-      </message>
-      <message name="IDS_NTP_RECENT_TABS_SYNC_ENABLE_SYNC_BUTTON" desc="Text that displayed or button that allows the user to enable sync.">
-        Enable sync
-      </message>
       <message name="IDS_NTP_RECENT_TABS_LAST_SYNCED" desc="Label for the time since a device was last synced">
         Last synced: <ph name="WHEN">%1$s<ex>4 hours ago</ex></ph>
       </message>
@@ -1911,18 +1931,6 @@ Just open Chrome on your computer, go to the menu, and select “Sign in to Chro
       </message>
       <message name="IDS_BOOKMARKS_FOLDER_EMPTY" desc="Text explaining that the currently selected bookmarks folder is empty.">
         No bookmarks here
-      </message>
-      <message name="IDS_BOOKMARK_SIGN_IN_PROMO_TITLE" desc="Promo title encouraging the user to sign in to Chrome to improve their bookmarks experience. It means that after signing-in, bookmarks will become synced across devices and possible to search.">
-        Sync your bookmarks
-      </message>
-      <message name="IDS_BOOKMARK_SIGN_IN_PROMO_DESCRIPTION" desc="Description for bookmark UI sign-in promotion.">
-        To get your bookmarks on all your devices, sign in to Chrome
-      </message>
-      <message name="IDS_BOOKMARK_SIGN_IN_PROMO_NO_THANKS" desc="Text for the decline button in the bookmark UI">
-        No, thanks
-      </message>
-      <message name="IDS_BOOKMARK_SIGN_IN_PROMO_SIGN_IN" desc="Text for the sign-in button in promotion in the bookmark UI">
-        Sign in
       </message>
       <message name="IDS_BOOKMARK_PAGE_SAVED" desc="Message shown after user adds a new bookmark. [CHAR-LIMIT=32]">
         Bookmarked

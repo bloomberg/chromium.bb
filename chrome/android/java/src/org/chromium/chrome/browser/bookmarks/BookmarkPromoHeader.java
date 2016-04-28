@@ -5,18 +5,16 @@
 package org.chromium.chrome.browser.bookmarks;
 
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 
 import org.chromium.base.metrics.RecordUserAction;
-import org.chromium.chrome.R;
+import org.chromium.chrome.browser.signin.SigninAccessPoint;
+import org.chromium.chrome.browser.signin.SigninAndSyncView;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
 import org.chromium.sync.AndroidSyncSettings;
@@ -98,26 +96,17 @@ class BookmarkPromoHeader implements AndroidSyncSettingsObserver,
      *         {@link RecyclerView}.
      */
     ViewHolder createHolder(ViewGroup parent) {
-        ViewGroup promoHeader = (ViewGroup) LayoutInflater.from(mContext)
-                .inflate(R.layout.bookmark_promo_header, parent, false);
-
-        promoHeader.findViewById(R.id.no_thanks).setOnClickListener(new OnClickListener() {
+        SigninAndSyncView.Listener listener = new SigninAndSyncView.Listener() {
             @Override
-            public void onClick(View view) {
+            public void onViewDismissed() {
                 RecordUserAction.record("Stars_SignInPromoHeader_Dismissed");
                 setSigninPromoDeclined();
                 updateShouldShow(true);
             }
-        });
+        };
 
-        promoHeader.findViewById(R.id.sign_in).setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                mContext.startActivity(new Intent(mContext, BookmarkSigninActivity.class));
-            }
-        });
-
-        return new ViewHolder(promoHeader) {};
+        View view = new SigninAndSyncView(mContext, listener, SigninAccessPoint.BOOKMARK_MANAGER);
+        return new ViewHolder(view) {};
     }
 
     /**

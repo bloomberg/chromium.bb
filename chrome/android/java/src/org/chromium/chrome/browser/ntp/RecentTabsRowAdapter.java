@@ -27,8 +27,9 @@ import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
 import org.chromium.chrome.browser.ntp.ForeignSessionHelper.ForeignSession;
 import org.chromium.chrome.browser.ntp.ForeignSessionHelper.ForeignSessionTab;
 import org.chromium.chrome.browser.ntp.ForeignSessionHelper.ForeignSessionWindow;
-import org.chromium.chrome.browser.ntp.RecentTabsPromoView.UserActionListener;
 import org.chromium.chrome.browser.ntp.RecentlyClosedBridge.RecentlyClosedTab;
+import org.chromium.chrome.browser.signin.SigninAccessPoint;
+import org.chromium.chrome.browser.signin.SigninAndSyncView;
 import org.chromium.ui.WindowOpenDisposition;
 import org.chromium.ui.base.DeviceFormFactor;
 
@@ -593,20 +594,16 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
         View getChildView(int childPosition, boolean isLastChild, View convertView,
                 ViewGroup parent) {
             if (convertView == null) {
-                convertView = new RecentTabsPromoView(
-                        mActivity, mRecentTabsManager, new UserActionListener() {
-                            @Override
-                            public void onAccountSelectionConfirmed() {
-                                RecordUserAction.record("Signin_Signin_FromRecentTabs");
-                            }
-                            @Override
-                            public void onNewAccount() {}
-                            @Override
-                            public void onAccountSelectionCancelled() {
-                                mRecentTabsManager.setSigninPromoDeclined();
-                                notifyDataSetChanged();
-                            }
-                        });
+                SigninAndSyncView.Listener listener = new SigninAndSyncView.Listener() {
+                    @Override
+                    public void onViewDismissed() {
+                        mRecentTabsManager.setSigninPromoDeclined();
+                        notifyDataSetChanged();
+                    }
+                };
+
+                convertView =
+                        new SigninAndSyncView(mActivity, listener, SigninAccessPoint.RECENT_TABS);
             }
             if (!mRecentTabsManager.isSignedIn()) {
                 RecordUserAction.record("Signin_Impression_FromRecentTabs");

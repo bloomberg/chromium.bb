@@ -360,11 +360,6 @@ by a child template that "extends" this file.
             android:label="@string/bookmark_choose_folder"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize">
         </activity>
-        <activity android:name="org.chromium.chrome.browser.bookmarks.BookmarkSigninActivity"
-            android:theme="@style/BookmarkDialogWhite"
-            android:screenOrientation="portrait"
-            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize">
-        </activity>
 
         <!--
             Activities for webapps.
