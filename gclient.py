@@ -371,9 +371,6 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     # recursedeps is a mutable value that selectively overrides the default
     # 'no recursion' setting on a dep-by-dep basis.  It will replace
     # recursion_override.
-    #
-    # It will be a dictionary of {deps_name: {"deps_file": depfile_name}} or
-    # None.
     self.recursedeps = None
 
     if not self.name and self.parent:
@@ -653,14 +650,9 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
       self.recursion_override = local_scope.get('recursion')
       logging.warning(
           'Setting %s recursion to %d.', self.name, self.recursion_limit)
-    self.recursedeps = None
+    self.recursedeps = local_scope.get('recursedeps', None)
     if 'recursedeps' in local_scope:
-      self.recursedeps = {}
-      for ent in local_scope['recursedeps']:
-        if isinstance(ent, basestring):
-          self.recursedeps[ent] = {"deps_file": "DEPS"}
-        else:  # (depname, depsfilename)
-          self.recursedeps[ent[0]] = {"deps_file": ent[1]}
+      self.recursedeps = set(self.recursedeps)
       logging.warning('Found recursedeps %r.', repr(self.recursedeps))
     # If present, save 'target_os' in the local_target_os property.
     if 'target_os' in local_scope:
@@ -695,9 +687,9 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
       # Update recursedeps if it's set.
       if self.recursedeps is not None:
         logging.warning('Updating recursedeps by prepending %s.', self.name)
-        rel_deps = {}
-        for depname, options in self.recursedeps.iteritems():
-          rel_deps[os.path.normpath(os.path.join(self.name, depname))] = options
+        rel_deps = set()
+        for d in self.recursedeps:
+          rel_deps.add(os.path.normpath(os.path.join(self.name, d)))
         self.recursedeps = rel_deps
 
     if 'allowed_hosts' in local_scope:
@@ -716,14 +708,9 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     deps_to_add = []
     for name, url in deps.iteritems():
       should_process = self.recursion_limit and self.should_process
-      deps_file = self.deps_file
-      if self.recursedeps is not None:
-        ent = self.recursedeps.get(name)
-        if ent is not None:
-          deps_file = ent['deps_file']
       deps_to_add.append(Dependency(
           self, name, url, None, None, None, self.custom_vars, None,
-          deps_file, should_process))
+          self.deps_file, should_process))
     deps_to_add.sort(key=lambda x: x.name)
 
     # override named sets of hooks by the custom hooks

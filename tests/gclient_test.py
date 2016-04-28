@@ -847,42 +847,6 @@ class GclientTest(trial_dir.TestCase):
         ],
         self._get_processed())
 
-  def testRecursedepsAltfile(self):
-    """Verifies gclient respects the |recursedeps| var syntax with overridden
-    target DEPS file.
-
-    This is what we mean to check here:
-    - Naming an alternate DEPS file in recursedeps pulls from that one.
-    """
-    write(
-        '.gclient',
-        'solutions = [\n'
-        '  { "name": "foo", "url": "svn://example.com/foo" },\n'
-        ']')
-    write(
-        os.path.join('foo', 'DEPS'),
-        'deps = {\n'
-        '  "bar": "/bar",\n'
-        '}\n'
-        'recursedeps = [("bar", "DEPS.alt")]')
-    write(os.path.join('bar', 'DEPS'), 'ERROR ERROR ERROR')
-    write(
-        os.path.join('bar', 'DEPS.alt'),
-        'deps = {\n'
-        '  "baz": "/baz",\n'
-        '}')
-
-    options, _ = gclient.OptionParser().parse_args([])
-    obj = gclient.GClient.LoadCurrentConfig(options)
-    obj.RunOnDeps('None', [])
-    self.assertEquals(
-        [
-          'svn://example.com/foo',
-          'svn://example.com/foo/bar',
-          'svn://example.com/foo/bar/baz',
-        ],
-        self._get_processed())
-
   def testGitDeps(self):
     """Verifies gclient respects a .DEPS.git deps file.
 
