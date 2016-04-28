@@ -1054,6 +1054,9 @@ def _CheckAddedDepsHaveTargetApprovals(input_api, output_api):
     if input_api.tbr:
       return [output_api.PresubmitNotifyResult(
           '--tbr was specified, skipping OWNERS check for DEPS additions')]
+    if input_api.dry_run:
+      return [output_api.PresubmitNotifyResult(
+          'This is a dry run, skipping OWNERS check for DEPS additions')]
     if not input_api.change.issue:
       return [output_api.PresubmitError(
           "DEPS approval by OWNERS check failed: this change has "
