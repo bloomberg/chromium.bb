@@ -113,7 +113,7 @@ public class ConnectivityTaskTest extends ConnectivityCheckerTestBase {
     @MediumTest
     @Feature({"Feedback"})
     public void testCallbackTwoTimeouts() throws InterruptedException {
-        final int checkTimeoutMs = 100;
+        final int checkTimeoutMs = 1000;
         final Semaphore semaphore = new Semaphore(0);
         final AtomicReference<FeedbackData> feedbackRef = new AtomicReference<>();
         final ConnectivityTask.ConnectivityResult callback =
