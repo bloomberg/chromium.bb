@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/credit_card.h"
@@ -22,8 +23,10 @@ FullCardRequest::FullCardRequest(AutofillClient* autofill_client,
       payments_client_(payments_client),
       personal_data_manager_(personal_data_manager),
       delegate_(nullptr),
+      should_unmask_card_(false),
       weak_ptr_factory_(this) {
   DCHECK(autofill_client_);
+  DCHECK(payments_client_);
   DCHECK(personal_data_manager_);
 }
 
@@ -45,14 +48,16 @@ void FullCardRequest::GetFullCard(const CreditCard& card,
   delegate_ = delegate;
   request_.reset(new payments::PaymentsClient::UnmaskRequestDetails);
   request_->card = card;
-  bool is_masked = card.record_type() == CreditCard::MASKED_SERVER_CARD;
-  if (is_masked)
+  should_unmask_card_ = card.record_type() == CreditCard::MASKED_SERVER_CARD ||
+                        (card.record_type() == CreditCard::FULL_SERVER_CARD &&
+                         card.ShouldUpdateExpiration(base::Time::Now()));
+  if (should_unmask_card_)
     payments_client_->Prepare();
 
   autofill_client_->ShowUnmaskPrompt(request_->card, reason,
                                      weak_ptr_factory_.GetWeakPtr());
 
-  if (is_masked) {
+  if (should_unmask_card_) {
     autofill_client_->LoadRiskData(
         base::Bind(&FullCardRequest::OnDidGetUnmaskRiskData,
                    weak_ptr_factory_.GetWeakPtr()));
@@ -64,20 +69,22 @@ bool FullCardRequest::IsGettingFullCard() const {
 }
 
 void FullCardRequest::OnUnmaskResponse(const UnmaskResponse& response) {
-  // TODO(rouslan): Update the expiration date of the card on disk.
-  // http://crbug.com/606008
   if (!response.exp_month.empty())
     request_->card.SetRawInfo(CREDIT_CARD_EXP_MONTH, response.exp_month);
 
   if (!response.exp_year.empty())
     request_->card.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, response.exp_year);
 
-  if (request_->card.record_type() != CreditCard::MASKED_SERVER_CARD) {
+  if (request_->card.record_type() == CreditCard::LOCAL_CARD &&
+      (!response.exp_month.empty() || !response.exp_year.empty())) {
+    personal_data_manager_->UpdateCreditCard(request_->card);
+  }
+
+  if (!should_unmask_card_) {
     if (delegate_)
       delegate_->OnFullCardDetails(request_->card, response.cvc);
-    delegate_ = nullptr;
+    Reset();
     autofill_client_->OnUnmaskVerificationResult(AutofillClient::SUCCESS);
-    request_.reset();
     return;
   }
 
@@ -92,9 +99,8 @@ void FullCardRequest::OnUnmaskPromptClosed() {
   if (delegate_)
     delegate_->OnFullCardError();
 
-  delegate_ = nullptr;
+  Reset();
   payments_client_->CancelRequest();
-  request_.reset();
 }
 
 void FullCardRequest::OnDidGetUnmaskRiskData(const std::string& risk_data) {
@@ -114,6 +120,7 @@ void FullCardRequest::OnDidGetRealPan(AutofillClient::PaymentsRpcResult result,
     DCHECK_EQ(AutofillClient::SUCCESS, result);
     request_->card.set_record_type(CreditCard::FULL_SERVER_CARD);
     request_->card.SetNumber(base::UTF8ToUTF16(real_pan));
+    request_->card.SetServerStatus(CreditCard::OK);
 
     if (request_->user_response.should_store_pan)
       personal_data_manager_->UpdateServerCreditCard(request_->card);
@@ -125,9 +132,14 @@ void FullCardRequest::OnDidGetRealPan(AutofillClient::PaymentsRpcResult result,
       delegate_->OnFullCardError();
   }
 
-  delegate_ = nullptr;
+  Reset();
   autofill_client_->OnUnmaskVerificationResult(result);
+}
+
+void FullCardRequest::Reset() {
+  delegate_ = nullptr;
   request_.reset();
+  should_unmask_card_ = false;
 }
 
 }  // namespace payments

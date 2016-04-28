@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/autofill_type.h"
@@ -730,6 +731,104 @@ TEST(CreditCardTest, CanBuildFromCardNumberAndExpirationDate) {
   EXPECT_EQ(card_number, card.number());
   EXPECT_EQ(month, card.expiration_month());
   EXPECT_EQ(year, card.expiration_year());
+}
+
+// Verifies that a credit card should be updated.
+TEST(CreditCardTest, ShouldUpdateExpiration) {
+  base::Time now = base::Time::Now();
+
+  base::Time::Exploded last_year;
+  (now - base::TimeDelta::FromDays(365)).LocalExplode(&last_year);
+
+  base::Time::Exploded last_month;
+  (now - base::TimeDelta::FromDays(31)).LocalExplode(&last_month);
+
+  base::Time::Exploded current;
+  now.LocalExplode(&current);
+
+  base::Time::Exploded next_month;
+  (now + base::TimeDelta::FromDays(31)).LocalExplode(&next_month);
+
+  base::Time::Exploded next_year;
+  (now + base::TimeDelta::FromDays(365)).LocalExplode(&next_year);
+
+  static const struct {
+    bool should_update_expiration;
+    int month;
+    int year;
+    CreditCard::RecordType record_type;
+    CreditCard::ServerStatus server_status;
+  } kTestCases[] = {
+
+      // Cards that expired last year should always be updated.
+      {true, last_year.month, last_year.year, CreditCard::LOCAL_CARD},
+      {true, last_year.month, last_year.year, CreditCard::FULL_SERVER_CARD,
+       CreditCard::OK},
+      {true, last_year.month, last_year.year, CreditCard::MASKED_SERVER_CARD,
+       CreditCard::OK},
+      {true, last_year.month, last_year.year, CreditCard::FULL_SERVER_CARD,
+       CreditCard::EXPIRED},
+      {true, last_year.month, last_year.year, CreditCard::MASKED_SERVER_CARD,
+       CreditCard::EXPIRED},
+
+      // Cards that expired last month should always be updated.
+      {true, last_month.month, last_month.year, CreditCard::LOCAL_CARD},
+      {true, last_month.month, last_month.year, CreditCard::FULL_SERVER_CARD,
+       CreditCard::OK},
+      {true, last_month.month, last_month.year, CreditCard::MASKED_SERVER_CARD,
+       CreditCard::OK},
+      {true, last_month.month, last_month.year, CreditCard::FULL_SERVER_CARD,
+       CreditCard::EXPIRED},
+      {true, last_month.month, last_month.year, CreditCard::MASKED_SERVER_CARD,
+       CreditCard::EXPIRED},
+
+      // Cards that expire this month should be updated only if the server
+      // status is EXPIRED.
+      {false, current.month, current.year, CreditCard::LOCAL_CARD},
+      {false, current.month, current.year, CreditCard::FULL_SERVER_CARD,
+       CreditCard::OK},
+      {false, current.month, current.year, CreditCard::MASKED_SERVER_CARD,
+       CreditCard::OK},
+      {true, current.month, current.year, CreditCard::FULL_SERVER_CARD,
+       CreditCard::EXPIRED},
+      {true, current.month, current.year, CreditCard::MASKED_SERVER_CARD,
+       CreditCard::EXPIRED},
+
+      // Cards that expire next month should be updated only if the server
+      // status is EXPIRED.
+      {false, next_month.month, next_month.year, CreditCard::LOCAL_CARD},
+      {false, next_month.month, next_month.year, CreditCard::MASKED_SERVER_CARD,
+       CreditCard::OK},
+      {false, next_month.month, next_month.year, CreditCard::FULL_SERVER_CARD,
+       CreditCard::OK},
+      {true, next_month.month, next_month.year, CreditCard::MASKED_SERVER_CARD,
+       CreditCard::EXPIRED},
+      {true, next_month.month, next_month.year, CreditCard::FULL_SERVER_CARD,
+       CreditCard::EXPIRED},
+
+      // Cards that expire next year should be updated only if the server status
+      // is EXPIRED.
+      {false, next_year.month, next_year.year, CreditCard::LOCAL_CARD},
+      {false, next_year.month, next_year.year, CreditCard::MASKED_SERVER_CARD,
+       CreditCard::OK},
+      {false, next_year.month, next_year.year, CreditCard::FULL_SERVER_CARD,
+       CreditCard::OK},
+      {true, next_year.month, next_year.year, CreditCard::MASKED_SERVER_CARD,
+       CreditCard::EXPIRED},
+      {true, next_year.month, next_year.year, CreditCard::FULL_SERVER_CARD,
+       CreditCard::EXPIRED},
+  };
+
+  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
+    CreditCard card(base::ASCIIToUTF16("1234"), kTestCases[i].month,
+                    kTestCases[i].year);
+    card.set_record_type(kTestCases[i].record_type);
+    if (card.record_type() != CreditCard::LOCAL_CARD)
+      card.SetServerStatus(kTestCases[i].server_status);
+
+    EXPECT_EQ(kTestCases[i].should_update_expiration,
+              card.ShouldUpdateExpiration(now));
+  }
 }
 
 }  // namespace autofill

@@ -61,6 +61,9 @@ class FullCardRequest : public CardUnmaskDelegate {
   // Called by autofill client when the risk data has been loaded.
   void OnDidGetUnmaskRiskData(const std::string& risk_data);
 
+  // Resets the state of the request.
+  void Reset();
+
   // Responsible for showing the UI that prompts the user for the CVC and/or the
   // updated expiration date.
   AutofillClient* const autofill_client_;
@@ -76,6 +79,9 @@ class FullCardRequest : public CardUnmaskDelegate {
 
   // The pending request to get a card's full PAN and CVC.
   std::unique_ptr<payments::PaymentsClient::UnmaskRequestDetails> request_;
+
+  // Whether the card unmask request should be sent to the payment server.
+  bool should_unmask_card_;
 
   // The timestamp when the full PAN was requested from a server. For
   // histograms.

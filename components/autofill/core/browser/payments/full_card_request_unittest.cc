@@ -7,6 +7,8 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/message_loop/message_loop.h"
+#include "base/time/time.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
@@ -30,6 +32,15 @@ class MockDelegate : public FullCardRequest::Delegate,
   MOCK_METHOD0(OnFullCardError, void());
 };
 
+// The personal data manager.
+class MockPersonalDataManager : public PersonalDataManager {
+ public:
+  MockPersonalDataManager() : PersonalDataManager("en-US") {}
+  ~MockPersonalDataManager() override {}
+  MOCK_METHOD1(UpdateCreditCard, void(const CreditCard& credit_card));
+  MOCK_METHOD1(UpdateServerCreditCard, void(const CreditCard& credit_card));
+};
+
 // The autofill client.
 class MockAutofillClient : public TestAutofillClient {
  public:
@@ -46,8 +57,7 @@ class FullCardRequestTest : public testing::Test,
                             public PaymentsClientDelegate {
  public:
   FullCardRequestTest()
-      : personal_data_("en_US"),
-        request_context_(new net::TestURLRequestContextGetter(
+      : request_context_(new net::TestURLRequestContextGetter(
             base::ThreadTaskRunnerHandle::Get())),
         payments_client_(request_context_.get(), this),
         request_(&autofill_client_, &payments_client_, &personal_data_) {
@@ -58,6 +68,8 @@ class FullCardRequestTest : public testing::Test,
   }
 
   ~FullCardRequestTest() override {}
+
+  MockPersonalDataManager* personal_data() { return &personal_data_; }
 
   MockAutofillClient* client() { return &autofill_client_; }
 
@@ -89,7 +101,7 @@ class FullCardRequestTest : public testing::Test,
   }
 
   base::MessageLoop message_loop_;
-  PersonalDataManager personal_data_;
+  MockPersonalDataManager personal_data_;
   MockAutofillClient autofill_client_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_;
   PaymentsClient payments_client_;
@@ -167,6 +179,59 @@ TEST_F(FullCardRequestTest, GetFullCardPanAndCvcForFullServerCard) {
   CardUnmaskDelegate::UnmaskResponse response;
   response.cvc = base::ASCIIToUTF16("123");
   ui_delegate()->OnUnmaskResponse(response);
+  ui_delegate()->OnUnmaskPromptClosed();
+}
+
+// Verify getting the CVC for an unmasked server card with EXPIRED server
+// status.
+TEST_F(FullCardRequestTest,
+       GetFullCardPanAndCvcForFullServerCardInExpiredStatus) {
+  EXPECT_CALL(*delegate(),
+              OnFullCardDetails(CardMatches(CreditCard::FULL_SERVER_CARD,
+                                            "4111", "12", "2051"),
+                                base::ASCIIToUTF16("123")));
+  EXPECT_CALL(*client(), ShowUnmaskPrompt(_, _, _));
+  EXPECT_CALL(*personal_data(), UpdateServerCreditCard(_)).Times(0);
+  EXPECT_CALL(*client(), OnUnmaskVerificationResult(AutofillClient::SUCCESS));
+
+  CreditCard full_server_card(base::ASCIIToUTF16("4111"), 12, 2050);
+  full_server_card.set_record_type(CreditCard::FULL_SERVER_CARD);
+  full_server_card.SetServerStatus(CreditCard::EXPIRED);
+  request()->GetFullCard(full_server_card, AutofillClient::UNMASK_FOR_AUTOFILL,
+                         delegate()->AsWeakPtr());
+  CardUnmaskDelegate::UnmaskResponse response;
+  response.cvc = base::ASCIIToUTF16("123");
+  response.exp_year = base::ASCIIToUTF16("2051");
+  response.exp_month = base::ASCIIToUTF16("12");
+  ui_delegate()->OnUnmaskResponse(response);
+  OnDidGetRealPan(AutofillClient::SUCCESS, "4111");
+  ui_delegate()->OnUnmaskPromptClosed();
+}
+
+// Verify getting the CVC for an unmasked server card with OK status, but
+// expiration date in the past.
+TEST_F(FullCardRequestTest, GetFullCardPanAndCvcForExpiredFullServerCard) {
+  EXPECT_CALL(*delegate(),
+              OnFullCardDetails(CardMatches(CreditCard::FULL_SERVER_CARD,
+                                            "4111", "12", "2051"),
+                                base::ASCIIToUTF16("123")));
+  EXPECT_CALL(*client(), ShowUnmaskPrompt(_, _, _));
+  EXPECT_CALL(*personal_data(), UpdateServerCreditCard(_)).Times(0);
+  EXPECT_CALL(*client(), OnUnmaskVerificationResult(AutofillClient::SUCCESS));
+
+  base::Time::Exploded today;
+  base::Time::Now().LocalExplode(&today);
+  CreditCard full_server_card(base::ASCIIToUTF16("4111"), 12, today.year - 1);
+  full_server_card.set_record_type(CreditCard::FULL_SERVER_CARD);
+  full_server_card.SetServerStatus(CreditCard::OK);
+  request()->GetFullCard(full_server_card, AutofillClient::UNMASK_FOR_AUTOFILL,
+                         delegate()->AsWeakPtr());
+  CardUnmaskDelegate::UnmaskResponse response;
+  response.cvc = base::ASCIIToUTF16("123");
+  response.exp_year = base::ASCIIToUTF16("2051");
+  response.exp_month = base::ASCIIToUTF16("12");
+  ui_delegate()->OnUnmaskResponse(response);
+  OnDidGetRealPan(AutofillClient::SUCCESS, "4111");
   ui_delegate()->OnUnmaskPromptClosed();
 }
 
@@ -280,24 +345,30 @@ TEST_F(FullCardRequestTest, UpdateExpDateForFullServerCard) {
   response.exp_month = base::ASCIIToUTF16("12");
   response.exp_year = base::ASCIIToUTF16("2050");
   ui_delegate()->OnUnmaskResponse(response);
+  OnDidGetRealPan(AutofillClient::SUCCESS, "4111");
   ui_delegate()->OnUnmaskPromptClosed();
 }
 
 // Verify updating expiration date for a local card.
 TEST_F(FullCardRequestTest, UpdateExpDateForLocalCard) {
   EXPECT_CALL(*delegate(), OnFullCardDetails(CardMatches(CreditCard::LOCAL_CARD,
-                                                         "4111", "12", "2050"),
+                                                         "4111", "12", "2051"),
                                              base::ASCIIToUTF16("123")));
   EXPECT_CALL(*client(), ShowUnmaskPrompt(_, _, _));
+  EXPECT_CALL(*personal_data(),
+              UpdateCreditCard(
+                  CardMatches(CreditCard::LOCAL_CARD, "4111", "12", "2051")));
   EXPECT_CALL(*client(), OnUnmaskVerificationResult(AutofillClient::SUCCESS));
 
-  request()->GetFullCard(CreditCard(base::ASCIIToUTF16("4111"), 10, 2000),
-                         AutofillClient::UNMASK_FOR_AUTOFILL,
-                         delegate()->AsWeakPtr());
+  base::Time::Exploded today;
+  base::Time::Now().LocalExplode(&today);
+  request()->GetFullCard(
+      CreditCard(base::ASCIIToUTF16("4111"), 12, today.year - 1),
+      AutofillClient::UNMASK_FOR_AUTOFILL, delegate()->AsWeakPtr());
   CardUnmaskDelegate::UnmaskResponse response;
   response.cvc = base::ASCIIToUTF16("123");
   response.exp_month = base::ASCIIToUTF16("12");
-  response.exp_year = base::ASCIIToUTF16("2050");
+  response.exp_year = base::ASCIIToUTF16("2051");
   ui_delegate()->OnUnmaskResponse(response);
   ui_delegate()->OnUnmaskPromptClosed();
 }
@@ -309,6 +380,9 @@ TEST_F(FullCardRequestTest, SaveRealPan) {
                                             "4111", "12", "2050"),
                                 base::ASCIIToUTF16("123")));
   EXPECT_CALL(*client(), ShowUnmaskPrompt(_, _, _));
+  EXPECT_CALL(*personal_data(),
+              UpdateServerCreditCard(CardMatches(CreditCard::FULL_SERVER_CARD,
+                                                 "4111", "12", "2050")));
   EXPECT_CALL(*client(), OnUnmaskVerificationResult(AutofillClient::SUCCESS));
 
   request()->GetFullCard(

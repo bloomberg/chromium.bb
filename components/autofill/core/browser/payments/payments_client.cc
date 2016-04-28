@@ -176,8 +176,9 @@ class UnmaskCardRequest : public PaymentsRequest {
  public:
   UnmaskCardRequest(const PaymentsClient::UnmaskRequestDetails& request_details)
       : request_details_(request_details) {
-    DCHECK_EQ(CreditCard::MASKED_SERVER_CARD,
-              request_details.card.record_type());
+    DCHECK(
+        CreditCard::MASKED_SERVER_CARD == request_details.card.record_type() ||
+        CreditCard::FULL_SERVER_CARD == request_details.card.record_type());
   }
   ~UnmaskCardRequest() override {}
 

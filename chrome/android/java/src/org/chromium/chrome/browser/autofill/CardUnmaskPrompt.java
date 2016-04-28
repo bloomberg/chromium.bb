@@ -47,6 +47,7 @@ public class CardUnmaskPrompt
     private final AlertDialog mDialog;
     private boolean mShouldRequestExpirationDate;
     private final int mThisYear;
+    private final int mThisMonth;
 
     private final View mMainView;
     private final TextView mInstructions;
@@ -138,6 +139,7 @@ public class CardUnmaskPrompt
 
         mShouldRequestExpirationDate = shouldRequestExpirationDate;
         mThisYear = Calendar.getInstance().get(Calendar.YEAR);
+        mThisMonth = Calendar.getInstance().get(Calendar.MONTH) + 1;
     }
 
     public void show() {
@@ -321,8 +323,9 @@ public class CardUnmaskPrompt
 
     private boolean areInputsValid() {
         if (mShouldRequestExpirationDate) {
+            int month = -1;
             try {
-                int month = Integer.parseInt(mMonthInput.getText().toString());
+                month = Integer.parseInt(mMonthInput.getText().toString());
                 if (month < 1 || month > 12) return false;
             } catch (NumberFormatException e) {
                 return false;
@@ -330,6 +333,8 @@ public class CardUnmaskPrompt
 
             int year = getFourDigitYear();
             if (year < mThisYear || year > mThisYear + 10) return false;
+
+            if (year == mThisYear && month < mThisMonth) return false;
         }
         return mDelegate.checkUserInputValidity(mCardUnmaskInput.getText().toString());
     }

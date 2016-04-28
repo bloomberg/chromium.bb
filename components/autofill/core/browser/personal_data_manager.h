@@ -135,11 +135,11 @@ class PersonalDataManager : public KeyedService,
 
   // Updates |credit_card| which already exists in the web database. This
   // can only be used on local credit cards.
-  void UpdateCreditCard(const CreditCard& credit_card);
+  virtual void UpdateCreditCard(const CreditCard& credit_card);
 
   // Update a server card. Only the full number and masked/unmasked
   // status can be changed.
-  void UpdateServerCreditCard(const CreditCard& credit_card);
+  virtual void UpdateServerCreditCard(const CreditCard& credit_card);
 
   // Resets the card for |guid| to the masked state.
   void ResetFullServerCard(const std::string& guid);
