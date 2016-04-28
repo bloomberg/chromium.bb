@@ -55509,6 +55509,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="UMA.Debug.EnableCrashUpload.Uptime" units="ms">
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    Measures how much time since start up it took before crash reporting was
+    enabled via enablePotentialCrashUploading() as part of deferred start up.
+    Only logged on Android.
+  </summary>
+</histogram>
+
 <histogram name="UMA.Discarded Log Events">
   <owner>asvitkine@chromium.org</owner>
   <summary>

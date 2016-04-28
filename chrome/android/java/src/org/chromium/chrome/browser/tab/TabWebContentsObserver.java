@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.tab;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.os.SystemClock;
 import android.support.annotation.IntDef;
 import android.view.View;
 
@@ -213,7 +214,7 @@ public class TabWebContentsObserver extends WebContentsObserver {
             //   s^b = 60000
             //   b = ln(60000) / ln(1.05) ~= 225
             RecordHistogram.recordCustomTimesHistogram("Startup.FirstCommitNavigationTime",
-                    System.currentTimeMillis() - UmaUtils.getMainEntryPointTime(),
+                    SystemClock.uptimeMillis() - UmaUtils.getMainEntryPointTime(),
                     1, 60000 /* 1 minute */, TimeUnit.MILLISECONDS, 225);
             UmaUtils.setRunningApplicationStart(false);
         }

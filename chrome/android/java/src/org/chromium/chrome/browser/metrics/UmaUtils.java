@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.metrics;
 
+import android.os.SystemClock;
+
 import org.chromium.base.annotations.CalledByNative;
 
 /**
@@ -24,7 +26,7 @@ public class UmaUtils {
         // isn't initialized until we start the native content browser component, and we
         // then need the start time in the C++ side before we return to Java. As such we
         // save it in a static that the C++ can fetch once it has initialized the JNI.
-        sApplicationStartWallClockMs = System.currentTimeMillis();
+        sApplicationStartWallClockMs = SystemClock.uptimeMillis();
     }
 
     /**

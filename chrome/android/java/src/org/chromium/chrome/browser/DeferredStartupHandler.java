@@ -6,6 +6,7 @@ package org.chromium.chrome.browser;
 
 import android.content.Context;
 import android.os.AsyncTask;
+import android.os.SystemClock;
 import android.text.TextUtils;
 
 import org.chromium.base.FieldTrialList;
@@ -14,10 +15,12 @@ import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.bookmarkswidget.BookmarkWidgetProvider;
 import org.chromium.chrome.browser.crash.CrashFileManager;
 import org.chromium.chrome.browser.crash.MinidumpUploadService;
 import org.chromium.chrome.browser.media.MediaCaptureNotificationService;
+import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.partnerbookmarks.PartnerBookmarksShim;
 import org.chromium.chrome.browser.physicalweb.PhysicalWeb;
 import org.chromium.chrome.browser.precache.PrecacheLauncher;
@@ -25,6 +28,8 @@ import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.content.browser.ChildProcessLauncher;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * Handler for application level tasks to be completed on deferred startup.
@@ -65,6 +70,10 @@ public class DeferredStartupHandler {
                 try {
                     TraceEvent.begin("ChromeBrowserInitializer.onDeferredStartup.doInBackground");
                     if (!crashDumpUploadingCommandLineDisabled) {
+                        RecordHistogram.recordMediumTimesHistogram(
+                                "UMA.Debug.EnableCrashUpload.Uptime",
+                                SystemClock.uptimeMillis() - UmaUtils.getMainEntryPointTime(),
+                                TimeUnit.MILLISECONDS);
                         PrivacyPreferencesManager.getInstance(application)
                                 .enablePotentialCrashUploading();
                         MinidumpUploadService.tryUploadAllCrashDumps(application);
