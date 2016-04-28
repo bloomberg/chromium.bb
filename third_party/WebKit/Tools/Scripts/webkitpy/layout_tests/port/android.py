@@ -257,12 +257,10 @@ class AndroidCommands(object):
             error_handler = None
 
         result = self._executive.run_command(self.adb_command() + command,
-                                             error_handler=error_handler,
-                                             decode_output=False,
-                                             debug_logging=self._debug_logging)
+                                             error_handler=error_handler, debug_logging=self._debug_logging)
 
         # We limit the length to avoid outputting too verbose commands, such as "adb logcat".
-        self._log_debug('Run adb result: ' + result[:80].decode('ascii', errors='replace'))
+        self._log_debug('Run adb result: ' + result[:80])
         return result
 
     def get_serial(self):
@@ -315,14 +313,12 @@ class AndroidCommands(object):
     def _determine_adb_version(adb_command_path, executive, debug_logging):
         re_version = re.compile('^.*version ([\d\.]+)')
         try:
-            output = executive.run_command([adb_command_path, 'version'],
-                                           error_handler=executive.ignore_error,
-                                           decode_output=False,
+            output = executive.run_command([adb_command_path, 'version'], error_handler=executive.ignore_error,
                                            debug_logging=debug_logging)
         except OSError:
             return None
 
-        result = re_version.match(output.decode('ascii', errors='replace'))
+        result = re_version.match(output)
         if not output or not result:
             return None
 
@@ -359,10 +355,8 @@ class AndroidDevices(object):
         re_device = re.compile('^([a-zA-Z0-9_:.-]+)\tdevice$', re.MULTILINE)
 
         result = executive.run_command([AndroidCommands.adb_command_path(executive, debug_logging=self._debug_logging), 'devices'],
-                                       error_handler=executive.ignore_error,
-                                       decode_output=False,
-                                       debug_logging=self._debug_logging)
-        devices = re_device.findall(result.decode('ascii', errors='replace'))
+                                       error_handler=executive.ignore_error, debug_logging=self._debug_logging)
+        devices = re_device.findall(result)
         if not devices:
             return []
 
@@ -514,16 +508,14 @@ class AndroidPort(base.Port):
                 pids = self._executive.running_pids(lambda name: 'adb' in name)
                 if not pids:
                     # Apparently adb is not running, which is unusual. Running any adb command should start it.
-                    self._executive.run_command(['adb', 'devices'],
-                                                decode_output=False)
+                    self._executive.run_command(['adb', 'devices'])
                     pids = self._executive.running_pids(lambda name: 'adb' in name)
                 if not pids:
                     _log.error("The adb daemon does not appear to be running.")
                     return False
 
                 for pid in pids:
-                    self._executive.run_command(['taskset', '-p', '-c', '0', str(pid)],
-                                                decode_output=False)
+                    self._executive.run_command(['taskset', '-p', '-c', '0', str(pid)])
 
         if not result:
             _log.error('For complete Android build requirements, please see:')
@@ -742,8 +734,7 @@ http://goto.google.com/cr-android-perf-howto
 
     def _perf_version_string(self, perf_path):
         try:
-            return self._host.executive.run_command([perf_path, '--version'],
-                                                    decode_output=False)
+            return self._host.executive.run_command([perf_path, '--version'])
         except:
             return None
 
@@ -784,10 +775,9 @@ http://goto.google.com/cr-android-perf-howto
         ]
         if perfhost_path:
             perfhost_args = [perfhost_path] + perfhost_report_command + ['--call-graph', 'none']
-            perf_output = self._host.executive.run_command(perfhost_args,
-                                                           decode_output=False)
+            perf_output = self._host.executive.run_command(perfhost_args)
             # We could save off the full -g report to a file if users found that useful.
-            _log.debug(self._first_ten_lines_of_profile(perf_output).decode('ascii', errors='replace'))
+            _log.debug(self._first_ten_lines_of_profile(perf_output))
         else:
             _log.debug("""
 Failed to find perfhost_linux binary, can't process samples from the device.
