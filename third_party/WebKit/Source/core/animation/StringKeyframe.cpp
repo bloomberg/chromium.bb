@@ -6,9 +6,6 @@
 
 #include "core/StylePropertyShorthand.h"
 #include "core/animation/DeferredLegacyStyleInterpolation.h"
-#include "core/animation/InvalidatableInterpolation.h"
-#include "core/animation/LegacyStyleInterpolation.h"
-#include "core/animation/PropertyInterpolationTypesMapping.h"
 #include "core/animation/css/CSSAnimations.h"
 #include "core/css/CSSPropertyMetadata.h"
 #include "core/css/resolver/StyleResolver.h"
@@ -103,42 +100,6 @@ bool StringKeyframe::CSSPropertySpecificKeyframe::populateAnimatableValue(CSSPro
     return true;
 }
 
-PassRefPtr<Interpolation> StringKeyframe::CSSPropertySpecificKeyframe::createLegacyStyleInterpolation(CSSPropertyID property, Keyframe::PropertySpecificKeyframe& end, Element* element, const ComputedStyle* baseStyle) const
-{
-    CSSValue& fromCSSValue = *m_value.get();
-    CSSValue& toCSSValue = *toCSSPropertySpecificKeyframe(end).value();
-    if (DeferredLegacyStyleInterpolation::interpolationRequiresStyleResolve(fromCSSValue) || DeferredLegacyStyleInterpolation::interpolationRequiresStyleResolve(toCSSValue)) {
-        // FIXME: Handle these cases outside of DeferredLegacyStyleInterpolation.
-        return DeferredLegacyStyleInterpolation::create(&fromCSSValue, &toCSSValue, property);
-    }
-
-    // FIXME: Remove the use of AnimatableValues and Elements here.
-    ASSERT(element);
-    populateAnimatableValue(property, *element, baseStyle, false);
-    end.populateAnimatableValue(property, *element, baseStyle, false);
-    return LegacyStyleInterpolation::create(getAnimatableValue(), end.getAnimatableValue(), property);
-}
-
-PassRefPtr<Interpolation> StringKeyframe::CSSPropertySpecificKeyframe::maybeCreateInterpolation(PropertyHandle propertyHandle, Keyframe::PropertySpecificKeyframe& end, Element* element, const ComputedStyle* baseStyle) const
-{
-    const InterpolationTypes* applicableTypes = PropertyInterpolationTypesMapping::get(propertyHandle);
-    if (applicableTypes)
-        return InvalidatableInterpolation::create(propertyHandle, *applicableTypes, const_cast<CSSPropertySpecificKeyframe*>(this), &end);
-
-    // TODO(alancutter): Remove the remainder of this function.
-
-    // FIXME: Refactor this into a generic piece that lives in InterpolationEffect, and a template parameter specific converter.
-    CSSPropertyID property = propertyHandle.isCSSProperty() ? propertyHandle.cssProperty() : propertyHandle.presentationAttribute();
-    CSSValue* fromCSSValue = m_value.get();
-    CSSValue* toCSSValue = toCSSPropertySpecificKeyframe(end).value();
-
-    // FIXME: Remove this check once neutral keyframes are implemented in StringKeyframes.
-    if (!fromCSSValue || !toCSSValue)
-        return DeferredLegacyStyleInterpolation::create(fromCSSValue, toCSSValue, property);
-
-    return createLegacyStyleInterpolation(property, end, element, baseStyle);
-}
-
 PassRefPtr<Keyframe::PropertySpecificKeyframe> StringKeyframe::CSSPropertySpecificKeyframe::neutralKeyframe(double offset, PassRefPtr<TimingFunction> easing) const
 {
     return create(offset, easing, nullptr, EffectModel::CompositeAdd);
@@ -159,13 +120,6 @@ PassRefPtr<Keyframe::PropertySpecificKeyframe> SVGPropertySpecificKeyframe::clon
 PassRefPtr<Keyframe::PropertySpecificKeyframe> SVGPropertySpecificKeyframe::neutralKeyframe(double offset, PassRefPtr<TimingFunction> easing) const
 {
     return create(offset, easing, String(), EffectModel::CompositeAdd);
-}
-
-PassRefPtr<Interpolation> SVGPropertySpecificKeyframe::maybeCreateInterpolation(PropertyHandle propertyHandle, Keyframe::PropertySpecificKeyframe& end, Element*, const ComputedStyle*) const
-{
-    const InterpolationTypes* applicableTypes = PropertyInterpolationTypesMapping::get(propertyHandle);
-    ASSERT(applicableTypes);
-    return InvalidatableInterpolation::create(propertyHandle, *applicableTypes, const_cast<SVGPropertySpecificKeyframe*>(this), &end);
 }
 
 } // namespace blink

@@ -40,10 +40,9 @@ PassRefPtr<Keyframe::PropertySpecificKeyframe> AnimatableValueKeyframe::Property
     return create(offset, m_easing, m_value, m_composite);
 }
 
-PassRefPtr<Interpolation> AnimatableValueKeyframe::PropertySpecificKeyframe::maybeCreateInterpolation(PropertyHandle property, Keyframe::PropertySpecificKeyframe& end, Element*, const ComputedStyle*) const
+PassRefPtr<Interpolation> AnimatableValueKeyframe::PropertySpecificKeyframe::createInterpolation(PropertyHandle property, const Keyframe::PropertySpecificKeyframe& end) const
 {
-    AnimatableValuePropertySpecificKeyframe& to = toAnimatableValuePropertySpecificKeyframe(end);
-    return LegacyStyleInterpolation::create(value(), to.value(), property.cssProperty());
+    return LegacyStyleInterpolation::create(value(), toAnimatableValuePropertySpecificKeyframe(end).value(), property.cssProperty());
 }
 
 PassRefPtr<Keyframe::PropertySpecificKeyframe> AnimatableValueKeyframe::PropertySpecificKeyframe::neutralKeyframe(double offset, PassRefPtr<TimingFunction> easing) const

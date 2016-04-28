@@ -39,7 +39,7 @@ public:
         m_interpolations.append(InterpolationRecord(interpolation, easing, start, end, applyFrom, applyTo));
     }
 
-    void addInterpolationsFromKeyframes(PropertyHandle, Element*, const ComputedStyle* baseStyle, Keyframe::PropertySpecificKeyframe& keyframeA, Keyframe::PropertySpecificKeyframe& keyframeB, double applyFrom, double applyTo);
+    void addInterpolationsFromKeyframes(PropertyHandle, const Keyframe::PropertySpecificKeyframe& keyframeA, const Keyframe::PropertySpecificKeyframe& keyframeB, double applyFrom, double applyTo);
 
     template<typename T>
     inline void forEachInterpolation(const T& callback)

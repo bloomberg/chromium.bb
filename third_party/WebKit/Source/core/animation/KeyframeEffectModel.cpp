@@ -80,8 +80,9 @@ bool KeyframeEffectModelBase::sample(int iteration, double fraction, double iter
 void KeyframeEffectModelBase::forceConversionsToAnimatableValues(Element& element, const ComputedStyle* baseStyle)
 {
     ensureKeyframeGroups();
+    // TODO(alancutter): Defer compositor keyframe snapshotting to style resolve to remove the Element and ComputedStyle dependency here.
     snapshotAllCompositorKeyframes(element, baseStyle);
-    ensureInterpolationEffectPopulated(&element, baseStyle);
+    ensureInterpolationEffectPopulated();
 }
 
 bool KeyframeEffectModelBase::snapshotNeutralCompositorKeyframes(Element& element, const ComputedStyle& oldStyle, const ComputedStyle& newStyle)
@@ -198,7 +199,7 @@ void KeyframeEffectModelBase::ensureKeyframeGroups() const
     }
 }
 
-void KeyframeEffectModelBase::ensureInterpolationEffectPopulated(Element* element, const ComputedStyle* baseStyle) const
+void KeyframeEffectModelBase::ensureInterpolationEffectPopulated() const
 {
     if (m_interpolationEffect.isPopulated())
         return;
@@ -211,7 +212,7 @@ void KeyframeEffectModelBase::ensureInterpolationEffectPopulated(Element* elemen
             if (applyTo == 1)
                 applyTo = std::numeric_limits<double>::infinity();
 
-            m_interpolationEffect.addInterpolationsFromKeyframes(entry.key, element, baseStyle, *keyframes[i], *keyframes[i + 1], applyFrom, applyTo);
+            m_interpolationEffect.addInterpolationsFromKeyframes(entry.key, *keyframes[i], *keyframes[i + 1], applyFrom, applyTo);
         }
     }
 

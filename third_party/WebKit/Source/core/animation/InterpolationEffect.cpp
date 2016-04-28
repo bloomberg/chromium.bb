@@ -28,44 +28,9 @@ void InterpolationEffect::getActiveInterpolations(double fraction, double iterat
         result.shrink(resultIndex);
 }
 
-void InterpolationEffect::addInterpolationsFromKeyframes(PropertyHandle property, Element* element, const ComputedStyle* baseStyle, Keyframe::PropertySpecificKeyframe& keyframeA, Keyframe::PropertySpecificKeyframe& keyframeB, double applyFrom, double applyTo)
+void InterpolationEffect::addInterpolationsFromKeyframes(PropertyHandle property, const Keyframe::PropertySpecificKeyframe& keyframeA, const Keyframe::PropertySpecificKeyframe& keyframeB, double applyFrom, double applyTo)
 {
-    RefPtr<Interpolation> interpolation = keyframeA.maybeCreateInterpolation(property, keyframeB, element, baseStyle);
-
-    if (interpolation) {
-        addInterpolation(interpolation, &keyframeA.easing(), keyframeA.offset(), keyframeB.offset(), applyFrom, applyTo);
-    } else {
-        RefPtr<Interpolation> interpolationA = keyframeA.maybeCreateInterpolation(property, keyframeA, element, baseStyle);
-        RefPtr<Interpolation> interpolationB = keyframeB.maybeCreateInterpolation(property, keyframeB, element, baseStyle);
-
-        Vector<TimingFunction::PartitionRegion> regions = Vector<TimingFunction::PartitionRegion>();
-        keyframeA.easing().partition(regions);
-
-        size_t regionIndex = 0;
-        for (const auto& region : regions) {
-            double regionStart = blend(keyframeA.offset(), keyframeB.offset(), region.start);
-            double regionEnd = blend(keyframeA.offset(), keyframeB.offset(), region.end);
-
-            double regionApplyFrom = regionIndex == 0 ? applyFrom : regionStart;
-            double regionApplyTo = regionIndex == regions.size() - 1 ? applyTo : regionEnd;
-
-            if (region.half == TimingFunction::RangeHalf::Lower) {
-                interpolation = interpolationA;
-            } else if (region.half == TimingFunction::RangeHalf::Upper) {
-                interpolation = interpolationB;
-            } else {
-                ASSERT_NOT_REACHED();
-                continue;
-            }
-
-            if (interpolation) {
-                addInterpolation(interpolation.release(),
-                    &keyframeA.easing(), regionStart, regionEnd, regionApplyFrom, regionApplyTo);
-            }
-
-            regionIndex++;
-        }
-    }
+    addInterpolation(keyframeA.createInterpolation(property, keyframeB), &keyframeA.easing(), keyframeA.offset(), keyframeB.offset(), applyFrom, applyTo);
 }
 
 } // namespace blink

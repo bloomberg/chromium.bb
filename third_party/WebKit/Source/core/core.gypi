@@ -967,6 +967,8 @@
             'animation/InterpolationValue.h',
             'animation/InvalidatableInterpolation.cpp',
             'animation/InvalidatableInterpolation.h',
+            'animation/Keyframe.cpp',
+            'animation/Keyframe.h',
             'animation/KeyframeEffectModel.cpp',
             'animation/KeyframeEffectModel.h',
             'animation/LegacyStyleInterpolation.h',

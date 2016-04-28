@@ -60,29 +60,6 @@ public:
     // calling evaluate();
     virtual void range(double* minValue, double* maxValue) const = 0;
 
-    enum RangeHalf {
-        Lower, // Timing function values < 0.5
-        Upper // Timing function values >= 0.5
-    };
-
-    struct PartitionRegion {
-        RangeHalf half;
-        double start; // inclusive
-        double end; // exclusive
-
-        PartitionRegion(RangeHalf half, double start, double end)
-            : half(half)
-            , start(start)
-            , end(end)
-        { }
-    };
-
-    // Partitions the timing function into a number of regions,
-    // representing the ranges in which the function's value is < 0.5
-    // and >= 0.5, and hence whether interpolation 0 or 1 should be
-    // used.
-    virtual void partition(Vector<PartitionRegion>& regions) const = 0;
-
 protected:
     TimingFunction(FunctionType type)
         : m_type(type)
@@ -107,7 +84,6 @@ public:
 
     double evaluate(double fraction, double) const override;
     void range(double* minValue, double* maxValue) const override;
-    void partition(Vector<PartitionRegion>& regions) const override;
 private:
     LinearTimingFunction()
         : TimingFunction(kLinearFunction)
@@ -165,7 +141,6 @@ public:
 
     double evaluate(double fraction, double accuracy) const override;
     void range(double* minValue, double* maxValue) const override;
-    void partition(Vector<PartitionRegion>& regions) const override;
 
     double x1() const { return m_x1; }
     double y1() const { return m_y1; }
@@ -236,7 +211,6 @@ public:
 
     double evaluate(double fraction, double) const override;
     void range(double* minValue, double* maxValue) const override;
-    void partition(Vector<PartitionRegion>& regions) const override;
 
     int numberOfSteps() const { return m_steps; }
     StepAtPosition getStepAtPosition() const { return m_stepAtPosition; }

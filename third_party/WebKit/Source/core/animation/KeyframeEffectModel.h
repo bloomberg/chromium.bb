@@ -137,7 +137,7 @@ protected:
 
     // Lazily computes the groups of property-specific keyframes.
     void ensureKeyframeGroups() const;
-    void ensureInterpolationEffectPopulated(Element* = nullptr, const ComputedStyle* baseStyle = nullptr) const;
+    void ensureInterpolationEffectPopulated() const;
 
     KeyframeVector m_keyframes;
     // The spec describes filtering the normalized keyframes at sampling time
