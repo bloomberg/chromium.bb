@@ -4,17 +4,27 @@
 
 #include "net/socket/fuzzed_socket.h"
 
+#include <algorithm>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/thread_task_runner_handle.h"
+#include "net/base/fuzzed_data_provider.h"
 #include "net/base/io_buffer.h"
 
 namespace net {
 
 namespace {
 
-// Subset of the socket errors that can be returned by normal socket reads /
+// Some of the socket errors that can be returned by normal socket connection
+// attempts.
+const Error kConnectErrors[] = {
+    ERR_CONNECTION_RESET,     ERR_CONNECTION_CLOSED, ERR_FAILED,
+    ERR_CONNECTION_TIMED_OUT, ERR_ACCESS_DENIED,     ERR_CONNECTION_REFUSED,
+    ERR_ADDRESS_UNREACHABLE};
+
+// Some of the socket errors that can be returned by normal socket reads /
 // writes. The first one is returned when no more input data remains, so it's
 // one of the most common ones.
 const Error kReadWriteErrors[] = {ERR_CONNECTION_CLOSED, ERR_FAILED,
@@ -22,11 +32,11 @@ const Error kReadWriteErrors[] = {ERR_CONNECTION_CLOSED, ERR_FAILED,
 
 }  // namespace
 
-FuzzedSocket::FuzzedSocket(const uint8_t* data,
-                           size_t data_size,
-                           const BoundNetLog& bound_net_log)
-    : data_(reinterpret_cast<const char*>(data), data_size),
-      bound_net_log_(bound_net_log),
+FuzzedSocket::FuzzedSocket(FuzzedDataProvider* data_provider,
+                           net::NetLog* net_log)
+    : data_provider_(data_provider),
+      bound_net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_SOCKET)),
+      remote_address_(IPEndPoint(IPAddress::IPv4Localhost(), 80)),
       weak_factory_(this) {}
 
 FuzzedSocket::~FuzzedSocket() {}
@@ -34,6 +44,7 @@ FuzzedSocket::~FuzzedSocket() {}
 int FuzzedSocket::Read(IOBuffer* buf,
                        int buf_len,
                        const CompletionCallback& callback) {
+  DCHECK(!connect_pending_);
   DCHECK(!read_pending_);
 
   bool sync;
@@ -44,24 +55,25 @@ int FuzzedSocket::Read(IOBuffer* buf,
     result = net_error_;
     sync = !error_pending_;
   } else {
-    // Otherwise, use |data_|.
-    uint8_t random_val = ConsumeUint8FromData();
-    sync = !!(random_val & 0x01);
-    result = random_val >> 1;
+    // Otherwise, use |data_provider_|.
+    sync = data_provider_->ConsumeBool();
+    // This allows for more consistent behavior across mutations of the fuzzed
+    // data than ConsumeValueInRange(0,255).
+    result = data_provider_->ConsumeBits(8);
     if (result > buf_len)
       result = buf_len;
-    // Can't read more data than is available in |data_|.
-    if (static_cast<size_t>(result) > data_.length())
-      result = data_.length();
+
+    if (result > 0) {
+      base::StringPiece data = data_provider_->ConsumeBytes(result);
+      result = data.length();
+      std::copy(data.data(), data.data() + result, buf->data());
+    }
 
     if (result == 0) {
       net_error_ = ConsumeReadWriteErrorFromData();
       result = net_error_;
       if (!sync)
         error_pending_ = true;
-    } else {
-      memcpy(buf->data(), data_.data(), result);
-      data_ = data_.substr(result);
     }
   }
 
@@ -86,6 +98,7 @@ int FuzzedSocket::Read(IOBuffer* buf,
 int FuzzedSocket::Write(IOBuffer* buf,
                         int buf_len,
                         const CompletionCallback& callback) {
+  DCHECK(!connect_pending_);
   DCHECK(!write_pending_);
 
   bool sync;
@@ -97,9 +110,10 @@ int FuzzedSocket::Write(IOBuffer* buf,
     sync = !error_pending_;
   } else {
     // Otherwise, use |data_|.
-    uint8_t random_val = ConsumeUint8FromData();
-    sync = !!(random_val & 0x01);
-    result = random_val >> 1;
+    sync = data_provider_->ConsumeBool();
+    // This allows for more consistent behavior across mutations of the fuzzed
+    // data than ConsumeValueInRange(0,255).
+    result = data_provider_->ConsumeBits(8);
     if (result > buf_len)
       result = buf_len;
     if (result == 0) {
@@ -134,19 +148,43 @@ int FuzzedSocket::SetSendBufferSize(int32_t size) {
 int FuzzedSocket::Connect(const CompletionCallback& callback) {
   // Sockets can normally be reused, but don't support it here.
   DCHECK_NE(net_error_, OK);
+  DCHECK(!connect_pending_);
   DCHECK(!read_pending_);
   DCHECK(!write_pending_);
   DCHECK(!error_pending_);
   DCHECK(!total_bytes_read_);
   DCHECK(!total_bytes_written_);
 
-  net_error_ = OK;
-  return OK;
+  bool sync = true;
+  Error result = OK;
+  if (fuzz_connect_result_) {
+    // Decide if sync or async. Use async, if no data is left.
+    sync = data_provider_->ConsumeBool();
+    // Decide if the connect succeeds or not, and if so, pick an error code.
+    if (data_provider_->ConsumeBool()) {
+      result = kConnectErrors[data_provider_->ConsumeValueInRange(
+          0, arraysize(kConnectErrors) - 1)];
+    }
+  }
+
+  if (sync) {
+    net_error_ = result;
+    return result;
+  }
+
+  connect_pending_ = true;
+  if (result != OK)
+    error_pending_ = true;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&FuzzedSocket::OnConnectComplete,
+                            weak_factory_.GetWeakPtr(), callback, result));
+  return ERR_IO_PENDING;
 }
 
 void FuzzedSocket::Disconnect() {
   net_error_ = ERR_CONNECTION_CLOSED;
   weak_factory_.InvalidateWeakPtrs();
+  connect_pending_ = false;
   read_pending_ = false;
   write_pending_ = false;
   error_pending_ = false;
@@ -212,17 +250,9 @@ int64_t FuzzedSocket::GetTotalReceivedBytes() const {
   return total_bytes_read_;
 }
 
-uint8_t FuzzedSocket::ConsumeUint8FromData() {
-  size_t length = data_.length();
-  if (!length)
-    return 0;
-  uint8_t out = data_[length - 1];
-  data_ = data_.substr(0, length - 1);
-  return out;
-}
-
 Error FuzzedSocket::ConsumeReadWriteErrorFromData() {
-  return kReadWriteErrors[ConsumeUint8FromData() % arraysize(kReadWriteErrors)];
+  return kReadWriteErrors[data_provider_->ConsumeValueInRange(
+      0, arraysize(kReadWriteErrors) - 1)];
 }
 
 void FuzzedSocket::OnReadComplete(const CompletionCallback& callback,
@@ -246,6 +276,15 @@ void FuzzedSocket::OnWriteComplete(const CompletionCallback& callback,
   } else {
     total_bytes_written_ += result;
   }
+  callback.Run(result);
+}
+
+void FuzzedSocket::OnConnectComplete(const CompletionCallback& callback,
+                                     int result) {
+  CHECK(connect_pending_);
+  connect_pending_ = false;
+  if (result < 0)
+    error_pending_ = false;
   callback.Run(result);
 }
 

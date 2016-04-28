@@ -11,20 +11,23 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_piece.h"
 #include "net/base/completion_callback.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/log/net_log.h"
 #include "net/socket/stream_socket.h"
 
 namespace net {
 
+class FuzzedDataProvider;
+class IPEndPoint;
 class IOBuffer;
 
-// A StreamSocket that uses a single block of data to generate responses for use
-// with fuzzers. Writes can succeed synchronously or asynchronously, can write
-// some or all of the provided data, and can fail with several different errors.
-// Reads can do the same, but the read data is also generated from the initial
-// input data. The number of bytes written/read from a single call is currently
-// capped at 127 bytes.
+// A StreamSocket that uses a FuzzedDataProvider to generate responses. Writes
+// can succeed synchronously or asynchronously, can write some or all of the
+// provided data, and can fail with several different errors. Reads can do the
+// same, but the read data is also generated from the FuzzedDataProvider. The
+// number of bytes written/read from a single call is currently capped at 255
+// bytes.
 //
 // Reads and writes are executed independently of one another, so to guarantee
 // the fuzzer behaves the same across repeated runs with the same input, the
@@ -33,13 +36,22 @@ class IOBuffer;
 // data.
 class FuzzedSocket : public StreamSocket {
  public:
-  // |data| must be of length |data_size| and is used as to determine behavior
-  // of the FuzzedSocket. It must remain valid until the FuzzedSocket is
-  // destroyed.
-  FuzzedSocket(const uint8_t* data,
-               size_t data_size,
-               const BoundNetLog& bound_net_log);
+  // |data_provider| is used as to determine behavior of the FuzzedSocket. It
+  // must remain valid until after the FuzzedSocket is destroyed.
+  FuzzedSocket(FuzzedDataProvider* data_provider, net::NetLog* net_log);
   ~FuzzedSocket() override;
+
+  // If set to true, the socket will fuzz the result of the Connect() call.
+  // It can fail or succeed, and return synchronously or asynchronously. If
+  // false, Connect() succeeds synchronously. Defaults to false.
+  void set_fuzz_connect_result(bool fuzz_connect_result) {
+    fuzz_connect_result_ = fuzz_connect_result;
+  }
+
+  // Sets the remote address the socket claims to be using.
+  void set_remote_address(const IPEndPoint& remote_address) {
+    remote_address_ = remote_address;
+  }
 
   // Socket implementation:
   int Read(IOBuffer* buf,
@@ -72,22 +84,22 @@ class FuzzedSocket : public StreamSocket {
   int64_t GetTotalReceivedBytes() const override;
 
  private:
-  // Returns a uint8_t removed from the back of |data_|. Bytes read from the
-  // socket are taken from the front of the stream, so this will keep read bytes
-  // more consistent between test runs. If no data is left, returns 0.
-  uint8_t ConsumeUint8FromData();
-
   // Returns a net::Error that can be returned by a read or a write. Reads and
   // writes return basically the same set of errors, at the TCP socket layer.
-  // Which error is determined by a call to ConsumeUint8FromData().
   Error ConsumeReadWriteErrorFromData();
 
   void OnReadComplete(const CompletionCallback& callback, int result);
   void OnWriteComplete(const CompletionCallback& callback, int result);
+  void OnConnectComplete(const CompletionCallback& callback, int result);
 
-  // The unconsumed portion of the input data that |this| was created with.
-  base::StringPiece data_;
+  FuzzedDataProvider* data_provider_;
 
+  // If true, the result of the Connect() call is fuzzed - it can succeed or
+  // fail with a variety of connection errors, and it can complete synchronously
+  // or asynchronously.
+  bool fuzz_connect_result_ = false;
+
+  bool connect_pending_ = false;
   bool read_pending_ = false;
   bool write_pending_ = false;
 
@@ -104,6 +116,8 @@ class FuzzedSocket : public StreamSocket {
   int64_t total_bytes_written_ = 0;
 
   BoundNetLog bound_net_log_;
+
+  IPEndPoint remote_address_;
 
   base::WeakPtrFactory<FuzzedSocket> weak_factory_;
 

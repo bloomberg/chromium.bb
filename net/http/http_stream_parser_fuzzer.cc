@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "net/base/fuzzed_data_provider.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
@@ -33,8 +34,9 @@
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   net::TestCompletionCallback callback;
   net::BoundTestNetLog bound_test_net_log;
-  std::unique_ptr<net::FuzzedSocket> fuzzed_socket(
-      new net::FuzzedSocket(data, size, bound_test_net_log.bound()));
+  net::FuzzedDataProvider data_provider(data, size);
+  std::unique_ptr<net::FuzzedSocket> fuzzed_socket(new net::FuzzedSocket(
+      &data_provider, bound_test_net_log.bound().net_log()));
   CHECK_EQ(net::OK, fuzzed_socket->Connect(callback.callback()));
 
   net::ClientSocketHandle socket_handle;
