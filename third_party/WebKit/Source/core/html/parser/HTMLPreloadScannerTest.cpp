@@ -123,13 +123,14 @@ protected:
         return data;
     }
 
-    void runSetUp(ViewportState viewportState, PreloadState preloadState = PreloadEnabled)
+    void runSetUp(ViewportState viewportState, PreloadState preloadState = PreloadEnabled, ReferrerPolicy documentReferrerPolicy = ReferrerPolicyDefault)
     {
         HTMLParserOptions options(&m_dummyPageHolder->document());
         KURL documentURL(ParsedURLString, "http://whatever.test/");
         m_dummyPageHolder->document().settings()->setViewportEnabled(viewportState == ViewportEnabled);
         m_dummyPageHolder->document().settings()->setViewportMetaEnabled(viewportState == ViewportEnabled);
         m_dummyPageHolder->document().settings()->setDoHtmlPreloadScanning(preloadState == PreloadEnabled);
+        m_dummyPageHolder->document().setReferrerPolicy(documentReferrerPolicy);
         m_scanner = HTMLPreloadScanner::create(options, documentURL, CachedDocumentParameters::create(&m_dummyPageHolder->document()), createMediaValuesData());
     }
 
@@ -356,6 +357,28 @@ TEST_F(HTMLPreloadScannerTest, testReferrerPolicy)
         // The scanner's state is not reset between test cases, so all subsequent test cases have a document referrer policy of no-referrer.
         { "http://example.test", "<img referrerpolicy='not-a-valid-policy' src='bla.gif'/>", "bla.gif", "http://example.test/", Resource::Image, 0, ReferrerPolicyNever },
         { "http://example.test", "<img src='bla.gif'/>", "bla.gif", "http://example.test/", Resource::Image, 0, ReferrerPolicyNever }
+    };
+
+    for (const auto& testCase : testCases)
+        test(testCase);
+}
+
+// Tests that a document-level referrer policy (e.g. one set by HTTP
+// header) is applied for preload requests.
+TEST_F(HTMLPreloadScannerTest, testReferrerPolicyOnDocument)
+{
+    runSetUp(ViewportEnabled, PreloadEnabled, ReferrerPolicyOrigin);
+    ReferrerPolicyTestCase testCases[] = {
+        { "http://example.test", "<img src='blah.gif'/>", "blah.gif", "http://example.test/", Resource::Image, 0, ReferrerPolicyOrigin },
+        { "http://example.test", "<style>@import url('blah.css');</style>", "blah.css", "http://example.test/", Resource::CSSStyleSheet, 0, ReferrerPolicyOrigin },
+        // Tests that a meta-delivered referrer policy with an
+        // unrecognized policy value does not override the document's
+        // referrer policy.
+        { "http://example.test", "<meta name='referrer' content='not-a-valid-policy'><img src='bla.gif'/>", "bla.gif", "http://example.test/", Resource::Image, 0, ReferrerPolicyOrigin },
+        // Tests that a meta-delivered referrer policy with a
+        // valid policy value does override the document's
+        // referrer policy.
+        { "http://example.test", "<meta name='referrer' content='unsafe-url'><img src='bla.gif'/>", "bla.gif", "http://example.test/", Resource::Image, 0, ReferrerPolicyAlways },
     };
 
     for (const auto& testCase : testCases)

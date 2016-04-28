@@ -484,6 +484,7 @@ TokenPreloadScanner::TokenPreloadScanner(const KURL& documentURL, PassOwnPtr<Cac
 {
     ASSERT(m_documentParameters.get());
     ASSERT(m_mediaValues.get());
+    m_cssScanner.setReferrerPolicy(m_documentParameters->referrerPolicy);
 }
 
 TokenPreloadScanner::~TokenPreloadScanner()
@@ -541,8 +542,9 @@ static void handleMetaViewport(const String& attributeValue, const CachedDocumen
 
 static void handleMetaReferrer(const String& attributeValue, CachedDocumentParameters* documentParameters, CSSPreloadScanner* cssScanner)
 {
-    if (attributeValue.isEmpty() || attributeValue.isNull() || !SecurityPolicy::referrerPolicyFromString(attributeValue, &documentParameters->referrerPolicy)) {
-        documentParameters->referrerPolicy = ReferrerPolicyDefault;
+    ReferrerPolicy metaReferrerPolicy = ReferrerPolicyDefault;
+    if (!attributeValue.isEmpty() && !attributeValue.isNull() && SecurityPolicy::referrerPolicyFromString(attributeValue, &metaReferrerPolicy)) {
+        documentParameters->referrerPolicy = metaReferrerPolicy;
     }
     cssScanner->setReferrerPolicy(documentParameters->referrerPolicy);
 }
@@ -799,7 +801,7 @@ CachedDocumentParameters::CachedDocumentParameters(Document* document)
     defaultViewportMinWidth = document->viewportDefaultMinWidth();
     viewportMetaZeroValuesQuirk = document->settings() && document->settings()->viewportMetaZeroValuesQuirk();
     viewportMetaEnabled = document->settings() && document->settings()->viewportMetaEnabled();
-    referrerPolicy = ReferrerPolicyDefault;
+    referrerPolicy = document->getReferrerPolicy();
 }
 
 } // namespace blink
