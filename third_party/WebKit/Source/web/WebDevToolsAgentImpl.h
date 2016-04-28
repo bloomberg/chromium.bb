@@ -35,7 +35,6 @@
 #include "core/inspector/InspectorRuntimeAgent.h"
 #include "core/inspector/InspectorSession.h"
 #include "core/inspector/InspectorTracingAgent.h"
-#include "core/inspector/InstrumentingSessions.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebSize.h"
 #include "public/platform/WebThread.h"
@@ -150,7 +149,7 @@ private:
     bool m_hasBeenDisposed;
 #endif
 
-    Member<InstrumentingSessions> m_instrumentingSessions;
+    Member<InstrumentingAgents> m_instrumentingAgents;
     Member<InspectorResourceContentLoader> m_resourceContentLoader;
     Member<InspectorOverlay> m_overlay;
     Member<InspectedFrames> m_inspectedFrames;

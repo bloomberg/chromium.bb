@@ -5,7 +5,6 @@
 #include "core/inspector/InspectorSession.h"
 
 #include "bindings/core/v8/ScriptController.h"
-#include "core/InstrumentingAgents.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
 #include "core/inspector/InspectedFrames.h"
@@ -21,14 +20,14 @@
 
 namespace blink {
 
-InspectorSession::InspectorSession(Client* client, InspectedFrames* inspectedFrames, int sessionId, bool autoFlush)
+InspectorSession::InspectorSession(Client* client, InspectedFrames* inspectedFrames, InstrumentingAgents* instrumentingAgents, int sessionId, bool autoFlush)
     : m_client(client)
     , m_v8Session(nullptr)
     , m_sessionId(sessionId)
     , m_autoFlush(autoFlush)
     , m_attached(false)
     , m_inspectedFrames(inspectedFrames)
-    , m_instrumentingAgents(new InstrumentingAgents())
+    , m_instrumentingAgents(instrumentingAgents)
     , m_inspectorFrontend(adoptPtr(new protocol::Frontend(this)))
     , m_inspectorBackendDispatcher(protocol::Dispatcher::create(this))
 {
@@ -220,14 +219,14 @@ void InspectorSession::didLeaveNestedRunLoop()
 void InspectorSession::startInstrumenting()
 {
     ASSERT(!isInstrumenting());
-    m_instrumentingAgents->setInspectorSession(this);
+    m_instrumentingAgents->addInspectorSession(this);
     forceContextsInAllFrames();
 }
 
 void InspectorSession::stopInstrumenting()
 {
     ASSERT(isInstrumenting());
-    m_instrumentingAgents->setInspectorSession(nullptr);
+    m_instrumentingAgents->removeInspectorSession(this);
 }
 
 void InspectorSession::forceContextsInAllFrames()
@@ -243,7 +242,7 @@ void InspectorSession::forceContextsInAllFrames()
 #if ENABLE(ASSERT)
 bool InspectorSession::isInstrumenting()
 {
-    return m_instrumentingAgents->inspectorSession() == this;
+    return m_instrumentingAgents->inspectorSessions().contains(this);
 }
 #endif
 

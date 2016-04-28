@@ -71,16 +71,16 @@ $methods
 template_impl = string.Template("""
 ${return_type} ${name}(${params})
 {
-    InstrumentingSessions* sessions = ${sessions_getter};
-    if (!sessions || sessions->isEmpty())
-        ${default_return}
-    for (InspectorSession* session : *sessions) {${impl_lines}
-    }${maybe_default_return}
+    InstrumentingAgents* agents = instrumentingAgentsFor(${first_param_name});
+    if (!agents)
+        ${default_return}${impl_lines}${maybe_default_return}
 }""")
 
 template_agent_call = string.Template("""
-        if (${agent_class}* agent = session->instrumentingAgents()->${agent_getter}())
-            ${maybe_return}agent->${name}(${params_agent});""")
+    if (agents->has${agent_class}s()) {
+        for (${agent_class}* agent : agents->${agent_getter}s())
+            ${maybe_return}agent->${name}(${params_agent});
+    }""")
 
 template_instrumenting_agents_h = string.Template("""// Code generated from InspectorInstrumentation.idl
 
@@ -102,7 +102,6 @@ class CORE_EXPORT InstrumentingAgents : public GarbageCollected<InstrumentingAge
 public:
     InstrumentingAgents();
     DECLARE_TRACE();
-
 ${accessor_list}
 
 private:
@@ -115,15 +114,31 @@ ${member_list}
 """)
 
 template_instrumenting_agent_accessor = string.Template("""
-    ${class_name}* ${getter_name}() const { return ${member_name}; }
-    void set${class_name}(${class_name}* agent) { ${member_name} = agent; }""")
+    bool has${class_name}s() const { return ${has_member_name}; }
+    const HeapHashSet<Member<${class_name}>>& ${getter_name}s() const { return ${member_name}; }
+    void add${class_name}(${class_name}* agent);
+    void remove${class_name}(${class_name}* agent);""")
+
+template_instrumenting_agent_impl = string.Template("""
+void InstrumentingAgents::add${class_name}(${class_name}* agent)
+{
+    ${member_name}.add(agent);
+    ${has_member_name} = true;
+}
+
+void InstrumentingAgents::remove${class_name}(${class_name}* agent)
+{
+    ${member_name}.remove(agent);
+    ${has_member_name} = !${member_name}.isEmpty();
+}
+""")
 
 template_instrumenting_agents_cpp = string.Template("""
 InstrumentingAgents::InstrumentingAgents()
     : $init_list
 {
 }
-
+${impl_list}
 DEFINE_TRACE(InstrumentingAgents)
 {
     $trace_list
@@ -233,8 +248,6 @@ class Method:
             self.return_type, self.name, ", ".join(map(Parameter.to_str_class, self.params))))
 
     def generate_cpp(self, cpp_lines):
-        sessions_getter = "instrumentingSessionsFor(%s)" % self.params[0].name
-
         default_return = "return;"
         maybe_default_return = ""
         if self.returns_value:
@@ -252,7 +265,7 @@ class Method:
             default_return=default_return,
             maybe_default_return=maybe_default_return,
             impl_lines="".join(body_lines),
-            sessions_getter=sessions_getter))
+            first_param_name=self.params[0].name))
 
     def generate_agent_call(self, agent):
         agent_class, agent_getter = agent_getter_signature(agent)
@@ -360,32 +373,36 @@ def include_inspector_header(name):
 
 def generate_instrumenting_agents(used_agents):
     agents = list(used_agents)
+    agents.sort()
 
     forward_list = []
     accessor_list = []
     member_list = []
     init_list = []
     trace_list = []
+    impl_list = []
 
     for agent in agents:
         class_name, getter_name = agent_getter_signature(agent)
-        member_name = "m_" + getter_name
+        member_name = "m_" + getter_name + "s"
+        has_member_name = "m_has" + class_name + "s"
 
         forward_list.append("class %s;" % class_name)
         accessor_list.append(template_instrumenting_agent_accessor.substitute(
             None,
             class_name=class_name,
             getter_name=getter_name,
-            member_name=member_name))
-        member_list.append("    Member<%s> %s;" % (class_name, member_name))
-        init_list.append("%s(nullptr)" % member_name)
+            member_name=member_name,
+            has_member_name=has_member_name))
+        member_list.append("    HeapHashSet<Member<%s>> %s;" % (class_name, member_name))
+        member_list.append("    bool %s;" % has_member_name)
+        init_list.append("%s(false)" % has_member_name)
         trace_list.append("visitor->trace(%s);" % member_name)
-
-    forward_list.sort()
-    accessor_list.sort()
-    member_list.sort()
-    init_list.sort()
-    trace_list.sort()
+        impl_list.append(template_instrumenting_agent_impl.substitute(
+            None,
+            class_name=class_name,
+            member_name=member_name,
+            has_member_name=has_member_name))
 
     header_lines = template_instrumenting_agents_h.substitute(
         None,
@@ -396,6 +413,7 @@ def generate_instrumenting_agents(used_agents):
     cpp_lines = template_instrumenting_agents_cpp.substitute(
         None,
         init_list="\n    , ".join(init_list),
+        impl_list="".join(impl_list),
         trace_list="\n    ".join(trace_list))
 
     return header_lines, cpp_lines
@@ -420,7 +438,6 @@ def generate(input_path, output_dir):
         cpp_includes.append(include_inspector_header(agent_class_name(agent)))
     cpp_includes.append(include_header("InstrumentingAgents"))
     cpp_includes.append(include_header("core/CoreExport"))
-    cpp_includes.append(include_header("core/inspector/InspectorSession"))
     cpp_includes.sort()
 
     instrumenting_agents_header, instrumenting_agents_cpp = generate_instrumenting_agents(used_agents)

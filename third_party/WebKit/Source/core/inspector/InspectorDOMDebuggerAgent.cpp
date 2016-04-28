@@ -144,7 +144,7 @@ void InspectorDOMDebuggerAgent::disable(ErrorString*)
 void InspectorDOMDebuggerAgent::restore()
 {
     if (m_state->booleanProperty(DOMDebuggerAgentState::enabled, false))
-        m_instrumentingAgents->setInspectorDOMDebuggerAgent(this);
+        m_instrumentingAgents->addInspectorDOMDebuggerAgent(this);
 }
 
 void InspectorDOMDebuggerAgent::setEventListenerBreakpoint(ErrorString* error, const String& eventName, const Maybe<String>& targetName)
@@ -621,11 +621,11 @@ void InspectorDOMDebuggerAgent::didRemoveBreakpoint()
 void InspectorDOMDebuggerAgent::setEnabled(bool enabled)
 {
     if (enabled) {
-        m_instrumentingAgents->setInspectorDOMDebuggerAgent(this);
+        m_instrumentingAgents->addInspectorDOMDebuggerAgent(this);
         m_state->setBoolean(DOMDebuggerAgentState::enabled, true);
     } else {
         m_state->remove(DOMDebuggerAgentState::enabled);
-        m_instrumentingAgents->setInspectorDOMDebuggerAgent(nullptr);
+        m_instrumentingAgents->removeInspectorDOMDebuggerAgent(this);
     }
 }
 

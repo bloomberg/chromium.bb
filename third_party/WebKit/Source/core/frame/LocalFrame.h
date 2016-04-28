@@ -33,7 +33,6 @@
 #include "core/frame/Frame.h"
 #include "core/frame/LocalFrameLifecycleNotifier.h"
 #include "core/frame/LocalFrameLifecycleObserver.h"
-#include "core/inspector/InstrumentingSessions.h"
 #include "core/loader/FrameLoader.h"
 #include "core/page/FrameTree.h"
 #include "core/paint/PaintPhase.h"
@@ -62,6 +61,7 @@ class HTMLPlugInElement;
 class InputMethodController;
 class IntPoint;
 class IntSize;
+class InstrumentingAgents;
 class LayoutViewItem;
 class LocalDOMWindow;
 class NavigationScheduler;
@@ -134,7 +134,7 @@ public:
     // should be updated to avoid storing things on the main frame.
     LocalFrame* localFrameRoot();
 
-    InstrumentingSessions* instrumentingSessions() { return m_instrumentingSessions.get(); }
+    InstrumentingAgents* instrumentingAgents() { return m_instrumentingAgents.get(); }
 
     // ======== All public functions below this point are candidates to move out of LocalFrame into another class. ========
 
@@ -223,7 +223,7 @@ private:
 
     bool m_inViewSourceMode;
 
-    Member<InstrumentingSessions> m_instrumentingSessions;
+    Member<InstrumentingAgents> m_instrumentingAgents;
 
     ServiceRegistry* const m_serviceRegistry;
 };

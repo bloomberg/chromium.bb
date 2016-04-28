@@ -55,7 +55,7 @@ void InspectorConsoleAgent::enable(ErrorString*)
 {
     if (m_enabled)
         return;
-    m_instrumentingAgents->setInspectorConsoleAgent(this);
+    m_instrumentingAgents->addInspectorConsoleAgent(this);
     m_enabled = true;
     enableStackCapturingIfNeeded();
 
@@ -77,7 +77,7 @@ void InspectorConsoleAgent::disable(ErrorString*)
 {
     if (!m_enabled)
         return;
-    m_instrumentingAgents->setInspectorConsoleAgent(nullptr);
+    m_instrumentingAgents->removeInspectorConsoleAgent(this);
     m_enabled = false;
     disableStackCapturingIfNeeded();
 

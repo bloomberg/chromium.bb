@@ -30,11 +30,11 @@
 
 #include "core/inspector/WorkerInspectorController.h"
 
+#include "core/InstrumentingAgents.h"
 #include "core/inspector/InspectorConsoleAgent.h"
 #include "core/inspector/InspectorHeapProfilerAgent.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorProfilerAgent.h"
-#include "core/inspector/InspectorTaskRunner.h"
 #include "core/inspector/WorkerConsoleAgent.h"
 #include "core/inspector/WorkerDebuggerAgent.h"
 #include "core/inspector/WorkerRuntimeAgent.h"
@@ -60,7 +60,7 @@ WorkerInspectorController* WorkerInspectorController::create(WorkerGlobalScope* 
 WorkerInspectorController::WorkerInspectorController(WorkerGlobalScope* workerGlobalScope, WorkerThreadDebugger* debugger)
     : m_debugger(debugger)
     , m_workerGlobalScope(workerGlobalScope)
-    , m_instrumentingSessions(new InstrumentingSessions())
+    , m_instrumentingAgents(new InstrumentingAgents())
 {
 }
 
@@ -74,7 +74,7 @@ void WorkerInspectorController::connectFrontend()
         return;
 
     // sessionId will be overwritten by WebDevToolsAgent::sendProtocolNotifications call.
-    m_session = new InspectorSession(this, nullptr, 0, true /* autoFlush */);
+    m_session = new InspectorSession(this, nullptr, m_instrumentingAgents.get(), 0, true /* autoFlush */);
     m_v8Session = m_debugger->debugger()->connect(m_debugger->contextGroupId());
 
     m_session->append(WorkerRuntimeAgent::create(m_v8Session->runtimeAgent(), m_workerGlobalScope, this));
@@ -83,7 +83,6 @@ void WorkerInspectorController::connectFrontend()
     m_session->append(InspectorHeapProfilerAgent::create(m_v8Session->heapProfilerAgent()));
     m_session->append(WorkerConsoleAgent::create(m_v8Session->runtimeAgent(), m_workerGlobalScope));
 
-    m_instrumentingSessions->add(m_session);
     m_session->attach(m_v8Session.get(), nullptr);
 }
 
@@ -92,7 +91,6 @@ void WorkerInspectorController::disconnectFrontend()
     if (!m_session)
         return;
     m_session->detach();
-    m_instrumentingSessions->remove(m_session);
     m_v8Session.clear();
     m_session.clear();
 }
@@ -122,7 +120,7 @@ void WorkerInspectorController::sendProtocolMessage(int sessionId, int callId, c
 DEFINE_TRACE(WorkerInspectorController)
 {
     visitor->trace(m_workerGlobalScope);
-    visitor->trace(m_instrumentingSessions);
+    visitor->trace(m_instrumentingAgents);
     visitor->trace(m_session);
 }
 

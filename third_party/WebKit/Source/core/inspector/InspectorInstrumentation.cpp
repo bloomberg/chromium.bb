@@ -53,10 +53,10 @@ namespace blink {
 
 namespace {
 
-PersistentHeapHashSet<WeakMember<InstrumentingSessions>>& instrumentingSessionsSet()
+PersistentHeapHashSet<WeakMember<InstrumentingAgents>>& instrumentingAgentsSet()
 {
-    DEFINE_STATIC_LOCAL(PersistentHeapHashSet<WeakMember<InstrumentingSessions>>, instrumentingSessionsSet, ());
-    return instrumentingSessionsSet;
+    DEFINE_STATIC_LOCAL(PersistentHeapHashSet<WeakMember<InstrumentingAgents>>, instrumentingAgentsSet, ());
+    return instrumentingAgentsSet;
 }
 
 }
@@ -68,96 +68,84 @@ AsyncTask::AsyncTask(ExecutionContext* context, void* task) : AsyncTask(context,
 }
 
 AsyncTask::AsyncTask(ExecutionContext* context, void* task, bool enabled)
-    : m_instrumentingSessions(enabled ? instrumentingSessionsFor(context) : nullptr)
+    : m_instrumentingAgents(enabled ? instrumentingAgentsFor(context) : nullptr)
     , m_task(task)
 {
-    if (!m_instrumentingSessions || m_instrumentingSessions->isEmpty())
+    if (!m_instrumentingAgents || !m_instrumentingAgents->hasInspectorSessions())
         return;
-    for (InspectorSession* session : *m_instrumentingSessions) {
-        if (session->instrumentingAgents()->inspectorSession())
-            session->instrumentingAgents()->inspectorSession()->asyncTaskStarted(m_task);
-    }
+    for (InspectorSession* session : m_instrumentingAgents->inspectorSessions())
+        session->asyncTaskStarted(m_task);
 }
 
 AsyncTask::~AsyncTask()
 {
-    if (!m_instrumentingSessions || m_instrumentingSessions->isEmpty())
+    if (!m_instrumentingAgents || !m_instrumentingAgents->hasInspectorSessions())
         return;
-    for (InspectorSession* session : *m_instrumentingSessions) {
-        if (session->instrumentingAgents()->inspectorSession())
-            session->instrumentingAgents()->inspectorSession()->asyncTaskFinished(m_task);
-    }
+    for (InspectorSession* session : m_instrumentingAgents->inspectorSessions())
+        session->asyncTaskFinished(m_task);
 }
 
 NativeBreakpoint::NativeBreakpoint(ExecutionContext* context, const String& name, bool sync)
-    : m_instrumentingSessions(instrumentingSessionsFor(context))
+    : m_instrumentingAgents(instrumentingAgentsFor(context))
     , m_sync(sync)
 {
-    if (!m_instrumentingSessions || m_instrumentingSessions->isEmpty())
+    if (!m_instrumentingAgents || !m_instrumentingAgents->hasInspectorDOMDebuggerAgents())
         return;
-    for (InspectorSession* session : *m_instrumentingSessions) {
-        if (session->instrumentingAgents()->inspectorDOMDebuggerAgent())
-            session->instrumentingAgents()->inspectorDOMDebuggerAgent()->allowNativeBreakpoint(name, nullptr, m_sync);
-    }
+    for (InspectorDOMDebuggerAgent* domDebuggerAgent : m_instrumentingAgents->inspectorDOMDebuggerAgents())
+        domDebuggerAgent->allowNativeBreakpoint(name, nullptr, m_sync);
 }
 
 NativeBreakpoint::NativeBreakpoint(ExecutionContext* context, EventTarget* eventTarget, Event* event)
-    : m_instrumentingSessions(instrumentingSessionsFor(context))
+    : m_instrumentingAgents(instrumentingAgentsFor(context))
     , m_sync(false)
 {
-    if (!m_instrumentingSessions || m_instrumentingSessions->isEmpty())
+    if (!m_instrumentingAgents || !m_instrumentingAgents->hasInspectorDOMDebuggerAgents())
         return;
     Node* node = eventTarget->toNode();
     String targetName = node ? node->nodeName() : eventTarget->interfaceName();
-    for (InspectorSession* session : *m_instrumentingSessions) {
-        if (session->instrumentingAgents()->inspectorDOMDebuggerAgent())
-            session->instrumentingAgents()->inspectorDOMDebuggerAgent()->allowNativeBreakpoint(event->type(), &targetName, m_sync);
-    }
+    for (InspectorDOMDebuggerAgent* domDebuggerAgent : m_instrumentingAgents->inspectorDOMDebuggerAgents())
+        domDebuggerAgent->allowNativeBreakpoint(event->type(), &targetName, m_sync);
 }
 
 NativeBreakpoint::~NativeBreakpoint()
 {
-    if (m_sync || !m_instrumentingSessions || m_instrumentingSessions->isEmpty())
+    if (m_sync || !m_instrumentingAgents || !m_instrumentingAgents->hasInspectorDOMDebuggerAgents())
         return;
-    for (InspectorSession* session : *m_instrumentingSessions) {
-        if (session->instrumentingAgents()->inspectorDOMDebuggerAgent())
-            session->instrumentingAgents()->inspectorDOMDebuggerAgent()->cancelNativeBreakpoint();
-    }
+    for (InspectorDOMDebuggerAgent* domDebuggerAgent : m_instrumentingAgents->inspectorDOMDebuggerAgents())
+        domDebuggerAgent->cancelNativeBreakpoint();
 }
 
 StyleRecalc::StyleRecalc(Document* document)
-    : m_instrumentingSessions(instrumentingSessionsFor(document))
+    : m_instrumentingAgents(instrumentingAgentsFor(document))
 {
-    if (!m_instrumentingSessions || m_instrumentingSessions->isEmpty())
+    if (!m_instrumentingAgents || m_instrumentingAgents->hasInspectorResourceAgents())
         return;
-    for (InspectorSession* session : *m_instrumentingSessions) {
-        if (session->instrumentingAgents()->inspectorResourceAgent())
-            session->instrumentingAgents()->inspectorResourceAgent()->willRecalculateStyle(document);
-    }
+    for (InspectorResourceAgent* resourceAgent : m_instrumentingAgents->inspectorResourceAgents())
+        resourceAgent->willRecalculateStyle(document);
 }
 
 StyleRecalc::~StyleRecalc()
 {
-    if (!m_instrumentingSessions || m_instrumentingSessions->isEmpty())
+    if (!m_instrumentingAgents)
         return;
-    for (InspectorSession* session : *m_instrumentingSessions) {
-        if (session->instrumentingAgents()->inspectorResourceAgent())
-            session->instrumentingAgents()->inspectorResourceAgent()->didRecalculateStyle();
-        if (session->instrumentingAgents()->inspectorPageAgent())
-            session->instrumentingAgents()->inspectorPageAgent()->didRecalculateStyle();
+    if (m_instrumentingAgents->hasInspectorResourceAgents()) {
+        for (InspectorResourceAgent* resourceAgent : m_instrumentingAgents->inspectorResourceAgents())
+            resourceAgent->didRecalculateStyle();
+    }
+    if (m_instrumentingAgents->hasInspectorPageAgents()) {
+        for (InspectorPageAgent* pageAgent : m_instrumentingAgents->inspectorPageAgents())
+            pageAgent->didRecalculateStyle();
     }
 }
 
 JavaScriptDialog::JavaScriptDialog(LocalFrame* frame, const String& message, ChromeClient::DialogType dialogType)
-    : m_instrumentingSessions(instrumentingSessionsFor(frame))
+    : m_instrumentingAgents(instrumentingAgentsFor(frame))
     , m_result(false)
 {
-    if (!m_instrumentingSessions || m_instrumentingSessions->isEmpty())
+    if (!m_instrumentingAgents || !m_instrumentingAgents->hasInspectorPageAgents())
         return;
-    for (InspectorSession* session : *m_instrumentingSessions) {
-        if (session->instrumentingAgents()->inspectorPageAgent())
-            session->instrumentingAgents()->inspectorPageAgent()->willRunJavaScriptDialog(message, dialogType);
-    }
+    for (InspectorPageAgent* pageAgent : m_instrumentingAgents->inspectorPageAgents())
+        pageAgent->willRunJavaScriptDialog(message, dialogType);
 }
 
 void JavaScriptDialog::setResult(bool result)
@@ -167,12 +155,10 @@ void JavaScriptDialog::setResult(bool result)
 
 JavaScriptDialog::~JavaScriptDialog()
 {
-    if (!m_instrumentingSessions || m_instrumentingSessions->isEmpty())
+    if (!m_instrumentingAgents || !m_instrumentingAgents->hasInspectorPageAgents())
         return;
-    for (InspectorSession* session : *m_instrumentingSessions) {
-        if (session->instrumentingAgents()->inspectorPageAgent())
-            session->instrumentingAgents()->inspectorPageAgent()->didRunJavaScriptDialog(m_result);
-    }
+    for (InspectorPageAgent* pageAgent : m_instrumentingAgents->inspectorPageAgents())
+        pageAgent->didRunJavaScriptDialog(m_result);
 }
 
 int FrontendCounter::s_frontendCounter = 0;
@@ -203,66 +189,62 @@ void continueWithPolicyIgnore(LocalFrame* frame, DocumentLoader* loader, unsigne
 void removedResourceFromMemoryCache(Resource* cachedResource)
 {
     ASSERT(isMainThread());
-    for (InstrumentingSessions* instrumentingSessions: instrumentingSessionsSet()) {
-        if (instrumentingSessions->isEmpty())
+    for (InstrumentingAgents* instrumentingAgents: instrumentingAgentsSet()) {
+        if (!instrumentingAgents->hasInspectorResourceAgents())
             continue;
-        for (InspectorSession* session : *instrumentingSessions) {
-            if (InspectorResourceAgent* inspectorResourceAgent = session->instrumentingAgents()->inspectorResourceAgent())
-                inspectorResourceAgent->removedResourceFromMemoryCache(cachedResource);
-        }
+        for (InspectorResourceAgent* resourceAgent : instrumentingAgents->inspectorResourceAgents())
+            resourceAgent->removedResourceFromMemoryCache(cachedResource);
     }
 }
 
 bool collectingHTMLParseErrors(Document* document)
 {
     ASSERT(isMainThread());
-    if (InstrumentingSessions* instrumentingSessions = instrumentingSessionsFor(document))
-        return instrumentingSessionsSet().contains(instrumentingSessions);
+    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsFor(document))
+        return instrumentingAgentsSet().contains(instrumentingAgents);
     return false;
 }
 
 bool consoleAgentEnabled(ExecutionContext* executionContext)
 {
-    InstrumentingSessions* instrumentingSessions = instrumentingSessionsFor(executionContext);
-    if (!instrumentingSessions || instrumentingSessions->isEmpty())
+    InstrumentingAgents* instrumentingAgents = instrumentingAgentsFor(executionContext);
+    if (!instrumentingAgents || !instrumentingAgents->hasInspectorConsoleAgents())
         return false;
-    for (InspectorSession* session : *instrumentingSessions) {
-        if (InspectorConsoleAgent* consoleAgent = session->instrumentingAgents()->inspectorConsoleAgent()) {
-            if (consoleAgent->enabled())
-                return true;
-        }
+    for (InspectorConsoleAgent* consoleAgent: instrumentingAgents->inspectorConsoleAgents()) {
+        if (consoleAgent->enabled())
+            return true;
     }
     return false;
 }
 
-void registerInstrumentingSessions(InstrumentingSessions* instrumentingSessions)
+void registerInstrumentingAgents(InstrumentingAgents* instrumentingAgents)
 {
     ASSERT(isMainThread());
-    instrumentingSessionsSet().add(instrumentingSessions);
+    instrumentingAgentsSet().add(instrumentingAgents);
 }
 
-void unregisterInstrumentingSessions(InstrumentingSessions* instrumentingSessions)
+void unregisterInstrumentingAgents(InstrumentingAgents* instrumentingAgents)
 {
     ASSERT(isMainThread());
-    ASSERT(instrumentingSessionsSet().contains(instrumentingSessions));
-    instrumentingSessionsSet().remove(instrumentingSessions);
+    ASSERT(instrumentingAgentsSet().contains(instrumentingAgents));
+    instrumentingAgentsSet().remove(instrumentingAgents);
 }
 
-InstrumentingSessions* instrumentingSessionsFor(WorkerGlobalScope* workerGlobalScope)
+InstrumentingAgents* instrumentingAgentsFor(WorkerGlobalScope* workerGlobalScope)
 {
     if (!workerGlobalScope)
         return nullptr;
     if (WorkerInspectorController* controller = workerGlobalScope->workerInspectorController())
-        return controller->instrumentingSessions();
+        return controller->instrumentingAgents();
     return nullptr;
 }
 
-InstrumentingSessions* instrumentingSessionsForNonDocumentContext(ExecutionContext* context)
+InstrumentingAgents* instrumentingAgentsForNonDocumentContext(ExecutionContext* context)
 {
     if (context->isWorkerGlobalScope())
-        return instrumentingSessionsFor(toWorkerGlobalScope(context));
+        return instrumentingAgentsFor(toWorkerGlobalScope(context));
     if (context->isWorkletGlobalScope())
-        return instrumentingSessionsFor(toMainThreadWorkletGlobalScope(context)->frame());
+        return instrumentingAgentsFor(toMainThreadWorkletGlobalScope(context)->frame());
     return nullptr;
 }
 

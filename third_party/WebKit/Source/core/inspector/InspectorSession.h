@@ -38,9 +38,8 @@ public:
         virtual ~Client() {}
     };
 
-    InspectorSession(Client*, InspectedFrames*, int sessionId, bool autoFlush);
+    InspectorSession(Client*, InspectedFrames*, InstrumentingAgents*, int sessionId, bool autoFlush);
     int sessionId() { return m_sessionId; }
-    InstrumentingAgents* instrumentingAgents() { return m_instrumentingAgents.get(); }
 
     void append(InspectorAgent*);
     void attach(V8InspectorSession*, const String* savedState);

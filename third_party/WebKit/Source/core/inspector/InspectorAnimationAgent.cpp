@@ -60,7 +60,7 @@ void InspectorAnimationAgent::restore()
 void InspectorAnimationAgent::enable(ErrorString*)
 {
     m_state->setBoolean(AnimationAgentState::animationAgentEnabled, true);
-    m_instrumentingAgents->setInspectorAnimationAgent(this);
+    m_instrumentingAgents->addInspectorAnimationAgent(this);
 }
 
 void InspectorAnimationAgent::disable(ErrorString*)
@@ -69,7 +69,7 @@ void InspectorAnimationAgent::disable(ErrorString*)
     for (const auto& clone : m_idToAnimationClone.values())
         clone->cancel();
     m_state->setBoolean(AnimationAgentState::animationAgentEnabled, false);
-    m_instrumentingAgents->setInspectorAnimationAgent(nullptr);
+    m_instrumentingAgents->removeInspectorAnimationAgent(this);
     m_idToAnimation.clear();
     m_idToAnimationType.clear();
     m_idToAnimationClone.clear();

@@ -171,7 +171,7 @@ void InspectorLayerTreeAgent::restore()
 
 void InspectorLayerTreeAgent::enable(ErrorString*)
 {
-    m_instrumentingAgents->setInspectorLayerTreeAgent(this);
+    m_instrumentingAgents->addInspectorLayerTreeAgent(this);
     Document* document = m_inspectedFrames->root()->document();
     if (document && document->lifecycle().state() >= DocumentLifecycle::CompositingClean)
         layerTreeDidChange();
@@ -179,7 +179,7 @@ void InspectorLayerTreeAgent::enable(ErrorString*)
 
 void InspectorLayerTreeAgent::disable(ErrorString*)
 {
-    m_instrumentingAgents->setInspectorLayerTreeAgent(0);
+    m_instrumentingAgents->removeInspectorLayerTreeAgent(this);
     m_snapshotById.clear();
     ErrorString unused;
 }

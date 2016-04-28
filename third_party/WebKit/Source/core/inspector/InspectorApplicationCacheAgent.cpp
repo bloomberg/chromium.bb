@@ -56,14 +56,14 @@ void InspectorApplicationCacheAgent::restore()
 void InspectorApplicationCacheAgent::enable(ErrorString*)
 {
     m_state->setBoolean(ApplicationCacheAgentState::applicationCacheAgentEnabled, true);
-    m_instrumentingAgents->setInspectorApplicationCacheAgent(this);
+    m_instrumentingAgents->addInspectorApplicationCacheAgent(this);
     frontend()->networkStateUpdated(networkStateNotifier().onLine());
 }
 
 void InspectorApplicationCacheAgent::disable(ErrorString*)
 {
     m_state->setBoolean(ApplicationCacheAgentState::applicationCacheAgentEnabled, false);
-    m_instrumentingAgents->setInspectorApplicationCacheAgent(nullptr);
+    m_instrumentingAgents->removeInspectorApplicationCacheAgent(this);
 }
 
 void InspectorApplicationCacheAgent::updateApplicationCacheStatus(LocalFrame* frame)

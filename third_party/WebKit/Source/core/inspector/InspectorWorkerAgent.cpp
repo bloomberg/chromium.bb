@@ -65,7 +65,7 @@ void InspectorWorkerAgent::restore()
 {
     if (!enabled())
         return;
-    m_instrumentingAgents->setInspectorWorkerAgent(this);
+    m_instrumentingAgents->addInspectorWorkerAgent(this);
     connectToAllProxies();
 }
 
@@ -74,7 +74,7 @@ void InspectorWorkerAgent::enable(ErrorString*)
     if (enabled())
         return;
     m_state->setBoolean(WorkerAgentState::workerInspectionEnabled, true);
-    m_instrumentingAgents->setInspectorWorkerAgent(this);
+    m_instrumentingAgents->addInspectorWorkerAgent(this);
     connectToAllProxies();
 }
 
@@ -84,7 +84,7 @@ void InspectorWorkerAgent::disable(ErrorString*)
         return;
     m_state->setBoolean(WorkerAgentState::workerInspectionEnabled, false);
     m_state->setBoolean(WorkerAgentState::waitForDebuggerOnStart, false);
-    m_instrumentingAgents->setInspectorWorkerAgent(nullptr);
+    m_instrumentingAgents->removeInspectorWorkerAgent(this);
     for (auto& idProxy : m_connectedProxies)
         idProxy.value->disconnectFromInspector(this);
     m_connectedProxies.clear();

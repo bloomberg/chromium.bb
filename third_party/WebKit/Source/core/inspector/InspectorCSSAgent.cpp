@@ -683,7 +683,7 @@ void InspectorCSSAgent::wasEnabled()
         return;
     }
 
-    m_instrumentingAgents->setInspectorCSSAgent(this);
+    m_instrumentingAgents->addInspectorCSSAgent(this);
     m_domAgent->setDOMListener(this);
     HeapVector<Member<Document>> documents = m_domAgent->documents();
     for (Document* document : documents)
@@ -694,7 +694,7 @@ void InspectorCSSAgent::disable(ErrorString*)
 {
     reset();
     m_domAgent->setDOMListener(nullptr);
-    m_instrumentingAgents->setInspectorCSSAgent(0);
+    m_instrumentingAgents->removeInspectorCSSAgent(this);
     m_state->setBoolean(CSSAgentState::cssAgentEnabled, false);
     m_resourceContentLoader->cancel(m_resourceContentLoaderClientId);
 }

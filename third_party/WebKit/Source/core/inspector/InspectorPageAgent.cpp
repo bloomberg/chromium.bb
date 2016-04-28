@@ -369,7 +369,7 @@ void InspectorPageAgent::enable(ErrorString*)
 {
     m_enabled = true;
     m_state->setBoolean(PageAgentState::pageAgentEnabled, true);
-    m_instrumentingAgents->setInspectorPageAgent(this);
+    m_instrumentingAgents->addInspectorPageAgent(this);
 }
 
 void InspectorPageAgent::disable(ErrorString*)
@@ -379,7 +379,7 @@ void InspectorPageAgent::disable(ErrorString*)
     m_state->remove(PageAgentState::pageAgentScriptsToEvaluateOnLoad);
     m_scriptToEvaluateOnLoadOnce = String();
     m_pendingScriptToEvaluateOnLoadOnce = String();
-    m_instrumentingAgents->setInspectorPageAgent(0);
+    m_instrumentingAgents->removeInspectorPageAgent(this);
     m_inspectorResourceContentLoader->cancel(m_resourceContentLoaderClientId);
 
     stopScreencast(0);

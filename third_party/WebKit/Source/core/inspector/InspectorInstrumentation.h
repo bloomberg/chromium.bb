@@ -35,11 +35,11 @@
 #include "core/dom/Document.h"
 #include "core/dom/Node.h"
 #include "core/frame/LocalFrame.h"
-#include "core/inspector/InstrumentingSessions.h"
 #include "core/page/ChromeClient.h"
 
 namespace blink {
 
+class InstrumentingAgents;
 class WorkerGlobalScope;
 
 namespace InspectorInstrumentation {
@@ -52,7 +52,7 @@ public:
     ~AsyncTask();
 
 private:
-    Member<InstrumentingSessions> m_instrumentingSessions;
+    Member<InstrumentingAgents> m_instrumentingAgents;
     void* m_task;
 };
 
@@ -64,7 +64,7 @@ public:
     ~NativeBreakpoint();
 
 private:
-    Member<InstrumentingSessions> m_instrumentingSessions;
+    Member<InstrumentingAgents> m_instrumentingAgents;
     bool m_sync;
 };
 
@@ -74,7 +74,7 @@ public:
     StyleRecalc(Document*);
     ~StyleRecalc();
 private:
-    Member<InstrumentingSessions> m_instrumentingSessions;
+    Member<InstrumentingAgents> m_instrumentingAgents;
 };
 
 class CORE_EXPORT JavaScriptDialog {
@@ -84,7 +84,7 @@ public:
     void setResult(bool);
     ~JavaScriptDialog();
 private:
-    Member<InstrumentingSessions> m_instrumentingSessions;
+    Member<InstrumentingAgents> m_instrumentingAgents;
     bool m_result;
 };
 
@@ -101,48 +101,48 @@ inline void frontendCreated() { atomicIncrement(&FrontendCounter::s_frontendCoun
 inline void frontendDeleted() { atomicDecrement(&FrontendCounter::s_frontendCounter); }
 inline bool hasFrontends() { return acquireLoad(&FrontendCounter::s_frontendCounter); }
 
-CORE_EXPORT void registerInstrumentingSessions(InstrumentingSessions*);
-CORE_EXPORT void unregisterInstrumentingSessions(InstrumentingSessions*);
+CORE_EXPORT void registerInstrumentingAgents(InstrumentingAgents*);
+CORE_EXPORT void unregisterInstrumentingAgents(InstrumentingAgents*);
 
 CORE_EXPORT extern const char kInspectorEmulateNetworkConditionsClientId[];
 
 // Called from generated instrumentation code.
-CORE_EXPORT InstrumentingSessions* instrumentingSessionsFor(WorkerGlobalScope*);
-CORE_EXPORT InstrumentingSessions* instrumentingSessionsForNonDocumentContext(ExecutionContext*);
+CORE_EXPORT InstrumentingAgents* instrumentingAgentsFor(WorkerGlobalScope*);
+CORE_EXPORT InstrumentingAgents* instrumentingAgentsForNonDocumentContext(ExecutionContext*);
 
-inline InstrumentingSessions* instrumentingSessionsFor(LocalFrame* frame)
+inline InstrumentingAgents* instrumentingAgentsFor(LocalFrame* frame)
 {
-    return frame ? frame->instrumentingSessions() : nullptr;
+    return frame ? frame->instrumentingAgents() : nullptr;
 }
 
-inline InstrumentingSessions* instrumentingSessionsFor(Document& document)
+inline InstrumentingAgents* instrumentingAgentsFor(Document& document)
 {
     LocalFrame* frame = document.frame();
     if (!frame && document.templateDocumentHost())
         frame = document.templateDocumentHost()->frame();
-    return instrumentingSessionsFor(frame);
+    return instrumentingAgentsFor(frame);
 }
 
-inline InstrumentingSessions* instrumentingSessionsFor(Document* document)
+inline InstrumentingAgents* instrumentingAgentsFor(Document* document)
 {
-    return document ? instrumentingSessionsFor(*document) : nullptr;
+    return document ? instrumentingAgentsFor(*document) : nullptr;
 }
 
-inline InstrumentingSessions* instrumentingSessionsFor(ExecutionContext* context)
+inline InstrumentingAgents* instrumentingAgentsFor(ExecutionContext* context)
 {
     if (!context)
         return nullptr;
-    return context->isDocument() ? instrumentingSessionsFor(*toDocument(context)) : instrumentingSessionsForNonDocumentContext(context);
+    return context->isDocument() ? instrumentingAgentsFor(*toDocument(context)) : instrumentingAgentsForNonDocumentContext(context);
 }
 
-inline InstrumentingSessions* instrumentingSessionsFor(Node* node)
+inline InstrumentingAgents* instrumentingAgentsFor(Node* node)
 {
-    return node ? instrumentingSessionsFor(node->document()) : nullptr;
+    return node ? instrumentingAgentsFor(node->document()) : nullptr;
 }
 
-inline InstrumentingSessions* instrumentingSessionsFor(EventTarget* eventTarget)
+inline InstrumentingAgents* instrumentingAgentsFor(EventTarget* eventTarget)
 {
-    return eventTarget ? instrumentingSessionsFor(eventTarget->getExecutionContext()) : nullptr;
+    return eventTarget ? instrumentingAgentsFor(eventTarget->getExecutionContext()) : nullptr;
 }
 
 } // namespace InspectorInstrumentation

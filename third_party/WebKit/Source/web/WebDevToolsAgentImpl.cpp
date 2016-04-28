@@ -303,7 +303,7 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
 #if DCHECK_IS_ON()
     , m_hasBeenDisposed(false)
 #endif
-    , m_instrumentingSessions(m_webLocalFrameImpl->frame()->instrumentingSessions())
+    , m_instrumentingAgents(m_webLocalFrameImpl->frame()->instrumentingAgents())
     , m_resourceContentLoader(InspectorResourceContentLoader::create(m_webLocalFrameImpl->frame()))
     , m_overlay(overlay)
     , m_inspectedFrames(InspectedFrames::create(m_webLocalFrameImpl->frame()))
@@ -354,7 +354,7 @@ void WebDevToolsAgentImpl::webFrameWidgetImplClosed(WebFrameWidgetImpl* webFrame
 DEFINE_TRACE(WebDevToolsAgentImpl)
 {
     visitor->trace(m_webLocalFrameImpl);
-    visitor->trace(m_instrumentingSessions);
+    visitor->trace(m_instrumentingAgents);
     visitor->trace(m_resourceContentLoader);
     visitor->trace(m_overlay);
     visitor->trace(m_inspectedFrames);
@@ -377,7 +377,7 @@ void WebDevToolsAgentImpl::willBeDestroyed()
 
 void WebDevToolsAgentImpl::initializeSession(int sessionId, const String& hostId)
 {
-    m_session = new InspectorSession(this, m_inspectedFrames.get(), sessionId, false /* autoFlush */);
+    m_session = new InspectorSession(this, m_inspectedFrames.get(), m_instrumentingAgents.get(), sessionId, false /* autoFlush */);
 
     ClientMessageLoopAdapter::ensureMainThreadDebuggerCreated(m_client);
     MainThreadDebugger* mainThreadDebugger = MainThreadDebugger::instance();
@@ -458,8 +458,7 @@ void WebDevToolsAgentImpl::initializeSession(int sessionId, const String& hostId
         m_overlay->init(cssAgent, debuggerAgent, m_domAgent);
 
     Platform::current()->currentThread()->addTaskObserver(this);
-    InspectorInstrumentation::registerInstrumentingSessions(m_instrumentingSessions.get());
-    m_instrumentingSessions->add(m_session);
+    InspectorInstrumentation::registerInstrumentingAgents(m_instrumentingAgents.get());
 }
 
 void WebDevToolsAgentImpl::destroySession()
@@ -474,12 +473,11 @@ void WebDevToolsAgentImpl::destroySession()
     m_domAgent.clear();
 
     m_session->detach();
-    m_instrumentingSessions->remove(m_session);
     m_v8Session.clear();
     m_session.clear();
 
     Platform::current()->currentThread()->removeTaskObserver(this);
-    InspectorInstrumentation::unregisterInstrumentingSessions(m_instrumentingSessions.get());
+    InspectorInstrumentation::unregisterInstrumentingAgents(m_instrumentingAgents.get());
 }
 
 void WebDevToolsAgentImpl::attach(const WebString& hostId, int sessionId)

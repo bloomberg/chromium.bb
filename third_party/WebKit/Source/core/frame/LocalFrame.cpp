@@ -30,6 +30,7 @@
 #include "core/frame/LocalFrame.h"
 
 #include "bindings/core/v8/ScriptController.h"
+#include "core/InstrumentingAgents.h"
 #include "core/dom/DocumentType.h"
 #include "core/dom/StyleChangeReason.h"
 #include "core/editing/EditingUtilities.h"
@@ -51,7 +52,6 @@
 #include "core/input/EventHandler.h"
 #include "core/inspector/ConsoleMessageStorage.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include "core/inspector/InspectorSession.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/api/LayoutViewItem.h"
@@ -240,7 +240,7 @@ LocalFrame::~LocalFrame()
 
 DEFINE_TRACE(LocalFrame)
 {
-    visitor->trace(m_instrumentingSessions);
+    visitor->trace(m_instrumentingAgents);
     visitor->trace(m_loader);
     visitor->trace(m_navigationScheduler);
     visitor->trace(m_view);
@@ -786,9 +786,9 @@ inline LocalFrame::LocalFrame(FrameLoaderClient* client, FrameHost* host, FrameO
     , m_serviceRegistry(serviceRegistry)
 {
     if (isLocalRoot())
-        m_instrumentingSessions = new InstrumentingSessions();
+        m_instrumentingAgents = new InstrumentingAgents();
     else
-        m_instrumentingSessions = localFrameRoot()->m_instrumentingSessions;
+        m_instrumentingAgents = localFrameRoot()->m_instrumentingAgents;
 }
 
 WebFrameScheduler* LocalFrame::frameScheduler()

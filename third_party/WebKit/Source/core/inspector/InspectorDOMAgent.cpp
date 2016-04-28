@@ -483,7 +483,7 @@ void InspectorDOMAgent::innerEnable()
     m_history = new InspectorHistory();
     m_domEditor = new DOMEditor(m_history.get());
     m_document = m_inspectedFrames->root()->document();
-    m_instrumentingAgents->setInspectorDOMAgent(this);
+    m_instrumentingAgents->addInspectorDOMAgent(this);
     if (m_backendNodeIdToInspect)
         frontend()->inspectNodeRequested(m_backendNodeIdToInspect);
     m_backendNodeIdToInspect = 0;
@@ -510,7 +510,7 @@ void InspectorDOMAgent::disable(ErrorString* errorString)
     }
     m_state->setBoolean(DOMAgentState::domAgentEnabled, false);
     setSearchingForNode(errorString, NotSearching, Maybe<protocol::DOM::HighlightConfig>());
-    m_instrumentingAgents->setInspectorDOMAgent(nullptr);
+    m_instrumentingAgents->removeInspectorDOMAgent(this);
     m_history.clear();
     m_domEditor.clear();
     setDocument(nullptr);

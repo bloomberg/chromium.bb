@@ -68,12 +68,12 @@ void PageConsoleAgent::enable(ErrorString* errorString)
 {
     InspectorConsoleAgent::enable(errorString);
     m_workersWithEnabledConsole.clear();
-    m_instrumentingAgents->setPageConsoleAgent(this);
+    m_instrumentingAgents->addPageConsoleAgent(this);
 }
 
 void PageConsoleAgent::disable(ErrorString* errorString)
 {
-    m_instrumentingAgents->setPageConsoleAgent(nullptr);
+    m_instrumentingAgents->removePageConsoleAgent(this);
     InspectorConsoleAgent::disable(errorString);
     m_workersWithEnabledConsole.clear();
 }

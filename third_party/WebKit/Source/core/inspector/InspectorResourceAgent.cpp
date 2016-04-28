@@ -900,7 +900,7 @@ void InspectorResourceAgent::enable(int totalBufferSize, int resourceBufferSize)
     m_state->setBoolean(ResourceAgentState::resourceAgentEnabled, true);
     m_state->setNumber(ResourceAgentState::totalBufferSize, totalBufferSize);
     m_state->setNumber(ResourceAgentState::resourceBufferSize, resourceBufferSize);
-    m_instrumentingAgents->setInspectorResourceAgent(this);
+    m_instrumentingAgents->addInspectorResourceAgent(this);
 }
 
 void InspectorResourceAgent::disable(ErrorString*)
@@ -908,7 +908,7 @@ void InspectorResourceAgent::disable(ErrorString*)
     ASSERT(!m_pendingRequest);
     m_state->setBoolean(ResourceAgentState::resourceAgentEnabled, false);
     m_state->setString(ResourceAgentState::userAgentOverride, "");
-    m_instrumentingAgents->setInspectorResourceAgent(0);
+    m_instrumentingAgents->removeInspectorResourceAgent(this);
     m_resourcesData->clear();
     m_knownRequestIdMap.clear();
 }
