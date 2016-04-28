@@ -14,6 +14,11 @@ const base::Feature kAutomaticTabDiscarding{"AutomaticTabDiscarding",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
+// Fixes for browser hang bugs are deployed in a field trial in order to measure
+// their impact. See crbug.com/478209.
+const base::Feature kBrowserHangFixesExperiment{
+    "BrowserHangFixesExperiment", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables Expect CT reporting, which sends reports for opted-in sites
 // that don't serve sufficient Certificate Transparency information.
 const base::Feature kExpectCTReporting{"ExpectCTReporting",

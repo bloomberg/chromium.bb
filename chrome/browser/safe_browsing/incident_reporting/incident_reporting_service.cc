@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -33,6 +34,7 @@
 #include "chrome/browser/safe_browsing/incident_reporting/preference_validation_delegate.h"
 #include "chrome/browser/safe_browsing/incident_reporting/state_store.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "components/prefs/pref_service.h"
@@ -144,6 +146,15 @@ bool ProfileCanAcceptIncident(Profile* profile, const Incident& incident) {
   }
   NOTREACHED();
   return false;
+}
+
+// Returns the shutdown behavior for the task runners of the incident reporting
+// service. Current metrics suggest that CONTINUE_ON_SHUTDOWN will reduce the
+// number of browser hangs on shutdown.
+base::SequencedWorkerPool::WorkerShutdown GetShutdownBehavior() {
+  return base::FeatureList::IsEnabled(features::kBrowserHangFixesExperiment)
+             ? base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN
+             : base::SequencedWorkerPool::SKIP_ON_SHUTDOWN;
 }
 
 }  // namespace
@@ -338,8 +349,7 @@ IncidentReportingService::IncidentReportingService(
       collect_environment_data_fn_(&CollectEnvironmentData),
       environment_collection_task_runner_(
           content::BrowserThread::GetBlockingPool()
-              ->GetTaskRunnerWithShutdownBehavior(
-                  base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)),
+              ->GetTaskRunnerWithShutdownBehavior(GetShutdownBehavior())),
       environment_collection_pending_(),
       collation_timeout_pending_(),
       collation_timer_(FROM_HERE,
@@ -349,13 +359,11 @@ IncidentReportingService::IncidentReportingService(
       delayed_analysis_callbacks_(
           base::TimeDelta::FromMilliseconds(kDefaultCallbackIntervalMs),
           content::BrowserThread::GetBlockingPool()
-              ->GetTaskRunnerWithShutdownBehavior(
-                  base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)),
+              ->GetTaskRunnerWithShutdownBehavior(GetShutdownBehavior())),
       extended_reporting_only_delayed_analysis_callbacks_(
           base::TimeDelta::FromMilliseconds(kDefaultCallbackIntervalMs),
           content::BrowserThread::GetBlockingPool()
-              ->GetTaskRunnerWithShutdownBehavior(
-                  base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)),
+              ->GetTaskRunnerWithShutdownBehavior(GetShutdownBehavior())),
       download_metadata_manager_(content::BrowserThread::GetBlockingPool()),
       receiver_weak_ptr_factory_(this),
       weak_ptr_factory_(this) {
@@ -463,8 +471,7 @@ IncidentReportingService::IncidentReportingService(
       collect_environment_data_fn_(&CollectEnvironmentData),
       environment_collection_task_runner_(
           content::BrowserThread::GetBlockingPool()
-              ->GetTaskRunnerWithShutdownBehavior(
-                  base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)),
+              ->GetTaskRunnerWithShutdownBehavior(GetShutdownBehavior())),
       environment_collection_pending_(),
       collation_timeout_pending_(),
       collation_timer_(FROM_HERE,
@@ -497,8 +504,7 @@ void IncidentReportingService::SetCollectEnvironmentHook(
     collect_environment_data_fn_ = &CollectEnvironmentData;
     environment_collection_task_runner_ =
         content::BrowserThread::GetBlockingPool()
-            ->GetTaskRunnerWithShutdownBehavior(
-                base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
+            ->GetTaskRunnerWithShutdownBehavior(GetShutdownBehavior());
   }
 }
 
