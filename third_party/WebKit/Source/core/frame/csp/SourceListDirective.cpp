@@ -52,6 +52,11 @@ bool SourceListDirective::allowHash(const CSPHashValue& hashValue) const
     return m_sourceList.allowHash(hashValue);
 }
 
+bool SourceListDirective::allowHashedAttributes() const
+{
+    return m_sourceList.allowHashedAttributes();
+}
+
 bool SourceListDirective::isHashOrNoncePresent() const
 {
     return m_sourceList.isHashOrNoncePresent();

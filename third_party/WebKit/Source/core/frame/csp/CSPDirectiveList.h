@@ -61,8 +61,8 @@ public:
     bool allowAncestors(LocalFrame*, const KURL&, ContentSecurityPolicy::ReportingStatus) const;
     bool allowScriptNonce(const String&) const;
     bool allowStyleNonce(const String&) const;
-    bool allowScriptHash(const CSPHashValue&) const;
-    bool allowStyleHash(const CSPHashValue&) const;
+    bool allowScriptHash(const CSPHashValue&, ContentSecurityPolicy::InlineType) const;
+    bool allowStyleHash(const CSPHashValue&, ContentSecurityPolicy::InlineType) const;
     bool allowDynamic() const;
 
     const String& evalDisabledErrorMessage() const { return m_evalDisabledErrorMessage; }
@@ -111,6 +111,7 @@ private:
     bool checkDynamic(SourceListDirective*) const;
     bool checkNonce(SourceListDirective*, const String&) const;
     bool checkHash(SourceListDirective*, const CSPHashValue&) const;
+    bool checkHashedAttributes(SourceListDirective*) const;
     bool checkSource(SourceListDirective*, const KURL&, ContentSecurityPolicy::RedirectStatus) const;
     bool checkMediaType(MediaListDirective*, const String& type, const String& typeAttribute) const;
     bool checkAncestors(SourceListDirective*, LocalFrame*) const;

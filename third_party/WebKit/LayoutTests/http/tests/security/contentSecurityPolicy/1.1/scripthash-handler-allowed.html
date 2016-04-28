@@ -24,7 +24,7 @@
             }, 'Inline event handlers not whitelisted by the policy should generate error events.');
         </script>
 
-        <meta http-equiv="Content-Security-Policy" content="script-src 'sha256-nhtYaXCssBJTThiDLYewspQYue9tisulEwJ3nTJKcMI='">
+        <meta http-equiv="Content-Security-Policy" content="script-src 'sha256-nhtYaXCssBJTThiDLYewspQYue9tisulEwJ3nTJKcMI=' 'unsafe-hashed-attributes'">
     </head>
     <body>
         <button id="pass" onclick="expectSuccess(this)"></button>

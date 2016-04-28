@@ -372,11 +372,11 @@ bool isAllowedByAllWithNonce(const CSPDirectiveListVector& policies, const Strin
     return true;
 }
 
-template<bool (CSPDirectiveList::*allowed)(const CSPHashValue&) const>
-bool isAllowedByAllWithHash(const CSPDirectiveListVector& policies, const CSPHashValue& hashValue)
+template<bool (CSPDirectiveList::*allowed)(const CSPHashValue&, ContentSecurityPolicy::InlineType) const>
+bool isAllowedByAllWithHash(const CSPDirectiveListVector& policies, const CSPHashValue& hashValue, ContentSecurityPolicy::InlineType type)
 {
     for (const auto& policy : policies) {
-        if (!(policy.get()->*allowed)(hashValue))
+        if (!(policy.get()->*allowed)(hashValue, type))
             return false;
     }
     return true;
@@ -405,8 +405,8 @@ bool isAllowedByAllWithFrame(const CSPDirectiveListVector& policies, LocalFrame*
     return true;
 }
 
-template<bool (CSPDirectiveList::*allowed)(const CSPHashValue&) const>
-bool checkDigest(const String& source, uint8_t hashAlgorithmsUsed, const CSPDirectiveListVector& policies)
+template<bool (CSPDirectiveList::*allowed)(const CSPHashValue&, ContentSecurityPolicy::InlineType) const>
+bool checkDigest(const String& source, ContentSecurityPolicy::InlineType type, uint8_t hashAlgorithmsUsed, const CSPDirectiveListVector& policies)
 {
     // Any additions or subtractions from this struct should also modify the
     // respective entries in the kSupportedPrefixes array in
@@ -431,7 +431,7 @@ bool checkDigest(const String& source, uint8_t hashAlgorithmsUsed, const CSPDire
         DigestValue digest;
         if (algorithmMap.cspHashAlgorithm & hashAlgorithmsUsed) {
             bool digestSuccess = computeDigest(algorithmMap.algorithm, utf8Source.data(), utf8Source.length(), digest);
-            if (digestSuccess && isAllowedByAllWithHash<allowed>(policies, CSPHashValue(algorithmMap.cspHashAlgorithm, digest)))
+            if (digestSuccess && isAllowedByAllWithHash<allowed>(policies, CSPHashValue(algorithmMap.cspHashAlgorithm, digest), type))
                 return true;
         }
     }
@@ -444,8 +444,12 @@ bool ContentSecurityPolicy::allowJavaScriptURLs(const String& contextURL, const 
     return isAllowedByAllWithContext<&CSPDirectiveList::allowJavaScriptURLs>(m_policies, contextURL, contextLine, reportingStatus);
 }
 
-bool ContentSecurityPolicy::allowInlineEventHandlers(const String& contextURL, const WTF::OrdinalNumber& contextLine, ContentSecurityPolicy::ReportingStatus reportingStatus) const
+bool ContentSecurityPolicy::allowInlineEventHandler(const String& source, const String& contextURL, const WTF::OrdinalNumber& contextLine, ContentSecurityPolicy::ReportingStatus reportingStatus) const
 {
+    // Inline event handlers may be whitelisted by hash, if 'unsafe-hash-attributes' is present in a policy. Check
+    // against the digest of the |source| first before proceeding on to checking whether inline script is allowed.
+    if (checkDigest<&CSPDirectiveList::allowScriptHash>(source, InlineType::Attribute, m_scriptHashAlgorithmsUsed, m_policies))
+        return true;
     return isAllowedByAllWithContext<&CSPDirectiveList::allowInlineEventHandlers>(m_policies, contextURL, contextLine, reportingStatus);
 }
 
@@ -528,14 +532,14 @@ bool ContentSecurityPolicy::allowStyleWithNonce(const String& nonce) const
     return isAllowedByAllWithNonce<&CSPDirectiveList::allowStyleNonce>(m_policies, nonce);
 }
 
-bool ContentSecurityPolicy::allowScriptWithHash(const String& source) const
+bool ContentSecurityPolicy::allowScriptWithHash(const String& source, InlineType type) const
 {
-    return checkDigest<&CSPDirectiveList::allowScriptHash>(source, m_scriptHashAlgorithmsUsed, m_policies);
+    return checkDigest<&CSPDirectiveList::allowScriptHash>(source, type, m_scriptHashAlgorithmsUsed, m_policies);
 }
 
-bool ContentSecurityPolicy::allowStyleWithHash(const String& source) const
+bool ContentSecurityPolicy::allowStyleWithHash(const String& source, InlineType type) const
 {
-    return checkDigest<&CSPDirectiveList::allowStyleHash>(source, m_styleHashAlgorithmsUsed, m_policies);
+    return checkDigest<&CSPDirectiveList::allowStyleHash>(source, type, m_styleHashAlgorithmsUsed, m_policies);
 }
 
 bool ContentSecurityPolicy::allowRequest(WebURLRequest::RequestContext context, const KURL& url, RedirectStatus redirectStatus, ReportingStatus reportingStatus) const

@@ -174,7 +174,7 @@ StyleElement::ProcessingResult StyleElement::createSheet(Element* e, const Strin
 
     const ContentSecurityPolicy* csp = document.contentSecurityPolicy();
     bool passesContentSecurityPolicyChecks = shouldBypassMainWorldCSP(e)
-        || csp->allowStyleWithHash(text)
+        || csp->allowStyleWithHash(text, ContentSecurityPolicy::InlineType::Block)
         || csp->allowStyleWithNonce(e->fastGetAttribute(HTMLNames::nonceAttr))
         || csp->allowInlineStyle(e->document().url(), m_startPosition.m_line, text);
 

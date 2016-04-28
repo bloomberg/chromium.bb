@@ -62,6 +62,16 @@ TEST_F(CSPSourceListTest, BasicMatchingUnsafeDynamic)
     EXPECT_TRUE(sourceList.allowDynamic());
 }
 
+TEST_F(CSPSourceListTest, BasicMatchingUnsafeHashedAttributes)
+{
+    String sources = "'unsafe-hashed-attributes'";
+    CSPSourceList sourceList(csp.get(), "script-src");
+    parseSourceList(sourceList, sources);
+
+    EXPECT_TRUE(sourceList.allowHashedAttributes());
+}
+
+
 TEST_F(CSPSourceListTest, BasicMatchingStar)
 {
     KURL base;

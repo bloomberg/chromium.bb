@@ -33,6 +33,7 @@ public:
     bool allowDynamic() const;
     bool allowNonce(const String&) const;
     bool allowHash(const CSPHashValue&) const;
+    bool allowHashedAttributes() const;
     uint8_t hashAlgorithmsUsed() const;
 
     bool isHashOrNoncePresent() const;
@@ -51,6 +52,7 @@ private:
     void addSourceUnsafeInline();
     void addSourceUnsafeEval();
     void addSourceUnsafeDynamic();
+    void addSourceUnsafeHashedAttributes();
     void addSourceNonce(const String& nonce);
     void addSourceHash(const ContentSecurityPolicyHashAlgorithm&, const DigestValue& hash);
 
@@ -64,6 +66,7 @@ private:
     bool m_allowInline;
     bool m_allowEval;
     bool m_allowDynamic;
+    bool m_allowHashedAttributes;
     HashSet<String> m_nonces;
     HashSet<CSPHashValue> m_hashes;
     uint8_t m_hashAlgorithmsUsed;

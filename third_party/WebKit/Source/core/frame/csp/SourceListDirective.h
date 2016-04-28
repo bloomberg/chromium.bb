@@ -29,6 +29,7 @@ public:
     bool allowDynamic() const;
     bool allowNonce(const String& nonce) const;
     bool allowHash(const CSPHashValue&) const;
+    bool allowHashedAttributes() const;
     bool isHashOrNoncePresent() const;
     uint8_t hashAlgorithmsUsed() const;
 

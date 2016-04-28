@@ -5037,10 +5037,9 @@ bool Document::isSecureTransitionTo(const KURL& url) const
     return getSecurityOrigin()->canAccess(other.get());
 }
 
-bool Document::allowInlineEventHandlers(Node* node, EventListener* listener, const String& contextURL, const WTF::OrdinalNumber& contextLine)
+bool Document::allowInlineEventHandler(Node* node, EventListener* listener, const String& contextURL, const WTF::OrdinalNumber& contextLine)
 {
-    bool allowedByHash = contentSecurityPolicy()->experimentalFeaturesEnabled() && contentSecurityPolicy()->allowScriptWithHash(listener->code());
-    if (!ContentSecurityPolicy::shouldBypassMainWorld(this) && !allowedByHash && !contentSecurityPolicy()->allowInlineEventHandlers(contextURL, contextLine))
+    if (!ContentSecurityPolicy::shouldBypassMainWorld(this) && !contentSecurityPolicy()->allowInlineEventHandler(listener->code(), contextURL, contextLine))
         return false;
 
     // HTML says that inline script needs browsing context to create its execution environment.
@@ -5052,7 +5051,7 @@ bool Document::allowInlineEventHandlers(Node* node, EventListener* listener, con
         return false;
     if (!frame->script().canExecuteScripts(NotAboutToExecuteScript))
         return false;
-    if (node && node->document() != this && !node->document().allowInlineEventHandlers(node, listener, contextURL, contextLine))
+    if (node && node->document() != this && !node->document().allowInlineEventHandler(node, listener, contextURL, contextLine))
         return false;
 
     return true;

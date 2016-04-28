@@ -126,7 +126,7 @@ void V8LazyEventListener::prepareListenerObject(ExecutionContext* executionConte
     if (!executionContext->isDocument())
         return;
 
-    if (!toDocument(executionContext)->allowInlineEventHandlers(m_node, this, m_sourceURL, m_position.m_line)) {
+    if (!toDocument(executionContext)->allowInlineEventHandler(m_node, this, m_sourceURL, m_position.m_line)) {
         clearListenerObject();
         return;
     }

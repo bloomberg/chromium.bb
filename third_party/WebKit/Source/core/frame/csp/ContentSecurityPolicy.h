@@ -129,6 +129,11 @@ public:
         URLViolation
     };
 
+    enum class InlineType {
+        Block,
+        Attribute
+    };
+
     static ContentSecurityPolicy* create()
     {
         return new ContentSecurityPolicy();
@@ -146,7 +151,7 @@ public:
     PassOwnPtr<Vector<CSPHeaderAndType>> headers() const;
 
     bool allowJavaScriptURLs(const String& contextURL, const WTF::OrdinalNumber& contextLine, ReportingStatus = SendReport) const;
-    bool allowInlineEventHandlers(const String& contextURL, const WTF::OrdinalNumber& contextLine, ReportingStatus = SendReport) const;
+    bool allowInlineEventHandler(const String& source, const String& contextURL, const WTF::OrdinalNumber& contextLine, ReportingStatus = SendReport) const;
     bool allowInlineScript(const String& contextURL, const WTF::OrdinalNumber& contextLine, const String& scriptContent, ReportingStatus = SendReport) const;
     bool allowInlineStyle(const String& contextURL, const WTF::OrdinalNumber& contextLine, const String& styleContent, ReportingStatus = SendReport) const;
     // When the reporting status is |SendReport|, the |ExceptionStatus|
@@ -193,8 +198,8 @@ public:
     // issue a load and be safe disabling any further CSP checks.
     bool allowScriptWithNonce(const String& nonce) const;
     bool allowStyleWithNonce(const String& nonce) const;
-    bool allowScriptWithHash(const String& source) const;
-    bool allowStyleWithHash(const String& source) const;
+    bool allowScriptWithHash(const String& source, InlineType) const;
+    bool allowStyleWithHash(const String& source, InlineType) const;
 
     bool allowRequest(WebURLRequest::RequestContext, const KURL&, RedirectStatus = DidNotRedirect, ReportingStatus = SendReport) const;
 

@@ -130,6 +130,11 @@ bool CSPDirectiveList::checkHash(SourceListDirective* directive, const CSPHashVa
     return !directive || directive->allowHash(hashValue);
 }
 
+bool CSPDirectiveList::checkHashedAttributes(SourceListDirective* directive) const
+{
+    return !directive || directive->allowHashedAttributes();
+}
+
 bool CSPDirectiveList::checkDynamic(SourceListDirective* directive) const
 {
     return !directive || directive->allowDynamic();
@@ -423,13 +428,21 @@ bool CSPDirectiveList::allowStyleNonce(const String& nonce) const
     return checkNonce(operativeDirective(m_styleSrc.get()), nonce);
 }
 
-bool CSPDirectiveList::allowScriptHash(const CSPHashValue& hashValue) const
+bool CSPDirectiveList::allowScriptHash(const CSPHashValue& hashValue, ContentSecurityPolicy::InlineType type) const
 {
+    if (type == ContentSecurityPolicy::InlineType::Attribute) {
+        if (!m_policy->experimentalFeaturesEnabled())
+            return false;
+        if (!checkHashedAttributes(operativeDirective(m_scriptSrc.get())))
+            return false;
+    }
     return checkHash(operativeDirective(m_scriptSrc.get()), hashValue);
 }
 
-bool CSPDirectiveList::allowStyleHash(const CSPHashValue& hashValue) const
+bool CSPDirectiveList::allowStyleHash(const CSPHashValue& hashValue, ContentSecurityPolicy::InlineType type) const
 {
+    if (type != ContentSecurityPolicy::InlineType::Block)
+        return false;
     return checkHash(operativeDirective(m_styleSrc.get()), hashValue);
 }
 

@@ -862,7 +862,7 @@ public:
 
     bool isSecureTransitionTo(const KURL&) const;
 
-    bool allowInlineEventHandlers(Node*, EventListener*, const String& contextURL, const WTF::OrdinalNumber& contextLine);
+    bool allowInlineEventHandler(Node*, EventListener*, const String& contextURL, const WTF::OrdinalNumber& contextLine);
     bool allowExecutingScripts(Node*);
 
     void enforceSandboxFlags(SandboxFlags mask) override;
