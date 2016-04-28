@@ -1101,7 +1101,6 @@ TEST_P(QuicStreamFactoryTest, Goaway) {
   EXPECT_EQ(true,
             QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
   EXPECT_FALSE(HasActiveSession(host_port_pair_));
-  EXPECT_FALSE(HasActiveSession(host_port_pair_));
 
   // Create a new request for the same destination and verify that a
   // new session is created.
@@ -2803,8 +2802,8 @@ TEST_P(QuicStreamFactoryTest, BadPacketLoss) {
   TestCompletionCallback callback2;
   QuicStreamRequest request2(factory_.get());
   EXPECT_EQ(OK, request2.Request(server2, privacy_mode_,
-                                 /*cert_verify_flags=*/0, url_, "GET", net_log_,
-                                 callback2.callback()));
+                                 /*cert_verify_flags=*/0, url2_, "GET",
+                                 net_log_, callback2.callback()));
   QuicChromiumClientSession* session2 = GetActiveSession(server2);
 
   // If there is no packet loss during handshake confirmation, number of lossy
@@ -2856,7 +2855,6 @@ TEST_P(QuicStreamFactoryTest, BadPacketLoss) {
   EXPECT_TRUE(
       QuicStreamFactoryPeer::IsQuicDisabled(factory_.get(), server3.port()));
   EXPECT_FALSE(HasActiveSession(server3));
-  EXPECT_FALSE(HasActiveSession(server3));
 
   // Set packet_loss_rate to higher value than packet_loss_threshold 3rd time in
   // a row and IsQuicDisabled() should close the session.
@@ -2867,7 +2865,6 @@ TEST_P(QuicStreamFactoryTest, BadPacketLoss) {
   EXPECT_FALSE(session4->connection()->connected());
   EXPECT_TRUE(
       QuicStreamFactoryPeer::IsQuicDisabled(factory_.get(), server4.port()));
-  EXPECT_FALSE(HasActiveSession(server4));
   EXPECT_FALSE(HasActiveSession(server4));
 
   std::unique_ptr<QuicHttpStream> stream = request.CreateStream();
@@ -3148,7 +3145,7 @@ TEST_P(QuicStreamFactoryTest, PublicResetPostHandshakeTwoOfThree) {
   TestCompletionCallback callback3;
   QuicStreamRequest request3(factory_.get());
   EXPECT_EQ(OK, request3.Request(server3, privacy_mode_,
-                                 /*cert_verify_flags=*/0, url2_, "GET",
+                                 /*cert_verify_flags=*/0, url3_, "GET",
                                  net_log_, callback3.callback()));
   QuicChromiumClientSession* session3 = GetActiveSession(server3);
 
