@@ -67,6 +67,10 @@ class PromptObserver {
   // Checks if the update prompt is being currently shown.
   virtual bool IsShowingUpdatePrompt() const;
 
+  // Dismisses the prompt currently open and moves the controller to the
+  // inactive state.
+  virtual void Dismiss() const = 0;
+
   // Expecting that the prompt is shown, saves the password. Checks that the
   // prompt is no longer visible afterwards.
   void Accept() const;

@@ -122,4 +122,29 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
   EXPECT_FALSE(prompt_observer->IsShowingPrompt());
 }
 
+IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest, SaveViaAPIAndAutofill) {
+  NavigateToFile("/password/password_form.html");
+  std::string fill_password =
+  "document.getElementById('username_field').value = 'user';"
+  "document.getElementById('password_field').value = '12345';";
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_password));
+
+  // Call the API to save the form.
+  ASSERT_TRUE(content::ExecuteScript(
+      RenderViewHost(),
+      "var c = new PasswordCredential({ id: 'user', password: '12345' });"
+      "navigator.credentials.store(c);"));
+  std::unique_ptr<PromptObserver> prompt_observer(
+      PromptObserver::Create(WebContents()));
+  EXPECT_TRUE(prompt_observer->IsShowingPrompt());
+  prompt_observer->Dismiss();
+
+  NavigationObserver form_submit_observer(WebContents());
+  ASSERT_TRUE(content::ExecuteScript(
+      RenderViewHost(),
+      "document.getElementById('input_submit_button').click();"));
+  form_submit_observer.Wait();
+  EXPECT_FALSE(prompt_observer->IsShowingPrompt());
+}
+
 }  // namespace

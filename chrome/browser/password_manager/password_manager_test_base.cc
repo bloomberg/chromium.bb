@@ -14,7 +14,7 @@
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/passwords/passwords_model_delegate.h"
+#include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
@@ -24,6 +24,7 @@
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "components/password_manager/core/common/password_manager_features.h"
+#include "content/public/browser/navigation_details.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
@@ -95,6 +96,10 @@ class InfoBarObserver : public PromptObserver,
       infobar_service_->RemoveObserver(this);
   }
 
+  void Dismiss() const override {
+    NOTIMPLEMENTED();
+  }
+
  private:
   // PromptObserver:
   bool IsShowingPrompt() const override { return infobar_is_being_shown_; }
@@ -142,6 +147,17 @@ class BubbleObserver : public PromptObserver {
             PasswordsModelDelegateFromWebContents(web_contents)) {}
 
   ~BubbleObserver() override {}
+
+  void Dismiss() const override {
+    passwords_model_delegate_->OnBubbleHidden();
+    // Navigate away to reset the state to inactive.
+    static_cast<content::WebContentsObserver*>(
+        static_cast<ManagePasswordsUIController*>(passwords_model_delegate_))
+            ->DidNavigateMainFrame(content::LoadCommittedDetails(),
+                                   content::FrameNavigateParams());
+    ASSERT_EQ(password_manager::ui::INACTIVE_STATE,
+              passwords_model_delegate_->GetState());
+  }
 
  private:
   // PromptObserver:

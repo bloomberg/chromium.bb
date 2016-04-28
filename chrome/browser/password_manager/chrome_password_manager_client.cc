@@ -222,6 +222,10 @@ bool ChromePasswordManagerClient::PromptUserToSaveOrUpdatePassword(
     return false;
   }
 
+  // Prevent the autofill password manager from prompting the second time.
+  if (type == password_manager::CredentialSourceType::CREDENTIAL_SOURCE_API)
+    password_manager_.DropFormManagers();
+
   if (IsTheHotNewBubbleUIEnabled()) {
 #if !BUILDFLAG(ANDROID_JAVA_UI)
     PasswordsClientUIDelegate* manage_passwords_ui_controller =
