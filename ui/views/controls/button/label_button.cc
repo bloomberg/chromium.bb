@@ -424,7 +424,8 @@ std::unique_ptr<views::InkDropAnimation> LabelButton::CreateInkDropAnimation()
   return GetText().empty()
              ? CustomButton::CreateInkDropAnimation()
              : base::WrapUnique(new views::FloodFillInkDropAnimation(
-                   size(), GetInkDropCenter(), GetInkDropBaseColor()));
+                   GetLocalBounds(), GetInkDropCenter(),
+                   GetInkDropBaseColor()));
 }
 
 std::unique_ptr<views::InkDropHover> LabelButton::CreateInkDropHover() const {

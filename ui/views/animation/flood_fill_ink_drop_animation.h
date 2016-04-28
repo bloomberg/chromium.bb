@@ -48,7 +48,7 @@ class FloodFillInkDropAnimationTestApi;
 //
 class VIEWS_EXPORT FloodFillInkDropAnimation : public InkDropAnimation {
  public:
-  FloodFillInkDropAnimation(const gfx::Size& size,
+  FloodFillInkDropAnimation(const gfx::Rect& clip_bounds,
                             const gfx::Point& center_point,
                             SkColor color);
   ~FloodFillInkDropAnimation() override;
@@ -101,8 +101,8 @@ class VIEWS_EXPORT FloodFillInkDropAnimation : public InkDropAnimation {
   // Returns the target Transform for when the ink drop is fully shown.
   gfx::Transform GetMaxSizeTargetTransform() const;
 
-  // The clip Size.
-  const gfx::Size size_;
+  // The clip bounds.
+  const gfx::Rect clip_bounds_;
 
   // The point where the Center of the ink drop's circle should be drawn.
   gfx::Point center_point_;

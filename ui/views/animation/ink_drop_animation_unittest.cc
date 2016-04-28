@@ -69,7 +69,7 @@ InkDropAnimationTest::InkDropAnimationTest() {
     }
     case FLOOD_FILL_INK_DROP_ANIMATION: {
       FloodFillInkDropAnimation* flood_fill_ink_drop_animation =
-          new FloodFillInkDropAnimation(gfx::Size(10, 10), gfx::Point(),
+          new FloodFillInkDropAnimation(gfx::Rect(0, 0, 10, 10), gfx::Point(),
                                         SK_ColorBLACK);
       ink_drop_animation_.reset(flood_fill_ink_drop_animation);
       test_api_.reset(

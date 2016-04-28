@@ -107,26 +107,22 @@ base::TimeDelta GetAnimationDuration(InkDropSubAnimations state) {
 namespace views {
 
 FloodFillInkDropAnimation::FloodFillInkDropAnimation(
-    const gfx::Size& size,
+    const gfx::Rect& clip_bounds,
     const gfx::Point& center_point,
     SkColor color)
-    : size_(size),
+    : clip_bounds_(clip_bounds),
       center_point_(center_point),
       root_layer_(ui::LAYER_NOT_DRAWN),
-      circle_layer_delegate_(color,
-                             std::max(size_.width(), size_.height()) / 2.f),
+      circle_layer_delegate_(
+          color,
+          std::max(clip_bounds_.width(), clip_bounds_.height()) / 2.f),
       ink_drop_state_(InkDropState::HIDDEN) {
   root_layer_.set_name("FloodFillInkDropAnimation:ROOT_LAYER");
   root_layer_.SetMasksToBounds(true);
-  root_layer_.SetBounds(gfx::Rect(size_));
+  root_layer_.SetBounds(clip_bounds);
 
-  const gfx::Vector2dF translate_vector =
-      center_point_ - root_layer_.bounds().CenterPoint();
-  gfx::Transform transfrom;
-  transfrom.Translate(translate_vector.x(), translate_vector.y());
-  root_layer_.SetTransform(transfrom);
-
-  const int painted_size_length = 2 * std::max(size_.width(), size_.height());
+  const int painted_size_length =
+      2 * std::max(clip_bounds_.width(), clip_bounds_.height());
 
   painted_layer_.SetBounds(gfx::Rect(painted_size_length, painted_size_length));
   painted_layer_.SetFillsBoundsOpaquely(false);
@@ -313,10 +309,10 @@ gfx::Transform FloodFillInkDropAnimation::CalculateTransform(
       ToRoundedPoint(circle_layer_delegate_.GetCenterPoint());
 
   gfx::Transform transform = gfx::Transform();
-  transform.Translate(root_layer_.bounds().CenterPoint().x(),
-                      root_layer_.bounds().CenterPoint().y());
+  transform.Translate(center_point_.x(), center_point_.y());
   transform.Scale(target_scale, target_scale);
-  transform.Translate(-drawn_center_point.x(), -drawn_center_point.y());
+  transform.Translate(-drawn_center_point.x() - root_layer_.bounds().x(),
+                      -drawn_center_point.y() - root_layer_.bounds().y());
 
   return transform;
 }
@@ -325,7 +321,7 @@ gfx::Transform FloodFillInkDropAnimation::GetMaxSizeTargetTransform() const {
   // TODO(estade): get rid of this 2, but make the fade out start before the
   // active/action transform is done.
   return CalculateTransform(
-      gfx::Vector2dF(size_.width(), size_.height()).Length() / 2);
+      gfx::Vector2dF(clip_bounds_.width(), clip_bounds_.height()).Length() / 2);
 }
 
 }  // namespace views

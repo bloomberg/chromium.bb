@@ -476,7 +476,7 @@ void DownloadItemViewMd::AddInkDropLayer(ui::Layer* ink_drop_layer) {
 std::unique_ptr<views::InkDropAnimation>
 DownloadItemViewMd::CreateInkDropAnimation() const {
   return base::WrapUnique(new views::FloodFillInkDropAnimation(
-      size(), ink_drop_delegate_.last_ink_drop_location(),
+      GetLocalBounds(), ink_drop_delegate_.last_ink_drop_location(),
       color_utils::DeriveDefaultIconColor(GetTextColor())));
 }
 
@@ -834,6 +834,10 @@ void DownloadItemViewMd::HandlePressEvent(const ui::LocatedEvent& event,
   // Stop any completion animation.
   if (complete_animation_.get() && complete_animation_->is_animating())
     complete_animation_->End();
+
+  // Don't show the ripple for right clicks.
+  if (!active_event)
+    return;
 
   ink_drop_delegate_.set_last_ink_drop_location(event.location());
   ink_drop_delegate_.OnAction(views::InkDropState::ACTION_PENDING);

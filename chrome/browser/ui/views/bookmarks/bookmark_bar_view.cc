@@ -88,6 +88,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/favicon_size.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/text_constants.h"
@@ -189,10 +190,10 @@ int GetHorizontalMargin() {
   return kHorizontalMargin[ui::MaterialDesignController::GetMode()];
 }
 
-gfx::Size CalculateInkDropSize(const gfx::Size& button_size) {
-  gfx::Size ink_drop_size(button_size);
-  ink_drop_size.Enlarge(0, -2);
-  return ink_drop_size;
+gfx::Rect CalculateInkDropBounds(const gfx::Size& size) {
+  gfx::Rect ink_drop_bounds(size);
+  ink_drop_bounds.Inset(0, 1);
+  return ink_drop_bounds;
 }
 
 // BookmarkButtonBase -----------------------------------------------
@@ -240,16 +241,17 @@ class BookmarkButtonBase : public views::LabelButton {
   std::unique_ptr<views::InkDropAnimation> CreateInkDropAnimation()
       const override {
     return base::WrapUnique(new views::FloodFillInkDropAnimation(
-        CalculateInkDropSize(size()), GetInkDropCenter(),
+        CalculateInkDropBounds(size()), GetInkDropCenter(),
         GetInkDropBaseColor()));
   }
 
   std::unique_ptr<views::InkDropHover> CreateInkDropHover() const override {
     if (!ShouldShowInkDropHover())
       return nullptr;
-    return base::WrapUnique(
-        new views::InkDropHover(CalculateInkDropSize(size()), 0,
-                                GetInkDropCenter(), GetInkDropBaseColor()));
+
+    const gfx::Rect bounds = CalculateInkDropBounds(size());
+    return base::WrapUnique(new views::InkDropHover(
+        bounds.size(), 0, bounds.CenterPoint(), GetInkDropBaseColor()));
   }
 
   SkColor GetInkDropBaseColor() const override {
@@ -341,16 +343,17 @@ class BookmarkMenuButtonBase : public views::MenuButton {
   std::unique_ptr<views::InkDropAnimation> CreateInkDropAnimation()
       const override {
     return base::WrapUnique(new views::FloodFillInkDropAnimation(
-        CalculateInkDropSize(size()), GetInkDropCenter(),
+        CalculateInkDropBounds(size()), GetInkDropCenter(),
         GetInkDropBaseColor()));
   }
 
   std::unique_ptr<views::InkDropHover> CreateInkDropHover() const override {
     if (!ShouldShowInkDropHover())
       return nullptr;
-    return base::WrapUnique(
-        new views::InkDropHover(CalculateInkDropSize(size()), 0,
-                                GetInkDropCenter(), GetInkDropBaseColor()));
+
+    const gfx::Rect bounds = CalculateInkDropBounds(size());
+    return base::WrapUnique(new views::InkDropHover(
+        bounds.size(), 0, bounds.CenterPoint(), GetInkDropBaseColor()));
   }
 
   SkColor GetInkDropBaseColor() const override {
