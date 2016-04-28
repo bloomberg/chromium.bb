@@ -329,7 +329,7 @@ source_set("protobuf_full") {
 
 # Only compile the compiler for the host architecture.
 if (current_toolchain == host_toolchain) {
-  source_set("protoc_lib") {
+  executable("protoc") {
     sources = [
       "src/google/protobuf/compiler/code_generator.cc",
       "src/google/protobuf/compiler/code_generator.h",
@@ -476,6 +476,7 @@ if (current_toolchain == host_toolchain) {
       "src/google/protobuf/compiler/javanano/javanano_primitive_field.h",
       "src/google/protobuf/compiler/js/js_generator.cc",
       "src/google/protobuf/compiler/js/js_generator.h",
+      "src/google/protobuf/compiler/main.cc",
       "src/google/protobuf/compiler/objectivec/objectivec_enum.cc",
       "src/google/protobuf/compiler/objectivec/objectivec_enum.h",
       "src/google/protobuf/compiler/objectivec/objectivec_enum_field.cc",
@@ -527,31 +528,16 @@ if (current_toolchain == host_toolchain) {
       configs -= [ "//build/config/win:lean_and_mean" ]
     }
 
-    public_configs = [ ":protobuf_config" ]
-
-    cflags = protobuf_lite_cflags
-
-    public_deps = [
-      ":protobuf_full",
-    ]
-  }
-
-  executable("protoc") {
-    sources = [
-      "src/google/protobuf/compiler/main.cc",
-    ]
-
-    configs -= [ "//build/config/compiler:chromium_code" ]
-    configs += ["//build/config/compiler:no_chromium_code"]
-
     cflags = protobuf_lite_cflags
 
     deps = [
-      ":protoc_lib",
+      ":protobuf_full",
+      "//build/config/sanitizers:deps",
 
       # Default manifest on Windows (a no-op elsewhere).
       "//build/win:default_exe_manifest",
     ]
+    deps += [ "//build/config/sanitizers:deps" ]
   }
 }
 
