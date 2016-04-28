@@ -92427,6 +92427,8 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="websame"
       label="Link triggered prerender, rel=prerender, same domain."/>
   <suffix name="webnext" label="Link triggered prerender, rel=next."/>
+  <suffix name="offline"
+      label="Prerender triggered for saving a page for offline use."/>
   <affected-histogram name="Prerender.AbandonTimeUntilUsed"/>
   <affected-histogram name="Prerender.CookieSendType"/>
   <affected-histogram name="Prerender.CookieStatus"/>

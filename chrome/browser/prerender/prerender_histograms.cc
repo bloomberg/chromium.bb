@@ -47,7 +47,7 @@ std::string GetHistogramName(Origin origin, bool is_wash,
     case ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN:
       return ComposeHistogramName("webcross", name);
     case ORIGIN_EXTERNAL_REQUEST:
-        return ComposeHistogramName("externalrequest", name);
+      return ComposeHistogramName("externalrequest", name);
     case ORIGIN_INSTANT:
       return ComposeHistogramName("Instant", name);
     case ORIGIN_LINK_REL_NEXT:
@@ -56,6 +56,8 @@ std::string GetHistogramName(Origin origin, bool is_wash,
       return ComposeHistogramName("gws", name);
     case ORIGIN_EXTERNAL_REQUEST_FORCED_CELLULAR:
       return ComposeHistogramName("externalrequestforced", name);
+    case ORIGIN_OFFLINE:
+      return ComposeHistogramName("offline", name);
     default:
       NOTREACHED();
       break;
@@ -91,6 +93,7 @@ do { \
   } \
   /* Do not rename.  HISTOGRAM expects a local variable "name". */ \
   std::string name = GetHistogramName(origin, wash, histogram_name); \
+  /* Branching because HISTOGRAM is caching the histogram into a static. */ \
   if (wash) { \
     HISTOGRAM; \
   } else if (origin == ORIGIN_OMNIBOX) { \
@@ -108,6 +111,8 @@ do { \
   } else if (origin == ORIGIN_LINK_REL_NEXT) { \
     HISTOGRAM; \
   } else if (origin == ORIGIN_EXTERNAL_REQUEST_FORCED_CELLULAR) { \
+    HISTOGRAM; \
+  } else if (origin == ORIGIN_OFFLINE) { \
     HISTOGRAM; \
   } else { \
     HISTOGRAM; \

@@ -320,6 +320,14 @@ PrerenderHandle* PrerenderManager::AddPrerenderForInstant(
                       session_storage_namespace);
 }
 
+PrerenderHandle* PrerenderManager::AddPrerenderForOffline(
+    const GURL& url,
+    content::SessionStorageNamespace* session_storage_namespace,
+    const gfx::Size& size) {
+  return AddPrerender(ORIGIN_OFFLINE, url, content::Referrer(), size,
+                      session_storage_namespace);
+}
+
 void PrerenderManager::CancelAllPrerenders() {
   DCHECK(CalledOnValidThread());
   while (!active_prerenders_.empty()) {
@@ -951,7 +959,8 @@ PrerenderHandle* PrerenderManager::AddPrerender(
   // histogram tracking.
   histograms_->RecordPrerender(origin, url_arg);
 
-  if (profile_->GetPrefs()->GetBoolean(prefs::kBlockThirdPartyCookies)) {
+  if (profile_->GetPrefs()->GetBoolean(prefs::kBlockThirdPartyCookies) &&
+      origin != ORIGIN_OFFLINE) {
     RecordFinalStatusWithoutCreatingPrerenderContents(
         url, origin, FINAL_STATUS_BLOCK_THIRD_PARTY_COOKIES);
     return nullptr;
@@ -1147,8 +1156,12 @@ PrerenderManager::PrerenderData* PrerenderManager::FindPrerenderData(
     const SessionStorageNamespace* session_storage_namespace) {
   for (ScopedVector<PrerenderData>::iterator it = active_prerenders_.begin();
        it != active_prerenders_.end(); ++it) {
-    if ((*it)->contents()->Matches(url, session_storage_namespace))
+    PrerenderContents* contents = (*it)->contents();
+    if (contents->Matches(url, session_storage_namespace)) {
+      if (contents->origin() == ORIGIN_OFFLINE)
+        return NULL;
       return *it;
+    }
   }
   return NULL;
 }
@@ -1169,6 +1182,11 @@ bool PrerenderManager::DoesRateLimitAllowPrerender(Origin origin) const {
   base::TimeDelta elapsed_time =
       GetCurrentTimeTicks() - last_prerender_start_time_;
   histograms_->RecordTimeBetweenPrerenderRequests(origin, elapsed_time);
+  // TODO(gabadie,pasko): Re-implement missing tests for
+  // FINAL_STATUS_RATE_LIMIT_EXCEEDED that where removed by:
+  //    http://crrev.com/a2439eeab37f7cb7a118493fb55ec0cb07f93b49.
+  if (origin == ORIGIN_OFFLINE)
+    return true;
   if (!config_.rate_limit_enabled)
     return true;
   return elapsed_time >=
@@ -1311,10 +1329,18 @@ NetworkPredictionStatus PrerenderManager::GetPredictionStatusForOrigin(
     Origin origin) const {
   DCHECK(CalledOnValidThread());
 
-  // LINK rel=prerender origins ignore the network state and the privacy
-  // settings.
+  // <link rel=prerender> origins ignore the network state and the privacy
+  // settings. Web developers should be able prefetch with all possible privacy
+  // settings and with all possible network types. This would avoid web devs
+  // coming up with creative ways to prefetch in cases they are not allowed to
+  // do so.
+  //
+  // Offline originated prerenders also ignore the network state and privacy
+  // settings because they are controlled by the offliner logic via
+  // PrerenderHandle.
   if (origin == ORIGIN_LINK_REL_PRERENDER_SAMEDOMAIN ||
-      origin == ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN) {
+      origin == ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN ||
+      origin == ORIGIN_OFFLINE) {
     return NetworkPredictionStatus::ENABLED;
   }
 
