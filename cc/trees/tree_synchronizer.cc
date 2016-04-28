@@ -125,59 +125,28 @@ void SynchronizeTreesRecursive(OwnedLayerImplMap* old_layers,
 }
 
 #if DCHECK_IS_ON()
-static void CheckScrollAndClipPointersForLayer(Layer* layer,
-                                               LayerImpl* layer_impl) {
-  DCHECK_EQ(!!layer, !!layer_impl);
+static void CheckScrollAndClipPointersForLayer(Layer* layer) {
   if (!layer)
     return;
 
-  // Having a scroll parent on the impl thread implies having one the main
-  // thread, too. The main thread may have a scroll parent that is not in the
-  // tree because it's been removed but not deleted. In this case, the layer
-  // impl will have no scroll parent. Same argument applies for clip parents and
-  // scroll/clip children.
-  DCHECK(!layer_impl->scroll_parent() || !!layer->scroll_parent());
-  DCHECK(!layer_impl->clip_parent() || !!layer->clip_parent());
-  DCHECK(!layer_impl->scroll_children() || !!layer->scroll_children());
-  DCHECK(!layer_impl->clip_children() || !!layer->clip_children());
-
-  if (layer_impl->scroll_parent())
-    DCHECK_EQ(layer->scroll_parent()->id(), layer_impl->scroll_parent()->id());
-
-  if (layer_impl->clip_parent())
-    DCHECK_EQ(layer->clip_parent()->id(), layer_impl->clip_parent()->id());
-
-  if (layer_impl->scroll_children()) {
+  if (layer->scroll_children()) {
     for (std::set<Layer*>::iterator it = layer->scroll_children()->begin();
          it != layer->scroll_children()->end(); ++it) {
       DCHECK_EQ((*it)->scroll_parent(), layer);
     }
-    for (std::set<LayerImpl*>::iterator it =
-             layer_impl->scroll_children()->begin();
-         it != layer_impl->scroll_children()->end(); ++it) {
-      DCHECK_EQ((*it)->scroll_parent(), layer_impl);
-    }
   }
 
-  if (layer_impl->clip_children()) {
+  if (layer->clip_children()) {
     for (std::set<Layer*>::iterator it = layer->clip_children()->begin();
          it != layer->clip_children()->end(); ++it) {
       DCHECK_EQ((*it)->clip_parent(), layer);
     }
-    for (std::set<LayerImpl*>::iterator it =
-             layer_impl->clip_children()->begin();
-         it != layer_impl->clip_children()->end(); ++it) {
-      DCHECK_EQ((*it)->clip_parent(), layer_impl);
-    }
   }
 }
 
-static void CheckScrollAndClipPointers(LayerTreeHost* host,
-                                       LayerTreeImpl* host_impl) {
-  for (auto* layer_impl : *host_impl) {
-    Layer* layer = host->LayerById(layer_impl->id());
-    CheckScrollAndClipPointersForLayer(layer, layer_impl);
-  }
+static void CheckScrollAndClipPointers(LayerTreeHost* host) {
+  for (auto* layer : *host)
+    CheckScrollAndClipPointersForLayer(layer);
 }
 #endif
 
@@ -204,8 +173,8 @@ void TreeSynchronizer::PushLayerProperties(LayerTreeHost* host_tree,
                               impl_tree);
 
 #if DCHECK_IS_ON()
-  if (host_tree->root_layer() && impl_tree->root_layer())
-    CheckScrollAndClipPointers(host_tree, impl_tree);
+  if (host_tree->root_layer())
+    CheckScrollAndClipPointers(host_tree);
 #endif
 }
 

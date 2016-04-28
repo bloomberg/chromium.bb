@@ -1218,11 +1218,11 @@ TEST_F(LayerTreeImplTest, HitTestingRespectsClipParents) {
     grand_child->SetHasRenderSurface(true);
 
     // This should let |grand_child| "escape" |child|'s clip.
-    grand_child->SetClipParent(root.get());
+    grand_child->test_properties()->clip_parent = root.get();
     std::unique_ptr<std::set<LayerImpl*>> clip_children(
         new std::set<LayerImpl*>);
     clip_children->insert(grand_child.get());
-    root->SetClipChildren(clip_children.release());
+    root->test_properties()->clip_children.reset(clip_children.release());
 
     child->AddChild(std::move(grand_child));
     root->AddChild(std::move(child));
@@ -1273,11 +1273,11 @@ TEST_F(LayerTreeImplTest, HitTestingRespectsScrollParents) {
 
     // This should cause scroll child and its descendants to be affected by
     // |child|'s clip.
-    scroll_child->SetScrollParent(child.get());
+    scroll_child->test_properties()->scroll_parent = child.get();
     std::unique_ptr<std::set<LayerImpl*>> scroll_children(
         new std::set<LayerImpl*>);
     scroll_children->insert(scroll_child.get());
-    child->SetScrollChildren(scroll_children.release());
+    child->test_properties()->scroll_children.reset(scroll_children.release());
 
     SetLayerPropertiesForTesting(grand_child.get(), identity_matrix,
                                  transform_origin, position, bounds, true,

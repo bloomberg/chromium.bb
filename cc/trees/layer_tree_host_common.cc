@@ -326,7 +326,7 @@ static void PreCalculateMetaInformationInternal(
 static void PreCalculateMetaInformationInternalForTesting(
     LayerImpl* layer,
     PreCalculateMetaInformationRecursiveData* recursive_data) {
-  if (layer->clip_parent())
+  if (layer->test_properties()->clip_parent)
     recursive_data->num_unclipped_descendants++;
 
   if (!HasInvertibleOrAnimatedTransformForTesting(layer)) {
@@ -343,8 +343,8 @@ static void PreCalculateMetaInformationInternalForTesting(
     recursive_data->Merge(data_for_child);
   }
 
-  if (layer->clip_children()) {
-    size_t num_clip_children = layer->clip_children()->size();
+  if (layer->test_properties()->clip_children) {
+    size_t num_clip_children = layer->test_properties()->clip_children->size();
     DCHECK_GE(recursive_data->num_unclipped_descendants, num_clip_children);
     recursive_data->num_unclipped_descendants -= num_clip_children;
   }

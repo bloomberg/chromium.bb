@@ -45,8 +45,6 @@
 namespace cc {
 LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
     : parent_(nullptr),
-      scroll_parent_(nullptr),
-      clip_parent_(nullptr),
       mask_layer_id_(-1),
       mask_layer_(nullptr),
       replica_layer_id_(-1),
@@ -148,28 +146,10 @@ void LayerImpl::ClearLinksToOtherLayers() {
   replica_layer_ = nullptr;
 }
 
-void LayerImpl::SetScrollParent(LayerImpl* parent) {
-  if (scroll_parent_ == parent)
-    return;
-
-  if (parent)
-    DCHECK_EQ(layer_tree_impl()->LayerById(parent->id()), parent);
-
-  scroll_parent_ = parent;
-  SetNeedsPushProperties();
-}
-
 void LayerImpl::SetDebugInfo(
     std::unique_ptr<base::trace_event::ConvertableToTraceFormat> debug_info) {
   owned_debug_info_ = std::move(debug_info);
   debug_info_ = owned_debug_info_.get();
-  SetNeedsPushProperties();
-}
-
-void LayerImpl::SetScrollChildren(std::set<LayerImpl*>* children) {
-  if (scroll_children_.get() == children)
-    return;
-  scroll_children_.reset(children);
   SetNeedsPushProperties();
 }
 
@@ -197,21 +177,6 @@ void LayerImpl::ApplyScroll(ScrollState* scroll_state) {
   ScrollNode* node = layer_tree_impl()->property_trees()->scroll_tree.Node(
       scroll_tree_index());
   layer_tree_impl()->ApplyScroll(node, scroll_state);
-}
-
-void LayerImpl::SetClipParent(LayerImpl* ancestor) {
-  if (clip_parent_ == ancestor)
-    return;
-
-  clip_parent_ = ancestor;
-  SetNeedsPushProperties();
-}
-
-void LayerImpl::SetClipChildren(std::set<LayerImpl*>* children) {
-  if (clip_children_.get() == children)
-    return;
-  clip_children_.reset(children);
-  SetNeedsPushProperties();
 }
 
 void LayerImpl::SetTransformTreeIndex(int index) {
@@ -516,47 +481,6 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->SetEffectTreeIndex(effect_tree_index_);
   layer->SetScrollTreeIndex(scroll_tree_index_);
   layer->set_offset_to_transform_parent(offset_to_transform_parent_);
-
-  LayerImpl* scroll_parent = nullptr;
-  if (scroll_parent_) {
-    scroll_parent = layer->layer_tree_impl()->LayerById(scroll_parent_->id());
-    DCHECK(scroll_parent);
-  }
-
-  layer->SetScrollParent(scroll_parent);
-  if (scroll_children_) {
-    std::set<LayerImpl*>* scroll_children = new std::set<LayerImpl*>;
-    for (std::set<LayerImpl*>::iterator it = scroll_children_->begin();
-         it != scroll_children_->end();
-         ++it) {
-      DCHECK_EQ((*it)->scroll_parent(), this);
-      LayerImpl* scroll_child =
-          layer->layer_tree_impl()->LayerById((*it)->id());
-      DCHECK(scroll_child);
-      scroll_children->insert(scroll_child);
-    }
-    layer->SetScrollChildren(scroll_children);
-  } else {
-    layer->SetScrollChildren(nullptr);
-  }
-
-  LayerImpl* clip_parent = nullptr;
-  if (clip_parent_) {
-    clip_parent = layer->layer_tree_impl()->LayerById(
-        clip_parent_->id());
-    DCHECK(clip_parent);
-  }
-
-  layer->SetClipParent(clip_parent);
-  if (clip_children_) {
-    std::set<LayerImpl*>* clip_children = new std::set<LayerImpl*>;
-    for (std::set<LayerImpl*>::iterator it = clip_children_->begin();
-        it != clip_children_->end(); ++it)
-      clip_children->insert(layer->layer_tree_impl()->LayerById((*it)->id()));
-    layer->SetClipChildren(clip_children);
-  } else {
-    layer->SetClipChildren(nullptr);
-  }
 
   layer->PassCopyRequests(&copy_requests_);
 
@@ -1338,12 +1262,6 @@ void LayerImpl::AsValueInto(base::trace_event::TracedValue* state) const {
     replica_layer_->AsValueInto(state);
     state->EndDictionary();
   }
-
-  if (scroll_parent_)
-    state->SetInteger("scroll_parent", scroll_parent_->id());
-
-  if (clip_parent_)
-    state->SetInteger("clip_parent", clip_parent_->id());
 
   state->SetBoolean("can_use_lcd_text", can_use_lcd_text());
   state->SetBoolean("contents_opaque", contents_opaque());

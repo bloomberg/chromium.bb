@@ -135,20 +135,8 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
   LayerImpl* root = root_ptr.get();
   root_clip_ptr->AddChild(std::move(root_ptr));
   host_impl.active_tree()->SetRootLayer(std::move(root_clip_ptr));
-  std::unique_ptr<LayerImpl> scroll_parent =
-      LayerImpl::Create(host_impl.active_tree(), 3);
-  LayerImpl* scroll_child = LayerImpl::Create(host_impl.active_tree(), 4).get();
-  std::set<LayerImpl*>* scroll_children = new std::set<LayerImpl*>();
-  scroll_children->insert(scroll_child);
-  scroll_children->insert(root);
-  root->test_properties()->force_render_surface = true;
 
-  std::unique_ptr<LayerImpl> clip_parent =
-      LayerImpl::Create(host_impl.active_tree(), 5);
-  LayerImpl* clip_child = LayerImpl::Create(host_impl.active_tree(), 6).get();
-  std::set<LayerImpl*>* clip_children = new std::set<LayerImpl*>();
-  clip_children->insert(clip_child);
-  clip_children->insert(root);
+  root->test_properties()->force_render_surface = true;
   root->layer_tree_impl()->ResetAllChangeTracking(
       PropertyTrees::ResetFlags::ALL_TREES);
 
@@ -229,14 +217,6 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
       root->SetElementId(2));
   EXECUTE_AND_VERIFY_NEEDS_PUSH_PROPERTIES_AND_SUBTREE_DID_NOT_CHANGE(
       root->SetMutableProperties(MutableProperty::kOpacity));
-  EXECUTE_AND_VERIFY_NEEDS_PUSH_PROPERTIES_AND_SUBTREE_DID_NOT_CHANGE(
-      root->SetScrollParent(scroll_parent.get()));
-  EXECUTE_AND_VERIFY_NEEDS_PUSH_PROPERTIES_AND_SUBTREE_DID_NOT_CHANGE(
-      root->SetScrollChildren(scroll_children));
-  EXECUTE_AND_VERIFY_NEEDS_PUSH_PROPERTIES_AND_SUBTREE_DID_NOT_CHANGE(
-      root->SetClipParent(clip_parent.get()));
-  EXECUTE_AND_VERIFY_NEEDS_PUSH_PROPERTIES_AND_SUBTREE_DID_NOT_CHANGE(
-      root->SetClipChildren(clip_children));
 
   // After setting all these properties already, setting to the exact same
   // values again should not cause any change.
@@ -252,14 +232,6 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
       root->SetBlendMode(arbitrary_blend_mode));
   EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->SetDrawsContent(true));
   EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->SetBounds(bounds_size));
-  EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(
-      root->SetScrollParent(scroll_parent.get()));
-  EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(
-      root->SetScrollChildren(scroll_children));
-  EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(
-      root->SetClipParent(clip_parent.get()));
-  EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(
-      root->SetClipChildren(clip_children));
 }
 
 TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {

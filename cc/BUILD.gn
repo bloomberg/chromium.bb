@@ -119,6 +119,8 @@ component("cc") {
     "layers/layer_collections.h",
     "layers/layer_impl.cc",
     "layers/layer_impl.h",
+    "layers/layer_impl_test_properties.cc",
+    "layers/layer_impl_test_properties.h",
     "layers/layer_iterator.h",
     "layers/layer_list_iterator.cc",
     "layers/layer_list_iterator.h",

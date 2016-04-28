@@ -107,17 +107,6 @@ class CC_EXPORT LayerImpl {
   std::unique_ptr<LayerImpl> RemoveChildForTesting(LayerImpl* child);
   void SetParent(LayerImpl* parent);
 
-  void SetScrollParent(LayerImpl* parent);
-
-  LayerImpl* scroll_parent() { return scroll_parent_; }
-
-  void SetScrollChildren(std::set<LayerImpl*>* children);
-
-  std::set<LayerImpl*>* scroll_children() { return scroll_children_.get(); }
-  const std::set<LayerImpl*>* scroll_children() const {
-    return scroll_children_.get();
-  }
-
   void DistributeScroll(ScrollState* scroll_state);
   void ApplyScroll(ScrollState* scroll_state);
 
@@ -160,18 +149,6 @@ class CC_EXPORT LayerImpl {
 
   // For compatibility with Layer.
   bool has_render_surface() const { return !!render_surface(); }
-  void SetClipParent(LayerImpl* ancestor);
-
-  LayerImpl* clip_parent() {
-    return clip_parent_;
-  }
-
-  void SetClipChildren(std::set<LayerImpl*>* children);
-
-  std::set<LayerImpl*>* clip_children() { return clip_children_.get(); }
-  const std::set<LayerImpl*>* clip_children() const {
-    return clip_children_.get();
-  }
 
   void PassCopyRequests(
       std::vector<std::unique_ptr<CopyOutputRequest>>* requests);
@@ -584,17 +561,6 @@ class CC_EXPORT LayerImpl {
   // Properties internal to LayerImpl
   LayerImpl* parent_;
   LayerImplList children_;
-
-  LayerImpl* scroll_parent_;
-
-  // Storing a pointer to a set rather than a set since this will be rarely
-  // used. If this pointer turns out to be too heavy, we could have this (and
-  // the scroll parent above) be stored in a LayerImpl -> scroll_info
-  // map somewhere.
-  std::unique_ptr<std::set<LayerImpl*>> scroll_children_;
-
-  LayerImpl* clip_parent_;
-  std::unique_ptr<std::set<LayerImpl*>> clip_children_;
 
   // mask_layer_ can be temporarily stolen during tree sync, we need this ID to
   // confirm newly assigned layer is still the previous one

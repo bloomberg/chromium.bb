@@ -2013,11 +2013,11 @@ TEST_F(LayerTreeHostImplTest, ScrollDoesntBubble) {
   child_clip = scroll_child_clip.get();
   viewport_scroll->AddChild(std::move(scroll_child_clip));
 
-  child_clip->SetScrollParent(parent);
+  child_clip->test_properties()->scroll_parent = parent;
   std::unique_ptr<std::set<LayerImpl*>> scroll_children(
       new std::set<LayerImpl*>);
   scroll_children->insert(child_clip);
-  parent->SetScrollChildren(scroll_children.release());
+  parent->test_properties()->scroll_children.reset(scroll_children.release());
 
   SetNeedsRebuildPropertyTrees();
   DrawFrame();
@@ -8177,9 +8177,10 @@ TEST_F(LayerTreeHostImplTest, ScrollInvisibleScrollerWithVisibleScrollChild) {
   std::unique_ptr<std::set<LayerImpl*>> scroll_children(
       new std::set<LayerImpl*>);
   scroll_children->insert(scroll_child.get());
-  invisible_scroll->SetScrollChildren(scroll_children.release());
+  invisible_scroll->test_properties()->scroll_children.reset(
+      scroll_children.release());
 
-  scroll_child->SetScrollParent(invisible_scroll.get());
+  scroll_child->test_properties()->scroll_parent = invisible_scroll.get();
 
   container->AddChild(std::move(invisible_scroll));
   container->AddChild(std::move(scroll_child));

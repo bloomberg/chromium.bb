@@ -1175,51 +1175,6 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->SetElementId(element_id_);
   layer->SetMutableProperties(mutable_properties_);
 
-  LayerImpl* scroll_parent = nullptr;
-  if (scroll_parent_) {
-    scroll_parent = layer->layer_tree_impl()->LayerById(scroll_parent_->id());
-    DCHECK(scroll_parent);
-  }
-
-  layer->SetScrollParent(scroll_parent);
-  if (scroll_children_) {
-    std::set<LayerImpl*>* scroll_children = new std::set<LayerImpl*>;
-    for (std::set<Layer*>::iterator it = scroll_children_->begin();
-         it != scroll_children_->end();
-         ++it) {
-      DCHECK_EQ((*it)->scroll_parent(), this);
-      LayerImpl* scroll_child =
-          layer->layer_tree_impl()->LayerById((*it)->id());
-      DCHECK(scroll_child);
-      scroll_children->insert(scroll_child);
-    }
-    layer->SetScrollChildren(scroll_children);
-  } else {
-    layer->SetScrollChildren(nullptr);
-  }
-
-  LayerImpl* clip_parent = nullptr;
-  if (clip_parent_) {
-    clip_parent =
-        layer->layer_tree_impl()->LayerById(clip_parent_->id());
-    DCHECK(clip_parent);
-  }
-
-  layer->SetClipParent(clip_parent);
-  if (clip_children_) {
-    std::set<LayerImpl*>* clip_children = new std::set<LayerImpl*>;
-    for (std::set<Layer*>::iterator it = clip_children_->begin();
-        it != clip_children_->end(); ++it) {
-      DCHECK_EQ((*it)->clip_parent(), this);
-      LayerImpl* clip_child = layer->layer_tree_impl()->LayerById((*it)->id());
-      DCHECK(clip_child);
-      clip_children->insert(clip_child);
-    }
-    layer->SetClipChildren(clip_children);
-  } else {
-    layer->SetClipChildren(nullptr);
-  }
-
   // When a scroll offset animation is interrupted the new scroll position on
   // the pending tree will clobber any impl-side scrolling occuring on the
   // active tree. To do so, avoid scrolling the pending tree along with it

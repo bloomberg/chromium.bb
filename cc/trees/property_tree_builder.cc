@@ -80,6 +80,30 @@ static LayerPositionConstraint PositionConstraint(LayerImpl* layer) {
   return layer->test_properties()->position_constraint;
 }
 
+static Layer* ScrollParent(Layer* layer) {
+  return layer->scroll_parent();
+}
+
+static LayerImpl* ScrollParent(LayerImpl* layer) {
+  return layer->test_properties()->scroll_parent;
+}
+
+static std::set<Layer*>* ScrollChildren(Layer* layer) {
+  return layer->scroll_children();
+}
+
+static std::set<LayerImpl*>* ScrollChildren(LayerImpl* layer) {
+  return layer->test_properties()->scroll_children.get();
+}
+
+static Layer* ClipParent(Layer* layer) {
+  return layer->clip_parent();
+}
+
+static LayerImpl* ClipParent(LayerImpl* layer) {
+  return layer->test_properties()->clip_parent;
+}
+
 template <typename LayerType>
 static LayerType* GetTransformParent(const DataForRecursion<LayerType>& data,
                                      LayerType* layer) {
@@ -91,9 +115,9 @@ static LayerType* GetTransformParent(const DataForRecursion<LayerType>& data,
 template <typename LayerType>
 static ClipNode* GetClipParent(const DataForRecursion<LayerType>& data,
                                LayerType* layer) {
-  const bool inherits_clip = !layer->clip_parent();
+  const bool inherits_clip = !ClipParent(layer);
   const int id = inherits_clip ? data.clip_tree_parent
-                               : layer->clip_parent()->clip_tree_index();
+                               : ClipParent(layer)->clip_tree_index();
   return data.clip_tree->Node(id);
 }
 
@@ -105,9 +129,9 @@ static bool LayerClipsSubtree(LayerType* layer) {
 template <typename LayerType>
 static int GetScrollParentId(const DataForRecursion<LayerType>& data,
                              LayerType* layer) {
-  const bool inherits_scroll = !layer->scroll_parent();
+  const bool inherits_scroll = !ScrollParent(layer);
   const int id = inherits_scroll ? data.scroll_tree_parent
-                                 : layer->scroll_parent()->scroll_tree_index();
+                                 : ScrollParent(layer)->scroll_tree_index();
   return id;
 }
 
@@ -284,9 +308,9 @@ bool AddTransformNodeIfNeeded(
   // a scroll child's render target is different from the scroll parent's render
   // target.
   const bool scroll_child_has_different_target =
-      layer->scroll_parent() &&
+      ScrollParent(layer) &&
       layer->parent()->effect_tree_index() !=
-          layer->scroll_parent()->effect_tree_index();
+          ScrollParent(layer)->effect_tree_index();
 
   const bool is_at_boundary_of_3d_rendering_context =
       IsAtBoundaryOf3dRenderingContext(layer);
@@ -308,7 +332,7 @@ bool AddTransformNodeIfNeeded(
 
   gfx::Vector2dF source_offset;
   if (transform_parent) {
-    if (layer->scroll_parent()) {
+    if (ScrollParent(layer)) {
       LayerType* source = layer->parent();
       source_offset += source->offset_to_transform_parent();
       source_index = source->transform_tree_index();
@@ -440,7 +464,7 @@ bool AddTransformNodeIfNeeded(
     DCHECK(!is_scrollable);
     node->data.scroll_offset =
         gfx::ScrollOffset(data_from_ancestor.elastic_overscroll);
-  } else if (!layer->scroll_parent()) {
+  } else if (!ScrollParent(layer)) {
     node->data.scroll_offset = layer->CurrentScrollOffset();
   }
 
@@ -880,7 +904,7 @@ void BuildPropertyTreesInternal(
 
   for (size_t i = 0; i < layer->children().size(); ++i) {
     SetLayerPropertyChangedForChild(layer, layer->child_at(i));
-    if (!layer->child_at(i)->scroll_parent()) {
+    if (!ScrollParent(layer->child_at(i))) {
       DataForRecursionFromChild<LayerType> data_from_child;
       BuildPropertyTreesInternal(layer->child_at(i), data_for_children,
                                  &data_from_child);
@@ -888,14 +912,14 @@ void BuildPropertyTreesInternal(
     } else {
       // The child should be included in its scroll parent's list of scroll
       // children.
-      DCHECK(layer->child_at(i)->scroll_parent()->scroll_children()->count(
-          layer->child_at(i)));
+      DCHECK(ScrollChildren(ScrollParent(layer->child_at(i)))
+                 ->count(layer->child_at(i)));
     }
   }
 
-  if (layer->scroll_children()) {
-    for (LayerType* scroll_child : *layer->scroll_children()) {
-      DCHECK_EQ(scroll_child->scroll_parent(), layer);
+  if (ScrollChildren(layer)) {
+    for (LayerType* scroll_child : *ScrollChildren(layer)) {
+      DCHECK_EQ(ScrollParent(scroll_child), layer);
       DataForRecursionFromChild<LayerType> data_from_child;
       DCHECK(scroll_child->parent());
       data_for_children.effect_tree_parent =
