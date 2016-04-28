@@ -76,11 +76,11 @@ std::string GetEntryTypeCode(bool is_android_uri, bool is_clickable) {
 // Creates key for sorting password or password exception entries.
 // The key is eTLD+1 followed by subdomains
 // (e.g. secure.accounts.example.com => example.com.accounts.secure).
-// If |username_and_password_in_key == true|, username and password is appended
-// to the key. The entry type code (non-Android, Android w/ or w/o affiliated
-// web realm) is also appended to the key.
+// If |entry_type == SAVED|, username, password and federation are appended to
+// the key. The entry type code (non-Android, Android w/ or w/o affiliated web
+// realm) is also appended to the key.
 std::string CreateSortKey(const autofill::PasswordForm& form,
-                          bool username_and_password_in_key) {
+                          PasswordEntryType entry_type) {
   bool is_android_uri = false;
   bool is_clickable = false;
   GURL link_url;
@@ -102,10 +102,12 @@ std::string CreateSortKey(const autofill::PasswordForm& form,
       site_name + SplitByDotAndReverse(StringPiece(
                       &origin[0], origin.length() - site_name.length()));
 
-  if (username_and_password_in_key) {
+  if (entry_type == PasswordEntryType::SAVED) {
     key = key + kSortKeyPartsSeparator +
           base::UTF16ToUTF8(form.username_value) + kSortKeyPartsSeparator +
           base::UTF16ToUTF8(form.password_value);
+    if (!form.federation_origin.unique())
+      key = key + kSortKeyPartsSeparator + form.federation_origin.host();
   }
 
   // Since Android and non-Android entries shouldn't be merged into one entry,
@@ -120,9 +122,8 @@ std::string CreateSortKey(const autofill::PasswordForm& form,
 void RemoveDuplicates(const autofill::PasswordForm& form,
                       DuplicatesMap* duplicates,
                       PasswordStore* store,
-                      bool username_and_password_in_key) {
-  std::string key =
-      CreateSortKey(form, username_and_password_in_key);
+                      PasswordEntryType entry_type) {
+  std::string key = CreateSortKey(form, entry_type);
   std::pair<DuplicatesMap::iterator, DuplicatesMap::iterator> dups =
       duplicates->equal_range(key);
   for (DuplicatesMap::iterator it = dups.first; it != dups.second; ++it)
@@ -190,8 +191,8 @@ void PasswordManagerPresenter::RemoveSavedPassword(size_t index) {
   if (!store)
     return;
 
-  RemoveDuplicates(*password_list_[index], &password_duplicates_,
-                   store, true);
+  RemoveDuplicates(*password_list_[index], &password_duplicates_, store,
+                   PasswordEntryType::SAVED);
   store->RemoveLogin(*password_list_[index]);
   content::RecordAction(
       base::UserMetricsAction("PasswordManager_RemoveSavedPassword"));
@@ -209,7 +210,8 @@ void PasswordManagerPresenter::RemovePasswordException(size_t index) {
   if (!store)
     return;
   RemoveDuplicates(*password_exception_list_[index],
-                   &password_exception_duplicates_, store, false);
+                   &password_exception_duplicates_, store,
+                   PasswordEntryType::BLACKLISTED);
   store->RemoveLogin(*password_exception_list_[index]);
   content::RecordAction(
       base::UserMetricsAction("PasswordManager_RemovePasswordException"));
@@ -299,13 +301,13 @@ void PasswordManagerPresenter::SetPasswordExceptionList() {
 void PasswordManagerPresenter::SortEntriesAndHideDuplicates(
     std::vector<std::unique_ptr<autofill::PasswordForm>>* list,
     DuplicatesMap* duplicates,
-    bool username_and_password_in_key) {
+    PasswordEntryType entry_type) {
   std::vector<std::pair<std::string, std::unique_ptr<autofill::PasswordForm>>>
       pairs;
   pairs.reserve(list->size());
   for (auto& form : *list) {
-    pairs.push_back(std::make_pair(
-        CreateSortKey(*form, username_and_password_in_key), std::move(form)));
+    pairs.push_back(
+        std::make_pair(CreateSortKey(*form, entry_type), std::move(form)));
   }
 
   std::sort(
@@ -375,7 +377,7 @@ void PasswordManagerPresenter::PasswordListPopulater::OnGetPasswordStoreResults(
       password_manager_util::ConvertScopedVector(std::move(results));
   page_->SortEntriesAndHideDuplicates(&page_->password_list_,
                                       &page_->password_duplicates_,
-                                      true /* use username and password */);
+                                      PasswordEntryType::SAVED);
   page_->SetPasswordList();
 }
 
@@ -399,7 +401,7 @@ void PasswordManagerPresenter::PasswordExceptionListPopulater::
   page_->password_exception_list_ =
       password_manager_util::ConvertScopedVector(std::move(results));
   page_->SortEntriesAndHideDuplicates(&page_->password_exception_list_,
-      &page_->password_exception_duplicates_,
-      false /* don't use username and password*/);
+                                      &page_->password_exception_duplicates_,
+                                      PasswordEntryType::BLACKLISTED);
   page_->SetPasswordExceptionList();
 }

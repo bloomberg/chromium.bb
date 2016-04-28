@@ -27,6 +27,8 @@ struct PasswordForm;
 using DuplicatesMap =
     std::multimap<std::string, std::unique_ptr<autofill::PasswordForm>>;
 
+enum class PasswordEntryType { SAVED, BLACKLISTED };
+
 class PasswordUIView;
 
 class Profile;
@@ -83,14 +85,14 @@ class PasswordManagerPresenter
 
   // Sort entries of |list| based on sort key. The key is the concatenation of
   // origin, entry type (non-Android credential, Android w/ affiliated web realm
-  // or Android w/o affiliated web realm). If |username_and_password_in_key|,
-  // username and password are also included in sort key. If there are several
-  // forms with the same key, all such forms but the first one are
+  // or Android w/o affiliated web realm). If |entry_type == SAVED|,
+  // username, password and federation are also included in sort key. If there
+  // are several forms with the same key, all such forms but the first one are
   // stored in |duplicates| instead of |list|.
   void SortEntriesAndHideDuplicates(
       std::vector<std::unique_ptr<autofill::PasswordForm>>* list,
       DuplicatesMap* duplicates,
-      bool username_and_password_in_key);
+      PasswordEntryType entry_type);
 
   // Returns the password store associated with the currently active profile.
   password_manager::PasswordStore* GetPasswordStore();
