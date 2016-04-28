@@ -90,3 +90,26 @@ tests:
     # conventionally replaced with an asterisk.
     - გ
     - ⠔
+
+  - # Emphasis only at the beginning of a word
+    - valtionpäämies
+    - ⠨⠧⠁⠇⠞⠊⠕⠝⠨⠏⠜⠜⠍⠊⠑⠎
+    - typeform:
+        italic: '+++++++       '
+  - # Emphasis only in the middle of a word
+    - valtionpäämies
+    - ⠧⠁⠇⠞⠊⠕⠝⠨⠏⠜⠜⠨⠍⠊⠑⠎
+    - typeform:
+        italic: '       +++    '
+  - # Emphasis only at the end of a word
+    - valtionpäämies
+    - ⠧⠁⠇⠞⠊⠕⠝⠏⠜⠜⠨⠍⠊⠑⠎⠨
+    - typeform:
+        italic: '          ++++'
+  - # Emphasis at the beginning and the end of a word, but not in the middle
+    - valtionpäämies
+    - ⠨⠧⠁⠇⠞⠊⠕⠝⠨⠏⠜⠜⠨⠍⠊⠑⠎⠨
+    - typeform:
+        italic: '+++++++   ++++'
+      xfail: this test also fails in master, i.e. w/o the UEB improvements
+
