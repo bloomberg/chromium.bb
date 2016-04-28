@@ -109,6 +109,6 @@ public class SysUtils {
         }
 
         int ramSizeKB = amountOfPhysicalMemoryKB();
-        return (ramSizeKB > 0 && ramSizeKB / 1024 < ANDROID_LOW_MEMORY_DEVICE_THRESHOLD_MB);
+        return (ramSizeKB > 0 && ramSizeKB / 1024 <= ANDROID_LOW_MEMORY_DEVICE_THRESHOLD_MB);
     }
 }
