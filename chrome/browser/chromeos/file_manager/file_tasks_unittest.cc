@@ -455,8 +455,8 @@ class FileManagerFileTasksComplexTest : public testing::Test {
 
    private:
     void OnReply(std::vector<FullTaskDescriptor>* out,
-                 const std::vector<FullTaskDescriptor>& result) {
-      *out = result;
+                 std::unique_ptr<std::vector<FullTaskDescriptor>> result) {
+      *out = *result;
       run_loop_.Quit();
     }
 

@@ -192,11 +192,12 @@ void FileManagerPrivateInternalGetFileTasksFunction::
 }
 
 void FileManagerPrivateInternalGetFileTasksFunction::OnFileTasksListed(
-    const std::vector<file_manager::file_tasks::FullTaskDescriptor>& tasks) {
+    std::unique_ptr<std::vector<file_manager::file_tasks::FullTaskDescriptor>>
+        tasks) {
   // Convert the tasks into JSON compatible objects.
   using api::file_manager_private::FileTask;
   std::vector<FileTask> results;
-  for (const file_manager::file_tasks::FullTaskDescriptor& task : tasks) {
+  for (const file_manager::file_tasks::FullTaskDescriptor& task : *tasks) {
     FileTask converted;
     converted.task_id =
         file_manager::file_tasks::TaskDescriptorToId(task.task_descriptor());

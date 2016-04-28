@@ -111,6 +111,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_FILE_MANAGER_FILE_TASKS_H_
 #define CHROME_BROWSER_CHROMEOS_FILE_MANAGER_FILE_TASKS_H_
 
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -289,7 +290,8 @@ void FindFileBrowserHandlerTasks(
     std::vector<FullTaskDescriptor>* result_list);
 
 // Callback function type for FindAllTypesOfTasks.
-typedef base::Callback<void(const std::vector<FullTaskDescriptor>& result)>
+typedef base::Callback<void(
+    std::unique_ptr<std::vector<FullTaskDescriptor>> result)>
     FindTasksCallback;
 
 // Finds all types (drive, file handlers, file browser handlers) of

@@ -68,7 +68,8 @@ class FileManagerPrivateInternalGetFileTasksFunction
       std::unique_ptr<std::set<base::FilePath>> path_directory_set);
 
   void OnFileTasksListed(
-      const std::vector<file_manager::file_tasks::FullTaskDescriptor>& tasks);
+      std::unique_ptr<std::vector<file_manager::file_tasks::FullTaskDescriptor>>
+          tasks);
 
   std::unique_ptr<app_file_handler_util::IsDirectoryCollector>
       is_directory_collector_;
