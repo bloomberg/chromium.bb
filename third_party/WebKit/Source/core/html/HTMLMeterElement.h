@@ -60,7 +60,7 @@ public:
     double valueRatio() const;
     GaugeRegion getGaugeRegion() const;
 
-    bool canContainRangeEndPoint() const override { return false; }
+    bool canContainRangeEndPoint() const override;
 
     DECLARE_VIRTUAL_TRACE();
 

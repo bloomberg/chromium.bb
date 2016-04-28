@@ -4,4 +4,4 @@ PASS successfullyParsed is true
 TEST COMPLETE
 The inner element of meter should not be deleteable.
 
-(before)(after)
+(before)In meter(after)

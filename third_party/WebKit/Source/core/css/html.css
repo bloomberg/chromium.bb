@@ -845,6 +845,7 @@ meter {
     height: 1em;
     width: 5em;
     vertical-align: -0.2em;
+    -webkit-user-modify: read-only !important;
 }
 
 meter::-webkit-meter-inner-element {

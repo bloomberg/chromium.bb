@@ -1873,7 +1873,7 @@ bool Document::needsLayoutTreeUpdateForNode(const Node& node) const
     return false;
 }
 
-void Document::updateLayoutTreeForNode(Node* node)
+void Document::updateLayoutTreeForNode(const Node* node)
 {
     DCHECK(node);
     if (!needsLayoutTreeUpdateForNode(*node))

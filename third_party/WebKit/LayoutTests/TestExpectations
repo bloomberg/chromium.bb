@@ -568,7 +568,8 @@ crbug.com/517840 imported/web-platform-tests/webrtc/rtcpeerconnection/rtcpeercon
 crbug.com/552494 scrollbars/overflow-scrollbar-combinations.html [ Pass Failure ]
 crbug.com/552494 virtual/prefer_compositing_to_lcd_text/scrollbars/overflow-scrollbar-combinations.html [ Pass Failure ]
 crbug.com/552494 virtual/rootlayerscrolls/scrollbars/overflow-scrollbar-combinations.html [ Pass Failure ]
-
+crbug.com/51182 fast/dom/HTMLMeterElement/meter-element-repaint-on-update-value.html [ NeedsManualRebaseline ]
+crbug.com/51182 fast/dom/HTMLMeterElement/meter-styles.html [ NeedsManualRebaseline ]
 crbug.com/380217 [ Linux Win ] fast/shapes/shape-outside-floats/shape-outside-floats-inset-rounded-large-radius.html [ Skip ]
 crbug.com/380217 [ Win ] fast/shapes/shape-outside-floats/shape-outside-floats-inset-rounded-bottom-left.html [ Skip ]
 

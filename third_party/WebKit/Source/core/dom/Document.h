@@ -424,7 +424,7 @@ public:
     void updateLayoutTree();
     // Same as updateLayoutTree() except ignoring pending stylesheets.
     void updateLayoutTreeIgnorePendingStylesheets();
-    void updateLayoutTreeForNode(Node*);
+    void updateLayoutTreeForNode(const Node*);
     void updateLayout();
     void layoutUpdated();
     enum RunPostLayoutTasks {

@@ -24,8 +24,10 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/HTMLNames.h"
+#include "core/dom/NodeComputedStyle.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/frame/UseCounter.h"
+#include "core/html/HTMLContentElement.h"
 #include "core/html/HTMLDivElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/layout/LayoutObject.h"
@@ -34,6 +36,70 @@
 namespace blink {
 
 using namespace HTMLNames;
+
+// ----------------------------------------------------------------
+
+class MeterFallbackElement final : public HTMLDivElement {
+public:
+    DECLARE_NODE_FACTORY(MeterFallbackElement);
+
+private:
+    explicit MeterFallbackElement(Document& doc)
+        : HTMLDivElement(doc)
+    {
+        setHasCustomStyleCallbacks();
+    }
+
+    PassRefPtr<ComputedStyle> customStyleForLayoutObject() override
+    {
+        // We can't use setInlineStyleProperty() because it updates the DOM
+        // tree.  We shouldn't do it during style calculation.
+        // TODO(tkent): Injecting a CSS variable by host is a better approach?
+        Element* host = shadowHost();
+        RefPtr<ComputedStyle> style = originalStyleForLayoutObject();
+        if (!host || !host->computedStyle() || host->computedStyle()->appearance() != MeterPart || style->display() == NONE)
+            return style.release();
+        RefPtr<ComputedStyle> newStyle = ComputedStyle::clone(*style);
+        newStyle->setDisplay(NONE);
+        newStyle->setUnique();
+        return newStyle.release();
+    }
+};
+
+DEFINE_NODE_FACTORY(MeterFallbackElement)
+
+// ----------------------------------------------------------------
+
+class MeterInnerElement final : public HTMLDivElement {
+public:
+    DECLARE_NODE_FACTORY(MeterInnerElement);
+
+private:
+    explicit MeterInnerElement(Document& doc)
+        : HTMLDivElement(doc)
+    {
+        setHasCustomStyleCallbacks();
+    }
+
+    PassRefPtr<ComputedStyle> customStyleForLayoutObject() override
+    {
+        // We can't use setInlineStyleProperty() because it updates the DOM
+        // tree.  We shouldn't do it during style calculation.
+        // TODO(tkent): Injecting a CSS variable by host is a better approach?
+        Element* host = shadowHost();
+        RefPtr<ComputedStyle> style = originalStyleForLayoutObject();
+        if (!host || !host->computedStyle() || host->computedStyle()->appearance() == MeterPart || style->display() == NONE)
+            return style.release();
+        RefPtr<ComputedStyle> newStyle = ComputedStyle::clone(*style);
+        newStyle->setDisplay(NONE);
+        newStyle->setUnique();
+        return newStyle.release();
+    }
+};
+
+DEFINE_NODE_FACTORY(MeterInnerElement)
+
+// ----------------------------------------------------------------
 
 HTMLMeterElement::HTMLMeterElement(Document& document)
     : LabelableElement(meterTag, document)
@@ -192,7 +258,7 @@ void HTMLMeterElement::didAddUserAgentShadowRoot(ShadowRoot& root)
 {
     ASSERT(!m_value);
 
-    HTMLDivElement* inner = HTMLDivElement::create(document());
+    MeterInnerElement* inner = MeterInnerElement::create(document());
     inner->setShadowPseudoId(AtomicString("-webkit-meter-inner-element"));
     root.appendChild(inner);
 
@@ -204,6 +270,10 @@ void HTMLMeterElement::didAddUserAgentShadowRoot(ShadowRoot& root)
     bar->appendChild(m_value);
 
     inner->appendChild(bar);
+
+    MeterFallbackElement* fallback = MeterFallbackElement::create(document());
+    fallback->appendChild(HTMLContentElement::create(document()));
+    root.appendChild(fallback);
 }
 
 void HTMLMeterElement::updateValueAppearance(double percentage)
@@ -224,6 +294,12 @@ void HTMLMeterElement::updateValueAppearance(double percentage)
         m_value->setShadowPseudoId(evenLessGoodPseudoId);
         break;
     }
+}
+
+bool HTMLMeterElement::canContainRangeEndPoint() const
+{
+    document().updateLayoutTreeForNode(this);
+    return computedStyle() && !computedStyle()->hasAppearance();
 }
 
 DEFINE_TRACE(HTMLMeterElement)

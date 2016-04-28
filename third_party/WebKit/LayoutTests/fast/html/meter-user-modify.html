@@ -17,14 +17,14 @@ meter {
 <p>The inner element of meter should not be deleteable.</p>
 
 <div id="container" contenteditable>
-    (before)<meter id="meter" min="0" max="100" value="50"></meter>(after)
+    (before)<meter id="meter" min="0" max="100" value="50">In meter</meter>(after)
 </div>
 
 <script>
 function focusAndType(id, key)
 {
     var target = document.getElementById(id);
-    eventSender.mouseMoveTo(target.offsetLeft + 2, target.offsetTop + 2);
+    eventSender.mouseMoveTo(target.offsetLeft + target.offsetWidth / 2, target.offsetTop + target.offsetHeight / 2);
     eventSender.mouseDown();
     eventSender.mouseUp();
     eventSender.keyDown(key);
