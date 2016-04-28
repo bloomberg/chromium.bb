@@ -5,7 +5,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/base_switches.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "chrome/browser/extensions/api/instance_id/instance_id_api.h"
@@ -42,7 +41,6 @@ class InstanceIDApiTest : public ExtensionApiTest {
 
  protected:
   void SetUpOnMainThread() override;
-  void SetUpCommandLine(base::CommandLine* command_line) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InstanceIDApiTest);
@@ -56,14 +54,6 @@ void InstanceIDApiTest::SetUpOnMainThread() {
       browser()->profile(), &BuildFakeGCMProfileService);
 
   ExtensionApiTest::SetUpOnMainThread();
-}
-
-void InstanceIDApiTest::SetUpCommandLine(base::CommandLine* command_line) {
-  ExtensionApiTest::SetUpCommandLine(command_line);
-
-  // Makes sure InstanceID is enabled for testing.
-  command_line->AppendSwitchASCII(
-       switches::kForceFieldTrials, "InstanceID/Enabled/");
 }
 
 IN_PROC_BROWSER_TEST_F(InstanceIDApiTest, GetID) {

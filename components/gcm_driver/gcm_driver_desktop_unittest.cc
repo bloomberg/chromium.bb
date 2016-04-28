@@ -11,7 +11,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/test/test_simple_task_runner.h"
@@ -167,7 +166,6 @@ class GCMDriverTest : public testing::Test {
   TestingPrefServiceSimple prefs_;
   base::MessageLoopForUI message_loop_;
   base::Thread io_thread_;
-  base::FieldTrialList field_trial_list_;
   std::unique_ptr<GCMDriverDesktop> driver_;
   std::unique_ptr<FakeGCMAppHandler> gcm_app_handler_;
   std::unique_ptr<FakeGCMConnectionObserver> gcm_connection_observer_;
@@ -187,7 +185,6 @@ class GCMDriverTest : public testing::Test {
 
 GCMDriverTest::GCMDriverTest()
     : io_thread_("IOThread"),
-      field_trial_list_(NULL),
       registration_result_(GCMClient::UNKNOWN_ERROR),
       send_result_(GCMClient::UNKNOWN_ERROR),
       unregistration_result_(GCMClient::UNKNOWN_ERROR) {
@@ -950,9 +947,6 @@ void GCMChannelStatusSyncerTest::SetUp() {
   GCMDriverTest::SetUp();
 
   url_fetcher_factory_.set_remove_fetcher_on_delete(true);
-
-  // Turn on all-user support.
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial("GCM", "Enabled"));
 }
 
 void GCMChannelStatusSyncerTest::CompleteGCMChannelStatusRequest(
