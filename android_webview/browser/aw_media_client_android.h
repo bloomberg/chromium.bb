@@ -6,7 +6,7 @@
 #define ANDROID_WEBVIEW_BROWSER_AW_MEDIA_CLIENT_ANDROID_H_
 
 #include "base/macros.h"
-#include "components/cdm/browser/widevine_drm_delegate_android.h"
+#include "components/cdm/common/widevine_drm_delegate_android.h"
 #include "media/base/android/media_client_android.h"
 
 namespace android_webview {

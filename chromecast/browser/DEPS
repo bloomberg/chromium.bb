@@ -3,7 +3,7 @@ include_rules = [
   # embedder and can include from all other chromecast/ directories.
   "+cc/base/switches.h",
   "+chromecast",
-  "+components/cdm/browser",
+  "+components/cdm/common",
   "+components/crash",
   "+components/devtools_discovery",
   "+components/devtools_http_handler",

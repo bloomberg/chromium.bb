@@ -6,8 +6,6 @@ source_set("browser") {
   sources = [
     "cdm_message_filter_android.cc",
     "cdm_message_filter_android.h",
-    "widevine_drm_delegate_android.cc",
-    "widevine_drm_delegate_android.h",
   ]
 
   deps = [

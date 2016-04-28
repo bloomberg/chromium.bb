@@ -34,6 +34,10 @@ namespace gpu {
 struct GPUInfo;
 }
 
+namespace media {
+class MediaClientAndroid;
+}
+
 namespace sandbox {
 class TargetPolicy;
 }
@@ -169,6 +173,9 @@ class CONTENT_EXPORT ContentClient {
   // compositor. Note setting this to true will permit synchronous IPCs from
   // the browser UI thread.
   virtual bool UsingSynchronousCompositing();
+
+  // Returns the MediaClientAndroid to be used by media code on Android.
+  virtual media::MediaClientAndroid* GetMediaClientAndroid();
 #endif  // OS_ANDROID
 
  private:

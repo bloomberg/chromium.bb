@@ -23,6 +23,8 @@
       'common/chrome_content_client.h',
       'common/chrome_content_client_constants.cc',
       'common/chrome_content_client_ios.mm',
+      'common/chrome_media_client_android.cc',
+      'common/chrome_media_client_android.h',
       'common/chrome_result_codes.h',
       'common/chrome_utility_messages.h',
       'common/common_message_generator.cc',

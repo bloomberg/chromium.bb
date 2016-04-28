@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_ANDROID_CHROME_MEDIA_CLIENT_ANDROID_H_
-#define CHROME_BROWSER_ANDROID_CHROME_MEDIA_CLIENT_ANDROID_H_
+#ifndef CHROME_COMMON_CHROME_MEDIA_CLIENT_ANDROID_H_
+#define CHROME_COMMON_CHROME_MEDIA_CLIENT_ANDROID_H_
 
 #include <stdint.h>
 
 #include "base/macros.h"
-#include "components/cdm/browser/widevine_drm_delegate_android.h"
+#include "components/cdm/common/widevine_drm_delegate_android.h"
 #include "media/base/android/media_client_android.h"
 
 class ChromeMediaClientAndroid : public media::MediaClientAndroid {
@@ -26,4 +26,4 @@ class ChromeMediaClientAndroid : public media::MediaClientAndroid {
   DISALLOW_COPY_AND_ASSIGN(ChromeMediaClientAndroid);
 };
 
-#endif  // CHROME_BROWSER_ANDROID_CHROME_MEDIA_CLIENT_ANDROID_H_
+#endif  // CHROME_COMMON_CHROME_MEDIA_CLIENT_ANDROID_H_

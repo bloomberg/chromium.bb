@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_CDM_BROWSER_WIDEVINE_DRM_DELEGATE_ANDROID_H_
-#define COMPONENTS_CDM_BROWSER_WIDEVINE_DRM_DELEGATE_ANDROID_H_
+#ifndef COMPONENTS_CDM_COMMON_WIDEVINE_DRM_DELEGATE_ANDROID_H_
+#define COMPONENTS_CDM_COMMON_WIDEVINE_DRM_DELEGATE_ANDROID_H_
 
 #include <stdint.h>
 
@@ -31,4 +31,4 @@ class WidevineDrmDelegateAndroid : public media::MediaDrmBridgeDelegate {
 
 }  // namespace cdm
 
-#endif  // COMPONENTS_CDM_BROWSER_WIDEVINE_DRM_DELEGATE_ANDROID_H_
+#endif  // COMPONENTS_CDM_COMMON_WIDEVINE_DRM_DELEGATE_ANDROID_H_

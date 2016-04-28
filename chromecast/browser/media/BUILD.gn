@@ -49,7 +49,7 @@ source_set("media") {
   ]
 
   if (is_android) {
-    deps += [ "//components/cdm/browser" ]
+    deps += [ "//components/cdm/common" ]
   } else {
     sources += [
       "cma_message_filter_host.cc",

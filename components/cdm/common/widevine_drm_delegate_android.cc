@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/cdm/browser/widevine_drm_delegate_android.h"
+#include "components/cdm/common/widevine_drm_delegate_android.h"
 
 #include "base/macros.h"
 #include "media/cdm/cenc_utils.h"
@@ -12,16 +12,14 @@ namespace cdm {
 namespace {
 
 const uint8_t kWidevineUuid[16] = {
-    0xED, 0xEF, 0x8B, 0xA9, 0x79, 0xD6, 0x4A, 0xCE,
-    0xA3, 0xC8, 0x27, 0xDC, 0xD5, 0x1D, 0x21, 0xED };
+    0xED, 0xEF, 0x8B, 0xA9, 0x79, 0xD6, 0x4A, 0xCE,  //
+    0xA3, 0xC8, 0x27, 0xDC, 0xD5, 0x1D, 0x21, 0xED};
 
 }  // namespace
 
-WidevineDrmDelegateAndroid::WidevineDrmDelegateAndroid() {
-}
+WidevineDrmDelegateAndroid::WidevineDrmDelegateAndroid() {}
 
-WidevineDrmDelegateAndroid::~WidevineDrmDelegateAndroid() {
-}
+WidevineDrmDelegateAndroid::~WidevineDrmDelegateAndroid() {}
 
 const std::vector<uint8_t> WidevineDrmDelegateAndroid::GetUUID() const {
   return std::vector<uint8_t>(kWidevineUuid,

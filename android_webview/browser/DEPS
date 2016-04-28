@@ -13,6 +13,7 @@ include_rules = [
   "+components/autofill/core/browser",
   "+components/autofill/core/common",
   "+components/cdm/browser",
+  "+components/cdm/common",
   "+components/crash/content/browser",
   "+components/data_reduction_proxy/core/browser",
   "+components/navigation_interception",

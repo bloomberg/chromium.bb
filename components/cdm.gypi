@@ -18,6 +18,14 @@
         'cdm/common/cdm_message_generator.h',
         'cdm/common/cdm_messages_android.h',
       ],
+      'conditions': [
+        ['OS == "android"', {
+          'sources': [
+            'cdm/common/widevine_drm_delegate_android.cc',
+            'cdm/common/widevine_drm_delegate_android.h',
+          ],
+        }],
+      ],
     },
     {
       # GN version: //components/cdm/renderer
@@ -64,8 +72,6 @@
           'sources': [
             'cdm/browser/cdm_message_filter_android.cc',
             'cdm/browser/cdm_message_filter_android.h',
-            'cdm/browser/widevine_drm_delegate_android.cc',
-            'cdm/browser/widevine_drm_delegate_android.h',
           ],
         },
       ],

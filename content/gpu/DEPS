@@ -4,6 +4,7 @@ include_rules = [
   "+content/public/gpu",
   "+libEGL",
   "+libGLESv2",
+  "+media/base/android",
   "+media/mojo/services",
   "+services/shell",
   "+sandbox",

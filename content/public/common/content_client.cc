@@ -127,6 +127,10 @@ base::StringPiece ContentClient::GetOriginTrialPublicKey() {
 bool ContentClient::UsingSynchronousCompositing() {
   return false;
 }
+
+media::MediaClientAndroid* ContentClient::GetMediaClientAndroid() {
+  return nullptr;
+}
 #endif  // OS_ANDROID
 
 }  // namespace content

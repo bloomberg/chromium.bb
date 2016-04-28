@@ -2,13 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/chrome_media_client_android.h"
+#include "chrome/common/chrome_media_client_android.h"
 
-ChromeMediaClientAndroid::ChromeMediaClientAndroid() {
-}
+ChromeMediaClientAndroid::ChromeMediaClientAndroid() {}
 
-ChromeMediaClientAndroid::~ChromeMediaClientAndroid() {
-}
+ChromeMediaClientAndroid::~ChromeMediaClientAndroid() {}
 
 media::MediaDrmBridgeDelegate*
 ChromeMediaClientAndroid::GetMediaDrmBridgeDelegate(

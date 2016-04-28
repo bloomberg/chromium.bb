@@ -95,6 +95,10 @@ class ChromeContentClient : public content::ContentClient {
     return &origin_trial_key_manager_;
   }
 
+#if defined(OS_ANDROID)
+  media::MediaClientAndroid* GetMediaClientAndroid() override;
+#endif  // OS_ANDROID
+
  private:
   OriginTrialKeyManager origin_trial_key_manager_;
 };

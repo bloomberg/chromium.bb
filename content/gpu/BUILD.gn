@@ -64,6 +64,9 @@ source_set("gpu_sources") {
 
   if (mojo_media_host == "gpu") {
     deps += [ "//media/mojo/services:application_factory" ]
+    if (is_android) {
+      deps += [ "//media/base/android" ]
+    }
   }
 
   if (is_win) {

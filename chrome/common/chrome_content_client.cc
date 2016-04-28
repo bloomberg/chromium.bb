@@ -79,6 +79,10 @@
 #include "chrome/common/widevine_cdm_constants.h"
 #endif
 
+#if defined(OS_ANDROID)
+#include "chrome/common/chrome_media_client_android.h"
+#endif
+
 namespace {
 
 #if defined(ENABLE_PLUGINS)
@@ -687,3 +691,9 @@ bool ChromeContentClient::IsSupplementarySiteIsolationModeEnabled() {
 base::StringPiece ChromeContentClient::GetOriginTrialPublicKey() {
   return origin_trial_key_manager_.GetPublicKey();
 }
+
+#if defined(OS_ANDROID)
+media::MediaClientAndroid* ChromeContentClient::GetMediaClientAndroid() {
+  return new ChromeMediaClientAndroid();
+}
+#endif  // OS_ANDROID

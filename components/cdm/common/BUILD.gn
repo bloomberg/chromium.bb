@@ -7,6 +7,8 @@ source_set("common") {
     "cdm_message_generator.cc",
     "cdm_message_generator.h",
     "cdm_messages_android.h",
+    "widevine_drm_delegate_android.cc",
+    "widevine_drm_delegate_android.h",
   ]
 
   deps = [
