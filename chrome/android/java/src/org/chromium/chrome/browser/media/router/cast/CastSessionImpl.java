@@ -142,8 +142,10 @@ public class CastSessionImpl implements MediaNotificationListener, CastSession {
         }
 
         Intent contentIntent = Tab.createBringTabToFrontIntent(tabId);
-        contentIntent.putExtra(MediaNotificationUma.INTENT_EXTRA_NAME,
-                MediaNotificationUma.SOURCE_PRESENTATION);
+        if (contentIntent != null) {
+            contentIntent.putExtra(MediaNotificationUma.INTENT_EXTRA_NAME,
+                    MediaNotificationUma.SOURCE_PRESENTATION);
+        }
         mNotificationBuilder = new MediaNotificationInfo.Builder()
                 .setPaused(false)
                 .setOrigin(origin)

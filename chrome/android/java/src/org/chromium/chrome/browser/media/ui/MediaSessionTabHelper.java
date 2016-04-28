@@ -114,8 +114,10 @@ public class MediaSessionTabHelper {
                 }
 
                 Intent contentIntent = Tab.createBringTabToFrontIntent(mTab.getId());
-                contentIntent.putExtra(MediaNotificationUma.INTENT_EXTRA_NAME,
-                        MediaNotificationUma.SOURCE_MEDIA);
+                if (contentIntent != null) {
+                    contentIntent.putExtra(MediaNotificationUma.INTENT_EXTRA_NAME,
+                            MediaNotificationUma.SOURCE_MEDIA);
+                }
 
                 mNotificationInfoBuilder =
                         new MediaNotificationInfo.Builder()
