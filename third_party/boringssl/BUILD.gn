@@ -125,14 +125,14 @@ component("boringssl") {
   }
 }
 
-create_tests("boringssl_tests") {
-  configs = [ ":internal_config" ]
-  deps = [
-    ":boringssl",
-  ]
-}
-
 if (build_with_chromium) {
+  create_tests("boringssl_tests") {
+    configs = [ ":internal_config" ]
+    deps = [
+      ":boringssl",
+    ]
+  }
+
   test("boringssl_unittests") {
     deps = [
       ":boringssl_tests",
