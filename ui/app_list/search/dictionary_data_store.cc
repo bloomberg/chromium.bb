@@ -10,7 +10,6 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_runner_util.h"
@@ -79,7 +78,7 @@ DictionaryDataStore::LoadOnBlockingPool() {
   }
 
   std::unique_ptr<base::DictionaryValue> return_dict =
-      base::WrapUnique(dict_value.get()->DeepCopy());
+      dict_value->CreateDeepCopy();
   cached_dict_ = std::move(dict_value);
   return return_dict;
 }
