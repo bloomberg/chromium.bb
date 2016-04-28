@@ -849,7 +849,7 @@ static inline CanvasImageSource* toImageSourceInternal(const CanvasImageSourceUn
         return value.getAsHTMLCanvasElement();
     if (value.isImageBitmap()) {
         if (static_cast<ImageBitmap*>(value.getAsImageBitmap())->isNeutered()) {
-            exceptionState.throwDOMException(InvalidStateError, String::format("The image source is neutered"));
+            exceptionState.throwDOMException(InvalidStateError, String::format("The image source is detached"));
             return nullptr;
         }
         return value.getAsImageBitmap();

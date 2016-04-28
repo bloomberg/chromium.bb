@@ -5818,7 +5818,7 @@ bool WebGLRenderingContextBase::validateHTMLVideoElement(const char* functionNam
 bool WebGLRenderingContextBase::validateImageBitmap(const char* functionName, ImageBitmap* bitmap, ExceptionState& exceptionState)
 {
     if (bitmap->isNeutered()) {
-        synthesizeGLError(GL_INVALID_VALUE, functionName, "The source data has been neutered.");
+        synthesizeGLError(GL_INVALID_VALUE, functionName, "The source data has been detached.");
         return false;
     }
     if (!bitmap->originClean()) {

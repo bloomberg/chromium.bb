@@ -7,7 +7,7 @@ PASS bitmapWidth is imageWidth
 PASS bitmapHeight is imageHeight
 PASS bitmapWidth is 0
 PASS bitmapHeight is 0
-PASS Apply structured cloning to a neutered ImageBitmap should throw an exception: DataCloneError: Failed to execute 'postMessage' on 'Worker': An ImageBitmap is neutered and could not be cloned.
+PASS Apply structured cloning to a neutered ImageBitmap should throw an exception: DataCloneError: Failed to execute 'postMessage' on 'Worker': An ImageBitmap is detached and could not be cloned.
 PASS createImageBitmap from a neutered ImageBitmap was rejected
 PASS bitmapWidth is imageWidth
 PASS bitmapHeight is imageHeight

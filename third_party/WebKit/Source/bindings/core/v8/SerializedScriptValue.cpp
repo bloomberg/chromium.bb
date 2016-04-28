@@ -125,7 +125,7 @@ void SerializedScriptValue::transferImageBitmaps(v8::Isolate* isolate, const Ima
 
     for (size_t i = 0; i < imageBitmaps.size(); ++i) {
         if (imageBitmaps[i]->isNeutered()) {
-            exceptionState.throwDOMException(DataCloneError, "ImageBitmap at index " + String::number(i) + " is already neutered.");
+            exceptionState.throwDOMException(DataCloneError, "ImageBitmap at index " + String::number(i) + " is already detached.");
             return;
         }
     }
@@ -151,7 +151,7 @@ void SerializedScriptValue::transferOffscreenCanvas(v8::Isolate* isolate, const 
         if (visited.contains(offscreenCanvases[i].get()))
             continue;
         if (offscreenCanvases[i]->isNeutered()) {
-            exceptionState.throwDOMException(DataCloneError, "OffscreenCanvas at index " + String::number(i) + " is already neutered.");
+            exceptionState.throwDOMException(DataCloneError, "OffscreenCanvas at index " + String::number(i) + " is already detached.");
             return;
         }
         if (offscreenCanvases[i]->renderingContext()) {

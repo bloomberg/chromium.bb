@@ -1053,7 +1053,7 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::writeImageBitmap(v8::Lo
     if (!imageBitmap)
         return nullptr;
     if (imageBitmap->isNeutered())
-        return handleError(DataCloneError, "An ImageBitmap is neutered and could not be cloned.", next);
+        return handleError(DataCloneError, "An ImageBitmap is detached and could not be cloned.", next);
     OwnPtr<uint8_t[]> pixelData = imageBitmap->copyBitmapData(PremultiplyAlpha);
     m_writer.writeImageBitmap(imageBitmap->width(), imageBitmap->height(), pixelData.get(), imageBitmap->width() * imageBitmap->height() * 4);
     return nullptr;
@@ -1123,7 +1123,7 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::writeTransferredImageBi
     if (!imageBitmap)
         return 0;
     if (imageBitmap->isNeutered())
-        return handleError(DataCloneError, "An ImageBitmap is neutered and could not be cloned.", next);
+        return handleError(DataCloneError, "An ImageBitmap is detached and could not be cloned.", next);
     m_writer.writeTransferredImageBitmap(index);
     return 0;
 }
