@@ -240,6 +240,7 @@ void CommandBufferProxyImpl::Flush(int32_t put_offset) {
 }
 
 void CommandBufferProxyImpl::OrderingBarrier(int32_t put_offset) {
+  CheckLock();
   if (last_state_.error != gpu::error::kNoError)
     return;
 
