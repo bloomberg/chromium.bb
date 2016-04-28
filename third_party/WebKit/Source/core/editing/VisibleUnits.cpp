@@ -671,23 +671,20 @@ static VisiblePositionTemplate<Strategy> previousBoundary(const VisiblePositionT
     const PositionTemplate<Strategy> end = pos.parentAnchoredEquivalent();
 
     ForwardsTextBuffer suffixString;
-    unsigned suffixLength = 0;
-
     if (requiresContextForWordBoundary(characterBefore(c))) {
         TextIteratorAlgorithm<Strategy> forwardsIterator(end, PositionTemplate<Strategy>::afterNode(boundary));
         while (!forwardsIterator.atEnd()) {
-            // TODO(xiaochengh): Eliminate this intermediate buffer.
-            ForwardsTextBuffer characters;
-            forwardsIterator.copyTextTo(&characters);
-            int i = endOfFirstWordBoundaryContext(characters.data(), characters.size());
-            suffixString.pushRange(characters.data(), i);
-            suffixLength += i;
-            if (static_cast<unsigned>(i) < characters.size())
+            forwardsIterator.copyTextTo(&suffixString);
+            int contextEndIndex = endOfFirstWordBoundaryContext(suffixString.data() + suffixString.size() - forwardsIterator.length(), forwardsIterator.length());
+            if (contextEndIndex < forwardsIterator.length()) {
+                suffixString.shrink(forwardsIterator.length() - contextEndIndex);
                 break;
+            }
             forwardsIterator.advance();
         }
     }
 
+    unsigned suffixLength = suffixString.size();
     BackwardsTextBuffer string;
     string.pushRange(suffixString.data(), suffixString.size());
 
@@ -759,24 +756,20 @@ static VisiblePositionTemplate<Strategy> nextBoundary(const VisiblePositionTempl
     const PositionTemplate<Strategy> start(pos.parentAnchoredEquivalent());
 
     BackwardsTextBuffer prefixString;
-    unsigned prefixLength = 0;
-
     if (requiresContextForWordBoundary(characterAfter(c))) {
         SimplifiedBackwardsTextIteratorAlgorithm<Strategy> backwardsIterator(PositionTemplate<Strategy>::firstPositionInNode(&d), start);
         while (!backwardsIterator.atEnd()) {
-            // TODO(xiaochengh): Eliminate this intermediate buffer.
-            BackwardsTextBuffer characters;
-            backwardsIterator.copyTextTo(&characters);
-            int length = characters.size();
-            int i = startOfLastWordBoundaryContext(characters.data(), length);
-            prefixString.pushRange(characters.data() + i, length - i);
-            prefixLength += length - i;
-            if (i > 0)
+            backwardsIterator.copyTextTo(&prefixString);
+            int contextStartIndex = startOfLastWordBoundaryContext(prefixString.data(), backwardsIterator.length());
+            if (contextStartIndex > 0) {
+                prefixString.shrink(contextStartIndex);
                 break;
+            }
             backwardsIterator.advance();
         }
     }
 
+    unsigned prefixLength = prefixString.size();
     ForwardsTextBuffer string;
     string.pushRange(prefixString.data(), prefixString.size());
 

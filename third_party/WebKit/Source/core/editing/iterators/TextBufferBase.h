@@ -32,6 +32,8 @@ public:
         std::copy(other, other + length, ensureDestination(length));
     }
 
+    void shrink(size_t delta) { DCHECK_LE(delta, m_size); m_size -= delta; }
+
 protected:
     TextBufferBase();
     UChar* ensureDestination(size_t length);
