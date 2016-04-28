@@ -242,7 +242,7 @@ void Args::SetSystemVarsLocked(Scope* dest) const {
     arch = kX86;
   else if (os_arch == "x86_64")
     arch = kX64;
-  else if (os_arch.substr(3) == "arm")
+  else if (os_arch.substr(0, 3) == "arm")
     arch = kArm;
   else if (os_arch == "mips")
     arch = kMips;
