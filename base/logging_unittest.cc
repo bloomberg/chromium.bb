@@ -241,6 +241,16 @@ TEST_F(LoggingTest, Dcheck) {
   EXPECT_EQ(DCHECK_IS_ON() ? 2 : 0, log_sink_call_count);
   DCHECK_EQ(0, 1);
   EXPECT_EQ(DCHECK_IS_ON() ? 3 : 0, log_sink_call_count);
+
+  // Test DCHECK on std::nullptr_t
+  log_sink_call_count = 0;
+  const void* p_null = nullptr;
+  const void* p_not_null = &p_null;
+  DCHECK_EQ(p_null, nullptr);
+  DCHECK_EQ(nullptr, p_null);
+  DCHECK_NE(p_not_null, nullptr);
+  DCHECK_NE(nullptr, p_not_null);
+  EXPECT_EQ(0, log_sink_call_count);
 }
 
 TEST_F(LoggingTest, DcheckReleaseBehavior) {
