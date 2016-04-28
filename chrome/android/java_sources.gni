@@ -615,7 +615,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/preferences/ChromePreferenceManager.java",
   "java/src/org/chromium/chrome/browser/preferences/ChromeSwitchPreference.java",
   "java/src/org/chromium/chrome/browser/preferences/ClearBrowsingDataCheckBoxPreference.java",
-  "java/src/org/chromium/chrome/browser/preferences/ConnectionChangeReceiver.java",
   "java/src/org/chromium/chrome/browser/preferences/DocumentModeManager.java",
   "java/src/org/chromium/chrome/browser/preferences/DocumentModePreference.java",
   "java/src/org/chromium/chrome/browser/preferences/ExpandablePreferenceGroup.java",

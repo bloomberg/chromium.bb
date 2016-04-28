@@ -74,7 +74,6 @@ import org.chromium.chrome.browser.omnibox.AutocompleteController;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
-import org.chromium.chrome.browser.preferences.ConnectionChangeReceiver;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionPromoScreen;
 import org.chromium.chrome.browser.signin.SigninPromoScreen;
@@ -186,8 +185,6 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
     private TabModelSelectorImpl mTabModelSelectorImpl;
     private TabModelSelectorTabObserver mTabModelSelectorTabObserver;
     private TabModelObserver mTabModelObserver;
-
-    private ConnectionChangeReceiver mConnectionChangeReceiver;
 
     private boolean mUIInitialized = false;
 
@@ -364,11 +361,6 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         if (getActivityTab() != null) getActivityTab().setIsAllowedToReturnToExternalApp(false);
 
         mTabModelSelectorImpl.saveState();
-        try {
-            getConnectionChangeReceiver().unregisterReceiver(ChromeTabbedActivity.this);
-        } catch (IllegalArgumentException e) {
-            // This may happen when onStop get called very early in UI test.
-        }
         StartupMetrics.getInstance().recordHistogram(true);
         mActivityStopMetrics.onStopWithNative(this);
     }
@@ -384,8 +376,6 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         super.onStartWithNative();
         // If we don't have a current tab, show the overview mode.
         if (getActivityTab() == null) mLayoutManager.showOverview(false);
-
-        getConnectionChangeReceiver().registerReceiver(ChromeTabbedActivity.this);
 
         resetSavedInstanceState();
 
@@ -1352,13 +1342,6 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                 && (!isTablet() || getCurrentTabModel().getCount() != 0);
         return KeyboardShortcuts.onKeyDown(event, this, isCurrentTabVisible, true)
                 || super.onKeyDown(keyCode, event);
-    }
-
-    private ConnectionChangeReceiver getConnectionChangeReceiver() {
-        if (mConnectionChangeReceiver == null) {
-            mConnectionChangeReceiver = new ConnectionChangeReceiver();
-        }
-        return mConnectionChangeReceiver;
     }
 
     @VisibleForTesting
