@@ -51,6 +51,23 @@ void ToJavaOfflinePageList(JNIEnv* env,
   }
 }
 
+void CheckPagesExistOfflineCallback(
+    const ScopedJavaGlobalRef<jobject>& j_callback_obj,
+    const OfflinePageModel::CheckPagesExistOfflineResult& offline_pages) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+
+  std::vector<std::string> offline_pages_vector;
+  for (const GURL& page : offline_pages)
+    offline_pages_vector.push_back(page.spec());
+
+  ScopedJavaLocalRef<jobjectArray> j_result_array =
+      base::android::ToJavaArrayOfStrings(env, offline_pages_vector);
+  DCHECK(j_result_array.obj());
+
+  Java_CheckPagesExistOfflineCallbackInternal_onResult(
+      env, j_callback_obj.obj(), j_result_array.obj());
+}
+
 void GetAllPagesCallback(const ScopedJavaGlobalRef<jobject>& j_result_obj,
                          const ScopedJavaGlobalRef<jobject>& j_callback_obj,
                          const OfflinePageModel::GetAllPagesResult& result) {
@@ -177,6 +194,27 @@ void OfflinePageBridge::HasPages(JNIEnv* env,
 
   return offline_page_model_->HasPages(
       name_space, base::Bind(&HasPagesCallback, j_callback_ref));
+}
+
+void OfflinePageBridge::CheckPagesExistOffline(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobjectArray>& j_urls_array,
+    const JavaParamRef<jobject>& j_callback_obj) {
+  DCHECK(j_urls_array);
+  DCHECK(j_callback_obj);
+
+  std::vector<std::string> urls;
+  base::android::AppendJavaStringArrayToStringVector(env, j_urls_array.obj(),
+                                                     &urls);
+
+  std::set<GURL> page_urls;
+  for (const std::string& url : urls)
+    page_urls.insert(GURL(url));
+
+  offline_page_model_->CheckPagesExistOffline(
+      page_urls, base::Bind(&CheckPagesExistOfflineCallback,
+                            ScopedJavaGlobalRef<jobject>(env, j_callback_obj)));
 }
 
 void OfflinePageBridge::GetAllPages(

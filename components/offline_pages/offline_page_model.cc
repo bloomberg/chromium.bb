@@ -294,6 +294,27 @@ void OfflinePageModel::HasPagesAfterLoadDone(
   callback.Run(has_pages);
 }
 
+void OfflinePageModel::CheckPagesExistOffline(
+    const std::set<GURL>& urls,
+    const CheckPagesExistOfflineCallback& callback) {
+  RunWhenLoaded(
+      base::Bind(&OfflinePageModel::CheckPagesExistOfflineAfterLoadDone,
+                 weak_ptr_factory_.GetWeakPtr(), urls, callback));
+}
+
+void OfflinePageModel::CheckPagesExistOfflineAfterLoadDone(
+    const std::set<GURL>& urls,
+    const CheckPagesExistOfflineCallback& callback) {
+  DCHECK(is_loaded_);
+  CheckPagesExistOfflineResult result;
+  for (const auto& id_page_pair : offline_pages_) {
+    auto iter = urls.find(id_page_pair.second.url);
+    if (iter != urls.end())
+      result.insert(*iter);
+  }
+  callback.Run(result);
+}
+
 void OfflinePageModel::GetAllPages(const GetAllPagesCallback& callback) {
   if (!is_loaded_) {
     delayed_tasks_.push_back(

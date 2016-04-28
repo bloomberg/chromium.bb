@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.offlinepages;
 
 import android.os.AsyncTask;
 
+import org.chromium.base.Callback;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
@@ -18,6 +19,7 @@ import org.chromium.components.offlinepages.SavePageResult;
 import org.chromium.content_public.browser.WebContents;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -470,17 +472,32 @@ public class OfflinePageBridge {
         nativeCheckMetadataConsistency(mNativeOfflinePageBridge);
     }
 
+    private static class CheckPagesExistOfflineCallbackInternal {
+        private Callback<Set<String>> mCallback;
+
+        CheckPagesExistOfflineCallbackInternal(Callback<Set<String>> callback) {
+            mCallback = callback;
+        }
+
+        @CalledByNative("CheckPagesExistOfflineCallbackInternal")
+        public void onResult(String[] results) {
+            Set<String> resultSet = new HashSet<>();
+            Collections.addAll(resultSet, results);
+            mCallback.onResult(resultSet);
+        }
+    }
+
     /**
-     * Gets the offline URL of an offline page of that is saved for the online URL.
-     * This method is deprecated. Use OfflinePageBridge#getPagesByOnlineUrl.
+     * Returns via callback any urls in <code>urls</code> for which there exist offline pages.
      *
-     * @param onlineUrl Online URL, which might have offline copy.
-     * @return URL pointing to the offline copy or <code>null</code> if none exists.
+     * TODO(http://crbug.com/598006): Add metrics for preventing UI jank.
      */
-    public boolean offlinePageExists(String onlineUrl) {
-        assert mIsNativeOfflinePageModelLoaded;
-        OfflinePageItem item = nativeGetPageByOnlineURL(mNativeOfflinePageBridge, onlineUrl);
-        return item != null;
+    public void checkPagesExistOffline(Set<String> urls, Callback<Set<String>> callback) {
+        String[] urlArray = urls.toArray(new String[urls.size()]);
+
+        CheckPagesExistOfflineCallbackInternal callbackInternal =
+                new CheckPagesExistOfflineCallbackInternal(callback);
+        nativeCheckPagesExistOffline(mNativeOfflinePageBridge, urlArray, callbackInternal);
     }
 
     private DeletePageCallback wrapCallbackWithHistogramReporting(
@@ -587,6 +604,8 @@ public class OfflinePageBridge {
     @VisibleForTesting
     native void nativeGetAllPages(long nativeOfflinePageBridge, List<OfflinePageItem> offlinePages,
             final MultipleOfflinePageItemCallback callback);
+    private native void nativeCheckPagesExistOffline(long nativeOfflinePageBridge, Object[] urls,
+            CheckPagesExistOfflineCallbackInternal callback);
     native void nativeHasPages(
             long nativeOfflinePageBridge, String nameSpace, final HasPagesCallback callback);
 

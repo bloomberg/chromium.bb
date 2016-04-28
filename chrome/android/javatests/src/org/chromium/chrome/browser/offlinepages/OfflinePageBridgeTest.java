@@ -8,6 +8,7 @@ import android.content.Context;
 import android.os.Environment;
 import android.test.suitebuilder.annotation.SmallTest;
 
+import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -23,7 +24,9 @@ import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -154,18 +157,6 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
                 getPageByClientId(BOOKMARK_ID));
     }
 
-    @SmallTest
-    public void testOfflinePageExists() throws Exception {
-        loadUrl(mTestPage);
-        assertFalse("We should not say a page exists for one we haven't saved.",
-                mOfflinePageBridge.offlinePageExists(mTestPage));
-        savePage(SavePageResult.SUCCESS, mTestPage);
-        assertTrue("We should say a page exists for one we just saved.",
-                mOfflinePageBridge.offlinePageExists(mTestPage));
-        assertFalse("We should not say a page exists for one we haven't saved.",
-                mOfflinePageBridge.offlinePageExists(mTestPage + "?foo=bar"));
-    }
-
     @CommandLineFlags.Add("disable-features=OfflinePagesBackgroundLoading")
     @SmallTest
     public void testBackgroundLoadSwitch() throws Exception {
@@ -178,6 +169,26 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
         });
     }
 
+    @SmallTest
+    public void testCheckPagesExistOffline() throws Exception {
+        // If we save a page, then it should exist in the result.
+        loadUrl(mTestPage);
+        savePage(SavePageResult.SUCCESS, mTestPage);
+        Set<String> testCases = new HashSet<>();
+        testCases.add(mTestPage);
+
+        // Querying for a page that hasn't been saved should not affect the result.
+        testCases.add(mTestPage + "?foo=bar");
+
+        Set<String> pages = checkPagesExistOffline(testCases);
+
+        assertEquals(
+                "We only saved one page and queried for it, so the result should be one string.", 1,
+                pages.size());
+        assertTrue("The only page returned should be the page that was actually saved.",
+                pages.contains(mTestPage));
+    }
+
     private void savePage(final int expectedResult, final String expectedUrl)
             throws InterruptedException {
         final Semaphore semaphore = new Semaphore(0);
@@ -185,7 +196,7 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
             @Override
             public void run() {
                 assertNotNull("Tab is null", getActivity().getActivityTab());
-                assertEquals("URL does not match requested.", mTestPage,
+                assertEquals("URL does not match requested.", expectedUrl,
                         getActivity().getActivityTab().getUrl());
                 assertNotNull("WebContents is null",
                         getActivity().getActivityTab().getWebContents());
@@ -275,5 +286,25 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
         });
         assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
         return result[0];
+    }
+
+    private Set<String> checkPagesExistOffline(final Set<String> query)
+            throws InterruptedException {
+        final Set<String> result = new HashSet<>();
+        final Semaphore semaphore = new Semaphore(0);
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mOfflinePageBridge.checkPagesExistOffline(query, new Callback<Set<String>>() {
+                    @Override
+                    public void onResult(Set<String> offlinedPages) {
+                        result.addAll(offlinedPages);
+                        semaphore.release();
+                    }
+                });
+            }
+        });
+        assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        return result;
     }
 }

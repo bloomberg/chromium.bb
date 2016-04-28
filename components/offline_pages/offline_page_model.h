@@ -9,6 +9,7 @@
 
 #include <map>
 #include <memory>
+#include <set>
 #include <vector>
 
 #include "base/callback.h"
@@ -123,10 +124,13 @@ class OfflinePageModel : public KeyedService, public base::SupportsUserData {
   };
 
   typedef std::vector<OfflinePageItem> GetAllPagesResult;
+  typedef std::set<GURL> CheckPagesExistOfflineResult;
 
   typedef base::Callback<void(SavePageResult, int64_t)> SavePageCallback;
   typedef base::Callback<void(DeletePageResult)> DeletePageCallback;
   typedef base::Callback<void(const GetAllPagesResult&)> GetAllPagesCallback;
+  typedef base::Callback<void(const CheckPagesExistOfflineResult&)>
+      CheckPagesExistOfflineCallback;
   typedef base::Callback<void(bool)> HasPagesCallback;
 
   // Generates a new offline id
@@ -178,6 +182,11 @@ class OfflinePageModel : public KeyedService, public base::SupportsUserData {
   // |name_space|.
   void HasPages(const std::string& name_space,
                 const HasPagesCallback& callback);
+
+  // Returns via callback all GURLs in |urls| that are equal to the online URL
+  // of any offline page.
+  void CheckPagesExistOffline(const std::set<GURL>& urls,
+                              const CheckPagesExistOfflineCallback& callback);
 
   // Gets all available offline pages. Requires that the model is loaded.
   void GetAllPages(const GetAllPagesCallback& callback);
@@ -237,6 +246,9 @@ class OfflinePageModel : public KeyedService, public base::SupportsUserData {
   void OnEnsureArchivesDirCreatedDone();
 
   void GetAllPagesAfterLoadDone(const GetAllPagesCallback& callback);
+  void CheckPagesExistOfflineAfterLoadDone(
+      const std::set<GURL>& urls,
+      const CheckPagesExistOfflineCallback& callback);
 
   // Callback for checking whether we have offline pages.
   void HasPagesAfterLoadDone(const std::string& name_space,

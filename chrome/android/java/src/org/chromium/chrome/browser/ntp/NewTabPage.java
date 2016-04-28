@@ -80,6 +80,8 @@ import org.chromium.sync.signin.ChromeSigninController;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import jp.tomorrowkey.android.gifplayer.BaseGifImage;
@@ -455,10 +457,32 @@ public class NewTabPage
         }
 
         @Override
-        public boolean isOfflineAvailable(String pageUrl) {
-            if (mIsDestroyed || !isNtpOfflinePagesEnabled()) return false;
-            if (isLocalUrl(pageUrl)) return true;
-            return OfflinePageBridge.getForProfile(mProfile).offlinePageExists(pageUrl);
+        public void getUrlsAvailableOffline(
+                Set<String> pageUrls, final Callback<Set<String>> callback) {
+            final Set<String> urlsAvailableOffline = new HashSet<>();
+            if (mIsDestroyed || !isNtpOfflinePagesEnabled()) {
+                callback.onResult(urlsAvailableOffline);
+                return;
+            }
+
+            HashSet<String> urlsToCheckForOfflinePage = new HashSet<>();
+
+            for (String pageUrl : pageUrls) {
+                if (isLocalUrl(pageUrl)) {
+                    urlsAvailableOffline.add(pageUrl);
+                } else {
+                    urlsToCheckForOfflinePage.add(pageUrl);
+                }
+            }
+
+            OfflinePageBridge.getForProfile(mProfile).checkPagesExistOffline(
+                    urlsToCheckForOfflinePage, new Callback<Set<String>>() {
+                        @Override
+                        public void onResult(Set<String> urlsWithOfflinePages) {
+                            urlsAvailableOffline.addAll(urlsWithOfflinePages);
+                            callback.onResult(urlsAvailableOffline);
+                        }
+                    });
         }
 
         @Override

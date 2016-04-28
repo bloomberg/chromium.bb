@@ -30,6 +30,8 @@
 using SavePageResult = offline_pages::OfflinePageModel::SavePageResult;
 using DeletePageResult = offline_pages::OfflinePageModel::DeletePageResult;
 using GetAllPagesResult = offline_pages::OfflinePageModel::GetAllPagesResult;
+using CheckPagesExistOfflineResult =
+    offline_pages::OfflinePageModel::CheckPagesExistOfflineResult;
 
 namespace offline_pages {
 
@@ -77,6 +79,7 @@ class OfflinePageModelTest
   void OnSavePageDone(SavePageResult result, int64_t offline_id);
   void OnDeletePageDone(DeletePageResult result);
   void OnHasPagesDone(bool result);
+  void OnCheckPagesExistOfflineDone(const CheckPagesExistOfflineResult& result);
   void OnClearAllDone();
 
   // OfflinePageMetadataStore callbacks.
@@ -115,6 +118,7 @@ class OfflinePageModelTest
   }
 
   bool HasPages(std::string name_space);
+  CheckPagesExistOfflineResult CheckPagesExistOffline(std::set<GURL>);
 
   OfflinePageModel* model() { return model_.get(); }
 
@@ -148,6 +152,7 @@ class OfflinePageModelTest
   int64_t last_deleted_offline_id_;
   ClientId last_deleted_client_id_;
   bool last_has_pages_result_;
+  CheckPagesExistOfflineResult last_pages_exist_result_;
 };
 
 OfflinePageModelTest::OfflinePageModelTest()
@@ -213,6 +218,11 @@ void OfflinePageModelTest::OnHasPagesDone(bool result) {
   last_has_pages_result_ = result;
 }
 
+void OfflinePageModelTest::OnCheckPagesExistOfflineDone(
+    const CheckPagesExistOfflineResult& result) {
+  last_pages_exist_result_ = result;
+}
+
 void OfflinePageModelTest::OnClearAllDone() {
   PumpLoop();
 }
@@ -260,6 +270,7 @@ void OfflinePageModelTest::ResetResults() {
   last_save_result_ = SavePageResult::CANCELLED;
   last_delete_result_ = DeletePageResult::CANCELLED;
   last_archiver_path_.clear();
+  last_pages_exist_result_.clear();
 }
 
 OfflinePageTestStore* OfflinePageModelTest::GetStore() {
@@ -288,6 +299,15 @@ const std::vector<OfflinePageItem>& OfflinePageModelTest::GetAllPages() {
       base::Bind(&OfflinePageModelTest::OnGetAllPagesDone, AsWeakPtr()));
   PumpLoop();
   return all_pages_;
+}
+
+CheckPagesExistOfflineResult OfflinePageModelTest::CheckPagesExistOffline(
+    std::set<GURL> pages) {
+  model()->CheckPagesExistOffline(
+      pages, base::Bind(&OfflinePageModelTest::OnCheckPagesExistOfflineDone,
+                        AsWeakPtr()));
+  PumpLoop();
+  return last_pages_exist_result_;
 }
 
 bool OfflinePageModelTest::HasPages(std::string name_space) {
@@ -748,6 +768,22 @@ TEST_F(OfflinePageModelTest, GetPageByOnlineURL) {
 
   page = model()->GetPageByOnlineURL(GURL("http://foo"));
   EXPECT_FALSE(page);
+}
+
+TEST_F(OfflinePageModelTest, CheckPagesExistOffline) {
+  SavePage(kTestUrl, kTestClientId1);
+  SavePage(kTestUrl2, kTestClientId2);
+
+  std::set<GURL> input;
+  input.insert(kTestUrl);
+  input.insert(kTestUrl2);
+  input.insert(kTestUrl3);
+
+  CheckPagesExistOfflineResult existing_pages = CheckPagesExistOffline(input);
+  EXPECT_EQ(2U, existing_pages.size());
+  EXPECT_NE(existing_pages.end(), existing_pages.find(kTestUrl));
+  EXPECT_NE(existing_pages.end(), existing_pages.find(kTestUrl2));
+  EXPECT_EQ(existing_pages.end(), existing_pages.find(kTestUrl3));
 }
 
 // Test that model returns pages that are older than 30 days as candidates for

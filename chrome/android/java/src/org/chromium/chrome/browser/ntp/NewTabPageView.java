@@ -32,6 +32,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
@@ -53,6 +54,10 @@ import org.chromium.chrome.browser.profiles.MostVisitedSites.ThumbnailCallback;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.ui.base.DeviceFormFactor;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import jp.tomorrowkey.android.gifplayer.BaseGifImage;
 
@@ -198,10 +203,11 @@ public class NewTabPageView extends FrameLayout
                 IconAvailabilityCallback callback);
 
         /**
-         * Checks if the page with the given URL is available offline.
-         * @param pageUrl The URL of the site whose offline availability is requested.
+         * Checks if the pages with the given URLs are available offline.
+         * @param pageUrls The URLs of the sites whose offline availability is requested.
+         * @param callback Fired when the results are available.
          */
-        boolean isOfflineAvailable(String pageUrl);
+        void getUrlsAvailableOffline(Set<String> pageUrls, Callback<Set<String>> callback);
 
         /**
          * Called when the user clicks on the logo.
@@ -805,7 +811,22 @@ public class NewTabPageView extends FrameLayout
 
     @Override
     public void onMostVisitedURLsAvailable(
-            String[] titles, String[] urls, String[] whitelistIconPaths) {
+            final String[] titles, final String[] urls, final String[] whitelistIconPaths) {
+        Set<String> urlSet = new HashSet<>(Arrays.asList(urls));
+
+        // TODO(https://crbug.com/607573): We should show offline-available content in a nonblocking
+        // way so that responsiveness of the NTP does not depend on ready availability of offline
+        // pages.
+        mManager.getUrlsAvailableOffline(urlSet, new Callback<Set<String>>() {
+            @Override
+            public void onResult(Set<String> offlineUrls) {
+                onOfflineUrlsAvailable(titles, urls, whitelistIconPaths, offlineUrls);
+            }
+        });
+    }
+
+    private void onOfflineUrlsAvailable(final String[] titles, final String[] urls,
+            final String[] whitelistIconPaths, final Set<String> offlineUrls) {
         mMostVisitedLayout.removeAllViews();
 
         MostVisitedItem[] oldItems = mMostVisitedItems;
@@ -820,7 +841,7 @@ public class NewTabPageView extends FrameLayout
             final String url = urls[i];
             final String title = titles[i];
             final String whitelistIconPath = whitelistIconPaths[i];
-            boolean offlineAvailable = mManager.isOfflineAvailable(url);
+            boolean offlineAvailable = offlineUrls.contains(url);
 
             // Look for an existing item to reuse.
             MostVisitedItem item = null;
