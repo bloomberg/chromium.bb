@@ -64,6 +64,23 @@ function loadTypeSchema(typeName, defaultSchema) {
 }
 
 /**
+ * Sets a property |value| on |obj| with property name |key|. Like
+ *
+ *     obj[key] = value;
+ *
+ * but without triggering setters.
+ */
+function defineProperty(obj, key, value) {
+  $Object.defineProperty(obj, key, {
+    __proto__: null,
+    configurable: true,
+    enumerable: true,
+    writable: true,
+    value: value,
+  });
+}
+
+/**
  * Takes a private class implementation |privateClass| and exposes a subset of
  * its methods |functions| and properties |properties| and |readonly| to a
  * public wrapper class that should be passed in. Within bindings code, you can
@@ -90,8 +107,7 @@ function loadTypeSchema(typeName, defaultSchema) {
  *     properties and |readonly| are read-only properties.
  */
 function expose(publicClass, privateClass, exposed) {
-  // TODO(robwu): Fix callers and uncomment this assertion.
-  // DCHECK(!(privateClass instanceof $Object.self));
+  DCHECK(!(privateClass.prototype instanceof $Object.self));
 
   $Object.setPrototypeOf(exposed, null);
 
@@ -218,6 +234,7 @@ function promise(func) {
 exports.$set('forEach', forEach);
 exports.$set('loadTypeSchema', loadTypeSchema);
 exports.$set('lookup', lookup);
+exports.$set('defineProperty', defineProperty);
 exports.$set('expose', expose);
 exports.$set('deepCopy', deepCopy);
 exports.$set('promise', promise);

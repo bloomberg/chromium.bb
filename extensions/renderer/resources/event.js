@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// TODO(robwu): Fix indentation.
+
   var exceptionHandler = require('uncaught_exception_handler');
   var eventNatives = requireNative('event_natives');
   var logging = requireNative('logging');
@@ -13,6 +15,7 @@
   // Schemas for the rule-style functions on the events API that
   // only need to be generated occasionally, so populate them lazily.
   var ruleFunctionSchemas = {
+    __proto__: null,
     // These values are set lazily:
     // addRules: {},
     // getRules: {},
@@ -35,18 +38,20 @@
   }
 
   // A map of event names to the event object that is registered to that name.
-  var attachedNamedEvents = {};
+  var attachedNamedEvents = {__proto__: null};
 
   // A map of functions that massage event arguments before they are dispatched.
   // Key is event name, value is function.
-  var eventArgumentMassagers = {};
+  var eventArgumentMassagers = {__proto__: null};
 
   // An attachment strategy for events that aren't attached to the browser.
   // This applies to events with the "unmanaged" option and events without
   // names.
-  var NullAttachmentStrategy = function(event) {
+  function NullAttachmentStrategy(event) {
     this.event_ = event;
-  };
+  }
+  $Object.setPrototypeOf(NullAttachmentStrategy.prototype, null);
+
   NullAttachmentStrategy.prototype.onAddedListener =
       function(listener) {
   };
@@ -61,9 +66,10 @@
   };
 
   // Handles adding/removing/dispatching listeners for unfiltered events.
-  var UnfilteredAttachmentStrategy = function(event) {
+  function UnfilteredAttachmentStrategy(event) {
     this.event_ = event;
-  };
+  }
+  $Object.setPrototypeOf(UnfilteredAttachmentStrategy.prototype, null);
 
   UnfilteredAttachmentStrategy.prototype.onAddedListener =
       function(listener) {
@@ -87,12 +93,14 @@
     return this.event_.listeners;
   };
 
-  var FilteredAttachmentStrategy = function(event) {
+  function FilteredAttachmentStrategy(event) {
     this.event_ = event;
-    this.listenerMap_ = {};
-  };
+    this.listenerMap_ = {__proto__: null};
+  }
+  $Object.setPrototypeOf(FilteredAttachmentStrategy.prototype, null);
 
-  FilteredAttachmentStrategy.idToEventMap = {};
+  utils.defineProperty(FilteredAttachmentStrategy, 'idToEventMap',
+      {__proto__: null});
 
   FilteredAttachmentStrategy.prototype.onAddedListener = function(listener) {
     var id = eventNatives.AttachFilteredEvent(this.event_.eventName,
@@ -131,16 +139,9 @@
   };
 
   function parseEventOptions(opt_eventOptions) {
-    function merge(dest, src) {
-      for (var k in src) {
-        if (!$Object.hasOwnProperty(dest, k)) {
-          dest[k] = src[k];
-        }
-      }
-    }
-
-    var options = $Object.assign({}, opt_eventOptions || {});
-    merge(options, {
+    return $Object.assign({
+      __proto__: null,
+    }, {
       // Event supports adding listeners with filters ("filtered events"), for
       // example as used in the webNavigation API.
       //
@@ -166,9 +167,8 @@
       // events are unmanaged, though in the latter case the browser *does*
       // interact indirectly with them via IPCs written by hand.
       unmanaged: false,
-    });
-    return options;
-  };
+    }, opt_eventOptions);
+  }
 
   // Event object.  If opt_eventName is provided, this object represents
   // the unique instance of that named event, and dispatching an event
@@ -187,8 +187,8 @@
   // If opt_webViewInstanceId exists, it is an integer uniquely identifying a
   // <webview> tag within the embedder. If it does not exist, then this is an
   // extension event rather than a <webview> event.
-  var EventImpl = function(opt_eventName, opt_argSchemas, opt_eventOptions,
-                           opt_webViewInstanceId) {
+  function EventImpl(opt_eventName, opt_argSchemas, opt_eventOptions,
+                     opt_webViewInstanceId) {
     this.eventName = opt_eventName;
     this.argSchemas = opt_argSchemas;
     this.listeners = [];
@@ -216,7 +216,8 @@
       this.attachmentStrategy = new FilteredAttachmentStrategy(this);
     else
       this.attachmentStrategy = new UnfilteredAttachmentStrategy(this);
-  };
+  }
+  $Object.setPrototypeOf(EventImpl.prototype, null);
 
   // callback is a function(args, dispatch). args are the args we receive from
   // dispatchEvent(), and dispatch is a function(args) that dispatches args to
@@ -413,12 +414,19 @@
     // data types.
     function buildArrayOfChoicesSchema(typesList) {
       return {
+        __proto__: null,
         'type': 'array',
         'items': {
-          'choices': $Array.map(typesList, function(el) {return {'$ref': el};})
+          __proto__: null,
+          'choices': $Array.map(typesList, function(el) {
+            return {
+              __proto__: null,
+              '$ref': el,
+            };
+          }),
         }
       };
-    };
+    }
 
     // Validate conditions and actions against specific schemas of this
     // event object type.
@@ -449,8 +457,7 @@
     // We remove the first parameter from the validation to give the user more
     // meaningful error messages.
     validate([this.webViewInstanceId, rules, opt_cb],
-             $Array.splice(
-                 $Array.slice(ruleFunctionSchemas.addRules.parameters), 1));
+        $Array.slice(ruleFunctionSchemas.addRules.parameters, 1));
     sendRequest(
       "events.addRules",
       [this.eventName, this.webViewInstanceId, rules,  opt_cb],
@@ -464,8 +471,7 @@
     // We remove the first parameter from the validation to give the user more
     // meaningful error messages.
     validate([this.webViewInstanceId, ruleIdentifiers, opt_cb],
-             $Array.splice(
-                 $Array.slice(ruleFunctionSchemas.removeRules.parameters), 1));
+        $Array.slice(ruleFunctionSchemas.removeRules.parameters, 1));
     sendRequest("events.removeRules",
                 [this.eventName,
                  this.webViewInstanceId,
@@ -481,8 +487,7 @@
     // We remove the first parameter from the validation to give the user more
     // meaningful error messages.
     validate([this.webViewInstanceId, ruleIdentifiers, cb],
-             $Array.splice(
-                 $Array.slice(ruleFunctionSchemas.getRules.parameters), 1));
+        $Array.slice(ruleFunctionSchemas.getRules.parameters, 1));
 
     sendRequest(
       "events.getRules",

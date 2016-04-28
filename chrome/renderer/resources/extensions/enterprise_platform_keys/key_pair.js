@@ -17,7 +17,7 @@ var KeyUsage = keyModule.KeyUsage;
  * @param {KeyUsage[]} usages The allowed key usages.
  * @constructor
  */
-var KeyPairImpl = function(publicKeySpki, algorithm, usages) {
+function KeyPairImpl(publicKeySpki, algorithm, usages) {
   this.publicKey = new Key(KeyType.public,
                            publicKeySpki,
                            algorithm,
@@ -28,7 +28,8 @@ var KeyPairImpl = function(publicKeySpki, algorithm, usages) {
                             algorithm,
                             intersect([KeyUsage.sign], usages),
                             false /* not extractable */);
-};
+}
+$Object.setPrototypeOf(KeyPairImpl.prototype, null);
 
 function KeyPair() {
   privates(KeyPair).constructPrivate(this, arguments);

@@ -9,6 +9,7 @@ var utils = require('utils');
  * @enum {string}
  */
 var KeyType = {
+  __proto__: null,
   public: 'public',
   private: 'private'
 };
@@ -18,6 +19,7 @@ var KeyType = {
  * @enum {string}
  */
 var KeyUsage = {
+  __proto__: null,
   sign: 'sign',
   verify: 'verify'
 };
@@ -32,22 +34,25 @@ var KeyUsage = {
  * @param {boolean} extractable Whether the key is extractable.
  * @constructor
  */
-var KeyImpl = function(type, publicKeySpki, algorithm, usages, extractable) {
+function KeyImpl(type, publicKeySpki, algorithm, usages, extractable) {
   this.type = type;
   this.spki = publicKeySpki;
   this.algorithm = algorithm;
   this.usages = usages;
   this.extractable = extractable;
-};
+}
+$Object.setPrototypeOf(KeyImpl.prototype, null);
 
-var KeyBase = function() {};
-
-Object.defineProperty(KeyBase.prototype, 'algorithm', {
-  enumerable: true,
-  get: function() {
+/**
+ * The public base class of Key.
+ */
+function KeyBase() {}
+KeyBase.prototype = {
+  constructor: KeyBase,
+  get algorithm() {
     return utils.deepCopy(privates(this).impl.algorithm);
-  }
-});
+  },
+};
 
 function Key() {
   privates(Key).constructPrivate(this, arguments);

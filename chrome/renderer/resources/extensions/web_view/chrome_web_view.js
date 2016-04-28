@@ -37,11 +37,12 @@ function ContextMenusOnClickedEvent(webViewInstanceId,
                                     opt_argSchemas,
                                     opt_eventOptions) {
   var subEventName = GetUniqueSubEventName(opt_eventName);
-  EventBindings.Event.call(this,
-                           subEventName,
-                           opt_argSchemas,
-                           opt_eventOptions,
-                           webViewInstanceId);
+  $Function.call(EventBindings.Event,
+                 this,
+                 subEventName,
+                 opt_argSchemas,
+                 opt_eventOptions,
+                 webViewInstanceId);
 
   var view = GuestViewInternalNatives.GetViewFromID(webViewInstanceId);
   if (!view) {
@@ -52,19 +53,21 @@ function ContextMenusOnClickedEvent(webViewInstanceId,
     $Function.apply(this.dispatch, this, $Array.slice(arguments));
   }.bind(this), {instanceId: webViewInstanceId});
 }
+$Object.setPrototypeOf(ContextMenusOnClickedEvent.prototype,
+                       EventBindings.Event.prototype);
 
-ContextMenusOnClickedEvent.prototype.__proto__ = EventBindings.Event.prototype;
-
+// This event is exposed as <webview>.contextMenus.onShow.
 function ContextMenusOnContextMenuEvent(webViewInstanceId,
                                         opt_eventName,
                                         opt_argSchemas,
                                         opt_eventOptions) {
   var subEventName = GetUniqueSubEventName(opt_eventName);
-  EventBindings.Event.call(this,
-                           subEventName,
-                           opt_argSchemas,
-                           opt_eventOptions,
-                           webViewInstanceId);
+  $Function.call(EventBindings.Event,
+                 this,
+                 subEventName,
+                 opt_argSchemas,
+                 opt_eventOptions,
+                 webViewInstanceId);
 
   var view = GuestViewInternalNatives.GetViewFromID(webViewInstanceId);
   if (!view) {
@@ -91,8 +94,8 @@ function ContextMenusOnContextMenuEvent(webViewInstanceId,
   }.bind(this), {instanceId: webViewInstanceId});
 }
 
-ContextMenusOnContextMenuEvent.prototype.__proto__ =
-    EventBindings.Event.prototype;
+$Object.setPrototypeOf(ContextMenusOnContextMenuEvent.prototype,
+                       EventBindings.Event.prototype);
 
 // -----------------------------------------------------------------------------
 // WebViewContextMenusImpl object.
@@ -101,6 +104,7 @@ ContextMenusOnContextMenuEvent.prototype.__proto__ =
 function WebViewContextMenusImpl(viewInstanceId) {
   this.viewInstanceId_ = viewInstanceId;
 }
+$Object.setPrototypeOf(WebViewContextMenusImpl.prototype, null);
 
 WebViewContextMenusImpl.prototype.create = function() {
   var args = $Array.concat([this.viewInstanceId_], $Array.slice(arguments));
@@ -188,8 +192,6 @@ WebViewImpl.prototype.maybeSetupContextMenus = function() {
   }.bind(this);
 
   // Expose <webview>.contextMenus object.
-  // TODO(lazyboy): Add documentation for contextMenus:
-  // http://crbug.com/470979.
   $Object.defineProperty(
       this.element,
       'contextMenus',

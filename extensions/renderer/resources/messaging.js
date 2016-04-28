@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 // chrome.runtime.messaging API implementation.
+// TODO(robwu): Fix this indentation.
 
   // TODO(kalman): factor requiring chrome out of here.
   var chrome = requireNative('chrome').GetChrome();
@@ -22,7 +23,7 @@
   var kNativeMessageChannel = "chrome.runtime.sendNativeMessage";
 
   // Map of port IDs to port object.
-  var ports = {};
+  var ports = {__proto__: null};
 
   // Change even to odd and vice versa, to get the other side of a given
   // channel.
@@ -34,15 +35,27 @@
     this.portId_ = portId;
     this.name = opt_name;
 
-    var portSchema = {name: 'port', $ref: 'runtime.Port'};
-    var options = {unmanaged: true};
+    // Note: Keep these schemas in sync with the documentation in runtime.json
+    var portSchema = {
+      __proto__: null,
+      name: 'port',
+      $ref: 'runtime.Port',
+    };
+    var messageSchema = {
+      __proto__: null,
+      name: 'message',
+      type: 'any',
+      optional: true,
+    };
+    var options = {
+      __proto__: null,
+      unmanaged: true,
+    };
     this.onDisconnect = new Event(null, [portSchema], options);
-    this.onMessage = new Event(
-        null,
-        [{name: 'message', type: 'any', optional: true}, portSchema],
-        options);
+    this.onMessage = new Event(null, [messageSchema, portSchema], options);
     this.onDestroy_ = null;
   }
+  $Object.setPrototypeOf(PortImpl.prototype, null);
 
   // Sends a message asynchronously to the context on the other end of this
   // port.
@@ -72,8 +85,10 @@
   };
 
   PortImpl.prototype.destroy_ = function() {
-    if (this.onDestroy_)
+    if (this.onDestroy_) {
       this.onDestroy_();
+      this.onDestroy_ = null;
+    }
     privates(this.onDisconnect).impl.destroy_();
     privates(this.onMessage).impl.destroy_();
     // TODO(robwu): Remove port lifetime management because it is completely
@@ -114,23 +129,24 @@
                                   sourceExtensionId,
                                   targetExtensionId,
                                   sourceUrl) {
-    var errorMsg = [];
-    var eventName = isSendMessage ? "runtime.onMessage" : "extension.onRequest";
+    var errorMsg;
+    var eventName = isSendMessage ? 'runtime.onMessage' : 'extension.onRequest';
     if (isSendMessage && !responseCallbackPreserved) {
-      $Array.push(errorMsg,
-          "The chrome." + eventName + " listener must return true if you " +
-          "want to send a response after the listener returns");
+      errorMsg =
+        'The chrome.' + eventName + ' listener must return true if you ' +
+        'want to send a response after the listener returns';
     } else {
-      $Array.push(errorMsg,
-          "Cannot send a response more than once per chrome." + eventName +
-          " listener per document");
+      errorMsg =
+        'Cannot send a response more than once per chrome.' + eventName +
+        ' listener per document';
     }
-    $Array.push(errorMsg, "(message was sent by extension" + sourceExtensionId);
-    if (sourceExtensionId != "" && sourceExtensionId != targetExtensionId)
-      $Array.push(errorMsg, "for extension " + targetExtensionId);
-    if (sourceUrl != "")
-      $Array.push(errorMsg, "for URL " + sourceUrl);
-    lastError.set(eventName, errorMsg.join(" ") + ").", null, chrome);
+    errorMsg += ' (message was sent by extension' + sourceExtensionId;
+    if (sourceExtensionId && sourceExtensionId !== targetExtensionId)
+      errorMsg += ' for extension ' + targetExtensionId;
+    if (sourceUrl)
+      errorMsg += ' for URL ' + sourceUrl;
+    errorMsg += ').';
+    lastError.set(eventName, errorMsg, null, chrome);
   }
 
   // Helper function for dispatchOnConnect

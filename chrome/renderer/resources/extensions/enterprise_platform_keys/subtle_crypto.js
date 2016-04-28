@@ -16,7 +16,7 @@ var normalizeAlgorithm =
 // This error is thrown by the internal and public API's token functions and
 // must be rethrown by this custom binding. Keep this in sync with the C++ part
 // of this API.
-var errorInvalidToken = "The token is not valid.";
+var errorInvalidToken = 'The token is not valid.';
 
 // The following errors are specified in WebCrypto.
 // TODO(pneubeck): These should be DOMExceptions.
@@ -76,12 +76,12 @@ function equalsStandardPublicExponent(array) {
  * @param {string} tokenId The id of the backing Token.
  * @constructor
  */
-var EnterpriseSubtleCryptoImpl = function(tokenId) {
-  SubtleCryptoImpl.call(this, tokenId);
-};
+function EnterpriseSubtleCryptoImpl(tokenId) {
+  $Function.call(SubtleCryptoImpl, this, tokenId);
+}
 
 EnterpriseSubtleCryptoImpl.prototype =
-    Object.create(SubtleCryptoImpl.prototype);
+    $Object.create(SubtleCryptoImpl.prototype);
 
 EnterpriseSubtleCryptoImpl.prototype.generateKey =
     function(algorithm, extractable, keyUsages) {

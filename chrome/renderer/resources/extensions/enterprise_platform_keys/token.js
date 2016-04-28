@@ -10,10 +10,11 @@ var SubtleCrypto = require('enterprise.platformKeys.SubtleCrypto').SubtleCrypto;
  * @param {string} id The id of the new Token.
  * @constructor
  */
-var TokenImpl = function(id) {
+function TokenImpl(id) {
   this.id = id;
   this.subtleCrypto = new SubtleCrypto(id);
-};
+}
+$Object.setPrototypeOf(TokenImpl.prototype, null);
 
 function Token() {
   privates(Token).constructPrivate(this, arguments);
