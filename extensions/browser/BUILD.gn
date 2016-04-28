@@ -31,6 +31,7 @@ source_set("browser") {
     "//skia",
     "//third_party/leveldatabase",
     "//third_party/re2",
+    "//ui/display",
   ]
 
   configs += [

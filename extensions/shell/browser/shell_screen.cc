@@ -57,7 +57,7 @@ void ShellScreen::OnWindowDestroying(aura::Window* window) {
   host_ = nullptr;
 }
 
-// gfx::Screen overrides:
+// display::Screen overrides:
 
 gfx::Point ShellScreen::GetCursorScreenPoint() {
   return aura::Env::GetInstance()->last_mouse_location();
@@ -75,33 +75,31 @@ int ShellScreen::GetNumDisplays() const {
   return 1;
 }
 
-std::vector<gfx::Display> ShellScreen::GetAllDisplays() const {
-  return std::vector<gfx::Display>(1, display_);
+std::vector<display::Display> ShellScreen::GetAllDisplays() const {
+  return std::vector<display::Display>(1, display_);
 }
 
-gfx::Display ShellScreen::GetDisplayNearestWindow(
+display::Display ShellScreen::GetDisplayNearestWindow(
     gfx::NativeWindow window) const {
   return display_;
 }
 
-gfx::Display ShellScreen::GetDisplayNearestPoint(
+display::Display ShellScreen::GetDisplayNearestPoint(
     const gfx::Point& point) const {
   return display_;
 }
 
-gfx::Display ShellScreen::GetDisplayMatching(
+display::Display ShellScreen::GetDisplayMatching(
     const gfx::Rect& match_rect) const {
   return display_;
 }
 
-gfx::Display ShellScreen::GetPrimaryDisplay() const {
+display::Display ShellScreen::GetPrimaryDisplay() const {
   return display_;
 }
 
-void ShellScreen::AddObserver(gfx::DisplayObserver* observer) {
-}
+void ShellScreen::AddObserver(display::DisplayObserver* observer) {}
 
-void ShellScreen::RemoveObserver(gfx::DisplayObserver* observer) {
-}
+void ShellScreen::RemoveObserver(display::DisplayObserver* observer) {}
 
 }  // namespace extensions

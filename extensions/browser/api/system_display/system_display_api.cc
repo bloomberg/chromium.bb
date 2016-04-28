@@ -13,7 +13,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "extensions/common/manifest_handlers/kiosk_mode_info.h"
-#include "ui/gfx/screen.h"
 #endif
 
 namespace extensions {

@@ -15,15 +15,14 @@
 #include "extensions/browser/api_test_utils.h"
 #include "extensions/common/api/system_display.h"
 #include "extensions/shell/test/shell_apitest.h"
-#include "ui/gfx/display.h"
-#include "ui/gfx/display_observer.h"
-#include "ui/gfx/screen.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 
 namespace extensions {
 
 using api::system_display::Bounds;
 using api::system_display::DisplayUnitInfo;
-using gfx::Screen;
+using display::Screen;
 
 class MockScreen : public Screen {
  public:
@@ -31,7 +30,7 @@ class MockScreen : public Screen {
     for (int i = 0; i < 4; i++) {
       gfx::Rect bounds(0, 0, 1280, 720);
       gfx::Rect work_area(0, 0, 960, 720);
-      gfx::Display display(i, bounds);
+      display::Display display(i, bounds);
       display.set_work_area(work_area);
       displays_.push_back(display);
     }
@@ -39,7 +38,7 @@ class MockScreen : public Screen {
   ~MockScreen() override {}
 
  protected:
-  // Overridden from gfx::Screen:
+  // Overridden from display::Screen:
   gfx::Point GetCursorScreenPoint() override { return gfx::Point(); }
   gfx::NativeWindow GetWindowUnderCursor() override {
     return gfx::NativeWindow();
@@ -50,24 +49,27 @@ class MockScreen : public Screen {
   int GetNumDisplays() const override {
     return static_cast<int>(displays_.size());
   }
-  std::vector<gfx::Display> GetAllDisplays() const override {
+  std::vector<display::Display> GetAllDisplays() const override {
     return displays_;
   }
-  gfx::Display GetDisplayNearestWindow(gfx::NativeView window) const override {
-    return gfx::Display(0);
+  display::Display GetDisplayNearestWindow(
+      gfx::NativeView window) const override {
+    return display::Display(0);
   }
-  gfx::Display GetDisplayNearestPoint(const gfx::Point& point) const override {
-    return gfx::Display(0);
+  display::Display GetDisplayNearestPoint(
+      const gfx::Point& point) const override {
+    return display::Display(0);
   }
-  gfx::Display GetDisplayMatching(const gfx::Rect& match_rect) const override {
-    return gfx::Display(0);
+  display::Display GetDisplayMatching(
+      const gfx::Rect& match_rect) const override {
+    return display::Display(0);
   }
-  gfx::Display GetPrimaryDisplay() const override { return displays_[0]; }
-  void AddObserver(gfx::DisplayObserver* observer) override {}
-  void RemoveObserver(gfx::DisplayObserver* observer) override {}
+  display::Display GetPrimaryDisplay() const override { return displays_[0]; }
+  void AddObserver(display::DisplayObserver* observer) override {}
+  void RemoveObserver(display::DisplayObserver* observer) override {}
 
  private:
-  std::vector<gfx::Display> displays_;
+  std::vector<display::Display> displays_;
 
   DISALLOW_COPY_AND_ASSIGN(MockScreen);
 };
@@ -104,7 +106,7 @@ class MockDisplayInfoProvider : public DisplayInfoProvider {
   // Update the content of the |unit| obtained for |display| using
   // platform specific method.
   void UpdateDisplayUnitInfoForPlatform(
-      const gfx::Display& display,
+      const display::Display& display,
       extensions::api::system_display::DisplayUnitInfo* unit) override {
     int64_t id = display.id();
     unit->name = "DISPLAY NAME FOR " + base::Int64ToString(id);
@@ -140,14 +142,14 @@ class SystemDisplayApiTest : public ShellApiTest {
 
   void SetUpOnMainThread() override {
     ShellApiTest::SetUpOnMainThread();
-    ANNOTATE_LEAKING_OBJECT_PTR(gfx::Screen::GetScreen());
-    gfx::Screen::SetScreenInstance(screen_.get());
+    ANNOTATE_LEAKING_OBJECT_PTR(display::Screen::GetScreen());
+    display::Screen::SetScreenInstance(screen_.get());
     DisplayInfoProvider::InitializeForTesting(provider_.get());
   }
 
  protected:
   std::unique_ptr<MockDisplayInfoProvider> provider_;
-  std::unique_ptr<gfx::Screen> screen_;
+  std::unique_ptr<display::Screen> screen_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SystemDisplayApiTest);

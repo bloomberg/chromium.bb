@@ -24,8 +24,8 @@
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/common/api/system_display.h"
 #include "extensions/common/api/system_storage.h"
-#include "ui/gfx/display_observer.h"
-#include "ui/gfx/screen.h"
+#include "ui/display/display_observer.h"
+#include "ui/display/screen.h"
 
 namespace extensions {
 
@@ -49,7 +49,7 @@ bool IsSystemStorageEvent(const std::string& event_name) {
 
 // Event router for systemInfo API. It is a singleton instance shared by
 // multiple profiles.
-class SystemInfoEventRouter : public gfx::DisplayObserver,
+class SystemInfoEventRouter : public display::DisplayObserver,
                               public storage_monitor::RemovableStorageObserver {
  public:
   static SystemInfoEventRouter* GetInstance();
@@ -62,10 +62,10 @@ class SystemInfoEventRouter : public gfx::DisplayObserver,
   void RemoveEventListener(const std::string& event_name);
 
  private:
-  // gfx::DisplayObserver:
-  void OnDisplayAdded(const gfx::Display& new_display) override;
-  void OnDisplayRemoved(const gfx::Display& old_display) override;
-  void OnDisplayMetricsChanged(const gfx::Display& display,
+  // display::DisplayObserver:
+  void OnDisplayAdded(const display::Display& new_display) override;
+  void OnDisplayRemoved(const display::Display& old_display) override;
+  void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t metrics) override;
 
   // RemovableStorageObserver implementation.
@@ -119,7 +119,7 @@ void SystemInfoEventRouter::AddEventListener(const std::string& event_name) {
     return;
 
   if (IsDisplayChangedEvent(event_name)) {
-    gfx::Screen* screen = gfx::Screen::GetScreen();
+    display::Screen* screen = display::Screen::GetScreen();
     if (screen)
       screen->AddObserver(this);
   }
@@ -145,7 +145,7 @@ void SystemInfoEventRouter::RemoveEventListener(const std::string& event_name) {
   }
 
   if (IsDisplayChangedEvent(event_name)) {
-    gfx::Screen* screen = gfx::Screen::GetScreen();
+    display::Screen* screen = display::Screen::GetScreen();
     if (screen)
       screen->RemoveObserver(this);
   }
@@ -184,16 +184,19 @@ void SystemInfoEventRouter::OnRemovableStorageDetached(
                 system_storage::OnDetached::kEventName, std::move(args));
 }
 
-void SystemInfoEventRouter::OnDisplayAdded(const gfx::Display& new_display) {
+void SystemInfoEventRouter::OnDisplayAdded(
+    const display::Display& new_display) {
   OnDisplayChanged();
 }
 
-void SystemInfoEventRouter::OnDisplayRemoved(const gfx::Display& old_display) {
+void SystemInfoEventRouter::OnDisplayRemoved(
+    const display::Display& old_display) {
   OnDisplayChanged();
 }
 
-void SystemInfoEventRouter::OnDisplayMetricsChanged(const gfx::Display& display,
-                                                    uint32_t metrics) {
+void SystemInfoEventRouter::OnDisplayMetricsChanged(
+    const display::Display& display,
+    uint32_t metrics) {
   OnDisplayChanged();
 }
 
