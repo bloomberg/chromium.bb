@@ -2226,9 +2226,9 @@ fullscreen_binding(struct weston_keyboard *keyboard, uint32_t time,
 }
 
 static struct wayland_backend *
-wayland_backend_create(struct weston_compositor *compositor, int use_pixman,
-		       const char *display_name, int *argc, char *argv[],
-		       struct weston_config *config)
+wayland_backend_create(struct weston_compositor *compositor,
+		       struct weston_wayland_backend_config *new_config,
+		       int *argc, char *argv[], struct weston_config *config)
 {
 	struct wayland_backend *b;
 	struct wl_event_loop *loop;
@@ -2242,7 +2242,7 @@ wayland_backend_create(struct weston_compositor *compositor, int use_pixman,
 	if (weston_compositor_set_presentation_clock_software(compositor) < 0)
 		goto err_compositor;
 
-	b->parent.wl_display = wl_display_connect(display_name);
+	b->parent.wl_display = wl_display_connect(new_config->display_name);
 	if (b->parent.wl_display == NULL) {
 		weston_log("failed to create display: %m\n");
 		goto err_compositor;
@@ -2256,7 +2256,7 @@ wayland_backend_create(struct weston_compositor *compositor, int use_pixman,
 
 	create_cursor(b, config);
 
-	b->use_pixman = use_pixman;
+	b->use_pixman = new_config->use_pixman;
 
 	if (!b->use_pixman) {
 		gl_renderer = weston_load_module("gl-renderer.so",
@@ -2366,8 +2366,7 @@ backend_init(struct weston_compositor *compositor, int *argc, char *argv[],
 	parse_options(wayland_options,
 		      ARRAY_LENGTH(wayland_options), argc, argv);
 
-	b = wayland_backend_create(compositor, new_config.use_pixman,
-			new_config.display_name, argc, argv, config);
+	b = wayland_backend_create(compositor, &new_config, argc, argv, config);
 
 	if (!b)
 		return -1;
