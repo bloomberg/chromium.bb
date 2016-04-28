@@ -23,6 +23,7 @@
 #include "base/memory/scoped_vector.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/app_icon_loader.h"
+#include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/ash/app_sync_ui_state_observer.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_types.h"
@@ -381,7 +382,8 @@ class ChromeLauncherController
     return app_window_controllers_[0].get();
   }
 
-  bool CanPin(const std::string& app_id);
+  // TODO(khmel): Find better home for Pinnable enum.
+  AppListControllerDelegate::Pinnable GetPinnable(const std::string& app_id);
 
  protected:
   // Creates a new app shortcut item and controller on the shelf at |index|.

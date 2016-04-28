@@ -273,7 +273,8 @@ class TestV2AppLauncherItemController : public LauncherItemController {
   }
   bool IsDraggable() override { return false; }
   bool CanPin() const override {
-    return launcher_controller()->CanPin(app_id());
+    return launcher_controller()->GetPinnable(app_id()) ==
+           AppListControllerDelegate::PIN_EDITABLE;
   }
   bool ShouldShowTooltip() override { return false; }
 
@@ -1053,10 +1054,14 @@ TEST_F(ChromeLauncherControllerTest, MergePolicyAndUserPrefPinnedApps) {
   EXPECT_TRUE(launcher_controller_->IsAppPinned(extension2_->id()));
 
   // Check user can manually pin or unpin these apps
-  EXPECT_TRUE(launcher_controller_->CanPin(extension1_->id()));
-  EXPECT_FALSE(launcher_controller_->CanPin(extension2_->id()));
-  EXPECT_TRUE(launcher_controller_->CanPin(extension3_->id()));
-  EXPECT_FALSE(launcher_controller_->CanPin(extension4_->id()));
+  EXPECT_EQ(AppListControllerDelegate::PIN_EDITABLE,
+            launcher_controller_->GetPinnable(extension1_->id()));
+  EXPECT_EQ(AppListControllerDelegate::PIN_FIXED,
+            launcher_controller_->GetPinnable(extension2_->id()));
+  EXPECT_EQ(AppListControllerDelegate::PIN_EDITABLE,
+            launcher_controller_->GetPinnable(extension3_->id()));
+  EXPECT_EQ(AppListControllerDelegate::PIN_FIXED,
+            launcher_controller_->GetPinnable(extension4_->id()));
 
   // Check the order of shelf pinned apps
   EXPECT_EQ("AppList, App2, App4, App1, Chrome, App3", GetPinnedAppStatus());

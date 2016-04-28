@@ -83,7 +83,7 @@ void ExtensionLauncherContextMenu::Init() {
     AddItemWithStringId(MENU_CLOSE, IDS_LAUNCHER_CONTEXT_MENU_CLOSE);
   } else {
     if (item().type == ash::TYPE_PLATFORM_APP)
-      AddItemWithStringId(MENU_PIN, IDS_LAUNCHER_CONTEXT_MENU_PIN);
+      AddPinMenu();
     bool show_close_button = controller()->IsOpen(item().id);
 #if defined(OS_CHROMEOS)
     if (extension_misc::IsImeMenuExtensionId(

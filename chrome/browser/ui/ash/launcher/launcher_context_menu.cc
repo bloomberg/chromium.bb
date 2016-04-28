@@ -160,14 +160,23 @@ void LauncherContextMenu::ExecuteCommand(int command_id, int event_flags) {
 void LauncherContextMenu::AddPinMenu() {
   // Expect an item with a none zero id to add pin/unpin menu item.
   DCHECK(item_.id);
-  const std::string app_id = controller_->GetAppIDForShelfID(item_.id);
   int menu_pin_string_id;
-  if (!controller_->CanPin(app_id))
-    menu_pin_string_id = IDS_LAUNCHER_CONTEXT_MENU_PIN_ENFORCED_BY_POLICY;
-  else if (controller_->IsPinned(item_.id))
-    menu_pin_string_id = IDS_LAUNCHER_CONTEXT_MENU_UNPIN;
-  else
-    menu_pin_string_id = IDS_LAUNCHER_CONTEXT_MENU_PIN;
+  const std::string app_id = controller_->GetAppIDForShelfID(item_.id);
+  switch (controller_->GetPinnable(app_id)) {
+    case AppListControllerDelegate::PIN_EDITABLE:
+      menu_pin_string_id = controller_->IsPinned(item_.id)
+                               ? IDS_LAUNCHER_CONTEXT_MENU_UNPIN
+                               : IDS_LAUNCHER_CONTEXT_MENU_PIN;
+      break;
+    case AppListControllerDelegate::PIN_FIXED:
+      menu_pin_string_id = IDS_LAUNCHER_CONTEXT_MENU_PIN_ENFORCED_BY_POLICY;
+      break;
+    case AppListControllerDelegate::NO_PIN:
+      return;
+    default:
+      NOTREACHED();
+      return;
+  }
   AddItemWithStringId(MENU_PIN, menu_pin_string_id);
 }
 

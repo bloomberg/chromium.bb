@@ -213,7 +213,8 @@ bool AppShortcutLauncherItemController::IsDraggable() {
 }
 
 bool AppShortcutLauncherItemController::CanPin() const {
-  return launcher_controller()->CanPin(app_id());
+  return launcher_controller()->GetPinnable(app_id()) ==
+         AppListControllerDelegate::PIN_EDITABLE;
 }
 
 bool AppShortcutLauncherItemController::ShouldShowTooltip() {

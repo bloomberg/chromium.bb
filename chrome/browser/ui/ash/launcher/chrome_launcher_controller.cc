@@ -222,6 +222,15 @@ void update_pinned_apps(const std::string& app_id,
   }
 }
 
+const char* const kPinProhibitedExtensionIds[] = {
+#if defined(OS_CHROMEOS)
+    "cnbgggchhmkkdmeppjobngjoejnihlei",  // Arc Support
+#endif
+};
+
+const size_t kPinProhibitedExtensionIdsLength =
+    arraysize(kPinProhibitedExtensionIds);
+
 }  // namespace
 
 #if defined(OS_CHROMEOS)
@@ -503,20 +512,26 @@ void ChromeLauncherController::CloseLauncherItem(ash::ShelfID id) {
   }
 }
 
-bool ChromeLauncherController::CanPin(const std::string& app_id) {
+AppListControllerDelegate::Pinnable ChromeLauncherController::GetPinnable(
+    const std::string& app_id) {
+  for (size_t i = 0; i < kPinProhibitedExtensionIdsLength; ++i) {
+    if (kPinProhibitedExtensionIds[i] == app_id)
+      return AppListControllerDelegate::NO_PIN;
+  }
+
   const base::ListValue* pref =
       profile_->GetPrefs()->GetList(prefs::kPolicyPinnedLauncherApps);
   if (!pref)
-    return true;
+    return AppListControllerDelegate::PIN_EDITABLE;
   for (size_t index = 0; index < pref->GetSize(); ++index) {
     const base::DictionaryValue* app = nullptr;
     std::string the_app_id;
     if (pref->GetDictionary(index, &app) &&
         app->GetString(ash::kPinnedAppsPrefAppIDPath, &the_app_id) &&
         app_id == the_app_id)
-      return false;
+      return AppListControllerDelegate::PIN_FIXED;
   }
-  return true;
+  return AppListControllerDelegate::PIN_EDITABLE;
 }
 
 void ChromeLauncherController::Pin(ash::ShelfID id) {
@@ -542,7 +557,7 @@ void ChromeLauncherController::Pin(ash::ShelfID id) {
 void ChromeLauncherController::Unpin(ash::ShelfID id) {
   LauncherItemController* controller = GetLauncherItemController(id);
   CHECK(controller);
-  bool can_pin = controller->CanPin();
+  const bool can_pin = controller->CanPin();
 
   if (controller->type() == LauncherItemController::TYPE_APP ||
       controller->locked()) {
@@ -791,7 +806,7 @@ bool ChromeLauncherController::IsWindowedAppInLauncher(
 }
 
 void ChromeLauncherController::PinAppWithID(const std::string& app_id) {
-  if (CanPin(app_id))
+  if (GetPinnable(app_id) == AppListControllerDelegate::PIN_EDITABLE)
     DoPinAppWithID(app_id);
   else
     NOTREACHED();
@@ -808,7 +823,7 @@ void ChromeLauncherController::SetLaunchType(
 }
 
 void ChromeLauncherController::UnpinAppWithID(const std::string& app_id) {
-  if (CanPin(app_id))
+  if (GetPinnable(app_id) == AppListControllerDelegate::PIN_EDITABLE)
     DoUnpinAppWithID(app_id);
   else
     NOTREACHED();
@@ -1452,7 +1467,7 @@ void ChromeLauncherController::DoPinAppWithID(const std::string& app_id) {
   } else {
     // Otherwise, create a shortcut item for it.
     shelf_id = CreateAppShortcutLauncherItem(app_id, model_->item_count());
-    if (CanPin(app_id))
+    if (GetPinnable(app_id) == AppListControllerDelegate::PIN_EDITABLE)
       PersistPinnedState();
   }
 }

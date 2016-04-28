@@ -49,9 +49,7 @@ void AppListControllerDelegateAsh::UnpinApp(const std::string& extension_id) {
 
 AppListControllerDelegate::Pinnable AppListControllerDelegateAsh::GetPinnable(
     const std::string& extension_id) {
-  return ChromeLauncherController::instance()->CanPin(extension_id)
-             ? PIN_EDITABLE
-             : PIN_FIXED;
+  return ChromeLauncherController::instance()->GetPinnable(extension_id);
 }
 
 void AppListControllerDelegateAsh::OnShowChildDialog() {

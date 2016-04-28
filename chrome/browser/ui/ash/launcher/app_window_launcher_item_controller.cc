@@ -146,7 +146,8 @@ bool AppWindowLauncherItemController::IsDraggable() {
 }
 
 bool AppWindowLauncherItemController::CanPin() const {
-  return launcher_controller()->CanPin(app_id());
+  return launcher_controller()->GetPinnable(app_id()) ==
+         AppListControllerDelegate::PIN_EDITABLE;
 }
 
 bool AppWindowLauncherItemController::ShouldShowTooltip() {

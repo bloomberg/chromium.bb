@@ -412,6 +412,7 @@ void ArcAuthService::RemoveObserver(Observer* observer) {
 
 void ArcAuthService::CloseUI() {
   FOR_EACH_OBSERVER(Observer, observer_list_, OnOptInUIClose());
+  SetUIPage(UIPage::NO_PAGE, base::string16());
   if (!disable_ui_for_testing)
     ArcAuthNotification::Hide();
 }
