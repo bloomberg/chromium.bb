@@ -460,9 +460,8 @@ bool WiFiDisplayTransportStreamPacketizer::EncodeElementaryStreamUnit(
   UpdateDelayForUnitTimeStamps(pts, dts);
   NormalizeUnitTimeStamps(&pts, &dts);
 
-  WiFiDisplayElementaryStreamPacketizer elementary_stream_packetizer;
   WiFiDisplayElementaryStreamPacket elementary_stream_packet =
-      elementary_stream_packetizer.EncodeElementaryStreamUnit(
+      WiFiDisplayElementaryStreamPacketizer::EncodeElementaryStreamUnit(
           stream_state.stream_id, stream_state.unit_header.data,
           stream_state.unit_header.size, unit_data, unit_size, pts, dts);
 
@@ -477,14 +476,10 @@ bool WiFiDisplayTransportStreamPacketizer::EncodeElementaryStreamUnit(
     //    (only for the first and/or the last packet):
     //     - for the first packet to hold flags
     //     - for the last packet to hold padding
-    //  * PES packet header (only for the first packet):
-    //     - PES packet header base
-    //     - Optional PES header base
-    //     - Optional PES header optional fields:
-    //        - Presentation time stamp
-    //        - Decoding time stamp
+    //  * Elementary stream packet header (only for the first packet)
+    //  * Elementary stream packet unit header (only for the first packet)
     bool adaptation_field_flag = false;
-    size_t header_min_size;
+    size_t header_min_size = 0u;
     const bool is_payload_unit_start_or_end =
         is_payload_unit_start ||
         remaining_unit_size <= WiFiDisplayTransportStreamPacket::kPacketSize -

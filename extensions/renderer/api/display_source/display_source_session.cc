@@ -40,8 +40,9 @@ DisplaySourceSessionFactory::CreateSession(
     const DisplaySourceSessionParams& params) {
 #if defined(ENABLE_WIFI_DISPLAY)
   return std::unique_ptr<DisplaySourceSession>(new WiFiDisplaySession(params));
-#endif
+#else
   return nullptr;
+#endif
 }
 
 }  // namespace extensions

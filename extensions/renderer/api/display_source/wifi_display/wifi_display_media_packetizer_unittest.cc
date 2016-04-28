@@ -169,7 +169,8 @@ class FakeTransportStreamPacketizer
 };
 
 struct ProgramClockReference {
-  enum { kInvalidBase = ~static_cast<uint64_t>(0u) };
+  static const uint64_t kInvalidBase = ~static_cast<uint64_t>(0u);
+
   uint64_t base;
   uint16_t extension;
 };
@@ -560,14 +561,13 @@ TEST_P(WiFiDisplayElementaryStreamUnitPacketizationTest,
           ? WiFiDisplayElementaryStreamPacketizer::kFirstVideoStreamId
           : WiFiDisplayElementaryStreamPacketizer::kFirstAudioStreamId;
 
-  WiFiDisplayElementaryStreamPacketizer packetizer;
   uint8_t unit_header_data[kMaxUnitHeaderSize];
   for (size_t unit_header_size = 0u; unit_header_size <= kMaxUnitHeaderSize;
        ++unit_header_size) {
     WiFiDisplayElementaryStreamPacket packet =
-        packetizer.EncodeElementaryStreamUnit(stream_id, unit_header_data,
-                                              unit_header_size, unit_.data(),
-                                              unit_.size(), pts_, dts_);
+        WiFiDisplayElementaryStreamPacketizer::EncodeElementaryStreamUnit(
+            stream_id, unit_header_data, unit_header_size, unit_.data(),
+            unit_.size(), pts_, dts_);
     CheckElementaryStreamPacketHeader(packet, stream_id);
     CheckElementaryStreamPacketUnitHeader(packet, unit_header_data,
                                           unit_header_size);
@@ -672,7 +672,6 @@ TEST_P(WiFiDisplayElementaryStreamUnitPacketizationTest,
   stream_infos.emplace_back(WiFiDisplayElementaryStreamInfo::AUDIO_LPCM,
                             std::move(lpcm_descriptors));
   stream_infos.emplace_back(WiFiDisplayElementaryStreamInfo::AUDIO_AAC);
-  WiFiDisplayElementaryStreamPacketizer elementary_stream_packetizer;
   FakeTransportStreamPacketizer packetizer(
       base::TimeDelta::FromMilliseconds(200), stream_infos);
 
@@ -696,7 +695,7 @@ TEST_P(WiFiDisplayElementaryStreamUnitPacketizationTest,
       auto normalized_dts = dts_;
       packetizer.NormalizeUnitTimeStamps(&normalized_pts, &normalized_dts);
       WiFiDisplayElementaryStreamPacket elementary_stream_packet =
-          elementary_stream_packetizer.EncodeElementaryStreamUnit(
+          WiFiDisplayElementaryStreamPacketizer::EncodeElementaryStreamUnit(
               kStreamIds[stream_index], unit_header_data, unit_header_size,
               unit_.data(), unit_.size(), normalized_pts, normalized_dts);
 
@@ -783,7 +782,7 @@ TEST(WiFiDisplayTransportStreamPacketizationTest, EncodeToMediaDatagramPacket) {
 
   // Check datagram packets.
   ProgramClockReference pcr = {ProgramClockReference::kInvalidBase, 0u};
-  uint16_t sequence_number;
+  uint16_t sequence_number = 0u;
   uint32_t synchronization_source_identifier;
   auto transport_stream_packet_it = transport_stream_packets.cbegin();
   for (const auto& packet : packets) {
