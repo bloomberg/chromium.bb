@@ -25,6 +25,10 @@
 namespace gfx {
 class Screen;
 }
+namespace display {
+using Screen = gfx::Screen;
+}
+
 namespace wm {
 class WMTestHelper;
 }
@@ -249,7 +253,7 @@ class Shell : public WebContentsDelegate,
 #elif defined(USE_AURA)
 #if defined(OS_CHROMEOS)
   static wm::WMTestHelper* wm_test_helper_;
-  static gfx::Screen* test_screen_;
+  static display::Screen* test_screen_;
 #endif
 #if defined(TOOLKIT_VIEWS)
   static views::ViewsDelegate* views_delegate_;

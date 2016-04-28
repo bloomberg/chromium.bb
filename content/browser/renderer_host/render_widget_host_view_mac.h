@@ -38,7 +38,7 @@
 #import "ui/base/cocoa/command_dispatcher.h"
 #include "ui/base/cocoa/remote_layer_api.h"
 #import "ui/base/cocoa/tool_tip_base_view.h"
-#include "ui/gfx/display_observer.h"
+#include "ui/display/display_observer.h"
 
 namespace content {
 class RenderWidgetHostImpl;
@@ -229,7 +229,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
       public DelegatedFrameHostClient,
       public ui::AcceleratedWidgetMacNSView,
       public IPC::Sender,
-      public gfx::DisplayObserver,
+      public display::DisplayObserver,
       public cc::BeginFrameObserverBase {
  public:
   // The view will associate itself with the given widget. The native view must
@@ -355,10 +355,10 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // IPC::Sender implementation.
   bool Send(IPC::Message* message) override;
 
-  // gfx::DisplayObserver implementation.
-  void OnDisplayAdded(const gfx::Display& new_display) override;
-  void OnDisplayRemoved(const gfx::Display& old_display) override;
-  void OnDisplayMetricsChanged(const gfx::Display& display,
+  // display::DisplayObserver implementation.
+  void OnDisplayAdded(const display::Display& new_display) override;
+  void OnDisplayRemoved(const display::Display& old_display) override;
+  void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t metrics) override;
 
   // Forwards the mouse event to the renderer.

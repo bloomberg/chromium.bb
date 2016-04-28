@@ -40,7 +40,7 @@ ui::PlatformCursor WebCursor::GetPlatformCursor() {
   return platform_cursor_;
 }
 
-void WebCursor::SetDisplayInfo(const gfx::Display& display) {
+void WebCursor::SetDisplayInfo(const display::Display& display) {
   if (rotation_ == display.rotation() &&
       device_scale_factor_ == display.device_scale_factor() &&
       maximum_cursor_size_ == display.maximum_cursor_size())
@@ -64,7 +64,7 @@ void WebCursor::SetDisplayInfo(const gfx::Display& display) {
 void WebCursor::InitPlatformData() {
   platform_cursor_ = NULL;
   device_scale_factor_ = 1.f;
-  rotation_ = gfx::Display::ROTATE_0;
+  rotation_ = display::Display::ROTATE_0;
   maximum_cursor_size_ =
       gfx::Size(kDefaultMaxCursorWidth, kDefaultMaxCursorHeight);
 }

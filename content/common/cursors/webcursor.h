@@ -11,7 +11,7 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebCursorInfo.h"
-#include "ui/gfx/display.h"
+#include "ui/display/display.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
@@ -109,7 +109,7 @@ class CONTENT_EXPORT WebCursor {
   ui::PlatformCursor GetPlatformCursor();
 
   // Updates |device_scale_factor_| and |rotation_| based on |display|.
-  void SetDisplayInfo(const gfx::Display& display);
+  void SetDisplayInfo(const display::Display& display);
 
   float GetCursorScaleFactor();
 
@@ -197,7 +197,7 @@ class CONTENT_EXPORT WebCursor {
 #endif
 
 #if defined(USE_OZONE)
-  gfx::Display::Rotation rotation_;
+  display::Display::Rotation rotation_;
   gfx::Size maximum_cursor_size_;
 #endif
 };

@@ -14,7 +14,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "ui/gfx/screen.h"
+#include "ui/display/screen.h"
 
 namespace content {
 namespace {
@@ -605,8 +605,9 @@ void ReadFrameState(SerializeObject* obj, bool is_top,
     if (state->page_scale_factor) {
       float device_scale_factor = g_device_scale_factor_for_testing;
       if (!device_scale_factor) {
-        device_scale_factor =
-            gfx::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor();
+        device_scale_factor = display::Screen::GetScreen()
+                                  ->GetPrimaryDisplay()
+                                  .device_scale_factor();
       }
       state->scroll_offset =
           gfx::Point(state->scroll_offset.x() / state->page_scale_factor,

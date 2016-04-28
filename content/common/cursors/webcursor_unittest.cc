@@ -267,7 +267,7 @@ TEST(WebCursorTest, AlphaConversion) {
 
 #if defined(USE_AURA)
 TEST(WebCursorTest, CursorScaleFactor) {
-  gfx::Display display;
+  display::Display display;
   display.set_device_scale_factor(80.2f);
 
   WebCursor::CursorInfo info;
@@ -309,7 +309,7 @@ TEST(WebCursorTest, UnscaledImageCopy) {
 
 #if defined(OS_WIN)
 void ScaleCursor(float scaleFactor, int hotspotX, int hotspotY) {
-  gfx::Display display;
+  display::Display display;
   display.set_device_scale_factor(scaleFactor);
 
   WebCursor::CursorInfo info;

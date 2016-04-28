@@ -6,14 +6,14 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationType.h"
-#include "ui/gfx/display.h"
+#include "ui/display/display.h"
 
 namespace content {
 
 namespace {
 
-gfx::Display CreateDisplay(int width, int height, int angle) {
-  gfx::Display display;
+display::Display CreateDisplay(int width, int height, int angle) {
+  display::Display display;
   display.SetRotationAsDegree(angle);
   display.set_bounds(gfx::Rect(width, height));
 
@@ -25,7 +25,7 @@ gfx::Display CreateDisplay(int width, int height, int angle) {
 TEST(RenderWidgetHostViewBaseTest, OrientationTypeForMobile) {
   // Square display (width == height).
   {
-    gfx::Display display = CreateDisplay(100, 100, 0);
+    display::Display display = CreateDisplay(100, 100, 0);
     EXPECT_EQ(blink::WebScreenOrientationPortraitPrimary,
               RenderWidgetHostViewBase::GetOrientationTypeForMobile(display));
 
@@ -44,7 +44,7 @@ TEST(RenderWidgetHostViewBaseTest, OrientationTypeForMobile) {
 
   // natural width > natural height.
   {
-    gfx::Display display = CreateDisplay(1, 0, 0);
+    display::Display display = CreateDisplay(1, 0, 0);
     EXPECT_EQ(blink::WebScreenOrientationLandscapePrimary,
               RenderWidgetHostViewBase::GetOrientationTypeForMobile(display));
 
@@ -63,7 +63,7 @@ TEST(RenderWidgetHostViewBaseTest, OrientationTypeForMobile) {
 
   // natural width < natural height.
   {
-    gfx::Display display = CreateDisplay(0, 1, 0);
+    display::Display display = CreateDisplay(0, 1, 0);
     EXPECT_EQ(blink::WebScreenOrientationPortraitPrimary,
               RenderWidgetHostViewBase::GetOrientationTypeForMobile(display));
 
@@ -90,7 +90,7 @@ TEST(RenderWidgetHostViewBaseTest, OrientationTypeForDesktop) {
 
   // natural width > natural height.
   {
-    gfx::Display display = CreateDisplay(1, 0, 0);
+    display::Display display = CreateDisplay(1, 0, 0);
     blink::WebScreenOrientationType landscape_1 =
         RenderWidgetHostViewBase::GetOrientationTypeForDesktop(display);
     EXPECT_TRUE(landscape_1 == blink::WebScreenOrientationLandscapePrimary ||

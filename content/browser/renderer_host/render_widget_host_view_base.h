@@ -31,7 +31,7 @@
 #include "third_party/WebKit/public/web/WebTextDirection.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
-#include "ui/gfx/display.h"
+#include "ui/display/display.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/range/range.h"
@@ -333,11 +333,11 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
 
   // Compute the orientation type of the display assuming it is a mobile device.
   static blink::WebScreenOrientationType GetOrientationTypeForMobile(
-      const gfx::Display& display);
+      const display::Display& display);
 
   // Compute the orientation type of the display assuming it is a desktop.
   static blink::WebScreenOrientationType GetOrientationTypeForDesktop(
-      const gfx::Display& display);
+      const display::Display& display);
 
   virtual void GetScreenInfo(blink::WebScreenInfo* results) = 0;
   virtual bool GetScreenColorProfile(std::vector<char>* color_profile) = 0;
@@ -417,7 +417,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   float current_device_scale_factor_;
 
   // The orientation of the display the renderer is currently on.
-  gfx::Display::Rotation current_display_rotation_;
+  display::Display::Rotation current_display_rotation_;
 
   // Whether pinch-to-zoom should be enabled and pinch events forwarded to the
   // renderer.

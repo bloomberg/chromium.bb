@@ -29,9 +29,9 @@
 #include "content/public/test/test_browser_context.h"
 #include "content/test/test_render_view_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/display/screen.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/screen.h"
 
 #if defined(OS_ANDROID)
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
@@ -464,7 +464,7 @@ class RenderWidgetHostTest : public testing::Test {
 #endif
 #if defined(USE_AURA)
     screen_.reset(aura::TestScreen::Create(gfx::Size()));
-    gfx::Screen::SetScreenInstance(screen_.get());
+    display::Screen::SetScreenInstance(screen_.get());
 #endif
     host_.reset(new MockRenderWidgetHost(delegate_.get(), process_,
                                          process_->GetNextRoutingID()));
@@ -484,7 +484,7 @@ class RenderWidgetHostTest : public testing::Test {
     browser_context_.reset();
 
 #if defined(USE_AURA)
-    gfx::Screen::SetScreenInstance(nullptr);
+    display::Screen::SetScreenInstance(nullptr);
     screen_.reset();
 #endif
 #if defined(USE_AURA) || defined(OS_MACOSX)
@@ -629,7 +629,7 @@ class RenderWidgetHostTest : public testing::Test {
   std::unique_ptr<MockRenderWidgetHostDelegate> delegate_;
   std::unique_ptr<MockRenderWidgetHost> host_;
   std::unique_ptr<TestView> view_;
-  std::unique_ptr<gfx::Screen> screen_;
+  std::unique_ptr<display::Screen> screen_;
   bool handle_key_press_event_;
   bool handle_mouse_event_;
   double last_simulated_event_time_seconds_;

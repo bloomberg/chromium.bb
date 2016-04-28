@@ -15,11 +15,11 @@
 #include "content/browser/renderer_host/render_widget_host_view_base_observer.h"
 #include "content/common/content_switches_internal.h"
 #include "content/public/browser/render_widget_host_view_frame_subscriber.h"
-#include "ui/gfx/display.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/geometry/size_f.h"
-#include "ui/gfx/screen.h"
 
 namespace content {
 
@@ -38,7 +38,7 @@ RenderWidgetHostViewBase::RenderWidgetHostViewBase()
       selection_text_offset_(0),
       selection_range_(gfx::Range::InvalidRange()),
       current_device_scale_factor_(0),
-      current_display_rotation_(gfx::Display::ROTATE_0),
+      current_display_rotation_(display::Display::ROTATE_0),
       pinch_zoom_enabled_(content::IsPinchToZoomEnabled()),
       renderer_frame_number_(0),
       weak_factory_(this) {}
@@ -82,8 +82,8 @@ bool RenderWidgetHostViewBase::GetBackgroundOpaque() {
 }
 
 gfx::Size RenderWidgetHostViewBase::GetPhysicalBackingSize() const {
-  gfx::Display display =
-      gfx::Screen::GetScreen()->GetDisplayNearestWindow(GetNativeView());
+  display::Display display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(GetNativeView());
   return gfx::ScaleToCeiledSize(GetRequestedRendererSize(),
                                 display.device_scale_factor());
 }
@@ -214,8 +214,8 @@ void RenderWidgetHostViewBase::UpdateScreenInfo(gfx::NativeView view) {
 }
 
 bool RenderWidgetHostViewBase::HasDisplayPropertyChanged(gfx::NativeView view) {
-  gfx::Display display =
-      gfx::Screen::GetScreen()->GetDisplayNearestWindow(view);
+  display::Display display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(view);
   if (current_display_area_ == display.work_area() &&
       current_device_scale_factor_ == display.device_scale_factor() &&
       current_display_rotation_ == display.rotation()) {
@@ -291,7 +291,7 @@ void RenderWidgetHostViewBase::SetInsets(const gfx::Insets& insets) {
 // static
 blink::WebScreenOrientationType
 RenderWidgetHostViewBase::GetOrientationTypeForMobile(
-    const gfx::Display& display) {
+    const display::Display& display) {
   int angle = display.RotationAsDegree();
   const gfx::Rect& bounds = display.bounds();
 
@@ -324,7 +324,7 @@ RenderWidgetHostViewBase::GetOrientationTypeForMobile(
 // static
 blink::WebScreenOrientationType
 RenderWidgetHostViewBase::GetOrientationTypeForDesktop(
-    const gfx::Display& display) {
+    const display::Display& display) {
   static int primary_landscape_angle = -1;
   static int primary_portrait_angle = -1;
 

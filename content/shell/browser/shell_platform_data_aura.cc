@@ -16,7 +16,6 @@
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/input_method_delegate.h"
 #include "ui/base/ime/input_method_factory.h"
-#include "ui/gfx/screen.h"
 #include "ui/wm/core/default_activation_client.h"
 
 namespace content {

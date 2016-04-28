@@ -6,8 +6,8 @@
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "ui/display/display.h"
 #include "ui/events/event_constants.h"
-#include "ui/gfx/display.h"
 #include "ui/gfx/switches.h"
 
 #if defined(OS_WIN)
@@ -27,7 +27,7 @@ TEST(WebInputEventBuilderTest, TestMouseEventScale) {
   if (base::win::GetVersion() < base::win::VERSION_WIN7)
     return;
 
-  gfx::Display::ResetForceDeviceScaleFactorForTesting();
+  display::Display::ResetForceDeviceScaleFactorForTesting();
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   command_line->AppendSwitchASCII(switches::kForceDeviceScaleFactor, "2");
@@ -52,7 +52,7 @@ TEST(WebInputEventBuilderTest, TestMouseEventScale) {
   EXPECT_EQ(100, mouse_move.globalY);
 
   command_line->AppendSwitchASCII(switches::kForceDeviceScaleFactor, "1");
-  gfx::Display::ResetForceDeviceScaleFactorForTesting();
+  display::Display::ResetForceDeviceScaleFactorForTesting();
 }
 #endif
 

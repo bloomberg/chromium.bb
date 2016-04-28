@@ -125,12 +125,12 @@ void WebCursor::CreateScaledBitmapAndHotspotFromCustomData(
   ImageFromCustomData(bitmap);
   *hotspot = hotspot_;
   ui::ScaleAndRotateCursorBitmapAndHotpoint(
-      GetCursorScaleFactor(), gfx::Display::ROTATE_0, bitmap, hotspot);
+      GetCursorScaleFactor(), display::Display::ROTATE_0, bitmap, hotspot);
 }
 
 // ozone has its own SetDisplayInfo that takes rotation into account
 #if !defined(USE_OZONE)
-void WebCursor::SetDisplayInfo(const gfx::Display& display) {
+void WebCursor::SetDisplayInfo(const display::Display& display) {
   if (device_scale_factor_ == display.device_scale_factor())
     return;
 

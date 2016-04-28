@@ -42,10 +42,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/layout.h"
-#include "ui/gfx/display.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/size_conversions.h"
-#include "ui/gfx/screen.h"
 #include "ui/gfx/test/test_screen.h"
 
 namespace content {
@@ -600,8 +600,8 @@ class MAYBE_WebContentsVideoCaptureDeviceTest : public testing::Test {
     test_screen_.display()->set_bounds(gfx::Rect(0, 0, 2560, 1440));
     test_screen_.display()->set_device_scale_factor(kTestDeviceScaleFactor);
 
-    gfx::Screen::SetScreenInstance(&test_screen_);
-    ASSERT_EQ(&test_screen_, gfx::Screen::GetScreen());
+    display::Screen::SetScreenInstance(&test_screen_);
+    ASSERT_EQ(&test_screen_, display::Screen::GetScreen());
 
     // TODO(nick): Sadness and woe! Much "mock-the-world" boilerplate could be
     // eliminated here, if only we could use RenderViewHostTestHarness. The
@@ -659,7 +659,7 @@ class MAYBE_WebContentsVideoCaptureDeviceTest : public testing::Test {
     render_view_host_factory_.reset();
     render_process_host_factory_.reset();
 
-    gfx::Screen::SetScreenInstance(nullptr);
+    display::Screen::SetScreenInstance(nullptr);
   }
 
   // Accessors.
