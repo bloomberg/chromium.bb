@@ -55,12 +55,14 @@ struct GL_EXPORT GLVersionInfo {
                                  unsigned* major_version,
                                  unsigned* minor_version,
                                  bool* is_es,
+                                 bool* is_es2,
                                  bool* is_es3);
 
   bool is_es;
   bool is_angle;
   unsigned major_version;
   unsigned minor_version;
+  bool is_es2;
   bool is_es3;
   bool is_desktop_core_profile;
 
