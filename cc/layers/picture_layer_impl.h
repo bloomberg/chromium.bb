@@ -93,9 +93,6 @@ class CC_EXPORT PictureLayerImpl
   RasterSource* GetRasterSource() const { return raster_source_.get(); }
 
  protected:
-  friend class LayerRasterTileIterator;
-  using TileRequirementCheck = bool (PictureLayerTiling::*)(const Tile*) const;
-
   PictureLayerImpl(LayerTreeImpl* tree_impl, int id, bool is_mask);
   PictureLayerTiling* AddTiling(float contents_scale);
   void RemoveAllTilings();

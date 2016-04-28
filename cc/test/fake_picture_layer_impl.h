@@ -17,6 +17,8 @@ namespace cc {
 
 class FakePictureLayerImpl : public PictureLayerImpl {
  public:
+  using TileRequirementCheck = bool (PictureLayerTiling::*)(const Tile*) const;
+
   static std::unique_ptr<FakePictureLayerImpl> Create(LayerTreeImpl* tree_impl,
                                                       int id) {
     bool is_mask = false;
