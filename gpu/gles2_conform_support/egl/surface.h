@@ -8,19 +8,31 @@
 #include <EGL/egl.h>
 
 #include "base/macros.h"
-
+#include "base/memory/ref_counted.h"
+namespace gfx {
+class GLSurface;
+}
 namespace egl {
+class Config;
 
-class Surface {
+class Surface : public base::RefCountedThreadSafe<Surface> {
  public:
-  explicit Surface(EGLNativeWindowType win);
-  ~Surface();
-
-  EGLNativeWindowType window() { return window_; }
+  explicit Surface(gfx::GLSurface* gl_surface, const Config* config);
+  void set_is_current_in_some_thread(bool flag) {
+    is_current_in_some_thread_ = flag;
+  }
+  bool is_current_in_some_thread() const { return is_current_in_some_thread_; }
+  gfx::GLSurface* gl_surface() const;
+  const Config* config() const;
+  static bool ValidatePbufferAttributeList(const EGLint* attrib_list);
+  static bool ValidateWindowAttributeList(const EGLint* attrib_list);
 
  private:
-  EGLNativeWindowType window_;
-
+  friend class base::RefCountedThreadSafe<Surface>;
+  ~Surface();
+  bool is_current_in_some_thread_;
+  scoped_refptr<gfx::GLSurface> gl_surface_;
+  const Config* config_;
   DISALLOW_COPY_AND_ASSIGN(Surface);
 };
 

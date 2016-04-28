@@ -27,6 +27,7 @@
       'type': 'static_library',
       'dependencies': [
         '../../base/base.gyp:base',
+	'../../gpu/command_buffer/command_buffer.gyp:gles2_utils',
         '../../gpu/gpu.gyp:command_buffer_service',
         '../../gpu/gpu.gyp:gles2_implementation_no_check',
         '../../gpu/gpu.gyp:gpu',
@@ -38,11 +39,17 @@
       'sources': [
         'egl/config.cc',
         'egl/config.h',
+        'egl/context.cc',
+        'egl/context.h',
         'egl/display.cc',
         'egl/display.h',
         'egl/egl.cc',
         'egl/surface.cc',
         'egl/surface.h',
+        'egl/test_support.cc',
+        'egl/test_support.h',
+        'egl/thread_state.cc',
+        'egl/thread_state.h',
       ],
       'defines': [
         'EGLAPI=',
