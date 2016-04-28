@@ -84,7 +84,7 @@ struct fbdev_output {
 	struct wl_event_source *finish_frame_timer;
 
 	/* Frame buffer details. */
-	const char *device; /* ownership shared with fbdev_parameters */
+	char *device;
 	struct fbdev_screeninfo fb_info;
 	void *fb; /* length is fb_info.buffer_length */
 
@@ -470,7 +470,7 @@ fbdev_output_create(struct fbdev_backend *backend,
 		return -1;
 
 	output->backend = backend;
-	output->device = device;
+	output->device = strdup(device);
 
 	/* Create the frame buffer. */
 	fb_fd = fbdev_frame_buffer_open(output, device, &output->fb_info);
@@ -554,6 +554,7 @@ out_hw_surface:
 	weston_output_destroy(&output->base);
 	fbdev_frame_buffer_destroy(output);
 out_free:
+	free(output->device);
 	free(output);
 
 	return -1;
@@ -580,6 +581,7 @@ fbdev_output_destroy(struct weston_output *base)
 	/* Remove the output. */
 	weston_output_destroy(&output->base);
 
+	free(output->device);
 	free(output);
 }
 
@@ -607,7 +609,7 @@ fbdev_output_reenable(struct fbdev_backend *backend,
 	struct fbdev_output *output = to_fbdev_output(base);
 	struct fbdev_screeninfo new_screen_info;
 	int fb_fd;
-	const char *device;
+	char *device;
 
 	weston_log("Re-enabling fbdev output.\n");
 
@@ -634,9 +636,10 @@ fbdev_output_reenable(struct fbdev_backend *backend,
 		/* Remove and re-add the output so that resources depending on
 		 * the frame buffer X/Y resolution (such as the shadow buffer)
 		 * are re-initialised. */
-		device = output->device;
-		fbdev_output_destroy(base);
+		device = strdup(output->device);
+		fbdev_output_destroy(&output->base);
 		fbdev_output_create(backend, device);
+		free(device);
 
 		return 0;
 	}
