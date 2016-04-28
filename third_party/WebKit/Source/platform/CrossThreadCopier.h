@@ -158,16 +158,6 @@ struct CrossThreadCopier<PassOwnPtr<T>> {
 };
 
 template <typename T>
-struct CrossThreadCopier<WeakMember<T>*> {
-    STATIC_ONLY(CrossThreadCopier);
-    typedef WeakMember<T>* Type;
-    static Type copy(Type ptr)
-    {
-        return ptr;
-    }
-};
-
-template <typename T>
 struct CrossThreadCopier<WTF::PassedWrapper<T>> {
     STATIC_ONLY(CrossThreadCopier);
     using Type = WTF::PassedWrapper<typename CrossThreadCopier<T>::Type>;
@@ -220,17 +210,6 @@ struct CrossThreadCopier<Member<T>> {
     static_assert(IsGarbageCollectedType<T>::value, "T must be a garbage-collected type.");
     typedef T* Type;
     static Type copy(const Member<T>& ptr)
-    {
-        return ptr;
-    }
-};
-
-template <typename T>
-struct CrossThreadCopier<WeakMember<T>> {
-    STATIC_ONLY(CrossThreadCopier);
-    static_assert(IsGarbageCollectedType<T>::value, "T must be a garbage-collected type.");
-    typedef T* Type;
-    static Type copy(const WeakMember<T>& ptr)
     {
         return ptr;
     }
