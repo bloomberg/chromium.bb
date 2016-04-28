@@ -309,7 +309,7 @@ class TracingTrackTestCase(unittest.TestCase):
          'args': {'frame': _MAIN_FRAME_ID}},
         ]
     self._HandleEvents(events)
-    self.assertEquals(_MAIN_FRAME_ID, self.track._GetMainFrameID())
+    self.assertEquals(_MAIN_FRAME_ID, self.track.GetMainFrameID())
 
   def testGetMatchingEvents(self):
     _MAIN_FRAME_ID = 0xffff

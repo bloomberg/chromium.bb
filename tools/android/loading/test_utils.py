@@ -221,7 +221,7 @@ class MockConnection(object):
     return response
 
 
-class MockUserSatisfiedLens(user_satisfied_lens._UserSatisfiedLens):
+class MockUserSatisfiedLens(user_satisfied_lens._FirstEventLens):
   def _CalculateTimes(self, _):
     self._satisfied_msec = float('inf')
     self._event_msec = float('inf')

@@ -52,7 +52,7 @@ class PrefetchSimulationView(object):
     if trace is None:
       return
     requests = trace.request_track.GetEvents()
-    critical_requests_ids = user_lens.CriticalRequests()
+    critical_requests_ids = user_lens.CriticalRequestIds()
     self.postload_msec = user_lens.PostloadTimeMsec()
     self.graph = dependency_graph.RequestDependencyGraph(
         requests, dependencies_lens, node_class=RequestNode)

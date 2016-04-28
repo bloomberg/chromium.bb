@@ -12,6 +12,7 @@ import collections
 import copy
 import datetime
 import email.utils
+import hashlib
 import json
 import logging
 import re
@@ -212,6 +213,12 @@ class Request(object):
     if self.start_msec is None:
       return None
     return self.start_msec + self.timing.LargestOffset()
+
+  @property
+  def fingerprint(self):
+    h = hashlib.sha256()
+    h.update(self.url)
+    return h.hexdigest()[:10]
 
   def _TimestampOffsetFromStartMs(self, timestamp):
     assert self.timing.request_time != -1

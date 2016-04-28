@@ -32,51 +32,65 @@ class UserSatisfiedLensTestCase(unittest.TestCase):
     return rq
 
   def testFirstContentfulPaintLens(self):
+    MAINFRAME = 1
+    SUBFRAME = 2
     loading_trace = test_utils.LoadingTraceFromEvents(
         [self._RequestAt(1), self._RequestAt(10), self._RequestAt(20)],
         trace_events=[{'ts': 0, 'ph': 'I',
                        'cat': 'blink.some_other_user_timing',
                        'name': 'firstContentfulPaint'},
-                      {'ts': 9 * self.MILLI_TO_MICRO, 'ph': 'I',
+                      {'ts': 30 * self.MILLI_TO_MICRO, 'ph': 'I',
                        'cat': 'blink.user_timing',
                        'name': 'firstDiscontentPaint'},
+                      {'ts': 5 * self.MILLI_TO_MICRO, 'ph': 'I',
+                       'cat': 'blink.user_timing',
+                       'name': 'firstContentfulPaint',
+                       'args': {'frame': SUBFRAME} },
                       {'ts': 12 * self.MILLI_TO_MICRO, 'ph': 'I',
                        'cat': 'blink.user_timing',
-                       'name': 'firstContentfulPaint'},
-                      {'ts': 22 * self.MILLI_TO_MICRO, 'ph': 'I',
-                       'cat': 'blink.user_timing',
-                       'name': 'firstContentfulPaint'}])
+                       'name': 'firstContentfulPaint',
+                       'args': {'frame': MAINFRAME}}])
+    loading_trace.tracing_track.SetMainFrameID(MAINFRAME)
     lens = user_satisfied_lens.FirstContentfulPaintLens(loading_trace)
-    self.assertEqual(set(['0.1', '0.2']), lens.CriticalRequests())
+    self.assertEqual(set(['0.1', '0.2']), lens.CriticalRequestIds())
     self.assertEqual(1, lens.PostloadTimeMsec())
 
   def testCantGetNoSatisfaction(self):
+    MAINFRAME = 1
     loading_trace = test_utils.LoadingTraceFromEvents(
         [self._RequestAt(1), self._RequestAt(10), self._RequestAt(20)],
         trace_events=[{'ts': 0, 'ph': 'I',
                        'cat': 'not_my_cat',
-                       'name': 'someEvent'}])
+                       'name': 'someEvent',
+                       'args': {'frame': MAINFRAME}}])
+    loading_trace.tracing_track.SetMainFrameID(MAINFRAME)
     lens = user_satisfied_lens.FirstContentfulPaintLens(loading_trace)
-    self.assertEqual(set(['0.1', '0.2', '0.3']), lens.CriticalRequests())
+    self.assertEqual(set(['0.1', '0.2', '0.3']), lens.CriticalRequestIds())
     self.assertEqual(float('inf'), lens.PostloadTimeMsec())
 
   def testFirstTextPaintLens(self):
+    MAINFRAME = 1
+    SUBFRAME = 2
     loading_trace = test_utils.LoadingTraceFromEvents(
         [self._RequestAt(1), self._RequestAt(10), self._RequestAt(20)],
         trace_events=[{'ts': 0, 'ph': 'I',
                        'cat': 'blink.some_other_user_timing',
                        'name': 'firstPaint'},
-                      {'ts': 9 * self.MILLI_TO_MICRO, 'ph': 'I',
+                      {'ts': 30 * self.MILLI_TO_MICRO, 'ph': 'I',
                        'cat': 'blink.user_timing',
-                       'name': 'firstishPaint'},
+                       'name': 'firstishPaint',
+                       'args': {'frame': MAINFRAME}},
+                      {'ts': 3 * self.MILLI_TO_MICRO, 'ph': 'I',
+                       'cat': 'blink.user_timing',
+                       'name': 'firstPaint',
+                       'args': {'frame': SUBFRAME}},
                       {'ts': 12 * self.MILLI_TO_MICRO, 'ph': 'I',
                        'cat': 'blink.user_timing',
-                       'name': 'firstPaint'},
-                      {'ts': 22 * self.MILLI_TO_MICRO, 'ph': 'I',
-                       'cat': 'blink.user_timing',
-                       'name': 'firstPaint'}])
+                       'name': 'firstPaint',
+                       'args': {'frame': MAINFRAME}}])
+    loading_trace.tracing_track.SetMainFrameID(MAINFRAME)
     lens = user_satisfied_lens.FirstTextPaintLens(loading_trace)
-    self.assertEqual(set(['0.1', '0.2']), lens.CriticalRequests())
+    self.assertEqual(set(['0.1', '0.2']), lens.CriticalRequestIds())
     self.assertEqual(1, lens.PostloadTimeMsec())
 
   def testFirstSignificantPaintLens(self):
@@ -112,8 +126,36 @@ class UserSatisfiedLensTestCase(unittest.TestCase):
                            'LayoutObjectsThatHadNeverHadLayout': 10
                        } } } ])
     lens = user_satisfied_lens.FirstSignificantPaintLens(loading_trace)
-    self.assertEqual(set(['0.1', '0.2']), lens.CriticalRequests())
+    self.assertEqual(set(['0.1', '0.2']), lens.CriticalRequestIds())
     self.assertEqual(7, lens.PostloadTimeMsec())
+
+  def testRequestFingerprintLens(self):
+    MAINFRAME = 1
+    SUBFRAME = 2
+    loading_trace = test_utils.LoadingTraceFromEvents(
+        [self._RequestAt(1), self._RequestAt(10), self._RequestAt(20)],
+        trace_events=[{'ts': 0, 'ph': 'I',
+                       'cat': 'blink.some_other_user_timing',
+                       'name': 'firstContentfulPaint'},
+                      {'ts': 30 * self.MILLI_TO_MICRO, 'ph': 'I',
+                       'cat': 'blink.user_timing',
+                       'name': 'firstDiscontentPaint'},
+                      {'ts': 5 * self.MILLI_TO_MICRO, 'ph': 'I',
+                       'cat': 'blink.user_timing',
+                       'name': 'firstContentfulPaint',
+                       'args': {'frame': SUBFRAME} },
+                      {'ts': 12 * self.MILLI_TO_MICRO, 'ph': 'I',
+                       'cat': 'blink.user_timing',
+                       'name': 'firstContentfulPaint',
+                       'args': {'frame': MAINFRAME}}])
+    loading_trace.tracing_track.SetMainFrameID(MAINFRAME)
+    lens = user_satisfied_lens.FirstContentfulPaintLens(loading_trace)
+    self.assertEqual(set(['0.1', '0.2']), lens.CriticalRequestIds())
+    self.assertEqual(1, lens.PostloadTimeMsec())
+    request_lens = user_satisfied_lens.RequestFingerprintLens(
+      loading_trace, lens.CriticalFingerprints())
+    self.assertEqual(set(['0.1', '0.2']), request_lens.CriticalRequestIds())
+    self.assertEqual(0, request_lens.PostloadTimeMsec())
 
 
 if __name__ == '__main__':

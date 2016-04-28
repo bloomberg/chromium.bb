@@ -6,6 +6,9 @@
 
 Several lenses are defined, for example FirstTextPaintLens and
 FirstSignificantPaintLens.
+
+When run from the command line, takes a lens name and a trace, and prints the
+fingerprints of the critical resources to stdout.
 """
 import logging
 import operator
@@ -24,6 +27,53 @@ class _UserSatisfiedLens(object):
   _ATTRS = ['_satisfied_msec', '_event_msec', '_postload_msec',
             '_critical_request_ids']
 
+  def CriticalRequests(self):
+    """Critical requests.
+
+    Returns:
+      A sequence of request_track.Request objects representing an estimate of
+      all requests that are necessary for the user satisfaction defined by this
+      class.
+    """
+    raise NotImplementedError
+
+  def CriticalRequestIds(self):
+    """Ids of critical requests."""
+    return set(rq.request_id for rq in self.CriticalRequests())
+
+  def CriticalFingerprints(self):
+    """Fingerprints of critical requests."""
+    return set(rq.fingerprint for rq in self.CriticalRequests())
+
+  def PostloadTimeMsec(self):
+    """Return postload time.
+
+    The postload time is an estimate of the amount of time needed by chrome to
+    transform the critical results into the satisfying event.
+
+    Returns:
+      Postload time in milliseconds.
+    """
+    return 0
+
+
+class RequestFingerprintLens(_UserSatisfiedLens):
+  """A lens built using requests in a trace that match a set of fingerprints."""
+  def __init__(self, trace, fingerprints):
+    fingerprints = set(fingerprints)
+    self._critical_requests = [rq for rq in trace.request_track.GetEvents()
+                               if rq.fingerprint in fingerprints]
+
+  def CriticalRequests(self):
+    """Ids of critical requests."""
+    return set(self._critical_requests)
+
+
+class _FirstEventLens(_UserSatisfiedLens):
+  """Helper abstract subclass that defines users first event manipulations."""
+  # pylint can't handle abstract subclasses.
+  # pylint: disable=abstract-method
+
   def __init__(self, trace):
     """Initialize the lens.
 
@@ -36,34 +86,23 @@ class _UserSatisfiedLens(object):
     self._critical_request_ids = None
     if trace is None:
       return
-    self._CalculateTimes(trace.tracing_track)
-    critical_requests = self._RequestsBefore(
+    self._CalculateTimes(trace)
+    self._critical_requests = self._RequestsBefore(
         trace.request_track, self._satisfied_msec)
-    self._critical_request_ids = set(rq.request_id for rq in critical_requests)
-    if critical_requests:
-      last_load = max(rq.end_msec for rq in critical_requests)
+    self._critical_request_ids = set(rq.request_id
+                                     for rq in self._critical_requests)
+    if self._critical_requests:
+      last_load = max(rq.end_msec for rq in self._critical_requests)
     else:
       last_load = float('inf')
     self._postload_msec = self._event_msec - last_load
 
   def CriticalRequests(self):
-    """Request ids of critical requests.
-
-    Returns:
-      A set of request ids (as strings) of an estimate of all requests that are
-      necessary for the user satisfaction defined by this class.
-    """
-    return self._critical_request_ids
+    """Override."""
+    return self._critical_requests
 
   def PostloadTimeMsec(self):
-    """Return postload time.
-
-    The postload time is an estimate of the amount of time needed by chrome to
-    transform the critical results into the satisfying event.
-
-    Returns:
-      Postload time in milliseconds.
-    """
+    """Override."""
     return self._postload_msec
 
   def ToJsonDict(self):
@@ -75,7 +114,7 @@ class _UserSatisfiedLens(object):
     return common_util.DeserializeAttributesFromJsonDict(
         json_dict, result, cls._ATTRS)
 
-  def _CalculateTimes(self, tracing_track):
+  def _CalculateTimes(self, trace):
     """Subclasses should implement to set _satisfied_msec and _event_msec."""
     raise NotImplementedError
 
@@ -84,26 +123,19 @@ class _UserSatisfiedLens(object):
     return [rq for rq in request_track.GetEvents()
             if rq.end_msec <= time_ms]
 
-
-class _FirstEventLens(_UserSatisfiedLens):
-  """Helper abstract subclass that defines users first event manipulations."""
-  # pylint can't handle abstract subclasses.
-  # pylint: disable=abstract-method
-
   @classmethod
   def _CheckCategory(cls, tracing_track, category):
     assert category in tracing_track.Categories(), (
         'The "%s" category must be enabled.' % category)
 
   @classmethod
-  def _ExtractFirstTiming(cls, times):
+  def _ExtractBestTiming(cls, times):
     if not times:
       return float('inf')
-    if len(times) != 1:
-      # TODO(mattcary): in some cases a trace has two first paint events. Why?
-      logging.error('%d %s with spread of %s', len(times),
-                    str(cls), max(times) - min(times))
-    return float(min(times))
+    assert len(times) == 1, \
+        'Unexpected duplicate {}: {} with spread of {}'.format(
+            str(cls), len(times), max(times) - min(times))
+    return float(max(times))
 
 
 class FirstTextPaintLens(_FirstEventLens):
@@ -112,12 +144,13 @@ class FirstTextPaintLens(_FirstEventLens):
   This event is taken directly from a trace.
   """
   _EVENT_CATEGORY = 'blink.user_timing'
-  def _CalculateTimes(self, tracing_track):
-    self._CheckCategory(tracing_track, self._EVENT_CATEGORY)
-    first_paints = [e.start_msec for e in tracing_track.GetEvents()
-                    if e.Matches(self._EVENT_CATEGORY, 'firstPaint')]
+  def _CalculateTimes(self, trace):
+    self._CheckCategory(trace.tracing_track, self._EVENT_CATEGORY)
+    first_paints = [
+        e.start_msec for e in trace.tracing_track.GetMatchingMainFrameEvents(
+            'blink.user_timing', 'firstPaint')]
     self._satisfied_msec = self._event_msec = \
-        self._ExtractFirstTiming(first_paints)
+        self._ExtractBestTiming(first_paints)
 
 
 class FirstContentfulPaintLens(_FirstEventLens):
@@ -127,12 +160,13 @@ class FirstContentfulPaintLens(_FirstEventLens):
   by filtering out things like background paint from firstPaint.
   """
   _EVENT_CATEGORY = 'blink.user_timing'
-  def _CalculateTimes(self, tracing_track):
-    self._CheckCategory(tracing_track, self._EVENT_CATEGORY)
-    first_paints = [e.start_msec for e in tracing_track.GetEvents()
-                    if e.Matches(self._EVENT_CATEGORY, 'firstContentfulPaint')]
+  def _CalculateTimes(self, trace):
+    self._CheckCategory(trace.tracing_track, self._EVENT_CATEGORY)
+    first_paints = [
+        e.start_msec for e in trace.tracing_track.GetMatchingMainFrameEvents(
+            'blink.user_timing', 'firstContentfulPaint')]
     self._satisfied_msec = self._event_msec = \
-       self._ExtractFirstTiming(first_paints)
+       self._ExtractBestTiming(first_paints)
 
 
 class FirstSignificantPaintLens(_FirstEventLens):
@@ -143,12 +177,18 @@ class FirstSignificantPaintLens(_FirstEventLens):
   that is the observable event.
   """
   _FIRST_LAYOUT_COUNTER = 'LayoutObjectsThatHadNeverHadLayout'
-  _EVENT_CATEGORY = 'disabled-by-default-blink.debug.layout'
-  def _CalculateTimes(self, tracing_track):
-    self._CheckCategory(tracing_track, self._EVENT_CATEGORY)
+  _EVENT_CATEGORIES = ['blink', 'disabled-by-default-blink.debug.layout']
+  def _CalculateTimes(self, trace):
+    for cat in self._EVENT_CATEGORIES:
+      self._CheckCategory(trace.tracing_track, cat)
     sync_paint_times = []
     layouts = []  # (layout item count, msec).
-    for e in tracing_track.GetEvents():
+    for e in trace.tracing_track.GetEvents():
+      if ('frame' in e.args and
+          e.args['frame'] != trace.tracing_track.GetMainFrameID()):
+        continue
+      # If we don't know have a frame id, we assume it applies to all events.
+
       # TODO(mattcary): is this the right paint event? Check if synchronized
       # paints appear at the same time as the first*Paint events, above.
       if e.Matches('blink', 'FrameView::synchronizedPaint'):
@@ -158,7 +198,25 @@ class FirstSignificantPaintLens(_FirstEventLens):
         layouts.append((e.args['counters'][self._FIRST_LAYOUT_COUNTER],
                         e.start_msec))
     assert layouts, 'No layout events'
+    assert sync_paint_times,'No sync paint times'
     layouts.sort(key=operator.itemgetter(0), reverse=True)
     self._satisfied_msec = layouts[0][1]
-    self._event_msec = self._ExtractFirstTiming([
-        min(t for t in sync_paint_times if t > self._satisfied_msec)])
+    self._event_msec = min(t for t in sync_paint_times
+                           if t > self._satisfied_msec)
+
+
+def main(lens_name, trace_file):
+  assert (lens_name in globals() and
+          not lens_name.startswith('_') and
+          lens_name.endswith('Lens')), 'Bad lens %s' % lens_name
+  lens_cls = globals()[lens_name]
+  trace = loading_trace.LoadingTrace.FromJsonFile(trace_file)
+  lens = lens_cls(trace)
+  for fp in sorted(lens.CriticalFingerprints()):
+    print fp
+
+
+if __name__ == '__main__':
+  import sys
+  import loading_trace
+  main(sys.argv[1], sys.argv[2])
