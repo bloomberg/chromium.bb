@@ -14,7 +14,6 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/time/time.h"
 #include "printing/print_settings.h"
-#include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkDocument.h"
@@ -157,17 +156,19 @@ bool PdfMetafileSkia::FinishDocument() {
     FinishPage();
 
   SkDynamicMemoryWStream pdf_stream;
-  skia::RefPtr<SkDocument> pdf_doc =
-      skia::AdoptRef(SkDocument::CreatePDF(&pdf_stream));
-  const std::string& user_agent = GetAgent();
-  SkDocument::Attribute info[] = {
-      SkDocument::Attribute(SkString("Creator"),
-                            user_agent.empty()
-                            ? SkString("Chromium")
-                            : SkString(user_agent.c_str(), user_agent.size())),
-  };
+
+  SkDocument::PDFMetadata metadata;
   SkTime::DateTime now = TimeToSkTime(base::Time::Now());
-  pdf_doc->setMetadata(info, SK_ARRAY_COUNT(info), &now, &now);
+  metadata.fCreation.fEnabled = true;
+  metadata.fCreation.fDateTime = now;
+  metadata.fModified.fEnabled = true;
+  metadata.fModified.fDateTime = now;
+  const std::string& agent = GetAgent();
+  metadata.fCreator = agent.empty() ? SkString("Chromium")
+                                    : SkString(agent.c_str(), agent.size());
+  sk_sp<SkDocument> pdf_doc = SkDocument::MakePDF(
+      &pdf_stream, SK_ScalarDefaultRasterDPI, metadata, nullptr, false);
+
   for (const auto& page : data_->pages_) {
     SkCanvas* canvas = pdf_doc->beginPage(
         page.page_size_.width(), page.page_size_.height(), &page.content_area_);
