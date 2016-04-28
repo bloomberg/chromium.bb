@@ -1,0 +1,7 @@
+This is a testharness.js-based test.
+FAIL 'display' property cannot be animated using property-indexed notation anim.effect.getFrames is not a function
+FAIL 'display' property cannot be animated using a keyframe sequence anim.effect.getFrames is not a function
+FAIL CSS animations and CSS transitions properties cannot be animated using property-indexed notation anim.effect.getFrames is not a function
+FAIL CSS animations and CSS transitions properties cannot be animated using a sequence of keyframes anim.effect.getFrames is not a function
+Harness: the test ran to completion.
+

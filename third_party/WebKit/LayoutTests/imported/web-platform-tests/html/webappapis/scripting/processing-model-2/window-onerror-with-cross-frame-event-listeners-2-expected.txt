@@ -1,0 +1,6 @@
+CONSOLE ERROR: line 2: Uncaught ReferenceError: thereIsNoSuchCallable is not defined
+ 
+This is a testharness.js-based test.
+FAIL The error event from an event listener should fire on that listener's global assert_true: expected true got false
+Harness: the test ran to completion.
+

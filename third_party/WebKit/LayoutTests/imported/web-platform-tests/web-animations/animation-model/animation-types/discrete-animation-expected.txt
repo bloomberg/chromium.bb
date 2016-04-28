@@ -1,0 +1,8 @@
+This is a testharness.js-based test.
+FAIL Test animating discrete values anim.effect.getComputedTiming is not a function
+FAIL Test discrete animation is used when interpolation fails anim.effect.getComputedTiming is not a function
+PASS Test discrete animation is used only for pairs of values that cannot be interpolated 
+PASS Test the 50% switch point for discrete animation is based on the effect easing 
+PASS Test the 50% switch point for discrete animation is based on the keyframe easing 
+Harness: the test ran to completion.
+

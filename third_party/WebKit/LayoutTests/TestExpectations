@@ -1511,6 +1511,9 @@ crbug.com/603703 [ Linux ] imported/web-platform-tests/web-animations/animation-
 
 crbug.com/600248 imported/web-platform-tests/web-animations/animation-effect-timing/endDelay.html [ Failure ]
 crbug.com/600248 imported/web-platform-tests/web-animations/animation/constructor.html [ Failure Timeout ]
+crbug.com/600248 imported/web-platform-tests/web-animations/animation/finished.html [ Pass Failure ]
+crbug.com/600248 imported/web-platform-tests/web-animations/animation/oncancel.html [ Pass Failure ]
+crbug.com/600248 imported/web-platform-tests/web-animations/animation/onfinish.html [ Pass Failure ]
 
 crbug.com/604642 [ Mac ]  fast/text/midword-break-after-breakable-char.html [ Failure ]
 

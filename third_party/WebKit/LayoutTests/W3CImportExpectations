@@ -767,16 +767,3 @@ imported/web-platform-tests/dom/nodes/MutationObserver-childList.html [ Skip ]
 
 # crbug.com/574461: update-w3c-deps imports .py file with x-bit cleared
 imported/web-platform-tests/dom/nodes/Document-createElement-namespace-tests/generate.py [ Skip ]
-
-# crbug.com/606875: New web animation web platform tests are failing.
-imported/web-platform-tests/web-animations/animation-effect-timing/easing.html [ Skip ]
-imported/web-platform-tests/web-animations/animation-effect-timing/fill.html [ Skip ]
-imported/web-platform-tests/web-animations/animation-model/animation-types/discrete-animation.html [ Skip ]
-imported/web-platform-tests/web-animations/animation-model/animation-types/not-animatable.html [ Skip ]
-imported/web-platform-tests/web-animations/animation/finished.html [ Skip ]
-imported/web-platform-tests/web-animations/animation/oncancel.html [ Skip ]
-imported/web-platform-tests/web-animations/animation/onfinish.html [ Skip ]
-
-# crbug.com/606900; Dispatching errors across iframes.
-imported/web-platform-tests/html/webappapis/scripting/processing-model-2/window-onerror-with-cross-frame-event-listeners-1.html [ Skip ]
-imported/web-platform-tests/html/webappapis/scripting/processing-model-2/window-onerror-with-cross-frame-event-listeners-2.html [ Skip ]
