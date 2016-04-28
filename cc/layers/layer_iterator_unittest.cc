@@ -141,7 +141,7 @@ TEST_F(LayerIteratorTest, SimpleTree) {
   LayerImplList render_surface_layer_list;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
       root_ptr, root_ptr->bounds(), &render_surface_layer_list);
-  LayerTreeHostCommon::CalculateDrawProperties(&inputs);
+  LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
   IterateFrontToBack(&render_surface_layer_list);
   EXPECT_COUNT(root_ptr, 5, -1, 4);
@@ -186,7 +186,7 @@ TEST_F(LayerIteratorTest, ComplexTree) {
   LayerImplList render_surface_layer_list;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
       root_ptr, root_ptr->bounds(), &render_surface_layer_list);
-  LayerTreeHostCommon::CalculateDrawProperties(&inputs);
+  LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
   IterateFrontToBack(&render_surface_layer_list);
   EXPECT_COUNT(root_ptr, 9, -1, 8);
@@ -239,7 +239,7 @@ TEST_F(LayerIteratorTest, ComplexTreeMultiSurface) {
   LayerImplList render_surface_layer_list;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
       root_ptr, root_ptr->bounds(), &render_surface_layer_list);
-  LayerTreeHostCommon::CalculateDrawProperties(&inputs);
+  LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
   IterateFrontToBack(&render_surface_layer_list);
   EXPECT_COUNT(root_ptr, 14, -1, 13);

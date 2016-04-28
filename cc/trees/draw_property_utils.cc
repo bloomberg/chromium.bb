@@ -71,11 +71,6 @@ static void ValidateRenderSurfaceForLayer(LayerType* layer) {
   ValidateIsNotRootForIsolatedGroup(layer);
 }
 
-static void ValidateRenderSurfacesRecursive(Layer* layer) {
-  ValidateRenderSurfaceForLayer(layer);
-  for (size_t i = 0; i < layer->children().size(); ++i)
-    ValidateRenderSurfacesRecursive(layer->child_at(i));
-}
 #endif
 
 template <typename LayerType>
@@ -373,15 +368,6 @@ void UpdateRenderSurfaceForLayer(EffectTree* effect_tree,
     layer->SetHasRenderSurface(false);
 }
 
-void UpdateRenderSurfacesForLayersRecursive(EffectTree* effect_tree,
-                                            Layer* layer) {
-  UpdateRenderSurfaceForLayer(effect_tree, true, layer);
-
-  for (size_t i = 0; i < layer->children().size(); ++i) {
-    UpdateRenderSurfacesForLayersRecursive(effect_tree, layer->child_at(i));
-  }
-}
-
 }  // namespace
 
 template <typename LayerType>
@@ -658,11 +644,12 @@ static void ComputeVisibleRectsInternal(
 }
 
 void UpdateRenderSurfaces(Layer* root_layer, PropertyTrees* property_trees) {
-  UpdateRenderSurfacesForLayersRecursive(&property_trees->effect_tree,
-                                         root_layer);
+  for (auto* layer : *root_layer->layer_tree_host()) {
+    UpdateRenderSurfaceForLayer(&property_trees->effect_tree, true, layer);
 #if DCHECK_IS_ON()
-  ValidateRenderSurfacesRecursive(root_layer);
+    ValidateRenderSurfaceForLayer(layer);
 #endif
+  }
 }
 
 void UpdatePropertyTrees(PropertyTrees* property_trees,

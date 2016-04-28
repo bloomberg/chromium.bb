@@ -1434,7 +1434,7 @@ TEST_F(LayerTreeHostImplTest, AnimationSchedulingCommitToActiveTree) {
   LayerImplList list;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
       root, gfx::Size(50, 50), &list);
-  LayerTreeHostCommon::CalculateDrawProperties(&inputs);
+  LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
   EXPECT_FALSE(did_request_next_frame_);
   EXPECT_FALSE(did_request_redraw_);

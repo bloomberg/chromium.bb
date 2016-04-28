@@ -17,6 +17,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "cc/layers/layer.h"
+#include "cc/trees/layer_tree_host.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/input/synthetic_gesture_params.h"
 #include "content/common/input/synthetic_pinch_gesture_params.h"
@@ -124,29 +125,27 @@ class SkPictureSerializer {
   // Recursively serializes the layer tree.
   // Each layer in the tree is serialized into a separate skp file
   // in the given directory.
-  void Serialize(const cc::Layer* layer) {
-    const cc::LayerList& children = layer->children();
-    for (size_t i = 0; i < children.size(); ++i) {
-      Serialize(children[i].get());
+  void Serialize(const cc::Layer* root_layer) {
+    for (auto* layer : *root_layer->layer_tree_host()) {
+      sk_sp<SkPicture> picture = layer->GetPicture();
+      if (!picture)
+        continue;
+
+      // Serialize picture to file.
+      // TODO(alokp): Note that for this to work Chrome needs to be launched
+      // with
+      // --no-sandbox command-line flag. Get rid of this limitation.
+      // CRBUG: 139640.
+      std::string filename = "layer_" + base::IntToString(layer_id_++) + ".skp";
+      std::string filepath = dirpath_.AppendASCII(filename).MaybeAsASCII();
+      DCHECK(!filepath.empty());
+      SkFILEWStream file(filepath.c_str());
+      DCHECK(file.isValid());
+
+      EncodingSerializer serializer;
+      picture->serialize(&file, &serializer);
+      file.fsync();
     }
-
-    sk_sp<SkPicture> picture = layer->GetPicture();
-    if (!picture)
-      return;
-
-    // Serialize picture to file.
-    // TODO(alokp): Note that for this to work Chrome needs to be launched with
-    // --no-sandbox command-line flag. Get rid of this limitation.
-    // CRBUG: 139640.
-    std::string filename = "layer_" + base::IntToString(layer_id_++) + ".skp";
-    std::string filepath = dirpath_.AppendASCII(filename).MaybeAsASCII();
-    DCHECK(!filepath.empty());
-    SkFILEWStream file(filepath.c_str());
-    DCHECK(file.isValid());
-
-    EncodingSerializer serializer;
-    picture->serialize(&file, &serializer);
-    file.fsync();
   }
 
  private:

@@ -232,7 +232,7 @@ class OcclusionTrackerTest : public testing::Test {
     LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
         root, root->bounds(), &render_surface_layer_list_impl_);
     inputs.can_adjust_raster_scales = true;
-    LayerTreeHostCommon::CalculateDrawProperties(&inputs);
+    LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
     layer_iterator_ = layer_iterator_begin_ =
         LayerIterator::Begin(&render_surface_layer_list_impl_);

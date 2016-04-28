@@ -67,8 +67,6 @@ class LayerTreeHostSerializationTest : public testing::Test {
               layer_tree_host_dst_->needs_meta_info_recomputation_);
     EXPECT_EQ(layer_tree_host_src_->source_frame_number_,
               layer_tree_host_dst_->source_frame_number_);
-    EXPECT_EQ(layer_tree_host_src_->meta_information_sequence_number_,
-              layer_tree_host_dst_->meta_information_sequence_number_);
     EXPECT_EQ(layer_tree_host_src_->root_layer()->id(),
               layer_tree_host_dst_->root_layer()->id());
     EXPECT_EQ(layer_tree_host_dst_.get(),
@@ -184,7 +182,6 @@ class LayerTreeHostSerializationTest : public testing::Test {
     layer_tree_host_src_->needs_meta_info_recomputation_ =
         !layer_tree_host_src_->needs_meta_info_recomputation_;
     layer_tree_host_src_->source_frame_number_ *= 3;
-    layer_tree_host_src_->meta_information_sequence_number_ *= 3;
 
     // Just fake setup a layer for both source and dest.
     scoped_refptr<Layer> root_layer_src = Layer::Create();

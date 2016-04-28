@@ -149,6 +149,8 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
 
   LayerListIterator<Layer> begin();
   LayerListIterator<Layer> end();
+  const LayerListIterator<Layer> begin() const;
+  const LayerListIterator<Layer> end() const;
   LayerListReverseIterator<Layer> rbegin();
   LayerListReverseIterator<Layer> rend();
 
@@ -171,16 +173,8 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
 
   int source_frame_number() const { return source_frame_number_; }
 
-  int meta_information_sequence_number() {
-    return meta_information_sequence_number_;
-  }
-
   bool gpu_rasterization_histogram_recorded() const {
     return gpu_rasterization_histogram_recorded_;
-  }
-
-  void IncrementMetaInformationSequenceNumber() {
-    meta_information_sequence_number_++;
   }
 
   void SetNeedsDisplayOnAllLayers();
@@ -510,7 +504,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   std::unique_ptr<TaskRunnerProvider> task_runner_provider_;
 
   int source_frame_number_;
-  int meta_information_sequence_number_;
   std::unique_ptr<RenderingStatsInstrumentation>
       rendering_stats_instrumentation_;
 

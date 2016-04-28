@@ -80,6 +80,137 @@ static LayerPositionConstraint PositionConstraint(LayerImpl* layer) {
   return layer->test_properties()->position_constraint;
 }
 
+struct PreCalculateMetaInformationRecursiveData {
+  size_t num_unclipped_descendants;
+  int num_layer_or_descendants_with_copy_request;
+  int num_layer_or_descendants_with_touch_handler;
+  int num_descendants_that_draw_content;
+
+  PreCalculateMetaInformationRecursiveData()
+      : num_unclipped_descendants(0),
+        num_layer_or_descendants_with_copy_request(0),
+        num_layer_or_descendants_with_touch_handler(0),
+        num_descendants_that_draw_content(0) {}
+
+  void Merge(const PreCalculateMetaInformationRecursiveData& data) {
+    num_layer_or_descendants_with_copy_request +=
+        data.num_layer_or_descendants_with_copy_request;
+    num_layer_or_descendants_with_touch_handler +=
+        data.num_layer_or_descendants_with_touch_handler;
+    num_unclipped_descendants += data.num_unclipped_descendants;
+    num_descendants_that_draw_content += data.num_descendants_that_draw_content;
+  }
+};
+
+static inline bool IsRootLayer(const Layer* layer) {
+  return !layer->parent();
+}
+
+static bool HasInvertibleOrAnimatedTransform(Layer* layer) {
+  return layer->transform_is_invertible() ||
+         layer->HasPotentiallyRunningTransformAnimation();
+}
+
+static bool HasInvertibleOrAnimatedTransformForTesting(LayerImpl* layer) {
+  return layer->transform().IsInvertible() ||
+         layer->HasPotentiallyRunningTransformAnimation();
+}
+
+static bool IsMetaInformationRecomputationNeeded(Layer* layer) {
+  return layer->layer_tree_host()->needs_meta_info_recomputation();
+}
+
+// Recursively walks the layer tree(if needed) to compute any information
+// that is needed before doing the main recursion.
+static void PreCalculateMetaInformationInternal(
+    Layer* layer,
+    PreCalculateMetaInformationRecursiveData* recursive_data) {
+  if (!IsMetaInformationRecomputationNeeded(layer)) {
+    DCHECK(IsRootLayer(layer));
+    return;
+  }
+
+  if (layer->clip_parent())
+    recursive_data->num_unclipped_descendants++;
+
+  if (!HasInvertibleOrAnimatedTransform(layer)) {
+    // Layers with singular transforms should not be drawn, the whole subtree
+    // can be skipped.
+    return;
+  }
+
+  for (size_t i = 0; i < layer->children().size(); ++i) {
+    Layer* child_layer = layer->child_at(i);
+
+    PreCalculateMetaInformationRecursiveData data_for_child;
+    PreCalculateMetaInformationInternal(child_layer, &data_for_child);
+    recursive_data->Merge(data_for_child);
+  }
+
+  if (layer->clip_children()) {
+    size_t num_clip_children = layer->clip_children()->size();
+    DCHECK_GE(recursive_data->num_unclipped_descendants, num_clip_children);
+    recursive_data->num_unclipped_descendants -= num_clip_children;
+  }
+
+  if (layer->HasCopyRequest())
+    recursive_data->num_layer_or_descendants_with_copy_request++;
+
+  if (!layer->touch_event_handler_region().IsEmpty())
+    recursive_data->num_layer_or_descendants_with_touch_handler++;
+
+  layer->set_num_unclipped_descendants(
+      recursive_data->num_unclipped_descendants);
+
+  if (IsRootLayer(layer))
+    layer->layer_tree_host()->SetNeedsMetaInfoRecomputation(false);
+}
+
+static void PreCalculateMetaInformationInternalForTesting(
+    LayerImpl* layer,
+    PreCalculateMetaInformationRecursiveData* recursive_data) {
+  if (layer->test_properties()->clip_parent)
+    recursive_data->num_unclipped_descendants++;
+
+  if (!HasInvertibleOrAnimatedTransformForTesting(layer)) {
+    // Layers with singular transforms should not be drawn, the whole subtree
+    // can be skipped.
+    return;
+  }
+
+  for (size_t i = 0; i < layer->children().size(); ++i) {
+    LayerImpl* child_layer = layer->child_at(i);
+
+    PreCalculateMetaInformationRecursiveData data_for_child;
+    PreCalculateMetaInformationInternalForTesting(child_layer, &data_for_child);
+    recursive_data->Merge(data_for_child);
+  }
+
+  if (layer->test_properties()->clip_children) {
+    size_t num_clip_children = layer->test_properties()->clip_children->size();
+    DCHECK_GE(recursive_data->num_unclipped_descendants, num_clip_children);
+    recursive_data->num_unclipped_descendants -= num_clip_children;
+  }
+
+  if (layer->HasCopyRequest())
+    recursive_data->num_layer_or_descendants_with_copy_request++;
+
+  if (!layer->touch_event_handler_region().IsEmpty())
+    recursive_data->num_layer_or_descendants_with_touch_handler++;
+
+  layer->draw_properties().num_unclipped_descendants =
+      recursive_data->num_unclipped_descendants;
+  layer->set_layer_or_descendant_has_touch_handler(
+      (recursive_data->num_layer_or_descendants_with_touch_handler != 0));
+  // TODO(enne): this should be synced from the main thread, so is only
+  // for tests constructing layers on the compositor thread.
+  layer->test_properties()->num_descendants_that_draw_content =
+      recursive_data->num_descendants_that_draw_content;
+
+  if (layer->DrawsContent())
+    recursive_data->num_descendants_that_draw_content++;
+}
+
 static Layer* ScrollParent(Layer* layer) {
   return layer->scroll_parent();
 }
@@ -950,6 +1081,34 @@ void BuildPropertyTreesInternal(
 }
 
 }  // namespace
+
+void CC_EXPORT
+PropertyTreeBuilder::PreCalculateMetaInformation(Layer* root_layer) {
+  PreCalculateMetaInformationRecursiveData recursive_data;
+  PreCalculateMetaInformationInternal(root_layer, &recursive_data);
+}
+
+void CC_EXPORT PropertyTreeBuilder::PreCalculateMetaInformationForTesting(
+    LayerImpl* root_layer) {
+  PreCalculateMetaInformationRecursiveData recursive_data;
+  PreCalculateMetaInformationInternalForTesting(root_layer, &recursive_data);
+}
+
+Layer* PropertyTreeBuilder::FindFirstScrollableLayer(Layer* layer) {
+  if (!layer)
+    return nullptr;
+
+  if (layer->scrollable())
+    return layer;
+
+  for (size_t i = 0; i < layer->children().size(); ++i) {
+    Layer* found = FindFirstScrollableLayer(layer->children()[i].get());
+    if (found)
+      return found;
+  }
+
+  return nullptr;
+}
 
 template <typename LayerType>
 void BuildPropertyTreesTopLevelInternal(

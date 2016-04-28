@@ -217,7 +217,6 @@ LayerTreeHost::LayerTreeHost(InitParams* params, CompositorMode mode)
       needs_meta_info_recomputation_(true),
       client_(params->client),
       source_frame_number_(0),
-      meta_information_sequence_number_(1),
       rendering_stats_instrumentation_(RenderingStatsInstrumentation::Create()),
       output_surface_lost_(true),
       settings_(*params->settings),
@@ -656,16 +655,8 @@ void LayerTreeHost::SetDeferCommits(bool defer_commits) {
 }
 
 void LayerTreeHost::SetNeedsDisplayOnAllLayers() {
-  std::stack<Layer*> layer_stack;
-  layer_stack.push(root_layer());
-  while (!layer_stack.empty()) {
-    Layer* current_layer = layer_stack.top();
-    layer_stack.pop();
-    current_layer->SetNeedsDisplay();
-    for (unsigned int i = 0; i < current_layer->children().size(); i++) {
-      layer_stack.push(current_layer->child_at(i));
-    }
-  }
+  for (auto* layer : *this)
+    layer->SetNeedsDisplay();
 }
 
 void LayerTreeHost::SetOutputIsSecure(bool output_is_secure) {
@@ -910,6 +901,14 @@ LayerListIterator<Layer> LayerTreeHost::end() {
   return LayerListIterator<Layer>(nullptr);
 }
 
+const LayerListIterator<Layer> LayerTreeHost::begin() const {
+  return LayerListIterator<Layer>(root_layer_.get());
+}
+
+const LayerListIterator<Layer> LayerTreeHost::end() const {
+  return LayerListIterator<Layer>(nullptr);
+}
+
 LayerListReverseIterator<Layer> LayerTreeHost::rbegin() {
   return LayerListReverseIterator<Layer>(root_layer_.get());
 }
@@ -920,22 +919,6 @@ LayerListReverseIterator<Layer> LayerTreeHost::rend() {
 
 void LayerTreeHost::DidCompletePageScaleAnimation() {
   did_complete_scale_animation_ = true;
-}
-
-static Layer* FindFirstScrollableLayer(Layer* layer) {
-  if (!layer)
-    return NULL;
-
-  if (layer->scrollable())
-    return layer;
-
-  for (size_t i = 0; i < layer->children().size(); ++i) {
-    Layer* found = FindFirstScrollableLayer(layer->children()[i].get());
-    if (found)
-      return found;
-  }
-
-  return NULL;
 }
 
 void LayerTreeHost::RecordGpuRasterizationHistogram() {
@@ -965,7 +948,7 @@ void LayerTreeHost::RecordGpuRasterizationHistogram() {
 }
 
 void LayerTreeHost::BuildPropertyTreesForTesting() {
-  LayerTreeHostCommon::PreCalculateMetaInformationForTesting(root_layer_.get());
+  PropertyTreeBuilder::PreCalculateMetaInformation(root_layer_.get());
   gfx::Transform identity_transform;
   PropertyTreeBuilder::BuildPropertyTrees(
       root_layer_.get(), page_scale_layer_.get(),
@@ -985,7 +968,8 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
 
   UpdateHudLayer();
 
-  Layer* root_scroll = FindFirstScrollableLayer(root_layer);
+  Layer* root_scroll =
+      PropertyTreeBuilder::FindFirstScrollableLayer(root_layer);
   Layer* page_scale_layer = page_scale_layer_.get();
   if (!page_scale_layer && root_scroll)
     page_scale_layer = root_scroll->parent();
@@ -1002,7 +986,7 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
     TRACE_EVENT0("cc", "LayerTreeHost::UpdateLayers::BuildPropertyTrees");
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug.cdp-perf"),
                  "LayerTreeHostCommon::ComputeVisibleRectsWithPropertyTrees");
-    LayerTreeHostCommon::PreCalculateMetaInformation(root_layer);
+    PropertyTreeBuilder::PreCalculateMetaInformation(root_layer);
     bool can_render_to_separate_surface = true;
     PropertyTreeBuilder::BuildPropertyTrees(
         root_layer, page_scale_layer, inner_viewport_scroll_layer_.get(),
@@ -1503,8 +1487,6 @@ void LayerTreeHost::ToProtobufForCommit(proto::LayerTreeHost* proto) {
   proto->set_needs_full_tree_sync(needs_full_tree_sync_);
   proto->set_needs_meta_info_recomputation(needs_meta_info_recomputation_);
   proto->set_source_frame_number(source_frame_number_);
-  proto->set_meta_information_sequence_number(
-      meta_information_sequence_number_);
 
   LayerProtoConverter::SerializeLayerHierarchy(root_layer_,
                                                proto->mutable_root_layer());
@@ -1576,7 +1558,6 @@ void LayerTreeHost::FromProtobufForCommit(const proto::LayerTreeHost& proto) {
   needs_full_tree_sync_ = proto.needs_full_tree_sync();
   needs_meta_info_recomputation_ = proto.needs_meta_info_recomputation();
   source_frame_number_ = proto.source_frame_number();
-  meta_information_sequence_number_ = proto.meta_information_sequence_number();
 
   // Layer hierarchy.
   scoped_refptr<Layer> new_root_layer =

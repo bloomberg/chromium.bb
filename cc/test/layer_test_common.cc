@@ -152,7 +152,7 @@ void LayerTestCommon::LayerImplTest::CalcDrawProps(
   LayerImplList layer_list;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
       root_layer(), viewport_size, &layer_list);
-  LayerTreeHostCommon::CalculateDrawProperties(&inputs);
+  LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 }
 
 void LayerTestCommon::LayerImplTest::AppendQuadsWithOcclusion(

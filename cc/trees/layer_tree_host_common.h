@@ -117,12 +117,9 @@ class CC_EXPORT LayerTreeHostCommon {
   static int CalculateLayerJitter(LayerImpl* scrolling_layer);
   static void CalculateDrawPropertiesForTesting(
       CalcDrawPropsMainInputsForTesting* inputs);
-  static void PreCalculateMetaInformation(Layer* root_layer);
-  static void PreCalculateMetaInformationForTesting(LayerImpl* root_layer);
-  static void PreCalculateMetaInformationForTesting(Layer* root_layer);
 
   static void CalculateDrawProperties(CalcDrawPropsImplInputs* inputs);
-  static void CalculateDrawProperties(
+  static void CalculateDrawPropertiesForTesting(
       CalcDrawPropsImplInputsForTesting* inputs);
 
   template <typename Function>

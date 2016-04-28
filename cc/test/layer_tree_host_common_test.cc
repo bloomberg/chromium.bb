@@ -74,7 +74,7 @@ void LayerTreeHostCommonTestBase::ExecuteCalculateDrawProperties(
     Layer* page_scale_layer,
     bool can_use_lcd_text,
     bool layers_always_allowed_lcd_text) {
-  LayerTreeHostCommon::PreCalculateMetaInformation(root_layer);
+  PropertyTreeBuilder::PreCalculateMetaInformation(root_layer);
 
   EXPECT_TRUE(page_scale_layer || (page_scale_factor == 1.f));
   gfx::Transform identity_matrix;
@@ -96,7 +96,7 @@ void LayerTreeHostCommonTestBase::ExecuteCalculateDrawProperties(
 void LayerTreeHostCommonTestBase::
     ExecuteCalculateDrawPropertiesWithPropertyTrees(Layer* root_layer) {
   DCHECK(root_layer->layer_tree_host());
-  LayerTreeHostCommon::PreCalculateMetaInformation(root_layer);
+  PropertyTreeBuilder::PreCalculateMetaInformation(root_layer);
 
   gfx::Transform identity_transform;
 
@@ -138,7 +138,7 @@ void LayerTreeHostCommonTestBase::
 void LayerTreeHostCommonTestBase::
     ExecuteCalculateDrawPropertiesWithPropertyTrees(LayerImpl* root_layer) {
   DCHECK(root_layer->layer_tree_impl());
-  LayerTreeHostCommon::PreCalculateMetaInformationForTesting(root_layer);
+  PropertyTreeBuilder::PreCalculateMetaInformationForTesting(root_layer);
 
   gfx::Transform identity_transform;
 
@@ -198,7 +198,7 @@ void LayerTreeHostCommonTestBase::ExecuteCalculateDrawProperties(
   inputs.layers_always_allowed_lcd_text = layers_always_allowed_lcd_text;
   inputs.can_adjust_raster_scales = true;
 
-  LayerTreeHostCommon::CalculateDrawProperties(&inputs);
+  LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 }
 
 void LayerTreeHostCommonTestBase::
@@ -215,7 +215,7 @@ void LayerTreeHostCommonTestBase::
   inputs.can_adjust_raster_scales = true;
   inputs.can_render_to_separate_surface = false;
 
-  LayerTreeHostCommon::CalculateDrawProperties(&inputs);
+  LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 }
 
 bool LayerTreeHostCommonTestBase::UpdateLayerListContains(int id) const {
