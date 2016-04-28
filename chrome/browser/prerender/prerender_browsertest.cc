@@ -326,6 +326,27 @@ class ChannelDestructionWatcher {
   DISALLOW_COPY_AND_ASSIGN(ChannelDestructionWatcher);
 };
 
+// A navigation observer to wait until WebContents is destroyed.
+class WebContentsDestructionObserver : public WebContentsObserver {
+ public:
+  explicit WebContentsDestructionObserver(WebContents* web_contents)
+      : WebContentsObserver(web_contents) {}
+
+  // Waits for destruction of the observed WebContents.
+  void Wait() {
+    loop_.Run();
+  }
+
+  // WebContentsObserver implementation:
+  void WebContentsDestroyed() override {
+    loop_.Quit();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WebContentsDestructionObserver);
+  base::RunLoop loop_;
+};
+
 // A navigation observer to wait on either a new load or a swap of a
 // WebContents. On swap, if the new WebContents is still loading, wait for that
 // load to complete as well. Note that the load must begin after the observer is
@@ -3074,7 +3095,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderFavicon) {
 }
 
 // Checks that when a prerendered page is swapped in to a referring page, the
-// unload handlers on the referring page are executed.
+// unload handlers on the referring page are executed and its WebContents is
+// destroyed.
+// TODO(pasko): A similar test for BeforeUnload. See http://crbug.com/600693
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderUnload) {
   // Matches URL in prerender_loader_with_unload.html.
   const GURL unload_url("http://unload-url.test");
@@ -3088,8 +3111,10 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderUnload) {
 
   set_loader_path("/prerender/prerender_loader_with_unload.html");
   PrerenderTestURL("/prerender/prerender_page.html", FINAL_STATUS_USED, 1);
+  WebContentsDestructionObserver destruction_observer(GetActiveWebContents());
   NavigateToDestURL();
   unload_counter.WaitForCount(1);
+  destruction_observer.Wait();
 }
 
 // Checks that a hanging unload on the referring page of a prerender swap does

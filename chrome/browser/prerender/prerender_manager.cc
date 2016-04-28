@@ -144,11 +144,6 @@ class PrerenderManager::OnCloseWebContentsDeleter
     ScheduleWebContentsForDeletion(false);
   }
 
-  void SwappedOut(WebContents* source) override {
-    DCHECK_EQ(tab_.get(), source);
-    ScheduleWebContentsForDeletion(false);
-  }
-
   bool ShouldSuppressDialogs(WebContents* source) override {
     // Use this as a proxy for getting statistics on how often we fail to honor
     // the beforeunload event.
