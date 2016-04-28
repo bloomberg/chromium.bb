@@ -38,4 +38,4 @@ IPC_STRUCT_TRAITS_END()
 // associated frame changed.
 IPC_MESSAGE_ROUTED2(PageLoadMetricsMsg_TimingUpdated,
                     page_load_metrics::PageLoadTiming,
-                    page_load_metrics::PageLoadMetadata);
+                    page_load_metrics::PageLoadMetadata)

@@ -11,6 +11,7 @@
       '../../../chrome/chrome.gyp:safe_browsing_proto',
       '../../../components/components.gyp:content_settings_content_common',
       '../../../components/components.gyp:network_hints_common',
+      '../../../components/components.gyp:page_load_metrics_common',
       '../../../components/components.gyp:pdf_common',
       '../../../components/nacl.gyp:nacl_common',
       '../../../content/content.gyp:content_child',

@@ -11,6 +11,7 @@ static_library("ipc_message_lib") {
     "//components/content_settings/content/common",
     "//components/nacl/common",
     "//components/network_hints/common",
+    "//components/page_load_metrics/common",
     "//components/pdf/common",
     "//content/child",
     "//content/public/child",
