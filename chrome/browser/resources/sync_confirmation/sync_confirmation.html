@@ -34,12 +34,17 @@
         };
       }
 
-      .action-container {
 <if expr="is_macosx or is_linux">
+      .action-container {
         flex-flow: row-reverse;
         justify-content: flex-start;
-</if>
       }
+
+      #undoButton {
+        -webkit-margin-end: 8px;
+        -webkit-margin-start: 0;
+      }
+</if>
     </style>
   </head>
   <body>
