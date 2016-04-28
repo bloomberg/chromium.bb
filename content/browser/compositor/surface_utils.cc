@@ -22,7 +22,7 @@
 #include "content/browser/renderer_host/compositor_impl_android.h"
 #else
 #include "content/browser/compositor/image_transport_factory.h"
-#include "ui/compositor/compositor.h"
+#include "ui/compositor/compositor.h"  // nogncheck
 #endif
 
 namespace {

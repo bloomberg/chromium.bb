@@ -61,6 +61,7 @@ source_set("browser") {
     "//google_apis",
     "//gpu",
     "//gpu/command_buffer/client:gles2_implementation",
+    "//gpu/command_buffer/client:gles2_interface",
     "//ipc/mojo",
     "//media",
     "//media/gpu/ipc/client",
@@ -325,10 +326,6 @@ source_set("browser") {
     sources += rebase_path(content_browser_gypi_values.android_browser_sources,
                            ".",
                            "//content")
-    sources += rebase_path(
-            content_browser_gypi_values.android_in_process_browser_sources,
-            ".",
-            "//content")
     sources -= [
       "browser_ipc_logging.cc",
       "device_sensors/data_fetcher_shared_memory_default.cc",

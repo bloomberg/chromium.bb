@@ -24,7 +24,6 @@
 #include "content/common/content_export.h"
 #include "content/common/input/input_event_ack_state.h"
 #include "content/public/browser/readback_types.h"
-#include "ui/compositor/compositor.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
 

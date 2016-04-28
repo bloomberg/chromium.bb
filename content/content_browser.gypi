@@ -1671,6 +1671,7 @@
       'browser/android/deferred_download_observer.h',
       'browser/android/download_controller_android_impl.cc',
       'browser/android/download_controller_android_impl.h',
+      'browser/android/gesture_event_type.h',
       'browser/android/interstitial_page_delegate_android.cc',
       'browser/android/interstitial_page_delegate_android.h',
       'browser/android/java/gin_java_bound_object.cc',
@@ -1699,6 +1700,8 @@
       'browser/android/overscroll_controller_android.h',
       'browser/android/popup_touch_handle_drawable.cc',
       'browser/android/popup_touch_handle_drawable.h',
+      'browser/android/synchronous_compositor_host.cc',
+      'browser/android/synchronous_compositor_host.h',
       'browser/android/tracing_controller_android.cc',
       'browser/android/tracing_controller_android.h',
       'browser/android/web_contents_observer_proxy.cc',
@@ -1724,11 +1727,6 @@
       'browser/web_contents/web_contents_view_android.cc',
       'browser/web_contents/web_contents_view_android.h',
     ],
-    'android_in_process_browser_sources': [
-      'browser/android/synchronous_compositor_host.cc',
-      'browser/android/synchronous_compositor_host.h',
-    ],
-
     'auralinux_browser_sources': [
       'browser/accessibility/accessibility_tree_formatter_auralinux.cc',
       'browser/accessibility/browser_accessibility_auralinux.cc',
@@ -2076,7 +2074,6 @@
       ],
       'sources': [
         '<@(android_browser_sources)',
-        '<@(android_in_process_browser_sources)',
       ],
       'sources!': [
         'browser/browser_ipc_logging.cc',

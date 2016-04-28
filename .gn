@@ -36,6 +36,7 @@ check_targets = [
   "//components/*",
 
   #"//content/*",  # A whole lot of errors.
+  "//content/browser/*",
   "//content/gpu/*",
   "//content/public/*",
   "//content/renderer/*",
