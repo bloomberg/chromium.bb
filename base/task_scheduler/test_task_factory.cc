@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/synchronization/waitable_event.h"
@@ -30,12 +31,12 @@ TestTaskFactory::~TestTaskFactory() {
 }
 
 bool TestTaskFactory::PostTask(PostNestedTask post_nested_task,
-                               WaitableEvent* event) {
+                               const Closure& after_task_closure) {
   AutoLock auto_lock(lock_);
   return task_runner_->PostTask(
       FROM_HERE,
       Bind(&TestTaskFactory::RunTaskCallback, Unretained(this),
-           num_posted_tasks_++, post_nested_task, Unretained(event)));
+           num_posted_tasks_++, post_nested_task, after_task_closure));
 }
 
 void TestTaskFactory::WaitForAllTasksToRun() const {
@@ -46,9 +47,9 @@ void TestTaskFactory::WaitForAllTasksToRun() const {
 
 void TestTaskFactory::RunTaskCallback(size_t task_index,
                                       PostNestedTask post_nested_task,
-                                      WaitableEvent* event) {
+                                      const Closure& after_task_closure) {
   if (post_nested_task == PostNestedTask::YES)
-    PostTask(PostNestedTask::NO, nullptr);
+    PostTask(PostNestedTask::NO, Closure());
 
   EXPECT_TRUE(task_runner_->RunsTasksOnCurrentThread());
 
@@ -73,8 +74,8 @@ void TestTaskFactory::RunTaskCallback(size_t task_index,
     cv_.Signal();
   }
 
-  if (event)
-    event->Wait();
+  if (!after_task_closure.is_null())
+    after_task_closure.Run();
 }
 
 }  // namespace test

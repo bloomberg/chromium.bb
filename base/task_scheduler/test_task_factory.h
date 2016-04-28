@@ -9,6 +9,7 @@
 
 #include <unordered_set>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/condition_variable.h"
@@ -26,6 +27,8 @@ namespace test {
 
 // A TestTaskFactory posts tasks to a TaskRunner and verifies that they run as
 // expected. Generates a test failure when:
+// - The RunsTasksOnCurrentThread() method of the TaskRunner returns false on a
+//   thread on which a Task is run.
 // - The ExecutionMode of the TaskRunner is SEQUENCED or SINGLE_THREADED and
 //   Tasks don't run in posting order.
 // - The ExecutionMode of the TaskRunner is SINGLE_THREADED and Tasks don't
@@ -45,10 +48,13 @@ class TestTaskFactory {
 
   ~TestTaskFactory();
 
-  // Posts a task. If |post_nested_task| is YES, the task will post a new task
-  // when it runs. If |event| is set, the task will block until it is signaled.
-  // Returns true if the task is posted.
-  bool PostTask(PostNestedTask post_nested_task, WaitableEvent* event);
+  // Posts a task. The posted task will:
+  // - Post a new task if |post_nested_task| is YES. The nested task won't run
+  //   |after_task_closure|.
+  // - Verify conditions in which the task runs (see potential failures above).
+  // - Run |after_task_closure| if it is not null.
+  bool PostTask(PostNestedTask post_nested_task,
+                const Closure& after_task_closure);
 
   // Waits for all tasks posted by PostTask() to start running. It is not
   // guaranteed that the tasks have completed their execution when this returns.
@@ -59,7 +65,7 @@ class TestTaskFactory {
  private:
   void RunTaskCallback(size_t task_index,
                        PostNestedTask post_nested_task,
-                       WaitableEvent* event);
+                       const Closure& after_task_closure);
 
   // Synchronizes access to all members.
   mutable Lock lock_;

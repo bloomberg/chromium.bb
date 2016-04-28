@@ -12,6 +12,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
@@ -126,7 +127,7 @@ class ThreadPostingTasks : public SimpleThread {
           WaitBeforePostTask::WAIT_FOR_ALL_THREADS_IDLE) {
         thread_pool_->WaitForAllWorkerThreadsIdleForTesting();
       }
-      EXPECT_TRUE(factory_.PostTask(post_nested_task_, nullptr));
+      EXPECT_TRUE(factory_.PostTask(post_nested_task_, Closure()));
     }
   }
 
@@ -219,17 +220,17 @@ TEST_P(TaskSchedulerThreadPoolImplTest, NestedPostTasks) {
 }
 
 TEST_P(TaskSchedulerThreadPoolImplTest, PostTasksWithOneAvailableThread) {
-  // Post tasks to keep all threads busy except one until |event| is signaled.
-  // Use different factories so that tasks are added to different sequences and
-  // can run simultaneously when the execution mode is SEQUENCED.
+  // Post blocking tasks to keep all threads busy except one until |event| is
+  // signaled. Use different factories so that tasks are added to different
+  // sequences and can run simultaneously when the execution mode is SEQUENCED.
   WaitableEvent event(true, false);
   std::vector<std::unique_ptr<test::TestTaskFactory>> blocked_task_factories;
   for (size_t i = 0; i < (kNumThreadsInThreadPool - 1); ++i) {
     blocked_task_factories.push_back(WrapUnique(new test::TestTaskFactory(
         thread_pool_->CreateTaskRunnerWithTraits(TaskTraits(), GetParam()),
         GetParam())));
-    EXPECT_TRUE(
-        blocked_task_factories.back()->PostTask(PostNestedTask::NO, &event));
+    EXPECT_TRUE(blocked_task_factories.back()->PostTask(
+        PostNestedTask::NO, Bind(&WaitableEvent::Wait, Unretained(&event))));
     blocked_task_factories.back()->WaitForAllTasksToRun();
   }
 
@@ -239,7 +240,7 @@ TEST_P(TaskSchedulerThreadPoolImplTest, PostTasksWithOneAvailableThread) {
       thread_pool_->CreateTaskRunnerWithTraits(TaskTraits(), GetParam()),
       GetParam());
   for (size_t i = 0; i < kNumTasksPostedPerThread; ++i)
-    EXPECT_TRUE(short_task_factory.PostTask(PostNestedTask::NO, nullptr));
+    EXPECT_TRUE(short_task_factory.PostTask(PostNestedTask::NO, Closure()));
   short_task_factory.WaitForAllTasksToRun();
 
   // Release tasks waiting on |event|.
@@ -252,16 +253,17 @@ TEST_P(TaskSchedulerThreadPoolImplTest, PostTasksWithOneAvailableThread) {
 
 TEST_P(TaskSchedulerThreadPoolImplTest, Saturate) {
   // Verify that it is possible to have |kNumThreadsInThreadPool|
-  // tasks/sequences running simultaneously. Use different factories so that
-  // tasks are added to different sequences and can run simultaneously when the
-  // execution mode is SEQUENCED.
+  // tasks/sequences running simultaneously. Use different factories so that the
+  // blocking tasks are added to different sequences and can run simultaneously
+  // when the execution mode is SEQUENCED.
   WaitableEvent event(true, false);
   std::vector<std::unique_ptr<test::TestTaskFactory>> factories;
   for (size_t i = 0; i < kNumThreadsInThreadPool; ++i) {
     factories.push_back(WrapUnique(new test::TestTaskFactory(
         thread_pool_->CreateTaskRunnerWithTraits(TaskTraits(), GetParam()),
         GetParam())));
-    EXPECT_TRUE(factories.back()->PostTask(PostNestedTask::NO, &event));
+    EXPECT_TRUE(factories.back()->PostTask(
+        PostNestedTask::NO, Bind(&WaitableEvent::Wait, Unretained(&event))));
     factories.back()->WaitForAllTasksToRun();
   }
 
