@@ -119,14 +119,6 @@ void PersistentRegion::tracePersistentNodes(Visitor* visitor)
     ASSERT(persistentCount == m_persistentCount);
 }
 
-
-namespace {
-class GCObject final : public GarbageCollected<GCObject> {
-public:
-    DEFINE_INLINE_TRACE() { }
-};
-}
-
 void CrossThreadPersistentRegion::prepareForThreadStateTermination(ThreadState* threadState)
 {
     // For heaps belonging to a thread that's detaching, any cross-thread persistents
