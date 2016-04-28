@@ -26,8 +26,8 @@ http://127.0.0.1:8000/inspector/resources-test.js == http://127.0.0.1:8000/inspe
 
 Resources Tree:
 Frames
-    (resource-tree-frame-navigate.html)
-        iframe(resource-tree-frame-navigate-iframe-before.html)
+    top
+        iframe (resource-tree-frame-navigate-iframe-before.html)
             Scripts
                 script-initial.js
             Stylesheets
@@ -134,8 +134,8 @@ http://127.0.0.1:8000/inspector/resources-test.js == http://127.0.0.1:8000/inspe
 
 Resources Tree:
 Frames
-    (resource-tree-frame-navigate.html)
-        iframe(resource-tree-frame-navigate-iframe-after.html)
+    top
+        iframe (resource-tree-frame-navigate-iframe-after.html)
             Scripts
                 script-navigated.js
             Stylesheets

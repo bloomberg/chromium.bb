@@ -13,10 +13,9 @@ function test()
     var scopes = [scope1, scope2];
     var step = 0;
 
-    InspectorTest.addSniffer(WebInspector.ServiceWorkersView.prototype, "_registrationUpdated", registrationUpdated, true);
-    function registrationUpdated(event)
+    InspectorTest.addSniffer(WebInspector.ServiceWorkersView.prototype, "_updateRegistration", updateRegistration, true);
+    function updateRegistration(registration)
     {
-        var registration = event.data;
         for (var version of registration.versions.values()) {
             if (step == 0 && registration.scopeURL == scope1 && version.isActivated() && version.isRunning()) {
                 ++step;

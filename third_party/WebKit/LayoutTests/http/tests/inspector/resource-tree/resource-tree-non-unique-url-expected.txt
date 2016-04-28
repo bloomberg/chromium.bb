@@ -3,8 +3,8 @@ Tests resources panel shows several resources with the same url if they were loa
 
 Resources Tree:
 Frames
-    (resource-tree-non-unique-url.html)
-        (resource-tree-non-unique-url-iframe.html)
+    top
+        resource-tree-non-unique-url-iframe.html
             Images
                 styles-non-unique-url.css
             Stylesheets

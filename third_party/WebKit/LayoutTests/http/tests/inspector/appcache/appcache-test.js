@@ -95,7 +95,7 @@ InspectorTest.dumpApplicationCacheTree = function()
         }
         for (var j = 0; j < manifestTreeElement.childCount(); ++j) {
             var frameTreeElement = manifestTreeElement.childAt(j);
-            InspectorTest.addResult("        Frame: " + frameTreeElement.displayName);
+            InspectorTest.addResult("        Frame: " + frameTreeElement.title);
         }
     }
 }

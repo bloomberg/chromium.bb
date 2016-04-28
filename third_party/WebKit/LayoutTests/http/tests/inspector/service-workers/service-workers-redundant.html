@@ -30,10 +30,9 @@ function test()
 
     InspectorTest.evaluateInPage("frontendReopeningCount", function(result) {
         if (result._description == "0") {
-            InspectorTest.addSniffer(WebInspector.ServiceWorkersView.prototype, "_registrationUpdated", registrationUpdated, true);
-            function registrationUpdated(event)
+            InspectorTest.addSniffer(WebInspector.ServiceWorkersView.prototype, "_updateRegistration", updateRegistration, true);
+            function updateRegistration(registration)
             {
-                var registration = event.data;
                 if (registration.scopeURL != scope)
                     return;
                 for (var version of registration.versions.values()) {

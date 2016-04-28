@@ -3,7 +3,7 @@ Tests ServiceWorkersView on resources panel.
 Select ServiceWorkers tree element.
 Register ServiceWorker for scope1
 ==== ServiceWorkersView ====
-127.0.0.1/inspector/service-workers/resources/scope1/
+http://127.0.0.1:8000/inspector/service-workers/resources/scope1/
 URL
 /inspector/service-workers/resources/service-worker-empty.js
 State
@@ -19,7 +19,7 @@ RESPONSE-TIME
 ============================
 Register ServiceWorker for scope2
 ==== ServiceWorkersView ====
-127.0.0.1/inspector/service-workers/resources/scope2/
+http://127.0.0.1:8000/inspector/service-workers/resources/scope2/
 URL
 /inspector/service-workers/resources/service-worker-empty.js
 State
@@ -46,7 +46,7 @@ RESPONSE-TIME
 ============================
 Unegister ServiceWorker for scope1
 ==== ServiceWorkersView ====
-127.0.0.1/inspector/service-workers/resources/scope1/ - deleted
+http://127.0.0.1:8000/inspector/service-workers/resources/scope1/ - deleted
 URL
 /inspector/service-workers/resources/service-worker-empty.js
 State

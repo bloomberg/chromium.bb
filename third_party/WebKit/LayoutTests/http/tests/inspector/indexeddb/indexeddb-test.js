@@ -11,21 +11,21 @@ InspectorTest.dumpIndexedDBTree = function()
     }
     for (var i = 0; i < indexedDBTreeElement.childCount(); ++i) {
         var databaseTreeElement = indexedDBTreeElement.childAt(i);
-        InspectorTest.addResult("    database: " + databaseTreeElement.titleText);
+        InspectorTest.addResult("    database: " + databaseTreeElement.title);
         if (!databaseTreeElement.childCount()) {
             InspectorTest.addResult("        (no object stores)");
             continue;
         }
         for (var j = 0; j < databaseTreeElement.childCount(); ++j) {
             var objectStoreTreeElement = databaseTreeElement.childAt(j);
-            InspectorTest.addResult("        Object store: " + objectStoreTreeElement.titleText);
+            InspectorTest.addResult("        Object store: " + objectStoreTreeElement.title);
             if (!objectStoreTreeElement.childCount()) {
                 InspectorTest.addResult("            (no indexes)");
                 continue;
             }
             for (var j = 0; j < objectStoreTreeElement.childCount(); ++j) {
                 var indexTreeElement = objectStoreTreeElement.childAt(j);
-                InspectorTest.addResult("            Index: " + indexTreeElement.titleText);
+                InspectorTest.addResult("            Index: " + indexTreeElement.title);
             }
         }
     }

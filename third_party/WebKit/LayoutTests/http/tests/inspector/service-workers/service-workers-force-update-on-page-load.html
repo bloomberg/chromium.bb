@@ -20,8 +20,8 @@ function test()
 
     function waitForWorkerActivated(scope) {
         return new Promise(function(resolve) {
-            InspectorTest.addSniffer(WebInspector.ServiceWorkersView.prototype, "_updateRegistration", registrationUpdated, false);
-            function registrationUpdated(registration)
+            InspectorTest.addSniffer(WebInspector.ServiceWorkersView.prototype, "_updateRegistration", updateRegistration, false);
+            function updateRegistration(registration)
             {
                 if (registration.scopeURL == scope) {
                     for (var version of registration.versions.values()) {
@@ -31,13 +31,13 @@ function test()
                         }
                     }
                 }
-                InspectorTest.addSniffer(WebInspector.ServiceWorkersView.prototype, "_updateRegistration", registrationUpdated, false);
+                InspectorTest.addSniffer(WebInspector.ServiceWorkersView.prototype, "_updateRegistration", updateRegistration, false);
             }});
     }
     function installNewWorkerDetector(scope) {
         var workerIdSet = {};
-        InspectorTest.addSniffer(WebInspector.ServiceWorkersView.prototype, "_updateRegistration", registrationUpdated, true);
-        function registrationUpdated(registration)
+        InspectorTest.addSniffer(WebInspector.ServiceWorkersView.prototype, "_updateRegistration", updateRegistration, true);
+        function updateRegistration(registration)
         {
             if (registration.scopeURL == scope) {
               for (var version of registration.versions.values()) {

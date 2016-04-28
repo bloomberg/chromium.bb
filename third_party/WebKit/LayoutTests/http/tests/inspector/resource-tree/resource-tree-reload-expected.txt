@@ -24,8 +24,8 @@ http://127.0.0.1:8000/inspector/resources-test.js == http://127.0.0.1:8000/inspe
 
 Resources Tree:
 Frames
-    (resource-tree-reload.html)
-        (resource-tree-reload-iframe.html)
+    top
+        resource-tree-reload-iframe.html
             Scripts
                 script-initial.js
             Stylesheets
