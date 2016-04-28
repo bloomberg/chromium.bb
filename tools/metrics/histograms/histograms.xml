@@ -22641,9 +22641,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="MemoryAndroid.LowRamDevice" enum="Boolean">
   <owner>mariakhomenko@chromium.org</owner>
   <summary>
-    Whether the OS is running in low_ram mode. This histogram is reported on
-    every upload by Android devices. The low_ram status is configured by the OS
-    and reported via ActivityManager.isLowRamDevice().
+    Whether Chrome is running in low ram mode. This histogram is reported on
+    every upload by Android devices. A device is considered low-RAM if it has
+    512MiB of RAM or lower (see SysUtils.detectLowEndDevice()).
+
+    Note: The low-RAM determination has changed in M-49, it used to be given
+    directly by the Android OS.
   </summary>
 </histogram>
 
