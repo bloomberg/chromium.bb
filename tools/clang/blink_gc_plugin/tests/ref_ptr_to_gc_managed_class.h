@@ -25,14 +25,6 @@ private:
     Vector<RefPtr<HeapObject> > m_objs;
 };
 
-class RefHeapObject : public RefCountedGarbageCollected<HeapObject> {
-public:
-    void trace(Visitor*);
-private:
-    PartObject m_part;
-    Vector<RefPtr<RefHeapObject> > m_objs;
-};
-
 }
 
 #endif

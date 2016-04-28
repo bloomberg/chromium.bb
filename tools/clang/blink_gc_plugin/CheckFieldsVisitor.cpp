@@ -86,7 +86,7 @@ void CheckFieldsVisitor::AtValue(Value* edge) {
 
   // Disallow  OwnPtr<T>, RefPtr<T> and T* to stack-allocated types.
   if (Parent()->IsOwnPtr() ||
-      (Parent()->IsRefPtr() && !edge->value()->IsGCRefCounted()) ||
+      Parent()->IsRefPtr() ||
       (stack_allocated_host_ && Parent()->IsRawPtr())) {
     invalid_fields_.push_back(std::make_pair(
         current_, InvalidSmartPtr(Parent())));

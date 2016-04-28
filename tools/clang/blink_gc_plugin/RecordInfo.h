@@ -101,7 +101,6 @@ class RecordInfo {
   bool IsNonNewable();
   bool IsOnlyPlacementNewable();
   bool IsEagerlyFinalized();
-  bool IsGCRefCounted();
 
   bool HasDefinition();
 
