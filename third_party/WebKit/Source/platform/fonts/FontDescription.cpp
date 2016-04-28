@@ -281,9 +281,13 @@ unsigned FontDescription::styleHashWithoutFamilyList() const
 SkFontStyle FontDescription::skiaFontStyle() const
 {
     int width = static_cast<int>(stretch());
-    SkFontStyle::Slant slant = style() == FontStyleItalic
-        ? SkFontStyle::kItalic_Slant
-        : SkFontStyle::kUpright_Slant;
+    SkFontStyle::Slant slant = SkFontStyle::kUpright_Slant;
+    switch (style()) {
+    case FontStyleNormal: slant = SkFontStyle::kUpright_Slant; break;
+    case FontStyleItalic: slant = SkFontStyle::kItalic_Slant; break;
+    case FontStyleOblique: slant = SkFontStyle::kOblique_Slant; break;
+    default: NOTREACHED(); break;
+    }
     return SkFontStyle(numericFontWeight(weight()), width, slant);
     static_assert(
         static_cast<int>(FontStretchUltraCondensed) == static_cast<int>(SkFontStyle::kUltraCondensed_Width),

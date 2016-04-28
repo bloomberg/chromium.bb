@@ -1060,6 +1060,11 @@ crbug.com/582230 fast/repaint/align-items-overflow-change.html [ Skip ]
 
 crbug.com/548695 fast/forms/datalist/update-range-with-datalist.html [ Failure ]
 
+crbug.com/607259 [ Win ] css2.1/t1508-c527-font-08-b.html [ NeedsManualRebaseline ]
+crbug.com/607259 [ Win ] css2.1/t1504-c523-font-style-00-b.html [ NeedsManualRebaseline ]
+crbug.com/607259 [ Win ] css1/font_properties/font_style.html [ NeedsManualRebaseline ]
+crbug.com/607259 [ Win ] svg/batik/text/textStyles.svg [ NeedsManualRebaseline ]
+
 # Temporarily disabled after chromium change
 crbug.com/492511 [ Mac ] fast/text/atsui-negative-spacing-features.html [ Failure ]
 crbug.com/492511 [ Mac ] fast/text/international/arabic-justify.html [ Failure ]
