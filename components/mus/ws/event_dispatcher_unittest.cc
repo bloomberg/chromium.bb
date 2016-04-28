@@ -96,6 +96,7 @@ class TestEventDispatcherDelegate : public EventDispatcherDelegate {
   void OnServerWindowCaptureLost(ServerWindow* window) override {
     lost_capture_window_ = window;
   }
+  void OnMouseCursorLocationChanged(const gfx::Point& point) override {}
   void DispatchInputEventToWindow(ServerWindow* target,
                                   bool in_nonclient_area,
                                   const ui::Event& event,

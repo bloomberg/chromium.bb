@@ -21,6 +21,7 @@
 #include "components/mus/ws/platform_display.h"
 #include "components/mus/ws/server_window.h"
 #include "components/mus/ws/server_window_observer.h"
+#include "components/mus/ws/user_display_manager.h"
 #include "components/mus/ws/window_manager_state.h"
 #include "components/mus/ws/window_server.h"
 #include "components/mus/ws/window_tree_binding.h"
@@ -1329,6 +1330,13 @@ void WindowTree::GetWindowManagerClient(
   window_manager_internal_client_binding_.reset(
       new mojo::AssociatedBinding<mojom::WindowManagerClient>(
           this, std::move(internal)));
+}
+
+void WindowTree::GetCursorLocationMemory(
+    const GetCursorLocationMemoryCallback& callback) {
+  callback.Run(
+      window_server_->display_manager()->GetUserDisplayManager(user_id_)->
+      GetCursorLocationMemory());
 }
 
 void WindowTree::AddAccelerator(uint32_t id,

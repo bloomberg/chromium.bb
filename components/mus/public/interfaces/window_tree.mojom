@@ -260,6 +260,11 @@ interface WindowTree {
 
   // See description of WindowManager for details.
   GetWindowManagerClient(associated WindowManagerClient& internal);
+
+  // Returns a shared memory segment that contains two 16-bit ints packed into a
+  // single Atomic32, which represent the current location of the mouse cursor
+  // where the location is (x << 16) | y.
+  GetCursorLocationMemory() => (handle<shared_buffer> cursor_buffer);
 };
 
 // Changes to windows are not sent to the connection that originated the

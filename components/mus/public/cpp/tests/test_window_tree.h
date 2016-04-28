@@ -97,6 +97,8 @@ class TestWindowTree : public mojom::WindowTree {
   void GetWindowManagerClient(
       mojo::AssociatedInterfaceRequest<mojom::WindowManagerClient> internal)
       override;
+  void GetCursorLocationMemory(const GetCursorLocationMemoryCallback& callback)
+      override;
 
   bool got_change_;
   uint32_t change_id_;

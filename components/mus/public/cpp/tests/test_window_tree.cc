@@ -155,4 +155,9 @@ void TestWindowTree::OnWindowInputEventAck(uint32_t event_id,
 void TestWindowTree::GetWindowManagerClient(
     mojo::AssociatedInterfaceRequest<mojom::WindowManagerClient> internal) {}
 
+void TestWindowTree::GetCursorLocationMemory(
+    const GetCursorLocationMemoryCallback& callback) {
+  callback.Run(mojo::ScopedSharedBufferHandle());
+}
+
 }  // namespace mus

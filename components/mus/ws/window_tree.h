@@ -384,6 +384,8 @@ class WindowTree : public mojom::WindowTree,
   void GetWindowManagerClient(
       mojo::AssociatedInterfaceRequest<mojom::WindowManagerClient> internal)
       override;
+  void GetCursorLocationMemory(const GetCursorLocationMemoryCallback& callback)
+      override;
 
   // mojom::WindowManagerClient:
   void AddAccelerator(uint32_t id,

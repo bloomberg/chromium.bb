@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/atomicops.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -225,6 +226,38 @@ TEST_F(UserDisplayManagerTest, AddRemoveDisplay) {
             display_manager_observer1.GetAndClearObserverCalls());
 
   UserDisplayManagerTestApi(user_display_manager1).SetTestObserver(nullptr);
+}
+
+TEST_F(UserDisplayManagerTest, NegativeCoordinates) {
+  window_server_delegate_.set_num_displays_to_create(1);
+
+  const UserId kUserId1 = "2";
+  TestDisplayManagerObserver display_manager_observer1;
+  DisplayManager* display_manager = window_server_->display_manager();
+  WindowManagerFactoryRegistryTestApi(
+      window_server_->window_manager_factory_registry())
+      .AddService(kUserId1, &test_window_manager_factory_);
+  UserDisplayManager* user_display_manager1 =
+      display_manager->GetUserDisplayManager(kUserId1);
+  ASSERT_TRUE(user_display_manager1);
+
+  user_display_manager1->OnMouseCursorLocationChanged(gfx::Point(-10, -11));
+
+  base::subtle::Atomic32* cursor_location_memory = nullptr;
+  mojo::ScopedSharedBufferHandle handle =
+      user_display_manager1->GetCursorLocationMemory();
+  MojoResult result = mojo::MapBuffer(
+      handle.get(), 0,
+      sizeof(base::subtle::Atomic32),
+      reinterpret_cast<void**>(&cursor_location_memory),
+      MOJO_MAP_BUFFER_FLAG_NONE);
+  ASSERT_EQ(MOJO_RESULT_OK, result);
+
+  base::subtle::Atomic32 location =
+      base::subtle::NoBarrier_Load(cursor_location_memory);
+  EXPECT_EQ(gfx::Point(static_cast<int16_t>(location >> 16),
+                       static_cast<int16_t>(location & 0xFFFF)),
+            gfx::Point(-10, -11));
 }
 
 }  // namespace test

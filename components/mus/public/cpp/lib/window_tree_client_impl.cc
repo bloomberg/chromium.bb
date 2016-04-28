@@ -131,7 +131,9 @@ WindowTreeClientImpl::WindowTreeClientImpl(
       binding_(this),
       tree_(nullptr),
       delete_on_no_roots_(true),
-      in_destructor_(false) {
+      in_destructor_(false),
+      cursor_location_memory_(nullptr),
+      weak_factory_(this) {
   // Allow for a null request in tests.
   if (request.is_pending())
     binding_.Bind(std::move(request));
@@ -177,6 +179,10 @@ void WindowTreeClientImpl::ConnectViaWindowTreeFactory(
   factory->CreateWindowTree(GetProxy(&tree_ptr_),
                             binding_.CreateInterfacePtrAndBind());
   tree_ = tree_ptr_.get();
+
+  tree_ptr_->GetCursorLocationMemory(
+      base::Bind(&WindowTreeClientImpl::OnReceivedCursorLocationMemory,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void WindowTreeClientImpl::WaitForEmbed() {
@@ -529,6 +535,21 @@ void WindowTreeClientImpl::OnEmbedImpl(mojom::WindowTree* window_tree,
   }
 }
 
+void WindowTreeClientImpl::OnReceivedCursorLocationMemory(
+    mojo::ScopedSharedBufferHandle handle) {
+  cursor_location_handle_ = std::move(handle);
+  MojoResult result = mojo::MapBuffer(
+      cursor_location_handle_.get(), 0,
+      sizeof(base::subtle::Atomic32),
+      reinterpret_cast<void**>(&cursor_location_memory_),
+      MOJO_MAP_BUFFER_FLAG_NONE);
+  if (result != MOJO_RESULT_OK) {
+    NOTREACHED();
+    return;
+  }
+  DCHECK(cursor_location_memory_);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // WindowTreeClientImpl, WindowTreeConnection implementation:
 
@@ -549,6 +570,17 @@ void WindowTreeClientImpl::ClearFocus() {
     return;
 
   SetFocus(nullptr);
+}
+
+gfx::Point WindowTreeClientImpl::GetCursorScreenPoint() {
+  // We raced initialization. Return (0, 0).
+  if (!cursor_location_memory_)
+    return gfx::Point();
+
+  base::subtle::Atomic32 location =
+      base::subtle::NoBarrier_Load(cursor_location_memory_);
+  return gfx::Point(static_cast<int16_t>(location >> 16),
+                    static_cast<int16_t>(location & 0xFFFF));
 }
 
 void WindowTreeClientImpl::SetEventObserver(mojom::EventMatcherPtr matcher) {

@@ -16,6 +16,10 @@
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 
+namespace gfx {
+class Point;
+}
+
 namespace shell {
 class Connector;
 }
@@ -77,6 +81,10 @@ class WindowTreeConnection {
 
   // Sets focus to null. This does nothing if focus is currently null.
   virtual void ClearFocus() = 0;
+
+  // Returns the current location of the mouse on screen. Note: this method may
+  // race the asynchronous initialization; but in that case we return (0, 0).
+  virtual gfx::Point GetCursorScreenPoint() = 0;
 
   // See description in window_tree.mojom. When an existing event observer is
   // updated or cleared then any future events from the server for that observer

@@ -13,7 +13,10 @@ namespace ws {
 
 UserDisplayManager::UserDisplayManager(ws::DisplayManager* display_manager,
                                        const UserId& user_id)
-    : display_manager_(display_manager), user_id_(user_id) {
+    : display_manager_(display_manager),
+      user_id_(user_id),
+      current_cursor_location_(0),
+      cursor_location_memory_(nullptr) {
   for (const WindowManagerState* wms : GetWindowManagerStatesForUser()) {
     if (wms->got_frame_decoration_values()) {
       got_valid_frame_decorations_ = true;
@@ -61,6 +64,54 @@ void UserDisplayManager::OnWillDestroyDisplay(Display* display) {
   if (test_observer_)
     test_observer_->OnDisplayRemoved(display->id());
 }
+
+void UserDisplayManager::OnMouseCursorLocationChanged(const gfx::Point& point) {
+  current_cursor_location_ =
+      static_cast<base::subtle::Atomic32>(
+          (point.x() & 0xFFFF) << 16 | (point.y() & 0xFFFF));
+  if (cursor_location_memory_) {
+    base::subtle::NoBarrier_Store(cursor_location_memory_,
+                                  current_cursor_location_);
+  }
+}
+
+mojo::ScopedSharedBufferHandle UserDisplayManager::GetCursorLocationMemory() {
+  if (!cursor_location_memory_) {
+    // Create our shared memory segment to share the cursor state with our
+    // window clients.
+    MojoResult result = mojo::CreateSharedBuffer(nullptr,
+                                                 sizeof(base::subtle::Atomic32),
+                                                 &cursor_location_handle_);
+    if (result != MOJO_RESULT_OK)
+      return mojo::ScopedSharedBufferHandle();
+    DCHECK(cursor_location_handle_.is_valid());
+
+    result = mojo::MapBuffer(cursor_location_handle_.get(), 0,
+                             sizeof(base::subtle::Atomic32),
+                             reinterpret_cast<void**>(&cursor_location_memory_),
+                             MOJO_MAP_BUFFER_FLAG_NONE);
+    if (result != MOJO_RESULT_OK)
+      return mojo::ScopedSharedBufferHandle();
+    DCHECK(cursor_location_memory_);
+
+    base::subtle::NoBarrier_Store(cursor_location_memory_,
+                                  current_cursor_location_);
+  }
+
+  mojo::ScopedSharedBufferHandle duped;
+  MojoDuplicateBufferHandleOptions options = {
+    sizeof(MojoDuplicateBufferHandleOptions),
+    MOJO_DUPLICATE_BUFFER_HANDLE_OPTIONS_FLAG_READ_ONLY
+  };
+  MojoResult result = mojo::DuplicateBuffer(cursor_location_handle_.get(),
+                                            &options, &duped);
+  if (result != MOJO_RESULT_OK)
+    return mojo::ScopedSharedBufferHandle();
+  DCHECK(duped.is_valid());
+
+  return duped;
+}
+
 
 std::set<const WindowManagerState*>
 UserDisplayManager::GetWindowManagerStatesForUser() const {

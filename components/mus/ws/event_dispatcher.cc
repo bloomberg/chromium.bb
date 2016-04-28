@@ -108,6 +108,10 @@ void EventDispatcher::SetMousePointerScreenLocation(
   DCHECK(pointer_targets_.empty());
   mouse_pointer_last_location_ = screen_location;
   UpdateCursorProviderByLastKnownLocation();
+  // Write our initial location back to our shared screen coordinate. This
+  // shouldn't cause problems because we already read the cursor before we
+  // process any events in views during window construction.
+  delegate_->OnMouseCursorLocationChanged(screen_location);
 }
 
 bool EventDispatcher::SetCaptureWindow(ServerWindow* window,
@@ -241,8 +245,10 @@ void EventDispatcher::ProcessLocatedEvent(const ui::LocatedEvent& event) {
   const bool is_mouse_event =
       event.IsMousePointerEvent() || event.IsMouseWheelEvent();
 
-  if (is_mouse_event)
+  if (is_mouse_event) {
     mouse_pointer_last_location_ = event.location();
+    delegate_->OnMouseCursorLocationChanged(event.root_location());
+  }
 
   // Release capture on pointer up. For mouse we only release if there are
   // no buttons down.

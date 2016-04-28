@@ -369,6 +369,11 @@ void WindowManagerState::OnServerWindowCaptureLost(ServerWindow* window) {
   window_server()->ProcessLostCapture(window);
 }
 
+void WindowManagerState::OnMouseCursorLocationChanged(const gfx::Point& point) {
+  window_server()->display_manager()->GetUserDisplayManager(user_id_)->
+      OnMouseCursorLocationChanged(point);
+}
+
 void WindowManagerState::DispatchInputEventToWindow(ServerWindow* target,
                                                     bool in_nonclient_area,
                                                     const ui::Event& event,

@@ -160,6 +160,7 @@ class WindowManagerState : public EventDispatcherDelegate {
   void SetNativeCapture() override;
   void ReleaseNativeCapture() override;
   void OnServerWindowCaptureLost(ServerWindow* window) override;
+  void OnMouseCursorLocationChanged(const gfx::Point& point) override;
   void DispatchInputEventToWindow(ServerWindow* target,
                                   bool in_nonclient_area,
                                   const ui::Event& event,

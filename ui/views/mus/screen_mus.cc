@@ -80,7 +80,8 @@ namespace views {
 ScreenMus::ScreenMus(ScreenMusDelegate* delegate)
     : delegate_(delegate),
       primary_display_index_(0),
-      display_manager_observer_binding_(this) {}
+      display_manager_observer_binding_(this) {
+}
 
 ScreenMus::~ScreenMus() {}
 
@@ -161,8 +162,14 @@ void ScreenMus::ProcessDisplayChanged(const display::Display& changed_display,
 }
 
 gfx::Point ScreenMus::GetCursorScreenPoint() {
-  NOTIMPLEMENTED();
-  return gfx::Point();
+  if (!delegate_) {
+    // TODO(erg): If we need the cursor point in the window manager, we'll need
+    // to make |delegate_| required. It only recently changed to be optional.
+    NOTIMPLEMENTED();
+    return gfx::Point();
+  }
+
+  return delegate_->GetCursorScreenPoint();
 }
 
 gfx::NativeWindow ScreenMus::GetWindowUnderCursor() {

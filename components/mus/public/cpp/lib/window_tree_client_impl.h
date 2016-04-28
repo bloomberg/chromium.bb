@@ -10,7 +10,9 @@
 #include <map>
 #include <set>
 
+#include "base/atomicops.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "components/mus/common/types.h"
 #include "components/mus/public/cpp/window.h"
@@ -162,11 +164,14 @@ class WindowTreeClientImpl : public WindowTreeConnection,
                    Id focused_window_id,
                    bool drawn);
 
+  void OnReceivedCursorLocationMemory(mojo::ScopedSharedBufferHandle handle);
+
   // Overridden from WindowTreeConnection:
   void SetDeleteOnNoRoots(bool value) override;
   const std::set<Window*>& GetRoots() override;
   Window* GetFocusedWindow() override;
   void ClearFocus() override;
+  gfx::Point GetCursorScreenPoint() override;
   void SetEventObserver(mojom::EventMatcherPtr matcher) override;
   Window* NewWindow(const Window::SharedProperties* properties) override;
   Window* NewTopLevelWindow(
@@ -294,6 +299,14 @@ class WindowTreeClientImpl : public WindowTreeConnection,
 
   bool in_destructor_;
 
+  // A handle to shared memory that is one 32 bit integer long. The window
+  // server uses this to let us synchronously read the cursor location.
+  mojo::ScopedSharedBufferHandle cursor_location_handle_;
+
+  // The one int in |cursor_location_handle_|. When we read from this
+  // location, we must always read from it atomically.
+  base::subtle::Atomic32* cursor_location_memory_;
+
   base::ObserverList<WindowTreeConnectionObserver> observers_;
 
   std::unique_ptr<mojo::AssociatedBinding<mojom::WindowManager>>
@@ -304,6 +317,8 @@ class WindowTreeClientImpl : public WindowTreeConnection,
 
   // Monotonically increasing ID for event observers.
   uint32_t event_observer_id_ = 0u;
+
+  base::WeakPtrFactory<WindowTreeClientImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeClientImpl);
 };

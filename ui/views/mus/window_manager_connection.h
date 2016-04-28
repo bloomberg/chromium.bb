@@ -79,6 +79,7 @@ class VIEWS_MUS_EXPORT WindowManagerConnection
 
   // ScreenMusDelegate:
   void OnWindowManagerFrameValuesChanged() override;
+  gfx::Point GetCursorScreenPoint() override;
 
   shell::Connector* connector_;
   shell::Identity identity_;

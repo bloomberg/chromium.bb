@@ -157,4 +157,8 @@ void WindowManagerConnection::OnWindowManagerFrameValuesChanged() {
     NativeWidgetMus::NotifyFrameChanged(window_tree_connection_.get());
 }
 
+gfx::Point WindowManagerConnection::GetCursorScreenPoint() {
+  return window_tree_connection_->GetCursorScreenPoint();
+}
+
 }  // namespace views
