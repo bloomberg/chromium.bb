@@ -33,6 +33,11 @@ public:
 
     ScriptPromise fetch(ScriptState* scriptState, const RequestInfo& input, const Dictionary& init, ExceptionState& exceptionState) override
     {
+        if (!scriptState->contextIsValid()) {
+            // TODO(yhirano): Should this be moved to bindings?
+            exceptionState.throwTypeError("The global scope is shutting down.");
+            return ScriptPromise();
+        }
         if (m_fetchManager->isStopped()) {
             exceptionState.throwTypeError("The global scope is shutting down.");
             return ScriptPromise();
