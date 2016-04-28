@@ -47,7 +47,7 @@
         event it received.
 
         The width and height arguments specify the size of the window
-        in surface local coordinates.
+        in surface-local coordinates.
       </description>
       <arg name="width" type="int"/>
       <arg name="height" type="int"/>
