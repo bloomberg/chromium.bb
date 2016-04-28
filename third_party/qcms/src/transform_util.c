@@ -601,7 +601,7 @@ void build_output_lut(struct curveType *trc,
                 uint16_t i;
                 uint16_t *output = malloc(sizeof(uint16_t)*256);
                 uint16_t *inverted;
-                int inverted_size = 256;
+                int inverted_size = 4096;
 
                 if (!output) {
                         *output_gamma_lut = NULL;
@@ -618,9 +618,6 @@ void build_output_lut(struct curveType *trc,
                 //     measurement or data, however it is what lcms uses.
                 //     the maximum number we would need is 65535 because that's the
                 //     accuracy used for computing the pre cache table
-                if (inverted_size < 256)
-                        inverted_size = 256;
-
                 inverted = invert_lut(output, 256, inverted_size);
                 if (!inverted)
                         return;

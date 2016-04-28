@@ -40,7 +40,7 @@ static int get_output_gamma_table(const char *profile_path, uint16_t **table, si
     }
 
     *size = qcms_transform_get_output_trc_rgba(transform, target, QCMS_TRC_USHORT, NULL);
-    assert(*size == 256);
+    assert(*size >= 256);
 
     *table = malloc(*size * sizeof(uint16_t) * 4);
     qcms_transform_get_output_trc_rgba(transform, target, QCMS_TRC_USHORT, *table);
@@ -75,7 +75,7 @@ static int get_input_gamma_table(const char *profile_path, uint16_t **table, siz
     }
 
     *size = qcms_transform_get_input_trc_rgba(transform, source, QCMS_TRC_USHORT, NULL);
-    assert(*size == 256);
+    assert(*size >= 256);
 
     *table = calloc(*size, sizeof(uint16_t) * 4);
     qcms_transform_get_input_trc_rgba(transform, source, QCMS_TRC_USHORT, *table);
@@ -96,7 +96,7 @@ static int qcms_test_output_trc(size_t width,
 {
     qcms_profile *profile;
     uint16_t *gamma_table_out;
-    size_t gamma_table_size;
+    size_t output_size;
     size_t i;
 
     printf("Test qcms output gamma curve table integrity.\n");
@@ -109,13 +109,13 @@ static int qcms_test_output_trc(size_t width,
     // Create profiles and transforms, get table and then free resources to make sure none
     // of the internal tables are initialized by previous calls.
     gamma_table_out = NULL;
-    gamma_table_size = 0;
-    if (get_output_gamma_table(in_path, &gamma_table_out, &gamma_table_size) != 0) {
+    output_size = 0;
+    if (get_output_gamma_table(in_path, &gamma_table_out, &output_size) != 0) {
         fprintf(stderr, "Unable to extract output gamma table\n");
         return EXIT_FAILURE;
     }
 
-    printf("LUT size = %zu\n", gamma_table_size);
+    printf("Output gamma LUT size = %zu\n", output_size);
 
     profile = qcms_profile_from_path(in_path);
     if (!profile) {
@@ -127,16 +127,17 @@ static int qcms_test_output_trc(size_t width,
     // Check only for red curve for now.
     if (profile->redTRC->type == PARAMETRIC_CURVE_TYPE) {
         int type = - (int)(profile->redTRC->count + 1);
-        FILE *gamma_file;
         uint16_t *gamma_table_in = NULL;
-        uint16_t *p_table_out, *p_table_in;
-        char file_name[256] = {0,};
         size_t input_size = 0;
+        float scale_factor;
+        FILE *output_file;
+        char output_file_name[1024];
+        long int time_stamp = (long int)time(NULL);
 
         printf("Detected parametric curve type = %d\n", profile->redTRC->count);
 
-        sprintf(file_name, "qcms-test-%ld-parametric-gamma-%s.csv", (long int)time(NULL), profile->description);
-        printf("Writing input and output gamma tables to %s\n", file_name);
+        sprintf(output_file_name, "qcms-test-%ld-parametric-gamma-output-%s.csv", time_stamp, profile->description);
+        printf("Writing output gamma tables to %s\n", output_file_name);
 
         printf("gamma = %.6f, a = %.6f, b = %.6f, c = %.6f, d = %.6f, e = %.6f, f = %.6f\n",
                 profile->redTRC->parameter[0], profile->redTRC->parameter[1], profile->redTRC->parameter[2],
@@ -144,44 +145,44 @@ static int qcms_test_output_trc(size_t width,
                 profile->redTRC->parameter[6]);
 
         // Write output to stdout and tables into a csv file.
-        gamma_file = fopen(file_name, "w");
-        fprintf(gamma_file, "Parametric gamma values for %s\n", profile->description);
-        fprintf(gamma_file, "gamma, a, b, c, d, e, f\n");
-        fprintf(gamma_file, "%.6f, %.6f, %.6f, %.6f, %.6f, %.6f, %.6f\n",
+        output_file = fopen(output_file_name, "w");
+        fprintf(output_file, "Parametric gamma values for %s\n", profile->description);
+        fprintf(output_file, "gamma, a, b, c, d, e, f\n");
+        fprintf(output_file, "%.6f, %.6f, %.6f, %.6f, %.6f, %.6f, %.6f\n",
                 profile->redTRC->parameter[0], profile->redTRC->parameter[1], profile->redTRC->parameter[2],
                 profile->redTRC->parameter[3], profile->redTRC->parameter[4], profile->redTRC->parameter[5],
                 profile->redTRC->parameter[6]);
 
         get_input_gamma_table(in_path, &gamma_table_in, &input_size);
-        assert(input_size == gamma_table_size);
         if (!gamma_table_in) {
             fprintf(stderr, "Unable to compute input trc. Aborting\n");
-            fclose(gamma_file);
+            fclose(output_file);
             qcms_profile_release(profile);
             free(gamma_table_out);
             return EXIT_FAILURE;
         }
 
-        fprintf(gamma_file, "\n\nInput gamma, Output gamma, LCMS Output gamma, Output gamma error\n");
+        scale_factor = (float)(output_size - 1) / (input_size - 1);
 
-        p_table_out = gamma_table_out;
-        p_table_in = gamma_table_in;
+        fprintf(output_file, "\nInput curve size: %zu\nOutput curve size: %zu\n", input_size, output_size);
+        fprintf(output_file, "\n\nInput gamma, Output gamma, LCMS Output gamma, Output gamma error\n");
 
-        for (i = 0; i < gamma_table_size; ++i) {
-            float p = i / (gamma_table_size * 1.0);
-            float reference_out = clamp_float(evaluate_parametric_curve(type, profile->redTRC->parameter, p));
-            float actual_out = *p_table_out * inverse65535;
-            float error_out = fabs(actual_out - reference_out);
-            float input = *p_table_in * inverse65535;
+        for (i = 0; i < input_size; ++i) {
+            float input = gamma_table_in[i * 4] * inverse65535;
+            size_t out_index = (size_t)floor(i * scale_factor + 0.5);
+            float p = out_index / (float)(output_size - 1);
+            float reference = clamp_float(evaluate_parametric_curve(type, profile->redTRC->parameter, p));
+            float actual = gamma_table_out[out_index * 4] * inverse65535;
+            float difference = fabs(actual - reference);
 
-            fprintf(gamma_file, "%.6f, %.6f, %6f, %6f\n",input, actual_out, reference_out, error_out);
-
-            p_table_out += 4; // Skip other channels.
-            p_table_in += 4; // Skip other channels.
+            fprintf(output_file, "%.6f, %.6f, %6f, %6f\n", input, actual, reference, difference);
         }
 
+        fprintf(output_file, "\nNote: the output curves we down sampled by a factor of %zu / %zu\n",
+                output_size, input_size);
+
+        fclose(output_file);
         free(gamma_table_in);
-        fclose(gamma_file);
     }
 
     qcms_profile_release(profile);
