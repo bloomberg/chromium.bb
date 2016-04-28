@@ -13,11 +13,10 @@ namespace egl {
 
 class Config {
  public:
-  explicit Config(EGLint surface_type);
+  Config();
   ~Config();
-  bool Matches(const EGLint* attrib_list) const;
+
   bool GetAttrib(EGLint attribute, EGLint* value) const;
-  static bool ValidateAttributeList(const EGLint* attrib_list);
 
  private:
   // Total color component bits in the color buffer.

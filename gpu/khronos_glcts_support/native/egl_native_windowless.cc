@@ -6,7 +6,7 @@
 // TODO: We may want to phase out the old gles2_conform support in preference
 // of this implementation.  So eventually we'll need to move the egl_native
 // stuff here or to a shareable location/path.
-#include "gpu/gles2_conform_support/egl/test_support.h"
+#include "gpu/gles2_conform_support/egl/display.h"
 
 #include "third_party/khronos_glcts/framework/egl/tcuEglPlatform.hpp"
 
@@ -74,9 +74,9 @@ class Platform : public tcu::EglPlatform {
                                   int height,
                                   qpVisibility visibility) override {
     tcu::egl::Display& eglDisplay = dpy.getEglDisplay();
-    EGLDisplay display = eglDisplay.getEGLDisplay();
-    CommandBufferGLESSetNextCreateWindowSurfaceCreatesPBuffer(eglDisplay, width,
-                                                              height);
+    egl::Display* display =
+        static_cast<egl::Display*>(eglDisplay.getEGLDisplay());
+    display->SetCreateOffscreen(width, height);
     return new Window(eglDisplay, config, attribList, width, height);
   }
 };
