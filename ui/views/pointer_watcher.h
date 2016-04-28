@@ -16,6 +16,8 @@ namespace views {
 
 // An interface for read-only observation of pointer events (in particular, the
 // events cannot be marked as handled). Only certain event types are supported.
+// NOTE: The event.target is always null, because on mus the target window may
+// be owned by another process.
 class VIEWS_EXPORT PointerWatcher {
  public:
   virtual ~PointerWatcher() {}
