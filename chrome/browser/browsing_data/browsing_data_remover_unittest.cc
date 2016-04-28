@@ -46,6 +46,7 @@
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
+#include "components/autofill/core/common/autofill_constants.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -132,7 +133,6 @@ const char kTestOriginExt[] = "chrome-extension://abcdefghijklmnopqrstuvwxyz/";
 const char kTestOriginDevTools[] = "chrome-devtools://abcdefghijklmnopqrstuvw/";
 
 // For Autofill.
-const char kChromeOrigin[] = "Chrome settings";
 const char kWebOrigin[] = "https://www.example.com/";
 
 const GURL kOrigin1(kTestOrigin1);
@@ -729,7 +729,7 @@ class RemoveAutofillTester : public autofill::PersonalDataManagerObserver {
     profiles.push_back(profile);
 
     profile.set_guid(base::GenerateGUID());
-    profile.set_origin(kChromeOrigin);
+    profile.set_origin(autofill::kSettingsOrigin);
     profiles.push_back(profile);
 
     personal_data_manager_->SetProfiles(&profiles);
@@ -744,7 +744,7 @@ class RemoveAutofillTester : public autofill::PersonalDataManagerObserver {
     cards.push_back(card);
 
     card.set_guid(base::GenerateGUID());
-    card.set_origin(kChromeOrigin);
+    card.set_origin(autofill::kSettingsOrigin);
     cards.push_back(card);
 
     personal_data_manager_->SetCreditCards(&cards);
@@ -2123,7 +2123,7 @@ TEST_F(BrowsingDataRemoverTest, AutofillOriginsRemovedWithHistory) {
   tester.AddProfilesAndCards();
   EXPECT_FALSE(tester.HasOrigin(std::string()));
   EXPECT_TRUE(tester.HasOrigin(kWebOrigin));
-  EXPECT_TRUE(tester.HasOrigin(kChromeOrigin));
+  EXPECT_TRUE(tester.HasOrigin(autofill::kSettingsOrigin));
 
   BlockUntilBrowsingDataRemoved(
       BrowsingDataRemover::LAST_HOUR,
@@ -2133,7 +2133,7 @@ TEST_F(BrowsingDataRemoverTest, AutofillOriginsRemovedWithHistory) {
   EXPECT_EQ(BrowsingDataHelper::UNPROTECTED_WEB, GetOriginTypeMask());
   EXPECT_TRUE(tester.HasOrigin(std::string()));
   EXPECT_FALSE(tester.HasOrigin(kWebOrigin));
-  EXPECT_TRUE(tester.HasOrigin(kChromeOrigin));
+  EXPECT_TRUE(tester.HasOrigin(autofill::kSettingsOrigin));
 }
 
 TEST_F(BrowsingDataRemoverTest, CompletionInhibition) {

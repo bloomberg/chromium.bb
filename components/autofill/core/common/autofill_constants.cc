@@ -15,4 +15,6 @@ const char kHelpURL[] =
     "https://support.google.com/chrome/?p=settings_autofill";
 #endif
 
+const char kSettingsOrigin[] = "Chrome settings";
+
 }  // namespace autofill

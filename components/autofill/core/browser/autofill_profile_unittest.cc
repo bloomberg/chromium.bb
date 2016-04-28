@@ -19,6 +19,7 @@
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -72,7 +73,7 @@ struct TestCase {
 
 void SetupTestProfile(AutofillProfile& profile) {
   profile.set_guid(base::GenerateGUID());
-  profile.set_origin("Chrome settings");
+  profile.set_origin(kSettingsOrigin);
   test::SetProfileInfo(&profile, "Marion", "Mitchell", "Morrison",
                        "marion@me.xyz", "Fox", "123 Zoo St.", "unit 5",
                        "Hollywood", "CA", "91601", "US", "12345678910");
@@ -224,7 +225,7 @@ TEST(AutofillProfileTest, AdjustInferredLabels) {
   EXPECT_EQ(ASCIIToUTF16("Jane Doe, 123 Letha Shore."), labels[1]);
 
   profiles.push_back(
-      new AutofillProfile(base::GenerateGUID(), "Chrome settings"));
+      new AutofillProfile(base::GenerateGUID(), kSettingsOrigin));
   test::SetProfileInfo(
       profiles[2],
       "John",
@@ -854,7 +855,7 @@ TEST(AutofillProfileTest, OverwriteWith_DifferentProfile) {
   //   (5) Has a language code.
   AutofillProfile b = a;
   b.set_guid(base::GenerateGUID());
-  b.set_origin("Chrome settings");
+  b.set_origin(kSettingsOrigin);
   b.SetRawInfo(ADDRESS_HOME_LINE2, ASCIIToUTF16("area 51"));
   b.SetRawInfo(COMPANY_NAME, base::string16());
 
@@ -862,7 +863,7 @@ TEST(AutofillProfileTest, OverwriteWith_DifferentProfile) {
   b.set_language_code("en");
 
   EXPECT_TRUE(a.OverwriteWith(b, "en-US"));
-  EXPECT_EQ("Chrome settings", a.origin());
+  EXPECT_EQ(kSettingsOrigin, a.origin());
   EXPECT_EQ(ASCIIToUTF16("area 51"), a.GetRawInfo(ADDRESS_HOME_LINE2));
   EXPECT_EQ(ASCIIToUTF16("Fox"), a.GetRawInfo(COMPANY_NAME));
   base::string16 name = a.GetInfo(AutofillType(NAME_FULL), "en-US");

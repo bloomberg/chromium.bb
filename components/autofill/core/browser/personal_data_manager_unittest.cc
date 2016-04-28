@@ -28,6 +28,7 @@
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
+#include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/form_data.h"
@@ -605,8 +606,8 @@ TEST_F(PersonalDataManagerTest, UpdateUnverifiedProfilesAndCreditCards) {
   // Try to update with just the origin changed.
   AutofillProfile original_profile(profile);
   CreditCard original_credit_card(credit_card);
-  profile.set_origin("Chrome settings");
-  credit_card.set_origin("Chrome settings");
+  profile.set_origin(kSettingsOrigin);
+  credit_card.set_origin(kSettingsOrigin);
 
   EXPECT_TRUE(profile.IsVerified());
   EXPECT_TRUE(credit_card.IsVerified());
@@ -1919,7 +1920,7 @@ TEST_F(PersonalDataManagerTest, ImportAddressProfiles_InsufficientAddress) {
 TEST_F(PersonalDataManagerTest,
        ImportAddressProfiles_ExistingVerifiedProfileWithConflict) {
   // Start with a verified profile.
-  AutofillProfile profile(base::GenerateGUID(), "Chrome settings");
+  AutofillProfile profile(base::GenerateGUID(), kSettingsOrigin);
   test::SetProfileInfo(&profile, "Marion", "Mitchell", "Morrison",
                        "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5",
                        "Hollywood", "CA", "91601", "US", "12345678910");
@@ -2507,7 +2508,7 @@ TEST_F(PersonalDataManagerTest, ImportCreditCard_SameCardWithSeparators) {
 TEST_F(PersonalDataManagerTest,
        ImportCreditCard_ExistingVerifiedCardWithConflict) {
   // Start with a verified credit card.
-  CreditCard credit_card(base::GenerateGUID(), "Chrome settings");
+  CreditCard credit_card(base::GenerateGUID(), kSettingsOrigin);
   test::SetCreditCardInfo(&credit_card, "Biggie Smalls",
                           "4111 1111 1111 1111" /* Visa */, "01", "2999");
   EXPECT_TRUE(credit_card.IsVerified());
@@ -2697,7 +2698,7 @@ TEST_F(PersonalDataManagerTest, SaveImportedProfileWithVerifiedData) {
 
   AutofillProfile new_verified_profile = profile;
   new_verified_profile.set_guid(base::GenerateGUID());
-  new_verified_profile.set_origin("Chrome settings");
+  new_verified_profile.set_origin(kSettingsOrigin);
   new_verified_profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER,
                                   ASCIIToUTF16("1 234 567-8910"));
   EXPECT_TRUE(new_verified_profile.IsVerified());
@@ -2719,7 +2720,7 @@ TEST_F(PersonalDataManagerTest, SaveImportedProfileWithVerifiedData) {
 // overwriting existing verified profiles as well.
 TEST_F(PersonalDataManagerTest, SaveImportedProfileWithExistingVerifiedData) {
   // Start with a verified profile.
-  AutofillProfile profile(base::GenerateGUID(), "Chrome settings");
+  AutofillProfile profile(base::GenerateGUID(), kSettingsOrigin);
   test::SetProfileInfo(&profile,
       "Marion", "Mitchell", "Morrison",
       "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
@@ -2756,7 +2757,7 @@ TEST_F(PersonalDataManagerTest, SaveImportedProfileWithExistingVerifiedData) {
 // Ensure that verified credit cards can be saved via SaveImportedCreditCard.
 TEST_F(PersonalDataManagerTest, SaveImportedCreditCardWithVerifiedData) {
   // Start with a verified credit card.
-  CreditCard credit_card(base::GenerateGUID(), "Chrome settings");
+  CreditCard credit_card(base::GenerateGUID(), kSettingsOrigin);
   test::SetCreditCardInfo(&credit_card,
       "Biggie Smalls", "4111 1111 1111 1111" /* Visa */, "01", "2999");
   EXPECT_TRUE(credit_card.IsVerified());
@@ -2993,7 +2994,7 @@ TEST_F(PersonalDataManagerTest, DefaultCountryCodeIsCached) {
       personal_data_->GetDefaultCountryCodeForNewAddress();
   EXPECT_EQ(2U, default_country.size());
 
-  AutofillProfile moose(base::GenerateGUID(), "Chrome settings");
+  AutofillProfile moose(base::GenerateGUID(), kSettingsOrigin);
   test::SetProfileInfo(&moose, "Moose", "P", "McMahon", "mpm@example.com",
       "", "1 Taiga TKTR", "", "Calgary", "AB", "T2B 2K2",
       "CA", "(800) 555-9000");
@@ -3021,7 +3022,7 @@ TEST_F(PersonalDataManagerTest, DefaultCountryCodeIsCached) {
 }
 
 TEST_F(PersonalDataManagerTest, DefaultCountryCodeComesFromProfiles) {
-  AutofillProfile moose(base::GenerateGUID(), "Chrome settings");
+  AutofillProfile moose(base::GenerateGUID(), kSettingsOrigin);
   test::SetProfileInfo(&moose, "Moose", "P", "McMahon", "mpm@example.com",
       "", "1 Taiga TKTR", "", "Calgary", "AB", "T2B 2K2",
       "CA", "(800) 555-9000");
@@ -3030,11 +3031,11 @@ TEST_F(PersonalDataManagerTest, DefaultCountryCodeComesFromProfiles) {
   EXPECT_EQ("CA", personal_data_->GetDefaultCountryCodeForNewAddress());
 
   // Multiple profiles cast votes.
-  AutofillProfile armadillo(base::GenerateGUID(), "Chrome settings");
+  AutofillProfile armadillo(base::GenerateGUID(), kSettingsOrigin);
   test::SetProfileInfo(&armadillo, "Armin", "Dill", "Oh", "ado@example.com",
       "", "1 Speed Bump", "", "Lubbock", "TX", "77500",
       "MX", "(800) 555-9000");
-  AutofillProfile armadillo2(base::GenerateGUID(), "Chrome settings");
+  AutofillProfile armadillo2(base::GenerateGUID(), kSettingsOrigin);
   test::SetProfileInfo(&armadillo2, "Armin", "Dill", "Oh", "ado@example.com",
       "", "2 Speed Bump", "", "Lubbock", "TX", "77500",
       "MX", "(800) 555-9000");
@@ -3057,7 +3058,7 @@ TEST_F(PersonalDataManagerTest, DefaultCountryCodeComesFromProfiles) {
   personal_data_->RemoveByGUID(armadillo.guid());
   ResetPersonalDataManager(USER_MODE_NORMAL);
   // But unverified profiles can be a tie breaker.
-  armadillo.set_origin("Chrome settings");
+  armadillo.set_origin(kSettingsOrigin);
   personal_data_->AddProfile(armadillo);
   ResetPersonalDataManager(USER_MODE_NORMAL);
   EXPECT_EQ("MX", personal_data_->GetDefaultCountryCodeForNewAddress());
@@ -3065,7 +3066,7 @@ TEST_F(PersonalDataManagerTest, DefaultCountryCodeComesFromProfiles) {
   // Invalid country codes are ignored.
   personal_data_->RemoveByGUID(armadillo.guid());
   personal_data_->RemoveByGUID(moose.guid());
-  AutofillProfile space_invader(base::GenerateGUID(), "Chrome settings");
+  AutofillProfile space_invader(base::GenerateGUID(), kSettingsOrigin);
   test::SetProfileInfo(&space_invader, "Marty", "", "Martian",
       "mm@example.com", "", "1 Flying Object", "", "Valles Marineris", "",
       "", "XX", "");

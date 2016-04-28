@@ -40,6 +40,7 @@
 #include "components/autofill/core/browser/country_names.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
+#include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/form_data.h"
@@ -103,7 +104,6 @@ const char* kFieldsFromPage[] =
       "shipping country",
       "shipping tel",
     };
-const char kSettingsOrigin[] = "Chrome settings";
 const char kTestCCNumberAmex[] = "376200000000002";
 const char kTestCCNumberVisa[] = "4111111111111111";
 const char kTestCCNumberMaster[] = "5555555555554444";
@@ -1724,7 +1724,7 @@ TEST_F(AutofillDialogControllerTest, LimitedCcChoices) {
   CreditCard visa_card(test::GetVerifiedCreditCard());
   CreditCard amex_card(test::GetVerifiedCreditCard2());
 
-  CreditCard master_card(base::GenerateGUID(), "chrome settings");
+  CreditCard master_card(base::GenerateGUID(), kSettingsOrigin);
   test::SetCreditCardInfo(
       &master_card, "Mr Foo", "5105105105105100", "07", "2099");
 

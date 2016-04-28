@@ -15,6 +15,7 @@
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/country_names.h"
 #include "components/autofill/core/browser/webdata/autofill_change.h"
+#include "components/autofill/core/common/autofill_constants.h"
 #include "sync/api/sync_error_factory.h"
 #include "sync/api/sync_error_factory_mock.h"
 #include "sync/protocol/sync.pb.h"
@@ -39,7 +40,6 @@ const char kGuid3[] = "EDC609ED-7EEE-4F27-B00C-423242A9C44D";
 const char kGuid4[] = "EDC609ED-7EEE-4F27-B00C-423242A9C44E";
 const char kHttpOrigin[] = "http://www.example.com/";
 const char kHttpsOrigin[] = "https://www.example.com/";
-const char kSettingsOrigin[] = "Chrome settings";
 
 class MockAutofillProfileSyncableService
     : public AutofillProfileSyncableService {

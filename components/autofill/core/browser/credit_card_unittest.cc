@@ -14,6 +14,7 @@
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/validation.h"
+#include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "grit/components_scaled_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -364,11 +365,11 @@ TEST(CreditCardTest, UpdateFromImportedCard) {
   // Try again, but with only the original card having a verified origin.
   // |a| should be unchanged.
   a = original_card;
-  a.set_origin("Chrome settings");
+  a.set_origin(kSettingsOrigin);
   b.SetRawInfo(CREDIT_CARD_NAME_FULL, ASCIIToUTF16("J. Dillinger"));
 
   EXPECT_TRUE(a.UpdateFromImportedCard(b, "en-US"));
-  EXPECT_EQ("Chrome settings", a.origin());
+  EXPECT_EQ(kSettingsOrigin, a.origin());
   EXPECT_EQ(ASCIIToUTF16("John Dillinger"),
             a.GetRawInfo(CREDIT_CARD_NAME_FULL));
   EXPECT_EQ(ASCIIToUTF16("09"), a.GetRawInfo(CREDIT_CARD_EXP_MONTH));
@@ -420,10 +421,10 @@ TEST(CreditCardTest, UpdateFromImportedCard) {
   // Try again, but with only the new card having a verified origin.
   // |a| should be updated.
   a = original_card;
-  b.set_origin("Chrome settings");
+  b.set_origin(kSettingsOrigin);
 
   EXPECT_TRUE(a.UpdateFromImportedCard(b, "en-US"));
-  EXPECT_EQ("Chrome settings", a.origin());
+  EXPECT_EQ(kSettingsOrigin, a.origin());
   EXPECT_EQ(ASCIIToUTF16("J. Dillinger"), a.GetRawInfo(CREDIT_CARD_NAME_FULL));
   EXPECT_EQ(ASCIIToUTF16("08"), a.GetRawInfo(CREDIT_CARD_EXP_MONTH));
   EXPECT_EQ(ASCIIToUTF16("2019"), a.GetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR));
@@ -432,10 +433,10 @@ TEST(CreditCardTest, UpdateFromImportedCard) {
   // |a| should be updated.
   a = original_card;
   a.set_origin("Chrome Autofill dialog");
-  b.set_origin("Chrome settings");
+  b.set_origin(kSettingsOrigin);
 
   EXPECT_TRUE(a.UpdateFromImportedCard(b, "en-US"));
-  EXPECT_EQ("Chrome settings", a.origin());
+  EXPECT_EQ(kSettingsOrigin, a.origin());
   EXPECT_EQ(ASCIIToUTF16("J. Dillinger"), a.GetRawInfo(CREDIT_CARD_NAME_FULL));
   EXPECT_EQ(ASCIIToUTF16("08"), a.GetRawInfo(CREDIT_CARD_EXP_MONTH));
   EXPECT_EQ(ASCIIToUTF16("2019"), a.GetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR));

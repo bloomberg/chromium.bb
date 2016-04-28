@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "components/autofill/core/common/autofill_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace autofill {
@@ -60,7 +61,7 @@ TEST(AutofillDataModelTest, IsVerified) {
   model.set_origin("chrome://settings/autofill");
   EXPECT_FALSE(model.IsVerified());
 
-  model.set_origin("Chrome Settings");
+  model.set_origin(kSettingsOrigin);
   EXPECT_TRUE(model.IsVerified());
 
   model.set_origin("Some gibberish string");

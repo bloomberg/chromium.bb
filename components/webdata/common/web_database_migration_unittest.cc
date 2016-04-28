@@ -24,6 +24,7 @@
 #include "components/autofill/core/browser/webdata/autofill_change.h"
 #include "components/autofill/core/browser/webdata/autofill_entry.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
+#include "components/autofill/core/common/autofill_constants.h"
 #include "components/password_manager/core/browser/webdata/logins_table.h"
 #include "components/search_engines/keyword_table.h"
 #include "components/signin/core/browser/webdata/token_service_table.h"
@@ -368,7 +369,8 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion53ToCurrent) {
     EXPECT_EQ(base::string16(), s_profiles.ColumnString16(7));
     EXPECT_EQ(ASCIIToUTF16("US"), s_profiles.ColumnString16(8));
     EXPECT_EQ(1386046731, s_profiles.ColumnInt(9));
-    EXPECT_EQ(ASCIIToUTF16("Chrome settings"), s_profiles.ColumnString16(10));
+    EXPECT_EQ(ASCIIToUTF16(autofill::kSettingsOrigin),
+              s_profiles.ColumnString16(10));
 
     // Only address line 1.
     ASSERT_TRUE(s_profiles.Step());
@@ -384,7 +386,8 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion53ToCurrent) {
     EXPECT_EQ(base::string16(), s_profiles.ColumnString16(7));
     EXPECT_EQ(ASCIIToUTF16("US"), s_profiles.ColumnString16(8));
     EXPECT_EQ(1386046800, s_profiles.ColumnInt(9));
-    EXPECT_EQ(ASCIIToUTF16("Chrome settings"), s_profiles.ColumnString16(10));
+    EXPECT_EQ(ASCIIToUTF16(autofill::kSettingsOrigin),
+              s_profiles.ColumnString16(10));
 
     // Only address line 2.
     ASSERT_TRUE(s_profiles.Step());
@@ -399,7 +402,8 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion53ToCurrent) {
     EXPECT_EQ(base::string16(), s_profiles.ColumnString16(7));
     EXPECT_EQ(base::string16(), s_profiles.ColumnString16(8));
     EXPECT_EQ(1386046834, s_profiles.ColumnInt(9));
-    EXPECT_EQ(ASCIIToUTF16("Chrome settings"), s_profiles.ColumnString16(10));
+    EXPECT_EQ(ASCIIToUTF16(autofill::kSettingsOrigin),
+              s_profiles.ColumnString16(10));
 
     // No address lines.
     ASSERT_TRUE(s_profiles.Step());
@@ -414,7 +418,8 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion53ToCurrent) {
     EXPECT_EQ(base::string16(), s_profiles.ColumnString16(7));
     EXPECT_EQ(base::string16(), s_profiles.ColumnString16(8));
     EXPECT_EQ(1386046847, s_profiles.ColumnInt(9));
-    EXPECT_EQ(ASCIIToUTF16("Chrome settings"), s_profiles.ColumnString16(10));
+    EXPECT_EQ(ASCIIToUTF16(autofill::kSettingsOrigin),
+              s_profiles.ColumnString16(10));
 
     // That should be it.
     EXPECT_FALSE(s_profiles.Step());
@@ -658,7 +663,8 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion55ToCurrent) {
     EXPECT_EQ(base::string16(), s_profiles.ColumnString16(7));
     EXPECT_EQ(ASCIIToUTF16("US"), s_profiles.ColumnString16(8));
     EXPECT_EQ(1395948829, s_profiles.ColumnInt(9));
-    EXPECT_EQ(ASCIIToUTF16("Chrome settings"), s_profiles.ColumnString16(10));
+    EXPECT_EQ(ASCIIToUTF16(autofill::kSettingsOrigin),
+              s_profiles.ColumnString16(10));
     EXPECT_EQ(std::string(), s_profiles.ColumnString(11));
 
     // No more entries expected.

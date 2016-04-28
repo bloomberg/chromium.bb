@@ -14,6 +14,9 @@ namespace autofill {
 // Help URL for the Autofill dialog.
 extern const char kHelpURL[];
 
+// The origin of an AutofillDataModel created or modified in the settings page.
+extern const char kSettingsOrigin[];
+
 // The number of fields required by Autofill to execute its heuristic and
 // crowdsourcing prediction routines. Ideally we would execute those routines no
 // matter how many fields are in the forms; however, finding the label for each

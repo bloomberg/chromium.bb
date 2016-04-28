@@ -39,6 +39,7 @@
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/autofill/core/browser/validation.h"
+#include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
@@ -828,12 +829,12 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, ShouldShowErrorBubble) {
 // Ensure that expired cards trigger invalid suggestions.
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, ExpiredCard) {
   CreditCard verified_card(test::GetCreditCard());
-  verified_card.set_origin("Chrome settings");
+  verified_card.set_origin(kSettingsOrigin);
   ASSERT_TRUE(verified_card.IsVerified());
   controller()->GetTestingManager()->AddTestingCreditCard(&verified_card);
 
   CreditCard expired_card(test::GetCreditCard());
-  expired_card.set_origin("Chrome settings");
+  expired_card.set_origin(kSettingsOrigin);
   expired_card.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("2007"));
   ASSERT_TRUE(expired_card.IsVerified());
   ASSERT_FALSE(
@@ -995,7 +996,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, AddNewClearsComboboxes) {
   // Set up an expired card.
   CreditCard card;
   test::SetCreditCardInfo(&card, "Roy Demeo", "4111111111111111", "8", "2013");
-  card.set_origin("Chrome settings");
+  card.set_origin(kSettingsOrigin);
   ASSERT_TRUE(card.IsVerified());
 
   // Add the card and check that there's a menu for that section.

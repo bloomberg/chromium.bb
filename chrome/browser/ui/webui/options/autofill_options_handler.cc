@@ -54,8 +54,6 @@ using i18n::addressinput::AddressUiComponent;
 
 namespace {
 
-const char kSettingsOrigin[] = "Chrome settings";
-
 static const char kFullNameField[] = "fullName";
 static const char kCompanyNameField[] = "companyName";
 static const char kAddressLineField[] = "addrLines";
@@ -474,7 +472,7 @@ void AutofillOptionsHandler::SetAddress(const base::ListValue* args) {
     return;
   }
 
-  AutofillProfile profile(guid, kSettingsOrigin);
+  AutofillProfile profile(guid, autofill::kSettingsOrigin);
 
   base::string16 full_name;
   if (args->GetString(arg_counter++, &full_name)) {
@@ -558,7 +556,7 @@ void AutofillOptionsHandler::SetCreditCard(const base::ListValue* args) {
     return;
   }
 
-  CreditCard credit_card(guid, kSettingsOrigin);
+  CreditCard credit_card(guid, autofill::kSettingsOrigin);
 
   base::string16 value;
   if (args->GetString(1, &value))
