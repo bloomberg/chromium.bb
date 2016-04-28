@@ -59,6 +59,10 @@ void InkDropHover::FadeOut(const base::TimeDelta& duration, bool explode) {
   AnimateFade(FADE_OUT, duration, size_, explode ? explode_size_ : size_);
 }
 
+test::InkDropHoverTestApi* InkDropHover::GetTestApi() {
+  return nullptr;
+}
+
 void InkDropHover::AnimateFade(HoverAnimationType animation_type,
                                const base::TimeDelta& duration,
                                const gfx::Size& initial_size,

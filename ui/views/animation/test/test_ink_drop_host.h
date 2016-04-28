@@ -23,6 +23,10 @@ class TestInkDropHost : public InkDropHost {
     should_show_hover_ = should_show_hover;
   }
 
+  void set_disable_timers_for_test(bool disable_timers_for_test) {
+    disable_timers_for_test_ = disable_timers_for_test;
+  }
+
   // TestInkDropHost:
   void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
   void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
@@ -33,6 +37,10 @@ class TestInkDropHost : public InkDropHost {
   int num_ink_drop_layers_;
 
   bool should_show_hover_;
+
+  // When true, the InkDropAnimation/InkDropHover instances will have their
+  // timers disabled after creation.
+  bool disable_timers_for_test_;
 
   DISALLOW_COPY_AND_ASSIGN(TestInkDropHost);
 };

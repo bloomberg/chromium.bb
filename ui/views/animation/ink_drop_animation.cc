@@ -91,6 +91,10 @@ void InkDropAnimation::HideImmediately() {
   target_ink_drop_state_ = InkDropState::HIDDEN;
 }
 
+test::InkDropAnimationTestApi* InkDropAnimation::GetTestApi() {
+  return nullptr;
+}
+
 void InkDropAnimation::AnimationStartedCallback(
     InkDropState ink_drop_state,
     const ui::CallbackLayerAnimationObserver& observer) {

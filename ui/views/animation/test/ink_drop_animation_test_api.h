@@ -21,8 +21,9 @@ class InkDropAnimation;
 
 namespace test {
 
-// Base Test API used by test fixtures to validate all concrete implementations
-// of the InkDropAnimation class.
+// Test API to provide internal access to an InkDropAnimation instance. This can
+// also be used to control the animations via the
+// ui::test::MultiLayerAnimatorTestController API.
 class InkDropAnimationTestApi
     : public ui::test::MultiLayerAnimatorTestController,
       public ui::test::MultiLayerAnimatorTestControllerDelegate {
@@ -33,6 +34,9 @@ class InkDropAnimationTestApi
   // Gets the opacity of the ink drop.
   virtual float GetCurrentOpacity() const = 0;
 
+  // MultiLayerAnimatorTestControllerDelegate:
+  std::vector<ui::LayerAnimator*> GetLayerAnimators() override;
+
  protected:
   InkDropAnimation* ink_drop_animation() {
     return static_cast<const InkDropAnimationTestApi*>(this)
@@ -40,9 +44,6 @@ class InkDropAnimationTestApi
   }
 
   InkDropAnimation* ink_drop_animation() const { return ink_drop_animation_; }
-
-  // MultiLayerAnimatorTestControllerDelegate:
-  std::vector<ui::LayerAnimator*> GetLayerAnimators() override;
 
  private:
   // The InkDropedAnimation to provide internal access to.

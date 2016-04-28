@@ -22,6 +22,10 @@ class CallbackLayerAnimationObserver;
 }  // namespace ui
 
 namespace views {
+namespace test {
+class InkDropHoverTestApi;
+}  // namespace test
+
 class RoundedRectangleLayerDelegate;
 
 // Manages fade in/out animations for a painted Layer that is used to provide
@@ -32,7 +36,7 @@ class VIEWS_EXPORT InkDropHover {
                int corner_radius,
                const gfx::Point& center_point,
                SkColor color);
-  ~InkDropHover();
+  virtual ~InkDropHover();
 
   void set_explode_size(const gfx::Size& size) { explode_size_ = size; }
 
@@ -50,7 +54,14 @@ class VIEWS_EXPORT InkDropHover {
   // The root Layer that can be added in to a Layer tree.
   ui::Layer* layer() { return layer_.get(); }
 
+  // Returns a test api to access internals of this. Default implmentations
+  // should return nullptr and test specific subclasses can override to return
+  // an instance.
+  virtual test::InkDropHoverTestApi* GetTestApi();
+
  private:
+  friend class test::InkDropHoverTestApi;
+
   enum HoverAnimationType { FADE_IN, FADE_OUT };
 
   // Animates a fade in/out as specified by |animation_type| combined with a
