@@ -1832,9 +1832,9 @@ void TestRunner::DumpPixelsAsync(
 
 void TestRunner::ReplicateLayoutTestRuntimeFlagsChanges(
     const base::DictionaryValue& changed_values) {
-  DCHECK(test_is_running_);
-  layout_test_runtime_flags_.tracked_dictionary().ApplyUntrackedChanges(
-      changed_values);
+  if (test_is_running_)
+    layout_test_runtime_flags_.tracked_dictionary().ApplyUntrackedChanges(
+        changed_values);
 }
 
 bool TestRunner::HasCustomTextDump(std::string* custom_text_dump) const {
@@ -1944,10 +1944,12 @@ bool TestRunner::tryToSetTopLoadingFrame(WebFrame* frame) {
   if (!IsFramePartOfMainTestWindow(frame))
     return false;
 
-  if (top_loading_frame_)
+  if (top_loading_frame_ || layout_test_runtime_flags_.have_top_loading_frame())
     return false;
 
   top_loading_frame_ = frame;
+  layout_test_runtime_flags_.set_have_top_loading_frame(true);
+  OnLayoutTestRuntimeFlagsChanged();
   return true;
 }
 
@@ -1959,6 +1961,10 @@ bool TestRunner::tryToClearTopLoadingFrame(WebFrame* frame) {
     return false;
 
   top_loading_frame_ = nullptr;
+  DCHECK(layout_test_runtime_flags_.have_top_loading_frame());
+  layout_test_runtime_flags_.set_have_top_loading_frame(false);
+  OnLayoutTestRuntimeFlagsChanged();
+
   LocationChangeDone();
   return true;
 }
@@ -3126,6 +3132,8 @@ void TestRunnerForSpecificView::CapturePixelsAsyncThen(
 
 void TestRunner::OnLayoutTestRuntimeFlagsChanged() {
   if (layout_test_runtime_flags_.tracked_dictionary().changed_values().empty())
+    return;
+  if (!test_is_running_)
     return;
 
   delegate_->OnLayoutTestRuntimeFlagsChanged(

@@ -158,6 +158,12 @@ class TEST_RUNNER_EXPORT LayoutTestRuntimeFlags {
   DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(
       stay_on_page_after_handling_before_unload)
 
+  // Indicates if the test already tracks a top loading frame (in any of the
+  // renderer processes).  This flag is trying to prevent different renderer
+  // processes from tracking different top loading frames (i.e. main frame in
+  // one renderer and an OOPIF in another renderer).
+  DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(have_top_loading_frame)
+
 #undef DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG
 #undef DEFINE_STRING_LAYOUT_TEST_RUNTIME_FLAG
 

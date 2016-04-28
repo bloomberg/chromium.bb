@@ -58,6 +58,8 @@ void LayoutTestRuntimeFlags::Reset() {
 
   set_stay_on_page_after_handling_before_unload(false);
 
+  set_have_top_loading_frame(false);
+
   // No need to report the initial state - only the future delta is important.
   tracked_dictionary().ResetChangeTracking();
 }
