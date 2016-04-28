@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_CDM_KEY_SYSTEM_NAMES_H_
-#define MEDIA_CDM_KEY_SYSTEM_NAMES_H_
+#ifndef MEDIA_BASE_KEY_SYSTEM_NAMES_H_
+#define MEDIA_BASE_KEY_SYSTEM_NAMES_H_
 
 #include <string>
 
@@ -11,13 +11,8 @@
 
 namespace media {
 
-// TODO(jrummell): Change other uses of Clear Key to use this common value.
-
-// The key system name for Clear Key.
-MEDIA_EXPORT extern const char kClearKey[];
-
-// The key system name for External Clear Key.
-MEDIA_EXPORT extern const char kExternalClearKey[];
+// TODO(jrummell): This file should be folded into key_systems.cc as that is
+// the primary user of these functions. http://crbug.com/606579.
 
 // Returns true if |key_system| is Clear Key, false otherwise.
 MEDIA_EXPORT bool IsClearKey(const std::string& key_system);
@@ -31,4 +26,4 @@ MEDIA_EXPORT bool IsExternalClearKey(const std::string& key_system);
 
 }  // namespace media
 
-#endif  // MEDIA_CDM_KEY_SYSTEM_NAMES_H_
+#endif  // MEDIA_BASE_KEY_SYSTEM_NAMES_H_

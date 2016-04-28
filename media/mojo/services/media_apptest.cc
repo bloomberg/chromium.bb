@@ -14,7 +14,6 @@
 #include "media/base/cdm_config.h"
 #include "media/base/mock_filters.h"
 #include "media/base/test_helpers.h"
-#include "media/cdm/key_system_names.h"
 #include "media/mojo/common/media_type_converters.h"
 #include "media/mojo/interfaces/content_decryption_module.mojom.h"
 #include "media/mojo/interfaces/decryptor.mojom.h"
@@ -33,6 +32,7 @@ namespace media {
 namespace {
 
 #if defined(ENABLE_MOJO_CDM)
+const char kClearKeyKeySystem[] = "org.w3.clearkey";
 const char kInvalidKeySystem[] = "invalid.key.system";
 #endif
 const char kSecurityOrigin[] = "http://foo.com";
@@ -140,7 +140,7 @@ class MediaAppTest : public shell::test::ApplicationTestBase {
 
 #if defined(ENABLE_MOJO_CDM)
 TEST_F(MediaAppTest, InitializeCdm_Success) {
-  InitializeCdm(kClearKey, true, 1);
+  InitializeCdm(kClearKeyKeySystem, true, 1);
   run_loop_->Run();
 }
 

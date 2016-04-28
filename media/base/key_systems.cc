@@ -17,10 +17,10 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "media/base/key_system_info.h"
+#include "media/base/key_system_names.h"
 #include "media/base/key_system_properties.h"
 #include "media/base/media.h"
 #include "media/base/media_client.h"
-#include "media/cdm/key_system_names.h"
 #include "media/media_features.h"
 #include "third_party/widevine/cdm/widevine_cdm_common.h"
 
@@ -169,7 +169,7 @@ static bool IsPotentiallySupportedKeySystem(const std::string& key_system) {
   // Known and supported key systems.
   if (key_system == kWidevineKeySystem)
     return true;
-  if (key_system == kClearKey)
+  if (key_system == kClearKeyKeySystem)
     return true;
 
   // External Clear Key is known and supports suffixes for testing.

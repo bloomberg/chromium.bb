@@ -94,8 +94,6 @@ component("media") {
     "cdm/default_cdm_factory.h",
     "cdm/json_web_key.cc",
     "cdm/json_web_key.h",
-    "cdm/key_system_names.cc",
-    "cdm/key_system_names.h",
     "cdm/player_tracker_impl.cc",
     "cdm/player_tracker_impl.h",
     "cdm/supported_cdm_versions.cc",

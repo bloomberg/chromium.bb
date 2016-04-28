@@ -6,7 +6,7 @@
 
 #include <cstddef>
 
-#include "media/cdm/key_system_names.h"
+#include "media/base/key_system_names.h"
 
 #include "widevine_cdm_version.h" // In SHARED_INTERMEDIATE_DIR.
 
@@ -30,7 +30,7 @@ CastKeySystem GetKeySystemByName(const std::string& key_system_name) {
   }
 #endif  // defined(PLAYREADY_CDM_AVAILABLE)
 
-  if (key_system_name.compare(::media::kClearKey) == 0) {
+  if (::media::IsClearKey(key_system_name)) {
     return KEY_SYSTEM_CLEAR_KEY;
   }
 
