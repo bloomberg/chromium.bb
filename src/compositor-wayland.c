@@ -52,6 +52,13 @@
 
 #define WINDOW_TITLE "Weston Compositor"
 
+struct weston_wayland_backend_config {
+	int use_pixman;
+	int sprawl;
+	char *display_name;
+	int fullscreen;
+};
+
 struct wayland_backend {
 	struct weston_backend base;
 	struct weston_compositor *compositor;
@@ -2332,38 +2339,40 @@ backend_init(struct weston_compositor *compositor, int *argc, char *argv[],
 	struct wayland_output *output;
 	struct wayland_parent_output *poutput;
 	struct weston_config_section *section;
-	int x, count, width, height, scale, use_pixman, fullscreen, sprawl;
-	const char *section_name, *display_name;
+	struct weston_wayland_backend_config new_config;
+	int x, count, width, height, scale;
+	const char *section_name;
 	char *name;
 
 	const struct weston_option wayland_options[] = {
 		{ WESTON_OPTION_INTEGER, "width", 0, &width },
 		{ WESTON_OPTION_INTEGER, "height", 0, &height },
 		{ WESTON_OPTION_INTEGER, "scale", 0, &scale },
-		{ WESTON_OPTION_STRING, "display", 0, &display_name },
-		{ WESTON_OPTION_BOOLEAN, "use-pixman", 0, &use_pixman },
+		{ WESTON_OPTION_STRING, "display", 0, &new_config.display_name },
+		{ WESTON_OPTION_BOOLEAN, "use-pixman", 0, &new_config.use_pixman },
 		{ WESTON_OPTION_INTEGER, "output-count", 0, &count },
-		{ WESTON_OPTION_BOOLEAN, "fullscreen", 0, &fullscreen },
-		{ WESTON_OPTION_BOOLEAN, "sprawl", 0, &sprawl },
+		{ WESTON_OPTION_BOOLEAN, "fullscreen", 0, &new_config.fullscreen },
+		{ WESTON_OPTION_BOOLEAN, "sprawl", 0, &new_config.sprawl },
 	};
 
 	width = 0;
 	height = 0;
 	scale = 0;
-	display_name = NULL;
-	use_pixman = 0;
+	new_config.display_name = NULL;
+	new_config.use_pixman = 0;
 	count = 1;
-	fullscreen = 0;
-	sprawl = 0;
+	new_config.fullscreen = 0;
+	new_config.sprawl = 0;
 	parse_options(wayland_options,
 		      ARRAY_LENGTH(wayland_options), argc, argv);
 
-	b = wayland_backend_create(compositor, use_pixman, display_name,
-				   argc, argv, config);
+	b = wayland_backend_create(compositor, new_config.use_pixman,
+			new_config.display_name, argc, argv, config);
+
 	if (!b)
 		return -1;
 
-	if (sprawl || b->parent.fshell) {
+	if (new_config.sprawl || b->parent.fshell) {
 		b->sprawl_across_outputs = 1;
 		wl_display_roundtrip(b->parent.wl_display);
 
@@ -2373,7 +2382,7 @@ backend_init(struct weston_compositor *compositor, int *argc, char *argv[],
 		return 0;
 	}
 
-	if (fullscreen) {
+	if (new_config.fullscreen) {
 		output = wayland_output_create(b, 0, 0, width, height,
 					       NULL, 1, 0, 1);
 		if (!output)
