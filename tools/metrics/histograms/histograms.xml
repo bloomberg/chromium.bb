@@ -35885,6 +35885,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Permissions.Prompt.ShownForPermission" enum="PermissionType">
+  <owner>benwells@chromium.org</owner>
+  <owner>tsergeant@chromium.org</owner>
+  <summary>
+    Tracks how many times permission prompts for permissions are shown to users.
+  </summary>
+</histogram>
+
 <histogram name="Permissions.Requested.CrossOrigin" enum="PermissionStatus">
   <owner>keenanb@google.com</owner>
   <owner>jww@chromium.org</owner>
@@ -80477,11 +80485,17 @@ To add a new entry, add it with any value and run test to compute valid value.
 <enum name="PermissionBubbleType" type="int">
   <int value="0" label="PERMISSION_BUBBLE_UNKNOWN"/>
   <int value="1" label="PERMISSION_BUBBLE_MULTIPLE"/>
-  <int value="2" label="PERMISSION_BUBBLE_PERMISSION"/>
+  <int value="2" label="PERMISSION_BUBBLE_UNUSED_PERMISSION"/>
   <int value="3" label="PERMISSION_BUBBLE_QUOTA"/>
   <int value="4" label="PERMISSION_BUBBLE_DOWNLOAD"/>
   <int value="5" label="PERMISSION_BUBBLE_MEDIA_STREAM"/>
   <int value="6" label="PERMISSION_BUBBLE_REGISTER_PROTOCOL_HANDLER"/>
+  <int value="7" label="PERMISSION_BUBBLE_PERMISSION_GEOLOCATION"/>
+  <int value="8" label="PERMISSION_BUBBLE_PERMISSION_MIDI_SYSEX"/>
+  <int value="9" label="PERMISSION_BUBBLE_PERMISSION_NOTIFICATIONS"/>
+  <int value="10"
+      label="PERMISSION_BUBBLE_PERMISSION_PROTECTED_MEDIA_IDENTIFIER"/>
+  <int value="11" label="PERMISSION_BUBBLE_PERMISSION_PUSH_MESSAGING"/>
 </enum>
 
 <enum name="PermissionStatus" type="int">

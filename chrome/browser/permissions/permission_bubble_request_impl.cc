@@ -166,5 +166,23 @@ void PermissionBubbleRequestImpl::RequestFinished() {
 
 PermissionBubbleType PermissionBubbleRequestImpl::GetPermissionBubbleType()
     const {
-  return PermissionBubbleType::PERMISSION;
+  switch (permission_type_) {
+    case content::PermissionType::GEOLOCATION:
+      return PermissionBubbleType::PERMISSION_GEOLOCATION;
+#if defined(ENABLE_NOTIFICATIONS)
+    case content::PermissionType::NOTIFICATIONS:
+      return PermissionBubbleType::PERMISSION_NOTIFICATIONS;
+#endif
+    case content::PermissionType::MIDI_SYSEX:
+      return PermissionBubbleType::PERMISSION_MIDI_SYSEX;
+    case content::PermissionType::PUSH_MESSAGING:
+      return PermissionBubbleType::PERMISSION_PUSH_MESSAGING;
+#if defined(OS_CHROMEOS)
+    case content::PermissionType::PROTECTED_MEDIA_IDENTIFIER:
+      return PermissionBubbleType::PERMISSION_PROTECTED_MEDIA_IDENTIFIER;
+#endif
+    default:
+      NOTREACHED();
+      return PermissionBubbleType::UNKNOWN;
+  }
 }

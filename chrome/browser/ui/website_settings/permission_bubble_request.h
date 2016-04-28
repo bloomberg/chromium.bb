@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBSITE_SETTINGS_PERMISSION_BUBBLE_REQUEST_H_
 
 #include "base/strings/string16.h"
+#include "content/public/browser/permission_type.h"
 #include "url/gurl.h"
 
 namespace gfx {
@@ -22,11 +23,16 @@ enum class VectorIconId;
 enum class PermissionBubbleType {
   UNKNOWN,
   MULTIPLE,
-  PERMISSION,
+  UNUSED_PERMISSION,
   QUOTA,
   DOWNLOAD,
   MEDIA_STREAM,
   REGISTER_PROTOCOL_HANDLER,
+  PERMISSION_GEOLOCATION,
+  PERMISSION_MIDI_SYSEX,
+  PERMISSION_NOTIFICATIONS,
+  PERMISSION_PROTECTED_MEDIA_IDENTIFIER,
+  PERMISSION_PUSH_MESSAGING,
   // NUM must be the last value in the enum.
   NUM
 };
@@ -82,6 +88,7 @@ class PermissionBubbleRequest {
   // eventually be called on every request which is not unregistered.
   virtual void RequestFinished() = 0;
 
+  // Used to record UMA metrics for bubbles.
   virtual PermissionBubbleType GetPermissionBubbleType() const;
 };
 
