@@ -995,9 +995,9 @@ IN_PROC_BROWSER_TEST_F(WebViewPopupInteractiveTest,
   // make sure we keep rendering popups correct in webview.
 }
 
-// Flaky on ChromeOS: http://crbug.com/526886
-// Causes problems on windows: http://crbug.com/544037
-#if defined(OS_CHROMEOS) || defined(OS_WIN)
+// Flaky on ChromeOS and Linux: http://crbug.com/526886
+// Causes problems on windows: http://crbug.com/544998
+#if defined(OS_CHROMEOS) || defined(OS_WIN) || defined(OS_LINUX)
 #define MAYBE_PopupPositioningMoved DISABLED_PopupPositioningMoved
 #else
 #define MAYBE_PopupPositioningMoved PopupPositioningMoved
