@@ -464,7 +464,6 @@ Background.prototype = {
           current = cursors.Range.fromNode(node);
         break;
       case 'forceClickOnCurrentItem':
-      case 'performDefaultAction':
         if (this.currentRange_) {
           var actionNode = this.currentRange_.start.node;
           if (actionNode.role == RoleType.inlineTextBox)

@@ -270,7 +270,7 @@
       }
     },
     {
-      "command": "performDefaultAction",
+      "command": "forceClickOnCurrentItem",
       "sequence": {
         "cvoxModifier": true,
         "keys": {
