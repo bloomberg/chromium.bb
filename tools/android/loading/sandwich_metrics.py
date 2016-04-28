@@ -43,6 +43,8 @@ CSV_FIELD_NAMES = [
     'net_emul.upload',
     'net_emul.latency']
 
+_UNAVAILABLE_CSV_VALUE = 'unavailable'
+
 _TRACKED_EVENT_NAMES = set(['requestStart', 'loadEventStart', 'loadEventEnd'])
 
 # Points of a completeness record.
@@ -81,6 +83,7 @@ def _GetBrowserDumpEvents(tracing_track):
   Returns:
     List of memory dump events.
   """
+  assert sandwich_runner.MEMORY_DUMP_CATEGORY in tracing_track.Categories()
   browser_pid = _GetBrowserPID(tracing_track)
   browser_dumps_events = []
   for event in tracing_track.GetEvents():
@@ -130,8 +133,8 @@ def _GetWebPageTrackedEvents(tracing_track):
   return tracked_events
 
 
-def _ExtractMetricsFromLoadingTrace(loading_trace):
-  """Pulls all the metrics from a given trace.
+def _ExtractDefaultMetrics(loading_trace):
+  """Extracts all the default metrics from a given trace.
 
   Args:
     loading_trace: loading_trace_module.LoadingTrace.
@@ -139,15 +142,32 @@ def _ExtractMetricsFromLoadingTrace(loading_trace):
   Returns:
     Dictionary with all trace extracted fields set.
   """
-  assert all(
-      cat in loading_trace.tracing_track.Categories()
-      for cat in sandwich_runner.ADDITIONAL_CATEGORIES), (
-          'This trace was not generated with the required set of categories '
-          'to be processed by this script.')
-  browser_dump_events = _GetBrowserDumpEvents(loading_trace.tracing_track)
   web_page_tracked_events = _GetWebPageTrackedEvents(
       loading_trace.tracing_track)
+  return {
+    'total_load': (web_page_tracked_events['loadEventEnd'].start_msec -
+                   web_page_tracked_events['requestStart'].start_msec),
+    'js_onload_event': (web_page_tracked_events['loadEventEnd'].start_msec -
+                        web_page_tracked_events['loadEventStart'].start_msec)
+  }
 
+
+def _ExtractMemoryMetrics(loading_trace):
+  """Extracts all the memory metrics from a given trace.
+
+  Args:
+    loading_trace: loading_trace_module.LoadingTrace.
+
+  Returns:
+    Dictionary with all trace extracted fields set.
+  """
+  if (sandwich_runner.MEMORY_DUMP_CATEGORY not in
+          loading_trace.tracing_track.Categories()):
+    return {
+      'browser_malloc_avg': _UNAVAILABLE_CSV_VALUE,
+      'browser_malloc_max': _UNAVAILABLE_CSV_VALUE
+    }
+  browser_dump_events = _GetBrowserDumpEvents(loading_trace.tracing_track)
   browser_malloc_sum = 0
   browser_malloc_max = 0
   for dump_event in browser_dump_events:
@@ -156,12 +176,7 @@ def _ExtractMetricsFromLoadingTrace(loading_trace):
     size = int(attr['value'], 16)
     browser_malloc_sum += size
     browser_malloc_max = max(browser_malloc_max, size)
-
   return {
-    'total_load': (web_page_tracked_events['loadEventEnd'].start_msec -
-                   web_page_tracked_events['requestStart'].start_msec),
-    'js_onload_event': (web_page_tracked_events['loadEventEnd'].start_msec -
-                        web_page_tracked_events['loadEventStart'].start_msec),
     'browser_malloc_avg': browser_malloc_sum / float(len(browser_dump_events)),
     'browser_malloc_max': browser_malloc_max
   }
@@ -239,14 +254,15 @@ def _ExtractMetricsFromRunDirectory(run_directory_path):
   logging.info('processing trace \'%s\'' % trace_path)
   loading_trace = loading_trace_module.LoadingTrace.FromJsonFile(trace_path)
   run_metrics = {'url': loading_trace.url}
-  run_metrics.update(_ExtractMetricsFromLoadingTrace(loading_trace))
+  run_metrics.update(_ExtractDefaultMetrics(loading_trace))
+  run_metrics.update(_ExtractMemoryMetrics(loading_trace))
   video_path = os.path.join(run_directory_path, 'video.mp4')
   if os.path.isfile(video_path):
     logging.info('processing speed-index video \'%s\'' % video_path)
     completeness_record = _ExtractCompletenessRecordFromVideo(video_path)
     run_metrics['speed_index'] = ComputeSpeedIndex(completeness_record)
   else:
-    run_metrics['speed_index'] = 'disabled'
+    run_metrics['speed_index'] = _UNAVAILABLE_CSV_VALUE
   for key, value in loading_trace.metadata['network_emulation'].iteritems():
     run_metrics['net_emul.' + key] = value
   return run_metrics

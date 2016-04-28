@@ -26,9 +26,8 @@ import loading_trace
 TRACE_FILENAME = 'trace.json'
 VIDEO_FILENAME = 'video.mp4'
 
-# List of selected trace event categories when running chrome.
-ADDITIONAL_CATEGORIES = (
-    'disabled-by-default-memory-infra',)  # Used by _GetBrowserDumpEvents()
+# Memory dump category used to get memory metrics.
+MEMORY_DUMP_CATEGORY = 'disabled-by-default-memory-infra'
 
 _JOB_SEARCH_PATH = 'sandwich_jobs'
 
@@ -124,6 +123,9 @@ class SandwichRunner(object):
     # Configures whether to record speed-index video.
     self.record_video = False
 
+    # Configures whether to record memory dumps.
+    self.record_memory_dumps = False
+
     # Path to the WPR archive to load or save. Is str or None.
     self.wpr_archive_path = None
 
@@ -189,13 +191,17 @@ class SandwichRunner(object):
         os.makedirs(run_path)
     self._chrome_ctl.SetNetworkEmulation(
         self._GetEmulatorNetworkCondition('browser'))
+    additional_categories = []
+    if self.record_memory_dumps:
+      additional_categories = [MEMORY_DUMP_CATEGORY]
     # TODO(gabadie): add a way to avoid recording a trace.
     with self._chrome_ctl.Open() as connection:
       if clear_cache:
         connection.ClearCache()
       if run_path is not None and self.record_video:
         device = self._chrome_ctl.GetDevice()
-        assert device, 'Can only record video on a remote device.'
+        if device is None:
+          raise RuntimeError('Can only record video on a remote device.')
         video_recording_path = os.path.join(run_path, VIDEO_FILENAME)
         with device_setup.RemoteSpeedIndexRecorder(device, connection,
                                                    video_recording_path):
@@ -203,14 +209,14 @@ class SandwichRunner(object):
               url=url,
               connection=connection,
               chrome_metadata=self._chrome_ctl.ChromeMetadata(),
-              additional_categories=ADDITIONAL_CATEGORIES,
+              additional_categories=additional_categories,
               timeout_seconds=_DEVTOOLS_TIMEOUT)
       else:
         trace = loading_trace.LoadingTrace.RecordUrlNavigation(
             url=url,
             connection=connection,
             chrome_metadata=self._chrome_ctl.ChromeMetadata(),
-            additional_categories=ADDITIONAL_CATEGORIES,
+            additional_categories=additional_categories,
             timeout_seconds=_DEVTOOLS_TIMEOUT)
     if run_path is not None:
       trace_path = os.path.join(run_path, TRACE_FILENAME)

@@ -37,7 +37,7 @@ class SandwichTaskBuilder(task_manager.Builder):
   """A builder for a graph of tasks, each prepares or invokes a SandwichRunner.
   """
 
-  def __init__(self, output_directory, android_device, job_path, url_repeat):
+  def __init__(self, output_directory, android_device, job_path):
     """Constructor.
 
     Args:
@@ -45,13 +45,10 @@ class SandwichTaskBuilder(task_manager.Builder):
       android_device: The android DeviceUtils to run sandwich on or None to run
         it locally.
       job_path: Path of the sandwich's job.
-      url_repeat: Non null integer controlling how many times the URLs should be
-        repeated in the benchmarks.
     """
     task_manager.Builder.__init__(self, output_directory)
     self._android_device = android_device
     self._job_path = job_path
-    self._url_repeat = url_repeat
     self._default_final_tasks = []
 
     self._original_wpr_task = None
@@ -159,20 +156,20 @@ class SandwichTaskBuilder(task_manager.Builder):
     return ValidateReferenceCache
 
   def PopulateLoadBenchmark(self, subresource_discoverer,
-                            runner_transformer_name, runner_transformer):
+                            transformer_list_name, transformer_list):
     """Populate benchmarking tasks from its setup tasks.
 
     Args:
       subresource_discoverer: Name of a subresources discoverer.
-      runner_transformer: A function that takes an instance of SandwichRunner as
-          parameter, would be applied immediately before SandwichRunner.Run().
-      runner_transformer_name: Name of the runner transformer used to generate
-          task names.
-      benchmark_name: The benchmark's name for that runner modifier.
+      transformer_list_name: A string describing the transformers, will be used
+          in Task names (prefer names without spaces and special characters).
+      transformer_list: An ordered list of function that takes an instance of
+          SandwichRunner as parameter, would be applied immediately before
+          SandwichRunner.Run() in the given order.
 
     Here is the full dependency of the added tree for the returned task:
-    <runner_transformer_name>/<subresource_discoverer>-metrics.csv
-      depends on: <runner_transformer_name>/<subresource_discoverer>-run/
+    <transformer_list_name>/<subresource_discoverer>-metrics.csv
+      depends on: <transformer_list_name>/<subresource_discoverer>-run/
         depends on: common/<subresource_discoverer>-cache.zip
           depends on: some tasks saved by PopulateCommonPipelines()
           depends on: common/<subresource_discoverer>-setup.json
@@ -180,12 +177,12 @@ class SandwichTaskBuilder(task_manager.Builder):
 
     Returns:
       task_manager.Task for
-          <runner_transformer_name>/<subresource_discoverer>-metrics.csv
+          <transformer_list_name>/<subresource_discoverer>-metrics.csv
     """
     assert subresource_discoverer in sandwich_misc.SUBRESOURCE_DISCOVERERS
     assert 'common' not in sandwich_misc.SUBRESOURCE_DISCOVERERS
     shared_task_prefix = os.path.join('common', subresource_discoverer)
-    task_prefix = os.path.join(runner_transformer_name, subresource_discoverer)
+    task_prefix = os.path.join(transformer_list_name, subresource_discoverer)
 
     @self.RegisterTask(shared_task_prefix + '-setup.json', merge=True,
                        dependencies=[self._subresources_for_urls_task])
@@ -221,9 +218,8 @@ class SandwichTaskBuilder(task_manager.Builder):
                        dependencies=[BuildBenchmarkCacheArchive])
     def RunBenchmark():
       runner = self._CreateSandwichRunner()
-      # runner.record_video = True
-      runner.job_repeat = self._url_repeat
-      runner_transformer(runner)
+      for transformer in transformer_list:
+        transformer(runner)
       runner.wpr_archive_path = self._patched_wpr_task.path
       runner.wpr_out_log_path = os.path.join(RunBenchmark.path, 'wpr.log')
       runner.cache_archive_path = BuildBenchmarkCacheArchive.path

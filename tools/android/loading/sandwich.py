@@ -44,6 +44,9 @@ from trace_test.webserver_test import WebServer
 # Use options layer to access constants.
 OPTIONS = options.OPTIONS
 
+_SPEED_INDEX_MEASUREMENT = 'speed-index'
+_MEMORY_MEASUREMENT = 'memory'
+
 
 def _ArgumentParser():
   """Build a command line argument's parser."""
@@ -179,6 +182,9 @@ def _ArgumentParser():
                        parents=[common_job_parser, task_parser],
                        help='Run all steps using the task manager '
                             'infrastructure.')
+  run_all.add_argument('-m', '--measure', default=[], dest='optional_measures',
+                       choices=[_SPEED_INDEX_MEASUREMENT, _MEMORY_MEASUREMENT],
+                       nargs='+', help='Enable optional measurements.')
   run_all.add_argument('-g', '--gen-full', action='store_true',
                        help='Generate the full graph with all possible'
                             'benchmarks.')
@@ -281,31 +287,37 @@ def _RunAllMain(args):
   builder = sandwich_task_builder.SandwichTaskBuilder(
       output_directory=args.output,
       android_device=android_device,
-      job_path=args.job,
-      url_repeat=args.url_repeat)
+      job_path=args.job)
   if args.wpr_archive_path:
     builder.OverridePathToWprArchive(args.wpr_archive_path)
   else:
     builder.PopulateWprRecordingTask()
   builder.PopulateCommonPipelines()
 
-  runner_transformer_name = 'no-network-emulation'
-  runner_transformer = lambda arg: None
+  def MainTransformer(runner):
+    runner.record_video = _SPEED_INDEX_MEASUREMENT in args.optional_measures
+    runner.record_memory_dumps = _MEMORY_MEASUREMENT in args.optional_measures
+    runner.job_repeat = args.url_repeat
+
+  transformer_list_name = 'no-network-emulation'
   builder.PopulateLoadBenchmark(sandwich_misc.EMPTY_CACHE_DISCOVERER,
-                                runner_transformer_name, runner_transformer)
+                                transformer_list_name,
+                                transformer_list=[MainTransformer])
   builder.PopulateLoadBenchmark(sandwich_misc.FULL_CACHE_DISCOVERER,
-                                runner_transformer_name, runner_transformer)
+                                transformer_list_name,
+                                transformer_list=[MainTransformer])
 
   if args.gen_full:
-    for subresource_discoverer in sandwich_misc.SUBRESOURCE_DISCOVERERS:
-      if subresource_discoverer == sandwich_misc.FULL_CACHE_DISCOVERER:
-        continue
-      for network_condition in ['Regular4G', 'Regular3G', 'Regular2G']:
-        runner_transformer_name = network_condition.lower()
-        runner_transformer = sandwich_task_builder.NetworkSimulationTransformer(
-            network_condition)
-        builder.PopulateLoadBenchmark(
-            subresource_discoverer, runner_transformer_name, runner_transformer)
+    for network_condition in ['Regular4G', 'Regular3G', 'Regular2G']:
+      transformer_list_name = network_condition.lower()
+      network_transformer = \
+          sandwich_task_builder.NetworkSimulationTransformer(network_condition)
+      transformer_list = [MainTransformer, network_transformer]
+      for subresource_discoverer in sandwich_misc.SUBRESOURCE_DISCOVERERS:
+        if subresource_discoverer == sandwich_misc.FULL_CACHE_DISCOVERER:
+          continue
+        builder.PopulateLoadBenchmark(subresource_discoverer,
+            transformer_list_name, transformer_list)
 
   return task_manager.ExecuteWithCommandLine(
       args, builder.tasks.values(), builder.default_final_tasks)
