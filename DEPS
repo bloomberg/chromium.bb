@@ -8,14 +8,14 @@ vars = {
   # directories contain commits at each revision, you will need to select
   # revisions at latest revision up to a high watermark from each slice.
   # Document the high watermark here:
-  # chrome_rev: 381328
-  "build_rev": "805c57fe6472a128c2cf511d5d35825dcdcdd467", # from cr commit position 381323
-  "build_overrides_rev": "7ae8b951d779566018520c1849537102cebb84ab", # from cr commit position 377770
+  # chrome_rev: 390457
+  "build_rev": "10ea72091524e848511f0ad4729fd647526355fa", # from cr commit position 390424
+  "build_overrides_rev": "bab0eea0cf5f7ae68b661eacd8b9c792bf19e8ae", # from cr commit position 390448
   "binutils_rev": "3a125b5a41761bc85d71aa4a478f88d667712267", # from cr commit position 378721
   "libcxx_static_rev": "fd8f9a82862aa40dab0c5bcdea6e498715284f5a", # from cr commit position 369150
   # NOTE: be sure to update clang_lib_version in SConstruct whenever
   # updating this clang_rev (e.g., if LLVM changes from version 3.7 to 3.8).
-  "clang_rev": "c642451e861b9c568967fb8e4d9d3fd081699162", # from cr commit position 380953
+  "clang_rev": "e18fbfd9a57db60c8667acfc60f5296337c7f4ab", # from cr commit position 390421
 
   # NOTE!  These five should be kept up to date with their counterparts in
   # chromium/src/DEPS.
@@ -24,12 +24,12 @@ vars = {
   # in the build that goes into Chromium.  But we might as well update it too.)
   # You should now use the roll-dep script in depot_tools to do this update.
   "gtest_rev": "6f8a66431cb592dad629028a50b3dd418a408c87",
-  "gyp_rev": "61259d585ce99d9de8b35188cd0025bdbcb58411",
+  "gyp_rev": "4cf07e8d616739f6484e46c9359b2a35196b2585",
   "breakpad_rev": "a4eb2e302cefff9908ec955e761fef5d813d1b00", # from svn revision 1416
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling build tools
   # and whatever else without interference from each other.
-  'buildtools_revision': '7274f1c726640bce4cd4c4198e1ee62a0b29bb89',
+  'buildtools_revision': 'cdbd50759bf2289d2c9d3f1f7d02239b4b4b1209',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling lss
   # and whatever else without interference from each other.
@@ -241,7 +241,7 @@ hooks = [
   ### End of clauses copied (almost verbatim) from chromium/src/DEPS.
   ###
 
-  # Pull NaCl Toolchain binaries. This needs to be before running GYP below.
+  # Pull NaCl Toolchain binaries.
   {
     "pattern": ".",
     "action": ["python",

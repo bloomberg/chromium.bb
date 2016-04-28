@@ -79,6 +79,10 @@ def SetupWindowsEnvironment(context):
   # Poke around looking for MSVC.  We should do something more principled in
   # the future.
 
+  # NOTE!  This affects only SCons.  The GN build figures out MSVC on its own
+  # and will wind up with a different version than this one (the same version
+  # being used for Chromium builds).
+
   # The name of Program Files can differ, depending on the bittage of Windows.
   program_files = r'c:\Program Files (x86)'
   if not os.path.exists(program_files):
@@ -96,7 +100,6 @@ def SetupWindowsEnvironment(context):
 
   for dirname, comntools_var, gyp_msvs_version in msvc_locs:
     msvc = os.path.join(program_files, dirname)
-    context.SetEnv('GYP_MSVS_VERSION', gyp_msvs_version)
     if os.path.exists(msvc):
       break
   else:
