@@ -48,14 +48,6 @@ void BeginFrameObserverBase::OnBeginFrame(const BeginFrameArgs& args) {
   }
 }
 
-void BeginFrameObserverBase::AsValueInto(
-    base::trace_event::TracedValue* dict) const {
-  dict->BeginDictionary("last_begin_frame_args_");
-  last_begin_frame_args_.AsValueInto(dict);
-  dict->EndDictionary();
-  dict->SetInteger("dropped_begin_frame_args_", dropped_begin_frame_args_);
-}
-
 // BeginFrameSourceBase ------------------------------------------------------
 BeginFrameSourceBase::BeginFrameSourceBase()
     : paused_(false), inside_as_value_into_(false) {}
@@ -101,29 +93,6 @@ void BeginFrameSourceBase::SetBeginFrameSourcePaused(bool paused) {
   std::set<BeginFrameObserver*> observers(observers_);
   for (BeginFrameObserver* obs : observers)
     obs->OnBeginFrameSourcePausedChanged(paused_);
-}
-
-// Tracing support
-void BeginFrameSourceBase::AsValueInto(
-    base::trace_event::TracedValue* dict) const {
-  // As the observer might try to trace the source, prevent an infinte loop
-  // from occuring.
-  if (inside_as_value_into_) {
-    dict->SetString("observer", "<loop detected>");
-    return;
-  }
-
-  {
-    base::AutoReset<bool> prevent_loops(
-        const_cast<bool*>(&inside_as_value_into_), true);
-    dict->BeginArray("observers");
-    for (const BeginFrameObserver* obs : observers_) {
-      dict->BeginDictionary();
-      obs->AsValueInto(dict);
-      dict->EndDictionary();
-    }
-    dict->EndArray();
-  }
 }
 
 // BackToBackBeginFrameSource --------------------------------------------
@@ -190,13 +159,6 @@ void BackToBackBeginFrameSource::SendPendingBeginFrames() {
     obs->OnBeginFrame(args);
 }
 
-// Tracing support
-void BackToBackBeginFrameSource::AsValueInto(
-    base::trace_event::TracedValue* dict) const {
-  dict->SetString("type", "BackToBackBeginFrameSource");
-  BeginFrameSourceBase::AsValueInto(dict);
-}
-
 // SyntheticBeginFrameSource ---------------------------------------------
 SyntheticBeginFrameSource::SyntheticBeginFrameSource(
     base::SingleThreadTaskRunner* task_runner,
@@ -260,17 +222,6 @@ void SyntheticBeginFrameSource::OnTimerTick() {
       it->OnBeginFrame(args);
     }
   }
-}
-
-// Tracing support
-void SyntheticBeginFrameSource::AsValueInto(
-    base::trace_event::TracedValue* dict) const {
-  dict->SetString("type", "SyntheticBeginFrameSource");
-  BeginFrameSourceBase::AsValueInto(dict);
-
-  dict->BeginDictionary("time_source");
-  time_source_->AsValueInto(dict);
-  dict->EndDictionary();
 }
 
 }  // namespace cc

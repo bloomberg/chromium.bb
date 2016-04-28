@@ -61,9 +61,6 @@ class CC_EXPORT BeginFrameObserver {
   virtual const BeginFrameArgs& LastUsedBeginFrameArgs() const = 0;
 
   virtual void OnBeginFrameSourcePausedChanged(bool paused) = 0;
-
-  // Tracing support
-  virtual void AsValueInto(base::trace_event::TracedValue* dict) const = 0;
 };
 
 // Simple base class which implements a BeginFrameObserver which checks the
@@ -86,9 +83,6 @@ class CC_EXPORT BeginFrameObserverBase : public BeginFrameObserver {
   // true.
   void OnBeginFrame(const BeginFrameArgs& args) override;
   const BeginFrameArgs& LastUsedBeginFrameArgs() const override;
-
-  // Outputs last_begin_frame_args_
-  void AsValueInto(base::trace_event::TracedValue* dict) const override;
 
  protected:
   // Subclasses should override this method!
@@ -126,10 +120,6 @@ class CC_EXPORT BeginFrameSource {
   // should shut down its timers, disable vsync, etc.
   virtual void AddObserver(BeginFrameObserver* obs) = 0;
   virtual void RemoveObserver(BeginFrameObserver* obs) = 0;
-
-  // Tracing support - Recommend (but not required) to call this implementation
-  // in any override.
-  virtual void AsValueInto(base::trace_event::TracedValue* dict) const = 0;
 };
 
 // Simple base class which implements a BeginFrameSource.
@@ -137,8 +127,6 @@ class CC_EXPORT BeginFrameSource {
 //  - Implement the pure virtual (Set)NeedsBeginFrames methods from
 //    BeginFrameSource.
 //  - Use the CallOnBeginFrame method to call to the observer(s).
-//  - Recommended (but not required) to call BeginFrameSourceBase::AsValueInto
-//    in their own AsValueInto implementation.
 class CC_EXPORT BeginFrameSourceBase : public BeginFrameSource {
  public:
   ~BeginFrameSourceBase() override;
@@ -148,10 +136,6 @@ class CC_EXPORT BeginFrameSourceBase : public BeginFrameSource {
                       size_t remaining_frames) override {}
   void AddObserver(BeginFrameObserver* obs) override;
   void RemoveObserver(BeginFrameObserver* obs) override;
-
-  // Tracing support - Recommend (but not required) to call this implementation
-  // in any override.
-  void AsValueInto(base::trace_event::TracedValue* dict) const override;
 
  protected:
   BeginFrameSourceBase();
@@ -190,9 +174,6 @@ class CC_EXPORT BackToBackBeginFrameSource : public BeginFrameSourceBase {
   void DidFinishFrame(BeginFrameObserver* obs,
                       size_t remaining_frames) override;
 
-  // Tracing
-  void AsValueInto(base::trace_event::TracedValue* dict) const override;
-
  protected:
   virtual base::TimeTicks Now();  // Now overridable for testing
 
@@ -226,9 +207,6 @@ class CC_EXPORT SyntheticBeginFrameSource : public BeginFrameSourceBase,
   // BeginFrameSourceBase
   void AddObserver(BeginFrameObserver* obs) override;
   void OnNeedsBeginFramesChanged(bool needs_begin_frames) override;
-
-  // Tracing
-  void AsValueInto(base::trace_event::TracedValue* dict) const override;
 
   // DelayBasedTimeSourceClient
   void OnTimerTick() override;

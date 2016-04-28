@@ -42,12 +42,6 @@ FakeBeginFrameSource::FakeBeginFrameSource() {}
 
 FakeBeginFrameSource::~FakeBeginFrameSource() {}
 
-void FakeBeginFrameSource::AsValueInto(
-    base::trace_event::TracedValue* dict) const {
-  dict->SetString("type", "FakeBeginFrameSource");
-  BeginFrameSourceBase::AsValueInto(dict);
-}
-
 TestBackToBackBeginFrameSource::TestBackToBackBeginFrameSource(
     base::SimpleTestTickClock* now_src,
     base::SingleThreadTaskRunner* task_runner)
