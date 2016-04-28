@@ -164,6 +164,15 @@ TEST_F(ArcPolicyBridgeTest, DefaultGeolocationSettingTest) {
       PolicyStringCallback("{\"shareLocationDisabled\":false}"));
 }
 
+TEST_F(ArcPolicyBridgeTest, ExternalStorageDisabledTest) {
+  policy_map().Set(policy::key::kExternalStorageDisabled,
+                   policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+                   policy::POLICY_SOURCE_CLOUD,
+                   new base::FundamentalValue(true), nullptr);
+  policy_bridge()->GetPolicies(
+      PolicyStringCallback("{\"usbFileTransferDisabled\":true}"));
+}
+
 TEST_F(ArcPolicyBridgeTest, URLBlacklistTest) {
   base::ListValue blacklist;
   blacklist.Append(new base::StringValue("www.blacklist1.com"));
