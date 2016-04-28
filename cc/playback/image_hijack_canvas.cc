@@ -4,9 +4,9 @@
 
 #include "cc/playback/image_hijack_canvas.h"
 
+#include "base/optional.h"
 #include "cc/playback/discardable_image_map.h"
 #include "cc/tiles/image_decode_controller.h"
-#include "third_party/skia/include/core/SkTLazy.h"
 
 namespace cc {
 namespace {
@@ -32,9 +32,10 @@ class ScopedDecodedImageLock {
         decoded_draw_image_(
             image_decode_controller_->GetDecodedImageForDraw(draw_image_)) {
     DCHECK(draw_image_.image()->isLazyGenerated());
-    if (paint)
-      decoded_paint_.set(*paint)->setFilterQuality(
-          decoded_draw_image_.filter_quality());
+    if (paint) {
+      decoded_paint_ = *paint;
+      decoded_paint_->setFilterQuality(decoded_draw_image_.filter_quality());
+    }
   }
 
   ~ScopedDecodedImageLock() {
@@ -43,14 +44,15 @@ class ScopedDecodedImageLock {
   }
 
   const DecodedDrawImage& decoded_image() const { return decoded_draw_image_; }
-  const SkPaint* decoded_paint() const { return decoded_paint_.getMaybeNull(); }
+  const SkPaint* decoded_paint() const {
+    return decoded_paint_ ? &decoded_paint_.value() : nullptr;
+  }
 
  private:
   ImageDecodeController* image_decode_controller_;
   DrawImage draw_image_;
   DecodedDrawImage decoded_draw_image_;
-  // TODO(fmalita): use base::Optional when it becomes available
-  SkTLazy<SkPaint> decoded_paint_;
+  base::Optional<SkPaint> decoded_paint_;
 };
 
 }  // namespace

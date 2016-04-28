@@ -18,7 +18,6 @@
 #include "skia/ext/analysis_canvas.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
-#include "third_party/skia/include/core/SkTLazy.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
 namespace cc {

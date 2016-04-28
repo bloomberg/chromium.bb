@@ -18,7 +18,6 @@
 #include "third_party/skia/include/core/SkRRect.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "third_party/skia/include/core/SkString.h"
-#include "third_party/skia/include/core/SkTLazy.h"
 #include "third_party/skia/include/core/SkTextBlob.h"
 #include "third_party/skia/include/core/SkXfermode.h"
 
@@ -453,14 +452,13 @@ namespace skia {
 
 class BenchmarkingCanvas::AutoOp {
 public:
+  // AutoOp objects are always scoped within draw call frames,
+  // so the paint is guaranteed to be valid for their lifetime.
   AutoOp(BenchmarkingCanvas* canvas, const char op_name[],
          const SkPaint* paint = nullptr)
       : canvas_(canvas)
       , op_record_(new base::DictionaryValue())
-      , op_params_(new base::ListValue())
-      // AutoOp objects are always scoped within draw call frames,
-      // so the paint is guaranteed to be valid for their lifetime.
-      , paint_(paint) {
+      , op_params_(new base::ListValue()) {
 
     DCHECK(canvas);
     DCHECK(op_name);
@@ -468,15 +466,16 @@ public:
     op_record_->SetString("cmd_string", op_name);
     op_record_->Set("info", op_params_);
 
-    if (paint)
+    if (paint) {
       this->addParam("paint", AsValue(*paint));
+      filtered_paint_ = *paint;
+    }
 
     if (canvas->flags_ & kOverdrawVisualization_Flag) {
       DCHECK(canvas->overdraw_xfermode_);
 
-      paint_ = paint ? filtered_paint_.set(*paint) : filtered_paint_.init();
-      filtered_paint_.get()->setXfermode(canvas->overdraw_xfermode_);
-      filtered_paint_.get()->setAntiAlias(false);
+      filtered_paint_.setXfermode(canvas->overdraw_xfermode_);
+      filtered_paint_.setAntiAlias(false);
     }
 
     start_ticks_ = base::TimeTicks::Now();
@@ -496,7 +495,7 @@ public:
     op_params_->Append(param.release());
   }
 
-  const SkPaint* paint() const { return paint_; }
+  const SkPaint* paint() const { return &filtered_paint_; }
 
 private:
   BenchmarkingCanvas* canvas_;
@@ -504,8 +503,7 @@ private:
   base::ListValue* op_params_;
   base::TimeTicks start_ticks_;
 
-  const SkPaint* paint_;
-  SkTLazy<SkPaint> filtered_paint_;
+  SkPaint filtered_paint_;
 };
 
 BenchmarkingCanvas::BenchmarkingCanvas(SkCanvas* canvas, unsigned flags)
