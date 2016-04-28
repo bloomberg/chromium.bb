@@ -2443,17 +2443,13 @@ void BrowserView::UpdateAcceleratorMetrics(const ui::Accelerator& accelerator,
   // on Chrome OS.
   switch (command_id) {
     case IDC_BACK:
-      if (key_code == ui::VKEY_BACK)
-        content::RecordAction(UserMetricsAction("Accel_Back_Backspace"));
-      else if (key_code == ui::VKEY_BROWSER_BACK)
+      if (key_code == ui::VKEY_BROWSER_BACK)
         content::RecordAction(UserMetricsAction("Accel_Back_F1"));
       else if (key_code == ui::VKEY_LEFT)
         content::RecordAction(UserMetricsAction("Accel_Back_Left"));
       break;
     case IDC_FORWARD:
-      if (key_code == ui::VKEY_BACK)
-        content::RecordAction(UserMetricsAction("Accel_Forward_Backspace"));
-      else if (key_code == ui::VKEY_BROWSER_FORWARD)
+      if (key_code == ui::VKEY_BROWSER_FORWARD)
         content::RecordAction(UserMetricsAction("Accel_Forward_F2"));
       else if (key_code == ui::VKEY_RIGHT)
         content::RecordAction(UserMetricsAction("Accel_Forward_Right"));

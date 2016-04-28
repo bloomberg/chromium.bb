@@ -35,7 +35,6 @@ const ui::EventFlags kPlatformModifier = ui::EF_CONTROL_DOWN;
 // http://blogs.msdn.com/b/oldnewthing/archive/2004/03/29/101121.aspx
 const AcceleratorMapping kAcceleratorMap[] = {
   { ui::VKEY_LEFT, ui::EF_ALT_DOWN, IDC_BACK },
-  { ui::VKEY_BACK, ui::EF_NONE, IDC_BACK },
   { ui::VKEY_D, ui::EF_CONTROL_DOWN, IDC_BOOKMARK_PAGE },
   { ui::VKEY_D, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
     IDC_BOOKMARK_ALL_TABS },
@@ -52,7 +51,6 @@ const AcceleratorMapping kAcceleratorMap[] = {
   { ui::VKEY_B, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, IDC_FOCUS_BOOKMARKS },
   { ui::VKEY_A, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, IDC_FOCUS_INFOBARS },
   { ui::VKEY_RIGHT, ui::EF_ALT_DOWN, IDC_FORWARD },
-  { ui::VKEY_BACK, ui::EF_SHIFT_DOWN, IDC_FORWARD },
   { ui::VKEY_I, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, IDC_DEV_TOOLS },
   { ui::VKEY_F12, ui::EF_NONE, IDC_DEV_TOOLS_TOGGLE },
   { ui::VKEY_J, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,

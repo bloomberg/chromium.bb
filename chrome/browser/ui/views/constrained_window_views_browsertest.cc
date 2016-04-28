@@ -168,32 +168,6 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, TabMoveTest) {
   EXPECT_EQ(NULL, dialog->GetWidget());
 }
 
-// Tests that the web contents navigates when backspace is pressed.
-IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, NavigationOnBackspace) {
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  content::WaitForLoadStop(web_contents);
-  const GURL original_url = web_contents->GetURL();
-  EXPECT_NE(GURL(chrome::kChromeUIVersionURL), original_url);
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIVersionURL));
-  content::WaitForLoadStop(web_contents);
-  EXPECT_EQ(GURL(chrome::kChromeUIVersionURL), web_contents->GetURL());
-
-  std::unique_ptr<TestDialog> dialog = ShowModalDialog(web_contents);
-  EXPECT_TRUE(dialog->GetWidget()->IsVisible());
-  EXPECT_EQ(dialog->GetContentsView(),
-            dialog->GetWidget()->GetFocusManager()->GetFocusedView());
-
-  // Pressing backspace should navigate back and close the dialog.
-  EXPECT_TRUE(chrome::CanGoBack(browser()));
-  EXPECT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_BACK,
-                                              false, false, false, false));
-  content::RunAllPendingInMessageLoop();
-  content::WaitForLoadStop(web_contents);
-  EXPECT_EQ(NULL, dialog->GetWidget());
-  EXPECT_EQ(original_url, web_contents->GetURL());
-}
-
 // Tests that the dialog closes when the escape key is pressed.
 IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, ClosesOnEscape) {
 #if defined(OS_WIN)

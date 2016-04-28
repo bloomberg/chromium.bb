@@ -29,13 +29,11 @@ TEST(GlobalKeyboardShortcuts, ShortcutsToWindowCommand) {
     EXPECT_EQ(cmd_num, it->chrome_command);
   }
 
-  // Test that cmd-left and backspace are not window-level commands (else they
-  // would be invoked even if e.g. the omnibox had focus, where they really
+  // Test that cmd-left is not a window-level command (else it
+  // would be invoked even if e.g. the omnibox had focus, where it really
   // should have text editing functionality).
   EXPECT_EQ(-1, CommandForWindowKeyboardShortcut(
       true, false, false, false, kVK_LeftArrow, 0));
-  EXPECT_EQ(-1, CommandForWindowKeyboardShortcut(
-      false, false, false, false, kVK_Delete, 0));
 
   // Test that Cmd-'{' and Cmd-'}' are interpreted as IDC_SELECT_NEXT_TAB
   // and IDC_SELECT_PREVIOUS_TAB regardless of the virtual key code values.
