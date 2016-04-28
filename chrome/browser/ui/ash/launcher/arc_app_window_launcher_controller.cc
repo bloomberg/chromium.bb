@@ -280,6 +280,11 @@ void ArcAppWindowLauncherController::OnTaskSetActive(int32_t task_id) {
   TaskIdToAppWindow::iterator new_active_app_it =
       task_id_to_app_window_.find(active_task_id_);
   if (new_active_app_it != task_id_to_app_window_.end()) {
+    // Activate root Arc widget if active task has been changed. This can be
+    // due creating of the new Arc app or bringing an existing app to the front.
+    if (new_active_app_it != previous_active_app_it && root_widget_)
+      root_widget_->Activate();
+
     owner()->SetItemStatus(new_active_app_it->second->shelf_id(),
                            root_widget_ && root_widget_->IsActive()
                                ? ash::STATUS_ACTIVE
