@@ -14,6 +14,7 @@ from oauth2client.client import GoogleCredentials
 
 from common.clovis_task import ClovisTask
 import common.google_instance_helper
+import email_helper
 from memory_logs import MemoryLogs
 
 
@@ -33,7 +34,7 @@ def Render(message, memory_logs):
       'log.html', body=message, log=memory_logs.Flush().split('\n'))
 
 
-def PollWorkers(tag, start_time, timeout_hours):
+def PollWorkers(tag, start_time, timeout_hours, email_address, task_url):
   """Checks if there are workers associated with tag, by polling the instance
   group. When all workers are finished, the instance group and the instance
   template are destroyed.
@@ -46,10 +47,12 @@ def PollWorkers(tag, start_time, timeout_hours):
     start_time (float): Time when the polling started, as returned by
                         time.time().
     timeout_hours (int): Timeout after which workers are terminated.
+    email_address (str): Email address to notify when the task is complete.
+    task_url (str): URL where the results of the task can be found.
   """
   if (time.time() - start_time) > (3600 * timeout_hours):
     clovis_logger.error('Worker timeout for tag %s, shuting down.' % tag)
-    deferred.defer(DeleteInstanceGroup, tag)
+    Finalize(tag, email_address, 'TIMEOUT', task_url)
     return
 
   clovis_logger.info('Polling workers for tag: ' + tag)
@@ -60,10 +63,26 @@ def PollWorkers(tag, start_time, timeout_hours):
   if live_instance_count > 0 or live_instance_count == -1:
     clovis_logger.info('Retry later, instances still alive for tag: ' + tag)
     poll_interval_minutes = 10
-    deferred.defer(PollWorkers, tag, start_time,
+    deferred.defer(PollWorkers, tag, start_time, email_address, task_url,
                    _countdown=(60 * poll_interval_minutes))
     return
 
+  Finalize(tag, email_address, 'SUCCESS', task_url)
+
+
+def Finalize(tag, email_address, status, task_url):
+  """Cleans up the remaining ComputeEngine resources and notifies the user.
+
+  Args:
+    tag (str): Tag of the task to finalize.
+    email_address (str): Email address of the user to be notified.
+    status (str): Status of the task, indicating the success or the cause of
+                  failure.
+    task_url (str): URL where the results of the task can be found.
+  """
+  email_helper.SendEmailTaskComplete(
+      to_address=email_address, tag=tag, status=status, task_url=task_url,
+      logger=clovis_logger)
   clovis_logger.info('Scheduling instance group destruction for tag: ' + tag)
   deferred.defer(DeleteInstanceGroup, tag)
 
@@ -142,7 +161,11 @@ def StartFromJsonString(http_body_str):
 
   # Split the task in smaller tasks.
   sub_tasks = []
+  task_url = None
   if task.Action() == 'trace':
+    bucket = task.BackendParams().get('storage_bucket')
+    if bucket:
+      task_url = 'https://console.cloud.google.com/storage/' + bucket
     sub_tasks = SplitTraceTask(task)
   else:
     error_string = 'Unsupported action: %s.' % task.Action()
@@ -160,10 +183,14 @@ def StartFromJsonString(http_body_str):
   clovis_logger.info('Creating worker polling task.')
   first_poll_delay_minutes = 10
   timeout_hours = task.BackendParams().get('timeout_hours', 5)
-  deferred.defer(PollWorkers, task_tag, time.time(), timeout_hours,
-                 _countdown=(60 * first_poll_delay_minutes))
+  user_email = email_helper.GetUserEmail()
+  deferred.defer(PollWorkers, task_tag, time.time(), timeout_hours, user_email,
+                 task_url, _countdown=(60 * first_poll_delay_minutes))
 
-  return Render('Success', memory_logs)
+  return Render(flask.Markup(
+      'Success!<br>Your task %s has started.<br>'
+      'You will be notified at %s when completed.') % (task_tag, user_email),
+      memory_logs)
 
 
 def SplitTraceTask(task):
