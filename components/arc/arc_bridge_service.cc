@@ -86,6 +86,8 @@ void ArcBridgeService::AddObserver(Observer* observer) {
     observer->OnProcessInstanceReady();
   if (video_instance())
     observer->OnVideoInstanceReady();
+  if (window_manager_instance())
+    observer->OnWindowManagerInstanceReady();
 }
 
 void ArcBridgeService::RemoveObserver(Observer* observer) {
@@ -466,6 +468,32 @@ void ArcBridgeService::CloseVideoChannel() {
   FOR_EACH_OBSERVER(Observer, observer_list(), OnVideoInstanceClosed());
 }
 
+void ArcBridgeService::OnWindowManagerInstanceReady(
+    mojom::WindowManagerInstancePtr window_manager_ptr) {
+  DCHECK(CalledOnValidThread());
+  temporary_window_manager_ptr_ = std::move(window_manager_ptr);
+  temporary_window_manager_ptr_.QueryVersion(base::Bind(
+      &ArcBridgeService::OnWindowManagerVersionReady,
+      weak_factory_.GetWeakPtr()));
+}
+
+void ArcBridgeService::OnWindowManagerVersionReady(int32_t version) {
+  DCHECK(CalledOnValidThread());
+  window_manager_ptr_ = std::move(temporary_window_manager_ptr_);
+  window_manager_ptr_.set_connection_error_handler(base::Bind(
+      &ArcBridgeService::CloseWindowManagerChannel,
+      weak_factory_.GetWeakPtr()));
+  FOR_EACH_OBSERVER(Observer, observer_list(), OnWindowManagerInstanceReady());
+}
+
+void ArcBridgeService::CloseWindowManagerChannel() {
+  if (!window_manager_ptr_)
+    return;
+
+  window_manager_ptr_.reset();
+  FOR_EACH_OBSERVER(Observer, observer_list(), OnWindowManagerInstanceClosed());
+}
+
 void ArcBridgeService::SetState(State state) {
   DCHECK(CalledOnValidThread());
   // DCHECK on enum classes not supported.
@@ -503,6 +531,7 @@ void ArcBridgeService::CloseAllChannels() {
   ClosePowerChannel();
   CloseProcessChannel();
   CloseVideoChannel();
+  CloseWindowManagerChannel();
 }
 
 }  // namespace arc

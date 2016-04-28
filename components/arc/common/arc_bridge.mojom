@@ -19,6 +19,7 @@ import "policy.mojom";
 import "power.mojom";
 import "process.mojom";
 import "video.mojom";
+import "window_manager.mojom";
 
 interface ArcBridgeHost {
   // Keep the entries alphabetical. In order to do so without breaking
@@ -71,6 +72,9 @@ interface ArcBridgeHost {
 
   // Notifies Chrome that the VideoInstance interface is ready.
   [MinVersion=6] OnVideoInstanceReady@107(VideoInstance instance_ptr);
+  
+  // Notifies Android of entering / exiting TouchView.
+  [MinVersion=11] OnWindowManagerInstanceReady@117(WindowManagerInstance instance_ptr);
 };
 
 interface ArcBridgeInstance {

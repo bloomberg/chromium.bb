@@ -46,6 +46,8 @@ static_library("arc") {
     "net/arc_net_host_impl.h",
     "power/arc_power_bridge.cc",
     "power/arc_power_bridge.h",
+    "window_manager/arc_window_manager_bridge.cc",
+    "window_manager/arc_window_manager_bridge.h",
   ]
 
   deps = [
@@ -97,6 +99,7 @@ mojom("arc_bindings") {
     "common/process.mojom",
     "common/video.mojom",
     "common/video_accelerator.mojom",
+    "common/window_manager.mojom",
   ]
 }
 

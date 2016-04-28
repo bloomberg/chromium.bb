@@ -132,6 +132,10 @@ class ArcBridgeService : public mojom::ArcBridgeHost {
     virtual void OnVideoInstanceReady() {}
     virtual void OnVideoInstanceClosed() {}
 
+    // Called whenever the ARC window manager interface state changes.
+    virtual void OnWindowManagerInstanceReady() {}
+    virtual void OnWindowManagerInstanceClosed() {}
+
    protected:
     virtual ~Observer() {}
   };
@@ -194,6 +198,9 @@ class ArcBridgeService : public mojom::ArcBridgeHost {
   mojom::PowerInstance* power_instance() { return power_ptr_.get(); }
   mojom::ProcessInstance* process_instance() { return process_ptr_.get(); }
   mojom::VideoInstance* video_instance() { return video_ptr_.get(); }
+  mojom::WindowManagerInstance* window_manager_instance() {
+    return window_manager_ptr_.get();
+  }
 
   int32_t app_version() const { return app_ptr_.version(); }
   int32_t audio_version() const { return audio_ptr_.version(); }
@@ -212,6 +219,9 @@ class ArcBridgeService : public mojom::ArcBridgeHost {
   int32_t power_version() const { return power_ptr_.version(); }
   int32_t process_version() const { return process_ptr_.version(); }
   int32_t video_version() const { return video_ptr_.version(); }
+  int32_t window_manager_version() const {
+    return window_manager_ptr_.version();
+  }
 
   // ArcHost:
   void OnAppInstanceReady(mojom::AppInstancePtr app_ptr) override;
@@ -234,6 +244,8 @@ class ArcBridgeService : public mojom::ArcBridgeHost {
   void OnPowerInstanceReady(mojom::PowerInstancePtr power_ptr) override;
   void OnProcessInstanceReady(mojom::ProcessInstancePtr process_ptr) override;
   void OnVideoInstanceReady(mojom::VideoInstancePtr video_ptr) override;
+  void OnWindowManagerInstanceReady(
+      mojom::WindowManagerInstancePtr window_manager_ptr) override;
 
   // Gets the current state of the bridge service.
   State state() const { return state_; }
@@ -280,6 +292,7 @@ class ArcBridgeService : public mojom::ArcBridgeHost {
   void ClosePowerChannel();
   void CloseProcessChannel();
   void CloseVideoChannel();
+  void CloseWindowManagerChannel();
 
   // Callbacks for QueryVersion.
   void OnAppVersionReady(int32_t version);
@@ -297,6 +310,7 @@ class ArcBridgeService : public mojom::ArcBridgeHost {
   void OnPowerVersionReady(int32_t version);
   void OnProcessVersionReady(int32_t version);
   void OnVideoVersionReady(int32_t version);
+  void OnWindowManagerVersionReady(int32_t version);
 
   // Mojo interfaces.
   mojom::AppInstancePtr app_ptr_;
@@ -314,6 +328,7 @@ class ArcBridgeService : public mojom::ArcBridgeHost {
   mojom::PowerInstancePtr power_ptr_;
   mojom::ProcessInstancePtr process_ptr_;
   mojom::VideoInstancePtr video_ptr_;
+  mojom::WindowManagerInstancePtr window_manager_ptr_;
 
   // Temporary Mojo interfaces.  After a Mojo interface pointer has been
   // received from the other endpoint, we still need to asynchronously query
@@ -336,6 +351,7 @@ class ArcBridgeService : public mojom::ArcBridgeHost {
   mojom::PowerInstancePtr temporary_power_ptr_;
   mojom::ProcessInstancePtr temporary_process_ptr_;
   mojom::VideoInstancePtr temporary_video_ptr_;
+  mojom::WindowManagerInstancePtr temporary_window_manager_ptr_;
 
   base::ObserverList<Observer> observer_list_;
 

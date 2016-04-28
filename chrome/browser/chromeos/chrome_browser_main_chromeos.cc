@@ -117,6 +117,8 @@
 #include "chromeos/network/portal_detector/network_portal_detector_stub.h"
 #include "chromeos/system/statistics_provider.h"
 #include "chromeos/tpm/tpm_token_loader.h"
+#include "components/arc/arc_bridge_service.h"
+#include "components/arc/arc_service_manager.h"
 #include "components/browser_sync/common/browser_sync_switches.h"
 #include "components/device_event_log/device_event_log.h"
 #include "components/metrics/metrics_service.h"
@@ -687,6 +689,14 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   // This observer cannot be created earlier because it requires the shell to be
   // available.
   idle_action_warning_observer_.reset(new IdleActionWarningObserver());
+
+  // Tell the window manager observer to monitor window manager changes. To do
+  // so, the ash::shell needs to be available (which it is now).
+  if (arc::ArcBridgeService::GetEnabled(
+          base::CommandLine::ForCurrentProcess())) {
+    DCHECK(arc::ArcServiceManager::Get());
+    arc::ArcServiceManager::Get()->OnAshStarted();
+  }
 
   ChromeBrowserMainPartsLinux::PostProfileInit();
 }

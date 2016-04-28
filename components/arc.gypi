@@ -68,6 +68,8 @@
         'arc/net/arc_net_host_impl.h',
         'arc/power/arc_power_bridge.cc',
         'arc/power/arc_power_bridge.h',
+        'arc/window_manager/arc_window_manager_bridge.cc',
+        'arc/window_manager/arc_window_manager_bridge.h',
       ],
     },
     {
@@ -120,6 +122,7 @@
         'arc/common/process.mojom',
         'arc/common/video.mojom',
         'arc/common/video_accelerator.mojom',
+        'arc/common/window_manager.mojom',
       ],
     },
     {

@@ -19,6 +19,7 @@
 #include "components/arc/metrics/arc_metrics_service.h"
 #include "components/arc/net/arc_net_host_impl.h"
 #include "components/arc/power/arc_power_bridge.h"
+#include "components/arc/window_manager/arc_window_manager_bridge.h"
 #include "ui/arc/notification/arc_notification_manager.h"
 
 namespace arc {
@@ -90,6 +91,17 @@ void ArcServiceManager::OnPrimaryUserProfilePrepared(
 
   AddService(base::WrapUnique(
       new ArcNotificationManager(arc_bridge_service(), account_id)));
+}
+
+void ArcServiceManager::OnAshStarted() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  // We might come here multiple times. As such we should only do this once.
+  if (on_ash_started_called_)
+    return;
+
+  on_ash_started_called_ = true;
+  AddService(
+      base::WrapUnique(new ArcWindowManagerBridge(arc_bridge_service())));
 }
 
 void ArcServiceManager::Shutdown() {

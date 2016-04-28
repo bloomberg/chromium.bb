@@ -38,6 +38,9 @@ class ArcServiceManager {
   // Called when the main profile is initialized after user logs in.
   void OnPrimaryUserProfilePrepared(const AccountId& account_id);
 
+  // Called once the windowing system (ash) has been started.
+  void OnAshStarted();
+
   // Called to shut down all ARC services.
   void Shutdown();
 
@@ -50,6 +53,10 @@ class ArcServiceManager {
   base::ThreadChecker thread_checker_;
   std::unique_ptr<ArcBridgeService> arc_bridge_service_;
   std::vector<std::unique_ptr<ArcService>> services_;
+
+  // True once the window manager service got added, barring adding any more
+  // of those since OnAshStarted() might be called multiple times.
+  bool on_ash_started_called_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ArcServiceManager);
 };
