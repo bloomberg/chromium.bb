@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_WINDOW_POSITIONER_H_
-#define ASH_WM_WINDOW_POSITIONER_H_
+#ifndef ASH_WM_COMMON_WINDOW_POSITIONER_H_
+#define ASH_WM_COMMON_WINDOW_POSITIONER_H_
 
 #include "ash/ash_export.h"
 #include "base/macros.h"
@@ -103,8 +103,8 @@ class ASH_EXPORT WindowPositioner {
                                 const gfx::Rect& work_area);
 
   // Align the location to the grid / snap to the right / bottom corner.
-  gfx::Rect AlignPopupPosition(const gfx::Rect &pos,
-                               const gfx::Rect &work_area,
+  gfx::Rect AlignPopupPosition(const gfx::Rect& pos,
+                               const gfx::Rect& work_area,
                                int grid);
 
   // Constant exposed for unittest.
@@ -130,4 +130,4 @@ class ASH_EXPORT WindowPositioner {
 
 }  // namespace ash
 
-#endif  // ASH_WM_WINDOW_POSITIONER_H_
+#endif  // ASH_WM_COMMON_WINDOW_POSITIONER_H_

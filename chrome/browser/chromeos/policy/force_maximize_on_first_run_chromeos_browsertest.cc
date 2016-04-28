@@ -7,7 +7,7 @@
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
 #include "ash/test/display_manager_test_api.h"
-#include "ash/wm/window_positioner.h"
+#include "ash/wm/common/window_positioner.h"
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"

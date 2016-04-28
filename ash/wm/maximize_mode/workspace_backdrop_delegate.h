@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/wm/workspace/workspace_layout_manager_backdrop_delegate.h"
+#include "ash/wm/common/workspace/workspace_layout_manager_backdrop_delegate.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 

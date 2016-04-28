@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/window_positioner.h"
+#include "ash/wm/common/window_positioner.h"
 
 #include "ash/wm/common/window_positioning_utils.h"
 #include "ash/wm/common/window_state.h"
@@ -108,8 +108,8 @@ void SetBoundsAndOffsetTransientChildren(wm::WmWindow* window,
       new_child_bounds.set_x(work_area.right() - bounds.width());
     else if (new_child_bounds.x() < work_area.x())
       new_child_bounds.set_x(work_area.x());
-    SetBoundsAndOffsetTransientChildren(transient_child,
-                                        new_child_bounds, work_area, offset);
+    SetBoundsAndOffsetTransientChildren(transient_child, new_child_bounds,
+                                        work_area, offset);
   }
 
   window->SetBoundsWithTransitionDelay(
@@ -254,8 +254,8 @@ void WindowPositioner::GetBoundsAndShowStateForNewWindow(
   // We ignore the saved show state, but look instead for the top level
   // window's show state.
   if (show_state_in == ui::SHOW_STATE_DEFAULT) {
-    *show_state_out = maximized ? ui::SHOW_STATE_MAXIMIZED :
-        ui::SHOW_STATE_DEFAULT;
+    *show_state_out =
+        maximized ? ui::SHOW_STATE_MAXIMIZED : ui::SHOW_STATE_DEFAULT;
   }
 
   if (maximized || top_window_state->IsFullscreen()) {
@@ -265,7 +265,8 @@ void WindowPositioner::GetBoundsAndShowStateForNewWindow(
       // the top level window and use its restore bounds
       // instead. Offset the bounds to prevent the windows from
       // overlapping exactly when restored.
-      *bounds_in_out = top_window_state->GetRestoreBoundsInScreen() +
+      *bounds_in_out =
+          top_window_state->GetRestoreBoundsInScreen() +
           gfx::Vector2d(kMinimumWindowOffset, kMinimumWindowOffset);
     }
     if (is_saved_bounds || has_restore_bounds) {
@@ -382,8 +383,7 @@ WindowPositioner::WindowPositioner(wm::WmGlobals* globals)
       last_popup_position_x_(0),
       last_popup_position_y_(0) {}
 
-WindowPositioner::~WindowPositioner() {
-}
+WindowPositioner::~WindowPositioner() {}
 
 gfx::Rect WindowPositioner::GetDefaultWindowBounds(
     const display::Display& display) {
@@ -400,10 +400,8 @@ gfx::Rect WindowPositioner::GetDefaultWindowBounds(
     offset_x = (work_area.width() - kMaximumWindowWidth) / 2;
     default_width = kMaximumWindowWidth;
   }
-  return gfx::Rect(work_area.x() + offset_x,
-                   work_area.y() + kDesktopBorderSize,
-                   default_width,
-                   default_height);
+  return gfx::Rect(work_area.x() + offset_x, work_area.y() + kDesktopBorderSize,
+                   default_width, default_height);
 }
 
 gfx::Rect WindowPositioner::GetPopupPosition(const gfx::Rect& old_pos) {
@@ -428,7 +426,7 @@ gfx::Rect WindowPositioner::GetPopupPosition(const gfx::Rect& old_pos) {
   // Only try to reposition the popup when it is not spanning the entire
   // screen.
   if ((old_pos.width() + popup_position_offset_from_screen_corner_x >=
-      work_area.width()) ||
+       work_area.width()) ||
       (old_pos.height() + popup_position_offset_from_screen_corner_y >=
        work_area.height()))
     return AlignPopupPosition(old_pos, work_area, grid);
@@ -443,9 +441,8 @@ void WindowPositioner::SetMaximizeFirstWindow(bool maximize) {
   maximize_first_window = maximize;
 }
 
-gfx::Rect WindowPositioner::NormalPopupPosition(
-    const gfx::Rect& old_pos,
-    const gfx::Rect& work_area) {
+gfx::Rect WindowPositioner::NormalPopupPosition(const gfx::Rect& old_pos,
+                                                const gfx::Rect& work_area) {
   int w = old_pos.width();
   int h = old_pos.height();
   // Note: The 'last_popup_position' is checked and kept relative to the
@@ -476,10 +473,9 @@ gfx::Rect WindowPositioner::NormalPopupPosition(
   return gfx::Rect(x + work_area.x(), y + work_area.y(), w, h);
 }
 
-gfx::Rect WindowPositioner::SmartPopupPosition(
-    const gfx::Rect& old_pos,
-    const gfx::Rect& work_area,
-    int grid) {
+gfx::Rect WindowPositioner::SmartPopupPosition(const gfx::Rect& old_pos,
+                                               const gfx::Rect& work_area,
+                                               int grid) {
   const std::vector<wm::WmWindow*> windows =
       globals_->GetMruWindowListIgnoreModals();
 
@@ -516,10 +512,10 @@ gfx::Rect WindowPositioner::SmartPopupPosition(
   // then to the left.
   // When no location was found, an empty rectangle will be returned.
   for (int run = 0; run < 2; run++) {
-    if (run == 0) { // First run: Start left, parse right till mid screen.
+    if (run == 0) {  // First run: Start left, parse right till mid screen.
       x = 0;
       x_increment = pop_position_offset_increment_x;
-    } else { // Second run: Start right, parse left till mid screen.
+    } else {  // Second run: Start right, parse left till mid screen.
       x = work_area.width() - w;
       x_increment = -pop_position_offset_increment_x;
     }
@@ -530,8 +526,8 @@ gfx::Rect WindowPositioner::SmartPopupPosition(
       while (y + h <= work_area.height()) {
         size_t i;
         for (i = 0; i < regions.size(); i++) {
-          if (regions[i]->Intersects(gfx::Rect(x + work_area.x(),
-                                               y + work_area.y(), w, h))) {
+          if (regions[i]->Intersects(
+                  gfx::Rect(x + work_area.x(), y + work_area.y(), w, h))) {
             y = regions[i]->bottom() - work_area.y();
             break;
           }
@@ -544,10 +540,9 @@ gfx::Rect WindowPositioner::SmartPopupPosition(
   return gfx::Rect(0, 0, 0, 0);
 }
 
-gfx::Rect WindowPositioner::AlignPopupPosition(
-    const gfx::Rect& pos,
-    const gfx::Rect& work_area,
-    int grid) {
+gfx::Rect WindowPositioner::AlignPopupPosition(const gfx::Rect& pos,
+                                               const gfx::Rect& work_area,
+                                               int grid) {
   if (grid <= 1)
     return pos;
 

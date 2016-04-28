@@ -4,9 +4,9 @@
 
 #include "ash/wm/maximize_mode/workspace_backdrop_delegate.h"
 
+#include "ash/wm/common/workspace/workspace_layout_manager_backdrop_delegate.h"
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm/workspace/workspace_layout_manager_backdrop_delegate.h"
 #include "base/auto_reset.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"

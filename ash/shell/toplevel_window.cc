@@ -5,8 +5,8 @@
 #include "ash/shell/toplevel_window.h"
 
 #include "ash/shell.h"
+#include "ash/wm/common/window_positioner.h"
 #include "ash/wm/common/window_state.h"
-#include "ash/wm/window_positioner.h"
 #include "ash/wm/window_state_aura.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/window.h"

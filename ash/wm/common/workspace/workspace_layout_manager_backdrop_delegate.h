@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_WORKSPACE_WORKSPACE_LAYOUT_MANAGER_BACKDROP_DELEGATE_H_
-#define ASH_WM_WORKSPACE_WORKSPACE_LAYOUT_MANAGER_BACKDROP_DELEGATE_H_
+#ifndef ASH_WM_COMMON_WORKSPACE_WORKSPACE_LAYOUT_MANAGER_BACKDROP_DELEGATE_H_
+#define ASH_WM_COMMON_WORKSPACE_WORKSPACE_LAYOUT_MANAGER_BACKDROP_DELEGATE_H_
 
 #include "ash/ash_export.h"
 #include "ash/wm/common/wm_types.h"
@@ -43,4 +43,4 @@ class ASH_EXPORT WorkspaceLayoutManagerBackdropDelegate {
 
 }  // namespace ash
 
-#endif  // ASH_WM_WORKSPACE_WORKSPACE_LAYOUT_MANAGER_BACKDROP_DELEGATE_H_
+#endif  // ASH_WM_COMMON_WORKSPACE_WORKSPACE_LAYOUT_MANAGER_BACKDROP_DELEGATE_H_

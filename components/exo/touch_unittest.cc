@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/shell.h"
-#include "ash/wm/window_positioner.h"
+#include "ash/wm/common/window_positioner.h"
 #include "ash/wm/window_util.h"
 #include "components/exo/buffer.h"
 #include "components/exo/shell_surface.h"

@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/workspace/workspace_layout_manager.h"
+#include "ash/wm/common/workspace/workspace_layout_manager.h"
 
 #include <algorithm>
 
-#include "ash/wm/always_on_top_controller.h"
+#include "ash/wm/common/always_on_top_controller.h"
 #include "ash/wm/common/fullscreen_window_finder.h"
+#include "ash/wm/common/window_positioner.h"
 #include "ash/wm/common/window_state.h"
 #include "ash/wm/common/wm_event.h"
 #include "ash/wm/common/wm_globals.h"
@@ -15,9 +16,8 @@
 #include "ash/wm/common/wm_screen_util.h"
 #include "ash/wm/common/wm_window.h"
 #include "ash/wm/common/wm_window_property.h"
+#include "ash/wm/common/workspace/workspace_layout_manager_backdrop_delegate.h"
 #include "ash/wm/common/workspace/workspace_layout_manager_delegate.h"
-#include "ash/wm/window_positioner.h"
-#include "ash/wm/workspace/workspace_layout_manager_backdrop_delegate.h"
 #include "ui/compositor/layer.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
 

@@ -17,7 +17,7 @@
 #include "ash/test/test_session_state_delegate.h"
 #include "ash/test/test_shell_delegate.h"
 #include "ash/test/test_system_tray_delegate.h"
-#include "ash/wm/window_positioner.h"
+#include "ash/wm/common/window_positioner.h"
 #include "base/command_line.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/screen_position_client.h"

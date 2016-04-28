@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_WORKSPACE_WORKSPACE_LAYOUT_MANAGER_H_
-#define ASH_WM_WORKSPACE_WORKSPACE_LAYOUT_MANAGER_H_
+#ifndef ASH_WM_COMMON_WORKSPACE_WORKSPACE_LAYOUT_MANAGER_H_
+#define ASH_WM_COMMON_WORKSPACE_WORKSPACE_LAYOUT_MANAGER_H_
 
 #include <memory>
 #include <set>
@@ -146,4 +146,4 @@ class ASH_EXPORT WorkspaceLayoutManager
 
 }  // namespace ash
 
-#endif  // ASH_WM_WORKSPACE_WORKSPACE_LAYOUT_MANAGER_H_
+#endif  // ASH_WM_COMMON_WORKSPACE_WORKSPACE_LAYOUT_MANAGER_H_
