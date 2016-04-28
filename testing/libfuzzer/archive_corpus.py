@@ -18,23 +18,17 @@ import zipfile
 
 def main():
   parser = argparse.ArgumentParser(description="Generate fuzzer config.")
-  parser.add_argument('--depfile', required=True)
   parser.add_argument('--corpus', required=True)
   parser.add_argument('--output', required=True)
   parser.add_argument('--fuzzer', required=True)
   args = parser.parse_args()
 
   corpus_files = []
-  # Generate .d file with dependency from corpus archive to individual files.
-  with open(args.depfile, 'w') as depfile:
-      print(os.path.basename(args.output), ":", end="", file=depfile)
-      for (dirpath, _, filenames) in os.walk(args.corpus):
-          for filename in filenames:
-              full_filename = os.path.join(dirpath, filename)
-              print(" ", full_filename, end="", file=depfile)
-              corpus_files.append(full_filename)
-      # chrome bots complain about this one:
-      # print(" ", args.fuzzer, end="", file=depfile)
+
+  for (dirpath, _, filenames) in os.walk(args.corpus):
+    for filename in filenames:
+      full_filename = os.path.join(dirpath, filename)
+      corpus_files.append(full_filename)
 
   with zipfile.ZipFile(args.output, 'w') as z:
     for corpus_file in corpus_files:
@@ -43,4 +37,3 @@ def main():
 
 if __name__ == '__main__':
   main()
-

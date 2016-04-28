@@ -37,14 +37,11 @@ template("fuzzer_test") {
     }
 
     if (defined(invoker.seed_corpus)) {
-      depfile = "$root_build_dir/$target_name" + ".seed_corpus.d"
       out = "$root_build_dir/$target_name" + "_seed_corpus.zip"
 
       action(target_name + "_seed_corpus") {
         script = "//testing/libfuzzer/archive_corpus.py"
         args = [
-          "--depfile",
-          rebase_path(depfile),
           "--corpus",
           rebase_path(invoker.seed_corpus),
           "--output",
@@ -53,7 +50,6 @@ template("fuzzer_test") {
           rebase_path("$root_build_dir/$target_name"),
         ]
 
-        depfile = depfile
         outputs = [
           out,
         ]

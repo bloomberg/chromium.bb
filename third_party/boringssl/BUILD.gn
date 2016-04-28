@@ -178,6 +178,16 @@ if (build_with_chromium) {
         ":boringssl_fuzzer",
       ]
       seed_corpus = "src/fuzz/${fuzzer}_corpus"
+
+      if ("cert" == fuzzer) {
+        libfuzzer_options = [ "max_len=3072" ]
+      } else if ("client" == fuzzer) {
+        libfuzzer_options = [ "max_len=20000" ]
+      } else if ("privkey" == fuzzer) {
+        libfuzzer_options = [ "max_len=2048" ]
+      } else if ("server" == fuzzer) {
+        libfuzzer_options = [ "max_len=4096" ]
+      }
     }
   }
 }
