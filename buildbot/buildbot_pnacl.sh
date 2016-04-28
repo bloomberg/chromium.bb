@@ -13,7 +13,7 @@ export PNACL_BUILDBOT=true
 # build.sh output)
 export PNACL_VERBOSE=true
 
-# This affects trusted components of gyp and scons builds.
+# This affects trusted components of scons builds.
 # The setting OPT reuslts in optimized/release trusted executables,
 # the setting DEBUG results in unoptimized/debug trusted executables
 BUILD_MODE_HOST=OPT
@@ -111,56 +111,10 @@ unarchive-for-hw-bots() {
   tar xvfz arm-scons.tgz --no-same-owner
 }
 
-# Build with gyp - this only exercises the trusted TC and hence this only
-# makes sense to run for ARM.
-gyp-arm-build() {
-  local gypmode="Release"
-  if [ "${BUILD_MODE_HOST}" = "DEBUG" ] ; then
-    gypmode="Debug"
-  fi
-
-  echo "@@@BUILD_STEP gyp_configure [${gypmode}]@@@"
-  # Setup environment for arm.
-  export GYP_DEFINES="target_arch=arm"
-  export GYP_CROSSCOMPILE=1
-  # NOTE: gclient runhooks and gyp_nacl use the exported env vars so we have to
-  # run it again
-  gclient runhooks
-
-  echo "@@@BUILD_STEP gyp_compile [${gypmode}]@@@"
-  ninja -C ../out/${gypmode} -v
-}
-
-# Build with gyp for MIPS.
-gyp-mips32-build() {
-  local gypmode="Release"
-  if [ "${BUILD_MODE_HOST}" = "DEBUG" ] ; then
-    gypmode="Debug"
-  fi
-
-  # Ensure the trusted mips toolchain is installed.
-  build/package_version/package_version.py \
-      --packages linux_x86/mips_trusted sync -x
-
-  echo "@@@BUILD_STEP gyp_configure [${gypmode}]@@@"
-  # Add mipsel-linux-gnu-gcc tools to the PATH
-  export PATH=$PATH:$PWD/toolchain/linux_x86/mips_trusted/bin/
-  export GYP_DEFINES="target_arch=mipsel"
-  export GYP_CROSSCOMPILE=1
-  # NOTE: gclient runhooks and gyp_nacl use the exported env vars so we have to
-  # run it again
-  gclient runhooks
-
-  echo "@@@BUILD_STEP gyp_compile [${gypmode}]@@@"
-  ninja -C ../out/${gypmode} -v
-}
-
 # QEMU upload bot runs this function, and the hardware download bot runs
 # mode-buildbot-arm-hw
 mode-buildbot-arm() {
   clobber
-
-  gyp-arm-build
 
   # Don't run the tests on qemu, only build them.
   # QEMU is too flaky for the main waterfall
@@ -186,12 +140,6 @@ mode-buildbot-arm-hw() {
 mode-trybot-qemu() {
   clobber
   local arch=$1
-  # TODO(dschuff): move the gyp build to buildbot_pnacl.py
-  if [[ ${arch} == "arm" ]] ; then
-    gyp-arm-build
-  elif [[ ${arch} == "mips32" ]] ; then
-    gyp-mips32-build
-  fi
 
   buildbot/buildbot_pnacl.py opt $arch pnacl
 }

@@ -15,22 +15,26 @@ import traceback
 
 ARCH_MAP = {
     '32': {
-        'gyp_arch': 'ia32',
+        'gn_arch': 'x86',
         'scons_platform': 'x86-32',
         },
     '64': {
-        'gyp_arch': 'x64',
+        'gn_arch': 'x64',
         'scons_platform': 'x86-64',
         },
     'arm': {
-        'gyp_arch': 'arm',
+        'gn_arch': 'arm',
         'scons_platform': 'arm',
         },
     'mips32': {
-        'gyp_arch': 'mips32',
+        'gn_arch': 'mipsel',
         'scons_platform': 'mips32',
         },
     }
+
+
+def GNArch(arch):
+  return ARCH_MAP[arch]['gn_arch']
 
 
 def RunningOnBuildbot():
@@ -120,20 +124,6 @@ def SetupWindowsEnvironment(context):
   # Needed for finding devenv.
   context['msvc'] = msvc
 
-  SetupGyp(context, [])
-
-
-def SetupGyp(context, extra_vars=[]):
-  if RunningOnBuildbot():
-    goma_opts = [
-        'use_goma=1',
-        'gomadir=/b/build/goma',
-    ]
-  else:
-    goma_opts = []
-  context.SetEnv('GYP_DEFINES', ' '.join(
-      context['gyp_vars'] + goma_opts + extra_vars))
-
 
 def SetupLinuxEnvironment(context):
   if context['arch'] == 'mips32':
@@ -141,17 +131,6 @@ def SetupLinuxEnvironment(context):
     cmd = ['build/package_version/package_version.py', '--packages',
            'linux_x86/mips_trusted', 'sync', '-x']
     Command(context, cmd)
-
-  SetupGyp(context, ['target_arch='+context['gyp_arch']])
-
-
-def SetupMacEnvironment(context):
-  SetupGyp(context, ['target_arch='+context['gyp_arch']])
-
-
-def SetupAndroidEnvironment(context):
-  SetupGyp(context, ['OS=android', 'target_arch='+context['gyp_arch']])
-  context.SetEnv('GYP_CROSSCOMPILE', '1')
 
 
 def ParseStandardCommandLine(context):
@@ -185,8 +164,8 @@ def ParseStandardCommandLine(context):
                     action='append', help='Extra scons arguments.')
   parser.add_option('--step-suffix', metavar='SUFFIX', default='',
                     help='Append SUFFIX to buildbot step names.')
-  parser.add_option('--no-gyp', dest='no_gyp', default=False,
-                    action='store_true', help='Do not run the gyp build')
+  parser.add_option('--no-gn', dest='no_gn', default=False,
+                    action='store_true', help='Do not run the GN build')
   parser.add_option('--no-goma', dest='no_goma', default=False,
                     action='store_true', help='Do not run with goma')
   parser.add_option('--use-breakpad-tools', dest='use_breakpad_tools',
@@ -227,20 +206,11 @@ def ParseStandardCommandLine(context):
   context['validator'] = options.validator
   context['asan'] = options.asan
   # TODO(ncbray) turn derived values into methods.
-  context['gyp_mode'] = {
-      'opt': 'Release',
-      'dbg': 'Debug',
-      'coverage': 'Debug'}[mode]
   context['gn_is_debug'] = {
       'opt': 'false',
       'dbg': 'true',
       'coverage': 'true'}[mode]
-  context['gyp_arch'] = ARCH_MAP[arch]['gyp_arch']
-  context['gyp_vars'] = []
-  if context['clang']:
-    context['gyp_vars'].append('clang=1')
-  if context['asan']:
-    context['gyp_vars'].append('asan=1')
+  context['gn_arch'] = GNArch(arch)
   context['default_scons_platform'] = ARCH_MAP[arch]['scons_platform']
   context['default_scons_mode'] = ['nacl']
   # Only Linux can build trusted code on ARM.
@@ -254,16 +224,13 @@ def ParseStandardCommandLine(context):
   context['dry_run'] = options.dry_run
   context['inside_toolchain'] = options.inside_toolchain
   context['step_suffix'] = options.step_suffix
-  context['no_gyp'] = options.no_gyp
+  context['no_gn'] = options.no_gn
   context['no_goma'] = options.no_goma
   context['coverage'] = options.coverage
   context['use_breakpad_tools'] = options.use_breakpad_tools
   context['scons_args'] = options.scons_args
   context['skip_build'] = options.skip_build
   context['skip_run'] = options.skip_run
-  # Don't run gyp on coverage builds.
-  if context['coverage']:
-    context['no_gyp'] = True
 
   for key, value in sorted(context.config.items()):
     print '%s=%s' % (key, value)

@@ -257,12 +257,6 @@ hooks = [
                "cleanup",
     ],
   },
-
-  # Run GYP, do this last to make sure all the tools are present first.
-  {
-    "pattern": ".",
-    "action": ["python", "native_client/build/gyp_nacl"],
-  },
 ]
 
 include_rules = [

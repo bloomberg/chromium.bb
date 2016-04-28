@@ -9,7 +9,7 @@ import sys
 from buildbot_lib import (
     BuildContext, BuildStatus, Command, ParseStandardCommandLine,
     RemoveSconsBuildDirectories, RunBuild, SetupLinuxEnvironment,
-    SetupMacEnvironment, SetupWindowsEnvironment, SCons, Step )
+    SetupWindowsEnvironment, SCons, Step )
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import pynacl.platform
@@ -214,7 +214,8 @@ def Main():
   elif context.Windows():
     SetupWindowsEnvironment(context)
   elif context.Mac():
-    SetupMacEnvironment(context)
+    # No setup to do for Mac.
+    pass
   else:
     raise Exception('Unsupported platform')
 

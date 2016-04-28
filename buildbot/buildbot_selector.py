@@ -22,14 +22,14 @@ BOT_ASSIGNMENT = {
     # Buildbots.
     ######################################################################
     'xp-newlib-opt':
-        python + ' buildbot\\buildbot_standard.py opt 32 newlib --no-gyp',
+        python + ' buildbot\\buildbot_standard.py opt 32 newlib',
     'xp-glibc-opt':
-        python + ' buildbot\\buildbot_standard.py opt 32 glibc --no-gyp',
+        python + ' buildbot\\buildbot_standard.py opt 32 glibc',
 
     'xp-bare-newlib-opt':
-        python + ' buildbot\\buildbot_standard.py opt 32 newlib --no-gyp',
+        python + ' buildbot\\buildbot_standard.py opt 32 newlib',
     'xp-bare-glibc-opt':
-        python + ' buildbot\\buildbot_standard.py opt 32 glibc --no-gyp',
+        python + ' buildbot\\buildbot_standard.py opt 32 glibc',
 
     'precise-64-validator-opt':
         python + ' buildbot/buildbot_standard.py opt 64 glibc --validator',
@@ -257,15 +257,6 @@ for platform in [
     arch_flags = ''
     real_arch = arch
     arch_part = '-' + arch
-    # Disable GYP build for win32 bots and arm cross-builders. In this case
-    # "win" means Windows XP, not Vista, Windows 7, etc.
-    #
-    # Building via GYP always builds all toolchains by default, but the win32
-    # XP pnacl builds are pathologically slow (e.g. ~38 seconds per compile on
-    # the nacl-win32_glibc_opt trybot). There are other builders that test
-    # Windows builds via gyp, so the reduced test coverage should be slight.
-    if arch == 'arm' or (platform == 'win' and arch == '32'):
-      arch_flags += ' --no-gyp'
     if platform == 'win7' and arch == '32':
       arch_flags += ' --no-goma'
     if arch == '':
