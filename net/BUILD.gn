@@ -1819,6 +1819,16 @@ fuzzer_test("net_cert_verify_name_in_subtree_fuzzer") {
   ]
 }
 
+fuzzer_test("net_cert_parse_certificate_fuzzer") {
+  sources = [
+    "cert/internal/parse_certificate_fuzzer.cc",
+  ]
+  deps = [
+    "//base",
+    "//net",
+  ]
+}
+
 fuzzer_test("net_parse_cookie_line_fuzzer") {
   sources = [
     "cookies/parse_cookie_line_fuzzer.cc",
