@@ -34,6 +34,7 @@
 #include "core/html/HTMLCanvasElement.h"
 #include "modules/canvas2d/CanvasGradient.h"
 #include "modules/canvas2d/CanvasPattern.h"
+#include "third_party/skia/include/core/SkShader.h"
 #include "wtf/PassRefPtr.h"
 
 namespace blink {

@@ -37,6 +37,7 @@
 #include "platform/testing/HistogramTester.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkImage.h"
 #include "wtf/StdLibExtras.h"
 
 namespace blink {

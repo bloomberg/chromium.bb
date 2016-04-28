@@ -29,11 +29,12 @@
 #define FrameData_h
 
 #include "platform/graphics/ImageOrientation.h"
-#include "third_party/skia/include/core/SkImage.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/RefPtr.h"
 #include "wtf/VectorTraits.h"
+
+class SkImage;
 
 namespace blink {
 

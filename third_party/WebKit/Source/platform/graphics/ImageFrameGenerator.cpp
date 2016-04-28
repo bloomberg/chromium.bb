@@ -29,6 +29,7 @@
 #include "platform/TraceEvent.h"
 #include "platform/graphics/ImageDecodingStore.h"
 #include "platform/image-decoders/ImageDecoder.h"
+#include "third_party/skia/include/core/SkYUVSizeInfo.h"
 
 namespace blink {
 

@@ -40,7 +40,8 @@
 #include "core/imagebitmap/ImageBitmapOptions.h"
 #include "platform/Supplementable.h"
 #include "platform/geometry/IntRect.h"
-#include "third_party/skia/include/core/SkImage.h"
+
+class SkImage;
 
 namespace blink {
 

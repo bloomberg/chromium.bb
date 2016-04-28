@@ -9,6 +9,8 @@
 #include "platform/graphics/GeneratedImage.h"
 #include "wtf/OwnPtr.h"
 
+class SkPicture;
+
 namespace blink {
 
 class PLATFORM_EXPORT PaintGeneratedImage : public GeneratedImage {

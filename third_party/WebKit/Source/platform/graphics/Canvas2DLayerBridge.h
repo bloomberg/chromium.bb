@@ -34,7 +34,7 @@
 #include "public/platform/WebExternalTextureMailbox.h"
 #include "public/platform/WebThread.h"
 #include "third_party/khronos/GLES2/gl2.h"
-#include "third_party/skia/include/core/SkImage.h"
+#include "third_party/skia/include/core/SkSurface.h"
 #include "wtf/Allocator.h"
 #include "wtf/Deque.h"
 #include "wtf/PassOwnPtr.h"
@@ -43,6 +43,8 @@
 #include "wtf/Vector.h"
 #include "wtf/WeakPtr.h"
 
+class SkImage;
+struct SkImageInfo;
 class SkPictureRecorder;
 
 namespace gpu {

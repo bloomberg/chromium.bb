@@ -9,7 +9,8 @@
 #include "modules/ModulesExport.h"
 #include "modules/canvas2d/BaseRenderingContext2D.h"
 #include "platform/graphics/ImageBuffer.h"
-#include "third_party/skia/include/core/SkCanvas.h"
+
+class SkCanvas;
 
 namespace blink {
 

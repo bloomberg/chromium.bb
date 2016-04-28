@@ -27,6 +27,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "platform/graphics/StrokeData.h"
+#include "third_party/skia/include/effects/SkDashPathEffect.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 

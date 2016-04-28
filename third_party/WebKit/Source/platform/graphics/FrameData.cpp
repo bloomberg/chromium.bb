@@ -25,6 +25,7 @@
  */
 
 #include "platform/graphics/FrameData.h"
+#include "third_party/skia/include/core/SkImage.h"
 
 namespace blink {
 

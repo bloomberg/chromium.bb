@@ -29,8 +29,6 @@
 #include "platform/PlatformExport.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/image-decoders/ImageDecoder.h"
-#include "third_party/skia/include/core/SkBitmap.h"
-#include "third_party/skia/include/core/SkPixelRef.h"
 #include "third_party/skia/include/core/SkRWBuffer.h"
 #include "wtf/Allocator.h"
 #include "wtf/Forward.h"

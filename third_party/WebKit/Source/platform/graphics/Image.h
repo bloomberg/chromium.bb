@@ -34,7 +34,6 @@
 #include "platform/graphics/ImageAnimationPolicy.h"
 #include "platform/graphics/ImageObserver.h"
 #include "platform/graphics/ImageOrientation.h"
-#include "third_party/skia/include/core/SkCanvas.h"
 #include "wtf/Assertions.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassRefPtr.h"
@@ -43,6 +42,7 @@
 #include "wtf/text/WTFString.h"
 
 class SkBitmap;
+class SkCanvas;
 class SkImage;
 
 namespace blink {

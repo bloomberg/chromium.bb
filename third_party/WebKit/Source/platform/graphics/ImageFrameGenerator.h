@@ -31,7 +31,6 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkSize.h"
 #include "third_party/skia/include/core/SkTypes.h"
-#include "third_party/skia/include/core/SkYUVSizeInfo.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassOwnPtr.h"
@@ -43,6 +42,7 @@
 #include "wtf/Vector.h"
 
 class SkData;
+struct SkYUVSizeInfo;
 
 namespace blink {
 
