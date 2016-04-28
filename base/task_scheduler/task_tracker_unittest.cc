@@ -16,6 +16,7 @@
 #include "base/task_scheduler/test_utils.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/simple_thread.h"
+#include "base/threading/thread_restrictions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -59,6 +60,19 @@ class ThreadRunningTask : public SimpleThread {
   const Task* const task_;
 
   DISALLOW_COPY_AND_ASSIGN(ThreadRunningTask);
+};
+
+class ScopedSetSingletonAllowed {
+ public:
+  ScopedSetSingletonAllowed(bool singleton_allowed)
+      : previous_value_(
+            ThreadRestrictions::SetSingletonAllowed(singleton_allowed)) {}
+  ~ScopedSetSingletonAllowed() {
+    ThreadRestrictions::SetSingletonAllowed(previous_value_);
+  }
+
+ private:
+  const bool previous_value_;
 };
 
 class TaskSchedulerTaskTrackerTest
@@ -280,6 +294,30 @@ TEST_P(TaskSchedulerTaskTrackerTest, WillPostAfterShutdown) {
     EXPECT_DCHECK_DEATH({ tracker_.WillPostTask(task.get()); }, "");
   } else {
     EXPECT_FALSE(tracker_.WillPostTask(task.get()));
+  }
+}
+
+// Verify that BLOCK_SHUTDOWN and SKIP_ON_SHUTDOWN tasks can
+// AssertSingletonAllowed() but CONTINUE_ON_SHUTDOWN tasks can't.
+TEST_P(TaskSchedulerTaskTrackerTest, SingletonAllowed) {
+  const bool can_use_singletons =
+      (GetParam() != TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN);
+
+  TaskTracker tracker;
+  Task task(FROM_HERE, Bind(&ThreadRestrictions::AssertSingletonAllowed),
+            TaskTraits().WithShutdownBehavior(GetParam()), TimeDelta());
+  EXPECT_TRUE(tracker.WillPostTask(&task));
+
+  // Set the singleton allowed bit to the opposite of what it is expected to be
+  // when |tracker| runs |task| to verify that |tracker| actually sets the
+  // correct value.
+  ScopedSetSingletonAllowed scoped_singleton_allowed(!can_use_singletons);
+
+  // Running the task should fail iff the task isn't allowed to use singletons.
+  if (can_use_singletons) {
+    tracker.RunTask(&task);
+  } else {
+    EXPECT_DCHECK_DEATH({ tracker.RunTask(&task); }, "");
   }
 }
 

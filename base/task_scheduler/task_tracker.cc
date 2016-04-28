@@ -7,6 +7,7 @@
 #include "base/callback.h"
 #include "base/debug/task_annotator.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/threading/thread_restrictions.h"
 
 namespace base {
 namespace internal {
@@ -77,6 +78,13 @@ void TaskTracker::RunTask(const Task* task) {
       task->traits.shutdown_behavior();
   if (!BeforeRunTask(shutdown_behavior))
     return;
+
+  // All tasks run through here and the scheduler itself doesn't use singletons.
+  // Therefore, it isn't necessary to reset the singleton allowed bit after
+  // running the task.
+  ThreadRestrictions::SetSingletonAllowed(
+      task->traits.shutdown_behavior() !=
+      TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN);
 
   debug::TaskAnnotator task_annotator;
   task_annotator.RunTask(kQueueFunctionName, *task);
