@@ -67,7 +67,6 @@ BitmapImage::BitmapImage(ImageObserver* observer)
     , m_allDataReceived(false)
     , m_haveSize(false)
     , m_sizeAvailable(false)
-    , m_hasUniformFrameSize(true)
     , m_haveFrameCount(false)
 {
 }
@@ -167,10 +166,6 @@ void BitmapImage::cacheFrame(size_t index)
     m_frames[index].m_hasAlpha = m_source.frameHasAlphaAtIndex(index);
     m_frames[index].m_frameBytes = m_source.frameBytesAtIndex(index);
 
-    const IntSize frameSize(index ? m_source.frameSizeAtIndex(index) : m_size);
-    if (frameSize != m_size)
-        m_hasUniformFrameSize = false;
-
     notifyMemoryChanged();
 }
 
@@ -236,7 +231,6 @@ bool BitmapImage::dataChanged(bool allDataReceived)
     m_source.setData(*data(), allDataReceived);
 
     m_haveFrameCount = false;
-    m_hasUniformFrameSize = true;
     return isSizeAvailable();
 }
 
