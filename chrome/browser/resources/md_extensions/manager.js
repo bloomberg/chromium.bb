@@ -36,8 +36,8 @@ cr.define('extensions', function() {
       /** @type {extensions.Sidebar} */
       sidebar: Object,
 
-      /** @type {extensions.Service} */
-      service: Object,
+      /** @type {extensions.ItemDelegate} */
+      itemDelegate: Object,
 
       inDevMode: {
         type: Boolean,
@@ -72,15 +72,18 @@ cr.define('extensions', function() {
       I18nBehavior,
     ],
 
+    created: function() {
+      this.readyPromiseResolver = new PromiseResolver();
+    },
+
     ready: function() {
       /** @type {extensions.Sidebar} */
       this.sidebar =
           /** @type {extensions.Sidebar} */(this.$$('extensions-sidebar'));
-      this.service = extensions.Service.getInstance();
-      this.service.managerReady(this);
       this.scrollHelper_ = new ScrollHelper(this);
       this.sidebar.setScrollDelegate(this.scrollHelper_);
       this.$.toolbar.setSearchDelegate(new SearchHelper(this));
+      this.readyPromiseResolver.resolve();
     },
 
     /**

@@ -79,6 +79,7 @@ content::WebUIDataSource* CreateMdExtensionsSource() {
   source->AddLocalizedString("viewIframe",
                              IDS_EXTENSIONS_VIEW_IFRAME);
 
+  source->AddResourcePath("extensions.js", IDR_MD_EXTENSIONS_EXTENSIONS_JS);
   source->AddResourcePath("manager.css", IDR_MD_EXTENSIONS_MANAGER_CSS);
   source->AddResourcePath("manager.html", IDR_MD_EXTENSIONS_MANAGER_HTML);
   source->AddResourcePath("manager.js", IDR_MD_EXTENSIONS_MANAGER_JS);

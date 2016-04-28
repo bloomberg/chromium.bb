@@ -14,15 +14,14 @@ cr.define('extensions', function() {
 
   Service.prototype = {
     /** @private {boolean} */
-    promptIsShowing_: false,
+    isDeleting_: false,
 
     /** @param {extensions.Manager} manager */
     managerReady: function(manager) {
       /** @private {extensions.Manager} */
       this.manager_ = manager;
-      /** @private {extensions.Sidebar} */
-      this.sidebar_ = manager.sidebar;
-      this.sidebar_.setDelegate(this);
+      this.manager_.sidebar.setDelegate(this);
+      this.manager_.set('itemDelegate', this);
       chrome.developerPrivate.onProfileStateChanged.addListener(
           this.onProfileStateChanged_.bind(this));
       chrome.developerPrivate.onItemStateChanged.addListener(
@@ -44,8 +43,6 @@ cr.define('extensions', function() {
      * @private
      */
     onProfileStateChanged_: function(profileInfo) {
-      /** @private {chrome.developerPrivate.ProfileInfo} */
-      this.profileInfo_ = profileInfo;
       this.manager_.set('inDevMode', profileInfo.inDeveloperMode);
     },
 
@@ -93,15 +90,15 @@ cr.define('extensions', function() {
 
     /** @override */
     deleteItem: function(id) {
-      if (this.promptIsShowing_)
+      if (this.isDeleting_)
         return;
-      this.promptIsShowing_ = true;
+      this.isDeleting_ = true;
       chrome.management.uninstall(id, {showConfirmDialog: true}, function() {
         // The "last error" was almost certainly the user canceling the dialog.
         // Do nothing. We only check it so we don't get noisy logs.
         /** @suppress {suspiciousCode} */
         chrome.runtime.lastError;
-        this.promptIsShowing_ = false;
+        this.isDeleting_ = false;
       }.bind(this));
     },
 
