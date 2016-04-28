@@ -546,6 +546,11 @@ void GpuDataManagerImplPrivate::Initialize() {
     }
 
     gpu::ParseSecondaryGpuDevicesFromCommandLine(*command_line, &gpu_info);
+
+    if (command_line->HasSwitch(switches::kGpuTestingDriverDate)) {
+      gpu_info.driver_date =
+          command_line->GetSwitchValueASCII(switches::kGpuTestingDriverDate);
+    }
   }
 #if defined(ARCH_CPU_X86_FAMILY)
   if (!gpu_info.gpu.vendor_id || !gpu_info.gpu.device_id) {
@@ -744,6 +749,8 @@ void GpuDataManagerImplPrivate::AppendGpuCommandLine(
       gpu_info_.driver_vendor);
   command_line->AppendSwitchASCII(switches::kGpuDriverVersion,
       gpu_info_.driver_version);
+  command_line->AppendSwitchASCII(switches::kGpuDriverDate,
+      gpu_info_.driver_date);
 
   gpu::GPUInfo::GPUDevice maybe_active_gpu_device;
   if (gpu_info_.gpu.active)

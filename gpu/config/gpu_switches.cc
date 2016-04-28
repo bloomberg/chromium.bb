@@ -40,6 +40,9 @@ const char kGpuTestingSecondaryVendorIDs[] = "gpu-testing-secondary-vendor-ids";
 // Override secondary gpu device ids from the GpuInfoCollector.
 const char kGpuTestingSecondaryDeviceIDs[] = "gpu-testing-secondary-device-ids";
 
+// Override gpu driver date from the GpuInfoCollector.
+const char kGpuTestingDriverDate[] = "gpu-testing-driver-date";
+
 // Override gl vendor from the GpuInfoCollector.
 const char kGpuTestingGLVendor[] = "gpu-testing-gl-vendor";
 

@@ -306,7 +306,6 @@ int GpuMain(const MainFunctionParams& parameters) {
       if (!CollectGraphicsInfo(gpu_info))
         dead_on_arrival = true;
 
-#if defined(OS_CHROMEOS) || defined(OS_ANDROID) || defined(OS_LINUX)
       // Recompute gpu driver bug workarounds.
       // This is necessary on systems where vendor_id/device_id aren't available
       // (Chrome OS, Android) or where workarounds may be dependent on GL_VENDOR
@@ -319,7 +318,6 @@ int GpuMain(const MainFunctionParams& parameters) {
         gpu::ApplyGpuDriverBugWorkarounds(
             gpu_info, const_cast<base::CommandLine*>(&command_line));
       }
-#endif
 
 #if defined(OS_LINUX)
       initialized_gl_context = true;
@@ -438,6 +436,8 @@ void GetGpuInfoFromCommandLine(gpu::GPUInfo& gpu_info,
       command_line.GetSwitchValueASCII(switches::kGpuDriverVendor);
   gpu_info.driver_version =
       command_line.GetSwitchValueASCII(switches::kGpuDriverVersion);
+  gpu_info.driver_date =
+      command_line.GetSwitchValueASCII(switches::kGpuDriverDate);
   gpu::ParseSecondaryGpuDevicesFromCommandLine(command_line, &gpu_info);
 
   // Set active gpu device.

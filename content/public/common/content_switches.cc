@@ -542,6 +542,9 @@ const char kGpuDriverVendor[]               = "gpu-driver-vendor";
 // Passes gpu driver_version from browser process to GPU process.
 const char kGpuDriverVersion[]              = "gpu-driver-version";
 
+// Passes gpu driver_date from browser process to GPU process.
+const char kGpuDriverDate[]                 = "gpu-driver-date";
+
 // Extra command line options for launching the GPU process (normally used
 // for debugging). Use like renderer-cmd-prefix.
 const char kGpuLauncher[]                   = "gpu-launcher";

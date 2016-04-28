@@ -160,6 +160,7 @@ CONTENT_EXPORT extern const char kGenerateAccessibilityTestExpectations[];
 extern const char kGpuDeviceID[];
 extern const char kGpuDriverVendor[];
 extern const char kGpuDriverVersion[];
+extern const char kGpuDriverDate[];
 extern const char kGpuLauncher[];
 CONTENT_EXPORT extern const char kGpuProcess[];
 CONTENT_EXPORT extern const char kGpuSandboxAllowSysVShm[];

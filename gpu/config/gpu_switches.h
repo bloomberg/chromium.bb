@@ -20,6 +20,7 @@ GPU_EXPORT extern const char kGpuTestingVendorId[];
 GPU_EXPORT extern const char kGpuTestingDeviceId[];
 GPU_EXPORT extern const char kGpuTestingSecondaryVendorIDs[];
 GPU_EXPORT extern const char kGpuTestingSecondaryDeviceIDs[];
+GPU_EXPORT extern const char kGpuTestingDriverDate[];
 GPU_EXPORT extern const char kGpuTestingGLVendor[];
 GPU_EXPORT extern const char kGpuTestingGLRenderer[];
 GPU_EXPORT extern const char kGpuTestingGLVersion[];
