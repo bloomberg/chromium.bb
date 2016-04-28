@@ -210,7 +210,7 @@
 	The parameters hotspot_x and hotspot_y define the position of the
 	pointer surface relative to the pointer location. Its top-left corner
 	is always at (x, y) - (hotspot_x, hotspot_y), where (x, y) are the
-	coordinates of the pointer location, in surface local coordinates.
+	coordinates of the pointer location, in surface-local coordinates.
 
 	On surface.attach requests to the pointer surface, hotspot_x and
 	hotspot_y are decremented by the x and y parameters passed to the
@@ -235,8 +235,8 @@
       </description>
       <arg name="serial" type="uint" summary="serial of the enter event"/>
       <arg name="surface" type="object" interface="wl_surface" allow-null="true"/>
-      <arg name="hotspot_x" type="int" summary="x coordinate in surface local coordinates"/>
-      <arg name="hotspot_y" type="int" summary="y coordinate in surface local coordinates"/>
+      <arg name="hotspot_x" type="int" summary="surface-local x coordinate"/>
+      <arg name="hotspot_y" type="int" summary="surface-local y coordinate"/>
     </request>
 
     <request name="destroy" type="destructor">
@@ -449,8 +449,8 @@
       <description summary="motion event">
 	Sent whenever a tablet tool moves.
       </description>
-      <arg name="x" type="fixed" summary="x coordinate in surface local coordinates"/>
-      <arg name="y" type="fixed" summary="y coordinate in surface local coordinates"/>
+      <arg name="x" type="fixed" summary="surface-local x coordinate"/>
+      <arg name="y" type="fixed" summary="surface-local y coordinate"/>
     </event>
 
     <event name="pressure">
