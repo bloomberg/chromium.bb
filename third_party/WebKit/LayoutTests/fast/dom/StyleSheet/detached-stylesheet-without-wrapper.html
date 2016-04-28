@@ -10,13 +10,11 @@
 <body>
 <span id="test-element"></div>
 <script>
-description("Test that CSS stylesheets lacking wrappers are pruned from detached CSSOM subtrees. " + 
-"This is surprising behavior, but it's a very rare situation, and the behavior actually matches " +
-"what both WebKit and Gecko do for DOM nodes in detached subtrees.");
+description("Test that detached CSSOM subtrees keeps a reference to CSS stylesheets lacking wrappers.");
 
 var rule = getMatchedCSSRules(document.getElementById("test-element")).item(0);
 document.documentElement.removeChild(document.head);
-shouldBe("rule.parentStyleSheet", "null");
+shouldNotBe("rule.parentStyleSheet", "null");
 </script>
 </body>
 </html>
