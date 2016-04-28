@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "blimp/client/blimp_client_export.h"
 #include "blimp/net/blimp_message_processor.h"
 #include "ui/base/ime/text_input_type.h"
 
@@ -29,7 +28,7 @@ namespace client {
 // user navigates away from the currently page or the page loads for the first
 // time), ImeMessage::HIDE_IME will be sent.
 
-class BLIMP_CLIENT_EXPORT ImeFeature : public BlimpMessageProcessor {
+class ImeFeature : public BlimpMessageProcessor {
  public:
   // A delegate to be notified of text input requests.
   class Delegate {

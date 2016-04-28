@@ -21,6 +21,9 @@ source_set("ppapi_plugin_sources") {
   visibility = [
     ":ppapi_plugin",
     "//content",  # For the component build.
+    "//content/app:both",
+    "//content/app:browser",
+    "//content/app:child",
     "//gin",
   ]
 

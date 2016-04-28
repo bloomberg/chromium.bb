@@ -17,14 +17,11 @@ source_set("blimp_client") {
     "app/blimp_discardable_memory_allocator.h",
     "app/blimp_startup.cc",
     "app/blimp_startup.h",
-    "blimp_client_export.h",
     "session/assignment_source.cc",
     "session/assignment_source.h",
     "session/blimp_client_session.cc",
     "session/blimp_client_session.h",
   ]
-
-  defines = [ "BLIMP_CLIENT_IMPLEMENTATION=1" ]
 
   public_deps = [
     "//components/safe_json",
@@ -35,6 +32,7 @@ source_set("blimp_client") {
   deps = [
     ":feature",
     "//base",
+    "//blimp/common:blimp_common",
     "//blimp/common/proto",
     "//blimp/net:blimp_net",
     "//cc",
@@ -43,6 +41,7 @@ source_set("blimp_client") {
     "//net",
     "//third_party/libwebp",
     "//ui/gfx/geometry",
+    "//ui/gl",
     "//url:url",
   ]
 }
@@ -57,6 +56,7 @@ source_set("blimp_client_unit_tests") {
     "//base",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
+    "//blimp/common:blimp_common",
     "//testing/gmock",
     "//testing/gtest",
   ]
@@ -129,12 +129,18 @@ source_set("feature") {
     "//blimp/net:blimp_net",
     "//cc",
     "//cc/proto",
+    "//components/url_formatter",
     "//gpu/command_buffer/client",
     "//gpu/command_buffer/client:gl_in_process_context",
+    "//gpu/command_buffer/client:gles2_c_lib",
+    "//gpu/command_buffer/client:gles2_implementation",
     "//gpu/command_buffer/common:gles2_utils",
     "//gpu/skia_bindings",
+    "//net",
     "//skia",
+    "//third_party/WebKit/public:blink_headers",
     "//ui/base/ime:text_input_types",
+    "//ui/events:gesture_detection",
     "//ui/events/blink",
     "//ui/events/gestures/blink",
     "//ui/gl",
@@ -165,9 +171,13 @@ source_set("feature_unit_tests") {
     "//blimp/net:blimp_net",
     "//blimp/net:test_support",
     "//cc/proto",
+    "//net",
+    "//net:test_support",
     "//skia",
     "//testing/gmock",
     "//testing/gtest",
+    "//ui/events:gesture_detection",
+    "//ui/gfx/geometry",
   ]
 
   if (is_linux) {
@@ -193,6 +203,7 @@ if (is_linux && !is_chromeos && use_x11) {
       "//blimp/net:blimp_net",
       "//net",
       "//ui/events/platform/x11",
+      "//ui/platform_window",
       "//ui/platform_window/x11",
     ]
 
@@ -362,10 +373,12 @@ if (is_android) {
       ":feature",
       ":jni_headers",
       "//base",
+      "//blimp/common:blimp_common",
       "//blimp/common/proto",
       "//blimp/net:blimp_net",
       "//components/safe_json/android:safe_json_jni_headers",
       "//components/url_formatter",
+      "//net",
       "//skia",
       "//ui/base/ime:text_input_types",
       "//ui/gfx/geometry",

@@ -69,6 +69,7 @@ component("blimp_net") {
     "//blimp/common:blimp_common",
     "//blimp/common/proto",
     "//net",
+    "//third_party/WebKit/public:blink_headers",
     "//third_party/zlib",
     "//ui/base/ime:text_input_types",
   ]
@@ -125,5 +126,6 @@ source_set("unit_tests") {
     "//net:test_support",
     "//testing/gmock",
     "//testing/gtest",
+    "//third_party/WebKit/public:blink_headers",
   ]
 }

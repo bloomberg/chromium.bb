@@ -53,38 +53,89 @@ source_set("app") {
     "app/blimp_content_browser_client.h",
     "app/blimp_content_main_delegate.cc",
     "app/blimp_content_main_delegate.h",
-    "app/blimp_engine_config.cc",
-    "app/blimp_engine_config.h",
-    "app/blimp_network_delegate.cc",
-    "app/blimp_network_delegate.h",
-    "app/blimp_permission_manager.cc",
-    "app/blimp_permission_manager.h",
-    "app/blimp_system_url_request_context_getter.cc",
-    "app/blimp_system_url_request_context_getter.h",
-    "app/blimp_url_request_context_getter.cc",
-    "app/blimp_url_request_context_getter.h",
-    "app/engine_settings.h",
-    "app/settings_manager.cc",
-    "app/settings_manager.h",
-    "app/switches.cc",
-    "app/switches.h",
   ]
 
   deps = [
+    ":app_config",
+    ":app_net",
+    ":app_permissions",
+    ":app_settings",
+    ":app_switches",
     ":app_ui",
     ":blob_channel",
     ":common",
     ":renderer",
     ":session",
     "//base",
+    "//blimp/common:blimp_common",
     "//blimp/common/proto",
-    "//components/web_cache/renderer",
-    "//content",
+    "//blimp/engine:blob_channel_mojo_cpp_sources",
+    "//blimp/net:blimp_net",
     "//content/public/app:both",
     "//content/public/browser",
     "//content/public/common",
     "//content/public/renderer",
     "//content/public/utility",
+    "//net",
+  ]
+}
+
+source_set("app_config") {
+  sources = [
+    "app/blimp_engine_config.cc",
+    "app/blimp_engine_config.h",
+  ]
+  deps = [
+    ":app_switches",
+    "//base",
+  ]
+}
+
+source_set("app_net") {
+  sources = [
+    "app/blimp_network_delegate.cc",
+    "app/blimp_network_delegate.h",
+    "app/blimp_system_url_request_context_getter.cc",
+    "app/blimp_system_url_request_context_getter.h",
+    "app/blimp_url_request_context_getter.cc",
+    "app/blimp_url_request_context_getter.h",
+  ]
+  deps = [
+    ":common_user_agent",
+    "//base",
+    "//content/public/browser",
+    "//net",
+  ]
+}
+
+source_set("app_permissions") {
+  sources = [
+    "app/blimp_permission_manager.cc",
+    "app/blimp_permission_manager.h",
+  ]
+  deps = [
+    "//base",
+    "//content/public/browser",
+  ]
+}
+
+source_set("app_settings") {
+  sources = [
+    "app/engine_settings.h",
+    "app/settings_manager.cc",
+    "app/settings_manager.h",
+  ]
+  deps = [
+    "//blimp/net:blimp_net",
+    "//content/public/browser",
+    "//content/public/common",
+  ]
+}
+
+source_set("app_switches") {
+  sources = [
+    "app/switches.cc",
+    "app/switches.h",
   ]
 }
 
@@ -123,10 +174,25 @@ source_set("common") {
   ]
 
   deps = [
+    ":app_net",
+    ":app_permissions",
+    ":common_user_agent",
     "//base",
+    "//content/public/browser",
+    "//content/public/common",
+    "//net",
+    "//ui/base",
+  ]
+}
+
+source_set("common_user_agent") {
+  sources = [
+    "common/blimp_user_agent.cc",
+    "common/blimp_user_agent.h",
+  ]
+  deps = [
     "//components/version_info",
     "//content/public/common",
-    "//ui/base",
   ]
 }
 
@@ -140,7 +206,14 @@ source_set("feature") {
 
   deps = [
     "//base",
+    "//blimp/common:blimp_common",
     "//blimp/common/proto",
+    "//blimp/engine:app_settings",
+    "//blimp/engine:common",
+    "//blimp/net:blimp_net",
+    "//content/public/browser",
+    "//content/public/common",
+    "//net",
     "//ui/base",
     "//ui/base/ime",
     "//ui/resources",
@@ -162,6 +235,9 @@ source_set("renderer") {
     "//blimp/common:blimp_common",
     "//blimp/common/proto",
     "//cc",
+    "//components/web_cache/renderer",
+    "//content/public/common",
+    "//content/public/renderer",
     "//skia",
     "//third_party/libwebp",
     "//ui/gfx/geometry",
@@ -176,13 +252,22 @@ source_set("session") {
   ]
 
   deps = [
+    ":app_config",
+    ":app_settings",
+    ":app_switches",
+    ":app_ui",
+    ":common",
     ":feature",
     "//base",
     "//blimp/common:blimp_common",
     "//blimp/common/proto",
     "//blimp/net:blimp_net",
-    "//content",
+    "//content/public/browser",
     "//net",
+    "//ui/aura",
+    "//ui/base/ime",
+    "//ui/gfx/geometry",
+    "//ui/wm",
   ]
 }
 
@@ -214,9 +299,13 @@ source_set("app_unit_tests") {
 
   deps = [
     ":app",
+    ":app_config",
+    ":app_settings",
+    ":app_switches",
     "//base",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
+    "//blimp/engine:app_ui",
     "//testing/gmock",
     "//testing/gtest",
     "//ui/gfx:test_support",
@@ -236,10 +325,18 @@ source_set("feature_unit_tests") {
     "//base",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
+    "//blimp/common:blimp_common",
     "//blimp/common/proto",
-    "//content",
+    "//blimp/engine:app_settings",
+    "//blimp/net:blimp_net",
+    "//blimp/net:test_support",
+    "//content/public/browser",
+    "//net",
+    "//net:test_support",
     "//testing/gmock",
     "//testing/gtest",
+    "//third_party/WebKit/public:blink_headers",
+    "//ui/base/ime",
   ]
 }
 
@@ -261,6 +358,7 @@ if (is_linux) {
     deps = [
       ":app",
       ":pak",
+      "//base",
       "//blimp/net:blimp_net",
       "//content/public/app:both",
     ]

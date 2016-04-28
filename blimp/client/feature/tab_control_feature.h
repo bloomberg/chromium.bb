@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "blimp/client/blimp_client_export.h"
 #include "blimp/net/blimp_message_processor.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -19,7 +18,7 @@ class Size;
 namespace blimp {
 namespace client {
 
-class BLIMP_CLIENT_EXPORT TabControlFeature : public BlimpMessageProcessor {
+class TabControlFeature : public BlimpMessageProcessor {
  public:
   TabControlFeature();
   ~TabControlFeature() override;

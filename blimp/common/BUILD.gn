@@ -51,7 +51,10 @@ source_set("unit_tests") {
 
   deps = [
     ":blimp_common",
+    "//base",
     "//blimp/common/proto",
+    "//blimp/net:test_support",
+    "//crypto",
     "//testing/gmock",
     "//testing/gtest",
   ]

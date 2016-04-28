@@ -10,7 +10,6 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "blimp/client/blimp_client_export.h"
 #include "blimp/client/feature/compositor/blimp_input_manager.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_host_client.h"
@@ -85,7 +84,7 @@ class BlimpCompositorClient {
 // RenderWidget, identified by a custom |render_widget_id| generated on the
 // engine. The lifetime of this compositor is controlled by its corresponding
 // RenderWidget.
-class BLIMP_CLIENT_EXPORT BlimpCompositor
+class BlimpCompositor
     : public cc::LayerTreeHostClient,
       public cc::RemoteProtoChannel,
       public BlimpInputManagerClient {

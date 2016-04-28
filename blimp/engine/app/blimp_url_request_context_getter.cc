@@ -11,7 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "blimp/engine/app/blimp_network_delegate.h"
-#include "blimp/engine/common/blimp_content_client.h"
+#include "blimp/engine/common/blimp_user_agent.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/proxy/proxy_config_service.h"
 #include "net/proxy/proxy_service.h"

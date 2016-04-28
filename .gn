@@ -18,6 +18,7 @@ check_targets = [
   #"//apps/*",  # Medium-hard.
   "//ash/*",
   "//base/*",
+  "//blimp/*",
   "//blink/*",
   "//breakpad/*",
   "//build/*",
