@@ -88,6 +88,31 @@ group("chromium_builder_tests") {
   ]
 }
 
+if (is_chromeos) {
+  group("chromiumos_preflight") {
+    testonly = true
+    deps = [
+      "//breakpad:minidump_stackwalk($host_toolchain)",
+      "//chrome",
+      "//chrome/test/chromedriver",
+
+      # TODO(crbug.com/607362)
+      # "//content/test:video_decode_accelerator_unittest",
+      # "//content/test:video_encode_accelerator_unittest",
+
+      "//media:media_unittests",
+      "//ppapi/examples/video_decode",
+      "//sandbox/linux:chrome_sandbox",
+      "//sandbox/linux:sandbox_linux_unittests",
+
+      # TODO(crbug.com/607362)
+      #"//third_party/catapult/telemetry:bitmaptools",
+
+      "//tools/perf/clear_system_cache",
+    ]
+  }
+}
+
 # The "both_gn_and_gyp" target should reflect every target that is built
 # in both the GN and GYP builds, and ideally it should match the
 # "both_gn_and_gyp" target in build/gn_migration.gypi line-for-line.

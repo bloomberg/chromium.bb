@@ -67,7 +67,7 @@
     },
 
     'chromium.chromiumos': {
-      'ChromiumOS amd64-generic Compile': 'cros_chrome_sdk_gyp',
+      'ChromiumOS amd64-generic Compile': 'cros_chrome_sdk_gn',
       'ChromiumOS daisy Compile': 'cros_chrome_sdk_gyp',
       'ChromiumOS x86-generic Compile': 'cros_chrome_sdk_gyp',
       'Linux ChromiumOS Builder': 'swarming_chromeos_gyp_release_bot',
@@ -691,7 +691,7 @@
       'ChromiumOS Codesearch Builder': 'codesearch_gn',
       'cast_shell_linux': 'cast_gn_release_trybot',
       'chromeos_amd64-generic_variable': 'findit',
-      'chromeos_amd64-generic_chromium_compile_only_ng': 'cros_chrome_sdk_gyp',
+      'chromeos_amd64-generic_chromium_compile_only_ng': 'cros_chrome_sdk_gn',
       'chromeos_daisy_chromium_compile_only_ng': 'cros_chrome_sdk_gyp',
       'chromeos_daisy_variable': 'findit',
       'chromeos_x86-generic_chromium_compile_only_ng': 'cros_chrome_sdk_gyp',
@@ -1070,6 +1070,10 @@
     # The 'cros_chrome_sdk_* configs are placeholders that indicate
     # that the GYP_DEFINES (or GN args) are set by the `cros chrome-sdk`
     # wrapper and need to be looked at specially.
+    'cros_chrome_sdk_gn': [
+      'gn', 'cros_chrome_sdk',
+    ],
+
     'cros_chrome_sdk_gyp': [
       'gyp', 'cros_chrome_sdk',
     ],
