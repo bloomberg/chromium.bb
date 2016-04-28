@@ -753,6 +753,63 @@ class LayerTreeHostAnimationTestScrollOffsetChangesArePropagated
 SINGLE_AND_MULTI_THREAD_TEST_F(
     LayerTreeHostAnimationTestScrollOffsetChangesArePropagated);
 
+// Verifies that when a main thread scrolling reason gets added, the
+// notification to takover the animation on the main thread gets sent.
+class LayerTreeHostAnimationTestScrollOffsetAnimationTakeover
+    : public LayerTreeHostAnimationTest {
+ public:
+  LayerTreeHostAnimationTestScrollOffsetAnimationTakeover() {}
+
+  void SetupTree() override {
+    LayerTreeHostAnimationTest::SetupTree();
+
+    scroll_layer_ = FakePictureLayer::Create(&client_);
+    scroll_layer_->SetBounds(gfx::Size(10000, 10000));
+    client_.set_bounds(scroll_layer_->bounds());
+    scroll_layer_->SetScrollOffset(gfx::ScrollOffset(10, 20));
+    layer_tree_host()->root_layer()->AddChild(scroll_layer_);
+
+    AttachPlayersToTimeline();
+    player_child_->AttachElement(scroll_layer_->id());
+    // Allows NotifyAnimationTakeover to get called.
+    player_child_->set_animation_delegate(this);
+  }
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void DidCommit() override {
+    // Add a main thread scrolling reason after the first commit to trigger
+    // the takeover path.
+    if (layer_tree_host()->source_frame_number() == 1) {
+      scroll_layer_->AddMainThreadScrollingReasons(
+          MainThreadScrollingReason::kHasNonLayerViewportConstrainedObjects);
+    }
+  }
+
+  void WillCommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
+    if (host_impl->sync_tree()->source_frame_number() == 0) {
+      host_impl->animation_host()->ImplOnlyScrollAnimationCreate(
+          scroll_layer_->id(), gfx::ScrollOffset(650.f, 750.f),
+          gfx::ScrollOffset(10, 20));
+    }
+  }
+
+  void NotifyAnimationTakeover(base::TimeTicks monotonic_time,
+                               TargetProperty::Type target_property,
+                               double animation_start_time,
+                               std::unique_ptr<AnimationCurve> curve) override {
+    EndTest();
+  }
+
+  void AfterTest() override {}
+
+ private:
+  FakeContentLayerClient client_;
+  scoped_refptr<FakePictureLayer> scroll_layer_;
+};
+
+MULTI_THREAD_TEST_F(LayerTreeHostAnimationTestScrollOffsetAnimationTakeover);
+
 // Verifies that when the main thread removes a scroll animation and sets a new
 // scroll position, the active tree takes on exactly this new scroll position
 // after activation, and the main thread doesn't receive a spurious scroll
