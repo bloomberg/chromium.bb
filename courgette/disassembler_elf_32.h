@@ -61,8 +61,13 @@ class DisassemblerElf32 : public Disassembler {
     virtual uint16_t op_size() const = 0;
 
     // Comparator for sorting, which assumes uniqueness of RVAs.
-    static bool IsLessThan(TypedRVA* a, TypedRVA* b) {
+    static bool IsLessThanByRVA(TypedRVA* a, TypedRVA* b) {
       return a->rva() < b->rva();
+    }
+
+    // Comparator for sorting, which assumes uniqueness of file offsets.
+    static bool IsLessThanByFileOffset(TypedRVA* a, TypedRVA* b) {
+      return a->file_offset() < b->file_offset();
     }
 
   private:
@@ -163,6 +168,7 @@ class DisassemblerElf32 : public Disassembler {
 
   CheckBool CheckSection(RVA rva) WARN_UNUSED_RESULT;
 
+  // Extracts all rel32 TypedRVAs. Does not sort the result.
   CheckBool ParseRel32RelocsFromSections() WARN_UNUSED_RESULT;
 
   const Elf32_Ehdr* header_;

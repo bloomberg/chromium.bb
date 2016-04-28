@@ -169,6 +169,12 @@ bool DisassemblerElf32::Disassemble(AssemblyProgram* target) {
   if (!ParseFile(target))
     return false;
 
+  std::sort(rel32_locations_.begin(),
+            rel32_locations_.end(),
+            TypedRVA::IsLessThanByRVA);
+  DCHECK(rel32_locations_.empty() ||
+         rel32_locations_.back()->rva() != kUnassignedRVA);
+
   target->DefaultAssignIndexes();
   return true;
 }
@@ -283,16 +289,23 @@ CheckBool DisassemblerElf32::ParseFile(AssemblyProgram* program) {
 
   std::vector<FileOffset> abs_offsets;
 
+  // File parsing follows file offset order, and we visit abs32 and rel32
+  // locations in lockstep. Therefore we need to extract and sort file offsets
+  // of all abs32 and rel32 locations.
   if (!RVAsToFileOffsets(abs32_locations_, &abs_offsets))
     return false;
+  std::sort(abs32_locations_.begin(), abs32_locations_.end());
 
   if (!RVAsToFileOffsets(&rel32_locations_))
     return false;
+  std::sort(rel32_locations_.begin(),
+            rel32_locations_.end(),
+            TypedRVA::IsLessThanByFileOffset);
 
   std::vector<FileOffset>::iterator current_abs_offset = abs_offsets.begin();
-  ScopedVector<TypedRVA>::iterator current_rel = rel32_locations_.begin();
-
   std::vector<FileOffset>::iterator end_abs_offset = abs_offsets.end();
+
+  ScopedVector<TypedRVA>::iterator current_rel = rel32_locations_.begin();
   ScopedVector<TypedRVA>::iterator end_rel = rel32_locations_.end();
 
   // Visit section headers ordered by file offset.
@@ -512,27 +525,32 @@ CheckBool DisassemblerElf32::CheckSection(RVA rva) {
 
 CheckBool DisassemblerElf32::ParseRel32RelocsFromSections() {
   rel32_locations_.clear();
+  bool found_rel32 = false;
 
   // Loop through sections for relocation sections
   for (Elf32_Half section_id = 0; section_id < SectionHeaderCount();
        ++section_id) {
     const Elf32_Shdr* section_header = SectionHeader(section_id);
 
-    // TODO(huangs): Add better checks to skip non-code sections.
     // Some debug sections can have sh_type=SHT_PROGBITS but sh_addr=0.
     if (section_header->sh_type != SHT_PROGBITS ||
         section_header->sh_addr == 0)
       continue;
 
+    // Heuristic: Only consider ".text" section.
+    std::string section_name;
+    if (!SectionName(*section_header, &section_name))
+      return false;
+    if (section_name != ".text")
+      continue;
+
+    found_rel32 = true;
     if (!ParseRel32RelocsFromSection(section_header))
       return false;
   }
+  if (!found_rel32)
+    VLOG(1) << "Warning: Found no rel32 addresses. Missing .text section?";
 
-  std::sort(rel32_locations_.begin(),
-            rel32_locations_.end(),
-            TypedRVA::IsLessThan);
-  DCHECK(rel32_locations_.empty() ||
-         rel32_locations_.back()->rva() != kUnassignedRVA);
   return true;
 }
 
