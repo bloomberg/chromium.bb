@@ -115,10 +115,6 @@ NonClientFrameView* BubbleDialogDelegateView::CreateNonClientFrameView(
   return frame;
 }
 
-void BubbleDialogDelegateView::GetAccessibleState(ui::AXViewState* state) {
-  state->role = ui::AX_ROLE_DIALOG;
-}
-
 const char* BubbleDialogDelegateView::GetClassName() const {
   return kViewClassName;
 }

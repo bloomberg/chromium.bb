@@ -44,7 +44,6 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   bool ShouldShowCloseButton() const override;
   ClientView* CreateClientView(Widget* widget) override;
   NonClientFrameView* CreateNonClientFrameView(Widget* widget) override;
-  void GetAccessibleState(ui::AXViewState* state) override;
   const char* GetClassName() const override;
 
   // WidgetObserver overrides:
