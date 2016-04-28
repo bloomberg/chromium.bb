@@ -24,6 +24,10 @@ if (is_mac) {
 #         string, name of the generated target used for the product
 #         and executable name as specified in the output Info.plist.
 #
+#     format:
+#         string, the format to `plutil -convert` the plist to when
+#         generating the output.
+#
 #     extra_substitutions:
 #         (optional) string array, 'key=value' pairs for extra fields which are
 #         specified in a source Info.plist template.
@@ -32,6 +36,8 @@ template("info_plist") {
          "A list of template plist files must be specified for $target_name")
   assert(defined(invoker.executable_name),
          "The executable_name must be specified for $target_name")
+  assert(defined(invoker.format),
+         "The plist format must be specified for $target_name")
   executable_name = invoker.executable_name
 
   action(target_name) {
@@ -55,6 +61,7 @@ template("info_plist") {
           "-s=XCODE_BUILD=$xcode_build",
           "-s=XCODE_VERSION=$xcode_version",
           "-o=" + rebase_path(outputs[0], root_build_dir),
+          "-f=" + invoker.format,
         ] + rebase_path(sources, root_build_dir)
     args = [ "@{{response_file_name}}" ]
   }

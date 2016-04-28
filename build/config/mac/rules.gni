@@ -21,6 +21,7 @@ import("//build/config/mac/base_rules.gni")
 #         specified in a source Info.plist template.
 template("mac_info_plist") {
   info_plist(target_name) {
+    format = "xml1"
     extra_substitutions = []
     if (defined(invoker.extra_substitutions)) {
       extra_substitutions = invoker.extra_substitutions

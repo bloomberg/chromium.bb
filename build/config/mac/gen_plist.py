@@ -138,13 +138,13 @@ def LoadPList(path):
     os.unlink(name)
 
 
-def SavePList(path, data):
-  """Saves |data| as a Plist to |path| in binary1 format."""
+def SavePList(path, format, data):
+  """Saves |data| as a Plist to |path| in the specified |format|."""
   fd, name = tempfile.mkstemp()
   try:
     with os.fdopen(fd, 'w') as f:
       plistlib.writePlist(data, f)
-    subprocess.check_call(['plutil', '-convert', 'binary1', '-o', path, name])
+    subprocess.check_call(['plutil', '-convert', format, '-o', path, name])
   finally:
     os.unlink(name)
 
@@ -190,6 +190,8 @@ def main():
                       help='Path to output plist file.')
   parser.add_argument('-s', '--subst', action='append', default=[],
                       help='Substitution rule in the format "key=value".')
+  parser.add_argument('-f', '--format', required=True,
+                      help='Plist format (e.g. binary1, xml1) to output.')
   parser.add_argument('path', nargs="+", help='Path to input plist files.')
   args = parser.parse_args()
   substitutions = {}
@@ -200,7 +202,7 @@ def main():
   for filename in args.path:
     data = MergePList(data, LoadPList(filename))
   data = Interpolate(data, substitutions)
-  SavePList(args.output, data)
+  SavePList(args.output, args.format, data)
   return 0
 
 if __name__ == '__main__':

@@ -239,8 +239,12 @@ template("mac_toolchain") {
     }
 
     tool("copy_bundle_data") {
-      command = "rm -rf {{output}} && " +
-                "./gyp-mac-tool copy-bundle-resource {{source}} {{output}} True"
+      if (is_ios) {
+        _convert_to_binary = "True"
+      } else {
+        _convert_to_binary = "False"
+      }
+      command = "rm -rf {{output}} && ./gyp-mac-tool copy-bundle-resource {{source}} {{output}} $_convert_to_binary"
       description = "COPY_BUNDLE_DATA {{source}} {{output}}"
     }
     tool("compile_xcassets") {
