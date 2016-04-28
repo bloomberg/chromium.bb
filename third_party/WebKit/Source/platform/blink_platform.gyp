@@ -255,6 +255,8 @@
           # Use native Mac font code from core.
           ['include', '(fonts/)?mac/[^/]*Font[^/]*\\.(cpp|mm?)$'],
 
+          ['include', 'text/mac/HyphenationMac\\.cpp$'],
+
           # Cherry-pick some files that can't be included by broader regexps.
           # Some of these are used instead of Chromium platform files, see
           # the specific exclusions in the "exclude" list below.
@@ -318,6 +320,8 @@
           ['include', 'fonts/win/FontCacheSkiaWin\\.cpp$'],
           ['include', 'fonts/win/FontFallbackWin\\.(cpp|h)$'],
           ['include', 'fonts/win/FontPlatformDataWin\\.cpp$'],
+
+          ['include', 'text/win/HyphenationWin\\.cpp$'],
 
           # SystemInfo.cpp is useful and we don't want to copy it.
           ['include', 'win/SystemInfo\\.cpp$'],
