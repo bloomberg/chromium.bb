@@ -60,6 +60,7 @@ class GamepadPlatformDataFetcherMac : public GamepadDataFetcher,
   size_t GetSlotForXboxDevice(XboxController* device);
 
   void DeviceAdd(IOHIDDeviceRef device);
+  bool CheckCollection(IOHIDElementRef element);
   bool AddButtonsAndAxes(NSArray* elements, size_t slot);
   void DeviceRemove(IOHIDDeviceRef device);
   void ValueChanged(IOHIDValueRef value);

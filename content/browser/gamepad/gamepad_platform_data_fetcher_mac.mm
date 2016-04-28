@@ -156,6 +156,23 @@ void GamepadPlatformDataFetcherMac::ValueChangedCallback(void* context,
   InstanceFromContext(context)->ValueChanged(ref);
 }
 
+bool GamepadPlatformDataFetcherMac::CheckCollection(IOHIDElementRef element) {
+  // Check that a parent collection of this element matches one of the usage
+  // numbers that we are looking for.
+  while ((element = IOHIDElementGetParent(element)) != NULL) {
+    uint32_t usage_page = IOHIDElementGetUsagePage(element);
+    uint32_t usage = IOHIDElementGetUsage(element);
+    if (usage_page == kGenericDesktopUsagePage) {
+      if (usage == kJoystickUsageNumber ||
+          usage == kGameUsageNumber ||
+          usage == kMultiAxisUsageNumber) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 bool GamepadPlatformDataFetcherMac::AddButtonsAndAxes(NSArray* elements,
                                                       size_t slot) {
   WebGamepad& pad = pad_state_[slot].data;
@@ -172,6 +189,9 @@ bool GamepadPlatformDataFetcherMac::AddButtonsAndAxes(NSArray* elements,
 
   for (id elem in elements) {
     IOHIDElementRef element = reinterpret_cast<IOHIDElementRef>(elem);
+    if (!CheckCollection(element))
+      continue;
+
     uint32_t usage_page = IOHIDElementGetUsagePage(element);
     uint32_t usage = IOHIDElementGetUsage(element);
     if (IOHIDElementGetType(element) == kIOHIDElementTypeInput_Button &&
@@ -202,6 +222,9 @@ bool GamepadPlatformDataFetcherMac::AddButtonsAndAxes(NSArray* elements,
     uint32_t next_index = 0;
     for (id elem in elements) {
       IOHIDElementRef element = reinterpret_cast<IOHIDElementRef>(elem);
+      if (!CheckCollection(element))
+        continue;
+
       uint32_t usage_page = IOHIDElementGetUsagePage(element);
       uint32_t usage = IOHIDElementGetUsage(element);
       if (IOHIDElementGetType(element) == kIOHIDElementTypeInput_Misc &&
