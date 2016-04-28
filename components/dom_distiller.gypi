@@ -166,6 +166,7 @@
             '../net/net.gyp:net',
             '../skia/skia.gyp:skia',
             '../sync/sync.gyp:sync',
+            '../ui/display/display.gyp:display',
             '../ui/gfx/gfx.gyp:gfx',
             '../url/url.gyp:url_lib',
             'components_resources.gyp:components_resources',

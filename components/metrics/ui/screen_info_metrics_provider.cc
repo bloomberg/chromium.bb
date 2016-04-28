@@ -6,7 +6,7 @@
 
 #include "build/build_config.h"
 #include "components/metrics/proto/system_profile.pb.h"
-#include "ui/gfx/screen.h"
+#include "ui/display/screen.h"
 
 namespace metrics {
 
@@ -78,15 +78,17 @@ void ScreenInfoMetricsProvider::ProvideSystemProfileMetrics(
 }
 
 gfx::Size ScreenInfoMetricsProvider::GetScreenSize() const {
-  return gfx::Screen::GetScreen()->GetPrimaryDisplay().GetSizeInPixel();
+  return display::Screen::GetScreen()->GetPrimaryDisplay().GetSizeInPixel();
 }
 
 float ScreenInfoMetricsProvider::GetScreenDeviceScaleFactor() const {
-  return gfx::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor();
+  return display::Screen::GetScreen()
+      ->GetPrimaryDisplay()
+      .device_scale_factor();
 }
 
 int ScreenInfoMetricsProvider::GetScreenCount() const {
-  return gfx::Screen::GetScreen()->GetNumDisplays();
+  return display::Screen::GetScreen()->GetNumDisplays();
 }
 
 }  // namespace metrics

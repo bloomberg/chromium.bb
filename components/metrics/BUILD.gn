@@ -216,6 +216,7 @@ source_set("ui") {
   ]
   deps = [
     "//base",
+    "//ui/display",
     "//ui/gfx",
     "//ui/gfx/geometry",
   ]

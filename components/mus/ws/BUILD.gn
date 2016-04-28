@@ -103,6 +103,7 @@ source_set("lib") {
     "//services/shell/public/interfaces",
     "//services/tracing/public/cpp",
     "//ui/base",
+    "//ui/display",
     "//ui/events",
     "//ui/events/platform",
     "//ui/gfx",

@@ -21,7 +21,6 @@
 
 #include "ash/display/display_info.h"
 #include "ash/display/display_manager.h"
-#include "ash/display/screen_ash.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/cancelable_callback.h"
@@ -47,8 +46,9 @@
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/aura/window_property.h"
 #include "ui/base/hit_test.h"
+#include "ui/display/display_observer.h"
+#include "ui/display/screen.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
-#include "ui/gfx/display_observer.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 
@@ -939,37 +939,37 @@ void bind_shell(wl_client* client, void* data, uint32_t version, uint32_t id) {
 ////////////////////////////////////////////////////////////////////////////////
 // wl_output_interface:
 
-wl_output_transform OutputTransform(gfx::Display::Rotation rotation) {
+wl_output_transform OutputTransform(display::Display::Rotation rotation) {
   switch (rotation) {
-    case gfx::Display::ROTATE_0:
+    case display::Display::ROTATE_0:
       return WL_OUTPUT_TRANSFORM_NORMAL;
-    case gfx::Display::ROTATE_90:
+    case display::Display::ROTATE_90:
       return WL_OUTPUT_TRANSFORM_90;
-    case gfx::Display::ROTATE_180:
+    case display::Display::ROTATE_180:
       return WL_OUTPUT_TRANSFORM_180;
-    case gfx::Display::ROTATE_270:
+    case display::Display::ROTATE_270:
       return WL_OUTPUT_TRANSFORM_270;
   }
   NOTREACHED();
   return WL_OUTPUT_TRANSFORM_NORMAL;
 }
 
-class WaylandDisplayObserver : public gfx::DisplayObserver {
+class WaylandDisplayObserver : public display::DisplayObserver {
  public:
-  WaylandDisplayObserver(const gfx::Display& display,
+  WaylandDisplayObserver(const display::Display& display,
                          wl_resource* output_resource)
       : display_id_(display.id()), output_resource_(output_resource) {
-    gfx::Screen::GetScreen()->AddObserver(this);
+    display::Screen::GetScreen()->AddObserver(this);
     SendDisplayMetrics(display);
   }
   ~WaylandDisplayObserver() override {
-    gfx::Screen::GetScreen()->RemoveObserver(this);
+    display::Screen::GetScreen()->RemoveObserver(this);
   }
 
-  // Overridden from gfx::DisplayObserver:
-  void OnDisplayAdded(const gfx::Display& new_display) override {}
-  void OnDisplayRemoved(const gfx::Display& new_display) override {}
-  void OnDisplayMetricsChanged(const gfx::Display& display,
+  // Overridden from display::DisplayObserver:
+  void OnDisplayAdded(const display::Display& new_display) override {}
+  void OnDisplayRemoved(const display::Display& new_display) override {}
+  void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t changed_metrics) override {
     if (display.id() != display_id_)
       return;
@@ -982,7 +982,7 @@ class WaylandDisplayObserver : public gfx::DisplayObserver {
   }
 
  private:
-  void SendDisplayMetrics(const gfx::Display& display) {
+  void SendDisplayMetrics(const display::Display& display) {
     const ash::DisplayInfo& info =
         ash::Shell::GetInstance()->display_manager()->GetDisplayInfo(
             display.id());
@@ -1031,9 +1031,9 @@ void bind_output(wl_client* client, void* data, uint32_t version, uint32_t id) {
       client, &wl_output_interface, std::min(version, output_version), id);
 
   // TODO(reveman): Multi-display support.
-  const gfx::Display& display = ash::Shell::GetInstance()
-                                    ->display_manager()
-                                    ->GetPrimaryDisplayCandidate();
+  const display::Display& display = ash::Shell::GetInstance()
+                                        ->display_manager()
+                                        ->GetPrimaryDisplayCandidate();
 
   SetImplementation(
       resource, nullptr,

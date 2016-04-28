@@ -142,6 +142,7 @@
       ],
       'dependencies': [
         '../base/base.gyp:base',
+        '../ui/display/display.gyp:display',
         '../ui/gfx/gfx.gyp:gfx',
         'metrics',
       ],

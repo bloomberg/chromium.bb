@@ -32,9 +32,9 @@
 #include "services/shell/public/cpp/connector.h"
 #include "third_party/skia/include/core/SkXfermode.h"
 #include "ui/base/cursor/cursor_loader.h"
+#include "ui/display/display.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
-#include "ui/gfx/display.h"
 #include "ui/platform_window/platform_ime_controller.h"
 #include "ui/platform_window/platform_window.h"
 
@@ -316,8 +316,8 @@ void DefaultPlatformDisplay::WantToDraw() {
 
 void DefaultPlatformDisplay::UpdateMetrics(const gfx::Size& size,
                                            float device_pixel_ratio) {
-  if (gfx::Display::HasForceDeviceScaleFactor())
-    device_pixel_ratio = gfx::Display::GetForcedDeviceScaleFactor();
+  if (display::Display::HasForceDeviceScaleFactor())
+    device_pixel_ratio = display::Display::GetForcedDeviceScaleFactor();
   if (metrics_.size_in_pixels.To<gfx::Size>() == size &&
       metrics_.device_pixel_ratio == device_pixel_ratio)
     return;

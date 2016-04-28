@@ -75,6 +75,7 @@
             '../third_party/wayland-protocols/wayland-protocols.gyp:xdg_shell_protocol',
             '../third_party/wayland/wayland.gyp:wayland_server',
             '../ui/events/events.gyp:dom_keycode_converter',
+            '../ui/display/display.gyp:display',
             '../ui/events/events.gyp:events_base',
             '../ui/views/views.gyp:views',
             'exo',

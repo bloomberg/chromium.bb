@@ -41,6 +41,7 @@ static_library("browser") {
     "//sync",
     "//third_party/WebKit/public:blink_headers",
     "//ui/base",
+    "//ui/display",
     "//ui/gfx",
     "//url",
   ]

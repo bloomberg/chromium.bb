@@ -42,8 +42,8 @@
 #include "gpu/config/gpu_info.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebScreenInfo.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/screen.h"
 
 using blink::WebScreenInfo;
 
@@ -126,10 +126,10 @@ void AddAcceptLanguagesToFingerprint(
 // into the |machine|.
 void AddScreenInfoToFingerprint(const WebScreenInfo& screen_info,
                                 Fingerprint::MachineCharacteristics* machine) {
-  machine->set_screen_count(gfx::Screen::GetScreen()->GetNumDisplays());
+  machine->set_screen_count(display::Screen::GetScreen()->GetNumDisplays());
 
   const gfx::Size screen_size =
-      gfx::Screen::GetScreen()->GetPrimaryDisplay().GetSizeInPixel();
+      display::Screen::GetScreen()->GetPrimaryDisplay().GetSizeInPixel();
   machine->mutable_screen_size()->set_width(screen_size.width());
   machine->mutable_screen_size()->set_height(screen_size.height());
 
