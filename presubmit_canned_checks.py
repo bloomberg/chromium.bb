@@ -859,10 +859,7 @@ def CheckOwners(input_api, output_api, source_file_filter=None):
       return [output_api.PresubmitNotifyResult(
           '--tbr was specified, skipping OWNERS check')]
     if input_api.change.issue:
-      if (input_api.dry_run or
-        # TODO(tandrii): clean below once CQ && run_presubmit.py recipe specify
-        # dry_run property. http://crbug.com/605563.
-        _GetRietveldIssueProps(input_api, None).get('cq_dry_run', False)):
+      if input_api.dry_run:
         return [output_api.PresubmitNotifyResult(
             'This is a dry run, skipping OWNERS check')]
     else:

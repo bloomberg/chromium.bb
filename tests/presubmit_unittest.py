@@ -2563,7 +2563,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
   def AssertOwnersWorks(self, tbr=False, issue='1', approvers=None,
       reviewers=None, is_committing=True, rietveld_response=None,
       uncovered_files=None, expected_output='',
-      manually_specified_reviewers=None, cq_dry_run=False):
+      manually_specified_reviewers=None, dry_run=None):
     if approvers is None:
       # The set of people who lgtm'ed a change.
       approvers = set()
@@ -2589,9 +2589,10 @@ class CannedChecksUnittest(PresubmitTestsBase):
     input_api.owners_db = fake_db
     input_api.is_committing = is_committing
     input_api.tbr = tbr
+    input_api.dry_run = dry_run
 
     if not is_committing or (not tbr and issue):
-      if not cq_dry_run:
+      if not dry_run:
         affected_file.LocalPath().AndReturn('foo/xyz.cc')
         change.AffectedFiles(file_filter=None).AndReturn([affected_file])
       if issue and not rietveld_response:
@@ -2606,14 +2607,10 @@ class CannedChecksUnittest(PresubmitTestsBase):
 
       if is_committing:
         people = approvers
-        if issue:
-          input_api.rietveld.get_issue_properties(
-              issue=int(input_api.change.issue), messages=None).AndReturn(
-                  rietveld_response)
       else:
         people = reviewers
 
-      if not cq_dry_run:
+      if not dry_run:
         if issue:
           input_api.rietveld.get_issue_properties(
               issue=int(input_api.change.issue), messages=True).AndReturn(
@@ -2637,11 +2634,10 @@ class CannedChecksUnittest(PresubmitTestsBase):
   def testCannedCheckOwners_DryRun(self):
     response = {
       "owner_email": "john@example.com",
-      "cq_dry_run": True,
       "reviewers": ["ben@example.com"],
     }
     self.AssertOwnersWorks(approvers=set(),
-        cq_dry_run=True,
+        dry_run=True,
         rietveld_response=response,
         reviewers=set(["ben@example.com"]),
         expected_output='This is a dry run, skipping OWNERS check\n')
