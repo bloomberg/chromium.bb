@@ -94,6 +94,7 @@ public:
     void setBaseBackgroundColor(WebColor) override;
     bool forSubframe() const { return false; }
     void scheduleAnimation() override;
+    WebWidgetClient* client() const override { return m_client; }
 
 private:
     WebWidgetClient* m_client;

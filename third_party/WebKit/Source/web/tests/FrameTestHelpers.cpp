@@ -189,7 +189,7 @@ WebViewHelper::~WebViewHelper()
     reset();
 }
 
-WebViewImpl* WebViewHelper::initializeWithOpener(WebFrame* opener, bool enableJavascript, TestWebFrameClient* webFrameClient, TestWebViewClient* webViewClient, void (*updateSettingsFunc)(WebSettings*))
+WebViewImpl* WebViewHelper::initializeWithOpener(WebFrame* opener, bool enableJavascript, TestWebFrameClient* webFrameClient, TestWebViewClient* webViewClient, TestWebWidgetClient* webWidgetClient, void (*updateSettingsFunc)(WebSettings*))
 {
     reset();
 
@@ -197,6 +197,8 @@ WebViewImpl* WebViewHelper::initializeWithOpener(WebFrame* opener, bool enableJa
         webFrameClient = defaultWebFrameClient();
     if (!webViewClient)
         webViewClient = defaultWebViewClient();
+    if (!webWidgetClient)
+        webWidgetClient = webViewClient->widgetClient();
     m_webView = WebViewImpl::create(webViewClient);
     m_webView->settings()->setJavaScriptEnabled(enableJavascript);
     m_webView->settings()->setPluginsEnabled(true);
@@ -218,21 +220,21 @@ WebViewImpl* WebViewHelper::initializeWithOpener(WebFrame* opener, bool enableJa
     m_webView->setMainFrame(frame);
     // TODO(dcheng): The main frame widget currently has a special case.
     // Eliminate this once WebView is no longer a WebWidget.
-    m_webViewWidget = blink::WebFrameWidget::create(webViewClient, m_webView, frame);
+    m_webViewWidget = blink::WebFrameWidget::create(webWidgetClient, m_webView, frame);
 
     m_testWebViewClient = webViewClient;
 
     return m_webView;
 }
 
-WebViewImpl* WebViewHelper::initialize(bool enableJavascript, TestWebFrameClient* webFrameClient, TestWebViewClient* webViewClient, void (*updateSettingsFunc)(WebSettings*))
+WebViewImpl* WebViewHelper::initialize(bool enableJavascript, TestWebFrameClient* webFrameClient, TestWebViewClient* webViewClient, TestWebWidgetClient* webWidgetClient, void (*updateSettingsFunc)(WebSettings*))
 {
-    return initializeWithOpener(nullptr, enableJavascript, webFrameClient, webViewClient, updateSettingsFunc);
+    return initializeWithOpener(nullptr, enableJavascript, webFrameClient, webViewClient, webWidgetClient, updateSettingsFunc);
 }
 
-WebViewImpl* WebViewHelper::initializeAndLoad(const std::string& url, bool enableJavascript, TestWebFrameClient* webFrameClient, TestWebViewClient* webViewClient, void (*updateSettingsFunc)(WebSettings*))
+WebViewImpl* WebViewHelper::initializeAndLoad(const std::string& url, bool enableJavascript, TestWebFrameClient* webFrameClient, TestWebViewClient* webViewClient, TestWebWidgetClient* webWidgetClient, void (*updateSettingsFunc)(WebSettings*))
 {
-    initialize(enableJavascript, webFrameClient, webViewClient, updateSettingsFunc);
+    initialize(enableJavascript, webFrameClient, webViewClient, webWidgetClient, updateSettingsFunc);
 
     loadFrame(webView()->mainFrame(), url);
 

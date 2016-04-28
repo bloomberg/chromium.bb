@@ -76,6 +76,7 @@ public:
     // blink.
     virtual bool forSubframe() const { return true; }
     virtual void scheduleAnimation() = 0;
+    virtual WebWidgetClient* client() const = 0;
 };
 
 } // namespace blink

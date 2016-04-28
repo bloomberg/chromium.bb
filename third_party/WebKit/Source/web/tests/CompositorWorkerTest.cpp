@@ -31,7 +31,7 @@ public:
         : m_baseURL("http://www.test.com/")
     {
         RuntimeEnabledFeatures::setCompositorWorkerEnabled(true);
-        m_helper.initialize(true, 0, &m_mockWebViewClient, &configureSettings);
+        m_helper.initialize(true, nullptr, &m_mockWebViewClient, nullptr, &configureSettings);
         webViewImpl()->resize(IntSize(320, 240));
     }
 

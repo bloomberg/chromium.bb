@@ -2070,6 +2070,109 @@ void RenderViewImpl::initializeLayerTreeView() {
   }
 }
 
+bool RenderViewImpl::allowsBrokenNullLayerTreeView() const {
+  return RenderWidget::allowsBrokenNullLayerTreeView();
+}
+
+void RenderViewImpl::closeWidgetSoon() {
+  RenderWidget::closeWidgetSoon();
+}
+
+void RenderViewImpl::convertViewportToWindow(blink::WebRect* rect) {
+  RenderWidget::convertViewportToWindow(rect);
+}
+
+void RenderViewImpl::convertWindowToViewport(blink::WebFloatRect* rect) {
+  RenderWidget::convertWindowToViewport(rect);
+}
+
+void RenderViewImpl::didAutoResize(const blink::WebSize& newSize) {
+  RenderWidget::didAutoResize(newSize);
+}
+
+void RenderViewImpl::didChangeCursor(const blink::WebCursorInfo& info) {
+  RenderWidget::didChangeCursor(info);
+}
+
+void RenderViewImpl::didInvalidateRect(const blink::WebRect& rect) {
+  RenderWidget::didInvalidateRect(rect);
+}
+
+void RenderViewImpl::didMeaningfulLayout(
+    blink::WebMeaningfulLayout layout_type) {
+  RenderWidget::didMeaningfulLayout(layout_type);
+}
+
+void RenderViewImpl::didOverscroll(
+    const blink::WebFloatSize& overscrollDelta,
+    const blink::WebFloatSize& accumulatedOverscroll,
+    const blink::WebFloatPoint& positionInViewport,
+    const blink::WebFloatSize& velocityInViewport) {
+  RenderWidget::didOverscroll(overscrollDelta, accumulatedOverscroll,
+                              positionInViewport, velocityInViewport);
+}
+
+void RenderViewImpl::didUpdateTextOfFocusedElementByNonUserInput() {
+  RenderWidget::didUpdateTextOfFocusedElementByNonUserInput();
+}
+
+void RenderViewImpl::hasTouchEventHandlers(bool has_handlers) {
+  RenderWidget::hasTouchEventHandlers(has_handlers);
+}
+
+blink::WebLayerTreeView* RenderViewImpl::layerTreeView() {
+  return RenderWidget::layerTreeView();
+}
+
+void RenderViewImpl::resetInputMethod() {
+  RenderWidget::resetInputMethod();
+}
+
+blink::WebRect RenderViewImpl::rootWindowRect() {
+  return RenderWidget::rootWindowRect();
+}
+
+void RenderViewImpl::scheduleAnimation() {
+  RenderWidget::scheduleAnimation();
+}
+
+blink::WebScreenInfo RenderViewImpl::screenInfo() {
+  return RenderWidget::screenInfo();
+}
+
+void RenderViewImpl::setToolTipText(const blink::WebString& text,
+                                    blink::WebTextDirection hint) {
+  RenderWidget::setToolTipText(text, hint);
+}
+
+void RenderViewImpl::setTouchAction(blink::WebTouchAction touchAction) {
+  RenderWidget::setTouchAction(touchAction);
+}
+
+void RenderViewImpl::setWindowRect(const blink::WebRect& rect) {
+  RenderWidget::setWindowRect(rect);
+}
+
+void RenderViewImpl::showImeIfNeeded() {
+  RenderWidget::showImeIfNeeded();
+}
+
+void RenderViewImpl::showUnhandledTapUIIfNeeded(
+    const blink::WebPoint& tappedPosition,
+    const blink::WebNode& tappedNode,
+    bool pageChanged) {
+  RenderWidget::showUnhandledTapUIIfNeeded(tappedPosition, tappedNode,
+                                           pageChanged);
+}
+
+blink::WebRect RenderViewImpl::windowRect() {
+  return RenderWidget::windowRect();
+}
+
+blink::WebRect RenderViewImpl::windowResizerRect() {
+  return RenderWidget::windowResizerRect();
+}
+
 // blink::WebFrameClient -----------------------------------------------------
 
 void RenderViewImpl::Repaint(const gfx::Size& size) {

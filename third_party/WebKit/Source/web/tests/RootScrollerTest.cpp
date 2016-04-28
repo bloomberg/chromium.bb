@@ -59,7 +59,8 @@ public:
         // Load a page with large body and set viewport size to 400x400 to
         // ensure main frame is scrollable.
         m_helper.initializeAndLoad(
-            m_baseURL + pageName, true, 0, &m_client, &configureSettings);
+            m_baseURL + pageName, true, nullptr, &m_client, nullptr,
+            &configureSettings);
 
         // Initialize top controls to be shown.
         webViewImpl()->resizeWithTopControls(IntSize(400, 400), 50, true);

@@ -52,7 +52,7 @@ public:
     ScrollingCoordinatorTest()
         : m_baseURL("http://www.test.com/")
     {
-        m_helper.initialize(true, 0, &m_mockWebViewClient, &configureSettings);
+        m_helper.initialize(true, nullptr, &m_mockWebViewClient, nullptr, &configureSettings);
         webViewImpl()->resize(IntSize(320, 240));
 
         // OSX attaches main frame scrollbars to the VisualViewport so the VisualViewport layers need

@@ -1752,7 +1752,7 @@ TEST_F(WebViewTest, ShowPressOnTransformedLink)
 {
     OwnPtr<FrameTestHelpers::TestWebViewClient> fakeCompositingWebViewClient = adoptPtr(new FrameTestHelpers::TestWebViewClient());
     FrameTestHelpers::WebViewHelper webViewHelper;
-    WebViewImpl* webViewImpl = webViewHelper.initialize(true, 0, fakeCompositingWebViewClient.get(), &configueCompositingWebView);
+    WebViewImpl* webViewImpl = webViewHelper.initialize(true, nullptr, fakeCompositingWebViewClient.get(), nullptr, &configueCompositingWebView);
 
     int pageWidth = 640;
     int pageHeight = 480;

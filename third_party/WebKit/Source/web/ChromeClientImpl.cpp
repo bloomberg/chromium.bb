@@ -565,13 +565,8 @@ IntRect ChromeClientImpl::viewportToScreen(const IntRect& rectInViewport, const 
     DCHECK(widget->isFrameView());
     const FrameView* view = toFrameView(widget);
     LocalFrame* frame = view->frame().localFrameRoot();
-    WebWidgetClient* client = nullptr;
 
-    // TODO(kenrb): Consolidate this to a single case when WebViewFrameWidget refactor is complete.
-    if (WebLocalFrameImpl::fromFrame(frame) && WebLocalFrameImpl::fromFrame(frame)->frameWidget() && WebLocalFrameImpl::fromFrame(frame)->frameWidget()->forSubframe())
-        client = toWebFrameWidgetImpl(WebLocalFrameImpl::fromFrame(frame)->frameWidget())->client();
-    else
-        client = m_webView->client();
+    WebWidgetClient* client = WebLocalFrameImpl::fromFrame(frame)->frameWidget()->client();
 
     if (client) {
         client->convertViewportToWindow(&screenRect);
@@ -579,6 +574,7 @@ IntRect ChromeClientImpl::viewportToScreen(const IntRect& rectInViewport, const 
         screenRect.x += windowRect.x;
         screenRect.y += windowRect.y;
     }
+
     return screenRect;
 }
 

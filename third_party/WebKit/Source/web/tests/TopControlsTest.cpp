@@ -78,7 +78,7 @@ public:
 
         // Load a page with large body and set viewport size to 400x400 to ensure
         // main frame is scrollable.
-        m_helper.initializeAndLoad(m_baseURL + pageName, true, 0, 0, &configureSettings);
+        m_helper.initializeAndLoad(m_baseURL + pageName, true, nullptr, nullptr, nullptr, &configureSettings);
 
         webViewImpl()->resize(IntSize(400, 400));
         return webViewImpl();

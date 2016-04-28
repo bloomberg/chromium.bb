@@ -319,8 +319,39 @@ class CONTENT_EXPORT RenderViewImpl
   void didHandleGestureEvent(const blink::WebGestureEvent& event,
                              bool event_cancelled) override;
   void onMouseDown(const blink::WebNode& mouse_down_node) override;
-
   void initializeLayerTreeView() override;
+
+  // TODO(lfg): Remove once WebViewClient no longer inherits from
+  // WebWidgetClient.
+  bool allowsBrokenNullLayerTreeView() const override;
+  void closeWidgetSoon() override;
+  void convertViewportToWindow(blink::WebRect* rect) override;
+  void convertWindowToViewport(blink::WebFloatRect* rect) override;
+  void didAutoResize(const blink::WebSize& newSize) override;
+  void didChangeCursor(const blink::WebCursorInfo& info) override;
+  void didInvalidateRect(const blink::WebRect& rect) override;
+  void didMeaningfulLayout(blink::WebMeaningfulLayout layout_type) override;
+  void didOverscroll(const blink::WebFloatSize& overscrollDelta,
+                     const blink::WebFloatSize& accumulatedOverscroll,
+                     const blink::WebFloatPoint& positionInViewport,
+                     const blink::WebFloatSize& velocityInViewport) override;
+  void didUpdateTextOfFocusedElementByNonUserInput() override;
+  void hasTouchEventHandlers(bool has_handlers) override;
+  blink::WebLayerTreeView* layerTreeView() override;
+  void resetInputMethod() override;
+  blink::WebRect rootWindowRect() override;
+  void scheduleAnimation() override;
+  blink::WebScreenInfo screenInfo() override;
+  void setToolTipText(const blink::WebString&,
+                      blink::WebTextDirection hint) override;
+  void setTouchAction(blink::WebTouchAction touchAction) override;
+  void setWindowRect(const blink::WebRect& rect) override;
+  void showImeIfNeeded() override;
+  void showUnhandledTapUIIfNeeded(const blink::WebPoint& tappedPosition,
+                                  const blink::WebNode& tappedNode,
+                                  bool pageChanged) override;
+  blink::WebRect windowRect() override;
+  blink::WebRect windowResizerRect() override;
 
   // blink::WebViewClient implementation --------------------------------------
 

@@ -122,7 +122,7 @@ public:
     void setBaseBackgroundColor(WebColor) override;
     void scheduleAnimation() override;
 
-    WebWidgetClient* client() const { return m_client; }
+    WebWidgetClient* client() const override { return m_client; }
 
     Frame* focusedCoreFrame() const;
 

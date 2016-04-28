@@ -71,7 +71,7 @@ protected:
     void initialize(CompositingMode compositingMode)
     {
         m_helper.initialize(
-            false /* enableJavascript */, nullptr /* webFrameClient */, nullptr /* webViewClient */,
+            false /* enableJavascript */, nullptr /* webFrameClient */, nullptr /* webViewClient */, nullptr /* webWidgetClient */,
             compositingMode == AcceleratedCompositing ? enableAcceleratedCompositing : disableAcceleratedCompositing);
         webViewImpl()->resize(WebSize(viewportWidth, viewportHeight));
         webViewImpl()->updateAllLifecyclePhases();

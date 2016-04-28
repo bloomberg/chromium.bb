@@ -59,6 +59,7 @@ enum class WebCachePolicy;
 namespace FrameTestHelpers {
 
 class TestWebFrameClient;
+using TestWebWidgetClient = WebWidgetClient;
 
 // Loads a url into the specified WebFrame for testing purposes. Pumps any
 // pending resource requests, as well as waiting for the threaded parser to
@@ -127,6 +128,11 @@ public:
     bool animationScheduled() { return m_animationScheduled; }
     void clearAnimationScheduled() { m_animationScheduled = false; }
 
+    // TODO(lfg): This is a temporary method to retrieve the WebWidgetClient,
+    // while we refactor WebView to not inherit from Webwidget.
+    // Returns the WebWidgetClient.
+    WebWidgetClient* widgetClient() { return this; }
+
 private:
     OwnPtr<WebLayerTreeView> m_layerTreeView;
     bool m_animationScheduled;
@@ -142,14 +148,14 @@ public:
     // Creates and initializes the WebView. Implicitly calls reset() first. If
     // a WebFrameClient or a WebViewClient are passed in, they must outlive the
     // WebViewHelper.
-    WebViewImpl* initializeWithOpener(WebFrame* opener, bool enableJavascript = false, TestWebFrameClient* = nullptr, TestWebViewClient* = nullptr, void (*updateSettingsFunc)(WebSettings*) = nullptr);
+    WebViewImpl* initializeWithOpener(WebFrame* opener, bool enableJavascript = false, TestWebFrameClient* = nullptr, TestWebViewClient* = nullptr, TestWebWidgetClient* = nullptr, void (*updateSettingsFunc)(WebSettings*) = nullptr);
 
     // Same as initializeWithOpener(), but always sets the opener to null.
-    WebViewImpl* initialize(bool enableJavascript = false, TestWebFrameClient* = 0, TestWebViewClient* = 0, void (*updateSettingsFunc)(WebSettings*) = 0);
+    WebViewImpl* initialize(bool enableJavascript = false, TestWebFrameClient* = nullptr, TestWebViewClient* = nullptr, TestWebWidgetClient* = nullptr, void (*updateSettingsFunc)(WebSettings*) = 0);
 
     // Same as initialize() but also performs the initial load of the url. Only
     // returns once the load is complete.
-    WebViewImpl* initializeAndLoad(const std::string& url, bool enableJavascript = false, TestWebFrameClient* = 0, TestWebViewClient* = 0, void (*updateSettingsFunc)(WebSettings*) = 0);
+    WebViewImpl* initializeAndLoad(const std::string& url, bool enableJavascript = false, TestWebFrameClient* = nullptr, TestWebViewClient* = nullptr, TestWebWidgetClient* = nullptr, void (*updateSettingsFunc)(WebSettings*) = 0);
 
     void resize(WebSize);
 

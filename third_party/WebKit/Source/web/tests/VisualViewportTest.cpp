@@ -119,7 +119,7 @@ public:
     {
         if (!overrideSettingsFunc)
             overrideSettingsFunc = &configureSettings;
-        m_helper.initialize(true, 0, &m_mockWebViewClient, overrideSettingsFunc);
+        m_helper.initialize(true, nullptr, &m_mockWebViewClient, nullptr, overrideSettingsFunc);
         webViewImpl()->setDefaultPageScaleLimits(1, 4);
     }
 
@@ -127,7 +127,7 @@ public:
     {
         if (!overrideSettingsFunc)
             overrideSettingsFunc = &configureAndroidSettings;
-        m_helper.initialize(true, 0, &m_mockWebViewClient, overrideSettingsFunc);
+        m_helper.initialize(true, nullptr, &m_mockWebViewClient, nullptr, overrideSettingsFunc);
         webViewImpl()->setDefaultPageScaleLimits(0.25f, 5);
     }
 

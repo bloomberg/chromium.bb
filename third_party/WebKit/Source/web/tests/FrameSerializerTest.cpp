@@ -69,7 +69,7 @@ protected:
     void SetUp() override
     {
         // We want the images to load and JavaScript to be on.
-        m_helper.initialize(true, 0, 0, &configureSettings);
+        m_helper.initialize(true, nullptr, nullptr, nullptr, &configureSettings);
     }
 
     void TearDown() override

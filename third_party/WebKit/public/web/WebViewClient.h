@@ -69,7 +69,7 @@ struct WebWindowFeatures;
 // Since a WebView is a WebWidget, a WebViewClient is a WebWidgetClient.
 // Virtual inheritance allows an implementation of WebWidgetClient to be
 // easily reused as part of an implementation of WebViewClient.
-class WebViewClient : virtual public WebWidgetClient {
+class WebViewClient : protected WebWidgetClient {
 public:
     // Factory methods -----------------------------------------------------
 
@@ -269,6 +269,41 @@ public:
 
     // Informs the browser that the draggable regions have been updated.
     virtual void draggableRegionsChanged() { }
+
+    // TODO(lfg): These methods are only exposed through WebViewClient while we
+    // refactor WebView to not inherit from WebWidget.
+    // WebWidgetClient overrides.
+    bool allowsBrokenNullLayerTreeView() const override { return false; }
+    void closeWidgetSoon() override {}
+    void convertViewportToWindow(WebRect* rect) override {}
+    void convertWindowToViewport(WebFloatRect* rect) override {}
+    void didAutoResize(const WebSize& newSize) override {}
+    void didChangeCursor(const WebCursorInfo&) override {}
+    void didFocus() override {}
+    void didHandleGestureEvent(const WebGestureEvent& event, bool eventCancelled) override {}
+    void didInvalidateRect(const WebRect&) override {}
+    void didMeaningfulLayout(WebMeaningfulLayout) override {}
+    void didOverscroll(const WebFloatSize& overscrollDelta, const WebFloatSize& accumulatedOverscroll, const WebFloatPoint& positionInViewport, const WebFloatSize& velocityInViewport) override {}
+    void didUpdateTextOfFocusedElementByNonUserInput() override {}
+    void hasTouchEventHandlers(bool) override {}
+    void initializeLayerTreeView() override {}
+    bool isPointerLocked() override { return false; }
+    WebLayerTreeView* layerTreeView() override { return 0; }
+    void onMouseDown(const WebNode& mouseDownNode) override {}
+    bool requestPointerLock() override { return false; }
+    void requestPointerUnlock() override {}
+    void resetInputMethod() override {}
+    WebRect rootWindowRect() override { return WebRect(); }
+    void scheduleAnimation() override {}
+    WebScreenInfo screenInfo() override { return WebScreenInfo(); }
+    void setToolTipText(const WebString&, WebTextDirection hint) override {}
+    void setTouchAction(WebTouchAction touchAction) override {}
+    void setWindowRect(const WebRect&) override {}
+    void showImeIfNeeded() override {}
+    void showUnhandledTapUIIfNeeded(const WebPoint& tappedPosition, const WebNode& tappedNode, bool pageChanged) override {}
+    void show(WebNavigationPolicy) override {}
+    WebRect windowRect() override { return WebRect(); }
+    WebRect windowResizerRect() override { return WebRect(); }
 
 protected:
     ~WebViewClient() { }
