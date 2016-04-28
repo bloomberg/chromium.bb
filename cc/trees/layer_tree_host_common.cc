@@ -83,7 +83,6 @@ LayerTreeHostCommon::CalcDrawPropsImplInputs::CalcDrawPropsImplInputs(
     bool can_render_to_separate_surface,
     bool can_adjust_raster_scales,
     LayerImplList* render_surface_layer_list,
-    int current_render_surface_layer_list_id,
     PropertyTrees* property_trees)
     : root_layer(root_layer),
       device_viewport_size(device_viewport_size),
@@ -102,16 +101,13 @@ LayerTreeHostCommon::CalcDrawPropsImplInputs::CalcDrawPropsImplInputs(
       can_render_to_separate_surface(can_render_to_separate_surface),
       can_adjust_raster_scales(can_adjust_raster_scales),
       render_surface_layer_list(render_surface_layer_list),
-      current_render_surface_layer_list_id(
-          current_render_surface_layer_list_id),
       property_trees(property_trees) {}
 
 LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting::
     CalcDrawPropsImplInputsForTesting(LayerImpl* root_layer,
                                       const gfx::Size& device_viewport_size,
                                       const gfx::Transform& device_transform,
-                                      LayerImplList* render_surface_layer_list,
-                                      int current_render_surface_layer_list_id)
+                                      LayerImplList* render_surface_layer_list)
     : CalcDrawPropsImplInputs(root_layer,
                               device_viewport_size,
                               device_transform,
@@ -128,7 +124,6 @@ LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting::
                               true,
                               false,
                               render_surface_layer_list,
-                              current_render_surface_layer_list_id,
                               GetPropertyTrees(root_layer)) {
   DCHECK(root_layer);
   DCHECK(render_surface_layer_list);
@@ -137,13 +132,11 @@ LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting::
 LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting::
     CalcDrawPropsImplInputsForTesting(LayerImpl* root_layer,
                                       const gfx::Size& device_viewport_size,
-                                      LayerImplList* render_surface_layer_list,
-                                      int current_render_surface_layer_list_id)
+                                      LayerImplList* render_surface_layer_list)
     : CalcDrawPropsImplInputsForTesting(root_layer,
                                         device_viewport_size,
                                         gfx::Transform(),
-                                        render_surface_layer_list,
-                                        current_render_surface_layer_list_id) {}
+                                        render_surface_layer_list) {}
 
 bool LayerTreeHostCommon::ScrollUpdateInfo::operator==(
     const LayerTreeHostCommon::ScrollUpdateInfo& other) const {
@@ -209,41 +202,41 @@ static bool HasInvertibleOrAnimatedTransformForTesting(LayerImpl* layer) {
          layer->HasPotentiallyRunningTransformAnimation();
 }
 
-static inline void MarkLayerWithRenderSurfaceLayerListId(
-    LayerImpl* layer,
-    int current_render_surface_layer_list_id) {
-  layer->draw_properties().last_drawn_render_surface_layer_list_id =
-      current_render_surface_layer_list_id;
-}
-
-static inline void MarkMasksWithRenderSurfaceLayerListId(
-    LayerImpl* layer,
-    int current_render_surface_layer_list_id) {
-  if (layer->mask_layer()) {
-    MarkLayerWithRenderSurfaceLayerListId(layer->mask_layer(),
-                                          current_render_surface_layer_list_id);
-  }
+static inline void SetMaskLayersAreDrawnRenderSurfaceLayerListMembers(
+    LayerImpl* layer) {
+  if (layer->mask_layer())
+    layer->mask_layer()->set_is_drawn_render_surface_layer_list_member(true);
   if (layer->replica_layer() && layer->replica_layer()->mask_layer()) {
-    MarkLayerWithRenderSurfaceLayerListId(layer->replica_layer()->mask_layer(),
-                                          current_render_surface_layer_list_id);
+    layer->replica_layer()
+        ->mask_layer()
+        ->set_is_drawn_render_surface_layer_list_member(true);
   }
 }
 
-static inline void ClearRenderSurfaceLayerListId(LayerImplList* layer_list,
-                                                 ScrollTree* scroll_tree) {
-  const int cleared_render_surface_layer_list_id = 0;
+static inline void ClearLayerIsDrawnRenderSurfaceLayerListMember(
+    LayerImpl* layer) {
+  layer->set_is_drawn_render_surface_layer_list_member(false);
+  if (layer->mask_layer())
+    layer->mask_layer()->set_is_drawn_render_surface_layer_list_member(false);
+  if (layer->replica_layer() && layer->replica_layer()->mask_layer()) {
+    layer->replica_layer()
+        ->mask_layer()
+        ->set_is_drawn_render_surface_layer_list_member(false);
+  }
+}
+
+static inline void ClearIsDrawnRenderSurfaceLayerListMember(
+    LayerImplList* layer_list,
+    ScrollTree* scroll_tree) {
   for (LayerImpl* layer : *layer_list) {
-    if (layer->IsDrawnRenderSurfaceLayerListMember()) {
+    if (layer->is_drawn_render_surface_layer_list_member()) {
       DCHECK_GT(scroll_tree->Node(layer->scroll_tree_index())
                     ->data.num_drawn_descendants,
                 0);
       scroll_tree->Node(layer->scroll_tree_index())
           ->data.num_drawn_descendants--;
     }
-    MarkLayerWithRenderSurfaceLayerListId(layer,
-                                          cleared_render_surface_layer_list_id);
-    MarkMasksWithRenderSurfaceLayerListId(layer,
-                                          cleared_render_surface_layer_list_id);
+    ClearLayerIsDrawnRenderSurfaceLayerListMember(layer);
   }
 }
 
@@ -478,8 +471,7 @@ static void ComputeInitialRenderSurfaceLayerList(
     LayerTreeImpl* layer_tree_impl,
     PropertyTrees* property_trees,
     LayerImplList* render_surface_layer_list,
-    bool can_render_to_separate_surface,
-    int current_render_surface_layer_list_id) {
+    bool can_render_to_separate_surface) {
   ScrollTree* scroll_tree = &property_trees->scroll_tree;
   for (int i = 0; i < static_cast<int>(scroll_tree->size()); ++i)
     scroll_tree->Node(i)->data.num_drawn_descendants = 0;
@@ -490,6 +482,7 @@ static void ComputeInitialRenderSurfaceLayerList(
   for (LayerImpl* layer : *layer_tree_impl) {
     if (layer->render_surface())
       layer->ClearRenderSurfaceLayerList();
+    ClearLayerIsDrawnRenderSurfaceLayerListMember(layer);
 
     bool layer_is_drawn =
         property_trees->effect_tree.Node(layer->effect_tree_index())
@@ -552,8 +545,7 @@ static void ComputeInitialRenderSurfaceLayerList(
     if (!layer_should_be_drawn)
       continue;
 
-    MarkLayerWithRenderSurfaceLayerListId(layer,
-                                          current_render_surface_layer_list_id);
+    layer->set_is_drawn_render_surface_layer_list_member(true);
     scroll_tree->Node(layer->scroll_tree_index())->data.num_drawn_descendants++;
     layer->render_target()->layer_list().push_back(layer);
 
@@ -586,12 +578,10 @@ static void ComputeSurfaceContentRects(LayerTreeImpl* layer_tree_impl,
   }
 }
 
-static void ComputeListOfNonEmptySurfaces(
-    LayerTreeImpl* layer_tree_impl,
-    PropertyTrees* property_trees,
-    LayerImplList* initial_surface_list,
-    LayerImplList* final_surface_list,
-    int current_render_surface_layer_list_id) {
+static void ComputeListOfNonEmptySurfaces(LayerTreeImpl* layer_tree_impl,
+                                          PropertyTrees* property_trees,
+                                          LayerImplList* initial_surface_list,
+                                          LayerImplList* final_surface_list) {
   // Walk the initial surface list forwards. The root surface and each
   // surface with a non-empty content rect go into the final render surface
   // layer list. Surfaces with empty content rects or whose target isn't in
@@ -602,8 +592,8 @@ static void ComputeListOfNonEmptySurfaces(
     RenderSurfaceImpl* target_surface = surface->render_target();
     if (!is_root && (surface->content_rect().IsEmpty() ||
                      target_surface->layer_list().empty())) {
-      ClearRenderSurfaceLayerListId(&surface->layer_list(),
-                                    &property_trees->scroll_tree);
+      ClearIsDrawnRenderSurfaceLayerListMember(&surface->layer_list(),
+                                               &property_trees->scroll_tree);
       surface->ClearLayerLists();
       if (!is_root) {
         LayerImplList& target_list = target_surface->layer_list();
@@ -624,8 +614,7 @@ static void ComputeListOfNonEmptySurfaces(
       }
       continue;
     }
-    MarkMasksWithRenderSurfaceLayerListId(layer,
-                                          current_render_surface_layer_list_id);
+    SetMaskLayersAreDrawnRenderSurfaceLayerListMembers(layer);
     final_surface_list->push_back(layer);
   }
 }
@@ -635,7 +624,6 @@ static void CalculateRenderSurfaceLayerList(
     PropertyTrees* property_trees,
     LayerImplList* render_surface_layer_list,
     const bool can_render_to_separate_surface,
-    const int current_render_surface_layer_list_id,
     const int max_texture_size) {
   // This calculates top level Render Surface Layer List, and Layer List for all
   // Render Surfaces.
@@ -646,14 +634,14 @@ static void CalculateRenderSurfaceLayerList(
   // First compute an RSLL that might include surfaces that later turn out to
   // have an empty content rect. After surface content rects are computed,
   // produce a final RSLL that omits empty surfaces.
-  ComputeInitialRenderSurfaceLayerList(
-      layer_tree_impl, property_trees, &initial_render_surface_list,
-      can_render_to_separate_surface, current_render_surface_layer_list_id);
+  ComputeInitialRenderSurfaceLayerList(layer_tree_impl, property_trees,
+                                       &initial_render_surface_list,
+                                       can_render_to_separate_surface);
   ComputeSurfaceContentRects(layer_tree_impl, property_trees,
                              &initial_render_surface_list, max_texture_size);
-  ComputeListOfNonEmptySurfaces(
-      layer_tree_impl, property_trees, &initial_render_surface_list,
-      render_surface_layer_list, current_render_surface_layer_list_id);
+  ComputeListOfNonEmptySurfaces(layer_tree_impl, property_trees,
+                                &initial_render_surface_list,
+                                render_surface_layer_list);
 
   ComputeLayerScrollsDrawnDescendants(layer_tree_impl,
                                       &property_trees->scroll_tree);
@@ -767,13 +755,10 @@ void CalculateDrawPropertiesInternal(
       ComputeMaskLayerDrawProperties(layer, replica_mask_layer);
   }
 
-  DCHECK_EQ(
-      inputs->current_render_surface_layer_list_id,
-      inputs->root_layer->layer_tree_impl()->current_render_surface_list_id());
   CalculateRenderSurfaceLayerList(
       inputs->root_layer->layer_tree_impl(), inputs->property_trees,
       inputs->render_surface_layer_list, inputs->can_render_to_separate_surface,
-      inputs->current_render_surface_layer_list_id, inputs->max_texture_size);
+      inputs->max_texture_size);
 
   if (should_measure_property_tree_performance) {
     TRACE_EVENT_END0(TRACE_DISABLED_BY_DEFAULT("cc.debug.cdp-perf"),

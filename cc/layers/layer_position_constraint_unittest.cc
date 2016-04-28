@@ -48,10 +48,8 @@ void SetLayerPropertiesForTesting(Layer* layer,
 
 void ExecuteCalculateDrawProperties(LayerImpl* root_layer) {
   std::vector<LayerImpl*> dummy_render_surface_layer_list;
-  root_layer->layer_tree_impl()->IncrementRenderSurfaceListIdForTesting();
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root_layer, root_layer->bounds(), &dummy_render_surface_layer_list,
-      root_layer->layer_tree_impl()->current_render_surface_list_id());
+      root_layer, root_layer->bounds(), &dummy_render_surface_layer_list);
   inputs.inner_viewport_scroll_layer =
       root_layer->layer_tree_impl()->InnerViewportScrollLayer();
   inputs.outer_viewport_scroll_layer =

@@ -52,8 +52,8 @@ class LayerTreeHostOcclusionTestDrawPropertiesOnLayer
     LayerImpl* child = impl->active_tree()->LayerById(child_->id());
 
     // Verify the draw properties are valid.
-    EXPECT_TRUE(root->IsDrawnRenderSurfaceLayerListMember());
-    EXPECT_TRUE(child->IsDrawnRenderSurfaceLayerListMember());
+    EXPECT_TRUE(root->is_drawn_render_surface_layer_list_member());
+    EXPECT_TRUE(child->is_drawn_render_surface_layer_list_member());
 
     EXPECT_OCCLUSION_EQ(
         Occlusion(child->DrawTransform(), SimpleEnclosedRegion(),
@@ -109,8 +109,8 @@ class LayerTreeHostOcclusionTestDrawPropertiesOnSurface
     RenderSurfaceImpl* surface = child->render_surface();
 
     // Verify the draw properties are valid.
-    EXPECT_TRUE(root->IsDrawnRenderSurfaceLayerListMember());
-    EXPECT_TRUE(child->IsDrawnRenderSurfaceLayerListMember());
+    EXPECT_TRUE(root->is_drawn_render_surface_layer_list_member());
+    EXPECT_TRUE(child->is_drawn_render_surface_layer_list_member());
     EXPECT_TRUE(child->has_render_surface());
     EXPECT_EQ(child->render_surface(), child->render_target());
 
@@ -177,8 +177,8 @@ class LayerTreeHostOcclusionTestDrawPropertiesOnMask
     LayerImpl* mask = child->mask_layer();
 
     // Verify the draw properties are valid.
-    EXPECT_TRUE(root->IsDrawnRenderSurfaceLayerListMember());
-    EXPECT_TRUE(child->IsDrawnRenderSurfaceLayerListMember());
+    EXPECT_TRUE(root->is_drawn_render_surface_layer_list_member());
+    EXPECT_TRUE(child->is_drawn_render_surface_layer_list_member());
     EXPECT_TRUE(child->has_render_surface());
     EXPECT_EQ(child->render_surface(), child->render_target());
 
@@ -318,8 +318,8 @@ class LayerTreeHostOcclusionTestDrawPropertiesInsideReplica
     LayerImpl* mask = child->mask_layer();
 
     // Verify the draw properties are valid.
-    EXPECT_TRUE(root->IsDrawnRenderSurfaceLayerListMember());
-    EXPECT_TRUE(child->IsDrawnRenderSurfaceLayerListMember());
+    EXPECT_TRUE(root->is_drawn_render_surface_layer_list_member());
+    EXPECT_TRUE(child->is_drawn_render_surface_layer_list_member());
     EXPECT_TRUE(child->has_render_surface());
     EXPECT_EQ(child->render_surface(), child->render_target());
 

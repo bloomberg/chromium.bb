@@ -473,7 +473,13 @@ class CC_EXPORT LayerImpl {
   void SetDebugInfo(
       std::unique_ptr<base::trace_event::ConvertableToTraceFormat> debug_info);
 
-  bool IsDrawnRenderSurfaceLayerListMember() const;
+  void set_is_drawn_render_surface_layer_list_member(bool is_member) {
+    is_drawn_render_surface_layer_list_member_ = is_member;
+  }
+
+  bool is_drawn_render_surface_layer_list_member() const {
+    return is_drawn_render_surface_layer_list_member_;
+  }
 
   void Set3dSortingContextId(int id);
   int sorting_context_id() { return sorting_context_id_; }
@@ -595,6 +601,7 @@ class CC_EXPORT LayerImpl {
   bool use_local_transform_for_backface_visibility_ : 1;
   bool should_check_backface_visibility_ : 1;
   bool draws_content_ : 1;
+  bool is_drawn_render_surface_layer_list_member_ : 1;
   bool hide_layer_and_subtree_ : 1;
 
   bool is_affected_by_page_scale_ : 1;

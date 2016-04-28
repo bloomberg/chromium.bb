@@ -66,15 +66,6 @@ struct CC_EXPORT DrawProperties {
   // does not include our clip children because they are clipped by us.
   size_t num_unclipped_descendants;
 
-  // Each time we generate a new render surface layer list, an ID is used to
-  // identify it. |last_drawn_render_surface_layer_list_id| is set to the ID
-  // that marked the render surface layer list generation which last updated
-  // these draw properties and determined that this layer will draw itself.
-  // If these draw properties are not a part of the render surface layer list,
-  // or the layer doesn't contribute anything, then this ID will be either out
-  // of date or 0.
-  int last_drawn_render_surface_layer_list_id;
-
   // The maximum scale during the layers current animation at which content
   // should be rastered at to be crisp.
   float maximum_animation_contents_scale;

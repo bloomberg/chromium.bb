@@ -78,7 +78,6 @@ LayerTreeImpl::LayerTreeImpl(
       needs_full_tree_sync_(true),
       next_activation_forces_redraw_(false),
       has_ever_been_drawn_(false),
-      render_surface_layer_list_id_(0),
       have_scroll_event_handlers_(false),
       event_listener_properties_(),
       top_controls_shrink_blink_size_(false),
@@ -818,8 +817,6 @@ bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
         (layer_tree_host_impl_->GetDrawMode() !=
          DRAW_MODE_RESOURCELESS_SOFTWARE);
 
-    ++render_surface_layer_list_id_;
-
     LayerTreeHostCommon::CalcDrawPropsImplInputs inputs(
         root_layer(), DrawViewportSize(),
         layer_tree_host_impl_->DrawTransform(), device_scale_factor(),
@@ -830,8 +827,7 @@ bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
         settings().can_use_lcd_text, settings().layers_always_allowed_lcd_text,
         can_render_to_separate_surface,
         settings().layer_transforms_should_scale_layer_contents,
-        &render_surface_layer_list_, render_surface_layer_list_id_,
-        &property_trees_);
+        &render_surface_layer_list_, &property_trees_);
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
     if (const char* client_name = GetClientNameForMetrics()) {
       UMA_HISTOGRAM_COUNTS(
@@ -938,7 +934,7 @@ bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
     size_t layers_updated_count = 0;
     bool tile_priorities_updated = false;
     for (PictureLayerImpl* layer : picture_layers_) {
-      if (!layer->IsDrawnRenderSurfaceLayerListMember())
+      if (!layer->is_drawn_render_surface_layer_list_member())
         continue;
       ++layers_updated_count;
       tile_priorities_updated |= layer->UpdateTiles();
@@ -967,10 +963,6 @@ void LayerTreeImpl::BuildPropertyTreesForTesting() {
       gfx::Rect(DrawViewportSize()), layer_tree_host_impl_->DrawTransform(),
       &property_trees_);
   property_trees_.transform_tree.set_source_to_parent_updates_allowed(false);
-}
-
-void LayerTreeImpl::IncrementRenderSurfaceListIdForTesting() {
-  render_surface_layer_list_id_++;
 }
 
 const LayerImplList& LayerTreeImpl::RenderSurfaceLayerList() const {
@@ -1615,7 +1607,7 @@ static const gfx::Transform SurfaceScreenSpaceTransform(
     const LayerImpl* layer,
     const TransformTree& transform_tree) {
   DCHECK(layer->render_surface());
-  return layer->IsDrawnRenderSurfaceLayerListMember()
+  return layer->is_drawn_render_surface_layer_list_member()
              ? layer->render_surface()->screen_space_transform()
              : transform_tree.ToScreenSpaceTransformWithoutSublayerScale(
                    layer->render_surface()->TransformTreeIndex());
@@ -1762,7 +1754,7 @@ static bool ScrollsOrScrollbarAnyDrawnRenderSurfaceLayerListMember(
     LayerImpl* layer) {
   return layer->scrolls_drawn_descendant() ||
          (layer->ToScrollbarLayer() &&
-          layer->IsDrawnRenderSurfaceLayerListMember());
+          layer->is_drawn_render_surface_layer_list_member());
 }
 
 struct FindScrollingLayerOrScrollbarLayerFunctor {
@@ -1784,7 +1776,7 @@ LayerTreeImpl::FindFirstScrollingLayerOrScrollbarLayerThatIsHitByPoint(
 
 struct HitTestVisibleScrollableOrTouchableFunctor {
   bool operator()(LayerImpl* layer) const {
-    return layer->IsDrawnRenderSurfaceLayerListMember() ||
+    return layer->is_drawn_render_surface_layer_list_member() ||
            ScrollsOrScrollbarAnyDrawnRenderSurfaceLayerListMember(layer) ||
            !layer->touch_event_handler_region().IsEmpty();
   }

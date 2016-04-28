@@ -16,9 +16,7 @@
 namespace cc {
 LayerTreeHostCommonTestBase::LayerTreeHostCommonTestBase(
     const LayerTreeSettings& settings)
-    : LayerTestCommon::LayerImplTest(settings),
-      render_surface_layer_list_count_(0) {
-}
+    : LayerTestCommon::LayerImplTest(settings) {}
 
 LayerTreeHostCommonTestBase::~LayerTreeHostCommonTestBase() {
 }
@@ -191,19 +189,14 @@ void LayerTreeHostCommonTestBase::ExecuteCalculateDrawProperties(
   // We are probably not testing what is intended if the root_layer bounds are
   // empty.
   DCHECK(!root_layer->bounds().IsEmpty());
-  root_layer->layer_tree_impl()->IncrementRenderSurfaceListIdForTesting();
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root_layer, device_viewport_size, render_surface_layer_list_impl_.get(),
-      root_layer->layer_tree_impl()->current_render_surface_list_id());
+      root_layer, device_viewport_size, render_surface_layer_list_impl_.get());
   inputs.device_scale_factor = device_scale_factor;
   inputs.page_scale_factor = page_scale_factor;
   inputs.page_scale_layer = page_scale_layer;
   inputs.can_use_lcd_text = can_use_lcd_text;
   inputs.layers_always_allowed_lcd_text = layers_always_allowed_lcd_text;
   inputs.can_adjust_raster_scales = true;
-
-  render_surface_layer_list_count_ =
-      inputs.current_render_surface_layer_list_id;
 
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 }
@@ -217,15 +210,10 @@ void LayerTreeHostCommonTestBase::
   render_surface_layer_list_impl_.reset(new LayerImplList);
 
   DCHECK(!root_layer->bounds().IsEmpty());
-  root_layer->layer_tree_impl()->IncrementRenderSurfaceListIdForTesting();
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root_layer, device_viewport_size, render_surface_layer_list_impl_.get(),
-      root_layer->layer_tree_impl()->current_render_surface_list_id());
+      root_layer, device_viewport_size, render_surface_layer_list_impl_.get());
   inputs.can_adjust_raster_scales = true;
   inputs.can_render_to_separate_surface = false;
-
-  render_surface_layer_list_count_ =
-      inputs.current_render_surface_layer_list_id;
 
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 }

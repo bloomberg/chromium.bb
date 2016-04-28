@@ -119,12 +119,6 @@ void FakePictureLayerImpl::SetRasterSourceOnPending(
   UpdateRasterSource(raster_source, &invalidation_temp, pending_set);
 }
 
-void FakePictureLayerImpl::SetIsDrawnRenderSurfaceLayerListMember(bool is) {
-  draw_properties().last_drawn_render_surface_layer_list_id =
-      is ? layer_tree_impl()->current_render_surface_list_id()
-         : layer_tree_impl()->current_render_surface_list_id() - 1;
-}
-
 void FakePictureLayerImpl::CreateAllTiles() {
   for (size_t i = 0; i < num_tilings(); ++i)
     tilings_->tiling_at(i)->CreateAllTilesForTesting();

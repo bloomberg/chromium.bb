@@ -2116,7 +2116,7 @@ TEST_F(LayerTreeImplTest, HitTestingTouchHandlerRegionsForLayerThatIsNotDrawn) {
       host_impl().active_tree()->FindLayerThatIsHitByPointInTouchHandlerRegion(
           test_point);
   EXPECT_FALSE(result_layer);
-  EXPECT_FALSE(test_layer->IsDrawnRenderSurfaceLayerListMember());
+  EXPECT_FALSE(test_layer->is_drawn_render_surface_layer_list_member());
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       expected_screen_space_transform,
       draw_property_utils::ScreenSpaceTransform(
@@ -2138,7 +2138,7 @@ TEST_F(LayerTreeImplTest, HitTestingTouchHandlerRegionsForLayerThatIsNotDrawn) {
           test_point);
   ASSERT_TRUE(result_layer);
   ASSERT_EQ(test_layer, result_layer);
-  EXPECT_FALSE(result_layer->IsDrawnRenderSurfaceLayerListMember());
+  EXPECT_FALSE(result_layer->is_drawn_render_surface_layer_list_member());
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       expected_screen_space_transform,
       draw_property_utils::ScreenSpaceTransform(

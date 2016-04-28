@@ -150,10 +150,8 @@ LayerTestCommon::LayerImplTest::~LayerImplTest() {
 void LayerTestCommon::LayerImplTest::CalcDrawProps(
     const gfx::Size& viewport_size) {
   LayerImplList layer_list;
-  host_->host_impl()->active_tree()->IncrementRenderSurfaceListIdForTesting();
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root_layer(), viewport_size, &layer_list,
-      host_->host_impl()->active_tree()->current_render_surface_list_id());
+      root_layer(), viewport_size, &layer_list);
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 }
 

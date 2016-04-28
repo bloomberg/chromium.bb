@@ -82,7 +82,6 @@ class CC_EXPORT LayerTreeHostCommon {
         bool can_render_to_separate_surface,
         bool can_adjust_raster_scales,
         LayerImplList* render_surface_layer_list,
-        int current_render_surface_layer_list_id,
         PropertyTrees* property_trees);
 
     LayerImpl* root_layer;
@@ -101,7 +100,6 @@ class CC_EXPORT LayerTreeHostCommon {
     bool can_render_to_separate_surface;
     bool can_adjust_raster_scales;
     LayerImplList* render_surface_layer_list;
-    int current_render_surface_layer_list_id;
     PropertyTrees* property_trees;
   };
 
@@ -110,12 +108,10 @@ class CC_EXPORT LayerTreeHostCommon {
     CalcDrawPropsImplInputsForTesting(LayerImpl* root_layer,
                                       const gfx::Size& device_viewport_size,
                                       const gfx::Transform& device_transform,
-                                      LayerImplList* render_surface_layer_list,
-                                      int current_render_surface_layer_list_id);
+                                      LayerImplList* render_surface_layer_list);
     CalcDrawPropsImplInputsForTesting(LayerImpl* root_layer,
                                       const gfx::Size& device_viewport_size,
-                                      LayerImplList* render_surface_layer_list,
-                                      int current_render_surface_layer_list_id);
+                                      LayerImplList* render_surface_layer_list);
   };
 
   static int CalculateLayerJitter(LayerImpl* scrolling_layer);

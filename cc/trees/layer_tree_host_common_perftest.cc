@@ -107,7 +107,6 @@ class CalcDrawPropsTest : public LayerTreeHostCommonPerfTest {
                                 LayerTreeImpl* active_tree,
                                 LayerTreeHostImpl* host_impl) {
     LayerImplList update_list;
-    active_tree->IncrementRenderSurfaceListIdForTesting();
     LayerTreeHostCommon::CalcDrawPropsImplInputs inputs(
         active_tree->root_layer(), active_tree->DrawViewportSize(),
         host_impl->DrawTransform(), active_tree->device_scale_factor(),
@@ -121,8 +120,7 @@ class CalcDrawPropsTest : public LayerTreeHostCommonPerfTest {
         host_impl->settings().layers_always_allowed_lcd_text,
         can_render_to_separate_surface,
         host_impl->settings().layer_transforms_should_scale_layer_contents,
-        &update_list, active_tree->current_render_surface_list_id(),
-        active_tree->property_trees());
+        &update_list, active_tree->property_trees());
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
   }
 };

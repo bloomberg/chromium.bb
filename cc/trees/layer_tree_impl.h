@@ -275,7 +275,6 @@ class CC_EXPORT LayerTreeImpl {
   // text may cause invalidations, so should only be done after a commit.
   bool UpdateDrawProperties(bool update_lcd_text);
   void BuildPropertyTreesForTesting();
-  void IncrementRenderSurfaceListIdForTesting();
 
   void set_needs_update_draw_properties() {
     needs_update_draw_properties_ = true;
@@ -400,10 +399,6 @@ class CC_EXPORT LayerTreeImpl {
   void RemoveSurfaceLayer(LayerImpl* layer);
   const std::vector<LayerImpl*>& SurfaceLayers() const {
     return surface_layers_;
-  }
-
-  int current_render_surface_list_id() const {
-    return render_surface_layer_list_id_;
   }
 
   LayerImpl* FindFirstScrollingLayerOrScrollbarLayerThatIsHitByPoint(
@@ -577,8 +572,6 @@ class CC_EXPORT LayerTreeImpl {
   std::vector<std::unique_ptr<SwapPromise>> pinned_swap_promise_list_;
 
   UIResourceRequestQueue ui_resource_request_queue_;
-
-  int render_surface_layer_list_id_;
 
   bool have_scroll_event_handlers_;
   EventListenerProperties event_listener_properties_[static_cast<size_t>(

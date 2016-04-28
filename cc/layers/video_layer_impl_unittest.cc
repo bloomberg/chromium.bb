@@ -312,6 +312,7 @@ TEST(VideoLayerImplTest, SoftwareVideoFrameGeneratesYUVQuad) {
       impl.AddChildToRoot<VideoLayerImpl>(&provider, media::VIDEO_ROTATION_0);
   video_layer_impl->SetBounds(layer_size);
   video_layer_impl->SetDrawsContent(true);
+  impl.host_impl()->active_tree()->BuildPropertyTreesForTesting();
 
   gfx::Rect occluded;
   impl.AppendQuadsWithOcclusion(video_layer_impl, occluded);
@@ -353,6 +354,7 @@ TEST(VideoLayerImplTest, NativeYUVFrameGeneratesYUVQuad) {
       impl.AddChildToRoot<VideoLayerImpl>(&provider, media::VIDEO_ROTATION_0);
   video_layer_impl->SetBounds(layer_size);
   video_layer_impl->SetDrawsContent(true);
+  impl.host_impl()->active_tree()->BuildPropertyTreesForTesting();
 
   gfx::Rect occluded;
   impl.AppendQuadsWithOcclusion(video_layer_impl, occluded);

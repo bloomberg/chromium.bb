@@ -1558,6 +1558,7 @@ TEST_F(TileManagerTilePriorityQueueTest, NoRasterTasksforSolidColorTiles) {
 
   std::unique_ptr<PictureLayerImpl> layer_impl =
       PictureLayerImpl::Create(host_impl_.active_tree(), 1, false);
+  layer_impl->set_is_drawn_render_surface_layer_list_member(true);
   PictureLayerTilingSet* tiling_set = layer_impl->picture_layer_tiling_set();
 
   PictureLayerTiling* tiling = tiling_set->AddTiling(1.0f, raster_source);
@@ -1788,6 +1789,7 @@ TEST_F(TileManagerTest, LowResHasNoImage) {
     std::unique_ptr<PictureLayerImpl> layer =
         PictureLayerImpl::Create(host_impl_->active_tree(), 1, false);
     PictureLayerTilingSet* tiling_set = layer->picture_layer_tiling_set();
+    layer->set_is_drawn_render_surface_layer_list_member(true);
 
     auto* tiling = tiling_set->AddTiling(1.0f, raster);
     tiling->set_resolution(resolutions[i]);

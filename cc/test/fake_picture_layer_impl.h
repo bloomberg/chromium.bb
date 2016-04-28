@@ -125,8 +125,6 @@ class FakePictureLayerImpl : public PictureLayerImpl {
 
   void set_fixed_tile_size(const gfx::Size& size) { fixed_tile_size_ = size; }
 
-  void SetIsDrawnRenderSurfaceLayerListMember(bool is);
-
   void CreateAllTiles();
   void SetAllTilesReady();
   void SetAllTilesReadyInTiling(PictureLayerTiling* tiling);

@@ -229,10 +229,8 @@ class OcclusionTrackerTest : public testing::Test {
 
     FakeLayerTreeHostImpl::RecursiveUpdateNumChildren(root);
 
-    root->layer_tree_impl()->IncrementRenderSurfaceListIdForTesting();
     LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-        root, root->bounds(), &render_surface_layer_list_impl_,
-        root->layer_tree_impl()->current_render_surface_list_id());
+        root, root->bounds(), &render_surface_layer_list_impl_);
     inputs.can_adjust_raster_scales = true;
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 

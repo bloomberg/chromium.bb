@@ -34,10 +34,8 @@ void ExecuteCalculateDrawProperties(LayerImpl* root,
   ASSERT_FALSE(render_surface_layer_list->size());
 
   FakeLayerTreeHostImpl::RecursiveUpdateNumChildren(root);
-  root->layer_tree_impl()->IncrementRenderSurfaceListIdForTesting();
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root, root->bounds(), render_surface_layer_list,
-      root->layer_tree_impl()->current_render_surface_list_id());
+      root, root->bounds(), render_surface_layer_list);
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
   ASSERT_TRUE(root->render_surface());
 }

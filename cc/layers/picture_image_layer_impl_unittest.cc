@@ -89,6 +89,7 @@ class PictureImageLayerImplTest : public testing::Test {
     gfx::Transform scale_transform;
     scale_transform.Scale(ideal_contents_scale, ideal_contents_scale);
     layer->draw_properties().target_space_transform = scale_transform;
+    layer->set_is_drawn_render_surface_layer_list_member(true);
     DCHECK_EQ(layer->GetIdealContentsScale(), ideal_contents_scale);
     layer->draw_properties().maximum_animation_contents_scale =
         maximum_animation_contents_scale;

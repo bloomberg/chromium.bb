@@ -65,6 +65,7 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
       use_local_transform_for_backface_visibility_(false),
       should_check_backface_visibility_(false),
       draws_content_(false),
+      is_drawn_render_surface_layer_list_member_(false),
       hide_layer_and_subtree_(false),
       is_affected_by_page_scale_(true),
       was_ever_ready_since_last_transform_animation_(true),
@@ -1294,11 +1295,6 @@ void LayerImpl::AsValueInto(base::trace_event::TracedValue* state) const {
   }
 }
 
-bool LayerImpl::IsDrawnRenderSurfaceLayerListMember() const {
-  return draw_properties_.last_drawn_render_surface_layer_list_id ==
-         layer_tree_impl_->current_render_surface_list_id();
-}
-
 size_t LayerImpl::GPUMemoryUsageInBytes() const { return 0; }
 
 void LayerImpl::RunMicroBenchmark(MicroBenchmarkImpl* benchmark) {
@@ -1318,7 +1314,7 @@ void LayerImpl::SetHasRenderSurface(bool should_have_render_surface) {
 
 gfx::Transform LayerImpl::DrawTransform() const {
   // Only drawn layers have up-to-date draw properties.
-  if (!IsDrawnRenderSurfaceLayerListMember()) {
+  if (!is_drawn_render_surface_layer_list_member()) {
     if (layer_tree_impl()->property_trees()->non_root_surfaces_enabled) {
       return draw_property_utils::DrawTransform(
           this, layer_tree_impl()->property_trees()->transform_tree);
@@ -1333,7 +1329,7 @@ gfx::Transform LayerImpl::DrawTransform() const {
 
 gfx::Transform LayerImpl::ScreenSpaceTransform() const {
   // Only drawn layers have up-to-date draw properties.
-  if (!IsDrawnRenderSurfaceLayerListMember()) {
+  if (!is_drawn_render_surface_layer_list_member()) {
     return draw_property_utils::ScreenSpaceTransform(
         this, layer_tree_impl()->property_trees()->transform_tree);
   }
