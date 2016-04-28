@@ -32,7 +32,7 @@ shouldBeTrue("ctx3 == ctx");
 
 // TODO: change the below part of the test when webgl is supported.
 // Calling getContext on an unimplemented context type will return null
-var bogusCanvas = new OffscreenCanvas(20, 20);
-var bogusCtx = bogusCanvas.getContext("webgl");
-shouldBeNull("bogusCtx");
+var bCanvas = new OffscreenCanvas(20, 20);
+var ctx4 = bCanvas.getContext("webgl");
+shouldBeType("ctx4", "WebGLRenderingContext");
 </script>

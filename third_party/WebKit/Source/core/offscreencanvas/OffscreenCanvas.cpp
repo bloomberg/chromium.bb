@@ -58,7 +58,7 @@ ImageBitmap* OffscreenCanvas::transferToImageBitmap(ExceptionState& exceptionSta
     return image;
 }
 
-CanvasRenderingContext* OffscreenCanvas::getCanvasRenderingContext(const String& id, const CanvasContextCreationAttributes& attributes)
+CanvasRenderingContext* OffscreenCanvas::getCanvasRenderingContext(ScriptState* scriptState, const String& id, const CanvasContextCreationAttributes& attributes)
 {
     CanvasRenderingContext::ContextType contextType = CanvasRenderingContext::contextTypeFromId(id);
 
@@ -76,7 +76,7 @@ CanvasRenderingContext* OffscreenCanvas::getCanvasRenderingContext(const String&
             return nullptr;
         }
     } else {
-        m_context = factory->create(this, attributes);
+        m_context = factory->create(scriptState, this, attributes);
     }
 
     return m_context.get();

@@ -65,28 +65,51 @@
 
 namespace blink {
 
+// An helper function for the two create() methods. The return value is an
+// indicate of whether the create() should return nullptr or not.
+static bool shouldCreateContext(WebGraphicsContext3DProvider* contextProvider)
+{
+    if (!contextProvider)
+        return false;
+    gpu::gles2::GLES2Interface* gl = contextProvider->contextGL();
+    OwnPtr<Extensions3DUtil> extensionsUtil = Extensions3DUtil::create(gl);
+    if (!extensionsUtil)
+        return false;
+    if (extensionsUtil->supportsExtension("GL_EXT_debug_marker")) {
+        String contextLabel(String::format("WebGLRenderingContext-%p", contextProvider));
+        gl->PushGroupMarkerEXT(0, contextLabel.ascii().data());
+    }
+    return true;
+}
+
+CanvasRenderingContext* WebGLRenderingContext::Factory::create(ScriptState* scriptState, OffscreenCanvas* offscreenCanvas, const CanvasContextCreationAttributes& attrs)
+{
+    WebGLContextAttributes attributes = toWebGLContextAttributes(attrs);
+    OwnPtr<WebGraphicsContext3DProvider> contextProvider(createWebGraphicsContext3DProvider(scriptState, attributes, 1));
+    if (!shouldCreateContext(contextProvider.get()))
+        return nullptr;
+
+    WebGLRenderingContext* renderingContext = new WebGLRenderingContext(offscreenCanvas, contextProvider.release(), attributes);
+    if (!renderingContext->drawingBuffer())
+        return nullptr;
+    renderingContext->initializeNewContext();
+    renderingContext->registerContextExtensions();
+
+    return renderingContext;
+}
+
 CanvasRenderingContext* WebGLRenderingContext::Factory::create(HTMLCanvasElement* canvas, const CanvasContextCreationAttributes& attrs, Document&)
 {
     WebGLContextAttributes attributes = toWebGLContextAttributes(attrs);
     OwnPtr<WebGraphicsContext3DProvider> contextProvider(createWebGraphicsContext3DProvider(canvas, attributes, 1));
-    if (!contextProvider)
+    if (!shouldCreateContext(contextProvider.get()))
         return nullptr;
-    gpu::gles2::GLES2Interface* gl = contextProvider->contextGL();
-    OwnPtr<Extensions3DUtil> extensionsUtil = Extensions3DUtil::create(gl);
-    if (!extensionsUtil)
-        return nullptr;
-    if (extensionsUtil->supportsExtension("GL_EXT_debug_marker")) {
-        String contextLabel(String::format("WebGLRenderingContext-%p", contextProvider.get()));
-        gl->PushGroupMarkerEXT(0, contextLabel.ascii().data());
-    }
 
     WebGLRenderingContext* renderingContext = new WebGLRenderingContext(canvas, contextProvider.release(), attributes);
-
     if (!renderingContext->drawingBuffer()) {
         canvas->dispatchEvent(WebGLContextEvent::create(EventTypeNames::webglcontextcreationerror, false, true, "Could not create a WebGL context."));
         return nullptr;
     }
-
     renderingContext->initializeNewContext();
     renderingContext->registerContextExtensions();
 
@@ -103,6 +126,11 @@ WebGLRenderingContext::WebGLRenderingContext(HTMLCanvasElement* passedCanvas, Pa
 {
 }
 
+WebGLRenderingContext::WebGLRenderingContext(OffscreenCanvas* passedOffscreenCanvas, PassOwnPtr<WebGraphicsContext3DProvider> contextProvider, const WebGLContextAttributes& requestedAttributes)
+    : WebGLRenderingContextBase(passedOffscreenCanvas, std::move(contextProvider), requestedAttributes)
+{
+}
+
 WebGLRenderingContext::~WebGLRenderingContext()
 {
 }
@@ -110,6 +138,17 @@ WebGLRenderingContext::~WebGLRenderingContext()
 void WebGLRenderingContext::setCanvasGetContextResult(RenderingContext& result)
 {
     result.setWebGLRenderingContext(this);
+}
+
+void WebGLRenderingContext::setOffscreenCanvasGetContextResult(OffscreenRenderingContext& result)
+{
+    result.setWebGLRenderingContext(this);
+}
+
+ImageBitmap* WebGLRenderingContext::transferToImageBitmap(ExceptionState& exceptionState)
+{
+    NOTIMPLEMENTED();
+    return nullptr;
 }
 
 void WebGLRenderingContext::registerContextExtensions()

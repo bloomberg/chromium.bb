@@ -73,7 +73,8 @@ public:
     virtual bool hasAlpha() const { return true; }
     virtual void setIsHidden(bool) = 0;
     virtual bool isContextLost() const { return true; }
-    virtual void setCanvasGetContextResult(RenderingContext&) = 0;
+    virtual void setCanvasGetContextResult(RenderingContext&) { ASSERT_NOT_REACHED(); };
+    virtual void setOffscreenCanvasGetContextResult(OffscreenRenderingContext&) { ASSERT_NOT_REACHED(); }
 
     // Return true if the content is updated.
     virtual bool paintRenderingResultsToCanvas(SourceDrawingBuffer) { return false; }
@@ -126,8 +127,7 @@ public:
     virtual ImageBitmap* transferToImageBitmap(ExceptionState&) { return nullptr; }
 
 protected:
-    CanvasRenderingContext(HTMLCanvasElement*);
-    CanvasRenderingContext(OffscreenCanvas*);
+    CanvasRenderingContext(HTMLCanvasElement* = nullptr, OffscreenCanvas* = nullptr);
     DECLARE_VIRTUAL_TRACE();
     virtual void stop() = 0;
 

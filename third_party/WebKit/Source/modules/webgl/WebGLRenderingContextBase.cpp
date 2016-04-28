@@ -503,6 +503,34 @@ static String extractWebGLContextCreationError(const Platform::GraphicsInfo& inf
     return statusMessage;
 }
 
+static PassOwnPtr<WebGraphicsContext3DProvider> createWebGraphicsContext3DProviderInternal(HTMLCanvasElement* canvas, ScriptState* scriptState, WebGLContextAttributes attributes, unsigned webGLVersion)
+{
+    Platform::ContextAttributes contextAttributes = toPlatformContextAttributes(attributes, webGLVersion);
+    Platform::GraphicsInfo glInfo;
+    OwnPtr<WebGraphicsContext3DProvider> contextProvider;
+    if (canvas) {
+        contextProvider = adoptPtr(Platform::current()->createOffscreenGraphicsContext3DProvider(
+            contextAttributes, canvas->document().topDocument().url(), 0, &glInfo));
+    } else {
+        contextProvider = adoptPtr(Platform::current()->createOffscreenGraphicsContext3DProvider(
+            contextAttributes, scriptState->getExecutionContext()->url(), 0, &glInfo));
+    }
+    if (!contextProvider || shouldFailContextCreationForTesting) {
+        shouldFailContextCreationForTesting = false;
+        if (canvas)
+            canvas->dispatchEvent(WebGLContextEvent::create(EventTypeNames::webglcontextcreationerror, false, true, extractWebGLContextCreationError(glInfo)));
+        return nullptr;
+    }
+    gpu::gles2::GLES2Interface* gl = contextProvider->contextGL();
+    if (!String(gl->GetString(GL_EXTENSIONS)).contains("GL_OES_packed_depth_stencil")) {
+        if (canvas)
+            canvas->dispatchEvent(WebGLContextEvent::create(EventTypeNames::webglcontextcreationerror, false, true, "OES_packed_depth_stencil support is required."));
+        return nullptr;
+    }
+
+    return contextProvider.release();
+}
+
 PassOwnPtr<WebGraphicsContext3DProvider> WebGLRenderingContextBase::createWebGraphicsContext3DProvider(HTMLCanvasElement* canvas, WebGLContextAttributes attributes, unsigned webGLVersion)
 {
     Document& document = canvas->document();
@@ -520,22 +548,12 @@ PassOwnPtr<WebGraphicsContext3DProvider> WebGLRenderingContextBase::createWebGra
         return nullptr;
     }
 
-    Platform::ContextAttributes contextAttributes = toPlatformContextAttributes(attributes, webGLVersion);
-    Platform::GraphicsInfo glInfo;
-    OwnPtr<WebGraphicsContext3DProvider> contextProvider = adoptPtr(Platform::current()->createOffscreenGraphicsContext3DProvider(
-        contextAttributes, document.topDocument().url(), 0, &glInfo));
-    if (!contextProvider || shouldFailContextCreationForTesting) {
-        shouldFailContextCreationForTesting = false;
-        canvas->dispatchEvent(WebGLContextEvent::create(EventTypeNames::webglcontextcreationerror, false, true, extractWebGLContextCreationError(glInfo)));
-        return nullptr;
-    }
-    gpu::gles2::GLES2Interface* gl = contextProvider->contextGL();
-    if (!String(gl->GetString(GL_EXTENSIONS)).contains("GL_OES_packed_depth_stencil")) {
-        canvas->dispatchEvent(WebGLContextEvent::create(EventTypeNames::webglcontextcreationerror, false, true, "OES_packed_depth_stencil support is required."));
-        return nullptr;
-    }
+    return createWebGraphicsContext3DProviderInternal(canvas, nullptr, attributes, webGLVersion);
+}
 
-    return contextProvider.release();
+PassOwnPtr<WebGraphicsContext3DProvider> WebGLRenderingContextBase::createWebGraphicsContext3DProvider(ScriptState* scriptState, WebGLContextAttributes attributes, unsigned webGLVersion)
+{
+    return createWebGraphicsContext3DProviderInternal(nullptr, scriptState, attributes, webGLVersion);
 }
 
 void WebGLRenderingContextBase::forceNextWebGLContextCreationToFail()
@@ -780,8 +798,16 @@ bool isSRGBFormat(GLenum internalformat)
 
 } // namespace
 
+WebGLRenderingContextBase::WebGLRenderingContextBase(OffscreenCanvas* passedOffscreenCanvas, PassOwnPtr<WebGraphicsContext3DProvider> contextProvider, const WebGLContextAttributes& requestedAttributes)
+    : WebGLRenderingContextBase(nullptr, passedOffscreenCanvas, std::move(contextProvider), requestedAttributes)
+{ }
+
 WebGLRenderingContextBase::WebGLRenderingContextBase(HTMLCanvasElement* passedCanvas, PassOwnPtr<WebGraphicsContext3DProvider> contextProvider, const WebGLContextAttributes& requestedAttributes)
-    : CanvasRenderingContext(passedCanvas)
+    : WebGLRenderingContextBase(passedCanvas, nullptr, std::move(contextProvider), requestedAttributes)
+{ }
+
+WebGLRenderingContextBase::WebGLRenderingContextBase(HTMLCanvasElement* passedCanvas, OffscreenCanvas* passedOffscreenCanvas, PassOwnPtr<WebGraphicsContext3DProvider> contextProvider, const WebGLContextAttributes& requestedAttributes)
+    : CanvasRenderingContext(passedCanvas, passedOffscreenCanvas)
     , m_isHidden(false)
     , m_contextLostMode(NotLostContext)
     , m_autoRecoveryMethod(Manual)
@@ -976,8 +1002,10 @@ void WebGLRenderingContextBase::initializeNewContext()
 void WebGLRenderingContextBase::setupFlags()
 {
     ASSERT(drawingBuffer());
-    if (Page* p = canvas()->document().page()) {
-        m_synthesizedErrorsToConsole = p->settings().webGLErrorsToConsoleEnabled();
+    if (canvas()) {
+        if (Page* p = canvas()->document().page()) {
+            m_synthesizedErrorsToConsole = p->settings().webGLErrorsToConsoleEnabled();
+        }
     }
 
     m_isDepthStencilSupported = extensionsUtil()->isExtensionEnabled("GL_OES_packed_depth_stencil");
@@ -6044,8 +6072,16 @@ void WebGLRenderingContextBase::enableOrDisable(GLenum capability, bool enable)
 
 IntSize WebGLRenderingContextBase::clampedCanvasSize()
 {
-    return IntSize(clamp(canvas()->width(), 1, m_maxViewportDims[0]),
-        clamp(canvas()->height(), 1, m_maxViewportDims[1]));
+    int width, height;
+    if (canvas()) {
+        width = canvas()->width();
+        height = canvas()->height();
+    } else {
+        width = getOffscreenCanvas()->width();
+        height = getOffscreenCanvas()->height();
+    }
+    return IntSize(clamp(width, 1, m_maxViewportDims[0]),
+        clamp(height, 1, m_maxViewportDims[1]));
 }
 
 GLint WebGLRenderingContextBase::maxDrawBuffers()

@@ -83,6 +83,17 @@ void WebGL2RenderingContext::setCanvasGetContextResult(RenderingContext& result)
     result.setWebGL2RenderingContext(this);
 }
 
+void WebGL2RenderingContext::setOffscreenCanvasGetContextResult(OffscreenRenderingContext& result)
+{
+    result.setWebGL2RenderingContext(this);
+}
+
+ImageBitmap* WebGL2RenderingContext::transferToImageBitmap(ExceptionState& exceptionState)
+{
+    NOTIMPLEMENTED();
+    return nullptr;
+}
+
 void WebGL2RenderingContext::registerContextExtensions()
 {
     // Register extensions.

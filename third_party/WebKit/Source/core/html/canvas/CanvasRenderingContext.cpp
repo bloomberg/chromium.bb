@@ -31,13 +31,9 @@
 
 namespace blink {
 
-CanvasRenderingContext::CanvasRenderingContext(HTMLCanvasElement* canvas)
+CanvasRenderingContext::CanvasRenderingContext(HTMLCanvasElement* canvas, OffscreenCanvas* offscreenCanvas)
     : m_canvas(canvas)
-{
-}
-
-CanvasRenderingContext::CanvasRenderingContext(OffscreenCanvas* canvas)
-    : m_offscreenCanvas(canvas)
+    , m_offscreenCanvas(offscreenCanvas)
 {
 }
 

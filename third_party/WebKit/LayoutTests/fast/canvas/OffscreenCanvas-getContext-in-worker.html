@@ -5,10 +5,15 @@
 <script id="myWorker" type="text/worker">
 self.onmessage = function(e) {
     var aCanvas = new OffscreenCanvas(50, 50);
+    var bCanvas = new OffscreenCanvas(50, 50);
     try {
-      var ctx = aCanvas.getContext('2d');
-      if (toString.call(ctx) != '[object OffscreenCanvasRenderingContext2D]') {
+      var ctx1 = aCanvas.getContext('2d');
+      //TODO(crbug.com/602391): implement get webgl context in worker
+      var ctx2 = bCanvas.getContext('webgl');
+      if (toString.call(ctx1) != '[object OffscreenCanvasRenderingContext2D]') {
           self.postMessage("aCanvas.getContext('2d') does not return [object OffscreenCanvasRenderingContext2D]");
+      } else if (toString.call(ctx2) != '[object Null]') {
+          self.postMessage("bCanvas.getContext('webgl') does not return [object Null]");
       } else {
           self.postMessage("success");
       }

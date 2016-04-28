@@ -13,7 +13,7 @@ PASS ctx is an instance of OffscreenCanvasRenderingContext2D
 PASS ctx2 is null
 PASS ctx3 is non-null.
 PASS ctx3 == ctx is true
-PASS bogusCtx is null
+PASS ctx4 is an instance of WebGLRenderingContext
 PASS successfullyParsed is true
 
 TEST COMPLETE

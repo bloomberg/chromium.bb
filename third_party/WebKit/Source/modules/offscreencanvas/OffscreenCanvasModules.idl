@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-typedef OffscreenCanvasRenderingContext2D OffscreenRenderingContext;
+typedef (OffscreenCanvasRenderingContext2D or
+         WebGLRenderingContext or
+         WebGL2RenderingContext) OffscreenRenderingContext;
 
 partial interface OffscreenCanvas {
-    [RaisesException, RuntimeEnabled=ExperimentalCanvasFeatures] OffscreenRenderingContext? getContext(DOMString contextId, optional CanvasContextCreationAttributes attributes);
+    [CallWith=ScriptState, RaisesException, RuntimeEnabled=ExperimentalCanvasFeatures] OffscreenRenderingContext? getContext(DOMString contextId, optional CanvasContextCreationAttributes attributes);
 };

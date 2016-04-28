@@ -25,7 +25,7 @@ public:
     virtual ~CanvasRenderingContextFactory() { }
 
     virtual CanvasRenderingContext* create(HTMLCanvasElement*, const CanvasContextCreationAttributes&, Document&) { return nullptr; }
-    virtual CanvasRenderingContext* create(OffscreenCanvas*, const CanvasContextCreationAttributes&) { return nullptr; }
+    virtual CanvasRenderingContext* create(ScriptState*, OffscreenCanvas*, const CanvasContextCreationAttributes&) { return nullptr; }
     virtual CanvasRenderingContext::ContextType getContextType() const = 0;
     virtual void onError(HTMLCanvasElement*, const String& error) {};
     virtual void onError(OffscreenCanvas*, const String& error) {};

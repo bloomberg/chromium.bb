@@ -55,6 +55,7 @@ void ModulesInitializer::initialize()
 
     // OffscreenCanvas context types must be registered with the OffscreenCanvas.
     OffscreenCanvas::registerRenderingContextFactory(adoptPtr(new OffscreenCanvasRenderingContext2D::Factory()));
+    OffscreenCanvas::registerRenderingContextFactory(adoptPtr(new WebGLRenderingContext::Factory()));
 
     ASSERT(isInitialized());
 }

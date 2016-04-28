@@ -152,6 +152,7 @@ public:
     static unsigned getWebGLVersion(const CanvasRenderingContext*);
 
     static PassOwnPtr<WebGraphicsContext3DProvider> createWebGraphicsContext3DProvider(HTMLCanvasElement*, WebGLContextAttributes, unsigned webGLVersion);
+    static PassOwnPtr<WebGraphicsContext3DProvider> createWebGraphicsContext3DProvider(ScriptState*, WebGLContextAttributes, unsigned webGLVersion);
     static void forceNextWebGLContextCreationToFail();
 
     int drawingBufferWidth() const;
@@ -443,6 +444,7 @@ protected:
     friend class ScopedFramebufferRestorer;
 
     WebGLRenderingContextBase(HTMLCanvasElement*, PassOwnPtr<WebGraphicsContext3DProvider>, const WebGLContextAttributes&);
+    WebGLRenderingContextBase(OffscreenCanvas*, PassOwnPtr<WebGraphicsContext3DProvider>, const WebGLContextAttributes&);
     PassRefPtr<DrawingBuffer> createDrawingBuffer(PassOwnPtr<WebGraphicsContext3DProvider>);
     void setupFlags();
 
@@ -1074,6 +1076,9 @@ protected:
     static WebGLRenderingContextBase* oldestEvictedContext();
 
     CrossThreadWeakPersistentThisPointer<WebGLRenderingContextBase> createWeakThisPointer() { return CrossThreadWeakPersistentThisPointer<WebGLRenderingContextBase>(this); }
+
+private:
+    WebGLRenderingContextBase(HTMLCanvasElement*, OffscreenCanvas*, PassOwnPtr<WebGraphicsContext3DProvider>, const WebGLContextAttributes&);
 };
 
 DEFINE_TYPE_CASTS(WebGLRenderingContextBase, CanvasRenderingContext, context, context->is3d(), context.is3d());

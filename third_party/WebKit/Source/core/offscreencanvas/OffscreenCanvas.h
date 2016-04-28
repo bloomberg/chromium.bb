@@ -16,6 +16,8 @@ namespace blink {
 
 class CanvasContextCreationAttributes;
 class ImageBitmap;
+class OffscreenCanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContext;
+typedef OffscreenCanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContext OffscreenRenderingContext;
 
 class CORE_EXPORT OffscreenCanvas final : public GarbageCollected<OffscreenCanvas>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
@@ -36,7 +38,7 @@ public:
     int getAssociatedCanvasId() const { return m_canvasId; }
     bool isNeutered() const { return m_isNeutered; }
     void setNeutered();
-    CanvasRenderingContext* getCanvasRenderingContext(const String&, const CanvasContextCreationAttributes&);
+    CanvasRenderingContext* getCanvasRenderingContext(ScriptState*, const String&, const CanvasContextCreationAttributes&);
     CanvasRenderingContext* renderingContext() { return m_context; }
 
     static void registerRenderingContextFactory(PassOwnPtr<CanvasRenderingContextFactory>);

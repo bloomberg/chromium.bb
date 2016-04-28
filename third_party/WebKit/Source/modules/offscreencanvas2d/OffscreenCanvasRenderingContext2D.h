@@ -12,8 +12,6 @@
 
 namespace blink {
 
-class HTMLCanvasElement;
-
 class MODULES_EXPORT OffscreenCanvasRenderingContext2D final : public CanvasRenderingContext, public BaseRenderingContext2D {
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(OffscreenCanvasRenderingContext2D);
@@ -23,7 +21,7 @@ public:
         Factory() {}
         ~Factory() override {}
 
-        CanvasRenderingContext* create(OffscreenCanvas* canvas, const CanvasContextCreationAttributes& attrs) override
+        CanvasRenderingContext* create(ScriptState* scriptState, OffscreenCanvas* canvas, const CanvasContextCreationAttributes& attrs) override
         {
             return new OffscreenCanvasRenderingContext2D(canvas, attrs);
         }
@@ -38,6 +36,7 @@ public:
     ~OffscreenCanvasRenderingContext2D() override;
     ContextType getContextType() const override { return Context2d; }
     bool is2d() const override { return true; }
+    void setOffscreenCanvasGetContextResult(OffscreenRenderingContext&) final;
     void setIsHidden(bool) final { ASSERT_NOT_REACHED(); }
     void stop() final { ASSERT_NOT_REACHED(); }
     void setCanvasGetContextResult(RenderingContext&) final {}

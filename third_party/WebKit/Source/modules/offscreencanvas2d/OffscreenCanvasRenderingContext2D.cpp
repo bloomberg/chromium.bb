@@ -19,7 +19,7 @@ OffscreenCanvasRenderingContext2D::~OffscreenCanvasRenderingContext2D()
 }
 
 OffscreenCanvasRenderingContext2D::OffscreenCanvasRenderingContext2D(OffscreenCanvas* canvas, const CanvasContextCreationAttributes& attrs)
-    : CanvasRenderingContext(canvas)
+    : CanvasRenderingContext(nullptr, canvas)
     , m_hasAlpha(attrs.alpha())
 {
 }
@@ -93,6 +93,11 @@ ImageBitmap* OffscreenCanvasRenderingContext2D::transferToImageBitmap(ExceptionS
     RefPtr<StaticBitmapImage> image = StaticBitmapImage::create(skImage.release());
     m_imageBuffer.clear(); // "Transfer" means no retained buffer
     return ImageBitmap::create(image.release());
+}
+
+void OffscreenCanvasRenderingContext2D::setOffscreenCanvasGetContextResult(OffscreenRenderingContext& result)
+{
+    result.setOffscreenCanvasRenderingContext2D(this);
 }
 
 bool OffscreenCanvasRenderingContext2D::parseColorOrCurrentColor(Color& color, const String& colorString) const
