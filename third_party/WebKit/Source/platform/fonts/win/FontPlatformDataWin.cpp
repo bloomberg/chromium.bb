@@ -62,11 +62,10 @@ void FontPlatformData::setupPaint(SkPaint* paint, float, const Font*) const
 
     if (ts >= m_minSizeForAntiAlias) {
 
-        if (m_useSubpixelPositioning
-            // Disable subpixel text for certain older fonts at smaller sizes as
-            // they tend to get quite blurry at non-integer sizes and positions.
-            // For high-DPI this workaround isn't required.
-            && (ts >= m_minSizeForSubpixel
+        // Disable subpixel text for certain older fonts at smaller sizes as
+        // they tend to get quite blurry at non-integer sizes and positions.
+        // For high-DPI this workaround isn't required.
+        if ((ts >= m_minSizeForSubpixel
                 || FontCache::fontCache()->deviceScaleFactor() >= 1.5)
 
             // Subpixel text positioning looks pretty bad without font
@@ -117,14 +116,9 @@ static int computePaintTextFlags(String fontFamilyName)
 }
 
 
-void FontPlatformData::querySystemForRenderStyle(bool)
+void FontPlatformData::querySystemForRenderStyle()
 {
     m_paintTextFlags = computePaintTextFlags(fontFamilyName());
-}
-
-bool FontPlatformData::defaultUseSubpixelPositioning()
-{
-    return FontCache::fontCache()->useSubpixelPositioning();
 }
 
 } // namespace blink

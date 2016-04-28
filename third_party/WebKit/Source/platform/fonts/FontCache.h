@@ -103,7 +103,6 @@ public:
     static void setFontManager(const RefPtr<SkFontMgr>&);
 
 #if OS(WIN)
-    bool useSubpixelPositioning() const { return s_useSubpixelPositioning; }
     static bool antialiasedTextEnabled() { return s_antialiasedTextEnabled; }
     static bool lcdTextEnabled() { return s_lcdTextEnabled; }
     static float deviceScaleFactor() { return s_deviceScaleFactor; }
@@ -190,7 +189,6 @@ private:
     static bool s_antialiasedTextEnabled;
     static bool s_lcdTextEnabled;
     static float s_deviceScaleFactor;
-    static bool s_useSubpixelPositioning;
     static HashMap<String, RefPtr<SkTypeface>>* s_sideloadedFonts;
     // The system font metrics cache.
     static AtomicString* s_menuFontFamilyName;

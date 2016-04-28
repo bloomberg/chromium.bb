@@ -84,7 +84,7 @@ public:
 #if OS(MACOSX)
     FontPlatformData(NSFont*, float size, bool syntheticBold = false, bool syntheticItalic = false, FontOrientation = FontOrientation::Horizontal);
 #endif
-    FontPlatformData(PassRefPtr<SkTypeface>, const char* name, float textSize, bool syntheticBold, bool syntheticItalic, FontOrientation = FontOrientation::Horizontal, bool subpixelTextPosition = defaultUseSubpixelPositioning());
+    FontPlatformData(PassRefPtr<SkTypeface>, const char* name, float textSize, bool syntheticBold, bool syntheticItalic, FontOrientation = FontOrientation::Horizontal);
     ~FontPlatformData();
 
 #if OS(MACOSX)
@@ -145,9 +145,8 @@ public:
 #endif
 
 private:
-    bool static defaultUseSubpixelPositioning();
 #if !OS(MACOSX)
-    void querySystemForRenderStyle(bool useSkiaSubpixelPositioning);
+    void querySystemForRenderStyle();
 #endif
 
     RefPtr<SkTypeface> m_typeface;
@@ -169,7 +168,6 @@ private:
     bool m_isHashTableDeletedValue;
 #if OS(WIN)
     int m_paintTextFlags;
-    bool m_useSubpixelPositioning;
     unsigned m_minSizeForAntiAlias;
     float m_minSizeForSubpixel;
 #endif

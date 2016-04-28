@@ -163,10 +163,4 @@ FontPlatformData::FontPlatformData(NSFont *nsFont, float size, bool syntheticBol
     }
 }
 
-bool FontPlatformData::defaultUseSubpixelPositioning()
-{
-    return FontDescription::subpixelPositioning();
-}
-
-
 } // namespace blink

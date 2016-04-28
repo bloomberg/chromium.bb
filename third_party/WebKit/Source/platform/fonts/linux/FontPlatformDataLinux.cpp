@@ -96,7 +96,7 @@ void FontPlatformData::setupPaint(SkPaint* paint, float deviceScaleFactor, const
     paint->setTextSkewX(m_syntheticItalic ? -SK_Scalar1 / 4 : 0);
 }
 
-void FontPlatformData::querySystemForRenderStyle(bool useSkiaSubpixelPositioning)
+void FontPlatformData::querySystemForRenderStyle()
 {
     WebFontRenderStyle style;
 #if OS(ANDROID)
@@ -133,12 +133,7 @@ void FontPlatformData::querySystemForRenderStyle(bool useSkiaSubpixelPositioning
     // TestRunner specifically toggles the subpixel positioning flag.
     if (m_style.useSubpixelPositioning == FontRenderStyle::NoPreference
         || LayoutTestSupport::isRunningLayoutTest())
-        m_style.useSubpixelPositioning = useSkiaSubpixelPositioning;
-}
-
-bool FontPlatformData::defaultUseSubpixelPositioning()
-{
-    return FontDescription::subpixelPositioning();
+        m_style.useSubpixelPositioning = FontDescription::subpixelPositioning();
 }
 
 } // namespace blink

@@ -101,9 +101,6 @@ FontCache::FontCache()
     m_fontManager = s_fontManager;
     if (!m_fontManager.get())
         m_fontManager = adoptRef(SkFontMgr_New_DirectWrite());
-
-    s_useSubpixelPositioning = true;
-
     ASSERT(m_fontManager.get());
 }
 
@@ -401,8 +398,7 @@ PassOwnPtr<FontPlatformData> FontCache::createFontPlatformData(const FontDescrip
         fontSize,
         (fontDescription.weight() >= FontWeight600 && !tf->isBold()) || fontDescription.isSyntheticBold(),
         ((fontDescription.style() == FontStyleItalic || fontDescription.style() == FontStyleOblique) && !tf->isItalic()) || fontDescription.isSyntheticItalic(),
-        fontDescription.orientation(),
-        s_useSubpixelPositioning));
+        fontDescription.orientation()));
 
     struct FamilyMinSize {
         const wchar_t* family;

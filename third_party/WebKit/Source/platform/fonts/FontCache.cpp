@@ -78,7 +78,6 @@ SkFontMgr* FontCache::s_fontManager = nullptr;
 #if OS(WIN)
 bool FontCache::s_antialiasedTextEnabled = false;
 bool FontCache::s_lcdTextEnabled = false;
-bool FontCache::s_useSubpixelPositioning = false;
 float FontCache::s_deviceScaleFactor = 1.0;
 bool FontCache::s_useSkiaFontFallback = false;
 #endif // OS(WIN)

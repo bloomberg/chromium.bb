@@ -54,7 +54,6 @@ FontPlatformData::FontPlatformData(WTF::HashTableDeletedValueType)
     , m_isHashTableDeletedValue(true)
 #if OS(WIN)
     , m_paintTextFlags(0)
-    , m_useSubpixelPositioning(false)
     , m_minSizeForAntiAlias(0)
     , m_minSizeForSubpixel(0)
 #endif
@@ -76,7 +75,6 @@ FontPlatformData::FontPlatformData()
     , m_isHashTableDeletedValue(false)
 #if OS(WIN)
     , m_paintTextFlags(0)
-    , m_useSubpixelPositioning(false)
     , m_minSizeForAntiAlias(0)
     , m_minSizeForSubpixel(0)
 #endif
@@ -98,7 +96,6 @@ FontPlatformData::FontPlatformData(float size, bool syntheticBold, bool syntheti
     , m_isHashTableDeletedValue(false)
 #if OS(WIN)
     , m_paintTextFlags(0)
-    , m_useSubpixelPositioning(false)
     , m_minSizeForAntiAlias(0)
     , m_minSizeForSubpixel(0)
 #endif
@@ -121,7 +118,6 @@ FontPlatformData::FontPlatformData(const FontPlatformData& source)
     , m_isHashTableDeletedValue(false)
 #if OS(WIN)
     , m_paintTextFlags(source.m_paintTextFlags)
-    , m_useSubpixelPositioning(source.m_useSubpixelPositioning)
     , m_minSizeForAntiAlias(source.m_minSizeForAntiAlias)
     , m_minSizeForSubpixel(source.m_minSizeForSubpixel)
 #endif
@@ -144,17 +140,18 @@ FontPlatformData::FontPlatformData(const FontPlatformData& src, float textSize)
     , m_isHashTableDeletedValue(false)
 #if OS(WIN)
     , m_paintTextFlags(src.m_paintTextFlags)
-    , m_useSubpixelPositioning(src.m_useSubpixelPositioning)
     , m_minSizeForAntiAlias(src.m_minSizeForAntiAlias)
     , m_minSizeForSubpixel(src.m_minSizeForSubpixel)
 #endif
 {
 #if !OS(MACOSX)
-    querySystemForRenderStyle(FontDescription::subpixelPositioning());
+    querySystemForRenderStyle();
 #endif
 }
 
-FontPlatformData::FontPlatformData(PassRefPtr<SkTypeface> tf, const char* family, float textSize, bool syntheticBold, bool syntheticItalic, FontOrientation orientation, bool subpixelTextPosition)
+FontPlatformData::FontPlatformData(PassRefPtr<SkTypeface> tf,
+    const char* family, float textSize, bool syntheticBold,
+    bool syntheticItalic, FontOrientation orientation)
     : m_typeface(tf)
 #if !OS(WIN)
     , m_family(family)
@@ -166,13 +163,12 @@ FontPlatformData::FontPlatformData(PassRefPtr<SkTypeface> tf, const char* family
     , m_isHashTableDeletedValue(false)
 #if OS(WIN)
     , m_paintTextFlags(0)
-    , m_useSubpixelPositioning(subpixelTextPosition)
     , m_minSizeForAntiAlias(0)
     , m_minSizeForSubpixel(0)
 #endif
 {
 #if !OS(MACOSX)
-    querySystemForRenderStyle(subpixelTextPosition);
+    querySystemForRenderStyle();
 #endif
 }
 
@@ -215,7 +211,6 @@ const FontPlatformData& FontPlatformData::operator=(const FontPlatformData& othe
     m_paintTextFlags = 0;
     m_minSizeForAntiAlias = other.m_minSizeForAntiAlias;
     m_minSizeForSubpixel = other.m_minSizeForSubpixel;
-    m_useSubpixelPositioning = other.m_useSubpixelPositioning;
 #endif
 
     return *this;
