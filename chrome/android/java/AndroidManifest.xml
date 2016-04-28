@@ -307,12 +307,10 @@ by a child template that "extends" this file.
             android:label="@string/fre_label"
             android:launchMode="singleTop"
             android:windowSoftInputMode="stateHidden|adjustPan"
-            android:screenOrientation="portrait"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize">
         </activity>
         <activity android:name="org.chromium.chrome.browser.signin.AccountSigninActivity"
             android:theme="@style/MainTheme"
-            android:screenOrientation="portrait"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize">
         </activity>
         <activity android:name="org.chromium.chrome.browser.preferences.Preferences"

@@ -35,7 +35,6 @@ import org.chromium.ui.widget.ButtonCompat;
 
 import java.util.List;
 
-// TODO(gogerald): add landscape mode (http://crbug.com/599139).
 // TODO(gogerald): refactor common part into one place after redesign all sign in screens.
 
 /**

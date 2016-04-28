@@ -8,6 +8,7 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -60,10 +61,22 @@ public class AccountSigninChooseView extends ScrollView {
         int width = MeasureSpec.getSize(widthMeasureSpec);
         int height = MeasureSpec.getSize(heightMeasureSpec);
 
-        // Sets the title aspect ratio to be 16:9 in portrait mode (height > width).
+        View title = findViewById(R.id.signin_title);
+        ViewGroup.LayoutParams params = title.getLayoutParams();
         if (height > width) {
-            ((TextView) findViewById(R.id.signin_title)).setHeight(width * 9 / 16);
+            // Sets the title aspect ratio to be 16:9.
+            params.height = width * 9 / 16;
+            title.setPadding(
+                    title.getPaddingLeft(), 0, title.getPaddingRight(), title.getPaddingBottom());
+        } else {
+            params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+
+            // Adds top padding.
+            title.setPadding(title.getPaddingLeft(),
+                    getResources().getDimensionPixelOffset(R.dimen.signin_screen_top_padding),
+                    title.getPaddingRight(), title.getPaddingBottom());
         }
+        title.setLayoutParams(params);
 
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }

@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.signin;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
@@ -42,15 +43,25 @@ public class AccountSigninConfirmationView extends ScrollView {
         int width = MeasureSpec.getSize(widthMeasureSpec);
         int height = MeasureSpec.getSize(heightMeasureSpec);
 
-        // Sets aspect ratio of the head to 16:9.
+        View head = findViewById(R.id.signin_confirmation_head);
+        RelativeLayout.LayoutParams headLayoutParams =
+                (RelativeLayout.LayoutParams) head.getLayoutParams();
+        View accountImage = findViewById(R.id.signin_account_image);
+        LinearLayout.LayoutParams accountImageLayoutParams =
+                (LinearLayout.LayoutParams) accountImage.getLayoutParams();
         if (height > width) {
-            LinearLayout layout = (LinearLayout) findViewById(R.id.signin_confirmation_head);
-            RelativeLayout.LayoutParams params =
-                    (RelativeLayout.LayoutParams) layout.getLayoutParams();
-            params.height = width * 9 / 16;
-            params.width = LayoutParams.MATCH_PARENT;
-            layout.setLayoutParams(params);
+            // Sets aspect ratio of the head to 16:9.
+            headLayoutParams.height = width * 9 / 16;
+            accountImageLayoutParams.topMargin = 0;
+        } else {
+            headLayoutParams.height = LayoutParams.WRAP_CONTENT;
+
+            // Adds top margin.
+            accountImageLayoutParams.topMargin =
+                    getResources().getDimensionPixelOffset(R.dimen.signin_screen_top_padding);
         }
+        head.setLayoutParams(headLayoutParams);
+        accountImage.setLayoutParams(accountImageLayoutParams);
 
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
