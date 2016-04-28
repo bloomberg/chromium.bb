@@ -782,9 +782,10 @@ class MetaBuildWrapper(object):
         self.Print('GN gen failed: %d' % ret)
         return ret
 
+    android = 'target_os="android"' in vals['gn_args']
     for target in swarming_targets:
-      if target.endswith('_apk'):
-        # "_apk" targets may be either android_apk or executable. The former
+      if android:
+        # Android targets may be either android_apk or executable. The former
         # will result in runtime_deps associated with the stamp file, while the
         # latter will result in runtime_deps associated with the executable.
         target_name = self.GNTargetName(target)
@@ -1326,7 +1327,7 @@ class MetaBuildWrapper(object):
     self.Print(json.dumps(obj, indent=2, sort_keys=True))
 
   def GNTargetName(self, target):
-    return target[:-len('_apk')] if target.endswith('_apk') else target
+    return target
 
   def Build(self, target):
     build_dir = self.ToSrcRelPath(self.args.path[0])
