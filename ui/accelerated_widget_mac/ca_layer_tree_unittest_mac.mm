@@ -16,6 +16,48 @@
 
 namespace gpu {
 
+namespace {
+
+struct CALayerProperties {
+  bool is_clipped = true;
+  gfx::Rect clip_rect;
+  int sorting_context_id = 0;
+  gfx::Transform transform;
+  gfx::RectF contents_rect = gfx::RectF(0.0f, 0.0f, 1.0f, 1.0f);
+  gfx::Rect rect = gfx::Rect(0, 0, 256, 256);
+  unsigned background_color = SkColorSetARGB(0xFF, 0xFF, 0xFF, 0xFF);
+  unsigned edge_aa_mask = 0;
+  float opacity = 1.0f;
+  float scale_factor = 1.0f;
+  unsigned filter = GL_LINEAR;
+  base::ScopedCFTypeRef<CVPixelBufferRef> cv_pixel_buffer;
+  base::ScopedCFTypeRef<IOSurfaceRef> io_surface;
+};
+
+bool ScheduleCALayer(ui::CARendererLayerTree* tree,
+                     CALayerProperties* properties) {
+  return tree->ScheduleCALayer(
+      properties->is_clipped, properties->clip_rect,
+      properties->sorting_context_id, properties->transform,
+      properties->io_surface, properties->cv_pixel_buffer,
+      properties->contents_rect, properties->rect, properties->background_color,
+      properties->edge_aa_mask, properties->opacity, properties->filter);
+}
+
+void UpdateCALayerTree(std::unique_ptr<ui::CARendererLayerTree>& ca_layer_tree,
+                       CALayerProperties* properties,
+                       CALayer* superlayer) {
+  std::unique_ptr<ui::CARendererLayerTree> new_ca_layer_tree(
+      new ui::CARendererLayerTree);
+  bool result = ScheduleCALayer(new_ca_layer_tree.get(), properties);
+  EXPECT_TRUE(result);
+  new_ca_layer_tree->CommitScheduledCALayers(
+      superlayer, std::move(ca_layer_tree), properties->scale_factor);
+  std::swap(new_ca_layer_tree, ca_layer_tree);
+}
+
+}  // namespace
+
 class CALayerTreeTest : public testing::Test {
  protected:
   void SetUp() override {
@@ -30,21 +72,16 @@ class CALayerTreeTest : public testing::Test {
 
 // Test updating each layer's properties.
 TEST_F(CALayerTreeTest, PropertyUpdates) {
-  base::ScopedCFTypeRef<IOSurfaceRef> io_surface(gfx::CreateIOSurface(
-      gfx::Size(256, 256), gfx::BufferFormat::BGRA_8888));
-  bool is_clipped = true;
-  gfx::Rect clip_rect(2, 4, 8, 16);
-  int sorting_context_id = 0;
-  gfx::Transform transform;
-  transform.Translate(10, 20);
-  gfx::RectF contents_rect(0.0f, 0.25f, 0.5f, 0.75f);
-  gfx::Rect rect(16, 32, 64, 128);
-  unsigned background_color = SkColorSetARGB(0xFF, 0xFF, 0, 0);
-  unsigned edge_aa_mask = GL_CA_LAYER_EDGE_LEFT_CHROMIUM;
-  float opacity = 0.5f;
-  unsigned filter = GL_LINEAR;
-  float scale_factor = 1.0f;
-  bool result = false;
+  CALayerProperties properties;
+  properties.clip_rect = gfx::Rect(2, 4, 8, 16);
+  properties.transform.Translate(10, 20);
+  properties.contents_rect = gfx::RectF(0.0f, 0.25f, 0.5f, 0.75f);
+  properties.rect = gfx::Rect(16, 32, 64, 128);
+  properties.background_color = SkColorSetARGB(0xFF, 0xFF, 0, 0);
+  properties.edge_aa_mask = GL_CA_LAYER_EDGE_LEFT_CHROMIUM;
+  properties.opacity = 0.5f;
+  properties.io_surface =
+      gfx::CreateIOSurface(gfx::Size(256, 256), gfx::BufferFormat::BGRA_8888);
 
   std::unique_ptr<ui::CARendererLayerTree> ca_layer_tree;
   CALayer* root_layer = nil;
@@ -56,23 +93,8 @@ TEST_F(CALayerTreeTest, PropertyUpdates) {
   {
     std::unique_ptr<ui::CARendererLayerTree> new_ca_layer_tree(
         new ui::CARendererLayerTree);
-    result = new_ca_layer_tree->ScheduleCALayer(
-        is_clipped,
-        clip_rect,
-        sorting_context_id,
-        transform,
-        io_surface,
-        nullptr,
-        contents_rect,
-        rect,
-        background_color,
-        edge_aa_mask,
-        opacity,
-        filter);
-    EXPECT_TRUE(result);
-    new_ca_layer_tree->CommitScheduledCALayers(
-        superlayer_, std::move(ca_layer_tree), scale_factor);
-    std::swap(new_ca_layer_tree, ca_layer_tree);
+
+    UpdateCALayerTree(ca_layer_tree, &properties, superlayer_);
 
     // Validate the tree structure.
     EXPECT_EQ(1u, [[superlayer_ sublayers] count]);
@@ -86,56 +108,41 @@ TEST_F(CALayerTreeTest, PropertyUpdates) {
 
     // Validate the clip and sorting context layer.
     EXPECT_TRUE([clip_and_sorting_layer masksToBounds]);
-    EXPECT_EQ(gfx::Rect(clip_rect.size()),
+    EXPECT_EQ(gfx::Rect(properties.clip_rect.size()),
               gfx::Rect([clip_and_sorting_layer bounds]));
-    EXPECT_EQ(clip_rect.origin(),
+    EXPECT_EQ(properties.clip_rect.origin(),
               gfx::Point([clip_and_sorting_layer position]));
-    EXPECT_EQ(-clip_rect.origin().x(),
+    EXPECT_EQ(-properties.clip_rect.origin().x(),
               [clip_and_sorting_layer sublayerTransform].m41);
-    EXPECT_EQ(-clip_rect.origin().y(),
+    EXPECT_EQ(-properties.clip_rect.origin().y(),
               [clip_and_sorting_layer sublayerTransform].m42);
 
     // Validate the transform layer.
-    EXPECT_EQ(transform.matrix().get(3, 0),
+    EXPECT_EQ(properties.transform.matrix().get(3, 0),
               [transform_layer sublayerTransform].m41);
-    EXPECT_EQ(transform.matrix().get(3, 1),
+    EXPECT_EQ(properties.transform.matrix().get(3, 1),
               [transform_layer sublayerTransform].m42);
 
     // Validate the content layer.
-    EXPECT_EQ(static_cast<id>(io_surface.get()), [content_layer contents]);
-    EXPECT_EQ(contents_rect, gfx::RectF([content_layer contentsRect]));
-    EXPECT_EQ(rect.origin(), gfx::Point([content_layer position]));
-    EXPECT_EQ(gfx::Rect(rect.size()), gfx::Rect([content_layer bounds]));
+    EXPECT_EQ(static_cast<id>(properties.io_surface.get()),
+              [content_layer contents]);
+    EXPECT_EQ(properties.contents_rect,
+              gfx::RectF([content_layer contentsRect]));
+    EXPECT_EQ(properties.rect.origin(), gfx::Point([content_layer position]));
+    EXPECT_EQ(gfx::Rect(properties.rect.size()),
+              gfx::Rect([content_layer bounds]));
     EXPECT_EQ(kCALayerLeftEdge, [content_layer edgeAntialiasingMask]);
-    EXPECT_EQ(opacity, [content_layer opacity]);
+    EXPECT_EQ(properties.opacity, [content_layer opacity]);
     EXPECT_NSEQ(kCAFilterLinear, [content_layer minificationFilter]);
     EXPECT_NSEQ(kCAFilterLinear, [content_layer magnificationFilter]);
     if ([content_layer respondsToSelector:(@selector(contentsScale))])
-      EXPECT_EQ(scale_factor, [content_layer contentsScale]);
+      EXPECT_EQ(properties.scale_factor, [content_layer contentsScale]);
   }
 
   // Update just the clip rect and re-commit.
   {
-    clip_rect = gfx::Rect(4, 8, 16, 32);
-    std::unique_ptr<ui::CARendererLayerTree> new_ca_layer_tree(
-        new ui::CARendererLayerTree);
-    result = new_ca_layer_tree->ScheduleCALayer(
-        is_clipped,
-        clip_rect,
-        sorting_context_id,
-        transform,
-        io_surface,
-        nullptr,
-        contents_rect,
-        rect,
-        background_color,
-        edge_aa_mask,
-        opacity,
-        filter);
-    EXPECT_TRUE(result);
-    new_ca_layer_tree->CommitScheduledCALayers(
-        superlayer_, std::move(ca_layer_tree), scale_factor);
-    std::swap(new_ca_layer_tree, ca_layer_tree);
+    properties.clip_rect = gfx::Rect(4, 8, 16, 32);
+    UpdateCALayerTree(ca_layer_tree, &properties, superlayer_);
 
     // Validate the tree structure
     EXPECT_EQ(1u, [[superlayer_ sublayers] count]);
@@ -148,38 +155,20 @@ TEST_F(CALayerTreeTest, PropertyUpdates) {
 
     // Validate the clip and sorting context layer.
     EXPECT_TRUE([clip_and_sorting_layer masksToBounds]);
-    EXPECT_EQ(gfx::Rect(clip_rect.size()),
+    EXPECT_EQ(gfx::Rect(properties.clip_rect.size()),
               gfx::Rect([clip_and_sorting_layer bounds]));
-    EXPECT_EQ(clip_rect.origin(),
+    EXPECT_EQ(properties.clip_rect.origin(),
               gfx::Point([clip_and_sorting_layer position]));
-    EXPECT_EQ(-clip_rect.origin().x(),
+    EXPECT_EQ(-properties.clip_rect.origin().x(),
               [clip_and_sorting_layer sublayerTransform].m41);
-    EXPECT_EQ(-clip_rect.origin().y(),
+    EXPECT_EQ(-properties.clip_rect.origin().y(),
               [clip_and_sorting_layer sublayerTransform].m42);
   }
 
   // Disable clipping and re-commit.
   {
-    is_clipped = false;
-    std::unique_ptr<ui::CARendererLayerTree> new_ca_layer_tree(
-        new ui::CARendererLayerTree);
-    result = new_ca_layer_tree->ScheduleCALayer(
-        is_clipped,
-        clip_rect,
-        sorting_context_id,
-        transform,
-        io_surface,
-        nullptr,
-        contents_rect,
-        rect,
-        background_color,
-        edge_aa_mask,
-        opacity,
-        filter);
-    EXPECT_TRUE(result);
-    new_ca_layer_tree->CommitScheduledCALayers(
-        superlayer_, std::move(ca_layer_tree), scale_factor);
-    std::swap(new_ca_layer_tree, ca_layer_tree);
+    properties.is_clipped = false;
+    UpdateCALayerTree(ca_layer_tree, &properties, superlayer_);
 
     // Validate the tree structure
     EXPECT_EQ(1u, [[superlayer_ sublayers] count]);
@@ -201,26 +190,8 @@ TEST_F(CALayerTreeTest, PropertyUpdates) {
 
   // Change the transform and re-commit.
   {
-    transform.Translate(5, 5);
-    std::unique_ptr<ui::CARendererLayerTree> new_ca_layer_tree(
-        new ui::CARendererLayerTree);
-    result = new_ca_layer_tree->ScheduleCALayer(
-        is_clipped,
-        clip_rect,
-        sorting_context_id,
-        transform,
-        io_surface,
-        nullptr,
-        contents_rect,
-        rect,
-        background_color,
-        edge_aa_mask,
-        opacity,
-        filter);
-    EXPECT_TRUE(result);
-    new_ca_layer_tree->CommitScheduledCALayers(
-        superlayer_, std::move(ca_layer_tree), scale_factor);
-    std::swap(new_ca_layer_tree, ca_layer_tree);
+    properties.transform.Translate(5, 5);
+    UpdateCALayerTree(ca_layer_tree, &properties, superlayer_);
 
     // Validate the tree structure.
     EXPECT_EQ(1u, [[superlayer_ sublayers] count]);
@@ -232,34 +203,16 @@ TEST_F(CALayerTreeTest, PropertyUpdates) {
               [[clip_and_sorting_layer sublayers] objectAtIndex:0]);
 
     // Validate the transform layer.
-    EXPECT_EQ(transform.matrix().get(3, 0),
+    EXPECT_EQ(properties.transform.matrix().get(3, 0),
               [transform_layer sublayerTransform].m41);
-    EXPECT_EQ(transform.matrix().get(3, 1),
+    EXPECT_EQ(properties.transform.matrix().get(3, 1),
               [transform_layer sublayerTransform].m42);
   }
 
   // Change the edge antialiasing mask and commit.
   {
-    edge_aa_mask = GL_CA_LAYER_EDGE_TOP_CHROMIUM;
-    std::unique_ptr<ui::CARendererLayerTree> new_ca_layer_tree(
-        new ui::CARendererLayerTree);
-    result = new_ca_layer_tree->ScheduleCALayer(
-        is_clipped,
-        clip_rect,
-        sorting_context_id,
-        transform,
-        io_surface,
-        nullptr,
-        contents_rect,
-        rect,
-        background_color,
-        edge_aa_mask,
-        opacity,
-        filter);
-    EXPECT_TRUE(result);
-    new_ca_layer_tree->CommitScheduledCALayers(
-        superlayer_, std::move(ca_layer_tree), scale_factor);
-    std::swap(new_ca_layer_tree, ca_layer_tree);
+    properties.edge_aa_mask = GL_CA_LAYER_EDGE_TOP_CHROMIUM;
+    UpdateCALayerTree(ca_layer_tree, &properties, superlayer_);
 
     // Validate the tree structure.
     EXPECT_EQ(1u, [[superlayer_ sublayers] count]);
@@ -278,25 +231,8 @@ TEST_F(CALayerTreeTest, PropertyUpdates) {
 
   // Change the contents and commit.
   {
-    std::unique_ptr<ui::CARendererLayerTree> new_ca_layer_tree(
-        new ui::CARendererLayerTree);
-    result = new_ca_layer_tree->ScheduleCALayer(
-        is_clipped,
-        clip_rect,
-        sorting_context_id,
-        transform,
-        nullptr,
-        nullptr,
-        contents_rect,
-        rect,
-        background_color,
-        edge_aa_mask,
-        opacity,
-        filter);
-    EXPECT_TRUE(result);
-    new_ca_layer_tree->CommitScheduledCALayers(
-        superlayer_, std::move(ca_layer_tree), scale_factor);
-    std::swap(new_ca_layer_tree, ca_layer_tree);
+    properties.io_surface = nullptr;
+    UpdateCALayerTree(ca_layer_tree, &properties, superlayer_);
 
     // Validate the tree structure.
     EXPECT_EQ(1u, [[superlayer_ sublayers] count]);
@@ -316,26 +252,8 @@ TEST_F(CALayerTreeTest, PropertyUpdates) {
 
   // Change the rect size.
   {
-    rect = gfx::Rect(rect.origin(), gfx::Size(32, 16));
-    std::unique_ptr<ui::CARendererLayerTree> new_ca_layer_tree(
-        new ui::CARendererLayerTree);
-    result = new_ca_layer_tree->ScheduleCALayer(
-        is_clipped,
-        clip_rect,
-        sorting_context_id,
-        transform,
-        nullptr,
-        nullptr,
-        contents_rect,
-        rect,
-        background_color,
-        edge_aa_mask,
-        opacity,
-        filter);
-    EXPECT_TRUE(result);
-    new_ca_layer_tree->CommitScheduledCALayers(
-        superlayer_, std::move(ca_layer_tree), scale_factor);
-    std::swap(new_ca_layer_tree, ca_layer_tree);
+    properties.rect = gfx::Rect(properties.rect.origin(), gfx::Size(32, 16));
+    UpdateCALayerTree(ca_layer_tree, &properties, superlayer_);
 
     // Validate the tree structure.
     EXPECT_EQ(1u, [[superlayer_ sublayers] count]);
@@ -349,32 +267,15 @@ TEST_F(CALayerTreeTest, PropertyUpdates) {
     EXPECT_EQ(content_layer, [[transform_layer sublayers] objectAtIndex:0]);
 
     // Validate the content layer.
-    EXPECT_EQ(rect.origin(), gfx::Point([content_layer position]));
-    EXPECT_EQ(gfx::Rect(rect.size()), gfx::Rect([content_layer bounds]));
+    EXPECT_EQ(properties.rect.origin(), gfx::Point([content_layer position]));
+    EXPECT_EQ(gfx::Rect(properties.rect.size()),
+              gfx::Rect([content_layer bounds]));
   }
 
   // Change the rect position.
   {
-    rect = gfx::Rect(gfx::Point(16, 4), rect.size());
-    std::unique_ptr<ui::CARendererLayerTree> new_ca_layer_tree(
-        new ui::CARendererLayerTree);
-    result = new_ca_layer_tree->ScheduleCALayer(
-        is_clipped,
-        clip_rect,
-        sorting_context_id,
-        transform,
-        nullptr,
-        nullptr,
-        contents_rect,
-        rect,
-        background_color,
-        edge_aa_mask,
-        opacity,
-        filter);
-    EXPECT_TRUE(result);
-    new_ca_layer_tree->CommitScheduledCALayers(
-        superlayer_, std::move(ca_layer_tree), scale_factor);
-    std::swap(new_ca_layer_tree, ca_layer_tree);
+    properties.rect = gfx::Rect(gfx::Point(16, 4), properties.rect.size());
+    UpdateCALayerTree(ca_layer_tree, &properties, superlayer_);
 
     // Validate the tree structure.
     EXPECT_EQ(1u, [[superlayer_ sublayers] count]);
@@ -388,32 +289,15 @@ TEST_F(CALayerTreeTest, PropertyUpdates) {
     EXPECT_EQ(content_layer, [[transform_layer sublayers] objectAtIndex:0]);
 
     // Validate the content layer.
-    EXPECT_EQ(rect.origin(), gfx::Point([content_layer position]));
-    EXPECT_EQ(gfx::Rect(rect.size()), gfx::Rect([content_layer bounds]));
+    EXPECT_EQ(properties.rect.origin(), gfx::Point([content_layer position]));
+    EXPECT_EQ(gfx::Rect(properties.rect.size()),
+              gfx::Rect([content_layer bounds]));
   }
 
   // Change the opacity.
   {
-    opacity = 1.0f;
-    std::unique_ptr<ui::CARendererLayerTree> new_ca_layer_tree(
-        new ui::CARendererLayerTree);
-    result = new_ca_layer_tree->ScheduleCALayer(
-        is_clipped,
-        clip_rect,
-        sorting_context_id,
-        transform,
-        nullptr,
-        nullptr,
-        contents_rect,
-        rect,
-        background_color,
-        edge_aa_mask,
-        opacity,
-        filter);
-    EXPECT_TRUE(result);
-    new_ca_layer_tree->CommitScheduledCALayers(
-        superlayer_, std::move(ca_layer_tree), scale_factor);
-    std::swap(new_ca_layer_tree, ca_layer_tree);
+    properties.opacity = 1.0f;
+    UpdateCALayerTree(ca_layer_tree, &properties, superlayer_);
 
     // Validate the tree structure.
     EXPECT_EQ(1u, [[superlayer_ sublayers] count]);
@@ -427,31 +311,13 @@ TEST_F(CALayerTreeTest, PropertyUpdates) {
     EXPECT_EQ(content_layer, [[transform_layer sublayers] objectAtIndex:0]);
 
     // Validate the content layer.
-    EXPECT_EQ(opacity, [content_layer opacity]);
+    EXPECT_EQ(properties.opacity, [content_layer opacity]);
   }
 
   // Change the filter.
   {
-    filter = GL_NEAREST;
-    std::unique_ptr<ui::CARendererLayerTree> new_ca_layer_tree(
-        new ui::CARendererLayerTree);
-    result = new_ca_layer_tree->ScheduleCALayer(
-        is_clipped,
-        clip_rect,
-        sorting_context_id,
-        transform,
-        nullptr,
-        nullptr,
-        contents_rect,
-        rect,
-        background_color,
-        edge_aa_mask,
-        opacity,
-        filter);
-    EXPECT_TRUE(result);
-    new_ca_layer_tree->CommitScheduledCALayers(
-        superlayer_, std::move(ca_layer_tree), scale_factor);
-    std::swap(new_ca_layer_tree, ca_layer_tree);
+    properties.filter = GL_NEAREST;
+    UpdateCALayerTree(ca_layer_tree, &properties, superlayer_);
 
     // Validate the tree structure.
     EXPECT_EQ(1u, [[superlayer_ sublayers] count]);
@@ -471,26 +337,10 @@ TEST_F(CALayerTreeTest, PropertyUpdates) {
 
   // Add the clipping and IOSurface contents back.
   {
-    is_clipped = true;
-    std::unique_ptr<ui::CARendererLayerTree> new_ca_layer_tree(
-        new ui::CARendererLayerTree);
-    result = new_ca_layer_tree->ScheduleCALayer(
-        is_clipped,
-        clip_rect,
-        sorting_context_id,
-        transform,
-        io_surface,
-        nullptr,
-        contents_rect,
-        rect,
-        background_color,
-        edge_aa_mask,
-        opacity,
-        filter);
-    EXPECT_TRUE(result);
-    new_ca_layer_tree->CommitScheduledCALayers(
-        superlayer_, std::move(ca_layer_tree), scale_factor);
-    std::swap(new_ca_layer_tree, ca_layer_tree);
+    properties.is_clipped = true;
+    properties.io_surface =
+        gfx::CreateIOSurface(gfx::Size(256, 256), gfx::BufferFormat::BGRA_8888);
+    UpdateCALayerTree(ca_layer_tree, &properties, superlayer_);
 
     // Validate the tree structure.
     EXPECT_EQ(1u, [[superlayer_ sublayers] count]);
@@ -504,32 +354,15 @@ TEST_F(CALayerTreeTest, PropertyUpdates) {
     EXPECT_EQ(content_layer, [[transform_layer sublayers] objectAtIndex:0]);
 
     // Validate the content layer.
-    EXPECT_EQ(static_cast<id>(io_surface.get()), [content_layer contents]);
+    EXPECT_EQ(static_cast<id>(properties.io_surface.get()),
+              [content_layer contents]);
     EXPECT_EQ(kCALayerBottomEdge, [content_layer edgeAntialiasingMask]);
   }
 
   // Change the scale factor. This should result in a new tree being created.
   {
-    scale_factor = 2.0f;
-    std::unique_ptr<ui::CARendererLayerTree> new_ca_layer_tree(
-        new ui::CARendererLayerTree);
-    result = new_ca_layer_tree->ScheduleCALayer(
-        is_clipped,
-        clip_rect,
-        sorting_context_id,
-        transform,
-        io_surface,
-        nullptr,
-        contents_rect,
-        rect,
-        background_color,
-        edge_aa_mask,
-        opacity,
-        filter);
-    EXPECT_TRUE(result);
-    new_ca_layer_tree->CommitScheduledCALayers(
-        superlayer_, std::move(ca_layer_tree), scale_factor);
-    std::swap(new_ca_layer_tree, ca_layer_tree);
+    properties.scale_factor = 2.0f;
+    UpdateCALayerTree(ca_layer_tree, &properties, superlayer_);
 
     // Validate the tree structure.
     EXPECT_EQ(1u, [[superlayer_ sublayers] count]);
@@ -548,47 +381,47 @@ TEST_F(CALayerTreeTest, PropertyUpdates) {
 
     // Validate the clip and sorting context layer.
     EXPECT_TRUE([clip_and_sorting_layer masksToBounds]);
-    EXPECT_EQ(gfx::ConvertRectToDIP(scale_factor, gfx::Rect(clip_rect.size())),
+    EXPECT_EQ(gfx::ConvertRectToDIP(properties.scale_factor,
+                                    gfx::Rect(properties.clip_rect.size())),
               gfx::Rect([clip_and_sorting_layer bounds]));
-    EXPECT_EQ(gfx::ConvertPointToDIP(scale_factor, clip_rect.origin()),
+    EXPECT_EQ(gfx::ConvertPointToDIP(properties.scale_factor,
+                                     properties.clip_rect.origin()),
               gfx::Point([clip_and_sorting_layer position]));
-    EXPECT_EQ(-clip_rect.origin().x() / scale_factor,
+    EXPECT_EQ(-properties.clip_rect.origin().x() / properties.scale_factor,
               [clip_and_sorting_layer sublayerTransform].m41);
-    EXPECT_EQ(-clip_rect.origin().y() / scale_factor,
+    EXPECT_EQ(-properties.clip_rect.origin().y() / properties.scale_factor,
               [clip_and_sorting_layer sublayerTransform].m42);
 
     // Validate the transform layer.
-    EXPECT_EQ(transform.matrix().get(3, 0) / scale_factor,
+    EXPECT_EQ(properties.transform.matrix().get(3, 0) / properties.scale_factor,
               [transform_layer sublayerTransform].m41);
-    EXPECT_EQ(transform.matrix().get(3, 1) / scale_factor,
+    EXPECT_EQ(properties.transform.matrix().get(3, 1) / properties.scale_factor,
               [transform_layer sublayerTransform].m42);
 
     // Validate the content layer.
-    EXPECT_EQ(static_cast<id>(io_surface.get()), [content_layer contents]);
-    EXPECT_EQ(contents_rect, gfx::RectF([content_layer contentsRect]));
-    EXPECT_EQ(gfx::ConvertPointToDIP(scale_factor, rect.origin()),
+    EXPECT_EQ(static_cast<id>(properties.io_surface.get()),
+              [content_layer contents]);
+    EXPECT_EQ(properties.contents_rect,
+              gfx::RectF([content_layer contentsRect]));
+    EXPECT_EQ(gfx::ConvertPointToDIP(properties.scale_factor,
+                                     properties.rect.origin()),
               gfx::Point([content_layer position]));
-    EXPECT_EQ(gfx::ConvertRectToDIP(scale_factor, gfx::Rect(rect.size())),
+    EXPECT_EQ(gfx::ConvertRectToDIP(properties.scale_factor,
+                                    gfx::Rect(properties.rect.size())),
               gfx::Rect([content_layer bounds]));
     EXPECT_EQ(kCALayerBottomEdge, [content_layer edgeAntialiasingMask]);
-    EXPECT_EQ(opacity, [content_layer opacity]);
+    EXPECT_EQ(properties.opacity, [content_layer opacity]);
     if ([content_layer respondsToSelector:(@selector(contentsScale))])
-      EXPECT_EQ(scale_factor, [content_layer contentsScale]);
+      EXPECT_EQ(properties.scale_factor, [content_layer contentsScale]);
   }
 }
 
 // Verify that sorting context zero is split at non-flat transforms.
 TEST_F(CALayerTreeTest, SplitSortingContextZero) {
-  bool is_clipped = false;
-  gfx::Rect clip_rect;
-  int sorting_context_id = 0;
-  gfx::RectF contents_rect(0, 0, 1, 1);
-  gfx::Rect rect(0, 0, 256, 256);
-  unsigned background_color = SkColorSetARGB(0xFF, 0xFF, 0xFF, 0xFF);
-  unsigned edge_aa_mask = 0;
-  float opacity = 1.0f;
-  float scale_factor = 1.0f;
-  unsigned filter = GL_LINEAR;
+  CALayerProperties properties;
+  properties.is_clipped = false;
+  properties.clip_rect = gfx::Rect();
+  properties.rect = gfx::Rect(0, 0, 256, 256);
 
   // We'll use the IOSurface contents to identify the content layers.
   base::ScopedCFTypeRef<IOSurfaceRef> io_surfaces[5];
@@ -612,22 +445,13 @@ TEST_F(CALayerTreeTest, SplitSortingContextZero) {
   std::unique_ptr<ui::CARendererLayerTree> ca_layer_tree(
       new ui::CARendererLayerTree);
   for (size_t i = 0; i < 5; ++i) {
-    bool result = ca_layer_tree->ScheduleCALayer(
-        is_clipped,
-        clip_rect,
-        sorting_context_id,
-        transforms[i],
-        io_surfaces[i],
-        nullptr,
-        contents_rect,
-        rect,
-        background_color,
-        edge_aa_mask,
-        opacity,
-        filter);
+    properties.io_surface = io_surfaces[i];
+    properties.transform = transforms[i];
+    bool result = ScheduleCALayer(ca_layer_tree.get(), &properties);
     EXPECT_TRUE(result);
   }
-  ca_layer_tree->CommitScheduledCALayers(superlayer_, nullptr, scale_factor);
+  ca_layer_tree->CommitScheduledCALayers(superlayer_, nullptr,
+                                         properties.scale_factor);
 
   // Validate the root layer.
   EXPECT_EQ(1u, [[superlayer_ sublayers] count]);
@@ -678,17 +502,10 @@ TEST_F(CALayerTreeTest, SplitSortingContextZero) {
 
 // Verify that sorting contexts are allocated appropriately.
 TEST_F(CALayerTreeTest, SortingContexts) {
-  bool is_clipped = false;
-  gfx::Rect clip_rect;
-  int sorting_context_ids[3] = {3, -1, 0};
-  gfx::RectF contents_rect(0, 0, 1, 1);
-  gfx::Rect rect(0, 0, 256, 256);
-  gfx::Transform transform;
-  unsigned background_color = SkColorSetARGB(0xFF, 0xFF, 0xFF, 0xFF);
-  unsigned edge_aa_mask = 0;
-  float opacity = 1.0f;
-  float scale_factor = 1.0f;
-  unsigned filter = GL_LINEAR;
+  CALayerProperties properties;
+  properties.is_clipped = false;
+  properties.clip_rect = gfx::Rect();
+  properties.rect = gfx::Rect(0, 0, 256, 256);
 
   // We'll use the IOSurface contents to identify the content layers.
   base::ScopedCFTypeRef<IOSurfaceRef> io_surfaces[3];
@@ -697,26 +514,19 @@ TEST_F(CALayerTreeTest, SortingContexts) {
         gfx::Size(256, 256), gfx::BufferFormat::BGRA_8888));
   }
 
+  int sorting_context_ids[3] = {3, -1, 0};
+
   // Schedule and commit the layers.
   std::unique_ptr<ui::CARendererLayerTree> ca_layer_tree(
       new ui::CARendererLayerTree);
   for (size_t i = 0; i < 3; ++i) {
-    bool result = ca_layer_tree->ScheduleCALayer(
-        is_clipped,
-        clip_rect,
-        sorting_context_ids[i],
-        transform,
-        io_surfaces[i],
-        nullptr,
-        contents_rect,
-        rect,
-        background_color,
-        edge_aa_mask,
-        opacity,
-        filter);
+    properties.sorting_context_id = sorting_context_ids[i];
+    properties.io_surface = io_surfaces[i];
+    bool result = ScheduleCALayer(ca_layer_tree.get(), &properties);
     EXPECT_TRUE(result);
   }
-  ca_layer_tree->CommitScheduledCALayers(superlayer_, nullptr, scale_factor);
+  ca_layer_tree->CommitScheduledCALayers(superlayer_, nullptr,
+                                         properties.scale_factor);
 
   // Validate the root layer.
   EXPECT_EQ(1u, [[superlayer_ sublayers] count]);
@@ -755,14 +565,7 @@ TEST_F(CALayerTreeTest, SortingContexts) {
 
 // Verify that sorting contexts must all have the same clipping properties.
 TEST_F(CALayerTreeTest, SortingContextMustHaveConsistentClip) {
-  base::ScopedCFTypeRef<IOSurfaceRef> io_surface;
-  gfx::RectF contents_rect(0, 0, 1, 1);
-  gfx::Rect rect(0, 0, 256, 256);
-  gfx::Transform transform;
-  unsigned background_color = SkColorSetARGB(0xFF, 0xFF, 0xFF, 0xFF);
-  unsigned edge_aa_mask = 0;
-  float opacity = 1.0f;
-  unsigned filter = GL_LINEAR;
+  CALayerProperties properties;
 
   // Vary the clipping parameters within sorting contexts.
   bool is_clippeds[3] = { true, true, false};
@@ -777,39 +580,21 @@ TEST_F(CALayerTreeTest, SortingContextMustHaveConsistentClip) {
   // First send the various clip parameters to sorting context zero. This is
   // legitimate.
   for (size_t i = 0; i < 3; ++i) {
-    int sorting_context_id = 0;
-    bool result = ca_layer_tree->ScheduleCALayer(
-        is_clippeds[i],
-        clip_rects[i],
-        sorting_context_id,
-        transform,
-        io_surface,
-        nullptr,
-        contents_rect,
-        rect,
-        background_color,
-        edge_aa_mask,
-        opacity,
-        filter);
+    properties.is_clipped = is_clippeds[i];
+    properties.clip_rect = clip_rects[i];
+
+    bool result = ScheduleCALayer(ca_layer_tree.get(), &properties);
     EXPECT_TRUE(result);
   }
+
   // Next send the various clip parameters to a non-zero sorting context. This
   // will fail when we try to change the clip within the sorting context.
   for (size_t i = 0; i < 3; ++i) {
-    int sorting_context_id = 3;
-    bool result = ca_layer_tree->ScheduleCALayer(
-        is_clippeds[i],
-        clip_rects[i],
-        sorting_context_id,
-        transform,
-        io_surface,
-        nullptr,
-        contents_rect,
-        rect,
-        background_color,
-        edge_aa_mask,
-        opacity,
-        filter);
+    properties.sorting_context_id = 3;
+    properties.is_clipped = is_clippeds[i];
+    properties.clip_rect = clip_rects[i];
+
+    bool result = ScheduleCALayer(ca_layer_tree.get(), &properties);
     if (i == 0)
       EXPECT_TRUE(result);
     else
@@ -817,41 +602,19 @@ TEST_F(CALayerTreeTest, SortingContextMustHaveConsistentClip) {
   }
   // Try once more with the original clip and verify it works.
   {
-    int sorting_context_id = 3;
-    bool result = ca_layer_tree->ScheduleCALayer(
-        is_clippeds[0],
-        clip_rects[0],
-        sorting_context_id,
-        transform,
-        io_surface,
-        nullptr,
-        contents_rect,
-        rect,
-        background_color,
-        edge_aa_mask,
-        opacity,
-        filter);
+    properties.is_clipped = is_clippeds[0];
+    properties.clip_rect = clip_rects[0];
+
+    bool result = ScheduleCALayer(ca_layer_tree.get(), &properties);
     EXPECT_TRUE(result);
   }
 }
 
 // Test updating each layer's properties.
 TEST_F(CALayerTreeTest, AVLayer) {
-  base::ScopedCFTypeRef<IOSurfaceRef> io_surface(gfx::CreateIOSurface(
-      gfx::Size(256, 256), gfx::BufferFormat::YUV_420_BIPLANAR));
-
-  bool is_clipped = true;
-  gfx::Rect clip_rect(2, 4, 8, 16);
-  int sorting_context_id = 0;
-  gfx::Transform transform;
-  gfx::RectF contents_rect(0.0f, 0.0f, 1.0f, 1.0f);
-  gfx::Rect rect(16, 32, 64, 128);
-  unsigned background_color = SkColorSetARGB(0xFF, 0xFF, 0, 0);
-  unsigned edge_aa_mask = GL_CA_LAYER_EDGE_LEFT_CHROMIUM;
-  float opacity = 0.5f;
-  float scale_factor = 1.0f;
-  bool result = false;
-  unsigned filter = GL_LINEAR;
+  CALayerProperties properties;
+  properties.io_surface = gfx::CreateIOSurface(
+      gfx::Size(256, 256), gfx::BufferFormat::YUV_420_BIPLANAR);
 
   std::unique_ptr<ui::CARendererLayerTree> ca_layer_tree;
   CALayer* root_layer = nil;
@@ -863,24 +626,7 @@ TEST_F(CALayerTreeTest, AVLayer) {
 
   // Validate the initial values.
   {
-    std::unique_ptr<ui::CARendererLayerTree> new_ca_layer_tree(
-        new ui::CARendererLayerTree);
-    result = new_ca_layer_tree->ScheduleCALayer(
-        is_clipped,
-        clip_rect,
-        sorting_context_id,
-        transform,
-        io_surface,
-        nullptr,
-        contents_rect,
-        rect, background_color,
-        edge_aa_mask,
-        opacity,
-        filter);
-    EXPECT_TRUE(result);
-    new_ca_layer_tree->CommitScheduledCALayers(
-        superlayer_, std::move(ca_layer_tree), scale_factor);
-    std::swap(new_ca_layer_tree, ca_layer_tree);
+    UpdateCALayerTree(ca_layer_tree, &properties, superlayer_);
 
     // Validate the tree structure.
     EXPECT_EQ(1u, [[superlayer_ sublayers] count]);
@@ -897,30 +643,12 @@ TEST_F(CALayerTreeTest, AVLayer) {
         isKindOfClass:NSClassFromString(@"AVSampleBufferDisplayLayer")]);
   }
 
-  io_surface.reset(gfx::CreateIOSurface(gfx::Size(256, 256),
-                                        gfx::BufferFormat::YUV_420_BIPLANAR));
+  properties.io_surface.reset(gfx::CreateIOSurface(
+      gfx::Size(256, 256), gfx::BufferFormat::YUV_420_BIPLANAR));
 
   // Pass another frame.
   {
-    std::unique_ptr<ui::CARendererLayerTree> new_ca_layer_tree(
-        new ui::CARendererLayerTree);
-    result = new_ca_layer_tree->ScheduleCALayer(
-        is_clipped,
-        clip_rect,
-        sorting_context_id,
-        transform,
-        io_surface,
-        nullptr,
-        contents_rect,
-        rect,
-        background_color,
-        edge_aa_mask,
-        opacity,
-        filter);
-    EXPECT_TRUE(result);
-    new_ca_layer_tree->CommitScheduledCALayers(
-        superlayer_, std::move(ca_layer_tree), scale_factor);
-    std::swap(new_ca_layer_tree, ca_layer_tree);
+    UpdateCALayerTree(ca_layer_tree, &properties, superlayer_);
 
     // Validate the tree structure.
     EXPECT_EQ(1u, [[superlayer_ sublayers] count]);
@@ -938,33 +666,14 @@ TEST_F(CALayerTreeTest, AVLayer) {
     EXPECT_EQ(content_layer2, content_layer1);
   }
 
-  io_surface.reset(gfx::CreateIOSurface(gfx::Size(256, 256),
-                                        gfx::BufferFormat::YUV_420_BIPLANAR));
-  base::ScopedCFTypeRef<CVPixelBufferRef> cv_pixel_buffer;
-  CVPixelBufferCreateWithIOSurface(
-      nullptr, io_surface, nullptr, cv_pixel_buffer.InitializeInto());
+  properties.io_surface.reset(gfx::CreateIOSurface(
+      gfx::Size(256, 256), gfx::BufferFormat::YUV_420_BIPLANAR));
+  CVPixelBufferCreateWithIOSurface(nullptr, properties.io_surface, nullptr,
+                                   properties.cv_pixel_buffer.InitializeInto());
 
   // Pass a frame with a CVPixelBuffer
   {
-    std::unique_ptr<ui::CARendererLayerTree> new_ca_layer_tree(
-        new ui::CARendererLayerTree);
-    result = new_ca_layer_tree->ScheduleCALayer(
-        is_clipped,
-        clip_rect,
-        sorting_context_id,
-        transform,
-        io_surface,
-        cv_pixel_buffer,
-        contents_rect,
-        rect,
-        background_color,
-        edge_aa_mask,
-        opacity,
-        filter);
-    EXPECT_TRUE(result);
-    new_ca_layer_tree->CommitScheduledCALayers(
-        superlayer_, std::move(ca_layer_tree), scale_factor);
-    std::swap(new_ca_layer_tree, ca_layer_tree);
+    UpdateCALayerTree(ca_layer_tree, &properties, superlayer_);
 
     // Validate the tree structure.
     EXPECT_EQ(1u, [[superlayer_ sublayers] count]);
@@ -982,32 +691,14 @@ TEST_F(CALayerTreeTest, AVLayer) {
     EXPECT_NE(content_layer2, content_layer1);
   }
 
-  io_surface.reset(gfx::CreateIOSurface(gfx::Size(256, 256),
-                                        gfx::BufferFormat::YUV_420_BIPLANAR));
-  cv_pixel_buffer.reset();
+  properties.io_surface.reset(gfx::CreateIOSurface(
+      gfx::Size(256, 256), gfx::BufferFormat::YUV_420_BIPLANAR));
+  properties.cv_pixel_buffer.reset();
 
   // Pass a frame that is clipped.
-  contents_rect = gfx::RectF(0, 0, 1, 0.9);
+  properties.contents_rect = gfx::RectF(0, 0, 1, 0.9);
   {
-    std::unique_ptr<ui::CARendererLayerTree> new_ca_layer_tree(
-        new ui::CARendererLayerTree);
-    result = new_ca_layer_tree->ScheduleCALayer(
-        is_clipped,
-        clip_rect,
-        sorting_context_id,
-        transform,
-        io_surface,
-        nullptr,
-        contents_rect,
-        rect,
-        background_color,
-        edge_aa_mask,
-        opacity,
-        filter);
-    EXPECT_TRUE(result);
-    new_ca_layer_tree->CommitScheduledCALayers(
-        superlayer_, std::move(ca_layer_tree), scale_factor);
-    std::swap(new_ca_layer_tree, ca_layer_tree);
+    UpdateCALayerTree(ca_layer_tree, &properties, superlayer_);
 
     // Validate the tree structure.
     EXPECT_EQ(1u, [[superlayer_ sublayers] count]);
@@ -1028,41 +719,30 @@ TEST_F(CALayerTreeTest, AVLayer) {
 
 // Test fullscreen low power detection.
 TEST_F(CALayerTreeTest, FullscreenLowPower) {
-  base::ScopedCFTypeRef<IOSurfaceRef> io_surface(gfx::CreateIOSurface(
-      gfx::Size(256, 256), gfx::BufferFormat::YUV_420_BIPLANAR));
+  CALayerProperties properties;
+  properties.io_surface = gfx::CreateIOSurface(
+      gfx::Size(256, 256), gfx::BufferFormat::YUV_420_BIPLANAR);
+  properties.is_clipped = false;
+  CVPixelBufferCreateWithIOSurface(nullptr, properties.io_surface, nullptr,
+                                   properties.cv_pixel_buffer.InitializeInto());
 
-  bool is_clipped = false;
-  gfx::Rect clip_rect(0, 0, 1, 1);
-  int sorting_context_id = 0;
-  gfx::Transform transform;
-  transform.Translate(10, 20);
-  transform.Scale(0.5, 2.0);
-  gfx::RectF contents_rect(0.0f, 0.0f, 1.0f, 1.0f);
-  gfx::Rect rect(16, 32, 64, 128);
-  unsigned background_color = SkColorSetARGB(0, 0, 0, 0);
-  unsigned edge_aa_mask = 0;
-  float opacity = 1.0f;
-  float scale_factor = 1.0f;
-  bool result = false;
-  unsigned filter = GL_LINEAR;
+  CALayerProperties properties_black;
+  properties_black.is_clipped = false;
+  properties_black.background_color = SK_ColorBLACK;
+  CALayerProperties properties_white;
+  properties_white.is_clipped = false;
+  properties_white.background_color = SK_ColorWHITE;
 
   std::unique_ptr<ui::CARendererLayerTree> ca_layer_tree;
-
-  base::ScopedCFTypeRef<CVPixelBufferRef> cv_pixel_buffer;
-  CVPixelBufferCreateWithIOSurface(nullptr, io_surface, nullptr,
-                                   cv_pixel_buffer.InitializeInto());
 
   // Test a configuration with no background.
   {
     std::unique_ptr<ui::CARendererLayerTree> new_ca_layer_tree(
         new ui::CARendererLayerTree);
-    result = new_ca_layer_tree->ScheduleCALayer(
-        is_clipped, clip_rect, sorting_context_id, transform, io_surface,
-        cv_pixel_buffer, contents_rect, rect, background_color, edge_aa_mask,
-        opacity, filter);
+    bool result = ScheduleCALayer(new_ca_layer_tree.get(), &properties);
     EXPECT_TRUE(result);
     new_ca_layer_tree->CommitScheduledCALayers(
-        superlayer_, std::move(ca_layer_tree), scale_factor);
+        superlayer_, std::move(ca_layer_tree), properties.scale_factor);
     bool fullscreen_low_power_valid =
         new_ca_layer_tree->CommitFullscreenLowPowerLayer(
             fullscreen_low_power_layer_);
@@ -1089,16 +769,12 @@ TEST_F(CALayerTreeTest, FullscreenLowPower) {
   {
     std::unique_ptr<ui::CARendererLayerTree> new_ca_layer_tree(
         new ui::CARendererLayerTree);
-    result = new_ca_layer_tree->ScheduleCALayer(
-        is_clipped, clip_rect, sorting_context_id, transform, nullptr, nullptr,
-        contents_rect, rect, SK_ColorBLACK, edge_aa_mask, opacity, filter);
-    result = new_ca_layer_tree->ScheduleCALayer(
-        is_clipped, clip_rect, sorting_context_id, transform, io_surface,
-        cv_pixel_buffer, contents_rect, rect, background_color, edge_aa_mask,
-        opacity, filter);
+    bool result = ScheduleCALayer(new_ca_layer_tree.get(), &properties_black);
+    EXPECT_TRUE(result);
+    result = ScheduleCALayer(new_ca_layer_tree.get(), &properties);
     EXPECT_TRUE(result);
     new_ca_layer_tree->CommitScheduledCALayers(
-        superlayer_, std::move(ca_layer_tree), scale_factor);
+        superlayer_, std::move(ca_layer_tree), properties.scale_factor);
     bool fullscreen_low_power_valid =
         new_ca_layer_tree->CommitFullscreenLowPowerLayer(
             fullscreen_low_power_layer_);
@@ -1125,16 +801,12 @@ TEST_F(CALayerTreeTest, FullscreenLowPower) {
   {
     std::unique_ptr<ui::CARendererLayerTree> new_ca_layer_tree(
         new ui::CARendererLayerTree);
-    result = new_ca_layer_tree->ScheduleCALayer(
-        is_clipped, clip_rect, sorting_context_id, transform, nullptr, nullptr,
-        contents_rect, rect, SK_ColorWHITE, edge_aa_mask, opacity, filter);
-    result = new_ca_layer_tree->ScheduleCALayer(
-        is_clipped, clip_rect, sorting_context_id, transform, io_surface,
-        cv_pixel_buffer, contents_rect, rect, background_color, edge_aa_mask,
-        opacity, filter);
+    bool result = ScheduleCALayer(new_ca_layer_tree.get(), &properties_white);
+    EXPECT_TRUE(result);
+    result = ScheduleCALayer(new_ca_layer_tree.get(), &properties);
     EXPECT_TRUE(result);
     new_ca_layer_tree->CommitScheduledCALayers(
-        superlayer_, std::move(ca_layer_tree), scale_factor);
+        superlayer_, std::move(ca_layer_tree), properties.scale_factor);
     bool fullscreen_low_power_valid =
         new_ca_layer_tree->CommitFullscreenLowPowerLayer(
             fullscreen_low_power_layer_);
@@ -1161,16 +833,12 @@ TEST_F(CALayerTreeTest, FullscreenLowPower) {
   {
     std::unique_ptr<ui::CARendererLayerTree> new_ca_layer_tree(
         new ui::CARendererLayerTree);
-    result = new_ca_layer_tree->ScheduleCALayer(
-        is_clipped, clip_rect, sorting_context_id, transform, io_surface,
-        cv_pixel_buffer, contents_rect, rect, background_color, edge_aa_mask,
-        opacity, filter);
-    result = new_ca_layer_tree->ScheduleCALayer(
-        is_clipped, clip_rect, sorting_context_id, transform, nullptr, nullptr,
-        contents_rect, rect, SK_ColorBLACK, edge_aa_mask, opacity, filter);
+    bool result = ScheduleCALayer(new_ca_layer_tree.get(), &properties);
+    EXPECT_TRUE(result);
+    result = ScheduleCALayer(new_ca_layer_tree.get(), &properties_black);
     EXPECT_TRUE(result);
     new_ca_layer_tree->CommitScheduledCALayers(
-        superlayer_, std::move(ca_layer_tree), scale_factor);
+        superlayer_, std::move(ca_layer_tree), properties.scale_factor);
     bool fullscreen_low_power_valid =
         new_ca_layer_tree->CommitFullscreenLowPowerLayer(
             fullscreen_low_power_layer_);
