@@ -31,6 +31,7 @@ MACHINE_TYPE_AMD64 = 0x8664
 # Windows guru for advice.
 EXCLUDED_FILES = ['chrome_frame_mini_installer.exe',
                   'mini_installer.exe',
+                  'next_version_mini_installer.exe',
                   'wow_helper.exe'
                   ]
 
