@@ -40,6 +40,7 @@
 #include <wayland-cursor.h>
 
 #include "compositor.h"
+#include "compositor-wayland.h"
 #include "gl-renderer.h"
 #include "pixman-renderer.h"
 #include "shared/helpers.h"
@@ -51,25 +52,6 @@
 #include "linux-dmabuf.h"
 
 #define WINDOW_TITLE "Weston Compositor"
-
-struct weston_wayland_backend_output_config {
-	int width;
-	int height;
-	char *name;
-	uint32_t transform;
-	int32_t scale;
-};
-
-struct weston_wayland_backend_config {
-	int use_pixman;
-	int sprawl;
-	char *display_name;
-	int fullscreen;
-	char *cursor_theme;
-	int cursor_size;
-	int num_outputs;
-	struct weston_wayland_backend_output_config *outputs;
-};
 
 struct wayland_backend {
 	struct weston_backend base;

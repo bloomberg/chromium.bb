@@ -76,6 +76,7 @@ weston_SOURCES =					\
 	src/compositor-fbdev.h				\
 	src/compositor-rdp.h				\
 	src/compositor-x11.h			\
+	src/compositor-wayland.h			\
 	src/input.c					\
 	src/data-device.c				\
 	src/screenshooter.c				\
@@ -216,6 +217,7 @@ westoninclude_HEADERS =				\
 	src/compositor-fbdev.h			\
 	src/compositor-rdp.h			\
 	src/compositor-x11.h			\
+	src/compositor-wayland.h		\
 	src/timeline-object.h			\
 	shared/matrix.h				\
 	shared/config-parser.h			\
@@ -316,6 +318,7 @@ wayland_backend_la_CFLAGS =			\
 	$(AM_CFLAGS)
 wayland_backend_la_SOURCES = 			\
 	src/compositor-wayland.c		\
+	src/compositor-wayland.h		\
 	shared/helpers.h
 nodist_wayland_backend_la_SOURCES =			\
 	protocol/fullscreen-shell-unstable-v1-protocol.c		\
