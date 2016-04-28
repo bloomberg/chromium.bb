@@ -11,6 +11,7 @@
 
 import collections
 import json
+import logging
 import operator
 import optparse
 import os
@@ -408,6 +409,7 @@ Pass any number of files to graph their sizes. Any files with the extension
 
   if chartjson:
     results_path = os.path.join(options.output_dir, 'results-chart.json')
+    logging.critical('Dumping json to %s', results_path)
     with open(results_path, 'w') as json_file:
       json.dump(chartjson, json_file)
 
