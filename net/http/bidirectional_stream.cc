@@ -5,6 +5,7 @@
 #include "net/http/bidirectional_stream.h"
 
 #include <memory>
+#include <string>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -13,18 +14,48 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "base/values.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/http/bidirectional_stream_request_info.h"
+#include "net/http/http_log_util.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_stream.h"
+#include "net/log/net_log_capture_mode.h"
+#include "net/spdy/spdy_header_block.h"
 #include "net/spdy/spdy_http_utils.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_config.h"
 #include "url/gurl.h"
 
 namespace net {
+
+namespace {
+
+std::unique_ptr<base::Value> NetLogHeadersCallback(
+    const SpdyHeaderBlock* headers,
+    NetLogCaptureMode capture_mode) {
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  dict->Set("headers", ElideSpdyHeaderBlockForNetLog(*headers, capture_mode));
+  return std::move(dict);
+}
+
+std::unique_ptr<base::Value> NetLogCallback(const GURL* url,
+                                            const std::string* method,
+                                            const HttpRequestHeaders* headers,
+                                            NetLogCaptureMode capture_mode) {
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  dict->SetString("url", url->possibly_invalid_spec());
+  dict->SetString("method", *method);
+  std::string empty;
+  std::unique_ptr<base::Value> headers_param(
+      headers->NetLogCallback(&empty, capture_mode));
+  dict->Set("headers", std::move(headers_param));
+  return std::move(dict);
+}
+
+}  // namespace
 
 BidirectionalStream::Delegate::Delegate() {}
 
@@ -85,10 +116,19 @@ BidirectionalStream::BidirectionalStream(
   // Check that HttpStreamFactory does not invoke OnBidirectionalStreamImplReady
   // synchronously.
   DCHECK(!stream_impl_);
+  if (net_log_.IsCapturing()) {
+    net_log_.BeginEvent(
+        NetLog::TYPE_BIDIRECTIONAL_STREAM_ALIVE,
+        base::Bind(&NetLogCallback, &request_info_->url, &request_info_->method,
+                   base::Unretained(&request_info_->extra_headers)));
+  }
 }
 
 BidirectionalStream::~BidirectionalStream() {
   Cancel();
+  if (net_log_.IsCapturing()) {
+    net_log_.EndEvent(NetLog::TYPE_BIDIRECTIONAL_STREAM_ALIVE);
+  }
 }
 
 int BidirectionalStream::ReadData(IOBuffer* buf, int buf_len) {
@@ -173,7 +213,10 @@ void BidirectionalStream::OnHeadersReceived(
     delegate_->OnFailed(ERR_FAILED);
     return;
   }
-
+  if (net_log_.IsCapturing()) {
+    net_log_.AddEvent(NetLog::TYPE_BIDIRECTIONAL_STREAM_RECV_HEADERS,
+                      base::Bind(&NetLogHeadersCallback, &response_headers));
+  }
   session_->http_stream_factory()->ProcessAlternativeServices(
       session_, response_info.headers.get(),
       url::SchemeHostPort(request_info_->url));
@@ -183,9 +226,11 @@ void BidirectionalStream::OnHeadersReceived(
 void BidirectionalStream::OnDataRead(int bytes_read) {
   DCHECK(read_buffer_);
 
-  net_log_.AddByteTransferEvent(
-      NetLog::TYPE_BIDIRECTIONAL_STREAM_BYTES_RECEIVED, bytes_read,
-      read_buffer_->data());
+  if (net_log_.IsCapturing()) {
+    net_log_.AddByteTransferEvent(
+        NetLog::TYPE_BIDIRECTIONAL_STREAM_BYTES_RECEIVED, bytes_read,
+        read_buffer_->data());
+  }
   read_buffer_ = nullptr;
   delegate_->OnDataRead(bytes_read);
 }
@@ -194,10 +239,12 @@ void BidirectionalStream::OnDataSent() {
   DCHECK(!write_buffer_list_.empty());
   DCHECK_EQ(write_buffer_list_.size(), write_buffer_len_list_.size());
 
-  for (size_t i = 0; i < write_buffer_list_.size(); ++i) {
-    net_log_.AddByteTransferEvent(NetLog::TYPE_BIDIRECTIONAL_STREAM_BYTES_SENT,
-                                  write_buffer_len_list_[i],
-                                  write_buffer_list_[i]->data());
+  if (net_log_.IsCapturing()) {
+    for (size_t i = 0; i < write_buffer_list_.size(); ++i) {
+      net_log_.AddByteTransferEvent(
+          NetLog::TYPE_BIDIRECTIONAL_STREAM_BYTES_SENT,
+          write_buffer_len_list_[i], write_buffer_list_[i]->data());
+    }
   }
   write_buffer_list_.clear();
   write_buffer_len_list_.clear();
@@ -205,6 +252,10 @@ void BidirectionalStream::OnDataSent() {
 }
 
 void BidirectionalStream::OnTrailersReceived(const SpdyHeaderBlock& trailers) {
+  if (net_log_.IsCapturing()) {
+    net_log_.AddEvent(NetLog::TYPE_BIDIRECTIONAL_STREAM_RECV_TRAILERS,
+                      base::Bind(&NetLogHeadersCallback, &trailers));
+  }
   delegate_->OnTrailersReceived(trailers);
 }
 

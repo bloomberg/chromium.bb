@@ -480,7 +480,8 @@ TEST_F(BidirectionalStreamTest, TestReadDataAfterClose) {
             delegate->GetTotalReceivedBytes());
 }
 
-TEST_F(BidirectionalStreamTest, TestContainFullBytes) {
+// Tests that the NetLog contains correct entries.
+TEST_F(BidirectionalStreamTest, TestNetLogContainEntries) {
   BufferedSpdyFramer framer(spdy_util_.spdy_version());
 
   std::unique_ptr<SpdySerializedFrame> req(spdy_util_.ConstructSpdyPost(
@@ -496,7 +497,12 @@ TEST_F(BidirectionalStreamTest, TestContainFullBytes) {
   std::unique_ptr<SpdySerializedFrame> response_body_frame1(
       spdy_util_.ConstructSpdyBodyFrame(1, false));
   std::unique_ptr<SpdySerializedFrame> response_body_frame2(
-      spdy_util_.ConstructSpdyBodyFrame(1, true));
+      spdy_util_.ConstructSpdyBodyFrame(1, false));
+
+  SpdyHeaderBlock trailers;
+  trailers["foo"] = "bar";
+  std::unique_ptr<SpdySerializedFrame> response_trailers(
+      spdy_util_.ConstructSpdyResponseHeaders(1, trailers, true));
 
   MockRead reads[] = {
       CreateMockRead(*resp, 1),
@@ -504,7 +510,8 @@ TEST_F(BidirectionalStreamTest, TestContainFullBytes) {
       CreateMockRead(*response_body_frame1, 4),
       MockRead(ASYNC, ERR_IO_PENDING, 5),  // Force a pause.
       CreateMockRead(*response_body_frame2, 6),
-      MockRead(ASYNC, 0, 7),
+      CreateMockRead(*response_trailers, 7),
+      MockRead(ASYNC, 0, 8),
   };
 
   HostPortPair host_port_pair("www.example.org", 443);
@@ -558,16 +565,31 @@ TEST_F(BidirectionalStreamTest, TestContainFullBytes) {
   EXPECT_EQ(1, delegate->on_data_read_count());
   EXPECT_EQ(1, delegate->on_data_sent_count());
   EXPECT_EQ(kProtoHTTP2, delegate->GetProtocol());
+  EXPECT_EQ("bar", delegate->trailers().find("foo")->second);
   EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)),
             delegate->GetTotalSentBytes());
   EXPECT_EQ(CountReadBytes(reads, arraysize(reads)),
             delegate->GetTotalReceivedBytes());
 
+  // Destroy the delegate will destroy the stream, so we can get an end event
+  // for BIDIRECTIONAL_STREAM_ALIVE.
+  delegate.reset();
   TestNetLogEntry::List entries;
   net_log_.GetEntries(&entries);
-  // Sent bytes. Sending data is always asynchronous.
   size_t index = ExpectLogContainsSomewhere(
-      entries, 0, NetLog::TYPE_BIDIRECTIONAL_STREAM_BYTES_SENT,
+      entries, 0, NetLog::TYPE_BIDIRECTIONAL_STREAM_ALIVE, NetLog::PHASE_BEGIN);
+  // Headers received should happen after BIDIRECTIONAL_STREAM_ALIVE.
+  index = ExpectLogContainsSomewhere(
+      entries, index, NetLog::TYPE_BIDIRECTIONAL_STREAM_RECV_HEADERS,
+      NetLog::PHASE_NONE);
+  // Trailers received should happen after headers received. It might happen
+  // before the reads complete.
+  ExpectLogContainsSomewhere(entries, index,
+                             NetLog::TYPE_BIDIRECTIONAL_STREAM_RECV_TRAILERS,
+                             NetLog::PHASE_NONE);
+  // Sent bytes. Sending data is always asynchronous.
+  index = ExpectLogContainsSomewhere(
+      entries, index, NetLog::TYPE_BIDIRECTIONAL_STREAM_BYTES_SENT,
       NetLog::PHASE_NONE);
   TestNetLogEntry entry = entries[index];
   EXPECT_EQ(NetLog::SOURCE_BIDIRECTIONAL_STREAM, entry.source.type);
@@ -583,6 +605,9 @@ TEST_F(BidirectionalStreamTest, TestContainFullBytes) {
       NetLog::PHASE_NONE);
   entry = entries[index];
   EXPECT_EQ(NetLog::SOURCE_BIDIRECTIONAL_STREAM, entry.source.type);
+  ExpectLogContainsSomewhere(entries, index,
+                             NetLog::TYPE_BIDIRECTIONAL_STREAM_ALIVE,
+                             NetLog::PHASE_END);
 }
 
 TEST_F(BidirectionalStreamTest, TestInterleaveReadDataAndSendData) {
@@ -927,16 +952,19 @@ TEST_F(BidirectionalStreamTest, TestBufferingWithTrailers) {
   std::unique_ptr<SpdySerializedFrame> body_frame(
       spdy_util_.ConstructSpdyBodyFrame(1, false));
 
-  SpdyHeaderBlock late_headers;
-  late_headers["foo"] = "bar";
-  std::unique_ptr<SpdySerializedFrame> trailers(
-      spdy_util_.ConstructSpdyResponseHeaders(1, late_headers, true));
+  SpdyHeaderBlock trailers;
+  trailers["foo"] = "bar";
+  std::unique_ptr<SpdySerializedFrame> response_trailers(
+      spdy_util_.ConstructSpdyResponseHeaders(1, trailers, true));
 
   MockRead reads[] = {
-      CreateMockRead(*resp, 1),           CreateMockRead(*body_frame, 2),
-      CreateMockRead(*body_frame, 3),     CreateMockRead(*body_frame, 4),
+      CreateMockRead(*resp, 1),
+      CreateMockRead(*body_frame, 2),
+      CreateMockRead(*body_frame, 3),
+      CreateMockRead(*body_frame, 4),
       MockRead(ASYNC, ERR_IO_PENDING, 5),  // Force a pause.
-      CreateMockRead(*trailers, 6),       MockRead(SYNCHRONOUS, 0, 7),
+      CreateMockRead(*response_trailers, 6),
+      MockRead(SYNCHRONOUS, 0, 7),
   };
 
   HostPortPair host_port_pair("www.example.org", 443);
@@ -1308,14 +1336,14 @@ TEST_P(BidirectionalStreamTest, CancelOrDeleteStreamDuringOnTrailersReceived) {
   std::unique_ptr<SpdySerializedFrame> response_body_frame(
       spdy_util_.ConstructSpdyBodyFrame(1, false));
 
-  SpdyHeaderBlock late_headers;
-  late_headers["foo"] = "bar";
-  std::unique_ptr<SpdySerializedFrame> trailers(
-      spdy_util_.ConstructSpdyResponseHeaders(1, late_headers, true));
+  SpdyHeaderBlock trailers;
+  trailers["foo"] = "bar";
+  std::unique_ptr<SpdySerializedFrame> response_trailers(
+      spdy_util_.ConstructSpdyResponseHeaders(1, trailers, true));
 
   MockRead reads[] = {
       CreateMockRead(*resp, 1), CreateMockRead(*response_body_frame, 2),
-      CreateMockRead(*trailers, 3), MockRead(ASYNC, 0, 5),
+      CreateMockRead(*response_trailers, 3), MockRead(ASYNC, 0, 5),
   };
 
   HostPortPair host_port_pair("www.example.org", 443);

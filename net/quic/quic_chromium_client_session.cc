@@ -131,26 +131,13 @@ std::unique_ptr<base::Value> NetLogQuicClientSessionCallback(
   return std::move(dict);
 }
 
-std::unique_ptr<base::ListValue> SpdyHeaderBlockToListValue(
-    const SpdyHeaderBlock& headers,
-    NetLogCaptureMode capture_mode) {
-  std::unique_ptr<base::ListValue> headers_list(new base::ListValue());
-  for (const auto& it : headers) {
-    headers_list->AppendString(
-        it.first.as_string() + ": " +
-        ElideHeaderValueForNetLog(capture_mode, it.first.as_string(),
-                                  it.second.as_string()));
-  }
-  return headers_list;
-}
-
 std::unique_ptr<base::Value> NetLogQuicPushPromiseReceivedCallback(
     const SpdyHeaderBlock* headers,
     SpdyStreamId stream_id,
     SpdyStreamId promised_stream_id,
     NetLogCaptureMode capture_mode) {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->Set("headers", SpdyHeaderBlockToListValue(*headers, capture_mode));
+  dict->Set("headers", ElideSpdyHeaderBlockForNetLog(*headers, capture_mode));
   dict->SetInteger("id", stream_id);
   dict->SetInteger("promised_stream_id", promised_stream_id);
   return std::move(dict);

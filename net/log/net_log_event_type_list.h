@@ -1170,6 +1170,15 @@ EVENT_TYPE(HTTP_TRANSACTION_RESTART_AFTER_ERROR)
 // BidirectionalStream
 // ------------------------------------------------------------------------
 
+// Marks the creation/destruction of a net::BidirectionalStream.
+// The following parameters are attached:
+//   {
+//      "url": <The URL being used>,
+//      "method": <The HTTP method being used>,
+//      "headers": <The list of header:value pairs>,
+//   }
+EVENT_TYPE(BIDIRECTIONAL_STREAM_ALIVE)
+
 // The specified number of bytes were sent on the stream.  Depending on the
 // source of the event, may be logged either once the data is sent, or when it
 // is queued to be sent.
@@ -1189,6 +1198,20 @@ EVENT_TYPE(BIDIRECTIONAL_STREAM_BYTES_SENT)
 //                           Only present when byte logging is enabled>,
 //   }
 EVENT_TYPE(BIDIRECTIONAL_STREAM_BYTES_RECEIVED)
+
+// This event is sent for receiving headers on the stream.
+// The following parameters are attached:
+//   {
+//     "headers": <The list of header:value pairs>,
+//   }
+EVENT_TYPE(BIDIRECTIONAL_STREAM_RECV_HEADERS)
+
+// This event is sent for receiving trailers on the stream.
+// The following parameters are attached:
+//   {
+//     "headers": <The list of header:value pairs>,
+//   }
+EVENT_TYPE(BIDIRECTIONAL_STREAM_RECV_TRAILERS)
 
 // ------------------------------------------------------------------------
 // SpdySession
