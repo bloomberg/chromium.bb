@@ -547,10 +547,11 @@ cr.define('extensions', function() {
       });
 
       // The 'Enabled' checkbox.
-      wrapper.setupColumn('enabled', '.enable-checkbox input', 'change',
+      wrapper.setupColumn('enabled', '.enable-checkbox input', 'click',
                           function(e) {
         var checked = e.target.checked;
-        // TODO(devlin): What should we do if this fails?
+        // TODO(devlin): What should we do if this fails? Ideally we want to
+        // show some kind of error or feedback to the user if this fails.
         chrome.management.setEnabled(extension.id, checked);
 
         // This may seem counter-intuitive (to not set/clear the checkmark)
