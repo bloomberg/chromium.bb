@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/base/network_quality_estimator.h"
+#include "net/nqe/network_quality_estimator.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -23,12 +23,12 @@
 #include "base/test/histogram_tester.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "net/base/external_estimate_provider.h"
 #include "net/base/load_flags.h"
 #include "net/base/network_change_notifier.h"
-#include "net/base/socket_performance_watcher.h"
-#include "net/base/socket_performance_watcher_factory.h"
 #include "net/http/http_status_code.h"
+#include "net/nqe/external_estimate_provider.h"
+#include "net/socket/socket_performance_watcher.h"
+#include "net/socket/socket_performance_watcher_factory.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"

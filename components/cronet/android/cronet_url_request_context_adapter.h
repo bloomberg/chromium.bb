@@ -18,7 +18,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread.h"
 #include "components/prefs/json_pref_store.h"
-#include "net/base/network_quality_estimator.h"
+#include "net/nqe/network_quality_estimator.h"
 
 class PrefService;
 

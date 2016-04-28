@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_BASE_SOCKET_PERFORMANCE_WATCHER_H_
-#define NET_BASE_SOCKET_PERFORMANCE_WATCHER_H_
+#ifndef NET_SOCKET_SOCKET_PERFORMANCE_WATCHER_H_
+#define NET_SOCKET_SOCKET_PERFORMANCE_WATCHER_H_
 
 #include "net/base/net_export.h"
 
@@ -40,4 +40,4 @@ class NET_EXPORT_PRIVATE SocketPerformanceWatcher {
 
 }  // namespace net
 
-#endif  // NET_BASE_SOCKET_PERFORMANCE_WATCHER_H_
+#endif  // NET_SOCKET_SOCKET_PERFORMANCE_WATCHER_H_

@@ -4,9 +4,9 @@
 
 #include "net/quic/quic_connection_logger.h"
 
-#include "net/base/socket_performance_watcher.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/test_tools/quic_test_utils.h"
+#include "net/socket/socket_performance_watcher.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {

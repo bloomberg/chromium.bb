@@ -43,7 +43,7 @@
           'target_name': 'network_quality_observations_java',
           'type': 'none',
           'variables': {
-            'source_file': '../net/base/network_quality_estimator.h',
+            'source_file': '../net/nqe/network_quality_estimator.h',
           },
           'includes': [ '../build/android/java_cpp_enum.gypi' ],
         },

@@ -26,8 +26,6 @@
 #include "crypto/openssl_util.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
-#include "net/base/socket_performance_watcher.h"
-#include "net/base/socket_performance_watcher_factory.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/ct_verifier.h"
 #include "net/dns/host_resolver.h"
@@ -54,6 +52,8 @@
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_server_id.h"
 #include "net/socket/client_socket_factory.h"
+#include "net/socket/socket_performance_watcher.h"
+#include "net/socket/socket_performance_watcher_factory.h"
 #include "net/ssl/token_binding.h"
 #include "net/udp/udp_client_socket.h"
 

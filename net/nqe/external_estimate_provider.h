@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_BASE_EXTERNAL_ESTIMATE_PROVIDER_H_
-#define NET_BASE_EXTERNAL_ESTIMATE_PROVIDER_H_
+#ifndef NET_NQE_EXTERNAL_ESTIMATE_PROVIDER_H_
+#define NET_NQE_EXTERNAL_ESTIMATE_PROVIDER_H_
 
 #include <stdint.h>
 
@@ -69,4 +69,4 @@ class NET_EXPORT ExternalEstimateProvider {
 
 }  // namespace net
 
-#endif  // NET_BASE_EXTERNAL_ESTIMATE_PROVIDER_H_
+#endif  // NET_NQE_EXTERNAL_ESTIMATE_PROVIDER_H_

@@ -43,7 +43,7 @@ java_cpp_enum("net_request_priority_java") {
 
 java_cpp_enum("network_quality_observations_java") {
   sources = [
-    "//net/base/network_quality_estimator.h",
+    "//net/nqe/network_quality_estimator.h",
   ]
 }
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_BASE_NETWORK_QUALITY_ESTIMATOR_H_
-#define NET_BASE_NETWORK_QUALITY_ESTIMATOR_H_
+#ifndef NET_NQE_NETWORK_QUALITY_ESTIMATOR_H_
+#define NET_NQE_NETWORK_QUALITY_ESTIMATOR_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -22,10 +22,10 @@
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
-#include "net/base/external_estimate_provider.h"
 #include "net/base/net_export.h"
 #include "net/base/network_change_notifier.h"
-#include "net/base/socket_performance_watcher_factory.h"
+#include "net/nqe/external_estimate_provider.h"
+#include "net/socket/socket_performance_watcher_factory.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -668,4 +668,4 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
 
 }  // namespace net
 
-#endif  // NET_BASE_NETWORK_QUALITY_ESTIMATOR_H_
+#endif  // NET_NQE_NETWORK_QUALITY_ESTIMATOR_H_

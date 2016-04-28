@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/base/network_quality_estimator.h"
+#include "net/nqe/network_quality_estimator.h"
 
 #include <float.h>
 #include <algorithm>
@@ -21,8 +21,8 @@
 #include "net/base/load_flags.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/network_interfaces.h"
-#include "net/base/socket_performance_watcher.h"
 #include "net/base/url_util.h"
+#include "net/socket/socket_performance_watcher.h"
 #include "net/url_request/url_request.h"
 #include "url/gurl.h"
 
@@ -1117,17 +1117,14 @@ void NetworkQualityEstimator::NotifyObserversOfThroughput(
 NetworkQualityEstimator::CachedNetworkQuality::CachedNetworkQuality(
     const NetworkQuality& network_quality)
     : last_update_time_(base::TimeTicks::Now()),
-      network_quality_(network_quality) {
-}
+      network_quality_(network_quality) {}
 
 NetworkQualityEstimator::CachedNetworkQuality::CachedNetworkQuality(
     const CachedNetworkQuality& other)
     : last_update_time_(other.last_update_time_),
-      network_quality_(other.network_quality_) {
-}
+      network_quality_(other.network_quality_) {}
 
-NetworkQualityEstimator::CachedNetworkQuality::~CachedNetworkQuality() {
-}
+NetworkQualityEstimator::CachedNetworkQuality::~CachedNetworkQuality() {}
 
 bool NetworkQualityEstimator::CachedNetworkQuality::OlderThan(
     const CachedNetworkQuality& cached_network_quality) const {
@@ -1153,8 +1150,8 @@ NetworkQualityEstimator::NetworkQuality::NetworkQuality(
 NetworkQualityEstimator::NetworkQuality::~NetworkQuality() {}
 
 NetworkQualityEstimator::NetworkQuality&
-    NetworkQualityEstimator::NetworkQuality::
-    operator=(const NetworkQuality& other) {
+NetworkQualityEstimator::NetworkQuality::operator=(
+    const NetworkQuality& other) {
   rtt_ = other.rtt_;
   downstream_throughput_kbps_ = other.downstream_throughput_kbps_;
   return *this;
