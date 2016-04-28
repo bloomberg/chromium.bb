@@ -12174,6 +12174,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Event.Touch.TouchDispositionsAfterPageLoad"
+    enum="TouchEventDispatchResultType">
+  <owner>tdresser@chromium.org</owner>
+  <summary>
+    Records the disposition (handled or not handled) of touch start events and
+    the first touchmove events per scroll. Only recorded after the page is fully
+    loaded.
+  </summary>
+</histogram>
+
+<histogram name="Event.Touch.TouchDispositionsBeforePageLoad"
+    enum="TouchEventDispatchResultType">
+  <owner>tdresser@chromium.org</owner>
+  <summary>
+    Records the disposition (handled or not handled) of touch start events and
+    the first touchmove events per scroll. Only recorded before the page is
+    fully loaded.
+  </summary>
+</histogram>
+
 <histogram name="Event.TouchDuration" units="ms">
   <owner>kuscher@google.com</owner>
   <owner>rbyers@chromium.org</owner>
@@ -86361,6 +86381,11 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="CLIENT_ONLY"/>
   <int value="2" label="CLIENT_AND_SERVER"/>
   <int value="3" label="CLIENT_NO_CHANNEL_ID_SERVICE"/>
+</enum>
+
+<enum name="TouchEventDispatchResultType" type="int">
+  <int value="0" label="Unhandled touch events"/>
+  <int value="1" label="Handled touch events"/>
 </enum>
 
 <enum name="TouchEventsState" type="int">

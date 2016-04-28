@@ -258,6 +258,12 @@ TouchTargetAndDispatchResultType toTouchTargetHistogramValue(EventTarget* eventT
     return static_cast<TouchTargetAndDispatchResultType>(result);
 }
 
+enum TouchEventDispatchResultType {
+    UnhandledTouches, // Unhandled touch events.
+    HandledTouches, // Handled touch events.
+    TouchEventDispatchResultTypeMax,
+};
+
 } // namespace
 
 using namespace HTMLNames;
@@ -3871,11 +3877,19 @@ WebInputEventResult EventHandler::dispatchTouchEvents(const PlatformTouchEvent& 
             if (touchStartOrFirstTouchMove && touchInfos.size() == 1 && event.cancelable() && !m_frame->document()->ownerElement()) {
                 DEFINE_STATIC_LOCAL(EnumerationHistogram, rootDocumentListenerHistogram, ("Event.Touch.TargetAndDispatchResult", TouchTargetAndDispatchResultTypeMax));
                 rootDocumentListenerHistogram.count(toTouchTargetHistogramValue(eventTarget, domDispatchResult));
+
+                // Count the handled touch starts and first touch moves before and after the page is fully loaded respectively.
+                if (m_frame->document()->isLoadCompleted()) {
+                    DEFINE_STATIC_LOCAL(EnumerationHistogram, touchDispositionsAfterPageLoadHistogram, ("Event.Touch.TouchDispositionsAfterPageLoad", TouchEventDispatchResultTypeMax));
+                    touchDispositionsAfterPageLoadHistogram.count((domDispatchResult != DispatchEventResult::NotCanceled) ? HandledTouches : UnhandledTouches);
+                } else {
+                    DEFINE_STATIC_LOCAL(EnumerationHistogram, touchDispositionsBeforePageLoadHistogram, ("Event.Touch.TouchDispositionsBeforePageLoad", TouchEventDispatchResultTypeMax));
+                    touchDispositionsBeforePageLoadHistogram.count((domDispatchResult != DispatchEventResult::NotCanceled) ? HandledTouches : UnhandledTouches);
+                }
             }
             eventResult = mergeEventResult(eventResult, toWebInputEventResult(domDispatchResult));
         }
     }
-
     return eventResult;
 }
 
