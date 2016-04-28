@@ -24,15 +24,5 @@
   "configuration": "Debug",
   "sdk": "iphonesimulator9.0",
   "tests": [
-    {
-      "include": "common_tests.json",
-      "device type": "iPhone 5s",
-      "os": "9.0"
-    },
-    {
-      "include": "common_tests.json",
-      "device type": "iPad Air",
-      "os": "9.0"
-    }
   ]
 }
