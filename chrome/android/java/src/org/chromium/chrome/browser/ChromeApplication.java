@@ -63,7 +63,6 @@ import org.chromium.chrome.browser.notifications.NotificationPlatformBridge;
 import org.chromium.chrome.browser.omaha.RequestGenerator;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.physicalweb.PhysicalWebBleClient;
-import org.chromium.chrome.browser.physicalweb.PhysicalWebEnvironment;
 import org.chromium.chrome.browser.policy.PolicyAuditor;
 import org.chromium.chrome.browser.preferences.LocationSettings;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
@@ -653,17 +652,10 @@ public class ChromeApplication extends ContentApplication {
     }
 
     /**
-     * @return A new {@link PhysicalWebBleClient} instance.
+     * @return A new PhysicalWebBleClient instance.
      */
     public PhysicalWebBleClient createPhysicalWebBleClient() {
         return new PhysicalWebBleClient();
-    }
-
-    /**
-     * @return A new {@link PhysicalWebEnvironment} instance.
-     */
-    public PhysicalWebEnvironment createPhysicalWebEnvironment() {
-        return new PhysicalWebEnvironment();
     }
 
     /**
