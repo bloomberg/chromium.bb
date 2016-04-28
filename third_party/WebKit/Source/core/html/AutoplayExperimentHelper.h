@@ -124,6 +124,9 @@ public:
         virtual PageVisibilityState pageVisibilityState() const = 0;
         virtual String autoplayExperimentMode() const = 0;
 
+        // Frame
+        virtual bool isCrossOrigin() const = 0;
+
         // LayoutObject
         virtual void setRequestPositionUpdates(bool) = 0;
         virtual IntRect absoluteBoundingBoxRect() const = 0;
@@ -182,9 +185,12 @@ public:
         // Restrict gestureless autoplay to sites which contain the
         // viewport tag.
         IfMobile          = 1 << 6,
+        // Restrict gestureless autoplay to sites which are from the same origin
+        // as the top-level frame.
+        IfSameOrigin      = 1 << 7,
         // If gestureless autoplay is allowed, then mute the media before
         // starting to play.
-        PlayMuted         = 1 << 7,
+        PlayMuted         = 1 << 8,
     };
 
     DEFINE_INLINE_TRACE() { visitor->trace(m_client); }

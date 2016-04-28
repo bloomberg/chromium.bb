@@ -327,6 +327,10 @@ bool AutoplayExperimentHelper::isEligible() const
         && !client().isLegacyViewportType())
         return false;
 
+    // If we require same-origin, then check the origin.
+    if (enabled(IfSameOrigin) && client().isCrossOrigin())
+        return false;
+
     // If we require muted media and this is muted, then it is eligible.
     if (enabled(IfMuted))
         return client().muted();
@@ -394,6 +398,8 @@ AutoplayExperimentHelper::Mode AutoplayExperimentHelper::fromString(const String
         value |= IfMuted;
     if (mode.contains("-ifmobile"))
         value |= IfMobile;
+    if (mode.contains("-ifsameorigin"))
+        value |= IfSameOrigin;
     if (mode.contains("-playmuted"))
         value |= PlayMuted;
 

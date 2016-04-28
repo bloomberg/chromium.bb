@@ -121,6 +121,10 @@ public:
 
     Settings* settings() const; // can be null
 
+    // Return true if and only if this frame is a cross-origin frame with
+    // respect to the top-level frame.
+    bool isCrossOrigin() const;
+
     // isLoading() is true when the embedder should think a load is in progress.
     // In the case of LocalFrames, it means that the frame has sent a didStartLoading()
     // callback, but not the matching didStopLoading(). Inside blink, you probably

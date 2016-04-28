@@ -288,6 +288,14 @@ Settings* Frame::settings() const
     return nullptr;
 }
 
+bool Frame::isCrossOrigin() const
+{
+    // Check to see if the frame can script into the top level document.
+    const SecurityOrigin* securityOrigin = securityContext()->getSecurityOrigin();
+    Frame* top = tree().top();
+    return top && !securityOrigin->canAccess(top->securityContext()->getSecurityOrigin());
+}
+
 Frame::Frame(FrameClient* client, FrameHost* host, FrameOwner* owner)
     : m_treeNode(this)
     , m_host(host)

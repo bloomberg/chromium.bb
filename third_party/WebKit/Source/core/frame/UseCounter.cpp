@@ -740,12 +740,7 @@ void UseCounter::countIfNotPrivateScript(v8::Isolate* isolate, const ExecutionCo
 void UseCounter::countCrossOriginIframe(const Document& document, Feature feature)
 {
     Frame* frame = document.frame();
-    if (!frame)
-        return;
-    // Check to see if the frame can script into the top level document.
-    SecurityOrigin* securityOrigin = frame->securityContext()->getSecurityOrigin();
-    Frame* top = frame->tree().top();
-    if (top && !securityOrigin->canAccess(top->securityContext()->getSecurityOrigin()))
+    if (frame && frame->isCrossOrigin())
         count(frame, feature);
 }
 

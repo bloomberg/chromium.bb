@@ -52,6 +52,8 @@ public:
             .WillByDefault(Return(false));
         ON_CALL(*this, pageVisibilityState())
             .WillByDefault(Return(PageVisibilityStateVisible));
+        ON_CALL(*this, isCrossOrigin())
+            .WillByDefault(Return(false));
         ON_CALL(*this, absoluteBoundingBoxRect())
             .WillByDefault(Return(
                 IntRect(10, 10, 100, 100)));
@@ -85,6 +87,7 @@ public:
     MOCK_METHOD0(isLegacyViewportType, bool());
     MOCK_CONST_METHOD0(pageVisibilityState, PageVisibilityState());
     MOCK_CONST_METHOD0(autoplayExperimentMode, String());
+    MOCK_CONST_METHOD0(isCrossOrigin, bool());
     MOCK_METHOD1(setRequestPositionUpdates, void(bool));
     MOCK_CONST_METHOD0(absoluteBoundingBoxRect, IntRect());
 
@@ -431,4 +434,23 @@ TEST_F(AutoplayExperimentTest, DeferPlaybackUntilInViewport)
         .Times(1);
     moveIntoViewport();
 }
+
+TEST_F(AutoplayExperimentTest, WithSameOriginTests)
+{
+    setInterface(new NiceMock<MockAutoplayClient>("enabled-forvideo-ifsameorigin", MockAutoplayClient::Video));
+    ON_CALL(*m_client, isCrossOrigin()).WillByDefault(Return(false));
+    EXPECT_TRUE(isEligible());
+    ON_CALL(*m_client, isCrossOrigin()).WillByDefault(Return(true));
+    EXPECT_FALSE(isEligible());
+}
+
+TEST_F(AutoplayExperimentTest, WithoutSameOriginTests)
+{
+    setInterface(new NiceMock<MockAutoplayClient>("enabled-forvideo", MockAutoplayClient::Video));
+    ON_CALL(*m_client, isCrossOrigin()).WillByDefault(Return(false));
+    EXPECT_TRUE(isEligible());
+    ON_CALL(*m_client, isCrossOrigin()).WillByDefault(Return(true));
+    EXPECT_TRUE(isEligible());
+}
+
 }

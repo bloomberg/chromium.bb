@@ -317,6 +317,13 @@ public:
     PageVisibilityState pageVisibilityState() const override;
     String autoplayExperimentMode() const override;
 
+    // Frame
+    bool isCrossOrigin() const override
+    {
+        const Frame* frame = m_element->document().frame();
+        return frame && frame->isCrossOrigin();
+    }
+
     // LayoutObject
     void setRequestPositionUpdates(bool) override;
     IntRect absoluteBoundingBoxRect() const override;
