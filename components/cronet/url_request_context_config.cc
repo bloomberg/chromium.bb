@@ -34,7 +34,6 @@ const char kQuicStoreServerConfigsInProperties[] =
     "store_server_configs_in_properties";
 const char kQuicMaxServerConfigsStoredInProperties[] =
     "max_server_configs_stored_in_properties";
-const char kQuicDelayTcpRace[] = "delay_tcp_race";
 const char kQuicMaxNumberOfLossyConnections[] =
     "max_number_of_lossy_connections";
 const char kQuicPacketLossThreshold[] = "packet_loss_threshold";
@@ -107,11 +106,6 @@ void ParseAndSetExperimentalOptions(
                               &quic_max_server_configs_stored_in_properties)) {
       context_builder->set_quic_max_server_configs_stored_in_properties(
           static_cast<size_t>(quic_max_server_configs_stored_in_properties));
-    }
-
-    bool quic_delay_tcp_race = false;
-    if (quic_args->GetBoolean(kQuicDelayTcpRace, &quic_delay_tcp_race)) {
-      context_builder->set_quic_delay_tcp_race(quic_delay_tcp_race);
     }
 
     int quic_max_number_of_lossy_connections = 0;

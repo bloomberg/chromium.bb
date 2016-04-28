@@ -156,7 +156,6 @@ class IOSChromeIOThread : public web::WebThreadDelegate {
     Optional<int> quic_max_number_of_lossy_connections;
     Optional<float> quic_packet_loss_threshold;
     Optional<int> quic_socket_receive_buffer_size;
-    Optional<bool> quic_delay_tcp_race;
     Optional<size_t> quic_max_packet_length;
     net::QuicTagVector quic_connection_options;
     Optional<std::string> quic_user_agent_id;
@@ -326,10 +325,6 @@ class IOSChromeIOThread : public web::WebThreadDelegate {
   // Returns the size of the QUIC receive buffer to use, or 0 if
   // the default should be used.
   static int GetQuicSocketReceiveBufferSize(
-      const VariationParameters& quic_trial_params);
-
-  // Returns true if QUIC should delay TCP connection when QUIC works.
-  static bool ShouldQuicDelayTcpRace(
       const VariationParameters& quic_trial_params);
 
   // Returns true if QUIC should close sessions when any of the client's

@@ -1252,7 +1252,6 @@ void IOThread::NetworkSessionConfigurator::ConfigureQuicParams(
     if (receive_buffer_size != 0) {
       params->quic_socket_receive_buffer_size = receive_buffer_size;
     }
-    params->quic_delay_tcp_race = ShouldQuicDelayTcpRace(quic_trial_params);
     float load_server_info_timeout_srtt_multiplier =
         GetQuicLoadServerInfoTimeoutSrttMultiplier(quic_trial_params);
     if (load_server_info_timeout_srtt_multiplier != 0) {
@@ -1519,13 +1518,6 @@ int IOThread::NetworkSessionConfigurator::GetQuicSocketReceiveBufferSize(
     return value;
   }
   return 0;
-}
-
-// static
-bool IOThread::NetworkSessionConfigurator::ShouldQuicDelayTcpRace(
-    const VariationParameters& quic_trial_params) {
-  return base::LowerCaseEqualsASCII(
-      GetVariationParam(quic_trial_params, "delay_tcp_race"), "true");
 }
 
 // static

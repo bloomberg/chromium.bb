@@ -338,10 +338,6 @@ class IOThread : public content::BrowserThreadDelegate {
     static int GetQuicSocketReceiveBufferSize(
         const VariationParameters& quic_trial_params);
 
-    // Returns true if QUIC should delay TCP connection when QUIC works.
-    static bool ShouldQuicDelayTcpRace(
-        const VariationParameters& quic_trial_params);
-
     // Returns true if QUIC should close sessions when any of the client's IP
     // addresses change.
     static bool ShouldQuicCloseSessionsOnIpChange(

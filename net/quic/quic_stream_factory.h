@@ -155,7 +155,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       int threshold_timeouts_with_streams_open,
       int threshold_public_resets_post_handshake,
       int socket_receive_buffer_size,
-      bool delay_tcp_race,
       int max_server_configs_stored_in_properties,
       bool close_sessions_on_ip_change,
       bool disable_quic_on_timeout_with_open_streams,
@@ -321,8 +320,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   }
 
   int socket_receive_buffer_size() const { return socket_receive_buffer_size_; }
-
-  bool delay_tcp_race() const { return delay_tcp_race_; }
 
  private:
   class Job;
@@ -515,9 +512,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
 
   // Size of the UDP receive buffer.
   int socket_receive_buffer_size_;
-
-  // Set if we do want to delay TCP connection when it is racing with QUIC.
-  bool delay_tcp_race_;
 
   // If more than |yield_after_packets_| packets have been read or more than
   // |yield_after_duration_| time has passed, then

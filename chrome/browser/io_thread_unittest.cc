@@ -255,7 +255,6 @@ TEST_F(NetworkSessionConfiguratorTest, EnableQuicFromFieldTrialGroup) {
   EXPECT_FALSE(params_.enable_alternative_service_with_different_host);
   EXPECT_EQ(0, params_.quic_max_number_of_lossy_connections);
   EXPECT_EQ(1.0f, params_.quic_packet_loss_threshold);
-  EXPECT_FALSE(params_.quic_delay_tcp_race);
   EXPECT_FALSE(params_.quic_close_sessions_on_ip_change);
   EXPECT_EQ(net::kIdleConnectionTimeoutSeconds,
             params_.quic_idle_connection_timeout_seconds);
@@ -625,17 +624,6 @@ TEST_F(NetworkSessionConfiguratorTest, QuicReceiveBufferSize) {
   ParseFieldTrials();
 
   EXPECT_EQ(2097152, params_.quic_socket_receive_buffer_size);
-}
-
-TEST_F(NetworkSessionConfiguratorTest, QuicDelayTcpConnection) {
-  std::map<std::string, std::string> field_trial_params;
-  field_trial_params["delay_tcp_race"] = "true";
-  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
-  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
-
-  ParseFieldTrials();
-
-  EXPECT_TRUE(params_.quic_delay_tcp_race);
 }
 
 TEST_F(NetworkSessionConfiguratorTest, QuicOriginsToForceQuicOn) {

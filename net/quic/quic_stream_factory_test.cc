@@ -226,7 +226,6 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<TestParams> {
         threshold_timeouts_with_open_streams_(2),
         threshold_public_resets_post_handshake_(2),
         receive_buffer_size_(0),
-        delay_tcp_race_(false),
         close_sessions_on_ip_change_(false),
         disable_quic_on_timeout_with_open_streams_(false),
         idle_connection_timeout_seconds_(kIdleConnectionTimeoutSeconds),
@@ -250,7 +249,7 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<TestParams> {
         max_number_of_lossy_connections_, packet_loss_threshold_,
         max_disabled_reasons_, threshold_timeouts_with_open_streams_,
         threshold_public_resets_post_handshake_, receive_buffer_size_,
-        delay_tcp_race_, /*max_server_configs_stored_in_properties*/ 0,
+        /*max_server_configs_stored_in_properties*/ 0,
         close_sessions_on_ip_change_,
         disable_quic_on_timeout_with_open_streams_,
         idle_connection_timeout_seconds_, migrate_sessions_on_network_change_,
@@ -437,7 +436,6 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<TestParams> {
   int threshold_timeouts_with_open_streams_;
   int threshold_public_resets_post_handshake_;
   int receive_buffer_size_;
-  bool delay_tcp_race_;
   bool close_sessions_on_ip_change_;
   bool disable_quic_on_timeout_with_open_streams_;
   int idle_connection_timeout_seconds_;
@@ -3673,8 +3671,6 @@ TEST_P(QuicStreamFactoryTest, EnableDelayTcpRace) {
   Initialize();
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
-  bool delay_tcp_race = QuicStreamFactoryPeer::GetDelayTcpRace(factory_.get());
-  QuicStreamFactoryPeer::SetDelayTcpRace(factory_.get(), false);
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
   SequencedSocketData socket_data(reads, arraysize(reads), nullptr, 0);
   socket_factory_.AddSocketDataProvider(&socket_data);
@@ -3697,14 +3693,6 @@ TEST_P(QuicStreamFactoryTest, EnableDelayTcpRace) {
                             /*cert_verify_flags=*/0, url_, "POST", net_log_,
                             callback_.callback()));
 
-  // If we don't delay TCP connection, then time delay should be 0.
-  EXPECT_FALSE(factory_->delay_tcp_race());
-  EXPECT_EQ(base::TimeDelta(), request.GetTimeDelayForWaitingJob());
-
-  // Enable |delay_tcp_race_| param and verify delay is one RTT and that
-  // server supports QUIC.
-  QuicStreamFactoryPeer::SetDelayTcpRace(factory_.get(), true);
-  EXPECT_TRUE(factory_->delay_tcp_race());
   EXPECT_EQ(base::TimeDelta::FromMicroseconds(15),
             request.GetTimeDelayForWaitingJob());
 
@@ -3718,7 +3706,6 @@ TEST_P(QuicStreamFactoryTest, EnableDelayTcpRace) {
   EXPECT_TRUE(stream.get());
   EXPECT_TRUE(socket_data.AllReadDataConsumed());
   EXPECT_TRUE(socket_data.AllWriteDataConsumed());
-  QuicStreamFactoryPeer::SetDelayTcpRace(factory_.get(), delay_tcp_race);
 }
 
 TEST_P(QuicStreamFactoryTest, MaybeInitialize) {

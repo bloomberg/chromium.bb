@@ -96,7 +96,6 @@ class NET_EXPORT URLRequestContextBuilder {
     bool enable_quic;
     std::string quic_user_agent_id;
     int quic_max_server_configs_stored_in_properties;
-    bool quic_delay_tcp_race;
     int quic_max_number_of_lossy_connections;
     std::unordered_set<std::string> quic_host_whitelist;
     bool quic_prefer_aes;
@@ -230,10 +229,6 @@ class NET_EXPORT URLRequestContextBuilder {
       int quic_max_server_configs_stored_in_properties) {
     http_network_session_params_.quic_max_server_configs_stored_in_properties =
         quic_max_server_configs_stored_in_properties;
-  }
-
-  void set_quic_delay_tcp_race(bool quic_delay_tcp_race) {
-    http_network_session_params_.quic_delay_tcp_race = quic_delay_tcp_race;
   }
 
   void set_quic_max_number_of_lossy_connections(

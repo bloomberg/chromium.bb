@@ -594,7 +594,6 @@ QuicStreamFactory::QuicStreamFactory(
     int threshold_public_resets_post_handshake,
     int threshold_timeouts_with_open_streams,
     int socket_receive_buffer_size,
-    bool delay_tcp_race,
     int max_server_configs_stored_in_properties,
     bool close_sessions_on_ip_change,
     bool disable_quic_on_timeout_with_open_streams,
@@ -643,7 +642,6 @@ QuicStreamFactory::QuicStreamFactory(
       threshold_public_resets_post_handshake_(
           threshold_public_resets_post_handshake),
       socket_receive_buffer_size_(socket_receive_buffer_size),
-      delay_tcp_race_(delay_tcp_race),
       yield_after_packets_(kQuicYieldAfterPacketsRead),
       yield_after_duration_(QuicTime::Delta::FromMilliseconds(
           kQuicYieldAfterDurationMilliseconds)),
@@ -740,7 +738,7 @@ bool QuicStreamFactory::ZeroRTTEnabledFor(const QuicServerId& quic_server_id) {
 
 base::TimeDelta QuicStreamFactory::GetTimeDelayForWaitingJob(
     const QuicServerId& server_id) {
-  if (!delay_tcp_race_ || require_confirmation_)
+  if (require_confirmation_)
     return base::TimeDelta();
   int64_t srtt =
       1.5 * GetServerNetworkStatsSmoothedRttInMicroseconds(server_id);

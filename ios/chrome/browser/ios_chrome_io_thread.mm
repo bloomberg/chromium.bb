@@ -664,7 +664,6 @@ void IOSChromeIOThread::InitializeNetworkSessionParamsFromGlobals(
       &params->quic_packet_loss_threshold);
   globals.quic_socket_receive_buffer_size.CopyToIfSet(
       &params->quic_socket_receive_buffer_size);
-  globals.quic_delay_tcp_race.CopyToIfSet(&params->quic_delay_tcp_race);
   params->enable_quic_port_selection = false;
   globals.quic_max_packet_length.CopyToIfSet(&params->quic_max_packet_length);
   globals.quic_user_agent_id.CopyToIfSet(&params->quic_user_agent_id);
@@ -772,7 +771,6 @@ void IOSChromeIOThread::ConfigureQuicGlobals(
     if (receive_buffer_size != 0) {
       globals->quic_socket_receive_buffer_size.set(receive_buffer_size);
     }
-    globals->quic_delay_tcp_race.set(ShouldQuicDelayTcpRace(quic_trial_params));
     float load_server_info_timeout_srtt_multiplier =
         GetQuicLoadServerInfoTimeoutSrttMultiplier(quic_trial_params);
     if (load_server_info_timeout_srtt_multiplier != 0) {
@@ -943,12 +941,6 @@ int IOSChromeIOThread::GetQuicSocketReceiveBufferSize(
     return value;
   }
   return 0;
-}
-
-bool IOSChromeIOThread::ShouldQuicDelayTcpRace(
-    const VariationParameters& quic_trial_params) {
-  return base::LowerCaseEqualsASCII(
-      GetVariationParam(quic_trial_params, "delay_tcp_race"), "true");
 }
 
 bool IOSChromeIOThread::ShouldQuicCloseSessionsOnIpChange(

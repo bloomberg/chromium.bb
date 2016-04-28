@@ -1628,9 +1628,9 @@ TEST_P(HttpStreamFactoryBidirectionalQuicTest,
   EXPECT_EQ(OK, stream_impl->ReadData(buffer.get(), 1));
   EXPECT_EQ(kProtoQUIC1SPDY3, stream_impl->GetProtocol());
   EXPECT_EQ("200", delegate.response_headers().find(":status")->second);
-  EXPECT_EQ(1, GetSocketPoolGroupCount(session()->GetTransportSocketPool(
+  EXPECT_EQ(0, GetSocketPoolGroupCount(session()->GetTransportSocketPool(
                    HttpNetworkSession::NORMAL_SOCKET_POOL)));
-  EXPECT_EQ(1, GetSocketPoolGroupCount(session()->GetSSLSocketPool(
+  EXPECT_EQ(0, GetSocketPoolGroupCount(session()->GetSSLSocketPool(
                    HttpNetworkSession::NORMAL_SOCKET_POOL)));
   EXPECT_EQ(0, GetSocketPoolGroupCount(session()->GetTransportSocketPool(
                    HttpNetworkSession::WEBSOCKET_SOCKET_POOL)));
