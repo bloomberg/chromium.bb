@@ -9,14 +9,11 @@
 #include <algorithm>
 #include <ios>
 #include <iterator>
-#include <list>
 #include <memory>
-#include <new>
 #include <string>
 #include <vector>
 
 #include "base/lazy_instance.h"
-#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "net/quic/quic_flags.h"
 #include "net/spdy/hpack/hpack_constants.h"
@@ -24,7 +21,6 @@
 #include "net/spdy/spdy_bug_tracker.h"
 #include "net/spdy/spdy_frame_builder.h"
 #include "net/spdy/spdy_frame_reader.h"
-#include "net/spdy/spdy_framer_adapter.h"
 #include "third_party/zlib/zlib.h"
 
 using base::StringPiece;
@@ -169,7 +165,7 @@ bool SpdyFramerVisitorInterface::OnRstStreamFrameData(
   return true;
 }
 
-SpdyFramer::SpdyFramer(SpdyMajorVersion version, bool choose_decoder)
+SpdyFramer::SpdyFramer(SpdyMajorVersion version)
     : current_frame_buffer_(kControlFrameBufferSize),
       expect_continuation_(0),
       visitor_(NULL),
@@ -187,23 +183,7 @@ SpdyFramer::SpdyFramer(SpdyMajorVersion version, bool choose_decoder)
   static_assert(kMaxControlFrameSize <= kSpdyInitialFrameSizeLimit,
                 "Our send limit should be at most our receive limit");
   Reset();
-
-  if (choose_decoder && version == HTTP2) {
-#ifdef SPDY_USE_NESTED_DECODER
-    // Another case will be added, hence the nested if blocks...
-    if (VLOG_IS_ON(1)) {
-      VLOG(1) << "Creating NestedSpdyFramerDecoder.";
-    } else {
-      // Logging at INFO level to make it easy to determine if this is
-      // triggering unexpectedly.
-      LOG_FIRST_N(INFO, 100) << "Creating NestedSpdyFramerDecoder.";
-    }
-    decoder_adapter_.reset(CreateNestedSpdyFramerDecoder(this));
-#endif
-  }
 }
-
-SpdyFramer::SpdyFramer(SpdyMajorVersion version) : SpdyFramer(version, true) {}
 
 SpdyFramer::~SpdyFramer() {
   if (header_compressor_.get()) {
@@ -215,9 +195,6 @@ SpdyFramer::~SpdyFramer() {
 }
 
 void SpdyFramer::Reset() {
-  if (decoder_adapter_ != nullptr) {
-    decoder_adapter_->Reset();
-  }
   state_ = SPDY_READY_FOR_FRAME;
   previous_state_ = SPDY_READY_FOR_FRAME;
   error_code_ = SPDY_NO_ERROR;
@@ -231,49 +208,6 @@ void SpdyFramer::Reset() {
   settings_scratch_.Reset();
   altsvc_scratch_.reset();
   remaining_padding_payload_length_ = 0;
-}
-
-void SpdyFramer::set_visitor(SpdyFramerVisitorInterface* visitor) {
-  if (decoder_adapter_ != nullptr) {
-    decoder_adapter_->set_visitor(visitor);
-  }
-  visitor_ = visitor;
-}
-
-void SpdyFramer::set_debug_visitor(
-    SpdyFramerDebugVisitorInterface* debug_visitor) {
-  if (decoder_adapter_ != nullptr) {
-    decoder_adapter_->set_debug_visitor(debug_visitor);
-  }
-  debug_visitor_ = debug_visitor;
-}
-
-void SpdyFramer::set_process_single_input_frame(bool v) {
-  if (decoder_adapter_ != nullptr) {
-    decoder_adapter_->set_process_single_input_frame(v);
-  }
-  process_single_input_frame_ = v;
-}
-
-bool SpdyFramer::probable_http_response() const {
-  if (decoder_adapter_) {
-    return decoder_adapter_->probable_http_response();
-  }
-  return probable_http_response_;
-}
-
-SpdyFramer::SpdyError SpdyFramer::error_code() const {
-  if (decoder_adapter_ != nullptr) {
-    return decoder_adapter_->error_code();
-  }
-  return error_code_;
-}
-
-SpdyFramer::SpdyState SpdyFramer::state() const {
-  if (decoder_adapter_ != nullptr) {
-    return decoder_adapter_->state();
-  }
-  return state_;
 }
 
 size_t SpdyFramer::GetDataFrameMinimumSize() const {
@@ -592,9 +526,6 @@ size_t SpdyFramer::ProcessInput(const char* data, size_t len) {
   DCHECK(visitor_);
   DCHECK(data);
 
-  if (decoder_adapter_ != nullptr) {
-    return decoder_adapter_->ProcessInput(data, len);
-  }
   const size_t original_len = len;
   do {
     previous_state_ = state_;
@@ -724,10 +655,8 @@ size_t SpdyFramer::ProcessInput(const char* data, size_t len) {
         goto bottom;
     }
   } while (state_ != previous_state_);
-bottom:
-  DCHECK(len == 0 || state_ == SPDY_ERROR || process_single_input_frame_)
-      << "len: " << len << " state: " << state_
-      << " process single input frame: " << process_single_input_frame_;
+ bottom:
+  DCHECK(len == 0 || state_ == SPDY_ERROR || process_single_input_frame_);
   if (current_frame_buffer_.len() == 0 && remaining_data_length_ == 0 &&
       remaining_control_header_ == 0) {
     DCHECK(state_ == SPDY_READY_FOR_FRAME || state_ == SPDY_ERROR)
