@@ -1869,7 +1869,7 @@ static const struct weston_pointer_grab_interface resize_grab_interface = {
 
 /*
  * Returns the bounding box of a surface and all its sub-surfaces,
- * in the surface coordinates system. */
+ * in surface-local coordinates. */
 static void
 surface_subsurfaces_boundingbox(struct weston_surface *surface, int32_t *x,
 				int32_t *y, int32_t *w, int32_t *h) {
