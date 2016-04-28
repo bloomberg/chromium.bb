@@ -20,6 +20,7 @@
 #include "base/strings/string_util.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/threading/worker_pool.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -46,6 +47,11 @@
 #include "google_apis/google_api_keys.h"
 #include "net/cookies/cookie_store.h"
 #include "net/extras/sqlite/cookie_crypto_delegate.h"
+#include "net/extras/sqlite/sqlite_channel_id_store.h"
+#include "net/http/http_network_layer.h"
+#include "net/http/http_transaction_factory.h"
+#include "net/ssl/channel_id_service.h"
+#include "net/ssl/default_channel_id_store.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -80,6 +86,8 @@ namespace {
 
 // Filename suffix for the cookie database.
 const base::FilePath::CharType kCookiesFile[] = FILE_PATH_LITERAL(" Cookies");
+const base::FilePath::CharType kChannelIDFile[] =
+    FILE_PATH_LITERAL(" Channel IDs");
 
 // The default URL prefix where browser fetches chunk updates, hashes,
 // and reports safe browsing hits and malware details.
@@ -103,6 +111,11 @@ const char kSbBackupNetworkErrorURLPrefix[] =
 base::FilePath CookieFilePath() {
   return base::FilePath(
       SafeBrowsingService::GetBaseFilename().value() + kCookiesFile);
+}
+
+base::FilePath ChannelIDFilePath() {
+  return base::FilePath(SafeBrowsingService::GetBaseFilename().value() +
+                        kChannelIDFile);
 }
 
 }  // namespace
@@ -135,6 +148,10 @@ class SafeBrowsingURLRequestContextGetter
   std::unique_ptr<net::URLRequestContext> safe_browsing_request_context_;
 
   scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
+
+  std::unique_ptr<net::ChannelIDService> channel_id_service_;
+  std::unique_ptr<net::HttpNetworkSession> http_network_session_;
+  std::unique_ptr<net::HttpTransactionFactory> http_transaction_factory_;
 };
 
 SafeBrowsingURLRequestContextGetter::SafeBrowsingURLRequestContextGetter(
@@ -166,17 +183,36 @@ SafeBrowsingURLRequestContextGetter::GetURLRequestContext() {
             nullptr));
     safe_browsing_request_context_->set_cookie_store(
         safe_browsing_cookie_store_.get());
-    // The above cookie store will persist cookies, but the ChannelIDService in
-    // the system request context is ephemeral, which could lead to losing the
-    // keys that cookies are bound to. Since this is only used for safe
-    // browsing, any cookie bindings don't matter.
-    //
-    // For crbug.com/548423, the channel ID store and cookie store used for a
-    // request are being tracked to see if an ephemeral channel ID store is used
-    // with a persistent cookie store (which apart from here would be a bug).
-    // The following line tells that tracking to ignore the mismatch from this
-    // URLRequestContext.
-    safe_browsing_request_context_->set_has_known_mismatched_cookie_store();
+
+    // Set up the ChannelIDService
+    scoped_refptr<net::SQLiteChannelIDStore> channel_id_db =
+        new net::SQLiteChannelIDStore(
+            ChannelIDFilePath(),
+            BrowserThread::GetBlockingPool()->GetSequencedTaskRunner(
+                base::SequencedWorkerPool::GetSequenceToken()));
+    channel_id_service_.reset(new net::ChannelIDService(
+        new net::DefaultChannelIDStore(channel_id_db.get()),
+        base::WorkerPool::GetTaskRunner(true)));
+    safe_browsing_request_context_->set_channel_id_service(
+        channel_id_service_.get());
+
+    // Rebuild the HttpNetworkSession and the HttpTransactionFactory to use the
+    // new ChannelIDService.
+    if (safe_browsing_request_context_->http_transaction_factory() &&
+        safe_browsing_request_context_->http_transaction_factory()
+            ->GetSession()) {
+      net::HttpNetworkSession::Params safe_browsing_params =
+          safe_browsing_request_context_->http_transaction_factory()
+              ->GetSession()
+              ->params();
+      safe_browsing_params.channel_id_service = channel_id_service_.get();
+      http_network_session_.reset(
+          new net::HttpNetworkSession(safe_browsing_params));
+      http_transaction_factory_.reset(
+          new net::HttpNetworkLayer(http_network_session_.get()));
+      safe_browsing_request_context_->set_http_transaction_factory(
+          http_transaction_factory_.get());
+    }
   }
 
   return safe_browsing_request_context_.get();

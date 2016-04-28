@@ -38,6 +38,10 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/extension_builder.h"
+#include "extensions/common/value_builder.h"
 #include "net/base/net_errors.h"
 #include "net/test/url_request/url_request_failed_job.h"
 #include "net/url_request/url_fetcher.h"
@@ -416,6 +420,133 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, ExitType) {
     profile->SetExitType(Profile::EXIT_CRASHED);
     std::string final_value(prefs->GetString(prefs::kSessionExitType));
     EXPECT_EQ(crash_value, final_value);
+  }
+
+  FlushIoTaskRunnerAndSpinThreads();
+}
+
+namespace {
+
+scoped_refptr<const extensions::Extension> BuildTestApp(Profile* profile) {
+  scoped_refptr<const extensions::Extension> app;
+  app =
+      extensions::ExtensionBuilder()
+          .SetManifest(
+              extensions::DictionaryBuilder()
+                  .Set("name", "test app")
+                  .Set("version", "1")
+                  .Set("app",
+                       extensions::DictionaryBuilder()
+                           .Set("background",
+                                extensions::DictionaryBuilder()
+                                    .Set("scripts", extensions::ListBuilder()
+                                                        .Append("background.js")
+                                                        .Build())
+                                    .Build())
+                           .Build())
+                  .Build())
+          .Build();
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(profile);
+  EXPECT_TRUE(registry->AddEnabled(app));
+  return app;
+}
+
+void CompareURLRequestContexts(
+    net::URLRequestContextGetter* extension_context_getter,
+    net::URLRequestContextGetter* main_context_getter) {
+  net::URLRequestContext* extension_context =
+      extension_context_getter->GetURLRequestContext();
+  net::URLRequestContext* main_context =
+      main_context_getter->GetURLRequestContext();
+
+  // Check that the URLRequestContexts are different and that their
+  // ChannelIDServices and CookieStores are different.
+  EXPECT_NE(extension_context, main_context);
+  EXPECT_NE(extension_context->channel_id_service(),
+            main_context->channel_id_service());
+  EXPECT_NE(extension_context->cookie_store(), main_context->cookie_store());
+
+  // Check that the ChannelIDService in the HttpNetworkSession is the same as
+  // the one directly on the URLRequestContext.
+  EXPECT_EQ(extension_context->http_transaction_factory()
+                ->GetSession()
+                ->params()
+                .channel_id_service,
+            extension_context->channel_id_service());
+  EXPECT_EQ(main_context->http_transaction_factory()
+                ->GetSession()
+                ->params()
+                .channel_id_service,
+            main_context->channel_id_service());
+}
+
+}  // namespace
+
+IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, URLRequestContextIsolation) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  MockProfileDelegate delegate;
+  EXPECT_CALL(delegate, OnProfileCreated(testing::NotNull(), true, true));
+
+  {
+    std::unique_ptr<Profile> profile(CreateProfile(
+        temp_dir.path(), &delegate, Profile::CREATE_MODE_SYNCHRONOUS));
+
+    scoped_refptr<const extensions::Extension> app =
+        BuildTestApp(profile.get());
+    content::StoragePartition* extension_partition =
+        content::BrowserContext::GetStoragePartitionForSite(
+            profile.get(),
+            extensions::Extension::GetBaseURLFromExtensionId(app->id()));
+    net::URLRequestContextGetter* extension_context_getter =
+        extension_partition->GetURLRequestContext();
+    net::URLRequestContextGetter* main_context_getter =
+        profile->GetRequestContext();
+
+    base::RunLoop run_loop;
+    content::BrowserThread::PostTaskAndReply(
+        content::BrowserThread::IO, FROM_HERE,
+        base::Bind(&CompareURLRequestContexts, extension_context_getter,
+                   main_context_getter),
+        run_loop.QuitClosure());
+    run_loop.Run();
+  }
+
+  FlushIoTaskRunnerAndSpinThreads();
+}
+
+IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
+                       OffTheRecordURLRequestContextIsolation) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  MockProfileDelegate delegate;
+  EXPECT_CALL(delegate, OnProfileCreated(testing::NotNull(), true, true));
+
+  {
+    std::unique_ptr<Profile> profile(CreateProfile(
+        temp_dir.path(), &delegate, Profile::CREATE_MODE_SYNCHRONOUS));
+    Profile* otr_profile = profile->GetOffTheRecordProfile();
+
+    scoped_refptr<const extensions::Extension> app = BuildTestApp(otr_profile);
+    content::StoragePartition* extension_partition =
+        content::BrowserContext::GetStoragePartitionForSite(
+            otr_profile,
+            extensions::Extension::GetBaseURLFromExtensionId(app->id()));
+    net::URLRequestContextGetter* extension_context_getter =
+        extension_partition->GetURLRequestContext();
+    net::URLRequestContextGetter* main_context_getter =
+        otr_profile->GetRequestContext();
+
+    base::RunLoop run_loop;
+    content::BrowserThread::PostTaskAndReply(
+        content::BrowserThread::IO, FROM_HERE,
+        base::Bind(&CompareURLRequestContexts, extension_context_getter,
+                   main_context_getter),
+        run_loop.QuitClosure());
+    run_loop.Run();
   }
 
   FlushIoTaskRunnerAndSpinThreads();

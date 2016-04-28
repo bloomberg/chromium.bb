@@ -623,6 +623,8 @@ net::URLRequestContext* ProfileImplIOData::InitializeAppRequestContext(
 
   base::FilePath cookie_path = partition_descriptor.path.Append(
       chrome::kCookieFilename);
+  base::FilePath channel_id_path =
+      partition_descriptor.path.Append(chrome::kChannelIDFilename);
   base::FilePath cache_path =
       partition_descriptor.path.Append(chrome::kCacheDirname);
 
@@ -638,10 +640,9 @@ net::URLRequestContext* ProfileImplIOData::InitializeAppRequestContext(
         app_cache_max_size_,
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE)));
   }
-  std::unique_ptr<net::HttpCache> app_http_cache =
-      CreateHttpFactory(http_network_session_.get(), std::move(app_backend));
 
   std::unique_ptr<net::CookieStore> cookie_store;
+  scoped_refptr<net::SQLiteChannelIDStore> channel_id_db;
   if (partition_descriptor.in_memory) {
     cookie_store = content::CreateCookieStore(content::CookieStoreConfig());
   } else {
@@ -656,7 +657,29 @@ net::URLRequestContext* ProfileImplIOData::InitializeAppRequestContext(
         nullptr, nullptr);
     cookie_config.crypto_delegate = cookie_config::GetCookieCryptoDelegate();
     cookie_store = content::CreateCookieStore(cookie_config);
+    channel_id_db = new net::SQLiteChannelIDStore(
+        channel_id_path,
+        BrowserThread::GetBlockingPool()->GetSequencedTaskRunner(
+            base::SequencedWorkerPool::GetSequenceToken()));
   }
+  std::unique_ptr<net::ChannelIDService> channel_id_service(
+      new net::ChannelIDService(
+          new net::DefaultChannelIDStore(channel_id_db.get()),
+          base::WorkerPool::GetTaskRunner(true)));
+
+  // Build a new HttpNetworkSession that uses the new ChannelIDService.
+  net::HttpNetworkSession::Params network_params =
+      http_network_session_->params();
+  network_params.channel_id_service = channel_id_service.get();
+  std::unique_ptr<net::HttpNetworkSession> http_network_session(
+      new net::HttpNetworkSession(network_params));
+  std::unique_ptr<net::HttpCache> app_http_cache =
+      CreateHttpFactory(http_network_session.get(), std::move(app_backend));
+
+  // Transfer ownership of the ChannelIDStore and the HttpNetworkSession to the
+  // AppRequestContext.
+  context->SetChannelIDService(std::move(channel_id_service));
+  context->SetHttpNetworkSession(std::move(http_network_session));
 
   // Transfer ownership of the cookies and cache to AppRequestContext.
   context->SetCookieStore(std::move(cookie_store));

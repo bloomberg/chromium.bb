@@ -332,11 +332,23 @@ net::URLRequestContext* OffTheRecordProfileIOData::InitializeAppRequestContext(
   // extensions API, but we need to update it to understand isolated apps first.
   context->SetCookieStore(
       content::CreateCookieStore(content::CookieStoreConfig()));
+  std::unique_ptr<net::ChannelIDService> channel_id_service(
+      new net::ChannelIDService(new net::DefaultChannelIDStore(nullptr),
+                                base::WorkerPool::GetTaskRunner(true)));
+
+  // Build a new HttpNetworkSession that uses the new ChannelIDService.
+  net::HttpNetworkSession::Params network_params =
+      http_network_session_->params();
+  network_params.channel_id_service = channel_id_service.get();
+  std::unique_ptr<net::HttpNetworkSession> http_network_session(
+      new net::HttpNetworkSession(network_params));
 
   // Use a separate in-memory cache for the app.
   std::unique_ptr<net::HttpCache> app_http_cache = CreateHttpFactory(
-      http_network_session_.get(), net::HttpCache::DefaultBackend::InMemory(0));
+      http_network_session.get(), net::HttpCache::DefaultBackend::InMemory(0));
 
+  context->SetChannelIDService(std::move(channel_id_service));
+  context->SetHttpNetworkSession(std::move(http_network_session));
   context->SetHttpTransactionFactory(std::move(app_http_cache));
 
   std::unique_ptr<net::URLRequestJobFactoryImpl> job_factory(

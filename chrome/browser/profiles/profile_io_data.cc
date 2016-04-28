@@ -573,6 +573,17 @@ void ProfileIOData::AppRequestContext::SetCookieStore(
   set_cookie_store(cookie_store_.get());
 }
 
+void ProfileIOData::AppRequestContext::SetChannelIDService(
+    std::unique_ptr<net::ChannelIDService> channel_id_service) {
+  channel_id_service_ = std::move(channel_id_service);
+  set_channel_id_service(channel_id_service_.get());
+}
+
+void ProfileIOData::AppRequestContext::SetHttpNetworkSession(
+    std::unique_ptr<net::HttpNetworkSession> http_network_session) {
+  http_network_session_ = std::move(http_network_session);
+}
+
 void ProfileIOData::AppRequestContext::SetHttpTransactionFactory(
     std::unique_ptr<net::HttpTransactionFactory> http_factory) {
   http_factory_ = std::move(http_factory);
