@@ -520,6 +520,7 @@ bool HTMLMediaElement::isMouseFocusable() const
 void HTMLMediaElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)
 {
     if (name == srcAttr) {
+        WTF_LOG(Media, "HTMLMediaElement::parseAttribute(%p, srcAttr, old=%s, new=%s)", this, oldValue.utf8().data(), value.utf8().data());
         // Trigger a reload, as long as the 'src' attribute is present.
         if (!value.isNull()) {
             m_ignorePreloadNone = false;
@@ -659,6 +660,7 @@ void HTMLMediaElement::setSrc(const AtomicString& url)
 
 void HTMLMediaElement::setSrcObject(MediaStreamDescriptor* srcObject)
 {
+    WTF_LOG(Media, "HTMLMediaElement::setSrcObject(%p)", this);
     m_srcObject = srcObject;
     invokeLoadAlgorithm();
 }
