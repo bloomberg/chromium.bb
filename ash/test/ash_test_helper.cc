@@ -7,11 +7,13 @@
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/ash_switches.h"
 #include "ash/display/display_info.h"
+#include "ash/material_design/material_design_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_init_params.h"
 #include "ash/test/ash_test_views_delegate.h"
 #include "ash/test/content/test_shell_content_state.h"
 #include "ash/test/display_manager_test_api.h"
+#include "ash/test/material_design_controller_test_api.h"
 #include "ash/test/shell_test_api.h"
 #include "ash/test/test_screenshot_delegate.h"
 #include "ash/test/test_session_state_delegate.h"
@@ -124,6 +126,7 @@ void AshTestHelper::SetUp(bool start_session) {
   // MaterialDesignController in unit_tests suite.
   ui::test::MaterialDesignControllerTestAPI::Uninitialize();
   ui::MaterialDesignController::Initialize();
+  ash::MaterialDesignController::Initialize();
   ShellInitParams init_params;
   init_params.delegate = test_shell_delegate_;
   init_params.context_factory = context_factory;
@@ -149,6 +152,7 @@ void AshTestHelper::SetUp(bool start_session) {
 void AshTestHelper::TearDown() {
   // Tear down the shell.
   Shell::DeleteInstance();
+  test::MaterialDesignControllerTestAPI::Uninitialize();
   ShellContentState::DestroyInstance();
 
   test_screenshot_delegate_ = NULL;

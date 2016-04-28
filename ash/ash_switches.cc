@@ -95,6 +95,13 @@ const char kAshHideNotificationsForFactory[] =
 // "800,0+800-800x800,0+1600-800x800" for three displays at 800x800 resolution.
 const char kAshHostWindowBounds[] = "ash-host-window-bounds";
 
+// Specifies if Material Design elements in Chrome OS system UI are enabled.
+// Can be disabled / enabled / experimental allowing to launch incrementally.
+const char kAshMaterialDesign[] = "ash-md";
+const char kAshMaterialDesignDisabled[] = "disabled";
+const char kAshMaterialDesignEnabled[] = "enabled";
+const char kAshMaterialDesignExperimental[] = "experimental";
+
 // Specifies the layout mode and offsets for the secondary display for
 // testing. The format is "<t|r|b|l>,<offset>" where t=TOP, r=RIGHT,
 // b=BOTTOM and L=LEFT. For example, 'r,-100' means the secondary display

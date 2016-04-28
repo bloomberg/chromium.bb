@@ -181,6 +181,7 @@
 #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
 #if defined(OS_CHROMEOS)
+#include "ash/material_design/material_design_controller.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/settings/cros_settings_names.h"
@@ -979,6 +980,9 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   // are not available until this point. Now that they are, proceed with
   // initializing the MaterialDesignController.
   ui::MaterialDesignController::Initialize();
+#if defined(OS_CHROMEOS)
+  ash::MaterialDesignController::Initialize();
+#endif  // !defined(OS_CHROMEOS)
 
 #if defined(OS_MACOSX)
   // Material Design resource packs can be loaded now that command line flags

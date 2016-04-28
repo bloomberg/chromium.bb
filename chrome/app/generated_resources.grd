@@ -5640,6 +5640,15 @@ Keep your key file in a safe place. You will need it to create new versions of y
           </message>
       </if>
       <if expr="use_ash">
+        <message name="IDS_FLAGS_ASH_MD" desc="Title of the flag which enables or disables material design in Chrome OS system UI.">
+          Material Design in Chrome OS system UI
+        </message>
+        <message name="IDS_FLAGS_ASH_MD_DESCRIPTION" desc="Description of the flag which changes the material design elements in Chrome OS system UI.">
+          Sets the Material Design elements in Chrome OS system UI.
+        </message>
+        <message name="IDS_FLAGS_ASH_MD_EXPERIMENTAL" desc="The value of the Material Design in Chrome OS UI flag that controls experimental features.">
+          Experimental
+        </message>
         <message name="IDS_FLAGS_ASH_MAXIMIZE_MODE_WINDOW_BACKDROP_NAME" desc="Title for the flag which can be used for window backdrops in TouchView.">
           Window backdrops in TouchView
         </message>
