@@ -141,7 +141,8 @@ bool CARendererLayerTree::ScheduleCALayer(
     const gfx::Rect& rect,
     unsigned background_color,
     unsigned edge_aa_mask,
-    float opacity) {
+    float opacity,
+    unsigned filter) {
   // Excessive logging to debug white screens (crbug.com/583805).
   // TODO(ccameron): change this back to a DLOG.
   if (has_committed_) {
@@ -151,7 +152,7 @@ bool CARendererLayerTree::ScheduleCALayer(
   return root_layer_.AddContentLayer(is_clipped, clip_rect, sorting_context_id,
                                      transform, io_surface, cv_pixel_buffer,
                                      contents_rect, rect, background_color,
-                                     edge_aa_mask, opacity);
+                                     edge_aa_mask, opacity, filter);
 }
 
 void CARendererLayerTree::CommitScheduledCALayers(
@@ -285,14 +286,18 @@ CARendererLayerTree::ContentLayer::ContentLayer(
     const gfx::Rect& rect,
     unsigned background_color,
     unsigned edge_aa_mask,
-    float opacity)
+    float opacity,
+    unsigned filter)
     : io_surface(io_surface),
       cv_pixel_buffer(cv_pixel_buffer),
       contents_rect(contents_rect),
       rect(rect),
       background_color(background_color),
       ca_edge_aa_mask(0),
-      opacity(opacity) {
+      opacity(opacity),
+      ca_filter(filter == GL_LINEAR ? kCAFilterLinear : kCAFilterNearest) {
+  DCHECK(filter == GL_LINEAR || filter == GL_NEAREST);
+
   // Because the root layer has setGeometryFlipped:YES, there is some ambiguity
   // about what exactly top and bottom mean. This ambiguity is resolved in
   // different ways for solid color CALayers and for CALayers that have content
@@ -338,6 +343,7 @@ CARendererLayerTree::ContentLayer::ContentLayer(ContentLayer&& layer)
       background_color(layer.background_color),
       ca_edge_aa_mask(layer.ca_edge_aa_mask),
       opacity(layer.opacity),
+      ca_filter(layer.ca_filter),
       ca_layer(std::move(layer.ca_layer)),
       av_layer(std::move(layer.av_layer)),
       use_av_layer(layer.use_av_layer) {
@@ -360,7 +366,8 @@ bool CARendererLayerTree::RootLayer::AddContentLayer(
     const gfx::Rect& rect,
     unsigned background_color,
     unsigned edge_aa_mask,
-    float opacity) {
+    float opacity,
+    unsigned filter) {
   bool needs_new_clip_and_sorting_layer = true;
 
   // In sorting_context_id 0, all quads are listed in back-to-front order.
@@ -398,7 +405,7 @@ bool CARendererLayerTree::RootLayer::AddContentLayer(
   }
   clip_and_sorting_layers.back().AddContentLayer(
       transform, io_surface, cv_pixel_buffer, contents_rect, rect,
-      background_color, edge_aa_mask, opacity);
+      background_color, edge_aa_mask, opacity, filter);
   return true;
 }
 
@@ -410,7 +417,8 @@ void CARendererLayerTree::ClipAndSortingLayer::AddContentLayer(
     const gfx::Rect& rect,
     unsigned background_color,
     unsigned edge_aa_mask,
-    float opacity) {
+    float opacity,
+    unsigned filter) {
   bool needs_new_transform_layer = true;
   if (!transform_layers.empty()) {
     const TransformLayer& current_layer = transform_layers.back();
@@ -421,7 +429,7 @@ void CARendererLayerTree::ClipAndSortingLayer::AddContentLayer(
     transform_layers.push_back(TransformLayer(transform));
   transform_layers.back().AddContentLayer(io_surface, cv_pixel_buffer,
                                           contents_rect, rect, background_color,
-                                          edge_aa_mask, opacity);
+                                          edge_aa_mask, opacity, filter);
 }
 
 void CARendererLayerTree::TransformLayer::AddContentLayer(
@@ -431,10 +439,11 @@ void CARendererLayerTree::TransformLayer::AddContentLayer(
     const gfx::Rect& rect,
     unsigned background_color,
     unsigned edge_aa_mask,
-    float opacity) {
+    float opacity,
+    unsigned filter) {
   content_layers.push_back(ContentLayer(io_surface, cv_pixel_buffer,
                                         contents_rect, rect, background_color,
-                                        edge_aa_mask, opacity));
+                                        edge_aa_mask, opacity, filter));
 }
 
 void CARendererLayerTree::RootLayer::CommitToCA(CALayer* superlayer,
@@ -561,6 +570,7 @@ void CARendererLayerTree::ContentLayer::CommitToCA(CALayer* superlayer,
   bool update_background_color = true;
   bool update_ca_edge_aa_mask = true;
   bool update_opacity = true;
+  bool update_ca_filter = true;
   if (old_layer && old_layer->use_av_layer == use_av_layer) {
     DCHECK(old_layer->ca_layer);
     std::swap(ca_layer, old_layer->ca_layer);
@@ -572,6 +582,7 @@ void CARendererLayerTree::ContentLayer::CommitToCA(CALayer* superlayer,
     update_background_color = old_layer->background_color != background_color;
     update_ca_edge_aa_mask = old_layer->ca_edge_aa_mask != ca_edge_aa_mask;
     update_opacity = old_layer->opacity != opacity;
+    update_ca_filter = old_layer->ca_filter != ca_filter;
   } else {
     if (use_av_layer) {
       av_layer.reset([[AVSampleBufferDisplayLayer alloc] init]);
@@ -586,7 +597,8 @@ void CARendererLayerTree::ContentLayer::CommitToCA(CALayer* superlayer,
   DCHECK_EQ([ca_layer superlayer], superlayer);
   bool update_anything = update_contents || update_contents_rect ||
                          update_rect || update_background_color ||
-                         update_ca_edge_aa_mask || update_opacity;
+                         update_ca_edge_aa_mask || update_opacity ||
+                         update_ca_filter;
   if (use_av_layer) {
     if (update_contents) {
       if (cv_pixel_buffer) {
@@ -626,6 +638,10 @@ void CARendererLayerTree::ContentLayer::CommitToCA(CALayer* superlayer,
     [ca_layer setEdgeAntialiasingMask:ca_edge_aa_mask];
   if (update_opacity)
     [ca_layer setOpacity:opacity];
+  if (update_ca_filter) {
+    [ca_layer setMagnificationFilter:ca_filter];
+    [ca_layer setMinificationFilter:ca_filter];
+  }
 
   static bool show_borders = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kShowMacOverlayBorders);

@@ -48,7 +48,8 @@ class ACCELERATED_WIDGET_MAC_EXPORT CARendererLayerTree {
                        const gfx::Rect& rect,
                        unsigned background_color,
                        unsigned edge_aa_mask,
-                       float opacity);
+                       float opacity,
+                       unsigned filter);
 
   // Create a CALayer tree for the scheduled layers, and set |superlayer| to
   // have only this tree as its sublayers. If |old_tree| is non-null, then try
@@ -92,7 +93,8 @@ class ACCELERATED_WIDGET_MAC_EXPORT CARendererLayerTree {
         const gfx::Rect& rect,
         unsigned background_color,
         unsigned edge_aa_mask,
-        float opacity);
+        float opacity,
+        unsigned filter);
 
     // Allocate CALayers for this layer and its children, and set their
     // properties appropriately. Re-use the CALayers from |old_layer| if
@@ -126,7 +128,8 @@ class ACCELERATED_WIDGET_MAC_EXPORT CARendererLayerTree {
         const gfx::Rect& rect,
         unsigned background_color,
         unsigned edge_aa_mask,
-        float opacity);
+        float opacity,
+        unsigned filter);
     void CommitToCA(CALayer* superlayer,
                     ClipAndSortingLayer* old_layer,
                     float scale_factor);
@@ -155,7 +158,8 @@ class ACCELERATED_WIDGET_MAC_EXPORT CARendererLayerTree {
         const gfx::Rect& rect,
         unsigned background_color,
         unsigned edge_aa_mask,
-        float opacity);
+        float opacity,
+        unsigned filter);
     void CommitToCA(CALayer* superlayer,
                     TransformLayer* old_layer,
                     float scale_factor);
@@ -174,7 +178,8 @@ class ACCELERATED_WIDGET_MAC_EXPORT CARendererLayerTree {
                  const gfx::Rect& rect,
                  unsigned background_color,
                  unsigned edge_aa_mask,
-                 float opacity);
+                 float opacity,
+                 unsigned filter);
     ContentLayer(ContentLayer&& layer);
 
     // See the behavior of RootLayer for the effects of these functions on the
@@ -196,6 +201,7 @@ class ACCELERATED_WIDGET_MAC_EXPORT CARendererLayerTree {
     // the edge antialiasing mask passed to the constructor.
     CAEdgeAntialiasingMask ca_edge_aa_mask = 0;
     float opacity = 1;
+    NSString* const ca_filter = nil;
     base::scoped_nsobject<CALayer> ca_layer;
 
     // If this layer's contents can be represented as an

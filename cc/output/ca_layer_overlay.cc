@@ -101,6 +101,7 @@ CALayerResult FromTextureQuad(ResourceProvider* resource_provider,
       return CA_LAYER_FAILED_UNKNOWN;
   }
   ca_layer_overlay->opacity *= quad->vertex_opacity[0];
+  ca_layer_overlay->filter = quad->nearest_neighbor ? GL_NEAREST : GL_LINEAR;
   return CA_LAYER_SUCCESS;
 }
 
@@ -191,7 +192,7 @@ CALayerResult FromDrawQuad(ResourceProvider* resource_provider,
 
 }  // namespace
 
-CALayerOverlay::CALayerOverlay() {}
+CALayerOverlay::CALayerOverlay() : filter(GL_LINEAR) {}
 
 CALayerOverlay::CALayerOverlay(const CALayerOverlay& other) = default;
 

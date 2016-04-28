@@ -42,6 +42,8 @@ class CC_EXPORT CALayerOverlay {
   gfx::RectF bounds_rect;
   // The transform to apply to the CALayer.
   SkMatrix44 transform = SkMatrix44(SkMatrix44::kIdentity_Constructor);
+  // The minification and magnification filters for the CALayer.
+  unsigned filter;
 };
 
 typedef std::vector<CALayerOverlay> CALayerOverlayList;

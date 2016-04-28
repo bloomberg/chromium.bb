@@ -280,10 +280,11 @@ bool ImageTransportSurfaceOverlayMac::ScheduleCALayer(
     cv_pixel_buffer = io_surface_image->cv_pixel_buffer();
   }
   return ca_layer_tree_coordinator_->GetPendingCARendererLayerTree()
-      ->ScheduleCALayer(
-          is_clipped, gfx::ToEnclosingRect(clip_rect), sorting_context_id,
-          transform, io_surface, cv_pixel_buffer, contents_rect,
-          gfx::ToEnclosingRect(rect), background_color, edge_aa_mask, opacity);
+      ->ScheduleCALayer(is_clipped, gfx::ToEnclosingRect(clip_rect),
+                        sorting_context_id, transform, io_surface,
+                        cv_pixel_buffer, contents_rect,
+                        gfx::ToEnclosingRect(rect), background_color,
+                        edge_aa_mask, opacity, filter);
 }
 
 bool ImageTransportSurfaceOverlayMac::IsSurfaceless() const {

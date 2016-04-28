@@ -8,6 +8,7 @@
 #include "base/mac/sdk_forward_declarations.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/gtest_mac.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accelerated_widget_mac/ca_renderer_layer_tree.h"
 #include "ui/gfx/geometry/dip_util.h"
@@ -41,6 +42,7 @@ TEST_F(CALayerTreeTest, PropertyUpdates) {
   unsigned background_color = SkColorSetARGB(0xFF, 0xFF, 0, 0);
   unsigned edge_aa_mask = GL_CA_LAYER_EDGE_LEFT_CHROMIUM;
   float opacity = 0.5f;
+  unsigned filter = GL_LINEAR;
   float scale_factor = 1.0f;
   bool result = false;
 
@@ -65,7 +67,8 @@ TEST_F(CALayerTreeTest, PropertyUpdates) {
         rect,
         background_color,
         edge_aa_mask,
-        opacity);
+        opacity,
+        filter);
     EXPECT_TRUE(result);
     new_ca_layer_tree->CommitScheduledCALayers(
         superlayer_, std::move(ca_layer_tree), scale_factor);
@@ -105,6 +108,8 @@ TEST_F(CALayerTreeTest, PropertyUpdates) {
     EXPECT_EQ(gfx::Rect(rect.size()), gfx::Rect([content_layer bounds]));
     EXPECT_EQ(kCALayerLeftEdge, [content_layer edgeAntialiasingMask]);
     EXPECT_EQ(opacity, [content_layer opacity]);
+    EXPECT_NSEQ(kCAFilterLinear, [content_layer minificationFilter]);
+    EXPECT_NSEQ(kCAFilterLinear, [content_layer magnificationFilter]);
     if ([content_layer respondsToSelector:(@selector(contentsScale))])
       EXPECT_EQ(scale_factor, [content_layer contentsScale]);
   }
@@ -125,7 +130,8 @@ TEST_F(CALayerTreeTest, PropertyUpdates) {
         rect,
         background_color,
         edge_aa_mask,
-        opacity);
+        opacity,
+        filter);
     EXPECT_TRUE(result);
     new_ca_layer_tree->CommitScheduledCALayers(
         superlayer_, std::move(ca_layer_tree), scale_factor);
@@ -168,7 +174,8 @@ TEST_F(CALayerTreeTest, PropertyUpdates) {
         rect,
         background_color,
         edge_aa_mask,
-        opacity);
+        opacity,
+        filter);
     EXPECT_TRUE(result);
     new_ca_layer_tree->CommitScheduledCALayers(
         superlayer_, std::move(ca_layer_tree), scale_factor);
@@ -208,7 +215,8 @@ TEST_F(CALayerTreeTest, PropertyUpdates) {
         rect,
         background_color,
         edge_aa_mask,
-        opacity);
+        opacity,
+        filter);
     EXPECT_TRUE(result);
     new_ca_layer_tree->CommitScheduledCALayers(
         superlayer_, std::move(ca_layer_tree), scale_factor);
@@ -246,7 +254,8 @@ TEST_F(CALayerTreeTest, PropertyUpdates) {
         rect,
         background_color,
         edge_aa_mask,
-        opacity);
+        opacity,
+        filter);
     EXPECT_TRUE(result);
     new_ca_layer_tree->CommitScheduledCALayers(
         superlayer_, std::move(ca_layer_tree), scale_factor);
@@ -282,7 +291,8 @@ TEST_F(CALayerTreeTest, PropertyUpdates) {
         rect,
         background_color,
         edge_aa_mask,
-        opacity);
+        opacity,
+        filter);
     EXPECT_TRUE(result);
     new_ca_layer_tree->CommitScheduledCALayers(
         superlayer_, std::move(ca_layer_tree), scale_factor);
@@ -320,7 +330,8 @@ TEST_F(CALayerTreeTest, PropertyUpdates) {
         rect,
         background_color,
         edge_aa_mask,
-        opacity);
+        opacity,
+        filter);
     EXPECT_TRUE(result);
     new_ca_layer_tree->CommitScheduledCALayers(
         superlayer_, std::move(ca_layer_tree), scale_factor);
@@ -358,7 +369,8 @@ TEST_F(CALayerTreeTest, PropertyUpdates) {
         rect,
         background_color,
         edge_aa_mask,
-        opacity);
+        opacity,
+        filter);
     EXPECT_TRUE(result);
     new_ca_layer_tree->CommitScheduledCALayers(
         superlayer_, std::move(ca_layer_tree), scale_factor);
@@ -396,7 +408,8 @@ TEST_F(CALayerTreeTest, PropertyUpdates) {
         rect,
         background_color,
         edge_aa_mask,
-        opacity);
+        opacity,
+        filter);
     EXPECT_TRUE(result);
     new_ca_layer_tree->CommitScheduledCALayers(
         superlayer_, std::move(ca_layer_tree), scale_factor);
@@ -417,6 +430,45 @@ TEST_F(CALayerTreeTest, PropertyUpdates) {
     EXPECT_EQ(opacity, [content_layer opacity]);
   }
 
+  // Change the filter.
+  {
+    filter = GL_NEAREST;
+    std::unique_ptr<ui::CARendererLayerTree> new_ca_layer_tree(
+        new ui::CARendererLayerTree);
+    result = new_ca_layer_tree->ScheduleCALayer(
+        is_clipped,
+        clip_rect,
+        sorting_context_id,
+        transform,
+        nullptr,
+        nullptr,
+        contents_rect,
+        rect,
+        background_color,
+        edge_aa_mask,
+        opacity,
+        filter);
+    EXPECT_TRUE(result);
+    new_ca_layer_tree->CommitScheduledCALayers(
+        superlayer_, std::move(ca_layer_tree), scale_factor);
+    std::swap(new_ca_layer_tree, ca_layer_tree);
+
+    // Validate the tree structure.
+    EXPECT_EQ(1u, [[superlayer_ sublayers] count]);
+    EXPECT_EQ(root_layer, [[superlayer_ sublayers] objectAtIndex:0]);
+    EXPECT_EQ(1u, [[root_layer sublayers] count]);
+    EXPECT_EQ(clip_and_sorting_layer, [[root_layer sublayers] objectAtIndex:0]);
+    EXPECT_EQ(1u, [[clip_and_sorting_layer sublayers] count]);
+    EXPECT_EQ(transform_layer,
+              [[clip_and_sorting_layer sublayers] objectAtIndex:0]);
+    EXPECT_EQ(1u, [[transform_layer sublayers] count]);
+    EXPECT_EQ(content_layer, [[transform_layer sublayers] objectAtIndex:0]);
+
+    // Validate the content layer.
+    EXPECT_NSEQ(kCAFilterNearest, [content_layer minificationFilter]);
+    EXPECT_NSEQ(kCAFilterNearest, [content_layer magnificationFilter]);
+  }
+
   // Add the clipping and IOSurface contents back.
   {
     is_clipped = true;
@@ -433,7 +485,8 @@ TEST_F(CALayerTreeTest, PropertyUpdates) {
         rect,
         background_color,
         edge_aa_mask,
-        opacity);
+        opacity,
+        filter);
     EXPECT_TRUE(result);
     new_ca_layer_tree->CommitScheduledCALayers(
         superlayer_, std::move(ca_layer_tree), scale_factor);
@@ -471,7 +524,8 @@ TEST_F(CALayerTreeTest, PropertyUpdates) {
         rect,
         background_color,
         edge_aa_mask,
-        opacity);
+        opacity,
+        filter);
     EXPECT_TRUE(result);
     new_ca_layer_tree->CommitScheduledCALayers(
         superlayer_, std::move(ca_layer_tree), scale_factor);
@@ -534,6 +588,7 @@ TEST_F(CALayerTreeTest, SplitSortingContextZero) {
   unsigned edge_aa_mask = 0;
   float opacity = 1.0f;
   float scale_factor = 1.0f;
+  unsigned filter = GL_LINEAR;
 
   // We'll use the IOSurface contents to identify the content layers.
   base::ScopedCFTypeRef<IOSurfaceRef> io_surfaces[5];
@@ -568,7 +623,8 @@ TEST_F(CALayerTreeTest, SplitSortingContextZero) {
         rect,
         background_color,
         edge_aa_mask,
-        opacity);
+        opacity,
+        filter);
     EXPECT_TRUE(result);
   }
   ca_layer_tree->CommitScheduledCALayers(superlayer_, nullptr, scale_factor);
@@ -632,6 +688,7 @@ TEST_F(CALayerTreeTest, SortingContexts) {
   unsigned edge_aa_mask = 0;
   float opacity = 1.0f;
   float scale_factor = 1.0f;
+  unsigned filter = GL_LINEAR;
 
   // We'll use the IOSurface contents to identify the content layers.
   base::ScopedCFTypeRef<IOSurfaceRef> io_surfaces[3];
@@ -655,7 +712,8 @@ TEST_F(CALayerTreeTest, SortingContexts) {
         rect,
         background_color,
         edge_aa_mask,
-        opacity);
+        opacity,
+        filter);
     EXPECT_TRUE(result);
   }
   ca_layer_tree->CommitScheduledCALayers(superlayer_, nullptr, scale_factor);
@@ -704,6 +762,7 @@ TEST_F(CALayerTreeTest, SortingContextMustHaveConsistentClip) {
   unsigned background_color = SkColorSetARGB(0xFF, 0xFF, 0xFF, 0xFF);
   unsigned edge_aa_mask = 0;
   float opacity = 1.0f;
+  unsigned filter = GL_LINEAR;
 
   // Vary the clipping parameters within sorting contexts.
   bool is_clippeds[3] = { true, true, false};
@@ -730,7 +789,8 @@ TEST_F(CALayerTreeTest, SortingContextMustHaveConsistentClip) {
         rect,
         background_color,
         edge_aa_mask,
-        opacity);
+        opacity,
+        filter);
     EXPECT_TRUE(result);
   }
   // Next send the various clip parameters to a non-zero sorting context. This
@@ -748,7 +808,8 @@ TEST_F(CALayerTreeTest, SortingContextMustHaveConsistentClip) {
         rect,
         background_color,
         edge_aa_mask,
-        opacity);
+        opacity,
+        filter);
     if (i == 0)
       EXPECT_TRUE(result);
     else
@@ -768,7 +829,8 @@ TEST_F(CALayerTreeTest, SortingContextMustHaveConsistentClip) {
         rect,
         background_color,
         edge_aa_mask,
-        opacity);
+        opacity,
+        filter);
     EXPECT_TRUE(result);
   }
 }
@@ -789,6 +851,7 @@ TEST_F(CALayerTreeTest, AVLayer) {
   float opacity = 0.5f;
   float scale_factor = 1.0f;
   bool result = false;
+  unsigned filter = GL_LINEAR;
 
   std::unique_ptr<ui::CARendererLayerTree> ca_layer_tree;
   CALayer* root_layer = nil;
@@ -812,7 +875,8 @@ TEST_F(CALayerTreeTest, AVLayer) {
         contents_rect,
         rect, background_color,
         edge_aa_mask,
-        opacity);
+        opacity,
+        filter);
     EXPECT_TRUE(result);
     new_ca_layer_tree->CommitScheduledCALayers(
         superlayer_, std::move(ca_layer_tree), scale_factor);
@@ -851,7 +915,8 @@ TEST_F(CALayerTreeTest, AVLayer) {
         rect,
         background_color,
         edge_aa_mask,
-        opacity);
+        opacity,
+        filter);
     EXPECT_TRUE(result);
     new_ca_layer_tree->CommitScheduledCALayers(
         superlayer_, std::move(ca_layer_tree), scale_factor);
@@ -894,7 +959,8 @@ TEST_F(CALayerTreeTest, AVLayer) {
         rect,
         background_color,
         edge_aa_mask,
-        opacity);
+        opacity,
+        filter);
     EXPECT_TRUE(result);
     new_ca_layer_tree->CommitScheduledCALayers(
         superlayer_, std::move(ca_layer_tree), scale_factor);
@@ -936,7 +1002,8 @@ TEST_F(CALayerTreeTest, AVLayer) {
         rect,
         background_color,
         edge_aa_mask,
-        opacity);
+        opacity,
+        filter);
     EXPECT_TRUE(result);
     new_ca_layer_tree->CommitScheduledCALayers(
         superlayer_, std::move(ca_layer_tree), scale_factor);
@@ -977,6 +1044,7 @@ TEST_F(CALayerTreeTest, FullscreenLowPower) {
   float opacity = 1.0f;
   float scale_factor = 1.0f;
   bool result = false;
+  unsigned filter = GL_LINEAR;
 
   std::unique_ptr<ui::CARendererLayerTree> ca_layer_tree;
 
@@ -991,7 +1059,7 @@ TEST_F(CALayerTreeTest, FullscreenLowPower) {
     result = new_ca_layer_tree->ScheduleCALayer(
         is_clipped, clip_rect, sorting_context_id, transform, io_surface,
         cv_pixel_buffer, contents_rect, rect, background_color, edge_aa_mask,
-        opacity);
+        opacity, filter);
     EXPECT_TRUE(result);
     new_ca_layer_tree->CommitScheduledCALayers(
         superlayer_, std::move(ca_layer_tree), scale_factor);
@@ -1023,11 +1091,11 @@ TEST_F(CALayerTreeTest, FullscreenLowPower) {
         new ui::CARendererLayerTree);
     result = new_ca_layer_tree->ScheduleCALayer(
         is_clipped, clip_rect, sorting_context_id, transform, nullptr, nullptr,
-        contents_rect, rect, SK_ColorBLACK, edge_aa_mask, opacity);
+        contents_rect, rect, SK_ColorBLACK, edge_aa_mask, opacity, filter);
     result = new_ca_layer_tree->ScheduleCALayer(
         is_clipped, clip_rect, sorting_context_id, transform, io_surface,
         cv_pixel_buffer, contents_rect, rect, background_color, edge_aa_mask,
-        opacity);
+        opacity, filter);
     EXPECT_TRUE(result);
     new_ca_layer_tree->CommitScheduledCALayers(
         superlayer_, std::move(ca_layer_tree), scale_factor);
@@ -1059,11 +1127,11 @@ TEST_F(CALayerTreeTest, FullscreenLowPower) {
         new ui::CARendererLayerTree);
     result = new_ca_layer_tree->ScheduleCALayer(
         is_clipped, clip_rect, sorting_context_id, transform, nullptr, nullptr,
-        contents_rect, rect, SK_ColorWHITE, edge_aa_mask, opacity);
+        contents_rect, rect, SK_ColorWHITE, edge_aa_mask, opacity, filter);
     result = new_ca_layer_tree->ScheduleCALayer(
         is_clipped, clip_rect, sorting_context_id, transform, io_surface,
         cv_pixel_buffer, contents_rect, rect, background_color, edge_aa_mask,
-        opacity);
+        opacity, filter);
     EXPECT_TRUE(result);
     new_ca_layer_tree->CommitScheduledCALayers(
         superlayer_, std::move(ca_layer_tree), scale_factor);
@@ -1096,10 +1164,10 @@ TEST_F(CALayerTreeTest, FullscreenLowPower) {
     result = new_ca_layer_tree->ScheduleCALayer(
         is_clipped, clip_rect, sorting_context_id, transform, io_surface,
         cv_pixel_buffer, contents_rect, rect, background_color, edge_aa_mask,
-        opacity);
+        opacity, filter);
     result = new_ca_layer_tree->ScheduleCALayer(
         is_clipped, clip_rect, sorting_context_id, transform, nullptr, nullptr,
-        contents_rect, rect, SK_ColorBLACK, edge_aa_mask, opacity);
+        contents_rect, rect, SK_ColorBLACK, edge_aa_mask, opacity, filter);
     EXPECT_TRUE(result);
     new_ca_layer_tree->CommitScheduledCALayers(
         superlayer_, std::move(ca_layer_tree), scale_factor);
