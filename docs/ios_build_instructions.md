@@ -16,6 +16,8 @@ the web layer), and various unit tests.
 
 ## Setting Up
 
+### With GYP
+
 In the directory where you are going to check out the code, create a
 `chromium.gyp_env` to set the build to use iOS targets (and to use
 hybrid builds; see [Building](#Building) below):
@@ -40,6 +42,26 @@ cat > chromium.gyp_env <<EOF
 }
 EOF
 ```
+
+### With GN
+
+Use `gn args out/Debug-iphonesimulator` (or replace
+`out/Debug-iphonesimulator` with your chosen `out/` directory) to open up an
+editor to set the following gn variables and regenerate:
+
+```
+# Set to true if you have a valid code signing key.
+ios_enable_code_signing = false
+target_os = "ios"
+# Set to "x86", "x64", "arm", "armv7", "arm64". "x86" and "x64" will create a
+# build to run on the iOS simulator (and set use_ios_simulator = true), all
+# others are for an iOS device.
+target_cpu = "x64"
+# Release vs debug build.
+is_debug = true
+```
+
+### API Keys
 
 Before you build, you may want to
 [install API keys](https://sites.google.com/a/chromium.org/dev/developers/how-tos/api-keys)
@@ -100,9 +122,9 @@ below:
 1.  Add `target_os = [ "ios" ]` to the bottom of your `chromium/.gclient`
 file.
 
-2.  Make sure you have the following in your `chromium/chromium.gyp_env`
-file (removing the `chromium_ios_signing=0` if you want to make
-developer-signed builds):
+2.  For gyp, make sure you have the following in your
+`chromium/chromium.gyp_env` file (removing the `chromium_ios_signing=0` if you
+want to make developer-signed builds):
 
     ```json
     {
@@ -110,6 +132,8 @@ developer-signed builds):
       "GYP_GENERATORS" : "ninja,xcode-ninja",
     }
     ```
+
+    For gn, add the arguments specified [above](#With-GN) to your gn setup.
 
 3.  Make sure to sync again to fetch the iOS specific dependencies and
 regenerate build rules using:
