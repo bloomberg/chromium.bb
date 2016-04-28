@@ -75,6 +75,7 @@ class ShelfDelegateMus : public ShelfDelegate,
   std::map<uint32_t, ShelfID> window_id_to_shelf_id_;
 
   std::map<std::string, ShelfID> app_id_to_shelf_id_;
+  std::map<ShelfID, std::string> shelf_id_to_app_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfDelegateMus);
 };

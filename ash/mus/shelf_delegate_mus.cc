@@ -216,17 +216,18 @@ void ShelfDelegateMus::OnShelfAutoHideBehaviorChanged(Shelf* shelf) {
 }
 
 ShelfID ShelfDelegateMus::GetShelfIDForAppID(const std::string& app_id) {
-  NOTIMPLEMENTED();
+  if (app_id_to_shelf_id_.count(app_id))
+    return app_id_to_shelf_id_[app_id];
   return 0;
 }
 
 bool ShelfDelegateMus::HasShelfIDToAppIDMapping(ShelfID id) const {
-  NOTIMPLEMENTED();
-  return false;
+  return shelf_id_to_app_id_.count(id) != 0;
 }
 
 const std::string& ShelfDelegateMus::GetAppIDForShelfID(ShelfID id) {
-  NOTIMPLEMENTED();
+  if (shelf_id_to_app_id_.count(id))
+    return shelf_id_to_app_id_[id];
   return base::EmptyString();
 }
 
@@ -282,6 +283,7 @@ void ShelfDelegateMus::PinItem(
 
   ShelfID shelf_id = model_->next_id();
   app_id_to_shelf_id_.insert(std::make_pair(app_id, shelf_id));
+  shelf_id_to_app_id_.insert(std::make_pair(shelf_id, app_id));
 
   ShelfItem shelf_item;
   shelf_item.type = TYPE_APP_SHORTCUT;
@@ -304,8 +306,11 @@ void ShelfDelegateMus::UnpinItem(const mojo::String& app_id) {
   ShelfItemDelegateMus* item_delegate = GetShelfItemDelegate(shelf_id);
   DCHECK(item_delegate->pinned());
   item_delegate->set_pinned(false);
-  if (item_delegate->window_id_to_title().empty())
+  if (item_delegate->window_id_to_title().empty()) {
     model_->RemoveItemAt(model_->ItemIndexByID(shelf_id));
+    app_id_to_shelf_id_.erase(app_id.To<std::string>());
+    shelf_id_to_app_id_.erase(shelf_id);
+  }
 }
 
 void ShelfDelegateMus::OnUserWindowObserverAdded(
@@ -334,6 +339,7 @@ void ShelfDelegateMus::OnUserWindowAdded(
   window_id_to_shelf_id_.insert(
       std::make_pair(user_window->window_id, shelf_id));
   app_id_to_shelf_id_.insert(std::make_pair(app_id, shelf_id));
+  shelf_id_to_app_id_.insert(std::make_pair(shelf_id, app_id));
 
   ShelfItem item;
   item.type = TYPE_PLATFORM_APP;
@@ -355,8 +361,12 @@ void ShelfDelegateMus::OnUserWindowRemoved(uint32_t window_id) {
   ShelfItemDelegateMus* item_delegate = GetShelfItemDelegate(shelf_id);
   item_delegate->RemoveWindow(window_id);
   window_id_to_shelf_id_.erase(window_id);
-  if (item_delegate->window_id_to_title().empty() && !item_delegate->pinned())
+  if (item_delegate->window_id_to_title().empty() && !item_delegate->pinned()) {
     model_->RemoveItemAt(model_->ItemIndexByID(shelf_id));
+    const std::string& app_id = shelf_id_to_app_id_[shelf_id];
+    app_id_to_shelf_id_.erase(app_id);
+    shelf_id_to_app_id_.erase(shelf_id);
+  }
 }
 
 void ShelfDelegateMus::OnUserWindowTitleChanged(
