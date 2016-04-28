@@ -10,9 +10,6 @@
 
 using chrome::android::TabLayer;
 
-// A test class for TabLayer class.
-class TabLayerTest : public testing::Test {};
-
 TEST(ComputePaddingPositionsTest, NoSideOrBottomPadding) {
   gfx::Size content_size(100, 400);
   gfx::Size desired_size(100, 400);
