@@ -4,7 +4,10 @@
   "display_name": "Browser Driver",
   "capabilities": {
     "required": {
-      "*": { "classes": [ "app" ] }
+      "*": { "classes": [ "mash:launchable" ] },
+      "mojo:desktop_wm": {
+        "interfaces": [ "mus::mojom::AcceleratorRegistrar" ]
+      }
     }
   }
 }
