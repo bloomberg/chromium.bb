@@ -111,14 +111,8 @@ body {
   padding: 8px 16px;
 }
 
-#confirmButton {
-  background-color: rgb(66, 133, 244);
-  color: white;
-}
-
 #undoButton {
   -webkit-margin-start: 8px;
-  color: #5A5A5A;
 }
 
 #illustration {
