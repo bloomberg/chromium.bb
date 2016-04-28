@@ -391,7 +391,7 @@ class Executive(object):
 
         # run_command automatically decodes to unicode() unless explicitly told not to.
         if decode_output:
-            output = output.decode(self._child_process_encoding())
+            output = output.decode(self._child_process_encoding(), errors="replace")
 
         # wait() is not threadsafe and can throw OSError due to:
         # http://bugs.python.org/issue1731717
