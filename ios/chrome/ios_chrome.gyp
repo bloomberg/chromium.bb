@@ -148,6 +148,7 @@
           '$(SDKROOT)/System/Library/Frameworks/Foundation.framework',
           '$(SDKROOT)/System/Library/Frameworks/QuartzCore.framework',
           '$(SDKROOT)/System/Library/Frameworks/UIKit.framework',
+          '$(SDKROOT)/System/Library/Frameworks/Photos.framework',
         ],
       },
       'sources': [
