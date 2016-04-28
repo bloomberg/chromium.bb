@@ -52,7 +52,7 @@ class LoadingTrace(object):
     """Save a json file representing this instance."""
     json_dict = self.ToJsonDict()
     with open(json_path, 'w') as output_file:
-       json.dump(json_dict, output_file, indent=2)
+       json.dump(json_dict, output_file)
 
   @classmethod
   def FromJsonDict(cls, json_dict):

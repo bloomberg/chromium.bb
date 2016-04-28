@@ -59,16 +59,6 @@ def _LoadPage(device, url):
   device.StartActivity(load_intent, blocking=True)
 
 
-def _WriteJson(output, json_data):
-  """Write JSON data in a nice way.
-
-  Args:
-    output: a file object
-    json_data: JSON data as a dict.
-  """
-  json.dump(json_data, output, sort_keys=True, indent=2)
-
-
 def _GetPrefetchHtml(graph_view, name=None):
   """Generate prefetch page for the resources in resource graph.
 
@@ -154,14 +144,14 @@ def _FullFetch(url, json_output, prefetch):
     logging.warning('Warm fetch')
     warm_data = _LogRequests(url, clear_cache_override=False)
     with open(json_output, 'w') as f:
-      _WriteJson(f, warm_data)
+      json.dump(warm_data, f)
     logging.warning('Wrote ' + json_output)
     with open(json_output + '.cold', 'w') as f:
-      _WriteJson(f, cold_data)
+      json.dump(cold_data, f)
     logging.warning('Wrote ' + json_output + '.cold')
   else:
     with open(json_output, 'w') as f:
-      _WriteJson(f, cold_data)
+      json.dump(cold_data, f)
     logging.warning('Wrote ' + json_output)
 
 
