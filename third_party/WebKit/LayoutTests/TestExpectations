@@ -116,9 +116,6 @@ crbug.com/463358 [ Mac Linux ] svg/W3C-SVG-1.1/paths-data-02-t.svg [ Pass Failur
 
 crbug.com/267206 [ Mac ] virtual/rootlayerscrolls/fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
 
-crbug.com/582836 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/variables/variable-font-face-01.html [ Failure ]
-crbug.com/582836 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/variables/variable-font-face-02.html [ Failure ]
-
 crbug.com/280342 [ Linux Win ] http/tests/media/progress-events-generated-correctly.html [ Failure ]
 
 crbug.com/520739 [ Mac ] http/tests/websocket/close-code-and-reason.html [ Failure Pass Timeout ]
@@ -564,6 +561,7 @@ crbug.com/505364 imported/web-platform-tests/shadow-dom/untriaged/user-interacti
 crbug.com/505364 imported/web-platform-tests/shadow-dom/untriaged/user-interaction/focus-navigation/test-003.html [ Failure ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/untriaged/user-interaction/focus-navigation/test-004.html [ Failure ]
 crbug.com/505364 imported/web-platform-tests/custom-elements/instantiating-custom-elements/extensions-to-document-interface/create-element-interface-type-is-a-type-extension.html [ Failure ]
+crbug.com/505364 imported/csswg-test/css-scoping-1/css-scoping-shadow-slot-display-override.html [ Failure ]
 
 crbug.com/517840 imported/web-platform-tests/webrtc/rtcpeerconnection/rtcpeerconnection-idl.html [ Failure Timeout ]
 
@@ -587,12 +585,16 @@ crbug.com/441840 imported/csswg-test/css-shapes-1/shape-outside/values/shape-out
 crbug.com/441840 imported/csswg-test/css-shapes-1/shape-outside/values/shape-outside-polygon-004.html [ Failure ]
 crbug.com/441840 [ Linux Win ] imported/csswg-test/css-shapes-1/shape-outside/values/shape-outside-shape-arguments-000.html [ Failure ]
 
-crbug.com/586413 imported/csswg-test/css-snap-size-1/snap-width-block-in-available-001.html [ Failure ]
-crbug.com/586413 imported/csswg-test/css-snap-size-1/snap-width-block-in-fixed-001.html [ Failure ]
-crbug.com/586413 imported/csswg-test/css-snap-size-1/snap-width-block-in-max-001.html [ Failure ]
-crbug.com/586413 imported/csswg-test/css-snap-size-1/snap-width-inline-in-available-001.html [ Failure ]
-crbug.com/586413 imported/csswg-test/css-snap-size-1/snap-width-inline-in-fixed-001.html [ Failure ]
-crbug.com/586413 imported/csswg-test/css-snap-size-1/snap-width-inline-in-max-001.html [ Failure ]
+crbug.com/586413 imported/csswg-test/css-snap-size-1/snap-width-block-in-available-001.html [ Missing ]
+crbug.com/586413 imported/csswg-test/css-snap-size-1/snap-width-block-in-fixed-001.html [ Missing ]
+crbug.com/586413 imported/csswg-test/css-snap-size-1/snap-width-block-in-max-001.html [ Missing ]
+crbug.com/586413 imported/csswg-test/css-snap-size-1/snap-width-inline-in-available-001.html [ Missing ]
+crbug.com/586413 imported/csswg-test/css-snap-size-1/snap-width-inline-in-fixed-001.html [ Missing ]
+crbug.com/586413 imported/csswg-test/css-snap-size-1/snap-width-inline-in-max-001.html [ Missing ]
+crbug.com/586413 imported/csswg-test/css-snap-size-1/snap-width-table-in-available-001.html [ Missing ]
+crbug.com/586413 imported/csswg-test/css-snap-size-1/snap-width-table-in-fixed-001.html [ Missing ]
+crbug.com/586413 imported/csswg-test/css-snap-size-1/snap-width-table-in-max-001.html [ Missing ]
+
 
 crbug.com/505151 imported/csswg-test/css-writing-modes-3/abs-pos-non-replaced-icb-vlr-003.xht [ Failure ]
 crbug.com/505151 imported/csswg-test/css-writing-modes-3/abs-pos-non-replaced-icb-vlr-005.xht [ Failure ]
@@ -690,7 +692,6 @@ crbug.com/571531 imported/csswg-test/css-flexbox-1/css-flexbox-height-animation-
 # Either "combo" or split should run: http://testthewebforward.org/docs/css-naming.html
 crbug.com/410320 imported/csswg-test/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001.html [ Skip ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-orientation-script-001.html [ Skip ]
-crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-orientation-script-001e.html [ Failure ]
 
 # These tests pass but images do not match because of wrong half-leading in vertical-lr
 crbug.com/537080 imported/csswg-test/css-writing-modes-3/vertical-alignment-003.xht [ Failure ]
@@ -986,7 +987,6 @@ crbug.com/467127 imported/csswg-test/css-flexbox-1/flexbox_justifycontent-center
 crbug.com/467127 imported/csswg-test/css-flexbox-1/getcomputedstyle/flexbox_computedstyle_align-items-invalid.html [ Failure ]
 crbug.com/467127 imported/csswg-test/css-flexbox-1/getcomputedstyle/flexbox_computedstyle_align-self-invalid.html [ Failure ]
 crbug.com/467127 imported/csswg-test/css-flexbox-1/getcomputedstyle/flexbox_computedstyle_flex-basis-0percent.html [ Failure ]
-crbug.com/467127 imported/csswg-test/css-flexbox-1/getcomputedstyle/flexbox_computedstyle_flex-basis-percent.html [ Failure ]
 crbug.com/467127 imported/csswg-test/css-flexbox-1/getcomputedstyle/flexbox_computedstyle_flex-shorthand-number.html [ Failure ]
 crbug.com/467127 [ Mac Win ] imported/csswg-test/css-flexbox-1/ttwf-reftest-flex-wrap-reverse.html [ Failure ]
 crbug.com/467127 [ Mac Win ] imported/csswg-test/css-flexbox-1/ttwf-reftest-flex-wrap.html [ Failure ]
@@ -1016,11 +1016,8 @@ crbug.com/553838 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reft
 crbug.com/553838 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-min-width-auto-002a.html [ Failure ]
 crbug.com/553838 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-min-width-auto-002c.html [ Failure ]
 crbug.com/553838 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-paint-ordering-002.xhtml [ Failure ]
-crbug.com/553838 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-table-fixup-001a.xhtml [ Failure ]
-crbug.com/553838 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-table-fixup-001b.xhtml [ Failure ]
 crbug.com/553838 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-whitespace-handling-001a.xhtml [ Failure ]
 crbug.com/553838 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-whitespace-handling-001b.xhtml [ Failure ]
-crbug.com/553838 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-with-pseudo-elements-003.html [ Failure ]
 crbug.com/553838 [ Mac ] imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-001a.xhtml [ Failure ]
 crbug.com/553838 [ Mac ] imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-001b.xhtml [ Failure ]
 

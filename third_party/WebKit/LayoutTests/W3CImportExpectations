@@ -30,11 +30,13 @@ imported/csswg-test/css-images-3 [ Skip ]
 imported/csswg-test/css-lists-3 [ Skip ]
 imported/csswg-test/css-masking-1 [ Skip ]
 imported/csswg-test/css-multicol-1 [ Skip ]
-imported/csswg-test/css-namespaces-1 [ Skip ]
+imported/csswg-test/css-namespaces-3 [ Skip ]
 imported/csswg-test/css-page-3 [ Skip ]
 imported/csswg-test/css-pseudo-4 [ Skip ]
 imported/csswg-test/css-regions-1 [ Skip ]
 imported/csswg-test/css-ruby-1 [ Skip ]
+## Owners: kochi@chromium.org
+#imported/csswg-test/css-scoping-1 [ Pass ]
 ## Owners: bjonesbe@adobe.com
 # imported/csswg-test/css-shapes-1 [ Pass ]
 ## Owners: kojii@chromium.org
