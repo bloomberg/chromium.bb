@@ -217,6 +217,55 @@ TEST_P(SparseHistogramTest, Serialize) {
   EXPECT_FALSE(iter.SkipBytes(1));
 }
 
+// Ensure that race conditions that cause multiple, identical sparse histograms
+// to be created will safely resolve to a single one.
+TEST_P(SparseHistogramTest, DuplicationSafety) {
+  const char histogram_name[] = "Duplicated";
+  size_t histogram_count = StatisticsRecorder::GetHistogramCount();
+
+  // Create a histogram that we will later duplicate.
+  HistogramBase* original =
+      SparseHistogram::FactoryGet(histogram_name, HistogramBase::kNoFlags);
+  ++histogram_count;
+  DCHECK_EQ(histogram_count, StatisticsRecorder::GetHistogramCount());
+  original->Add(1);
+
+  // Create a duplicate. This has to happen differently depending on where the
+  // memory is taken from.
+  if (use_persistent_histogram_allocator_) {
+    // To allocate from persistent memory, clear the last_created reference in
+    // the GlobalHistogramAllocator. This will cause an Import to recreate
+    // the just-created histogram which will then be released as a duplicate.
+    GlobalHistogramAllocator::Get()->ClearLastCreatedReferenceForTesting();
+    // Creating a different histogram will first do an Import to ensure it
+    // hasn't been created elsewhere, triggering the duplication and release.
+    SparseHistogram::FactoryGet("something.new", HistogramBase::kNoFlags);
+    ++histogram_count;
+  } else {
+    // To allocate from the heap, just call the (private) constructor directly.
+    // Delete it immediately like would have happened within FactoryGet();
+    std::unique_ptr<SparseHistogram> something =
+        NewSparseHistogram(histogram_name);
+    DCHECK_NE(original, something.get());
+  }
+  DCHECK_EQ(histogram_count, StatisticsRecorder::GetHistogramCount());
+
+  // Re-creating the histogram via FactoryGet() will return the same one.
+  HistogramBase* duplicate =
+      SparseHistogram::FactoryGet(histogram_name, HistogramBase::kNoFlags);
+  DCHECK_EQ(original, duplicate);
+  DCHECK_EQ(histogram_count, StatisticsRecorder::GetHistogramCount());
+  duplicate->Add(2);
+
+  // Ensure that original histograms are still cross-functional.
+  original->Add(2);
+  duplicate->Add(1);
+  std::unique_ptr<HistogramSamples> snapshot_orig = original->SnapshotSamples();
+  std::unique_ptr<HistogramSamples> snapshot_dup = duplicate->SnapshotSamples();
+  DCHECK_EQ(2, snapshot_orig->GetCount(2));
+  DCHECK_EQ(2, snapshot_dup->GetCount(1));
+}
+
 TEST_P(SparseHistogramTest, FactoryTime) {
   const int kTestCreateCount = 1 << 10;  // Must be power-of-2.
   const int kTestLookupCount = 100000;

@@ -270,6 +270,10 @@ void PersistentHistogramAllocator::UpdateTrackingHistograms() {
   memory_allocator_->UpdateTrackingHistograms();
 }
 
+void PersistentHistogramAllocator::ClearLastCreatedReferenceForTesting() {
+  subtle::NoBarrier_Store(&last_created_, 0);
+}
+
 // static
 HistogramBase*
 PersistentHistogramAllocator::GetCreateHistogramResultHistogram() {
