@@ -205,10 +205,8 @@ inline bool matchesTagName(const QualifiedName& tagName, const Element& element)
 template <typename SelectorQueryTrait>
 void SelectorDataList::collectElementsByTagName(ContainerNode& rootNode, const QualifiedName& tagName,  typename SelectorQueryTrait::OutputType& output) const
 {
+    DCHECK_EQ(tagName.namespaceURI(), starAtom);
     for (Element& element : ElementTraversal::descendantsOf(rootNode)) {
-        // querySelector*() doesn't allow namespaces and throws before it gets
-        // here so we can ignore them.
-        DCHECK_EQ(tagName.namespaceURI(), starAtom);
         if (matchesTagName(tagName, element)) {
             SelectorQueryTrait::appendElement(output, element);
             if (SelectorQueryTrait::shouldOnlyMatchFirstElement)
@@ -510,8 +508,15 @@ void SelectorDataList::execute(ContainerNode& rootNode, typename SelectorQueryTr
             collectElementsByClassName<SelectorQueryTrait>(rootNode, firstSelector.value(), output);
             return;
         case CSSSelector::Tag:
-            collectElementsByTagName<SelectorQueryTrait>(rootNode, firstSelector.tagQName(), output);
-            return;
+            if (firstSelector.tagQName().namespaceURI() == starAtom) {
+                collectElementsByTagName<SelectorQueryTrait>(rootNode, firstSelector.tagQName(), output);
+                return;
+            }
+            // querySelector*() doesn't allow namespace prefix resolution and
+            // throws before we get here, but we still may have selectors for
+            // elements without a namespace.
+            DCHECK_EQ(firstSelector.tagQName().namespaceURI(), nullAtom);
+            break;
         default:
             break; // If we need another fast path, add here.
         }
