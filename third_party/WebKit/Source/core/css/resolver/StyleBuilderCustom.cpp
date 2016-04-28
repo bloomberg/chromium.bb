@@ -674,13 +674,8 @@ void StyleBuilderFunctions::applyValueCSSPropertyContent(StyleResolverState& sta
     ContentData* prevContent = nullptr;
     for (auto& item : toCSSValueList(*value)) {
         ContentData* nextContent = nullptr;
-        // TODO(timloh): This should just call styleImage to handle all the different image types
-        if (item->isImageGeneratorValue()) {
-            nextContent = ContentData::create(StyleGeneratedImage::create(toCSSImageGeneratorValue(*item)));
-        } else if (item->isImageSetValue()) {
-            nextContent = ContentData::create(state.elementStyleResources().setOrPendingFromValue(CSSPropertyContent, toCSSImageSetValue(*item)));
-        } else if (item->isImageValue()) {
-            nextContent = ContentData::create(state.elementStyleResources().cachedOrPendingFromValue(CSSPropertyContent, toCSSImageValue(*item)));
+        if (item->isImageGeneratorValue() || item->isImageSetValue() || item->isImageValue()) {
+            nextContent = ContentData::create(state.styleImage(CSSPropertyContent, *item));
         } else if (item->isCounterValue()) {
             CSSCounterValue* counterValue = toCSSCounterValue(item.get());
             EListStyleType listStyleType = NoneListStyle;
