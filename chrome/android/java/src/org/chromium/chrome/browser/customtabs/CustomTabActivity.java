@@ -710,6 +710,7 @@ public class CustomTabActivity extends ChromeActivity {
         if (DomDistillerUrlUtils.isDistilledPage(url)) {
             url = DomDistillerUrlUtils.getOriginalUrlFromDistillerUrl(url);
         }
+        if (TextUtils.isEmpty(url)) url = getUrlToLoad();
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.putExtra(ChromeLauncherActivity.EXTRA_IS_ALLOWED_TO_RETURN_TO_PARENT, false);
