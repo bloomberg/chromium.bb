@@ -37,8 +37,6 @@ public:
     bool hasMemoryOnConsole;
 };
 
-using V8ContextInfoVector = protocol::Vector<V8ContextInfo>;
-
 } // namespace blink
 
 #endif // V8ContextInfo_h

@@ -139,43 +139,43 @@ void InspectorSession::scriptExecutionBlockedByCSP(const String& directiveText)
     ASSERT(isInstrumenting());
     OwnPtr<protocol::DictionaryValue> directive = protocol::DictionaryValue::create();
     directive->setString("directiveText", directiveText);
-    m_v8Session->debuggerAgent()->breakProgramOnException(protocol::Debugger::Paused::ReasonEnum::CSPViolation, directive.release());
+    m_v8Session->breakProgramOnException(protocol::Debugger::Paused::ReasonEnum::CSPViolation, directive.release());
 }
 
 void InspectorSession::asyncTaskScheduled(const String& taskName, void* task)
 {
     ASSERT(isInstrumenting());
-    m_v8Session->debuggerAgent()->asyncTaskScheduled(taskName, task, false);
+    m_v8Session->asyncTaskScheduled(taskName, task, false);
 }
 
 void InspectorSession::asyncTaskScheduled(const String& operationName, void* task, bool recurring)
 {
     ASSERT(isInstrumenting());
-    m_v8Session->debuggerAgent()->asyncTaskScheduled(operationName, task, recurring);
+    m_v8Session->asyncTaskScheduled(operationName, task, recurring);
 }
 
 void InspectorSession::asyncTaskCanceled(void* task)
 {
     ASSERT(isInstrumenting());
-    m_v8Session->debuggerAgent()->asyncTaskCanceled(task);
+    m_v8Session->asyncTaskCanceled(task);
 }
 
 void InspectorSession::allAsyncTasksCanceled()
 {
     ASSERT(isInstrumenting());
-    m_v8Session->debuggerAgent()->allAsyncTasksCanceled();
+    m_v8Session->allAsyncTasksCanceled();
 }
 
 void InspectorSession::asyncTaskStarted(void* task)
 {
     ASSERT(isInstrumenting());
-    m_v8Session->debuggerAgent()->asyncTaskStarted(task);
+    m_v8Session->asyncTaskStarted(task);
 }
 
 void InspectorSession::asyncTaskFinished(void* task)
 {
     ASSERT(isInstrumenting());
-    m_v8Session->debuggerAgent()->asyncTaskFinished(task);
+    m_v8Session->asyncTaskFinished(task);
 }
 
 void InspectorSession::didStartProvisionalLoad(LocalFrame* frame)

@@ -39,8 +39,8 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "core/inspector/InspectorDOMAgent.h"
 #include "platform/inspector_protocol/Values.h"
-#include "platform/v8_inspector/public/V8DebuggerAgent.h"
 #include "platform/v8_inspector/public/V8EventListenerInfo.h"
+#include "platform/v8_inspector/public/V8InspectorSession.h"
 #include "platform/v8_inspector/public/V8RuntimeAgent.h"
 
 namespace {
@@ -72,11 +72,6 @@ static const char eventTargetAny[] = "*";
 static const char pauseOnAllXHRs[] = "pauseOnAllXHRs";
 static const char xhrBreakpoints[] = "xhrBreakpoints";
 static const char enabled[] = "enabled";
-}
-
-InspectorDOMDebuggerAgent* InspectorDOMDebuggerAgent::create(v8::Isolate* isolate, InspectorDOMAgent* domAgent, V8RuntimeAgent* runtimeAgent, V8DebuggerAgent* debuggerAgent)
-{
-    return new InspectorDOMDebuggerAgent(isolate, domAgent, runtimeAgent, debuggerAgent);
 }
 
 void InspectorDOMDebuggerAgent::eventListenersInfoForTarget(v8::Isolate* isolate, v8::Local<v8::Value> value, V8EventListenerInfoList& eventInformation)
@@ -117,12 +112,12 @@ void InspectorDOMDebuggerAgent::eventListenersInfoForTarget(v8::Isolate* isolate
     }
 }
 
-InspectorDOMDebuggerAgent::InspectorDOMDebuggerAgent(v8::Isolate* isolate, InspectorDOMAgent* domAgent, V8RuntimeAgent* runtimeAgent, V8DebuggerAgent* debuggerAgent)
+InspectorDOMDebuggerAgent::InspectorDOMDebuggerAgent(v8::Isolate* isolate, InspectorDOMAgent* domAgent, V8RuntimeAgent* runtimeAgent, V8InspectorSession* v8Session)
     : InspectorBaseAgent<InspectorDOMDebuggerAgent, protocol::Frontend::DOMDebugger>("DOMDebugger")
     , m_isolate(isolate)
     , m_domAgent(domAgent)
     , m_runtimeAgent(runtimeAgent)
-    , m_debuggerAgent(debuggerAgent)
+    , m_v8Session(v8Session)
 {
 }
 
@@ -241,7 +236,7 @@ void InspectorDOMDebuggerAgent::didInvalidateStyleAttr(Node* node)
     if (hasBreakpoint(node, AttributeModified)) {
         OwnPtr<protocol::DictionaryValue> eventData = protocol::DictionaryValue::create();
         descriptionForDOMEvent(node, AttributeModified, false, eventData.get());
-        m_debuggerAgent->breakProgram(protocol::Debugger::Paused::ReasonEnum::DOM, eventData.release());
+        m_v8Session->breakProgram(protocol::Debugger::Paused::ReasonEnum::DOM, eventData.release());
     }
 }
 
@@ -413,7 +408,7 @@ void InspectorDOMDebuggerAgent::willInsertDOMNode(Node* parent)
     if (hasBreakpoint(parent, SubtreeModified)) {
         OwnPtr<protocol::DictionaryValue> eventData = protocol::DictionaryValue::create();
         descriptionForDOMEvent(parent, SubtreeModified, true, eventData.get());
-        m_debuggerAgent->breakProgram(protocol::Debugger::Paused::ReasonEnum::DOM, eventData.release());
+        m_v8Session->breakProgram(protocol::Debugger::Paused::ReasonEnum::DOM, eventData.release());
     }
 }
 
@@ -423,11 +418,11 @@ void InspectorDOMDebuggerAgent::willRemoveDOMNode(Node* node)
     if (hasBreakpoint(node, NodeRemoved)) {
         OwnPtr<protocol::DictionaryValue> eventData = protocol::DictionaryValue::create();
         descriptionForDOMEvent(node, NodeRemoved, false, eventData.get());
-        m_debuggerAgent->breakProgram(protocol::Debugger::Paused::ReasonEnum::DOM, eventData.release());
+        m_v8Session->breakProgram(protocol::Debugger::Paused::ReasonEnum::DOM, eventData.release());
     } else if (parentNode && hasBreakpoint(parentNode, SubtreeModified)) {
         OwnPtr<protocol::DictionaryValue> eventData = protocol::DictionaryValue::create();
         descriptionForDOMEvent(node, SubtreeModified, false, eventData.get());
-        m_debuggerAgent->breakProgram(protocol::Debugger::Paused::ReasonEnum::DOM, eventData.release());
+        m_v8Session->breakProgram(protocol::Debugger::Paused::ReasonEnum::DOM, eventData.release());
     }
     didRemoveDOMNode(node);
 }
@@ -437,7 +432,7 @@ void InspectorDOMDebuggerAgent::willModifyDOMAttr(Element* element, const Atomic
     if (hasBreakpoint(element, AttributeModified)) {
         OwnPtr<protocol::DictionaryValue> eventData = protocol::DictionaryValue::create();
         descriptionForDOMEvent(element, AttributeModified, false, eventData.get());
-        m_debuggerAgent->breakProgram(protocol::Debugger::Paused::ReasonEnum::DOM, eventData.release());
+        m_v8Session->breakProgram(protocol::Debugger::Paused::ReasonEnum::DOM, eventData.release());
     }
 }
 
@@ -449,7 +444,7 @@ void InspectorDOMDebuggerAgent::descriptionForDOMEvent(Node* target, int breakpo
     if ((1 << breakpointType) & inheritableDOMBreakpointTypesMask) {
         // For inheritable breakpoint types, target node isn't always the same as the node that owns a breakpoint.
         // Target node may be unknown to frontend, so we need to push it first.
-        OwnPtr<protocol::Runtime::RemoteObject> targetNodeObject = m_domAgent->resolveNode(target, V8DebuggerAgent::backtraceObjectGroup);
+        OwnPtr<protocol::Runtime::RemoteObject> targetNodeObject = m_domAgent->resolveNode(target, V8InspectorSession::backtraceObjectGroup);
         description->setValue("targetNode", targetNodeObject->serialize());
 
         // Find breakpoint owner node.
@@ -505,9 +500,9 @@ void InspectorDOMDebuggerAgent::pauseOnNativeEventIfNeeded(PassOwnPtr<protocol::
     if (!eventData)
         return;
     if (synchronous)
-        m_debuggerAgent->breakProgram(protocol::Debugger::Paused::ReasonEnum::EventListener, std::move(eventData));
+        m_v8Session->breakProgram(protocol::Debugger::Paused::ReasonEnum::EventListener, std::move(eventData));
     else
-        m_debuggerAgent->schedulePauseOnNextStatement(protocol::Debugger::Paused::ReasonEnum::EventListener, std::move(eventData));
+        m_v8Session->schedulePauseOnNextStatement(protocol::Debugger::Paused::ReasonEnum::EventListener, std::move(eventData));
 }
 
 PassOwnPtr<protocol::DictionaryValue> InspectorDOMDebuggerAgent::preparePauseOnNativeEventData(const String& eventName, const String* targetName)
@@ -557,7 +552,7 @@ void InspectorDOMDebuggerAgent::didFireWebGLErrorOrWarning(const String& message
 
 void InspectorDOMDebuggerAgent::cancelNativeBreakpoint()
 {
-    m_debuggerAgent->cancelPauseOnNextStatement();
+    m_v8Session->cancelPauseOnNextStatement();
 }
 
 void InspectorDOMDebuggerAgent::setXHRBreakpoint(ErrorString* errorString, const String& url)
@@ -600,7 +595,7 @@ void InspectorDOMDebuggerAgent::willSendXMLHttpRequest(const String& url)
     OwnPtr<protocol::DictionaryValue> eventData = protocol::DictionaryValue::create();
     eventData->setString("breakpointURL", breakpointURL);
     eventData->setString("url", url);
-    m_debuggerAgent->breakProgram(protocol::Debugger::Paused::ReasonEnum::XHR, eventData.release());
+    m_v8Session->breakProgram(protocol::Debugger::Paused::ReasonEnum::XHR, eventData.release());
 }
 
 void InspectorDOMDebuggerAgent::didAddBreakpoint()

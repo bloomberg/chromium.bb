@@ -54,6 +54,16 @@ public:
     V8HeapProfilerAgent* heapProfilerAgent() override;
     V8ProfilerAgent* profilerAgent() override;
     V8RuntimeAgent* runtimeAgent() override;
+    void schedulePauseOnNextStatement(const String16& breakReason, PassOwnPtr<protocol::DictionaryValue> data) override;
+    void cancelPauseOnNextStatement() override;
+    void breakProgram(const String16& breakReason, PassOwnPtr<protocol::DictionaryValue> data) override;
+    void breakProgramOnException(const String16& breakReason, PassOwnPtr<protocol::DictionaryValue> data) override;
+    void setSkipAllPauses(bool) override;
+    void asyncTaskScheduled(const String16& taskName, void* task, bool recurring) override;
+    void asyncTaskCanceled(void* task) override;
+    void asyncTaskStarted(void* task) override;
+    void asyncTaskFinished(void* task) override;
+    void allAsyncTasksCanceled() override;
 
     void addInspectedObject(PassOwnPtr<V8RuntimeAgent::Inspectable>);
     V8RuntimeAgent::Inspectable* inspectedObject(unsigned num);

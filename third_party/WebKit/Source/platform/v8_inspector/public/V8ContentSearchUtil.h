@@ -11,13 +11,13 @@
 
 namespace blink {
 
-class V8Debugger;
+class V8InspectorSession;
 
 namespace V8ContentSearchUtil {
 
 PLATFORM_EXPORT String16 findSourceURL(const String16& content, bool multiline, bool* deprecated = nullptr);
 PLATFORM_EXPORT String16 findSourceMapURL(const String16& content, bool multiline, bool* deprecated = nullptr);
-PLATFORM_EXPORT PassOwnPtr<protocol::Array<protocol::Debugger::SearchMatch>> searchInTextByLines(V8Debugger*, const String16& text, const String16& query, const bool caseSensitive, const bool isRegex);
+PLATFORM_EXPORT PassOwnPtr<protocol::Array<protocol::Debugger::SearchMatch>> searchInTextByLines(V8InspectorSession*, const String16& text, const String16& query, const bool caseSensitive, const bool isRegex);
 
 }
 

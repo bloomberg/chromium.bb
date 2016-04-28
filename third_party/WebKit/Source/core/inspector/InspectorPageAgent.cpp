@@ -53,7 +53,6 @@
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InspectedFrames.h"
 #include "core/inspector/InspectorCSSAgent.h"
-#include "core/inspector/InspectorDebuggerAgent.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorResourceContentLoader.h"
 #include "core/loader/DocumentLoader.h"
@@ -63,7 +62,7 @@
 #include "platform/UserGestureIndicator.h"
 #include "platform/inspector_protocol/Values.h"
 #include "platform/v8_inspector/public/V8ContentSearchUtil.h"
-#include "platform/v8_inspector/public/V8DebuggerAgent.h"
+#include "platform/v8_inspector/public/V8InspectorSession.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/ListHashSet.h"
@@ -254,9 +253,9 @@ bool InspectorPageAgent::dataContent(const char* data, unsigned size, const Stri
     return decodeBuffer(data, size, textEncodingName, result);
 }
 
-InspectorPageAgent* InspectorPageAgent::create(InspectedFrames* inspectedFrames, Client* client, InspectorResourceContentLoader* resourceContentLoader, InspectorDebuggerAgent* debuggerAgent)
+InspectorPageAgent* InspectorPageAgent::create(InspectedFrames* inspectedFrames, Client* client, InspectorResourceContentLoader* resourceContentLoader, V8InspectorSession* v8Session)
 {
-    return new InspectorPageAgent(inspectedFrames, client, resourceContentLoader, debuggerAgent);
+    return new InspectorPageAgent(inspectedFrames, client, resourceContentLoader, v8Session);
 }
 
 Resource* InspectorPageAgent::cachedResource(LocalFrame* frame, const KURL& url)
@@ -345,10 +344,10 @@ String InspectorPageAgent::cachedResourceTypeJson(const Resource& cachedResource
     return resourceTypeJson(cachedResourceType(cachedResource));
 }
 
-InspectorPageAgent::InspectorPageAgent(InspectedFrames* inspectedFrames, Client* client, InspectorResourceContentLoader* resourceContentLoader, InspectorDebuggerAgent* debuggerAgent)
+InspectorPageAgent::InspectorPageAgent(InspectedFrames* inspectedFrames, Client* client, InspectorResourceContentLoader* resourceContentLoader, V8InspectorSession* v8Session)
     : InspectorBaseAgent<InspectorPageAgent, protocol::Frontend::Page>("Page")
     , m_inspectedFrames(inspectedFrames)
-    , m_debuggerAgent(debuggerAgent)
+    , m_v8Session(v8Session)
     , m_client(client)
     , m_lastScriptIdentifier(0)
     , m_enabled(false)
@@ -422,8 +421,7 @@ void InspectorPageAgent::setAutoAttachToCreatedPages(ErrorString*, bool autoAtta
 void InspectorPageAgent::reload(ErrorString*, const Maybe<bool>& optionalBypassCache, const Maybe<String>& optionalScriptToEvaluateOnLoad)
 {
     m_pendingScriptToEvaluateOnLoadOnce = optionalScriptToEvaluateOnLoad.fromMaybe("");
-    ErrorString unused;
-    m_debuggerAgent->setSkipAllPauses(&unused, true);
+    m_v8Session->setSkipAllPauses(true);
     m_reloading = true;
     m_inspectedFrames->root()->reload(optionalBypassCache.fromMaybe(false) ? FrameLoadTypeReloadBypassingCache : FrameLoadTypeReload, ClientRedirectPolicy::NotClientRedirect);
 }
@@ -490,8 +488,7 @@ void InspectorPageAgent::finishReload()
     if (!m_reloading)
         return;
     m_reloading = false;
-    ErrorString unused;
-    m_debuggerAgent->setSkipAllPauses(&unused, false);
+    m_v8Session->setSkipAllPauses(false);
 }
 
 void InspectorPageAgent::getResourceContentAfterResourcesContentLoaded(const String& frameId, const String& url, PassOwnPtr<GetResourceContentCallback> callback)
@@ -538,7 +535,7 @@ void InspectorPageAgent::searchContentAfterResourcesContentLoaded(const String& 
     }
 
     OwnPtr<protocol::Array<protocol::Debugger::SearchMatch>> results;
-    results = V8ContentSearchUtil::searchInTextByLines(&m_debuggerAgent->v8Agent()->debugger(), content, query, caseSensitive, isRegex);
+    results = V8ContentSearchUtil::searchInTextByLines(m_v8Session, content, query, caseSensitive, isRegex);
     callback->sendSuccess(results.release());
 }
 
@@ -770,7 +767,6 @@ void InspectorPageAgent::setOverlayMessage(ErrorString*, const Maybe<String>& me
 DEFINE_TRACE(InspectorPageAgent)
 {
     visitor->trace(m_inspectedFrames);
-    visitor->trace(m_debuggerAgent);
     visitor->trace(m_inspectorResourceContentLoader);
     InspectorBaseAgent::trace(visitor);
 }

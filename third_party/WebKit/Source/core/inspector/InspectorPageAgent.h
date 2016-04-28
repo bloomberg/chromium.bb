@@ -45,12 +45,12 @@ class Document;
 class DocumentLoader;
 class InspectedFrames;
 class InspectorCSSAgent;
-class InspectorDebuggerAgent;
 class InspectorResourceContentLoader;
 class KURL;
 class LocalFrame;
 class SharedBuffer;
 class TextResourceDecoder;
+class V8InspectorSession;
 
 using blink::protocol::Maybe;
 
@@ -81,7 +81,7 @@ public:
         OtherResource
     };
 
-    static InspectorPageAgent* create(InspectedFrames*, Client*, InspectorResourceContentLoader*, InspectorDebuggerAgent*);
+    static InspectorPageAgent* create(InspectedFrames*, Client*, InspectorResourceContentLoader*, V8InspectorSession*);
 
     static HeapVector<Member<Document>> importsForFrame(LocalFrame*);
     static bool cachedResourceContent(Resource*, String* result, bool* base64Encoded);
@@ -135,7 +135,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    InspectorPageAgent(InspectedFrames*, Client*, InspectorResourceContentLoader*, InspectorDebuggerAgent*);
+    InspectorPageAgent(InspectedFrames*, Client*, InspectorResourceContentLoader*, V8InspectorSession*);
 
     void finishReload();
     void getResourceContentAfterResourcesContentLoaded(const String& frameId, const String& url, PassOwnPtr<GetResourceContentCallback>);
@@ -146,7 +146,7 @@ private:
     PassOwnPtr<protocol::Page::Frame> buildObjectForFrame(LocalFrame*);
     PassOwnPtr<protocol::Page::FrameResourceTree> buildObjectForFrameTree(LocalFrame*);
     Member<InspectedFrames> m_inspectedFrames;
-    Member<InspectorDebuggerAgent> m_debuggerAgent;
+    V8InspectorSession* m_v8Session;
     Client* m_client;
     long m_lastScriptIdentifier;
     String m_pendingScriptToEvaluateOnLoadOnce;

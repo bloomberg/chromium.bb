@@ -81,8 +81,6 @@ public:
     void dispose() override;
     void restore() override;
 
-    V8DebuggerAgent* v8Agent() const { return m_v8DebuggerAgent; }
-
 protected:
     explicit InspectorDebuggerAgent(V8DebuggerAgent*);
 

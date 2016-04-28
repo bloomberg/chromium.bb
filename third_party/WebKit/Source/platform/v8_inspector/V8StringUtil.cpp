@@ -6,6 +6,7 @@
 
 #include "platform/inspector_protocol/String16.h"
 #include "platform/v8_inspector/V8DebuggerImpl.h"
+#include "platform/v8_inspector/V8InspectorSessionImpl.h"
 #include "platform/v8_inspector/V8Regex.h"
 #include "platform/v8_inspector/public/V8ContentSearchUtil.h"
 #include "platform/v8_inspector/public/V8ToProtocolValue.h"
@@ -194,10 +195,10 @@ String16 findSourceMapURL(const String16& content, bool multiline, bool* depreca
     return findMagicComment(content, "sourceMappingURL", multiline, deprecated);
 }
 
-PassOwnPtr<protocol::Array<protocol::Debugger::SearchMatch>> searchInTextByLines(V8Debugger* debugger, const String16& text, const String16& query, const bool caseSensitive, const bool isRegex)
+PassOwnPtr<protocol::Array<protocol::Debugger::SearchMatch>> searchInTextByLines(V8InspectorSession* session, const String16& text, const String16& query, const bool caseSensitive, const bool isRegex)
 {
     OwnPtr<protocol::Array<protocol::Debugger::SearchMatch>> result = protocol::Array<protocol::Debugger::SearchMatch>::create();
-    OwnPtr<V8Regex> regex = createSearchRegex(static_cast<V8DebuggerImpl*>(debugger), query, caseSensitive, isRegex);
+    OwnPtr<V8Regex> regex = createSearchRegex(static_cast<V8InspectorSessionImpl*>(session)->debugger(), query, caseSensitive, isRegex);
     protocol::Vector<std::pair<int, String16>> matches = scriptRegexpMatchesByLines(*regex.get(), text);
 
     for (const auto& match : matches)

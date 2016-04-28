@@ -17,6 +17,8 @@
 
 namespace blink {
 
+const char V8InspectorSession::backtraceObjectGroup[] = "backtrace";
+
 PassOwnPtr<V8InspectorSessionImpl> V8InspectorSessionImpl::create(V8DebuggerImpl* debugger, int contextGroupId)
 {
     return adoptPtr(new V8InspectorSessionImpl(debugger, contextGroupId));
@@ -184,6 +186,57 @@ V8RuntimeAgent::Inspectable* V8InspectorSessionImpl::inspectedObject(unsigned nu
     if (num >= m_inspectedObjects.size())
         return nullptr;
     return m_inspectedObjects[num].get();
+}
+
+void V8InspectorSessionImpl::schedulePauseOnNextStatement(const String16& breakReason, PassOwnPtr<protocol::DictionaryValue> data)
+{
+    m_debuggerAgent->schedulePauseOnNextStatement(breakReason, data);
+}
+
+void V8InspectorSessionImpl::cancelPauseOnNextStatement()
+{
+    m_debuggerAgent->cancelPauseOnNextStatement();
+}
+
+void V8InspectorSessionImpl::breakProgram(const String16& breakReason, PassOwnPtr<protocol::DictionaryValue> data)
+{
+    m_debuggerAgent->breakProgram(breakReason, data);
+}
+
+void V8InspectorSessionImpl::breakProgramOnException(const String16& breakReason, PassOwnPtr<protocol::DictionaryValue> data)
+{
+    m_debuggerAgent->breakProgramOnException(breakReason, data);
+}
+
+void V8InspectorSessionImpl::setSkipAllPauses(bool skip)
+{
+    ErrorString errorString;
+    m_debuggerAgent->setSkipAllPauses(&errorString, skip);
+}
+
+void V8InspectorSessionImpl::asyncTaskScheduled(const String16& taskName, void* task, bool recurring)
+{
+    m_debuggerAgent->asyncTaskScheduled(taskName, task, recurring);
+}
+
+void V8InspectorSessionImpl::asyncTaskCanceled(void* task)
+{
+    m_debuggerAgent->asyncTaskCanceled(task);
+}
+
+void V8InspectorSessionImpl::asyncTaskStarted(void* task)
+{
+    m_debuggerAgent->asyncTaskStarted(task);
+}
+
+void V8InspectorSessionImpl::asyncTaskFinished(void* task)
+{
+    m_debuggerAgent->asyncTaskFinished(task);
+}
+
+void V8InspectorSessionImpl::allAsyncTasksCanceled()
+{
+    m_debuggerAgent->allAsyncTasksCanceled();
 }
 
 } // namespace blink

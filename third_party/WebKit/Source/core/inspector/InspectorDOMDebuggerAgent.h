@@ -47,7 +47,7 @@ class Event;
 class EventTarget;
 class InspectorDOMAgent;
 class Node;
-class V8DebuggerAgent;
+class V8InspectorSession;
 class V8RuntimeAgent;
 
 namespace protocol {
@@ -59,10 +59,9 @@ class CORE_EXPORT InspectorDOMDebuggerAgent final
     , public protocol::Backend::DOMDebugger {
     WTF_MAKE_NONCOPYABLE(InspectorDOMDebuggerAgent);
 public:
-    static InspectorDOMDebuggerAgent* create(v8::Isolate*, InspectorDOMAgent*, V8RuntimeAgent*, V8DebuggerAgent*);
-
     static void eventListenersInfoForTarget(v8::Isolate*, v8::Local<v8::Value>, V8EventListenerInfoList& listeners);
 
+    InspectorDOMDebuggerAgent(v8::Isolate*, InspectorDOMAgent*, V8RuntimeAgent*, V8InspectorSession*);
     ~InspectorDOMDebuggerAgent() override;
     DECLARE_VIRTUAL_TRACE();
 
@@ -96,8 +95,6 @@ public:
     void didCommitLoadForLocalFrame(LocalFrame*) override;
 
 private:
-    InspectorDOMDebuggerAgent(v8::Isolate*, InspectorDOMAgent*, V8RuntimeAgent*, V8DebuggerAgent*);
-
     void pauseOnNativeEventIfNeeded(PassOwnPtr<protocol::DictionaryValue> eventData, bool synchronous);
     PassOwnPtr<protocol::DictionaryValue> preparePauseOnNativeEventData(const String& eventName, const String* targetName);
 
@@ -120,7 +117,7 @@ private:
     v8::Isolate* m_isolate;
     Member<InspectorDOMAgent> m_domAgent;
     V8RuntimeAgent* m_runtimeAgent;
-    V8DebuggerAgent* m_debuggerAgent;
+    V8InspectorSession* m_v8Session;
     HeapHashMap<Member<Node>, uint32_t> m_domBreakpoints;
 };
 

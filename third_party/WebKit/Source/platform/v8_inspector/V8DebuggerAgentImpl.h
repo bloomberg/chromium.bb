@@ -56,7 +56,6 @@ public:
     void enable(ErrorString*) override;
     void setBreakpointsActive(ErrorString*, bool active) override;
     void setSkipAllPauses(ErrorString*, bool skipped) override;
-
     void setBreakpointByUrl(ErrorString*,
         int lineNumber,
         const Maybe<String16>& optionalURL,
@@ -135,23 +134,22 @@ public:
         const String16& scriptId,
         PassOwnPtr<protocol::Array<protocol::Debugger::ScriptPosition>> positions) override;
 
-    void schedulePauseOnNextStatement(const String16& breakReason, PassOwnPtr<protocol::DictionaryValue> data) override;
-    void cancelPauseOnNextStatement() override;
-    void breakProgram(const String16& breakReason, PassOwnPtr<protocol::DictionaryValue> data) override;
-    void breakProgramOnException(const String16& breakReason, PassOwnPtr<protocol::DictionaryValue> data) override;
-
     bool enabled();
-    V8DebuggerImpl& debugger() override { return *m_debugger; }
+    V8DebuggerImpl& debugger() { return *m_debugger; }
 
     void setBreakpointAt(const String16& scriptId, int lineNumber, int columnNumber, BreakpointSource, const String16& condition = String16());
     void removeBreakpointAt(const String16& scriptId, int lineNumber, int columnNumber, BreakpointSource);
+    void schedulePauseOnNextStatement(const String16& breakReason, PassOwnPtr<protocol::DictionaryValue> data);
+    void cancelPauseOnNextStatement();
+    void breakProgram(const String16& breakReason, PassOwnPtr<protocol::DictionaryValue> data);
+    void breakProgramOnException(const String16& breakReason, PassOwnPtr<protocol::DictionaryValue> data);
 
     // Async call stacks implementation.
-    void asyncTaskScheduled(const String16& taskName, void* task, bool recurring) override;
-    void asyncTaskCanceled(void* task) override;
-    void asyncTaskStarted(void* task) override;
-    void asyncTaskFinished(void* task) override;
-    void allAsyncTasksCanceled() override;
+    void asyncTaskScheduled(const String16& taskName, void* task, bool recurring);
+    void asyncTaskCanceled(void* task);
+    void asyncTaskStarted(void* task);
+    void asyncTaskFinished(void* task);
+    void allAsyncTasksCanceled();
 
     void reset();
 

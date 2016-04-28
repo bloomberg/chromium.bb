@@ -424,7 +424,7 @@ void WebDevToolsAgentImpl::initializeSession(int sessionId, const String& hostId
     m_tracingAgent = tracingAgent;
     m_session->append(tracingAgent);
 
-    m_session->append(InspectorDOMDebuggerAgent::create(isolate, m_domAgent, runtimeAgent, debuggerAgent->v8Agent()));
+    m_session->append(new InspectorDOMDebuggerAgent(isolate, m_domAgent, runtimeAgent, m_v8Session.get()));
 
     m_session->append(InspectorInputAgent::create(m_inspectedFrames.get()));
 
@@ -432,7 +432,7 @@ void WebDevToolsAgentImpl::initializeSession(int sessionId, const String& hostId
 
     m_session->append(InspectorHeapProfilerAgent::create(m_v8Session->heapProfilerAgent()));
 
-    InspectorPageAgent* pageAgent = InspectorPageAgent::create(m_inspectedFrames.get(), this, m_resourceContentLoader.get(), debuggerAgent);
+    InspectorPageAgent* pageAgent = InspectorPageAgent::create(m_inspectedFrames.get(), this, m_resourceContentLoader.get(), m_v8Session.get());
     m_pageAgent = pageAgent;
     m_session->append(pageAgent);
 
