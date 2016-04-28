@@ -13,8 +13,13 @@
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
         '<(EXTERNS_GYP):passwords_private',
         '<(EXTERNS_GYP):settings_private',
+        'autofill_section',
         'passwords_section',
       ],
+      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'autofill_section',
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {

@@ -462,6 +462,12 @@
       <structure name="IDR_SETTINGS_PASSWORDS_AND_FORMS_PAGE_JS"
                  file="passwords_and_forms_page/passwords_and_forms_page.js"
                  type="chrome_html" />
+      <structure name="IDR_SETTINGS_AUTOFILL_SECTION_HTML"
+                 file="passwords_and_forms_page/autofill_section.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_AUTOFILL_SECTION_JS"
+                 file="passwords_and_forms_page/autofill_section.js"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_PASSWORDS_SECTION_HTML"
                  file="passwords_and_forms_page/passwords_section.html"
                  type="chrome_html" />

@@ -315,6 +315,12 @@ Polymer({
     },
 </if>
     {
+      url: '/autofill',
+      page: 'advanced',
+      section: 'passwordsAndForms',
+      subpage: ['manage-autofill'],
+    },
+    {
       url: '/passwords',
       page: 'advanced',
       section: 'passwordsAndForms',

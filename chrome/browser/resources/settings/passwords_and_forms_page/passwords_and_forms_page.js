@@ -198,6 +198,19 @@ Polymer({
   },
 
   /**
+   * Shows the manage autofill sub page.
+   * @param {!Event} event
+   * @private
+   */
+  onAutofillTap_: function(event) {
+    // Ignore clicking on the toggle button and verify autofill is enabled.
+    if (Polymer.dom(event).localTarget != this.$.autofillToggle &&
+        this.getPref('autofill.enabled').value) {
+      this.$.pages.setSubpageChain(['manage-autofill']);
+    }
+  },
+
+  /**
    * Shows the manage passwords sub page.
    * @param {!Event} event
    * @private
