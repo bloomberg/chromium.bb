@@ -1783,6 +1783,16 @@ fuzzer_test("net_get_domain_and_registry_fuzzer") {
   ]
 }
 
+fuzzer_test("net_cert_normalize_name_fuzzer") {
+  sources = [
+    "cert/internal/verify_name_match_normalizename_fuzzer.cc",
+  ]
+  deps = [
+    "//base",
+    "//net",
+  ]
+}
+
 fuzzer_test("net_parse_cookie_line_fuzzer") {
   sources = [
     "cookies/parse_cookie_line_fuzzer.cc",
