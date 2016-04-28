@@ -269,6 +269,7 @@ source_set("ffmpeg_internal") {
     if (is_component_ffmpeg) {
       # Export all symbols when building as component.
       configs -= [ "//build/config/gcc:symbol_visibility_hidden" ]
+      configs += [ "//build/config/gcc:symbol_visibility_default" ]
     }
     # TODO(ajwong): How to handle openbsd? Especially w/o the is_posix?
     #      if (is_openbsd) {
@@ -280,6 +281,7 @@ source_set("ffmpeg_internal") {
     if (is_component_ffmpeg) {
       # Export all symbols when building as component.
       configs -= [ "//build/config/gcc:symbol_visibility_hidden" ]
+      configs += [ "//build/config/gcc:symbol_visibility_default" ]
     }
 
     defines += [ "_DARWIN_C_SOURCE" ]
