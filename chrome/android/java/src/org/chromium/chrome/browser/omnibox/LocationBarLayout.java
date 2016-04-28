@@ -831,11 +831,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
 
     @Override
     public void onUrlPreFocusChanged(boolean gainFocus) {
-        if (mToolbarDataProvider == null || mToolbarDataProvider.getTab() == null) return;
-
-        if (!mQueryInTheOmnibox && !TextUtils.isEmpty(mUrlBar.getText())) {
-            mUrlBar.setUrl(getOnlineUrlFromTab(), null);
-        }
+      // TODO(mariakhomenko): remove from the interface entirely as it's unused
     }
 
     @Override
