@@ -302,7 +302,7 @@
       'Cast Android (dbg)': 'android_cast_gn_debug_static_bot',
       'Cast Linux': 'cast_gn_release_bot',
       'Linux Builder (dbg)': 'swarming_gn_debug_bot',
-      'Linux Builder (dbg)(32)': 'swarming_gyp_debug_bot_no_symbols_x86',
+      'Linux Builder (dbg)(32)': 'swarming_gn_debug_bot_no_symbols_x86',
       'Linux Builder': 'swarming_gn_release_bot',
       'Linux Tests (dbg)(1)': 'none',
       'Linux Tests (dbg)(1)(32)': 'none',
@@ -721,10 +721,10 @@
       'linux_chromium_chromeos_variable': 'findit',
       'linux_chromium_chromeos_variable_chrome': 'findit',
       'linux_chromium_clobber_rel_ng': 'gn_release_trybot',
-      'linux_chromium_compile_dbg_32_ng': 'swarming_gyp_debug_trybot_x86',
+      'linux_chromium_compile_dbg_32_ng': 'swarming_gn_debug_trybot_x86',
       'linux_chromium_compile_dbg_ng': 'swarming_gn_debug_trybot',
       'linux_chromium_compile_rel_ng': 'swarming_gn_release_trybot',
-      'linux_chromium_dbg_32_ng': 'swarming_gyp_debug_trybot_x86',
+      'linux_chromium_dbg_32_ng': 'swarming_gn_debug_trybot_x86',
       'linux_chromium_dbg_ng': 'swarming_gn_debug_trybot',
       'linux_chromium_gn_chromeos_dbg': 'chromeos_gn_debug_bot',
       'linux_chromium_gn_chromeos_rel': 'chromeos_ozone_gn_release_trybot',
@@ -1755,8 +1755,16 @@
       'swarming', 'gn', 'debug_bot', 'x64',
     ],
 
+    'swarming_gn_debug_bot_no_symbols_x86': [
+      'swarming', 'gn', 'debug_bot', 'no_symbols', 'x86',
+    ],
+
     'swarming_gn_debug_trybot': [
       'swarming', 'gn', 'debug_trybot',
+    ],
+
+    'swarming_gn_debug_trybot_x86': [
+      'swarming', 'gn', 'debug_trybot', 'x86',
     ],
 
     'swarming_gn_release_bot': [
@@ -1826,14 +1834,6 @@
 
     'swarming_gyp_debug_bot_minimal_symbols_x86': [
       'swarming', 'gyp', 'debug_bot_minimal_symbols', 'x86',
-    ],
-
-    'swarming_gyp_debug_bot_no_symbols_x86': [
-      'swarming', 'gyp', 'debug_bot', 'no_symbols', 'x86',
-    ],
-
-    'swarming_gyp_debug_trybot_x86': [
-      'swarming', 'gyp', 'debug_trybot', 'x86',
     ],
 
     'swarming_gyp_msan_release_bot': [
