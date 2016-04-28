@@ -456,24 +456,24 @@ calc_inverse_matrix_transform(const struct weston_matrix *matrix,
 
 /**
  * This computes the whole transformation matrix:m from surface-local
- * coordinates to multi screens coordinate, which is global coordinates.
+ * coordinates to multi-screen coordinates, which are global coordinates.
  * It is assumed that weston_view::geometry.{x,y} are zero.
  *
  * Additionally, this computes the mask on surface-local coordinates as a
  * ivi_rectangle. This can be set to weston_view_set_mask.
  *
  * The mask is computed by following steps
- * - destination rectangle of layer is tansformed to multi screen coordinate,
+ * - destination rectangle of layer is transformed to multi-screen coordinates,
  *   global coordinates. This is done by adding weston_output.{x,y} in simple
  *   because there is no scaled and rotated transformation.
- * - destination rectangle of layer in multi screens coordinate needs to be
+ * - destination rectangle of layer in multi-screen coordinates needs to be
  *   intersected inside of a screen the layer is assigned to. This is because
  *   overlapped region of weston surface in another screen shall not be
  *   displayed according to ivi use case.
  * - destination rectangle of layer
- *   - in multi screen coordinates,
+ *   - in multi-screen coordinates,
  *   - and intersected inside of an assigned screen,
- *   is inversed to surface-local cooodinates by inversed matrix:m.
+ *   is inversed to surface-local coordinates by inversed matrix:m.
  * - the area is intersected by intersected area between weston_surface and
  *   source rectangle of ivi_surface.
  */
@@ -525,9 +525,9 @@ calc_surface_to_global_matrix_and_mask_to_weston_surface(
 	 * coordinates to global coordinates, which is computed by
 	 * two steps,
 	 * - surface-local coordinates to layer-local coordinates
-	 * - layer-local coordinates to a single screen-local coordinates
-	 * - a single screen-local coordinates to multi screen coordinates,
-         *   which is global coordinates.
+	 * - layer-local coordinates to single screen-local coordinates
+	 * - single screen-local coordinates to multi-screen coordinates,
+	 *   which are global coordinates.
 	 */
 	calc_transformation_matrix(&surface_source_rect,
 				   &surface_dest_rect,
