@@ -233,9 +233,9 @@
       </description>
 
       <arg name="surface_x" type="fixed"
-	   summary="x coordinate in surface local coordinates"/>
+	   summary="surface-local x coordinate"/>
       <arg name="surface_y" type="fixed"
-	   summary="y coordinate in surface local coordinates"/>
+	   summary="surface-local y coordinate"/>
     </request>
 
     <request name="set_region">
