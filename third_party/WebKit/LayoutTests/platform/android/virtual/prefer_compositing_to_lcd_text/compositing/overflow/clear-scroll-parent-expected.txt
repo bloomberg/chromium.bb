@@ -47,13 +47,13 @@
           "backgroundColor": "#008000"
         },
         {
-          "position": [4, 4],
+          "position": [12, 12],
           "bounds": [80, 80],
           "shouldFlattenTransform": false,
           "hasScrollParent": true,
           "children": [
             {
-              "position": [18, 18],
+              "position": [10, 10],
               "bounds": [100, 100],
               "contentsOpaque": true,
               "drawsContent": true,
