@@ -63,9 +63,9 @@ class ShellConnection : public mojom::ShellClient {
   void SetAppTestConnectorForTesting(mojom::ConnectorPtr connector);
 
   // Specify a function to be called when the connection to the shell is lost.
-  void set_connection_lost_closure(const base::Closure& closure) {
-    connection_lost_closure_ = closure;
-  }
+  // Note that if connection has already been lost, then |closure| is called
+  // immediately.
+  void SetConnectionLostClosure(const base::Closure& closure);
 
  private:
   // mojom::ShellClient:
@@ -95,6 +95,7 @@ class ShellConnection : public mojom::ShellClient {
   mojo::Binding<mojom::ShellClient> binding_;
   std::unique_ptr<Connector> connector_;
   shell::Identity identity_;
+  bool should_run_connection_lost_closure_ = false;
 
   base::Closure connection_lost_closure_;
 

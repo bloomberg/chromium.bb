@@ -122,7 +122,7 @@ bool MojoShellConnectionImpl::UsingExternalShell() const {
 
 void MojoShellConnectionImpl::SetConnectionLostClosure(
     const base::Closure& closure) {
-  shell_connection_->set_connection_lost_closure(closure);
+  shell_connection_->SetConnectionLostClosure(closure);
 }
 
 void MojoShellConnectionImpl::AddListener(std::unique_ptr<Listener> listener) {

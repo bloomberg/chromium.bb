@@ -64,7 +64,9 @@ class CONTENT_EXPORT MojoShellConnection {
   // a shell embedded in the browser process (false).
   virtual bool UsingExternalShell() const = 0;
 
-  // Sets a closure that is called when the connection is lost.
+  // Sets a closure that is called when the connection is lost. Note that
+  // connection may already have been closed, in which case |closure| will be
+  // run immediately before returning from this function.
   virtual void SetConnectionLostClosure(const base::Closure& closure) = 0;
 
   // [De]Register an impl of Listener that will be consulted when the wrapped

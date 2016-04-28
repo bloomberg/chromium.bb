@@ -36,12 +36,12 @@ class EmbeddedApplicationRunner::Instance
     if (!shell_client_)
       shell_client_ = factory_callback_.Run();
 
-    std::unique_ptr<shell::ShellConnection> new_connection(
-        new shell::ShellConnection(shell_client_.get(), std::move(request)));
-    new_connection->set_connection_lost_closure(
-        base::Bind(&Instance::OnShellConnectionLost,
-                   base::Unretained(this), new_connection.get()));
-    shell_connections_.push_back(std::move(new_connection));
+    shell::ShellConnection* new_connection =
+        new shell::ShellConnection(shell_client_.get(), std::move(request));
+    shell_connections_.push_back(base::WrapUnique(new_connection));
+    new_connection->SetConnectionLostClosure(
+        base::Bind(&Instance::OnShellConnectionLost, base::Unretained(this),
+                   new_connection));
   }
 
  private:

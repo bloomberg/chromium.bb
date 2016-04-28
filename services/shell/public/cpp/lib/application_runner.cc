@@ -56,7 +56,7 @@ MojoResult ApplicationRunner::Run(MojoHandle shell_client_request_handle,
         mojo::MakeRequest<mojom::ShellClient>(mojo::MakeScopedHandle(
             mojo::MessagePipeHandle(shell_client_request_handle)))));
     base::RunLoop run_loop;
-    connection_->set_connection_lost_closure(run_loop.QuitClosure());
+    connection_->SetConnectionLostClosure(run_loop.QuitClosure());
     run_loop.Run();
     // It's very common for the client to cache the app and terminate on errors.
     // If we don't delete the client before the app we run the risk of the

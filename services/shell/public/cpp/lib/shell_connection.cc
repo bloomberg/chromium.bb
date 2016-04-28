@@ -43,6 +43,13 @@ void ShellConnection::SetAppTestConnectorForTesting(
   connector_.reset(new ConnectorImpl(std::move(connector)));
 }
 
+void ShellConnection::SetConnectionLostClosure(const base::Closure& closure) {
+  connection_lost_closure_ = closure;
+  if (should_run_connection_lost_closure_ &&
+      !connection_lost_closure_.is_null())
+    connection_lost_closure_.Run();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // ShellConnection, mojom::ShellClient implementation:
 
@@ -87,7 +94,9 @@ void ShellConnection::OnConnectionError() {
   // Note that the ShellClient doesn't technically have to quit now, it may live
   // on to service existing connections. All existing Connectors however are
   // invalid.
-  if (client_->ShellConnectionLost() && !connection_lost_closure_.is_null())
+  should_run_connection_lost_closure_ = client_->ShellConnectionLost();
+  if (should_run_connection_lost_closure_ &&
+      !connection_lost_closure_.is_null())
     connection_lost_closure_.Run();
   // We don't reset the connector as clients may have taken a raw pointer to it.
   // Connect() will return nullptr if they try to connect to anything.
