@@ -41,7 +41,7 @@ STABLE_TEST_SUITES = [
     'ui_android_unittests',
     'ui_base_unittests',
     'ui_touch_selection_unittests',
-    'unit_tests',
+    'unit_tests_apk',
     'webkit_unit_tests',
 ]
 
