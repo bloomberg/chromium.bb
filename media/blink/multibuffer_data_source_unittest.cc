@@ -1317,4 +1317,26 @@ TEST_F(MultibufferDataSourceTest, Http_RetryThenRedirect) {
   Stop();
 }
 
+TEST_F(MultibufferDataSourceTest, Http_NotStreamingAfterRedirect) {
+  Initialize(kHttpUrl, true);
+
+  // Server responds with a redirect.
+  blink::WebURLRequest request((GURL(kHttpDifferentPathUrl)));
+  blink::WebURLResponse response((GURL(kHttpUrl)));
+  response.setHTTPStatusCode(307);
+  data_provider()->willFollowRedirect(url_loader(), request, response);
+
+  EXPECT_CALL(host_, SetTotalBytes(response_generator_->content_length()));
+  Respond(response_generator_->Generate206(0));
+
+  EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize));
+  ReceiveData(kDataSize);
+
+  EXPECT_FALSE(data_source_->IsStreaming());
+
+  FinishLoading();
+  EXPECT_FALSE(loading());
+  Stop();
+}
+
 }  // namespace media

@@ -262,7 +262,8 @@ void ResourceMultiBufferDataProvider::didReceiveResponse(
     // If we have verified the partial response and it is correct.
     // It's also possible for a server to support range requests
     // without advertising "Accept-Ranges: bytes".
-    if (partial_response && VerifyPartialResponse(response)) {
+    if (partial_response &&
+        VerifyPartialResponse(response, destination_url_data)) {
       destination_url_data->set_range_supported();
     } else if (ok_response && pos_ == 0) {
       // We accept a 200 response for a Range:0- request, trusting the
@@ -483,7 +484,8 @@ int64_t ResourceMultiBufferDataProvider::block_size() const {
 }
 
 bool ResourceMultiBufferDataProvider::VerifyPartialResponse(
-    const WebURLResponse& response) {
+    const WebURLResponse& response,
+    const scoped_refptr<UrlData>& url_data) {
   int64_t first_byte_position, last_byte_position, instance_size;
   if (!ParseContentRange(response.httpHeaderField("Content-Range").utf8(),
                          &first_byte_position, &last_byte_position,
@@ -492,7 +494,7 @@ bool ResourceMultiBufferDataProvider::VerifyPartialResponse(
   }
 
   if (url_data_->length() == kPositionNotSpecified) {
-    url_data_->set_length(instance_size);
+    url_data->set_length(instance_size);
   }
 
   if (byte_pos() != first_byte_position) {
