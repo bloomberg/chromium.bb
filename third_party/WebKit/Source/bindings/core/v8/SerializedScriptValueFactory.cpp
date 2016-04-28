@@ -17,10 +17,9 @@ namespace blink {
 
 SerializedScriptValueFactory* SerializedScriptValueFactory::m_instance = 0;
 
-PassRefPtr<SerializedScriptValue> SerializedScriptValueFactory::create(v8::Isolate* isolate, v8::Local<v8::Value> value, Transferables* transferables, WebBlobInfoArray* blobInfo, ExceptionState& exceptionState)
+PassRefPtr<SerializedScriptValue> SerializedScriptValueFactory::create(v8::Isolate* isolate, v8::Local<v8::Value> value, SerializedScriptValueWriter& writer, Transferables* transferables, WebBlobInfoArray* blobInfo, ExceptionState& exceptionState)
 {
     RefPtr<SerializedScriptValue> serializedValue = create();
-    SerializedScriptValueWriter writer;
     ScriptValueSerializer::Status status;
     String errorMessage;
     {
@@ -35,7 +34,7 @@ PassRefPtr<SerializedScriptValue> SerializedScriptValueFactory::create(v8::Isola
     switch (status) {
     case ScriptValueSerializer::InputError:
     case ScriptValueSerializer::DataCloneError:
-        exceptionState.throwDOMException(ScriptValueSerializer::DataCloneError, errorMessage);
+        exceptionState.throwDOMException(DataCloneError, errorMessage);
         return serializedValue.release();
     case ScriptValueSerializer::Success:
         transferData(serializedValue.get(), writer, transferables, exceptionState, isolate);
@@ -46,6 +45,12 @@ PassRefPtr<SerializedScriptValue> SerializedScriptValueFactory::create(v8::Isola
     }
     ASSERT_NOT_REACHED();
     return serializedValue.release();
+}
+
+PassRefPtr<SerializedScriptValue> SerializedScriptValueFactory::create(v8::Isolate* isolate, v8::Local<v8::Value> value, Transferables* transferables, WebBlobInfoArray* blobInfo, ExceptionState& exceptionState)
+{
+    SerializedScriptValueWriter writer;
+    return create(isolate, value, writer, transferables, blobInfo, exceptionState);
 }
 
 PassRefPtr<SerializedScriptValue> SerializedScriptValueFactory::create(v8::Isolate* isolate, v8::Local<v8::Value> value, Transferables* transferables, ExceptionState& exceptionState)

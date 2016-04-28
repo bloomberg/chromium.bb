@@ -13,33 +13,8 @@ namespace blink {
 
 PassRefPtr<SerializedScriptValue> SerializedScriptValueForModulesFactory::create(v8::Isolate* isolate, v8::Local<v8::Value> value, Transferables* transferables, WebBlobInfoArray* blobInfo, ExceptionState& exceptionState)
 {
-    RefPtr<SerializedScriptValue> serializedValue = SerializedScriptValueFactory::create();
     SerializedScriptValueWriterForModules writer;
-    ScriptValueSerializer::Status status;
-    String errorMessage;
-    {
-        v8::TryCatch tryCatch(isolate);
-        status = SerializedScriptValueFactory::doSerialize(value, writer, transferables, blobInfo, serializedValue.get(), tryCatch, errorMessage, isolate);
-        if (status == ScriptValueSerializer::JSException) {
-            // If there was a JS exception thrown, re-throw it.
-            exceptionState.rethrowV8Exception(tryCatch.Exception());
-            return serializedValue.release();
-        }
-    }
-    switch (status) {
-    case ScriptValueSerializer::InputError:
-    case ScriptValueSerializer::DataCloneError:
-        exceptionState.throwDOMException(DataCloneError, errorMessage);
-        return serializedValue.release();
-    case ScriptValueSerializer::Success:
-        transferData(serializedValue.get(), writer, transferables, exceptionState, isolate);
-        return serializedValue.release();
-    case ScriptValueSerializer::JSException:
-        ASSERT_NOT_REACHED();
-        break;
-    }
-    ASSERT_NOT_REACHED();
-    return serializedValue.release();
+    return SerializedScriptValueFactory::create(isolate, value, writer, transferables, blobInfo, exceptionState);
 }
 
 PassRefPtr<SerializedScriptValue> SerializedScriptValueForModulesFactory::create(v8::Isolate* isolate, const String& data)

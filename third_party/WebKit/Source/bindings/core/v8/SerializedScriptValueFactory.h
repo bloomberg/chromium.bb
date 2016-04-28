@@ -25,6 +25,7 @@ public:
     // the caller must not invoke any V8 operations until control returns to
     // V8. When serialization is successful, |didThrow| is false.
     virtual PassRefPtr<SerializedScriptValue> create(v8::Isolate*, v8::Local<v8::Value>, Transferables*, WebBlobInfoArray*, ExceptionState&);
+    PassRefPtr<SerializedScriptValue> create(v8::Isolate*, v8::Local<v8::Value>, SerializedScriptValueWriter&, Transferables*, WebBlobInfoArray*, ExceptionState&);
     PassRefPtr<SerializedScriptValue> create(v8::Isolate*, v8::Local<v8::Value>, Transferables*, ExceptionState&);
     PassRefPtr<SerializedScriptValue> createFromWire(const String&);
     PassRefPtr<SerializedScriptValue> createFromWireBytes(const char* data, size_t length);
