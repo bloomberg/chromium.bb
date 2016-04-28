@@ -21,18 +21,6 @@ http/tests/serviceworker/windowclient-navigate.html [ Crash ]
 # Uninvestigated timeouts (possibly variants of https://crbug.com/584984)
 http/tests/history/cross-origin-redirect-on-back.html [ Timeout Crash ]
 
-# https://crbug.com/582201 - missing console message about blocked XSS.
-http/tests/security/javascriptURL/javascriptURL-execution-context-frame-src-getAttribute-value.html [ Failure ]
-http/tests/security/javascriptURL/javascriptURL-execution-context-frame-src-htmldom.html [ Failure ]
-http/tests/security/javascriptURL/javascriptURL-execution-context-frame-src-setAttribute.html [ Failure ]
-http/tests/security/javascriptURL/javascriptURL-execution-context-frame-src-setAttributeNode.html [ Failure ]
-http/tests/security/javascriptURL/javascriptURL-execution-context-frame-src-setAttributeNS.html [ Failure ]
-http/tests/security/javascriptURL/javascriptURL-execution-context-iframe-src-getAttribute-value.html [ Failure ]
-http/tests/security/javascriptURL/javascriptURL-execution-context-iframe-src-htmldom.html [ Failure ]
-http/tests/security/javascriptURL/javascriptURL-execution-context-iframe-src-setAttribute.html [ Failure ]
-http/tests/security/javascriptURL/javascriptURL-execution-context-iframe-src-setAttributeNode.html [ Failure ]
-http/tests/security/javascriptURL/javascriptURL-execution-context-iframe-src-setAttributeNS.html [ Failure ]
-
 # https://crbug.com/582245 - no exception, b/c BindingSecurity::shouldAllowAccessTo exits early when |!target|.
 http/tests/security/xss-DENIED-getSVGDocument-iframe.html [ Failure ]
 http/tests/security/xss-DENIED-getSVGDocument-object.html [ Failure ]
