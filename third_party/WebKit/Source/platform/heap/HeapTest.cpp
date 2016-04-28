@@ -6405,7 +6405,7 @@ TEST(HeapTest, CrossThreadWeakPersistent)
     MutexLocker mainThreadMutexLocker(mainThreadMutex());
     OwnPtr<WebThread> workerThread = adoptPtr(Platform::current()->createThread("Test Worker Thread"));
     DestructorLockingObject* object = nullptr;
-    workerThread->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(workerThreadMainForCrossThreadWeakPersistentTest, AllowCrossThreadAccessWrapper<DestructorLockingObject**>(&object)));
+    workerThread->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(workerThreadMainForCrossThreadWeakPersistentTest, AllowCrossThreadAccess(&object)));
     parkMainThread();
 
     // Step 3: Set up a CrossThreadWeakPersistent.

@@ -241,9 +241,15 @@ template <typename T>
 struct AllowCrossThreadAccessWrapper {
     STACK_ALLOCATED();
 public:
-    explicit AllowCrossThreadAccessWrapper(T value) : m_value(value) { }
     T value() const { return m_value; }
 private:
+    // Only constructible from AllowCrossThreadAccess().
+    explicit AllowCrossThreadAccessWrapper(T value) : m_value(value) { }
+    template <typename U>
+    friend AllowCrossThreadAccessWrapper<U*> AllowCrossThreadAccess(U*);
+    template <typename U>
+    friend AllowCrossThreadAccessWrapper<const WeakPtr<U>&> AllowCrossThreadAccess(const WeakPtr<U>&);
+
     // This raw pointer is safe since AllowCrossThreadAccessWrapper is
     // always stack-allocated. Ideally this should be Member<T> if T is
     // garbage-collected and T* otherwise, but we don't want to introduce
