@@ -1,0 +1,19 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# On Android there's no system FreeType. On Windows and Mac, only a few
+# methods are used from it.
+pdfium_bundle_freetype = !is_linux
+
+# Enable use of Javascript in PDFs.
+pdf_enable_v8 = true
+
+# Disable XFA forms in Chromium builds.
+pdf_enable_xfa = false
+
+# Disable use of Skia backend.
+pdf_use_skia = false
+
+# Build is part of Chrome, not standalone.
+pdf_is_standalone = false
