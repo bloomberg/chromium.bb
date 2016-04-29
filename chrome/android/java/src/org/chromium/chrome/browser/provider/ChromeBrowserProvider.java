@@ -1145,8 +1145,9 @@ public class ChromeBrowserProvider extends ContentProvider {
     @Override
     protected void finalize() throws Throwable {
         try {
-            // Tests might try to destroy this in the wrong thread.
-            ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            // Per Object#finalize(), finalizers are run on a single VM-wide finalizer thread, and
+            // the native objects need to be destroyed on the UI thread.
+            ThreadUtils.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     ensureNativeChromeDestroyedOnUIThread();
