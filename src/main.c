@@ -693,7 +693,7 @@ load_headless_backend(struct weston_compositor *c, char const * backend,
 {
 	struct weston_headless_backend_config config = {{ 0, }};
 	int ret = 0;
-	const char *transform = "normal";
+	char *transform = NULL;
 
 	config.width = 1024;
 	config.height = 640;
@@ -707,8 +707,12 @@ load_headless_backend(struct weston_compositor *c, char const * backend,
 
 	parse_options(options, ARRAY_LENGTH(options), argc, argv);
 
-	if (weston_parse_transform(transform, &config.transform) < 0)
-		weston_log("Invalid transform \"%s\"\n", transform);
+	config.transform = WL_OUTPUT_TRANSFORM_NORMAL;
+	if (transform) {
+		if (weston_parse_transform(transform, &config.transform) < 0)
+			weston_log("Invalid transform \"%s\"\n", transform);
+		free(transform);
+	}
 
 	config.base.struct_version = WESTON_HEADLESS_BACKEND_CONFIG_VERSION;
 	config.base.struct_size = sizeof(struct weston_headless_backend_config);
