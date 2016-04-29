@@ -126,7 +126,9 @@ endif # AV1
 ifeq ($(findstring yes,$(CONFIG_AV1_ENCODER)$(CONFIG_AV1_ENCODER)),yes)
 LIBAOM_TEST_SRCS-yes += avg_test.cc
 endif
-
+ifeq ($(CONFIG_INTERNAL_STATS),yes)
+LIBAOM_TEST_SRCS-$(CONFIG_AOM_HIGHBITDEPTH) += hbd_metrics_test.cc
+endif
 LIBAOM_TEST_SRCS-$(CONFIG_ENCODERS) += sad_test.cc
 
 TEST_INTRA_PRED_SPEED_SRCS-yes := test_intra_pred_speed.cc
