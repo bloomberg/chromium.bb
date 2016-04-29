@@ -22,26 +22,27 @@ class FuzzedDataProvider {
   FuzzedDataProvider(const uint8_t* data, size_t size);
   ~FuzzedDataProvider();
 
-  // Returns a StringPiece containing |length| bytes of the input data. If fewer
-  // than that many bytes remain, returns a shorter StringPiece containing all
+  // Returns a StringPiece containing |num_bytes| of input data. If fewer than
+  // |num_bytes| of data remain, returns a shorter StringPiece containing all
   // of the data that's left. The data pointed at by the returned StringPiece
   // must not be used after the FuzzedDataProvider is destroyed.
-  base::StringPiece ConsumeBytes(size_t bytes);
+  base::StringPiece ConsumeBytes(size_t num_bytes);
 
   // Returns a StringPiece containing all remaining bytes of the input data.
   // The data pointed at by the returned StringPiece must not be used after the
   // FuzzedDataProvider is destroyed.
   base::StringPiece ConsumeRemainingBytes();
 
-  // Returns a value from |min| to |max| inclusive, extracting a value from the
-  // input data in some unspecified manner. Value may not be uniformly
-  // distributed in the given range. If there's no input data left, always
-  // returns |min|. |min| must be less than or equal to |max|.
+  // Returns an unsigned number in the range [min, max] by consuming bytes from
+  // the input data. The value might not be uniformly distributed in the given
+  // range. If there's no input data left, always returns |min|. |min| must be
+  // less than or equal to |max|.
   uint32_t ConsumeValueInRange(uint32_t min, uint32_t max);
 
-  // Returns a value with the specified number of bits of data. Returns 0 if
-  // there's no input data left. |num_bits| must non-zero, and at most 32.
-  // Basically the same as ConsumeValueInRange((1 << num_bits) - 1);
+  // Returns a value comprised of |num_bits| worth of data. Returns 0 if
+  // there's no input data left. When consuming fewer than 32-bits, the most
+  // significant |32 - num_bits| of the result will be 0. This function behaves
+  // the same as calling ConsumeValueInRange((1 << num_bits) - 1).
   uint32_t ConsumeBits(size_t num_bits);
 
   // Same as ConsumeBits(1), but returns a bool. Returns false when there's no
