@@ -21,19 +21,6 @@ import git_common
 import git_footers
 import subprocess2
 
-class ChangelistMock():
-  # A class variable so we can access it when we don't have access to the
-  # instance that's being set.
-  desc = ""
-  def __init__(self, **kwargs):
-    pass
-  def GetIssue(self):
-    return 1
-  def GetDescription(self):
-    return ChangelistMock.desc
-  def UpdateDescription(self, desc):
-    ChangelistMock.desc = desc
-
 class PresubmitMock(object):
   def __init__(self, *args, **kwargs):
     self.reviewers = []
@@ -1398,8 +1385,15 @@ class TestGitCl(TestCase):
     out = StringIO.StringIO()
     self.mock(git_cl.sys, 'stdout', out)
 
-    self.mock(git_cl, 'Changelist', ChangelistMock)
-    ChangelistMock.desc = 'foo\n'
+    class MockChangelist():
+      def __init__(self, **kwargs):
+        pass
+      def GetIssue(self):
+        return 1
+      def GetDescription(self):
+        return 'foo'
+
+    self.mock(git_cl, 'Changelist', MockChangelist)
 
     self.assertEqual(0, git_cl.main(['description', '-d']))
     self.assertEqual('foo\n', out.getvalue())
@@ -1428,34 +1422,6 @@ class TestGitCl(TestCase):
     self.assertEqual(0, git_cl.main([
         'description', 'https://code.review.org/123123', '-d', '--gerrit']))
     self.assertEqual('foobar\n', out.getvalue())
-
-  def test_description_set_raw(self):
-    out = StringIO.StringIO()
-    self.mock(git_cl.sys, 'stdout', out)
-
-    self.mock(git_cl, 'Changelist', ChangelistMock)
-    class TMP():
-      def splitlines(self):
-        return ['hihi']
-
-    self.mock(git_cl.sys, 'stdin', TMP())
-
-    self.assertEqual(0, git_cl.main(['description', '-n', 'hihi']))
-    self.assertEqual('hihi', ChangelistMock.desc)
-
-  def test_description_set_stdin(self):
-    out = StringIO.StringIO()
-    self.mock(git_cl.sys, 'stdout', out)
-
-    self.mock(git_cl, 'Changelist', ChangelistMock)
-    class TMP():
-      def splitlines(self):
-        return ['hi', 'there']
-
-    self.mock(git_cl.sys, 'stdin', TMP())
-
-    self.assertEqual(0, git_cl.main(['description', '-n', '-']))
-    self.assertEqual('hi\nthere', ChangelistMock.desc)
 
 
 if __name__ == '__main__':
