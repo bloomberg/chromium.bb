@@ -136,6 +136,8 @@ class OpenWithMenuObserver : public RenderViewContextMenuObserver,
             l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_OPEN_WITH_APP,
                                        base::UTF8ToUTF16(it->second.name));
         proxy_->UpdateMenuItem(command_id, true, false, label);
+        if (!it->second.icon.IsEmpty())
+          proxy_->UpdateMenuIcon(command_id, it->second.icon);
       }
     }
   }
