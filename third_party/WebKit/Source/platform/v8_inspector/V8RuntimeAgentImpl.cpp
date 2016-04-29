@@ -383,53 +383,6 @@ void V8RuntimeAgentImpl::disable(ErrorString* errorString)
     m_session->changeInstrumentationCounter(-1);
 }
 
-PassOwnPtr<RemoteObject> V8RuntimeAgentImpl::wrapObject(v8::Local<v8::Context> context, v8::Local<v8::Value> value, const String16& groupName, bool generatePreview)
-{
-    ErrorString errorString;
-    InjectedScript* injectedScript = m_session->findInjectedScript(&errorString, V8Debugger::contextId(context));
-    if (!injectedScript)
-        return nullptr;
-    return injectedScript->wrapObject(&errorString, value, groupName, false, generatePreview);
-}
-
-PassOwnPtr<RemoteObject> V8RuntimeAgentImpl::wrapTable(v8::Local<v8::Context> context, v8::Local<v8::Value> table, v8::Local<v8::Value> columns)
-{
-    ErrorString errorString;
-    InjectedScript* injectedScript = m_session->findInjectedScript(&errorString, V8Debugger::contextId(context));
-    if (!injectedScript)
-        return nullptr;
-    return injectedScript->wrapTable(table, columns);
-}
-
-void V8RuntimeAgentImpl::disposeObjectGroup(const String16& groupName)
-{
-    m_session->releaseObjectGroup(groupName);
-}
-
-v8::Local<v8::Value> V8RuntimeAgentImpl::findObject(ErrorString* errorString, const String16& objectId, v8::Local<v8::Context>* context, String16* groupName)
-{
-    OwnPtr<RemoteObjectId> remoteId = RemoteObjectId::parse(errorString, objectId);
-    if (!remoteId)
-        return v8::Local<v8::Value>();
-    InjectedScript* injectedScript = m_session->findInjectedScript(errorString, remoteId.get());
-    if (!injectedScript)
-        return v8::Local<v8::Value>();
-    v8::Local<v8::Value> objectValue;
-    injectedScript->findObject(errorString, *remoteId, &objectValue);
-    if (objectValue.IsEmpty())
-        return v8::Local<v8::Value>();
-    if (context)
-        *context = injectedScript->context()->context();
-    if (groupName)
-        *groupName = injectedScript->objectGroupName(*remoteId);
-    return objectValue;
-}
-
-void V8RuntimeAgentImpl::addInspectedObject(PassOwnPtr<Inspectable> inspectable)
-{
-    m_session->addInspectedObject(std::move(inspectable));
-}
-
 void V8RuntimeAgentImpl::reset()
 {
     m_compiledScripts.clear();

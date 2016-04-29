@@ -26,7 +26,7 @@
 #include "core/inspector/InspectorStyleSheet.h"
 #include "platform/Decimal.h"
 #include "platform/animation/TimingFunction.h"
-#include "platform/v8_inspector/public/V8RuntimeAgent.h"
+#include "platform/v8_inspector/public/V8InspectorSession.h"
 #include "wtf/text/Base64.h"
 
 namespace AnimationAgentState {
@@ -36,12 +36,12 @@ static const char animationAgentPlaybackRate[] = "animationAgentPlaybackRate";
 
 namespace blink {
 
-InspectorAnimationAgent::InspectorAnimationAgent(InspectedFrames* inspectedFrames, InspectorDOMAgent* domAgent, InspectorCSSAgent* cssAgent, V8RuntimeAgent* runtimeAgent)
+InspectorAnimationAgent::InspectorAnimationAgent(InspectedFrames* inspectedFrames, InspectorDOMAgent* domAgent, InspectorCSSAgent* cssAgent, V8InspectorSession* v8Session)
     : InspectorBaseAgent<InspectorAnimationAgent, protocol::Frontend::Animation>("Animation")
     , m_inspectedFrames(inspectedFrames)
     , m_domAgent(domAgent)
     , m_cssAgent(cssAgent)
-    , m_runtimeAgent(runtimeAgent)
+    , m_v8Session(v8Session)
     , m_isCloning(false)
 {
 }
@@ -380,8 +380,8 @@ void InspectorAnimationAgent::resolveAnimation(ErrorString* errorString, const S
     }
 
     ScriptState::Scope scope(scriptState);
-    m_runtimeAgent->disposeObjectGroup("animation");
-    *result = m_runtimeAgent->wrapObject(scriptState->context(), toV8(animation, scriptState->context()->Global(), scriptState->isolate()), "animation");
+    m_v8Session->releaseObjectGroup("animation");
+    *result = m_v8Session->wrapObject(scriptState->context(), toV8(animation, scriptState->context()->Global(), scriptState->isolate()), "animation");
     if (!*result)
         *errorString = "Element not associated with a document.";
 }

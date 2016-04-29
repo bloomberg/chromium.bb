@@ -142,6 +142,43 @@ void V8InspectorSessionImpl::releaseObjectGroup(const String16& objectGroup)
     }
 }
 
+v8::Local<v8::Value> V8InspectorSessionImpl::findObject(ErrorString* errorString, const String16& objectId, v8::Local<v8::Context>* context, String16* groupName)
+{
+    OwnPtr<RemoteObjectId> remoteId = RemoteObjectId::parse(errorString, objectId);
+    if (!remoteId)
+        return v8::Local<v8::Value>();
+    InjectedScript* injectedScript = findInjectedScript(errorString, remoteId.get());
+    if (!injectedScript)
+        return v8::Local<v8::Value>();
+    v8::Local<v8::Value> objectValue;
+    injectedScript->findObject(errorString, *remoteId, &objectValue);
+    if (objectValue.IsEmpty())
+        return v8::Local<v8::Value>();
+    if (context)
+        *context = injectedScript->context()->context();
+    if (groupName)
+        *groupName = injectedScript->objectGroupName(*remoteId);
+    return objectValue;
+}
+
+PassOwnPtr<protocol::Runtime::RemoteObject> V8InspectorSessionImpl::wrapObject(v8::Local<v8::Context> context, v8::Local<v8::Value> value, const String16& groupName, bool generatePreview)
+{
+    ErrorString errorString;
+    InjectedScript* injectedScript = findInjectedScript(&errorString, V8Debugger::contextId(context));
+    if (!injectedScript)
+        return nullptr;
+    return injectedScript->wrapObject(&errorString, value, groupName, false, generatePreview);
+}
+
+PassOwnPtr<protocol::Runtime::RemoteObject> V8InspectorSessionImpl::wrapTable(v8::Local<v8::Context> context, v8::Local<v8::Value> table, v8::Local<v8::Value> columns)
+{
+    ErrorString errorString;
+    InjectedScript* injectedScript = findInjectedScript(&errorString, V8Debugger::contextId(context));
+    if (!injectedScript)
+        return nullptr;
+    return injectedScript->wrapTable(table, columns);
+}
+
 void V8InspectorSessionImpl::setCustomObjectFormatterEnabled(bool enabled)
 {
     m_customObjectFormatterEnabled = enabled;
@@ -174,14 +211,14 @@ void V8InspectorSessionImpl::changeInstrumentationCounter(int delta)
         m_client->stopInstrumenting();
 }
 
-void V8InspectorSessionImpl::addInspectedObject(PassOwnPtr<V8RuntimeAgent::Inspectable> inspectable)
+void V8InspectorSessionImpl::addInspectedObject(PassOwnPtr<V8InspectorSession::Inspectable> inspectable)
 {
     m_inspectedObjects.prepend(std::move(inspectable));
     while (m_inspectedObjects.size() > kInspectedObjectBufferSize)
         m_inspectedObjects.removeLast();
 }
 
-V8RuntimeAgent::Inspectable* V8InspectorSessionImpl::inspectedObject(unsigned num)
+V8InspectorSession::Inspectable* V8InspectorSessionImpl::inspectedObject(unsigned num)
 {
     if (num >= m_inspectedObjects.size())
         return nullptr;

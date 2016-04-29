@@ -41,7 +41,6 @@
 #include "platform/inspector_protocol/Values.h"
 #include "platform/v8_inspector/public/V8EventListenerInfo.h"
 #include "platform/v8_inspector/public/V8InspectorSession.h"
-#include "platform/v8_inspector/public/V8RuntimeAgent.h"
 
 namespace {
 
@@ -112,11 +111,10 @@ void InspectorDOMDebuggerAgent::eventListenersInfoForTarget(v8::Isolate* isolate
     }
 }
 
-InspectorDOMDebuggerAgent::InspectorDOMDebuggerAgent(v8::Isolate* isolate, InspectorDOMAgent* domAgent, V8RuntimeAgent* runtimeAgent, V8InspectorSession* v8Session)
+InspectorDOMDebuggerAgent::InspectorDOMDebuggerAgent(v8::Isolate* isolate, InspectorDOMAgent* domAgent, V8InspectorSession* v8Session)
     : InspectorBaseAgent<InspectorDOMDebuggerAgent, protocol::Frontend::DOMDebugger>("DOMDebugger")
     , m_isolate(isolate)
     , m_domAgent(domAgent)
-    , m_runtimeAgent(runtimeAgent)
     , m_v8Session(v8Session)
 {
 }
@@ -339,7 +337,7 @@ void InspectorDOMDebuggerAgent::getEventListeners(ErrorString* errorString, cons
 
     v8::Local<v8::Context> context;
     String16 objectGroup;
-    v8::Local<v8::Value> value = m_runtimeAgent->findObject(errorString, objectId, &context, &objectGroup);
+    v8::Local<v8::Value> value = m_v8Session->findObject(errorString, objectId, &context, &objectGroup);
     if (value.IsEmpty())
         return;
     v8::Context::Scope scope(context);
@@ -392,8 +390,8 @@ PassOwnPtr<protocol::DOMDebugger::EventListener> InspectorDOMDebuggerAgent::buil
         .setPassive(info.passive)
         .setLocation(location.release()).build();
     if (!objectGroupId.isEmpty()) {
-        value->setHandler(m_runtimeAgent->wrapObject(context, function, objectGroupId));
-        value->setOriginalHandler(m_runtimeAgent->wrapObject(context, info.handler, objectGroupId));
+        value->setHandler(m_v8Session->wrapObject(context, function, objectGroupId));
+        value->setOriginalHandler(m_v8Session->wrapObject(context, info.handler, objectGroupId));
     }
     return value.release();
 }

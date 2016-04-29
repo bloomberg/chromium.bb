@@ -37,7 +37,7 @@
 #include "core/style/ComputedStyleConstants.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/inspector_protocol/Values.h"
-#include "platform/v8_inspector/public/V8RuntimeAgent.h"
+#include "platform/v8_inspector/public/V8InspectorSession.h"
 
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
@@ -94,15 +94,11 @@ public:
         virtual void setInspectedNode(Node*) { }
     };
 
-    static InspectorDOMAgent* create(v8::Isolate* isolate, InspectedFrames* inspectedFrames, V8RuntimeAgent* runtimeAgent, Client* client)
-    {
-        return new InspectorDOMAgent(isolate, inspectedFrames, runtimeAgent, client);
-    }
-
     static String toErrorString(ExceptionState&);
     static bool getPseudoElementType(PseudoId, String*);
     static ShadowRoot* userAgentShadowRoot(Node*);
 
+    InspectorDOMAgent(v8::Isolate*, InspectedFrames*, V8InspectorSession*, Client*);
     ~InspectorDOMAgent() override;
     DECLARE_VIRTUAL_TRACE();
 
@@ -200,8 +196,6 @@ public:
     Document* assertDocument(ErrorString*, int nodeId);
 
 private:
-    InspectorDOMAgent(v8::Isolate*, InspectedFrames*, V8RuntimeAgent*, Client*);
-
     void setDocument(Document*);
     void innerEnable();
 
@@ -242,7 +236,7 @@ private:
 
     v8::Isolate* m_isolate;
     Member<InspectedFrames> m_inspectedFrames;
-    V8RuntimeAgent* m_runtimeAgent;
+    V8InspectorSession* m_v8Session;
     Client* m_client;
     Member<DOMListener> m_domListener;
     Member<NodeToIdMap> m_documentNodeToIdMap;

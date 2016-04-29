@@ -623,7 +623,7 @@ void V8Console::inspectedObject(const v8::FunctionCallbackInfo<v8::Value>& info,
     ASSERT(num < V8InspectorSessionImpl::kInspectedObjectBufferSize);
     ConsoleHelper helper(info);
     if (V8InspectorSessionImpl* session = helper.currentSession()) {
-        V8RuntimeAgent::Inspectable* object = session->inspectedObject(num);
+        V8InspectorSession::Inspectable* object = session->inspectedObject(num);
         v8::Isolate* isolate = info.GetIsolate();
         if (object)
             info.GetReturnValue().Set(object->get(isolate->GetCurrentContext()));

@@ -34,12 +34,11 @@ namespace blink {
 
 class ConsoleMessage;
 class ConsoleMessageStorage;
-class V8RuntimeAgent;
+class V8InspectorSession;
 
 class CORE_EXPORT InspectorConsoleAgent : public InspectorBaseAgent<InspectorConsoleAgent, protocol::Frontend::Console>, public protocol::Backend::Console {
     WTF_MAKE_NONCOPYABLE(InspectorConsoleAgent);
 public:
-    InspectorConsoleAgent(V8RuntimeAgent*);
     ~InspectorConsoleAgent() override;
 
     void enable(ErrorString*) override;
@@ -52,13 +51,14 @@ public:
     virtual void consoleMessagesCleared();
 
 protected:
+    explicit InspectorConsoleAgent(V8InspectorSession*);
     void sendConsoleMessageToFrontend(ConsoleMessage*, bool generatePreview);
     virtual ConsoleMessageStorage* messageStorage() = 0;
 
     virtual void enableStackCapturingIfNeeded() = 0;
     virtual void disableStackCapturingIfNeeded() = 0;
 
-    V8RuntimeAgent* m_runtimeAgent;
+    V8InspectorSession* m_v8Session;
     bool m_enabled;
 };
 

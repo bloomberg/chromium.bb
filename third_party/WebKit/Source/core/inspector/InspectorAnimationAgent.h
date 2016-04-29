@@ -21,15 +21,12 @@ class InspectedFrames;
 class InspectorCSSAgent;
 class InspectorDOMAgent;
 class TimingFunction;
-class V8RuntimeAgent;
+class V8InspectorSession;
 
 class CORE_EXPORT InspectorAnimationAgent final : public InspectorBaseAgent<InspectorAnimationAgent, protocol::Frontend::Animation>, public protocol::Backend::Animation {
     WTF_MAKE_NONCOPYABLE(InspectorAnimationAgent);
 public:
-    static InspectorAnimationAgent* create(InspectedFrames* inspectedFrames, InspectorDOMAgent* domAgent, InspectorCSSAgent* cssAgent, V8RuntimeAgent* runtimeAgent)
-    {
-        return new InspectorAnimationAgent(inspectedFrames, domAgent, cssAgent, runtimeAgent);
-    }
+    InspectorAnimationAgent(InspectedFrames*, InspectorDOMAgent*, InspectorCSSAgent*, V8InspectorSession*);
 
     // Base agent methods.
     void restore() override;
@@ -58,8 +55,6 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    InspectorAnimationAgent(InspectedFrames*, InspectorDOMAgent*, InspectorCSSAgent*, V8RuntimeAgent*);
-
     using AnimationType = protocol::Animation::Animation::TypeEnum;
 
     PassOwnPtr<protocol::Animation::Animation> buildObjectForAnimation(blink::Animation&);
@@ -72,7 +67,7 @@ private:
     Member<InspectedFrames> m_inspectedFrames;
     Member<InspectorDOMAgent> m_domAgent;
     Member<InspectorCSSAgent> m_cssAgent;
-    V8RuntimeAgent* m_runtimeAgent;
+    V8InspectorSession* m_v8Session;
     HeapHashMap<String, Member<blink::Animation>> m_idToAnimation;
     HeapHashMap<String, Member<blink::Animation>> m_idToAnimationClone;
     HashMap<String, String> m_idToAnimationType;

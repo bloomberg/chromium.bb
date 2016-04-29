@@ -44,12 +44,12 @@ public:
     void reset();
     void discardInjectedScripts();
     void reportAllContexts(V8RuntimeAgentImpl*);
-    void releaseObjectGroup(const String16& objectGroup);
     void setCustomObjectFormatterEnabled(bool);
     void changeInstrumentationCounter(int delta);
 
     // V8InspectorSession implementation.
     void setClient(V8InspectorSessionClient*) override;
+    void addInspectedObject(PassOwnPtr<V8InspectorSession::Inspectable>) override;
     V8DebuggerAgent* debuggerAgent() override;
     V8HeapProfilerAgent* heapProfilerAgent() override;
     V8ProfilerAgent* profilerAgent() override;
@@ -64,9 +64,12 @@ public:
     void asyncTaskStarted(void* task) override;
     void asyncTaskFinished(void* task) override;
     void allAsyncTasksCanceled() override;
+    void releaseObjectGroup(const String16& objectGroup) override;
+    v8::Local<v8::Value> findObject(ErrorString*, const String16& objectId, v8::Local<v8::Context>* = nullptr, String16* groupName = nullptr) override;
+    PassOwnPtr<protocol::Runtime::RemoteObject> wrapObject(v8::Local<v8::Context>, v8::Local<v8::Value>, const String16& groupName, bool generatePreview = false) override;
+    PassOwnPtr<protocol::Runtime::RemoteObject> wrapTable(v8::Local<v8::Context>, v8::Local<v8::Value> table, v8::Local<v8::Value> columns) override;
 
-    void addInspectedObject(PassOwnPtr<V8RuntimeAgent::Inspectable>);
-    V8RuntimeAgent::Inspectable* inspectedObject(unsigned num);
+    V8InspectorSession::Inspectable* inspectedObject(unsigned num);
     static const unsigned kInspectedObjectBufferSize = 5;
 
 private:
@@ -82,7 +85,7 @@ private:
     OwnPtr<V8DebuggerAgentImpl> m_debuggerAgent;
     OwnPtr<V8HeapProfilerAgentImpl> m_heapProfilerAgent;
     OwnPtr<V8ProfilerAgentImpl> m_profilerAgent;
-    protocol::Vector<OwnPtr<V8RuntimeAgent::Inspectable>> m_inspectedObjects;
+    protocol::Vector<OwnPtr<V8InspectorSession::Inspectable>> m_inspectedObjects;
 };
 
 } // namespace blink

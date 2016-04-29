@@ -104,7 +104,7 @@ v8::Local<v8::Object> objectByHeapObjectId(v8::Isolate* isolate, int id)
     return value.As<v8::Object>();
 }
 
-class InspectableHeapObject final : public V8RuntimeAgent::Inspectable {
+class InspectableHeapObject final : public V8InspectorSession::Inspectable {
 public:
     explicit InspectableHeapObject(int heapObjectId) : m_heapObjectId(heapObjectId) { }
     v8::Local<v8::Value> get(v8::Local<v8::Context> context) override
@@ -266,7 +266,7 @@ void V8HeapProfilerAgentImpl::getObjectByHeapObjectId(ErrorString* error, const 
         return;
     }
 
-    *result = m_session->runtimeAgent()->wrapObject(heapObject->CreationContext(), heapObject, objectGroup.fromMaybe(""));
+    *result = m_session->wrapObject(heapObject->CreationContext(), heapObject, objectGroup.fromMaybe(""));
     if (!result)
         *error = "Object is not available";
 }
@@ -292,13 +292,13 @@ void V8HeapProfilerAgentImpl::addInspectedHeapObject(ErrorString* errorString, c
         return;
     }
 
-    m_session->runtimeAgent()->addInspectedObject(adoptPtr(new InspectableHeapObject(id)));
+    m_session->addInspectedObject(adoptPtr(new InspectableHeapObject(id)));
 }
 
 void V8HeapProfilerAgentImpl::getHeapObjectId(ErrorString* errorString, const String16& objectId, String16* heapSnapshotObjectId)
 {
     v8::HandleScope handles(m_isolate);
-    v8::Local<v8::Value> value = m_session->runtimeAgent()->findObject(errorString, objectId);
+    v8::Local<v8::Value> value = m_session->findObject(errorString, objectId);
     if (value.IsEmpty() || value->IsUndefined())
         return;
 

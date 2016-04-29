@@ -78,7 +78,7 @@
 #include "platform/PlatformGestureEvent.h"
 #include "platform/PlatformMouseEvent.h"
 #include "platform/PlatformTouchEvent.h"
-#include "platform/v8_inspector/public/V8RuntimeAgent.h"
+#include "platform/v8_inspector/public/V8InspectorSession.h"
 #include "wtf/ListHashSet.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
@@ -243,11 +243,11 @@ bool InspectorDOMAgent::getPseudoElementType(PseudoId pseudoId, protocol::DOM::P
     }
 }
 
-InspectorDOMAgent::InspectorDOMAgent(v8::Isolate* isolate, InspectedFrames* inspectedFrames, V8RuntimeAgent* runtimeAgent, Client* client)
+InspectorDOMAgent::InspectorDOMAgent(v8::Isolate* isolate, InspectedFrames* inspectedFrames, V8InspectorSession* v8Session, Client* client)
     : InspectorBaseAgent<InspectorDOMAgent, protocol::Frontend::DOM>("DOM")
     , m_isolate(isolate)
     , m_inspectedFrames(inspectedFrames)
-    , m_runtimeAgent(runtimeAgent)
+    , m_v8Session(v8Session)
     , m_client(client)
     , m_domListener(nullptr)
     , m_documentNodeToIdMap(new NodeToIdMap())
@@ -1167,7 +1167,7 @@ void InspectorDOMAgent::innerHighlightQuad(PassOwnPtr<FloatQuad> quad, const May
 Node* InspectorDOMAgent::nodeForRemoteId(ErrorString* errorString, const String& objectId)
 {
     v8::HandleScope handles(m_isolate);
-    v8::Local<v8::Value> value = m_runtimeAgent->findObject(errorString, objectId);
+    v8::Local<v8::Value> value = m_v8Session->findObject(errorString, objectId);
     if (value.IsEmpty()) {
         *errorString = "Node for given objectId not found";
         return nullptr;
@@ -1997,7 +1997,7 @@ void InspectorDOMAgent::pushNodesByBackendIdsToFrontend(ErrorString* errorString
     }
 }
 
-class InspectableNode final : public V8RuntimeAgent::Inspectable {
+class InspectableNode final : public V8InspectorSession::Inspectable {
 public:
     explicit InspectableNode(Node* node) : m_nodeId(DOMNodeIds::idForNode(node)) { }
 
@@ -2014,7 +2014,7 @@ void InspectorDOMAgent::setInspectedNode(ErrorString* errorString, int nodeId)
     Node* node = assertNode(errorString, nodeId);
     if (!node)
         return;
-    m_runtimeAgent->addInspectedObject(adoptPtr(new InspectableNode(node)));
+    m_v8Session->addInspectedObject(adoptPtr(new InspectableNode(node)));
     if (m_client)
         m_client->setInspectedNode(node);
 }
@@ -2056,7 +2056,7 @@ PassOwnPtr<protocol::Runtime::RemoteObject> InspectorDOMAgent::resolveNode(Node*
         return nullptr;
 
     ScriptState::Scope scope(scriptState);
-    return m_runtimeAgent->wrapObject(scriptState->context(), nodeV8Value(scriptState->context(), node), objectGroup);
+    return m_v8Session->wrapObject(scriptState->context(), nodeV8Value(scriptState->context(), node), objectGroup);
 }
 
 bool InspectorDOMAgent::pushDocumentUponHandlelessOperation(ErrorString* errorString)

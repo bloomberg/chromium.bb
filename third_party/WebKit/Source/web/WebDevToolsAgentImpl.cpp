@@ -382,13 +382,11 @@ void WebDevToolsAgentImpl::initializeSession(int sessionId, const String& hostId
     ClientMessageLoopAdapter::ensureMainThreadDebuggerCreated(m_client);
     MainThreadDebugger* mainThreadDebugger = MainThreadDebugger::instance();
     v8::Isolate* isolate = V8PerIsolateData::mainThreadIsolate();
-
     m_v8Session = mainThreadDebugger->debugger()->connect(mainThreadDebugger->contextGroupId(m_inspectedFrames->root()));
-    V8RuntimeAgent* runtimeAgent = m_v8Session->runtimeAgent();
 
-    m_session->append(PageRuntimeAgent::create(this, runtimeAgent, m_inspectedFrames.get()));
+    m_session->append(PageRuntimeAgent::create(this, m_v8Session->runtimeAgent(), m_inspectedFrames.get()));
 
-    InspectorDOMAgent* domAgent = InspectorDOMAgent::create(isolate, m_inspectedFrames.get(), runtimeAgent, m_overlay.get());
+    InspectorDOMAgent* domAgent = new InspectorDOMAgent(isolate, m_inspectedFrames.get(), m_v8Session.get(), m_overlay.get());
     m_domAgent = domAgent;
     m_session->append(domAgent);
 
@@ -403,7 +401,7 @@ void WebDevToolsAgentImpl::initializeSession(int sessionId, const String& hostId
     InspectorCSSAgent* cssAgent = InspectorCSSAgent::create(m_domAgent, m_inspectedFrames.get(), m_resourceAgent, m_resourceContentLoader.get(), m_resourceContainer.get());
     m_session->append(cssAgent);
 
-    m_session->append(InspectorAnimationAgent::create(m_inspectedFrames.get(), m_domAgent, cssAgent, runtimeAgent));
+    m_session->append(new InspectorAnimationAgent(m_inspectedFrames.get(), m_domAgent, cssAgent, m_v8Session.get()));
 
     m_session->append(InspectorMemoryAgent::create());
 
@@ -414,7 +412,7 @@ void WebDevToolsAgentImpl::initializeSession(int sessionId, const String& hostId
     InspectorDebuggerAgent* debuggerAgent = PageDebuggerAgent::create(m_v8Session->debuggerAgent(), m_inspectedFrames.get());
     m_session->append(debuggerAgent);
 
-    PageConsoleAgent* pageConsoleAgent = PageConsoleAgent::create(runtimeAgent, m_domAgent, m_inspectedFrames.get());
+    PageConsoleAgent* pageConsoleAgent = new PageConsoleAgent(m_v8Session.get(), m_domAgent, m_inspectedFrames.get());
     m_session->append(pageConsoleAgent);
 
     InspectorWorkerAgent* workerAgent = InspectorWorkerAgent::create(m_inspectedFrames.get(), pageConsoleAgent);
@@ -424,7 +422,7 @@ void WebDevToolsAgentImpl::initializeSession(int sessionId, const String& hostId
     m_tracingAgent = tracingAgent;
     m_session->append(tracingAgent);
 
-    m_session->append(new InspectorDOMDebuggerAgent(isolate, m_domAgent, runtimeAgent, m_v8Session.get()));
+    m_session->append(new InspectorDOMDebuggerAgent(isolate, m_domAgent, m_v8Session.get()));
 
     m_session->append(InspectorInputAgent::create(m_inspectedFrames.get()));
 

@@ -31,7 +31,7 @@
 #include "core/inspector/ConsoleMessageStorage.h"
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/ScriptArguments.h"
-#include "platform/v8_inspector/public/V8RuntimeAgent.h"
+#include "platform/v8_inspector/public/V8InspectorSession.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -40,9 +40,9 @@ namespace ConsoleAgentState {
 static const char consoleMessagesEnabled[] = "consoleMessagesEnabled";
 }
 
-InspectorConsoleAgent::InspectorConsoleAgent(V8RuntimeAgent* runtimeAgent)
+InspectorConsoleAgent::InspectorConsoleAgent(V8InspectorSession* v8Session)
     : InspectorBaseAgent<InspectorConsoleAgent, protocol::Frontend::Console>("Console")
-    , m_runtimeAgent(runtimeAgent)
+    , m_v8Session(v8Session)
     , m_enabled(false)
 {
 }
@@ -100,7 +100,7 @@ void InspectorConsoleAgent::addMessageToConsole(ConsoleMessage* consoleMessage)
 
 void InspectorConsoleAgent::consoleMessagesCleared()
 {
-    m_runtimeAgent->disposeObjectGroup("console");
+    m_v8Session->releaseObjectGroup("console");
     frontend()->messagesCleared();
 }
 
@@ -184,14 +184,14 @@ void InspectorConsoleAgent::sendConsoleMessageToFrontend(ConsoleMessage* console
         if (consoleMessage->type() == TableMessageType && generatePreview) {
             v8::Local<v8::Value> table = arguments->argumentAt(0).v8Value();
             v8::Local<v8::Value> columns = arguments->argumentCount() > 1 ? arguments->argumentAt(1).v8Value() : v8::Local<v8::Value>();
-            OwnPtr<protocol::Runtime::RemoteObject> inspectorValue = m_runtimeAgent->wrapTable(context, table, columns);
+            OwnPtr<protocol::Runtime::RemoteObject> inspectorValue = m_v8Session->wrapTable(context, table, columns);
             if (inspectorValue)
                 jsonArgs->addItem(inspectorValue.release());
             else
                 jsonArgs = nullptr;
         } else {
             for (unsigned i = 0; i < arguments->argumentCount(); ++i) {
-                OwnPtr<protocol::Runtime::RemoteObject> inspectorValue = m_runtimeAgent->wrapObject(context, arguments->argumentAt(i).v8Value(), "console", generatePreview);
+                OwnPtr<protocol::Runtime::RemoteObject> inspectorValue = m_v8Session->wrapObject(context, arguments->argumentAt(i).v8Value(), "console", generatePreview);
                 if (!inspectorValue) {
                     jsonArgs = nullptr;
                     break;
