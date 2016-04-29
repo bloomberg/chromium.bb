@@ -35,7 +35,7 @@ const unsigned int kRequestTimeoutInSeconds = 3;
 
 // Default url for connectivity checking.
 const char kDefaultConnectivityCheckUrl[] =
-    "https://clients3.google.com/generate_204";
+    "https://connectivitycheck.gstatic.com/generate_204";
 
 // Delay notification of network change events to smooth out rapid flipping.
 // Histogram "Cast.Network.Down.Duration.In.Seconds" shows 40% of network
