@@ -188,6 +188,7 @@ class AudioVideoPipelineDeviceTest : public testing::Test {
   void TearDown() override {
     // Pipeline must be destroyed before finalizing media shlib.
     backend_.reset();
+    effects_backends_.clear();
     CastMediaShlib::Finalize();
   }
 
