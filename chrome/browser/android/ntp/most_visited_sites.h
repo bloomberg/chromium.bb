@@ -89,9 +89,9 @@ class MostVisitedSites : public history::TopSitesObserver,
 
   ~MostVisitedSites() override;
 
-  // Does not take ownership of |observer|, which must outlive this object.
-  void SetMostVisitedURLsObserver(
-      Observer* observer, int num_sites);
+  // Does not take ownership of |observer|, which must outlive this object and
+  // must not be null.
+  void SetMostVisitedURLsObserver(Observer* observer, int num_sites);
 
   using ThumbnailCallback = base::Callback<
       void(bool /* is_local_thumbnail */, const SkBitmap* /* bitmap */)>;
@@ -111,7 +111,7 @@ class MostVisitedSites : public history::TopSitesObserver,
   // TODO(treib): use SuggestionsVector in internal functions. crbug.com/601734
   using SuggestionsPtrVector = std::vector<std::unique_ptr<Suggestion>>;
 
-  void QueryMostVisitedURLs();
+  void BuildCurrentSuggestions();
 
   // Initialize the query to Top Sites. Called if the SuggestionsService is not
   // enabled, or if it returns no data.
