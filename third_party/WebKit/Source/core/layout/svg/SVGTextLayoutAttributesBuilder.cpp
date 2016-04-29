@@ -147,9 +147,9 @@ void SVGTextLayoutAttributesBuilder::buildCharacterDataMap(LayoutSVGText& textRo
 
     // Handle x/y default attributes.
     SVGCharacterData& data = m_characterDataMap.add(1, SVGCharacterData()).storedValue->value;
-    if (SVGTextLayoutAttributes::isEmptyValue(data.x))
+    if (!data.hasX())
         data.x = 0;
-    if (SVGTextLayoutAttributes::isEmptyValue(data.y))
+    if (!data.hasY())
         data.y = 0;
 }
 

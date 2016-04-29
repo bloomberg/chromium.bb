@@ -141,7 +141,7 @@ bool LayoutSVGInlineText::characterStartsNewTextChunk(int position) const
     if (it == m_layoutAttributes.characterDataMap().end())
         return false;
 
-    return !SVGTextLayoutAttributes::isEmptyValue(it->value.x) || !SVGTextLayoutAttributes::isEmptyValue(it->value.y);
+    return it->value.hasX() || it->value.hasY();
 }
 
 PositionWithAffinity LayoutSVGInlineText::positionForPoint(const LayoutPoint& point)

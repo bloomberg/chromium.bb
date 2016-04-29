@@ -54,11 +54,11 @@ SVGTextLayoutEngine::~SVGTextLayoutEngine() = default;
 
 bool SVGTextLayoutEngine::setCurrentTextPosition(const SVGCharacterData& data)
 {
-    bool hasX = !SVGTextLayoutAttributes::isEmptyValue(data.x);
+    bool hasX = data.hasX();
     if (hasX)
         m_textPosition.setX(data.x);
 
-    bool hasY = !SVGTextLayoutAttributes::isEmptyValue(data.y);
+    bool hasY = data.hasY();
     if (hasY)
         m_textPosition.setY(data.y);
 
@@ -93,11 +93,11 @@ void SVGTextLayoutEngine::advanceCurrentTextPosition(float glyphAdvance)
 bool SVGTextLayoutEngine::applyRelativePositionAdjustmentsIfNeeded(const SVGCharacterData& data)
 {
     FloatPoint delta;
-    bool hasDx = !SVGTextLayoutAttributes::isEmptyValue(data.dx);
+    bool hasDx = data.hasDx();
     if (hasDx)
         delta.setX(data.dx);
 
-    bool hasDy = !SVGTextLayoutAttributes::isEmptyValue(data.dy);
+    bool hasDy = data.hasDy();
     if (hasDy)
         delta.setY(data.dy);
 
@@ -449,7 +449,7 @@ void SVGTextLayoutEngine::layoutTextOnLineOrPath(SVGInlineTextBox* textBox, Line
             position += baselineShift;
         }
 
-        if (!SVGTextLayoutAttributes::isEmptyValue(data.rotate))
+        if (data.hasRotate())
             angle += data.rotate;
 
         // Determine whether we have to start a new fragment.
