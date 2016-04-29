@@ -58,20 +58,10 @@ class LevelDBServiceTest : public shell::test::ShellTest {
   DISALLOW_COPY_AND_ASSIGN(LevelDBServiceTest);
 };
 
-// TODO(crbug.com/602820) Test is flaky.
-#if defined(OS_LINUX) || defined(OS_WIN)
-#define MAYBE_Basic DISABLED_Basic
-#else
-#define MAYBE_Basic Basic
-#endif
-TEST_F(LevelDBServiceTest, MAYBE_Basic) {
-  filesystem::DirectoryPtr directory;
-  GetUserDataDir(&directory);
-
+TEST_F(LevelDBServiceTest, Basic) {
   DatabaseError error;
   LevelDBDatabasePtr database;
-  leveldb()->Open(std::move(directory), "test", GetProxy(&database),
-                  Capture(&error));
+  leveldb()->OpenInMemory(GetProxy(&database), Capture(&error));
   ASSERT_TRUE(leveldb().WaitForIncomingResponse());
   EXPECT_EQ(DatabaseError::OK, error);
 
@@ -109,13 +99,7 @@ TEST_F(LevelDBServiceTest, MAYBE_Basic) {
   EXPECT_EQ("", value.To<std::string>());
 }
 
-// TODO(crbug.com/602820) Test is flaky.
-#if defined(OS_LINUX) || defined(OS_WIN)
-#define MAYBE_WriteBatch DISABLED_WriteBatch
-#else
-#define MAYBE_WriteBatch WriteBatch
-#endif
-TEST_F(LevelDBServiceTest, MAYBE_WriteBatch) {
+TEST_F(LevelDBServiceTest, WriteBatch) {
   DatabaseError error;
   LevelDBDatabasePtr database;
   leveldb()->OpenInMemory(GetProxy(&database), Capture(&error));
@@ -255,21 +239,10 @@ TEST_F(LevelDBServiceTest, MAYBE_Reconnect) {
   }
 }
 
-// TODO(crbug.com/602820) Test is flaky.
-#if defined(OS_LINUX) || defined(OS_WIN)
-#define MAYBE_GetSnapshotSimple DISABLED_GetSnapshotSimple
-#else
-#define MAYBE_GetSnapshotSimple GetSnapshotSimple
-#endif
-TEST_F(LevelDBServiceTest, MAYBE_GetSnapshotSimple) {
+TEST_F(LevelDBServiceTest, GetSnapshotSimple) {
   DatabaseError error;
-
-  filesystem::DirectoryPtr directory;
-  GetUserDataDir(&directory);
-
   LevelDBDatabasePtr database;
-  leveldb()->Open(std::move(directory), "test", GetProxy(&database),
-                  Capture(&error));
+  leveldb()->OpenInMemory(GetProxy(&database), Capture(&error));
   ASSERT_TRUE(leveldb().WaitForIncomingResponse());
   EXPECT_EQ(DatabaseError::OK, error);
 
@@ -279,21 +252,10 @@ TEST_F(LevelDBServiceTest, MAYBE_GetSnapshotSimple) {
   EXPECT_NE(static_cast<uint64_t>(0), snapshot_id);
 }
 
-// TODO(crbug.com/602820) Test is flaky.
-#if defined(OS_LINUX) || defined(OS_WIN)
-#define MAYBE_GetFromSnapshots DISABLED_GetFromSnapshots
-#else
-#define MAYBE_GetFromSnapshots GetFromSnapshots
-#endif
-TEST_F(LevelDBServiceTest, MAYBE_GetFromSnapshots) {
+TEST_F(LevelDBServiceTest, GetFromSnapshots) {
   DatabaseError error;
-
-  filesystem::DirectoryPtr directory;
-  GetUserDataDir(&directory);
-
   LevelDBDatabasePtr database;
-  leveldb()->Open(std::move(directory), "test", GetProxy(&database),
-                  Capture(&error));
+  leveldb()->OpenInMemory(GetProxy(&database), Capture(&error));
   ASSERT_TRUE(leveldb().WaitForIncomingResponse());
   EXPECT_EQ(DatabaseError::OK, error);
 
@@ -339,20 +301,10 @@ TEST_F(LevelDBServiceTest, MAYBE_GetFromSnapshots) {
   EXPECT_EQ("value", value.To<std::string>());
 }
 
-// TODO(crbug.com/602820) Test is flaky.
-#if defined(OS_LINUX) || defined(OS_WIN)
-#define MAYBE_InvalidArgumentOnInvalidSnapshot DISABLED_InvalidArgumentOnInvalidSnapshot
-#else
-#define MAYBE_InvalidArgumentOnInvalidSnapshot InvalidArgumentOnInvalidSnapshot
-#endif
-TEST_F(LevelDBServiceTest, MAYBE_InvalidArgumentOnInvalidSnapshot) {
-  filesystem::DirectoryPtr directory;
-  GetUserDataDir(&directory);
-
+TEST_F(LevelDBServiceTest, InvalidArgumentOnInvalidSnapshot) {
   LevelDBDatabasePtr database;
   DatabaseError error = DatabaseError::INVALID_ARGUMENT;
-  leveldb()->Open(std::move(directory), "test", GetProxy(&database),
-                  Capture(&error));
+  leveldb()->OpenInMemory(GetProxy(&database), Capture(&error));
   ASSERT_TRUE(leveldb().WaitForIncomingResponse());
   EXPECT_EQ(DatabaseError::OK, error);
 
