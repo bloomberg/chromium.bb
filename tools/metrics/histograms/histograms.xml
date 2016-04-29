@@ -32336,7 +32336,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="NewTabPage.AnimatedLogoDownloadTime" units="ms">
   <owner>ianwen@chromium.org</owner>
-  <summary>The amount of time it takes to download the animated logo.</summary>
+  <summary>
+    The amount of time it takes to download the animated logo. Android only.
+  </summary>
 </histogram>
 
 <histogram name="NewTabPage.AppsPageDragSource" enum="AppsPageDragSource">
@@ -32394,6 +32396,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The number of most visited tiles on the new tab page that are displayed
     using a fallback color (as opposed to having an icon, or simply being gray).
+    Android only.
   </summary>
 </histogram>
 
@@ -32401,7 +32404,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>newt@chromium.org</owner>
   <summary>
     The number of most visited tiles on the new tab page that are displayed as
-    gray (as opposed to having an icon, or a fallback color).
+    gray (as opposed to having an icon, or a fallback color). Android only.
   </summary>
 </histogram>
 
@@ -32409,7 +32412,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>newt@chromium.org</owner>
   <summary>
     The number of most visited tiles on the new tab page that are displayed with
-    the site's icon (as opposed using a fallback color or just gray).
+    the site's icon (as opposed using a fallback color or just gray). Android
+    only.
   </summary>
 </histogram>
 
@@ -32452,12 +32456,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Outcome of downloading search provider's logos. It measures whether
     download/parsing is successful, revalidation and parsing work properly, etc.
+    Android only.
   </summary>
 </histogram>
 
 <histogram name="NewTabPage.LogoDownloadTime" units="ms">
   <owner>ianwen@chromium.org</owner>
-  <summary>The amount of time it takes to download the static logo.</summary>
+  <summary>
+    The amount of time it takes to download the static logo. Android only.
+  </summary>
 </histogram>
 
 <histogram name="NewTabPage.MobileIsUserOnline" enum="Boolean">
