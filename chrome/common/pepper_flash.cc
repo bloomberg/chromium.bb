@@ -126,8 +126,16 @@ bool CheckPepperFlashManifest(const base::DictionaryValue& manifest,
 
   std::string arch;
   manifest.GetStringASCII("x-ppapi-arch", &arch);
-  if (arch != kPepperFlashArch)
+  if (arch != kPepperFlashArch) {
+#if defined(OS_MACOSX)
+    // On Mac OS X the arch is 'x64' for component updated Flash but 'mac' for
+    // system Flash, so accept both variations.
+    if (arch != kPepperFlashOperatingSystem)
+      return false;
+#else
     return false;
+#endif
+  }
 
   *version_out = version;
   return true;
