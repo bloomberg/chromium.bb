@@ -7,9 +7,9 @@
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/shell/browser/shell_app_delegate.h"
 #include "extensions/shell/browser/shell_app_window_client.h"
-#include "ui/gfx/display.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/gfx/screen.h"
 
 namespace extensions {
 
@@ -26,7 +26,7 @@ ShellDesktopControllerMac::~ShellDesktopControllerMac() {
 
 gfx::Size ShellDesktopControllerMac::GetWindowSize() {
   // This is the full screen size.
-  return gfx::Screen::GetScreen()->GetPrimaryDisplay().bounds().size();
+  return display::Screen::GetScreen()->GetPrimaryDisplay().bounds().size();
 }
 
 AppWindow* ShellDesktopControllerMac::CreateAppWindow(

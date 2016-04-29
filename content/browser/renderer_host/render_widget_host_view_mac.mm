@@ -79,15 +79,15 @@
 #include "ui/base/layout.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/color_profile.h"
-#include "ui/gfx/display.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
-#include "ui/gfx/screen.h"
 #include "ui/gl/gl_switches.h"
 
 using content::BrowserAccessibility;
@@ -379,8 +379,8 @@ NSWindow* ApparentWindowForView(NSView* view) {
 }
 
 blink::WebScreenInfo GetWebScreenInfo(NSView* view) {
-  gfx::Display display =
-      gfx::Screen::GetScreen()->GetDisplayNearestWindow(view);
+  display::Display display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(view);
 
   NSScreen* screen = [NSScreen deepestScreen];
 
@@ -569,7 +569,7 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
   root_layer_.reset(new ui::Layer(ui::LAYER_SOLID_COLOR));
   delegated_frame_host_.reset(new DelegatedFrameHost(this));
 
-  gfx::Screen::GetScreen()->AddObserver(this);
+  display::Screen::GetScreen()->AddObserver(this);
 
   if (!is_guest_view_hack_)
     render_widget_host_->SetView(this);
@@ -585,7 +585,7 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
 }
 
 RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
-  gfx::Screen::GetScreen()->RemoveObserver(this);
+  display::Screen::GetScreen()->RemoveObserver(this);
 
   // This is being called from |cocoa_view_|'s destructor, so invalidate the
   // pointer.
@@ -1589,7 +1589,7 @@ uint32_t RenderWidgetHostViewMac::SurfaceIdNamespaceAtPoint(
     gfx::Point* transformed_point) {
   // The surface hittest happens in device pixels, so we need to convert the
   // |point| from DIPs to pixels before hittesting.
-  float scale_factor = gfx::Screen::GetScreen()
+  float scale_factor = display::Screen::GetScreen()
                            ->GetDisplayNearestWindow(cocoa_view_)
                            .device_scale_factor();
   gfx::Point point_in_pixels = gfx::ConvertPointToPixel(scale_factor, point);
@@ -1643,7 +1643,7 @@ void RenderWidgetHostViewMac::TransformPointToLocalCoordSpace(
     gfx::Point* transformed_point) {
   // Transformations use physical pixels rather than DIP, so conversion
   // is necessary.
-  float scale_factor = gfx::Screen::GetScreen()
+  float scale_factor = display::Screen::GetScreen()
                            ->GetDisplayNearestWindow(cocoa_view_)
                            .device_scale_factor();
   gfx::Point point_in_pixels = gfx::ConvertPointToPixel(scale_factor, point);
@@ -1765,17 +1765,17 @@ void RenderWidgetHostViewMac::PauseForPendingResizeOrRepaintsAndDraw() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// gfx::DisplayObserver, public:
+// display::DisplayObserver, public:
 
-void RenderWidgetHostViewMac::OnDisplayAdded(const gfx::Display& display) {
-}
+void RenderWidgetHostViewMac::OnDisplayAdded(const display::Display& display) {}
 
-void RenderWidgetHostViewMac::OnDisplayRemoved(const gfx::Display& display) {
-}
+void RenderWidgetHostViewMac::OnDisplayRemoved(
+    const display::Display& display) {}
 
 void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
-    const gfx::Display& display, uint32_t metrics) {
-  gfx::Screen* screen = gfx::Screen::GetScreen();
+    const display::Display& display,
+    uint32_t metrics) {
+  display::Screen* screen = display::Screen::GetScreen();
   if (display.id() != screen->GetDisplayNearestWindow(cocoa_view_).id())
     return;
 

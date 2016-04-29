@@ -6,7 +6,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
-#include "ui/gfx/display.h"
+#include "ui/display/display.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -123,7 +123,7 @@ class AppListServiceMacUnitTest : public testing::Test {
   }
 
  private:
-  gfx::Display display_;
+  display::Display display_;
   gfx::Size window_size_;
   bool cursor_is_visible_;
   gfx::Point cursor_;
