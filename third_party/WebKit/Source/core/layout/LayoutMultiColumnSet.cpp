@@ -436,8 +436,7 @@ void LayoutMultiColumnSet::addOverflowFromChildren()
         overflowRect.unite(rect);
     }
     addLayoutOverflow(overflowRect);
-    if (!hasOverflowClip())
-        addVisualOverflow(overflowRect);
+    addContentsVisualOverflow(overflowRect);
 }
 
 void LayoutMultiColumnSet::insertedIntoTree()

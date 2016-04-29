@@ -261,7 +261,7 @@ void LayoutTableRow::addOverflowFromCell(const LayoutTableCell* cell)
     LayoutUnit cellOffsetLogicalTopDifference = cell->location().y() - location().y();
     cellVisualOverflowRect.move(LayoutUnit(), cellOffsetLogicalTopDifference);
 
-    addVisualOverflow(cellVisualOverflowRect);
+    addContentsVisualOverflow(cellVisualOverflowRect);
 }
 
 } // namespace blink

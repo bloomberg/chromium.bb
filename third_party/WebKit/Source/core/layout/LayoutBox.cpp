@@ -4013,7 +4013,7 @@ void LayoutBox::addVisualEffectOverflow()
     // Add in the final overflow with shadows, outsets and outline combined.
     LayoutRect visualEffectOverflow = borderBoxRect();
     visualEffectOverflow.expand(computeVisualEffectOverflowOutsets());
-    addVisualOverflow(visualEffectOverflow);
+    addSelfVisualOverflow(visualEffectOverflow);
 }
 
 LayoutRectOutsets LayoutBox::computeVisualEffectOverflowOutsets() const
@@ -4086,8 +4086,11 @@ void LayoutBox::addOverflowFromChild(LayoutBox* child, const LayoutSize& delta)
 
 void LayoutBox::addLayoutOverflow(const LayoutRect& rect)
 {
+    if (rect.isEmpty())
+        return;
+
     LayoutRect clientBox = noOverflowRect();
-    if (clientBox.contains(rect) || rect.isEmpty())
+    if (clientBox.contains(rect))
         return;
 
     // For overflow clip objects, we don't want to propagate overflow into unreachable areas.
@@ -4122,32 +4125,40 @@ void LayoutBox::addLayoutOverflow(const LayoutRect& rect)
     }
 
     if (!m_overflow)
-        m_overflow = adoptPtr(new OverflowModel(clientBox, borderBoxRect()));
+        m_overflow = adoptPtr(new BoxOverflowModel(clientBox, borderBoxRect()));
 
     m_overflow->addLayoutOverflow(overflowRect);
 }
 
-void LayoutBox::addVisualOverflow(const LayoutRect& rect)
+void LayoutBox::addSelfVisualOverflow(const LayoutRect& rect)
 {
+    if (rect.isEmpty())
+        return;
+
     LayoutRect borderBox = borderBoxRect();
-    if (borderBox.contains(rect) || rect.isEmpty())
+    if (borderBox.contains(rect))
         return;
 
     if (!m_overflow)
-        m_overflow = adoptPtr(new OverflowModel(noOverflowRect(), borderBox));
+        m_overflow = adoptPtr(new BoxOverflowModel(noOverflowRect(), borderBox));
 
-    m_overflow->addVisualOverflow(rect);
+    m_overflow->addSelfVisualOverflow(rect);
 }
 
 void LayoutBox::addContentsVisualOverflow(const LayoutRect& rect)
 {
-    if (!hasOverflowClip()) {
-        addVisualOverflow(rect);
+    if (rect.isEmpty())
         return;
-    }
+
+    // If hasOverflowClip() we always save contents visual overflow because we need it
+    // e.g. to determine whether to apply rounded corner clip on contents.
+    // Otherwise we save contents visual overflow only if it overflows the border box.
+    LayoutRect borderBox = borderBoxRect();
+    if (!hasOverflowClip() && borderBox.contains(rect))
+        return;
 
     if (!m_overflow)
-        m_overflow = adoptPtr(new OverflowModel(noOverflowRect(), borderBoxRect()));
+        m_overflow = adoptPtr(new BoxOverflowModel(noOverflowRect(), borderBox));
     m_overflow->addContentsVisualOverflow(rect);
 }
 
@@ -4156,7 +4167,7 @@ void LayoutBox::clearLayoutOverflow()
     if (!m_overflow)
         return;
 
-    if (!hasVisualOverflow() && contentsVisualOverflowRect().isEmpty()) {
+    if (!hasSelfVisualOverflow() && contentsVisualOverflowRect().isEmpty()) {
         clearAllOverflows();
         return;
     }
@@ -4382,6 +4393,16 @@ LayoutRect LayoutBox::noOverflowRect() const
     else
         rect.contract(scrollBarWidth, scrollBarHeight);
     return rect;
+}
+
+LayoutRect LayoutBox::visualOverflowRect() const
+{
+    if (!m_overflow)
+        return borderBoxRect();
+    if (hasOverflowClip())
+        return m_overflow->selfVisualOverflowRect();
+    // TODO(wangxianzhu): We should use normal unionRect() which ignores empty rects.
+    return unionRectEvenIfEmpty(m_overflow->selfVisualOverflowRect(), m_overflow->contentsVisualOverflowRect());
 }
 
 LayoutUnit LayoutBox::offsetLeft() const

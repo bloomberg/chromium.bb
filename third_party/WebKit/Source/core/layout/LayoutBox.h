@@ -373,16 +373,15 @@ public:
     LayoutUnit logicalLeftLayoutOverflow() const { return style()->isHorizontalWritingMode() ? layoutOverflowRect().x() : layoutOverflowRect().y(); }
     LayoutUnit logicalRightLayoutOverflow() const { return style()->isHorizontalWritingMode() ? layoutOverflowRect().maxX() : layoutOverflowRect().maxY(); }
 
-    LayoutRect visualOverflowRect() const override { return m_overflow ? m_overflow->visualOverflowRect() : borderBoxRect(); }
+    LayoutRect visualOverflowRect() const override;
     LayoutUnit logicalLeftVisualOverflow() const { return style()->isHorizontalWritingMode() ? visualOverflowRect().x() : visualOverflowRect().y(); }
     LayoutUnit logicalRightVisualOverflow() const { return style()->isHorizontalWritingMode() ? visualOverflowRect().maxX() : visualOverflowRect().maxY(); }
 
+    LayoutRect selfVisualOverflowRect() const { return m_overflow ? m_overflow->selfVisualOverflowRect() : borderBoxRect(); }
     LayoutRect contentsVisualOverflowRect() const { return m_overflow ? m_overflow->contentsVisualOverflowRect() : LayoutRect(); }
 
     void addLayoutOverflow(const LayoutRect&);
-    void addVisualOverflow(const LayoutRect&);
-
-    // Clipped by the contents clip, if one exists.
+    void addSelfVisualOverflow(const LayoutRect&);
     void addContentsVisualOverflow(const LayoutRect&);
 
     void addVisualEffectOverflow();
@@ -853,7 +852,8 @@ public:
     LayoutRect layoutOverflowRectForPropagation(const ComputedStyle&) const;
 
     bool hasOverflowModel() const { return m_overflow.get(); }
-    bool hasVisualOverflow() const { return m_overflow && !borderBoxRect().contains(m_overflow->visualOverflowRect()); }
+    bool hasSelfVisualOverflow() const { return m_overflow && !borderBoxRect().contains(m_overflow->selfVisualOverflowRect()); }
+    bool hasVisualOverflow() const { return m_overflow && !borderBoxRect().contains(visualOverflowRect()); }
 
     virtual bool needsPreferredWidthsRecalculation() const;
 
@@ -1075,7 +1075,7 @@ protected:
     LayoutUnit m_maxPreferredLogicalWidth;
 
     // Our overflow information.
-    OwnPtr<OverflowModel> m_overflow;
+    OwnPtr<BoxOverflowModel> m_overflow;
 
 private:
     // The inline box containing this LayoutBox, for atomic inline elements.

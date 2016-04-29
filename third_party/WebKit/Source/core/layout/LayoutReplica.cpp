@@ -56,7 +56,7 @@ LayoutReplica::~LayoutReplica()
 void LayoutReplica::layout()
 {
     setFrameRect(parentBox()->borderBoxRect());
-    addVisualOverflow(parentBox()->visualOverflowRect());
+    addSelfVisualOverflow(parentBox()->visualOverflowRect());
     updateLayerTransformAfterLayout();
     clearNeedsLayout();
 }

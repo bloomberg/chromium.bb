@@ -25,16 +25,34 @@
 
 namespace blink {
 
-// OverflowModel is a class for tracking content that spills out of an object.
-// This class is used by LayoutBox and InlineFlowBox.
+inline void uniteLayoutOverflowRect(LayoutRect& layoutOverflow, const LayoutRect& rect)
+{
+    LayoutUnit maxX = std::max(rect.maxX(), layoutOverflow.maxX());
+    LayoutUnit maxY = std::max(rect.maxY(), layoutOverflow.maxY());
+    LayoutUnit minX = std::min(rect.x(), layoutOverflow.x());
+    LayoutUnit minY = std::min(rect.y(), layoutOverflow.y());
+    // In case the width/height is larger than LayoutUnit can represent, fix the right/bottom edge and shift the top/left ones.
+    layoutOverflow.setWidth(maxX - minX);
+    layoutOverflow.setHeight(maxY - minY);
+    layoutOverflow.setX(maxX - layoutOverflow.width());
+    layoutOverflow.setY(maxY - layoutOverflow.height());
+}
+
+// OverflowModel classes track content that spills out of an object.
+// SimpleOverflowModel is used by InlineFlowBox, and BoxOverflowModel is
+// used by LayoutBox.
 //
-// There are 3 types of overflows that we store: layout, visual overflow and
-// content visual overflows.
-// All overflows are in logical coordinates.
+// SimpleOverflowModel tracks 2 types of overflows: layout and visual
+// overflows. BoxOverflowModel separates visual overflow into self visual
+// overflow and contents visual overflow.
 //
-// This class models the overflows as rectangles that unite all the sources of
+// All overflows are in the coordinate space of the object (i.e. physical
+// coordinates with flipped block-flow direction). See documentation of
+// LayoutBoxModelObject and LayoutBox::noOverflowRect() for more details.
+//
+// The classes model the overflows as rectangles that unite all the sources of
 // overflow. This is the natural choice for layout overflow (scrollbars are
-// linear in nature, thus are modelled by rectangles in 2D). For visual overflow
+// linear in nature, thus are modeled by rectangles in 2D). For visual overflow
 // and content visual overflow, this is a first order simplification though as
 // they can be thought of as a collection of (potentially overlapping)
 // rectangles.
@@ -53,8 +71,48 @@ namespace blink {
 //
 // Visual overflow covers all the effects that visually bleed out of the box.
 // Its primary use is to determine the area to invalidate.
-// Visual overflow includes shadows ('text-shadow' / 'box-shadow'), text stroke,
-// 'outline' and 'border-image'.
+// Visual overflow includes ('text-shadow' / 'box-shadow'), text stroke,
+// 'outline', 'border-image', etc.
+//
+// An overflow model object is allocated only when some of these fields have
+// non-default values in the owning object. Care should be taken to use adder
+// functions (addLayoutOverflow, addVisualOverflow, etc.) to keep this invariant.
+
+class SimpleOverflowModel {
+    WTF_MAKE_NONCOPYABLE(SimpleOverflowModel);
+    USING_FAST_MALLOC(SimpleOverflowModel);
+public:
+    SimpleOverflowModel(const LayoutRect& layoutRect, const LayoutRect& visualRect)
+        : m_layoutOverflow(layoutRect)
+        , m_visualOverflow(visualRect)
+    {
+    }
+
+    const LayoutRect& layoutOverflowRect() const { return m_layoutOverflow; }
+    void setLayoutOverflow(const LayoutRect& rect) { m_layoutOverflow = rect; }
+    void addLayoutOverflow(const LayoutRect& rect) { uniteLayoutOverflowRect(m_layoutOverflow, rect); }
+
+    const LayoutRect& visualOverflowRect() const { return m_visualOverflow; }
+    void setVisualOverflow(const LayoutRect& rect) { m_visualOverflow = rect; }
+    // TODO(wangxianzhu): Should use normal LayoutRect::unite() which ignores empty rects.
+    void addVisualOverflow(const LayoutRect& rect) { m_visualOverflow.uniteEvenIfEmpty(rect); }
+
+    void move(LayoutUnit dx, LayoutUnit dy)
+    {
+        m_layoutOverflow.move(dx, dy);
+        m_visualOverflow.move(dx, dy);
+    }
+
+private:
+    LayoutRect m_layoutOverflow;
+    LayoutRect m_visualOverflow;
+};
+
+// BoxModelOverflow tracks overflows of a LayoutBox. It separates visual overflow
+// into self visual overflow and contents visual overflow.
+//
+// Self visual overflow covers all the effects of the object itself that visually
+// bleed out of the box.
 //
 // Content visual overflow includes anything that would bleed out of the box and
 // would be clipped by the overflow clip ('overflow' != visible). This
@@ -70,88 +128,48 @@ namespace blink {
 // self-painting layer is handled by PaintLayerPainter, which relies on
 // PaintLayerClipper and thus ignores this optimization.
 //
-// This object is allocated only when some of these fields have non-default
-// values in the owning box. Care should be taken to use LayoutBox adder
-// functions (addLayoutOverflow, addVisualOverflow, addContentsVisualOverflow)
-// to keep this invariant.
-class OverflowModel {
-    WTF_MAKE_NONCOPYABLE(OverflowModel);
-    USING_FAST_MALLOC(OverflowModel);
+// Visual overflow covers self visual overflow, and if the box doesn't clip
+// overflow, also content visual overflow. OverflowModel doesn't keep visual
+// overflow, but keeps self visual overflow and contents visual overflow
+// separately. The box should use self visual overflow as visual overflow if
+// it clips overflow, otherwise union of self visual overflow and contents
+// visual overflow.
+
+class BoxOverflowModel {
 public:
-    OverflowModel(const LayoutRect& layoutRect, const LayoutRect& visualRect)
+    BoxOverflowModel(const LayoutRect& layoutRect, const LayoutRect& selfVisualOverflowRect)
         : m_layoutOverflow(layoutRect)
-        , m_visualOverflow(visualRect)
+        , m_selfVisualOverflow(selfVisualOverflowRect)
     {
     }
 
     const LayoutRect& layoutOverflowRect() const { return m_layoutOverflow; }
-    const LayoutRect& visualOverflowRect() const { return m_visualOverflow; }
-    LayoutRect contentsVisualOverflowRect() const { return m_contentsVisualOverflow; }
+    void setLayoutOverflow(const LayoutRect& rect) { m_layoutOverflow = rect; }
+    void addLayoutOverflow(const LayoutRect& rect) { uniteLayoutOverflowRect(m_layoutOverflow, rect); }
 
-    void move(LayoutUnit dx, LayoutUnit dy);
+    const LayoutRect& selfVisualOverflowRect() const { return m_selfVisualOverflow; }
+    // TODO(wangxianzhu): Should use normal LayoutRect::unite() which ignores empty rects.
+    void addSelfVisualOverflow(const LayoutRect& rect) { m_selfVisualOverflow.uniteEvenIfEmpty(rect); }
 
-    void addLayoutOverflow(const LayoutRect&);
-    void addVisualOverflow(const LayoutRect&);
+    const LayoutRect& contentsVisualOverflowRect() const { return m_contentsVisualOverflow; }
     void addContentsVisualOverflow(const LayoutRect& rect) { m_contentsVisualOverflow.unite(rect); }
 
-    void setLayoutOverflow(const LayoutRect&);
-    void setVisualOverflow(const LayoutRect&);
+    void move(LayoutUnit dx, LayoutUnit dy)
+    {
+        m_layoutOverflow.move(dx, dy);
+        m_selfVisualOverflow.move(dx, dy);
+        m_contentsVisualOverflow.move(dx, dy);
+    }
 
     LayoutUnit layoutClientAfterEdge() const { return m_layoutClientAfterEdge; }
     void setLayoutClientAfterEdge(LayoutUnit clientAfterEdge) { m_layoutClientAfterEdge = clientAfterEdge; }
 
 private:
-    // The layout overflow rectangle. See class description for details.
     LayoutRect m_layoutOverflow;
-
-    // The visual overflow rectangle. See class description for details.
-    LayoutRect m_visualOverflow;
-
-    // The content visual overflow rectangle. See class description for details.
+    LayoutRect m_selfVisualOverflow;
     LayoutRect m_contentsVisualOverflow;
-
     LayoutUnit m_layoutClientAfterEdge;
 };
-
-inline void OverflowModel::move(LayoutUnit dx, LayoutUnit dy)
-{
-    m_layoutOverflow.move(dx, dy);
-    m_visualOverflow.move(dx, dy);
-    m_contentsVisualOverflow.move(dx, dy);
-}
-
-inline void OverflowModel::addLayoutOverflow(const LayoutRect& rect)
-{
-    LayoutUnit maxX = std::max(rect.maxX(), m_layoutOverflow.maxX());
-    LayoutUnit maxY = std::max(rect.maxY(), m_layoutOverflow.maxY());
-    LayoutUnit minX = std::min(rect.x(), m_layoutOverflow.x());
-    LayoutUnit minY = std::min(rect.y(), m_layoutOverflow.y());
-    // In case the width/height is larger than LayoutUnit can represent, fix the right/bottom edge and shift the top/left ones
-    m_layoutOverflow.setWidth(maxX - minX);
-    m_layoutOverflow.setHeight(maxY - minY);
-    m_layoutOverflow.setX(maxX - m_layoutOverflow.width());
-    m_layoutOverflow.setY(maxY - m_layoutOverflow.height());
-}
-
-inline void OverflowModel::addVisualOverflow(const LayoutRect& rect)
-{
-    LayoutUnit maxX = std::max(rect.maxX(), m_visualOverflow.maxX());
-    LayoutUnit maxY = std::max(rect.maxY(), m_visualOverflow.maxY());
-    m_visualOverflow.setX(std::min(rect.x(), m_visualOverflow.x()));
-    m_visualOverflow.setY(std::min(rect.y(), m_visualOverflow.y()));
-    m_visualOverflow.setWidth(maxX - m_visualOverflow.x());
-    m_visualOverflow.setHeight(maxY - m_visualOverflow.y());
-}
-
-inline void OverflowModel::setLayoutOverflow(const LayoutRect& rect)
-{
-    m_layoutOverflow = rect;
-}
-
-inline void OverflowModel::setVisualOverflow(const LayoutRect& rect)
-{
-    m_visualOverflow = rect;
-}
 
 } // namespace blink
 

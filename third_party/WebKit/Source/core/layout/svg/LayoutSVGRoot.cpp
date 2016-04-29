@@ -172,7 +172,7 @@ void LayoutSVGRoot::layout()
     if (!shouldApplyViewportClip()) {
         FloatRect contentPaintInvalidationRect = paintInvalidationRectInLocalSVGCoordinates();
         contentPaintInvalidationRect = m_localToBorderBoxTransform.mapRect(contentPaintInvalidationRect);
-        addVisualOverflow(enclosingLayoutRect(contentPaintInvalidationRect));
+        addContentsVisualOverflow(enclosingLayoutRect(contentPaintInvalidationRect));
     }
 
     updateLayerTransformAfterLayout();
@@ -191,6 +191,14 @@ bool LayoutSVGRoot::shouldApplyViewportClip() const
         || style()->overflowX() == OverflowAuto
         || style()->overflowX() == OverflowScroll
         || this->isDocumentElement();
+}
+
+LayoutRect LayoutSVGRoot::visualOverflowRect() const
+{
+    LayoutRect rect = LayoutReplaced::selfVisualOverflowRect();
+    if (!shouldApplyViewportClip())
+        rect.unite(contentsVisualOverflowRect());
+    return rect;
 }
 
 void LayoutSVGRoot::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const

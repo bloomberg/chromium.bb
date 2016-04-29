@@ -952,7 +952,7 @@ void InlineFlowBox::setLayoutOverflow(const LayoutRect& rect, const LayoutRect& 
         return;
 
     if (!m_overflow)
-        m_overflow = adoptPtr(new OverflowModel(frameBox, frameBox));
+        m_overflow = adoptPtr(new SimpleOverflowModel(frameBox, frameBox));
 
     m_overflow->setLayoutOverflow(rect);
 }
@@ -964,7 +964,7 @@ void InlineFlowBox::setVisualOverflow(const LayoutRect& rect, const LayoutRect& 
         return;
 
     if (!m_overflow)
-        m_overflow = adoptPtr(new OverflowModel(frameBox, frameBox));
+        m_overflow = adoptPtr(new SimpleOverflowModel(frameBox, frameBox));
 
     m_overflow->setVisualOverflow(rect);
 }

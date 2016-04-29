@@ -310,7 +310,7 @@ private:
     void setOverflowFromLogicalRects(const LayoutRect& logicalLayoutOverflow, const LayoutRect& logicalVisualOverflow, LayoutUnit lineTop, LayoutUnit lineBottom);
 
 protected:
-    OwnPtr<OverflowModel> m_overflow;
+    OwnPtr<SimpleOverflowModel> m_overflow;
 
     bool isInlineFlowBox() const final { return true; }
 

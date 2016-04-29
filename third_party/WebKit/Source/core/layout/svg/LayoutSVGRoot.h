@@ -66,6 +66,8 @@ public:
     const AffineTransform& localToBorderBoxTransform() const { return m_localToBorderBoxTransform; }
     bool shouldApplyViewportClip() const;
 
+    LayoutRect visualOverflowRect() const override;
+
     bool hasNonIsolatedBlendingDescendants() const final;
 
     const char* name() const override { return "LayoutSVGRoot"; }
