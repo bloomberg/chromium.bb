@@ -218,10 +218,6 @@ typedef void (^SSLErrorCallback)(BOOL);
 - (void)webControllerDidUpdateSSLStatusForCurrentNavigationItem:
     (CRWWebController*)webController;
 
-// Called when CRWWebController did update page load progress.
-- (void)webController:(CRWWebController*)webController
-    didUpdateProgress:(CGFloat)progress;
-
 // Called when web view process has been terminated.
 - (void)webControllerWebProcessDidCrash:(CRWWebController*)webController;
 

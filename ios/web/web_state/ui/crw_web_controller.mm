@@ -3575,10 +3575,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 }
 
 - (void)updatedProgress:(float)progress {
-  if ([_delegate
-          respondsToSelector:@selector(webController:didUpdateProgress:)]) {
-    [_delegate webController:self didUpdateProgress:progress];
-  }
+  // This is a UIWebView callback, which is no longer called.
+  NOTREACHED();
 }
 
 - (void)certificateUsed:(net::X509Certificate*)certificate
@@ -5211,14 +5209,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 }
 
 - (void)webViewEstimatedProgressDidChange {
-  if (_isBeingDestroyed)
-    return;
-
-  self.webStateImpl->SendChangeLoadProgress([_webView estimatedProgress]);
-  if ([_delegate
-          respondsToSelector:@selector(webController:didUpdateProgress:)]) {
-    [_delegate webController:self
-           didUpdateProgress:[_webView estimatedProgress]];
+  if (!_isBeingDestroyed) {
+    self.webStateImpl->SendChangeLoadProgress([_webView estimatedProgress]);
   }
 }
 
