@@ -33,17 +33,11 @@
   inspector/elements/edit/edit-dom-actions.html
 
 # Regressions: Unexpected crashes (53)
-  dom/xhtml/level2/html/HTMLIFrameElement11.xhtml [ Crash Timeout ]
   editing/execCommand/apply-style-command-crash.html [ Crash ]
   editing/pasteboard/file-drag-to-editable.html [ Crash Failure ]
   editing/style/apply-style-crash.html [ Crash ]
-  fast/css/acid2-pixel.html [ Crash Timeout ]
-  fast/css/acid2.html [ Crash Timeout ]
-  fast/dom/HTMLObjectElement/children-changed.html [ Crash Timeout ]
-  fast/dom/HTMLScriptElement/script-element-moved-to-detached-document-crash.html [ Crash Timeout ]
-  fast/dom/Range/acid3-surround-contents.html [ Crash Timeout ]
-  fast/dom/Window/window-resize-and-move-sub-frame.html [ Crash Timeout ]
-  fast/dom/exception-no-frame-timeout-crash.html [ Crash Timeout ]
+  fast/css/acid2-pixel.html [ Crash Timeout Failure ]
+  fast/css/acid2.html [ Crash Timeout Failure ]
   fast/dom/location-new-window-no-crash.html [ Crash ]
   http/tests/appcache/main-resource-hash.html [ Crash Timeout ]
   http/tests/appcache/main-resource-redirect.html [ Crash Timeout ]
@@ -53,22 +47,10 @@
   http/tests/history/cross-origin-redirect-on-back.html [ Crash ]
   http/tests/history/post-replace-state-reload.html [ Crash Failure ]
   http/tests/navigation/location-reload-after-post.php [ Crash Failure ]
-  virtual/pointerevent/fast/events/before-unload-return-bad-value.html [ Crash Failure ]
   virtual/pointerevent/fast/events/before-unload-return-value-from-listener.html [ Crash Failure ]
-  virtual/pointerevent/fast/events/before-unload-returnValue.html [ Crash Failure ]
   virtual/pointerevent/fast/events/drop-handler-should-not-stop-navigate.html [ Crash Failure ]
-  virtual/pointerevent/fast/events/focusingUnloadedFrame.html [ Crash Timeout ]
-  virtual/pointerevent/fast/events/onload-webkit-before-webcore.html [ Crash Timeout ]
-  virtual/pointerevent/fast/events/onloadFrameCrash.html [ Crash Timeout ]
-  virtual/pointerevent/fast/events/only-valid-drop-targets-receive-file-drop.html [ Crash Failure ]
-  virtual/trustedeventsdefaultaction/fast/events/before-unload-return-bad-value.html [ Crash Failure ]
   virtual/trustedeventsdefaultaction/fast/events/before-unload-return-value-from-listener.html [ Crash Failure ]
-  virtual/trustedeventsdefaultaction/fast/events/before-unload-returnValue.html [ Crash Failure ]
   virtual/trustedeventsdefaultaction/fast/events/drop-handler-should-not-stop-navigate.html [ Crash Failure ]
-  virtual/trustedeventsdefaultaction/fast/events/focusingUnloadedFrame.html [ Crash Timeout ]
-  virtual/trustedeventsdefaultaction/fast/events/onload-webkit-before-webcore.html [ Crash Timeout ]
-  virtual/trustedeventsdefaultaction/fast/events/onloadFrameCrash.html [ Crash Timeout ]
-  virtual/trustedeventsdefaultaction/fast/events/only-valid-drop-targets-receive-file-drop.html [ Crash Failure ]
 
 # Regressions: Unexpected missing results (1)
   http/tests/security/upgrade-insecure-requests/https-header-top-level.html [ Missing ]
@@ -76,7 +58,6 @@
 # Regressions: Unexpected text-only failures (69)
   fast/dom/frame-loading-via-document-write.html [ Failure ]
   http/tests/appcache/remove-cache.html [ Failure Timeout ]
-  http/tests/history/push-state-in-grandchild-after-reload.html [ Failure ]
   http/tests/inspector/console-resource-errors.html [ Failure ]
   http/tests/inspector/extensions-ignore-cache.html [ Failure ]
   http/tests/inspector/network/network-document-initiator.html [ Failure ]
@@ -97,7 +78,6 @@
   http/tests/navigation/post-goback1.html [ Crash Failure ]
   http/tests/navigation/redirect-on-reload-updates-history-item.html [ Failure ]
   http/tests/navigation/same-origin-fragment-navigation-is-sync.html [ Failure ]
-  http/tests/navigation/success200-frames-loadsame.html [ Failure ]
   http/tests/security/XFrameOptions/x-frame-options-allowall.html [ Failure ]
   http/tests/security/XFrameOptions/x-frame-options-deny-meta-tag-in-body.html [ Failure ]
   http/tests/security/XFrameOptions/x-frame-options-deny-meta-tag-parent-same-origin-allow.html [ Failure ]
@@ -123,7 +103,6 @@
   http/tests/security/xssAuditor/script-tag-post-control-char.html [ Failure ]
   http/tests/security/xssAuditor/script-tag-post-null-char.html [ Failure ]
   http/tests/security/xssAuditor/script-tag-post.html [ Failure ]
-  http/tests/security/xssAuditor/script-tag-with-callbacks.html [ Failure ]
   http/tests/security/xssAuditor/xss-filter-bypass-long-string.html [ Failure ]
   http/tests/security/xssAuditor/xss-protection-parsing-01.html [ Failure ]
   http/tests/serviceworker/appcache-ordering-main.html [ Failure ]
@@ -143,7 +122,6 @@
   http/tests/misc/window-open-then-write.html [ Timeout ]
   http/tests/navigation/forward-to-fragment-fires-onload.html [ Timeout ]
   http/tests/navigation/history-back-across-form-submission-to-fragment.html [ Timeout ]
-  http/tests/navigation/redirect-on-back-updates-history-item.html [ Timeout ]
   http/tests/navigation/response204.html [ Timeout ]
   http/tests/navigation/scrollstate-after-http-equiv-refresh-fragment-identifier-2.html [ Timeout ]
   http/tests/navigation/scrollstate-after-http-equiv-refresh-fragment-identifier.html [ Timeout ]
@@ -158,7 +136,6 @@
 
 # Regressions: Unexpected text-only failures (25)
   fast/events/drag-file-crash.html [ Failure ]
-  fast/events/frame-tab-focus.html [ Failure ]
   fast/forms/submit-to-url-fragment.html [ Failure ]
   fast/history/history-length-append-subframe-with-hash.html [ Failure ]
   fast/history/same-document-iframes-changing-fragment.html [ Failure ]
@@ -187,52 +164,24 @@
   svg/custom/anchor-on-use.svg [ Failure ]
 
 # Regressions: Unexpected crashes (55)
-  fast/events/before-unload-return-bad-value.html [ Crash Failure ]
   fast/events/before-unload-return-value-from-listener.html [ Crash Failure ]
-  fast/events/before-unload-returnValue.html [ Crash Failure ]
   fast/events/drop-handler-should-not-stop-navigate.html [ Crash Failure ]
-  fast/events/focusingUnloadedFrame.html [ Crash Timeout ]
-  fast/events/onload-webkit-before-webcore.html [ Crash Timeout ]
-  fast/events/onloadFrameCrash.html [ Crash Timeout ]
-  fast/events/only-valid-drop-targets-receive-file-drop.html [ Crash Failure ]
-  fast/frames/empty-frame-document.html [ Crash Timeout ]
   fast/frames/iframe-plugin-load-remove-document-crash.html [ Crash ]
-  fast/innerHTML/innerHTML-iframe.html [ Crash Timeout ]
-  fast/loader/iframe-crash-on-missing-image.xhtml [ Crash Timeout ]
   fast/loader/recursive-before-unload-crash.html [ Crash Failure ]
   fast/loader/reload-zero-byte-plugin.html [ Crash ]
   fast/loader/stateobjects/pushstate-with-fragment-urls-and-hashchange.html [ Crash Timeout ]
-  fast/overflow/overflow-height-float-not-removed-crash.html [ Crash Timeout ]
-  fast/overflow/overflow-height-float-not-removed-crash2.html [ Crash Timeout ]
-  fast/overflow/overflow-height-float-not-removed-crash3.html [ Crash Timeout ]
-  fast/parser/empty-text-resource.html [ Crash Timeout ]
-  fast/table/crash-splitColumn-2.html [ Crash Timeout ]
-  fast/table/giantCellspacing.html [ Crash Timeout ]
+  fast/overflow/overflow-height-float-not-removed-crash.html [ Crash Timeout Failure ]
+  fast/overflow/overflow-height-float-not-removed-crash3.html [ Crash Timeout Failure ]
+  fast/table/giantCellspacing.html [ Crash Timeout Failure ]
   fast/xmlhttprequest/null-document-xmlhttprequest-open.html [ Crash Timeout ]
-  http/tests/loading/bad-server-subframe.html [ Crash Timeout ]
+  http/tests/loading/bad-server-subframe.html [ Crash Timeout Failure ]
   http/tests/loading/pdf-commit-load-callbacks.html [ Crash ]
   http/tests/loading/redirect-methods.html [ Crash Failure ]
   imported/web-platform-tests/html/browsers/browsing-the-web/history-traversal/popstate_event.html [ Crash Failure Timeout ]
-  imported/web-platform-tests/html/browsers/windows/browsing-context-names/browsing-context-default-name.html [ Crash Timeout ]
-  imported/web-platform-tests/html/dom/dynamic-markup-insertion/opening-the-input-stream/004.html [ Crash Timeout ]
-  imported/web-platform-tests/html/dom/dynamic-markup-insertion/opening-the-input-stream/005.html [ Crash Timeout ]
-  imported/web-platform-tests/html/dom/dynamic-markup-insertion/opening-the-input-stream/006.html [ Crash Timeout ]
-  imported/web-platform-tests/html/dom/dynamic-markup-insertion/opening-the-input-stream/007.html [ Crash Timeout ]
-  imported/web-platform-tests/html/dom/dynamic-markup-insertion/opening-the-input-stream/008.html [ Crash Timeout ]
-  imported/web-platform-tests/html/dom/dynamic-markup-insertion/opening-the-input-stream/010.html [ Crash Timeout ]
-  imported/web-platform-tests/html/editing/focus/document-level-focus-apis/document-level-apis.html [ Crash Timeout ]
-  imported/web-platform-tests/html/semantics/embedded-content/the-embed-element/embed-document.html [ Crash Timeout ]
-  imported/web-platform-tests/html/semantics/embedded-content/the-img-element/sizes/parse-a-sizes-attribute.html [ Crash Timeout ]
-  imported/web-platform-tests/html/semantics/embedded-content/the-object-element/object-attributes.html [ Crash Timeout ]
-  imported/web-platform-tests/html/semantics/selectors/pseudo-classes/focus.html [ Crash Timeout ]
-  inspector-protocol/page/javascriptDialogEvents.html [ Crash Timeout ]
-  inspector/elements/styles-4/styles-source-lines-inline.html [ Crash Timeout ]
-  tables/mozilla/bugs/bug137388-1.html [ Crash Timeout ]
-  tables/mozilla/bugs/bug137388-2.html [ Crash Timeout ]
+  imported/web-platform-tests/html/semantics/embedded-content/the-object-element/object-attributes.html [ Crash Timeout Failure ]
 
 # Regressions: Unexpected timeouts (21)
   fast/forms/xss-auditor-doesnt-crash-on-post-submit.html [ Timeout ]
-  fast/history/history-replace-updates-current-item.html [ Timeout ]
   http/tests/loading/bad-scheme-subframe.html [ Timeout ]
   http/tests/loading/text-content-type-with-binary-extension.html [ Timeout Failure ]
   http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_cross_origin_redirect.html [ Timeout ]
@@ -265,14 +214,11 @@
 # Regressions: Unexpected timeouts (5)
   http/tests/serviceworker/chromium/register-link-header.html [ Timeout ]
   inspector-protocol/runtime/runtime-execution-contexts-events.html [ Timeout ]
-  virtual/spv2/fast/overflow/overflow-height-float-not-removed-crash.html [ Timeout ]
+  virtual/spv2/fast/overflow/overflow-height-float-not-removed-crash.html [ Timeout Failure ]
   virtual/spv2/fast/overflow/overflow-height-float-not-removed-crash2.html [ Timeout ]
-  virtual/spv2/fast/overflow/overflow-height-float-not-removed-crash3.html [ Timeout ]
+  virtual/spv2/fast/overflow/overflow-height-float-not-removed-crash3.html [ Timeout Failure ]
 
 # Update on 16-3-17
-
-# Regressions: Unexpected text-only failures (1)
-  css3/fonts/font-style-matching-8.html [ Failure ]
 
 # Regressions: Unexpected timeouts (1)
   imported/web-platform-tests/html/browsers/browsing-the-web/history-traversal/popstate_event.html [ Timeout ]
@@ -294,7 +240,6 @@
 # Update on 16-4-14
 
 # Regressions: Unexpected text-only failures (2)
-  http/tests/security/mixedContent/insecure-prefetch-in-main-frame.html [ Failure ]
   imported/web-platform-tests/web-animations/animation-timeline/document-timeline.html [ Failure ]
 
 # Update on 16-4-26
@@ -302,10 +247,19 @@
 # Regressions: Unexpected text-only failures (1)
   http/tests/loading/doc-write-sync-third-party-script-reload.html [ Failure ]
 
-# Regressions: Unexpected crashes ()
+# Regressions: Unexpected crashes (6)
   fast/events/before-unload-forbidden-navigation.html [ Crash ]
   fast/forms/state-restore-skip-stateless.html [ Crash ]
   fast/loader/document-destruction-within-unload.html [ Crash ]
   http/tests/history/back-during-beforeunload.html [ Crash ]
   http/tests/misc/timer-vs-loading.html [ Crash ]
   virtual/trustedeventsdefaultaction/fast/events/before-unload-forbidden-navigation.html [ Crash ]
+
+# Update on 16-4-29
+
+# Regressions: Unexpected text-only failures (2)
+  fast/layout/scroll-anchoring/history-restore-anchors.html [ Failure ]
+  imported/web-platform-tests/shadow-dom/untriaged/html-elements-in-shadow-trees/html-forms/test-003.html [ Failure ]
+
+# Regressions: Unexpected crashes (1)
+  virtual/pointerevent/fast/events/before-unload-forbidden-navigation.html [ Crash ]
