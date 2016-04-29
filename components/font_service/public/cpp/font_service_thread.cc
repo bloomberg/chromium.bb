@@ -104,6 +104,7 @@ void FontServiceThread::MatchFamilyNameImpl(
   style->width = requested_style.width();
   style->slant = static_cast<TypefaceSlant>(requested_style.slant());
 
+  pending_waitable_events_.insert(done_event);
   font_service_->MatchFamilyName(
       mojo::String(family_name), std::move(style),
       base::Bind(&FontServiceThread::OnMatchFamilyNameComplete, this,
@@ -121,6 +122,7 @@ void FontServiceThread::OnMatchFamilyNameComplete(
     mojo::String family_name,
     TypefaceStylePtr style) {
   DCHECK_EQ(GetThreadId(), base::PlatformThread::CurrentId());
+  pending_waitable_events_.erase(done_event);
 
   *out_valid = font_identity;
   if (font_identity) {
