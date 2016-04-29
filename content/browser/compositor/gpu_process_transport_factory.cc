@@ -74,7 +74,9 @@
 #elif defined(OS_MACOSX)
 #include "content/browser/compositor/browser_compositor_overlay_candidate_validator_mac.h"
 #include "content/browser/compositor/software_output_device_mac.h"
+#include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "ui/base/cocoa/remote_layer_api.h"
+#include "ui/base/ui_base_switches.h"
 #elif defined(OS_ANDROID)
 #include "content/browser/compositor/browser_compositor_overlay_candidate_validator_android.h"
 #endif
@@ -130,6 +132,13 @@ CreateContextCommon(scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
       gfx::PreferIntegratedGpu, share_resources, automatic_flushes,
       nullptr));
 }
+
+#if defined(OS_MACOSX)
+bool IsCALayersDisabledFromCommandLine() {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  return command_line->HasSwitch(switches::kDisableMacOverlays);
+}
+#endif
 
 }  // namespace
 
@@ -216,7 +225,14 @@ CreateOverlayCandidateValidator(gfx::AcceleratedWidget widget) {
 #elif defined(OS_MACOSX)
   // Overlays are only supported through the remote layer API.
   if (ui::RemoteLayerAPISupported()) {
-    validator.reset(new BrowserCompositorOverlayCandidateValidatorMac());
+    static bool overlays_disabled_at_command_line =
+        IsCALayersDisabledFromCommandLine();
+    const bool ca_layers_disabled =
+        overlays_disabled_at_command_line ||
+        GpuDataManagerImpl::GetInstance()->IsDriverBugWorkaroundActive(
+            gpu::DISABLE_OVERLAY_CA_LAYERS);
+    validator.reset(
+        new BrowserCompositorOverlayCandidateValidatorMac(ca_layers_disabled));
   }
 #elif defined(OS_ANDROID)
   validator.reset(new BrowserCompositorOverlayCandidateValidatorAndroid());

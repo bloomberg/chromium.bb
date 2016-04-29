@@ -6,19 +6,11 @@
 
 #include <stddef.h>
 
-#include "base/command_line.h"
-#include "content/browser/gpu/gpu_data_manager_impl.h"
-#include "gpu/config/gpu_driver_bug_workaround_type.h"
-#include "ui/base/ui_base_switches.h"
-
 namespace content {
 
 BrowserCompositorOverlayCandidateValidatorMac::
-    BrowserCompositorOverlayCandidateValidatorMac()
-    : software_mirror_active_(false),
-      ca_layers_disabled_(
-          GpuDataManagerImpl::GetInstance()->IsDriverBugWorkaroundActive(
-              gpu::DISABLE_OVERLAY_CA_LAYERS)) {}
+    BrowserCompositorOverlayCandidateValidatorMac(bool ca_layer_disabled)
+    : software_mirror_active_(false), ca_layer_disabled_(ca_layer_disabled) {}
 
 BrowserCompositorOverlayCandidateValidatorMac::
     ~BrowserCompositorOverlayCandidateValidatorMac() {
@@ -29,27 +21,11 @@ void BrowserCompositorOverlayCandidateValidatorMac::GetStrategies(
 }
 
 bool BrowserCompositorOverlayCandidateValidatorMac::AllowCALayerOverlays() {
-  static bool overlays_disabled_at_command_line =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableMacOverlays);
-  if (software_mirror_active_ || ca_layers_disabled_ ||
-      overlays_disabled_at_command_line)
-    return false;
-  return true;
+  return !ca_layer_disabled_ && !software_mirror_active_;
 }
 
 void BrowserCompositorOverlayCandidateValidatorMac::CheckOverlaySupport(
     cc::OverlayCandidateList* surfaces) {
-  // SW mirroring copies out of the framebuffer, so we can't remove any
-  // quads for overlaying, otherwise the output is incorrect.
-  if (software_mirror_active_)
-    return;
-
-  if (ca_layers_disabled_)
-    return;
-
-  for (size_t i = 0; i < surfaces->size(); ++i)
-    surfaces->at(i).overlay_handled = true;
 }
 
 void BrowserCompositorOverlayCandidateValidatorMac::SetSoftwareMirrorMode(

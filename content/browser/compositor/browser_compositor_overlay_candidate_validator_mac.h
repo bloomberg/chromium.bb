@@ -16,7 +16,8 @@ namespace content {
 class CONTENT_EXPORT BrowserCompositorOverlayCandidateValidatorMac
     : public BrowserCompositorOverlayCandidateValidator {
  public:
-  BrowserCompositorOverlayCandidateValidatorMac();
+  explicit BrowserCompositorOverlayCandidateValidatorMac(
+      bool ca_layer_disabled);
   ~BrowserCompositorOverlayCandidateValidatorMac() override;
 
   // cc::OverlayCandidateValidator implementation.
@@ -30,7 +31,7 @@ class CONTENT_EXPORT BrowserCompositorOverlayCandidateValidatorMac
  private:
   gfx::AcceleratedWidget widget_;
   bool software_mirror_active_;
-  bool ca_layers_disabled_;
+  const bool ca_layer_disabled_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserCompositorOverlayCandidateValidatorMac);
 };
