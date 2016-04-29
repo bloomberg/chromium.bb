@@ -303,6 +303,11 @@ void MediaRouterMojoImpl::RouteResponseReceived(
     result = RouteRequestResult::FromError(
         error, RouteRequestResult::OFF_THE_RECORD_MISMATCH);
   } else {
+    // Off the record media routes do not support custom controllers.
+    // crbug.com/590376
+    if (media_route->off_the_record)
+      media_route->custom_controller_path = nullptr;
+
     result = RouteRequestResult::FromSuccess(
         media_route.To<std::unique_ptr<MediaRoute>>(), presentation_id);
   }
