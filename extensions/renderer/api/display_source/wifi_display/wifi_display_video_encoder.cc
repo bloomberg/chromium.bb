@@ -6,6 +6,8 @@
 
 #include "base/logging.h"
 
+#include "extensions/renderer/api/display_source/wifi_display/wifi_display_elementary_stream_descriptor.h"
+
 namespace extensions {
 
 WiFiDisplayVideoEncoder::InitParameters::InitParameters() = default;
@@ -17,6 +19,10 @@ WiFiDisplayVideoEncoder::WiFiDisplayVideoEncoder(
     scoped_refptr<base::SingleThreadTaskRunner> media_task_runner)
     : media_task_runner_(std::move(media_task_runner)), send_idr_(false) {
   DCHECK(media_task_runner_);
+
+  // Add descriptors common to all H.264 video encoders.
+  descriptors_.push_back(
+      WiFiDisplayElementaryStreamDescriptor::AVCTimingAndHRD::Create());
 }
 
 WiFiDisplayVideoEncoder::~WiFiDisplayVideoEncoder() = default;
@@ -26,6 +32,13 @@ void WiFiDisplayVideoEncoder::Create(
     const InitParameters& params,
     const VideoEncoderCallback& encoder_callback) {
   CreateVEA(params, encoder_callback);
+}
+
+WiFiDisplayElementaryStreamInfo
+WiFiDisplayVideoEncoder::CreateElementaryStreamInfo() const {
+  DCHECK(client_thread_checker_.CalledOnValidThread());
+  return WiFiDisplayElementaryStreamInfo(
+      WiFiDisplayElementaryStreamInfo::VIDEO_H264, descriptors_);
 }
 
 void WiFiDisplayVideoEncoder::InsertRawVideoFrame(

@@ -14,6 +14,7 @@
 #include "base/move.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
+#include "extensions/renderer/api/display_source/wifi_display/wifi_display_elementary_stream_info.h"
 
 namespace extensions {
 
@@ -50,6 +51,13 @@ class WiFiDisplayMediaEncoder
  public:
   using EncodedUnitCallback =
       base::Callback<void(std::unique_ptr<WiFiDisplayEncodedUnit>)>;
+
+  // Creates an elementary stream info describing the stream of encoded units
+  // which this encoder generates and passes to a callback set using
+  // |SetCallbacks|. The created elementary stream info should be passed to
+  // a Wi-Fi Display media packetizer.
+  virtual WiFiDisplayElementaryStreamInfo CreateElementaryStreamInfo()
+      const = 0;
 
   // Sets callbacks for the obtained encoder instance:
   // |encoded_callback| is invoked to return the next encoded unit

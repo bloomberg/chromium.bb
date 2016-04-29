@@ -73,8 +73,8 @@ void WiFiDisplayMediaPipeline::RequestIDRPicture() {
 
 enum WiFiDisplayMediaPipeline::InitializationStep : unsigned {
   INITIALIZE_FIRST,
-  INITIALIZE_MEDIA_PACKETIZER = INITIALIZE_FIRST,
-  INITIALIZE_VIDEO_ENCODER,
+  INITIALIZE_VIDEO_ENCODER = INITIALIZE_FIRST,
+  INITIALIZE_MEDIA_PACKETIZER,
   INITIALIZE_MEDIA_SERVICE,
   INITIALIZE_LAST = INITIALIZE_MEDIA_SERVICE
 };
@@ -103,11 +103,6 @@ void WiFiDisplayMediaPipeline::OnInitialize(
   }
 
   switch (current_step) {
-    case INITIALIZE_MEDIA_PACKETIZER:
-      DCHECK(!packetizer_);
-      CreateMediaPacketizer();
-      init_step_callback.Run(true);
-      break;
     case INITIALIZE_VIDEO_ENCODER:
       DCHECK(!video_encoder_);
       if (type_ & wds::VideoSession) {
@@ -118,6 +113,11 @@ void WiFiDisplayMediaPipeline::OnInitialize(
       } else {
         init_step_callback.Run(true);
       }
+      break;
+    case INITIALIZE_MEDIA_PACKETIZER:
+      DCHECK(!packetizer_);
+      CreateMediaPacketizer();
+      init_step_callback.Run(true);
       break;
     case INITIALIZE_MEDIA_SERVICE:
       service_callback_.Run(
@@ -131,12 +131,10 @@ void WiFiDisplayMediaPipeline::OnInitialize(
 void WiFiDisplayMediaPipeline::CreateMediaPacketizer() {
   DCHECK(!packetizer_);
   std::vector<WiFiDisplayElementaryStreamInfo> stream_infos;
+
   if (type_ & wds::VideoSession) {
-    std::vector<WiFiDisplayElementaryStreamDescriptor> descriptors;
-    descriptors.emplace_back(
-        WiFiDisplayElementaryStreamDescriptor::AVCTimingAndHRD::Create());
-    stream_infos.emplace_back(WiFiDisplayElementaryStreamInfo::VIDEO_H264,
-                              std::move(descriptors));
+    DCHECK(video_encoder_);
+    stream_infos.push_back(video_encoder_->CreateElementaryStreamInfo());
   }
 
   if (type_ & wds::AudioSession) {
@@ -156,8 +154,7 @@ void WiFiDisplayMediaPipeline::CreateMediaPacketizer() {
   }
 
   packetizer_.reset(new WiFiDisplayMediaPacketizer(
-      base::TimeDelta::FromMilliseconds(200),
-      std::move(stream_infos),
+      base::TimeDelta::FromMilliseconds(200), stream_infos,
       base::Bind(&WiFiDisplayMediaPipeline::OnPacketizedMediaDatagramPacket,
                  base::Unretained(this))));
 }

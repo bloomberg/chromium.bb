@@ -5,6 +5,8 @@
 #ifndef EXTENSIONS_RENDERER_API_DISPLAY_SOURCE_WIFI_DISPLAY_WIFI_DISPLAY_VIDEO_ENCODER_H_
 #define EXTENSIONS_RENDERER_API_DISPLAY_SOURCE_WIFI_DISPLAY_WIFI_DISPLAY_VIDEO_ENCODER_H_
 
+#include <vector>
+
 #include "base/memory/shared_memory.h"
 #include "extensions/renderer/api/display_source/wifi_display/wifi_display_media_encoder.h"
 #include "media/base/video_frame.h"
@@ -12,6 +14,8 @@
 #include "third_party/wds/src/libwds/public/video_format.h"
 
 namespace extensions {
+
+class WiFiDisplayElementaryStreamDescriptor;
 
 using WiFiDisplayEncodedFrame = WiFiDisplayEncodedUnit;
 
@@ -54,6 +58,9 @@ class WiFiDisplayVideoEncoder : public WiFiDisplayMediaEncoder {
   static void Create(const InitParameters& params,
                      const VideoEncoderCallback& encoder_callback);
 
+  // WiFiDisplayMediaEncoder
+  WiFiDisplayElementaryStreamInfo CreateElementaryStreamInfo() const final;
+
   // Encodes the given raw frame. The resulting encoded frame is passed
   // as an |encoded_callback|'s argument which is set via 'SetCallbacks'
   // method.
@@ -79,6 +86,7 @@ class WiFiDisplayVideoEncoder : public WiFiDisplayMediaEncoder {
       base::TimeTicks reference_time,
       bool send_idr) = 0;
 
+  std::vector<WiFiDisplayElementaryStreamDescriptor> descriptors_;
   scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
   bool send_idr_;
 };
