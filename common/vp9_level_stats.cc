@@ -132,8 +132,11 @@ Vp9Level Vp9LevelStats::GetLevel() const {
 
   int level_index = 0;
   Vp9Level max_level = LEVEL_UNKNOWN;
+  const double grace_multiplier =
+      max_luma_sample_rate_grace_percent_ / 100.0 + 1.0;
   for (int i = 0; i < kNumVp9Levels; ++i) {
-    if (max_luma_sample_rate <= Vp9LevelTable[i].max_luma_sample_rate) {
+    if (max_luma_sample_rate <=
+        Vp9LevelTable[i].max_luma_sample_rate * grace_multiplier) {
       if (max_level < Vp9LevelTable[i].level) {
         max_level = Vp9LevelTable[i].level;
         level_index = i;
