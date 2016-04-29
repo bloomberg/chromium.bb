@@ -849,7 +849,6 @@ public class BrowserAccessibilityManager {
         }
         if (isEditableText) {
             node.setText(charSequence);
-            node.setEditable(true);
         } else {
             node.setContentDescription(charSequence);
         }
@@ -916,7 +915,7 @@ public class BrowserAccessibilityManager {
 
     @CalledByNative
     protected void setAccessibilityNodeInfoKitKatAttributes(AccessibilityNodeInfo node,
-            boolean isRoot, String roleDescription) {
+            boolean isRoot, boolean isEditableText, String roleDescription) {
         // Requires KitKat or higher.
     }
 

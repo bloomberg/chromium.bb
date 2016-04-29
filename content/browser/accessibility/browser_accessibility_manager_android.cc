@@ -451,6 +451,7 @@ jboolean BrowserAccessibilityManagerAndroid::PopulateAccessibilityNodeInfo(
   Java_BrowserAccessibilityManager_setAccessibilityNodeInfoKitKatAttributes(
       env, obj, info,
       is_root,
+      node->IsEditableText(),
       base::android::ConvertUTF16ToJavaString(
           env, node->GetRoleDescription()).obj());
 

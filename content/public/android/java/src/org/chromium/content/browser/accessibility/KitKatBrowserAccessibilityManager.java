@@ -29,12 +29,15 @@ public class KitKatBrowserAccessibilityManager extends BrowserAccessibilityManag
 
     @Override
     protected void setAccessibilityNodeInfoKitKatAttributes(AccessibilityNodeInfo node,
-            boolean isRoot, String roleDescription) {
+            boolean isRoot, boolean isEditableText, String roleDescription) {
         Bundle bundle = node.getExtras();
         bundle.putCharSequence("AccessibilityNodeInfo.roleDescription", roleDescription);
         if (isRoot) {
             bundle.putCharSequence("ACTION_ARGUMENT_HTML_ELEMENT_STRING_VALUES",
                     mSupportedHtmlElementTypes);
+        }
+        if (isEditableText) {
+            node.setEditable(true);
         }
     }
 }
