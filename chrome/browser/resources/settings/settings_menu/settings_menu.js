@@ -45,7 +45,7 @@ Polymer({
     if (submenuRoute) {
       this.currentRoute = {
         page: submenuRoute,
-        section: '',
+        section: event.currentTarget.dataset.section,
         subpage: [],
       };
     }

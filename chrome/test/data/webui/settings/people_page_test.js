@@ -47,11 +47,6 @@ cr.define('settings_people_page', function() {
 
         PolymerTest.clearBody();
         peoplePage = document.createElement('settings-people-page');
-        peoplePage.currentRoute = {
-          url: '/',
-          page: 'basic',
-          section: '',
-        };
         document.body.appendChild(peoplePage);
       });
 

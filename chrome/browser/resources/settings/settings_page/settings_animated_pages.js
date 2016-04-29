@@ -88,11 +88,8 @@ Polymer({
       return;
     }
 
-    // route.section is only non-empty when the user is within a subpage.
-    // When the user is not in a subpage, but on the Basic page, route.section
-    // is an empty string.
-    var newRouteIsSubpage = newRoute && newRoute.section == this.section;
-    var oldRouteIsSubpage = oldRoute && oldRoute.section == this.section;
+    var newRouteIsSubpage = newRoute && newRoute.subpage.length;
+    var oldRouteIsSubpage = oldRoute && oldRoute.subpage.length;
 
     if (newRouteIsSubpage)
       this.ensureSubpageInstance_();

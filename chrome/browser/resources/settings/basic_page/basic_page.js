@@ -16,6 +16,8 @@
 Polymer({
   is: 'settings-basic-page',
 
+  behaviors: [I18nBehavior, SettingsPageVisibility, RoutableBehavior],
+
   properties: {
     /**
      * Preferences state.
@@ -27,6 +29,7 @@ Polymer({
 
     /**
      * The current active route.
+     * @type {SettingsRoute}
      */
     currentRoute: {
       type: Object,
@@ -58,8 +61,6 @@ Polymer({
     /** @override */
     this.scroller = this.parentElement;
   },
-
-  behaviors: [I18nBehavior, SettingsPageVisibility, RoutableBehavior],
 
   onResetDone_: function() {
     this.showResetProfileBanner_ = false;

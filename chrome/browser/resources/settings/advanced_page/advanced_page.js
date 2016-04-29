@@ -31,6 +31,7 @@ Polymer({
 
     /**
      * The current active route.
+     * @type {SettingsRoute}
      */
     currentRoute: {
       type: Object,

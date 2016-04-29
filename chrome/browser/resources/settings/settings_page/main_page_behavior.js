@@ -309,11 +309,13 @@ var MainPageBehaviorImpl = {
   },
 };
 
+
 /** @polymerBehavior */
 var MainPageBehavior = [
   TransitionBehavior,
   MainPageBehaviorImpl
 ];
+
 
 /**
  * TODO(michaelpg): integrate slide animations.
@@ -329,13 +331,23 @@ var RoutableBehaviorImpl = {
     },
   },
 
+  /**
+   * @param {string} section Name of the item to scroll into view.
+   */
+  scrollToSection: function(section) {
+    if (section) {
+      // TODO(dschuyler): Determine whether this setTimeout can be removed.
+      // See also: https://github.com/Polymer/polymer/issues/3629
+      setTimeout(function() {
+        this.getSection_(section).scrollIntoView();
+      }.bind(this));
+    }
+  },
+
   /** @private */
   currentRouteChanged_: function(newRoute, oldRoute) {
-    // route.section is only non-empty when the user is within a subpage.
-    // When the user is not in a subpage, but on the Basic page, route.section
-    // is an empty string.
-    var newRouteIsSubpage = newRoute && newRoute.section;
-    var oldRouteIsSubpage = oldRoute && oldRoute.section;
+    var newRouteIsSubpage = newRoute && newRoute.subpage.length;
+    var oldRouteIsSubpage = oldRoute && oldRoute.subpage.length;
 
     if (!oldRoute && newRouteIsSubpage) {
       // Allow the page to load before expanding the section. TODO(michaelpg):
@@ -357,6 +369,8 @@ var RoutableBehaviorImpl = {
       var section = this.getSection_(newRoute.section);
       if (section)
         this.expandSection(section);
+    } else if (newRoute && newRoute.section) {
+      this.scrollToSection(newRoute.section);
     }
   },
 
@@ -371,6 +385,7 @@ var RoutableBehaviorImpl = {
         this.$$('[section=' + section + ']'));
   },
 };
+
 
 /** @polymerBehavior */
 var RoutableBehavior = [
