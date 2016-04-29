@@ -10,18 +10,12 @@
 namespace mojo {
 namespace internal {
 
-class PickleBuffer;
-
 // Buffer provides a way to allocate memory. Allocations are 8-byte aligned and
 // zero-initialized. Allocations remain valid for the lifetime of the Buffer.
 class Buffer {
  public:
   virtual ~Buffer() {}
   virtual void* Allocate(size_t num_bytes) = 0;
-
-  // TODO(rockot): Remove this. It's a hack to get a PickleBuffer in
-  // Serialize_ calls without having to update every call site.
-  virtual PickleBuffer* AsPickleBuffer() = 0;
 };
 
 }  // namespace internal

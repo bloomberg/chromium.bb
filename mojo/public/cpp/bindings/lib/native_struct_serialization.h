@@ -17,7 +17,6 @@
 #include "mojo/public/cpp/bindings/lib/bindings_internal.h"
 #include "mojo/public/cpp/bindings/lib/bindings_serialization.h"
 #include "mojo/public/cpp/bindings/lib/native_struct_data.h"
-#include "mojo/public/cpp/bindings/lib/pickle_buffer.h"
 #include "mojo/public/cpp/bindings/lib/serialization_forward.h"
 
 namespace mojo {
@@ -43,41 +42,20 @@ void SerializeNative_(const T& value,
                       Buffer* buffer,
                       NativeStruct_Data** out,
                       SerializationContext* context) {
-  PickleBuffer* pickler = buffer->AsPickleBuffer();
-  DCHECK(pickler) << "Native types can only be used with PickleBuffers.";
+  base::Pickle pickle;
+  IPC::ParamTraits<T>::Write(&pickle, value);
 
-  ArrayHeader* header =
-      reinterpret_cast<ArrayHeader*>(buffer->Allocate(sizeof(ArrayHeader)));
-
-  // Remember where the Pickle started before writing.
-  base::Pickle* pickle = pickler->pickle();
-  const char* data_start = pickle->end_of_payload();
-
-#if !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
-  const char* payload_base = pickle->payload();
-  size_t size_before_write = pickle->payload_size();
-#endif
-
-  IPC::ParamTraits<T>::Write(pickle, value);
-
-#if !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
-  // Ensure the pickle buffer hasn't moved.
-  DCHECK_EQ(payload_base, pickle->payload());
-  // Explicitly validate that the value returned by GetSize() always equals the
-  // number of bytes actually written by Write().
-  DCHECK_GE(pickle->payload_size(), size_before_write);
-  size_t bytes_written = pickle->payload_size() - size_before_write;
-  DCHECK_EQ(Align(bytes_written + sizeof(ArrayHeader)),
-            GetSerializedSizeNative_(value, context));
-#endif
-
-  // Fix up the ArrayHeader so that num_elements contains the length of the
-  // pickled data.
-  size_t pickled_size = pickle->end_of_payload() - data_start;
-  size_t total_size = pickled_size + sizeof(ArrayHeader);
+  size_t total_size = pickle.payload_size() + sizeof(ArrayHeader);
   DCHECK_LT(total_size, std::numeric_limits<uint32_t>::max());
+  DCHECK_EQ(Align(total_size), GetSerializedSizeNative_(value, context));
+
+  // Allocate a uint8 array, initialize its header, and copy the Pickle in.
+  ArrayHeader* header =
+      reinterpret_cast<ArrayHeader*>(buffer->Allocate(total_size));
   header->num_bytes = static_cast<uint32_t>(total_size);
-  header->num_elements = static_cast<uint32_t>(pickled_size);
+  header->num_elements = static_cast<uint32_t>(pickle.payload_size());
+  memcpy(reinterpret_cast<char*>(header) + sizeof(ArrayHeader),
+         pickle.payload(), pickle.payload_size());
 
   *out = reinterpret_cast<NativeStruct_Data*>(header);
 }

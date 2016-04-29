@@ -39,8 +39,6 @@ void* FixedBuffer::Allocate(size_t delta) {
   return result;
 }
 
-PickleBuffer* FixedBuffer::AsPickleBuffer() { return nullptr; }
-
 FixedBufferForTesting::FixedBufferForTesting(size_t size) {
   size_ = internal::Align(size);
   // Use calloc here to ensure all message memory is zero'd out.

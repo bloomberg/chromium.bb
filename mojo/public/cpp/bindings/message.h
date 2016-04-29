@@ -13,8 +13,9 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "mojo/public/cpp/bindings/lib/message_buffer.h"
 #include "mojo/public/cpp/bindings/lib/message_internal.h"
-#include "mojo/public/cpp/bindings/lib/pickle_buffer.h"
+#include "mojo/public/cpp/system/message.h"
 
 namespace mojo {
 
@@ -27,15 +28,18 @@ class Message {
   Message();
   ~Message();
 
+  // Initializes a Message with enough space for |capacity| bytes.
   void Initialize(size_t capacity, bool zero_initialized);
+
+  // Initializes a Message from an existing Mojo MessageHandle.
+  void InitializeFromMojoMessage(ScopedMessageHandle message,
+                                 uint32_t num_bytes,
+                                 std::vector<Handle>* handles);
 
   // Transfers data and handles to |destination|.
   void MoveTo(Message* destination);
 
-  uint32_t data_num_bytes() const {
-    DCHECK(buffer_->data_num_bytes() <= std::numeric_limits<uint32_t>::max());
-    return static_cast<uint32_t>(buffer_->data_num_bytes());
-  }
+  uint32_t data_num_bytes() const { return buffer_->data_num_bytes(); }
 
   // Access the raw bytes of the message.
   const uint8_t* data() const {
@@ -90,10 +94,15 @@ class Message {
   // Access the underlying Buffer interface.
   internal::Buffer* buffer() { return buffer_.get(); }
 
+  // Takes a scoped MessageHandle which may be passed to |WriteMessageNew()| for
+  // transmission. Note that this invalidates this Message object, taking
+  // ownership of its internal storage and any attached handles.
+  ScopedMessageHandle TakeMojoMessage();
+
  private:
   void CloseHandles();
 
-  std::unique_ptr<internal::PickleBuffer> buffer_;
+  std::unique_ptr<internal::MessageBuffer> buffer_;
   std::vector<Handle> handles_;
 
   DISALLOW_COPY_AND_ASSIGN(Message);

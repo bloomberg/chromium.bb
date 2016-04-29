@@ -308,6 +308,8 @@ MOJO_SYSTEM_EXPORT MojoResult MojoFreeMessage(MojoMessageHandle message);
 //   |MOJO_RESULT_OK| if |message| is a valid message object. |*buffer| will
 //       be updated to point to mutable message bytes.
 //   |MOJO_RESULT_INVALID_ARGUMENT| if |message| is not a valid message object.
+//
+// NOTE: A returned buffer address is always guaranteed to be 8-byte aligned.
 MOJO_SYSTEM_EXPORT MojoResult MojoGetMessageBuffer(MojoMessageHandle message,
                                                    void** buffer);  // Out
 

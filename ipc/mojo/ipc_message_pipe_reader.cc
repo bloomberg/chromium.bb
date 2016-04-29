@@ -108,15 +108,8 @@ bool MessagePipeReader::Send(std::unique_ptr<Message> message) {
   DCHECK_LE(num_handles, std::numeric_limits<uint32_t>::max());
 
   mojo_message->set_interface_id(sender_interface_id_);
-  result = mojo::WriteMessageRaw(
-      sender_pipe_, mojo_message->data(), mojo_message->data_num_bytes(),
-      reinterpret_cast<const MojoHandle*>(mojo_message->handles()->data()),
-      static_cast<uint32_t>(num_handles), MOJO_WRITE_MESSAGE_FLAG_NONE);
-
-  // If the write was successful, the handles have been transferred and they
-  // should not be closed when the message is destroyed.
-  if (result == MOJO_RESULT_OK)
-    mojo_message->mutable_handles()->clear();
+  result = mojo::WriteMessageNew(sender_pipe_, mojo_message->TakeMojoMessage(),
+                                 MOJO_WRITE_MESSAGE_FLAG_NONE);
 
   DVLOG(4) << "Send " << message->type() << ": " << message->size();
   return result == MOJO_RESULT_OK;

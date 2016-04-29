@@ -150,19 +150,8 @@ bool Connector::Accept(Message* message) {
     return true;
 
   MojoResult rv =
-      WriteMessageRaw(message_pipe_.get(),
-                      message->data(),
-                      message->data_num_bytes(),
-                      message->mutable_handles()->empty()
-                          ? nullptr
-                          : reinterpret_cast<const MojoHandle*>(
-                                &message->mutable_handles()->front()),
-                      static_cast<uint32_t>(message->mutable_handles()->size()),
+      WriteMessageNew(message_pipe_.get(), message->TakeMojoMessage(),
                       MOJO_WRITE_MESSAGE_FLAG_NONE);
-
-  // The handles are always either transferred or closed, so we don't need the
-  // message to track their lifetime any longer.
-  message->mutable_handles()->clear();
 
   switch (rv) {
     case MOJO_RESULT_OK:

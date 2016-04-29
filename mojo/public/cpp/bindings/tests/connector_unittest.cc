@@ -527,11 +527,11 @@ TEST_F(ConnectorTest, PauseWithQueuedMessages) {
 
   const char kText[] = "hello world";
 
+  // Queue up two messages.
   Message message;
   AllocMessage(kText, &message);
-
-  // Queue up two messages.
   connector0.Accept(&message);
+  AllocMessage(kText, &message);
   connector0.Accept(&message);
 
   base::RunLoop run_loop;
@@ -560,11 +560,11 @@ TEST_F(ConnectorTest, ProcessWhenNested) {
 
   const char kText[] = "hello world";
 
+  // Queue up two messages.
   Message message;
   AllocMessage(kText, &message);
-
-  // Queue up two messages.
   connector0.Accept(&message);
+  AllocMessage(kText, &message);
   connector0.Accept(&message);
 
   base::RunLoop run_loop;

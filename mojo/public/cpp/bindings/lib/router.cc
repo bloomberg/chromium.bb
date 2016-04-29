@@ -153,11 +153,12 @@ bool Router::AcceptWithResponder(Message* message, MessageReceiver* responder) {
   if (request_id == 0)
     request_id = next_request_id_++;
 
+  bool is_sync = message->has_flag(kMessageIsSync);
   message->set_request_id(request_id);
   if (!connector_.Accept(message))
     return false;
 
-  if (!message->has_flag(kMessageIsSync)) {
+  if (!is_sync) {
     // We assume ownership of |responder|.
     async_responders_[request_id] = base::WrapUnique(responder);
     return true;

@@ -219,10 +219,11 @@ bool InterfaceEndpointClient::AcceptWithResponder(Message* message,
 
   message->set_request_id(request_id);
 
+  bool is_sync = message->has_flag(kMessageIsSync);
   if (!controller_->SendMessage(message))
     return false;
 
-  if (!message->has_flag(kMessageIsSync)) {
+  if (!is_sync) {
     // We assume ownership of |responder|.
     async_responders_[request_id] = base::WrapUnique(responder);
     return true;
