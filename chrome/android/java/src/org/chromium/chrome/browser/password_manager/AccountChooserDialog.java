@@ -48,6 +48,7 @@ public class AccountChooserDialog
     private final int mTitleLinkEnd;
     private final String mOrigin;
     private ArrayAdapter<Credential> mAdapter;
+    private boolean mIsDestroyed;
 
     /**
      * Holds the reference to the credentials which were chosen by the user.
@@ -194,6 +195,7 @@ public class AccountChooserDialog
 
     @CalledByNative
     private void imageFetchComplete(int index, Bitmap avatarBitmap) {
+        if (mIsDestroyed) return;
         assert index >= 0 && index < mCredentials.length;
         assert mCredentials[index] != null;
         avatarBitmap = AccountManagementFragment.makeRoundUserPicture(avatarBitmap);
@@ -210,6 +212,8 @@ public class AccountChooserDialog
 
     private void destroy() {
         assert mNativeAccountChooserDialog != 0;
+        assert !mIsDestroyed;
+        mIsDestroyed = true;
         nativeDestroy(mNativeAccountChooserDialog);
         mNativeAccountChooserDialog = 0;
     }
