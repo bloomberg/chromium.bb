@@ -531,6 +531,7 @@ crbug.com/387740 imported/web-platform-tests/mediacapture-streams/MediaStream-re
 crbug.com/412381 imported/web-platform-tests/mediacapture-streams/GUM-empty-option-param.html [ Failure ]
 crbug.com/412381 imported/web-platform-tests/mediacapture-streams/GUM-trivial-constraint.html [ Failure ]
 crbug.com/412381 imported/web-platform-tests/mediacapture-streams/GUM-unknownkey-option-param.html [ Failure ]
+crbug.com/412381 imported/web-platform-tests/mediacapture-streams/MediaStream-MediaElement-preload-none.html [ Pass Timeout Failure ]
 
 crbug.com/325673 imported/web-platform-tests/custom-elements/concepts/custom-elements-type-allowed-chars-first-char.html [ Failure Timeout ]
 crbug.com/325673 imported/web-platform-tests/custom-elements/concepts/custom-elements-type-allowed-chars.html [ Failure Timeout ]

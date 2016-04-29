@@ -181,7 +181,6 @@ imported/csswg-test/.hgsubstate [ Skip ]
 imported/csswg-test/.htaccess [ Skip ]
 
 imported/web-platform-tests/2dcontext [ Skip ]
-imported/web-platform-tests/DOMEvents [ Skip ]
 ## Owners: jsbell@chromium.org
 # imported/web-platform-tests/FileAPI [ Pass ]
 ## Owners: jsbell@chromium.org
@@ -288,7 +287,8 @@ imported/web-platform-tests/tools [ Skip ]
 ## Owners: chongz@chromium.org
 # imported/web-platform-tests/touch-events [ Pass ]
 imported/web-platform-tests/typedarrays [ Skip ]
-imported/web-platform-tests/uievents [ Skip ]
+## Owners: dtapuska@chromium.org
+# imported/web-platform-tests/uievents [ Pass ]
 imported/web-platform-tests/url [ Skip ]
 ## Owners: jsbell@chromium.org
 # imported/web-platform-tests/user-timing [ Pass ]
@@ -324,6 +324,7 @@ imported/web-platform-tests/pointerevents/OWNERS [ Skip ]
 imported/web-platform-tests/webstorage/OWNERS [ Skip ]
 imported/web-platform-tests/mediacapture-streams/OWNERS [ Skip ]
 imported/web-platform-tests/touch-events/OWNERS [ Skip ]
+imported/web-platform-tests/uievents/OWNERS [ Skip ]
 imported/web-platform-tests/web-animations/OWNERS [ Skip ]
 
 # Exceptions for individual files that fail due to bugs in the

@@ -1,0 +1,5 @@
+CONSOLE ERROR: line 22: Uncaught Error: Error from listener
+This is a testharness.js-based test.
+Harness Error. harness_status.status = 1 , harness_status.message = Uncaught Error: Error from listener
+Harness: the test ran to completion.
+

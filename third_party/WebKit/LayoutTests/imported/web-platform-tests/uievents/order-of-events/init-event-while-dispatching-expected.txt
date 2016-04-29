@@ -1,0 +1,8 @@
+This is a testharness.js-based test.
+PASS Calling initKeyboardEvent while dispatching. 
+PASS Calling initMouseEvent while dispatching. 
+FAIL Calling initCustomEvent while dispatching. assert_equals: initCustomEvent detail setter should short-circuit expected (object) null but got (number) 1
+PASS Calling initUIEvent while dispatching. 
+PASS Calling initEvent while dispatching. 
+Harness: the test ran to completion.
+
