@@ -1380,6 +1380,9 @@
     # Experimental setting to optimize Chrome's DLLs with PGO.
     'chrome_pgo_phase%': '0',
 
+    # Experimental setting to build the official builds with full WPO.
+    'full_wpo_on_official%': '0',
+
     # Whether the VS xtree header has been patched to disable warning 4702. If
     # it has, then we don't need to disable 4702 (unreachable code warning).
     # The patch is preapplied to the internal toolchain and hence all bots.
@@ -5506,6 +5509,12 @@
                     'Optimization': '1',
                     # 2, favorSize - Favor small code (/Os)
                     'FavorSizeOrSpeed': '2',
+                    'conditions': [
+                      ['full_wpo_on_official==1', {
+                        # This implies link time code generation.
+                        'WholeProgramOptimization': 'true',
+                      }],
+                    ],
                   },
                 },
               }],
@@ -5528,6 +5537,12 @@
                     'Optimization': '2',
                     # 1, favorSpeed - Favor fast code (/Ot)
                     'FavorSizeOrSpeed': '1',
+                    'conditions': [
+                      ['full_wpo_on_official==1', {
+                        # This implies link time code generation.
+                        'WholeProgramOptimization': 'true',
+                      }],
+                    ],
                   },
                 },
               }],

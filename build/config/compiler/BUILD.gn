@@ -1244,12 +1244,9 @@ if (is_win) {
 # Default "optimization on" config.
 config("optimize") {
   if (is_win) {
-    # TODO(sebmarchand): Enable this once we've decided to ship with full WPO
-    # and when the change to the incompatible projects (FFmpeg and Yasm) have
-    # have been committed.
-    #if (is_official_build) {
-    #  common_optimize_on_cflags += [ "/GL" ]
-    #}
+    if (is_official_build && full_wpo_on_official) {
+      common_optimize_on_cflags += [ "/GL" ]
+    }
 
     # Favor size over speed, /O1 must be before the common flags. The GYP
     # build also specifies /Os and /GF but these are implied by /O1.

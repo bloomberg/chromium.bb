@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/ui.gni")
+import("//build/config/compiler/compiler.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 
 config("mesa_headers_config") {
@@ -144,6 +145,11 @@ config("mesa_internal_warnings") {
       "/wd4345",  # POD-type default initializers.
       "/wd4311",  # Pointer truncation TODO(brucedawson): http://crbug.com/554200
     ]
+    if (is_official_build && full_wpo_on_official) {
+      # TODO(sebmarchand): http://crbug.com/604838 This should be removed if
+      # Mesa is ever rolled and the warning is fixed.
+      cflags += [ "/wd4723" ]  # potential divide by 0.
+    }
   }
 }
 
