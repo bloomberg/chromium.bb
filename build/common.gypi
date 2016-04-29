@@ -3908,6 +3908,12 @@
               ['_toolset=="target"', {
                 'conditions': [
                   ['clang==0', {
+                    'cflags': [
+                      # Don't warn about "maybe" uninitialized. Clang doesn't
+                      # include this in -Wall but gcc does, and it gives false
+                      # positives.
+                      '-Wno-maybe-uninitialized',
+                    ],
                     'cflags_cc': [
                       # The codesourcery arm-2009q3 toolchain warns at that the ABI
                       # has changed whenever it encounters a varargs function. This

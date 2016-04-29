@@ -914,6 +914,10 @@ config("default_warnings") {
       # for gcc 4.8.
       # TODO: remove this flag once all builds work. See crbug.com/227506
       cflags += [ "-Wno-unused-local-typedefs" ]
+
+      # Don't warn about "maybe" uninitialized. Clang doesn't include this
+      # in -Wall but gcc does, and it gives false positives.
+      cflags += [ "-Wno-maybe-uninitialized" ]
     }
   }
 
