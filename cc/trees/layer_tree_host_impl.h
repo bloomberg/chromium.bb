@@ -64,7 +64,8 @@ class MemoryHistory;
 class PageScaleAnimation;
 class PictureLayerImpl;
 class RasterTilePriorityQueue;
-class TileTaskWorkerPool;
+class TileTaskManager;
+class RasterBufferProvider;
 class RenderPassDrawQuad;
 class RenderingStatsInstrumentation;
 class ResourcePool;
@@ -575,8 +576,8 @@ class CC_EXPORT LayerTreeHostImpl
   bool SupportsImplScrolling() const;
   bool CommitToActiveTree() const;
 
-  virtual void CreateResourceAndTileTaskWorkerPool(
-      std::unique_ptr<TileTaskWorkerPool>* tile_task_worker_pool,
+  virtual void CreateResourceAndRasterBufferProvider(
+      std::unique_ptr<RasterBufferProvider>* raster_buffer_provider,
       std::unique_ptr<ResourcePool>* resource_pool);
 
   bool prepare_tiles_needed() const { return tile_priorities_dirty_; }
@@ -731,7 +732,7 @@ class CC_EXPORT LayerTreeHostImpl
   bool use_msaa_;
   GpuRasterizationStatus gpu_rasterization_status_;
   bool tree_resources_for_gpu_rasterization_dirty_;
-  std::unique_ptr<TileTaskWorkerPool> tile_task_worker_pool_;
+  std::unique_ptr<TileTaskManager> tile_task_manager_;
   std::unique_ptr<ResourcePool> resource_pool_;
   std::unique_ptr<Renderer> renderer_;
   std::unique_ptr<ImageDecodeController> image_decode_controller_;

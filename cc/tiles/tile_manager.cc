@@ -210,7 +210,7 @@ void InsertNodesForRasterTask(TaskGraph* graph,
 
     dependencies++;
 
-    // Add decode task if it doesn't already exists in graph.
+    // Add decode task if it doesn't already exist in graph.
     TaskGraph::Node::Vector::iterator decode_it =
         std::find_if(graph->nodes.begin(), graph->nodes.end(),
                      [decode_task](const TaskGraph::Node& node) {
@@ -308,7 +308,7 @@ TileManager::TileManager(TileManagerClient* client,
     : client_(client),
       task_runner_(std::move(task_runner)),
       resource_pool_(nullptr),
-      tile_task_worker_pool_(nullptr),
+      tile_task_manager_(nullptr),
       scheduled_raster_task_limit_(scheduled_raster_task_limit),
       use_partial_raster_(use_partial_raster),
       use_gpu_rasterization_(false),
@@ -332,25 +332,25 @@ TileManager::~TileManager() {
 }
 
 void TileManager::FinishTasksAndCleanUp() {
-  if (!tile_task_worker_pool_)
+  if (!tile_task_manager_)
     return;
 
   global_state_ = GlobalStateThatImpactsTilePriority();
 
   // This cancels tasks if possible, finishes pending tasks, and release any
   // uninitialized resources.
-  tile_task_worker_pool_->Shutdown();
+  tile_task_manager_->Shutdown();
 
   // Now that all tasks have been finished, we can clear any
   // |orphan_tasks_|.
   orphan_tasks_.clear();
 
-  tile_task_worker_pool_->CheckForCompletedTasks();
+  tile_task_manager_->CheckForCompletedTasks();
 
   FreeResourcesForReleasedTiles();
   CleanUpReleasedTiles();
 
-  tile_task_worker_pool_ = nullptr;
+  tile_task_manager_ = nullptr;
   resource_pool_ = nullptr;
   more_tiles_need_prepare_check_notifier_.Cancel();
   signals_check_notifier_.Cancel();
@@ -358,18 +358,18 @@ void TileManager::FinishTasksAndCleanUp() {
 }
 
 void TileManager::SetResources(ResourcePool* resource_pool,
-                               TileTaskWorkerPool* tile_task_worker_pool,
                                ImageDecodeController* image_decode_controller,
+                               TileTaskManager* tile_task_manager,
                                size_t scheduled_raster_task_limit,
                                bool use_gpu_rasterization) {
-  DCHECK(!tile_task_worker_pool_);
-  DCHECK(tile_task_worker_pool);
+  DCHECK(!tile_task_manager_);
+  DCHECK(tile_task_manager);
 
   use_gpu_rasterization_ = use_gpu_rasterization;
   scheduled_raster_task_limit_ = scheduled_raster_task_limit;
   resource_pool_ = resource_pool;
-  tile_task_worker_pool_ = tile_task_worker_pool;
   image_decode_controller_ = image_decode_controller;
+  tile_task_manager_ = tile_task_manager;
 }
 
 void TileManager::Release(Tile* tile) {
@@ -419,7 +419,7 @@ void TileManager::DidFinishRunningAllTileTasks() {
   TRACE_EVENT0("cc", "TileManager::DidFinishRunningAllTileTasks");
   TRACE_EVENT_ASYNC_END0("cc", "ScheduledTasks", this);
   DCHECK(resource_pool_);
-  DCHECK(tile_task_worker_pool_);
+  DCHECK(tile_task_manager_);
 
   has_scheduled_tile_tasks_ = false;
 
@@ -446,7 +446,7 @@ bool TileManager::PrepareTiles(
   TRACE_EVENT1("cc", "TileManager::PrepareTiles", "prepare_tiles_id",
                prepare_tiles_count_);
 
-  if (!tile_task_worker_pool_) {
+  if (!tile_task_manager_) {
     TRACE_EVENT_INSTANT0("cc", "PrepareTiles aborted",
                          TRACE_EVENT_SCOPE_THREAD);
     return false;
@@ -458,7 +458,7 @@ bool TileManager::PrepareTiles(
   // We need to call CheckForCompletedTasks() once in-between each call
   // to ScheduleTasks() to prevent canceled tasks from being scheduled.
   if (!did_check_for_completed_tasks_since_last_schedule_tasks_) {
-    tile_task_worker_pool_->CheckForCompletedTasks();
+    tile_task_manager_->CheckForCompletedTasks();
     did_check_for_completed_tasks_since_last_schedule_tasks_ = true;
   }
 
@@ -490,12 +490,12 @@ bool TileManager::PrepareTiles(
 void TileManager::Flush() {
   TRACE_EVENT0("cc", "TileManager::Flush");
 
-  if (!tile_task_worker_pool_) {
+  if (!tile_task_manager_) {
     TRACE_EVENT_INSTANT0("cc", "Flush aborted", TRACE_EVENT_SCOPE_THREAD);
     return;
   }
 
-  tile_task_worker_pool_->CheckForCompletedTasks();
+  tile_task_manager_->CheckForCompletedTasks();
 
   did_check_for_completed_tasks_since_last_schedule_tasks_ = true;
 
@@ -592,7 +592,7 @@ void TileManager::AssignGpuMemoryToTiles(
   TRACE_EVENT_BEGIN0("cc", "TileManager::AssignGpuMemoryToTiles");
 
   DCHECK(resource_pool_);
-  DCHECK(tile_task_worker_pool_);
+  DCHECK(tile_task_manager_);
 
   // Maintain the list of released resources that can potentially be re-used
   // or deleted. If this operation becomes expensive too, only do this after
@@ -830,7 +830,7 @@ void TileManager::ScheduleTasks(
   // Schedule running of |raster_queue_|. This replaces any previously
   // scheduled tasks and effectively cancels all tasks not present
   // in |raster_queue_|.
-  tile_task_worker_pool_->ScheduleTasks(&graph_);
+  tile_task_manager_->ScheduleTasks(&graph_);
 
   // It's now safe to clean up orphan tasks as raster worker pool is not
   // allowed to keep around unreferenced raster tasks after ScheduleTasks() has
@@ -961,7 +961,7 @@ ScopedTilePtr TileManager::CreateTile(const Tile::CreateInfo& info,
                                       int flags) {
   // We need to have a tile task worker pool to do anything meaningful with
   // tiles.
-  DCHECK(tile_task_worker_pool_);
+  DCHECK(tile_task_manager_);
   ScopedTilePtr tile(
       new Tile(this, info, layer_id, source_frame_number, flags));
   DCHECK(tiles_.find(tile->id()) == tiles_.end());
@@ -970,9 +970,9 @@ ScopedTilePtr TileManager::CreateTile(const Tile::CreateInfo& info,
   return tile;
 }
 
-void TileManager::SetTileTaskWorkerPoolForTesting(
-    TileTaskWorkerPool* tile_task_worker_pool) {
-  tile_task_worker_pool_ = tile_task_worker_pool;
+void TileManager::SetTileTaskManagerForTesting(
+    TileTaskManager* tile_task_manager) {
+  tile_task_manager_ = tile_task_manager;
 }
 
 bool TileManager::AreRequiredTilesReadyToDraw(
@@ -1015,7 +1015,7 @@ bool TileManager::IsReadyToDraw() const {
 
 void TileManager::CheckAndIssueSignals() {
   TRACE_EVENT0("cc", "TileManager::CheckAndIssueSignals");
-  tile_task_worker_pool_->CheckForCompletedTasks();
+  tile_task_manager_->CheckForCompletedTasks();
   did_check_for_completed_tasks_since_last_schedule_tasks_ = true;
 
   // Ready to activate.
@@ -1055,7 +1055,7 @@ void TileManager::CheckAndIssueSignals() {
 }
 
 void TileManager::CheckIfMoreTilesNeedToBePrepared() {
-  tile_task_worker_pool_->CheckForCompletedTasks();
+  tile_task_manager_->CheckForCompletedTasks();
   did_check_for_completed_tasks_since_last_schedule_tasks_ = true;
 
   // When OOM, keep re-assigning memory until we reach a steady state
@@ -1142,11 +1142,13 @@ bool TileManager::MarkTilesOutOfMemory(
 }
 
 ResourceFormat TileManager::DetermineResourceFormat(const Tile* tile) const {
-  return tile_task_worker_pool_->GetResourceFormat(!tile->is_opaque());
+  return tile_task_manager_->GetRasterBufferProvider()->GetResourceFormat(
+      !tile->is_opaque());
 }
 
 bool TileManager::DetermineResourceRequiresSwizzle(const Tile* tile) const {
-  return tile_task_worker_pool_->GetResourceRequiresSwizzle(!tile->is_opaque());
+  return tile_task_manager_->GetRasterBufferProvider()
+      ->GetResourceRequiresSwizzle(!tile->is_opaque());
 }
 
 std::unique_ptr<base::trace_event::ConvertableToTraceFormat>

@@ -17,12 +17,12 @@ DrawResult TestHooks::PrepareToDrawOnThread(
   return draw_result;
 }
 
-void TestHooks::CreateResourceAndTileTaskWorkerPool(
+void TestHooks::CreateResourceAndRasterBufferProvider(
     LayerTreeHostImpl* host_impl,
-    std::unique_ptr<TileTaskWorkerPool>* tile_task_worker_pool,
+    std::unique_ptr<RasterBufferProvider>* raster_buffer_provider,
     std::unique_ptr<ResourcePool>* resource_pool) {
-  host_impl->LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
-      tile_task_worker_pool, resource_pool);
+  host_impl->LayerTreeHostImpl::CreateResourceAndRasterBufferProvider(
+      raster_buffer_provider, resource_pool);
 }
 
 }  // namespace cc

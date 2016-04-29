@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_RASTER_TILE_TASK_WORKER_POOL_H_
-#define CC_RASTER_TILE_TASK_WORKER_POOL_H_
+#ifndef CC_RASTER_RASTER_BUFFER_PROVIDER_H_
+#define CC_RASTER_RASTER_BUFFER_PROVIDER_H_
 
 #include <stddef.h>
 
@@ -20,21 +20,12 @@ class SequencedTaskRunner;
 }
 
 namespace cc {
-class RenderingStatsInstrumentation;
+class Resource;
 
-// This class provides the wrapper over TaskGraphRunner for scheduling and
-// collecting tasks. The client can call CheckForCompletedTasks() at any time to
-// process all completed tasks at the moment that have finished running or
-// cancelled.
-class CC_EXPORT TileTaskWorkerPool {
+class CC_EXPORT RasterBufferProvider {
  public:
-  TileTaskWorkerPool();
-  virtual ~TileTaskWorkerPool();
-
-  // Utility function that can be used to call ::ScheduleOnOriginThread() for
-  // each task in |graph|.
-  static void ScheduleTasksOnOriginThread(RasterBufferProvider* provider,
-                                          TaskGraph* graph);
+  RasterBufferProvider();
+  virtual ~RasterBufferProvider();
 
   // Utility function that will create a temporary bitmap and copy pixels to
   // |memory| when necessary. The |canvas_bitmap_rect| is the rect of the bitmap
@@ -53,20 +44,17 @@ class CC_EXPORT TileTaskWorkerPool {
       float scale,
       const RasterSource::PlaybackSettings& playback_settings);
 
-  // Tells the worker pool to shutdown after canceling all previously scheduled
-  // tasks. Reply callbacks are still guaranteed to run when
-  // CheckForCompletedTasks() is called.
-  virtual void Shutdown() = 0;
+  // Acquire raster buffer.
+  virtual std::unique_ptr<RasterBuffer> AcquireBufferForRaster(
+      const Resource* resource,
+      uint64_t resource_content_id,
+      uint64_t previous_content_id) = 0;
 
-  // Schedule running of tile tasks in |graph| and all dependencies.
-  // Previously scheduled tasks that are not in |graph| will be canceled unless
-  // already running. Once scheduled, reply callbacks are guaranteed to run for
-  // all tasks even if they later get canceled by another call to
-  // ScheduleTasks().
-  virtual void ScheduleTasks(TaskGraph* graph) = 0;
+  // Release raster buffer.
+  virtual void ReleaseBufferForRaster(std::unique_ptr<RasterBuffer> buffer) = 0;
 
-  // Check for completed tasks and dispatch reply callbacks.
-  virtual void CheckForCompletedTasks() = 0;
+  // Barrier to sync resources to the worker context.
+  virtual void OrderingBarrier() = 0;
 
   // Returns the format to use for the tiles.
   virtual ResourceFormat GetResourceFormat(bool must_support_alpha) const = 0;
@@ -74,8 +62,8 @@ class CC_EXPORT TileTaskWorkerPool {
   // Determine if the resource requires swizzling.
   virtual bool GetResourceRequiresSwizzle(bool must_support_alpha) const = 0;
 
-  // Downcasting routine for RasterBufferProvider interface.
-  virtual RasterBufferProvider* AsRasterBufferProvider() = 0;
+  // Shutdown for doing cleanup.
+  virtual void Shutdown() = 0;
 
  protected:
   // Check if resource format matches output format.
@@ -84,4 +72,4 @@ class CC_EXPORT TileTaskWorkerPool {
 
 }  // namespace cc
 
-#endif  // CC_RASTER_TILE_TASK_WORKER_POOL_H_
+#endif  // CC_RASTER_RASTER_BUFFER_PROVIDER_H_

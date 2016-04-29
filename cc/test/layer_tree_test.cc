@@ -190,11 +190,11 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
         block_notify_ready_to_activate_for_testing_(false),
         notify_ready_to_activate_was_blocked_(false) {}
 
-  void CreateResourceAndTileTaskWorkerPool(
-      std::unique_ptr<TileTaskWorkerPool>* tile_task_worker_pool,
+  void CreateResourceAndRasterBufferProvider(
+      std::unique_ptr<RasterBufferProvider>* raster_buffer_provider,
       std::unique_ptr<ResourcePool>* resource_pool) override {
-    test_hooks_->CreateResourceAndTileTaskWorkerPool(
-        this, tile_task_worker_pool, resource_pool);
+    test_hooks_->CreateResourceAndRasterBufferProvider(
+        this, raster_buffer_provider, resource_pool);
   }
 
   void WillBeginImplFrame(const BeginFrameArgs& args) override {

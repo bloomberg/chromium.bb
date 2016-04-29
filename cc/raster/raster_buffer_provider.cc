@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/raster/tile_task_worker_pool.h"
+#include "cc/raster/raster_buffer_provider.h"
 
 #include <stddef.h>
 
@@ -15,28 +15,9 @@
 
 namespace cc {
 
-TileTaskWorkerPool::TileTaskWorkerPool() {}
+RasterBufferProvider::RasterBufferProvider() {}
 
-TileTaskWorkerPool::~TileTaskWorkerPool() {}
-
-// static
-void TileTaskWorkerPool::ScheduleTasksOnOriginThread(
-    RasterBufferProvider* provider,
-    TaskGraph* graph) {
-  TRACE_EVENT0("cc", "TileTaskWorkerPool::ScheduleTasksOnOriginThread");
-
-  for (TaskGraph::Node::Vector::iterator it = graph->nodes.begin();
-       it != graph->nodes.end(); ++it) {
-    TaskGraph::Node& node = *it;
-    TileTask* task = static_cast<TileTask*>(node.task);
-
-    if (!task->HasBeenScheduled()) {
-      task->WillSchedule();
-      task->ScheduleOnOriginThread(provider);
-      task->DidSchedule();
-    }
-  }
-}
+RasterBufferProvider::~RasterBufferProvider() {}
 
 namespace {
 
@@ -61,7 +42,7 @@ bool IsSupportedPlaybackToMemoryFormat(ResourceFormat format) {
 }  // anonymous namespace
 
 // static
-void TileTaskWorkerPool::PlaybackToMemory(
+void RasterBufferProvider::PlaybackToMemory(
     void* memory,
     ResourceFormat format,
     const gfx::Size& size,
@@ -71,7 +52,7 @@ void TileTaskWorkerPool::PlaybackToMemory(
     const gfx::Rect& canvas_playback_rect,
     float scale,
     const RasterSource::PlaybackSettings& playback_settings) {
-  TRACE_EVENT0("cc", "TileTaskWorkerPool::PlaybackToMemory");
+  TRACE_EVENT0("cc", "RasterBufferProvider::PlaybackToMemory");
 
   DCHECK(IsSupportedPlaybackToMemoryFormat(format)) << format;
 
@@ -111,7 +92,7 @@ void TileTaskWorkerPool::PlaybackToMemory(
 
       if (format == ETC1) {
         TRACE_EVENT0("cc",
-                     "TileTaskWorkerPool::PlaybackToMemory::CompressETC1");
+                     "RasterBufferProvider::PlaybackToMemory::CompressETC1");
         DCHECK_EQ(size.width() % 4, 0);
         DCHECK_EQ(size.height() % 4, 0);
         std::unique_ptr<TextureCompressor> texture_compressor =
@@ -124,7 +105,7 @@ void TileTaskWorkerPool::PlaybackToMemory(
             TextureCompressor::kQualityHigh);
       } else {
         TRACE_EVENT0("cc",
-                     "TileTaskWorkerPool::PlaybackToMemory::ConvertRGBA4444");
+                     "RasterBufferProvider::PlaybackToMemory::ConvertRGBA4444");
         SkImageInfo dst_info =
             SkImageInfo::Make(info.width(), info.height(),
                               ResourceFormatToClosestSkColorType(format),
@@ -146,7 +127,8 @@ void TileTaskWorkerPool::PlaybackToMemory(
   NOTREACHED();
 }
 
-bool TileTaskWorkerPool::ResourceFormatRequiresSwizzle(ResourceFormat format) {
+bool RasterBufferProvider::ResourceFormatRequiresSwizzle(
+    ResourceFormat format) {
   switch (format) {
     case RGBA_8888:
     case BGRA_8888:

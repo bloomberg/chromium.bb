@@ -5,12 +5,12 @@
 #include "cc/test/layer_tree_pixel_resource_test.h"
 
 #include "cc/layers/layer.h"
-#include "cc/raster/bitmap_tile_task_worker_pool.h"
+#include "cc/raster/bitmap_raster_buffer_provider.h"
+#include "cc/raster/gpu_raster_buffer_provider.h"
 #include "cc/raster/gpu_rasterizer.h"
-#include "cc/raster/gpu_tile_task_worker_pool.h"
-#include "cc/raster/one_copy_tile_task_worker_pool.h"
-#include "cc/raster/tile_task_worker_pool.h"
-#include "cc/raster/zero_copy_tile_task_worker_pool.h"
+#include "cc/raster/one_copy_raster_buffer_provider.h"
+#include "cc/raster/raster_buffer_provider.h"
+#include "cc/raster/zero_copy_raster_buffer_provider.h"
 #include "cc/resources/resource_pool.h"
 #include "cc/test/fake_output_surface.h"
 #include "gpu/GLES2/gl2extchromium.h"
@@ -44,7 +44,7 @@ bool IsTestCaseSupported(PixelResourceTestCase test_case) {
 LayerTreeHostPixelResourceTest::LayerTreeHostPixelResourceTest(
     PixelResourceTestCase test_case)
     : draw_texture_target_(GL_INVALID_VALUE),
-      resource_pool_option_(BITMAP_TILE_TASK_WORKER_POOL),
+      raster_buffer_provider_type_(RASTER_BUFFER_PROVIDER_TYPE_BITMAP),
       initialized_(false),
       test_case_(test_case) {
   InitializeFromTestCase(test_case);
@@ -52,7 +52,7 @@ LayerTreeHostPixelResourceTest::LayerTreeHostPixelResourceTest(
 
 LayerTreeHostPixelResourceTest::LayerTreeHostPixelResourceTest()
     : draw_texture_target_(GL_INVALID_VALUE),
-      resource_pool_option_(BITMAP_TILE_TASK_WORKER_POOL),
+      raster_buffer_provider_type_(RASTER_BUFFER_PROVIDER_TYPE_BITMAP),
       initialized_(false),
       test_case_(SOFTWARE) {}
 
@@ -64,50 +64,50 @@ void LayerTreeHostPixelResourceTest::InitializeFromTestCase(
     case SOFTWARE:
       test_type_ = PIXEL_TEST_SOFTWARE;
       draw_texture_target_ = GL_INVALID_VALUE;
-      resource_pool_option_ = BITMAP_TILE_TASK_WORKER_POOL;
+      raster_buffer_provider_type_ = RASTER_BUFFER_PROVIDER_TYPE_BITMAP;
       return;
     case GL_GPU_RASTER_2D_DRAW:
       test_type_ = PIXEL_TEST_GL;
       draw_texture_target_ = GL_TEXTURE_2D;
-      resource_pool_option_ = GPU_TILE_TASK_WORKER_POOL;
+      raster_buffer_provider_type_ = RASTER_BUFFER_PROVIDER_TYPE_GPU;
       return;
     case GL_ONE_COPY_2D_STAGING_2D_DRAW:
       test_type_ = PIXEL_TEST_GL;
       draw_texture_target_ = GL_TEXTURE_2D;
-      resource_pool_option_ = ONE_COPY_TILE_TASK_WORKER_POOL;
+      raster_buffer_provider_type_ = RASTER_BUFFER_PROVIDER_TYPE_ONE_COPY;
       return;
     case GL_ONE_COPY_RECT_STAGING_2D_DRAW:
       test_type_ = PIXEL_TEST_GL;
       draw_texture_target_ = GL_TEXTURE_2D;
-      resource_pool_option_ = ONE_COPY_TILE_TASK_WORKER_POOL;
+      raster_buffer_provider_type_ = RASTER_BUFFER_PROVIDER_TYPE_ONE_COPY;
       return;
     case GL_ONE_COPY_EXTERNAL_STAGING_2D_DRAW:
       test_type_ = PIXEL_TEST_GL;
       draw_texture_target_ = GL_TEXTURE_2D;
-      resource_pool_option_ = ONE_COPY_TILE_TASK_WORKER_POOL;
+      raster_buffer_provider_type_ = RASTER_BUFFER_PROVIDER_TYPE_ONE_COPY;
       return;
     case GL_ZERO_COPY_2D_DRAW:
       test_type_ = PIXEL_TEST_GL;
       draw_texture_target_ = GL_TEXTURE_2D;
-      resource_pool_option_ = ZERO_COPY_TILE_TASK_WORKER_POOL;
+      raster_buffer_provider_type_ = RASTER_BUFFER_PROVIDER_TYPE_ZERO_COPY;
       return;
     case GL_ZERO_COPY_RECT_DRAW:
       test_type_ = PIXEL_TEST_GL;
       draw_texture_target_ = GL_TEXTURE_RECTANGLE_ARB;
-      resource_pool_option_ = ZERO_COPY_TILE_TASK_WORKER_POOL;
+      raster_buffer_provider_type_ = RASTER_BUFFER_PROVIDER_TYPE_ZERO_COPY;
       return;
     case GL_ZERO_COPY_EXTERNAL_DRAW:
       test_type_ = PIXEL_TEST_GL;
       draw_texture_target_ = GL_TEXTURE_EXTERNAL_OES;
-      resource_pool_option_ = ZERO_COPY_TILE_TASK_WORKER_POOL;
+      raster_buffer_provider_type_ = RASTER_BUFFER_PROVIDER_TYPE_ZERO_COPY;
       return;
   }
   NOTREACHED();
 }
 
-void LayerTreeHostPixelResourceTest::CreateResourceAndTileTaskWorkerPool(
+void LayerTreeHostPixelResourceTest::CreateResourceAndRasterBufferProvider(
     LayerTreeHostImpl* host_impl,
-    std::unique_ptr<TileTaskWorkerPool>* tile_task_worker_pool,
+    std::unique_ptr<RasterBufferProvider>* raster_buffer_provider,
     std::unique_ptr<ResourcePool>* resource_pool) {
   base::SingleThreadTaskRunner* task_runner =
       task_runner_provider()->HasImplThread()
@@ -122,42 +122,39 @@ void LayerTreeHostPixelResourceTest::CreateResourceAndTileTaskWorkerPool(
   int max_bytes_per_copy_operation = 1024 * 1024;
   int max_staging_buffer_usage_in_bytes = 32 * 1024 * 1024;
 
-  switch (resource_pool_option_) {
-    case BITMAP_TILE_TASK_WORKER_POOL:
+  // Create resource pool.
+  *resource_pool = ResourcePool::Create(resource_provider, task_runner);
+
+  switch (raster_buffer_provider_type_) {
+    case RASTER_BUFFER_PROVIDER_TYPE_BITMAP:
       EXPECT_FALSE(context_provider);
       EXPECT_EQ(PIXEL_TEST_SOFTWARE, test_type_);
-      *resource_pool = ResourcePool::Create(resource_provider, task_runner);
 
-      *tile_task_worker_pool = BitmapTileTaskWorkerPool::Create(
-          task_runner, task_graph_runner(), resource_provider);
+      *raster_buffer_provider =
+          BitmapRasterBufferProvider::Create(resource_provider);
       break;
-    case GPU_TILE_TASK_WORKER_POOL:
+    case RASTER_BUFFER_PROVIDER_TYPE_GPU:
       EXPECT_TRUE(context_provider);
       EXPECT_EQ(PIXEL_TEST_GL, test_type_);
-      *resource_pool = ResourcePool::Create(resource_provider, task_runner);
 
-      *tile_task_worker_pool = GpuTileTaskWorkerPool::Create(
-          task_runner, task_graph_runner(), context_provider, resource_provider,
-          false, 0);
+      *raster_buffer_provider = GpuRasterBufferProvider::Create(
+          context_provider, resource_provider, false, 0);
       break;
-    case ZERO_COPY_TILE_TASK_WORKER_POOL:
+    case RASTER_BUFFER_PROVIDER_TYPE_ZERO_COPY:
       EXPECT_TRUE(context_provider);
       EXPECT_EQ(PIXEL_TEST_GL, test_type_);
       EXPECT_TRUE(host_impl->GetRendererCapabilities().using_image);
-      *resource_pool = ResourcePool::Create(resource_provider, task_runner);
 
-      *tile_task_worker_pool = ZeroCopyTileTaskWorkerPool::Create(
-          task_runner, task_graph_runner(), resource_provider,
-          PlatformColor::BestTextureFormat());
+      *raster_buffer_provider = ZeroCopyRasterBufferProvider::Create(
+          resource_provider, PlatformColor::BestTextureFormat());
       break;
-    case ONE_COPY_TILE_TASK_WORKER_POOL:
+    case RASTER_BUFFER_PROVIDER_TYPE_ONE_COPY:
       EXPECT_TRUE(context_provider);
       EXPECT_EQ(PIXEL_TEST_GL, test_type_);
       EXPECT_TRUE(host_impl->GetRendererCapabilities().using_image);
-      *resource_pool = ResourcePool::Create(resource_provider, task_runner);
 
-      *tile_task_worker_pool = OneCopyTileTaskWorkerPool::Create(
-          task_runner, task_graph_runner(), context_provider, resource_provider,
+      *raster_buffer_provider = OneCopyRasterBufferProvider::Create(
+          task_runner, context_provider, resource_provider,
           max_bytes_per_copy_operation, false,
           max_staging_buffer_usage_in_bytes,
           PlatformColor::BestTextureFormat());

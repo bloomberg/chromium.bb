@@ -23,6 +23,7 @@
 #include "cc/test/fake_raster_source.h"
 #include "cc/test/fake_recording_source.h"
 #include "cc/test/fake_tile_manager.h"
+#include "cc/test/fake_tile_task_manager.h"
 #include "cc/test/test_gpu_memory_buffer_manager.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_task_graph_runner.h"
@@ -1907,51 +1908,21 @@ TEST_F(ActivationTasksDoNotBlockReadyToDrawTest,
   run_loop.Run();
 }
 
-// Fake TileTaskRunner that just no-ops all calls.
-// Fake TileTaskWorkerPool that just no-ops all calls.
-class FakeTileTaskWorkerPool : public TileTaskWorkerPool,
-                               public RasterBufferProvider {
+// Fake TileTaskManager that just cancels all scheduled tasks immediately.
+class CancellingTileTaskManager : public FakeTileTaskManagerImpl {
  public:
-  FakeTileTaskWorkerPool() {}
-  ~FakeTileTaskWorkerPool() override {}
-
-  // TileTaskWorkerPool methods.
-  void Shutdown() override {}
-  void CheckForCompletedTasks() override {}
-  ResourceFormat GetResourceFormat(bool must_support_alpha) const override {
-    return ResourceFormat::RGBA_8888;
-  }
-  bool GetResourceRequiresSwizzle(bool must_support_alpha) const override {
-    return false;
-  }
-  RasterBufferProvider* AsRasterBufferProvider() override { return this; }
-
-  void ScheduleTasks(TaskGraph* graph) override {}
-
-  // RasterBufferProvider methods.
-  std::unique_ptr<RasterBuffer> AcquireBufferForRaster(
-      const Resource* resource,
-      uint64_t resource_content_id,
-      uint64_t previous_content_id) override {
-    NOTREACHED();
-    return nullptr;
-  }
-  void ReleaseBufferForRaster(std::unique_ptr<RasterBuffer> buffer) override {}
-};
-
-// Fake TileTaskWorkerPool that just cancels all scheduled tasks immediately.
-class CancellingTileTaskWorkerPool : public FakeTileTaskWorkerPool {
- public:
-  CancellingTileTaskWorkerPool() {}
-  ~CancellingTileTaskWorkerPool() override {}
+  CancellingTileTaskManager() {}
+  ~CancellingTileTaskManager() override {}
 
   void ScheduleTasks(TaskGraph* graph) override {
     // Just call CompleteOnOriginThread on each item in the queue. As none of
     // these items have run yet, they will be treated as cancelled tasks.
     for (const auto& node : graph->nodes) {
-      static_cast<TileTask*>(node.task)->CompleteOnOriginThread(this);
+      static_cast<TileTask*>(node.task)->CompleteOnOriginThread(
+          raster_buffer_provider_.get());
     }
   }
+  void CheckForCompletedTasks() override {}
 };
 
 class PartialRasterTileManagerTest : public TileManagerTest {
@@ -1966,9 +1937,9 @@ class PartialRasterTileManagerTest : public TileManagerTest {
 TEST_F(PartialRasterTileManagerTest, CancelledTasksHaveNoContentId) {
   // Create a CancellingTaskRunner and set it on the tile manager so that all
   // scheduled work is immediately cancelled.
-  CancellingTileTaskWorkerPool cancelling_worker_pool;
-  host_impl_->tile_manager()->SetTileTaskWorkerPoolForTesting(
-      &cancelling_worker_pool);
+  CancellingTileTaskManager cancelling_task_manager;
+  host_impl_->tile_manager()->SetTileTaskManagerForTesting(
+      &cancelling_task_manager);
 
   // Pick arbitrary IDs - they don't really matter as long as they're constant.
   const int kLayerId = 7;
@@ -2001,9 +1972,8 @@ TEST_F(PartialRasterTileManagerTest, CancelledTasksHaveNoContentId) {
   EXPECT_FALSE(queue->IsEmpty());
   queue->Top().tile()->SetInvalidated(gfx::Rect(), kInvalidatedId);
 
-  // PrepareTiles to schedule tasks. Due to the CancellingTileTaskWorkerPool,
-  // these
-  // tasks will immediately be canceled.
+  // PrepareTiles to schedule tasks. Due to the CancellingTileTaskManager,
+  // these tasks will immediately be canceled.
   host_impl_->tile_manager()->PrepareTiles(host_impl_->global_tile_state());
 
   // Make sure that the tile we invalidated above was not returned to the pool
@@ -2012,31 +1982,20 @@ TEST_F(PartialRasterTileManagerTest, CancelledTasksHaveNoContentId) {
   EXPECT_FALSE(host_impl_->resource_pool()->TryAcquireResourceWithContentId(
       kInvalidatedId));
 
-  // Free our host_impl_ before the cancelling_worker_pool we passed it, as it
-  // will
-  // use that class in clean up.
+  // Free our host_impl_ before the cancelling_task_manager we passed it, as it
+  // will use that class in clean up.
   host_impl_ = nullptr;
 }
 
-// Fake TileTaskWorkerPool that verifies the resource content ID of raster
+// FakeRasterBufferProviderImpl that verifies the resource content ID of raster
 // tasks.
-class VerifyResourceContentIdTileTaskWorkerPool
-    : public FakeTileTaskWorkerPool {
+class VerifyResourceContentIdRasterBufferProvider
+    : public FakeRasterBufferProviderImpl {
  public:
-  explicit VerifyResourceContentIdTileTaskWorkerPool(
+  explicit VerifyResourceContentIdRasterBufferProvider(
       uint64_t expected_resource_id)
       : expected_resource_id_(expected_resource_id) {}
-  ~VerifyResourceContentIdTileTaskWorkerPool() override {}
-
-  void ScheduleTasks(TaskGraph* graph) override {
-    for (const auto& node : graph->nodes) {
-      TileTask* task = static_cast<TileTask*>(node.task);
-      // Triggers a call to AcquireBufferForRaster.
-      task->ScheduleOnOriginThread(this);
-      // Calls TileManager as though task was cancelled.
-      task->CompleteOnOriginThread(this);
-    }
-  }
+  ~VerifyResourceContentIdRasterBufferProvider() override {}
 
   // RasterBufferProvider methods.
   std::unique_ptr<RasterBuffer> AcquireBufferForRaster(
@@ -2051,6 +2010,26 @@ class VerifyResourceContentIdTileTaskWorkerPool
   uint64_t expected_resource_id_;
 };
 
+class VerifyResourceContentIdTileTaskManager : public FakeTileTaskManagerImpl {
+ public:
+  explicit VerifyResourceContentIdTileTaskManager(uint64_t expected_resource_id)
+      : FakeTileTaskManagerImpl(base::WrapUnique<RasterBufferProvider>(
+            new VerifyResourceContentIdRasterBufferProvider(
+                expected_resource_id))) {}
+  ~VerifyResourceContentIdTileTaskManager() override {}
+
+  void ScheduleTasks(TaskGraph* graph) override {
+    for (const auto& node : graph->nodes) {
+      TileTask* task = static_cast<TileTask*>(node.task);
+      // Triggers a call to AcquireBufferForRaster.
+      task->ScheduleOnOriginThread(raster_buffer_provider_.get());
+      // Calls TileManager as though task was cancelled.
+      task->CompleteOnOriginThread(raster_buffer_provider_.get());
+    }
+  }
+  void CheckForCompletedTasks() override {}
+};
+
 // Runs a test to ensure that partial raster is either enabled or disabled,
 // depending on |partial_raster_enabled|'s value. Takes ownership of host_impl
 // so that cleanup order can be controlled.
@@ -2062,12 +2041,11 @@ void RunPartialRasterCheck(std::unique_ptr<LayerTreeHostImpl> host_impl,
   const uint64_t kExpectedId = partial_raster_enabled ? kInvalidatedId : 0u;
   const gfx::Size kTileSize(128, 128);
 
-  // Create a VerifyResourceContentIdTileTaskWorkerPool to ensure that the
-  // raster
-  // task we see is created with |kExpectedId|.
-  VerifyResourceContentIdTileTaskWorkerPool verifying_worker_pool(kExpectedId);
-  host_impl->tile_manager()->SetTileTaskWorkerPoolForTesting(
-      &verifying_worker_pool);
+  // Create a VerifyResourceContentIdTileTaskManager to ensure that the
+  // raster task we see is created with |kExpectedId|.
+  VerifyResourceContentIdTileTaskManager verifying_task_manager(kExpectedId);
+  host_impl->tile_manager()->SetTileTaskManagerForTesting(
+      &verifying_task_manager);
 
   // Ensure there's a resource with our |kInvalidatedId| in the resource pool.
   host_impl->resource_pool()->ReleaseResource(
@@ -2102,13 +2080,12 @@ void RunPartialRasterCheck(std::unique_ptr<LayerTreeHostImpl> host_impl,
   queue->Top().tile()->SetInvalidated(gfx::Rect(), kInvalidatedId);
 
   // PrepareTiles to schedule tasks. Due to the
-  // VerifyPreviousContentTileTaskWorkerPool, these tasks will verified and
+  // VerifyPreviousContentRasterBufferProvider, these tasks will verified and
   // cancelled.
   host_impl->tile_manager()->PrepareTiles(host_impl->global_tile_state());
 
-  // Free our host_impl before the cancelling_worker_pool we passed it, as it
-  // will
-  // use that class in clean up.
+  // Free our host_impl before the verifying_task_manager we passed it, as it
+  // will use that class in clean up.
   host_impl = nullptr;
 }
 

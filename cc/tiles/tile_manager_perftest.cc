@@ -20,6 +20,7 @@
 #include "cc/test/fake_raster_source.h"
 #include "cc/test/fake_tile_manager.h"
 #include "cc/test/fake_tile_manager_client.h"
+#include "cc/test/fake_tile_task_manager.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/test/test_tile_priorities.h"
@@ -37,54 +38,7 @@ static const int kTimeLimitMillis = 2000;
 static const int kWarmupRuns = 5;
 static const int kTimeCheckInterval = 10;
 
-class FakeTileTaskWorkerPoolImpl : public TileTaskWorkerPool,
-                                   public RasterBufferProvider {
- public:
-  // Overridden from TileTaskWorkerPool:
-  void Shutdown() override {}
-  void ScheduleTasks(TaskGraph* graph) override {
-    for (auto& node : graph->nodes) {
-      TileTask* task = static_cast<TileTask*>(node.task);
-
-      task->WillSchedule();
-      task->ScheduleOnOriginThread(this);
-      task->DidSchedule();
-
-      completed_tasks_.push_back(task);
-    }
-  }
-  void CheckForCompletedTasks() override {
-    for (TileTask::Vector::iterator it = completed_tasks_.begin();
-         it != completed_tasks_.end(); ++it) {
-      TileTask* task = it->get();
-
-      task->WillComplete();
-      task->CompleteOnOriginThread(this);
-      task->DidComplete();
-    }
-    completed_tasks_.clear();
-  }
-  ResourceFormat GetResourceFormat(bool must_support_alpha) const override {
-    return RGBA_8888;
-  }
-  bool GetResourceRequiresSwizzle(bool must_support_alpha) const override {
-    return ResourceFormatRequiresSwizzle(GetResourceFormat(must_support_alpha));
-  }
-  RasterBufferProvider* AsRasterBufferProvider() override { return this; }
-
-  // Overridden from RasterBufferProvider:
-  std::unique_ptr<RasterBuffer> AcquireBufferForRaster(
-      const Resource* resource,
-      uint64_t new_content_id,
-      uint64_t previous_content_id) override {
-    return nullptr;
-  }
-  void ReleaseBufferForRaster(std::unique_ptr<RasterBuffer> buffer) override {}
-
- private:
-  TileTask::Vector completed_tasks_;
-};
-base::LazyInstance<FakeTileTaskWorkerPoolImpl> g_fake_tile_task_worker_pool =
+base::LazyInstance<FakeTileTaskManagerImpl> g_fake_tile_task_manager =
     LAZY_INSTANCE_INITIALIZER;
 
 class TileManagerPerfTest : public testing::Test {
@@ -127,8 +81,8 @@ class TileManagerPerfTest : public testing::Test {
   virtual void InitializeRenderer() {
     host_impl_.SetVisible(true);
     host_impl_.InitializeRenderer(output_surface_.get());
-    tile_manager()->SetTileTaskWorkerPoolForTesting(
-        g_fake_tile_task_worker_pool.Pointer());
+    tile_manager()->SetTileTaskManagerForTesting(
+        g_fake_tile_task_manager.Pointer());
   }
 
   void SetupDefaultTrees(const gfx::Size& layer_bounds) {

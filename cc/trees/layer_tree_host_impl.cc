@@ -63,13 +63,13 @@
 #include "cc/quads/shared_quad_state.h"
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
-#include "cc/raster/bitmap_tile_task_worker_pool.h"
+#include "cc/raster/bitmap_raster_buffer_provider.h"
+#include "cc/raster/gpu_raster_buffer_provider.h"
 #include "cc/raster/gpu_rasterizer.h"
-#include "cc/raster/gpu_tile_task_worker_pool.h"
-#include "cc/raster/one_copy_tile_task_worker_pool.h"
+#include "cc/raster/one_copy_raster_buffer_provider.h"
+#include "cc/raster/raster_buffer_provider.h"
 #include "cc/raster/synchronous_task_graph_runner.h"
-#include "cc/raster/tile_task_worker_pool.h"
-#include "cc/raster/zero_copy_tile_task_worker_pool.h"
+#include "cc/raster/zero_copy_raster_buffer_provider.h"
 #include "cc/resources/memory_history.h"
 #include "cc/resources/resource_pool.h"
 #include "cc/resources/ui_resource_bitmap.h"
@@ -79,6 +79,7 @@
 #include "cc/tiles/picture_layer_tiling.h"
 #include "cc/tiles/raster_tile_priority_queue.h"
 #include "cc/tiles/software_image_decode_controller.h"
+#include "cc/tiles/tile_task_manager.h"
 #include "cc/trees/damage_tracker.h"
 #include "cc/trees/draw_property_utils.h"
 #include "cc/trees/latency_info_swap_promise_monitor.h"
@@ -2134,7 +2135,9 @@ void LayerTreeHostImpl::CreateAndSetRenderer() {
 }
 
 void LayerTreeHostImpl::CreateTileManagerResources() {
-  CreateResourceAndTileTaskWorkerPool(&tile_task_worker_pool_, &resource_pool_);
+  std::unique_ptr<RasterBufferProvider> raster_buffer_provider;
+  CreateResourceAndRasterBufferProvider(&raster_buffer_provider,
+                                        &resource_pool_);
 
   if (use_gpu_rasterization_) {
     image_decode_controller_ = base::WrapUnique(new GpuImageDecodeController(
@@ -2146,24 +2149,6 @@ void LayerTreeHostImpl::CreateTileManagerResources() {
             settings_.renderer_settings.preferred_tile_format));
   }
 
-  // TODO(vmpstr): Initialize tile task limit at ctor time.
-  tile_manager_->SetResources(
-      resource_pool_.get(), tile_task_worker_pool_.get(),
-      image_decode_controller_.get(),
-      is_synchronous_single_threaded_ ? std::numeric_limits<size_t>::max()
-                                      : settings_.scheduled_raster_task_limit,
-      use_gpu_rasterization_);
-  UpdateTileManagerMemoryPolicy(ActualManagedMemoryPolicy());
-}
-
-void LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
-    std::unique_ptr<TileTaskWorkerPool>* tile_task_worker_pool,
-    std::unique_ptr<ResourcePool>* resource_pool) {
-  DCHECK(GetTaskRunner());
-  // TODO(vmpstr): Make this a DCHECK (or remove) when crbug.com/419086 is
-  // resolved.
-  CHECK(resource_provider_);
-
   // Pass the single-threaded synchronous task graph runner to the worker pool
   // if we're in synchronous single-threaded mode.
   TaskGraphRunner* task_graph_runner = task_graph_runner_;
@@ -2174,13 +2159,34 @@ void LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
     task_graph_runner = single_thread_synchronous_task_graph_runner_.get();
   }
 
+  tile_task_manager_ = TileTaskManagerImpl::Create(
+      std::move(raster_buffer_provider), task_graph_runner);
+
+  // TODO(vmpstr): Initialize tile task limit at ctor time.
+  tile_manager_->SetResources(
+      resource_pool_.get(), image_decode_controller_.get(),
+      tile_task_manager_.get(),
+      is_synchronous_single_threaded_ ? std::numeric_limits<size_t>::max()
+                                      : settings_.scheduled_raster_task_limit,
+      use_gpu_rasterization_);
+  UpdateTileManagerMemoryPolicy(ActualManagedMemoryPolicy());
+}
+
+void LayerTreeHostImpl::CreateResourceAndRasterBufferProvider(
+    std::unique_ptr<RasterBufferProvider>* raster_buffer_provider,
+    std::unique_ptr<ResourcePool>* resource_pool) {
+  DCHECK(GetTaskRunner());
+  // TODO(vmpstr): Make this a DCHECK (or remove) when crbug.com/419086 is
+  // resolved.
+  CHECK(resource_provider_);
+
   ContextProvider* context_provider = output_surface_->context_provider();
   if (!context_provider) {
     *resource_pool =
         ResourcePool::Create(resource_provider_.get(), GetTaskRunner());
 
-    *tile_task_worker_pool = BitmapTileTaskWorkerPool::Create(
-        GetTaskRunner(), task_graph_runner, resource_provider_.get());
+    *raster_buffer_provider =
+        BitmapRasterBufferProvider::Create(resource_provider_.get());
     return;
   }
 
@@ -2192,10 +2198,9 @@ void LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
 
     int msaa_sample_count = use_msaa_ ? RequestedMSAASampleCount() : 0;
 
-    *tile_task_worker_pool = GpuTileTaskWorkerPool::Create(
-        GetTaskRunner(), task_graph_runner, context_provider,
-        resource_provider_.get(), settings_.use_distance_field_text,
-        msaa_sample_count);
+    *raster_buffer_provider = GpuRasterBufferProvider::Create(
+        context_provider, resource_provider_.get(),
+        settings_.use_distance_field_text, msaa_sample_count);
     return;
   }
 
@@ -2214,8 +2219,8 @@ void LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
     *resource_pool = ResourcePool::CreateForGpuMemoryBufferResources(
         resource_provider_.get(), GetTaskRunner());
 
-    *tile_task_worker_pool = ZeroCopyTileTaskWorkerPool::Create(
-        GetTaskRunner(), task_graph_runner, resource_provider_.get(),
+    *raster_buffer_provider = ZeroCopyRasterBufferProvider::Create(
+        resource_provider_.get(),
         settings_.renderer_settings.preferred_tile_format);
     return;
   }
@@ -2226,10 +2231,10 @@ void LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
   const int max_copy_texture_chromium_size =
       context_provider->ContextCapabilities().max_copy_texture_chromium_size;
 
-  *tile_task_worker_pool = OneCopyTileTaskWorkerPool::Create(
-      GetTaskRunner(), task_graph_runner, context_provider,
-      resource_provider_.get(), max_copy_texture_chromium_size,
-      settings_.use_partial_raster, settings_.max_staging_buffer_usage_in_bytes,
+  *raster_buffer_provider = OneCopyRasterBufferProvider::Create(
+      GetTaskRunner(), context_provider, resource_provider_.get(),
+      max_copy_texture_chromium_size, settings_.use_partial_raster,
+      settings_.max_staging_buffer_usage_in_bytes,
       settings_.renderer_settings.preferred_tile_format);
 }
 
@@ -2243,7 +2248,7 @@ void LayerTreeHostImpl::CleanUpTileManagerAndUIResources() {
   ClearUIResources();
   tile_manager_->FinishTasksAndCleanUp();
   resource_pool_ = nullptr;
-  tile_task_worker_pool_ = nullptr;
+  tile_task_manager_ = nullptr;
   single_thread_synchronous_task_graph_runner_ = nullptr;
   image_decode_controller_ = nullptr;
 }

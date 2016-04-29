@@ -12,20 +12,6 @@
 #include "ui/gfx/geometry/rect.h"
 
 namespace cc {
-class RasterBuffer;
-class Resource;
-
-class CC_EXPORT RasterBufferProvider {
- public:
-  virtual std::unique_ptr<RasterBuffer> AcquireBufferForRaster(
-      const Resource* resource,
-      uint64_t resource_content_id,
-      uint64_t previous_content_id) = 0;
-  virtual void ReleaseBufferForRaster(std::unique_ptr<RasterBuffer> buffer) = 0;
-
- protected:
-  virtual ~RasterBufferProvider() {}
-};
 
 class CC_EXPORT RasterBuffer {
  public:

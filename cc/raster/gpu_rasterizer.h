@@ -44,7 +44,7 @@ class CC_EXPORT GpuRasterizer {
   bool use_distance_field_text_;
   int msaa_sample_count_;
 
-  friend class GpuTileTaskWorkerPool;
+  friend class GpuRasterBufferProvider;
   DISALLOW_COPY_AND_ASSIGN(GpuRasterizer);
 };
 

@@ -16,7 +16,7 @@
 #include "cc/output/output_surface_client.h"
 #include "cc/output/software_renderer.h"
 #include "cc/output/texture_mailbox_deleter.h"
-#include "cc/raster/tile_task_worker_pool.h"
+#include "cc/raster/raster_buffer_provider.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/test/fake_output_surface_client.h"

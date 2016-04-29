@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/raster/gpu_tile_task_worker_pool.h"
+#include "cc/raster/gpu_raster_buffer_provider.h"
 
 #include <stdint.h>
 
@@ -89,96 +89,29 @@ class RasterBufferImpl : public RasterBuffer {
 }  // namespace
 
 // static
-std::unique_ptr<TileTaskWorkerPool> GpuTileTaskWorkerPool::Create(
-    base::SequencedTaskRunner* task_runner,
-    TaskGraphRunner* task_graph_runner,
+std::unique_ptr<RasterBufferProvider> GpuRasterBufferProvider::Create(
     ContextProvider* context_provider,
     ResourceProvider* resource_provider,
     bool use_distance_field_text,
     int gpu_rasterization_msaa_sample_count) {
-  return base::WrapUnique<TileTaskWorkerPool>(new GpuTileTaskWorkerPool(
-      task_runner, task_graph_runner, context_provider, resource_provider,
-      use_distance_field_text, gpu_rasterization_msaa_sample_count));
+  return base::WrapUnique<RasterBufferProvider>(new GpuRasterBufferProvider(
+      context_provider, resource_provider, use_distance_field_text,
+      gpu_rasterization_msaa_sample_count));
 }
 
-GpuTileTaskWorkerPool::GpuTileTaskWorkerPool(
-    base::SequencedTaskRunner* task_runner,
-    TaskGraphRunner* task_graph_runner,
+GpuRasterBufferProvider::GpuRasterBufferProvider(
     ContextProvider* context_provider,
     ResourceProvider* resource_provider,
     bool use_distance_field_text,
     int gpu_rasterization_msaa_sample_count)
-    : task_runner_(task_runner),
-      task_graph_runner_(task_graph_runner),
-      namespace_token_(task_graph_runner_->GetNamespaceToken()),
-      rasterizer_(new GpuRasterizer(context_provider,
+    : rasterizer_(new GpuRasterizer(context_provider,
                                     resource_provider,
                                     use_distance_field_text,
                                     gpu_rasterization_msaa_sample_count)) {}
 
-GpuTileTaskWorkerPool::~GpuTileTaskWorkerPool() {
-  DCHECK_EQ(0u, completed_tasks_.size());
-}
+GpuRasterBufferProvider::~GpuRasterBufferProvider() {}
 
-void GpuTileTaskWorkerPool::Shutdown() {
-  TRACE_EVENT0("cc", "GpuTileTaskWorkerPool::Shutdown");
-
-  TaskGraph empty;
-  task_graph_runner_->ScheduleTasks(namespace_token_, &empty);
-  task_graph_runner_->WaitForTasksToFinishRunning(namespace_token_);
-}
-
-void GpuTileTaskWorkerPool::ScheduleTasks(TaskGraph* graph) {
-  TRACE_EVENT0("cc", "GpuTileTaskWorkerPool::ScheduleTasks");
-
-  ScheduleTasksOnOriginThread(this, graph);
-
-  // Barrier to sync any new resources to the worker context.
-  rasterizer_->resource_provider()
-      ->output_surface()
-      ->context_provider()
-      ->ContextGL()
-      ->OrderingBarrierCHROMIUM();
-
-  task_graph_runner_->ScheduleTasks(namespace_token_, graph);
-}
-
-void GpuTileTaskWorkerPool::CheckForCompletedTasks() {
-  TRACE_EVENT0("cc", "GpuTileTaskWorkerPool::CheckForCompletedTasks");
-
-  task_graph_runner_->CollectCompletedTasks(namespace_token_,
-                                            &completed_tasks_);
-  CompleteTasks(completed_tasks_);
-  completed_tasks_.clear();
-}
-
-ResourceFormat GpuTileTaskWorkerPool::GetResourceFormat(
-    bool must_support_alpha) const {
-  return rasterizer_->resource_provider()->best_render_buffer_format();
-}
-
-bool GpuTileTaskWorkerPool::GetResourceRequiresSwizzle(
-    bool must_support_alpha) const {
-  // This doesn't require a swizzle because we rasterize to the correct format.
-  return false;
-}
-
-RasterBufferProvider* GpuTileTaskWorkerPool::AsRasterBufferProvider() {
-  return this;
-}
-
-void GpuTileTaskWorkerPool::CompleteTasks(const Task::Vector& tasks) {
-  for (auto& task : tasks) {
-    TileTask* tile_task = static_cast<TileTask*>(task.get());
-
-    tile_task->WillComplete();
-    tile_task->CompleteOnOriginThread(this);
-    tile_task->DidComplete();
-  }
-  completed_tasks_.clear();
-}
-
-std::unique_ptr<RasterBuffer> GpuTileTaskWorkerPool::AcquireBufferForRaster(
+std::unique_ptr<RasterBuffer> GpuRasterBufferProvider::AcquireBufferForRaster(
     const Resource* resource,
     uint64_t resource_content_id,
     uint64_t previous_content_id) {
@@ -186,9 +119,32 @@ std::unique_ptr<RasterBuffer> GpuTileTaskWorkerPool::AcquireBufferForRaster(
       rasterizer_.get(), resource, resource_content_id, previous_content_id));
 }
 
-void GpuTileTaskWorkerPool::ReleaseBufferForRaster(
+void GpuRasterBufferProvider::ReleaseBufferForRaster(
     std::unique_ptr<RasterBuffer> buffer) {
   // Nothing to do here. RasterBufferImpl destructor cleans up after itself.
 }
+
+void GpuRasterBufferProvider::OrderingBarrier() {
+  TRACE_EVENT0("cc", "GpuRasterBufferProvider::OrderingBarrier");
+
+  rasterizer_->resource_provider()
+      ->output_surface()
+      ->context_provider()
+      ->ContextGL()
+      ->OrderingBarrierCHROMIUM();
+}
+
+ResourceFormat GpuRasterBufferProvider::GetResourceFormat(
+    bool must_support_alpha) const {
+  return rasterizer_->resource_provider()->best_render_buffer_format();
+}
+
+bool GpuRasterBufferProvider::GetResourceRequiresSwizzle(
+    bool must_support_alpha) const {
+  // This doesn't require a swizzle because we rasterize to the correct format.
+  return false;
+}
+
+void GpuRasterBufferProvider::Shutdown() {}
 
 }  // namespace cc

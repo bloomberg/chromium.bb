@@ -11,7 +11,7 @@
 namespace cc {
 
 class LayerTreeHostImpl;
-class TileTaskWorkerPool;
+class RasterBufferProvider;
 class ResourcePool;
 
 // Enumerate the various combinations of renderer, resource pool, staging
@@ -34,24 +34,24 @@ class LayerTreeHostPixelResourceTest : public LayerTreePixelTest {
   explicit LayerTreeHostPixelResourceTest(PixelResourceTestCase test_case);
   LayerTreeHostPixelResourceTest();
 
-  void CreateResourceAndTileTaskWorkerPool(
+  void CreateResourceAndRasterBufferProvider(
       LayerTreeHostImpl* host_impl,
-      std::unique_ptr<TileTaskWorkerPool>* tile_task_worker_pool,
+      std::unique_ptr<RasterBufferProvider>* raster_buffer_provider,
       std::unique_ptr<ResourcePool>* resource_pool) override;
 
   void RunPixelResourceTest(scoped_refptr<Layer> content_root,
                             base::FilePath file_name);
 
-  enum TileTaskWorkerPoolOption {
-    BITMAP_TILE_TASK_WORKER_POOL,
-    GPU_TILE_TASK_WORKER_POOL,
-    ZERO_COPY_TILE_TASK_WORKER_POOL,
-    ONE_COPY_TILE_TASK_WORKER_POOL
+  enum RasterBufferProviderType {
+    RASTER_BUFFER_PROVIDER_TYPE_ZERO_COPY,
+    RASTER_BUFFER_PROVIDER_TYPE_ONE_COPY,
+    RASTER_BUFFER_PROVIDER_TYPE_GPU,
+    RASTER_BUFFER_PROVIDER_TYPE_BITMAP
   };
 
  protected:
   unsigned draw_texture_target_;
-  TileTaskWorkerPoolOption resource_pool_option_;
+  RasterBufferProviderType raster_buffer_provider_type_;
   bool initialized_;
 
   void InitializeFromTestCase(PixelResourceTestCase test_case);
