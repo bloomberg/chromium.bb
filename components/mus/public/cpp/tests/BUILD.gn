@@ -33,7 +33,6 @@ source_set("test_support") {
     "//components/mus/public/cpp",
     "//services/shell/public/cpp:shell_test_support",
     "//services/shell/public/cpp:sources",
-    "//services/shell/public/cpp:test_support",
     "//testing/gtest",
     "//ui/gl",
   ]

@@ -20,7 +20,7 @@
 #include "media/mojo/interfaces/renderer.mojom.h"
 #include "media/mojo/interfaces/service_factory.mojom.h"
 #include "media/mojo/services/mojo_demuxer_stream_impl.h"
-#include "services/shell/public/cpp/application_test_base.h"
+#include "services/shell/public/cpp/shell_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using testing::Exactly;
@@ -52,19 +52,20 @@ class MockRendererClient : public interfaces::RendererClient {
   DISALLOW_COPY_AND_ASSIGN(MockRendererClient);
 };
 
-class MediaAppTest : public shell::test::ApplicationTestBase {
+class MediaShellTest : public shell::test::ShellTest {
  public:
-  MediaAppTest()
-      : renderer_client_binding_(&renderer_client_),
+  MediaShellTest()
+      : ShellTest("exe:media_mojo_unittests"),
+        renderer_client_binding_(&renderer_client_),
         video_demuxer_stream_(DemuxerStream::VIDEO) {}
-  ~MediaAppTest() override {}
+  ~MediaShellTest() override {}
 
   void SetUp() override {
-    ApplicationTestBase::SetUp();
+    ShellTest::SetUp();
 
     connection_ = connector()->Connect("mojo:media");
     connection_->SetConnectionLostClosure(
-        base::Bind(&MediaAppTest::ConnectionClosed, base::Unretained(this)));
+        base::Bind(&MediaShellTest::ConnectionClosed, base::Unretained(this)));
 
     connection_->GetInterface(&service_factory_);
 
@@ -90,7 +91,7 @@ class MediaAppTest : public shell::test::ApplicationTestBase {
         .WillOnce(InvokeWithoutArgs(run_loop_.get(), &base::RunLoop::Quit));
     cdm_->Initialize(
         key_system, kSecurityOrigin, interfaces::CdmConfig::From(CdmConfig()),
-        base::Bind(&MediaAppTest::OnCdmInitialized, base::Unretained(this)));
+        base::Bind(&MediaShellTest::OnCdmInitialized, base::Unretained(this)));
   }
 
   MOCK_METHOD1(OnRendererInitialized, void(bool));
@@ -109,7 +110,7 @@ class MediaAppTest : public shell::test::ApplicationTestBase {
         .WillOnce(InvokeWithoutArgs(run_loop_.get(), &base::RunLoop::Quit));
     renderer_->Initialize(renderer_client_binding_.CreateInterfacePtrAndBind(),
                           nullptr, std::move(video_stream),
-                          base::Bind(&MediaAppTest::OnRendererInitialized,
+                          base::Bind(&MediaShellTest::OnRendererInitialized,
                                      base::Unretained(this)));
   }
 
@@ -130,7 +131,7 @@ class MediaAppTest : public shell::test::ApplicationTestBase {
  private:
   std::unique_ptr<shell::Connection> connection_;
 
-  DISALLOW_COPY_AND_ASSIGN(MediaAppTest);
+  DISALLOW_COPY_AND_ASSIGN(MediaShellTest);
 };
 
 }  // namespace
@@ -139,12 +140,12 @@ class MediaAppTest : public shell::test::ApplicationTestBase {
 // even when the loop is idle, we may still have pending events in the pipe.
 
 #if defined(ENABLE_MOJO_CDM)
-TEST_F(MediaAppTest, InitializeCdm_Success) {
+TEST_F(MediaShellTest, InitializeCdm_Success) {
   InitializeCdm(kClearKeyKeySystem, true, 1);
   run_loop_->Run();
 }
 
-TEST_F(MediaAppTest, InitializeCdm_InvalidKeySystem) {
+TEST_F(MediaShellTest, InitializeCdm_InvalidKeySystem) {
   InitializeCdm(kInvalidKeySystem, false, 0);
   run_loop_->Run();
 }
@@ -158,18 +159,18 @@ TEST_F(MediaAppTest, InitializeCdm_InvalidKeySystem) {
 #define MAYBE_InitializeRenderer_Success InitializeRenderer_Success
 #endif
 
-TEST_F(MediaAppTest, MAYBE_InitializeRenderer_Success) {
+TEST_F(MediaShellTest, MAYBE_InitializeRenderer_Success) {
   InitializeRenderer(TestVideoConfig::Normal(), true);
   run_loop_->Run();
 }
 
-TEST_F(MediaAppTest, InitializeRenderer_InvalidConfig) {
+TEST_F(MediaShellTest, InitializeRenderer_InvalidConfig) {
   InitializeRenderer(TestVideoConfig::Invalid(), false);
   run_loop_->Run();
 }
 #endif  // defined(ENABLE_MOJO_RENDERER)
 
-TEST_F(MediaAppTest, Lifetime) {
+TEST_F(MediaShellTest, Lifetime) {
   // Disconnecting CDM and Renderer services doesn't terminate the app.
   cdm_.reset();
   renderer_.reset();

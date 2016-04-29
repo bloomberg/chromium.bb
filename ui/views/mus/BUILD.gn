@@ -128,14 +128,6 @@ group("for_shared_library") {
   }
 }
 
-group("tests") {
-  testonly = true
-
-  deps = [
-    ":views_mus_unittests",
-  ]
-}
-
 test("views_mus_unittests") {
   testonly = true
 

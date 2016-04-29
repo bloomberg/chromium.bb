@@ -102,7 +102,7 @@ source_set("mojo_pipeline_integration_tests") {
       "//media/mojo/interfaces",
       "//media/mojo/services:proxy",
       "//media/mojo/services:renderer_service",
-      "//services/shell/public/cpp:test_support",
+      "//services/shell/public/cpp:shell_test_support",
       "//testing/gtest",
       "//ui/gfx:test_support",
       "//ui/gfx/geometry",

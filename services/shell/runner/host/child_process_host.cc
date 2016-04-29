@@ -154,9 +154,9 @@ void ChildProcessHost::DoLaunch(
   // that case, they're automatically inherited by child processes. See
   // https://msdn.microsoft.com/en-us/library/windows/desktop/ms682075.aspx
   // Trying to add them to the list of handles to inherit causes CreateProcess
-  // to fail. When this process is launched from Python
-  // (i.e. by apptest_runner.py) then a real handle is used. In that case, we do
-  // want to add it to the list of handles that is inherited.
+  // to fail. When this process is launched from Python then a real handle is
+  // used. In that case, we do want to add it to the list of handles that is
+  // inherited.
   if (options.stdout_handle &&
       GetFileType(options.stdout_handle) != FILE_TYPE_CHAR) {
     handle_passing_info_.push_back(options.stdout_handle);

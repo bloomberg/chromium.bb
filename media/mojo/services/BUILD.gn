@@ -245,19 +245,11 @@ mojo_application_manifest("media_manifest") {
   source = "media_manifest.json"
 }
 
-# Note, the following tests must be loaded via mojo_runner as an app, e.g.
-#
-#   mojo/tools/apptest_runner.py
-#     --apptest-filter mojo:media_apptests out/Debug
-#
-#   mojo/tools/apptest_runner.py
-#     --apptest-filter mojo:media_pipeline_integration_apptests out/Debug
-#
-mojo_native_application("media_apptests") {
+test("media_mojo_shell_unittests") {
   testonly = true
 
   sources = [
-    "media_apptest.cc",
+    "media_mojo_unittest.cc",
   ]
 
   deps = [
@@ -266,44 +258,40 @@ mojo_native_application("media_apptests") {
     "//media/base:test_support",
     "//media/mojo/common",
     "//media/mojo/interfaces",
-    "//services/shell/public/cpp:test_support",
+    "//services/shell/public/cpp:shell_test_support",
+    "//services/shell/public/cpp/test:run_all_shelltests",
     "//testing/gmock",
     "//testing/gtest",
   ]
 
   data_deps = [
-    ":apptest_manifest",
+    ":test_manifest",
     ":media",
   ]
 }
 
-mojo_application_manifest("apptest_manifest") {
-  application_name = "media_apptests"
-  source = "apptest_manifest.json"
+mojo_application_manifest("test_manifest") {
+  application_name = "media_mojo_shell_unittests"
+  type = "exe"
+  source = "test_manifest.json"
 }
 
-mojo_native_application("media_pipeline_integration_apptests") {
+test("media_pipeline_integration_unittests") {
   testonly = true
 
   deps = [
     "//media/test:mojo_pipeline_integration_tests",
+    "//services/shell/public/cpp/test:run_all_shelltests",
   ]
 
   data_deps = [
     ":media",
-    ":pipeline_apptest_manifest",
+    ":pipeline_test_manifest",
   ]
 }
 
-mojo_application_manifest("pipeline_apptest_manifest") {
-  application_name = "media_pipeline_integration_apptests"
-  source = "pipeline_apptest_manifest.json"
-}
-
-group("tests") {
-  testonly = true
-  deps = [
-    ":media_apptests",
-    ":media_pipeline_integration_apptests",
-  ]
+mojo_application_manifest("pipeline_test_manifest") {
+  application_name = "media_pipeline_integration_unittests"
+  type = "exe"
+  source = "pipeline_test_manifest.json"
 }

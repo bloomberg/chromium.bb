@@ -629,39 +629,6 @@ group("both_gn_and_gyp") {
   }
 }
 
-# This group contains all the targets needed to run mojo's apptest_runner.
-group("mojo_apptests") {
-  testonly = true
-
-  deps = []
-  data_deps = []
-  data = []
-
-  if (is_win || is_linux) {
-    deps += [ "//services/shell/standalone" ]
-    data_deps = [
-      "//media/mojo/services:media_apptests",
-    ]
-    if (is_linux) {
-      data_deps += [ "//tools/xdisplaycheck" ]
-    }
-    data += [
-      "//mojo/tools/apptest_runner.py",
-      "//mojo/tools/data/apptests",
-      "//mojo/tools/mopy/",
-      "//testing/xvfb.py",
-      "//tools/swarming_client/utils/subprocess42.py",
-    ]
-  }
-}
-
-group("mojo_apptests_run") {
-  testonly = true
-  deps = [
-    ":mojo_apptests",
-  ]
-}
-
 group("gn_only") {
   testonly = true
 
@@ -681,11 +648,13 @@ group("gn_only") {
 
   if (is_win || is_linux) {
     deps += [
-      ":mojo_apptests",
       "//components/mus/demo",
       "//components/mus/ws:tests",
+      "//components/resource_provider:resource_provider_unittests",
       "//mash:all",
+      "//media/mojo/services:media_mojo_shell_unittests",
       "//mojo",
+      "//ui/views/mus:views_mus_unittests",
     ]
   }
 

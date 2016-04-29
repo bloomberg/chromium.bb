@@ -206,7 +206,6 @@ test("mus_ws_unittests") {
     "//mojo/public/cpp/bindings:bindings",
     "//services/shell/public/cpp:shell_test_support",
     "//services/shell/public/cpp:sources",
-    "//services/shell/public/cpp:test_support",
     "//services/shell/public/cpp/test:run_all_shelltests",
     "//services/shell/public/interfaces",
     "//testing/gtest",

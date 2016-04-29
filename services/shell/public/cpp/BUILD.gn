@@ -69,31 +69,6 @@ source_set("init_commandline") {
   ]
 }
 
-source_set("test_support") {
-  testonly = true
-  sources = [
-    "application_test_base.h",
-    "lib/application_test_base.cc",
-    "lib/application_test_main.cc",
-  ]
-
-  public_deps = [
-    ":cpp",
-    "//testing/gtest",
-  ]
-
-  deps = [
-    "//base",
-    "//base/test:test_support",
-    "//mojo/logging",
-    "//mojo/public/cpp/bindings",
-    "//mojo/public/cpp/system",
-    "//services/shell/public/interfaces:interfaces_cpp_sources",
-  ]
-
-  data_deps = []
-}
-
 source_set("shell_test_support") {
   testonly = true
   sources = [

@@ -364,6 +364,10 @@
     "label": "//media:media_unittests",
     "type": "windowed_test_launcher",
   },
+  "media_mojo_shell_unittests": {
+    "label": "//media/mojo/services:media_mojo_shell_unittests",
+    "type": "console_test_launcher",
+  },
   "media_blink_unittests": {
     "label": "//media/blink:media_blink_unittests",
     "type": "windowed_test_launcher",
@@ -371,14 +375,6 @@
   "midi_unittests": {
     "label": "//media/midi:midi_unittests",
     "type": "windowed_test_launcher",
-  },
-  "mojo_apptests": {
-    "label": ":mojo_apptests",
-    "type": "script",
-    "script": "//mojo/tools/apptest_runner.py",
-    "args": [
-      '.',
-    ],
   },
   "mojo_common_unittests": {
     "label": "//mojo/common:mojo_common_unittests",

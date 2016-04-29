@@ -39,8 +39,8 @@
 #include "media/mojo/interfaces/renderer.mojom.h"
 #include "media/mojo/interfaces/service_factory.mojom.h"
 #include "media/mojo/services/mojo_renderer_impl.h"
-#include "services/shell/public/cpp/application_test_base.h"
 #include "services/shell/public/cpp/connect.h"
+#include "services/shell/public/cpp/shell_test.h"
 
 // TODO(dalecurtis): The mojo renderer is in another process, so we have no way
 // currently to get hashes for video and audio samples.  This also means that
@@ -661,14 +661,20 @@ class MockMediaSource {
   base::TimeDelta last_timestamp_offset_;
 };
 
-#if defined(MOJO_RENDERER)
-class PipelineIntegrationTestHost : public shell::test::ApplicationTestBase,
+// TODO(xhwang): These tests have been disabled for some time as apptests and no
+//               longer pass. They need to be reconstituted as shell tests.
+//               Currently there are compile issues which must be resolved,
+//               preferably by eliminating multiple inheritance here which is
+//               banned by Google C++ style.
+#if defined(MOJO_RENDERER) && defined(ENABLE_MOJO_PIPELINE_INTEGRATION_TEST)
+class PipelineIntegrationTestHost : public shell::test::ShellTest,
                                     public PipelineIntegrationTestBase {
  public:
-  bool ShouldCreateDefaultRunLoop() override { return false; }
+  PipelineIntegrationTestHost()
+      : shell::test::ShellTest("exe:media_pipeline_integration_shelltests") {}
 
   void SetUp() override {
-    ApplicationTestBase::SetUp();
+    ShellTest::SetUp();
     InitializeMediaLibrary();
   }
 

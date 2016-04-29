@@ -9,7 +9,7 @@ import("//mojo/public/tools/bindings/mojom.gni")
 group("child") {
   testonly = true
   deps = [
-    ":apptests",
+    ":test_native_main",
   ]
 }
 
@@ -29,63 +29,5 @@ source_set("test_native_main") {
     "//mojo/message_pump",
     "//services/shell/public/cpp",
     "//services/shell/runner/common",
-  ]
-}
-
-mojom("apptest_interfaces") {
-  sources = [
-    "test_native_service.mojom",
-  ]
-
-  deps = [
-    "//services/shell/public/interfaces",
-  ]
-
-  import_dirs = [ "//mojo/services" ]
-}
-
-mojo_native_application("apptests") {
-  output_name = "mojo_runner_child_apptest"
-  testonly = true
-  avoid_runner_cycle = true
-
-  sources = [
-    "native_apptest.cc",
-  ]
-
-  deps = [
-    ":apptest_interfaces",
-    "//base",
-    "//base/test:test_config",
-    "//services/shell/public/cpp:sources",
-    "//services/shell/public/cpp:test_support",
-  ]
-
-  data_deps = [
-    ":manifest",
-    ":native_target",
-  ]
-}
-
-mojo_application_manifest("manifest") {
-  application_name = "mojo_runner_child_apptest"
-  source = "manifest.json"
-}
-
-executable("native_target") {
-  output_name = "mojo_runner_child_apptest_native_target"
-  testonly = true
-
-  sources = [
-    "native_apptest_target.cc",
-  ]
-
-  deps = [
-    ":apptest_interfaces",
-    ":test_native_main",
-    "//base",
-    "//build/config/sanitizers:deps",
-    "//build/win:default_exe_manifest",
-    "//services/shell/public/cpp",
   ]
 }
