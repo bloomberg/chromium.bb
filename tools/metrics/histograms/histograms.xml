@@ -59667,6 +59667,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.Video.CurrentDelayInMs" units="ms">
+  <owner>asapersson@chromium.org</owner>
+  <summary>
+    Average current delay for a received video stream. This is the actual delay
+    imposed on frames (where the goal is to reach the target delay (see
+    WebRTC.Video.TargetDelayInMs)). Recorded when a stream is removed.
+  </summary>
+</histogram>
+
 <histogram name="WebRTC.Video.Decoded.Vp8.Qp" units="qp value">
   <owner>asapersson@chromium.org</owner>
   <summary>
@@ -59833,6 +59842,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The average input width per frame (for incoming frames to video engine) for
     a sent video stream. Recorded when a stream is removed.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.JitterBufferDelayInMs" units="ms">
+  <owner>asapersson@chromium.org</owner>
+  <summary>
+    Average jitter buffer delay for a received video stream. Recorded when a
+    stream is removed.
   </summary>
 </histogram>
 
@@ -60355,6 +60372,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The average sent width per frame for a sent video stream. Recorded when a
     stream is removed.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.TargetDelayInMs" units="ms">
+  <owner>asapersson@chromium.org</owner>
+  <summary>
+    Average target delay (jitter delay + decode time + render delay) for a
+    received video stream. Recorded when a stream is removed.
   </summary>
 </histogram>
 
