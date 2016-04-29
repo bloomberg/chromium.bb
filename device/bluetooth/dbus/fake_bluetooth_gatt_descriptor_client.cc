@@ -4,8 +4,14 @@
 
 #include "device/bluetooth/dbus/fake_bluetooth_gatt_descriptor_client.h"
 
+#include <vector>
+
 #include "base/bind.h"
+#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/logging.h"
+#include "dbus/bus.h"
+#include "dbus/property.h"
 #include "device/bluetooth/dbus/bluetooth_gatt_characteristic_client.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"

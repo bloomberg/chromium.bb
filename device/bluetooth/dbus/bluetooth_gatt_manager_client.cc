@@ -26,20 +26,20 @@ class BluetoothGattManagerClientImpl : public BluetoothGattManagerClient {
   ~BluetoothGattManagerClientImpl() override {}
 
   // BluetoothGattManagerClient override.
-  void RegisterService(const dbus::ObjectPath& service_path,
-                       const Options& options,
-                       const base::Closure& callback,
-                       const ErrorCallback& error_callback) override {
+  void RegisterApplication(const dbus::ObjectPath& application_path,
+                           const Options& options,
+                           const base::Closure& callback,
+                           const ErrorCallback& error_callback) override {
     dbus::MethodCall method_call(
         bluetooth_gatt_manager::kBluetoothGattManagerInterface,
         bluetooth_gatt_manager::kRegisterService);
 
     dbus::MessageWriter writer(&method_call);
-    writer.AppendObjectPath(service_path);
+    writer.AppendObjectPath(application_path);
 
-    // TODO(armansito): The parameters of the Options dictionary are undefined
-    // but the method signature still requires a value dictionary. Pass an
-    // empty dictionary and fill in the contents later once this is defined.
+    // The parameters of the Options dictionary are undefined but the method
+    // signature still requires a value dictionary. Pass an empty dictionary
+    // and fill in the contents later if and when we add any options.
     dbus::MessageWriter array_writer(NULL);
     writer.OpenArray("{sv}", &array_writer);
     writer.CloseContainer(&array_writer);
@@ -54,15 +54,15 @@ class BluetoothGattManagerClientImpl : public BluetoothGattManagerClient {
   }
 
   // BluetoothGattManagerClient override.
-  void UnregisterService(const dbus::ObjectPath& service_path,
-                         const base::Closure& callback,
-                         const ErrorCallback& error_callback) override {
+  void UnregisterApplication(const dbus::ObjectPath& application_path,
+                             const base::Closure& callback,
+                             const ErrorCallback& error_callback) override {
     dbus::MethodCall method_call(
         bluetooth_gatt_manager::kBluetoothGattManagerInterface,
         bluetooth_gatt_manager::kUnregisterService);
 
     dbus::MessageWriter writer(&method_call);
-    writer.AppendObjectPath(service_path);
+    writer.AppendObjectPath(application_path);
 
     DCHECK(object_proxy_);
     object_proxy_->CallMethodWithErrorCallback(

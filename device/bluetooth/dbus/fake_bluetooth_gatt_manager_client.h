@@ -6,17 +6,23 @@
 #define DEVICE_BLUETOOTH_DBUS_FAKE_BLUETOOTH_GATT_MANAGER_CLIENT_H_
 
 #include <map>
-#include <string>
+#include <set>
 #include <utility>
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/macros.h"
+#include "dbus/bus.h"
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluetooth_export.h"
 #include "device/bluetooth/dbus/bluetooth_gatt_manager_client.h"
+#include "device/bluetooth/dbus/fake_bluetooth_gatt_application_service_provider.h"
+#include "device/bluetooth/dbus/fake_bluetooth_gatt_characteristic_service_provider.h"
+#include "device/bluetooth/dbus/fake_bluetooth_gatt_descriptor_service_provider.h"
+#include "device/bluetooth/dbus/fake_bluetooth_gatt_service_service_provider.h"
 
 namespace bluez {
 
+class FakeBluetoothGattApplicationServiceProvider;
 class FakeBluetoothGattCharacteristicServiceProvider;
 class FakeBluetoothGattDescriptorServiceProvider;
 class FakeBluetoothGattServiceServiceProvider;
@@ -34,17 +40,19 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothGattManagerClient
   void Init(dbus::Bus* bus) override;
 
   // BluetoothGattManagerClient overrides.
-  void RegisterService(const dbus::ObjectPath& service_path,
-                       const Options& options,
-                       const base::Closure& callback,
-                       const ErrorCallback& error_callback) override;
-  void UnregisterService(const dbus::ObjectPath& service_path,
-                         const base::Closure& callback,
-                         const ErrorCallback& error_callback) override;
+  void RegisterApplication(const dbus::ObjectPath& application_path,
+                           const Options& options,
+                           const base::Closure& callback,
+                           const ErrorCallback& error_callback) override;
+  void UnregisterApplication(const dbus::ObjectPath& application_path,
+                             const base::Closure& callback,
+                             const ErrorCallback& error_callback) override;
 
-  // Register, unregister, and retrieve pointers to service, characteristic, and
-  // descriptor service providers. Automatically called from the service
-  // provider constructor and destructors.
+  // Register, unregister, and retrieve pointers to application service
+  // providers. Automatically called from the application provider constructor
+  // and destructors.
+  void RegisterApplicationServiceProvider(
+      FakeBluetoothGattApplicationServiceProvider* provider);
   void RegisterServiceServiceProvider(
       FakeBluetoothGattServiceServiceProvider* provider);
   void RegisterCharacteristicServiceProvider(
@@ -52,6 +60,8 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothGattManagerClient
   void RegisterDescriptorServiceProvider(
       FakeBluetoothGattDescriptorServiceProvider* provider);
 
+  void UnregisterApplicationServiceProvider(
+      FakeBluetoothGattApplicationServiceProvider* provider);
   void UnregisterServiceServiceProvider(
       FakeBluetoothGattServiceServiceProvider* provider);
   void UnregisterCharacteristicServiceProvider(
@@ -68,27 +78,46 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothGattManagerClient
   FakeBluetoothGattDescriptorServiceProvider* GetDescriptorServiceProvider(
       const dbus::ObjectPath& object_path) const;
 
-  // Returns true, if a GATT service with object path |object_path| was
-  // registered with the GATT manager using RegisterService.
   bool IsServiceRegistered(const dbus::ObjectPath& object_path) const;
 
  private:
-  // Mappings for GATT service, characteristic, and descriptor service
-  // providers. The fake GATT manager stores references to all instances
-  // created so that they can be obtained by tests.
-  typedef std::map<dbus::ObjectPath,
-                   FakeBluetoothGattCharacteristicServiceProvider*>
-      CharacteristicMap;
-  typedef std::map<dbus::ObjectPath,
-                   FakeBluetoothGattDescriptorServiceProvider*> DescriptorMap;
+  // The boolean indicates whether this application service provider is
+  // registered or not.
+  using ApplicationProvider =
+      std::pair<FakeBluetoothGattApplicationServiceProvider*, bool>;
 
-  // The mapping for services is from object paths to pairs of boolean and
-  // service provider pointer, where the boolean denotes whether or not the
-  // service is already registered.
-  typedef std::pair<bool, FakeBluetoothGattServiceServiceProvider*>
-      ServiceProvider;
-  typedef std::map<dbus::ObjectPath, ServiceProvider> ServiceMap;
+  // Mappings for GATT application, service, characteristic, and descriptor
+  // service providers. The fake GATT manager stores references to all
+  // instances created so that they can be obtained by tests.
+  using ApplicationMap = std::map<dbus::ObjectPath, ApplicationProvider>;
+  using ServiceMap =
+      std::map<dbus::ObjectPath, FakeBluetoothGattServiceServiceProvider*>;
+  using CharacteristicMap =
+      std::map<dbus::ObjectPath,
+               FakeBluetoothGattCharacteristicServiceProvider*>;
+  using DescriptorMap =
+      std::map<dbus::ObjectPath, FakeBluetoothGattDescriptorServiceProvider*>;
 
+  // Return a pointer to the Application provider that corresponds to the object
+  // path |object_path| if it exists.
+  ApplicationProvider* GetApplicationServiceProvider(
+      const dbus::ObjectPath& object_path);
+
+  // Find attribute providers in this application.
+  std::set<dbus::ObjectPath> FindServiceProviders(
+      dbus::ObjectPath application_path);
+  std::set<dbus::ObjectPath> FindCharacteristicProviders(
+      dbus::ObjectPath application_path);
+  std::set<dbus::ObjectPath> FindDescriptorProviders(
+      dbus::ObjectPath application_path);
+
+  // Verify that the attribute hierarchy exposed by this application provider
+  // is correct. i.e., all descriptors have a characteristic, which all have a
+  // service and all the attributes are under this application's object path.
+  bool VerifyProviderHierarchy(
+      FakeBluetoothGattApplicationServiceProvider* application_provider);
+
+  ApplicationMap application_map_;
   ServiceMap service_map_;
   CharacteristicMap characteristic_map_;
   DescriptorMap descriptor_map_;

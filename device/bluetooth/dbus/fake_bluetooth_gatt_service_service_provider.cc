@@ -34,4 +34,9 @@ FakeBluetoothGattServiceServiceProvider::
   fake_bluetooth_gatt_manager_client->UnregisterServiceServiceProvider(this);
 }
 
+const dbus::ObjectPath& FakeBluetoothGattServiceServiceProvider::object_path()
+    const {
+  return object_path_;
+}
+
 }  // namespace bluez

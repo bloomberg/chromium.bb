@@ -115,6 +115,7 @@
             'bluetooth/bluez/bluetooth_bluez_unittest.cc',
             'bluetooth/bluez/bluetooth_gatt_bluez_unittest.cc',
             'bluetooth/bluez/bluetooth_socket_bluez_unittest.cc',
+            'bluetooth/dbus/bluetooth_gatt_application_service_provider_unittest.cc',
             'bluetooth/test/bluetooth_test_bluez.cc',
             'bluetooth/test/bluetooth_test_bluez.h',
           ],

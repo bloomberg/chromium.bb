@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "dbus/bus.h"
+#include "dbus/message.h"
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluetooth_export.h"
 
@@ -28,6 +29,11 @@ namespace bluez {
 class DEVICE_BLUETOOTH_EXPORT BluetoothGattServiceServiceProvider {
  public:
   virtual ~BluetoothGattServiceServiceProvider();
+
+  // Writes an array of the service's properties into the provided writer.
+  virtual void WriteProperties(dbus::MessageWriter* writer) {}
+
+  virtual const dbus::ObjectPath& object_path() const = 0;
 
   // Creates the instance where |bus| is the D-Bus bus connection to export the
   // object onto, |object_path| is the object path that it should have, |uuid|

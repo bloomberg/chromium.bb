@@ -1,0 +1,172 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "device/bluetooth/dbus/bluetooth_gatt_application_service_provider_impl.h"
+
+#include "base/bind.h"
+#include "base/logging.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
+
+namespace bluez {
+
+BluetoothGattApplicationServiceProviderImpl::
+    BluetoothGattApplicationServiceProviderImpl(
+        dbus::Bus* bus,
+        const dbus::ObjectPath& object_path,
+        const std::map<dbus::ObjectPath, BluetoothLocalGattServiceBlueZ*>&
+            services)
+    : origin_thread_id_(base::PlatformThread::CurrentId()),
+      bus_(bus),
+      object_path_(object_path),
+      weak_ptr_factory_(this) {
+  VLOG(1) << "Creating Bluetooth GATT application: " << object_path_.value();
+  DCHECK(object_path_.IsValid());
+  DCHECK(bus_);
+
+  exported_object_ = bus_->GetExportedObject(object_path_);
+
+  exported_object_->ExportMethod(
+      dbus::kDBusObjectManagerInterface,
+      dbus::kDBusObjectManagerGetManagedObjects,
+      base::Bind(
+          &BluetoothGattApplicationServiceProviderImpl::GetManagedObjects,
+          weak_ptr_factory_.GetWeakPtr()),
+      base::Bind(&BluetoothGattApplicationServiceProviderImpl::OnExported,
+                 weak_ptr_factory_.GetWeakPtr()));
+
+  BluetoothGattApplicationServiceProvider::CreateAttributeServiceProviders(
+      bus, services, &service_providers_, &characteristic_providers_,
+      &descriptor_providers_);
+}
+
+BluetoothGattApplicationServiceProviderImpl::
+    ~BluetoothGattApplicationServiceProviderImpl() {
+  VLOG(1) << "Cleaning up Bluetooth GATT service: " << object_path_.value();
+  if (bus_)
+    bus_->UnregisterExportedObject(object_path_);
+}
+
+BluetoothGattApplicationServiceProviderImpl::
+    BluetoothGattApplicationServiceProviderImpl(
+        const dbus::ObjectPath& object_path)
+    : origin_thread_id_(base::PlatformThread::CurrentId()),
+      bus_(nullptr),
+      object_path_(object_path),
+      weak_ptr_factory_(this) {
+  VLOG(1) << "Creating Fake Bluetooth GATT application service provider.";
+}
+
+bool BluetoothGattApplicationServiceProviderImpl::OnOriginThread() {
+  return base::PlatformThread::CurrentId() == origin_thread_id_;
+}
+
+template <typename AttributeProvider>
+void BluetoothGattApplicationServiceProviderImpl::WriteObjectStruct(
+    dbus::MessageWriter* writer,
+    const std::string& attribute_interface,
+    AttributeProvider* attribute_provider) {
+  // Open a struct entry for { object_path : interface_list }.
+  dbus::MessageWriter object_struct_writer(NULL);
+  // [ (oa(sa{sv}) ]
+  writer->OpenStruct(&object_struct_writer);
+
+  // Key: Object path. [ (o ]
+  object_struct_writer.AppendObjectPath(attribute_provider->object_path());
+
+  // Value: Open array for single entry interface_list. [ a(sa{sv}) ]
+  dbus::MessageWriter interface_array_writer(NULL);
+  object_struct_writer.OpenArray("(sa{sv})", &interface_array_writer);
+  WriteInterfaceStruct(&interface_array_writer, attribute_interface,
+                       attribute_provider);
+  object_struct_writer.CloseContainer(&interface_array_writer);
+
+  writer->CloseContainer(&object_struct_writer);
+}
+
+template <typename AttributeProvider>
+void BluetoothGattApplicationServiceProviderImpl::WriteInterfaceStruct(
+    dbus::MessageWriter* writer,
+    const std::string& attribute_interface,
+    AttributeProvider* attribute_provider) {
+  // Open a struct entry for { interface_name : properties_list }.
+  dbus::MessageWriter interface_struct_writer(NULL);
+  // [ (sa{sv}) ]
+  writer->OpenStruct(&interface_struct_writer);
+
+  // Key: Interface name. [ (s ]
+  interface_struct_writer.AppendString(attribute_interface);
+  // Value: Open a array for properties_list. [ a{sv}) ]
+  WriteAttributeProperties(&interface_struct_writer, attribute_provider);
+  writer->CloseContainer(&interface_struct_writer);
+}
+
+void BluetoothGattApplicationServiceProviderImpl::WriteAttributeProperties(
+    dbus::MessageWriter* writer,
+    BluetoothGattServiceServiceProvider* service_provider) {
+  service_provider->WriteProperties(writer);
+}
+
+void BluetoothGattApplicationServiceProviderImpl::WriteAttributeProperties(
+    dbus::MessageWriter* writer,
+    BluetoothGattCharacteristicServiceProvider* characteristic_provider) {
+  characteristic_provider->WriteProperties(writer, nullptr);
+}
+
+void BluetoothGattApplicationServiceProviderImpl::WriteAttributeProperties(
+    dbus::MessageWriter* writer,
+    BluetoothGattDescriptorServiceProvider* descriptor_provider) {
+  descriptor_provider->WriteProperties(writer, nullptr);
+}
+
+void BluetoothGattApplicationServiceProviderImpl::GetManagedObjects(
+    dbus::MethodCall* method_call,
+    dbus::ExportedObject::ResponseSender response_sender) {
+  VLOG(2) << "BluetoothGattApplicationServiceProvider::GetManagedObjects: "
+          << object_path_.value();
+  DCHECK(OnOriginThread());
+
+  dbus::MessageReader reader(method_call);
+
+  std::unique_ptr<dbus::Response> response =
+      dbus::Response::FromMethodCall(method_call);
+
+  // The expected format by GetAll is [ a(oa(sa{sv})) ]
+  dbus::MessageWriter writer(response.get());
+  dbus::MessageWriter array_writer(nullptr);
+
+  writer.OpenArray("(oa(sa{sv}))", &array_writer);
+
+  for (const auto& service_provider : service_providers_) {
+    WriteObjectStruct(&array_writer,
+                      bluetooth_gatt_service::kBluetoothGattServiceInterface,
+                      service_provider.get());
+  }
+  for (const auto& characteristic_provider : characteristic_providers_) {
+    WriteObjectStruct(
+        &array_writer,
+        bluetooth_gatt_characteristic::kBluetoothGattCharacteristicInterface,
+        characteristic_provider.get());
+  }
+  for (const auto& descriptor_provider : descriptor_providers_) {
+    WriteObjectStruct(
+        &array_writer,
+        bluetooth_gatt_descriptor::kBluetoothGattDescriptorInterface,
+        descriptor_provider.get());
+  }
+
+  writer.CloseContainer(&array_writer);
+
+  response_sender.Run(std::move(response));
+}
+
+// Called by dbus:: when a method is exported.
+void BluetoothGattApplicationServiceProviderImpl::OnExported(
+    const std::string& interface_name,
+    const std::string& method_name,
+    bool success) {
+  LOG_IF(WARNING, !success) << "Failed to export " << interface_name << "."
+                            << method_name;
+}
+
+}  // namespace bluez

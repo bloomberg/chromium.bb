@@ -45,16 +45,16 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattManagerClient
   // using D-Bus Object Manager. Hence, the object paths and the interfaces in
   // the registered hierarchy must comply with the BlueZ GATT D-Bus
   // specification.
-  virtual void RegisterService(const dbus::ObjectPath& service_path,
-                               const Options& options,
-                               const base::Closure& callback,
-                               const ErrorCallback& error_callback) = 0;
+  virtual void RegisterApplication(const dbus::ObjectPath& application_path,
+                                   const Options& options,
+                                   const base::Closure& callback,
+                                   const ErrorCallback& error_callback) = 0;
 
   // Unregisters the GATT service with the D-Bus object path |service_path| from
   // the remote GATT manager.
-  virtual void UnregisterService(const dbus::ObjectPath& service_path,
-                                 const base::Closure& callback,
-                                 const ErrorCallback& error_callback) = 0;
+  virtual void UnregisterApplication(const dbus::ObjectPath& application_path,
+                                     const base::Closure& callback,
+                                     const ErrorCallback& error_callback) = 0;
 
   // Creates the instance.
   static BluetoothGattManagerClient* Create();

@@ -27,7 +27,7 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothGattServiceServiceProvider
       const std::vector<dbus::ObjectPath>& includes);
   ~FakeBluetoothGattServiceServiceProvider() override;
 
-  const dbus::ObjectPath& object_path() const { return object_path_; }
+  const dbus::ObjectPath& object_path() const override;
   const std::string& uuid() const { return uuid_; }
 
  private:
