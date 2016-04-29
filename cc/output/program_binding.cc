@@ -88,7 +88,7 @@ unsigned ProgramBindingBase::LoadShader(GLES2Interface* context,
       shader_source_str,
       shader_length);
   context->CompileShader(shader);
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   int compiled = 0;
   context->GetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
   if (!compiled)

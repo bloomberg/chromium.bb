@@ -81,6 +81,7 @@ class CONTENT_EXPORT PepperVideoEncoderHost
 
   // GpuControlClient implementation.
   void OnGpuControlLostContext() final;
+  void OnGpuControlLostContextMaybeReentrant() final;
   void OnGpuControlErrorMessage(const char* msg, int id) final {}
 
   int32_t OnHostMsgGetSupportedProfiles(

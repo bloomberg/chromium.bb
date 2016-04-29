@@ -13,7 +13,6 @@ namespace gpu {
 typedef int32_t CommandBufferOffset;
 const CommandBufferOffset kInvalidCommandBufferOffset = -1;
 
-// This enum must stay in sync with NPDeviceContext3DError.
 namespace error {
   enum Error {
     kNoError,

@@ -672,7 +672,7 @@ class GLES2ImplementationTest : public testing::Test {
   // Sets the ProgramInfoManager. The manager will be owned
   // by the ShareGroup.
   void SetProgramInfoManager(ProgramInfoManager* manager) {
-    gl_->share_group()->set_program_info_manager(manager);
+    gl_->share_group()->SetProgramInfoManagerForTesting(manager);
   }
 
   int CheckError() {
@@ -4487,9 +4487,7 @@ TEST_F(GLES2ImplementationTest, SignalSyncToken) {
   EXPECT_EQ(1, signaled_count);
 }
 
-// TODO(danakj): Re-enable after/during re-land of https://crrev.com/389947.
-// This test depends on r389947 but that CL was reverted in r389980.
-TEST_F(GLES2ImplementationTest, DISABLED_SignalSyncTokenAfterContextLoss) {
+TEST_F(GLES2ImplementationTest, SignalSyncTokenAfterContextLoss) {
   EXPECT_CALL(*gpu_control_, GenerateFenceSyncRelease()).WillOnce(Return(1));
   const uint64_t fence_sync = gl_->InsertFenceSyncCHROMIUM();
   gl_->ShallowFlushCHROMIUM();
@@ -4524,6 +4522,34 @@ TEST_F(GLES2ImplementationTest, DISABLED_SignalSyncTokenAfterContextLoss) {
   // have already run the lost context callback.
   signal_closure.Run();
   EXPECT_EQ(0, signaled_count);
+}
+
+TEST_F(GLES2ImplementationTest, ReportLoss) {
+  GpuControlClient* gl_as_client = gl_;
+  int lost_count = 0;
+  gl_->SetLostContextCallback(base::Bind(&CountCallback, &lost_count));
+  EXPECT_EQ(0, lost_count);
+
+  EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), gl_->GetGraphicsResetStatusKHR());
+  gl_as_client->OnGpuControlLostContext();
+  EXPECT_NE(static_cast<GLenum>(GL_NO_ERROR), gl_->GetGraphicsResetStatusKHR());
+  // The lost context callback should be run when GLES2Implementation is
+  // notified of the loss.
+  EXPECT_EQ(1, lost_count);
+}
+
+TEST_F(GLES2ImplementationTest, ReportLossReentrant) {
+  GpuControlClient* gl_as_client = gl_;
+  int lost_count = 0;
+  gl_->SetLostContextCallback(base::Bind(&CountCallback, &lost_count));
+  EXPECT_EQ(0, lost_count);
+
+  EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), gl_->GetGraphicsResetStatusKHR());
+  gl_as_client->OnGpuControlLostContextMaybeReentrant();
+  EXPECT_NE(static_cast<GLenum>(GL_NO_ERROR), gl_->GetGraphicsResetStatusKHR());
+  // The lost context callback should not be run yet to avoid calling back into
+  // clients re-entrantly, and having them re-enter GLES2Implementation.
+  EXPECT_EQ(0, lost_count);
 }
 
 TEST_F(GLES2ImplementationManualInitTest, LoseContextOnOOM) {

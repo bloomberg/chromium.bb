@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/memory/shared_memory.h"
+#include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
@@ -85,8 +86,9 @@ bool CommandBufferProxyImpl::OnMessageReceived(const IPC::Message& message) {
   IPC_END_MESSAGE_MAP()
 
   if (!handled) {
-    DLOG(ERROR) << "Gpu process sent invalid message.";
-    InvalidGpuMessage();
+    LOG(ERROR) << "Gpu process sent invalid message.";
+    OnGpuAsyncMessageError(gpu::error::kInvalidGpuMessage,
+                           gpu::error::kLostContext);
   }
   return handled;
 }
@@ -99,32 +101,18 @@ void CommandBufferProxyImpl::OnChannelError() {
   gpu::error::ContextLostReason context_lost_reason =
       gpu::error::kGpuChannelLost;
   if (shared_state_shm_ && shared_state_shm_->memory()) {
-    TryUpdateState();
     // The GPU process might have intentionally been crashed
     // (exit_on_context_lost), so try to find out the original reason.
+    TryUpdateStateDontReportError();
     if (last_state_.error == gpu::error::kLostContext)
       context_lost_reason = last_state_.context_lost_reason;
   }
-  OnDestroyed(context_lost_reason, gpu::error::kLostContext);
+  OnGpuAsyncMessageError(context_lost_reason, gpu::error::kLostContext);
 }
 
 void CommandBufferProxyImpl::OnDestroyed(gpu::error::ContextLostReason reason,
                                          gpu::error::Error error) {
-  CheckLock();
-
-  // When the client sees that the context is lost, they should delete this
-  // CommandBufferProxyImpl and create a new one.
-  last_state_.error = error;
-  last_state_.context_lost_reason = reason;
-
-  // Prevent any further messages from being sent, and ensure we only call
-  // the client for lost context a single time.
-  if (channel_) {
-    channel_->DestroyCommandBuffer(this);
-    channel_ = nullptr;
-    if (gpu_control_client_)
-      gpu_control_client_->OnGpuControlLostContext();
-  }
+  OnGpuAsyncMessageError(reason, error);
 }
 
 void CommandBufferProxyImpl::OnConsoleMessage(
@@ -152,8 +140,9 @@ void CommandBufferProxyImpl::RemoveDeletionObserver(
 void CommandBufferProxyImpl::OnSignalAck(uint32_t id) {
   SignalTaskMap::iterator it = signal_tasks_.find(id);
   if (it == signal_tasks_.end()) {
-    DLOG(ERROR) << "Gpu process sent invalid SignalAck.";
-    InvalidGpuMessage();
+    LOG(ERROR) << "Gpu process sent invalid SignalAck.";
+    OnGpuAsyncMessageError(gpu::error::kInvalidGpuMessage,
+                           gpu::error::kLostContext);
     return;
   }
   base::Closure callback = it->second;
@@ -298,12 +287,12 @@ void CommandBufferProxyImpl::WaitForTokenInRange(int32_t start, int32_t end) {
     gpu::CommandBuffer::State state;
     if (Send(new GpuCommandBufferMsg_WaitForTokenInRange(route_id_, start, end,
                                                          &state)))
-      OnUpdateState(state);
+      SetStateFromSyncReply(state);
   }
   if (!InRange(start, end, last_state_.token) &&
       last_state_.error == gpu::error::kNoError) {
-    DLOG(ERROR) << "GPU state invalid after WaitForTokenInRange.";
-    InvalidGpuReply();
+    LOG(ERROR) << "GPU state invalid after WaitForTokenInRange.";
+    OnGpuSyncReplyError();
   }
 }
 
@@ -318,12 +307,12 @@ void CommandBufferProxyImpl::WaitForGetOffsetInRange(int32_t start,
     gpu::CommandBuffer::State state;
     if (Send(new GpuCommandBufferMsg_WaitForGetOffsetInRange(route_id_, start,
                                                              end, &state)))
-      OnUpdateState(state);
+      SetStateFromSyncReply(state);
   }
   if (!InRange(start, end, last_state_.get_offset) &&
       last_state_.error == gpu::error::kNoError) {
-    DLOG(ERROR) << "GPU state invalid after WaitForGetOffsetInRange.";
-    InvalidGpuReply();
+    LOG(ERROR) << "GPU state invalid after WaitForGetOffsetInRange.";
+    OnGpuSyncReplyError();
   }
 }
 
@@ -351,14 +340,14 @@ scoped_refptr<gpu::Buffer> CommandBufferProxyImpl::CreateTransferBuffer(
       channel_->factory()->AllocateSharedMemory(size));
   if (!shared_memory) {
     if (last_state_.error == gpu::error::kNoError)
-      last_state_.error = gpu::error::kOutOfBounds;
+      OnClientError(gpu::error::kOutOfBounds);
     return NULL;
   }
 
   DCHECK(!shared_memory->memory());
   if (!shared_memory->Map(size)) {
     if (last_state_.error == gpu::error::kNoError)
-      last_state_.error = gpu::error::kOutOfBounds;
+      OnClientError(gpu::error::kOutOfBounds);
     return NULL;
   }
 
@@ -369,7 +358,7 @@ scoped_refptr<gpu::Buffer> CommandBufferProxyImpl::CreateTransferBuffer(
       channel_->ShareToGpuProcess(shared_memory->handle());
   if (!base::SharedMemory::IsHandleValid(handle)) {
     if (last_state_.error == gpu::error::kNoError)
-      last_state_.error = gpu::error::kLostContext;
+      OnClientError(gpu::error::kLostContext);
     return NULL;
   }
 
@@ -505,10 +494,6 @@ uint32_t CommandBufferProxyImpl::CreateStreamTexture(uint32_t texture_id) {
 
 void CommandBufferProxyImpl::SetLock(base::Lock* lock) {
   lock_ = lock;
-}
-
-bool CommandBufferProxyImpl::IsGpuChannelLost() {
-  return !channel_ || channel_->IsLost();
 }
 
 void CommandBufferProxyImpl::EnsureWorkVisible() {
@@ -663,19 +648,30 @@ bool CommandBufferProxyImpl::Send(IPC::Message* msg) {
   // OnChannelError is called after returning to the message loop in case
   // it is referenced elsewhere.
   DVLOG(1) << "CommandBufferProxyImpl::Send failed. Losing context.";
-  last_state_.error = gpu::error::kLostContext;
+  OnClientError(gpu::error::kLostContext);
   return false;
 }
 
-void CommandBufferProxyImpl::OnUpdateState(
+void CommandBufferProxyImpl::SetStateFromSyncReply(
     const gpu::CommandBuffer::State& state) {
+  DCHECK(last_state_.error == gpu::error::kNoError);
   // Handle wraparound. It works as long as we don't have more than 2B state
   // updates in flight across which reordering occurs.
   if (state.generation - last_state_.generation < 0x80000000U)
     last_state_ = state;
+  if (last_state_.error != gpu::error::kNoError)
+    OnGpuStateError();
 }
 
 void CommandBufferProxyImpl::TryUpdateState() {
+  if (last_state_.error == gpu::error::kNoError) {
+    shared_state()->Read(&last_state_);
+    if (last_state_.error != gpu::error::kNoError)
+      OnGpuStateError();
+  }
+}
+
+void CommandBufferProxyImpl::TryUpdateStateDontReportError() {
   if (last_state_.error == gpu::error::kNoError)
     shared_state()->Read(&last_state_);
 }
@@ -716,27 +712,75 @@ void CommandBufferProxyImpl::OnUpdateVSyncParameters(base::TimeTicks timebase,
     update_vsync_parameters_completion_callback_.Run(timebase, interval);
 }
 
-void CommandBufferProxyImpl::InvalidGpuMessage() {
-  LOG(ERROR) << "Received invalid message from the GPU process.";
-  OnDestroyed(gpu::error::kInvalidGpuMessage, gpu::error::kLostContext);
-}
-
-void CommandBufferProxyImpl::InvalidGpuReply() {
-  CheckLock();
-  LOG(ERROR) << "Received invalid reply from the GPU process.";
+void CommandBufferProxyImpl::OnGpuSyncReplyError() {
   last_state_.error = gpu::error::kLostContext;
   last_state_.context_lost_reason = gpu::error::kInvalidGpuMessage;
-  callback_thread_->PostTask(
-      FROM_HERE,
-      base::Bind(&CommandBufferProxyImpl::InvalidGpuReplyOnClientThread,
-                 weak_this_));
+  // This method may be inside a callstack from the GpuControlClient (we got a
+  // bad reply to something we are sending to the GPU process). So avoid
+  // re-entering the GpuControlClient here.
+  DisconnectChannelInFreshCallStack();
 }
 
-void CommandBufferProxyImpl::InvalidGpuReplyOnClientThread() {
-  std::unique_ptr<base::AutoLock> lock;
+void CommandBufferProxyImpl::OnGpuAsyncMessageError(
+    gpu::error::ContextLostReason reason,
+    gpu::error::Error error) {
+  CheckLock();
+  last_state_.error = error;
+  last_state_.context_lost_reason = reason;
+  // This method only occurs when receiving IPC messages, so we know it's not in
+  // a callstack from the GpuControlClient.
+  DisconnectChannel();
+}
+
+void CommandBufferProxyImpl::OnGpuStateError() {
+  DCHECK(last_state_.error != gpu::error::kNoError);
+  // This method may be inside a callstack from the GpuControlClient (we
+  // encountered an error while trying to perform some action). So avoid
+  // re-entering the GpuControlClient here.
+  DisconnectChannelInFreshCallStack();
+}
+
+void CommandBufferProxyImpl::OnClientError(gpu::error::Error error) {
+  CheckLock();
+  last_state_.error = error;
+  last_state_.context_lost_reason = gpu::error::kUnknown;
+  // This method may be inside a callstack from the GpuControlClient (we
+  // encountered an error while trying to perform some action). So avoid
+  // re-entering the GpuControlClient here.
+  DisconnectChannelInFreshCallStack();
+}
+
+void CommandBufferProxyImpl::DisconnectChannelInFreshCallStack() {
+  CheckLock();
+  // Inform the GpuControlClient of the lost state immediately, though this may
+  // be a re-entrant call to the client so we use the MaybeReentrant variant.
+  if (gpu_control_client_)
+    gpu_control_client_->OnGpuControlLostContextMaybeReentrant();
+  // Create a fresh call stack to keep the |channel_| alive while we unwind the
+  // stack in case things will use it, and give the GpuChannelClient a chance to
+  // act fully on the lost context.
+  callback_thread_->PostTask(
+      FROM_HERE, base::Bind(&CommandBufferProxyImpl::LockAndDisconnectChannel,
+                            weak_this_));
+}
+
+void CommandBufferProxyImpl::LockAndDisconnectChannel() {
+  base::Optional<base::AutoLock> hold;
   if (lock_)
-    lock.reset(new base::AutoLock(*lock_));
-  OnDestroyed(gpu::error::kInvalidGpuMessage, gpu::error::kLostContext);
+    hold.emplace(*lock_);
+  DisconnectChannel();
+}
+
+void CommandBufferProxyImpl::DisconnectChannel() {
+  CheckLock();
+  // Prevent any further messages from being sent, and ensure we only call
+  // the client for lost context a single time.
+  if (!channel_)
+    return;
+  channel_->DestroyCommandBuffer(this);
+  channel_ = nullptr;
+  if (gpu_control_client_)
+    gpu_control_client_->OnGpuControlLostContext();
 }
 
 }  // namespace gpu

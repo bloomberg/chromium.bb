@@ -86,6 +86,7 @@ class PPB_Graphics3D_Impl : public ppapi::PPB_Graphics3D_Shared,
 
   // GpuControlClient implementation.
   void OnGpuControlLostContext() final;
+  void OnGpuControlLostContextMaybeReentrant() final;
   void OnGpuControlErrorMessage(const char* msg, int id) final;
 
   // Other notifications from the GPU process.

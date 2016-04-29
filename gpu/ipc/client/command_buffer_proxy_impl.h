@@ -102,7 +102,6 @@ class GPU_EXPORT CommandBufferProxyImpl
                                      unsigned usage) override;
   void SignalQuery(uint32_t query, const base::Closure& callback) override;
   void SetLock(base::Lock* lock) override;
-  bool IsGpuChannelLost() override;
   void EnsureWorkVisible() override;
   gpu::CommandBufferNamespace GetNamespaceID() const override;
   gpu::CommandBufferId GetCommandBufferID() const override;
@@ -174,7 +173,6 @@ class GPU_EXPORT CommandBufferProxyImpl
   bool Send(IPC::Message* msg);
 
   // Message handlers:
-  void OnUpdateState(const gpu::CommandBuffer::State& state);
   void OnDestroyed(gpu::error::ContextLostReason reason,
                    gpu::error::Error error);
   void OnConsoleMessage(const GPUCommandBufferConsoleMessage& message);
@@ -184,21 +182,37 @@ class GPU_EXPORT CommandBufferProxyImpl
   void OnUpdateVSyncParameters(base::TimeTicks timebase,
                                base::TimeDelta interval);
 
-  // Try to read an updated copy of the state from shared memory.
-  void TryUpdateState();
-
   // Updates the highest verified release fence sync.
   void UpdateVerifiedReleases(uint32_t verified_flush);
 
-  // Loses the context after we received an invalid message from the GPU
-  // process. Will call the lost context callback reentrantly if any.
-  void InvalidGpuMessage();
+  // Try to read an updated copy of the state from shared memory, and calls
+  // OnGpuStateError() if the new state has an error.
+  void TryUpdateState();
+  // Like the above but does not call the error event handler if the new state
+  // has an error.
+  void TryUpdateStateDontReportError();
+  // Sets the state, and calls OnGpuStateError() if the new state has an error.
+  void SetStateFromSyncReply(const gpu::CommandBuffer::State& state);
 
   // Loses the context after we received an invalid reply from the GPU
-  // process. Will post a task to call the lost context callback if any.
-  void InvalidGpuReply();
+  // process.
+  void OnGpuSyncReplyError();
 
-  void InvalidGpuReplyOnClientThread();
+  // Loses the context when receiving a message from the GPU process.
+  void OnGpuAsyncMessageError(gpu::error::ContextLostReason reason,
+                              gpu::error::Error error);
+
+  // Loses the context after we receive an error state from the GPU process.
+  void OnGpuStateError();
+
+  // Sets an error on the last_state_ and loses the context due to client-side
+  // errors.
+  void OnClientError(gpu::error::Error error);
+
+  // Helper methods, don't call these directly.
+  void DisconnectChannelInFreshCallStack();
+  void LockAndDisconnectChannel();
+  void DisconnectChannel();
 
   // The shared memory area used to update state.
   gpu::CommandBufferSharedState* shared_state() const;

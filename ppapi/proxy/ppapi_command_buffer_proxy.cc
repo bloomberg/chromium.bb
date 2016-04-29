@@ -179,11 +179,6 @@ void PpapiCommandBufferProxy::SetLock(base::Lock*) {
   NOTIMPLEMENTED();
 }
 
-bool PpapiCommandBufferProxy::IsGpuChannelLost() {
-  NOTIMPLEMENTED();
-  return false;
-}
-
 void PpapiCommandBufferProxy::EnsureWorkVisible() {
   DCHECK_GE(flushed_fence_sync_release_, validated_fence_sync_release_);
   Send(new PpapiHostMsg_PPBGraphics3D_EnsureWorkVisible(

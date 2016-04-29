@@ -175,9 +175,17 @@ void QueryTracker::Query::QueryCounter(GLES2Implementation* gl) {
 bool QueryTracker::Query::CheckResultsAvailable(
     CommandBufferHelper* helper) {
   if (Pending()) {
-    if (base::subtle::Acquire_Load(&info_.sync->process_count) ==
-            submit_count_ ||
-        helper->IsContextLost()) {
+    bool processed_all =
+        base::subtle::Acquire_Load(&info_.sync->process_count) == submit_count_;
+    // We check lost on the command buffer itself here instead of checking the
+    // GLES2Implementation because the GLES2Implementation will not hear about
+    // the loss until we exit out of this call stack (to avoid re-entrancy), and
+    // we need be able to enter kComplete state on context loss.
+    // TODO(danakj): If GLES2Implementation can handle being notified of loss
+    // re-entrantly (without calling its clients re-entrantly), then we could
+    // call GLES2Implementation::GetGraphicsResetStatusKHR() here and remove
+    // this method from CommandBufferHelper.
+    if (processed_all || helper->IsContextLost()) {
       switch (target()) {
         case GL_COMMANDS_ISSUED_CHROMIUM:
           result_ = info_.sync->result;

@@ -11,7 +11,16 @@ namespace gpu {
 
 class GpuControlClient {
  public:
+  // Informs the client that the context was lost. It should inform its own
+  // clients or take actions as needed. This will only be called a single time
+  // for any GpuControl.
   virtual void OnGpuControlLostContext() = 0;
+  // This may happen inside calls from the client to the GpuControl, so this
+  // function is reentrant. It informs the client of loss, but the client will
+  // also receive a OnGpuControlLostContext (non-re-entrantly) in the future.
+  // Use this only to update internal state if needed to make lost context be
+  // visible immediately while unwinding the call stack.
+  virtual void OnGpuControlLostContextMaybeReentrant() = 0;
   virtual void OnGpuControlErrorMessage(const char* message, int32_t id) = 0;
 };
 

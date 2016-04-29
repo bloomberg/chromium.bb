@@ -413,6 +413,7 @@ class GLES2_IMPL_EXPORT GLES2Implementation
 
   // GpuControlClient implementation.
   void OnGpuControlLostContext() final;
+  void OnGpuControlLostContextMaybeReentrant() final;
   void OnGpuControlErrorMessage(const char* message, int32_t id) final;
 
   void* GetResultBuffer();
@@ -817,9 +818,7 @@ class GLES2_IMPL_EXPORT GLES2Implementation
 
   base::Callback<void(const char*, int32_t)> error_message_callback_;
   base::Closure lost_context_callback_;
-#if DCHECK_IS_ON()
-  bool lost_context_ = false;
-#endif
+  bool lost_context_callback_run_ = false;
 
   int current_trace_stack_;
 

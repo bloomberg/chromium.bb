@@ -326,6 +326,10 @@ void PPB_Graphics3D_Impl::OnGpuControlLostContext() {
                             weak_ptr_factory_.GetWeakPtr()));
 }
 
+void PPB_Graphics3D_Impl::OnGpuControlLostContextMaybeReentrant() {
+  // No internal state to update on lost context.
+}
+
 void PPB_Graphics3D_Impl::OnSwapBuffers() {
   if (HasPendingSwap()) {
     // If we're off-screen, no need to trigger and wait for compositing.

@@ -242,6 +242,10 @@ void PepperVideoEncoderHost::OnGpuControlLostContext() {
   NotifyPepperError(PP_ERROR_RESOURCE_FAILED);
 }
 
+void PepperVideoEncoderHost::OnGpuControlLostContextMaybeReentrant() {
+  // No internal state to update on lost context.
+}
+
 int32_t PepperVideoEncoderHost::OnHostMsgGetSupportedProfiles(
     ppapi::host::HostMessageContext* context) {
   std::vector<PP_VideoProfileDescription> pp_profiles;
