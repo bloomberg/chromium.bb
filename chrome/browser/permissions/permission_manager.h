@@ -95,10 +95,6 @@ class PermissionManager : public KeyedService,
       int permission_id,
       blink::mojom::PermissionStatus status);
 
-  // Not all WebContents are able to display permission requests. If the PBM
-  // is required but missing for |web_contents|, don't pass along the request.
-  bool IsPermissionBubbleManagerMissing(content::WebContents* web_contents);
-
   // content_settings::Observer implementation.
   void OnContentSettingChanged(const ContentSettingsPattern& primary_pattern,
                                const ContentSettingsPattern& secondary_pattern,

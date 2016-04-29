@@ -32,10 +32,6 @@
 #include "chrome/browser/media/protected_media_identifier_permission_context.h"
 #endif
 
-#if !defined(OS_ANDROID)
-#include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
-#endif
-
 #if BUILDFLAG(ANDROID_JAVA_UI)
 #include "chrome/browser/geolocation/geolocation_permission_context_android.h"
 #else
@@ -296,7 +292,6 @@ int PermissionManager::RequestPermissions(
     const PermissionType permission = permissions[i];
 
     if (IsConstantPermission(permission) ||
-        IsPermissionBubbleManagerMissing(web_contents) ||
         !GetPermissionContext(permission)) {
       OnPermissionsRequestResponseStatus(request_id, i,
           GetPermissionStatus(permission, requesting_origin, embedding_origin));
@@ -351,10 +346,6 @@ void PermissionManager::CancelPermissionRequest(int request_id) {
   content::WebContents* web_contents = tab_util::GetWebContentsByFrameID(
       pending_request->render_process_id(), pending_request->render_frame_id());
   DCHECK(web_contents);
-  if (IsPermissionBubbleManagerMissing(web_contents)) {
-    pending_requests_.Remove(request_id);
-    return;
-  }
 
   const PermissionRequestID request(pending_request->render_process_id(),
                                     pending_request->render_frame_id(),
@@ -442,13 +433,6 @@ void PermissionManager::UnsubscribePermissionStatusChange(int subscription_id) {
   if (subscriptions_.IsEmpty())
     HostContentSettingsMapFactory::GetForProfile(profile_)
         ->RemoveObserver(this);
-}
-
-bool PermissionManager::IsPermissionBubbleManagerMissing(
-    content::WebContents* web_contents) {
-  // TODO(felt): Remove this method entirely. Leaving it to make a minimal
-  // last-minute merge to 46. See crbug.com/457091 and crbug.com/534631.
-  return false;
 }
 
 void PermissionManager::OnContentSettingChanged(
