@@ -87,7 +87,8 @@ class Vp9LevelStats {
         total_uncompressed_bits_(0),
         frames_refreshed_(0),
         max_frames_refreshed_(0),
-        max_column_tiles_(0) {}
+        max_column_tiles_(0),
+        estimate_last_frame_duration_(true) {}
 
   ~Vp9LevelStats() = default;
   Vp9LevelStats(Vp9LevelStats&& other) = delete;
@@ -135,6 +136,16 @@ class Vp9LevelStats {
   // as the duration.
   void set_duration(int64_t time_ns) { duration_ns_ = time_ns; }
 
+  bool estimate_last_frame_duration() const {
+    return estimate_last_frame_duration_;
+  }
+
+  // If true try to estimate the last frame's duration if the stream's duration
+  // is not set or the stream's duration equals the last frame's timestamp.
+  void set_estimate_last_frame_duration(bool flag) {
+    estimate_last_frame_duration_ = flag;
+  }
+
  private:
   int frames;
   int displayed_frames;
@@ -175,6 +186,8 @@ class Vp9LevelStats {
   int max_frames_refreshed_;
 
   int max_column_tiles_;
+
+  bool estimate_last_frame_duration_;
 };
 
 }  // namespace vp9_parser

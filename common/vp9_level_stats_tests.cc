@@ -129,12 +129,16 @@ TEST_F(Vp9LevelStatsTests, VideoOnlyFile) {
   EXPECT_EQ(11, stats_.GetLevel());
   EXPECT_EQ(479232, stats_.GetMaxLumaSampleRate());
   EXPECT_EQ(36864, stats_.GetMaxLumaPictureSize());
-  EXPECT_DOUBLE_EQ(275.512, stats_.GetAverageBitRate());
+  EXPECT_DOUBLE_EQ(264.03233333333333, stats_.GetAverageBitRate());
   EXPECT_DOUBLE_EQ(147.136, stats_.GetMaxCpbSize());
   EXPECT_DOUBLE_EQ(20.873079938441883, stats_.GetCompressionRatio());
   EXPECT_EQ(1, stats_.GetMaxColumnTiles());
   EXPECT_EQ(11, stats_.GetMinimumAltrefDistance());
   EXPECT_EQ(3, stats_.GetMaxReferenceFrames());
+
+  EXPECT_TRUE(stats_.estimate_last_frame_duration());
+  stats_.set_estimate_last_frame_duration(false);
+  EXPECT_DOUBLE_EQ(275.512, stats_.GetAverageBitRate());
 }
 
 TEST_F(Vp9LevelStatsTests, Muxed) {
@@ -148,12 +152,15 @@ TEST_F(Vp9LevelStatsTests, Muxed) {
   EXPECT_EQ(30, stats_.GetLevel());
   EXPECT_EQ(9838080, stats_.GetMaxLumaSampleRate());
   EXPECT_EQ(409920, stats_.GetMaxLumaPictureSize());
-  EXPECT_DOUBLE_EQ(468.38413361169108, stats_.GetAverageBitRate());
+  EXPECT_DOUBLE_EQ(447.09394572025053, stats_.GetAverageBitRate());
   EXPECT_DOUBLE_EQ(118.464, stats_.GetMaxCpbSize());
   EXPECT_DOUBLE_EQ(263.10185597889068, stats_.GetCompressionRatio());
   EXPECT_EQ(2, stats_.GetMaxColumnTiles());
   EXPECT_EQ(9, stats_.GetMinimumAltrefDistance());
   EXPECT_EQ(3, stats_.GetMaxReferenceFrames());
+
+  stats_.set_estimate_last_frame_duration(false);
+  EXPECT_DOUBLE_EQ(468.38413361169108, stats_.GetAverageBitRate());
 }
 
 TEST_F(Vp9LevelStatsTests, SetDuration) {

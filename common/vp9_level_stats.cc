@@ -211,9 +211,18 @@ int64_t Vp9LevelStats::GetMaxLumaPictureSize() const {
 }
 
 double Vp9LevelStats::GetAverageBitRate() const {
-  const double duration_seconds =
-      ((duration_ns_ == -1) ? end_ns_ - start_ns_ : duration_ns_) /
+  const int64_t frame_duration_ns = end_ns_ - start_ns_;
+  double duration_seconds =
+      ((duration_ns_ == -1) ? frame_duration_ns : duration_ns_) /
       libwebm::kNanosecondsPerSecond;
+  if (estimate_last_frame_duration_ &&
+      (duration_ns_ == -1 || duration_ns_ <= frame_duration_ns)) {
+    const double sec_per_frame = frame_duration_ns /
+                                 libwebm::kNanosecondsPerSecond /
+                                 (displayed_frames - 1);
+    duration_seconds += sec_per_frame;
+  }
+
   return total_compressed_size_ / duration_seconds / 125.0;
 }
 
