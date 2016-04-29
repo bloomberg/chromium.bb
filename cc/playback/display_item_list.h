@@ -128,7 +128,6 @@ class CC_EXPORT DisplayItemList
   sk_sp<SkPicture> picture_;
 
   std::unique_ptr<SkPictureRecorder> recorder_;
-  sk_sp<SkCanvas> canvas_;
   const DisplayItemListSettings settings_;
   bool retain_individual_display_items_;
 

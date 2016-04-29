@@ -90,12 +90,10 @@ DisplayItemList::DisplayItemList(gfx::Rect layer_rect,
     SkRTreeFactory factory;
     recorder_.reset(new SkPictureRecorder());
 
-    // TODO(fmalita): this is fragile, we should drop canvas_ and use
-    // recorder_->getCanvas() instead.
-    canvas_ = sk_ref_sp(recorder_->beginRecording(
-        layer_rect_.width(), layer_rect_.height(), &factory));
-    canvas_->translate(-layer_rect_.x(), -layer_rect_.y());
-    canvas_->clipRect(gfx::RectToSkRect(layer_rect_));
+    SkCanvas* canvas = recorder_->beginRecording(
+        layer_rect_.width(), layer_rect_.height(), &factory);
+    canvas->translate(-layer_rect_.x(), -layer_rect_.y());
+    canvas->clipRect(gfx::RectToSkRect(layer_rect_));
   }
 }
 
@@ -149,8 +147,8 @@ void DisplayItemList::Raster(SkCanvas* canvas,
 
 void DisplayItemList::ProcessAppendedItem(const DisplayItem* item) {
   if (settings_.use_cached_picture) {
-    DCHECK(canvas_);
-    item->Raster(canvas_.get(), gfx::Rect(), nullptr);
+    DCHECK(recorder_);
+    item->Raster(recorder_->getRecordingCanvas(), gfx::Rect(), nullptr);
   }
   if (!retain_individual_display_items_) {
     items_.Clear();
@@ -158,10 +156,10 @@ void DisplayItemList::ProcessAppendedItem(const DisplayItem* item) {
 }
 
 void DisplayItemList::RasterIntoCanvas(const DisplayItem& item) {
-  DCHECK(canvas_);
+  DCHECK(recorder_);
   DCHECK(!retain_individual_display_items_);
 
-  item.Raster(canvas_.get(), gfx::Rect(), nullptr);
+  item.Raster(recorder_->getRecordingCanvas(), gfx::Rect(), nullptr);
 }
 
 bool DisplayItemList::RetainsIndividualDisplayItems() const {
@@ -192,7 +190,6 @@ void DisplayItemList::Finalize() {
     picture_memory_usage_ =
         SkPictureUtils::ApproximateBytesUsed(picture_.get());
     recorder_.reset();
-    canvas_.reset();
     is_suitable_for_gpu_rasterization_ =
         picture_->suitableForGpuRasterization(nullptr);
   }
