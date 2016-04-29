@@ -196,10 +196,9 @@ void MediaDocumentParser::createDocumentStructure()
         anchor->addEventListener(EventTypeNames::click, listener, false);
         HTMLDivElement* buttonContainer = HTMLDivElement::create(*document());
         buttonContainer->setAttribute(styleAttr,
-            "position: absolute;"
             "text-align: center;"
-            "left: 0;"
-            "right: 0;");
+            "height: 0;"
+            "flex: none");
         buttonContainer->appendChild(anchor);
         div->appendChild(buttonContainer);
         recordDownloadMetric(MediaDocumentDownloadButtonShown);
