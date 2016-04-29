@@ -86,7 +86,7 @@ bool LayoutSVGResourceClipper::calculateClipContentPathIfNeeded()
             continue;
 
         const ComputedStyle* style = childLayoutObject->style();
-        if (!style || style->display() == NONE || style->visibility() != VISIBLE)
+        if (!style || style->display() == NONE || (style->visibility() != VISIBLE && !isSVGUseElement(*childElement)))
             continue;
 
         // Current shape in clip-path gets clipped too. Fallback to masking.
@@ -177,12 +177,12 @@ PassRefPtr<const SkPicture> LayoutSVGResourceClipper::createContentPicture()
             continue;
 
         const ComputedStyle* style = layoutObject->style();
-        if (!style || style->display() == NONE || style->visibility() != VISIBLE)
+        if (!style || style->display() == NONE || (style->visibility() != VISIBLE && !isSVGUseElement(*childElement)))
             continue;
 
         bool isUseElement = isSVGUseElement(*childElement);
         if (isUseElement) {
-            const SVGGraphicsElement* clippingElement = toSVGUseElement(*childElement).targetGraphicsElementForClipping();
+            const SVGGraphicsElement* clippingElement = toSVGUseElement(*childElement).visibleTargetGraphicsElementForClipping();
             if (!clippingElement)
                 continue;
 
@@ -221,8 +221,11 @@ void LayoutSVGResourceClipper::calculateClipContentPaintInvalidationRect()
         if (!layoutObject->isSVGShape() && !layoutObject->isSVGText() && !isSVGUseElement(*childElement))
             continue;
         const ComputedStyle* style = layoutObject->style();
-        if (!style || style->display() == NONE || style->visibility() != VISIBLE)
+        if (!style || style->display() == NONE || (style->visibility() != VISIBLE && !isSVGUseElement(*childElement)))
             continue;
+        if (isSVGUseElement(*childElement) && !toSVGUseElement(*childElement).visibleTargetGraphicsElementForClipping())
+            continue;
+
         m_clipBoundaries.unite(layoutObject->localToSVGParentTransform().mapRect(layoutObject->paintInvalidationRectInLocalSVGCoordinates()));
     }
     m_clipBoundaries = toSVGClipPathElement(element())->calculateAnimatedLocalTransform().mapRect(m_clipBoundaries);

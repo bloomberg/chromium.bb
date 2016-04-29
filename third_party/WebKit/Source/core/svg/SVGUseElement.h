@@ -48,7 +48,7 @@ public:
 
     // Return the element that should be used for clipping,
     // or null if a valid clip element is not directly referenced.
-    SVGGraphicsElement* targetGraphicsElementForClipping() const;
+    SVGGraphicsElement* visibleTargetGraphicsElementForClipping() const;
 
     SVGAnimatedLength* x() const { return m_x.get(); }
     SVGAnimatedLength* y() const { return m_y.get(); }

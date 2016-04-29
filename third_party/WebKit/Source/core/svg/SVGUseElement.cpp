@@ -482,9 +482,9 @@ void SVGUseElement::toClipPath(Path& path) const
 {
     ASSERT(path.isEmpty());
 
-    const SVGGraphicsElement* element = targetGraphicsElementForClipping();
+    const SVGGraphicsElement* element = visibleTargetGraphicsElementForClipping();
 
-    if (!element || !element->layoutObject())
+    if (!element)
         return;
 
     if (element->isSVGGeometryElement()) {
@@ -496,7 +496,7 @@ void SVGUseElement::toClipPath(Path& path) const
     }
 }
 
-SVGGraphicsElement* SVGUseElement::targetGraphicsElementForClipping() const
+SVGGraphicsElement* SVGUseElement::visibleTargetGraphicsElementForClipping() const
 {
     Node* n = userAgentShadowRoot()->firstChild();
     if (!n || !n->isSVGElement())
@@ -507,13 +507,19 @@ SVGGraphicsElement* SVGUseElement::targetGraphicsElementForClipping() const
     if (!element.isSVGGraphicsElement())
         return nullptr;
 
+    if (!element.layoutObject())
+        return nullptr;
+
+    const ComputedStyle* style = element.layoutObject()->style();
+    if (!style || style->visibility() != VISIBLE)
+        return nullptr;
+
     // Spec: "If a <use> element is a child of a clipPath element, it must directly
     // reference <path>, <text> or basic shapes elements. Indirect references are an
     // error and the clipPath element must be ignored."
     // http://dev.w3.org/fxtf/css-masking-1/#the-clip-path
     if (!isDirectReference(element)) {
         // Spec: Indirect references are an error (14.3.5)
-        document().accessSVGExtensions().reportError("Not allowed to use indirect reference in <clip-path>");
         return nullptr;
     }
 
