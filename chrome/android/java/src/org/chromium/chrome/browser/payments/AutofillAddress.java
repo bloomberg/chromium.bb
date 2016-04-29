@@ -33,7 +33,8 @@ public class AutofillAddress extends PaymentOption {
      * Builds for the autofill address.
      */
     public AutofillAddress(AutofillProfile profile) {
-        super(profile.getGUID(), profile.getLabel(), profile.getFullName(), PaymentOption.NO_ICON);
+        super(profile.getGUID(), profile.getFullName(), profile.getStreetAddress(),
+                PaymentOption.NO_ICON);
 
         assert profile.getCountryCode() != null : "Country code should not be null";
         assert Pattern.compile(REGION_CODE_PATTERN).matcher(profile.getCountryCode()).matches()

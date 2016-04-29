@@ -38,7 +38,7 @@ public class AutofillTestHelper {
         return ThreadUtils.runOnUiThreadBlocking(new Callable<List<AutofillProfile>>() {
             @Override
             public List<AutofillProfile> call() {
-                return PersonalDataManager.getInstance().getProfiles(false);
+                return PersonalDataManager.getInstance().getProfiles();
             }
         });
     }
@@ -47,7 +47,7 @@ public class AutofillTestHelper {
         return ThreadUtils.runOnUiThreadBlocking(new Callable<Integer>() {
             @Override
             public Integer call() {
-                return PersonalDataManager.getInstance().getProfiles(false).size();
+                return PersonalDataManager.getInstance().getProfiles().size();
             }
         }).intValue();
     }

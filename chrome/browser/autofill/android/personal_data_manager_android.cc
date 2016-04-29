@@ -5,7 +5,6 @@
 #include "chrome/browser/autofill/android/personal_data_manager_android.h"
 
 #include <stddef.h>
-#include <memory>
 
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
@@ -339,28 +338,11 @@ ScopedJavaLocalRef<jstring> PersonalDataManagerAndroid::SetProfile(
 
 ScopedJavaLocalRef<jobjectArray> PersonalDataManagerAndroid::GetProfileLabels(
     JNIEnv* env,
-    const JavaParamRef<jobject>& unused_obj,
-    bool address_only) {
-  std::unique_ptr<std::vector<ServerFieldType>> suggested_fields;
-  size_t minimal_fields_shown = 2;
-  if (address_only) {
-    suggested_fields.reset(new std::vector<ServerFieldType>);
-    suggested_fields->push_back(COMPANY_NAME);
-    suggested_fields->push_back(ADDRESS_HOME_LINE1);
-    suggested_fields->push_back(ADDRESS_HOME_LINE2);
-    suggested_fields->push_back(ADDRESS_HOME_DEPENDENT_LOCALITY);
-    suggested_fields->push_back(ADDRESS_HOME_CITY);
-    suggested_fields->push_back(ADDRESS_HOME_STATE);
-    suggested_fields->push_back(ADDRESS_HOME_ZIP);
-    suggested_fields->push_back(ADDRESS_HOME_SORTING_CODE);
-    suggested_fields->push_back(ADDRESS_HOME_COUNTRY);
-    minimal_fields_shown = suggested_fields->size();
-  }
-
+    const JavaParamRef<jobject>& unused_obj) {
   std::vector<base::string16> labels;
   AutofillProfile::CreateInferredLabels(
-      personal_data_manager_->GetProfiles(), suggested_fields.get(), NAME_FULL,
-      minimal_fields_shown, g_browser_process->GetApplicationLocale(), &labels);
+      personal_data_manager_->GetProfiles(), NULL, NAME_FULL, 2,
+      g_browser_process->GetApplicationLocale(), &labels);
 
   return base::android::ToJavaArrayOfStrings(env, labels);
 }

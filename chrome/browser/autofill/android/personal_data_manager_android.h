@@ -52,15 +52,9 @@ class PersonalDataManagerAndroid : public PersonalDataManagerObserver {
 
   // Gets the labels for all known profiles. These labels are useful for
   // distinguishing the profiles from one another.
-  //
-  // The labels never contain the full name and include at least 2 fields.
-  //
-  // If |address_only| is true, then such fields as phone number and email
-  // address are also omitted, but all fields are included in the label.
   base::android::ScopedJavaLocalRef<jobjectArray> GetProfileLabels(
       JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& unused_obj,
-      bool address_only);
+      const base::android::JavaParamRef<jobject>& unused_obj);
 
   // These functions act on local credit cards.
   // --------------------

@@ -88,7 +88,7 @@ public class AutofillPreferences extends PreferenceFragment
         // Add an edit preference for each current Chrome profile.
         PreferenceGroup profileCategory = (PreferenceGroup) findPreference(PREF_AUTOFILL_PROFILES);
         profileCategory.removeAll();
-        for (AutofillProfile profile : PersonalDataManager.getInstance().getProfiles(false)) {
+        for (AutofillProfile profile : PersonalDataManager.getInstance().getProfiles()) {
             // Add an item on the current page...
             Preference pref = new Preference(getActivity());
             pref.setTitle(profile.getFullName());
