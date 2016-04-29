@@ -36,9 +36,7 @@ class AwContentRendererClient : public content::ContentRendererClient {
   unsigned long long VisitedLinkHash(const char* canonical_url,
                                      size_t length) override;
   bool IsLinkVisited(unsigned long long link_hash) override;
-  void AddSupportedKeySystems(
-      std::vector<std::unique_ptr<::media::KeySystemProperties>>* key_systems)
-      override;
+  void AddKeySystems(std::vector<media::KeySystemInfo>* key_systems) override;
 
   bool HandleNavigation(content::RenderFrame* render_frame,
                         bool is_content_initiated,

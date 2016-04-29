@@ -38,12 +38,12 @@
         '../third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_version_h',
       ],
       'include_dirs': [
-        # Needed by widevine_key_system_properties.cc.
+        # Needed by widevine_key_systems.cc.
         '<(SHARED_INTERMEDIATE_DIR)',
       ],
       'sources': [
-        'cdm/renderer/widevine_key_system_properties.cc',
-        'cdm/renderer/widevine_key_system_properties.h',
+        'cdm/renderer/widevine_key_systems.cc',
+        'cdm/renderer/widevine_key_systems.h',
       ],
       'conditions': [
         ['OS == "android"', {

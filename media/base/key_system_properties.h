@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "build/build_config.h"
 #include "media/base/eme_constants.h"
 #include "media/base/key_system_info.h"
 #include "media/base/media_export.h"

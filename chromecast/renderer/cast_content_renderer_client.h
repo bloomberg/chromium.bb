@@ -35,10 +35,7 @@ class CastContentRendererClient : public content::ContentRendererClient {
   void RenderThreadStarted() override;
   void RenderViewCreated(content::RenderView* render_view) override;
   void AddKeySystems(
-      std::vector<::media::KeySystemInfo>* key_systems_info) override;
-  void AddSupportedKeySystems(
-      std::vector<std::unique_ptr<::media::KeySystemProperties>>*
-          key_systems_properties) override;
+      std::vector< ::media::KeySystemInfo>* key_systems) override;
 #if !defined(OS_ANDROID)
   std::unique_ptr<::media::RendererFactory> CreateMediaRendererFactory(
       content::RenderFrame* render_frame,
