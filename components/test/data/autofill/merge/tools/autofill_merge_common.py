@@ -41,7 +41,8 @@ def ColumnNameToFieldType(column_name):
 
   column_name = column_name.lower()
   field_type = "unknown"
-  if column_name in ["guid", "label", "country", "date_modified"]:
+  if column_name in ["guid", "label", "country", "date_modified", "origin",
+      "language_code", "use_count", "use_date"]:
     field_type = "ignored"
   elif column_name == "first_name":
     field_type = "NAME_FIRST"
@@ -49,6 +50,8 @@ def ColumnNameToFieldType(column_name):
     field_type = "NAME_MIDDLE"
   elif column_name == "last_name":
     field_type = "NAME_LAST"
+  elif column_name == "full_name":
+    field_type = "NAME_FULL"
   elif column_name == "email":
     field_type = "EMAIL_ADDRESS"
   elif column_name == "company_name":
@@ -57,6 +60,8 @@ def ColumnNameToFieldType(column_name):
     field_type = "ADDRESS_HOME_LINE1"
   elif column_name == "address_line_2":
     field_type = "ADDRESS_HOME_LINE2"
+  elif column_name == "street_address":
+    field_type = "ADDRESS_HOME_STREET_ADDRESS"
   elif column_name == "city":
     field_type = "ADDRESS_HOME_CITY"
   elif column_name == "state":
@@ -65,6 +70,10 @@ def ColumnNameToFieldType(column_name):
     field_type = "ADDRESS_HOME_ZIP"
   elif column_name == "country_code":
     field_type = "ADDRESS_HOME_COUNTRY"
+  elif column_name == "sorting_code":
+    field_type = "ADDRESS_HOME_SORTING_CODE"
+  elif column_name == "dependent_locality":
+    field_type = "ADDRESS_HOME_DEPENDENT_LOCALITY"
   elif column_name == "phone":
     field_type = "PHONE_HOME_WHOLE_NUMBER"
   else:
