@@ -7,12 +7,15 @@
 // be found in the AUTHORS file in the root of the source tree.
 #include "hdr_util.h"
 
+#include <climits>
 #include <cstddef>
 #include <new>
 
 #include "mkvparser/mkvparser.h"
 
 namespace libwebm {
+const int Vp9CodecFeatures::kValueNotPresent = INT_MAX;
+
 bool CopyPrimaryChromaticity(const mkvparser::PrimaryChromaticity& parser_pc,
                              PrimaryChromaticityPtr* muxer_pc) {
   muxer_pc->reset(new (std::nothrow)
@@ -135,19 +138,23 @@ bool CopyColour(const mkvparser::Colour& parser_colour,
 // See the following link for more information:
 // http://www.webmproject.org/vp9/profiles/
 bool ParseVpxCodecPrivate(const uint8_t* private_data, int32_t length,
-                          int* profile, int* level) {
+                          Vp9CodecFeatures* features) {
   const int kVpxCodecPrivateMinLength = 3;
-  if (!private_data || !profile || !level || length < kVpxCodecPrivateMinLength)
+  if (!private_data || !features || length < kVpxCodecPrivateMinLength)
     return false;
 
   const uint8_t kVp9ProfileId = 1;
   const uint8_t kVp9LevelId = 2;
+  const uint8_t kVp9BitDepthId = 3;
+  const uint8_t kVp9ChromaSubsamplingId = 4;
   const int kVpxFeatureLength = 1;
   int offset = 0;
 
-  // Set profile and level to not set.
-  *profile = -1;
-  *level = -1;
+  // Set features to not set.
+  features->profile = Vp9CodecFeatures::kValueNotPresent;
+  features->level = Vp9CodecFeatures::kValueNotPresent;
+  features->bit_depth = Vp9CodecFeatures::kValueNotPresent;
+  features->chroma_subsampling = Vp9CodecFeatures::kValueNotPresent;
   do {
     const uint8_t id_byte = private_data[offset++];
     const uint8_t length_byte = private_data[offset++];
@@ -157,9 +164,11 @@ bool ParseVpxCodecPrivate(const uint8_t* private_data, int32_t length,
       const int priv_profile = static_cast<int>(private_data[offset++]);
       if (priv_profile < 0 || priv_profile > 3)
         return false;
-      if (*profile != -1 && *profile != priv_profile)
+      if (features->profile != Vp9CodecFeatures::kValueNotPresent &&
+          features->profile != priv_profile) {
         return false;
-      *profile = priv_profile;
+      }
+      features->profile = priv_profile;
     } else if (id_byte == kVp9LevelId) {
       const int priv_level = static_cast<int>(private_data[offset++]);
 
@@ -169,14 +178,34 @@ bool ParseVpxCodecPrivate(const uint8_t* private_data, int32_t length,
 
       for (int i = 0; i < kNumLevels; ++i) {
         if (priv_level == levels[i]) {
-          if (*level != -1 && *level != priv_level)
+          if (features->level != Vp9CodecFeatures::kValueNotPresent &&
+              features->level != priv_level) {
             return false;
-          *level = priv_level;
+          }
+          features->level = priv_level;
           break;
         }
       }
-      if (*level == -1)
+      if (features->level == Vp9CodecFeatures::kValueNotPresent)
         return false;
+    } else if (id_byte == kVp9BitDepthId) {
+      const int priv_profile = static_cast<int>(private_data[offset++]);
+      if (priv_profile != 8 && priv_profile != 10 && priv_profile != 12)
+        return false;
+      if (features->bit_depth != Vp9CodecFeatures::kValueNotPresent &&
+          features->bit_depth != priv_profile) {
+        return false;
+      }
+      features->bit_depth = priv_profile;
+    } else if (id_byte == kVp9ChromaSubsamplingId) {
+      const int priv_profile = static_cast<int>(private_data[offset++]);
+      if (priv_profile != 0 && priv_profile != 2 && priv_profile != 3)
+        return false;
+      if (features->chroma_subsampling != Vp9CodecFeatures::kValueNotPresent &&
+          features->chroma_subsampling != priv_profile) {
+        return false;
+      }
+      features->chroma_subsampling = priv_profile;
     } else {
       // Invalid ID.
       return false;

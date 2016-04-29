@@ -35,7 +35,7 @@ using libwebm::Indent;
 using libwebm::kNanosecondsPerSecond;
 using libwebm::kNanosecondsPerSecondi;
 
-const char VERSION_STRING[] = "1.0.4.0";
+const char VERSION_STRING[] = "1.0.4.1";
 
 struct Options {
   Options();
@@ -379,21 +379,25 @@ bool OutputTracks(const mkvparser::Segment& segment, const Options& options,
         const std::string codec_id = track->GetCodecId();
         const std::string v_vp9 = "V_VP9";
         if (codec_id == v_vp9) {
-          int profile;
-          int level;
-
+          libwebm::Vp9CodecFeatures features;
           if (!libwebm::ParseVpxCodecPrivate(private_data,
                                              static_cast<int32_t>(private_size),
-                                             &profile, &level)) {
+                                             &features)) {
             fprintf(stderr, "Error parsing VpxCodecPrivate.\n");
             return false;
           }
-          if (profile != -1)
-            fprintf(o, "%sVP9 profile : %d\n", indent->indent_str().c_str(),
-                    profile);
-          if (level != -1)
-            fprintf(o, "%sVP9 level   : %d\n", indent->indent_str().c_str(),
-                    level);
+          if (features.profile != -1)
+            fprintf(o, "%sVP9 profile            : %d\n",
+                    indent->indent_str().c_str(), features.profile);
+          if (features.level != -1)
+            fprintf(o, "%sVP9 level              : %d\n",
+                    indent->indent_str().c_str(), features.level);
+          if (features.bit_depth != -1)
+            fprintf(o, "%sVP9 bit_depth          : %d\n",
+                    indent->indent_str().c_str(), features.bit_depth);
+          if (features.chroma_subsampling != -1)
+            fprintf(o, "%sVP9 chroma subsampling : %d\n",
+                    indent->indent_str().c_str(), features.chroma_subsampling);
         }
       }
     }
