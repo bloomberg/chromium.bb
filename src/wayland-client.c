@@ -51,7 +51,8 @@
 
 enum wl_proxy_flag {
 	WL_PROXY_FLAG_ID_DELETED = (1 << 0),
-	WL_PROXY_FLAG_DESTROYED = (1 << 1)
+	WL_PROXY_FLAG_DESTROYED = (1 << 1),
+	WL_PROXY_FLAG_WRAPPER = (1 << 2),
 };
 
 struct wl_proxy {
@@ -425,12 +426,17 @@ proxy_destroy(struct wl_proxy *proxy)
  *
  * \param proxy The proxy to be destroyed
  *
+ * \c proxy must not be a proxy wrapper.
+ *
  * \memberof wl_proxy
  */
 WL_EXPORT void
 wl_proxy_destroy(struct wl_proxy *proxy)
 {
 	struct wl_display *display = proxy->display;
+
+	if (proxy->flags & WL_PROXY_FLAG_WRAPPER)
+		wl_abort("Tried to destroy wrapper with wl_proxy_destroy()\n");
 
 	pthread_mutex_lock(&display->mutex);
 	proxy_destroy(proxy);
@@ -452,12 +458,17 @@ wl_proxy_destroy(struct wl_proxy *proxy)
  * \c n, \c implementation[n] should point to the handler of \c n for
  * the given object.
  *
+ * \c proxy must not be a proxy wrapper.
+ *
  * \memberof wl_proxy
  */
 WL_EXPORT int
 wl_proxy_add_listener(struct wl_proxy *proxy,
 		      void (**implementation)(void), void *data)
 {
+	if (proxy->flags & WL_PROXY_FLAG_WRAPPER)
+		wl_abort("Proxy %p is a wrapper\n", proxy);
+
 	if (proxy->object.implementation || proxy->dispatcher) {
 		wl_log("proxy %p already has listener\n", proxy);
 		return -1;
@@ -504,6 +515,8 @@ wl_proxy_get_listener(struct wl_proxy *proxy)
  * The exact details of dispatcher_data depend on the dispatcher used.  This
  * function is intended to be used by language bindings, not user code.
  *
+ * \c proxy must not be a proxy wrapper.
+ *
  * \memberof wl_proxy
  */
 WL_EXPORT int
@@ -511,6 +524,9 @@ wl_proxy_add_dispatcher(struct wl_proxy *proxy,
 			wl_dispatcher_func_t dispatcher,
 			const void *implementation, void *data)
 {
+	if (proxy->flags & WL_PROXY_FLAG_WRAPPER)
+		wl_abort("Proxy %p is a wrapper\n", proxy);
+
 	if (proxy->object.implementation || proxy->dispatcher) {
 		wl_log("proxy %p already has listener\n", proxy);
 		return -1;
@@ -1950,6 +1966,98 @@ wl_proxy_set_queue(struct wl_proxy *proxy, struct wl_event_queue *queue)
 		proxy->queue = queue;
 	else
 		proxy->queue = &proxy->display->default_queue;
+}
+
+/** Create a proxy wrapper for making queue assignments thread-safe
+ *
+ * \param proxy The proxy object to be wrapped
+ * \return A proxy wrapper for the given proxy or NULL on failure
+ *
+ * A proxy wrapper is type of 'struct wl_proxy' instance that can be used when
+ * sending requests instead of using the original proxy. A proxy wrapper does
+ * not have an implementation or dispatcher, and events received on the
+ * object is still emitted on the original proxy. Trying to set an
+ * implementation or dispatcher will have no effect but result in a warning
+ * being logged.
+ *
+ * Setting the proxy queue of the proxy wrapper will make new objects created
+ * using the proxy wrapper use the set proxy queue.
+ * Even though there is no implementation nor dispatcher, the proxy queue can
+ * be changed. This will affect the default queue of new objects created by
+ * requests sent via the proxy wrapper.
+ *
+ * A proxy wrapper can only be destroyed using wl_proxy_wrapper_destroy().
+ *
+ * A proxy wrapper must be destroyed before the proxy it was created from.
+ *
+ * If a user reads and dispatches events on more than one thread, it is
+ * necessary to use a proxy wrapper when sending requests on objects when the
+ * intention is that a newly created proxy is to use a proxy queue different
+ * from the proxy the request was sent on, as creating the new proxy and then
+ * setting the queue is not thread safe.
+ *
+ * For example, a module that runs using its own proxy queue that needs to
+ * do display roundtrip must wrap the wl_display proxy object before sending
+ * the wl_display.sync request. For example:
+ *
+ * \code
+ *
+ *   struct wl_event_queue *queue = ...;
+ *   struct wl_display *wrapped_display;
+ *   struct wl_callback *callback;
+ *
+ *   wrapped_display = wl_proxy_create_wrapper(display);
+ *   wl_proxy_set_queue((struct wl_proxy *) wrapped_display, queue);
+ *   callback = wl_display_sync(wrapped_display);
+ *   wl_proxy_wrapper_destroy(wrapped_display);
+ *   wl_callback_add_listener(callback, ...);
+ *
+ * \endcode
+ *
+ * \memberof wl_proxy
+ */
+WL_EXPORT void *
+wl_proxy_create_wrapper(void *proxy)
+{
+	struct wl_proxy *wrapped_proxy = proxy;
+	struct wl_proxy *wrapper;
+
+	wrapper = zalloc(sizeof *wrapper);
+	if (!wrapper)
+		return NULL;
+
+	pthread_mutex_lock(&wrapped_proxy->display->mutex);
+
+	wrapper->object.interface = wrapped_proxy->object.interface;
+	wrapper->object.id = wrapped_proxy->object.id;
+	wrapper->version = wrapped_proxy->version;
+	wrapper->display = wrapped_proxy->display;
+	wrapper->queue = wrapped_proxy->queue;
+	wrapper->flags = WL_PROXY_FLAG_WRAPPER;
+	wrapper->refcount = 1;
+
+	pthread_mutex_unlock(&wrapped_proxy->display->mutex);
+
+	return wrapper;
+}
+
+/** Destroy a proxy wrapper
+ * \param proxy_wrapper The proxy wrapper to be destroyed
+ *
+ * \memberof wl_proxy
+ */
+WL_EXPORT void
+wl_proxy_wrapper_destroy(void *proxy_wrapper)
+{
+	struct wl_proxy *wrapper = proxy_wrapper;
+
+	if (!(wrapper->flags & WL_PROXY_FLAG_WRAPPER))
+		wl_abort("Tried to destroy non-wrapper proxy with "
+			 "wl_proxy_wrapper_destroy\n");
+
+	assert(wrapper->refcount == 1);
+
+	free(wrapper);
 }
 
 WL_EXPORT void
