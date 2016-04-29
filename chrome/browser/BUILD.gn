@@ -149,6 +149,7 @@ source_set("browser") {
     "//components/navigation_metrics",
     "//components/network_time",
     "//components/ntp_snippets",
+    "//components/ntp_tiles",
     "//components/offline_pages",
     "//components/omnibox/browser",
     "//components/os_crypt",

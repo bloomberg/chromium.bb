@@ -19,8 +19,8 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_switches.h"
 #include "components/google/core/browser/google_util.h"
+#include "components/ntp_tiles/switches.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/search_engine_type.h"
@@ -51,7 +51,8 @@ std::string GetDefaultSearchEngineCountryCode(
   DCHECK(template_url_service);
 
   base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
-  if (!cmd_line->HasSwitch(switches::kEnableNTPSearchEngineCountryDetection))
+  if (!cmd_line->HasSwitch(
+          ntp_tiles::switches::kEnableNTPSearchEngineCountryDetection))
     return std::string();
 
   const TemplateURL* default_provider =

@@ -24,9 +24,9 @@
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_url_filter.h"
 #include "chrome/browser/thumbnails/thumbnail_list_source.h"
-#include "chrome/common/chrome_switches.h"
-#include "chrome/common/pref_names.h"
 #include "components/history/core/browser/top_sites.h"
+#include "components/ntp_tiles/pref_names.h"
+#include "components/ntp_tiles/switches.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/variations/variations_associated_data.h"
@@ -106,9 +106,9 @@ bool ShouldShowPopularSites() {
   const std::string group_name =
       base::FieldTrialList::FindFullName(kPopularSitesFieldTrialName);
   base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
-  if (cmd_line->HasSwitch(switches::kDisableNTPPopularSites))
+  if (cmd_line->HasSwitch(ntp_tiles::switches::kDisableNTPPopularSites))
     return false;
-  if (cmd_line->HasSwitch(switches::kEnableNTPPopularSites))
+  if (cmd_line->HasSwitch(ntp_tiles::switches::kEnableNTPPopularSites))
     return true;
   return base::StartsWith(group_name, "Enabled",
                           base::CompareCase::INSENSITIVE_ASCII);
@@ -128,7 +128,7 @@ std::string GetPopularSitesVersion() {
 // |num_tiles| tiles.
 bool NeedPopularSites(const PrefService* prefs, size_t num_tiles) {
   const base::ListValue* source_list =
-      prefs->GetList(prefs::kNTPSuggestionsIsPersonal);
+      prefs->GetList(ntp_tiles::prefs::kNTPSuggestionsIsPersonal);
   // If there aren't enough previous suggestions to fill the grid, we need
   // popular suggestions.
   if (source_list->GetSize() < num_tiles)
@@ -363,8 +363,8 @@ void MostVisitedSites::OnURLFilterChanged() {
 // static
 void MostVisitedSites::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterListPref(prefs::kNTPSuggestionsURL);
-  registry->RegisterListPref(prefs::kNTPSuggestionsIsPersonal);
+  registry->RegisterListPref(ntp_tiles::prefs::kNTPSuggestionsURL);
+  registry->RegisterListPref(ntp_tiles::prefs::kNTPSuggestionsIsPersonal);
 }
 
 void MostVisitedSites::QueryMostVisitedURLs() {
@@ -658,9 +658,10 @@ void MostVisitedSites::GetPreviousNTPSites(
     std::vector<std::string>* old_sites_url,
     std::vector<bool>* old_sites_is_personal) const {
   const PrefService* prefs = profile_->GetPrefs();
-  const base::ListValue* url_list = prefs->GetList(prefs::kNTPSuggestionsURL);
+  const base::ListValue* url_list = prefs->GetList(
+      ntp_tiles::prefs::kNTPSuggestionsURL);
   const base::ListValue* source_list =
-      prefs->GetList(prefs::kNTPSuggestionsIsPersonal);
+      prefs->GetList(ntp_tiles::prefs::kNTPSuggestionsIsPersonal);
   DCHECK_EQ(url_list->GetSize(), source_list->GetSize());
   if (url_list->GetSize() < num_tiles)
     num_tiles = url_list->GetSize();
@@ -690,8 +691,8 @@ void MostVisitedSites::SaveCurrentNTPSites() {
     source_list.AppendBoolean(suggestion.source != MostVisitedSites::POPULAR);
   }
   PrefService* prefs = profile_->GetPrefs();
-  prefs->Set(prefs::kNTPSuggestionsIsPersonal, source_list);
-  prefs->Set(prefs::kNTPSuggestionsURL, url_list);
+  prefs->Set(ntp_tiles::prefs::kNTPSuggestionsIsPersonal, source_list);
+  prefs->Set(ntp_tiles::prefs::kNTPSuggestionsURL, url_list);
 }
 
 // static

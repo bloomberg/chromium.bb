@@ -113,6 +113,8 @@ per-file network_time.gypi=file://components/network_time/OWNERS
 
 per-file ntp_snippets.gypi=file://components/ntp_snippets/OWNERS
 
+per-file ntp_tiles.gypi=file://components/ntp_tiles/OWNERS
+
 per-file offline_pages.gypi=file://components/offline_pages/OWNERS
 
 per-file omnibox.gypi=file://components/omnibox/OWNERS

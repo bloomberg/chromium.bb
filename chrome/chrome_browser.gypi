@@ -3325,6 +3325,7 @@
             '../components/components.gyp:net_log',
             '../components/components.gyp:network_hints_common',
             '../components/components.gyp:ntp_snippets',
+            '../components/components.gyp:ntp_tiles',
             '../components/components.gyp:packed_ct_ev_whitelist',
             '../components/components.gyp:password_manager_content_browser',
             '../components/components.gyp:password_manager_sync_browser',

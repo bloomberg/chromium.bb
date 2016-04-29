@@ -528,10 +528,6 @@ extern const char kNtpCollapsedSnapshotDocument[];
 extern const char kNtpCollapsedSyncPromo[];
 #endif
 extern const char kNtpShownPage[];
-#if BUILDFLAG(ANDROID_JAVA_UI)
-extern const char kNTPSuggestionsURL[];
-extern const char kNTPSuggestionsIsPersonal[];
-#endif
 
 extern const char kDevToolsAdbKey[];
 extern const char kDevToolsDisabled[];
