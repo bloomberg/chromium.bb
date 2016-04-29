@@ -425,6 +425,8 @@ protected:
 private:
     InlineBoxBitfields m_bitfields;
 
+    DISPLAY_ITEM_CACHE_STATUS_IMPLEMENTATION
+
 #if ENABLE(ASSERT)
     bool m_hasBadParent;
 #endif

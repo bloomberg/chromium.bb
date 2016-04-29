@@ -138,9 +138,8 @@ void PaintController::invalidate(const DisplayItemClient& client)
 void PaintController::invalidateUntracked(const DisplayItemClient& client)
 {
     // This can be called during painting, but we can't invalidate already painted clients.
+    client.setDisplayItemsUncached();
     ASSERT(!m_newDisplayItemIndicesByClient.contains(&client));
-    updateValidlyCachedClientsIfNeeded();
-    m_validlyCachedClients.remove(&client);
 }
 
 void PaintController::invalidateAll()
@@ -148,8 +147,7 @@ void PaintController::invalidateAll()
     // Can only be called during layout/paintInvalidation, not during painting.
     ASSERT(m_newDisplayItemList.isEmpty());
     m_currentPaintArtifact.reset();
-    m_validlyCachedClients.clear();
-    m_validlyCachedClientsDirty = false;
+    m_currentCacheGeneration.invalidate();
 
     if (RuntimeEnabledFeatures::slimmingPaintV2Enabled() && m_trackedPaintInvalidationObjects)
         m_trackedPaintInvalidationObjects->append("##ALL##");
@@ -157,10 +155,10 @@ void PaintController::invalidateAll()
 
 bool PaintController::clientCacheIsValid(const DisplayItemClient& client) const
 {
+    ASSERT(DisplayItemClient::isAlive(client));
     if (skippingCache())
         return false;
-    updateValidlyCachedClientsIfNeeded();
-    return m_validlyCachedClients.contains(&client);
+    return client.displayItemsAreCached(m_currentCacheGeneration);
 }
 
 void PaintController::invalidatePaintOffset(const DisplayItemClient& client)
@@ -236,12 +234,10 @@ DisplayItemList::iterator PaintController::findOutOfOrderCachedItemForward(const
     for (; context.nextItemToIndex != currentEnd; ++context.nextItemToIndex) {
         const DisplayItem& item = *context.nextItemToIndex;
         ASSERT(item.hasValidClient());
-        if (item.isCacheable() && clientCacheIsValid(item.client())) {
-            if (id.matches(item))
-                return context.nextItemToIndex++;
-
+        if (id.matches(item))
+            return context.nextItemToIndex++;
+        if (item.isCacheable())
             addItemToIndexIfNeeded(item, context.nextItemToIndex - m_currentPaintArtifact.getDisplayItemList().begin(), context.displayItemIndicesByClient);
-        }
     }
     return currentEnd;
 }
@@ -296,9 +292,6 @@ void PaintController::commitNewDisplayItemsInternal(const LayoutSize& offsetFrom
         "num_non_cached_new_items", (int)m_newDisplayItemList.size() - m_numCachedNewItems);
     m_numCachedNewItems = 0;
 
-    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
-        m_clientsCheckedPaintInvalidation.clear();
-
     // These data structures are used during painting only.
     ASSERT(m_scopeStack.isEmpty());
     m_scopeStack.clear();
@@ -320,11 +313,9 @@ void PaintController::commitNewDisplayItemsInternal(const LayoutSize& offsetFrom
 
         m_currentPaintArtifact = PaintArtifact(std::move(m_newDisplayItemList), m_newPaintChunks.releasePaintChunks());
         m_newDisplayItemList = DisplayItemList(kInitialDisplayItemListCapacityBytes);
-        m_validlyCachedClientsDirty = true;
+        updateCacheGeneration();
         return;
     }
-
-    updateValidlyCachedClientsIfNeeded();
 
     // Stores indices to valid DrawingDisplayItems in m_currentDisplayItems that have not been matched
     // by CachedDisplayItems during synchronized matching. The indexed items will be matched
@@ -403,7 +394,7 @@ void PaintController::commitNewDisplayItemsInternal(const LayoutSize& offsetFrom
     m_currentPaintArtifact = PaintArtifact(std::move(updatedList), m_newPaintChunks.releasePaintChunks());
 
     m_newDisplayItemList = DisplayItemList(kInitialDisplayItemListCapacityBytes);
-    m_validlyCachedClientsDirty = true;
+    updateCacheGeneration();
 }
 
 size_t PaintController::approximateUnsharedMemoryUsage() const
@@ -431,22 +422,12 @@ size_t PaintController::approximateUnsharedMemoryUsage() const
     return memoryUsage;
 }
 
-void PaintController::updateValidlyCachedClientsIfNeeded() const
+void PaintController::updateCacheGeneration()
 {
-    if (!m_validlyCachedClientsDirty)
-        return;
-
-    m_validlyCachedClients.clear();
-    m_validlyCachedClientsDirty = false;
-
-    const DisplayItemClient* lastAddedClient = nullptr;
+    m_currentCacheGeneration = DisplayItemCacheGeneration::next();
     for (const DisplayItem& displayItem : m_currentPaintArtifact.getDisplayItemList()) {
-        if (&displayItem.client() == lastAddedClient)
-            continue;
-        if (displayItem.isCacheable()) {
-            lastAddedClient = &displayItem.client();
-            m_validlyCachedClients.add(lastAddedClient);
-        }
+        if (displayItem.isCacheable())
+            displayItem.client().setDisplayItemsCached(m_currentCacheGeneration);
     }
 }
 
@@ -513,7 +494,7 @@ void PaintController::checkCachedDisplayItemIsUnchanged(const char* messagePrefi
         ASSERT_NOT_REACHED();
     }
 
-    if (newItem.isCacheable() && !m_validlyCachedClients.contains(&newItem.client())) {
+    if (newItem.isCacheable() && !clientCacheIsValid(newItem.client())) {
         showUnderInvalidationError(messagePrefix, "ERROR: under-invalidation: invalidated in cached subsequence", &newItem, &oldItem);
         ASSERT_NOT_REACHED();
     }

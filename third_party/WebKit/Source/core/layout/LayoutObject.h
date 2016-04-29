@@ -1938,6 +1938,8 @@ private:
     // For slimmingPaintInvalidation, this stores the previous paint offset.
     // TODO(wangxianzhu): Rename this to m_previousPaintOffset when we enable slimmingPaintInvalidation.
     LayoutPoint m_previousPositionFromPaintInvalidationBacking;
+
+    DISPLAY_ITEM_CACHE_STATUS_IMPLEMENTATION
 };
 
 // FIXME: remove this once the layout object lifecycle ASSERTS are no longer hit.

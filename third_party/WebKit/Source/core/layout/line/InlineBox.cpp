@@ -43,6 +43,7 @@ struct SameSizeAsInlineBox {
     LayoutPoint b;
     LayoutUnit c;
     uint32_t d : 32;
+    DisplayItemCacheGeneration cacheGeneration;
 #if ENABLE(ASSERT)
     bool f;
 #endif

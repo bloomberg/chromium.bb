@@ -79,6 +79,7 @@ public:
 
 private:
     PageOverlay(WebViewImpl*, PageOverlay::Delegate*);
+    DISPLAY_ITEM_CACHE_STATUS_UNCACHEABLE_IMPLEMENTATION
 
     WebViewImpl* m_viewImpl;
     Persistent<PageOverlay::Delegate> m_delegate;

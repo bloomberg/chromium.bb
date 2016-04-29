@@ -163,15 +163,6 @@ public:
         return m_trackedPaintInvalidationObjects ? *m_trackedPaintInvalidationObjects : Vector<String>();
     }
 
-    bool clientHasCheckedPaintInvalidation(const DisplayItemClient& client) const
-    {
-        return m_clientsCheckedPaintInvalidation.contains(&client);
-    }
-    void setClientHasCheckedPaintInvalidation(const DisplayItemClient& client)
-    {
-        m_clientsCheckedPaintInvalidation.add(&client);
-    }
-
 #if ENABLE(ASSERT)
     void assertDisplayItemClientsAreLive();
 #endif
@@ -179,20 +170,18 @@ public:
 protected:
     PaintController()
         : m_newDisplayItemList(kInitialDisplayItemListCapacityBytes)
-        , m_validlyCachedClientsDirty(false)
         , m_constructionDisabled(false)
         , m_subsequenceCachingDisabled(false)
         , m_textPainted(false)
         , m_imagePainted(false)
         , m_skippingCacheCount(0)
         , m_numCachedNewItems(0)
-        , m_nextScope(1) { }
+        , m_nextScope(1)
+    { }
 
 private:
     // Set new item state (scopes, cache skipping, etc) for a new item.
     void processNewItem(DisplayItem&);
-
-    void updateValidlyCachedClientsIfNeeded() const;
 
 #ifndef NDEBUG
     WTF::String displayItemListAsDebugString(const DisplayItemList&) const;
@@ -220,6 +209,8 @@ private:
 
     void commitNewDisplayItemsInternal(const LayoutSize& offsetFromLayoutObject);
 
+    void updateCacheGeneration();
+
     // The last complete paint artifact.
     // In SPv2, this includes paint chunks as well as display items.
     PaintArtifact m_currentPaintArtifact;
@@ -227,18 +218,6 @@ private:
     // Data being used to build the next paint artifact.
     DisplayItemList m_newDisplayItemList;
     PaintChunker m_newPaintChunks;
-
-    // Contains all clients having valid cached paintings if updated.
-    // It's lazily updated in updateValidlyCachedClientsIfNeeded().
-    // TODO(wangxianzhu): In the future we can replace this with client-side repaint flags
-    // to avoid the cost of building and querying the hash table.
-    mutable HashSet<const DisplayItemClient*> m_validlyCachedClients;
-    mutable bool m_validlyCachedClientsDirty;
-
-    // Used during painting. Contains clients that have checked paint invalidation and
-    // are known to be valid.
-    // TODO(wangxianzhu): Use client side flag to avoid const of hash table.
-    HashSet<const DisplayItemClient*> m_clientsCheckedPaintInvalidation;
 
 #if ENABLE(ASSERT)
     // Set of clients which had paint offset changes since the last commit. This is used for
@@ -275,6 +254,8 @@ private:
 #endif
 
     OwnPtr<Vector<String>> m_trackedPaintInvalidationObjects;
+
+    DisplayItemCacheGeneration m_currentCacheGeneration;
 };
 
 } // namespace blink

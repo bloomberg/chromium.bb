@@ -21,6 +21,8 @@ public:
     LayoutRect visualRect() const override { return m_visualRect; }
 
 private:
+    DISPLAY_ITEM_CACHE_STATUS_IMPLEMENTATION
+
     String m_name;
     LayoutRect m_visualRect;
 };

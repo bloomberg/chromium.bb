@@ -113,6 +113,7 @@ struct SameSizeAsPaintLayer : DisplayItemClient {
         void* pointer;
         LayoutRect rect;
     } previousPaintStatus;
+    DisplayItemCacheGeneration cacheGeneration;
 };
 
 static_assert(sizeof(PaintLayer) == sizeof(SameSizeAsPaintLayer), "PaintLayer should stay small");
