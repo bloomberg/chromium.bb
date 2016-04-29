@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/i18n/number_formatting.h"
 #include "base/message_loop/message_loop.h"
-#include "base/profiler/scoped_tracker.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/chromium_strings.h"

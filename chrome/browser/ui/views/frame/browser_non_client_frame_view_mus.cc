@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "base/profiler/scoped_tracker.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profiles_state.h"
