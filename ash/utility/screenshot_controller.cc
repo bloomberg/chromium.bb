@@ -16,10 +16,10 @@
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window_targeter.h"
 #include "ui/compositor/paint_recorder.h"
+#include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/cursor_manager.h"
 
@@ -53,8 +53,8 @@ class ScreenshotWindowTargeter : public aura::WindowTargeter {
     gfx::Point location = event->location();
     position_client->ConvertPointToScreen(target, &location);
 
-    gfx::Display display =
-        gfx::Screen::GetScreen()->GetDisplayNearestPoint(location);
+    display::Display display =
+        display::Screen::GetScreen()->GetDisplayNearestPoint(location);
 
     aura::Window* root_window = Shell::GetInstance()
                                     ->window_tree_host_manager()
@@ -199,7 +199,7 @@ void ScreenshotController::StartWindowScreenshotSession(
   screenshot_delegate_ = screenshot_delegate;
   mode_ = WINDOW;
 
-  gfx::Screen::GetScreen()->AddObserver(this);
+  display::Screen::GetScreen()->AddObserver(this);
   for (aura::Window* root : Shell::GetAllRootWindows()) {
     layers_[root] = new ScreenshotLayer(
         Shell::GetContainer(root, kShellWindowId_OverlayContainer)->layer());
@@ -222,7 +222,7 @@ void ScreenshotController::StartPartialScreenshotSession(
 
   screenshot_delegate_ = screenshot_delegate;
   mode_ = PARTIAL;
-  gfx::Screen::GetScreen()->AddObserver(this);
+  display::Screen::GetScreen()->AddObserver(this);
   for (aura::Window* root : Shell::GetAllRootWindows()) {
     layers_[root] = new ScreenshotLayer(
         Shell::GetContainer(root, kShellWindowId_OverlayContainer)->layer());
@@ -283,7 +283,7 @@ void ScreenshotController::Cancel() {
   root_window_ = nullptr;
   SetSelectedWindow(nullptr);
   screenshot_delegate_ = nullptr;
-  gfx::Screen::GetScreen()->RemoveObserver(this);
+  display::Screen::GetScreen()->RemoveObserver(this);
   STLDeleteValues(&layers_);
   cursor_setter_.reset();
   EnableMouseWarp(true);
@@ -435,20 +435,22 @@ void ScreenshotController::OnTouchEvent(ui::TouchEvent* event) {
   event->StopPropagation();
 }
 
-void ScreenshotController::OnDisplayAdded(const gfx::Display& new_display) {
+void ScreenshotController::OnDisplayAdded(const display::Display& new_display) {
   if (!screenshot_delegate_)
     return;
   Cancel();
 }
 
-void ScreenshotController::OnDisplayRemoved(const gfx::Display& old_display) {
+void ScreenshotController::OnDisplayRemoved(
+    const display::Display& old_display) {
   if (!screenshot_delegate_)
     return;
   Cancel();
 }
 
-void ScreenshotController::OnDisplayMetricsChanged(const gfx::Display& display,
-                                                   uint32_t changed_metrics) {}
+void ScreenshotController::OnDisplayMetricsChanged(
+    const display::Display& display,
+    uint32_t changed_metrics) {}
 
 void ScreenshotController::OnWindowDestroying(aura::Window* window) {
   SetSelectedWindow(nullptr);
