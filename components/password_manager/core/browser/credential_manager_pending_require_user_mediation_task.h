@@ -52,7 +52,7 @@ class CredentialManagerPendingRequireUserMediationTask
  private:
   CredentialManagerPendingRequireUserMediationTaskDelegate* const
       delegate_;  // Weak.
-  std::set<std::string> origins_;
+  std::set<std::string> registrable_domains_;
   std::set<std::string> affiliated_realms_;
 
   DISALLOW_COPY_AND_ASSIGN(CredentialManagerPendingRequireUserMediationTask);

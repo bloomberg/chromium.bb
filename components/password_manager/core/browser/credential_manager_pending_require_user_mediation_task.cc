@@ -7,6 +7,7 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/affiliated_match_helper.h"
 #include "components/password_manager/core/browser/password_store.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "url/gurl.h"
 
 namespace password_manager {
@@ -18,7 +19,10 @@ CredentialManagerPendingRequireUserMediationTask::
         const std::vector<std::string>& affiliated_realms)
     : delegate_(delegate),
       affiliated_realms_(affiliated_realms.begin(), affiliated_realms.end()) {
-  origins_.insert(origin.spec());
+  registrable_domains_.insert(
+      net::registry_controlled_domains::GetDomainAndRegistry(
+          origin,
+          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES));
 }
 
 CredentialManagerPendingRequireUserMediationTask::
@@ -26,14 +30,21 @@ CredentialManagerPendingRequireUserMediationTask::
 
 void CredentialManagerPendingRequireUserMediationTask::AddOrigin(
     const GURL& origin) {
-  origins_.insert(origin.spec());
+  registrable_domains_.insert(
+      net::registry_controlled_domains::GetDomainAndRegistry(
+          origin,
+          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES));
 }
 
 void CredentialManagerPendingRequireUserMediationTask::
     OnGetPasswordStoreResults(ScopedVector<autofill::PasswordForm> results) {
   PasswordStore* store = delegate_->GetPasswordStore();
   for (autofill::PasswordForm* form : results) {
-    if (origins_.count(form->origin.spec()) ||
+    std::string form_registrable_domain =
+        net::registry_controlled_domains::GetDomainAndRegistry(
+            form->origin,
+            net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+    if (registrable_domains_.count(form_registrable_domain) ||
         (affiliated_realms_.count(form->signon_realm) &&
          AffiliatedMatchHelper::IsValidAndroidCredential(*form))) {
       form->skip_zero_click = true;

@@ -249,6 +249,14 @@ class CredentialManagerImplTest : public content::RenderViewHostTestHarness {
     origin_path_form_.scheme = autofill::PasswordForm::SCHEME_HTML;
     origin_path_form_.skip_zero_click = false;
 
+    subdomain_form_.username_value = base::ASCIIToUTF16("Username 2");
+    subdomain_form_.display_name = base::ASCIIToUTF16("Display Name 2");
+    subdomain_form_.password_value = base::ASCIIToUTF16("Password 2");
+    subdomain_form_.origin = GURL("https://subdomain.example.com/path");
+    subdomain_form_.signon_realm = subdomain_form_.origin.spec();
+    subdomain_form_.scheme = autofill::PasswordForm::SCHEME_HTML;
+    subdomain_form_.skip_zero_click = false;
+
     cross_origin_form_.username_value = base::ASCIIToUTF16("Username");
     cross_origin_form_.display_name = base::ASCIIToUTF16("Display Name");
     cross_origin_form_.password_value = base::ASCIIToUTF16("Password");
@@ -354,6 +362,7 @@ class CredentialManagerImplTest : public content::RenderViewHostTestHarness {
   autofill::PasswordForm affiliated_form1_;
   autofill::PasswordForm affiliated_form2_;
   autofill::PasswordForm origin_path_form_;
+  autofill::PasswordForm subdomain_form_;
   autofill::PasswordForm cross_origin_form_;
   scoped_refptr<TestPasswordStore> store_;
   std::unique_ptr<testing::NiceMock<MockPasswordManagerClient>> client_;
@@ -540,14 +549,17 @@ TEST_F(CredentialManagerImplTest,
 
 TEST_F(CredentialManagerImplTest, CredentialManagerOnRequireUserMediation) {
   store_->AddLogin(form_);
+  store_->AddLogin(subdomain_form_);
   store_->AddLogin(cross_origin_form_);
   RunAllPendingTasks();
 
   TestPasswordStore::PasswordMap passwords = store_->stored_passwords();
-  EXPECT_EQ(2U, passwords.size());
+  EXPECT_EQ(3U, passwords.size());
   EXPECT_EQ(1U, passwords[form_.signon_realm].size());
+  EXPECT_EQ(1U, passwords[subdomain_form_.signon_realm].size());
   EXPECT_EQ(1U, passwords[cross_origin_form_.signon_realm].size());
   EXPECT_FALSE(passwords[form_.signon_realm][0].skip_zero_click);
+  EXPECT_FALSE(passwords[subdomain_form_.signon_realm][0].skip_zero_click);
   EXPECT_FALSE(passwords[cross_origin_form_.signon_realm][0].skip_zero_click);
 
   bool called = false;
@@ -558,10 +570,12 @@ TEST_F(CredentialManagerImplTest, CredentialManagerOnRequireUserMediation) {
   EXPECT_TRUE(called);
 
   passwords = store_->stored_passwords();
-  EXPECT_EQ(2U, passwords.size());
+  EXPECT_EQ(3U, passwords.size());
   EXPECT_EQ(1U, passwords[form_.signon_realm].size());
+  EXPECT_EQ(1U, passwords[subdomain_form_.signon_realm].size());
   EXPECT_EQ(1U, passwords[cross_origin_form_.signon_realm].size());
   EXPECT_TRUE(passwords[form_.signon_realm][0].skip_zero_click);
+  EXPECT_TRUE(passwords[subdomain_form_.signon_realm][0].skip_zero_click);
   EXPECT_FALSE(passwords[cross_origin_form_.signon_realm][0].skip_zero_click);
 }
 
