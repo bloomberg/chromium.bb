@@ -32,32 +32,39 @@ class ArcNetHostImpl : public ArcService,
   explicit ArcNetHostImpl(ArcBridgeService* arc_bridge_service);
   ~ArcNetHostImpl() override;
 
-  // Called when a GetNetworks call is sent from ARC.
+  // ARC -> Chrome calls:
+
   void GetNetworksDeprecated(
       bool configured_only,
       bool visible_only,
       const GetNetworksDeprecatedCallback& callback) override;
 
-  // Called when a GetNetworks call is sent from ARC.
   void GetNetworks(mojom::GetNetworksRequestType type,
                    const GetNetworksCallback& callback) override;
 
-  // Called when a GetWifiEnabledState call is sent from ARC.
   void GetWifiEnabledState(
       const GetWifiEnabledStateCallback& callback) override;
 
-  // Called when a SetWifiEnabledState call is sent from ARC.
   void SetWifiEnabledState(
       bool is_enabled,
       const SetWifiEnabledStateCallback& callback) override;
 
-  // Called when a StartScan call is sent from ARC.
   void StartScan() override;
+
+  void CreateNetwork(mojom::WifiConfigurationPtr cfg,
+                     const CreateNetworkCallback& callback) override;
+
+  void ForgetNetwork(const mojo::String& guid,
+                     const ForgetNetworkCallback& callback) override;
+
+  void StartConnect(const mojo::String& guid,
+                    const StartConnectCallback& callback) override;
+
+  void StartDisconnect(const mojo::String& guid,
+                       const StartDisconnectCallback& callback) override;
 
   // Overriden from chromeos::NetworkStateHandlerObserver.
   void ScanCompleted(const chromeos::DeviceState* /*unused*/) override;
-
-  // Overriden from chromeos::NetworkStateHandlerObserver.
   void OnShuttingDown() override;
 
   // Overridden from ArcBridgeService::Observer:

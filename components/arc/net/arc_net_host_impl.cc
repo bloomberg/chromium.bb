@@ -8,12 +8,17 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "chromeos/login/login_state.h"
+#include "chromeos/network/managed_network_configuration_handler.h"
+#include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_handler.h"
+#include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_type_pattern.h"
 #include "chromeos/network/network_util.h"
@@ -30,6 +35,22 @@ namespace arc {
 
 chromeos::NetworkStateHandler* GetStateHandler() {
   return chromeos::NetworkHandler::Get()->network_state_handler();
+}
+
+chromeos::ManagedNetworkConfigurationHandler* GetManagedConfigurationHandler() {
+  return chromeos::NetworkHandler::Get()
+      ->managed_network_configuration_handler();
+}
+
+chromeos::NetworkConnectionHandler* GetNetworkConnectionHandler() {
+  return chromeos::NetworkHandler::Get()->network_connection_handler();
+}
+
+bool IsDeviceOwner() {
+  // Check whether the logged-in Chrome OS user is allowed to add or
+  // remove WiFi networks.
+  return chromeos::LoginState::Get()->GetLoggedInUserType() ==
+         chromeos::LoginState::LOGGED_IN_USER_OWNER;
 }
 
 ArcNetHostImpl::ArcNetHostImpl(ArcBridgeService* bridge_service)
@@ -138,10 +159,170 @@ void ArcNetHostImpl::GetNetworks(mojom::GetNetworksRequestType type,
     DCHECK(!tmp.empty());
     wc->bssid = tmp;
 
+    mojom::VisibleNetworkDetailsPtr details =
+        mojom::VisibleNetworkDetails::New();
+    details->frequency = wc->frequency;
+    details->signal_strength = wc->signal_strength;
+    details->bssid = wc->bssid;
+    wc->details = mojom::NetworkDetails::New();
+    wc->details->set_visible(std::move(details));
+
     networks.push_back(std::move(wc));
   }
   data->networks = std::move(networks);
   callback.Run(std::move(data));
+}
+
+void CreateNetworkSuccessCallback(
+    const arc::mojom::NetHost::CreateNetworkCallback& mojo_callback,
+    const std::string& service_path,
+    const std::string& guid) {
+  VLOG(1) << "CreateNetworkSuccessCallback";
+  mojo_callback.Run(guid);
+}
+
+void CreateNetworkFailureCallback(
+    const arc::mojom::NetHost::CreateNetworkCallback& mojo_callback,
+    const std::string& error_name,
+    std::unique_ptr<base::DictionaryValue> error_data) {
+  VLOG(1) << "CreateNetworkFailureCallback: " << error_name;
+  mojo_callback.Run("");
+}
+
+void ArcNetHostImpl::CreateNetwork(mojom::WifiConfigurationPtr cfg,
+                                   const CreateNetworkCallback& callback) {
+  if (!IsDeviceOwner()) {
+    callback.Run("");
+    return;
+  }
+
+  std::unique_ptr<base::DictionaryValue> properties(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> wifi_dict(new base::DictionaryValue);
+
+  if (cfg->hexssid.is_null() || !cfg->details) {
+    callback.Run("");
+    return;
+  }
+  mojom::ConfiguredNetworkDetailsPtr details =
+      std::move(cfg->details->get_configured());
+  if (!details) {
+    callback.Run("");
+    return;
+  }
+
+  properties->SetStringWithoutPathExpansion(onc::network_config::kType,
+                                            onc::network_config::kWiFi);
+  wifi_dict->SetStringWithoutPathExpansion(onc::wifi::kHexSSID, cfg->hexssid);
+  wifi_dict->SetBooleanWithoutPathExpansion(onc::wifi::kAutoConnect,
+                                            details->autoconnect);
+  if (cfg->security.get().empty()) {
+    wifi_dict->SetStringWithoutPathExpansion(onc::wifi::kSecurity,
+                                             onc::wifi::kSecurityNone);
+  } else {
+    wifi_dict->SetStringWithoutPathExpansion(onc::wifi::kSecurity,
+                                             cfg->security);
+    if (!details->passphrase.is_null()) {
+      wifi_dict->SetStringWithoutPathExpansion(onc::wifi::kPassphrase,
+                                               details->passphrase);
+    }
+  }
+  properties->SetWithoutPathExpansion(onc::network_config::kWiFi,
+                                      std::move(wifi_dict));
+
+  std::string user_id_hash = chromeos::LoginState::Get()->primary_user_hash();
+  GetManagedConfigurationHandler()->CreateConfiguration(
+      user_id_hash, *properties,
+      base::Bind(&CreateNetworkSuccessCallback, callback),
+      base::Bind(&CreateNetworkFailureCallback, callback));
+}
+
+void ForgetNetworkSuccessCallback(
+    const arc::mojom::NetHost::ForgetNetworkCallback& mojo_callback) {
+  mojo_callback.Run(mojom::NetworkResult::SUCCESS);
+}
+
+void ForgetNetworkFailureCallback(
+    const arc::mojom::NetHost::ForgetNetworkCallback& mojo_callback,
+    const std::string& error_name,
+    std::unique_ptr<base::DictionaryValue> error_data) {
+  VLOG(1) << "ForgetNetworkFailureCallback: " << error_name;
+  mojo_callback.Run(mojom::NetworkResult::FAILURE);
+}
+
+void ArcNetHostImpl::ForgetNetwork(const mojo::String& guid,
+                                   const ForgetNetworkCallback& callback) {
+  if (!IsDeviceOwner()) {
+    callback.Run(mojom::NetworkResult::FAILURE);
+    return;
+  }
+
+  const chromeos::NetworkState* network =
+      GetStateHandler()->GetNetworkStateFromGuid(guid);
+
+  if (!network) {
+    callback.Run(mojom::NetworkResult::FAILURE);
+    return;
+  }
+
+  GetManagedConfigurationHandler()->RemoveConfiguration(
+      network->path(), base::Bind(&ForgetNetworkSuccessCallback, callback),
+      base::Bind(&ForgetNetworkFailureCallback, callback));
+}
+
+void StartConnectSuccessCallback(
+    const arc::mojom::NetHost::StartConnectCallback& mojo_callback) {
+  mojo_callback.Run(mojom::NetworkResult::SUCCESS);
+}
+
+void StartConnectFailureCallback(
+    const arc::mojom::NetHost::StartConnectCallback& mojo_callback,
+    const std::string& error_name,
+    std::unique_ptr<base::DictionaryValue> error_data) {
+  VLOG(1) << "StartConnectFailureCallback: " << error_name;
+  mojo_callback.Run(mojom::NetworkResult::FAILURE);
+}
+
+void ArcNetHostImpl::StartConnect(const mojo::String& guid,
+                                  const StartConnectCallback& callback) {
+  const chromeos::NetworkState* network =
+      GetStateHandler()->GetNetworkStateFromGuid(guid);
+
+  if (!network) {
+    callback.Run(mojom::NetworkResult::FAILURE);
+    return;
+  }
+
+  GetNetworkConnectionHandler()->ConnectToNetwork(
+      network->path(), base::Bind(&StartConnectSuccessCallback, callback),
+      base::Bind(&StartConnectFailureCallback, callback), false);
+}
+
+void StartDisconnectSuccessCallback(
+    const arc::mojom::NetHost::StartDisconnectCallback& mojo_callback) {
+  mojo_callback.Run(mojom::NetworkResult::SUCCESS);
+}
+
+void StartDisconnectFailureCallback(
+    const arc::mojom::NetHost::StartDisconnectCallback& mojo_callback,
+    const std::string& error_name,
+    std::unique_ptr<base::DictionaryValue> error_data) {
+  VLOG(1) << "StartDisconnectFailureCallback: " << error_name;
+  mojo_callback.Run(mojom::NetworkResult::FAILURE);
+}
+
+void ArcNetHostImpl::StartDisconnect(const mojo::String& guid,
+                                     const StartDisconnectCallback& callback) {
+  const chromeos::NetworkState* network =
+      GetStateHandler()->GetNetworkStateFromGuid(guid);
+
+  if (!network) {
+    callback.Run(mojom::NetworkResult::FAILURE);
+    return;
+  }
+
+  GetNetworkConnectionHandler()->DisconnectNetwork(
+      network->path(), base::Bind(&StartDisconnectSuccessCallback, callback),
+      base::Bind(&StartDisconnectFailureCallback, callback));
 }
 
 void ArcNetHostImpl::GetWifiEnabledState(

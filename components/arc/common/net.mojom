@@ -16,16 +16,51 @@ enum GetNetworksRequestType {
   VISIBLE_ONLY = 1,
 };
 
-struct WifiConfiguration {
-  // These correspond to ONC properties returned by
-  // chrome.networkingPrivate.getNetworks().
-  // See components/onc/docs/onc_spec.html
-  string ssid;
+[Extensible]
+enum ConnectionStateType {
+  CONNECTED = 0,
+  CONNECTING = 1,
+  NOT_CONNECTED = 2,
+};
+
+struct VisibleNetworkDetails {
   int32 frequency;
   int32 signal_strength;
   string bssid;
-  string security;
-  [MinVersion=1] string? guid;
+};
+
+struct ConfiguredNetworkDetails {
+  string passphrase;
+  bool autoconnect;
+};
+
+union NetworkDetails {
+  VisibleNetworkDetails visible;
+  ConfiguredNetworkDetails configured;
+};
+
+struct WifiConfiguration {
+  // These correspond to ONC properties returned by
+  // chrome.networkingPrivate.getNetworks() and createNetwork().
+  // See components/onc/docs/onc_spec.html
+
+  // SSID encoded as a series of hex bytes, e.g. "61626364"
+  // This allows for handling SSIDs which are not valid UTF-8 strings.
+  [MinVersion=2] string? hexssid@6;
+
+  [MinVersion=1] string? guid@5;
+  string security@4;
+
+  // Fields specific to either visible or configured networks.
+  [MinVersion=2] NetworkDetails? details@7;
+
+  // Deprecated.  These will be removed when both sides support NetworkDetails.
+  int32 frequency@1;
+  int32 signal_strength@2;
+  string bssid@3;
+
+  // Deprecated. |hexssid| will be used, going forward.
+  string ssid@0;
 };
 
 struct NetworkData {
@@ -53,6 +88,20 @@ interface NetHost {
   // state. It is false if WiFi manipulation is prohibited due to a policy or
   // its current state.
   [MinVersion=3] SetWifiEnabledState@4(bool is_enabled) => (bool result);
+
+  // Creates a new network and returns the GUID.  If an error occurs,
+  // |guid| will be an empty string.
+  [MinVersion=4] CreateNetwork@5(WifiConfiguration cfg) => (string guid);
+
+  // Deletes an existing network.
+  [MinVersion=4] ForgetNetwork@6(string guid) => (NetworkResult status);
+
+  // Initiates a network connection.  If called when connected to a different
+  // network, it will drop the current connection first.
+  [MinVersion=4] StartConnect@7(string guid) => (NetworkResult status);
+
+  // Disconnects from network |guid|.
+  [MinVersion=4] StartDisconnect@8(string guid) => (NetworkResult status);
 };
 
 interface NetInstance {
