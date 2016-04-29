@@ -29,10 +29,9 @@ import org.chromium.sync.signin.ChromeSigninController;
  */
 public class SigninAndSyncView extends FrameLayout
         implements AndroidSyncSettingsObserver, SignInStateObserver {
-    private static final String TAG = "SigninAndSyncView";
     private final Listener mListener;
-    private final int mAccessPoint;
-    @AccessPoint private final SigninManager mSigninManager;
+    @AccessPoint private final int mAccessPoint;
+    private final SigninManager mSigninManager;
 
     private final TextView mTitle;
     private final TextView mDescription;
