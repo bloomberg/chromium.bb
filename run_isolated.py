@@ -303,8 +303,7 @@ def map_and_run(
     'version': 3,
   }
   if root_dir:
-    if not fs.isdir(root_dir):
-      fs.makedirs(root_dir, 0700)
+    file_path.ensure_tree(root_dir, 0700)
     prefix = u''
   else:
     root_dir = os.path.dirname(cache.cache_dir) if cache.cache_dir else None
@@ -467,9 +466,7 @@ def run_tha_test(
   if result_json:
     # We've found tests to delete 'work' when quitting, causing an exception
     # here. Try to recreate the directory if necessary.
-    work_dir = os.path.dirname(result_json)
-    if not fs.isdir(work_dir):
-      fs.mkdir(work_dir)
+    file_path.ensure_tree(os.path.dirname(result_json))
     tools.write_json(result_json, result, dense=True)
     # Only return 1 if there was an internal error.
     return int(bool(result['internal_failure']))

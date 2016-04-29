@@ -769,6 +769,12 @@ def link_file(outfile, infile, action):
 ### Write directory functions.
 
 
+def ensure_tree(path, perm=0777):
+  """Ensures a directory exists."""
+  if not fs.isdir(path):
+    fs.makedirs(path, perm)
+
+
 def make_tree_read_only(root):
   """Makes all the files in the directories read only.
 

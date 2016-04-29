@@ -103,9 +103,7 @@ def recreate_tree(outdir, indir, infiles, action, as_hash):
           fs.remove(outfile)
     else:
       outfile = os.path.join(outdir, relfile)
-      outsubdir = os.path.dirname(outfile)
-      if not os.path.isdir(outsubdir):
-        fs.makedirs(outsubdir)
+      file_path.ensure_tree(os.path.dirname(outfile))
 
     if 'l' in metadata:
       pointed = metadata['l']
@@ -717,11 +715,12 @@ def create_isolate_tree(outdir, root_dir, files, relative_cwd, read_only):
       action=action,
       as_hash=False)
   cwd = os.path.normpath(os.path.join(outdir, relative_cwd))
-  if not fs.isdir(cwd):
-    # It can happen when no files are mapped from the directory containing the
-    # .isolate file. But the directory must exist to be the current working
-    # directory.
-    fs.makedirs(cwd)
+
+  # cwd may not exist when no files are mapped from the directory containing the
+  # .isolate file. But the directory must exist to be the current working
+  # directory.
+  file_path.ensure_tree(cwd)
+
   run_isolated.change_tree_read_only(outdir, read_only)
   return cwd
 
@@ -973,8 +972,7 @@ def CMDremap(parser, args):
   process_outdir_options(parser, options, cwd)
   complete_state = load_complete_state(options, cwd, None, options.skip_refresh)
 
-  if not fs.isdir(options.outdir):
-    fs.makedirs(options.outdir)
+  file_path.ensure_tree(options.outdir)
   print('Remapping into %s' % options.outdir)
   if fs.listdir(options.outdir):
     raise ExecutionError('Can\'t remap in a non-empty directory')

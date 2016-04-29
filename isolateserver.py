@@ -136,9 +136,7 @@ def file_write(path, content_generator):
 
   Meant to be mocked out in unit tests.
   """
-  filedir = os.path.dirname(path)
-  if not fs.isdir(filedir):
-    fs.makedirs(filedir)
+  file_path.ensure_tree(os.path.dirname(path))
   total = 0
   with fs.open(path, 'wb') as f:
     for d in content_generator:
@@ -1910,15 +1908,13 @@ def fetch_isolated(isolated_hash, storage, cache, outdir):
 
     with tools.Profiler('GetRest'):
       # Create file system hierarchy.
-      if not fs.isdir(outdir):
-        fs.makedirs(outdir)
+      file_path.ensure_tree(outdir)
       create_directories(outdir, bundle.files)
       create_symlinks(outdir, bundle.files.iteritems())
 
       # Ensure working directory exists.
       cwd = os.path.normpath(os.path.join(outdir, bundle.relative_cwd))
-      if not fs.isdir(cwd):
-        fs.makedirs(cwd)
+      file_path.ensure_tree(cwd)
 
       # Multimap: digest -> list of pairs (path, props).
       remaining = {}

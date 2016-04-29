@@ -387,8 +387,8 @@ class TaskOutputCollector(object):
     self._per_shard_results = {}
     self._storage = None
 
-    if self.task_output_dir and not fs.isdir(self.task_output_dir):
-      fs.makedirs(self.task_output_dir)
+    if self.task_output_dir:
+      file_path.ensure_tree(self.task_output_dir)
 
   def process_shard_result(self, shard_index, result):
     """Stores results of a single task shard, fetches output files if necessary.
