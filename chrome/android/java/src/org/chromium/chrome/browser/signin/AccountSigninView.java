@@ -248,11 +248,11 @@ public class AccountSigninView extends FrameLayout implements ProfileDownloader.
         }
 
         mSigninChooseView.updateAccounts(mAccountNames, accountToSelect, mProfileData);
-        if (!mAccountNames.isEmpty()) {
-            setUpSigninButton(true);
-        } else {
+        if (mAccountNames.isEmpty()) {
             setUpSigninButton(false);
+            return false;
         }
+        setUpSigninButton(true);
 
         mProfileData.update();
 
