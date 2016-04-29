@@ -225,6 +225,7 @@ public class CronetFixedModeOutputStreamTest extends CronetTestBase {
                 (HttpURLConnection) url.openConnection();
         connection.setDoOutput(true);
         connection.setRequestMethod("POST");
+        // largeData is 1.8 MB.
         byte[] largeData = TestUtil.getLargeData();
         connection.setFixedLengthStreamingMode(largeData.length);
         OutputStream out = connection.getOutputStream();
@@ -239,6 +240,7 @@ public class CronetFixedModeOutputStreamTest extends CronetTestBase {
             }
             out.write(largeData, totalBytesWritten, bytesToWrite);
             totalBytesWritten += bytesToWrite;
+            // About 5th iteration of this loop, bytesToWrite will be bigger than 16384.
             bytesToWrite *= 2;
         }
         assertEquals(200, connection.getResponseCode());
@@ -277,7 +279,7 @@ public class CronetFixedModeOutputStreamTest extends CronetTestBase {
             throws Exception {
         // Set an internal buffer of size larger than the buffer size used
         // in network stack internally.
-        // Normal stream uses 16384, QUIC uses 14520, and SPDY uses 2852.
+        // Normal stream uses 16384, QUIC uses 14520, and SPDY uses 16384.
         CronetFixedModeOutputStream.setDefaultBufferLengthForTesting(17384);
         testFixedLengthStreamingModeLargeDataWriteOneByte();
         testFixedLengthStreamingModeLargeData();

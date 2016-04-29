@@ -23,12 +23,10 @@ import java.nio.ByteBuffer;
 final class CronetFixedModeOutputStream extends CronetOutputStream {
     // CronetFixedModeOutputStream buffers up to this value and wait for UploadDataStream
     // to consume the data. This field is non-final, so it can be changed for tests.
-    // Using 2048 bytes is because the internal read buffer is 14520 for QUIC,
-    // 2852 for SPDY, and 16384 for normal stream. If a large value is used
-    // here, the buffer might not fit the internal buffer and compacting the buffer
-    // will be costly, see #read method below.
+    // Using 16384 bytes is because the internal read buffer is 14520 for QUIC,
+    // 16384 for SPDY, and 16384 for normal HTTP/1.1 stream.
     @VisibleForTesting
-    private static int sDefaultBufferLength = 2048;
+    private static int sDefaultBufferLength = 16384;
     private final CronetHttpURLConnection mConnection;
     private final MessageLoop mMessageLoop;
     private final long mContentLength;
