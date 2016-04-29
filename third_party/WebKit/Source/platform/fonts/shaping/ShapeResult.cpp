@@ -310,9 +310,6 @@ void ShapeResult::insertRun(PassOwnPtr<ShapeResult::RunInfo> runToInsert,
         // whether the buffer direction is horizontal or vertical.
         float advance = harfBuzzPositionToFloat(pos.x_advance - pos.y_advance);
 
-        // The characterIndex of one ShapeResult run is normalized to the run's
-        // startIndex and length.  TODO crbug.com/542703: Consider changing that
-        // and instead pass the whole run to hb_buffer_t each time.
         run->m_glyphData[i].characterIndex =
             glyphInfos[startGlyph + i].cluster - startCluster;
 
