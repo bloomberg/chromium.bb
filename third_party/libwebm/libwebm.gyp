@@ -7,10 +7,25 @@
     {
       'target_name': 'libwebm',
       'type': 'static_library',
+      'conditions': [
+        ['OS!="win"', {
+          'cflags': [
+            '-Wno-deprecated-declarations',  # libwebm uses std::auto_ptr
+          ],
+        }],
+      ],
+      'include_dirs': [
+        './source',
+      ],
+      'direct_dependent_settings': {
+        'include_dirs': [
+          './source',
+        ],
+      },
       'sources': [
-        'source/mkvmuxer.cpp',
-        'source/mkvmuxerutil.cpp',
-        'source/mkvwriter.cpp',
+        'source/mkvmuxer/mkvmuxer.cc',
+        'source/mkvmuxer/mkvmuxerutil.cc',
+        'source/mkvmuxer/mkvwriter.cc',
       ],
     },  # target libwebm
   ]

@@ -238,6 +238,8 @@ component("media") {
   deps = [
     ":cdm_api",
   ]
+
+  public_configs = [ "//third_party/libwebm:libwebm_config" ]
   public_deps = []
 
   include_dirs = [ "." ]

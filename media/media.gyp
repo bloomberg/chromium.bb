@@ -90,6 +90,7 @@
         'shared_memory_support',
       ],
       'export_dependent_settings': [
+        '../third_party/libwebm/libwebm.gyp:libwebm',
         '../third_party/opus/opus.gyp:opus',
       ],
       'defines': [
