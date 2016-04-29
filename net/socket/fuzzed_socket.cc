@@ -57,9 +57,7 @@ int FuzzedSocket::Read(IOBuffer* buf,
   } else {
     // Otherwise, use |data_provider_|.
     sync = data_provider_->ConsumeBool();
-    // This allows for more consistent behavior across mutations of the fuzzed
-    // data than ConsumeValueInRange(0,255).
-    result = data_provider_->ConsumeBits(8);
+    result = data_provider_->ConsumeUint8();
     if (result > buf_len)
       result = buf_len;
 
@@ -111,9 +109,7 @@ int FuzzedSocket::Write(IOBuffer* buf,
   } else {
     // Otherwise, use |data_|.
     sync = data_provider_->ConsumeBool();
-    // This allows for more consistent behavior across mutations of the fuzzed
-    // data than ConsumeValueInRange(0,255).
-    result = data_provider_->ConsumeBits(8);
+    result = data_provider_->ConsumeUint8();
     if (result > buf_len)
       result = buf_len;
     if (result == 0) {

@@ -10,7 +10,7 @@
 // Entry point for LibFuzzer.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   net::FuzzedDataProvider fuzzed_data(data, size);
-  size_t first_part_size = fuzzed_data.ConsumeValueInRange(0, 0xFFFF);
+  size_t first_part_size = fuzzed_data.ConsumeUint16();
   base::StringPiece first_part = fuzzed_data.ConsumeBytes(first_part_size);
   base::StringPiece second_part = fuzzed_data.ConsumeRemainingBytes();
 

@@ -39,15 +39,17 @@ class FuzzedDataProvider {
   // less than or equal to |max|.
   uint32_t ConsumeValueInRange(uint32_t min, uint32_t max);
 
-  // Returns a value comprised of |num_bits| worth of data. Returns 0 if
-  // there's no input data left. When consuming fewer than 32-bits, the most
-  // significant |32 - num_bits| of the result will be 0. This function behaves
-  // the same as calling ConsumeValueInRange((1 << num_bits) - 1).
-  uint32_t ConsumeBits(size_t num_bits);
-
-  // Same as ConsumeBits(1), but returns a bool. Returns false when there's no
-  // data remaining.
+  // Returns a bool, or false when no data remains.
   bool ConsumeBool();
+
+  // Returns a uint8_t from the input or 0 if nothing remains. This is
+  // equivalent to ConsumeValueInRange(0, 0xFF).
+  uint8_t ConsumeUint8();
+
+  // Returns a uint16_t from the input. If fewer than 2 bytes of data remain
+  // will fill the most significant bytes with 0. This is equivalent to
+  // ConsumeValueInRange(0, 0xFFFF).
+  uint16_t ConsumeUint16();
 
  private:
   base::StringPiece remaining_data_;

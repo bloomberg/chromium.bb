@@ -41,9 +41,9 @@ uint32_t FuzzedDataProvider::ConsumeValueInRange(uint32_t min, uint32_t max) {
     // and this data is often used to encode length of data read by
     // ConsumeBytes. Separating out read lengths makes it easier modify the
     // contents of the data that is actually read.
-    uint8_t next_byte = remaining_data_.data()[remaining_data_.length() - 1];
+    uint8_t next_byte = remaining_data_.back();
+    remaining_data_.remove_suffix(1);
     result = (result << 8) | next_byte;
-    remaining_data_ = remaining_data_.substr(0, remaining_data_.length() - 1);
     offset += 8;
   }
 
@@ -54,18 +54,16 @@ uint32_t FuzzedDataProvider::ConsumeValueInRange(uint32_t min, uint32_t max) {
   return min + result % (range + 1);
 }
 
-uint32_t FuzzedDataProvider::ConsumeBits(size_t num_bits) {
-  CHECK_NE(0u, num_bits);
-  CHECK_LE(num_bits, 32u);
-
-  if (num_bits == 32)
-    return ConsumeValueInRange(0, std::numeric_limits<uint32_t>::max());
-  return ConsumeValueInRange(0, (1 << num_bits) - 1);
+bool FuzzedDataProvider::ConsumeBool() {
+  return (ConsumeUint8() & 0x01) == 0x01;
 }
 
-bool FuzzedDataProvider::ConsumeBool() {
-  // Double negation so this returns false once there's no more data.
-  return !!ConsumeBits(1);
+uint8_t FuzzedDataProvider::ConsumeUint8() {
+  return ConsumeValueInRange(0, 0xFF);
+}
+
+uint16_t FuzzedDataProvider::ConsumeUint16() {
+  return ConsumeValueInRange(0, 0xFFFF);
 }
 
 }  // namespace net
