@@ -4,7 +4,7 @@
 
 # PDFium fuzzers.
 
-import("//build_overrides/pdfium.gni")
+import("//third_party/pdfium/pdfium.gni")
 import("//testing/test.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 
