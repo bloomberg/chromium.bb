@@ -83,6 +83,7 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.concurrent.Callable;
 
 /**
@@ -963,16 +964,26 @@ public class AwContents implements SmartClipProvider,
             return mWindowAndroid;
         }
     }
+    private static WeakHashMap<Context, WindowAndroidWrapper> sContextWindowMap;
 
-    private static WindowAndroidWrapper createWindowAndroid(Context context) {
-        // TODO(boliu): WebView does not currently initialize ApplicationStatus, crbug.com/470582.
+    // getWindowAndroid is only called on UI thread, so there are no threading issues with lazy
+    // initialization.
+    @SuppressFBWarnings("LI_LAZY_INIT_STATIC")
+    private static WindowAndroidWrapper getWindowAndroid(Context context) {
+        if (sContextWindowMap == null) sContextWindowMap = new WeakHashMap<>();
+        WindowAndroidWrapper wrapper = sContextWindowMap.get(context);
+        if (wrapper != null) return wrapper;
+
         boolean contextWrapsActivity = activityFromContext(context) != null;
-        if (!contextWrapsActivity) {
-            return new WindowAndroidWrapper(new WindowAndroid(context));
+        if (contextWrapsActivity) {
+            wrapper = new WindowAndroidWrapper(new WindowAndroid(context));
+        } else {
+            final boolean listenToActivityState = false;
+            wrapper = new WindowAndroidWrapper(
+                    new ActivityWindowAndroid(context, listenToActivityState));
         }
-
-        final boolean listenToActivityState = false;
-        return new WindowAndroidWrapper(new ActivityWindowAndroid(context, listenToActivityState));
+        sContextWindowMap.put(context, wrapper);
+        return wrapper;
     }
 
     @VisibleForTesting
@@ -1006,7 +1017,7 @@ public class AwContents implements SmartClipProvider,
 
         WebContents webContents = nativeGetWebContents(mNativeAwContents);
 
-        mWindowAndroid = createWindowAndroid(mContext);
+        mWindowAndroid = getWindowAndroid(mContext);
         mContentViewCore = createAndInitializeContentViewCore(mContainerView, mContext,
                 mInternalAccessAdapter, webContents, new AwGestureStateListener(),
                 mContentViewClient, mZoomControls, mWindowAndroid.getWindowAndroid());
