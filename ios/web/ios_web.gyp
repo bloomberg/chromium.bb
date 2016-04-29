@@ -205,7 +205,6 @@
         'web_state/crw_web_view_scroll_view_proxy.mm',
         'web_state/error_translation_util.h',
         'web_state/error_translation_util.mm',
-        'web_state/frame_info.h',
         'web_state/global_web_state_event_tracker.h',
         'web_state/global_web_state_event_tracker.mm',
         'web_state/global_web_state_observer.cc',

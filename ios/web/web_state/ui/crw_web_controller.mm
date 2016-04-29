@@ -81,7 +81,6 @@
 #import "ios/web/web_state/crw_pass_kit_downloader.h"
 #import "ios/web/web_state/crw_web_view_proxy_impl.h"
 #import "ios/web/web_state/error_translation_util.h"
-#include "ios/web/web_state/frame_info.h"
 #import "ios/web/web_state/js/crw_js_plugin_placeholder_manager.h"
 #import "ios/web/web_state/js/crw_js_post_request_loader.h"
 #import "ios/web/web_state/js/crw_js_window_id_manager.h"
@@ -802,14 +801,10 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 - (void)didBlockPopupWithURL:(GURL)popupURL
                    sourceURL:(GURL)sourceURL
               referrerPolicy:(const std::string&)referrerPolicyString;
-// Best guess as to whether the request is a main frame request. This method
-// should not be assumed correct for security evaluations, as it is possible to
-// spoof.
-- (BOOL)isPutativeMainFrameRequest:(NSURLRequest*)request
-                       targetFrame:(const web::FrameInfo*)targetFrame;
-// Returns whether external URL request should be opened.
-- (BOOL)shouldOpenExternalURLRequest:(NSURLRequest*)request
-                         targetFrame:(const web::FrameInfo*)targetFrame;
+// Returns YES if the navigation action is associated with a main frame request.
+- (BOOL)isMainFrameNavigationAction:(WKNavigationAction*)action;
+// Returns whether external URL navigation action should be opened.
+- (BOOL)shouldOpenExternalURLForNavigationAction:(WKNavigationAction*)action;
 // Called when a page updates its history stack using pushState or replaceState.
 - (void)didUpdateHistoryStateWithPageURL:(const GURL&)url;
 // Updates SSL status for the current navigation item based on the information
@@ -945,14 +940,9 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
             (base::DictionaryValue*)message
                                           context:(NSDictionary*)context;
 
-// Returns YES if the given load request should be allowed to continue. If this
-// returns NO, the load should be cancelled. |targetFrame| contains information
-// about the frame to which navigation is targeted, can be null.
-// |isLinkClick| should indicate whether the navigation is the
-// result of a link click (either directly, or via JS triggered by a link).
-- (BOOL)shouldAllowLoadWithRequest:(NSURLRequest*)request
-                       targetFrame:(const web::FrameInfo*)targetFrame
-                       isLinkClick:(BOOL)isLinkClick;
+// Returns YES if the given |action| should be allowed to continue.
+// If this returns NO, the load should be cancelled.
+- (BOOL)shouldAllowLoadWithNavigationAction:(WKNavigationAction*)action;
 // Called when a load ends in an error.
 // TODO(stuartmorgan): Figure out if there's actually enough shared logic that
 // this makes sense. At the very least remove inMainFrame since that only makes
@@ -3252,10 +3242,10 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 // TODO(stuartmorgan): This is mostly logic from the original UIWebView delegate
 // method, which provides less information than the WKWebView version. Audit
 // this for things that should be handled in the subclass instead.
-- (BOOL)shouldAllowLoadWithRequest:(NSURLRequest*)request
-                       targetFrame:(const web::FrameInfo*)targetFrame
-                       isLinkClick:(BOOL)isLinkClick {
+- (BOOL)shouldAllowLoadWithNavigationAction:(WKNavigationAction*)action {
+  NSURLRequest* request = action.request;
   GURL requestURL = net::GURLWithNSURL(request.URL);
+  BOOL isLinkClick = [self isLinkNavigation:action.navigationType];
 
   // Check if the request should be delayed.
   if (_externalRequest && _externalRequest->url == requestURL) {
@@ -3305,12 +3295,12 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // TODO(droger):  Check transition type before opening an external
   // application? For example, only allow it for TYPED and LINK transitions.
   if (![CRWWebController webControllerCanShow:requestURL]) {
-    if (![self shouldOpenExternalURLRequest:request targetFrame:targetFrame]) {
+    if (![self shouldOpenExternalURLForNavigationAction:action]) {
       return NO;
     }
 
     // Stop load if navigation is believed to be happening on the main frame.
-    if ([self isPutativeMainFrameRequest:request targetFrame:targetFrame])
+    if ([self isMainFrameNavigationAction:action])
       [self stopLoading];
 
     if ([_delegate openExternalURL:requestURL linkClicked:isLinkClick]) {
@@ -4345,29 +4335,19 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   }
 }
 
-- (BOOL)isPutativeMainFrameRequest:(NSURLRequest*)request
-                       targetFrame:(const web::FrameInfo*)targetFrame {
-  // Determine whether the request is for the main frame using frame info if
-  // available. In the case of missing frame info, the request is considered to
-  // have originated from the main frame if either of the following is true:
-  //   (a) The request's URL matches the request's main document URL
-  //   (b) The request's URL resourceSpecifier matches the request's
-  //       mainDocumentURL specifier, as is the case upon redirect from http
-  //       App Store links to a URL with itms-apps scheme. This appears to be is
-  //       App Store specific behavior, specially handled by web view.
-  // Note: These heuristics are not guaranteed to be correct, and should not be
-  // used for any decisions with security implications.
-  return targetFrame
-             ? targetFrame->is_main_frame
-             : [request.URL isEqual:request.mainDocumentURL] ||
-                   [request.URL.resourceSpecifier
-                       isEqual:request.mainDocumentURL.resourceSpecifier];
+- (BOOL)isMainFrameNavigationAction:(WKNavigationAction*)action {
+  if (action.targetFrame) {
+    return action.targetFrame.mainFrame;
+  }
+  // According to WKNavigationAction documentation, in the case of a new window
+  // navigation, target frame will be nil. In this case check if the
+  // |sourceFrame| is the mainFrame.
+  return action.sourceFrame.mainFrame;
 }
 
-- (BOOL)shouldOpenExternalURLRequest:(NSURLRequest*)request
-                         targetFrame:(const web::FrameInfo*)targetFrame {
+- (BOOL)shouldOpenExternalURLForNavigationAction:(WKNavigationAction*)action {
   ExternalURLRequestStatus requestStatus = NUM_EXTERNAL_URL_REQUEST_STATUS;
-  if ([self isPutativeMainFrameRequest:request targetFrame:targetFrame]) {
+  if ([self isMainFrameNavigationAction:action]) {
     requestStatus = MAIN_FRAME_ALLOWED;
   } else {
     // If the request's main document URL differs from that at the time of the
@@ -4375,7 +4355,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     // interacted.
     BOOL userInteractedWithRequestMainFrame =
         [self userClickedRecently] &&
-        net::GURLWithNSURL(request.mainDocumentURL) ==
+        net::GURLWithNSURL(action.request.mainDocumentURL) ==
             _lastUserInteraction->main_document_url;
     // Prevent subframe requests from opening an external URL if the user has
     // not interacted with the request's main frame.
@@ -4389,7 +4369,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     return NO;
   }
 
-  GURL requestURL = net::GURLWithNSURL(request.URL);
+  GURL requestURL = net::GURLWithNSURL(action.request.URL);
   return [_delegate respondsToSelector:@selector(webController:
                                            shouldOpenExternalURL:)] &&
          [_delegate webController:self shouldOpenExternalURL:requestURL];
@@ -4776,17 +4756,17 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (WKWebView*)webView:(WKWebView*)webView
     createWebViewWithConfiguration:(WKWebViewConfiguration*)configuration
-               forNavigationAction:(WKNavigationAction*)navigationAction
+               forNavigationAction:(WKNavigationAction*)action
                     windowFeatures:(WKWindowFeatures*)windowFeatures {
   if (self.shouldSuppressDialogs) {
     [self didSuppressDialog];
     return nil;
   }
 
-  GURL requestURL = net::GURLWithNSURL(navigationAction.request.URL);
+  GURL requestURL = net::GURLWithNSURL(action.request.URL);
 
   if (![self userIsInteracting]) {
-    NSString* referer = [self refererFromNavigationAction:navigationAction];
+    NSString* referer = [self refererFromNavigationAction:action];
     GURL referrerURL =
         referer ? GURL(base::SysNSStringToUTF8(referer)) : [self currentURL];
     if ([self shouldBlockPopupWithURL:requestURL sourceURL:referrerURL]) {
@@ -4897,7 +4877,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 #pragma mark WKNavigationDelegate Methods
 
 - (void)webView:(WKWebView*)webView
-    decidePolicyForNavigationAction:(WKNavigationAction*)navigationAction
+    decidePolicyForNavigationAction:(WKNavigationAction*)action
                     decisionHandler:
                         (void (^)(WKNavigationActionPolicy))decisionHandler {
   _webProcessIsDead = NO;
@@ -4906,22 +4886,15 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     return;
   }
 
-  NSURLRequest* request = navigationAction.request;
-  GURL url = net::GURLWithNSURL(request.URL);
-
   // The page will not be changed until this navigation is commited, so the
   // retrieved state will be pending until |didCommitNavigation| callback.
-  [self updatePendingNavigationInfoFromNavigationAction:navigationAction];
+  [self updatePendingNavigationInfoFromNavigationAction:action];
 
-  web::FrameInfo targetFrame(navigationAction.targetFrame.mainFrame);
-  BOOL isLinkClick = [self isLinkNavigation:navigationAction.navigationType];
-  BOOL allowLoad = [self shouldAllowLoadWithRequest:request
-                                        targetFrame:&targetFrame
-                                        isLinkClick:isLinkClick];
+  BOOL allowLoad = [self shouldAllowLoadWithNavigationAction:action];
 
   if (allowLoad) {
-    allowLoad = self.webStateImpl->ShouldAllowRequest(request);
-    if (!allowLoad && navigationAction.targetFrame.mainFrame) {
+    allowLoad = self.webStateImpl->ShouldAllowRequest(action.request);
+    if (!allowLoad && action.targetFrame.mainFrame) {
       [_pendingNavigationInfo setCancelled:YES];
     }
   }
