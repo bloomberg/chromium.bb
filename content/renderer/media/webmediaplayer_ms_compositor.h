@@ -78,6 +78,13 @@ class CONTENT_EXPORT WebMediaPlayerMSCompositor
   scoped_refptr<media::VideoFrame> GetCurrentFrame() override;
   void PutCurrentFrame() override;
 
+  // Return the current frame being rendered.
+  // Difference between GetCurrentFrame(): GetCurrentFrame() is designed for
+  // chrome compositor to pull frame from WebMediaPlayerMSCompositor, and thus
+  // calling GetCurrentFrame() will affect statistics like |dropped_frames_|
+  // etc. Calling this function has no side effect.
+  scoped_refptr<media::VideoFrame> GetCurrentFrameWithoutUpdatingStatistics();
+
   void StartRendering();
   void StopRendering();
   void ReplaceCurrentFrameWithACopy();

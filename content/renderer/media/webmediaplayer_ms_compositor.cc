@@ -287,13 +287,19 @@ bool WebMediaPlayerMSCompositor::HasCurrentFrame() {
 scoped_refptr<media::VideoFrame> WebMediaPlayerMSCompositor::GetCurrentFrame() {
   DVLOG(3) << __FUNCTION__;
   base::AutoLock auto_lock(current_frame_lock_);
+  current_frame_used_by_compositor_ = true;
   return current_frame_;
 }
 
 void WebMediaPlayerMSCompositor::PutCurrentFrame() {
   DVLOG(3) << __FUNCTION__;
+}
+
+scoped_refptr<media::VideoFrame>
+WebMediaPlayerMSCompositor::GetCurrentFrameWithoutUpdatingStatistics() {
+  DVLOG(3) << __FUNCTION__;
   base::AutoLock auto_lock(current_frame_lock_);
-  current_frame_used_by_compositor_ = true;
+  return current_frame_;
 }
 
 void WebMediaPlayerMSCompositor::StartRendering() {

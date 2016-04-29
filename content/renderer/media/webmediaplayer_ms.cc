@@ -328,7 +328,8 @@ void WebMediaPlayerMS::paint(blink::WebCanvas* canvas,
   DVLOG(3) << __FUNCTION__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  const scoped_refptr<media::VideoFrame> frame = compositor_->GetCurrentFrame();
+  const scoped_refptr<media::VideoFrame> frame =
+      compositor_->GetCurrentFrameWithoutUpdatingStatistics();
 
   media::Context3D context_3d;
   if (frame && frame->HasTextures()) {
@@ -452,7 +453,8 @@ bool WebMediaPlayerMS::copyVideoTextureToPlatformTexture(
   TRACE_EVENT0("media", "WebMediaPlayerMS:copyVideoTextureToPlatformTexture");
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  scoped_refptr<media::VideoFrame> video_frame = compositor_->GetCurrentFrame();
+  scoped_refptr<media::VideoFrame> video_frame =
+      compositor_->GetCurrentFrameWithoutUpdatingStatistics();
 
   if (!video_frame.get() || !video_frame->HasTextures() ||
       media::VideoFrame::NumPlanes(video_frame->format()) != 1) {

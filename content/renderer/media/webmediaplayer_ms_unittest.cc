@@ -634,10 +634,10 @@ TEST_P(WebMediaPlayerMSTest, PlayThenPause) {
   // Here we call pause, and expect a freezing frame.
   EXPECT_CALL(*this, DoStopRendering());
   player_.pause();
-  auto prev_frame = compositor_->GetCurrentFrame();
+  auto prev_frame = compositor_->GetCurrentFrameWithoutUpdatingStatistics();
   message_loop_controller_.RunAndWaitForStatus(
       media::PipelineStatus::PIPELINE_OK);
-  auto after_frame = compositor_->GetCurrentFrame();
+  auto after_frame = compositor_->GetCurrentFrameWithoutUpdatingStatistics();
   EXPECT_EQ(prev_frame->timestamp(), after_frame->timestamp());
   testing::Mock::VerifyAndClearExpectations(this);
 
@@ -675,20 +675,20 @@ TEST_P(WebMediaPlayerMSTest, PlayThenPauseThenPlay) {
   // Here we call pause, and expect a freezing frame.
   EXPECT_CALL(*this, DoStopRendering());
   player_.pause();
-  auto prev_frame = compositor_->GetCurrentFrame();
+  auto prev_frame = compositor_->GetCurrentFrameWithoutUpdatingStatistics();
   message_loop_controller_.RunAndWaitForStatus(
       media::PipelineStatus::PIPELINE_OK);
-  auto after_frame = compositor_->GetCurrentFrame();
+  auto after_frame = compositor_->GetCurrentFrameWithoutUpdatingStatistics();
   EXPECT_EQ(prev_frame->timestamp(), after_frame->timestamp());
   testing::Mock::VerifyAndClearExpectations(this);
 
   // We resume the player, and expect rendering can continue.
   EXPECT_CALL(*this, DoStartRendering());
   player_.play();
-  prev_frame = compositor_->GetCurrentFrame();
+  prev_frame = compositor_->GetCurrentFrameWithoutUpdatingStatistics();
   message_loop_controller_.RunAndWaitForStatus(
       media::PipelineStatus::PIPELINE_OK);
-  after_frame = compositor_->GetCurrentFrame();
+  after_frame = compositor_->GetCurrentFrameWithoutUpdatingStatistics();
   EXPECT_NE(prev_frame->timestamp(), after_frame->timestamp());
   testing::Mock::VerifyAndClearExpectations(this);
 
@@ -731,18 +731,18 @@ TEST_F(WebMediaPlayerMSTest, BackgroundRendering) {
 
   // Switch to background rendering, expect rendering to continue.
   SetBackgroundRendering(true);
-  auto prev_frame = compositor_->GetCurrentFrame();
+  auto prev_frame = compositor_->GetCurrentFrameWithoutUpdatingStatistics();
   message_loop_controller_.RunAndWaitForStatus(
       media::PipelineStatus::PIPELINE_OK);
-  auto after_frame = compositor_->GetCurrentFrame();
+  auto after_frame = compositor_->GetCurrentFrameWithoutUpdatingStatistics();
   EXPECT_NE(prev_frame->timestamp(), after_frame->timestamp());
 
   // Switch to foreground rendering.
   SetBackgroundRendering(false);
-  prev_frame = compositor_->GetCurrentFrame();
+  prev_frame = compositor_->GetCurrentFrameWithoutUpdatingStatistics();
   message_loop_controller_.RunAndWaitForStatus(
       media::PipelineStatus::PIPELINE_OK);
-  after_frame = compositor_->GetCurrentFrame();
+  after_frame = compositor_->GetCurrentFrameWithoutUpdatingStatistics();
   EXPECT_NE(prev_frame->timestamp(), after_frame->timestamp());
   testing::Mock::VerifyAndClearExpectations(this);
 
