@@ -147,6 +147,36 @@ CSSParserToken CSSParserToken::copyWithUpdatedString(const CSSParserString& pars
     return copy;
 }
 
+bool CSSParserToken::operator==(const CSSParserToken& other) const
+{
+    if (m_type != other.m_type)
+        return false;
+    switch (m_type) {
+    case DelimiterToken:
+        return delimiter() == other.delimiter();
+    case HashToken:
+        if (m_hashTokenType != other.m_hashTokenType)
+            return false;
+        // fallthrough
+    case IdentToken:
+    case FunctionToken:
+    case StringToken:
+    case UrlToken:
+        return m_valueDataCharRaw == other.m_valueDataCharRaw && m_valueLength == other.m_valueLength && m_valueIs8Bit == other.m_valueIs8Bit;
+    case DimensionToken:
+        if (m_valueDataCharRaw != other.m_valueDataCharRaw || m_valueLength != other.m_valueLength || m_valueIs8Bit != other.m_valueIs8Bit)
+            return false;
+        // fallthrough
+    case NumberToken:
+    case PercentageToken:
+        return m_numericSign == other.m_numericSign && m_numericValue == other.m_numericValue && m_numericValueType == other.m_numericValueType;
+    case UnicodeRangeToken:
+        return m_unicodeRange.start == other.m_unicodeRange.start && m_unicodeRange.end == other.m_unicodeRange.end;
+    default:
+        return true;
+    }
+}
+
 void CSSParserToken::serialize(StringBuilder& builder) const
 {
     // This is currently only used for @supports CSSOM. To keep our implementation
