@@ -145,15 +145,12 @@
         'mojo_edk.gyp:mojo_common_test_support',
         'mojo_edk.gyp:mojo_run_all_unittests',
         'mojo_public.gyp:mojo_cpp_bindings',
-        'mojo_public.gyp:mojo_message_pump_lib',
         'mojo_public.gyp:mojo_public_test_utils',
         'mojo_url_type_converters',
       ],
       'sources': [
         'common/common_custom_types_unittest.cc',
         'common/common_type_converters_unittest.cc',
-        'message_pump/handle_watcher_unittest.cc',
-        'message_pump/message_pump_mojo_unittest.cc',
       ],
     },
     {
@@ -198,7 +195,6 @@
             'mojo_common_lib',
             'mojo_edk.gyp:mojo_system_impl',
             'mojo_jni_headers',
-            'mojo_public.gyp:mojo_message_pump_lib',
           ],
           'sources': [
             'android/system/core_impl.cc',

@@ -41,7 +41,7 @@ DrainData::~DrainData() {
 
 void DrainData::WaitForData() {
   handle_watcher_.Start(
-      handle_.get(), MOJO_HANDLE_SIGNAL_READABLE, MOJO_DEADLINE_INDEFINITE,
+      handle_.get(), MOJO_HANDLE_SIGNAL_READABLE,
       base::Bind(&DrainData::DataReady, base::Unretained(this)));
 }
 

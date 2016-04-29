@@ -17,8 +17,8 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "jni/CoreImpl_jni.h"
-#include "mojo/message_pump/handle_watcher.h"
 #include "mojo/public/c/system/core.h"
+#include "mojo/public/cpp/system/watcher.h"
 
 namespace {
 
@@ -36,7 +36,7 @@ struct AsyncWaitCallbackData {
   }
 };
 
-void AsyncWaitCallback(mojo::common::HandleWatcher* watcher,
+void AsyncWaitCallback(mojo::Watcher* watcher,
                        void* data,
                        MojoResult result) {
   delete watcher;
@@ -374,10 +374,9 @@ static ScopedJavaLocalRef<jobject> AsyncWait(
       new AsyncWaitCallbackData(env, jcaller, callback);
   MojoAsyncWaitID cancel_id;
   if (static_cast<MojoHandle>(mojo_handle) != MOJO_HANDLE_INVALID) {
-    common::HandleWatcher* watcher = new common::HandleWatcher();
+    Watcher* watcher = new Watcher();
     cancel_id = reinterpret_cast<MojoAsyncWaitID>(watcher);
     watcher->Start(Handle(static_cast<MojoHandle>(mojo_handle)), signals,
-                   deadline,
                    base::Bind(&AsyncWaitCallback, watcher, callback_data));
   } else {
     cancel_id = kInvalidHandleCancelID;
@@ -404,8 +403,7 @@ static void CancelAsyncWait(JNIEnv* env,
   }
   std::unique_ptr<AsyncWaitCallbackData> deleter(
       reinterpret_cast<AsyncWaitCallbackData*>(data_ptr));
-  delete reinterpret_cast<common::HandleWatcher*>(
-      static_cast<MojoAsyncWaitID>(id));
+  delete reinterpret_cast<Watcher*>(static_cast<MojoAsyncWaitID>(id));
 }
 
 static jint GetNativeBufferOffset(JNIEnv* env,

@@ -11,7 +11,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
-#include "mojo/message_pump/message_pump_mojo.h"
 #include "mojo/public/cpp/bindings/lib/interface_endpoint_client.h"
 #include "mojo/public/cpp/bindings/lib/scoped_interface_endpoint_handle.h"
 #include "mojo/public/cpp/bindings/message.h"
@@ -30,7 +29,7 @@ using mojo::internal::ScopedInterfaceEndpointHandle;
 
 class MultiplexRouterTest : public testing::Test {
  public:
-  MultiplexRouterTest() : loop_(common::MessagePumpMojo::Create()) {}
+  MultiplexRouterTest() {}
 
   void SetUp() override {
     MessagePipe pipe;

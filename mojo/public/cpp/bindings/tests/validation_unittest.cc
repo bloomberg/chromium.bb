@@ -13,7 +13,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
-#include "mojo/message_pump/message_pump_mojo.h"
 #include "mojo/public/c/system/macros.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
@@ -197,7 +196,7 @@ class DummyMessageReceiver : public MessageReceiver {
 
 class ValidationTest : public testing::Test {
  public:
-  ValidationTest() : loop_(common::MessagePumpMojo::Create()) {}
+  ValidationTest() {}
 
  protected:
   base::MessageLoop loop_;

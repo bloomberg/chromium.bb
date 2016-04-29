@@ -12,7 +12,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
-#include "mojo/message_pump/message_pump_mojo.h"
 #include "mojo/public/cpp/bindings/lib/message_builder.h"
 #include "mojo/public/cpp/bindings/tests/message_queue.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -88,7 +87,7 @@ class ReentrantMessageAccumulator : public MessageAccumulator {
 
 class ConnectorTest : public testing::Test {
  public:
-  ConnectorTest() : loop_(common::MessagePumpMojo::Create()) {}
+  ConnectorTest() {}
 
   void SetUp() override {
     CreateMessagePipe(nullptr, &handle0_, &handle1_);

@@ -45,7 +45,6 @@ component("common_base") {
   deps = [
     "//base",
     "//base/third_party/dynamic_annotations",
-    "//mojo/message_pump",
     "//mojo/public/c/system:for_component",
     "//mojo/public/cpp/bindings",
   ]
@@ -88,7 +87,6 @@ test("mojo_common_unittests") {
     "//base/test:test_support",
     "//mojo/edk/test:run_all_unittests",
     "//mojo/edk/test:test_support",
-    "//mojo/message_pump",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/test_support:test_utils",
     "//testing/gtest",
@@ -96,10 +94,6 @@ test("mojo_common_unittests") {
   ]
 
   sources = [
-    # The message_pump tests are so small and some what related to this code
-    # that we put them here.
-    "../message_pump/handle_watcher_unittest.cc",
-    "../message_pump/message_pump_mojo_unittest.cc",
     "common_custom_types_unittest.cc",
     "common_type_converters_unittest.cc",
   ]
@@ -116,13 +110,8 @@ test("mojo_common_perftests") {
     ":common",
     "//base",
     "//mojo/edk/test:run_all_perftests",
-    "//mojo/message_pump",
     "//mojo/public/cpp/test_support:test_utils",
     "//testing/gtest",
-  ]
-
-  sources = [
-    "../message_pump/handle_watcher_perftest.cc",
   ]
 
   if (is_linux && !is_component_build) {

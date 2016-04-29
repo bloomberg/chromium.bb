@@ -8,7 +8,6 @@
 
 #include "base/run_loop.h"
 #include "extensions/common/test_util.h"
-#include "mojo/message_pump/message_pump_mojo.h"
 
 namespace media_router {
 namespace {

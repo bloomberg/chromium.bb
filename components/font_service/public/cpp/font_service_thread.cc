@@ -10,7 +10,6 @@
 #include "base/files/file.h"
 #include "base/synchronization/waitable_event.h"
 #include "components/font_service/public/cpp/mapped_font_file.h"
-#include "mojo/message_pump/message_pump_mojo.h"
 #include "mojo/platform_handle/platform_handle_functions.h"
 
 namespace font_service {
@@ -24,10 +23,7 @@ FontServiceThread::FontServiceThread(FontServicePtr font_service)
     : base::Thread(kFontThreadName),
       font_service_info_(font_service.PassInterface()),
       weak_factory_(this) {
-  base::Thread::Options options;
-  options.message_pump_factory =
-      base::Bind(&mojo::common::MessagePumpMojo::Create);
-  StartWithOptions(options);
+  Start();
 }
 
 bool FontServiceThread::MatchFamilyName(

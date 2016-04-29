@@ -9,10 +9,10 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/message_loop/message_pump_default.h"
 #include "base/path_service.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/simple_thread.h"
-#include "mojo/message_pump/message_pump_mojo.h"
 #include "services/catalog/store.h"
 #include "services/shell/connect_params.h"
 #include "services/shell/public/cpp/shell_client.h"
@@ -24,15 +24,15 @@ namespace shell {
 
 namespace {
 
-std::unique_ptr<base::MessagePump> CreateMessagePumpMojo() {
-  return base::WrapUnique(new mojo::common::MessagePumpMojo);
+std::unique_ptr<base::MessagePump> CreateDefaultMessagePump() {
+  return base::WrapUnique(new base::MessagePumpDefault);
 }
 
 class MojoMessageLoop : public base::MessageLoop {
  public:
   MojoMessageLoop()
       : base::MessageLoop(base::MessageLoop::TYPE_CUSTOM,
-                          base::Bind(&CreateMessagePumpMojo)) {}
+                          base::Bind(&CreateDefaultMessagePump)) {}
   ~MojoMessageLoop() override {}
 
   void BindToCurrentThread() { base::MessageLoop::BindToCurrentThread(); }

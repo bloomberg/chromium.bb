@@ -17,7 +17,9 @@ DataPipeDrainer::DataPipeDrainer(Client* client,
                                  mojo::ScopedDataPipeConsumerHandle source)
     : client_(client), source_(std::move(source)), weak_factory_(this) {
   DCHECK(client_);
-  ReadData();
+  handle_watcher_.Start(
+      source_.get(), MOJO_HANDLE_SIGNAL_READABLE,
+      base::Bind(&DataPipeDrainer::WaitComplete, weak_factory_.GetWeakPtr()));
 }
 
 DataPipeDrainer::~DataPipeDrainer() {}
@@ -30,20 +32,11 @@ void DataPipeDrainer::ReadData() {
   if (rv == MOJO_RESULT_OK) {
     client_->OnDataAvailable(buffer, num_bytes);
     EndReadDataRaw(source_.get(), num_bytes);
-    WaitForData();
-  } else if (rv == MOJO_RESULT_SHOULD_WAIT) {
-    WaitForData();
   } else if (rv == MOJO_RESULT_FAILED_PRECONDITION) {
     client_->OnDataComplete();
-  } else {
+  } else if (rv != MOJO_RESULT_SHOULD_WAIT) {
     DCHECK(false) << "Unhandled MojoResult: " << rv;
   }
-}
-
-void DataPipeDrainer::WaitForData() {
-  handle_watcher_.Start(
-      source_.get(), MOJO_HANDLE_SIGNAL_READABLE, MOJO_DEADLINE_INDEFINITE,
-      base::Bind(&DataPipeDrainer::WaitComplete, weak_factory_.GetWeakPtr()));
 }
 
 void DataPipeDrainer::WaitComplete(MojoResult result) {

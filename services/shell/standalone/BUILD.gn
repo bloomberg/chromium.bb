@@ -37,7 +37,6 @@ source_set("lib") {
     "//base/third_party/dynamic_annotations",
     "//components/tracing:startup_tracing",
     "//mojo/edk/system",
-    "//mojo/message_pump",
     "//services/catalog:lib",
     "//services/shell",
     "//services/shell/public/cpp",

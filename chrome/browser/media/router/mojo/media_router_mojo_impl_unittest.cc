@@ -39,7 +39,6 @@
 #include "extensions/common/test_util.h"
 #include "extensions/common/value_builder.h"
 #include "media/base/gmock_callback_support.h"
-#include "mojo/message_pump/message_pump_mojo.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -1281,9 +1280,7 @@ TEST_F(MediaRouterMojoImplTest, SearchSinksAndCreateRoute) {
 
 class MediaRouterMojoExtensionTest : public ::testing::Test {
  public:
-  MediaRouterMojoExtensionTest()
-      : process_manager_(nullptr),
-        message_loop_(mojo::common::MessagePumpMojo::Create()) {}
+  MediaRouterMojoExtensionTest() : process_manager_(nullptr) {}
 
   ~MediaRouterMojoExtensionTest() override {}
 

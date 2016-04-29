@@ -8,7 +8,6 @@
     '../courgette/courgette.gyp:courgette_lib',
     '../mojo/mojo_base.gyp:mojo_common_lib',
     '../mojo/mojo_public.gyp:mojo_cpp_bindings',
-    '../mojo/mojo_public.gyp:mojo_message_pump_lib',
     '../services/shell/shell.gyp:shell_public',
     '../services/shell/shell.gyp:shell_lib',
     '../url/url.gyp:url_lib',
