@@ -17,6 +17,15 @@ WiFiDisplayAudioEncoder::~WiFiDisplayAudioEncoder() = default;
 void WiFiDisplayAudioEncoder::Create(
     const wds::AudioCodec& audio_codec,
     const AudioEncoderCallback& encoder_callback) {
+  // Create a format specific encoder.
+  switch (audio_codec.format) {
+    case wds::LPCM:
+      CreateLPCM(audio_codec, encoder_callback);
+      return;
+    default:
+      break;
+  }
+
   // Report failure.
   encoder_callback.Run(nullptr);
 }

@@ -26,6 +26,11 @@ class WiFiDisplayAudioEncoder : public WiFiDisplayMediaEncoder,
  protected:
   static const size_t kInvalidCodecModeValue = ~static_cast<size_t>(0u);
 
+  // A factory method that creates a new encoder instance for Linear Pulse-Code
+  // Modulation (LPCM) audio encoding.
+  static void CreateLPCM(const wds::AudioCodec& audio_codec,
+                         const AudioEncoderCallback& encoder_callback);
+
   explicit WiFiDisplayAudioEncoder(const wds::AudioCodec& audio_codec);
   ~WiFiDisplayAudioEncoder() override;
 
