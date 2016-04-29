@@ -86441,6 +86441,8 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="8" label="EPHEMERAL_MISMATCH"/>
   <int value="9" label="PERSISTENT_MATCH"/>
   <int value="10" label="PERSISTENT_MISMATCH"/>
+  <int value="11" label="EPHEMERAL_UNKNOWN"/>
+  <int value="12" label="PERSISTENT_UNKNOWN"/>
 </enum>
 
 <enum name="TokenBinding.Support" type="int">
