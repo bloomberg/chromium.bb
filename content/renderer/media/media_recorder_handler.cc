@@ -15,7 +15,6 @@
 #include "content/renderer/media/audio_track_recorder.h"
 #include "content/renderer/media/media_stream_audio_track.h"
 #include "content/renderer/media/media_stream_track.h"
-#include "content/renderer/media/video_track_recorder.h"
 #include "content/renderer/media/webrtc_uma_histograms.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_parameters.h"
@@ -29,13 +28,33 @@
 
 using base::TimeDelta;
 using base::TimeTicks;
+using base::ToLowerASCII;
 
 namespace content {
+
+namespace {
+
+media::VideoCodec CodecIdToMediaVideoCodec(VideoTrackRecorder::CodecId id) {
+  switch (id) {
+    case VideoTrackRecorder::CodecId::VP8:
+      return media::kCodecVP8;
+    case VideoTrackRecorder::CodecId::VP9:
+      return media::kCodecVP8;
+#if BUILDFLAG(RTC_USE_H264)
+    case VideoTrackRecorder::CodecId::H264:
+      return media::kCodecH264;
+#endif
+  }
+  NOTREACHED() << "Unsupported codec";
+  return media::kUnknownVideoCodec;
+}
+
+}  // anonymous namespace
 
 MediaRecorderHandler::MediaRecorderHandler()
     : video_bits_per_second_(0),
       audio_bits_per_second_(0),
-      use_vp9_(false),
+      codec_id_(VideoTrackRecorder::CodecId::VP8),
       recording_(false),
       client_(nullptr),
       weak_factory_(this) {}
@@ -48,7 +67,8 @@ MediaRecorderHandler::~MediaRecorderHandler() {
 }
 
 bool MediaRecorderHandler::canSupportMimeType(
-    const blink::WebString& web_type, const blink::WebString& web_codecs) {
+    const blink::WebString& web_type,
+    const blink::WebString& web_codecs) {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   // An empty |web_type| means MediaRecorderHandler can choose its preferred
   // codecs.
@@ -65,7 +85,7 @@ bool MediaRecorderHandler::canSupportMimeType(
   // Both |video| and |audio| support empty |codecs|; |type| == "video" supports
   // vp8, vp9 or opus; |type| = "audio", supports only opus.
   // http://www.webmproject.org/docs/container Sec:"HTML5 Video Type Parameters"
-  static const char* const kVideoCodecs[] = { "vp8", "vp9", "opus" };
+  static const char* const kVideoCodecs[] = { "vp8", "vp9", "h264", "opus" };
   static const char* const kAudioCodecs[] = { "opus" };
   const char* const* codecs = video ? &kVideoCodecs[0] : &kAudioCodecs[0];
   const int codecs_count =
@@ -101,7 +121,18 @@ bool MediaRecorderHandler::initialize(
                 << ";codecs=" << codecs.utf8();
     return false;
   }
-  use_vp9_ = base::ToLowerASCII(codecs.utf8()).find("vp9") != std::string::npos;
+
+  // Once established that we support the codec(s), hunt then individually.
+  const std::string& codecs_str = ToLowerASCII(codecs.utf8());
+  if (codecs_str.find("vp8") != std::string::npos)
+    codec_id_ = VideoTrackRecorder::CodecId::VP8;
+  else if (codecs_str.find("vp9") != std::string::npos)
+    codec_id_ = VideoTrackRecorder::CodecId::VP9;
+#if BUILDFLAG(RTC_USE_H264)
+  else if (codecs_str.find("h264") != std::string::npos)
+    codec_id_ = VideoTrackRecorder::CodecId::H264;
+#endif
+
   media_stream_ = media_stream;
   DCHECK(client);
   client_ = client;
@@ -147,9 +178,9 @@ bool MediaRecorderHandler::start(int timeslice) {
                                     blink::WebMediaStreamSource::ReadyStateLive;
 
   webm_muxer_.reset(new media::WebmMuxer(
-      use_vp9_ ? media::kCodecVP9 : media::kCodecVP8, use_video_tracks,
-      use_audio_tracks, base::Bind(&MediaRecorderHandler::WriteData,
-                                   weak_factory_.GetWeakPtr())));
+      CodecIdToMediaVideoCodec(codec_id_), use_video_tracks, use_audio_tracks,
+      base::Bind(&MediaRecorderHandler::WriteData,
+                 weak_factory_.GetWeakPtr())));
 
   if (use_video_tracks) {
     // TODO(mcasas): The muxer API supports only one video track. Extend it to
@@ -166,9 +197,7 @@ bool MediaRecorderHandler::start(int timeslice) {
             &MediaRecorderHandler::OnEncodedVideo, weak_factory_.GetWeakPtr()));
 
     video_recorders_.push_back(new VideoTrackRecorder(
-        use_vp9_ ? VideoTrackRecorder::CodecId::VP9
-                 : VideoTrackRecorder::CodecId::VP8,
-        video_track, on_encoded_video_cb, video_bits_per_second_));
+        codec_id_, video_track, on_encoded_video_cb, video_bits_per_second_));
   }
 
   if (use_audio_tracks) {

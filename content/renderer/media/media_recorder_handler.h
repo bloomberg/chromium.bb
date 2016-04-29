@@ -14,6 +14,7 @@
 #include "base/strings/string_piece.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
+#include "content/renderer/media/video_track_recorder.h"
 #include "third_party/WebKit/public/platform/WebMediaRecorderHandler.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 
@@ -31,7 +32,6 @@ class WebmMuxer;
 
 namespace content {
 
-class VideoTrackRecorder;
 class AudioTrackRecorder;
 
 // MediaRecorderHandler orchestrates the creation, lifetime management and
@@ -89,8 +89,8 @@ class CONTENT_EXPORT MediaRecorderHandler final
   int32_t video_bits_per_second_;
   int32_t audio_bits_per_second_;
 
-  // Force using VP9 for video encoding, otherwise VP8 will be used by default.
-  bool use_vp9_;
+  // Video Codec, VP8 is used by default.
+  VideoTrackRecorder::CodecId codec_id_;
 
   // |client_| has no notion of time, thus may configure us via start(timeslice)
   // to notify it after a certain |timeslice_| has passed. We use a moving

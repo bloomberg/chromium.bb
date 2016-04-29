@@ -237,13 +237,15 @@ TEST_P(WebmMuxerTest, VideoIsStoredWhileWaitingForAudio) {
 }
 
 const kTestParams kTestCases[] = {
-    // TODO: consider not enumerating every combination by hand.
     {kCodecVP8, 1 /* num_video_tracks */, 0 /*num_audio_tracks*/},
     {kCodecVP8, 0, 1},
     {kCodecVP8, 1, 1},
     {kCodecVP9, 1, 0},
     {kCodecVP9, 0, 1},
     {kCodecVP9, 1, 1},
+    {kCodecH264, 1, 0},
+    {kCodecH264, 0, 1},
+    {kCodecH264, 1, 1},
 };
 
 INSTANTIATE_TEST_CASE_P(, WebmMuxerTest, ValuesIn(kTestCases));

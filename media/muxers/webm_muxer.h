@@ -96,8 +96,8 @@ class MEDIA_EXPORT WebmMuxer : public NON_EXPORTED_BASE(mkvmuxer::IMkvWriter) {
   // Used to DCHECK that we are called on the correct thread.
   base::ThreadChecker thread_checker_;
 
-  // Video Codec configured: VP9 if true, otherwise VP8 is used by default.
-  const bool use_vp9_;
+  // Video Codec configured on construction.
+  const VideoCodec video_codec_;
 
   // Caller-side identifiers to interact with |segment_|, initialised upon
   // first frame arrival to Add{Video, Audio}Track().

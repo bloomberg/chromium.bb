@@ -69,13 +69,29 @@ static double GetFrameRate(const scoped_refptr<VideoFrame>& video_frame) {
   return frame_rate;
 }
 
+static const char kH264CodecId[] = "V_MPEG4/ISO/AVC";
+
+static const char* MkvCodeIcForMediaVideoCodecId(VideoCodec video_codec) {
+  switch (video_codec) {
+    case kCodecVP8:
+      return mkvmuxer::Tracks::kVp8CodecId;
+    case kCodecVP9:
+      return mkvmuxer::Tracks::kVp9CodecId;
+    case kCodecH264:
+      return kH264CodecId;
+    default:
+      NOTREACHED() << "Unsupported codec " << GetCodecName(video_codec);
+      return "";
+  }
+}
+
 }  // anonymous namespace
 
 WebmMuxer::WebmMuxer(VideoCodec codec,
                      bool has_video,
                      bool has_audio,
                      const WriteDataCB& write_data_callback)
-    : use_vp9_(codec == kCodecVP9),
+    : video_codec_(codec),
       video_track_index_(0),
       audio_track_index_(0),
       has_video_(has_video),
@@ -84,8 +100,8 @@ WebmMuxer::WebmMuxer(VideoCodec codec,
       position_(0) {
   DCHECK(has_video_ || has_audio_);
   DCHECK(!write_data_callback_.is_null());
-  DCHECK(codec == kCodecVP8 || codec == kCodecVP9)
-      << " Only Vp8 and VP9 are supported in WebmMuxer";
+  DCHECK(codec == kCodecVP8 || codec == kCodecVP9 || codec == kCodecH264)
+      << " Unsupported codec: " << GetCodecName(codec);
 
   segment_.Init(this);
   segment_.set_mode(mkvmuxer::Segment::kLive);
@@ -208,8 +224,7 @@ void WebmMuxer::AddVideoTrack(const gfx::Size& frame_size, double frame_rate) {
       reinterpret_cast<mkvmuxer::VideoTrack*>(
           segment_.GetTrackByNumber(video_track_index_));
   DCHECK(video_track);
-  video_track->set_codec_id(use_vp9_ ? mkvmuxer::Tracks::kVp9CodecId
-                                     : mkvmuxer::Tracks::kVp8CodecId);
+  video_track->set_codec_id(MkvCodeIcForMediaVideoCodecId(video_codec_));
   DCHECK_EQ(0ull, video_track->crop_right());
   DCHECK_EQ(0ull, video_track->crop_left());
   DCHECK_EQ(0ull, video_track->crop_top());

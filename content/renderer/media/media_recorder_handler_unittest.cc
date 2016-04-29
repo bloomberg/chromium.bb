@@ -59,6 +59,9 @@ struct MediaRecorderTestParams {
 static const MediaRecorderTestParams kMediaRecorderTestParams[] = {
     {true, false, "video/webm", "vp8"},
     {true, false, "video/webm", "vp9"},
+#if BUILDFLAG(RTC_USE_H264)
+    {true, false, "video/webm", "h264"},
+#endif
     {false, true, "video/webm", "vp8"}};
 
 class MediaRecorderHandlerTest : public TestWithParam<MediaRecorderTestParams>,
@@ -156,6 +159,9 @@ TEST_F(MediaRecorderHandlerTest, CanSupportMimeType) {
   const WebString example_good_codecs_3(base::UTF8ToUTF16("VP9,opus"));
   EXPECT_TRUE(media_recorder_handler_->canSupportMimeType(
                   mime_type_video, example_good_codecs_3));
+  const WebString example_good_codecs_4(base::UTF8ToUTF16("H264"));
+  EXPECT_TRUE(media_recorder_handler_->canSupportMimeType(
+                  mime_type_video, example_good_codecs_4));
 
   const WebString example_unsupported_codecs_1(base::UTF8ToUTF16("daala"));
   EXPECT_FALSE(media_recorder_handler_->canSupportMimeType(
@@ -164,12 +170,12 @@ TEST_F(MediaRecorderHandlerTest, CanSupportMimeType) {
   const WebString mime_type_audio(base::UTF8ToUTF16("audio/webm"));
   EXPECT_TRUE(media_recorder_handler_->canSupportMimeType(
                   mime_type_audio, WebString()));
-  const WebString example_good_codecs_4(base::UTF8ToUTF16("opus"));
-  EXPECT_TRUE(media_recorder_handler_->canSupportMimeType(
-                  mime_type_audio, example_good_codecs_4));
-  const WebString example_good_codecs_5(base::UTF8ToUTF16("OpUs"));
+  const WebString example_good_codecs_5(base::UTF8ToUTF16("opus"));
   EXPECT_TRUE(media_recorder_handler_->canSupportMimeType(
                   mime_type_audio, example_good_codecs_5));
+  const WebString example_good_codecs_6(base::UTF8ToUTF16("OpUs"));
+  EXPECT_TRUE(media_recorder_handler_->canSupportMimeType(
+                  mime_type_audio, example_good_codecs_6));
 
   const WebString example_unsupported_codecs_2(base::UTF8ToUTF16("vorbis"));
   EXPECT_FALSE(media_recorder_handler_->canSupportMimeType(
@@ -221,8 +227,8 @@ TEST_P(MediaRecorderHandlerTest, EncodeVideoFrames) {
   const scoped_refptr<media::VideoFrame> video_frame =
       media::VideoFrame::CreateBlackFrame(gfx::Size(160, 80));
 
-  const size_t kEncodedSizeThreshold = 16;
   {
+    const size_t kEncodedSizeThreshold = 16;
     base::RunLoop run_loop;
     base::Closure quit_closure = run_loop.QuitClosure();
     // writeData() is pinged a number of times as the WebM header is written;
@@ -239,6 +245,7 @@ TEST_P(MediaRecorderHandlerTest, EncodeVideoFrames) {
   Mock::VerifyAndClearExpectations(this);
 
   {
+    const size_t kEncodedSizeThreshold = 13;
     base::RunLoop run_loop;
     base::Closure quit_closure = run_loop.QuitClosure();
     // The second time around writeData() is called a number of times to write
