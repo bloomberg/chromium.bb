@@ -503,9 +503,7 @@ Your Google account may have other forms of browsing history like searches and a
         Usage and crash reports
       </message>
       <message name="IDS_USAGE_AND_CRASH_REPORTS_DESCRIPTION" desc="Description for 'Usage and crash reports' preference">
-        Help us prioritize the features and improvements we should work on by sending Google information about the files, applications, and services running whenever you experience a crash.
-
-Usage statistics include information such as preferences, button clicks, and memory usage. They do not include webpage URLs or any personal information. Crash reports contain system information at the time of the crash, and may contain web page URLs or personal information, depending on what was happening at the time of the crash.
+        Automatically send usage statistics and crash reports to Google
       </message>
 
       <!-- Accessibility preferences -->
@@ -1020,7 +1018,7 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_NTP_RECENT_TABS_SYNC_PROMO_INSTRUCTIONS" desc="Information about sync displayed on the NTP when the user has signed in on mobile but not on desktop">
         Tabs that you've opened in Chrome on your other devices will appear here
       </message>
-      
+
       <message name="IDS_SIGN_IN_SYNC" desc="Sync preference title in signed-in prefs and prefix for notification related to sync [CHAR-LIMIT=32]">
         Sync
       </message>
