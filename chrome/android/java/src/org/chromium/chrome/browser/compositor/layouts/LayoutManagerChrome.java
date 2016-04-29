@@ -368,8 +368,8 @@ public class LayoutManagerChrome
 
         // Check if we should notify OverviewModeObservers.
         if (isOverviewLayout(layoutBeingShown)) {
-            boolean showToolbar =
-                    !mEnableAnimations || getTabModelSelector().getCurrentModel().getCount() <= 0;
+            boolean showToolbar = animate && (!mEnableAnimations
+                    || getTabModelSelector().getCurrentModel().getCount() <= 0);
             for (OverviewModeObserver observer : mOverviewModeObservers) {
                 observer.onOverviewModeStartedShowing(showToolbar);
             }
