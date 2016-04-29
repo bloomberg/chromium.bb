@@ -197,6 +197,73 @@ class _MailTextResult(_PresubmitResult):
     super(_MailTextResult, self).__init__()
     raise NotImplementedError()
 
+class GerritAccessor(object):
+  """Limited Gerrit functionality for canned presubmit checks to work.
+
+  To avoid excessive Gerrit calls, caches the results.
+  """
+
+  def __init__(self, host):
+    self.host = host
+    self.cache = {}
+
+  def _FetchChangeDetail(self, issue):
+    # Separate function to be easily mocked in tests.
+    return gerrit_util.GetChangeDetail(
+        self.host, str(issue),
+        ['ALL_REVISIONS', 'DETAILED_LABELS'])
+
+  def GetChangeInfo(self, issue):
+    """Returns labels and all revisions (patchsets) for this issue.
+
+    The result is a dictionary according to Gerrit REST Api.
+    https://gerrit-review.googlesource.com/Documentation/rest-api.html
+
+    However, API isn't very clear what's inside, so see tests for example.
+    """
+    assert issue
+    cache_key = int(issue)
+    if cache_key not in self.cache:
+      self.cache[cache_key] = self._FetchChangeDetail(issue)
+    return self.cache[cache_key]
+
+  def GetChangeDescription(self, issue, patchset=None):
+    """If patchset is none, fetches current patchset."""
+    info = self.GetChangeInfo(issue)
+    # info is a reference to cache. We'll modify it here adding description to
+    # it to the right patchset, if it is not yet there.
+
+    # Find revision info for the patchset we want.
+    if patchset is not None:
+      for rev, rev_info in info['revisions'].iteritems():
+        if str(rev_info['_number']) == str(patchset):
+          break
+      else:
+        raise Exception('patchset %s doesn\'t exist in issue %s' % (
+            patchset, issue))
+    else:
+      rev = info['current_revision']
+      rev_info = info['revisions'][rev]
+
+    # Updates revision info, which is part of cached issue info.
+    if 'real_description' not in rev_info:
+      rev_info['real_description'] = (
+          gerrit_util.GetChangeDescriptionFromGitiles(
+              rev_info['fetch']['http']['url'], rev))
+    return rev_info['real_description']
+
+  def GetChangeOwner(self, issue):
+    return self.GetChangeInfo(issue)['owner']['email']
+
+  def GetChangeReviewers(self, issue, approving_only=True):
+    # Gerrit has 'approved' sub-section, but it only lists 1 approver.
+    # So, if we look only for approvers, we have to look at all anyway.
+    # Also, assume LGTM means Code-Review label == 2. Other configurations
+    # aren't supported.
+    return [r['email']
+            for r in self.GetChangeInfo(issue)['labels']['Code-Review']['all']
+            if not approving_only or '2' == str(r.get('value', 0))]
+
 
 class OutputApi(object):
   """An instance of OutputApi gets passed to presubmit scripts so that they
@@ -265,7 +332,7 @@ class InputApi(object):
   )
 
   def __init__(self, change, presubmit_path, is_committing,
-      rietveld_obj, verbose, dry_run=None):
+      rietveld_obj, verbose, gerrit_obj=None, dry_run=None):
     """Builds an InputApi object.
 
     Args:
@@ -273,12 +340,15 @@ class InputApi(object):
       presubmit_path: The path to the presubmit script being processed.
       is_committing: True if the change is about to be committed.
       rietveld_obj: rietveld.Rietveld client object
+      gerrit_obj: provides basic Gerrit codereview functionality.
+      dry_run: if true, some Checks will be skipped.
     """
     # Version number of the presubmit_support script.
     self.version = [int(x) for x in __version__.split('.')]
     self.change = change
     self.is_committing = is_committing
     self.rietveld = rietveld_obj
+    self.gerrit = gerrit_obj
     self.dry_run = dry_run
     # TBD
     self.host_url = 'http://codereview.chromium.org'
@@ -1349,16 +1419,19 @@ def DoPostUploadExecuter(change,
 
 class PresubmitExecuter(object):
   def __init__(self, change, committing, rietveld_obj, verbose,
-               dry_run=None):
+               gerrit_obj=None, dry_run=None):
     """
     Args:
       change: The Change object.
       committing: True if 'gcl commit' is running, False if 'gcl upload' is.
       rietveld_obj: rietveld.Rietveld client object.
+      gerrit_obj: provides basic Gerrit codereview functionality.
+      dry_run: if true, some Checks will be skipped.
     """
     self.change = change
     self.committing = committing
     self.rietveld = rietveld_obj
+    self.gerrit = gerrit_obj
     self.verbose = verbose
     self.dry_run = dry_run
 
@@ -1381,7 +1454,7 @@ class PresubmitExecuter(object):
     # Load the presubmit script into context.
     input_api = InputApi(self.change, presubmit_path, self.committing,
                          self.rietveld, self.verbose,
-                         dry_run=self.dry_run)
+                         self.dry_run, self.gerrit)
     context = {}
     try:
       exec script_text in context
@@ -1424,6 +1497,7 @@ def DoPresubmitChecks(change,
                       default_presubmit,
                       may_prompt,
                       rietveld_obj,
+                      gerrit_obj=None,
                       dry_run=None):
   """Runs all presubmit checks that apply to the files in the change.
 
@@ -1443,6 +1517,7 @@ def DoPresubmitChecks(change,
     default_presubmit: A default presubmit script to execute in any case.
     may_prompt: Enable (y/n) questions on warning or error.
     rietveld_obj: rietveld.Rietveld object.
+    gerrit_obj: provides basic Gerrit codereview functionality.
     dry_run: if true, some Checks will be skipped.
 
   Warning:
@@ -1471,7 +1546,7 @@ def DoPresubmitChecks(change,
       output.write("Warning, no PRESUBMIT.py found.\n")
     results = []
     executer = PresubmitExecuter(change, committing, rietveld_obj, verbose,
-                                 dry_run=dry_run)
+                                 gerrit_obj, dry_run)
     if default_presubmit:
       if verbose:
         output.write("Running default presubmit script.\n")
@@ -1696,7 +1771,8 @@ def main(argv=None):
     parser.error('For unversioned directory, <files> is not optional.')
   logging.info('Found %d file(s).' % len(files))
 
-  rietveld_obj = None
+  rietveld_obj, gerrit_obj = None, None
+
   if options.rietveld_url:
     # The empty password is permitted: '' is not None.
     if options.rietveld_private_key_file:
@@ -1718,21 +1794,11 @@ def main(argv=None):
       logging.info('Got description: """\n%s\n"""', options.description)
 
   if options.gerrit_url and options.gerrit_fetch:
-    rietveld_obj = None
     assert options.issue and options.patchset
-    props = gerrit_util.GetChangeDetail(
-        urlparse.urlparse(options.gerrit_url).netloc, str(options.issue),
-        ['ALL_REVISIONS'])
-    options.author = props['owner']['email']
-    for rev, rev_info in props['revisions'].iteritems():
-      if str(rev_info['_number']) == str(options.patchset):
-        options.description = gerrit_util.GetChangeDescriptionFromGitiles(
-            rev_info['fetch']['http']['url'], rev)
-        break
-    else:
-      print >> sys.stderr, ('Patchset %d was not found in Gerrit issue %d' %
-                            options.patchset, options.issue)
-      return 2
+    rietveld_obj = None
+    gerrit_obj = GerritAccessor(urlparse.urlparse(options.gerrit_url).netloc)
+    options.author = gerrit_obj.GetChangeOwner(options.issue)
+    options.description = gerrit_obj.GetChangeDescription(options.patchset)
     logging.info('Got author: "%s"', options.author)
     logging.info('Got description: """\n%s\n"""', options.description)
 
@@ -1754,6 +1820,7 @@ def main(argv=None):
           options.default_presubmit,
           options.may_prompt,
           rietveld_obj,
+          gerrit_obj,
           options.dry_run)
     return not results.should_continue()
   except NonexistantCannedCheckFilter, e:
