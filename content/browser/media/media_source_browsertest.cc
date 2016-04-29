@@ -107,6 +107,9 @@ IN_PROC_BROWSER_TEST_F(MediaSourceTest, ConfigChangeVideo) {
 }
 
 #if defined(USE_PROPRIETARY_CODECS)
+
+// TODO(chcunningham): Figure out why this is flaky on android. crbug/607841
+#if !defined(OS_ANDROID)
 IN_PROC_BROWSER_TEST_F(MediaSourceTest, Playback_Video_MP4_Audio_WEBM) {
   if (!IsMSESupported()) {
     VLOG(0) << "Skipping test - MSE not supported.";
@@ -117,6 +120,7 @@ IN_PROC_BROWSER_TEST_F(MediaSourceTest, Playback_Video_MP4_Audio_WEBM) {
   query_params.push_back(std::make_pair("audioFormat", "CLEAR_WEBM"));
   RunMediaTestPage("mse_different_containers.html", query_params, kEnded, true);
 }
+#endif  // !defined(OS_ANDROID)
 
 IN_PROC_BROWSER_TEST_F(MediaSourceTest, Playback_Video_WEBM_Audio_MP4) {
   if (!IsMSESupported()) {
