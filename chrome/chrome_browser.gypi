@@ -1544,6 +1544,8 @@
       'browser/bookmarks/startup_task_runner_service_factory.h',
     ],
     'chrome_browser_offline_pages_sources': [
+      'browser/android/offline_pages/background_scheduler_bridge.cc',
+      'browser/android/offline_pages/background_scheduler_bridge.h',
       'browser/android/offline_pages/offline_page_bridge.cc',
       'browser/android/offline_pages/offline_page_bridge.h',
       'browser/android/offline_pages/offline_page_mhtml_archiver.cc',
@@ -1958,6 +1960,7 @@
       'android/java/src/org/chromium/chrome/browser/ntp/RecentlyClosedBridge.java',
       'android/java/src/org/chromium/chrome/browser/ntp/snippets/SnippetsBridge.java',
       'android/java/src/org/chromium/chrome/browser/ntp/snippets/SnippetsLauncher.java',
+      'android/java/src/org/chromium/chrome/browser/offlinepages/BackgroundSchedulerBridge.java',
       'android/java/src/org/chromium/chrome/browser/offlinepages/OfflinePageBridge.java',
       'android/java/src/org/chromium/chrome/browser/omnibox/AnswersImage.java',
       'android/java/src/org/chromium/chrome/browser/omnibox/AutocompleteController.java',

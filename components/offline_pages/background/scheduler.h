@@ -20,13 +20,14 @@ class Scheduler {
   Scheduler() {}
   virtual ~Scheduler() {}
 
-  // Ensures that the system has a task scheduled for |trigger_conditions|.
+  // Schedules the triggering of a task subject to |trigger_conditions|.
   // This may overwrite any previous scheduled task with a new one for
-  // these conditions.
-  virtual void EnsureScheduled(const TriggerCondition& trigger_condition) = 0;
+  // these conditions. That is, only one set of triggering conditions
+  // is scheduled at a time.
+  virtual void Schedule(const TriggerCondition& trigger_condition) = 0;
 
-  // Clears the currently scheduled task, if any.
-  virtual void ClearScheduled() = 0;
+  // Unschedules the currently scheduled task, if any.
+  virtual void Unschedule() = 0;
 };
 
 }  // namespace offline_pages

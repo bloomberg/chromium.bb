@@ -63,6 +63,7 @@
 #include "chrome/browser/android/ntp/new_tab_page_prefs.h"
 #include "chrome/browser/android/ntp/ntp_snippets_bridge.h"
 #include "chrome/browser/android/ntp/ntp_snippets_launcher.h"
+#include "chrome/browser/android/offline_pages/background_scheduler_bridge.h"
 #include "chrome/browser/android/offline_pages/offline_page_bridge.h"
 #include "chrome/browser/android/omnibox/answers_image_bridge.h"
 #include "chrome/browser/android/omnibox/autocomplete_controller_android.h"
@@ -228,6 +229,8 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
      autofill::AutofillPopupViewAndroid::RegisterAutofillPopupViewAndroid},
     {"AutofillProfileBridge", autofill::RegisterAutofillProfileBridge},
     {"AutoSigninSnackbarController", RegisterAutoSigninSnackbarController},
+    {"BackgroundSchedulerBridge",
+      offline_pages::android::RegisterBackgroundSchedulerBridge},
     {"BackgroundSyncLauncherAndroid",
      BackgroundSyncLauncherAndroid::RegisterLauncher},
     {"BluetoothChooserAndroid", BluetoothChooserAndroid::Register},
