@@ -4,15 +4,11 @@
 # https://crbug.com/582494 - [sigsegv / av] blink::Document::styleEngine.
 http/tests/security/mixedContent/insecure-plugin-in-iframe.html [ Crash ]
 
-# https://crbug.com/602818 - Incorrect process transfer for blob URL
-http/tests/fileapi/blob-url-in-subframe.html [ Timeout ]
-
 # https://crbug.com/584984 - Check failed: bindings_ == kInvalidBindings || bindings_ == bindings
 http/tests/inspector-enabled/console-log-before-frame-navigation.html [ Crash ]
 http/tests/inspector/change-iframe-src.html [ Crash ]
 http/tests/navigation/cross-origin-fragment-navigation-is-async.html [ Crash Failure ]
 http/tests/security/frameNavigation/xss-ALLOWED-targeted-subframe-navigation-change.html [ Crash Timeout ]
-http/tests/security/opened-document-security-origin-resets-on-navigation.html [ Crash ]
 http/tests/security/xssAuditor/anchor-url-dom-write-location-inline-event-null-char.html [ Crash Timeout ]
 http/tests/security/xssAuditor/anchor-url-dom-write-location-inline-event.html [ Crash ]
 http/tests/security/xssAuditor/dom-write-location-inline-event.html [ Crash ]
