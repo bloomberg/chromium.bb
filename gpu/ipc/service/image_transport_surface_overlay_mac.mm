@@ -107,6 +107,11 @@ bool ImageTransportSurfaceOverlayMac::Initialize(
     ca_context_.reset([
         [CAContext contextWithCGSConnection:connection_id options:@{}] retain]);
     [ca_context_ setLayer:ca_layer_tree_coordinator_->GetCALayerForDisplay()];
+
+    fullscreen_low_power_ca_context_.reset([
+        [CAContext contextWithCGSConnection:connection_id options:@{}] retain]);
+    [fullscreen_low_power_ca_context_ setLayer:
+        ca_layer_tree_coordinator_->GetFullscreenLowPowerLayerForDisplay()];
   }
   return true;
 }
@@ -144,6 +149,8 @@ void ImageTransportSurfaceOverlayMac::BufferPresented(
 void ImageTransportSurfaceOverlayMac::SendAcceleratedSurfaceBuffersSwapped(
     gpu::SurfaceHandle surface_handle,
     CAContextID ca_context_id,
+    bool fullscreen_low_power_ca_context_valid,
+    CAContextID fullscreen_low_power_ca_context_id,
     const gfx::ScopedRefCountedIOSurfaceMachPort& io_surface,
     const gfx::Size& size,
     float scale_factor,
@@ -153,7 +160,8 @@ void ImageTransportSurfaceOverlayMac::SendAcceleratedSurfaceBuffersSwapped(
                        "GLImpl", static_cast<int>(gfx::GetGLImplementation()),
                        "width", size.width());
   manager_->delegate()->SendAcceleratedSurfaceBuffersSwapped(
-      surface_handle, ca_context_id, io_surface, size, scale_factor,
+      surface_handle, ca_context_id, fullscreen_low_power_ca_context_valid,
+      fullscreen_low_power_ca_context_id, io_surface, size, scale_factor,
       std::move(latency_info));
 }
 
@@ -191,18 +199,22 @@ gfx::SwapResult ImageTransportSurfaceOverlayMac::SwapBuffersInternal(
 
   // Send acknowledgement to the browser.
   CAContextID ca_context_id = 0;
+  CAContextID fullscreen_low_power_ca_context_id = 0;
   gfx::ScopedRefCountedIOSurfaceMachPort io_surface_mach_port;
   if (use_remote_layer_api_) {
     ca_context_id = [ca_context_ contextId];
+    fullscreen_low_power_ca_context_id =
+        [fullscreen_low_power_ca_context_ contextId];
   } else {
     IOSurfaceRef io_surface =
         ca_layer_tree_coordinator_->GetIOSurfaceForDisplay();
     if (io_surface)
       io_surface_mach_port.reset(IOSurfaceCreateMachPort(io_surface));
   }
-  SendAcceleratedSurfaceBuffersSwapped(handle_, ca_context_id,
-                                       io_surface_mach_port, pixel_size_,
-                                       scale_factor_, std::move(latency_info_));
+  SendAcceleratedSurfaceBuffersSwapped(
+      handle_, ca_context_id, fullscreen_low_power_layer_valid,
+      fullscreen_low_power_ca_context_id, io_surface_mach_port, pixel_size_,
+      scale_factor_, std::move(latency_info_));
 
   // Reset all state for the next frame.
   latency_info_.clear();

@@ -327,6 +327,8 @@ void GpuChildThread::GpuMemoryUmaStats(const gpu::GPUMemoryUmaStats& params) {
 void GpuChildThread::SendAcceleratedSurfaceBuffersSwapped(
     gpu::SurfaceHandle surface_handle,
     CAContextID ca_context_id,
+    bool fullscreen_low_power_ca_context_valid,
+    CAContextID fullscreen_low_power_ca_context_id,
     const gfx::ScopedRefCountedIOSurfaceMachPort& io_surface,
     const gfx::Size& size,
     float scale_factor,
@@ -334,6 +336,10 @@ void GpuChildThread::SendAcceleratedSurfaceBuffersSwapped(
   AcceleratedSurfaceBuffersSwappedParams params;
   params.surface_handle = surface_handle;
   params.ca_context_id = ca_context_id;
+  params.fullscreen_low_power_ca_context_valid =
+      fullscreen_low_power_ca_context_valid;
+  params.fullscreen_low_power_ca_context_id =
+      fullscreen_low_power_ca_context_id;
   params.io_surface = io_surface;
   params.size = size;
   params.scale_factor = scale_factor;

@@ -89,7 +89,7 @@ class BridgedNativeWidgetTestApi {
   void SimulateFrameSwap(const gfx::Size& size) {
     const float kScaleFactor = 1.0f;
     bridge_->compositor_widget_->GotFrame(
-        0, base::ScopedCFTypeRef<IOSurfaceRef>(), size, kScaleFactor);
+        0, false, 0, base::ScopedCFTypeRef<IOSurfaceRef>(), size, kScaleFactor);
     bridge_->AcceleratedWidgetSwapCompleted();
   }
 

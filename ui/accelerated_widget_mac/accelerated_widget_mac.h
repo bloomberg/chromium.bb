@@ -67,12 +67,16 @@ class ACCELERATED_WIDGET_MAC_EXPORT AcceleratedWidgetMac {
       base::TimeTicks* timebase, base::TimeDelta* interval) const;
 
   void GotFrame(CAContextID ca_context_id,
+                bool fullscreen_low_power_ca_context_valid,
+                CAContextID fullscreen_low_power_ca_context_id,
                 base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
                 const gfx::Size& pixel_size,
                 float scale_factor);
 
  private:
   void GotCAContextFrame(CAContextID ca_context_id,
+                         bool fullscreen_low_power_ca_context_valid,
+                         CAContextID fullscreen_low_power_ca_context_id,
                          const gfx::Size& pixel_size,
                          float scale_factor);
 
@@ -104,8 +108,9 @@ class ACCELERATED_WIDGET_MAC_EXPORT AcceleratedWidgetMac {
   // behavior.
   base::scoped_nsobject<CALayer> flipped_layer_;
 
-  // The accelerated CoreAnimation layer hosted by the GPU process.
+  // The accelerated CoreAnimation layers hosted by the GPU process.
   base::scoped_nsobject<CALayerHost> ca_context_layer_;
+  base::scoped_nsobject<CALayerHost> fullscreen_low_power_layer_;
 
   // The locally drawn layer, which has its contents set to an IOSurface.
   base::scoped_nsobject<CALayer> local_layer_;
@@ -122,6 +127,8 @@ ACCELERATED_WIDGET_MAC_EXPORT
 void AcceleratedWidgetMacGotFrame(
     gfx::AcceleratedWidget widget,
     CAContextID ca_context_id,
+    bool fullscreen_low_power_ca_context_valid,
+    CAContextID fullscreen_low_power_ca_context_id,
     base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
     const gfx::Size& pixel_size,
     float scale_factor,

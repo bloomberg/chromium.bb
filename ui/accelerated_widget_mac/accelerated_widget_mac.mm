@@ -118,6 +118,8 @@ void AcceleratedWidgetMac::GetVSyncParameters(
 
 void AcceleratedWidgetMac::GotFrame(
     CAContextID ca_context_id,
+    bool fullscreen_low_power_ca_context_valid,
+    CAContextID fullscreen_low_power_ca_context_id,
     base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
     const gfx::Size& pixel_size,
     float scale_factor) {
@@ -134,17 +136,23 @@ void AcceleratedWidgetMac::GotFrame(
 
   last_swap_size_dip_ = gfx::ConvertSizeToDIP(scale_factor, pixel_size);
 
-  if (ca_context_id)
-    GotCAContextFrame(ca_context_id, pixel_size, scale_factor);
-  else
+  if (ca_context_id) {
+    GotCAContextFrame(ca_context_id, fullscreen_low_power_ca_context_valid,
+                      fullscreen_low_power_ca_context_id, pixel_size,
+                      scale_factor);
+  } else {
     GotIOSurfaceFrame(io_surface, pixel_size, scale_factor);
+  }
 
   view_->AcceleratedWidgetSwapCompleted();
 }
 
-void AcceleratedWidgetMac::GotCAContextFrame(CAContextID ca_context_id,
-                                             const gfx::Size& pixel_size,
-                                             float scale_factor) {
+void AcceleratedWidgetMac::GotCAContextFrame(
+    CAContextID ca_context_id,
+    bool fullscreen_low_power_ca_context_valid,
+    CAContextID fullscreen_low_power_ca_context_id,
+    const gfx::Size& pixel_size,
+    float scale_factor) {
   TRACE_EVENT0("ui", "AcceleratedWidgetMac::GotCAContextFrame");
 
   // In the layer is replaced, keep the old one around until after the new one
@@ -161,6 +169,13 @@ void AcceleratedWidgetMac::GotCAContextFrame(CAContextID ca_context_id,
     [ca_context_layer_
         setAutoresizingMask:kCALayerMaxXMargin|kCALayerMaxYMargin];
     [flipped_layer_ addSublayer:ca_context_layer_];
+  }
+  if ([fullscreen_low_power_layer_ contextId] !=
+        fullscreen_low_power_ca_context_id) {
+    TRACE_EVENT0("ui", "Creating a new CALayerHost");
+    fullscreen_low_power_layer_.reset([[CALayerHost alloc] init]);
+    [fullscreen_low_power_layer_
+        setContextId:fullscreen_low_power_ca_context_id];
   }
 
   // If this replacing a same-type layer, remove it now that the new layer is
@@ -229,6 +244,8 @@ void AcceleratedWidgetMac::DestroyLocalLayer() {
 void AcceleratedWidgetMacGotFrame(
     gfx::AcceleratedWidget widget,
     CAContextID ca_context_id,
+    bool fullscreen_low_power_ca_context_valid,
+    CAContextID fullscreen_low_power_ca_context_id,
     base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
     const gfx::Size& pixel_size,
     float scale_factor,
@@ -243,8 +260,10 @@ void AcceleratedWidgetMacGotFrame(
       GetHelperFromAcceleratedWidget(widget);
 
   if (accelerated_widget_mac) {
-    accelerated_widget_mac->GotFrame(ca_context_id, io_surface, pixel_size,
-                                     scale_factor);
+    accelerated_widget_mac->GotFrame(ca_context_id,
+                                     fullscreen_low_power_ca_context_valid,
+                                     fullscreen_low_power_ca_context_id,
+                                     io_surface, pixel_size, scale_factor);
     if (vsync_timebase && vsync_interval) {
       accelerated_widget_mac->GetVSyncParameters(vsync_timebase,
                                                  vsync_interval);

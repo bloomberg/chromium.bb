@@ -49,6 +49,8 @@ class TestGpuChannelManagerDelegate : public GpuChannelManagerDelegate {
   void SendAcceleratedSurfaceBuffersSwapped(
       gpu::SurfaceHandle surface_handle,
       CAContextID ca_context_id,
+      bool fullscreen_low_power_ca_context_valid,
+      CAContextID fullscreen_low_power_ca_context_id,
       const gfx::ScopedRefCountedIOSurfaceMachPort& io_surface,
       const gfx::Size& size,
       float scale_factor,

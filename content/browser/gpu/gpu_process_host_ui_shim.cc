@@ -256,10 +256,12 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceBuffersSwapped(
       io_surface.reset(IOSurfaceLookupFromMachPort(params.io_surface));
     }
 
-    ui::AcceleratedWidgetMacGotFrame(native_widget, ca_context_id, io_surface,
-                                     params.size, params.scale_factor,
-                                     &ack_params.vsync_timebase,
-                                     &ack_params.vsync_interval);
+    ui::AcceleratedWidgetMacGotFrame(
+        native_widget, ca_context_id,
+        params.fullscreen_low_power_ca_context_valid,
+        params.fullscreen_low_power_ca_context_id, io_surface, params.size,
+        params.scale_factor, &ack_params.vsync_timebase,
+        &ack_params.vsync_interval);
   } else {
     TRACE_EVENT0("browser", "Skipping recycled surface frame");
   }

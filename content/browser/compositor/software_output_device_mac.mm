@@ -145,8 +145,8 @@ void SoftwareOutputDeviceMac::EndPaint() {
   base::TimeTicks vsync_timebase;
   base::TimeDelta vsync_interval;
   ui::AcceleratedWidgetMacGotFrame(
-      compositor_->widget(), 0, io_surfaces_[current_index_], pixel_size_,
-      scale_factor_, &vsync_timebase, &vsync_interval);
+      compositor_->widget(), 0, false, 0, io_surfaces_[current_index_],
+      pixel_size_, scale_factor_, &vsync_timebase, &vsync_interval);
   if (!update_vsync_callback_.is_null())
     update_vsync_callback_.Run(vsync_timebase, vsync_interval);
 

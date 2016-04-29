@@ -78,6 +78,8 @@ class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
   void SendAcceleratedSurfaceBuffersSwapped(
       gpu::SurfaceHandle surface_handle,
       CAContextID ca_context_id,
+      bool fullscreen_low_power_ca_context_valid,
+      CAContextID fullscreen_low_power_ca_context_id,
       const gfx::ScopedRefCountedIOSurfaceMachPort& io_surface,
       const gfx::Size& size,
       float scale_factor,
@@ -91,6 +93,7 @@ class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
 
   bool use_remote_layer_api_;
   base::scoped_nsobject<CAContext> ca_context_;
+  base::scoped_nsobject<CAContext> fullscreen_low_power_ca_context_;
   std::unique_ptr<ui::CALayerTreeCoordinator> ca_layer_tree_coordinator_;
 
   gfx::Size pixel_size_;

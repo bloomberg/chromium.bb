@@ -84,6 +84,8 @@ IPC_STRUCT_TRAITS_BEGIN(content::AcceleratedSurfaceBuffersSwappedParams)
   IPC_STRUCT_TRAITS_MEMBER(surface_handle)
   // Only one of ca_context_id or io_surface may be non-0.
   IPC_STRUCT_TRAITS_MEMBER(ca_context_id)
+  IPC_STRUCT_TRAITS_MEMBER(fullscreen_low_power_ca_context_valid)
+  IPC_STRUCT_TRAITS_MEMBER(fullscreen_low_power_ca_context_id)
   IPC_STRUCT_TRAITS_MEMBER(io_surface)
   IPC_STRUCT_TRAITS_MEMBER(size)
   IPC_STRUCT_TRAITS_MEMBER(scale_factor)
