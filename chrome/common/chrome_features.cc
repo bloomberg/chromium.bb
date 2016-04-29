@@ -55,14 +55,8 @@ const base::Feature kSafeSearchUrlReporting{"SafeSearchUrlReporting",
 // A new user experience for transitioning into fullscreen and mouse pointer
 // lock states. The name is a misnomer (for historical reasons); affects both
 // Views and Android builds.
-const base::Feature kSimplifiedFullscreenUI = {
-    "ViewsSimplifiedFullscreenUI",
-#if defined(OS_ANDROID)
-    base::FEATURE_DISABLED_BY_DEFAULT
-#else
-    base::FEATURE_ENABLED_BY_DEFAULT
-#endif
-};
+const base::Feature kSimplifiedFullscreenUI{"ViewsSimplifiedFullscreenUI",
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
 #if defined(SYZYASAN)
 // Enable the deferred free mechanism in the syzyasan module, which helps the
