@@ -32,13 +32,16 @@ source_set("renderer") {
     "//third_party/WebKit/public:blink",
   ]
 
-  if (enable_wifi_display) {
+  if (proprietary_codecs && enable_wifi_display) {
     wifi_display_sources = rebase_path(
             extensions_gypi_values.extensions_renderer_sources_wifi_display,
             ".",
             "//extensions")
     sources += wifi_display_sources
 
-    deps += [ "//third_party/wds:libwds" ]
+    deps += [
+      "//third_party/openh264/openh264.gyp:openh264_encoder",
+      "//third_party/wds:libwds",
+    ]
   }
 }

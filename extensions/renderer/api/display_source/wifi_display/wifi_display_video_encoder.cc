@@ -4,6 +4,7 @@
 
 #include "extensions/renderer/api/display_source/wifi_display/wifi_display_video_encoder.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 
 #include "extensions/renderer/api/display_source/wifi_display/wifi_display_elementary_stream_descriptor.h"
@@ -31,7 +32,21 @@ WiFiDisplayVideoEncoder::~WiFiDisplayVideoEncoder() = default;
 void WiFiDisplayVideoEncoder::Create(
     const InitParameters& params,
     const VideoEncoderCallback& encoder_callback) {
-  CreateVEA(params, encoder_callback);
+  CreateVEA(params, base::Bind(&OnCreatedVEA, params, encoder_callback));
+}
+
+// static
+void WiFiDisplayVideoEncoder::OnCreatedVEA(
+    const InitParameters& params,
+    const VideoEncoderCallback& encoder_callback,
+    scoped_refptr<WiFiDisplayVideoEncoder> vea_encoder) {
+  if (vea_encoder) {
+    // An accelerated encoder was created successfully. Pass it on.
+    encoder_callback.Run(vea_encoder);
+  } else {
+    // An accelerated encoder was not created. Fall back to a software encoder.
+    CreateSVC(params, encoder_callback);
+  }
 }
 
 WiFiDisplayElementaryStreamInfo

@@ -38,7 +38,7 @@
         '<@(extensions_common_mojo_sources)',
       ],
       'conditions': [
-        ['enable_wifi_display==1', {
+        ['proprietary_codecs==1 and enable_wifi_display==1', {
           'sources': [
             '<@(extensions_common_mojo_sources_wifi_display)',
           ],
@@ -187,7 +187,7 @@
             '<@(extensions_browser_sources_linux_nonchromeos)',
           ],
         }],
-        ['enable_wifi_display == 1', {
+        ['proprietary_codecs==1 and enable_wifi_display == 1', {
           'sources': [
             '<@(extensions_browser_sources_wifi_display)',
             '<(SHARED_INTERMEDIATE_DIR)/extensions/common/mojo/wifi_display_session_service.mojom.cc',
@@ -220,8 +220,9 @@
       # Disable c4267 warnings until we fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],
       'conditions': [
-        ['enable_wifi_display==1', {
+        ['proprietary_codecs==1 and enable_wifi_display==1', {
           'dependencies': [
+            '../third_party/openh264/openh264.gyp:openh264_encoder',
             '../third_party/wds/wds.gyp:libwds',
           ],
           'sources': [

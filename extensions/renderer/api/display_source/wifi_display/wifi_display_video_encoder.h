@@ -72,10 +72,18 @@ class WiFiDisplayVideoEncoder : public WiFiDisplayMediaEncoder {
   void RequestIDRPicture();
 
  protected:
+  // A factory method that creates a new encoder instance which uses OpenH264
+  // SVC encoder for encoding.
+  static void CreateSVC(const InitParameters& params,
+                        const VideoEncoderCallback& encoder_callback);
+
   // A factory method that creates a new encoder instance which uses Video
   // Encode Accelerator (VEA) for encoding.
   static void CreateVEA(const InitParameters& params,
                         const VideoEncoderCallback& encoder_callback);
+  static void OnCreatedVEA(const InitParameters& params,
+                           const VideoEncoderCallback& encoder_callback,
+                           scoped_refptr<WiFiDisplayVideoEncoder> vea_encoder);
 
   explicit WiFiDisplayVideoEncoder(
       scoped_refptr<base::SingleThreadTaskRunner> media_task_runner);

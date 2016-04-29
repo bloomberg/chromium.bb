@@ -22,7 +22,7 @@ if (enable_extensions) {
     sources = rebase_path(extensions_gypi_values.extensions_common_mojo_sources,
                           ".",
                           "//extensions")
-    if (enable_wifi_display) {
+    if (proprietary_codecs && enable_wifi_display) {
       wifi_display_sources = rebase_path(
               extensions_gypi_values.extensions_common_mojo_sources_wifi_display,
               ".",

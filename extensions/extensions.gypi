@@ -1067,6 +1067,7 @@
       'renderer/api/display_source/wifi_display/wifi_display_transport_stream_packetizer.h',
       'renderer/api/display_source/wifi_display/wifi_display_video_encoder.cc',
       'renderer/api/display_source/wifi_display/wifi_display_video_encoder.h',
+      'renderer/api/display_source/wifi_display/wifi_display_video_encoder_svc.cc',
       'renderer/api/display_source/wifi_display/wifi_display_video_encoder_vea.cc',
     ],
     'extensions_utility_sources': [
