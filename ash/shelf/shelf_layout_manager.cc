@@ -229,13 +229,16 @@ ShelfLayoutManager::ShelfLayoutManager(ShelfWidget* shelf)
       gesture_drag_auto_hide_state_(SHELF_AUTO_HIDE_SHOWN),
       update_shelf_observer_(NULL),
       chromevox_panel_height_(0),
-      duration_override_in_ms_(0),
-      root_window_controller_observer_(
-          new RootWindowControllerObserverImpl(this)) {
+      duration_override_in_ms_(0) {
   Shell::GetInstance()->AddShellObserver(this);
-  wm::WmWindowAura::Get(root_window_)
-      ->GetRootWindowController()
-      ->AddObserver(root_window_controller_observer_.get());
+
+  if (!Shell::GetInstance()->in_mus()) {
+    root_window_controller_observer_.reset(
+        new RootWindowControllerObserverImpl(this));
+    wm::WmWindowAura::Get(root_window_)
+        ->GetRootWindowController()
+        ->AddObserver(root_window_controller_observer_.get());
+  }
   Shell::GetInstance()->lock_state_controller()->AddObserver(this);
   aura::client::GetActivationClient(root_window_)->AddObserver(this);
   Shell::GetInstance()->session_state_delegate()->AddSessionStateObserver(this);
@@ -250,9 +253,11 @@ ShelfLayoutManager::~ShelfLayoutManager() {
   Shell::GetInstance()->lock_state_controller()->RemoveObserver(this);
   Shell::GetInstance()->
       session_state_delegate()->RemoveSessionStateObserver(this);
-  wm::WmWindowAura::Get(root_window_)
-      ->GetRootWindowController()
-      ->RemoveObserver(root_window_controller_observer_.get());
+  if (root_window_controller_observer_) {
+    wm::WmWindowAura::Get(root_window_)
+        ->GetRootWindowController()
+        ->RemoveObserver(root_window_controller_observer_.get());
+  }
 }
 
 void ShelfLayoutManager::PrepareForShutdown() {
