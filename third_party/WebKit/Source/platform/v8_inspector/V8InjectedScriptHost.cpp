@@ -172,7 +172,10 @@ void V8InjectedScriptHost::getEventListenersCallback(const v8::FunctionCallbackI
 
     V8DebuggerClient* client = unwrapDebugger(info)->client();
     V8EventListenerInfoList listenerInfo;
+    // eventListeners call can produce message on ErrorEvent during lazy event listener compilation.
+    client->muteWarningsAndDeprecations();
     client->eventListeners(info[0], listenerInfo);
+    client->unmuteWarningsAndDeprecations();
 
     v8::Local<v8::Object> result = v8::Object::New(info.GetIsolate());
     protocol::HashSet<String16> types;
