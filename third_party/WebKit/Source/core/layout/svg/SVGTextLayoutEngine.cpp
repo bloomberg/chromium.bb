@@ -276,35 +276,45 @@ void SVGTextLayoutEngine::finishLayout()
     m_lineLayoutBoxes.clear();
 }
 
-bool SVGTextLayoutEngine::currentLogicalCharacterAttributes(SVGTextLayoutAttributes*& logicalAttributes)
+const SVGTextLayoutAttributes* SVGTextLayoutEngine::nextLogicalAttributes()
 {
-    if (m_layoutAttributesPosition == m_layoutAttributes.size())
-        return false;
-
-    logicalAttributes = m_layoutAttributes[m_layoutAttributesPosition];
-    ASSERT(logicalAttributes);
-
-    if (m_logicalCharacterOffset != logicalAttributes->context()->textLength())
-        return true;
-
+    ASSERT(m_layoutAttributesPosition < m_layoutAttributes.size());
     ++m_layoutAttributesPosition;
     if (m_layoutAttributesPosition == m_layoutAttributes.size())
-        return false;
+        return nullptr;
 
-    logicalAttributes = m_layoutAttributes[m_layoutAttributesPosition];
     m_logicalMetricsListOffset = 0;
     m_logicalCharacterOffset = 0;
-    return true;
+    return m_layoutAttributes[m_layoutAttributesPosition];
 }
 
-bool SVGTextLayoutEngine::currentLogicalCharacterMetrics(SVGTextLayoutAttributes*& logicalAttributes, SVGTextMetrics& logicalMetrics)
+const SVGTextLayoutAttributes* SVGTextLayoutEngine::currentLogicalCharacterMetrics(SVGTextMetrics& logicalMetrics)
 {
+    // If we're consumed all layout attributes, there can be no more metrics.
+    if (m_layoutAttributesPosition == m_layoutAttributes.size())
+        return nullptr;
+
+    const SVGTextLayoutAttributes* logicalAttributes = m_layoutAttributes[m_layoutAttributesPosition];
+    // If we reached the end of the text node associated with the current set
+    // of layout attributes, try to move to the next text node/set of layout
+    // attributes.
+    ASSERT(m_logicalCharacterOffset <= logicalAttributes->context()->textLength());
+    if (m_logicalCharacterOffset == logicalAttributes->context()->textLength()) {
+        logicalAttributes = nextLogicalAttributes();
+        if (!logicalAttributes)
+            return nullptr;
+    }
+
+    // We have set of layout attributes. Find the first non-collapsed text
+    // metrics cell.
     const Vector<SVGTextMetrics>* metricsList = &logicalAttributes->context()->metricsList();
     unsigned metricsListSize = metricsList->size();
     while (true) {
+        // If we run out of metrics, move to the next set of layout attributes.
         if (m_logicalMetricsListOffset == metricsListSize) {
-            if (!currentLogicalCharacterAttributes(logicalAttributes))
-                return false;
+            logicalAttributes = nextLogicalAttributes();
+            if (!logicalAttributes)
+                return nullptr;
 
             metricsList = &logicalAttributes->context()->metricsList();
             metricsListSize = metricsList->size();
@@ -320,11 +330,11 @@ bool SVGTextLayoutEngine::currentLogicalCharacterMetrics(SVGTextLayoutAttributes
         }
 
         // Stop if we found the next valid logical text metrics object.
-        return true;
+        return logicalAttributes;
     }
 
     ASSERT_NOT_REACHED();
-    return true;
+    return nullptr;
 }
 
 void SVGTextLayoutEngine::advanceToNextLogicalCharacter(const SVGTextMetrics& logicalMetrics)
@@ -368,18 +378,14 @@ void SVGTextLayoutEngine::layoutTextOnLineOrPath(SVGInlineTextBox* textBox, Line
             continue;
         }
 
-        SVGTextLayoutAttributes* logicalAttributes = nullptr;
-        if (!currentLogicalCharacterAttributes(logicalAttributes))
-            break;
-
-        ASSERT(logicalAttributes);
         SVGTextMetrics logicalMetrics(SVGTextMetrics::SkippedSpaceMetrics);
-        if (!currentLogicalCharacterMetrics(logicalAttributes, logicalMetrics))
+        const SVGTextLayoutAttributes* logicalAttributes = currentLogicalCharacterMetrics(logicalMetrics);
+        if (!logicalAttributes)
             break;
 
-        SVGCharacterDataMap& characterDataMap = logicalAttributes->characterDataMap();
+        const SVGCharacterDataMap& characterDataMap = logicalAttributes->characterDataMap();
         SVGCharacterData data;
-        SVGCharacterDataMap::iterator it = characterDataMap.find(m_logicalCharacterOffset + 1);
+        SVGCharacterDataMap::const_iterator it = characterDataMap.find(m_logicalCharacterOffset + 1);
         if (it != characterDataMap.end())
             data = it->value;
 

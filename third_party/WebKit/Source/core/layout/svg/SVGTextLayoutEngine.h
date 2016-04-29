@@ -71,19 +71,19 @@ private:
     void layoutInlineTextBox(SVGInlineTextBox*);
     void layoutTextOnLineOrPath(SVGInlineTextBox*, LineLayoutSVGInlineText, const ComputedStyle&);
 
-    bool currentLogicalCharacterAttributes(SVGTextLayoutAttributes*&);
-    bool currentLogicalCharacterMetrics(SVGTextLayoutAttributes*&, SVGTextMetrics&);
+    const SVGTextLayoutAttributes* nextLogicalAttributes();
+    const SVGTextLayoutAttributes* currentLogicalCharacterMetrics(SVGTextMetrics&);
     void advanceToNextLogicalCharacter(const SVGTextMetrics&);
 
-private:
+    // Logical iteration state.
     Vector<SVGTextLayoutAttributes*>& m_layoutAttributes;
+    unsigned m_layoutAttributesPosition;
+    unsigned m_logicalCharacterOffset;
+    unsigned m_logicalMetricsListOffset;
 
     Vector<SVGInlineTextBox*> m_lineLayoutBoxes;
 
     SVGTextFragment m_currentTextFragment;
-    unsigned m_layoutAttributesPosition;
-    unsigned m_logicalCharacterOffset;
-    unsigned m_logicalMetricsListOffset;
     SVGInlineTextMetricsIterator m_visualMetricsIterator;
     FloatPoint m_textPosition;
     bool m_isVerticalText;
