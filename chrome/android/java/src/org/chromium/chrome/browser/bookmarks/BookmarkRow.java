@@ -248,6 +248,7 @@ abstract class BookmarkRow extends FrameLayout implements BookmarkUIObserver,
 
     @Override
     public boolean isChecked() {
+        if (mHighlightView == null) return false;
         return mHighlightView.isChecked();
     }
 
@@ -258,7 +259,8 @@ abstract class BookmarkRow extends FrameLayout implements BookmarkUIObserver,
 
     @Override
     public void setChecked(boolean checked) {
-        mHighlightView.setChecked(checked);
+        // Unselectable rows do not have highlight view.
+        if (mHighlightView != null) mHighlightView.setChecked(checked);
     }
 
     // BookmarkUIObserver implementations.
