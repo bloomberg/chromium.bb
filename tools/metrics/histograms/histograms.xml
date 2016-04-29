@@ -71426,6 +71426,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1320" label="FileAPINativeLineEndings"/>
   <int value="1321" label="PointerEventAttributeCount"/>
   <int value="1322" label="CompositedReplication"/>
+  <int value="1323" label="EncryptedMediaAllSelectedContentTypesHaveCodecs"/>
+  <int value="1324" label="EncryptedMediaAllSelectedContentTypesMissingCodecs"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

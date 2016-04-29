@@ -1138,6 +1138,8 @@ public:
         FileAPINativeLineEndings = 1320,
         PointerEventAttributeCount = 1321,
         CompositedReplication = 1322,
+        EncryptedMediaAllSelectedContentTypesHaveCodecs = 1323,
+        EncryptedMediaAllSelectedContentTypesMissingCodecs = 1324,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

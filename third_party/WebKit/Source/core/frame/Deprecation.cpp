@@ -367,6 +367,9 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature)
     case UseCounter::WindowPostMessageWithLegacyTargetOriginArgument:
         return replacedWillBeRemoved("'window.postMessage(message, transferables, targetOrigin)'", "'window.postMessage(message, targetOrigin, transferables)'", 54, "5719033043222528");
 
+    case UseCounter::EncryptedMediaAllSelectedContentTypesMissingCodecs:
+        return "contentType strings without codecs will not be supported by requestMediaKeySystemAccess() in the future. Please specify the desired codec(s) as part of the contentType.";
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();
