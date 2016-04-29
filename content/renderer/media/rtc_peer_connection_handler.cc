@@ -301,14 +301,13 @@ void CopyConstraintsIntoRtcConfiguration(
       &configuration->enable_rtp_data_channel)) {
     configuration->enable_rtp_data_channel = false;
   }
-  // TODO: Special treatment for screencast min bitrate, since it's an integer.
-  // if (FindConstraint(constraints,
-  //                   MediaConstraintsInterface::kScreencastMinBitrate,
-  //                   &configuration->screencast_min_bitrate, NULL)) {
-  //  configuration->override_screencast_min_bitrate = true;
-  // }
-  // Note: If an optional is not present, webrtc decides on its own
-  // what the value should be.
+  int rate;
+  if (GetConstraintValueAsInteger(
+          constraints,
+          &blink::WebMediaTrackConstraintSet::googScreencastMinBitrate,
+          &rate)) {
+    configuration->screencast_min_bitrate = rtc::Optional<int>(rate);
+  }
   configuration->combined_audio_video_bwe = ConstraintToOptional(
       constraints,
       &blink::WebMediaTrackConstraintSet::googCombinedAudioVideoBwe);
