@@ -7,6 +7,7 @@
 #include <sddl.h>
 
 #include <memory>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -141,7 +142,7 @@ void AddCrashKey(const wchar_t *key, const wchar_t *value,
 
 // Get the |process| and the |thread_id| of the node inside the |wait_chain|
 // that is of type ThreadType and belongs to a process that is valid for the
-// capture of a crash dump. Returns if such a node was found.
+// capture of a crash dump. Returns true if such a node was found.
 bool GetLastValidNodeInfo(const base::win::WaitChainNodeVector& wait_chain,
                           base::Process* process,
                           DWORD* thread_id) {
@@ -159,6 +160,68 @@ bool GetLastValidNodeInfo(const base::win::WaitChainNodeVector& wait_chain,
     }
   }
   return false;
+}
+
+// Adds the entire wait chain to |crash_keys|.
+//
+// As an example (key : value):
+// hung-process-wait-chain-00 : Thread 10242 in process 4554 with status Blocked
+// hung-process-wait-chain-01 : Lock of type ThreadWait with status Owned
+// hung-process-wait-chain-02 : Thread 77221 in process 4554 with status Blocked
+//
+void AddWaitChainToCrashKeys(const base::win::WaitChainNodeVector& wait_chain,
+                             std::vector<kasko::api::CrashKey>* crash_keys) {
+  for (size_t i = 0; i < wait_chain.size(); i++) {
+    AddCrashKey(
+        base::StringPrintf(L"hung-process-wait-chain-%02" PRIuS, i).c_str(),
+        base::win::WaitChainNodeToString(wait_chain[i]).c_str(), crash_keys);
+  }
+}
+
+base::FilePath GetExeFilePathForProcess(const base::Process& process) {
+  wchar_t exe_name[MAX_PATH];
+  DWORD exe_name_len = arraysize(exe_name);
+  // Note: requesting the Win32 path format.
+  if (::QueryFullProcessImageName(process.Handle(), 0, exe_name,
+                                  &exe_name_len) == 0) {
+    DPLOG(ERROR) << "Failed to get executable name for process";
+    return base::FilePath();
+  }
+
+  // QueryFullProcessImageName's documentation does not specify behavior when
+  // the buffer is too small, but we know that GetModuleFileNameEx succeeds and
+  // truncates the returned name in such a case. Given that paths of arbitrary
+  // length may exist, the conservative approach is to reject names when
+  // the returned length is that of the buffer.
+  if (exe_name_len > 0 && exe_name_len < arraysize(exe_name))
+    return base::FilePath(exe_name);
+
+  return base::FilePath();
+}
+
+// Adds the executable base name for each unique pid found in the |wait_chain|
+// to the |crash_keys|.
+void AddProcessExeNameToCrashKeys(
+    const base::win::WaitChainNodeVector& wait_chain,
+    std::vector<kasko::api::CrashKey>* crash_keys) {
+  std::set<DWORD> unique_pids;
+  for (size_t i = 0; i < wait_chain.size(); i += 2)
+    unique_pids.insert(wait_chain[i].ThreadObject.ProcessId);
+
+  for (DWORD pid : unique_pids) {
+    // This is racy on the pid but for the purposes of this function, some error
+    // threshold can be tolerated. Hopefully the race doesn't happen often.
+    base::Process process(
+        base::Process::OpenWithAccess(pid, PROCESS_QUERY_LIMITED_INFORMATION));
+
+    base::string16 exe_file_path = L"N/A";
+    if (process.IsValid())
+      exe_file_path = GetExeFilePathForProcess(process).BaseName().value();
+
+    AddCrashKey(
+        base::StringPrintf(L"hung-process-wait-chain-pid-%u", pid).c_str(),
+        exe_file_path.c_str(), crash_keys);
+  }
 }
 
 }  // namespace
@@ -185,31 +248,13 @@ void ShutdownKaskoReporter() {
 }
 
 bool EnsureTargetProcessValidForCapture(const base::Process& process) {
-  // Ensure the target process shares the current process's executable name.
-  base::FilePath exe_self;
-  if (!PathService::Get(base::FILE_EXE, &exe_self))
+  // Ensure the target process's executable is inside the current Chrome
+  // directory.
+  base::FilePath chrome_dir;
+  if (!PathService::Get(base::DIR_EXE, &chrome_dir))
     return false;
 
-  wchar_t exe_name_other[MAX_PATH];
-  DWORD exe_name_other_len = arraysize(exe_name_other);
-  // Note: requesting the Win32 path format.
-  if (::QueryFullProcessImageName(process.Handle(), 0, exe_name_other,
-                                  &exe_name_other_len) == 0) {
-    DPLOG(ERROR) << "Failed to get executable name for other process";
-    return false;
-  }
-
-  // QueryFullProcessImageName's documentation does not specify behavior when
-  // the buffer is too small, but we know that GetModuleFileNameEx succeeds and
-  // truncates the returned name in such a case. Given that paths of arbitrary
-  // length may exist, the conservative approach is to reject names when
-  // the returned length is that of the buffer.
-  if (exe_name_other_len > 0 &&
-      exe_name_other_len < arraysize(exe_name_other)) {
-    return base::FilePath::CompareEqualIgnoreCase(exe_self.value(),
-                                                  exe_name_other);
-  }
-  return false;
+  return chrome_dir.IsParent(GetExeFilePathForProcess(process));
 }
 
 void DumpHungProcess(DWORD main_thread_id, const base::string16& channel,
@@ -236,22 +281,11 @@ void DumpHungProcess(DWORD main_thread_id, const base::string16& channel,
         GetLastValidNodeInfo(wait_chain, &hung_process, &hung_thread_id);
     DCHECK(found_valid_node);
 
-    // The entire wait chain is added to the crash report via crash keys.
-    //
-    // As an example (key : value):
-    // hung-process-is-deadlock  : false
-    // hung-process-wait-chain-00 : Thread #10242 with status Blocked
-    // hung-process-wait-chain-01 : Lock of type ThreadWait with status Owned
-    // hung-process-wait-chain-02 : Thread #77221 with status Blocked
-    //
+    // Add some interesting data about the wait chain to the crash keys.
     AddCrashKey(L"hung-process-is-deadlock", is_deadlock ? L"true" : L"false",
                 &annotations);
-    for (size_t i = 0; i < wait_chain.size(); i++) {
-      AddCrashKey(
-          base::StringPrintf(L"hung-process-wait-chain-%02" PRIuS, i).c_str(),
-          base::win::WaitChainNodeToString(wait_chain[i]).c_str(),
-          &annotations);
-    }
+    AddWaitChainToCrashKeys(wait_chain, &annotations);
+    AddProcessExeNameToCrashKeys(wait_chain, &annotations);
   } else {
     // The call to GetThreadWaitChain() failed. Include the reason inside the
     // report using crash keys.
