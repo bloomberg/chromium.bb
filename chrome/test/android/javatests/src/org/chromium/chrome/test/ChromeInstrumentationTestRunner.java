@@ -18,6 +18,7 @@ import org.chromium.base.test.BaseInstrumentationTestRunner;
 import org.chromium.base.test.BaseTestResult;
 import org.chromium.base.test.util.RestrictionSkipCheck;
 import org.chromium.base.test.util.SkipCheck;
+import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.chrome.test.util.DisableInTabbedMode;
@@ -68,9 +69,14 @@ public class ChromeInstrumentationTestRunner extends BaseInstrumentationTestRunn
                 return true;
             }
             if (TextUtils.equals(restriction,
-                                 ChromeRestriction.RESTRICTION_TYPE_GOOGLE_PLAY_SERVICES)
+                    ChromeRestriction.RESTRICTION_TYPE_GOOGLE_PLAY_SERVICES)
                     && (ConnectionResult.SUCCESS != GoogleApiAvailability.getInstance()
-                            .isGooglePlayServicesAvailable(getTargetContext()))) {
+                    .isGooglePlayServicesAvailable(getTargetContext()))) {
+                return true;
+            }
+            if (TextUtils.equals(restriction,
+                    ChromeRestriction.RESTRICTION_TYPE_OFFICIAL_BUILD)
+                    && (!ChromeVersionInfo.isOfficialBuild())) {
                 return true;
             }
             return false;

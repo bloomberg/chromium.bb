@@ -15,4 +15,6 @@ public final class ChromeRestriction {
     public static final String RESTRICTION_TYPE_PHONE = "Phone";
     /** Specifies the test is only valid on tablet form factors. */
     public static final String RESTRICTION_TYPE_TABLET = "Tablet";
+    /** Specifies the test is only valid on official build. */
+    public static final String RESTRICTION_TYPE_OFFICIAL_BUILD = "Official_Build";
 }
