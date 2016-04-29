@@ -479,7 +479,8 @@ bool HostProcess::InitWithCommandLine(const base::CommandLine* cmd_line) {
   IPC::AttachmentBroker* broker = IPC::AttachmentBroker::GetGlobal();
   if (broker && !broker->IsPrivilegedBroker())
     broker->RegisterBrokerCommunicationChannel(daemon_channel_.get());
-  daemon_channel_->Init(channel_handle, IPC::Channel::MODE_CLIENT, true);
+  daemon_channel_->Init(channel_handle, IPC::Channel::MODE_CLIENT,
+                        /*create_pipe_now=*/true);
 
 #else  // !defined(REMOTING_MULTI_PROCESS)
   if (cmd_line->HasSwitch(kHostConfigSwitchName)) {
@@ -860,8 +861,9 @@ void HostProcess::ShutdownOnUiThread() {
 
 #if defined(REMOTING_MULTI_PROCESS)
   IPC::AttachmentBroker* broker = IPC::AttachmentBroker::GetGlobal();
-  if (broker && !broker->IsPrivilegedBroker())
+  if (broker && !broker->IsPrivilegedBroker()) {
     broker->DeregisterBrokerCommunicationChannel(daemon_channel_.get());
+  }
   daemon_channel_.reset();
 #endif  // defined(REMOTING_MULTI_PROCESS)
 

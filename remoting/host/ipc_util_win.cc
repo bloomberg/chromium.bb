@@ -59,10 +59,13 @@ bool CreateConnectedIpcChannel(
   // Wrap the pipe into an IPC channel.
   std::unique_ptr<IPC::ChannelProxy> server(
       new IPC::ChannelProxy(listener, io_task_runner));
-  IPC::AttachmentBroker::GetGlobal()->RegisterCommunicationChannel(
-      server.get(), io_task_runner);
+  IPC::AttachmentBroker* broker = IPC::AttachmentBroker::GetGlobal();
+  DCHECK(broker) << "No AttachmentBroker registered.";
+  if (broker->IsPrivilegedBroker()) {
+    broker->RegisterCommunicationChannel(server.get(), io_task_runner);
+  }
   server->Init(IPC::ChannelHandle(pipe.Get()), IPC::Channel::MODE_SERVER,
-                true);
+               /*create_pipe_now=*/true);
 
   // Convert the channel name to the pipe name.
   std::string pipe_name(kChromePipeNamePrefix);

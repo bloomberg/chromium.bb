@@ -387,7 +387,7 @@ void WtsSessionProcessDelegate::Core::DoLaunchProcess() {
   IPC::AttachmentBroker::GetGlobal()->RegisterCommunicationChannel(
       channel.get(), io_task_runner_);
   channel->Init(IPC::ChannelHandle(pipe.Get()), IPC::Channel::MODE_SERVER,
-                true);
+                /*create_pipe_now=*/true);
 
   // Pass the name of the IPC channel to use.
   command_line.AppendSwitchNative(kDaemonPipeSwitchName,
