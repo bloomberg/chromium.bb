@@ -46,7 +46,8 @@ TEST_F(OmniboxPopupCellTest, Image) {
        initWithMatch:match
       contentsOffset:0
                image:[NSImage imageNamed:NSImageNameInfo]
-         answerImage:nil]);
+         answerImage:nil
+        forDarkTheme:NO]);
   [cell_ setObjectValue:cellData_];
   [control_ display];
 }
@@ -58,7 +59,8 @@ TEST_F(OmniboxPopupCellTest, Title) {
   cellData_.reset([[OmniboxPopupCellData alloc] initWithMatch:match
                                                contentsOffset:0
                                                         image:nil
-                                                  answerImage:nil]);
+                                                  answerImage:nil
+                                                 forDarkTheme:NO]);
   [cell_ setObjectValue:cellData_];
   [control_ display];
 }
@@ -84,7 +86,8 @@ TEST_F(OmniboxPopupCellTest, AnswerStyle) {
   cellData_.reset([[OmniboxPopupCellData alloc] initWithMatch:match
                                                contentsOffset:0
                                                         image:nil
-                                                  answerImage:nil]);
+                                                  answerImage:nil
+                                                 forDarkTheme:NO]);
   EXPECT_NSEQ([[cellData_ description] string], finalString);
   size_t length = [[[cellData_ description] string] length];
   const NSRange checkValues[] = {{0, 2}, {2, 2}, {4, 4}};

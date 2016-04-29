@@ -14,9 +14,6 @@
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/color_palette.h"
-#include "ui/gfx/image/image_skia_util_mac.h"
-#include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icons_public.h"
 
 namespace {
 
@@ -37,29 +34,16 @@ StarDecoration::StarDecoration(CommandUpdater* command_updater)
 StarDecoration::~StarDecoration() {
 }
 
-void StarDecoration::SetStarred(bool starred, bool locationBarIsDark) {
+void StarDecoration::SetStarred(bool starred, bool location_bar_is_dark) {
   starred_ = starred;
-  const int image_id = starred ? IDR_STAR_LIT : IDR_STAR;
   const int tip_id = starred ? IDS_TOOLTIP_STARRED : IDS_TOOLTIP_STAR;
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    NSImage* theImage;
-    gfx::VectorIconId iconId = starred_ ?
-        gfx::VectorIconId::LOCATION_BAR_STAR_ACTIVE :
-        gfx::VectorIconId::LOCATION_BAR_STAR;
-    SkColor starColor = gfx::kPlaceholderColor;
-    if (locationBarIsDark) {
-      starColor = SK_ColorWHITE;
-    } else if (starred_) {
-      starColor = gfx::kGoogleBlue500;
-    } else {
-      starColor = gfx::kChromeIconGrey;
-    }
-    theImage = NSImageFromImageSkia(gfx::CreateVectorIcon(
-        iconId, 16, starColor));
-    SetImage(theImage);
-  } else {
+  if (!ui::MaterialDesignController::IsModeMaterial()) {
+    const int image_id = starred ? IDR_STAR_LIT : IDR_STAR;
     SetImage(OmniboxViewMac::ImageForResource(image_id));
+    tooltip_.reset([l10n_util::GetNSStringWithFixup(tip_id) retain]);
+    return;
   }
+  SetImage(GetMaterialIcon(location_bar_is_dark));
   tooltip_.reset([l10n_util::GetNSStringWithFixup(tip_id) retain]);
 }
 
@@ -80,4 +64,16 @@ bool StarDecoration::OnMousePressed(NSRect frame, NSPoint location) {
 
 NSString* StarDecoration::GetToolTip() {
   return tooltip_.get();
+}
+
+SkColor StarDecoration::GetMaterialIconColor(bool location_bar_is_dark) const {
+  if (location_bar_is_dark) {
+    return starred_ ? gfx::kGoogleBlue300 : SkColorSetA(SK_ColorWHITE, 0xCC);
+  }
+  return starred_ ? gfx::kGoogleBlue500 : gfx::kChromeIconGrey;
+}
+
+gfx::VectorIconId StarDecoration::GetMaterialVectorIconId() const {
+  return starred_ ? gfx::VectorIconId::LOCATION_BAR_STAR_ACTIVE
+                  : gfx::VectorIconId::LOCATION_BAR_STAR;
 }

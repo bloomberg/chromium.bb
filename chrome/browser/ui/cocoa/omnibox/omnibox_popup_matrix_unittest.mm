@@ -31,7 +31,8 @@ class OmniboxPopupMatrixTest : public CocoaTest,
 
   void SetUp() override {
     CocoaTest::SetUp();
-    matrix_.reset([[OmniboxPopupMatrix alloc] initWithObserver:this]);
+    matrix_.reset([[OmniboxPopupMatrix alloc] initWithObserver:this
+                                                  forDarkTheme:NO]);
     [[test_window() contentView] addSubview:matrix_];
 
     NSMutableArray* array = [NSMutableArray array];

@@ -25,22 +25,30 @@
 #import "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/base/cocoa/flipped_view.h"
 #include "ui/base/cocoa/window_size_constants.h"
+#include "ui/base/material_design/material_design_controller.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/image/image_skia_util_mac.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 #include "ui/gfx/text_elider.h"
+#include "ui/gfx/vector_icons_public.h"
 
 namespace {
 
+const int kPopupPaddingVertical = 5;
+const int kMaterialPopupPaddingVertical = 4;
+
 // Padding between matrix and the top and bottom of the popup window.
-const CGFloat kPopupPaddingVertical = 5.0;
+CGFloat PopupPaddingVertical() {
+  if (!ui::MaterialDesignController::IsModeMaterial()) {
+    return kPopupPaddingVertical;
+  }
+  return kMaterialPopupPaddingVertical;
+}
 
 // Animation duration when animating the popup window smaller.
 const NSTimeInterval kShrinkAnimationDuration = 0.1;
-
-// Background colors for different states of the popup elements.
-NSColor* BackgroundColor() {
-  return [NSColor controlBackgroundColor];
-}
 
 }  // namespace
 
@@ -64,6 +72,16 @@ OmniboxPopupViewMac::~OmniboxPopupViewMac() {
   // Break references to |this| because the popup may not be
   // deallocated immediately.
   [matrix_ setObserver:NULL];
+}
+
+// Background colors for different states of the popup elements.
+// static
+NSColor* OmniboxPopupViewMac::BackgroundColor(bool is_dark_theme) {
+  const CGFloat kMDDarkControlBackround = 40 / 255.;
+  return is_dark_theme
+             ? [NSColor colorWithGenericGamma22White:kMDDarkControlBackround
+                                               alpha:1]
+             : [NSColor controlBackgroundColor];
 }
 
 bool OmniboxPopupViewMac::IsOpen() const {
@@ -102,7 +120,9 @@ void OmniboxPopupViewMac::UpdatePopupAppearance() {
                                         tableView:matrix_
                                         popupView:*this
                                       answerImage:answerImage]];
-  [matrix_ setSeparator:[OmniboxPopupCell createSeparatorString]];
+  BOOL is_dark_theme = [matrix_ hasDarkTheme];
+  [matrix_ setSeparator:[OmniboxPopupCell
+                            createSeparatorStringForDarkTheme:is_dark_theme]];
 
   // Update the selection before placing (and displaying) the window.
   PaintUpdatesNow();
@@ -165,23 +185,28 @@ void OmniboxPopupViewMac::CreatePopupIfNeeded() {
         [[FlippedView alloc] initWithFrame:NSZeroRect]);
     [popup_ setContentView:contentView];
 
+    BOOL is_dark_theme = ui::MaterialDesignController::IsModeMaterial() &&
+                         [[field_ window] hasDarkTheme];
+
     // View to draw a background beneath the matrix.
     background_view_.reset([[NSBox alloc] initWithFrame:NSZeroRect]);
     [background_view_ setBoxType:NSBoxCustom];
     [background_view_ setBorderType:NSNoBorder];
-    [background_view_ setFillColor:BackgroundColor()];
+    [background_view_ setFillColor:BackgroundColor(is_dark_theme)];
     [background_view_ setContentViewMargins:NSZeroSize];
     [contentView addSubview:background_view_];
 
-    matrix_.reset([[OmniboxPopupMatrix alloc] initWithObserver:this]);
+    matrix_.reset([[OmniboxPopupMatrix alloc] initWithObserver:this
+                                                  forDarkTheme:is_dark_theme]);
     [background_view_ addSubview:matrix_];
 
     top_separator_view_.reset(
         [[OmniboxPopupTopSeparatorView alloc] initWithFrame:NSZeroRect]);
     [contentView addSubview:top_separator_view_];
 
-    bottom_separator_view_.reset(
-        [[OmniboxPopupBottomSeparatorView alloc] initWithFrame:NSZeroRect]);
+    bottom_separator_view_.reset([[OmniboxPopupBottomSeparatorView alloc]
+        initWithFrame:NSZeroRect
+         forDarkTheme:is_dark_theme]);
     [contentView addSubview:bottom_separator_view_];
 
     // TODO(dtseng): Ignore until we provide NSAccessibility support.
@@ -198,7 +223,7 @@ void OmniboxPopupViewMac::PositionPopup(const CGFloat matrixHeight) {
   // Calculate the popup's position on the screen.
   NSRect popup_frame = anchor_rect_base;
   // Size to fit the matrix and shift down by the size.
-  popup_frame.size.height = matrixHeight + kPopupPaddingVertical * 2.0;
+  popup_frame.size.height = matrixHeight + PopupPaddingVertical() * 2.0;
   popup_frame.size.height += [OmniboxPopupTopSeparatorView preferredHeight];
   popup_frame.size.height += [OmniboxPopupBottomSeparatorView preferredHeight];
   popup_frame.origin.y -= NSHeight(popup_frame);
@@ -232,21 +257,31 @@ void OmniboxPopupViewMac::PositionPopup(const CGFloat matrixHeight) {
   background_rect.origin.y = NSMaxY(top_separator_frame);
   [background_view_ setFrame:background_rect];
 
-  // Calculate the width of the table based on backing out the popup's border
+  // In Material Design, the table is the width of the window. In non-MD,
+  // calculate the width of the table based on backing out the popup's border
   // from the width of the field.
-  const CGFloat tableWidth = NSWidth([field_ bounds]);
-  DCHECK_GT(tableWidth, 0.0);
+  CGFloat table_width = NSWidth([background_view_ bounds]);
+  bool is_mode_material = ui::MaterialDesignController::IsModeMaterial();
+  if (!is_mode_material) {
+    table_width = NSWidth([field_ bounds]);
+  }
+  DCHECK_GT(table_width, 0.0);
 
   // Matrix.
   NSPoint field_origin_base =
       [field_ convertPoint:[field_ bounds].origin toView:nil];
   NSRect matrix_frame = NSZeroRect;
-  matrix_frame.origin.x = field_origin_base.x - NSMinX(anchor_rect_base);
-  matrix_frame.origin.y = kPopupPaddingVertical;
-  matrix_frame.size.width = tableWidth;
+  matrix_frame.origin.x = 0;
+  if (!is_mode_material) {
+    matrix_frame.origin.x = field_origin_base.x - NSMinX(anchor_rect_base);
+  } else {
+    [matrix_ setContentLeftPadding:field_origin_base.x];
+  }
+  matrix_frame.origin.y = PopupPaddingVertical();
+  matrix_frame.size.width = table_width;
   matrix_frame.size.height = matrixHeight;
   [matrix_ setFrame:matrix_frame];
-  [[[matrix_ tableColumns] objectAtIndex:0] setWidth:tableWidth];
+  [[[matrix_ tableColumns] objectAtIndex:0] setWidth:table_width];
 
   // Don't play animation games on first display.
   target_popup_frame_ = popup_frame;
@@ -301,15 +336,28 @@ void OmniboxPopupViewMac::PositionPopup(const CGFloat matrixHeight) {
   }
 }
 
-NSImage* OmniboxPopupViewMac::ImageForMatch(
-    const AutocompleteMatch& match) const {
+NSImage* OmniboxPopupViewMac::ImageForMatch(const AutocompleteMatch& match,
+                                            BOOL ignore_dark_theme) const {
   gfx::Image image = model_->GetIconIfExtensionMatch(match);
   if (!image.IsEmpty())
     return image.AsNSImage();
 
-  const int resource_id = model_->IsStarredMatch(match) ?
-      IDR_OMNIBOX_STAR : AutocompleteMatch::TypeToIcon(match.type);
-  return OmniboxViewMac::ImageForResource(resource_id);
+  if (!ui::MaterialDesignController::IsModeMaterial()) {
+    const int resource_id = model_->IsStarredMatch(match)
+                                ? IDR_OMNIBOX_STAR
+                                : AutocompleteMatch::TypeToIcon(match.type);
+    return OmniboxViewMac::ImageForResource(resource_id);
+  }
+  bool is_dark_mode = !ignore_dark_theme && [matrix_ hasDarkTheme];
+  const SkColor icon_color =
+      is_dark_mode ? SkColorSetA(SK_ColorWHITE, 0xCC) : gfx::kChromeIconGrey;
+  const gfx::VectorIconId vector_icon_id =
+      model_->IsStarredMatch(match)
+          ? gfx::VectorIconId::LOCATION_BAR_STAR
+          : AutocompleteMatch::TypeToVectorIcon(match.type);
+  const int kIconSize = 16;
+  return NSImageFromImageSkia(
+      gfx::CreateVectorIcon(vector_icon_id, kIconSize, icon_color));
 }
 
 void OmniboxPopupViewMac::OpenURLForRow(size_t row,

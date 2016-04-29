@@ -7,7 +7,10 @@
 #include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
 #include "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/image/image_skia_util_mac.h"
+#include "ui/gfx/paint_vector_icon.h"
 
 const CGFloat LocationBarDecoration::kOmittedWidth = 0.0;
 
@@ -80,6 +83,23 @@ NSPoint LocationBarDecoration::GetBubblePointInFrame(NSRect frame) {
   return frame.origin;
 }
 
+NSImage* LocationBarDecoration::GetMaterialIcon(
+    bool location_bar_is_dark) const {
+  const int kIconSize = 16;
+  gfx::VectorIconId vector_icon_id = GetMaterialVectorIconId();
+  if (vector_icon_id == gfx::VectorIconId::VECTOR_ICON_NONE) {
+    // Return an empty image when the decoration specifies no vector icon, so
+    // that its bubble is positioned correctly (the position is based on the
+    // width of the image; returning nil will mess up the positioning).
+    NSSize icon_size = NSMakeSize(kIconSize, kIconSize);
+    return [[[NSImage alloc] initWithSize:icon_size] autorelease];
+  }
+
+  SkColor vector_icon_color = GetMaterialIconColor(location_bar_is_dark);
+  return NSImageFromImageSkia(
+      gfx::CreateVectorIcon(vector_icon_id, kIconSize, vector_icon_color));
+}
+
 // static
 void LocationBarDecoration::DrawLabel(NSString* label,
                                       NSDictionary* attributes,
@@ -102,4 +122,15 @@ void LocationBarDecoration::DrawAttributedString(NSAttributedString* str,
 NSSize LocationBarDecoration::GetLabelSize(NSString* label,
                                            NSDictionary* attributes) {
   return [label sizeWithAttributes:attributes];
+}
+
+SkColor LocationBarDecoration::GetMaterialIconColor(
+    bool location_bar_is_dark) const {
+  return location_bar_is_dark ? SkColorSetA(SK_ColorWHITE, 0xCC)
+                              : gfx::kChromeIconGrey;
+}
+
+gfx::VectorIconId LocationBarDecoration::GetMaterialVectorIconId() const {
+  NOTREACHED();
+  return gfx::VectorIconId::VECTOR_ICON_NONE;
 }

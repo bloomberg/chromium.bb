@@ -45,6 +45,7 @@ class OmniboxPopupViewMac;
 @property(readonly, retain, nonatomic) NSAttributedString* description;
 @property(readonly, retain, nonatomic) NSAttributedString* prefix;
 @property(readonly, retain, nonatomic) NSImage* image;
+@property(retain, nonatomic) NSImage* incognitoImage;
 @property(readonly, retain, nonatomic) NSImage* answerImage;
 @property(readonly, nonatomic) CGFloat contentsOffset;
 @property(readonly, nonatomic) BOOL isContentsRTL;
@@ -54,7 +55,8 @@ class OmniboxPopupViewMac;
 - (instancetype)initWithMatch:(const AutocompleteMatch&)match
                contentsOffset:(CGFloat)contentsOffset
                         image:(NSImage*)image
-                  answerImage:(NSImage*)answerImage;
+                  answerImage:(NSImage*)answerImage
+                 forDarkTheme:(BOOL)isDarkTheme;
 
 // Returns the width of the match contents.
 - (CGFloat)getMatchContentsWidth;
@@ -72,7 +74,7 @@ class OmniboxPopupViewMac;
 // shared by all OmniboxPopupCell instances through OmniboxPopupViewMac parent.
 + (CGFloat)computeContentsOffset:(const AutocompleteMatch&)match;
 
-+ (NSAttributedString*)createSeparatorString;
++ (NSAttributedString*)createSeparatorStringForDarkTheme:(BOOL)isDarkTheme;
 
 @end
 

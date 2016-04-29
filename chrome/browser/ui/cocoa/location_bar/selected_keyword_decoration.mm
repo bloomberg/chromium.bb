@@ -13,18 +13,15 @@
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/color_palette.h"
-#include "ui/gfx/image/image_skia_util_mac.h"
-#include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icons_public.h"
 
 SelectedKeywordDecoration::SelectedKeywordDecoration() {
   if (!ui::MaterialDesignController::IsModeMaterial()) {
     search_image_.reset([OmniboxViewMac::ImageForResource(
         IDR_KEYWORD_SEARCH_MAGNIFIER) retain]);
     SetTextColor([NSColor blackColor]);
-  } else {
-    SetTextColor(GetBackgroundBorderColor());
+    return;
   }
+  SetTextColor(GetBackgroundBorderColor());
 }
 
 SelectedKeywordDecoration::~SelectedKeywordDecoration() {}

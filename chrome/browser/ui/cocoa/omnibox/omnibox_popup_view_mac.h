@@ -32,6 +32,9 @@ class OmniboxPopupViewMac : public OmniboxPopupView,
                       NSTextField* field);
   ~OmniboxPopupViewMac() override;
 
+  // Return the OmniboxPopupViewMac background color.
+  static NSColor* BackgroundColor(bool is_dark_theme);
+
   // Overridden from OmniboxPopupView:
   bool IsOpen() const override;
   void InvalidateLine(size_t line) override {}
@@ -50,7 +53,8 @@ class OmniboxPopupViewMac : public OmniboxPopupView,
                                 size_t row) override;
 
   // Returns the NSImage that should be used as an icon for the given match.
-  NSImage* ImageForMatch(const AutocompleteMatch& match) const;
+  NSImage* ImageForMatch(const AutocompleteMatch& match,
+                         BOOL ignore_dark_theme) const;
 
   OmniboxPopupMatrix* matrix() { return matrix_; }
 

@@ -615,16 +615,15 @@ void LocationBarViewMac::OnThemeChanged() {
 }
 
 void LocationBarViewMac::OnChanged() {
-  NSImage* image = nil;
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    UpdateLocationIcon();
-  } else {
+  if (!ui::MaterialDesignController::IsModeMaterial()) {
     const int resource_id = omnibox_view_->GetIcon();
-    image = OmniboxViewMac::ImageForResource(resource_id);
+    NSImage* image = OmniboxViewMac::ImageForResource(resource_id);
     location_icon_decoration_->SetImage(image);
     ev_bubble_decoration_->SetImage(image);
     Layout();
+    return;
   }
+  UpdateLocationIcon();
 }
 
 void LocationBarViewMac::OnSetFocus() {

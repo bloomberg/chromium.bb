@@ -8,6 +8,8 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/macros.h"
+#include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/vector_icons_public.h"
 
 // Base class for decorations at the left and right of the location
 // bar.  For instance, the location icon.
@@ -88,6 +90,9 @@ class LocationBarDecoration {
   // The return value is in the same coordinate system as |frame|.
   virtual NSPoint GetBubblePointInFrame(NSRect frame);
 
+  // Gets the Material Design vector-based icon.
+  NSImage* GetMaterialIcon(bool location_bar_is_dark) const;
+
   static void DrawLabel(NSString* label,
                         NSDictionary* attributes,
                         const NSRect& frame);
@@ -99,6 +104,17 @@ class LocationBarDecoration {
   // Width returned by |GetWidthForSpace()| when the item should be
   // omitted for this width;
   static const CGFloat kOmittedWidth;
+
+ protected:
+  // Gets the color used to draw the Material Design icon. The default
+  // implementation satisfies most cases - few subclasses should need to
+  // override.
+  virtual SkColor GetMaterialIconColor(bool location_bar_is_dark) const;
+
+  // Gets the id of the decoration's Material Design vector icon. Subclasses
+  // should override to return the correct id. Not an abstract method because
+  // some decorations are assigned their icon (vs. creating it themselves).
+  virtual gfx::VectorIconId GetMaterialVectorIconId() const;
 
  private:
   bool visible_;

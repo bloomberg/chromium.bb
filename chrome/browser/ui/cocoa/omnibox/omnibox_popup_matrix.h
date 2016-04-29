@@ -68,14 +68,23 @@ class OmniboxPopupMatrixObserver {
   CGFloat maxMatchContentsWidth_;
 
   CGFloat answerLineHeight_;
+
+  // Left margin padding for the content (i.e. icon and text) in a cell.
+  CGFloat contentLeftPadding_;
+
+  // true if the OmniboxPopupMatrix should use the dark theme style.
+  BOOL hasDarkTheme_;
 }
 
 @property(retain, nonatomic) NSAttributedString* separator;
 @property(nonatomic) CGFloat maxMatchContentsWidth;
 @property(nonatomic) CGFloat answerLineHeight;
+@property(nonatomic) CGFloat contentLeftPadding;
+@property(readonly, nonatomic) BOOL hasDarkTheme;
 
 // Create a zero-size matrix.
-- (instancetype)initWithObserver:(OmniboxPopupMatrixObserver*)observer;
+- (instancetype)initWithObserver:(OmniboxPopupMatrixObserver*)observer
+                    forDarkTheme:(BOOL)isDarkTheme;
 
 // Sets the observer.
 - (void)setObserver:(OmniboxPopupMatrixObserver*)observer;

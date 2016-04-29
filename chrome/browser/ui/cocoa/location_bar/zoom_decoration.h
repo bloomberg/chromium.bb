@@ -52,6 +52,9 @@ class ZoomDecoration : public ImageDecoration,
                                NSString* tooltip_string,
                                bool location_bar_is_dark);
 
+  // Overridden from LocationBarDecoration:
+  gfx::VectorIconId GetMaterialVectorIconId() const override;
+
  private:
   friend ZoomDecorationTest;
 
@@ -78,6 +81,8 @@ class ZoomDecoration : public ImageDecoration,
 
   // The string to show for a tooltip.
   base::scoped_nsobject<NSString> tooltip_;
+
+  gfx::VectorIconId vector_icon_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ZoomDecoration);
 };

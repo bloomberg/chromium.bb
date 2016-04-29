@@ -30,6 +30,10 @@ class TranslateDecoration : public ImageDecoration {
   NSString* GetToolTip() override;
   NSPoint GetBubblePointInFrame(NSRect frame) override;
 
+ protected:
+  // Overridden from LocationBarDecoration:
+  gfx::VectorIconId GetMaterialVectorIconId() const override;
+
  private:
   // For showing the translate bubble up.
   CommandUpdater* command_updater_;  // Weak, owned by Browser.

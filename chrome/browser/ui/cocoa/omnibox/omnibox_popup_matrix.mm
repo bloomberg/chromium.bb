@@ -32,6 +32,7 @@ const NSInteger kMiddleButtonNumber = 2;
                            popupView:(const OmniboxPopupViewMac&)popupView
                          answerImage:(NSImage*)answerImage {
   base::scoped_nsobject<NSMutableArray> array([[NSMutableArray alloc] init]);
+  BOOL isDarkTheme = [tableView hasDarkTheme];
   CGFloat max_match_contents_width = 0.0f;
   CGFloat contentsOffset = -1.0f;
   for (const AutocompleteMatch& match : result) {
@@ -42,8 +43,12 @@ const NSInteger kMiddleButtonNumber = 2;
         [[OmniboxPopupCellData alloc]
              initWithMatch:match
             contentsOffset:contentsOffset
-                     image:popupView.ImageForMatch(match)
-               answerImage:(match.answer ? answerImage : nil)]);
+                     image:popupView.ImageForMatch(match, NO)
+               answerImage:(match.answer ? answerImage : nil)
+              forDarkTheme:isDarkTheme]);
+    if (isDarkTheme) {
+      [cellData setIncognitoImage:popupView.ImageForMatch(match, YES)];
+    }
     [array addObject:cellData];
     if (match.type == AutocompleteMatchType::SEARCH_SUGGEST_TAIL) {
       max_match_contents_width =
@@ -118,10 +123,14 @@ const NSInteger kMiddleButtonNumber = 2;
 @synthesize separator = separator_;
 @synthesize maxMatchContentsWidth = maxMatchContentsWidth_;
 @synthesize answerLineHeight = answerLineHeight_;
+@synthesize contentLeftPadding = contentLeftPadding_;
+@synthesize hasDarkTheme = hasDarkTheme_;
 
-- (instancetype)initWithObserver:(OmniboxPopupMatrixObserver*)observer {
+- (instancetype)initWithObserver:(OmniboxPopupMatrixObserver*)observer
+                    forDarkTheme:(BOOL)isDarkTheme {
   if ((self = [super initWithFrame:NSZeroRect])) {
     observer_ = observer;
+    hasDarkTheme_ = isDarkTheme;
 
     base::scoped_nsobject<NSTableColumn> column(
         [[NSTableColumn alloc] initWithIdentifier:@"MainColumn"]);
@@ -132,7 +141,9 @@ const NSInteger kMiddleButtonNumber = 2;
     [self setIntercellSpacing:NSMakeSize(0.0, 0.0)];
 
     [self setSelectionHighlightStyle:NSTableViewSelectionHighlightStyleNone];
-    [self setBackgroundColor:[NSColor controlBackgroundColor]];
+    NSColor* backgroundColor =
+        OmniboxPopupViewMac::BackgroundColor(hasDarkTheme_);
+    [self setBackgroundColor:backgroundColor];
     [self setAllowsEmptySelection:YES];
     [self deselectAll:self];
 

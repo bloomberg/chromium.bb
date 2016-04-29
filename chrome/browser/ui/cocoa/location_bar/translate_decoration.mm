@@ -11,10 +11,6 @@
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/material_design/material_design_controller.h"
-#include "ui/gfx/color_palette.h"
-#include "ui/gfx/image/image_skia_util_mac.h"
-#include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icons_public.h"
 
 TranslateDecoration::TranslateDecoration(CommandUpdater* command_updater)
     : command_updater_(command_updater) {
@@ -23,19 +19,13 @@ TranslateDecoration::TranslateDecoration(CommandUpdater* command_updater)
 
 TranslateDecoration::~TranslateDecoration() {}
 
-void TranslateDecoration::SetLit(bool on, bool locationBarIsDark) {
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    SkColor vectorIconColor = locationBarIsDark ? SK_ColorWHITE
-                                                : gfx::kChromeIconGrey;
-    NSImage* theImage =
-        NSImageFromImageSkia(gfx::CreateVectorIcon(gfx::VectorIconId::TRANSLATE,
-                                                   16,
-                                                   vectorIconColor));
-    SetImage(theImage);
-  } else {
+void TranslateDecoration::SetLit(bool on, bool location_bar_is_dark) {
+  if (!ui::MaterialDesignController::IsModeMaterial()) {
     const int image_id = on ? IDR_TRANSLATE_ACTIVE : IDR_TRANSLATE;
     SetImage(OmniboxViewMac::ImageForResource(image_id));
+    return;
   }
+  SetImage(GetMaterialIcon(location_bar_is_dark));
 }
 
 NSPoint TranslateDecoration::GetBubblePointInFrame(NSRect frame) {
@@ -54,4 +44,8 @@ bool TranslateDecoration::OnMousePressed(NSRect frame, NSPoint location) {
 
 NSString* TranslateDecoration::GetToolTip() {
   return l10n_util::GetNSStringWithFixup(IDS_TOOLTIP_TRANSLATE);
+}
+
+gfx::VectorIconId TranslateDecoration::GetMaterialVectorIconId() const {
+  return gfx::VectorIconId::TRANSLATE;
 }

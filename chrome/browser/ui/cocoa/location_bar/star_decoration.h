@@ -31,6 +31,11 @@ class StarDecoration : public ImageDecoration {
   NSString* GetToolTip() override;
   NSPoint GetBubblePointInFrame(NSRect frame) override;
 
+ protected:
+  // Overridden from LocationBarDecoration:
+  SkColor GetMaterialIconColor(bool location_bar_is_dark) const override;
+  gfx::VectorIconId GetMaterialVectorIconId() const override;
+
  private:
   // For bringing up bookmark bar.
   CommandUpdater* command_updater_;  // Weak, owned by Browser.

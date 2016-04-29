@@ -19,9 +19,12 @@
 
 // A view used to draw a drop shadow beneath the omnibox popup.
 @interface OmniboxPopupBottomSeparatorView : NSView {
+ @private
+  BOOL isDarkTheme_;
 }
 
 + (CGFloat)preferredHeight;
+- (instancetype)initWithFrame:(NSRect)frame forDarkTheme:(BOOL)isDarkTheme;
 
 @end
 

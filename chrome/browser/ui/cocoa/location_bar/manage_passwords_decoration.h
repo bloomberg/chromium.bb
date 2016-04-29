@@ -57,6 +57,10 @@ class ManagePasswordsDecoration : public ImageDecoration {
   // Accessor for the platform-independent interface.
   ManagePasswordsIconCocoa* icon() { return icon_.get(); }
 
+ protected:
+  // Overridden from LocationBarDecoration:
+  gfx::VectorIconId GetMaterialVectorIconId() const override;
+
  private:
   // Triggers a redraw after a state change.
   void OnChange();
