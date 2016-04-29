@@ -43,8 +43,6 @@ ojan@chromium.org
 # pdr reviews many svg and text autosizing patches.
 pdr@chromium.org
 pfeldman@chromium.org
-# philipj reviews <video>, <track>, WebVTT and Fullscreen.
-philipj@opera.com
 pkasting@chromium.org
 # rbyers reviews input related changes (eg. event handling, mouse cursors, touch hit testing, scrolling coordinator)
 rbyers@chromium.org

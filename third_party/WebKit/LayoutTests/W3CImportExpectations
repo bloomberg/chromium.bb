@@ -211,7 +211,7 @@ imported/web-platform-tests/cssom-view [ Skip ]
 # imported/web-platform-tests/custom-elements [ Pass ]
 imported/web-platform-tests/custom-elements/registering-custom-elements/unresolved-element-pseudoclass [ Skip ]
 imported/web-platform-tests/docs [ Skip ]
-## Owners: philipj@opera.com
+## Owners: tkent@chromium.org
 imported/web-platform-tests/dom [ Pass ]
 imported/web-platform-tests/domparsing [ Skip ]
 imported/web-platform-tests/domxpath [ Skip ]
