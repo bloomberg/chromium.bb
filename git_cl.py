@@ -95,9 +95,9 @@ def GetNoGitPagerEnv():
   return env
 
 
-def RunCommand(args, error_ok=False, error_message=None, **kwargs):
+def RunCommand(args, error_ok=False, error_message=None, shell=False, **kwargs):
   try:
-    return subprocess2.check_output(args, shell=False, **kwargs)
+    return subprocess2.check_output(args, shell=shell, **kwargs)
   except subprocess2.CalledProcessError as e:
     logging.debug('Failed running %s', args)
     if not error_ok:
@@ -4748,7 +4748,9 @@ def CMDformat(parser, args):
     if not opts.dry_run and not opts.diff:
       cmd.append('--in-place')
     for gn_diff_file in gn_diff_files:
-      stdout = RunCommand(cmd + [gn_diff_file], cwd=top_dir)
+      stdout = RunCommand(cmd + [gn_diff_file],
+                          shell=sys.platform == 'win32',
+                          cwd=top_dir)
       if opts.diff:
         sys.stdout.write(stdout)
 
