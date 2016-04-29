@@ -1106,6 +1106,10 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
                     && tab.getWebContents().isLoadingToDifferentDocument()) {
                 mToolbar.onNavigatedToDifferentPage();
             }
+
+            // Ensure the URL bar loses focus if the tab it was interacting with is changed from
+            // underneath it.
+            setUrlBarFocus(false);
         }
 
         Profile profile = mTabModelSelector.getModel(isIncognito).getProfile();
