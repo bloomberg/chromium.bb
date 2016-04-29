@@ -45,21 +45,18 @@ namespace extensions {
 class FullStreamUIPolicyTest : public testing::Test {
  public:
   FullStreamUIPolicyTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
-        saved_cmdline_(base::CommandLine::NO_PROGRAM) {
+      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {
 #if defined OS_CHROMEOS
     test_user_manager_.reset(new chromeos::ScopedTestUserManager());
 #endif
-    base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
-    saved_cmdline_ = *base::CommandLine::ForCurrentProcess();
+    base::CommandLine no_program_command_line(base::CommandLine::NO_PROGRAM);
     profile_.reset(new TestingProfile());
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableExtensionActivityLogging);
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableExtensionActivityLogTesting);
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+    command_line->AppendSwitch(switches::kEnableExtensionActivityLogging);
+    command_line->AppendSwitch(switches::kEnableExtensionActivityLogTesting);
     extension_service_ = static_cast<TestExtensionSystem*>(
         ExtensionSystem::Get(profile_.get()))->CreateExtensionService
-            (&command_line, base::FilePath(), false);
+            (&no_program_command_line, base::FilePath(), false);
   }
 
   ~FullStreamUIPolicyTest() override {
@@ -69,8 +66,6 @@ class FullStreamUIPolicyTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
     profile_.reset(NULL);
     base::RunLoop().RunUntilIdle();
-    // Restore the original command line and undo the affects of SetUp().
-    *base::CommandLine::ForCurrentProcess() = saved_cmdline_;
   }
 
   // A wrapper function for CheckReadFilteredData, so that we don't need to
@@ -443,11 +438,6 @@ class FullStreamUIPolicyTest : public testing::Test {
   ExtensionService* extension_service_;
   std::unique_ptr<TestingProfile> profile_;
   content::TestBrowserThreadBundle thread_bundle_;
-  // Used to preserve a copy of the original command line.
-  // The test framework will do this itself as well. However, by then,
-  // it is too late to call ActivityLog::RecomputeLoggingIsEnabled() in
-  // TearDown().
-  base::CommandLine saved_cmdline_;
 
 #if defined OS_CHROMEOS
   chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;

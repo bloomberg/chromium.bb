@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_command_line.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/api/activity_log_private/activity_log_private_api.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -69,12 +70,13 @@ TEST_F(ActivityLogEnabledTest, CommandLineSwitch) {
   std::unique_ptr<TestingProfile> profile2(
       static_cast<TestingProfile*>(CreateBrowserContext()));
 
-  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
-  base::CommandLine saved_cmdline_ = *base::CommandLine::ForCurrentProcess();
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+  ActivityLog* activity_log1;
+  {
+    base::test::ScopedCommandLine scoped_command_line;
+    scoped_command_line.GetProcessCommandLine()->AppendSwitch(
       switches::kEnableExtensionActivityLogging);
-  ActivityLog* activity_log1 = ActivityLog::GetInstance(profile1.get());
-  *base::CommandLine::ForCurrentProcess() = saved_cmdline_;
+    activity_log1 = ActivityLog::GetInstance(profile1.get());
+  }
   ActivityLog* activity_log2 = ActivityLog::GetInstance(profile2.get());
 
   EXPECT_EQ(0,
@@ -229,19 +231,17 @@ TEST_F(ActivityLogEnabledTest, WatchdogSwitch) {
 }
 
 TEST_F(ActivityLogEnabledTest, AppAndCommandLine) {
-  // Set the command line switch.
-  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
-  base::CommandLine saved_cmdline_ = *base::CommandLine::ForCurrentProcess();
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExtensionActivityLogging);
 
   std::unique_ptr<TestingProfile> profile(
       static_cast<TestingProfile*>(CreateBrowserContext()));
   // Extension service is destroyed by the profile.
+  base::CommandLine no_program_command_line(base::CommandLine::NO_PROGRAM);
   ExtensionService* extension_service =
     static_cast<TestExtensionSystem*>(
         ExtensionSystem::Get(profile.get()))->CreateExtensionService(
-            &command_line, base::FilePath(), false);
+            &no_program_command_line, base::FilePath(), false);
   static_cast<TestExtensionSystem*>(
       ExtensionSystem::Get(profile.get()))->SetReady();
 
@@ -281,9 +281,6 @@ TEST_F(ActivityLogEnabledTest, AppAndCommandLine) {
   EXPECT_EQ(0,
       profile->GetPrefs()->GetInteger(prefs::kWatchdogExtensionActive));
   EXPECT_FALSE(activity_log->IsWatchdogAppActive());
-
-  // Cleanup.
-  *base::CommandLine::ForCurrentProcess() = saved_cmdline_;
 }
 
 }  // namespace extensions

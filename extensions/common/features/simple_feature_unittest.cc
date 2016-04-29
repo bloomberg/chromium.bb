@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
+#include "base/test/scoped_command_line.h"
 #include "base/values.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/value_builder.h"
@@ -27,21 +28,6 @@ struct IsAvailableTestData {
   Feature::Platform platform;
   int manifest_version;
   Feature::AvailabilityResult expected_result;
-};
-
-class ScopedCommandLineSwitch {
- public:
-  explicit ScopedCommandLineSwitch(const std::string& arg)
-      : original_command_line_(*base::CommandLine::ForCurrentProcess()) {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(arg);
-  }
-
-  ~ScopedCommandLineSwitch() {
-    *base::CommandLine::ForCurrentProcess() = original_command_line_;
-  }
-
- private:
-  base::CommandLine original_command_line_;
 };
 
 }  // namespace
@@ -704,27 +690,34 @@ TEST_F(SimpleFeatureTest, CommandLineSwitch) {
               feature.IsAvailableToEnvironment().result());
   }
   {
-    ScopedCommandLineSwitch scoped_switch("laser-beams");
+    base::test::ScopedCommandLine scoped_command_line;
+    scoped_command_line.GetProcessCommandLine()->AppendSwitch("laser-beams");
     EXPECT_EQ(Feature::MISSING_COMMAND_LINE_SWITCH,
               feature.IsAvailableToEnvironment().result());
   }
   {
-    ScopedCommandLineSwitch scoped_switch("enable-laser-beams");
+    base::test::ScopedCommandLine scoped_command_line;
+    scoped_command_line.GetProcessCommandLine()->AppendSwitch(
+        "enable-laser-beams");
     EXPECT_EQ(Feature::IS_AVAILABLE,
               feature.IsAvailableToEnvironment().result());
   }
   {
-    ScopedCommandLineSwitch scoped_switch("disable-laser-beams");
+    base::test::ScopedCommandLine scoped_command_line;
+    scoped_command_line.GetProcessCommandLine()->AppendSwitch(
+        "disable-laser-beams");
     EXPECT_EQ(Feature::MISSING_COMMAND_LINE_SWITCH,
               feature.IsAvailableToEnvironment().result());
   }
   {
-    ScopedCommandLineSwitch scoped_switch("laser-beams=1");
+    base::test::ScopedCommandLine scoped_command_line;
+    scoped_command_line.GetProcessCommandLine()->AppendSwitch("laser-beams=1");
     EXPECT_EQ(Feature::IS_AVAILABLE,
               feature.IsAvailableToEnvironment().result());
   }
   {
-    ScopedCommandLineSwitch scoped_switch("laser-beams=0");
+    base::test::ScopedCommandLine scoped_command_line;
+    scoped_command_line.GetProcessCommandLine()->AppendSwitch("laser-beams=0");
     EXPECT_EQ(Feature::MISSING_COMMAND_LINE_SWITCH,
               feature.IsAvailableToEnvironment().result());
   }

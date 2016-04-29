@@ -895,6 +895,8 @@
         'test/perf_time_logger.h',
         'test/power_monitor_test_base.cc',
         'test/power_monitor_test_base.h',
+        'test/scoped_command_line.cc',
+        'test/scoped_command_line.h',
         'test/scoped_locale.cc',
         'test/scoped_locale.h',
         'test/scoped_path_override.cc',

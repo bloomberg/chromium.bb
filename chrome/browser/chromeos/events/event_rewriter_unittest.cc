@@ -489,12 +489,9 @@ TEST_F(EventRewriterTest, TestRewriteNumPadKeys) {
 
 TEST_F(EventRewriterTest, TestRewriteNumPadKeysWithDiamondKeyFlag) {
   // Make sure the num lock works correctly even when Diamond key exists.
-  const base::CommandLine original_cl(*base::CommandLine::ForCurrentProcess());
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       chromeos::switches::kHasChromeOSDiamondKey, "");
-
   TestRewriteNumPadKeys();
-  *base::CommandLine::ForCurrentProcess() = original_cl;
 }
 
 // Tests if the rewriter can handle a Command + Num Pad event.

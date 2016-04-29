@@ -61,6 +61,8 @@ source_set("test_support") {
     "perf_time_logger.h",
     "power_monitor_test_base.cc",
     "power_monitor_test_base.h",
+    "scoped_command_line.cc",
+    "scoped_command_line.h",
     "scoped_locale.cc",
     "scoped_locale.h",
     "scoped_path_override.cc",
