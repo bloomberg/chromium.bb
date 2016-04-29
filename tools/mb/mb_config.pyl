@@ -519,6 +519,10 @@
       'Linux Debug Builder': 'gn_debug_bot',
       'V8 Android GN (dbg)': 'android_gn_debug_bot',
       'V8 Linux GN': 'gn_release_bot',
+      'V8-Blink Linux 64': 'noswarming_gn_release_bot_x64',
+      'V8-Blink Linux 64 (dbg)': 'noswarming_gn_debug_bot_x64',
+      'V8-Blink Mac': 'noswarming_gyp_release_bot_x64',
+      'V8-Blink Win': 'noswarming_gyp_release_bot_minimal_symbols_x86',
     },
 
     'chromium.webkit': {
@@ -1380,6 +1384,10 @@
       'error',
     ],
 
+    'noswarming_gn_debug_bot_x64': [
+      'noswarming', 'gn', 'debug_bot', 'x64',
+    ],
+
     'noswarming_gn_release_bot': [
       'noswarming', 'gn', 'release_bot',
     ],
@@ -1388,12 +1396,20 @@
       'noswarming', 'gn', 'release_bot', 'minimal_symbols', 'x64',
     ],
 
+    'noswarming_gn_release_bot_x64': [
+      'noswarming', 'gn', 'release_bot', 'x64',
+    ],
+
     'noswarming_gyp_release_bot_mac_strip': [
       'noswarming', 'gyp', 'release_bot', 'mac_strip',
     ],
 
     'noswarming_gyp_release_bot_minimal_symbols_x86': [
       'noswarming', 'gyp', 'release_bot', 'minimal_symbols', 'x86',
+    ],
+
+    'noswarming_gyp_release_bot_x64': [
+      'noswarming', 'gyp', 'release_bot', 'x64',
     ],
 
     'noswarming_gyp_release_trybot': [
