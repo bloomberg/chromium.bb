@@ -17,10 +17,6 @@ from telemetry import benchmark
 from telemetry import story
 from telemetry.timeline import tracing_category_filter
 from telemetry.web_perf import timeline_based_measurement
-from telemetry.web_perf.metrics import v8_gc_latency
-from telemetry.web_perf.metrics import v8_execution
-from telemetry.web_perf.metrics import smoothness
-from telemetry.web_perf.metrics import memory_timeline
 
 
 def CreateV8TimelineBasedMeasurementOptions():
@@ -106,31 +102,19 @@ class _InfiniteScrollBenchmark(perf_benchmark.PerfBenchmark):
         'blink.console', 'renderer.scheduler', 'v8', 'webkit.console']
     smoothness_categories = [
         'webkit.console', 'blink.console', 'benchmark', 'trace_event_overhead']
-    categories = list(set(v8_categories + smoothness_categories))
-    memory_categories = 'blink.console,disabled-by-default-memory-infra'
+    memory_categories = ['blink.console', 'disabled-by-default-memory-infra']
     category_filter = tracing_category_filter.TracingCategoryFilter(
-        memory_categories)
-    for category in categories:
-      category_filter.AddIncludedCategory(category)
+        ','.join(['-*'] + v8_categories +
+                 smoothness_categories + memory_categories))
     options = timeline_based_measurement.Options(category_filter)
-    options.SetLegacyTimelineBasedMetrics([v8_gc_latency.V8GCLatency(),
-                                     v8_execution.V8ExecutionMetric(),
-                                     smoothness.SmoothnessMetric(),
-                                     memory_timeline.MemoryTimelineMetric()])
+    # TODO(ulan): Add frame time discrepancy once it is ported to TBMv2,
+    # see crbug.com/606841.
+    options.SetTimelineBasedMetric('v8AndMemoryMetrics')
     return options
 
   @classmethod
   def ValueCanBeAddedPredicate(cls, value, _):
-    if value.tir_label in ['Load', 'Wait']:
-      return (value.name.startswith('v8_') and not
-              value.name.startswith('v8_gc'))
-    if value.tir_label in ['Begin', 'End']:
-      return (value.name.startswith('memory_') and
-              'v8_renderer' in value.name) or \
-             (value.name.startswith('v8_') and not
-              value.name.startswith('v8_gc'))
-    else:
-      return value.tir_label == 'Scrolling'
+    return 'v8' in value.name
 
   @classmethod
   def ShouldTearDownStateAfterEachStoryRun(cls):
