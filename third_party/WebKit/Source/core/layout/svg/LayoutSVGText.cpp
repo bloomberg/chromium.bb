@@ -186,51 +186,45 @@ void LayoutSVGText::layout()
     ASSERT(needsLayout());
     LayoutAnalyzer::Scope analyzer(*this);
 
-    bool updateCachedBoundariesInParents = false;
+    bool updateParentBoundaries = false;
     if (m_needsTransformUpdate) {
         m_localTransform = toSVGTextElement(node())->calculateAnimatedLocalTransform();
         m_needsTransformUpdate = false;
-        updateCachedBoundariesInParents = true;
+        updateParentBoundaries = true;
     }
 
+    // This flag is set and reset as needed only within this function.
+    ASSERT(!m_needsReordering);
+
+    // When laying out initially, build the character data map and propagate
+    // resulting layout attributes to all LayoutSVGInlineText children in the
+    // subtree.
     if (!everHadLayout()) {
-        // When laying out initially, collect all layout attributes, build the character data map,
-        // and propogate resulting SVGLayoutAttributes to all LayoutSVGInlineText children in the subtree.
-        ASSERT(m_layoutAttributes.isEmpty());
-        collectLayoutAttributes(this, m_layoutAttributes);
+        m_needsPositioningValuesUpdate = true;
+        m_needsTextMetricsUpdate = true;
+    }
+
+    // If the root layout size changed (eg. window size changes), or the screen
+    // scale factor has changed, then recompute the on-screen font size. Since
+    // the computation of layout attributes uses the text metrics, we need to
+    // update them before updating the layout attributes.
+    if (m_needsTextMetricsUpdate || SVGLayoutSupport::findTreeRootObject(this)->isLayoutSizeChanged()) {
         updateFontAndMetrics(*this);
-
-        SVGTextLayoutAttributesBuilder(*this).buildLayoutAttributes();
-
-        m_needsReordering = true;
         m_needsTextMetricsUpdate = false;
-        m_needsPositioningValuesUpdate = false;
-        updateCachedBoundariesInParents = true;
-    } else if (m_needsPositioningValuesUpdate) {
-        // When the x/y/dx/dy/rotate lists change, recompute the layout attributes, and eventually
-        // update the on-screen font objects as well in all descendants.
-        if (m_needsTextMetricsUpdate) {
-            updateFontAndMetrics(*this);
-            m_needsTextMetricsUpdate = false;
-        }
+        updateParentBoundaries = true;
+    }
 
+    // When the x/y/dx/dy/rotate lists change, we need to recompute the layout
+    // attributes.
+    if (m_needsPositioningValuesUpdate) {
         m_layoutAttributes.clear();
         collectLayoutAttributes(this, m_layoutAttributes);
 
         SVGTextLayoutAttributesBuilder(*this).buildLayoutAttributes();
 
-        m_needsReordering = true;
         m_needsPositioningValuesUpdate = false;
-        updateCachedBoundariesInParents = true;
-    } else if (m_needsTextMetricsUpdate || SVGLayoutSupport::findTreeRootObject(this)->isLayoutSizeChanged()) {
-        // If the root layout size changed (eg. window size changes), or the screen scale factor has
-        // changed, then recompute the on-screen font size.
-        updateFontAndMetrics(*this);
-
-        ASSERT(!m_needsReordering);
-        ASSERT(!m_needsPositioningValuesUpdate);
-        m_needsTextMetricsUpdate = false;
-        updateCachedBoundariesInParents = true;
+        m_needsReordering = true;
+        updateParentBoundaries = true;
     }
 
     checkLayoutAttributesConsistency(this, m_layoutAttributes);
@@ -272,17 +266,21 @@ void LayoutSVGText::layout()
     m_overflow.clear();
     addVisualEffectOverflow();
 
-    if (!updateCachedBoundariesInParents)
-        updateCachedBoundariesInParents = oldBoundaries != objectBoundingBox();
+    if (!updateParentBoundaries)
+        updateParentBoundaries = oldBoundaries != objectBoundingBox();
 
     // Invalidate all resources of this client if our layout changed.
     if (everHadLayout() && selfNeedsLayout())
         SVGResourcesCache::clientLayoutChanged(this);
 
     // If our bounds changed, notify the parents.
-    if (updateCachedBoundariesInParents)
+    if (updateParentBoundaries)
         LayoutSVGBlock::setNeedsBoundariesUpdate();
 
+    ASSERT(!m_needsReordering);
+    ASSERT(!m_needsTransformUpdate);
+    ASSERT(!m_needsTextMetricsUpdate);
+    ASSERT(!m_needsPositioningValuesUpdate);
     clearNeedsLayout();
 }
 
