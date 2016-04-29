@@ -48,10 +48,6 @@
     # We have to nest variables inside variables so that they can be overridden
     # through GYP_DEFINES.
     'variables': {
-      # Enables the Oilpan garbage-collection infrastructure.
-      # If you update the default value below, be sure to update the one in
-      # ../config.gyp, too!
-      'enable_oilpan%': 1,
       'blink_logging_always_on%': 0,
     },
     'conditions': [

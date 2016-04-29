@@ -80,15 +80,6 @@ config("config") {
       "-Xclang",
       "blink-gc-plugin",
     ]
-
-    if (enable_oilpan) {
-      cflags += [
-        "-Xclang",
-        "-plugin-arg-blink-gc-plugin",
-        "-Xclang",
-        "enable-oilpan",
-      ]
-    }
   }
 
   ## TODO(GYP) : gn does not yet support use_system_icu.
