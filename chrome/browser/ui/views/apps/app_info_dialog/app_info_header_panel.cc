@@ -117,16 +117,10 @@ void AppInfoHeaderPanel::LoadAppImageAsync() {
 }
 
 void AppInfoHeaderPanel::OnAppImageLoaded(const gfx::Image& image) {
-  const SkBitmap* bitmap;
-  if (image.IsEmpty()) {
-    bitmap = &extensions::util::GetDefaultAppIcon()
-                  .GetRepresentation(gfx::ImageSkia::GetMaxSupportedScale())
-                  .sk_bitmap();
-  } else {
-    bitmap = image.ToSkBitmap();
-  }
-
-  app_icon_->SetImage(gfx::ImageSkia::CreateFrom1xBitmap(*bitmap));
+  if (image.IsEmpty())
+    app_icon_->SetImage(extensions::util::GetDefaultAppIcon());
+  else
+    app_icon_->SetImage(image.AsImageSkia());
 }
 
 void AppInfoHeaderPanel::ShowAppInWebStore() {
