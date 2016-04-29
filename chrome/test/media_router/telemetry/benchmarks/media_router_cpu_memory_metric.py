@@ -43,7 +43,10 @@ class MediaRouterCPUMemoryMetric(Metric):
           continue
         # Get rid of 0 values
         non_zero_results = [result for result in process_results if result]
-        avg_result = round(sum(non_zero_results)/len(non_zero_results), 4)
+        if non_zero_results:
+          avg_result = round(sum(non_zero_results)/len(non_zero_results), 4)
+        else:
+          avg_result = 0
         if metric == 'privateMemory':
           avg_result = round(avg_result/(1024 * 1024), 2)
         results.AddValue(scalar.ScalarValue(

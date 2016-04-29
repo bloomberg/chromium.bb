@@ -10,6 +10,7 @@ from benchmarks.pagesets import media_router_page
 from telemetry.core import exceptions
 from telemetry.page import shared_page_state
 
+SESSION_TIME = 300  # 5 minutes
 
 class SharedState(shared_page_state.SharedPageState):
   """Shared state that restarts the browser for every single story."""
@@ -59,7 +60,7 @@ class CastIdlePage(CastDialogPage):
     action_runner.Wait(5)
     with action_runner.CreateInteraction('Idle'):
       action_runner.ExecuteJavaScript('collectPerfData();')
-      action_runner.Wait(300)
+      action_runner.Wait(SESSION_TIME)
 
 
 class CastFlingingPage(media_router_page.CastPage):
@@ -72,13 +73,17 @@ class CastFlingingPage(media_router_page.CastPage):
         shared_page_state_class=SharedState)
 
   def RunPageInteractions(self, action_runner):
-     # Wait for 5s after Chrome is opened in order to get consistent results.
+    sink_name = self._GetDeviceName()
+    # Wait for 5s after Chrome is opened in order to get consistent results.
     action_runner.Wait(5)
     with action_runner.CreateInteraction('flinging'):
+
       self._WaitForResult(
           action_runner,
           lambda: action_runner.EvaluateJavaScript('initialized'),
-          'Failed to initialize')
+          'Failed to initialize',
+          timeout=30)
+      self.CloseExistingRoute(action_runner, sink_name)
 
       # Start session
       action_runner.TapElement(selector='#start_session_button')
@@ -92,7 +97,7 @@ class CastFlingingPage(media_router_page.CastPage):
       for tab in action_runner.tab.browser.tabs:
         # Choose sink
         if tab.url == 'chrome://media-router/':
-          self.ChooseSink(tab, self._GetDeviceName())
+          self.ChooseSink(tab, sink_name)
 
       self._WaitForResult(
         action_runner,
@@ -110,13 +115,56 @@ class CastFlingingPage(media_router_page.CastPage):
 
       action_runner.Wait(5)
       action_runner.ExecuteJavaScript('collectPerfData();')
-      action_runner.Wait(300)
+      action_runner.Wait(SESSION_TIME)
       # Stop session
       self.ExecuteAsyncJavaScript(
           action_runner,
           'stopSession();',
           lambda: not action_runner.EvaluateJavaScript('currentSession'),
           'Failed to stop session')
+
+
+class CastMirroringPage(media_router_page.CastPage):
+  """Cast page to mirror a tab to Chromecast device."""
+
+  def __init__(self, page_set):
+    super(CastMirroringPage, self).__init__(
+        page_set=page_set,
+        url='file://mirroring.html',
+        shared_page_state_class=SharedState)
+
+  def RunPageInteractions(self, action_runner):
+    sink_name = self._GetDeviceName()
+    # Wait for 5s after Chrome is opened in order to get consistent results.
+    action_runner.Wait(5)
+    with action_runner.CreateInteraction('mirroring'):
+      self.CloseExistingRoute(action_runner, sink_name)
+
+      # Start session
+      action_runner.TapElement(selector='#start_session_button')
+      self._WaitForResult(
+          action_runner,
+          lambda: len(action_runner.tab.browser.tabs) >= 2,
+          'MR dialog never showed up.')
+
+      # Wait for 2s to make sure the dialog is fully loaded.
+      action_runner.Wait(2)
+      for tab in action_runner.tab.browser.tabs:
+        # Choose sink
+        if tab.url == 'chrome://media-router/':
+          self.ChooseSink(tab, sink_name)
+
+      # Wait for 5s to make sure the route is created.
+      action_runner.Wait(5)
+      action_runner.TapElement(selector='#start_session_button')
+      action_runner.Wait(2)
+      for tab in action_runner.tab.browser.tabs:
+        if tab.url == 'chrome://media-router/':
+          if not self.CheckIfExistingRoute(tab, sink_name):
+            raise page.page_test.Failure('Failed to start mirroring session.')
+      action_runner.ExecuteJavaScript('collectPerfData();')
+      action_runner.Wait(SESSION_TIME)
+      self.CloseExistingRoute(action_runner, sink_name)
 
 
 class MediaRouterDialogPageSet(story.StorySet):
@@ -136,3 +184,4 @@ class MediaRouterCPUMemoryPageSet(story.StorySet):
         cloud_storage_bucket=story.PARTNER_BUCKET)
     self.AddStory(CastIdlePage(self))
     self.AddStory(CastFlingingPage(self))
+    self.AddStory(CastMirroringPage(self))
