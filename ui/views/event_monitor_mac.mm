@@ -8,10 +8,10 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/events/event_handler.h"
 #include "ui/events/event_utils.h"
-#include "ui/gfx/screen.h"
 
 namespace views {
 
@@ -30,7 +30,7 @@ std::unique_ptr<EventMonitor> EventMonitor::CreateWindowMonitor(
 
 // static
 gfx::Point EventMonitor::GetLastMouseLocation() {
-  return gfx::Screen::GetScreen()->GetCursorScreenPoint();
+  return display::Screen::GetScreen()->GetCursorScreenPoint();
 }
 
 EventMonitorMac::EventMonitorMac(ui::EventHandler* event_handler,
