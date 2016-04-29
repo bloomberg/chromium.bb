@@ -34,8 +34,6 @@ class CastContentRendererClient : public content::ContentRendererClient {
   // ContentRendererClient implementation:
   void RenderThreadStarted() override;
   void RenderViewCreated(content::RenderView* render_view) override;
-  void AddKeySystems(
-      std::vector<::media::KeySystemInfo>* key_systems_info) override;
   void AddSupportedKeySystems(
       std::vector<std::unique_ptr<::media::KeySystemProperties>>*
           key_systems_properties) override;

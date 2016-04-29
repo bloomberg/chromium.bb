@@ -100,11 +100,6 @@ void CastContentRendererClient::RenderViewCreated(
   }
 }
 
-void CastContentRendererClient::AddKeySystems(
-    std::vector<::media::KeySystemInfo>* key_systems_info) {
-  AddChromecastKeySystemsInfo(key_systems_info);
-}
-
 void CastContentRendererClient::AddSupportedKeySystems(
     std::vector<std::unique_ptr<::media::KeySystemProperties>>*
         key_systems_properties) {

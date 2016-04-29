@@ -8,8 +8,9 @@
 #include <memory>
 #include <vector>
 
-#include "media/base/key_system_info.h"
-#include "media/base/key_system_properties.h"
+namespace media {
+class KeySystemProperties;
+}
 
 namespace chromecast {
 namespace shell {
@@ -17,9 +18,6 @@ namespace shell {
 void AddChromecastKeySystems(
     std::vector<std::unique_ptr<::media::KeySystemProperties>>*
         key_systems_properties);
-
-void AddChromecastKeySystemsInfo(
-    std::vector<::media::KeySystemInfo>* key_systems_info);
 
 }  // namespace shell
 }  // namespace chromecast

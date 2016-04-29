@@ -12,46 +12,75 @@
 #include "chromecast/media/base/key_systems_common.h"
 #include "components/cdm/renderer/widevine_key_system_properties.h"
 #include "media/base/eme_constants.h"
+#include "media/base/key_system_properties.h"
 
 #include "widevine_cdm_version.h" // In SHARED_INTERMEDIATE_DIR.
 
+using ::media::EmeConfigRule;
 using ::media::EmeFeatureSupport;
+using ::media::EmeInitDataType;
+using ::media::EmeMediaType;
 using ::media::EmeRobustness;
 using ::media::EmeSessionTypeSupport;
+using ::media::SupportedCodecs;
 
 namespace chromecast {
 namespace shell {
 namespace {
 
 #if defined(PLAYREADY_CDM_AVAILABLE)
-void AddKeySystemWithCodecs(
-    const std::string& key_system_name,
-    std::vector<::media::KeySystemInfo>* key_systems_info) {
-  ::media::KeySystemInfo info;
-  info.key_system = key_system_name;
-  info.supported_init_data_types = ::media::kInitDataTypeMaskCenc;
-  info.supported_codecs =
-      ::media::EME_CODEC_MP4_AAC | ::media::EME_CODEC_MP4_AVC1;
-  info.max_audio_robustness = EmeRobustness::EMPTY;
-  info.max_video_robustness = EmeRobustness::EMPTY;
+class PlayReadyKeySystemProperties : public ::media::KeySystemProperties {
+ public:
+  std::string GetKeySystemName() const override {
+    return media::kChromecastPlayreadyKeySystem;
+  }
+
+  bool IsSupportedInitDataType(EmeInitDataType init_data_type) const override {
+    return init_data_type == EmeInitDataType::CENC;
+  }
+
+  SupportedCodecs GetSupportedCodecs() const override {
+    return ::media::EME_CODEC_MP4_AAC | ::media::EME_CODEC_MP4_AVC1;
+  }
+
+  EmeConfigRule GetRobustnessConfigRule(
+      EmeMediaType media_type,
+      const std::string& requested_robustness) const override {
+    return requested_robustness.empty() ? EmeConfigRule::SUPPORTED
+                                        : EmeConfigRule::NOT_SUPPORTED;
+  }
+
+  EmeSessionTypeSupport GetPersistentLicenseSessionSupport() const override {
 #if defined(OS_ANDROID)
-  info.persistent_license_support = EmeSessionTypeSupport::NOT_SUPPORTED;
+    return EmeSessionTypeSupport::NOT_SUPPORTED;
 #else
-  info.persistent_license_support = EmeSessionTypeSupport::SUPPORTED;
+    return EmeSessionTypeSupport::SUPPORTED;
 #endif
-  info.persistent_release_message_support =
-      EmeSessionTypeSupport::NOT_SUPPORTED;
-  info.persistent_state_support = EmeFeatureSupport::ALWAYS_ENABLED;
-  info.distinctive_identifier_support = EmeFeatureSupport::ALWAYS_ENABLED;
-  key_systems_info->push_back(info);
-}
-#endif  // defined(PLAYREADY_CDM_AVAILABLE)
+  }
+
+  EmeSessionTypeSupport GetPersistentReleaseMessageSessionSupport()
+      const override {
+    return EmeSessionTypeSupport::NOT_SUPPORTED;
+  }
+
+  EmeFeatureSupport GetPersistentStateSupport() const override {
+    return EmeFeatureSupport::ALWAYS_ENABLED;
+  }
+  EmeFeatureSupport GetDistinctiveIdentifierSupport() const override {
+    return EmeFeatureSupport::ALWAYS_ENABLED;
+  }
+};
+#endif  // PLAYREADY_CDM_AVAILABLE
 
 }  // namespace
 
 void AddChromecastKeySystems(
     std::vector<std::unique_ptr<::media::KeySystemProperties>>*
         key_systems_properties) {
+#if defined(PLAYREADY_CDM_AVAILABLE)
+  key_systems_properties->emplace_back(new PlayReadyKeySystemProperties());
+#endif  // defined(PLAYREADY_CDM_AVAILABLE)
+
 #if defined(WIDEVINE_CDM_AVAILABLE)
   ::media::SupportedCodecs codecs =
       ::media::EME_CODEC_MP4_AAC | ::media::EME_CODEC_MP4_AVC1 |
@@ -69,14 +98,6 @@ void AddChromecastKeySystems(
       EmeFeatureSupport::ALWAYS_ENABLED,    // Persistent state.
       EmeFeatureSupport::ALWAYS_ENABLED));  // Distinctive identifier.
 #endif  // defined(WIDEVINE_CDM_AVAILABLE)
-}
-
-void AddChromecastKeySystemsInfo(
-    std::vector<::media::KeySystemInfo>* key_systems_info) {
-#if defined(PLAYREADY_CDM_AVAILABLE)
-  AddKeySystemWithCodecs(media::kChromecastPlayreadyKeySystem,
-                         key_systems_info);
-#endif  // defined(PLAYREADY_CDM_AVAILABLE)
 }
 
 }  // namespace shell
