@@ -1251,7 +1251,7 @@ bool IsX11WindowFullScreen(XID window) {
   if (!ui::GetOuterWindowBounds(window, &window_rect))
     return false;
 
-  // We can't use gfx::Screen here because we don't have an aura::Window. So
+  // We can't use display::Screen here because we don't have an aura::Window. So
   // instead just look at the size of the default display.
   //
   // TODO(erg): Actually doing this correctly would require pulling out xrandr,

@@ -14,6 +14,7 @@
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/cursor_util.h"
 #include "ui/base/x/x11_util.h"
+#include "ui/display/display.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/image/image.h"
@@ -209,7 +210,7 @@ void CursorLoaderX11::SetPlatformCursor(gfx::NativeCursor* cursor) {
     xcursor =  invisible_cursor_.get();
   else if (*cursor == kCursorCustom)
     xcursor = cursor->platform();
-  else if (scale() == 1.0f && rotation() == gfx::Display::ROTATE_0) {
+  else if (scale() == 1.0f && rotation() == display::Display::ROTATE_0) {
     xcursor = GetXCursor(CursorShapeFromNative(*cursor));
   } else {
     xcursor = ImageCursorFromNative(kCursorPointer);

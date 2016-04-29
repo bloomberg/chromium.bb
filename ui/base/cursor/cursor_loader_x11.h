@@ -14,7 +14,6 @@
 #include "ui/base/cursor/cursor_loader.h"
 #include "ui/base/ui_base_export.h"
 #include "ui/base/x/x11_util.h"
-#include "ui/gfx/display.h"
 
 namespace ui {
 

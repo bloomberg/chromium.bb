@@ -10,7 +10,7 @@
 #include "base/compiler_specific.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/ui_base_export.h"
-#include "ui/gfx/display.h"
+#include "ui/display/display.h"
 #include "ui/gfx/geometry/point.h"
 
 namespace ui {
@@ -20,19 +20,19 @@ namespace ui {
 // both input and output.
 UI_BASE_EXPORT void ScaleAndRotateCursorBitmapAndHotpoint(
     float scale,
-    gfx::Display::Rotation rotation,
+    display::Display::Rotation rotation,
     SkBitmap* bitmap_in_out,
     gfx::Point* hotpoint_in_out);
 
 // Helpers for CursorLoader.
 void GetImageCursorBitmap(int resource_id,
                           float scale,
-                          gfx::Display::Rotation rotation,
+                          display::Display::Rotation rotation,
                           gfx::Point* hotspot,
                           SkBitmap* bitmap);
 void GetAnimatedCursorBitmaps(int resource_id,
                               float scale,
-                              gfx::Display::Rotation rotation,
+                              display::Display::Rotation rotation,
                               gfx::Point* hotspot,
                               std::vector<SkBitmap>* bitmaps);
 

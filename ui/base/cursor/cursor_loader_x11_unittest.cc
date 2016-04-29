@@ -11,6 +11,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/cursor/cursor_util.h"
+#include "ui/display/display.h"
 
 namespace ui {
 
@@ -21,35 +22,27 @@ TEST(CursorLoaderX11Test, ScaleAndRotate) {
 
   gfx::Point hotpoint(3,4);
 
-  ScaleAndRotateCursorBitmapAndHotpoint(1.0f,
-                                        gfx::Display::ROTATE_0,
-                                        &bitmap,
-                                        &hotpoint);
+  ScaleAndRotateCursorBitmapAndHotpoint(1.0f, display::Display::ROTATE_0,
+                                        &bitmap, &hotpoint);
   EXPECT_EQ(10, bitmap.width());
   EXPECT_EQ(5, bitmap.height());
   EXPECT_EQ("3,4", hotpoint.ToString());
 
-  ScaleAndRotateCursorBitmapAndHotpoint(1.0f,
-                                        gfx::Display::ROTATE_90,
-                                        &bitmap,
-                                        &hotpoint);
+  ScaleAndRotateCursorBitmapAndHotpoint(1.0f, display::Display::ROTATE_90,
+                                        &bitmap, &hotpoint);
 
   EXPECT_EQ(5, bitmap.width());
   EXPECT_EQ(10, bitmap.height());
   EXPECT_EQ("1,3", hotpoint.ToString());
 
-  ScaleAndRotateCursorBitmapAndHotpoint(2.0f,
-                                        gfx::Display::ROTATE_180,
-                                        &bitmap,
-                                        &hotpoint);
+  ScaleAndRotateCursorBitmapAndHotpoint(2.0f, display::Display::ROTATE_180,
+                                        &bitmap, &hotpoint);
   EXPECT_EQ(10, bitmap.width());
   EXPECT_EQ(20, bitmap.height());
   EXPECT_EQ("8,14", hotpoint.ToString());
 
-  ScaleAndRotateCursorBitmapAndHotpoint(1.0f,
-                                        gfx::Display::ROTATE_270,
-                                        &bitmap,
-                                        &hotpoint);
+  ScaleAndRotateCursorBitmapAndHotpoint(1.0f, display::Display::ROTATE_270,
+                                        &bitmap, &hotpoint);
   EXPECT_EQ(20, bitmap.width());
   EXPECT_EQ(10, bitmap.height());
   EXPECT_EQ("14,2", hotpoint.ToString());

@@ -40,33 +40,33 @@ bool ConvertSkBitmapAlphaType(SkBitmap* bitmap, SkAlphaType alpha_type) {
 } // namespace
 
 void ScaleAndRotateCursorBitmapAndHotpoint(float scale,
-                                           gfx::Display::Rotation rotation,
+                                           display::Display::Rotation rotation,
                                            SkBitmap* bitmap,
                                            gfx::Point* hotpoint) {
   // SkBitmapOperations::Rotate() needs the bitmap to have premultiplied alpha,
   // so convert bitmap alpha type if we are going to rotate.
   bool was_converted = false;
-  if (rotation != gfx::Display::ROTATE_0 &&
+  if (rotation != display::Display::ROTATE_0 &&
       bitmap->info().alphaType() == kUnpremul_SkAlphaType) {
     ConvertSkBitmapAlphaType(bitmap, kPremul_SkAlphaType);
     was_converted = true;
   }
 
   switch (rotation) {
-    case gfx::Display::ROTATE_0:
+    case display::Display::ROTATE_0:
       break;
-    case gfx::Display::ROTATE_90:
+    case display::Display::ROTATE_90:
       hotpoint->SetPoint(bitmap->height() - hotpoint->y(), hotpoint->x());
       *bitmap = SkBitmapOperations::Rotate(
           *bitmap, SkBitmapOperations::ROTATION_90_CW);
       break;
-    case gfx::Display::ROTATE_180:
+    case display::Display::ROTATE_180:
       hotpoint->SetPoint(
           bitmap->width() - hotpoint->x(), bitmap->height() - hotpoint->y());
       *bitmap = SkBitmapOperations::Rotate(
           *bitmap, SkBitmapOperations::ROTATION_180_CW);
       break;
-    case gfx::Display::ROTATE_270:
+    case display::Display::ROTATE_270:
       hotpoint->SetPoint(hotpoint->y(), bitmap->width() - hotpoint->x());
       *bitmap = SkBitmapOperations::Rotate(
           *bitmap, SkBitmapOperations::ROTATION_270_CW);
@@ -98,7 +98,7 @@ void ScaleAndRotateCursorBitmapAndHotpoint(float scale,
 
 void GetImageCursorBitmap(int resource_id,
                           float scale,
-                          gfx::Display::Rotation rotation,
+                          display::Display::Rotation rotation,
                           gfx::Point* hotspot,
                           SkBitmap* bitmap) {
   const gfx::ImageSkia* image =
@@ -114,7 +114,7 @@ void GetImageCursorBitmap(int resource_id,
 
 void GetAnimatedCursorBitmaps(int resource_id,
                               float scale,
-                              gfx::Display::Rotation rotation,
+                              display::Display::Rotation rotation,
                               gfx::Point* hotspot,
                               std::vector<SkBitmap>* bitmaps) {
   // TODO(oshima|tdanderson): Support rotation and fractional scale factor.

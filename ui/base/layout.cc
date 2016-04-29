@@ -16,9 +16,9 @@
 #include "build/build_config.h"
 #include "ui/base/touch/touch_device.h"
 #include "ui/base/ui_base_switches.h"
-#include "ui/gfx/display.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/gfx/screen.h"
 
 namespace ui {
 
@@ -106,7 +106,7 @@ ScopedSetSupportedScaleFactors::~ScopedSetSupportedScaleFactors() {
 
 #if !defined(OS_MACOSX)
 float GetScaleFactorForNativeView(gfx::NativeView view) {
-  return gfx::Screen::GetScreen()
+  return display::Screen::GetScreen()
       ->GetDisplayNearestWindow(view)
       .device_scale_factor();
 }

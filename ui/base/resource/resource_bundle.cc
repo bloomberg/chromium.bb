@@ -33,13 +33,14 @@
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/ui_features.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_source.h"
-#include "ui/gfx/screen.h"
 #include "ui/strings/grit/app_locale_settings.h"
 
 #if defined(OS_ANDROID)
@@ -647,8 +648,8 @@ void ResourceBundle::InitSharedInstance(Delegate* delegate) {
 #endif
 #if defined(OS_ANDROID)
   float display_density;
-  if (gfx::Display::HasForceDeviceScaleFactor()) {
-    display_density = gfx::Display::GetForcedDeviceScaleFactor();
+  if (display::Display::HasForceDeviceScaleFactor()) {
+    display_density = display::Display::GetForcedDeviceScaleFactor();
   } else {
     gfx::DeviceDisplayInfo device_info;
     display_density = device_info.GetDIPScale();
@@ -657,7 +658,7 @@ void ResourceBundle::InitSharedInstance(Delegate* delegate) {
   if (closest != SCALE_FACTOR_100P)
     supported_scale_factors.push_back(closest);
 #elif defined(OS_IOS)
-  gfx::Display display = gfx::Screen::GetScreen()->GetPrimaryDisplay();
+  display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
   if (display.device_scale_factor() > 2.0) {
     DCHECK_EQ(3.0, display.device_scale_factor());
     supported_scale_factors.push_back(SCALE_FACTOR_300P);

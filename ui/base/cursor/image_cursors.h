@@ -11,7 +11,7 @@
 #include "base/strings/string16.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/ui_base_export.h"
-#include "ui/gfx/display.h"
+#include "ui/display/display.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace ui {
@@ -27,11 +27,11 @@ class UI_BASE_EXPORT ImageCursors {
 
   // Returns the scale and rotation of the currently loaded cursor.
   float GetScale() const;
-  gfx::Display::Rotation GetRotation() const;
+  display::Display::Rotation GetRotation() const;
 
   // Sets the display the cursors are loaded for. |scale_factor| determines the
   // size of the image to load. Returns true if the cursor image is reloaded.
-  bool SetDisplay(const gfx::Display& display, float scale_factor);
+  bool SetDisplay(const display::Display& display, float scale_factor);
 
   // Sets the type of the mouse cursor icon.
   void SetCursorSet(CursorSetType cursor_set);
