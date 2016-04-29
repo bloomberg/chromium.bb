@@ -101,6 +101,27 @@ class TBMv2MemoryBenchmarkTop10Mobile(MemoryHealthQuick):
     return 'memory.top_10_mobile_tbmv2'
 
 
+# Benchmark is disabled by default because it takes too long to run.
+@benchmark.Disabled('all')
+class DualBrowserBenchmark(_MemoryInfra):
+  """Measures memory usage while interacting with two different browsers.
+
+  The user story involves going back and forth between doing Google searches
+  on a webview-based browser (a stand in for the Search app), and loading
+  pages on a select browser.
+  """
+  page_set = page_sets.DualBrowserStorySet
+  options = {'pageset_repeat': 5}
+
+  @classmethod
+  def Name(cls):
+    return 'memory.dual_browser_test'
+
+  def SetupBenchmarkDefaultTraceRerunOptions(self, tbm_options):
+    # This is a TBMv2 benchmark.
+    tbm_options.SetTimelineBasedMetric('memoryMetric')
+
+
 # TODO(bashi): Workaround for http://crbug.com/532075
 # @benchmark.Enabled('android') shouldn't be needed.
 @benchmark.Enabled('android')

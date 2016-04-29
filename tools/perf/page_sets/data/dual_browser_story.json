@@ -1,0 +1,27 @@
+{
+    "description": "Describes the Web Page Replay archives for a story set. Don't edit by hand! Use record_wpr for updating.", 
+    "archives": {
+        "dual_browser_story_000.wpr": [
+            "google_movies_94110", 
+            "https_m_facebook_com_rihanna", 
+            "http_m_taobao_com_channel_act_mobile_20131111_women_html", 
+            "google_sfo_jfk_flights", 
+            "google_tom_hanks", 
+            "http_yandex_ru_touchsearch_text_science", 
+            "https_www_google_com_hl_en_q_science", 
+            "http_search_yahoo_com_search__ylt_p_google", 
+            "http_www_amazon_com_gp_aw_s_k_nexus", 
+            "google_weather_94110", 
+            "google_tip_on_100_bill", 
+            "http_en_m_wikipedia_org_wiki_Science", 
+            "http_m_youtube_com_results_q_science", 
+            "google_cat_pictures", 
+            "https_mobile_twitter_com_justinbieber_skip_interstitial_true", 
+            "http_www_baidu_com_s_word_google", 
+            "google_science", 
+            "google_population_of_california", 
+            "google_1600_amphitheatre_pkwy_mountain_view_ca", 
+            "google_goog"
+        ]
+    }
+}
