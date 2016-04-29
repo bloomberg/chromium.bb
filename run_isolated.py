@@ -14,7 +14,7 @@ file. All content written to this directory will be uploaded upon termination
 and the .isolated file describing this directory will be printed to stdout.
 """
 
-__version__ = '0.6.0'
+__version__ = '0.6.1'
 
 import base64
 import logging
@@ -222,18 +222,35 @@ def run_command(command, cwd, tmp_dir, hard_timeout, grace_period):
   return exit_code, had_hard_timeout
 
 
+def fetch_and_measure(isolated_hash, storage, cache, outdir):
+  """Fetches an isolated and returns (bundle, stats)."""
+  start = time.time()
+  bundle = isolateserver.fetch_isolated(
+      isolated_hash=isolated_hash,
+      storage=storage,
+      cache=cache,
+      outdir=outdir)
+  return bundle, {
+    'duration': time.time() - start,
+    'initial_number_items': cache.initial_number_items,
+    'initial_size': cache.initial_size,
+    'items_cold': base64.b64encode(large.pack(sorted(cache.added))),
+    'items_hot': base64.b64encode(
+        large.pack(sorted(set(cache.linked) - set(cache.added)))),
+  }
+
+
 def delete_and_upload(storage, out_dir, leak_temp_dir):
   """Deletes the temporary run directory and uploads results back.
 
   Returns:
-    tuple(outputs_ref, success, cold, hot)
+    tuple(outputs_ref, success, stats)
     - outputs_ref: a dict referring to the results archived back to the isolated
           server, if applicable.
     - success: False if something occurred that means that the task must
           forcibly be considered a failure, e.g. zombie processes were left
           behind.
-    - cold: list of size of cold items, they had to be uploaded.
-    - hot: list of size of hot items, they didn't have to be uploaded.
+    - stats: uploading stats.
   """
 
   # Upload out_dir and generate a .isolated file out of this directory. It is
@@ -241,6 +258,8 @@ def delete_and_upload(storage, out_dir, leak_temp_dir):
   outputs_ref = None
   cold = []
   hot = []
+  start = time.time()
+
   if fs.isdir(out_dir) and fs.listdir(out_dir):
     with tools.Profiler('ArchiveOutput'):
       try:
@@ -263,17 +282,23 @@ def delete_and_upload(storage, out_dir, leak_temp_dir):
         sys.stderr.write('Received SIGTERM while uploading')
         # Re-raise, so it will be treated as an internal failure.
         raise
+
+  success = False
   try:
     if (not leak_temp_dir and fs.isdir(out_dir) and
         not file_path.rmtree(out_dir)):
       logging.error('Had difficulties removing out_dir %s', out_dir)
-      return outputs_ref, False, cold, hot
+    else:
+      success = True
   except OSError as e:
     # When this happens, it means there's a process error.
     logging.exception('Had difficulties removing out_dir %s: %s', out_dir, e)
-    return outputs_ref, False, cold, hot
-  return outputs_ref, True, cold, hot
-
+  stats = {
+    'duration': time.time() - start,
+    'items_cold': base64.b64encode(large.pack(cold)),
+    'items_hot': base64.b64encode(large.pack(hot)),
+  }
+  return outputs_ref, success, stats
 
 
 def map_and_run(
@@ -312,8 +337,7 @@ def map_and_run(
   out_dir = make_temp_dir(prefix + u'out', root_dir)
   tmp_dir = make_temp_dir(prefix + u'tmp', root_dir)
   try:
-    start = time.time()
-    bundle = isolateserver.fetch_isolated(
+    bundle, result['stats']['download'] = fetch_and_measure(
         isolated_hash=isolated_hash,
         storage=storage,
         cache=cache,
@@ -328,14 +352,6 @@ def map_and_run(
         sys.stderr.write('<This occurs at the \'isolate\' step>\n')
       result['exit_code'] = 1
       return result
-    result['stats']['download'] = {
-      'duration': time.time() - start,
-      'initial_number_items': cache.initial_number_items,
-      'initial_size': cache.initial_size,
-      'items_cold': base64.b64encode(large.pack(sorted(cache.added))),
-      'items_hot': base64.b64encode(
-          large.pack(sorted(set(cache.linked) - set(cache.added)))),
-    }
 
     change_tree_read_only(run_dir, bundle.read_only)
     cwd = os.path.normpath(os.path.join(run_dir, bundle.relative_cwd))
@@ -396,14 +412,8 @@ def map_and_run(
               result['exit_code'] = 1
 
       # This deletes out_dir if leak_temp_dir is not set.
-      start = time.time()
-      result['outputs_ref'], success, cold, hot = delete_and_upload(
-          storage, out_dir, leak_temp_dir)
-      result['stats']['upload'] = {
-        'duration': time.time() - start,
-        'items_cold': base64.b64encode(large.pack(cold)),
-        'items_hot': base64.b64encode(large.pack(hot)),
-      }
+      result['outputs_ref'], success, result['stats']['upload'] = (
+          delete_and_upload(storage, out_dir, leak_temp_dir))
       if not success and result['exit_code'] == 0:
         result['exit_code'] = 1
     except Exception as e:
