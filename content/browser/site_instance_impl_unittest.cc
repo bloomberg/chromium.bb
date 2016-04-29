@@ -289,12 +289,38 @@ TEST_F(SiteInstanceTest, GetSiteForURL) {
   EXPECT_EQ("http", site_url.scheme());
   EXPECT_EQ("google.com", site_url.host());
 
-  // Ports are irrlevant.
+  // Ports are irrelevant.
   test_url = GURL("https://www.google.com:8080");
   site_url = SiteInstanceImpl::GetSiteForURL(nullptr, test_url);
   EXPECT_EQ(GURL("https://google.com"), site_url);
 
-  // Hostnames without TLDs are ok.
+  // Punycode is canonicalized.
+  test_url = GURL("http://☃snowperson☃.net:333/");
+  site_url = SiteInstanceImpl::GetSiteForURL(nullptr, test_url);
+  EXPECT_EQ(GURL("http://xn--snowperson-di0gka.net"), site_url);
+
+  // Username and password are stripped out.
+  test_url = GURL("ftp://username:password@ftp.chromium.org/files/README");
+  site_url = SiteInstanceImpl::GetSiteForURL(nullptr, test_url);
+  EXPECT_EQ(GURL("ftp://chromium.org"), site_url);
+
+  // Literal IP addresses of any flavor are okay.
+  test_url = GURL("http://127.0.0.1/a.html");
+  site_url = SiteInstanceImpl::GetSiteForURL(nullptr, test_url);
+  EXPECT_EQ(GURL("http://127.0.0.1"), site_url);
+  EXPECT_EQ("127.0.0.1", site_url.host());
+
+  test_url = GURL("http://2130706433/a.html");
+  site_url = SiteInstanceImpl::GetSiteForURL(nullptr, test_url);
+  EXPECT_EQ(GURL("http://127.0.0.1"), site_url);
+  EXPECT_EQ("127.0.0.1", site_url.host());
+
+  test_url = GURL("http://[::1]:2/page.html");
+  site_url = SiteInstanceImpl::GetSiteForURL(nullptr, test_url);
+  EXPECT_EQ(GURL("http://[::1]"), site_url);
+  EXPECT_EQ("[::1]", site_url.host());
+
+  // Hostnames without TLDs are okay.
   test_url = GURL("http://foo/a.html");
   site_url = SiteInstanceImpl::GetSiteForURL(nullptr, test_url);
   EXPECT_EQ(GURL("http://foo"), site_url);
@@ -326,6 +352,25 @@ TEST_F(SiteInstanceTest, GetSiteForURL) {
   EXPECT_EQ(GURL("javascript:"), site_url);
   EXPECT_EQ("javascript", site_url.scheme());
   EXPECT_FALSE(site_url.has_host());
+
+  // Blob URLs extract the site from the origin.
+  test_url = GURL(
+      "blob:gopher://www.ftp.chromium.org/"
+      "4d4ff040-6d61-4446-86d3-13ca07ec9ab9");
+  site_url = SiteInstanceImpl::GetSiteForURL(nullptr, test_url);
+  EXPECT_EQ(GURL("gopher://chromium.org"), site_url);
+
+  // Private domains are preserved, appspot being such a site.
+  test_url = GURL(
+      "blob:http://www.example.appspot.com:44/"
+      "4d4ff040-6d61-4446-86d3-13ca07ec9ab9");
+  site_url = SiteInstanceImpl::GetSiteForURL(nullptr, test_url);
+  EXPECT_EQ(GURL("http://example.appspot.com"), site_url);
+
+  // The site of filesystem URLs is determined by the inner URL.
+  test_url = GURL("filesystem:http://www.google.com/foo/bar.html?foo#bar");
+  site_url = SiteInstanceImpl::GetSiteForURL(nullptr, test_url);
+  EXPECT_EQ(GURL("http://google.com"), site_url);
 
   // Guest URLs are special and need to have the path in the site as well,
   // since it affects the StoragePartition configuration.

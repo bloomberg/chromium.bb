@@ -511,11 +511,13 @@ GURL GetEffectiveURLForInstant(const GURL& url, Profile* profile) {
 
   GURL effective_url(url);
 
-  // Replace the scheme with "chrome-search:".
+  // Replace the scheme with "chrome-search:", and clear the port, since
+  // chrome-search is a scheme without port.
   url::Replacements<char> replacements;
   std::string search_scheme(chrome::kChromeSearchScheme);
   replacements.SetScheme(search_scheme.data(),
                          url::Component(0, search_scheme.length()));
+  replacements.ClearPort();
 
   // If this is the URL for a server-provided NTP, replace the host with
   // "remote-ntp".

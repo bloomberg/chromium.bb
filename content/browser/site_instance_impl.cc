@@ -334,31 +334,18 @@ GURL SiteInstance::GetSiteForURL(BrowserContext* browser_context,
     return real_url;
 
   GURL url = SiteInstanceImpl::GetEffectiveURL(browser_context, real_url);
+  url::Origin origin(url);
 
   // If the url has a host, then determine the site.
-  if (url.has_host()) {
-    // Only keep the scheme and registered domain as given by GetOrigin.  This
-    // may also include a port, which we need to drop.
-    GURL site = url.GetOrigin();
-
-    // Remove port, if any.
-    if (site.has_port()) {
-      GURL::Replacements rep;
-      rep.ClearPort();
-      site = site.ReplaceComponents(rep);
-    }
-
-    // If this URL has a registered domain, we only want to remember that part.
-    std::string domain =
-        net::registry_controlled_domains::GetDomainAndRegistry(
-            url,
-            net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
-    if (!domain.empty()) {
-      GURL::Replacements rep;
-      rep.SetHostStr(domain);
-      site = site.ReplaceComponents(rep);
-    }
-    return site;
+  if (!origin.host().empty()) {
+    // Only keep the scheme and registered domain of |origin|.
+    std::string domain = net::registry_controlled_domains::GetDomainAndRegistry(
+        origin.host(),
+        net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+    std::string site = origin.scheme();
+    site += url::kStandardSchemeSeparator;
+    site += domain.empty() ? origin.host() : domain;
+    return GURL(site);
   }
 
   // If there is no host but there is a scheme, return the scheme.
