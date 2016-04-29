@@ -52,6 +52,9 @@ source_set("unittests") {
   sources = [
     "entry_unittest.cc",
   ]
+  data = [
+    "//services/catalog/data/",
+  ]
   deps = [
     ":lib",
     "//base",

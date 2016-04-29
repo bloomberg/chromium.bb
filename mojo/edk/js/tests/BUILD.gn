@@ -23,6 +23,12 @@ source_set("js_to_cpp_tests") {
     "js_to_cpp_tests.cc",
   ]
 
+  data = [
+    "connection_tests.js",
+    "js_to_cpp_tests.js",
+    "sample_service_tests.js",
+  ]
+
   configs += [ "//v8:external_startup_data" ]
 }
 

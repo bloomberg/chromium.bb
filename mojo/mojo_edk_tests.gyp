@@ -326,6 +326,45 @@
             'mojo_public_system_unittests.isolate',
           ],
         },
+        {
+          'target_name': 'mojo_js_unittests_run',
+          'type': 'none',
+          'dependencies': [
+            'mojo_js_unittests',
+          ],
+          'includes': [
+            '../build/isolate.gypi',
+          ],
+          'sources': [
+            'mojo_js_unittests.isolate',
+          ],
+        },
+        {
+          'target_name': 'mojo_js_integration_tests_run',
+          'type': 'none',
+          'dependencies': [
+            'mojo_js_integration_tests',
+          ],
+          'includes': [
+            '../build/isolate.gypi',
+          ],
+          'sources': [
+            'mojo_js_integration_tests.isolate',
+          ],
+        },
+        {
+          'target_name': 'mojo_system_unittests_run',
+          'type': 'none',
+          'dependencies': [
+            'mojo_system_unittests',
+          ],
+          'includes': [
+            '../build/isolate.gypi',
+          ],
+          'sources': [
+            'mojo_system_unittests.isolate',
+          ],
+        },
       ],
     }],
   ],

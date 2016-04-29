@@ -248,4 +248,23 @@
       'public/cpp/tests/interface_registry_unittest.cc',
     ],
   }],
+  'conditions': [
+    ['test_isolation_mode != "noop"', {
+      'targets': [
+        {
+          'target_name': 'mojo_shell_unittests_run',
+          'type': 'none',
+          'dependencies': [
+            'mojo_shell_unittests',
+          ],
+          'includes': [
+            '../../build/isolate.gypi',
+          ],
+          'sources': [
+            'mojo_shell_unittests.isolate',
+          ],
+        },
+      ],
+    }],
+  ],
 }

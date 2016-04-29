@@ -10,7 +10,7 @@
       'variables': {
         'command': [
           '../testing/test_env.py',
-          '<(PRODUCT_DIR)/mojo_public_bindings_unittests<(EXECUTABLE_SUFFIX)',
+          '<(PRODUCT_DIR)/mojo_system_unittests<(EXECUTABLE_SUFFIX)',
           '--brave-new-test-launcher',
           '--test-launcher-bot-mode',
         ],

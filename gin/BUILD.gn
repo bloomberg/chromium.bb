@@ -156,6 +156,9 @@ source_set("gin_test") {
     "test/v8_test.cc",
     "test/v8_test.h",
   ]
+  data = [
+    "test/expect.js",
+  ]
 
   public_deps = [
     ":gin",
@@ -195,7 +198,6 @@ test("gin_unittests") {
   data = [
     "modules/module_registry_unittests.js",
     "shell/hello_world.js",
-    "test/expect.js",
     "test/file_unittests.js",
     "test/gtest_unittests.js",
     "../OWNERS",

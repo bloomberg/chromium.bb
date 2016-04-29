@@ -62,12 +62,14 @@ mojo_native_application("connect_test_package") {
     "connect_test_package.cc",
   ]
   deps = [
-    ":connect_test_package_manifest",
     ":interfaces",
     "//base",
     "//mojo/common:common_base",
     "//services/shell/public/cpp:sources",
     "//services/shell/public/interfaces",
+  ]
+  data_deps = [
+    ":connect_test_package_manifest",
   ]
 }
 
@@ -90,12 +92,14 @@ mojo_native_application("connect_test_app") {
     "connect_test_app.cc",
   ]
   deps = [
-    ":connect_test_app_manifest",
     ":interfaces",
     "//base",
     "//mojo/common:common_base",
     "//services/shell/public/cpp:sources",
     "//services/shell/public/interfaces",
+  ]
+  data_deps = [
+    ":connect_test_app_manifest",
   ]
 }
 
@@ -110,12 +114,14 @@ mojo_native_application("connect_test_class_app") {
     "connect_test_class_app.cc",
   ]
   deps = [
-    ":connect_test_class_app_manifest",
     ":interfaces",
     "//base",
     "//mojo/common:common_base",
     "//services/shell/public/cpp:sources",
     "//services/shell/public/interfaces",
+  ]
+  data_deps = [
+    ":connect_test_class_app_manifest",
   ]
 }
 
@@ -130,10 +136,12 @@ mojo_native_application("connect_test_singleton_app") {
     "connect_test_singleton_app.cc",
   ]
   deps = [
-    ":connect_test_singleton_app_manifest",
     "//base",
     "//mojo/common:common_base",
     "//services/shell/public/cpp:sources",
+  ]
+  data_deps = [
+    ":connect_test_singleton_app_manifest",
   ]
 }
 

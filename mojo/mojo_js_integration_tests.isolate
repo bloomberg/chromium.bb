@@ -1,4 +1,4 @@
-# Copyright 2014 The Chromium Authors. All rights reserved.
+# Copyright 2016 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 {
@@ -12,15 +12,18 @@
       'variables': {
         'command': [
           '../testing/test_env.py',
-          '<(PRODUCT_DIR)/mojo_js_unittests<(EXECUTABLE_SUFFIX)',
+          '<(PRODUCT_DIR)/mojo_js_integration_tests<(EXECUTABLE_SUFFIX)',
           '--brave-new-test-launcher',
           '--test-launcher-bot-mode',
         ],
         'files': [
           '../gin/test/expect.js',
+          '../mojo/edk/js/tests/',
+          '../mojo/public/js/',
           '../testing/test_env.py',
-          'public/interfaces/bindings/tests/data/validation/',
-          'public/js/',
+          '<(PRODUCT_DIR)/mojo_js_integration_tests<(EXECUTABLE_SUFFIX)',
+          '<(PRODUCT_DIR)/gen/mojo/common/common_custom_types.mojom.js',
+          '<(PRODUCT_DIR)/gen/mojo/edk/js/tests/js_to_cpp.mojom.js',
           '<(PRODUCT_DIR)/gen/mojo/public/interfaces/bindings/tests/math_calculator.mojom.js',
           '<(PRODUCT_DIR)/gen/mojo/public/interfaces/bindings/tests/no_module.mojom.js',
           '<(PRODUCT_DIR)/gen/mojo/public/interfaces/bindings/tests/ping_service.mojom.js',

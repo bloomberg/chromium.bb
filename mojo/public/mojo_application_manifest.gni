@@ -107,11 +107,14 @@ template("mojo_application_manifest") {
       }
     }
     deps = []
+    data_deps = []
     if (defined(invoker.deps)) {
       deps += invoker.deps
+      data_deps += invoker.deps
     }
     if (defined(invoker.base_deps)) {
       deps += invoker.base_deps
+      data_deps += invoker.base_deps
     }
   }
 

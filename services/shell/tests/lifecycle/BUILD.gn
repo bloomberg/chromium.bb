@@ -74,10 +74,12 @@ mojo_native_application("lifecycle_unittest_package") {
   deps = [
     ":app_client",
     ":interfaces",
-    ":lifecycle_unittest_package_manifest",
     "//base",
     "//services/shell/public/cpp:sources",
     "//services/shell/public/interfaces",
+  ]
+  data_deps = [
+    ":lifecycle_unittest_package_manifest",
   ]
 }
 

@@ -30,6 +30,8 @@ def main():
                       help='The number of times to repeat the set of tests.')
   parser.add_argument('--write-full-results-to', metavar='FILENAME',
                       help='The path to write the JSON list of full results.')
+  parser.add_argument('--test-launcher-summary-output', metavar='FILENAME',
+                      help='The path to write the JSON list of full results.')
   parser.add_argument('--test-list-file', metavar='FILENAME', type=file,
                       default=APPTESTS, help='The file listing tests to run.')
   parser.add_argument('--apptest-filter', default='',
@@ -112,6 +114,8 @@ def main():
 
   if args.write_full_results_to:
     _WriteJSONResults(tests, failed, args.write_full_results_to)
+  if args.test_launcher_summary_output:
+    _WriteSwarmingJSONResults(tests, failed, args.test_launcher_summary_output)
 
   return 1 if failed else 0
 
@@ -158,6 +162,31 @@ def _AddPathToTrie(trie, path, value):
   if directory not in trie:
     trie[directory] = {}
   _AddPathToTrie(trie[directory], rest, value)
+
+
+def _WriteSwarmingJSONResults(tests, failed, write_full_results_to):
+  '''Writes the test results in the JSON test result format used by swarming.'''
+  results = {
+    'all_tests': tests,
+    'disabled_tests': [],
+    'global_tags': [],
+  }
+
+  test_results = []
+  for test in sorted(tests):
+    value = [{
+      'status': 'FAILURE' if test in failed else 'SUCCESS',
+      'output_snippet': '',
+      'output_snippet_base64': '',
+    }]
+    test_results.append({test: value})
+  results['per_iteration_data'] = test_results
+
+  with open(write_full_results_to, 'w') as fp:
+    json.dump(results, fp, indent=2)
+    fp.write('\n')
+
+  return results
 
 
 if __name__ == '__main__':

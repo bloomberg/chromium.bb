@@ -103,4 +103,23 @@
       ],
     },
   ],
+  'conditions': [
+    ['test_isolation_mode != "noop"', {
+      'targets': [
+        {
+          'target_name': 'ipc_mojo_unittests_run',
+          'type': 'none',
+          'dependencies': [
+            'ipc_mojo_unittests',
+          ],
+          'includes': [
+            '../../build/isolate.gypi',
+          ],
+          'sources': [
+            'ipc_mojo_unittests.isolate',
+          ],
+        },
+      ],
+    }],
+  ],
 }

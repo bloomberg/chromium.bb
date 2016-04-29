@@ -332,7 +332,7 @@
   },
   "ipc_mojo_unittests": {
     "label": "//ipc/mojo:ipc_mojo_unittests",
-    "type": "unknown",
+    "type": "console_test_launcher",
   },
   "ipc_tests": {
     "label": "//ipc:ipc_tests",
@@ -372,6 +372,14 @@
     "label": "//media/midi:midi_unittests",
     "type": "windowed_test_launcher",
   },
+  "mojo_apptests": {
+    "label": ":mojo_apptests",
+    "type": "script",
+    "script": "//mojo/tools/apptest_runner.py",
+    "args": [
+      '.',
+    ],
+  },
   "mojo_common_unittests": {
     "label": "//mojo/common:mojo_common_unittests",
     "type": "console_test_launcher",
@@ -385,8 +393,8 @@
     "type": "console_test_launcher",
   },
   "mojo_public_application_unittests": {
-    "label": "//mojo/edk/test:mojo_public_applicaiton_unittests",
-    "type": "unknown",
+    "label": "//services/shell/public/cpp/tests:mojo_public_application_unittests",
+    "type": "windowed_test_launcher",
   },
   "mojo_public_bindings_unittests": {
     "label": "//mojo/edk/test:mojo_public_bindings_unittests",
@@ -397,24 +405,24 @@
     "type": "console_test_launcher",
   },
   "mojo_runner_host_unittests": {
-    "label": "//mojo/runner/host:unittests",
-    "type": "unknown",
+    "label": "//services/shell/runner/host:mojo_runner_host_unittests",
+    "type": "console_test_launcher",
   },
   "mojo_shell_unittests": {
-    "label": "//services/shell:mojo_shell_unittests",
-    "type": "unknown",
+    "label": "//services/shell/tests:mojo_shell_unittests",
+    "type": "console_test_launcher",
   },
   "mojo_surfaces_lib_unittests": {
     "label": "//mojo/converters/surfaces/tests:mojo_surfaces_lib_unittests",
-    "type": "unknown",
+    "type": "windowed_test_launcher",
   },
   "mojo_system_unittests": {
     "label": "//mojo/edk/system:mojo_system_unittests",
-    "type": "unknown",
+    "type": "console_test_launcher",
   },
   "mojo_view_manager_lib_unittests": {
-    "label": "//components/view_manager/public/cpp/tests:mojo_view_manager_lib_unittests",
-    "type": "unknown",
+    "label": "//components/mus/public/cpp/tests:mojo_view_manager_lib_unittests",
+    "type": "windowed_test_launcher",
   },
   "message_center_unittests": {
     "label": "//ui/message_center:message_center_unittests",

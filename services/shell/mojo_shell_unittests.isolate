@@ -3,19 +3,19 @@
 # found in the LICENSE file.
 {
   'includes': [
-    '../mojo/mojo.isolate',
+    '../../mojo/mojo.isolate',
   ],
   'conditions': [
     ['OS=="win" or OS=="mac" or OS=="linux"', {
       'variables': {
         'command': [
-          '../testing/test_env.py',
-          '<(PRODUCT_DIR)/mojo_public_bindings_unittests<(EXECUTABLE_SUFFIX)',
+          '../../testing/test_env.py',
+          '<(PRODUCT_DIR)/mojo_shell_unittests<(EXECUTABLE_SUFFIX)',
           '--brave-new-test-launcher',
           '--test-launcher-bot-mode',
         ],
         'files': [
-          '../testing/test_env.py',
+          '../../testing/test_env.py',
         ],
       },
     }],
