@@ -184,6 +184,8 @@ static inline void checkLayoutAttributesConsistency(LayoutSVGText* text, Vector<
 void LayoutSVGText::layout()
 {
     ASSERT(needsLayout());
+    // This flag is set and reset as needed only within this function.
+    ASSERT(!m_needsReordering);
     LayoutAnalyzer::Scope analyzer(*this);
 
     bool updateParentBoundaries = false;
@@ -192,9 +194,6 @@ void LayoutSVGText::layout()
         m_needsTransformUpdate = false;
         updateParentBoundaries = true;
     }
-
-    // This flag is set and reset as needed only within this function.
-    ASSERT(!m_needsReordering);
 
     // When laying out initially, build the character data map and propagate
     // resulting layout attributes to all LayoutSVGInlineText children in the
@@ -256,8 +255,7 @@ void LayoutSVGText::layout()
     LayoutUnit paintInvalidationLogicalBottom;
     layoutInlineChildren(true, paintInvalidationLogicalTop, paintInvalidationLogicalBottom, afterEdge);
 
-    if (m_needsReordering)
-        m_needsReordering = false;
+    m_needsReordering = false;
 
     // If we don't have any line boxes, then make sure the frame rect is still cleared.
     if (!firstLineBox())
