@@ -415,7 +415,8 @@ void vpx_lpf_vertical_8_dual_c(uint8_t *s, int pitch, const uint8_t *blimit0, co
 #define vpx_lpf_vertical_8_dual vpx_lpf_vertical_8_dual_c
 
 void vpx_minmax_8x8_c(const uint8_t *s, int p, const uint8_t *d, int dp, int *min, int *max);
-#define vpx_minmax_8x8 vpx_minmax_8x8_c
+void vpx_minmax_8x8_neon(const uint8_t *s, int p, const uint8_t *d, int dp, int *min, int *max);
+#define vpx_minmax_8x8 vpx_minmax_8x8_neon
 
 unsigned int vpx_mse16x16_c(const uint8_t *src_ptr, int  source_stride, const uint8_t *ref_ptr, int  recon_stride, unsigned int *sse);
 unsigned int vpx_mse16x16_neon(const uint8_t *src_ptr, int  source_stride, const uint8_t *ref_ptr, int  recon_stride, unsigned int *sse);

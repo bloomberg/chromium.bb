@@ -421,7 +421,8 @@ void vpx_lpf_vertical_8_dual_neon(uint8_t *s, int pitch, const uint8_t *blimit0,
 RTCD_EXTERN void (*vpx_lpf_vertical_8_dual)(uint8_t *s, int pitch, const uint8_t *blimit0, const uint8_t *limit0, const uint8_t *thresh0, const uint8_t *blimit1, const uint8_t *limit1, const uint8_t *thresh1);
 
 void vpx_minmax_8x8_c(const uint8_t *s, int p, const uint8_t *d, int dp, int *min, int *max);
-#define vpx_minmax_8x8 vpx_minmax_8x8_c
+void vpx_minmax_8x8_neon(const uint8_t *s, int p, const uint8_t *d, int dp, int *min, int *max);
+RTCD_EXTERN void (*vpx_minmax_8x8)(const uint8_t *s, int p, const uint8_t *d, int dp, int *min, int *max);
 
 unsigned int vpx_mse16x16_c(const uint8_t *src_ptr, int  source_stride, const uint8_t *ref_ptr, int  recon_stride, unsigned int *sse);
 unsigned int vpx_mse16x16_media(const uint8_t *src_ptr, int  source_stride, const uint8_t *ref_ptr, int  recon_stride, unsigned int *sse);
@@ -971,6 +972,8 @@ static void setup_rtcd_internal(void)
     if (flags & HAS_NEON) vpx_lpf_vertical_8 = vpx_lpf_vertical_8_neon;
     vpx_lpf_vertical_8_dual = vpx_lpf_vertical_8_dual_c;
     if (flags & HAS_NEON) vpx_lpf_vertical_8_dual = vpx_lpf_vertical_8_dual_neon;
+    vpx_minmax_8x8 = vpx_minmax_8x8_c;
+    if (flags & HAS_NEON) vpx_minmax_8x8 = vpx_minmax_8x8_neon;
     vpx_mse16x16 = vpx_mse16x16_media;
     if (flags & HAS_NEON) vpx_mse16x16 = vpx_mse16x16_neon;
     vpx_sad16x16 = vpx_sad16x16_media;
