@@ -229,7 +229,7 @@ class TileTaskWorkerPoolPerfTestBase {
         graph->nodes.push_back(
             TaskGraph::Node(decode_task.get(), 0u /* group */, priority, 0u));
         graph->edges.push_back(
-            TaskGraph::Edge(raster_task.get(), decode_task.get()));
+            TaskGraph::Edge(decode_task.get(), raster_task.get()));
       }
 
       graph->nodes.push_back(TaskGraph::Node(
