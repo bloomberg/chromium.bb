@@ -175,6 +175,8 @@ bool WasAbortedInForeground(UserAbortType abort_type,
     return false;
   if (WasStartedInForegroundEventInForeground(time_to_abort, info))
     return true;
+  if (!info.started_in_foreground)
+    return false;
   DCHECK_GT(time_to_abort, info.first_background_time);
   base::TimeDelta bg_abort_delta = time_to_abort - info.first_background_time;
   // Consider this a foregrounded abort if it occurred within 100ms of a
