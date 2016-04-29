@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "extensions/common/mojo/wifi_display_session_service.mojom.h"
+#include "extensions/renderer/api/display_source/wifi_display/wifi_display_audio_encoder.h"
 #include "extensions/renderer/api/display_source/wifi_display/wifi_display_media_packetizer.h"
 #include "extensions/renderer/api/display_source/wifi_display/wifi_display_video_encoder.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
@@ -56,6 +57,8 @@ class WiFiDisplayMediaPipeline {
 
   void RequestIDRPicture();
 
+  WiFiDisplayAudioEncoder* audio_sink() { return audio_encoder_.get(); }
+
  private:
   using InitStepCompletionCallback = InitCompletionCallback;
   enum InitializationStep : unsigned;
@@ -73,16 +76,21 @@ class WiFiDisplayMediaPipeline {
   void OnInitialize(const InitCompletionCallback& callback,
                     InitializationStep current_step,
                     bool success);
+  void OnAudioEncoderCreated(
+      const InitStepCompletionCallback& callback,
+      scoped_refptr<WiFiDisplayAudioEncoder> audio_encoder);
   void OnVideoEncoderCreated(
       const InitStepCompletionCallback& callback,
       scoped_refptr<WiFiDisplayVideoEncoder> video_encoder);
   void OnMediaServiceRegistered(const InitCompletionCallback& callback);
 
+  void OnEncodedAudioUnit(std::unique_ptr<WiFiDisplayEncodedUnit> unit);
   void OnEncodedVideoFrame(std::unique_ptr<WiFiDisplayEncodedFrame> frame);
 
   bool OnPacketizedMediaDatagramPacket(
      WiFiDisplayMediaDatagramPacket media_datagram_packet);
 
+  scoped_refptr<WiFiDisplayAudioEncoder> audio_encoder_;
   scoped_refptr<WiFiDisplayVideoEncoder> video_encoder_;
   std::unique_ptr<WiFiDisplayMediaPacketizer> packetizer_;
 

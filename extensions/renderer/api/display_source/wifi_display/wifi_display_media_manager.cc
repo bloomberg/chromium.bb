@@ -31,6 +31,33 @@ const char kErrorMediaPipelineFailure[] =
     "Failed to initialize media pipeline for the session";
 }  // namespace
 
+class WiFiDisplayAudioSink {
+ public:
+  WiFiDisplayAudioSink(const blink::WebMediaStreamTrack& track,
+                       content::MediaStreamAudioSink* delegate)
+      : track_(track), delegate_(delegate), sink_added_(false) {}
+
+  ~WiFiDisplayAudioSink() { Stop(); }
+
+  void Start() {
+    DCHECK(!sink_added_);
+    sink_added_ = true;
+    delegate_->AddToAudioTrack(delegate_, track_);
+  }
+
+  void Stop() {
+    if (sink_added_) {
+      delegate_->RemoveFromAudioTrack(delegate_, track_);
+      sink_added_ = false;
+    }
+  }
+
+ private:
+  blink::WebMediaStreamTrack track_;
+  content::MediaStreamAudioSink* delegate_;
+  bool sink_added_;
+};
+
 class WiFiDisplayVideoSink : public content::MediaStreamVideoSink {
  public:
   WiFiDisplayVideoSink(
@@ -106,6 +133,12 @@ void WiFiDisplayMediaManager::Play() {
     return;  // Waiting for initialization being completed.
   }
 
+  if (!audio_track_.isNull()) {
+    audio_sink_.reset(
+        new WiFiDisplayAudioSink(audio_track_, player_->audio_sink()));
+    audio_sink_->Start();
+  }
+
   if (!video_track_.isNull()) {
     // To be called on IO thread.
     auto on_raw_video_frame = base::Bind(
@@ -129,6 +162,7 @@ void WiFiDisplayMediaManager::Teardown() {
 
 void WiFiDisplayMediaManager::Pause() {
   is_playing_ = false;
+  audio_sink_.reset();
   video_sink_.reset();
 }
 

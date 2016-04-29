@@ -7,13 +7,12 @@
 #include "base/logging.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/video_encode_accelerator.h"
-#include "extensions/renderer/api/display_source/wifi_display/wifi_display_elementary_stream_descriptor.h"
-#include "extensions/renderer/api/display_source/wifi_display/wifi_display_elementary_stream_info.h"
 
 namespace extensions {
 
 namespace {
 
+const char kErrorAudioEncoderError[] = "Unrepairable audio encoder error";
 const char kErrorVideoEncoderError[] = "Unrepairable video encoder error";
 const char kErrorUnableSendMedia[] = "Unable to send media";
 
@@ -73,7 +72,8 @@ void WiFiDisplayMediaPipeline::RequestIDRPicture() {
 
 enum WiFiDisplayMediaPipeline::InitializationStep : unsigned {
   INITIALIZE_FIRST,
-  INITIALIZE_VIDEO_ENCODER = INITIALIZE_FIRST,
+  INITIALIZE_AUDIO_ENCODER = INITIALIZE_FIRST,
+  INITIALIZE_VIDEO_ENCODER,
   INITIALIZE_MEDIA_PACKETIZER,
   INITIALIZE_MEDIA_SERVICE,
   INITIALIZE_LAST = INITIALIZE_MEDIA_SERVICE
@@ -81,7 +81,7 @@ enum WiFiDisplayMediaPipeline::InitializationStep : unsigned {
 
 void WiFiDisplayMediaPipeline::Initialize(
     const InitCompletionCallback& callback) {
-  DCHECK(!video_encoder_ && !packetizer_);
+  DCHECK(!audio_encoder_ && !video_encoder_ && !packetizer_);
   OnInitialize(callback, INITIALIZE_FIRST, true);
 }
 
@@ -103,6 +103,17 @@ void WiFiDisplayMediaPipeline::OnInitialize(
   }
 
   switch (current_step) {
+    case INITIALIZE_AUDIO_ENCODER:
+      DCHECK(!audio_encoder_);
+      if (type_ & wds::AudioSession) {
+        auto result_callback =
+            base::Bind(&WiFiDisplayMediaPipeline::OnAudioEncoderCreated,
+                       weak_factory_.GetWeakPtr(), init_step_callback);
+        WiFiDisplayAudioEncoder::Create(audio_codec_, result_callback);
+      } else {
+        init_step_callback.Run(true);
+      }
+      break;
     case INITIALIZE_VIDEO_ENCODER:
       DCHECK(!video_encoder_);
       if (type_ & wds::VideoSession) {
@@ -138,25 +149,34 @@ void WiFiDisplayMediaPipeline::CreateMediaPacketizer() {
   }
 
   if (type_ & wds::AudioSession) {
-    using LPCMAudioStreamDescriptor =
-        WiFiDisplayElementaryStreamDescriptor::LPCMAudioStream;
-    std::vector<WiFiDisplayElementaryStreamDescriptor> descriptors;
-    descriptors.emplace_back(
-        LPCMAudioStreamDescriptor::Create(
-            audio_codec_.modes.test(wds::LPCM_48K_16B_2CH)
-                ? LPCMAudioStreamDescriptor::SAMPLING_FREQUENCY_48K
-                : LPCMAudioStreamDescriptor::SAMPLING_FREQUENCY_44_1K,
-            LPCMAudioStreamDescriptor::BITS_PER_SAMPLE_16,
-            false,  // emphasis_flag
-            LPCMAudioStreamDescriptor::NUMBER_OF_CHANNELS_STEREO));
-    stream_infos.emplace_back(WiFiDisplayElementaryStreamInfo::AUDIO_LPCM,
-                              std::move(descriptors));
+    DCHECK(audio_encoder_);
+    stream_infos.push_back(audio_encoder_->CreateElementaryStreamInfo());
   }
 
   packetizer_.reset(new WiFiDisplayMediaPacketizer(
       base::TimeDelta::FromMilliseconds(200), stream_infos,
       base::Bind(&WiFiDisplayMediaPipeline::OnPacketizedMediaDatagramPacket,
                  base::Unretained(this))));
+}
+
+void WiFiDisplayMediaPipeline::OnAudioEncoderCreated(
+    const InitStepCompletionCallback& callback,
+    scoped_refptr<WiFiDisplayAudioEncoder> audio_encoder) {
+  DCHECK(!audio_encoder_);
+
+  if (!audio_encoder) {
+    callback.Run(false);
+    return;
+  }
+
+  audio_encoder_ = std::move(audio_encoder);
+  auto encoded_callback =
+      base::Bind(&WiFiDisplayMediaPipeline::OnEncodedAudioUnit,
+                 weak_factory_.GetWeakPtr());
+  auto error_callback = base::Bind(error_callback_, kErrorAudioEncoderError);
+  audio_encoder_->SetCallbacks(encoded_callback, error_callback);
+
+  callback.Run(true);
 }
 
 void WiFiDisplayMediaPipeline::OnVideoEncoderCreated(
@@ -188,6 +208,17 @@ void WiFiDisplayMediaPipeline::OnMediaServiceRegistered(
       sink_ip_address_,
       static_cast<int32_t>(sink_rtp_ports_.first),
       callback);
+}
+
+void WiFiDisplayMediaPipeline::OnEncodedAudioUnit(
+    std::unique_ptr<WiFiDisplayEncodedFrame> unit) {
+  DCHECK(packetizer_);
+  const unsigned stream_index = (type_ & wds::VideoSession) ? 1u : 0u;
+  if (!packetizer_->EncodeElementaryStreamUnit(stream_index, unit->bytes(),
+                                               unit->size(), unit->key_frame,
+                                               unit->pts, unit->dts, true)) {
+    DVLOG(1) << "Couldn't write audio mpegts packet";
+  }
 }
 
 void WiFiDisplayMediaPipeline::OnEncodedVideoFrame(

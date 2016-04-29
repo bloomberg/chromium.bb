@@ -23,6 +23,7 @@ class ServiceRegistry;
 }  // namespace content
 
 namespace extensions {
+class WiFiDisplayAudioSink;
 class WiFiDisplayVideoSink;
 class WiFiDisplayMediaPipeline;
 class WiFiDisplaySessionService;
@@ -75,6 +76,7 @@ class WiFiDisplayMediaManager : public wds::SourceMediaManager {
   blink::WebMediaStreamTrack video_track_;
   blink::WebMediaStreamTrack audio_track_;
 
+  std::unique_ptr<WiFiDisplayAudioSink> audio_sink_;
   std::unique_ptr<WiFiDisplayVideoSink> video_sink_;
 
   content::ServiceRegistry* service_registry_;
