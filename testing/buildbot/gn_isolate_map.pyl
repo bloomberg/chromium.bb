@@ -430,7 +430,7 @@
   },
   "mash_unittests": {
     "label": "//mash:mash_unittests",
-    "type": "unknown",
+    "type": "windowed_test_launcher",
   },
   "mus_gpu_unittests": {
     "label": "//components/mus/gpu:mus_gpu_unittests",
