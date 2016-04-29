@@ -114,6 +114,12 @@ void AllocationContextTracker::PushCurrentTaskContext(const char* context) {
 }
 
 void AllocationContextTracker::PopCurrentTaskContext(const char* context) {
+  // Guard for stack underflow. If tracing was started with a TRACE_EVENT in
+  // scope, the context was never pushed, so it is possible that pop is called
+  // on an empty stack.
+  if (task_contexts_.empty())
+    return;
+
   DCHECK_EQ(context, task_contexts_.back())
       << "Encountered an unmatched context end";
   task_contexts_.pop_back();
