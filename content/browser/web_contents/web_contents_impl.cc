@@ -174,6 +174,20 @@ bool HasMatchingProcess(FrameTree* tree, int render_process_id) {
   return false;
 }
 
+bool HasMatchingWidgetHost(FrameTree* tree, RenderWidgetHost* host) {
+  // This method scans the frame tree rather than checking whether
+  // host->delegate() == this, which allows it to return false when the host
+  // for a frame that is pending or pending deletion.
+  if (!host)
+    return false;
+
+  for (FrameTreeNode* node : tree->Nodes()) {
+    if (node->current_frame_host()->GetRenderWidgetHost() == host)
+      return true;
+  }
+  return false;
+}
+
 void SetAccessibilityModeOnFrame(AccessibilityMode mode,
                                  RenderFrameHost* frame_host) {
   static_cast<RenderFrameHostImpl*>(frame_host)->SetAccessibilityMode(mode);
@@ -4445,9 +4459,8 @@ bool WebContentsImpl::AddMessageToConsole(int32_t level,
 void WebContentsImpl::OnUserInteraction(
     RenderWidgetHostImpl* render_widget_host,
     const blink::WebInputEvent::Type type) {
-  // Ignore when the renderer is swapped out.
-  // TODO(dominickn,creis): support widgets for out-of-process iframes.
-  if (render_widget_host != GetRenderViewHost()->GetWidget())
+  // Ignore unless the widget is currently in the frame tree.
+  if (!HasMatchingWidgetHost(&frame_tree_, render_widget_host))
     return;
 
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,

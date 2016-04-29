@@ -375,6 +375,34 @@ void RenderFrameHostCreatedObserver::RenderFrameCreated(
   }
 }
 
+// This observer detects when WebContents receives notification of a user
+// gesture having occurred, following a user input event targeted to
+// a RenderWidgetHost under that WebContents.
+class UserInteractionObserver : public WebContentsObserver {
+ public:
+  explicit UserInteractionObserver(WebContents* web_contents)
+      : WebContentsObserver(web_contents), user_interaction_received_(false) {}
+
+  ~UserInteractionObserver() override {}
+
+  // Retrieve the flag. There is no need to wait on a loop since
+  // DidGetUserInteraction() should be called synchronously with the input
+  // event processing in the browser process.
+  bool WasUserInteractionReceived() { return user_interaction_received_; }
+
+  void Reset() { user_interaction_received_ = false; }
+
+ private:
+  // WebContentsObserver
+  void DidGetUserInteraction(const blink::WebInputEvent::Type type) override {
+    user_interaction_received_ = true;
+  }
+
+  bool user_interaction_received_;
+
+  DISALLOW_COPY_AND_ASSIGN(UserInteractionObserver);
+};
+
 // This observer is used to wait for its owner FrameTreeNode to become focused.
 class FrameFocusedObserver : public FrameTreeNode::Observer {
  public:
@@ -6223,6 +6251,33 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // fixed.
 
   subframe_process->DecrementWorkerRefCount();
+}
+
+// Tests that an input event targeted to a out-of-process iframe correctly
+// triggers a user interaction notification for WebContentsObservers.
+// This is used for browser features such as download request limiting and
+// launching multiple external protocol handlers, which can block repeated
+// actions from a page when a user is not interacting with the page.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       UserInteractionForChildFrameTest) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  UserInteractionObserver observer(web_contents());
+
+  // Target an event to the child frame's RenderWidgetHostView.
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  SimulateMouseClick(
+      root->child_at(0)->current_frame_host()->GetRenderWidgetHost(), 5, 5);
+
+  EXPECT_TRUE(observer.WasUserInteractionReceived());
+
+  // Target an event to the main frame.
+  observer.Reset();
+  SimulateMouseClick(root->current_frame_host()->GetRenderWidgetHost(), 1, 1);
+
+  EXPECT_TRUE(observer.WasUserInteractionReceived());
 }
 
 }  // namespace content
