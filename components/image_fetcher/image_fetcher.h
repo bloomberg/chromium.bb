@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SUGGESTIONS_IMAGE_FETCHER_H_
-#define COMPONENTS_SUGGESTIONS_IMAGE_FETCHER_H_
+#ifndef COMPONENTS_IMAGE_FETCHER_IMAGE_FETCHER_H_
+#define COMPONENTS_IMAGE_FETCHER_IMAGE_FETCHER_H_
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "components/suggestions/image_fetcher_delegate.h"
+#include "components/image_fetcher/image_fetcher_delegate.h"
 #include "url/gurl.h"
 
 class SkBitmap;
 
-namespace suggestions {
+namespace image_fetcher {
 
 // A class used to fetch server images.
 class ImageFetcher {
@@ -30,6 +30,6 @@ class ImageFetcher {
   DISALLOW_COPY_AND_ASSIGN(ImageFetcher);
 };
 
-}  // namespace suggestions
+}  // namespace image_fetcher
 
-#endif  // COMPONENTS_SUGGESTIONS_IMAGE_FETCHER_H_
+#endif  // COMPONENTS_IMAGE_FETCHER_IMAGE_FETCHER_H_

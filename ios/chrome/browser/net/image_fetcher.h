@@ -24,8 +24,6 @@ namespace net {
 class URLRequestContextGetter;
 }
 
-namespace image_fetcher {
-
 // Callback that informs of the download of an image encoded in |data|,
 // downloaded from |url|, and with the http status |http_response_code|. If the
 // url is a data URL, |http_response_code| is always 200.
@@ -88,7 +86,5 @@ class ImageFetcher : public net::URLFetcherDelegate {
   // during WebP decoding.
   base::WeakPtrFactory<ImageFetcher> weak_factory_;
 };
-
-}  // namespace image_fetcher
 
 #endif  // IOS_CHROME_BROWSER_NET_IMAGE_FETCHER_H_

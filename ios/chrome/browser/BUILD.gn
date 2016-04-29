@@ -560,6 +560,7 @@ source_set("browser") {
     "//components/google/core/browser",
     "//components/history/core/browser",
     "//components/history/ios/browser",
+    "//components/image_fetcher",
     "//components/infobars/core",
     "//components/invalidation/impl",
     "//components/invalidation/public",

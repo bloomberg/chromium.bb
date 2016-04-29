@@ -66,6 +66,7 @@
         '../../components/components.gyp:google_core_browser',
         '../../components/components.gyp:history_core_browser',
         '../../components/components.gyp:history_ios_browser',
+        '../../components/components.gyp:image_fetcher',
         '../../components/components.gyp:infobars_core',
         '../../components/components.gyp:invalidation_impl',
         '../../components/components.gyp:invalidation_public',

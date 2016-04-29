@@ -41,6 +41,7 @@
     'guest_view.gypi',
     'handoff.gypi',
     'history.gypi',
+    'image_fetcher.gypi',
     'infobars.gypi',
     'invalidation.gypi',
     'json_schema.gypi',

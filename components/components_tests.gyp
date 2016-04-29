@@ -1095,6 +1095,7 @@
         'components.gyp:history_core_browser',
         'components.gyp:history_core_common',
         'components.gyp:history_core_test_support',
+        'components.gyp:image_fetcher',
         'components.gyp:instance_id_test_support',
         'components.gyp:invalidation_impl',
         'components.gyp:invalidation_test_support',

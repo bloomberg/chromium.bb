@@ -21,12 +21,12 @@ namespace base {
 class RefCountedMemory;
 }
 
-namespace thumbnails {
-class ThumbnailService;
+namespace image_fetcher {
+class ImageFetcher;
 }
 
-namespace suggestions {
-class ImageFetcher;
+namespace thumbnails {
+class ThumbnailService;
 }
 
 // ThumbnailSource is the gateway between network-level chrome: requests for
@@ -71,7 +71,7 @@ class ThumbnailSource : public content::URLDataSource {
   scoped_refptr<thumbnails::ThumbnailService> thumbnail_service_;
 
   // ImageFetcher.
-  std::unique_ptr<suggestions::ImageFetcher> image_fetcher_;
+  std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher_;
 
   // Indicate that, when a URL for which we don't have a thumbnail is requested
   // from this source, then Chrome should capture a thumbnail next time it

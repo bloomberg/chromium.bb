@@ -26,6 +26,7 @@ include_rules = [
   "+components/google/core/browser",
   "+components/history/core/browser",
   "+components/history/ios/browser",
+  "+components/image_fetcher",
   "+components/infobars/core",
   "+components/invalidation",
   "+components/keyed_service/core",

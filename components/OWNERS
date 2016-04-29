@@ -83,6 +83,8 @@ per-file handoff.gypi=file://components/handoff/OWNERS
 
 per-file history.gypi=file://components/history/OWNERS
 
+per-file image_fetcher.gypi=file://components/image_fetcher/OWNERS
+
 per-file infobars.gypi=file://components/infobars/OWNERS
 
 per-file invalidation.gypi=file://components/invalidation/OWNERS

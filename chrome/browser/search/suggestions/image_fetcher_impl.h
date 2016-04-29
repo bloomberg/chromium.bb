@@ -12,7 +12,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
-#include "components/suggestions/image_fetcher.h"
+#include "components/image_fetcher/image_fetcher.h"
 #include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
 
@@ -24,13 +24,14 @@ namespace suggestions {
 
 // A class used to fetch server images. It can be called from any thread and the
 // callback will be called on the thread which initiated the fetch.
-class ImageFetcherImpl : public ImageFetcher,
+class ImageFetcherImpl : public image_fetcher::ImageFetcher,
                          public chrome::BitmapFetcherDelegate {
  public:
   explicit ImageFetcherImpl(net::URLRequestContextGetter* url_request_context);
   ~ImageFetcherImpl() override;
 
-  void SetImageFetcherDelegate(ImageFetcherDelegate* delegate) override;
+  void SetImageFetcherDelegate(
+      image_fetcher::ImageFetcherDelegate* delegate) override;
 
   void StartOrQueueNetworkRequest(
       const GURL& url,
@@ -74,7 +75,7 @@ class ImageFetcherImpl : public ImageFetcher,
   // url, fetcher, pending callbacks).
   ImageRequestMap pending_net_requests_;
 
-  ImageFetcherDelegate* delegate_;
+  image_fetcher::ImageFetcherDelegate* delegate_;
 
   net::URLRequestContextGetter* url_request_context_;
 

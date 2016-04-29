@@ -9,13 +9,14 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "components/suggestions/image_fetcher.h"
+#include "components/image_fetcher/image_fetcher.h"
 
 class GURL;
+class ImageFetcher;
 class SkBitmap;
 
 namespace image_fetcher {
-class ImageFetcher;
+class ImageFetcherDelegate;
 }
 
 namespace base {
@@ -28,16 +29,15 @@ class URLRequestContextGetter;
 
 namespace suggestions {
 
-class ImageFetcherDelegate;
-
 // A class used to fetch server images asynchronously.
-class ImageFetcherImpl : public suggestions::ImageFetcher {
+class ImageFetcherImpl : public image_fetcher::ImageFetcher {
  public:
   ImageFetcherImpl(net::URLRequestContextGetter* url_request_context,
                    base::SequencedWorkerPool* blocking_pool);
   ~ImageFetcherImpl() override;
 
-  void SetImageFetcherDelegate(ImageFetcherDelegate* delegate) override;
+  void SetImageFetcherDelegate(
+      image_fetcher::ImageFetcherDelegate* delegate) override;
 
   void StartOrQueueNetworkRequest(
       const GURL& url,
@@ -45,9 +45,9 @@ class ImageFetcherImpl : public suggestions::ImageFetcher {
       base::Callback<void(const GURL&, const SkBitmap*)> callback) override;
 
  private:
-  std::unique_ptr<image_fetcher::ImageFetcher> imageFetcher_;
+  std::unique_ptr<::ImageFetcher> imageFetcher_;
 
-  ImageFetcherDelegate* delegate_;
+  image_fetcher::ImageFetcherDelegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageFetcherImpl);
 };

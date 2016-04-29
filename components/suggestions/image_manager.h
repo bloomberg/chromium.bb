@@ -18,11 +18,15 @@
 #include "base/memory/weak_ptr.h"
 #include "base/task_runner.h"
 #include "base/threading/thread_checker.h"
+#include "components/image_fetcher/image_fetcher_delegate.h"
 #include "components/leveldb_proto/proto_database.h"
-#include "components/suggestions/image_fetcher_delegate.h"
 #include "components/suggestions/proto/suggestions.pb.h"
 #include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
+
+namespace image_fetcher {
+class ImageFetcher;
+}
 
 namespace net {
 class URLRequestContextGetter;
@@ -31,17 +35,16 @@ class URLRequestContextGetter;
 namespace suggestions {
 
 class ImageData;
-class ImageFetcher;
 class SuggestionsProfile;
 
 // A class used to fetch server images asynchronously and manage the caching
 // layer (both in memory and on disk).
-class ImageManager : public ImageFetcherDelegate {
+class ImageManager : public image_fetcher::ImageFetcherDelegate {
  public:
   typedef std::vector<ImageData> ImageDataVector;
 
   ImageManager(
-      std::unique_ptr<ImageFetcher> image_fetcher,
+      std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher,
       std::unique_ptr<leveldb_proto::ProtoDatabase<ImageData>> database,
       const base::FilePath& database_dir,
       scoped_refptr<base::TaskRunner> background_task_runner);
@@ -142,7 +145,7 @@ class ImageManager : public ImageFetcherDelegate {
   // Holding the bitmaps in memory, keyed by website URL string.
   ImageMap image_map_;
 
-  std::unique_ptr<ImageFetcher> image_fetcher_;
+  std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher_;
 
   std::unique_ptr<leveldb_proto::ProtoDatabase<ImageData>> database_;
 

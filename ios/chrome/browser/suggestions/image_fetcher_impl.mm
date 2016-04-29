@@ -7,6 +7,7 @@
 #include <UIKit/UIKit.h>
 
 #include "base/threading/sequenced_worker_pool.h"
+#include "components/image_fetcher/image_fetcher_delegate.h"
 #include "ios/chrome/browser/net/image_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "skia/ext/skia_utils_ios.h"
@@ -16,14 +17,15 @@ namespace suggestions {
 ImageFetcherImpl::ImageFetcherImpl(
     net::URLRequestContextGetter* url_request_context,
     base::SequencedWorkerPool* blocking_pool) {
-  imageFetcher_.reset(new image_fetcher::ImageFetcher(blocking_pool));
+  imageFetcher_.reset(new ::ImageFetcher(blocking_pool));
   imageFetcher_->SetRequestContextGetter(url_request_context);
 }
 
 ImageFetcherImpl::~ImageFetcherImpl() {
 }
 
-void ImageFetcherImpl::SetImageFetcherDelegate(ImageFetcherDelegate* delegate) {
+void ImageFetcherImpl::SetImageFetcherDelegate(
+    image_fetcher::ImageFetcherDelegate* delegate) {
   DCHECK(delegate);
   delegate_ = delegate;
 }
@@ -41,7 +43,7 @@ void ImageFetcherImpl::StartOrQueueNetworkRequest(
   }
   // Copy url reference so it's retained.
   const GURL page_url(url);
-  image_fetcher::ImageFetchedCallback fetcher_callback =
+  ImageFetchedCallback fetcher_callback =
       ^(const GURL& original_url, int response_code, NSData* data) {
       if (data) {
         // Most likely always returns 1x images.

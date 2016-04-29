@@ -60,8 +60,6 @@ base::scoped_nsobject<NSData> DecodeWebpImage(
 
 }  // namespace
 
-namespace image_fetcher {
-
 ImageFetcher::ImageFetcher(const scoped_refptr<base::TaskRunner>& task_runner)
     : request_context_getter_(nullptr),
       task_runner_(task_runner),
@@ -174,5 +172,3 @@ void ImageFetcher::SetRequestContextGetter(
     const scoped_refptr<net::URLRequestContextGetter>& request_context_getter) {
   request_context_getter_ = request_context_getter;
 }
-
-}  // namespace image_fetcher

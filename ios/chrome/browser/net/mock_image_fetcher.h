@@ -9,8 +9,6 @@
 
 #include "testing/gmock/include/gmock/gmock.h"
 
-namespace image_fetcher {
-
 // Mock the ImageFetcher utility class, which can be used to asynchronously
 // retrieve an image from an URL.
 class MockImageFetcher : public ImageFetcher {
@@ -29,7 +27,5 @@ class MockImageFetcher : public ImageFetcher {
                void(const scoped_refptr<net::URLRequestContextGetter>&
                         request_context_getter));
 };
-
-}  // namespace image_fetcher
 
 #endif  // IOS_CHROME_BROWSER_NET_MOCK_IMAGE_FETCHER_H_

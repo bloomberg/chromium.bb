@@ -10,8 +10,8 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/task_runner_util.h"
+#include "components/image_fetcher/image_fetcher.h"
 #include "components/suggestions/image_encoder.h"
-#include "components/suggestions/image_fetcher.h"
 
 using leveldb_proto::ProtoDatabase;
 
@@ -36,7 +36,7 @@ namespace suggestions {
 ImageManager::ImageManager() : weak_ptr_factory_(this) {}
 
 ImageManager::ImageManager(
-    std::unique_ptr<ImageFetcher> image_fetcher,
+    std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher,
     std::unique_ptr<ProtoDatabase<ImageData>> database,
     const base::FilePath& database_dir,
     scoped_refptr<base::TaskRunner> background_task_runner)

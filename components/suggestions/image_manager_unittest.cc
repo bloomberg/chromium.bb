@@ -11,11 +11,11 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
+#include "components/image_fetcher/image_fetcher.h"
+#include "components/image_fetcher/image_fetcher_delegate.h"
 #include "components/leveldb_proto/proto_database.h"
 #include "components/leveldb_proto/testing/fake_db.h"
 #include "components/suggestions/image_encoder.h"
-#include "components/suggestions/image_fetcher.h"
-#include "components/suggestions/image_fetcher_delegate.h"
 #include "components/suggestions/proto/suggestions.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -26,6 +26,9 @@ using ::testing::Return;
 using ::testing::StrictMock;
 using ::testing::_;
 
+using image_fetcher::ImageFetcher;
+using image_fetcher::ImageFetcherDelegate;
+
 namespace suggestions {
 
 const char kTestUrl1[] = "http://go.com/";
@@ -34,14 +37,12 @@ const char kTestImagePath[] = "files/image_decoding/droids.png";
 const char kInvalidImagePath[] = "files/DOESNOTEXIST";
 
 using leveldb_proto::test::FakeDB;
-using suggestions::ImageData;
-using suggestions::ImageManager;
 
 typedef base::hash_map<std::string, ImageData> EntryMap;
 
 void AddEntry(const ImageData& d, EntryMap* map) { (*map)[d.url()] = d; }
 
-class MockImageFetcher : public suggestions::ImageFetcher {
+class MockImageFetcher : public ImageFetcher {
  public:
   MockImageFetcher() {}
   virtual ~MockImageFetcher() {}

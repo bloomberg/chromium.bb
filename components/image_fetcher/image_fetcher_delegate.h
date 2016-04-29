@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SUGGESTIONS_IMAGE_FETCHER_DELEGATE_H_
-#define COMPONENTS_SUGGESTIONS_IMAGE_FETCHER_DELEGATE_H_
+#ifndef COMPONENTS_IMAGE_FETCHER_IMAGE_FETCHER_DELEGATE_H_
+#define COMPONENTS_IMAGE_FETCHER_IMAGE_FETCHER_DELEGATE_H_
 
 #include "base/macros.h"
 
 class GURL;
 class SkBitmap;
 
-namespace suggestions {
+namespace image_fetcher {
 
 class ImageFetcherDelegate {
  public:
@@ -27,6 +27,6 @@ class ImageFetcherDelegate {
   DISALLOW_COPY_AND_ASSIGN(ImageFetcherDelegate);
 };
 
-}  // namespace suggestions
+}  // namespace image_fetcher
 
-#endif  // COMPONENTS_SUGGESTIONS_IMAGE_FETCHER_DELEGATE_H_
+#endif  // COMPONENTS_IMAGE_FETCHER_IMAGE_FETCHER_DELEGATE_H_

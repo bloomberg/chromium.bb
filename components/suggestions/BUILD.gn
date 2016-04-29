@@ -7,8 +7,6 @@ source_set("suggestions") {
     "blacklist_store.cc",
     "blacklist_store.h",
     "image_encoder.h",
-    "image_fetcher.h",
-    "image_fetcher_delegate.h",
     "image_manager.cc",
     "image_manager.h",
     "suggestions_pref_names.cc",
@@ -30,6 +28,7 @@ source_set("suggestions") {
   deps = [
     "//components/data_use_measurement/core",
     "//components/google/core/browser",
+    "//components/image_fetcher",
     "//components/keyed_service/core",
     "//components/leveldb_proto",
     "//components/pref_registry",
@@ -58,6 +57,7 @@ source_set("unit_tests") {
   deps = [
     ":suggestions",
     "//base/test:test_support",
+    "//components/image_fetcher",
     "//components/leveldb_proto:test_support",
     "//components/pref_registry:test_support",
     "//components/signin/core/browser:test_support",

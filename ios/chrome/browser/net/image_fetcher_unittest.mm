@@ -74,7 +74,7 @@ class ImageFetcherTest : public PlatformTest {
  protected:
   ImageFetcherTest()
       : pool_(new base::SequencedWorkerPool(1, "TestPool")),
-        image_fetcher_(new image_fetcher::ImageFetcher(pool_)),
+        image_fetcher_(new ImageFetcher(pool_)),
         result_(nil),
         called_(false) {
     callback_.reset(
@@ -100,10 +100,10 @@ class ImageFetcherTest : public PlatformTest {
   }
 
   base::MessageLoop loop_;
-  base::mac::ScopedBlock<image_fetcher::ImageFetchedCallback> callback_;
+  base::mac::ScopedBlock<ImageFetchedCallback> callback_;
   net::TestURLFetcherFactory factory_;
   scoped_refptr<base::SequencedWorkerPool> pool_;
-  std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher_;
+  std::unique_ptr<ImageFetcher> image_fetcher_;
   UIImage* result_;
   bool called_;
 };

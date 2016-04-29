@@ -28,7 +28,8 @@ ImageFetcherImpl::ImageRequest::ImageRequest(const ImageRequest& other) =
 
 ImageFetcherImpl::ImageRequest::~ImageRequest() { delete fetcher; }
 
-void ImageFetcherImpl::SetImageFetcherDelegate(ImageFetcherDelegate* delegate) {
+void ImageFetcherImpl::SetImageFetcherDelegate(
+    image_fetcher::ImageFetcherDelegate* delegate) {
   DCHECK(delegate);
   delegate_ = delegate;
 }
