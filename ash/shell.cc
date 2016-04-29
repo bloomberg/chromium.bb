@@ -57,7 +57,7 @@
 #include "ash/system/toast/toast_manager.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
-#include "ash/utility/partial_screenshot_controller.h"
+#include "ash/utility/screenshot_controller.h"
 #include "ash/wm/ash_focus_rules.h"
 #include "ash/wm/ash_native_cursor_manager.h"
 #include "ash/wm/aura/wm_globals_aura.h"
@@ -810,7 +810,7 @@ Shell::~Shell() {
   resolution_notification_controller_.reset();
 #endif
   desktop_background_controller_.reset();
-  partial_screenshot_controller_.reset();
+  screenshot_controller_.reset();
   mouse_cursor_filter_.reset();
 
 #if defined(OS_CHROMEOS)
@@ -1036,11 +1036,11 @@ void Shell::Init(const ShellInitParams& init_params) {
   AddShellObserver(lock_state_controller_.get());
 
   drag_drop_controller_.reset(new DragDropController);
-  // |partial_screenshot_controller_| needs to be created (and prepended as a
+  // |screenshot_controller_| needs to be created (and prepended as a
   // pre-target handler) at this point, because |mouse_cursor_filter_| needs to
-  // process mouse events prior to partial screenshot session.
+  // process mouse events prior to screenshot session.
   // See http://crbug.com/459214
-  partial_screenshot_controller_.reset(new PartialScreenshotController());
+  screenshot_controller_.reset(new ScreenshotController());
   mouse_cursor_filter_.reset(new MouseCursorEventFilter());
   PrependPreTargetHandler(mouse_cursor_filter_.get());
 

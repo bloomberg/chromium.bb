@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/utility/partial_screenshot_controller.h"
+#include "ash/utility/screenshot_controller.h"
 
 #include "ash/display/cursor_window_controller.h"
 #include "ash/display/mouse_cursor_event_filter.h"
@@ -13,6 +13,7 @@
 #include "ash/test/display_manager_test_api.h"
 #include "ash/test/mirror_window_test_api.h"
 #include "ash/test/test_screenshot_delegate.h"
+#include "ash/wm/window_util.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/cursor/cursor.h"
@@ -21,14 +22,14 @@
 
 namespace ash {
 
-class PartialScreenshotControllerTest : public test::AshTestBase {
+class ScreenshotControllerTest : public test::AshTestBase {
  public:
-  PartialScreenshotControllerTest() {}
-  ~PartialScreenshotControllerTest() override {}
+  ScreenshotControllerTest() {}
+  ~ScreenshotControllerTest() override {}
 
  protected:
-  PartialScreenshotController* partial_screenshot_controller() {
-    return Shell::GetInstance()->partial_screenshot_controller();
+  ScreenshotController* screenshot_controller() {
+    return Shell::GetInstance()->screenshot_controller();
   }
 
   bool TestIfMouseWarpsAt(const gfx::Point& point_in_screen) {
@@ -37,25 +38,39 @@ class PartialScreenshotControllerTest : public test::AshTestBase {
   }
 
   void StartPartialScreenshotSession() {
-    partial_screenshot_controller()->StartPartialScreenshotSession(
+    screenshot_controller()->StartPartialScreenshotSession(
         GetScreenshotDelegate());
   }
 
-  void Cancel() { partial_screenshot_controller()->Cancel(); }
+  void StartWindowScreenshotSession() {
+    screenshot_controller()->StartWindowScreenshotSession(
+        GetScreenshotDelegate());
+  }
+
+  void Cancel() { screenshot_controller()->Cancel(); }
 
   bool IsActive() {
-    return partial_screenshot_controller()->screenshot_delegate_ != nullptr;
+    return screenshot_controller()->screenshot_delegate_ != nullptr;
   }
 
   const gfx::Point& GetStartPosition() const {
-    return Shell::GetInstance()
-        ->partial_screenshot_controller()
-        ->start_position_;
+    return Shell::GetInstance()->screenshot_controller()->start_position_;
+  }
+
+  const aura::Window* GetCurrentSelectedWindow() const {
+    return Shell::GetInstance()->screenshot_controller()->selected_;
+  }
+
+  aura::Window* CreateSelectableWindow(const gfx::Rect& rect) {
+    return CreateTestWindowInShell(SK_ColorGRAY, 0, rect);
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(PartialScreenshotControllerTest);
+  DISALLOW_COPY_AND_ASSIGN(ScreenshotControllerTest);
 };
+
+using WindowScreenshotControllerTest = ScreenshotControllerTest;
+using PartialScreenshotControllerTest = ScreenshotControllerTest;
 
 TEST_F(PartialScreenshotControllerTest, BasicMouse) {
   StartPartialScreenshotSession();
@@ -170,27 +185,9 @@ TEST_F(PartialScreenshotControllerTest, TwoFingerTouch) {
   EXPECT_FALSE(IsActive());
 }
 
-TEST_F(PartialScreenshotControllerTest, MultipleDisplays) {
-  if (!SupportsMultipleDisplays())
-    return;
-
-  StartPartialScreenshotSession();
-  EXPECT_TRUE(IsActive());
-  UpdateDisplay("400x400,500x500");
-  RunAllPendingInMessageLoop();
-  EXPECT_FALSE(IsActive());
-
-  StartPartialScreenshotSession();
-  EXPECT_TRUE(IsActive());
-  UpdateDisplay("400x400");
-  RunAllPendingInMessageLoop();
-  EXPECT_FALSE(IsActive());
-}
-
-// Make sure PartialScreenshotController doesn't allow taking screenshot
+// Make sure ScreenshotController doesn't allow taking screenshot
 // across multiple monitors
 // cursor. See http://crbug.com/462229
-#if defined(OS_CHROMEOS)
 TEST_F(PartialScreenshotControllerTest, MouseWarpTest) {
   if (!SupportsMultipleDisplays())
     return;
@@ -211,6 +208,7 @@ TEST_F(PartialScreenshotControllerTest, MouseWarpTest) {
             aura::Env::GetInstance()->last_mouse_location().ToString());
 }
 
+#if defined(OS_CHROMEOS)
 TEST_F(PartialScreenshotControllerTest, VisibilityTest) {
   aura::client::CursorClient* client = Shell::GetInstance()->cursor_manager();
 
@@ -227,7 +225,7 @@ TEST_F(PartialScreenshotControllerTest, VisibilityTest) {
   EXPECT_TRUE(client->IsCursorVisible());
 }
 
-// Make sure PartialScreenshotController doesn't prevent handling of large
+// Make sure ScreenshotController doesn't prevent handling of large
 // cursor. See http://crbug.com/459214
 TEST_F(PartialScreenshotControllerTest, LargeCursor) {
   Shell::GetInstance()->cursor_manager()->SetCursorSet(ui::CURSOR_SET_LARGE);
@@ -268,5 +266,149 @@ TEST_F(PartialScreenshotControllerTest, LargeCursor) {
   EXPECT_FALSE(IsActive());
 }
 #endif
+
+TEST_F(WindowScreenshotControllerTest, KeyboardOperation) {
+  ui::test::EventGenerator& generator(GetEventGenerator());
+  test::TestScreenshotDelegate* test_delegate = GetScreenshotDelegate();
+
+  StartWindowScreenshotSession();
+  generator.PressKey(ui::VKEY_ESCAPE, 0);
+  generator.ReleaseKey(ui::VKEY_ESCAPE, 0);
+  EXPECT_FALSE(IsActive());
+  EXPECT_FALSE(test_delegate->GetSelectedWindowAndReset());
+
+  StartWindowScreenshotSession();
+  generator.PressKey(ui::VKEY_RETURN, 0);
+  generator.ReleaseKey(ui::VKEY_RETURN, 0);
+  EXPECT_FALSE(IsActive());
+  EXPECT_FALSE(test_delegate->GetSelectedWindowAndReset());
+
+  std::unique_ptr<aura::Window> window1(
+      CreateSelectableWindow(gfx::Rect(5, 5, 20, 20)));
+  wm::ActivateWindow(window1.get());
+  StartWindowScreenshotSession();
+  generator.PressKey(ui::VKEY_ESCAPE, 0);
+  generator.ReleaseKey(ui::VKEY_ESCAPE, 0);
+  EXPECT_FALSE(IsActive());
+  EXPECT_FALSE(test_delegate->GetSelectedWindowAndReset());
+
+  StartWindowScreenshotSession();
+  generator.PressKey(ui::VKEY_RETURN, 0);
+  generator.ReleaseKey(ui::VKEY_RETURN, 0);
+  EXPECT_FALSE(IsActive());
+  EXPECT_EQ(window1.get(), test_delegate->GetSelectedWindowAndReset());
+  // Make sure it's properly reset.
+  EXPECT_FALSE(test_delegate->GetSelectedWindowAndReset());
+}
+
+TEST_F(WindowScreenshotControllerTest, MouseOperation) {
+  ui::test::EventGenerator& generator(GetEventGenerator());
+  test::TestScreenshotDelegate* test_delegate = GetScreenshotDelegate();
+  StartWindowScreenshotSession();
+  EXPECT_TRUE(IsActive());
+  generator.ClickLeftButton();
+  EXPECT_FALSE(IsActive());
+  EXPECT_FALSE(test_delegate->GetSelectedWindowAndReset());
+
+  std::unique_ptr<aura::Window> window1(
+      CreateSelectableWindow(gfx::Rect(5, 5, 20, 20)));
+  std::unique_ptr<aura::Window> window2(
+      CreateSelectableWindow(gfx::Rect(100, 100, 100, 100)));
+  wm::ActivateWindow(window1.get());
+  StartWindowScreenshotSession();
+  EXPECT_EQ(window1.get(), GetCurrentSelectedWindow());
+  generator.MoveMouseTo(150, 150);
+  EXPECT_EQ(window2.get(), GetCurrentSelectedWindow());
+  generator.MoveMouseTo(400, 0);
+  EXPECT_FALSE(GetCurrentSelectedWindow());
+  generator.MoveMouseTo(10, 10);
+  EXPECT_EQ(window1.get(), GetCurrentSelectedWindow());
+  generator.ClickLeftButton();
+  EXPECT_EQ(window1.get(), test_delegate->GetSelectedWindowAndReset());
+
+  // Window selection should work even with Capture.
+  window2->SetCapture();
+  wm::ActivateWindow(window2.get());
+  StartWindowScreenshotSession();
+  EXPECT_EQ(window2.get(), GetCurrentSelectedWindow());
+  generator.MoveMouseTo(10, 10);
+  EXPECT_EQ(window1.get(), GetCurrentSelectedWindow());
+  generator.MoveMouseTo(400, 0);
+  EXPECT_FALSE(GetCurrentSelectedWindow());
+  generator.MoveMouseTo(10, 10);
+  EXPECT_EQ(window1.get(), GetCurrentSelectedWindow());
+  generator.ClickLeftButton();
+  EXPECT_EQ(window1.get(), test_delegate->GetSelectedWindowAndReset());
+
+  // Remove window.
+  StartWindowScreenshotSession();
+  generator.MoveMouseTo(10, 10);
+  EXPECT_EQ(window1.get(), GetCurrentSelectedWindow());
+  window1.reset();
+  EXPECT_FALSE(GetCurrentSelectedWindow());
+  generator.ClickLeftButton();
+  EXPECT_FALSE(test_delegate->GetSelectedWindowAndReset());
+}
+
+TEST_F(WindowScreenshotControllerTest, MultiDisplays) {
+  if (!SupportsMultipleDisplays())
+    return;
+
+  UpdateDisplay("400x400,500x500");
+
+  ui::test::EventGenerator& generator(GetEventGenerator());
+  test::TestScreenshotDelegate* test_delegate = GetScreenshotDelegate();
+
+  std::unique_ptr<aura::Window> window1(
+      CreateSelectableWindow(gfx::Rect(100, 100, 100, 100)));
+  std::unique_ptr<aura::Window> window2(
+      CreateSelectableWindow(gfx::Rect(600, 200, 100, 100)));
+  EXPECT_NE(window1.get()->GetRootWindow(), window2.get()->GetRootWindow());
+
+  StartWindowScreenshotSession();
+  generator.MoveMouseTo(150, 150);
+  EXPECT_EQ(window1.get(), GetCurrentSelectedWindow());
+  generator.MoveMouseTo(650, 250);
+  EXPECT_EQ(window2.get(), GetCurrentSelectedWindow());
+  generator.ClickLeftButton();
+  EXPECT_EQ(window2.get(), test_delegate->GetSelectedWindowAndReset());
+
+  window2->SetCapture();
+  wm::ActivateWindow(window2.get());
+  StartWindowScreenshotSession();
+  generator.MoveMouseTo(150, 150);
+  EXPECT_EQ(window1.get(), GetCurrentSelectedWindow());
+  generator.ClickLeftButton();
+  EXPECT_EQ(window1.get(), test_delegate->GetSelectedWindowAndReset());
+}
+
+TEST_F(ScreenshotControllerTest, MultipleDisplays) {
+  if (!SupportsMultipleDisplays())
+    return;
+
+  StartPartialScreenshotSession();
+  EXPECT_TRUE(IsActive());
+  UpdateDisplay("400x400,500x500");
+  RunAllPendingInMessageLoop();
+  EXPECT_FALSE(IsActive());
+
+  StartPartialScreenshotSession();
+  EXPECT_TRUE(IsActive());
+  UpdateDisplay("400x400");
+  RunAllPendingInMessageLoop();
+  EXPECT_FALSE(IsActive());
+
+  StartWindowScreenshotSession();
+  EXPECT_TRUE(IsActive());
+  UpdateDisplay("400x400,500x500");
+  RunAllPendingInMessageLoop();
+  EXPECT_FALSE(IsActive());
+
+  StartWindowScreenshotSession();
+  EXPECT_TRUE(IsActive());
+  UpdateDisplay("400x400");
+  RunAllPendingInMessageLoop();
+  EXPECT_FALSE(IsActive());
+}
 
 }  // namespace ash

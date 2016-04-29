@@ -860,17 +860,6 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
     EXPECT_TRUE(ProcessInController(ui::Accelerator(
         ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN)));
     EXPECT_EQ(2, delegate->handle_take_screenshot_count());
-    // None active window test case.
-    EXPECT_TRUE(ProcessInController(ui::Accelerator(
-        ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN)));
-    EXPECT_EQ(0, delegate->handle_take_window_screenshot_count());
-    // Active window test case.
-    std::unique_ptr<aura::Window> window;
-    window.reset(CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
-    wm::ActivateWindow(window.get());
-    EXPECT_TRUE(ProcessInController(ui::Accelerator(
-        ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN)));
-    EXPECT_EQ(1, delegate->handle_take_window_screenshot_count());
   }
   const ui::Accelerator volume_mute(ui::VKEY_VOLUME_MUTE, ui::EF_NONE);
   const ui::Accelerator volume_down(ui::VKEY_VOLUME_DOWN, ui::EF_NONE);

@@ -119,7 +119,6 @@ class MruWindowTracker;
 class NewWindowDelegate;
 class OverlayEventFilter;
 class PartialMagnificationController;
-class PartialScreenshotController;
 class PointerWatcherDelegate;
 class PowerButtonController;
 class PowerEventObserver;
@@ -130,6 +129,7 @@ class RootWindowController;
 class ScopedTargetRootWindow;
 class ScreenAsh;
 class ScreenOrientationController;
+class ScreenshotController;
 class ScreenPositionController;
 class SessionStateDelegate;
 class Shelf;
@@ -405,8 +405,8 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
     return touch_transformer_controller_.get();
   }
 #endif  // defined(OS_CHROMEOS)
-  PartialScreenshotController* partial_screenshot_controller() {
-    return partial_screenshot_controller_.get();
+  ScreenshotController* screenshot_controller() {
+    return screenshot_controller_.get();
   }
   MouseCursorEventFilter* mouse_cursor_filter() {
     return mouse_cursor_filter_.get();
@@ -718,7 +718,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
 
   aura::client::ActivationClient* activation_client_;
 
-  std::unique_ptr<PartialScreenshotController> partial_screenshot_controller_;
+  std::unique_ptr<ScreenshotController> screenshot_controller_;
 
   std::unique_ptr<MouseCursorEventFilter> mouse_cursor_filter_;
   std::unique_ptr<ScreenPositionController> screen_position_controller_;

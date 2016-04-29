@@ -33,11 +33,9 @@ class TestScreenshotDelegate : public ScreenshotDelegate {
     return handle_take_partial_screenshot_count_;
   }
 
-  int handle_take_window_screenshot_count() const {
-    return handle_take_window_screenshot_count_;
-  }
-
   const gfx::Rect& last_rect() const { return last_rect_; }
+
+  const aura::Window* GetSelectedWindowAndReset();
 
   void set_can_take_screenshot(bool can_take_screenshot) {
     can_take_screenshot_ = can_take_screenshot;
@@ -46,9 +44,9 @@ class TestScreenshotDelegate : public ScreenshotDelegate {
  private:
   int handle_take_screenshot_count_;
   int handle_take_partial_screenshot_count_;
-  int handle_take_window_screenshot_count_;
   gfx::Rect last_rect_;
   bool can_take_screenshot_;
+  aura::Window* selected_window_;
 
   DISALLOW_COPY_AND_ASSIGN(TestScreenshotDelegate);
 };
