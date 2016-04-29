@@ -1473,7 +1473,8 @@
     ],
 
     'swarming_gyp_asan_clang_tot_full_symbols_static_release': [
-      'swarming', 'asan', 'clang_tot', 'full_symbols', 'static', 'release',
+      'swarming', 'gyp', 'asan', 'clang_tot', 'full_symbols', 'static',
+      'release',
     ],
 
     'swarming_gyp_clang_tot_minimal_symbols_shared_debug_use_lld_x64': [
