@@ -337,8 +337,6 @@ def trigger_try_jobs(auth_config, changelist, options, masters, category):
               'rietveld': rietveld_url,
           },
       }
-      if 'presubmit' in builder.lower():
-        parameters['properties']['dry_run'] = 'true'
       if tests:
         parameters['properties']['testfilter'] = tests
       if properties:
@@ -4318,7 +4316,8 @@ def CMDtry(parser, args):
           for master, builders in cq_masters.iteritems():
             for builder in builders:
               # Skip presubmit builders, because these will fail without LGTM.
-              masters.setdefault(master, {})[builder] = ['defaulttests']
+              if 'presubmit' not in builder.lower():
+                masters.setdefault(master, {})[builder] = ['defaulttests']
           if masters:
             return masters
 
