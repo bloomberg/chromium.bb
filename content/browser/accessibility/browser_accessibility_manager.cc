@@ -189,7 +189,7 @@ void BrowserAccessibilityManager::FireFocusEventsIfNeeded() {
   // Don't fire focus events if the window itself doesn't have focus.
   // Bypass this check if a global focus listener was set up for testing
   // so that the test passes whether the window is active or not.
-  if (!g_focus_change_callback_for_testing.Pointer()) {
+  if (g_focus_change_callback_for_testing.Get().is_null()) {
     if (delegate_ && !delegate_->AccessibilityViewHasFocus())
       focus = nullptr;
 
