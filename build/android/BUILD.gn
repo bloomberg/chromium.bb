@@ -101,6 +101,7 @@ group("test_runner_py") {
            "//third_party/android_tools/sdk/platform-tools/adb",
            "//third_party/catapult/third_party/gsutil/",
            "//third_party/catapult/devil/devil/devil_dependencies.json",
+           "//third_party/proguard/lib/proguard.jar",
          ]
   data_deps = [
     "//tools/swarming_client:isolate_py",
