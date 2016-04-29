@@ -59,6 +59,7 @@ test("cast_media_unittests") {
     "//media/base:test_support",
     "//testing/gmock",
     "//testing/gtest",
+    "//ui/display",
     "//ui/gfx/geometry",
   ]
 

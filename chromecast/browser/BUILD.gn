@@ -110,6 +110,7 @@ source_set("browser") {
     "//net",
     "//ui/base",
     "//ui/compositor",
+    "//ui/display",
     "//ui/gl",
   ]
 

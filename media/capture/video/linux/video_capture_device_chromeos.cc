@@ -11,16 +11,16 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
-#include "ui/gfx/display.h"
-#include "ui/gfx/display_observer.h"
-#include "ui/gfx/screen.h"
+#include "ui/display/display.h"
+#include "ui/display/display_observer.h"
+#include "ui/display/screen.h"
 
 namespace media {
 
 // This is a delegate class used to transfer Display change events from the UI
 // thread to the media thread.
 class VideoCaptureDeviceChromeOS::ScreenObserverDelegate
-    : public gfx::DisplayObserver,
+    : public display::DisplayObserver,
       public base::RefCountedThreadSafe<ScreenObserverDelegate> {
  public:
   ScreenObserverDelegate(
@@ -47,9 +47,9 @@ class VideoCaptureDeviceChromeOS::ScreenObserverDelegate
 
   ~ScreenObserverDelegate() override { DCHECK(!capture_device_); }
 
-  void OnDisplayAdded(const gfx::Display& /*new_display*/) override {}
-  void OnDisplayRemoved(const gfx::Display& /*old_display*/) override {}
-  void OnDisplayMetricsChanged(const gfx::Display& display,
+  void OnDisplayAdded(const display::Display& /*new_display*/) override {}
+  void OnDisplayRemoved(const display::Display& /*old_display*/) override {}
+  void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t metrics) override {
     DCHECK(ui_task_runner_->BelongsToCurrentThread());
     if (!(metrics & DISPLAY_METRIC_ROTATION))
@@ -59,7 +59,7 @@ class VideoCaptureDeviceChromeOS::ScreenObserverDelegate
 
   void AddObserverOnUIThread() {
     DCHECK(ui_task_runner_->BelongsToCurrentThread());
-    gfx::Screen* screen = gfx::Screen::GetScreen();
+    display::Screen* screen = display::Screen::GetScreen();
     if (screen) {
       screen->AddObserver(this);
       SendDisplayRotation(screen->GetPrimaryDisplay());
@@ -68,13 +68,13 @@ class VideoCaptureDeviceChromeOS::ScreenObserverDelegate
 
   void RemoveObserverOnUIThread() {
     DCHECK(ui_task_runner_->BelongsToCurrentThread());
-    gfx::Screen* screen = gfx::Screen::GetScreen();
+    display::Screen* screen = display::Screen::GetScreen();
     if (screen)
       screen->RemoveObserver(this);
   }
 
   // Post the screen rotation change from the UI thread to capture thread
-  void SendDisplayRotation(const gfx::Display& display) {
+  void SendDisplayRotation(const display::Display& display) {
     DCHECK(ui_task_runner_->BelongsToCurrentThread());
     capture_task_runner_->PostTask(
         FROM_HERE,
@@ -82,7 +82,7 @@ class VideoCaptureDeviceChromeOS::ScreenObserverDelegate
                    this, display));
   }
 
-  void SendDisplayRotationOnCaptureThread(const gfx::Display& display) {
+  void SendDisplayRotationOnCaptureThread(const display::Display& display) {
     DCHECK(capture_task_runner_->BelongsToCurrentThread());
     if (capture_device_)
       capture_device_->SetDisplayRotation(display);
@@ -107,7 +107,7 @@ VideoCaptureDeviceChromeOS::~VideoCaptureDeviceChromeOS() {
 }
 
 void VideoCaptureDeviceChromeOS::SetDisplayRotation(
-    const gfx::Display& display) {
+    const display::Display& display) {
   if (display.IsInternal())
     SetRotation(display.rotation() * 90);
 }

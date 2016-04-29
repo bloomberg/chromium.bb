@@ -12,6 +12,7 @@ include_rules = [
   "+third_party/libyuv",
   "+third_party/opus",
   "+third_party/skia",
+  "+ui/display",
   "+ui/events",
   "+ui/gfx",
   "+ui/gl",

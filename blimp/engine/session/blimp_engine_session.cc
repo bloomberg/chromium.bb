@@ -234,8 +234,8 @@ BlimpEngineSession::~BlimpEngineSession() {
 }
 
 void BlimpEngineSession::Initialize() {
-  DCHECK(!gfx::Screen::GetScreen());
-  gfx::Screen::SetScreenInstance(screen_.get());
+  DCHECK(!display::Screen::GetScreen());
+  display::Screen::SetScreenInstance(screen_.get());
 
   window_tree_host_.reset(new BlimpWindowTreeHost());
 

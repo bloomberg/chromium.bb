@@ -6,7 +6,7 @@
 
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
-#include "ui/gfx/display_observer.h"
+#include "ui/display/display_observer.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace blimp {
@@ -30,16 +30,16 @@ void BlimpScreen::UpdateDisplayScaleAndSize(float scale,
     return;
   }
 
-  uint32_t metrics = gfx::DisplayObserver::DISPLAY_METRIC_NONE;
+  uint32_t metrics = display::DisplayObserver::DISPLAY_METRIC_NONE;
   if (scale != display_.device_scale_factor())
-    metrics |= gfx::DisplayObserver::DISPLAY_METRIC_DEVICE_SCALE_FACTOR;
+    metrics |= display::DisplayObserver::DISPLAY_METRIC_DEVICE_SCALE_FACTOR;
 
   if (size != display_.GetSizeInPixel())
-    metrics |= gfx::DisplayObserver::DISPLAY_METRIC_BOUNDS;
+    metrics |= display::DisplayObserver::DISPLAY_METRIC_BOUNDS;
 
   display_.SetScaleAndBounds(scale, gfx::Rect(size));
 
-  FOR_EACH_OBSERVER(gfx::DisplayObserver, observers_,
+  FOR_EACH_OBSERVER(display::DisplayObserver, observers_,
                     OnDisplayMetricsChanged(display_, metrics));
 }
 
@@ -62,34 +62,34 @@ int BlimpScreen::GetNumDisplays() const {
   return kNumDisplays;
 }
 
-std::vector<gfx::Display> BlimpScreen::GetAllDisplays() const {
-  return std::vector<gfx::Display>(1, display_);
+std::vector<display::Display> BlimpScreen::GetAllDisplays() const {
+  return std::vector<display::Display>(1, display_);
 }
 
-gfx::Display BlimpScreen::GetDisplayNearestWindow(
+display::Display BlimpScreen::GetDisplayNearestWindow(
     gfx::NativeWindow window) const {
   return display_;
 }
 
-gfx::Display BlimpScreen::GetDisplayNearestPoint(
+display::Display BlimpScreen::GetDisplayNearestPoint(
     const gfx::Point& point) const {
   return display_;
 }
 
-gfx::Display BlimpScreen::GetDisplayMatching(
+display::Display BlimpScreen::GetDisplayMatching(
     const gfx::Rect& match_rect) const {
   return display_;
 }
 
-gfx::Display BlimpScreen::GetPrimaryDisplay() const {
+display::Display BlimpScreen::GetPrimaryDisplay() const {
   return display_;
 }
 
-void BlimpScreen::AddObserver(gfx::DisplayObserver* observer) {
+void BlimpScreen::AddObserver(display::DisplayObserver* observer) {
   observers_.AddObserver(observer);
 }
 
-void BlimpScreen::RemoveObserver(gfx::DisplayObserver* observer) {
+void BlimpScreen::RemoveObserver(display::DisplayObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 

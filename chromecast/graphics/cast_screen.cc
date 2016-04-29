@@ -7,10 +7,10 @@
 #include <stdint.h>
 
 #include "ui/aura/env.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/screen.h"
 
 namespace chromecast {
 
@@ -61,32 +61,32 @@ int CastScreen::GetNumDisplays() const {
   return 1;
 }
 
-std::vector<gfx::Display> CastScreen::GetAllDisplays() const {
-  return std::vector<gfx::Display>(1, display_);
+std::vector<display::Display> CastScreen::GetAllDisplays() const {
+  return std::vector<display::Display>(1, display_);
 }
 
-gfx::Display CastScreen::GetDisplayNearestWindow(
+display::Display CastScreen::GetDisplayNearestWindow(
     gfx::NativeWindow window) const {
   return display_;
 }
 
-gfx::Display CastScreen::GetDisplayNearestPoint(const gfx::Point& point) const {
+display::Display CastScreen::GetDisplayNearestPoint(
+    const gfx::Point& point) const {
   return display_;
 }
 
-gfx::Display CastScreen::GetDisplayMatching(const gfx::Rect& match_rect) const {
+display::Display CastScreen::GetDisplayMatching(
+    const gfx::Rect& match_rect) const {
   return display_;
 }
 
-gfx::Display CastScreen::GetPrimaryDisplay() const {
+display::Display CastScreen::GetPrimaryDisplay() const {
   return display_;
 }
 
-void CastScreen::AddObserver(gfx::DisplayObserver* observer) {
-}
+void CastScreen::AddObserver(display::DisplayObserver* observer) {}
 
-void CastScreen::RemoveObserver(gfx::DisplayObserver* observer) {
-}
+void CastScreen::RemoveObserver(display::DisplayObserver* observer) {}
 
 CastScreen::CastScreen() : display_(kDisplayId) {
   display_.SetScaleAndBounds(1.0f,

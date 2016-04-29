@@ -12,6 +12,10 @@ namespace gfx {
 class Display;
 }  // namespace gfx
 
+namespace display {
+using Display = gfx::Display;
+}  // namespace display
+
 namespace media {
 
 // This class is functionally the same as VideoCaptureDeviceLinux, with the
@@ -27,7 +31,7 @@ class VideoCaptureDeviceChromeOS : public VideoCaptureDeviceLinux {
  private:
   class ScreenObserverDelegate;
 
-  void SetDisplayRotation(const gfx::Display& display);
+  void SetDisplayRotation(const display::Display& display);
   scoped_refptr<ScreenObserverDelegate> screen_observer_delegate_;
   DISALLOW_IMPLICIT_CONSTRUCTORS(VideoCaptureDeviceChromeOS);
 };

@@ -48,8 +48,8 @@ class VideoPlaneController {
 
   // Sets graphics hardware plane resolution, and clears any cached video plane
   // geometry parameters. This must be called at least once when the hardware
-  // graphics plane resolution (same resolution as gfx::Screen) is known, then
-  // later when it changes. If there is no change to the graphics plane
+  // graphics plane resolution (same resolution as display::Screen) is known,
+  // then later when it changes. If there is no change to the graphics plane
   // resolution from the last call to this method, it is a no-op.
   void SetGraphicsPlaneResolution(const Size& resolution);
 

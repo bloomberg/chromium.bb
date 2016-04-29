@@ -83,6 +83,7 @@ source_set("capture") {
     "//base",
     "//media/base",
     "//skia",
+    "//ui/display",
   ]
 
   configs += [

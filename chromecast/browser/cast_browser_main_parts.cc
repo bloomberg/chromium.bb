@@ -80,7 +80,7 @@
 // header, but is exported to allow injecting the overlay-composited
 // callback.
 #include "chromecast/graphics/cast_screen.h"
-#include "ui/gfx/screen.h"
+#include "ui/display/screen.h"
 #include "ui/ozone/platform/cast/overlay_manager_cast.h"  // nogncheck
 #endif
 
@@ -373,8 +373,8 @@ int CastBrowserMainParts::PreCreateThreads() {
   // code.  See CastContentWindow::CreateWindowTree for update when resolution
   // is available.
   cast_browser_process_->SetCastScreen(base::WrapUnique(new CastScreen));
-  DCHECK(!gfx::Screen::GetScreen());
-  gfx::Screen::SetScreenInstance(cast_browser_process_->cast_screen());
+  DCHECK(!display::Screen::GetScreen());
+  display::Screen::SetScreenInstance(cast_browser_process_->cast_screen());
 #endif
 
   content::ChildProcessSecurityPolicy::GetInstance()->RegisterWebSafeScheme(

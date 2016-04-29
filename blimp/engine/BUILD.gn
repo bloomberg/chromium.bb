@@ -157,6 +157,7 @@ source_set("app_ui") {
     "//cc/surfaces",
     "//ui/aura",
     "//ui/compositor",
+    "//ui/display",
     "//ui/events",
     "//ui/gfx",
     "//ui/platform_window",
@@ -308,6 +309,7 @@ source_set("app_unit_tests") {
     "//blimp/engine:app_ui",
     "//testing/gmock",
     "//testing/gtest",
+    "//ui/display",
     "//ui/gfx:test_support",
   ]
 }
