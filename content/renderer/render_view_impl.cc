@@ -631,6 +631,7 @@ RenderViewImpl::RenderViewImpl(CompositorDependencies* compositor_deps,
       top_controls_height_(0.f),
       has_focus_(false),
       has_scrolled_focused_editable_node_into_rect_(false),
+      page_zoom_level_(params.page_zoom_level),
       main_render_frame_(nullptr),
       frame_widget_(nullptr),
       speech_recognition_dispatcher_(NULL),
@@ -801,6 +802,8 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
     webview()->mainFrame()->toWebLocalFrame()->forceSandboxFlags(
         params.replicated_frame_state.sandbox_flags);
   }
+
+  page_zoom_level_ = params.page_zoom_level;
 }
 
 RenderViewImpl::~RenderViewImpl() {
@@ -1303,8 +1306,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_Zoom, OnZoom)
     IPC_MESSAGE_HANDLER(ViewMsg_SetZoomLevelForLoadingURL,
                         OnSetZoomLevelForLoadingURL)
-    IPC_MESSAGE_HANDLER(ViewMsg_SetZoomLevelForView,
-                        OnSetZoomLevelForView)
     IPC_MESSAGE_HANDLER(ViewMsg_SetPageEncoding, OnSetPageEncoding)
     IPC_MESSAGE_HANDLER(ViewMsg_ResetPageEncodingToDefault,
                         OnResetPageEncodingToDefault)
@@ -1345,8 +1346,11 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
                         OnReleaseDisambiguationPopupBitmap)
     IPC_MESSAGE_HANDLER(ViewMsg_ForceRedraw, OnForceRedraw)
     IPC_MESSAGE_HANDLER(ViewMsg_SelectWordAroundCaret, OnSelectWordAroundCaret)
+
+    // Page messages.
     IPC_MESSAGE_HANDLER(PageMsg_UpdateWindowScreenRect,
                         OnUpdateWindowScreenRect)
+    IPC_MESSAGE_HANDLER(PageMsg_SetZoomLevel, OnSetZoomLevel)
 #if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateTopControlsState,
                         OnUpdateTopControlsState)
@@ -1601,6 +1605,7 @@ WebView* RenderViewImpl::createView(WebLocalFrame* creator,
   view_params.enable_auto_resize = false;
   view_params.min_size = gfx::Size();
   view_params.max_size = gfx::Size();
+  view_params.page_zoom_level = page_zoom_level_;
 
   RenderViewImpl* view =
       RenderViewImpl::Create(compositor_deps_, view_params, true);
@@ -1674,6 +1679,10 @@ void RenderViewImpl::AttachWebFrameWidget(blink::WebFrameWidget* frame_widget) {
 }
 
 void RenderViewImpl::SetZoomLevel(double zoom_level) {
+  // If we change the zoom level for the view, make sure any subsequent subframe
+  // loads reflect the current zoom level.
+  page_zoom_level_ = zoom_level;
+
   webview()->setZoomLevel(zoom_level);
   FOR_EACH_OBSERVER(RenderViewObserver, observers_, OnZoomLevelChanged());
 }
@@ -2381,6 +2390,11 @@ void RenderViewImpl::OnZoom(PageZoom zoom) {
 
 void RenderViewImpl::OnSetZoomLevelForLoadingURL(const GURL& url,
                                                  double zoom_level) {
+  // TODO(wjmaclean): We should see if this restriction is really necessary,
+  // since it isn't enforced in other parts of the page zoom system (e.g.
+  // when a users changes the zoom of a currently displayed page). Android
+  // has no UI for this, so in theory the following code would normally just use
+  // the default zoom anyways.
 #if !defined(OS_ANDROID)
   // On Android, page zoom isn't used, and in case of WebView, text zoom is used
   // for legacy WebView text scaling emulation. Thus, the code that resets
@@ -2389,12 +2403,26 @@ void RenderViewImpl::OnSetZoomLevelForLoadingURL(const GURL& url,
 #endif
 }
 
-void RenderViewImpl::OnSetZoomLevelForView(bool uses_temporary_zoom_level,
-                                           double level) {
-  uses_temporary_zoom_level_ = uses_temporary_zoom_level;
-
+void RenderViewImpl::OnSetZoomLevel(
+    PageMsg_SetZoomLevel_Command command,
+    double zoom_level) {
+  switch (command) {
+    case PageMsg_SetZoomLevel_Command::CLEAR_TEMPORARY:
+      uses_temporary_zoom_level_ = false;
+      break;
+    case PageMsg_SetZoomLevel_Command::SET_TEMPORARY:
+      uses_temporary_zoom_level_ = true;
+      break;
+    case PageMsg_SetZoomLevel_Command::USE_CURRENT_TEMPORARY_MODE:
+      // Don't override a temporary zoom level without an explicit SET.
+      if (uses_temporary_zoom_level_)
+        return;
+      break;
+    default:
+      NOTIMPLEMENTED();
+  }
   webview()->hidePopups();
-  SetZoomLevel(level);
+  SetZoomLevel(zoom_level);
 }
 
 void RenderViewImpl::OnSetPageEncoding(const std::string& encoding_name) {
@@ -2584,7 +2612,6 @@ void RenderViewImpl::OnDisableScrollbarsForSmallWindows(
 
 void RenderViewImpl::OnSetRendererPrefs(
     const RendererPreferences& renderer_prefs) {
-  double old_zoom_level = renderer_preferences_.default_zoom_level;
   std::string old_accept_languages = renderer_preferences_.accept_languages;
 
   renderer_preferences_ = renderer_prefs;
@@ -2607,17 +2634,6 @@ void RenderViewImpl::OnSetRendererPrefs(
     }
   }
 #endif  // defined(USE_DEFAULT_RENDER_THEME)
-
-  // If the zoom level for this page matches the old zoom default, and this
-  // is not a plugin, update the zoom level to match the new default.
-  if (webview() && webview()->mainFrame()->isWebLocalFrame() &&
-      !webview()->mainFrame()->document().isPluginDocument() &&
-      !ZoomValuesEqual(old_zoom_level,
-                       renderer_preferences_.default_zoom_level) &&
-      ZoomValuesEqual(webview()->zoomLevel(), old_zoom_level)) {
-    SetZoomLevel(renderer_preferences_.default_zoom_level);
-    zoomLevelChanged();
-  }
 
   if (webview() &&
       old_accept_languages != renderer_preferences_.accept_languages) {

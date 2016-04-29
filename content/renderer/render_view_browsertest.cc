@@ -368,7 +368,8 @@ class RenderViewImplTest : public RenderViewTest {
   }
 
   void SetZoomLevel(double level) {
-    view()->OnSetZoomLevelForView(false, level);
+    view()->OnSetZoomLevel(
+        PageMsg_SetZoomLevel_Command::USE_CURRENT_TEMPORARY_MODE, level);
   }
 
  private:

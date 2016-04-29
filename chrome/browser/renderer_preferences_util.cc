@@ -9,7 +9,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
-#include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/webrtc_ip_handling_policy.h"
@@ -17,10 +16,6 @@
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
 #include "ui/gfx/font_render_params.h"
-#endif
-
-#if !defined(OS_ANDROID)
-#include "components/ui/zoom/zoom_controller.h"
 #endif
 
 #if defined(TOOLKIT_VIEWS)
@@ -61,24 +56,6 @@ void UpdateFromSystemSettings(content::RendererPreferences* prefs,
         pref_service->GetString(prefs::kWebRTCIPHandlingPolicy);
   }
 #endif
-
-  double default_zoom_level = 0;
-  bool default_zoom_level_set = false;
-#if !defined(OS_ANDROID)
-  ui_zoom::ZoomController* zoom_controller =
-      ui_zoom::ZoomController::FromWebContents(web_contents);
-  if (zoom_controller) {
-    default_zoom_level = zoom_controller->GetDefaultZoomLevel();
-    default_zoom_level_set = true;
-  }
-#endif
-
-  if (!default_zoom_level_set) {
-    default_zoom_level =
-        content::HostZoomMap::Get(web_contents->GetSiteInstance())
-            ->GetDefaultZoomLevel();
-  }
-  prefs->default_zoom_level = default_zoom_level;
 
 #if defined(USE_DEFAULT_RENDER_THEME)
   prefs->focus_ring_color = SkColorSetRGB(0x4D, 0x90, 0xFE);

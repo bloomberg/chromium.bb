@@ -259,51 +259,6 @@ class WebThreadForCompositor : public WebThreadImplForWorkerScheduler {
   DISALLOW_COPY_AND_ASSIGN(WebThreadForCompositor);
 };
 
-class RenderViewZoomer : public RenderViewVisitor {
- public:
-  RenderViewZoomer(const std::string& scheme,
-                   const std::string& host,
-                   double zoom_level) : scheme_(scheme),
-                                        host_(host),
-                                        zoom_level_(zoom_level) {
-  }
-
-  bool Visit(RenderView* render_view) override {
-    WebView* webview = render_view->GetWebView();
-    RenderViewImpl* render_view_impl =
-        static_cast<RenderViewImpl*>(render_view);
-    // Remote frames don't host documents.
-    // TODO(wjmaclean) Although it seems likely that a frame without a
-    // document can safely early-out here, we should confirm this is truly
-    // the case. https://crbug.com/477007
-    if (webview->mainFrame()->isWebRemoteFrame())
-      return true;
-
-    WebDocument document = webview->mainFrame()->document();
-
-    // Don't set zoom level for full-page plugin since they don't use the same
-    // zoom settings.
-    if (document.isPluginDocument())
-      return true;
-    GURL url(document.url());
-    // Empty scheme works as wildcard that matches any scheme,
-    if ((net::GetHostOrSpecFromURL(url) == host_) &&
-        (scheme_.empty() || scheme_ == url.scheme()) &&
-        !render_view_impl->uses_temporary_zoom_level()) {
-      webview->hidePopups();
-      render_view_impl->SetZoomLevel(zoom_level_);
-    }
-    return true;
-  }
-
- private:
-  const std::string scheme_;
-  const std::string host_;
-  const double zoom_level_;
-
-  DISALLOW_COPY_AND_ASSIGN(RenderViewZoomer);
-};
-
 void* CreateHistogram(
     const char *name, int min, int max, size_t buckets) {
   if (min <= 0)
@@ -1700,8 +1655,6 @@ bool RenderThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(RenderThreadImpl, msg)
     IPC_MESSAGE_HANDLER(FrameMsg_NewFrame, OnCreateNewFrame)
     IPC_MESSAGE_HANDLER(FrameMsg_NewFrameProxy, OnCreateNewFrameProxy)
-    IPC_MESSAGE_HANDLER(ViewMsg_SetZoomLevelForCurrentURL,
-                        OnSetZoomLevelForCurrentURL)
     // TODO(port): removed from render_messages_internal.h;
     // is there a new non-windows message I should add here?
     IPC_MESSAGE_HANDLER(ViewMsg_New, OnCreateNewView)
@@ -1761,13 +1714,6 @@ void RenderThreadImpl::OnCreateNewFrameProxy(
   RenderFrameProxy::CreateFrameProxy(routing_id, render_view_routing_id,
                                      opener_routing_id, parent_routing_id,
                                      replicated_state);
-}
-
-void RenderThreadImpl::OnSetZoomLevelForCurrentURL(const std::string& scheme,
-                                                   const std::string& host,
-                                                   double zoom_level) {
-  RenderViewZoomer zoomer(scheme, host, zoom_level);
-  RenderView::ForEach(&zoomer);
 }
 
 void RenderThreadImpl::OnCreateNewView(const ViewMsg_New_Params& params) {

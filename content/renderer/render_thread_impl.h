@@ -489,9 +489,6 @@ class CONTENT_EXPORT RenderThreadImpl
                              int opener_routing_id,
                              int parent_routing_id,
                              const FrameReplicationState& replicated_state);
-  void OnSetZoomLevelForCurrentURL(const std::string& scheme,
-                                   const std::string& host,
-                                   double zoom_level);
   void OnCreateNewView(const ViewMsg_New_Params& params);
   void OnTransferBitmap(const SkBitmap& bitmap, int resource_id);
 #if defined(ENABLE_PLUGINS)

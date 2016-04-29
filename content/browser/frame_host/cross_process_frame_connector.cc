@@ -195,6 +195,10 @@ void CrossProcessFrameConnector::OnForwardInputEvent(
 
 void CrossProcessFrameConnector::OnFrameRectChanged(
     const gfx::Rect& frame_rect) {
+  // TODO(wjmaclean) When changing the zoom of a WebView child without also
+  // changing the zoom of the embedder (e.g. using WebView.setZoom()), we
+  // shouldn't propagate this change in the frame rect. We need to find a way
+  // to detect when this happens. http://crbug.com/607978
   if (!frame_rect.size().IsEmpty())
     SetRect(frame_rect);
 }

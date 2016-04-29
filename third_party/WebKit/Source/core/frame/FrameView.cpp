@@ -398,10 +398,11 @@ void FrameView::setFrameRect(const IntRect& newRect)
     const bool frameSizeChanged = oldRect.size() != newRect.size();
 
     m_needsScrollbarsUpdate = frameSizeChanged;
-    // If layout is clean then update scrollbars immediately otherwise wait
-    // for layout to ensure content size is correct too.
-    if (!needsLayout())
-        updateScrollbarsIfNeeded();
+    // TODO(wjmaclean): find out why scrollbars fail to resize for complex
+    // subframes after changing the zoom level. For now always calling
+    // updateScrollbarsIfNeeded() here fixes the issue, but it would be good to
+    // discover the deeper cause of this. http://crbug.com/607987.
+    updateScrollbarsIfNeeded();
 
     frameRectsChanged();
 

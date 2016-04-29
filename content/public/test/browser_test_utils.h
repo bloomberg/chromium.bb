@@ -203,6 +203,9 @@ bool ExecuteScript(const ToRenderFrameHost& adapter,
 // sets |result| to the value passed to "window.domAutomationController.send" by
 // the executed script. They return true on success, false if the script
 // execution failed or did not evaluate to the expected type.
+bool ExecuteScriptAndExtractDouble(const ToRenderFrameHost& adapter,
+                                   const std::string& script,
+                                   double* result) WARN_UNUSED_RESULT;
 bool ExecuteScriptAndExtractInt(const ToRenderFrameHost& adapter,
                                 const std::string& script,
                                 int* result) WARN_UNUSED_RESULT;

@@ -115,6 +115,7 @@
 #include "content/public/common/web_preferences.h"
 #include "mojo/common/url_type_converters.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
+#include "net/base/url_util.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/url_request/url_request_context.h"
@@ -922,6 +923,39 @@ void WebContentsImpl::RequestAXTreeSnapshot(AXTreeSnapshotCallback callback) {
     frame_tree_node->current_frame_host()->RequestAXTreeSnapshot(
         combiner->AddFrame(is_root));
   }
+}
+
+void WebContentsImpl::SetTemporaryZoomLevel(double level,
+                                            bool temporary_zoom_enabled) {
+  SendPageMessage(new PageMsg_SetZoomLevel(
+      MSG_ROUTING_NONE,
+      temporary_zoom_enabled ? PageMsg_SetZoomLevel_Command::SET_TEMPORARY
+                             : PageMsg_SetZoomLevel_Command::CLEAR_TEMPORARY,
+      level));
+}
+
+void WebContentsImpl::UpdateZoom(double level) {
+  // Individual frames may still ignore the new zoom level if their RenderView
+  // contains a plugin document or if it uses a temporary zoom level.
+  SendPageMessage(new PageMsg_SetZoomLevel(
+      MSG_ROUTING_NONE,
+      PageMsg_SetZoomLevel_Command::USE_CURRENT_TEMPORARY_MODE, level));
+}
+
+void WebContentsImpl::UpdateZoomIfNecessary(const std::string& scheme,
+                                            const std::string& host,
+                                            double level) {
+  NavigationEntry* entry = GetController().GetLastCommittedEntry();
+  if (!entry)
+    return;
+
+  GURL url = HostZoomMap::GetURLFromEntry(entry);
+  if (host != net::GetHostOrSpecFromURL(url) ||
+      (!scheme.empty() && !url.SchemeIs(scheme))) {
+    return;
+  }
+
+  UpdateZoom(level);
 }
 
 WebUI* WebContentsImpl::CreateSubframeWebUI(const GURL& url,
@@ -4011,6 +4045,16 @@ void WebContentsImpl::RunBeforeUnloadConfirm(
 
 WebContents* WebContentsImpl::GetAsWebContents() {
   return this;
+}
+
+double WebContentsImpl::GetPendingPageZoomLevel() {
+  NavigationEntry* pending_entry = GetController().GetPendingEntry();
+  if (!pending_entry)
+    return HostZoomMap::GetZoomLevel(this);
+
+  GURL url = pending_entry->GetURL();
+  return HostZoomMap::GetForWebContents(this)->GetZoomLevelForHostAndScheme(
+      url.scheme(), net::GetHostOrSpecFromURL(url));
 }
 
 bool WebContentsImpl::IsNeverVisible() {

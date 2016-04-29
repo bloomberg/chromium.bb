@@ -4568,6 +4568,8 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
     DCHECK(!navigation_state->request_params().should_clear_history_list);
     params.history_list_was_cleared = false;
     params.report_type = FrameMsg_UILoadMetricsReportType::NO_REPORT;
+    // Subframes should match the zoom level of the main frame.
+    render_view_->webview()->setZoomLevel(render_view_->page_zoom_level());
   }
 
   // This message needs to be sent before any of allowScripts(),

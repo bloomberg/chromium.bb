@@ -226,6 +226,7 @@
       'browser/frame_host/render_widget_host_view_child_frame_browsertest.cc',
       'browser/gpu/gpu_ipc_browsertests.cc',
       'browser/host_zoom_map_impl_browsertest.cc',
+      'browser/iframe_zoom_browsertest.cc',
       'browser/indexed_db/indexed_db_browsertest.cc',
       'browser/indexed_db/mock_browsertest_indexed_db_class_factory.cc',
       'browser/indexed_db/mock_browsertest_indexed_db_class_factory.h',

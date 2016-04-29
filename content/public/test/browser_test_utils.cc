@@ -662,6 +662,18 @@ bool ExecuteScript(const ToRenderFrameHost& adapter,
   return ExecuteScriptHelper(adapter.render_frame_host(), new_script, NULL);
 }
 
+bool ExecuteScriptAndExtractDouble(const ToRenderFrameHost& adapter,
+                                   const std::string& script, double* result) {
+  DCHECK(result);
+  std::unique_ptr<base::Value> value;
+  if (!ExecuteScriptHelper(adapter.render_frame_host(), script, &value) ||
+      !value.get()) {
+    return false;
+  }
+
+  return value->GetAsDouble(result);
+}
+
 bool ExecuteScriptAndExtractInt(const ToRenderFrameHost& adapter,
                                 const std::string& script, int* result) {
   DCHECK(result);

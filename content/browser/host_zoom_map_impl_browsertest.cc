@@ -8,19 +8,25 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/content_browser_test.h"
+#include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "net/dns/mock_host_resolver.h"
 #include "url/gurl.h"
 
 namespace content {
 
 class HostZoomMapImplBrowserTest : public ContentBrowserTest {
+ protected:
+  void SetUpOnMainThread() override {
+    host_resolver()->AddRule("*", "127.0.0.1");
+    ASSERT_TRUE(embedded_test_server()->Start());
+  }
 };
 
 void RunTestForURL(const GURL& url,
                    Shell* shell,
                    double host_zoom_level,
                    double temp_zoom_level) {
-  shell->LoadURL(url);
   WebContents* web_contents = shell->web_contents();
 
   HostZoomMapImpl* host_zoom_map = static_cast<HostZoomMapImpl*>(
@@ -49,7 +55,10 @@ void RunTestForURL(const GURL& url,
 // stored by host value, and can distinguish temporary zoom levels from
 // these.
 IN_PROC_BROWSER_TEST_F(HostZoomMapImplBrowserTest, GetZoomForView_Host) {
-  GURL url("http://abc.com");
+  GURL url(embedded_test_server()->GetURL("abc.com", "/"));
+
+  // We must navigate so the WebContents has a committed entry.
+  EXPECT_TRUE(NavigateToURL(shell(), url));
 
   HostZoomMap* host_zoom_map =
       HostZoomMap::GetForWebContents(shell()->web_contents());
@@ -68,7 +77,10 @@ IN_PROC_BROWSER_TEST_F(HostZoomMapImplBrowserTest, GetZoomForView_Host) {
 // from these.
 IN_PROC_BROWSER_TEST_F(HostZoomMapImplBrowserTest,
                        GetZoomForView_HostAndScheme) {
-  GURL url("http://abc.com");
+  GURL url(embedded_test_server()->GetURL("abc.com", "/"));
+
+  // We must navigate so the WebContents has a committed entry.
+  EXPECT_TRUE(NavigateToURL(shell(), url));
 
   HostZoomMap* host_zoom_map =
       HostZoomMap::GetForWebContents(shell()->web_contents());

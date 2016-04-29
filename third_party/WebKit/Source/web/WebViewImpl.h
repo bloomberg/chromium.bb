@@ -529,6 +529,7 @@ private:
     InspectorOverlay* inspectorOverlay();
 
     void setPageScaleFactorAndLocation(float, const FloatPoint&);
+    void propagateZoomToLocalFrameRoots(Frame*);
 
     void scrollAndRescaleViewports(float scaleFactor, const IntPoint& mainFrameOrigin, const FloatPoint& visualViewportOrigin);
 

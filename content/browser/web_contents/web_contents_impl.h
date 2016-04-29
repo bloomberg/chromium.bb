@@ -225,6 +225,21 @@ class CONTENT_EXPORT WebContentsImpl
           const ui::AXTreeUpdate&)>;
   void RequestAXTreeSnapshot(AXTreeSnapshotCallback callback);
 
+  // Set a temporary zoom level for the frames associated with this WebContents.
+  // If |is_temporary| is true, we are setting a new temporary zoom level,
+  // otherwise we are clearing a previously set temporary zoom level.
+  void SetTemporaryZoomLevel(double level, bool temporary_zoom_enabled);
+
+  // Sets the zoom level for frames associated with this WebContents.
+  void UpdateZoom(double level);
+
+  // Sets the zoom level for frames associated with this WebContents if it
+  // matches |host| and (if non-empty) |scheme|. Matching is done on the
+  // last committed entry.
+  void UpdateZoomIfNecessary(const std::string& scheme,
+                             const std::string& host,
+                             double level);
+
   // WebContents ------------------------------------------------------
   WebContentsDelegate* GetDelegate() override;
   void SetDelegate(WebContentsDelegate* delegate) override;
@@ -520,6 +535,7 @@ class CONTENT_EXPORT WebContentsImpl
   void SetIsVirtualKeyboardRequested(bool requested) override;
   bool IsVirtualKeyboardRequested() override;
   bool IsOverridingUserAgent() override;
+  double GetPendingPageZoomLevel() override;
 
   // NavigatorDelegate ---------------------------------------------------------
 

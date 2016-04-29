@@ -102,9 +102,6 @@ struct CONTENT_EXPORT RendererPreferences {
   // in webrtc_ip_handling_policy.h.
   std::string webrtc_ip_handling_policy;
 
-  // Default page zoom level.
-  double default_zoom_level;
-
   // The user agent given to WebKit when it requests one and the user agent is
   // being overridden for the current navigation.
   std::string user_agent_override;

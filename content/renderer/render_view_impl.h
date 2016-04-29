@@ -32,6 +32,7 @@
 #include "content/common/frame_message_enums.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/common/navigation_gesture.h"
+#include "content/common/page_message_enums.h"
 #include "content/common/view_message_enums.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/referrer.h"
@@ -235,6 +236,10 @@ class CONTENT_EXPORT RenderViewImpl
   // Sets the zoom level and notifies observers. Doesn't call zoomLevelChanged,
   // as that is only for changes that aren't initiated by the client.
   void SetZoomLevel(double zoom_level);
+
+  double page_zoom_level() {
+    return page_zoom_level_;
+  }
 
   // Indicates whether this page has been focused by the browser.
   bool has_focus() const { return has_focus_; }
@@ -685,7 +690,7 @@ class CONTENT_EXPORT RenderViewImpl
   void OnSetRendererPrefs(const RendererPreferences& renderer_prefs);
   void OnSetWebUIProperty(const std::string& name, const std::string& value);
   void OnSetZoomLevelForLoadingURL(const GURL& url, double zoom_level);
-  void OnSetZoomLevelForView(bool uses_temporary_zoom_level, double level);
+  void OnSuppressDialogsUntilSwapOut();
   void OnThemeChanged();
   void OnUpdateTargetURLAck();
   void OnUpdateWebPreferences(const WebPreferences& prefs);
@@ -705,6 +710,7 @@ class CONTENT_EXPORT RenderViewImpl
 
   // Page message handlers -----------------------------------------------------
   void OnUpdateWindowScreenRect(gfx::Rect window_screen_rect);
+  void OnSetZoomLevel(PageMsg_SetZoomLevel_Command command, double zoom_level);
 
   // Adding a new message handler? Please add it in alphabetical order above
   // and put it in the same position in the .cc file.
@@ -910,6 +916,10 @@ class CONTENT_EXPORT RenderViewImpl
   // scrolled and focused editable node.
   bool has_scrolled_focused_editable_node_into_rect_;
   gfx::Rect rect_for_scrolled_focused_editable_node_;
+
+  // Used to indicate the zoom level to be used during subframe loads, since
+  // they should match page zoom level.
+  double page_zoom_level_;
 
   // Helper objects ------------------------------------------------------------
 

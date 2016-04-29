@@ -31,7 +31,6 @@ RendererPreferences::RendererPreferences()
       use_custom_colors(true),
       enable_referrers(true),
       enable_do_not_track(false),
-      default_zoom_level(0),
       report_frame_name_changes(false),
       tap_multiple_targets_strategy(TAP_MULTIPLE_TARGETS_STRATEGY_POPUP),
       disable_client_blocked_error_page(false),

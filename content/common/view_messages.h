@@ -257,7 +257,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::RendererPreferences)
   IPC_STRUCT_TRAITS_MEMBER(enable_referrers)
   IPC_STRUCT_TRAITS_MEMBER(enable_do_not_track)
   IPC_STRUCT_TRAITS_MEMBER(webrtc_ip_handling_policy)
-  IPC_STRUCT_TRAITS_MEMBER(default_zoom_level)
   IPC_STRUCT_TRAITS_MEMBER(user_agent_override)
   IPC_STRUCT_TRAITS_MEMBER(accept_languages)
   IPC_STRUCT_TRAITS_MEMBER(report_frame_name_changes)
@@ -512,6 +511,9 @@ IPC_STRUCT_BEGIN(ViewMsg_New_Params)
 
   // The maximum size to layout the page if auto-resize is enabled.
   IPC_STRUCT_MEMBER(gfx::Size, max_size)
+
+  // The page zoom level.
+  IPC_STRUCT_MEMBER(double, page_zoom_level)
 IPC_STRUCT_END()
 
 #if defined(OS_MACOSX)
@@ -664,19 +666,6 @@ IPC_MESSAGE_ROUTED1(ViewMsg_Zoom,
 // and ignored otherwise.
 IPC_MESSAGE_ROUTED2(ViewMsg_SetZoomLevelForLoadingURL,
                     GURL /* url */,
-                    double /* zoom_level */)
-
-// Set the zoom level for a particular url, so all render views
-// displaying this url can update their zoom levels to match.
-// If scheme is empty, then only host is used for matching.
-IPC_MESSAGE_CONTROL3(ViewMsg_SetZoomLevelForCurrentURL,
-                     std::string /* scheme */,
-                     std::string /* host */,
-                     double /* zoom_level */)
-
-// Set the zoom level for a particular render view.
-IPC_MESSAGE_ROUTED2(ViewMsg_SetZoomLevelForView,
-                    bool /* uses_temporary_zoom_level */,
                     double /* zoom_level */)
 
 // Change encoding of page in the renderer.
