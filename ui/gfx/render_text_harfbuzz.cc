@@ -577,21 +577,21 @@ sk_sp<SkTypeface> CreateSkiaTypeface(const gfx::Font& font, int style) {
 }
 #endif
 
-TextRunHarfBuzz::TextRunHarfBuzz()
+TextRunHarfBuzz::TextRunHarfBuzz(const gfx::Font& template_font)
     : width(0.0f),
       preceding_run_widths(0.0f),
       is_rtl(false),
       level(0),
       script(USCRIPT_INVALID_CODE),
       glyph_count(static_cast<size_t>(-1)),
+      font(template_font),
       font_size(0),
       baseline_offset(0),
       baseline_type(0),
       font_style(0),
       strike(false),
       diagonal_strike(false),
-      underline(false) {
-}
+      underline(false) {}
 
 TextRunHarfBuzz::~TextRunHarfBuzz() {}
 
@@ -1255,7 +1255,8 @@ void RenderTextHarfBuzz::ItemizeTextToRuns(
   // to misbehave since they expect non-zero text metrics from a non-empty text.
   base::i18n::BiDiLineIterator bidi_iterator;
   if (!bidi_iterator.Open(text, GetTextDirection(text))) {
-    internal::TextRunHarfBuzz* run = new internal::TextRunHarfBuzz;
+    internal::TextRunHarfBuzz* run =
+        new internal::TextRunHarfBuzz(font_list().GetPrimaryFont());
     run->range = Range(0, text.length());
     run_list_out->add(run);
     run_list_out->InitIndexMap();
@@ -1275,7 +1276,8 @@ void RenderTextHarfBuzz::ItemizeTextToRuns(
   internal::StyleIterator style(empty_colors, baselines(), styles());
 
   for (size_t run_break = 0; run_break < text.length();) {
-    internal::TextRunHarfBuzz* run = new internal::TextRunHarfBuzz;
+    internal::TextRunHarfBuzz* run =
+        new internal::TextRunHarfBuzz(font_list().GetPrimaryFont());
     run->range.set_start(run_break);
     run->font_style = (style.style(BOLD) ? Font::BOLD : 0) |
                       (style.style(ITALIC) ? Font::ITALIC : 0);
@@ -1378,7 +1380,7 @@ void RenderTextHarfBuzz::ShapeRun(const base::string16& text,
     }
   }
 
-  Font best_font;
+  Font best_font(primary_font);
   FontRenderParams best_render_params;
   size_t best_missing_glyphs = std::numeric_limits<size_t>::max();
 
@@ -1389,7 +1391,7 @@ void RenderTextHarfBuzz::ShapeRun(const base::string16& text,
   }
 
 #if defined(OS_WIN)
-  Font uniscribe_font;
+  Font uniscribe_font(primary_font);
   std::string uniscribe_family;
   const base::char16* run_text = &(text[run->range.start()]);
   if (GetUniscribeFallbackFont(primary_font, run_text, run->range.length(),

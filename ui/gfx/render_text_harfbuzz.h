@@ -32,7 +32,9 @@ class RangeF;
 namespace internal {
 
 struct GFX_EXPORT TextRunHarfBuzz {
-  TextRunHarfBuzz();
+  // Construct the run with |template_font| since determining the details of a
+  // default-constructed gfx::Font is expensive, but it will always be replaced.
+  explicit TextRunHarfBuzz(const gfx::Font& template_font);
   ~TextRunHarfBuzz();
 
   // Returns the index of the first glyph that corresponds to the character at

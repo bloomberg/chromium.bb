@@ -2707,7 +2707,7 @@ TEST_F(RenderTextTest, HarfBuzz_Clusters) {
     },
   };
 
-  internal::TextRunHarfBuzz run;
+  internal::TextRunHarfBuzz run((Font()));
   run.range = Range(0, 4);
   run.glyph_count = 4;
   run.glyph_to_char.resize(4);
@@ -2790,7 +2790,7 @@ TEST_F(RenderTextTest, HarfBuzz_SubglyphGraphemePartition) {
     },
   };
 
-  internal::TextRunHarfBuzz run;
+  internal::TextRunHarfBuzz run((Font()));
   run.range = Range(0, 4);
   run.glyph_count = 2;
   run.glyph_to_char.resize(2);
@@ -2941,7 +2941,7 @@ TEST_F(RenderTextTest, HarfBuzz_NonExistentFont) {
 
 // Ensure an empty run returns sane values to queries.
 TEST_F(RenderTextTest, HarfBuzz_EmptyRun) {
-  internal::TextRunHarfBuzz run;
+  internal::TextRunHarfBuzz run((Font()));
   const base::string16 kString = ASCIIToUTF16("abcdefgh");
   std::unique_ptr<base::i18n::BreakIterator> iter(new base::i18n::BreakIterator(
       kString, base::i18n::BreakIterator::BREAK_CHARACTER));

@@ -68,7 +68,7 @@ class GFX_EXPORT RenderTextMac : public RenderText {
     std::vector<uint16_t> glyphs;
     std::vector<SkPoint> glyph_positions;
     SkScalar width;
-    Font font;
+    base::ScopedCFTypeRef<CTFontRef> ct_font;
     sk_sp<SkTypeface> typeface;
     SkColor foreground;
     bool underline;
@@ -76,7 +76,8 @@ class GFX_EXPORT RenderTextMac : public RenderText {
     bool diagonal_strike;
 
     TextRun();
-    TextRun(const TextRun& other);
+    TextRun(const TextRun& other) = delete;
+    TextRun(TextRun&& other);
     ~TextRun();
   };
 
