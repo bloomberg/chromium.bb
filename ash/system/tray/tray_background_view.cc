@@ -265,6 +265,17 @@ void TrayBackgroundView::Initialize() {
   SetTrayBorder();
 }
 
+// static
+void TrayBackgroundView::InitializeBubbleAnimations(
+    views::Widget* bubble_widget) {
+  aura::Window* window = bubble_widget->GetNativeWindow();
+  ::wm::SetWindowVisibilityAnimationType(
+      window, ::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
+  ::wm::SetWindowVisibilityAnimationTransition(window, ::wm::ANIMATE_HIDE);
+  ::wm::SetWindowVisibilityAnimationDuration(
+      window, base::TimeDelta::FromMilliseconds(kAnimationDurationForPopupMs));
+}
+
 void TrayBackgroundView::SetVisible(bool visible) {
   if (visible == layer()->GetTargetVisibility())
     return;
@@ -457,18 +468,6 @@ void TrayBackgroundView::HideTransformation() {
   else
     transform.Translate(0.0f, height());
   layer()->SetTransform(transform);
-}
-
-void TrayBackgroundView::InitializeBubbleAnimations(
-    views::Widget* bubble_widget) {
-  ::wm::SetWindowVisibilityAnimationType(
-      bubble_widget->GetNativeWindow(),
-      ::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
-  ::wm::SetWindowVisibilityAnimationTransition(bubble_widget->GetNativeWindow(),
-                                               ::wm::ANIMATE_HIDE);
-  ::wm::SetWindowVisibilityAnimationDuration(
-      bubble_widget->GetNativeWindow(),
-      base::TimeDelta::FromMilliseconds(kAnimationDurationForPopupMs));
 }
 
 aura::Window* TrayBackgroundView::GetBubbleWindowContainer() const {

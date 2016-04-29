@@ -4,13 +4,12 @@
 
 #include "ash/shelf/overflow_bubble.h"
 
-#include "ash/root_window_controller.h"
 #include "ash/shelf/overflow_bubble_view.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
-#include "ash/system/tray/system_tray.h"
+#include "ash/system/tray/tray_background_view.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/events/event.h"
@@ -36,10 +35,10 @@ void OverflowBubble::Show(views::View* anchor, ShelfView* shelf_view) {
   shelf_view_ = shelf_view;
   anchor_ = anchor;
 
+  // TODO(jamescook): Change this to a PointerWatcher.
   Shell::GetInstance()->AddPreTargetHandler(this);
 
-  RootWindowController::ForWindow(anchor->GetWidget()->GetNativeView())->
-      GetSystemTray()->InitializeBubbleAnimations(bubble_->GetWidget());
+  TrayBackgroundView::InitializeBubbleAnimations(bubble_->GetWidget());
   bubble_->GetWidget()->AddObserver(this);
   bubble_->GetWidget()->Show();
 }

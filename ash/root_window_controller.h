@@ -77,6 +77,10 @@ class AshTouchExplorationManager;
 // The RootWindowController for particular root window is stored in
 // its property (RootWindowSettings) and can be obtained using
 // |GetRootWindowController(aura::WindowEventDispatcher*)| function.
+//
+// NOTE: In classic ash there is one RootWindow per display, so every RootWindow
+// has a RootWindowController. In mus/mash there is one RootWindow per top-level
+// Widget, so not all RootWindows have a RootWindowController.
 class ASH_EXPORT RootWindowController : public ShellObserver {
  public:
   // Creates and Initialize the RootWindowController for primary display.

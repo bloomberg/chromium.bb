@@ -68,6 +68,9 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   // Called after the tray has been added to the widget containing it.
   virtual void Initialize();
 
+  // Initializes animations for the bubble.
+  static void InitializeBubbleAnimations(views::Widget* bubble_widget);
+
   // views::View:
   void SetVisible(bool visible) override;
   const char* GetClassName() const override;
@@ -115,9 +118,6 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   // false if a window overlaps the shelf.
   void SetPaintsBackground(bool value,
                            BackgroundAnimatorChangeType change_type);
-
-  // Initializes animations for the bubble.
-  void InitializeBubbleAnimations(views::Widget* bubble_widget);
 
   // Returns the window hosting the bubble.
   aura::Window* GetBubbleWindowContainer() const;
