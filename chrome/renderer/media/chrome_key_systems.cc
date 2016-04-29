@@ -15,9 +15,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/common/render_messages.h"
-#include "components/cdm/renderer/widevine_key_systems.h"
+#include "components/cdm/renderer/widevine_key_system_properties.h"
 #include "content/public/renderer/render_thread.h"
 #include "media/base/eme_constants.h"
+#include "media/base/key_system_info.h"
+#include "media/base/key_system_properties.h"
+
 #include "media/media_features.h"
 
 #if defined(OS_ANDROID)
@@ -34,6 +37,7 @@
 #endif
 
 using media::KeySystemInfo;
+using media::KeySystemProperties;
 using media::SupportedCodecs;
 
 #if defined(ENABLE_PEPPER_CDMS)
@@ -150,7 +154,7 @@ void GetSupportedCodecsForPepperCdm(
 }
 
 static void AddPepperBasedWidevine(
-    std::vector<KeySystemInfo>* concrete_key_systems) {
+    std::vector<std::unique_ptr<KeySystemProperties>>* concrete_key_systems) {
 #if defined(WIDEVINE_CDM_MIN_GLIBC_VERSION)
   Version glibc_version(gnu_get_libc_version());
   DCHECK(glibc_version.IsValid());
@@ -198,7 +202,7 @@ static void AddPepperBasedWidevine(
 #endif  // defined(USE_PROPRIETARY_CODECS)
   }
 
-  cdm::AddWidevineWithCodecs(
+  concrete_key_systems->emplace_back(new cdm::WidevineKeySystemProperties(
       supported_codecs,
 #if defined(OS_CHROMEOS)
       media::EmeRobustness::HW_SECURE_ALL,  // Maximum audio robustness.
@@ -206,33 +210,37 @@ static void AddPepperBasedWidevine(
       media::EmeSessionTypeSupport::
           SUPPORTED_WITH_IDENTIFIER,  // Persistent-license.
       media::EmeSessionTypeSupport::
-          NOT_SUPPORTED,                      // Persistent-release-message.
-      media::EmeFeatureSupport::REQUESTABLE,  // Persistent state.
-      media::EmeFeatureSupport::REQUESTABLE,  // Distinctive identifier.
+          NOT_SUPPORTED,                        // Persistent-release-message.
+      media::EmeFeatureSupport::REQUESTABLE,    // Persistent state.
+      media::EmeFeatureSupport::REQUESTABLE));  // Distinctive identifier.
 #else   // (Desktop)
       media::EmeRobustness::SW_SECURE_CRYPTO,       // Maximum audio robustness.
       media::EmeRobustness::SW_SECURE_DECODE,       // Maximum video robustness.
       media::EmeSessionTypeSupport::NOT_SUPPORTED,  // persistent-license.
       media::EmeSessionTypeSupport::
-          NOT_SUPPORTED,                        // persistent-release-message.
-      media::EmeFeatureSupport::REQUESTABLE,    // Persistent state.
-      media::EmeFeatureSupport::NOT_SUPPORTED,  // Distinctive identifier.
+          NOT_SUPPORTED,                          // persistent-release-message.
+      media::EmeFeatureSupport::REQUESTABLE,      // Persistent state.
+      media::EmeFeatureSupport::NOT_SUPPORTED));  // Distinctive identifier.
 #endif  // defined(OS_CHROMEOS)
-      concrete_key_systems);
 }
 #endif  // defined(WIDEVINE_CDM_AVAILABLE)
 #endif  // defined(ENABLE_PEPPER_CDMS)
 
-void AddChromeKeySystems(std::vector<KeySystemInfo>* key_systems_info) {
+void AddChromeKeySystemsInfo(std::vector<KeySystemInfo>* key_systems_info) {
 #if defined(ENABLE_PEPPER_CDMS)
   AddExternalClearKey(key_systems_info);
+#endif
+}
 
+void AddChromeKeySystems(
+    std::vector<std::unique_ptr<KeySystemProperties>>* key_systems_properties) {
+#if defined(ENABLE_PEPPER_CDMS)
 #if defined(WIDEVINE_CDM_AVAILABLE)
-  AddPepperBasedWidevine(key_systems_info);
+  AddPepperBasedWidevine(key_systems_properties);
 #endif  // defined(WIDEVINE_CDM_AVAILABLE)
 #endif  // defined(ENABLE_PEPPER_CDMS)
 
 #if defined(OS_ANDROID)
-  cdm::AddAndroidWidevine(key_systems_info);
+  cdm::AddAndroidWidevine(key_systems_properties);
 #endif  // defined(OS_ANDROID)
 }

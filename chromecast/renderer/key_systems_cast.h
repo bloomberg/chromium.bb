@@ -5,21 +5,20 @@
 #ifndef CHROMECAST_RENDERER_KEY_SYSTEMS_CAST_H_
 #define CHROMECAST_RENDERER_KEY_SYSTEMS_CAST_H_
 
+#include <memory>
 #include <vector>
 
 #include "media/base/key_system_info.h"
+#include "media/base/key_system_properties.h"
 
 namespace chromecast {
 namespace shell {
 
-// Adds a single key system by name.
-// TODO(gunsch): modify this API to accept specifying different supported
-// features, and/or APIs per key system type.
-void AddKeySystemWithCodecs(
-    const std::string& key_system_name,
-    std::vector<::media::KeySystemInfo>* concrete_key_systems);
-
 void AddChromecastKeySystems(
+    std::vector<std::unique_ptr<::media::KeySystemProperties>>*
+        key_systems_properties);
+
+void AddChromecastKeySystemsInfo(
     std::vector<::media::KeySystemInfo>* key_systems_info);
 
 }  // namespace shell

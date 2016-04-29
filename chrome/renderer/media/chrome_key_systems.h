@@ -5,10 +5,23 @@
 #ifndef CHROME_RENDERER_MEDIA_CHROME_KEY_SYSTEMS_H_
 #define CHROME_RENDERER_MEDIA_CHROME_KEY_SYSTEMS_H_
 
+#include <memory>
 #include <vector>
 
-#include "media/base/key_system_info.h"
+namespace media {
+struct KeySystemInfo;
+class KeySystemProperties;
+}
 
-void AddChromeKeySystems(std::vector<media::KeySystemInfo>* key_systems_info);
+// DEPRECATED: Register the key systems supported by populating
+// |key_systems_info|.  TODO(halliwell): move all key systems to
+// KeySystemProperties API.
+void AddChromeKeySystemsInfo(
+    std::vector<media::KeySystemInfo>* key_systems_info);
+
+// Register the key systems supported by populating |key_systems_properties|.
+void AddChromeKeySystems(
+    std::vector<std::unique_ptr<media::KeySystemProperties>>*
+        key_systems_properties);
 
 #endif  // CHROME_RENDERER_MEDIA_CHROME_KEY_SYSTEMS_H_

@@ -5,13 +5,15 @@
 #ifndef ANDROID_WEBVIEW_RENDERER_AW_KEY_SYSTEMS_H_
 #define ANDROID_WEBVIEW_RENDERER_AW_KEY_SYSTEMS_H_
 
+#include <memory>
 #include <vector>
 
-#include "media/base/key_system_info.h"
+#include "media/base/key_system_properties.h"
 
 namespace android_webview {
 
-void AwAddKeySystems(std::vector<media::KeySystemInfo>* key_systems_info);
+void AwAddKeySystems(std::vector<std::unique_ptr<media::KeySystemProperties>>*
+                         key_systems_properties);
 
 }  // namespace android_webview
 

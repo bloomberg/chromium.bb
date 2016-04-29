@@ -5,19 +5,22 @@
 #ifndef COMPONENTS_CDM_RENDERER_ANDROID_KEY_SYSTEMS_H_
 #define COMPONENTS_CDM_RENDERER_ANDROID_KEY_SYSTEMS_H_
 
+#include <memory>
 #include <vector>
 
-#include "media/base/key_system_info.h"
+#include "media/base/key_system_properties.h"
 
 namespace cdm {
 
 void AddAndroidWidevine(
-    std::vector<media::KeySystemInfo>* concrete_key_systems);
+    std::vector<std::unique_ptr<media::KeySystemProperties>>*
+        concrete_key_systems);
 
 // Add platform-supported key systems which are not explicitly handled
 // by Chrome.
 void AddAndroidPlatformKeySystems(
-    std::vector<media::KeySystemInfo>* concrete_key_systems);
+    std::vector<std::unique_ptr<media::KeySystemProperties>>*
+        concrete_key_systems);
 
 }  // namespace cdm
 

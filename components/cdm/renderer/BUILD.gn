@@ -4,8 +4,8 @@
 
 static_library("renderer") {
   sources = [
-    "widevine_key_systems.cc",
-    "widevine_key_systems.h",
+    "widevine_key_system_properties.cc",
+    "widevine_key_system_properties.h",
   ]
 
   if (is_android) {
