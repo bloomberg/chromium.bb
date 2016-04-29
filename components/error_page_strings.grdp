@@ -500,8 +500,8 @@
   <message name="IDS_ERRORPAGES_SUGGESTION_LEARNMORE_SUMMARY" desc="When a webpage fails to load, we provide a link to the help center to learn more about the failure.">
     <ph name="BEGIN_LINK">&lt;a jsvalues="href:learnMoreUrl"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph> about this problem.
   </message>
-  <message name="IDS_ERRORPAGES_SUGGESTION_CLEAR_COOKIES_SUMMARY" desc="The message displayed in a list of suggestions following a network error suggesting the user could try clearing their cookies. We also provide a link to the help center to learn more about the failure. The suggestions list is prefixed with 'Try:'.">
-    <ph name="BEGIN_LINK">&lt;a jsvalues="href:learnMoreUrl"&gt;</ph>Clearing your cookies<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+  <message name="IDS_ERRORPAGES_SUGGESTION_CLEAR_COOKIES_SUMMARY" desc="The message displayed following a network error suggesting the user could try clearing their cookies. We also provide a link to the help center to learn more about the failure.">
+    <ph name="BEGIN_LINK">&lt;a jsvalues="href:learnMoreUrl"&gt;</ph>Try clearing your cookies<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex>.</ph>
   </message>
   <if expr="is_ios or is_android">
     <message name="IDS_ERRORPAGES_SUGGESTION_TURN_OFF_AIRPLANE_SUMMARY" desc="When a page fails to load and the device is offline, we provide a suggestion that the user try turning off airplane mode. The suggestions list is prefixed with 'Try:'.">
@@ -514,11 +514,8 @@
       Checking the signal in your area
     </message>
   </if>
-  <message name="IDS_ERRORPAGES_SUGGESTION_CHECK_CABLES_SUMMARY" desc="The message displayed in a list of suggestions following a network error suggesting to check the network cables or router. The suggestions list is prefixed with 'Try:'.">
-    Checking the network cable or router
-  </message>
-  <message name="IDS_ERRORPAGES_SUGGESTION_RESET_HARDWARE_SUMMARY" desc="The message displayed in a list of suggestions following a network error suggesting to the reset the modem or router. The suggestions list is prefixed with 'Try:'.">
-    Resetting the modem or router
+  <message name="IDS_ERRORPAGES_SUGGESTION_CHECK_HARDWARE_SUMMARY" desc="The message displayed in a list of suggestions following a network error suggesting to check the network cables, modem, and router. The suggestions list is prefixed with 'Try:'.">
+    Checking the network cables, modem, and router
   </message>
   <message name="IDS_ERRORPAGES_SUGGESTION_CHECK_WIFI_SUMMARY" desc="The message displayed in a list of suggestions following a network error suggesting to the user to reconnect to Wi-Fi. The suggestions list is prefixed with 'Try:'.">
     Reconnecting to Wi-Fi
@@ -529,11 +526,8 @@
   <message name="IDS_ERRORPAGES_SUGGESTION_COMPLETE_SETUP_SUMMARY" desc="The message displayed asking the user to sign out and complete their device setup.">
     Sign out and complete setup
   </message>
-  <message name="IDS_ERRORPAGES_SUGGESTION_DISABLE_EXTENSION_SUMMARY" desc="When a page fails to load, we provide a suggestion that the user try disabling the extension that's blocking it. The suggestions list is prefixed with 'Try:'.">
-    Disabling your extensions
-  </message>
-  <message name="IDS_ERRORPAGES_SUGGESTION_RELOAD_SUMMARY" desc="The message displayed in a list of suggestions following a network error, suggesting the user should try reload the page. The suggestions list is prefixed with 'Try:'.">
-    Reloading the page
+  <message name="IDS_ERRORPAGES_SUGGESTION_DISABLE_EXTENSION_SUMMARY" desc="When a page fails to load, we provide a suggestion that the user try disabling the extension that's blocking it.">
+    Try disabling your extensions.
   </message>
   <message name="IDS_ERRORPAGES_SUGGESTION_GOOGLE_SEARCH_SUMMARY" desc="When a page fails to load, sometimes we suggest a specific Google search.">
     Search Google for <ph name="LINK">&lt;a jsvalues="href:searchUrl;.jstdata:$this" onclick="linkClicked(this.jstdata)" jscontent="searchTerms" id="search-link"&gt;<ex>Example search terms</ex>&lt;/a&gt;</ph>
