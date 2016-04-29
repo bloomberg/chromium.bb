@@ -44,6 +44,7 @@ const char kValueRequestDeviceAttributeUpdatePermission[] =
     "device_attribute_update_permission";
 const char kValueRequestDeviceAttributeUpdate[] = "device_attribute_update";
 const char kValueRequestGcmIdUpdate[] = "gcm_id_update";
+const char kValueRequestCheckAndroidManagement[] = "check_android_management";
 
 const char kChromeDevicePolicyType[] = "google/chromeos/device";
 #if defined(OS_CHROMEOS)

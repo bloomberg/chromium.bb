@@ -767,6 +767,8 @@
         'browser/chromeos/policy/affiliated_invalidation_service_provider.h',
         'browser/chromeos/policy/affiliated_invalidation_service_provider_impl.cc',
         'browser/chromeos/policy/affiliated_invalidation_service_provider_impl.h',
+        'browser/chromeos/policy/android_management_client.cc',
+        'browser/chromeos/policy/android_management_client.h',
         'browser/chromeos/policy/auto_enrollment_client.cc',
         'browser/chromeos/policy/auto_enrollment_client.h',
         'browser/chromeos/policy/bluetooth_policy_handler.cc',

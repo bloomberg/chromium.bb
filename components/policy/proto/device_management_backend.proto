@@ -1030,6 +1030,17 @@ message GcmIdUpdateRequest {
 // Response for GcmIdUpdateRequest, an empty message for now.
 message GcmIdUpdateResponse {}
 
+// Request from device to server to check for Android-for-Work service with
+// DPC enforcement. Must be sent only for users who are not managed in Chrome
+// OS.
+// Provide user's OAuth token with your HTTP Request.
+message CheckAndroidManagementRequest {}
+
+// Response from server to device for check for Android-for-Work service with
+// DPC enforcement request.
+// SC_CONFLICT HTTP code is returned if DPC enforcement is required.
+message CheckAndroidManagementResponse {}
+
 // Request from the DMAgent on the device to the DMServer.  This is
 // container for all requests from device to server.  The overall HTTP
 // request MUST be in the following format:
@@ -1053,13 +1064,14 @@ message GcmIdUpdateResponse {}
 //     * attribute_update_permission
 //     * attribute_update
 //     * gcm_id_update
+//     * check_android_management
 //
 //   * devicetype: MUST BE "1" for Android or "2" for Chrome OS.
 //   * apptype: MUST BE Android or Chrome.
 //   * deviceid: MUST BE no more than 64-char in [\x21-\x7E].
 //   * agent: MUST BE a string of characters.
 // * HTTP Authorization header MUST be in the following formats:
-//   * For register and ping requests
+//   * For register, ping and check_android_management requests
 //     Authorization: GoogleLogin auth=<auth cookie for Mobile Sync>
 //
 //   * For unregister, policy, status, cert_upload, remote commands requests,
@@ -1087,6 +1099,7 @@ message GcmIdUpdateResponse {}
 //   attribute_update_permission: device_attribute_update_permission_request
 //   attribute_update: device_attribute_update_request
 //   gcm_id_update: gcm_id_update_request
+//   check_android_management: check_android_management_request
 //
 message DeviceManagementRequest {
   // Register request.
@@ -1136,6 +1149,9 @@ message DeviceManagementRequest {
 
   // Update the GCM id to device_id mapping.
   optional GcmIdUpdateRequest gcm_id_update_request = 16;
+
+  // Check if user is a managed Android-for-Work user with DPC enforcement.
+  optional CheckAndroidManagementRequest check_android_management_request = 17;
 }
 
 // Response from server to device.
@@ -1203,4 +1219,8 @@ message DeviceManagementResponse {
 
   // Response to GCM id update request.
   optional GcmIdUpdateResponse gcm_id_update_response = 17;
+
+  // Response to check Android management request.
+  optional CheckAndroidManagementResponse
+      check_android_management_response = 18;
 }

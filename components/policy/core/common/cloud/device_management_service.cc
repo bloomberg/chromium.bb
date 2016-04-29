@@ -127,6 +127,8 @@ const char* JobTypeToRequestType(DeviceManagementRequestJob::JobType type) {
       return dm_protocol::kValueRequestDeviceAttributeUpdate;
     case DeviceManagementRequestJob::TYPE_GCM_ID_UPDATE:
       return dm_protocol::kValueRequestGcmIdUpdate;
+    case DeviceManagementRequestJob::TYPE_ANDROID_MANAGEMENT_CHECK:
+      return dm_protocol::kValueRequestCheckAndroidManagement;
   }
   NOTREACHED() << "Invalid job type " << type;
   return "";
