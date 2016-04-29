@@ -297,19 +297,80 @@ void LayoutBlockFlow::clearShouldBreakAtLineToAvoidWidow() const
 
 bool LayoutBlockFlow::isSelfCollapsingBlock() const
 {
-    m_hasOnlySelfCollapsingChildren = LayoutBlock::isSelfCollapsingBlock();
-    return m_hasOnlySelfCollapsingChildren;
+    if (needsLayout()) {
+        // Sometimes we don't lay out objects in DOM order (column spanners being one such relevant
+        // type of object right here). As long as the object in question establishes a new
+        // formatting context, that's nothing to worry about, though.
+        ASSERT(createsNewFormattingContext());
+        return false;
+    }
+    ASSERT(!m_isSelfCollapsing == !checkIfIsSelfCollapsingBlock());
+    return m_isSelfCollapsing;
+}
+
+bool LayoutBlockFlow::checkIfIsSelfCollapsingBlock() const
+{
+    // We are not self-collapsing if we
+    // (a) have a non-zero height according to layout (an optimization to avoid wasting time)
+    // (b) have border/padding,
+    // (c) have a min-height
+    // (d) have specified that one of our margins can't collapse using a CSS extension
+    // (e) establish a new block formatting context.
+
+    // The early exit must be done before we check for clean layout.
+    // We should be able to give a quick answer if the box is a relayout boundary.
+    // Being a relayout boundary implies a block formatting context, and also
+    // our internal layout shouldn't affect our container in any way.
+    if (createsNewFormattingContext())
+        return false;
+
+    // Placeholder elements are not laid out until the dimensions of their parent text control are known, so they
+    // don't get layout until their parent has had layout - this is unique in the layout tree and means
+    // when we call isSelfCollapsingBlock on them we find that they still need layout.
+    ASSERT(!needsLayout() || (node() && node()->isElementNode() && toElement(node())->shadowPseudoId() == "-webkit-input-placeholder"));
+
+    if (logicalHeight() > LayoutUnit()
+        || borderAndPaddingLogicalHeight()
+        || style()->logicalMinHeight().isPositive()
+        || style()->marginBeforeCollapse() == MarginCollapseSeparate || style()->marginAfterCollapse() == MarginCollapseSeparate)
+        return false;
+
+    Length logicalHeightLength = style()->logicalHeight();
+    bool hasAutoHeight = logicalHeightLength.isAuto();
+    if (logicalHeightLength.hasPercent() && !document().inQuirksMode()) {
+        hasAutoHeight = true;
+        for (LayoutBlock* cb = containingBlock(); !cb->isLayoutView(); cb = cb->containingBlock()) {
+            if (cb->style()->logicalHeight().isFixed() || cb->isTableCell())
+                hasAutoHeight = false;
+        }
+    }
+
+    // If the height is 0 or auto, then whether or not we are a self-collapsing block depends
+    // on whether we have content that is all self-collapsing or not.
+    // TODO(alancutter): Make this work correctly for calc lengths.
+    if (hasAutoHeight || ((logicalHeightLength.isFixed() || logicalHeightLength.hasPercent()) && logicalHeightLength.isZero())) {
+        // If the block has inline children, see if we generated any line boxes.  If we have any
+        // line boxes, then we can't be self-collapsing, since we have content.
+        if (childrenInline())
+            return !firstLineBox();
+
+        // Whether or not we collapse is dependent on whether all our normal flow children
+        // are also self-collapsing.
+        for (LayoutBox* child = firstChildBox(); child; child = child->nextSiblingBox()) {
+            if (child->isFloatingOrOutOfFlowPositioned())
+                continue;
+            if (!child->isSelfCollapsingBlock())
+                return false;
+        }
+        return true;
+    }
+    return false;
 }
 
 void LayoutBlockFlow::layoutBlock(bool relayoutChildren)
 {
     ASSERT(needsLayout());
     ASSERT(isInlineBlockOrInlineTable() || !isInline());
-
-    // If we are self-collapsing with self-collapsing descendants this will get set to save us burrowing through our
-    // descendants every time in |isSelfCollapsingBlock|. We reset it here so that |isSelfCollapsingBlock| attempts to burrow
-    // at least once and so that it always gives a reliable result reflecting the latest layout.
-    m_hasOnlySelfCollapsingChildren = false;
 
     if (!relayoutChildren && simplifiedLayout())
         return;
@@ -347,6 +408,7 @@ void LayoutBlockFlow::layoutBlock(bool relayoutChildren)
         positionDialog();
 
     clearNeedsLayout();
+    m_isSelfCollapsing = checkIfIsSelfCollapsingBlock();
 }
 
 inline bool LayoutBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit &pageLogicalHeight, SubtreeLayoutScope& layoutScope)

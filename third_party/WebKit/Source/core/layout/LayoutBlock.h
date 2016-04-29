@@ -405,8 +405,6 @@ private:
 
     void addChildIgnoringContinuation(LayoutObject* newChild, LayoutObject* beforeChild) override;
 
-    bool isSelfCollapsingBlock() const override;
-
     TrackedLayoutBoxListHashSet* positionedObjectsInternal() const;
     TrackedLayoutBoxListHashSet* percentHeightDescendantsInternal() const;
 
@@ -501,7 +499,7 @@ protected:
     unsigned m_hasMarkupTruncation : 1;
     unsigned m_widthAvailableToChildrenChanged  : 1;
     unsigned m_heightAvailableToChildrenChanged  : 1;
-    mutable unsigned m_hasOnlySelfCollapsingChildren : 1;
+    unsigned m_isSelfCollapsing : 1; // True if margin-before and margin-after are adjoining.
     mutable unsigned m_descendantsWithFloatsMarkedForLayout : 1;
 
     unsigned m_hasPositionedObjects : 1;

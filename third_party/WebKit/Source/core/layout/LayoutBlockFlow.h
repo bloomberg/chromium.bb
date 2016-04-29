@@ -561,6 +561,7 @@ private:
     LayoutUnit m_paintInvalidationLogicalBottom;
 
     bool isSelfCollapsingBlock() const override;
+    bool checkIfIsSelfCollapsingBlock() const;
 
 protected:
     OwnPtr<LayoutBlockFlowRareData> m_rareData;
