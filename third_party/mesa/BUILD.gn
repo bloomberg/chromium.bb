@@ -745,9 +745,13 @@ loadable_module("osmesa") {
     ":mesa",
     ":mesa_headers",
     ":mesa_libglslcommon",
-    "//base",  # Required for the allocator implementation.
     "//build/config/sanitizers:deps",
   ]
+
+  # Required for the allocator implementation, which is not used on Mac.
+  if (!is_mac) {
+    deps += [ "//base" ]
+  }
 
   if (is_win) {
     defines = [
