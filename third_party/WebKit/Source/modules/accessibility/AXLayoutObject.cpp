@@ -1417,7 +1417,7 @@ AXObject* AXLayoutObject::accessibilityHitTest(const IntPoint& point) const
     Node* node = hitTestResult.innerNode();
 
     // MediaDocument has a special shadow root for displaying the save button.
-    bool allowNodeInShadowTree = node->ownerDocument()->isMediaDocument() && RuntimeEnabledFeatures::mediaDocumentDownloadButtonEnabled();
+    bool allowNodeInShadowTree = node->document().isMediaDocument() && RuntimeEnabledFeatures::mediaDocumentDownloadButtonEnabled();
 
     // Allow the hit test to return media control buttons.
     if (node->isInShadowTree() && (!isHTMLInputElement(*node) || !node->isMediaControlElement()) && !allowNodeInShadowTree)
