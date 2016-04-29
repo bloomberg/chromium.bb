@@ -34,6 +34,7 @@ class MockContentSettingsClient : public blink::WebContentSettingsClient {
   bool allowRunningInsecureContent(bool enabledPerSettings,
                                    const blink::WebSecurityOrigin&,
                                    const blink::WebURL&) override;
+  bool allowAutoplay(bool defaultValue) override;
 
   void SetDelegate(WebTestDelegate*);
 

@@ -114,6 +114,7 @@ class TEST_RUNNER_EXPORT LayoutTestRuntimeFlags {
   DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(running_insecure_content_allowed)
   DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(
       dump_web_content_settings_client_callbacks)
+  DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(autoplay_allowed)
 
   // If true, the test_shell will write a descriptive line for each editing
   // command.

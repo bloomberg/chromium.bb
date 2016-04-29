@@ -405,6 +405,7 @@ class TestRunner : public WebTestRunner {
   void SetPluginsAllowed(bool allowed);
   void SetAllowDisplayOfInsecureContent(bool allowed);
   void SetAllowRunningOfInsecureContent(bool allowed);
+  void SetAutoplayAllowed(bool allowed);
   void DumpPermissionClientCallbacks();
 
   // This function sets a flag that tells the test_shell to dump all calls

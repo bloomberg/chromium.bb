@@ -200,6 +200,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void SetAllowDisplayOfInsecureContent(bool allowed);
   void SetAllowFileAccessFromFileURLs(bool allow);
   void SetAllowRunningOfInsecureContent(bool allowed);
+  void SetAutoplayAllowed(bool allowed);
   void SetAllowUniversalAccessFromFileURLs(bool allow);
   void SetAlwaysAcceptCookies(bool accept);
   void SetAudioData(const gin::ArrayBufferView& view);
@@ -499,6 +500,8 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::SetAllowFileAccessFromFileURLs)
       .SetMethod("setAllowRunningOfInsecureContent",
                  &TestRunnerBindings::SetAllowRunningOfInsecureContent)
+      .SetMethod("setAutoplayAllowed",
+                 &TestRunnerBindings::SetAutoplayAllowed)
       .SetMethod("setAllowUniversalAccessFromFileURLs",
                  &TestRunnerBindings::SetAllowUniversalAccessFromFileURLs)
       .SetMethod("setAlwaysAcceptCookies",
@@ -1141,6 +1144,11 @@ void TestRunnerBindings::SetAllowDisplayOfInsecureContent(bool allowed) {
 void TestRunnerBindings::SetAllowRunningOfInsecureContent(bool allowed) {
   if (runner_)
     runner_->SetAllowRunningOfInsecureContent(allowed);
+}
+
+void TestRunnerBindings::SetAutoplayAllowed(bool allowed) {
+  if (runner_)
+    runner_->SetAutoplayAllowed(allowed);
 }
 
 void TestRunnerBindings::DumpPermissionClientCallbacks() {
@@ -2808,6 +2816,11 @@ void TestRunner::SetAllowDisplayOfInsecureContent(bool allowed) {
 
 void TestRunner::SetAllowRunningOfInsecureContent(bool allowed) {
   layout_test_runtime_flags_.set_running_insecure_content_allowed(allowed);
+  OnLayoutTestRuntimeFlagsChanged();
+}
+
+void TestRunner::SetAutoplayAllowed(bool allowed) {
+  layout_test_runtime_flags_.set_autoplay_allowed(allowed);
   OnLayoutTestRuntimeFlagsChanged();
 }
 

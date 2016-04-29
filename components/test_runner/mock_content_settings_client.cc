@@ -21,9 +21,10 @@ bool MockContentSettingsClient::allowImage(bool enabled_per_settings,
                                            const blink::WebURL& image_url) {
   bool allowed = enabled_per_settings && flags_->images_allowed();
   if (flags_->dump_web_content_settings_client_callbacks() && delegate_) {
-    delegate_->PrintMessage(std::string("PERMISSION CLIENT: allowImage(") +
-                            NormalizeLayoutTestURL(image_url.string().utf8()) +
-                            "): " + (allowed ? "true" : "false") + "\n");
+    delegate_->PrintMessage(
+        std::string("MockContentSettingsClient: allowImage(") +
+        NormalizeLayoutTestURL(image_url.string().utf8()) +
+        "): " + (allowed ? "true" : "false") + "\n");
   }
   return allowed;
 }
@@ -31,9 +32,10 @@ bool MockContentSettingsClient::allowImage(bool enabled_per_settings,
 bool MockContentSettingsClient::allowMedia(const blink::WebURL& image_url) {
   bool allowed = flags_->media_allowed();
   if (flags_->dump_web_content_settings_client_callbacks() && delegate_)
-    delegate_->PrintMessage(std::string("PERMISSION CLIENT: allowMedia(") +
-                            NormalizeLayoutTestURL(image_url.string().utf8()) +
-                            "): " + (allowed ? "true" : "false") + "\n");
+    delegate_->PrintMessage(
+        std::string("MockContentSettingsClient: allowMedia(") +
+        NormalizeLayoutTestURL(image_url.string().utf8()) +
+        "): " + (allowed ? "true" : "false") + "\n");
   return allowed;
 }
 
@@ -43,7 +45,7 @@ bool MockContentSettingsClient::allowScriptFromSource(
   bool allowed = enabled_per_settings && flags_->scripts_allowed();
   if (flags_->dump_web_content_settings_client_callbacks() && delegate_) {
     delegate_->PrintMessage(
-        std::string("PERMISSION CLIENT: allowScriptFromSource(") +
+        std::string("MockContentSettingsClient: allowScriptFromSource(") +
         NormalizeLayoutTestURL(scriptURL.string().utf8()) + "): " +
         (allowed ? "true" : "false") + "\n");
   }
@@ -69,6 +71,10 @@ bool MockContentSettingsClient::allowRunningInsecureContent(
     const blink::WebSecurityOrigin&,
     const blink::WebURL&) {
   return enabled_per_settings || flags_->running_insecure_content_allowed();
+}
+
+bool MockContentSettingsClient::allowAutoplay(bool defaultValue) {
+  return defaultValue || flags_->autoplay_allowed();
 }
 
 void MockContentSettingsClient::SetDelegate(WebTestDelegate* delegate) {

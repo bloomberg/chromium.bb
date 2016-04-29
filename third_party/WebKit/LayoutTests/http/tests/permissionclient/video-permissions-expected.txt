@@ -1,5 +1,5 @@
-PERMISSION CLIENT: allowMedia(http://127.0.0.1:8000/permissionclient/resources/redir.php?url=http://127.0.0.1:8000/media/resources/test.ogv): true
-PERMISSION CLIENT: allowMedia(http://127.0.0.1:8000/media/resources/test.ogv): true
+MockContentSettingsClient: allowMedia(http://127.0.0.1:8000/permissionclient/resources/redir.php?url=http://127.0.0.1:8000/media/resources/test.ogv): true
+MockContentSettingsClient: allowMedia(http://127.0.0.1:8000/media/resources/test.ogv): true
 This test checks that all URLs in a redirect chain are passed to the PermissionClient.
 
 PASS: video loaded

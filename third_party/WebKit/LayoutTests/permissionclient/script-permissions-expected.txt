@@ -1,2 +1,2 @@
-PERMISSION CLIENT: allowScriptFromSource((file test):permissionclient/resources/script.js): false
+MockContentSettingsClient: allowScriptFromSource((file test):permissionclient/resources/script.js): false
 
