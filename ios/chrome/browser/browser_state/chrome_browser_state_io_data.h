@@ -134,6 +134,10 @@ class ChromeBrowserStateIOData {
     AppRequestContext();
 
     void SetCookieStore(std::unique_ptr<net::CookieStore> cookie_store);
+    void SetChannelIDService(
+        std::unique_ptr<net::ChannelIDService> channel_id_service);
+    void SetHttpNetworkSession(
+        std::unique_ptr<net::HttpNetworkSession> http_network_session);
     void SetHttpTransactionFactory(
         std::unique_ptr<net::HttpTransactionFactory> http_factory);
     void SetJobFactory(std::unique_ptr<net::URLRequestJobFactory> job_factory);
@@ -142,6 +146,8 @@ class ChromeBrowserStateIOData {
 
    private:
     std::unique_ptr<net::CookieStore> cookie_store_;
+    std::unique_ptr<net::ChannelIDService> channel_id_service_;
+    std::unique_ptr<net::HttpNetworkSession> http_network_session_;
     std::unique_ptr<net::HttpTransactionFactory> http_factory_;
     std::unique_ptr<net::URLRequestJobFactory> job_factory_;
   };
