@@ -8,6 +8,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "modules/webaudio/AudioBasicProcessorHandler.h"
+#include "platform/Histogram.h"
 
 namespace blink {
 
@@ -17,6 +18,13 @@ IIRFilterNode::IIRFilterNode(AbstractAudioContext& context, float sampleRate, co
     setHandler(AudioBasicProcessorHandler::create(
         AudioHandler::NodeTypeIIRFilter, *this, sampleRate,
         adoptPtr(new IIRProcessor(sampleRate, 1, feedforwardCoef, feedbackCoef))));
+
+    // Histogram of the IIRFilter order.  createIIRFilter ensures that the length of |feedbackCoef|
+    // is in the range [1, IIRFilter::kMaxOrder + 1].  The order is one less than the length of this
+    // vector.
+    DEFINE_STATIC_LOCAL(SparseHistogram, filterOrderHistogram, ("WebAudio.IIRFilterNode.Order"));
+
+    filterOrderHistogram.sample(feedbackCoef.size() - 1);
 }
 
 DEFINE_TRACE(IIRFilterNode)

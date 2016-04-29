@@ -58376,6 +58376,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebAudio.IIRFilterNode.Order">
+  <owner>rtoy@chromium.org</owner>
+  <owner>hongchan@chromium.org</owner>
+  <summary>
+    The order of the WebAudio IIRFilterNode.  The order is one less than the
+    number of feedback coefficients used in the denominator of the IIRFilter
+    transfer function.  Recorded each time an IIRFilter is constructed.
+  </summary>
+</histogram>
+
 <histogram name="WebController.CertVerificationErrorsCacheHit"
     enum="BooleanCacheHit">
   <owner>eugenebut@chromium.org</owner>
