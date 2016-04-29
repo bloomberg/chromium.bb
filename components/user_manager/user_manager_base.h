@@ -86,6 +86,7 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   bool IsCurrentUserOwner() const override;
   bool IsCurrentUserNew() const override;
   bool IsCurrentUserNonCryptohomeDataEphemeral() const override;
+  bool IsCurrentUserCryptohomeDataEphemeral() const override;
   bool CanCurrentUserLock() const override;
   bool IsUserLoggedIn() const override;
   bool IsLoggedInAsUserWithGaiaAccount() const override;
@@ -97,6 +98,8 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   bool IsLoggedInAsStub() const override;
   bool IsSessionStarted() const override;
   bool IsUserNonCryptohomeDataEphemeral(
+      const AccountId& account_id) const override;
+  bool IsUserCryptohomeDataEphemeral(
       const AccountId& account_id) const override;
   void AddObserver(UserManager::Observer* obs) override;
   void RemoveObserver(UserManager::Observer* obs) override;

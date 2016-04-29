@@ -230,6 +230,12 @@ void ArcAuthService::OnPrimaryUserProfilePrepared(Profile* profile) {
     return;
   }
 
+  if (user_manager::UserManager::Get()
+          ->IsCurrentUserCryptohomeDataEphemeral()) {
+    VLOG(2) << "Users with ephemeral data are not supported in Arc.";
+    return;
+  }
+
   profile_ = profile;
   PrefServiceSyncableFromProfile(profile_)->AddSyncedPrefObserver(
       prefs::kArcEnabled, this);

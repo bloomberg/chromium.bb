@@ -139,9 +139,16 @@ void FakeChromeUserManager::SwitchActiveUser(const AccountId& account_id) {
   ProfileHelper::Get()->ActiveUserHashChanged(
       ProfileHelper::GetUserIdHashByUserIdForTesting(
           account_id.GetUserEmail()));
+  active_user_ = nullptr;
   if (!users_.empty() && active_account_id_.is_valid()) {
-    for (user_manager::User* user : users_)
-      user->set_is_active(user->GetAccountId() == active_account_id_);
+    for (user_manager::User* const user : users_) {
+      if (user->GetAccountId() == active_account_id_) {
+        active_user_ = user;
+        user->set_is_active(true);
+      } else {
+        user->set_is_active(false);
+      }
+    }
   }
 }
 

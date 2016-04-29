@@ -538,6 +538,12 @@ bool UserManagerBase::IsCurrentUserNonCryptohomeDataEphemeral() const {
          IsUserNonCryptohomeDataEphemeral(GetLoggedInUser()->GetAccountId());
 }
 
+bool UserManagerBase::IsCurrentUserCryptohomeDataEphemeral() const {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+  return IsUserLoggedIn() &&
+         IsUserCryptohomeDataEphemeral(GetActiveUser()->GetAccountId());
+}
+
 bool UserManagerBase::CanCurrentUserLock() const {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
   return IsUserLoggedIn() && active_user_->can_lock();
@@ -619,6 +625,30 @@ bool UserManagerBase::IsUserNonCryptohomeDataEphemeral(
   //    - or -
   // b) The browser is restarting after a crash.
   return AreEphemeralUsersEnabled() || HasBrowserRestarted();
+}
+
+bool UserManagerBase::IsUserCryptohomeDataEphemeral(
+    const AccountId& account_id) const {
+  // Don't consider stub users data as ephemeral.
+  if (IsStubAccountId(account_id))
+    return false;
+
+  // Data belonging to the guest and demo users is always ephemeral.
+  if (IsGuestAccountId(account_id) || IsDemoApp(account_id))
+    return true;
+
+  // Data belonging to the public accounts is always ephemeral.
+  const User* user = FindUser(account_id);
+  if (user && user->GetType() == USER_TYPE_PUBLIC_ACCOUNT)
+    return true;
+
+  // Ephemeral users.
+  if (user && user->GetType() == USER_TYPE_REGULAR &&
+      FindUserInList(account_id) == nullptr) {
+    return true;
+  }
+
+  return false;
 }
 
 void UserManagerBase::AddObserver(UserManager::Observer* obs) {

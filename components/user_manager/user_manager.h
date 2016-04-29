@@ -269,6 +269,10 @@ class USER_MANAGER_EXPORT UserManager {
   // display email) is ephemeral.
   virtual bool IsCurrentUserNonCryptohomeDataEphemeral() const = 0;
 
+  // Returns true if data stored or cached for the current user inside that
+  // user's cryptohome is ephemeral.
+  virtual bool IsCurrentUserCryptohomeDataEphemeral() const = 0;
+
   // Returns true if the current user's session can be locked (i.e. the user has
   // a password with which to unlock the session).
   virtual bool CanCurrentUserLock() const = 0;
@@ -307,6 +311,9 @@ class USER_MANAGER_EXPORT UserManager {
   // address outside that user's cryptohome (wallpaper, avatar, OAuth token
   // status, display name, display email) is to be treated as ephemeral.
   virtual bool IsUserNonCryptohomeDataEphemeral(
+      const AccountId& account_id) const = 0;
+
+  virtual bool IsUserCryptohomeDataEphemeral(
       const AccountId& account_id) const = 0;
 
   virtual void AddObserver(Observer* obs) = 0;

@@ -15,11 +15,13 @@
 #include "chrome/browser/chromeos/arc/arc_auth_service.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
+#include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/login/user_names.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/test/fake_arc_bridge_service.h"
 #include "components/prefs/pref_service.h"
@@ -74,6 +76,8 @@ class ArcAuthServiceTest : public testing::Test {
         AccountId::FromUserEmailGaiaId("user@gmail.com", "1234567890"));
     GetFakeUserManager()->AddUser(account_id);
     GetFakeUserManager()->LoginUser(account_id);
+
+    chromeos::WallpaperManager::Initialize();
   }
 
   void TearDown() override {}
@@ -122,6 +126,43 @@ TEST_F(ArcAuthServiceTest, PrefChangeTriggersService) {
   ASSERT_EQ(ArcAuthService::State::FETCHING_CODE, auth_service()->state());
 
   pref->SetBoolean(prefs::kArcEnabled, false);
+  ASSERT_EQ(ArcAuthService::State::STOPPED, auth_service()->state());
+
+  // Correctly stop service.
+  auth_service()->Shutdown();
+}
+
+TEST_F(ArcAuthServiceTest, DisabledForEphemeralDataUsers) {
+  PrefService* const prefs = profile()->GetPrefs();
+  EXPECT_FALSE(prefs->GetBoolean(prefs::kArcSignedIn));
+  prefs->SetBoolean(prefs::kArcEnabled, true);
+
+  chromeos::FakeChromeUserManager* const fake_user_manager =
+      GetFakeUserManager();
+
+  fake_user_manager->AddUser(fake_user_manager->GetGuestAccountId());
+  fake_user_manager->SwitchActiveUser(fake_user_manager->GetGuestAccountId());
+  auth_service()->OnPrimaryUserProfilePrepared(profile());
+  ASSERT_EQ(ArcAuthService::State::STOPPED, auth_service()->state());
+
+  fake_user_manager->AddUser(chromeos::login::DemoAccountId());
+  fake_user_manager->SwitchActiveUser(chromeos::login::DemoAccountId());
+  auth_service()->OnPrimaryUserProfilePrepared(profile());
+  ASSERT_EQ(ArcAuthService::State::STOPPED, auth_service()->state());
+
+  const AccountId public_account_id(
+      AccountId::FromUserEmail("public_user@gmail.com"));
+  fake_user_manager->AddPublicAccountUser(public_account_id);
+  fake_user_manager->SwitchActiveUser(public_account_id);
+  auth_service()->OnPrimaryUserProfilePrepared(profile());
+  ASSERT_EQ(ArcAuthService::State::STOPPED, auth_service()->state());
+
+  const AccountId not_in_list_account_id(
+      AccountId::FromUserEmail("not_in_list_user@gmail.com"));
+  fake_user_manager->AddUser(not_in_list_account_id);
+  fake_user_manager->SwitchActiveUser(not_in_list_account_id);
+  fake_user_manager->RemoveUserFromList(not_in_list_account_id);
+  auth_service()->OnPrimaryUserProfilePrepared(profile());
   ASSERT_EQ(ArcAuthService::State::STOPPED, auth_service()->state());
 
   // Correctly stop service.

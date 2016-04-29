@@ -1091,8 +1091,9 @@ void BrowserOptionsHandler::InitializePage() {
   if (arc::ArcBridgeService::GetEnabled(
           base::CommandLine::ForCurrentProcess()) &&
       !arc::ArcAuthService::IsOptInVerificationDisabled() &&
-      !profile->IsLegacySupervised() &&
-      user->HasGaiaAccount()) {
+      !profile->IsLegacySupervised() && user->HasGaiaAccount() &&
+      !user_manager::UserManager::Get()
+           ->IsCurrentUserCryptohomeDataEphemeral()) {
     web_ui()->CallJavascriptFunction("BrowserOptions.showAndroidAppsSection");
   }
   OnSystemTimezoneAutomaticDetectionPolicyChanged();

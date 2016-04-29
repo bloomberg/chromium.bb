@@ -59,7 +59,8 @@ void FakeUserManager::RemoveUserFromList(const AccountId& account_id) {
   while (it != users_.end() && (*it)->GetEmail() != account_id.GetUserEmail())
     ++it;
   if (it != users_.end()) {
-    delete *it;
+    if (active_user_ != *it)
+      delete *it;
     users_.erase(it);
   }
 }
@@ -101,6 +102,9 @@ void FakeUserManager::UserLoggedIn(const AccountId& account_id,
 }
 
 user_manager::User* FakeUserManager::GetActiveUserInternal() const {
+  if (active_user_ != nullptr)
+    return active_user_;
+
   if (!users_.empty()) {
     if (active_account_id_.is_valid()) {
       for (user_manager::UserList::const_iterator it = users_.begin();
@@ -155,14 +159,16 @@ bool FakeUserManager::IsKnownUser(const AccountId& account_id) const {
 
 const user_manager::User* FakeUserManager::FindUser(
     const AccountId& account_id) const {
+  if (active_user_ != nullptr && active_user_->GetAccountId() == account_id)
+    return active_user_;
+
   const user_manager::UserList& users = GetUsers();
   for (user_manager::UserList::const_iterator it = users.begin();
        it != users.end(); ++it) {
-    // TODO (alemate): Chenge this to GetAccountId(), once a real AccountId is
-    // passed. crbug.com/546876
-    if ((*it)->GetEmail() == account_id.GetUserEmail())
+    if ((*it)->GetAccountId() == account_id)
       return *it;
   }
+
   return nullptr;
 }
 
@@ -271,7 +277,7 @@ bool FakeUserManager::IsEnterpriseManaged() const {
 }
 
 bool FakeUserManager::IsDemoApp(const AccountId& account_id) const {
-  return false;
+  return account_id == chromeos::login::DemoAccountId();
 }
 
 bool FakeUserManager::IsDeviceLocalAccountMarkedForRemoval(
