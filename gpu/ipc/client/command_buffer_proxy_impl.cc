@@ -427,7 +427,7 @@ int32_t CommandBufferProxyImpl::CreateImage(ClientBuffer buffer,
     image_fence_sync = GenerateFenceSyncRelease();
 
     // Make sure fence syncs were flushed before CreateImage() was called.
-    DCHECK_LE(image_fence_sync - 1, flushed_fence_sync_release_);
+    DCHECK_EQ(image_fence_sync, flushed_fence_sync_release_ + 1);
   }
 
   DCHECK(gpu::IsGpuMemoryBufferFormatSupported(gpu_memory_buffer->GetFormat(),
@@ -529,14 +529,17 @@ int32_t CommandBufferProxyImpl::GetExtraCommandBufferData() const {
 }
 
 uint64_t CommandBufferProxyImpl::GenerateFenceSyncRelease() {
+  CheckLock();
   return next_fence_sync_release_++;
 }
 
 bool CommandBufferProxyImpl::IsFenceSyncRelease(uint64_t release) {
+  CheckLock();
   return release != 0 && release < next_fence_sync_release_;
 }
 
 bool CommandBufferProxyImpl::IsFenceSyncFlushed(uint64_t release) {
+  CheckLock();
   return release != 0 && release <= flushed_fence_sync_release_;
 }
 

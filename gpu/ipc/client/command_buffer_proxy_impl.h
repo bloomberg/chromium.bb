@@ -21,6 +21,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/threading/thread_checker.h"
 #include "gpu/command_buffer/client/gpu_control.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/common/command_buffer_id.h"
@@ -157,8 +158,11 @@ class GPU_EXPORT CommandBufferProxyImpl
   typedef base::hash_map<uint32_t, base::Closure> SignalTaskMap;
 
   void CheckLock() {
-    if (lock_)
+    if (lock_) {
       lock_->AssertAcquired();
+    } else {
+      DCHECK(lockless_thread_checker_.CalledOnValidThread());
+    }
   }
 
   // Send an IPC message over the GPU channel. This is private to fully
@@ -196,7 +200,11 @@ class GPU_EXPORT CommandBufferProxyImpl
   // The shared memory area used to update state.
   gpu::CommandBufferSharedState* shared_state() const;
 
+  // There should be a lock_ if this is going to be used across multiple
+  // threads, or we guarantee it is used by a single thread by using a thread
+  // checker if no lock_ is set.
   base::Lock* lock_;
+  base::ThreadChecker lockless_thread_checker_;
 
   // Client that wants to listen for important events on the GpuControl.
   gpu::GpuControlClient* gpu_control_client_;
