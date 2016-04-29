@@ -39,7 +39,12 @@ class ASH_EXPORT WmGlobalsAura : public WmGlobals,
   void LockCursor() override;
   void UnlockCursor() override;
   std::vector<WmWindow*> GetAllRootWindows() override;
-  UserMetricsRecorder* GetUserMetricsRecorder() override;
+  void RecordUserMetricsAction(WmUserMetricsAction action) override;
+  std::unique_ptr<WindowResizer> CreateDragWindowResizer(
+      std::unique_ptr<WindowResizer> next_window_resizer,
+      wm::WindowState* window_state) override;
+  bool IsOverviewModeSelecting() override;
+  bool IsOverviewModeRestoringMinimizedWindows() override;
   void AddActivationObserver(WmActivationObserver* observer) override;
   void RemoveActivationObserver(WmActivationObserver* observer) override;
   void AddDisplayObserver(WmDisplayObserver* observer) override;

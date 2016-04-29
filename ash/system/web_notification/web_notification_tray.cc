@@ -19,6 +19,7 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_utils.h"
 #include "ash/system/web_notification/ash_popup_alignment_delegate.h"
+#include "ash/wm/common/shelf/wm_shelf_util.h"
 #include "base/auto_reset.h"
 #include "base/i18n/number_formatting.h"
 #include "base/i18n/rtl.h"
@@ -223,7 +224,7 @@ bool WebNotificationTray::ShowMessageCenterInternal(bool show_settings) {
   // Assume the status area and bubble bottoms are aligned when vertical.
   aura::Window* status_area_window = status_area_widget()->GetNativeView();
   const int max_height =
-      IsHorizontalAlignment(GetShelfLayoutManager()->GetAlignment())
+      wm::IsHorizontalAlignment(GetShelfLayoutManager()->GetAlignment())
           ? GetShelfLayoutManager()->GetIdealBounds().y()
           : status_area_window->GetBoundsInRootWindow().bottom();
 

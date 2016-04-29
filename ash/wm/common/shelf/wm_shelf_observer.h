@@ -6,7 +6,6 @@
 #define ASH_WM_COMMON_SHELF_WM_SHELF_OBSERVER_H_
 
 #include "ash/ash_export.h"
-// TODO(sky): refactor into common.
 #include "ash/wm/common/background_animator.h"
 #include "ash/wm/common/shelf/wm_shelf_types.h"
 
@@ -20,6 +19,8 @@ class ASH_EXPORT WmShelfObserver {
  public:
   virtual void OnBackgroundUpdated(ShelfBackgroundType background_type,
                                    BackgroundAnimatorChangeType change_type) {}
+  virtual void WillChangeVisibilityState(ShelfVisibilityState new_state) {}
+  virtual void OnShelfIconPositionsChanged() {}
 
  protected:
   virtual ~WmShelfObserver() {}

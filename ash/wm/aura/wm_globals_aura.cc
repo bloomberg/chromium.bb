@@ -12,8 +12,11 @@
 #include "ash/wm/common/wm_activation_observer.h"
 #include "ash/wm/common/wm_display_observer.h"
 #include "ash/wm/common/wm_overview_mode_observer.h"
+#include "ash/wm/drag_window_resizer.h"
 #include "ash/wm/mru_window_tracker.h"
+#include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/window_util.h"
+#include "base/memory/ptr_util.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/wm/public/activation_client.h"
 
@@ -109,8 +112,29 @@ std::vector<WmWindow*> WmGlobalsAura::GetAllRootWindows() {
   return wm_windows;
 }
 
-UserMetricsRecorder* WmGlobalsAura::GetUserMetricsRecorder() {
-  return Shell::GetInstance()->metrics();
+void WmGlobalsAura::RecordUserMetricsAction(WmUserMetricsAction action) {
+  return Shell::GetInstance()->metrics()->RecordUserMetricsAction(action);
+}
+
+std::unique_ptr<WindowResizer> WmGlobalsAura::CreateDragWindowResizer(
+    std::unique_ptr<WindowResizer> next_window_resizer,
+    wm::WindowState* window_state) {
+  return base::WrapUnique(
+      DragWindowResizer::Create(next_window_resizer.release(), window_state));
+}
+
+bool WmGlobalsAura::IsOverviewModeSelecting() {
+  WindowSelectorController* window_selector_controller =
+      Shell::GetInstance()->window_selector_controller();
+  return window_selector_controller &&
+         window_selector_controller->IsSelecting();
+}
+
+bool WmGlobalsAura::IsOverviewModeRestoringMinimizedWindows() {
+  WindowSelectorController* window_selector_controller =
+      Shell::GetInstance()->window_selector_controller();
+  return window_selector_controller &&
+         window_selector_controller->IsRestoringMinimizedWindows();
 }
 
 void WmGlobalsAura::AddActivationObserver(WmActivationObserver* observer) {

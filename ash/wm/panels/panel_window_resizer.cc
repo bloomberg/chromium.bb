@@ -4,20 +4,16 @@
 
 #include "ash/wm/panels/panel_window_resizer.h"
 
-#include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_types.h"
-#include "ash/shelf/shelf_widget.h"
-#include "ash/shell_window_ids.h"
-#include "ash/wm/aura/wm_window_aura.h"
+#include "ash/wm/common/shelf/wm_shelf.h"
 #include "ash/wm/common/window_parenting_utils.h"
 #include "ash/wm/common/window_state.h"
 #include "ash/wm/common/wm_root_window_controller.h"
+#include "ash/wm/common/wm_shell_window_ids.h"
 #include "ash/wm/common/wm_window.h"
 #include "ash/wm/panels/panel_layout_manager.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/display/screen.h"
-#include "ui/views/widget/widget.h"
 
 namespace ash {
 
@@ -122,10 +118,8 @@ bool PanelWindowResizer::AttachToLauncher(const gfx::Rect& bounds,
     PanelLayoutManager* panel_layout_manager =
         PanelLayoutManager::Get(panel_container_);
     gfx::Rect launcher_bounds = GetTarget()->GetParent()->ConvertRectFromScreen(
-        panel_layout_manager->shelf()
-            ->shelf_widget()
-            ->GetWindowBoundsInScreen());
-    switch (panel_layout_manager->shelf()->alignment()) {
+        panel_layout_manager->shelf()->GetWindow()->GetBoundsInScreen());
+    switch (panel_layout_manager->shelf()->GetAlignment()) {
       case wm::SHELF_ALIGNMENT_BOTTOM:
       case wm::SHELF_ALIGNMENT_BOTTOM_LOCKED:
         if (bounds.bottom() >= (launcher_bounds.y() -
@@ -202,8 +196,7 @@ void PanelWindowResizer::UpdateLauncherPosition() {
   if (panel_container_) {
     PanelLayoutManager::Get(panel_container_)
         ->shelf()
-        ->UpdateIconPositionForWindow(
-            wm::WmWindowAura::GetAuraWindow(GetTarget()));
+        ->UpdateIconPositionForWindow(GetTarget());
   }
 }
 

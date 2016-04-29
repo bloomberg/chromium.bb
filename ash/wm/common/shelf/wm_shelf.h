@@ -8,6 +8,10 @@
 #include "ash/ash_export.h"
 #include "ash/wm/common/shelf/wm_shelf_types.h"
 
+namespace gfx {
+class Rect;
+}
+
 namespace ash {
 namespace wm {
 
@@ -20,11 +24,20 @@ class ASH_EXPORT WmShelf {
   // Returns the window showing the shelf.
   virtual WmWindow* GetWindow() = 0;
 
-  virtual ShelfAlignment GetAlignment() = 0;
+  virtual ShelfAlignment GetAlignment() const = 0;
 
-  virtual ShelfBackgroundType GetBackgroundType() = 0;
+  virtual ShelfBackgroundType GetBackgroundType() const = 0;
 
   virtual void UpdateVisibilityState() = 0;
+
+  virtual ShelfVisibilityState GetVisibilityState() const = 0;
+
+  virtual void UpdateIconPositionForWindow(WmWindow* window) = 0;
+
+  // Returns the screen bounds of the item for the specified window. If there is
+  // no item for the specified window an empty rect is returned.
+  virtual gfx::Rect GetScreenBoundsOfItemIconForWindow(
+      wm::WmWindow* window) = 0;
 
   virtual void AddObserver(WmShelfObserver* observer) = 0;
   virtual void RemoveObserver(WmShelfObserver* observer) = 0;

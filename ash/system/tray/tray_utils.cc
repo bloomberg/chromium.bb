@@ -7,6 +7,7 @@
 #include "ash/shelf/shelf_util.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_item_view.h"
+#include "ash/wm/common/shelf/wm_shelf_util.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/vector2d.h"
@@ -27,7 +28,7 @@ void SetupLabelForTray(views::Label* label) {
 
 void SetTrayImageItemBorder(views::View* tray_view,
                             wm::ShelfAlignment alignment) {
-  if (IsHorizontalAlignment(alignment)) {
+  if (wm::IsHorizontalAlignment(alignment)) {
     tray_view->SetBorder(views::Border::CreateEmptyBorder(
         0, kTrayImageItemHorizontalPaddingBottomAlignment, 0,
         kTrayImageItemHorizontalPaddingBottomAlignment));
@@ -42,7 +43,7 @@ void SetTrayImageItemBorder(views::View* tray_view,
 
 void SetTrayLabelItemBorder(TrayItemView* tray_view,
                             wm::ShelfAlignment alignment) {
-  if (IsHorizontalAlignment(alignment)) {
+  if (wm::IsHorizontalAlignment(alignment)) {
     tray_view->SetBorder(views::Border::CreateEmptyBorder(
         0, kTrayLabelItemHorizontalPaddingBottomAlignment, 0,
         kTrayLabelItemHorizontalPaddingBottomAlignment));

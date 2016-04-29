@@ -21,17 +21,6 @@ enum ShelfAutoHideBehavior {
   SHELF_AUTO_HIDE_ALWAYS_HIDDEN,
 };
 
-enum ShelfVisibilityState {
-  // Always visible.
-  SHELF_VISIBLE,
-
-  // A couple of pixels are reserved at the bottom for the shelf.
-  SHELF_AUTO_HIDE,
-
-  // Nothing is shown. Used for fullscreen windows.
-  SHELF_HIDDEN,
-};
-
 enum ShelfAutoHideState {
   SHELF_AUTO_HIDE_SHOWN,
   SHELF_AUTO_HIDE_HIDDEN,

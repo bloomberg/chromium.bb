@@ -6,6 +6,7 @@
 #define ASH_WM_AURA_WM_SHELF_AURA_H_
 
 #include "ash/ash_export.h"
+#include "ash/shelf/shelf_icon_observer.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
 #include "ash/wm/common/shelf/wm_shelf.h"
 #include "base/macros.h"
@@ -20,17 +21,23 @@ namespace wm {
 
 // Aura implementation of WmShelf.
 class ASH_EXPORT WmShelfAura : public WmShelf,
-                               public ShelfLayoutManagerObserver {
+                               public ShelfLayoutManagerObserver,
+                               public ShelfIconObserver {
  public:
   explicit WmShelfAura(Shelf* shelf);
   ~WmShelfAura() override;
 
+  static Shelf* GetShelf(WmShelf* shelf);
+
  private:
   // WmShelf:
   WmWindow* GetWindow() override;
-  ShelfAlignment GetAlignment() override;
-  ShelfBackgroundType GetBackgroundType() override;
+  ShelfAlignment GetAlignment() const override;
+  ShelfBackgroundType GetBackgroundType() const override;
   void UpdateVisibilityState() override;
+  ShelfVisibilityState GetVisibilityState() const override;
+  void UpdateIconPositionForWindow(WmWindow* window) override;
+  gfx::Rect GetScreenBoundsOfItemIconForWindow(wm::WmWindow* window) override;
   void AddObserver(WmShelfObserver* observer) override;
   void RemoveObserver(WmShelfObserver* observer) override;
 
@@ -38,6 +45,10 @@ class ASH_EXPORT WmShelfAura : public WmShelf,
   void WillDeleteShelf() override;
   void OnBackgroundUpdated(wm::ShelfBackgroundType background_type,
                            BackgroundAnimatorChangeType change_type) override;
+  void WillChangeVisibilityState(ShelfVisibilityState new_state) override;
+
+  // ShelfIconObserver:
+  void OnShelfIconPositionsChanged() override;
 
   Shelf* shelf_;
   base::ObserverList<WmShelfObserver> observers_;

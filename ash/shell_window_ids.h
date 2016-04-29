@@ -47,8 +47,8 @@ const int kShellWindowId_VirtualKeyboardContainer = 5;
 // wm_shell_window_ids.
 // kShellWindowId_DockedContainer = 8;
 
-// The container for the shelf.
-const int kShellWindowId_ShelfContainer = 9;
+// The container for the shelf. Defined in wm_shell_window_ids.
+// kShellWindowId_ShelfContainer = 9;
 
 // The container for bubbles which float over the shelf.
 const int kShellWindowId_ShelfBubbleContainer = 10;
@@ -94,7 +94,8 @@ const int kShellWindowId_SettingBubbleContainer = 21;
 const int kShellWindowId_OverlayContainer = 22;
 
 // ID of the window created by PhantomWindowController or DragWindowController.
-const int kShellWindowId_PhantomWindow = 23;
+// Defined in wm_shell_window_ids.
+// kShellWindowId_PhantomWindow = 23;
 
 // The container for mouse cursor.
 const int kShellWindowId_MouseCursorContainer = 24;
@@ -120,6 +121,12 @@ static_assert((kShellWindowId_DockedContainer - 1 ==
                    kShellWindowId_ShelfContainer),
               "docked between always-on-top and shelf");
 
+static_assert((kShellWindowId_ShelfContainer - 1 ==
+               kShellWindowId_DockedContainer) &&
+                  (kShellWindowId_ShelfContainer + 1 ==
+                   kShellWindowId_ShelfBubbleContainer),
+              "shelf between docked and shelf-bubble");
+
 static_assert((kShellWindowId_PanelContainer - 1 ==
                kShellWindowId_ShelfBubbleContainer) &&
                   (kShellWindowId_PanelContainer + 1 ==
@@ -131,6 +138,12 @@ static_assert((kShellWindowId_AppListContainer - 1 ==
                   (kShellWindowId_AppListContainer + 1 ==
                    kShellWindowId_SystemModalContainer),
               "app-list between panel and system-modal");
+
+static_assert((kShellWindowId_PhantomWindow - 1 ==
+               kShellWindowId_OverlayContainer) &&
+                  (kShellWindowId_PhantomWindow + 1 ==
+                   kShellWindowId_MouseCursorContainer),
+              "phanton between overlay and mouse-cursor");
 
 }  // namespace ash
 

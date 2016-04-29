@@ -9,7 +9,6 @@
 #include <utility>
 #include <vector>
 
-#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/wm/common/default_window_resizer.h"
 #include "ash/wm/common/dock/docked_window_layout_manager.h"
 #include "ash/wm/common/window_positioning_utils.h"
@@ -19,9 +18,9 @@
 #include "ash/wm/common/wm_root_window_controller.h"
 #include "ash/wm/common/wm_screen_util.h"
 #include "ash/wm/common/wm_shell_window_ids.h"
+#include "ash/wm/common/wm_user_metrics_action.h"
 #include "ash/wm/common/wm_window.h"
 #include "ash/wm/dock/docked_window_resizer.h"
-#include "ash/wm/drag_window_resizer.h"
 #include "ash/wm/panels/panel_window_resizer.h"
 #include "ash/wm/workspace/phantom_window_controller.h"
 #include "ash/wm/workspace/two_step_edge_cycler.h"
@@ -85,8 +84,8 @@ std::unique_ptr<WindowResizer> CreateWindowResizer(
   } else {
     window_resizer.reset(DefaultWindowResizer::Create(window_state));
   }
-  window_resizer.reset(
-      DragWindowResizer::Create(window_resizer.release(), window_state));
+  window_resizer = window->GetGlobals()->CreateDragWindowResizer(
+      std::move(window_resizer), window_state);
   if (window->GetType() == ui::wm::WINDOW_TYPE_PANEL)
     window_resizer.reset(
         PanelWindowResizer::Create(window_resizer.release(), window_state));
@@ -429,15 +428,15 @@ void WorkspaceWindowResizer::CompleteDrag() {
           details().restore_bounds);
     }
     if (!dock_layout_->is_dragged_window_docked()) {
-      UserMetricsRecorder* metrics = globals_->GetUserMetricsRecorder();
       // TODO(oshima): Add event source type to WMEvent and move
       // metrics recording inside WindowState::OnWMEvent.
       const wm::WMEvent event(snap_type_ == SNAP_LEFT ?
                               wm::WM_EVENT_SNAP_LEFT : wm::WM_EVENT_SNAP_RIGHT);
       window_state()->OnWMEvent(&event);
-      metrics->RecordUserMetricsAction(
-          snap_type_ == SNAP_LEFT ?
-          UMA_DRAG_MAXIMIZE_LEFT : UMA_DRAG_MAXIMIZE_RIGHT);
+      globals_->RecordUserMetricsAction(
+          snap_type_ == SNAP_LEFT
+              ? wm::WmUserMetricsAction::DRAG_MAXIMIZE_LEFT
+              : wm::WmUserMetricsAction::DRAG_MAXIMIZE_RIGHT);
       snapped = true;
     }
   }

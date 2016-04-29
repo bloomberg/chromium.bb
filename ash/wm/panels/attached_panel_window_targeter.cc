@@ -6,6 +6,7 @@
 
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
+#include "ash/wm/aura/wm_shelf_aura.h"
 #include "ash/wm/panels/panel_layout_manager.h"
 
 namespace ash {
@@ -50,10 +51,12 @@ void AttachedPanelWindowTargeter::UpdateTouchExtend(aura::Window* root_window) {
 
   DCHECK(panel_layout_manager_->shelf());
   gfx::Insets touch(default_touch_extend_);
-  set_touch_extend(panel_layout_manager_->shelf()->SelectValueForShelfAlignment(
-      gfx::Insets(touch.top(), touch.left(), 0, touch.right()),
-      gfx::Insets(touch.top(), 0, touch.bottom(), touch.right()),
-      gfx::Insets(touch.top(), touch.left(), touch.bottom(), 0)));
+  set_touch_extend(
+      wm::WmShelfAura::GetShelf(panel_layout_manager_->shelf())
+          ->SelectValueForShelfAlignment(
+              gfx::Insets(touch.top(), touch.left(), 0, touch.right()),
+              gfx::Insets(touch.top(), 0, touch.bottom(), touch.right()),
+              gfx::Insets(touch.top(), touch.left(), touch.bottom(), 0)));
 }
 
 }  // namespace ash

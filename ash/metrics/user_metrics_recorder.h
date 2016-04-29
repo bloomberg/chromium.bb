@@ -20,6 +20,10 @@ namespace test {
 class UserMetricsRecorderTestAPI;
 }
 
+namespace wm {
+enum class WmUserMetricsAction;
+}
+
 enum UserMetricsAction {
   UMA_ACCEL_EXIT_FIRST_Q,
   UMA_ACCEL_EXIT_SECOND_Q,
@@ -33,8 +37,6 @@ enum UserMetricsAction {
   UMA_ACCEL_SHUT_DOWN_POWER_BUTTON,
   UMA_CLOSE_THROUGH_CONTEXT_MENU,
   UMA_DESKTOP_SWITCH_TASK,
-  UMA_DRAG_MAXIMIZE_LEFT,
-  UMA_DRAG_MAXIMIZE_RIGHT,
   UMA_LAUNCHER_BUTTON_PRESSED_WITH_MOUSE,
   UMA_LAUNCHER_BUTTON_PRESSED_WITH_TOUCH,
   UMA_LAUNCHER_CLICK_ON_APP,
@@ -155,6 +157,7 @@ class ASH_EXPORT UserMetricsRecorder {
 
   // Records an Ash owned user action.
   void RecordUserMetricsAction(ash::UserMetricsAction action);
+  void RecordUserMetricsAction(wm::WmUserMetricsAction action);
 
   TaskSwitchMetricsRecorder& task_switch_metrics_recorder() {
     return task_switch_metrics_recorder_;

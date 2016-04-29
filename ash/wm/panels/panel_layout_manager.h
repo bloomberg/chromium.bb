@@ -10,8 +10,8 @@
 
 #include "ash/ash_export.h"
 #include "ash/shelf/shelf_icon_observer.h"
-#include "ash/shelf/shelf_layout_manager_observer.h"
 #include "ash/shell_observer.h"
+#include "ash/wm/common/shelf/wm_shelf_observer.h"
 #include "ash/wm/common/window_state_observer.h"
 #include "ash/wm/common/wm_activation_observer.h"
 #include "ash/wm/common/wm_display_observer.h"
@@ -45,6 +45,7 @@ class ShelfLayoutManager;
 
 namespace wm {
 class WmRootWindowController;
+class WmShelf;
 }
 
 // PanelLayoutManager is responsible for organizing panels within the
@@ -66,7 +67,7 @@ class ASH_EXPORT PanelLayoutManager
       public wm::WmRootWindowControllerObserver,
       public wm::WmWindowObserver,
       public keyboard::KeyboardControllerObserver,
-      public ShelfLayoutManagerObserver {
+      public wm::WmShelfObserver {
  public:
   explicit PanelLayoutManager(wm::WmWindow* panel_container);
   ~PanelLayoutManager() override;
@@ -89,8 +90,8 @@ class ASH_EXPORT PanelLayoutManager
   // Returns the callout widget (arrow) for |panel|.
   views::Widget* GetCalloutWidgetForPanel(wm::WmWindow* panel);
 
-  Shelf* shelf() { return shelf_; }
-  void SetShelf(Shelf* shelf);
+  wm::WmShelf* shelf() { return shelf_; }
+  void SetShelf(wm::WmShelf* shelf);
 
   // Overridden from wm::WmLayoutManager
   void OnWindowResized() override;
@@ -101,9 +102,6 @@ class ASH_EXPORT PanelLayoutManager
                                       bool visibile) override;
   void SetChildBounds(wm::WmWindow* child,
                       const gfx::Rect& requested_bounds) override;
-
-  // Overridden from ShelfIconObserver
-  void OnShelfIconPositionsChanged() override;
 
   // Overridden from wm::WmOverviewModeObserver
   void OnOverviewModeEnded() override;
@@ -127,8 +125,9 @@ class ASH_EXPORT PanelLayoutManager
   // Overridden from WindowTreeHostManager::Observer
   void OnDisplayConfigurationChanged() override;
 
-  // Overridden from ShelfLayoutManagerObserver
+  // Overridden from wm::WmShelfObserver
   void WillChangeVisibilityState(ShelfVisibilityState new_state) override;
+  void OnShelfIconPositionsChanged() override;
 
  private:
   friend class PanelLayoutManagerTest;
@@ -198,9 +197,7 @@ class ASH_EXPORT PanelLayoutManager
   // The panel being dragged.
   wm::WmWindow* dragged_panel_;
   // The shelf we are observing for shelf icon changes.
-  Shelf* shelf_;
-  // The shelf layout manager being observed for visibility changes.
-  ShelfLayoutManager* shelf_layout_manager_;
+  wm::WmShelf* shelf_;
 
   // When not NULL, the shelf is hidden (i.e. full screen) and this tracks the
   // set of panel windows which have been temporarily hidden and need to be

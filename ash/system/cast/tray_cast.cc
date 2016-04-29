@@ -21,6 +21,7 @@
 #include "ash/system/tray/tray_item_more.h"
 #include "ash/system/tray/tray_item_view.h"
 #include "ash/system/tray/tray_popup_label_button.h"
+#include "ash/wm/common/shelf/wm_shelf_util.h"
 #include "base/bind.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
@@ -358,7 +359,7 @@ CastTrayView::~CastTrayView() {
 
 void CastTrayView::UpdateAlignment(wm::ShelfAlignment alignment) {
   // Center the item dependent on the orientation of the shelf.
-  views::BoxLayout::Orientation layout = IsHorizontalAlignment(alignment)
+  views::BoxLayout::Orientation layout = wm::IsHorizontalAlignment(alignment)
                                              ? views::BoxLayout::kVertical
                                              : views::BoxLayout::kHorizontal;
   SetLayoutManager(new views::BoxLayout(layout, 0, 0, 0));

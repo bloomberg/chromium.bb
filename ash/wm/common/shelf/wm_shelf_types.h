@@ -6,6 +6,19 @@
 #define ASH_WM_COMMON_SHELF_WM_SHELF_TYPES_H_
 
 namespace ash {
+
+// TODO(sky): move into wm namespace.
+enum ShelfVisibilityState {
+  // Always visible.
+  SHELF_VISIBLE,
+
+  // A couple of pixels are reserved at the bottom for the shelf.
+  SHELF_AUTO_HIDE,
+
+  // Nothing is shown. Used for fullscreen windows.
+  SHELF_HIDDEN,
+};
+
 namespace wm {
 
 enum ShelfAlignment {

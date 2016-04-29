@@ -25,6 +25,7 @@
 #include "ash/system/user/tray_user.h"
 #include "ash/system/user/tray_user_separator.h"
 #include "ash/system/web_notification/web_notification_tray.h"
+#include "ash/wm/common/shelf/wm_shelf_util.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/timer/timer.h"
@@ -317,7 +318,7 @@ void SystemTray::UpdateAfterLoginStatusChange(user::LoginStatus login_status) {
 
   // Items default to SHELF_ALIGNMENT_BOTTOM. Update them if the initial
   // position of the shelf differs.
-  if (!IsHorizontalAlignment(shelf_alignment()))
+  if (!wm::IsHorizontalAlignment(shelf_alignment()))
     UpdateAfterShelfAlignmentChange(shelf_alignment());
 
   SetVisible(true);
@@ -417,7 +418,7 @@ base::string16 SystemTray::GetAccessibleNameForTray() {
 
 int SystemTray::GetTrayXOffset(SystemTrayItem* item) const {
   // Don't attempt to align the arrow if the shelf is on the left or right.
-  if (!IsHorizontalAlignment(shelf_alignment()))
+  if (!wm::IsHorizontalAlignment(shelf_alignment()))
     return TrayBubbleView::InitParams::kArrowDefaultOffset;
 
   std::map<SystemTrayItem*, views::View*>::const_iterator it =
@@ -711,7 +712,7 @@ bool SystemTray::PerformAction(const ui::Event& event) {
     if (event.IsMouseEvent() || event.type() == ui::ET_GESTURE_TAP) {
       const ui::LocatedEvent& located_event =
           static_cast<const ui::LocatedEvent&>(event);
-      if (IsHorizontalAlignment(shelf_alignment())) {
+      if (wm::IsHorizontalAlignment(shelf_alignment())) {
         gfx::Point point(located_event.x(), 0);
         ConvertPointToWidget(this, &point);
         arrow_offset = point.x();

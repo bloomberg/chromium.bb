@@ -10,6 +10,7 @@
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/tray_utils.h"
+#include "ash/wm/common/shelf/wm_shelf_util.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "grit/ash_resources.h"
@@ -104,7 +105,7 @@ void OverviewButtonTray::SetShelfAlignment(wm::ShelfAlignment alignment) {
 }
 
 void OverviewButtonTray::SetIconBorderForShelfAlignment() {
-  if (IsHorizontalAlignment(shelf_alignment())) {
+  if (wm::IsHorizontalAlignment(shelf_alignment())) {
     icon_->SetBorder(views::Border::CreateEmptyBorder(
         kHorizontalShelfVerticalPadding,
         kHorizontalShelfHorizontalPadding,

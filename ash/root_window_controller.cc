@@ -443,7 +443,7 @@ void RootWindowController::ShowShelf() {
 
 void RootWindowController::OnShelfCreated() {
   if (panel_layout_manager_)
-    panel_layout_manager_->SetShelf(shelf_->shelf());
+    panel_layout_manager_->SetShelf(shelf_->shelf()->wm_shelf());
   if (docked_layout_manager_) {
     docked_layout_manager_->SetShelf(shelf_->shelf()->wm_shelf());
     if (shelf_->shelf_layout_manager())

@@ -58,9 +58,4 @@ const ShelfItemDetails* GetShelfItemDetailsForWindow(
   return window->GetProperty(kShelfItemDetailsKey);
 }
 
-bool IsHorizontalAlignment(wm::ShelfAlignment alignment) {
-  return alignment == wm::SHELF_ALIGNMENT_BOTTOM ||
-         alignment == wm::SHELF_ALIGNMENT_BOTTOM_LOCKED;
-}
-
 }  // namespace ash

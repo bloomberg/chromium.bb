@@ -22,6 +22,7 @@
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/aura/wm_shelf_aura.h"
+#include "ash/wm/common/shelf/wm_shelf_util.h"
 #include "ash/wm/window_properties.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -90,7 +91,7 @@ void Shelf::SetAlignment(wm::ShelfAlignment alignment) {
 }
 
 bool Shelf::IsHorizontalAlignment() const {
-  return ash::IsHorizontalAlignment(alignment_);
+  return wm::IsHorizontalAlignment(alignment_);
 }
 
 void Shelf::SetAutoHideBehavior(ShelfAutoHideBehavior auto_hide_behavior) {

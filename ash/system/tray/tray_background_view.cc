@@ -16,6 +16,7 @@
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_event_filter.h"
+#include "ash/wm/common/shelf/wm_shelf_util.h"
 #include "ash/wm/window_animations.h"
 #include "base/command_line.h"
 #include "grit/ash_resources.h"
@@ -193,7 +194,7 @@ void TrayBackgroundView::TrayContainer::ViewHierarchyChanged(
 void TrayBackgroundView::TrayContainer::UpdateLayout() {
   // Adjust the size of status tray dark background by adding additional
   // empty border.
-  if (IsHorizontalAlignment(alignment_)) {
+  if (wm::IsHorizontalAlignment(alignment_)) {
     SetBorder(views::Border::CreateEmptyBorder(
         kPaddingFromEdgeOfShelf,
         kPaddingFromEdgeOfShelf,
@@ -404,7 +405,7 @@ void TrayBackgroundView::SetTrayBorder() {
   // Tray views are laid out right-to-left or bottom-to-top
   bool on_edge = (this == parent->child_at(0));
   int left_edge, top_edge, right_edge, bottom_edge;
-  if (IsHorizontalAlignment(shelf_alignment())) {
+  if (wm::IsHorizontalAlignment(shelf_alignment())) {
     top_edge = ShelfLayoutManager::kShelfItemInset;
     left_edge = 0;
     bottom_edge = kShelfSize -
@@ -451,7 +452,7 @@ bool TrayBackgroundView::RequiresNotificationWhenAnimatorDestroyed() const {
 
 void TrayBackgroundView::HideTransformation() {
   gfx::Transform transform;
-  if (IsHorizontalAlignment(shelf_alignment_))
+  if (wm::IsHorizontalAlignment(shelf_alignment_))
     transform.Translate(width(), 0.0f);
   else
     transform.Translate(0.0f, height());

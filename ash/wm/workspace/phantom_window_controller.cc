@@ -6,9 +6,9 @@
 
 #include <math.h>
 
-#include "ash/shell_window_ids.h"
 #include "ash/wm/common/root_window_finder.h"
 #include "ash/wm/common/wm_root_window_controller.h"
+#include "ash/wm/common/wm_shell_window_ids.h"
 #include "ash/wm/common/wm_window.h"
 #include "grit/ash_resources.h"
 #include "ui/compositor/layer.h"

@@ -8,28 +8,21 @@
 #include <map>
 #include <utility>
 
-#include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_layout_manager.h"
-#include "ash/shelf/shelf_types.h"
-#include "ash/shelf/shelf_util.h"
-#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
-#include "ash/shell_window_ids.h"
-#include "ash/wm/aura/wm_window_aura.h"
+#include "ash/wm/common/shelf/wm_shelf.h"
+#include "ash/wm/common/shelf/wm_shelf_util.h"
 #include "ash/wm/common/window_animation_types.h"
 #include "ash/wm/common/window_parenting_utils.h"
 #include "ash/wm/common/window_state.h"
 #include "ash/wm/common/wm_globals.h"
 #include "ash/wm/common/wm_root_window_controller.h"
+#include "ash/wm/common/wm_shell_window_ids.h"
 #include "ash/wm/common/wm_window.h"
 #include "ash/wm/common/wm_window_property.h"
-#include "ash/wm/overview/window_selector_controller.h"
-#include "ash/wm/window_animations.h"
 #include "base/auto_reset.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
-#include "ui/aura/window.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect.h"
@@ -190,7 +183,7 @@ class PanelCalloutWidget : public views::Widget {
 
   void SetAlignment(wm::ShelfAlignment alignment) {
     gfx::Rect callout_bounds = GetWindowBoundsInScreen();
-    if (IsHorizontalAlignment(alignment)) {
+    if (wm::IsHorizontalAlignment(alignment)) {
       callout_bounds.set_width(kArrowWidth);
       callout_bounds.set_height(kArrowHeight);
     } else {
@@ -247,8 +240,7 @@ PanelLayoutManager::PanelLayoutManager(wm::WmWindow* panel_container)
       in_layout_(false),
       show_callout_widgets_(true),
       dragged_panel_(NULL),
-      shelf_(NULL),
-      shelf_layout_manager_(NULL),
+      shelf_(nullptr),
       last_active_panel_(NULL),
       weak_factory_(this) {
   DCHECK(panel_container);
@@ -275,17 +267,15 @@ PanelLayoutManager* PanelLayoutManager::Get(wm::WmWindow* window) {
 }
 
 void PanelLayoutManager::Shutdown() {
-  if (shelf_layout_manager_)
-    shelf_layout_manager_->RemoveObserver(this);
-  shelf_layout_manager_ = NULL;
+  if (shelf_) {
+    shelf_->RemoveObserver(this);
+    shelf_ = nullptr;
+  }
   for (PanelList::iterator iter = panel_windows_.begin();
        iter != panel_windows_.end(); ++iter) {
     delete iter->callout_widget;
   }
   panel_windows_.clear();
-  if (shelf_)
-    shelf_->RemoveIconObserver(this);
-  shelf_ = NULL;
   wm::WmGlobals* globals = panel_container_->GetGlobals();
   globals->RemoveActivationObserver(this);
   globals->RemoveDisplayObserver(this);
@@ -304,16 +294,11 @@ void PanelLayoutManager::FinishDragging() {
   Relayout();
 }
 
-void PanelLayoutManager::SetShelf(Shelf* shelf) {
+void PanelLayoutManager::SetShelf(wm::WmShelf* shelf) {
   DCHECK(!shelf_);
-  DCHECK(!shelf_layout_manager_);
   shelf_ = shelf;
-  shelf_->AddIconObserver(this);
-  if (shelf_->shelf_layout_manager()) {
-    shelf_layout_manager_ = shelf_->shelf_layout_manager();
-    WillChangeVisibilityState(shelf_layout_manager_->visibility_state());
-    shelf_layout_manager_->AddObserver(this);
-  }
+  shelf_->AddObserver(this);
+  WillChangeVisibilityState(shelf_->GetVisibilityState());
 }
 
 void PanelLayoutManager::ToggleMinimize(wm::WmWindow* panel) {
@@ -452,16 +437,6 @@ void PanelLayoutManager::SetChildBounds(wm::WmWindow* child,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// PanelLayoutManager, ShelfIconObserver implementation:
-
-void PanelLayoutManager::OnShelfIconPositionsChanged() {
-  // TODO: As this is called for every animation step now. Relayout needs to be
-  // updated to use current icon position instead of use the ideal bounds so
-  // that the panels slide with their icons instead of jumping.
-  Relayout();
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // PanelLayoutManager, ash::ShellObserver implementation:
 
 void PanelLayoutManager::OnOverviewModeEnded() {
@@ -509,7 +484,7 @@ void PanelLayoutManager::OnPostWindowStateTypeChange(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// PanelLayoutManager, aura::client::ActivationChangeObserver implementation:
+// PanelLayoutManager, wm::WmActivationObserver implementation:
 
 void PanelLayoutManager::OnWindowActivated(wm::WmWindow* gained_active,
                                            wm::WmWindow* lost_active) {
@@ -565,6 +540,13 @@ void PanelLayoutManager::WillChangeVisibilityState(
   restore_windows_on_shelf_visible_ = std::move(minimized_windows);
 }
 
+void PanelLayoutManager::OnShelfIconPositionsChanged() {
+  // TODO: As this is called for every animation step now. Relayout needs to be
+  // updated to use current icon position instead of use the ideal bounds so
+  // that the panels slide with their icons instead of jumping.
+  Relayout();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // PanelLayoutManager private implementation:
 
@@ -578,7 +560,7 @@ void PanelLayoutManager::MinimizePanel(wm::WmWindow* panel) {
   panel_slide_settings.SetTransitionDuration(
       base::TimeDelta::FromMilliseconds(kPanelSlideDurationMilliseconds));
   gfx::Rect bounds(panel->GetBounds());
-  bounds.Offset(GetSlideInAnimationOffset(shelf_->alignment()));
+  bounds.Offset(GetSlideInAnimationOffset(shelf_->GetAlignment()));
   panel->SetBoundsDirect(bounds);
   panel->Hide();
   layer->SetOpacity(0);
@@ -596,26 +578,25 @@ void PanelLayoutManager::RestorePanel(wm::WmWindow* panel) {
 }
 
 void PanelLayoutManager::Relayout() {
-  if (!shelf_ || !shelf_->shelf_widget())
+  if (!shelf_)
     return;
 
   // Suppress layouts during overview mode because changing window bounds
   // interfered with overview mode animations. However, layouts need to be done
   // when the WindowSelectorController is restoring minimized windows so that
   // they actually become visible.
-  WindowSelectorController* window_selector_controller =
-      Shell::GetInstance()->window_selector_controller();
-  if (in_layout_ || !window_selector_controller ||
-      (window_selector_controller->IsSelecting() &&
-          !window_selector_controller->IsRestoringMinimizedWindows()))
+  wm::WmGlobals* globals = panel_container_->GetGlobals();
+  if (in_layout_ || (globals->IsOverviewModeSelecting() &&
+                     !globals->IsOverviewModeRestoringMinimizedWindows())) {
     return;
+  }
 
   base::AutoReset<bool> auto_reset_in_layout(&in_layout_, true);
 
-  const wm::ShelfAlignment alignment = shelf_->alignment();
-  const bool horizontal = shelf_->IsHorizontalAlignment();
+  const wm::ShelfAlignment alignment = shelf_->GetAlignment();
+  const bool horizontal = wm::IsHorizontalAlignment(shelf_->GetAlignment());
   gfx::Rect shelf_bounds = panel_container_->ConvertRectFromScreen(
-      shelf_->shelf_widget()->GetWindowBoundsInScreen());
+      shelf_->GetWindow()->GetBoundsInScreen());
   int panel_start_bounds = kPanelIdealSpacing;
   int panel_end_bounds =
       horizontal ? panel_container_->GetBounds().width() - kPanelIdealSpacing
@@ -645,8 +626,7 @@ void PanelLayoutManager::Relayout() {
       continue;
     }
 
-    gfx::Rect icon_bounds = shelf_->GetScreenBoundsOfItemIconForWindow(
-        wm::WmWindowAura::GetAuraWindow(panel));
+    gfx::Rect icon_bounds = shelf_->GetScreenBoundsOfItemIconForWindow(panel);
 
     // If both the icon width and height are 0 then there is no icon in the
     // shelf. If the shelf is hidden, one of the height or width will be
@@ -772,7 +752,7 @@ void PanelLayoutManager::UpdateStacking(wm::WmWindow* active_panel) {
   // the titlebar--even though it doesn't update the shelf icon positions, we
   // still want the visual effect.
   std::map<int, wm::WmWindow*> window_ordering;
-  const bool horizontal = shelf_->IsHorizontalAlignment();
+  const bool horizontal = wm::IsHorizontalAlignment(shelf_->GetAlignment());
   for (PanelList::const_iterator it = panel_windows_.begin();
        it != panel_windows_.end(); ++it) {
     gfx::Rect bounds = it->window->GetBounds();
@@ -807,7 +787,7 @@ void PanelLayoutManager::UpdateStacking(wm::WmWindow* active_panel) {
 }
 
 void PanelLayoutManager::UpdateCallouts() {
-  const bool horizontal = shelf_->IsHorizontalAlignment();
+  const bool horizontal = wm::IsHorizontalAlignment(shelf_->GetAlignment());
   for (PanelList::iterator iter = panel_windows_.begin();
        iter != panel_windows_.end(); ++iter) {
     wm::WmWindow* panel = iter->window;
@@ -817,8 +797,7 @@ void PanelLayoutManager::UpdateCallouts() {
     gfx::Rect current_bounds = panel->GetBoundsInScreen();
     gfx::Rect bounds =
         panel->GetParent()->ConvertRectToScreen(panel->GetTargetBounds());
-    gfx::Rect icon_bounds = shelf_->GetScreenBoundsOfItemIconForWindow(
-        wm::WmWindowAura::GetAuraWindow(panel));
+    gfx::Rect icon_bounds = shelf_->GetScreenBoundsOfItemIconForWindow(panel);
     if (icon_bounds.IsEmpty() || !panel->GetLayer()->GetTargetVisibility() ||
         panel == dragged_panel_ || !show_callout_widgets_) {
       callout_widget->Hide();
@@ -844,9 +823,9 @@ void PanelLayoutManager::UpdateCallouts() {
           current_bounds.y() - callout_bounds.y(),
           callout_bounds.bottom() - current_bounds.bottom());
     }
-    if (shelf_->alignment() == wm::SHELF_ALIGNMENT_LEFT)
+    if (shelf_->GetAlignment() == wm::SHELF_ALIGNMENT_LEFT)
       callout_bounds.set_x(bounds.x() - callout_bounds.width());
-    else if (shelf_->alignment() == wm::SHELF_ALIGNMENT_RIGHT)
+    else if (shelf_->GetAlignment() == wm::SHELF_ALIGNMENT_RIGHT)
       callout_bounds.set_x(bounds.right());
     else
       callout_bounds.set_y(bounds.bottom());

@@ -20,6 +20,7 @@
 #include "ash/shell_window_ids.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/wm/common/shelf/wm_shelf_constants.h"
+#include "ash/wm/common/shelf/wm_shelf_util.h"
 #include "ash/wm/status_area_layout_manager.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/workspace_controller.h"
@@ -181,7 +182,7 @@ void DimmerView::OnPaintBackground(gfx::Canvas* canvas) {
   gfx::ImageSkia shelf_background =
       *rb->GetImageNamed(IDR_ASH_SHELF_DIMMING).ToImageSkia();
 
-  if (!IsHorizontalAlignment(shelf_->GetAlignment())) {
+  if (!wm::IsHorizontalAlignment(shelf_->GetAlignment())) {
     shelf_background = gfx::ImageSkiaOperations::CreateRotatedImage(
         shelf_background, shelf_->GetAlignment() == wm::SHELF_ALIGNMENT_LEFT
                               ? SkBitmapOperations::ROTATION_90_CW
@@ -451,7 +452,7 @@ void ShelfWidget::DelegateView::OnPaintBackground(gfx::Canvas* canvas) {
   ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
   gfx::ImageSkia shelf_background =
       *rb->GetImageSkiaNamed(IDR_ASH_SHELF_BACKGROUND);
-  const bool horizontal = IsHorizontalAlignment(shelf_->GetAlignment());
+  const bool horizontal = wm::IsHorizontalAlignment(shelf_->GetAlignment());
   if (!horizontal) {
     shelf_background = gfx::ImageSkiaOperations::CreateRotatedImage(
         shelf_background, shelf_->GetAlignment() == wm::SHELF_ALIGNMENT_LEFT

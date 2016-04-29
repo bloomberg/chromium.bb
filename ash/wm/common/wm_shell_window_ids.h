@@ -25,12 +25,18 @@ const int kShellWindowId_AlwaysOnTopContainer = 7;
 // The container for windows docked to either side of the desktop.
 const int kShellWindowId_DockedContainer = 8;
 
+// The container for the shelf.
+const int kShellWindowId_ShelfContainer = 9;
+
 // The container for panel windows.
 const int kShellWindowId_PanelContainer = 11;
 
 // TODO(sky): this seems unnecessary. Perhaps it should be injected?
 // The container for the app list.
 const int kShellWindowId_AppListContainer = 12;
+
+// ID of the window created by PhantomWindowController or DragWindowController.
+const int kShellWindowId_PhantomWindow = 23;
 
 }  // namespace ash
 

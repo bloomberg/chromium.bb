@@ -15,6 +15,7 @@
 #include "ash/shell_window_ids.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/wm/common/window_state.h"
+#include "ash/wm/common/wm_user_metrics_action.h"
 #include "ash/wm/window_state_aura.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/user_metrics.h"
@@ -241,12 +242,6 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
       base::RecordAction(base::UserMetricsAction("Desktop_SwitchTask"));
       task_switch_metrics_recorder_.OnTaskSwitch(
           TaskSwitchMetricsRecorder::DESKTOP);
-      break;
-    case ash::UMA_DRAG_MAXIMIZE_LEFT:
-      base::RecordAction(base::UserMetricsAction("WindowDrag_MaximizeLeft"));
-      break;
-    case ash::UMA_DRAG_MAXIMIZE_RIGHT:
-      base::RecordAction(base::UserMetricsAction("WindowDrag_MaximizeRight"));
       break;
     case ash::UMA_LAUNCHER_BUTTON_PRESSED_WITH_MOUSE:
       base::RecordAction(
@@ -604,6 +599,18 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
     case ash::UMA_WINDOW_CYCLE:
       base::RecordAction(
           base::UserMetricsAction("WindowCycleController_Cycle"));
+      break;
+  }
+}
+
+void UserMetricsRecorder::RecordUserMetricsAction(
+    wm::WmUserMetricsAction action) {
+  switch (action) {
+    case wm::WmUserMetricsAction::DRAG_MAXIMIZE_LEFT:
+      base::RecordAction(base::UserMetricsAction("WindowDrag_MaximizeLeft"));
+      break;
+    case wm::WmUserMetricsAction::DRAG_MAXIMIZE_RIGHT:
+      base::RecordAction(base::UserMetricsAction("WindowDrag_MaximizeRight"));
       break;
   }
 }

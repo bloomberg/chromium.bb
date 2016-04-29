@@ -11,6 +11,7 @@
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_item_view.h"
+#include "ash/wm/common/shelf/wm_shelf_util.h"
 
 #if defined(OS_CHROMEOS)
 #include "ash/system/chromeos/system_clock_observer.h"
@@ -95,8 +96,9 @@ void TrayDate::UpdateAfterLoginStatusChange(user::LoginStatus status) {
 
 void TrayDate::UpdateAfterShelfAlignmentChange(wm::ShelfAlignment alignment) {
   if (time_tray_) {
-    ClockLayout clock_layout =
-        IsHorizontalAlignment(alignment) ? HORIZONTAL_CLOCK : VERTICAL_CLOCK;
+    ClockLayout clock_layout = wm::IsHorizontalAlignment(alignment)
+                                   ? HORIZONTAL_CLOCK
+                                   : VERTICAL_CLOCK;
     time_tray_->UpdateClockLayout(clock_layout);
   }
 }

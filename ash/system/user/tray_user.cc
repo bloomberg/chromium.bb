@@ -18,6 +18,7 @@
 #include "ash/system/tray/tray_utils.h"
 #include "ash/system/user/rounded_image_view.h"
 #include "ash/system/user/user_view.h"
+#include "ash/wm/common/shelf/wm_shelf_util.h"
 #include "base/logging.h"
 #include "base/strings/string16.h"
 #include "components/signin/core/account_id/account_id.h"
@@ -192,7 +193,7 @@ void TrayUser::UpdateAfterShelfAlignmentChange(wm::ShelfAlignment alignment) {
   // Inactive users won't have a layout.
   if (!layout_view_)
     return;
-  if (IsHorizontalAlignment(alignment)) {
+  if (wm::IsHorizontalAlignment(alignment)) {
     if (avatar_) {
       avatar_->SetBorder(views::Border::NullBorder());
       avatar_->SetCornerRadii(

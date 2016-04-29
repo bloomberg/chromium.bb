@@ -55,9 +55,6 @@ ASH_EXPORT void ClearShelfItemDetailsForWindow(aura::Window* window);
 ASH_EXPORT const ShelfItemDetails* GetShelfItemDetailsForWindow(
     aura::Window* window);
 
-// Returns true if the shelf |alignment| is horizontal.
-ASH_EXPORT bool IsHorizontalAlignment(wm::ShelfAlignment alignment);
-
 }  // namespace ash
 
 #endif  // ASH_SHELF_SHELF_UTIL_H_

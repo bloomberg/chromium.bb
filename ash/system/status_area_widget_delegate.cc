@@ -11,6 +11,7 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/tray/tray_constants.h"
+#include "ash/wm/common/shelf/wm_shelf_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/compositor/layer.h"
@@ -113,7 +114,7 @@ void StatusAreaWidgetDelegate::UpdateLayout() {
   SetLayoutManager(layout);
 
   views::ColumnSet* columns = layout->AddColumnSet(0);
-  if (IsHorizontalAlignment(alignment_)) {
+  if (wm::IsHorizontalAlignment(alignment_)) {
     bool is_first_visible_child = true;
     for (int c = 0; c < child_count(); ++c) {
       views::View* child = child_at(c);

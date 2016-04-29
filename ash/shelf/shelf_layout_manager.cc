@@ -25,6 +25,7 @@
 #include "ash/shell_window_ids.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/wm/aura/wm_window_aura.h"
+#include "ash/wm/common/shelf/wm_shelf_util.h"
 #include "ash/wm/common/window_state.h"
 #include "ash/wm/common/wm_root_window_controller.h"
 #include "ash/wm/common/wm_root_window_controller_observer.h"
@@ -533,7 +534,7 @@ void ShelfLayoutManager::OnWindowActivated(
 }
 
 bool ShelfLayoutManager::IsHorizontalAlignment() const {
-  return ash::IsHorizontalAlignment(GetAlignment());
+  return wm::IsHorizontalAlignment(GetAlignment());
 }
 
 void ShelfLayoutManager::SetChromeVoxPanelHeight(int height) {

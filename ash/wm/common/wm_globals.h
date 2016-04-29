@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "ash/ash_export.h"
@@ -17,14 +18,17 @@ class Rect;
 
 namespace ash {
 
-class UserMetricsRecorder;
+class WindowResizer;
 
 namespace wm {
 
+class WindowState;
 class WmActivationObserver;
 class WmDisplayObserver;
 class WmOverviewModeObserver;
 class WmWindow;
+
+enum class WmUserMetricsAction;
 
 // Used for accessing global state.
 class ASH_EXPORT WmGlobals {
@@ -62,7 +66,19 @@ class ASH_EXPORT WmGlobals {
 
   virtual std::vector<WmWindow*> GetAllRootWindows() = 0;
 
-  virtual UserMetricsRecorder* GetUserMetricsRecorder() = 0;
+  virtual void RecordUserMetricsAction(WmUserMetricsAction action) = 0;
+
+  // Returns a WindowResizer to handle dragging. |next_window_resizer| is
+  // the next WindowResizer in the WindowResizer chain. This may return
+  // |next_window_resizer|.
+  virtual std::unique_ptr<WindowResizer> CreateDragWindowResizer(
+      std::unique_ptr<WindowResizer> next_window_resizer,
+      wm::WindowState* window_state) = 0;
+
+  // TODO(sky): if WindowSelectorController can't be moved over, move these
+  // onto their own local class.
+  virtual bool IsOverviewModeSelecting() = 0;
+  virtual bool IsOverviewModeRestoringMinimizedWindows() = 0;
 
   virtual void AddActivationObserver(WmActivationObserver* observer) = 0;
   virtual void RemoveActivationObserver(WmActivationObserver* observer) = 0;
