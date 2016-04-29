@@ -39,7 +39,7 @@ struct Vp9CodecFeatures {
         level(kValueNotPresent),
         bit_depth(kValueNotPresent),
         chroma_subsampling(kValueNotPresent) {}
-  ~Vp9CodecFeatures(){};
+  ~Vp9CodecFeatures() {}
 
   int profile;
   int level;
