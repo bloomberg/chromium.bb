@@ -4,12 +4,6 @@
 
 #include "ui/views/animation/test/ink_drop_animation_test_api.h"
 
-#include "base/time/time.h"
-#include "ui/compositor/layer.h"
-#include "ui/compositor/layer_animator.h"
-#include "ui/compositor/test/layer_animator_test_controller.h"
-#include "ui/views/animation/ink_drop_animation.h"
-
 namespace views {
 namespace test {
 

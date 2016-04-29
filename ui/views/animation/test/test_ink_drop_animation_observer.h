@@ -43,7 +43,7 @@ class TestInkDropAnimationObserver
                       InkDropAnimationEndedReason reason) override;
 
  private:
-  // The type as this inherits from. Reduces verbosity in .cc file.
+  // The type this inherits from. Reduces verbosity in .cc file.
   using ObserverHelper = TestInkDropAnimationObserverHelper<InkDropState>;
 
   // The value of InkDropAnimation::GetTargetInkDropState() the last time an

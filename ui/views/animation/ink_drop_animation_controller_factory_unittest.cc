@@ -102,8 +102,16 @@ INSTANTIATE_TEST_CASE_P(
                     ui::MaterialDesignController::MATERIAL_HYBRID));
 
 TEST_P(InkDropAnimationControllerFactoryTest,
-       VerifyAllInkDropLayersRemovedAfterDestruction) {
+       VerifyInkDropLayersRemovedAfterDestructionWhenRippleIsActive) {
   ink_drop_animation_controller_->AnimateToState(InkDropState::ACTION_PENDING);
+  ink_drop_animation_controller_.reset();
+  EXPECT_EQ(0, test_ink_drop_host_.num_ink_drop_layers());
+}
+
+TEST_P(InkDropAnimationControllerFactoryTest,
+       VerifyInkDropLayersRemovedAfterDestructionWhenHoverIsActive) {
+  test_ink_drop_host_.set_should_show_hover(true);
+  ink_drop_animation_controller_->SetHovered(true);
   ink_drop_animation_controller_.reset();
   EXPECT_EQ(0, test_ink_drop_host_.num_ink_drop_layers());
 }

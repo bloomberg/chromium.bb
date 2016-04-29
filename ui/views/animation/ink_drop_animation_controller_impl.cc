@@ -54,17 +54,17 @@ InkDropAnimationControllerImpl::InkDropAnimationControllerImpl(
     InkDropHost* ink_drop_host)
     : ink_drop_host_(ink_drop_host),
       root_layer_(new ui::Layer(ui::LAYER_NOT_DRAWN)),
+      root_layer_added_to_host_(false),
       is_hovered_(false),
       hover_after_animation_timer_(nullptr) {
   root_layer_->set_name("InkDropAnimationControllerImpl:RootLayer");
-  ink_drop_host_->AddInkDropLayer(root_layer_.get());
 }
 
 InkDropAnimationControllerImpl::~InkDropAnimationControllerImpl() {
   // Explicitly destroy the InkDropAnimation so that this still exists if
   // views::InkDropAnimationObserver methods are called on this.
   DestroyInkDropAnimation();
-  ink_drop_host_->RemoveInkDropLayer(root_layer_.get());
+  DestroyInkDropHover();
 }
 
 InkDropState InkDropAnimationControllerImpl::GetTargetInkDropState() const {
@@ -125,6 +125,7 @@ void InkDropAnimationControllerImpl::CreateInkDropAnimation() {
   ink_drop_animation_ = ink_drop_host_->CreateInkDropAnimation();
   ink_drop_animation_->set_observer(this);
   root_layer_->Add(ink_drop_animation_->GetRootLayer());
+  AddRootLayerToHostIfNeeded();
 }
 
 void InkDropAnimationControllerImpl::DestroyInkDropAnimation() {
@@ -132,6 +133,7 @@ void InkDropAnimationControllerImpl::DestroyInkDropAnimation() {
     return;
   root_layer_->Remove(ink_drop_animation_->GetRootLayer());
   ink_drop_animation_.reset();
+  RemoveRootLayerFromHostIfNeeded();
 }
 
 void InkDropAnimationControllerImpl::CreateInkDropHover() {
@@ -140,19 +142,41 @@ void InkDropAnimationControllerImpl::CreateInkDropHover() {
   hover_ = ink_drop_host_->CreateInkDropHover();
   if (!hover_)
     return;
+  hover_->set_observer(this);
   root_layer_->Add(hover_->layer());
+  AddRootLayerToHostIfNeeded();
 }
 
 void InkDropAnimationControllerImpl::DestroyInkDropHover() {
   if (!hover_)
     return;
   root_layer_->Remove(hover_->layer());
+  hover_->set_observer(nullptr);
   hover_.reset();
+  RemoveRootLayerFromHostIfNeeded();
+}
+
+void InkDropAnimationControllerImpl::AddRootLayerToHostIfNeeded() {
+  DCHECK(hover_ || ink_drop_animation_);
+  if (!root_layer_added_to_host_) {
+    root_layer_added_to_host_ = true;
+    ink_drop_host_->AddInkDropLayer(root_layer_.get());
+  }
+}
+
+void InkDropAnimationControllerImpl::RemoveRootLayerFromHostIfNeeded() {
+  if (root_layer_added_to_host_ && !hover_ && !ink_drop_animation_) {
+    root_layer_added_to_host_ = false;
+    ink_drop_host_->RemoveInkDropLayer(root_layer_.get());
+  }
 }
 
 bool InkDropAnimationControllerImpl::IsHoverFadingInOrVisible() const {
   return hover_ && hover_->IsFadingInOrVisible();
 }
+
+// -----------------------------------------------------------------------------
+// views::InkDropAnimationObserver:
 
 void InkDropAnimationControllerImpl::AnimationStarted(
     InkDropState ink_drop_state) {}
@@ -171,6 +195,21 @@ void InkDropAnimationControllerImpl::AnimationEnded(
     // InkDropAnimations is expensive and consider creating an
     // InkDropAnimationPool. See www.crbug.com/522175.
     DestroyInkDropAnimation();
+  }
+}
+
+// -----------------------------------------------------------------------------
+// views::InkDropHoverObserver:
+
+void InkDropAnimationControllerImpl::AnimationStarted(
+    InkDropHover::AnimationType animation_type) {}
+
+void InkDropAnimationControllerImpl::AnimationEnded(
+    InkDropHover::AnimationType animation_type,
+    InkDropAnimationEndedReason reason) {
+  if (animation_type == InkDropHover::FADE_OUT &&
+      reason == InkDropAnimationEndedReason::SUCCESS) {
+    DestroyInkDropHover();
   }
 }
 

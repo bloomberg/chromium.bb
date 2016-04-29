@@ -29,8 +29,8 @@ class VIEWS_EXPORT InkDropAnimationObserver {
                               InkDropAnimationEndedReason reason) = 0;
 
  protected:
-  InkDropAnimationObserver() {}
-  virtual ~InkDropAnimationObserver() {}
+  InkDropAnimationObserver() = default;
+  virtual ~InkDropAnimationObserver() = default;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InkDropAnimationObserver);

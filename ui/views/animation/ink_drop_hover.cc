@@ -9,6 +9,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/views/animation/ink_drop_hover_observer.h"
 #include "ui/views/animation/ink_drop_painted_layer_delegates.h"
 
 namespace views {
@@ -33,7 +34,8 @@ InkDropHover::InkDropHover(const gfx::Size& size,
       last_animation_initiated_was_fade_in_(false),
       layer_delegate_(
           new RoundedRectangleLayerDelegate(color, size, corner_radius)),
-      layer_(new ui::Layer()) {
+      layer_(new ui::Layer()),
+      observer_(nullptr) {
   layer_->SetBounds(gfx::Rect(size));
   layer_->SetFillsBoundsOpaquely(false);
   layer_->set_delegate(layer_delegate_.get());
@@ -63,7 +65,7 @@ test::InkDropHoverTestApi* InkDropHover::GetTestApi() {
   return nullptr;
 }
 
-void InkDropHover::AnimateFade(HoverAnimationType animation_type,
+void InkDropHover::AnimateFade(AnimationType animation_type,
                                const base::TimeDelta& duration,
                                const gfx::Size& initial_size,
                                const gfx::Size& target_size) {
@@ -75,6 +77,8 @@ void InkDropHover::AnimateFade(HoverAnimationType animation_type,
   // AnimationStartedCallback() returns true.
   ui::CallbackLayerAnimationObserver* animation_observer =
       new ui::CallbackLayerAnimationObserver(
+          base::Bind(&InkDropHover::AnimationStartedCallback,
+                     base::Unretained(this), animation_type),
           base::Bind(&InkDropHover::AnimationEndedCallback,
                      base::Unretained(this), animation_type));
 
@@ -115,13 +119,27 @@ gfx::Transform InkDropHover::CalculateTransform(const gfx::Size& size) const {
   return transform;
 }
 
+void InkDropHover::AnimationStartedCallback(
+    AnimationType animation_type,
+    const ui::CallbackLayerAnimationObserver& observer) {
+  if (observer_)
+    observer_->AnimationStarted(animation_type);
+}
+
 bool InkDropHover::AnimationEndedCallback(
-    HoverAnimationType animation_type,
+    AnimationType animation_type,
     const ui::CallbackLayerAnimationObserver& observer) {
   // AnimationEndedCallback() may be invoked when this is being destroyed and
   // |layer_| may be null.
   if (animation_type == FADE_OUT && layer_)
     layer_->SetVisible(false);
+
+  if (observer_) {
+    observer_->AnimationEnded(animation_type,
+                              observer.aborted_count()
+                                  ? InkDropAnimationEndedReason::PRE_EMPTED
+                                  : InkDropAnimationEndedReason::SUCCESS);
+  }
   return true;
 }
 

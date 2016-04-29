@@ -27,16 +27,21 @@ class InkDropHoverTestApi;
 }  // namespace test
 
 class RoundedRectangleLayerDelegate;
+class InkDropHoverObserver;
 
 // Manages fade in/out animations for a painted Layer that is used to provide
 // visual feedback on ui::Views for mouse hover states.
 class VIEWS_EXPORT InkDropHover {
  public:
+  enum AnimationType { FADE_IN, FADE_OUT };
+
   InkDropHover(const gfx::Size& size,
                int corner_radius,
                const gfx::Point& center_point,
                SkColor color);
   virtual ~InkDropHover();
+
+  void set_observer(InkDropHoverObserver* observer) { observer_ = observer; }
 
   void set_explode_size(const gfx::Size& size) { explode_size_ = size; }
 
@@ -62,12 +67,10 @@ class VIEWS_EXPORT InkDropHover {
  private:
   friend class test::InkDropHoverTestApi;
 
-  enum HoverAnimationType { FADE_IN, FADE_OUT };
-
   // Animates a fade in/out as specified by |animation_type| combined with a
   // transformation from the |initial_size| to the |target_size| over the given
   // |duration|.
-  void AnimateFade(HoverAnimationType animation_type,
+  void AnimateFade(AnimationType animation_type,
                    const base::TimeDelta& duration,
                    const gfx::Size& initial_size,
                    const gfx::Size& target_size);
@@ -75,9 +78,14 @@ class VIEWS_EXPORT InkDropHover {
   // Calculates the Transform to apply to |layer_| for the given |size|.
   gfx::Transform CalculateTransform(const gfx::Size& size) const;
 
+  // The callback that will be invoked when a fade in/out animation is started.
+  void AnimationStartedCallback(
+      AnimationType animation_type,
+      const ui::CallbackLayerAnimationObserver& observer);
+
   // The callback that will be invoked when a fade in/out animation is complete.
   bool AnimationEndedCallback(
-      HoverAnimationType animation_type,
+      AnimationType animation_type,
       const ui::CallbackLayerAnimationObserver& observer);
 
   // The size of the hover shape when fully faded in.
@@ -99,6 +107,8 @@ class VIEWS_EXPORT InkDropHover {
 
   // The visual hover layer that is painted by |layer_delegate_|.
   std::unique_ptr<ui::Layer> layer_;
+
+  InkDropHoverObserver* observer_;
 
   DISALLOW_COPY_AND_ASSIGN(InkDropHover);
 };
