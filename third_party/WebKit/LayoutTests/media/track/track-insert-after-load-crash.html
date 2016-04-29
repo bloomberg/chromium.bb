@@ -1,20 +1,14 @@
 <!DOCTYPE  html>
-<html>
-    <head>
-        <script src="../media-file.js"></script>
-        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src="../video-test.js"></script>
-    </head>
-    <body>
-      <p>Tests that inserting a &lt;track&gt; element immediately after a load() doesn't crash.</p>
-      <video id="v"></video>
-      <script>
-        var v = document.querySelector('#v');
-        v.src = findMediaFile('video', '../content/test');
-        v.load();
-        v.appendChild(document.createElement('track'));
-        v.addEventListener('loadedmetadata', endTest);
-      </script>
-    </body>
-</html>
+<title>Tests that inserting a track element immediately after a load() doesn't crash.</title>
+<script src="../media-file.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script>
+async_test(function(t) {
+    var video = document.createElement('video');
+    video.src = findMediaFile('video', '../content/test');
+    video.load();
+    video.appendChild(document.createElement('track'));
+    video.onloadedmetadata = t.step_func_done();
+});
+</script>

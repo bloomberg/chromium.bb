@@ -1,44 +1,27 @@
 <!DOCTYPE html>
-<html>
-    <head>
+<title>Tests that the TextTrack "id" attribute is set appropriately.</title>
+<video>
+    <track id="LoremIpsum" src="captions-webvtt/captions-fast.vtt" default>
+</video>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script>
+test(function() {
+    var video = document.querySelector("video");
 
-        <script src=../media-file.js></script>
-        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=../video-test.js></script>
-        <script>
+    var track = document.querySelector("track");
+    
+    var textTrack = track.track;
 
-            var textTrack;
+    // Test default attribute value.
+    assert_equals(textTrack.id, "LoremIpsum");
+    assert_equals(video.textTracks[0].id, "LoremIpsum");
 
-            function start()
-            {
-                findMediaElement();
-                consoleWrite("");
+    // Make sure we can look up tracks by id.
+    assert_equals(video.textTracks.getTrackById("LoremIpsum"), textTrack);
 
-                textTrack = document.getElementById("LoremIpsum").track;
-
-                consoleWrite("<b>++ Test default attribute value</b>");
-                testExpected("textTrack.id", "LoremIpsum");
-                testExpected("video.textTracks[0].id", "LoremIpsum");
-                consoleWrite("");
-
-                consoleWrite("<b>++ Make sure we can look tracks up by id</b>");
-                testExpected("video.textTracks.getTrackById('LoremIpsum')", textTrack);
-                consoleWrite("");
-
-                consoleWrite("<b>++ Test that it's readonly</b>");
-                run("textTrack.id = 'newvalue';");
-                testExpected("textTrack.id", "LoremIpsum");
-
-                endTest();
-            }
-
-        </script>
-    </head>
-    <body >
-        <p>Tests that the TextTrack "id" attribute is appropriately set.</p>
-        <video>
-            <track id="LoremIpsum" src="captions-webvtt/captions-fast.vtt" onload="start()" default>
-        </video>
-    </body>
-</html>
+    // Test that it's readonly.
+    textTrack.id = "newvalue";
+    assert_equals(textTrack.id, "LoremIpsum");
+});
+</script>
