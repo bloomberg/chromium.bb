@@ -10,11 +10,6 @@ import("//build/toolchain/toolchain.gni")
 # Should only be running on Windows.
 assert(is_win)
 
-declare_args() {
-  # Set to true to use lld, the LLVM linker.
-  use_lld = false
-}
-
 # Setup the Visual Studio state.
 #
 # Its arguments are the VS path and the compiler wrapper tool. It will write

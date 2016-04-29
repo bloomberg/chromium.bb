@@ -428,7 +428,7 @@ def UpdateClang(args):
 
   Checkout('LLVM', LLVM_REPO_URL + '/llvm/trunk', LLVM_DIR)
   Checkout('Clang', LLVM_REPO_URL + '/cfe/trunk', CLANG_DIR)
-  if sys.platform == 'win32':
+  if sys.platform == 'win32' or use_head_revision:
     Checkout('LLD', LLVM_REPO_URL + '/lld/trunk', LLD_DIR)
   Checkout('compiler-rt', LLVM_REPO_URL + '/compiler-rt/trunk', COMPILER_RT_DIR)
   if sys.platform == 'darwin':

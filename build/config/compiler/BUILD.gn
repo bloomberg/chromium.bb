@@ -48,7 +48,8 @@ declare_args() {
   # TODO(GYP): We should be using 64-bit gold for linking on both 64-bit Linux
   # and 32-bit linux; 32-bit Gold runs out of address-space on 32-bit builds.
   # However, something isn't quite working right on the 32-bit builds.
-  use_gold = is_linux && (current_cpu == "x64" || current_cpu == "arm")
+  use_gold =
+      is_linux && (current_cpu == "x64" || current_cpu == "arm") && !use_lld
 
   # When we are going to use gold we need to find it.
   # This is initialized below, after use_gold might have been overridden.
@@ -292,7 +293,9 @@ config("compiler") {
 
   # Linux-specific compiler flags setup.
   # ------------------------------------
-  if (use_gold) {
+  if (is_posix && use_lld) {
+    ldflags += [ "-fuse-ld=lld" ]
+  } else if (use_gold) {
     ldflags += [
       "-B$gold_path",
 
@@ -316,11 +319,6 @@ config("compiler") {
       ldflags += [ "-Wl,--gdb-index" ]
     }
 
-    if (!using_sanitizer && !(is_android && use_order_profiling)) {
-      # TODO(brettw) common.gypi has this only for target toolset.
-      ldflags += [ "-Wl,--icf=all" ]
-    }
-
     # TODO(thestig): Make this flag work with GN.
     #if (!is_official_build && !is_chromeos && !(is_asan || is_lsan || is_tsan || is_msan)) {
     #  ldflags += [
@@ -331,6 +329,11 @@ config("compiler") {
     # Gold is the default linker for the bundled binutils so we explicitly
     # enable the bfd linker when use_gold is not set.
     ldflags += [ "-fuse-ld=bfd" ]
+  }
+
+  if (is_posix && (use_gold || use_lld) && !using_sanitizer &&
+      !(is_android && use_order_profiling)) {
+    ldflags += [ "-Wl,--icf=all" ]
   }
 
   if (linux_use_bundled_binutils) {
@@ -413,7 +416,11 @@ config("compiler") {
 
     # Apply a lower LTO optimization level as the default is too slow.
     if (is_linux) {
-      ldflags += [ "-Wl,-plugin-opt,O1" ]
+      if (use_lld) {
+        ldflags += [ "-Wl,--lto-O1" ]
+      } else {
+        ldflags += [ "-Wl,-plugin-opt,O1" ]
+      }
     } else if (is_mac) {
       ldflags += [ "-Wl,-mllvm,-O1" ]
     }

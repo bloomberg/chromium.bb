@@ -11,6 +11,12 @@ declare_args() {
   #
   # TODO(pcc): Remove this flag if/when LTO is enabled in official builds.
   allow_posix_link_time_opt = false
+
+  # Set to true to use lld, the LLVM linker. This flag may be used on Windows
+  # with the shipped LLVM toolchain, or on Linux with a self-built top-of-tree
+  # LLVM toolchain (see llvm_force_head_revision in
+  # build/config/compiler/BUILD.gn).
+  use_lld = false
 }
 
 # Subdirectory within root_out_dir for shared library files.
