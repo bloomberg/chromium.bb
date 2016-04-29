@@ -604,7 +604,9 @@ void LocalDiscoveryUIHandler::SetupCloudPrintConnectorSection() {
 }
 
 void LocalDiscoveryUIHandler::RefreshCloudPrintStatusFromService() {
-  GetCloudPrintProxyService()->RefreshStatusFromService();
+  auto* service = GetCloudPrintProxyService();
+  if (service)
+    service->RefreshStatusFromService();
 }
 
 CloudPrintProxyService* LocalDiscoveryUIHandler::GetCloudPrintProxyService() {
