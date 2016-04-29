@@ -554,7 +554,9 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         public void onSSLStateUpdated(Tab tab) {
             PolicyAuditor auditor =
                     ((ChromeApplication) getApplicationContext()).getPolicyAuditor();
-            auditor.notifyCertificateFailure(getWebContents(), getApplicationContext());
+            auditor.notifyCertificateFailure(
+                    PolicyAuditor.nativeGetCertificateFailure(getWebContents()),
+                    getApplicationContext());
             updateFullscreenEnabledState();
         }
 

@@ -890,6 +890,8 @@
       'browser/android/omnibox/omnibox_prerender.h',
       'browser/android/password_ui_view_android.cc',
       'browser/android/password_ui_view_android.h',
+      'browser/android/policy/policy_auditor.cc',
+      'browser/android/policy/policy_auditor.h',
       'browser/android/precache/precache_launcher.cc',
       'browser/android/precache/precache_launcher.h',
       'browser/android/preferences/autofill/autofill_profile_bridge.cc',
@@ -1970,6 +1972,7 @@
       'android/java/src/org/chromium/chrome/browser/password_manager/AccountChooserDialog.java',
       'android/java/src/org/chromium/chrome/browser/password_manager/AutoSigninFirstRunDialog.java',
       'android/java/src/org/chromium/chrome/browser/PasswordUIView.java',
+      'android/java/src/org/chromium/chrome/browser/policy/PolicyAuditor.java',
       'android/java/src/org/chromium/chrome/browser/precache/PrecacheLauncher.java',
       'android/java/src/org/chromium/chrome/browser/preferences/autofill/AutofillProfileBridge.java',
       'android/java/src/org/chromium/chrome/browser/preferences/LocationSettings.java',
@@ -4114,6 +4117,15 @@
           'type': 'none',
           'variables': {
             'source_file': 'browser/android/ntp/most_visited_sites.cc',
+          },
+          'includes': [ '../build/android/java_cpp_enum.gypi' ],
+        },
+        {
+          # GN: //chrome/android:chrome_android_java_enums_srcjar
+          'target_name': 'policy_auditor_java',
+          'type': 'none',
+          'variables': {
+            'source_file': 'browser/android/policy/policy_auditor.cc',
           },
           'includes': [ '../build/android/java_cpp_enum.gypi' ],
         },
