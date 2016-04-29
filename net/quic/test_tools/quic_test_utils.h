@@ -471,6 +471,65 @@ class PacketSavingConnection : public MockConnection {
   DISALLOW_COPY_AND_ASSIGN(PacketSavingConnection);
 };
 
+class MockQuicSession : public QuicSession {
+ public:
+  explicit MockQuicSession(QuicConnection* connection);
+  ~MockQuicSession() override;
+
+  QuicCryptoStream* GetCryptoStream() override { return crypto_stream_.get(); }
+
+  MOCK_METHOD3(OnConnectionClosed,
+               void(QuicErrorCode error,
+                    const std::string& error_details,
+                    ConnectionCloseSource source));
+  MOCK_METHOD1(CreateIncomingDynamicStream,
+               ReliableQuicStream*(QuicStreamId id));
+  MOCK_METHOD1(CreateOutgoingDynamicStream,
+               ReliableQuicStream*(SpdyPriority priority));
+  MOCK_METHOD1(ShouldCreateIncomingDynamicStream, bool(QuicStreamId id));
+  MOCK_METHOD0(ShouldCreateOutgoingDynamicStream, bool());
+  MOCK_METHOD5(WritevData,
+               QuicConsumedData(QuicStreamId id,
+                                QuicIOVector data,
+                                QuicStreamOffset offset,
+                                bool fin,
+                                QuicAckListenerInterface*));
+
+  MOCK_METHOD3(SendRstStream,
+               void(QuicStreamId stream_id,
+                    QuicRstStreamErrorCode error,
+                    QuicStreamOffset bytes_written));
+
+  MOCK_METHOD2(OnStreamHeaders,
+               void(QuicStreamId stream_id, base::StringPiece headers_data));
+  MOCK_METHOD2(OnStreamHeadersPriority,
+               void(QuicStreamId stream_id, SpdyPriority priority));
+  MOCK_METHOD3(OnStreamHeadersComplete,
+               void(QuicStreamId stream_id, bool fin, size_t frame_len));
+  MOCK_METHOD4(OnStreamHeaderList,
+               void(QuicStreamId stream_id,
+                    bool fin,
+                    size_t frame_len,
+                    const QuicHeaderList& header_list));
+  MOCK_METHOD0(IsCryptoHandshakeConfirmed, bool());
+
+  using QuicSession::ActivateStream;
+
+  // Returns a QuicConsumedData that indicates all of |data| (and |fin| if set)
+  // has been consumed.
+  static QuicConsumedData ConsumeAllData(
+      QuicStreamId id,
+      const QuicIOVector& data,
+      QuicStreamOffset offset,
+      bool fin,
+      QuicAckListenerInterface* ack_notifier_delegate);
+
+ private:
+  std::unique_ptr<QuicCryptoStream> crypto_stream_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockQuicSession);
+};
+
 class MockQuicSpdySession : public QuicSpdySession {
  public:
   explicit MockQuicSpdySession(QuicConnection* connection);

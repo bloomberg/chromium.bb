@@ -326,6 +326,26 @@ void PacketSavingConnection::SendOrQueuePacket(SerializedPacket* packet) {
                                     HAS_RETRANSMITTABLE_DATA);
 }
 
+MockQuicSession::MockQuicSession(QuicConnection* connection)
+    : QuicSession(connection, DefaultQuicConfig()) {
+  crypto_stream_.reset(new QuicCryptoStream(this));
+  Initialize();
+  ON_CALL(*this, WritevData(_, _, _, _, _))
+      .WillByDefault(testing::Return(QuicConsumedData(0, false)));
+}
+
+MockQuicSession::~MockQuicSession() {}
+
+// static
+QuicConsumedData MockQuicSession::ConsumeAllData(
+    QuicStreamId /*id*/,
+    const QuicIOVector& data,
+    QuicStreamOffset /*offset*/,
+    bool fin,
+    QuicAckListenerInterface* /*ack_notifier_delegate*/) {
+  return QuicConsumedData(data.total_length, fin);
+}
+
 MockQuicSpdySession::MockQuicSpdySession(QuicConnection* connection)
     : QuicSpdySession(connection, DefaultQuicConfig()) {
   crypto_stream_.reset(new QuicCryptoStream(this));
