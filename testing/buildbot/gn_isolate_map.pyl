@@ -424,6 +424,10 @@
     "label": "//mash:mash_unittests",
     "type": "unknown",
   },
+  "mus_gpu_unittests": {
+    "label": "//components/mus/gpu:mus_gpu_unittests",
+    "type": "console_test_launcher",
+  },
   "mus_ws_unittests": {
     "label": "//components/mus/ws:mus_ws_unittests",
     "type": "windowed_test_launcher",

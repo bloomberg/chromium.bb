@@ -1757,6 +1757,9 @@
         "test": "mash_unittests"
       },
       {
+        "test": "mus_gpu_unittests"
+      },
+      {
         "test": "mus_ws_unittests"
       },
       {
