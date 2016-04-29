@@ -599,6 +599,7 @@ private:
     bool matchedEndLine(LineLayoutState&, const InlineBidiResolver&, const InlineIterator& endLineStart, const BidiStatus& endLineStatus);
     void deleteEllipsisLineBoxes();
     void checkLinesForTextOverflow();
+    void markLinesDirtyInBlockRange(LayoutUnit logicalTop, LayoutUnit logicalBottom, RootInlineBox* highest = nullptr);
     // Positions new floats and also adjust all floats encountered on the line if any of them
     // have to move to the next page/column.
     void positionDialog();
