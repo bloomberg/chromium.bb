@@ -5769,11 +5769,6 @@ bool RenderFrameImpl::ShouldDisplayErrorPageForFailedLoad(
     return false;
   }
 
-  if (RenderThreadImpl::current() &&
-      RenderThreadImpl::current()->layout_test_mode()) {
-    return false;
-  }
-
   return true;
 }
 

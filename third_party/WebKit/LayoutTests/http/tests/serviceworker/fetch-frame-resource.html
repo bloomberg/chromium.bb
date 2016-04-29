@@ -71,16 +71,14 @@ async_test(function(t) {
             scope + '?mode=no-cors&url=' +
             encodeURIComponent(host_info['HTTP_REMOTE_ORIGIN'] + path);
           document.body.appendChild(frame);
-          // We can't catch the network error on iframe. So we use the timer.
           return new Promise(function(resolve) {
-              setTimeout(function() { resolve(frame); }, 1000);
-            });
+              frame.onload = function () { resolve(frame) };
+          });
         })
       .then(function(frame) {
-          assert_equals(
-            frame.contentDocument.body.textContent,
-            '',
-            'Opaque type response could not be loaded in the iframe.');
+          assert_throws('SecurityError', _ => {
+              assert_equals(frame.contentDocument.body.textContent, '');
+          }, 'Opaque response renders error page in the iframe.');
           frame.remove();
           return service_worker_unregister_and_done(t, scope);
         })
@@ -145,23 +143,22 @@ async_test(function(t) {
           return wait_for_state(t, reg.installing, 'activated');
         })
       .then(function() {
-          var win = window.open(
+          return window.open(
             scope + '?mode=no-cors&url=' +
             encodeURIComponent(host_info['HTTP_REMOTE_ORIGIN'] + path));
-          // We can't catch the network error on window. So we use the timer.
-          return new Promise(function(resolve) {
-              setTimeout(function() { resolve(win); }, 1000);
-            });
         })
       .then(function(win) {
-          assert_equals(
-            win.document.body.textContent,
-            '',
-            'Opaque type response could not be loaded in the new window.');
-          win.close();
-          return service_worker_unregister_and_done(t, scope);
+          // Give the window time to load: we won't get any error or load events
+          // so we'll set a timeout instead:
+          setTimeout(_ => {
+              assert_throws('SecurityError', _ => {
+                  assert_equals(win.document.body.textContent, '');
+              }, 'Opaque response renders error page in the new window.');
+              win.close();
+              return service_worker_unregister_and_done(t, scope);
+          }, 1000);
         })
-      .catch(unreached_rejection(t));
+//      .catch(unreached_rejection(t));
   }, 'Opaque type response could not be loaded in the new window.');
 </script>
 </body>

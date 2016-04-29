@@ -3,6 +3,8 @@
 <script type="text/javascript" src="../../http/tests/inspector-protocol/inspector-protocol-test.js"></script>
 <script>
 
+testRunner.setShouldStayOnPageAfterHandlingBeforeUnload(true);
+
 window.onbeforeunload = onBeforeUnload;
 
 function onBeforeUnload()
