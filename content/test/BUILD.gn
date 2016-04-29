@@ -895,8 +895,8 @@ test("content_perftests") {
   }
 }
 
-if (is_android) {
-  # TODO(GYP): Port Windows and ChromeOS logic.
+if (is_android || is_chromeos) {
+  # TODO(GYP): Port Windows logic.
   test("video_decode_accelerator_unittest") {
     deps = [
       "//base",
@@ -911,6 +911,9 @@ if (is_android) {
       "//ui/gl:test_support",
     ]
     configs += [ "//third_party/khronos:khronos_headers" ]
+    if (is_chromeos && target_cpu != "arm") {
+      configs += [ "//third_party/libva:libva_config" ]
+    }
     sources = [
       "//content/common/gpu/media/video_accelerator_unittest_helpers.h",
     ]
@@ -933,6 +936,48 @@ if (is_android) {
         "//testing/gmock",
         "//ui/android:ui_java",
       ]
+    }
+    if (is_chromeos && use_ozone) {
+      deps += [
+        "//ui/display",  # Used by rendering_helper.cc
+        "//ui/ozone",  # Used by rendering_helper.cc
+      ]
+    }
+    if (use_x11) {
+      configs += [ "//build/config/linux:x11" ]
+      deps += [ "//ui/gfx/x" ]
+    }
+  }
+}
+
+if (is_chromeos || is_mac) {
+  test("video_encode_accelerator_unittest") {
+    deps = [
+      "//base",
+      "//content",
+      "//media",
+      "//media/base:test_support",
+      "//testing/gtest",
+      "//ui/base",
+      "//ui/gfx",
+      "//ui/gfx:test_support",
+      "//ui/gfx/geometry",
+      "//ui/gl",
+      "//ui/gl:test_support",
+    ]
+    configs += [
+      "//third_party/libva:libva_config",
+      "//third_party/libyuv:libyuv_config",
+    ]
+    sources = [
+      "//content/common/gpu/media/video_accelerator_unittest_helpers.h",
+      "//content/common/gpu/media/video_encode_accelerator_unittest.cc",
+    ]
+    if (use_x11) {
+      deps += [ "//ui/gfx/x" ]
+    }
+    if (use_ozone) {
+      deps += [ "//ui/ozone" ]
     }
   }
 }
