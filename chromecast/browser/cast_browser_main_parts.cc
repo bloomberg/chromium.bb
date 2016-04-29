@@ -69,6 +69,7 @@
 #include "chromecast/browser/media/cast_media_client_android.h"
 #include "components/crash/content/browser/crash_dump_manager_android.h"
 #include "media/base/android/media_client_android.h"
+#include "media/base/media_switches.h"
 #include "net/android/network_change_notifier_factory_android.h"
 #else
 #include "chromecast/net/network_change_notifier_factory_cast.h"
@@ -195,6 +196,10 @@ DefaultCommandLineSwitch g_default_switches[] = {
   // Disables Chromecast-specific WiFi-related features on ATV for now.
   { switches::kNoWifi, "" },
   { switches::kDisableGestureRequirementForMediaPlayback, ""},
+  // TODO(sanfin): Unified Media Pipeline is disabled on ATV because of extant
+  // issues with DRM and v8 that block media playback for numerous apps.
+  // Reenable when the Unified Media Pipeline is stable enough for testing.
+  { switches::kDisableUnifiedMediaPipeline, ""},
 #else
   // GPU shader disk cache disabling is largely to conserve disk space.
   { switches::kDisableGpuShaderDiskCache, "" },
