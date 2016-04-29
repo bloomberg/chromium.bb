@@ -1317,8 +1317,7 @@ class Changelist(object):
       return presubmit_support.DoPresubmitChecks(change, committing,
           verbose=verbose, output_stream=sys.stdout, input_stream=sys.stdin,
           default_presubmit=None, may_prompt=may_prompt,
-          rietveld_obj=self._codereview_impl.GetRieveldObjForPresubmit(),
-          gerrit_obj=self._codereview_impl.GetGerritObjForPresubmit())
+          rietveld_obj=self._codereview_impl.GetRieveldObjForPresubmit())
     except presubmit_support.PresubmitFailure, e:
       DieWithError(
           ('%s\nMaybe your depot_tools is out of date?\n'
@@ -1501,10 +1500,6 @@ class _ChangelistCodereviewBase(object):
     # This is an unfortunate Rietveld-embeddedness in presubmit.
     # For non-Rietveld codereviews, this probably should return a dummy object.
     raise NotImplementedError()
-
-  def GetGerritObjForPresubmit(self):
-    # None is valid return value, otherwise presubmit_support.GerritAccessor.
-    return None
 
   def UpdateDescriptionRemote(self, description):
     """Update the description on codereview site."""
@@ -2111,9 +2106,6 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
             'See also http://crbug.com/579160.' % attr)
         raise NotImplementedError()
     return ThisIsNotRietveldIssue()
-
-  def GetGerritObjForPresubmit(self):
-    return presubmit_support.GerritAccessor(self._GetGerritHost())
 
   def GetStatus(self):
     """Apply a rough heuristic to give a simple summary of an issue's review
