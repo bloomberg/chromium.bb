@@ -105,7 +105,7 @@ public:
     void reattach(const WebString& hostId, int sessionId, const WebString& savedState) override;
     void detach() override;
     void continueProgram() override;
-    void dispatchOnInspectorBackend(int sessionId, const WebString& message) override;
+    void dispatchOnInspectorBackend(int sessionId, int callId, const WebString& method, const WebString& message) override;
     void inspectElementAt(const WebPoint&) override;
     void failedToRequestDevTools() override;
     WebString evaluateInWebInspectorOverlay(const WebString& script) override;

@@ -174,9 +174,13 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   // List of handles currently navigating.
   std::set<NavigationHandle*> navigating_handles_;
 
-  // <call_id> -> <session_id, message>
-  std::map<int, std::pair<int, std::string>>
-      in_navigation_protocol_message_buffer_;
+  struct PendingMessage {
+    int session_id;
+    std::string method;
+    std::string message;
+  };
+  // <call_id> -> PendingMessage
+  std::map<int, PendingMessage> in_navigation_protocol_message_buffer_;
 
   // The FrameTreeNode associated with this agent.
   FrameTreeNode* frame_tree_node_;

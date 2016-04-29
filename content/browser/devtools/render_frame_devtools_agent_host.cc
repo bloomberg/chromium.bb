@@ -98,6 +98,7 @@ class RenderFrameDevToolsAgentHost::FrameHostHolder {
   void Detach();
   void DispatchProtocolMessage(int session_id,
                                int call_id,
+                               const std::string& method,
                                const std::string& message);
   void InspectElement(int x, int y);
   void ProcessChunkedMessageFromAgent(const DevToolsMessageChunk& chunk);
@@ -116,8 +117,8 @@ class RenderFrameDevToolsAgentHost::FrameHostHolder {
   DevToolsMessageChunkProcessor chunk_processor_;
   // <session_id, message>
   std::vector<std::pair<int, std::string>> pending_messages_;
-  // <call_id> -> <session_id, message>
-  std::map<int, std::pair<int, std::string>> sent_messages_;
+  // <call_id> -> PendingMessage
+  std::map<int, PendingMessage> sent_messages_;
 };
 
 RenderFrameDevToolsAgentHost::FrameHostHolder::FrameHostHolder(
@@ -154,8 +155,8 @@ void RenderFrameDevToolsAgentHost::FrameHostHolder::Reattach(
       chunk_processor_.state_cookie()));
   if (old) {
     for (const auto& pair : old->sent_messages_) {
-      DispatchProtocolMessage(pair.second.first, pair.first,
-                              pair.second.second);
+      DispatchProtocolMessage(pair.second.session_id, pair.first,
+                              pair.second.method, pair.second.message);
     }
   }
   GrantPolicy();
@@ -198,10 +199,11 @@ void RenderFrameDevToolsAgentHost::FrameHostHolder::RevokePolicy() {
 void RenderFrameDevToolsAgentHost::FrameHostHolder::DispatchProtocolMessage(
     int session_id,
     int call_id,
+    const std::string& method,
     const std::string& message) {
   host_->Send(new DevToolsAgentMsg_DispatchOnInspectorBackend(
-      host_->GetRoutingID(), session_id, message));
-  sent_messages_[call_id] = std::make_pair(session_id, message);
+      host_->GetRoutingID(), session_id, call_id, method, message));
+  sent_messages_[call_id] = { session_id, method, message };
 }
 
 void RenderFrameDevToolsAgentHost::FrameHostHolder::InspectElement(
@@ -459,20 +461,22 @@ void RenderFrameDevToolsAgentHost::Detach() {
 bool RenderFrameDevToolsAgentHost::DispatchProtocolMessage(
     const std::string& message) {
   int call_id = 0;
-  if (protocol_handler_->HandleOptionalMessage(session_id(), message, &call_id))
+  std::string method;
+  if (protocol_handler_->HandleOptionalMessage(session_id(), message, &call_id,
+                                               &method))
     return true;
 
   if (!navigating_handles_.empty()) {
     DCHECK(IsBrowserSideNavigationEnabled());
     in_navigation_protocol_message_buffer_[call_id] =
-        std::make_pair(session_id(), message);
+        { session_id(), method, message };
     return true;
   }
 
   if (current_)
-    current_->DispatchProtocolMessage(session_id(), call_id, message);
+    current_->DispatchProtocolMessage(session_id(), call_id, method, message);
   if (pending_)
-    pending_->DispatchProtocolMessage(session_id(), call_id, message);
+    pending_->DispatchProtocolMessage(session_id(), call_id, method, message);
   return true;
 }
 
@@ -746,8 +750,9 @@ void RenderFrameDevToolsAgentHost::
       in_navigation_protocol_message_buffer_.size()) {
     DCHECK(current_);
     for (const auto& pair : in_navigation_protocol_message_buffer_) {
-      current_->DispatchProtocolMessage(pair.second.first, pair.first,
-                                        pair.second.second);
+      current_->DispatchProtocolMessage(
+          pair.second.session_id, pair.first, pair.second.method,
+          pair.second.message);
     }
     in_navigation_protocol_message_buffer_.clear();
   }

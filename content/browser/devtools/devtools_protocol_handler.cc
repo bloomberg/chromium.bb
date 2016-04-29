@@ -60,14 +60,15 @@ void DevToolsProtocolHandler::HandleMessage(int session_id,
 
 bool DevToolsProtocolHandler::HandleOptionalMessage(int session_id,
                                                     const std::string& message,
-                                                    int* call_id) {
+                                                    int* call_id,
+                                                    std::string* method) {
   std::unique_ptr<base::DictionaryValue> command =
       ParseCommand(session_id, message);
   if (!command)
     return true;
   if (PassCommandToDelegate(session_id, command.get()))
     return true;
-  return HandleOptionalCommand(session_id, std::move(command), call_id);
+  return HandleOptionalCommand(session_id, std::move(command), call_id, method);
 }
 
 bool DevToolsProtocolHandler::PassCommandToDelegate(
@@ -146,13 +147,13 @@ void DevToolsProtocolHandler::HandleCommand(
 bool DevToolsProtocolHandler::HandleOptionalCommand(
     int session_id,
     std::unique_ptr<base::DictionaryValue> command,
-    int* call_id) {
+    int* call_id,
+    std::string* method) {
   *call_id = DevToolsCommandId::kNoId;
-  std::string method;
   command->GetInteger(kIdParam, call_id);
-  command->GetString(kMethodParam, &method);
+  command->GetString(kMethodParam, method);
   DevToolsProtocolDispatcher::CommandHandler command_handler(
-      dispatcher_.FindCommandHandler(method));
+      dispatcher_.FindCommandHandler(*method));
   if (!command_handler.is_null()) {
     return command_handler.Run(DevToolsCommandId(*call_id, session_id),
                                TakeDictionary(command.get(), kParamsParam));

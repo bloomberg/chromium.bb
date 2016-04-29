@@ -61,18 +61,19 @@ DevToolsAgentFilter::~DevToolsAgentFilter() {}
 
 void DevToolsAgentFilter::OnDispatchOnInspectorBackend(
     int session_id,
+    int call_id,
+    const std::string& method,
     const std::string& message) {
   if (embedded_worker_routes_.find(current_routing_id_) !=
       embedded_worker_routes_.end()) {
     return;
   }
 
-  if (WebDevToolsAgent::shouldInterruptForMessage(
-          WebString::fromUTF8(message))) {
+  if (WebDevToolsAgent::shouldInterruptForMethod(
+          WebString::fromUTF8(method))) {
     WebDevToolsAgent::interruptAndDispatch(
         session_id, new MessageImpl(message, current_routing_id_));
   }
-
 }
 
 void DevToolsAgentFilter::AddEmbeddedWorkerRouteOnMainThread(

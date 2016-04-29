@@ -35,7 +35,10 @@ class EmbeddedWorkerDevToolsAgent : public IPC::Listener {
                   int session_id,
                   const std::string& state);
   void OnDetach();
-  void OnDispatchOnInspectorBackend(int session_id, const std::string& message);
+  void OnDispatchOnInspectorBackend(int session_id,
+                                    int call_id,
+                                    const std::string& method,
+                                    const std::string& message);
 
   blink::WebEmbeddedWorker* webworker_;
   int route_id_;

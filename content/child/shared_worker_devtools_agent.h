@@ -38,7 +38,11 @@ class SharedWorkerDevToolsAgent {
                   int session_id,
                   const std::string& state);
   void OnDetach();
-  void OnDispatchOnInspectorBackend(int session_id, const std::string& message);
+  void OnDispatchOnInspectorBackend(
+      int session_id,
+      int call_id,
+      const std::string& method,
+      const std::string& message);
 
   bool Send(IPC::Message* message);
   const int route_id_;

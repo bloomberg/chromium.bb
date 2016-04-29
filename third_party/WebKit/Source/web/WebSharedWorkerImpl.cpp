@@ -384,13 +384,13 @@ void WebSharedWorkerImpl::detachDevTools()
         devtoolsAgent->detach();
 }
 
-void WebSharedWorkerImpl::dispatchDevToolsMessage(int sessionId, const WebString& message)
+void WebSharedWorkerImpl::dispatchDevToolsMessage(int sessionId, int callId, const WebString& method, const WebString& message)
 {
     if (m_askedToTerminate)
         return;
     WebDevToolsAgent* devtoolsAgent = m_mainFrame->devToolsAgent();
     if (devtoolsAgent)
-        devtoolsAgent->dispatchOnInspectorBackend(sessionId, message);
+        devtoolsAgent->dispatchOnInspectorBackend(sessionId, callId, method, message);
 }
 
 WebSharedWorker* WebSharedWorker::create(WebSharedWorkerClient* client)

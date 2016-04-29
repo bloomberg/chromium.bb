@@ -196,13 +196,13 @@ void WebEmbeddedWorkerImpl::detachDevTools()
         devtoolsAgent->detach();
 }
 
-void WebEmbeddedWorkerImpl::dispatchDevToolsMessage(int sessionId, const WebString& message)
+void WebEmbeddedWorkerImpl::dispatchDevToolsMessage(int sessionId, int callId, const WebString& method, const WebString& message)
 {
     if (m_askedToTerminate)
         return;
     WebDevToolsAgent* devtoolsAgent = m_mainFrame->devToolsAgent();
     if (devtoolsAgent)
-        devtoolsAgent->dispatchOnInspectorBackend(sessionId, message);
+        devtoolsAgent->dispatchOnInspectorBackend(sessionId, callId, method, message);
 }
 
 void WebEmbeddedWorkerImpl::addMessageToConsole(const WebConsoleMessage& message)

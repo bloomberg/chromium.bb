@@ -49,7 +49,7 @@ public:
 
     virtual void continueProgram() = 0;
 
-    virtual void dispatchOnInspectorBackend(int sessionId, const WebString& message) = 0;
+    virtual void dispatchOnInspectorBackend(int sessionId, int callId, const WebString& method, const WebString& message) = 0;
 
     virtual void inspectElementAt(const WebPoint&) = 0;
     virtual void failedToRequestDevTools() = 0;
@@ -65,7 +65,7 @@ public:
     };
     // Asynchronously request debugger to pause immediately and run the command.
     BLINK_EXPORT static void interruptAndDispatch(int sessionId, MessageDescriptor*);
-    BLINK_EXPORT static bool shouldInterruptForMessage(const WebString&);
+    BLINK_EXPORT static bool shouldInterruptForMethod(const WebString&);
 
 };
 

@@ -93,8 +93,10 @@ IPC_MESSAGE_ROUTED3(DevToolsAgentMsg_Reattach,
 IPC_MESSAGE_ROUTED0(DevToolsAgentMsg_Detach)
 
 // WebKit-level transport.
-IPC_MESSAGE_ROUTED2(DevToolsAgentMsg_DispatchOnInspectorBackend,
+IPC_MESSAGE_ROUTED4(DevToolsAgentMsg_DispatchOnInspectorBackend,
                     int /* session_id */,
+                    int /* call_id */,
+                    std::string /* method */,
                     std::string /* message */)
 
 // Inspect element with the given coordinates.

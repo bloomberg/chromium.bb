@@ -228,9 +228,13 @@ void DevToolsAgent::OnDetach() {
 }
 
 void DevToolsAgent::OnDispatchOnInspectorBackend(int session_id,
+                                                 int call_id,
+                                                 const std::string& method,
                                                  const std::string& message) {
   TRACE_EVENT0("devtools", "DevToolsAgent::OnDispatchOnInspectorBackend");
   GetWebAgent()->dispatchOnInspectorBackend(session_id,
+                                            call_id,
+                                            WebString::fromUTF8(method),
                                             WebString::fromUTF8(message));
 }
 

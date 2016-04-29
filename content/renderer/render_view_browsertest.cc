@@ -394,8 +394,9 @@ class DevToolsAgentTest : public RenderViewImplTest {
     return agent()->paused_;
   }
 
-  void DispatchDevToolsMessage(const std::string& message) {
-    agent()->OnDispatchOnInspectorBackend(17, message);
+  void DispatchDevToolsMessage(const std::string& method,
+                               const std::string& message) {
+    agent()->OnDispatchOnInspectorBackend(17, 1, method, message);
   }
 
   void CloseWhilePaused() {
@@ -2370,7 +2371,8 @@ TEST_F(RenderViewImplScaleFactorTest, AutoResizeWithoutZoomForDSF) {
 TEST_F(DevToolsAgentTest, DevToolsResumeOnClose) {
   Attach();
   EXPECT_FALSE(IsPaused());
-  DispatchDevToolsMessage("{\"id\":1,\"method\":\"Debugger.enable\"}");
+  DispatchDevToolsMessage("Debugger.enable",
+                          "{\"id\":1,\"method\":\"Debugger.enable\"}");
 
   // Executing javascript will pause the thread and create nested message loop.
   // Posting task simulates message coming from browser.
@@ -2387,13 +2389,15 @@ TEST_F(DevToolsAgentTest, DevToolsResumeOnClose) {
 TEST_F(DevToolsAgentTest, RuntimeEnableForcesContexts) {
   LoadHTML("<body>page<iframe></iframe></body>");
   Attach();
-  DispatchDevToolsMessage("{\"id\":1,\"method\":\"Runtime.enable\"}");
+  DispatchDevToolsMessage("Runtime.enable",
+                          "{\"id\":1,\"method\":\"Runtime.enable\"}");
   EXPECT_EQ(2, CountNotifications("Runtime.executionContextCreated"));
 }
 
 TEST_F(DevToolsAgentTest, RuntimeEnableForcesContextsAfterNavigation) {
   Attach();
-  DispatchDevToolsMessage("{\"id\":1,\"method\":\"Runtime.enable\"}");
+  DispatchDevToolsMessage("Runtime.enable",
+                          "{\"id\":1,\"method\":\"Runtime.enable\"}");
   EXPECT_EQ(0, CountNotifications("Runtime.executionContextCreated"));
   LoadHTML("<body>page<iframe></iframe></body>");
   EXPECT_EQ(2, CountNotifications("Runtime.executionContextCreated"));

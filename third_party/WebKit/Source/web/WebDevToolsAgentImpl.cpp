@@ -554,11 +554,11 @@ void WebDevToolsAgentImpl::setCPUThrottlingRate(double rate)
     m_client->setCPUThrottlingRate(rate);
 }
 
-void WebDevToolsAgentImpl::dispatchOnInspectorBackend(int sessionId, const WebString& message)
+void WebDevToolsAgentImpl::dispatchOnInspectorBackend(int sessionId, int callId, const WebString& method, const WebString& message)
 {
     if (!attached())
         return;
-    if (WebDevToolsAgent::shouldInterruptForMessage(message))
+    if (WebDevToolsAgent::shouldInterruptForMethod(method))
         MainThreadDebugger::instance()->taskRunner()->runAllTasksDontWait();
     else
         dispatchMessageFromFrontend(sessionId, message);
@@ -677,16 +677,13 @@ void WebDevToolsAgent::interruptAndDispatch(int sessionId, MessageDescriptor* ra
     MainThreadDebugger::interruptMainThreadAndRun(threadSafeBind(WebDevToolsAgentImpl::runDebuggerTask, sessionId, passed(adoptPtr(rawDescriptor))));
 }
 
-bool WebDevToolsAgent::shouldInterruptForMessage(const WebString& message)
+bool WebDevToolsAgent::shouldInterruptForMethod(const WebString& method)
 {
-    String16 commandName;
-    if (!protocol::Dispatcher::getCommandName(message, &commandName))
-        return false;
-    return commandName == "Debugger.pause"
-        || commandName == "Debugger.setBreakpoint"
-        || commandName == "Debugger.setBreakpointByUrl"
-        || commandName == "Debugger.removeBreakpoint"
-        || commandName == "Debugger.setBreakpointsActive";
+    return method == "Debugger.pause"
+        || method == "Debugger.setBreakpoint"
+        || method == "Debugger.setBreakpointByUrl"
+        || method == "Debugger.removeBreakpoint"
+        || method == "Debugger.setBreakpointsActive";
 }
 
 } // namespace blink

@@ -106,7 +106,7 @@ public:
     void attachDevTools(const WebString& hostId, int sessionId) override;
     void reattachDevTools(const WebString& hostId, int sesionId, const WebString& savedState) override;
     void detachDevTools() override;
-    void dispatchDevToolsMessage(int sessionId, const WebString&) override;
+    void dispatchDevToolsMessage(int sessionId, int callId, const WebString& method, const WebString& message) override;
 
 private:
     ~WebSharedWorkerImpl() override;

@@ -46,12 +46,14 @@ bool WorkerDevToolsAgentHost::DispatchProtocolMessage(
     return true;
 
   int call_id;
-  if (protocol_handler_->HandleOptionalMessage(session_id(), message, &call_id))
+  std::string method;
+  if (protocol_handler_->HandleOptionalMessage(session_id(), message, &call_id,
+                                               &method))
     return true;
 
   if (RenderProcessHost* host = RenderProcessHost::FromID(worker_id_.first)) {
     host->Send(new DevToolsAgentMsg_DispatchOnInspectorBackend(
-        worker_id_.second, session_id(), message));
+        worker_id_.second, session_id(), call_id, method, message));
   }
   return true;
 }
