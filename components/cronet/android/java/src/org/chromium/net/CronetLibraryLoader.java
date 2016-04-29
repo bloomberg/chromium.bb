@@ -17,23 +17,24 @@ import org.chromium.base.annotations.JNINamespace;
  */
 @JNINamespace("cronet")
 class CronetLibraryLoader {
-    /**
-     * Synchronize access to sInitTaskPosted and initialization routine.
-     */
+    // Synchronize initialization.
     private static final Object sLoadLock = new Object();
     private static final String TAG = "CronetLibraryLoader";
-    private static boolean sInitTaskPosted = false;
+    // Has library loading commenced?  Setting guarded by sLoadLock.
+    private static volatile boolean sInitStarted = false;
+    // Has ensureMainThreadInitialized() completed?  Only accessed on main thread.
+    private static boolean sMainThreadInitDone = false;
 
     /**
      * Ensure that native library is loaded and initialized. Can be called from
      * any thread, the load and initialization is performed on main thread.
      */
-    public static void ensureInitialized(
-            final Context context, final CronetEngine.Builder builder) {
+    static void ensureInitialized(final Context context, final CronetEngine.Builder builder) {
         synchronized (sLoadLock) {
-            if (sInitTaskPosted) {
+            if (sInitStarted) {
                 return;
             }
+            sInitStarted = true;
             ContextUtils.initApplicationContext(context.getApplicationContext());
             builder.loadLibrary();
             ContextUtils.initApplicationContextForNative();
@@ -50,7 +51,7 @@ class CronetLibraryLoader {
             Runnable task = new Runnable() {
                 @Override
                 public void run() {
-                    initOnMainThread(context);
+                    ensureInitializedOnMainThread(context);
                 }
             };
             // Run task immediately or post it to the UI thread.
@@ -61,11 +62,20 @@ class CronetLibraryLoader {
                 // to other tasks posted to the main thread.
                 new Handler(Looper.getMainLooper()).post(task);
             }
-            sInitTaskPosted = true;
         }
     }
 
-    private static void initOnMainThread(final Context context) {
+    /**
+     * Ensure that the main thread initialization has completed. Can only be called from
+     * the main thread. Ensures that the NetworkChangeNotifier is initialzied and the
+     * main thread native MessageLoop is initialized.
+     */
+    static void ensureInitializedOnMainThread(Context context) {
+        assert sInitStarted;
+        assert Looper.getMainLooper() == Looper.myLooper();
+        if (sMainThreadInitDone) {
+            return;
+        }
         NetworkChangeNotifier.init(context);
         // Registers to always receive network notifications. Note
         // that this call is fine for Cronet because Cronet
@@ -78,6 +88,7 @@ class CronetLibraryLoader {
         // the undesired initial network change observer notification, which
         // will cause active requests to fail with ERR_NETWORK_CHANGED.
         nativeCronetInitOnMainThread();
+        sMainThreadInitDone = true;
     }
 
     // Native methods are implemented in cronet_library_loader.cc.
