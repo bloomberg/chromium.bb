@@ -84,3 +84,6 @@ SigninErrorNotifierTest.NoErrorAuthStatusProviders
 
 # https://crbug.com/577410
 PluginInfoMessageFilterTest.FindEnabledPlugin
+
+# http://crbug.com/
+BackgroundApplicationListModelTest.*
