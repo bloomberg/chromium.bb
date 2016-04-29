@@ -1704,6 +1704,18 @@ source_set("net_fuzzer_test_support") {
   ]
 }
 
+fuzzer_test("net_data_job_fuzzer") {
+  sources = [
+    "url_request/url_request_data_job_fuzzer.cc",
+  ]
+  deps = [
+    ":net_fuzzer_test_support",
+    ":test_support",
+    "//base",
+    "//net",
+  ]
+}
+
 fuzzer_test("net_mime_sniffer_fuzzer") {
   sources = [
     "base/mime_sniffer_fuzzer.cc",

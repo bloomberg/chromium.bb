@@ -51,6 +51,9 @@ class FuzzedDataProvider {
   // ConsumeValueInRange(0, 0xFFFF).
   uint16_t ConsumeUint16();
 
+  // Reports the remaining bytes available for fuzzed input.
+  size_t remaining_bytes() { return remaining_data_.length(); }
+
  private:
   base::StringPiece remaining_data_;
 
