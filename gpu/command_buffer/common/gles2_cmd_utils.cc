@@ -1067,30 +1067,16 @@ uint32_t GLES2Util::GetGLReadPixelsImplementationType(uint32_t internal_format,
     case GL_RG32F:
     case GL_RGB32F:
     case GL_RGBA32F:
-      return GL_FLOAT;
+    case GL_R11F_G11F_B10F:
+      return GL_UNSIGNED_BYTE;
     case GL_R16F:
     case GL_RG16F:
-    case GL_R11F_G11F_B10F:
     case GL_RGB16F:
     case GL_RGBA16F:
-      // TODO(zmo): Consider return GL_UNSIGNED_INT_10F_11F_11F_REV and
-      // GL_HALF_FLOAT.
-      return GL_FLOAT;
-    case GL_RGBA:
-    case GL_RGB:
-      // Unsized internal format, check the type
-      switch (texture_type) {
-        case GL_FLOAT:
-        case GL_HALF_FLOAT_OES:
-          return GL_FLOAT;
-        // TODO(zmo): Consider return GL_UNSIGNED_SHORT_5_6_5,
-        // GL_UNSIGNED_SHORT_4_4_4_4, GL_UNSIGNED_SHORT_5_5_5_1, and
-        // GL_UNSIGNED_INT_2_10_10_10_REV.
-        default:
-          return GL_UNSIGNED_BYTE;
-      }
+      return GL_HALF_FLOAT;
     default:
-      return GL_UNSIGNED_BYTE;
+      // Unsized internal format.
+      return texture_type;
   }
 }
 

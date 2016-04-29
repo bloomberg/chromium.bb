@@ -104,9 +104,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/textures/misc/tex-sub-image-2d-bad-args.html',
         bug=570453)
 
-    self.Fail('conformance/extensions/oes-texture-half-float.html',
-        bug=607283)
-
     # Fails on multiple platforms
 
     # OpenGL / NVIDIA failures
@@ -114,6 +111,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'linux', 'nvidia', 'opengl'], bug=1007) # angle bug ID
 
     # Win failures
+    self.Fail('conformance/extensions/oes-texture-half-float.html',
+        ['win'], bug=607283)
     # Note that the following two tests pass with OpenGL.
     self.Fail('conformance/glsl/bugs/' +
               'pow-of-small-constant-in-user-defined-function.html',
