@@ -40,6 +40,15 @@ source_set("os_crypt") {
   if (is_win) {
     libs = [ "crypt32.lib" ]
   }
+
+  if (is_desktop_linux) {
+    sources += [
+      "libsecret_util_posix.cc",
+      "libsecret_util_posix.h",
+    ]
+    deps += [ "//third_party/libsecret" ]
+    defines = [ "USE_LIBSECRET" ]
+  }
 }
 
 source_set("unit_tests") {

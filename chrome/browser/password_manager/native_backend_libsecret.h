@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_PASSWORD_MANAGER_NATIVE_BACKEND_LIBSECRET_H_
 #define CHROME_BROWSER_PASSWORD_MANAGER_NATIVE_BACKEND_LIBSECRET_H_
 
-#include <libsecret/secret.h>
-
 #include <string>
 
 #include "base/compiler_specific.h"
@@ -16,39 +14,13 @@
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/password_manager/password_store_x.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/os_crypt/libsecret_util_posix.h"
 
 namespace autofill {
 struct PasswordForm;
 }
 
-class LibsecretLoader {
- public:
-  static decltype(&::secret_password_store_sync) secret_password_store_sync;
-  static decltype(&::secret_service_search_sync) secret_service_search_sync;
-  static decltype(&::secret_password_clear_sync) secret_password_clear_sync;
-  static decltype(&::secret_item_get_secret) secret_item_get_secret;
-  static decltype(&::secret_value_get_text) secret_value_get_text;
-  static decltype(&::secret_item_get_attributes) secret_item_get_attributes;
-  static decltype(&::secret_item_load_secret_sync) secret_item_load_secret_sync;
-  static decltype(&::secret_value_unref) secret_value_unref;
-
- protected:
-  static bool LoadLibsecret();
-  static bool LibsecretIsAvailable();
-
-  static bool libsecret_loaded;
-
- private:
-  struct FunctionInfo {
-    const char* name;
-    void** pointer;
-  };
-
-  static const FunctionInfo functions[];
-};
-
-class NativeBackendLibsecret : public PasswordStoreX::NativeBackend,
-                               public LibsecretLoader {
+class NativeBackendLibsecret : public PasswordStoreX::NativeBackend {
  public:
   explicit NativeBackendLibsecret(LocalProfileId id);
 

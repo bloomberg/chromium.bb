@@ -215,7 +215,7 @@ class MockLibsecretLoader : public LibsecretLoader {
                                    mock_secret_item_load_secret_sync;
     secret_value_unref =
         (decltype(&::secret_value_unref)) & mock_secret_value_unref;
-    libsecret_loaded = true;
+    libsecret_loaded_ = true;
     // Reset the state of the mock library.
     global_mock_libsecret_items->clear();
     global_mock_libsecret_reject_local_ids = false;

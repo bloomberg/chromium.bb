@@ -50,6 +50,18 @@
             },
           },
         }],
+        ['OS=="linux" and chromeos!=1', {
+          'sources': [ 
+            'os_crypt/libsecret_util_posix.cc',
+            'os_crypt/libsecret_util_posix.h',
+          ],
+          'defines': [
+            'USE_LIBSECRET',
+          ],
+          'include_dirs' : [
+            '../third_party/libsecret/'
+          ],
+        }],
       ],
       'target_conditions': [
         ['OS=="ios"', {

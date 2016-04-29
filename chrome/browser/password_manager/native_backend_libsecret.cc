@@ -4,9 +4,10 @@
 
 #include "chrome/browser/password_manager/native_backend_libsecret.h"
 
-#include <dlfcn.h>
 #include <stddef.h>
 #include <stdint.h>
+
+#include <libsecret/secret.h>
 
 #include <limits>
 #include <list>
@@ -31,68 +32,6 @@ namespace {
 const char kEmptyString[] = "";
 const int kMaxPossibleTimeTValue = std::numeric_limits<int>::max();
 }  // namespace
-
-typeof(&::secret_password_store_sync)
-    LibsecretLoader::secret_password_store_sync;
-typeof(&::secret_service_search_sync)
-    LibsecretLoader::secret_service_search_sync;
-typeof(&::secret_password_clear_sync)
-    LibsecretLoader::secret_password_clear_sync;
-typeof(&::secret_item_get_secret) LibsecretLoader::secret_item_get_secret;
-typeof(&::secret_value_get_text) LibsecretLoader::secret_value_get_text;
-typeof(&::secret_item_get_attributes)
-    LibsecretLoader::secret_item_get_attributes;
-typeof(&::secret_item_load_secret_sync)
-    LibsecretLoader::secret_item_load_secret_sync;
-typeof(&::secret_value_unref) LibsecretLoader::secret_value_unref;
-
-bool LibsecretLoader::libsecret_loaded = false;
-
-const LibsecretLoader::FunctionInfo LibsecretLoader::functions[] = {
-    {"secret_password_store_sync",
-     reinterpret_cast<void**>(&secret_password_store_sync)},
-    {"secret_service_search_sync",
-     reinterpret_cast<void**>(&secret_service_search_sync)},
-    {"secret_password_clear_sync",
-     reinterpret_cast<void**>(&secret_password_clear_sync)},
-    {"secret_item_get_secret",
-     reinterpret_cast<void**>(&secret_item_get_secret)},
-    {"secret_value_get_text", reinterpret_cast<void**>(&secret_value_get_text)},
-    {"secret_item_get_attributes",
-     reinterpret_cast<void**>(&secret_item_get_attributes)},
-    {"secret_item_load_secret_sync",
-     reinterpret_cast<void**>(&secret_item_load_secret_sync)},
-    {"secret_value_unref", reinterpret_cast<void**>(&secret_value_unref)},
-    {nullptr, nullptr}};
-
-bool LibsecretLoader::LoadLibsecret() {
-  if (libsecret_loaded)
-    return true;
-
-  void* handle = dlopen("libsecret-1.so.0", RTLD_NOW | RTLD_GLOBAL);
-  if (!handle) {
-    // We wanted to use libsecret, but we couldn't load it. Warn, because
-    // either the user asked for this, or we autodetected it incorrectly. (Or
-    // the system has broken libraries, which is also good to warn about.)
-    LOG(WARNING) << "Could not load libsecret-1.so.0: " << dlerror();
-    return false;
-  }
-
-  for (size_t i = 0; functions[i].name; ++i) {
-    dlerror();
-    *functions[i].pointer = dlsym(handle, functions[i].name);
-    const char* error = dlerror();
-    if (error) {
-      VLOG(1) << "Unable to load symbol " << functions[i].name << ": " << error;
-      dlclose(handle);
-      return false;
-    }
-  }
-
-  libsecret_loaded = true;
-  // We leak the library handle. That's OK: this function is called only once.
-  return true;
-}
 
 namespace {
 
@@ -215,48 +154,6 @@ std::unique_ptr<PasswordForm> FormOutOfAttributes(GHashTable* attrs) {
   return form;
 }
 
-class LibsecretAttributesBuilder {
- public:
-  LibsecretAttributesBuilder();
-  ~LibsecretAttributesBuilder();
-  void Append(const std::string& name, const std::string& value);
-  void Append(const std::string& name, int64_t value);
-  // GHashTable, its keys and values returned from Get() are destroyed in
-  // |LibsecretAttributesBuilder| desctructor.
-  GHashTable* Get() { return attrs_; }
-
- private:
-  // |name_values_| is a storage for strings referenced in |attrs_|.
-  std::list<std::string> name_values_;
-  GHashTable* attrs_;
-};
-
-LibsecretAttributesBuilder::LibsecretAttributesBuilder() {
-  attrs_ = g_hash_table_new_full(g_str_hash, g_str_equal,
-                                 nullptr,   // no deleter for keys
-                                 nullptr);  // no deleter for values
-}
-
-LibsecretAttributesBuilder::~LibsecretAttributesBuilder() {
-  g_hash_table_destroy(attrs_);
-}
-
-void LibsecretAttributesBuilder::Append(const std::string& name,
-                                        const std::string& value) {
-  name_values_.push_back(name);
-  gpointer name_str =
-      static_cast<gpointer>(const_cast<char*>(name_values_.back().c_str()));
-  name_values_.push_back(value);
-  gpointer value_str =
-      static_cast<gpointer>(const_cast<char*>(name_values_.back().c_str()));
-  g_hash_table_insert(attrs_, name_str, value_str);
-}
-
-void LibsecretAttributesBuilder::Append(const std::string& name,
-                                        int64_t value) {
-  Append(name, base::Int64ToString(value));
-}
-
 // Generates a profile-specific app string based on profile_id_.
 std::string GetProfileSpecificAppString(LocalProfileId id) {
   // Originally, the application string was always just "chrome" and used only
@@ -267,30 +164,6 @@ std::string GetProfileSpecificAppString(LocalProfileId id) {
 
 }  // namespace
 
-bool LibsecretLoader::LibsecretIsAvailable() {
-  if (!libsecret_loaded)
-    return false;
-  // A dummy query is made to check for availability, because libsecret doesn't
-  // have a dedicated availability function. For performance reasons, the query
-  // is meant to return an empty result.
-  LibsecretAttributesBuilder attrs;
-  attrs.Append("application", "chrome-string_to_get_empty_result");
-
-  GError* error = nullptr;
-  GList* found = secret_service_search_sync(nullptr,  // default secret service
-                                            &kLibsecretSchema, attrs.Get(),
-                                            SECRET_SEARCH_ALL,
-                                            nullptr,  // no cancellable ojbect
-                                            &error);
-  bool success = (error == nullptr);
-  if (error)
-    g_error_free(error);
-  if (found)
-    g_list_free(found);
-
-  return success;
-}
-
 NativeBackendLibsecret::NativeBackendLibsecret(LocalProfileId id)
     : app_string_(GetProfileSpecificAppString(id)) {
 }
@@ -299,7 +172,7 @@ NativeBackendLibsecret::~NativeBackendLibsecret() {
 }
 
 bool NativeBackendLibsecret::Init() {
-  return LoadLibsecret() && LibsecretIsAvailable();
+  return LibsecretLoader::EnsureLibsecretLoaded();
 }
 
 password_manager::PasswordStoreChangeList NativeBackendLibsecret::AddLogin(
@@ -373,14 +246,14 @@ bool NativeBackendLibsecret::RemoveLogin(
     password_manager::PasswordStoreChangeList* changes) {
   DCHECK(changes);
   GError* error = nullptr;
-  if (secret_password_clear_sync(
-          &kLibsecretSchema, nullptr, &error,
-          "origin_url", form.origin.spec().c_str(),
-          "username_element", UTF16ToUTF8(form.username_element).c_str(),
-          "username_value", UTF16ToUTF8(form.username_value).c_str(),
-          "password_element", UTF16ToUTF8(form.password_element).c_str(),
-          "signon_realm", form.signon_realm.c_str(),
-          "application", app_string_.c_str(), nullptr)) {
+  if (LibsecretLoader::secret_password_clear_sync(
+          &kLibsecretSchema, nullptr, &error, "origin_url",
+          form.origin.spec().c_str(), "username_element",
+          UTF16ToUTF8(form.username_element).c_str(), "username_value",
+          UTF16ToUTF8(form.username_value).c_str(), "password_element",
+          UTF16ToUTF8(form.password_element).c_str(), "signon_realm",
+          form.signon_realm.c_str(), "application", app_string_.c_str(),
+          nullptr)) {
     changes->push_back(password_manager::PasswordStoreChange(
         password_manager::PasswordStoreChange::REMOVE, form));
   }
@@ -443,11 +316,11 @@ bool NativeBackendLibsecret::AddUpdateLoginSearch(
   attrs.Append("application", app_string_);
 
   GError* error = nullptr;
-  GList* found = secret_service_search_sync(nullptr,  // default secret service
-                                            &kLibsecretSchema, attrs.Get(),
-                                            SECRET_SEARCH_ALL,
-                                            nullptr,  // no cancellable ojbect
-                                            &error);
+  GList* found = LibsecretLoader::secret_service_search_sync(
+      nullptr,  // default secret service
+      &kLibsecretSchema, attrs.Get(), SECRET_SEARCH_ALL,
+      nullptr,  // no cancellable ojbect
+      &error);
   if (error) {
     LOG(ERROR) << "Unable to get logins " << error->message;
     g_error_free(error);
@@ -471,7 +344,7 @@ bool NativeBackendLibsecret::RawAddLogin(const PasswordForm& form) {
   SerializeFormDataToBase64String(form.form_data, &form_data);
   GError* error = nullptr;
   // clang-format off
-  secret_password_store_sync(
+  LibsecretLoader::secret_password_store_sync(
       &kLibsecretSchema,
       nullptr,                     // Default collection.
       form.origin.spec().c_str(),  // Display name.
@@ -546,11 +419,11 @@ bool NativeBackendLibsecret::GetLoginsList(
     attrs.Append("signon_realm", lookup_form->signon_realm);
 
   GError* error = nullptr;
-  GList* found = secret_service_search_sync(nullptr,  // default secret service
-                                            &kLibsecretSchema, attrs.Get(),
-                                            SECRET_SEARCH_ALL,
-                                            nullptr,  // no cancellable ojbect
-                                            &error);
+  GList* found = LibsecretLoader::secret_service_search_sync(
+      nullptr,  // default secret service
+      &kLibsecretSchema, attrs.Get(), SECRET_SEARCH_ALL,
+      nullptr,  // no cancellable ojbect
+      &error);
   if (error) {
     LOG(ERROR) << "Unable to get logins " << error->message;
     g_error_free(error);
@@ -646,7 +519,7 @@ ScopedVector<autofill::PasswordForm> NativeBackendLibsecret::ConvertFormList(
       error = nullptr;
       continue;
     }
-    GHashTable* attrs = secret_item_get_attributes(secretItem);
+    GHashTable* attrs = LibsecretLoader::secret_item_get_attributes(secretItem);
     std::unique_ptr<PasswordForm> form(FormOutOfAttributes(attrs));
     g_hash_table_unref(attrs);
     if (form) {
@@ -667,10 +540,12 @@ ScopedVector<autofill::PasswordForm> NativeBackendLibsecret::ConvertFormList(
           continue;
         }
       }
-      SecretValue* secretValue = secret_item_get_secret(secretItem);
+      SecretValue* secretValue =
+          LibsecretLoader::secret_item_get_secret(secretItem);
       if (secretValue) {
-        form->password_value = UTF8ToUTF16(secret_value_get_text(secretValue));
-        secret_value_unref(secretValue);
+        form->password_value =
+            UTF8ToUTF16(LibsecretLoader::secret_value_get_text(secretValue));
+        LibsecretLoader::secret_value_unref(secretValue);
       } else {
         LOG(WARNING) << "Unable to access password from list element!";
       }
