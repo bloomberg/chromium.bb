@@ -25,9 +25,9 @@ public class JniInterface {
      * @param context The Application context.
      */
     public static void loadLibrary(Context context) {
-        ContextUtils.initApplicationContext(context.getApplicationContext());
         System.loadLibrary("remoting_client_jni");
-        ContextUtils.initApplicationContextForNative();
+
+        ContextUtils.initApplicationContext(context);
         nativeLoadNative();
     }
 

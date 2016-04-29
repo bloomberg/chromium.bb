@@ -17,7 +17,6 @@ import org.chromium.base.metrics.RecordHistogram;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * This class provides the path related methods for the native library.
@@ -31,7 +30,6 @@ public abstract class PathUtils {
     private static final int DATABASE_DIRECTORY = 2;
     private static final int CACHE_DIRECTORY = 3;
     private static final int NUM_DIRECTORIES = 4;
-    private static final AtomicBoolean sInitializationStarted = new AtomicBoolean();
     private static AsyncTask<Void, Void, String[]> sDirPathFetchTask;
 
     // In setPrivateDataDirectorySuffix(), we store the app's context. If the AsyncTask started in
@@ -125,18 +123,14 @@ public abstract class PathUtils {
      * @see Context#getDir(String, int)
      */
     public static void setPrivateDataDirectorySuffix(String suffix, Context context) {
-        // This method should only be called once, but many tests end up calling it multiple times,
-        // so adding a guard here.
-        if (!sInitializationStarted.getAndSet(true)) {
-            sDataDirectorySuffix = suffix;
-            sDataDirectoryAppContext = context.getApplicationContext();
-            sDirPathFetchTask = new AsyncTask<Void, Void, String[]>() {
-                @Override
-                protected String[] doInBackground(Void... unused) {
-                    return PathUtils.setPrivateDataDirectorySuffixInternal();
-                }
-            }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-        }
+        sDataDirectorySuffix = suffix;
+        sDataDirectoryAppContext = context.getApplicationContext();
+        sDirPathFetchTask = new AsyncTask<Void, Void, String[]>() {
+            @Override
+            protected String[] doInBackground(Void... unused) {
+                return PathUtils.setPrivateDataDirectorySuffixInternal();
+            }
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     /**

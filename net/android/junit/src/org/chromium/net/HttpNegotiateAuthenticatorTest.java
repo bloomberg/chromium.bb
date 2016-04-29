@@ -98,7 +98,7 @@ public class HttpNegotiateAuthenticatorTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        ContextUtils.initApplicationContextForTests(Robolectric.application);
+        ContextUtils.initApplicationContextForJUnitTests(Robolectric.application);
     }
 
     @After

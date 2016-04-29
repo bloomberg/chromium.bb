@@ -6,7 +6,6 @@ package org.chromium.native_test;
 
 import android.os.Bundle;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.PathUtils;
 import org.chromium.base.PowerMonitor;
@@ -30,7 +29,6 @@ public class NativeUnitTestActivity extends NativeTestActivity {
         // Needed by system_monitor_unittest.cc
         PowerMonitor.createForTests(this);
 
-        ContextUtils.initApplicationContext(getApplicationContext());
         loadLibraries();
     }
 
@@ -40,6 +38,5 @@ public class NativeUnitTestActivity extends NativeTestActivity {
             System.loadLibrary(library);
             Log.i(TAG, "loaded: %s", library);
         }
-        ContextUtils.initApplicationContextForNative();
     }
 }

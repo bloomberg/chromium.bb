@@ -41,7 +41,7 @@ public class WebRestrictionsClientTest {
 
     @Before
     public void setUp() {
-        ContextUtils.initApplicationContextForTests(Robolectric.application);
+        ContextUtils.initApplicationContextForJUnitTests(Robolectric.application);
         mTestClient = Mockito.spy(new WebRestrictionsClient());
         Mockito.doNothing().when(mTestClient).nativeNotifyWebRestrictionsChanged(anyLong());
         mProvider = Mockito.mock(ContentProvider.class);

@@ -6,7 +6,6 @@ package org.chromium.resource_provider;
 
 import android.content.Context;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.PathUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -23,7 +22,6 @@ public final class Main {
     @SuppressWarnings("unused")
     @CalledByNative
     private static void init(Context context) {
-        ContextUtils.initApplicationContext(context.getApplicationContext());
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX, context);
     }
 }

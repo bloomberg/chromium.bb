@@ -23,7 +23,6 @@ import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.BaseSwitches;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContentUriUtils;
-import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.PathUtils;
 import org.chromium.base.ResourceExtractor;
@@ -134,6 +133,8 @@ public class ChromeBrowserInitializer {
     public void handlePreNativeStartup(final BrowserParts parts) {
         assert ThreadUtils.runningOnUiThread() : "Tried to start the browser on the wrong thread";
 
+        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX, mApplication);
+
         preInflationStartup();
         parts.preInflationStartup();
         if (parts.isActivityFinishing()) return;
@@ -182,9 +183,6 @@ public class ChromeBrowserInitializer {
     private void preInflationStartup() {
         ThreadUtils.assertOnUiThread();
         if (mPreInflationStartupComplete) return;
-
-        ContextUtils.initApplicationContext(mApplication);
-        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX, mApplication);
 
         // Ensure critical files are available, so they aren't blocked on the file-system
         // behind long-running accesses in next phase.

@@ -87,6 +87,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
     private WebStorageAdapter mWebStorage;
     private WebViewDatabaseAdapter mWebViewDatabase;
     private AwDevToolsServer mDevToolsServer;
+    private Context mWrappedAppContext;
 
     private ArrayList<WeakReference<WebViewChromium>> mWebViewsToStart =
             new ArrayList<WeakReference<WebViewChromium>>();
@@ -115,11 +116,6 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
     @SuppressFBWarnings("DMI_HARDCODED_ABSOLUTE_FILENAME")
     private void initialize(WebViewDelegate webViewDelegate) {
         mWebViewDelegate = webViewDelegate;
-
-        // WebView needs to make sure to always use the wrapped application context.
-        ContextUtils.initApplicationContext(
-                ResourcesContextWrapperFactory.get(mWebViewDelegate.getApplication()));
-
         if (isBuildDebuggable()) {
             // Suppress the StrictMode violation as this codepath is only hit on debugglable builds.
             StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
@@ -131,7 +127,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
 
         ThreadUtils.setWillOverrideUiThread();
         // Load chromium library.
-        AwBrowserProcess.loadLibrary(ContextUtils.getApplicationContext());
+        AwBrowserProcess.loadLibrary(getWrappedCurrentApplicationContext());
 
         final PackageInfo packageInfo = WebViewFactory.getLoadedPackageInfo();
 
@@ -268,7 +264,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
             return;
         }
 
-        Context context = ContextUtils.getApplicationContext();
+        Context context = getWrappedCurrentApplicationContext();
         try {
             LibraryLoader.get(LibraryProcessType.PROCESS_WEBVIEW).ensureInitialized(context);
         } catch (ProcessInitException e) {
@@ -326,6 +322,14 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         }
     }
 
+    private Context getWrappedCurrentApplicationContext() {
+        if (mWrappedAppContext == null) {
+            mWrappedAppContext = ResourcesContextWrapperFactory.get(
+                    mWebViewDelegate.getApplication());
+        }
+        return mWrappedAppContext;
+    }
+
     AwBrowserContext getBrowserContext() {
         synchronized (mLock) {
             return getBrowserContextLocked();
@@ -337,7 +341,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         assert mStarted;
         if (mBrowserContext == null) {
             mBrowserContext =
-                    new AwBrowserContext(mWebViewPrefs, ContextUtils.getApplicationContext());
+                    new AwBrowserContext(mWebViewPrefs, getWrappedCurrentApplicationContext());
         }
         return mBrowserContext;
     }
@@ -447,6 +451,13 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
     public CookieManager getCookieManager() {
         synchronized (mLock) {
             if (mCookieManager == null) {
+                if (!mStarted) {
+                    // We can use CookieManager without starting Chromium; the native code
+                    // will bring up just the parts it needs to make this work on a temporary
+                    // basis until Chromium is started for real. The temporary cookie manager
+                    // needs the application context to have been set.
+                    ContextUtils.initApplicationContext(getWrappedCurrentApplicationContext());
+                }
                 mCookieManager = new CookieManagerAdapter(new AwCookieManager());
             }
         }
