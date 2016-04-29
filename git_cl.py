@@ -3279,6 +3279,8 @@ def CMDdescription(parser, args):
   """Brings up the editor for the current CL's description."""
   parser.add_option('-d', '--display', action='store_true',
                     help='Display the description instead of opening an editor')
+  parser.add_option('-n', '--new-description',
+                    help='New description to set for this issue (- for stdin)')
 
   _add_codereview_select_options(parser)
   auth.add_auth_options(parser)
@@ -3302,10 +3304,20 @@ def CMDdescription(parser, args):
   if not cl.GetIssue():
     DieWithError('This branch has no associated changelist.')
   description = ChangeDescription(cl.GetDescription())
+
   if options.display:
     print description.description
     return 0
-  description.prompt()
+
+  if options.new_description:
+    text = options.new_description
+    if text == '-':
+      text = '\n'.join(sys.stdin.splitlines())
+
+    description.set_description(text)
+  else:
+    description.prompt()
+
   if cl.GetDescription() != description.description:
     cl.UpdateDescription(description.description)
   return 0
