@@ -668,17 +668,20 @@ void RenderWidgetHostViewAura::OnSetNeedsBeginFrames(bool needs_begin_frames) {
   }
 }
 
-bool RenderWidgetHostViewAura::OnBeginFrameDerivedImpl(
+void RenderWidgetHostViewAura::OnBeginFrame(
     const cc::BeginFrameArgs& args) {
   delegated_frame_host_->SetVSyncParameters(args.frame_time, args.interval);
   host_->Send(new ViewMsg_BeginFrame(host_->GetRoutingID(), args));
-  return true;
+  last_begin_frame_args_ = args;
+}
+
+const cc::BeginFrameArgs& RenderWidgetHostViewAura::LastUsedBeginFrameArgs()
+    const {
+  return last_begin_frame_args_;
 }
 
 void RenderWidgetHostViewAura::OnBeginFrameSourcePausedChanged(bool paused) {
-  // Ignored for now.  If the begin frame source is paused, the renderer
-  // doesn't need to be informed about it and will just not receive more
-  // begin frames.
+  // Only used on Android WebView.
 }
 
 void RenderWidgetHostViewAura::SetKeyboardFocus() {

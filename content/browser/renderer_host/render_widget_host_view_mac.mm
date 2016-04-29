@@ -484,17 +484,22 @@ void RenderWidgetHostViewMac::OnSetNeedsBeginFrames(bool needs_begin_frames) {
   }
 }
 
-bool RenderWidgetHostViewMac::OnBeginFrameDerivedImpl(
+void RenderWidgetHostViewMac::OnBeginFrame(
     const cc::BeginFrameArgs& args) {
   delegated_frame_host_->SetVSyncParameters(args.frame_time, args.interval);
   render_widget_host_->Send(
       new ViewMsg_BeginFrame(render_widget_host_->GetRoutingID(), args));
-  return true;
+  last_begin_frame_args_ = args;
+}
+
+const cc::BeginFrameArgs& RenderWidgetHostViewMac::LastUsedBeginFrameArgs()
+    const {
+  return last_begin_frame_args_;
 }
 
 void RenderWidgetHostViewMac::OnBeginFrameSourcePausedChanged(
     bool paused) {
-  // Nothing to do here.
+  // Only used on Android WebView.
 }
 
 ////////////////////////////////////////////////////////////////////////////////

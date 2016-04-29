@@ -230,7 +230,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
       public ui::AcceleratedWidgetMacNSView,
       public IPC::Sender,
       public display::DisplayObserver,
-      public cc::BeginFrameObserverBase {
+      public cc::BeginFrameObserver {
  public:
   // The view will associate itself with the given widget. The native view must
   // be hooked up immediately to the view hierarchy, or else when it is
@@ -509,8 +509,9 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
       const base::TimeDelta& interval) override;
   void SetBeginFrameSource(cc::BeginFrameSource* source) override;
 
-  // cc::BeginFrameObserverBase implementation.
-  bool OnBeginFrameDerivedImpl(const cc::BeginFrameArgs& args) override;
+  // cc::BeginFrameObserver implementation.
+  void OnBeginFrame(const cc::BeginFrameArgs& args) override;
+  const cc::BeginFrameArgs& LastUsedBeginFrameArgs() const override;
   void OnBeginFrameSourcePausedChanged(bool paused) override;
 
   // AcceleratedWidgetMacNSView implementation.
@@ -601,6 +602,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   // The begin frame source being observed.  Null if none.
   cc::BeginFrameSource* begin_frame_source_;
+  cc::BeginFrameArgs last_begin_frame_args_;
   bool needs_begin_frames_;
 
   // The current composition character range and its bounds.

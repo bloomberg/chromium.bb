@@ -98,7 +98,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
       public aura::client::ActivationDelegate,
       public aura::client::FocusChangeObserver,
       public aura::client::CursorClientObserver,
-      public cc::BeginFrameObserverBase {
+      public cc::BeginFrameObserver {
  public:
   // When |is_guest_view_hack| is true, this view isn't really the view for
   // the |widget|, a RenderWidgetHostViewGuest is.
@@ -462,8 +462,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
       const base::TimeDelta& interval) override;
   void SetBeginFrameSource(cc::BeginFrameSource* source) override;
 
-  // cc::BeginFrameObserverBase implementation.
-  bool OnBeginFrameDerivedImpl(const cc::BeginFrameArgs& args) override;
+  // cc::BeginFrameObserver implementation.
+  void OnBeginFrame(const cc::BeginFrameArgs& args) override;
+  const cc::BeginFrameArgs& LastUsedBeginFrameArgs() const override;
   void OnBeginFrameSourcePausedChanged(bool paused) override;
 
   // Detaches |this| from the input method object.
@@ -596,6 +597,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   // The begin frame source being observed.  Null if none.
   cc::BeginFrameSource* begin_frame_source_;
+  cc::BeginFrameArgs last_begin_frame_args_;
   bool needs_begin_frames_;
 
   // Used to record the last position of the mouse.
