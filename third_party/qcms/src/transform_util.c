@@ -598,32 +598,25 @@ void build_output_lut(struct curveType *trc,
 {
         if (trc->type == PARAMETRIC_CURVE_TYPE) {
                 float gamma_table[256];
+                uint16_t gamma_table_uint[256];
                 uint16_t i;
-                uint16_t *output = malloc(sizeof(uint16_t)*256);
                 uint16_t *inverted;
                 int inverted_size = 4096;
 
-                if (!output) {
-                        *output_gamma_lut = NULL;
-                        return;
-                }
-
                 compute_curve_gamma_table_type_parametric(gamma_table, trc->parameter, trc->count);
-
                 for(i = 0; i < 256; i++) {
-                        output[i] = (uint16_t)(gamma_table[i] * 65535);
+                        gamma_table_uint[i] = (uint16_t)(gamma_table[i] * 65535);
                 }
 
                 //XXX: the choice of a minimum of 256 here is not backed by any theory,
                 //     measurement or data, however it is what lcms uses.
                 //     the maximum number we would need is 65535 because that's the
                 //     accuracy used for computing the pre cache table
-                inverted = invert_lut(output, 256, inverted_size);
+                inverted = invert_lut(gamma_table_uint, 256, inverted_size);
                 if (!inverted)
                         return;
                 *output_gamma_lut = inverted;
                 *output_gamma_lut_length = inverted_size;
-                free(output);
         } else {
                 if (trc->count == 0) {
                         *output_gamma_lut = build_linear_table(4096);

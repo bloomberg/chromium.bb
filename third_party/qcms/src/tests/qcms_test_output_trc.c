@@ -99,12 +99,12 @@ static int qcms_test_output_trc(size_t width,
     size_t output_size;
     size_t i;
 
-    printf("Test qcms output gamma curve table integrity.\n");
-
     if (!in_path) {
         fprintf(stderr, "%s: please provide valid ICC profiles via -i option\n", __FUNCTION__);
         return EXIT_FAILURE;
     }
+
+    printf("Test qcms output gamma curve table integrity.\n");
 
     // Create profiles and transforms, get table and then free resources to make sure none
     // of the internal tables are initialized by previous calls.
@@ -115,7 +115,7 @@ static int qcms_test_output_trc(size_t width,
         return EXIT_FAILURE;
     }
 
-    printf("Output gamma LUT size = %zu\n", output_size);
+    printf("Output gamma table size = %zu\n", output_size);
 
     profile = qcms_profile_from_path(in_path);
     if (!profile) {
@@ -162,9 +162,11 @@ static int qcms_test_output_trc(size_t width,
             return EXIT_FAILURE;
         }
 
+        fprintf(output_file, "\nInput curve size: %zu", input_size);
+        fprintf(output_file, "\nOutput curve size: %zu", output_size);
+
         scale_factor = (float)(output_size - 1) / (input_size - 1);
 
-        fprintf(output_file, "\nInput curve size: %zu\nOutput curve size: %zu\n", input_size, output_size);
         fprintf(output_file, "\n\nInput gamma, Output gamma, LCMS Output gamma, Output gamma error\n");
 
         for (i = 0; i < input_size; ++i) {
@@ -178,7 +180,7 @@ static int qcms_test_output_trc(size_t width,
             fprintf(output_file, "%.6f, %.6f, %6f, %6f\n", input, actual, reference, difference);
         }
 
-        fprintf(output_file, "\nNote: the output curves we down sampled by a factor of %zu / %zu\n",
+        fprintf(output_file, "\nNote: the output gamma curves are down-sampled by a factor of %zu / %zu\n",
                 output_size, input_size);
 
         fclose(output_file);

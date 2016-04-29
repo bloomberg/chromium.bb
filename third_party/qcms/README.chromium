@@ -153,6 +153,8 @@ The following changes have been made since qcms was imported:
    - https://bugs.chromium.org/p/chromium/issues/detail?id=600338
  - Make build_output_lut output 4096 points for parametric curves
    - https://bugs.chromium.org/p/chromium/issues/detail?id=600338
+ - Use a static table in build_output_lut to invert para curves
+   - https://bugs.chromium.org/p/chromium/issues/detail?id=600338
 
 For the Chromium changes, since the import, in a patch format run:
   git diff b8456f38 src
