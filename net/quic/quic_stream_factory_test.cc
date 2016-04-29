@@ -4,6 +4,8 @@
 
 #include "net/quic/quic_stream_factory.h"
 
+#include <ostream>
+
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/thread_task_runner_handle.h"
@@ -44,7 +46,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::StringPiece;
-using std::ostream;
 using std::string;
 using std::vector;
 
@@ -53,25 +54,33 @@ namespace net {
 namespace test {
 
 namespace {
+
+enum DestinationType {
+  // In pooling tests with two requests for different origins to the same
+  // destination, the destination should be
+  SAME_AS_FIRST,   // the same as the first origin,
+  SAME_AS_SECOND,  // the same as the second origin, or
+  DIFFERENT,       // different from both.
+};
+
 const char kDefaultServerHostName[] = "www.example.org";
 const char kServer2HostName[] = "mail.example.org";
 const char kServer3HostName[] = "docs.example.org";
 const char kServer4HostName[] = "images.example.org";
+const char kDifferentHostname[] = "different.example.com";
 const int kDefaultServerPort = 443;
 const char kDefaultUrl[] = "https://www.example.org/";
 const char kServer2Url[] = "https://mail.example.org/";
 const char kServer3Url[] = "https://docs.example.org/";
 const char kServer4Url[] = "https://images.example.org/";
 
-// Run all tests with all the combinations of versions and
-// enable_connection_racing.
+// Run QuicStreamFactoryTest instances with all value combinations of version
+// and enable_connection_racting.
 struct TestParams {
-  TestParams(const QuicVersion version, bool enable_connection_racing)
-      : version(version), enable_connection_racing(enable_connection_racing) {}
-
-  friend ostream& operator<<(ostream& os, const TestParams& p) {
-    os << "{ version: " << QuicVersionToString(p.version);
-    os << " enable_connection_racing: " << p.enable_connection_racing << " }";
+  friend std::ostream& operator<<(std::ostream& os, const TestParams& p) {
+    os << "{ version: " << QuicVersionToString(p.version)
+       << ", enable_connection_racing: "
+       << (p.enable_connection_racing ? "true" : "false") << " }";
     return os;
   }
 
@@ -79,18 +88,67 @@ struct TestParams {
   bool enable_connection_racing;
 };
 
-// Constructs various test permutations.
-vector<TestParams> GetTestParams() {
-  vector<TestParams> params;
+std::vector<TestParams> GetTestParams() {
+  std::vector<TestParams> params;
   QuicVersionVector all_supported_versions = QuicSupportedVersions();
   for (const QuicVersion version : all_supported_versions) {
-    params.push_back(TestParams(version, false));
-    params.push_back(TestParams(version, true));
+    params.push_back(TestParams{version, false});
+    params.push_back(TestParams{version, true});
+  }
+  return params;
+}
+
+// Run QuicStreamFactoryWithDestinationTest instances with all value
+// combinations of version, enable_connection_racting, and destination_type.
+struct PoolingTestParams {
+  friend std::ostream& operator<<(std::ostream& os,
+                                  const PoolingTestParams& p) {
+    os << "{ version: " << QuicVersionToString(p.version)
+       << ", enable_connection_racing: "
+       << (p.enable_connection_racing ? "true" : "false")
+       << ", destination_type: ";
+    switch (p.destination_type) {
+      case SAME_AS_FIRST:
+        os << "SAME_AS_FIRST";
+        break;
+      case SAME_AS_SECOND:
+        os << "SAME_AS_SECOND";
+        break;
+      case DIFFERENT:
+        os << "DIFFERENT";
+        break;
+    }
+    os << " }";
+    return os;
+  }
+
+  QuicVersion version;
+  bool enable_connection_racing;
+  DestinationType destination_type;
+};
+
+std::vector<PoolingTestParams> GetPoolingTestParams() {
+  std::vector<PoolingTestParams> params;
+  QuicVersionVector all_supported_versions = QuicSupportedVersions();
+  for (const QuicVersion version : all_supported_versions) {
+    params.push_back(PoolingTestParams{version, false, SAME_AS_FIRST});
+    params.push_back(PoolingTestParams{version, false, SAME_AS_SECOND});
+    params.push_back(PoolingTestParams{version, false, DIFFERENT});
+    params.push_back(PoolingTestParams{version, true, SAME_AS_FIRST});
+    params.push_back(PoolingTestParams{version, true, SAME_AS_SECOND});
+    params.push_back(PoolingTestParams{version, true, DIFFERENT});
   }
   return params;
 }
 
 }  // namespace
+
+class QuicHttpStreamPeer {
+ public:
+  static QuicChromiumClientSession* GetSession(QuicHttpStream* stream) {
+    return stream->session_.get();
+  }
+};
 
 class MockQuicServerInfo : public QuicServerInfo {
  public:
@@ -192,13 +250,14 @@ class ScopedMockNetworkChangeNotifier {
   std::unique_ptr<MockNetworkChangeNotifier> mock_network_change_notifier_;
 };
 
-class QuicStreamFactoryTest : public ::testing::TestWithParam<TestParams> {
+class QuicStreamFactoryTestBase {
  protected:
-  QuicStreamFactoryTest()
+  QuicStreamFactoryTestBase(QuicVersion version, bool enable_connection_racing)
       : random_generator_(0),
         clock_(new MockClock()),
         runner_(new TestTaskRunner(clock_)),
-        maker_(GetParam().version, 0, clock_, kDefaultServerHostName),
+        version_(version),
+        maker_(version_, 0, clock_, kDefaultServerHostName),
         cert_verifier_(CertVerifier::CreateDefault()),
         channel_id_service_(
             new ChannelIDService(new DefaultChannelIDStore(nullptr),
@@ -216,7 +275,7 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<TestParams> {
         always_require_handshake_confirmation_(false),
         disable_connection_pooling_(false),
         load_server_info_timeout_srtt_multiplier_(0.0f),
-        enable_connection_racing_(GetParam().enable_connection_racing),
+        enable_connection_racing_(enable_connection_racing),
         enable_non_blocking_io_(true),
         disable_disk_cache_(false),
         prefer_aes_(false),
@@ -234,19 +293,27 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<TestParams> {
     clock_->AdvanceTime(QuicTime::Delta::FromSeconds(1));
   }
 
+  ~QuicStreamFactoryTestBase() {
+    // If |factory_| was initialized, then it took over ownership of |clock_|.
+    // If |factory_| was not initialized, then |clock_| needs to be destroyed.
+    if (!factory_) {
+      delete clock_;
+    }
+  }
+
   void Initialize() {
+    DCHECK(!factory_);
     factory_.reset(new QuicStreamFactory(
         &host_resolver_, &socket_factory_, http_server_properties_.GetWeakPtr(),
         cert_verifier_.get(), nullptr, channel_id_service_.get(),
         &transport_security_state_, cert_transparency_verifier_.get(),
         /*SocketPerformanceWatcherFactory*/ nullptr,
         &crypto_client_stream_factory_, &random_generator_, clock_,
-        kDefaultMaxPacketSize, std::string(),
-        SupportedVersions(GetParam().version), enable_port_selection_,
-        always_require_handshake_confirmation_, disable_connection_pooling_,
-        load_server_info_timeout_srtt_multiplier_, enable_connection_racing_,
-        enable_non_blocking_io_, disable_disk_cache_, prefer_aes_,
-        max_number_of_lossy_connections_, packet_loss_threshold_,
+        kDefaultMaxPacketSize, std::string(), SupportedVersions(version_),
+        enable_port_selection_, always_require_handshake_confirmation_,
+        disable_connection_pooling_, load_server_info_timeout_srtt_multiplier_,
+        enable_connection_racing_, enable_non_blocking_io_, disable_disk_cache_,
+        prefer_aes_, max_number_of_lossy_connections_, packet_loss_threshold_,
         max_disabled_reasons_, threshold_timeouts_with_open_streams_,
         threshold_public_resets_post_handshake_, receive_buffer_size_,
         /*max_server_configs_stored_in_properties*/ 0,
@@ -349,7 +416,7 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<TestParams> {
     QuicStreamId stream_id = kClientDataStreamId1;
     return maker_.MakeRstPacket(
         1, true, stream_id,
-        AdjustErrorForVersion(QUIC_RST_ACKNOWLEDGEMENT, GetParam().version));
+        AdjustErrorForVersion(QUIC_RST_ACKNOWLEDGEMENT, version_));
   }
 
   static ProofVerifyDetailsChromium DefaultProofVerifyDetails() {
@@ -398,10 +465,10 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<TestParams> {
   MockHostResolver host_resolver_;
   MockClientSocketFactory socket_factory_;
   MockCryptoClientStreamFactory crypto_client_stream_factory_;
-  ProofVerifyDetailsChromium verify_details_;
   MockRandom random_generator_;
-  MockClock* clock_;  // Owned by factory_.
+  MockClock* clock_;  // Owned by |factory_| once created.
   scoped_refptr<TestTaskRunner> runner_;
+  QuicVersion version_;
   QuicTestPacketMaker maker_;
   HttpServerPropertiesImpl http_server_properties_;
   std::unique_ptr<CertVerifier> cert_verifier_;
@@ -441,6 +508,14 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<TestParams> {
   int idle_connection_timeout_seconds_;
   bool migrate_sessions_on_network_change_;
   bool migrate_sessions_early_;
+};
+
+class QuicStreamFactoryTest : public QuicStreamFactoryTestBase,
+                              public ::testing::TestWithParam<TestParams> {
+ protected:
+  QuicStreamFactoryTest()
+      : QuicStreamFactoryTestBase(GetParam().version,
+                                  GetParam().enable_connection_racing) {}
 };
 
 INSTANTIATE_TEST_CASE_P(Version,
@@ -536,39 +611,6 @@ TEST_P(QuicStreamFactoryTest, CreateZeroRttPost) {
       QuicSession::HANDSHAKE_CONFIRMED);
 
   EXPECT_EQ(OK, callback_.WaitForResult());
-  std::unique_ptr<QuicHttpStream> stream = request.CreateStream();
-  EXPECT_TRUE(stream.get());
-  EXPECT_TRUE(socket_data.AllReadDataConsumed());
-  EXPECT_TRUE(socket_data.AllWriteDataConsumed());
-}
-
-TEST_P(QuicStreamFactoryTest, NoZeroRttForDifferentHost) {
-  Initialize();
-  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
-  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
-
-  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  SequencedSocketData socket_data(reads, arraysize(reads), nullptr, 0);
-  socket_factory_.AddSocketDataProvider(&socket_data);
-
-  crypto_client_stream_factory_.set_handshake_mode(
-      MockCryptoClientStream::ZERO_RTT);
-  host_resolver_.set_synchronous_mode(true);
-  host_resolver_.rules()->AddIPLiteralRule(host_port_pair_.host(),
-                                           "192.168.0.1", "");
-
-  QuicStreamRequest request(factory_.get());
-  int rv = request.Request(host_port_pair_, privacy_mode_,
-                           /*cert_verify_flags=*/0, url2_, "GET", net_log_,
-                           callback_.callback());
-  // If server and origin have different hostnames, then handshake confirmation
-  // should be required, so Request will return asynchronously.
-  EXPECT_EQ(ERR_IO_PENDING, rv);
-  // Confirm handshake.
-  crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
-      QuicSession::HANDSHAKE_CONFIRMED);
-  EXPECT_EQ(OK, callback_.WaitForResult());
-
   std::unique_ptr<QuicHttpStream> stream = request.CreateStream();
   EXPECT_TRUE(stream.get());
   EXPECT_TRUE(socket_data.AllReadDataConsumed());
@@ -853,77 +895,6 @@ TEST_P(QuicStreamFactoryTest, NoHttpsPoolingIfDisabled) {
   EXPECT_TRUE(socket_data1.AllWriteDataConsumed());
   EXPECT_TRUE(socket_data2.AllReadDataConsumed());
   EXPECT_TRUE(socket_data2.AllWriteDataConsumed());
-}
-
-class QuicAlternativeServiceCertificateValidationPooling
-    : public QuicStreamFactoryTest {
- public:
-  void Run(bool valid) {
-    MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-    SequencedSocketData socket_data1(reads, arraysize(reads), nullptr, 0);
-    socket_factory_.AddSocketDataProvider(&socket_data1);
-
-    HostPortPair server1(kDefaultServerHostName, 443);
-    HostPortPair server2(kServer2HostName, 443);
-
-    GURL url(valid ? url2_ : GURL("http://invalid.example.com/"));
-    HostPortPair alternative(kDefaultServerHostName, 443);
-
-    ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
-    bool common_name_fallback_used;
-    EXPECT_EQ(valid,
-              verify_details.cert_verify_result.verified_cert->VerifyNameMatch(
-                  url.host(), &common_name_fallback_used));
-    EXPECT_TRUE(
-        verify_details.cert_verify_result.verified_cert->VerifyNameMatch(
-            alternative.host(), &common_name_fallback_used));
-    crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
-
-    host_resolver_.set_synchronous_mode(true);
-    host_resolver_.rules()->AddIPLiteralRule(alternative.host(), "192.168.0.1",
-                                             "");
-
-    // Open first stream to alternative.
-    QuicStreamRequest request1(factory_.get());
-    EXPECT_EQ(OK, request1.Request(alternative, privacy_mode_,
-                                   /*cert_verify_flags=*/0, url_, "GET",
-                                   net_log_, callback_.callback()));
-    std::unique_ptr<QuicHttpStream> stream1 = request1.CreateStream();
-    EXPECT_TRUE(stream1.get());
-
-    QuicStreamRequest request2(factory_.get());
-    int rv = request2.Request(alternative, privacy_mode_,
-                              /*cert_verify_flags=*/0, url, "GET", net_log_,
-                              callback_.callback());
-    if (valid) {
-      // Alternative service of origin to |alternative| should pool to session
-      // of |stream1| even if origin is different.  Since only one
-      // SocketDataProvider is set up, the second request succeeding means that
-      // it pooled to the session opened by the first one.
-      EXPECT_EQ(OK, rv);
-      std::unique_ptr<QuicHttpStream> stream2 = request2.CreateStream();
-      EXPECT_TRUE(stream2.get());
-    } else {
-      EXPECT_EQ(ERR_ALTERNATIVE_CERT_NOT_VALID_FOR_ORIGIN, rv);
-    }
-
-    EXPECT_TRUE(socket_data1.AllReadDataConsumed());
-    EXPECT_TRUE(socket_data1.AllWriteDataConsumed());
-  }
-};
-
-INSTANTIATE_TEST_CASE_P(Version,
-                        QuicAlternativeServiceCertificateValidationPooling,
-                        ::testing::ValuesIn(GetTestParams()));
-
-TEST_P(QuicAlternativeServiceCertificateValidationPooling, Valid) {
-  Initialize();
-  Run(true);
-}
-
-TEST_P(QuicAlternativeServiceCertificateValidationPooling, Invalid) {
-  Initialize();
-  Run(false);
 }
 
 TEST_P(QuicStreamFactoryTest, HttpsPoolingWithMatchingPins) {
@@ -2638,7 +2609,7 @@ TEST_P(QuicStreamFactoryTest, RacingConnections) {
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
-  if (!GetParam().enable_connection_racing)
+  if (!enable_connection_racing_)
     return;
 
   QuicStreamFactoryPeer::SetTaskRunner(factory_.get(), runner_.get());
@@ -4082,6 +4053,271 @@ TEST_P(QuicStreamFactoryTest, ServerPushPrivacyModeMismatch) {
   EXPECT_TRUE(socket_data1.AllWriteDataConsumed());
   EXPECT_TRUE(socket_data2.AllReadDataConsumed());
   EXPECT_TRUE(socket_data2.AllWriteDataConsumed());
+}
+
+// Pool to existing session with matching QuicServerId
+// even if destination is different.
+TEST_P(QuicStreamFactoryTest, PoolByOrigin) {
+  Initialize();
+
+  HostPortPair destination1("first.example.com", 443);
+  HostPortPair destination2("second.example.com", 443);
+
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+
+  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
+  SequencedSocketData socket_data(reads, arraysize(reads), nullptr, 0);
+  socket_factory_.AddSocketDataProvider(&socket_data);
+
+  QuicStreamRequest request1(factory_.get());
+  EXPECT_EQ(ERR_IO_PENDING,
+            request1.Request(destination1, privacy_mode_,
+                             /*cert_verify_flags=*/0, url_, "GET", net_log_,
+                             callback_.callback()));
+  EXPECT_EQ(OK, callback_.WaitForResult());
+  std::unique_ptr<QuicHttpStream> stream1 = request1.CreateStream();
+  EXPECT_TRUE(stream1.get());
+  EXPECT_TRUE(HasActiveSession(host_port_pair_));
+
+  // Second request returns synchronously because it pools to existing session.
+  TestCompletionCallback callback2;
+  QuicStreamRequest request2(factory_.get());
+  EXPECT_EQ(OK, request2.Request(destination2, privacy_mode_,
+                                 /*cert_verify_flags=*/0, url_, "GET", net_log_,
+                                 callback2.callback()));
+  std::unique_ptr<QuicHttpStream> stream2 = request2.CreateStream();
+  EXPECT_TRUE(stream2.get());
+
+  QuicChromiumClientSession* session1 =
+      QuicHttpStreamPeer::GetSession(stream1.get());
+  QuicChromiumClientSession* session2 =
+      QuicHttpStreamPeer::GetSession(stream2.get());
+  EXPECT_EQ(session1, session2);
+  EXPECT_EQ(QuicServerId(host_port_pair_, privacy_mode_),
+            session1->server_id());
+
+  EXPECT_TRUE(socket_data.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data.AllWriteDataConsumed());
+}
+
+class QuicStreamFactoryWithDestinationTest
+    : public QuicStreamFactoryTestBase,
+      public ::testing::TestWithParam<PoolingTestParams> {
+ protected:
+  QuicStreamFactoryWithDestinationTest()
+      : QuicStreamFactoryTestBase(GetParam().version,
+                                  GetParam().enable_connection_racing),
+        destination_type_(GetParam().destination_type),
+        hanging_read_(SYNCHRONOUS, ERR_IO_PENDING, 0) {}
+
+  HostPortPair GetDestination() {
+    switch (destination_type_) {
+      case SAME_AS_FIRST:
+        return origin1_;
+      case SAME_AS_SECOND:
+        return origin2_;
+      case DIFFERENT:
+        return HostPortPair(kDifferentHostname, 443);
+      default:
+        NOTREACHED();
+        return HostPortPair();
+    }
+  }
+
+  void AddHangingSocketData() {
+    std::unique_ptr<SequencedSocketData> sequenced_socket_data(
+        new SequencedSocketData(&hanging_read_, 1, nullptr, 0));
+    socket_factory_.AddSocketDataProvider(sequenced_socket_data.get());
+    sequenced_socket_data_vector_.push_back(std::move(sequenced_socket_data));
+  }
+
+  bool AllDataConsumed() {
+    for (const auto& socket_data_ptr : sequenced_socket_data_vector_) {
+      if (!socket_data_ptr->AllReadDataConsumed() ||
+          !socket_data_ptr->AllWriteDataConsumed()) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  DestinationType destination_type_;
+  HostPortPair origin1_;
+  HostPortPair origin2_;
+  MockRead hanging_read_;
+  std::vector<std::unique_ptr<SequencedSocketData>>
+      sequenced_socket_data_vector_;
+};
+
+INSTANTIATE_TEST_CASE_P(Version,
+                        QuicStreamFactoryWithDestinationTest,
+                        ::testing::ValuesIn(GetPoolingTestParams()));
+
+// A single QUIC request fails because the certificate does not match the origin
+// hostname, regardless of whether it matches the alternative service hostname.
+TEST_P(QuicStreamFactoryWithDestinationTest, InvalidCertificate) {
+  if (destination_type_ == DIFFERENT)
+    return;
+
+  Initialize();
+
+  GURL url("https://mail.example.com/");
+  origin1_ = HostPortPair::FromURL(url);
+
+  // Not used for requests, but this provides a test case where the certificate
+  // is valid for the hostname of the alternative service.
+  origin2_ = HostPortPair("mail.example.org", 433);
+
+  HostPortPair destination = GetDestination();
+
+  scoped_refptr<X509Certificate> cert(
+      ImportCertFromFile(GetTestCertsDirectory(), "wildcard.pem"));
+  bool unused;
+  ASSERT_FALSE(cert->VerifyNameMatch(origin1_.host(), &unused));
+  ASSERT_TRUE(cert->VerifyNameMatch(origin2_.host(), &unused));
+
+  ProofVerifyDetailsChromium verify_details;
+  verify_details.cert_verify_result.verified_cert = cert;
+  verify_details.cert_verify_result.is_issued_by_known_root = true;
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+
+  AddHangingSocketData();
+
+  QuicStreamRequest request(factory_.get());
+  EXPECT_EQ(ERR_IO_PENDING, request.Request(destination, privacy_mode_,
+                                            /*cert_verify_flags=*/0, url, "GET",
+                                            net_log_, callback_.callback()));
+
+  EXPECT_EQ(ERR_QUIC_HANDSHAKE_FAILED, callback_.WaitForResult());
+
+  EXPECT_TRUE(AllDataConsumed());
+}
+
+// QuicStreamRequest is pooled based on |destination| if certificate matches.
+TEST_P(QuicStreamFactoryWithDestinationTest, SharedCertificate) {
+  Initialize();
+
+  GURL url1("https://www.example.org/");
+  GURL url2("https://mail.example.org/");
+  origin1_ = HostPortPair::FromURL(url1);
+  origin2_ = HostPortPair::FromURL(url2);
+
+  HostPortPair destination = GetDestination();
+
+  scoped_refptr<X509Certificate> cert(
+      ImportCertFromFile(GetTestCertsDirectory(), "wildcard.pem"));
+  bool unused;
+  ASSERT_TRUE(cert->VerifyNameMatch(origin1_.host(), &unused));
+  ASSERT_TRUE(cert->VerifyNameMatch(origin2_.host(), &unused));
+  ASSERT_FALSE(cert->VerifyNameMatch(kDifferentHostname, &unused));
+
+  ProofVerifyDetailsChromium verify_details;
+  verify_details.cert_verify_result.verified_cert = cert;
+  verify_details.cert_verify_result.is_issued_by_known_root = true;
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+
+  AddHangingSocketData();
+
+  QuicStreamRequest request1(factory_.get());
+  EXPECT_EQ(ERR_IO_PENDING,
+            request1.Request(destination, privacy_mode_,
+                             /*cert_verify_flags=*/0, url1, "GET", net_log_,
+                             callback_.callback()));
+  EXPECT_EQ(OK, callback_.WaitForResult());
+  std::unique_ptr<QuicHttpStream> stream1 = request1.CreateStream();
+  EXPECT_TRUE(stream1.get());
+  EXPECT_TRUE(HasActiveSession(origin1_));
+
+  // Second request returns synchronously because it pools to existing session.
+  TestCompletionCallback callback2;
+  QuicStreamRequest request2(factory_.get());
+  EXPECT_EQ(OK, request2.Request(destination, privacy_mode_,
+                                 /*cert_verify_flags=*/0, url2, "GET", net_log_,
+                                 callback2.callback()));
+  std::unique_ptr<QuicHttpStream> stream2 = request2.CreateStream();
+  EXPECT_TRUE(stream2.get());
+
+  QuicChromiumClientSession* session1 =
+      QuicHttpStreamPeer::GetSession(stream1.get());
+  QuicChromiumClientSession* session2 =
+      QuicHttpStreamPeer::GetSession(stream2.get());
+  EXPECT_EQ(session1, session2);
+
+  EXPECT_EQ(QuicServerId(origin1_, privacy_mode_), session1->server_id());
+
+  EXPECT_TRUE(AllDataConsumed());
+}
+
+// QuicStreamRequest is not pooled if certificate does not match its origin.
+TEST_P(QuicStreamFactoryWithDestinationTest, DisjointCertificate) {
+  Initialize();
+
+  GURL url1("https://news.example.org/");
+  GURL url2("https://mail.example.com/");
+  origin1_ = HostPortPair::FromURL(url1);
+  origin2_ = HostPortPair::FromURL(url2);
+
+  HostPortPair destination = GetDestination();
+
+  scoped_refptr<X509Certificate> cert1(
+      ImportCertFromFile(GetTestCertsDirectory(), "wildcard.pem"));
+  bool unused;
+  ASSERT_TRUE(cert1->VerifyNameMatch(origin1_.host(), &unused));
+  ASSERT_FALSE(cert1->VerifyNameMatch(origin2_.host(), &unused));
+  ASSERT_FALSE(cert1->VerifyNameMatch(kDifferentHostname, &unused));
+
+  ProofVerifyDetailsChromium verify_details1;
+  verify_details1.cert_verify_result.verified_cert = cert1;
+  verify_details1.cert_verify_result.is_issued_by_known_root = true;
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details1);
+
+  scoped_refptr<X509Certificate> cert2(
+      ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem"));
+  ASSERT_TRUE(cert2->VerifyNameMatch(origin2_.host(), &unused));
+  ASSERT_FALSE(cert2->VerifyNameMatch(kDifferentHostname, &unused));
+
+  ProofVerifyDetailsChromium verify_details2;
+  verify_details2.cert_verify_result.verified_cert = cert2;
+  verify_details2.cert_verify_result.is_issued_by_known_root = true;
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details2);
+
+  AddHangingSocketData();
+  AddHangingSocketData();
+
+  QuicStreamRequest request1(factory_.get());
+  EXPECT_EQ(ERR_IO_PENDING,
+            request1.Request(destination, privacy_mode_,
+                             /*cert_verify_flags=*/0, url1, "GET", net_log_,
+                             callback_.callback()));
+  EXPECT_EQ(OK, callback_.WaitForResult());
+  std::unique_ptr<QuicHttpStream> stream1 = request1.CreateStream();
+  EXPECT_TRUE(stream1.get());
+  EXPECT_TRUE(HasActiveSession(origin1_));
+
+  TestCompletionCallback callback2;
+  QuicStreamRequest request2(factory_.get());
+  EXPECT_EQ(ERR_IO_PENDING,
+            request2.Request(destination, privacy_mode_,
+                             /*cert_verify_flags=*/0, url2, "GET", net_log_,
+                             callback2.callback()));
+  EXPECT_EQ(OK, callback2.WaitForResult());
+  std::unique_ptr<QuicHttpStream> stream2 = request2.CreateStream();
+  EXPECT_TRUE(stream2.get());
+
+  // |request2| does not pool to the first session, because the certificate does
+  // not match.  Instead, another session is opened to the same destination, but
+  // with a different QuicServerId.
+  QuicChromiumClientSession* session1 =
+      QuicHttpStreamPeer::GetSession(stream1.get());
+  QuicChromiumClientSession* session2 =
+      QuicHttpStreamPeer::GetSession(stream2.get());
+  EXPECT_NE(session1, session2);
+
+  EXPECT_EQ(QuicServerId(origin1_, privacy_mode_), session1->server_id());
+  EXPECT_EQ(QuicServerId(origin2_, privacy_mode_), session2->server_id());
+
+  EXPECT_TRUE(AllDataConsumed());
 }
 
 }  // namespace test
