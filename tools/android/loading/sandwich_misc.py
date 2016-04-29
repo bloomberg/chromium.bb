@@ -5,6 +5,7 @@
 import logging
 import json
 import os
+from urlparse import urlparse
 
 import chrome_cache
 import common_util
@@ -199,6 +200,7 @@ def VerifyBenchmarkOutputDirectory(benchmark_setup_path,
   benchmark_setup = json.load(open(benchmark_setup_path))
   cache_whitelist = set(benchmark_setup['cache_whitelist'])
   url_resources = set(benchmark_setup['url_resources'])
+  all_sent_url_requests = set()
 
   # Verify requests from traces.
   run_id = -1
@@ -218,9 +220,36 @@ def VerifyBenchmarkOutputDirectory(benchmark_setup_path,
     _PrintUrlSetComparison(url_resources.intersection(cache_whitelist),
         _ListUrlRequests(trace, _RequestOutcome.ServedFromCache),
         'Cached resources')
+    sent_url_requests = \
+        _ListUrlRequests(trace, _RequestOutcome.NotServedFromCache)
     _PrintUrlSetComparison(url_resources.difference(cache_whitelist),
-        _ListUrlRequests(trace, _RequestOutcome.NotServedFromCache),
-        'Non cached resources')
+        sent_url_requests, 'Non cached resources')
+    all_sent_url_requests.update(sent_url_requests)
+
+  # Verify requests from WPR.
+  wpr_log_path = os.path.join(
+      benchmark_output_directory_path, sandwich_runner.WPR_LOG_FILENAME)
+  logging.info('verifying requests from %s' % wpr_log_path)
+  all_wpr_requests = wpr_backend.ExtractRequestsFromLog(wpr_log_path)
+  all_wpr_urls = set()
+  unserved_wpr_urls = set()
+  wpr_command_colliding_urls = set()
+
+  for request in all_wpr_requests:
+    if request.is_wpr_host:
+      continue
+    if urlparse(request.url).path.startswith('/web-page-replay'):
+      wpr_command_colliding_urls.add(request.url)
+    elif request.is_served is False:
+      unserved_wpr_urls.add(request.url)
+    all_wpr_urls.add(request.url)
+
+  _PrintUrlSetComparison(set(), unserved_wpr_urls,
+                         'Distinct unserved resources from WPR')
+  _PrintUrlSetComparison(set(), wpr_command_colliding_urls,
+                         'Distinct resources colliding to WPR commands')
+  _PrintUrlSetComparison(all_wpr_urls, all_sent_url_requests,
+                         'Distinct resources requests to WPR')
 
 
 def ReadSubresourceMapFromBenchmarkOutput(benchmark_output_directory_path):

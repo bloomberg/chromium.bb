@@ -2,9 +2,20 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import contextlib
+import httplib
+import os
+import shutil
+import tempfile
 import unittest
 
-from wpr_backend import WprUrlEntry
+from device_setup import _WprHost
+from options import OPTIONS
+from trace_test.webserver_test import WebServer
+from wpr_backend import WprUrlEntry, WprRequest, ExtractRequestsFromLog
+
+
+LOADING_DIR = os.path.dirname(__file__)
 
 
 class MockWprResponse(object):
@@ -120,6 +131,124 @@ class WprUrlEntryTest(unittest.TestCase):
     entry.DeleteResponseHeader('header1')
     self.assertNotIn('header1', entry.GetResponseHeadersDict())
     self.assertEquals(2, len(entry.GetResponseHeadersDict()))
+
+
+class WprHostTest(unittest.TestCase):
+  def setUp(self):
+    OPTIONS.ParseArgs([])
+    self._server_address = None
+    self._wpr_http_port = None
+    self._tmp_directory = tempfile.mkdtemp(prefix='tmp_test_')
+
+  def tearDown(self):
+    shutil.rmtree(self._tmp_directory)
+
+  def _TmpPath(self, name):
+    return os.path.join(self._tmp_directory, name)
+
+  def _LogPath(self):
+    return self._TmpPath('wpr.log')
+
+  def _ArchivePath(self):
+    return self._TmpPath('wpr')
+
+  @contextlib.contextmanager
+  def RunWebServer(self):
+    assert self._server_address is None
+    with WebServer.Context(
+        source_dir=os.path.join(LOADING_DIR, 'trace_test', 'tests'),
+        communication_dir=self._tmp_directory) as server:
+      self._server_address = server.Address()
+      yield
+
+  @contextlib.contextmanager
+  def RunWpr(self, record):
+    assert self._server_address is not None
+    assert self._wpr_http_port is None
+    with _WprHost(self._ArchivePath(), record=record,
+                  out_log_path=self._LogPath()) as (http_port, https_port):
+      del https_port # unused
+      self._wpr_http_port = http_port
+      yield http_port
+
+  def DoHttpRequest(self, path, expected_status=200, destination='wpr'):
+    assert self._server_address is not None
+    if destination == 'wpr':
+      assert self._wpr_http_port is not None
+      connection = httplib.HTTPConnection('127.0.0.1', self._wpr_http_port)
+    elif destination == 'server':
+      connection = httplib.HTTPConnection(self._server_address)
+    else:
+      assert False
+    try:
+      connection.request(
+          "GET", '/' + path, headers={'Host': self._server_address})
+      response = connection.getresponse()
+    finally:
+      connection.close()
+    self.assertEquals(expected_status, response.status)
+
+  def _GenRawWprRequest(self, path):
+    assert self._wpr_http_port is not None
+    url = 'http://127.0.0.1:{}/web-page-replay-{}'.format(
+        self._wpr_http_port, path)
+    return WprRequest(is_served=True, method='GET', is_wpr_host=True, url=url)
+
+  def GenRawRequest(self, path, is_served):
+    assert self._server_address is not None
+    return WprRequest(is_served=is_served, method='GET', is_wpr_host=False,
+        url='http://{}/{}'.format(self._server_address, path))
+
+  def AssertWprParsedRequests(self, ref_requests):
+    all_ref_requests = []
+    all_ref_requests.append(self._GenRawWprRequest('generate-200'))
+    all_ref_requests.extend(ref_requests)
+    all_ref_requests.append(self._GenRawWprRequest('generate-200'))
+    all_ref_requests.append(self._GenRawWprRequest('command-exit'))
+    requests = ExtractRequestsFromLog(self._LogPath())
+    self.assertEquals(all_ref_requests, requests)
+    self._wpr_http_port = None
+
+  def testExtractRequestsFromLog(self):
+    with self.RunWebServer():
+      with self.RunWpr(record=True):
+        self.DoHttpRequest('1.html')
+        self.DoHttpRequest('2.html')
+        ref_requests = [
+            self.GenRawRequest('1.html', is_served=True),
+            self.GenRawRequest('2.html', is_served=True)]
+    self.AssertWprParsedRequests(ref_requests)
+
+    with self.RunWpr(record=False):
+      self.DoHttpRequest('2.html')
+      self.DoHttpRequest('1.html')
+      ref_requests = [
+          self.GenRawRequest('2.html', is_served=True),
+          self.GenRawRequest('1.html', is_served=True)]
+    self.AssertWprParsedRequests(ref_requests)
+
+  def testExtractRequestsFromLogHaveCorrectIsServed(self):
+    with self.RunWebServer():
+      with self.RunWpr(record=True):
+        self.DoHttpRequest('4.html', expected_status=404)
+        ref_requests = [self.GenRawRequest('4.html', is_served=True)]
+    self.AssertWprParsedRequests(ref_requests)
+
+    with self.RunWpr(record=False):
+      self.DoHttpRequest('4.html', expected_status=404)
+      self.DoHttpRequest('5.html', expected_status=404)
+      ref_requests = [self.GenRawRequest('4.html', is_served=True),
+                      self.GenRawRequest('5.html', is_served=False)]
+    self.AssertWprParsedRequests(ref_requests)
+
+  def testExtractRequestsFromLogHaveCorrectIsWprHost(self):
+    PATH = 'web-page-replay-generate-200'
+    with self.RunWebServer():
+      self.DoHttpRequest(PATH, expected_status=404, destination='server')
+      with self.RunWpr(record=True):
+        self.DoHttpRequest(PATH)
+      ref_requests = [self.GenRawRequest(PATH, is_served=True)]
+    self.AssertWprParsedRequests(ref_requests)
 
 
 if __name__ == '__main__':

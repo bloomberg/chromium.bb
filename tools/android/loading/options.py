@@ -113,6 +113,7 @@ class Options(object):
     self._parsed_args = parsed_args
 
   def _MakeParser(self, description=None, extra=None, group=None):
+    self._arg_set = set()
     add_help = True if group is None else False
     parser = argparse.ArgumentParser(
         description=description, add_help=add_help)

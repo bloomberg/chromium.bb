@@ -25,6 +25,7 @@ import loading_trace
 # Standard filenames in the sandwich runner's output directory.
 TRACE_FILENAME = 'trace.json'
 VIDEO_FILENAME = 'video.mp4'
+WPR_LOG_FILENAME = 'wpr.log'
 
 # Memory dump category used to get memory metrics.
 MEMORY_DUMP_CATEGORY = 'disabled-by-default-memory-infra'
@@ -264,12 +265,16 @@ class SandwichRunner(object):
       chrome_cache.UnzipDirectoryContent(
           self.cache_archive_path, self._local_cache_directory_path)
 
+    out_log_path = None
+    if self.trace_output_directory:
+      out_log_path = os.path.join(self.trace_output_directory, WPR_LOG_FILENAME)
+
     ran_urls = []
     with self._chrome_ctl.OpenWprHost(self.wpr_archive_path,
         record=self.wpr_record,
         network_condition_name=self._GetEmulatorNetworkCondition('wpr'),
-        disable_script_injection=self.disable_wpr_script_injection
-        ):
+        disable_script_injection=self.disable_wpr_script_injection,
+        out_log_path=out_log_path):
       for _ in xrange(self.job_repeat):
         for url in self.urls:
           self._RunUrl(url, run_id=len(ran_urls))

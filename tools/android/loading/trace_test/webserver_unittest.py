@@ -24,8 +24,7 @@ OPTIONS = options.OPTIONS
 
 class WebServerTestCase(unittest.TestCase):
   def setUp(self):
-    if not OPTIONS._parsed_args:
-      OPTIONS.ParseArgs('', extra=[('--noisy', False)])
+    OPTIONS.ParseArgs('', extra=[('--noisy', False)])
     self._temp_dir = tempfile.mkdtemp()
     self._server = webserver_test.WebServer(self._temp_dir, self._temp_dir)
 
