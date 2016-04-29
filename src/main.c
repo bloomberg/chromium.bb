@@ -47,6 +47,7 @@
 #include "git-version.h"
 #include "version.h"
 
+#include "compositor-drm.h"
 #include "compositor-headless.h"
 #include "compositor-rdp.h"
 #include "compositor-fbdev.h"
@@ -688,6 +689,83 @@ load_backend_new(struct weston_compositor *compositor, const char *backend,
 	return backend_init(compositor, NULL, NULL, NULL, config_base);
 }
 
+static enum weston_drm_backend_output_mode
+drm_configure_output(struct weston_compositor *c,
+		     bool use_current_mode,
+		     const char *name,
+		     struct weston_drm_backend_output_config *config)
+{
+	struct weston_config *wc = weston_compositor_get_user_data(c);
+	struct weston_config_section *section;
+	char *s;
+	int scale;
+	enum weston_drm_backend_output_mode mode =
+		WESTON_DRM_BACKEND_OUTPUT_PREFERRED;
+
+	section = weston_config_get_section(wc, "output", "name", name);
+	weston_config_section_get_string(section, "mode", &s, "preferred");
+	if (strcmp(s, "off") == 0) {
+		free(s);
+		return WESTON_DRM_BACKEND_OUTPUT_OFF;
+	}
+
+	if (use_current_mode || strcmp(s, "current") == 0) {
+		mode = WESTON_DRM_BACKEND_OUTPUT_CURRENT;
+	} else if (strcmp(s, "preferred") != 0) {
+		config->modeline = s;
+		s = NULL;
+	}
+	free(s);
+
+	weston_config_section_get_int(section, "scale", &scale, 1);
+	config->base.scale = scale >= 1 ? scale : 1;
+	weston_config_section_get_string(section, "transform", &s, "normal");
+	if (weston_parse_transform(s, &config->base.transform) < 0)
+		weston_log("Invalid transform \"%s\" for output %s\n",
+			   s, name);
+	free(s);
+
+	weston_config_section_get_string(section,
+					 "gbm-format", &config->gbm_format, NULL);
+	weston_config_section_get_string(section, "seat", &config->seat, "");
+	return mode;
+}
+
+static int
+load_drm_backend(struct weston_compositor *c, const char *backend,
+		 int *argc, char **argv, struct weston_config *wc)
+{
+	struct weston_drm_backend_config config = {{ 0, }};
+	struct weston_config_section *section;
+	int ret = 0;
+
+	const struct weston_option options[] = {
+		{ WESTON_OPTION_INTEGER, "connector", 0, &config.connector },
+		{ WESTON_OPTION_STRING, "seat", 0, &config.seat_id },
+		{ WESTON_OPTION_INTEGER, "tty", 0, &config.tty },
+		{ WESTON_OPTION_BOOLEAN, "current-mode", 0, &config.use_current_mode },
+		{ WESTON_OPTION_BOOLEAN, "use-pixman", 0, &config.use_pixman },
+	};
+
+	parse_options(options, ARRAY_LENGTH(options), argc, argv);
+
+	section = weston_config_get_section(wc, "core", NULL, NULL);
+	weston_config_section_get_string(section,
+					 "gbm-format", &config.gbm_format,
+					 NULL);
+
+	config.base.struct_version = WESTON_DRM_BACKEND_CONFIG_VERSION;
+	config.base.struct_size = sizeof(struct weston_drm_backend_config);
+	config.configure_output = drm_configure_output;
+
+	ret = load_backend_new(c, backend, &config.base);
+
+	free(config.gbm_format);
+	free(config.seat_id);
+
+	return ret;
+}
+
 static int
 load_headless_backend(struct weston_compositor *c, char const * backend,
 		      int *argc, char **argv, struct weston_config *wc)
@@ -959,11 +1037,11 @@ load_backend(struct weston_compositor *compositor, const char *backend,
 		return load_rdp_backend(compositor, backend, argc, argv, config);
 	else if (strstr(backend, "fbdev-backend.so"))
 		return load_fbdev_backend(compositor, backend, argc, argv, config);
+	else if (strstr(backend, "drm-backend.so"))
+		return load_drm_backend(compositor, backend, argc, argv, config);
 	else if (strstr(backend, "x11-backend.so"))
 		return load_x11_backend(compositor, backend, argc, argv, config);
 #if 0
-	else if (strstr(backend, "drm-backend.so"))
-		return load_drm_backend(compositor, backend, argc, argv, config);
 	else if (strstr(backend, "wayland-backend.so"))
 		return load_wayland_backend(compositor, backend, argc, argv, config);
 	else if (strstr(backend, "rpi-backend.so"))
@@ -1064,7 +1142,7 @@ int main(int argc, char *argv[])
 			backend = weston_choose_default_backend();
 	}
 
-	ec = weston_compositor_create(display, NULL);
+	ec = weston_compositor_create(display, config);
 	if (ec == NULL) {
 		weston_log("fatal: failed to create compositor\n");
 		goto out;
