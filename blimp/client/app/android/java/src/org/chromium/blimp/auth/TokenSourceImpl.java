@@ -87,7 +87,7 @@ public class TokenSourceImpl implements TokenSource {
 
         if (accountName == null || !doesAccountExist(accountName)) {
             // Remove any old preference value in case the account is invalid.
-            preferences.edit().remove(ACCOUNT_NAME_PREF).commit();
+            preferences.edit().remove(ACCOUNT_NAME_PREF).apply();
 
             // Trigger account selection.
             mCallback.onNeedsAccountToBeSelected(getAccountChooserIntent());
@@ -130,7 +130,7 @@ public class TokenSourceImpl implements TokenSource {
 
         String accountName = data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(mAppContext);
-        preferences.edit().putString(ACCOUNT_NAME_PREF, accountName).commit();
+        preferences.edit().putString(ACCOUNT_NAME_PREF, accountName).apply();
     }
 
     @SuppressWarnings("deprecation")
