@@ -153,19 +153,6 @@ class RendererMemoryBlinkMemoryMobile(_MemoryInfra):
 
 
 # Disabled on reference builds because they don't support the new
-# Tracing.requestMemoryDump DevTools API. See http://crbug.com/540022.
-@benchmark.Disabled('reference')
-class MemoryBenchmarkTop10Mobile(_MemoryInfra):
-  """Timeline based benchmark for measuring memory on top 10 mobile sites."""
-
-  page_set = page_sets.MemoryInfraTop10MobilePageSet
-
-  @classmethod
-  def Name(cls):
-    return 'memory.top_10_mobile'
-
-
-# Disabled on reference builds because they don't support the new
 # Tracing.requestMemoryDump DevTools API.
 # For 'reference' see http://crbug.com/540022.
 # For 'android' see http://crbug.com/579546.
