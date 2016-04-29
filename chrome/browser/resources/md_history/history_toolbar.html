@@ -46,9 +46,12 @@
         flex: 1 0 var(--side-bar-width);
       }
 
-      #centered-buttons {
-        flex: 0 1 var(--card-max-width);
-        padding: 0 var(--card-padding-side);
+      #centered-content {
+        /** Padding-start gives space on one side, flex-basis gives space on the
+          other. */
+        -webkit-padding-start: var(--card-padding-side);
+        display: flex;
+        flex: 1 1 calc(var(--card-max-width) + var(--card-padding-side));
       }
 
       #right-content {
@@ -98,18 +101,18 @@
         <div id="left-content">
           <h1 id="title">$i18n{title}</h1>
         </div>
-        <div id="centered-buttons">
+        <div id="centered-content">
           <paper-button on-tap="onClearBrowsingDataTap_"
               id="clear-browsing-data-button">
             $i18n{clearBrowsingData}
           </paper-button>
-        </div>
-        <div id="right-content">
-          <paper-spinner id="searching-spinner" active="[[searching]]">
-          </paper-spinner>
-          <cr-search-field id="search-input" label="$i18n{search}"
-              clear-label="$i18n{clearSearch}">
-          </cr-search-field>
+          <div id="right-content">
+            <paper-spinner id="searching-spinner" active="[[searching]]">
+            </paper-spinner>
+            <cr-search-field id="search-input" label="$i18n{search}"
+                clear-label="$i18n{clearSearch}">
+            </cr-search-field>
+          </div>
         </div>
       </div>
 
