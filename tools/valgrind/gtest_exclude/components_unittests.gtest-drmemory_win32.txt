@@ -1,2 +1,5 @@
 # http://crbug.com/514421
 WatcherMetricsProviderWinTest.DoesNotReportOwnProcessId
+
+# http://crbug.com/608053
+SafeBrowsingV4GetHashProtocolManagerTest.TestGetHashErrorHandlingNetwork
