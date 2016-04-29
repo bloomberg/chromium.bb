@@ -1144,9 +1144,8 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Focus ---------------------------------------------------------------------
 
-  // Returns true if ALWAYS is the last set focus behavior. Use IsFocusable() to
-  // determine if a view can take focus right now.
-  bool focusable() const { return focus_behavior_ == FocusBehavior::ALWAYS; }
+  // Returns last set focus behavior.
+  FocusBehavior focus_behavior() const { return focus_behavior_; }
 
   // Override to be notified when focus has changed either to or from this View.
   virtual void OnFocus();
