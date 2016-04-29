@@ -3548,7 +3548,7 @@ bool WebGLRenderingContextBase::validateReadPixelsFormatAndType(GLenum format, G
         }
         return true;
     case GL_FLOAT:
-        if (extensionEnabled(OESTextureFloatName) || extensionEnabled(OESTextureHalfFloatName)) {
+        if (extensionEnabled(OESTextureFloatName)) {
             if (buffer && buffer->type() != DOMArrayBufferView::TypeFloat32) {
                 synthesizeGLError(GL_INVALID_OPERATION, "readPixels", "type FLOAT but ArrayBufferView not Float32Array");
                 return false;
@@ -5128,21 +5128,8 @@ ScriptValue WebGLRenderingContextBase::getFloatParameter(ScriptState* scriptStat
 ScriptValue WebGLRenderingContextBase::getIntParameter(ScriptState* scriptState, GLenum pname)
 {
     GLint value = 0;
-    if (!isContextLost()) {
+    if (!isContextLost())
         contextGL()->GetIntegerv(pname, &value);
-        switch (pname) {
-        case GL_IMPLEMENTATION_COLOR_READ_FORMAT:
-        case GL_IMPLEMENTATION_COLOR_READ_TYPE:
-            if (value == 0) {
-                // This indicates read framebuffer is incomplete and an
-                // INVALID_OPERATION has been generated.
-                return ScriptValue::createNull(scriptState);
-            }
-            break;
-        default:
-            break;
-        }
-    }
     return WebGLAny(scriptState, value);
 }
 

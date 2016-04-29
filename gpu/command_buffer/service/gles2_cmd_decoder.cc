@@ -1284,18 +1284,15 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   bool FormsTextureCopyingFeedbackLoop(TextureRef* texture, GLint level);
 
   // Check if a framebuffer meets our requirements.
-  // Generates |gl_error| if the framebuffer is incomplete.
   bool CheckFramebufferValid(
       Framebuffer* framebuffer,
       GLenum target,
       bool clear_uncleared_images,
-      GLenum gl_error,
       const char* func_name);
 
   bool CheckBoundDrawFramebufferValid(
       bool clear_uncleared_images, const char* func_name);
-  // Generates |gl_error| if the bound read fbo is incomplete.
-  bool CheckBoundReadFramebufferValid(const char* func_name, GLenum gl_error);
+  bool CheckBoundReadFramebufferValid(const char* func_name);
 
   // Checks if the current program exists and is valid. If not generates the
   // appropriate GL error.  Returns true if the current program is in a usable
@@ -3756,7 +3753,6 @@ bool GLES2DecoderImpl::CheckFramebufferValid(
     Framebuffer* framebuffer,
     GLenum target,
     bool clear_uncleared_images,
-    GLenum gl_error,
     const char* func_name) {
   if (!framebuffer) {
     if (surfaceless_)
@@ -3796,7 +3792,8 @@ bool GLES2DecoderImpl::CheckFramebufferValid(
 
   GLenum completeness = framebuffer->IsPossiblyComplete(feature_info_.get());
   if (completeness != GL_FRAMEBUFFER_COMPLETE) {
-    LOCAL_SET_GL_ERROR(gl_error, func_name, "framebuffer incomplete");
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_FRAMEBUFFER_OPERATION, func_name, "framebuffer incomplete");
     return false;
   }
 
@@ -3809,7 +3806,8 @@ bool GLES2DecoderImpl::CheckFramebufferValid(
       if (framebuffer->GetStatus(texture_manager(), target) !=
           GL_FRAMEBUFFER_COMPLETE) {
         LOCAL_SET_GL_ERROR(
-            gl_error, func_name, "framebuffer incomplete (clear)");
+            GL_INVALID_FRAMEBUFFER_OPERATION, func_name,
+            "framebuffer incomplete (clear)");
         return false;
       }
       ClearUnclearedAttachments(target, framebuffer);
@@ -3820,7 +3818,8 @@ bool GLES2DecoderImpl::CheckFramebufferValid(
     if (framebuffer->GetStatus(texture_manager(), target) !=
         GL_FRAMEBUFFER_COMPLETE) {
       LOCAL_SET_GL_ERROR(
-          gl_error, func_name, "framebuffer incomplete (check)");
+          GL_INVALID_FRAMEBUFFER_OPERATION, func_name,
+          "framebuffer incomplete (check)");
       return false;
     }
     framebuffer_manager()->MarkAsComplete(framebuffer);
@@ -3834,20 +3833,17 @@ bool GLES2DecoderImpl::CheckBoundDrawFramebufferValid(
       GL_DRAW_FRAMEBUFFER : GL_FRAMEBUFFER;
   Framebuffer* framebuffer = GetFramebufferInfoForTarget(target);
   bool valid = CheckFramebufferValid(
-      framebuffer, target, clear_uncleared_images,
-      GL_INVALID_FRAMEBUFFER_OPERATION, func_name);
+      framebuffer, target, clear_uncleared_images, func_name);
   if (valid && !features().chromium_framebuffer_multisample)
     OnUseFramebuffer();
   return valid;
 }
 
-bool GLES2DecoderImpl::CheckBoundReadFramebufferValid(
-    const char* func_name, GLenum gl_error) {
+bool GLES2DecoderImpl::CheckBoundReadFramebufferValid(const char* func_name) {
   GLenum target = features().chromium_framebuffer_multisample ?
       GL_READ_FRAMEBUFFER : GL_FRAMEBUFFER;
   Framebuffer* framebuffer = GetFramebufferInfoForTarget(target);
-  bool valid = CheckFramebufferValid(
-      framebuffer, target, true, gl_error, func_name);
+  bool valid = CheckFramebufferValid(framebuffer, target, true, func_name);
   return valid;
 }
 
@@ -5373,52 +5369,50 @@ void GLES2DecoderImpl::DoGenerateMipmap(GLenum target) {
 bool GLES2DecoderImpl::GetHelper(
     GLenum pname, GLint* params, GLsizei* num_written) {
   DCHECK(num_written);
-  switch (pname) {
-    case GL_IMPLEMENTATION_COLOR_READ_FORMAT:
-    case GL_IMPLEMENTATION_COLOR_READ_TYPE:
-      // They are not supported on Desktop GL until 4.1, but could be exposed
-      // through GL_OES_read_format extension. However, a conflicting extension
-      // GL_ARB_ES2_compatibility specifies an error case when requested on
-      // integer/floating point buffers.
-      // To simpify the handling, we just query and check for GL errors. If an
-      // GL error occur, we fall back to our internal implementation.
-      *num_written = 1;
-      if (!CheckBoundReadFramebufferValid("glGetIntegerv",
-                                          GL_INVALID_OPERATION)) {
-        if (params) {
-          *params = 0;
-        }
-        return true;
-      }
-      if (params) {
-        ScopedGLErrorSuppressor suppressor("GLES2DecoderImpl::GetHelper",
-                                           GetErrorState());
-        glGetIntegerv(pname, params);
-        if (glGetError() != GL_NO_ERROR) {
-          if (pname == GL_IMPLEMENTATION_COLOR_READ_FORMAT) {
-            *params = GLES2Util::GetGLReadPixelsImplementationFormat(
-                GetBoundReadFrameBufferInternalFormat(),
-                GetBoundReadFrameBufferTextureType(),
-                feature_info_->feature_flags().ext_read_format_bgra);
-          } else {
-            *params = GLES2Util::GetGLReadPixelsImplementationType(
-                GetBoundReadFrameBufferInternalFormat(),
-                GetBoundReadFrameBufferTextureType());
-          }
-        }
-        if (*params == GL_HALF_FLOAT &&
-            (feature_info_->context_type() == CONTEXT_TYPE_WEBGL1 ||
-             feature_info_->context_type() == CONTEXT_TYPE_OPENGLES2)) {
-          *params = GL_HALF_FLOAT_OES;
-        }
-      }
-      return true;
-    default:
-      break;
-  }
-
   if (gfx::GetGLImplementation() != gfx::kGLImplementationEGLGLES2) {
     switch (pname) {
+      case GL_IMPLEMENTATION_COLOR_READ_FORMAT:
+        *num_written = 1;
+        // Return the GL implementation's preferred format and (see below type)
+        // if we have the GL extension that exposes this. This allows the GPU
+        // client to use the implementation's preferred format for glReadPixels
+        // for optimisation.
+        //
+        // A conflicting extension (GL_ARB_ES2_compatibility) specifies an error
+        // case when requested on integer/floating point buffers but which is
+        // acceptable on GLES2 and with the GL_OES_read_format extension.
+        //
+        // Therefore if an error occurs we swallow the error and use the
+        // internal implementation.
+        if (params) {
+          if (context_->HasExtension("GL_OES_read_format")) {
+            ScopedGLErrorSuppressor suppressor("GLES2DecoderImpl::GetHelper",
+                                               GetErrorState());
+            glGetIntegerv(pname, params);
+            if (glGetError() == GL_NO_ERROR)
+              return true;
+          }
+          *params = GLES2Util::GetGLReadPixelsImplementationFormat(
+              GetBoundReadFrameBufferInternalFormat(),
+              GetBoundReadFrameBufferTextureType(),
+              feature_info_->feature_flags().ext_read_format_bgra);
+        }
+        return true;
+      case GL_IMPLEMENTATION_COLOR_READ_TYPE:
+        *num_written = 1;
+        if (params) {
+          if (context_->HasExtension("GL_OES_read_format")) {
+            ScopedGLErrorSuppressor suppressor("GLES2DecoderImpl::GetHelper",
+                                               GetErrorState());
+            glGetIntegerv(pname, params);
+            if (glGetError() == GL_NO_ERROR)
+              return true;
+          }
+          *params = GLES2Util::GetGLReadPixelsImplementationType(
+              GetBoundReadFrameBufferInternalFormat(),
+              GetBoundReadFrameBufferTextureType());
+        }
+        return true;
       case GL_MAX_FRAGMENT_UNIFORM_VECTORS:
         *num_written = 1;
         if (params) {
@@ -6794,8 +6788,7 @@ void GLES2DecoderImpl::DoBlitFramebufferCHROMIUM(
   DCHECK(!ShouldDeferReads() && !ShouldDeferDraws());
 
   if (!CheckBoundDrawFramebufferValid(true, "glBlitFramebufferCHROMIUM") ||
-      !CheckBoundReadFramebufferValid("glBlitFramebufferCHROMIUM",
-                                      GL_INVALID_FRAMEBUFFER_OPERATION)) {
+      !CheckBoundReadFramebufferValid("glBlitFramebufferCHROMIUM")) {
     return;
   }
 
@@ -9585,8 +9578,7 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32_t immediate_data_size,
     return error::kNoError;
   }
 
-  if (!CheckBoundReadFramebufferValid("glReadPixels",
-                                      GL_INVALID_FRAMEBUFFER_OPERATION)) {
+  if (!CheckBoundReadFramebufferValid("glReadPixels")) {
     return error::kNoError;
   }
   GLenum src_internal_format = GetBoundReadFrameBufferInternalFormat();
@@ -9640,7 +9632,11 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32_t immediate_data_size,
           case GL_HALF_FLOAT_OES:
           case GL_FLOAT:
           case GL_UNSIGNED_INT_10F_11F_11F_REV:
-            accepted_types.push_back(GL_FLOAT);
+            if (!feature_info_->IsES3Enabled()) {
+              accepted_types.push_back(GL_UNSIGNED_BYTE);
+            } else {
+              accepted_types.push_back(GL_FLOAT);
+            }
             break;
           default:
             accepted_types.push_back(GL_UNSIGNED_BYTE);
@@ -9677,10 +9673,6 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32_t immediate_data_size,
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glReadPixels",
         "format and type incompatible with the current read framebuffer");
     return error::kNoError;
-  }
-  if (type == GL_HALF_FLOAT_OES &&
-      !(feature_info_->gl_version_info().is_es2)) {
-    type = GL_HALF_FLOAT;
   }
   if (width == 0 || height == 0) {
     return error::kNoError;
@@ -11802,8 +11794,7 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
     return;
   }
 
-  if (!CheckBoundReadFramebufferValid("glCopyTexImage2D",
-                                      GL_INVALID_FRAMEBUFFER_OPERATION)) {
+  if (!CheckBoundReadFramebufferValid("glCopyTexImage2D")) {
     return;
   }
 
@@ -12002,8 +11993,7 @@ void GLES2DecoderImpl::DoCopyTexSubImage2D(
     return;
   }
 
-  if (!CheckBoundReadFramebufferValid("glCopyTexImage2D",
-                                      GL_INVALID_FRAMEBUFFER_OPERATION)) {
+  if (!CheckBoundReadFramebufferValid("glCopyTexImage2D")) {
     return;
   }
 

@@ -43,12 +43,11 @@ GLVersionInfo::GLVersionInfo(const char* version_str, const char* renderer_str)
       is_angle(false),
       major_version(0),
       minor_version(0),
-      is_es2(false),
       is_es3(false),
       is_desktop_core_profile(false) {
   if (version_str) {
     ParseVersionString(version_str, &major_version, &minor_version,
-                       &is_es, &is_es2, &is_es3);
+                       &is_es, &is_es3);
   }
   if (renderer_str) {
     is_angle = base::StartsWith(renderer_str, "ANGLE",
@@ -60,13 +59,11 @@ void GLVersionInfo::ParseVersionString(const char* version_str,
                                        unsigned* major_version,
                                        unsigned* minor_version,
                                        bool* is_es,
-                                       bool* is_es2,
                                        bool* is_es3) {
   // Make sure the outputs are always initialized.
   *major_version = 0;
   *minor_version = 0;
   *is_es = false;
-  *is_es2 = false;
   *is_es3 = false;
   if (!version_str)
     return;
@@ -84,8 +81,6 @@ void GLVersionInfo::ParseVersionString(const char* version_str,
       *minor_version = minor;
     }
   }
-  if (*is_es && *major_version == 2)
-    *is_es2 = true;
   if (*is_es && *major_version == 3)
     *is_es3 = true;
   DCHECK(major_version != 0);

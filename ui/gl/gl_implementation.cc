@@ -205,10 +205,9 @@ bool WillUseGLGetStringForExtensions() {
   const char* version_str =
       reinterpret_cast<const char*>(glGetString(GL_VERSION));
   unsigned major_version, minor_version;
-  bool is_es, is_es2, is_es3;
+  bool is_es, is_es3;
   gfx::GLVersionInfo::ParseVersionString(
-      version_str, &major_version, &minor_version,
-      &is_es, &is_es2, &is_es3);
+      version_str, &major_version, &minor_version, &is_es, &is_es3);
   return is_es || major_version < 3;
 }
 
