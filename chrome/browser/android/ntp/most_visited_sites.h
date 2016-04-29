@@ -212,6 +212,9 @@ class MostVisitedSites : public history::TopSitesObserver,
   // The profile whose most visited sites will be queried.
   Profile* profile_;
 
+  scoped_refptr<history::TopSites> top_sites_;
+  suggestions::SuggestionsService* suggestions_service_;
+
   Observer* observer_;
 
   // The maximum number of most visited sites to return.

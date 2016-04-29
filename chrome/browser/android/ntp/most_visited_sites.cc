@@ -40,7 +40,6 @@ using content::BrowserThread;
 using history::TopSites;
 using suggestions::ChromeSuggestion;
 using suggestions::SuggestionsProfile;
-using suggestions::SuggestionsService;
 using suggestions::SuggestionsServiceFactory;
 
 namespace {
@@ -179,7 +178,9 @@ MostVisitedSites::Suggestion&
 MostVisitedSites::Suggestion::operator=(Suggestion&&) = default;
 
 MostVisitedSites::MostVisitedSites(Profile* profile)
-    : profile_(profile), observer_(nullptr), num_sites_(0),
+    : profile_(profile), top_sites_(TopSitesFactory::GetForProfile(profile)),
+      suggestions_service_(SuggestionsServiceFactory::GetForProfile(profile_)),
+      observer_(nullptr), num_sites_(0),
       received_most_visited_sites_(false), received_popular_sites_(false),
       recorded_uma_(false), scoped_observer_(this), weak_ptr_factory_(this) {
   // Register the thumbnails debugging page.
@@ -216,40 +217,36 @@ void MostVisitedSites::SetMostVisitedURLsObserver(
     received_popular_sites_ = true;
   }
 
-  scoped_refptr<TopSites> top_sites = TopSitesFactory::GetForProfile(profile_);
-  if (top_sites) {
+  if (top_sites_) {
     // TopSites updates itself after a delay. To ensure up-to-date results,
     // force an update now.
-    top_sites->SyncWithHistory();
+    top_sites_->SyncWithHistory();
 
     // Register as TopSitesObserver so that we can update ourselves when the
     // TopSites changes.
-    scoped_observer_.Add(top_sites.get());
+    scoped_observer_.Add(top_sites_.get());
   }
 
-  SuggestionsService* suggestions_service =
-      SuggestionsServiceFactory::GetForProfile(profile_);
-  suggestions_subscription_ = suggestions_service->AddCallback(
+  suggestions_subscription_ = suggestions_service_->AddCallback(
       base::Bind(&MostVisitedSites::OnSuggestionsProfileAvailable,
                  base::Unretained(this)));
 
   // Immediately get the current suggestions from the cache. If the cache is
   // empty, this will fall back to TopSites.
   OnSuggestionsProfileAvailable(
-      suggestions_service->GetSuggestionsDataFromCache());
+      suggestions_service_->GetSuggestionsDataFromCache());
   // Also start a request for fresh suggestions.
-  suggestions_service->FetchSuggestionsData();
+  suggestions_service_->FetchSuggestionsData();
 }
 
 void MostVisitedSites::GetURLThumbnail(
     const GURL& url,
     const ThumbnailCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  scoped_refptr<TopSites> top_sites(TopSitesFactory::GetForProfile(profile_));
 
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::DB, FROM_HERE,
-      base::Bind(&MaybeFetchLocalThumbnail, url, top_sites),
+      base::Bind(&MaybeFetchLocalThumbnail, url, top_sites_),
       base::Bind(&MostVisitedSites::OnLocalThumbnailFetched,
                  weak_ptr_factory_.GetWeakPtr(), url, callback));
 }
@@ -262,27 +259,24 @@ void MostVisitedSites::OnLocalThumbnailFetched(
   if (!bitmap.get()) {
     // A thumbnail is not locally available for |url|. Make sure it is put in
     // the list to be fetched at the next visit to this site.
-    scoped_refptr<TopSites> top_sites(TopSitesFactory::GetForProfile(profile_));
-    if (top_sites)
-      top_sites->AddForcedURL(url, base::Time::Now());
+    if (top_sites_)
+      top_sites_->AddForcedURL(url, base::Time::Now());
     // Also fetch a remote thumbnail if possible. PopularSites or the
     // SuggestionsService can supply a thumbnail download URL.
-    SuggestionsService* suggestions_service =
-        SuggestionsServiceFactory::GetForProfile(profile_);
     if (popular_sites_) {
       const std::vector<PopularSites::Site>& sites = popular_sites_->sites();
       auto it = std::find_if(
           sites.begin(), sites.end(),
           [&url](const PopularSites::Site& site) { return site.url == url; });
       if (it != sites.end() && it->thumbnail_url.is_valid()) {
-        return suggestions_service->GetPageThumbnailWithURL(
+        return suggestions_service_->GetPageThumbnailWithURL(
             url, it->thumbnail_url,
             base::Bind(&MostVisitedSites::OnObtainedThumbnail,
                        weak_ptr_factory_.GetWeakPtr(), false, callback));
       }
     }
     if (mv_source_ == SUGGESTIONS_SERVICE) {
-      return suggestions_service->GetPageThumbnail(
+      return suggestions_service_->GetPageThumbnail(
           url, base::Bind(&MostVisitedSites::OnObtainedThumbnail,
                           weak_ptr_factory_.GetWeakPtr(), false, callback));
     }
@@ -302,22 +296,19 @@ void MostVisitedSites::OnObtainedThumbnail(
 void MostVisitedSites::AddOrRemoveBlacklistedUrl(
     const GURL& url, bool add_url) {
   // Always blacklist in the local TopSites.
-  scoped_refptr<TopSites> top_sites = TopSitesFactory::GetForProfile(profile_);
-  if (top_sites) {
+  if (top_sites_) {
     if (add_url)
-      top_sites->AddBlacklistedURL(url);
+      top_sites_->AddBlacklistedURL(url);
     else
-      top_sites->RemoveBlacklistedURL(url);
+      top_sites_->RemoveBlacklistedURL(url);
   }
 
   // Only blacklist in the server-side suggestions service if it's active.
   if (mv_source_ == SUGGESTIONS_SERVICE) {
-    SuggestionsService* suggestions_service =
-        SuggestionsServiceFactory::GetForProfile(profile_);
     if (add_url)
-      suggestions_service->BlacklistURL(url);
+      suggestions_service_->BlacklistURL(url);
     else
-      suggestions_service->UndoBlacklistURL(url);
+      suggestions_service_->UndoBlacklistURL(url);
   }
 }
 
@@ -368,9 +359,7 @@ void MostVisitedSites::RegisterProfilePrefs(
 }
 
 void MostVisitedSites::QueryMostVisitedURLs() {
-  SuggestionsService* suggestions_service =
-      SuggestionsServiceFactory::GetForProfile(profile_);
-  if (suggestions_service->FetchSuggestionsData()) {
+  if (suggestions_service_->FetchSuggestionsData()) {
     // A suggestions network request is on its way. We'll be called back via
     // OnSuggestionsProfileAvailable.
     return;
@@ -379,15 +368,14 @@ void MostVisitedSites::QueryMostVisitedURLs() {
   // cache. If that also returns nothing, OnSuggestionsProfileAvailable will
   // call InitiateTopSitesQuery.
   OnSuggestionsProfileAvailable(
-      suggestions_service->GetSuggestionsDataFromCache());
+      suggestions_service_->GetSuggestionsDataFromCache());
 }
 
 void MostVisitedSites::InitiateTopSitesQuery() {
-  scoped_refptr<TopSites> top_sites = TopSitesFactory::GetForProfile(profile_);
-  if (!top_sites)
+  if (!top_sites_)
     return;
 
-  top_sites->GetMostVisitedURLs(
+  top_sites_->GetMostVisitedURLs(
       base::Bind(&MostVisitedSites::OnMostVisitedURLsAvailable,
                  weak_ptr_factory_.GetWeakPtr()),
       false);
@@ -496,11 +484,10 @@ MostVisitedSites::CreateWhitelistEntryPointSuggestions(
   std::set<std::string> personal_hosts;
   for (const auto& suggestion : personal_suggestions)
     personal_hosts.insert(suggestion->url.host());
-  scoped_refptr<TopSites> top_sites(TopSitesFactory::GetForProfile(profile_));
 
   for (const auto& whitelist : supervised_user_service->whitelists()) {
     // Skip blacklisted sites.
-    if (top_sites && top_sites->IsBlacklisted(whitelist->entry_point()))
+    if (top_sites_ && top_sites_->IsBlacklisted(whitelist->entry_point()))
       continue;
 
     // Skip suggestions already present.
@@ -551,10 +538,9 @@ MostVisitedSites::CreatePopularSitesSuggestions(
       hosts.insert(suggestion->url.host());
     for (const auto& suggestion : whitelist_suggestions)
       hosts.insert(suggestion->url.host());
-    scoped_refptr<TopSites> top_sites(TopSitesFactory::GetForProfile(profile_));
     for (const PopularSites::Site& popular_site : popular_sites_->sites()) {
       // Skip blacklisted sites.
-      if (top_sites && top_sites->IsBlacklisted(popular_site.url))
+      if (top_sites_ && top_sites_->IsBlacklisted(popular_site.url))
         continue;
       std::string host = popular_site.url.host();
       // Skip suggestions already present in personal or whitelists.
