@@ -208,7 +208,9 @@ void CronetBidirectionalStream::ReadDataOnNetworkThread(
   DCHECK(!read_buffer_);
   if (read_state_ != WAITING_FOR_READ) {
     DLOG(ERROR) << "Unexpected Read Data in read_state " << WAITING_FOR_READ;
-    OnFailed(net::ERR_UNEXPECTED);
+    // Invoke OnFailed unless it is already invoked.
+    if (read_state_ != ERROR)
+      OnFailed(net::ERR_UNEXPECTED);
     return;
   }
   read_state_ = READING;
@@ -235,7 +237,9 @@ void CronetBidirectionalStream::WriteDataOnNetworkThread(
   DCHECK(!write_buffer_);
   if (write_state_ != WAITING_FOR_WRITE) {
     DLOG(ERROR) << "Unexpected Write Data in write_state " << write_state_;
-    OnFailed(net::ERR_UNEXPECTED);
+    // Invoke OnFailed unless it is already invoked.
+    if (write_state_ != ERROR)
+      OnFailed(net::ERR_UNEXPECTED);
     return;
   }
   write_state_ = WRITING;

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "quic_test_server.h"
+#include "components/cronet/ios/test/quic_test_server.h"
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -14,15 +14,47 @@
 #include "net/base/ip_endpoint.h"
 #include "net/base/test_data_directory.h"
 #include "net/quic/crypto/proof_source_chromium.h"
+#include "net/spdy/spdy_header_block.h"
 #include "net/tools/quic/quic_in_memory_cache.h"
 #include "net/tools/quic/quic_simple_server.h"
 
 namespace cronet {
 
-static const int kServerPort = 6121;
+// This must match the certificate used (quic_test.example.com.crt and
+// quic_test.example.com.key.pkcs8).
+const char kTestServerDomain[] = "test.example.com";
+const int kTestServerPort = 6121;
+const char kTestServerHost[] = "test.example.com:6121";
+const char kTestServerUrl[] = "https://test.example.com:6121/hello.txt";
+
+const char kStatusHeader[] = ":status";
+
+const char kHelloPath[] = "/hello.txt";
+const char kHelloBodyValue[] = "Hello from QUIC Server";
+const char kHelloStatus[] = "200";
+
+const char kHelloHeaderName[] = "hello_header";
+const char kHelloHeaderValue[] = "hello header value";
+
+const char kHelloTrailerName[] = "hello_trailer";
+const char kHelloTrailerValue[] = "hello trailer value";
 
 base::Thread* g_quic_server_thread = nullptr;
 net::QuicSimpleServer* g_quic_server = nullptr;
+
+void SetupQuicInMemoryCache() {
+  static bool setup_done = false;
+  if (setup_done)
+    return;
+  setup_done = true;
+  net::SpdyHeaderBlock headers;
+  headers.ReplaceOrAppendHeader(kHelloHeaderName, kHelloHeaderValue);
+  headers.ReplaceOrAppendHeader(kStatusHeader, kHelloStatus);
+  net::SpdyHeaderBlock trailers;
+  trailers.ReplaceOrAppendHeader(kHelloTrailerName, kHelloTrailerValue);
+  net::QuicInMemoryCache::GetInstance()->AddResponse(
+      kTestServerHost, kHelloPath, headers, kHelloBodyValue, trailers);
+}
 
 void StartQuicServerOnServerThread(const base::FilePath& test_files_root,
                                    base::WaitableEvent* server_started_event) {
@@ -30,18 +62,10 @@ void StartQuicServerOnServerThread(const base::FilePath& test_files_root,
   DCHECK(!g_quic_server);
 
   // Set up in-memory cache.
-  /*
-  base::FilePath file_dir = test_files_root.Append("quic_data");
-  CHECK(base::PathExists(file_dir)) << "Quic data does not exist";
-  net::QuicInMemoryCache::GetInstance()->InitializeFromDirectory(
-      file_dir.value());
-   */
+  SetupQuicInMemoryCache();
   net::QuicConfig config;
-
   // Set up server certs.
   base::FilePath directory;
-  // CHECK(base::android::GetExternalStorageDirectory(&directory));
-  // directory = directory.Append("net/data/ssl/certificates");
   directory = test_files_root;
   // TODO(xunjieli): Use scoped_ptr when crbug.com/545474 is fixed.
   net::ProofSourceChromium* proof_source = new net::ProofSourceChromium();
@@ -54,7 +78,7 @@ void StartQuicServerOnServerThread(const base::FilePath& test_files_root,
 
   // Start listening.
   int rv = g_quic_server->Listen(
-      net::IPEndPoint(net::IPAddress::IPv4AllZeros(), kServerPort));
+      net::IPEndPoint(net::IPAddress::IPv4AllZeros(), kTestServerPort));
   CHECK_GE(rv, 0) << "Quic server fails to start";
   server_started_event->Signal();
 }
@@ -89,6 +113,8 @@ bool StartQuicTestServer() {
 }
 
 void ShutdownQuicTestServer() {
+  if (!g_quic_server_thread)
+    return;
   DCHECK(!g_quic_server_thread->task_runner()->BelongsToCurrentThread());
   base::WaitableEvent server_stopped_event(true, false);
   g_quic_server_thread->task_runner()->PostTask(
