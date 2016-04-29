@@ -1,4 +1,25 @@
 {
+  "Android Arm64 Builder (dbg)": {
+    "additional_compile_targets": [
+      "android_builder_tests"
+    ]
+  },
+  "Android Builder": {
+    "additional_compile_targets": [
+      "cronet_test_instrumentation_apk",
+      "system_webview_apk"
+    ]
+  },
+  "Android Builder (dbg)": {
+    "additional_compile_targets": [
+      "system_webview_apk"
+    ]
+  },
+  "Android Clang Builder (dbg)": {
+    "additional_compile_targets": [
+      "android_builder_tests"
+    ]
+  },
   "Android GN": {
     "gtest_tests": [
       {
