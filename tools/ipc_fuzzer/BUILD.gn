@@ -9,6 +9,9 @@ config("ipc_fuzzer_config") {
 }
 
 config("ipc_fuzzer_tool_config") {
+  if (is_win) {
+    cflags = [ "/wd4366" ]
+  }
   defines = [
     "ENABLE_IPC_FUZZER",
     "USE_CUPS",

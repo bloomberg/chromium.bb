@@ -13,6 +13,7 @@ static_library("ipc_message_lib") {
     "//components/network_hints/common",
     "//components/page_load_metrics/common",
     "//components/pdf/common",
+    "//components/tracing",
     "//content/child",
     "//content/public/child",
     "//ipc",
