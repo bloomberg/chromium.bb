@@ -230,6 +230,7 @@ java_cpp_enum("chrome_android_java_enums_srcjar") {
     "//chrome/browser/android/activity_type_ids.h",
     "//chrome/browser/android/feedback/connectivity_checker.cc",
     "//chrome/browser/android/ntp/most_visited_sites.cc",
+    "//chrome/browser/android/policy/policy_auditor.cc",
     "//chrome/browser/android/shortcut_info.h",
     "//chrome/browser/android/tab_android.h",
     "//chrome/browser/browsing_data/browsing_data_counter_utils.h",

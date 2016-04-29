@@ -494,6 +494,7 @@
             'infobar_action_type_java',
             'most_visited_tile_type_java',
             'page_info_connection_type_java',
+            'policy_auditor_java',
             'profile_account_management_metrics_java',
             'resource_id_java',
             'shortcut_source_java',

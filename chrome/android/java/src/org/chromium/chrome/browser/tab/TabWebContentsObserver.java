@@ -304,7 +304,9 @@ public class TabWebContentsObserver extends WebContentsObserver {
 
         PolicyAuditor auditor =
                 ((ChromeApplication) mTab.getApplicationContext()).getPolicyAuditor();
-        auditor.notifyCertificateFailure(mTab.getWebContents(), mTab.getApplicationContext());
+        auditor.notifyCertificateFailure(
+                PolicyAuditor.nativeGetCertificateFailure(mTab.getWebContents()),
+                mTab.getApplicationContext());
     }
 
     @Override
