@@ -1198,6 +1198,7 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/SSLClientCertificateRequestTest.java",
   "junit/src/org/chromium/chrome/browser/compositor/overlays/strip/StripLayoutHelperTest.java",
   "junit/src/org/chromium/chrome/browser/contextualsearch/ContextualSearchSelectionControllerTest.java",
+  "junit/src/org/chromium/chrome/browser/cookies/CanonicalCookieTest.java",
   "junit/src/org/chromium/chrome/browser/crash/LogcatExtractionCallableTest.java",
   "junit/src/org/chromium/chrome/browser/externalauth/ExternalAuthUtilsTest.java",
   "junit/src/org/chromium/chrome/browser/firstrun/FirstRunFlowSequencerTest.java",

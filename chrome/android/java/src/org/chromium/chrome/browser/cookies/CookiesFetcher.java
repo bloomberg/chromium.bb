@@ -18,7 +18,6 @@ import org.chromium.content.common.CleanupReference;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -39,13 +38,6 @@ public class CookiesFetcher {
 
     /** Used for logging. */
     private static final String TAG = "CookiesFetcher";
-
-    /**
-     * Used to confirm that the current cipher key matches the previously used cipher key when
-     * restoring data.  If this value cannot be read from the file, the file is likely garbage.
-     * TODO(acleung): May be use real cryptographic integrity checks on the whole file, instead.
-     */
-    private static final String MAGIC_STRING = "c0Ok135";
 
     /** Native-side pointer. */
     private final long mNativeCookiesFetcher;
@@ -119,7 +111,7 @@ public class CookiesFetcher {
             @Override
             protected List<CanonicalCookie> doInBackground(Void... voids) {
                 // Read cookies from disk on a background thread to avoid strict mode violations.
-                ArrayList<CanonicalCookie> cookies = new ArrayList<CanonicalCookie>();
+                List<CanonicalCookie> cookies = new ArrayList<CanonicalCookie>();
                 DataInputStream in = null;
                 try {
                     Cipher cipher = CipherFactory.getInstance().getCipher(Cipher.DECRYPT_MODE);
@@ -132,27 +124,14 @@ public class CookiesFetcher {
 
                     FileInputStream streamIn = new FileInputStream(fileIn);
                     in = new DataInputStream(new CipherInputStream(streamIn, cipher));
-                    String check = in.readUTF();
-                    if (!MAGIC_STRING.equals(check)) {
-                        // Stale cookie file. Chrome might have crashed before it
-                        // can delete the old file.
-                        return cookies;
-                    }
-                    try {
-                        while (true) {
-                            CanonicalCookie cookie = CanonicalCookie.createFromStream(in);
-                            cookies.add(cookie);
-                        }
-                    } catch (EOFException ignored) {
-                      // We are done.
-                    }
+                    cookies = CanonicalCookie.readListFromStream(in);
 
                     // The Cookie File should not be restored again. It'll be overwritten
                     // on the next onPause.
                     scheduleDeleteCookiesFile(context);
 
                 } catch (IOException e) {
-                    Log.w(TAG, "IOException during Cookie Restore");
+                    Log.w(TAG, "IOException during Cookie Restore", e);
                 } catch (Throwable t) {
                     Log.w(TAG, "Error restoring cookies.", t);
                 } finally {
@@ -174,7 +153,7 @@ public class CookiesFetcher {
                     nativeRestoreCookies(cookie.getUrl(), cookie.getName(), cookie.getValue(),
                             cookie.getDomain(), cookie.getPath(), cookie.getCreationDate(),
                             cookie.getExpirationDate(), cookie.getLastAccessDate(),
-                            cookie.isSecure(), cookie.isHttpOnly(), cookie.isSameSite(),
+                            cookie.isSecure(), cookie.isHttpOnly(), cookie.getSameSite(),
                             cookie.getPriority());
                 }
             }
@@ -219,7 +198,7 @@ public class CookiesFetcher {
     @CalledByNative
     private CanonicalCookie createCookie(String url, String name, String value, String domain,
             String path, long creation, long expiration, long lastAccess, boolean secure,
-            boolean httpOnly, boolean sameSite, int priority) {
+            boolean httpOnly, int sameSite, int priority) {
         return new CanonicalCookie(url, name, value, domain, path, creation, expiration, lastAccess,
                 secure, httpOnly, sameSite, priority);
     }
@@ -251,11 +230,7 @@ public class CookiesFetcher {
             CipherOutputStream cipherOut =
                     new CipherOutputStream(byteOut, cipher);
             out = new DataOutputStream(cipherOut);
-
-            out.writeUTF(MAGIC_STRING);
-            for (CanonicalCookie cookie : cookies) {
-                cookie.saveToStream(out);
-            }
+            CanonicalCookie.saveListToStream(out, cookies);
             out.close();
             ImportantFileWriterAndroid.writeFileAtomically(
                     fetchFileName(mContext), byteOut.toByteArray());
@@ -296,5 +271,5 @@ public class CookiesFetcher {
     private native void nativePersistCookies(long nativeCookiesFetcher);
     private static native void nativeRestoreCookies(String url, String name, String value,
             String domain, String path, long creation, long expiration, long lastAccess,
-            boolean secure, boolean httpOnly, boolean sameSite, int priority);
+            boolean secure, boolean httpOnly, int sameSite, int priority);
 }

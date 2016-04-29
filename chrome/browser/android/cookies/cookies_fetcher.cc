@@ -134,7 +134,7 @@ static void RestoreCookies(JNIEnv* env,
                            jlong last_access,
                            jboolean secure,
                            jboolean httponly,
-                           jboolean same_site,
+                           jint same_site,
                            jint priority) {
   Profile* profile = ProfileManager::GetPrimaryUserProfile();
   if (!profile->HasOffTheRecordProfile()) {
@@ -154,8 +154,7 @@ static void RestoreCookies(JNIEnv* env,
       base::Time::FromInternalValue(creation),
       base::Time::FromInternalValue(expiration),
       base::Time::FromInternalValue(last_access), secure, httponly,
-      same_site ? net::CookieSameSite::LAX_MODE
-                : net::CookieSameSite::NO_RESTRICTION,
+      static_cast<net::CookieSameSite>(same_site),
       static_cast<net::CookiePriority>(priority));
 
   // The rest must be done from the IO thread.
