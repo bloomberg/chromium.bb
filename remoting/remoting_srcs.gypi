@@ -251,6 +251,8 @@
     ],
 
     'remoting_signaling_sources': [
+      'signaling/chromoting_event.cc',
+      'signaling/chromoting_event.h',
       'signaling/iq_sender.cc',
       'signaling/iq_sender.h',
       'signaling/jid_util.cc',
@@ -262,6 +264,8 @@
       'signaling/server_log_entry.cc',
       'signaling/server_log_entry.h',
       'signaling/signal_strategy.h',
+      'signaling/telemetry_log_writer.cc',
+      'signaling/telemetry_log_writer.h',
       'signaling/xmpp_signal_strategy.cc',
       'signaling/xmpp_signal_strategy.h',
       'signaling/xmpp_stream_parser.cc',

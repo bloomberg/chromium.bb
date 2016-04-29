@@ -29,8 +29,10 @@ source_set("signaling") {
 
   if (is_nacl) {
     sources -= [
+      "chromoting_event.cc",
       "log_to_server.cc",
       "server_log_entry.cc",
+      "telemetry_log_writer.cc",
       "xmpp_signal_strategy.cc",
     ]
   }
@@ -62,6 +64,7 @@ source_set("unit_tests") {
     "push_notification_subscriber_unittest.cc",
     "server_log_entry_unittest.cc",
     "server_log_entry_unittest.h",
+    "telemetry_log_writer_unittest.cc",
     "xmpp_login_handler_unittest.cc",
     "xmpp_signal_strategy_unittest.cc",
     "xmpp_stream_parser_unittest.cc",

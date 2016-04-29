@@ -365,6 +365,7 @@
         'signaling/push_notification_subscriber_unittest.cc',
         'signaling/server_log_entry_unittest.cc',
         'signaling/server_log_entry_unittest.h',
+        'signaling/telemetry_log_writer_unittest.cc',
         'signaling/xmpp_login_handler_unittest.cc',
         'signaling/xmpp_signal_strategy_unittest.cc',
         'signaling/xmpp_stream_parser_unittest.cc',
