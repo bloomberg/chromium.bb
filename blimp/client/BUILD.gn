@@ -9,7 +9,7 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
-source_set("blimp_client") {
+source_set("client") {
   sources = [
     "app/blimp_client_switches.cc",
     "app/blimp_client_switches.h",
@@ -32,9 +32,9 @@ source_set("blimp_client") {
   deps = [
     ":feature",
     "//base",
-    "//blimp/common:blimp_common",
+    "//blimp/common",
     "//blimp/common/proto",
-    "//blimp/net:blimp_net",
+    "//blimp/net",
     "//cc",
     "//gpu/command_buffer/client:gles2_implementation",
     "//gpu/skia_bindings",
@@ -52,11 +52,11 @@ source_set("blimp_client_unit_tests") {
   sources = []
 
   deps = [
-    ":blimp_client",
+    ":client",
     "//base",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
-    "//blimp/common:blimp_common",
+    "//blimp/common",
     "//testing/gmock",
     "//testing/gtest",
   ]
@@ -83,7 +83,7 @@ source_set("app_unit_tests") {
   ]
 
   deps = [
-    ":blimp_client",
+    ":client",
     "//base",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
@@ -125,8 +125,8 @@ source_set("feature") {
   ]
 
   deps = [
-    "//blimp/common:blimp_common",
-    "//blimp/net:blimp_net",
+    "//blimp/common",
+    "//blimp/net",
     "//cc",
     "//cc/proto",
     "//components/url_formatter",
@@ -166,9 +166,9 @@ source_set("feature_unit_tests") {
     "//base",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
-    "//blimp/common:blimp_common",
+    "//blimp/common",
     "//blimp/common/proto",
-    "//blimp/net:blimp_net",
+    "//blimp/net",
     "//blimp/net:test_support",
     "//cc/proto",
     "//net",
@@ -197,10 +197,10 @@ if (is_linux && !is_chromeos && use_x11) {
     ]
 
     deps = [
-      ":blimp_client",
+      ":client",
       ":feature",
       "//base",
-      "//blimp/net:blimp_net",
+      "//blimp/net",
       "//net",
       "//ui/events/platform/x11",
       "//ui/platform_window",
@@ -369,13 +369,13 @@ if (is_android) {
 
   shared_library("blimp_client_android") {
     deps = [
-      ":blimp_client",
+      ":client",
       ":feature",
       ":jni_headers",
       "//base",
-      "//blimp/common:blimp_common",
+      "//blimp/common",
       "//blimp/common/proto",
-      "//blimp/net:blimp_net",
+      "//blimp/net",
       "//components/safe_json/android:safe_json_jni_headers",
       "//components/url_formatter",
       "//net",

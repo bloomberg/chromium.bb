@@ -4,7 +4,8 @@
 
 import("//testing/test.gni")
 
-component("blimp_common") {
+component("common") {
+  output_name = "blimp_common"
   sources = [
     "blimp_common_export.h",
     "blob_cache/blob_cache.h",
@@ -50,7 +51,7 @@ source_set("unit_tests") {
   ]
 
   deps = [
-    ":blimp_common",
+    ":common",
     "//base",
     "//blimp/common/proto",
     "//blimp/net:test_support",

@@ -2,7 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-component("blimp_net") {
+component("net") {
+  output_name = "blimp_net"
   sources = [
     "blimp_connection.cc",
     "blimp_connection.h",
@@ -66,7 +67,7 @@ component("blimp_net") {
 
   deps = [
     "//base",
-    "//blimp/common:blimp_common",
+    "//blimp/common",
     "//blimp/common/proto",
     "//net",
     "//third_party/WebKit/public:blink_headers",
@@ -84,7 +85,7 @@ source_set("test_support") {
   ]
 
   deps = [
-    ":blimp_net",
+    ":net",
     "//blimp/common/proto",
     "//net:test_support",
     "//testing/gmock",
@@ -116,12 +117,12 @@ source_set("unit_tests") {
   ]
 
   deps = [
-    ":blimp_net",
+    ":net",
     ":test_support",
     "//base",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
-    "//blimp/common:blimp_common",
+    "//blimp/common",
     "//blimp/common/proto",
     "//net:test_support",
     "//testing/gmock",

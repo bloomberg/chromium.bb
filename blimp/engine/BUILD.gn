@@ -67,10 +67,10 @@ source_set("app") {
     ":renderer",
     ":session",
     "//base",
-    "//blimp/common:blimp_common",
+    "//blimp/common",
     "//blimp/common/proto",
     "//blimp/engine:blob_channel_mojo_cpp_sources",
-    "//blimp/net:blimp_net",
+    "//blimp/net",
     "//content/public/app:both",
     "//content/public/browser",
     "//content/public/common",
@@ -126,7 +126,7 @@ source_set("app_settings") {
     "app/settings_manager.h",
   ]
   deps = [
-    "//blimp/net:blimp_net",
+    "//blimp/net",
     "//content/public/browser",
     "//content/public/common",
   ]
@@ -152,7 +152,7 @@ source_set("app_ui") {
   ]
 
   deps = [
-    "//blimp/common:blimp_common",
+    "//blimp/common",
     "//cc",
     "//cc/surfaces",
     "//ui/aura",
@@ -206,11 +206,11 @@ source_set("feature") {
 
   deps = [
     "//base",
-    "//blimp/common:blimp_common",
+    "//blimp/common",
     "//blimp/common/proto",
     "//blimp/engine:app_settings",
     "//blimp/engine:common",
-    "//blimp/net:blimp_net",
+    "//blimp/net",
     "//content/public/browser",
     "//content/public/common",
     "//net",
@@ -232,7 +232,7 @@ source_set("renderer") {
   deps = [
     ":blob_channel_mojo",
     "//base",
-    "//blimp/common:blimp_common",
+    "//blimp/common",
     "//blimp/common/proto",
     "//cc",
     "//components/web_cache/renderer",
@@ -259,9 +259,9 @@ source_set("session") {
     ":common",
     ":feature",
     "//base",
-    "//blimp/common:blimp_common",
+    "//blimp/common",
     "//blimp/common/proto",
-    "//blimp/net:blimp_net",
+    "//blimp/net",
     "//content/public/browser",
     "//net",
     "//ui/aura",
@@ -325,10 +325,10 @@ source_set("feature_unit_tests") {
     "//base",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
-    "//blimp/common:blimp_common",
+    "//blimp/common",
     "//blimp/common/proto",
     "//blimp/engine:app_settings",
-    "//blimp/net:blimp_net",
+    "//blimp/net",
     "//blimp/net:test_support",
     "//content/public/browser",
     "//net",
@@ -359,12 +359,12 @@ if (is_linux) {
       ":app",
       ":pak",
       "//base",
-      "//blimp/net:blimp_net",
+      "//blimp/net",
       "//content/public/app:both",
     ]
   }
 
-  group("blimp_engine") {
+  group("engine") {
     deps = [
       ":blimp_engine_app",
       ":pak",
@@ -391,7 +391,7 @@ if (is_linux) {
 
     # Detail the target & "source"-file dependencies, and output, for GN.
     deps = [
-      "//blimp/engine:blimp_engine",
+      "//blimp/engine",
     ]
     sources = [
       _rebased_dockerfile,

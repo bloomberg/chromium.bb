@@ -44,7 +44,7 @@ dependencies. From time to time, this list may need to be updated. Use
 ```bash
 ./blimp/tools/generate-engine-manifest.py \
     --build-dir out-linux/Debug \
-    --target //blimp/engine:blimp_engine \
+    --target //blimp/engine \
     --output blimp/engine/engine-manifest.txt
 ```
 

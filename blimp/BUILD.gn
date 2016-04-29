@@ -14,8 +14,8 @@ group("blimp") {
 
   deps = [
     ":blimp_tests",
-    "//blimp/client:blimp_client",
-    "//blimp/common:blimp_common",
+    "//blimp/client",
+    "//blimp/common",
   ]
 
   if (is_android) {
@@ -27,7 +27,7 @@ group("blimp") {
 
   if (is_linux) {
     deps += [
-      "//blimp/engine:blimp_engine",
+      "//blimp/engine",
       "//blimp/engine:blimp_engine_bundle",
     ]
   }
