@@ -4473,6 +4473,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Cellular.ActivationFailure">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The count of cellular device activation failures (Chrome OS).
@@ -4485,6 +4488,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Cellular.ConnectionFailed">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The count of cellular reconnect failures during activation (Chrome OS).
@@ -4492,6 +4498,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Cellular.ConnectionRetry">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The count of cellular device reconnect tries during activation (Chrome OS).
@@ -4499,6 +4508,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Cellular.MobileSetupFailed">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The count of successful cellular plan established (Chrome OS).
@@ -4513,16 +4525,25 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Cellular.MobileSetupSucceeded">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>The count of failed cellular plan setup tries (Chrome OS).</summary>
 </histogram>
 
 <histogram name="Cellular.PaymentFailed">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>The count of failed cellular plan purchases (Chrome OS).</summary>
 </histogram>
 
 <histogram name="Cellular.PaymentReceived">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The count of successfully completed cellular plan purchases (Chrome OS).
@@ -4547,6 +4568,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="CertificateType2">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Information about the certificate algorithms and sizes in use on the web, to
@@ -4726,6 +4750,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Chrome.Android.Activity.CrashCounts" enum="AndroidActivityId">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Indicates how many times each particular type of Activity was in the
@@ -4735,6 +4762,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Chrome.Android.Activity.LaunchCounts" enum="AndroidActivityId">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Indicates how many times each particular type of Activity was brought to the
@@ -4863,6 +4893,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="ChromeNotifierService.Actions"
     enum="ChromeNotifierServiceActionType">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The actions to enable or disable services sending synced notifications.
@@ -5219,6 +5252,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="clickjacking.report_and_discard_download" units="ms">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Time between &quot;Report and Discard&quot; button being shown and it being
@@ -5555,6 +5591,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Compositing.CopyFromSurfaceTimeSynchronous" units="ms">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The time taken for the sync readback of pixels is measured here.
@@ -7927,6 +7966,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Diagnostics.Recovery.ConflictingDlls" enum="DiagnosticsResult">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     TBD - Not run automatically yet, so this is just a placeholder for future
@@ -7986,6 +8028,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Diagnostics.Recovery.OperatingSystem" enum="DiagnosticsResult">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     TBD - Not run automatically yet, so this is just a placeholder for future
@@ -8039,6 +8084,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Diagnostics.Recovery.SQLiteIntegrityAppCache"
     enum="DiagnosticsResult">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Shows the success and failure rates of the SQLiteIntegrityAppCache recovery
@@ -8158,6 +8206,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Diagnostics.Test.ConflictingDlls" enum="DiagnosticsResult">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     TBD - Not run automatically yet, so this is just a placeholder for future
@@ -8213,6 +8264,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Diagnostics.Test.OperatingSystem" enum="DiagnosticsResult">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     TBD - Not run automatically yet, so this is just a placeholder for future
@@ -8262,6 +8316,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Diagnostics.Test.SQLiteIntegrityAppCache"
     enum="DiagnosticsResult">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Shows the success and failure rates of the SQLiteIntegrityAppCache test that
@@ -8476,11 +8533,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DisabledExtension.ExtensionWipedStatus" enum="BooleanWiped">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>Whether an extension has been wiped out.</summary>
 </histogram>
 
 <histogram name="DisabledExtension.SideloadWipeoutCount">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     How many external extensions get wiped out as a result of the Sideload
@@ -8489,6 +8552,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DisabledExtension.SideloadWipeoutNeeded" enum="BooleanSuccess">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Whether any extension got wiped out as a result of the Sideload Wipeout
@@ -8497,6 +8563,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DisabledExtension.UserSelection" enum="SideloadWipeoutBubble">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The user selection in the Sideload Wipeout bubble, grouped by the
@@ -12907,6 +12976,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.APIUse_RelativeURL" enum="UrlResolutionResult">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Captures the results of URL resolution when relative urls are used in the
@@ -13176,6 +13248,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.DepricatedExternalJsonCount">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Number of extensions referenced in the depricated external extensions source
@@ -13684,6 +13759,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.GetUserDataTempDir" enum="GetUserDataTempDirResult">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     What happens when the extensions system tries to get a temp dir to unpack
@@ -14979,6 +15057,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.ToolstripLoadTime" units="ms">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>Time taken to load a toolstrip.</summary>
 </histogram>
@@ -18164,6 +18245,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Instant.InstantControllerEvent" enum="InstantControllerEvent">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Records various events of interest in the InstantController. E.g. When URLs
@@ -18173,6 +18257,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Instant.SessionsStorageNamespace"
     enum="InstantSessionStorageNamespace">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     How often an Instant preview is committed onto a different tab than it was
@@ -18181,6 +18268,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Instant.TimeToFirstShow" units="ms">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The time between the first Omnibox interaction and when the Instant preview
@@ -20716,6 +20806,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Media.Fling.DelayedAndDroppedFramesPer5Sec" units="frames/5s">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The average number of delayed and dropped frames for the Fling application.
@@ -20735,6 +20828,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Media.Fling.TimeToBufferAv" units="ms">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Time needed to pre-buffer A/V data before the actual playback for the Fling
@@ -20743,6 +20839,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Media.Fling.TimeToBufferAvAfterAbort" units="ms">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Time needed to buffer A/V data after an abort for the Fling application.
@@ -20750,6 +20849,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Media.Fling.TimeToBufferAvAfterUnderrun" units="ms">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Time needed to buffer A/V data after an underrun for the Fling application.
@@ -21014,6 +21116,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Media.Netflix.AudioBitrate" units="kbps">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The audio bit rate as reported by the Netflix application.  May be reported
@@ -21022,6 +21127,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Media.Netflix.AudioNumChannels" units="channels">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The number of audio channels as reported by the Netflix application. May be
@@ -21031,6 +21139,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Media.Netflix.DelayedAndDroppedFramesPer5Sec"
     units="frames/5s">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The average number of delayed and dropped frames for the Netflix
@@ -21050,6 +21161,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Media.Netflix.VideoBitrate" units="kbps">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Video bit rate as reported by the Netflix application.  May be reported
@@ -21058,6 +21172,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Media.Netflix.VideoHeight" units="pixels">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Video height as reported by the Netflix application.  May be reported
@@ -21112,6 +21229,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Media.PlayMovies.DelayedAndDroppedFramesPer5Sec"
     units="frames/5s">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The average number of delayed and dropped frames for the PlayMovies
@@ -21573,6 +21693,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Media.YouTube.DelayedAndDroppedFramesPer5Sec"
     units="frames/5s">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The average number of delayed and dropped frames for the YouTube
@@ -21600,6 +21723,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Media.YouTube.TimeToBufferAvAfterAbort" units="ms">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Time needed to buffer A/V data after an abort for the YouTube application.
@@ -23003,6 +23129,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="MouseEventPrefetch.MouseDownDuration_Click" units="ms">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Measures the time elapsed between when the user mousedown-ed a link and when
@@ -23012,6 +23141,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="MouseEventPrefetch.MouseDownFollowedByClick"
     enum="MouseEventFollowedByClick">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     For each click handled by an HTML anchor tag link, whether Blink saw a
@@ -23021,6 +23153,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="MouseEventPrefetch.MouseDowns">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The number of mousedown events detected at HTML anchor-tag links' default
@@ -23029,6 +23164,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="MouseEventPrefetch.MouseOverDuration_Click" units="ms">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Measures the time elapsed between when the user mouseover-ed a link and when
@@ -23037,6 +23175,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="MouseEventPrefetch.MouseOverDuration_NoClick" units="ms">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Measures the time elapsed between when the user mouseover-ed a link and when
@@ -23045,6 +23186,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="MouseEventPrefetch.MouseOvers">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The number of mouseover events detected at HTML anchor-tag links' default
@@ -23054,6 +23198,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="MouseEventPrefetch.PreTapEventsFollowedByClick"
     enum="PreTapEvents">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The tap gesture events detected before click at HTML anchor-tag links'
@@ -23062,6 +23209,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="MouseEventPrefetch.TapDownDuration_Click" units="ms">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Measures the time elapsed between when the user tapdown-ed a link and when
@@ -23070,6 +23220,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="MouseEventPrefetch.TapDowns">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The number of gesturetapdown events detected at HTML anchor-tag links'
@@ -23078,6 +23231,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="MouseEventPrefetch.TapUnconfirmeds">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The number of gesturetapunconfirmed events detected at HTML anchor-tag
@@ -23149,11 +23305,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="MPArch.RWH_OnMsgPaintRect" units="ms">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>The time spent inside RenderWidgetHost::OnMsgPaintRect.</summary>
 </histogram>
 
 <histogram name="MPArch.RWH_OnMsgScrollRect" units="ms">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>The time spent inside RenderWidgetHost::OnMsgScrollRect.</summary>
 </histogram>
@@ -23177,6 +23339,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="MPArch.RWHH_WhiteoutDuration" units="ms">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The time that the user sees a blank white page after switching to a
@@ -24896,6 +25061,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.CoalescePotential" enum="CoalescePotentialPackets">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The number of times we sent N packets, but could have sent N-1 packets.
@@ -25188,6 +25356,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="net.CookieDomainPerEtldp1Count">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     For every top level domain, number of subdomains in that top level domain
@@ -25805,6 +25976,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Net.DoubleGetExperiment_InitialResponseMethod"
     enum="DoubleGetExperimentMethods">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The number of HTTP request responses with MS Office Docs MIME types. The
@@ -25818,6 +25992,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.DoubleGetExperiment_ResponseCode">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The response codes encountered for GET request repeated in Double GET
@@ -26036,6 +26213,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.FileError_Flush">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     System error code that a file Flush failed with.  The code is OS dependent,
@@ -26044,6 +26224,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.FileError_GetSize">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     System error code that a file GetSize failed with.  The code is OS
@@ -26052,6 +26235,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.FileError_Open">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     System error code that a file Open failed with.  The code is OS dependent,
@@ -26060,6 +26246,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.FileError_Read">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     System error code that a file Read failed with.  The code is OS dependent,
@@ -26068,6 +26257,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.FileError_Seek">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     System error code that a file Seek failed with.  The code is OS dependent,
@@ -26076,6 +26268,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.FileError_SetEof">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     System error code that a file SetEof failed with.  The code is OS dependent,
@@ -26084,6 +26279,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.FileError_Write">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     System error code that a file Write failed with.  The code is OS dependent,
@@ -26092,6 +26290,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.FileErrorRange_Flush">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     System error code range that a file Flush failed with.  Any value other than
@@ -26102,6 +26303,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.FileErrorRange_GetSize">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     System error code range that a file GetSize failed with.  Any value other
@@ -26112,6 +26316,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.FileErrorRange_Open">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     System error code range that a file Open failed with.  Any value other than
@@ -26122,6 +26329,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.FileErrorRange_Read">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     System error code range that a file Read failed with.  Any value other than
@@ -26132,6 +26342,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.FileErrorRange_Seek">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     System error code range that a file Seek failed with.  Any value other than
@@ -26142,6 +26355,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.FileErrorRange_SetEof">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     System error code range that a file SetEof failed with.  Any value other
@@ -26152,6 +26368,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.FileErrorRange_Write">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     System error code range that a file Write failed with.  Any value other than
@@ -26673,6 +26892,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.IOError_SocketReuseType" enum="HttpSocketType">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The count of handleable socket errors (connection abort/close/reset) per
@@ -26747,11 +26969,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.IPv6Status" enum="IPV6ProbeResult">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>The probe results when a test for IPv6 support is done.</summary>
 </histogram>
 
 <histogram name="Net.IPv6Status_retest" enum="IPV6ProbeResult">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The probe results when a test for IPv6 support is done, after a network
@@ -26805,6 +27033,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.NetworkErrorsRecovered.MainFrame" enum="NetErrorCodes">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     How often automatically retrying to download the main frame of a page in
@@ -26813,6 +27044,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.NetworkErrorsRecovered.Subresource" enum="NetErrorCodes">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     How often automatically retrying to download a subresource in response to
@@ -26821,6 +27055,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.NetworkErrorsUnrecovered.MainFrame" enum="NetErrorCodes">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     How often automatically retrying to download the main frame of a page in
@@ -26830,6 +27067,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.NetworkErrorsUnrecovered.Subresource" enum="NetErrorCodes">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     How often automatically retrying to download a subresource in response to
@@ -28714,6 +28954,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.SocketIdleTimeOnIOError2_ReusedSocket">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The time a previously used socket sat idle before encountering a recoverable
@@ -28722,6 +28965,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.SocketIdleTimeOnIOError2_UnusedSocket">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The time an unused socket sat idle before encountering a recoverable socket
@@ -28914,6 +29160,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.SocksSocketRequestTime">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>Time it takes to request a new (unused) SOCKS proxy socket.</summary>
 </histogram>
@@ -29643,6 +29892,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.TCP_Connection_Idle_Sockets">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>Number of idle sockets when the Connect() succeeded.</summary>
 </histogram>
@@ -30369,6 +30621,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="NetConnectivity.TCP.Status"
     enum="NetConnectivityProtocolStatus">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>Status for TCP protocol for echoing</summary>
 </histogram>
@@ -30390,6 +30645,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NetConnectivity.TCP.Success" units="ms">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>The RTT for TCP protocol for echoing</summary>
 </histogram>
@@ -30458,6 +30716,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="NetConnectivity.UDP.Status"
     enum="NetConnectivityProtocolStatus">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>Status for UDP protocol for echoing</summary>
 </histogram>
@@ -30479,6 +30740,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NetConnectivity.UDP.Success" units="ms">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>The RTT for UDP protocol for echoing</summary>
 </histogram>
@@ -30500,6 +30764,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NetConnectivity2.Send6.PacketsSent">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     This histogram records how many packets (out of 6 attempted) were sent via
@@ -30508,6 +30775,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NetConnectivity2.Send6.SeriesAcked">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Chrome sends 6 UDP packets in a row to test to see if there is a
@@ -30520,6 +30790,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NetConnectivity2.Sent21">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     In this experiment, 21 packets were sent to Google via UDP as rapidly as
@@ -30532,6 +30805,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NetConnectivity2.Sent21.AckReceivedForNthPacket">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     In this experiment, 21 packets were sent to Google via UDP as rapidly as
@@ -30542,6 +30818,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NetConnectivity2.Sent21.GotAnAck" enum="BooleanSuccess">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     In this experiment, 21 packets were sent to Google via UDP as rapidly as
@@ -30552,6 +30831,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NetConnectivity2.Sent21.PacketsSent">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     This histogram records how many packets (out of 21 attempted) were sent via
@@ -30560,6 +30842,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NetConnectivity3">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     In this experiment, 21 packets were sent to Google via UDP on port 443 or
@@ -30569,94 +30854,142 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="NetConnectivity3.NonPacedPacket.Sent21.443.100B.PacketDelay"
     units="ms">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary/>
 </histogram>
 
 <histogram name="NetConnectivity3.NonPacedPacket.Sent21.443.1200B.PacketDelay"
     units="ms">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary/>
 </histogram>
 
 <histogram name="NetConnectivity3.NonPacedPacket.Sent21.443.500B.PacketDelay"
     units="ms">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary/>
 </histogram>
 
 <histogram name="NetConnectivity3.NonPacedPacket.Sent21.6121.100B.PacketDelay"
     units="ms">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary/>
 </histogram>
 
 <histogram name="NetConnectivity3.NonPacedPacket.Sent21.6121.1200B.PacketDelay"
     units="ms">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary/>
 </histogram>
 
 <histogram name="NetConnectivity3.NonPacedPacket.Sent21.6121.500B.PacketDelay"
     units="ms">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary/>
 </histogram>
 
 <histogram name="NetConnectivity3.NonPacedPacket.Sent21.GotAnAck"
     enum="BooleanSuccess">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary/>
 </histogram>
 
 <histogram name="NetConnectivity3.NonPacedPacket.Sent21.Success.RTT" units="ms">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary/>
 </histogram>
 
 <histogram name="NetConnectivity3.PacedPacket.Sent21.443.100B.PacketDelay"
     units="ms">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary/>
 </histogram>
 
 <histogram name="NetConnectivity3.PacedPacket.Sent21.443.1200B.PacketDelay"
     units="ms">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary/>
 </histogram>
 
 <histogram name="NetConnectivity3.PacedPacket.Sent21.443.500B.PacketDelay"
     units="ms">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary/>
 </histogram>
 
 <histogram name="NetConnectivity3.PacedPacket.Sent21.6121.100B.PacketDelay"
     units="ms">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary/>
 </histogram>
 
 <histogram name="NetConnectivity3.PacedPacket.Sent21.6121.1200B.PacketDelay"
     units="ms">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary/>
 </histogram>
 
 <histogram name="NetConnectivity3.PacedPacket.Sent21.6121.500B.PacketDelay"
     units="ms">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary/>
 </histogram>
 
 <histogram name="NetConnectivity3.PacedPacket.Sent21.GotAnAck"
     enum="BooleanSuccess">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary/>
 </histogram>
 
 <histogram name="NetConnectivity3.PacedPacket.Sent21.Success.RTT" units="ms">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary/>
 </histogram>
@@ -30674,52 +31007,79 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="NetConnectivity3.StartPacket.Sent21.443.100B.PacketDelay"
     units="ms">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary/>
 </histogram>
 
 <histogram name="NetConnectivity3.StartPacket.Sent21.443.1200B.PacketDelay"
     units="ms">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary/>
 </histogram>
 
 <histogram name="NetConnectivity3.StartPacket.Sent21.443.500B.PacketDelay"
     units="ms">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary/>
 </histogram>
 
 <histogram name="NetConnectivity3.StartPacket.Sent21.6121.100B.PacketDelay"
     units="ms">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary/>
 </histogram>
 
 <histogram name="NetConnectivity3.StartPacket.Sent21.6121.1200B.PacketDelay"
     units="ms">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary/>
 </histogram>
 
 <histogram name="NetConnectivity3.StartPacket.Sent21.6121.500B.PacketDelay"
     units="ms">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary/>
 </histogram>
 
 <histogram name="NetConnectivity3.StartPacket.Sent21.GotAnAck"
     enum="BooleanSuccess">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary/>
 </histogram>
 
 <histogram name="NetConnectivity3.StartPacket.Sent21.Success.RTT" units="ms">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary/>
 </histogram>
 
 <histogram name="NetConnectivity4">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     In this experiment, a few packets were sent from Google to clients via UDP
@@ -30728,6 +31088,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NetConnectivity5">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     In this experiment, a few packets were sent from Google to clients via UDP
@@ -30737,6 +31100,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="NetConnectivity5.TestFailed.WritePending"
     enum="BooleanSuccess">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Next NetConnectivity5 experiment weren't started because there is an
@@ -30786,6 +31152,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Cellular.TimeOnline" units="seconds">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Chrome OS network metric sampling the time spent using Cellular to transport
@@ -30795,6 +31164,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Cellular.TimeToConfig" units="ms">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Chrome OS network performance metric sampling the time to join a 3G/Cellular
@@ -30803,6 +31175,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Cellular.TimeToOnline" units="ms">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Chrome OS network performance metric sampling the time to determine that a
@@ -30811,6 +31186,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Cellular.TimeToPortal" units="ms">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Chrome OS network performance metric sampling the time to determine that a
@@ -30820,11 +31198,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Network.Cellular.UsageRequestStatus"
     enum="NetworkCellularUsageRequestStatus">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>Chrome OS cellular usage API request status codes.</summary>
 </histogram>
 
 <histogram name="Network.Ethernet.TimeOnline" units="seconds">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Chrome OS network metric sampling the time spent using Ethernet to transport
@@ -30834,6 +31218,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Ethernet.TimeToConfig" units="ms">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Chrome OS network performance metric sampling the time to join a wired
@@ -30843,6 +31230,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Ethernet.TimeToOnline" units="ms">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Chrome OS network performance metric sampling the time to determine that an
@@ -30851,6 +31241,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Ethernet.TimeToPortal" units="ms">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Chrome OS network performance metric sampling the time to determine that an
@@ -30874,6 +31267,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.ServiceErrors" enum="NetworkServiceError">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>Chrome OS connection manager service errors seen.</summary>
 </histogram>
@@ -32157,6 +32553,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.TimeToConfig.Cellular" units="ms">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Chrome OS network performance metric sampling the time to join a 3G/Cellular
@@ -32166,6 +32565,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.TimeToConfig.Ethernet" units="ms">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Chrome OS network performance metric sampling the time to join a wired
@@ -32175,6 +32577,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.TimeToConfig.Wifi" units="ms">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Chrome OS network performance metric sampling the time to configure Layer 3
@@ -32184,6 +32589,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.TimeToDrop" units="seconds">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Chrome OS network stability metric sampling the time in seconds between the
@@ -32194,6 +32602,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.TimeToJoin.Wifi" units="ms">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Chrome OS network performance metric sampling the time to join (associate
@@ -32203,6 +32614,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Wifi.AuthMode" enum="NetworkAuthModeType">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Chrome OS network performance metric sampling the time to configure Layer 3
@@ -32211,6 +32625,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Wifi.BitRate" units="bps">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Network metric reporting the download speed test results run at setup time.
@@ -32251,6 +32668,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Wifi.TimeOnline" units="seconds">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Chrome OS network metric sampling the time spent using WiFi to transport
@@ -32260,6 +32680,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Wifi.TimeResumeToReady" units="ms">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Chrome OS network performance metric sampling the time from the resume event
@@ -32269,6 +32692,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Wifi.TimeToConfig" units="ms">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Chrome OS network performance metric sampling the time to configure Layer 3
@@ -32277,6 +32703,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Wifi.TimeToJoin" units="ms">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Chrome OS network performance metric sampling the time to join (associate
@@ -32285,6 +32714,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Wifi.TimeToOnline" units="ms">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Chrome OS network performance metric sampling the time to determine that an
@@ -32293,6 +32725,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Wifi.TimeToPortal" units="ms">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Chrome OS network performance metric sampling the time to determine that an
@@ -33290,6 +33725,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ntp.searchurls.total">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>TBD</summary>
 </histogram>
@@ -33772,6 +34210,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="OfflinePolicy.SuccessfulResourceLoadPercentage" units="%">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     When a page is loaded in offline mode, the percentage of resources on that
@@ -36151,6 +36592,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Platform.DiskUsage.Cache_Avg" units="KB">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Average size of user's Cache directory. Logged once a day, if disk usage is
@@ -36159,6 +36603,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Platform.DiskUsage.Cache_Max" units="KB">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Maximum size of user's Cache directory. Logged once a day, if disk usage is
@@ -36167,6 +36614,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Platform.DiskUsage.Downloads_Avg" units="KB">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Average size of user's Cache directory. Logged once a day, if disk usage is
@@ -36175,6 +36625,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Platform.DiskUsage.Downloads_Max" units="KB">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Maximum size of user's Cache directory. Logged once a day, if disk usage is
@@ -36183,6 +36636,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Platform.DiskUsage.GCache_Avg" units="KB">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Average size of user's GCache directory. Logged once a day, if disk usage is
@@ -36191,6 +36647,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Platform.DiskUsage.GCache_Max" units="KB">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Maximum size of user's GCache directory. Logged once a day, if disk usage is
@@ -36199,6 +36658,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Platform.DiskUsage.LeastUsedAccountDays" units="days">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Days since the least frequently used account signed in. Logged once a day,
@@ -36955,6 +37417,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Platform.SwapJank.Scroll.Faults.Swap2.Time3"
     units="page faults/second">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Page faults/second for the specified swap group and time interval after a
@@ -37595,6 +38060,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Platform.Tps65090Retries">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Retries needed to enable a FET on tps65090 (AKA tpschrome).  Tps65090 is a
@@ -39385,6 +39853,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Power.MilliConsumptionPerHourIosOnActive">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The average power consumption, measured in milli-units per hour, when sync
@@ -39397,6 +39868,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Power.MilliConsumptionPerHourOthers">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The average power consumption, measured in milli-units per hour, for other
@@ -39409,6 +39883,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Power.MilliConsumptionPerHourP2P">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The average power consumption, measured in milli-units per hour, when sync
@@ -39421,6 +39898,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Power.MilliConsumptionPerHourServer">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The average power consumption, measured in milli-units per hour, when sync
@@ -41338,6 +41818,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Profile.ThumbnailsSize" units="MB">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>Size of the thumbnails database.</summary>
 </histogram>
@@ -42064,6 +42547,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Renderer.PixelIncreaseFromTransitions">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     A lower-bound on the percentage increase in memory that would result from
@@ -42092,6 +42578,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Renderer2.FinishDocToFinish">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The time from when a document finished loading to when all it's resources
@@ -42111,6 +42600,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Renderer2.RequestToFinish_L">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The time from when a page was requested by a user to when it is fully
@@ -42119,6 +42611,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Renderer2.RequestToFirstLayout">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The time from when a page was requested by a user to its first layout.
@@ -42126,6 +42621,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Renderer2.RequestToStart">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The time from when a page was requested by a user to when it starts loading.
@@ -42133,6 +42631,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Renderer2.StartToFinish">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The time from when a page started loading to when it is fully loaded.
@@ -42140,6 +42641,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Renderer2.StartToFinishDoc">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The time from when a page starts loading to when the main document is
@@ -42148,6 +42652,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Renderer2.StartToFirstLayout">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The time from when a page starts loading to its first layout.
@@ -57681,6 +58188,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="VirtualKeyboard.KeystrokesBetweenBackspace">
+  <obsolete>
+    Deprecated 04/2016 as doesn't have data nor owner.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Counts the number of keys typed by the virtual keyboard between each
