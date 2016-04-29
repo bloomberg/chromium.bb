@@ -31,6 +31,7 @@
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/web_contents.h"
+#include "grit/components_scaled_resources.h"
 #include "jni/PersonalDataManager_jni.h"
 
 using base::android::ConvertJavaStringToUTF8;
@@ -129,35 +130,39 @@ void PopulateNativeProfileFromJava(
           Java_AutofillProfile_getLanguageCode(env, jprofile.obj())));
 }
 
-// Mapping from Chrome card types to basic card payment spec.
+// Mapping from Chrome card types to PaymentRequest basic card payment spec and
+// icons. Note that "generic" is not in the spec.
 // https://w3c.github.io/browser-payment-api/specs/basic-card-payment.html#method-id
-// Note that "generic" is not in the spec.
-const struct {
+const struct PaymentRequestData {
   const char* card_type;
   const char* basic_card_payment_type;
-} kBasicCardPaymentTypes[] {
-  {"genericCC", "generic"},
-  {"americanExpressCC", "amex"},
-  {"dinersCC", "diners"},
-  {"discoverCC", "discover"},
-  {"jcbCC", "jcb"},
-  {"masterCardCC", "mastercard"},
-  {"visaCC", "visa"}
+  const int icon_resource_id;
+} kPaymentRequestData[] {
+  {"genericCC", "generic", IDR_AUTOFILL_PR_GENERIC},
+  {"americanExpressCC", "amex", IDR_AUTOFILL_PR_AMEX},
+  {"dinersCC", "diners", IDR_AUTOFILL_PR_GENERIC},
+  {"discoverCC", "discover", IDR_AUTOFILL_PR_DISCOVER},
+  {"jcbCC", "jcb", IDR_AUTOFILL_PR_GENERIC},
+  {"masterCardCC", "mastercard", IDR_AUTOFILL_PR_MASTERCARD},
+  {"visaCC", "visa", IDR_AUTOFILL_PR_VISA}
 };
 
-// Returns the type of this card according to the basic card payment spec. Will
-// return "generic" for unrecognized card type.
-const char* ConvertToBasicCardPaymentType(const std::string& type) {
-  for (size_t i = 0; i < arraysize(kBasicCardPaymentTypes); ++i) {
-    if (type == kBasicCardPaymentTypes[i].card_type)
-      return kBasicCardPaymentTypes[i].basic_card_payment_type;
+// Converts the card type into PaymentRequest type according to the basic card
+// payment spec and an icon. Will set the type and the icon to "generic" for
+// unrecognized card type.
+const PaymentRequestData* GetPaymentRequestData(const std::string& type) {
+  for (size_t i = 0; i < arraysize(kPaymentRequestData); ++i) {
+    if (type == kPaymentRequestData[i].card_type)
+      return &kPaymentRequestData[i];
   }
-  return kBasicCardPaymentTypes[0].basic_card_payment_type;
+  return &kPaymentRequestData[0];
 }
 
 ScopedJavaLocalRef<jobject> CreateJavaCreditCardFromNative(
     JNIEnv* env,
     const CreditCard& card) {
+  const PaymentRequestData* payment_request_data =
+      GetPaymentRequestData(card.type());
   return Java_CreditCard_create(
       env, ConvertUTF8ToJavaString(env, card.guid()).obj(),
       ConvertUTF8ToJavaString(env, card.origin()).obj(),
@@ -172,10 +177,11 @@ ScopedJavaLocalRef<jobject> CreateJavaCreditCardFromNative(
       ConvertUTF16ToJavaString(env,
                                card.GetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR))
           .obj(),
-      ConvertUTF8ToJavaString(env, ConvertToBasicCardPaymentType(card.type()))
+      ConvertUTF8ToJavaString(env,
+                              payment_request_data->basic_card_payment_type)
           .obj(),
       ResourceMapper::MapFromChromiumId(
-          CreditCard::IconResourceId(card.type())));
+          payment_request_data->icon_resource_id));
 }
 
 void PopulateNativeCreditCardFromJava(
