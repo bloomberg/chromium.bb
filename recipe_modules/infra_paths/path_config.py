@@ -40,7 +40,11 @@ def infra_kitchen(c):
         '/', 'b', 'cache', 'chromium', 'git_cache')
     c.base_paths['goma_cache'] = (
         '/', 'b', 'cache', 'chromium', 'goma_cache')
+    c.base_paths['goma_deps_cache'] = (
+        '/', 'b', 'cache', 'chromium', 'goma_deps_cache')
   else:
     c.base_paths['cache'] = c.base_paths['root'] + ('cache',)
     c.base_paths['git_cache'] = c.base_paths['root'] + ('cache_dir',)
     c.base_paths['goma_cache'] = c.base_paths['root'] + ('goma_cache',)
+    c.base_paths['goma_deps_cache'] = c.base_paths['root'] + (
+        'goma_deps_cache',)
