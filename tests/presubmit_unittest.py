@@ -184,7 +184,6 @@ class PresubmitUnittest(PresubmitTestsBase):
       'subprocess', 'sys', 'tempfile', 'time', 'traceback', 'types', 'unittest',
       'urllib2', 'warn', 'multiprocessing', 'DoGetTryMasters',
       'GetTryMastersExecuter', 'itertools', 'urlparse', 'gerrit_util',
-      'GerritAccessor',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(presubmit, members)
@@ -829,8 +828,7 @@ def CheckChangeOnCommit(input_api, output_api):
         0,
         None)
     output = presubmit.DoPresubmitChecks(
-        change, False, True, None, input_buf, DEFAULT_SCRIPT, False, None, None,
-        None)
+        change, False, True, None, input_buf, DEFAULT_SCRIPT, False, None)
     self.failIf(output.should_continue())
     text = (
         'Running presubmit upload checks ...\n'
@@ -912,8 +910,7 @@ def CheckChangeOnCommit(input_api, output_api):
         0,
         None)
     self.failUnless(presubmit.DoPresubmitChecks(
-        change, False, True, output, input_buf, DEFAULT_SCRIPT, False, None,
-        None))
+        change, False, True, output, input_buf, DEFAULT_SCRIPT, False, None))
     self.assertEquals(output.getvalue(),
                       ('Running presubmit upload checks ...\n'
                        'Warning, no PRESUBMIT.py found.\n'
@@ -1156,7 +1153,7 @@ def CheckChangeOnCommit(input_api, output_api):
     presubmit.DoPresubmitChecks(mox.IgnoreArg(), False, False,
                                 mox.IgnoreArg(),
                                 mox.IgnoreArg(),
-                                None, False, None, None, None).AndReturn(output)
+                                None, False, None, None).AndReturn(output)
     self.mox.ReplayAll()
 
     self.assertEquals(
@@ -1200,7 +1197,7 @@ class InputApiUnittest(PresubmitTestsBase):
       'os_walk', 'os_path', 'os_stat', 'owners_db', 'pickle', 'platform',
       'python_executable', 're', 'rietveld', 'subprocess', 'tbr', 'tempfile',
       'time', 'traceback', 'unittest', 'urllib2', 'version', 'verbose',
-      'dry_run', 'gerrit',
+      'dry_run',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(
@@ -1842,7 +1839,6 @@ class CannedChecksUnittest(PresubmitTestsBase):
     input_api.os_path = presubmit.os.path
     input_api.re = presubmit.re
     input_api.rietveld = self.mox.CreateMock(rietveld.Rietveld)
-    input_api.gerrit = None
     input_api.traceback = presubmit.traceback
     input_api.urllib2 = self.mox.CreateMock(presubmit.urllib2)
     input_api.unittest = unittest
@@ -2565,8 +2561,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
         presubmit.OutputApi.PresubmitNotifyResult)
 
   def AssertOwnersWorks(self, tbr=False, issue='1', approvers=None,
-      reviewers=None, is_committing=True,
-      rietveld_response=None, gerrit_response=None,
+      reviewers=None, is_committing=True, rietveld_response=None,
       uncovered_files=None, expected_output='',
       manually_specified_reviewers=None, dry_run=None):
     if approvers is None:
@@ -2589,11 +2584,6 @@ class CannedChecksUnittest(PresubmitTestsBase):
     change.TBR = ''
     affected_file = self.mox.CreateMock(presubmit.SvnAffectedFile)
     input_api = self.MockInputApi(change, False)
-    if gerrit_response:
-      assert not rietveld_response
-      input_api.rietveld = None
-      input_api.gerrit = presubmit.GerritAccessor('host')
-
     fake_db = self.mox.CreateMock(owners.Database)
     fake_db.email_regexp = input_api.re.compile(owners.BASIC_EMAIL_REGEXP)
     input_api.owners_db = fake_db
@@ -2605,7 +2595,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
       if not dry_run:
         affected_file.LocalPath().AndReturn('foo/xyz.cc')
         change.AffectedFiles(file_filter=None).AndReturn([affected_file])
-      if issue and not rietveld_response and not gerrit_response:
+      if issue and not rietveld_response:
         rietveld_response = {
           "owner_email": change.author_email,
           "messages": [
@@ -2622,12 +2612,9 @@ class CannedChecksUnittest(PresubmitTestsBase):
 
       if not dry_run:
         if issue:
-          if rietveld_response:
-            input_api.rietveld.get_issue_properties(
-                issue=int(input_api.change.issue), messages=True).AndReturn(
-                    rietveld_response)
-          elif gerrit_response:
-            input_api.gerrit._FetchChangeDetail = lambda _: gerrit_response
+          input_api.rietveld.get_issue_properties(
+              issue=int(input_api.change.issue), messages=True).AndReturn(
+                  rietveld_response)
 
         people.add(change.author_email)
         fake_db.files_not_covered_by(set(['foo/xyz.cc']),
@@ -2658,39 +2645,6 @@ class CannedChecksUnittest(PresubmitTestsBase):
     self.AssertOwnersWorks(approvers=set(['ben@example.com']),
         is_committing=False,
         rietveld_response=response,
-        expected_output='')
-
-  def testCannedCheckOwners_Approved_Gerrit(self):
-    response = {
-      "owner": {"email": "john@example.com"},
-      "labels": {"Code-Review": {
-        u'all': [
-          {
-            u'email': u'john@example.com',  # self +1 :)
-            u'value': 1
-          },
-          {
-            u'email': u'ben@example.com',
-            u'value': 2
-          },
-        ],
-        u'approved': {u'email': u'ben@example.org'},
-        u'default_value': 0,
-        u'values': {u' 0': u'No score',
-                    u'+1': u'Looks good to me, but someone else must approve',
-                    u'+2': u'Looks good to me, approved',
-                    u'-1': u"I would prefer that you didn't submit this",
-                    u'-2': u'Do not submit'}
-      }},
-    }
-    self.AssertOwnersWorks(approvers=set(['ben@example.com']),
-        gerrit_response=response,
-        is_committing=True,
-        expected_output='')
-
-    self.AssertOwnersWorks(approvers=set(['ben@example.com']),
-        is_committing=False,
-        gerrit_response=response,
         expected_output='')
 
   def testCannedCheckOwners_Approved(self):
