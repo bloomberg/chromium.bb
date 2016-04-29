@@ -189,7 +189,12 @@ enum <i>enumname</i> : <i>base-type</i></code></td>
 
 <tr>
 <td>Local Types as Template Arguments</td>
-<td></td>
+<td><code>void func() {<br />
+&nbsp;&nbsp;class Pred {<br />
+&nbsp;&nbsp;&nbsp;public:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;bool operator()(const T&) { ... }<br />
+&nbsp;&nbsp;};<br />
+&nbsp;&nbsp;std::remove_if(vec.begin(), vec.end(), Pred());</code></td>
 <td>Allows local and unnamed types as template arguments</td>
 <td><a href="http://stackoverflow.com/questions/742607/using-local-classes-with-stl-algorithms">Local types, types without linkage and unnamed types as template arguments</a></td>
 <td>Usage should be rare. Approved without discussion.</td>
@@ -255,6 +260,14 @@ template &lt;typename T&gt;<br/>void Function(T&& t) { ... }</code></td>
 </tr>
 
 <tr>
+<td>Uniform Initialization Syntax</td>
+<td><code><i>type</i> <i>name</i> {[<i>value</i> ..., <i>value</i>]};</code></td>
+<td>Allows any object of primitive, aggregate or class type to be initialized using brace syntax</td>
+<td><a href="http://www.stroustrup.com/C++11FAQ.html#uniform-init">Uniform initialization syntax and semantics</a></td>
+<td>See the <a href="https://www.chromium.org/developers/coding-style/cpp-dos-and-donts?pli=1#TOC-Variable-initialization">Chromium C++ Dos And Don'ts guidance</a> on when to use this. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/GF96FshwHLw">Discussion thread</a></td>
+</tr>
+
+<tr>
 <td>Variadic Macros</td>
 <td><code>#define <i>MACRO</i>(...) <i>Impl</i>(<i>args</i>, __VA_ARGS__)</code></td>
 <td>Allows macros that accept a variable number of arguments</td>
@@ -310,7 +323,7 @@ template &lt;typename T&gt;<br/>void Function(T&& t) { ... }</code></td>
 <code>minmax</code>, <code>minmax_element</code><br/>
 <code>is_permutation<br/></td>
 <td>Safe and performant implementations of common algorithms</td>
-<td><a href="http://en.cppreference.com/w/cpp/header/algorithm"><code>&lt;algorithm&gt;</code></a></td>
+<td><a href="http://en.cppreference.com/w/cpp/header/algorithm">&lt;algorithm&gt;</a></td>
 <td><a href="https://groups.google.com/a/chromium.org/forum/#!topic/cxx/UJQk8S1IuHk">Discussion thread</a><br/> Note that &lt;algorithm&gt; contains a range-based <code>move</code> method. This is allowed, but because people may confuse it with the single-arg <code>std::move</code>, there is often a way to write code without it that is more readable. <a href='https://groups.google.com/a/chromium.org/forum/#!topic/cxx/8WzmtYrZvQ8'>Discussion thread</a></td>
 </tr>
 
@@ -366,9 +379,17 @@ template &lt;typename T&gt;<br/>void Function(T&& t) { ... }</code></td>
 <td>Forwarding references</td>
 <td><code>std::forward()</code></td>
 <td>Perfectly forwards arguments (including rvalues)</td>
-<td><a href="http://en.cppreference.com/w/cpp/utility/forward"><code>std::forward</code></a></td>
+<td><a href="http://en.cppreference.com/w/cpp/utility/forward">std::forward</a></td>
 <td>Allowed, though usage should be rare (primarily for forwarding constructor arguments, or in carefully reviewed library code). <a href="https://groups.google.com/a/chromium.org/d/topic/cxx/-O7euklhSxs/discussion">Discussion thread</a>
 </td>
+</tr>
+
+<tr>
+<td>Initializer Lists</td>
+<td><code>std::initializer_list&lt;T&gt;</code></td>
+<td>Allows containers to be initialized with aggregate elements</td>
+<td><a href="http://en.cppreference.com/w/cpp/utility/initializer_list">std::initializer_list</a></td>
+<td>Be cautious adding new constructors which take these, as they can hide non-initializer_list constructors in undesirable ways; see Effective Modern C++ Item 7 for more.</td>
 </tr>
 
 <tr>
@@ -387,7 +408,7 @@ template &lt;typename T&gt;<br/>void Function(T&& t) { ... }</code></td>
 <code>fmax</code>, <code>fmin</code>, <code>trunc</code>, <code>round</code><br/>
 <code>isinf</code>, <code>isnan</code><br/></td>
 <td>Useful for math-related code</td>
-<td><a href="http://en.cppreference.com/w/cpp/header/cmath"><code>&lt;cmath&gt;</code></a></td>
+<td><a href="http://en.cppreference.com/w/cpp/header/cmath">&lt;cmath&gt;</a></td>
 <td><a href="https://groups.google.com/a/chromium.org/forum/#!topic/cxx/P-1bFBXMeUk">Discussion thread</a></td>
 </tr>
 
@@ -403,7 +424,7 @@ template &lt;typename T&gt;<br/>void Function(T&& t) { ... }</code></td>
 <td>Move Semantics</td>
 <td><code>std::move()</code></td>
 <td>Facilitates efficient move operations</td>
-<td><a href="http://en.cppreference.com/w/cpp/utility/move"><code>std::move</code> reference</a></td>
+<td><a href="http://en.cppreference.com/w/cpp/utility/move">std::move</a></td>
 <td><a href='https://groups.google.com/a/chromium.org/forum/#!topic/cxx/x_dWFxJFdbM'>Discussion thread</a></td>
 </tr>
 
@@ -519,14 +540,6 @@ codebase.
 </tr>
 
 <tr>
-<td>(Uniform) Initialization Syntax</td>
-<td><code><i>type</i> <i>name</i> {[<i>value</i> ..., <i>value</i>]};</code></td>
-<td>Allows any object of primitive, aggregate or class type to be initialized using brace syntax</td>
-<td>TODO: documentation link</td>
-<td>Reevaulate now that MSVS2015 is available. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/GF96FshwHLw">Discussion thread</a></td>
-</tr>
-
-<tr>
 <td>UTF-16 and UTF-32 Support (16-Bit and 32-Bit Character Types)</td>
 <td><code>char16_t</code> and <code>char32_t</code></td>
 <td>Provides character types for handling 16-bit and 32-bit code units (useful for encoding UTF-16 and UTF-32 string data)</td>
@@ -613,14 +626,6 @@ std::move(t).f();&nbsp;&nbsp;// second</code></td>
 <td>Allows shared ownership of a pointer through reference counts</td>
 <td><a href="http://en.cppreference.com/w/cpp/memory/shared_ptr">std::shared_ptr</a></td>
 <td>Needs a lot more evaluation for Chromium, and there isn't enough of a push for this feature. <a href="https://google.github.io/styleguide/cppguide.html#Ownership_and_Smart_Pointers">Google Style Guide</a>. <a href="https://groups.google.com/a/chromium.org/d/topic/cxx/aT2wsBLKvzI/discussion">Discussion Thread</a>.</td>
-</tr>
-
-<tr>
-<td>Initializer Lists</td>
-<td><code>std::initializer_list&lt;T&gt;</code></td>
-<td>Allows containers to be initialized with aggregate elements</td>
-<td><a href="http://en.cppreference.com/w/cpp/utility/initializer_list"><code>std::initializer_list</code></a></td>
-<td>Reevaluate now that MSVS2015 is available. <a href="https://groups.google.com/a/chromium.org/d/topic/cxx/TQQ-L51_naM/discussion">Discussion Thread</a></td>
 </tr>
 
 </tbody>
