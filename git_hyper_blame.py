@@ -17,6 +17,7 @@ import sys
 
 import git_common
 import git_dates
+import setup_color
 
 
 logging.getLogger().setLevel(logging.INFO)
@@ -385,5 +386,6 @@ def main(args, stdout=sys.stdout, stderr=sys.stderr):
 
 
 if __name__ == '__main__':  # pragma: no cover
+  setup_color.init()
   with git_common.less() as less_input:
     sys.exit(main(sys.argv[1:], stdout=less_input))
