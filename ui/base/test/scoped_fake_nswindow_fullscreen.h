@@ -24,6 +24,9 @@ class ScopedFakeNSWindowFullscreen {
   ScopedFakeNSWindowFullscreen();
   ~ScopedFakeNSWindowFullscreen();
 
+  // Wait for any transition in progress to complete.
+  void FinishTransition();
+
  private:
   std::unique_ptr<Impl> impl_;
 

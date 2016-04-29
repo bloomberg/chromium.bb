@@ -14,6 +14,7 @@
 #import "base/mac/sdk_forward_declarations.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 
 // This method exists on NSWindowDelegate on 10.7+.
 // To build on 10.6, we just need to declare it somewhere. We'll test
@@ -175,6 +176,8 @@ class ScopedFakeNSWindowFullscreen::Impl {
     style_as_fullscreen_ = false;
   }
 
+  bool is_in_transition() { return is_in_transition_; }
+
  private:
   base::mac::ScopedObjCClassSwizzler toggle_fullscreen_swizzler_;
   base::mac::ScopedObjCClassSwizzler style_mask_swizzler_;
@@ -203,6 +206,13 @@ ScopedFakeNSWindowFullscreen::ScopedFakeNSWindowFullscreen() {
 
 ScopedFakeNSWindowFullscreen::~ScopedFakeNSWindowFullscreen() {
   g_fake_fullscreen_impl = nullptr;
+}
+
+void ScopedFakeNSWindowFullscreen::FinishTransition() {
+  if (impl_->is_in_transition())
+    base::RunLoop().RunUntilIdle();
+
+  DCHECK(!impl_->is_in_transition());
 }
 
 }  // namespace test

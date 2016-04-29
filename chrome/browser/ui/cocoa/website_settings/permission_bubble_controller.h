@@ -49,8 +49,8 @@ class PermissionBubbleRequest;
 // Should only be used outside this class for tests.
 - (NSPoint)getExpectedAnchorPoint;
 
-// Returns true of the browser has support for the location bar.
+// Returns true if the browser has a visible location bar.
 // Should only be used outside this class for tests.
-- (bool)hasLocationBar;
+- (bool)hasVisibleLocationBar;
 
 @end

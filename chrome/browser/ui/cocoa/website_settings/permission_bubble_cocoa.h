@@ -40,7 +40,9 @@ class PermissionBubbleCocoa : public PermissionBubbleView {
   FRIEND_TEST_ALL_PREFIXES(PermissionBubbleBrowserTest,
                            HasLocationBarByDefault);
   FRIEND_TEST_ALL_PREFIXES(PermissionBubbleBrowserTest,
-                           FullscreenHasLocationBar);
+                           BrowserFullscreenHasLocationBar);
+  FRIEND_TEST_ALL_PREFIXES(PermissionBubbleBrowserTest,
+                           TabFullscreenHasLocationBar);
   FRIEND_TEST_ALL_PREFIXES(PermissionBubbleBrowserTest, AppHasNoLocationBar);
   FRIEND_TEST_ALL_PREFIXES(PermissionBubbleKioskBrowserTest,
                            KioskHasNoLocationBar);

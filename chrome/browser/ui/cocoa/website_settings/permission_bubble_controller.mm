@@ -25,10 +25,15 @@
 #include "chrome/browser/ui/cocoa/website_settings/permission_selector_button.h"
 #include "chrome/browser/ui/cocoa/website_settings/split_block_button.h"
 #include "chrome/browser/ui/cocoa/website_settings/website_settings_utils_cocoa.h"
+#include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
+#include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
+#include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_request.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_view.h"
 #include "chrome/browser/ui/website_settings/permission_menu_model.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/prefs/pref_service.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/user_metrics.h"
@@ -447,7 +452,7 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 
 - (NSPoint)getExpectedAnchorPoint {
   NSPoint anchor;
-  if ([self hasLocationBar]) {
+  if ([self hasVisibleLocationBar]) {
     LocationBarViewMac* location_bar =
         [[[self getExpectedParentWindow] windowController] locationBarBridge];
     anchor = location_bar->GetPageInfoBubblePoint();
@@ -461,12 +466,31 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
                                             anchor);
 }
 
-- (bool)hasLocationBar {
-  return browser_->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR);
+- (bool)hasVisibleLocationBar {
+  if (!browser_->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR))
+    return false;
+
+  if (!browser_->exclusive_access_manager()->context()->IsFullscreen())
+    return true;
+
+  // If the browser is in browser-initiated full screen, a preference can cause
+  // the toolbar to be hidden.
+  if (browser_->exclusive_access_manager()
+          ->fullscreen_controller()
+          ->IsFullscreenForBrowser()) {
+    PrefService* prefs = browser_->profile()->GetPrefs();
+    bool show_toolbar = prefs->GetBoolean(prefs::kShowFullscreenToolbar);
+    return show_toolbar;
+  }
+
+  // Otherwise this is fullscreen without a toolbar, so there is no visible
+  // location bar.
+  return false;
 }
 
 - (info_bubble::BubbleArrowLocation)getExpectedArrowLocation {
-  return [self hasLocationBar] ? info_bubble::kTopLeft : info_bubble::kNoArrow;
+  return [self hasVisibleLocationBar] ? info_bubble::kTopLeft
+                                      : info_bubble::kNoArrow;
 }
 
 - (NSWindow*)getExpectedParentWindow {

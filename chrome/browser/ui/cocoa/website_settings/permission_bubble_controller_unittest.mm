@@ -48,14 +48,14 @@
 @end
 
 @implementation MockBubbleYesLocationBar
-- (bool)hasLocationBar { return true; }
+- (bool)hasVisibleLocationBar { return true; }
 @end
 
 @interface MockBubbleNoLocationBar : NSObject
 @end
 
 @implementation MockBubbleNoLocationBar
-- (bool)hasLocationBar { return false; }
+- (bool)hasVisibleLocationBar { return false; }
 @end
 
 namespace {
@@ -352,9 +352,8 @@ TEST_F(PermissionBubbleControllerTest, ExitFullscreen) {
 
 TEST_F(PermissionBubbleControllerTest, AnchorPositionWithLocationBar) {
   base::mac::ScopedObjCClassSwizzler locationSwizzle(
-      [PermissionBubbleController class],
-      [MockBubbleYesLocationBar class],
-      @selector(hasLocationBar));
+      [PermissionBubbleController class], [MockBubbleYesLocationBar class],
+      @selector(hasVisibleLocationBar));
 
   NSPoint anchor = [controller_ getExpectedAnchorPoint];
 
@@ -370,9 +369,8 @@ TEST_F(PermissionBubbleControllerTest, AnchorPositionWithLocationBar) {
 
 TEST_F(PermissionBubbleControllerTest, AnchorPositionWithoutLocationBar) {
   base::mac::ScopedObjCClassSwizzler locationSwizzle(
-      [PermissionBubbleController class],
-      [MockBubbleNoLocationBar class],
-      @selector(hasLocationBar));
+      [PermissionBubbleController class], [MockBubbleNoLocationBar class],
+      @selector(hasVisibleLocationBar));
 
   NSPoint anchor = [controller_ getExpectedAnchorPoint];
 
@@ -389,18 +387,16 @@ TEST_F(PermissionBubbleControllerTest,
   NSPoint withLocationBar;
   {
     base::mac::ScopedObjCClassSwizzler locationSwizzle(
-        [PermissionBubbleController class],
-        [MockBubbleYesLocationBar class],
-        @selector(hasLocationBar));
+        [PermissionBubbleController class], [MockBubbleYesLocationBar class],
+        @selector(hasVisibleLocationBar));
     withLocationBar = [controller_ getExpectedAnchorPoint];
   }
 
   NSPoint withoutLocationBar;
   {
     base::mac::ScopedObjCClassSwizzler locationSwizzle(
-        [PermissionBubbleController class],
-        [MockBubbleNoLocationBar class],
-        @selector(hasLocationBar));
+        [PermissionBubbleController class], [MockBubbleNoLocationBar class],
+        @selector(hasVisibleLocationBar));
     withoutLocationBar = [controller_ getExpectedAnchorPoint];
   }
 

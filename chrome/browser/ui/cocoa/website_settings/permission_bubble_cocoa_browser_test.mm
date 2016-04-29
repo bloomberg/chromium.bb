@@ -3,36 +3,79 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_window.h"
-#import "chrome/browser/ui/cocoa/browser_window_controller.h"
+#include "chrome/browser/ui/browser_commands_mac.h"
 #import "chrome/browser/ui/cocoa/website_settings/permission_bubble_cocoa.h"
 #import "chrome/browser/ui/cocoa/website_settings/permission_bubble_controller.h"
+#include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_browser_test_util.h"
+#include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 #import "testing/gtest_mac.h"
-#import "ui/base/cocoa/fullscreen_window_manager.h"
+#include "ui/base/test/scoped_fake_nswindow_fullscreen.h"
 
 IN_PROC_BROWSER_TEST_F(PermissionBubbleBrowserTest, HasLocationBarByDefault) {
   PermissionBubbleCocoa bubble(browser());
   bubble.SetDelegate(test_delegate());
   bubble.Show(requests(), accept_states());
-  EXPECT_TRUE([bubble.bubbleController_ hasLocationBar]);
+  EXPECT_TRUE([bubble.bubbleController_ hasVisibleLocationBar]);
   bubble.Hide();
 }
 
-IN_PROC_BROWSER_TEST_F(PermissionBubbleBrowserTest, FullscreenHasLocationBar) {
+IN_PROC_BROWSER_TEST_F(PermissionBubbleBrowserTest,
+                       BrowserFullscreenHasLocationBar) {
+  ui::test::ScopedFakeNSWindowFullscreen faker;
+
   PermissionBubbleCocoa bubble(browser());
   bubble.SetDelegate(test_delegate());
   bubble.Show(requests(), accept_states());
+  EXPECT_TRUE([bubble.bubbleController_ hasVisibleLocationBar]);
 
-  NSWindow* window = browser()->window()->GetNativeWindow();
-  base::scoped_nsobject<FullscreenWindowManager> manager(
-      [[FullscreenWindowManager alloc] initWithWindow:window
-                                        desiredScreen:[NSScreen mainScreen]]);
-  EXPECT_TRUE([bubble.bubbleController_ hasLocationBar]);
-  [manager enterFullscreenMode];
-  EXPECT_TRUE([bubble.bubbleController_ hasLocationBar]);
-  [manager exitFullscreenMode];
-  EXPECT_TRUE([bubble.bubbleController_ hasLocationBar]);
+  FullscreenController* controller =
+      browser()->exclusive_access_manager()->fullscreen_controller();
+  controller->ToggleBrowserFullscreenMode();
+  faker.FinishTransition();
+
+  // The location bar should be visible if the toolbar is set to be visible in
+  // fullscreen mode.
+  PrefService* prefs = browser()->profile()->GetPrefs();
+  bool show_toolbar = prefs->GetBoolean(prefs::kShowFullscreenToolbar);
+  EXPECT_EQ(show_toolbar, [bubble.bubbleController_ hasVisibleLocationBar]);
+
+  // Toggle the value of the preference.
+  chrome::ToggleFullscreenToolbar(browser());
+  EXPECT_EQ(!show_toolbar, [bubble.bubbleController_ hasVisibleLocationBar]);
+
+  // Put the setting back the way it started.
+  chrome::ToggleFullscreenToolbar(browser());
+  controller->ToggleBrowserFullscreenMode();
+  faker.FinishTransition();
+
+  EXPECT_TRUE([bubble.bubbleController_ hasVisibleLocationBar]);
+  bubble.Hide();
+}
+
+IN_PROC_BROWSER_TEST_F(PermissionBubbleBrowserTest,
+                       TabFullscreenHasLocationBar) {
+  ui::test::ScopedFakeNSWindowFullscreen faker;
+
+  PermissionBubbleCocoa bubble(browser());
+  bubble.SetDelegate(test_delegate());
+  bubble.Show(requests(), accept_states());
+  EXPECT_TRUE([bubble.bubbleController_ hasVisibleLocationBar]);
+
+  FullscreenController* controller =
+      browser()->exclusive_access_manager()->fullscreen_controller();
+  controller->EnterFullscreenModeForTab(
+      browser()->tab_strip_model()->GetActiveWebContents(), GURL());
+  faker.FinishTransition();
+
+  EXPECT_FALSE([bubble.bubbleController_ hasVisibleLocationBar]);
+  controller->ExitFullscreenModeForTab(
+      browser()->tab_strip_model()->GetActiveWebContents());
+  faker.FinishTransition();
+
+  EXPECT_TRUE([bubble.bubbleController_ hasVisibleLocationBar]);
   bubble.Hide();
 }
 
@@ -41,7 +84,7 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleBrowserTest, AppHasNoLocationBar) {
   PermissionBubbleCocoa bubble(app_browser);
   bubble.SetDelegate(test_delegate());
   bubble.Show(requests(), accept_states());
-  EXPECT_FALSE([bubble.bubbleController_ hasLocationBar]);
+  EXPECT_FALSE([bubble.bubbleController_ hasVisibleLocationBar]);
   bubble.Hide();
 }
 
@@ -52,6 +95,6 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleKioskBrowserTest,
   PermissionBubbleCocoa bubble(browser());
   bubble.SetDelegate(test_delegate());
   bubble.Show(requests(), accept_states());
-  EXPECT_FALSE([bubble.bubbleController_ hasLocationBar]);
+  EXPECT_FALSE([bubble.bubbleController_ hasVisibleLocationBar]);
   bubble.Hide();
 }
