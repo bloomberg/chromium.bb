@@ -175,6 +175,7 @@ void AUHALStream::Stop() {
   if (stopped_)
     return;
   DVLOG(1) << "Stop";
+  DVLOG(2) << "number_of_frames: " << number_of_frames_;
   OSStatus result = AudioOutputUnitStop(audio_unit_);
   OSSTATUS_DLOG_IF(ERROR, result != noErr, result)
       << "AudioOutputUnitStop() failed.";
@@ -218,8 +219,7 @@ OSStatus AUHALStream::Render(
       // changes reflected in UMA stats.
       number_of_frames_requested_ = number_of_frames;
       DVLOG(1) << "Audio frame size changed from " << number_of_frames_
-               << " to " << number_of_frames
-               << "; adding FIFO to compensate.";
+               << " to " << number_of_frames << " adding FIFO to compensate.";
       audio_fifo_.reset(new AudioPullFifo(
           output_channels_,
           number_of_frames_,
