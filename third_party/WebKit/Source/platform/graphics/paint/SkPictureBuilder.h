@@ -7,6 +7,7 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/geometry/FloatRect.h"
+#include "platform/graphics/paint/DisplayItemClient.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
@@ -21,7 +22,7 @@ class PaintController;
 
 // When slimming paint ships we can remove this SkPicture abstraction and
 // rely on PaintController here.
-class PLATFORM_EXPORT SkPictureBuilder final {
+class PLATFORM_EXPORT SkPictureBuilder final : public DisplayItemClient {
     WTF_MAKE_NONCOPYABLE(SkPictureBuilder);
 public:
     // Constructs a new builder with the given bounds for the resulting recorded picture. If
@@ -36,6 +37,10 @@ public:
     // Returns a picture capturing all drawing performed on the builder's context since
     // construction.
     PassRefPtr<SkPicture> endRecording();
+
+    // DisplayItemClient methods
+    String debugName() const final { return "SkPictureBuilder"; }
+    LayoutRect visualRect() const final { return LayoutRect(); }
 
 private:
     OwnPtr<PaintController> m_paintController;

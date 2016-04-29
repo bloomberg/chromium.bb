@@ -28,7 +28,6 @@
 #define SVGImage_h
 
 #include "platform/graphics/Image.h"
-#include "platform/graphics/paint/DisplayItemClient.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/Allocator.h"
@@ -42,7 +41,7 @@ class LayoutReplaced;
 class SVGImageChromeClient;
 class SVGImageForContainer;
 
-class SVGImage final : public Image, public DisplayItemClient {
+class SVGImage final : public Image {
 public:
     static PassRefPtr<SVGImage> create(ImageObserver* observer)
     {
@@ -81,10 +80,6 @@ public:
     // not have the effective zoom level applied. The returned size is
     // thus also independent of current zoom level.
     FloatSize concreteObjectSize(const FloatSize& defaultObjectSize) const;
-
-    // DisplayItemClient methods.
-    String debugName() const final { return "SVGImage"; }
-    LayoutRect visualRect() const override;
 
     bool hasIntrinsicDimensions() const;
 

@@ -117,7 +117,7 @@ public:
         AffineTransform transform;
         transform.scale(deviceScaleFactor, deviceScaleFactor);
         transform.translate(-m_bounds.x(), -m_bounds.y());
-        context().getPaintController().createAndAppend<BeginTransformDisplayItem>(*m_localFrame, transform);
+        context().getPaintController().createAndAppend<BeginTransformDisplayItem>(*m_pictureBuilder, transform);
     }
 
     GraphicsContext& context() { return m_pictureBuilder->context(); }
@@ -126,7 +126,7 @@ public:
     {
         if (m_draggedNode && m_draggedNode->layoutObject())
             m_draggedNode->layoutObject()->updateDragState(false);
-        context().getPaintController().endItem<EndTransformDisplayItem>(*m_localFrame);
+        context().getPaintController().endItem<EndTransformDisplayItem>(*m_pictureBuilder);
         RefPtr<const SkPicture> recording = m_pictureBuilder->endRecording();
         RefPtr<SkImage> skImage = adoptRef(SkImage::NewFromPicture(recording.get(),
             SkISize::Make(m_bounds.width(), m_bounds.height()), nullptr, nullptr));

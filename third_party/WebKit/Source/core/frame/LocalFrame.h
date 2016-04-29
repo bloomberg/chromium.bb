@@ -38,7 +38,6 @@
 #include "core/paint/PaintPhase.h"
 #include "platform/Supplementable.h"
 #include "platform/graphics/ImageOrientation.h"
-#include "platform/graphics/paint/DisplayItem.h"
 #include "platform/heap/Handle.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "wtf/HashSet.h"
@@ -78,7 +77,7 @@ class WebFrameHostScheduler;
 class WebFrameScheduler;
 template <typename Strategy> class PositionWithAffinityTemplate;
 
-class CORE_EXPORT LocalFrame : public Frame, public LocalFrameLifecycleNotifier, public Supplementable<LocalFrame>, public DisplayItemClient {
+class CORE_EXPORT LocalFrame : public Frame, public LocalFrameLifecycleNotifier, public Supplementable<LocalFrame> {
     USING_GARBAGE_COLLECTED_MIXIN(LocalFrame);
 public:
     static LocalFrame* create(FrameLoaderClient*, FrameHost*, FrameOwner*, ServiceRegistry* = nullptr);
@@ -170,11 +169,6 @@ public:
     bool isURLAllowed(const KURL&) const;
     bool shouldReuseDefaultView(const KURL&) const;
     void removeSpellingMarkersUnderWords(const Vector<String>& words);
-
-    // DisplayItemClient methods
-    String debugName() const final { return "LocalFrame"; }
-    // TODO(chrishtr): fix this.
-    LayoutRect visualRect() const override { return LayoutRect(); }
 
     bool shouldThrottleRendering() const;
 

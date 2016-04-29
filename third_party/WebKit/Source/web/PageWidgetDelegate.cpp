@@ -80,16 +80,15 @@ static void paintInternal(Page& page, WebCanvas* canvas,
 
         AffineTransform scale;
         scale.scale(scaleFactor);
-        TransformRecorder scaleRecorder(paintContext, root, scale);
+        TransformRecorder scaleRecorder(paintContext, pictureBuilder, scale);
 
         IntRect dirtyRect(rect);
         FrameView* view = root.view();
         if (view) {
-            ClipRecorder clipRecorder(paintContext, root, DisplayItem::PageWidgetDelegateClip, LayoutRect(dirtyRect));
-
+            ClipRecorder clipRecorder(paintContext, pictureBuilder, DisplayItem::PageWidgetDelegateClip, LayoutRect(dirtyRect));
             view->paint(paintContext, globalPaintFlags, CullRect(dirtyRect));
-        } else if (!DrawingRecorder::useCachedDrawingIfPossible(paintContext, root, DisplayItem::PageWidgetDelegateBackgroundFallback)) {
-            DrawingRecorder drawingRecorder(paintContext, root, DisplayItem::PageWidgetDelegateBackgroundFallback, dirtyRect);
+        } else {
+            DrawingRecorder drawingRecorder(paintContext, pictureBuilder, DisplayItem::PageWidgetDelegateBackgroundFallback, dirtyRect);
             paintContext.fillRect(dirtyRect, Color::white);
         }
     }

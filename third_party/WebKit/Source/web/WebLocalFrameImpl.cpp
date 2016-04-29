@@ -271,7 +271,7 @@ WebPluginContainerImpl* WebLocalFrameImpl::pluginContainerFromNode(LocalFrame* f
 
 // Simple class to override some of PrintContext behavior. Some of the methods
 // made virtual so that they can be overridden by ChromePluginPrintContext.
-class ChromePrintContext : public PrintContext, public DisplayItemClient {
+class ChromePrintContext : public PrintContext {
     WTF_MAKE_NONCOPYABLE(ChromePrintContext);
 public:
     ChromePrintContext(LocalFrame* frame)
@@ -309,7 +309,7 @@ public:
         SkPictureBuilder pictureBuilder(pageRect, &skia::GetMetaData(*canvas));
         pictureBuilder.context().setPrinting(true);
 
-        float scale = spoolPage(pictureBuilder.context(), pageNumber);
+        float scale = spoolPage(pictureBuilder, pageNumber);
         pictureBuilder.endRecording()->playback(canvas);
         return scale;
     }
@@ -339,7 +339,7 @@ public:
 
         // Fill the whole background by white.
         {
-            DrawingRecorder backgroundRecorder(context, *this, DisplayItem::PrintedContentBackground, allPagesRect);
+            DrawingRecorder backgroundRecorder(context, pictureBuilder, DisplayItem::PrintedContentBackground, allPagesRect);
             context.fillRect(FloatRect(0, 0, pageWidth, totalHeight), Color::white);
         }
 
@@ -348,7 +348,7 @@ public:
             ScopeRecorder scopeRecorder(context);
             // Draw a line for a page boundary if this isn't the first page.
             if (pageIndex > 0) {
-                DrawingRecorder lineBoundaryRecorder(context, *this, DisplayItem::PrintedContentLineBoundary, allPagesRect);
+                DrawingRecorder lineBoundaryRecorder(context, pictureBuilder, DisplayItem::PrintedContentLineBoundary, allPagesRect);
                 context.save();
                 context.setStrokeColor(Color(0, 0, 255));
                 context.setFillColor(Color(0, 0, 255));
@@ -364,17 +364,13 @@ public:
             float scale = getPageShrink(pageIndex);
             transform.scale(scale, scale);
 #endif
-            TransformRecorder transformRecorder(context, *this, transform);
-            spoolPage(context, pageIndex);
+            TransformRecorder transformRecorder(context, pictureBuilder, transform);
+            spoolPage(pictureBuilder, pageIndex);
 
             currentHeight += pageSizeInPixels.height() + 1;
         }
         pictureBuilder.endRecording()->playback(canvas);
     }
-
-    // DisplayItemClient methods
-    String debugName() const final { return "ChromePrintContext"; }
-    LayoutRect visualRect() const override { return LayoutRect(); }
 
 protected:
     // Spools the printed page, a subrect of frame(). Skip the scale step.
@@ -382,24 +378,25 @@ protected:
     // instead. Returns the scale to be applied.
     // On Linux, we don't have the problem with NativeTheme, hence we let WebKit
     // do the scaling and ignore the return value.
-    virtual float spoolPage(GraphicsContext& context, int pageNumber)
+    virtual float spoolPage(SkPictureBuilder& pictureBuilder, int pageNumber)
     {
         IntRect pageRect = m_pageRects[pageNumber];
         float scale = m_printedPageWidth / pageRect.width();
+        GraphicsContext& context = pictureBuilder.context();
 
         AffineTransform transform;
 #if OS(POSIX) && !OS(MACOSX)
         transform.scale(scale);
 #endif
         transform.translate(static_cast<float>(-pageRect.x()), static_cast<float>(-pageRect.y()));
-        TransformRecorder transformRecorder(context, *this, transform);
+        TransformRecorder transformRecorder(context, pictureBuilder, transform);
 
-        ClipRecorder clipRecorder(context, *this, DisplayItem::ClipPrintedPage, LayoutRect(pageRect));
+        ClipRecorder clipRecorder(context, pictureBuilder, DisplayItem::ClipPrintedPage, LayoutRect(pageRect));
 
         frame()->view()->paintContents(context, GlobalPaintNormalPhase, pageRect);
 
         {
-            DrawingRecorder lineBoundaryRecorder(context, *this, DisplayItem::PrintedContentDestinationLocations, pageRect);
+            DrawingRecorder lineBoundaryRecorder(context, pictureBuilder, DisplayItem::PrintedContentDestinationLocations, pageRect);
             outputLinkedDestinations(context, pageRect);
         }
 
@@ -471,10 +468,10 @@ protected:
     // Spools the printed page, a subrect of frame(). Skip the scale step.
     // NativeTheme doesn't play well with scaling. Scaling is done browser side
     // instead. Returns the scale to be applied.
-    float spoolPage(GraphicsContext& context, int pageNumber) override
+    float spoolPage(SkPictureBuilder& pictureBuilder, int pageNumber) override
     {
         IntRect pageRect = m_pageRects[pageNumber];
-        m_plugin->printPage(pageNumber, context, pageRect);
+        m_plugin->printPage(pageNumber, pictureBuilder.context(), pageRect);
 
         return 1.0;
     }

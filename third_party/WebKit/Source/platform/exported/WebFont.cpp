@@ -8,7 +8,6 @@
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/paint/DisplayItemClient.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/graphics/paint/SkPictureBuilder.h"
 #include "platform/text/TextRun.h"
@@ -25,7 +24,7 @@ WebFont* WebFont::create(const WebFontDescription& description)
     return new WebFont(description);
 }
 
-class WebFont::Impl final : public DisplayItemClient {
+class WebFont::Impl final {
 public:
     explicit Impl(const WebFontDescription& description)
         : m_font(description)
@@ -34,12 +33,6 @@ public:
     }
 
     const Font& getFont() const { return m_font; }
-    String debugName() const final { return "WebFont::Impl"; }
-    LayoutRect visualRect() const final
-    {
-        // TODO(chrishtr): fix this.
-        return LayoutRect();
-    }
 
 private:
     Font m_font;
@@ -98,9 +91,8 @@ void WebFont::drawText(WebCanvas* canvas, const WebTextRun& run,
     SkPictureBuilder pictureBuilder(intRect);
     GraphicsContext& context = pictureBuilder.context();
 
-    ASSERT(!DrawingRecorder::useCachedDrawingIfPossible(context, *m_private, DisplayItem::WebFont));
     {
-        DrawingRecorder drawingRecorder(context, *m_private, DisplayItem::WebFont, intRect);
+        DrawingRecorder drawingRecorder(context, pictureBuilder, DisplayItem::WebFont, intRect);
         context.save();
         context.setFillColor(color);
         context.clip(textClipRect);
