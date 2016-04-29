@@ -26,13 +26,7 @@ InspectorTest.parseCSS = function(url, text)
 
 InspectorTest.parseSCSS = function(url, text)
 {
-    return self.runtime.instancePromise(WebInspector.TokenizerFactory)
-        .then(onTokenizer);
-
-    function onTokenizer(tokenizer)
-    {
-        return WebInspector.SASSSupport.parseSCSS(tokenizer, url, text);
-    }
+    return WebInspector.SASSSupport.parseSCSS(url, text);
 }
 
 InspectorTest.loadASTMapping = function(header, callback)

@@ -64,8 +64,8 @@ rule 1: "properties"
         disabled: false
 rule 2: "mixins"
     property 0
-        name: "@include border-radius"
-            range: {"startLine":13,"startColumn":4,"endLine":13,"endColumn":26}
+        name: "border-radius"
+            range: {"startLine":13,"startColumn":13,"endLine":13,"endColumn":26}
         value: "15px"
             range: {"startLine":13,"startColumn":27,"endLine":13,"endColumn":31}
         range: {"startLine":13,"startColumn":4,"endLine":13,"endColumn":32}

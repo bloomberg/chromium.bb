@@ -23,10 +23,9 @@ rule 1: "properties"
     property 1
         name: "margin"
             range: {"startLine":2,"startColumn":4,"endLine":2,"endColumn":10}
-        value: " 0 auto
-"
-            range: {"startLine":2,"startColumn":11,"endLine":3,"endColumn":0}
-        range: {"startLine":2,"startColumn":4,"endLine":3,"endColumn":1}
+        value: " 0 auto"
+            range: {"startLine":2,"startColumn":11,"endLine":2,"endColumn":18}
+        range: {"startLine":2,"startColumn":4,"endLine":3,"endColumn":0}
         disabled: false
     property 2
         name: "color"
@@ -38,8 +37,8 @@ rule 1: "properties"
     property 3
         name: "margin"
             range: {"startLine":7,"startColumn":7,"endLine":7,"endColumn":13}
-        value: " 0 auto "
-            range: {"startLine":7,"startColumn":14,"endLine":7,"endColumn":22}
+        value: " 0 auto"
+            range: {"startLine":7,"startColumn":14,"endLine":7,"endColumn":21}
         range: {"startLine":7,"startColumn":4,"endLine":7,"endColumn":24}
         disabled: true
 rule 2: "mixins"
