@@ -49,5 +49,9 @@ STABLE_TEST_SUITES = [
 # http://crbug.com/344868
 ASAN_EXCLUDED_TEST_SUITES = [
     'breakpad_unittests',
-    'sandbox_linux_unittests'
+    'sandbox_linux_unittests',
+
+    # The internal ASAN recipe cannot run step "unit_tests_apk", this is the
+    # only internal recipe affected. See http://crbug.com/607850
+    'unit_tests_apk',
 ]
