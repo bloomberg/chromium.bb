@@ -699,6 +699,26 @@ TEST_F(MuxerTest, AccurateClusterDurationTwoTracks) {
       GetTestFilePath("accurate_cluster_duration_two_tracks.webm"), filename_));
 }
 
+TEST_F(MuxerTest, AccurateClusterDurationWithoutFinalizingCluster) {
+  EXPECT_TRUE(SegmentInit(false, true, false));
+  AddVideoTrack();
+
+  // Add a couple of frames and then bail out without finalizing the Segment
+  // (and thereby not finalizing the Cluster). The expectation here is that
+  // there shouldn't be any leaks. The test will fail under valgrind if there's
+  // a leak.
+  Frame video_frame;
+  video_frame.Init(dummy_data_, kFrameLength);
+  video_frame.set_track_number(kVideoTrackNumber);
+  video_frame.set_timestamp(0);
+  video_frame.set_is_key(true);
+  EXPECT_TRUE(segment_.AddGenericFrame(&video_frame));
+  video_frame.set_timestamp(33000000);
+  EXPECT_TRUE(segment_.AddGenericFrame(&video_frame));
+
+  CloseWriter();
+}
+
 TEST_F(MuxerTest, UseFixedSizeClusterTimecode) {
   EXPECT_TRUE(SegmentInit(false, false, true));
   AddVideoTrack();
