@@ -15,6 +15,7 @@ if (is_android) {
   import("//build/config/android/config.gni")
 } else if (is_mac) {
   import("//build/config/mac/rules.gni")
+  import("//build_overrides/v8.gni")
 }
 
 declare_args() {
@@ -430,11 +431,22 @@ if (is_android) {
     ]
   }
 } else if (is_mac) {
-  group("content_shell") {
+  mac_app_bundle("content_shell") {
     testonly = true
-    deps = [
-      ":content_shell_lib",
+    output_name = content_shell_product_name
+    sources = [
+      "app/shell_main.cc",
     ]
+    deps = [
+      ":content_shell_framework_bundle_data",
+      ":content_shell_resources_bundle_data",
+
+      # TODO(rsesek): Remove this after GYP is gone, since it only needs to
+      # be here per the comment in blink_test_platform_support_mac.mm about
+      # the bundle structure.
+      "//components/test_runner:resources",
+    ]
+    info_plist = "app/app-Info.plist"
   }
 } else {
   # TODO(brettw) when GYP is no longer necessary, delete
@@ -470,15 +482,6 @@ if (is_android) {
       }
     }
 
-    if (is_mac) {
-      # TODO(GYP) lots of stuff from GYP file here including helper_app and
-      # postbuilds.
-      output_name = content_shell_product_name
-      deps = [
-        ":framework",
-      ]
-    }
-
     if (is_linux && !is_component_build) {
       # Set rpath to find our own libfreetype even in a non-component build.
       configs += [ "//build/config/gcc:rpath_for_built_shared_libraries" ]
@@ -506,35 +509,172 @@ if (is_win) {
 }
 
 if (is_mac) {
-  # TODO(GYP) this should be a bundle. Lots of other stuff in this target.
-  # GYP version: content/content_shell.gypi:content_shell_framework
-  shared_library("framework") {
+  mac_xib_bundle_data("content_shell_framework_xibs") {
+    sources = [
+      "app/English.lproj/HttpAuth.xib",
+      "app/English.lproj/MainMenu.xib",
+    ]
+    output_path = "{{bundle_resources_dir}}/English.lproj"
+  }
+
+  bundle_data("content_shell_framework_resources") {
+    sources = [
+      "$root_out_dir/content_shell.pak",
+      "$root_out_dir/icudtl.dat",
+      "resources/missingImage.png",
+      "resources/textAreaResizeCorner.png",
+    ]
+
+    public_deps = [
+      ":pak",
+    ]
+
+    deps = [
+      "//third_party/icu:icudata",
+    ]
+
+    if (v8_use_external_startup_data) {
+      sources += [
+        "$root_out_dir/natives_blob.bin",
+        "$root_out_dir/snapshot_blob.bin",
+      ]
+      public_deps += [ "//v8" ]
+    }
+
+    outputs = [
+      "{{bundle_resources_dir}}/{{source_file_part}}",
+    ]
+  }
+
+  if (enable_plugins) {
+    bundle_data("content_shell_framework_plugins") {
+      sources = [
+        "$root_out_dir/blink_deprecated_test_plugin.plugin",
+        "$root_out_dir/blink_test_plugin.plugin",
+      ]
+
+      outputs = [
+        "{{bundle_root_dir}}/{{source_file_part}}",
+      ]
+
+      public_deps = [
+        "//ppapi:blink_deprecated_test_plugin",
+        "//ppapi:blink_test_plugin",
+      ]
+    }
+  }
+
+  content_shell_framework_name = "$content_shell_product_name Framework"
+  content_shell_helper_name = "$content_shell_product_name Helper"
+
+  mac_framework_bundle("content_shell_framework") {
     testonly = true
 
-    # TODO(GYP) bug 546894: Fix GN and toolchains to handle spaces here.
-    #output_name = "$content_shell_product_name Framework"
-    output_name = "content_shell_framework"  # Temporary one with no spaces.
+    output_name = content_shell_framework_name
 
     sources = [
       "app/shell_content_main.cc",
       "app/shell_content_main.h",
     ]
 
+    # TODO(rsesek): Handle these missing pieces:
+    #   - crash_inspector
+    #   - crash_report_sender.app
+
     deps = [
+      ":content_shell_framework_resources",
+      ":content_shell_framework_xibs",
       ":content_shell_lib",
+      "//third_party/icu:icudata",
     ]
+
+    if (enable_plugins) {
+      deps += [ ":content_shell_framework_plugins" ]
+    }
+
+    ldflags = [
+      "-install_name",
+      "@executable_path/../Frameworks/$output_name.framework/$output_name",
+    ]
+
+    info_plist = "app/framework-Info.plist"
   }
 
   mac_app_bundle("content_shell_helper_app") {
     testonly = true
-    output_name = "$content_shell_product_name Helper"
+    output_name = content_shell_helper_name
     sources = [
       "app/shell_main.cc",
     ]
     deps = [
-      ":framework",
+      ":content_shell_framework+link",
     ]
     info_plist = "app/helper-Info.plist"
+  }
+
+  # The install_name_tool can only operate in-place, rather than producing a
+  # unique output. Use the xcrun wrapper script to write a fake stamp output
+  # file. After :content_shell_helper_app has been built and bundled, this
+  # will run, modifying the executable in the bundle and writing out the
+  # --stamp specified. This will change the mtime on the executable, but
+  # because the stamp will also be updated, the
+  # :content_shell_framework_bundle_data will re-copy the output. This only
+  # works because nothing else depends on the output of
+  # :content_shell_helper_app.
+  # TODO(rsesek): After GYP is gone, re-write content_shell_main to be like
+  # chrome_main and use dlopen() instead of a linked framework.
+  action("fix_helper_link_framework") {
+    testonly = true
+    script = "//build/config/mac/xcrun.py"
+    inputs = [
+      "$root_out_dir/$content_shell_helper_name.app/Contents/MacOS/$content_shell_helper_name",
+    ]
+
+    stamp_file = "$target_out_dir/xcrun_$target_name.stamp"
+    outputs = [
+      stamp_file,
+    ]
+
+    # TODO(rsesek): Figure out something like GYP's postbuilds to allow
+    # install_name_tool to operate in-place <https://crbug.com/607292>.
+    args = [
+             "--stamp",
+             rebase_path(stamp_file, root_build_dir),
+
+             # xcrun arguments:
+             "install_name_tool",
+             "-change",
+             "@executable_path/../Frameworks/$content_shell_framework_name.framework/$content_shell_framework_name",
+             "@executable_path/../../../$content_shell_framework_name.framework/$content_shell_framework_name",
+           ] + rebase_path(inputs, root_build_dir)
+    public_deps = [
+      ":content_shell_helper_app",
+    ]
+  }
+
+  bundle_data("content_shell_framework_bundle_data") {
+    testonly = true
+    sources = [
+      "$root_out_dir/$content_shell_framework_name.framework",
+      "$root_out_dir/$content_shell_helper_name.app",
+    ]
+    outputs = [
+      "{{bundle_root_dir}}/Frameworks/{{source_file_part}}",
+    ]
+    public_deps = [
+      ":content_shell_framework+link",
+      ":fix_helper_link_framework",
+    ]
+  }
+
+  bundle_data("content_shell_resources_bundle_data") {
+    testonly = true
+    sources = [
+      "app/app.icns",
+    ]
+    outputs = [
+      "{{bundle_resources_dir}}/{{source_file_part}}",
+    ]
   }
 }
 

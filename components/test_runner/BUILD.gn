@@ -158,20 +158,24 @@ if (is_android) {
     ]
   }
 }
+if (is_mac) {
+  bundle_data("test_runner_bundle_data") {
+    sources = [
+      "resources/fonts/AHEM____.TTF",
+      "resources/fonts/ChromiumAATTest.ttf",
+    ]
+
+    outputs = [
+      "{{bundle_resources_dir}}/{{source_file_part}}",
+    ]
+  }
+}
 
 group("resources") {
   deps = []
 
   if (is_mac) {
-    # TODO(GYP) Mac bundle resources.
-    #'all_dependent_settings': {
-    #  'mac_bundle_resources': [
-    #    'resources/fonts/AHEM____.TTF',
-    #    'resources/fonts/ChromiumAATTest.ttf',
-    #    '<(SHARED_INTERMEDIATE_DIR)/webkit/missingImage.png',
-    #    '<(SHARED_INTERMEDIATE_DIR)/webkit/textAreaResizeCorner.png',
-    #  ],
-    #},
+    deps += [ ":test_runner_bundle_data" ]
   } else {
     deps += [ ":copy_ahem" ]
   }

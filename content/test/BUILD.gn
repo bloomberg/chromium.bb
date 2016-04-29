@@ -542,10 +542,7 @@ test("content_browsertests") {
 
   if (is_mac) {
     sources += [ "../renderer/external_popup_menu_browsertest.cc" ]
-    deps += [
-      # Needed for Content Shell.app's Helper.
-      #"//content/shell:content_shell",  #TODO(GYP) enable for mac
-    ]
+    deps += [ "//content/shell:content_shell" ]
   }
 
   if (use_aura && !is_win) {
