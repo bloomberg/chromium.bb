@@ -1568,12 +1568,6 @@ void LayoutBlockFlow::layoutInlineChildren(bool relayoutChildren, LayoutUnit& pa
         deleteEllipsisLineBoxes();
 
     if (firstChild()) {
-        // In full layout mode, clear the line boxes of children upfront. Otherwise,
-        // siblings can run into stale root lineboxes during layout. Then layout
-        // the replaced elements later. In partial layout mode, line boxes are not
-        // deleted and only dirtied. In that case, we can layout the replaced
-        // elements at the same time.
-        Vector<LayoutBox*> replacedChildren;
         for (InlineWalker walker(LineLayoutBlockFlow(this)); !walker.atEnd(); walker.advance()) {
             LayoutObject* o = walker.current().layoutObject();
 
@@ -1594,12 +1588,9 @@ void LayoutBlockFlow::layoutInlineChildren(bool relayoutChildren, LayoutUnit& pa
                         markLinesDirtyInBlockRange(toLayoutBox(o)->logicalTop(), toLayoutBox(o)->logicalBottom());
                     }
                 } else if (isFullLayout || o->needsLayout()) {
-                    // Replaced element.
+                    // Atomic inline.
                     box->dirtyLineBoxes(isFullLayout);
-                    if (isFullLayout)
-                        replacedChildren.append(box);
-                    else
-                        o->layoutIfNeeded();
+                    o->layoutIfNeeded();
                 }
             } else if (o->isText() || (o->isLayoutInline() && !walker.atEndOfInline())) {
                 if (!o->isText())
@@ -1612,9 +1603,6 @@ void LayoutBlockFlow::layoutInlineChildren(bool relayoutChildren, LayoutUnit& pa
             if (isInlineWithOutlineAndContinuation(*o))
                 setContainsInlineWithOutlineAndContinuation(true);
         }
-
-        for (size_t i = 0; i < replacedChildren.size(); i++)
-            replacedChildren[i]->layoutIfNeeded();
 
         layoutRunsAndFloats(layoutState);
     }
