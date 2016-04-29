@@ -7,7 +7,7 @@
 #include <windows.h>
 
 #include "base/win/scoped_hdc.h"
-#include "ui/gfx/display.h"
+#include "ui/display/display.h"
 
 namespace display {
 namespace win {
@@ -49,8 +49,8 @@ void SetDefaultDeviceScaleFactor(float scale) {
 }
 
 float GetDPIScale() {
-  if (gfx::Display::HasForceDeviceScaleFactor())
-    return gfx::Display::GetForcedDeviceScaleFactor();
+  if (display::Display::HasForceDeviceScaleFactor())
+    return display::Display::GetForcedDeviceScaleFactor();
   float dpi_scale = GetUnforcedDeviceScaleFactor();
   return (dpi_scale <= 1.25f) ? 1.f : dpi_scale;
 }

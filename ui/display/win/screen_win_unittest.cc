@@ -1568,7 +1568,7 @@ class ScreenWinUninitializedForced1x : public testing::Test {
   }
 
   void TearDown() override {
-    gfx::Display::ResetForceDeviceScaleFactorForTesting();
+    display::Display::ResetForceDeviceScaleFactorForTesting();
     testing::Test::TearDown();
   }
 
@@ -1666,7 +1666,7 @@ class ScreenWinUninitializedForced2x : public testing::Test {
   }
 
   void TearDown() override {
-    gfx::Display::ResetForceDeviceScaleFactorForTesting();
+    display::Display::ResetForceDeviceScaleFactorForTesting();
     testing::Test::TearDown();
   }
 

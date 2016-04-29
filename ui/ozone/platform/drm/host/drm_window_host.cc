@@ -5,12 +5,12 @@
 #include "ui/ozone/platform/drm/host/drm_window_host.h"
 
 #include "base/bind.h"
+#include "ui/display/display.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/event.h"
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
 #include "ui/events/ozone/events_ozone.h"
 #include "ui/events/platform/platform_event_source.h"
-#include "ui/gfx/display.h"
 #include "ui/ozone/platform/drm/host/drm_cursor.h"
 #include "ui/ozone/platform/drm/host/drm_display_host.h"
 #include "ui/ozone/platform/drm/host/drm_display_host_manager.h"
@@ -145,7 +145,7 @@ bool DrmWindowHost::CanDispatchEvent(const PlatformEvent& ne) {
         DeviceDataManager::GetInstance()->GetTargetDisplayForTouchDevice(
             event->source_device_id());
 
-    if (display_id == gfx::Display::kInvalidDisplayID)
+    if (display_id == display::Display::kInvalidDisplayID)
       return false;
 
     DrmDisplayHost* display = display_manager_->GetDisplay(display_id);

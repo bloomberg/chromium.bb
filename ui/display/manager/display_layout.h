@@ -31,7 +31,7 @@ using Display = gfx::Display;
 // DisplayLayoutStore.
 using DisplayIdList = std::vector<int64_t>;
 
-using DisplayList = std::vector<gfx::Display>;
+using DisplayList = std::vector<display::Display>;
 
 // DisplayPlacement specifies where the display (D) is placed relative
 // to parent (P) display.  In the following example, the display (D)

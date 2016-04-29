@@ -36,10 +36,10 @@ bool IsIdInList(int64_t id, const DisplayIdList& list) {
   return iter != list.end();
 }
 
-gfx::Display* FindDisplayById(DisplayList* display_list, int64_t id) {
+display::Display* FindDisplayById(DisplayList* display_list, int64_t id) {
   auto iter = std::find_if(
       display_list->begin(), display_list->end(),
-      [id](const gfx::Display& display) { return display.id() == id; });
+      [id](const display::Display& display) { return display.id() == id; });
   return &(*iter);
 }
 
@@ -289,10 +289,10 @@ DisplayPlacement DisplayLayout::FindPlacementById(int64_t display_id) const {
 bool DisplayLayout::ApplyDisplayPlacement(const DisplayPlacement& placement,
                                           DisplayList* display_list,
                                           int minimum_offset_overlap) {
-  const gfx::Display& parent_display =
+  const display::Display& parent_display =
       *FindDisplayById(display_list, placement.parent_display_id);
   DCHECK(parent_display.is_valid());
-  gfx::Display* target_display =
+  display::Display* target_display =
       FindDisplayById(display_list, placement.display_id);
   gfx::Rect old_bounds(target_display->bounds());
   DCHECK(target_display);

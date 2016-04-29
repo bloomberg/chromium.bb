@@ -126,6 +126,7 @@ source_set("gbm") {
     "//skia",
     "//third_party/minigbm",
     "//ui/base",
+    "//ui/display",
     "//ui/display/types",
     "//ui/display/util",
     "//ui/events",
