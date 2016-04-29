@@ -23,9 +23,7 @@ void ShouldShowNoticeAboutOtherFormsOfBrowsingHistory(
   if (!sync_service ||
       !sync_service->IsSyncActive() ||
       sync_service->IsUsingSecondaryPassphrase() ||
-      !history_service ||
-      (!testing::g_override_other_forms_of_browsing_history_query &&
-       !history_service->HasOtherFormsOfBrowsingHistory())) {
+      !history_service) {
     callback.Run(false);
     return;
   }
@@ -37,6 +35,13 @@ void ShouldPopupDialogAboutOtherFormsOfBrowsingHistory(
     const ProfileSyncService* sync_service,
     history::WebHistoryService* history_service,
     base::Callback<void(bool)> callback) {
+  if (!history_service ||
+      (!testing::g_override_other_forms_of_browsing_history_query &&
+       !history_service->HasOtherFormsOfBrowsingHistory())) {
+    callback.Run(false);
+    return;
+  }
+
   ShouldShowNoticeAboutOtherFormsOfBrowsingHistory(
       sync_service, history_service, callback);
 }
