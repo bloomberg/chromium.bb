@@ -16,10 +16,12 @@
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chrome_content_browser_client.h"
@@ -105,7 +107,12 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "net/base/net_errors.h"
+#include "net/base/test_data_directory.h"
+#include "net/cert/x509_certificate.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/ssl/ssl_cipher_suite_names.h"
+#include "net/ssl/ssl_connection_status_flags.h"
+#include "net/test/cert_test_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
@@ -3064,27 +3071,121 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SecurityStyleChangedObserverGoBack) {
 
 namespace {
 
+// After AddNonsecureUrlHandler() is called, requests to this hostname
+// will use obsolete TLS settings.
+const char kMockNonsecureHostname[] = "example-nonsecure.test";
+
+// A URLRequestMockHTTPJob that mocks a TLS connection with an obsolete
+// protocol version.
+class URLRequestObsoleteTLSJob : public net::URLRequestMockHTTPJob {
+ public:
+  URLRequestObsoleteTLSJob(net::URLRequest* request,
+                           net::NetworkDelegate* network_delegate,
+                           const base::FilePath& file_path,
+                           scoped_refptr<net::X509Certificate> cert,
+                           scoped_refptr<base::TaskRunner> task_runner)
+      : net::URLRequestMockHTTPJob(request,
+                                   network_delegate,
+                                   file_path,
+                                   task_runner),
+        cert_(std::move(cert)) {}
+
+  void GetResponseInfo(net::HttpResponseInfo* info) override {
+    net::URLRequestMockHTTPJob::GetResponseInfo(info);
+    net::SSLConnectionStatusSetVersion(net::SSL_CONNECTION_VERSION_TLS1_1,
+                                       &info->ssl_info.connection_status);
+    const uint16_t kTlsEcdheRsaWithAes128CbcSha = 0xc013;
+    net::SSLConnectionStatusSetCipherSuite(kTlsEcdheRsaWithAes128CbcSha,
+                                           &info->ssl_info.connection_status);
+    info->ssl_info.cert = cert_;
+  }
+
+ protected:
+  ~URLRequestObsoleteTLSJob() override {}
+
+ private:
+  const scoped_refptr<net::X509Certificate> cert_;
+
+  DISALLOW_COPY_AND_ASSIGN(URLRequestObsoleteTLSJob);
+};
+
+// A URLRequestInterceptor that handles requests with
+// URLRequestObsoleteTLSJob jobs.
+class URLRequestNonsecureInterceptor : public net::URLRequestInterceptor {
+ public:
+  URLRequestNonsecureInterceptor(
+      const base::FilePath& base_path,
+      scoped_refptr<base::SequencedWorkerPool> worker_pool,
+      scoped_refptr<net::X509Certificate> cert)
+      : base_path_(base_path),
+        worker_pool_(std::move(worker_pool)),
+        cert_(std::move(cert)) {}
+
+  ~URLRequestNonsecureInterceptor() override {}
+
+  // net::URLRequestInterceptor:
+  net::URLRequestJob* MaybeInterceptRequest(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const override {
+    return new URLRequestObsoleteTLSJob(
+        request, network_delegate, base_path_, cert_,
+        worker_pool_->GetTaskRunnerWithShutdownBehavior(
+            base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
+  }
+
+ private:
+  const base::FilePath base_path_;
+  const scoped_refptr<base::SequencedWorkerPool> worker_pool_;
+  const scoped_refptr<net::X509Certificate> cert_;
+
+  DISALLOW_COPY_AND_ASSIGN(URLRequestNonsecureInterceptor);
+};
+
+// Installs a handler to serve HTTPS requests to
+// |kMockNonsecureHostname| with connections that have obsolete TLS
+// settings.
+void AddNonsecureUrlHandler(
+    const base::FilePath& base_path,
+    scoped_refptr<net::X509Certificate> cert,
+    scoped_refptr<base::SequencedWorkerPool> worker_pool) {
+  net::URLRequestFilter* filter = net::URLRequestFilter::GetInstance();
+  filter->AddHostnameInterceptor(
+      "https", kMockNonsecureHostname,
+      std::unique_ptr<net::URLRequestInterceptor>(
+          new URLRequestNonsecureInterceptor(base_path, worker_pool, cert)));
+}
+
 class BrowserTestNonsecureURLRequest : public BrowserTest {
  public:
-  BrowserTestNonsecureURLRequest() : BrowserTest() {}
+  BrowserTestNonsecureURLRequest() : BrowserTest(), cert_(nullptr) {}
+
+  void SetUpInProcessBrowserTestFixture() override {
+    cert_ =
+        net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
+    ASSERT_TRUE(cert_);
+  }
+
   void SetUpOnMainThread() override {
-    base::FilePath root_http;
-    PathService::Get(chrome::DIR_TEST_DATA, &root_http);
+    base::FilePath serve_file;
+    PathService::Get(chrome::DIR_TEST_DATA, &serve_file);
+    serve_file = serve_file.Append(FILE_PATH_LITERAL("title1.html"));
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
         base::Bind(
-            &net::URLRequestMockHTTPJob::AddUrlHandlers, root_http,
+            &AddNonsecureUrlHandler, serve_file, cert_,
             make_scoped_refptr(content::BrowserThread::GetBlockingPool())));
   }
 
  private:
+  scoped_refptr<net::X509Certificate> cert_;
+
   DISALLOW_COPY_AND_ASSIGN(BrowserTestNonsecureURLRequest);
 };
 
 }  // namespace
 
-// Tests that a nonsecure connection does not get a secure connection
-// explanation.
+// Tests that a connection with obsolete TLS settings does not get a
+// secure connection explanation.
 IN_PROC_BROWSER_TEST_F(BrowserTestNonsecureURLRequest,
                        SecurityStyleChangedObserverNonsecureConnection) {
   content::WebContents* web_contents =
@@ -3092,7 +3193,16 @@ IN_PROC_BROWSER_TEST_F(BrowserTestNonsecureURLRequest,
   SecurityStyleTestObserver observer(web_contents);
 
   ui_test_utils::NavigateToURL(
-      browser(), net::URLRequestMockHTTPJob::GetMockHttpsUrl(std::string()));
+      browser(), GURL(std::string("https://") + kMockNonsecureHostname));
+
+  // The security style of the page doesn't get downgraded for obsolete
+  // TLS settings, so it should remain at SECURITY_STYLE_AUTHENTICATED.
+  EXPECT_EQ(content::SECURITY_STYLE_AUTHENTICATED,
+            observer.latest_security_style());
+
+  // The messages explaining the security style do, however, get
+  // downgraded: SECURE_PROTOCOL_AND_CIPHERSUITE should not show up when
+  // the TLS settings are obsolete.
   for (const auto& explanation :
        observer.latest_explanations().secure_explanations) {
     EXPECT_NE(l10n_util::GetStringUTF8(IDS_SECURE_PROTOCOL_AND_CIPHERSUITE),
