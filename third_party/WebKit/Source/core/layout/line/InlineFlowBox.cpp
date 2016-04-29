@@ -1236,7 +1236,7 @@ LayoutUnit InlineFlowBox::computeUnderAnnotationAdjustment(LayoutUnit allowedPos
     return result;
 }
 
-void InlineFlowBox::collectLeafBoxesInLogicalOrder(Vector<InlineBox*>& leafBoxesInLogicalOrder, CustomInlineBoxRangeReverse customReverseImplementation, void* userData) const
+void InlineFlowBox::collectLeafBoxesInLogicalOrder(Vector<InlineBox*>& leafBoxesInLogicalOrder, CustomInlineBoxRangeReverse customReverseImplementation) const
 {
     InlineBox* leaf = firstLeafChild();
 
@@ -1279,12 +1279,10 @@ void InlineFlowBox::collectLeafBoxesInLogicalOrder(Vector<InlineBox*>& leafBoxes
                 ++it;
             }
             Vector<InlineBox*>::iterator last = it;
-            if (customReverseImplementation) {
-                ASSERT(userData);
-                (*customReverseImplementation)(userData, first, last);
-            } else {
+            if (customReverseImplementation)
+                (*customReverseImplementation)(first, last);
+            else
                 std::reverse(first, last);
-            }
         }
         ++minLevel;
     }
