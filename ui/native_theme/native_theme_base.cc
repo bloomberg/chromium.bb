@@ -918,24 +918,6 @@ void NativeThemeBase::AdjustCheckboxRadioRectForPadding(SkRect* rect) const {
   rect->iset(rect->x(), rect->y(), rect->right() - 1, rect->bottom() - 1);
 }
 
-void NativeThemeBase::DrawImageInt(
-    SkCanvas* sk_canvas, const gfx::ImageSkia& image,
-    int src_x, int src_y, int src_w, int src_h,
-    int dest_x, int dest_y, int dest_w, int dest_h) const {
-  std::unique_ptr<gfx::Canvas> canvas(CommonThemeCreateCanvas(sk_canvas));
-  canvas->DrawImageInt(image, src_x, src_y, src_w, src_h,
-      dest_x, dest_y, dest_w, dest_h, true);
-}
-
-void NativeThemeBase::DrawTiledImage(SkCanvas* sk_canvas,
-    const gfx::ImageSkia& image,
-    int src_x, int src_y, float tile_scale_x, float tile_scale_y,
-    int dest_x, int dest_y, int w, int h) const {
-  std::unique_ptr<gfx::Canvas> canvas(CommonThemeCreateCanvas(sk_canvas));
-  canvas->TileImageInt(image, src_x, src_y, tile_scale_x,
-      tile_scale_y, dest_x, dest_y, w, h);
-}
-
 SkColor NativeThemeBase::SaturateAndBrighten(SkScalar* hsv,
                                              SkScalar saturate_amount,
                                              SkScalar brighten_amount) const {

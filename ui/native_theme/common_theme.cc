@@ -435,14 +435,4 @@ void CommonThemePaintMenuItemBackground(
   canvas->drawRect(gfx::RectToSkRect(rect), paint);
 }
 
-// static
-std::unique_ptr<gfx::Canvas> CommonThemeCreateCanvas(SkCanvas* sk_canvas) {
-  // TODO(pkotwicz): Do something better and don't infer device
-  // scale factor from canvas scale.
-  SkMatrix m = sk_canvas->getTotalMatrix();
-  float device_scale = static_cast<float>(SkScalarAbs(m.getScaleX()));
-  return base::WrapUnique(
-      new gfx::Canvas(skia::SharePtr(sk_canvas), device_scale));
-}
-
 }  // namespace ui

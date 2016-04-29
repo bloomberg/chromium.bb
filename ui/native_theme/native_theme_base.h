@@ -155,16 +155,6 @@ class NATIVE_THEME_EXPORT NativeThemeBase : public NativeTheme {
   }
   int scrollbar_button_length() const { return scrollbar_button_length_; }
 
-  void DrawImageInt(SkCanvas* canvas, const gfx::ImageSkia& image,
-                    int src_x, int src_y, int src_w, int src_h,
-                    int dest_x, int dest_y, int dest_w, int dest_h) const;
-
-  void DrawTiledImage(SkCanvas* canvas,
-                      const gfx::ImageSkia& image,
-                      int src_x, int src_y,
-                      float tile_scale_x, float tile_scale_y,
-                      int dest_x, int dest_y, int w, int h) const;
-
   SkColor SaturateAndBrighten(SkScalar* hsv,
                               SkScalar saturate_amount,
                               SkScalar brighten_amount) const;
