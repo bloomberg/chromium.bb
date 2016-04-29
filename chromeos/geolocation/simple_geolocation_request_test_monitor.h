@@ -6,6 +6,7 @@
 #define CHROMEOS_GEOLOCATION_SIMPLE_GEOLOCATION_REQUEST_TEST_MONITOR_H_
 
 #include "base/macros.h"
+#include "chromeos/chromeos_export.h"
 
 namespace chromeos {
 
@@ -13,8 +14,9 @@ class SimpleGeolocationRequest;
 
 // This is global hook, that allows to monitor SimpleGeolocationRequest
 // in tests.
-
-class SimpleGeolocationRequestTestMonitor {
+//
+// Note: we need CHROMEOS_EXPORT for tests.
+class CHROMEOS_EXPORT SimpleGeolocationRequestTestMonitor {
  public:
   SimpleGeolocationRequestTestMonitor();
 
