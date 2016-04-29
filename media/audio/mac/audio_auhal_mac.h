@@ -88,7 +88,6 @@ class AUHALStream : public AudioOutputStream {
 
   AudioDeviceID device_id() const { return device_; }
   size_t requested_buffer_size() const { return number_of_frames_; }
-  AudioUnit audio_unit() const { return audio_unit_; }
 
  private:
   // AUHAL callback.
@@ -146,9 +145,7 @@ class AUHALStream : public AudioOutputStream {
   // For convenience - same as in params_.
   const int output_channels_;
 
-  // Size of audio buffer requested at construction. The actual buffer size
-  // is given by |actual_io_buffer_frame_size_| and it can differ from the
-  // requested size.
+  // Buffer-size.
   const size_t number_of_frames_;
 
   // Stores the number of frames that we actually get callbacks for.
