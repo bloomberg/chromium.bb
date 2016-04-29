@@ -217,7 +217,6 @@ def EnqueueTasks(tasks, task_tag):
   Google Compute Engine.
   """
   q = taskqueue.Queue('clovis-queue')
-  retry_options = taskqueue.TaskRetryOptions(task_retry_limit=3)
   # Add tasks to the queue by groups.
   # TODO(droger): This supports thousands of tasks, but maybe not millions.
   # Defer the enqueuing if it times out.
@@ -228,7 +227,7 @@ def EnqueueTasks(tasks, task_tag):
       group = tasks[i:i+group_size]
       taskqueue_tasks = [
           taskqueue.Task(payload=task.ToJsonString(), method='PULL',
-                         tag=task_tag, retry_options=retry_options)
+                         tag=task_tag)
           for task in group]
       rpc = taskqueue.create_rpc()
       q.add_async(task=taskqueue_tasks, rpc=rpc)

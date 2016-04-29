@@ -8,7 +8,6 @@ import logging
 import os
 import re
 import sys
-import time
 
 from googleapiclient import discovery
 from oauth2client.client import GoogleCredentials
@@ -123,10 +122,21 @@ class Worker(object):
         project=project_name, taskqueue=queue_name, numTasks=1, leaseSecs=600,
         groupByTag=True, tag=self._taskqueue_tag).execute()
     if (not response.get('items')) or (len(response['items']) < 1):
-      return (None, None)
+      return (None, None)  # The task queue is empty.
 
     google_task = response['items'][0]
     task_id = google_task['id']
+
+    # Delete the task without processing if it already failed multiple times.
+    # TODO(droger): This is a workaround for internal bug b/28442122, revisit
+    # once it is fixed.
+    retry_count = google_task['retry_count']
+    max_retry_count = 3
+    if retry_count >= max_retry_count:
+      task_api.tasks().delete(project=project_name, taskqueue=queue_name,
+                              task=task_id).execute()
+      return self._FetchClovisTask(project_name, task_api, queue_name)
+
     clovis_task = ClovisTask.FromBase64(google_task['payloadBase64'])
     return (clovis_task, task_id)
 
