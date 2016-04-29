@@ -11,7 +11,6 @@
 
 
 import argparse
-import errno
 import os
 import subprocess
 import sys
