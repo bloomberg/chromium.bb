@@ -227,7 +227,8 @@ class ScreenOrientationLockDisabledBrowserTest : public ContentBrowserTest  {
 
 // Check that when --disable-screen-orientation-lock is passed to the command
 // line, screen.orientation.lock() correctly reports to not be supported.
-IN_PROC_BROWSER_TEST_F(ScreenOrientationLockDisabledBrowserTest, NotSupported) {
+IN_PROC_BROWSER_TEST_F(ScreenOrientationLockDisabledBrowserTest,
+    DISABLED_NotSupported) {
   GURL test_url = GetTestUrl("screen_orientation",
                              "screen_orientation_lock_disabled.html");
 
