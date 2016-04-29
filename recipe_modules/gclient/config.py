@@ -67,7 +67,8 @@ def BaseConfig(USE_MIRROR=True, GIT_MODE=False, CACHE_DIR=None,
     #  - solution/path is then used to apply patches as patch root in
     #    bot_update.
     #  - if revision is given, it's passed verbatim to bot_update for
-    #    corresponding dependency.
+    #    corresponding dependency. Otherwise (ie None), the patch will be
+    #    applied on top of version pinned in DEPS.
     # This is essentially a whitelist of which projects inside a solution
     # can be patched automatically by bot_update based on PATCH_PROJECT
     # property.
