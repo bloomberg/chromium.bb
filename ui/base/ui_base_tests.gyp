@@ -175,6 +175,7 @@
             '../../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
             '../events/platform/x11/x11_events_platform.gyp:x11_events_platform',
             '../gfx/x/gfx_x11.gyp:gfx_x11',
+            'x/ui_base_x.gyp:ui_base_x',
           ],
         }],
         ['OS!="win" or use_aura==0', {

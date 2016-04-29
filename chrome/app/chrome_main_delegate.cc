@@ -5,6 +5,7 @@
 #include "chrome/app/chrome_main_delegate.h"
 
 #include <stddef.h>
+#include <string>
 
 #include "base/base_paths.h"
 #include "base/command_line.h"
@@ -110,7 +111,7 @@
 #if defined(USE_X11)
 #include <stdlib.h>
 #include <string.h>
-#include "ui/base/x/x11_util.h"
+#include "ui/base/x/x11_util.h"  // nogncheck
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)

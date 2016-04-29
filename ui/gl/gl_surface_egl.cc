@@ -39,7 +39,7 @@ extern "C" {
 #include <X11/Xlib.h>
 #define Status int
 }
-#include "ui/base/x/x11_util_internal.h"
+#include "ui/base/x/x11_util_internal.h"  // nogncheck
 #include "ui/gfx/x/x11_switches.h"  // nogncheck
 #endif
 

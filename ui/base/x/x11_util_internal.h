@@ -19,7 +19,7 @@ extern "C" {
 }
 
 #include "build/build_config.h"
-#include "ui/base/ui_base_export.h"
+#include "ui/base/x/ui_base_x_export.h"
 
 namespace ui {
 
@@ -29,21 +29,21 @@ namespace ui {
 // Get the XRENDER format id for ARGB32 (Skia's format).
 //
 // NOTE:Currently this don't support multiple screens/displays.
-UI_BASE_EXPORT XRenderPictFormat* GetRenderARGB32Format(Display* dpy);
+UI_BASE_X_EXPORT XRenderPictFormat* GetRenderARGB32Format(Display* dpy);
 
 // --------------------------------------------------------------------------
 // X11 error handling.
 // Sets the X Error Handlers. Passing NULL for either will enable the default
 // error handler, which if called will log the error and abort the process.
-UI_BASE_EXPORT void SetX11ErrorHandlers(XErrorHandler error_handler,
-                                        XIOErrorHandler io_error_handler);
+UI_BASE_X_EXPORT void SetX11ErrorHandlers(XErrorHandler error_handler,
+                                          XIOErrorHandler io_error_handler);
 
 // NOTE: This function should not be called directly from the
 // X11 Error handler because it queries the server to decode the
 // error message, which may trigger other errors. A suitable workaround
 // is to post a task in the error handler to call this function.
-UI_BASE_EXPORT void LogErrorEventDescription(Display* dpy,
-                                             const XErrorEvent& error_event);
+UI_BASE_X_EXPORT void LogErrorEventDescription(Display* dpy,
+                                               const XErrorEvent& error_event);
 
 // --------------------------------------------------------------------------
 // Selects a visual with a preference for alpha support on compositing window
@@ -51,7 +51,7 @@ UI_BASE_EXPORT void LogErrorEventDescription(Display* dpy,
 // supports transparency. NULL parameters are allowed to install or query the
 // cached visual and depth.
 #if !defined(OS_CHROMEOS)
-UI_BASE_EXPORT void ChooseVisualForWindow(Visual** visual, int* depth);
+UI_BASE_X_EXPORT void ChooseVisualForWindow(Visual** visual, int* depth);
 #endif
 
 }  // namespace ui

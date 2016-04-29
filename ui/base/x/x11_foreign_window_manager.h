@@ -10,7 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "ui/base/ui_base_export.h"
+#include "ui/base/x/ui_base_x_export.h"
 #include "ui/gfx/x/x11_types.h"
 
 // A process wide singleton for selecting events on X windows which were not
@@ -24,7 +24,7 @@ namespace ui {
 // Manages the events that Chrome has selected on X windows which were not
 // created by Chrome. This class allows several clients to select events
 // on the same X window.
-class UI_BASE_EXPORT XForeignWindowManager {
+class UI_BASE_X_EXPORT XForeignWindowManager {
  public:
   static XForeignWindowManager* GetInstance();
 

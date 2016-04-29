@@ -796,6 +796,7 @@
               'sources': [ '<@(views_desktop_aura_x11_sources)' ],
               'dependencies': [
                 '../../build/linux/system.gyp:xext',
+                '../../ui/base/x/ui_base_x.gyp:ui_base_x',
               ],
             }],
             ['OS == "win"', {

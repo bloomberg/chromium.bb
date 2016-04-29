@@ -393,13 +393,6 @@
         'x/selection_requestor.h',
         'x/selection_utils.cc',
         'x/selection_utils.h',
-        'x/x11_foreign_window_manager.cc',
-        'x/x11_foreign_window_manager.h',
-        'x/x11_menu_list.cc',
-        'x/x11_menu_list.h',
-        'x/x11_util.cc',
-        'x/x11_util.h',
-        'x/x11_util_internal.h',
       ],
       'target_conditions': [
         ['OS == "ios"', {
@@ -608,6 +601,7 @@
             '../events/devices/x11/events_devices_x11.gyp:events_devices_x11',
             '../events/platform/x11/x11_events_platform.gyp:x11_events_platform',
             '../gfx/x/gfx_x11.gyp:gfx_x11',
+            'x/ui_base_x.gyp:ui_base_x',
           ],
         }],
         ['use_x11==1 and chromeos==0', {

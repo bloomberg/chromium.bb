@@ -6,6 +6,8 @@
 
 #include <algorithm>
 #include <cmath>
+#include <limits>
+#include <map>
 #include <set>
 #include <string>
 #include <utility>
@@ -41,7 +43,7 @@
 #include "ui/gfx/geometry/size_conversions.h"
 
 #if defined(USE_X11)
-#include "ui/base/x/x11_util.h"
+#include "ui/base/x/x11_util.h"  // nogncheck
 #endif
 
 #if defined(OS_CHROMEOS)

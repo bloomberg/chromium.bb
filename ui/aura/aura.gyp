@@ -117,6 +117,7 @@
             '../../build/linux/system.gyp:x11',
             '../../build/linux/system.gyp:xrandr',
             '../../build/linux/system.gyp:xi',
+            '../base/x/ui_base_x.gyp:ui_base_x',
             '../events/devices/events_devices.gyp:events_devices',
             '../events/devices/x11/events_devices_x11.gyp:events_devices_x11',
             '../events/platform/x11/x11_events_platform.gyp:x11_events_platform',
@@ -201,6 +202,13 @@
       ],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],
+      'conditions': [
+        ['use_x11==1', {
+          'dependencies': [
+            '../base/x/ui_base_x.gyp:ui_base_x',
+          ],
+        }],
+      ],
     },
     {
       'target_name': 'aura_demo',

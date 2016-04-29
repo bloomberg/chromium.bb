@@ -2033,6 +2033,7 @@
     ['use_x11==1', {
       'dependencies': [
         '../build/linux/system.gyp:x11',
+        '../ui/base/x/ui_base_x.gyp:ui_base_x',
         '../ui/events/platform/x11/x11_events_platform.gyp:x11_events_platform',
         '../ui/gfx/x/gfx_x11.gyp:gfx_x11',
       ],

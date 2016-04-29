@@ -41,7 +41,10 @@ component("x11") {
       "x11_window_ozone.cc",
       "x11_window_ozone.h",
     ]
-    deps += [ "//ui/base" ]
+    deps += [
+      "//ui/base",
+      "//ui/base/x",
+    ]
   } else if (use_x11) {
     sources += [
       "x11_window.cc",

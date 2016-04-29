@@ -1072,6 +1072,7 @@
           'dependencies': [
             '../build/linux/system.gyp:x11',
             '../build/linux/system.gyp:xfixes',
+            '../ui/base/x/ui_base_x.gyp:ui_base_x',
             '../ui/events/devices/x11/events_devices_x11.gyp:events_devices_x11',
             '../ui/gfx/x/gfx_x11.gyp:gfx_x11',
            ],

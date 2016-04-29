@@ -390,8 +390,27 @@ component("base") {
     deps += [ "//ui/events" ]
   }
 
+  if (use_x11) {
+    public_deps += [ "//ui/base/x" ]
+    configs += [ "//build/config/linux:x11" ]
+
+    if (!is_chromeos) {
+      sources += [
+        "idle/idle_query_x11.cc",
+        "idle/idle_query_x11.h",
+        "idle/screensaver_window_finder_x11.cc",
+        "idle/screensaver_window_finder_x11.h",
+      ]
+      configs += [ "//build/config/linux:xscrnsaver" ]
+      deps += [ "//ui/gfx/x" ]
+    }
+  }
+
   if (use_x11 && use_aura) {
     sources += [
+      "cursor/cursor_loader_x11.cc",
+      "cursor/cursor_loader_x11.h",
+      "cursor/cursor_x11.cc",
       "x/selection_owner.cc",
       "x/selection_owner.h",
       "x/selection_requestor.cc",
@@ -399,7 +418,18 @@ component("base") {
       "x/selection_utils.cc",
       "x/selection_utils.h",
     ]
-    deps += [ "//ui/events/platform/x11" ]
+    deps += [
+      "//ui/events/platform/x11",
+      "//ui/gfx/x",
+    ]
+
+    if (!is_chromeos) {
+      # These Aura X11 files aren't used on ChromeOS.
+      sources += [
+        "dragdrop/os_exchange_data_provider_aurax11.cc",
+        "dragdrop/os_exchange_data_provider_aurax11.h",
+      ]
+    }
   }
 
   if (use_aura) {
@@ -410,33 +440,6 @@ component("base") {
       "cursor/cursor.cc",
       "cursor/cursor.h",
       "dragdrop/drag_utils_aura.cc",
-    ]
-  }
-
-  # TODO(kylechar): remove ozone_platform_x11 from here.
-  if (use_x11 || ozone_platform_x11) {
-    sources += [
-      "x/x11_foreign_window_manager.cc",
-      "x/x11_foreign_window_manager.h",
-      "x/x11_menu_list.cc",
-      "x/x11_menu_list.h",
-      "x/x11_util.cc",
-      "x/x11_util.h",
-      "x/x11_util_internal.h",
-    ]
-    if (!is_chromeos) {
-      sources += [
-        "idle/idle_query_x11.cc",
-        "idle/idle_query_x11.h",
-        "idle/screensaver_window_finder_x11.cc",
-        "idle/screensaver_window_finder_x11.h",
-      ]
-      configs += [ "//build/config/linux:xscrnsaver" ]
-    }
-    deps += [
-      "//ui/events/devices/x11",
-      "//ui/events/keycodes:x11",
-      "//ui/gfx/x",
     ]
   }
 
@@ -527,30 +530,7 @@ component("base") {
     ]
   }
 
-  if (use_x11 || ozone_platform_x11) {
-    #'all_dependent_settings': {
-    #'ldflags': [
-    #'-L<(PRODUCT_DIR)',
-    #],
-    #},
-    configs += [ "//build/config/linux:x11" ]
-  }
-
   if (use_aura) {
-    if (use_x11) {
-      sources += [
-        "cursor/cursor_loader_x11.cc",
-        "cursor/cursor_loader_x11.h",
-        "cursor/cursor_x11.cc",
-      ]
-      if (!is_chromeos) {
-        # These Aura X11 files aren't used on ChromeOS.
-        sources += [
-          "dragdrop/os_exchange_data_provider_aurax11.cc",
-          "dragdrop/os_exchange_data_provider_aurax11.h",
-        ]
-      }
-    }
     if (is_android) {
       sources += [ "cursor/cursor_loader_android.cc" ]
     }
@@ -615,10 +595,16 @@ component("base") {
   # Aura clipboard.
   if (use_aura) {
     if (use_x11) {
-      sources += [ "clipboard/clipboard_aurax11.cc" ]
+      sources += [
+        "clipboard/clipboard_aurax11.cc",
+        "clipboard/clipboard_aurax11.h",
+      ]
     } else if (!is_win && !is_android) {
       # This file is used for all non-X11, non-Windows, non-Android aura Builds.
-      sources += [ "clipboard/clipboard_aura.cc" ]
+      sources += [
+        "clipboard/clipboard_aura.cc",
+        "clipboard/clipboard_aura.h",
+      ]
     }
   }
 

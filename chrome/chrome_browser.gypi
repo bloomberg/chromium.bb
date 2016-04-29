@@ -3427,6 +3427,11 @@
                 '../ui/views/views.gyp:views'
               ],
             }],
+            ['use_x11==1', {
+              'dependencies': [
+                '../ui/base/x/ui_base_x.gyp:ui_base_x',
+              ],
+            }],
           ],
         }, {  # OS == "ios"
           'dependencies': [

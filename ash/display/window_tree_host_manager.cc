@@ -51,7 +51,7 @@
 #include "ui/wm/public/activation_client.h"
 
 #if defined(USE_X11)
-#include "ui/base/x/x11_util.h"
+#include "ui/base/x/x11_util.h"  // nogncheck
 #include "ui/gfx/x/x11_types.h"  // nogncheck
 
 // Including this at the bottom to avoid other
