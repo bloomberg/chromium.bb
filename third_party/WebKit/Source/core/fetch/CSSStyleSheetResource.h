@@ -55,6 +55,8 @@ public:
     StyleSheetContents* restoreParsedStyleSheet(const CSSParserContext&);
     void saveParsedStyleSheet(StyleSheetContents*);
 
+    void appendData(const char* data, size_t length) override;
+
 protected:
     bool isSafeToUnlock() const override;
     void destroyDecodedDataIfPossible() override;
@@ -80,6 +82,8 @@ private:
     String m_decodedSheetText;
 
     Member<StyleSheetContents> m_parsedStyleSheetCache;
+
+    bool m_didNotifyFirstData;
 };
 
 DEFINE_RESOURCE_TYPE_CASTS(CSSStyleSheet);

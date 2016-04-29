@@ -51,6 +51,7 @@ CSSStyleSheetResource* CSSStyleSheetResource::createForTest(const ResourceReques
 
 CSSStyleSheetResource::CSSStyleSheetResource(const ResourceRequest& resourceRequest, const ResourceLoaderOptions& options, const String& charset)
     : StyleSheetResource(resourceRequest, CSSStyleSheet, options, "text/css", charset)
+    , m_didNotifyFirstData(false)
 {
 }
 
@@ -96,6 +97,17 @@ const String CSSStyleSheetResource::sheetText(MIMETypeCheck mimeTypeCheck) const
 
     // Don't cache the decoded text, regenerating is cheap and it can use quite a bit of memory
     return decodedText();
+}
+
+void CSSStyleSheetResource::appendData(const char* data, size_t length)
+{
+    Resource::appendData(data, length);
+    if (m_didNotifyFirstData)
+        return;
+    ResourceClientWalker<StyleSheetResourceClient> w(m_clients);
+    while (StyleSheetResourceClient* c = w.next())
+        c->didAppendFirstData(this);
+    m_didNotifyFirstData = true;
 }
 
 void CSSStyleSheetResource::checkNotify()

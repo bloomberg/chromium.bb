@@ -40,6 +40,10 @@ public:
     ResourceClientType getResourceClientType() const final { return StyleSheetType; }
     virtual void setCSSStyleSheet(const String& /* href */, const KURL& /* baseURL */, const String& /* charset */, const CSSStyleSheetResource*) {}
     virtual void setXSLStyleSheet(const String& /* href */, const KURL& /* baseURL */, const String& /* sheet */) {}
+
+    // This gets called on the very first appendData call for the
+    // CSSStyleSheetResource.
+    virtual void didAppendFirstData(const CSSStyleSheetResource*) {}
 };
 
 } // namespace blink

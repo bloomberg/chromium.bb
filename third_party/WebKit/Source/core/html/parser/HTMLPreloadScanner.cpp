@@ -44,6 +44,7 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/parser/HTMLSrcsetParser.h"
 #include "core/html/parser/HTMLTokenizer.h"
+#include "core/html/parser/ResourcePreloader.h"
 #include "core/loader/LinkLoader.h"
 #include "platform/ContentType.h"
 #include "platform/Histogram.h"
