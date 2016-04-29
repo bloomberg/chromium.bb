@@ -15,6 +15,7 @@ import glob
 import httplib
 import json
 import logging
+import multiprocessing
 import optparse
 import os
 import Queue
@@ -2932,7 +2933,7 @@ def fetch_cl_status(branch, auth_config=None):
 
 def get_cl_statuses(
     branches, fine_grained, max_processes=None, auth_config=None):
-  """Returns a blocking iterable of (branch, issue, color) for given branches.
+  """Returns a blocking iterable of (branch, issue, status) for given branches.
 
   If fine_grained is true, this will fetch CL statuses from the server.
   Otherwise, simply indicate if there's a matching url for the given branches.
@@ -2940,7 +2941,15 @@ def get_cl_statuses(
   If max_processes is specified, it is used as the maximum number of processes
   to spawn to fetch CL status from the server. Otherwise 1 process per branch is
   spawned.
+
+  See GetStatus() for a list of possible statuses.
   """
+  def fetch(branch):
+    if not branch:
+      return None
+
+    return fetch_cl_status(branch, auth_config=auth_config)
+
   # Silence upload.py otherwise it becomes unwieldly.
   upload.verbosity = 0
 
@@ -2948,7 +2957,7 @@ def get_cl_statuses(
     # Process one branch synchronously to work through authentication, then
     # spawn processes to process all the other branches in parallel.
     if branches:
-      fetch = lambda branch: fetch_cl_status(branch, auth_config=auth_config)
+
       yield fetch(branches[0])
 
       branches_to_fetch = branches[1:]
@@ -2956,13 +2965,28 @@ def get_cl_statuses(
           min(max_processes, len(branches_to_fetch))
               if max_processes is not None
               else len(branches_to_fetch))
-      for x in pool.imap_unordered(fetch, branches_to_fetch):
-        yield x
+
+      fetched_branches = set()
+      it = pool.imap_unordered(fetch, branches_to_fetch).__iter__()
+      while True:
+        try:
+          row = it.next(timeout=5)
+        except multiprocessing.TimeoutError:
+          break
+
+        fetched_branches.add(row[0])
+        yield row
+
+      # Add any branches that failed to fetch.
+      for b in set(branches_to_fetch) - fetched_branches:
+        cl = Changelist(branchref=b, auth_config=auth_config)
+        yield (b, cl.GetIssueURL() if b else None, 'error')
+
   else:
     # Do not use GetApprovingReviewers(), since it requires an HTTP request.
     for b in branches:
       cl = Changelist(branchref=b, auth_config=auth_config)
-      url = cl.GetIssueURL()
+      url = cl.GetIssueURL() if b else None
       yield (b, url, 'waiting' if url else 'error')
 
 
