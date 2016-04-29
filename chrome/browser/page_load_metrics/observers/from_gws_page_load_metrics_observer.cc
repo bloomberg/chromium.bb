@@ -239,18 +239,25 @@ bool FromGWSPageLoadMetricsLogger::IsGoogleSearchResultUrl(const GURL& url) {
 }
 
 // static
-bool FromGWSPageLoadMetricsLogger::IsGoogleRedirectorUrl(const GURL& url) {
-  return IsGoogleSearchHostname(url.host_piece()) &&
-         url.path_piece() == "/url" && url.has_query();
-}
-
-// static
 bool FromGWSPageLoadMetricsLogger::IsGoogleSearchRedirectorUrl(
     const GURL& url) {
-  return IsGoogleRedirectorUrl(url) &&
-         // Google search result redirects are differentiated from other
-         // redirects by 'source=web'.
-         QueryContainsComponent(url.query_piece(), "source=web");
+  if (!IsGoogleSearchHostname(url.host_piece()))
+    return false;
+
+  // The primary search redirector.  Google search result redirects are
+  // differentiated from other general google redirects by 'source=web' in the
+  // query string.
+  if (url.path_piece() == "/url" && url.has_query() &&
+      QueryContainsComponent(url.query_piece(), "source=web")) {
+    return true;
+  }
+
+  // Intent-based navigations from search are redirected through a second
+  // redirector, which receives its redirect URL in the fragment/hash/ref
+  // portion of the URL (the portion after '#'). We don't check for the presence
+  // of certain params in the ref since this redirector is only used for
+  // redirects from search.
+  return url.path_piece() == "/searchurl/r.html" && url.has_ref();
 }
 
 // static
@@ -328,8 +335,9 @@ void FromGWSPageLoadMetricsLogger::SetPreviouslyCommittedUrl(const GURL& url) {
 }
 
 void FromGWSPageLoadMetricsLogger::SetProvisionalUrl(const GURL& url) {
-  provisional_url_is_search_results_or_google_redirector_ =
-      IsGoogleSearchResultUrl(url) || IsGoogleRedirectorUrl(url);
+  provisional_url_has_search_hostname_ =
+      IsGoogleSearchHostname(url.host_piece());
+  provisional_url_is_non_http_or_https_ = !url.SchemeIsHTTPOrHTTPS();
 }
 
 FromGWSPageLoadMetricsObserver::FromGWSPageLoadMetricsObserver() {}
@@ -345,10 +353,15 @@ void FromGWSPageLoadMetricsObserver::OnCommit(
     content::NavigationHandle* navigation_handle) {
   // We'd like to also check navigation_handle->HasUserGesture() here, however
   // this signal is not carried forward for navigations that open links in new
-  // tabs, so we look only at PAGE_TRANSITION_LINK.
+  // tabs, so we look only at PAGE_TRANSITION_LINK. Back/forward navigations
+  // that were originally navigated from a link will continue to report a core
+  // type of link, so to filter out back/forward navs, we also check that the
+  // page transition is a new navigation.
   logger_.set_navigation_initiated_via_link(
       ui::PageTransitionCoreTypeIs(navigation_handle->GetPageTransition(),
-                                   ui::PAGE_TRANSITION_LINK));
+                                   ui::PAGE_TRANSITION_LINK) &&
+      ui::PageTransitionIsNewNavigation(
+          navigation_handle->GetPageTransition()));
 }
 
 void FromGWSPageLoadMetricsObserver::OnComplete(
@@ -387,25 +400,31 @@ void FromGWSPageLoadMetricsLogger::OnComplete(
 }
 
 bool FromGWSPageLoadMetricsLogger::ShouldLogMetrics(const GURL& committed_url) {
-  // If this page is a known google redirector URL or Google search results URL,
-  // then we should not log stats. Use the provisional url if the navigation
-  // never commit. Note that this might throw away navigations to the Javascript
-  // redirector url.
+  // If this page has a URL on a known google search hostname, then it may be a
+  // page associated with search (either a search results page, or a search
+  // redirector url), so we should not log stats. We could try to detect only
+  // the specific known search URLs here, and log navigations to other pages on
+  // the google search hostname (for example, a search for 'about google'
+  // includes a result for https://www.google.com/about/), however, we assume
+  // these cases are relatively uncommon, and we run the risk of logging metrics
+  // for some search redirector URLs. Thus we choose the more conservative
+  // approach of ignoring all urls on known search hostnames. We use the
+  // provisional url if the navigation didn't commit. Also ignore navigations to
+  // other URL schemes, such as app navigations via intent://.
   if (committed_url.is_empty()) {
-    if (provisional_url_is_search_results_or_google_redirector_)
+    if (provisional_url_has_search_hostname_ ||
+        provisional_url_is_non_http_or_https_)
       return false;
   } else {
-    if (IsGoogleSearchResultUrl(committed_url) ||
-        IsGoogleRedirectorUrl(committed_url)) {
+    if (IsGoogleSearchHostname(committed_url.host_piece()) ||
+        !committed_url.SchemeIsHTTPOrHTTPS())
       return false;
-    }
   }
 
-  // We're only interested in tracking user gesture initiated navigations
-  // (e.g. clicks) initiated via links. Note that the redirector will mask
-  // these, so don't enforce this if the navigation came from a redirect url.
-  // TODO(csharrison): Use this signal for provisional loads when the content
-  // APIs allow for it.
+  // We're only interested in tracking navigations (e.g. clicks) initiated via
+  // links. Note that the redirector will mask these, so don't enforce this if
+  // the navigation came from a redirect url. TODO(csharrison): Use this signal
+  // for provisional loads when the content APIs allow for it.
   if (previously_committed_url_is_search_results_ &&
       (committed_url.is_empty() || navigation_initiated_via_link_)) {
     return true;

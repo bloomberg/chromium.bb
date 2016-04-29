@@ -46,7 +46,6 @@ class FromGWSPageLoadMetricsLogger {
   // The methods below are public only for testing.
   static bool IsGoogleSearchHostname(base::StringPiece host);
   static bool IsGoogleSearchResultUrl(const GURL& url);
-  static bool IsGoogleRedirectorUrl(const GURL& url);
   static bool IsGoogleSearchRedirectorUrl(const GURL& url);
   bool ShouldLogMetrics(const GURL& url);
 
@@ -69,7 +68,8 @@ class FromGWSPageLoadMetricsLogger {
   bool previously_committed_url_is_search_results_ = false;
   bool previously_committed_url_is_search_redirector_ = false;
   bool navigation_initiated_via_link_ = false;
-  bool provisional_url_is_search_results_or_google_redirector_ = false;
+  bool provisional_url_has_search_hostname_ = false;
+  bool provisional_url_is_non_http_or_https_ = false;
 
   static bool IsUrlFromGWS(const GURL& url);
 
