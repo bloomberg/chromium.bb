@@ -88,7 +88,6 @@ http/tests/security/xssAuditor/post-from-iframe.html [ Failure ]
 http/tests/security/xssAuditor/script-tag-post-control-char.html [ Failure ]
 http/tests/security/xssAuditor/script-tag-post.html [ Failure ]
 http/tests/security/xssAuditor/script-tag-post-null-char.html [ Failure ]
-http/tests/security/xssAuditor/script-tag-with-callbacks.html [ Failure ]
 http/tests/security/xssAuditor/xss-filter-bypass-long-string.html [ Failure ]
 
 # Uninvestigated failures under http/tests (but outside of http/tests/security):
