@@ -29,6 +29,7 @@ class Message;
 namespace content {
 
 struct Manifest;
+struct ManifestDebugInfo;
 struct PushSubscriptionOptions;
 
 class PushMessagingDispatcher : public RenderFrameObserver,
@@ -51,7 +52,8 @@ class PushMessagingDispatcher : public RenderFrameObserver,
       blink::WebServiceWorkerRegistration* service_worker_registration,
       const blink::WebPushSubscriptionOptions& options,
       blink::WebPushSubscriptionCallbacks* callbacks,
-      const Manifest& manifest);
+      const Manifest& manifest,
+      const ManifestDebugInfo&);
 
   void DoSubscribe(
       blink::WebServiceWorkerRegistration* service_worker_registration,

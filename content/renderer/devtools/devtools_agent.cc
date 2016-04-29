@@ -8,14 +8,17 @@
 
 #include <map>
 
+#include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "content/common/devtools_messages.h"
 #include "content/common/frame_messages.h"
+#include "content/public/common/manifest.h"
 #include "content/renderer/devtools/devtools_client.h"
 #include "content/renderer/devtools/devtools_cpu_throttler.h"
+#include "content/renderer/manifest/manifest_manager.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_widget.h"
 #include "ipc/ipc_channel.h"
@@ -37,6 +40,8 @@ namespace content {
 namespace {
 
 const size_t kMaxMessageChunkSize = IPC::Channel::kMaximumMessageSize / 4;
+const char kPageGetAppManifest[] = "Page.getAppManifest";
+
 
 class WebKitClientMessageLoopImpl
     : public WebDevToolsAgentClient::WebKitClientMessageLoop {
@@ -66,7 +71,8 @@ DevToolsAgent::DevToolsAgent(RenderFrameImpl* frame)
       paused_in_mouse_move_(false),
       paused_(false),
       frame_(frame),
-      cpu_throttler_(new DevToolsCPUThrottler()) {
+      cpu_throttler_(new DevToolsCPUThrottler()),
+      weak_factory_(this) {
   g_agent_for_routing_id.Get()[routing_id()] = this;
   frame_->GetWebFrame()->setDevToolsAgentClient(this);
 }
@@ -232,6 +238,13 @@ void DevToolsAgent::OnDispatchOnInspectorBackend(int session_id,
                                                  const std::string& method,
                                                  const std::string& message) {
   TRACE_EVENT0("devtools", "DevToolsAgent::OnDispatchOnInspectorBackend");
+  if (method == kPageGetAppManifest) {
+    ManifestManager* manager = frame_->manifest_manager();
+    manager->GetManifest(
+        base::Bind(&DevToolsAgent::GotManifest,
+        weak_factory_.GetWeakPtr(), session_id, call_id));
+    return;
+  }
   GetWebAgent()->dispatchOnInspectorBackend(session_id,
                                             call_id,
                                             WebString::fromUTF8(method),
@@ -267,6 +280,40 @@ WebDevToolsAgent* DevToolsAgent::GetWebAgent() {
 
 bool DevToolsAgent::IsAttached() {
   return is_attached_;
+}
+
+void DevToolsAgent::GotManifest(int session_id,
+                                int call_id,
+                                const Manifest& manifest,
+                                const ManifestDebugInfo& debug_info) {
+  if (!is_attached_)
+    return;
+
+  std::unique_ptr<base::DictionaryValue> response(new base::DictionaryValue());
+  response->SetInteger("id", call_id);
+  std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
+  std::unique_ptr<base::ListValue> errors(new base::ListValue());
+
+  bool failed = false;
+  for (const auto& error : debug_info.errors) {
+    base::DictionaryValue* error_value = new base::DictionaryValue();
+    errors->Append(error_value);
+    error_value->SetString("message", error.message);
+    error_value->SetBoolean("critical", error.critical);
+    error_value->SetInteger("line", error.line);
+    error_value->SetInteger("column", error.column);
+    if (error.critical)
+      failed = true;
+  }
+  if (!failed)
+    result->SetString("data", debug_info.raw_data);
+  result->Set("errors", errors.release());
+  response->Set("result", result.release());
+
+  std::string json_message;
+  base::JSONWriter::Write(*response, &json_message);
+  SendChunkedProtocolMessage(this, routing_id(), session_id, call_id,
+                             json_message, std::string());
 }
 
 }  // namespace content

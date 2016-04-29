@@ -60,7 +60,8 @@ void ManifestManager::OnRequestManifest(int request_id) {
 }
 
 void ManifestManager::OnRequestManifestComplete(
-    int request_id, const Manifest& manifest) {
+    int request_id, const Manifest& manifest,
+    const ManifestDebugInfo&) {
   // When sent via IPC, the Manifest must follow certain security rules.
   Manifest ipc_manifest = manifest;
   ipc_manifest.name = base::NullableString16(
@@ -92,12 +93,12 @@ void ManifestManager::OnRequestManifestComplete(
 
 void ManifestManager::GetManifest(const GetManifestCallback& callback) {
   if (!may_have_manifest_) {
-    callback.Run(Manifest());
+    callback.Run(Manifest(), ManifestDebugInfo());
     return;
   }
 
   if (!manifest_dirty_) {
-    callback.Run(manifest_);
+    callback.Run(manifest_, manifest_debug_info_);
     return;
   }
 
@@ -143,6 +144,11 @@ void ManifestManager::FetchManifest() {
                  render_frame()->GetWebFrame()->document().url()));
 }
 
+static const std::string& GetMessagePrefix() {
+  CR_DEFINE_STATIC_LOCAL(std::string, message_prefix, ("Manifest: "));
+  return message_prefix;
+}
+
 void ManifestManager::OnManifestFetchComplete(
     const GURL& document_url,
     const blink::WebURLResponse& response,
@@ -154,21 +160,23 @@ void ManifestManager::OnManifestFetchComplete(
   }
 
   ManifestUmaUtil::FetchSucceeded();
-
   ManifestParser parser(data, response.url(), document_url);
   parser.Parse();
 
   fetcher_.reset();
+  manifest_debug_info_.raw_data = data;
+  parser.TakeErrors(&manifest_debug_info_.errors);
 
-  for (const std::unique_ptr<ManifestParser::ErrorInfo>& error_info :
-       parser.errors()) {
+  for (const auto& error : manifest_debug_info_.errors) {
     blink::WebConsoleMessage message;
-    message.level = blink::WebConsoleMessage::LevelError;
-    message.text = blink::WebString::fromUTF8(error_info->error_msg);
+    message.level = error.critical ? blink::WebConsoleMessage::LevelError :
+        blink::WebConsoleMessage::LevelWarning;
+    message.text =
+        blink::WebString::fromUTF8(GetMessagePrefix() + error.message);
     message.url =
         render_frame()->GetWebFrame()->document().manifestURL().string();
-    message.lineNumber = error_info->error_line;
-    message.columnNumber = error_info->error_column;
+    message.lineNumber = error.line;
+    message.columnNumber = error.column;
     render_frame()->GetWebFrame()->addMessageToConsole(message);
   }
 
@@ -189,14 +197,12 @@ void ManifestManager::ResolveCallbacks(ResolveState state) {
 
   manifest_dirty_ = state != ResolveStateSuccess;
 
-  Manifest manifest = manifest_;
-  std::list<GetManifestCallback> callbacks = pending_callbacks_;
-
-  pending_callbacks_.clear();
+  std::list<GetManifestCallback> callbacks;
+  callbacks.swap(pending_callbacks_);
 
   for (std::list<GetManifestCallback>::const_iterator it = callbacks.begin();
        it != callbacks.end(); ++it) {
-    it->Run(manifest);
+    it->Run(manifest_, manifest_debug_info_);
   }
 }
 

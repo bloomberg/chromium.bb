@@ -267,6 +267,8 @@
       'renderer/java/gin_java_bridge_value_converter.h',
       'renderer/java/gin_java_function_invocation_helper.cc',
       'renderer/java/gin_java_function_invocation_helper.h',
+      'renderer/manifest/manifest_debug_info.cc',
+      'renderer/manifest/manifest_debug_info.h',
       'renderer/manifest/manifest_manager.cc',
       'renderer/manifest/manifest_manager.h',
       'renderer/manifest/manifest_parser.cc',

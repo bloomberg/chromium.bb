@@ -14,6 +14,7 @@
 #include "base/strings/string_piece.h"
 #include "content/common/content_export.h"
 #include "content/public/common/manifest.h"
+#include "content/renderer/manifest/manifest_debug_info.h"
 
 class GURL;
 
@@ -28,16 +29,6 @@ namespace content {
 // http://w3c.github.io/manifest/#dfn-steps-for-processing-a-manifest
 class CONTENT_EXPORT ManifestParser {
  public:
-  class ErrorInfo {
-   public:
-    ErrorInfo(const std::string& error_msg, int error_line, int error_column)
-        : error_msg(error_msg),
-          error_line(error_line),
-          error_column(error_column) {}
-    const std::string error_msg;
-    const int error_line;
-    const int error_column;
-  };
   ManifestParser(const base::StringPiece& data,
                  const GURL& manifest_url,
                  const GURL& document_url);
@@ -48,8 +39,9 @@ class CONTENT_EXPORT ManifestParser {
   void Parse();
 
   const Manifest& manifest() const;
-  const std::vector<std::unique_ptr<ErrorInfo>>& errors() const;
   bool failed() const;
+
+  void TakeErrors(std::vector<ManifestDebugInfo::Error>* errors);
 
  private:
   // Used to indicate whether to strip whitespace when parsing a string.
@@ -190,6 +182,7 @@ class CONTENT_EXPORT ManifestParser {
       const base::DictionaryValue& dictionary);
 
   void AddErrorInfo(const std::string& error_msg,
+                    bool critical = false,
                     int error_line = 0,
                     int error_column = 0);
 
@@ -199,7 +192,7 @@ class CONTENT_EXPORT ManifestParser {
 
   bool failed_;
   Manifest manifest_;
-  std::vector<std::unique_ptr<ErrorInfo>> errors_;
+  std::vector<ManifestDebugInfo::Error> errors_;
 
   DISALLOW_COPY_AND_ASSIGN(ManifestParser);
 };

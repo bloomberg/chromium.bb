@@ -33,11 +33,12 @@ class ManifestParserTest : public testing::Test  {
                                  const GURL& manifest_url) {
     ManifestParser parser(data, document_url, manifest_url);
     parser.Parse();
+    std::vector<ManifestDebugInfo::Error> errors;
+    parser.TakeErrors(&errors);
+
     errors_.clear();
-    for (const std::unique_ptr<ManifestParser::ErrorInfo>& error_info :
-         parser.errors()) {
-      errors_.push_back(error_info->error_msg);
-    }
+    for (const auto& error : errors)
+      errors_.push_back(error.message);
     return parser.manifest();
   }
 
@@ -74,9 +75,11 @@ TEST_F(ManifestParserTest, CrashTest) {
                         GURL("http://example.com"),
                         GURL("http://example.com"));
   parser.Parse();
+  std::vector<ManifestDebugInfo::Error> errors;
+  parser.TakeErrors(&errors);
 
   // .Parse() should have been call without crashing and succeeded.
-  EXPECT_EQ(0u, parser.errors().size());
+  EXPECT_EQ(0u, errors.size());
   EXPECT_FALSE(parser.manifest().IsEmpty());
 }
 
@@ -85,7 +88,7 @@ TEST_F(ManifestParserTest, EmptyStringNull) {
 
   // This Manifest is not a valid JSON object, it's a parsing error.
   EXPECT_EQ(1u, GetErrorCount());
-  EXPECT_EQ("Manifest parsing error: Line: 1, column: 1, Unexpected token.",
+  EXPECT_EQ("Line: 1, column: 1, Unexpected token.",
             errors()[0]);
 
   // A parsing error is equivalent to an empty manifest.
@@ -126,28 +129,21 @@ TEST_F(ManifestParserTest, MultipleErrorsReporting) {
 
   EXPECT_EQ(8u, GetErrorCount());
 
-  EXPECT_EQ("Manifest parsing error: property 'name' ignored,"
-            " type string expected.",
+  EXPECT_EQ("property 'name' ignored, type string expected.",
             errors()[0]);
-  EXPECT_EQ("Manifest parsing error: property 'short_name' ignored,"
-            " type string expected.",
+  EXPECT_EQ("property 'short_name' ignored, type string expected.",
             errors()[1]);
-  EXPECT_EQ("Manifest parsing error: property 'start_url' ignored,"
-            " type string expected.",
+  EXPECT_EQ("property 'start_url' ignored, type string expected.",
             errors()[2]);
-  EXPECT_EQ("Manifest parsing error: unknown 'display' value ignored.",
+  EXPECT_EQ("unknown 'display' value ignored.",
             errors()[3]);
-  EXPECT_EQ("Manifest parsing error: property 'orientation' ignored,"
-            " type string expected.",
+  EXPECT_EQ("property 'orientation' ignored, type string expected.",
             errors()[4]);
-  EXPECT_EQ("Manifest parsing error: property 'icons' ignored, "
-            "type array expected.",
+  EXPECT_EQ("property 'icons' ignored, type array expected.",
             errors()[5]);
-  EXPECT_EQ("Manifest parsing error: property 'theme_color' ignored,"
-            " type string expected.",
+  EXPECT_EQ("property 'theme_color' ignored, type string expected.",
             errors()[6]);
-  EXPECT_EQ("Manifest parsing error: property 'background_color' ignored,"
-            " type string expected.",
+  EXPECT_EQ("property 'background_color' ignored, type string expected.",
             errors()[7]);
 }
 
@@ -172,8 +168,7 @@ TEST_F(ManifestParserTest, NameParseRules) {
     Manifest manifest = ParseManifest("{ \"name\": {} }");
     ASSERT_TRUE(manifest.name.is_null());
     EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ("Manifest parsing error: property 'name' ignored,"
-              " type string expected.",
+    EXPECT_EQ("property 'name' ignored, type string expected.",
               errors()[0]);
   }
 
@@ -182,8 +177,7 @@ TEST_F(ManifestParserTest, NameParseRules) {
     Manifest manifest = ParseManifest("{ \"name\": 42 }");
     ASSERT_TRUE(manifest.name.is_null());
     EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ("Manifest parsing error: property 'name' ignored,"
-              " type string expected.",
+    EXPECT_EQ("property 'name' ignored, type string expected.",
               errors()[0]);
   }
 }
@@ -209,8 +203,7 @@ TEST_F(ManifestParserTest, ShortNameParseRules) {
     Manifest manifest = ParseManifest("{ \"short_name\": {} }");
     ASSERT_TRUE(manifest.short_name.is_null());
     EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ("Manifest parsing error: property 'short_name' ignored,"
-              " type string expected.",
+    EXPECT_EQ("property 'short_name' ignored, type string expected.",
               errors()[0]);
   }
 
@@ -219,8 +212,7 @@ TEST_F(ManifestParserTest, ShortNameParseRules) {
     Manifest manifest = ParseManifest("{ \"short_name\": 42 }");
     ASSERT_TRUE(manifest.short_name.is_null());
     EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ("Manifest parsing error: property 'short_name' ignored,"
-              " type string expected.",
+    EXPECT_EQ("property 'short_name' ignored, type string expected.",
               errors()[0]);
   }
 }
@@ -248,8 +240,7 @@ TEST_F(ManifestParserTest, StartURLParseRules) {
     Manifest manifest = ParseManifest("{ \"start_url\": {} }");
     ASSERT_TRUE(manifest.start_url.is_empty());
     EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ("Manifest parsing error: property 'start_url' ignored,"
-              " type string expected.",
+    EXPECT_EQ("property 'start_url' ignored, type string expected.",
               errors()[0]);
   }
 
@@ -258,8 +249,7 @@ TEST_F(ManifestParserTest, StartURLParseRules) {
     Manifest manifest = ParseManifest("{ \"start_url\": 42 }");
     ASSERT_TRUE(manifest.start_url.is_empty());
     EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ("Manifest parsing error: property 'start_url' ignored,"
-              " type string expected.",
+    EXPECT_EQ("property 'start_url' ignored, type string expected.",
               errors()[0]);
   }
 
@@ -281,7 +271,7 @@ TEST_F(ManifestParserTest, StartURLParseRules) {
                               GURL("http://foo.com/index.html"));
     ASSERT_TRUE(manifest.start_url.is_empty());
     EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ("Manifest parsing error: property 'start_url' ignored, should "
+    EXPECT_EQ("property 'start_url' ignored, should "
               "be same origin as document.",
               errors()[0]);
   }
@@ -318,7 +308,7 @@ TEST_F(ManifestParserTest, DisplayParserRules) {
     Manifest manifest = ParseManifest("{ \"display\": {} }");
     EXPECT_EQ(manifest.display, blink::WebDisplayModeUndefined);
     EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ("Manifest parsing error: property 'display' ignored,"
+    EXPECT_EQ("property 'display' ignored,"
               " type string expected.",
               errors()[0]);
   }
@@ -328,7 +318,7 @@ TEST_F(ManifestParserTest, DisplayParserRules) {
     Manifest manifest = ParseManifest("{ \"display\": 42 }");
     EXPECT_EQ(manifest.display, blink::WebDisplayModeUndefined);
     EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ("Manifest parsing error: property 'display' ignored,"
+    EXPECT_EQ("property 'display' ignored,"
               " type string expected.",
               errors()[0]);
   }
@@ -338,7 +328,7 @@ TEST_F(ManifestParserTest, DisplayParserRules) {
     Manifest manifest = ParseManifest("{ \"display\": \"browser_something\" }");
     EXPECT_EQ(manifest.display, blink::WebDisplayModeUndefined);
     EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ("Manifest parsing error: unknown 'display' value ignored.",
+    EXPECT_EQ("unknown 'display' value ignored.",
               errors()[0]);
   }
 
@@ -399,8 +389,7 @@ TEST_F(ManifestParserTest, OrientationParserRules) {
     Manifest manifest = ParseManifest("{ \"orientation\": {} }");
     EXPECT_EQ(manifest.orientation, blink::WebScreenOrientationLockDefault);
     EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ("Manifest parsing error: property 'orientation' ignored,"
-              " type string expected.",
+    EXPECT_EQ("property 'orientation' ignored, type string expected.",
               errors()[0]);
   }
 
@@ -409,8 +398,7 @@ TEST_F(ManifestParserTest, OrientationParserRules) {
     Manifest manifest = ParseManifest("{ \"orientation\": 42 }");
     EXPECT_EQ(manifest.orientation, blink::WebScreenOrientationLockDefault);
     EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ("Manifest parsing error: property 'orientation' ignored,"
-              " type string expected.",
+    EXPECT_EQ("property 'orientation' ignored, type string expected.",
               errors()[0]);
   }
 
@@ -419,7 +407,7 @@ TEST_F(ManifestParserTest, OrientationParserRules) {
     Manifest manifest = ParseManifest("{ \"orientation\": \"naturalish\" }");
     EXPECT_EQ(manifest.orientation, blink::WebScreenOrientationLockDefault);
     EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ("Manifest parsing error: unknown 'orientation' value ignored.",
+    EXPECT_EQ("unknown 'orientation' value ignored.",
               errors()[0]);
   }
 
@@ -564,8 +552,7 @@ TEST_F(ManifestParserTest, IconSrcParseRules) {
     Manifest manifest = ParseManifest("{ \"icons\": [ {\"src\": {} } ] }");
     EXPECT_TRUE(manifest.icons.empty());
     EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ("Manifest parsing error: property 'src' ignored,"
-              " type string expected.",
+    EXPECT_EQ("property 'src' ignored, type string expected.",
               errors()[0]);
   }
 
@@ -574,8 +561,7 @@ TEST_F(ManifestParserTest, IconSrcParseRules) {
     Manifest manifest = ParseManifest("{ \"icons\": [ {\"src\": 42 } ] }");
     EXPECT_TRUE(manifest.icons.empty());
     EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ("Manifest parsing error: property 'src' ignored,"
-              " type string expected.",
+    EXPECT_EQ("property 'src' ignored, type string expected.",
               errors()[0]);
   }
 
@@ -614,8 +600,7 @@ TEST_F(ManifestParserTest, IconTypeParseRules) {
         ParseManifest("{ \"icons\": [ {\"src\": \"\", \"type\": {} } ] }");
     EXPECT_TRUE(manifest.icons[0].type.is_null());
     EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ("Manifest parsing error: property 'type' ignored,"
-              " type string expected.",
+    EXPECT_EQ("property 'type' ignored, type string expected.",
               errors()[0]);
   }
 
@@ -625,8 +610,7 @@ TEST_F(ManifestParserTest, IconTypeParseRules) {
         ParseManifest("{ \"icons\": [ {\"src\": \"\", \"type\": 42 } ] }");
     EXPECT_TRUE(manifest.icons[0].type.is_null());
     EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ("Manifest parsing error: property 'type' ignored,"
-              " type string expected.",
+    EXPECT_EQ("property 'type' ignored, type string expected.",
               errors()[0]);
   }
 }
@@ -654,8 +638,7 @@ TEST_F(ManifestParserTest, IconSizesParseRules) {
         "\"sizes\": {} } ] }");
     EXPECT_EQ(manifest.icons[0].sizes.size(), 0u);
     EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ("Manifest parsing error: property 'sizes' ignored,"
-              " type string expected.",
+    EXPECT_EQ("property 'sizes' ignored, type string expected.",
               errors()[0]);
   }
 
@@ -665,8 +648,7 @@ TEST_F(ManifestParserTest, IconSizesParseRules) {
         "\"sizes\": 42 } ] }");
     EXPECT_EQ(manifest.icons[0].sizes.size(), 0u);
     EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ("Manifest parsing error: property 'sizes' ignored,"
-              " type string expected.",
+    EXPECT_EQ("property 'sizes' ignored, type string expected.",
               errors()[0]);
   }
 
@@ -703,7 +685,7 @@ TEST_F(ManifestParserTest, IconSizesParseRules) {
         "\"sizes\": \"004X007  042x00\" } ] }");
     EXPECT_EQ(manifest.icons[0].sizes.size(), 0u);
     EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ("Manifest parsing error: found icon with no valid size.",
+    EXPECT_EQ("found icon with no valid size.",
               errors()[0]);
   }
 
@@ -713,7 +695,7 @@ TEST_F(ManifestParserTest, IconSizesParseRules) {
         "\"sizes\": \"e4X1.0  55ax1e10\" } ] }");
     EXPECT_EQ(manifest.icons[0].sizes.size(), 0u);
     EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ("Manifest parsing error: found icon with no valid size.",
+    EXPECT_EQ("found icon with no valid size.",
               errors()[0]);
   }
 
@@ -737,7 +719,7 @@ TEST_F(ManifestParserTest, IconSizesParseRules) {
     gfx::Size any = gfx::Size(0, 0);
     EXPECT_EQ(manifest.icons[0].sizes.size(), 0u);
     EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ("Manifest parsing error: found icon with no valid size.",
+    EXPECT_EQ("found icon with no valid size.",
               errors()[0]);
   }
 }
@@ -759,8 +741,7 @@ TEST_F(ManifestParserTest, RelatedApplicationsParseRules) {
     EXPECT_EQ(manifest.related_applications.size(), 0u);
     EXPECT_TRUE(manifest.IsEmpty());
     EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ("Manifest parsing error: 'platform' is a required field, "
-              "related application ignored.",
+    EXPECT_EQ("'platform' is a required field, related application ignored.",
               errors()[0]);
   }
 
@@ -772,10 +753,9 @@ TEST_F(ManifestParserTest, RelatedApplicationsParseRules) {
     EXPECT_TRUE(manifest.IsEmpty());
     EXPECT_EQ(2u, GetErrorCount());
     EXPECT_EQ(
-        "Manifest parsing error: property 'platform' ignored, type string "
-        "expected.",
+        "property 'platform' ignored, type string expected.",
         errors()[0]);
-    EXPECT_EQ("Manifest parsing error: 'platform' is a required field, "
+    EXPECT_EQ("'platform' is a required field, "
               "related application ignored.",
               errors()[1]);
   }
@@ -787,8 +767,7 @@ TEST_F(ManifestParserTest, RelatedApplicationsParseRules) {
     EXPECT_EQ(manifest.related_applications.size(), 0u);
     EXPECT_TRUE(manifest.IsEmpty());
     EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ("Manifest parsing error: 'platform' is a required field, "
-              "related application ignored.",
+    EXPECT_EQ("'platform' is a required field, related application ignored.",
               errors()[0]);
   }
 
@@ -799,8 +778,7 @@ TEST_F(ManifestParserTest, RelatedApplicationsParseRules) {
     EXPECT_EQ(manifest.related_applications.size(), 0u);
     EXPECT_TRUE(manifest.IsEmpty());
     EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ("Manifest parsing error: one of 'url' or 'id' is required, "
-              "related application ignored.",
+    EXPECT_EQ("one of 'url' or 'id' is required, related application ignored.",
               errors()[0]);
   }
 
@@ -871,11 +849,9 @@ TEST_F(ManifestParserTest, RelatedApplicationsParseRules) {
                                   "foo"));
     EXPECT_FALSE(manifest.IsEmpty());
     EXPECT_EQ(2u, GetErrorCount());
-    EXPECT_EQ("Manifest parsing error: one of 'url' or 'id' is required, "
-              "related application ignored.",
+    EXPECT_EQ("one of 'url' or 'id' is required, related application ignored.",
               errors()[0]);
-    EXPECT_EQ("Manifest parsing error: 'platform' is a required field, "
-              "related application ignored.",
+    EXPECT_EQ("'platform' is a required field, related application ignored.",
               errors()[1]);
   }
 }
@@ -896,7 +872,7 @@ TEST_F(ManifestParserTest, ParsePreferRelatedApplicationsParseRules) {
     EXPECT_FALSE(manifest.prefer_related_applications);
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ(
-        "Manifest parsing error: property 'prefer_related_applications' "
+        "property 'prefer_related_applications' "
         "ignored, type boolean expected.",
         errors()[0]);
   }
@@ -906,7 +882,7 @@ TEST_F(ManifestParserTest, ParsePreferRelatedApplicationsParseRules) {
     EXPECT_FALSE(manifest.prefer_related_applications);
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ(
-        "Manifest parsing error: property 'prefer_related_applications' "
+        "property 'prefer_related_applications' "
         "ignored, type boolean expected.",
         errors()[0]);
   }
@@ -915,7 +891,7 @@ TEST_F(ManifestParserTest, ParsePreferRelatedApplicationsParseRules) {
     EXPECT_FALSE(manifest.prefer_related_applications);
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ(
-        "Manifest parsing error: property 'prefer_related_applications' "
+        "property 'prefer_related_applications' "
         "ignored, type boolean expected.",
         errors()[0]);
   }
@@ -950,8 +926,7 @@ TEST_F(ManifestParserTest, ThemeColorParserRules) {
     Manifest manifest = ParseManifest("{ \"theme_color\": {} }");
     EXPECT_EQ(manifest.theme_color, Manifest::kInvalidOrMissingColor);
     EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ("Manifest parsing error: property 'theme_color' ignored,"
-              " type string expected.",
+    EXPECT_EQ("property 'theme_color' ignored, type string expected.",
               errors()[0]);
   }
 
@@ -960,8 +935,7 @@ TEST_F(ManifestParserTest, ThemeColorParserRules) {
     Manifest manifest = ParseManifest("{ \"theme_color\": false }");
     EXPECT_EQ(manifest.theme_color, Manifest::kInvalidOrMissingColor);
     EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ("Manifest parsing error: property 'theme_color' ignored,"
-              " type string expected.",
+    EXPECT_EQ("property 'theme_color' ignored, type string expected.",
               errors()[0]);
   }
 
@@ -970,8 +944,7 @@ TEST_F(ManifestParserTest, ThemeColorParserRules) {
     Manifest manifest = ParseManifest("{ \"theme_color\": null }");
     EXPECT_EQ(manifest.theme_color, Manifest::kInvalidOrMissingColor);
     EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ("Manifest parsing error: property 'theme_color' ignored,"
-              " type string expected.",
+    EXPECT_EQ("property 'theme_color' ignored, type string expected.",
               errors()[0]);
   }
 
@@ -980,8 +953,7 @@ TEST_F(ManifestParserTest, ThemeColorParserRules) {
     Manifest manifest = ParseManifest("{ \"theme_color\": [] }");
     EXPECT_EQ(manifest.theme_color, Manifest::kInvalidOrMissingColor);
     EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ("Manifest parsing error: property 'theme_color' ignored,"
-              " type string expected.",
+    EXPECT_EQ("property 'theme_color' ignored, type string expected.",
               errors()[0]);
   }
 
@@ -990,8 +962,7 @@ TEST_F(ManifestParserTest, ThemeColorParserRules) {
     Manifest manifest = ParseManifest("{ \"theme_color\": 42 }");
     EXPECT_EQ(manifest.theme_color, Manifest::kInvalidOrMissingColor);
     EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ("Manifest parsing error: property 'theme_color' ignored,"
-              " type string expected.",
+    EXPECT_EQ("property 'theme_color' ignored, type string expected.",
               errors()[0]);
   }
 
@@ -1000,7 +971,7 @@ TEST_F(ManifestParserTest, ThemeColorParserRules) {
     Manifest manifest = ParseManifest("{ \"theme_color\": \"foo(bar)\" }");
     EXPECT_EQ(manifest.theme_color, Manifest::kInvalidOrMissingColor);
     EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ("Manifest parsing error: property 'theme_color' ignored,"
+    EXPECT_EQ("property 'theme_color' ignored,"
               " 'foo(bar)' is not a valid color.",
               errors()[0]);
   }
@@ -1010,8 +981,7 @@ TEST_F(ManifestParserTest, ThemeColorParserRules) {
     Manifest manifest = ParseManifest("{ \"theme_color\": \"bleu\" }");
     EXPECT_EQ(manifest.theme_color, Manifest::kInvalidOrMissingColor);
     EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ("Manifest parsing error: property 'theme_color' ignored, 'bleu'"
-              " is not a valid color.",
+    EXPECT_EQ("property 'theme_color' ignored, 'bleu' is not a valid color.",
               errors()[0]);
   }
 
@@ -1020,7 +990,7 @@ TEST_F(ManifestParserTest, ThemeColorParserRules) {
     Manifest manifest = ParseManifest("{ \"theme_color\": \"FF00FF\" }");
     EXPECT_EQ(manifest.theme_color, Manifest::kInvalidOrMissingColor);
     EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ("Manifest parsing error: property 'theme_color' ignored, 'FF00FF'"
+    EXPECT_EQ("property 'theme_color' ignored, 'FF00FF'"
               " is not a valid color.",
               errors()[0]);
   }
@@ -1030,7 +1000,7 @@ TEST_F(ManifestParserTest, ThemeColorParserRules) {
     Manifest manifest = ParseManifest("{ \"theme_color\": \"#ABC #DEF\" }");
     EXPECT_EQ(manifest.theme_color, Manifest::kInvalidOrMissingColor);
     EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ("Manifest parsing error: property 'theme_color' ignored, "
+    EXPECT_EQ("property 'theme_color' ignored, "
               "'#ABC #DEF' is not a valid color.",
               errors()[0]);
   }
@@ -1041,7 +1011,7 @@ TEST_F(ManifestParserTest, ThemeColorParserRules) {
         "{ \"theme_color\": \"#AABBCC #DDEEFF\" }");
     EXPECT_EQ(manifest.theme_color, Manifest::kInvalidOrMissingColor);
     EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ("Manifest parsing error: property 'theme_color' ignored, "
+    EXPECT_EQ("property 'theme_color' ignored, "
               "'#AABBCC #DDEEFF' is not a valid color.",
               errors()[0]);
   }
@@ -1119,8 +1089,7 @@ TEST_F(ManifestParserTest, BackgroundColorParserRules) {
     Manifest manifest = ParseManifest("{ \"background_color\": {} }");
     EXPECT_EQ(manifest.background_color, Manifest::kInvalidOrMissingColor);
     EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ("Manifest parsing error: property 'background_color' ignored,"
-              " type string expected.",
+    EXPECT_EQ("property 'background_color' ignored, type string expected.",
               errors()[0]);
   }
 
@@ -1129,8 +1098,7 @@ TEST_F(ManifestParserTest, BackgroundColorParserRules) {
     Manifest manifest = ParseManifest("{ \"background_color\": false }");
     EXPECT_EQ(manifest.background_color, Manifest::kInvalidOrMissingColor);
     EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ("Manifest parsing error: property 'background_color' ignored,"
-              " type string expected.",
+    EXPECT_EQ("property 'background_color' ignored, type string expected.",
               errors()[0]);
   }
 
@@ -1139,8 +1107,7 @@ TEST_F(ManifestParserTest, BackgroundColorParserRules) {
     Manifest manifest = ParseManifest("{ \"background_color\": null }");
     EXPECT_EQ(manifest.background_color, Manifest::kInvalidOrMissingColor);
     EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ("Manifest parsing error: property 'background_color' ignored,"
-              " type string expected.",
+    EXPECT_EQ("property 'background_color' ignored, type string expected.",
               errors()[0]);
   }
 
@@ -1149,8 +1116,7 @@ TEST_F(ManifestParserTest, BackgroundColorParserRules) {
     Manifest manifest = ParseManifest("{ \"background_color\": [] }");
     EXPECT_EQ(manifest.background_color, Manifest::kInvalidOrMissingColor);
     EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ("Manifest parsing error: property 'background_color' ignored,"
-              " type string expected.",
+    EXPECT_EQ("property 'background_color' ignored, type string expected.",
               errors()[0]);
   }
 
@@ -1159,8 +1125,7 @@ TEST_F(ManifestParserTest, BackgroundColorParserRules) {
     Manifest manifest = ParseManifest("{ \"background_color\": 42 }");
     EXPECT_EQ(manifest.background_color, Manifest::kInvalidOrMissingColor);
     EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ("Manifest parsing error: property 'background_color' ignored,"
-              " type string expected.",
+    EXPECT_EQ("property 'background_color' ignored, type string expected.",
               errors()[0]);
   }
 
@@ -1169,7 +1134,7 @@ TEST_F(ManifestParserTest, BackgroundColorParserRules) {
     Manifest manifest = ParseManifest("{ \"background_color\": \"foo(bar)\" }");
     EXPECT_EQ(manifest.background_color, Manifest::kInvalidOrMissingColor);
     EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ("Manifest parsing error: property 'background_color' ignored,"
+    EXPECT_EQ("property 'background_color' ignored,"
               " 'foo(bar)' is not a valid color.",
               errors()[0]);
   }
@@ -1179,7 +1144,7 @@ TEST_F(ManifestParserTest, BackgroundColorParserRules) {
     Manifest manifest = ParseManifest("{ \"background_color\": \"bleu\" }");
     EXPECT_EQ(manifest.background_color, Manifest::kInvalidOrMissingColor);
     EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ("Manifest parsing error: property 'background_color' ignored,"
+    EXPECT_EQ("property 'background_color' ignored,"
               " 'bleu' is not a valid color.",
               errors()[0]);
   }
@@ -1189,7 +1154,7 @@ TEST_F(ManifestParserTest, BackgroundColorParserRules) {
     Manifest manifest = ParseManifest("{ \"background_color\": \"FF00FF\" }");
     EXPECT_EQ(manifest.background_color, Manifest::kInvalidOrMissingColor);
     EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ("Manifest parsing error: property 'background_color' ignored,"
+    EXPECT_EQ("property 'background_color' ignored,"
               " 'FF00FF' is not a valid color.",
               errors()[0]);
   }
@@ -1200,7 +1165,7 @@ TEST_F(ManifestParserTest, BackgroundColorParserRules) {
         "{ \"background_color\": \"#ABC #DEF\" }");
     EXPECT_EQ(manifest.background_color, Manifest::kInvalidOrMissingColor);
     EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ("Manifest parsing error: property 'background_color' ignored, "
+    EXPECT_EQ("property 'background_color' ignored, "
               "'#ABC #DEF' is not a valid color.",
               errors()[0]);
   }
@@ -1211,7 +1176,7 @@ TEST_F(ManifestParserTest, BackgroundColorParserRules) {
         "{ \"background_color\": \"#AABBCC #DDEEFF\" }");
     EXPECT_EQ(manifest.background_color, Manifest::kInvalidOrMissingColor);
     EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ("Manifest parsing error: property 'background_color' ignored, "
+    EXPECT_EQ("property 'background_color' ignored, "
               "'#AABBCC #DDEEFF' is not a valid color.",
               errors()[0]);
   }
@@ -1289,16 +1254,14 @@ TEST_F(ManifestParserTest, GCMSenderIDParseRules) {
     Manifest manifest = ParseManifest("{ \"gcm_sender_id\": {} }");
     EXPECT_TRUE(manifest.gcm_sender_id.is_null());
     EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ("Manifest parsing error: property 'gcm_sender_id' ignored,"
-              " type string expected.",
+    EXPECT_EQ("property 'gcm_sender_id' ignored, type string expected.",
               errors()[0]);
   }
   {
     Manifest manifest = ParseManifest("{ \"gcm_sender_id\": 42 }");
     EXPECT_TRUE(manifest.gcm_sender_id.is_null());
     EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ("Manifest parsing error: property 'gcm_sender_id' ignored,"
-              " type string expected.",
+    EXPECT_EQ("property 'gcm_sender_id' ignored, type string expected.",
               errors()[0]);
   }
 }

@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "third_party/WebKit/public/web/WebDevToolsAgentClient.h"
@@ -22,6 +23,8 @@ namespace content {
 
 class DevToolsCPUThrottler;
 class RenderFrameImpl;
+struct Manifest;
+struct ManifestDebugInfo;
 
 // DevToolsAgent belongs to the inspectable RenderFrameImpl and communicates
 // with WebDevToolsAgent. There is a corresponding DevToolsAgentHost
@@ -85,6 +88,11 @@ class CONTENT_EXPORT DevToolsAgent
   void ContinueProgram();
   void OnSetupDevToolsClient(const std::string& compatibility_script);
 
+  void GotManifest(int session_id,
+                   int command_id,
+                   const Manifest& manifest,
+                   const ManifestDebugInfo& debug_info);
+
   bool is_attached_;
   bool is_devtools_client_;
   bool paused_in_mouse_move_;
@@ -93,6 +101,7 @@ class CONTENT_EXPORT DevToolsAgent
   base::Callback<void(int, int, const std::string&, const std::string&)>
       send_protocol_message_callback_for_test_;
   std::unique_ptr<DevToolsCPUThrottler> cpu_throttler_;
+  base::WeakPtrFactory<DevToolsAgent> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsAgent);
 };
