@@ -21,6 +21,13 @@ config("symbol_visibility_hidden") {
   cflags = [ "-fvisibility=hidden" ]
 }
 
+# This config is usually set when :symbol_visibility_hidden is removed.
+# It's often a good idea to set visibility explicitly, as there're flags
+# which would error out otherwise (e.g. -fsanitize=cfi-unrelated-cast)
+config("symbol_visibility_default") {
+  cflags = [ "-fvisibility=default" ]
+}
+
 # The rpath is the dynamic library search path. Setting this config on a link
 # step will put the directory where the build generates shared libraries into
 # the rpath.

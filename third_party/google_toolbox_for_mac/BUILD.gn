@@ -202,5 +202,6 @@ component("google_toolbox_for_mac") {
     # chrome binary doesn't end up with unnecessarily exported
     # symbols.
     configs -= [ "//build/config/gcc:symbol_visibility_hidden" ]
+    configs += [ "//build/config/gcc:symbol_visibility_default" ]
   }
 }

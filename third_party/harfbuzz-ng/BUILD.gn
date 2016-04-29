@@ -190,6 +190,7 @@ if (use_system_harfbuzz) {
         current_cpu != "arm" && current_cpu != "mipsel") {
       deps += [ "//build/linux:freetype2" ]
       configs -= [ "//build/config/gcc:symbol_visibility_hidden" ]
+      configs += [ "//build/config/gcc:symbol_visibility_default" ]
       configs += [ "//build/config/linux:glib" ]
       sources += [
         "src/hb-ft.cc",
