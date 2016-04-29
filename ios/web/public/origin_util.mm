@@ -2,10 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web/public/origin_util.h"
+#import "ios/web/public/origin_util.h"
 
+#import <WebKit/WebKit.h>
+
+#include "base/numerics/safe_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "net/base/url_util.h"
 #include "url/gurl.h"
+#include "url/scheme_host_port.h"
 
 namespace web {
 
@@ -23,6 +28,16 @@ bool IsOriginSecure(const GURL& url) {
     return true;
 
   return false;
+}
+
+GURL GURLOriginWithWKSecurityOrigin(WKSecurityOrigin* origin) {
+  if (!origin)
+    return GURL();
+
+  url::SchemeHostPort origin_tuple(base::SysNSStringToUTF8(origin.protocol),
+                                   base::SysNSStringToUTF8(origin.host),
+                                   base::checked_cast<uint16_t>(origin.port));
+  return GURL(origin_tuple.Serialize());
 }
 
 }  // namespace web

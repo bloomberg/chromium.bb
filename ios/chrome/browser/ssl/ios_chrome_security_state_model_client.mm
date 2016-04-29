@@ -10,7 +10,7 @@
 #include "ios/web/public/cert_store.h"
 #include "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
-#include "ios/web/public/origin_util.h"
+#import "ios/web/public/origin_util.h"
 #include "ios/web/public/security_style.h"
 #include "ios/web/public/ssl_status.h"
 #include "ios/web/public/web_state/web_state.h"

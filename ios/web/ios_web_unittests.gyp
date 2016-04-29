@@ -42,6 +42,7 @@
         'net/request_group_util_unittest.mm',
         'net/request_tracker_impl_unittest.mm',
         'net/web_http_protocol_handler_delegate_unittest.mm',
+        'public/origin_util_unittest.mm',
         'public/referrer_util_unittest.cc',
         'public/web_state/page_viewport_state_unittest.mm',
         'string_util_unittest.cc',
