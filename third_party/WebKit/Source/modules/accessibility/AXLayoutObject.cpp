@@ -1018,18 +1018,19 @@ void AXLayoutObject::loadInlineTextBoxes()
 
 AXObject* AXLayoutObject::nextOnLine() const
 {
-    if (!m_layoutObject)
-        return 0;
+    if (!getLayoutObject())
+        return nullptr;
 
-    InlineBox* inlineBox;
-    if (m_layoutObject->isLayoutInline())
-        inlineBox = toLayoutInline(m_layoutObject)->lastLineBox();
-    else if (m_layoutObject->isText())
-        inlineBox = toLayoutText(m_layoutObject)->lastTextBox();
-    else
-        return 0;
+    InlineBox* inlineBox = nullptr;
+    if (getLayoutObject()->isLayoutInline())
+        inlineBox = toLayoutInline(getLayoutObject())->lastLineBox();
+    else if (getLayoutObject()->isText())
+        inlineBox = toLayoutText(getLayoutObject())->lastTextBox();
 
-    AXObject* result = 0;
+    if (!inlineBox)
+        return nullptr;
+
+    AXObject* result = nullptr;
     for (InlineBox* next = inlineBox->nextOnLine(); next; next = next->nextOnLine()) {
         LayoutObject* layoutObject = LineLayoutAPIShim::layoutObjectFrom(next->getLineLayoutItem());
         result = axObjectCache().getOrCreate(layoutObject);
@@ -1047,18 +1048,19 @@ AXObject* AXLayoutObject::nextOnLine() const
 
 AXObject* AXLayoutObject::previousOnLine() const
 {
-    if (!m_layoutObject)
-        return 0;
+    if (!getLayoutObject())
+        return nullptr;
 
-    InlineBox* inlineBox;
-    if (m_layoutObject->isLayoutInline())
-        inlineBox = toLayoutInline(m_layoutObject)->firstLineBox();
-    else if (m_layoutObject->isText())
-        inlineBox = toLayoutText(m_layoutObject)->firstTextBox();
-    else
-        return 0;
+    InlineBox* inlineBox = nullptr;
+    if (getLayoutObject()->isLayoutInline())
+        inlineBox = toLayoutInline(getLayoutObject())->firstLineBox();
+    else if (getLayoutObject()->isText())
+        inlineBox = toLayoutText(getLayoutObject())->firstTextBox();
 
-    AXObject* result = 0;
+    if (!inlineBox)
+        return nullptr;
+
+    AXObject* result = nullptr;
     for (InlineBox* prev = inlineBox->prevOnLine(); prev; prev = prev->prevOnLine()) {
         LayoutObject* layoutObject = LineLayoutAPIShim::layoutObjectFrom(prev->getLineLayoutItem());
         result = axObjectCache().getOrCreate(layoutObject);
