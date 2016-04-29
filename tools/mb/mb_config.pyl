@@ -352,6 +352,10 @@
       'Mac10.11 Tests': 'none',
       'Mac10.9 Tests (dbg)': 'none',
       'Mac10.9 Tests': 'none',
+      'ios-device': 'ios_gyp',
+      'ios-device-gn': 'ios_gn',
+      'ios-simulator': 'ios_gyp',
+      'ios-simulator-gn': 'ios_gn',
       'iOS_Device': 'ios_gyp',
       'iOS_Device_(ninja)': 'ios_gyp',
       'iOS_Device_GN': 'ios_gn',
@@ -755,6 +759,10 @@
     },
 
     'tryserver.chromium.mac': {
+      'ios-device': 'ios_gyp',
+      'ios-device-gn': 'ios_gyp',
+      'ios-simulator': 'ios_gyp',
+      'ios-simulator-gn': 'ios_gyp',
       'ios_dbg_simulator': 'ios_gyp',
       'ios_dbg_simulator_gn': 'ios_gn',
       'ios_dbg_simulator_ninja': 'ios_gyp',
