@@ -200,6 +200,10 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['mac', ('amd', 0x6821)], bug=599272)
 
     # Linux failures
+    # OpenGL
+    self.Fail('conformance/extensions/oes-texture-half-float.html',
+        ['linux', 'opengl'], bug=607283)
+
     # NVIDIA
     self.Fail('conformance/extensions/angle-instanced-arrays.html',
               ['linux', 'nvidia'], bug=544989) # Too flaky to retry
