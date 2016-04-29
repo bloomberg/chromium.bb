@@ -59,7 +59,9 @@ int DesktopProcessMain() {
   desktop_environment_factory.reset(new SessionDesktopEnvironmentFactory(
       ui_task_runner, video_capture_task_runner, input_task_runner,
       ui_task_runner,
-      base::Bind(&DesktopProcess::InjectSas, desktop_process.AsWeakPtr())));
+      base::Bind(&DesktopProcess::InjectSas, desktop_process.AsWeakPtr()),
+      base::Bind(&DesktopProcess::LockWorkStation,
+                 desktop_process.AsWeakPtr())));
 #else  // !defined(OS_WIN)
   desktop_environment_factory.reset(new Me2MeDesktopEnvironmentFactory(
       ui_task_runner, video_capture_task_runner, input_task_runner,

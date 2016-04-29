@@ -51,6 +51,9 @@ class DesktopProcess : public DesktopSessionAgent::Delegate,
   // Injects Secure Attention Sequence.
   void InjectSas();
 
+  // Locks the workstation for the current session.
+  void LockWorkStation();
+
   // Creates the desktop agent and required threads and IPC channels. Returns
   // true on success.
   bool Start(

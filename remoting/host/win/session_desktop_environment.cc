@@ -26,7 +26,7 @@ SessionDesktopEnvironment::CreateInputInjector() {
   return base::WrapUnique(new SessionInputInjectorWin(
       input_task_runner(),
       InputInjector::Create(input_task_runner(), ui_task_runner()),
-      ui_task_runner(), inject_sas_));
+      ui_task_runner(), inject_sas_, lock_workstation_));
 }
 
 SessionDesktopEnvironment::SessionDesktopEnvironment(
@@ -35,25 +35,29 @@ SessionDesktopEnvironment::SessionDesktopEnvironment(
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     const base::Closure& inject_sas,
+    const base::Closure& lock_workstation,
     bool supports_touch_events)
     : Me2MeDesktopEnvironment(caller_task_runner,
                               video_capture_task_runner,
                               input_task_runner,
                               ui_task_runner,
                               supports_touch_events),
-      inject_sas_(inject_sas) {}
+      inject_sas_(inject_sas),
+      lock_workstation_(lock_workstation) {}
 
 SessionDesktopEnvironmentFactory::SessionDesktopEnvironmentFactory(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> video_capture_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-    const base::Closure& inject_sas)
+    const base::Closure& inject_sas,
+    const base::Closure& lock_workstation)
     : Me2MeDesktopEnvironmentFactory(caller_task_runner,
                                      video_capture_task_runner,
                                      input_task_runner,
                                      ui_task_runner),
-      inject_sas_(inject_sas) {
+      inject_sas_(inject_sas),
+      lock_workstation_(lock_workstation) {
   DCHECK(caller_task_runner->BelongsToCurrentThread());
 }
 
@@ -64,10 +68,10 @@ std::unique_ptr<DesktopEnvironment> SessionDesktopEnvironmentFactory::Create(
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
   std::unique_ptr<SessionDesktopEnvironment> desktop_environment(
-      new SessionDesktopEnvironment(caller_task_runner(),
-                                    video_capture_task_runner(),
-                                    input_task_runner(), ui_task_runner(),
-                                    inject_sas_, supports_touch_events()));
+      new SessionDesktopEnvironment(
+          caller_task_runner(), video_capture_task_runner(),
+          input_task_runner(), ui_task_runner(), inject_sas_, lock_workstation_,
+          supports_touch_events()));
   if (!desktop_environment->InitializeSecurity(client_session_control,
                                                curtain_enabled())) {
     return nullptr;

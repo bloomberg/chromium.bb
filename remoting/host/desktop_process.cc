@@ -25,6 +25,10 @@
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/desktop_session_agent.h"
 
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif  // defined(OS_WIN)
+
 namespace remoting {
 
 DesktopProcess::DesktopProcess(
@@ -59,6 +63,22 @@ void DesktopProcess::InjectSas() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   daemon_channel_->Send(new ChromotingDesktopDaemonMsg_InjectSas());
+}
+
+void DesktopProcess::LockWorkStation() {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+#if defined(OS_WIN)
+  if (base::win::OSInfo::GetInstance()->version_type() ==
+      base::win::VersionType::SUITE_HOME) {
+    return;
+  }
+
+  if (!::LockWorkStation()) {
+    LOG(ERROR) << "LockWorkStation() failed: " << ::GetLastError();
+  }
+#else
+  NOTREACHED();
+#endif  // defined(OS_WIN)
 }
 
 bool DesktopProcess::OnMessageReceived(const IPC::Message& message) {
