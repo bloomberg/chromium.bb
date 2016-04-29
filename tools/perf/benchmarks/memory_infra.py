@@ -10,6 +10,7 @@ from telemetry import benchmark
 from telemetry.timeline import tracing_category_filter
 from telemetry.web_perf import timeline_based_measurement
 from telemetry.web_perf.metrics import memory_timeline
+from telemetry.web_perf.metrics import v8_gc_latency
 
 import page_sets
 
@@ -164,44 +165,37 @@ class MemoryBenchmarkTop10Mobile(_MemoryInfra):
     return 'memory.top_10_mobile'
 
 
-class _MemoryV8Benchmark(_MemoryInfra):
-  def CreateTimelineBasedMeasurementOptions(self):
-    v8_categories = [
-        'blink.console', 'renderer.scheduler', 'v8', 'webkit.console']
-    memory_categories = ['blink.console', 'disabled-by-default-memory-infra']
-    category_filter = tracing_category_filter.TracingCategoryFilter(
-        ','.join(['-*'] + v8_categories + memory_categories))
-    options = timeline_based_measurement.Options(category_filter)
-    options.SetTimelineBasedMetric('v8AndMemoryMetrics')
-    return options
-
-
-
 # Disabled on reference builds because they don't support the new
 # Tracing.requestMemoryDump DevTools API.
 # For 'reference' see http://crbug.com/540022.
 # For 'android' see http://crbug.com/579546.
 @benchmark.Disabled('reference', 'android')
-class MemoryLongRunningIdleGmail(_MemoryV8Benchmark):
+class MemoryLongRunningIdleGmailTBM(_MemoryInfra):
   """Use (recorded) real world web sites and measure memory consumption
   of long running idle Gmail page """
   page_set = page_sets.LongRunningIdleGmailPageSet
 
+  def CreateTimelineBasedMeasurementOptions(self):
+    v8_categories = [
+        'blink.console', 'renderer.scheduler', 'v8', 'webkit.console']
+    memory_categories = 'blink.console,disabled-by-default-memory-infra'
+    category_filter = tracing_category_filter.TracingCategoryFilter(
+        memory_categories)
+    for category in v8_categories:
+      category_filter.AddIncludedCategory(category)
+    options = timeline_based_measurement.Options(category_filter)
+    return options
+
+  def SetupBenchmarkDefaultTraceRerunOptions(self, tbm_options):
+    tbm_options.SetLegacyTimelineBasedMetrics((
+        v8_gc_latency.V8GCLatency(),
+        memory_timeline.MemoryTimelineMetric(),
+    ))
+
   @classmethod
   def Name(cls):
-    return 'memory.long_running_idle_gmail_tbmv2'
-
-
-# Disabled on reference builds because they don't support the new
-# Tracing.requestMemoryDump DevTools API.
-# For 'reference' see http://crbug.com/540022.
-# For 'android' see http://crbug.com/579546.
-@benchmark.Disabled('reference', 'android')
-class MemoryLongRunningIdleGmailBackground(_MemoryV8Benchmark):
-  """Use (recorded) real world web sites and measure memory consumption
-  of long running idle Gmail page """
-  page_set = page_sets.LongRunningIdleGmailBackgroundPageSet
+    return 'memory.long_running_idle_gmail_tbm'
 
   @classmethod
-  def Name(cls):
-    return 'memory.long_running_idle_gmail_background_tbmv2'
+  def ShouldTearDownStateAfterEachStoryRun(cls):
+    return True
