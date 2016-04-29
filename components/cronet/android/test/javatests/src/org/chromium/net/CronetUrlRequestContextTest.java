@@ -1126,4 +1126,30 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
             assertTrue(loader.wasCalled());
         }
     }
+
+    // Creates a CronetEngine on another thread and then one on the main thread.  This shouldn't
+    // crash.
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testThreadedStartup() throws Exception {
+        final ConditionVariable otherThreadDone = new ConditionVariable();
+        final ConditionVariable uiThreadDone = new ConditionVariable();
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            public void run() {
+                final CronetEngine.Builder builder =
+                        new CronetEngine.Builder(getContext()).setLibraryName("cronet_tests");
+                new Thread() {
+                    public void run() {
+                        CronetEngine cronetEngine = builder.build();
+                        otherThreadDone.open();
+                        cronetEngine.shutdown();
+                    }
+                }.start();
+                otherThreadDone.block();
+                builder.build().shutdown();
+                uiThreadDone.open();
+            }
+        });
+        assertTrue(uiThreadDone.block(1000));
+    }
 }
