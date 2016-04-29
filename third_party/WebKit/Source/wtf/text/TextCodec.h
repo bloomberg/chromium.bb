@@ -50,7 +50,11 @@ enum UnencodableHandling {
     // Encodes the character as en entity as above, but escaped
     // non-alphanumeric characters. This is used in URLs.
     // For example, U+6DE would be "%26%231758%3B".
-    URLEncodedEntitiesForUnencodables
+    URLEncodedEntitiesForUnencodables,
+
+    // Encodes the character as a CSS entity.  For example U+06DE
+    // would be \06de.  See: https://www.w3.org/TR/css-syntax-3/#escaping
+    CSSEncodedEntitiesForUnencodables,
 };
 
 typedef char UnencodableReplacementArray[32];
@@ -70,8 +74,7 @@ static_assert(!DoNotFlush, "DoNotFlush should be falsy");
 static_assert(FetchEOF, "FetchEOF should be truthy");
 static_assert(DataEOF, "DataEOF should be truthy");
 
-
-class TextCodec {
+class WTF_EXPORT TextCodec {
     WTF_MAKE_NONCOPYABLE(TextCodec); USING_FAST_MALLOC(TextCodec);
 public:
     TextCodec() { }

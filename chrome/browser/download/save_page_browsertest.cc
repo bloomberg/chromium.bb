@@ -735,6 +735,11 @@ IN_PROC_BROWSER_TEST_F(SavePageAsMHTMLBrowserTest, SavePageAsMHTML) {
   int64_t actual_file_size = -1;
   EXPECT_TRUE(base::GetFileSize(full_file_name, &actual_file_size));
   EXPECT_LE(kFileSizeMin, actual_file_size);
+
+  std::string contents;
+  EXPECT_TRUE(base::ReadFileToString(full_file_name, &contents));
+  // Test for a CSS encoded character.  This used to use HTML encoding.
+  EXPECT_THAT(contents, HasSubstr("content: \"\\e003 \\e004 b\""));
 }
 
 IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SavePageBrowserTest_NonMHTML) {

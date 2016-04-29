@@ -329,7 +329,7 @@ void FrameSerializer::serializeCSSStyleSheet(CSSStyleSheet& styleSheet, const KU
         WTF::TextEncoding textEncoding(styleSheet.contents()->charset());
         ASSERT(textEncoding.isValid());
         String textString = cssText.toString();
-        CString text = textEncoding.encode(textString, WTF::EntitiesForUnencodables);
+        CString text = textEncoding.encode(textString, WTF::CSSEncodedEntitiesForUnencodables);
         m_resources->append(SerializedResource(url, String("text/css"), SharedBuffer::create(text.data(), text.length())));
         m_resourceURLs.add(url);
     }

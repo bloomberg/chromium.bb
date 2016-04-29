@@ -47,6 +47,10 @@ int TextCodec::getUnencodableReplacement(unsigned codePoint, UnencodableHandling
     case URLEncodedEntitiesForUnencodables:
         snprintf(replacement, sizeof(UnencodableReplacementArray), "%%26%%23%u%%3B", codePoint);
         return static_cast<int>(strlen(replacement));
+
+    case CSSEncodedEntitiesForUnencodables:
+        snprintf(replacement, sizeof(UnencodableReplacementArray), "\\%x ", codePoint);
+        return static_cast<int>(strlen(replacement));
     }
     ASSERT_NOT_REACHED();
     replacement[0] = 0;
