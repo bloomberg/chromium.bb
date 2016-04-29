@@ -165,6 +165,8 @@
       'browser/component_updater/component_updater_resource_throttle.h',
       'browser/component_updater/ev_whitelist_component_installer.cc',
       'browser/component_updater/ev_whitelist_component_installer.h',
+      'browser/component_updater/origin_trials_component_installer.cc',
+      'browser/component_updater/origin_trials_component_installer.h',
       'browser/component_updater/pnacl_component_installer.cc',
       'browser/component_updater/pnacl_component_installer.h',
       'browser/component_updater/recovery_component_installer.cc',

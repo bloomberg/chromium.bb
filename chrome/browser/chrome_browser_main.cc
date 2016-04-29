@@ -50,6 +50,7 @@
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
 #include "chrome/browser/component_updater/cld_component_installer.h"
 #include "chrome/browser/component_updater/ev_whitelist_component_installer.h"
+#include "chrome/browser/component_updater/origin_trials_component_installer.h"
 #include "chrome/browser/component_updater/pepper_flash_component_installer.h"
 #include "chrome/browser/component_updater/recovery_component_installer.h"
 #include "chrome/browser/component_updater/sth_set_component_installer.h"
@@ -495,6 +496,7 @@ void RegisterComponentsForUpdate() {
     // Chrome OS: On Chrome OS this registration is delayed until user login.
     RegisterSTHSetComponent(cus, path);
 #endif  // defined(OS_ANDROID)
+    RegisterOriginTrialsComponent(cus, path);
   }
 
 #if defined(OS_WIN)
