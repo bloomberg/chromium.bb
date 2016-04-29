@@ -42,6 +42,7 @@ import org.chromium.android_webview.AwQuotaManagerBridge;
 import org.chromium.android_webview.AwResource;
 import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.R;
+import org.chromium.android_webview.ResourcesContextWrapperFactory;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.MemoryPressureListener;

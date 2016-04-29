@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package com.android.webview.chromium;
+package org.chromium.android_webview;
 
 import android.content.ComponentCallbacks;
 import android.content.Context;
@@ -10,7 +10,6 @@ import android.content.ContextWrapper;
 import android.content.Intent;
 import android.view.LayoutInflater;
 
-import org.chromium.android_webview.AwContents;
 import org.chromium.base.annotations.SuppressFBWarnings;
 
 import java.lang.ref.WeakReference;

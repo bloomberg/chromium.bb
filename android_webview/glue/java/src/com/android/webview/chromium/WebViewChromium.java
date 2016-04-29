@@ -54,6 +54,7 @@ import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsStatics;
 import org.chromium.android_webview.AwPrintDocumentAdapter;
 import org.chromium.android_webview.AwSettings;
+import org.chromium.android_webview.ResourcesContextWrapperFactory;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.content.browser.SmartClipProvider;
