@@ -13,6 +13,7 @@
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/location.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -493,6 +494,9 @@ void NTPSnippetsService::LoadingSnippetsFinished() {
                      }),
       discarded_snippets_.end());
   StoreDiscardedSnippetsToPrefs();
+
+  UMA_HISTOGRAM_SPARSE_SLOWLY("NewTabPage.Snippets.NumArticles",
+                              snippets_.size());
 
   FOR_EACH_OBSERVER(NTPSnippetsServiceObserver, observers_,
                     NTPSnippetsServiceLoaded());

@@ -29,6 +29,10 @@ source_set("ntp_snippets") {
     "//net",
     "//url",
   ]
+
+  deps = [
+    "//components/metrics",
+  ]
 }
 
 source_set("unit_tests") {
@@ -41,6 +45,7 @@ source_set("unit_tests") {
   deps = [
     ":ntp_snippets",
     "//base",
+    "//base/test:test_support",
     "//components/signin/core/browser:test_support",
     "//net:test_support",
     "//testing/gtest",

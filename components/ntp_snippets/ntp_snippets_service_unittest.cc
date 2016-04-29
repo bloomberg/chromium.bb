@@ -13,6 +13,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/histogram_tester.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/ntp_snippets/ntp_snippet.h"
@@ -384,6 +385,29 @@ TEST_F(NTPSnippetsServiceTest, RemoveExpiredContent) {
 
   LoadFromJSONString(json_str);
   EXPECT_EQ(service()->size(), 0u);
+}
+
+TEST_F(NTPSnippetsServiceTest, LogNumArticlesHistogram) {
+  base::HistogramTester tester;
+  SetExpectJsonParseSuccess(false);
+  LoadFromJSONString(GetInvalidJson());
+  tester.ExpectUniqueSample("NewTabPage.Snippets.NumArticles", /*sample=*/0,
+                            /*expected_count=*/1);
+  SetExpectJsonParseSuccess(true);
+  LoadFromJSONString(GetTestJson());
+  tester.ExpectBucketCount("NewTabPage.Snippets.NumArticles", /*sample=*/1,
+                            /*expected_count=*/1);
+  // Duplicate snippet shouldn't increase the list size.
+  LoadFromJSONString(GetTestJson());
+  tester.ExpectBucketCount("NewTabPage.Snippets.NumArticles", /*sample=*/1,
+                            /*expected_count=*/2);
+  // Discarding a snippet should decrease the list size. This will only be
+  // logged after the next fetch.
+  EXPECT_TRUE(service()->DiscardSnippet(GURL("http://localhost/foobar")));
+  LoadFromJSONString(GetTestJson());
+  tester.ExpectBucketCount("NewTabPage.Snippets.NumArticles", /*sample=*/0,
+                            /*expected_count=*/2);
+  tester.ExpectTotalCount("NewTabPage.Snippets.NumArticles", 4);
 }
 
 }  // namespace ntp_snippets

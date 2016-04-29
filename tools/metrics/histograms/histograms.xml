@@ -32792,8 +32792,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="NewTabPage.Snippets.NumArticles" units="articles">
   <owner>knn@chromium.org</owner>
   <summary>
-    Android: The number of snippet articles available to show on the NTP logged
-    once per NTP load.
+    Android: The number of snippet articles available to show on the NTP, logged
+    once every time the list is updated.
   </summary>
 </histogram>
 
