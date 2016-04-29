@@ -11,6 +11,7 @@ import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Handler;
+import android.support.v4.content.ContextCompat;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -575,10 +576,12 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
             mSelectedSection.setClickable(true);
         }
 
-        sectionLabel.setBackgroundColor(R.color.default_primary_color);
+        int defaultPrimaryColor = ContextCompat.getColor(mContext, R.color.default_primary_color);
+
+        sectionLabel.setBackgroundColor(defaultPrimaryColor);
         sectionLabel.setClickable(false);
 
-        section.setBackgroundColor(R.color.default_primary_color);
+        section.setBackgroundColor(defaultPrimaryColor);
         section.setClickable(false);
 
         ViewGroup noLongerSelectedSection = mSelectedSection;
