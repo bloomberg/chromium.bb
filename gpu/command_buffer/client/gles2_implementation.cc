@@ -111,7 +111,7 @@ GLES2Implementation::SingleThreadChecker::~SingleThreadChecker() {
 
 GLES2Implementation::GLES2Implementation(
     GLES2CmdHelper* helper,
-    ShareGroup* share_group,
+    scoped_refptr<ShareGroup> share_group,
     TransferBufferInterface* transfer_buffer,
     bool bind_generates_resource,
     bool lose_context_when_out_of_memory,
@@ -181,7 +181,7 @@ GLES2Implementation::GLES2Implementation(
   });
 
   share_group_ =
-      (share_group ? share_group
+      (share_group ? std::move(share_group)
                    : new ShareGroup(
                          bind_generates_resource,
                          gpu_control_->GetCommandBufferID().GetUnsafeValue()));

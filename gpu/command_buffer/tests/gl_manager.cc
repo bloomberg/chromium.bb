@@ -259,7 +259,7 @@ void GLManager::InitializeWithCommandLine(
   }
 
   gles2::ContextGroup* context_group = NULL;
-  gles2::ShareGroup* client_share_group = NULL;
+  scoped_refptr<gles2::ShareGroup> client_share_group;
   if (options.share_group_manager) {
     context_group = options.share_group_manager->decoder_->GetContextGroup();
     client_share_group =
@@ -373,14 +373,11 @@ void GLManager::InitializeWithCommandLine(
 
   // Create the object exposing the OpenGL API.
   const bool support_client_side_arrays = true;
-  gles2_implementation_.reset(
-      new gles2::GLES2Implementation(gles2_helper_.get(),
-                                     client_share_group,
-                                     transfer_buffer_.get(),
-                                     options.bind_generates_resource,
-                                     options.lose_context_when_out_of_memory,
-                                     support_client_side_arrays,
-                                     this));
+  gles2_implementation_.reset(new gles2::GLES2Implementation(
+      gles2_helper_.get(), std::move(client_share_group),
+      transfer_buffer_.get(), options.bind_generates_resource,
+      options.lose_context_when_out_of_memory, support_client_side_arrays,
+      this));
 
   ASSERT_TRUE(gles2_implementation_->Initialize(
       kStartTransferBufferSize, kMinTransferBufferSize, kMaxTransferBufferSize,

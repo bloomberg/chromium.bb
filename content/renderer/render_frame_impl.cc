@@ -52,6 +52,7 @@
 #include "content/common/clipboard_messages.h"
 #include "content/common/frame_messages.h"
 #include "content/common/frame_replication_state.h"
+#include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/common/input_messages.h"
 #include "content/common/navigation_params.h"
 #include "content/common/page_messages.h"
@@ -201,7 +202,6 @@
 #if defined(OS_ANDROID)
 #include <cpu-features.h>
 
-#include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/renderer/java/gin_java_bridge_dispatcher.h"
 #include "content/renderer/media/android/renderer_media_player_manager.h"
 #include "content/renderer/media/android/renderer_media_session_manager.h"
@@ -603,7 +603,7 @@ CommonNavigationParams MakeCommonNavigationParams(
 }
 
 media::Context3D GetSharedMainThreadContext3D() {
-  cc::ContextProvider* provider =
+  ContextProviderCommandBuffer* provider =
       RenderThreadImpl::current()->SharedMainThreadContextProvider().get();
   if (!provider)
     return media::Context3D();

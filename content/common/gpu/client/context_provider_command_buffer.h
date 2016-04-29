@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/synchronization/lock.h"
@@ -40,6 +41,7 @@ class CONTENT_EXPORT ContextProviderCommandBuffer
   ContextProviderCommandBuffer(
       std::unique_ptr<WebGraphicsContext3DCommandBufferImpl> context3d,
       const gpu::SharedMemoryLimits& memory_limits,
+      ContextProviderCommandBuffer* shared_context_provider,
       CommandBufferContextType type);
 
   gpu::CommandBufferProxyImpl* GetCommandBufferProxy();
@@ -67,8 +69,21 @@ class CONTENT_EXPORT ContextProviderCommandBuffer
   void OnLostContext();
 
  private:
+  struct SharedProviders : public base::RefCountedThreadSafe<SharedProviders> {
+    base::Lock lock;
+    std::vector<ContextProviderCommandBuffer*> list;
+
+    SharedProviders();
+
+   private:
+    friend class base::RefCountedThreadSafe<SharedProviders>;
+    ~SharedProviders();
+  };
+
   base::ThreadChecker main_thread_checker_;
   base::ThreadChecker context_thread_checker_;
+
+  scoped_refptr<SharedProviders> shared_providers_;
 
   std::unique_ptr<WebGraphicsContext3DCommandBufferImpl> context3d_;
   std::unique_ptr<gpu::gles2::GLES2TraceImplementation> trace_impl_;

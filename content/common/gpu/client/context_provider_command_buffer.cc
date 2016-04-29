@@ -23,6 +23,9 @@
 
 namespace content {
 
+ContextProviderCommandBuffer::SharedProviders::SharedProviders() = default;
+ContextProviderCommandBuffer::SharedProviders::~SharedProviders() = default;
+
 class ContextProviderCommandBuffer::LostContextCallbackProxy
     : public WebGraphicsContext3DCommandBufferImpl::
           WebGraphicsContextLostCallback {
@@ -45,8 +48,12 @@ class ContextProviderCommandBuffer::LostContextCallbackProxy
 ContextProviderCommandBuffer::ContextProviderCommandBuffer(
     std::unique_ptr<WebGraphicsContext3DCommandBufferImpl> context3d,
     const gpu::SharedMemoryLimits& memory_limits,
+    ContextProviderCommandBuffer* shared_context_provider,
     CommandBufferContextType type)
-    : context3d_(std::move(context3d)),
+    : shared_providers_(shared_context_provider
+                            ? shared_context_provider->shared_providers_
+                            : new SharedProviders),
+      context3d_(std::move(context3d)),
       memory_limits_(memory_limits),
       context_type_(type),
       debug_name_(CommandBufferContextTypeToString(type)) {
@@ -58,6 +65,14 @@ ContextProviderCommandBuffer::ContextProviderCommandBuffer(
 ContextProviderCommandBuffer::~ContextProviderCommandBuffer() {
   DCHECK(main_thread_checker_.CalledOnValidThread() ||
          context_thread_checker_.CalledOnValidThread());
+
+  {
+    base::AutoLock hold(shared_providers_->lock);
+    auto it = std::find(shared_providers_->list.begin(),
+                        shared_providers_->list.end(), this);
+    if (it != shared_providers_->list.end())
+      shared_providers_->list.erase(it);
+  }
 
   // Destroy references to the context3d_ before leaking it.
   // TODO(danakj): Delete this.
@@ -91,8 +106,50 @@ bool ContextProviderCommandBuffer::BindToCurrentThread() {
     return true;
 
   context3d_->SetContextType(context_type_);
-  if (!context3d_->InitializeOnCurrentThread(memory_limits_))
-    return false;
+
+  // It's possible to be running BindToCurrentThread on two contexts
+  // on different threads at the same time, but which will be in the same share
+  // group. To ensure they end up in the same group, hold the lock on the
+  // shared_providers_ (which they will share) after querying the group, until
+  // this context has been added to the list.
+  {
+    ContextProviderCommandBuffer* shared_context_provider = nullptr;
+    gpu::CommandBufferProxyImpl* shared_command_buffer = nullptr;
+    scoped_refptr<gpu::gles2::ShareGroup> share_group;
+
+    base::AutoLock hold(shared_providers_->lock);
+
+    if (!shared_providers_->list.empty()) {
+      shared_context_provider = shared_providers_->list.front();
+      shared_command_buffer =
+          shared_context_provider->context3d_->GetCommandBufferProxy();
+      share_group = shared_context_provider->context3d_->GetImplementation()
+                        ->share_group();
+    }
+
+    if (!context3d_->InitializeOnCurrentThread(
+            memory_limits_, shared_command_buffer, std::move(share_group)))
+      return false;
+
+    // If any context in the share group has been lost, then abort and don't
+    // continue since we need to go back to the caller of the constructor to
+    // find the correct share group.
+    // This may happen in between the share group being chosen at the
+    // constructor, and getting to run this BindToCurrentThread method which
+    // can be on some other thread.
+    // We intentionally call this *after* creating the command buffer via the
+    // GpuChannelHost. Once that has happened, the service knows we are in the
+    // share group and if a shared context is lost, our context will be informed
+    // also, and the lost context callback will occur for the owner of the
+    // context provider. If we check sooner, the shared context may be lost in
+    // between these two states and our context here would be left in an orphan
+    // share group.
+    if (share_group && share_group->IsLost())
+      return false;
+
+    shared_providers_->list.push_back(this);
+  }
+
   lost_context_callback_proxy_.reset(new LostContextCallbackProxy(this));
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(

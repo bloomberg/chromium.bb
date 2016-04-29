@@ -160,7 +160,7 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   static const size_t kMaxSwapBuffers = 2;
 
   GLES2Implementation(GLES2CmdHelper* helper,
-                      ShareGroup* share_group,
+                      scoped_refptr<ShareGroup> share_group,
                       TransferBufferInterface* transfer_buffer,
                       bool bind_generates_resource,
                       bool lose_context_when_out_of_memory,
@@ -262,9 +262,7 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     base::trace_event::ProcessMemoryDump* pmd) override;
 
-  ShareGroup* share_group() const {
-    return share_group_.get();
-  }
+  const scoped_refptr<ShareGroup>& share_group() const { return share_group_; }
 
   const Capabilities& capabilities() const {
     return capabilities_;

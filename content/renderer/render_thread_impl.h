@@ -63,10 +63,6 @@ class ImageSerializationProcessor;
 class TaskGraphRunner;
 }
 
-namespace cc_blink {
-class ContextProviderWebContext;
-}
-
 namespace gpu {
 class GpuChannelHost;
 }
@@ -355,8 +351,7 @@ class CONTENT_EXPORT RenderThreadImpl
 
   media::GpuVideoAcceleratorFactories* GetGpuFactories();
 
-  scoped_refptr<cc_blink::ContextProviderWebContext>
-  SharedMainThreadContextProvider();
+  scoped_refptr<ContextProviderCommandBuffer> SharedMainThreadContextProvider();
 
   // AudioRendererMixerManager instance which manages renderer side mixer
   // instances shared based on configured audio parameters.  Lazily created on

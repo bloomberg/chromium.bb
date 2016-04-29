@@ -23,10 +23,6 @@ namespace base {
 class SingleThreadTaskRunner;
 }
 
-namespace cc_blink {
-class ContextProviderWebContext;
-}
-
 namespace gpu {
 namespace gles2 {
 class GLES2Interface;
@@ -39,6 +35,7 @@ class DecoderBuffer;
 
 namespace content {
 
+class ContextProviderCommandBuffer;
 class PepperVideoDecoderHost;
 
 // This class is a shim to wrap a media::VideoDecoder so that it can be used
@@ -90,7 +87,7 @@ class VideoDecoderShim : public media::VideoDecodeAccelerator {
 
   PepperVideoDecoderHost* host_;
   scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
-  scoped_refptr<cc_blink::ContextProviderWebContext> context_provider_;
+  scoped_refptr<ContextProviderCommandBuffer> context_provider_;
 
   // The current decoded frame size.
   gfx::Size texture_size_;

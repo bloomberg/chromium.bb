@@ -10,10 +10,6 @@
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3DProvider.h"
 
-namespace cc_blink {
-class ContextProviderWebContext;
-}
-
 namespace gpu {
 namespace gles2 {
 class GLES2Interface;
@@ -21,12 +17,13 @@ class GLES2Interface;
 }
 
 namespace content {
+class ContextProviderCommandBuffer;
 
 class CONTENT_EXPORT WebGraphicsContext3DProviderImpl
     : public NON_EXPORTED_BASE(blink::WebGraphicsContext3DProvider) {
  public:
   explicit WebGraphicsContext3DProviderImpl(
-      scoped_refptr<cc_blink::ContextProviderWebContext> provider);
+      scoped_refptr<ContextProviderCommandBuffer> provider);
   ~WebGraphicsContext3DProviderImpl() override;
 
   // WebGraphicsContext3DProvider implementation.
@@ -38,8 +35,12 @@ class CONTENT_EXPORT WebGraphicsContext3DProviderImpl
   void setErrorMessageCallback(
       blink::WebFunction<void(const char*, int32_t)>) override;
 
+  ContextProviderCommandBuffer* context_provider() const {
+    return provider_.get();
+  }
+
  private:
-  scoped_refptr<cc_blink::ContextProviderWebContext> provider_;
+  scoped_refptr<ContextProviderCommandBuffer> provider_;
 };
 
 }  // namespace content

@@ -11,7 +11,7 @@
 #include "base/hash.h"
 #include "base/single_thread_task_runner.h"
 #include "base/values.h"
-#include "cc/blink/context_provider_web_context.h"
+#include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/renderer/media/webmediaplayer_ms.h"
 #include "content/renderer/render_thread_impl.h"
 #include "media/base/media_switches.h"
@@ -49,7 +49,7 @@ scoped_refptr<media::VideoFrame> CopyFrame(
                           frame->visible_rect().height());
     SkCanvas canvas(bitmap);
 
-    cc::ContextProvider* const provider =
+    auto* provider =
         RenderThreadImpl::current()->SharedMainThreadContextProvider().get();
     if (provider) {
       const media::Context3D context_3d =

@@ -39,51 +39,13 @@
 
 namespace content {
 
-namespace {
-
-static base::LazyInstance<base::Lock>::Leaky
-    g_default_share_groups_lock = LAZY_INSTANCE_INITIALIZER;
-
-typedef std::map<
-    gpu::GpuChannelHost*,
-    scoped_refptr<WebGraphicsContext3DCommandBufferImpl::ShareGroup>>
-    ShareGroupMap;
-static base::LazyInstance<ShareGroupMap> g_default_share_groups =
-    LAZY_INSTANCE_INITIALIZER;
-
-scoped_refptr<WebGraphicsContext3DCommandBufferImpl::ShareGroup>
-GetDefaultShareGroupForHost(gpu::GpuChannelHost* host) {
-  base::AutoLock lock(g_default_share_groups_lock.Get());
-
-  ShareGroupMap& share_groups = g_default_share_groups.Get();
-  ShareGroupMap::iterator it = share_groups.find(host);
-  if (it == share_groups.end()) {
-    scoped_refptr<WebGraphicsContext3DCommandBufferImpl::ShareGroup> group =
-        new WebGraphicsContext3DCommandBufferImpl::ShareGroup();
-    share_groups[host] = group;
-    return group;
-  }
-  return it->second;
-}
-
-} // namespace anonymous
-
-WebGraphicsContext3DCommandBufferImpl::ShareGroup::ShareGroup() {
-}
-
-WebGraphicsContext3DCommandBufferImpl::ShareGroup::~ShareGroup() {
-  DCHECK(contexts_.empty());
-}
-
 WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl(
     gpu::SurfaceHandle surface_handle,
     const GURL& active_url,
     gpu::GpuChannelHost* host,
     const gpu::gles2::ContextCreationAttribHelper& attributes,
     gfx::GpuPreference gpu_preference,
-    bool share_resources,
-    bool automatic_flushes,
-    WebGraphicsContext3DCommandBufferImpl* share_context)
+    bool automatic_flushes)
     : automatic_flushes_(automatic_flushes),
       attributes_(attributes),
       host_(host),
@@ -100,14 +62,6 @@ WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl(
     case gpu::gles2::CONTEXT_TYPE_WEBGL2:
       context_type_ = OFFSCREEN_CONTEXT_FOR_WEBGL;
   }
-  if (share_context) {
-    DCHECK(!share_resources);
-    share_group_ = share_context->share_group_;
-  } else if (share_resources) {
-    share_group_ = GetDefaultShareGroupForHost(host);
-  } else {
-    share_group_ = make_scoped_refptr(new ShareGroup);
-  }
 }
 
 WebGraphicsContext3DCommandBufferImpl::
@@ -119,7 +73,9 @@ WebGraphicsContext3DCommandBufferImpl::
 }
 
 bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL(
-    const gpu::SharedMemoryLimits& memory_limits) {
+    const gpu::SharedMemoryLimits& memory_limits,
+    gpu::CommandBufferProxyImpl* shared_command_buffer,
+    scoped_refptr<gpu::gles2::ShareGroup> share_group) {
   if (initialized_)
     return true;
 
@@ -133,7 +89,8 @@ bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "125248 WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL"));
 
-  if (!CreateContext(memory_limits)) {
+  if (!CreateContext(memory_limits, shared_command_buffer,
+                     std::move(share_group))) {
     Destroy();
 
     initialize_failed_ = true;
@@ -153,15 +110,9 @@ bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL(
 }
 
 bool WebGraphicsContext3DCommandBufferImpl::InitializeCommandBuffer(
-    WebGraphicsContext3DCommandBufferImpl* share_context) {
+    gpu::CommandBufferProxyImpl* shared_command_buffer) {
   if (!host_.get())
     return false;
-
-  gpu::CommandBufferProxyImpl* share_group_command_buffer = NULL;
-
-  if (share_context) {
-    share_group_command_buffer = share_context->GetCommandBufferProxy();
-  }
 
   DCHECK(attributes_.buffer_preserved);
   std::vector<int32_t> serialized_attributes;
@@ -169,7 +120,7 @@ bool WebGraphicsContext3DCommandBufferImpl::InitializeCommandBuffer(
 
   // Create a proxy to a command buffer in the GPU process.
   command_buffer_ = host_->CreateCommandBuffer(
-      surface_handle_, gfx::Size(), share_group_command_buffer,
+      surface_handle_, gfx::Size(), shared_command_buffer,
       gpu::GpuChannelHost::kDefaultStreamId,
       gpu::GpuChannelHost::kDefaultStreamPriority, serialized_attributes,
       active_url_, gpu_preference_);
@@ -192,27 +143,15 @@ bool WebGraphicsContext3DCommandBufferImpl::InitializeCommandBuffer(
 }
 
 bool WebGraphicsContext3DCommandBufferImpl::CreateContext(
-    const gpu::SharedMemoryLimits& memory_limits) {
+    const gpu::SharedMemoryLimits& memory_limits,
+    gpu::CommandBufferProxyImpl* shared_command_buffer,
+    scoped_refptr<gpu::gles2::ShareGroup> share_group) {
   TRACE_EVENT0("gpu", "WebGfxCtx3DCmdBfrImpl::CreateContext");
-  scoped_refptr<gpu::gles2::ShareGroup> gles2_share_group;
+  DCHECK_EQ(!!shared_command_buffer, !!share_group);
 
-  std::unique_ptr<base::AutoLock> share_group_lock;
-  bool add_to_share_group = false;
-  if (!command_buffer_) {
-    WebGraphicsContext3DCommandBufferImpl* share_context = NULL;
-
-    share_group_lock.reset(new base::AutoLock(share_group_->lock()));
-    share_context = share_group_->GetAnyContextLocked();
-
-    if (!InitializeCommandBuffer(share_context)) {
-      LOG(ERROR) << "Failed to initialize command buffer.";
-      return false;
-    }
-
-    if (share_context)
-      gles2_share_group = share_context->GetImplementation()->share_group();
-
-    add_to_share_group = true;
+  if (!InitializeCommandBuffer(shared_command_buffer)) {
+    LOG(ERROR) << "Failed to initialize command buffer.";
+    return false;
   }
 
   // Create the GLES2 helper, which writes the command buffer protocol.
@@ -237,7 +176,7 @@ bool WebGraphicsContext3DCommandBufferImpl::CreateContext(
 
   // Create the object exposing the OpenGL API.
   real_gl_.reset(new gpu::gles2::GLES2Implementation(
-      gles2_helper_.get(), gles2_share_group.get(), transfer_buffer_.get(),
+      gles2_helper_.get(), std::move(share_group), transfer_buffer_.get(),
       bind_generates_resource, lose_context_when_out_of_memory,
       support_client_side_arrays, command_buffer_.get()));
   if (!real_gl_->Initialize(memory_limits.start_transfer_buffer_size,
@@ -248,15 +187,15 @@ bool WebGraphicsContext3DCommandBufferImpl::CreateContext(
     return false;
   }
 
-  if (add_to_share_group)
-    share_group_->AddContextLocked(this);
-
   return true;
 }
 
 bool WebGraphicsContext3DCommandBufferImpl::InitializeOnCurrentThread(
-    const gpu::SharedMemoryLimits& memory_limits) {
-  if (!MaybeInitializeGL(memory_limits)) {
+    const gpu::SharedMemoryLimits& memory_limits,
+    gpu::CommandBufferProxyImpl* shared_command_buffer,
+    scoped_refptr<gpu::gles2::ShareGroup> share_group) {
+  if (!MaybeInitializeGL(memory_limits, shared_command_buffer,
+                         std::move(share_group))) {
     DLOG(ERROR) << "Failed to initialize context.";
     return false;
   }
@@ -270,8 +209,6 @@ bool WebGraphicsContext3DCommandBufferImpl::InitializeOnCurrentThread(
 }
 
 void WebGraphicsContext3DCommandBufferImpl::Destroy() {
-  share_group_->RemoveContext(this);
-
   trace_gl_.reset();
   real_gl_.reset();
   transfer_buffer_.reset();
@@ -290,14 +227,6 @@ WebGraphicsContext3DCommandBufferImpl::GetContextSupport() {
 void WebGraphicsContext3DCommandBufferImpl::OnContextLost() {
   if (context_lost_callback_)
     context_lost_callback_->onContextLost();
-
-  share_group_->RemoveAllContexts();
-
-  DCHECK(host_.get());
-  {
-    base::AutoLock lock(g_default_share_groups_lock.Get());
-    g_default_share_groups.Get().erase(host_.get());
-  }
 
   gpu::CommandBuffer::State state = command_buffer_->GetLastState();
   UmaRecordContextLost(context_type_, state.error, state.context_lost_reason);

@@ -549,7 +549,6 @@ void CompositorImpl::CreateOutputSurface() {
   scoped_refptr<gpu::GpuChannelHost> gpu_channel_host(factory->GetGpuChannel());
 
   GURL url("chrome://gpu/CompositorImpl::CreateOutputSurface");
-  constexpr bool share_resources = false;
   constexpr bool automatic_flushes = false;
 
   constexpr size_t kBytesPerPixel = 4;
@@ -574,9 +573,8 @@ void CompositorImpl::CreateOutputSurface() {
       new ContextProviderCommandBuffer(
           base::WrapUnique(new WebGraphicsContext3DCommandBufferImpl(
               surface_handle_, url, gpu_channel_host.get(), attributes,
-              gfx::PreferIntegratedGpu, share_resources, automatic_flushes,
-              nullptr)),
-          limits, DISPLAY_COMPOSITOR_ONSCREEN_CONTEXT));
+              gfx::PreferIntegratedGpu, automatic_flushes)),
+          limits, nullptr, DISPLAY_COMPOSITOR_ONSCREEN_CONTEXT));
   DCHECK(context_provider.get());
 
   std::unique_ptr<cc::OutputSurface> real_output_surface(

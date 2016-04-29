@@ -16,6 +16,7 @@
 #include "cc/blink/web_layer_impl.h"
 #include "cc/layers/video_frame_provider_client_impl.h"
 #include "cc/layers/video_layer.h"
+#include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/public/renderer/media_stream_audio_renderer.h"
 #include "content/public/renderer/media_stream_renderer_factory.h"
 #include "content/public/renderer/video_frame_provider.h"
@@ -333,7 +334,7 @@ void WebMediaPlayerMS::paint(blink::WebCanvas* canvas,
 
   media::Context3D context_3d;
   if (frame && frame->HasTextures()) {
-    cc::ContextProvider* provider =
+    auto* provider =
         RenderThreadImpl::current()->SharedMainThreadContextProvider().get();
     // GPU Process crashed.
     if (!provider)

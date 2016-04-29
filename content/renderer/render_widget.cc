@@ -220,12 +220,11 @@ CreateOffscreenContext(scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
   attributes.bind_generates_resource = false;
   attributes.lose_context_when_out_of_memory = true;
 
-  bool share_resources = true;
   bool automatic_flushes = false;
 
   return base::WrapUnique(new content::WebGraphicsContext3DCommandBufferImpl(
       gpu::kNullSurfaceHandle, url, gpu_channel_host.get(), attributes,
-      gfx::PreferIntegratedGpu, share_resources, automatic_flushes, nullptr));
+      gfx::PreferIntegratedGpu, automatic_flushes));
 }
 
 }  // namespace
@@ -780,16 +779,18 @@ std::unique_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(
     limits.start_transfer_buffer_size = 64 * 1024;
     limits.min_transfer_buffer_size = 64 * 1024;
 
-    context_provider = new ContextProviderCommandBuffer(
-        CreateOffscreenContext(std::move(gpu_channel_host),
-                               GetURLForGraphicsContext3D()),
-        limits, RENDER_COMPOSITOR_CONTEXT);
     worker_context_provider =
         RenderThreadImpl::current()->SharedWorkerContextProvider();
     if (!worker_context_provider) {
       // Cause the compositor to wait and try again.
       return nullptr;
     }
+
+    // The compositor context shares resources with the worker context.
+    context_provider = new ContextProviderCommandBuffer(
+        CreateOffscreenContext(std::move(gpu_channel_host),
+                               GetURLForGraphicsContext3D()),
+        limits, worker_context_provider.get(), RENDER_COMPOSITOR_CONTEXT);
 
 #if defined(OS_ANDROID)
     if (RenderThreadImpl::current() &&

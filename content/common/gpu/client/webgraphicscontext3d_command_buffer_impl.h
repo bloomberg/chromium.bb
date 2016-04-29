@@ -14,6 +14,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
@@ -37,6 +38,7 @@ namespace gles2 {
 class GLES2CmdHelper;
 class GLES2Implementation;
 class GLES2Interface;
+class ShareGroup;
 }
 }
 
@@ -47,50 +49,6 @@ class WebGraphicsContext3DCommandBufferImpl
  public:
   enum MappedMemoryReclaimLimit {
     kNoLimit = 0,
-  };
-
-  class ShareGroup : public base::RefCountedThreadSafe<ShareGroup> {
-   public:
-    ShareGroup();
-
-    WebGraphicsContext3DCommandBufferImpl* GetAnyContextLocked() {
-      // In order to ensure that the context returned is not removed while
-      // in use, the share group's lock should be aquired before calling this
-      // function.
-      lock_.AssertAcquired();
-      if (contexts_.empty())
-        return NULL;
-      return contexts_.front();
-    }
-
-    void AddContextLocked(WebGraphicsContext3DCommandBufferImpl* context) {
-      lock_.AssertAcquired();
-      contexts_.push_back(context);
-    }
-
-    void RemoveContext(WebGraphicsContext3DCommandBufferImpl* context) {
-      base::AutoLock auto_lock(lock_);
-      contexts_.erase(std::remove(contexts_.begin(), contexts_.end(), context),
-          contexts_.end());
-    }
-
-    void RemoveAllContexts() {
-      base::AutoLock auto_lock(lock_);
-      contexts_.clear();
-    }
-
-    base::Lock& lock() {
-      return lock_;
-    }
-
-   private:
-    friend class base::RefCountedThreadSafe<ShareGroup>;
-    virtual ~ShareGroup();
-
-    std::vector<WebGraphicsContext3DCommandBufferImpl*> contexts_;
-    base::Lock lock_;
-
-    DISALLOW_COPY_AND_ASSIGN(ShareGroup);
   };
 
   class WebGraphicsContextLostCallback {
@@ -112,9 +70,7 @@ class WebGraphicsContext3DCommandBufferImpl
       gpu::GpuChannelHost* host,
       const gpu::gles2::ContextCreationAttribHelper& attributes,
       gfx::GpuPreference gpu_preference,
-      bool share_resources,
-      bool automatic_flushes,
-      WebGraphicsContext3DCommandBufferImpl* share_context);
+      bool automatic_flushes);
 
   ~WebGraphicsContext3DCommandBufferImpl() override;
 
@@ -133,7 +89,9 @@ class WebGraphicsContext3DCommandBufferImpl
   }
 
   CONTENT_EXPORT bool InitializeOnCurrentThread(
-      const gpu::SharedMemoryLimits& memory_limits);
+      const gpu::SharedMemoryLimits& memory_limits,
+      gpu::CommandBufferProxyImpl* shared_command_buffer,
+      scoped_refptr<gpu::gles2::ShareGroup> share_group);
 
   void SetContextType(CommandBufferContextType type) {
     context_type_ = type;
@@ -150,14 +108,18 @@ class WebGraphicsContext3DCommandBufferImpl
   // and subsequent calls are ignored. Must be called from the thread that is
   // going to use this object to issue GL commands (which might not be the main
   // thread).
-  bool MaybeInitializeGL(const gpu::SharedMemoryLimits& memory_limits);
+  bool MaybeInitializeGL(const gpu::SharedMemoryLimits& memory_limits,
+                         gpu::CommandBufferProxyImpl* shared_command_buffer,
+                         scoped_refptr<gpu::gles2::ShareGroup> share_group);
 
   bool InitializeCommandBuffer(
-      WebGraphicsContext3DCommandBufferImpl* share_context);
+      gpu::CommandBufferProxyImpl* shared_command_buffer);
 
   void Destroy();
 
-  bool CreateContext(const gpu::SharedMemoryLimits& memory_limits);
+  bool CreateContext(const gpu::SharedMemoryLimits& memory_limits,
+                     gpu::CommandBufferProxyImpl* shared_command_buffer,
+                     scoped_refptr<gpu::gles2::ShareGroup> share_group);
 
   void OnContextLost();
 
@@ -181,7 +143,6 @@ class WebGraphicsContext3DCommandBufferImpl
   std::unique_ptr<gpu::TransferBuffer> transfer_buffer_;
   std::unique_ptr<gpu::gles2::GLES2Implementation> real_gl_;
   std::unique_ptr<gpu::gles2::GLES2Interface> trace_gl_;
-  scoped_refptr<ShareGroup> share_group_;
 
   // Member variables should appear before the WeakPtrFactory, to ensure
   // that any WeakPtrs to Controller are invalidated before its members

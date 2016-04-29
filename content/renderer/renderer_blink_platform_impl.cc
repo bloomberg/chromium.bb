@@ -1035,19 +1035,21 @@ RendererBlinkPlatformImpl::createOffscreenGraphicsContext3DProvider(
     return nullptr;
   }
 
-  // WebGL contexts must fail creation if the share group is lost.
-  if (share_provider &&
-      share_provider->contextGL()->GetGraphicsResetStatusKHR() != GL_NO_ERROR) {
-    std::string error_message(
-        "OffscreenContext Creation failed, Shared context is lost");
-    gl_info->errorMessage = WebString::fromUTF8(error_message);
-    return nullptr;
-  }
+  content::WebGraphicsContext3DProviderImpl* share_provider_impl =
+      static_cast<content::WebGraphicsContext3DProviderImpl*>(share_provider);
+  ContextProviderCommandBuffer* share_context = nullptr;
 
-  WebGraphicsContext3DCommandBufferImpl* share_context =
-      share_provider ? static_cast<WebGraphicsContext3DCommandBufferImpl*>(
-                           share_provider->context3d())
-                     : nullptr;
+  // WebGL contexts must fail creation if the share group is lost.
+  if (share_provider_impl) {
+    auto* gl = share_provider_impl->contextGL();
+    if (gl->GetGraphicsResetStatusKHR() != GL_NO_ERROR) {
+      std::string error_message(
+          "OffscreenContext Creation failed, Shared context is lost");
+      gl_info->errorMessage = WebString::fromUTF8(error_message);
+      return nullptr;
+    }
+    share_context = share_provider_impl->context_provider();
+  }
 
   // This is an offscreen context, which doesn't use the default frame buffer,
   // so don't request any alpha, depth, stencil, antialiasing.
@@ -1067,7 +1069,6 @@ RendererBlinkPlatformImpl::createOffscreenGraphicsContext3DProvider(
   else if (web_attributes.webGLVersion == 2)
     attributes.context_type = gpu::gles2::CONTEXT_TYPE_WEBGL2;
 
-  bool share_resources = false;
   bool automatic_flushes = true;
   // Prefer discrete GPU for WebGL.
   gfx::GpuPreference gpu_preference = gfx::PreferDiscreteGpu;
@@ -1077,8 +1078,9 @@ RendererBlinkPlatformImpl::createOffscreenGraphicsContext3DProvider(
           base::WrapUnique(new WebGraphicsContext3DCommandBufferImpl(
               gpu::kNullSurfaceHandle, GURL(top_document_web_url),
               gpu_channel_host.get(), attributes, gpu_preference,
-              share_resources, automatic_flushes, share_context)),
-          gpu::SharedMemoryLimits(), RENDERER_MAINTHREAD_CONTEXT));
+              automatic_flushes)),
+          gpu::SharedMemoryLimits(), share_context,
+          RENDERER_MAINTHREAD_CONTEXT));
   if (!provider->BindToCurrentThread()) {
     // Collect Graphicsinfo if there is a context failure or it is failed
     // purposefully in case of layout tests.
@@ -1092,7 +1094,7 @@ RendererBlinkPlatformImpl::createOffscreenGraphicsContext3DProvider(
 
 blink::WebGraphicsContext3DProvider*
 RendererBlinkPlatformImpl::createSharedOffscreenGraphicsContext3DProvider() {
-  scoped_refptr<cc_blink::ContextProviderWebContext> provider =
+  scoped_refptr<ContextProviderCommandBuffer> provider =
       RenderThreadImpl::current()->SharedMainThreadContextProvider();
   if (!provider)
     return nullptr;
