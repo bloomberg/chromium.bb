@@ -111,7 +111,7 @@ template("mac_toolchain") {
     }
 
     tool("alink") {
-      command = "rm -f {{output}} && ./gyp-mac-tool filter-libtool libtool -static {{arflags}} -o {{output}} {{inputs}}"
+      command = "rm -f {{output}} && ./gyp-mac-tool filter-libtool libtool -static -o {{output}} {{inputs}}"
       description = "LIBTOOL-STATIC {{output}}"
       outputs = [
         "{{output_dir}}/{{target_output_name}}{{output_extension}}",
