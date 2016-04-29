@@ -35,7 +35,7 @@ using libwebm::Indent;
 using libwebm::kNanosecondsPerSecond;
 using libwebm::kNanosecondsPerSecondi;
 
-const char VERSION_STRING[] = "1.0.4.2";
+const char VERSION_STRING[] = "1.0.4.3";
 
 struct Options {
   Options();
