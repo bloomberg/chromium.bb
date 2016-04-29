@@ -111,12 +111,6 @@ void CreateSystemProfileForUserManager(
 // the tutorial.
 void ShowUserManagerMaybeWithTutorial(Profile* profile);
 
-// Enables new profile management preview and shows the user manager tutorial.
-void EnableNewProfileManagementPreview(Profile* profile);
-
-// Disables new profile management preview and attempts to relaunch Chrome.
-void DisableNewProfileManagementPreview(Profile* profile);
-
 // Converts from modes in the avatar menu to modes understood by
 // ProfileChooserView.
 void BubbleViewModeFromAvatarBubbleMode(

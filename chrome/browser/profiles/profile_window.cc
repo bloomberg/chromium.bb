@@ -68,9 +68,6 @@ using content::BrowserThread;
 
 namespace {
 
-const char kNewProfileManagementExperimentInternalName[] =
-    "enable-new-profile-management";
-
 #if defined(ENABLE_EXTENSIONS)
 void BlockExtensions(Profile* profile) {
   ExtensionService* extension_service =
@@ -229,15 +226,6 @@ void OnUserManagerSystemProfileCreated(
     page += profiles::kUserManagerSelectProfileAppLauncher;
   }
   callback.Run(system_profile, page);
-}
-
-// Updates Chrome services that require notification when
-// the new_profile_management's status changes.
-void UpdateServicesWithNewProfileManagementFlag(Profile* profile,
-                                                bool new_flag_status) {
-  AccountReconcilor* account_reconcilor =
-      AccountReconcilorFactory::GetForProfile(profile);
-  account_reconcilor->OnNewProfileManagementFlagChanged(new_flag_status);
 }
 
 }  // namespace
@@ -442,50 +430,6 @@ void ShowUserManagerMaybeWithTutorial(Profile* profile) {
   UserManager::Show(base::FilePath(),
                     profiles::USER_MANAGER_TUTORIAL_OVERVIEW,
                     profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
-}
-
-void EnableNewProfileManagementPreview(Profile* profile) {
-#if defined(OS_ANDROID)
-  NOTREACHED();
-#else
-  // TODO(rogerta): instead of setting experiment flags and command line
-  // args, we should set a profile preference.
-  const flags_ui::FeatureEntry entry = {
-      kNewProfileManagementExperimentInternalName,
-      0,  // string id for title of experiment
-      0,  // string id for description of experiment
-      0,  // supported platforms
-      flags_ui::FeatureEntry::ENABLE_DISABLE_VALUE,
-      switches::kEnableNewProfileManagement,
-      "",  // not used with ENABLE_DISABLE_VALUE type
-      switches::kDisableNewProfileManagement,
-      "",       // not used with ENABLE_DISABLE_VALUE type
-      nullptr,  // not used with ENABLE_DISABLE_VALUE type
-      nullptr,  // not used with ENABLE_DISABLE_VALUE type
-      3};
-  flags_ui::PrefServiceFlagsStorage flags_storage(
-      g_browser_process->local_state());
-  about_flags::SetFeatureEntryEnabled(&flags_storage, entry.NameForChoice(1),
-                                      true);
-
-  switches::EnableNewProfileManagementForTesting(
-      base::CommandLine::ForCurrentProcess());
-  UserManager::Show(base::FilePath(),
-                    profiles::USER_MANAGER_TUTORIAL_OVERVIEW,
-                    profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
-  UpdateServicesWithNewProfileManagementFlag(profile, true);
-#endif
-}
-
-void DisableNewProfileManagementPreview(Profile* profile) {
-  flags_ui::PrefServiceFlagsStorage flags_storage(
-      g_browser_process->local_state());
-  about_flags::SetFeatureEntryEnabled(
-      &flags_storage,
-      kNewProfileManagementExperimentInternalName,
-      false);
-  chrome::AttemptRestart();
-  UpdateServicesWithNewProfileManagementFlag(profile, false);
 }
 
 void BubbleViewModeFromAvatarBubbleMode(

@@ -21,32 +21,7 @@ OwnerFlagsStorage::OwnerFlagsStorage(
     PrefService* prefs,
     ownership::OwnerSettingsService* owner_settings_service)
     : flags_ui::PrefServiceFlagsStorage(prefs),
-      owner_settings_service_(owner_settings_service) {
-  // Make this code more unit test friendly.
-  if (g_browser_process->local_state()) {
-    const base::ListValue* legacy_experiments =
-        g_browser_process->local_state()->GetList(
-            flags_ui::prefs::kEnabledLabsExperiments);
-    if (!legacy_experiments->empty()) {
-      // If there are any flags set in local state migrate them to the owner's
-      // prefs and device settings.
-      std::set<std::string> flags;
-      for (base::ListValue::const_iterator it = legacy_experiments->begin();
-           it != legacy_experiments->end(); ++it) {
-        std::string experiment_name;
-        if (!(*it)->GetAsString(&experiment_name)) {
-          LOG(WARNING) << "Invalid entry in "
-                       << flags_ui::prefs::kEnabledLabsExperiments;
-          continue;
-        }
-        flags.insert(experiment_name);
-      }
-      SetFlags(flags);
-      g_browser_process->local_state()->ClearPref(
-          flags_ui::prefs::kEnabledLabsExperiments);
-    }
-  }
-}
+      owner_settings_service_(owner_settings_service) {}
 
 OwnerFlagsStorage::~OwnerFlagsStorage() {}
 
