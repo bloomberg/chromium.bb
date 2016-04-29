@@ -9,11 +9,9 @@
 #include <utility>
 #include <vector>
 
-#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/cancellation_flag.h"
@@ -29,7 +27,6 @@
 #include "net/proxy/proxy_info.h"
 #include "net/proxy/proxy_resolver_error_observer.h"
 #include "net/proxy/proxy_resolver_v8.h"
-#include "url/url_canon.h"
 
 // The intent of this class is explained in the design document:
 // https://docs.google.com/a/chromium.org/document/d/16Ij5OcVnR3s0MH4Z5XkhI9VTPoMJdaBn9rKreAmGOdE/edit
@@ -63,24 +60,6 @@ const size_t kMaxUniqueResolveDnsPerExec = 20;
 // too much memory bloat. It is not expected for well behaved scripts to
 // hit this. (In fact normal scripts should not even have alerts() or errors).
 const size_t kMaxAlertsAndErrorsBytes = 2048;
-
-// Strips path information from the URL and replaces it with a
-// recognizable placeholder.
-// TODO(eroman): Remove when done gathering data for crbug.com/593759
-GURL StripUrlForBug593759(const GURL& url) {
-  GURL::Replacements replacements;
-  replacements.SetPathStr("PathIsHiddenForCrbug593759");
-  replacements.ClearQuery();
-  replacements.ClearRef();
-  return url.ReplaceComponents(replacements);
-}
-
-// TODO(eroman): Remove when done gathering data for crbug.com/593759
-void LogHistogramForBug593759(PacResultForStrippedUrl value) {
-  UMA_HISTOGRAM_ENUMERATION(
-      kHistogramPacResultForStrippedUrl, static_cast<int>(value),
-      static_cast<int>(PacResultForStrippedUrl::MAX_VALUE));
-}
 
 // The Job class is responsible for executing GetProxyForURL() and
 // creating ProxyResolverV8 instances, since both of these operations share
@@ -171,9 +150,6 @@ class Job : public base::RefCountedThreadSafe<Job>,
   void ExecuteBlocking();
   void ExecuteNonBlocking();
   int ExecuteProxyResolver();
-
-  // TODO(eroman): Remove when done gathering data for crbug.com/593759
-  void LogMetricsForBug593759(int original_error);
 
   // Implementation of ProxyResolverv8::JSBindings
   bool ResolveDns(const std::string& host,
@@ -300,9 +276,6 @@ class Job : public base::RefCountedThreadSafe<Job>,
 
   // Whether the current execution needs to be restarted in blocking mode.
   bool should_restart_with_blocking_dns_;
-
-  // TODO(eroman): Remove when done gathering data for crbug.com/593759
-  bool dont_start_dns_ = false;
 
   // ---------------------------------------------------------------------------
   // State for pending DNS request.
@@ -562,9 +535,6 @@ void Job::ExecuteNonBlocking() {
 
   int result = ExecuteProxyResolver();
 
-  // TODO(eroman): Remove when done gathering data for crbug.com/593759
-  LogMetricsForBug593759(result);
-
   if (should_restart_with_blocking_dns_) {
     DCHECK(!blocking_dns_);
     DCHECK(abandoned_);
@@ -603,110 +573,6 @@ int Job::ExecuteProxyResolver() {
   }
 
   return result;
-}
-
-// Gathers data on how often PAC scripts execute differently depending
-// on the URL path and parameters.
-//
-// TODO(eroman): Remove when done gathering data for crbug.com/593759
-void Job::LogMetricsForBug593759(int original_error) {
-  CheckIsOnWorkerThread();
-
-  DCHECK(!blocking_dns_);
-
-  if (operation_ != GET_PROXY_FOR_URL || !url_.SchemeIsCryptographic()) {
-    // Only interested in FindProxyForURL() invocations for cryptographic URL
-    // schemes (https:// and wss://).
-    return;
-  }
-
-  if (should_restart_with_blocking_dns_) {
-    // The current instrumentation is limited to non-blocking DNS mode, for
-    // simplicity. Fallback to blocking mode is possible for unusual PAC
-    // scripts (non-deterministic, or relies on global state).
-    LogHistogramForBug593759(
-        PacResultForStrippedUrl::SKIPPED_FALLBACK_BLOCKING_DNS);
-    return;
-  }
-
-  if (abandoned_) {
-    // If the FindProxyForURL() attempt was abandoned, it was either cancelled
-    // or it encountered a missing DNS dependency. In the latter case the job
-    // will be re-started once the DNS has been resolved, so just wait until
-    // then.
-    return;
-  }
-
-  if (original_error != OK) {
-    // Only run the extra diagnostics for successful invocations of
-    // FindProxyForURL(). In other words, the instrumentation will
-    // not check whether the script succeeds when using a stripped
-    // path after having already failed on the original URL. A script error
-    // means the PAC script is already broken, so this would just skew the data.
-    return;
-  }
-
-  // Save some state variables to compare the original run against the new run
-  // using a stripped URL.
-  auto original_num_dns = num_dns_;
-  auto original_alerts_and_errors_byte_cost_ = alerts_and_errors_byte_cost_;
-  auto original_results = results_.ToPacString();
-
-  // Reset state variables used by ExecuteProxyResolver().
-  //
-  // This is a bit messy, but it keeps the diagnostics code local
-  // to LogMetricsForBug593759() without having to refactor the existing
-  // code.
-  //
-  // The intent is that after returning from this function all of the
-  // internal state is re-set to reflect the original completion of
-  // ExecuteProxyResolver(), not the second diagnostic one.
-  //
-  // Any global modifications made to the script state however are
-  // not undone, since creating a new script context just for this
-  // test would be expensive.
-  //
-  // Lastly, DNS resolution is disabled before calling
-  // ExecuteProxyResolver(), so only previously cached results can be
-  // used.
-  base::AutoReset<GURL> reset_url(&url_, StripUrlForBug593759(url_));
-  base::AutoReset<int> reset_num_dns(&num_dns_, 0);
-  base::AutoReset<std::vector<AlertOrError>> reset_alerts_and_errors(
-      &alerts_and_errors_, std::vector<AlertOrError>());
-  base::AutoReset<size_t> reset_alerts_and_errors_byte_cost(
-      &alerts_and_errors_byte_cost_, 0);
-  base::AutoReset<bool> reset_should_restart_with_blocking_dns(
-      &should_restart_with_blocking_dns_, false);
-  base::AutoReset<ProxyInfo> reset_results(&results_, ProxyInfo());
-  base::AutoReset<bool> reset_dont_start_dns(&dont_start_dns_, true);
-  base::AutoReset<bool> reset_abandoned(&abandoned_, false);
-
-  // Re-run FindProxyForURL().
-  auto result = ExecuteProxyResolver();
-
-  // Log the result of having run FindProxyForURL() with the modified
-  // URL to an UMA histogram.
-  if (should_restart_with_blocking_dns_) {
-    LogHistogramForBug593759(
-        PacResultForStrippedUrl::FAIL_FALLBACK_BLOCKING_DNS);
-  } else if (abandoned_) {
-    LogHistogramForBug593759(PacResultForStrippedUrl::FAIL_ABANDONED);
-  } else if (result != OK) {
-    LogHistogramForBug593759(PacResultForStrippedUrl::FAIL_ERROR);
-  } else if (original_results != results_.ToPacString()) {
-    LogHistogramForBug593759(
-        PacResultForStrippedUrl::FAIL_DIFFERENT_PROXY_LIST);
-  } else if (original_alerts_and_errors_byte_cost_ !=
-             alerts_and_errors_byte_cost_) {
-    // Here alerts_and_errors_byte_cost_ is being used as a cheap (albeit
-    // imprecise) fingerprint for the calls that were made to alert().
-    LogHistogramForBug593759(PacResultForStrippedUrl::SUCCESS_DIFFERENT_ALERTS);
-  } else if (original_num_dns != num_dns_) {
-    LogHistogramForBug593759(
-        PacResultForStrippedUrl::SUCCESS_DIFFERENT_NUM_DNS);
-  } else {
-    LogHistogramForBug593759(PacResultForStrippedUrl::SUCCESS);
-  }
 }
 
 bool Job::ResolveDns(const std::string& host,
@@ -781,12 +647,6 @@ bool Job::ResolveDnsNonBlocking(const std::string& host,
   if (GetDnsFromLocalCache(host, op, output, &rv)) {
     // Yay, cache hit!
     return rv;
-  }
-
-  // TODO(eroman): Remove when done gathering data for crbug.com/593759
-  if (dont_start_dns_) {
-    abandoned_ = true;
-    return false;
   }
 
   if (num_dns_ <= last_num_dns_) {
@@ -1241,7 +1101,5 @@ std::unique_ptr<ProxyResolverV8TracingFactory>
 ProxyResolverV8TracingFactory::Create() {
   return base::WrapUnique(new ProxyResolverV8TracingFactoryImpl());
 }
-
-const char kHistogramPacResultForStrippedUrl[] = "Net.PacResultForStrippedUrl";
 
 }  // namespace net

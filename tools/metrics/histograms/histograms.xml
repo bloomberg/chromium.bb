@@ -26934,6 +26934,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.PacResultForStrippedUrl" enum="PacResultForStrippedUrl">
+  <obsolete>
+    Deprecated 4/27/2016. No longer tracked.
+  </obsolete>
   <owner>eroman@chromium.org</owner>
   <summary>
     Proxy Auto Config (PAC) allows specifying an arbitrary javascript program to
@@ -79513,6 +79516,9 @@ To add a new entry, add it with any value and run test to compute valid value.
 </enum>
 
 <enum name="PacResultForStrippedUrl" type="int">
+  <obsolete>
+    Deprecated 4/27/2016. No longer tracked.
+  </obsolete>
   <summary>
     Result for PAC script experiment as defined in
     net/proxy/proxy_resolver_v8_tracing.h

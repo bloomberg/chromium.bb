@@ -90,55 +90,6 @@ class NET_EXPORT ProxyResolverV8TracingFactory {
   DISALLOW_COPY_AND_ASSIGN(ProxyResolverV8TracingFactory);
 };
 
-// This enum is used by an UMA histogram, so the values shouldn't be reordered
-// or renumbered.
-//
-// TODO(eroman): Remove when done gathering data for crbug.com/593759
-enum class PacResultForStrippedUrl {
-  // Did NOT measure the impact of running FindProxyForURL() with a modified
-  // URL path, because the original URL could not complete using the
-  // non-blocking DNS mode.
-  SKIPPED_FALLBACK_BLOCKING_DNS = 0,
-
-  // The result of running FindProxyForURL() with a modified URL path appears
-  // to be indistinguishable. (Although there may have been sideffects to the
-  // script state that won't manifest until later invocations).
-  SUCCESS = 1,
-
-  // Calling FindProxyForURL() with a modified URL path returned the same proxy
-  // list, but had measurable sideffects in calls to alert().
-  SUCCESS_DIFFERENT_ALERTS = 2,
-
-  // Calling FindProxyForURL() with a modified URL path returned the same proxy
-  // list, but invoked a different sequence of DNS resolutions. This would
-  // require a rather unusual script to trigger.
-  SUCCESS_DIFFERENT_NUM_DNS = 3,
-
-  // Calling FindProxyForURL() with a modified URL path resulted in a different
-  // set of DNS dependencies.
-  FAIL_ABANDONED = 4,
-
-  // Calling FindProxyForURL() with a modified URL path caused a different
-  // execution flow. Whereas with the original URL it succeeded with
-  // non-blocking DNS, this attempt requires fallback to blocking DNS (and was
-  // not attempted).
-  FAIL_FALLBACK_BLOCKING_DNS = 5,
-
-  // Calling FindProxyForURL() with a modified URL path caused a script error.
-  FAIL_ERROR = 6,
-
-  // Calling FindProxyForURL() with a modified URL path returned a different
-  // proxy list.
-  FAIL_DIFFERENT_PROXY_LIST = 7,
-
-  MAX_VALUE,
-};
-
-// TODO(eroman): Remove when done gathering data for crbug.com/593759
-//
-// This histogram name is exported only for the sake of unit-tests.
-extern NET_EXPORT_PRIVATE const char kHistogramPacResultForStrippedUrl[];
-
 }  // namespace net
 
 #endif  // NET_PROXY_PROXY_RESOLVER_V8_TRACING_H_
