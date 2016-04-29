@@ -11,7 +11,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.TextView;
 
@@ -22,6 +21,7 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.text.SpanApplier.SpanInfo;
+import org.chromium.ui.widget.ButtonCompat;
 
 /**
  * The First Run Experience fragment that allows the user to accept Terms of Service ("ToS") and
@@ -29,7 +29,7 @@ import org.chromium.ui.text.SpanApplier.SpanInfo;
  * User Metrics Analysis) as defined in the Chrome Privacy Notice.
  */
 public class ToSAndUMAFirstRunFragment extends FirstRunPage {
-    private Button mAcceptButton;
+    private ButtonCompat mAcceptButton;
     private CheckBox mSendReportCheckBox;
     private TextView mTosAndPrivacy;
 
@@ -43,10 +43,11 @@ public class ToSAndUMAFirstRunFragment extends FirstRunPage {
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        mAcceptButton = (Button) view.findViewById(R.id.terms_accept);
+        mAcceptButton = (ButtonCompat) view.findViewById(R.id.terms_accept);
         mSendReportCheckBox = (CheckBox) view.findViewById(R.id.send_report_checkbox);
         mTosAndPrivacy = (TextView) view.findViewById(R.id.tos_and_privacy);
 
+        mAcceptButton.setRaised(false);
         mAcceptButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {

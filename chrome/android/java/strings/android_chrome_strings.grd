@@ -1716,7 +1716,7 @@ You are signing in with a managed account and giving its administrator control o
         Continue
       </message>
       <message name="IDS_SIGNIN_ACCOUNT_CHOICE_DESCRIPTION" desc="Text for account chooser page">
-        Sign in to get your bookmarks, history, passwords, and other settings on all your devices.
+        Sign in with your Google Account to get your bookmarks, history, passwords, and other settings on all your devices.
       </message>
       <message name="IDS_SIGNIN_ACCEPT" desc="Text for button to accept being signed in">
         OK, got it
