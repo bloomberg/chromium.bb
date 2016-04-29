@@ -642,6 +642,15 @@
                 '../ui/touch_selection/ui_touch_selection.gyp:ui_touch_selection_unittests_run',
               ],
             }],
+            ['OS!="android" and OS!="ios" and chromecast==0', {
+              'dependencies': [
+                '../ipc/mojo/ipc_mojo.gyp:ipc_mojo_unittests_run',
+                '../mojo/mojo_edk_tests.gyp:mojo_js_unittests_run',
+                '../mojo/mojo_edk_tests.gyp:mojo_js_integration_tests_run',
+                '../mojo/mojo_edk_tests.gyp:mojo_system_unittests_run',
+                '../services/shell/shell.gyp:mojo_shell_unittests_run',
+              ],
+            }],
             ['use_ash==1', {
               'dependencies': [
                 '../ash/ash.gyp:ash_unittests_run',
