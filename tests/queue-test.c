@@ -205,6 +205,104 @@ client_test_queue_roundtrip(void)
 }
 
 static void
+client_test_queue_proxy_wrapper(void)
+{
+	struct wl_event_queue *queue;
+	struct wl_display *display;
+	struct wl_display *display_wrapper;
+	struct wl_callback *callback;
+	bool done = false;
+
+	/*
+	 * For an illustration of what usage would normally fail without using
+	 * proxy wrappers, see the `client_test_queue_set_queue_race' test case.
+	 */
+
+	display = wl_display_connect(NULL);
+	assert(display);
+
+	/* Pretend we are in a separate thread where a thread-local queue is
+	 * used. */
+	queue = wl_display_create_queue(display);
+	assert(queue);
+
+	display_wrapper = wl_proxy_create_wrapper(display);
+	assert(display_wrapper);
+	wl_proxy_set_queue((struct wl_proxy *) display_wrapper, queue);
+	callback = wl_display_sync(display_wrapper);
+	wl_proxy_wrapper_destroy(display_wrapper);
+	assert(callback != NULL);
+
+	/* Pretend we are now another thread and dispatch the dispatch the main
+	 * queue while also knowing our callback is read and queued. */
+	wl_display_roundtrip(display);
+
+	/* Make sure that the pretend-to-be main thread didn't dispatch our
+	 * callback, behind our back. */
+	wl_callback_add_listener(callback, &sync_listener_roundtrip, &done);
+	wl_display_flush(display);
+
+	assert(!done);
+
+	/* Make sure that we eventually end up dispatching our callback. */
+	while (!done)
+		assert(wl_display_dispatch_queue(display, queue) != -1);
+
+	wl_callback_destroy(callback);
+	wl_event_queue_destroy(queue);
+
+	wl_display_disconnect(display);
+}
+
+static void
+client_test_queue_set_queue_race(void)
+{
+	struct wl_event_queue *queue;
+	struct wl_display *display;
+	struct wl_callback *callback;
+	bool done = false;
+
+	/*
+	 * This test illustrates the multi threading scenario which would fail
+	 * without doing what is done in the `client_test_queue_proxy_wrapper'
+	 * test.
+	 */
+
+	display = wl_display_connect(NULL);
+	assert(display);
+
+	/* Pretend we are in a separate thread where a thread-local queue is
+	 * used. */
+	queue = wl_display_create_queue(display);
+	assert(queue);
+
+	callback = wl_display_sync(display);
+	assert(callback != NULL);
+
+	/* Pretend we are now another thread and dispatch the dispatch the main
+	 * queue while also knowing our callback is read, queued on the wrong
+	 * queue, and dispatched. */
+	wl_display_roundtrip(display);
+
+	/* Pretend we are back in the separate thread, and continue with setting
+	 * up our callback. */
+	wl_callback_add_listener(callback, &sync_listener_roundtrip, &done);
+	wl_proxy_set_queue((struct wl_proxy *) callback, queue);
+
+	/* Roundtrip our separate thread queue to make sure any events are
+	 * dispatched. */
+	wl_display_roundtrip_queue(display, queue);
+
+	/* Verify that the callback has indeed been dropped. */
+	assert(!done);
+
+	wl_callback_destroy(callback);
+	wl_event_queue_destroy(queue);
+
+	wl_display_disconnect(display);
+}
+
+static void
 dummy_bind(struct wl_client *client,
 	   void *data, uint32_t version, uint32_t id)
 {
@@ -255,6 +353,30 @@ TEST(queue_roundtrip)
 	test_set_timeout(2);
 
 	client_create_noarg(d, client_test_queue_roundtrip);
+	display_run(d);
+
+	display_destroy(d);
+}
+
+TEST(queue_set_queue_proxy_wrapper)
+{
+	struct display *d = display_create();
+
+	test_set_timeout(2);
+
+	client_create_noarg(d, client_test_queue_proxy_wrapper);
+	display_run(d);
+
+	display_destroy(d);
+}
+
+TEST(queue_set_queue_race)
+{
+	struct display *d = display_create();
+
+	test_set_timeout(2);
+
+	client_create_noarg(d, client_test_queue_set_queue_race);
 	display_run(d);
 
 	display_destroy(d);
