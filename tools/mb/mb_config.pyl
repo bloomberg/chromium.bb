@@ -220,16 +220,17 @@
     },
 
     'chromium.gpu': {
-      'Android Debug (Nexus 5)': 'android_gn_debug_static_bot',
-      'Android Debug (Nexus 6)': 'android_gn_debug_static_bot',
-      'GPU Mac Builder': 'swarming_gpu_tests_gyp_release_bot',
-      'GPU Mac Builder (dbg)': 'swarming_gpu_tests_gyp_debug_bot',
-      'GPU Linux Builder (dbg)': 'swarming_gpu_tests_gn_debug_bot',
-      'GPU Linux Builder': 'swarming_gpu_tests_gn_release_bot',
+      # These all use the 'trybot' mixins to ensure that dcheck is on.
+      'Android Debug (Nexus 5)': 'android_gn_debug_static_trybot',
+      'Android Debug (Nexus 6)': 'android_gn_debug_static_trybot',
+      'GPU Mac Builder': 'swarming_gpu_tests_gyp_release_trybot',
+      'GPU Mac Builder (dbg)': 'swarming_gpu_tests_gyp_debug_trybot',
+      'GPU Linux Builder (dbg)': 'swarming_gpu_tests_gn_debug_trybot',
+      'GPU Linux Builder': 'swarming_gpu_tests_gn_release_trybot',
       'GPU Win Builder':
-        'swarming_gpu_tests_gyp_release_bot_minimal_symbols_x86',
+        'swarming_gpu_tests_gyp_release_trybot_minimal_symbols_x86',
       'GPU Win Builder (dbg)':
-        'swarming_gpu_tests_gyp_debug_bot_minimal_symbols_x86',
+        'swarming_gpu_tests_gyp_debug_trybot_minimal_symbols_x86',
       'Linux Debug (NVIDIA)': 'none',
       'Linux Release (NVIDIA)': 'none',
       'Mac 10.10 Debug (Intel)': 'none',
@@ -242,23 +243,24 @@
     },
 
     'chromium.gpu.fyi': {
-      'Android Debug (Nexus 9)': 'android_gn_debug_static_bot_arm64',
-      'GPU Linux Builder (dbg)': 'swarming_gpu_fyi_tests_gn_debug_bot',
-      'GPU Linux Builder': 'swarming_gpu_fyi_tests_gn_release_bot',
-      'GPU Mac Builder': 'swarming_gpu_fyi_tests_gyp_release_bot',
-      'GPU Mac Builder (dbg)': 'swarming_gpu_fyi_tests_gyp_debug_bot',
+      # These all use the 'trybot' mixins to ensure that dcheck is on.
+      'Android Debug (Nexus 9)': 'android_gn_debug_static_trybot_arm64',
+      'GPU Linux Builder (dbg)': 'swarming_gpu_fyi_tests_gn_debug_trybot',
+      'GPU Linux Builder': 'swarming_gpu_fyi_tests_gn_release_trybot',
+      'GPU Mac Builder': 'swarming_gpu_fyi_tests_gyp_release_trybot',
+      'GPU Mac Builder (dbg)': 'swarming_gpu_fyi_tests_gyp_debug_trybot',
       'GPU Win Builder':
-        'swarming_gpu_tests_deqp_gles_gyp_release_bot_minimal_symbols_x86',
+        'swarming_gpu_tests_deqp_gles_gyp_release_trybot_minimal_symbols_x86',
       'GPU Win Builder (dbg)':
-        'swarming_gpu_tests_deqp_gles_gyp_debug_bot_minimal_symbols_x86',
+        'swarming_gpu_tests_deqp_gles_gyp_debug_trybot_minimal_symbols_x86',
       'GPU Win Clang Builder (dbg)':
-        'swarming_gpu_fyi_tests_gyp_clang_debug_bot_x86',
+        'swarming_gpu_fyi_tests_gyp_clang_debug_trybot_x86',
       'GPU Win x64 Builder':
-        'swarming_gpu_tests_deqp_gles_gyp_release_bot_minimal_symbols_x64',
+        'swarming_gpu_tests_deqp_gles_gyp_release_trybot_minimal_symbols_x64',
       'GPU Win x64 Builder (dbg)':
-        'swarming_gpu_tests_deqp_gles_gyp_debug_bot_minimal_symbols_x64',
+        'swarming_gpu_tests_deqp_gles_gyp_debug_trybot_minimal_symbols_x64',
       'Linux ChromiumOS Builder':
-        'swarming_gpu_fyi_tests_chromeos_gyp_release_bot',
+        'swarming_gpu_fyi_tests_chromeos_gyp_release_trybot',
       'Linux Debug (NVIDIA)': 'none',
       'Linux Debug (New Intel)': 'none',
       'Linux Release (ATI)': 'none',
@@ -681,11 +683,11 @@
       'mac_angle_dbg_ng': 'swarming_gpu_fyi_tests_gyp_debug_trybot',
       'mac_angle_rel_ng': 'swarming_gpu_fyi_tests_gyp_release_trybot',
       'win_angle_dbg_ng':
-        'swarming_gpu_tests_deqp_gles_gyp_debug_bot_minimal_symbols_x86',
+        'swarming_gpu_tests_deqp_gles_gyp_debug_trybot_minimal_symbols_x86',
       'win_angle_rel_ng':
         'swarming_gpu_tests_deqp_gles_gyp_release_trybot_minimal_symbols_x86',
       'win_angle_x64_dbg_ng':
-        'swarming_gpu_tests_deqp_gles_gyp_debug_bot_minimal_symbols_x64',
+        'swarming_gpu_tests_deqp_gles_gyp_debug_trybot_minimal_symbols_x64',
       'win_angle_x64_rel_ng':
         'swarming_gpu_tests_deqp_gles_gyp_release_trybot_minimal_symbols_x64',
     },
@@ -990,6 +992,14 @@
 
     'android_gn_debug_static_minimal_symbols_mipsel': [
       'android', 'gn', 'debug', 'static', 'minimal_symbols', 'mipsel',
+    ],
+
+    'android_gn_debug_static_trybot': [
+      'android', 'gn', 'debug_static_trybot',
+    ],
+
+    'android_gn_debug_static_trybot_arm64': [
+      'android', 'gn', 'debug_static_trybot', 'arm64',
     ],
 
     'android_gn_debug_trybot': [
@@ -1628,14 +1638,9 @@
       'swarming', 'gn', 'msan', 'release_bot', 'x64',
     ],
 
-    'swarming_gpu_fyi_tests_chromeos_gyp_release_bot': [
+    'swarming_gpu_fyi_tests_chromeos_gyp_release_trybot': [
       'swarming', 'gpu_tests', 'internal_gles2_conform_tests', 'gyp',
-      'release_bot', 'angle_deqp_tests', 'chromeos',
-    ],
-
-    'swarming_gpu_fyi_tests_gn_debug_bot': [
-      'swarming', 'gpu_tests', 'internal_gles2_conform_tests', 'gn',
-      'debug_bot', 'angle_deqp_tests',
+      'release_trybot', 'angle_deqp_tests', 'chromeos',
     ],
 
     'swarming_gpu_fyi_tests_gn_debug_trybot': [
@@ -1643,19 +1648,9 @@
       'debug_trybot', 'angle_deqp_tests',
     ],
 
-    'swarming_gpu_fyi_tests_gn_release_bot': [
-      'swarming', 'gpu_tests', 'internal_gles2_conform_tests', 'gn',
-      'release_bot', 'angle_deqp_tests',
-    ],
-
     'swarming_gpu_fyi_tests_gn_release_trybot': [
       'swarming', 'gpu_tests', 'internal_gles2_conform_tests', 'gn',
       'release_bot', 'angle_deqp_tests',
-    ],
-
-    'swarming_gpu_fyi_tests_gyp_debug_bot': [
-      'swarming', 'gpu_tests', 'internal_gles2_conform_tests', 'gyp',
-      'debug_bot',
     ],
 
     'swarming_gpu_fyi_tests_gyp_debug_trybot': [
@@ -1663,30 +1658,25 @@
       'debug_trybot',
     ],
 
-    'swarming_gpu_fyi_tests_gyp_release_bot': [
-      'swarming', 'gpu_tests', 'internal_gles2_conform_tests', 'gyp',
-      'release_bot',
-    ],
-
     'swarming_gpu_fyi_tests_gyp_release_trybot': [
       'swarming', 'gpu_tests', 'internal_gles2_conform_tests', 'gyp',
       'release_trybot',
     ],
 
-    'swarming_gpu_fyi_tests_gyp_clang_debug_bot_x86': [
+    'swarming_gpu_fyi_tests_gyp_clang_debug_trybot_x86': [
       'swarming', 'gpu_tests', 'internal_gles2_conform_tests', 'gyp',
-      'clang', 'debug_bot', 'x86',
+      'clang', 'debug_trybot', 'x86',
     ],
 
-    'swarming_gpu_tests_deqp_gles_gyp_debug_bot_minimal_symbols_x64': [
+    'swarming_gpu_tests_deqp_gles_gyp_debug_trybot_minimal_symbols_x64': [
       'swarming', 'gpu_tests', 'angle_deqp_tests',
-      'internal_gles2_conform_tests', 'gyp', 'debug_bot',
+      'internal_gles2_conform_tests', 'gyp', 'debug_trybot',
       'minimal_symbols', 'x64',
     ],
 
-    'swarming_gpu_tests_deqp_gles_gyp_debug_bot_minimal_symbols_x86': [
+    'swarming_gpu_tests_deqp_gles_gyp_debug_trybot_minimal_symbols_x86': [
       'swarming', 'gpu_tests', 'angle_deqp_tests',
-      'internal_gles2_conform_tests', 'gyp', 'debug_bot',
+      'internal_gles2_conform_tests', 'gyp', 'debug_trybot',
       'minimal_symbols', 'x86',
     ],
 
@@ -1702,40 +1692,36 @@
       'minimal_symbols', 'x86',
     ],
 
-    'swarming_gpu_tests_deqp_gles_gyp_release_bot_minimal_symbols_x64': [
+    'swarming_gpu_tests_deqp_gles_gyp_release_trybot_minimal_symbols_x64': [
       'swarming', 'gpu_tests', 'angle_deqp_tests',
-      'internal_gles2_conform_tests', 'gyp', 'release_bot',
+      'internal_gles2_conform_tests', 'gyp', 'release_trybot',
       'minimal_symbols', 'x64',
     ],
 
-    'swarming_gpu_tests_deqp_gles_gyp_release_bot_minimal_symbols_x86': [
+    'swarming_gpu_tests_deqp_gles_gyp_release_trybot_minimal_symbols_x86': [
       'swarming', 'gpu_tests', 'angle_deqp_tests',
-      'internal_gles2_conform_tests', 'gyp', 'release_bot',
+      'internal_gles2_conform_tests', 'gyp', 'release_trybot',
       'minimal_symbols', 'x86',
     ],
 
-    'swarming_gpu_tests_gn_debug_bot': [
-      'swarming', 'gpu_tests', 'gn', 'debug_bot',
-    ],
-
-    'swarming_gpu_tests_gn_release_bot': [
-      'swarming', 'gpu_tests', 'gn', 'release_bot',
+    'swarming_gpu_tests_gn_debug_trybot': [
+      'swarming', 'gpu_tests', 'gn', 'debug_trybot',
     ],
 
     'swarming_gpu_tests_gn_release_trybot': [
       'swarming', 'gpu_tests', 'gn', 'release_trybot',
     ],
 
-    'swarming_gpu_tests_gyp_debug_bot_minimal_symbols_x86': [
-      'swarming', 'gpu_tests', 'gyp', 'debug_bot', 'minimal_symbols', 'x86',
+    'swarming_gpu_tests_gyp_debug_trybot_minimal_symbols_x86': [
+      'swarming', 'gpu_tests', 'gyp', 'debug_trybot', 'minimal_symbols', 'x86',
     ],
 
     'swarming_gpu_tests_gyp_release_bot': [
       'swarming', 'gpu_tests', 'gyp', 'release_bot',
     ],
 
-    'swarming_gpu_tests_gyp_debug_bot': [
-      'swarming', 'gpu_tests', 'gyp', 'debug_bot',
+    'swarming_gpu_tests_gyp_debug_trybot': [
+      'swarming', 'gpu_tests', 'gyp', 'debug_trybot',
     ],
 
     'swarming_gpu_tests_gyp_release_bot_minimal_symbols_x86': [
@@ -2062,6 +2048,11 @@
 
     'debug_static_bot': {
       'mixins': ['debug', 'static', 'minimal_symbols', 'goma'],
+    },
+
+    'debug_static_trybot': {
+      'mixins': ['debug', 'static', 'dcheck_always_on', 'minimal_symbols',
+                 'goma'],
     },
 
     'debug_trybot': {
