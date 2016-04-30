@@ -70,9 +70,9 @@
 	own set of error codes.  The message is a brief description
 	of the error, for (debugging) convenience.
       </description>
-      <arg name="object_id" type="object"/>
-      <arg name="code" type="uint"/>
-      <arg name="message" type="string"/>
+      <arg name="object_id" type="object" summary="object where the error occurred"/>
+      <arg name="code" type="uint" summary="error code"/>
+      <arg name="message" type="string" summary="error description"/>
     </event>
 
     <enum name="error">
@@ -96,7 +96,7 @@
 	When the client receives this event, it will know that it can
 	safely reuse the object ID.
       </description>
-      <arg name="id" type="uint" />
+      <arg name="id" type="uint" summary="deleted object id"/>
     </event>
   </interface>
 
@@ -141,9 +141,9 @@
         the given name is now available, and it implements the
         given version of the given interface.
       </description>
-      <arg name="name" type="uint"/>
-      <arg name="interface" type="string"/>
-      <arg name="version" type="uint"/>
+      <arg name="name" type="uint" summary="numeric name of the global object"/>
+      <arg name="interface" type="string" summary="interface implemented by the object"/>
+      <arg name="version" type="uint" summary="interface version"/>
     </event>
 
     <event name="global_remove">
@@ -159,7 +159,7 @@
 	ignored until the client destroys it, to avoid races between
 	the global going away and a client sending a request to it.
       </description>
-      <arg name="name" type="uint"/>
+      <arg name="name" type="uint" summary="numeric name of the global object"/>
     </event>
   </interface>
 
@@ -367,7 +367,7 @@
 	can be used for buffers. Known formats include
 	argb8888 and xrgb8888.
       </description>
-      <arg name="format" type="uint" enum="format"/>
+      <arg name="format" type="uint" enum="format" summary="buffer pixel format"/>
     </event>
   </interface>
 
@@ -485,7 +485,7 @@
 	event per offered mime type.
       </description>
 
-      <arg name="mime_type" type="string"/>
+      <arg name="mime_type" type="string" summary="offered mime type"/>
     </event>
 
     <!-- Version 3 additions -->
@@ -550,7 +550,7 @@
 	will be sent right after wl_data_device.enter, or anytime the source
 	side changes its offered actions through wl_data_source.set_actions.
       </description>
-      <arg name="source_actions" type="uint"/>
+      <arg name="source_actions" type="uint" summary="actions offered by the data source"/>
     </event>
 
     <event name="action" since="3">
@@ -591,7 +591,7 @@
 	final wl_data_offer.set_actions and wl_data_offer.accept requests
 	must happen before the call to wl_data_offer.finish.
       </description>
-      <arg name="dnd_action" type="uint"/>
+      <arg name="dnd_action" type="uint" summary="action selected by the compositor"/>
     </event>
   </interface>
 
@@ -633,7 +633,7 @@
 	Used for feedback during drag-and-drop.
       </description>
 
-      <arg name="mime_type" type="string" allow-null="true"/>
+      <arg name="mime_type" type="string" allow-null="true" summary="mime type accepted by the target"/>
     </event>
 
     <event name="send">
@@ -643,8 +643,8 @@
 	close it.
       </description>
 
-      <arg name="mime_type" type="string"/>
-      <arg name="fd" type="fd"/>
+      <arg name="mime_type" type="string" summary="mime type for the data"/>
+      <arg name="fd" type="fd" summary="file descriptor for the data"/>
     </event>
 
     <event name="cancelled">
@@ -746,7 +746,7 @@
 	Clients can trigger cursor surface changes from this point, so
 	they reflect the current action.
       </description>
-      <arg name="dnd_action" type="uint"/>
+      <arg name="dnd_action" type="uint" summary="action selected by the compositor"/>
     </event>
   </interface>
 
@@ -821,7 +821,7 @@
 	mime types it offers.
       </description>
 
-      <arg name="id" type="new_id" interface="wl_data_offer"/>
+      <arg name="id" type="new_id" interface="wl_data_offer" summary="the new data_offer object"/>
     </event>
 
     <event name="enter">
@@ -832,11 +832,12 @@
 	coordinates.
       </description>
 
-      <arg name="serial" type="uint"/>
-      <arg name="surface" type="object" interface="wl_surface"/>
-      <arg name="x" type="fixed"/>
-      <arg name="y" type="fixed"/>
-      <arg name="id" type="object" interface="wl_data_offer" allow-null="true"/>
+      <arg name="serial" type="uint" summary="serial number of the enter event"/>
+      <arg name="surface" type="object" interface="wl_surface" summary="client surface entered"/>
+      <arg name="x" type="fixed" summary="surface-local x coordinate"/>
+      <arg name="y" type="fixed" summary="surface-local y coordinate"/>
+      <arg name="id" type="object" interface="wl_data_offer" allow-null="true"
+	   summary="source data_offer object"/>
     </event>
 
     <event name="leave">
@@ -855,8 +856,8 @@
 	coordinates.
       </description>
       <arg name="time" type="uint" summary="timestamp with millisecond granularity"/>
-      <arg name="x" type="fixed"/>
-      <arg name="y" type="fixed"/>
+      <arg name="x" type="fixed" summary="surface-local x coordinate"/>
+      <arg name="y" type="fixed" summary="surface-local y coordinate"/>
     </event>
 
     <event name="drop">
@@ -891,7 +892,8 @@
 	destroy the previous selection data_offer, if any, upon receiving
 	this event.
       </description>
-      <arg name="id" type="object" interface="wl_data_offer" allow-null="true"/>
+      <arg name="id" type="object" interface="wl_data_offer" allow-null="true"
+	   summary="selection data_offer object"/>
     </event>
 
     <!-- Version 2 additions -->
@@ -1230,7 +1232,7 @@
 	Ping a client to check if it is receiving events and sending
 	requests. A client is expected to reply with a pong request.
       </description>
-      <arg name="serial" type="uint"/>
+      <arg name="serial" type="uint" summary="serial number of the ping"/>
     </event>
 
     <event name="configure">
@@ -1254,9 +1256,9 @@
 	in surface-local coordinates.
       </description>
 
-      <arg name="edges" type="uint" enum="resize"/>
-      <arg name="width" type="int"/>
-      <arg name="height" type="int"/>
+      <arg name="edges" type="uint" enum="resize" summary="how the surface was resized"/>
+      <arg name="width" type="int" summary="new width of the surface"/>
+      <arg name="height" type="int" summary="new height of the surface"/>
     </event>
 
     <event name="popup_done">
@@ -1532,7 +1534,7 @@
 
 	Note that a surface may be overlapping with zero or more outputs.
       </description>
-      <arg name="output" type="object" interface="wl_output"/>
+      <arg name="output" type="object" interface="wl_output" summary="output entered by the surface"/>
     </event>
 
     <event name="leave">
@@ -1541,7 +1543,7 @@
 	results in it no longer having any part of it within the scanout region
 	of an output.
       </description>
-      <arg name="output" type="object" interface="wl_output"/>
+      <arg name="output" type="object" interface="wl_output" summary="output left by the surface"/>
     </event>
 
     <!-- Version 2 additions -->
@@ -1700,7 +1702,7 @@
 	The above behavior also applies to wl_keyboard and wl_touch with the
 	keyboard and touch capabilities, respectively.
       </description>
-      <arg name="capabilities" type="uint" enum="capability"/>
+      <arg name="capabilities" type="uint" enum="capability" summary="capabilities of the seat"/>
     </event>
 
     <request name="get_pointer">
@@ -1750,7 +1752,7 @@
 	identify which physical devices the seat represents. Based on
 	the seat configuration used by the compositor.
       </description>
-      <arg name="name" type="string"/>
+      <arg name="name" type="string" summary="seat identifier"/>
     </event>
 
     <!-- Version 5 additions -->
@@ -1831,8 +1833,8 @@
 	an appropriate pointer image with the set_cursor request.
       </description>
 
-      <arg name="serial" type="uint"/>
-      <arg name="surface" type="object" interface="wl_surface"/>
+      <arg name="serial" type="uint" summary="serial number of the enter event"/>
+      <arg name="surface" type="object" interface="wl_surface" summary="surface entered by the pointer"/>
       <arg name="surface_x" type="fixed" summary="surface-local x coordinate"/>
       <arg name="surface_y" type="fixed" summary="surface-local y coordinate"/>
     </event>
@@ -1845,8 +1847,8 @@
 	The leave notification is sent before the enter notification
 	for the new focus.
       </description>
-      <arg name="serial" type="uint"/>
-      <arg name="surface" type="object" interface="wl_surface"/>
+      <arg name="serial" type="uint" summary="serial number of the leave event"/>
+      <arg name="surface" type="object" interface="wl_surface" summary="surface left by the pointer"/>
     </event>
 
     <event name="motion">
@@ -1880,10 +1882,10 @@
         granularity, with an undefined base.
       </description>
 
-      <arg name="serial" type="uint"/>
+      <arg name="serial" type="uint" summary="serial number of the button event"/>
       <arg name="time" type="uint" summary="timestamp with millisecond granularity"/>
-      <arg name="button" type="uint"/>
-      <arg name="state" type="uint" enum="button_state"/>
+      <arg name="button" type="uint" summary="button that produced the event"/>
+      <arg name="state" type="uint" enum="button_state" summary="physical state of the button"/>
     </event>
 
     <enum name="axis">
@@ -1915,8 +1917,8 @@
       </description>
 
       <arg name="time" type="uint" summary="timestamp with millisecond granularity"/>
-      <arg name="axis" type="uint" enum="axis"/>
-      <arg name="value" type="fixed"/>
+      <arg name="axis" type="uint" enum="axis" summary="axis type"/>
+      <arg name="value" type="fixed" summary="length of vector in surface-local coordinate space"/>
     </event>
 
     <!-- Version 3 additions -->
@@ -2019,7 +2021,7 @@
 	The order of wl_pointer.axis_discrete and wl_pointer.axis_source is
 	not guaranteed.
       </description>
-      <arg name="axis_source" type="uint" enum="axis_source"/>
+      <arg name="axis_source" type="uint" enum="axis_source" summary="source of the axis event"/>
     </event>
 
     <event name="axis_stop" since="5">
@@ -2072,8 +2074,8 @@
 	The order of wl_pointer.axis_discrete and wl_pointer.axis_source is
 	not guaranteed.
       </description>
-      <arg name="axis" type="uint" enum="axis" />
-      <arg name="discrete" type="int"/>
+      <arg name="axis" type="uint" enum="axis" summary="axis type"/>
+      <arg name="discrete" type="int" summary="number of steps"/>
     </event>
   </interface>
 
@@ -2099,9 +2101,9 @@
 	This event provides a file descriptor to the client which can be
 	memory-mapped to provide a keyboard mapping description.
       </description>
-      <arg name="format" type="uint" enum="keymap_format"/>
-      <arg name="fd" type="fd"/>
-      <arg name="size" type="uint"/>
+      <arg name="format" type="uint" enum="keymap_format" summary="keymap format"/>
+      <arg name="fd" type="fd" summary="keymap file descriptor"/>
+      <arg name="size" type="uint" summary="keymap size, in bytes"/>
     </event>
 
     <event name="enter">
@@ -2109,8 +2111,8 @@
 	Notification that this seat's keyboard focus is on a certain
 	surface.
       </description>
-      <arg name="serial" type="uint"/>
-      <arg name="surface" type="object" interface="wl_surface"/>
+      <arg name="serial" type="uint" summary="serial number of the enter event"/>
+      <arg name="surface" type="object" interface="wl_surface" summary="surface gaining keyboard focus"/>
       <arg name="keys" type="array" summary="the currently pressed keys"/>
     </event>
 
@@ -2122,8 +2124,8 @@
 	The leave notification is sent before the enter notification
 	for the new focus.
       </description>
-      <arg name="serial" type="uint"/>
-      <arg name="surface" type="object" interface="wl_surface"/>
+      <arg name="serial" type="uint" summary="serial number of the leave event"/>
+      <arg name="surface" type="object" interface="wl_surface" summary="surface that lost keyboard focus"/>
     </event>
 
     <enum name="key_state">
@@ -2141,10 +2143,10 @@
         granularity, with an undefined base.
       </description>
 
-      <arg name="serial" type="uint"/>
+      <arg name="serial" type="uint" summary="serial number of the key event"/>
       <arg name="time" type="uint" summary="timestamp with millisecond granularity"/>
-      <arg name="key" type="uint"/>
-      <arg name="state" type="uint" enum="key_state"/>
+      <arg name="key" type="uint" summary="key that produced the event"/>
+      <arg name="state" type="uint" enum="key_state" summary="physical state of the key"/>
     </event>
 
     <event name="modifiers">
@@ -2153,11 +2155,11 @@
 	changed, and it should update its local state.
       </description>
 
-      <arg name="serial" type="uint"/>
-      <arg name="mods_depressed" type="uint"/>
-      <arg name="mods_latched" type="uint"/>
-      <arg name="mods_locked" type="uint"/>
-      <arg name="group" type="uint"/>
+      <arg name="serial" type="uint" summary="serial number of the modifiers event"/>
+      <arg name="mods_depressed" type="uint" summary="depressed modifiers"/>
+      <arg name="mods_latched" type="uint" summary="latched modifiers"/>
+      <arg name="mods_locked" type="uint" summary="locked modifiers"/>
+      <arg name="group" type="uint" summary="keyboard layout"/>
     </event>
 
     <!-- Version 3 additions -->
@@ -2210,9 +2212,9 @@
 	this ID. The ID ceases to be valid after a touch up event and may be
 	reused in the future.
       </description>
-      <arg name="serial" type="uint"/>
+      <arg name="serial" type="uint" summary="serial number of the touch down event"/>
       <arg name="time" type="uint" summary="timestamp with millisecond granularity"/>
-      <arg name="surface" type="object" interface="wl_surface"/>
+      <arg name="surface" type="object" interface="wl_surface" summary="surface touched"/>
       <arg name="id" type="int" summary="the unique ID of this touch point"/>
       <arg name="x" type="fixed" summary="surface-local x coordinate"/>
       <arg name="y" type="fixed" summary="surface-local y coordinate"/>
@@ -2224,7 +2226,7 @@
 	this touch point and the touch point's ID is released and may be
 	reused in a future touch down event.
       </description>
-      <arg name="serial" type="uint"/>
+      <arg name="serial" type="uint" summary="serial number of the touch up event"/>
       <arg name="time" type="uint" summary="timestamp with millisecond granularity"/>
       <arg name="id" type="int" summary="the unique ID of this touch point"/>
     </event>
