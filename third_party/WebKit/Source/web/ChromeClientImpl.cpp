@@ -548,14 +548,8 @@ void ChromeClientImpl::scheduleAnimation(Widget* widget)
     // FIXME: Is this the right thing to do? Is there a way to avoid having
     // a local frame root that doesn't have a WebWidget? During initialization
     // there is no content to draw so this call serves no purpose.
-    if (WebLocalFrameImpl::fromFrame(frame) && WebLocalFrameImpl::fromFrame(frame)->frameWidget()) {
+    if (WebLocalFrameImpl::fromFrame(frame) && WebLocalFrameImpl::fromFrame(frame)->frameWidget())
         WebLocalFrameImpl::fromFrame(frame)->frameWidget()->scheduleAnimation();
-    } else {
-        // TODO(lfg): We need to keep this for now because we still have some
-        // WebViews who don't have a WebViewFrameWidget. This should be
-        // removed once the WebViewFrameWidget refactor is complete.
-        m_webView->scheduleAnimation();
-    }
 }
 
 IntRect ChromeClientImpl::viewportToScreen(const IntRect& rectInViewport, const Widget* widget) const
