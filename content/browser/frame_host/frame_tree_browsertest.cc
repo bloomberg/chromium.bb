@@ -450,6 +450,68 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest,
   EXPECT_EQ("Hi from a.com", document_body);
 }
 
+// Ensures that iframe with srcdoc is always put in the same origin as its
+// parent frame.
+IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, ChildFrameWithSrcdoc) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  WebContentsImpl* contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  FrameTreeNode* root = contents->GetFrameTree()->root();
+  EXPECT_EQ(1U, root->child_count());
+
+  FrameTreeNode* child = root->child_at(0);
+  std::string frame_origin;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      child->current_frame_host(),
+      "domAutomationController.send(document.origin);", &frame_origin));
+  EXPECT_TRUE(
+      child->current_frame_host()->GetLastCommittedOrigin().IsSameOriginWith(
+          url::Origin(GURL(frame_origin))));
+  EXPECT_FALSE(
+      root->current_frame_host()->GetLastCommittedOrigin().IsSameOriginWith(
+          url::Origin(GURL(frame_origin))));
+
+  // Create a new iframe with srcdoc and add it to the main frame. It should
+  // be created in the same SiteInstance as the parent.
+  {
+    std::string script("var f = document.createElement('iframe');"
+                       "f.srcdoc = 'some content';"
+                       "document.body.appendChild(f)");
+    TestNavigationObserver observer(shell()->web_contents());
+    EXPECT_TRUE(ExecuteScript(root->current_frame_host(), script));
+    EXPECT_EQ(2U, root->child_count());
+    observer.Wait();
+
+    EXPECT_EQ(GURL(url::kAboutBlankURL), root->child_at(1)->current_url());
+    EXPECT_TRUE(ExecuteScriptAndExtractString(
+        root->child_at(1)->current_frame_host(),
+        "domAutomationController.send(document.origin);", &frame_origin));
+    EXPECT_EQ(root->current_frame_host()->GetLastCommittedURL().GetOrigin(),
+              GURL(frame_origin));
+    EXPECT_NE(child->current_frame_host()->GetLastCommittedURL().GetOrigin(),
+              GURL(frame_origin));
+  }
+
+  // Set srcdoc on the existing cross-site frame. It should navigate the frame
+  // back to the origin of the parent.
+  {
+    std::string script("var f = document.getElementById('child-0');"
+                       "f.srcdoc = 'some content';");
+    TestNavigationObserver observer(shell()->web_contents());
+    EXPECT_TRUE(ExecuteScript(root->current_frame_host(), script));
+    observer.Wait();
+
+    EXPECT_EQ(GURL(url::kAboutBlankURL), child->current_url());
+    EXPECT_TRUE(ExecuteScriptAndExtractString(
+        child->current_frame_host(),
+        "domAutomationController.send(document.origin);", &frame_origin));
+    EXPECT_EQ(root->current_frame_host()->GetLastCommittedURL().GetOrigin(),
+              GURL(frame_origin));
+  }
+}
+
 // Ensure that sandbox flags are correctly set when child frames are created.
 IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, SandboxFlagsSetForChildFrames) {
   GURL main_url(embedded_test_server()->GetURL("/sandboxed_frames.html"));
