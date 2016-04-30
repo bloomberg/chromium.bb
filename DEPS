@@ -10,7 +10,6 @@ vars = {
   # Document the high watermark here:
   # chrome_rev: 390457
   "build_rev": "10ea72091524e848511f0ad4729fd647526355fa", # from cr commit position 390424
-  "build_overrides_rev": "bab0eea0cf5f7ae68b661eacd8b9c792bf19e8ae", # from cr commit position 390448
   "binutils_rev": "3a125b5a41761bc85d71aa4a478f88d667712267", # from cr commit position 378721
   "libcxx_static_rev": "fd8f9a82862aa40dab0c5bcdea6e498715284f5a", # from cr commit position 369150
   # NOTE: be sure to update clang_lib_version in SConstruct whenever
@@ -43,6 +42,9 @@ vars = {
   "nsis_rev": "21b6ad22daa7bfc04b9f1c1805a34622e2607a93", # from svn revision 7071
   "ragel_rev": "da42bb33f1b67c2d70b38ec1d2edf5263271b635", # from svn revision 9010
   "validator_snapshots_rev": "ef053694ef9b0d98d9bed0b9bb649963084bfc81",
+  # Rolls of build_overrides_rev should done at the same time as a roll of
+  # build_rev as build_overrides/ is tightly coupled with build/.
+  "build_overrides_rev": "7858afa5620b83855e381f7399b3494849d1902e",
 
   "chromium_git": "https://chromium.googlesource.com",
 }
@@ -58,7 +60,7 @@ deps = {
     Var("chromium_git") + "/chromium/src/build.git@" +
     Var("build_rev"),
   "build_overrides":
-    Var("chromium_git") + "/chromium/src/build_overrides.git@" +
+    Var("chromium_git") + "/native_client/src/build_overrides.git@" +
     Var("build_overrides_rev"),
   "testing/gtest":
     (Var("chromium_git") + "/external/github.com/google/googletest.git@" +
