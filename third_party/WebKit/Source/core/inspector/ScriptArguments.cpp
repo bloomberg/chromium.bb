@@ -95,6 +95,10 @@ private:
             m_builder.append("[object Window]");
             return true;
         }
+        if (value->IsProxy()) {
+            m_builder.append("[object Proxy]");
+            return true;
+        }
         if (value->IsObject()
             && !value->IsDate()
             && !value->IsFunction()

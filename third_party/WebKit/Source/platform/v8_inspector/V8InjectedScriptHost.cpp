@@ -116,9 +116,12 @@ void V8InjectedScriptHost::subtypeCallback(const v8::FunctionCallbackInfo<v8::Va
         info.GetReturnValue().Set(toV8StringInternalized(isolate, "generator"));
         return;
     }
-
     if (value->IsNativeError()) {
         info.GetReturnValue().Set(toV8StringInternalized(isolate, "error"));
+        return;
+    }
+    if (value->IsProxy()) {
+        info.GetReturnValue().Set(toV8StringInternalized(isolate, "proxy"));
         return;
     }
     String16 subtype = unwrapDebugger(info)->client()->valueSubtype(value);

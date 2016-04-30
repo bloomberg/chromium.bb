@@ -726,6 +726,9 @@ InjectedScript.prototype = {
             return description;
         }
 
+        if (subtype === "proxy")
+            return "Proxy";
+
         var className = InjectedScriptHost.internalConstructorName(obj);
         if (subtype === "array") {
             if (typeof obj.length === "number")
@@ -833,7 +836,7 @@ InjectedScript.RemoteObject = function(object, objectGroupName, doNotBind, force
         this.className = className;
     this.description = injectedScript._describe(object);
 
-    if (generatePreview && this.type === "object" && this.subtype !== "node")
+    if (generatePreview && this.type === "object" && this.subtype !== "node" && this.subtype !== "proxy")
         this.preview = this._generatePreview(object, undefined, columnNames, isTable, skipEntriesPreview);
 
     if (injectedScript._customObjectFormatterEnabled) {
