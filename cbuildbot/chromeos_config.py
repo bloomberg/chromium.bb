@@ -630,7 +630,6 @@ _waterfall_config_map = {
         'gru-release-group',
         'oak-release-group',
         'storm-release-group',
-        'strago-c-release-group',
         'strago-d-release-group',
         'veyron-c-release-group',
         'veyron-d-release-group',
@@ -2909,7 +2908,6 @@ def GetConfig():
           'umaro',
           'banon',
       ),
-      important=False,
   )
 
   _AddGroupConfig(
