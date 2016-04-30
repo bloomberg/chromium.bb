@@ -64,10 +64,8 @@ private:
     int callV8FunctionReturnInt(const char* name) const;
 
     v8::Isolate* m_isolate;
-    OwnPtr<JavaScriptCallFrame> m_caller;
     v8::Global<v8::Context> m_debuggerContext;
     v8::Global<v8::Object> m_callFrame;
-    v8::Global<v8::FunctionTemplate> m_wrapperTemplate;
 };
 
 using JavaScriptCallFrames = protocol::Vector<OwnPtr<JavaScriptCallFrame>>;

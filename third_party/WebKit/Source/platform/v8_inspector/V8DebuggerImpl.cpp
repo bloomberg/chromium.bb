@@ -295,14 +295,10 @@ void V8DebuggerImpl::breakProgram()
         return;
 
     v8::HandleScope scope(m_isolate);
-    if (m_breakProgramCallbackTemplate.IsEmpty()) {
-        v8::Local<v8::FunctionTemplate> templ = v8::FunctionTemplate::New(m_isolate);
-        templ->SetCallHandler(&V8DebuggerImpl::breakProgramCallback, v8::External::New(m_isolate, this));
-        m_breakProgramCallbackTemplate.Reset(m_isolate, templ);
-    }
-
-    v8::Local<v8::Function> breakProgramFunction = v8::Local<v8::FunctionTemplate>::New(m_isolate, m_breakProgramCallbackTemplate)->GetFunction();
-    v8::Debug::Call(debuggerContext(), breakProgramFunction).ToLocalChecked();
+    v8::Local<v8::Function> breakFunction;
+    if (!v8::Function::New(m_isolate->GetCurrentContext(), &V8DebuggerImpl::breakProgramCallback, v8::External::New(m_isolate, this)).ToLocal(&breakFunction))
+        return;
+    v8::Debug::Call(debuggerContext(), breakFunction).ToLocalChecked();
 }
 
 void V8DebuggerImpl::continueProgram()
@@ -841,19 +837,6 @@ const V8DebuggerImpl::ContextByIdMap* V8DebuggerImpl::contextGroup(int contextGr
 V8InspectorSessionImpl* V8DebuggerImpl::sessionForContextGroup(int contextGroupId)
 {
     return contextGroupId ? m_sessions.get(contextGroupId) : nullptr;
-}
-
-v8::MaybeLocal<v8::FunctionTemplate> V8DebuggerImpl::functionTemplate(const String16& name)
-{
-    if (!m_templates.contains(name))
-        return v8::MaybeLocal<v8::FunctionTemplate>();
-    return m_templates.get(name)->Get(m_isolate);
-}
-
-void V8DebuggerImpl::setFunctionTemplate(const String16& name, v8::Local<v8::FunctionTemplate> functionTemplate)
-{
-    OwnPtr<v8::Global<v8::FunctionTemplate>> global = adoptPtr(new v8::Global<v8::FunctionTemplate>(m_isolate, functionTemplate));
-    m_templates.set(name, global.release());
 }
 
 } // namespace blink

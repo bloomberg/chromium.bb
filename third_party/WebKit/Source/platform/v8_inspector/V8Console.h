@@ -15,7 +15,7 @@ class InspectedContext;
 // https://console.spec.whatwg.org/#console-interface
 class V8Console {
 public:
-    static v8::MaybeLocal<v8::Object> createConsole(InspectedContext*, bool hasMemoryAttribute);
+    static v8::Local<v8::Object> createConsole(InspectedContext*, bool hasMemoryAttribute);
     static v8::Local<v8::Object> createCommandLineAPI(InspectedContext*);
     static void clearInspectedContextIfNeeded(v8::Local<v8::Context>, v8::Local<v8::Object> console);
 

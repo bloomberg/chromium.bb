@@ -121,9 +121,6 @@ public:
     void disconnect(V8InspectorSessionImpl*);
     V8InspectorSessionImpl* sessionForContextGroup(int contextGroupId);
 
-    v8::MaybeLocal<v8::FunctionTemplate> functionTemplate(const String16& name);
-    void setFunctionTemplate(const String16& name, v8::Local<v8::FunctionTemplate>);
-
 private:
     void enable();
     void disable();
@@ -155,15 +152,12 @@ private:
     SessionMap m_sessions;
     int m_enabledAgentsCount;
     bool m_breakpointsActivated;
-    v8::Global<v8::FunctionTemplate> m_breakProgramCallbackTemplate;
     v8::Global<v8::Object> m_debuggerScript;
     v8::Global<v8::Context> m_debuggerContext;
     v8::Local<v8::Object> m_executionState;
     v8::Local<v8::Context> m_pausedContext;
     bool m_runningNestedMessageLoop;
     v8::Global<v8::Context> m_regexContext;
-    using FunctionTemplateMap = protocol::HashMap<String16, OwnPtr<v8::Global<v8::FunctionTemplate>>>;
-    FunctionTemplateMap m_templates;
 };
 
 } // namespace blink
