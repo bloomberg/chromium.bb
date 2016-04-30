@@ -244,7 +244,8 @@ void GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang() {
 #if defined(OS_WIN)
   // Defer termination until a certain amount of CPU time has elapsed on the
   // watched thread.
-  base::TimeDelta time_since_arm = GetWatchedThreadTime() - arm_cpu_time_;
+  base::ThreadTicks current_cpu_time = GetWatchedThreadTime();
+  base::TimeDelta time_since_arm = current_cpu_time - arm_cpu_time_;
   if (use_thread_cpu_time_ && (time_since_arm < timeout_)) {
     message_loop()->PostDelayedTask(
         FROM_HERE,
@@ -349,7 +350,11 @@ void GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang() {
   ULONGLONG interrupt_delay = fire_interrupt_time - arm_interrupt_time_;
 
   base::debug::Alias(&interrupt_delay);
+  base::debug::Alias(&current_cpu_time);
   base::debug::Alias(&time_since_arm);
+
+  bool using_thread_ticks = base::ThreadTicks::IsSupported();
+  base::debug::Alias(&using_thread_ticks);
 
   bool using_high_res_timer = base::Time::IsHighResolutionTimerInUse();
   base::debug::Alias(&using_high_res_timer);
