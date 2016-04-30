@@ -248,9 +248,12 @@ void AssociatedURLLoader::ClientAdapter::didFinishLoading(unsigned long identifi
     if (!m_client)
         return;
 
-    m_loader->disposeObserver();
+    m_loader->clientAdapterDone();
 
-    m_client->didFinishLoading(m_loader, finishTime, WebURLLoaderClient::kUnknownEncodedDataLength);
+    auto client = m_client;
+    m_client = nullptr;
+    client->didFinishLoading(m_loader, finishTime, WebURLLoaderClient::kUnknownEncodedDataLength);
+    // |this| may be dead here.
 }
 
 void AssociatedURLLoader::ClientAdapter::didFail(const ResourceError& error)
@@ -258,7 +261,7 @@ void AssociatedURLLoader::ClientAdapter::didFail(const ResourceError& error)
     if (!m_client)
         return;
 
-    m_loader->disposeObserver();
+    m_loader->clientAdapterDone();
 
     m_didFail = true;
     m_error = WebURLError(error);
@@ -287,7 +290,10 @@ void AssociatedURLLoader::ClientAdapter::notifyError(Timer<ClientAdapter>* timer
     if (!m_client)
         return;
 
-    m_client->didFail(m_loader, m_error);
+    auto client = m_client;
+    m_client = nullptr;
+    client->didFail(m_loader, m_error);
+    // |this| may be dead here.
 }
 
 class AssociatedURLLoader::Observer final : public GarbageCollected<Observer>, public ContextLifecycleObserver {
@@ -320,7 +326,8 @@ public:
 };
 
 AssociatedURLLoader::AssociatedURLLoader(WebLocalFrameImpl* frameImpl, const WebURLLoaderOptions& options)
-    : m_options(options)
+    : m_client(nullptr)
+    , m_options(options)
     , m_observer(new Observer(this, frameImpl->frame()->document()))
 {
 }
@@ -349,6 +356,7 @@ void AssociatedURLLoader::loadSynchronously(const WebURLRequest& request, WebURL
 
 void AssociatedURLLoader::loadAsynchronously(const WebURLRequest& request, WebURLLoaderClient* client)
 {
+    DCHECK(!m_client);
     DCHECK(!m_loader);
     DCHECK(!m_clientAdapter);
 
@@ -367,6 +375,7 @@ void AssociatedURLLoader::loadAsynchronously(const WebURLRequest& request, WebUR
         }
     }
 
+    m_client = client;
     m_clientAdapter = ClientAdapter::create(this, client, m_options);
 
     if (allowLoad) {
@@ -402,7 +411,18 @@ void AssociatedURLLoader::loadAsynchronously(const WebURLRequest& request, WebUR
 void AssociatedURLLoader::cancel()
 {
     disposeObserver();
+    cancelLoader();
+    m_client = nullptr;
+}
 
+void AssociatedURLLoader::clientAdapterDone()
+{
+    disposeObserver();
+    m_client = nullptr;
+}
+
+void AssociatedURLLoader::cancelLoader()
+{
     if (!m_clientAdapter)
         return;
 
@@ -429,9 +449,15 @@ void AssociatedURLLoader::setLoadingTaskRunner(blink::WebTaskRunner*)
 
 void AssociatedURLLoader::documentDestroyed()
 {
-    cancel();
+    disposeObserver();
+    cancelLoader();
 
-    m_client->didFail(this, ResourceError());
+    if (!m_client)
+        return;
+
+    WebURLLoaderClient* client = m_client;
+    m_client = nullptr;
+    client->didFail(this, ResourceError());
     // |this| may be dead here.
 }
 

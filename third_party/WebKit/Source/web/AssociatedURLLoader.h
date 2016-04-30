@@ -60,11 +60,16 @@ public:
     // Called by |m_observer| to handle destruction of the Document associated
     // with the frame given to the constructor.
     void documentDestroyed();
-    void disposeObserver();
+
+    // Called by ClientAdapter to handle completion of loading.
+    void clientAdapterDone();
 
 private:
     class ClientAdapter;
     class Observer;
+
+    void cancelLoader();
+    void disposeObserver();
 
     WebURLLoaderClient* m_client;
     WebURLLoaderOptions m_options;
