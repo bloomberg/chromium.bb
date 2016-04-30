@@ -16,7 +16,7 @@
 
 IPC_ENUM_TRAITS_MAX_VALUE(
     PageMsg_SetZoomLevel_Command,
-    PageMsg_SetZoomLevel_Command::LAST);
+    PageMsg_SetZoomLevel_Command::LAST)
 
 // Messages sent from the browser to the renderer.
 
