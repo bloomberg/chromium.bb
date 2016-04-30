@@ -40,7 +40,8 @@ bool Vp9HeaderParser::ParseUncompressedHeader() {
     return false;
   }
 
-  profile_ = VpxReadLiteral(2);
+  profile_ = ReadBit();
+  profile_ |= ReadBit() << 1;
   if (profile_ > 2)
     profile_ += ReadBit();
 
