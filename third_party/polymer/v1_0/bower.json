@@ -18,7 +18,6 @@
     "iron-icon": "PolymerElements/iron-icon#^1.0.0",
     "iron-iconset-svg": "PolymerElements/iron-iconset-svg#^1.0.0",
     "iron-icons": "PolymerElements/iron-icons#^1.0.0",
-    "iron-image": "PolymerElements/iron-image#^1.0.0",
     "iron-input": "PolymerElements/iron-input#^1.0.0",
     "iron-list": "PolymerElements/iron-list#^1.0.0",
     "iron-location": "PolymerElements/iron-location#^0.8.1",
@@ -37,7 +36,6 @@
     "neon-animation": "PolymerElements/neon-animation#^1.1.0",
     "paper-behaviors": "PolymerElements/paper-behaviors#^1.0.0",
     "paper-button": "PolymerElements/paper-button#^1.0.0",
-    "paper-card": "PolymerElements/paper-card",
     "paper-checkbox": "PolymerElements/paper-checkbox#^1.0.0",
     "paper-dialog-behavior": "PolymerElements/paper-dialog-behavior#^1.0.0",
     "paper-dialog": "PolymerElements/paper-dialog#^1.0.0",
@@ -62,7 +60,6 @@
     "paper-tabs": "PolymerElements/paper-tabs#^1.0.0",
     "paper-toggle-button": "PolymerElements/paper-toggle-button#^1.0.0",
     "paper-toolbar": "PolymerElements/paper-toolbar#^1.0.0",
-    "paper-tooltip": "PolymerElements/paper-tooltip#^1.0.0",
     "polymer-externs": "PolymerLabs/polymer-externs#^1.0.0",
     "polymer": "Polymer/polymer#^v1.0.0",
     "web-animations-js": "web-animations/web-animations-js#^2.0.0"

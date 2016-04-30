@@ -110,13 +110,6 @@ Tag: v1.0.9
 Revision: ce9b2ea1f73d936cffdd05f3fe34b1f69d1d32db
 Tree link: https://github.com/PolymerElements/iron-iconset-svg/tree/v1.0.9
 
-Name: iron-image
-Version: 1.2.3
-Repository: git://github.com/PolymerElements/iron-image.git
-Tag: v1.2.3
-Revision: ab4f710c21e34eb1a383da63b127920111804919
-Tree link: https://github.com/PolymerElements/iron-image/tree/v1.2.3
-
 Name: iron-input
 Version: 1.0.10
 Repository: git://github.com/PolymerElements/iron-input.git
@@ -242,13 +235,6 @@ Repository: git://github.com/PolymerElements/paper-button.git
 Tag: v1.0.11
 Revision: 7d0f75300372d91835ae7298593d50987d4a610f
 Tree link: https://github.com/PolymerElements/paper-button/tree/v1.0.11
-
-Name: paper-card
-Version: 1.1.1
-Repository: git://github.com/PolymerElements/paper-card.git
-Tag: v1.1.1
-Revision: 8ddd91424414ad32147c4c0c6812aff348da6114
-Tree link: https://github.com/PolymerElements/paper-card/tree/v1.1.1
 
 Name: paper-checkbox
 Version: 1.1.3
@@ -417,13 +403,6 @@ Repository: git://github.com/PolymerElements/paper-toolbar.git
 Tag: v1.1.4
 Revision: e9d582733fab4d0698c680047d7faaab1a35196c
 Tree link: https://github.com/PolymerElements/paper-toolbar/tree/v1.1.4
-
-Name: paper-tooltip
-Version: 1.1.2
-Repository: git://github.com/PolymerElements/paper-tooltip.git
-Tag: v1.1.2
-Revision: 6be894127678900f6e506b56fc9622ab768c03aa
-Tree link: https://github.com/PolymerElements/paper-tooltip/tree/v1.1.2
 
 Name: polymer
 Version: 1.4.0
