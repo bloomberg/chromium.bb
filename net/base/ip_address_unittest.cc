@@ -308,25 +308,53 @@ TEST(IPAddressTest, AllZeros) {
 }
 
 TEST(IPAddressTest, ToString) {
-  uint8_t addr1[4] = {0, 0, 0, 0};
-  IPAddress ip_address1(addr1);
-  EXPECT_EQ("0.0.0.0", ip_address1.ToString());
+  EXPECT_EQ("0.0.0.0", IPAddress::IPv4AllZeros().ToString());
 
-  uint8_t addr2[4] = {192, 168, 0, 1};
-  IPAddress ip_address2(addr2);
-  EXPECT_EQ("192.168.0.1", ip_address2.ToString());
+  IPAddress address(192, 168, 0, 1);
+  EXPECT_EQ("192.168.0.1", address.ToString());
 
-  uint8_t addr3[16] = {0xFE, 0xDC, 0xBA, 0x98};
-  IPAddress ip_address3(addr3);
-  EXPECT_EQ("fedc:ba98::", ip_address3.ToString());
+  IPAddress address2(0xFE, 0xDC, 0xBA, 0x98, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                     0);
+  EXPECT_EQ("fedc:ba98::", address2.ToString());
 
   // ToString() shouldn't crash on invalid addresses.
   uint8_t addr4[2];
-  IPAddress ip_address4(addr4);
-  EXPECT_EQ("", ip_address4.ToString());
+  IPAddress address4(addr4);
+  EXPECT_EQ("", address4.ToString());
 
-  IPAddress ip_address5;
-  EXPECT_EQ("", ip_address5.ToString());
+  IPAddress address5;
+  EXPECT_EQ("", address5.ToString());
+}
+
+TEST(IPAddressTest, IPAddressToStringWithPort) {
+  EXPECT_EQ("0.0.0.0:3",
+            IPAddressToStringWithPort(IPAddress::IPv4AllZeros(), 3));
+
+  IPAddress address1(192, 168, 0, 1);
+  EXPECT_EQ("192.168.0.1:99", IPAddressToStringWithPort(address1, 99));
+
+  IPAddress address2(0xFE, 0xDC, 0xBA, 0x98, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                     0);
+  EXPECT_EQ("[fedc:ba98::]:8080", IPAddressToStringWithPort(address2, 8080));
+
+  // IPAddressToStringWithPort() shouldn't crash on invalid addresses.
+  uint8_t addr3[2];
+  EXPECT_EQ("", IPAddressToStringWithPort(IPAddress(addr3), 8080));
+}
+
+TEST(IPAddressTest, IPAddressToPackedString) {
+  IPAddress ipv4_address;
+  EXPECT_TRUE(ipv4_address.AssignFromIPLiteral("4.31.198.44"));
+  std::string expected_ipv4_address("\x04\x1f\xc6\x2c", 4);
+  EXPECT_EQ(expected_ipv4_address, IPAddressToPackedString(ipv4_address));
+
+  IPAddress ipv6_address;
+  EXPECT_TRUE(ipv6_address.AssignFromIPLiteral("2001:0700:0300:1800::000f"));
+  std::string expected_ipv6_address(
+      "\x20\x01\x07\x00\x03\x00\x18\x00"
+      "\x00\x00\x00\x00\x00\x00\x00\x0f",
+      16);
+  EXPECT_EQ(expected_ipv6_address, IPAddressToPackedString(ipv6_address));
 }
 
 // Test that invalid IP literals fail to parse.
@@ -392,39 +420,6 @@ TEST(IPAddressTest, LessThan) {
   EXPECT_TRUE(ip_address3.AssignFromIPLiteral("127.0.0.1"));
   EXPECT_FALSE(ip_address1 < ip_address3);
   EXPECT_FALSE(ip_address3 < ip_address1);
-}
-
-TEST(IPAddressTest, IPAddressToStringWithPort) {
-  IPAddress address1;
-  EXPECT_TRUE(address1.AssignFromIPLiteral("0.0.0.0"));
-  EXPECT_EQ("0.0.0.0:3", IPAddressToStringWithPort(address1, 3));
-
-  IPAddress address2;
-  EXPECT_TRUE(address2.AssignFromIPLiteral("192.168.0.1"));
-  EXPECT_EQ("192.168.0.1:99", IPAddressToStringWithPort(address2, 99));
-
-  IPAddress address3;
-  EXPECT_TRUE(address3.AssignFromIPLiteral("fedc:ba98::"));
-  EXPECT_EQ("[fedc:ba98::]:8080", IPAddressToStringWithPort(address3, 8080));
-
-  // ToString() shouldn't crash on invalid addresses.
-  IPAddress address4;
-  EXPECT_EQ("", IPAddressToStringWithPort(address4, 8080));
-}
-
-TEST(IPAddressTest, IPAddressToPackedString) {
-  IPAddress ipv4_address;
-  EXPECT_TRUE(ipv4_address.AssignFromIPLiteral("4.31.198.44"));
-  std::string expected_ipv4_address("\x04\x1f\xc6\x2c", 4);
-  EXPECT_EQ(expected_ipv4_address, IPAddressToPackedString(ipv4_address));
-
-  IPAddress ipv6_address;
-  EXPECT_TRUE(ipv6_address.AssignFromIPLiteral("2001:0700:0300:1800::000f"));
-  std::string expected_ipv6_address(
-      "\x20\x01\x07\x00\x03\x00\x18\x00"
-      "\x00\x00\x00\x00\x00\x00\x00\x0f",
-      16);
-  EXPECT_EQ(expected_ipv6_address, IPAddressToPackedString(ipv6_address));
 }
 
 // Test mapping an IPv4 address to an IPv6 address.

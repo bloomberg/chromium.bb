@@ -29,7 +29,6 @@ using net::DnsTransactionFactory;
 using net::IPEndPoint;
 using net::NetLog;
 using net::NetworkChangeNotifier;
-using net::ParseIPLiteralToNumber;
 
 namespace chrome_browser_net {
 

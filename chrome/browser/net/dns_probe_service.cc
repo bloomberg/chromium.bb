@@ -22,7 +22,6 @@ using base::StringToInt;
 using error_page::DnsProbeStatus;
 using net::DnsClient;
 using net::DnsConfig;
-using net::ParseIPLiteralToNumber;
 using net::NetworkChangeNotifier;
 
 namespace chrome_browser_net {

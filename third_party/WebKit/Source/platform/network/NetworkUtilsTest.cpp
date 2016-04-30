@@ -4,7 +4,7 @@
 
 #include "platform/network/NetworkUtils.h"
 
-#include "net/base/ip_address_number.h"
+#include "net/base/ip_address.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/text/WTFString.h"
 
@@ -46,10 +46,9 @@ TEST(NetworkUtilsTest, IsReservedIPAddress)
     EXPECT_FALSE(NetworkUtils::isReservedIPAddress("127.0.0.1.example.com"));
 
     // Moar IPv4
-    uint8_t address[4] = { 0, 0, 0, 1 };
     for (int i = 0; i < 256; i++) {
-        address[0] = i;
-        std::string addressString = net::IPAddressToString(address, sizeof(address));
+        net::IPAddress address(i, 0, 0, 1);
+        std::string addressString = address.ToString();
         if (i == 0 || i == 10 || i == 127 || i > 223) {
             EXPECT_TRUE(NetworkUtils::isReservedIPAddress(
                 String::fromUTF8(addressString.data(),
