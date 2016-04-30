@@ -2530,6 +2530,9 @@ Even if you have downloaded files from this website before, the website might ha
         <message name="IDS_CERT_SELECTOR_PROVIDER_COLUMN" desc="The text of the header for the certificate provider column in the certificate selector dialog.">
           Provider
         </message>
+        <message name="IDS_CERT_SELECTOR_SERIAL_COLUMN" desc="The text of the header for the certificate serial number column in the certificate selector dialog.">
+          Serial
+        </message>
       </if>
 
       <!-- Certificate viewer dialog strings that are shared across all the platforms -->

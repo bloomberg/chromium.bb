@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/certificate_viewer.h"
@@ -39,8 +40,8 @@
 
 namespace chrome {
 
-const int CertificateSelector::kTableViewWidth = 400;
-const int CertificateSelector::kTableViewHeight = 100;
+const int CertificateSelector::kTableViewWidth = 500;
+const int CertificateSelector::kTableViewHeight = 150;
 
 class CertificateSelector::CertificateTableModel : public ui::TableModel {
  public:
@@ -58,6 +59,7 @@ class CertificateSelector::CertificateTableModel : public ui::TableModel {
     base::string16 subject;
     base::string16 issuer;
     base::string16 provider;
+    base::string16 serial;
   };
   std::vector<Row> rows_;
 
@@ -74,6 +76,10 @@ CertificateSelector::CertificateTableModel::CertificateTableModel(
     row.subject = base::UTF8ToUTF16(cert->subject().GetDisplayName());
     row.issuer = base::UTF8ToUTF16(cert->issuer().GetDisplayName());
     row.provider = base::UTF8ToUTF16(provider_names[i]);
+    if (cert->serial_number().size() < std::numeric_limits<size_t>::max() / 2) {
+      row.serial = base::UTF8ToUTF16(base::HexEncode(
+          cert->serial_number().data(), cert->serial_number().size()));
+    }
     rows_.push_back(row);
   }
 }
@@ -96,6 +102,8 @@ base::string16 CertificateSelector::CertificateTableModel::GetText(
       return row.issuer;
     case IDS_CERT_SELECTOR_PROVIDER_COLUMN:
       return row.provider;
+    case IDS_CERT_SELECTOR_SERIAL_COLUMN:
+      return row.serial;
     default:
       NOTREACHED();
   }
@@ -199,6 +207,8 @@ void CertificateSelector::InitWithText(
     columns.push_back(ui::TableColumn(IDS_CERT_SELECTOR_PROVIDER_COLUMN,
                                       ui::TableColumn::LEFT, -1, 0.4f));
   }
+  columns.push_back(ui::TableColumn(IDS_CERT_SELECTOR_SERIAL_COLUMN,
+                                    ui::TableColumn::LEFT, -1, 0.2f));
   table_ = new views::TableView(model_.get(), columns, views::TEXT_ONLY,
                                 true /* single_selection */);
   table_->SetObserver(this);
@@ -208,6 +218,10 @@ void CertificateSelector::InitWithText(
                   kTableViewWidth, kTableViewHeight);
 
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+}
+
+ui::TableModel* CertificateSelector::table_model_for_testing() const {
+  return model_.get();
 }
 
 net::X509Certificate* CertificateSelector::GetSelectedCert() const {

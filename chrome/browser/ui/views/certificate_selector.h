@@ -24,6 +24,10 @@ class TableView;
 class View;
 }
 
+namespace ui {
+class TableModel;
+}
+
 namespace chrome {
 
 // A base class for dialogs that show a given list of certificates to the user.
@@ -78,6 +82,8 @@ class CertificateSelector : public views::DialogDelegateView,
   // and is supposed to explain to the user what the implication of the
   // certificate selection is.
   void InitWithText(std::unique_ptr<views::View> text_label);
+
+  ui::TableModel* table_model_for_testing() const;
 
  private:
   class CertificateTableModel;
