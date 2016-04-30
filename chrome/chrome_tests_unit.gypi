@@ -2728,7 +2728,7 @@
             }],
           ],
         }],
-        ['OS != "android" and (use_nss_certs == 1 or use_openssl_certs == 1)', {
+        ['OS != "android" and use_nss_certs == 1', {
           'sources': [
             'common/net/x509_certificate_model_unittest.cc',
           ],

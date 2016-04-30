@@ -566,7 +566,6 @@
         'common/net/x509_certificate_model.cc',
         'common/net/x509_certificate_model.h',
         'common/net/x509_certificate_model_nss.cc',
-        'common/net/x509_certificate_model_openssl.cc',
       ],
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
@@ -590,15 +589,6 @@
         ['OS == "android" or OS == "ios"', {
           'sources!': [
             'common/net/x509_certificate_model.cc',
-          ],
-        }],
-        ['use_openssl_certs == 1 and OS != "android"', {
-          'dependencies': [
-            '<(DEPTH)/third_party/boringssl/boringssl.gyp:boringssl',
-          ],
-        }, {
-          'sources!': [
-            'common/net/x509_certificate_model_openssl.cc',
           ],
         }],
         ['use_nss_certs == 1', {

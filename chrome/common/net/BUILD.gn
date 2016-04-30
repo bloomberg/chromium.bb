@@ -12,7 +12,6 @@ static_library("net") {
     "x509_certificate_model.cc",
     "x509_certificate_model.h",
     "x509_certificate_model_nss.cc",
-    "x509_certificate_model_openssl.cc",
   ]
 
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
@@ -36,12 +35,6 @@ static_library("net") {
 
   if (is_android || is_ios) {
     sources -= [ "x509_certificate_model.cc" ]
-  }
-
-  if (use_openssl_certs && !is_android) {
-    deps += [ "//third_party/boringssl" ]
-  } else {
-    sources -= [ "x509_certificate_model_openssl.cc" ]
   }
 
   if (use_nss_certs) {

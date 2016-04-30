@@ -2128,7 +2128,7 @@ test("unit_tests") {
               "//chrome")
     }
   }
-  if (!is_android && (use_nss_certs || use_openssl_certs)) {
+  if (!is_android && use_nss_certs) {
     sources += [ "../common/net/x509_certificate_model_unittest.cc" ]
   }
   if (enable_supervised_users) {

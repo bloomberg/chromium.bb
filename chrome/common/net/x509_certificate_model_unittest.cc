@@ -37,30 +37,18 @@ TEST(X509CertificateModelTest, GetCertNameOrNicknameAndGetTitle) {
       net::ImportCertFromFile(net::GetTestCertsDirectory(),
                               "no_subject_common_name_cert.pem"));
   ASSERT_TRUE(no_cn_cert.get());
-#if defined(USE_OPENSSL_CERTS)
-  EXPECT_EQ("emailAddress=wtc@google.com",
-            x509_certificate_model::GetCertNameOrNickname(
-                no_cn_cert->os_cert_handle()));
-#else
   // Temp cert has no nickname.
   EXPECT_EQ("",
             x509_certificate_model::GetCertNameOrNickname(
                 no_cn_cert->os_cert_handle()));
-#endif
 
   EXPECT_EQ("xn--wgv71a119e.com",
             x509_certificate_model::GetTitle(
                 punycode_cert->os_cert_handle()));
 
-#if defined(USE_OPENSSL_CERTS)
-  EXPECT_EQ("emailAddress=wtc@google.com",
-            x509_certificate_model::GetTitle(
-                no_cn_cert->os_cert_handle()));
-#else
   EXPECT_EQ("E=wtc@google.com",
             x509_certificate_model::GetTitle(
                 no_cn_cert->os_cert_handle()));
-#endif
 
   scoped_refptr<net::X509Certificate> no_cn_cert2(net::ImportCertFromFile(
       net::GetTestCertsDirectory(), "ct-test-embedded-cert.pem"));
@@ -225,11 +213,6 @@ TEST(X509CertificateModelTest, GetTypeCA) {
                               "root_ca_cert.pem"));
   ASSERT_TRUE(cert.get());
 
-#if defined(USE_OPENSSL_CERTS)
-  // Remove this when OpenSSL build implements the necessary functions.
-  EXPECT_EQ(net::OTHER_CERT,
-            x509_certificate_model::GetType(cert->os_cert_handle()));
-#else
   EXPECT_EQ(net::CA_CERT,
             x509_certificate_model::GetType(cert->os_cert_handle()));
 
@@ -246,7 +229,6 @@ TEST(X509CertificateModelTest, GetTypeCA) {
 
   EXPECT_EQ(net::CA_CERT,
             x509_certificate_model::GetType(cert->os_cert_handle()));
-#endif
 }
 
 TEST(X509CertificateModelTest, GetTypeServer) {
@@ -255,11 +237,6 @@ TEST(X509CertificateModelTest, GetTypeServer) {
                               "google.single.der"));
   ASSERT_TRUE(cert.get());
 
-#if defined(USE_OPENSSL_CERTS)
-  // Remove this when OpenSSL build implements the necessary functions.
-  EXPECT_EQ(net::OTHER_CERT,
-            x509_certificate_model::GetType(cert->os_cert_handle()));
-#else
   // Test mozilla_security_manager::GetCertType with server certs and default
   // trust.  Currently this doesn't work.
   // TODO(mattm): make mozilla_security_manager::GetCertType smarter so we can
@@ -286,7 +263,6 @@ TEST(X509CertificateModelTest, GetTypeServer) {
 
   EXPECT_EQ(net::SERVER_CERT,
             x509_certificate_model::GetType(cert->os_cert_handle()));
-#endif
 }
 
 // An X.509 v1 certificate with the version field omitted should get
@@ -325,15 +301,11 @@ TEST(X509CertificateModelTest, GetCMSString) {
             net::X509Certificate::FORMAT_PKCS7);
 
     ASSERT_EQ(certs.size(), decoded_certs.size());
-#if defined(USE_OPENSSL_CERTS)
-    for (size_t i = 0; i < certs.size(); ++i)
-      EXPECT_TRUE(certs[i]->Equals(decoded_certs[i].get()));
-#else
+
     // NSS sorts the certs before writing the file.
     EXPECT_TRUE(certs[0]->Equals(decoded_certs.back().get()));
     for (size_t i = 1; i < certs.size(); ++i)
       EXPECT_TRUE(certs[i]->Equals(decoded_certs[i - 1].get()));
-#endif
   }
 
   {
@@ -410,11 +382,7 @@ TEST(X509CertificateModelTest, ProcessSubjectPublicKeyInfo) {
         "2A 15 84 49 F1 01 BF 9B 30 06 D0 15 A0 1F 9D 51\n"
         "91 47 E1 53 5F EF 5E EC C2 61 79 C2 14 9F C4 E3\n"
         "\n"
-#if defined(USE_OPENSSL_CERTS)
-        "  Public Exponent (17 bits):\n"
-#else
         "  Public Exponent (24 bits):\n"
-#endif
         "  01 00 01",
         x509_certificate_model::ProcessSubjectPublicKeyInfo(
             cert->os_cert_handle()));
