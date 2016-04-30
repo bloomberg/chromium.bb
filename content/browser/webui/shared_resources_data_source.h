@@ -23,7 +23,9 @@ class SharedResourcesDataSource : public URLDataSource {
       int render_process_id,
       int render_frame_id,
       const URLDataSource::GotDataCallback& callback) override;
-  std::string GetMimeType(const std::string&) const override;
+  std::string GetMimeType(const std::string& path) const override;
+  base::MessageLoop* MessageLoopForRequestPath(
+        const std::string& path) const override;
   std::string GetAccessControlAllowOriginForOrigin(
       const std::string& origin) const override;
 
