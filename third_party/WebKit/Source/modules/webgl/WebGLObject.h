@@ -31,10 +31,6 @@
 #include "platform/heap/Handle.h"
 #include "wtf/Assertions.h"
 
-namespace blink {
-class WebGraphicsContext3D;
-}
-
 namespace gpu {
 namespace gles2 {
 class GLES2Interface;

@@ -21,7 +21,6 @@
 #include "content/renderer/top_level_blame_context.h"
 #include "content/renderer/webpublicsuffixlist_impl.h"
 #include "device/vibration/vibration_manager.mojom.h"
-#include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBFactory.h"
 #include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationType.h"
 

@@ -72,11 +72,6 @@ public:
         m_grContext = adoptRef(GrContext::Create(kOpenGL_GrBackend, reinterpret_cast<GrBackendContext>(glInterface.get())));
     }
 
-    WebGraphicsContext3D* context3d() override
-    {
-        return nullptr;
-    }
-
     GrContext* grContext() override
     {
         return m_grContext.get();

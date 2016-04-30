@@ -91,7 +91,6 @@
 #include "platform/graphics/gpu/AcceleratedImageBufferSurface.h"
 #include "platform/graphics/gpu/DrawingBuffer.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebGraphicsContext3D.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
 #include "public/platform/functional/WebFunction.h"
 #include "wtf/Functional.h"
@@ -1060,7 +1059,7 @@ WebGLRenderingContextBase::~WebGLRenderingContextBase()
     m_extensions.clear();
 
     // Context must be removed from the group prior to the destruction of the
-    // WebGraphicsContext3D, otherwise shared objects may not be properly deleted.
+    // GL context, otherwise shared objects may not be properly deleted.
     m_contextGroup->removeContext(this);
 
     destroyContext();
@@ -4052,14 +4051,14 @@ void WebGLRenderingContextBase::texImageCanvasByGPU(TexImageByGPUType functionTy
 
     if (!canvas->is3D()) {
         ImageBuffer* buffer = canvas->buffer();
-        if (!buffer->copyToPlatformTexture(webContext(), contextGL(), targetTexture, targetInternalformat, targetType,
+        if (!buffer->copyToPlatformTexture(contextGL(), targetTexture, targetInternalformat, targetType,
             targetLevel, m_unpackPremultiplyAlpha, m_unpackFlipY)) {
             ASSERT_NOT_REACHED();
         }
     } else {
         WebGLRenderingContextBase* gl = toWebGLRenderingContextBase(canvas->renderingContext());
         ScopedTexture2DRestorer restorer(gl);
-        if (!gl->drawingBuffer()->copyToPlatformTexture(webContext(), contextGL(), targetTexture, targetInternalformat, targetType,
+        if (!gl->drawingBuffer()->copyToPlatformTexture(contextGL(), targetTexture, targetInternalformat, targetType,
             targetLevel, m_unpackPremultiplyAlpha, !m_unpackFlipY, BackBuffer)) {
             ASSERT_NOT_REACHED();
         }
@@ -4156,7 +4155,7 @@ void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLint int
                 video->paintCurrentFrame(imageBuffer->canvas(), IntRect(0, 0, video->videoWidth(), video->videoHeight()), nullptr);
 
                 // This is a straight GPU-GPU copy, any necessary color space conversion was handled in the paintCurrentFrameInContext() call.
-                if (imageBuffer->copyToPlatformTexture(webContext(), contextGL(), texture->object(), internalformat, type,
+                if (imageBuffer->copyToPlatformTexture(contextGL(), texture->object(), internalformat, type,
                     level, m_unpackPremultiplyAlpha, m_unpackFlipY)) {
                     return;
                 }
@@ -5936,7 +5935,7 @@ void WebGLRenderingContextBase::maybeRestoreContext(Timer<WebGLRenderingContextB
         attributes, canvas()->document().topDocument().url(), 0, &glInfo));
     RefPtr<DrawingBuffer> buffer;
     if (contextProvider) {
-        // Construct a new drawing buffer with the new WebGraphicsContext3D.
+        // Construct a new drawing buffer with the new GL context.
         buffer = createDrawingBuffer(contextProvider.release());
         // If DrawingBuffer::create() fails to allocate a fbo, |drawingBuffer| is set to null.
     }

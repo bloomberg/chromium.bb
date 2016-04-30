@@ -102,7 +102,6 @@
       "platform/WebGestureCurve.h",
       "platform/WebGestureCurveTarget.h",
       "platform/WebGestureDevice.h",
-      "platform/WebGraphicsContext3D.h",
       "platform/WebGraphicsContext3DProvider.h",
       "platform/WebHTTPBody.h",
       "platform/WebHTTPHeaderVisitor.h",

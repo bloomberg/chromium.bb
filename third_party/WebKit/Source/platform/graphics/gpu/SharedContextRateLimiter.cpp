@@ -6,7 +6,6 @@
 
 #include "platform/graphics/gpu/Extensions3DUtil.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebGraphicsContext3D.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
 
 #ifndef GL_COMMANDS_COMPLETED_CHROMIUM

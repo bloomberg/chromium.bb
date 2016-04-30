@@ -20,7 +20,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "cc/blink/context_provider_web_context.h"
 #include "components/scheduler/child/web_scheduler_impl.h"
 #include "components/scheduler/child/web_task_runner_impl.h"
 #include "components/scheduler/renderer/renderer_scheduler.h"

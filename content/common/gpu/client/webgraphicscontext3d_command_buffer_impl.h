@@ -22,7 +22,6 @@
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/ipc/client/command_buffer_proxy_impl.h"
 #include "gpu/ipc/common/surface_handle.h"
-#include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "ui/gl/gpu_preference.h"
 #include "url/gurl.h"
@@ -44,8 +43,7 @@ class ShareGroup;
 
 namespace content {
 
-class WebGraphicsContext3DCommandBufferImpl
-    : public NON_EXPORTED_BASE(blink::WebGraphicsContext3D) {
+class WebGraphicsContext3DCommandBufferImpl {
  public:
   enum MappedMemoryReclaimLimit {
     kNoLimit = 0,
@@ -72,7 +70,7 @@ class WebGraphicsContext3DCommandBufferImpl
       gfx::GpuPreference gpu_preference,
       bool automatic_flushes);
 
-  ~WebGraphicsContext3DCommandBufferImpl() override;
+  CONTENT_EXPORT ~WebGraphicsContext3DCommandBufferImpl();
 
   gpu::CommandBufferProxyImpl* GetCommandBufferProxy() {
     return command_buffer_.get();

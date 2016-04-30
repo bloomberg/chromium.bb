@@ -13,7 +13,6 @@
 #include "base/compiler_specific.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
-#include "cc/blink/context_provider_web_context.h"
 #include "cc/output/context_provider.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/client/command_buffer_metrics.h"
@@ -36,7 +35,7 @@ namespace content {
 // Implementation of cc::ContextProvider that provides a
 // WebGraphicsContext3DCommandBufferImpl context and a GrContext.
 class CONTENT_EXPORT ContextProviderCommandBuffer
-    : NON_EXPORTED_BASE(public cc_blink::ContextProviderWebContext) {
+    : NON_EXPORTED_BASE(public cc::ContextProvider) {
  public:
   ContextProviderCommandBuffer(
       std::unique_ptr<WebGraphicsContext3DCommandBufferImpl> context3d,
@@ -45,9 +44,6 @@ class CONTENT_EXPORT ContextProviderCommandBuffer
       CommandBufferContextType type);
 
   gpu::CommandBufferProxyImpl* GetCommandBufferProxy();
-
-  // cc_blink::ContextProviderWebContext implementation.
-  WebGraphicsContext3DCommandBufferImpl* WebContext3D() override;
 
   // cc::ContextProvider implementation.
   bool BindToCurrentThread() override;

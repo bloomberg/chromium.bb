@@ -140,7 +140,6 @@
 #include "platform/weborigin/SchemeRegistry.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebConnectionType.h"
-#include "public/platform/WebGraphicsContext3D.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
 #include "public/platform/WebLayer.h"
 #include "wtf/InstanceCounter.h"

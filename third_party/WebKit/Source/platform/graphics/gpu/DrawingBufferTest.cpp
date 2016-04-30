@@ -38,7 +38,6 @@
 #include "platform/graphics/gpu/Extensions3DUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebExternalTextureMailbox.h"
-#include "public/platform/WebGraphicsContext3D.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
 #include "public/platform/functional/WebFunction.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -241,7 +240,6 @@ public:
     {
     }
 
-    WebGraphicsContext3D* context3d() override { return nullptr; }
     gpu::gles2::GLES2Interface* contextGL() override { return m_gl.get(); }
     // Not used by WebGL code.
     GrContext* grContext() override { return nullptr; }

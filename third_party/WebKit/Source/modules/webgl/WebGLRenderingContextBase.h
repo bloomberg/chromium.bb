@@ -45,7 +45,6 @@
 #include "platform/graphics/gpu/DrawingBuffer.h"
 #include "platform/graphics/gpu/Extensions3DUtil.h"
 #include "platform/graphics/gpu/WebGLImageConversion.h"
-#include "public/platform/WebGraphicsContext3D.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/text/WTFString.h"
 
@@ -380,7 +379,6 @@ public:
     void forceRestoreContext();
     void loseContextImpl(LostContextMode, AutoRecoveryMethod);
 
-    WebGraphicsContext3D* webContext() const { return drawingBuffer()->context(); }
     gpu::gles2::GLES2Interface* contextGL() const
     {
         DrawingBuffer* d = drawingBuffer();
@@ -1016,8 +1014,8 @@ protected:
         DontDisplayInConsole
     };
 
-    // Wrapper for WebGraphicsContext3D::synthesizeGLError that sends a message
-    // to the JavaScript console.
+    // Reports an error to glGetError, sends a message to the JavaScript
+    // console.
     void synthesizeGLError(GLenum, const char* functionName, const char* description, ConsoleDisplayPreference = DisplayInConsole);
     void emitGLWarning(const char* function, const char* reason);
 

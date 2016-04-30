@@ -44,13 +44,11 @@ class GLES2Interface;
 }
 
 namespace blink {
-class WebGraphicsContext3D;
 
 class WebGraphicsContext3DProvider {
 public:
     virtual ~WebGraphicsContext3DProvider() { }
 
-    virtual WebGraphicsContext3D* context3d() = 0;
     virtual gpu::gles2::GLES2Interface* contextGL() = 0;
     virtual GrContext* grContext() = 0;
     virtual gpu::Capabilities getCapabilities() = 0;

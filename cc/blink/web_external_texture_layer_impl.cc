@@ -13,7 +13,6 @@
 #include "third_party/WebKit/public/platform/WebExternalTextureLayerClient.h"
 #include "third_party/WebKit/public/platform/WebExternalTextureMailbox.h"
 #include "third_party/WebKit/public/platform/WebFloatRect.h"
-#include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/khronos/GLES2/gl2.h"
 

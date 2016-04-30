@@ -21,7 +21,6 @@
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/platform/WebCompositorSupport.h"
-#include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3DProvider.h"
 #include "third_party/WebKit/public/platform/WebTaskRunner.h"
 #include "third_party/WebKit/public/platform/WebThread.h"
@@ -125,7 +124,6 @@ TestPlugin::TestPlugin(blink::WebFrame* frame,
     : frame_(frame),
       delegate_(delegate),
       container_(nullptr),
-      context_(nullptr),
       gl_(nullptr),
       color_texture_(0),
       mailbox_changed_(false),
@@ -189,7 +187,6 @@ bool TestPlugin::initialize(blink::WebPluginContainer* container) {
   context_provider_ = base::WrapUnique(
       blink::Platform::current()->createOffscreenGraphicsContext3DProvider(
           attrs, url, nullptr, &gl_info));
-  context_ = context_provider_ ? context_provider_->context3d() : nullptr;
   gl_ = context_provider_ ? context_provider_->contextGL() : nullptr;
 
   if (!InitScene())

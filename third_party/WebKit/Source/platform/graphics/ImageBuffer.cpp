@@ -48,7 +48,6 @@
 #include "platform/image-encoders/skia/WEBPImageEncoder.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebExternalTextureMailbox.h"
-#include "public/platform/WebGraphicsContext3D.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
 #include "skia/ext/texture_handle.h"
 #include "third_party/skia/include/core/SkPicture.h"
@@ -179,7 +178,7 @@ WebLayer* ImageBuffer::platformLayer() const
     return m_surface->layer();
 }
 
-bool ImageBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, gpu::gles2::GLES2Interface* gl, Platform3DObject texture, GLenum internalFormat, GLenum destType, GLint level, bool premultiplyAlpha, bool flipY)
+bool ImageBuffer::copyToPlatformTexture(gpu::gles2::GLES2Interface* gl, Platform3DObject texture, GLenum internalFormat, GLenum destType, GLint level, bool premultiplyAlpha, bool flipY)
 {
     if (!Extensions3DUtil::canUseCopyTextureCHROMIUM(GL_TEXTURE_2D, internalFormat, destType, level))
         return false;
@@ -248,7 +247,6 @@ bool ImageBuffer::copyRenderingResultsFromDrawingBuffer(DrawingBuffer* drawingBu
     OwnPtr<WebGraphicsContext3DProvider> provider = adoptPtr(Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
     if (!provider)
         return false;
-    WebGraphicsContext3D* context3D = provider->context3d();
     gpu::gles2::GLES2Interface* gl = provider->contextGL();
     Platform3DObject textureId = m_surface->getBackingTextureHandleForOverwrite();
     if (!textureId)
@@ -256,7 +254,7 @@ bool ImageBuffer::copyRenderingResultsFromDrawingBuffer(DrawingBuffer* drawingBu
 
     gl->Flush();
 
-    return drawingBuffer->copyToPlatformTexture(context3D, gl, textureId, GL_RGBA,
+    return drawingBuffer->copyToPlatformTexture(gl, textureId, GL_RGBA,
         GL_UNSIGNED_BYTE, 0, true, false, sourceBuffer);
 }
 

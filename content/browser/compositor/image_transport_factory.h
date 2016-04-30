@@ -31,10 +31,6 @@ class ContextFactory;
 class Texture;
 }
 
-namespace blink {
-class WebGraphicsContext3D;
-}
-
 namespace display_compositor {
 class GLHelper;
 }

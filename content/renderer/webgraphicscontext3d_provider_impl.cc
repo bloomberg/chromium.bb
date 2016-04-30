@@ -16,10 +16,6 @@ WebGraphicsContext3DProviderImpl::WebGraphicsContext3DProviderImpl(
 
 WebGraphicsContext3DProviderImpl::~WebGraphicsContext3DProviderImpl() {}
 
-blink::WebGraphicsContext3D* WebGraphicsContext3DProviderImpl::context3d() {
-  return nullptr;
-}
-
 gpu::gles2::GLES2Interface* WebGraphicsContext3DProviderImpl::contextGL() {
   return provider_->ContextGL();
 }

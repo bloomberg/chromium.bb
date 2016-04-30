@@ -23,7 +23,6 @@
 
 namespace blink {
 class WebFrame;
-class WebGraphicsContext3D;
 class WebGraphicsContext3DProvider;
 class WebLayer;
 struct WebPluginParams;
@@ -45,9 +44,9 @@ class WebTestDelegate;
 
 // A fake implemention of blink::WebPlugin for testing purposes.
 //
-// It uses WebGraphicsContext3D to paint a scene consisiting of a primitive
-// over a background. The primitive and background can be customized using
-// the following plugin parameters:
+// It uses GL to paint a scene consisiting of a primitive over a background. The
+// primitive and background can be customized using the following plugin
+// parameters.
 // primitive: none (default), triangle.
 // background-color: black (default), red, green, blue.
 // primitive-color: black (default), red, green, blue.
@@ -159,7 +158,6 @@ class TestPlugin : public blink::WebPlugin, public cc::TextureLayerClient {
 
   blink::WebRect rect_;
   std::unique_ptr<blink::WebGraphicsContext3DProvider> context_provider_;
-  blink::WebGraphicsContext3D* context_;
   gpu::gles2::GLES2Interface* gl_;
   GLuint color_texture_;
   cc::TextureMailbox texture_mailbox_;

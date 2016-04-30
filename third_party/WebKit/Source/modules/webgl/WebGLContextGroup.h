@@ -32,10 +32,6 @@
 #include "wtf/RefCounted.h"
 
 namespace blink {
-class WebGraphicsContext3D;
-}
-
-namespace blink {
 
 class WebGLSharedObject;
 class WebGLRenderingContextBase;

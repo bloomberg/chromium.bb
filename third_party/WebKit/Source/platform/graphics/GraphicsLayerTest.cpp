@@ -39,7 +39,6 @@
 #include "platform/transforms/TranslateTransformOperation.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorSupport.h"
-#include "public/platform/WebGraphicsContext3D.h"
 #include "public/platform/WebLayer.h"
 #include "public/platform/WebLayerTreeView.h"
 #include "testing/gtest/include/gtest/gtest.h"

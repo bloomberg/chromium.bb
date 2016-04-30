@@ -40,7 +40,6 @@
 #include "public/platform/WebCompositorSupport.h"
 #include "public/platform/WebExternalBitmap.h"
 #include "public/platform/WebExternalTextureLayer.h"
-#include "public/platform/WebGraphicsContext3D.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
 #include "wtf/CheckedNumeric.h"
 #include "wtf/typed_arrays/ArrayBufferContents.h"
@@ -137,7 +136,6 @@ DrawingBuffer::DrawingBuffer(
     , m_readFramebufferBinding(0)
     , m_activeTextureUnit(GL_TEXTURE0)
     , m_contextProvider(std::move(contextProvider))
-    , m_context(m_contextProvider->context3d())
     , m_gl(m_contextProvider->contextGL())
     , m_extensionsUtil(std::move(extensionsUtil))
     , m_size(-1, -1)
@@ -190,11 +188,6 @@ void DrawingBuffer::setBufferClearNeeded(bool flag)
     } else {
         ASSERT(!m_bufferClearNeeded);
     }
-}
-
-WebGraphicsContext3D* DrawingBuffer::context()
-{
-    return m_context;
 }
 
 gpu::gles2::GLES2Interface* DrawingBuffer::contextGL()
@@ -480,7 +473,7 @@ bool DrawingBuffer::initialize(const IntSize& size, bool wantDepthBuffer, bool w
     return true;
 }
 
-bool DrawingBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, gpu::gles2::GLES2Interface* gl, GLuint texture, GLenum internalFormat,
+bool DrawingBuffer::copyToPlatformTexture(gpu::gles2::GLES2Interface* gl, GLuint texture, GLenum internalFormat,
     GLenum destType, GLint level, bool premultiplyAlpha, bool flipY, SourceDrawingBuffer sourceBuffer)
 {
     if (m_contentsChanged) {

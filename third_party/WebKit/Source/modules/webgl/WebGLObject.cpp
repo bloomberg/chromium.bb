@@ -26,7 +26,6 @@
 #include "modules/webgl/WebGLObject.h"
 
 #include "modules/webgl/WebGLRenderingContextBase.h"
-#include "public/platform/WebGraphicsContext3D.h"
 
 namespace blink {
 

@@ -37,7 +37,6 @@
 #include "platform/graphics/gpu/WebGLImageConversion.h"
 #include "public/platform/WebExternalTextureLayerClient.h"
 #include "public/platform/WebExternalTextureMailbox.h"
-#include "public/platform/WebGraphicsContext3D.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -63,7 +62,6 @@ class Extensions3DUtil;
 class ImageBuffer;
 class WebExternalBitmap;
 class WebExternalTextureLayer;
-class WebGraphicsContext3D;
 class WebGraphicsContext3DProvider;
 class WebLayer;
 
@@ -161,7 +159,6 @@ public:
 
     WebLayer* platformLayer();
 
-    WebGraphicsContext3D* context();
     gpu::gles2::GLES2Interface* contextGL();
     WebGraphicsContext3DProvider* contextProvider();
 
@@ -170,7 +167,7 @@ public:
     void mailboxReleased(const WebExternalTextureMailbox&, bool lostResource = false) override;
 
     // Destroys the TEXTURE_2D binding for the owned context
-    bool copyToPlatformTexture(WebGraphicsContext3D*, gpu::gles2::GLES2Interface*, GLuint texture, GLenum internalFormat,
+    bool copyToPlatformTexture(gpu::gles2::GLES2Interface*, GLuint texture, GLenum internalFormat,
         GLenum destType, GLint level, bool premultiplyAlpha, bool flipY, SourceDrawingBuffer);
 
     void setPackAlignment(GLint param);
@@ -313,8 +310,8 @@ private:
     GLenum m_activeTextureUnit;
 
     OwnPtr<WebGraphicsContext3DProvider> m_contextProvider;
-    WebGraphicsContext3D* m_context; // Lifetime is tied to the m_contextProvider.
-    gpu::gles2::GLES2Interface* m_gl; // Lifetime is tied to the m_contextProvider.
+    // Lifetime is tied to the m_contextProvider.
+    gpu::gles2::GLES2Interface* m_gl;
     OwnPtr<Extensions3DUtil> m_extensionsUtil;
     IntSize m_size;
     const bool m_discardFramebufferSupported;

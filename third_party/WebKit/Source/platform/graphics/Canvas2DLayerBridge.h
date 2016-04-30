@@ -58,7 +58,6 @@ namespace blink {
 class Canvas2DLayerBridgeHistogramLogger;
 class Canvas2DLayerBridgeTest;
 class ImageBuffer;
-class WebGraphicsContext3D;
 class WebGraphicsContext3DProvider;
 class SharedContextRateLimiter;
 
@@ -184,7 +183,6 @@ private:
     };
 
     Canvas2DLayerBridge(PassOwnPtr<WebGraphicsContext3DProvider>, const IntSize&, int msaaSampleCount, OpacityMode, AccelerationMode);
-    WebGraphicsContext3D* context();
     gpu::gles2::GLES2Interface* contextGL();
     void startRecording();
     void skipQueuedDrawCommands();

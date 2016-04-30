@@ -30,7 +30,6 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/readback_types.h"
 #include "gpu/command_buffer/common/mailbox.h"
-#include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/android/window_android_observer.h"
 #include "ui/events/gesture_detection/filtered_gesture_provider.h"

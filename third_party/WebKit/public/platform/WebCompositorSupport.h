@@ -42,7 +42,6 @@ class WebContentLayer;
 class WebContentLayerClient;
 class WebExternalTextureLayer;
 class WebExternalTextureLayerClient;
-class WebGraphicsContext3D;
 class WebImageLayer;
 class WebLayer;
 class WebScrollbarLayer;

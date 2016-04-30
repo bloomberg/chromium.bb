@@ -25,7 +25,6 @@
 #include "modules/webgl/WebGLUniformLocation.h"
 #include "modules/webgl/WebGLVertexArrayObject.h"
 #include "platform/CheckedInt.h"
-#include "public/platform/WebGraphicsContext3D.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"

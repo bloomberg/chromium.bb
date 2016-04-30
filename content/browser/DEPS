@@ -62,7 +62,6 @@ include_rules = [
   "+third_party/WebKit/public/platform/WebGamepad.h",
   "+third_party/WebKit/public/platform/WebGamepads.h",
   "+third_party/WebKit/public/platform/WebGeofencingEventType.h",
-  "+third_party/WebKit/public/platform/WebGraphicsContext3D.h",
   "+third_party/WebKit/public/platform/WebReferrerPolicy.h",
   "+third_party/WebKit/public/platform/WebScreenInfo.h",
   "+third_party/WebKit/public/platform/WebString.h",

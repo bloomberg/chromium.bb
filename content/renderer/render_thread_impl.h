@@ -47,7 +47,6 @@ struct WorkerProcessMsg_CreateWorker_Params;
 
 namespace blink {
 class WebGamepads;
-class WebGraphicsContext3D;
 class WebMediaStreamCenter;
 class WebMediaStreamCenterClient;
 }

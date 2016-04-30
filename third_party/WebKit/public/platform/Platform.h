@@ -44,7 +44,6 @@
 #include "WebGamepadListener.h"
 #include "WebGamepads.h"
 #include "WebGestureDevice.h"
-#include "WebGraphicsContext3D.h"
 #include "WebLocalizedString.h"
 #include "WebPlatformEventType.h"
 #include "WebSize.h"

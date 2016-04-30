@@ -66,7 +66,6 @@ class Image;
 class ImageBufferClient;
 class IntPoint;
 class IntRect;
-class WebGraphicsContext3D;
 
 enum Multiply {
     Premultiplied,
@@ -125,7 +124,7 @@ public:
     // with textures that are RGB or RGBA format, UNSIGNED_BYTE type and level 0, as specified in
     // Extensions3D::canUseCopyTextureCHROMIUM().
     // Destroys the TEXTURE_2D binding for the active texture unit of the passed context
-    bool copyToPlatformTexture(WebGraphicsContext3D*, gpu::gles2::GLES2Interface*, Platform3DObject, GLenum, GLenum, GLint, bool, bool);
+    bool copyToPlatformTexture(gpu::gles2::GLES2Interface*, Platform3DObject, GLenum, GLenum, GLint, bool, bool);
 
     bool copyRenderingResultsFromDrawingBuffer(DrawingBuffer*, SourceDrawingBuffer);
 

@@ -12,10 +12,6 @@
 #include "third_party/WebKit/public/platform/WebContentLayerClient.h"
 #include "third_party/WebKit/public/platform/WebLayer.h"
 
-namespace blink {
-class WebGraphicsContext3D;
-}
-
 namespace cc_blink {
 
 class CC_BLINK_EXPORT WebCompositorSupportImpl

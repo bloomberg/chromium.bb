@@ -211,8 +211,6 @@
 #include "content/renderer/media/android/webmediasession_android.h"
 #include "media/base/android/media_codec_util.h"
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
-#else
-#include "cc/blink/context_provider_web_context.h"
 #endif
 
 #if defined(ENABLE_PEPPER_CDMS)

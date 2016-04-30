@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 // These tests are run twice:
-// Once in a gpu test with an in-process WebGraphicsContext3D.
-// Once in a browsertest with a gpu-process WebGraphicsContext3D.
+// Once in a gpu test with an in-process command buffer.
+// Once in a browsertest with an out-of-process command buffer and gpu-process.
 
 #include "base/bind.h"
 #include "base/run_loop.h"

@@ -32,7 +32,6 @@
 #define WebViewClient_h
 
 #include "../platform/WebDragOperation.h"
-#include "../platform/WebGraphicsContext3D.h"
 #include "../platform/WebPageVisibilityState.h"
 #include "../platform/WebString.h"
 #include "WebAXEnums.h"
