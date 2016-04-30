@@ -1,4 +1,4 @@
-ALERT: 35
+ALERT: 34
 ALERT: 107.5
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
