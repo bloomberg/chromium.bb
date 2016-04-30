@@ -5,7 +5,6 @@
 #include "content/browser/renderer_host/media/media_stream_dispatcher_host.h"
 
 #include "content/browser/browser_main_loop.h"
-#include "content/browser/child_process_security_policy_impl.h"
 #include "content/common/media/media_stream_messages.h"
 #include "content/common/media/media_stream_options.h"
 #include "content/public/browser/render_process_host.h"
@@ -129,18 +128,19 @@ void MediaStreamDispatcherHost::OnChannelClosing() {
 MediaStreamDispatcherHost::~MediaStreamDispatcherHost() {
 }
 
-void MediaStreamDispatcherHost::OnGenerateStream(int render_frame_id,
-                                                 int page_request_id,
-                                                 const StreamControls& controls,
-                                                 const GURL& security_origin,
-                                                 bool user_gesture) {
+void MediaStreamDispatcherHost::OnGenerateStream(
+    int render_frame_id,
+    int page_request_id,
+    const StreamControls& controls,
+    const url::Origin& security_origin,
+    bool user_gesture) {
   DVLOG(1) << "MediaStreamDispatcherHost::OnGenerateStream(" << render_frame_id
            << ", " << page_request_id << ", ["
            << " audio:" << controls.audio.requested
-           << " video:" << controls.video.requested << " ], "
-           << security_origin.spec() << ", " << user_gesture << ")";
+           << " video:" << controls.video.requested << " ], " << security_origin
+           << ", " << user_gesture << ")";
 
-  if (!IsURLAllowed(security_origin))
+  if (!MediaStreamManager::IsOriginAllowed(render_process_id_, security_origin))
     return;
 
   media_stream_manager_->GenerateStream(
@@ -171,14 +171,12 @@ void MediaStreamDispatcherHost::OnEnumerateDevices(
     int render_frame_id,
     int page_request_id,
     MediaStreamType type,
-    const GURL& security_origin) {
+    const url::Origin& security_origin) {
   DVLOG(1) << "MediaStreamDispatcherHost::OnEnumerateDevices("
-           << render_frame_id << ", "
-           << page_request_id << ", "
-           << type << ", "
-           << security_origin.spec() << ")";
+           << render_frame_id << ", " << page_request_id << ", " << type << ", "
+           << security_origin << ")";
 
-  if (!IsURLAllowed(security_origin))
+  if (!MediaStreamManager::IsOriginAllowed(render_process_id_, security_origin))
     return;
 
   media_stream_manager_->EnumerateDevices(
@@ -201,15 +199,12 @@ void MediaStreamDispatcherHost::OnOpenDevice(
     int page_request_id,
     const std::string& device_id,
     MediaStreamType type,
-    const GURL& security_origin) {
-  DVLOG(1) << "MediaStreamDispatcherHost::OnOpenDevice("
-           << render_frame_id << ", "
-           << page_request_id << ", device_id: "
-           << device_id.c_str() << ", type: "
-           << type << ", "
-           << security_origin.spec() << ")";
+    const url::Origin& security_origin) {
+  DVLOG(1) << "MediaStreamDispatcherHost::OnOpenDevice(" << render_frame_id
+           << ", " << page_request_id << ", device_id: " << device_id.c_str()
+           << ", type: " << type << ", " << security_origin << ")";
 
-  if (!IsURLAllowed(security_origin))
+  if (!MediaStreamManager::IsOriginAllowed(render_process_id_, security_origin))
     return;
 
   media_stream_manager_->OpenDevice(
@@ -225,16 +220,6 @@ void MediaStreamDispatcherHost::OnCloseDevice(
            << label << ")";
 
   media_stream_manager_->CancelRequest(label);
-}
-
-bool MediaStreamDispatcherHost::IsURLAllowed(const GURL& url) {
-  if (!ChildProcessSecurityPolicyImpl::GetInstance()->CanRequestURL(
-          render_process_id_, url)) {
-    LOG(ERROR) << "MSDH: Renderer requested a URL it's not allowed to use.";
-    return false;
-  }
-
-  return true;
 }
 
 }  // namespace content

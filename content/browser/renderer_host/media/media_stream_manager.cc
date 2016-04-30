@@ -30,6 +30,7 @@
 #include "base/threading/thread_local.h"
 #include "build/build_config.h"
 #include "content/browser/browser_main_loop.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/renderer_host/media/audio_input_device_manager.h"
 #include "content/browser/renderer_host/media/audio_output_device_enumerator.h"
 #include "content/browser/renderer_host/media/media_capture_devices_impl.h"
@@ -55,6 +56,7 @@
 #include "media/base/media_switches.h"
 #include "media/capture/video/video_capture_device_factory.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 #if defined(OS_WIN)
 #include "base/win/scoped_com_initializer.h"
@@ -193,6 +195,10 @@ bool CalledOnIOThread() {
          !BrowserThread::IsMessageLoopValid(BrowserThread::IO);
 }
 
+GURL ConvertToGURL(const url::Origin& origin) {
+  return origin.unique() ? GURL() : GURL(origin.Serialize());
+}
+
 }  // namespace
 
 
@@ -208,7 +214,7 @@ class MediaStreamManager::DeviceRequest {
                 int requesting_process_id,
                 int requesting_frame_id,
                 int page_request_id,
-                const GURL& security_origin,
+                const url::Origin& security_origin,
                 bool user_gesture,
                 MediaStreamRequestType request_type,
                 const StreamControls& controls,
@@ -253,16 +259,11 @@ class MediaStreamManager::DeviceRequest {
     DCHECK(!ui_request_);
     target_process_id_ = requesting_process_id;
     target_frame_id_ = requesting_frame_id;
-    ui_request_.reset(new MediaStreamRequest(requesting_process_id,
-                                             requesting_frame_id,
-                                             page_request_id,
-                                             security_origin,
-                                             user_gesture,
-                                             request_type,
-                                             requested_audio_device_id,
-                                             requested_video_device_id,
-                                             audio_type_,
-                                             video_type_));
+    ui_request_.reset(new MediaStreamRequest(
+        requesting_process_id, requesting_frame_id, page_request_id,
+        ConvertToGURL(security_origin), user_gesture, request_type,
+        requested_audio_device_id, requested_video_device_id, audio_type_,
+        video_type_));
   }
 
   // Creates a tab capture specific MediaStreamRequest object that is used by
@@ -272,16 +273,10 @@ class MediaStreamManager::DeviceRequest {
     DCHECK(!ui_request_);
     target_process_id_ = target_render_process_id;
     target_frame_id_ = target_render_frame_id;
-    ui_request_.reset(new MediaStreamRequest(target_render_process_id,
-                                             target_render_frame_id,
-                                             page_request_id,
-                                             security_origin,
-                                             user_gesture,
-                                             request_type,
-                                             "",
-                                             "",
-                                             audio_type_,
-                                             video_type_));
+    ui_request_.reset(new MediaStreamRequest(
+        target_render_process_id, target_render_frame_id, page_request_id,
+        ConvertToGURL(security_origin), user_gesture, request_type, "", "",
+        audio_type_, video_type_));
   }
 
   bool HasUIRequest() const { return ui_request_.get() != nullptr; }
@@ -306,8 +301,8 @@ class MediaStreamManager::DeviceRequest {
       return;
 
     media_observer->OnMediaRequestStateChanged(
-        target_process_id_, target_frame_id_, page_request_id, security_origin,
-        stream_type, new_state);
+        target_process_id_, target_frame_id_, page_request_id,
+        ConvertToGURL(security_origin), stream_type, new_state);
   }
 
   MediaRequestState state(MediaStreamType stream_type) const {
@@ -332,7 +327,7 @@ class MediaStreamManager::DeviceRequest {
   // An ID the render frame provided to identify this request.
   const int page_request_id;
 
-  const GURL security_origin;
+  const url::Origin security_origin;
 
   const bool user_gesture;
 
@@ -454,7 +449,7 @@ std::string MediaStreamManager::MakeMediaAccessRequest(
     int render_frame_id,
     int page_request_id,
     const StreamControls& controls,
-    const GURL& security_origin,
+    const url::Origin& security_origin,
     const MediaRequestResponseCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -487,7 +482,7 @@ void MediaStreamManager::GenerateStream(MediaStreamRequester* requester,
                                         const ResourceContext::SaltCallback& sc,
                                         int page_request_id,
                                         const StreamControls& controls,
-                                        const GURL& security_origin,
+                                        const url::Origin& security_origin,
                                         bool user_gesture) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DVLOG(1) << "GenerateStream()";
@@ -667,7 +662,7 @@ std::string MediaStreamManager::EnumerateDevices(
     const ResourceContext::SaltCallback& sc,
     int page_request_id,
     MediaStreamType type,
-    const GURL& security_origin) {
+    const url::Origin& security_origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(requester);
   DCHECK(type == MEDIA_DEVICE_AUDIO_CAPTURE ||
@@ -784,7 +779,7 @@ void MediaStreamManager::OpenDevice(MediaStreamRequester* requester,
                                     int page_request_id,
                                     const std::string& device_id,
                                     MediaStreamType type,
-                                    const GURL& security_origin) {
+                                    const url::Origin& security_origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(type == MEDIA_DEVICE_AUDIO_CAPTURE ||
          type == MEDIA_DEVICE_VIDEO_CAPTURE);
@@ -820,7 +815,7 @@ void MediaStreamManager::OpenDevice(MediaStreamRequester* requester,
 bool MediaStreamManager::TranslateSourceIdToDeviceId(
     MediaStreamType stream_type,
     const ResourceContext::SaltCallback& sc,
-    const GURL& security_origin,
+    const url::Origin& security_origin,
     const std::string& source_id,
     std::string* device_id) const {
   DCHECK(stream_type == MEDIA_DEVICE_AUDIO_CAPTURE ||
@@ -973,7 +968,7 @@ void MediaStreamManager::StartMonitoringOnUIThread() {
 bool MediaStreamManager::PickDeviceId(
     MediaStreamType type,
     const ResourceContext::SaltCallback& salt_callback,
-    const GURL& security_origin,
+    const url::Origin& security_origin,
     const TrackControls& controls,
     std::string* device_id) const {
   if (!controls.device_ids.empty()) {
@@ -1198,14 +1193,6 @@ void MediaStreamManager::SetupRequest(const std::string& label) {
   if (!request) {
     DVLOG(1) << "SetupRequest label " << label << " doesn't exist!!";
     return;  // This can happen if the request has been canceled.
-  }
-
-  if (!request->security_origin.is_valid()) {
-    LOG(ERROR) << "Invalid security origin. " << request->security_origin;
-    FinalizeRequestFailed(label,
-                          request,
-                          MEDIA_DEVICE_INVALID_SECURITY_ORIGIN);
-    return;
   }
 
   MediaStreamType audio_type = MEDIA_NO_SERVICE;
@@ -1458,12 +1445,8 @@ void MediaStreamManager::FinalizeEnumerateDevices(const std::string& label,
          (request->audio_type() == MEDIA_NO_SERVICE &&
           request->video_type() == MEDIA_DEVICE_VIDEO_CAPTURE));
 
-  if (request->security_origin.is_valid()) {
-    for (StreamDeviceInfo& device_info : request->devices)
-      TranslateDeviceIdToSourceId(request, &device_info.device);
-  } else {
-    request->devices.clear();
-  }
+  for (StreamDeviceInfo& device_info : request->devices)
+    TranslateDeviceIdToSourceId(request, &device_info.device);
 
   if (use_fake_ui_) {
     if (!fake_ui_)
@@ -2125,9 +2108,8 @@ void MediaStreamManager::NotifyDeviceChangeSubscribers(MediaStreamType type) {
 // static
 std::string MediaStreamManager::GetHMACForMediaDeviceID(
     const ResourceContext::SaltCallback& sc,
-    const GURL& security_origin,
+    const url::Origin& security_origin,
     const std::string& raw_unique_id) {
-  DCHECK(security_origin.is_valid());
   DCHECK(!raw_unique_id.empty());
   if (raw_unique_id == media::AudioDeviceDescription::kDefaultDeviceId ||
       raw_unique_id == media::AudioDeviceDescription::kCommunicationsDeviceId) {
@@ -2138,7 +2120,7 @@ std::string MediaStreamManager::GetHMACForMediaDeviceID(
   const size_t digest_length = hmac.DigestLength();
   std::vector<uint8_t> digest(digest_length);
   std::string salt = sc.Run();
-  bool result = hmac.Init(security_origin.spec()) &&
+  bool result = hmac.Init(security_origin.Serialize()) &&
                 hmac.Sign(raw_unique_id + salt, &digest[0], digest.size());
   DCHECK(result);
   return base::ToLowerASCII(base::HexEncode(&digest[0], digest.size()));
@@ -2147,14 +2129,25 @@ std::string MediaStreamManager::GetHMACForMediaDeviceID(
 // static
 bool MediaStreamManager::DoesMediaDeviceIDMatchHMAC(
     const ResourceContext::SaltCallback& sc,
-    const GURL& security_origin,
+    const url::Origin& security_origin,
     const std::string& device_guid,
     const std::string& raw_unique_id) {
-  DCHECK(security_origin.is_valid());
   DCHECK(!raw_unique_id.empty());
   std::string guid_from_raw_device_id =
       GetHMACForMediaDeviceID(sc, security_origin, raw_unique_id);
   return guid_from_raw_device_id == device_guid;
+}
+
+// static
+bool MediaStreamManager::IsOriginAllowed(int render_process_id,
+                                         const url::Origin& origin) {
+  if (!ChildProcessSecurityPolicyImpl::GetInstance()->CanRequestURL(
+          render_process_id, ConvertToGURL(origin))) {
+    LOG(ERROR) << "MSM: Renderer requested a URL it's not allowed to use.";
+    return false;
+  }
+
+  return true;
 }
 
 }  // namespace content

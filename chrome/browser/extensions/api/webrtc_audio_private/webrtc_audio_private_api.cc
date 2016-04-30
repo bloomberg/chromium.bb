@@ -21,6 +21,8 @@
 #include "extensions/common/permissions/permissions_data.h"
 #include "media/audio/audio_device_description.h"
 #include "media/audio/audio_output_controller.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace extensions {
 
@@ -198,7 +200,7 @@ std::string WebrtcAudioPrivateFunction::CalculateHMACImpl(
   if (media::AudioDeviceDescription::IsDefaultDevice(raw_id))
     return media::AudioDeviceDescription::kDefaultDeviceId;
 
-  GURL security_origin(source_url().GetOrigin());
+  url::Origin security_origin(source_url().GetOrigin());
   return content::GetHMACForMediaDeviceID(device_id_salt(), security_origin,
                                           raw_id);
 }
@@ -446,7 +448,7 @@ void
 WebrtcAudioPrivateGetAssociatedSinkFunction::GetRawSourceIDOnIOThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  GURL security_origin(params_->security_origin);
+  url::Origin security_origin(GURL(params_->security_origin));
   std::string source_id_in_origin(params_->source_id_in_origin);
 
   // Find the raw source ID for source_id_in_origin.

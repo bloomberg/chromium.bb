@@ -9,14 +9,14 @@
 namespace content {
 
 std::string GetHMACForMediaDeviceID(const ResourceContext::SaltCallback& sc,
-                                    const GURL& security_origin,
+                                    const url::Origin& security_origin,
                                     const std::string& raw_unique_id) {
   return MediaStreamManager::GetHMACForMediaDeviceID(sc, security_origin,
                                                      raw_unique_id);
 }
 
 bool DoesMediaDeviceIDMatchHMAC(const ResourceContext::SaltCallback& sc,
-                                const GURL& security_origin,
+                                const url::Origin& security_origin,
                                 const std::string& device_guid,
                                 const std::string& raw_unique_id) {
   return MediaStreamManager::DoesMediaDeviceIDMatchHMAC(
@@ -25,7 +25,7 @@ bool DoesMediaDeviceIDMatchHMAC(const ResourceContext::SaltCallback& sc,
 
 bool GetMediaDeviceIDForHMAC(MediaStreamType stream_type,
                              const ResourceContext::SaltCallback& rc,
-                             const GURL& security_origin,
+                             const url::Origin& security_origin,
                              const std::string& source_id,
                              std::string* device_id) {
   content::MediaStreamManager* manager =

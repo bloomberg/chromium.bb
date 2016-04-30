@@ -13,6 +13,10 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/media_stream_request.h"
 
+namespace url {
+class Origin;
+}
+
 namespace content {
 
 class RenderFrameHostDelegate;
@@ -23,8 +27,8 @@ class RenderFrameHostDelegate;
 class CONTENT_EXPORT MediaStreamUIProxy {
  public:
   typedef base::Callback<
-      void (const MediaStreamDevices& devices,
-            content::MediaStreamRequestResult result)>
+      void(const MediaStreamDevices& devices,
+           content::MediaStreamRequestResult result)>
         ResponseCallback;
 
   typedef base::Callback<void(gfx::NativeViewId window_id)> WindowIdCallback;
@@ -46,7 +50,7 @@ class CONTENT_EXPORT MediaStreamUIProxy {
   // this does not query the user, it checks any stored settings such as policy
   // or extension permissions. |type| must be MEDIA_DEVICE_AUDIO_CAPTURE
   // or MEDIA_DEVICE_VIDEO_CAPTURE.
-  virtual void CheckAccess(const GURL& security_origin,
+  virtual void CheckAccess(const url::Origin& security_origin,
                            MediaStreamType type,
                            int render_process_id,
                            int render_frame_id,
@@ -100,7 +104,7 @@ class CONTENT_EXPORT FakeMediaStreamUIProxy : public MediaStreamUIProxy {
   // MediaStreamUIProxy overrides.
   void RequestAccess(std::unique_ptr<MediaStreamRequest> request,
                      const ResponseCallback& response_callback) override;
-  void CheckAccess(const GURL& security_origin,
+  void CheckAccess(const url::Origin& security_origin,
                    MediaStreamType type,
                    int render_process_id,
                    int render_frame_id,

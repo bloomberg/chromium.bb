@@ -32,13 +32,14 @@
 
 namespace blink {
 
+class SecurityOrigin;
 class WebSourceInfo;
 
 class MediaStreamTrackSourcesRequest : public GarbageCollectedFinalized<MediaStreamTrackSourcesRequest> {
 public:
     virtual ~MediaStreamTrackSourcesRequest() { }
 
-    virtual String origin() = 0;
+    virtual PassRefPtr<SecurityOrigin> origin() = 0;
     virtual void requestSucceeded(const WebVector<WebSourceInfo>&) = 0;
 
     DEFINE_INLINE_VIRTUAL_TRACE() { }

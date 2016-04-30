@@ -16,7 +16,6 @@
 #include "base/process/process.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/browser_main_loop.h"
-#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/media/audio_stream_monitor.h"
 #include "content/browser/media/capture/audio_mirroring_manager.h"
 #include "content/browser/media/media_internals.h"
@@ -54,10 +53,6 @@ std::pair<int, std::pair<bool, std::string>> MakeAuthorizationData(
     const std::string& device_unique_id) {
   return std::make_pair(stream_id,
                         std::make_pair(authorized, device_unique_id));
-}
-
-GURL ConvertToGURL(const url::Origin& origin) {
-  return origin.unique() ? GURL() : GURL(origin.Serialize());
 }
 
 bool IsValidDeviceId(const std::string& device_id) {
@@ -438,10 +433,9 @@ void AudioRendererHost::OnRequestDeviceAuthorization(
           stream_id, true, info->device.matched_output_device_id));
       MaybeFixAudioParameters(&output_params);
       // Hash matched device id and pass it to the renderer
-      GURL gurl_security_origin = ConvertToGURL(security_origin);
       Send(new AudioMsg_NotifyDeviceAuthorized(
           stream_id, media::OUTPUT_DEVICE_STATUS_OK, output_params,
-          GetHMACForMediaDeviceID(salt_callback_, gurl_security_origin,
+          GetHMACForMediaDeviceID(salt_callback_, security_origin,
                                   info->device.matched_output_device_id)));
       return;
     }
@@ -449,16 +443,15 @@ void AudioRendererHost::OnRequestDeviceAuthorization(
 
   authorizations_.insert(
       MakeAuthorizationData(stream_id, false, std::string()));
-  GURL gurl_security_origin = ConvertToGURL(security_origin);
   CheckOutputDeviceAccess(
-      render_frame_id, device_id, gurl_security_origin,
+      render_frame_id, device_id, security_origin,
       base::Bind(&AudioRendererHost::OnDeviceAuthorized, this, stream_id,
-                 device_id, gurl_security_origin));
+                 device_id, security_origin));
 }
 
 void AudioRendererHost::OnDeviceAuthorized(int stream_id,
                                            const std::string& device_id,
-                                           const GURL& gurl_security_origin,
+                                           const url::Origin& security_origin,
                                            bool have_access) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   const auto& auth_data = authorizations_.find(stream_id);
@@ -490,7 +483,7 @@ void AudioRendererHost::OnDeviceAuthorized(int stream_id,
   } else {
     media_stream_manager_->audio_output_device_enumerator()->Enumerate(
         base::Bind(&AudioRendererHost::TranslateDeviceID, this, device_id,
-                   gurl_security_origin,
+                   security_origin,
                    base::Bind(&AudioRendererHost::OnDeviceIDTranslated, this,
                               stream_id)));
   }
@@ -747,15 +740,15 @@ bool AudioRendererHost::RenderFrameHasActiveAudio(int render_frame_id) const {
 void AudioRendererHost::CheckOutputDeviceAccess(
     int render_frame_id,
     const std::string& device_id,
-    const GURL& gurl_security_origin,
+    const url::Origin& security_origin,
     const OutputDeviceAccessCB& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // Check security origin if nondefault device is requested.
   // Ignore check for default device, which is always authorized.
   if (!media::AudioDeviceDescription::IsDefaultDevice(device_id) &&
-      !ChildProcessSecurityPolicyImpl::GetInstance()->CanRequestURL(
-          render_process_id_, gurl_security_origin)) {
+      !MediaStreamManager::IsOriginAllowed(render_process_id_,
+                                           security_origin)) {
     content::bad_message::ReceivedBadMessage(this,
                                              bad_message::ARH_UNAUTHORIZED_URL);
     return;
@@ -773,7 +766,7 @@ void AudioRendererHost::CheckOutputDeviceAccess(
     // MEDIA_DEVICE_AUDIO_OUTPUT.
     // TODO(guidou): Change to MEDIA_DEVICE_AUDIO_OUTPUT when support becomes
     // available. http://crbug.com/498675
-    ui_proxy->CheckAccess(gurl_security_origin, MEDIA_DEVICE_AUDIO_CAPTURE,
+    ui_proxy->CheckAccess(security_origin, MEDIA_DEVICE_AUDIO_CAPTURE,
                           render_process_id_, render_frame_id,
                           base::Bind(&AudioRendererHost::AccessChecked, this,
                                      base::Passed(&ui_proxy), callback));
@@ -790,7 +783,7 @@ void AudioRendererHost::AccessChecked(
 
 void AudioRendererHost::TranslateDeviceID(
     const std::string& device_id,
-    const GURL& security_origin,
+    const url::Origin& security_origin,
     const OutputDeviceInfoCB& callback,
     const AudioOutputDeviceEnumeration& enumeration) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);

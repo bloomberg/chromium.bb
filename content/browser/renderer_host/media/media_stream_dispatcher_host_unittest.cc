@@ -38,6 +38,8 @@
 #include "net/url_request/url_request_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/audio/cras_audio_handler.h"
@@ -81,7 +83,7 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
   void OnGenerateStream(int render_frame_id,
                         int page_request_id,
                         const StreamControls& controls,
-                        const GURL& security_origin,
+                        const url::Origin& security_origin,
                         const base::Closure& quit_closure) {
     quit_closures_.push(quit_closure);
     MediaStreamDispatcherHost::OnGenerateStream(
@@ -97,7 +99,7 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
                     int page_request_id,
                     const std::string& device_id,
                     MediaStreamType type,
-                    const GURL& security_origin,
+                    const url::Origin& security_origin,
                     const base::Closure& quit_closure) {
     quit_closures_.push(quit_closure);
     MediaStreamDispatcherHost::OnOpenDevice(
@@ -107,7 +109,7 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
   void OnEnumerateDevices(int render_frame_id,
                           int page_request_id,
                           MediaStreamType type,
-                          const GURL& security_origin,
+                          const url::Origin& security_origin,
                           const base::Closure& quit_closure) {
     quit_closures_.push(quit_closure);
     MediaStreamDispatcherHost::OnEnumerateDevices(
@@ -178,7 +180,7 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
       task_runner_->PostTask(FROM_HERE, base::ResetAndReturn(&quit_closure));
     }
 
-    label_= "";
+    label_ = "";
   }
 
   void OnDeviceStoppedInternal(const std::string& label,
@@ -227,7 +229,7 @@ class MediaStreamDispatcherHostTest : public testing::Test {
   MediaStreamDispatcherHostTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
         old_browser_client_(NULL),
-        origin_("https://test.com") {
+        origin_(GURL("https://test.com")) {
     audio_manager_.reset(
         new media::MockAudioManager(base::ThreadTaskRunnerHandle::Get()));
     // Make sure we use fake devices to avoid long delays.
@@ -370,7 +372,7 @@ class MediaStreamDispatcherHostTest : public testing::Test {
   }
 
   bool DoesEveryDeviceMapToRawId(const StreamDeviceInfoArray& devices,
-                                 const GURL& origin) {
+                                 const url::Origin& origin) {
     for (size_t i = 0; i < devices.size(); ++i) {
       bool found_match = false;
       media::AudioDeviceNames::const_iterator audio_it =
@@ -432,7 +434,7 @@ class MediaStreamDispatcherHostTest : public testing::Test {
   content::TestBrowserContext browser_context_;
   media::AudioDeviceNames physical_audio_devices_;
   media::VideoCaptureDevice::Names physical_video_devices_;
-  GURL origin_;
+  url::Origin origin_;
   media::FakeVideoCaptureDeviceFactory* video_capture_device_factory_;
 };
 

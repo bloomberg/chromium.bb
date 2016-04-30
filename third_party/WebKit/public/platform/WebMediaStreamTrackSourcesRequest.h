@@ -29,7 +29,7 @@
 #include "WebCommon.h"
 #include "WebNonCopyable.h"
 #include "WebPrivatePtr.h"
-#include "WebString.h"
+#include "WebSecurityOrigin.h"
 #include "WebVector.h"
 
 namespace blink {
@@ -54,7 +54,7 @@ public:
     BLINK_PLATFORM_EXPORT void reset();
     bool isNull() const { return m_private.isNull(); }
 
-    BLINK_PLATFORM_EXPORT WebString origin() const;
+    BLINK_PLATFORM_EXPORT WebSecurityOrigin origin() const;
     BLINK_PLATFORM_EXPORT void requestSucceeded(const WebVector<WebSourceInfo>&) const;
 
 #if INSIDE_BLINK

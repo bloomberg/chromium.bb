@@ -19,6 +19,10 @@
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/renderer/media/media_stream_dispatcher_eventhandler.h"
 
+namespace url {
+class Origin;
+}
+
 namespace content {
 
 // MediaStreamDispatcher is a delegate for the Media Stream API messages.
@@ -40,7 +44,7 @@ class CONTENT_EXPORT MediaStreamDispatcher
       int request_id,
       const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler,
       const StreamControls& controls,
-      const GURL& security_origin);
+      const url::Origin& security_origin);
 
   // Cancel the request for a new media stream to be created.
   virtual void CancelGenerateStream(
@@ -55,7 +59,7 @@ class CONTENT_EXPORT MediaStreamDispatcher
       int request_id,
       const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler,
       MediaStreamType type,
-      const GURL& security_origin);
+      const url::Origin& security_origin);
 
   // Request to stop enumerating devices.
   void StopEnumerateDevices(
@@ -68,7 +72,7 @@ class CONTENT_EXPORT MediaStreamDispatcher
       const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler,
       const std::string& device_id,
       MediaStreamType type,
-      const GURL& security_origin);
+      const url::Origin& security_origin);
 
   // Cancel the request to open a device.
   virtual void CancelOpenDevice(

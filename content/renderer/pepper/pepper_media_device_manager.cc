@@ -57,10 +57,9 @@ int PepperMediaDeviceManager::EnumerateDevices(
 
 #if defined(ENABLE_WEBRTC)
   GetMediaStreamDispatcher()->EnumerateDevices(
-      request_id,
-      AsWeakPtr(),
+      request_id, AsWeakPtr(),
       PepperMediaDeviceManager::FromPepperDeviceType(type),
-      document_url.GetOrigin());
+      url::Origin(document_url.GetOrigin()));
 #else
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
@@ -106,11 +105,9 @@ int PepperMediaDeviceManager::OpenDevice(PP_DeviceType_Dev type,
 
 #if defined(ENABLE_WEBRTC)
   GetMediaStreamDispatcher()->OpenDevice(
-      request_id,
-      AsWeakPtr(),
-      device_id,
+      request_id, AsWeakPtr(), device_id,
       PepperMediaDeviceManager::FromPepperDeviceType(type),
-      document_url.GetOrigin());
+      url::Origin(document_url.GetOrigin()));
 #else
   base::MessageLoop::current()->PostTask(
       FROM_HERE,

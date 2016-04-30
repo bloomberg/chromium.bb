@@ -18,6 +18,7 @@
 #include "media/base/audio_parameters.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content {
 namespace {
@@ -116,7 +117,7 @@ class MediaStreamDispatcherTest : public ::testing::Test {
   MediaStreamDispatcherTest()
       : dispatcher_(new MediaStreamDispatcherUnderTest()),
         handler_(new MockMediaStreamDispatcherEventHandler),
-        security_origin_("http://test.com") {}
+        security_origin_(url::Origin(GURL("http://test.com"))) {}
 
   // Generates a request for a MediaStream and returns the request id that is
   // used in IPC. Use this returned id in CompleteGenerateStream to identify
@@ -175,7 +176,7 @@ class MediaStreamDispatcherTest : public ::testing::Test {
   base::MessageLoop message_loop_;
   std::unique_ptr<MediaStreamDispatcherUnderTest> dispatcher_;
   std::unique_ptr<MockMediaStreamDispatcherEventHandler> handler_;
-  GURL security_origin_;
+  url::Origin security_origin_;
 };
 
 }  // namespace
@@ -219,7 +220,7 @@ TEST_F(MediaStreamDispatcherTest, BasicVideoDevice) {
       new MockMediaStreamDispatcherEventHandler);
   std::unique_ptr<MockMediaStreamDispatcherEventHandler> handler2(
       new MockMediaStreamDispatcherEventHandler);
-  GURL security_origin;
+  url::Origin security_origin;
 
   int ipc_request_id1 = dispatcher->next_ipc_id_;
   dispatcher->EnumerateDevices(
@@ -308,7 +309,7 @@ TEST_F(MediaStreamDispatcherTest, TestFailure) {
   std::unique_ptr<MockMediaStreamDispatcherEventHandler> handler(
       new MockMediaStreamDispatcherEventHandler);
   StreamControls components(true, true);
-  GURL security_origin;
+  url::Origin security_origin;
 
   // Test failure when creating a stream.
   int ipc_request_id1 = dispatcher->next_ipc_id_;
@@ -359,9 +360,9 @@ TEST_F(MediaStreamDispatcherTest, CancelGenerateStream) {
   int ipc_request_id1 = dispatcher->next_ipc_id_;
 
   dispatcher->GenerateStream(kRequestId1, handler.get()->AsWeakPtr(),
-                             components, GURL());
+                             components, url::Origin());
   dispatcher->GenerateStream(kRequestId2, handler.get()->AsWeakPtr(),
-                             components, GURL());
+                             components, url::Origin());
 
   EXPECT_EQ(2u, dispatcher->requests_.size());
   dispatcher->CancelGenerateStream(kRequestId2, handler.get()->AsWeakPtr());

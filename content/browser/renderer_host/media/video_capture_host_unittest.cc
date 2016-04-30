@@ -315,7 +315,7 @@ class VideoCaptureHostTest : public testing::Test {
     const int render_process_id = 1;
     const int render_frame_id = 1;
     const int page_request_id = 1;
-    const GURL security_origin("http://test.com");
+    const url::Origin security_origin(GURL("http://test.com"));
 
     ASSERT_TRUE(opened_device_label_.empty());
 

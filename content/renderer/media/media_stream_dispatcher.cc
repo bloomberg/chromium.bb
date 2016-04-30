@@ -12,7 +12,7 @@
 #include "content/renderer/render_thread_impl.h"
 #include "media/base/audio_parameters.h"
 #include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
-#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -74,7 +74,7 @@ void MediaStreamDispatcher::GenerateStream(
     int request_id,
     const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler,
     const StreamControls& controls,
-    const GURL& security_origin) {
+    const url::Origin& security_origin) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(1) << "MediaStreamDispatcher::GenerateStream(" << request_id << ")";
 
@@ -135,7 +135,7 @@ void MediaStreamDispatcher::EnumerateDevices(
     int request_id,
     const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler,
     MediaStreamType type,
-    const GURL& security_origin) {
+    const url::Origin& security_origin) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(type == MEDIA_DEVICE_AUDIO_CAPTURE ||
          type == MEDIA_DEVICE_VIDEO_CAPTURE ||
@@ -177,7 +177,7 @@ void MediaStreamDispatcher::OpenDevice(
     const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler,
     const std::string& device_id,
     MediaStreamType type,
-    const GURL& security_origin) {
+    const url::Origin& security_origin) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(1) << "MediaStreamDispatcher::OpenDevice(" << request_id << ")";
 

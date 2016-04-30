@@ -33,6 +33,7 @@ namespace blink {
 
 class ExecutionContext;
 class MediaStreamTrackSourcesCallback;
+class SecurityOrigin;
 class WebSourceInfo;
 template<typename T> class WebVector;
 
@@ -41,7 +42,7 @@ public:
     static MediaStreamTrackSourcesRequestImpl* create(ExecutionContext&, MediaStreamTrackSourcesCallback*);
     ~MediaStreamTrackSourcesRequestImpl();
 
-    String origin() override;
+    PassRefPtr<SecurityOrigin> origin() override;
     void requestSucceeded(const WebVector<WebSourceInfo>&) override;
 
     DECLARE_VIRTUAL_TRACE();

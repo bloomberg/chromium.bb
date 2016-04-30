@@ -12,6 +12,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/rect.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
 using testing::_;
 using testing::Return;
@@ -256,15 +258,13 @@ TEST_F(MediaStreamUIProxyTest, WindowIdCallbackCalled) {
 }
 
 TEST_F(MediaStreamUIProxyTest, CheckAccess) {
-  proxy_->CheckAccess(GURL("http://origin/"),
-                           MEDIA_DEVICE_AUDIO_CAPTURE,
-                           0,
-                           0,
-                           base::Bind(&MockResponseCallback::OnCheckResponse,
-                                      base::Unretained(&response_callback_)));
+  proxy_->CheckAccess(url::Origin(GURL("http://origin/")),
+                      MEDIA_DEVICE_AUDIO_CAPTURE, 0, 0,
+                      base::Bind(&MockResponseCallback::OnCheckResponse,
+                                 base::Unretained(&response_callback_)));
   EXPECT_CALL(delegate_, CheckMediaAccessPermission(_, _));
   EXPECT_CALL(response_callback_, OnCheckResponse(_));
   message_loop_.RunUntilIdle();
 }
 
-}  // content
+}  // namespace content

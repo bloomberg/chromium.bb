@@ -16,7 +16,6 @@
 #include "content/public/browser/resource_context.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "media/audio/audio_device_name.h"
-#include "url/gurl.h"
 
 namespace extensions {
 

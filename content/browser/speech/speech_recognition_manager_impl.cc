@@ -27,6 +27,8 @@
 #include "content/public/common/speech_recognition_result.h"
 #include "media/audio/audio_device_description.h"
 #include "media/audio/audio_manager.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
 #if defined(OS_ANDROID)
 #include "content/browser/speech/speech_recognizer_impl_android.h"
@@ -186,7 +188,7 @@ void SpeechRecognitionManagerImpl::RecognitionAllowedCallback(int session_id,
     SpeechRecognitionSessionContext& context = session->context;
     context.label = media_stream_manager_->MakeMediaAccessRequest(
         context.render_process_id, context.render_frame_id, context.request_id,
-        StreamControls(true, false), GURL(context.context_name),
+        StreamControls(true, false), url::Origin(GURL(context.context_name)),
         base::Bind(
             &SpeechRecognitionManagerImpl::MediaRequestPermissionCallback,
             weak_factory_.GetWeakPtr(), session_id));

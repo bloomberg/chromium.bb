@@ -17,6 +17,10 @@
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/resource_context.h"
 
+namespace url {
+class Origin;
+}
+
 namespace content {
 
 class MediaStreamManager;
@@ -69,7 +73,7 @@ class CONTENT_EXPORT MediaStreamDispatcherHost : public BrowserMessageFilter,
   void OnGenerateStream(int render_frame_id,
                         int page_request_id,
                         const StreamControls& controls,
-                        const GURL& security_origin,
+                        const url::Origin& security_origin,
                         bool user_gesture);
   void OnCancelGenerateStream(int render_frame_id,
                               int page_request_id);
@@ -79,7 +83,7 @@ class CONTENT_EXPORT MediaStreamDispatcherHost : public BrowserMessageFilter,
   void OnEnumerateDevices(int render_frame_id,
                           int page_request_id,
                           MediaStreamType type,
-                          const GURL& security_origin);
+                          const url::Origin& security_origin);
 
   void OnCancelEnumerateDevices(int render_frame_id,
                                 int page_request_id);
@@ -88,7 +92,7 @@ class CONTENT_EXPORT MediaStreamDispatcherHost : public BrowserMessageFilter,
                     int page_request_id,
                     const std::string& device_id,
                     MediaStreamType type,
-                    const GURL& security_origin);
+                    const url::Origin& security_origin);
 
   void OnCloseDevice(int render_frame_id,
                      const std::string& label);
@@ -96,8 +100,6 @@ class CONTENT_EXPORT MediaStreamDispatcherHost : public BrowserMessageFilter,
   void StoreRequest(int render_frame_id,
                     int page_request_id,
                     const std::string& label);
-
-  bool IsURLAllowed(const GURL& url);
 
   int render_process_id_;
   ResourceContext::SaltCallback salt_callback_;

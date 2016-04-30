@@ -14,8 +14,18 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "media/capture/video/fake_video_capture_device.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content {
+
+namespace {
+
+GURL ConvertToGURL(const url::Origin& origin) {
+  return origin.unique() ? GURL() : GURL(origin.Serialize());
+}
+
+}  // namespace
 
 void SetAndCheckAncestorFlag(MediaStreamRequest* request) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -193,7 +203,7 @@ void MediaStreamUIProxy::RequestAccess(
 }
 
 void MediaStreamUIProxy::CheckAccess(
-    const GURL& security_origin,
+    const url::Origin& security_origin,
     MediaStreamType type,
     int render_process_id,
     int render_frame_id,
@@ -201,17 +211,12 @@ void MediaStreamUIProxy::CheckAccess(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&Core::CheckAccess,
-                 base::Unretained(core_.get()),
-                 security_origin,
-                 type,
-                 render_process_id,
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&Core::CheckAccess, base::Unretained(core_.get()),
+                 ConvertToGURL(security_origin), type, render_process_id,
                  render_frame_id),
       base::Bind(&MediaStreamUIProxy::OnCheckedAccess,
-                 weak_factory_.GetWeakPtr(),
-                 callback));
+                 weak_factory_.GetWeakPtr(), callback));
 }
 
 void MediaStreamUIProxy::OnStarted(const base::Closure& stop_callback,
@@ -350,7 +355,7 @@ void FakeMediaStreamUIProxy::RequestAccess(
 }
 
 void FakeMediaStreamUIProxy::CheckAccess(
-    const GURL& security_origin,
+    const url::Origin& security_origin,
     MediaStreamType type,
     int render_process_id,
     int render_frame_id,

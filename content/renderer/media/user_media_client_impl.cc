@@ -205,7 +205,7 @@ void UserMediaClientImpl::requestUserMedia(
 
   int request_id = g_next_request_id++;
   StreamControls controls;
-  GURL security_origin;
+  url::Origin security_origin;
   bool enable_automatic_output_device_selection = false;
 
   // |user_media_request| can't be mocked. So in order to test at all we check
@@ -229,8 +229,7 @@ void UserMediaClientImpl::requestUserMedia(
       controls.video.requested = true;
     }
     CopyBlinkRequestToStreamControls(user_media_request, &controls);
-    security_origin = blink::WebStringToGURL(
-        user_media_request.getSecurityOrigin().toString());
+    security_origin = user_media_request.getSecurityOrigin();
     // ownerDocument may be null if we are in a test.
     // In that case, it's OK to not check frame().
     DCHECK(user_media_request.ownerDocument().isNull() ||
@@ -244,7 +243,7 @@ void UserMediaClientImpl::requestUserMedia(
            << " select associated sink: "
            << enable_automatic_output_device_selection
            << ", video=" << (controls.video.requested) << " ], "
-           << security_origin.spec() << ")";
+           << security_origin << ")";
 
   std::string audio_device_id;
   if (!user_media_request.isNull() && user_media_request.audio()) {
@@ -299,16 +298,13 @@ void UserMediaClientImpl::requestMediaDevices(
   // |media_devices_request| can't be mocked, so in tests it will be empty (the
   // underlying pointer is null). In order to use this function in a test we
   // need to check if it isNull.
-  GURL security_origin;
-  if (!media_devices_request.isNull()) {
-    security_origin = blink::WebStringToGURL(
-        media_devices_request.getSecurityOrigin().toString());
-  }
+  url::Origin security_origin;
+  if (!media_devices_request.isNull())
+    security_origin = media_devices_request.getSecurityOrigin();
 
   DVLOG(1) << "UserMediaClientImpl::requestMediaDevices("
-           << audio_input_request_id
-           << ", " << video_input_request_id << ", " << audio_output_request_id
-           << ", " << security_origin.spec() << ")";
+           << audio_input_request_id << ", " << video_input_request_id << ", "
+           << audio_output_request_id << ", " << security_origin << ")";
 
   media_devices_requests_.push_back(new MediaDevicesRequestInfo(
       media_devices_request,
@@ -357,14 +353,12 @@ void UserMediaClientImpl::requestSources(
   // |sources_request| can't be mocked, so in tests it will be empty (the
   // underlying pointer is null). In order to use this function in a test we
   // need to check if it isNull.
-  GURL security_origin;
+  url::Origin security_origin;
   if (!sources_request.isNull())
-    security_origin = GURL(sources_request.origin().utf8());
+    security_origin = sources_request.origin();
 
-  DVLOG(1) << "UserMediaClientImpl::requestSources("
-           << audio_input_request_id
-           << ", " << video_input_request_id
-           << ", " << security_origin.spec() << ")";
+  DVLOG(1) << "UserMediaClientImpl::requestSources(" << audio_input_request_id
+           << ", " << video_input_request_id << ", " << security_origin << ")";
 
   media_devices_requests_.push_back(new MediaDevicesRequestInfo(
       sources_request,

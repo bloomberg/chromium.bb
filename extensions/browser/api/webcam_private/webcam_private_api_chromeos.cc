@@ -13,6 +13,7 @@
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/process_manager_factory.h"
 #include "extensions/common/api/webcam_private.h"
+#include "url/origin.h"
 
 namespace webcam_private = extensions::api::webcam_private;
 
@@ -113,8 +114,8 @@ void WebcamPrivateAPI::OnOpenSerialWebcam(
 bool WebcamPrivateAPI::GetDeviceId(const std::string& extension_id,
                                    const std::string& webcam_id,
                                    std::string* device_id) {
-  GURL security_origin =
-      extensions::Extension::GetBaseURLFromExtensionId(extension_id);
+  url::Origin security_origin(
+      extensions::Extension::GetBaseURLFromExtensionId(extension_id));
 
   return content::GetMediaDeviceIDForHMAC(
       content::MEDIA_DEVICE_VIDEO_CAPTURE,
@@ -126,8 +127,8 @@ bool WebcamPrivateAPI::GetDeviceId(const std::string& extension_id,
 
 std::string WebcamPrivateAPI::GetWebcamId(const std::string& extension_id,
                                           const std::string& device_id) {
-  GURL security_origin =
-      extensions::Extension::GetBaseURLFromExtensionId(extension_id);
+  url::Origin security_origin(
+      extensions::Extension::GetBaseURLFromExtensionId(extension_id));
 
   return content::GetHMACForMediaDeviceID(
       browser_context_->GetResourceContext()->GetMediaDeviceIDSalt(),

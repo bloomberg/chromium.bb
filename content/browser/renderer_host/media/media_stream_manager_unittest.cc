@@ -27,6 +27,8 @@
 #include "media/base/media_switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
 #if defined(USE_ALSA)
 #include "media/audio/alsa/audio_manager_alsa.h"
@@ -236,7 +238,7 @@ class MediaStreamManagerTest : public ::testing::Test {
     const int render_process_id = 1;
     const int render_frame_id = 1;
     const int page_request_id = 1;
-    const GURL security_origin;
+    const url::Origin security_origin;
     MediaStreamManager::MediaRequestResponseCallback callback =
         base::Bind(&MediaStreamManagerTest::ResponseCallback,
                    base::Unretained(this), index);
@@ -281,7 +283,7 @@ TEST_F(MediaStreamManagerTest, MakeMultipleRequests) {
   int render_process_id = 2;
   int render_frame_id = 2;
   int page_request_id = 2;
-  GURL security_origin;
+  url::Origin security_origin;
   StreamControls controls(true, true);
   MediaStreamManager::MediaRequestResponseCallback callback =
       base::Bind(&MediaStreamManagerTest::ResponseCallback,
@@ -310,7 +312,7 @@ TEST_F(MediaStreamManagerTest, MakeAndCancelMultipleRequests) {
 }
 
 TEST_F(MediaStreamManagerTest, DeviceID) {
-  GURL security_origin("http://localhost");
+  url::Origin security_origin(GURL("http://localhost"));
   const std::string unique_default_id(
       media::AudioDeviceDescription::kDefaultDeviceId);
   const std::string hashed_default_id =
@@ -354,7 +356,7 @@ TEST_F(MediaStreamManagerTest, EnumerationOutputDevices) {
     const int render_process_id = 1;
     const int render_frame_id = 1;
     const int page_request_id = 1;
-    const GURL security_origin("http://localhost");
+    const url::Origin security_origin(GURL("http://localhost"));
     EXPECT_CALL(requester,
                 MockDevicesEnumerated(render_frame_id, page_request_id, _, _));
     std::string label = media_stream_manager_->EnumerateDevices(
@@ -370,7 +372,7 @@ TEST_F(MediaStreamManagerTest, NotifyDeviceChanges) {
   const int render_process_id = 1;
   const int render_frame_id = 1;
   const int page_request_id = 1;
-  const GURL security_origin("http://localhost");
+  const url::Origin security_origin(GURL("http://localhost"));
 
   // Check that device change notifications are received
   {

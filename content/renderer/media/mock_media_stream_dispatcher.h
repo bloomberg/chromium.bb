@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "content/renderer/media/media_stream_dispatcher.h"
-#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -23,7 +23,7 @@ class MockMediaStreamDispatcher : public MediaStreamDispatcher {
       int request_id,
       const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler,
       const StreamControls& controls,
-      const GURL& url) override;
+      const url::Origin& url) override;
   void CancelGenerateStream(
       int request_id,
       const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler)
@@ -32,7 +32,7 @@ class MockMediaStreamDispatcher : public MediaStreamDispatcher {
       int request_id,
       const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler,
       MediaStreamType type,
-      const GURL& security_origin) override;
+      const url::Origin& security_origin) override;
   void StopStreamDevice(const StreamDeviceInfo& device_info) override;
   bool IsStream(const std::string& label) override;
   int video_session_id(const std::string& label, int index) override;

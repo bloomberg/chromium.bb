@@ -147,7 +147,7 @@ class CONTENT_EXPORT AudioRendererHost : public BrowserMessageFilter {
                                     int render_frame_id,
                                     int session_id,
                                     const std::string& device_id,
-                                    const url::Origin& gurl_security_origin);
+                                    const url::Origin& security_origin);
 
   // Creates an audio output stream with the specified format.
   // Upon success/failure, the peer is notified via the NotifyStreamCreated
@@ -173,7 +173,7 @@ class CONTENT_EXPORT AudioRendererHost : public BrowserMessageFilter {
   // Proceed with device authorization after checking permissions.
   void OnDeviceAuthorized(int stream_id,
                           const std::string& device_id,
-                          const GURL& security_origin,
+                          const url::Origin& security_origin,
                           bool have_access);
 
   // Proceed with device authorization after translating device ID.
@@ -219,7 +219,7 @@ class CONTENT_EXPORT AudioRendererHost : public BrowserMessageFilter {
   // Check if the renderer process has access to the requested output device.
   void CheckOutputDeviceAccess(int render_frame_id,
                                const std::string& device_id,
-                               const GURL& gurl_security_origin,
+                               const url::Origin& security_origin,
                                const OutputDeviceAccessCB& callback);
 
   // Invoke |callback| after permission to use a device has been checked.
@@ -229,7 +229,7 @@ class CONTENT_EXPORT AudioRendererHost : public BrowserMessageFilter {
 
   // Translate the hashed |device_id| to a unique device ID.
   void TranslateDeviceID(const std::string& device_id,
-                         const GURL& gurl_security_origin,
+                         const url::Origin& security_origin,
                          const OutputDeviceInfoCB& callback,
                          const AudioOutputDeviceEnumeration& enumeration);
 
