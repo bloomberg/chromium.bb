@@ -486,9 +486,6 @@ bool LayoutView::mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* ance
 
 bool LayoutView::mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect& rect, MapCoordinatesFlags mode, VisualRectFlags visualRectFlags) const
 {
-    if (document().printing())
-        return true;
-
     // Convert the rect into the physical coordinates space of this LayoutView.
     flipForWritingMode(rect);
 
