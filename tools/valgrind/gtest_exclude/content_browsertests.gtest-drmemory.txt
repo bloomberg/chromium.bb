@@ -71,3 +71,7 @@ SingleProcessMemoryTracingTest.ManyInterleavedDumps
 # https://crbug.com/608081
 SitePerProcessBrowserTest.NavigateRemoteFrameToBlankAndDataURLs
 SitePerProcessBrowserTest.RFPHDestruction
+
+# https://crbug.com/608117
+WebRtcDataChannelTest.DataChannelGC
+
