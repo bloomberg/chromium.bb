@@ -73,7 +73,6 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
   friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
 
   struct RequestDeviceSession;
-  struct PrimaryServicesRequest;
 
   // Map to keep track of connections. Inserting and removing connections
   // will update the Web Contents for the frame. Upon destruction
@@ -124,8 +123,6 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
                    device::BluetoothDevice* device) override;
   void DeviceRemoved(device::BluetoothAdapter* adapter,
                      device::BluetoothDevice* device) override;
-  void GattServicesDiscovered(device::BluetoothAdapter* adapter,
-                              device::BluetoothDevice* device) override;
 
   // IPC Handlers, see definitions in bluetooth_messages.h.
   void OnRequestDevice(
@@ -141,11 +138,6 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
   void OnGATTServerDisconnect(int thread_id,
                               int frame_routing_id,
                               const std::string& device_id);
-  void OnGetPrimaryService(int thread_id,
-                           int request_id,
-                           int frame_routing_id,
-                           const std::string& device_id,
-                           const std::string& service_uuid);
 
   // Callbacks for BluetoothDevice::OnRequestDevice.
   // If necessary, the adapter must be obtained before continuing to Impl.
@@ -191,13 +183,6 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
       base::TimeTicks start_time,
       device::BluetoothDevice::ConnectErrorCode error_code);
 
-  // Adds the service to the map of services' instance ids to devices' instance
-  // ids and sends the service to the renderer.
-  void AddToServicesMapAndSendGetPrimaryServiceSuccess(
-      const device::BluetoothRemoteGattService& service,
-      int thread_id,
-      int request_id);
-
   // Functions to query the platform cache for the bluetooth object.
   // result.outcome == CacheQueryOutcome::SUCCESS if the object was found in the
   // cache. Otherwise result.outcome that can used to record the outcome and
@@ -210,17 +195,6 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
   // Fills in the |outcome| field and the |device| field if successful.
   CacheQueryResult QueryCacheForDevice(const url::Origin& origin,
                                        const std::string& device_id);
-
-  // Queries the platform cache for a Service with |service_instance_id|. Fills
-  // in the |outcome| field, and |device| and |service| fields if successful.
-  CacheQueryResult QueryCacheForService(const url::Origin& origin,
-                                        const std::string& service_instance_id);
-
-  // Adds the PrimaryServicesRequest to the vector of pending services requests
-  // for that device.
-  void AddToPendingPrimaryServicesRequest(
-      const std::string& device_address,
-      const PrimaryServicesRequest& request);
 
   // Returns the origin for the frame with "frame_routing_id" in
   // render_process_id_.
@@ -235,10 +209,6 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
   IDMap<RequestDeviceSession, IDMapOwnPointer> request_device_sessions_;
 
   BluetoothAllowedDevicesMap allowed_devices_map_;
-
-  // Maps to get the object's parent based on it's instanceID
-  // Map of service_instance_id to device_address.
-  std::map<std::string, std::string> service_to_device_;
 
   // Defines how long to scan for and how long to discover services for.
   int current_delay_time_;
@@ -257,11 +227,6 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
 
   // Retains BluetoothGattConnection objects to keep connections open.
   std::unique_ptr<ConnectedDevicesMap> connected_devices_map_;
-
-  // Map of device_address's to primary-services requests that need responses
-  // when that device's service discovery completes.
-  std::map<std::string, std::vector<PrimaryServicesRequest>>
-      pending_primary_services_requests_;
 
   // |weak_ptr_on_ui_thread_| provides weak pointers, e.g. for callbacks, and
   // because it exists and has been bound to the UI thread enforces that all

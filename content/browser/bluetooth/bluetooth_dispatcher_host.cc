@@ -179,23 +179,6 @@ void StopDiscoverySession(
                           base::Bind(&base::DoNothing));
 }
 
-// TODO(ortuno): This should really be a BluetoothDevice method.
-// Replace when implemented. http://crbug.com/552022
-std::vector<BluetoothRemoteGattService*> GetPrimaryServicesByUUID(
-    device::BluetoothDevice* device,
-    const std::string& service_uuid) {
-  std::vector<BluetoothRemoteGattService*> services;
-  VLOG(1) << "Looking for service: " << service_uuid;
-  for (BluetoothRemoteGattService* service : device->GetGattServices()) {
-    VLOG(1) << "Service in cache: " << service->GetUUID().canonical_value();
-    if (service->GetUUID().canonical_value() == service_uuid &&
-        service->IsPrimary()) {
-      services.push_back(service);
-    }
-  }
-  return services;
-}
-
 UMARequestDeviceOutcome OutcomeFromChooserEvent(BluetoothChooser::Event event) {
   switch (event) {
     case BluetoothChooser::Event::DENIED_PERMISSION:
@@ -270,7 +253,6 @@ bool BluetoothDispatcherHost::OnMessageReceived(const IPC::Message& message) {
   IPC_MESSAGE_HANDLER(BluetoothHostMsg_GATTServerConnect, OnGATTServerConnect)
   IPC_MESSAGE_HANDLER(BluetoothHostMsg_GATTServerDisconnect,
                       OnGATTServerDisconnect)
-  IPC_MESSAGE_HANDLER(BluetoothHostMsg_GetPrimaryService, OnGetPrimaryService)
   IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -293,13 +275,11 @@ void BluetoothDispatcherHost::SetBluetoothAdapterForTesting(
     // The following data structures are used to store pending operations.
     // They should never contain elements at the end of a test.
     DCHECK(request_device_sessions_.IsEmpty());
-    DCHECK(pending_primary_services_requests_.empty());
 
     // The following data structures are cleaned up when a
     // device/service/characteristic is removed.
     // Since this can happen after the test is done and the cleanup function is
     // called, we clean them here.
-    service_to_device_.clear();
     connected_devices_map_.reset(new ConnectedDevicesMap(render_process_id_));
     allowed_devices_map_ = BluetoothAllowedDevicesMap();
   }
@@ -355,25 +335,6 @@ struct BluetoothDispatcherHost::RequestDeviceSession {
   const std::vector<BluetoothUUID> optional_services;
   std::unique_ptr<BluetoothChooser> chooser;
   std::unique_ptr<device::BluetoothDiscoverySession> discovery_session;
-};
-
-struct BluetoothDispatcherHost::PrimaryServicesRequest {
-  enum CallingFunction { GET_PRIMARY_SERVICE, GET_PRIMARY_SERVICES };
-
-  PrimaryServicesRequest(int thread_id,
-                         int request_id,
-                         const std::string& service_uuid,
-                         PrimaryServicesRequest::CallingFunction func)
-      : thread_id(thread_id),
-        request_id(request_id),
-        service_uuid(service_uuid),
-        func(func) {}
-  ~PrimaryServicesRequest() {}
-
-  int thread_id;
-  int request_id;
-  std::string service_uuid;
-  CallingFunction func;
 };
 
 BluetoothDispatcherHost::ConnectedDevicesMap::ConnectedDevicesMap(
@@ -554,47 +515,6 @@ void BluetoothDispatcherHost::DeviceRemoved(device::BluetoothAdapter* adapter,
   }
 }
 
-void BluetoothDispatcherHost::GattServicesDiscovered(
-    device::BluetoothAdapter* adapter,
-    device::BluetoothDevice* device) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  const std::string& device_address = device->GetAddress();
-  VLOG(1) << "Services discovered for device: " << device_address;
-
-  auto iter = pending_primary_services_requests_.find(device_address);
-  if (iter == pending_primary_services_requests_.end()) {
-    return;
-  }
-  std::vector<PrimaryServicesRequest> requests;
-  requests.swap(iter->second);
-  pending_primary_services_requests_.erase(iter);
-
-  for (const PrimaryServicesRequest& request : requests) {
-    std::vector<BluetoothRemoteGattService*> services =
-        GetPrimaryServicesByUUID(device, request.service_uuid);
-    switch (request.func) {
-      case PrimaryServicesRequest::GET_PRIMARY_SERVICE:
-        if (!services.empty()) {
-          AddToServicesMapAndSendGetPrimaryServiceSuccess(
-              *services[0], request.thread_id, request.request_id);
-        } else {
-          VLOG(1) << "No service found";
-          RecordGetPrimaryServiceOutcome(
-              UMAGetPrimaryServiceOutcome::NOT_FOUND);
-          Send(new BluetoothMsg_GetPrimaryServiceError(
-              request.thread_id, request.request_id,
-              WebBluetoothError::SERVICE_NOT_FOUND));
-        }
-        break;
-      case PrimaryServicesRequest::GET_PRIMARY_SERVICES:
-        NOTIMPLEMENTED();
-        break;
-    }
-  }
-  DCHECK(!ContainsKey(pending_primary_services_requests_, device_address))
-      << "Sending get-service responses unexpectedly queued another request.";
-}
-
 void BluetoothDispatcherHost::OnRequestDevice(
     int thread_id,
     int request_id,
@@ -682,74 +602,6 @@ void BluetoothDispatcherHost::OnGATTServerDisconnect(
   // to observe the frame's lifetime and hide the indicator when necessary.
   // http://crbug.com/508771
   connected_devices_map_->Remove(frame_routing_id, device_id);
-}
-
-void BluetoothDispatcherHost::OnGetPrimaryService(
-    int thread_id,
-    int request_id,
-    int frame_routing_id,
-    const std::string& device_id,
-    const std::string& service_uuid) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  RecordWebBluetoothFunctionCall(UMAWebBluetoothFunction::GET_PRIMARY_SERVICE);
-  RecordGetPrimaryServiceService(BluetoothUUID(service_uuid));
-
-  if (!allowed_devices_map_.IsOriginAllowedToAccessService(
-          GetOrigin(frame_routing_id), device_id, service_uuid)) {
-    Send(new BluetoothMsg_GetPrimaryServiceError(
-        thread_id, request_id,
-        WebBluetoothError::NOT_ALLOWED_TO_ACCESS_SERVICE));
-    return;
-  }
-
-  const CacheQueryResult query_result =
-      QueryCacheForDevice(GetOrigin(frame_routing_id), device_id);
-
-  if (query_result.outcome != CacheQueryOutcome::SUCCESS) {
-    RecordGetPrimaryServiceOutcome(query_result.outcome);
-    Send(new BluetoothMsg_GetPrimaryServiceError(thread_id, request_id,
-                                                 query_result.GetWebError()));
-    return;
-  }
-
-  // There are four possibilities here:
-  // 1. Services not discovered and service present in |device|: Send back the
-  //    service to the renderer.
-  // 2. Services discovered and service present in |device|: Send back the
-  //    service to the renderer.
-  // 3. Services discovered and service not present in |device|: Send back not
-  //    found error.
-  // 4. Services not discovered and service not present in |device|: Add request
-  //    to map of pending getPrimaryService requests.
-
-  std::vector<BluetoothRemoteGattService*> services =
-      GetPrimaryServicesByUUID(query_result.device, service_uuid);
-
-  // 1. & 2.
-  if (!services.empty()) {
-    VLOG(1) << "Service found in device.";
-    const BluetoothRemoteGattService& service = *services[0];
-    DCHECK(service.IsPrimary());
-    AddToServicesMapAndSendGetPrimaryServiceSuccess(service, thread_id,
-                                                    request_id);
-    return;
-  }
-
-  // 3.
-  if (query_result.device->IsGattServicesDiscoveryComplete()) {
-    VLOG(1) << "Service not found in device.";
-    RecordGetPrimaryServiceOutcome(UMAGetPrimaryServiceOutcome::NOT_FOUND);
-    Send(new BluetoothMsg_GetPrimaryServiceError(
-        thread_id, request_id, WebBluetoothError::SERVICE_NOT_FOUND));
-    return;
-  }
-
-  VLOG(1) << "Adding service request to pending requests.";
-  // 4.
-  AddToPendingPrimaryServicesRequest(
-      query_result.device->GetAddress(),
-      PrimaryServicesRequest(thread_id, request_id, service_uuid,
-                             PrimaryServicesRequest::GET_PRIMARY_SERVICE));
 }
 
 void BluetoothDispatcherHost::OnGetAdapter(
@@ -1116,24 +968,6 @@ void BluetoothDispatcherHost::OnCreateGATTConnectionError(
       thread_id, request_id, TranslateConnectError(error_code)));
 }
 
-void BluetoothDispatcherHost::AddToServicesMapAndSendGetPrimaryServiceSuccess(
-    const device::BluetoothRemoteGattService& service,
-    int thread_id,
-    int request_id) {
-  const std::string& service_identifier = service.GetIdentifier();
-  const std::string& device_address = service.GetDevice()->GetAddress();
-  auto insert_result =
-      service_to_device_.insert(make_pair(service_identifier, device_address));
-
-  // If a value is already in map, DCHECK it's valid.
-  if (!insert_result.second)
-    DCHECK_EQ(insert_result.first->second, device_address);
-
-  RecordGetPrimaryServiceOutcome(UMAGetPrimaryServiceOutcome::SUCCESS);
-  Send(new BluetoothMsg_GetPrimaryServiceSuccess(thread_id, request_id,
-                                                 service_identifier));
-}
-
 CacheQueryResult BluetoothDispatcherHost::QueryCacheForDevice(
     const url::Origin& origin,
     const std::string& device_id) {
@@ -1158,45 +992,6 @@ CacheQueryResult BluetoothDispatcherHost::QueryCacheForDevice(
   return result;
 }
 
-CacheQueryResult BluetoothDispatcherHost::QueryCacheForService(
-    const url::Origin& origin,
-    const std::string& service_instance_id) {
-  auto device_iter = service_to_device_.find(service_instance_id);
-
-  // Kill the renderer, see "ID Not In Map Note" above.
-  if (device_iter == service_to_device_.end()) {
-    bad_message::ReceivedBadMessage(this, bad_message::BDH_INVALID_SERVICE_ID);
-    return CacheQueryResult(CacheQueryOutcome::BAD_RENDERER);
-  }
-
-  const std::string& device_id =
-      allowed_devices_map_.GetDeviceId(origin, device_iter->second);
-  // Kill the renderer if the origin is not allowed to access the device.
-  if (device_id.empty()) {
-    bad_message::ReceivedBadMessage(
-        this, bad_message::BDH_DEVICE_NOT_ALLOWED_FOR_ORIGIN);
-    return CacheQueryResult(CacheQueryOutcome::BAD_RENDERER);
-  }
-
-  CacheQueryResult result = QueryCacheForDevice(origin, device_id);
-
-  if (result.outcome != CacheQueryOutcome::SUCCESS) {
-    return result;
-  }
-
-  result.service = result.device->GetGattService(service_instance_id);
-  if (result.service == nullptr) {
-    result.outcome = CacheQueryOutcome::NO_SERVICE;
-  } else if (!allowed_devices_map_.IsOriginAllowedToAccessService(
-                 origin, device_id,
-                 result.service->GetUUID().canonical_value())) {
-    bad_message::ReceivedBadMessage(
-        this, bad_message::BDH_SERVICE_NOT_ALLOWED_FOR_ORIGIN);
-    return CacheQueryResult(CacheQueryOutcome::BAD_RENDERER);
-  }
-  return result;
-}
-
 void BluetoothDispatcherHost::AddAdapterObserver(
     device::BluetoothAdapter::Observer* observer) {
   adapter_observers_.insert(observer);
@@ -1211,12 +1006,6 @@ void BluetoothDispatcherHost::RemoveAdapterObserver(
   if (adapter_) {
     adapter_->RemoveObserver(observer);
   }
-}
-
-void BluetoothDispatcherHost::AddToPendingPrimaryServicesRequest(
-    const std::string& device_address,
-    const PrimaryServicesRequest& request) {
-  pending_primary_services_requests_[device_address].push_back(request);
 }
 
 url::Origin BluetoothDispatcherHost::GetOrigin(int frame_routing_id) {

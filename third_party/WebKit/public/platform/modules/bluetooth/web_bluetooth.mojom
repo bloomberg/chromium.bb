@@ -75,6 +75,11 @@ enum WebBluetoothGATTQueryQuantity {
   MULTIPLE
 };
 
+struct WebBluetoothRemoteGATTService {
+  string instance_id;
+  string uuid;
+};
+
 struct WebBluetoothRemoteGATTCharacteristic {
   string instance_id;
   string uuid;
@@ -91,6 +96,14 @@ interface WebBluetoothService {
   // client of device events e.g. when a Characteristic's value changes or when
   // a device disconnects.
   SetClient(associated WebBluetoothServiceClient client);
+
+  // Returns the first GATT Service with |service_uuid| of a Bluetooth Device
+  // with |device_id|.
+  RemoteServerGetPrimaryService(
+    string device_id,
+    string service_uuid) => (
+      WebBluetoothError error,
+      WebBluetoothRemoteGATTService? service);
 
   // Returns the Characteristics of a GATT Service with |service_instance_id|.
   // If |quantity| == WebBluetoothGATTQueryQuantity::SINGLE, only one

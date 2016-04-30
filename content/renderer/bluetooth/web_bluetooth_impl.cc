@@ -4,6 +4,8 @@
 
 #include "content/renderer/bluetooth/web_bluetooth_impl.h"
 
+#include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/memory/ptr_util.h"
@@ -15,6 +17,7 @@
 #include "mojo/public/cpp/bindings/array.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothRemoteGATTCharacteristic.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothRemoteGATTCharacteristicInit.h"
+#include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothRemoteGATTService.h"
 
 namespace content {
 
@@ -49,8 +52,11 @@ void WebBluetoothImpl::getPrimaryService(
     const blink::WebString& device_id,
     const blink::WebString& service_uuid,
     blink::WebBluetoothGetPrimaryServiceCallbacks* callbacks) {
-  GetDispatcher()->getPrimaryService(frame_routing_id_, device_id, service_uuid,
-                                     callbacks);
+  GetWebBluetoothService().RemoteServerGetPrimaryService(
+      mojo::String::From(device_id), mojo::String::From(service_uuid),
+      base::Bind(&WebBluetoothImpl::OnGetPrimaryServiceComplete,
+                 base::Unretained(this), device_id,
+                 base::Passed(base::WrapUnique(callbacks))));
 }
 
 void WebBluetoothImpl::getCharacteristics(
@@ -134,6 +140,22 @@ void WebBluetoothImpl::RemoteCharacteristicValueChanged(
       base::Bind(&WebBluetoothImpl::DispatchCharacteristicValueChanged,
                  base::Unretained(this), characteristic_instance_id,
                  value.PassStorage()));
+}
+
+void WebBluetoothImpl::OnGetPrimaryServiceComplete(
+    const blink::WebString& device_id,
+    std::unique_ptr<blink::WebBluetoothGetPrimaryServiceCallbacks> callbacks,
+    blink::mojom::WebBluetoothError error,
+    blink::mojom::WebBluetoothRemoteGATTServicePtr service) {
+  if (error == blink::mojom::WebBluetoothError::SUCCESS) {
+    callbacks->onSuccess(
+        base::WrapUnique(new blink::WebBluetoothRemoteGATTService(
+            blink::WebString::fromUTF8(service->instance_id),
+            blink::WebString::fromUTF8(service->uuid), true /* isPrimary */,
+            device_id)));
+  } else {
+    callbacks->onError(error);
+  }
 }
 
 void WebBluetoothImpl::OnGetCharacteristicsComplete(

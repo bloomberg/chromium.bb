@@ -32,21 +32,6 @@ using blink::WebRequestDeviceOptions;
 using blink::WebString;
 using blink::WebVector;
 
-struct BluetoothPrimaryServiceRequest {
-  BluetoothPrimaryServiceRequest(
-      blink::WebString device_id,
-      blink::WebString service_uuid,
-      blink::WebBluetoothGetPrimaryServiceCallbacks* callbacks)
-      : device_id(device_id),
-        service_uuid(service_uuid),
-        callbacks(callbacks) {}
-  ~BluetoothPrimaryServiceRequest() {}
-
-  blink::WebString device_id;
-  blink::WebString service_uuid;
-  std::unique_ptr<blink::WebBluetoothGetPrimaryServiceCallbacks> callbacks;
-};
-
 namespace content {
 
 namespace {
@@ -114,10 +99,6 @@ void BluetoothDispatcher::OnMessageReceived(const IPC::Message& msg) {
                       OnGATTServerConnectSuccess);
   IPC_MESSAGE_HANDLER(BluetoothMsg_GATTServerConnectError,
                       OnGATTServerConnectError);
-  IPC_MESSAGE_HANDLER(BluetoothMsg_GetPrimaryServiceSuccess,
-                      OnGetPrimaryServiceSuccess);
-  IPC_MESSAGE_HANDLER(BluetoothMsg_GetPrimaryServiceError,
-                      OnGetPrimaryServiceError);
   IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   DCHECK(handled) << "Unhandled message:" << msg.type();
@@ -167,18 +148,6 @@ void BluetoothDispatcher::disconnect(int frame_routing_id,
       CurrentWorkerId(), frame_routing_id, device_id.utf8()));
 }
 
-void BluetoothDispatcher::getPrimaryService(
-    int frame_routing_id,
-    const blink::WebString& device_id,
-    const blink::WebString& service_uuid,
-    blink::WebBluetoothGetPrimaryServiceCallbacks* callbacks) {
-  int request_id = pending_primary_service_requests_.Add(
-      new BluetoothPrimaryServiceRequest(device_id, service_uuid, callbacks));
-  Send(new BluetoothHostMsg_GetPrimaryService(
-      CurrentWorkerId(), request_id, frame_routing_id, device_id.utf8(),
-      service_uuid.utf8()));
-}
-
 void BluetoothDispatcher::WillStopCurrentWorkerThread() {
   delete this;
 }
@@ -224,30 +193,6 @@ void BluetoothDispatcher::OnGATTServerConnectError(int thread_id,
   pending_connect_requests_.Lookup(request_id)
       ->onError(WebBluetoothError(error));
   pending_connect_requests_.Remove(request_id);
-}
-
-void BluetoothDispatcher::OnGetPrimaryServiceSuccess(
-    int thread_id,
-    int request_id,
-    const std::string& service_instance_id) {
-  DCHECK(pending_primary_service_requests_.Lookup(request_id)) << request_id;
-  BluetoothPrimaryServiceRequest* request =
-      pending_primary_service_requests_.Lookup(request_id);
-  request->callbacks->onSuccess(
-      base::WrapUnique(new WebBluetoothRemoteGATTService(
-          WebString::fromUTF8(service_instance_id), request->service_uuid,
-          true /* isPrimary */, request->device_id)));
-  pending_primary_service_requests_.Remove(request_id);
-}
-
-void BluetoothDispatcher::OnGetPrimaryServiceError(int thread_id,
-                                                   int request_id,
-                                                   WebBluetoothError error) {
-  DCHECK(pending_primary_service_requests_.Lookup(request_id)) << request_id;
-
-  pending_primary_service_requests_.Lookup(request_id)
-      ->callbacks->onError(WebBluetoothError(error));
-  pending_primary_service_requests_.Remove(request_id);
 }
 
 }  // namespace content

@@ -55,6 +55,9 @@ class WebBluetoothServiceImpl : public blink::mojom::WebBluetoothService,
   void SetClientConnectionErrorHandler(base::Closure closure);
 
  private:
+  typedef base::Callback<void(device::BluetoothDevice*)>
+      PrimaryServicesRequestCallback;
+
   // WebContentsObserver:
   // These functions should always check that the affected RenderFrameHost
   // is this->render_frame_host_ and not some other frame in the same tab.
@@ -63,6 +66,8 @@ class WebBluetoothServiceImpl : public blink::mojom::WebBluetoothService,
   // BluetoothAdapter::Observer:
   void AdapterPresentChanged(device::BluetoothAdapter* adapter,
                              bool present) override;
+  void GattServicesDiscovered(device::BluetoothAdapter* adapter,
+                              device::BluetoothDevice* device) override;
   void GattCharacteristicValueChanged(
       device::BluetoothAdapter* adapter,
       device::BluetoothRemoteGattCharacteristic* characteristic,
@@ -78,6 +83,10 @@ class WebBluetoothServiceImpl : public blink::mojom::WebBluetoothService,
   // WebBluetoothService methods:
   void SetClient(
       blink::mojom::WebBluetoothServiceClientAssociatedPtrInfo client) override;
+  void RemoteServerGetPrimaryService(
+      const mojo::String& device_id,
+      const mojo::String& service_uuid,
+      const RemoteServerGetPrimaryServiceCallback& callback) override;
   void RemoteServiceGetCharacteristics(
       const mojo::String& service_instance_id,
       blink::mojom::WebBluetoothGATTQueryQuantity quantity,
@@ -96,6 +105,13 @@ class WebBluetoothServiceImpl : public blink::mojom::WebBluetoothService,
   void RemoteCharacteristicStopNotifications(
       const mojo::String& characteristic_instance_id,
       const RemoteCharacteristicStopNotificationsCallback& callback) override;
+
+  // Should only be run after the services have been discovered for
+  // |device_address|.
+  void RemoteServerGetPrimaryServiceImpl(
+      const std::string& service_uuid,
+      const RemoteServerGetPrimaryServiceCallback& callback,
+      device::BluetoothDevice* device);
 
   // Callbacks for BluetoothRemoteGattCharacteristic::ReadRemoteCharacteristic.
   void OnReadValueSuccess(const RemoteCharacteristicReadValueCallback& callback,
@@ -132,6 +148,10 @@ class WebBluetoothServiceImpl : public blink::mojom::WebBluetoothService,
   // renderer, record the reason and close the pipe, so it's safe to drop
   // any callbacks.
 
+  // Queries the platform cache for a Service with |service_instance_id|. Fills
+  // in the |outcome| field, and |device| and |service| fields if successful.
+  CacheQueryResult QueryCacheForService(const std::string& service_instance_id);
+
   // Queries the platform cache for a characteristic with
   // |characteristic_instance_id|. Fills in the |outcome| field, and |device|,
   // |service| and |characteristic| fields if successful.
@@ -147,9 +167,13 @@ class WebBluetoothServiceImpl : public blink::mojom::WebBluetoothService,
   void ClearState();
 
   // Maps to get the object's parent based on its instanceID.
-
-  // Map of characteristic_instance_id to service_instance_id.
+  std::unordered_map<std::string, std::string> service_id_to_device_address_;
   std::unordered_map<std::string, std::string> characteristic_id_to_service_id_;
+
+  // Maps a device address to callbacks that are waiting for services to
+  // be discovered for that device.
+  std::unordered_map<std::string, std::vector<PrimaryServicesRequestCallback>>
+      pending_primary_services_requests_;
 
   // Map to keep track of the characteristics' notify sessions.
   std::unordered_map<std::string,

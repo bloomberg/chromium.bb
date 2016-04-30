@@ -85,6 +85,11 @@ class CONTENT_EXPORT WebBluetoothImpl
       mojo::Array<uint8_t> value) override;
 
   // Callbacks for WebBluetoothService calls:
+  void OnGetPrimaryServiceComplete(
+      const blink::WebString& device_id,
+      std::unique_ptr<blink::WebBluetoothGetPrimaryServiceCallbacks> callbacks,
+      blink::mojom::WebBluetoothError error,
+      blink::mojom::WebBluetoothRemoteGATTServicePtr service);
   void OnGetCharacteristicsComplete(
       const blink::WebString& service_instance_id,
       std::unique_ptr<blink::WebBluetoothGetCharacteristicsCallbacks> callbacks,
