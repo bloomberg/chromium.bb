@@ -107,7 +107,12 @@ void V8RuntimeAgentImpl::evaluate(
     // Temporarily enable allow evals for inspector.
     if (evalIsDisabled)
         scope.context()->AllowCodeGenerationFromStrings(true);
-    v8::MaybeLocal<v8::Value> maybeResultValue = m_debugger->compileAndRunInternalScript(scope.context(), toV8String(m_debugger->isolate(), expression));
+
+    v8::MaybeLocal<v8::Value> maybeResultValue;
+    v8::Local<v8::Script> script = m_debugger->compileInternalScript(scope.context(), toV8String(m_debugger->isolate(), expression), String16());
+    if (!script.IsEmpty())
+        maybeResultValue = m_debugger->runCompiledScript(scope.context(), script);
+
     if (evalIsDisabled)
         scope.context()->AllowCodeGenerationFromStrings(false);
 

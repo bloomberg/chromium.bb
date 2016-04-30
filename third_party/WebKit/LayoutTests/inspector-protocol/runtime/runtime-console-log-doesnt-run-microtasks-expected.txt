@@ -1,0 +1,25 @@
+CONSOLE MESSAGE: line 9: 42
+CONSOLE MESSAGE: line 10: 43
+CONSOLE MESSAGE: line 8: 239
+CONSOLE MESSAGE: line 1: finished
+Check that console.log doesn't run microtasks.
+{
+    description : 42
+    type : number
+    value : 42
+}
+{
+    description : 43
+    type : number
+    value : 43
+}
+{
+    description : 239
+    type : number
+    value : 239
+}
+{
+    type : string
+    value : finished
+}
+
