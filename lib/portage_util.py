@@ -1558,6 +1558,29 @@ def GetBinaryPackagePath(c, p, v, sysroot='/', packages_dir=None):
   return path
 
 
+def GetRepositoryFromEbuildInfo(info):
+  """Parse output of the result of `ebuild <ebuild_path> info`
+
+  This command should return output that looks a lot like:
+   CROS_WORKON_SRCDIR=("/mnt/host/source/src/platform2")
+   CROS_WORKON_PROJECT=("chromiumos/platform2")
+  """
+  srcdir_match = re.search(r'^CROS_WORKON_SRCDIR=(\(".*"\))$',
+                           info, re.MULTILINE)
+  project_match = re.search(r'^CROS_WORKON_PROJECT=(\(".*"\))$',
+                            info, re.MULTILINE)
+  if not srcdir_match or not project_match:
+    return None
+
+  srcdirs = ParseBashArray(srcdir_match.group(1))
+  projects = ParseBashArray(project_match.group(1))
+  if len(srcdirs) != len(projects):
+    return None
+
+  return [RepositoryInfoTuple(srcdir, project)
+          for srcdir, project in zip(srcdirs, projects)]
+
+
 def GetRepositoryForEbuild(ebuild_path, sysroot):
   """Get parsed output of `ebuild <ebuild_path> info`
 
@@ -1575,24 +1598,7 @@ def GetRepositoryForEbuild(ebuild_path, sysroot):
          ebuild_path, 'info')
   result = cros_build_lib.RunCommand(
       cmd, capture_output=True, print_cmd=False, error_code_ok=True)
-
-  # This command should return output that looks a lot like:
-  # CROS_WORKON_SRCDIR=("/mnt/host/source/src/platform2")
-  # CROS_WORKON_PROJECT=("chromiumos/platform2")
-  srcdir_match = re.search(r'^CROS_WORKON_SRCDIR=\((".*")\)$',
-                           result.output, re.MULTILINE)
-  project_match = re.search(r'^CROS_WORKON_PROJECT=\((".*")\)$',
-                            result.output, re.MULTILINE)
-  if not srcdir_match or not project_match:
-    return None
-
-  srcdirs = ParseBashArray(srcdir_match.group(1))
-  projects = ParseBashArray(project_match.group(1))
-  if len(srcdirs) != len(projects):
-    return None
-
-  return [RepositoryInfoTuple(srcdir, project)
-          for srcdir, project in zip(srcdirs, projects)]
+  return GetRepositoryFromEbuildInfo(result.output)
 
 
 def CleanOutdatedBinaryPackages(sysroot):

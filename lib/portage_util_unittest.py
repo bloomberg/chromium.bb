@@ -822,6 +822,27 @@ class UtilFuncsTest(cros_test_lib.TempDirTestCase):
     osutils.WriteFile(layout_conf, 'here = we go')
     self.assertEqual(portage_util.GetOverlayName(self.tempdir), 'hi!')
 
+  def testGetRepositoryFromEbuildInfo(self):
+    """Verify GetRepositoryFromEbuildInfo handles data from ebuild info."""
+
+    def _runTestGetRepositoryFromEbuildInfo(fake_projects, fake_srcdirs):
+      """Generate the output from ebuild info"""
+
+      # ebuild info always put () around the result, even for single element
+      # array.
+      fake_ebuild_contents = """
+CROS_WORKON_PROJECT=("%s")
+CROS_WORKON_SRCDIR=("%s")
+      """ % ('" "'.join(fake_projects),
+             '" "'.join(fake_srcdirs))
+      result = portage_util.GetRepositoryFromEbuildInfo(fake_ebuild_contents)
+      result_srcdirs, result_projects = zip(*result)
+      self.assertEquals(fake_projects, list(result_projects))
+      self.assertEquals(fake_srcdirs, list(result_srcdirs))
+
+    _runTestGetRepositoryFromEbuildInfo(['a', 'b'], ['src_a', 'src_b'])
+    _runTestGetRepositoryFromEbuildInfo(['a'], ['src_a'])
+
 
 class BuildEBuildDictionaryTest(cros_test_lib.MockTempDirTestCase):
   """Tests of the EBuild Dictionary."""
