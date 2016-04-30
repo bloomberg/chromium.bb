@@ -25,7 +25,6 @@ import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
 import org.chromium.chrome.browser.notifications.NotificationManagerProxy;
 import org.chromium.chrome.browser.notifications.NotificationManagerProxyImpl;
@@ -413,13 +412,6 @@ class UrlManager {
         if (isUrlListEmptyAfter) {
             clearNotification();
             cancelClearNotificationAlarm();
-            return;
-        }
-
-        // We should only show notifications if there's no other notification-based client.
-        if (PhysicalWebEnvironment
-                .getInstance((ChromeApplication) mContext.getApplicationContext())
-                .hasNotificationBasedClient()) {
             return;
         }
 
