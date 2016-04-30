@@ -85,6 +85,29 @@ public:
         return toView()->invalidatePaintForSelection();
     }
 
+//    bool hitTest(HitTestResult&);
+//    bool hitTestNoLifecycleUpdate(HitTestResult&);
+
+    unsigned hitTestCount() const
+    {
+        return toView()->hitTestCount();
+    }
+
+    unsigned hitTestCacheHits() const
+    {
+        return toView()->hitTestCacheHits();
+    }
+
+    void clearHitTestCache()
+    {
+        toView()->clearHitTestCache();
+    }
+
+    void invalidatePaintForViewAndCompositedLayers()
+    {
+        toView()->invalidatePaintForViewAndCompositedLayers();
+    }
+
 private:
     LayoutView* toView() { return toLayoutView(layoutObject()); }
     const LayoutView* toView() const { return toLayoutView(layoutObject()); }

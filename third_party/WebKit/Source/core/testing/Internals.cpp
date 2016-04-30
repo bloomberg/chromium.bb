@@ -100,8 +100,8 @@
 #include "core/layout/LayoutMenuList.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutTreeAsText.h"
-#include "core/layout/LayoutView.h"
 #include "core/layout/api/LayoutMenuListItem.h"
+#include "core/layout/api/LayoutViewItem.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/loader/DocumentLoader.h"
@@ -337,7 +337,7 @@ unsigned Internals::hitTestCount(Document* doc, ExceptionState& exceptionState) 
         return 0;
     }
 
-    return doc->layoutView()->hitTestCount();
+    return doc->layoutViewItem().hitTestCount();
 }
 
 unsigned Internals::hitTestCacheHits(Document* doc, ExceptionState& exceptionState) const
@@ -347,7 +347,7 @@ unsigned Internals::hitTestCacheHits(Document* doc, ExceptionState& exceptionSta
         return 0;
     }
 
-    return doc->layoutView()->hitTestCacheHits();
+    return doc->layoutViewItem().hitTestCacheHits();
 }
 
 Element* Internals::elementFromPoint(Document* doc, double x, double y, bool ignoreClipping, bool allowChildFrameContent, ExceptionState& exceptionState) const
@@ -357,7 +357,7 @@ Element* Internals::elementFromPoint(Document* doc, double x, double y, bool ign
         return 0;
     }
 
-    if (!doc->layoutView())
+    if (doc->layoutViewItem().isNull())
         return 0;
 
     HitTestRequest::HitTestRequestType hitType = HitTestRequest::ReadOnly | HitTestRequest::Active;
@@ -378,10 +378,10 @@ void Internals::clearHitTestCache(Document* doc, ExceptionState& exceptionState)
         return;
     }
 
-    if (!doc->layoutView())
+    if (doc->layoutViewItem().isNull())
         return;
 
-    doc->layoutView()->clearHitTestCache();
+    doc->layoutViewItem().clearHitTestCache();
 }
 
 bool Internals::isPreloaded(const String& url)
@@ -1437,8 +1437,9 @@ LayerRectList* Internals::touchEventTargetLayerRects(Document* document, Excepti
     if (ScrollingCoordinator* scrollingCoordinator = document->page()->scrollingCoordinator())
         scrollingCoordinator->updateAfterCompositingChangeIfNeeded();
 
-    if (LayoutView* view = document->layoutView()) {
-        if (PaintLayerCompositor* compositor = view->compositor()) {
+    LayoutViewItem view = document->layoutViewItem();
+    if (!view.isNull()) {
+        if (PaintLayerCompositor* compositor = view.compositor()) {
             if (GraphicsLayer* rootLayer = compositor->rootGraphicsLayer()) {
                 LayerRectList* rects = LayerRectList::create();
                 accumulateLayerRectList(compositor, rootLayer, rects);
@@ -1501,9 +1502,9 @@ StaticNodeList* Internals::nodesFromRect(Document* document, int centerX, int ce
 
     LocalFrame* frame = document->frame();
     FrameView* frameView = document->view();
-    LayoutView* layoutView = document->layoutView();
+    LayoutViewItem layoutViewItem = document->layoutViewItem();
 
-    if (!layoutView)
+    if (layoutViewItem.isNull())
         return nullptr;
 
     float zoomFactor = frame->pageZoomFactor();
@@ -1523,7 +1524,7 @@ StaticNodeList* Internals::nodesFromRect(Document* document, int centerX, int ce
 
     HeapVector<Member<Node>> matches;
     HitTestResult result(request, point, topPadding, rightPadding, bottomPadding, leftPadding);
-    layoutView->hitTest(result);
+    layoutViewItem.hitTest(result);
     copyToVector(result.listBasedTestResult(), matches);
 
     return StaticNodeList::adopt(matches);
@@ -1998,8 +1999,9 @@ void Internals::forceFullRepaint(Document* document, ExceptionState& exceptionSt
         return;
     }
 
-    if (LayoutView *layoutView = document->layoutView())
-        layoutView->invalidatePaintForViewAndCompositedLayers();
+    LayoutViewItem layoutViewItem = document->layoutViewItem();
+    if (!layoutViewItem.isNull())
+        layoutViewItem.invalidatePaintForViewAndCompositedLayers();
 }
 
 void Internals::startTrackingPaintInvalidationObjects()
@@ -2250,7 +2252,7 @@ bool Internals::loseSharedGraphicsContext3D()
 void Internals::forceCompositingUpdate(Document* document, ExceptionState& exceptionState)
 {
     ASSERT(document);
-    if (!document->layoutView()) {
+    if (document->layoutViewItem().isNull()) {
         exceptionState.throwDOMException(InvalidAccessError, "The document provided is invalid.");
         return;
     }
