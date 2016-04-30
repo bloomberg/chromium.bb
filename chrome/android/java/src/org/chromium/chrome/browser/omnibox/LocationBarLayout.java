@@ -830,11 +830,6 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
     }
 
     @Override
-    public void onUrlPreFocusChanged(boolean gainFocus) {
-      // TODO(mariakhomenko): remove from the interface entirely as it's unused
-    }
-
-    @Override
     public void setUrlBarFocus(boolean shouldBeFocused) {
         if (shouldBeFocused) {
             mUrlBar.requestFocus();

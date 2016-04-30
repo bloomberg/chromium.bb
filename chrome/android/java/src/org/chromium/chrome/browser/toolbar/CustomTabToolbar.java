@@ -618,9 +618,6 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
     public void setToolbarDataProvider(ToolbarDataProvider model) {}
 
     @Override
-    public void onUrlPreFocusChanged(boolean gainFocus) {}
-
-    @Override
     public void onTextChangedForAutocomplete(boolean canInlineAutocomplete) {}
 
     @Override

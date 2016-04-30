@@ -131,6 +131,13 @@ public class OmniboxTest extends ChromeActivityTestCaseBase<ChromeActivity> {
                 (LocationBarLayout) getActivity().findViewById(R.id.location_bar);
         final UrlBar urlBar = (UrlBar) getActivity().findViewById(R.id.url_bar);
 
+        ThreadUtils.runOnUiThreadBlocking(new Runnable(){
+            @Override
+            public void run() {
+                urlBar.setUrl("http://www.example.com/", null);
+            }
+        });
+
         final TestAutocompleteController controller = new TestAutocompleteController(
                 locationBar, null, null);
 
@@ -151,6 +158,10 @@ public class OmniboxTest extends ChromeActivityTestCaseBase<ChromeActivity> {
                 return controller.numZeroSuggestRequests();
             }
         }));
+
+        getInstrumentation().waitForIdleSync();
+
+        assertFalse(controller.isStartAutocompleteCalled());
     }
 
     /**

@@ -158,13 +158,6 @@ public class UrlBar extends VerticallyFixedEditText {
         Tab getCurrentTab();
 
         /**
-         * Called at the beginning of the focus change event before the underlying TextView
-         * behavior is triggered.
-         * @param gainFocus Whether the URL is gaining focus or not.
-         */
-        void onUrlPreFocusChanged(boolean gainFocus);
-
-        /**
          * Called when the text state has changed and the autocomplete suggestions should be
          * refreshed.
          *
@@ -435,7 +428,6 @@ public class UrlBar extends VerticallyFixedEditText {
     @Override
     protected void onFocusChanged(boolean focused, int direction, Rect previouslyFocusedRect) {
         mFocused = focused;
-        mUrlBarDelegate.onUrlPreFocusChanged(focused);
         if (!focused) mAutocompleteSpan.clearSpan();
         super.onFocusChanged(focused, direction, previouslyFocusedRect);
 
