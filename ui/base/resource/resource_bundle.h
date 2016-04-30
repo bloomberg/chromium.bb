@@ -439,6 +439,8 @@ class UI_BASE_EXPORT ResourceBundle {
 
   IdToStringMap overridden_locale_strings_;
 
+  bool is_test_resources_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(ResourceBundle);
 };
 

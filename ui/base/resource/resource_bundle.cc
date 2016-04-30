@@ -26,6 +26,7 @@
 #include "build/build_config.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
 #include "ui/base/material_design/material_design_controller.h"
@@ -104,6 +105,13 @@ base::FilePath GetResourcesPakFilePath(const std::string& pak_name) {
 #endif  // OS_WIN
 }
 
+SkBitmap CreateEmptyBitmap() {
+  SkBitmap bitmap;
+  bitmap.allocN32Pixels(32, 32);
+  bitmap.eraseARGB(255, 255, 255, 0);
+  return bitmap;
+}
+
 }  // namespace
 
 // An ImageSkiaSource that loads bitmaps for the requested scale factor from
@@ -126,8 +134,16 @@ class ResourceBundle::ResourceBundleImageSource : public gfx::ImageSkiaSource {
     ScaleFactor scale_factor = GetSupportedScaleFactor(scale);
     bool found = rb_->LoadBitmap(resource_id_, &scale_factor,
                                  &image, &fell_back_to_1x);
-    if (!found)
+    if (!found) {
+#if defined(OS_ANDROID)
+      // TODO(oshima): Android unit_tests runs at DSF=3 with 100P assets.
       return gfx::ImageSkiaRep();
+#else
+      NOTREACHED() << "Unable to load image with id " << resource_id_
+                   << ", scale=" << scale;
+      return gfx::ImageSkiaRep(CreateEmptyBitmap(), scale);
+#endif
+    }
 
     // If the resource is in the package with SCALE_FACTOR_NONE, it
     // can be used in any scale factor. The image is maked as "unscaled"
@@ -320,6 +336,7 @@ std::string ResourceBundle::LoadLocaleResources(
 
 void ResourceBundle::LoadTestResources(const base::FilePath& path,
                                        const base::FilePath& locale_path) {
+  is_test_resources_ = true;
   DCHECK(!ui::GetSupportedScaleFactors().empty());
   const ScaleFactor scale_factor(ui::GetSupportedScaleFactors()[0]);
   // Use the given resource pak for both common and localized resources.
@@ -800,6 +817,7 @@ bool ResourceBundle::LoadBitmap(int resource_id,
                                 SkBitmap* bitmap,
                                 bool* fell_back_to_1x) const {
   DCHECK(fell_back_to_1x);
+  ResourceHandle* data_handle_100_percent = nullptr;
   for (size_t i = 0; i < data_packs_.size(); ++i) {
     if (data_packs_[i]->GetScaleFactor() == ui::SCALE_FACTOR_NONE &&
         LoadBitmap(*data_packs_[i], resource_id, bitmap, fell_back_to_1x)) {
@@ -807,11 +825,25 @@ bool ResourceBundle::LoadBitmap(int resource_id,
       *scale_factor = ui::SCALE_FACTOR_NONE;
       return true;
     }
+    if (data_packs_[i]->GetScaleFactor() == ui::SCALE_FACTOR_100P)
+      data_handle_100_percent = data_packs_[i];
+
     if (data_packs_[i]->GetScaleFactor() == *scale_factor &&
         LoadBitmap(*data_packs_[i], resource_id, bitmap, fell_back_to_1x)) {
       return true;
     }
   }
+
+  // Unit tests may only have 1x data pack. Allow them to fallback to 1x
+  // resources.
+  if (*scale_factor != ui::SCALE_FACTOR_100P && is_test_resources_ &&
+      data_handle_100_percent &&
+      LoadBitmap(*data_handle_100_percent, resource_id, bitmap,
+                 fell_back_to_1x)) {
+    *fell_back_to_1x = true;
+    return true;
+  }
+
   return false;
 }
 
@@ -820,9 +852,7 @@ gfx::Image& ResourceBundle::GetEmptyImage() {
 
   if (empty_image_.IsEmpty()) {
     // The placeholder bitmap is bright red so people notice the problem.
-    SkBitmap bitmap;
-    bitmap.allocN32Pixels(32, 32);
-    bitmap.eraseARGB(255, 255, 0, 0);
+    SkBitmap bitmap = CreateEmptyBitmap();
     empty_image_ = gfx::Image::CreateFrom1xBitmap(bitmap);
   }
   return empty_image_;

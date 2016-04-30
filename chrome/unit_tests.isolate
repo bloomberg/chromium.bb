@@ -61,6 +61,13 @@
         ],
       },
     }],
+    ['OS=="linux" or OS=="win"', {
+      'variables': {
+        'files': [
+          '<(PRODUCT_DIR)/chrome_200_percent.pak',
+        ],
+      },
+    }],
     ['OS=="linux"', {
       'variables': {
         'files': [
