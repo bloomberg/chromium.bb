@@ -12,6 +12,8 @@
 #ifndef AOM_DSP_SSIM_H_
 #define AOM_DSP_SSIM_H_
 
+#define MAX_SSIM_DB 100.0;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -74,7 +76,7 @@ double aom_calc_ssimg(const YV12_BUFFER_CONFIG *source,
 
 double aom_calc_fastssim(const YV12_BUFFER_CONFIG *source,
                          const YV12_BUFFER_CONFIG *dest, double *ssim_y,
-                         double *ssim_u, double *ssim_v);
+                         double *ssim_u, double *ssim_v, uint32_t bit_depth);
 
 double aom_psnrhvs(const YV12_BUFFER_CONFIG *source,
                    const YV12_BUFFER_CONFIG *dest, double *ssim_y,
@@ -83,11 +85,11 @@ double aom_psnrhvs(const YV12_BUFFER_CONFIG *source,
 #if CONFIG_AOM_HIGHBITDEPTH
 double aom_highbd_calc_ssim(const YV12_BUFFER_CONFIG *source,
                             const YV12_BUFFER_CONFIG *dest, double *weight,
-                            unsigned int bd);
+                            uint32_t bd);
 
 double aom_highbd_calc_ssimg(const YV12_BUFFER_CONFIG *source,
                              const YV12_BUFFER_CONFIG *dest, double *ssim_y,
-                             double *ssim_u, double *ssim_v, unsigned int bd);
+                             double *ssim_u, double *ssim_v, uint32_t bd);
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 
 #ifdef __cplusplus

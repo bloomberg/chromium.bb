@@ -3971,15 +3971,25 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
     cpi->bytes += (int)(*size);
 
     if (cm->show_frame) {
+      uint32_t bit_depth = 8;
+#if CONFIG_AOM_HIGHBITDEPTH
+      uint32_t in_bit_depth = 8;
+#endif
       cpi->count++;
+
+#if CONFIG_AOM_HIGHBITDEPTH
+      if (cm->use_highbitdepth) {
+        in_bit_depth = cpi->oxcf.input_bit_depth;
+        bit_depth = cm->bit_depth;
+      }
+#endif
 
       if (cpi->b_calculate_psnr) {
         YV12_BUFFER_CONFIG *orig = cpi->Source;
         YV12_BUFFER_CONFIG *recon = cpi->common.frame_to_show;
         PSNR_STATS psnr;
 #if CONFIG_AOM_HIGHBITDEPTH
-        calc_highbd_psnr(orig, recon, &psnr, cpi->td.mb.e_mbd.bd,
-                         cpi->oxcf.input_bit_depth);
+        calc_highbd_psnr(orig, recon, &psnr, cpi->td.mb.e_mbd.bd, in_bit_depth);
 #else
         calc_psnr(orig, recon, &psnr);
 #endif  // CONFIG_AOM_HIGHBITDEPTH
@@ -4073,13 +4083,10 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
 #endif  // CONFIG_AOM_HIGHBITDEPTH
         adjust_image_stat(y, u, v, frame_all, &cpi->ssimg);
       }
-#if CONFIG_AOM_HIGHBITDEPTH
-      if (!cm->use_highbitdepth)
-#endif
       {
         double y, u, v, frame_all;
-        frame_all =
-            aom_calc_fastssim(cpi->Source, cm->frame_to_show, &y, &u, &v);
+        frame_all = aom_calc_fastssim(cpi->Source, cm->frame_to_show, &y, &u,
+                                      &v, bit_depth);
         adjust_image_stat(y, u, v, frame_all, &cpi->fastssim);
         /* TODO(JBB): add 10/12 bit support */
       }
