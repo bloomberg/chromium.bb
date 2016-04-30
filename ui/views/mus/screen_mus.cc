@@ -106,7 +106,8 @@ void ScreenMus::Init(shell::Connector* connector) {
     DCHECK(display_manager_.encountered_error() || !success);
     // In this case we install a default display and assume the process is
     // going to exit shortly so that the real value doesn't matter.
-    displays_.push_back(gfx::Display(0xFFFFFFFF, gfx::Rect(0, 0, 801, 802)));
+    displays_.push_back(
+        display::Display(0xFFFFFFFF, gfx::Rect(0, 0, 801, 802)));
   }
 }
 

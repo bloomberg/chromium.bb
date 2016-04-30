@@ -97,7 +97,8 @@ int main(int argc, char** argv) {
     wm::WMState wm_state;
 #endif
 #if !defined(OS_CHROMEOS) && defined(USE_AURA)
-    std::unique_ptr<gfx::Screen> desktop_screen(views::CreateDesktopScreen());
+    std::unique_ptr<display::Screen> desktop_screen(
+        views::CreateDesktopScreen());
     display::Screen::SetScreenInstance(desktop_screen.get());
 #endif
 

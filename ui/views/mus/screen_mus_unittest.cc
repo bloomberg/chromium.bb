@@ -5,7 +5,7 @@
 #include "ui/views/mus/screen_mus.h"
 
 #include "base/command_line.h"
-#include "ui/gfx/screen.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/switches.h"
 #include "ui/views/mus/window_manager_connection.h"
 #include "ui/views/test/scoped_views_test_helper.h"
@@ -19,10 +19,10 @@ TEST(ScreenMusTest, ConsistentDisplayInHighDPI) {
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kForceDeviceScaleFactor, "2");
   ScopedViewsTestHelper test_helper;
-  gfx::Screen* screen = gfx::Screen::GetScreen();
-  std::vector<gfx::Display> displays = screen->GetAllDisplays();
+  display::Screen* screen = display::Screen::GetScreen();
+  std::vector<display::Display> displays = screen->GetAllDisplays();
   ASSERT_FALSE(displays.empty());
-  for (const gfx::Display& display : displays) {
+  for (const display::Display& display : displays) {
     EXPECT_EQ(2.f, display.device_scale_factor());
     EXPECT_EQ(display.work_area(), display.bounds());
   }
