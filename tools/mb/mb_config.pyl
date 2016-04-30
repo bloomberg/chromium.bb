@@ -760,9 +760,9 @@
 
     'tryserver.chromium.mac': {
       'ios-device': 'ios_gyp',
-      'ios-device-gn': 'ios_gyp',
+      'ios-device-gn': 'ios_gn',
       'ios-simulator': 'ios_gyp',
-      'ios-simulator-gn': 'ios_gyp',
+      'ios-simulator-gn': 'ios_gn',
       'ios_dbg_simulator': 'ios_gyp',
       'ios_dbg_simulator_gn': 'ios_gn',
       'ios_dbg_simulator_ninja': 'ios_gyp',
