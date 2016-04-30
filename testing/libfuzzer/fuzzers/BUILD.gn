@@ -275,3 +275,13 @@ fuzzer_test("libxml_xml_regexp_compile_fuzzer") {
   libfuzzer_options = [ "max_len=32" ]
   additional_configs = [ "//testing/libfuzzer:no_clusterfuzz" ]
 }
+
+fuzzer_test("convert_woff2ttf_fuzzer") {
+  sources = [
+    "convert_woff2ttf_fuzzer.cc",
+  ]
+  deps = [
+    "//third_party/woff2:woff2_dec",
+  ]
+  seed_corpus = "//testing/libfuzzer/fuzzers/woff2_corpus"
+}
