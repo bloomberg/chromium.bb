@@ -152,12 +152,6 @@ Polymer({
       subpage: ['search-engines'],
     },
     {
-      url: '/searchEngines/advanced',
-      page: 'basic',
-      section: 'search',
-      subpage: ['search-engines', 'search-engines-advanced'],
-    },
-    {
       url: '/onStartup',
       page: 'basic',
       section: 'onStartup',
