@@ -305,6 +305,9 @@ void DevToolsAgent::GotManifest(int session_id,
     if (error.critical)
       failed = true;
   }
+
+  WebString url = frame_->GetWebFrame()->document().manifestURL().string();
+  result->SetString("url", url);
   if (!failed)
     result->SetString("data", debug_info.raw_data);
   result->Set("errors", errors.release());
