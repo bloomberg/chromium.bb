@@ -164,6 +164,10 @@ def parse_args(args):
                 default=False,
                 help="Show all failures in results.html, rather than only regressions"),
             optparse.make_option(
+                "--json-test-results",
+                action="store",
+                help="Path to write the JSON test results to."),
+            optparse.make_option(
                 "--new-baseline",
                 action="store_true",
                 default=False,

@@ -196,7 +196,9 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         self.should_test_processes = not self._platform.is_win()
 
     def test_basic(self):
-        options, args = parse_args(tests_included=True)
+        options, args = parse_args(
+            extra_args=['--json-test-results', '/tmp/json_test_results.json'],
+            tests_included=True)
         logging_stream = StringIO.StringIO()
         stdout = StringIO.StringIO()
         host = MockHost()
@@ -230,6 +232,9 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         failing_results_text = host.filesystem.read_text_file('/tmp/layout-test-results/failing_results.json')
         json_to_eval = failing_results_text.replace("ADD_RESULTS(", "").replace(");", "")
         self.assertEqual(json.loads(json_to_eval), details.summarized_failing_results)
+
+        json_test_results = host.filesystem.read_text_file('/tmp/json_test_results.json')
+        self.assertEqual(json.loads(json_test_results), details.summarized_failing_results)
 
         full_results_text = host.filesystem.read_text_file('/tmp/layout-test-results/full_results.json')
         self.assertEqual(json.loads(full_results_text), details.summarized_full_results)
