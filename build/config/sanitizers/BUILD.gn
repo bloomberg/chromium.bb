@@ -325,6 +325,12 @@ config("ubsan_flags") {
   }
 }
 
+config("ubsan_no_recover") {
+  if (is_ubsan_no_recover) {
+    cflags = [ "-fno-sanitize-recover=undefined" ]
+  }
+}
+
 config("ubsan_security_flags") {
   if (is_ubsan_security) {
     ubsan_blacklist_path =
@@ -357,6 +363,7 @@ all_sanitizer_configs = [
   ":msan_flags",
   ":tsan_flags",
   ":ubsan_flags",
+  ":ubsan_no_recover",
   ":ubsan_security_flags",
   ":ubsan_vptr_flags",
 ]

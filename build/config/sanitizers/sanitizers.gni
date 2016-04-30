@@ -19,6 +19,9 @@ declare_args() {
   # undefined behaviour (excludes vptr checks).
   is_ubsan = false
 
+  # Halt the program if a problem is detected.
+  is_ubsan_no_recover = false
+
   # Compile for Undefined Behaviour Sanitizer's vptr checks.
   is_ubsan_vptr = false
 

@@ -1167,7 +1167,7 @@
     ],
 
     'gn_ubsan_vptr_release_bot': [
-      'gn', 'ubsan_vptr', 'release_bot',
+      'gn', 'ubsan_vptr', 'ubsan_no_recover_hack', 'release_bot',
     ],
 
     'gyp_asan_lsan_edge_fuzzer_debug_bot': [
@@ -2298,7 +2298,7 @@
       # TODO(krasin): Remove when https://llvm.org/bugs/show_bug.cgi?id=25569
       # is fixed and just use ubsan_vptr instead.
       'mixins': ['ubsan_vptr'],
-      'gn_args': 'error', # TODO(GYP): need a GN equivalent for this
+      'gn_args': 'is_ubsan_no_recover=true',
       'gyp_defines': 'release_extra_cflags=-fno-sanitize-recover=undefined',
     },
 
