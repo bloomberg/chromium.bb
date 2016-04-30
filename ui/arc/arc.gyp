@@ -43,6 +43,7 @@
         '../../components/components.gyp:arc_test_support',
         '../../mojo/mojo_edk.gyp:mojo_system_impl',
         '../../mojo/mojo_public.gyp:mojo_cpp_bindings',
+        '../../mojo/mojo_public.gyp:mojo_message_pump_lib',
         '../../testing/gtest.gyp:gtest',
         '../message_center/message_center.gyp:message_center_test_support',
         'arc',

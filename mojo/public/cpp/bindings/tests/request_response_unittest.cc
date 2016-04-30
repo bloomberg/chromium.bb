@@ -7,6 +7,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "mojo/message_pump/message_pump_mojo.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "mojo/public/interfaces/bindings/tests/sample_import.mojom.h"
@@ -102,7 +103,7 @@ class MessagePipeWriter {
 
 class RequestResponseTest : public testing::Test {
  public:
-  RequestResponseTest() {}
+  RequestResponseTest() : loop_(common::MessagePumpMojo::Create()) {}
   ~RequestResponseTest() override { loop_.RunUntilIdle(); }
 
   void PumpMessages() { loop_.RunUntilIdle(); }

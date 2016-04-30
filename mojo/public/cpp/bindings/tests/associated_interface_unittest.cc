@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
+#include "mojo/message_pump/message_pump_mojo.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/associated_group.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
@@ -90,7 +91,7 @@ class IntegerSenderConnectionImpl : public IntegerSenderConnection {
 
 class AssociatedInterfaceTest : public testing::Test {
  public:
-  AssociatedInterfaceTest() {}
+  AssociatedInterfaceTest() : loop_(common::MessagePumpMojo::Create()) {}
   ~AssociatedInterfaceTest() override { loop_.RunUntilIdle(); }
 
   void PumpMessages() { loop_.RunUntilIdle(); }
@@ -223,7 +224,10 @@ class TestSender {
       : sender_thread_("TestSender"),
         next_sender_(nullptr),
         max_value_to_send_(-1) {
-    sender_thread_.Start();
+    base::Thread::Options thread_options;
+    thread_options.message_pump_factory =
+        base::Bind(&common::MessagePumpMojo::Create);
+    sender_thread_.StartWithOptions(thread_options);
   }
 
   // The following three methods are called on the corresponding sender thread.
@@ -269,7 +273,10 @@ class TestSender {
 class TestReceiver {
  public:
   TestReceiver() : receiver_thread_("TestReceiver"), max_value_to_receive_(-1) {
-    receiver_thread_.Start();
+    base::Thread::Options thread_options;
+    thread_options.message_pump_factory =
+        base::Bind(&common::MessagePumpMojo::Create);
+    receiver_thread_.StartWithOptions(thread_options);
   }
 
   void SetUp(AssociatedInterfaceRequest<IntegerSender> request0,

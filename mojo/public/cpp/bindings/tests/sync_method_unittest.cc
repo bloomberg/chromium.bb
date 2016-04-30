@@ -8,6 +8,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/thread.h"
+#include "mojo/message_pump/message_pump_mojo.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/interfaces/bindings/tests/test_sync_methods.mojom.h"
@@ -171,7 +172,10 @@ class TestSyncServiceThread {
  public:
   TestSyncServiceThread()
       : thread_("TestSyncServiceThread"), ping_called_(false) {
-    thread_.Start();
+    base::Thread::Options thread_options;
+    thread_options.message_pump_factory =
+        base::Bind(&common::MessagePumpMojo::Create);
+    thread_.StartWithOptions(thread_options);
   }
 
   void SetUp(InterfaceRequest<Interface> request) {
@@ -211,7 +215,7 @@ class TestSyncServiceThread {
 
 class SyncMethodTest : public testing::Test {
  public:
-  SyncMethodTest() {}
+  SyncMethodTest() : loop_(common::MessagePumpMojo::Create()) {}
   ~SyncMethodTest() override { loop_.RunUntilIdle(); }
 
  protected:

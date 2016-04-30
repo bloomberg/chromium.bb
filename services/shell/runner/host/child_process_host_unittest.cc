@@ -20,6 +20,7 @@
 #include "base/threading/thread.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/process_delegate.h"
+#include "mojo/message_pump/message_pump_mojo.h"
 #include "services/shell/native_runner_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -76,7 +77,8 @@ class NativeRunnerDelegateImpl : public NativeRunnerDelegate {
 TEST(ChildProcessHostTest, MAYBE_StartJoin) {
   base::FilePath shell_dir;
   PathService::Get(base::DIR_MODULE, &shell_dir);
-  base::MessageLoop message_loop;
+  base::MessageLoop message_loop(
+      std::unique_ptr<base::MessagePump>(new mojo::common::MessagePumpMojo()));
   scoped_refptr<base::SequencedWorkerPool> blocking_pool(
       new base::SequencedWorkerPool(3, "blocking_pool"));
 

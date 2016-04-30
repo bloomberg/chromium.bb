@@ -7,8 +7,8 @@
 
 #include "base/memory/scoped_vector.h"
 #include "gin/runner.h"
+#include "mojo/message_pump/handle_watcher.h"
 #include "mojo/public/cpp/system/core.h"
-#include "mojo/public/cpp/system/watcher.h"
 #include "v8/include/v8.h"
 
 namespace mojo {
@@ -50,7 +50,7 @@ class DrainData {
 
   v8::Isolate* isolate_;
   ScopedDataPipeConsumerHandle handle_;
-  Watcher handle_watcher_;
+  common::HandleWatcher handle_watcher_;
   base::WeakPtr<gin::Runner> runner_;
   v8::UniquePersistent<v8::Promise::Resolver> resolver_;
   ScopedVector<DataBuffer> data_buffers_;

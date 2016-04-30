@@ -258,6 +258,31 @@
       },
     },
     {
+      # GN version: //mojo/message_pump
+      'target_name': 'mojo_message_pump_lib',
+      'type': '<(component)',
+      'defines': [
+        'MOJO_MESSAGE_PUMP_IMPLEMENTATION',
+      ],
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+        '<(mojo_system_for_component)',
+      ],
+      'export_dependent_settings': [
+        '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+      ],
+      'sources': [
+        'message_pump/handle_watcher.cc',
+        'message_pump/handle_watcher.h',
+        'message_pump/message_pump_mojo.cc',
+        'message_pump/message_pump_mojo.h',
+        'message_pump/message_pump_mojo_handler.h',
+        'message_pump/time_helper.cc',
+        'message_pump/time_helper.h',
+      ],
+    },
+    {
       # GN version: //mojo/public/js
       'target_name': 'mojo_js_bindings',
       'type': 'static_library',

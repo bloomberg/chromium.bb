@@ -29,7 +29,7 @@
     'export_dependent_settings': [
       '<(DEPTH)/mojo/mojo_base.gyp:mojo_common_custom_types_mojom',
     ],
-  },
+  },  
   {
     # GN version: //services/shell/public/cpp
     'target_name': 'shell_public',
@@ -69,6 +69,7 @@
       'shell_interfaces',
       '<(DEPTH)/base/base.gyp:base_i18n',
       '<(DEPTH)/mojo/mojo_public.gyp:mojo_cpp_bindings',
+      '<(DEPTH)/mojo/mojo_public.gyp:mojo_message_pump_lib',
     ],
   }, {
     'target_name': 'shell_lib',
@@ -195,6 +196,7 @@
       '<(DEPTH)/base/base.gyp:base_static',
       '<(DEPTH)/mojo/mojo_edk.gyp:mojo_system_impl',
       '<(DEPTH)/mojo/mojo_platform_handle.gyp:platform_handle',
+      '<(DEPTH)/mojo/mojo_public.gyp:mojo_message_pump_lib',
     ],
     'export_dependent_settings': [
       'shell_public',

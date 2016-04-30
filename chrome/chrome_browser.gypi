@@ -3378,6 +3378,7 @@
             '../mojo/mojo_edk.gyp:mojo_system_impl',
             '../mojo/mojo_public.gyp:mojo_cpp_bindings',
             '../mojo/mojo_public.gyp:mojo_js_bindings',
+            '../mojo/mojo_public.gyp:mojo_message_pump_lib',
             '../net/net.gyp:net_extras',
             '../net/net.gyp:net_with_v8',
             '../services/shell/shell.gyp:shell_public',

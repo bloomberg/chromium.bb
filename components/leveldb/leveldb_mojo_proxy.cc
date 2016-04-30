@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "mojo/message_pump/message_pump_mojo.h"
 #include "mojo/platform_handle/platform_handle_functions.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 

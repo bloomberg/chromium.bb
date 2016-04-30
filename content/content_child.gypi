@@ -10,6 +10,7 @@
     '../components/webcrypto/webcrypto.gyp:webcrypto',
     '../ipc/ipc.gyp:ipc',
     '../mojo/mojo_base.gyp:mojo_common_lib',
+    '../mojo/mojo_public.gyp:mojo_message_pump_lib',
     '../services/shell/shell.gyp:shell_runner_common_lib',
     '../skia/skia.gyp:skia',
     '../storage/storage_common.gyp:storage_common',

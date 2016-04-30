@@ -9,6 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
+#include "mojo/message_pump/message_pump_mojo.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/cpp/bindings/string.h"
@@ -130,7 +131,7 @@ class InterfaceImpl : public sample::Provider {
 
 class BindingCallbackTest : public testing::Test {
  public:
-  BindingCallbackTest() {}
+  BindingCallbackTest() : loop_(common::MessagePumpMojo::Create()) {}
   ~BindingCallbackTest() override {}
 
  protected:

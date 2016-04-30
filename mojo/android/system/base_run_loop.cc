@@ -12,13 +12,15 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "jni/BaseRunLoop_jni.h"
+#include "mojo/message_pump/message_pump_mojo.h"
 
 namespace mojo {
 namespace android {
 
 static jlong CreateBaseRunLoop(JNIEnv* env,
                                const JavaParamRef<jobject>& jcaller) {
-  base::MessageLoop* message_loop = new base::MessageLoop;
+  base::MessageLoop* message_loop =
+      new base::MessageLoop(common::MessagePumpMojo::Create());
   return reinterpret_cast<uintptr_t>(message_loop);
 }
 

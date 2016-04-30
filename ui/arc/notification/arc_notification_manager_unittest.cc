@@ -7,6 +7,7 @@
 #include "components/arc/test/fake_arc_bridge_instance.h"
 #include "components/arc/test/fake_arc_bridge_service.h"
 #include "components/arc/test/fake_notifications_instance.h"
+#include "mojo/message_pump/message_pump_mojo.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/arc/notification/arc_notification_manager.h"
 #include "ui/message_center/fake_message_center.h"
@@ -69,7 +70,8 @@ class ArcBridgeServiceObserver : public ArcBridgeService::Observer {
 
 class ArcNotificationManagerTest : public testing::Test {
  public:
-  ArcNotificationManagerTest() {}
+  ArcNotificationManagerTest()
+      : loop_(mojo::common::MessagePumpMojo::Create()) {}
   ~ArcNotificationManagerTest() override { loop_.RunUntilIdle(); }
 
  protected:

@@ -30,6 +30,7 @@ executable("window_type_launcher") {
     "//mojo/common:common_base",
     "//mojo/converters/geometry",
     "//mojo/edk/system",
+    "//mojo/message_pump",
     "//mojo/platform_handle:platform_handle_impl",
     "//mojo/public/cpp/bindings",
     "//services/shell/public/cpp",

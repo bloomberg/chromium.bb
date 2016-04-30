@@ -40,11 +40,7 @@ void WebMessagePortChannelImpl::CreatePair(
 WebMessagePortChannelImpl::WebMessagePortChannelImpl(
     mojo::ScopedMessagePipeHandle pipe)
     : client_(nullptr), pipe_(std::move(pipe)) {
-  handle_watcher_.Start(
-      pipe_.get(),
-      MOJO_HANDLE_SIGNAL_READABLE,
-      base::Bind(&WebMessagePortChannelImpl::OnMessageAvailable,
-                 base::Unretained(this)));
+  WaitForNextMessage();
 }
 
 WebMessagePortChannelImpl::~WebMessagePortChannelImpl() {
@@ -70,7 +66,7 @@ void WebMessagePortChannelImpl::postMessage(
       WebMessagePortChannelImpl* channel =
           static_cast<WebMessagePortChannelImpl*>((*channels)[i]);
       handles.push_back(channel->pipe_.release().value());
-      channel->handle_watcher_.Cancel();
+      channel->handle_watcher_.Stop();
     }
     delete channels;
   }
@@ -122,6 +118,15 @@ bool WebMessagePortChannelImpl::tryGetMessage(
   return true;
 }
 
+void WebMessagePortChannelImpl::WaitForNextMessage() {
+  handle_watcher_.Start(
+      pipe_.get(),
+      MOJO_HANDLE_SIGNAL_READABLE,
+      MOJO_DEADLINE_INDEFINITE,
+      base::Bind(&WebMessagePortChannelImpl::OnMessageAvailable,
+                 base::Unretained(this)));
+}
+
 void WebMessagePortChannelImpl::OnMessageAvailable(MojoResult result) {
   // |result| can be MOJO_RESULT_ABORTED when the message loop shuts down, or
   // MOJO_RESULT_FAILED_PRECONDITION when the end-of-file is reached.
@@ -133,6 +138,7 @@ void WebMessagePortChannelImpl::OnMessageAvailable(MojoResult result) {
   if (!client_)
     return;
   client_->messageAvailable();
+  WaitForNextMessage();
 }
 
 }  // namespace message_port

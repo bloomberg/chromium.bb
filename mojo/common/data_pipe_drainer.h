@@ -10,8 +10,8 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/common/mojo_common_export.h"
+#include "mojo/message_pump/handle_watcher.h"
 #include "mojo/public/cpp/system/core.h"
-#include "mojo/public/cpp/system/watcher.h"
 
 namespace mojo {
 namespace common {
@@ -32,11 +32,12 @@ class MOJO_COMMON_EXPORT DataPipeDrainer {
 
  private:
   void ReadData();
+  void WaitForData();
   void WaitComplete(MojoResult result);
 
   Client* client_;
   mojo::ScopedDataPipeConsumerHandle source_;
-  mojo::Watcher handle_watcher_;
+  mojo::common::HandleWatcher handle_watcher_;
 
   base::WeakPtrFactory<DataPipeDrainer> weak_factory_;
 

@@ -101,6 +101,8 @@ Result WebDataConsumerHandleImpl::ReaderImpl::HandleReadResult(
     case MOJO_RESULT_BUSY:
       return Busy;
     case MOJO_RESULT_SHOULD_WAIT:
+      if (client_)
+        StartWatching();
       return ShouldWait;
     case MOJO_RESULT_RESOURCE_EXHAUSTED:
       return ResourceExhausted;
@@ -112,6 +114,7 @@ Result WebDataConsumerHandleImpl::ReaderImpl::HandleReadResult(
 void WebDataConsumerHandleImpl::ReaderImpl::StartWatching() {
   handle_watcher_.Start(
       context_->handle().get(), MOJO_HANDLE_SIGNAL_READABLE,
+      MOJO_DEADLINE_INDEFINITE,
       base::Bind(&ReaderImpl::OnHandleGotReadable, base::Unretained(this)));
 }
 

@@ -45,6 +45,7 @@ source_set("child_process_base") {
   deps = [
     "//base",
     "//mojo/edk/system",
+    "//mojo/message_pump",
     "//mojo/platform_handle:platform_handle_impl",
     "//services/shell",
     "//services/shell/public/interfaces",
@@ -70,6 +71,7 @@ source_set("lib") {
     ":native_application_support",
     "//base:base_static",
     "//base:i18n",
+    "//mojo/message_pump",
     "//mojo/platform_handle:platform_handle_impl",
     "//services/shell/public/cpp:sources",
     "//services/shell/runner:init",
@@ -118,6 +120,7 @@ test("mojo_runner_host_unittests") {
     "//base",
     "//base/test:test_support",
     "//mojo/edk/system",
+    "//mojo/message_pump",
     "//services/shell",
     "//services/shell/runner:init",
     "//services/shell/runner/common",

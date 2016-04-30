@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "mojo/message_pump/message_pump_mojo.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/interfaces/bindings/tests/math_calculator.mojom.h"
@@ -213,7 +214,7 @@ class IntegerAccessorImpl : public sample::IntegerAccessor {
 
 class InterfacePtrTest : public testing::Test {
  public:
-  InterfacePtrTest() {}
+  InterfacePtrTest() : loop_(common::MessagePumpMojo::Create()) {}
   ~InterfacePtrTest() override { loop_.RunUntilIdle(); }
 
   void PumpMessages() { loop_.RunUntilIdle(); }
@@ -526,7 +527,7 @@ class StrongMathCalculatorImpl : public math::Calculator {
 };
 
 TEST(StrongConnectorTest, Math) {
-  base::MessageLoop loop;
+  base::MessageLoop loop(common::MessagePumpMojo::Create());
 
   bool error_received = false;
   bool destroyed = false;
@@ -599,7 +600,7 @@ class WeakMathCalculatorImpl : public math::Calculator {
 };
 
 TEST(WeakConnectorTest, Math) {
-  base::MessageLoop loop;
+  base::MessageLoop loop(common::MessagePumpMojo::Create());
 
   bool error_received = false;
   bool destroyed = false;

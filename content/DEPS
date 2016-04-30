@@ -31,6 +31,7 @@ include_rules = [
   "+mojo/edk/embedder",
   "+mojo/edk/js",
   "+mojo/edk/test",
+  "+mojo/message_pump",
   "+mojo/public",
   "+net",
   "+ppapi",

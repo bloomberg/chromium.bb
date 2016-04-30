@@ -46,6 +46,7 @@ source_set("tests") {
 
   deps = [
     ":mojo_public_bindings_test_utils",
+    "//mojo/message_pump",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/bindings:callback",
     "//mojo/public/cpp/system",
@@ -115,6 +116,7 @@ source_set("perftests") {
   deps = [
     "//base/test:test_support",
     "//mojo/edk/test:test_support",
+    "//mojo/message_pump",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/bindings:callback",
     "//mojo/public/cpp/system",

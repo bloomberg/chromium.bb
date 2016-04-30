@@ -1,6 +1,7 @@
 include_rules = [
   "+services/shell",
   "+mojo/common",
+  "+mojo/message_pump",
   "+mojo/platform_handle",
   "+mojo/public",
   "+services/tracing/public/cpp",

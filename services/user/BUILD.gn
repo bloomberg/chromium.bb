@@ -23,6 +23,7 @@ source_set("lib") {
     "//components/leveldb/public/interfaces",
     "//mojo/common",
     "//mojo/common:common_base",
+    "//mojo/message_pump",
     "//mojo/platform_handle",
     "//services/shell/public/cpp",
     "//services/shell/public/interfaces",

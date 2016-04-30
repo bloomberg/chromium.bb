@@ -3,6 +3,7 @@ include_rules = [
   "-mojo",
   "+services/shell/public/cpp",
   "+mojo/common",
+  "+mojo/message_pump",
   "+mojo/public",
 ]
 

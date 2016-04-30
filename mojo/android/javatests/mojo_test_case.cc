@@ -13,11 +13,12 @@
 #include "base/run_loop.h"
 #include "base/test/test_support_android.h"
 #include "jni/MojoTestCase_jni.h"
+#include "mojo/message_pump/message_pump_mojo.h"
 
 namespace {
 
 struct TestEnvironment {
-  TestEnvironment() {}
+  TestEnvironment() : message_loop(mojo::common::MessagePumpMojo::Create()) {}
 
   base::ShadowingAtExitManager at_exit;
   base::MessageLoop message_loop;

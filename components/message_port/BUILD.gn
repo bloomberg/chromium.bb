@@ -10,6 +10,7 @@ source_set("message_port") {
 
   public_deps = [
     "//base",
+    "//mojo/message_pump",
     "//mojo/public/cpp/system",
     "//third_party/WebKit/public:blink",
   ]
