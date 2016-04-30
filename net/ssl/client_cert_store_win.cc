@@ -128,6 +128,20 @@ void GetClientCertsImpl(HCERTSTORE cert_store,
       if (ok)
         intermediates.push_back(copied_intermediate);
     }
+
+    // Drop the self-signed root, if any. Match Internet Explorer in not sending
+    // it. Although the root's signature is irrelevant for authentication, some
+    // servers reject chains if the root is explicitly sent and has a weak
+    // signature algorithm. See https://crbug.com/607264.
+    //
+    // The leaf or a intermediate may also have a weak signature algorithm but,
+    // in that case, assume it is a configuration error.
+    if (!intermediates.empty() &&
+        X509Certificate::IsSelfSigned(intermediates.back())) {
+      CertFreeCertificateContext(intermediates.back());
+      intermediates.pop_back();
+    }
+
     // TODO(svaldez): cert currently wraps cert_context2 which may be backed
     // by a smartcard with threading difficulties. Instead, create a fresh
     // X509Certificate with CreateFromBytes and route cert_context2 into the
