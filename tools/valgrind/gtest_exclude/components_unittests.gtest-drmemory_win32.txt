@@ -2,4 +2,4 @@
 WatcherMetricsProviderWinTest.DoesNotReportOwnProcessId
 
 # http://crbug.com/608053
-SafeBrowsingV4GetHashProtocolManagerTest.TestGetHashErrorHandlingNetwork
+SafeBrowsingV4GetHashProtocolManagerTest.TestGetHash*
