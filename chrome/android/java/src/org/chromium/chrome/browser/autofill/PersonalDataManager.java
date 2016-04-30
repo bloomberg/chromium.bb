@@ -474,9 +474,17 @@ public class PersonalDataManager {
     }
 
     public List<AutofillProfile> getProfiles() {
+        return getProfilesWithAddressOnlyLabels(false);
+    }
+
+    public List<AutofillProfile> getAddressOnlyProfiles() {
+        return getProfilesWithAddressOnlyLabels(true);
+    }
+
+    private List<AutofillProfile> getProfilesWithAddressOnlyLabels(boolean addressOnly) {
         ThreadUtils.assertOnUiThread();
 
-        String[] profileLabels = nativeGetProfileLabels(mPersonalDataManagerAndroid);
+        String[] profileLabels = nativeGetProfileLabels(mPersonalDataManagerAndroid, addressOnly);
 
         int profileCount = nativeGetProfileCount(mPersonalDataManagerAndroid);
         List<AutofillProfile> profiles = new ArrayList<AutofillProfile>(profileCount);
@@ -578,7 +586,8 @@ public class PersonalDataManager {
 
     private native long nativeInit();
     private native int nativeGetProfileCount(long nativePersonalDataManagerAndroid);
-    private native String[] nativeGetProfileLabels(long nativePersonalDataManagerAndroid);
+    private native String[] nativeGetProfileLabels(long nativePersonalDataManagerAndroid,
+            boolean addressOnly);
     private native AutofillProfile nativeGetProfileByIndex(long nativePersonalDataManagerAndroid,
             int index);
     private native AutofillProfile nativeGetProfileByGUID(long nativePersonalDataManagerAndroid,

@@ -174,7 +174,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         }
 
         List<AutofillAddress> addresses = new ArrayList<>();
-        List<AutofillProfile> profiles = PersonalDataManager.getInstance().getProfiles();
+        List<AutofillProfile> profiles = PersonalDataManager.getInstance().getAddressOnlyProfiles();
         for (int i = 0; i < profiles.size(); i++) {
             AutofillProfile profile = profiles.get(i);
             if (profile.getCountryCode() != null
