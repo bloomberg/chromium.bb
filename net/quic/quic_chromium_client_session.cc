@@ -705,7 +705,7 @@ void QuicChromiumClientSession::OnClosedStream() {
     request->OnRequestCompleteSuccess(CreateOutgoingReliableStreamImpl());
   }
 
-  if (GetNumOpenOutgoingStreams() == 0) {
+  if (GetNumOpenOutgoingStreams() == 0 && stream_factory_) {
     stream_factory_->OnIdleSession(this);
   }
 }
@@ -909,7 +909,9 @@ void QuicChromiumClientSession::OnSuccessfulVersionNegotiation(
 }
 
 void QuicChromiumClientSession::OnPathDegrading() {
-  stream_factory_->MaybeMigrateSessionEarly(this);
+  if (stream_factory_) {
+    stream_factory_->MaybeMigrateSessionEarly(this);
+  }
 }
 
 void QuicChromiumClientSession::OnProofValid(
