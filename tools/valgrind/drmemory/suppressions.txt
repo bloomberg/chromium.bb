@@ -816,3 +816,11 @@ name=bug_604078
 content.dll!content::BluetoothBlacklist::PopulateWithServerProvidedValues
 content.dll!content::BluetoothBlacklist::BluetoothBlacklist
 content.dll!content::BluetoothBlacklist::Get
+
+
+UNINITIALIZED READ
+name=bug_608111
+DWrite.dll!DWriteCreateFactory
+skia.dll!SkDWriteFontFileStreamWrapper::GetFileSize
+...
+blink_platform.dll!blink::SimpleFontData::platformWidthForGlyph
