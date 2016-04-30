@@ -87,6 +87,7 @@ PluginInfoMessageFilterTest.FindEnabledPlugin
 
 # http://crbug.com/608064
 BackgroundApplicationListModelTest.*
+BackgroundModeManagerWithExtensionsTest.*
 ExtensionContextMenuModelTest.*
 SavedFilesServiceUnitTest.*
-ExtensionContextMenuModelTest.*
+KeywordExtensionsDelegateImplTest.*
