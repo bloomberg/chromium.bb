@@ -212,6 +212,7 @@ class SafeBrowsingBlockingPage : public SecurityInterstitialPage {
   std::string GetMetricPrefix() const;
   std::string GetExtraMetricsSuffix() const;
   std::string GetRapporPrefix() const;
+  std::string GetDeprecatedRapporPrefix() const;
   std::string GetSamplingEventName() const;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingBlockingPage);

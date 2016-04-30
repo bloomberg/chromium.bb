@@ -40,7 +40,8 @@ enum SSLExpirationAndDecision {
 
 // Rappor prefix, which is used for both overridable and non-overridable
 // interstitials so we don't leak the "overridable" bit.
-const char kSSLRapporPrefix[] = "ssl2";
+const char kDeprecatedSSLRapporPrefix[] = "ssl2";
+const char kSSLRapporPrefix[] = "ssl3";
 
 void RecordSSLExpirationPageEventState(bool expired_but_previously_allowed,
                                        bool proceed,
@@ -95,7 +96,9 @@ IOSSSLBlockingPage::IOSSSLBlockingPage(
   reporting_info.metric_prefix =
       overridable_ ? "ssl_overridable" : "ssl_nonoverridable";
   reporting_info.rappor_prefix = kSSLRapporPrefix;
-  reporting_info.rappor_report_type = rappor::UMA_RAPPOR_TYPE;
+  reporting_info.deprecated_rappor_prefix = kDeprecatedSSLRapporPrefix;
+  reporting_info.rappor_report_type = rappor::LOW_FREQUENCY_UMA_RAPPOR_TYPE;
+  reporting_info.deprecated_rappor_report_type = rappor::UMA_RAPPOR_TYPE;
   IOSChromeMetricsHelper* ios_chrome_metrics_helper =
       new IOSChromeMetricsHelper(web_state, request_url, reporting_info);
   controller_->set_metrics_helper(base::WrapUnique(ios_chrome_metrics_helper));

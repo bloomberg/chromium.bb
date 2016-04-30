@@ -13,17 +13,28 @@ namespace rappor {
 enum NoiseLevel {
   NO_NOISE = 0,
   NORMAL_NOISE,
+  SPARSE_NOISE,
   NUM_NOISE_LEVELS,
 };
 
 // The type of data stored in a metric.
+// Any use of the LOW_FREQUENCY types must be approved by Chrome Privacy and
+// the rappor-dev team.
 enum RapporType {
   // Generic metrics from UMA opt-in users.
   UMA_RAPPOR_TYPE = 0,
-  // Generic metrics for SafeBrowsing users.
+  // Generic metrics for SafeBrowsing users. Deprecated, replaced by
+  // LOW_FREQUENCY_SAFEBROWSING_RAPPOR_TYPE.
   SAFEBROWSING_RAPPOR_TYPE,
   // Deprecated: Use UMA_RAPPOR_TYPE for new metrics
   ETLD_PLUS_ONE_RAPPOR_TYPE,
+  // Type for low-frequency metrics from UMA opt-in users.
+  LOW_FREQUENCY_UMA_RAPPOR_TYPE,
+  // Type for low-frequency metrics from SafeBrowsing users.
+  LOW_FREQUENCY_SAFEBROWSING_RAPPOR_TYPE,
+  // Type for low-frequency metrics from UMA opt-in users. Do not use for new
+  // metrics.
+  LOW_FREQUENCY_ETLD_PLUS_ONE_RAPPOR_TYPE,
   NUM_RAPPOR_TYPES,
   COARSE_RAPPOR_TYPE = SAFEBROWSING_RAPPOR_TYPE,
 };
@@ -49,13 +60,16 @@ enum RecordingGroup {
 
 // An object describing noise probabilities for a noise level
 struct NoiseParameters {
-  // The probability that a bit will be redacted with fake data.
+  // The probability that a bit will be redacted with fake data. This
+  // corresponds to the F privacy parameter.
   Probability fake_prob;
   // The probability that a fake bit will be a one.
   Probability fake_one_prob;
-  // The probability that a one bit in the redacted data reports as one.
+  // The probability that a one bit in the redacted data reports as one. This
+  // corresponds to the Q privacy parameter
   Probability one_coin_prob;
-  // The probability that a zero bit in the redacted data reports as one.
+  // The probability that a zero bit in the redacted data reports as one. This
+  // corresponds to the P privacy parameter.
   Probability zero_coin_prob;
 };
 
@@ -104,6 +118,13 @@ const NoiseParameters kNoiseParametersForLevel[NUM_NOISE_LEVELS] = {
      rappor::PROBABILITY_75 /* One coin probability */,
      rappor::PROBABILITY_25 /* Zero coin probability */,
     },
+    // SPARSE_NOISE
+    {
+     rappor::PROBABILITY_25 /* Fake data probability */,
+     rappor::PROBABILITY_50 /* Fake one probability */,
+     rappor::PROBABILITY_75 /* One coin probability */,
+     rappor::PROBABILITY_25 /* Zero coin probability */,
+    },
 };
 
 const RapporParameters kRapporParametersForType[NUM_RAPPOR_TYPES] = {
@@ -124,6 +145,24 @@ const RapporParameters kRapporParametersForType[NUM_RAPPOR_TYPES] = {
      16 /* Bloom filter size bytes */,
      2 /* Bloom filter hash count */,
      rappor::NORMAL_NOISE /* Noise level */,
+     UMA_RAPPOR_GROUP /* Recording group */},
+    // LOW_FREQUENCY_UMA_RAPPOR_TYPE
+    {128 /* Num cohorts */,
+     4 /* Bloom filter size bytes */,
+     2 /* Bloom filter hash count */,
+     rappor::SPARSE_NOISE /* Noise level */,
+     UMA_RAPPOR_GROUP /* Recording group */},
+    // LOW_FREQUENCY_SAFEBROWSING_RAPPOR_TYPE
+    {128 /* Num cohorts */,
+     1 /* Bloom filter size bytes */,
+     2 /* Bloom filter hash count */,
+     rappor::SPARSE_NOISE /* Noise level */,
+     SAFEBROWSING_RAPPOR_GROUP /* Recording group */},
+    // LOW_FREQUENCY_ETLD_PLUS_ONE_RAPPOR_TYPE
+    {128 /* Num cohorts */,
+     16 /* Bloom filter size bytes */,
+     2 /* Bloom filter hash count */,
+     rappor::SPARSE_NOISE /* Noise level */,
      UMA_RAPPOR_GROUP /* Recording group */},
 };
 

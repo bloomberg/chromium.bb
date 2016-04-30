@@ -114,6 +114,8 @@ MetricsHelper::ReportDetails::ReportDetails()
 MetricsHelper::ReportDetails::ReportDetails(const ReportDetails& other) =
     default;
 
+MetricsHelper::ReportDetails::~ReportDetails() {}
+
 MetricsHelper::MetricsHelper(
   const GURL& request_url,
   const ReportDetails settings,
@@ -148,7 +150,10 @@ void MetricsHelper::RecordUserDecision(Decision decision) {
   }
 
   MaybeRecordDecisionAsAction(decision, settings_.metric_prefix);
-  RecordUserDecisionToRappor(decision);
+  RecordUserDecisionToRappor(decision, settings_.rappor_report_type,
+                             settings_.rappor_prefix);
+  RecordUserDecisionToRappor(decision, settings_.deprecated_rappor_report_type,
+                             settings_.deprecated_rappor_prefix);
   RecordExtraUserDecisionMetrics(decision);
 }
 
@@ -163,18 +168,20 @@ void MetricsHelper::RecordUserDecisionToMetrics(
   }
 }
 
-void MetricsHelper::RecordUserDecisionToRappor(Decision decision) {
+void MetricsHelper::RecordUserDecisionToRappor(
+    Decision decision,
+    const rappor::RapporType rappor_report_type,
+    const std::string& rappor_prefix) {
   if (!rappor_service_ || (decision != PROCEED && decision != DONT_PROCEED))
     return;
 
   std::unique_ptr<rappor::Sample> sample =
-      rappor_service_->CreateSample(settings_.rappor_report_type);
+      rappor_service_->CreateSample(rappor_report_type);
 
-  // This will populate, for example, "intersitial.malware.domain" or
-  // "interstitial.ssl2.domain".  |domain| will be empty for hosts w/o TLDs.
-  const std::string domain =
-      rappor::GetDomainAndRegistrySampleFromGURL(request_url_);
-  sample->SetStringField("domain", domain);
+  // This will populate, for example, "intersitial.malware2.domain" or
+  // "interstitial.ssl3.domain". The domain will be empty for hosts w/o TLDs.
+  sample->SetStringField(
+      "domain", rappor::GetDomainAndRegistrySampleFromGURL(request_url_));
 
   // Only report history and decision if we have history data.
   if (num_visits_ >= 0) {
@@ -187,7 +194,7 @@ void MetricsHelper::RecordUserDecisionToRappor(Decision decision) {
     sample->SetFlagsField("flags", flags,
                           InterstitialFlagBits::HIGHEST_USED_BIT + 1);
   }
-  rappor_service_->RecordSampleObj("interstitial." + settings_.rappor_prefix,
+  rappor_service_->RecordSampleObj("interstitial." + rappor_prefix,
                                    std::move(sample));
 }
 

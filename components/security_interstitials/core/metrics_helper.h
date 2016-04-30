@@ -21,11 +21,12 @@ class HistoryService;
 namespace security_interstitials {
 
 // MetricsHelper records user warning interactions in a common way via METRICS
-// histograms and, optionally, RAPPOR metrics. The  class will generate the
+// histograms and, optionally, RAPPOR metrics. The class will generate the
 // following histograms:
 //   METRICS: interstitial.<metric_prefix>.decision[.repeat_visit]
 //   METRICS: interstitial.<metric_prefix>.interaction[.repeat_visi]
-//   RAPPOR:  interstitial.<rappor_prefix>
+//   RAPPOR:  interstitial.<rappor_prefix> (SafeBrowsing parameters)
+//   RAPPOR:  interstitial.<rappor_prefix>2 (Low frequency parameters)
 // wherein |metric_prefix| and |rappor_prefix| are specified via ReportDetails.
 // repeat_visit is also generated if the user has seen the page before.
 //
@@ -63,16 +64,25 @@ class MetricsHelper {
   //               placing at the end of the metric name.  Examples:
   //               "from_datasaver", "from_device"
   // rappor_prefix: Metric prefix for Rappor.
-  //                examples: "phishing", "ssl2"
-  // rappor_report_type: Used to differentiate UMA and Safe Browsing statistics.
+  //                examples: "phishing2", "ssl3"
+  // rappor_report_type: Specifies the low-frequency RAPPOR configuration to use
+  //                     (i.e. UMA or Safe Browsing).
+  // deprecated_rappor_report_type: Specifies the deprecated RAPPOR
+  //                                configuration to use for comparison with the
+  //                                low-frequency metric.
   // The rappor preferences can be left blank if rappor_service is not set.
+  // TODO(dominickn): remove deprecated_rappor_report_type once sufficient
+  // comparison data has been collected and analysed - crbug.com/605836.
   struct ReportDetails {
     ReportDetails();
     ReportDetails(const ReportDetails& other);
+    ~ReportDetails();
     std::string metric_prefix;
     std::string extra_suffix;
     std::string rappor_prefix;
+    std::string deprecated_rappor_prefix;
     rappor::RapporType rappor_report_type;
+    rappor::RapporType deprecated_rappor_report_type;
   };
 
   // Args:
@@ -113,7 +123,9 @@ class MetricsHelper {
 
   void RecordUserDecisionToMetrics(Decision decision,
                                    const std::string& histogram_name);
-  void RecordUserDecisionToRappor(Decision decision);
+  void RecordUserDecisionToRappor(Decision decision,
+                                  const rappor::RapporType rappor_report_type,
+                                  const std::string& rappor_prefix);
   const GURL request_url_;
   const ReportDetails settings_;
   base::WeakPtr<rappor::RapporService> rappor_service_;

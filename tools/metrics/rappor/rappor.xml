@@ -36,6 +36,17 @@ components/rappor/rappor_parameters.h.
       zero-coin-prob="0.25"/>
 </noise-level>
 
+<noise-level name="SPARSE_NOISE">
+  <summary>
+    Reduced noise, suitable for metrics which receive limited reports (less
+    than 500,000 per day) or expect a highly skewed/sparse distribution over
+    a wide set of domains. Approval from the Chrome Privacy and Rappor teams
+    is required to implement a metric using this noise level.
+  </summary>
+  <noise-values fake-prob="0.25" fake-one-prob="0.5" one-coin-prob="0.75"
+      zero-coin-prob="0.25"/>
+</noise-level>
+
 </noise-levels>
 
 <rappor-parameter-types>
@@ -64,9 +75,47 @@ components/rappor/rappor_parameters.h.
       reporting-level="FINE" noise-level="NORMAL_NOISE"/>
 </rappor-parameters>
 
+<rappor-parameters name="LOW_FREQUENCY_ETLD_PLUS_ONE">
+  <summary>
+    Parameters for collecting the domain and registry of a URL from UMA opt-in
+    users, using SPARSE_NOISE. Intended for sparse/skewed metrics, or low
+    frequency metrics (less than 500,000 reports per day). Explicit approval
+    from the Chrome Privacy and Rappor teams is required to use this type. New
+    metrics should also consider LOW_FREQUENCY_UMA_RAPPOR_TYPE instead.
+  </summary>
+  <parameters num-cohorts="128" bytes="16" hash-functions="2" fake-prob="0.25"
+      fake-one-prob="0.5" one-coin-prob="0.75" zero-coin-prob="0.25"
+      reporting-level="FINE" noise-level="SPARSE_NOISE"/>
+</rappor-parameters>
+
+<rappor-parameters name="LOW_FREQUENCY_SAFEBROWSING_RAPPOR_TYPE">
+  <summary>
+    Parameters for metrics related to Safe Browsing, collected from all users
+    with safe browsing enabled, using SPARSE_NOISE. Intended for sparse/skewed
+    metrics, or low frequency metrics (less than 500,000 reports per day).
+    Explicit approval from the Chrome Privacy and Rappor teams is required to
+    use this type.
+  </summary>
+  <parameters num-cohorts="128" bytes="1" hash-functions="2" fake-prob="0.25"
+      fake-one-prob="0.5" one-coin-prob="0.75" zero-coin-prob="0.25"
+      reporting-level="COARSE" noise-level="SPARSE_NOISE"/>
+</rappor-parameters>
+
+<rappor-parameters name="LOW_FREQUENCY_UMA_RAPPOR_TYPE">
+  <summary>
+    Parameters suitable for metrics from UMA opt-in users, using SPARSE_NOISE.
+    Intended for sparse/skewed metrics, or low frequency metrics (less than
+    500,000 reports per day). Explicit approval from the Chrome Privacy and
+    Rappor teams is required to use this type.
+  </summary>
+  <parameters num-cohorts="128" bytes="4" hash-functions="2" fake-prob="0.25"
+      fake-one-prob="0.5" one-coin-prob="0.75" zero-coin-prob="0.25"
+      reporting-level="FINE" noise-level="SPARSE_NOISE"/>
+</rappor-parameters>
+
 <rappor-parameters name="SAFEBROWSING_RAPPOR_TYPE">
   <summary>
-    Parameters for metrics related to Safe Browsing, collected from all user
+    Parameters for metrics related to Safe Browsing, collected from all users
     with safe browsing enabled.
   </summary>
   <parameters num-cohorts="128" bytes="1" hash-functions="2" fake-prob="0.5"
@@ -211,8 +260,21 @@ components/rappor/rappor_parameters.h.
   <owner>miguelg@chromium.org</owner>
   <owner>tsergeant@chromium.org</owner>
   <summary>
-    The domain for which a AudioCapture permission prompt was Denied. Also
-    recorded as a multi-dimensional metric in Permissions.Action.AudioCapture.
+    **DEPRECATED. Replaced by
+    ContentSettings.PermissionActions_AudioCapture.Denied.Url2 as of M52. The
+    domain for which a AudioCapture permission prompt was Denied.
+  </summary>
+</rappor-metric>
+
+<rappor-metric
+    name="ContentSettings.PermissionActions_AudioCapture.Denied.Url2"
+    type="LOW_FREQUENCY_ETLD_PLUS_ONE">
+  <owner>dominickn@chromium.org</owner>
+  <owner>kcarattini@chromium.org</owner>
+  <owner>miguelg@chromium.org</owner>
+  <owner>tsergeant@chromium.org</owner>
+  <summary>
+    The domain for which an AudioCapture permission prompt was Denied.
   </summary>
 </rappor-metric>
 
@@ -223,8 +285,21 @@ components/rappor/rappor_parameters.h.
   <owner>miguelg@chromium.org</owner>
   <owner>tsergeant@chromium.org</owner>
   <summary>
-    The domain for which a AudioCapture permission prompt was Dismissed. Also
-    recorded as a multi-dimensional metric in Permissions.Action.AudioCapture.
+    **DEPRECATED. Replaced by
+    ContentSettings.PermissionActions_AudioCapture.Dismissed.Url2 as of M52.
+    The domain for which an AudioCapture permission prompt was Dismissed.
+  </summary>
+</rappor-metric>
+
+<rappor-metric
+    name="ContentSettings.PermissionActions_AudioCapture.Dismissed.Url2"
+    type="LOW_FREQUENCY_ETLD_PLUS_ONE">
+  <owner>dominickn@chromium.org</owner>
+  <owner>kcarattini@chromium.org</owner>
+  <owner>miguelg@chromium.org</owner>
+  <owner>tsergeant@chromium.org</owner>
+  <summary>
+    The domain for which an AudioCapture permission prompt was Dismissed.
   </summary>
 </rappor-metric>
 
@@ -235,8 +310,21 @@ components/rappor/rappor_parameters.h.
   <owner>miguelg@chromium.org</owner>
   <owner>tsergeant@chromium.org</owner>
   <summary>
-    The domain for which a AudioCapture permission prompt was accepted. Also
-    recorded as a multi-dimensional metric in Permissions.Action.AudioCapture.
+    **DEPRECATED. Replaced by
+    ContentSettings.PermissionActions_AudioCapture.Granted.Url2 as of M52. The
+    domain for which an AudioCapture permission prompt was accepted.
+  </summary>
+</rappor-metric>
+
+<rappor-metric
+    name="ContentSettings.PermissionActions_AudioCapture.Granted.Url2"
+    type="LOW_FREQUENCY_ETLD_PLUS_ONE">
+  <owner>dominickn@chromium.org</owner>
+  <owner>kcarattini@chromium.org</owner>
+  <owner>miguelg@chromium.org</owner>
+  <owner>tsergeant@chromium.org</owner>
+  <summary>
+    The domain for which an AudioCapture permission prompt was accepted.
   </summary>
 </rappor-metric>
 
@@ -247,8 +335,21 @@ components/rappor/rappor_parameters.h.
   <owner>miguelg@chromium.org</owner>
   <owner>tsergeant@chromium.org</owner>
   <summary>
-    The domain for which a AudioCapture permission prompt was Ignored. Also
-    recorded as a multi-dimensional metric in Permissions.Action.AudioCapture.
+    **DEPRECATED. Replaced by
+    ContentSettings.PermissionActions_AudioCapture.Ignored.Url2 as of M52. The
+    domain for which an AudioCapture permission prompt was Ignored.
+  </summary>
+</rappor-metric>
+
+<rappor-metric
+    name="ContentSettings.PermissionActions_AudioCapture.Ignored.Url2"
+    type="LOW_FREQUENCY_ETLD_PLUS_ONE">
+  <owner>dominickn@chromium.org</owner>
+  <owner>kcarattini@chromium.org</owner>
+  <owner>miguelg@chromium.org</owner>
+  <owner>tsergeant@chromium.org</owner>
+  <summary>
+    The domain for which an AudioCapture permission prompt was Ignored.
   </summary>
 </rappor-metric>
 
@@ -257,9 +358,20 @@ components/rappor/rappor_parameters.h.
     type="ETLD_PLUS_ONE">
   <owner>tsergeant@chromium.org</owner>
   <summary>
-    The domain for which an AudioCapture permission was revoked. Also recorded
-    as a multi-dimensional metric in Permissions.Action.AudioCapture. Note: This
-    metric is recorded for more revocation actions as of 2016-04-01 (M51).
+    **DEPRECATED. Replaced by
+    ContentSettings.PermissionActions_AudioCapture.Revoked.Url2 as of M52. The
+    domain for which an AudioCapture permission was revoked. Note: This metric
+    is recorded for more revocation actions as of 2016-04-01 (M51).
+  </summary>
+</rappor-metric>
+
+<rappor-metric
+    name="ContentSettings.PermissionActions_AudioCapture.Revoked.Url2"
+    type="LOW_FREQUENCY_ETLD_PLUS_ONE">
+  <owner>dominickn@chromium.org</owner>
+  <owner>tsergeant@chromium.org</owner>
+  <summary>
+    The domain for which an AudioCapture permission was revoked.
   </summary>
 </rappor-metric>
 
@@ -277,6 +389,17 @@ components/rappor/rappor_parameters.h.
     type="ETLD_PLUS_ONE">
   <owner>miguelg@chromium.org</owner>
   <summary>
+    **DEPRECATED. Replaced by
+    ContentSettings.PermissionActions_Geolocation.Denied.Url2 as of M52. The
+    domain for which a Geolocation permission prompt was Denied.
+  </summary>
+</rappor-metric>
+
+<rappor-metric name="ContentSettings.PermissionActions_Geolocation.Denied.Url2"
+    type="LOW_FREQUENCY_ETLD_PLUS_ONE">
+  <owner>dominickn@chromium.org</owner>
+  <owner>miguelg@chromium.org</owner>
+  <summary>
     The domain for which a Geolocation permission prompt was Denied.
   </summary>
 </rappor-metric>
@@ -284,6 +407,18 @@ components/rappor/rappor_parameters.h.
 <rappor-metric
     name="ContentSettings.PermissionActions_Geolocation.Dismissed.Url"
     type="ETLD_PLUS_ONE">
+  <owner>miguelg@chromium.org</owner>
+  <summary>
+    **DEPRECATED. Replaced by
+    ContentSettings.PermissionActions_Geolocation.Dismissed.Url2 as of M52.
+    The domain for which a Geolocation permission prompt was Dismissed.
+  </summary>
+</rappor-metric>
+
+<rappor-metric
+    name="ContentSettings.PermissionActions_Geolocation.Dismissed.Url2"
+    type="LOW_FREQUENCY_ETLD_PLUS_ONE">
+  <owner>dominickn@chromium.org</owner>
   <owner>miguelg@chromium.org</owner>
   <summary>
     The domain for which a Geolocation permission prompt was Dismissed.
@@ -294,12 +429,36 @@ components/rappor/rappor_parameters.h.
     type="ETLD_PLUS_ONE">
   <owner>miguelg@chromium.org</owner>
   <summary>
+    **DEPRECATED. Replaced by
+    ContentSettings.PermissionActions_Geolocation.Granted.Url2 as of M52. The
+    domain for which a Geolocation permission prompt was accepted.
+  </summary>
+</rappor-metric>
+
+<rappor-metric
+    name="ContentSettings.PermissionActions_Geolocation.Granted.Url2"
+    type="LOW_FREQUENCY_ETLD_PLUS_ONE">
+  <owner>dominickn@chromium.org</owner>
+  <owner>miguelg@chromium.org</owner>
+  <summary>
     The domain for which a Geolocation permission prompt was accepted.
   </summary>
 </rappor-metric>
 
 <rappor-metric name="ContentSettings.PermissionActions_Geolocation.Ignored.Url"
     type="ETLD_PLUS_ONE">
+  <owner>miguelg@chromium.org</owner>
+  <summary>
+    **DEPRECATED. Replaced by
+    ContentSettings.PermissionActions_Geolocation.Ignored.Url2 as of M52. The
+    domain for which a Geolocation permission prompt was Ignored.
+  </summary>
+</rappor-metric>
+
+<rappor-metric
+    name="ContentSettings.PermissionActions_Geolocation.Ignored.Url2"
+    type="LOW_FREQUENCY_ETLD_PLUS_ONE">
+  <owner>dominickn@chromium.org</owner>
   <owner>miguelg@chromium.org</owner>
   <summary>
     The domain for which a Geolocation permission prompt was Ignored.
@@ -310,8 +469,20 @@ components/rappor/rappor_parameters.h.
     type="ETLD_PLUS_ONE">
   <owner>jialiul@chromium.org</owner>
   <summary>
-    The domain for which a Geolocation permission was revoked. Note: This
-    metric is recorded for more revocation actions as of 2016-04-01 (M51).
+    **DEPRECATED. Replaced by
+    ContentSettings.PermissionActions_Geolocation.Revoked.Url2 as of M52. The
+    domain for which a Geolocation permission was revoked. Note: This metric is
+    recorded for more revocation actions as of 2016-04-01 (M51).
+  </summary>
+</rappor-metric>
+
+<rappor-metric
+    name="ContentSettings.PermissionActions_Geolocation.Revoked.Url2"
+    type="LOW_FREQUENCY_ETLD_PLUS_ONE">
+  <owner>dominickn@chromium.org</owner>
+  <owner>jialiul@chromium.org</owner>
+  <summary>
+    The domain for which a Geolocation permission was revoked.
   </summary>
 </rappor-metric>
 
@@ -330,6 +501,18 @@ components/rappor/rappor_parameters.h.
     type="ETLD_PLUS_ONE">
   <owner>miguelg@chromium.org</owner>
   <summary>
+    **DEPRECATED. Replaced by
+    ContentSettings.PermissionActions_Notifications.Denied.Url2 as of M52. The
+    domain for which a Notification permission prompt was Denied.
+  </summary>
+</rappor-metric>
+
+<rappor-metric
+    name="ContentSettings.PermissionActions_Notifications.Denied.Url2"
+    type="LOW_FREQUENCY_ETLD_PLUS_ONE">
+  <owner>dominickn@chromium.org</owner>
+  <owner>jialiul@chromium.org</owner>
+  <summary>
     The domain for which a Notification permission prompt was Denied.
   </summary>
 </rappor-metric>
@@ -339,6 +522,18 @@ components/rappor/rappor_parameters.h.
     type="ETLD_PLUS_ONE">
   <owner>miguelg@chromium.org</owner>
   <summary>
+    **DEPRECATED. Replaced by
+    ContentSettings.PermissionActions_Notifications.Dismissed.Url2 as of M52.
+    The domain for which a Notification permission prompt was Dismissed.
+  </summary>
+</rappor-metric>
+
+<rappor-metric
+    name="ContentSettings.PermissionActions_Notifications.Dismissed.Url2"
+    type="LOW_FREQUENCY_ETLD_PLUS_ONE">
+  <owner>dominickn@chromium.org</owner>
+  <owner>jialiul@chromium.org</owner>
+  <summary>
     The domain for which a Notification permission prompt was Dismissed.
   </summary>
 </rappor-metric>
@@ -346,6 +541,18 @@ components/rappor/rappor_parameters.h.
 <rappor-metric
     name="ContentSettings.PermissionActions_Notifications.Granted.Url"
     type="ETLD_PLUS_ONE">
+  <owner>miguelg@chromium.org</owner>
+  <summary>
+    **DEPRECATED. Replaced by
+    ContentSettings.PermissionActions_Notifications.Granted.Url2 as of M52. The
+    domain for which a Notification permission prompt was accepted.
+  </summary>
+</rappor-metric>
+
+<rappor-metric
+    name="ContentSettings.PermissionActions_Notifications.Granted.Url2"
+    type="LOW_FREQUENCY_ETLD_PLUS_ONE">
+  <owner>dominickn@chromium.org</owner>
   <owner>miguelg@chromium.org</owner>
   <summary>
     The domain for which a Notification permission prompt was accepted.
@@ -357,6 +564,18 @@ components/rappor/rappor_parameters.h.
     type="ETLD_PLUS_ONE">
   <owner>miguelg@chromium.org</owner>
   <summary>
+    **DEPRECATED. Replaced by
+    ContentSettings.PermissionActions_Notifications.Ignored.Url2 as of M52. The
+    domain for which a Notification permission prompt was Ignored.
+  </summary>
+</rappor-metric>
+
+<rappor-metric
+    name="ContentSettings.PermissionActions_Notifications.Ignored.Url2"
+    type="LOW_FREQUENCY_ETLD_PLUS_ONE">
+  <owner>dominickn@chromium.org</owner>
+  <owner>miguelg@chromium.org</owner>
+  <summary>
     The domain for which a Notification permission prompt was Ignored.
   </summary>
 </rappor-metric>
@@ -366,8 +585,20 @@ components/rappor/rappor_parameters.h.
     type="ETLD_PLUS_ONE">
   <owner>jialiul@chromium.org</owner>
   <summary>
-    The domain for which a Notification permission was revoked. Note: This
-    metric is recorded for more revocation actions as of 2016-04-01 (M51).
+    **DEPRECATED. Replaced by
+    ContentSettings.PermissionActions_Notifications.Revoked.Url2 as of M52. The
+    domain for which a Notification permission was revoked. Note: This metric
+    is recorded for more revocation actions as of 2016-04-01 (M51).
+  </summary>
+</rappor-metric>
+
+<rappor-metric
+    name="ContentSettings.PermissionActions_Notifications.Revoked.Url2"
+    type="LOW_FREQUENCY_ETLD_PLUS_ONE">
+  <owner>dominickn@chromium.org</owner>
+  <owner>jialiul@chromium.org</owner>
+  <summary>
+    The domain for which a Notification permission was revoked.
   </summary>
 </rappor-metric>
 
@@ -377,8 +608,21 @@ components/rappor/rappor_parameters.h.
   <owner>miguelg@chromium.org</owner>
   <owner>tsergeant@chromium.org</owner>
   <summary>
-    The domain for which a VideoCapture permission prompt was Denied. Also
-    recorded as a multi-dimensional metric in Permissions.Action.VideoCapture.
+    **DEPRECATED. Replaced by
+    ContentSettings.PermissionActions_VideoCapture.Denied.Url2 as of M52. The
+    domain for which a VideoCapture permission prompt was Denied.
+  </summary>
+</rappor-metric>
+
+<rappor-metric
+    name="ContentSettings.PermissionActions_VideoCapture.Denied.Url2"
+    type="LOW_FREQUENCY_ETLD_PLUS_ONE">
+  <owner>dominickn@chromium.org</owner>
+  <owner>kcarattini@chromium.org</owner>
+  <owner>miguelg@chromium.org</owner>
+  <owner>tsergeant@chromium.org</owner>
+  <summary>
+    The domain for which a VideoCapture permission prompt was Denied.
   </summary>
 </rappor-metric>
 
@@ -389,8 +633,21 @@ components/rappor/rappor_parameters.h.
   <owner>miguelg@chromium.org</owner>
   <owner>tsergeant@chromium.org</owner>
   <summary>
-    The domain for which a VideoCapture permission prompt was Dismissed. Also
-    recorded as a multi-dimensional metric in Permissions.Action.VideoCapture.
+    **DEPRECATED. Replaced by
+    ContentSettings.PermissionActions_VideoCapture.Dismissed.Url2 as of M52. The
+    domain for which a VideoCapture permission prompt was Dismissed.
+  </summary>
+</rappor-metric>
+
+<rappor-metric
+    name="ContentSettings.PermissionActions_VideoCapture.Dismissed.Url2"
+    type="LOW_FREQUENCY_ETLD_PLUS_ONE">
+  <owner>dominickn@chromium.org</owner>
+  <owner>kcarattini@chromium.org</owner>
+  <owner>miguelg@chromium.org</owner>
+  <owner>tsergeant@chromium.org</owner>
+  <summary>
+    The domain for which a VideoCapture permission prompt was Dismissed.
   </summary>
 </rappor-metric>
 
@@ -401,8 +658,21 @@ components/rappor/rappor_parameters.h.
   <owner>miguelg@chromium.org</owner>
   <owner>tsergeant@chromium.org</owner>
   <summary>
-    The domain for which a VideoCapture permission prompt was accepted. Also
-    recorded as a multi-dimensional metric in Permissions.Action.VideoCapture.
+    **DEPRECATED. Replaced by
+    ContentSettings.PermissionActions_VideoCapture.Granted.Url2 as of M52. The
+    domain for which a VideoCapture permission prompt was accepted.
+  </summary>
+</rappor-metric>
+
+<rappor-metric
+    name="ContentSettings.PermissionActions_VideoCapture.Granted.Url2"
+    type="LOW_FREQUENCY_ETLD_PLUS_ONE">
+  <owner>dominickn@chromium.org</owner>
+  <owner>kcarattini@chromium.org</owner>
+  <owner>miguelg@chromium.org</owner>
+  <owner>tsergeant@chromium.org</owner>
+  <summary>
+    The domain for which a VideoCapture permission prompt was accepted.
   </summary>
 </rappor-metric>
 
@@ -413,8 +683,21 @@ components/rappor/rappor_parameters.h.
   <owner>miguelg@chromium.org</owner>
   <owner>tsergeant@chromium.org</owner>
   <summary>
-    The domain for which a VideoCapture permission prompt was Ignored. Also
-    recorded as a multi-dimensional metric in Permissions.Action.VideoCapture.
+    **DEPRECATED. Replaced by
+    ContentSettings.PermissionActions_VideoCapture.Ignored.Url2 as of M52. The
+    domain for which a VideoCapture permission prompt was Ignored.
+  </summary>
+</rappor-metric>
+
+<rappor-metric
+    name="ContentSettings.PermissionActions_VideoCapture.Ignored.Url2"
+    type="LOW_FREQUENCY_ETLD_PLUS_ONE">
+  <owner>dominickn@chromium.org</owner>
+  <owner>kcarattini@chromium.org</owner>
+  <owner>miguelg@chromium.org</owner>
+  <owner>tsergeant@chromium.org</owner>
+  <summary>
+    The domain for which a VideoCapture permission prompt was Ignored.
   </summary>
 </rappor-metric>
 
@@ -423,14 +706,36 @@ components/rappor/rappor_parameters.h.
     type="ETLD_PLUS_ONE">
   <owner>tsergeant@chromium.org</owner>
   <summary>
-    The domain for which an VideoCapture permission was revoked. Also recorded
-    as a multi-dimensional metric in Permissions.Action.VideoCapture. Note: This
-    metric is recorded for more revocation actions as of 2016-04-01 (M51).
+    **DEPRECATED. Replaced by
+    ContentSettings.PermissionActions_VideoCapture.Revoked.Url2 as of M52. The
+    domain for which an VideoCapture permission was revoked. Note: This metric
+    is recorded for more revocation actions as of 2016-04-01 (M51).
+  </summary>
+</rappor-metric>
+
+<rappor-metric
+    name="ContentSettings.PermissionActions_VideoCapture.Revoked.Url2"
+    type="LOW_FREQUENCY_ETLD_PLUS_ONE">
+  <owner>dominickn@chromium.org</owner>
+  <owner>tsergeant@chromium.org</owner>
+  <summary>
+    The domain for which an VideoCapture permission was revoked.
   </summary>
 </rappor-metric>
 
 <rappor-metric name="ContentSettings.PermissionRequested.Geolocation.Url"
     type="ETLD_PLUS_ONE">
+  <owner>miguelg@chromium.org</owner>
+  <summary>
+    **DEPRECATED: replaced by
+    ContentSettings.PermissionRequested.Geolocation.Url2 as of M52. The domain
+    that issues a Geolocation permission prompt.
+  </summary>
+</rappor-metric>
+
+<rappor-metric name="ContentSettings.PermissionRequested.Geolocation.Url2"
+    type="LOW_FREQUENCY_ETLD_PLUS_ONE">
+  <owner>dominickn@chromium.org</owner>
   <owner>miguelg@chromium.org</owner>
   <summary>
     The domain that issues a Geolocation permission prompt.
@@ -439,6 +744,17 @@ components/rappor/rappor_parameters.h.
 
 <rappor-metric name="ContentSettings.PermissionRequested.Notifications.Url"
     type="ETLD_PLUS_ONE">
+  <owner>miguelg@chromium.org</owner>
+  <summary>
+    **DEPRECATED: replaced by
+    ContentSettings.PermissionRequested.Notifications.Url2 as of M52. The
+    domain that issues a Notification permission prompt.
+  </summary>
+</rappor-metric>
+
+<rappor-metric name="ContentSettings.PermissionRequested.Notifications.Url2"
+    type="LOW_FREQUENCY_ETLD_PLUS_ONE">
+  <owner>dominickn@chromium.org</owner>
   <owner>miguelg@chromium.org</owner>
   <summary>
     The domain that issues a Notification permission prompt.
@@ -724,7 +1040,8 @@ components/rappor/rappor_parameters.h.
   <owner>kcarattini@chromium.org</owner>
   <owner>tsergeant@chromium.org</owner>
   <summary>
-    The domain+registry of a URL that requested the MediaStream Microphone API.
+    **DEPRECATED. No longer reported as of M52. The domain+registry of a URL
+    that requested the MediaStream Microphone API.
   </summary>
   <string-field name="Scheme">
     <summary>
@@ -764,7 +1081,8 @@ components/rappor/rappor_parameters.h.
     type="SAFEBROWSING_RAPPOR_TYPE">
   <owner>kcarattini@chromium.org</owner>
   <summary>
-    The domain+registry of a URL that requested the Durable Storage API.
+    **DEPRECATED. No longer reported as of M52. The domain+registry of a URL
+    that requested the Durable Storage API.
   </summary>
   <string-field name="Scheme">
     <summary>
@@ -804,7 +1122,8 @@ components/rappor/rappor_parameters.h.
     type="SAFEBROWSING_RAPPOR_TYPE">
   <owner>kcarattini@chromium.org</owner>
   <summary>
-    The domain+registry of a URL that requested the Geolocation API.
+    **DEPRECATED. No longer reported as of M52. The domain+registry of a URL
+    that requested the Geolocation API.
   </summary>
   <string-field name="Scheme">
     <summary>
@@ -844,7 +1163,8 @@ components/rappor/rappor_parameters.h.
     type="SAFEBROWSING_RAPPOR_TYPE">
   <owner>kcarattini@chromium.org</owner>
   <summary>
-    The domain+registry of a URL that requested the MidiSysEx API.
+    **DEPRECATED. No longer reported as of M52. The domain+registry of a URL
+    that     requested the MidiSysEx API.
   </summary>
   <string-field name="Scheme">
     <summary>
@@ -884,7 +1204,8 @@ components/rappor/rappor_parameters.h.
     type="SAFEBROWSING_RAPPOR_TYPE">
   <owner>kcarattini@chromium.org</owner>
   <summary>
-    The domain+registry of a URL that requested the Notifications API.
+    **DEPRECATED. No longer reported as of M52. The domain+registry of a URL
+    that requested the Notifications API.
   </summary>
   <string-field name="Scheme">
     <summary>
@@ -924,8 +1245,8 @@ components/rappor/rappor_parameters.h.
     type="SAFEBROWSING_RAPPOR_TYPE">
   <owner>kcarattini@chromium.org</owner>
   <summary>
-    The domain+registry of a URL that requested the ProtectedMediaIdentifier
-    API.
+    **DEPRECATED. No longer reported as of M52. The domain+registry of a URL
+    that requested the ProtectedMediaIdentifier API.
   </summary>
   <string-field name="Scheme">
     <summary>
@@ -965,7 +1286,8 @@ components/rappor/rappor_parameters.h.
     type="SAFEBROWSING_RAPPOR_TYPE">
   <owner>kcarattini@chromium.org</owner>
   <summary>
-    The domain+registry of a URL that requested the PushMessaging API.
+    **DEPRECATED. No longer reported as of M52. The domain+registry of a URL
+    that requested the PushMessaging API.
   </summary>
   <string-field name="Scheme">
     <summary>
@@ -1006,7 +1328,8 @@ components/rappor/rappor_parameters.h.
   <owner>kcarattini@chromium.org</owner>
   <owner>tsergeant@chromium.org</owner>
   <summary>
-    The domain+registry of a URL that requested the MediaStream Camera API.
+    **DEPRECATED. No longer reported as of M52. The domain+registry of a URL
+    that requested the MediaStream Camera API.
   </summary>
   <string-field name="Scheme">
     <summary>
@@ -1370,6 +1693,30 @@ components/rappor/rappor_parameters.h.
   </summary>
   <string-field name="domain">
     <summary>
+      **DEPRECATED: replaced by interstitial.harmful2 as of M52. The
+      domain+registry of a URL that triggered a safe-browsing UWS
+      interstitial.
+    </summary>
+  </string-field>
+  <flags-field name="flags">
+    <flag>Bit 0: DID_PROCEED</flag>
+    <flag>Bit 1: IS_REPEAT_VISIT</flag>
+    <summary>
+      Bitfield of the state from a safe-browsing UWS warning interstitial.
+    </summary>
+  </flags-field>
+</rappor-metric>
+
+<rappor-metric name="interstitial.harmful2"
+    type="LOW_FREQUENCY_SAFEBROWSING_RAPPOR_TYPE">
+  <owner>dominickn@chromium.org</owner>
+  <owner>nparker@chromium.org</owner>
+  <summary>
+    The domain+registry of a URL that triggered a safe-browsing UWS
+    interstitial.
+  </summary>
+  <string-field name="domain">
+    <summary>
       The domain+registry of a URL that triggered a safe-browsing UWS
       interstitial.
     </summary>
@@ -1384,6 +1731,30 @@ components/rappor/rappor_parameters.h.
 </rappor-metric>
 
 <rappor-metric name="interstitial.malware" type="SAFEBROWSING_RAPPOR_TYPE">
+  <owner>nparker@chromium.org</owner>
+  <summary>
+    **DEPRECATED: replaced by interstitial.malware2 as of M52. The
+    domain+registry of a URL that triggered a safe-browsing malware
+    interstitial.
+  </summary>
+  <string-field name="domain">
+    <summary>
+      The domain+registry of a URL that triggered a safe-browsing malware
+      interstitial.
+    </summary>
+  </string-field>
+  <flags-field name="flags">
+    <flag>Bit 0: DID_PROCEED</flag>
+    <flag>Bit 1: IS_REPEAT_VISIT</flag>
+    <summary>
+      Bitfield of the state from a safe-browsing malware warning interstitial.
+    </summary>
+  </flags-field>
+</rappor-metric>
+
+<rappor-metric name="interstitial.malware2"
+    type="LOW_FREQUENCY_SAFEBROWSING_RAPPOR_TYPE">
+  <owner>dominickn@chromium.org</owner>
   <owner>nparker@chromium.org</owner>
   <summary>
     The domain+registry of a URL that triggered a safe-browsing malware
@@ -1405,6 +1776,30 @@ components/rappor/rappor_parameters.h.
 </rappor-metric>
 
 <rappor-metric name="interstitial.phishing" type="SAFEBROWSING_RAPPOR_TYPE">
+  <owner>nparker@chromium.org</owner>
+  <summary>
+    **DEPRECATED: replaced by interstitial.phishing2 as of M52. The
+    domain+registry of a URL that triggered a safe-browsing phishing
+    interstitial.
+  </summary>
+  <string-field name="domain">
+    <summary>
+      The domain+registry of a URL that triggered a safe-browsing phishing
+      interstitial.
+    </summary>
+  </string-field>
+  <flags-field name="flags">
+    <flag>Bit 0: DID_PROCEED</flag>
+    <flag>Bit 1: IS_REPEAT_VISIT</flag>
+    <summary>
+      Bitfield of the state from a safe-browsing phishing warning interstitial.
+    </summary>
+  </flags-field>
+</rappor-metric>
+
+<rappor-metric name="interstitial.phishing2"
+    type="LOW_FREQUENCY_SAFEBROWSING_RAPPOR_TYPE">
+  <owner>dominickn@chromium.org</owner>
   <owner>nparker@chromium.org</owner>
   <summary>
     The domain+registry of a URL that triggered a safe-browsing phishing
@@ -1435,6 +1830,27 @@ components/rappor/rappor_parameters.h.
 </rappor-metric>
 
 <rappor-metric name="interstitial.ssl2" type="UMA_RAPPOR_TYPE">
+  <owner>nparker@chromium.org</owner>
+  <summary>
+    **DEPRECATED: replaced by interstitial.ssl2 as of M52. The domain+registry
+    of a URL that triggered an SSL interstitial.
+  </summary>
+  <string-field name="domain">
+    <summary>
+      The domain+registry of a URL that triggered an SSL interstitial.
+    </summary>
+  </string-field>
+  <flags-field name="flags">
+    <flag>Bit 0: DID_PROCEED</flag>
+    <flag>Bit 1: IS_REPEAT_VISIT</flag>
+    <summary>
+      Bitfield of the state from an SSL warning interstitial.
+    </summary>
+  </flags-field>
+</rappor-metric>
+
+<rappor-metric name="interstitial.ssl3" type="LOW_FREQUENCY_UMA_RAPPOR_TYPE">
+  <owner>dominickn@chromium.org</owner>
   <owner>nparker@chromium.org</owner>
   <summary>
     The domain+registry of a URL that triggered an SSL interstitial.

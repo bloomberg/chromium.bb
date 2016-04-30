@@ -179,7 +179,11 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
   reporting_info.metric_prefix = GetMetricPrefix();
   reporting_info.extra_suffix = GetExtraMetricsSuffix();
   reporting_info.rappor_prefix = GetRapporPrefix();
-  reporting_info.rappor_report_type = rappor::SAFEBROWSING_RAPPOR_TYPE;
+  reporting_info.deprecated_rappor_prefix = GetDeprecatedRapporPrefix();
+  reporting_info.rappor_report_type =
+      rappor::LOW_FREQUENCY_SAFEBROWSING_RAPPOR_TYPE;
+  reporting_info.deprecated_rappor_report_type =
+      rappor::SAFEBROWSING_RAPPOR_TYPE;
   set_metrics_helper(base::WrapUnique(new ChromeMetricsHelper(
       web_contents, request_url(), reporting_info, GetSamplingEventName())));
   metrics_helper()->RecordUserDecision(
@@ -566,6 +570,19 @@ std::string SafeBrowsingBlockingPage::GetExtraMetricsSuffix() const {
 }
 
 std::string SafeBrowsingBlockingPage::GetRapporPrefix() const {
+  switch (interstitial_reason_) {
+    case SB_REASON_MALWARE:
+      return "malware2";
+    case SB_REASON_HARMFUL:
+      return "harmful2";
+    case SB_REASON_PHISHING:
+      return "phishing2";
+  }
+  NOTREACHED();
+  return std::string();
+}
+
+std::string SafeBrowsingBlockingPage::GetDeprecatedRapporPrefix() const {
   switch (interstitial_reason_) {
     case SB_REASON_MALWARE:
       return "malware";
