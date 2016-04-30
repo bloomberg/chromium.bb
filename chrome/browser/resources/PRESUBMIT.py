@@ -2,13 +2,17 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Presubmit script for HTML files in chrome/browser/resources.
+"""Presubmit script for files in chrome/browser/resources.
 
 See http://dev.chromium.org/developers/how-tos/depottools/presubmit-scripts
 for more details about the presubmit API built into depot_tools.
 """
 
+import re
+
+
 ACTION_XML_PATH = '../../../tools/metrics/actions/actions.xml'
+
 
 def CheckUserActionUpdate(input_api, output_api, action_xml_path):
   """Checks if any new user action has been added."""
@@ -93,3 +97,26 @@ def CheckChangeOnUpload(input_api, output_api):
 
 def CheckChangeOnCommit(input_api, output_api):
   return CheckUserActionUpdate(input_api, output_api, ACTION_XML_PATH)
+
+
+def PostUploadHook(cl, change, output_api):
+  rietveld_obj = cl.RpcServer()
+  description = rietveld_obj.get_description(cl.issue)
+
+  existing_bots = (change.CQ_INCLUDE_TRYBOTS or '').split(';')
+  clean_bots = set(filter(None, map(lambda s: s.strip(), existing_bots)))
+  new_bots = clean_bots | set(['tryserver.chromium.linux:closure_compilation'])
+  new_tag = 'CQ_INCLUDE_TRYBOTS=%s' % ';'.join(new_bots)
+
+  if clean_bots:
+    tag_reg = '^CQ_INCLUDE_TRYBOTS=.*$'
+    new_description = re.sub(tag_reg, new_tag, description, flags=re.M | re.I)
+  else:
+    new_description = description + '\n' + new_tag
+
+  if new_description == description:
+    return []
+
+  rietveld_obj.update_description(cl.issue, new_description)
+  return [output_api.PresubmitNotifyResult(
+      'Automatically added optional Closure bots to run on CQ.')]
