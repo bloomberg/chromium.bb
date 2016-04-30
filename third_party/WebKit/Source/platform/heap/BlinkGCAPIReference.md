@@ -335,8 +335,10 @@ Specifically, if your class needs a tracing method, you need to:
 The function implementation must contain:
 
 *   For each on-heap object `m_object` in your class, a tracing call: "```visitor->trace(m_object);```".
+*   If your class has one or more weak references (`WeakMember<T>`), you have the option of
+    registering a *weak callback* for the object. See details below for how.
 *   For each base class of your class `BaseClass` that is a descendant of `GarbageCollected<T>` or
-    `GarbageCollectedMixin`, delegation call to base class: "```BaseClass::trace(visitor);```"
+    `GarbageCollectedMixin`, a delegation call to base class: "```BaseClass::trace(visitor);```"
 
 It is recommended that the delegation call, if any, is put at the end of a tracing method.
 
@@ -381,5 +383,44 @@ DEFINE_TRACE(C)
     B::trace(visitor); // Delegate to the parent. In this case it's empty, but this is required.
 }
 ```
+
+Given that the class `C` above contained a `WeakMember<Y>` field, you could alternatively
+register a *weak callback* in the trace method, and have it be invoked after the marking
+phase:
+
+```c++
+
+void C::clearWeakMembers(Visitor* visitor)
+{
+    if (ThreadHeap::isHeapObjectAlive(m_y))
+        return;
+
+    // |m_y| is not referred to by anyone else, clear the weak
+    // reference along with updating state / clearing any other
+    // resources at the same time. None of those operations are
+    // allowed to perform heap allocations:
+    m_y->detach();
+
+    // Note: if the weak callback merely clears the weak reference,
+    // it is much simpler to just |trace| the field rather than
+    // install a custom weak callback.
+    m_y = nullptr;
+}
+
+DEFINE_TRACE(C)
+{
+    visitor->template registerWeakMembers<C, &C::clearWeakMembers>(this);
+    visitor->trace(m_x);
+    visitor->trace(m_z); // Heap collection does, too.
+    B::trace(visitor); // Delegate to the parent. In this case it's empty, but this is required.
+}
+```
+
+Please notice that if the object (of type `C`) is also not reachable, its `trace` method
+will not be invoked and any follow-on weak processing will not be done. Hence, if the
+object must always perform some operation when the weak reference is cleared, that
+needs to (also) happen during finalization.
+
+Weak callbacks have so far seen little use in Blink, but a mechanism that's available.
 
 ## Heap collections
