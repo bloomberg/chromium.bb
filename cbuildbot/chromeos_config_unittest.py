@@ -750,7 +750,7 @@ class CBuildBotTest(GenerateChromeosConfigTestBase):
         else:
           expected = 12 * 60 * 60
       else:
-        expected = 4 * 60 * 60
+        expected = (4 * 60 + 30) * 60
 
       self.assertEqual(
           config.build_timeout, expected,

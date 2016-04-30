@@ -320,7 +320,7 @@ class HWTestConfig(object):
   # Chromite code doesn't distinguish "timeout for Autotest" from
   # timeout in the builder.  This is WRONG WRONG WRONG.  But, until
   # there's a better fix, we'll allow these phases hours to fail.
-  ASYNC_HW_TEST_TIMEOUT = int(220.0 * _MINUTE)
+  ASYNC_HW_TEST_TIMEOUT = int(250.0 * _MINUTE)
 
   def __init__(self, suite, num=constants.HWTEST_DEFAULT_NUM,
                pool=constants.HWTEST_MACH_POOL, timeout=SHARED_HW_TEST_TIMEOUT,
@@ -400,7 +400,7 @@ def DefaultSettings():
       important=False,
 
       # Timeout for the build as a whole (in seconds).
-      build_timeout=4 * 60 * 60,
+      build_timeout=(4 * 60 + 30) * 60,
 
       # An integer. If this builder fails this many times consecutively, send
       # an alert email to the recipients health_alert_recipients. This does
