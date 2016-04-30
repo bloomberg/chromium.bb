@@ -191,22 +191,19 @@ bool BrowserAccessibility::IsPreviousSiblingOnSameLine() const {
   if (!previous_sibling)
     return false;
 
-  const BrowserAccessibility* text_object = this;
-  while (!text_object->IsTextOnlyObject()) {
-    // If we don't find a text object, then sibling cannot be on the same line.
-    if (!text_object->InternalChildCount())
-      return false;
-    text_object = text_object->InternalGetChild(0);
-  }
+  // Line linkage information might not be provided on non-leaf objects.
+  const BrowserAccessibility* leaf_object = PlatformDeepestFirstChild();
+  if (!leaf_object)
+    leaf_object = this;
 
   int32_t previous_on_line_id;
-  if (text_object->GetIntAttribute(ui::AX_ATTR_PREVIOUS_ON_LINE_ID,
+  if (leaf_object->GetIntAttribute(ui::AX_ATTR_PREVIOUS_ON_LINE_ID,
                                    &previous_on_line_id)) {
     const BrowserAccessibility* previous_on_line =
         manager()->GetFromID(previous_on_line_id);
-    // In the case of static text objects, the object designated to be the
-    // previous object on this line might be a child of the previous sibling,
-    // i.e. the last inline text box of the previous static text object.
+    // In the case of a static text sibling, the object designated to be the
+    // previous object on this line might be one of its children, i.e. the last
+    // inline text box.
     return previous_on_line &&
            previous_on_line->IsDescendantOf(previous_sibling);
   }
@@ -218,22 +215,19 @@ bool BrowserAccessibility::IsNextSiblingOnSameLine() const {
   if (!next_sibling)
     return false;
 
-  const BrowserAccessibility* text_object = this;
-  while (!text_object->IsTextOnlyObject()) {
-    // If we don't find a text object, then sibling cannot be on the same line.
-    if (!text_object->InternalChildCount())
-      return false;
-    text_object = text_object->InternalGetChild(0);
-  }
+  // Line linkage information might not be provided on non-leaf objects.
+  const BrowserAccessibility* leaf_object = PlatformDeepestLastChild();
+  if (!leaf_object)
+    leaf_object = this;
 
   int32_t next_on_line_id;
-  if (text_object->GetIntAttribute(ui::AX_ATTR_NEXT_ON_LINE_ID,
+  if (leaf_object->GetIntAttribute(ui::AX_ATTR_NEXT_ON_LINE_ID,
                                    &next_on_line_id)) {
     const BrowserAccessibility* next_on_line =
         manager()->GetFromID(next_on_line_id);
-    // In the case of static text objects, the object designated to be the next
-    // object on this line might be a child of the next sibling, i.e. the first
-    // inline text box of the next static text object.
+    // In the case of a static text sibling, the object designated to be the
+    // next object on this line might be one of its children, i.e. the last
+    // inline text box.
     return next_on_line && next_on_line->IsDescendantOf(next_sibling);
   }
   return false;

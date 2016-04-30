@@ -403,18 +403,13 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
         src.keyboardShortcut().utf8());
   }
 
-  if (dst->role == ui::AX_ROLE_STATIC_TEXT ||
-      dst->role == ui::AX_ROLE_LINE_BREAK ||
-      dst->role == ui::AX_ROLE_INLINE_TEXT_BOX) {
-    if (!src.nextOnLine().isDetached()) {
-      dst->AddIntAttribute(ui::AX_ATTR_NEXT_ON_LINE_ID,
-                           src.nextOnLine().axID());
-    }
+  if (!src.nextOnLine().isDetached()) {
+    dst->AddIntAttribute(ui::AX_ATTR_NEXT_ON_LINE_ID, src.nextOnLine().axID());
+  }
 
-    if (!src.previousOnLine().isDetached()) {
-      dst->AddIntAttribute(ui::AX_ATTR_PREVIOUS_ON_LINE_ID,
-                           src.previousOnLine().axID());
-    }
+  if (!src.previousOnLine().isDetached()) {
+    dst->AddIntAttribute(ui::AX_ATTR_PREVIOUS_ON_LINE_ID,
+                         src.previousOnLine().axID());
   }
 
   if (!src.ariaActiveDescendant().isDetached()) {

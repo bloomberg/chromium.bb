@@ -17,6 +17,10 @@ jumps over the lazy <b id="dog">dog</b>.
     </div>
 </div>
 
+<p id="paragraphWithLink">
+    Paragraph with <a href="#">link</a>
+</p>
+
 <script>
 test(function(t)
 {
@@ -89,8 +93,28 @@ test(function(t)
     }
 }, 'Test |nextOnLine| and |previousOnLine| for |AXLayoutObject|.');
 
+test(function(t)
+{
+    var axObj = accessibilityController.accessibleElementById('paragraphWithLink');
+    // There should be one static text child and a link in this paragraph.
+    assert_equals(axObj.childrenCount, 2);
+    axObj = axObj.childAtIndex(0);
+    assert_equals(axObj.role, 'AXRole: AXStaticText');
+
+    var lineText = [];
+    lineText.push(axObj.name);
+    axObj = axObj.nextOnLine();
+    assert_equals(axObj.role, 'AXRole: AXInlineTextBox');
+    lineText.push(axObj.name);
+    axObj = axObj.previousOnLine();
+    assert_equals(axObj.role, 'AXRole: AXInlineTextBox');
+    lineText.push(axObj.name);
+    assert_array_equals(lineText, ['Paragraph with ', 'link', 'Paragraph with ']);
+}, 'Test |nextOnLine| and |previousOnLine| for paragraphs with links.');
+
 if (window.testRunner) {
     document.getElementById('paragraph').style.display = 'none';
     document.getElementById('contentEditable').style.display = 'none';
+    document.getElementById('paragraphWithLink').style.display = 'none';
 }
 </script>
