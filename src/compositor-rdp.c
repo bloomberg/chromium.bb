@@ -42,15 +42,24 @@
 #define FREERDP_VERSION_NUMBER ((FREERDP_VERSION_MAJOR * 0x10000) + \
 		(FREERDP_VERSION_MINOR * 0x100) + FREERDP_VERSION_REVISION)
 
+
 #if FREERDP_VERSION_NUMBER >= 0x10201
 #define HAVE_SKIP_COMPRESSION
 #endif
 
 #if FREERDP_VERSION_NUMBER < 0x10202
-#define FREERDP_CB_RET_TYPE void
-#define FREERDP_CB_RETURN(V) return
+#	define FREERDP_CB_RET_TYPE void
+#	define FREERDP_CB_RETURN(V) return
+#	define NSC_RESET(C, W, H)
+#	define RFX_RESET(C, W, H) do { rfx_context_reset(C); C->width = W; C->height = H; } while(0)
 #else
-#define HAVE_NSC_RESET
+#if FREERDP_VERSION_MAJOR >= 2
+#	define NSC_RESET(C, W, H) nsc_context_reset(C, W, H)
+#	define RFX_RESET(C, W, H) rfx_context_reset(C, W, H)
+#else
+#	define NSC_RESET(C, W, H) do { nsc_context_reset(C); C->width = W; C->height = H; } while(0)
+#	define RFX_RESET(C, W, H) do { rfx_context_reset(C); C->width = W; C->height = H; } while(0)
+#endif
 #define FREERDP_CB_RET_TYPE BOOL
 #define FREERDP_CB_RETURN(V) return TRUE
 #endif
@@ -795,6 +804,7 @@ xf_peer_activate(freerdp_peer* client)
 	struct xkb_context *xkbContext;
 	struct xkb_rule_names xkbRuleNames;
 	struct xkb_keymap *keymap;
+	struct weston_output *weston_output;
 	int i;
 	pixman_box32_t box;
 	pixman_region32_t damage;
@@ -843,10 +853,9 @@ xf_peer_activate(freerdp_peer* client)
 		}
 	}
 
-	rfx_context_reset(peerCtx->rfx_context);
-#ifdef HAVE_NSC_RESET
-	nsc_context_reset(peerCtx->nsc_context);
-#endif
+	weston_output = &output->base;
+	RFX_RESET(peerCtx->rfx_context, weston_output->width, weston_output->height);
+	NSC_RESET(peerCtx->nsc_context, weston_output->width, weston_output->height);
 
 	if (peersItem->flags & RDP_PEER_ACTIVATED)
 		return TRUE;
