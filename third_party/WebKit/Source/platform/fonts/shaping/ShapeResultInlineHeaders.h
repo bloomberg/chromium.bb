@@ -84,11 +84,6 @@ public:
     void setGlyphAndPositions(unsigned index, uint16_t glyphId, float advance,
         float offsetX, float offsetY);
 
-    void addAdvance(unsigned index, float advance)
-    {
-        m_glyphData[index].advance += advance;
-    }
-
     size_t glyphToCharacterIndex(size_t i) const
     {
         return m_startIndex + m_glyphData[i].characterIndex;
