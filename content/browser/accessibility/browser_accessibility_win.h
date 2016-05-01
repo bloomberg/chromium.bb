@@ -888,8 +888,8 @@ BrowserAccessibilityWin
   // Updates object attributes of IA2 with html attributes.
   void UpdateRequiredAttributes();
 
-  // Updates the IA2 text style attributes.
-  void UpdateTextAttributes();
+  // Fire a Windows-specific accessibility event notification on this node.
+  void FireNativeEvent(LONG win_event_type) const;
 
   struct WinAttributes {
     WinAttributes();

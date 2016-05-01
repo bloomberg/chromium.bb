@@ -50,6 +50,7 @@ ui::AXTreeUpdate
 }
 
 void BrowserAccessibilityManagerAuraLinux::NotifyAccessibilityEvent(
+    BrowserAccessibilityEvent::Source source,
     ui::AXEvent event_type,
     BrowserAccessibility* node) {
   // TODO(shreeram.k) : Implement.

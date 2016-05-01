@@ -65,7 +65,10 @@ bool BrowserAccessibilityAndroid::IsNative() const {
 }
 
 void BrowserAccessibilityAndroid::OnLocationChanged() {
-  manager()->NotifyAccessibilityEvent(ui::AX_EVENT_LOCATION_CHANGED, this);
+  manager()->NotifyAccessibilityEvent(
+      BrowserAccessibilityEvent::FromTreeChange,
+      ui::AX_EVENT_LOCATION_CHANGED,
+      this);
 }
 
 base::string16 BrowserAccessibilityAndroid::GetValue() const {
@@ -1373,8 +1376,12 @@ void BrowserAccessibilityAndroid::OnDataChanged() {
     }
   }
 
-  if (GetRole() == ui::AX_ROLE_ALERT && first_time_)
-    manager()->NotifyAccessibilityEvent(ui::AX_EVENT_ALERT, this);
+  if (GetRole() == ui::AX_ROLE_ALERT && first_time_) {
+    manager()->NotifyAccessibilityEvent(
+        BrowserAccessibilityEvent::FromTreeChange,
+        ui::AX_EVENT_ALERT,
+        this);
+  }
 
   base::string16 live;
   if (GetString16Attribute(
@@ -1394,8 +1401,10 @@ void BrowserAccessibilityAndroid::NotifyLiveRegionUpdate(
   base::string16 text = GetText();
   if (cached_text_ != text) {
     if (!text.empty()) {
-      manager()->NotifyAccessibilityEvent(ui::AX_EVENT_SHOW,
-                                         this);
+      manager()->NotifyAccessibilityEvent(
+          BrowserAccessibilityEvent::FromTreeChange,
+          ui::AX_EVENT_SHOW,
+          this);
     }
     cached_text_ = text;
   }

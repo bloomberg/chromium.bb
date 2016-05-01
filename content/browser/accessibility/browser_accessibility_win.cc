@@ -16,6 +16,7 @@
 #include "base/win/enum_variant.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/windows_version.h"
+#include "content/browser/accessibility/browser_accessibility_event_win.h"
 #include "content/browser/accessibility/browser_accessibility_manager_win.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/common/accessibility_messages.h"
@@ -3493,31 +3494,31 @@ void BrowserAccessibilityWin::UpdateStep2ComputeHypertext() {
 }
 
 void BrowserAccessibilityWin::UpdateStep3FireEvents(bool is_subtree_creation) {
-  BrowserAccessibilityManagerWin* manager =
-      this->manager()->ToBrowserAccessibilityManagerWin();
-
   // Fire an event when an alert first appears.
   if (ia_role() == ROLE_SYSTEM_ALERT &&
       old_win_attributes_->ia_role != ROLE_SYSTEM_ALERT) {
-    manager->NotifyAccessibilityEvent(ui::AX_EVENT_ALERT, this);
+    BrowserAccessibilityEvent::Create(
+        BrowserAccessibilityEvent::FromTreeChange,
+        ui::AX_EVENT_ALERT,
+        this)->Fire();
   }
 
   // Fire an event when a new subtree is created.
   if (is_subtree_creation)
-    manager->MaybeCallNotifyWinEvent(EVENT_OBJECT_SHOW, this);
+    FireNativeEvent(EVENT_OBJECT_SHOW);
 
   // The rest of the events only fire on changes, not on new objects.
   if (old_win_attributes_->ia_role != 0 ||
       !old_win_attributes_->role_name.empty()) {
     // Fire an event if the name, description, help, or value changes.
     if (name() != old_win_attributes_->name)
-      manager->MaybeCallNotifyWinEvent(EVENT_OBJECT_NAMECHANGE, this);
+      FireNativeEvent(EVENT_OBJECT_NAMECHANGE);
     if (description() != old_win_attributes_->description)
-      manager->MaybeCallNotifyWinEvent(EVENT_OBJECT_DESCRIPTIONCHANGE, this);
+      FireNativeEvent(EVENT_OBJECT_DESCRIPTIONCHANGE);
     if (value() != old_win_attributes_->value)
-      manager->MaybeCallNotifyWinEvent(EVENT_OBJECT_VALUECHANGE, this);
+      FireNativeEvent(EVENT_OBJECT_VALUECHANGE);
     if (ia_state() != old_win_attributes_->ia_state)
-      manager->MaybeCallNotifyWinEvent(EVENT_OBJECT_STATECHANGE, this);
+      FireNativeEvent(EVENT_OBJECT_STATECHANGE);
 
     // Normally focus events are handled elsewhere, however
     // focus for managed descendants is platform-specific.
@@ -3528,7 +3529,7 @@ void BrowserAccessibilityWin::UpdateStep3FireEvents(bool is_subtree_creation) {
         (ia_state() & STATE_SYSTEM_SELECTABLE) &&
         (ia_state() & STATE_SYSTEM_FOCUSED) &&
         !(old_win_attributes_->ia_state & STATE_SYSTEM_FOCUSED)) {
-      manager->MaybeCallNotifyWinEvent(EVENT_OBJECT_FOCUS, this);
+      FireNativeEvent(EVENT_OBJECT_FOCUS);
     }
 
     // Handle selection being added or removed.
@@ -3543,13 +3544,13 @@ void BrowserAccessibilityWin::UpdateStep3FireEvents(bool is_subtree_creation) {
       if (multiselect) {
         // In a multi-select box, fire SELECTIONADD and SELECTIONREMOVE events.
         if (is_selected_now && !was_selected_before) {
-          manager->MaybeCallNotifyWinEvent(EVENT_OBJECT_SELECTIONADD, this);
+          FireNativeEvent(EVENT_OBJECT_SELECTIONADD);
         } else if (!is_selected_now && was_selected_before) {
-          manager->MaybeCallNotifyWinEvent(EVENT_OBJECT_SELECTIONREMOVE, this);
+          FireNativeEvent(EVENT_OBJECT_SELECTIONREMOVE);
         }
       } else if (is_selected_now && !was_selected_before) {
         // In a single-select box, only fire SELECTION events.
-        manager->MaybeCallNotifyWinEvent(EVENT_OBJECT_SELECTION, this);
+        FireNativeEvent(EVENT_OBJECT_SELECTION);
       }
     }
 
@@ -3559,7 +3560,7 @@ void BrowserAccessibilityWin::UpdateStep3FireEvents(bool is_subtree_creation) {
     if (GetIntAttribute(ui::AX_ATTR_SCROLL_X, &sx) &&
         GetIntAttribute(ui::AX_ATTR_SCROLL_Y, &sy)) {
       if (sx != previous_scroll_x_ || sy != previous_scroll_y_)
-        manager->MaybeCallNotifyWinEvent(EVENT_SYSTEM_SCROLLINGEND, this);
+        FireNativeEvent(EVENT_SYSTEM_SCROLLINGEND);
       previous_scroll_x_ = sx;
       previous_scroll_y_ = sy;
     }
@@ -3570,12 +3571,12 @@ void BrowserAccessibilityWin::UpdateStep3FireEvents(bool is_subtree_creation) {
     if (old_len > 0) {
       // In-process screen readers may call IAccessibleText::get_oldText
       // in reaction to this event to retrieve the text that was removed.
-      manager->MaybeCallNotifyWinEvent(IA2_EVENT_TEXT_REMOVED, this);
+      FireNativeEvent(IA2_EVENT_TEXT_REMOVED);
     }
     if (new_len > 0) {
       // In-process screen readers may call IAccessibleText::get_newText
       // in reaction to this event to retrieve the text that was inserted.
-      manager->MaybeCallNotifyWinEvent(IA2_EVENT_TEXT_INSERTED, this);
+      FireNativeEvent(IA2_EVENT_TEXT_INSERTED);
     }
 
     // Changing a static text node can affect the IAccessibleText hypertext
@@ -3597,8 +3598,7 @@ void BrowserAccessibilityWin::UpdatePlatformAttributes() {
 }
 
 void BrowserAccessibilityWin::OnSubtreeWillBeDeleted() {
-  manager()->ToBrowserAccessibilityManagerWin()->MaybeCallNotifyWinEvent(
-      EVENT_OBJECT_HIDE, this);
+  FireNativeEvent(EVENT_OBJECT_HIDE);
 }
 
 void BrowserAccessibilityWin::NativeAddReference() {
@@ -3614,8 +3614,7 @@ bool BrowserAccessibilityWin::IsNative() const {
 }
 
 void BrowserAccessibilityWin::OnLocationChanged() {
-  manager()->ToBrowserAccessibilityManagerWin()->MaybeCallNotifyWinEvent(
-      EVENT_OBJECT_LOCATIONCHANGE, this);
+  FireNativeEvent(EVENT_OBJECT_LOCATIONCHANGE);
 }
 
 std::vector<base::string16> BrowserAccessibilityWin::ComputeTextAttributes()
@@ -4392,6 +4391,14 @@ void BrowserAccessibilityWin::UpdateRequiredAttributes() {
     SanitizeStringAttributeForIA2(type, &type);
     win_attributes_->ia2_attributes.push_back(L"text-input-type:" + type);
   }
+}
+
+void BrowserAccessibilityWin::FireNativeEvent(LONG win_event_type) const {
+  (new BrowserAccessibilityEventWin(
+      BrowserAccessibilityEvent::FromTreeChange,
+      ui::AX_EVENT_NONE,
+      win_event_type,
+      this))->Fire();
 }
 
 void BrowserAccessibilityWin::InitRoleAndState() {

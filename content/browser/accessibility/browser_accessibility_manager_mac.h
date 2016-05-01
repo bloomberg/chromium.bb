@@ -35,8 +35,10 @@ class CONTENT_EXPORT BrowserAccessibilityManagerMac
   BrowserAccessibility* GetFocus() override;
 
   // Implementation of BrowserAccessibilityManager.
-  void NotifyAccessibilityEvent(ui::AXEvent event_type,
-                                BrowserAccessibility* node) override;
+  void NotifyAccessibilityEvent(
+      BrowserAccessibilityEvent::Source source,
+      ui::AXEvent event_type,
+      BrowserAccessibility* node) override;
 
   void OnAccessibilityEvents(
       const std::vector<AXEventNotificationDetails>& details) override;

@@ -141,6 +141,7 @@ BrowserAccessibility* BrowserAccessibilityManagerMac::GetFocus() {
 }
 
 void BrowserAccessibilityManagerMac::NotifyAccessibilityEvent(
+    BrowserAccessibilityEvent::Source source,
     ui::AXEvent event_type,
     BrowserAccessibility* node) {
   if (!node->IsNative())
@@ -393,7 +394,10 @@ void BrowserAccessibilityManagerMac::OnAtomicUpdateFinished(
       static_cast<BrowserAccessibilityMac*>(GetRoot());
   if (root) {
     root->RecreateNativeObject();
-    NotifyAccessibilityEvent(ui::AX_EVENT_CHILDREN_CHANGED, root);
+    NotifyAccessibilityEvent(
+        BrowserAccessibilityEvent::FromTreeChange,
+        ui::AX_EVENT_CHILDREN_CHANGED,
+        root);
   }
 }
 

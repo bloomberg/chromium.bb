@@ -193,6 +193,7 @@ bool BrowserAccessibilityManagerAndroid::ShouldExposePasswordText() {
 }
 
 void BrowserAccessibilityManagerAndroid::NotifyAccessibilityEvent(
+    BrowserAccessibilityEvent::Source source,
     ui::AXEvent event_type,
     BrowserAccessibility* node) {
   JNIEnv* env = AttachCurrentThread();

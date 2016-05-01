@@ -15,6 +15,7 @@
 #include "ui/accessibility/platform/ax_platform_node_win.h"
 
 namespace content {
+class BrowserAccessibilityEventWin;
 class BrowserAccessibilityWin;
 
 // Manages a tree of BrowserAccessibilityWin objects.
@@ -37,18 +38,21 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
   // The IAccessible for the parent window.
   IAccessible* GetParentIAccessible();
 
-  // Calls NotifyWinEvent if the parent window's IAccessible pointer is known.
-  void MaybeCallNotifyWinEvent(DWORD event, BrowserAccessibility* node);
-
   // IAccessible2UsageObserver
   void OnIAccessible2Used() override;
 
   // BrowserAccessibilityManager methods
   void UserIsReloading() override;
   void NotifyAccessibilityEvent(
-      ui::AXEvent event_type, BrowserAccessibility* node) override;
+      BrowserAccessibilityEvent::Source source,
+      ui::AXEvent event_type,
+      BrowserAccessibility* node) override;
+  BrowserAccessibilityEvent::Result
+      FireWinAccessibilityEvent(BrowserAccessibilityEventWin* event);
   bool CanFireEvents() override;
-  void FireFocusEvent(BrowserAccessibility* node) override;
+  void FireFocusEvent(
+      BrowserAccessibilityEvent::Source source,
+      BrowserAccessibility* node) override;
 
   // Track this object and post a VISIBLE_DATA_CHANGED notification when
   // its container scrolls.

@@ -725,7 +725,10 @@ BrowserAccessibility* BrowserAccessibility::BrowserAccessibilityForPoint(
 
 void BrowserAccessibility::Destroy() {
   // Allow the object to fire a TextRemoved notification.
-  manager_->NotifyAccessibilityEvent(ui::AX_EVENT_HIDE, this);
+  manager()->NotifyAccessibilityEvent(
+      BrowserAccessibilityEvent::FromTreeChange,
+      ui::AX_EVENT_HIDE,
+      this);
   node_ = NULL;
   manager_ = NULL;
 

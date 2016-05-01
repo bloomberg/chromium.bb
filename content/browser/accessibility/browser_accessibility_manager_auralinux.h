@@ -28,8 +28,10 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAuraLinux
   static ui::AXTreeUpdate GetEmptyDocument();
 
   // Implementation BrowserAccessibilityManager methods
-  void NotifyAccessibilityEvent(ui::AXEvent event_type,
-                                BrowserAccessibility* node) override;
+  void NotifyAccessibilityEvent(
+      BrowserAccessibilityEvent::Source source,
+      ui::AXEvent event_type,
+      BrowserAccessibility* node) override;
 
   AtkObject* parent_object() { return parent_object_; }
 

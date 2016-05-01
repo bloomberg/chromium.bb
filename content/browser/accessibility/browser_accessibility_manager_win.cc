@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/windows_version.h"
+#include "content/browser/accessibility/browser_accessibility_event_win.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/accessibility/browser_accessibility_win.h"
 #include "content/browser/renderer_host/legacy_render_widget_host_win.h"
@@ -88,144 +89,112 @@ IAccessible* BrowserAccessibilityManagerWin::GetParentIAccessible() {
   return delegate->AccessibilityGetNativeViewAccessible();
 }
 
-void BrowserAccessibilityManagerWin::MaybeCallNotifyWinEvent(
-    DWORD event, BrowserAccessibility* node) {
-  BrowserAccessibilityDelegate* delegate =
-      node->manager()->GetDelegateFromRootManager();
-  if (!delegate) {
-    // This line and other LOG(WARNING) lines are temporary, to debug
-    // flaky failures in DumpAccessibilityEvent* tests.
-    // http://crbug.com/440579
-    DLOG(WARNING) << "Not firing AX event because of no delegate";
-    return;
-  }
-
-  if (!node->IsNative())
-    return;
-
-  HWND hwnd = delegate->AccessibilityGetAcceleratedWidget();
-  if (!hwnd) {
-    DLOG(WARNING) << "Not firing AX event because of no hwnd";
-    return;
-  }
-
-  // Inline text boxes are an internal implementation detail, we don't
-  // expose them to Windows.
-  if (node->GetRole() == ui::AX_ROLE_INLINE_TEXT_BOX)
-    return;
-
-  // It doesn't make sense to fire a REORDER event on a leaf node; that
-  // happens when the node has internal children line inline text boxes.
-  if (event == EVENT_OBJECT_REORDER && node->PlatformChildCount() == 0)
-    return;
-
-  // Pass the negation of this node's unique id in the |child_id|
-  // argument to NotifyWinEvent; the AT client will then call get_accChild
-  // on the HWND's accessibility object and pass it that same id, which
-  // we can use to retrieve the IAccessible for this node.
-  LONG child_id = -node->unique_id();
-  ::NotifyWinEvent(event, hwnd, OBJID_CLIENT, child_id);
-}
-
 void BrowserAccessibilityManagerWin::OnIAccessible2Used() {
   BrowserAccessibilityStateImpl::GetInstance()->OnScreenReaderDetected();
 }
 
 void BrowserAccessibilityManagerWin::UserIsReloading() {
-  if (GetRoot())
-    MaybeCallNotifyWinEvent(IA2_EVENT_DOCUMENT_RELOAD, GetRoot());
+  if (GetRoot()) {
+    (new BrowserAccessibilityEventWin(
+        BrowserAccessibilityEvent::FromRenderFrameHost,
+        ui::AX_EVENT_NONE,
+        IA2_EVENT_DOCUMENT_RELOAD,
+        GetRoot()))->Fire();
+  }
 }
 
 void BrowserAccessibilityManagerWin::NotifyAccessibilityEvent(
+    BrowserAccessibilityEvent::Source source,
     ui::AXEvent event_type,
     BrowserAccessibility* node) {
-  BrowserAccessibilityDelegate* root_delegate = GetDelegateFromRootManager();
-  if (!root_delegate || !root_delegate->AccessibilityGetAcceleratedWidget()) {
-    DLOG(WARNING) << "Not firing AX event because of no root_delegate or hwnd";
-    return;
+  if (event_type == ui::AX_EVENT_BLUR) {
+    // Equivalent to focus on the root.
+    event_type = ui::AX_EVENT_FOCUS;
+    node = GetRoot();
   }
+
+  if (event_type == ui::AX_EVENT_DOCUMENT_SELECTION_CHANGED) {
+    // Fire the event on the object where the focus of the selection is.
+    int32_t focus_id = GetTreeData().sel_focus_object_id;
+    BrowserAccessibility* focus_object = GetFromID(focus_id);
+    if (focus_object) {
+      (new BrowserAccessibilityEventWin(
+          source,
+          ui::AX_EVENT_NONE,
+          IA2_EVENT_TEXT_CARET_MOVED,
+          focus_object))->Fire();
+      return;
+    }
+  }
+
+  BrowserAccessibilityManager::NotifyAccessibilityEvent(
+      source, event_type, node);
+}
+
+BrowserAccessibilityEvent::Result
+    BrowserAccessibilityManagerWin::FireWinAccessibilityEvent(
+        BrowserAccessibilityEventWin* event) {
+  const BrowserAccessibility* target = event->target();
+  ui::AXEvent event_type = event->event_type();
+  LONG win_event_type = event->win_event_type();
+
+  BrowserAccessibilityDelegate* root_delegate = GetDelegateFromRootManager();
+  if (!root_delegate)
+    return BrowserAccessibilityEvent::FailedBecauseFrameIsDetached;
+
+  HWND hwnd = root_delegate->AccessibilityGetAcceleratedWidget();
+  if (!hwnd)
+    return BrowserAccessibilityEvent::FailedBecauseNoWindow;
 
   // Don't fire events when this document might be stale as the user has
   // started navigating to a new document.
   if (user_is_navigating_away_)
-    return;
+    return BrowserAccessibilityEvent::DiscardedBecauseUserNavigatingAway;
 
   // Inline text boxes are an internal implementation detail, we don't
   // expose them to Windows.
-  if (node->GetRole() == ui::AX_ROLE_INLINE_TEXT_BOX)
-    return;
+  if (target->GetRole() == ui::AX_ROLE_INLINE_TEXT_BOX)
+    return BrowserAccessibilityEvent::NotNeededOnThisPlatform;
 
-  LONG event_id = EVENT_MIN;
-  switch (event_type) {
-    case ui::AX_EVENT_ACTIVEDESCENDANTCHANGED:
-      event_id = IA2_EVENT_ACTIVE_DESCENDANT_CHANGED;
-      break;
-    case ui::AX_EVENT_ALERT:
-      event_id = EVENT_SYSTEM_ALERT;
-      break;
-    case ui::AX_EVENT_AUTOCORRECTION_OCCURED:
-      event_id = IA2_EVENT_OBJECT_ATTRIBUTE_CHANGED;
-      break;
-    case ui::AX_EVENT_BLUR:
-      // Equivalent to focus on the root.
-      event_id = EVENT_OBJECT_FOCUS;
-      node = GetRoot();
-      break;
-    case ui::AX_EVENT_CHILDREN_CHANGED:
-      event_id = EVENT_OBJECT_REORDER;
-      break;
-    case ui::AX_EVENT_FOCUS:
-      event_id = EVENT_OBJECT_FOCUS;
-      break;
-    case ui::AX_EVENT_LIVE_REGION_CHANGED:
-      if (node->GetBoolAttribute(ui::AX_ATTR_CONTAINER_LIVE_BUSY))
-        return;
-      event_id = EVENT_OBJECT_LIVEREGIONCHANGED;
-      break;
-    case ui::AX_EVENT_LOAD_COMPLETE:
-      event_id = IA2_EVENT_DOCUMENT_LOAD_COMPLETE;
-      break;
-    case ui::AX_EVENT_SCROLL_POSITION_CHANGED:
-      event_id = EVENT_SYSTEM_SCROLLINGEND;
-      break;
-    case ui::AX_EVENT_SCROLLED_TO_ANCHOR:
-      event_id = EVENT_SYSTEM_SCROLLINGSTART;
-      break;
-    case ui::AX_EVENT_SELECTED_CHILDREN_CHANGED:
-      event_id = EVENT_OBJECT_SELECTIONWITHIN;
-      break;
-    case ui::AX_EVENT_DOCUMENT_SELECTION_CHANGED: {
-      // Fire the event on the object where the focus of the selection is.
-      int32_t focus_id = GetTreeData().sel_focus_object_id;
-      BrowserAccessibility* focus_object = GetFromID(focus_id);
-      if (focus_object)
-        node = focus_object;
-      event_id = IA2_EVENT_TEXT_CARET_MOVED;
-      break;
-    }
-    default:
-      // Not all WebKit accessibility events result in a Windows
-      // accessibility notification.
-      break;
+  if (event_type == ui::AX_EVENT_LIVE_REGION_CHANGED &&
+      target->GetBoolAttribute(ui::AX_ATTR_CONTAINER_LIVE_BUSY))
+    return BrowserAccessibilityEvent::DiscardedBecauseLiveRegionBusy;
+
+  if (!target)
+    return BrowserAccessibilityEvent::FailedBecauseNoFocus;
+
+  event->set_target(target);
+
+  // It doesn't make sense to fire a REORDER event on a leaf node; that
+  // happens when the target has internal children inline text boxes.
+  if (win_event_type == EVENT_OBJECT_REORDER &&
+      target->PlatformChildCount() == 0) {
+    return BrowserAccessibilityEvent::NotNeededOnThisPlatform;
   }
 
-  if (!node)
-    return;
-
-  if (event_id != EVENT_MIN)
-    MaybeCallNotifyWinEvent(event_id, node);
+  // Pass the negation of this node's unique id in the |child_id|
+  // argument to NotifyWinEvent; the AT client will then call get_accChild
+  // on the HWND's accessibility object and pass it that same id, which
+  // we can use to retrieve the IAccessible for this node.
+  LONG child_id = -target->unique_id();
+  ::NotifyWinEvent(win_event_type, hwnd, OBJID_CLIENT, child_id);
 
   // If this is a layout complete notification (sent when a container scrolls)
   // and there is a descendant tracked object, send a notification on it.
   // TODO(dmazzoni): remove once http://crbug.com/113483 is fixed.
   if (event_type == ui::AX_EVENT_LAYOUT_COMPLETE &&
       tracked_scroll_object_ &&
-      tracked_scroll_object_->IsDescendantOf(node)) {
-    MaybeCallNotifyWinEvent(
-        IA2_EVENT_VISIBLE_DATA_CHANGED, tracked_scroll_object_);
+      tracked_scroll_object_->IsDescendantOf(target)) {
+    (new BrowserAccessibilityEventWin(
+        BrowserAccessibilityEvent::FromScroll,
+        ui::AX_EVENT_NONE,
+        IA2_EVENT_VISIBLE_DATA_CHANGED,
+        tracked_scroll_object_))->Fire();
     tracked_scroll_object_->Release();
     tracked_scroll_object_ = NULL;
   }
+
+  return BrowserAccessibilityEvent::Sent;
 }
 
 bool BrowserAccessibilityManagerWin::CanFireEvents() {
@@ -237,15 +206,18 @@ bool BrowserAccessibilityManagerWin::CanFireEvents() {
 }
 
 void BrowserAccessibilityManagerWin::FireFocusEvent(
+    BrowserAccessibilityEvent::Source source,
     BrowserAccessibility* node) {
   // On Windows, we always fire a FOCUS event on the root of a frame before
   // firing a focus event within that frame.
   if (node->manager() != last_focused_manager_ &&
       node != node->manager()->GetRoot()) {
-    NotifyAccessibilityEvent(ui::AX_EVENT_FOCUS, node->manager()->GetRoot());
+    BrowserAccessibilityEvent::Create(source,
+                                      ui::AX_EVENT_FOCUS,
+                                      node->manager()->GetRoot())->Fire();
   }
 
-  BrowserAccessibilityManager::FireFocusEvent(node);
+  BrowserAccessibilityManager::FireFocusEvent(source, node);
 }
 
 void BrowserAccessibilityManagerWin::OnNodeCreated(ui::AXTree* tree,
