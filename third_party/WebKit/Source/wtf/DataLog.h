@@ -39,7 +39,6 @@ FilePrintStream& dataFile();
 
 WTF_EXPORT void dataLogFV(const char* format, va_list) WTF_ATTRIBUTE_PRINTF(1, 0);
 WTF_EXPORT void dataLogF(const char* format, ...) WTF_ATTRIBUTE_PRINTF(1, 2);
-WTF_EXPORT void dataLogFString(const char*);
 
 template<typename... T>
 void dataLog(const T&... values)
@@ -51,7 +50,6 @@ void dataLog(const T&... values)
 
 using WTF::dataLog;
 using WTF::dataLogF;
-using WTF::dataLogFString;
 
 #endif // DataLog_h
 

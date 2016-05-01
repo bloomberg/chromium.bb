@@ -99,10 +99,5 @@ void dataLogF(const char* format, ...)
     va_end(argList);
 }
 
-void dataLogFString(const char* str)
-{
-    dataFile().printf("%s", str);
-}
-
 } // namespace WTF
 
