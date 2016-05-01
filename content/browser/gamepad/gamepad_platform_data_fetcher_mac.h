@@ -88,6 +88,7 @@ class GamepadPlatformDataFetcherMac : public GamepadDataFetcher,
         IOHIDElementRef axis_elements[blink::WebGamepad::axesLengthCap];
         CFIndex axis_minimums[blink::WebGamepad::axesLengthCap];
         CFIndex axis_maximums[blink::WebGamepad::axesLengthCap];
+        CFIndex axis_report_sizes[blink::WebGamepad::axesLengthCap];
       } hid;
       struct {
         XboxController* device;

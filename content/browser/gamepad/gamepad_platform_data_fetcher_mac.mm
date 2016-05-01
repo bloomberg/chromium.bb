@@ -45,6 +45,18 @@ float NormalizeAxis(CFIndex value, CFIndex min, CFIndex max) {
   return (2.f * (value - min) / static_cast<float>(max - min)) - 1.f;
 }
 
+float NormalizeUInt8Axis(uint8_t value, uint8_t min, uint8_t max) {
+  return (2.f * (value - min) / static_cast<float>(max - min)) - 1.f;
+}
+
+float NormalizeUInt16Axis(uint16_t value, uint16_t min, uint16_t max) {
+  return (2.f * (value - min) / static_cast<float>(max - min)) - 1.f;
+}
+
+float NormalizeUInt32Axis(uint32_t value, uint32_t min, uint32_t max) {
+  return (2.f * (value - min) / static_cast<float>(max - min)) - 1.f;
+}
+
 // http://www.usb.org/developers/hidpage
 const uint32_t kGenericDesktopUsagePage = 0x01;
 const uint32_t kGameControlsUsagePage = 0x05;
@@ -205,10 +217,6 @@ bool GamepadPlatformDataFetcherMac::AddButtonsAndAxes(NSArray* elements,
     else if (IOHIDElementGetType(element) == kIOHIDElementTypeInput_Misc) {
       uint32_t axis_index = usage - kAxisMinimumUsageNumber;
       if (axis_index < WebGamepad::axesLengthCap) {
-        associated.hid.axis_minimums[axis_index] =
-            IOHIDElementGetLogicalMin(element);
-        associated.hid.axis_maximums[axis_index] =
-            IOHIDElementGetLogicalMax(element);
         associated.hid.axis_elements[axis_index] = element;
         pad.axesLength = std::max(pad.axesLength, axis_index + 1);
       } else {
@@ -235,10 +243,6 @@ bool GamepadPlatformDataFetcherMac::AddButtonsAndAxes(NSArray* elements,
             break;
         }
         if (next_index < WebGamepad::axesLengthCap) {
-          associated.hid.axis_minimums[next_index] =
-              IOHIDElementGetLogicalMin(element);
-          associated.hid.axis_maximums[next_index] =
-              IOHIDElementGetLogicalMax(element);
           associated.hid.axis_elements[next_index] = element;
           pad.axesLength = std::max(pad.axesLength, next_index + 1);
         }
@@ -246,6 +250,26 @@ bool GamepadPlatformDataFetcherMac::AddButtonsAndAxes(NSArray* elements,
 
       if (next_index >= WebGamepad::axesLengthCap)
         break;
+    }
+  }
+
+  for (uint32_t axis_index = 0; axis_index < pad.axesLength; ++axis_index) {
+    IOHIDElementRef element = associated.hid.axis_elements[axis_index];
+    if (element != NULL) {
+      CFIndex axis_min = IOHIDElementGetLogicalMin(element);
+      CFIndex axis_max = IOHIDElementGetLogicalMax(element);
+
+      // Some HID axes report a logical range of -1 to 0 signed, which must be
+      // interpreted as 0 to -1 unsigned for correct normalization behavior.
+      if (axis_min == -1 && axis_max == 0) {
+        axis_max = -1;
+        axis_min = 0;
+      }
+
+      associated.hid.axis_minimums[axis_index] = axis_min;
+      associated.hid.axis_maximums[axis_index] = axis_max;
+      associated.hid.axis_report_sizes[axis_index] =
+          IOHIDElementGetReportSize(element);
     }
   }
 
@@ -416,9 +440,27 @@ void GamepadPlatformDataFetcherMac::ValueChanged(IOHIDValueRef value) {
   // Find and fill in the associated axis event, if any.
   for (size_t i = 0; i < pad.axesLength; ++i) {
     if (associated.hid.axis_elements[i] == element) {
-      pad.axes[i] = NormalizeAxis(IOHIDValueGetIntegerValue(value),
-                                  associated.hid.axis_minimums[i],
-                                  associated.hid.axis_maximums[i]);
+      CFIndex axis_min = associated.hid.axis_minimums[i];
+      CFIndex axis_max = associated.hid.axis_maximums[i];
+      CFIndex axis_value = IOHIDValueGetIntegerValue(value);
+
+      if (axis_min > axis_max) {
+        // We'll need to interpret this axis as unsigned during normalization.
+        switch (associated.hid.axis_report_sizes[i]) {
+          case 8:
+            pad.axes[i] = NormalizeUInt8Axis(axis_value, axis_min, axis_max);
+            break;
+          case 16:
+            pad.axes[i] = NormalizeUInt16Axis(axis_value, axis_min, axis_max);
+            break;
+          case 32:
+            pad.axes[i] = NormalizeUInt32Axis(axis_value, axis_min, axis_max);
+            break;
+        }
+      } else {
+        pad.axes[i] = NormalizeAxis(axis_value, axis_min, axis_max);
+      }
+
       pad.timestamp = std::max(pad.timestamp, IOHIDValueGetTimeStamp(value));
       return;
     }
