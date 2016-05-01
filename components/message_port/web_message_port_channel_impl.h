@@ -6,8 +6,8 @@
 #define COMPONENTS_MESSAGE_PORT_WEB_MESSAGE_PORT_CHANNEL_IMPL_H_
 
 #include "base/macros.h"
-#include "mojo/message_pump/handle_watcher.h"
 #include "mojo/public/cpp/system/message_pipe.h"
+#include "mojo/public/cpp/system/watcher.h"
 #include "third_party/WebKit/public/platform/WebMessagePortChannel.h"
 
 namespace message_port {
@@ -30,12 +30,11 @@ class WebMessagePortChannelImpl : public blink::WebMessagePortChannel {
   bool tryGetMessage(blink::WebString* message,
                      blink::WebMessagePortChannelArray& channels) override;
 
-  void WaitForNextMessage();
   void OnMessageAvailable(MojoResult result);
 
   blink::WebMessagePortChannelClient* client_;
   mojo::ScopedMessagePipeHandle pipe_;
-  mojo::common::HandleWatcher handle_watcher_;
+  mojo::Watcher handle_watcher_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMessagePortChannelImpl);
 };

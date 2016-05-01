@@ -165,7 +165,6 @@
         '../base/base.gyp:base',
         '../gin/gin.gyp:gin',
         '../v8/src/v8.gyp:v8',
-        'mojo_public.gyp:mojo_message_pump_lib',
       ],
       'export_dependent_settings': [
         '../base/base.gyp:base',

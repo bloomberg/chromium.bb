@@ -25,7 +25,6 @@ include_rules = [
   "+content/public/common",
   "+content/public/test",
   "+mojo/common",
-  "+mojo/message_pump",
   "+mojo/public",
 
   # Don't allow inclusion of these other libs we shouldn't be calling directly.

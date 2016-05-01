@@ -35,7 +35,6 @@ static_library("ui_arc_unittests") {
     "//base/test:test_support",
     "//components/arc:arc_test_support",
     "//mojo/edk/system",
-    "//mojo/message_pump",
     "//ui/message_center:test_support",
   ]
 }

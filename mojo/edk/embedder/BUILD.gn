@@ -145,7 +145,6 @@ source_set("embedder_unittests") {
     "//mojo/edk/system",
     "//mojo/edk/system:test_utils",
     "//mojo/edk/test:test_support",
-    "//mojo/message_pump",
     "//testing/gtest",
   ]
 }

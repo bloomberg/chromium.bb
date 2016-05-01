@@ -9,7 +9,6 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "mojo/message_pump/message_pump_mojo.h"
 #include "mojo/public/cpp/bindings/array.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/lib/array_internal.h"
@@ -1120,7 +1119,7 @@ class SmallCacheImpl : public SmallCache {
 };
 
 TEST(UnionTest, InterfaceInUnion) {
-  base::MessageLoop message_loop(common::MessagePumpMojo::Create());
+  base::MessageLoop message_loop;
   base::RunLoop run_loop;
   SmallCacheImpl impl(run_loop.QuitClosure());
   SmallCachePtr ptr;
@@ -1135,7 +1134,7 @@ TEST(UnionTest, InterfaceInUnion) {
 }
 
 TEST(UnionTest, InterfaceInUnionSerialization) {
-  base::MessageLoop message_loop(common::MessagePumpMojo::Create());
+  base::MessageLoop message_loop;
   base::RunLoop run_loop;
   SmallCacheImpl impl(run_loop.QuitClosure());
   SmallCachePtr ptr;
@@ -1172,7 +1171,7 @@ class UnionInterfaceImpl : public UnionInterface {
 };
 
 TEST(UnionTest, UnionInInterface) {
-  base::MessageLoop run_loop(common::MessagePumpMojo::Create());
+  base::MessageLoop run_loop;
   UnionInterfaceImpl impl;
   UnionInterfacePtr ptr;
   Binding<UnionInterface> bindings(&impl, GetProxy(&ptr));

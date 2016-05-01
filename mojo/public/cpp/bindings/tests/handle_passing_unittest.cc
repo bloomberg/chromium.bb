@@ -7,7 +7,6 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "mojo/message_pump/message_pump_mojo.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
@@ -157,7 +156,7 @@ class SampleFactoryImpl : public sample::Factory {
 
 class HandlePassingTest : public testing::Test {
  public:
-  HandlePassingTest() : loop_(common::MessagePumpMojo::Create()) {}
+  HandlePassingTest() {}
 
   void TearDown() override { PumpMessages(); }
 

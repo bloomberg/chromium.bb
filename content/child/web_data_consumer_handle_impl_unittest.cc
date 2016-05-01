@@ -70,7 +70,11 @@ class ReadDataOperation : public ReadDataOperationBase {
 
   const std::string& result() const { return result_; }
 
-  void ReadMore() override { ReadData(); }
+  void ReadMore() override {
+    // We may have drained the pipe while this task was waiting to run.
+    if (reader_)
+      ReadData();
+  }
 
   void ReadData() {
     if (!client_) {
@@ -80,7 +84,6 @@ class ReadDataOperation : public ReadDataOperationBase {
 
     Result rv = kOk;
     size_t readSize = 0;
-
     while (true) {
       char buffer[16];
       rv = reader_->read(&buffer, sizeof(buffer), kNone, &readSize);
@@ -126,7 +129,9 @@ class TwoPhaseReadDataOperation : public ReadDataOperationBase {
   const std::string& result() const { return result_; }
 
   void ReadMore() override {
-    ReadData();
+    // We may have drained the pipe while this task was waiting to run.
+    if (reader_)
+      ReadData();
   }
 
   void ReadData() {

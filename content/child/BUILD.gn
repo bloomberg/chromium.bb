@@ -47,7 +47,6 @@ source_set("child") {
     "//content/common",
     "//crypto:platform",
     "//mojo/common",
-    "//mojo/message_pump",
     "//net",
     "//services/shell/public/interfaces",
     "//services/shell/runner/common",
