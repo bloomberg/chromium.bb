@@ -49,15 +49,6 @@ inline void appendByteAsHex(unsigned char byte, T& destination, HexConversionMod
 }
 
 template<typename T>
-inline void placeByteAsHexCompressIfPossible(unsigned char byte, T& destination, unsigned& index, HexConversionMode mode = Uppercase)
-{
-    const LChar* hexDigits = Internal::hexDigitsForMode(mode);
-    if (byte >= 0x10)
-        destination[index++] = hexDigits[byte >> 4];
-    destination[index++] = hexDigits[byte & 0xF];
-}
-
-template<typename T>
 inline void placeByteAsHex(unsigned char byte, T& destination, HexConversionMode mode = Uppercase)
 {
     const LChar* hexDigits = Internal::hexDigitsForMode(mode);
@@ -101,7 +92,6 @@ using WTF::appendByteAsHex;
 using WTF::appendUnsignedAsHex;
 using WTF::appendUnsignedAsHexFixedSize;
 using WTF::placeByteAsHex;
-using WTF::placeByteAsHexCompressIfPossible;
 using WTF::Lowercase;
 
 #endif // HexNumber_h
