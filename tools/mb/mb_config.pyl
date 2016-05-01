@@ -1476,17 +1476,17 @@
 
     ('swarming_gyp_asan_clang_edge_fuzzer'
          '_static_v8_heap_x86_full_symbols_release'): [
-      'swarming', 'gyp', 'asan', 'clang', 'edge', 'fuzzer', 'static', 'v8_heap',
-      'full_symbols', 'release',
+      'swarming', 'gyp', 'asan', 'clang_tot', 'edge', 'fuzzer', 'static',
+      'v8_heap', 'full_symbols', 'release',
     ],
 
     'swarming_gyp_asan_clang_fuzzer_shared_v8_heap_x86_full_symbols_release': [
-      'swarming', 'gyp', 'asan', 'clang', 'fuzzer', 'shared', 'v8_heap',
+      'swarming', 'gyp', 'asan', 'clang_tot', 'fuzzer', 'shared', 'v8_heap',
       'full_symbols', 'release',
     ],
 
     'swarming_gyp_asan_clang_fuzzer_static_v8_heap_x86_full_symbols_release': [
-      'swarming', 'gyp', 'asan', 'clang', 'fuzzer', 'static', 'v8_heap',
+      'swarming', 'gyp', 'asan', 'clang_tot', 'fuzzer', 'static', 'v8_heap',
       'full_symbols', 'release',
     ],
 
