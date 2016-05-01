@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/path_service.h"
@@ -24,6 +25,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+#if defined(OS_MACOSX)
+#include "base/mac/foundation_util.h"
+#endif
+
 namespace autofill {
 
 namespace {
@@ -35,20 +40,18 @@ const char kFieldSeparator[] = ": ";
 const char kProfileSeparator[] = "---";
 const size_t kFieldOffset = arraysize(kFieldSeparator) - 1;
 
-const ServerFieldType kProfileFieldTypes[] = {
-  NAME_FIRST,
-  NAME_MIDDLE,
-  NAME_LAST,
-  EMAIL_ADDRESS,
-  COMPANY_NAME,
-  ADDRESS_HOME_LINE1,
-  ADDRESS_HOME_LINE2,
-  ADDRESS_HOME_CITY,
-  ADDRESS_HOME_STATE,
-  ADDRESS_HOME_ZIP,
-  ADDRESS_HOME_COUNTRY,
-  PHONE_HOME_WHOLE_NUMBER
-};
+const ServerFieldType kProfileFieldTypes[] = {NAME_FIRST,
+                                              NAME_MIDDLE,
+                                              NAME_LAST,
+                                              NAME_FULL,
+                                              EMAIL_ADDRESS,
+                                              COMPANY_NAME,
+                                              ADDRESS_HOME_STREET_ADDRESS,
+                                              ADDRESS_HOME_CITY,
+                                              ADDRESS_HOME_STATE,
+                                              ADDRESS_HOME_ZIP,
+                                              ADDRESS_HOME_COUNTRY,
+                                              PHONE_HOME_WHOLE_NUMBER};
 
 const base::FilePath& GetTestDataDir() {
   CR_DEFINE_STATIC_LOCAL(base::FilePath, dir, ());
@@ -59,6 +62,25 @@ const base::FilePath& GetTestDataDir() {
     dir = dir.AppendASCII("data");
   }
   return dir;
+}
+
+const std::vector<base::FilePath> GetTestFiles() {
+  base::FilePath dir = GetTestDataDir();
+  dir = dir.AppendASCII("autofill").AppendASCII("merge").AppendASCII("input");
+  base::FileEnumerator input_files(dir, false, base::FileEnumerator::FILES,
+                                   kFileNamePattern);
+  std::vector<base::FilePath> files;
+  for (base::FilePath input_file = input_files.Next(); !input_file.empty();
+       input_file = input_files.Next()) {
+    files.push_back(input_file);
+  }
+  std::sort(files.begin(), files.end());
+
+#if defined(OS_MACOSX)
+  base::mac::ClearAmIBundledCache();
+#endif  // defined(OS_MACOSX)
+
+  return files;
 }
 
 // Serializes the |profiles| into a string.
@@ -72,6 +94,8 @@ std::string SerializeProfiles(const std::vector<AutofillProfile*>& profiles) {
       base::string16 value = profiles[i]->GetRawInfo(type);
       result += AutofillType(type).ToString();
       result += kFieldSeparator;
+      base::ReplaceFirstSubstringAfterOffset(
+          &value, 0, base::ASCIIToUTF16("\n"), base::ASCIIToUTF16("\\n"));
       result += base::UTF16ToUTF8(value);
       result += "\n";
     }
@@ -131,8 +155,8 @@ const std::vector<AutofillProfile*>& PersonalDataManagerMock::web_profiles()
 // corresponding output file is a dump of the saved profiles that result from
 // importing the input profiles. The output file format is identical to the
 // input format.
-class AutofillMergeTest : public testing::Test,
-                          public DataDrivenTest {
+class AutofillMergeTest : public DataDrivenTest,
+                          public testing::TestWithParam<base::FilePath> {
  protected:
   AutofillMergeTest();
   ~AutofillMergeTest() override;
@@ -194,7 +218,6 @@ void AutofillMergeTest::MergeProfiles(const std::string& profiles,
       profiles, "\n", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   for (size_t i = 0; i < lines.size(); ++i) {
     std::string line = lines[i];
-
     if (line != kProfileSeparator) {
       // Add a field to the current profile.
       size_t separator_pos = line.find(kFieldSeparator);
@@ -247,9 +270,10 @@ ServerFieldType AutofillMergeTest::StringToFieldType(const std::string& str) {
   return string_to_field_type_map_[str];
 }
 
-TEST_F(AutofillMergeTest, DataDrivenMergeProfiles) {
-  RunDataDrivenTest(GetInputDirectory(kTestName), GetOutputDirectory(kTestName),
-                    kFileNamePattern);
+TEST_P(AutofillMergeTest, DataDrivenMergeProfiles) {
+  RunOneDataDrivenTest(GetParam(), GetOutputDirectory(kTestName));
 }
+
+INSTANTIATE_TEST_CASE_P(, AutofillMergeTest, testing::ValuesIn(GetTestFiles()));
 
 }  // namespace autofill

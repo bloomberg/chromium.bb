@@ -26,6 +26,7 @@ def SerializeProfiles(profiles):
       if field_type == "ignored":
         continue;
 
+      value = value.replace('\n', '\\n')
       lines.append("%s: %s" % (field_type, value))
 
   return '\n'.join(lines)
@@ -42,7 +43,8 @@ def ColumnNameToFieldType(column_name):
   column_name = column_name.lower()
   field_type = "unknown"
   if column_name in ["guid", "label", "country", "date_modified", "origin",
-      "language_code", "use_count", "use_date"]:
+      "language_code", "use_count", "use_date", "sorting_code",
+      "dependent_locality"]:
     field_type = "ignored"
   elif column_name == "first_name":
     field_type = "NAME_FIRST"
@@ -70,10 +72,6 @@ def ColumnNameToFieldType(column_name):
     field_type = "ADDRESS_HOME_ZIP"
   elif column_name == "country_code":
     field_type = "ADDRESS_HOME_COUNTRY"
-  elif column_name == "sorting_code":
-    field_type = "ADDRESS_HOME_SORTING_CODE"
-  elif column_name == "dependent_locality":
-    field_type = "ADDRESS_HOME_DEPENDENT_LOCALITY"
   elif column_name == "phone":
     field_type = "PHONE_HOME_WHOLE_NUMBER"
   else:
