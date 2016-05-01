@@ -1266,8 +1266,6 @@ crbug.com/594672 virtual/trustedeventsdefaultaction/fast/events/iframe-object-on
 crbug.com/594672 virtual/trustedeventsdefaultaction/fast/events/scale-and-scroll-iframe-body.html [ Failure Pass ]
 crbug.com/594672 virtual/trustedeventsdefaultaction/fast/events/updateLayoutForHitTest.html [ Failure Pass ]
 
-crbug.com/593888 [ Linux Debug ] fast/dom/htmlcollection-reachable.html [ Timeout ]
-
 crbug.com/605515 svg/batik/filters/feTile.svg                                   [ NeedsManualRebaseline ]
 crbug.com/605515 svg/batik/text/textFeatures.svg                                [ NeedsManualRebaseline ]
 crbug.com/605515 svg/batik/text/smallFonts.svg                                  [ NeedsManualRebaseline ]

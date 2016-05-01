@@ -40,11 +40,13 @@ var collections = [
     'tableRow.cells',
 ];
 
-for (var i = 0; i < collections.length; i++) {
-    var code = collections[i];
-    eval(code).customProperty = i;
-    gc();
-    shouldBe(code + '.customProperty', '' + i);
-}
+// Note: as document.plugins is [ImplementedAs=embeds],
+// use customProperty{i} to ensure uniqueness.
+for (var i = 0; i < collections.length; ++i)
+    eval(collections[i])['customProperty' + i] = i;
 
+gc();
+
+for (var i = 0; i < collections.length; ++i)
+    shouldBe(collections[i] + '.customProperty' + i, '' + i);
 </script>
