@@ -1243,6 +1243,15 @@ crbug.com/572723 inspector/sources/debugger/debugger-uncaught-promise-on-pause.h
 
 crbug.com/572726 inspector/tracing/timeline-node-reference.html [ Timeout Pass Crash ]
 
+crbug.com/155836 [ Mac Win ] fast/css/text-overflow-ellipsis-bidi.html [ NeedsManualRebaseline ]
+crbug.com/155836 [ Mac Win ] fast/css/text-overflow-ellipsis-strict.html [ NeedsManualRebaseline ]
+crbug.com/155836 [ Mac Win ] fast/css/text-overflow-ellipsis.html [ NeedsManualRebaseline ]
+crbug.com/155836 [ Mac Win ] fast/css/text-overflow-input.html [ NeedsManualRebaseline ]
+crbug.com/155836 [ Mac Win ] fast/text/ellipsis-ltr-text-in-ltr-flow.html [ NeedsManualRebaseline ]
+crbug.com/155836 [ Mac Win ] fast/text/ellipsis-ltr-text-in-rtl-flow.html [ NeedsManualRebaseline ]
+crbug.com/155836 [ Mac Win ] fast/text/ellipsis-rtl-text-in-ltr-flow.html [ NeedsManualRebaseline ]
+crbug.com/155836 [ Mac Win ] fast/text/ellipsis-rtl-text-in-rtl-flow.html [ NeedsManualRebaseline ]
+
 crbug.com/577380 [ Linux Debug ] http/tests/serviceworker/chromium/registration-stress.html [ Failure ]
 
 crbug.com/581038 [ Linux Win ] fast/text/first-letter-bad-line-boxes-crash.html [ Crash Pass ]

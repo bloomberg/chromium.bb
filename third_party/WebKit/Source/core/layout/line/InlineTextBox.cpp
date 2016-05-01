@@ -342,8 +342,8 @@ LayoutUnit InlineTextBox::placeEllipsisBox(bool flowIsLTR, LayoutUnit visibleLef
         bool ltr = isLeftToRightDirection();
         if (ltr != flowIsLTR) {
             // Width in pixels of the visible portion of the box, excluding the ellipsis.
-            int visibleBoxWidth = visibleRightEdge - visibleLeftEdge  - ellipsisWidth;
-            ellipsisX = ltr ? logicalLeft() + visibleBoxWidth : logicalRight() - visibleBoxWidth;
+            int visibleBoxWidth = visibleRightEdge - visibleLeftEdge - ellipsisWidth;
+            ellipsisX = flowIsLTR ? logicalLeft() + visibleBoxWidth : logicalRight() - visibleBoxWidth;
         }
 
         int offset = offsetForPosition(ellipsisX, false);
@@ -359,8 +359,9 @@ LayoutUnit InlineTextBox::placeEllipsisBox(bool flowIsLTR, LayoutUnit visibleLef
         setTruncation(offset);
 
         // If we got here that means that we were only partially truncated and we need to return the pixel offset at which
-        // to place the ellipsis.
-        LayoutUnit widthOfVisibleText(getLineLayoutItem().width(m_start, offset, textPos(), flowIsLTR ? LTR : RTL, isFirstLineStyle()));
+        // to place the ellipsis. Where the text and its flow have opposite directions then our offset into the text is at
+        // the start of the part that will be visible.
+        LayoutUnit widthOfVisibleText(getLineLayoutItem().width(ltr == flowIsLTR ? m_start : offset, ltr == flowIsLTR ? offset : m_len - offset, textPos(), flowIsLTR ? LTR : RTL, isFirstLineStyle()));
 
         // The ellipsis needs to be placed just after the last visible character.
         // Where "after" is defined by the flow directionality, not the inline
