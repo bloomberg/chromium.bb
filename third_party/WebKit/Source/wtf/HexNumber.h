@@ -49,14 +49,6 @@ inline void appendByteAsHex(unsigned char byte, T& destination, HexConversionMod
 }
 
 template<typename T>
-inline void placeByteAsHex(unsigned char byte, T& destination, HexConversionMode mode = Uppercase)
-{
-    const LChar* hexDigits = Internal::hexDigitsForMode(mode);
-    *destination++ = hexDigits[byte >> 4];
-    *destination++ = hexDigits[byte & 0xF];
-}
-
-template<typename T>
 inline void appendUnsignedAsHex(unsigned number, T& destination, HexConversionMode mode = Uppercase)
 {
     const LChar* hexDigits = Internal::hexDigitsForMode(mode);
@@ -91,7 +83,6 @@ inline void appendUnsignedAsHexFixedSize(unsigned number, T& destination, unsign
 using WTF::appendByteAsHex;
 using WTF::appendUnsignedAsHex;
 using WTF::appendUnsignedAsHexFixedSize;
-using WTF::placeByteAsHex;
 using WTF::Lowercase;
 
 #endif // HexNumber_h
