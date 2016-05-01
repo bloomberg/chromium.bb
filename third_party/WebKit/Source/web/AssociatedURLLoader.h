@@ -71,6 +71,13 @@ private:
     void cancelLoader();
     void disposeObserver();
 
+    WebURLLoaderClient* releaseClient()
+    {
+        WebURLLoaderClient* client = m_client;
+        m_client = nullptr;
+        return client;
+    }
+
     WebURLLoaderClient* m_client;
     WebURLLoaderOptions m_options;
 

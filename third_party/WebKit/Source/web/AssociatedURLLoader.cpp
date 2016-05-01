@@ -142,7 +142,12 @@ public:
     void enableErrorNotifications();
 
     // Stops loading and releases the DocumentThreadableLoader as early as possible.
-    void clearClient() { m_client = 0; }
+    WebURLLoaderClient* releaseClient()
+    {
+        WebURLLoaderClient* client = m_client;
+        m_client = nullptr;
+        return client;
+    }
 
 private:
     ClientAdapter(AssociatedURLLoader*, WebURLLoaderClient*, const WebURLLoaderOptions&);
@@ -250,9 +255,7 @@ void AssociatedURLLoader::ClientAdapter::didFinishLoading(unsigned long identifi
 
     m_loader->clientAdapterDone();
 
-    auto client = m_client;
-    m_client = nullptr;
-    client->didFinishLoading(m_loader, finishTime, WebURLLoaderClient::kUnknownEncodedDataLength);
+    releaseClient()->didFinishLoading(m_loader, finishTime, WebURLLoaderClient::kUnknownEncodedDataLength);
     // |this| may be dead here.
 }
 
@@ -290,9 +293,7 @@ void AssociatedURLLoader::ClientAdapter::notifyError(Timer<ClientAdapter>* timer
     if (!m_client)
         return;
 
-    auto client = m_client;
-    m_client = nullptr;
-    client->didFail(m_loader, m_error);
+    releaseClient()->didFail(m_loader, m_error);
     // |this| may be dead here.
 }
 
@@ -412,13 +413,13 @@ void AssociatedURLLoader::cancel()
 {
     disposeObserver();
     cancelLoader();
-    m_client = nullptr;
+    releaseClient();
 }
 
 void AssociatedURLLoader::clientAdapterDone()
 {
     disposeObserver();
-    m_client = nullptr;
+    releaseClient();
 }
 
 void AssociatedURLLoader::cancelLoader()
@@ -427,7 +428,7 @@ void AssociatedURLLoader::cancelLoader()
         return;
 
     // Prevent invocation of the WebURLLoaderClient methods.
-    m_clientAdapter->clearClient();
+    m_clientAdapter->releaseClient();
 
     if (m_loader) {
         m_loader->cancel();
@@ -455,9 +456,7 @@ void AssociatedURLLoader::documentDestroyed()
     if (!m_client)
         return;
 
-    WebURLLoaderClient* client = m_client;
-    m_client = nullptr;
-    client->didFail(this, ResourceError());
+    releaseClient()->didFail(this, ResourceError());
     // |this| may be dead here.
 }
 
