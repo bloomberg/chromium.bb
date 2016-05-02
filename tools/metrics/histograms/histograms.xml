@@ -66097,6 +66097,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="12" label="Autofill"/>
   <int value="13" label="Policy"/>
   <int value="14" label="Spell Checker"/>
+  <int value="15" label="NTPSnippets"/>
 </enum>
 
 <enum name="DecodedImageOrientation" type="int">

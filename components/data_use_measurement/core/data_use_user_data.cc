@@ -56,6 +56,8 @@ std::string DataUseUserData::GetServiceNameAsString(ServiceName service_name) {
       return "Policy";
     case SPELL_CHECKER:
       return "SpellChecker";
+    case NTP_SNIPPETS:
+      return "NTPSnippets";
   }
   return "INVALID";
 }

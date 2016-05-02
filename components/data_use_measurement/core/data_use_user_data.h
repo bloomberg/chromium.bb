@@ -39,6 +39,7 @@ class DataUseUserData : public base::SupportsUserData::Data {
     AUTOFILL,
     POLICY,
     SPELL_CHECKER,
+    NTP_SNIPPETS,
   };
 
   explicit DataUseUserData(ServiceName service_name);
@@ -53,7 +54,7 @@ class DataUseUserData : public base::SupportsUserData::Data {
   static std::string GetServiceNameAsString(ServiceName service);
 
   // Services should use this function to attach their |service_name| to the
-  // URLFethcer serving them.
+  // URLFetcher serving them.
   static void AttachToFetcher(net::URLFetcher* fetcher,
                               ServiceName service_name);
 
