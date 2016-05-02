@@ -1004,13 +1004,12 @@ TEST_F(HistoryBackendDBTest, MigratePresentations) {
   // Re-open the db, triggering migration.
   CreateBackendAndDatabase();
 
-  std::vector<PageUsageData*> results;
-  db_->QuerySegmentUsage(segment_time, 10, &results);
+  std::vector<std::unique_ptr<PageUsageData>> results =
+      db_->QuerySegmentUsage(segment_time, 10);
   ASSERT_EQ(1u, results.size());
   EXPECT_EQ(url, results[0]->GetURL());
   EXPECT_EQ(segment_id, results[0]->GetID());
   EXPECT_EQ(title, results[0]->GetTitle());
-  STLDeleteElements(&results);
 }
 
 TEST_F(HistoryBackendDBTest, CheckLastCompatibleVersion) {

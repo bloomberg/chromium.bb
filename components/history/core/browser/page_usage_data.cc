@@ -4,20 +4,12 @@
 
 #include "components/history/core/browser/page_usage_data.h"
 
-#include <algorithm>
-
 namespace history {
 
 PageUsageData::PageUsageData(SegmentID id) : id_(id), score_(0.0) {
 }
 
 PageUsageData::~PageUsageData() {
-}
-
-// static
-bool PageUsageData::Predicate(const PageUsageData* lhs,
-                              const PageUsageData* rhs) {
-  return lhs->GetScore() > rhs->GetScore();
 }
 
 }  // namespace history

@@ -56,9 +56,6 @@ class PageUsageData {
     return score_;
   }
 
-  // Sort predicate to sort instances by score (high to low)
-  static bool Predicate(const PageUsageData* dud1, const PageUsageData* dud2);
-
  private:
   SegmentID id_;
   GURL url_;

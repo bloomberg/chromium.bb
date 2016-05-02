@@ -70,7 +70,6 @@ class HistoryServiceObserver;
 class HistoryServiceTest;
 class InMemoryHistoryBackend;
 struct KeywordSearchTermVisit;
-class PageUsageData;
 class URLDatabase;
 class VisitDelegate;
 class WebHistoryService;
@@ -82,9 +81,6 @@ class WebHistoryService;
 // thread that made the request.
 class HistoryService : public syncer::SyncableService, public KeyedService {
  public:
-  // Miscellaneous commonly-used types.
-  typedef std::vector<PageUsageData*> PageUsageDataList;
-
   // Callback for value asynchronously returned by TopHosts().
   typedef base::Callback<void(const TopHostsList&)> TopHostsCallback;
 

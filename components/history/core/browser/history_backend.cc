@@ -16,7 +16,6 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_enumerator.h"
-#include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
@@ -1357,13 +1356,10 @@ void HistoryBackend::QueryMostVisitedURLs(int result_count,
   if (!db_)
     return;
 
-  ScopedVector<PageUsageData> data;
-  db_->QuerySegmentUsage(
-      base::Time::Now() - base::TimeDelta::FromDays(days_back), result_count,
-      &data.get());
+  std::vector<std::unique_ptr<PageUsageData>> data = db_->QuerySegmentUsage(
+      base::Time::Now() - base::TimeDelta::FromDays(days_back), result_count);
 
-  for (size_t i = 0; i < data.size(); ++i) {
-    PageUsageData* current_data = data[i];
+  for (const std::unique_ptr<PageUsageData>& current_data : data) {
     RedirectList redirects;
     QueryRedirectsFrom(current_data->GetURL(), &redirects);
     MostVisitedURL url = MakeMostVisitedURL(*current_data, redirects);

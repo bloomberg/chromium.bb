@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_HISTORY_CORE_BROWSER_VISITSEGMENT_DATABASE_H_
 #define COMPONENTS_HISTORY_CORE_BROWSER_VISITSEGMENT_DATABASE_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "components/history/core/browser/history_types.h"
 
@@ -50,12 +52,11 @@ class VisitSegmentDatabase {
   bool IncreaseSegmentVisitCount(SegmentID segment_id, base::Time ts,
                                  int amount);
 
-  // Compute the segment usage since |from_time| using the provided aggregator.
-  // A PageUsageData is added in |result| for the highest-scored segments up to
-  // |max_result_count|.
-  void QuerySegmentUsage(base::Time from_time,
-                         int max_result_count,
-                         std::vector<PageUsageData*>* result);
+  // Computes the segment usage since |from_time|.
+  // Returns the highest-scored segments up to |max_result_count|.
+  std::vector<std::unique_ptr<PageUsageData>> QuerySegmentUsage(
+      base::Time from_time,
+      int max_result_count);
 
   // Delete all the segment usage data which is older than the provided time
   // stamp.
