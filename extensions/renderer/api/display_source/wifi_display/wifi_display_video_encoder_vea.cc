@@ -119,11 +119,11 @@ WiFiDisplayVideoEncoderVEA::~WiFiDisplayVideoEncoderVEA() {
 
 scoped_refptr<WiFiDisplayVideoEncoder>
 WiFiDisplayVideoEncoderVEA::InitOnMediaThread(const InitParameters& params) {
-  // TODO: Select media profile based on video format capabilities negotiations
-  // with sink device.
+  media::VideoCodecProfile profile = (params.profile == wds::CHP)
+      ? media::H264PROFILE_HIGH : media::H264PROFILE_BASELINE;
   bool success =
       vea_->Initialize(media::PIXEL_FORMAT_I420, params.frame_size,
-                       media::H264PROFILE_MAIN, params.bit_rate, this);
+                       profile, params.bit_rate, this);
   if (success)
     return this;
 

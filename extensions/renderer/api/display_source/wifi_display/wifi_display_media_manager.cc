@@ -284,26 +284,26 @@ bool FindRateResolution(const media::VideoCaptureFormat* format,
   return false;
 }
 
-bool FindOptimalFormat(
+void FindCompatibleFormats(
     const media::VideoCaptureFormat* capture_format,
     const std::vector<wds::H264VideoCodec>& sink_supported_codecs,
-    wds::H264VideoFormat* result /*out*/) {
+    std::vector<wds::H264VideoFormat>* result /*out*/) {
   DCHECK(result);
   for (const wds::H264VideoCodec& codec : sink_supported_codecs) {
+    wds::H264VideoFormat format;
     bool found =
         FindRateResolution<wds::CEA>(
-            capture_format, codec.cea_rr, cea_table, result) ||
+            capture_format, codec.cea_rr, cea_table, &format) ||
         FindRateResolution<wds::VESA>(
-            capture_format, codec.vesa_rr, vesa_table, result) ||
+            capture_format, codec.vesa_rr, vesa_table, &format) ||
         FindRateResolution<wds::HH>(
-            capture_format, codec.hh_rr, hh_table, result);
+            capture_format, codec.hh_rr, hh_table, &format);
     if (found) {
-      result->profile = codec.profile;
-      result->level = codec.level;
-      return true;
+      format.profile = codec.profile;
+      format.level = codec.level;
+      result->emplace_back(format);
     }
   }
-  return false;
 }
 
 }  // namespace
@@ -348,11 +348,48 @@ bool WiFiDisplayMediaManager::InitOptimalVideoFormat(
     return false;
   }
 
-  if (!FindOptimalFormat(
-      capture_format, sink_supported_codecs, &optimal_video_format_)) {
+  std::vector<wds::H264VideoFormat> compatible_formats;
+
+  FindCompatibleFormats(
+      capture_format, sink_supported_codecs, &compatible_formats);
+
+  if (compatible_formats.empty()) {
     error_callback_.Run(kErrorSinkCannotPlayVideo);
     return false;
   }
+
+  // The found compatible formats have the same frame rate and resolution but
+  // different video encoder profiles. Pick the appropriate profile from the
+  // supported by video encoder.
+  std::vector<wds::H264Profile> supported_profiles =
+      WiFiDisplayVideoEncoder::FindSupportedProfiles(
+          capture_format->frame_size,
+          capture_format->frame_rate);
+
+  if (supported_profiles.empty()) {
+    error_callback_.Run(kErrorSinkCannotPlayVideo);
+    return false;
+  }
+
+  bool profile_found = false;
+  for (wds::H264Profile profile : supported_profiles) {
+    if (profile_found)
+      break;
+
+    for (const auto& format : compatible_formats) {
+      if (format.profile == profile) {
+         optimal_video_format_ = format;
+         profile_found = true;
+         break;
+      }
+    }
+  }
+
+  if (!profile_found) {
+    error_callback_.Run(kErrorSinkCannotPlayVideo);
+    return false;
+  }
+
   video_encoder_parameters_.frame_size = capture_format->frame_size;
   video_encoder_parameters_.frame_rate =
       static_cast<int>(capture_format->frame_rate);

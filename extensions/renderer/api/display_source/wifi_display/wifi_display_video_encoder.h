@@ -52,6 +52,13 @@ class WiFiDisplayVideoEncoder : public WiFiDisplayMediaEncoder {
     CreateVideoEncodeAcceleratorCallback vea_create_callback;
   };
 
+  // Returns the list of supported video encoder profiles
+  // for the given frame size and frame rate.
+  // If hight profile is supported it is to be first in the list.
+  static std::vector<wds::H264Profile> FindSupportedProfiles(
+      const gfx::Size& frame_size,
+      int32_t frame_rate);
+
   // A factory method that creates a new encoder instance from the given
   // |params|, the encoder instance is returned as an argument of
   // |result_callback| ('nullptr' argument means encoder creation failure).

@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-
+#include "content/public/renderer/video_encode_accelerator.h"
 #include "extensions/renderer/api/display_source/wifi_display/wifi_display_elementary_stream_descriptor.h"
 
 namespace extensions {
@@ -27,6 +27,30 @@ WiFiDisplayVideoEncoder::WiFiDisplayVideoEncoder(
 }
 
 WiFiDisplayVideoEncoder::~WiFiDisplayVideoEncoder() = default;
+
+// static
+std::vector<wds::H264Profile> WiFiDisplayVideoEncoder::FindSupportedProfiles(
+    const gfx::Size& frame_size,
+    int32_t frame_rate) {
+  std::vector<wds::H264Profile> result;
+  media::VideoEncodeAccelerator::SupportedProfiles profiles =
+      content::GetSupportedVideoEncodeAcceleratorProfiles();
+  for (const auto& supported : profiles) {
+    if (supported.profile == media::H264PROFILE_HIGH &&
+        supported.max_resolution.width() >= frame_size.width() &&
+        supported.max_resolution.height() >= frame_size.height() &&
+        supported.max_framerate_numerator >= uint32_t(frame_rate)) {
+      result.push_back(wds::CHP);
+      break;
+    }
+  }
+
+  // Constrained profile is provided in any case (by the software encoder
+  // implementation).
+  result.push_back(wds::CBP);
+
+  return result;
+}
 
 // static
 void WiFiDisplayVideoEncoder::Create(
