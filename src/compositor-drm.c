@@ -3191,7 +3191,8 @@ err_drm_source:
 err_udev_input:
 	udev_input_destroy(&b->input);
 err_sprite:
-	gbm_device_destroy(b->gbm);
+	if (b->gbm)
+		gbm_device_destroy(b->gbm);
 	destroy_sprites(b);
 err_udev_dev:
 	udev_device_unref(drm_device);
