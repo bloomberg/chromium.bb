@@ -15,6 +15,7 @@
     <color name="text_highlight_color">#C6DAFC</color>
     <color name="dark_action_bar_color">#263238</color>
     <color name="descriptive_text_color">#646464</color>
+    <color name="google_blue_700">#3367d6</color>
 
     <!-- Infobar colors -->
     <color name="infobar_accent_blue">#4285f4</color>
@@ -179,5 +180,9 @@
 
     <!-- Bottom bar colors -->
     <color name="bottom_bar_shadow_color">#1d000000</color>
+
+    <!-- Payments UI colors -->
+    <color name="payments_section_edit_background">#f5f5f5</color>
+    <color name="payments_section_chevron">#b2b2b2</color>
 
 </resources>

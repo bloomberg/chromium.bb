@@ -579,6 +579,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/payments/ui/LineItem.java",
   "java/src/org/chromium/chrome/browser/payments/ui/PaymentInformation.java",
   "java/src/org/chromium/chrome/browser/payments/ui/PaymentOption.java",
+  "java/src/org/chromium/chrome/browser/payments/ui/PaymentRequestSection.java",
   "java/src/org/chromium/chrome/browser/payments/ui/PaymentRequestUI.java",
   "java/src/org/chromium/chrome/browser/payments/ui/SectionInformation.java",
   "java/src/org/chromium/chrome/browser/physicalweb/BitmapHttpRequest.java",

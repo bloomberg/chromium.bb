@@ -9,22 +9,24 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.os.Handler;
-import android.support.v4.content.ContextCompat;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.RadioButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.ExtraTextSection;
+import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.LineItemBreakdownSection;
+import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.OptionSection;
 import org.chromium.chrome.browser.widget.AlwaysDismissedDialog;
 
 import java.util.List;
@@ -32,7 +34,8 @@ import java.util.List;
 /**
  * The PaymentRequest UI.
  */
-public class PaymentRequestUI implements DialogInterface.OnDismissListener, View.OnClickListener {
+public class PaymentRequestUI implements DialogInterface.OnDismissListener, View.OnClickListener,
+        PaymentRequestSection.PaymentsSectionListener {
     /**
      * The interface to be implemented by the consumer of the PaymentRequest UI.
      */
@@ -114,34 +117,18 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     private final Button mPayButton;
     private final View mCloseButton;
 
-    private final View mOrderSummaryLabel;
-    private final ViewGroup mOrderSummary;
+    private final LineItemBreakdownSection mOrderSummarySection;
+    private final ExtraTextSection mShippingSummarySection;
+    private final OptionSection mShippingAddressSection;
+    private final OptionSection mShippingOptionSection;
+    private final OptionSection mPaymentMethodSection;
 
-    private final View mShippingSummaryLabel;
-    private final View mShippingSummary;
-    private final TextView mShippingSummaryAddress;
-    private final TextView mShippingSummaryOption;
-    private final View mShippingSummarySeparator;
-
-    private final View mShippingAddressesLabel;
-    private final ViewGroup mShippingAddresses;
-    private final View mShippingAddressesSeparator;
-
-    private final View mShippingOptionsLabel;
-    private final View mSelectShippingOptionPrompt;
-    private final ViewGroup mShippingOptions;
-    private final View mShippingOptionsSeparator;
-
-    private final View mPaymentMethodsLabel;
-    private final ViewGroup mPaymentMethods;
-
-    private View mSelectedSectionLabel;
     private ViewGroup mSelectedSection;
 
     private List<LineItem> mLineItems;
-    private SectionInformation mPaymentMethodsSection;
-    private SectionInformation mShippingAddressesSection;
-    private SectionInformation mShippingOptionsSection;
+    private SectionInformation mPaymentMethodSectionInformation;
+    private SectionInformation mShippingAddressSectionInformation;
+    private SectionInformation mShippingOptionsSectionInformation;
 
     /**
      * Builds and shows the UI for PaymentRequest.
@@ -184,46 +171,38 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         mCloseButton = mContainer.findViewById(R.id.close_button);
         mCloseButton.setOnClickListener(this);
 
-        mOrderSummaryLabel = mContainer.findViewById(R.id.orderSummaryLabel);
-        mOrderSummary = (ViewGroup) mContainer.findViewById(R.id.lineItems);
-        mOrderSummaryLabel.setOnClickListener(this);
-        mOrderSummary.setOnClickListener(this);
+        // Add all the possible sections.
+        LinearLayout paymentContainerLayout =
+                ((LinearLayout) mContainer.findViewById(R.id.paymentContainerLayout));
+        mOrderSummarySection = new LineItemBreakdownSection(activity,
+                activity.getString(R.string.payments_order_summary_label), this);
+        mShippingSummarySection = new ExtraTextSection(activity,
+                activity.getString(R.string.payments_shipping_summary_label), this);
+        mShippingAddressSection = new OptionSection(activity,
+                activity.getString(R.string.payments_shipping_address_label),
+                activity.getString(R.string.payments_select_shipping_address_prompt), this);
+        mShippingOptionSection = new OptionSection(activity,
+                activity.getString(R.string.payments_shipping_option_label),
+                activity.getString(R.string.payments_select_shipping_option_prompt), this);
+        mPaymentMethodSection = new OptionSection(activity,
+                activity.getString(R.string.payments_method_of_payment_label), null, this);
 
-        mShippingSummaryLabel = mContainer.findViewById(R.id.shippingSummaryLabel);
-        mShippingSummary = mContainer.findViewById(R.id.shippingSummary);
-        mShippingSummaryAddress = (TextView) mContainer.findViewById(R.id.shippingSummaryAddress);
-        mShippingSummaryOption = (TextView) mContainer.findViewById(R.id.shippingSummaryOption);
-        mShippingSummarySeparator = mContainer.findViewById(R.id.shippingSummarySeparator);
+        paymentContainerLayout.addView(mOrderSummarySection, new LinearLayout.LayoutParams(
+                LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+        paymentContainerLayout.addView(mShippingSummarySection, new LinearLayout.LayoutParams(
+                LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+        paymentContainerLayout.addView(mShippingAddressSection, new LinearLayout.LayoutParams(
+                LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+        paymentContainerLayout.addView(mShippingOptionSection, new LinearLayout.LayoutParams(
+                LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+        paymentContainerLayout.addView(mPaymentMethodSection, new LinearLayout.LayoutParams(
+                LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
 
-        mShippingAddressesLabel = mContainer.findViewById(R.id.shippingAddressesLabel);
-        mShippingAddresses = (ViewGroup) mContainer.findViewById(R.id.shippingAddresses);
-        mShippingAddressesSeparator = mContainer.findViewById(R.id.shippingAddressesSeparator);
+        mShippingSummarySection.setVisibility(mRequestShipping ? View.VISIBLE : View.GONE);
+        mShippingAddressSection.setVisibility(View.GONE);
+        mShippingOptionSection.setVisibility(View.GONE);
 
-        mShippingOptionsLabel = mContainer.findViewById(R.id.shippingOptionsLabel);
-        mSelectShippingOptionPrompt = mContainer.findViewById(R.id.selectShippingOptionPrompt);
-        mShippingOptions = (ViewGroup) mContainer.findViewById(R.id.shippingOptions);
-        mShippingOptionsSeparator = mContainer.findViewById(R.id.shippingOptionsSeparator);
-
-        if (mRequestShipping) {
-            mShippingSummaryLabel.setOnClickListener(this);
-            mShippingSummaryAddress.setOnClickListener(this);
-            mShippingAddressesLabel.setOnClickListener(this);
-            mShippingAddresses.setOnClickListener(this);
-            mShippingSummaryOption.setOnClickListener(this);
-            mShippingOptionsLabel.setOnClickListener(this);
-            mSelectShippingOptionPrompt.setOnClickListener(this);
-            mShippingOptions.setOnClickListener(this);
-        } else {
-            mShippingSummaryLabel.setVisibility(View.GONE);
-            mShippingSummary.setVisibility(View.GONE);
-            mShippingSummarySeparator.setVisibility(View.GONE);
-        }
-
-        mPaymentMethodsLabel = mContainer.findViewById(R.id.paymentsListLabel);
-        mPaymentMethods = (ViewGroup) mContainer.findViewById(R.id.paymentsList);
-        mPaymentMethodsLabel.setOnClickListener(this);
-        mPaymentMethods.setOnClickListener(this);
-
+        // Set up the dialog.
         mDialog = new AlwaysDismissedDialog(activity, R.style.DialogWhenLarge);
         mDialog.setOnDismissListener(this);
         mDialog.addContentView(
@@ -240,37 +219,31 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         mClient.getDefaultPaymentInformation(new Callback<PaymentInformation>() {
             @Override
             public void onResult(PaymentInformation result) {
-                updateLineItems(result.getLineItems());
+                updateOrderSummarySection(result.getLineItems());
 
                 if (mRequestShipping) {
-                    mShippingAddressesSection = result.getShippingAddresses();
-                    mShippingOptionsSection = result.getShippingOptions();
+                    updateShippingAddressSection(result.getShippingAddresses());
+                    updateShippingOptionsSection(result.getShippingOptions());
 
                     String selectedAddressLabel = result.getSelectedShippingAddressLabel();
                     String selectedShippingOptionLabel = result.getSelectedShippingOptionLabel();
                     if (selectedAddressLabel == null && selectedShippingOptionLabel == null) {
-                        mShippingSummaryAddress.setText(mContext.getString(
-                                R.string.payments_select_shipping_prompt));
+                        mShippingSummarySection.setSummaryText(mContext.getString(
+                                R.string.payments_select_shipping_prompt), null);
                     } else {
-                        if (selectedAddressLabel == null) {
-                            mShippingSummaryAddress.setText(mContext.getString(
-                                    R.string.payments_select_shipping_address_prompt));
-                        } else {
-                            mShippingSummaryAddress.setText(selectedAddressLabel);
-                        }
-
-                        if (selectedShippingOptionLabel == null) {
-                            mShippingSummaryOption.setText(mContext.getString(
-                                    R.string.payments_select_shipping_option_prompt));
-                        } else {
-                            mShippingSummaryOption.setText(selectedShippingOptionLabel);
-                        }
+                        // TODO(dfalcantara): Figure out how to break apart the address.
+                        mShippingSummarySection.setSummaryText(selectedAddressLabel == null
+                                ? mContext.getString(
+                                        R.string.payments_select_shipping_address_prompt)
+                                : selectedAddressLabel, null);
+                        mShippingSummarySection.setExtraText(selectedShippingOptionLabel == null
+                                ? mContext.getString(
+                                        R.string.payments_select_shipping_option_prompt)
+                                : selectedShippingOptionLabel);
                     }
                 }
 
-                mPaymentMethodsSection = result.getPaymentMethods();
-                updateSection(mPaymentMethods, mPaymentMethodsSection, null);
-
+                updatePaymentMethodSection(result.getPaymentMethods());
                 updatePayButtonEnabled();
             }
         });
@@ -335,34 +308,20 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
      *
      * @param lineItems The full bill. The last line item is the total.
      */
-    public void updateLineItems(List<LineItem> lineItems) {
+    public void updateOrderSummarySection(List<LineItem> lineItems) {
         mLineItems = lineItems;
-        mOrderSummary.removeAllViews();
 
         if (mLineItems == null || mLineItems.isEmpty()) {
-            mOrderSummary.setVisibility(View.GONE);
-            return;
-        }
-
-        mOrderSummary.setVisibility(View.VISIBLE);
-
-        LineItem total = lineItems.get(lineItems.size() - 1);
-        mOrderSummary.addView(buildLineItem(total));
-
-        if (mSelectedSection != mOrderSummary) return;
-
-        for (int i = 0; i < lineItems.size() - 1; i++) {
-            mOrderSummary.addView(buildLineItem(lineItems.get(i)));
+            mOrderSummarySection.setVisibility(View.GONE);
+        } else {
+            mOrderSummarySection.setVisibility(View.VISIBLE);
+            mOrderSummarySection.update(lineItems);
         }
     }
 
-    private ViewGroup buildLineItem(LineItem item) {
-        ViewGroup line =
-                (ViewGroup) LayoutInflater.from(mContext).inflate(R.layout.payment_line_item, null);
-        ((TextView) line.findViewById(R.id.lineItemLabel)).setText(item.getLabel());
-        ((TextView) line.findViewById(R.id.lineItemCurrencyCode)).setText(item.getCurrency());
-        ((TextView) line.findViewById(R.id.lineItemPrice)).setText(item.getPrice());
-        return line;
+    public void updateShippingAddressSection(SectionInformation section) {
+        mShippingAddressSectionInformation = section;
+        mShippingAddressSection.update(section);
     }
 
     /**
@@ -370,109 +329,30 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
      *
      * @param shipping The shipping options.
      */
-    public void updateShippingOptions(SectionInformation section) {
-        mShippingOptionsSection = section;
-        updateSection(mShippingOptions, mShippingOptionsSection, mSelectShippingOptionPrompt);
+    public void updateShippingOptionsSection(SectionInformation section) {
+        mShippingOptionsSectionInformation = section;
+        mShippingOptionSection.update(section);
     }
 
-    /**
-     * Selects or deselects the given section. Possible sections are: shipping address, shipping
-     * options, and payment methods.
-     *
-     * A selected section lists out all options as radio buttons.
-     *
-     * A deselected section shows the currently selected option without radio buttons. If there's no
-     * currently selected option, then selectOptionPrompt is displayed instead. This is important
-     * for shipping options. If the merchant provides multiple shipping options, then there will be
-     * no shipping option selected by default.
-     *
-     * @param sectionContainer The container for all UI elements of this section.
-     * @param section The model that contains all options and specifies the currently selected
-     *                option.
-     *  @param selectOptionPrompt The view to show if no option is selected. If null, then nothing
-     *                            is shown.
-     */
-    private void updateSection(
-            ViewGroup sectionContainer, final SectionInformation section, View selectOptionPrompt) {
-        sectionContainer.removeAllViews();
-        if (section == null) {
-            sectionContainer.setVisibility(View.GONE);
-            return;
-        }
-
-        sectionContainer.setVisibility(View.VISIBLE);
-
-        PaymentOption selectedItem = section.getSelectedItem();
-        if (mSelectedSection != sectionContainer && selectedItem == null) {
-            if (selectOptionPrompt != null) selectOptionPrompt.setVisibility(View.VISIBLE);
-            return;
-        }
-
-        if (selectOptionPrompt != null) selectOptionPrompt.setVisibility(View.GONE);
-
-        if (mSelectedSection != sectionContainer && selectedItem != null) {
-            OptionLine line = new OptionLine(mContext, selectedItem);
-            sectionContainer.addView(line.container);
-            return;
-        }
-
-        if (section.isEmpty()) return;
-
-        final OptionLine[] lines = new OptionLine[section.getSize()];
-        for (int i = 0; i < lines.length; i++) {
-            lines[i] = new OptionLine(mContext, section.getItem(i));
-            lines[i].radioButton.setVisibility(mSelectedSection == sectionContainer
-                    ? View.VISIBLE : View.GONE);
-            lines[i].radioButton.setChecked(i == section.getSelectedItemIndex());
-            lines[i].container.setClickable(true);
-            lines[i].container.setTag(new OptionLineTag(section, lines, i));
-            lines[i].container.setOnClickListener(this);
-            sectionContainer.addView(lines[i].container);
-        }
+    private void updatePaymentMethodSection(SectionInformation section) {
+        mPaymentMethodSectionInformation = section;
+        mPaymentMethodSection.update(section);
     }
 
-    private static class OptionLine {
-        public ViewGroup container;
-        public RadioButton radioButton;
-
-        public OptionLine(Context context, PaymentOption option) {
-            container = (ViewGroup) LayoutInflater.from(context).inflate(
-                    R.layout.payment_option_line, null);
-            radioButton = (RadioButton) container.findViewById(R.id.optionRadioButton);
-
-            ((TextView) container.findViewById(R.id.optionLabel)).setText(option.getLabel());
-            ((TextView) container.findViewById(R.id.optionSubLabel)).setText(option.getSublabel());
-
-            if (option.getDrawableIconId() != PaymentOption.NO_ICON) {
-                ((ImageView) container.findViewById(R.id.optionIcon))
-                        .setImageResource(option.getDrawableIconId());
-            }
-        }
-    }
-
-    private static class OptionLineTag {
-        private final SectionInformation mSection;
-        private final OptionLine[] mOptionLines;
-        private final int mThisLineIndex;
-
-        public OptionLineTag(SectionInformation section, OptionLine[] lines, int index) {
-            mSection = section;
-            mOptionLines = lines;
-            mThisLineIndex = index;
+    @Override
+    public void onPaymentOptionChanged(OptionSection section, PaymentOption option) {
+        if (section == mShippingAddressSection) {
+            mShippingAddressSectionInformation.setSelectedItem(option);
+            mClient.onShippingAddressChanged(option);
+        } else if (section == mShippingOptionSection) {
+            mShippingOptionsSectionInformation.setSelectedItem(option);
+            mClient.onShippingOptionChanged(option);
+        } else if (section == mPaymentMethodSection) {
+            mPaymentMethodSectionInformation.setSelectedItem(option);
+            mClient.onPaymentMethodChanged(option);
         }
 
-        public void selectOptionLine() {
-            mSection.setSelectedItemIndex(mThisLineIndex);
-            mOptionLines[mThisLineIndex].radioButton.setChecked(true);
-            for (int i = 0; i < mOptionLines.length; i++) {
-                if (i == mThisLineIndex) continue;
-                mOptionLines[i].radioButton.setChecked(false);
-            }
-        }
-
-        public SectionInformation getSection() {
-            return mSection;
-        }
+        updatePayButtonEnabled();
     }
 
     /**
@@ -480,16 +360,14 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
      */
     @Override
     public void onClick(View v) {
-        if (v == mOrderSummaryLabel || v == mOrderSummary) {
-            expand(mOrderSummaryLabel, mOrderSummary);
-        } else if (v == mShippingSummaryLabel || v == mShippingSummaryAddress
-                || v == mShippingAddressesLabel || v == mShippingAddresses) {
-            expand(mShippingAddressesLabel, mShippingAddresses);
-        } else if (v == mShippingSummaryOption || v == mShippingOptionsLabel
-                || v == mShippingOptions || v == mSelectShippingOptionPrompt) {
-            expand(mShippingOptionsLabel, mShippingOptions);
-        } else if (v == mPaymentMethodsLabel || v == mPaymentMethods) {
-            expand(mPaymentMethodsLabel, mPaymentMethods);
+        if (v == mOrderSummarySection) {
+            expand(mOrderSummarySection);
+        } else if (v == mShippingSummarySection || v == mShippingAddressSection) {
+            expand(mShippingAddressSection);
+        } else if (v == mShippingOptionSection) {
+            expand(mShippingOptionSection);
+        } else if (v == mPaymentMethodSection) {
+            expand(mPaymentMethodSection);
         } else if (v == mPayButton) {
             mPaymentContainer.setVisibility(View.GONE);
             mButtonBar.setVisibility(View.GONE);
@@ -500,31 +378,20 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                     ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
 
             mClient.onPayClicked(
-                    mShippingAddressesSection == null
-                            ? null : mShippingAddressesSection.getSelectedItem(),
-                    mShippingOptionsSection == null
-                            ? null : mShippingOptionsSection.getSelectedItem(),
-                    mPaymentMethodsSection.getSelectedItem());
+                    mShippingAddressSectionInformation == null
+                            ? null : mShippingAddressSectionInformation.getSelectedItem(),
+                    mShippingOptionsSectionInformation == null
+                            ? null : mShippingOptionsSectionInformation.getSelectedItem(),
+                    mPaymentMethodSectionInformation.getSelectedItem());
         } else if (v == mEditButton) {
             if (mSelectedSection == null) {
-                expand(mOrderSummaryLabel, mOrderSummary);
+                expand(mOrderSummarySection);
             } else {
                 mDialog.dismiss();
             }
         } else if (v == mCloseButton) {
             mDialog.dismiss();
             return;
-        } else if (v.getTag() != null && v.getTag() instanceof OptionLineTag) {
-            OptionLineTag tag = (OptionLineTag) v.getTag();
-            tag.selectOptionLine();
-
-            if (tag.getSection() == mShippingAddressesSection) {
-                mClient.onShippingAddressChanged(tag.getSection().getSelectedItem());
-            } else if (tag.getSection() == mShippingOptionsSection) {
-                mClient.onShippingOptionChanged(tag.getSection().getSelectedItem());
-            } else if (tag.getSection() == mPaymentMethodsSection) {
-                mClient.onPaymentMethodChanged(tag.getSection().getSelectedItem());
-            }
         }
 
         updatePayButtonEnabled();
@@ -532,107 +399,73 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
 
     private void updatePayButtonEnabled() {
         if (mRequestShipping) {
-            mPayButton.setEnabled(mShippingAddressesSection != null
-                    && mShippingAddressesSection.getSelectedItem() != null
-                    && mShippingOptionsSection != null
-                    && mShippingOptionsSection.getSelectedItem() != null
-                    && mPaymentMethodsSection != null
-                    && mPaymentMethodsSection.getSelectedItem() != null);
+            mPayButton.setEnabled(mShippingAddressSectionInformation != null
+                    && mShippingAddressSectionInformation.getSelectedItem() != null
+                    && mShippingOptionsSectionInformation != null
+                    && mShippingOptionsSectionInformation.getSelectedItem() != null
+                    && mPaymentMethodSectionInformation != null
+                    && mPaymentMethodSectionInformation.getSelectedItem() != null);
         } else {
-            mPayButton.setEnabled(mPaymentMethodsSection != null
-                    && mPaymentMethodsSection.getSelectedItem() != null);
+            mPayButton.setEnabled(mPaymentMethodSectionInformation != null
+                    && mPaymentMethodSectionInformation.getSelectedItem() != null);
         }
     }
 
-    private void expand(View sectionLabel, ViewGroup section) {
+    private void expand(ViewGroup section) {
         mEditButton.setText(mContext.getString(R.string.payments_cancel_button));
         mDialog.getWindow().setLayout(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
 
-        boolean isFirstExpansionWithShipping =
-                mRequestShipping && mShippingSummaryLabel.getVisibility() != View.GONE;
-        if (isFirstExpansionWithShipping) {
-            mShippingSummaryLabel.setVisibility(View.GONE);
-            mShippingSummary.setVisibility(View.GONE);
-            mShippingSummarySeparator.setVisibility(View.GONE);
-
-            mShippingAddressesLabel.setVisibility(View.VISIBLE);
-            mShippingAddresses.setVisibility(View.VISIBLE);
-            mShippingAddressesSeparator.setVisibility(View.VISIBLE);
-
-            mShippingOptionsLabel.setVisibility(View.VISIBLE);
-            mSelectShippingOptionPrompt.setVisibility(View.VISIBLE);
-            mShippingOptions.setVisibility(View.VISIBLE);
-            mShippingOptionsSeparator.setVisibility(View.VISIBLE);
+        // The edit dialog has been requested.  Get rid of the combined views & show the full ones.
+        if (mRequestShipping && mShippingSummarySection.getVisibility() != View.GONE) {
+            mShippingSummarySection.setVisibility(View.GONE);
+            mShippingAddressSection.setVisibility(View.VISIBLE);
+            mShippingOptionSection.setVisibility(View.VISIBLE);
         }
 
-        if (mSelectedSectionLabel != null) {
-            mSelectedSectionLabel.setBackgroundColor(Color.WHITE);
-            mSelectedSectionLabel.setClickable(true);
-        }
+        // Update the display status of each expandable section.
+        mOrderSummarySection.setDisplayMode(section == mOrderSummarySection
+                ? PaymentRequestSection.DISPLAY_MODE_FOCUSED
+                : PaymentRequestSection.DISPLAY_MODE_EXPANDABLE);
+        mShippingAddressSection.setDisplayMode(section == mShippingAddressSection
+                ? PaymentRequestSection.DISPLAY_MODE_FOCUSED
+                : PaymentRequestSection.DISPLAY_MODE_EXPANDABLE);
+        mShippingOptionSection.setDisplayMode(section == mShippingOptionSection
+                ? PaymentRequestSection.DISPLAY_MODE_FOCUSED
+                : PaymentRequestSection.DISPLAY_MODE_EXPANDABLE);
+        mPaymentMethodSection.setDisplayMode(section == mPaymentMethodSection
+                ? PaymentRequestSection.DISPLAY_MODE_FOCUSED
+                : PaymentRequestSection.DISPLAY_MODE_EXPANDABLE);
 
-        if (mSelectedSection != null) {
-            mSelectedSection.setBackgroundColor(Color.WHITE);
-            mSelectedSection.setClickable(true);
-        }
-
-        int defaultPrimaryColor = ContextCompat.getColor(mContext, R.color.default_primary_color);
-
-        sectionLabel.setBackgroundColor(defaultPrimaryColor);
-        sectionLabel.setClickable(false);
-
-        section.setBackgroundColor(defaultPrimaryColor);
-        section.setClickable(false);
-
-        ViewGroup noLongerSelectedSection = mSelectedSection;
-        mSelectedSectionLabel = sectionLabel;
+        // Update the section contents when they're selected.
         mSelectedSection = section;
-
-        if (noLongerSelectedSection == mOrderSummary) {
-            updateLineItems(mLineItems);
-        }
-        if (noLongerSelectedSection == mShippingAddresses
-                || (isFirstExpansionWithShipping && mSelectedSection != mShippingAddresses)) {
-            updateSection(mShippingAddresses, mShippingAddressesSection, null);
-        }
-        if (noLongerSelectedSection == mShippingOptions
-                || (isFirstExpansionWithShipping && mSelectedSection != mShippingOptions)) {
-            updateSection(mShippingOptions, mShippingOptionsSection, mSelectShippingOptionPrompt);
-        }
-        if (noLongerSelectedSection == mPaymentMethods) {
-            updateSection(mPaymentMethods, mPaymentMethodsSection, null);
-        }
-
-        if (mSelectedSection == mOrderSummary) {
+        assert mSelectedSection != mShippingSummarySection;
+        if (mSelectedSection == mOrderSummarySection) {
             mClient.getLineItems(new Callback<List<LineItem>>() {
                 @Override
                 public void onResult(List<LineItem> result) {
-                    updateLineItems(result);
+                    updateOrderSummarySection(result);
                 }
             });
-        } else if (mSelectedSection == mShippingAddresses) {
+        } else if (mSelectedSection == mShippingAddressSection) {
             mClient.getShippingAddresses(new Callback<SectionInformation>() {
                 @Override
                 public void onResult(SectionInformation result) {
-                    mShippingAddressesSection = result;
-                    updateSection(mShippingAddresses, mShippingAddressesSection, null);
+                    updateShippingAddressSection(result);
                 }
             });
-        } else if (mSelectedSection == mShippingOptions) {
+        } else if (mSelectedSection == mShippingOptionSection) {
             mClient.getShippingOptions(new Callback<SectionInformation>() {
                 @Override
                 public void onResult(SectionInformation result) {
-                    mShippingOptionsSection = result;
-                    updateSection(
-                            mShippingOptions, mShippingOptionsSection, mSelectShippingOptionPrompt);
+                    updateShippingOptionsSection(result);
                 }
             });
-        } else if (mSelectedSection == mPaymentMethods) {
+        } else if (mSelectedSection == mPaymentMethodSection) {
             mClient.getPaymentMethods(new Callback<SectionInformation>() {
                 @Override
                 public void onResult(SectionInformation result) {
-                    mPaymentMethodsSection = result;
-                    updateSection(mPaymentMethods, mPaymentMethodsSection, null);
+                    updatePaymentMethodSection(result);
                 }
             });
         }

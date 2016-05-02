@@ -314,4 +314,10 @@
 
     <!-- Clear browsing data preferences dimensions -->
     <dimen name="clear_browsing_data_checkbox_height">56dp</dimen>
+
+    <!-- Payments UI -->
+    <dimen name="payments_section_side_spacing">16dp</dimen>
+    <dimen name="payments_section_vertical_spacing">10dp</dimen>
+    <dimen name="payments_section_small_spacing">8dp</dimen>
+    <dimen name="payments_section_descriptive_item_spacing">40dp</dimen>
 </resources>

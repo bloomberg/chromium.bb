@@ -446,6 +446,21 @@
         <item name="android:windowContentOverlay">@null</item>
     </style>
 
+    <!-- Payments UI -->
+    <style name="PaymentsUiSectionHeader">
+        <item name="android:textColor">@color/google_blue_700</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+    <style name="PaymentsUiSectionDefaultText">
+        <item name="android:textColor">@color/default_text_color</item>
+        <item name="android:textSize">16sp</item>
+    </style>
+    <style name="PaymentsUiSectionDescriptiveText">
+        <item name="android:textColor">@color/descriptive_text_color</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textAlignment">viewEnd</item>
+    </style>
+
     <!-- Misc styles -->
     <style name="LocationBarButton">
         <item name="android:background">@null</item>
