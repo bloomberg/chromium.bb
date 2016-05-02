@@ -711,6 +711,8 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/push_messaging/PushMessagingServiceObserver.java",
   "java/src/org/chromium/chrome/browser/rappor/RapporServiceBridge.java",
   "java/src/org/chromium/chrome/browser/rlz/RevenueStats.java",
+  "java/src/org/chromium/chrome/browser/safe_browsing/SafeBrowsingApiBridge.java",
+  "java/src/org/chromium/chrome/browser/safe_browsing/SafeBrowsingApiHandler.java",
   "java/src/org/chromium/chrome/browser/search_engines/TemplateUrlService.java",
   "java/src/org/chromium/chrome/browser/services/AccountsChangedReceiver.java",
   "java/src/org/chromium/chrome/browser/services/AndroidEduAndChildAccountHelper.java",
