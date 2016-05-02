@@ -65,7 +65,7 @@ class WebGraphicsContext3DCommandBufferImpl {
   CONTENT_EXPORT WebGraphicsContext3DCommandBufferImpl(
       gpu::SurfaceHandle surface_handle,
       const GURL& active_url,
-      gpu::GpuChannelHost* host,
+      scoped_refptr<gpu::GpuChannelHost> host,
       const gpu::gles2::ContextCreationAttribHelper& attributes,
       gfx::GpuPreference gpu_preference,
       bool automatic_flushes);

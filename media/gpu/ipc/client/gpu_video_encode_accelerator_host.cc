@@ -17,9 +17,8 @@
 namespace media {
 
 GpuVideoEncodeAcceleratorHost::GpuVideoEncodeAcceleratorHost(
-    gpu::GpuChannelHost* channel,
     gpu::CommandBufferProxyImpl* impl)
-    : channel_(channel),
+    : channel_(impl->channel()),
       encoder_route_id_(MSG_ROUTING_NONE),
       client_(NULL),
       impl_(impl),

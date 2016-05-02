@@ -42,18 +42,18 @@ namespace content {
 WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl(
     gpu::SurfaceHandle surface_handle,
     const GURL& active_url,
-    gpu::GpuChannelHost* host,
+    scoped_refptr<gpu::GpuChannelHost> host,
     const gpu::gles2::ContextCreationAttribHelper& attributes,
     gfx::GpuPreference gpu_preference,
     bool automatic_flushes)
     : automatic_flushes_(automatic_flushes),
       attributes_(attributes),
-      host_(host),
+      host_(std::move(host)),
       surface_handle_(surface_handle),
       active_url_(active_url),
       gpu_preference_(gpu_preference),
       weak_ptr_factory_(this) {
-  DCHECK(host);
+  DCHECK(host_);
   switch (attributes.context_type) {
     case gpu::gles2::CONTEXT_TYPE_OPENGLES2:
     case gpu::gles2::CONTEXT_TYPE_OPENGLES3:

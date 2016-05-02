@@ -72,30 +72,27 @@ void StreamTextureProxy::OnFrameAvailable() {
 
 // static
 scoped_refptr<StreamTextureFactory> StreamTextureFactory::Create(
-    const scoped_refptr<ContextProviderCommandBuffer>& context_provider,
-    gpu::GpuChannelHost* channel) {
-  return new StreamTextureFactory(context_provider, channel);
+    scoped_refptr<ContextProviderCommandBuffer> context_provider) {
+  return new StreamTextureFactory(std::move(context_provider));
 }
 
 StreamTextureFactory::StreamTextureFactory(
-    const scoped_refptr<ContextProviderCommandBuffer>& context_provider,
-    gpu::GpuChannelHost* channel)
-    : context_provider_(context_provider), channel_(channel) {
-  DCHECK(channel);
+    scoped_refptr<ContextProviderCommandBuffer> context_provider)
+    : context_provider_(std::move(context_provider)),
+      channel_(context_provider_->GetCommandBufferProxy()->channel()) {
+  DCHECK(channel_);
 }
 
 StreamTextureFactory::~StreamTextureFactory() {}
 
 StreamTextureProxy* StreamTextureFactory::CreateProxy() {
-  DCHECK(channel_.get());
-  StreamTextureHost* host = new StreamTextureHost(channel_.get());
+  StreamTextureHost* host = new StreamTextureHost(channel_);
   return new StreamTextureProxy(host);
 }
 
 void StreamTextureFactory::EstablishPeer(int32_t stream_id,
                                              int player_id,
                                              int frame_id) {
-  DCHECK(channel_.get());
   channel_->Send(
       new GpuStreamTextureMsg_EstablishPeer(stream_id, frame_id, player_id));
 }

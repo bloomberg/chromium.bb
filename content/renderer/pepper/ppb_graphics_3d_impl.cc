@@ -196,9 +196,10 @@ bool PPB_Graphics3D_Impl::InitRaw(PPB_Graphics3D_API* share_context,
   if (!render_thread)
     return false;
 
-  channel_ = render_thread->EstablishGpuChannelSync(
-      CAUSE_FOR_GPU_LAUNCH_PEPPERPLATFORMCONTEXT3DIMPL_INITIALIZE);
-  if (!channel_.get())
+  scoped_refptr<gpu::GpuChannelHost> channel =
+      render_thread->EstablishGpuChannelSync(
+          CAUSE_FOR_GPU_LAUNCH_PEPPERPLATFORMCONTEXT3DIMPL_INITIALIZE);
+  if (!channel)
     return false;
 
   gfx::Size surface_size;
@@ -242,7 +243,7 @@ bool PPB_Graphics3D_Impl::InitRaw(PPB_Graphics3D_API* share_context,
     share_buffer = share_graphics->GetCommandBufferProxy();
   }
 
-  command_buffer_ = channel_->CreateCommandBuffer(
+  command_buffer_ = channel->CreateCommandBuffer(
       gpu::kNullSurfaceHandle, surface_size, share_buffer,
       gpu::GpuChannelHost::kDefaultStreamId,
       gpu::GpuChannelHost::kDefaultStreamPriority, attribs, GURL::EmptyGURL(),

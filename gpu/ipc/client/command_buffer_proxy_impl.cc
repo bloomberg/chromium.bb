@@ -39,13 +39,15 @@ gpu::CommandBufferId CommandBufferProxyID(int channel_id, int32_t route_id) {
 
 }  // namespace
 
-CommandBufferProxyImpl::CommandBufferProxyImpl(GpuChannelHost* channel,
-                                               int32_t route_id,
-                                               int32_t stream_id)
+CommandBufferProxyImpl::CommandBufferProxyImpl(
+    scoped_refptr<GpuChannelHost> channel,
+    int32_t route_id,
+    int32_t stream_id)
     : lock_(nullptr),
       gpu_control_client_(nullptr),
-      channel_(channel),
-      command_buffer_id_(CommandBufferProxyID(channel->channel_id(), route_id)),
+      channel_(std::move(channel)),
+      command_buffer_id_(
+          CommandBufferProxyID(channel_->channel_id(), route_id)),
       route_id_(route_id),
       stream_id_(stream_id),
       flush_count_(0),
@@ -57,7 +59,7 @@ CommandBufferProxyImpl::CommandBufferProxyImpl(GpuChannelHost* channel,
       next_signal_id_(0),
       weak_this_(AsWeakPtr()),
       callback_thread_(base::ThreadTaskRunnerHandle::Get()) {
-  DCHECK(channel);
+  DCHECK(channel_);
   DCHECK(stream_id);
 }
 

@@ -420,7 +420,7 @@ std::unique_ptr<WebGraphicsContext3DCommandBufferImpl> CreateOffscreenContext(
   return base::WrapUnique(new WebGraphicsContext3DCommandBufferImpl(
       gpu::kNullSurfaceHandle,
       GURL("chrome://gpu/RenderThreadImpl::CreateOffscreenContext3d"),
-      gpu_channel_host.get(), attributes, gfx::PreferIntegratedGpu,
+      std::move(gpu_channel_host), attributes, gfx::PreferIntegratedGpu,
       automatic_flushes));
 }
 
@@ -1419,7 +1419,7 @@ media::GpuVideoAcceleratorFactories* RenderThreadImpl::GetGpuFactories() {
                        &image_texture_targets);
 
     gpu_factories_.push_back(RendererGpuVideoAcceleratorFactories::Create(
-        gpu_channel_host.get(), base::ThreadTaskRunnerHandle::Get(),
+        std::move(gpu_channel_host), base::ThreadTaskRunnerHandle::Get(),
         media_task_runner, shared_context_provider,
         enable_gpu_memory_buffer_video_frames, image_texture_targets,
         enable_video_accelerator));
@@ -1458,19 +1458,16 @@ scoped_refptr<StreamTextureFactory> RenderThreadImpl::GetStreamTexureFactory() {
   if (!stream_texture_factory_.get() ||
       stream_texture_factory_->ContextGL()->GetGraphicsResetStatusKHR() !=
           GL_NO_ERROR) {
-    if (!SharedMainThreadContextProvider().get()) {
+    scoped_refptr<ContextProviderCommandBuffer> shared_context_provider =
+        SharedMainThreadContextProvider();
+    if (!shared_context_provider) {
       stream_texture_factory_ = NULL;
       return NULL;
     }
-    scoped_refptr<gpu::GpuChannelHost> gpu_channel_host(EstablishGpuChannelSync(
-        CAUSE_FOR_GPU_LAUNCH_VIDEODECODEACCELERATOR_INITIALIZE));
-    if (!gpu_channel_host.get()) {
-      LOG(ERROR) << "Failed to establish GPU channel for media player";
-      stream_texture_factory_ = NULL;
-    } else {
-      stream_texture_factory_ = StreamTextureFactory::Create(
-          shared_main_thread_contexts_, gpu_channel_host.get());
-    }
+    DCHECK(shared_context_provider->GetCommandBufferProxy());
+    DCHECK(shared_context_provider->GetCommandBufferProxy()->channel());
+    stream_texture_factory_ =
+        StreamTextureFactory::Create(std::move(shared_context_provider));
   }
   return stream_texture_factory_;
 }
@@ -1711,15 +1708,15 @@ void RenderThreadImpl::OnCreateNewView(const ViewMsg_New_Params& params) {
   RenderViewImpl::Create(compositor_deps, params, false);
 }
 
-gpu::GpuChannelHost* RenderThreadImpl::EstablishGpuChannelSync(
+scoped_refptr<gpu::GpuChannelHost> RenderThreadImpl::EstablishGpuChannelSync(
     CauseForGpuLaunch cause_for_gpu_launch) {
   TRACE_EVENT0("gpu", "RenderThreadImpl::EstablishGpuChannelSync");
 
-  if (gpu_channel_.get()) {
+  if (gpu_channel_) {
     // Do nothing if we already have a GPU channel or are already
     // establishing one.
     if (!gpu_channel_->IsLost())
-      return gpu_channel_.get();
+      return gpu_channel_;
 
     // Recreate the channel if it has been lost.
     gpu_channel_->DestroyChannel();
@@ -1749,7 +1746,7 @@ gpu::GpuChannelHost* RenderThreadImpl::EstablishGpuChannelSync(
   gpu_channel_ = gpu::GpuChannelHost::Create(
       this, client_id, gpu_info, channel_handle,
       ChildProcess::current()->GetShutDownEvent(), gpu_memory_buffer_manager());
-  return gpu_channel_.get();
+  return gpu_channel_;
 }
 
 blink::WebMediaStreamCenter* RenderThreadImpl::CreateMediaStreamCenter(
@@ -1776,7 +1773,7 @@ RenderThreadImpl::GetPeerConnectionDependencyFactory() {
 #endif
 
 gpu::GpuChannelHost* RenderThreadImpl::GetGpuChannel() {
-  if (!gpu_channel_.get())
+  if (!gpu_channel_)
     return NULL;
 
   if (gpu_channel_->IsLost())

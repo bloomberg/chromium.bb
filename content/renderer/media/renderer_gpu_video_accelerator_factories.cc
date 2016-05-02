@@ -46,7 +46,7 @@ void RecordContextProviderPhaseUmaEnum(const ContextProviderPhase phase) {
 // static
 std::unique_ptr<RendererGpuVideoAcceleratorFactories>
 RendererGpuVideoAcceleratorFactories::Create(
-    gpu::GpuChannelHost* gpu_channel_host,
+    scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
     const scoped_refptr<base::SingleThreadTaskRunner>& main_thread_task_runner,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     const scoped_refptr<ContextProviderCommandBuffer>& context_provider,
@@ -56,13 +56,13 @@ RendererGpuVideoAcceleratorFactories::Create(
   RecordContextProviderPhaseUmaEnum(
       ContextProviderPhase::CONTEXT_PROVIDER_ACQUIRED);
   return base::WrapUnique(new RendererGpuVideoAcceleratorFactories(
-      gpu_channel_host, main_thread_task_runner, task_runner, context_provider,
-      enable_gpu_memory_buffer_video_frames, image_texture_targets,
-      enable_video_accelerator));
+      std::move(gpu_channel_host), main_thread_task_runner, task_runner,
+      context_provider, enable_gpu_memory_buffer_video_frames,
+      image_texture_targets, enable_video_accelerator));
 }
 
 RendererGpuVideoAcceleratorFactories::RendererGpuVideoAcceleratorFactories(
-    gpu::GpuChannelHost* gpu_channel_host,
+    scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
     const scoped_refptr<base::SingleThreadTaskRunner>& main_thread_task_runner,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     const scoped_refptr<ContextProviderCommandBuffer>& context_provider,
@@ -71,7 +71,7 @@ RendererGpuVideoAcceleratorFactories::RendererGpuVideoAcceleratorFactories(
     bool enable_video_accelerator)
     : main_thread_task_runner_(main_thread_task_runner),
       task_runner_(task_runner),
-      gpu_channel_host_(gpu_channel_host),
+      gpu_channel_host_(std::move(gpu_channel_host)),
       context_provider_refptr_(context_provider),
       context_provider_(context_provider.get()),
       enable_gpu_memory_buffer_video_frames_(
@@ -115,13 +115,9 @@ RendererGpuVideoAcceleratorFactories::CreateVideoDecodeAccelerator() {
   if (CheckContextLost())
     return nullptr;
 
-  gpu::GpuChannelHost* channel =
-      context_provider_->GetCommandBufferProxy()->channel();
-  DCHECK(channel);
-
   return std::unique_ptr<media::VideoDecodeAccelerator>(
       new media::GpuVideoDecodeAcceleratorHost(
-          channel, context_provider_->GetCommandBufferProxy()));
+          context_provider_->GetCommandBufferProxy()));
 }
 
 std::unique_ptr<media::VideoEncodeAccelerator>
@@ -131,13 +127,9 @@ RendererGpuVideoAcceleratorFactories::CreateVideoEncodeAccelerator() {
   if (CheckContextLost())
     return nullptr;
 
-  gpu::GpuChannelHost* channel =
-      context_provider_->GetCommandBufferProxy()->channel();
-  DCHECK(channel);
-
   return std::unique_ptr<media::VideoEncodeAccelerator>(
       new media::GpuVideoEncodeAcceleratorHost(
-          channel, context_provider_->GetCommandBufferProxy()));
+          context_provider_->GetCommandBufferProxy()));
 }
 
 bool RendererGpuVideoAcceleratorFactories::CreateTextures(

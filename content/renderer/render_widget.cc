@@ -222,7 +222,7 @@ CreateOffscreenContext(scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
   bool automatic_flushes = false;
 
   return base::WrapUnique(new content::WebGraphicsContext3DCommandBufferImpl(
-      gpu::kNullSurfaceHandle, url, gpu_channel_host.get(), attributes,
+      gpu::kNullSurfaceHandle, url, std::move(gpu_channel_host), attributes,
       gfx::PreferIntegratedGpu, automatic_flushes));
 }
 

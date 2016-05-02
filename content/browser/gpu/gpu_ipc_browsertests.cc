@@ -29,7 +29,7 @@ const content::CauseForGpuLaunch kInitCause =
         CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE;
 
 std::unique_ptr<WebGraphicsContext3DCommandBufferImpl> CreateContext(
-    gpu::GpuChannelHost* gpu_channel_host) {
+    scoped_refptr<gpu::GpuChannelHost> gpu_channel_host) {
   // This is for an offscreen context, so the default framebuffer doesn't need
   // any alpha, depth, stencil, antialiasing.
   gpu::gles2::ContextCreationAttribHelper attributes;
@@ -41,7 +41,7 @@ std::unique_ptr<WebGraphicsContext3DCommandBufferImpl> CreateContext(
   attributes.bind_generates_resource = false;
   bool automatic_flushes = false;
   return base::WrapUnique(new WebGraphicsContext3DCommandBufferImpl(
-      gpu::kNullSurfaceHandle, GURL(), gpu_channel_host, attributes,
+      gpu::kNullSurfaceHandle, GURL(), std::move(gpu_channel_host), attributes,
       gfx::PreferIntegratedGpu, automatic_flushes));
 }
 
@@ -67,7 +67,7 @@ class ContextTestBase : public content::ContentBrowserTest {
     CHECK(gpu_channel_host);
 
     provider_ = new content::ContextProviderCommandBuffer(
-        CreateContext(gpu_channel_host.get()), gpu::SharedMemoryLimits(),
+        CreateContext(std::move(gpu_channel_host)), gpu::SharedMemoryLimits(),
         nullptr, content::OFFSCREEN_CONTEXT_FOR_TESTING);
     bool bound = provider_->BindToCurrentThread();
     CHECK(bound);

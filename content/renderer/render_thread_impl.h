@@ -222,7 +222,7 @@ class CONTENT_EXPORT RenderThreadImpl
   // established or if it has been lost (for example if the GPU plugin crashed).
   // If there is a pending asynchronous request, it will be completed by the
   // time this routine returns.
-  gpu::GpuChannelHost* EstablishGpuChannelSync(CauseForGpuLaunch);
+  scoped_refptr<gpu::GpuChannelHost> EstablishGpuChannelSync(CauseForGpuLaunch);
 
   // This method modifies how the next message is sent.  Normally, when sending
   // a synchronous message that runs a nested message loop, we need to suspend

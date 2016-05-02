@@ -643,7 +643,7 @@ WebString RendererBlinkPlatformImpl::databaseCreateOriginIdentifier(
 
 bool RendererBlinkPlatformImpl::canAccelerate2dCanvas() {
   RenderThreadImpl* thread = RenderThreadImpl::current();
-  gpu::GpuChannelHost* host =
+  scoped_refptr<gpu::GpuChannelHost> host =
       thread->EstablishGpuChannelSync(CAUSE_FOR_GPU_LAUNCH_CANVAS_2D);
   if (!host)
     return false;
@@ -980,10 +980,9 @@ blink::WebSpeechSynthesizer* RendererBlinkPlatformImpl::createSpeechSynthesizer(
 
 static void Collect3DContextInformationOnFailure(
     blink::Platform::GraphicsInfo* gl_info,
-    gpu::GpuChannelHost* host) {
+    const gpu::GPUInfo& gpu_info) {
   DCHECK(gl_info);
   std::string error_message("OffscreenContext Creation failed, ");
-  const gpu::GPUInfo& gpu_info = host->gpu_info();
   gl_info->vendorId = gpu_info.gpu.vendor_id;
   gl_info->deviceId = gpu_info.gpu.device_id;
   switch (gpu_info.context_info_state) {
@@ -1071,19 +1070,20 @@ RendererBlinkPlatformImpl::createOffscreenGraphicsContext3DProvider(
   bool automatic_flushes = true;
   // Prefer discrete GPU for WebGL.
   gfx::GpuPreference gpu_preference = gfx::PreferDiscreteGpu;
+  const auto& gpu_info = gpu_channel_host->gpu_info();
 
   scoped_refptr<ContextProviderCommandBuffer> provider(
       new ContextProviderCommandBuffer(
           base::WrapUnique(new WebGraphicsContext3DCommandBufferImpl(
               gpu::kNullSurfaceHandle, GURL(top_document_web_url),
-              gpu_channel_host.get(), attributes, gpu_preference,
+              std::move(gpu_channel_host), attributes, gpu_preference,
               automatic_flushes)),
           gpu::SharedMemoryLimits(), share_context,
           RENDERER_MAINTHREAD_CONTEXT));
   if (!provider->BindToCurrentThread()) {
     // Collect Graphicsinfo if there is a context failure or it is failed
     // purposefully in case of layout tests.
-    Collect3DContextInformationOnFailure(gl_info, gpu_channel_host.get());
+    Collect3DContextInformationOnFailure(gl_info, gpu_info);
     return nullptr;
   }
   return new WebGraphicsContext3DProviderImpl(std::move(provider));

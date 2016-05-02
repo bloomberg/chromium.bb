@@ -466,7 +466,9 @@ void PepperVideoEncoderHost::GetSupportedProfiles(
 
   if (EnsureGpuChannel()) {
     profiles = media::GpuVideoAcceleratorUtil::ConvertGpuToMediaEncodeProfiles(
-        channel_->gpu_info().video_encode_accelerator_supported_profiles);
+        command_buffer_->channel()
+            ->gpu_info()
+            .video_encode_accelerator_supported_profiles);
     for (media::VideoEncodeAccelerator::SupportedProfile profile : profiles) {
       if (profile.profile == media::VP9PROFILE_PROFILE1 ||
           profile.profile == media::VP9PROFILE_PROFILE2 ||
@@ -517,13 +519,14 @@ bool PepperVideoEncoderHost::EnsureGpuChannel() {
 
   // There is no guarantee that we have a 3D context to work with. So
   // we create a dummy command buffer to communicate with the gpu process.
-  channel_ = RenderThreadImpl::current()->EstablishGpuChannelSync(
-      CAUSE_FOR_GPU_LAUNCH_PEPPERVIDEOENCODERACCELERATOR_INITIALIZE);
-  if (!channel_)
+  scoped_refptr<gpu::GpuChannelHost> channel =
+      RenderThreadImpl::current()->EstablishGpuChannelSync(
+          CAUSE_FOR_GPU_LAUNCH_PEPPERVIDEOENCODERACCELERATOR_INITIALIZE);
+  if (!channel)
     return false;
 
   std::vector<int32_t> attribs(1, PP_GRAPHICS3DATTRIB_NONE);
-  command_buffer_ = channel_->CreateCommandBuffer(
+  command_buffer_ = channel->CreateCommandBuffer(
       gpu::kNullSurfaceHandle, gfx::Size(), nullptr,
       gpu::GpuChannelHost::kDefaultStreamId,
       gpu::GpuChannelHost::kDefaultStreamPriority, attribs, GURL::EmptyGURL(),
@@ -548,8 +551,8 @@ bool PepperVideoEncoderHost::InitializeHardware(
   if (!EnsureGpuChannel())
     return false;
 
-  encoder_.reset(new media::GpuVideoEncodeAcceleratorHost(
-      channel_.get(), command_buffer_.get()));
+  encoder_.reset(
+      new media::GpuVideoEncodeAcceleratorHost(command_buffer_.get()));
   return encoder_->Initialize(input_format, input_visible_size, output_profile,
                               initial_bitrate, this);
 }

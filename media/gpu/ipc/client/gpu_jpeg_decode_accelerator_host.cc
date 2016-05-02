@@ -97,10 +97,10 @@ class GpuJpegDecodeAcceleratorHost::Receiver : public IPC::Listener,
 };
 
 GpuJpegDecodeAcceleratorHost::GpuJpegDecodeAcceleratorHost(
-    gpu::GpuChannelHost* channel,
+    scoped_refptr<gpu::GpuChannelHost> channel,
     int32_t route_id,
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
-    : channel_(channel),
+    : channel_(std::move(channel)),
       decoder_route_id_(route_id),
       io_task_runner_(io_task_runner) {
   DCHECK(channel_);

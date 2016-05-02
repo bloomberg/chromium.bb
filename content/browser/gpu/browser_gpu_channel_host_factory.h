@@ -38,7 +38,7 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
 
   int GpuProcessHostId() { return gpu_host_id_; }
 #if !defined(OS_ANDROID)
-  gpu::GpuChannelHost* EstablishGpuChannelSync(
+  scoped_refptr<gpu::GpuChannelHost> EstablishGpuChannelSync(
       CauseForGpuLaunch cause_for_gpu_launch);
 #endif
   void EstablishGpuChannel(CauseForGpuLaunch cause_for_gpu_launch,

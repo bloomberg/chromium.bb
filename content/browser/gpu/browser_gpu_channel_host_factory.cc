@@ -280,14 +280,15 @@ BrowserGpuChannelHostFactory::AllocateSharedMemory(size_t size) {
 // (Opening the initial channel to a child process involves handling a reply
 // task on the UI thread first, so we cannot block here.)
 #if !defined(OS_ANDROID)
-gpu::GpuChannelHost* BrowserGpuChannelHostFactory::EstablishGpuChannelSync(
+scoped_refptr<gpu::GpuChannelHost>
+BrowserGpuChannelHostFactory::EstablishGpuChannelSync(
     CauseForGpuLaunch cause_for_gpu_launch) {
   EstablishGpuChannel(cause_for_gpu_launch, base::Closure());
 
   if (pending_request_.get())
     pending_request_->Wait();
 
-  return gpu_channel_.get();
+  return gpu_channel_;
 }
 #endif
 

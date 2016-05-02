@@ -72,8 +72,7 @@ typedef std::unique_ptr<StreamTextureProxy, StreamTextureProxy::Deleter>
 class StreamTextureFactory : public base::RefCounted<StreamTextureFactory> {
  public:
   static scoped_refptr<StreamTextureFactory> Create(
-      const scoped_refptr<ContextProviderCommandBuffer>& context_provider,
-      gpu::GpuChannelHost* channel);
+      scoped_refptr<ContextProviderCommandBuffer> context_provider);
 
   // Create the StreamTextureProxy object.
   StreamTextureProxy* CreateProxy();
@@ -99,8 +98,7 @@ class StreamTextureFactory : public base::RefCounted<StreamTextureFactory> {
  private:
   friend class base::RefCounted<StreamTextureFactory>;
   StreamTextureFactory(
-      const scoped_refptr<ContextProviderCommandBuffer>& context_provider,
-      gpu::GpuChannelHost* channel);
+      scoped_refptr<ContextProviderCommandBuffer> context_provider);
   ~StreamTextureFactory();
 
   scoped_refptr<ContextProviderCommandBuffer> context_provider_;

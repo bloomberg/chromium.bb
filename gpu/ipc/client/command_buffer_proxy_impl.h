@@ -66,7 +66,7 @@ class GPU_EXPORT CommandBufferProxyImpl
   typedef base::Callback<void(const std::string& msg, int id)>
       GpuConsoleMessageCallback;
 
-  CommandBufferProxyImpl(GpuChannelHost* channel,
+  CommandBufferProxyImpl(scoped_refptr<GpuChannelHost> channel,
                          int32_t route_id,
                          int32_t stream_id);
   ~CommandBufferProxyImpl() override;
@@ -145,7 +145,7 @@ class GPU_EXPORT CommandBufferProxyImpl
 
   int32_t stream_id() const { return stream_id_; }
 
-  GpuChannelHost* channel() const { return channel_; }
+  const scoped_refptr<GpuChannelHost>& channel() const { return channel_; }
 
   base::SharedMemoryHandle GetSharedStateHandle() const {
     return shared_state_shm_->handle();
@@ -232,9 +232,7 @@ class GPU_EXPORT CommandBufferProxyImpl
   // The shared memory area used to update state.
   std::unique_ptr<base::SharedMemory> shared_state_shm_;
 
-  // |*this| is owned by |*channel_| and so is always outlived by it, so using a
-  // raw pointer is ok.
-  GpuChannelHost* channel_;
+  scoped_refptr<GpuChannelHost> channel_;
   const gpu::CommandBufferId command_buffer_id_;
   const int32_t route_id_;
   const int32_t stream_id_;

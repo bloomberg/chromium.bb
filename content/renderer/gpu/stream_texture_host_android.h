@@ -29,7 +29,7 @@ namespace content {
 // StreamTextureProxy.
 class StreamTextureHost : public IPC::Listener {
  public:
-  explicit StreamTextureHost(gpu::GpuChannelHost* channel);
+  explicit StreamTextureHost(scoped_refptr<gpu::GpuChannelHost> channel);
   ~StreamTextureHost() override;
 
   // Listener class that is listening to the stream texture updates. It is

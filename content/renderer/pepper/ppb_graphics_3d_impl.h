@@ -22,7 +22,6 @@
 namespace gpu {
 struct Capabilities;
 class CommandBufferProxyImpl;
-class GpuChannelHost;
 }
 
 namespace content {
@@ -67,8 +66,6 @@ class PPB_Graphics3D_Impl : public ppapi::PPB_Graphics3D_Shared,
 
   gpu::CommandBufferProxyImpl* GetCommandBufferProxy();
 
-  gpu::GpuChannelHost* channel() { return channel_.get(); }
-
  protected:
   ~PPB_Graphics3D_Impl() override;
   // ppapi::PPB_Graphics3D_Shared overrides.
@@ -107,7 +104,6 @@ class PPB_Graphics3D_Impl : public ppapi::PPB_Graphics3D_Shared,
   gpu::Mailbox mailbox_;
   gpu::SyncToken sync_token_;
   bool has_alpha_;
-  scoped_refptr<gpu::GpuChannelHost> channel_;
   std::unique_ptr<gpu::CommandBufferProxyImpl> command_buffer_;
 
   base::WeakPtrFactory<PPB_Graphics3D_Impl> weak_ptr_factory_;

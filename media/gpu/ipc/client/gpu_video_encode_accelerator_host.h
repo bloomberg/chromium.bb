@@ -46,10 +46,8 @@ class GpuVideoEncodeAcceleratorHost
       public gpu::CommandBufferProxyImpl::DeletionObserver,
       public base::NonThreadSafe {
  public:
-  // |this| is guaranteed not to outlive |channel| and |impl|.  (See comments
-  // for |channel_| and |impl_|.)
-  GpuVideoEncodeAcceleratorHost(gpu::GpuChannelHost* channel,
-                                gpu::CommandBufferProxyImpl* impl);
+  // |this| is guaranteed not to outlive |impl|.  (See comments for |impl_|.)
+  explicit GpuVideoEncodeAcceleratorHost(gpu::CommandBufferProxyImpl* impl);
 
   // IPC::Listener implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
@@ -100,10 +98,7 @@ class GpuVideoEncodeAcceleratorHost
                               bool key_frame);
   void OnNotifyError(Error error);
 
-  // Unowned reference to the GpuChannelHost to send IPC messages to the GPU
-  // process.  |channel_| outlives |impl_|, so the reference is always valid as
-  // long as it is not NULL.
-  gpu::GpuChannelHost* channel_;
+  scoped_refptr<gpu::GpuChannelHost> channel_;
 
   // Route ID for the associated encoder in the GPU process.
   int32_t encoder_route_id_;

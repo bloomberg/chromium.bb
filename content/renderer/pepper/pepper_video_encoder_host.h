@@ -137,7 +137,6 @@ class CONTENT_EXPORT PepperVideoEncoderHost
   // Buffer manager for shared memory that holds video frames.
   ppapi::MediaStreamBufferManager buffer_manager_;
 
-  scoped_refptr<gpu::GpuChannelHost> channel_;
   std::unique_ptr<gpu::CommandBufferProxyImpl> command_buffer_;
 
   std::unique_ptr<media::VideoEncodeAccelerator> encoder_;

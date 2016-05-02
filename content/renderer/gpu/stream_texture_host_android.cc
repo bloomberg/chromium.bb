@@ -11,12 +11,12 @@
 
 namespace content {
 
-StreamTextureHost::StreamTextureHost(gpu::GpuChannelHost* channel)
+StreamTextureHost::StreamTextureHost(scoped_refptr<gpu::GpuChannelHost> channel)
     : stream_id_(0),
       listener_(NULL),
-      channel_(channel),
+      channel_(std::move(channel)),
       weak_ptr_factory_(this) {
-  DCHECK(channel);
+  DCHECK(channel_);
 }
 
 StreamTextureHost::~StreamTextureHost() {

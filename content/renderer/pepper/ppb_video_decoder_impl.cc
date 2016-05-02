@@ -129,10 +129,8 @@ bool PPB_VideoDecoder_Impl::Init(PP_Resource graphics_context,
 
   // This is not synchronous, but subsequent IPC messages will be buffered, so
   // it is okay to immediately send IPC messages.
-  gpu::GpuChannelHost* channel = command_buffer->channel();
-  if (channel) {
-    decoder_.reset(
-        new media::GpuVideoDecodeAcceleratorHost(channel, command_buffer));
+  if (command_buffer->channel()) {
+    decoder_.reset(new media::GpuVideoDecodeAcceleratorHost(command_buffer));
     return decoder_->Initialize(PPToMediaProfile(profile), this);
   }
   return false;

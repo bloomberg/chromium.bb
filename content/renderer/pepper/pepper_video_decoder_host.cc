@@ -147,10 +147,8 @@ int32_t PepperVideoDecoderHost::OnHostMsgInitialize(
   if (acceleration != PP_HARDWAREACCELERATION_NONE) {
     // This is not synchronous, but subsequent IPC messages will be buffered, so
     // it is okay to immediately send IPC messages.
-    gpu::GpuChannelHost* channel = command_buffer->channel();
-    if (channel) {
-      decoder_.reset(
-          new media::GpuVideoDecodeAcceleratorHost(channel, command_buffer));
+    if (command_buffer->channel()) {
+      decoder_.reset(new media::GpuVideoDecodeAcceleratorHost(command_buffer));
       if (decoder_->Initialize(profile_, this)) {
         initialized_ = true;
         return PP_OK;

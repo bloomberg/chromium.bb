@@ -47,7 +47,7 @@ class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
   // Takes a ref on |gpu_channel_host| and tests |context| for loss before each
   // use.  Safe to call from any thread.
   static std::unique_ptr<RendererGpuVideoAcceleratorFactories> Create(
-      gpu::GpuChannelHost* gpu_channel_host,
+      scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
       const scoped_refptr<base::SingleThreadTaskRunner>&
           main_thread_task_runner,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
@@ -98,7 +98,7 @@ class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
 
  private:
   RendererGpuVideoAcceleratorFactories(
-      gpu::GpuChannelHost* gpu_channel_host,
+      scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
       const scoped_refptr<base::SingleThreadTaskRunner>&
           main_thread_task_runner,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
