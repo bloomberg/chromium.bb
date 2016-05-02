@@ -464,8 +464,7 @@ void ScriptLoader::notifyFinished(Resource* resource)
 {
     DCHECK(!m_willBeParserExecuted);
 
-    Document* elementDocument = &(m_element->document());
-    Document* contextDocument = elementDocument->contextDocument();
+    Document* contextDocument = m_element->document().contextDocument();
     if (!contextDocument)
         return;
 
@@ -474,8 +473,8 @@ void ScriptLoader::notifyFinished(Resource* resource)
     ScriptRunner::ExecutionType runOrder = m_willExecuteInOrder ? ScriptRunner::IN_ORDER_EXECUTION : ScriptRunner::ASYNC_EXECUTION;
     if (m_resource->errorOccurred()) {
         contextDocument->scriptRunner()->notifyScriptLoadError(this, runOrder);
-        dispatchErrorEvent();
         detach();
+        dispatchErrorEvent();
         return;
     }
     contextDocument->scriptRunner()->notifyScriptReady(this, runOrder);
