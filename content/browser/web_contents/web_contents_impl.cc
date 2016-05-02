@@ -4242,11 +4242,6 @@ void WebContentsImpl::Close(RenderViewHost* rvh) {
     delegate_->CloseContents(this);
 }
 
-void WebContentsImpl::SwappedOut(RenderFrameHost* rfh) {
-  if (delegate_ && rfh->GetRenderViewHost() == GetRenderViewHost())
-    delegate_->SwappedOut(this);
-}
-
 void WebContentsImpl::RequestMove(const gfx::Rect& new_bounds) {
   if (delegate_ && delegate_->IsPopupOrPanel(this))
     delegate_->MoveContents(this, new_bounds);

@@ -134,12 +134,11 @@ class WebUILoginView : public views::View,
                                   content::MediaStreamType type) override;
   bool PreHandleGestureEvent(content::WebContents* source,
                              const blink::WebGestureEvent& event) override;
-  // TODO(jdufault): Remove LoadProgressChanged, SwappedOut, BeforeUnloadFired,
+  // TODO(jdufault): Remove LoadProgressChanged, BeforeUnloadFired,
   // RendererUnresponsive, RendererResponsive, DidNavigateMainFramePostCommit
   // overrides once crbug.com/452599 is resolved.
   void LoadProgressChanged(content::WebContents* source,
                            double progress) override;
-  void SwappedOut(content::WebContents* source) override;
   void BeforeUnloadFired(content::WebContents* tab,
                          bool proceed,
                          bool* proceed_to_fire_unload) override;

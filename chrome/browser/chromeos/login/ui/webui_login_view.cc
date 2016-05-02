@@ -462,10 +462,6 @@ void WebUILoginView::LoadProgressChanged(content::WebContents* source,
   VLOG(1) << "WebUILoginView loading progress updated to " << progress;
 }
 
-void WebUILoginView::SwappedOut(content::WebContents* source) {
-  VLOG(1) << "WebUILoginView got swapped out";
-}
-
 void WebUILoginView::BeforeUnloadFired(content::WebContents* tab,
                                        bool proceed,
                                        bool* proceed_to_fire_unload) {

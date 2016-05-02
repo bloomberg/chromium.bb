@@ -141,10 +141,6 @@ class CONTENT_EXPORT WebContentsDelegate {
   // it needs to do.
   virtual void CloseContents(WebContents* source) {}
 
-  // Informs the delegate that the underlying RenderViewHost has been swapped
-  // out so it can perform any cleanup necessary.
-  virtual void SwappedOut(WebContents* source) {}
-
   // Request the delegate to move this WebContents to the specified position
   // in screen coordinates.
   virtual void MoveContents(WebContents* source, const gfx::Rect& pos) {}

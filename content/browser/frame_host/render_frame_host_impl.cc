@@ -1230,9 +1230,6 @@ void RenderFrameHostImpl::SwapOut(
   is_waiting_for_swapout_ack_ = true;
   if (frame_tree_node_->IsMainFrame())
     render_view_host_->set_is_active(false);
-
-  if (!GetParent())
-    delegate_->SwappedOut(this);
 }
 
 void RenderFrameHostImpl::OnBeforeUnloadACK(
