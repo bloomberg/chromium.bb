@@ -932,6 +932,14 @@ components/rappor/rappor_parameters.h.
   </summary>
 </rappor-metric>
 
+<rappor-metric name="Media.OriginUrl.MSE.PipelineError" type="ETLD_PLUS_ONE">
+  <owner>xhwang@chromium.org</owner>
+  <summary>
+    The domain and registry of the URL that loads an HTML5 media player using
+    Media Source Extensions (MSE) and ends up with an error.
+  </summary>
+</rappor-metric>
+
 <rappor-metric name="Media.OriginUrl.MSE.Secure" type="ETLD_PLUS_ONE">
   <owner>wolenetz@chromium.org</owner>
   <summary>
@@ -945,6 +953,14 @@ components/rappor/rappor_parameters.h.
   <summary>
     The domain and registry of the URL that loads an HTML5 media player using
     SRC.
+  </summary>
+</rappor-metric>
+
+<rappor-metric name="Media.OriginUrl.SRC.PipelineError" type="ETLD_PLUS_ONE">
+  <owner>xhwang@chromium.org</owner>
+  <summary>
+    The domain and registry of the URL that loads an HTML5 media player using
+    SRC and ends up with an error.
   </summary>
 </rappor-metric>
 

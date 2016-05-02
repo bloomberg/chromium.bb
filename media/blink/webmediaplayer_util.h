@@ -32,6 +32,12 @@ ReportMetrics(blink::WebMediaPlayer::LoadType load_type,
               const GURL& url,
               const blink::WebSecurityOrigin& security_origin);
 
+// Report metrics about pipeline errors.
+void MEDIA_BLINK_EXPORT
+ReportPipelineError(blink::WebMediaPlayer::LoadType load_type,
+                    const blink::WebSecurityOrigin& security_origin,
+                    PipelineStatus error);
+
 // Record a RAPPOR metric for the origin of an HLS playback.
 void MEDIA_BLINK_EXPORT RecordOriginOfHLSPlayback(const GURL& origin_url);
 

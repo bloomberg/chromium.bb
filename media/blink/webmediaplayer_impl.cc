@@ -951,6 +951,8 @@ void WebMediaPlayerImpl::OnPipelineError(PipelineStatus error) {
   if (suppress_destruction_errors_)
     return;
 
+  ReportPipelineError(load_type_, frame_->getSecurityOrigin(), error);
+
   media_log_->AddEvent(media_log_->CreatePipelineErrorEvent(error));
 
   if (ready_state_ == WebMediaPlayer::ReadyStateHaveNothing) {
