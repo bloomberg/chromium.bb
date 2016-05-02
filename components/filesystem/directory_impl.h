@@ -13,12 +13,9 @@
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "components/filesystem/public/interfaces/directory.mojom.h"
+#include "components/filesystem/shared_temp_dir.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-
-namespace base {
-class ScopedTempDir;
-}  // namespace base
 
 namespace filesystem {
 
@@ -30,7 +27,7 @@ class DirectoryImpl : public Directory {
   // when this object is destroyed.
   DirectoryImpl(mojo::InterfaceRequest<Directory> request,
                 base::FilePath directory_path,
-                std::unique_ptr<base::ScopedTempDir> temp_dir,
+                scoped_refptr<SharedTempDir> temp_dir,
                 scoped_refptr<LockTable> lock_table);
   ~DirectoryImpl() override;
 
@@ -64,6 +61,7 @@ class DirectoryImpl : public Directory {
   void Flush(const FlushCallback& callback) override;
   void StatFile(const mojo::String& path,
                 const StatFileCallback& callback) override;
+  void Clone(mojo::InterfaceRequest<Directory> directory) override;
   void ReadEntireFile(const mojo::String& path,
                       const ReadEntireFileCallback& callback) override;
   void WriteFile(const mojo::String& path,
@@ -73,7 +71,7 @@ class DirectoryImpl : public Directory {
  private:
   mojo::StrongBinding<Directory> binding_;
   base::FilePath directory_path_;
-  std::unique_ptr<base::ScopedTempDir> temp_dir_;
+  scoped_refptr<SharedTempDir> temp_dir_;
   scoped_refptr<LockTable> lock_table_;
 
   DISALLOW_COPY_AND_ASSIGN(DirectoryImpl);

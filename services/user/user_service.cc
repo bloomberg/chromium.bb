@@ -28,7 +28,7 @@ UserService::~UserService() {}
 void UserService::GetDirectory(filesystem::DirectoryRequest request,
                                const GetDirectoryCallback& callback) {
   new filesystem::DirectoryImpl(std::move(request), path_,
-                                std::unique_ptr<base::ScopedTempDir>(),
+                                scoped_refptr<filesystem::SharedTempDir>(),
                                 lock_table_);
   callback.Run();
 }
@@ -50,7 +50,7 @@ void UserService::GetSubDirectory(const mojo::String& sub_directory_path,
   }
 
   new filesystem::DirectoryImpl(std::move(request), subdir,
-                                std::unique_ptr<base::ScopedTempDir>(),
+                                scoped_refptr<filesystem::SharedTempDir>(),
                                 lock_table_);
   callback.Run(filesystem::FileError::OK);
 }

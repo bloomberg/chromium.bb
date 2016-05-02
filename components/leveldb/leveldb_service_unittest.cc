@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "components/filesystem/public/interfaces/directory.mojom.h"
 #include "components/filesystem/public/interfaces/file_system.mojom.h"
@@ -40,10 +41,9 @@ class LevelDBServiceTest : public shell::test::ShellTest {
 
   // Note: This has an out parameter rather than returning the |DirectoryPtr|,
   // since |ASSERT_...()| doesn't work with return values.
-  void GetUserDataDir(filesystem::DirectoryPtr* directory) {
+  void GetTempDirectory(filesystem::DirectoryPtr* directory) {
     FileError error = FileError::FAILED;
-    files()->OpenPersistentFileSystem(GetProxy(directory),
-                                      mojo::Capture(&error));
+    files()->OpenTempDirectory(GetProxy(directory), mojo::Capture(&error));
     ASSERT_TRUE(files().WaitForIncomingResponse());
     ASSERT_EQ(FileError::OK, error);
   }
@@ -187,22 +187,24 @@ TEST_F(LevelDBServiceTest, WriteBatch) {
   EXPECT_EQ("", value.To<std::string>());
 }
 
-// TODO(crbug.com/602820) Test is flaky.
-#if defined(OS_LINUX) || defined(OS_WIN)
-#define MAYBE_Reconnect DISABLED_Reconnect
-#else
-#define MAYBE_Reconnect Reconnect
-#endif
-TEST_F(LevelDBServiceTest, MAYBE_Reconnect) {
+TEST_F(LevelDBServiceTest, Reconnect) {
   DatabaseError error;
+
+  filesystem::DirectoryPtr temp_directory;
+  GetTempDirectory(&temp_directory);
 
   {
     filesystem::DirectoryPtr directory;
-    GetUserDataDir(&directory);
+    temp_directory->Clone(GetProxy(&directory));
 
     LevelDBDatabasePtr database;
-    leveldb()->Open(std::move(directory), "test", GetProxy(&database),
-                    Capture(&error));
+    leveldb::OpenOptionsPtr options = leveldb::OpenOptions::New();
+    options->error_if_exists = true;
+    options->create_if_missing = true;
+    leveldb()->OpenWithOptions(std::move(options),
+                               std::move(directory), "test",
+                               GetProxy(&database),
+                               Capture(&error));
     ASSERT_TRUE(leveldb().WaitForIncomingResponse());
     EXPECT_EQ(DatabaseError::OK, error);
 
@@ -219,7 +221,7 @@ TEST_F(LevelDBServiceTest, MAYBE_Reconnect) {
 
   {
     filesystem::DirectoryPtr directory;
-    GetUserDataDir(&directory);
+    temp_directory->Clone(GetProxy(&directory));
 
     // Reconnect to the database.
     LevelDBDatabasePtr database;

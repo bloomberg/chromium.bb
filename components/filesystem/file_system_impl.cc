@@ -42,8 +42,10 @@ void FileSystemImpl::OpenTempDirectory(
   CHECK(temp_dir->CreateUniqueTempDir());
 
   base::FilePath path = temp_dir->path();
+  scoped_refptr<SharedTempDir> shared_temp_dir =
+      new SharedTempDir(std::move(temp_dir));
   new DirectoryImpl(
-      std::move(directory), path, std::move(temp_dir), lock_table_);
+      std::move(directory), path, std::move(shared_temp_dir), lock_table_);
   callback.Run(FileError::OK);
 }
 
@@ -55,8 +57,11 @@ void FileSystemImpl::OpenPersistentFileSystem(
   if (!base::PathExists(path))
     base::CreateDirectory(path);
 
+  scoped_refptr<SharedTempDir> shared_temp_dir =
+      new SharedTempDir(std::move(temp_dir));
+
   new DirectoryImpl(
-      std::move(directory), path, std::move(temp_dir), lock_table_);
+      std::move(directory), path, std::move(shared_temp_dir), lock_table_);
   callback.Run(FileError::OK);
 }
 

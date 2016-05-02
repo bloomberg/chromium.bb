@@ -24,15 +24,14 @@ namespace filesystem {
 
 DirectoryImpl::DirectoryImpl(mojo::InterfaceRequest<Directory> request,
                              base::FilePath directory_path,
-                             std::unique_ptr<base::ScopedTempDir> temp_dir,
+                             scoped_refptr<SharedTempDir> temp_dir,
                              scoped_refptr<LockTable> lock_table)
     : binding_(this, std::move(request)),
       directory_path_(directory_path),
       temp_dir_(std::move(temp_dir)),
       lock_table_(std::move(lock_table)) {}
 
-DirectoryImpl::~DirectoryImpl() {
-}
+DirectoryImpl::~DirectoryImpl() {}
 
 void DirectoryImpl::Read(const ReadCallback& callback) {
   mojo::Array<DirectoryEntryPtr> entries;
@@ -83,7 +82,8 @@ void DirectoryImpl::OpenFile(const mojo::String& raw_path,
   }
 
   if (file.is_pending()) {
-    new FileImpl(std::move(file), path, std::move(base_file), lock_table_);
+    new FileImpl(std::move(file), path, std::move(base_file), temp_dir_,
+                 lock_table_);
   }
   callback.Run(FileError::OK);
 }
@@ -155,7 +155,7 @@ void DirectoryImpl::OpenDirectory(const mojo::String& raw_path,
   }
 
   if (directory.is_pending())
-    new DirectoryImpl(std::move(directory), path, nullptr, lock_table_);
+    new DirectoryImpl(std::move(directory), path, temp_dir_, lock_table_);
   callback.Run(FileError::OK);
 }
 
@@ -265,6 +265,13 @@ void DirectoryImpl::StatFile(const mojo::String& raw_path,
   }
 
   callback.Run(FileError::OK, MakeFileInformation(info));
+}
+
+void DirectoryImpl::Clone(mojo::InterfaceRequest<Directory> directory) {
+  if (directory.is_pending()) {
+    new DirectoryImpl(std::move(directory), directory_path_,
+                      temp_dir_, lock_table_);
+  }
 }
 
 void DirectoryImpl::ReadEntireFile(const mojo::String& raw_path,

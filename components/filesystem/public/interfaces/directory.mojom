@@ -71,6 +71,9 @@ interface Directory {
   [Sync]
   StatFile(string path) => (FileError error, FileInformation? file_information);
 
+  // Creates a copy of this directory.
+  Clone(Directory& directory);
+
   // Reads the contents of an entire file.
   ReadEntireFile(string path) => (FileError error, array<uint8> data);
 

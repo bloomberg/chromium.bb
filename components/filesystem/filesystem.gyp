@@ -26,6 +26,8 @@
         'file_system_impl.h',
         'lock_table.cc',
         'lock_table.h',
+        'shared_temp_dir.cc',
+        'shared_temp_dir.h',
         'util.cc',
         'util.h',
       ],

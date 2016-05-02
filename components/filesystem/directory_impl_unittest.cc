@@ -154,6 +154,40 @@ TEST_F(DirectoryImplTest, CantOpenDirectoriesAsFiles) {
   }
 }
 
+TEST_F(DirectoryImplTest, Clone) {
+  DirectoryPtr clone_one;
+  DirectoryPtr clone_two;
+  FileError error;
+
+  {
+    DirectoryPtr directory;
+    GetTemporaryRoot(&directory);
+
+    directory->Clone(GetProxy(&clone_one));
+    directory->Clone(GetProxy(&clone_two));
+
+    // Original temporary directory goes out of scope here; shouldn't be
+    // deleted since it has clones.
+  }
+
+  std::string data("one two three");
+  {
+    clone_one->WriteFile("data", mojo::Array<uint8_t>::From(data),
+                         Capture(&error));
+    ASSERT_TRUE(clone_one.WaitForIncomingResponse());
+    EXPECT_EQ(FileError::OK, error);
+  }
+
+  {
+    mojo::Array<uint8_t> file_contents;
+    clone_two->ReadEntireFile("data", Capture(&error, &file_contents));
+    ASSERT_TRUE(clone_two.WaitForIncomingResponse());
+    EXPECT_EQ(FileError::OK, error);
+
+    EXPECT_EQ(data, file_contents.To<std::string>());
+  }
+}
+
 TEST_F(DirectoryImplTest, WriteFileReadFile) {
   DirectoryPtr directory;
   GetTemporaryRoot(&directory);

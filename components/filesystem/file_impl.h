@@ -21,16 +21,19 @@ class FilePath;
 namespace filesystem {
 
 class LockTable;
+class SharedTempDir;
 
 class FileImpl : public File {
  public:
   FileImpl(mojo::InterfaceRequest<File> request,
            const base::FilePath& path,
            uint32_t flags,
+           scoped_refptr<SharedTempDir> temp_dir,
            scoped_refptr<LockTable> lock_table);
   FileImpl(mojo::InterfaceRequest<File> request,
            const base::FilePath& path,
            base::File file,
+           scoped_refptr<SharedTempDir> temp_dir,
            scoped_refptr<LockTable> lock_table);
   ~FileImpl() override;
 
@@ -74,6 +77,7 @@ class FileImpl : public File {
   mojo::StrongBinding<File> binding_;
   base::File file_;
   base::FilePath path_;
+  scoped_refptr<SharedTempDir> temp_dir_;
   scoped_refptr<LockTable> lock_table_;
 
   DISALLOW_COPY_AND_ASSIGN(FileImpl);

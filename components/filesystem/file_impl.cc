@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "components/filesystem/lock_table.h"
+#include "components/filesystem/shared_temp_dir.h"
 #include "components/filesystem/util.h"
 #include "mojo/common/common_type_converters.h"
 #include "mojo/platform_handle/platform_handle_functions.h"
@@ -34,10 +35,12 @@ const size_t kMaxReadSize = 1 * 1024 * 1024;  // 1 MB.
 FileImpl::FileImpl(mojo::InterfaceRequest<File> request,
                    const base::FilePath& path,
                    uint32_t flags,
+                   scoped_refptr<SharedTempDir> temp_dir,
                    scoped_refptr<LockTable> lock_table)
     : binding_(this, std::move(request)),
       file_(path, flags),
       path_(path),
+      temp_dir_(std::move(temp_dir)),
       lock_table_(std::move(lock_table)) {
   DCHECK(file_.IsValid());
 }
@@ -45,10 +48,12 @@ FileImpl::FileImpl(mojo::InterfaceRequest<File> request,
 FileImpl::FileImpl(mojo::InterfaceRequest<File> request,
                    const base::FilePath& path,
                    base::File file,
+                   scoped_refptr<SharedTempDir> temp_dir,
                    scoped_refptr<LockTable> lock_table)
     : binding_(this, std::move(request)),
       file_(std::move(file)),
       path_(path),
+      temp_dir_(std::move(temp_dir)),
       lock_table_(std::move(lock_table)) {
   DCHECK(file_.IsValid());
 }
@@ -297,7 +302,8 @@ void FileImpl::Dup(mojo::InterfaceRequest<File> file,
   }
 
   if (file.is_pending())
-    new FileImpl(std::move(file), path_, std::move(new_file), lock_table_);
+    new FileImpl(std::move(file), path_, std::move(new_file), temp_dir_,
+                 lock_table_);
   callback.Run(FileError::OK);
 }
 
