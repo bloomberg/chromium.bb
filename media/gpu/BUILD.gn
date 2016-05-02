@@ -305,6 +305,7 @@ component("gpu") {
         ]
       }
       if (use_ozone) {
+        deps += [ "//ui/ozone" ]
         sources += [
           "vaapi_drm_picture.cc",
           "vaapi_drm_picture.h",
