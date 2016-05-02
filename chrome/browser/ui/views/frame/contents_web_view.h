@@ -38,6 +38,7 @@ class ContentsWebView
   void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
   void OnThemeChanged() override;
+  void RenderViewReady() override;
 
   // ui::LayerOwnerDelegate overrides:
   void OnLayerRecreated(ui::Layer* old_layer, ui::Layer* new_layer) override;
