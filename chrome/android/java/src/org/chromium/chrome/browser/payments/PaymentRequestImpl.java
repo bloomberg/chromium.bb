@@ -75,6 +75,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     private PaymentRequestUI mUI;
     private Callback<PaymentInformation> mPaymentInformationCallback;
     private Pattern mRegionCodePattern;
+    private boolean mMerchantNeedsShippingAddress;
 
     /**
      * Builds the dialog.
@@ -167,6 +168,11 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             return;
         }
 
+        // If the merchant requests shipping and does not provide shipping options here, then the
+        // merchant needs the shipping address to calculate shipping price and availability.
+        boolean requestShipping = options != null && options.requestShipping;
+        mMerchantNeedsShippingAddress = requestShipping && mShippingOptions.isEmpty();
+
         mData = getValidatedData(mSupportedMethods, stringifiedData);
         if (mData == null) {
             disconnectFromClientWithDebugMessage("Invalid payment method specific data");
@@ -211,7 +217,6 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
 
         if (!isGettingInstruments) mPaymentMethods = new SectionInformation();
 
-        boolean requestShipping = options != null && options.requestShipping;
         mUI = new PaymentRequestUI(mContext, this, requestShipping, mMerchantName, mOrigin);
         if (mFavicon != null) mUI.setTitleBitmap(mFavicon);
         mFavicon = null;
@@ -394,8 +399,10 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     public void onShippingAddressChanged(PaymentOption selectedShippingAddress) {
         assert selectedShippingAddress instanceof AutofillAddress;
         mShippingAddresses.setSelectedItem(selectedShippingAddress);
-        mClient.onShippingAddressChange(
-                ((AutofillAddress) selectedShippingAddress).toShippingAddress());
+        if (mMerchantNeedsShippingAddress) {
+            mClient.onShippingAddressChange(
+                    ((AutofillAddress) selectedShippingAddress).toShippingAddress());
+        }
     }
 
     @Override
