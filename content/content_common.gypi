@@ -184,6 +184,7 @@
       'public/common/sandbox_type.h',
       'public/common/sandboxed_process_launcher_delegate.cc',
       'public/common/sandboxed_process_launcher_delegate.h',
+      'public/common/screen_orientation_values.h',
       'public/common/security_style.h',
       'public/common/send_zygote_child_ping_linux.h',
       'public/common/service_registry.h',

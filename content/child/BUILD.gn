@@ -45,7 +45,11 @@ source_set("child") {
     "//content/app/resources",
     "//content/app/strings",
     "//content/common",
+    "//content/public/common:common_sources",
     "//crypto:platform",
+    "//gpu/command_buffer/client",
+    "//ipc/mojo",
+    "//media",
     "//mojo/common",
     "//net",
     "//services/shell/public/interfaces",
@@ -60,6 +64,7 @@ source_set("child") {
     "//ui/events/gestures/blink",
     "//ui/gfx",
     "//ui/gfx/geometry",
+    "//ui/gl",
     "//ui/native_theme",
     "//url",
   ]
@@ -76,9 +81,15 @@ source_set("child") {
   }
 
   if (enable_plugins) {
-    deps += [ "//ppapi/proxy" ]
+    deps += [
+      "//ppapi/proxy",
+      "//ppapi/shared_impl",
+    ]
   } else {
-    sources -= [ "browser_font_resource_trusted.cc" ]
+    sources -= [
+      "browser_font_resource_trusted.cc",
+      "browser_font_resource_trusted.h",
+    ]
   }
 
   configs += [
