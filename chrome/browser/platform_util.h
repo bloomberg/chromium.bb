@@ -37,7 +37,13 @@ enum OpenOperationResult {
 };
 
 // Type of item that is the target of the OpenItem() call.
-enum OpenItemType { OPEN_FILE, OPEN_FOLDER };
+enum OpenItemType {
+  OPEN_FILE,
+  OPEN_FOLDER,
+#if defined(OS_LINUX)
+  SHOW_ITEM_IN_FOLDER
+#endif
+};
 
 // Callback used with OpenFile and OpenFolder.
 typedef base::Callback<void(OpenOperationResult)> OpenOperationCallback;
