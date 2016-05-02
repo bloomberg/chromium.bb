@@ -1346,11 +1346,6 @@ public class ToolbarPhone extends ToolbarLayout
         enterAnimation.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
-                // The Android framework calls onAnimationEnd() on listeners before
-                // Animator#isRunning() returns false (see crbug.com/606419). In order for
-                // ToolbarPhone#isTabSwitcherAnimationRunning() to return the correct value,
-                // set mTabSwitcherModeAnimation = null here.
-                mTabSwitcherModeAnimation = null;
                 // This is to deal with the view going invisible when resuming the activity and
                 // running this animation.  The view is still there and clickable but does not
                 // render and only a layout triggers a refresh.  See crbug.com/306890.
@@ -1372,11 +1367,6 @@ public class ToolbarPhone extends ToolbarLayout
         exitAnimation.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
-                // The Android framework calls onAnimationEnd() on listeners before
-                // Animator#isRunning() returns false (see crbug.com/606419). In order for
-                // ToolbarPhone#isTabSwitcherAnimationRunning() to return the correct value,
-                // set mTabSwitcherModeAnimation = null here.
-                mTabSwitcherModeAnimation = null;
                 updateViewsForTabSwitcherMode(mIsInTabSwitcherMode);
             }
         });
