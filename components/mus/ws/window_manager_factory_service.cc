@@ -25,7 +25,7 @@ WindowManagerFactoryService::~WindowManagerFactoryService() {}
 void WindowManagerFactoryService::SetWindowManagerFactory(
     mojom::WindowManagerFactoryPtr factory) {
   window_manager_factory_ptr_ = std::move(factory);
-  binding_.set_connection_error_handler(base::Bind(
+  window_manager_factory_ptr_.set_connection_error_handler(base::Bind(
       &WindowManagerFactoryService::OnConnectionLost, base::Unretained(this)));
   SetWindowManagerFactoryImpl(window_manager_factory_ptr_.get());
 }
