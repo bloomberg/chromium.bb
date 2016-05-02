@@ -82,7 +82,6 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/mojo_channel_switches.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/content_renderer_client.h"
@@ -573,9 +572,7 @@ RenderThreadImpl::RenderThreadImpl(
     std::unique_ptr<scheduler::RendererScheduler> scheduler,
     scoped_refptr<base::SingleThreadTaskRunner>& resource_task_queue)
     : ChildThreadImpl(Options::Builder()
-                          .InBrowserProcess(params)
-                          .UseMojoChannel(ShouldUseMojoChannel())
-                          .Build()),
+          .InBrowserProcess(params).UseMojoChannel(true).Build()),
       renderer_scheduler_(std::move(scheduler)),
       raster_worker_pool_(new RasterWorkerPool()) {
   Init(resource_task_queue);
@@ -586,8 +583,7 @@ RenderThreadImpl::RenderThreadImpl(
 RenderThreadImpl::RenderThreadImpl(
     std::unique_ptr<base::MessageLoop> main_message_loop,
     std::unique_ptr<scheduler::RendererScheduler> scheduler)
-    : ChildThreadImpl(
-          Options::Builder().UseMojoChannel(ShouldUseMojoChannel()).Build()),
+    : ChildThreadImpl(Options::Builder().UseMojoChannel(true).Build()),
       renderer_scheduler_(std::move(scheduler)),
       main_message_loop_(std::move(main_message_loop)),
       raster_worker_pool_(new RasterWorkerPool()) {

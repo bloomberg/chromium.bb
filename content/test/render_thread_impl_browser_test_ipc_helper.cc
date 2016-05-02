@@ -4,7 +4,6 @@
 
 #include "content/test/render_thread_impl_browser_test_ipc_helper.h"
 
-#include "content/public/common/mojo_channel_switches.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -23,14 +22,7 @@ RenderThreadImplBrowserIPCTestHelper::RenderThreadImplBrowserIPCTestHelper() {
   dummy_listener_.reset(new DummyListener());
 
   SetupIpcThread();
-
-  if (ShouldUseMojoChannel()) {
-    SetupMojo();
-  } else {
-    channel_ = IPC::ChannelProxy::Create(channel_id_, IPC::Channel::MODE_SERVER,
-                                         dummy_listener_.get(),
-                                         ipc_thread_->task_runner());
-  }
+  SetupMojo();
 }
 
 RenderThreadImplBrowserIPCTestHelper::~RenderThreadImplBrowserIPCTestHelper() {
