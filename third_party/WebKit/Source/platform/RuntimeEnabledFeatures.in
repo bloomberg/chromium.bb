@@ -101,7 +101,7 @@ GeometryInterfaces status=test
 GetUserMedia depends_on=MediaDevices, status=experimental
 GlobalCacheStorage status=stable
 HiResEventTimeStamp status=stable
-ImageCapture status=test
+ImageCapture status=experimental
 ImageColorProfiles
 ImageOrientation status=test
 ImageRenderingPixelated status=stable
