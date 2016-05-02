@@ -12,12 +12,59 @@
 <dom-module id="settings-clear-browsing-data-dialog">
   <template>
     <style include="settings-shared">
+      #dialog {
+        max-width: 600px;
+      }
+
       paper-spinner {
+        -webkit-margin-end: 16px;
         margin-bottom: auto;
         margin-top: auto;
-        -webkit-margin-end: 16px;
+      }
+
+      #generalFooter {
+        margin: 0;
+        min-height: 18px;
+      }
+
+      #generalFooter iron-icon {
+        height: 18px;
+        padding: 1px;
+        width: 18px;
+      }
+
+      #googleFooter {
+        margin: 0 0 0.8em 0;
+        min-height: 16px;
+      }
+
+      #googleFooter iron-icon {
+        height: 16px;
+        padding: 2px;
+        width: 16px;
+      }
+
+      .clear-browsing-data-footer {
+        padding-left: 4px;
+      }
+
+      .clear-browsing-data-footer .footer-text {
+        -webkit-margin-start: 36px;
+      }
+
+      .clear-browsing-data-footer iron-icon {
+        float: left;
+      }
+
+      html[dir='rtl'] .clear-browsing-data-footer iron-icon {
+        float: right;
+      }
+
+      .clear-browsing-data-footer a {
+        text-decoration: none;
       }
     </style>
+
     <settings-dialog id="dialog">
       <div class="title">$i18n{clearBrowsingData}</div>
       <div class="body">
@@ -71,8 +118,20 @@
         </paper-button>
       </div>
       <div class="footer">
-        <span>$i18n{warnAboutNonClearedData}</span>
-        <span>$i18n{clearsSyncedData}</span>
+        <div id="googleFooter" class="clear-browsing-data-footer">
+          <iron-icon icon="md-settings-icons:googleg"></iron-icon>
+          <div class="footer-text">$i18nRaw{otherFormsOfBrowsingHistory}</div>
+        </div>
+        <div id="generalFooter" class="clear-browsing-data-footer">
+          <iron-icon icon="info"></iron-icon>
+          <div class="footer-text">
+            <span id="syncedDataSentence">$i18n{clearsSyncedData}</span>
+            <span>$i18n{warnAboutNonClearedData}</span>
+            <a id="clear-browser-data-old-learn-more-link"
+                href="$i18n{clearBrowsingDataLearnMoreUrl}"
+                target="_blank">$i18n{learnMore}</a>
+          </div>
+        </div>
       </div>
     </settings-dialog>
   </template>

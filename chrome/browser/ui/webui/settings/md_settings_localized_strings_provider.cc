@@ -298,7 +298,16 @@ void AddClearBrowsingDataStrings(content::WebUIDataSource* html_source) {
       {"clearDataEverything", IDS_SETTINGS_CLEAR_DATA_EVERYTHING},
       {"warnAboutNonClearedData", IDS_SETTINGS_CLEAR_DATA_SOME_STUFF_REMAINS},
       {"clearsSyncedData", IDS_SETTINGS_CLEAR_DATA_CLEARS_SYNCED_DATA},
+      {"clearBrowsingDataLearnMoreUrl", IDS_SETTINGS_CLEAR_DATA_LEARN_MORE_URL},
   };
+
+  html_source->AddString(
+      "otherFormsOfBrowsingHistory",
+      l10n_util::GetStringFUTF16(
+          IDS_CLEAR_BROWSING_DATA_HISTORY_FOOTER,
+          l10n_util::GetStringUTF16(
+              IDS_SETTINGS_CLEAR_DATA_WEB_HISTORY_URL_IN_FOOTER)));
+
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
 }

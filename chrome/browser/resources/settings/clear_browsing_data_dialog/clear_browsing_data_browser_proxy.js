@@ -16,6 +16,9 @@ cr.define('settings', function() {
      * @return {!Promise} A promise resolved when data clearing has completed.
      */
     clearBrowsingData: function() {},
+
+    /** Initializes the dialog. */
+    initialize: function() {},
   };
 
   /**
@@ -29,6 +32,11 @@ cr.define('settings', function() {
     /** @override */
     clearBrowsingData: function() {
       return cr.sendWithPromise('clearBrowsingData');
+    },
+
+    /** @override */
+    initialize: function() {
+      chrome.send('initializeClearBrowsingData');
     },
   };
 

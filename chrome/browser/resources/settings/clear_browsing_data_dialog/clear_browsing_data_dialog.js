@@ -49,8 +49,12 @@ Polymer({
     this.addWebUIListener(
         'browsing-history-pref-changed',
         this.setAllowDeletingHistory_.bind(this));
+    this.addWebUIListener(
+        'update-footer',
+        this.updateFooter_.bind(this));
     this.browserProxy_ =
         settings.ClearBrowsingDataBrowserProxyImpl.getInstance();
+    this.browserProxy_.initialize();
     this.$.dialog.open();
   },
 
@@ -65,6 +69,23 @@ Polymer({
       this.set('prefs.browser.clear_data.browsing_history.value', false);
       this.set('prefs.browser.clear_data.download_history.value', false);
     }
+  },
+
+  /**
+   * Updates the footer to show only those sentences that are relevant to this
+   * user.
+   * @param {boolean} syncing Whether the user is syncing data.
+   * @param {boolean} otherFormsOfBrowsingHistory Whether the user has other
+   *     forms of browsing history in their account.
+   * @private
+   */
+  updateFooter_: function(syncing, otherFormsOfBrowsingHistory) {
+    this.$.googleFooter.hidden = !otherFormsOfBrowsingHistory;
+    this.$.syncedDataSentence.hidden = !syncing;
+  },
+
+  open: function() {
+    this.$.dialog.open();
   },
 
   /** @private */

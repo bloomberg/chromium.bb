@@ -307,6 +307,16 @@
           https://support.google.com/chromebook/answer/183084?hl=[GRITLANGCODE]
         </message>
       </if>
+
+      <!-- Links from the Clear Browsing Data dialog. -->
+      <message name="IDS_SETTINGS_CLEAR_DATA_LEARN_MORE_URL" translateable="false">
+        https://support.google.com/chrome/?p=settings_clear_browsing_data
+      </message>
+
+      <message name="IDS_SETTINGS_CLEAR_DATA_WEB_HISTORY_URL_IN_FOOTER" translateable="false">
+        https://history.google.com/history/?utm_source=chrome_cbd
+      </message>
+
     </messages>
   </release>
 </grit>

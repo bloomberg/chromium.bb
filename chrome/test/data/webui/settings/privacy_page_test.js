@@ -27,7 +27,10 @@ cr.define('settings_privacy_page', function() {
    * @implements {settings.ClearBrowsingDataBrowserProxy}
    */
   function TestClearBrowsingDataBrowserProxy() {
-    settings.TestBrowserProxy.call(this, ['clearBrowsingData']);
+    settings.TestBrowserProxy.call(this, [
+      'initialize',
+      'clearBrowsingData',
+    ]);
 
     /**
      * The promise to return from |clearBrowsingData|.
@@ -51,6 +54,11 @@ cr.define('settings_privacy_page', function() {
       this.methodCalled('clearBrowsingData');
       return this.clearBrowsingDataPromise_ !== null ?
           this.clearBrowsingDataPromise_ : Promise.resolve();
+    },
+
+    /** @override */
+    initialize: function() {
+      this.methodCalled('initialize');
     },
   };
 
