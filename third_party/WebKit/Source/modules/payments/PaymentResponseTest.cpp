@@ -6,9 +6,9 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptState.h"
+#include "bindings/core/v8/ScriptValue.h"
 #include "core/testing/DummyPageHolder.h"
 #include "modules/payments/PaymentCompleter.h"
-#include "modules/payments/PaymentDetailsTestHelper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/OwnPtr.h"
@@ -43,7 +43,6 @@ public:
     PaymentResponseTest()
         : m_page(DummyPageHolder::create())
     {
-        m_page->document().setSecurityOrigin(SecurityOrigin::create(KURL(KURL(), "https://www.example.com/")));
     }
 
     ~PaymentResponseTest() override {}
@@ -58,6 +57,7 @@ private:
 
 TEST_F(PaymentResponseTest, DataCopiedOver)
 {
+    ScriptState::Scope scope(getScriptState());
     mojom::blink::PaymentResponsePtr input = mojom::blink::PaymentResponse::New();
     input->method_name = "foo";
     input->stringified_details = "{\"transactionId\": 123}";
@@ -65,12 +65,20 @@ TEST_F(PaymentResponseTest, DataCopiedOver)
 
     PaymentResponse output(std::move(input), completeCallback);
 
-    // TODO(rouslan): Verify that output.details() contains parsed input->stringified_details.
-    EXPECT_FALSE(getExceptionState().hadException());
     EXPECT_EQ("foo", output.methodName());
+
+    ScriptValue details = output.details(getScriptState(), getExceptionState());
+
+    ASSERT_FALSE(getExceptionState().hadException());
+    ASSERT_TRUE(details.v8Value()->IsObject());
+
+    ScriptValue transactionId(getScriptState(), details.v8Value().As<v8::Object>()->Get(v8String(getScriptState()->isolate(), "transactionId")));
+
+    ASSERT_TRUE(transactionId.v8Value()->IsNumber());
+    EXPECT_EQ(123, transactionId.v8Value().As<v8::Number>()->Value());
 }
 
-TEST_F(PaymentResponseTest, CompleteCalled)
+TEST_F(PaymentResponseTest, CompleteCalledWithSuccess)
 {
     mojom::blink::PaymentResponsePtr input = mojom::blink::PaymentResponse::New();
     input->method_name = "foo";
@@ -78,10 +86,22 @@ TEST_F(PaymentResponseTest, CompleteCalled)
     MockPaymentCompleter* completeCallback = new MockPaymentCompleter;
     PaymentResponse output(std::move(input), completeCallback);
 
-    EXPECT_FALSE(getExceptionState().hadException());
     EXPECT_CALL(*completeCallback, complete(getScriptState(), true));
 
     output.complete(getScriptState(), true);
+}
+
+TEST_F(PaymentResponseTest, CompleteCalledWithFailure)
+{
+    mojom::blink::PaymentResponsePtr input = mojom::blink::PaymentResponse::New();
+    input->method_name = "foo";
+    input->stringified_details = "{\"transactionId\": 123}";
+    MockPaymentCompleter* completeCallback = new MockPaymentCompleter;
+    PaymentResponse output(std::move(input), completeCallback);
+
+    EXPECT_CALL(*completeCallback, complete(getScriptState(), false));
+
+    output.complete(getScriptState(), false);
 }
 
 } // namespace
