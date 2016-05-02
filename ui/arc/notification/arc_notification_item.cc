@@ -39,6 +39,28 @@ SkBitmap DecodeImage(const std::vector<uint8_t>& data) {
   return bitmap;
 }
 
+// Converts from Android notification priority to Chrome notification priority.
+// On Android, PRIORITY_DEFAULT does not pop up, so this maps PRIORITY_DEFAULT
+// to Chrome's -1 to adapt that behavior. Also, this maps PRIORITY_LOW and _HIGH
+// to -2 and 0 respectively to adjust the value with keeping the order among
+// _LOW, _DEFAULT and _HIGH.
+int convertAndroidPriority(const int android_priority) {
+  switch (android_priority) {
+    case -2:  // PRIORITY_MIN
+    case -1:  // PRIORITY_LOW
+      return -2;
+    case 0:   // PRIORITY_DEFAULT
+      return -1;
+    case 1:   // PRIORITY_HIGH
+      return 0;
+    case 2:   // PRIORITY_MAX
+      return 2;
+    default:
+      NOTREACHED() << "Invalid Priority: " << android_priority;
+      return 0;
+  }
+}
+
 class ArcNotificationDelegate : public message_center::NotificationDelegate {
  public:
   explicit ArcNotificationDelegate(base::WeakPtr<ArcNotificationItem> item)
@@ -138,6 +160,8 @@ void ArcNotificationItem::UpdateWithArcNotificationData(
   // If the client is old (version < 1), both |no_clear| and |ongoing_event|
   // are false.
   rich_data.pinned = (data.no_clear || data.ongoing_event);
+
+  rich_data.priority = convertAndroidPriority(data.priority);
 
   // The identifier of the notifier, which is used to distinguish the notifiers
   // in the message center.
