@@ -370,13 +370,14 @@ Element* TreeScope::findAnchor(const String& name)
 
 void TreeScope::adoptIfNeeded(Node& node)
 {
+    // Script is forbidden to protect against event handlers firing in the middle of rescoping
+    // in |didMoveToNewDocument| callbacks. See https://crbug.com/605766 and https://crbug.com/606651.
+    ScriptForbiddenScope forbidScript;
     DCHECK(this);
     DCHECK(!node.isDocumentNode());
     TreeScopeAdopter adopter(node, *this);
-    if (adopter.needsScopeChange()) {
-        ScriptForbiddenScope forbidScript;
+    if (adopter.needsScopeChange())
         adopter.execute();
-    }
 }
 
 Element* TreeScope::retarget(const Element& target) const
