@@ -100,7 +100,7 @@ class LevelDBWrapperImpl : public mojom::LevelDBWrapper {
               const GetAllCallback& callback) override;
 
   void OnConnectionError();
-  void LoadMap();
+  void LoadMap(const base::Closure& completion_callback);
   void OnLoadComplete(leveldb::DatabaseError status,
                       mojo::Array<leveldb::KeyValuePtr> data);
   void CreateCommitBatchIfNeeded();

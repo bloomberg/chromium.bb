@@ -19,6 +19,10 @@ function test() {
 }
 
 function sanityCheck(storage) {
+  storage["preload"] = "done";
+  checkEqual("done", storage["preload"],
+             "storage['preload'] != 'done' after addition");
+
   storage.clear();
 
   checkEqual(0, storage.length,

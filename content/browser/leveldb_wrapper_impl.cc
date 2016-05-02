@@ -88,10 +88,9 @@ void LevelDBWrapperImpl::Put(mojo::Array<uint8_t> key,
                              const mojo::String& source,
                              const PutCallback& callback) {
   if (!map_) {
-    on_load_complete_tasks_.push_back(
+    LoadMap(
         base::Bind(&LevelDBWrapperImpl::Put, base::Unretained(this),
                    base::Passed(&key), base::Passed(&value), source, callback));
-    LoadMap();
     return;
   }
 
@@ -146,10 +145,9 @@ void LevelDBWrapperImpl::Delete(mojo::Array<uint8_t> key,
                                 const mojo::String& source,
                                 const DeleteCallback& callback) {
   if (!map_) {
-    on_load_complete_tasks_.push_back(
+    LoadMap(
         base::Bind(&LevelDBWrapperImpl::Delete, base::Unretained(this),
                    base::Passed(&key), source, callback));
-    LoadMap();
     return;
   }
 
@@ -178,10 +176,9 @@ void LevelDBWrapperImpl::Delete(mojo::Array<uint8_t> key,
 void LevelDBWrapperImpl::DeleteAll(const mojo::String& source,
                                    const DeleteAllCallback& callback) {
   if (!map_) {
-    on_load_complete_tasks_.push_back(
+    LoadMap(
         base::Bind(&LevelDBWrapperImpl::DeleteAll, base::Unretained(this),
                     source, callback));
-    LoadMap();
     return;
   }
 
@@ -202,10 +199,9 @@ void LevelDBWrapperImpl::DeleteAll(const mojo::String& source,
 void LevelDBWrapperImpl::Get(mojo::Array<uint8_t> key,
                              const GetCallback& callback) {
   if (!map_) {
-    on_load_complete_tasks_.push_back(
+    LoadMap(
         base::Bind(&LevelDBWrapperImpl::Get, base::Unretained(this),
                    base::Passed(&key), callback));
-    LoadMap();
     return;
   }
 
@@ -220,10 +216,9 @@ void LevelDBWrapperImpl::Get(mojo::Array<uint8_t> key,
 void LevelDBWrapperImpl::GetAll(const mojo::String& source,
                                 const GetAllCallback& callback) {
   if (!map_) {
-    on_load_complete_tasks_.push_back(
+    LoadMap(
         base::Bind(&LevelDBWrapperImpl::GetAll, base::Unretained(this),
                    source, callback));
-    LoadMap();
     return;
   }
 
@@ -247,9 +242,13 @@ void LevelDBWrapperImpl::OnConnectionError() {
   no_bindings_callback_.Run();
 }
 
-void LevelDBWrapperImpl::LoadMap() {
-  // TODO(michaeln): Import from sqlite localstorage db.
+void LevelDBWrapperImpl::LoadMap(const base::Closure& completion_callback) {
   DCHECK(!map_);
+  on_load_complete_tasks_.push_back(completion_callback);
+  if (on_load_complete_tasks_.size() > 1)
+    return;
+
+  // TODO(michaeln): Import from sqlite localstorage db.
   database_->GetPrefixed(mojo::Array<uint8_t>::From(prefix_),
                          base::Bind(&LevelDBWrapperImpl::OnLoadComplete,
                                     weak_ptr_factory_.GetWeakPtr()));

@@ -98,6 +98,15 @@ class DOMStorageContextWrapper::MojoState {
     level_db_wrappers_.erase(origin);
   }
 
+  void OnUserServiceConnectionComplete() {
+    CHECK_EQ(shell::mojom::ConnectResult::SUCCEEDED,
+             user_service_connection_->GetResult());
+  }
+
+  void OnUserServiceConnectionError() {
+    CHECK(false);
+  }
+
   // Part of our asynchronous directory opening called from OpenLocalStorage().
   void OnDirectoryOpened(filesystem::FileError err);
   void OnDatabaseOpened(leveldb::DatabaseError status);
@@ -143,6 +152,12 @@ void DOMStorageContextWrapper::MojoState::OpenLocalStorage(
     user_service_connection_ =
         connector_->Connect(user_service::kUserServiceName);
     connection_state_ = CONNECTION_IN_PROGRESS;
+    user_service_connection_->AddConnectionCompletedClosure(
+        base::Bind(&MojoState::OnUserServiceConnectionComplete,
+                   weak_ptr_factory_.GetWeakPtr()));
+    user_service_connection_->SetConnectionLostClosure(
+        base::Bind(&MojoState::OnUserServiceConnectionError,
+                   weak_ptr_factory_.GetWeakPtr()));
 
     if (!subdirectory_.empty()) {
       // We were given a subdirectory to write to. Get it and use a disk backed
