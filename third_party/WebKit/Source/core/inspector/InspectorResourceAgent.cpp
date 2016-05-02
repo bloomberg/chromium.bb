@@ -635,21 +635,42 @@ void InspectorResourceAgent::didReceiveScriptResponse(unsigned long identifier)
     m_resourcesData->setResourceType(IdentifiersFactory::requestId(identifier), InspectorPageAgent::ScriptResource);
 }
 
+void InspectorResourceAgent::clearPendingRequestData()
+{
+    if (m_pendingRequestType == InspectorPageAgent::XHRResource)
+        m_pendingXHRReplayData.clear();
+    m_pendingRequest = nullptr;
+}
+
 void InspectorResourceAgent::documentThreadableLoaderStartedLoadingForClient(unsigned long identifier, ThreadableLoaderClient* client)
 {
     if (!client)
         return;
-    ASSERT(client == m_pendingRequest || !m_pendingRequest);
-    if (client != m_pendingRequest)
+    if (client != m_pendingRequest) {
+        ASSERT(!m_pendingRequest);
         return;
+    }
+
     m_knownRequestIdMap.set(client, identifier);
     String requestId = IdentifiersFactory::requestId(identifier);
     m_resourcesData->setResourceType(requestId, m_pendingRequestType);
     if (m_pendingRequestType == InspectorPageAgent::XHRResource) {
         m_resourcesData->setXHRReplayData(requestId, m_pendingXHRReplayData.get());
-        m_pendingXHRReplayData.clear();
     }
-    m_pendingRequest = nullptr;
+
+    clearPendingRequestData();
+}
+
+void InspectorResourceAgent::documentThreadableLoaderFailedToStartLoadingForClient(ThreadableLoaderClient* client)
+{
+    if (!client)
+        return;
+    if (client != m_pendingRequest) {
+        ASSERT(!m_pendingRequest);
+        return;
+    }
+
+    clearPendingRequestData();
 }
 
 void InspectorResourceAgent::willLoadXHR(XMLHttpRequest* xhr, ThreadableLoaderClient* client, const AtomicString& method, const KURL& url, bool async, PassRefPtr<EncodedFormData> formData, const HTTPHeaderMap& headers, bool includeCredentials)
@@ -685,8 +706,7 @@ void InspectorResourceAgent::didFinishXHRLoading(ExecutionContext* context, XMLH
 
 void InspectorResourceAgent::didFinishXHRInternal(ExecutionContext* context, XMLHttpRequest* xhr, ThreadableLoaderClient* client, const AtomicString& method, const String& url, bool success)
 {
-    m_pendingRequest = nullptr;
-    m_pendingXHRReplayData.clear();
+    clearPendingRequestData();
 
     // This method will be called from the XHR.
     // We delay deleting the replay XHR, as deleting here may delete the caller.
@@ -750,7 +770,7 @@ void InspectorResourceAgent::willDispatchEventSourceEvent(ThreadableLoaderClient
 void InspectorResourceAgent::didFinishEventSourceRequest(ThreadableLoaderClient* eventSource)
 {
     m_knownRequestIdMap.remove(eventSource);
-    m_pendingRequest = nullptr;
+    clearPendingRequestData();
 }
 
 void InspectorResourceAgent::removedResourceFromMemoryCache(Resource* cachedResource)

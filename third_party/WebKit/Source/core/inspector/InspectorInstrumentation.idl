@@ -170,6 +170,9 @@ class XMLHttpRequest;
     void documentThreadableLoaderStartedLoadingForClient(ExecutionContext*, unsigned long identifier, ThreadableLoaderClient* client);
 
     [Resource]
+    void documentThreadableLoaderFailedToStartLoadingForClient(ExecutionContext*, ThreadableLoaderClient* client);
+
+    [Resource]
     void willSendEventSourceRequest(ExecutionContext*, ThreadableLoaderClient* eventSource);
 
     [Resource]

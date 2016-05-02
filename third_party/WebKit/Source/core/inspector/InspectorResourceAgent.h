@@ -97,6 +97,7 @@ public:
     bool shouldBlockRequest(const ResourceRequest&);
 
     void documentThreadableLoaderStartedLoadingForClient(unsigned long identifier, ThreadableLoaderClient*);
+    void documentThreadableLoaderFailedToStartLoadingForClient(ThreadableLoaderClient*);
     void willLoadXHR(XMLHttpRequest*, ThreadableLoaderClient*, const AtomicString& method, const KURL&, bool async, PassRefPtr<EncodedFormData> body, const HTTPHeaderMap& headers, bool includeCrendentials);
     void didFailXHRLoading(ExecutionContext*, XMLHttpRequest*, ThreadableLoaderClient*, const AtomicString&, const String&);
     void didFinishXHRLoading(ExecutionContext*, XMLHttpRequest*, ThreadableLoaderClient*, const AtomicString&, const String&);
@@ -163,6 +164,7 @@ private:
 
     bool canGetResponseBodyBlob(const String& requestId);
     void getResponseBodyBlob(const String& requestId, PassOwnPtr<GetResponseBodyCallback>);
+    void clearPendingRequestData();
 
     Member<InspectedFrames> m_inspectedFrames;
     String m_userAgentOverride;

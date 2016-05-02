@@ -145,6 +145,7 @@ void DocumentThreadableLoader::start(const ResourceRequest& request)
     m_redirectMode = request.fetchRedirectMode();
 
     if (!m_sameOriginRequest && m_options.crossOriginRequestPolicy == DenyCrossOriginRequests) {
+        InspectorInstrumentation::documentThreadableLoaderFailedToStartLoadingForClient(m_document, m_client);
         ThreadableLoaderClient* client = m_client;
         clear();
         client->didFail(ResourceError(errorDomainBlinkInternal, 0, request.url().getString(), "Cross origin requests are not supported."));
@@ -257,6 +258,7 @@ void DocumentThreadableLoader::makeCrossOriginAccessRequest(const ResourceReques
     // is no reason to send a request, preflighted or not, that's guaranteed
     // to be denied.
     if (!SchemeRegistry::shouldTreatURLSchemeAsCORSEnabled(request.url().protocol())) {
+        InspectorInstrumentation::documentThreadableLoaderFailedToStartLoadingForClient(m_document, m_client);
         ThreadableLoaderClient* client = m_client;
         clear();
         client->didFailAccessControlCheck(ResourceError(errorDomainBlinkInternal, 0, request.url().getString(), "Cross origin requests are only supported for protocol schemes: " + SchemeRegistry::listOfCORSEnabledURLSchemes() + "."));
@@ -850,6 +852,7 @@ void DocumentThreadableLoader::loadRequest(const ResourceRequest& request, Resou
             setResource(RawResource::fetch(newRequest, document().fetcher()));
 
         if (!resource()) {
+            InspectorInstrumentation::documentThreadableLoaderFailedToStartLoadingForClient(m_document, m_client);
             ThreadableLoaderClient* client = m_client;
             clear();
             client->didFail(ResourceError(errorDomainBlinkInternal, 0, requestURL.getString(), "Failed to start loading."));
@@ -860,6 +863,8 @@ void DocumentThreadableLoader::loadRequest(const ResourceRequest& request, Resou
         if (resource()->loader()) {
             unsigned long identifier = resource()->identifier();
             InspectorInstrumentation::documentThreadableLoaderStartedLoadingForClient(m_document, identifier, m_client);
+        } else {
+            InspectorInstrumentation::documentThreadableLoaderFailedToStartLoadingForClient(m_document, m_client);
         }
         return;
     }
