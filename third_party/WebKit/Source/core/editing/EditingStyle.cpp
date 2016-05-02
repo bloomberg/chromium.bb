@@ -1113,12 +1113,15 @@ EditingStyle* EditingStyle::wrappingStyleForAnnotatedSerialization(ContainerNode
 
 EditingStyle* EditingStyle::wrappingStyleForSerialization(ContainerNode* context)
 {
+    DCHECK(context);
     EditingStyle* wrappingStyle = EditingStyle::create();
 
     // When not annotating for interchange, we only preserve inline style declarations.
-    for (ContainerNode* node = context; node && !node->isDocumentNode(); node = node->parentNode()) {
-        if (node->isStyledElement() && !isMailHTMLBlockquoteElement(node)) {
-            wrappingStyle->mergeInlineAndImplicitStyleOfElement(toElement(node), EditingStyle::DoNotOverrideValues,
+    for (Node& node : NodeTraversal::inclusiveAncestorsOf(*context)) {
+        if (node.isDocumentNode())
+            break;
+        if (node.isStyledElement() && !isMailHTMLBlockquoteElement(&node)) {
+            wrappingStyle->mergeInlineAndImplicitStyleOfElement(toElement(&node), EditingStyle::DoNotOverrideValues,
                 EditingStyle::EditingPropertiesInEffect);
         }
     }
@@ -1391,17 +1394,20 @@ WritingDirection EditingStyle::textDirectionForSelection(const VisibleSelection&
         }
         node = selection.visibleStart().deepEquivalent().anchorNode();
     }
+    DCHECK(node);
 
     // The selection is either a caret with no typing attributes or a range in which no embedding is added, so just use the start position
     // to decide.
     Node* block = enclosingBlock(node);
     WritingDirection foundDirection = NaturalWritingDirection;
 
-    for (; node != block; node = node->parentNode()) {
-        if (!node->isStyledElement())
+    for (Node& runner : NodeTraversal::inclusiveAncestorsOf(*node)) {
+        if (runner == block)
+            break;
+        if (!runner.isStyledElement())
             continue;
 
-        Element* element = toElement(node);
+        Element* element = &toElement(runner);
         CSSComputedStyleDeclaration* style = CSSComputedStyleDeclaration::create(element);
         CSSValue* unicodeBidi = style->getPropertyCSSValue(CSSPropertyUnicodeBidi);
         if (!unicodeBidi || !unicodeBidi->isPrimitiveValue())

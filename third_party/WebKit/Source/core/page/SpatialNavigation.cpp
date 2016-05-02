@@ -29,6 +29,7 @@
 #include "core/page/SpatialNavigation.h"
 
 #include "core/HTMLNames.h"
+#include "core/dom/NodeTraversal.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
@@ -581,15 +582,15 @@ bool canBeScrolledIntoView(WebFocusType type, const FocusCandidate& candidate)
 {
     ASSERT(candidate.visibleNode && candidate.isOffscreen);
     LayoutRect candidateRect = candidate.rect;
-    for (Node* parentNode = candidate.visibleNode->parentNode(); parentNode; parentNode = parentNode->parentNode()) {
-        LayoutRect parentRect = nodeRectInAbsoluteCoordinates(parentNode);
+    for (Node& parentNode : NodeTraversal::ancestorsOf(*candidate.visibleNode)) {
+        LayoutRect parentRect = nodeRectInAbsoluteCoordinates(&parentNode);
         if (!candidateRect.intersects(parentRect)) {
-            if (((type == WebFocusTypeLeft || type == WebFocusTypeRight) && parentNode->layoutObject()->style()->overflowX() == OverflowHidden)
-                || ((type == WebFocusTypeUp || type == WebFocusTypeDown) && parentNode->layoutObject()->style()->overflowY() == OverflowHidden))
+            if (((type == WebFocusTypeLeft || type == WebFocusTypeRight) && parentNode.layoutObject()->style()->overflowX() == OverflowHidden)
+                || ((type == WebFocusTypeUp || type == WebFocusTypeDown) && parentNode.layoutObject()->style()->overflowY() == OverflowHidden))
                 return false;
         }
         if (parentNode == candidate.enclosingScrollableBox)
-            return canScrollInDirection(parentNode, type);
+            return canScrollInDirection(&parentNode, type);
     }
     return true;
 }

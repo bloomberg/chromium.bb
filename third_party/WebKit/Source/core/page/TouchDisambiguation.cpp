@@ -119,14 +119,16 @@ void findGoodTouchTargets(const IntRect& touchBoxInRootFrame, LocalFrame* mainFr
     HeapHashMap<Member<Node>, TouchTargetData> touchTargets;
     float bestScore = 0;
     for (const auto& hitResult : hitResults) {
-        for (Node* node = hitResult.get(); node; node = node->parentNode()) {
-            if (blackList.contains(node))
+        if (!hitResult)
+            continue;
+        for (Node& node : NodeTraversal::inclusiveAncestorsOf(*hitResult)) {
+            if (blackList.contains(&node))
                 continue;
-            if (node->isDocumentNode() || isHTMLHtmlElement(*node) || isHTMLBodyElement(*node))
+            if (node.isDocumentNode() || isHTMLHtmlElement(node) || isHTMLBodyElement(node))
                 break;
-            if (node->willRespondToMouseClickEvents()) {
-                TouchTargetData& targetData = touchTargets.add(node, TouchTargetData()).storedValue->value;
-                targetData.windowBoundingBox = boundingBoxForEventNodes(node);
+            if (node.willRespondToMouseClickEvents()) {
+                TouchTargetData& targetData = touchTargets.add(&node, TouchTargetData()).storedValue->value;
+                targetData.windowBoundingBox = boundingBoxForEventNodes(&node);
                 targetData.score = scoreTouchTarget(touchPoint, touchPointPadding, targetData.windowBoundingBox);
                 bestScore = std::max(bestScore, targetData.score);
                 break;

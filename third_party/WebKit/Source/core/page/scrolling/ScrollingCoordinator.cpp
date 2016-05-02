@@ -827,8 +827,10 @@ static void accumulateDocumentTouchEventTargetRects(LayerHitTestRects& rects, co
             // If the set also contains one of our ancestor nodes then processing
             // this node would be redundant.
             bool hasTouchEventTargetAncestor = false;
-            for (Node* ancestor = node->parentNode(); ancestor && !hasTouchEventTargetAncestor; ancestor = ancestor->parentNode()) {
-                if (targets->contains(ancestor))
+            for (Node& ancestor : NodeTraversal::ancestorsOf(*node)) {
+                if (hasTouchEventTargetAncestor)
+                    break;
+                if (targets->contains(&ancestor))
                     hasTouchEventTargetAncestor = true;
             }
             if (!hasTouchEventTargetAncestor) {

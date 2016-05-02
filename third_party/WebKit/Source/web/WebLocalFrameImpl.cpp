@@ -1652,16 +1652,18 @@ void WebLocalFrameImpl::setFindEndstateFocusAndSelection()
                     node = host;
             }
         }
-        for (; node; node = node->parentNode()) {
-            if (!node->isElementNode())
-                continue;
-            Element* element = toElement(node);
-            if (element->isFocusable()) {
-                // Found a focusable parent node. Set the active match as the
-                // selection and focus to the focusable node.
-                frame()->selection().setSelection(VisibleSelection(EphemeralRange(activeMatch)));
-                frame()->document()->setFocusedElement(element, FocusParams(SelectionBehaviorOnFocus::None, WebFocusTypeNone, nullptr));
-                return;
+        if (node) {
+            for (Node& runner : NodeTraversal::inclusiveAncestorsOf(*node)) {
+                if (!runner.isElementNode())
+                    continue;
+                Element& element = toElement(runner);
+                if (element.isFocusable()) {
+                    // Found a focusable parent node. Set the active match as the
+                    // selection and focus to the focusable node.
+                    frame()->selection().setSelection(VisibleSelection(EphemeralRange(activeMatch)));
+                    frame()->document()->setFocusedElement(&element, FocusParams(SelectionBehaviorOnFocus::None, WebFocusTypeNone, nullptr));
+                    return;
+                }
             }
         }
 

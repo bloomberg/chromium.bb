@@ -411,21 +411,23 @@ void SVGElement::updateRelativeLengthsInformation(bool clientHasRelativeLengths,
     // An element wants to notify us that its own relative lengths state changed.
     // Register it in the relative length map, and register us in the parent relative length map.
     // Register the parent in the grandparents map, etc. Repeat procedure until the root of the SVG tree.
-    for (ContainerNode* currentNode = this; currentNode && currentNode->isSVGElement(); currentNode = currentNode->parentNode()) {
-        SVGElement* currentElement = toSVGElement(currentNode);
-        ASSERT(!currentElement->m_inRelativeLengthClientsInvalidation);
+    for (Node& currentNode : NodeTraversal::inclusiveAncestorsOf(*this)) {
+        if (!currentNode.isSVGElement())
+            break;
+        SVGElement& currentElement = toSVGElement(currentNode);
+        ASSERT(!currentElement.m_inRelativeLengthClientsInvalidation);
 
-        bool hadRelativeLengths = currentElement->hasRelativeLengths();
+        bool hadRelativeLengths = currentElement.hasRelativeLengths();
         if (clientHasRelativeLengths)
-            currentElement->m_elementsWithRelativeLengths.add(clientElement);
+            currentElement.m_elementsWithRelativeLengths.add(clientElement);
         else
-            currentElement->m_elementsWithRelativeLengths.remove(clientElement);
+            currentElement.m_elementsWithRelativeLengths.remove(clientElement);
 
         // If the relative length state hasn't changed, we can stop propagating the notification.
-        if (hadRelativeLengths == currentElement->hasRelativeLengths())
+        if (hadRelativeLengths == currentElement.hasRelativeLengths())
             return;
 
-        clientElement = currentElement;
+        clientElement = &currentElement;
         clientHasRelativeLengths = clientElement->hasRelativeLengths();
     }
 

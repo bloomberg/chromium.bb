@@ -5609,8 +5609,8 @@ void Document::updateHoverActiveState(const HitTestRequest& request, Element* in
         // (for instance by setting display:none in the :hover pseudo-class). In this case, the old hovered element (and its ancestors)
         // must be updated, to ensure it's normal style is re-applied.
         if (oldHoverNode && !oldHoverObj) {
-            for (Node* node = oldHoverNode; node; node = node->parentNode()) {
-                if (!mustBeInActiveChain || (node->isElementNode() && toElement(node)->inActiveChain()))
+            for (Node& node : NodeTraversal::inclusiveAncestorsOf(*oldHoverNode)) {
+                if (!mustBeInActiveChain || (node.isElementNode() && toElement(node).inActiveChain()))
                     nodesToRemoveFromChain.append(node);
             }
 

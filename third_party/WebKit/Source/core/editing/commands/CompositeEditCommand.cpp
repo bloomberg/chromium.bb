@@ -1076,8 +1076,11 @@ void CompositeEditCommand::cloneParagraphUnderNewElement(const Position& start, 
         HeapVector<Member<Node>> ancestors;
 
         // Insert each node from innerNode to outerNode (excluded) in a list.
-        for (Node* n = start.anchorNode(); n && n != outerNode; n = n->parentNode())
-            ancestors.append(n);
+        for (Node& runner : NodeTraversal::inclusiveAncestorsOf(*start.anchorNode())) {
+            if (runner == outerNode)
+                break;
+            ancestors.append(runner);
+        }
 
         // Clone every node between start.anchorNode() and outerBlock.
 

@@ -464,13 +464,13 @@ bool Node::hasEditableStyle(EditableLevel editableLevel, UserSelectAllTreatment 
     // ContainerNode::setFocus() calls setNeedsStyleRecalc(), so the assertion
     // would fire in the middle of Document::setFocusedNode().
 
-    for (const Node* node = this; node; node = node->parentNode()) {
-        if ((node->isHTMLElement() || node->isDocumentNode()) && node->layoutObject()) {
+    for (const Node& node : NodeTraversal::inclusiveAncestorsOf(*this)) {
+        if ((node.isHTMLElement() || node.isDocumentNode()) && node.layoutObject()) {
             // Elements with user-select: all style are considered atomic
             // therefore non editable.
-            if (nodeIsUserSelectAll(node) && treatment == UserSelectAllIsAlwaysNonEditable)
+            if (nodeIsUserSelectAll(&node) && treatment == UserSelectAllIsAlwaysNonEditable)
                 return false;
-            switch (node->layoutObject()->style()->userModify()) {
+            switch (node.layoutObject()->style()->userModify()) {
             case READ_ONLY:
                 return false;
             case READ_WRITE:

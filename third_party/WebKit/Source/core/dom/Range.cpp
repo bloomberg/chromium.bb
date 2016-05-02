@@ -655,8 +655,11 @@ Node* Range::processAncestorsAndTheirSiblings(ActionType action, Node* container
     typedef HeapVector<Member<Node>> NodeVector;
 
     NodeVector ancestors;
-    for (ContainerNode* n = container->parentNode(); n && n != commonRoot; n = n->parentNode())
-        ancestors.append(n);
+    for (Node& runner : NodeTraversal::ancestorsOf(*container)) {
+        if (runner == commonRoot)
+            break;
+        ancestors.append(runner);
+    }
 
     Node* firstChildInAncestorToProcess = direction == ProcessContentsForward ? container->nextSibling() : container->previousSibling();
     for (const auto& ancestor : ancestors) {
@@ -766,8 +769,8 @@ void Range::insertNode(Node* newNode, ExceptionState& exceptionState)
         }
     }
 
-    for (Node* n = m_start.container(); n; n = n->parentNode()) {
-        if (n == newNode) {
+    for (Node& node : NodeTraversal::inclusiveAncestorsOf(*m_start.container())) {
+        if (node == newNode) {
             exceptionState.throwDOMException(HierarchyRequestError, "The node to be inserted contains the insertion point; it may not be inserted into itself.");
             return;
         }

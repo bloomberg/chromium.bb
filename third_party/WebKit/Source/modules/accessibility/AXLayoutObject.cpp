@@ -1709,9 +1709,11 @@ Element* AXLayoutObject::anchorElement() const
     // search up the DOM tree for an anchor element
     // NOTE: this assumes that any non-image with an anchor is an HTMLAnchorElement
     Node* node = currLayoutObject->node();
-    for ( ; node; node = node->parentNode()) {
-        if (isHTMLAnchorElement(*node) || (node->layoutObject() && cache.getOrCreate(node->layoutObject())->isAnchor()))
-            return toElement(node);
+    if (!node)
+        return nullptr;
+    for (Node& runner : NodeTraversal::inclusiveAncestorsOf(*node)) {
+        if (isHTMLAnchorElement(runner) || (runner.layoutObject() && cache.getOrCreate(runner.layoutObject())->isAnchor()))
+            return toElement(&runner);
     }
 
     return 0;

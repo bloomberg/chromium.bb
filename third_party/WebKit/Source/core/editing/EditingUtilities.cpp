@@ -773,9 +773,9 @@ Element* enclosingBlockFlowElement(const Node& node)
     if (isBlockFlowElement(node))
         return const_cast<Element*>(&toElement(node));
 
-    for (Node* n = node.parentNode(); n; n = n->parentNode()) {
-        if (isBlockFlowElement(*n) || isHTMLBodyElement(*n))
-            return toElement(n);
+    for (Node& runner : NodeTraversal::ancestorsOf(node)) {
+        if (isBlockFlowElement(runner) || isHTMLBodyElement(runner))
+            return toElement(&runner);
     }
     return nullptr;
 }
@@ -886,9 +886,11 @@ static bool isSpecialHTMLElement(const Node& n)
 static HTMLElement* firstInSpecialElement(const Position& pos)
 {
     Element* rootEditableElement = pos.computeContainerNode()->rootEditableElement();
-    for (Node* n = pos.anchorNode(); n && n->rootEditableElement() == rootEditableElement; n = n->parentNode()) {
-        if (isSpecialHTMLElement(*n)) {
-            HTMLElement* specialElement = toHTMLElement(n);
+    for (Node& runner : NodeTraversal::inclusiveAncestorsOf(*pos.anchorNode())) {
+        if (runner.rootEditableElement() != rootEditableElement)
+            break;
+        if (isSpecialHTMLElement(runner)) {
+            HTMLElement* specialElement = toHTMLElement(&runner);
             VisiblePosition vPos = createVisiblePosition(pos);
             VisiblePosition firstInElement = createVisiblePosition(firstPositionInOrBeforeNode(specialElement));
             if (isDisplayInsideTable(specialElement) && vPos.deepEquivalent() == nextPositionOf(firstInElement).deepEquivalent())
@@ -903,9 +905,11 @@ static HTMLElement* firstInSpecialElement(const Position& pos)
 static HTMLElement* lastInSpecialElement(const Position& pos)
 {
     Element* rootEditableElement = pos.computeContainerNode()->rootEditableElement();
-    for (Node* n = pos.anchorNode(); n && n->rootEditableElement() == rootEditableElement; n = n->parentNode()) {
-        if (isSpecialHTMLElement(*n)) {
-            HTMLElement* specialElement = toHTMLElement(n);
+    for (Node& runner : NodeTraversal::inclusiveAncestorsOf(*pos.anchorNode())) {
+        if (runner.rootEditableElement() != rootEditableElement)
+            break;
+        if (isSpecialHTMLElement(runner)) {
+            HTMLElement* specialElement = toHTMLElement(&runner);
             VisiblePosition vPos = createVisiblePosition(pos);
             VisiblePosition lastInElement = createVisiblePosition(lastPositionInOrAfterNode(specialElement));
             if (isDisplayInsideTable(specialElement) && vPos.deepEquivalent() == previousPositionOf(lastInElement).deepEquivalent())
@@ -1178,10 +1182,10 @@ HTMLElement* enclosingList(Node* node)
 
     ContainerNode* root = highestEditableRoot(firstPositionInOrBeforeNode(node));
 
-    for (ContainerNode* n = node->parentNode(); n; n = n->parentNode()) {
-        if (isHTMLUListElement(*n) || isHTMLOListElement(*n))
-            return toHTMLElement(n);
-        if (n == root)
+    for (Node& runner : NodeTraversal::ancestorsOf(*node)) {
+        if (isHTMLUListElement(runner) || isHTMLOListElement(runner))
+            return toHTMLElement(&runner);
+        if (runner == root)
             return 0;
     }
 

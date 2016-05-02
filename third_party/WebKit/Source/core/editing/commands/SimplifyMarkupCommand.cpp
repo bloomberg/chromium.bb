@@ -51,7 +51,7 @@ void SimplifyMarkupCommand::doApply(EditingState* editingState)
         if (node->hasChildren() || (node->isTextNode() && node->nextSibling()))
             continue;
 
-        ContainerNode* startingNode = node->parentNode();
+        ContainerNode* const startingNode = node->parentNode();
         if (!startingNode)
             continue;
         const ComputedStyle* startingStyle = startingNode->computedStyle();
@@ -80,8 +80,11 @@ void SimplifyMarkupCommand::doApply(EditingState* editingState)
 
         }
         if (topNodeWithStartingStyle) {
-            for (ContainerNode* node = startingNode; node != topNodeWithStartingStyle; node = node->parentNode())
-                nodesToRemove.append(node);
+            for (Node& node : NodeTraversal::inclusiveAncestorsOf(*startingNode)) {
+                if (node == topNodeWithStartingStyle)
+                    break;
+                nodesToRemove.append(static_cast<ContainerNode*>(&node));
+            }
         }
     }
 

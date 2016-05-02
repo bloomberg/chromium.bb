@@ -163,16 +163,17 @@ bool isElementForFormatBlock(const QualifiedName& tagName)
 
 Node* enclosingBlockToSplitTreeTo(Node* startNode)
 {
+    DCHECK(startNode);
     Node* lastBlock = startNode;
-    for (Node* n = startNode; n; n = n->parentNode()) {
-        if (!n->hasEditableStyle())
+    for (Node& runner : NodeTraversal::inclusiveAncestorsOf(*startNode)) {
+        if (!runner.hasEditableStyle())
             return lastBlock;
-        if (isTableCell(n) || isHTMLBodyElement(*n) || !n->parentNode() || !n->parentNode()->hasEditableStyle() || isElementForFormatBlock(n))
-            return n;
-        if (isEnclosingBlock(n))
-            lastBlock = n;
-        if (isHTMLListElement(n))
-            return n->parentNode()->hasEditableStyle() ? n->parentNode() : n;
+        if (isTableCell(&runner) || isHTMLBodyElement(&runner) || !runner.parentNode() || !runner.parentNode()->hasEditableStyle() || isElementForFormatBlock(&runner))
+            return &runner;
+        if (isEnclosingBlock(&runner))
+            lastBlock = &runner;
+        if (isHTMLListElement(&runner))
+            return runner.parentNode()->hasEditableStyle() ? runner.parentNode() : &runner;
     }
     return lastBlock;
 }

@@ -481,12 +481,14 @@ HTMLElement* ApplyStyleCommand::splitAncestorsWithUnicodeBidi(Node* node, bool b
     ContainerNode* highestAncestorWithUnicodeBidi = nullptr;
     ContainerNode* nextHighestAncestorWithUnicodeBidi = nullptr;
     int highestAncestorUnicodeBidi = 0;
-    for (ContainerNode* n = node->parentNode(); n != block; n = n->parentNode()) {
-        int unicodeBidi = getIdentifierValue(CSSComputedStyleDeclaration::create(n), CSSPropertyUnicodeBidi);
+    for (Node& runner : NodeTraversal::ancestorsOf(*node)) {
+        if (runner == block)
+            break;
+        int unicodeBidi = getIdentifierValue(CSSComputedStyleDeclaration::create(&runner), CSSPropertyUnicodeBidi);
         if (unicodeBidi && unicodeBidi != CSSValueNormal) {
             highestAncestorUnicodeBidi = unicodeBidi;
             nextHighestAncestorWithUnicodeBidi = highestAncestorWithUnicodeBidi;
-            highestAncestorWithUnicodeBidi = n;
+            highestAncestorWithUnicodeBidi = static_cast<ContainerNode*>(&runner);
         }
     }
 
@@ -527,11 +529,13 @@ void ApplyStyleCommand::removeEmbeddingUpToEnclosingBlock(Node* node, HTMLElemen
     if (!block)
         return;
 
-    for (ContainerNode* n = node->parentNode(); n != block && n != unsplitAncestor; n = n->parentNode()) {
-        if (!n->isStyledElement())
+    for (Node& runner : NodeTraversal::ancestorsOf(*node)) {
+        if (runner == block || runner == unsplitAncestor)
+            break;
+        if (!runner.isStyledElement())
             continue;
 
-        Element* element = toElement(n);
+        Element* element = toElement(&runner);
         int unicodeBidi = getIdentifierValue(CSSComputedStyleDeclaration::create(element), CSSPropertyUnicodeBidi);
         if (!unicodeBidi || unicodeBidi == CSSValueNormal)
             continue;

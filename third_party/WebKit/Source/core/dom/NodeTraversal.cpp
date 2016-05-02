@@ -49,10 +49,10 @@ Node* NodeTraversal::nextIncludingPseudo(const Node& current, const Node* stayWi
         return 0;
     if (Node* next = current.pseudoAwareNextSibling())
         return next;
-    for (Node* parent = current.parentNode(); parent; parent = parent->parentNode()) {
+    for (Node& parent : ancestorsOf(current)) {
         if (parent == stayWithin)
             return 0;
-        if (Node* next = parent->pseudoAwareNextSibling())
+        if (Node* next = parent.pseudoAwareNextSibling())
             return next;
     }
     return 0;
@@ -64,10 +64,10 @@ Node* NodeTraversal::nextIncludingPseudoSkippingChildren(const Node& current, co
         return 0;
     if (Node* next = current.pseudoAwareNextSibling())
         return next;
-    for (Node* parent = current.parentNode(); parent; parent = parent->parentNode()) {
+    for (Node& parent : ancestorsOf(current)) {
         if (parent == stayWithin)
             return 0;
-        if (Node* next = parent->pseudoAwareNextSibling())
+        if (Node* next = parent.pseudoAwareNextSibling())
             return next;
     }
     return 0;
@@ -76,9 +76,9 @@ Node* NodeTraversal::nextIncludingPseudoSkippingChildren(const Node& current, co
 Node* NodeTraversal::nextAncestorSibling(const Node& current)
 {
     DCHECK(!current.nextSibling());
-    for (Node* parent = current.parentNode(); parent; parent = parent->parentNode()) {
-        if (parent->nextSibling())
-            return parent->nextSibling();
+    for (Node& parent : ancestorsOf(current)) {
+        if (parent.nextSibling())
+            return parent.nextSibling();
     }
     return 0;
 }
@@ -87,11 +87,11 @@ Node* NodeTraversal::nextAncestorSibling(const Node& current, const Node* stayWi
 {
     DCHECK(!current.nextSibling());
     DCHECK_NE(current, stayWithin);
-    for (Node* parent = current.parentNode(); parent; parent = parent->parentNode()) {
+    for (Node& parent : ancestorsOf(current)) {
         if (parent == stayWithin)
             return 0;
-        if (parent->nextSibling())
-            return parent->nextSibling();
+        if (parent.nextSibling())
+            return parent.nextSibling();
     }
     return 0;
 }
@@ -129,11 +129,11 @@ Node* NodeTraversal::previousSkippingChildren(const Node& current, const Node* s
         return 0;
     if (current.previousSibling())
         return current.previousSibling();
-    for (Node* parent = current.parentNode(); parent; parent = parent->parentNode()) {
+    for (Node& parent : ancestorsOf(current)) {
         if (parent == stayWithin)
             return 0;
-        if (parent->previousSibling())
-            return parent->previousSibling();
+        if (parent.previousSibling())
+            return parent.previousSibling();
     }
     return 0;
 }
@@ -153,11 +153,11 @@ Node* NodeTraversal::nextPostOrder(const Node& current, const Node* stayWithin)
 static Node* previousAncestorSiblingPostOrder(const Node& current, const Node* stayWithin)
 {
     DCHECK(!current.previousSibling());
-    for (Node* parent = current.parentNode(); parent; parent = parent->parentNode()) {
+    for (Node& parent : NodeTraversal::ancestorsOf(current)) {
         if (parent == stayWithin)
             return 0;
-        if (parent->previousSibling())
-            return parent->previousSibling();
+        if (parent.previousSibling())
+            return parent.previousSibling();
     }
     return 0;
 }
