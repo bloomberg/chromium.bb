@@ -208,6 +208,8 @@ crbug.com/548226 [ Win ] virtual/pointerevent/fast/events/pointerevents/mouse-po
 crbug.com/548226 [ Win ] virtual/trustedeventsdefaultaction/fast/events/pointerevents/mouse-pointer-event-properties.html [ Failure Pass ]
 crbug.com/548226 [ Win ] virtual/pointerevent/fast/events/pointerevents/multi-pointer-preventdefault.html [ Failure Pass ]
 
+crbug.com/608356 [ Linux ] virtual/pointerevent/inspector/sources/debugger-breakpoints/dom-breakpoints.html [ Timeout ]
+
 crbug.com/432129 fast/html/marquee-scroll.html [ Failure Pass ]
 crbug.com/518929 [ Precise Debug ] http/tests/appcache/obsolete-error-events.html [ Failure Pass Timeout ]
 crbug.com/518929 [ Precise Debug ] http/tests/appcache/remove-cache.html [ Failure Pass ]
