@@ -86,7 +86,6 @@ NTPSnippetsFetcher::AddCallback(const SnippetsAvailableCallback& callback) {
 
 void NTPSnippetsFetcher::FetchSnippets(const std::set<std::string>& hosts,
                                        int count) {
-  // TODO(treib): What to do if there's already a pending request?
   const std::string& key = is_stable_channel_
                                ? google_apis::GetAPIKey()
                                : google_apis::GetNonStableAPIKey();
