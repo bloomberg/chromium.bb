@@ -9,7 +9,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "media/base/video_frame.h"
-#include "media/gpu/ipc/common/gpu_video_accelerator_util.h"
+#include "media/gpu/gpu_video_accelerator_util.h"
 #include "media/gpu/ipc/common/media_messages.h"
 #include "media/video/video_encode_accelerator.h"
 #include "ui/gfx/gpu_memory_buffer.h"

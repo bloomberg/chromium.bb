@@ -1618,6 +1618,12 @@
         }],
       ],
     },
+    {
+      # GN version: //media/gpu
+      'target_name': 'media_gpu',
+      'type': 'static_library',
+      'includes': [ 'media_gpu.gypi' ],
+    },
   ],
   'conditions': [
     ['target_arch=="ia32" or target_arch=="x64"', {
@@ -2083,6 +2089,201 @@
           ],
         },
       ],
+    }],
+    ['chromeos==1', {
+      'targets': [
+        {
+          'target_name': 'jpeg_decode_accelerator_unittest',
+          'type': 'executable',
+          'dependencies': [
+            '../base/base.gyp:base',
+            '../media/media.gyp:media',
+            '../media/media.gyp:media_gpu',
+            '../media/media.gyp:media_test_support',
+            '../testing/gtest.gyp:gtest',
+            '../third_party/libyuv/libyuv.gyp:libyuv',
+            '../ui/gfx/gfx.gyp:gfx',
+            '../ui/gfx/gfx.gyp:gfx_geometry',
+            '../ui/gl/gl.gyp:gl',
+            '../ui/gl/gl.gyp:gl_test_support',
+          ],
+          'sources': [
+            'gpu/jpeg_decode_accelerator_unittest.cc',
+          ],
+          'include_dirs': [
+            '<(DEPTH)/third_party/libva',
+            '<(DEPTH)/third_party/libyuv',
+          ],
+        }
+      ]
+    }],
+    ['chromeos==1 or OS=="mac"', {
+      'targets': [
+        {
+          'target_name': 'video_encode_accelerator_unittest',
+          'type': 'executable',
+          'dependencies': [
+            '../base/base.gyp:base',
+            '../media/media.gyp:media',
+            '../media/media.gyp:media_gpu',
+            '../media/media.gyp:media_test_support',
+            '../testing/gtest.gyp:gtest',
+            '../ui/base/ui_base.gyp:ui_base',
+            '../ui/gfx/gfx.gyp:gfx',
+            '../ui/gfx/gfx.gyp:gfx_geometry',
+            '../ui/gfx/gfx.gyp:gfx_test_support',
+            '../ui/gl/gl.gyp:gl',
+            '../ui/gl/gl.gyp:gl_test_support',
+          ],
+          'sources': [
+            'gpu/video_accelerator_unittest_helpers.h',
+            'gpu/video_encode_accelerator_unittest.cc',
+          ],
+          'include_dirs': [
+            '<(DEPTH)/third_party/libva',
+            '<(DEPTH)/third_party/libyuv',
+          ],
+          'conditions': [
+            ['use_x11==1', {
+              'dependencies': [
+                '../ui/gfx/x/gfx_x11.gyp:gfx_x11',
+              ],
+            }],
+            ['use_ozone==1', {
+              'dependencies': [
+                '../ui/ozone/ozone.gyp:ozone',
+              ],
+            }],
+          ],
+        }
+      ]
+    }],
+    ['chromeos==1 or OS=="win" or OS=="android"', {
+      'targets': [
+          {
+            # TODO(GYP): Port Windows and ChromeOS logic.
+            # GN: //media/gpu:video_decode_accelerator_unittest
+            'target_name': 'video_decode_accelerator_unittest',
+            'type': '<(gtest_target_type)',
+            'dependencies': [
+              '../base/base.gyp:base',
+              '../gpu/gpu.gyp:command_buffer_service',
+              '../media/gpu/ipc/media_ipc.gyp:media_gpu_ipc_service',
+              '../media/media.gyp:media',
+              '../media/media.gyp:media_gpu',
+              '../testing/gtest.gyp:gtest',
+              '../ui/base/ui_base.gyp:ui_base',
+              '../ui/gfx/gfx.gyp:gfx',
+              '../ui/gfx/gfx.gyp:gfx_geometry',
+              '../ui/gfx/gfx.gyp:gfx_test_support',
+              '../ui/gl/gl.gyp:gl',
+              '../ui/gl/gl.gyp:gl_test_support',
+            ],
+            'include_dirs': [
+              '<(DEPTH)/third_party/khronos',
+            ],
+            'sources': [
+              'gpu/android_video_decode_accelerator_unittest.cc',
+              'gpu/rendering_helper.cc',
+              'gpu/rendering_helper.h',
+              'gpu/video_accelerator_unittest_helpers.h',
+              'gpu/video_decode_accelerator_unittest.cc',
+            ],
+            'conditions': [
+              ['OS=="android"', {
+                'sources/': [
+                  ['exclude', '^gpu/rendering_helper.h'],
+                  ['exclude', '^gpu/rendering_helper.cc'],
+                  ['exclude', '^gpu/video_decode_accelerator_unittest.cc'],
+                ],
+                'dependencies': [
+                  '../media/media.gyp:player_android',
+                  '../testing/gmock.gyp:gmock',
+                  '../testing/android/native_test.gyp:native_test_native_code',
+                  '../gpu/gpu.gyp:gpu_unittest_utils',
+                ],
+              }, {  # OS!="android"
+                'sources/': [
+                  ['exclude', '^gpu/android_video_decode_accelerator_unittest.cc'],
+                ],
+              }],
+              ['OS=="win"', {
+                'dependencies': [
+                  '<(angle_path)/src/angle.gyp:libEGL',
+                  '<(angle_path)/src/angle.gyp:libGLESv2',
+                ],
+              }],
+              ['target_arch != "arm" and (OS=="linux" or chromeos == 1)', {
+                'include_dirs': [
+                  '<(DEPTH)/third_party/libva',
+                ],
+              }],
+              ['use_x11==1', {
+                'dependencies': [
+                  '../build/linux/system.gyp:x11',  # Used by rendering_helper.cc
+                  '../ui/gfx/x/gfx_x11.gyp:gfx_x11',
+                ],
+              }],
+              ['use_ozone==1 and chromeos==1', {
+                'dependencies': [
+                  '../ui/display/display.gyp:display',  # Used by rendering_helper.cc
+                  '../ui/ozone/ozone.gyp:ozone',  # Used by rendering_helper.cc
+                ],
+              }],
+            ],
+            # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+            'msvs_disabled_warnings': [ 4267 ],
+          },
+        ],
+    }],
+    ['OS=="android"', {
+      'targets': [
+        {
+          'target_name': 'video_decode_accelerator_unittest_apk',
+          'type': 'none',
+          'dependencies': [
+            'video_decode_accelerator_unittest',
+          ],
+          'variables': {
+            'test_suite_name': 'video_decode_accelerator_unittest',
+          },
+          'includes': [ '../build/apk_test.gypi' ],
+        },
+      ],
+    }],
+
+    ['chromeos==1 and target_arch != "arm"', {
+      'targets': [
+          {
+            'target_name': 'vaapi_jpeg_decoder_unittest',
+            'type': '<(gtest_target_type)',
+            'dependencies': [
+              '../media/media.gyp:media_gpu',
+              '../base/base.gyp:base',
+              '../media/media.gyp:media',
+              '../media/media.gyp:media_test_support',
+              '../testing/gtest.gyp:gtest',
+            ],
+            'sources': [
+              'gpu/vaapi_jpeg_decoder_unittest.cc',
+            ],
+            'include_dirs': [
+              '<(DEPTH)/third_party/libva',
+            ],
+            'conditions': [
+              ['use_x11==1', {
+                'dependencies': [
+                  '../build/linux/system.gyp:x11',
+                  '../ui/gfx/x/gfx_x11.gyp:gfx_x11',
+                ]
+              }, {
+                'dependencies': [
+                  '../build/linux/system.gyp:libdrm',
+                ]
+              }],
+            ],
+          }
+        ]
     }],
   ],
 }

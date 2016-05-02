@@ -32,10 +32,10 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
-#include "content/common/gpu/media/vt_video_decode_accelerator_mac.h"
 #include "content/grit/content_resources.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
+#include "media/gpu/vt_video_decode_accelerator_mac.h"
 #include "sandbox/mac/seatbelt.h"
 #include "third_party/icu/source/common/unicode/uchar.h"
 #include "ui/base/layout.h"
@@ -332,7 +332,7 @@ void Sandbox::SandboxWarmup(int sandbox_type) {
     gfx::GLSurface::InitializeOneOff();
 
     // Preload VideoToolbox.
-    InitializeVideoToolbox();
+    media::InitializeVideoToolbox();
   }
 
   if (sandbox_type == SANDBOX_TYPE_PPAPI) {

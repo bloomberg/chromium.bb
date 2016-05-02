@@ -6,8 +6,6 @@ source_set("common") {
   sources = [
     "create_video_encoder_params.cc",
     "create_video_encoder_params.h",
-    "gpu_video_accelerator_util.cc",
-    "gpu_video_accelerator_util.h",
     "media_message_generator.cc",
     "media_message_generator.h",
     "media_messages.cc",

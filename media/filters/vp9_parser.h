@@ -7,7 +7,7 @@
 // accelerators, e.g. libva which implements VA-API, require the caller
 // (chrome) to feed them parsed VP9 frame header.
 //
-// See content::VP9Decoder for example usage.
+// See media::VP9Decoder for example usage.
 //
 #ifndef MEDIA_FILTERS_VP9_PARSER_H_
 #define MEDIA_FILTERS_VP9_PARSER_H_

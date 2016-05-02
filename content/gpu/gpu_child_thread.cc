@@ -16,10 +16,6 @@
 #include "content/child/child_process.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/common/establish_channel_params.h"
-#include "content/common/gpu/media/gpu_jpeg_decode_accelerator.h"
-#include "content/common/gpu/media/gpu_video_decode_accelerator.h"
-#include "content/common/gpu/media/gpu_video_encode_accelerator.h"
-#include "content/common/gpu/media/media_service.h"
 #include "content/common/gpu_host_messages.h"
 #include "content/gpu/gpu_process_control_impl.h"
 #include "content/gpu/gpu_watchdog_thread.h"
@@ -35,6 +31,10 @@
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_sync_message_filter.h"
+#include "media/gpu/ipc/service/gpu_jpeg_decode_accelerator.h"
+#include "media/gpu/ipc/service/gpu_video_decode_accelerator.h"
+#include "media/gpu/ipc/service/gpu_video_encode_accelerator.h"
+#include "media/gpu/ipc/service/media_service.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/gl/gpu_switching_manager.h"
@@ -46,7 +46,7 @@
 #endif
 
 #if defined(OS_ANDROID)
-#include "content/common/gpu/media/avda_surface_tracker.h"
+#include "media/gpu/avda_surface_tracker.h"
 #endif
 
 namespace content {
@@ -367,12 +367,12 @@ void GpuChildThread::OnInitialize(const gpu::GpuPreferences& gpu_preferences) {
   gpu_preferences_ = gpu_preferences;
 
   gpu_info_.video_decode_accelerator_capabilities =
-      content::GpuVideoDecodeAccelerator::GetCapabilities(gpu_preferences_);
+      media::GpuVideoDecodeAccelerator::GetCapabilities(gpu_preferences_);
   gpu_info_.video_encode_accelerator_supported_profiles =
-      content::GpuVideoEncodeAccelerator::GetSupportedProfiles(
+      media::GpuVideoEncodeAccelerator::GetSupportedProfiles(
           gpu_preferences_);
   gpu_info_.jpeg_decode_accelerator_supported =
-      content::GpuJpegDecodeAccelerator::IsSupported();
+      media::GpuJpegDecodeAccelerator::IsSupported();
 
   // Record initialization only after collecting the GPU info because that can
   // take a significant amount of time.
@@ -415,7 +415,7 @@ void GpuChildThread::OnInitialize(const gpu::GpuPreferences& gpu_preferences) {
                             ChildProcess::current()->GetShutDownEvent(),
                             sync_point_manager, gpu_memory_buffer_factory_));
 
-  media_service_.reset(new MediaService(gpu_channel_manager_.get()));
+  media_service_.reset(new media::MediaService(gpu_channel_manager_.get()));
 
 #if defined(USE_OZONE)
   ui::OzonePlatform::GetInstance()
@@ -573,7 +573,7 @@ void GpuChildThread::OnWakeUpGpu() {
 }
 
 void GpuChildThread::OnDestroyingVideoSurface(int surface_id) {
-  AVDASurfaceTracker::GetInstance()->NotifyDestroyingSurface(surface_id);
+  media::AVDASurfaceTracker::GetInstance()->NotifyDestroyingSurface(surface_id);
   Send(new GpuHostMsg_DestroyingVideoSurfaceAck(surface_id));
 }
 #endif

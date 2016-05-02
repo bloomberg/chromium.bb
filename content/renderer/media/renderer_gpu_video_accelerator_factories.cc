@@ -19,9 +19,9 @@
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
+#include "media/gpu/gpu_video_accelerator_util.h"
 #include "media/gpu/ipc/client/gpu_video_decode_accelerator_host.h"
 #include "media/gpu/ipc/client/gpu_video_encode_accelerator_host.h"
-#include "media/gpu/ipc/common/gpu_video_accelerator_util.h"
 #include "media/video/video_decode_accelerator.h"
 #include "media/video/video_encode_accelerator.h"
 

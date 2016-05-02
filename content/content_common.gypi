@@ -12,11 +12,6 @@
     '../gpu/gpu.gyp:command_buffer_service',
     '../gpu/gpu.gyp:gles2_c_lib',
     '../gpu/gpu.gyp:gles2_implementation',
-
-    # TODO(markdittmer): This should be removed once content/common/gpu/media
-    # is refactored into media/ipc.
-    '../gpu/gpu.gyp:gpu_ipc_service',
-
     '../gpu/gpu.gyp:gpu',
     '../gpu/skia_bindings/skia_bindings.gyp:gpu_skia_bindings',
     '../ipc/ipc.gyp:ipc',
@@ -92,8 +87,6 @@
     '../ui/accessibility/accessibility.gyp:ax_gen',
   ],
   'variables': {
-    'use_v4lplugin%': 0,
-    'use_v4l2_codec%': 0,
     'public_common_sources': [
       'public/common/appcache_info.h',
       'public/common/bindings_policy.h',
@@ -354,23 +347,6 @@
       'common/gpu/client/context_provider_command_buffer.h',
       'common/gpu/client/webgraphicscontext3d_command_buffer_impl.cc',
       'common/gpu/client/webgraphicscontext3d_command_buffer_impl.h',
-      'common/gpu/media/fake_video_decode_accelerator.cc',
-      'common/gpu/media/fake_video_decode_accelerator.h',
-      'common/gpu/media/gpu_jpeg_decode_accelerator.cc',
-      'common/gpu/media/gpu_jpeg_decode_accelerator.h',
-      'common/gpu/media/gpu_video_decode_accelerator.cc',
-      'common/gpu/media/gpu_video_decode_accelerator.h',
-      'common/gpu/media/gpu_video_decode_accelerator_factory_impl.cc',
-      'common/gpu/media/gpu_video_decode_accelerator_factory_impl.h',
-      'common/gpu/media/gpu_video_decode_accelerator_helpers.h',
-      'common/gpu/media/gpu_video_encode_accelerator.cc',
-      'common/gpu/media/gpu_video_encode_accelerator.h',
-      'common/gpu/media/media_channel.cc',
-      'common/gpu/media/media_channel.h',
-      'common/gpu/media/media_service.cc',
-      'common/gpu/media/media_service.h',
-      'common/gpu/media/shared_memory_region.cc',
-      'common/gpu/media/shared_memory_region.h',
       'common/gpu_host_messages.h',
       'common/gpu_process_launch_causes.h',
       'common/host_discardable_shared_memory_manager.cc',
@@ -595,67 +571,12 @@
   ],
   'conditions': [
     ['OS=="mac"', {
-      'dependencies': [
-        '../media/media.gyp:media',
-        '../sandbox/sandbox.gyp:seatbelt',
-        'app/resources/content_resources.gyp:content_resources',
-        '../ui/accelerated_widget_mac/accelerated_widget_mac.gyp:accelerated_widget_mac'
-      ],
-      'sources': [
-        'common/gpu/media/vt_mac.h',
-        'common/gpu/media/vt_video_decode_accelerator_mac.cc',
-        'common/gpu/media/vt_video_decode_accelerator_mac.h',
-        'common/gpu/media/vt_video_encode_accelerator_mac.cc',
-        'common/gpu/media/vt_video_encode_accelerator_mac.h',
-      ],
-      'link_settings': {
-        'libraries': [
-          '$(SDKROOT)/System/Library/Frameworks/AVFoundation.framework',
-          '$(SDKROOT)/System/Library/Frameworks/CoreMedia.framework',
-          '$(SDKROOT)/System/Library/Frameworks/CoreVideo.framework',
-          '$(SDKROOT)/System/Library/Frameworks/IOSurface.framework',
-          '$(SDKROOT)/System/Library/Frameworks/QuartzCore.framework',
-          '$(SDKROOT)/usr/lib/libsandbox.dylib',
-        ],
-      },
+      'dependencies': [ '../sandbox/sandbox.gyp:seatbelt' ],
       'variables': {
-        'generate_stubs_script': '../tools/generate_stubs/generate_stubs.py',
-        'extra_header': 'common/gpu/media/vt_stubs_header.fragment',
-        'sig_files': ['common/gpu/media/vt.sig'],
-        'outfile_type': 'posix_stubs',
-        'stubs_filename_root': 'vt_stubs',
-        'project_path': 'content/common/gpu/media',
-        'intermediate_dir': '<(INTERMEDIATE_DIR)',
-        'output_root': '<(SHARED_INTERMEDIATE_DIR)/vt_stubs',
+        'vt_stubs_output_root': '<(SHARED_INTERMEDIATE_DIR)/vt_stubs',
       },
       'include_dirs': [
-        '<(output_root)',
-      ],
-      'actions': [
-        {
-          'action_name': 'generate_stubs',
-          'inputs': [
-            '<(generate_stubs_script)',
-            '<(extra_header)',
-            '<@(sig_files)',
-          ],
-          'outputs': [
-            '<(intermediate_dir)/<(stubs_filename_root).cc',
-            '<(output_root)/<(project_path)/<(stubs_filename_root).h',
-          ],
-          'action': ['python',
-                     '<(generate_stubs_script)',
-                     '-i', '<(intermediate_dir)',
-                     '-o', '<(output_root)/<(project_path)',
-                     '-t', '<(outfile_type)',
-                     '-e', '<(extra_header)',
-                     '-s', '<(stubs_filename_root)',
-                     '-p', '<(project_path)',
-                     '<@(_inputs)',
-          ],
-          'process_outputs_as_sources': 1,
-          'message': 'Generating VideoToolbox stubs for dynamic loading',
-        },
+        '<(vt_stubs_output_root)',
       ],
     }],
     ['OS=="android"',{
@@ -704,36 +625,6 @@
         'public/common/pepper_plugin_info.h',
       ],
     }],
-    ['OS=="android"', {
-      'dependencies': [
-        '../media/media.gyp:media',
-      ],
-      'sources': [
-        'common/gpu/media/android_copying_backing_strategy.cc',
-        'common/gpu/media/android_copying_backing_strategy.h',
-        'common/gpu/media/android_deferred_rendering_backing_strategy.cc',
-        'common/gpu/media/android_deferred_rendering_backing_strategy.h',
-        'common/gpu/media/android_video_decode_accelerator.cc',
-        'common/gpu/media/android_video_decode_accelerator.h',
-        'common/gpu/media/avda_codec_image.cc',
-        'common/gpu/media/avda_codec_image.h',
-        'common/gpu/media/avda_return_on_failure.h',
-        'common/gpu/media/avda_shared_state.cc',
-        'common/gpu/media/avda_shared_state.h',
-        'common/gpu/media/avda_state_provider.h',
-        'common/gpu/media/avda_surface_tracker.h',
-        'common/gpu/media/avda_surface_tracker.cc',
-      ],
-    }],
-    ['OS=="android" and enable_webrtc==1', {
-      'dependencies': [
-        '../third_party/libyuv/libyuv.gyp:libyuv',
-      ],
-      'sources': [
-        'common/gpu/media/android_video_encode_accelerator.cc',
-        'common/gpu/media/android_video_encode_accelerator.h',
-      ],
-    }],
     ['enable_webrtc==1', {
       'dependencies': [
         '../third_party/libjingle/libjingle.gyp:libjingle',
@@ -741,227 +632,6 @@
       'sources': [
         'public/common/webrtc_ip_handling_policy.cc',
         'public/common/webrtc_ip_handling_policy.h',
-      ],
-    }],
-    ['use_v4lplugin==1 and chromeos==1', {
-      'defines': [
-        'USE_LIBV4L2'
-      ],
-      'variables': {
-        'generate_stubs_script': '../tools/generate_stubs/generate_stubs.py',
-        'extra_header': 'common/gpu/media/v4l2_stub_header.fragment',
-        'sig_files': ['common/gpu/media/v4l2.sig'],
-        'outfile_type': 'posix_stubs',
-        'stubs_filename_root': 'v4l2_stubs',
-        'project_path': 'content/common/gpu/media',
-        'intermediate_dir': '<(INTERMEDIATE_DIR)',
-        'output_root': '<(SHARED_INTERMEDIATE_DIR)/v4l2',
-      },
-      'include_dirs': [
-        '<(output_root)',
-      ],
-      'actions': [
-        {
-          'action_name': 'generate_stubs',
-          'inputs': [
-            '<(generate_stubs_script)',
-            '<(extra_header)',
-            '<@(sig_files)',
-          ],
-          'outputs': [
-            '<(intermediate_dir)/<(stubs_filename_root).cc',
-            '<(output_root)/<(project_path)/<(stubs_filename_root).h',
-          ],
-          'action': ['python',
-            '<(generate_stubs_script)',
-            '-i', '<(intermediate_dir)',
-            '-o', '<(output_root)/<(project_path)',
-            '-t', '<(outfile_type)',
-            '-e', '<(extra_header)',
-            '-s', '<(stubs_filename_root)',
-            '-p', '<(project_path)',
-            '<@(_inputs)',
-          ],
-          'process_outputs_as_sources': 1,
-          'message': 'Generating libv4l2 stubs for dynamic loading',
-        },
-      ],
-    }],
-    ['chromeos==1', {
-      'sources': [
-        'common/gpu/media/accelerated_video_decoder.h',
-        'common/gpu/media/h264_decoder.cc',
-        'common/gpu/media/h264_decoder.h',
-        'common/gpu/media/h264_dpb.cc',
-        'common/gpu/media/h264_dpb.h',
-        'common/gpu/media/vp8_decoder.cc',
-        'common/gpu/media/vp8_decoder.h',
-        'common/gpu/media/vp8_picture.cc',
-        'common/gpu/media/vp8_picture.h',
-        'common/gpu/media/vp9_decoder.cc',
-        'common/gpu/media/vp9_decoder.h',
-        'common/gpu/media/vp9_picture.cc',
-        'common/gpu/media/vp9_picture.h',
-      ],
-    }],
-    ['chromeos==1 and use_v4l2_codec==1', {
-      'direct_dependent_settings': {
-        'defines': [
-          'USE_V4L2_CODEC'
-        ],
-      },
-      'defines': [
-        'USE_V4L2_CODEC'
-      ],
-      'dependencies': [
-        '../media/media.gyp:media',
-        '../third_party/libyuv/libyuv.gyp:libyuv',
-      ],
-      'sources': [
-        'common/gpu/media/generic_v4l2_device.cc',
-        'common/gpu/media/generic_v4l2_device.h',
-        'common/gpu/media/v4l2_device.cc',
-        'common/gpu/media/v4l2_device.h',
-        'common/gpu/media/v4l2_image_processor.cc',
-        'common/gpu/media/v4l2_image_processor.h',
-        'common/gpu/media/v4l2_jpeg_decode_accelerator.cc',
-        'common/gpu/media/v4l2_jpeg_decode_accelerator.h',
-        'common/gpu/media/v4l2_slice_video_decode_accelerator.cc',
-        'common/gpu/media/v4l2_slice_video_decode_accelerator.h',
-        'common/gpu/media/v4l2_video_decode_accelerator.cc',
-        'common/gpu/media/v4l2_video_decode_accelerator.h',
-        'common/gpu/media/v4l2_video_encode_accelerator.cc',
-        'common/gpu/media/v4l2_video_encode_accelerator.h',
-      ],
-      'include_dirs': [
-        '<(DEPTH)/third_party/khronos',
-      ],
-    }],
-    ['target_arch == "arm" and chromeos == 1', {
-      'sources': [
-        'common/gpu/media/tegra_v4l2_device.cc',
-        'common/gpu/media/tegra_v4l2_device.h',
-      ],
-    }],
-    ['target_arch != "arm" and chromeos == 1', {
-      'dependencies': [
-        '../media/media.gyp:media',
-        '../third_party/libyuv/libyuv.gyp:libyuv',
-      ],
-      'sources': [
-        'common/gpu/media/va_surface.h',
-        'common/gpu/media/vaapi_jpeg_decode_accelerator.cc',
-        'common/gpu/media/vaapi_jpeg_decode_accelerator.h',
-        'common/gpu/media/vaapi_jpeg_decoder.cc',
-        'common/gpu/media/vaapi_jpeg_decoder.h',
-        'common/gpu/media/vaapi_picture.cc',
-        'common/gpu/media/vaapi_picture.h',
-        'common/gpu/media/vaapi_video_decode_accelerator.cc',
-        'common/gpu/media/vaapi_video_decode_accelerator.h',
-        'common/gpu/media/vaapi_video_encode_accelerator.cc',
-        'common/gpu/media/vaapi_video_encode_accelerator.h',
-        'common/gpu/media/vaapi_wrapper.cc',
-        'common/gpu/media/vaapi_wrapper.h',
-      ],
-      'conditions': [
-        ['use_x11 == 1', {
-          'variables': {
-            'sig_files': [
-              'common/gpu/media/va.sigs',
-              'common/gpu/media/va_x11.sigs',
-            ],
-          },
-          'sources': [
-            'common/gpu/media/vaapi_tfp_picture.cc',
-            'common/gpu/media/vaapi_tfp_picture.h',
-          ],
-        }, {
-          'variables': {
-            'sig_files': [
-              'common/gpu/media/va.sigs',
-              'common/gpu/media/va_drm.sigs',
-            ],
-          },
-          'sources': [
-            'common/gpu/media/vaapi_drm_picture.cc',
-            'common/gpu/media/vaapi_drm_picture.h',
-          ],
-        }],
-      ],
-      'variables': {
-        'generate_stubs_script': '../tools/generate_stubs/generate_stubs.py',
-        'extra_header': 'common/gpu/media/va_stub_header.fragment',
-        'outfile_type': 'posix_stubs',
-        'stubs_filename_root': 'va_stubs',
-        'project_path': 'content/common/gpu/media',
-        'intermediate_dir': '<(INTERMEDIATE_DIR)',
-        'output_root': '<(SHARED_INTERMEDIATE_DIR)/va',
-      },
-      'include_dirs': [
-        '<(DEPTH)/third_party/libva',
-        '<(DEPTH)/third_party/libyuv',
-        '<(output_root)',
-      ],
-      'actions': [
-        {
-          'action_name': 'generate_stubs',
-          'inputs': [
-            '<(generate_stubs_script)',
-            '<(extra_header)',
-            '<@(sig_files)',
-          ],
-          'outputs': [
-            '<(intermediate_dir)/<(stubs_filename_root).cc',
-            '<(output_root)/<(project_path)/<(stubs_filename_root).h',
-          ],
-          'action': ['python',
-                     '<(generate_stubs_script)',
-                     '-i', '<(intermediate_dir)',
-                     '-o', '<(output_root)/<(project_path)',
-                     '-t', '<(outfile_type)',
-                     '-e', '<(extra_header)',
-                     '-s', '<(stubs_filename_root)',
-                     '-p', '<(project_path)',
-                     '<@(_inputs)',
-          ],
-          'process_outputs_as_sources': 1,
-          'message': 'Generating libva stubs for dynamic loading',
-        },
-     ]
-    }],
-    ['OS=="win"', {
-      'dependencies': [
-        '../media/media.gyp:media',
-        '../ui/gl/gl.gyp:gl',
-      ],
-      'link_settings': {
-        'libraries': [
-           '-ld3d9.lib',
-           '-ld3d11.lib',
-           '-ldxva2.lib',
-           '-lstrmiids.lib',
-           '-lmf.lib',
-           '-lmfplat.lib',
-           '-lmfuuid.lib',
-        ],
-        'msvs_settings': {
-          'VCLinkerTool': {
-            'DelayLoadDLLs': [
-              'd3d9.dll',
-			  'd3d11.dll',
-              'dxva2.dll',
-              'mf.dll',
-              'mfplat.dll',
-            ],
-          },
-        },
-      },
-      'sources': [
-        'common/gpu/media/dxva_video_decode_accelerator_win.cc',
-        'common/gpu/media/dxva_video_decode_accelerator_win.h',
-      ],
-      'include_dirs': [
-        '<(DEPTH)/third_party/khronos',
       ],
     }],
     ['use_seccomp_bpf==0', {

@@ -11,12 +11,3 @@ content_common_gypi_values =
                 [ rebase_path("../content_common.gypi") ],
                 "scope",
                 [ "../content_common.gypi" ])
-
-declare_args() {
-  # Indicates if V4L plugin is used.
-  use_v4lplugin = false
-
-  # Indicates if Video4Linux2 codec is used. This is used for all CrOS
-  # platforms which have v4l2 hardware encoder / decoder.
-  use_v4l2_codec = false
-}

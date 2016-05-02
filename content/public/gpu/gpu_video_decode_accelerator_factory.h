@@ -27,9 +27,11 @@ class GLES2Decoder;
 }
 }
 
-namespace content {
-
+namespace media {
 class GpuVideoDecodeAcceleratorFactoryImpl;
+}
+
+namespace content {
 
 // This factory allows creation of VideoDecodeAccelerator implementations,
 // providing the most applicable VDA for current platform and given
@@ -90,12 +92,14 @@ class CONTENT_EXPORT GpuVideoDecodeAcceleratorFactory {
 
  private:
   // TODO(posciak): This is temporary and will not be needed once
-  // GpuVideoDecodeAcceleratorFactoryImpl implements
+  // media::GpuVideoDecodeAcceleratorFactoryImpl implements
   // GpuVideoDecodeAcceleratorFactory, see crbug.com/597150 and related.
   GpuVideoDecodeAcceleratorFactory(
-      std::unique_ptr<GpuVideoDecodeAcceleratorFactoryImpl> gvdafactory_impl);
+      std::unique_ptr<media::GpuVideoDecodeAcceleratorFactoryImpl>
+      gvdafactory_impl);
 
-  std::unique_ptr<GpuVideoDecodeAcceleratorFactoryImpl> gvdafactory_impl_;
+  std::unique_ptr<media::GpuVideoDecodeAcceleratorFactoryImpl>
+      gvdafactory_impl_;
 };
 
 }  // namespace content

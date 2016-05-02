@@ -16,14 +16,13 @@
         '../../../ipc/ipc.gyp:ipc',
         '../../../ui/gfx/gfx.gyp:gfx',
         '../../../ui/gfx/gfx.gyp:gfx_geometry',
+        '../../../ui/gfx/ipc/geometry/gfx_ipc_geometry.gyp:gfx_ipc_geometry',
         '../../../ui/gfx/ipc/gfx_ipc.gyp:gfx_ipc',
       ],
       # This sources list is duplicated in //media/gpu/ipc/common/BUILD.gn
       'sources': [
         'common/create_video_encoder_params.cc',
         'common/create_video_encoder_params.h',
-        'common/gpu_video_accelerator_util.cc',
-        'common/gpu_video_accelerator_util.h',
         'common/media_message_generator.cc',
         'common/media_message_generator.h',
         'common/media_messages.cc',
@@ -40,6 +39,7 @@
       'dependencies': [
         '../../media.gyp:media',
         '../../media.gyp:media_features',
+        '../../media.gyp:media_gpu',
         '../../../base/base.gyp:base',
         '../../../gpu/gpu.gyp:gpu_ipc_common',
         '../../../ipc/ipc.gyp:ipc',
@@ -57,7 +57,49 @@
         'client/gpu_video_encode_accelerator_host.h',
       ],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-      'msvs_disabled_warnings': [4267, ],
+      'msvs_disabled_warnings': [ 4267 ],
     },
+    {
+      # GN version: //media/gpu/ipc/service
+      'target_name': 'media_gpu_ipc_service',
+      'type': 'static_library',
+      'dependencies': [
+        '../../../base/base.gyp:base',
+        '../../../gpu/gpu.gyp:gpu_config',
+        '../../../gpu/gpu.gyp:gpu_ipc_service',
+        '../../../ipc/ipc.gyp:ipc',
+        '../../../third_party/mesa/mesa.gyp:mesa_headers',
+        '../../media.gyp:media',
+        '../../media.gyp:media_gpu',
+        'media_gpu_ipc_common',
+      ],
+      'sources': [
+        'service/gpu_jpeg_decode_accelerator.cc',
+        'service/gpu_jpeg_decode_accelerator.h',
+        'service/gpu_video_decode_accelerator.cc',
+        'service/gpu_video_decode_accelerator.h',
+        'service/gpu_video_encode_accelerator.cc',
+        'service/gpu_video_encode_accelerator.h',
+        'service/media_channel.cc',
+        'service/media_channel.h',
+        'service/media_service.cc',
+        'service/media_service.h',
+      ],
+      'include_dirs': [
+        '<(DEPTH)/third_party/libva',
+        '<(DEPTH)/third_party/mesa/src/include',
+      ],
+      'conditions': [
+        ['OS == "win" and target_arch == "x64"', {
+          'msvs_settings': {
+            'VCCLCompilerTool': {
+              'AdditionalOptions': [
+                '/wd4267', # Conversion from 'size_t' to 'type', possible loss of data
+              ],
+            },
+          },
+        }],
+      ],
+    }
   ]
 }

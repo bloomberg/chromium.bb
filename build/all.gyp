@@ -323,7 +323,7 @@
         ['OS!="ios"', {
           'dependencies': [
             '../ui/gl/gl_tests.gyp:gl_unittests',
-	    '../url/ipc/url_ipc.gyp:url_ipc_unittests',
+            '../url/ipc/url_ipc.gyp:url_ipc_unittests',
           ],
         }],
         ['OS!="ios" and OS!="mac"', {
@@ -604,7 +604,7 @@
             '../gpu/gpu.gyp:gl_tests',
             '../gpu/gpu.gyp:angle_unittests',
             '../gpu/gpu.gyp:gpu_unittests',
-	    '../gpu/gpu.gyp:command_buffer_gles2_tests',
+            '../gpu/gpu.gyp:command_buffer_gles2_tests',
             '../third_party/catapult/telemetry/telemetry.gyp:*',
           ],
           'conditions': [
@@ -631,7 +631,7 @@
             '../gpu/gpu.gyp:gl_tests',
             '../gpu/gpu.gyp:angle_unittests',
             '../gpu/gpu.gyp:gpu_unittests',
-	    '../gpu/gpu.gyp:command_buffer_gles2_tests',
+            '../gpu/gpu.gyp:command_buffer_gles2_tests',
             '../third_party/catapult/telemetry/telemetry.gyp:*',
           ],
           'conditions': [
@@ -816,12 +816,12 @@
             '../components/components_tests.gyp:components_unittests_apk',
             '../content/content_shell_and_tests.gyp:content_browsertests_apk',
             '../content/content_shell_and_tests.gyp:content_unittests_apk',
-            '../content/content_shell_and_tests.gyp:video_decode_accelerator_unittest_apk',
             '../gpu/gpu.gyp:command_buffer_gles2_tests_apk',
             '../gpu/gpu.gyp:gl_tests_apk',
             '../gpu/gpu.gyp:gpu_unittests_apk',
             '../ipc/ipc.gyp:ipc_tests_apk',
             '../media/media.gyp:media_unittests_apk',
+            '../media/media.gyp:video_decode_accelerator_unittest_apk',
             '../media/midi/midi.gyp:midi_unittests_apk',
             '../net/net.gyp:net_unittests_apk',
             '../skia/skia_tests.gyp:skia_unittests_apk',
@@ -1192,14 +1192,14 @@
             '../breakpad/breakpad.gyp:minidump_stackwalk',
             '../chrome/chrome.gyp:chrome',
             '../chrome/chrome.gyp:chromedriver',
-            '../content/content_shell_and_tests.gyp:video_decode_accelerator_unittest',
-            '../content/content_shell_and_tests.gyp:video_encode_accelerator_unittest',
             '../media/media.gyp:media_unittests',
+            '../media/media.gyp:video_decode_accelerator_unittest',
+            '../media/media.gyp:video_encode_accelerator_unittest',
             '../ppapi/ppapi_internal.gyp:ppapi_example_video_decode',
             '../sandbox/sandbox.gyp:chrome_sandbox',
             '../sandbox/sandbox.gyp:sandbox_linux_unittests',
-            '../third_party/mesa/mesa.gyp:osmesa',
             '../third_party/catapult/telemetry/telemetry.gyp:bitmaptools#host',
+            '../third_party/mesa/mesa.gyp:osmesa',
             '../tools/perf/clear_system_cache/clear_system_cache.gyp:clear_system_cache',
           ],
           'conditions': [

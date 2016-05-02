@@ -27,6 +27,7 @@ include_rules = [
 
   "+dbus",
   "+gpu",
+  "+media",
   "+mojo/common",
   "+mojo/edk/embedder",
   "+mojo/edk/js",
@@ -118,4 +119,3 @@ specific_include_rules = {
     "+content/shell/common",
   ],
 }
-

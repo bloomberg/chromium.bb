@@ -10,6 +10,14 @@
 // the X11 headers on linux, which define all kinds of macros that are
 // liable to cause conflicts.
 
+// GL headers may include inttypes.h and so we need to ensure that
+// __STDC_FORMAT_MACROS is defined in order for //base/format_macros.h to
+// function correctly. See comment and #error message in //base/format_macros.h
+// for details.
+#if defined(OS_POSIX) && !defined(__STDC_FORMAT_MACROS)
+#define __STDC_FORMAT_MACROS
+#endif
+
 #include <GL/gl.h>
 #include <GL/glext.h>
 #include <EGL/egl.h>

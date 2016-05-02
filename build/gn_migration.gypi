@@ -230,7 +230,6 @@
             '../content/content_shell_and_tests.gyp:content_shell_apk',
             '../content/content_shell_and_tests.gyp:content_shell_test_apk',
             '../content/content_shell_and_tests.gyp:content_unittests_apk',
-            '../content/content_shell_and_tests.gyp:video_decode_accelerator_unittest_apk',
             '../device/device_tests.gyp:device_unittests_apk',
             '../gpu/gpu.gyp:command_buffer_gles2_tests_apk',
             '../gpu/gpu.gyp:gl_tests_apk',
@@ -240,6 +239,7 @@
             '../media/cast/cast.gyp:cast_unittests_apk',
             '../media/media.gyp:media_perftests_apk',
             '../media/media.gyp:media_unittests_apk',
+            '../media/media.gyp:video_decode_accelerator_unittest_apk',
             '../media/midi/midi.gyp:midi_unittests_apk',
             '../net/net.gyp:net_junit_tests',
             '../net/net.gyp:net_unittests_apk',
@@ -682,22 +682,22 @@
         }],
         ['chromeos==1', {
           'dependencies': [
-            '../content/content_shell_and_tests.gyp:jpeg_decode_accelerator_unittest',
+            '../media/media.gyp:jpeg_decode_accelerator_unittest',
           ],
         }],
         ['chromeos==1 or OS=="mac"', {
           'dependencies': [
-            '../content/content_shell_and_tests.gyp:video_encode_accelerator_unittest',
+            '../media/media.gyp:video_encode_accelerator_unittest',
           ],
         }],
         ['chromeos==1 and target_arch != "arm"', {
           'dependencies': [
-            '../content/content_shell_and_tests.gyp:vaapi_jpeg_decoder_unittest',
+            '../media/media.gyp:vaapi_jpeg_decoder_unittest',
           ],
         }],
         ['chromeos==1 or OS=="win" or OS=="android"', {
           'dependencies': [
-            '../content/content_shell_and_tests.gyp:video_decode_accelerator_unittest',
+            '../media/media.gyp:video_decode_accelerator_unittest',
           ],
         }],
         ['OS=="linux" or OS=="win"', {

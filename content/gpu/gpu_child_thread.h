@@ -34,6 +34,10 @@ class GpuMemoryBufferFactory;
 class SyncPointManager;
 }
 
+namespace media {
+class MediaService;
+}
+
 namespace sandbox {
 class TargetServices;
 }
@@ -41,7 +45,6 @@ class TargetServices;
 namespace content {
 class GpuProcessControlImpl;
 class GpuWatchdogThread;
-class MediaService;
 struct EstablishChannelParams;
 #if defined(OS_MACOSX)
 struct BufferPresentedParams;
@@ -163,7 +166,7 @@ class GpuChildThread : public ChildThreadImpl,
 
   std::unique_ptr<gpu::GpuChannelManager> gpu_channel_manager_;
 
-  std::unique_ptr<MediaService> media_service_;
+  std::unique_ptr<media::MediaService> media_service_;
 
   // Information about the GPU, such as device and vendor ID.
   gpu::GPUInfo gpu_info_;

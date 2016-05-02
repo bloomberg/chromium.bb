@@ -5,8 +5,8 @@
 #include "content/public/gpu/gpu_video_decode_accelerator_factory.h"
 
 #include "base/memory/ptr_util.h"
-#include "content/common/gpu/media/gpu_video_decode_accelerator_factory_impl.h"
 #include "content/gpu/gpu_child_thread.h"
+#include "media/gpu/gpu_video_decode_accelerator_factory_impl.h"
 
 namespace content {
 
@@ -18,7 +18,7 @@ GpuVideoDecodeAcceleratorFactory::Create(
     const GetGLContextCallback& get_gl_context_cb,
     const MakeGLContextCurrentCallback& make_context_current_cb,
     const BindGLImageCallback& bind_image_cb) {
-  auto gvdafactory_impl = GpuVideoDecodeAcceleratorFactoryImpl::Create(
+  auto gvdafactory_impl = media::GpuVideoDecodeAcceleratorFactoryImpl::Create(
       get_gl_context_cb, make_context_current_cb, bind_image_cb);
   if (!gvdafactory_impl)
     return nullptr;
@@ -35,7 +35,7 @@ GpuVideoDecodeAcceleratorFactory::CreateWithGLES2Decoder(
     const BindGLImageCallback& bind_image_cb,
     const GetGLES2DecoderCallback& get_gles2_decoder_cb) {
   auto gvdafactory_impl =
-      GpuVideoDecodeAcceleratorFactoryImpl::CreateWithGLES2Decoder(
+      media::GpuVideoDecodeAcceleratorFactoryImpl::CreateWithGLES2Decoder(
           get_gl_context_cb, make_context_current_cb, bind_image_cb,
           get_gles2_decoder_cb);
   if (!gvdafactory_impl)
@@ -49,7 +49,7 @@ GpuVideoDecodeAcceleratorFactory::CreateWithGLES2Decoder(
 std::unique_ptr<GpuVideoDecodeAcceleratorFactory>
 GpuVideoDecodeAcceleratorFactory::CreateWithNoGL() {
   auto gvdafactory_impl =
-      GpuVideoDecodeAcceleratorFactoryImpl::CreateWithNoGL();
+      media::GpuVideoDecodeAcceleratorFactoryImpl::CreateWithNoGL();
   if (!gvdafactory_impl)
     return nullptr;
 
@@ -62,7 +62,7 @@ gpu::VideoDecodeAcceleratorCapabilities
 GpuVideoDecodeAcceleratorFactory::GetDecoderCapabilities() {
   const gpu::GpuPreferences gpu_preferences =
       GpuChildThread::current()->gpu_preferences();
-  return GpuVideoDecodeAcceleratorFactoryImpl::GetDecoderCapabilities(
+  return media::GpuVideoDecodeAcceleratorFactoryImpl::GetDecoderCapabilities(
       gpu_preferences);
 }
 
@@ -79,7 +79,7 @@ GpuVideoDecodeAcceleratorFactory::CreateVDA(
 }
 
 GpuVideoDecodeAcceleratorFactory::GpuVideoDecodeAcceleratorFactory(
-    std::unique_ptr<GpuVideoDecodeAcceleratorFactoryImpl> gvdafactory_impl)
-    : gvdafactory_impl_(std::move(gvdafactory_impl)) {}
+    std::unique_ptr<media::GpuVideoDecodeAcceleratorFactoryImpl>
+    gvdafactory_impl) : gvdafactory_impl_(std::move(gvdafactory_impl)) {}
 
 }  // namespace content

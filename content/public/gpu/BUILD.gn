@@ -36,7 +36,8 @@ source_set("gpu_sources") {
     "//content/public/common:common_sources",
     "//gpu/command_buffer/service",
     "//gpu/config",
-    "//media:media",
+    "//media",
+    "//media/gpu",
   ]
 
   allow_circular_includes_from = [ "//content/gpu:gpu_sources" ]
