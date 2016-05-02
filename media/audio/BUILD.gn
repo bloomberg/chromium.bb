@@ -190,6 +190,8 @@ source_set("audio") {
       "android/opensles_input.h",
       "android/opensles_output.cc",
       "android/opensles_output.h",
+      "android/opensles_util.cc",
+      "android/opensles_util.h",
       "android/opensles_wrapper.cc",
     ]
     deps += [ "//media/base/android:media_jni_headers" ]

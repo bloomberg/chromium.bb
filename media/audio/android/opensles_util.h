@@ -8,6 +8,7 @@
 #include <SLES/OpenSLES.h>
 
 #include "base/logging.h"
+#include "media/base/media_export.h"
 
 namespace media {
 
@@ -39,6 +40,11 @@ class ScopedSLObject {
 };
 
 typedef ScopedSLObject<SLObjectItf, const SLObjectItf_*> ScopedSLObjectItf;
+
+// Guesses the channel mask for a given channel count. Android does not offer a
+// way to configure the layout, so this will be incorrect for less common
+// channel layouts.
+MEDIA_EXPORT SLuint32 ChannelCountToSLESChannelMask(int channel_count);
 
 }  // namespace media
 

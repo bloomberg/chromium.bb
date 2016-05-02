@@ -39,12 +39,7 @@ OpenSLESInputStream::OpenSLESInputStream(AudioManagerAndroid* audio_manager,
   format_.bitsPerSample = params.bits_per_sample();
   format_.containerSize = params.bits_per_sample();
   format_.endianness = SL_BYTEORDER_LITTLEENDIAN;
-  if (format_.numChannels == 1)
-    format_.channelMask = SL_SPEAKER_FRONT_CENTER;
-  else if (format_.numChannels == 2)
-    format_.channelMask = SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT;
-  else
-    NOTREACHED() << "Unsupported number of channels: " << format_.numChannels;
+  format_.channelMask = ChannelCountToSLESChannelMask(params.channels());
 
   buffer_size_bytes_ = params.GetBytesPerBuffer();
 
