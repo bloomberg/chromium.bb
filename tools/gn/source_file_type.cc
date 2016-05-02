@@ -11,7 +11,8 @@ SourceFileType GetSourceFileType(const SourceFile& file) {
   base::StringPiece extension = FindExtension(&file.value());
   if (extension == "cc" || extension == "cpp" || extension == "cxx")
     return SOURCE_CPP;
-  if (extension == "h")
+  if (extension == "h" || extension == "hpp" || extension == "hxx" ||
+      extension == "hh")
     return SOURCE_H;
   if (extension == "c")
     return SOURCE_C;
