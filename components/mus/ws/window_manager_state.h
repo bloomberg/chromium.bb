@@ -75,13 +75,10 @@ class WindowManagerState : public EventDispatcherDelegate {
     return event_dispatcher_.capture_window();
   }
 
-  // Checks if |modal_window| is a visible modal window that blocks current
-  // capture window and if that's the case, releases the capture.
   void ReleaseCaptureBlockedByModalWindow(const ServerWindow* modal_window);
-
-  // Checks if the current capture window is blocked by any visible modal window
-  // and if that's the case, releases the capture.
   void ReleaseCaptureBlockedByAnyModalWindow();
+
+  void AddSystemModalWindow(ServerWindow* window);
 
   // Returns true if this is the WindowManager of the active user.
   bool IsActive() const;

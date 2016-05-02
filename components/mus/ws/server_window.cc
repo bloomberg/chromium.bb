@@ -18,28 +18,6 @@ namespace mus {
 
 namespace ws {
 
-namespace {
-
-const ServerWindow* GetModalChildForWindowAncestor(const ServerWindow* window) {
-  for (const ServerWindow* ancestor = window; ancestor;
-       ancestor = ancestor->parent()) {
-    for (const auto& transient_child : ancestor->transient_children()) {
-      if (transient_child->is_modal() && transient_child->IsDrawn())
-        return transient_child;
-    }
-  }
-  return nullptr;
-}
-
-const ServerWindow* GetModalTargetForWindow(const ServerWindow* window) {
-  const ServerWindow* modal_window = GetModalChildForWindowAncestor(window);
-  if (!modal_window)
-    return window;
-  return GetModalTargetForWindow(modal_window);
-}
-
-}  // namespace
-
 ServerWindow::ServerWindow(ServerWindowDelegate* delegate, const WindowId& id)
     : ServerWindow(delegate, id, Properties()) {}
 
@@ -228,7 +206,11 @@ ServerWindow* ServerWindow::GetChildWindow(const WindowId& window_id) {
   return nullptr;
 }
 
-void ServerWindow::AddTransientWindow(ServerWindow* child) {
+bool ServerWindow::AddTransientWindow(ServerWindow* child) {
+  // A system modal window cannot become a transient child.
+  if (child->is_modal() && !child->transient_parent())
+    return false;
+
   if (child->transient_parent())
     child->transient_parent()->RemoveTransientWindow(child);
 
@@ -244,6 +226,7 @@ void ServerWindow::AddTransientWindow(ServerWindow* child) {
 
   FOR_EACH_OBSERVER(ServerWindowObserver, observers_,
                     OnTransientWindowAdded(this, child));
+  return true;
 }
 
 void ServerWindow::RemoveTransientWindow(ServerWindow* child) {
@@ -266,14 +249,6 @@ void ServerWindow::RemoveTransientWindow(ServerWindow* child) {
 
 void ServerWindow::SetModal() {
   is_modal_ = true;
-}
-
-bool ServerWindow::IsBlockedByModalWindow() const {
-  return !!GetModalChildForWindowAncestor(this);
-}
-
-const ServerWindow* ServerWindow::GetModalTarget() const {
-  return GetModalTargetForWindow(this);
 }
 
 bool ServerWindow::Contains(const ServerWindow* window) const {

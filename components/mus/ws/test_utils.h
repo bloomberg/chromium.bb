@@ -111,15 +111,34 @@ class EventDispatcherTestApi {
 
   bool AreAnyPointersDown() const { return ed_->AreAnyPointersDown(); }
   bool is_mouse_button_down() const { return ed_->mouse_button_down_; }
-  bool IsObservingWindow(ServerWindow* window) {
-    return ed_->IsObservingWindow(window);
-  }
+  bool IsWindowPointerTarget(const ServerWindow* window) const;
   int NumberPointerTargetsForWindow(ServerWindow* window);
+  ModalWindowController* modal_window_controller() const {
+    return &ed_->modal_window_controller_;
+  }
 
  private:
   EventDispatcher* ed_;
 
   DISALLOW_COPY_AND_ASSIGN(EventDispatcherTestApi);
+};
+
+// -----------------------------------------------------------------------------
+
+class ModalWindowControllerTestApi {
+ public:
+  explicit ModalWindowControllerTestApi(ModalWindowController* mwc)
+      : mwc_(mwc) {}
+  ~ModalWindowControllerTestApi() {}
+
+  ServerWindow* GetActiveSystemModalWindow() const {
+    return mwc_->GetActiveSystemModalWindow();
+  }
+
+ private:
+  ModalWindowController* mwc_;
+
+  DISALLOW_COPY_AND_ASSIGN(ModalWindowControllerTestApi);
 };
 
 // -----------------------------------------------------------------------------

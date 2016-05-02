@@ -100,7 +100,8 @@ class ServerWindow {
   ServerWindow* GetChildWindow(const WindowId& id);
 
   // Transient window management.
-  void AddTransientWindow(ServerWindow* child);
+  // Adding transient child fails if the child window is modal to system.
+  bool AddTransientWindow(ServerWindow* child);
   void RemoveTransientWindow(ServerWindow* child);
 
   ServerWindow* transient_parent() { return transient_parent_; }
@@ -110,17 +111,6 @@ class ServerWindow {
 
   bool is_modal() const { return is_modal_; }
   void SetModal();
-
-  bool IsBlockedByModalWindow() const;
-
-  // Returns the window that events targeted to this window should be retargeted
-  // to; according to modal windows. If any modal window is blocking this
-  // window, returns the topmost one; otherwise, returns this window.
-  const ServerWindow* GetModalTarget() const;
-  ServerWindow* GetModalTarget() {
-    return const_cast<ServerWindow*>(
-        static_cast<const ServerWindow*>(this)->GetModalTarget());
-  }
 
   // Returns true if this contains |window| or is |window|.
   bool Contains(const ServerWindow* window) const;
