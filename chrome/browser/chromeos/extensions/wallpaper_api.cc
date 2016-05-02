@@ -16,6 +16,7 @@
 #include "base/threading/worker_pool.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/extensions/wallpaper_private_api.h"
+#include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -171,9 +172,11 @@ void WallpaperSetWallpaperFunction::OnWallpaperDecoded(
       user_manager::User::CUSTOMIZED, image, update_wallpaper);
   unsafe_wallpaper_decoder_ = NULL;
 
-  // Save current extenion name. It will be displayed in the component
+  // Save current extension name. It will be displayed in the component
   // wallpaper picker app. If current extension is the component wallpaper
   // picker, set an empty string.
+  // TODO(xdai): This preference is unused now. For compatiblity concern, we
+  // need to keep it until it's safe to clean it up.
   Profile* profile = Profile::FromBrowserContext(browser_context());
   if (extension()->id() == extension_misc::kWallpaperManagerId) {
     profile->GetPrefs()->SetString(prefs::kCurrentWallpaperAppName,
@@ -248,7 +251,17 @@ void WallpaperSetWallpaperFunction::ThumbnailGenerated(
     event_args->Append(thumbnail_result);
     event_args->Append(new base::StringValue(
         extensions::api::wallpaper::ToString(params_->details.layout)));
-    event_args->Append(new base::StringValue(extension()->name()));
+    // Setting wallpaper from right click menu in 'Files' app is a feature that
+    // was implemented in crbug.com/578935. Since 'Files' app is a built-in v1
+    // app in ChromeOS, we should treat it slightly differently with other third
+    // party apps: the wallpaper set by the 'Files' app should still be syncable
+    // and it should not appear in the wallpaper grid in the Wallpaper Picker.
+    // But we should not display the 'wallpaper-set-by-mesage' since it might
+    // introduce confusion as shown in crbug.com/599407.
+    event_args->Append(new base::StringValue(
+        (extension()->id() == file_manager::kFileManagerAppId)
+            ? std::string()
+            : extension()->name()));
     std::unique_ptr<extensions::Event> event(new extensions::Event(
         extensions::events::WALLPAPER_PRIVATE_ON_WALLPAPER_CHANGED_BY_3RD_PARTY,
         extensions::api::wallpaper_private::OnWallpaperChangedBy3rdParty::
