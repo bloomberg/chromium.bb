@@ -589,13 +589,6 @@ static INLINE int allocated_tokens(TileInfo tile) {
   return get_token_alloc(tile_mb_rows, tile_mb_cols);
 }
 
-int64_t av1_get_y_sse(const YV12_BUFFER_CONFIG *a,
-                       const YV12_BUFFER_CONFIG *b);
-#if CONFIG_AOM_HIGHBITDEPTH
-int64_t av1_highbd_get_y_sse(const YV12_BUFFER_CONFIG *a,
-                              const YV12_BUFFER_CONFIG *b);
-#endif  // CONFIG_AOM_HIGHBITDEPTH
-
 void av1_alloc_compressor_data(AV1_COMP *cpi);
 
 void av1_scale_references(AV1_COMP *cpi);

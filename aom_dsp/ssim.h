@@ -12,7 +12,6 @@
 #ifndef AOM_DSP_SSIM_H_
 #define AOM_DSP_SSIM_H_
 
-#define MAX_PSNR 100.0;
 #define MAX_SSIM_DB 100.0;
 
 #ifdef __cplusplus

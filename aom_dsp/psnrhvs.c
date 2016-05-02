@@ -19,6 +19,7 @@
 
 #include "./aom_config.h"
 #include "./aom_dsp_rtcd.h"
+#include "aom_dsp/psnr.h"
 #include "aom_dsp/ssim.h"
 #include "aom_ports/system_state.h"
 

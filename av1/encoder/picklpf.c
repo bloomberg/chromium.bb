@@ -15,6 +15,7 @@
 #include "./aom_scale_rtcd.h"
 
 #include "aom_dsp/aom_dsp_common.h"
+#include "aom_dsp/psnr.h"
 #include "aom_mem/aom_mem.h"
 #include "aom_ports/mem.h"
 
@@ -51,12 +52,12 @@ static int64_t try_filter_frame(const YV12_BUFFER_CONFIG *sd,
 
 #if CONFIG_AOM_HIGHBITDEPTH
   if (cm->use_highbitdepth) {
-    filt_err = av1_highbd_get_y_sse(sd, cm->frame_to_show);
+    filt_err = aom_highbd_get_y_sse(sd, cm->frame_to_show);
   } else {
-    filt_err = av1_get_y_sse(sd, cm->frame_to_show);
+    filt_err = aom_get_y_sse(sd, cm->frame_to_show);
   }
 #else
-  filt_err = av1_get_y_sse(sd, cm->frame_to_show);
+  filt_err = aom_get_y_sse(sd, cm->frame_to_show);
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 
   // Re-instate the unfiltered frame
