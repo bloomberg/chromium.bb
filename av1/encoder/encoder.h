@@ -411,28 +411,19 @@ typedef struct AV1_COMP {
   uint64_t total_samples;
   ImageStat psnr;
 
-  uint64_t totalp_sq_error;
-  uint64_t totalp_samples;
-  ImageStat psnrp;
-
   double total_blockiness;
   double worst_blockiness;
 
   int bytes;
   double summed_quality;
   double summed_weights;
-  double summedp_quality;
-  double summedp_weights;
   unsigned int tot_recode_hits;
   double worst_ssim;
 
-  ImageStat ssimg;
   ImageStat fastssim;
   ImageStat psnrhvs;
 
-  int b_calculate_ssimg;
   int b_calculate_blockiness;
-
   int b_calculate_consistency;
 
   double total_inconsistency;
