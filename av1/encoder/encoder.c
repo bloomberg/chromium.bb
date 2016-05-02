@@ -1856,10 +1856,10 @@ static void generate_psnr_packet(AV1_COMP *cpi) {
   int i;
   PSNR_STATS psnr;
 #if CONFIG_AOM_HIGHBITDEPTH
-  calc_highbd_psnr(cpi->Source, cpi->common.frame_to_show, &psnr,
-                   cpi->td.mb.e_mbd.bd, cpi->oxcf.input_bit_depth);
+  aom_calc_highbd_psnr(cpi->Source, cpi->common.frame_to_show, &psnr,
+                       cpi->td.mb.e_mbd.bd, cpi->oxcf.input_bit_depth);
 #else
-  calc_psnr(cpi->Source, cpi->common.frame_to_show, &psnr);
+  aom_calc_psnr(cpi->Source, cpi->common.frame_to_show, &psnr);
 #endif
 
   for (i = 0; i < 4; ++i) {
@@ -3538,9 +3538,9 @@ static void compute_internal_stats(AV1_COMP *cpi) {
       aom_clear_system_state();
 // TODO(yaowu): unify these two versions into one.
 #if CONFIG_AOM_HIGHBITDEPTH
-      calc_highbd_psnr(orig, recon, &psnr, cpi->td.mb.e_mbd.bd, in_bit_depth);
+      aom_calc_highbd_psnr(orig, recon, &psnr, bit_depth, in_bit_depth);
 #else
-      calc_psnr(orig, recon, &psnr);
+      aom_calc_psnr(orig, recon, &psnr);
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 
       adjust_image_stat(psnr.psnr[1], psnr.psnr[2], psnr.psnr[3], psnr.psnr[0],

@@ -198,9 +198,9 @@ int64_t aom_highbd_get_y_sse(const YV12_BUFFER_CONFIG *a,
                         a->y_crop_width, a->y_crop_height);
 }
 
-void calc_highbd_psnr(const YV12_BUFFER_CONFIG *a, const YV12_BUFFER_CONFIG *b,
-                      PSNR_STATS *psnr, unsigned int bit_depth,
-                      unsigned int in_bit_depth) {
+void aom_calc_highbd_psnr(const YV12_BUFFER_CONFIG *a,
+                          const YV12_BUFFER_CONFIG *b, PSNR_STATS *psnr,
+                          uint32_t bit_depth, uint32_t in_bit_depth) {
   const int widths[3] = {a->y_crop_width, a->uv_crop_width, a->uv_crop_width};
   const int heights[3] = {a->y_crop_height, a->uv_crop_height,
                           a->uv_crop_height};
@@ -246,8 +246,8 @@ void calc_highbd_psnr(const YV12_BUFFER_CONFIG *a, const YV12_BUFFER_CONFIG *b,
 
 #endif
 
-void calc_psnr(const YV12_BUFFER_CONFIG *a, const YV12_BUFFER_CONFIG *b,
-               PSNR_STATS *psnr) {
+void aom_calc_psnr(const YV12_BUFFER_CONFIG *a, const YV12_BUFFER_CONFIG *b,
+                   PSNR_STATS *psnr) {
   static const double peak = 255.0;
   const int widths[3] = {a->y_crop_width, a->uv_crop_width, a->uv_crop_width};
   const int heights[3] = {a->y_crop_height, a->uv_crop_height,
