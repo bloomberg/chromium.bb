@@ -844,6 +844,8 @@ void DocumentThreadableLoader::loadRequest(const ResourceRequest& request, Resou
             newRequest.setOriginRestriction(FetchRequest::NoOriginRestriction);
         ASSERT(!resource());
 
+        WeakPtr<DocumentThreadableLoader> self(m_weakFactory.createWeakPtr());
+
         if (request.requestContext() == WebURLRequest::RequestContextVideo || request.requestContext() == WebURLRequest::RequestContextAudio)
             setResource(RawResource::fetchMedia(newRequest, document().fetcher()));
         else if (request.requestContext() == WebURLRequest::RequestContextManifest)
@@ -851,10 +853,20 @@ void DocumentThreadableLoader::loadRequest(const ResourceRequest& request, Resou
         else
             setResource(RawResource::fetch(newRequest, document().fetcher()));
 
+        // setResource() might call notifyFinished() synchronously, and thus
+        // clear() might be called and |this| may be dead here.
+        if (!self)
+            return;
+
         if (!resource()) {
             InspectorInstrumentation::documentThreadableLoaderFailedToStartLoadingForClient(m_document, m_client);
             ThreadableLoaderClient* client = m_client;
             clear();
+            // setResource() might call notifyFinished() and thus clear()
+            // synchronously, and in such cases ThreadableLoaderClient is
+            // already notified and |client| is null.
+            if (!client)
+                return;
             client->didFail(ResourceError(errorDomainBlinkInternal, 0, requestURL.getString(), "Failed to start loading."));
             // |this| may be dead here.
             return;
