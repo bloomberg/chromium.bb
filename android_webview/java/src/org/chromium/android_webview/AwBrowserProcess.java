@@ -9,6 +9,7 @@ import android.os.StrictMode;
 
 import org.chromium.android_webview.policy.AwPolicyProvider;
 import org.chromium.base.CommandLine;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.PathUtils;
 import org.chromium.base.ThreadUtils;
@@ -41,6 +42,7 @@ public abstract class AwBrowserProcess {
      */
     public static void loadLibrary(Context context) {
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX, context);
+        ContextUtils.initApplicationContext(context.getApplicationContext());
         try {
             LibraryLoader libraryLoader = LibraryLoader.get(LibraryProcessType.PROCESS_WEBVIEW);
             libraryLoader.loadNow(context);

@@ -75,10 +75,6 @@ static void RunTests(JNIEnv* env,
   static const char* const kInitialArgv[] = { "ChromeTestActivity" };
   base::CommandLine::Init(arraysize(kInitialArgv), kInitialArgv);
 
-  // Set the application context in base.
-  base::android::RegisterJni(env);
-  base::android::InitApplicationContext(env, app_context);
-
   std::vector<std::string> args;
 
   const std::string command_line_file_path(
@@ -133,6 +129,9 @@ static void RunTests(JNIEnv* env,
 }
 
 bool RegisterNativeTestJNI(JNIEnv* env) {
+  if (!base::android::RegisterJni(env)) {
+    return false;
+  }
   return RegisterNativesImpl(env);
 }
 

@@ -6,7 +6,6 @@ package org.chromium.base;
 
 import android.content.Context;
 
-import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 
 /**
@@ -14,6 +13,7 @@ import org.chromium.base.annotations.JNINamespace;
  */
 @JNINamespace("base::android")
 public class ContextUtils {
+    private static final String TAG = "ContextUtils";
     private static Context sApplicationContext;
 
     /**
@@ -29,34 +29,52 @@ public class ContextUtils {
      * may make is that it is a Context whose lifetime is the same as the lifetime of the process.
      */
     public static Context getApplicationContext() {
-        assert sApplicationContext != null;
         return sApplicationContext;
     }
 
     /**
-     * Initialize the Android application context.
+     * Initializes the java application context.
      *
-     * Either this or the native equivalent base::android::InitApplicationContext must be called
-     * once during startup. JNI bindings must have been initialized, as the context is stored on
-     * both sides.
+     * This should be called exactly once early on during startup, before native is loaded and
+     * before any other clients make use of the application context through this class.
+     *
+     * @param appContext The application context.
      */
     public static void initApplicationContext(Context appContext) {
-        assert appContext != null;
-        assert sApplicationContext == null || sApplicationContext == appContext;
+        // Conceding that occasionally in tests, native is loaded before the browser process is
+        // started, in which case the browser process re-sets the application context.
+        if (sApplicationContext != null && sApplicationContext != appContext) {
+            throw new RuntimeException("Attempting to set multiple global application contexts.");
+        }
         initJavaSideApplicationContext(appContext);
-        nativeInitNativeSideApplicationContext(appContext);
     }
 
     /**
-     * JUnit Robolectric tests run without native code; allow them to set just the Java-side
-     * context. Do not use in configurations that actually run on Android!
+     * Initialize the native Android application context to be the same as the java counter-part.
      */
-    public static void initApplicationContextForJUnitTests(Context appContext) {
+    public static void initApplicationContextForNative() {
+        if (sApplicationContext == null) {
+            throw new RuntimeException("Cannot have native global application context be null.");
+        }
+        nativeInitNativeSideApplicationContext(sApplicationContext);
+    }
+
+    /**
+     * Occasionally tests cannot ensure the application context doesn't change between tests (junit)
+     * and sometimes specific tests has its own special needs, initApplicationContext should be used
+     * as much as possible, but this method can be used to override it.
+     *
+     * @param appContext The new application context.
+     */
+    @VisibleForTesting
+    public static void initApplicationContextForTests(Context appContext) {
         initJavaSideApplicationContext(appContext);
     }
 
-    @CalledByNative
     private static void initJavaSideApplicationContext(Context appContext) {
+        if (appContext == null) {
+            throw new RuntimeException("Global application context cannot be set to null.");
+        }
         sApplicationContext = appContext;
     }
 
