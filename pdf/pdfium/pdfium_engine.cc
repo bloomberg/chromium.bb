@@ -2522,17 +2522,27 @@ void PDFiumEngine::LoadPageInfo(bool reload) {
   std::vector<pp::Rect> page_rects;
   int page_count = FPDF_GetPageCount(doc_);
   bool doc_complete = doc_loader_.IsDocumentComplete();
+  bool is_linear = FPDFAvail_IsLinearized(fpdf_availability_) == PDF_LINEARIZED;
   for (int i = 0; i < page_count; ++i) {
     if (i != 0) {
       // Add space for horizontal separator.
       document_size_.Enlarge(0, kPageSeparatorThickness);
     }
 
-    // Get page availability. If reload==false, and document is not loaded yet
-    // (we are using async loading) - mark all pages as unavailable.
-    // If reload==true (we have document constructed already), get page
-    // availability flag from already existing PDFiumPage class.
-    bool page_available = reload ? pages_[i]->available() : doc_complete;
+    // Get page availability. If |reload| == true, then the document has been
+    // constructed already. Get page availability flag from already existing
+    // PDFiumPage class.
+    // If |reload| == false, then the document may not be fully loaded yet.
+    bool page_available;
+    if (reload) {
+      page_available = pages_[i]->available();
+    } else if (is_linear) {
+      int linear_page_avail =
+          FPDFAvail_IsPageAvail(fpdf_availability_, i, &download_hints_);
+      page_available = linear_page_avail == PDF_DATA_AVAIL;
+    } else {
+      page_available = doc_complete;
+    }
 
     pp::Size size = page_available ? GetPageSize(i) : default_page_size_;
     size.Enlarge(kPageShadowLeft + kPageShadowRight,
@@ -2632,13 +2642,7 @@ bool PDFiumEngine::CheckPageAvailable(int index, std::vector<int>* pending) {
     return true;
 
   if (!FPDFAvail_IsPageAvail(fpdf_availability_, index, &download_hints_)) {
-    size_t j;
-    for (j = 0; j < pending->size(); ++j) {
-      if ((*pending)[j] == index)
-        break;
-    }
-
-    if (j == pending->size())
+    if (!ContainsValue(*pending, index))
       pending->push_back(index);
     return false;
   }
