@@ -30,12 +30,14 @@ namespace {
 typedef double (*LBDMetricFunc)(const YV12_BUFFER_CONFIG *source,
                                 const YV12_BUFFER_CONFIG *dest);
 typedef double (*HBDMetricFunc)(const YV12_BUFFER_CONFIG *source,
-                                const YV12_BUFFER_CONFIG *dest, uint32_t bd);
+                                const YV12_BUFFER_CONFIG *dest, uint32_t in_bd,
+                                uint32_t bd);
 
 double compute_hbd_psnr(const YV12_BUFFER_CONFIG *source,
-                        const YV12_BUFFER_CONFIG *dest, uint32_t bit_depth) {
+                        const YV12_BUFFER_CONFIG *dest, uint32_t in_bd,
+                        uint32_t bd) {
   PSNR_STATS psnr;
-  calc_highbd_psnr(source, dest, &psnr, bit_depth, bit_depth);
+  calc_highbd_psnr(source, dest, &psnr, bd, in_bd);
   return psnr.psnr[0];
 }
 
@@ -47,9 +49,10 @@ double compute_psnr(const YV12_BUFFER_CONFIG *source,
 }
 
 double compute_hbd_psnrhvs(const YV12_BUFFER_CONFIG *source,
-                           const YV12_BUFFER_CONFIG *dest, uint32_t bit_depth) {
+                           const YV12_BUFFER_CONFIG *dest, uint32_t in_bd,
+                           uint32_t bd) {
   double tempy, tempu, tempv;
-  return aom_psnrhvs(source, dest, &tempy, &tempu, &tempv, bit_depth);
+  return aom_psnrhvs(source, dest, &tempy, &tempu, &tempv, bd);
 }
 
 double compute_psnrhvs(const YV12_BUFFER_CONFIG *source,
@@ -59,10 +62,10 @@ double compute_psnrhvs(const YV12_BUFFER_CONFIG *source,
 }
 
 double compute_hbd_fastssim(const YV12_BUFFER_CONFIG *source,
-                            const YV12_BUFFER_CONFIG *dest,
-                            uint32_t bit_depth) {
+                            const YV12_BUFFER_CONFIG *dest, uint32_t in_bd,
+                            uint32_t bd) {
   double tempy, tempu, tempv;
-  return aom_calc_fastssim(source, dest, &tempy, &tempu, &tempv, bit_depth);
+  return aom_calc_fastssim(source, dest, &tempy, &tempu, &tempv, bd);
 }
 
 double compute_fastssim(const YV12_BUFFER_CONFIG *source,
@@ -72,9 +75,10 @@ double compute_fastssim(const YV12_BUFFER_CONFIG *source,
 }
 
 double compute_hbd_aomssim(const YV12_BUFFER_CONFIG *source,
-                           const YV12_BUFFER_CONFIG *dest, uint32_t bit_depth) {
+                           const YV12_BUFFER_CONFIG *dest, uint32_t in_bd,
+                           uint32_t bd) {
   double ssim, weight;
-  ssim = aom_highbd_calc_ssim(source, dest, &weight, bit_depth);
+  ssim = aom_highbd_calc_ssim(source, dest, &weight, bd);
   return 100 * pow(ssim / weight, 8.0);
 }
 
@@ -123,7 +127,7 @@ class HBDMetricsTestBase {
     }
 
     lbd_db = lbd_metric_(&lbd_src, &lbd_dst);
-    hbd_db = hbd_metric_(&hbd_src, &hbd_dst, bit_depth_);
+    hbd_db = hbd_metric_(&hbd_src, &hbd_dst, input_bit_depth_, bit_depth_);
     EXPECT_LE(fabs(lbd_db - hbd_db), threshold_);
 
     i = 0;
@@ -137,7 +141,7 @@ class HBDMetricsTestBase {
     }
 
     lbd_db = lbd_metric_(&lbd_src, &lbd_dst);
-    hbd_db = hbd_metric_(&hbd_src, &hbd_dst, bit_depth_);
+    hbd_db = hbd_metric_(&hbd_src, &hbd_dst, input_bit_depth_, bit_depth_);
     EXPECT_LE(fabs(lbd_db - hbd_db), threshold_);
 
     i = 0;
@@ -151,7 +155,7 @@ class HBDMetricsTestBase {
     }
 
     lbd_db = lbd_metric_(&lbd_src, &lbd_dst);
-    hbd_db = hbd_metric_(&hbd_src, &hbd_dst, bit_depth_);
+    hbd_db = hbd_metric_(&hbd_src, &hbd_dst, input_bit_depth_, bit_depth_);
     EXPECT_LE(fabs(lbd_db - hbd_db), threshold_);
     aom_free_frame_buffer(&lbd_src);
     aom_free_frame_buffer(&lbd_dst);
@@ -160,14 +164,14 @@ class HBDMetricsTestBase {
 
     EXPECT_LE(fabs(lbd_db - hbd_db), threshold_);
   }
-
+  int input_bit_depth_;
   int bit_depth_;
   double threshold_;
   LBDMetricFunc lbd_metric_;
   HBDMetricFunc hbd_metric_;
 };
 
-typedef std::tr1::tuple<LBDMetricFunc, HBDMetricFunc, int, double>
+typedef std::tr1::tuple<LBDMetricFunc, HBDMetricFunc, int, int, double>
     MetricTestTParam;
 class HBDMetricsTest : public HBDMetricsTestBase,
                        public ::testing::TestWithParam<MetricTestTParam> {
@@ -175,8 +179,9 @@ class HBDMetricsTest : public HBDMetricsTestBase,
   virtual void SetUp() {
     lbd_metric_ = GET_PARAM(0);
     hbd_metric_ = GET_PARAM(1);
-    bit_depth_ = GET_PARAM(2);
-    threshold_ = GET_PARAM(3);
+    input_bit_depth_ = GET_PARAM(2);
+    bit_depth_ = GET_PARAM(3);
+    threshold_ = GET_PARAM(4);
   }
   virtual void TearDown() {}
 };
@@ -193,24 +198,40 @@ static const double kPhvs_thresh = 0.3;
 INSTANTIATE_TEST_CASE_P(
     AOMSSIM, HBDMetricsTest,
     ::testing::Values(MetricTestTParam(&compute_aomssim, &compute_hbd_aomssim,
-                                       10, kSsim_thresh),
+                                       8, 10, kSsim_thresh),
                       MetricTestTParam(&compute_aomssim, &compute_hbd_aomssim,
-                                       12, kSsim_thresh)));
+                                       10, 10, kSsim_thresh),
+                      MetricTestTParam(&compute_aomssim, &compute_hbd_aomssim,
+                                       8, 12, kSsim_thresh),
+                      MetricTestTParam(&compute_aomssim, &compute_hbd_aomssim,
+                                       12, 12, kSsim_thresh)));
 INSTANTIATE_TEST_CASE_P(
     FASTSSIM, HBDMetricsTest,
     ::testing::Values(MetricTestTParam(&compute_fastssim, &compute_hbd_fastssim,
-                                       10, kFSsim_thresh),
+                                       8, 10, kFSsim_thresh),
                       MetricTestTParam(&compute_fastssim, &compute_hbd_fastssim,
-                                       12, kFSsim_thresh)));
+                                       10, 10, kFSsim_thresh),
+                      MetricTestTParam(&compute_fastssim, &compute_hbd_fastssim,
+                                       8, 12, kFSsim_thresh),
+                      MetricTestTParam(&compute_fastssim, &compute_hbd_fastssim,
+                                       12, 12, kFSsim_thresh)));
 INSTANTIATE_TEST_CASE_P(
     PSNRHVS, HBDMetricsTest,
     ::testing::Values(MetricTestTParam(&compute_psnrhvs, &compute_hbd_psnrhvs,
-                                       10, kPhvs_thresh),
+                                       8, 10, kPhvs_thresh),
                       MetricTestTParam(&compute_psnrhvs, &compute_hbd_psnrhvs,
-                                       12, kPhvs_thresh)));
+                                       10, 10, kPhvs_thresh),
+                      MetricTestTParam(&compute_psnrhvs, &compute_hbd_psnrhvs,
+                                       8, 12, kPhvs_thresh),
+                      MetricTestTParam(&compute_psnrhvs, &compute_hbd_psnrhvs,
+                                       12, 12, kPhvs_thresh)));
 INSTANTIATE_TEST_CASE_P(
     PSNR, HBDMetricsTest,
     ::testing::Values(
-        MetricTestTParam(&compute_psnr, &compute_hbd_psnr, 10, kPhvs_thresh),
-        MetricTestTParam(&compute_psnr, &compute_hbd_psnr, 12, kPhvs_thresh)));
+        MetricTestTParam(&compute_psnr, &compute_hbd_psnr, 8, 10, kPhvs_thresh),
+        MetricTestTParam(&compute_psnr, &compute_hbd_psnr, 10, 10,
+                         kPhvs_thresh),
+        MetricTestTParam(&compute_psnr, &compute_hbd_psnr, 8, 12, kPhvs_thresh),
+        MetricTestTParam(&compute_psnr, &compute_hbd_psnr, 12, 12,
+                         kPhvs_thresh)));
 }  // namespace
