@@ -778,27 +778,6 @@ KERNELBASE.dll!DuplicateHandle
 *!IPC::internal::HandleAttachmentWin::HandleAttachmentWin
 
 HANDLE LEAK
-name=bug_586668_a
-system call NtDuplicateObject
-KERNELBASE.dll!DuplicateHandle
-KERNEL32.dll!DuplicateHandle
-mojo_system_impl.dll!mojo::edk::Channel::Message::RewriteHandles
-mojo_system_impl.dll!mojo::edk::NodeController::OnRelayPortsMessage
-mojo_system_impl.dll!mojo::edk::NodeChannel::OnChannelMessage
-mojo_system_impl.dll!mojo::edk::Channel::OnReadComplete
-
-HANDLE LEAK
-name=bug_586668_b
-system call NtDuplicateObject
-KERNELBASE.dll!DuplicateHandle
-KERNEL32.dll!DuplicateHandle
-base.dll!base::SharedMemory::DuplicateHandle
-mojo_system_impl.dll!mojo::edk::PlatformSharedBuffer::DuplicatePlatformHandle
-mojo_system_impl.dll!mojo::edk::SharedBufferDispatcher::EndSerialize
-mojo_system_impl.dll!mojo::edk::MessagePipeDispatcher::WriteMessage
-mojo_system_impl.dll!mojo::edk::Core::WriteMessage
-
-HANDLE LEAK
 name=bug_586996_b
 system call NtDuplicateObject
 KERNELBASE.dll!DuplicateHandle
