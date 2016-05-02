@@ -15,7 +15,7 @@ unsigned ShapeResultTestInfo::numberOfRunsForTesting() const
 }
 
 bool ShapeResultTestInfo::runInfoForTesting(unsigned runIndex,
-    unsigned& startIndex, unsigned& numGlyphs, hb_script_t& script)
+    unsigned& startIndex, unsigned& numGlyphs, hb_script_t& script) const
 {
     if (runIndex < m_runs.size() && m_runs[runIndex]) {
         startIndex = m_runs[runIndex]->m_startIndex;
@@ -27,13 +27,13 @@ bool ShapeResultTestInfo::runInfoForTesting(unsigned runIndex,
 }
 
 uint16_t ShapeResultTestInfo::glyphForTesting(unsigned runIndex,
-    size_t glyphIndex)
+    size_t glyphIndex) const
 {
     return m_runs[runIndex]->m_glyphData[glyphIndex].glyph;
 }
 
 float ShapeResultTestInfo::advanceForTesting(unsigned runIndex,
-    size_t glyphIndex)
+    size_t glyphIndex) const
 {
     return m_runs[runIndex]->m_glyphData[glyphIndex].advance;
 }

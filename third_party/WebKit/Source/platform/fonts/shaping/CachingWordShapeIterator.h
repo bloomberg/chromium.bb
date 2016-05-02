@@ -55,7 +55,7 @@ public:
         m_shapeByWord = m_font->canShapeWordByWord();
     }
 
-    bool next(RefPtr<ShapeResult>* wordResult)
+    bool next(RefPtr<const ShapeResult>* wordResult)
     {
         if (UNLIKELY(m_textRun.allowTabs()))
             return nextForAllowTabs(wordResult);
@@ -72,14 +72,16 @@ public:
     }
 
 private:
-    PassRefPtr<ShapeResult> shapeWordWithoutSpacing(const TextRun& wordRun, const Font* font)
+    PassRefPtr<const ShapeResult> shapeWordWithoutSpacing(
+        const TextRun& wordRun, const Font* font)
     {
-        ShapeCacheEntry* cacheEntry = m_shapeCache->add(wordRun, ShapeCacheEntry());
+        ShapeCacheEntry* cacheEntry = m_shapeCache->add(wordRun,
+            ShapeCacheEntry());
         if (cacheEntry && cacheEntry->m_shapeResult)
             return cacheEntry->m_shapeResult;
 
         HarfBuzzShaper shaper(font, wordRun);
-        RefPtr<ShapeResult> shapeResult = shaper.shapeResult();
+        RefPtr<const ShapeResult> shapeResult = shaper.shapeResult();
         if (!shapeResult)
             return nullptr;
 
@@ -89,16 +91,17 @@ private:
         return shapeResult.release();
     }
 
-    PassRefPtr<ShapeResult> shapeWord(const TextRun& wordRun, const Font* font)
+    PassRefPtr<const ShapeResult> shapeWord(const TextRun& wordRun,
+        const Font* font)
     {
         if (LIKELY(!m_spacing.hasSpacing()))
             return shapeWordWithoutSpacing(wordRun, font);
 
-        RefPtr<ShapeResult> result = shapeWordWithoutSpacing(wordRun, font);
+        RefPtr<const ShapeResult> result = shapeWordWithoutSpacing(wordRun, font);
         return result->applySpacingToCopy(m_spacing, wordRun);
     }
 
-    bool nextWord(RefPtr<ShapeResult>* wordResult)
+    bool nextWord(RefPtr<const ShapeResult>* wordResult)
     {
         return shapeToEndIndex(wordResult, nextWordEndIndex());
     }
@@ -160,7 +163,7 @@ private:
         }
     }
 
-    bool shapeToEndIndex(RefPtr<ShapeResult>* result, unsigned endIndex)
+    bool shapeToEndIndex(RefPtr<const ShapeResult>* result, unsigned endIndex)
     {
         if (!endIndex || endIndex <= m_startIndex)
             return false;
@@ -187,7 +190,7 @@ private:
         }
     }
 
-    bool nextForAllowTabs(RefPtr<ShapeResult>* wordResult)
+    bool nextForAllowTabs(RefPtr<const ShapeResult>* wordResult)
     {
         unsigned length = m_textRun.length();
         if (m_startIndex >= length)

@@ -160,7 +160,7 @@ ShapeResult::~ShapeResult()
 {
 }
 
-size_t ShapeResult::byteSize()
+size_t ShapeResult::byteSize() const
 {
     size_t selfByteSize = sizeof(this);
     for (unsigned i = 0; i < m_runs.size(); ++i) {
@@ -265,7 +265,7 @@ void ShapeResult::applySpacing(ShapeResultSpacing& spacing, const TextRun& textR
 }
 
 PassRefPtr<ShapeResult> ShapeResult::applySpacingToCopy(
-    ShapeResultSpacing& spacing, const TextRun& run)
+    ShapeResultSpacing& spacing, const TextRun& run) const
 {
     RefPtr<ShapeResult> result = ShapeResult::create(*this);
     result->applySpacing(spacing, run);

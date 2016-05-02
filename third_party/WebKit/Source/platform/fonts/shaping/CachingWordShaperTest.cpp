@@ -39,16 +39,17 @@ protected:
     hb_script_t script = HB_SCRIPT_INVALID;
 };
 
-static inline ShapeResultTestInfo* testInfo(RefPtr<ShapeResult>& result)
+static inline const ShapeResultTestInfo* testInfo(
+    RefPtr<const ShapeResult>& result)
 {
-    return static_cast<ShapeResultTestInfo*>(result.get());
+    return static_cast<const ShapeResultTestInfo*>(result.get());
 }
 
 TEST_F(CachingWordShaperTest, LatinLeftToRightByWord)
 {
     TextRun textRun(reinterpret_cast<const LChar*>("ABC DEF."), 8);
 
-    RefPtr<ShapeResult> result;
+    RefPtr<const ShapeResult> result;
     CachingWordShapeIterator iterator(cache.get(), textRun, &font);
     ASSERT_TRUE(iterator.next(&result));
     ASSERT_TRUE(testInfo(result)->runInfoForTesting(0, startIndex, numGlyphs, script));
@@ -77,7 +78,7 @@ TEST_F(CachingWordShaperTest, CommonAccentLeftToRightByWord)
     TextRun textRun(str, 5);
 
     unsigned offset = 0;
-    RefPtr<ShapeResult> result;
+    RefPtr<const ShapeResult> result;
     CachingWordShapeIterator iterator(cache.get(), textRun, &font);
     ASSERT_TRUE(iterator.next(&result));
     ASSERT_TRUE(testInfo(result)->runInfoForTesting(0, startIndex, numGlyphs, script));
@@ -192,7 +193,7 @@ TEST_F(CachingWordShaperTest, SegmentCJKByCharacter)
     };
     TextRun textRun(str, 10);
 
-    RefPtr<ShapeResult> wordResult;
+    RefPtr<const ShapeResult> wordResult;
     CachingWordShapeIterator iterator(cache.get(), textRun, &font);
 
     ASSERT_TRUE(iterator.next(&wordResult));
@@ -230,7 +231,7 @@ TEST_F(CachingWordShaperTest, SegmentCJKAndCommon)
     };
     TextRun textRun(str, 7);
 
-    RefPtr<ShapeResult> wordResult;
+    RefPtr<const ShapeResult> wordResult;
     CachingWordShapeIterator iterator(cache.get(), textRun, &font);
 
     ASSERT_TRUE(iterator.next(&wordResult));
@@ -259,7 +260,7 @@ TEST_F(CachingWordShaperTest, SegmentCJKAndInherit)
     };
     TextRun textRun(str, 4);
 
-    RefPtr<ShapeResult> wordResult;
+    RefPtr<const ShapeResult> wordResult;
     CachingWordShapeIterator iterator(cache.get(), textRun, &font);
 
     ASSERT_TRUE(iterator.next(&wordResult));
@@ -283,7 +284,7 @@ TEST_F(CachingWordShaperTest, SegmentCJKAndNonCJKCommon)
     };
     TextRun textRun(str, 2);
 
-    RefPtr<ShapeResult> wordResult;
+    RefPtr<const ShapeResult> wordResult;
     CachingWordShapeIterator iterator(cache.get(), textRun, &font);
 
     ASSERT_TRUE(iterator.next(&wordResult));
@@ -318,7 +319,7 @@ TEST_F(CachingWordShaperTest, SegmentEmojiZWJCommon)
     };
     TextRun textRun(str, 22);
 
-    RefPtr<ShapeResult> wordResult;
+    RefPtr<const ShapeResult> wordResult;
     CachingWordShapeIterator iterator(cache.get(), textRun, &font);
 
     ASSERT_TRUE(iterator.next(&wordResult));
@@ -342,7 +343,7 @@ TEST_F(CachingWordShaperTest, SegmentEmojiHeartZWJSequence)
     };
     TextRun textRun(str, 11);
 
-    RefPtr<ShapeResult> wordResult;
+    RefPtr<const ShapeResult> wordResult;
     CachingWordShapeIterator iterator(cache.get(), textRun, &font);
 
     ASSERT_TRUE(iterator.next(&wordResult));
@@ -361,7 +362,7 @@ TEST_F(CachingWordShaperTest, SegmentEmojiSignsOfHornsModifier)
     };
     TextRun textRun(str, 4);
 
-    RefPtr<ShapeResult> wordResult;
+    RefPtr<const ShapeResult> wordResult;
     CachingWordShapeIterator iterator(cache.get(), textRun, &font);
 
     ASSERT_TRUE(iterator.next(&wordResult));
@@ -393,7 +394,7 @@ TEST_F(CachingWordShaperTest, SegmentEmojiExtraZWJPrefix)
     };
     TextRun textRun(str, 23);
 
-    RefPtr<ShapeResult> wordResult;
+    RefPtr<const ShapeResult> wordResult;
     CachingWordShapeIterator iterator(cache.get(), textRun, &font);
 
     ASSERT_TRUE(iterator.next(&wordResult));
@@ -415,7 +416,7 @@ TEST_F(CachingWordShaperTest, SegmentCJKCommon)
     };
     TextRun textRun(str, 3);
 
-    RefPtr<ShapeResult> wordResult;
+    RefPtr<const ShapeResult> wordResult;
     CachingWordShapeIterator iterator(cache.get(), textRun, &font);
 
     ASSERT_TRUE(iterator.next(&wordResult));
@@ -433,7 +434,7 @@ TEST_F(CachingWordShaperTest, SegmentCJKCommonAndNonCJK)
     };
     TextRun textRun(str, 3);
 
-    RefPtr<ShapeResult> wordResult;
+    RefPtr<const ShapeResult> wordResult;
     CachingWordShapeIterator iterator(cache.get(), textRun, &font);
 
     ASSERT_TRUE(iterator.next(&wordResult));
@@ -454,7 +455,7 @@ TEST_F(CachingWordShaperTest, SegmentCJKSmallFormVariants)
     };
     TextRun textRun(str, 2);
 
-    RefPtr<ShapeResult> wordResult;
+    RefPtr<const ShapeResult> wordResult;
     CachingWordShapeIterator iterator(cache.get(), textRun, &font);
 
     ASSERT_TRUE(iterator.next(&wordResult));
@@ -472,7 +473,7 @@ TEST_F(CachingWordShaperTest, SegmentHangulToneMark)
     };
     TextRun textRun(str, 2);
 
-    RefPtr<ShapeResult> wordResult;
+    RefPtr<const ShapeResult> wordResult;
     CachingWordShapeIterator iterator(cache.get(), textRun, &font);
 
     ASSERT_TRUE(iterator.next(&wordResult));

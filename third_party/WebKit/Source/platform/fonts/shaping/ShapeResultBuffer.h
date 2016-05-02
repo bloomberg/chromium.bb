@@ -23,7 +23,7 @@ public:
     ShapeResultBuffer()
         : m_hasVerticalOffsets(false) { }
 
-    void appendResult(PassRefPtr<ShapeResult> result)
+    void appendResult(PassRefPtr<const ShapeResult> result)
     {
         m_hasVerticalOffsets |= result->hasVerticalOffsets();
         m_results.append(result);
@@ -54,7 +54,7 @@ private:
         Vector<CharacterRange>&);
 
     // Empirically, cases where we get more than 50 ShapeResults are extremely rare.
-    Vector<RefPtr<ShapeResult>, 64>m_results;
+    Vector<RefPtr<const ShapeResult>, 64>m_results;
     bool m_hasVerticalOffsets;
 };
 

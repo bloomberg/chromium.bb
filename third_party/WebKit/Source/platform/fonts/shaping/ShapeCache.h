@@ -48,7 +48,7 @@ struct ShapeCacheEntry {
     {
         m_shapeResult = nullptr;
     }
-    RefPtr<ShapeResult> m_shapeResult;
+    RefPtr<const ShapeResult> m_shapeResult;
 };
 
 class ShapeCache {

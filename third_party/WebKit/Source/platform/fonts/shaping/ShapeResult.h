@@ -69,12 +69,12 @@ public:
     bool hasVerticalOffsets() const { return m_hasVerticalOffsets; }
 
     // For memory reporting.
-    size_t byteSize();
+    size_t byteSize() const;
 
     int offsetForPosition(float targetX) const;
 
     PassRefPtr<ShapeResult> applySpacingToCopy(ShapeResultSpacing&,
-        const TextRun&);
+        const TextRun&) const;
 
 protected:
     struct RunInfo;
