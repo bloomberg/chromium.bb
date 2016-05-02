@@ -434,8 +434,6 @@ without changes to the corresponding grd file. -->
                  type="chrome_html" />
       <structure name="IDR_WEBUI_JS_LOAD_TIME_DATA"
                  file="js/load_time_data.js" type="chrome_html" />
-      <structure name="IDR_WEBUI_JS_MEDIA_COMMON"
-                 file="js/media_common.js" type="chrome_html" />
       <structure name="IDR_WEBUI_JS_PARSE_HTML_SUBSET"
                  file="js/parse_html_subset.js" type="chrome_html" />
       <structure name="IDR_WEBUI_JS_POLYMER_CONFIG"
