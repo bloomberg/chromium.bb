@@ -12,6 +12,7 @@
 #ifndef AOM_DSP_SSIM_H_
 #define AOM_DSP_SSIM_H_
 
+#define MAX_PSNR 100.0;
 #define MAX_SSIM_DB 100.0;
 
 #ifdef __cplusplus
@@ -79,8 +80,8 @@ double aom_calc_fastssim(const YV12_BUFFER_CONFIG *source,
                          double *ssim_u, double *ssim_v, uint32_t bit_depth);
 
 double aom_psnrhvs(const YV12_BUFFER_CONFIG *source,
-                   const YV12_BUFFER_CONFIG *dest, double *ssim_y,
-                   double *ssim_u, double *ssim_v);
+                   const YV12_BUFFER_CONFIG *dest, double *phvs_y,
+                   double *phvs_u, double *phvs_v, uint32_t bit_depth);
 
 #if CONFIG_AOM_HIGHBITDEPTH
 double aom_highbd_calc_ssim(const YV12_BUFFER_CONFIG *source,

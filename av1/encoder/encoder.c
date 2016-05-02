@@ -4088,14 +4088,9 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
         frame_all = aom_calc_fastssim(cpi->Source, cm->frame_to_show, &y, &u,
                                       &v, bit_depth);
         adjust_image_stat(y, u, v, frame_all, &cpi->fastssim);
-        /* TODO(JBB): add 10/12 bit support */
-      }
-#if CONFIG_AOM_HIGHBITDEPTH
-      if (!cm->use_highbitdepth)
-#endif
-      {
-        double y, u, v, frame_all;
-        frame_all = aom_psnrhvs(cpi->Source, cm->frame_to_show, &y, &u, &v);
+
+        frame_all =
+            aom_psnrhvs(cpi->Source, cm->frame_to_show, &y, &u, &v, bit_depth);
         adjust_image_stat(y, u, v, frame_all, &cpi->psnrhvs);
       }
     }
