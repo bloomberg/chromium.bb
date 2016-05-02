@@ -22,13 +22,13 @@ The body of the commit message should describe what the patch changes
 and why, and also note any particular side effects. This shouldn't be
 empty on most of the cases. It shouldn't take a lot of effort to write
 a commit message for an obvious change, so an empty commit message
-body is only acceptable if the questions "What?" and "Why" are already
+body is only acceptable if the questions "What?" and "Why?" are already
 answered on the one-line summary.
 
 The lines of the commit message should have at most 76 characters, to
 cope with the way git log presents them.
 
-See [2] for a recommend reading on writing commit messages.
+See [2] for a recommended reading on writing commit messages.
 
 Your patches should also include a Signed-off-by line with your name and
 email address.  If you're not the patch's original author, you should
@@ -122,7 +122,7 @@ try to follow the rules below.
 - indent with tabs, and a tab is always 8 characters wide
 - opening braces are on the same line as the if statement;
 - no braces in an if-body with just one statement;
-- if one of the branches of an if-else codition has braces, than the
+- if one of the branches of an if-else condition has braces, then the
   other branch should also have braces;
 - there is always an empty line between variable declarations and the
   code;
@@ -147,7 +147,7 @@ my_function(void)
 
 - lines should be less than 80 characters wide;
 - when breaking lines with functions calls, the parameters are aligned
-  with the opening parenthesis;
+  with the opening parentheses;
 - when assigning a variable with the result of a function call, if the
   line would be longer we break it around the equal '=' sign if it makes
   sense;
@@ -166,7 +166,7 @@ Originally, X.org was covered under the MIT X11 license, but changed to
 the MIT Expat license.  Similarly, Wayland was covered initially as MIT
 X11 licensed, but changed to the MIT Expat license, following in X.org's
 footsteps.  Other than wording, the two licenses are substantially the
-same, with the exeption of a no-advertising clause in X11 not included
+same, with the exception of a no-advertising clause in X11 not included
 in Expat.
 
 New source code files should specify the MIT Expat license in their

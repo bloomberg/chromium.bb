@@ -199,7 +199,7 @@
       Every interface is versioned and every protocol object implements a
       particular version of its interface.  For global objects, the maximum
       version supported by the server is advertised with the global and the
-      actual verion of the created protocol object is determined by the
+      actual version of the created protocol object is determined by the
       version argument passed to wl_registry.bind().  For objects that are
       not globals, their version is inferred from the object that created
       them.
