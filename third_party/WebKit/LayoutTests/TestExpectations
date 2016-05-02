@@ -914,6 +914,9 @@ crbug.com/574283 [ Mac ] virtual/threaded/fast/scroll-behavior/smooth-scroll/hor
 crbug.com/574283 [ Mac ] virtual/threaded/fast/scroll-behavior/smooth-scroll/main-thread-scrolling-reason-added.html [ Skip ]
 crbug.com/574283 [ Mac ] virtual/threaded/fast/scroll-behavior/smooth-scroll/main-thread-scrolling-reason-correctness.html [ Skip ]
 crbug.com/574283 [ Mac ] virtual/threaded/fast/scroll-behavior/first-scroll-runs-on-compositor.html [ Skip ]
+crbug.com/574283 [ Mac ] virtual/threaded/fast/scroll-behavior/smooth-scroll/ongoing-smooth-scroll-anchors.html [ Skip ]
+crbug.com/574283 [ Mac ] virtual/scroll_customization/fast/scroll-behavior/smooth-scroll/ongoing-smooth-scroll-anchors.html [ Skip ]
+crbug.com/574283 [ Mac ] fast/scroll-behavior/smooth-scroll/ongoing-smooth-scroll-anchors.html [ Skip ]
 
 crbug.com/552556 [ Win Linux ] virtual/threaded/fast/scroll-behavior/overflow-scroll-root-frame-animates.html [ Pass Timeout ]
 crbug.com/552556 [ Win Linux ] virtual/threaded/fast/scroll-behavior/overflow-scroll-animates.html [ Pass Timeout ]

@@ -73,6 +73,8 @@ ScrollAnimator::~ScrollAnimator()
 
 FloatPoint ScrollAnimator::desiredTargetPosition() const
 {
+    if (m_runState == RunState::WaitingToCancelOnCompositor)
+        return currentPosition();
     return (m_animationCurve || m_runState == RunState::WaitingToSendToCompositor)
         ? m_targetOffset : currentPosition();
 }
@@ -148,10 +150,10 @@ bool ScrollAnimator::willAnimateToOffset(const FloatPoint& targetPos)
         resetAnimationState();
 
     if (m_runState == RunState::WaitingToCancelOnCompositor) {
-        // Ignore user scroll if WaitingToCancelOnCompositor. Can be in this
-        // state when holding down an arrow.
-        // TODO(ymalik): Handle this case by either updating the target on the
-        // current scroll or starting a new animation (see crbug.com/599876).
+        ASSERT(m_animationCurve);
+        m_targetOffset = targetPos;
+        if (registerAndScheduleAnimation())
+            m_runState = RunState::WaitingToCancelOnCompositorButNewScroll;
         return true;
     }
 
@@ -271,7 +273,8 @@ void ScrollAnimator::updateCompositorAnimations()
     }
 
     if (m_compositorAnimationId && m_runState != RunState::RunningOnCompositor
-        && m_runState != RunState::RunningOnCompositorButNeedsUpdate) {
+        && m_runState != RunState::RunningOnCompositorButNeedsUpdate
+        && m_runState != RunState::WaitingToCancelOnCompositorButNewScroll) {
         // If the current run state is WaitingToSendToCompositor but we have a
         // non-zero compositor animation id, there's a currently running
         // compositor animation that needs to be removed here before the new
@@ -296,23 +299,25 @@ void ScrollAnimator::updateCompositorAnimations()
         }
     }
 
-    if (m_runState == RunState::WaitingToSendToCompositor
-        || m_runState == RunState::RunningOnCompositorButNeedsUpdate) {
+    if (m_runState == RunState::RunningOnCompositorButNeedsUpdate
+        || m_runState == RunState::WaitingToCancelOnCompositorButNewScroll) {
+        // Abort the running animation before a new one with an updated
+        // target is added.
+        abortAnimation();
+
+        m_compositorAnimationId = 0;
+        m_compositorAnimationGroupId = 0;
+
+        m_animationCurve->updateTarget(m_timeFunction() - m_startTime,
+            compositorOffsetFromBlinkOffset(m_targetOffset));
+        if (m_runState == RunState::WaitingToCancelOnCompositorButNewScroll)
+            m_animationCurve->setInitialValue(compositorOffsetFromBlinkOffset(currentPosition()));
+        m_runState = RunState::WaitingToSendToCompositor;
+    }
+
+    if (m_runState == RunState::WaitingToSendToCompositor) {
         if (!m_compositorAnimationAttachedToLayerId)
             reattachCompositorPlayerIfNeeded(getScrollableArea()->compositorAnimationTimeline());
-
-        if (m_runState == RunState::RunningOnCompositorButNeedsUpdate) {
-            // Abort the running animation before a new one with an updated
-            // target is added.
-            abortAnimation();
-
-            m_compositorAnimationId = 0;
-            m_compositorAnimationGroupId = 0;
-
-            m_animationCurve->updateTarget(m_timeFunction() - m_startTime,
-                compositorOffsetFromBlinkOffset(m_targetOffset));
-            m_runState = RunState::WaitingToSendToCompositor;
-        }
 
         if (!m_animationCurve) {
             m_animationCurve = adoptPtr(CompositorFactory::current().createScrollOffsetAnimationCurve(

@@ -114,6 +114,12 @@ protected:
         // on the main thread. This could happen if a main thread scrolling
         // reason is added while animating the scroll offset.
         RunningOnCompositorButNeedsTakeover,
+
+        // Waiting to cancel the animation currently running on the compositor
+        // while another animation is requested. In this case, the currently
+        // running animation is aborted and an animation to the new target
+        // from the current position is started.
+        WaitingToCancelOnCompositorButNewScroll,
     };
 
     OwnPtr<CompositorAnimationPlayer> m_compositorPlayer;

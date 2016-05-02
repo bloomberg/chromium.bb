@@ -172,9 +172,21 @@ void ScrollAnchor::restore()
 
     LayoutSize adjustment = computeRelativeOffset(m_anchorObject, m_scroller, m_corner) - m_savedRelativeOffset;
     if (!adjustment.isZero()) {
-        m_scroller->setScrollPosition(
-            m_scroller->scrollPositionDouble() + DoubleSize(adjustment),
-            AnchoringScroll);
+        ScrollAnimatorBase* animator = m_scroller->existingScrollAnimator();
+        if (!animator || !animator->hasRunningAnimation()) {
+            m_scroller->setScrollPosition(
+                m_scroller->scrollPositionDouble() + DoubleSize(adjustment),
+                AnchoringScroll);
+        } else {
+            // If in the middle of a scroll animation, stop the animation, make
+            // the adjustment, and continue the animation on the pending delta.
+            FloatSize pendingDelta = animator->desiredTargetPosition() - FloatPoint(m_scroller->scrollPositionDouble());
+            animator->cancelAnimation();
+            m_scroller->setScrollPosition(
+                m_scroller->scrollPositionDouble() + DoubleSize(adjustment),
+                AnchoringScroll);
+            animator->userScroll(ScrollByPixel, pendingDelta);
+        }
         // Update UMA metric.
         DEFINE_STATIC_LOCAL(EnumerationHistogram, adjustedOffsetHistogram,
             ("Layout.ScrollAnchor.AdjustedScrollOffset", 2));

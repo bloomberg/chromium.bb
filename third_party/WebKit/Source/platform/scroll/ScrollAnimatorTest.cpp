@@ -457,8 +457,8 @@ TEST(ScrollAnimatorTest, CancellingCompositorAnimation)
         .WillRepeatedly(Return(IntPoint(1000, 1000)));
     // Called when reset, not setting anywhere else.
     EXPECT_CALL(*scrollableArea, setScrollOffset(_, _)).Times(1);
-    // Called from first and last user scroll, and first update.
-    EXPECT_CALL(*scrollableArea, registerForAnimation()).Times(3);
+    // Called from userScroll, and first update.
+    EXPECT_CALL(*scrollableArea, registerForAnimation()).Times(4);
     EXPECT_CALL(*scrollableArea, scheduleAnimation()).Times(AtLeast(1))
         .WillRepeatedly(Return(true));
 
@@ -485,31 +485,33 @@ TEST(ScrollAnimatorTest, CancellingCompositorAnimation)
     EXPECT_EQ(scrollAnimator->m_runState,
         ScrollAnimatorCompositorCoordinator::RunState::WaitingToCancelOnCompositor);
 
-    // Second user scroll should not affect the run state.
+    // Unrelated scroll position update.
+    scrollAnimator->setCurrentPosition(FloatPoint(50, 0));
+
+    // Desired target position should be that of the second scroll.
     result = scrollAnimator->userScroll(ScrollByLine, FloatSize(100, 0));
     EXPECT_TRUE(scrollAnimator->hasAnimationThatRequiresService());
     EXPECT_TRUE(result.didScrollX);
     EXPECT_FLOAT_EQ(0.0, result.unusedScrollDeltaX);
     EXPECT_EQ(scrollAnimator->m_runState,
-        ScrollAnimatorCompositorCoordinator::RunState::WaitingToCancelOnCompositor);
-    // Desired target position is what it was before.
-    EXPECT_EQ(100, scrollAnimator->desiredTargetPosition().x());
+        ScrollAnimatorCompositorCoordinator::RunState::WaitingToCancelOnCompositorButNewScroll);
+    EXPECT_EQ(150, scrollAnimator->desiredTargetPosition().x());
     EXPECT_EQ(0, scrollAnimator->desiredTargetPosition().y());
 
     // Update compositor animation.
     gMockedTime += 0.05;
     scrollAnimator->updateCompositorAnimations();
     EXPECT_EQ(scrollAnimator->m_runState,
-        ScrollAnimatorCompositorCoordinator::RunState::Idle);
+        ScrollAnimatorCompositorCoordinator::RunState::RunningOnCompositor);
 
-    // Third user scroll after compositor update is treated like a new scroll.
+    // Third user scroll after compositor update updates the target.
     result = scrollAnimator->userScroll(ScrollByLine, FloatSize(100, 0));
     EXPECT_TRUE(scrollAnimator->hasAnimationThatRequiresService());
     EXPECT_TRUE(result.didScrollX);
     EXPECT_FLOAT_EQ(0.0, result.unusedScrollDeltaX);
     EXPECT_EQ(scrollAnimator->m_runState,
-        ScrollAnimatorCompositorCoordinator::RunState::WaitingToSendToCompositor);
-    EXPECT_EQ(100, scrollAnimator->desiredTargetPosition().x());
+        ScrollAnimatorCompositorCoordinator::RunState::RunningOnCompositorButNeedsUpdate);
+    EXPECT_EQ(250, scrollAnimator->desiredTargetPosition().x());
     EXPECT_EQ(0, scrollAnimator->desiredTargetPosition().y());
     reset(*scrollAnimator);
 

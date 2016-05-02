@@ -51,6 +51,7 @@ bool ScrollAnimatorCompositorCoordinator::hasAnimationThatRequiresService() cons
     case RunState::Idle:
     case RunState::RunningOnCompositor:
         return false;
+    case RunState::WaitingToCancelOnCompositorButNewScroll:
     case RunState::PostAnimationCleanup:
     case RunState::WaitingToSendToCompositor:
     case RunState::RunningOnMainThread:
@@ -104,6 +105,7 @@ void ScrollAnimatorCompositorCoordinator::cancelAnimation()
     case RunState::RunningOnMainThread:
         m_runState = RunState::PostAnimationCleanup;
         break;
+    case RunState::WaitingToCancelOnCompositorButNewScroll:
     case RunState::RunningOnCompositorButNeedsUpdate:
     case RunState::RunningOnCompositor:
         m_runState = RunState::WaitingToCancelOnCompositor;
@@ -118,6 +120,7 @@ void ScrollAnimatorCompositorCoordinator::takeoverCompositorAnimation()
     switch (m_runState) {
     case RunState::Idle:
     case RunState::WaitingToCancelOnCompositor:
+    case RunState::WaitingToCancelOnCompositorButNewScroll:
     case RunState::PostAnimationCleanup:
     case RunState::RunningOnCompositorButNeedsTakeover:
     case RunState::WaitingToSendToCompositor:
@@ -153,6 +156,7 @@ void ScrollAnimatorCompositorCoordinator::compositorAnimationFinished(
         ASSERT_NOT_REACHED();
         break;
     case RunState::WaitingToSendToCompositor:
+    case RunState::WaitingToCancelOnCompositorButNewScroll:
         break;
     case RunState::RunningOnCompositor:
     case RunState::RunningOnCompositorButNeedsUpdate:
@@ -253,6 +257,8 @@ String ScrollAnimatorCompositorCoordinator::runStateAsText() const
         return String("PostAnimationCleanup");
     case RunState::RunningOnCompositorButNeedsTakeover:
         return String("RunningOnCompositorButNeedsTakeover");
+    case RunState::WaitingToCancelOnCompositorButNewScroll:
+        return String("WaitingToCancelOnCompositorButNewScroll");
     }
     ASSERT_NOT_REACHED();
     return String();
