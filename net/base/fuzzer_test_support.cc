@@ -6,6 +6,7 @@
 #include "base/i18n/icu_util.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/statistics_recorder.h"
 
 namespace {
 
@@ -19,6 +20,10 @@ struct InitGlobals {
     // //net code. Initializing ICU is important to prevent fuzztests from
     // asserting when handling non-ASCII urls.
     CHECK(base::i18n::InitializeICU());
+
+    // Prevent every call to get a Histogram* from leaking memory. Instead, only
+    // the fist call to get each Histogram* leaks memory.
+    base::StatisticsRecorder::Initialize();
   }
 
   // A number of tests use async code which depends on there being a message
