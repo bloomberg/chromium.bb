@@ -48,10 +48,6 @@ class PPB_Graphics3D_Impl : public ppapi::PPB_Graphics3D_Shared,
   gpu::CommandBuffer::State WaitForGetOffsetInRange(int32_t start,
                                                     int32_t end) override;
   void EnsureWorkVisible() override;
-  void TakeFrontBuffer() override;
-  void ReturnFrontBuffer(const gpu::Mailbox& mailbox,
-                         const gpu::SyncToken& sync_token,
-                         bool is_lost);
 
   // Binds/unbinds the graphics of this context with the associated instance.
   // Returns true if binding/unbinding is successful.
@@ -63,6 +59,11 @@ class PPB_Graphics3D_Impl : public ppapi::PPB_Graphics3D_Shared,
   // Notifications about the view's progress painting.  See PluginInstance.
   // These messages are used to send Flush callbacks to the plugin.
   void ViewInitiatedPaint();
+
+  void GetBackingMailbox(gpu::Mailbox* mailbox, gpu::SyncToken* sync_token) {
+    *mailbox = mailbox_;
+    *sync_token = sync_token_;
+  }
 
   gpu::CommandBufferProxyImpl* GetCommandBufferProxy();
 
@@ -94,16 +95,6 @@ class PPB_Graphics3D_Impl : public ppapi::PPB_Graphics3D_Shared,
   // Notifications sent to plugin.
   void SendContextLost();
 
-  // Reuses a mailbox if one is available, otherwise makes a new one.
-  gpu::Mailbox GenerateMailbox();
-
-  // A front buffer that was recently taken from the command buffer. This should
-  // be immediately consumed by DoSwapBuffers().
-  gpu::Mailbox taken_front_buffer_;
-
-  // Mailboxes that are no longer in use.
-  std::vector<gpu::Mailbox> mailboxes_to_reuse_;
-
   // True if context is bound to instance.
   bool bound_to_instance_;
   // True when waiting for compositor to commit our backing texture.
@@ -113,6 +104,8 @@ class PPB_Graphics3D_Impl : public ppapi::PPB_Graphics3D_Shared,
   bool lost_context_ = false;
 #endif
 
+  gpu::Mailbox mailbox_;
+  gpu::SyncToken sync_token_;
   bool has_alpha_;
   scoped_refptr<gpu::GpuChannelHost> channel_;
   std::unique_ptr<gpu::CommandBufferProxyImpl> command_buffer_;

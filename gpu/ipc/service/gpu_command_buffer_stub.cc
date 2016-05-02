@@ -295,9 +295,8 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
                                     OnInitialize);
     IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_SetGetBuffer,
                                     OnSetGetBuffer);
-    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_TakeFrontBuffer, OnTakeFrontBuffer);
-    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_ReturnFrontBuffer,
-                        OnReturnFrontBuffer);
+    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_ProduceFrontBuffer,
+                        OnProduceFrontBuffer);
     IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_WaitForTokenInRange,
                                     OnWaitForTokenInRange);
     IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_WaitForGetOffsetInRange,
@@ -715,22 +714,14 @@ void GpuCommandBufferStub::OnSetGetBuffer(int32_t shm_id,
   Send(reply_message);
 }
 
-void GpuCommandBufferStub::OnTakeFrontBuffer(const Mailbox& mailbox) {
-  TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnTakeFrontBuffer");
+void GpuCommandBufferStub::OnProduceFrontBuffer(const Mailbox& mailbox) {
+  TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnProduceFrontBuffer");
   if (!decoder_) {
-    LOG(ERROR) << "Can't take front buffer before initialization.";
+    LOG(ERROR) << "Can't produce front buffer before initialization.";
     return;
   }
 
-  decoder_->TakeFrontBuffer(mailbox);
-}
-
-void GpuCommandBufferStub::OnReturnFrontBuffer(const Mailbox& mailbox,
-                                               const SyncToken& sync_token,
-                                               bool is_lost) {
-  OnWaitFenceSync(sync_token.namespace_id(), sync_token.command_buffer_id(),
-                  sync_token.release_count());
-  decoder_->ReturnFrontBuffer(mailbox, is_lost);
+  decoder_->ProduceFrontBuffer(mailbox);
 }
 
 void GpuCommandBufferStub::OnParseError() {

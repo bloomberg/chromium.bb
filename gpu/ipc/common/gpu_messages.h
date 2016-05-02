@@ -138,17 +138,10 @@ IPC_SYNC_MESSAGE_ROUTED1_2(GpuCommandBufferMsg_Initialize,
 IPC_SYNC_MESSAGE_ROUTED1_0(GpuCommandBufferMsg_SetGetBuffer,
                            int32_t /* shm_id */)
 
-// Takes the front buffer into a mailbox. This allows another context to draw
+// Produces the front buffer into a mailbox. This allows another context to draw
 // the output of this context.
-IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_TakeFrontBuffer,
+IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_ProduceFrontBuffer,
                     gpu::Mailbox /* mailbox */)
-
-// Returns a front buffer taken with GpuCommandBufferMsg_TakeFrontBuffer. This
-// allows it to be reused.
-IPC_MESSAGE_ROUTED3(GpuCommandBufferMsg_ReturnFrontBuffer,
-                    gpu::Mailbox /* mailbox */,
-                    gpu::SyncToken /* sync_token */,
-                    bool /* is_lost */)
 
 // Wait until the token is in a specific range, inclusive.
 IPC_SYNC_MESSAGE_ROUTED2_1(GpuCommandBufferMsg_WaitForTokenInRange,

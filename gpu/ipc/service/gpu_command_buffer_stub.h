@@ -160,10 +160,7 @@ class GPU_EXPORT GpuCommandBufferStub
   void OnInitialize(base::SharedMemoryHandle shared_state_shm,
                     IPC::Message* reply_message);
   void OnSetGetBuffer(int32_t shm_id, IPC::Message* reply_message);
-  void OnTakeFrontBuffer(const Mailbox& mailbox);
-  void OnReturnFrontBuffer(const Mailbox& mailbox,
-                           const SyncToken& sync_token,
-                           bool is_lost);
+  void OnProduceFrontBuffer(const Mailbox& mailbox);
   void OnGetState(IPC::Message* reply_message);
   void OnWaitForTokenInRange(int32_t start,
                              int32_t end,

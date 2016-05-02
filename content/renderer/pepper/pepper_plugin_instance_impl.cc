@@ -781,53 +781,20 @@ void PepperPluginInstanceImpl::ScrollRect(int dx,
   }
 }
 
-void PepperPluginInstanceImpl::CommitTextureMailbox(
-    const cc::TextureMailbox& texture_mailbox) {
-  if (committed_texture_.IsValid() && !committed_texture_in_use_) {
-    bound_graphics_3d_->ReturnFrontBuffer(
-        committed_texture_.mailbox(), committed_texture_consumed_sync_token_,
-        false);
-  }
-
-  committed_texture_ = texture_mailbox;
-  committed_texture_in_use_ = false;
-
+void PepperPluginInstanceImpl::CommitBackingTexture() {
   if (!texture_layer_) {
     UpdateLayer(true);
     return;
   }
 
-  PassCommittedTextureToTextureLayer();
+  gpu::Mailbox mailbox;
+  gpu::SyncToken sync_token;
+  bound_graphics_3d_->GetBackingMailbox(&mailbox, &sync_token);
+  DCHECK(!mailbox.IsZero());
+  DCHECK(sync_token.HasData());
+  texture_layer_->SetTextureMailboxWithoutReleaseCallback(
+      cc::TextureMailbox(mailbox, sync_token, GL_TEXTURE_2D));
   texture_layer_->SetNeedsDisplay();
-}
-
-void PepperPluginInstanceImpl::PassCommittedTextureToTextureLayer() {
-  DCHECK(bound_graphics_3d_);
-
-  if (!committed_texture_.IsValid())
-    return;
-
-  std::unique_ptr<cc::SingleReleaseCallback> callback(
-      cc::SingleReleaseCallback::Create(base::Bind(
-          &PepperPluginInstanceImpl::FinishedConsumingCommittedTexture,
-          weak_factory_.GetWeakPtr(), committed_texture_)));
-
-  committed_texture_in_use_ = true;
-  texture_layer_->SetTextureMailbox(committed_texture_, std::move(callback));
-}
-
-void PepperPluginInstanceImpl::FinishedConsumingCommittedTexture(
-    const cc::TextureMailbox& texture_mailbox,
-    const gpu::SyncToken& sync_token,
-    bool is_lost) {
-  if (committed_texture_.mailbox() == texture_mailbox.mailbox() && !is_lost) {
-    committed_texture_in_use_ = false;
-    committed_texture_consumed_sync_token_ = sync_token;
-    return;
-  }
-
-  bound_graphics_3d_->ReturnFrontBuffer(texture_mailbox.mailbox(), sync_token,
-                                        is_lost);
 }
 
 void PepperPluginInstanceImpl::InstanceCrashed() {
@@ -2050,7 +2017,12 @@ void PepperPluginInstanceImpl::UpdateLayer(bool force_creation) {
   if (!container_)
     return;
 
-  bool want_3d_layer = !!bound_graphics_3d_.get();
+  gpu::Mailbox mailbox;
+  gpu::SyncToken sync_token;
+  if (bound_graphics_3d_.get()) {
+    bound_graphics_3d_->GetBackingMailbox(&mailbox, &sync_token);
+  }
+  bool want_3d_layer = !mailbox.IsZero() && sync_token.HasData();
   bool want_2d_layer = !!bound_graphics_2d_platform_;
   bool want_texture_layer = want_3d_layer || want_2d_layer;
   bool want_compositor_layer = !!bound_compositor_;
@@ -2089,8 +2061,8 @@ void PepperPluginInstanceImpl::UpdateLayer(bool force_creation) {
       DCHECK(bound_graphics_3d_.get());
       texture_layer_ = cc::TextureLayer::CreateForMailbox(NULL);
       opaque = bound_graphics_3d_->IsOpaque();
-
-      PassCommittedTextureToTextureLayer();
+      texture_layer_->SetTextureMailboxWithoutReleaseCallback(
+          cc::TextureMailbox(mailbox, sync_token, GL_TEXTURE_2D));
     } else {
       DCHECK(bound_graphics_2d_platform_);
       texture_layer_ = cc::TextureLayer::CreateForMailbox(this);

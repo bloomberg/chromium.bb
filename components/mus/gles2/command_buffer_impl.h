@@ -67,8 +67,7 @@ class CommandBufferImpl : public mojom::CommandBuffer,
       uint32_t client_texture_id,
       const mojom::CommandBuffer::CreateStreamTextureCallback& callback
       ) override;
-  void TakeFrontBuffer(const gpu::Mailbox& mailbox) override;
-  void ReturnFrontBuffer(const gpu::Mailbox& mailbox, bool is_lost) override;
+  void ProduceFrontBuffer(const gpu::Mailbox& mailbox) override;
   void SignalQuery(uint32_t query, uint32_t signal_id) override;
   void SignalSyncToken(const gpu::SyncToken& sync_token,
                        uint32_t signal_id) override;

@@ -24,7 +24,6 @@
 #include "cc/layers/content_layer_client.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/texture_layer_client.h"
-#include "cc/resources/texture_mailbox.h"
 #include "content/common/content_export.h"
 #include "content/public/renderer/pepper_plugin_instance.h"
 #include "content/public/renderer/plugin_instance_throttler.h"
@@ -198,17 +197,9 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   // slow path can also be triggered if there is an overlapping frame.
   void ScrollRect(int dx, int dy, const gfx::Rect& rect);
 
-  // Commit the texture mailbox to the screen.
-  void CommitTextureMailbox(const cc::TextureMailbox& texture_mailbox);
-
-  // Passes the committed texture to |texture_layer_| and marks it as in use.
-  void PassCommittedTextureToTextureLayer();
-
-  // Callback when the compositor is finished consuming the committed texture.
-  void FinishedConsumingCommittedTexture(
-      const cc::TextureMailbox& texture_mailbox,
-      const gpu::SyncToken& sync_token,
-      bool is_lost);
+  // Commit the backing texture to the screen once the side effects some
+  // rendering up to an offscreen SwapBuffers are visible.
+  void CommitBackingTexture();
 
   // Called when the out-of-process plugin implementing this instance crashed.
   void InstanceCrashed();
@@ -941,16 +932,6 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
 
   // The text that is currently selected in the plugin.
   base::string16 selected_text_;
-
-  // The most recently committed texture. This is kept around in case the layer
-  // needs to be regenerated.
-  cc::TextureMailbox committed_texture_;
-
-  // Whether the most recently committed texture is still in use by the
-  // compositor.
-  bool committed_texture_in_use_ = false;
-
-  gpu::SyncToken committed_texture_consumed_sync_token_;
 
   bool initialized_;
 

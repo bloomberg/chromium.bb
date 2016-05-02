@@ -55,7 +55,6 @@ class PPAPI_PROXY_EXPORT Graphics3D : public PPB_Graphics3D_Shared {
   gpu::CommandBuffer::State WaitForGetOffsetInRange(int32_t start,
                                                     int32_t end) override;
   void EnsureWorkVisible() override;
-  void TakeFrontBuffer() override;
 
  private:
   // PPB_Graphics3D_Shared overrides.
@@ -111,7 +110,6 @@ class PPB_Graphics3D_Proxy : public InterfaceProxy {
   void OnMsgDestroyTransferBuffer(const HostResource& context, int32_t id);
   void OnMsgSwapBuffers(const HostResource& context,
                         const gpu::SyncToken& sync_token);
-  void OnMsgTakeFrontBuffer(const HostResource& context);
   void OnMsgEnsureWorkVisible(const HostResource& context);
   // Renderer->plugin message handlers.
   void OnMsgSwapBuffersACK(const HostResource& context,
