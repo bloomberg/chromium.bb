@@ -267,6 +267,13 @@
     'clang_update': {
       'filepath': 'tools/clang/scripts/update.py'
     },
+    'clank_uma_settings': {
+      'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/preferences/privacy/UsageAndCrashReportsPreferenceFragment.java|'\
+                  'chrome/android/java/src/org/chromium/chrome/browser/preferences/privacy/PrivacyPreferencesManager.java|'\
+                  'chrome/android/java/src/org/chromium/chrome/browser/preferences/privacy/PrivacyPreferences.java|'\
+                  'chrome/android/java/src/org/chromium/chrome/browser/preferences/privacy/CrashDumpUploadPreference.java|'\
+                  'chrome/android/java/src/org/chromium/chrome/browser/metrics/UmaSessionStats.java',
+    },
     'clipboard': {
       'filepath': 'clipboard|dnd|drag|drop',
     },
@@ -1798,5 +1805,6 @@
     'blink_xmlhttprequest': [ 'tyoshino+watch@chromium.org' ],
     'test_runner': [ 'jochen+watch@chromium.org',
                      'mlamouri+watch-test-runner@chromium.org' ],
+    'clank_uma_settings': ['gayane+watch@chromium.org'],
   },
 }
