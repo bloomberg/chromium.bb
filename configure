@@ -4710,16 +4710,21 @@ link_name=$(mktemp -u $TMPDIR/name_XXXXXXXX)
 mkdir "$link_dest"
 $ln_s "$link_dest" "$link_name"
 touch "$link_dest/test_file"
-if [ "$source_path" != "." ] && ([ ! -d src ] || [ -L src ]) && [ -e "$link_name/test_file" ]; then
-    # create link to source path
-    [ -e src ] && rm src
-    $ln_s "$source_path" src
-    source_link=src
-else
-    # creating directory links doesn't work
-    # fall back to using the full source path
-    source_link="$source_path"
-fi
+
+# if [ "$source_path" != "." ] && ([ ! -d src ] || [ -L src ]) && [ -e "$link_name/test_file" ]; then
+#     # create link to source path
+#     [ -e src ] && rm src
+#     $ln_s "$source_path" src
+#     source_link=src
+# else
+#     # creating directory links doesn't work
+#     # fall back to using the full source path
+#     source_link="$source_path"
+# fi
+# TODO(chcunningham): Figure out why the above breaks our build_ffmpeg.py. cl.exe does not play nice with symlinks.
+# Hardcoding the else case for now. 
+source_link="$source_path"
+
 # cleanup
 rm -r "$link_dest"
 rm -r "$link_name"

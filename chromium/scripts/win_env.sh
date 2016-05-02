@@ -4,7 +4,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# Sets up the appropriate environment for Visual Studio 2013 command line
+# Sets up the appropriate environment for Visual Studio 2015 command line
 # development. Assumes the toolchain has been installed via depot_tools.
 # The environment settings only persist while the script is executing. The
 # command argument must be supplied to be run by this script while the
@@ -22,13 +22,13 @@ if [ ! -d $1 ]; then
   exit 1
 fi
 
-VSPATH=$1/win_toolchain/vs2013_files/4087e065abebdca6dbd0caca2910c6718d2ec67f
+VSPATH=$1/win_toolchain/vs_files/95ddda401ec5678f15eeed01d2bee08fcbc5ee97
 
 if [ ! -d $VSPATH ]; then
-  echo "Visual Studio 2013 toolchain not found: $VSPATH"
+  echo "Visual Studio 2015 toolchain not found: $VSPATH"
   echo "Please see http://www.chromium.org/developers/how-tos/build-instructions-windows"
   echo
-  echo "It's also possible that we've upgraded past 2013, in which case please send"
+  echo "It's also possible that we've upgraded past 2015, in which case please send"
   echo "out a patch updating this script."
   exit 1
 fi
@@ -76,6 +76,7 @@ case "$2" in
     add_path $VSPATH/VC/bin/amd64
 
     add_lib_path $VSPATH/VC/lib
+    add_lib_path $VSPATH/win_sdk/Lib/10.0.10586.0/ucrt/x86
     add_lib_path $VSPATH/win_sdk/Lib/10.0.10586.0/um/x86
     add_lib_path $VSPATH/VC/atlmfc/lib
     ;;
@@ -85,6 +86,7 @@ case "$2" in
     add_path $VSPATH/VC/bin/amd64
 
     add_lib_path $VSPATH/VC/lib/amd64
+    add_lib_path $VSPATH/win_sdk/Lib/10.0.10586.0/ucrt/x64
     add_lib_path $VSPATH/win_sdk/Lib/10.0.10586.0/um/x64
     add_lib_path $VSPATH/VC/atlmfc/lib/amd64
     ;;
@@ -97,6 +99,7 @@ esac
 
 # Common for x86 and x64.
 add_path $(dirname $(readlink -f "$0")) # For cygwin-wrapper.
+add_include_path $VSPATH/win_sdk/Include/10.0.10586.0/ucrt
 add_include_path $VSPATH/win_sdk/Include/10.0.10586.0/um
 add_include_path $VSPATH/win_sdk/Include/10.0.10586.0/shared
 add_include_path $VSPATH/VC/include
