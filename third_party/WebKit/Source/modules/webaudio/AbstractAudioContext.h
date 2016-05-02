@@ -118,11 +118,15 @@ public:
 
     size_t currentSampleFrame() const
     {
+        // TODO: What is the correct value for the current frame if the destination node has gone
+        // away?  0 is a valid frame.
         return m_destinationNode ? m_destinationNode->audioDestinationHandler().currentSampleFrame() : 0;
     }
 
     double currentTime() const
     {
+        // TODO: What is the correct value for the current time if the destination node has gone
+        // away? 0 is a valid time.
         return m_destinationNode ? m_destinationNode->audioDestinationHandler().currentTime() : 0;
     }
 
@@ -281,6 +285,9 @@ protected:
 
     void setClosedContextSampleRate(float newSampleRate) { m_closedContextSampleRate = newSampleRate; }
     float closedContextSampleRate() const { return m_closedContextSampleRate; }
+
+    void rejectPendingDecodeAudioDataResolvers();
+
 private:
     bool m_isCleared;
     void clear();
@@ -312,7 +319,8 @@ private:
     void resolvePromisesForResume();
     void resolvePromisesForResumeOnMainThread();
 
-    void rejectPendingResolvers();
+    // When the context is going away, reject any pending script promise resolvers.
+    virtual void rejectPendingResolvers();
 
     // True if we're in the process of resolving promises for resume().  Resolving can take some
     // time and the audio context process loop is very fast, so we don't want to call resolve an

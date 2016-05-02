@@ -891,6 +891,14 @@ void AbstractAudioContext::resolvePromisesForResume()
     }
 }
 
+void AbstractAudioContext::rejectPendingDecodeAudioDataResolvers()
+{
+    // Now reject any pending decodeAudioData resolvers
+    for (auto& resolver : m_decodeAudioResolvers)
+        resolver->reject(DOMException::create(InvalidStateError, "Audio context is going away"));
+    m_decodeAudioResolvers.clear();
+}
+
 void AbstractAudioContext::rejectPendingResolvers()
 {
     ASSERT(isMainThread());
@@ -903,10 +911,7 @@ void AbstractAudioContext::rejectPendingResolvers()
     m_resumeResolvers.clear();
     m_isResolvingResumePromises = false;
 
-    // Now reject any pending decodeAudioData resolvers
-    for (auto& resolver : m_decodeAudioResolvers)
-        resolver->reject(DOMException::create(InvalidStateError, "Audio context is going away"));
-    m_decodeAudioResolvers.clear();
+    rejectPendingDecodeAudioDataResolvers();
 }
 
 const AtomicString& AbstractAudioContext::interfaceName() const

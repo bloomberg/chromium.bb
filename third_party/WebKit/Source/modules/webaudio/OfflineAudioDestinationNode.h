@@ -81,7 +81,7 @@ private:
     void finishOfflineRendering();
 
     // Suspend/completion callbacks for the main thread.
-    void notifySuspend();
+    void notifySuspend(size_t);
     void notifyComplete();
 
     // The offline version of render() method. If the rendering needs to be

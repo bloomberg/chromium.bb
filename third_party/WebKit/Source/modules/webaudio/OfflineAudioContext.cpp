@@ -373,14 +373,37 @@ void OfflineAudioContext::resolveSuspendOnMainThread(size_t frame)
     // Wait until the suspend map is available for the removal.
     AutoLocker locker(this);
 
-    // |frame| must exist in the map. However, it can be removed already in a
-    // very rare case. See: crbug.com/568796
-    RELEASE_ASSERT(m_scheduledSuspends.contains(frame));
+    // If the context is going away, m_scheduledSuspends could have had all its entries removed.
+    // Check for that here.
+    if (m_scheduledSuspends.size()) {
+        // |frame| must exist in the map.
+        DCHECK(m_scheduledSuspends.contains(frame));
 
-    SuspendMap::iterator it = m_scheduledSuspends.find(frame);
-    it->value->resolve();
+        SuspendMap::iterator it = m_scheduledSuspends.find(frame);
+        it->value->resolve();
 
-    m_scheduledSuspends.remove(it);
+        m_scheduledSuspends.remove(it);
+    }
+}
+
+void OfflineAudioContext::rejectPendingResolvers()
+{
+    ASSERT(isMainThread());
+
+    // Wait until the suspend map is available for removal.
+    AutoLocker locker(this);
+
+    // Offline context is going away so reject any promises that are still pending.
+
+    for (auto& pendingSuspendResolver : m_scheduledSuspends) {
+        pendingSuspendResolver.value->reject(DOMException::create(
+            InvalidStateError, "Audio context is going away"));
+    }
+
+    m_scheduledSuspends.clear();
+    ASSERT(m_resumeResolvers.size() == 0);
+
+    rejectPendingDecodeAudioDataResolvers();
 }
 
 bool OfflineAudioContext::shouldSuspend()

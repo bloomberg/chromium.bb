@@ -55,6 +55,8 @@ public:
     // CANNOT be called from an OfflineAudioContext.
     ScriptPromise suspendContext(ScriptState*) final;
 
+    void rejectPendingResolvers() override;
+
     bool hasRealtimeConstraint() final { return false; }
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(complete);

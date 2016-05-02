@@ -201,8 +201,12 @@ void OfflineAudioDestinationHandler::suspendOfflineRendering()
 
     // The actual rendering has been suspended. Notify the context.
     if (context()->getExecutionContext()) {
-        context()->getExecutionContext()->postTask(BLINK_FROM_HERE,
-            createCrossThreadTask(&OfflineAudioDestinationHandler::notifySuspend, this));
+        context()->getExecutionContext()->postTask(
+            BLINK_FROM_HERE,
+            createCrossThreadTask(
+                &OfflineAudioDestinationHandler::notifySuspend,
+                this,
+                context()->currentSampleFrame()));
     }
 }
 
@@ -217,10 +221,12 @@ void OfflineAudioDestinationHandler::finishOfflineRendering()
     }
 }
 
-void OfflineAudioDestinationHandler::notifySuspend()
+void OfflineAudioDestinationHandler::notifySuspend(size_t frame)
 {
+    ASSERT(isMainThread());
+
     if (context())
-        context()->resolveSuspendOnMainThread(context()->currentSampleFrame());
+        context()->resolveSuspendOnMainThread(frame);
 }
 
 void OfflineAudioDestinationHandler::notifyComplete()
