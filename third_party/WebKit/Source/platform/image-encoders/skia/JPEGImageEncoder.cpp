@@ -209,7 +209,7 @@ bool JPEGImageEncoder::encode(const ImageDataBuffer& imageData, const double& qu
     if (!imageData.pixels())
         return false;
 
-    OwnPtr<JPEGImageEncoderState> encoderState = JPEGImageEncoderState::create(IntSize(imageData.width(), imageData.height()), quality, output);
+    OwnPtr<JPEGImageEncoderState> encoderState = JPEGImageEncoderState::create(imageData.size(), quality, output);
     if (!encoderState)
         return false;
 

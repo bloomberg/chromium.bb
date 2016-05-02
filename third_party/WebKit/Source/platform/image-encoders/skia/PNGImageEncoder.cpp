@@ -109,7 +109,7 @@ bool PNGImageEncoder::encode(const ImageDataBuffer& imageData, Vector<unsigned c
     if (!imageData.pixels())
         return false;
 
-    return encodePixels(IntSize(imageData.width(), imageData.height()), imageData.pixels(), output);
+    return encodePixels(imageData.size(), imageData.pixels(), output);
 }
 
 } // namespace blink

@@ -105,7 +105,7 @@ bool WEBPImageEncoder::encode(const ImageDataBuffer& imageData, int quality, Vec
     if (!imageData.pixels())
         return false;
 
-    return encodePixels(IntSize(imageData.width(), imageData.height()), imageData.pixels(), quality, output);
+    return encodePixels(imageData.size(), imageData.pixels(), quality, output);
 }
 
 } // namespace blink
