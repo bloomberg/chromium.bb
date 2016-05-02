@@ -21,6 +21,15 @@ cr.define('chrome.SnippetsInternals', function() {
       event.preventDefault();
     });
 
+    $('last-json-button').addEventListener('click', function(event) {
+      $('last-json-container').classList.toggle('hidden');
+    });
+
+    $('last-json-dump').addEventListener('click', function(event) {
+      receiveJsonToDownload($('last-json-text').innerText);
+      event.preventDefault();
+    });
+
     $('discarded-snippets-clear').addEventListener('click', function(event) {
       chrome.send('clearDiscarded');
       event.preventDefault();
@@ -50,6 +59,15 @@ cr.define('chrome.SnippetsInternals', function() {
   }
 
   function receiveJson(json) {
+    receiveProperty('last-json-text', json);
+    if (json) {
+      $('last-json').classList.remove('hidden');
+    } else {
+      $('last-json').classList.add('hidden');
+    }
+  }
+
+  function receiveJsonToDownload(json) {
     // Redirect the browser to download data in |json| as a file "snippets.json"
     // (Setting Content-Disposition: attachment via a data: URL is not possible;
     // create a link with download attribute and simulate a click, instead.)
@@ -80,8 +98,7 @@ cr.define('chrome.SnippetsInternals', function() {
     for (var link of links) {
       link.addEventListener('click', function(event) {
         var id = event.currentTarget.getAttribute('snippet-id');
-        $(id).classList.toggle('snippet-hidden');
-        event.preventDefault();
+        $(id).classList.toggle('hidden');
       });
     }
   }
@@ -94,6 +111,7 @@ cr.define('chrome.SnippetsInternals', function() {
     receiveSnippets: receiveSnippets,
     receiveDiscardedSnippets: receiveDiscardedSnippets,
     receiveJson: receiveJson,
+    receiveJsonToDownload: receiveJsonToDownload,
   };
 });
 

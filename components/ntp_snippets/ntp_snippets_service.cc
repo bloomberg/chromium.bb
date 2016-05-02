@@ -348,6 +348,8 @@ void NTPSnippetsService::OnSnippetsDownloaded(
   if (!snippets_json.empty()) {
     DCHECK(status.empty());
 
+    last_fetch_json_ = snippets_json;
+
     parse_json_callback_.Run(
         snippets_json,
         base::Bind(&NTPSnippetsService::OnJsonParsed,
@@ -423,11 +425,6 @@ bool NTPSnippetsService::LoadFromListValue(const base::ListValue& list) {
                    std::make_move_iterator(new_snippets.begin()),
                    std::make_move_iterator(new_snippets.end()));
 
-  // If there are more snippets now than we want to show, drop the extra ones
-  // from the end of the list.
-  if (snippets_.size() > kMaxSnippetCount)
-    snippets_.resize(kMaxSnippetCount);
-
   return true;
 }
 
@@ -485,6 +482,12 @@ void NTPSnippetsService::LoadingSnippetsFinished() {
                        return snippet->expiry_date() <= expiry;
                      }),
       snippets_.end());
+
+  // If there are more snippets now than we want to show, drop the extra ones
+  // from the end of the list.
+  if (snippets_.size() > kMaxSnippetCount)
+    snippets_.resize(kMaxSnippetCount);
+
   StoreSnippetsToPrefs();
 
   discarded_snippets_.erase(

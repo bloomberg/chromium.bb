@@ -51,7 +51,10 @@ class SnippetsInternalsMessageHandler
 
   ScopedObserver<ntp_snippets::NTPSnippetsService,
                  ntp_snippets::NTPSnippetsServiceObserver> observer_;
+
+  // Tracks whether we can already send messages to the page.
   bool dom_loaded_;
+
   ntp_snippets::NTPSnippetsService* ntp_snippets_service_;
 
   DISALLOW_COPY_AND_ASSIGN(SnippetsInternalsMessageHandler);

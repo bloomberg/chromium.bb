@@ -18,7 +18,7 @@ found in the LICENSE file.
 <script src="snippets_internals.js"></script>
 
 <div id="info">
-   <div class="section">
+   <div>
     <h2>Properties</h2>
     <table class="section-details">
       <tr>
@@ -30,14 +30,14 @@ found in the LICENSE file.
     </table>
   </div>
 
-  <div id="snippets" class="section">
+  <div id="snippets">
     <h2>Snippets <span class="detail">(click for details)</span></h2>
     <table class="section-details">
       <tr jsselect="list" style="display:none">
         <td class="title-link">
           <span class="snippet-title" jsvalues="snippet-id:id">
               <span jscontent="title"></span>&gt;&gt;</span>
-          <div jsvalues="id:id" class="snippet-detail snippet-hidden">
+          <div jsvalues="id:id" class="snippet-detail hidden">
             <table>
               <tr>
                 <td>Validity
@@ -67,25 +67,34 @@ found in the LICENSE file.
     <div class="detail" id="snippets-empty"></div>
     <div class="forms">
       <input id="submit-clear" type="submit" value="Clear the list">
-      <input id="submit-dump" type="submit" value="Dump the list to downloads">
+      <input id="submit-dump" type="submit" value="Dump the list">
     </div>
     <div class="forms">
       <input id="submit-download" type="submit" value="Add snippets">
           from hosts <span id="hosts-help" class="detail"></span>:
       <textarea id="hosts-input" placeholder="www.wired.com www.bbc.co.uk" 
           rows="5"></textarea>
-      <div id="hosts-status" class="detail"></div>
+      <span id="hosts-status" class="detail"></span>
     </div>
   </div>
   
-  <div id="discarded-snippets" class="section">
+  <div id="last-json" class="hidden">
+    <h2>Last JSON</h2>
+    <a id="last-json-button">Show the last JSON &gt;&gt;</a>
+    <div id="last-json-container" class="hidden">
+      <div id="last-json-text"></div>
+      <input id="last-json-dump" type="submit" value="Dump the last JSON">
+    </div>
+  </div>
+  
+  <div id="discarded-snippets">
     <h2>Discarded snippets <span class="detail">(click for details)</span></h2>
     <table class="section-details">
       <tr jsselect="list" style="display:none">
         <td class="title-link">
           <span class="discarded-snippet-title" jsvalues="snippet-id:id">
               <span jscontent="title"></span> &gt;&gt;</span>
-          <div jsvalues="id:id" class="snippet-detail snippet-hidden">
+          <div jsvalues="id:id" class="snippet-detail hidden">
             <table>
               <tr>
                 <td>Validity
@@ -118,7 +127,7 @@ found in the LICENSE file.
     </div>
   </div>
   
-  <div id="hosts" class="section">
+  <div id="hosts">
     <h2>Suggestion hosts</h2>
     <table class="section-details">
       <tr jsselect="list">

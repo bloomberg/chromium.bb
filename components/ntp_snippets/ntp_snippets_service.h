@@ -85,6 +85,11 @@ class NTPSnippetsService : public KeyedService {
     return last_fetch_status_;
   }
 
+  // Returns the last json from the snippets fetcher.
+  const std::string& last_json() const {
+    return last_fetch_json_;
+  }
+
   // (Re)schedules the periodic fetching of snippets. This is necessary because
   // the schedule depends on the time of day
   void RescheduleFetching();
@@ -201,6 +206,8 @@ class NTPSnippetsService : public KeyedService {
       snippets_fetcher_subscription_;
 
   std::string last_fetch_status_;
+
+  std::string last_fetch_json_;
 
   // Timer that calls us back when the next snippet expires.
   base::OneShotTimer expiry_timer_;

@@ -70,6 +70,10 @@ void SnippetsInternalsMessageHandler::NTPSnippetsServiceLoaded() {
 
   SendSnippets();
   SendDiscardedSnippets();
+
+  web_ui()->CallJavascriptFunction(
+      "chrome.SnippetsInternals.receiveJson",
+      base::StringValue(ntp_snippets_service_->last_json()));
 }
 
 void SnippetsInternalsMessageHandler::RegisterMessages() {
@@ -125,8 +129,7 @@ void SnippetsInternalsMessageHandler::HandleDump(const base::ListValue* args) {
   base::JSONWriter::Write(
       *pref_service->GetList(ntp_snippets::prefs::kSnippets), &json);
 
-  web_ui()->CallJavascriptFunction("chrome.SnippetsInternals.receiveJson",
-                                   base::StringValue(json));
+  SendJson(json);
 }
 
 void SnippetsInternalsMessageHandler::HandleClearDiscarded(
@@ -216,6 +219,12 @@ void SnippetsInternalsMessageHandler::SendHosts() {
   result.Set("list", std::move(hosts_list));
   web_ui()->CallJavascriptFunction("chrome.SnippetsInternals.receiveHosts",
                                    result);
+}
+
+void SnippetsInternalsMessageHandler::SendJson(const std::string& json) {
+  web_ui()->CallJavascriptFunction(
+      "chrome.SnippetsInternals.receiveJsonToDownload",
+      base::StringValue(json));
 }
 
 void SnippetsInternalsMessageHandler::SendBoolean(const std::string& name,

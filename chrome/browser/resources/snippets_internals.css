@@ -21,14 +21,12 @@ textarea {
   margin-top: 1em;
 }
 
-#info .section {
-  display: inline-block;
-  margin-left: auto;
-  margin-right: auto;
-}
-
 .section-details {
   width: 100%;
+}
+
+.section-details > tbody > tr:nth-child(odd) {
+  background: rgb(239, 243, 255);
 }
 
 .section-details .detail,
@@ -60,12 +58,8 @@ td.title-link {
   font-size: 90%;
 }
 
-.snippet-hidden {
+.hidden {
   display: none;
-}
-
-table.section-details > tbody > tr:nth-child(odd) {
-  background: rgb(239, 243, 255);
 }
 
 .detail {
@@ -79,4 +73,11 @@ table.section-details > tbody > tr:nth-child(odd) {
 
 #submit-clear {
   margin-bottom: 0.5em;
+}
+
+#last-json-text {
+  border: 1px solid black;
+  color: gray;
+  font-size: 90%;
+  padding: 4px;
 }
