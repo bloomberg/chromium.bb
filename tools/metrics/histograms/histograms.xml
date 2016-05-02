@@ -60856,6 +60856,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.Video.SendDelayInMs" units="ms">
+  <owner>asapersson@chromium.org</owner>
+  <summary>
+    The average send delay of sent packets for a sent video stream. Recorded
+    when a stream is removed. The delay is measured from a packet is sent to the
+    transport until leaving the socket.
+  </summary>
+</histogram>
+
 <histogram name="WebRTC.Video.SendSideDelayInMs" units="ms">
   <owner>asapersson@chromium.org</owner>
   <summary>
