@@ -3,6 +3,9 @@
   "name": "exe:chrome",
   "display_name": "Chrome",
   "capabilities": {
+    "required": {
+      "*": { "classes": [ "app" ] }
+    },
     "provided": {
       "mash:launchable": [ "mash::mojom::Launchable" ]
     }

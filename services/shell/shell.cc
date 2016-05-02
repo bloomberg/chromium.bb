@@ -172,7 +172,7 @@ class Shell::Instance : public mojom::Connector,
     // classes instead of specifying a wild-card for interfaces.
     if (HasClass(capability_spec_, kCapabilityClass_ExplicitClass) &&
         (request.interfaces.count("*") != 0)) {
-      request.interfaces = Interfaces();
+      request.interfaces.erase("*");
     }
 
     shell_client_->AcceptConnection(
