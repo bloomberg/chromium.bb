@@ -6,22 +6,65 @@
 #define MOJO_PUBLIC_CPP_BINDINGS_LIB_STRING_SERIALIZATION_H_
 
 #include <stddef.h>
+#include <string.h>
 
 #include "mojo/public/cpp/bindings/lib/array_internal.h"
+#include "mojo/public/cpp/bindings/lib/serialization_forward.h"
+#include "mojo/public/cpp/bindings/lib/serialization_util.h"
 #include "mojo/public/cpp/bindings/string.h"
+#include "mojo/public/cpp/bindings/string_traits.h"
 
 namespace mojo {
+namespace internal {
 
-size_t GetSerializedSize_(const String& input,
-                          internal::SerializationContext* context);
-void Serialize_(const String& input,
-                internal::Buffer* buffer,
-                internal::String_Data** output,
-                internal::SerializationContext* context);
-bool Deserialize_(internal::String_Data* input,
-                  String* output,
-                  internal::SerializationContext* context);
+template <typename InputUserType>
+struct Serializer<String, InputUserType> {
+  using MaybeConstUserType =
+      typename std::remove_reference<InputUserType>::type;
+  using UserType = typename std::remove_const<MaybeConstUserType>::type;
+  using Traits = StringTraits<UserType>;
 
+  static size_t PrepareToSerialize(MaybeConstUserType& input,
+                                   SerializationContext* context) {
+    if (CallIsNullIfExists<Traits>(input))
+      return 0;
+
+    void* custom_context = CustomContextHelper<Traits>::SetUp(input, context);
+    return Align(sizeof(String_Data) +
+                 CallWithContext(Traits::GetSize, input, custom_context));
+  }
+
+  static void Serialize(MaybeConstUserType& input,
+                        Buffer* buffer,
+                        String_Data** output,
+                        SerializationContext* context) {
+    if (CallIsNullIfExists<Traits>(input)) {
+      *output = nullptr;
+      return;
+    }
+
+    void* custom_context = CustomContextHelper<Traits>::GetNext(context);
+
+    String_Data* result = String_Data::New(
+        CallWithContext(Traits::GetSize, input, custom_context), buffer);
+    if (result) {
+      memcpy(result->storage(),
+             CallWithContext(Traits::GetData, input, custom_context),
+             CallWithContext(Traits::GetSize, input, custom_context));
+    }
+    *output = result;
+
+    CustomContextHelper<Traits>::TearDown(input, custom_context);
+  }
+
+  static bool Deserialize(String_Data* input,
+                          UserType* output,
+                          SerializationContext* context) {
+    return Traits::Read(input, output);
+  }
+};
+
+}  // namespace internal
 }  // namespace mojo
 
 #endif  // MOJO_PUBLIC_CPP_BINDINGS_LIB_STRING_SERIALIZATION_H_

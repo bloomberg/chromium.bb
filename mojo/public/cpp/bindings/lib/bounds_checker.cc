@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 #include "base/logging.h"
-#include "mojo/public/cpp/bindings/lib/bindings_serialization.h"
+#include "mojo/public/cpp/bindings/lib/serialization_util.h"
 #include "mojo/public/cpp/system/handle.h"
 
 namespace mojo {

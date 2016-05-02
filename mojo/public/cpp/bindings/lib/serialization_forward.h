@@ -9,10 +9,11 @@
 
 #include "mojo/public/cpp/bindings/array.h"
 #include "mojo/public/cpp/bindings/array_traits.h"
-#include "mojo/public/cpp/bindings/lib/string_serialization.h"
 #include "mojo/public/cpp/bindings/lib/wtf_string_serialization.h"
 #include "mojo/public/cpp/bindings/map.h"
 #include "mojo/public/cpp/bindings/native_struct.h"
+#include "mojo/public/cpp/bindings/string_traits.h"
+#include "mojo/public/cpp/bindings/struct_traits.h"
 
 // This file is included by serialization implementation files to avoid circular
 // includes.
@@ -59,6 +60,9 @@ template <typename T>
 bool DeserializeNative_(Array_Data<uint8_t>* data,
                         T* out,
                         SerializationContext* context);
+
+template <typename MojomType, typename InputUserType>
+struct Serializer;
 
 }  // namespace internal
 
@@ -139,6 +143,21 @@ template <typename MapKey,
 inline bool Deserialize_(internal::Map_Data<DataKey, DataValue>* input,
                          Map<MapKey, MapValue>* output,
                          internal::SerializationContext* context);
+
+// -----------------------------------------------------------------------------
+// Forward declaration for String.
+
+// TODO(yzshen): These methods are simply wrappers of the Serializer interface.
+// Remove them.
+size_t GetSerializedSize_(const String& input,
+                          internal::SerializationContext* context);
+void Serialize_(const String& input,
+                internal::Buffer* buffer,
+                internal::String_Data** output,
+                internal::SerializationContext* context);
+bool Deserialize_(internal::String_Data* input,
+                  String* output,
+                  internal::SerializationContext* context);
 
 }  // namespace mojo
 

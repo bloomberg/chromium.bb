@@ -26,8 +26,6 @@ source_set("bindings") {
     "lib/associated_interface_ptr_state.h",
     "lib/binding_state.h",
     "lib/bindings_internal.h",
-    "lib/bindings_serialization.cc",
-    "lib/bindings_serialization.h",
     "lib/bounds_checker.cc",
     "lib/bounds_checker.h",
     "lib/buffer.h",
@@ -77,6 +75,8 @@ source_set("bindings") {
     "lib/scoped_interface_endpoint_handle.h",
     "lib/serialization.h",
     "lib/serialization_forward.h",
+    "lib/serialization_util.cc",
+    "lib/serialization_util.h",
     "lib/string_serialization.cc",
     "lib/string_serialization.h",
     "lib/sync_handle_registry.cc",
@@ -101,6 +101,9 @@ source_set("bindings") {
     "no_interface.h",
     "stl_converters.h",
     "string.h",
+    "string_traits.h",
+    "string_traits_standard.h",
+    "string_traits_string_piece.h",
     "strong_binding.h",
     "struct_ptr.h",
     "type_converter.h",
@@ -144,10 +147,12 @@ source_set("struct_traits") {
 source_set("wtf_support") {
   sources = [
     "lib/array_traits_wtf.h",
+    "lib/string_traits_wtf.cc",
     "lib/wtf_array_serialization.h",
     "lib/wtf_serialization.h",
     "lib/wtf_string_serialization.cc",
     "lib/wtf_string_serialization.h",
+    "string_traits_wtf.h",
     "wtf_array.h",
   ]
 

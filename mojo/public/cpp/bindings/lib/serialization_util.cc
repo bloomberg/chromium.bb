@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/cpp/bindings/lib/bindings_serialization.h"
+#include "mojo/public/cpp/bindings/lib/serialization_util.h"
 
 #include <stddef.h>
 #include <stdint.h>

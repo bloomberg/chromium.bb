@@ -6,7 +6,7 @@
 
 #include <limits>
 
-#include "mojo/public/cpp/bindings/lib/bindings_serialization.h"
+#include "mojo/public/cpp/bindings/lib/serialization_util.h"
 
 namespace mojo {
 namespace internal {

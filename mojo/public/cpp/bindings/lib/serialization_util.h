@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <queue>
 #include <vector>
 
 #include "base/macros.h"
@@ -85,11 +86,6 @@ inline void AssociatedInterfaceDataToPtrInfo(
   output->set_version(input->version);
 }
 
-class WTFStringContext {
- public:
-  virtual ~WTFStringContext() {}
-};
-
 // A container for handles during serialization/deserialization.
 class SerializedHandleVector {
  public:
@@ -131,7 +127,8 @@ struct SerializationContext {
   // Used to serialize/deserialize associated interface pointers and requests.
   scoped_refptr<MultiplexRouter> router;
 
-  std::unique_ptr<WTFStringContext> wtf_string_context;
+  // Opaque context pointers returned by StringTraits::SetUpContext().
+  std::unique_ptr<std::queue<void*>> custom_contexts;
 
   // Stashes handles encoded in a message by index.
   SerializedHandleVector handles;
@@ -153,6 +150,102 @@ inline void InterfaceDataToPointer(Interface_Data* input,
   output->Bind(InterfacePtrInfo<T>(
       context->handles.TakeHandleAs<mojo::MessagePipeHandle>(input->handle),
       input->version));
+}
+
+template <typename T>
+struct HasIsNullMethod {
+  template <typename U>
+  static char Test(decltype(U::IsNull)*);
+  template <typename U>
+  static int Test(...);
+  static const bool value = sizeof(Test<T>(0)) == sizeof(char);
+
+ private:
+  EnsureTypeIsComplete<T> check_t_;
+};
+
+template <
+    typename Traits,
+    typename UserType,
+    typename std::enable_if<HasIsNullMethod<Traits>::value>::type* = nullptr>
+bool CallIsNullIfExists(const UserType& input) {
+  return Traits::IsNull(input);
+}
+
+template <
+    typename Traits,
+    typename UserType,
+    typename std::enable_if<!HasIsNullMethod<Traits>::value>::type* = nullptr>
+bool CallIsNullIfExists(const UserType& input) {
+  return false;
+}
+
+template <typename T>
+struct HasSetUpContextMethod {
+  template <typename U>
+  static char Test(decltype(U::SetUpContext)*);
+  template <typename U>
+  static int Test(...);
+  static const bool value = sizeof(Test<T>(0)) == sizeof(char);
+
+ private:
+  EnsureTypeIsComplete<T> check_t_;
+};
+
+template <typename Traits,
+          bool has_context = HasSetUpContextMethod<Traits>::value>
+struct CustomContextHelper;
+
+template <typename Traits>
+struct CustomContextHelper<Traits, true> {
+  template <typename MaybeConstUserType>
+  static void* SetUp(MaybeConstUserType& input, SerializationContext* context) {
+    void* custom_context = Traits::SetUpContext(input);
+    if (!context->custom_contexts)
+      context->custom_contexts.reset(new std::queue<void*>());
+    context->custom_contexts->push(custom_context);
+    return custom_context;
+  }
+
+  static void* GetNext(SerializationContext* context) {
+    void* custom_context = context->custom_contexts->front();
+    context->custom_contexts->pop();
+    return custom_context;
+  }
+
+  template <typename MaybeConstUserType>
+  static void TearDown(MaybeConstUserType& input, void* custom_context) {
+    Traits::TearDownContext(input, custom_context);
+  }
+};
+
+template <typename Traits>
+struct CustomContextHelper<Traits, false> {
+  template <typename MaybeConstUserType>
+  static void* SetUp(MaybeConstUserType& input, SerializationContext* context) {
+    return nullptr;
+  }
+
+  static void* GetNext(SerializationContext* context) { return nullptr; }
+
+  template <typename MaybeConstUserType>
+  static void TearDown(MaybeConstUserType& input, void* custom_context) {
+    DCHECK(!custom_context);
+  }
+};
+
+template <typename ReturnType, typename ParamType, typename MaybeConstUserType>
+ReturnType CallWithContext(ReturnType (*f)(ParamType, void*),
+                           MaybeConstUserType& input,
+                           void* context) {
+  return f(input, context);
+}
+
+template <typename ReturnType, typename ParamType, typename MaybeConstUserType>
+ReturnType CallWithContext(ReturnType (*f)(ParamType),
+                           MaybeConstUserType& input,
+                           void* context) {
+  return f(input);
 }
 
 }  // namespace internal

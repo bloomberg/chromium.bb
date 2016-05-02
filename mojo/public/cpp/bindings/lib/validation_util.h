@@ -9,6 +9,7 @@
 
 #include "mojo/public/cpp/bindings/lib/bindings_internal.h"
 #include "mojo/public/cpp/bindings/lib/bounds_checker.h"
+#include "mojo/public/cpp/bindings/lib/serialization_util.h"
 #include "mojo/public/cpp/bindings/lib/validate_params.h"
 #include "mojo/public/cpp/bindings/lib/validation_errors.h"
 #include "mojo/public/cpp/bindings/message.h"

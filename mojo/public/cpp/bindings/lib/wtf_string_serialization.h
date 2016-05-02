@@ -8,11 +8,13 @@
 #include <stddef.h>
 
 #include "mojo/public/cpp/bindings/lib/array_internal.h"
-#include "mojo/public/cpp/bindings/lib/bindings_serialization.h"
+#include "mojo/public/cpp/bindings/lib/serialization_util.h"
 
 namespace WTF {
 class String;
 
+// TODO(yzshen): These methods are simply wrappers of the Serialzer interface.
+// Remove them.
 size_t GetSerializedSize_(const WTF::String& input,
                           mojo::internal::SerializationContext* context);
 void Serialize_(const WTF::String& input,

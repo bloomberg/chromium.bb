@@ -50,6 +50,7 @@ class {{struct.name}}_Reader {
   mojo::internal::SerializationContext* context_;
 };
 
+{#- TODO(yzshen): Unify with the non-typemapped path. #}
 template <typename NativeType>
 struct {{struct.name}}_SerializerTraits_ {
   static size_t GetSize(const NativeType& input) {
@@ -62,11 +63,11 @@ struct {{struct.name}}_SerializerTraits_ {
         break;
 {%-   endif %}
 {%-   if pf.field.kind|is_string_kind %}
-      size += mojo::internal::Align(
-          mojo::internal::String_Data::Traits::GetStorageSize(
-              static_cast<uint32_t>(
-                  mojo::StructTraits<{{struct.name}}, NativeType>
-                      ::{{pf.field.name}}(input).size())));
+      size += mojo::internal::Serializer<
+          mojo::String, const base::StringPiece>::PrepareToSerialize(
+              mojo::StructTraits<{{struct.name}},
+                                 NativeType>::{{pf.field.name}}(input),
+              nullptr);
 {%-   elif pf.field.kind|is_object_kind %}
       NOTREACHED() << "Unsupported field type for StructTraits: "
                    << "{{pf.field.name}}";
@@ -91,12 +92,11 @@ struct {{struct.name}}_SerializerTraits_ {
         break;
 {%-   endif %}
 {%-   if kind|is_string_kind %}
-      base::StringPiece input_{{name}} =
-          mojo::StructTraits<{{struct.name}}, NativeType>::{{name}}(input);
-      result->{{name}}.ptr =
-          mojo::internal::String_Data::New(input_{{name}}.size(), buffer);
-      memcpy(result->{{name}}.ptr->storage(), input_{{name}}.data(),
-             input_{{name}}.size());
+      mojo::internal::Serializer<mojo::String,
+                                 const base::StringPiece>::Serialize(
+          mojo::StructTraits<{{struct.name}}, NativeType>::{{pf.field.name}}(
+              input),
+          buffer, &result->{{name}}.ptr, nullptr);
 {%-   elif kind|is_object_kind %}
       NOTREACHED() << "Unsupported field type for StructTraits: "
                    << "{{pf.field.name}}";
