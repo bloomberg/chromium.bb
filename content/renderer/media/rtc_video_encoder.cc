@@ -577,12 +577,12 @@ void RTCVideoEncoder::Impl::EncodeOneFrame() {
     // Do a strided copy of the input frame to match the input requirements for
     // the encoder.
     // TODO(sheu): support zero-copy from WebRTC.  http://crbug.com/269312
-    if (libyuv::I420Copy(next_frame->buffer(webrtc::kYPlane),
-                         next_frame->stride(webrtc::kYPlane),
-                         next_frame->buffer(webrtc::kUPlane),
-                         next_frame->stride(webrtc::kUPlane),
-                         next_frame->buffer(webrtc::kVPlane),
-                         next_frame->stride(webrtc::kVPlane),
+    if (libyuv::I420Copy(next_frame->video_frame_buffer()->DataY(),
+                         next_frame->video_frame_buffer()->StrideY(),
+                         next_frame->video_frame_buffer()->DataU(),
+                         next_frame->video_frame_buffer()->StrideU(),
+                         next_frame->video_frame_buffer()->DataV(),
+                         next_frame->video_frame_buffer()->StrideV(),
                          frame->data(media::VideoFrame::kYPlane),
                          frame->stride(media::VideoFrame::kYPlane),
                          frame->data(media::VideoFrame::kUPlane),
