@@ -40,6 +40,49 @@ AudioDestinationHandler& AudioParamHandler::destinationHandler() const
     return *m_destinationHandler;
 }
 
+String AudioParamHandler::getParamName() const
+{
+    // The returned string should be the name of the node and the name of the AudioParam for
+    // that node.
+    switch (m_paramType) {
+    case ParamTypeAudioBufferSourcePlaybackRate:
+        return "AudioBufferSource.playbackRate";
+    case ParamTypeAudioBufferSourceDetune:
+        return "AudioBufferSource.detune";
+    case ParamTypeBiquadFilterFrequency:
+        return "BiquadFilter.frequency";
+    case ParamTypeBiquadFilterQ:
+        return "BiquadFilter.Q";
+    case ParamTypeBiquadFilterGain:
+        return "BiquadFilter.gain";
+    case ParamTypeBiquadFilterDetune:
+        return "BiquadFilter.detune";
+    case ParamTypeDelayDelayTime:
+        return "Delay.delayTime";
+    case ParamTypeDynamicsCompressorThreshold:
+        return "DynamicsCompressor.threshold";
+    case ParamTypeDynamicsCompressorKnee:
+        return "DynamicsCompressor.knee";
+    case ParamTypeDynamicsCompressorRatio:
+        return "DynamicsCompressor.ratio";
+    case ParamTypeDynamicsCompressorAttack:
+        return "DynamicsCompressor.attack";
+    case ParamTypeDynamicsCompressorRelease:
+        return "DynamicsCompressor.release";
+    case ParamTypeGainGain:
+        return "Gain.gain";
+    case ParamTypeOscillatorFrequency:
+        return "Oscillator.frequency";
+    case ParamTypeOscillatorDetune:
+        return "Oscillator.detune";
+    case ParamTypeStereoPannerPan:
+        return "StereoPanner.pan";
+    };
+
+    NOTREACHED();
+    return "UnknownNode.unknownAudioParam";
+}
+
 float AudioParamHandler::value()
 {
     // Update value for timeline.
@@ -193,15 +236,15 @@ void AudioParamHandler::disconnect(AudioNodeOutput& output)
 
 // ----------------------------------------------------------------
 
-AudioParam::AudioParam(AbstractAudioContext& context, double defaultValue)
-    : m_handler(AudioParamHandler::create(context, defaultValue))
+AudioParam::AudioParam(AbstractAudioContext& context, AudioParamType paramType, double defaultValue)
+    : m_handler(AudioParamHandler::create(context, paramType, defaultValue))
     , m_context(context)
 {
 }
 
-AudioParam* AudioParam::create(AbstractAudioContext& context, double defaultValue)
+AudioParam* AudioParam::create(AbstractAudioContext& context, AudioParamType paramType, double defaultValue)
 {
-    return new AudioParam(context, defaultValue);
+    return new AudioParam(context, paramType, defaultValue);
 }
 
 DEFINE_TRACE(AudioParam)

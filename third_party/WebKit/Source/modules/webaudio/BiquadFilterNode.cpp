@@ -29,10 +29,10 @@ namespace blink {
 
 BiquadFilterNode::BiquadFilterNode(AbstractAudioContext& context, float sampleRate)
     : AudioNode(context)
-    , m_frequency(AudioParam::create(context, 350.0))
-    , m_q(AudioParam::create(context, 1))
-    , m_gain(AudioParam::create(context, 0.0))
-    , m_detune(AudioParam::create(context, 0.0))
+    , m_frequency(AudioParam::create(context, ParamTypeBiquadFilterFrequency, 350.0))
+    , m_q(AudioParam::create(context, ParamTypeBiquadFilterQ, 1))
+    , m_gain(AudioParam::create(context, ParamTypeBiquadFilterGain, 0.0))
+    , m_detune(AudioParam::create(context, ParamTypeBiquadFilterDetune, 0.0))
 {
     setHandler(AudioBasicProcessorHandler::create(AudioHandler::NodeTypeBiquadFilter, *this, sampleRate, adoptPtr(new BiquadProcessor(sampleRate, 1, m_frequency->handler(), m_q->handler(), m_gain->handler(), m_detune->handler()))));
 }

@@ -136,7 +136,7 @@ void StereoPannerHandler::setChannelCountMode(const String& mode, ExceptionState
 
 StereoPannerNode::StereoPannerNode(AbstractAudioContext& context, float sampleRate)
     : AudioNode(context)
-    , m_pan(AudioParam::create(context, 0))
+    , m_pan(AudioParam::create(context, ParamTypeStereoPannerPan, 0))
 {
     setHandler(StereoPannerHandler::create(*this, sampleRate, m_pan->handler()));
 }

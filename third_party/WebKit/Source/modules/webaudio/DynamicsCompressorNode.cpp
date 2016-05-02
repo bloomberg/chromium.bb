@@ -127,11 +127,11 @@ double DynamicsCompressorHandler::latencyTime() const
 
 DynamicsCompressorNode::DynamicsCompressorNode(AbstractAudioContext& context, float sampleRate)
     : AudioNode(context)
-    , m_threshold(AudioParam::create(context, -24))
-    , m_knee(AudioParam::create(context, 30))
-    , m_ratio(AudioParam::create(context, 12))
-    , m_attack(AudioParam::create(context, 0.003))
-    , m_release(AudioParam::create(context, 0.250))
+    , m_threshold(AudioParam::create(context, ParamTypeDynamicsCompressorThreshold, -24))
+    , m_knee(AudioParam::create(context, ParamTypeDynamicsCompressorKnee, 30))
+    , m_ratio(AudioParam::create(context, ParamTypeDynamicsCompressorRatio, 12))
+    , m_attack(AudioParam::create(context, ParamTypeDynamicsCompressorAttack, 0.003))
+    , m_release(AudioParam::create(context, ParamTypeDynamicsCompressorRelease, 0.250))
 {
     setHandler(DynamicsCompressorHandler::create(
         *this,

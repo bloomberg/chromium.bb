@@ -36,7 +36,7 @@ const double maximumAllowedDelayTime = 180;
 
 DelayNode::DelayNode(AbstractAudioContext& context, float sampleRate, double maxDelayTime)
     : AudioNode(context)
-    , m_delayTime(AudioParam::create(context, 0.0))
+    , m_delayTime(AudioParam::create(context, ParamTypeDelayDelayTime, 0.0))
 {
     setHandler(AudioBasicProcessorHandler::create(AudioHandler::NodeTypeDelay, *this, sampleRate, adoptPtr(new DelayProcessor(sampleRate, 1, m_delayTime->handler(), maxDelayTime))));
 }

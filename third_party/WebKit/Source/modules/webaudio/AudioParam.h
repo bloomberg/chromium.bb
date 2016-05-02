@@ -43,6 +43,28 @@ namespace blink {
 
 class AudioNodeOutput;
 
+// Each AudioParam gets an identifier here.  This is mostly for instrospection if warnings or
+// other messages need to be printed. It's useful to know what the AudioParam represents.  The
+// name should include the node type and the name of the AudioParam.
+enum AudioParamType {
+    ParamTypeAudioBufferSourcePlaybackRate,
+    ParamTypeAudioBufferSourceDetune,
+    ParamTypeBiquadFilterFrequency,
+    ParamTypeBiquadFilterQ,
+    ParamTypeBiquadFilterGain,
+    ParamTypeBiquadFilterDetune,
+    ParamTypeDelayDelayTime,
+    ParamTypeDynamicsCompressorThreshold,
+    ParamTypeDynamicsCompressorKnee,
+    ParamTypeDynamicsCompressorRatio,
+    ParamTypeDynamicsCompressorAttack,
+    ParamTypeDynamicsCompressorRelease,
+    ParamTypeGainGain,
+    ParamTypeOscillatorFrequency,
+    ParamTypeOscillatorDetune,
+    ParamTypeStereoPannerPan
+};
+
 // AudioParamHandler is an actual implementation of web-exposed AudioParam
 // interface. Each of AudioParam object creates and owns an AudioParamHandler,
 // and it is responsible for all of AudioParam tasks. An AudioParamHandler
@@ -52,12 +74,16 @@ class AudioNodeOutput;
 // dies.
 class AudioParamHandler final : public ThreadSafeRefCounted<AudioParamHandler>, public AudioSummingJunction {
 public:
+    AudioParamType getParamType() const { return m_paramType; }
+    // Return a nice name for the AudioParam.
+    String getParamName() const;
+
     static const double DefaultSmoothingConstant;
     static const double SnapThreshold;
 
-    static PassRefPtr<AudioParamHandler> create(AbstractAudioContext& context, double defaultValue)
+    static PassRefPtr<AudioParamHandler> create(AbstractAudioContext& context, AudioParamType paramType, double defaultValue)
     {
-        return adoptRef(new AudioParamHandler(context, defaultValue));
+        return adoptRef(new AudioParamHandler(context, paramType, defaultValue));
     }
 
     // This should be used only in audio rendering thread.
@@ -102,8 +128,9 @@ public:
 
     float intrinsicValue() const { return noBarrierLoad(&m_intrinsicValue); }
 private:
-    AudioParamHandler(AbstractAudioContext& context, double defaultValue)
+    AudioParamHandler(AbstractAudioContext& context, AudioParamType paramType, double defaultValue)
         : AudioSummingJunction(context.deferredTaskHandler())
+        , m_paramType(paramType)
         , m_intrinsicValue(defaultValue)
         , m_defaultValue(defaultValue)
         , m_smoothedValue(defaultValue)
@@ -113,6 +140,10 @@ private:
     // sampleAccurate corresponds to a-rate (audio rate) vs. k-rate in the Web Audio specification.
     void calculateFinalValues(float* values, unsigned numberOfValues, bool sampleAccurate);
     void calculateTimelineValues(float* values, unsigned numberOfValues);
+
+    // The type of AudioParam, indicating what this AudioParam represents and what node it belongs
+    // to.  Mostly for informational purposes and doesn't affect implementation.
+    AudioParamType m_paramType;
 
     // Intrinsic value
     float m_intrinsicValue;
@@ -133,12 +164,15 @@ private:
 class AudioParam final : public GarbageCollectedFinalized<AudioParam>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static AudioParam* create(AbstractAudioContext&, double defaultValue);
+    static AudioParam* create(AbstractAudioContext&, AudioParamType, double defaultValue);
     DECLARE_TRACE();
     // |handler| always returns a valid object.
     AudioParamHandler& handler() const { return *m_handler; }
     // |context| always returns a valid object.
     AbstractAudioContext* context() const { return m_context; }
+
+    AudioParamType getParamType() const { return handler().getParamType(); }
+    String getParamName() const;
 
     float value() const;
     void setValue(float);
@@ -151,7 +185,7 @@ public:
     AudioParam* cancelScheduledValues(double startTime, ExceptionState&);
 
 private:
-    AudioParam(AbstractAudioContext&, double defaultValue);
+    AudioParam(AbstractAudioContext&, AudioParamType, double defaultValue);
 
     RefPtr<AudioParamHandler> m_handler;
     Member<AbstractAudioContext> m_context;
