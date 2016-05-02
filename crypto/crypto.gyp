@@ -31,10 +31,10 @@
       'conditions': [
         [ 'os_posix == 1 and OS != "mac" and OS != "ios" and OS != "android"', {
           'dependencies': [
-            '../build/linux/system.gyp:ssl',
+            '../build/linux/system.gyp:nss',
           ],
           'export_dependent_settings': [
-            '../build/linux/system.gyp:ssl',
+            '../build/linux/system.gyp:nss',
           ],
           'conditions': [
             [ 'chromeos==1', {
@@ -140,7 +140,7 @@
       'conditions': [
         [ 'use_nss_certs == 1', {
           'dependencies': [
-            '../build/linux/system.gyp:ssl',
+            '../build/linux/system.gyp:nss',
           ],
         }],
         [ 'use_nss_certs == 0', {

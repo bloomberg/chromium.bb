@@ -1703,7 +1703,7 @@
         }],
         ['OS=="linux"', {
           'dependencies': [
-            '../build/linux/system.gyp:ssl',
+            '../build/linux/system.gyp:nss',
           ],
         }, {  # Non-Linux platforms (Linux includes ChromeOS here).
           'sources': [
@@ -2523,7 +2523,7 @@
         }],
         ['OS=="linux"', {
           'dependencies': [
-            '../build/linux/system.gyp:ssl',
+            '../build/linux/system.gyp:nss',
           ],
         }],
         ['OS=="mac"', {
@@ -2844,7 +2844,7 @@
         }],
         ['OS=="linux"', {
           'dependencies': [
-            '../build/linux/system.gyp:ssl',
+            '../build/linux/system.gyp:nss',
           ],
         }],
         ['OS=="mac"', {
@@ -2977,7 +2977,7 @@
       'conditions': [
         ['OS=="linux"', {
           'dependencies': [
-            '../build/linux/system.gyp:ssl',
+            '../build/linux/system.gyp:nss',
           ],
         }],
         ['OS=="mac"', {
@@ -3077,7 +3077,7 @@
       'conditions': [
         ['OS=="linux"', {
           'dependencies': [
-            '../build/linux/system.gyp:ssl',
+            '../build/linux/system.gyp:nss',
           ],
         }],
         ['OS=="mac"', {

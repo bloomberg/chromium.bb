@@ -2037,7 +2037,7 @@
         }],
         ['OS=="linux"', {
           'dependencies': [
-            '../build/linux/system.gyp:ssl',
+            '../build/linux/system.gyp:nss',
           ],
         }],
         ['enable_print_preview==1', {
@@ -2542,7 +2542,7 @@
         }],
         ['OS=="linux"', {
           'dependencies': [
-            '../build/linux/system.gyp:ssl',
+            '../build/linux/system.gyp:nss',
           ],
         }],
         # Only add this test for 64 bit builds because otherwise we need the 32

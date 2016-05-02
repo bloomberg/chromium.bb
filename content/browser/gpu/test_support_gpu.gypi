@@ -41,7 +41,7 @@
     }],
     ['chromeos==1 or (OS=="linux" and use_aura==1)', {
       'dependencies': [
-        '<(src_dir)/build/linux/system.gyp:ssl',
+        '<(src_dir)/build/linux/system.gyp:nss',
       ],
     }],
     ['toolkit_views==1', {

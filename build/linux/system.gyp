@@ -1242,45 +1242,38 @@
       ],
     },
     {
-      'target_name': 'ssl',
+      'target_name': 'nss',
       'type': 'none',
       'conditions': [
-        ['_toolset=="target"', {
-          'dependencies': [
-            '../../third_party/boringssl/boringssl.gyp:boringssl',
-          ],
+        # Link in the system NSS if it is used for the platform certificate
+        # library (use_nss_certs==1).
+        ['_toolset=="target" and use_nss_certs==1', {
+          'direct_dependent_settings': {
+            'cflags': [
+              '<!@(<(pkg-config) --cflags nss)',
+            ],
+          },
+          'link_settings': {
+            'ldflags': [
+              '<!@(<(pkg-config) --libs-only-L --libs-only-other nss)',
+            ],
+            'libraries': [
+              '<!@(<(pkg-config) --libs-only-l nss | sed -e "s/-lssl3//")',
+            ],
+          },
           'conditions': [
-            # Link in the system NSS if it is used for the platform certificate
-            # library (use_nss_certs==1).
-            ['use_nss_certs==1', {
+            ['clang==1', {
               'direct_dependent_settings': {
                 'cflags': [
-                  '<!@(<(pkg-config) --cflags nss)',
+                  # There is a broken header guard in /usr/include/nss/secmod.h:
+                  # https://bugzilla.mozilla.org/show_bug.cgi?id=884072
+                  '-Wno-header-guard',
                 ],
               },
-              'link_settings': {
-                'ldflags': [
-                  '<!@(<(pkg-config) --libs-only-L --libs-only-other nss)',
-                ],
-                'libraries': [
-                  '<!@(<(pkg-config) --libs-only-l nss | sed -e "s/-lssl3//")',
-                ],
-              },
-              'conditions': [
-                ['clang==1', {
-                  'direct_dependent_settings': {
-                    'cflags': [
-                      # There is a broken header guard in /usr/include/nss/secmod.h:
-                      # https://bugzilla.mozilla.org/show_bug.cgi?id=884072
-                      '-Wno-header-guard',
-                    ],
-                  },
-                }],
-              ],
             }],
-          ]
+          ],
         }],
-      ],
+      ]
     },
     {
       'target_name': 'libffi',

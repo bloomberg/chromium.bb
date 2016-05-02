@@ -224,7 +224,7 @@
           'conditions': [
             [ 'desktop_linux == 1 or chromeos == 1', {
               'dependencies': [
-                '../build/linux/system.gyp:ssl',
+                '../build/linux/system.gyp:nss',
               ],
             }, {  # desktop_linux == 0 and chromeos == 0
               'dependencies': [
@@ -656,7 +656,7 @@
           'conditions': [
             [ 'desktop_linux == 1 or chromeos == 1', {
               'dependencies': [
-                '../build/linux/system.gyp:ssl',
+                '../build/linux/system.gyp:nss',
               ],
             }, {  # desktop_linux == 0 and chromeos == 0
               'dependencies': [

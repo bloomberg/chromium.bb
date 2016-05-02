@@ -109,7 +109,7 @@
     }],
     [ 'use_nss_certs == 1', {
         'dependencies': [
-          '../build/linux/system.gyp:ssl',
+          '../build/linux/system.gyp:nss',
         ],
       }, {
         'sources!': [

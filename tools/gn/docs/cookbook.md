@@ -305,8 +305,8 @@ targets only, don't add stuff here just because you converted it.)
 | `base/base.gyp:run_all_unittests`                                                  | `//base/test:run_all_unittests`          |                      |
 | `base/base.gyp:test_support_base`                                                  | `//base/test:test_support`               |                      |
 | `base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations` | `//base/third_party/dynamic_annotations` |                      |
-| `build/linux/system.gyp:*` (except ssl)                                            | `//build/config/linux:*`                 | Linux system targets |
-| `build/linux/system.gyp:ssl`                                                       | `//crypto:platform`                      | SSL                  |
+| `build/linux/system.gyp:*` (except nss)                                            | `//build/config/linux:*`                 | Linux system targets |
+| `build/linux/system.gyp:nss`                                                       | `//crypto:platform`                      | SSL                  |
 | `net/third_party/nss/ssl.gyp:libssl`                                               | `//crypto:platform`                      | SSL                  |
 | `skia/skia.gyp:skia`                                                               | `//skia`                                 |                      |
 | `testing/gmock.gyp:gmock`                                                          | `//testing/gmock`                        | Secondary tree       |
