@@ -232,21 +232,23 @@ void KeyframeEffect::updateChildrenAndEffects() const
 
 double KeyframeEffect::calculateTimeToEffectChange(bool forwards, double localTime, double timeToNextIteration) const
 {
-    const double start = specifiedTiming().startDelay;
-    const double end = start + activeDurationInternal();
+    const double startTime = specifiedTiming().startDelay;
+    const double endTimeMinusEndDelay = startTime + activeDurationInternal();
+    const double endTime = endTimeMinusEndDelay + specifiedTiming().endDelay;
+    const double afterTime = std::min(endTimeMinusEndDelay, endTime);
 
     switch (getPhase()) {
     case PhaseNone:
         return std::numeric_limits<double>::infinity();
     case PhaseBefore:
-        ASSERT(start >= localTime);
+        ASSERT(startTime >= localTime);
         return forwards
-            ? start - localTime
+            ? startTime - localTime
             : std::numeric_limits<double>::infinity();
     case PhaseActive:
         if (forwards) {
             // Need service to apply fill / fire events.
-            const double timeToEnd = end - localTime;
+            const double timeToEnd = afterTime - localTime;
             if (requiresIterationEvents()) {
                 return std::min(timeToEnd, timeToNextIteration);
             }
@@ -254,13 +256,13 @@ double KeyframeEffect::calculateTimeToEffectChange(bool forwards, double localTi
         }
         return 0;
     case PhaseAfter:
-        ASSERT(localTime >= end);
+        ASSERT(localTime >= afterTime);
         // If this KeyframeEffect is still in effect then it will need to update
         // when its parent goes out of effect. We have no way of knowing when
         // that will be, however, so the parent will need to supply it.
         return forwards
             ? std::numeric_limits<double>::infinity()
-            : localTime - end;
+            : localTime - afterTime;
     default:
         ASSERT_NOT_REACHED();
         return std::numeric_limits<double>::infinity();

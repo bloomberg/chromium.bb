@@ -50,9 +50,10 @@ static inline AnimationEffect::Phase calculatePhase(double activeDuration, doubl
     ASSERT(activeDuration >= 0);
     if (isNull(localTime))
         return AnimationEffect::PhaseNone;
-    if (localTime < specified.startDelay)
+    double endTime = specified.startDelay + activeDuration + specified.endDelay;
+    if (localTime < std::min(specified.startDelay, endTime))
         return AnimationEffect::PhaseBefore;
-    if (localTime >= specified.startDelay + activeDuration)
+    if (localTime >= std::min(specified.startDelay + activeDuration, endTime))
         return AnimationEffect::PhaseAfter;
     return AnimationEffect::PhaseActive;
 }
