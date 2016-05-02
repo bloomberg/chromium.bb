@@ -70,7 +70,6 @@
   'dependencies': [
     'app_mode_app',
     # Bring in pdfsqueeze and run it on all pdfs
-    '../build/temp_gyp/pdfsqueeze.gyp:pdfsqueeze',
     '../crypto/crypto.gyp:crypto',
     # On Mac, Flash gets put into the framework, so we need this
     # dependency here. flash_player.gyp will copy the Flash bundle
@@ -80,22 +79,6 @@
     '../third_party/widevine/cdm/widevine_cdm.gyp:widevinecdmadapter',
     'chrome_resources.gyp:packed_extra_resources',
     'chrome_resources.gyp:packed_resources',
-  ],
-  'rules': [
-    # TODO(rsesek): Delete this.
-    {
-      'rule_name': 'pdfsqueeze',
-      'extension': 'pdf',
-      'inputs': [
-        '<(PRODUCT_DIR)/pdfsqueeze',
-      ],
-      'outputs': [
-        '<(INTERMEDIATE_DIR)/pdfsqueeze/<(RULE_INPUT_ROOT).pdf',
-      ],
-      'action': ['<(PRODUCT_DIR)/pdfsqueeze',
-                 '<(RULE_INPUT_PATH)', '<@(_outputs)'],
-      'message': 'Running pdfsqueeze on <(RULE_INPUT_PATH)',
-    },
   ],
   'variables': {
     'theme_dir_name': '<(branding_path_component)',

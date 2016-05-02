@@ -166,12 +166,6 @@ SPECIAL_CASES = {
         "URL": "http://code.google.com/p/pdfium/",
         "License": "BSD",
     },
-    os.path.join('third_party', 'pdfsqueeze'): {
-        "Name": "pdfsqueeze",
-        "URL": "http://code.google.com/p/pdfsqueeze/",
-        "License": "Apache 2.0",
-        "License File": "COPYING",
-    },
     os.path.join('third_party', 'ppapi'): {
         "Name": "ppapi",
         "URL": "http://code.google.com/p/ppapi/",
@@ -298,7 +292,6 @@ KNOWN_NON_IOS_LIBRARIES = set([
     os.path.join('third_party', 'mozilla'),
     os.path.join('third_party', 'npapi'),
     os.path.join('third_party', 'ots'),
-    os.path.join('third_party', 'pdfsqueeze'),
     os.path.join('third_party', 'ppapi'),
     os.path.join('third_party', 'qcms'),
     os.path.join('third_party', 're2'),
