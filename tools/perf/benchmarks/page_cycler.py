@@ -223,6 +223,10 @@ class PageCyclerBasicOopif(_PageCycler):
   def Name(cls):
     return 'page_cycler.basic_oopif'
 
+  @classmethod
+  def ShouldDisable(cls, possible_browser):
+    return cls.IsSvelte(possible_browser)  # http://crbug.com/607657
+
 
 @benchmark.Disabled('all')  # crbug.com/443730
 class PageCyclerBigJs(_PageCycler):
