@@ -1308,7 +1308,7 @@ wl_display_add_socket_fd(struct wl_display *display, int sock_fd)
  * fails and returns -1.
  *
  * The length of socket path, i.e., the path set in XDG_RUNTIME_DIR and the
- * socket name, must not exceed the maxium length of a Unix socket path.
+ * socket name, must not exceed the maximum length of a Unix socket path.
  * The function also fails if the user do not have write permission in the
  * XDG_RUNTIME_DIR path or if the socket name is already in use.
  *
