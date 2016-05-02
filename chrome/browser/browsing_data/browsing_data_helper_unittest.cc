@@ -79,7 +79,6 @@ TEST_F(BrowsingDataHelperTest, ChromeSchemesAreNotWebSafe) {
   EXPECT_FALSE(IsWebScheme(content::kChromeUIScheme));
   EXPECT_FALSE(IsWebScheme(url::kJavaScriptScheme));
   EXPECT_FALSE(IsWebScheme(url::kMailToScheme));
-  EXPECT_FALSE(IsWebScheme(content::kSwappedOutScheme));
   EXPECT_FALSE(IsWebScheme(content::kViewSourceScheme));
 }
 
@@ -102,7 +101,6 @@ TEST_F(BrowsingDataHelperTest, ChromeSchemesAreNotAllExtension) {
   EXPECT_FALSE(IsExtensionScheme(content::kChromeUIScheme));
   EXPECT_FALSE(IsExtensionScheme(url::kJavaScriptScheme));
   EXPECT_FALSE(IsExtensionScheme(url::kMailToScheme));
-  EXPECT_FALSE(IsExtensionScheme(content::kSwappedOutScheme));
   EXPECT_FALSE(IsExtensionScheme(content::kViewSourceScheme));
 }
 

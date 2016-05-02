@@ -1251,11 +1251,6 @@ void RenderThreadImpl::InitializeWebKit(
 }
 
 void RenderThreadImpl::RegisterSchemes() {
-  // swappedout:
-  WebString swappedout_scheme(base::ASCIIToUTF16(kSwappedOutScheme));
-  WebSecurityPolicy::registerURLSchemeAsDisplayIsolated(swappedout_scheme);
-  WebSecurityPolicy::registerURLSchemeAsEmptyDocument(swappedout_scheme);
-
   // chrome:
   WebString chrome_scheme(base::ASCIIToUTF16(kChromeUIScheme));
   WebSecurityPolicy::registerURLSchemeAsDisplayIsolated(chrome_scheme);
