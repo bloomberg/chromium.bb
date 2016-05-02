@@ -164,6 +164,10 @@ template("mac_framework_bundle") {
 #     output_name:
 #         (optional) string, name of the generated app without the
 #         .app suffix. If omitted, defaults to target_name.
+#
+#     extra_configs:
+#         (optional) list of label, additional configs to apply to the
+#         executable target.
 template("mac_app_bundle") {
   assert(defined(invoker.info_plist),
          "The Info.plist file must be specified for $target_name")
@@ -188,6 +192,9 @@ template("mac_app_bundle") {
                              "output_name",
                              "visibility",
                            ])
+    if (defined(extra_configs)) {
+      configs += extra_configs
+    }
     output_name = _output_name
     output_dir = "$target_out_dir/$_executable_target"
   }
