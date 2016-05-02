@@ -8,7 +8,6 @@
 #include "base/sys_info.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/channel_info.h"
@@ -171,9 +170,6 @@ void ChromeInternalLogSource::PopulateSyncLogs(SystemLogsResponse* response) {
 
 void ChromeInternalLogSource::PopulateExtensionInfoLogs(
     SystemLogsResponse* response) {
-  if (!ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled())
-    return;
-
   Profile* primary_profile =
       g_browser_process->profile_manager()->GetPrimaryUserProfile();
   if (!primary_profile)
