@@ -11,6 +11,10 @@
 #include "ash/wm/common/workspace/workspace_types.h"
 #include "ui/views/widget/widget.h"
 
+namespace gfx {
+class Point;
+}
+
 namespace ash {
 
 class AlwaysOnTopController;
@@ -48,6 +52,13 @@ class ASH_EXPORT WmRootWindowController {
       views::Widget* widget,
       int shell_container_id,
       views::Widget::InitParams* init_params) = 0;
+
+  // Returns the window events will be targeted at for the specified location
+  // (in screen coordinates).
+  //
+  // NOTE: the returned window may not contain the location as resize handles
+  // may extend outside the bounds of the window.
+  virtual WmWindow* FindEventTarget(const gfx::Point& location_in_screen) = 0;
 
   virtual void AddObserver(WmRootWindowControllerObserver* observer) = 0;
   virtual void RemoveObserver(WmRootWindowControllerObserver* observer) = 0;

@@ -45,6 +45,7 @@ class ASH_EXPORT WmRootWindowControllerAura : public WmRootWindowController,
       views::Widget* widget,
       int shell_container_id,
       views::Widget::InitParams* init_params) override;
+  WmWindow* FindEventTarget(const gfx::Point& location_in_screen) override;
   void AddObserver(WmRootWindowControllerObserver* observer) override;
   void RemoveObserver(WmRootWindowControllerObserver* observer) override;
 

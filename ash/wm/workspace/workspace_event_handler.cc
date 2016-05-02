@@ -7,6 +7,7 @@
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shell.h"
 #include "ash/touch/touch_uma.h"
+#include "ash/wm/aura/wm_window_aura.h"
 #include "ash/wm/common/window_state.h"
 #include "ash/wm/common/wm_event.h"
 #include "ash/wm/common/wm_window.h"
@@ -41,8 +42,8 @@ void WorkspaceEventHandler::OnMouseEvent(ui::MouseEvent* event) {
     case ui::ET_MOUSE_MOVED: {
       int component =
           target->delegate()->GetNonClientComponent(event->location());
-      multi_window_resize_controller_.Show(target, component,
-                                           event->location());
+      multi_window_resize_controller_.Show(wm::WmWindowAura::Get(target),
+                                           component, event->location());
       break;
     }
     case ui::ET_MOUSE_ENTERED:

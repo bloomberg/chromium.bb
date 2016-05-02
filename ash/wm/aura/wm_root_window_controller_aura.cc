@@ -16,6 +16,8 @@
 #include "ash/wm/workspace_controller.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_property.h"
+#include "ui/events/event_targeter.h"
+#include "ui/events/event_utils.h"
 
 DECLARE_WINDOW_PROPERTY_TYPE(ash::wm::WmRootWindowControllerAura*);
 
@@ -99,6 +101,20 @@ void WmRootWindowControllerAura::ConfigureWidgetInitParamsForContainer(
     views::Widget::InitParams* init_params) {
   init_params->parent = Shell::GetContainer(
       root_window_controller_->GetRootWindow(), shell_container_id);
+}
+
+WmWindow* WmRootWindowControllerAura::FindEventTarget(
+    const gfx::Point& location_in_screen) {
+  gfx::Point location_in_root =
+      GetWindow()->ConvertPointFromScreen(location_in_screen);
+  aura::Window* root = root_window_controller_->GetRootWindow();
+  ui::MouseEvent test_event(ui::ET_MOUSE_MOVED, location_in_root,
+                            location_in_root, ui::EventTimeForNow(),
+                            ui::EF_NONE, ui::EF_NONE);
+  ui::EventTarget* event_handler = static_cast<ui::EventTarget*>(root)
+                                       ->GetEventTargeter()
+                                       ->FindTargetForEvent(root, &test_event);
+  return WmWindowAura::Get(static_cast<aura::Window*>(event_handler));
 }
 
 void WmRootWindowControllerAura::AddObserver(

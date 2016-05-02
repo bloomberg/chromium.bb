@@ -5,7 +5,7 @@
 #ifndef ASH_WM_WORKSPACE_WORKSPACE_EVENT_HANDLER_H_
 #define ASH_WM_WORKSPACE_WORKSPACE_EVENT_HANDLER_H_
 
-#include "ash/wm/workspace/multi_window_resize_controller.h"
+#include "ash/wm/common/workspace/multi_window_resize_controller.h"
 #include "base/macros.h"
 #include "ui/events/event_handler.h"
 

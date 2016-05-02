@@ -2,17 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/workspace/multi_window_resize_controller.h"
+#include "ash/wm/common/workspace/multi_window_resize_controller.h"
 
 #include "ash/ash_constants.h"
 #include "ash/frame/custom_frame_view_ash.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/shell_test_api.h"
+#include "ash/wm/aura/wm_window_aura.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/workspace_event_handler_test_helper.h"
 #include "ash/wm/workspace_controller.h"
 #include "ash/wm/workspace_controller_test_helper.h"
+#include "base/stl_util.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
@@ -93,15 +95,11 @@ class MultiWindowResizeControllerTest : public test::AshTestBase {
   bool HasTarget(aura::Window* window) {
     if (!resize_controller_->windows_.is_valid())
       return false;
-    if ((resize_controller_->windows_.window1 == window ||
-         resize_controller_->windows_.window2 == window))
+    wm::WmWindow* wm_window = wm::WmWindowAura::Get(window);
+    if ((resize_controller_->windows_.window1 == wm_window ||
+         resize_controller_->windows_.window2 == wm_window))
       return true;
-    for (size_t i = 0;
-         i < resize_controller_->windows_.other_windows.size(); ++i) {
-      if (resize_controller_->windows_.other_windows[i] == window)
-        return true;
-    }
-    return false;
+    return ContainsValue(resize_controller_->windows_.other_windows, wm_window);
   }
 
   bool IsOverWindows(const gfx::Point& loc) {
