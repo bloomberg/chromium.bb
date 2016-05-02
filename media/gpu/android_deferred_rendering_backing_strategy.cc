@@ -434,6 +434,22 @@ bool AndroidDeferredRenderingBackingStrategy::ShouldCopyPictures() const {
     }
   }
 
+  // Samsung Galaxy Tab A, J3, and J1 Mini all like to crash on Lollipop in
+  // glEGLImageTargetTexture2DOES .  Exact models were SM-T280, SM-J320F,
+  // and SM-j105H.
+  if (base::android::BuildInfo::GetInstance()->sdk_int() <= 22) {  // L MR1
+    const std::string brand(
+        base::ToLowerASCII(base::android::BuildInfo::GetInstance()->brand()));
+    if (brand == "samsung") {
+      const std::string model(
+          base::ToLowerASCII(base::android::BuildInfo::GetInstance()->model()));
+      if (model.find("sm-t280") != std::string::npos ||
+          model.find("sm-j320f") != std::string::npos ||
+          model.find("sm-j105") != std::string::npos)
+        return false;
+    }
+  }
+
   // Assume so.
   return true;
 }
