@@ -1,1 +1,1 @@
-android-cts-5.1_r5-linux_x86-arm.zip
+android-cts-arm_64-2780604.zip
