@@ -80,12 +80,12 @@ class Chromium_ycmExtraConfTest(unittest.TestCase):
       |
       +-- out
           |
-          +-- Debug
+          +-- gn
                 build.ninja
     """
     self.chrome_root = os.path.abspath(os.path.normpath(
         os.path.join(self.test_root, 'src')))
-    self.out_dir = os.path.join(self.chrome_root, 'out', 'Debug')
+    self.out_dir = os.path.join(self.chrome_root, 'out', 'gn')
 
     os.makedirs(self.chrome_root)
     os.makedirs(os.path.join(self.chrome_root, '.git'))
@@ -165,7 +165,7 @@ class Chromium_ycmExtraConfTest(unittest.TestCase):
 
   def testOutDirNames(self):
     out_root = os.path.join(self.chrome_root, 'out_with_underscore')
-    out_dir = os.path.join(out_root, 'Debug')
+    out_dir = os.path.join(out_root, 'gn')
     shutil.move(os.path.join(self.chrome_root, 'out'),
         out_root)
 
@@ -337,4 +337,7 @@ class Chromium_ycmExtraConfTest(unittest.TestCase):
         ])
 
 if __name__ == '__main__':
+  if not os.path.isfile('chromium.ycm_extra_conf.py'):
+    print('The test must be run from src/tools/vim/ directory')
+    sys.exit(1)
   unittest.main()

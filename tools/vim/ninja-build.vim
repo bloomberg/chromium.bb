@@ -41,17 +41,17 @@ def path_to_source_root():
   return candidate
 
 
-def path_to_build_dir(configuration):
-  """Returns <chrome_root>/<output_dir>/(Release|Debug)."""
+def path_to_build_dir():
+  """Returns <chrome_root>/<output_dir>/(Release|Debug|<other>)."""
 
   chrome_root = path_to_source_root()
   sys.path.append(os.path.join(chrome_root, 'tools', 'vim'))
   from ninja_output import GetNinjaOutputDirectory
-  return GetNinjaOutputDirectory(chrome_root, configuration)
+  return GetNinjaOutputDirectory(chrome_root)
 
-def compute_ninja_command_for_current_buffer(configuration=None):
+def compute_ninja_command_for_current_buffer():
   """Returns the shell command to compile the file in the current buffer."""
-  build_dir = path_to_build_dir(configuration)
+  build_dir = path_to_build_dir()
 
   # ninja needs filepaths for the ^ syntax to be relative to the
   # build directory.
@@ -65,8 +65,8 @@ def compute_ninja_command_for_current_buffer(configuration=None):
   vim.command('return "%s"' % build_cmd)
 
 
-def compute_ninja_command_for_targets(targets='', configuration=None):
-  build_cmd = ' '.join(['ninja', '-C', path_to_build_dir(configuration),
+def compute_ninja_command_for_targets(targets=''):
+  build_cmd = ' '.join(['ninja', '-C', path_to_build_dir(),
                         targets])
   vim.command('return "%s"' % build_cmd)
 endpython
