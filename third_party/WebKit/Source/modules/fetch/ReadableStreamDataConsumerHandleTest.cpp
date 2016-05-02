@@ -103,7 +103,7 @@ TEST_F(ReadableStreamDataConsumerHandleTest, Create)
     ASSERT_FALSE(stream.isEmpty());
     OwnPtr<ReadableStreamDataConsumerHandle> handle = createHandle(stream);
     ASSERT_TRUE(handle);
-    MockClient* client = MockClient::create();
+    Persistent<MockClient> client = MockClient::create();
     Checkpoint checkpoint;
 
     InSequence s;
@@ -126,7 +126,7 @@ TEST_F(ReadableStreamDataConsumerHandleTest, EmptyStream)
     ASSERT_FALSE(stream.isEmpty());
     OwnPtr<ReadableStreamDataConsumerHandle> handle = createHandle(stream);
     ASSERT_TRUE(handle);
-    MockClient* client = MockClient::create();
+    Persistent<MockClient> client = MockClient::create();
     Checkpoint checkpoint;
 
     InSequence s;
@@ -157,7 +157,7 @@ TEST_F(ReadableStreamDataConsumerHandleTest, ErroredStream)
     ASSERT_FALSE(stream.isEmpty());
     OwnPtr<ReadableStreamDataConsumerHandle> handle = createHandle(stream);
     ASSERT_TRUE(handle);
-    MockClient* client = MockClient::create();
+    Persistent<MockClient> client = MockClient::create();
     Checkpoint checkpoint;
 
     InSequence s;
@@ -194,7 +194,7 @@ TEST_F(ReadableStreamDataConsumerHandleTest, Read)
     ASSERT_FALSE(stream.isEmpty());
     OwnPtr<ReadableStreamDataConsumerHandle> handle = createHandle(stream);
     ASSERT_TRUE(handle);
-    MockClient* client = MockClient::create();
+    Persistent<MockClient> client = MockClient::create();
     Checkpoint checkpoint;
 
     InSequence s;
@@ -262,7 +262,7 @@ TEST_F(ReadableStreamDataConsumerHandleTest, TwoPhaseRead)
     ASSERT_FALSE(stream.isEmpty());
     OwnPtr<ReadableStreamDataConsumerHandle> handle = createHandle(stream);
     ASSERT_TRUE(handle);
-    MockClient* client = MockClient::create();
+    Persistent<MockClient> client = MockClient::create();
     Checkpoint checkpoint;
 
     InSequence s;
@@ -339,7 +339,7 @@ TEST_F(ReadableStreamDataConsumerHandleTest, EnqueueUndefined)
     ASSERT_FALSE(stream.isEmpty());
     OwnPtr<ReadableStreamDataConsumerHandle> handle = createHandle(stream);
     ASSERT_TRUE(handle);
-    MockClient* client = MockClient::create();
+    Persistent<MockClient> client = MockClient::create();
     Checkpoint checkpoint;
 
     InSequence s;
@@ -374,7 +374,7 @@ TEST_F(ReadableStreamDataConsumerHandleTest, EnqueueNull)
     ASSERT_FALSE(stream.isEmpty());
     OwnPtr<ReadableStreamDataConsumerHandle> handle = createHandle(stream);
     ASSERT_TRUE(handle);
-    MockClient* client = MockClient::create();
+    Persistent<MockClient> client = MockClient::create();
     Checkpoint checkpoint;
 
     InSequence s;
@@ -409,7 +409,7 @@ TEST_F(ReadableStreamDataConsumerHandleTest, EnqueueString)
     ASSERT_FALSE(stream.isEmpty());
     OwnPtr<ReadableStreamDataConsumerHandle> handle = createHandle(stream);
     ASSERT_TRUE(handle);
-    MockClient* client = MockClient::create();
+    Persistent<MockClient> client = MockClient::create();
     Checkpoint checkpoint;
 
     InSequence s;
