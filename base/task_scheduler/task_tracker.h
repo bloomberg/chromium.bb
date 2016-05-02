@@ -32,7 +32,8 @@ class BASE_EXPORT TaskTracker {
   // - All SKIP_ON_SHUTDOWN tasks that were already running have completed their
   //   execution.
   // - All posted BLOCK_SHUTDOWN tasks have completed their execution.
-  // This must only be called once.
+  // CONTINUE_ON_SHUTDOWN tasks still may be running after Shutdown returns.
+  // This can only be called once.
   void Shutdown();
 
   // Informs this TaskTracker that |task| is about to be posted. Returns true if
