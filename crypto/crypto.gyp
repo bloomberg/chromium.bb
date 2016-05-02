@@ -22,12 +22,6 @@
       'defines': [
         'CRYPTO_IMPLEMENTATION',
       ],
-      'sources!': [
-        'third_party/nss/chromium-nss.h',
-        'third_party/nss/chromium-prtypes.h',
-        'third_party/nss/chromium-sha256.h',
-        'third_party/nss/sha512.cc',
-      ],
       'conditions': [
         [ 'os_posix == 1 and OS != "mac" and OS != "ios" and OS != "android"', {
           'dependencies': [
@@ -42,11 +36,6 @@
               },
             ],
           ],
-        }, {  # os_posix != 1 or OS == "mac" or OS == "ios" or OS == "android"
-            'sources!': [
-              'hmac_win.cc',
-              'symmetric_key_win.cc',
-            ],
         }],
         [ 'OS != "mac" and OS != "ios"', {
           'sources!': [
@@ -167,6 +156,7 @@
           'dependencies': [
             '../base/base.gyp:base_win64',
             '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations_win64',
+            '../third_party/boringssl/boringssl.gyp:boringssl_nacl_win64',
           ],
           'sources': [
             '<@(nacl_win64_sources)',

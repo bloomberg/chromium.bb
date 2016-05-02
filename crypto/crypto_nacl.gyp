@@ -38,8 +38,6 @@
         ['exclude', '^cssm_'],
         ['exclude', '^nss_'],
         ['exclude', '^mac_'],
-        ['exclude', '^third_party/nss/'],
-        ['include', '^third_party/nss/sha512.cc'],
       ],
     },
   ],

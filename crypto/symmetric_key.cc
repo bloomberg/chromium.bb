@@ -76,8 +76,9 @@ SymmetricKey* SymmetricKey::DeriveKeyFromPassword(Algorithm algorithm,
       base::WriteInto(&key->key_, key_size_in_bytes + 1));
   int rv = PKCS5_PBKDF2_HMAC_SHA1(
       password.data(), password.length(),
-      reinterpret_cast<const uint8_t*>(salt.data()), salt.length(), iterations,
-      static_cast<int>(key_size_in_bytes), key_data);
+      reinterpret_cast<const uint8_t*>(salt.data()), salt.length(),
+      static_cast<unsigned>(iterations),
+      key_size_in_bytes, key_data);
   return rv == 1 ? key.release() : NULL;
 }
 

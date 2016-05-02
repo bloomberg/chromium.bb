@@ -33,7 +33,6 @@ component("crypto") {
     "hkdf.h",
     "hmac.cc",
     "hmac.h",
-    "hmac_openssl.cc",
     "mac_security_services_lock.cc",
     "mac_security_services_lock.h",
 
@@ -72,10 +71,8 @@ component("crypto") {
     "signature_creator.h",
     "signature_verifier.cc",
     "signature_verifier.h",
+    "symmetric_key.cc",
     "symmetric_key.h",
-    "symmetric_key_openssl.cc",
-    "third_party/nss/chromium-sha256.h",
-    "third_party/nss/sha512.cc",
   ]
 
   # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
@@ -141,16 +138,12 @@ if (false && is_win) {
       "crypto_export.h",
       "hmac.cc",
       "hmac.h",
-      "hmac_win.cc",
-      "scoped_capi_types.h",
-      "scoped_nss_types.h",
+      "openssl_util.cc",
+      "openssl_util.h",
       "secure_util.cc",
       "secure_util.h",
+      "symmetric_key.cc",
       "symmetric_key.h",
-      "symmetric_key_win.cc",
-      "third_party/nss/chromium-blapi.h",
-      "third_party/nss/chromium-sha256.h",
-      "third_party/nss/sha512.cc",
     ]
 
     deps = [
