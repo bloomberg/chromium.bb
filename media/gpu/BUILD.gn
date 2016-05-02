@@ -357,6 +357,7 @@ if (is_android || is_chromeos) {
       "//base",
       "//media",
       "//media/gpu",
+      "//mojo/edk/system",
       "//testing/gtest",
       "//ui/base",
       "//ui/gfx",
