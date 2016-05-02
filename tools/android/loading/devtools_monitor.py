@@ -10,6 +10,7 @@ import json
 import logging
 import os
 import sys
+import time
 
 file_dir = os.path.dirname(__file__)
 sys.path.append(os.path.join(file_dir, '..', '..', 'perf'))
@@ -88,6 +89,8 @@ class DevToolsConnection(object):
   TRACING_DONE_EVENT = 'Tracing.tracingComplete'
   TRACING_STREAM_EVENT = 'Tracing.tracingComplete'  # Same as TRACING_DONE.
   TRACING_TIMEOUT = 300
+  HTTP_ATTEMPTS = 10
+  HTTP_ATTEMPT_INTERVAL_SECONDS = 0.1
 
   def __init__(self, hostname, port):
     """Initializes the connection with a DevTools server.
@@ -352,17 +355,22 @@ class DevToolsConnection(object):
 
   def _HttpRequest(self, path):
     assert path[0] == '/'
-    r = httplib.HTTPConnection(self._http_hostname, self._http_port)
-    try:
-      r.request('GET', '/json' + path)
-      response = r.getresponse()
-      if response.status != 200:
-        raise DevToolsConnectionException(
-            'Cannot connect to DevTools, reponse code %d' % response.status)
-      raw_response = response.read()
-    finally:
-      r.close()
-    return raw_response
+    for _ in xrange(self.HTTP_ATTEMPTS):
+      r = httplib.HTTPConnection(self._http_hostname, self._http_port)
+      try:
+        r.request('GET', '/json' + path)
+        response = r.getresponse()
+        if response.status != 200:
+          raise DevToolsConnectionException(
+              'Cannot connect to DevTools, reponse code %d' % response.status)
+        return response.read()
+      except httplib.BadStatusLine as exception:
+        logging.warning('Devtools HTTP connection failed: %s' % repr(exception))
+        time.sleep(self.HTTP_ATTEMPT_INTERVAL_SECONDS)
+      finally:
+        r.close()
+    # Raise the exception that has failed the last attempt.
+    raise
 
   def _Connect(self):
     assert not self._ws
