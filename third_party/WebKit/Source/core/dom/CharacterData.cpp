@@ -46,6 +46,8 @@ void CharacterData::setData(const String& data)
     if (m_data == nonNullData)
         return;
 
+    document().dataWillChange(*this);
+
     unsigned oldLength = length();
 
     setDataAndUpdate(nonNullData, 0, oldLength, nonNullData.length(), UpdateFromNonParser);
@@ -159,6 +161,9 @@ void CharacterData::setNodeValue(const String& nodeValue)
 
 void CharacterData::setDataAndUpdate(const String& newData, unsigned offsetOfReplacedData, unsigned oldLength, unsigned newLength, UpdateSource source, RecalcStyleBehavior recalcStyleBehavior)
 {
+    if (source != UpdateFromParser)
+        document().dataWillChange(*this);
+
     String oldData = m_data;
     m_data = newData;
 

@@ -1,0 +1,33 @@
+<!doctype HTML>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<div contenteditable id="root" class="editing"></div>
+<style>
+* {
+	font-family: Courier New;
+}
+</style>
+<script>
+test(function() {
+	// The innerText must be set explicitly, and not with an editing command.
+	root.innerText = "1";
+	window.getSelection().collapse(root.firstChild, 1);
+
+	if (window.internals)
+  	    window.internals.startTrackingRepaints(document);
+
+  	debugger;
+  	document.execCommand('delete');
+
+ 	if (window.internals) {
+	 	var layers = JSON.parse(window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS));
+	    assert_equals(layers.children[0].paintInvalidations[2].reason, "invalidate paint rectangle");
+		var previousOffset = layers.children[0].paintInvalidations[2].rect[0];
+		assert_equals(layers.children[0].paintInvalidations[2].rect[3], 20, "Old caret rect location");
+
+	    assert_equals(layers.children[0].paintInvalidations[3].reason, "invalidate paint rectangle");
+	    // Check that thet x offset is previousOffset - 1. This for the caret rect after delete.
+		assert_not_equals(layers.children[0].paintInvalidations[3].rect[0], previousOffset, "New caret rect location");
+	 }
+});
+</script>

@@ -731,6 +731,15 @@ void FrameSelection::invalidateCaretRect()
     m_previousCaretVisibility = m_caretBase->getCaretVisibility();
 }
 
+void FrameSelection::dataWillChange(const CharacterData& node)
+{
+    if (node == m_previousCaretNode) {
+        // This invalidation is eager, and intentionally uses stale state.
+        DisableCompositingQueryAsserts disabler;
+        m_caretBase->invalidateLocalCaretRect(m_previousCaretNode.get(), m_previousCaretRect);
+    }
+}
+
 void FrameSelection::paintCaret(GraphicsContext& context, const LayoutPoint& paintOffset)
 {
     if (selection().isCaret() && m_shouldPaintCaret) {

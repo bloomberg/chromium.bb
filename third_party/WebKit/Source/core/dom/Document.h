@@ -77,6 +77,7 @@ class CancellableTaskFactory;
 class CanvasFontCache;
 class CanvasRenderingContext2D;
 class CanvasRenderingContext2DOrWebGLRenderingContext;
+class CharacterData;
 class ChromeClient;
 class CompositorPendingAnimations;
 class Comment;
@@ -640,6 +641,8 @@ public:
     void nodeChildrenWillBeRemoved(ContainerNode&);
     // nodeWillBeRemoved is only safe when removing one node at a time.
     void nodeWillBeRemoved(Node&);
+    // Called just before a destructive update to some CharacterData.
+    void dataWillChange(const CharacterData&);
     bool canAcceptChild(const Node& newChild, const Node* oldChild, ExceptionState&) const;
 
     void didInsertText(Node*, unsigned offset, unsigned length);
