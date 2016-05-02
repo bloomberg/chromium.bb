@@ -197,7 +197,7 @@ bool FuzzedSocket::IsConnectedAndIdle() const {
 int FuzzedSocket::GetPeerAddress(IPEndPoint* address) const {
   if (!IsConnected())
     return ERR_SOCKET_NOT_CONNECTED;
-  *address = IPEndPoint(IPAddress(127, 0, 0, 1), 80);
+  *address = remote_address_;
   return OK;
 }
 
