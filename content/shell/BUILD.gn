@@ -269,7 +269,6 @@ static_library("content_shell_lib") {
   }
 
   if (is_win) {
-    #'LinkIncremental': '<(msvs_large_module_debug_link_mode)',  TODO(GYP)
     sources += [
       "common/v8_breakpad_support_win.cc",
       "common/v8_breakpad_support_win.h",
@@ -455,12 +454,13 @@ if (is_android) {
     testonly = true
 
     # TODO(GYP) mac resource bundle stuff for this target.
-    # TODO(GYP) Windows content shell settings:
-    #  - RC file.
-    #  - 'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
     sources = [
       "app/shell_main.cc",
     ]
+
+    if (is_win) {
+      sources += [ "app/shell.rc" ]
+    }
 
     defines = []
 
@@ -473,6 +473,11 @@ if (is_android) {
 
     if (is_win) {
       deps += [ "//sandbox" ]
+
+      # This is a large module that can't do incremental linking in some cases.
+      configs -= [ "//build/config/win:default_incremental_linking" ]
+      configs +=
+          [ "//build/config/win:default_large_module_incremental_linking" ]
       if (win_console_app) {
         defines += [ "WIN_CONSOLE_APP" ]
       } else {
