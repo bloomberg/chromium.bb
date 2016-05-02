@@ -42,15 +42,19 @@ bool NinePieceImagePainter::paint(GraphicsContext& graphicsContext, const Layout
 
     // NinePieceImage returns the image slices without effective zoom applied and thus we compute
     // the nine piece grid on top of the image in unzoomed coordinates.
-    LayoutSize defaultObjectSize = borderImageRect.size();
-    defaultObjectSize.scale(1 / style.effectiveZoom());
-    IntSize imageSize = roundedIntSize(styleImage->imageSize(m_layoutObject, 1, defaultObjectSize));
+    //
+    // FIXME: The default object size passed to imageSize() should be scaled by the zoom factor
+    // passed in. In this case it means that borderImageRect should be passed in compensated by
+    // effective zoom, since the scale factor is one. For generated images, the actual image data
+    // (gradient stops, etc.) are scaled to effective zoom instead so we must take care not to cause
+    // scale of them again.
+    IntSize imageSize = roundedIntSize(styleImage->imageSize(m_layoutObject, 1, borderImageRect.size()));
 
     IntRectOutsets borderWidths(style.borderTopWidth(), style.borderRightWidth(),
         style.borderBottomWidth(), style.borderLeftWidth());
     NinePieceImageGrid grid(ninePieceImage, imageSize, pixelSnappedIntRect(borderImageRect), borderWidths);
 
-    RefPtr<Image> image = styleImage->image(m_layoutObject, imageSize, 1);
+    RefPtr<Image> image = styleImage->image(m_layoutObject, imageSize, style.effectiveZoom());
 
     InterpolationQuality interpolationQuality = BoxPainter::chooseInterpolationQuality(m_layoutObject, image.get(), 0, rectWithOutsets.size());
     InterpolationQuality previousInterpolationQuality = graphicsContext.imageInterpolationQuality();

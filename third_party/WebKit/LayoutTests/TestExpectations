@@ -419,7 +419,6 @@ crbug.com/600618 virtual/spv2/svg/custom/object-sizing-explicit-width.xhtml [ Pa
 crbug.com/600618 virtual/spv2/svg/custom/object-sizing-no-width-height-change-content-box-size.xhtml [ Pass ]
 crbug.com/600618 virtual/spv2/svg/custom/svg-root-padding-left.html [ Pass ]
 crbug.com/600618 virtual/spv2/svg/custom/svg-root-padding-top.html [ Pass ]
-crbug.com/600618 virtual/spv2/svg/css/border-image-zoomed.html [ Pass ]
 crbug.com/600618 virtual/spv2/svg/css/max-height.html [ Pass ]
 crbug.com/600618 virtual/spv2/svg/css/max-width.html [ Pass ]
 
