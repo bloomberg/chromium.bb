@@ -139,10 +139,7 @@ struct drm_mode {
 	drmModeModeInfo mode_info;
 };
 
-struct drm_output;
-
 struct drm_fb {
-	struct drm_output *output;
 	uint32_t fb_id, stride, handle, size;
 	int fd;
 	int is_client_buffer;
