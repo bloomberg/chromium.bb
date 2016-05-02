@@ -293,8 +293,8 @@ PaymentRequest::PaymentRequest(ScriptState* scriptState, const Vector<String>& s
         }
     }
 
-    // Set the currently selected option if only one option was passed.
-    if (details.hasShippingOptions() && details.shippingOptions().size() == 1)
+    // Set the currently selected option if only one option is passed and shipping is requested.
+    if (options.requestShipping() && details.hasShippingOptions() && details.shippingOptions().size() == 1)
         m_shippingOption = details.shippingOptions().begin()->id();
 }
 

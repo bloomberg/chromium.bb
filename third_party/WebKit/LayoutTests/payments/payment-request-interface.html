@@ -90,16 +90,26 @@ test(function() {
 
 test(function() {
     var request = new PaymentRequest(['foo'], buildDetails('shippingOptions', {'id': 'standard'}));
+    assert_equals(null, request.shippingOption);
+}, 'Shipping option identifier should be null if shipping request is omitted.');
+
+test(function() {
+    var request = new PaymentRequest(['foo'], buildDetails('shippingOptions', {'id': 'standard'}), {'requestShipping': false});
+    assert_equals(null, request.shippingOption);
+}, 'Shipping option identifier should be null if shipping is explicitly not requested.');
+
+test(function() {
+    var request = new PaymentRequest(['foo'], buildDetails('shippingOptions', {'id': 'standard'}), {'requestShipping': true});
     assert_equals('standard', request.shippingOption);
 }, 'Shipping option identifier should default to the single provided option.');
 
 test(function() {
-    var request = new PaymentRequest(['foo'], {"items": [buildItem()]});
+    var request = new PaymentRequest(['foo'], {"items": [buildItem()]}, {'requestShipping': true});
     assert_equals(null, request.shippingOption);
 }, 'Shipping option identifier should be null when no shipping options are provided.');
 
 test(function() {
-    var request = new PaymentRequest(['foo'], {'items': [buildItem()], 'shippingOptions': [buildItem({'id': 'standard'}), buildItem({'id': 'express'})]});
+    var request = new PaymentRequest(['foo'], {'items': [buildItem()], 'shippingOptions': [buildItem({'id': 'standard'}), buildItem({'id': 'express'})]}, {'requestShipping': true});
     assert_equals(null, request.shippingOption);
 }, 'Shipping option identifier should be null at first when multiple shipping options are provided.');
 

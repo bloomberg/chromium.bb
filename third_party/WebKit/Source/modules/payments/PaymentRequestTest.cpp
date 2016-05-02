@@ -13,11 +13,12 @@
 #include "modules/payments/PaymentItem.h"
 #include "modules/payments/ShippingOption.h"
 #include "platform/heap/HeapAllocator.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/OwnPtr.h"
+#include <utility>
 
 namespace blink {
-
 namespace {
 
 class PaymentRequestTest : public testing::Test {
@@ -102,8 +103,10 @@ TEST_F(PaymentRequestTest, NullShippingOptionWhenNoOptionsAvailable)
 {
     PaymentDetails details;
     details.setItems(HeapVector<PaymentItem>(1, buildPaymentItemForTest()));
+    PaymentOptions options;
+    options.setRequestShipping(true);
 
-    PaymentRequest* request = PaymentRequest::create(getScriptState(), Vector<String>(1, "foo"), details, getExceptionState());
+    PaymentRequest* request = PaymentRequest::create(getScriptState(), Vector<String>(1, "foo"), details, options, getExceptionState());
 
     EXPECT_TRUE(request->shippingOption().isNull());
 }
@@ -113,13 +116,28 @@ TEST_F(PaymentRequestTest, NullShippingOptionWhenMultipleOptionsAvailable)
     PaymentDetails details;
     details.setItems(HeapVector<PaymentItem>(1, buildPaymentItemForTest()));
     details.setShippingOptions(HeapVector<ShippingOption>(2, buildShippingOptionForTest()));
+    PaymentOptions options;
+    options.setRequestShipping(true);
 
-    PaymentRequest* request = PaymentRequest::create(getScriptState(), Vector<String>(1, "foo"), details, getExceptionState());
+    PaymentRequest* request = PaymentRequest::create(getScriptState(), Vector<String>(1, "foo"), details, options, getExceptionState());
 
     EXPECT_TRUE(request->shippingOption().isNull());
 }
 
-TEST_F(PaymentRequestTest, SelectSingleAvailableShippingOption)
+TEST_F(PaymentRequestTest, SelectSingleAvailableShippingOptionWhenShippingRequested)
+{
+    PaymentDetails details;
+    details.setItems(HeapVector<PaymentItem>(1, buildPaymentItemForTest()));
+    details.setShippingOptions(HeapVector<ShippingOption>(1, buildShippingOptionForTest(PaymentTestDataId, PaymentTestOverwriteValue, "standard")));
+    PaymentOptions options;
+    options.setRequestShipping(true);
+
+    PaymentRequest* request = PaymentRequest::create(getScriptState(), Vector<String>(1, "foo"), details, options, getExceptionState());
+
+    EXPECT_EQ("standard", request->shippingOption());
+}
+
+TEST_F(PaymentRequestTest, DontSelectSingleAvailableShippingOptionByDefault)
 {
     PaymentDetails details;
     details.setItems(HeapVector<PaymentItem>(1, buildPaymentItemForTest()));
@@ -127,7 +145,20 @@ TEST_F(PaymentRequestTest, SelectSingleAvailableShippingOption)
 
     PaymentRequest* request = PaymentRequest::create(getScriptState(), Vector<String>(1, "foo"), details, getExceptionState());
 
-    EXPECT_EQ("standard", request->shippingOption());
+    EXPECT_TRUE(request->shippingOption().isNull());
+}
+
+TEST_F(PaymentRequestTest, DontSelectSingleAvailableShippingOptionWhenShippingNotRequested)
+{
+    PaymentDetails details;
+    details.setItems(HeapVector<PaymentItem>(1, buildPaymentItemForTest()));
+    details.setShippingOptions(HeapVector<ShippingOption>(1, buildShippingOptionForTest()));
+    PaymentOptions options;
+    options.setRequestShipping(false);
+
+    PaymentRequest* request = PaymentRequest::create(getScriptState(), Vector<String>(1, "foo"), details, options, getExceptionState());
+
+    EXPECT_TRUE(request->shippingOption().isNull());
 }
 
 TEST_F(PaymentRequestTest, AbortWithoutShowShouldThrow)
@@ -137,6 +168,157 @@ TEST_F(PaymentRequestTest, AbortWithoutShowShouldThrow)
 
     request->abort(getExceptionState());
     EXPECT_TRUE(getExceptionState().hadException());
+}
+
+class MockFunction : public ScriptFunction {
+public:
+    static v8::Local<v8::Function> noExpectations(ScriptState* scriptState)
+    {
+        MockFunction* self = new MockFunction(scriptState);
+        return self->bindToV8Function();
+    }
+
+    static v8::Local<v8::Function> expectCall(ScriptState* scriptState)
+    {
+        MockFunction* self = new MockFunction(scriptState);
+        EXPECT_CALL(*self, call(testing::_));
+        return self->bindToV8Function();
+    }
+
+    static v8::Local<v8::Function> expectNoCall(ScriptState* scriptState)
+    {
+        MockFunction* self = new MockFunction(scriptState);
+        EXPECT_CALL(*self, call(testing::_)).Times(0);
+        return self->bindToV8Function();
+    }
+
+private:
+    explicit MockFunction(ScriptState* scriptState)
+        : ScriptFunction(scriptState)
+    {
+        ON_CALL(*this, call(testing::_)).WillByDefault(testing::ReturnArg<0>());
+    }
+
+    MOCK_METHOD1(call, ScriptValue(ScriptValue));
+};
+
+TEST_F(PaymentRequestTest, CanAbortAfterShow)
+{
+    ScriptState::Scope scope(getScriptState());
+    PaymentRequest* request = PaymentRequest::create(getScriptState(), Vector<String>(1, "foo"), buildPaymentDetailsForTest(), getExceptionState());
+    EXPECT_FALSE(getExceptionState().hadException());
+
+    request->show(getScriptState()).then(MockFunction::expectNoCall(getScriptState()), MockFunction::noExpectations(getScriptState()));
+    request->abort(getExceptionState());
+
+    EXPECT_FALSE(getExceptionState().hadException());
+}
+
+TEST_F(PaymentRequestTest, RejectShowPromiseOnInvalidShippingAddress)
+{
+    ScriptState::Scope scope(getScriptState());
+    PaymentRequest* request = PaymentRequest::create(getScriptState(), Vector<String>(1, "foo"), buildPaymentDetailsForTest(), getExceptionState());
+    EXPECT_FALSE(getExceptionState().hadException());
+
+    request->show(getScriptState()).then(MockFunction::expectNoCall(getScriptState()), MockFunction::expectCall(getScriptState()));
+
+    static_cast<mojom::blink::PaymentRequestClient*>(request)->OnShippingAddressChange(mojom::blink::ShippingAddress::New());
+}
+
+TEST_F(PaymentRequestTest, DontRejectShowPromiseForValidShippingAddress)
+{
+    ScriptState::Scope scope(getScriptState());
+    PaymentRequest* request = PaymentRequest::create(getScriptState(), Vector<String>(1, "foo"), buildPaymentDetailsForTest(), getExceptionState());
+    EXPECT_FALSE(getExceptionState().hadException());
+    mojom::blink::ShippingAddressPtr shippingAddress = mojom::blink::ShippingAddress::New();
+    shippingAddress->region_code = "US";
+    shippingAddress->language_code = "en";
+    shippingAddress->script_code = "Latn";
+
+    request->show(getScriptState()).then(MockFunction::expectNoCall(getScriptState()), MockFunction::expectNoCall(getScriptState()));
+
+    static_cast<mojom::blink::PaymentRequestClient*>(request)->OnShippingAddressChange(std::move(shippingAddress));
+}
+
+TEST_F(PaymentRequestTest, ResolveShowPromiseWithoutShippingAddressInResponse)
+{
+    ScriptState::Scope scope(getScriptState());
+    PaymentRequest* request = PaymentRequest::create(getScriptState(), Vector<String>(1, "foo"), buildPaymentDetailsForTest(), getExceptionState());
+    EXPECT_FALSE(getExceptionState().hadException());
+
+    request->show(getScriptState()).then(MockFunction::expectCall(getScriptState()), MockFunction::expectNoCall(getScriptState()));
+
+    static_cast<mojom::blink::PaymentRequestClient*>(request)->OnPaymentResponse(mojom::blink::PaymentResponse::New());
+}
+
+TEST_F(PaymentRequestTest, OnShippingOptionChange)
+{
+    ScriptState::Scope scope(getScriptState());
+    PaymentRequest* request = PaymentRequest::create(getScriptState(), Vector<String>(1, "foo"), buildPaymentDetailsForTest(), getExceptionState());
+    EXPECT_FALSE(getExceptionState().hadException());
+
+    request->show(getScriptState()).then(MockFunction::expectNoCall(getScriptState()), MockFunction::expectNoCall(getScriptState()));
+
+    static_cast<mojom::blink::PaymentRequestClient*>(request)->OnShippingOptionChange("standardShipping");
+}
+
+TEST_F(PaymentRequestTest, CannotCallShowTwice)
+{
+    ScriptState::Scope scope(getScriptState());
+    PaymentRequest* request = PaymentRequest::create(getScriptState(), Vector<String>(1, "foo"), buildPaymentDetailsForTest(), getExceptionState());
+    EXPECT_FALSE(getExceptionState().hadException());
+    request->show(getScriptState());
+
+    request->show(getScriptState()).then(MockFunction::expectNoCall(getScriptState()), MockFunction::expectCall(getScriptState()));
+}
+
+TEST_F(PaymentRequestTest, CannotCallCompleteTwice)
+{
+    ScriptState::Scope scope(getScriptState());
+    PaymentRequest* request = PaymentRequest::create(getScriptState(), Vector<String>(1, "foo"), buildPaymentDetailsForTest(), getExceptionState());
+    EXPECT_FALSE(getExceptionState().hadException());
+    request->show(getScriptState());
+    static_cast<mojom::blink::PaymentRequestClient*>(request)->OnPaymentResponse(mojom::blink::PaymentResponse::New());
+    request->complete(getScriptState(), false);
+
+    request->complete(getScriptState(), true).then(MockFunction::expectNoCall(getScriptState()), MockFunction::expectCall(getScriptState()));
+}
+
+TEST_F(PaymentRequestTest, RejectShowPromiseOnError)
+{
+    ScriptState::Scope scope(getScriptState());
+    PaymentRequest* request = PaymentRequest::create(getScriptState(), Vector<String>(1, "foo"), buildPaymentDetailsForTest(), getExceptionState());
+    EXPECT_FALSE(getExceptionState().hadException());
+
+    request->show(getScriptState()).then(MockFunction::expectNoCall(getScriptState()), MockFunction::expectCall(getScriptState()));
+
+    static_cast<mojom::blink::PaymentRequestClient*>(request)->OnError();
+}
+
+TEST_F(PaymentRequestTest, RejectCompletePromiseOnError)
+{
+    ScriptState::Scope scope(getScriptState());
+    PaymentRequest* request = PaymentRequest::create(getScriptState(), Vector<String>(1, "foo"), buildPaymentDetailsForTest(), getExceptionState());
+    EXPECT_FALSE(getExceptionState().hadException());
+    request->show(getScriptState());
+    static_cast<mojom::blink::PaymentRequestClient*>(request)->OnPaymentResponse(mojom::blink::PaymentResponse::New());
+
+    request->complete(getScriptState(), true).then(MockFunction::expectNoCall(getScriptState()), MockFunction::expectCall(getScriptState()));
+
+    static_cast<mojom::blink::PaymentRequestClient*>(request)->OnError();
+}
+
+TEST_F(PaymentRequestTest, ResolvePromiseOnComplete)
+{
+    ScriptState::Scope scope(getScriptState());
+    PaymentRequest* request = PaymentRequest::create(getScriptState(), Vector<String>(1, "foo"), buildPaymentDetailsForTest(), getExceptionState());
+    EXPECT_FALSE(getExceptionState().hadException());
+    request->show(getScriptState());
+    static_cast<mojom::blink::PaymentRequestClient*>(request)->OnPaymentResponse(mojom::blink::PaymentResponse::New());
+
+    request->complete(getScriptState(), true).then(MockFunction::expectCall(getScriptState()), MockFunction::expectNoCall(getScriptState()));
+
+    static_cast<mojom::blink::PaymentRequestClient*>(request)->OnComplete();
 }
 
 } // namespace
