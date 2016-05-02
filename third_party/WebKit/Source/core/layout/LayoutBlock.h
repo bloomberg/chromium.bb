@@ -500,7 +500,7 @@ protected:
     unsigned m_widthAvailableToChildrenChanged  : 1;
     unsigned m_heightAvailableToChildrenChanged  : 1;
     unsigned m_isSelfCollapsing : 1; // True if margin-before and margin-after are adjoining.
-    mutable unsigned m_descendantsWithFloatsMarkedForLayout : 1;
+    unsigned m_descendantsWithFloatsMarkedForLayout : 1;
 
     unsigned m_hasPositionedObjects : 1;
     unsigned m_hasPercentHeightDescendants : 1;
