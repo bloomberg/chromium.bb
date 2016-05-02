@@ -185,14 +185,17 @@ void CSSStyleSheetResource::saveParsedStyleSheet(StyleSheetContents* sheet)
 
     if (m_parsedStyleSheetCache)
         m_parsedStyleSheetCache->removedFromMemoryCache();
+
+    if (!memoryCache()->contains(this)) {
+        // This stylesheet resource did conflict with another resource and was
+        // not added to the cache.
+        m_parsedStyleSheetCache = nullptr;
+        return;
+    }
     m_parsedStyleSheetCache = sheet;
+    m_parsedStyleSheetCache->addedToMemoryCache();
 
     setDecodedSize(m_parsedStyleSheetCache->estimatedSizeInBytes());
-
-    // Check if this stylesheet resource didn't conflict with
-    // another resource and has indeed been added to the cache.
-    if (memoryCache()->contains(this))
-        m_parsedStyleSheetCache->addedToMemoryCache();
 }
 
 } // namespace blink

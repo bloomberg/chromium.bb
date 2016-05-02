@@ -134,7 +134,8 @@ TEST_F(CSSStyleSheetResourceTest, DuplicateResourceNotCached)
     cssResource->responseReceived(ResourceResponse(cssURL, "style/css", 0, nullAtom, String()), nullptr);
     cssResource->finish();
 
-    StyleSheetContents* contents = StyleSheetContents::create(CSSParserContext(HTMLStandardMode, nullptr));
+    CSSParserContext parserContext(HTMLStandardMode, nullptr);
+    StyleSheetContents* contents = StyleSheetContents::create(parserContext);
     CSSStyleSheet* sheet = CSSStyleSheet::create(contents, document());
     EXPECT_TRUE(sheet);
 
@@ -144,9 +145,10 @@ TEST_F(CSSStyleSheetResourceTest, DuplicateResourceNotCached)
     // Verify that the cache will have a mapping for |imageResource| at |url|.
     // The underlying |contents| for the stylesheet resource must have a
     // matching cache status.
-    ASSERT_TRUE(memoryCache()->contains(imageResource));
-    ASSERT_FALSE(memoryCache()->contains(cssResource));
-    ASSERT_FALSE(contents->isInMemoryCache());
+    EXPECT_TRUE(memoryCache()->contains(imageResource));
+    EXPECT_FALSE(memoryCache()->contains(cssResource));
+    EXPECT_FALSE(contents->isInMemoryCache());
+    EXPECT_FALSE(cssResource->restoreParsedStyleSheet(parserContext));
 }
 
 } // namespace
