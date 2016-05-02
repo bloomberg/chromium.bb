@@ -43,6 +43,7 @@ void OverflowBubbleView::InitOverflowBubble(views::View* anchor,
 
   SetAnchorView(anchor);
   set_arrow(GetBubbleArrow());
+  set_mirror_arrow_in_rtl(false);
   set_background(NULL);
   set_color(SkColorSetARGB(wm::kShelfBackgroundAlpha, 0, 0, 0));
   set_margins(gfx::Insets(kPadding, kPadding, kPadding, kPadding));

@@ -220,6 +220,8 @@ class VIEWS_EXPORT NonClientView : public View, public ViewTargeterDelegate {
     client_view_ = client_view;
   }
 
+  void set_mirror_client_in_rtl(bool mirror) { mirror_client_in_rtl_ = mirror; }
+
   // Layout just the frame view. This is necessary on Windows when non-client
   // metrics such as the position of the window controls changes independently
   // of a window resize message.
@@ -251,6 +253,9 @@ class VIEWS_EXPORT NonClientView : public View, public ViewTargeterDelegate {
   // of the window, hit testing and perhaps other tasks depending on the
   // implementation.
   ClientView* client_view_;
+
+  // Set to false if client_view_ position shouldn't be mirrored in RTL.
+  bool mirror_client_in_rtl_;
 
   // The NonClientFrameView that renders the non-client portions of the window.
   // This object is not owned by the view hierarchy because it can be replaced

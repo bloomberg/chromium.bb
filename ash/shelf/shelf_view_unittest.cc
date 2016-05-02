@@ -46,6 +46,7 @@
 #include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/view_model.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -983,7 +984,7 @@ TEST_F(ShelfViewTest, AssertNoButtonsOverlap) {
 }
 
 // Making sure the overflow bubble arrow correctly tracks with shelf position.
-TEST_F(ShelfViewTest, OverflowArrowForShelfPosition) {
+TEST_P(ShelfViewTextDirectionTest, OverflowArrowForShelfPosition) {
   const wm::ShelfAlignment kAlignments[] = {
       wm::SHELF_ALIGNMENT_BOTTOM, wm::SHELF_ALIGNMENT_LEFT,
       wm::SHELF_ALIGNMENT_RIGHT, wm::SHELF_ALIGNMENT_BOTTOM_LOCKED,
@@ -1005,7 +1006,11 @@ TEST_F(ShelfViewTest, OverflowArrowForShelfPosition) {
     ASSERT_TRUE(test_api_->overflow_bubble() &&
                 test_api_->overflow_bubble()->IsShowing());
 
-    EXPECT_EQ(test_api_->overflow_bubble()->bubble_view()->arrow(), kArrows[i]);
+    EXPECT_EQ(kArrows[i], test_api_->overflow_bubble()->bubble_view()->arrow());
+    OverflowBubbleViewTestAPI bubble_view_api(
+        test_api_->overflow_bubble()->bubble_view());
+    EXPECT_EQ(kArrows[i],
+              bubble_view_api.GetBubbleFrameView()->bubble_border()->arrow());
   }
 }
 

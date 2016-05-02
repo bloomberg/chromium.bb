@@ -11,6 +11,10 @@ namespace gfx {
 class Size;
 }
 
+namespace views {
+class BubbleFrameView;
+}
+
 namespace ash {
 class OverflowBubbleView;
 
@@ -27,6 +31,9 @@ class OverflowBubbleViewTestAPI {
   // Emulates scroll operations on OverflowBubble to make invisible last item
   // visible.
   void ScrollByXOffset(int x_offset);
+
+  // Returns the NonClientFrameView for the bubble.
+  views::BubbleFrameView* GetBubbleFrameView();
 
  private:
   OverflowBubbleView* bubble_view_;

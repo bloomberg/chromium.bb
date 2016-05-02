@@ -94,6 +94,7 @@ bool BubbleDialogDelegateView::ShouldShowCloseButton() const {
 ClientView* BubbleDialogDelegateView::CreateClientView(Widget* widget) {
   DialogClientView* client = new DialogClientView(widget, GetContentsView());
   client->set_button_row_insets(gfx::Insets());
+  widget->non_client_view()->set_mirror_client_in_rtl(mirror_arrow_in_rtl_);
   return client;
 }
 
@@ -108,7 +109,7 @@ NonClientFrameView* BubbleDialogDelegateView::CreateNonClientFrameView(
   frame->SetFootnoteView(CreateFootnoteView());
 
   BubbleBorder::Arrow adjusted_arrow = arrow();
-  if (base::i18n::IsRTL())
+  if (base::i18n::IsRTL() && mirror_arrow_in_rtl_)
     adjusted_arrow = BubbleBorder::horizontal_mirror(adjusted_arrow);
   frame->SetBubbleBorder(std::unique_ptr<BubbleBorder>(
       new BubbleBorder(adjusted_arrow, shadow(), color())));
@@ -201,6 +202,7 @@ BubbleDialogDelegateView::BubbleDialogDelegateView(View* anchor_view,
       anchor_view_storage_id_(ViewStorage::GetInstance()->CreateStorageID()),
       anchor_widget_(NULL),
       arrow_(arrow),
+      mirror_arrow_in_rtl_(true),
       shadow_(BubbleBorder::SMALL_SHADOW),
       color_explicitly_set_(false),
       margins_(kPanelVertMargin,
