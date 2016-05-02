@@ -2273,6 +2273,10 @@ void LayerTreeHostImpl::ReleaseOutputSurface() {
     output_surface_->DetachFromClient();
     output_surface_ = nullptr;
   }
+
+  // We don't know if the next OutputSurface will support GPU rasterization.
+  // Make sure to clear the flag so that we force a re-computation.
+  use_gpu_rasterization_ = false;
 }
 
 bool LayerTreeHostImpl::InitializeRenderer(OutputSurface* output_surface) {

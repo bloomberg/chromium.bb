@@ -10684,5 +10684,31 @@ TEST_F(LayerTreeHostImplTest, JitterTest) {
   }
 }
 
+// Checks that if we lose a GPU raster enabled OutputSurface and replace it
+// with a software OutputSurface, LayerTreeHostImpl correctly re-computes GPU
+// rasterization status.
+TEST_F(LayerTreeHostImplTest, RecomputeGpuRasterOnOutputSurfaceChange) {
+  LayerTreeSettings settings = DefaultSettings();
+  settings.gpu_rasterization_forced = true;
+
+  host_impl_ = LayerTreeHostImpl::Create(
+      settings, this, &task_runner_provider_, &stats_instrumentation_,
+      &shared_bitmap_manager_, &gpu_memory_buffer_manager_, &task_graph_runner_,
+      0);
+  host_impl_->SetVisible(true);
+
+  // InitializeRenderer with a gpu-raster enabled output surface.
+  auto gpu_raster_output_surface =
+      FakeOutputSurface::Create3d(TestWebGraphicsContext3D::Create());
+  host_impl_->InitializeRenderer(gpu_raster_output_surface.get());
+  EXPECT_TRUE(host_impl_->use_gpu_rasterization());
+
+  // Re-initialize with a software output surface.
+  output_surface_ = FakeOutputSurface::CreateSoftware(
+      base::WrapUnique(new SoftwareOutputDevice));
+  host_impl_->InitializeRenderer(output_surface_.get());
+  EXPECT_FALSE(host_impl_->use_gpu_rasterization());
+}
+
 }  // namespace
 }  // namespace cc
