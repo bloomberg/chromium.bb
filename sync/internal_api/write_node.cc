@@ -336,6 +336,7 @@ WriteNode::InitUniqueByCreationResult WriteNode::InitUniqueByCreationImpl(
                                  syncable::GET_BY_CLIENT_TAG, hash));
 
   if (existing_entry->good()) {
+    bool entry_undeleted = false;
     if (existing_entry->GetIsDel()) {
       // Rules for undelete:
       // BASE_VERSION: Must keep the same.
@@ -372,9 +373,14 @@ WriteNode::InitUniqueByCreationResult WriteNode::InitUniqueByCreationImpl(
 
       existing_entry->PutNonUniqueName(dummy);
       existing_entry->PutParentId(parent_id);
+      entry_undeleted = true;
     }  // Else just reuse the existing entry.
     entry_ = existing_entry.release();
-    if (!DecryptIfNecessary())
+    // If entry is undeleted, its specifics are reset to default, unencrypted
+    // value, and therefore no decryption is necessary. Moreover trying to
+    // decrypt the password entry will fail because passwords are expected to be
+    // encrypted.
+    if (!entry_undeleted && !DecryptIfNecessary())
       return INIT_FAILED_DECRYPT_EXISTING_ENTRY;
   } else {
     entry_ = new syncable::MutableEntry(transaction_->GetWrappedWriteTrans(),

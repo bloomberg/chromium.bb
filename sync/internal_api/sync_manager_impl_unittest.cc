@@ -828,6 +828,45 @@ TEST_F(SyncApiTest, WriteNode_UniqueByCreation_EncryptedExistingEntry) {
   }
 }
 
+// Tests that undeleting deleted password doesn't trigger any issues.
+// See crbug/440430.
+TEST_F(SyncApiTest, WriteNode_PasswordUniqueByCreationAfterDelete) {
+  KeyParams params = {"localhost", "username", "passphrase"};
+  {
+    ReadTransaction trans(FROM_HERE, user_share());
+    trans.GetCryptographer()->AddKey(params);
+  }
+
+  WriteTransaction trans(FROM_HERE, user_share());
+  ReadNode root_node(&trans);
+  root_node.InitByRootLookup();
+  // Create new password.
+  {
+    WriteNode password_node(&trans);
+    WriteNode::InitUniqueByCreationResult result =
+        password_node.InitUniqueByCreation(PASSWORDS, root_node, "foo");
+    ASSERT_EQ(WriteNode::INIT_SUCCESS, result);
+    sync_pb::PasswordSpecificsData password_specifics;
+    password_specifics.set_password_value("secret");
+    password_node.SetPasswordSpecifics(password_specifics);
+  }
+  // Delete password.
+  {
+    WriteNode password_node(&trans);
+    BaseNode::InitByLookupResult result =
+        password_node.InitByClientTagLookup(PASSWORDS, "foo");
+    ASSERT_EQ(BaseNode::INIT_OK, result);
+    password_node.Tombstone();
+  }
+  // Create password again triggering undeletion.
+  {
+    WriteNode password_node(&trans);
+    WriteNode::InitUniqueByCreationResult result =
+        password_node.InitUniqueByCreation(PASSWORDS, root_node, "foo");
+    ASSERT_EQ(WriteNode::INIT_SUCCESS, result);
+  }
+}
+
 namespace {
 
 class TestHttpPostProviderInterface : public HttpPostProviderInterface {
