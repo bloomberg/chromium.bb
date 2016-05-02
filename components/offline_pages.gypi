@@ -37,6 +37,26 @@
       ],
     },
     {
+      # GN: //components/offline_pages/background:background_offliner
+      'target_name': 'background_offliner',
+      'type': 'static_library',
+      'include_dirs': [
+        '..',
+        '../..',
+      ],
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../net/net.gyp:net',
+        '../url/url.gyp:url_lib',
+      ],
+      'sources': [
+        'offline_pages/background/offliner.h',
+        'offline_pages/background/request_coordinator.cc',
+        'offline_pages/background/request_coordinator.h',
+        'offline_pages/background/scheduler.h',
+      ],
+    },
+    {
       # GN version: //components/offline_pages:test_support
       'target_name': 'offline_pages_test_support',
       'type': 'static_library',

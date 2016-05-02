@@ -151,6 +151,7 @@ source_set("browser") {
     "//components/ntp_snippets",
     "//components/ntp_tiles",
     "//components/offline_pages",
+    "//components/offline_pages/background:background_offliner",
     "//components/omnibox/browser",
     "//components/os_crypt",
     "//components/packed_ct_ev_whitelist",

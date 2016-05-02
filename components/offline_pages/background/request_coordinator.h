@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_OFFLINE_PAGES_BACKGROUND_REQUEST_COORDINATOR_H_
 #define COMPONENTS_OFFLINE_PAGES_BACKGROUND_REQUEST_COORDINATOR_H_
 
+#include "base/callback.h"
+
 namespace offline_pages {
 
 // Coordinates queueing and processing save page later requests.
@@ -20,7 +22,7 @@ class RequestCoordinator {
   // TODO(dougarnett): How to inject Offliner factories and policy objects.
   RequestCoordinator();
 
-  ~RequestCoordinator() {}
+  ~RequestCoordinator();
 
   // Queues |request| to later load and save when system conditions allow.
   bool SavePageLater(const SavePageRequest& request);
