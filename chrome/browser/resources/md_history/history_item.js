@@ -16,42 +16,35 @@ Polymer({
     // True if the website is a bookmarked page.
     starred: {
       type: Boolean,
-      value: false,
       reflectToAttribute: true
     },
 
     // Search term used to obtain this history-item.
     searchTerm: {
-      type: String,
-      value: '',
+      type: String
     },
 
     selected: {
       type: Boolean,
-      value: false,
       notify: true
     },
 
     isCardStart: {
       type: Boolean,
-      value: false,
       reflectToAttribute: true
     },
 
     isCardEnd: {
       type: Boolean,
-      value: false,
       reflectToAttribute: true
     },
 
     hasTimeGap: {
-      type: Boolean,
-      value: false,
+      type: Boolean
     },
 
     numberOfItems: {
-      type: Number,
-      value: 0
+      type: Number
     }
   },
 
