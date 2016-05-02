@@ -10,6 +10,8 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
 
 import org.chromium.base.Log;
 import org.chromium.chromoting.base.OAuthTokenFetcher;
@@ -30,6 +32,11 @@ public class MainActivity extends AppCompatActivity implements It2MeHostObserver
     private Host mHost;
     private String mAccountName;
 
+    private Button mShareButton;
+    private Button mDisconnectButton;
+    private TextView mStatusText;
+    private TextView mAccessCode;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -38,6 +45,13 @@ public class MainActivity extends AppCompatActivity implements It2MeHostObserver
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        mShareButton = (Button) findViewById(R.id.share_button);
+        mDisconnectButton = (Button) findViewById(R.id.disconnect_button);
+        mDisconnectButton.setEnabled(false);
+
+        mStatusText = (TextView) findViewById(R.id.status_text);
+        mAccessCode = (TextView) findViewById(R.id.access_code);
 
         if (mHost == null) {
             mHost = new Host();
@@ -49,6 +63,10 @@ public class MainActivity extends AppCompatActivity implements It2MeHostObserver
         Intent intent = AccountManager.newChooseAccountIntent(
                 null, null, new String[] {"com.google"}, false, null, null, null, null);
         startActivityForResult(intent, REQUEST_CODE_CHOOSE_ACCOUNT);
+    }
+
+    public void onDisconnectClicked(View view) {
+        mHost.disconnect();
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -82,11 +100,16 @@ public class MainActivity extends AppCompatActivity implements It2MeHostObserver
 
     @Override
     public void onAccessCodeReceived(String accessCode, int lifetimeSeconds) {
-        Log.e(TAG, "OnAccessCodeReceived: %s, %d", accessCode, lifetimeSeconds);
+        mAccessCode.setText(accessCode);
     }
 
     @Override
     public void onStateChanged(State state, String errorMessage) {
-        Log.e(TAG, "OnStateChanged: %s", state.name());
+        mStatusText.setText(state.name());
+        mShareButton.setEnabled(state == It2MeHostObserver.State.DISCONNECTED);
+        mDisconnectButton.setEnabled(state != It2MeHostObserver.State.DISCONNECTED);
+        if (state == It2MeHostObserver.State.DISCONNECTED) {
+            mAccessCode.setText("");
+        }
     }
 }

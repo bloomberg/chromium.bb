@@ -92,7 +92,12 @@ void JniHost::Connect(JNIEnv* env,
 }
 
 void JniHost::Disconnect(JNIEnv* env,
-                         const base::android::JavaParamRef<jobject>& caller) {}
+                         const base::android::JavaParamRef<jobject>& caller) {
+  if (it2me_host_) {
+    it2me_host_->Disconnect();
+    it2me_host_ = nullptr;
+  }
+}
 
 void JniHost::OnClientAuthenticated(const std::string& client_username) {
   HOST_LOG << "OnClientAuthenticated: " << client_username;
@@ -112,6 +117,10 @@ void JniHost::OnNatPolicyChanged(bool nat_traversal_enabled) {
 
 void JniHost::OnStateChanged(It2MeHostState state,
                              const std::string& error_message) {
+  if (state == kDisconnected) {
+    it2me_host_ = nullptr;
+  }
+
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_Host_onStateChanged(env, java_host_.obj(), state,
                            ConvertUTF8ToJavaString(env, error_message).obj());
