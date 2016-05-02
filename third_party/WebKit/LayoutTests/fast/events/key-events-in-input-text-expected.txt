@@ -1,3 +1,4 @@
+CONSOLE WARNING: 'KeyboardEvent.keyIdentifier' is deprecated and will be removed in M53, around September 2016. See https://www.chromestatus.com/features/5316065118650368 for more details.
 To test manually, press keys and compare results to other browsers.
 
   

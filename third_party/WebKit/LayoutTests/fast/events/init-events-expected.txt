@@ -1,3 +1,4 @@
+CONSOLE WARNING: 'KeyboardEvent.keyIdentifier' is deprecated and will be removed in M53, around September 2016. See https://www.chromestatus.com/features/5316065118650368 for more details.
 This tests the init functions for all the event DOM classes that have them.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

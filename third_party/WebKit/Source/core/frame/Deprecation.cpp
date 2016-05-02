@@ -370,6 +370,9 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature)
     case UseCounter::EncryptedMediaAllSelectedContentTypesMissingCodecs:
         return "contentType strings without codecs will not be supported by requestMediaKeySystemAccess() in the future. Please specify the desired codec(s) as part of the contentType.";
 
+    case UseCounter::V8KeyboardEvent_KeyIdentifier_AttributeGetter:
+        return willBeRemoved("'KeyboardEvent.keyIdentifier'", 53, "5316065118650368");
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();
