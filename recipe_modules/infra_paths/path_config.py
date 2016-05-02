@@ -36,15 +36,10 @@ def infra_kitchen(c):
   if c.PLATFORM == 'linux':
     c.base_paths['cache'] = (
         '/', 'b', 'cache', 'chromium')
-    c.base_paths['git_cache'] = (
-        '/', 'b', 'cache', 'chromium', 'git_cache')
-    c.base_paths['goma_cache'] = (
-        '/', 'b', 'cache', 'chromium', 'goma_cache')
-    c.base_paths['goma_deps_cache'] = (
-        '/', 'b', 'cache', 'chromium', 'goma_deps_cache')
+    for path in ('builder_cache', 'git_cache', 'goma_cache', 'goma_deps_cache'):
+      c.base_paths[path] = c.base_paths['cache'] + (path,)
   else:
     c.base_paths['cache'] = c.base_paths['root'] + ('cache',)
     c.base_paths['git_cache'] = c.base_paths['root'] + ('cache_dir',)
-    c.base_paths['goma_cache'] = c.base_paths['root'] + ('goma_cache',)
-    c.base_paths['goma_deps_cache'] = c.base_paths['root'] + (
-        'goma_deps_cache',)
+    for path in ('builder_cache', 'goma_cache', 'goma_deps_cache'):
+      c.base_paths[path] = c.base_paths['cache'] + (path,)
