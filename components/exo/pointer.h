@@ -12,6 +12,7 @@
 #include "components/exo/surface_observer.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/point_f.h"
 
 namespace ui {
 class Event;
@@ -74,7 +75,7 @@ class Pointer : public ui::EventHandler,
   Surface* focus_;
 
   // The location of the pointer in the current focus surface.
-  gfx::Point location_;
+  gfx::PointF location_;
 
   // The position of the pointer surface relative to the pointer location.
   gfx::Point hotspot_;

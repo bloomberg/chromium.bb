@@ -1426,15 +1426,15 @@ class WaylandPointerDelegate : public PointerDelegate {
            wl_resource_get_client(surface_resource) == client();
   }
   void OnPointerEnter(Surface* surface,
-                      const gfx::Point& location,
+                      const gfx::PointF& location,
                       int button_flags) override {
     wl_resource* surface_resource = surface->GetProperty(kSurfaceResourceKey);
     DCHECK(surface_resource);
     // Should we be sending button events to the client before the enter event
     // if client's pressed button state is different from |button_flags|?
     wl_pointer_send_enter(pointer_resource_, next_serial(), surface_resource,
-                          wl_fixed_from_int(location.x()),
-                          wl_fixed_from_int(location.y()));
+                          wl_fixed_from_double(location.x()),
+                          wl_fixed_from_double(location.y()));
   }
   void OnPointerLeave(Surface* surface) override {
     wl_resource* surface_resource = surface->GetProperty(kSurfaceResourceKey);
@@ -1442,10 +1442,10 @@ class WaylandPointerDelegate : public PointerDelegate {
     wl_pointer_send_leave(pointer_resource_, next_serial(), surface_resource);
   }
   void OnPointerMotion(base::TimeDelta time_stamp,
-                       const gfx::Point& location) override {
+                       const gfx::PointF& location) override {
     wl_pointer_send_motion(pointer_resource_, time_stamp.InMilliseconds(),
-                           wl_fixed_from_int(location.x()),
-                           wl_fixed_from_int(location.y()));
+                           wl_fixed_from_double(location.x()),
+                           wl_fixed_from_double(location.y()));
   }
   void OnPointerButton(base::TimeDelta time_stamp,
                        int button_flags,

@@ -10,6 +10,7 @@
 #include "components/exo/surface.h"
 #include "ui/aura/window.h"
 #include "ui/events/event.h"
+#include "ui/gfx/geometry/vector2d_conversions.h"
 #include "ui/views/widget/widget.h"
 
 namespace exo {
@@ -86,9 +87,9 @@ void Pointer::OnMouseEvent(ui::MouseEvent* event) {
     }
     // Second generate an enter event if focus moved to a new target.
     if (target) {
-      delegate_->OnPointerEnter(target, event->location(),
+      delegate_->OnPointerEnter(target, event->location_f(),
                                 event->button_flags());
-      location_ = event->location();
+      location_ = event->location_f();
       focus_ = target;
       focus_->AddSurfaceObserver(this);
     }
@@ -111,10 +112,10 @@ void Pointer::OnMouseEvent(ui::MouseEvent* event) {
       // here as mouse movement can generate both "moved" and "entered" events
       // but OnPointerMotion should only be called if location changed since
       // OnPointerEnter was called.
-      if (focus_ && event->location() != location_) {
-        delegate_->OnPointerMotion(event->time_stamp(), event->location());
+      if (focus_ && event->location_f() != location_) {
+        delegate_->OnPointerMotion(event->time_stamp(), event->location_f());
         delegate_->OnPointerFrame();
-        location_ = event->location();
+        location_ = event->location_f();
       }
       break;
     case ui::ET_SCROLL:
@@ -160,9 +161,10 @@ void Pointer::OnMouseEvent(ui::MouseEvent* event) {
   if (focus_) {
     if (!widget_)
       CreatePointerWidget();
-    widget_->SetBounds(gfx::Rect(
-        focus_->GetBoundsInScreen().origin() + location_.OffsetFromOrigin(),
-        gfx::Size(1, 1)));
+    widget_->SetBounds(
+        gfx::Rect(focus_->GetBoundsInScreen().origin() +
+                      gfx::ToRoundedVector2d(location_.OffsetFromOrigin()),
+                  gfx::Size(1, 1)));
     if (!widget_->IsVisible())
       widget_->Show();
   } else {

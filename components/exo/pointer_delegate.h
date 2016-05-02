@@ -10,6 +10,7 @@
 
 namespace gfx {
 class Point;
+class PointF;
 class Vector2dF;
 }
 
@@ -32,7 +33,7 @@ class PointerDelegate {
   // is the location of pointer relative to the origin of surface and
   // |button_flags| contains all currently pressed buttons.
   virtual void OnPointerEnter(Surface* surface,
-                              const gfx::Point& location,
+                              const gfx::PointF& location,
                               int pressed_button_flags) = 0;
 
   // Called when pointer leaves a valid target surface.
@@ -40,7 +41,7 @@ class PointerDelegate {
 
   // Called when pointer moved within the current target surface.
   virtual void OnPointerMotion(base::TimeDelta time_stamp,
-                               const gfx::Point& location) = 0;
+                               const gfx::PointF& location) = 0;
 
   // Called when pointer button state changed. |changed_button_flags| contains
   // all buttons that changed. |pressed| is true if buttons entered pressed
