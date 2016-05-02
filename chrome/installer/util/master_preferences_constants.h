@@ -92,6 +92,9 @@ extern const char kSystemLevel[];
 extern const char kVerboseLogging[];
 // Name of the block that contains the extensions on the master preferences.
 extern const char kExtensionsBlock[];
+// Boolean. Allow Chrome to be downgraded to a previous version if true.
+extern const char kAllowDowngrade[];
+
 }  // namespace master_preferences
 }  // namespace installer
 

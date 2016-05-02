@@ -75127,6 +75127,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="55" label="REENABLE_UPDATES_SUCCEEDED"/>
   <int value="56" label="REENABLE_UPDATES_FAILED"/>
   <int value="57" label="UNPACKING_FAILED"/>
+  <int value="58" label="IN_USE_DOWNGRADE"/>
+  <int value="59" label="OLD_VERSION_DOWNGRADE"/>
 </enum>
 
 <enum name="InstantControllerEvent" type="int">

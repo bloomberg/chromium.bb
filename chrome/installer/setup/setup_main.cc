@@ -1504,32 +1504,34 @@ InstallStatus InstallProductsHelper(const InstallationState& original_state,
     VLOG(1) << "version to install: " << installer_version->GetString();
     bool proceed_with_installation = true;
 
-    uint32_t higher_products = 0;
-    static_assert(sizeof(higher_products) * 8 > BrowserDistribution::NUM_TYPES,
-                  "too many distribution types");
-    const Products& products = installer_state.products();
-    for (Products::const_iterator it = products.begin(); it < products.end();
-         ++it) {
-      const Product& product = **it;
-      const ProductState* product_state =
-          original_state.GetProductState(system_install,
-                                         product.distribution()->GetType());
-      if (product_state != NULL &&
-          (product_state->version().CompareTo(*installer_version) > 0)) {
-        LOG(ERROR) << "Higher version of "
-                   << product.distribution()->GetDisplayName()
-                   << " is already installed.";
-        higher_products |= (1 << product.distribution()->GetType());
+    if (!IsDowngradeAllowed(prefs)) {
+      uint32_t higher_products = 0;
+      static_assert(
+          sizeof(higher_products) * 8 > BrowserDistribution::NUM_TYPES,
+          "too many distribution types");
+      const Products& products = installer_state.products();
+      for (Products::const_iterator it = products.begin(); it < products.end();
+           ++it) {
+        const Product& product = **it;
+        const ProductState* product_state = original_state.GetProductState(
+            system_install, product.distribution()->GetType());
+        if (product_state != NULL &&
+            (product_state->version().CompareTo(*installer_version) > 0)) {
+          LOG(ERROR) << "Higher version of "
+                     << product.distribution()->GetDisplayName()
+                     << " is already installed.";
+          higher_products |= (1 << product.distribution()->GetType());
+        }
       }
-    }
 
-    if (higher_products != 0) {
-      static_assert(BrowserDistribution::NUM_TYPES == 3,
-                    "add support for new products here");
-      int message_id = IDS_INSTALL_HIGHER_VERSION_BASE;
-      proceed_with_installation = false;
-      install_status = HIGHER_VERSION_EXISTS;
-      installer_state.WriteInstallerResult(install_status, message_id, NULL);
+      if (higher_products != 0) {
+        static_assert(BrowserDistribution::NUM_TYPES == 3,
+                      "add support for new products here");
+        int message_id = IDS_INSTALL_HIGHER_VERSION_BASE;
+        proceed_with_installation = false;
+        install_status = HIGHER_VERSION_EXISTS;
+        installer_state.WriteInstallerResult(install_status, message_id, NULL);
+      }
     }
 
     if (proceed_with_installation) {

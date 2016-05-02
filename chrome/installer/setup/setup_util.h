@@ -33,6 +33,7 @@ namespace installer {
 class InstallationState;
 class InstallerState;
 class ProductState;
+class MasterPreferences;
 
 // Applies a patch file to source file using Courgette. Returns 0 in case of
 // success. In case of errors, it returns kCourgetteErrorOffset + a Courgette
@@ -119,6 +120,9 @@ void DeleteRegistryKeyPartial(
 // Converts a product GUID into a SQuished gUID that is used for MSI installer
 // registry entries.
 base::string16 GuidToSquid(const base::string16& guid);
+
+// Returns true if downgrade is allowed by installer data.
+bool IsDowngradeAllowed(const MasterPreferences& prefs);
 
 // This class will enable the privilege defined by |privilege_name| on the
 // current process' token. The privilege will be disabled upon the

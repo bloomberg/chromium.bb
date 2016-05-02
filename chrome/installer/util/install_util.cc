@@ -575,6 +575,8 @@ int InstallUtil::GetInstallReturnCode(installer::InstallStatus status) {
     case installer::NEW_VERSION_UPDATED:
     case installer::IN_USE_UPDATED:
     case installer::UNUSED_BINARIES_UNINSTALLED:
+    case installer::OLD_VERSION_DOWNGRADE:
+    case installer::IN_USE_DOWNGRADE:
       return 0;
     default:
       return status;

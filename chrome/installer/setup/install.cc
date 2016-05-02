@@ -184,7 +184,8 @@ installer::InstallStatus InstallNewVersion(
     const base::FilePath& src_path,
     const base::FilePath& temp_path,
     const Version& new_version,
-    std::unique_ptr<Version>* current_version) {
+    std::unique_ptr<Version>* current_version,
+    bool is_downgrade_allowed) {
   DCHECK(current_version);
 
   installer_state.UpdateStage(installer::BUILDING);
@@ -236,14 +237,25 @@ installer::InstallStatus InstallNewVersion(
     return installer::INSTALL_REPAIRED;
   }
 
+  bool new_chrome_exe_exists = base::PathExists(new_chrome_exe);
   if (new_version > **current_version) {
-    if (base::PathExists(new_chrome_exe)) {
+    if (new_chrome_exe_exists) {
       VLOG(1) << "Version updated to " << new_version
               << " while running " << **current_version;
       return installer::IN_USE_UPDATED;
     }
     VLOG(1) << "Version updated to " << new_version;
     return installer::NEW_VERSION_UPDATED;
+  }
+
+  if (is_downgrade_allowed) {
+    if (new_chrome_exe_exists) {
+      VLOG(1) << "Version downgrades to " << new_version << " while running "
+              << **current_version;
+      return installer::IN_USE_DOWNGRADE;
+    }
+    VLOG(1) << "Version downgrades to " << new_version;
+    return installer::OLD_VERSION_DOWNGRADE;
   }
 
   LOG(ERROR) << "Not sure how we got here while updating"
@@ -582,9 +594,10 @@ InstallStatus InstallOrUpdateProduct(
   CreateVisualElementsManifest(src_path, new_version);
 
   std::unique_ptr<Version> existing_version;
-  InstallStatus result = InstallNewVersion(original_state, installer_state,
-      setup_path, archive_path, src_path, install_temp_path, new_version,
-      &existing_version);
+  InstallStatus result =
+      InstallNewVersion(original_state, installer_state, setup_path,
+                        archive_path, src_path, install_temp_path, new_version,
+                        &existing_version, IsDowngradeAllowed(prefs));
 
   // TODO(robertshield): Everything below this line should instead be captured
   // by WorkItems.
@@ -646,8 +659,8 @@ InstallStatus InstallOrUpdateProduct(
       // force it here because the master_preferences file will not get copied
       // into the build.
       bool force_chrome_default_for_user = false;
-      if (result == NEW_VERSION_UPDATED ||
-          result == INSTALL_REPAIRED) {
+      if (result == NEW_VERSION_UPDATED || result == INSTALL_REPAIRED ||
+          result == OLD_VERSION_DOWNGRADE || result == IN_USE_DOWNGRADE) {
         prefs.GetBool(master_preferences::kMakeChromeDefaultForUser,
                       &force_chrome_default_for_user);
       }

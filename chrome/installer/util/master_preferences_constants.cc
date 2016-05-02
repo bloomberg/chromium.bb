@@ -42,5 +42,7 @@ namespace master_preferences {
   const char kSystemLevel[] = "system_level";
   const char kVerboseLogging[] = "verbose_logging";
   const char kExtensionsBlock[] = "extensions.settings";
+  const char kAllowDowngrade[] = "allow_downgrade";
+
 }  // namespace master_preferences
 }  // namespace installer

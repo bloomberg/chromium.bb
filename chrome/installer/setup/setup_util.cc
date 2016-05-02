@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <iterator>
 #include <set>
+#include <string>
 
 #include "base/command_line.h"
 #include "base/cpu.h"
@@ -31,6 +32,8 @@
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/installation_state.h"
 #include "chrome/installer/util/installer_state.h"
+#include "chrome/installer/util/master_preferences.h"
+#include "chrome/installer/util/master_preferences_constants.h"
 #include "chrome/installer/util/util_constants.h"
 #include "courgette/courgette.h"
 #include "courgette/third_party/bsdiff.h"
@@ -538,6 +541,12 @@ base::string16 GuidToSquid(const base::string16& guid) {
   std::reverse_copy(input + 32, input + 34, output);
   std::reverse_copy(input + 34, input + 36, output);
   return squid;
+}
+
+bool IsDowngradeAllowed(const MasterPreferences& prefs) {
+  bool allow_downgrade = false;
+  return prefs.GetBool(master_preferences::kAllowDowngrade, &allow_downgrade) &&
+         allow_downgrade;
 }
 
 ScopedTokenPrivilege::ScopedTokenPrivilege(const wchar_t* privilege_name)
