@@ -114,7 +114,7 @@ static_library("gtest") {
     sources += [ "../platform_test.h" ]
   }
 
-  if (is_mac || is_ios) {
+  if ((is_mac || is_ios) && gtest_include_objc_support) {
     if (is_ios) {
       set_sources_assignment_filter([])
     }
@@ -128,7 +128,7 @@ static_library("gtest") {
     set_sources_assignment_filter(sources_assignment_filter)
   }
 
-  if (is_ios) {
+  if (is_ios && gtest_include_ios_coverage) {
     sources += [
       "../coverage_util_ios.cc",
       "../coverage_util_ios.h",
