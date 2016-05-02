@@ -154,6 +154,7 @@ def chromium_bare(c):
   m['src/v8'] = 'got_v8_revision'
   m['src/third_party/angle'] = 'got_angle_revision'
   m['src/third_party/webrtc'] = 'got_webrtc_revision'
+  m['src/buildtools'] = 'got_buildtools_revision'
 
   p = c.parent_got_revision_mapping
   p['parent_got_revision'] = None
@@ -165,6 +166,7 @@ def chromium_bare(c):
 
   p = c.patch_projects
   p['v8'] = ('src/v8', 'HEAD')
+  p['buildtools'] = ('src/buildtools', 'HEAD')
   p['angle/angle'] = ('src/third_party/angle', None)
   p['blink'] = ('src/third_party/WebKit', None)
   p['pdfium'] = ('src/third_party/pdfium', 'HEAD')
