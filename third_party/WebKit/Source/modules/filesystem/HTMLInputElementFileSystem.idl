@@ -31,5 +31,5 @@
 [
     RuntimeEnabled=FileSystem,
 ] partial interface HTMLInputElement {
-    [CallWith=ExecutionContext] readonly attribute Entry[] webkitEntries;
+    [CallWith=ExecutionContext, Measure] readonly attribute Entry[] webkitEntries;
 };

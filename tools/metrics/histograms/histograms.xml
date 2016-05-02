@@ -71959,6 +71959,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1322" label="CompositedReplication"/>
   <int value="1323" label="EncryptedMediaAllSelectedContentTypesHaveCodecs"/>
   <int value="1324" label="EncryptedMediaAllSelectedContentTypesMissingCodecs"/>
+  <int value="1325" label="V8DataTransferItem_WebkitGetAsEntry_Method"/>
+  <int value="1326" label="V8HTMLInputElement_WebkitEntries_AttributeGetter"/>
+  <int value="1327"
+      label="Entry_Filesystem_AttributeGetter_IsolatedFileSystem"/>
+  <int value="1328" label="Entry_GetMetadata_Method_IsolatedFileSystem"/>
+  <int value="1329" label="Entry_MoveTo_Method_IsolatedFileSystem"/>
+  <int value="1330" label="Entry_CopyTo_Method_IsolatedFileSystem"/>
+  <int value="1331" label="Entry_Remove_Method_IsolatedFileSystem"/>
+  <int value="1332" label="Entry_GetParent_Method_IsolatedFileSystem"/>
+  <int value="1333" label="Entry_ToURL_Method_IsolatedFileSystem"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

@@ -49,12 +49,14 @@ class MODULES_EXPORT Entry : public EntryBase, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     DOMFileSystem* filesystem() const { return static_cast<DOMFileSystem*>(m_fileSystem.get()); }
+    DOMFileSystem* filesystem(ExecutionContext*) const;
 
-    void getMetadata(MetadataCallback* successCallback = nullptr, ErrorCallback* = nullptr);
-    void moveTo(DirectoryEntry* parent, const String& name = String(), EntryCallback* successCallback = nullptr, ErrorCallback* = nullptr) const;
-    void copyTo(DirectoryEntry* parent, const String& name = String(), EntryCallback* successCallback = nullptr, ErrorCallback* = nullptr) const;
-    void remove(VoidCallback* successCallback = nullptr, ErrorCallback* = nullptr) const;
-    void getParent(EntryCallback* successCallback = nullptr, ErrorCallback* = nullptr) const;
+    void getMetadata(ExecutionContext*, MetadataCallback* successCallback = nullptr, ErrorCallback* = nullptr);
+    void moveTo(ExecutionContext*, DirectoryEntry* parent, const String& name = String(), EntryCallback* successCallback = nullptr, ErrorCallback* = nullptr) const;
+    void copyTo(ExecutionContext*, DirectoryEntry* parent, const String& name = String(), EntryCallback* successCallback = nullptr, ErrorCallback* = nullptr) const;
+    void remove(ExecutionContext*, VoidCallback* successCallback = nullptr, ErrorCallback* = nullptr) const;
+    void getParent(ExecutionContext*, EntryCallback* successCallback = nullptr, ErrorCallback* = nullptr) const;
+    String toURL(ExecutionContext*) const;
 
     DECLARE_VIRTUAL_TRACE();
 

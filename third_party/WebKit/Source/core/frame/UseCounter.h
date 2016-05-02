@@ -1140,6 +1140,15 @@ public:
         CompositedReplication = 1322,
         EncryptedMediaAllSelectedContentTypesHaveCodecs = 1323,
         EncryptedMediaAllSelectedContentTypesMissingCodecs = 1324,
+        V8DataTransferItem_WebkitGetAsEntry_Method = 1325,
+        V8HTMLInputElement_WebkitEntries_AttributeGetter = 1326,
+        Entry_Filesystem_AttributeGetter_IsolatedFileSystem = 1327,
+        Entry_GetMetadata_Method_IsolatedFileSystem = 1328,
+        Entry_MoveTo_Method_IsolatedFileSystem = 1329,
+        Entry_CopyTo_Method_IsolatedFileSystem = 1330,
+        Entry_Remove_Method_IsolatedFileSystem = 1331,
+        Entry_GetParent_Method_IsolatedFileSystem = 1332,
+        Entry_ToURL_Method_IsolatedFileSystem = 1333,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

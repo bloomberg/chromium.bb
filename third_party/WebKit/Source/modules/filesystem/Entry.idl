@@ -35,12 +35,12 @@
     readonly attribute boolean isDirectory;
     readonly attribute DOMString name;
     readonly attribute DOMString fullPath;
-    readonly attribute DOMFileSystem filesystem;
+    [CallWith=ExecutionContext] readonly attribute DOMFileSystem filesystem;
 
-    void getMetadata(MetadataCallback successCallback, optional ErrorCallback errorCallback);
-    void moveTo(DirectoryEntry parent, [TreatUndefinedAs=NullString] optional DOMString? name, optional EntryCallback successCallback, optional ErrorCallback errorCallback);
-    void copyTo(DirectoryEntry parent, [TreatUndefinedAs=NullString] optional DOMString? name, optional EntryCallback successCallback, optional ErrorCallback errorCallback);
-    DOMString toURL();
-    void remove(VoidCallback successCallback, optional ErrorCallback errorCallback);
-    void getParent(optional EntryCallback successCallback, optional ErrorCallback errorCallback);
+    [CallWith=ExecutionContext] void getMetadata(MetadataCallback successCallback, optional ErrorCallback errorCallback);
+    [CallWith=ExecutionContext] void moveTo(DirectoryEntry parent, [TreatUndefinedAs=NullString] optional DOMString? name, optional EntryCallback successCallback, optional ErrorCallback errorCallback);
+    [CallWith=ExecutionContext] void copyTo(DirectoryEntry parent, [TreatUndefinedAs=NullString] optional DOMString? name, optional EntryCallback successCallback, optional ErrorCallback errorCallback);
+    [CallWith=ExecutionContext] DOMString toURL();
+    [CallWith=ExecutionContext] void remove(VoidCallback successCallback, optional ErrorCallback errorCallback);
+    [CallWith=ExecutionContext] void getParent(optional EntryCallback successCallback, optional ErrorCallback errorCallback);
 };
