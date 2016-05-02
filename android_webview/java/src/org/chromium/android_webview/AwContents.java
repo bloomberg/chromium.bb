@@ -976,11 +976,11 @@ public class AwContents implements SmartClipProvider,
 
         boolean contextWrapsActivity = activityFromContext(context) != null;
         if (contextWrapsActivity) {
-            wrapper = new WindowAndroidWrapper(new WindowAndroid(context));
-        } else {
             final boolean listenToActivityState = false;
             wrapper = new WindowAndroidWrapper(
                     new ActivityWindowAndroid(context, listenToActivityState));
+        } else {
+            wrapper = new WindowAndroidWrapper(new WindowAndroid(context));
         }
         sContextWindowMap.put(context, wrapper);
         return wrapper;
