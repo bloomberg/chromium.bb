@@ -1,12 +1,11 @@
 importScripts('../../serviceworker/resources/worker-testharness.js');
-importScripts('/resources/testharness-helpers.js');
 
 test(function() {
     assert_true('PushEvent' in self);
 
     var event = new PushEvent('PushEvent');
     assert_equals(event.type, 'PushEvent');
-    assert_will_be_idl_attribute(event, 'data');
+    assert_idl_attribute(event, 'data');
     assert_equals(event.cancelable, false);
     assert_equals(event.bubbles, false);
     assert_inherits(event, 'waitUntil');

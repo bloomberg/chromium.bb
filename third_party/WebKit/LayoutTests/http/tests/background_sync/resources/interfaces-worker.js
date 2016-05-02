@@ -1,5 +1,4 @@
 importScripts('/resources/testharness.js');
-importScripts('/resources/testharness-helpers.js');
 
 test(function() {
     assert_own_property(self, 'SyncManager', 'SyncManager needs to be exposed as a global.');
@@ -13,10 +12,11 @@ test(function() {
 test(function() {
     assert_own_property(self, 'SyncEvent');
 
-    assert_will_be_idl_attribute(SyncEvent.prototype, 'tag');
+    var instance = new SyncEvent('dummy', {tag: ''});
+    assert_idl_attribute(instance, 'tag');
+    assert_idl_attribute(instance, 'lastChance');
 
     // SyncEvent should be extending ExtendableEvent.
     assert_inherits(SyncEvent.prototype, 'waitUntil');
 
 }, 'SyncEvent should be exposed and have the expected interface.');
-

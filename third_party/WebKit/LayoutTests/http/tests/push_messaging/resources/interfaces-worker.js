@@ -1,11 +1,10 @@
 importScripts('/resources/testharness.js');
-importScripts('/resources/testharness-helpers.js');
 
 test(function() {
     assert_own_property(self, 'PushEvent');
 
     var event = new PushEvent('PushEvent');
-    assert_will_be_idl_attribute(event, 'data');
+    assert_idl_attribute(event, 'data');
     assert_equals(event.type, 'PushEvent');
 
     // PushEvent should be extending ExtendableEvent.
@@ -15,7 +14,7 @@ test(function() {
 
 test(function() {
     assert_own_property(self, 'PushManager', 'PushManager needs to be exposed as a global.');
-    assert_will_be_idl_attribute(registration, 'pushManager', 'PushManager needs to be exposed on the registration.');
+    assert_idl_attribute(registration, 'pushManager', 'PushManager needs to be exposed on the registration.');
 
     assert_inherits(registration.pushManager, 'subscribe');
     assert_inherits(registration.pushManager, 'getSubscription');
