@@ -40,7 +40,7 @@
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
-#include "core/layout/LayoutView.h"
+#include "core/layout/api/LayoutViewItem.h"
 #include "core/page/Page.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "public/web/WebFrame.h"
@@ -104,7 +104,7 @@ TEST(WebInputEventConversionTest, WebTouchEventBuilder)
 
     Document* document = toLocalFrame(webViewImpl->page()->mainFrame())->document();
     LocalDOMWindow* domWindow = document->domWindow();
-    LayoutView* documentLayoutView = document->layoutView();
+    LayoutViewItem documentLayoutView = document->layoutViewItem();
 
     WebTouchPoint p0, p1;
     p0.id = 1;
@@ -261,7 +261,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
     FrameView* view = toLocalFrame(webViewImpl->page()->mainFrame())->view();
     Document* document = toLocalFrame(webViewImpl->page()->mainFrame())->document();
     LocalDOMWindow* domWindow = document->domWindow();
-    LayoutView* documentLayoutView = document->layoutView();
+    LayoutViewItem documentLayoutView = document->layoutViewItem();
 
     {
         WebMouseEvent webMouseEvent;
@@ -666,7 +666,7 @@ TEST(WebInputEventConversionTest, InputEventsConversions)
     FrameView* view = toLocalFrame(webViewImpl->page()->mainFrame())->view();
     Document* document = toLocalFrame(webViewImpl->page()->mainFrame())->document();
     LocalDOMWindow* domWindow = document->domWindow();
-    LayoutView* documentLayoutView = document->layoutView();
+    LayoutViewItem documentLayoutView = document->layoutViewItem();
 
     {
         WebGestureEvent webGestureEvent;
@@ -909,7 +909,7 @@ TEST(WebInputEventConversionTest, WebMouseWheelEventBuilder)
             WheelEvent::DOM_DELTA_PAGE, document->domWindow(), IntPoint(2, 6), IntPoint(10, 30),
             PlatformEvent::CtrlKey, 0, 0, true, -1 /* null plugin id */,
             true /* hasPreciseScrollingDeltas */, Event::RailsModeHorizontal, true /*cancelable*/);
-        WebMouseWheelEventBuilder webMouseWheel(toLocalFrame(webViewImpl->page()->mainFrame())->view(), document->layoutView(), *event);
+        WebMouseWheelEventBuilder webMouseWheel(toLocalFrame(webViewImpl->page()->mainFrame())->view(), document->layoutViewItem(), *event);
         EXPECT_EQ(1, webMouseWheel.wheelTicksX);
         EXPECT_EQ(3, webMouseWheel.wheelTicksY);
         EXPECT_EQ(5, webMouseWheel.deltaX);
@@ -930,7 +930,7 @@ TEST(WebInputEventConversionTest, WebMouseWheelEventBuilder)
         WheelEvent* event = WheelEvent::create(FloatPoint(1, 3), FloatPoint(5, 10),
             WheelEvent::DOM_DELTA_PAGE, document->domWindow(), IntPoint(2, 6), IntPoint(10, 30),
             PlatformEvent::CtrlKey, 0, 0, true, -1 /* null plugin id */, true /* hasPreciseScrollingDeltas */, Event::RailsModeHorizontal, false);
-        WebMouseWheelEventBuilder webMouseWheel(toLocalFrame(webViewImpl->page()->mainFrame())->view(), document->layoutView(), *event);
+        WebMouseWheelEventBuilder webMouseWheel(toLocalFrame(webViewImpl->page()->mainFrame())->view(), document->layoutViewItem(), *event);
         EXPECT_EQ(WebInputEvent::EventNonBlocking, webMouseWheel.dispatchType);
     }
 }

@@ -45,7 +45,7 @@ namespace blink {
 class GestureEvent;
 class KeyboardEvent;
 class MouseEvent;
-class LayoutObject;
+class LayoutItem;
 class TouchEvent;
 class WebMouseEvent;
 class WebMouseWheelEvent;
@@ -98,15 +98,15 @@ public:
     // NOTE: This is only implemented for mousemove, mouseover, mouseout,
     // mousedown and mouseup. If the event mapping fails, the event type will
     // be set to Undefined.
-    WebMouseEventBuilder(const Widget*, const LayoutObject*, const MouseEvent&);
-    WebMouseEventBuilder(const Widget*, const LayoutObject*, const TouchEvent&);
+    WebMouseEventBuilder(const Widget*, const LayoutItem, const MouseEvent&);
+    WebMouseEventBuilder(const Widget*, const LayoutItem, const TouchEvent&);
 };
 
 // Converts a WheelEvent to a corresponding WebMouseWheelEvent.
 // If the event mapping fails, the event type will be set to Undefined.
 class WEB_EXPORT WebMouseWheelEventBuilder : WTF_NON_EXPORTED_BASE(public WebMouseWheelEvent) {
 public:
-    WebMouseWheelEventBuilder(const Widget*, const LayoutObject*, const WheelEvent&);
+    WebMouseWheelEventBuilder(const Widget*, const LayoutItem, const WheelEvent&);
 };
 
 // Converts a KeyboardEvent or PlatformKeyboardEvent to a
@@ -124,14 +124,14 @@ public:
 // exceeding that cap will be dropped.
 class WEB_EXPORT WebTouchEventBuilder : WTF_NON_EXPORTED_BASE(public WebTouchEvent) {
 public:
-    WebTouchEventBuilder(const LayoutObject*, const TouchEvent&);
+    WebTouchEventBuilder(const LayoutItem, const TouchEvent&);
 };
 
 // Converts GestureEvent to a corresponding WebGestureEvent.
 // NOTE: If event mapping fails, the type will be set to Undefined.
 class WEB_EXPORT WebGestureEventBuilder : WTF_NON_EXPORTED_BASE(public WebGestureEvent) {
 public:
-    WebGestureEventBuilder(const LayoutObject*, const GestureEvent&);
+    WebGestureEventBuilder(const LayoutItem, const GestureEvent&);
 };
 
 } // namespace blink

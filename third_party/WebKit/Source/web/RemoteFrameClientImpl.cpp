@@ -10,6 +10,7 @@
 #include "core/frame/RemoteFrame.h"
 #include "core/frame/RemoteFrameView.h"
 #include "core/layout/LayoutPart.h"
+#include "core/layout/api/LayoutItem.h"
 #include "platform/exported/WrappedResourceRequest.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/weborigin/SecurityPolicy.h"
@@ -176,9 +177,9 @@ void RemoteFrameClientImpl::forwardInputEvent(Event* event)
     if (event->isKeyboardEvent())
         webEvent = adoptPtr(new WebKeyboardEventBuilder(*static_cast<KeyboardEvent*>(event)));
     else if (event->isMouseEvent())
-        webEvent = adoptPtr(new WebMouseEventBuilder(m_webFrame->frame()->view(), m_webFrame->toImplBase()->frame()->ownerLayoutObject(), *static_cast<MouseEvent*>(event)));
+        webEvent = adoptPtr(new WebMouseEventBuilder(m_webFrame->frame()->view(), LayoutItem(m_webFrame->toImplBase()->frame()->ownerLayoutObject()), *static_cast<MouseEvent*>(event)));
     else if (event->isWheelEvent())
-        webEvent = adoptPtr(new WebMouseWheelEventBuilder(m_webFrame->frame()->view(), m_webFrame->toImplBase()->frame()->ownerLayoutObject(), *static_cast<WheelEvent*>(event)));
+        webEvent = adoptPtr(new WebMouseWheelEventBuilder(m_webFrame->frame()->view(), LayoutItem(m_webFrame->toImplBase()->frame()->ownerLayoutObject()), *static_cast<WheelEvent*>(event)));
 
     // Other or internal Blink events should not be forwarded.
     if (!webEvent || webEvent->type == WebInputEvent::Undefined)

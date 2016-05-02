@@ -703,7 +703,7 @@ void WebPluginContainerImpl::handleMouseEvent(MouseEvent* event)
     // in the call to HandleEvent. See http://b/issue?id=1362948
     FrameView* parentView = toFrameView(parent());
 
-    WebMouseEventBuilder webEvent(this, m_element->layoutObject(), *event);
+    WebMouseEventBuilder webEvent(this, LayoutItem(m_element->layoutObject()), *event);
     if (webEvent.type == WebInputEvent::Undefined)
         return;
 
@@ -751,7 +751,7 @@ void WebPluginContainerImpl::handleDragEvent(MouseEvent* event)
 
 void WebPluginContainerImpl::handleWheelEvent(WheelEvent* event)
 {
-    WebMouseWheelEventBuilder webEvent(this, m_element->layoutObject(), *event);
+    WebMouseWheelEventBuilder webEvent(this, LayoutItem(m_element->layoutObject()), *event);
     if (webEvent.type == WebInputEvent::Undefined)
         return;
 
@@ -809,7 +809,7 @@ void WebPluginContainerImpl::handleTouchEvent(TouchEvent* event)
     case TouchEventRequestTypeNone:
         return;
     case TouchEventRequestTypeRaw: {
-        WebTouchEventBuilder webEvent(m_element->layoutObject(), *event);
+        WebTouchEventBuilder webEvent(LayoutItem(m_element->layoutObject()), *event);
         if (webEvent.type == WebInputEvent::Undefined)
             return;
 
@@ -830,7 +830,7 @@ void WebPluginContainerImpl::handleTouchEvent(TouchEvent* event)
 
 void WebPluginContainerImpl::handleGestureEvent(GestureEvent* event)
 {
-    WebGestureEventBuilder webEvent(m_element->layoutObject(), *event);
+    WebGestureEventBuilder webEvent(LayoutItem(m_element->layoutObject()), *event);
     if (webEvent.type == WebInputEvent::Undefined)
         return;
     if (event->type() == EventTypeNames::gesturetapdown)
@@ -846,7 +846,7 @@ void WebPluginContainerImpl::handleGestureEvent(GestureEvent* event)
 
 void WebPluginContainerImpl::synthesizeMouseEventIfPossible(TouchEvent* event)
 {
-    WebMouseEventBuilder webEvent(this, m_element->layoutObject(), *event);
+    WebMouseEventBuilder webEvent(this, LayoutItem(m_element->layoutObject()), *event);
     if (webEvent.type == WebInputEvent::Undefined)
         return;
 

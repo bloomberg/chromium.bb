@@ -179,6 +179,11 @@ public:
         m_layoutObject->computeLayerHitTestRects(layerRects);
     }
 
+    FloatPoint absoluteToLocal(const FloatPoint& point, MapCoordinatesFlags mode = 0) const
+    {
+        return m_layoutObject->absoluteToLocal(point, mode);
+    }
+
 protected:
     LayoutObject* layoutObject() { return m_layoutObject; }
     const LayoutObject* layoutObject() const { return m_layoutObject; }
