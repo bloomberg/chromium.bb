@@ -141,7 +141,7 @@ TEST_F(PaymentRequestTest, DontSelectSingleAvailableShippingOptionByDefault)
 {
     PaymentDetails details;
     details.setItems(HeapVector<PaymentItem>(1, buildPaymentItemForTest()));
-    details.setShippingOptions(HeapVector<ShippingOption>(1, buildShippingOptionForTest()));
+    details.setShippingOptions(HeapVector<ShippingOption>(1, buildShippingOptionForTest(PaymentTestDataId, PaymentTestOverwriteValue, "standard")));
 
     PaymentRequest* request = PaymentRequest::create(getScriptState(), Vector<String>(1, "foo"), details, getExceptionState());
 

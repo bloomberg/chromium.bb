@@ -8,8 +8,11 @@
 #include "platform/heap/HeapAllocator.h"
 
 namespace blink {
+namespace {
 
-PaymentItem buildPaymentItemForTest(PaymentTestDataToChange data, PaymentTestModificationType modificationType, const String& valueToUse)
+// PaymentItem and ShippingOption have identical structure.
+template <typename PaymentItemOrShippingOption>
+void setValues(PaymentItemOrShippingOption& original, PaymentTestDataToChange data, PaymentTestModificationType modificationType, const String& valueToUse)
 {
     CurrencyAmount itemAmount;
     if (data == PaymentTestDataCurrencyCode) {
@@ -18,68 +21,48 @@ PaymentItem buildPaymentItemForTest(PaymentTestDataToChange data, PaymentTestMod
     } else {
         itemAmount.setCurrencyCode("USD");
     }
-    if (data == PaymentTestDataAmount) {
+    if (data == PaymentTestDataValue) {
         if (modificationType == PaymentTestOverwriteValue)
             itemAmount.setValue(valueToUse);
     } else {
         itemAmount.setValue("9.99");
     }
 
-    PaymentItem item;
-    item.setAmount(itemAmount);
+    if (data != PaymentTestDataAmount || modificationType != PaymentTestRemoveKey)
+        original.setAmount(itemAmount);
+
     if (data == PaymentTestDataId) {
         if (modificationType == PaymentTestOverwriteValue)
-            item.setId(valueToUse);
+            original.setId(valueToUse);
     } else {
-        item.setId("total");
+        original.setId("id");
     }
     if (data == PaymentTestDataLabel) {
         if (modificationType == PaymentTestOverwriteValue)
-            item.setLabel(valueToUse);
+            original.setLabel(valueToUse);
     } else {
-        item.setLabel("Total charge");
+        original.setLabel("Label");
     }
+}
 
+} // namespace
+
+PaymentItem buildPaymentItemForTest(PaymentTestDataToChange data, PaymentTestModificationType modificationType, const String& valueToUse)
+{
+    PaymentItem item;
+    setValues(item, data, modificationType, valueToUse);
     return item;
 }
 
 ShippingOption buildShippingOptionForTest(PaymentTestDataToChange data, PaymentTestModificationType modificationType, const String& valueToUse)
 {
-    CurrencyAmount shippingAmount;
-    if (data == PaymentTestDataCurrencyCode) {
-        if (modificationType == PaymentTestOverwriteValue)
-            shippingAmount.setCurrencyCode(valueToUse);
-    } else {
-        shippingAmount.setCurrencyCode("USD");
-    }
-    if (data == PaymentTestDataAmount) {
-        if (modificationType == PaymentTestOverwriteValue)
-            shippingAmount.setValue(valueToUse);
-    } else {
-        shippingAmount.setValue("9.99");
-    }
-
     ShippingOption shippingOption;
-    shippingOption.setAmount(shippingAmount);
-    if (data == PaymentTestDataId) {
-        if (modificationType == PaymentTestOverwriteValue)
-            shippingOption.setId(valueToUse);
-    } else {
-        shippingOption.setId("standard");
-    }
-    if (data == PaymentTestDataLabel) {
-        if (modificationType == PaymentTestOverwriteValue)
-            shippingOption.setLabel(valueToUse);
-    } else {
-        shippingOption.setLabel("Standard shipping");
-    }
-
+    setValues(shippingOption, data, modificationType, valueToUse);
     return shippingOption;
 }
 
 PaymentDetails buildPaymentDetailsForTest(PaymentTestDetailToChange detail, PaymentTestDataToChange data, PaymentTestModificationType modificationType, const String& valueToUse)
 {
-
     PaymentItem item;
     if (detail == PaymentTestDetailItem)
         item = buildPaymentItemForTest(data, modificationType, valueToUse);

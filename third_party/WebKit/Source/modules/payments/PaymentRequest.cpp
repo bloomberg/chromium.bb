@@ -108,12 +108,12 @@ void validateShippingOptionsOrPaymentItems(HeapVector<T> items, ExceptionState& 
 {
     String errorMessage;
     for (const auto& item : items) {
-        if (!item.hasId()) {
+        if (!item.hasId() || item.id().isEmpty()) {
             exceptionState.throwTypeError("Item id required");
             return;
         }
 
-        if (!item.hasLabel()) {
+        if (!item.hasLabel() || item.label().isEmpty()) {
             exceptionState.throwTypeError("Item label required");
             return;
         }

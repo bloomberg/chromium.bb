@@ -22,8 +22,9 @@ enum PaymentTestDataToChange {
     PaymentTestDataNone,
     PaymentTestDataId,
     PaymentTestDataLabel,
+    PaymentTestDataAmount,
     PaymentTestDataCurrencyCode,
-    PaymentTestDataAmount
+    PaymentTestDataValue,
 };
 
 enum PaymentTestModificationType {
