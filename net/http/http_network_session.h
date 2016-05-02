@@ -103,9 +103,6 @@ class NET_EXPORT HttpNetworkSession
     // Enables NPN support.  Note that ALPN is always enabled.
     bool enable_npn;
 
-    // Enables Brotli Content-Encoding support.
-    bool enable_brotli;
-
     // Enable setting of HTTP/2 dependencies based on priority.
     bool enable_priority_dependencies;
 

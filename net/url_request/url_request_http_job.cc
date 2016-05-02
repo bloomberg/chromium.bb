@@ -710,9 +710,7 @@ void URLRequestHttpJob::AddExtraHeaders() {
 
     // Advertise "br" encoding only if transferred data is opaque to proxy.
     bool advertise_brotli = false;
-    const HttpNetworkSession::Params* network_session_params =
-        request()->context()->GetNetworkSessionParams();
-    if (network_session_params && network_session_params->enable_brotli)
+    if (request()->context()->enable_brotli())
       advertise_brotli = request()->url().SchemeIsCryptographic();
 
     // Supply Accept-Encoding headers first so that it is more likely that they

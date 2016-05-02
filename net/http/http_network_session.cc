@@ -99,7 +99,6 @@ HttpNetworkSession::Params::Params()
       parse_alternative_services(false),
       enable_alternative_service_with_different_host(false),
       enable_npn(false),
-      enable_brotli(false),
       enable_priority_dependencies(true),
       enable_quic(false),
       disable_quic_on_timeout_with_open_streams(false),

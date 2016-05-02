@@ -412,7 +412,8 @@ SystemRequestContextLeakChecker::~SystemRequestContextLeakChecker() {
     globals_->system_request_context->AssertNoURLRequests();
 }
 
-IOThread::Globals::Globals() : system_request_context_leak_checker(this) {}
+IOThread::Globals::Globals() : system_request_context_leak_checker(this),
+                               enable_brotli(false) {}
 
 IOThread::Globals::~Globals() {}
 
@@ -802,7 +803,7 @@ void IOThread::Init() {
           switches::kEnableUserAlternateProtocolPorts)) {
     params_.enable_user_alternate_protocol_ports = true;
   }
-  params_.enable_brotli =
+  globals_->enable_brotli =
       base::FeatureList::IsEnabled(features::kBrotliEncoding);
   params_.enable_token_binding =
       base::FeatureList::IsEnabled(features::kTokenBinding);
@@ -1669,6 +1670,8 @@ net::URLRequestContext* IOThread::ConstructSystemRequestContext(
   context->set_http_server_properties(
       globals->http_server_properties->GetWeakPtr());
 
+  context->set_enable_brotli(globals->enable_brotli);
+
   net::HttpNetworkSession::Params system_params(params);
   net::URLRequestContextBuilder::SetHttpNetworkSessionComponents(
       context, &system_params);
@@ -1717,6 +1720,8 @@ net::URLRequestContext* IOThread::ConstructProxyScriptFetcherContext(
       globals->http_user_agent_settings.get());
   context->set_http_server_properties(
       globals->http_server_properties->GetWeakPtr());
+
+  context->set_enable_brotli(globals->enable_brotli);
 
   net::HttpNetworkSession::Params session_params(params);
   net::URLRequestContextBuilder::SetHttpNetworkSessionComponents(

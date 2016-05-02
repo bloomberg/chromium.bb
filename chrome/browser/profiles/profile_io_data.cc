@@ -1033,6 +1033,8 @@ void ProfileIOData::Init(
   main_request_context_.reset(new net::URLRequestContext());
   extensions_request_context_.reset(new net::URLRequestContext());
 
+  main_request_context_->set_enable_brotli(io_thread_globals->enable_brotli);
+
   std::unique_ptr<ChromeNetworkDelegate> network_delegate(
       new ChromeNetworkDelegate(
 #if defined(ENABLE_EXTENSIONS)

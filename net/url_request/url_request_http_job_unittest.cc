@@ -706,7 +706,7 @@ class URLRequestHttpJobWithBrotliSupportTest : public ::testing::Test {
       : context_(new TestURLRequestContext(true)) {
     std::unique_ptr<HttpNetworkSession::Params> params(
         new HttpNetworkSession::Params);
-    params->enable_brotli = true;
+    context_->set_enable_brotli(true);
     context_->set_http_network_session_params(std::move(params));
     context_->set_client_socket_factory(&socket_factory_);
     context_->Init();
