@@ -20,8 +20,6 @@
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
-#include "base/metrics/field_trial.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -249,12 +247,6 @@ bool AutofillManager::ShouldShowScanCreditCard(const FormData& form,
                                                const FormFieldData& field) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableCreditCardScan)) {
-    return false;
-  }
-
-  if (base::FieldTrialList::FindFullName("CreditCardScan") == "Control" &&
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableCreditCardScan)) {
     return false;
   }
 
