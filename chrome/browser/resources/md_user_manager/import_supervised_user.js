@@ -130,10 +130,10 @@ Polymer({
   onImportTap_: function() {
     var supervisedUser = this.supervisedUsers_[this.supervisedUserIndex_];
     if (this.signedInUser_ && supervisedUser) {
+      this.popupHidden_ = true;
       // Event is caught by create-profile.
       this.fire('import', {supervisedUser: supervisedUser,
                            signedInUser: this.signedInUser_});
-      this.popupHidden_ = true;
     }
   }
 });

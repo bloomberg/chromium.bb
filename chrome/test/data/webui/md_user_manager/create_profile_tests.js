@@ -82,7 +82,7 @@ cr.define('user_manager.create_profile_tests', function() {
 
           var dropdownMenu = createProfileElement.$$('paper-dropdown-menu');
           var paperMenu = dropdownMenu.querySelector('paper-menu');
-          assertEquals(createProfileElement.i18n('selectAnAccount'),
+          assertEquals(loadTimeData.getString('selectAnAccount'),
                        paperMenu.selectedItem.textContent.trim());
         });
       });
@@ -131,7 +131,7 @@ cr.define('user_manager.create_profile_tests', function() {
         assertFalse(createProfileElement.$$('#message-container').hidden);
         // Error message is set.
         assertEquals(
-            createProfileElement.i18n('custodianAccountNotSelectedError'),
+            loadTimeData.getString('custodianAccountNotSelectedError'),
             createProfileElement.$.message.innerHTML);
       });
 
@@ -158,7 +158,7 @@ cr.define('user_manager.create_profile_tests', function() {
               // Message container is visible.
               assertFalse(createProfileElement.$$('#message-container').hidden);
               // Error message is set.
-              var message = createProfileElement.i18n(
+              var message = loadTimeData.getString(
                   'managedProfilesExistingLocalSupervisedUser');
               assertEquals(message, createProfileElement.$.message.innerHTML);
             });

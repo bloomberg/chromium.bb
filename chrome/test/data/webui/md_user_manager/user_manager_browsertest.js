@@ -28,6 +28,7 @@ UserManagerBrowserTest.prototype = {
     '../settings/test_browser_proxy.js',
     'control_bar_tests.js',
     'create_profile_tests.js',
+    'import_supervised_user_tests.js',
     'test_profile_browser_proxy.js',
     'user_manager_pages_tests.js',
   ]),
@@ -42,6 +43,7 @@ TEST_F('UserManagerBrowserTest', 'UserManagerTest', function() {
 
   user_manager.control_bar_tests.registerTests();
   user_manager.create_profile_tests.registerTests();
+  user_manager.import_supervised_user_tests.registerTests();
   user_manager.user_manager_pages_tests.registerTests();
   mocha.run();
 });
