@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_WORKSPACE_WORKSPACE_WINDOW_RESIZER_H_
-#define ASH_WM_WORKSPACE_WORKSPACE_WINDOW_RESIZER_H_
+#ifndef ASH_WM_COMMON_WORKSPACE_WORKSPACE_WINDOW_RESIZER_H_
+#define ASH_WM_COMMON_WORKSPACE_WORKSPACE_WINDOW_RESIZER_H_
 
 #include <stdint.h>
 
@@ -12,7 +12,7 @@
 
 #include "ash/wm/common/window_resizer.h"
 #include "ash/wm/common/wm_window_tracker.h"
-#include "ash/wm/workspace/magnetism_matcher.h"
+#include "ash/wm/common/workspace/magnetism_matcher.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -86,10 +86,9 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   // Note the return value can be positive or negative, a negative value
   // indicating that that many pixels couldn't be removed from the attached
   // windows.
-  int CalculateAttachedSizes(
-      int delta,
-      int available_size,
-      std::vector<int>* sizes) const;
+  int CalculateAttachedSizes(int delta,
+                             int available_size,
+                             std::vector<int>* sizes) const;
 
   // Divides |amount| evenly between |sizes|. If |amount| is negative it
   // indicates how many pixels |sizes| should be shrunk by.
@@ -228,4 +227,4 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
 
 }  // namespace ash
 
-#endif  // ASH_WM_WORKSPACE_WORKSPACE_WINDOW_RESIZER_H_
+#endif  // ASH_WM_COMMON_WORKSPACE_WORKSPACE_WINDOW_RESIZER_H_

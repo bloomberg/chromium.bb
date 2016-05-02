@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_WORKSPACE_MAGNETISM_MATCHER_H_
-#define ASH_WM_WORKSPACE_MAGNETISM_MATCHER_H_
+#ifndef ASH_WM_COMMON_WORKSPACE_MAGNETISM_MATCHER_H_
+#define ASH_WM_COMMON_WORKSPACE_MAGNETISM_MATCHER_H_
 
 #include <stdint.h>
 
@@ -20,10 +20,10 @@
 namespace ash {
 
 enum MagnetismEdge {
-  MAGNETISM_EDGE_TOP    = 1 << 0,
-  MAGNETISM_EDGE_LEFT   = 1 << 1,
+  MAGNETISM_EDGE_TOP = 1 << 0,
+  MAGNETISM_EDGE_LEFT = 1 << 1,
   MAGNETISM_EDGE_BOTTOM = 1 << 2,
-  MAGNETISM_EDGE_RIGHT  = 1 << 3,
+  MAGNETISM_EDGE_RIGHT = 1 << 3,
 };
 
 const uint32_t kAllMagnetismEdges = MAGNETISM_EDGE_TOP | MAGNETISM_EDGE_LEFT |
@@ -51,7 +51,7 @@ class MagnetismEdgeMatcher {
   bool ShouldAttach(const gfx::Rect& bounds);
 
  private:
-  typedef std::pair<int,int> Range;
+  typedef std::pair<int, int> Range;
   typedef std::vector<Range> Ranges;
 
   // Removes |range| from |ranges_|.
@@ -189,4 +189,4 @@ class ASH_EXPORT MagnetismMatcher {
 
 }  // namespace ash
 
-#endif  // ASH_WM_WORKSPACE_MAGNETISM_MATCHER_H_
+#endif  // ASH_WM_COMMON_WORKSPACE_MAGNETISM_MATCHER_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_DOCK_DOCK_WINDOW_RESIZER_H_
-#define ASH_WM_DOCK_DOCK_WINDOW_RESIZER_H_
+#ifndef ASH_WM_COMMON_DOCK_DOCKED_WINDOW_RESIZER_H_
+#define ASH_WM_COMMON_DOCK_DOCKED_WINDOW_RESIZER_H_
 
 #include <memory>
 
@@ -98,4 +98,4 @@ class ASH_EXPORT DockedWindowResizer : public WindowResizer {
 
 }  // namespace ash
 
-#endif  // ASH_WM_DOCK_DOCK_WINDOW_RESIZER_H_
+#endif  // ASH_WM_COMMON_DOCK_DOCKED_WINDOW_RESIZER_H_

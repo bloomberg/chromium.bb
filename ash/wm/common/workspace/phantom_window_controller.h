@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_WORKSPACE_PHANTOM_WINDOW_CONTROLLER_H_
-#define ASH_WM_WORKSPACE_PHANTOM_WINDOW_CONTROLLER_H_
+#ifndef ASH_WM_COMMON_WORKSPACE_PHANTOM_WINDOW_CONTROLLER_H_
+#define ASH_WM_COMMON_WORKSPACE_PHANTOM_WINDOW_CONTROLLER_H_
 
 #include <memory>
 
@@ -55,4 +55,4 @@ class ASH_EXPORT PhantomWindowController {
 
 }  // namespace ash
 
-#endif  // ASH_WM_WORKSPACE_PHANTOM_WINDOW_CONTROLLER_H_
+#endif  // ASH_WM_COMMON_WORKSPACE_PHANTOM_WINDOW_CONTROLLER_H_

@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/panels/panel_window_resizer.h"
+#include "ash/wm/common/panels/panel_window_resizer.h"
 
+#include "ash/wm/common/panels/panel_layout_manager.h"
 #include "ash/wm/common/shelf/wm_shelf.h"
 #include "ash/wm/common/window_parenting_utils.h"
 #include "ash/wm/common/window_state.h"
 #include "ash/wm/common/wm_root_window_controller.h"
 #include "ash/wm/common/wm_shell_window_ids.h"
 #include "ash/wm/common/wm_window.h"
-#include "ash/wm/panels/panel_layout_manager.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/display/screen.h"
@@ -23,13 +23,12 @@ const int kPanelSnapToLauncherDistance = 30;
 
 }  // namespace
 
-PanelWindowResizer::~PanelWindowResizer() {
-}
+PanelWindowResizer::~PanelWindowResizer() {}
 
 // static
-PanelWindowResizer*
-PanelWindowResizer::Create(WindowResizer* next_window_resizer,
-                           wm::WindowState* window_state) {
+PanelWindowResizer* PanelWindowResizer::Create(
+    WindowResizer* next_window_resizer,
+    wm::WindowState* window_state) {
   return new PanelWindowResizer(next_window_resizer, window_state);
 }
 
@@ -122,22 +121,22 @@ bool PanelWindowResizer::AttachToLauncher(const gfx::Rect& bounds,
     switch (panel_layout_manager->shelf()->GetAlignment()) {
       case wm::SHELF_ALIGNMENT_BOTTOM:
       case wm::SHELF_ALIGNMENT_BOTTOM_LOCKED:
-        if (bounds.bottom() >= (launcher_bounds.y() -
-                                kPanelSnapToLauncherDistance)) {
+        if (bounds.bottom() >=
+            (launcher_bounds.y() - kPanelSnapToLauncherDistance)) {
           should_attach = true;
           offset->set_y(launcher_bounds.y() - bounds.height() - bounds.y());
         }
         break;
       case wm::SHELF_ALIGNMENT_LEFT:
-        if (bounds.x() <= (launcher_bounds.right() +
-                           kPanelSnapToLauncherDistance)) {
+        if (bounds.x() <=
+            (launcher_bounds.right() + kPanelSnapToLauncherDistance)) {
           should_attach = true;
           offset->set_x(launcher_bounds.right() - bounds.x());
         }
         break;
       case wm::SHELF_ALIGNMENT_RIGHT:
-        if (bounds.right() >= (launcher_bounds.x() -
-                               kPanelSnapToLauncherDistance)) {
+        if (bounds.right() >=
+            (launcher_bounds.x() - kPanelSnapToLauncherDistance)) {
           should_attach = true;
           offset->set_x(launcher_bounds.x() - bounds.width() - bounds.x());
         }

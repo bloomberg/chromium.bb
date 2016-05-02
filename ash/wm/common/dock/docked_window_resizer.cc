@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/dock/docked_window_resizer.h"
+#include "ash/wm/common/dock/docked_window_resizer.h"
 
 #include "ash/wm/common/dock/docked_window_layout_manager.h"
 #include "ash/wm/common/window_parenting_utils.h"
@@ -11,7 +11,7 @@
 #include "ash/wm/common/wm_root_window_controller.h"
 #include "ash/wm/common/wm_shell_window_ids.h"
 #include "ash/wm/common/wm_window.h"
-#include "ash/wm/workspace/magnetism_matcher.h"
+#include "ash/wm/common/workspace/magnetism_matcher.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/display/screen.h"
@@ -32,13 +32,12 @@ DockedWindowLayoutManager* GetDockedLayoutManagerAtPoint(
 
 }  // namespace
 
-DockedWindowResizer::~DockedWindowResizer() {
-}
+DockedWindowResizer::~DockedWindowResizer() {}
 
 // static
-DockedWindowResizer*
-DockedWindowResizer::Create(WindowResizer* next_window_resizer,
-                            wm::WindowState* window_state) {
+DockedWindowResizer* DockedWindowResizer::Create(
+    WindowResizer* next_window_resizer,
+    wm::WindowState* window_state) {
   return new DockedWindowResizer(next_window_resizer, window_state);
 }
 
@@ -77,8 +76,9 @@ void DockedWindowResizer::Drag(const gfx::Point& location, int event_flags) {
     if (dock_layout_ != initial_dock_layout_)
       dock_layout_->FinishDragging(
           DOCKED_ACTION_NONE,
-          details().source == aura::client::WINDOW_MOVE_SOURCE_MOUSE ?
-              DOCKED_ACTION_SOURCE_MOUSE : DOCKED_ACTION_SOURCE_TOUCH);
+          details().source == aura::client::WINDOW_MOVE_SOURCE_MOUSE
+              ? DOCKED_ACTION_SOURCE_MOUSE
+              : DOCKED_ACTION_SOURCE_TOUCH);
     is_docked_ = false;
     dock_layout_ = new_dock_layout;
     // The window's initial layout manager already knows that the drag is
@@ -231,12 +231,13 @@ void DockedWindowResizer::FinishedDragging(
   }
 
   // Check if the window needs to be docked or returned to workspace.
-  DockedAction action = MaybeReparentWindowOnDragCompletion(is_resized,
-                                                            is_attached_panel);
+  DockedAction action =
+      MaybeReparentWindowOnDragCompletion(is_resized, is_attached_panel);
   dock_layout_->FinishDragging(
       move_result == aura::client::MOVE_CANCELED ? DOCKED_ACTION_NONE : action,
-      details().source == aura::client::WINDOW_MOVE_SOURCE_MOUSE ?
-          DOCKED_ACTION_SOURCE_MOUSE : DOCKED_ACTION_SOURCE_TOUCH);
+      details().source == aura::client::WINDOW_MOVE_SOURCE_MOUSE
+          ? DOCKED_ACTION_SOURCE_MOUSE
+          : DOCKED_ACTION_SOURCE_TOUCH);
 
   // If we started the drag in one root window and moved into another root
   // but then canceled the drag we may need to inform the original layout
@@ -244,13 +245,15 @@ void DockedWindowResizer::FinishedDragging(
   if (initial_dock_layout_ != dock_layout_)
     initial_dock_layout_->FinishDragging(
         DOCKED_ACTION_NONE,
-        details().source == aura::client::WINDOW_MOVE_SOURCE_MOUSE ?
-            DOCKED_ACTION_SOURCE_MOUSE : DOCKED_ACTION_SOURCE_TOUCH);
+        details().source == aura::client::WINDOW_MOVE_SOURCE_MOUSE
+            ? DOCKED_ACTION_SOURCE_MOUSE
+            : DOCKED_ACTION_SOURCE_TOUCH);
   is_docked_ = false;
 }
 
 DockedAction DockedWindowResizer::MaybeReparentWindowOnDragCompletion(
-    bool is_resized, bool is_attached_panel) {
+    bool is_resized,
+    bool is_attached_panel) {
   wm::WmWindow* window = GetTarget();
 
   // Check if the window needs to be docked or returned to workspace.

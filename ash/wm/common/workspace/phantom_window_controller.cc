@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/workspace/phantom_window_controller.h"
+#include "ash/wm/common/workspace/phantom_window_controller.h"
 
 #include <math.h>
 
@@ -76,8 +76,7 @@ void AnimateToBounds(views::Widget* widget,
 PhantomWindowController::PhantomWindowController(wm::WmWindow* window)
     : window_(window) {}
 
-PhantomWindowController::~PhantomWindowController() {
-}
+PhantomWindowController::~PhantomWindowController() {}
 
 void PhantomWindowController::Show(const gfx::Rect& bounds_in_screen) {
   gfx::Rect adjusted_bounds_in_screen = GetAdjustedBounds(bounds_in_screen);

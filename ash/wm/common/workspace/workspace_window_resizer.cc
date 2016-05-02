@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/workspace/workspace_window_resizer.h"
+#include "ash/wm/common/workspace/workspace_window_resizer.h"
 
 #include <algorithm>
 #include <cmath>
@@ -11,6 +11,8 @@
 
 #include "ash/wm/common/default_window_resizer.h"
 #include "ash/wm/common/dock/docked_window_layout_manager.h"
+#include "ash/wm/common/dock/docked_window_resizer.h"
+#include "ash/wm/common/panels/panel_window_resizer.h"
 #include "ash/wm/common/window_positioning_utils.h"
 #include "ash/wm/common/window_state.h"
 #include "ash/wm/common/wm_event.h"
@@ -20,10 +22,8 @@
 #include "ash/wm/common/wm_shell_window_ids.h"
 #include "ash/wm/common/wm_user_metrics_action.h"
 #include "ash/wm/common/wm_window.h"
-#include "ash/wm/dock/docked_window_resizer.h"
-#include "ash/wm/panels/panel_window_resizer.h"
-#include "ash/wm/workspace/phantom_window_controller.h"
-#include "ash/wm/workspace/two_step_edge_cycler.h"
+#include "ash/wm/common/workspace/phantom_window_controller.h"
+#include "ash/wm/common/workspace/two_step_edge_cycler.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/base/hit_test.h"
@@ -67,8 +67,8 @@ std::unique_ptr<WindowResizer> CreateWindowResizer(
   if (!window_state->IsNormalOrSnapped() && !window_state->IsDocked())
     return std::unique_ptr<WindowResizer>();
 
-  int bounds_change = WindowResizer::GetBoundsChangeForWindowComponent(
-      window_component);
+  int bounds_change =
+      WindowResizer::GetBoundsChangeForWindowComponent(window_component);
   if (bounds_change == WindowResizer::kBoundsChangeDirection_None)
     return std::unique_ptr<WindowResizer>();
 
@@ -154,15 +154,15 @@ gfx::Point OriginForMagneticAttach(const gfx::Rect& src,
   switch (edge.primary_edge) {
     case MAGNETISM_EDGE_TOP:
     case MAGNETISM_EDGE_BOTTOM:
-      x = CoordinateAlongSecondaryAxis(
-          edge.secondary_edge, attach_to.x(), attach_to.right() - src.width(),
-          src.x());
+      x = CoordinateAlongSecondaryAxis(edge.secondary_edge, attach_to.x(),
+                                       attach_to.right() - src.width(),
+                                       src.x());
       break;
     case MAGNETISM_EDGE_LEFT:
     case MAGNETISM_EDGE_RIGHT:
-      y = CoordinateAlongSecondaryAxis(
-          edge.secondary_edge, attach_to.y(), attach_to.bottom() - src.height(),
-          src.y());
+      y = CoordinateAlongSecondaryAxis(edge.secondary_edge, attach_to.y(),
+                                       attach_to.bottom() - src.height(),
+                                       src.y());
       break;
   }
   return gfx::Point(x, y);
@@ -262,10 +262,7 @@ WorkspaceWindowResizer* WorkspaceWindowResizer::GetInstanceForTest() {
 // and maximum size. 0 represents a lack of a constraint.
 class WindowSize {
  public:
-  WindowSize(int size, int min, int max)
-      : size_(size),
-        min_(min),
-        max_(max) {
+  WindowSize(int size, int min, int max) : size_(size), min_(min), max_(max) {
     // Grow the min/max bounds to include the starting size.
     if (is_underflowing())
       min_ = size_;
@@ -277,29 +274,17 @@ class WindowSize {
     return size_ == (shrinking ? min_ : max_);
   }
 
-  int size() const {
-    return size_;
-  }
+  int size() const { return size_; }
 
-  bool has_min() const {
-    return min_ != 0;
-  }
+  bool has_min() const { return min_ != 0; }
 
-  bool has_max() const {
-    return max_ != 0;
-  }
+  bool has_max() const { return max_ != 0; }
 
-  bool is_valid() const {
-    return !is_overflowing() && !is_underflowing();
-  }
+  bool is_valid() const { return !is_overflowing() && !is_underflowing(); }
 
-  bool is_overflowing() const {
-    return has_max() && size_ > max_;
-  }
+  bool is_overflowing() const { return has_max() && size_ > max_; }
 
-  bool is_underflowing() const {
-    return has_min() && size_ < min_;
-  }
+  bool is_underflowing() const { return has_min() && size_ < min_; }
 
   // Add |amount| to this WindowSize not exceeding min or max size constraints.
   // Returns by how much |size_| + |amount| exceeds the min/max constraints.
@@ -350,7 +335,7 @@ void WorkspaceWindowResizer::Drag(const gfx::Point& location_in_parent,
   if (event_flags & ui::EF_CONTROL_DOWN) {
     sticky_size = 0;
   } else if ((details().bounds_change & kBoundsChange_Resizes) &&
-      details().source == aura::client::WINDOW_MOVE_SOURCE_TOUCH) {
+             details().source == aura::client::WINDOW_MOVE_SOURCE_TOUCH) {
     sticky_size = kScreenEdgeInsetForTouchDrag;
   } else {
     sticky_size = kScreenEdgeInset;
@@ -423,15 +408,15 @@ void WorkspaceWindowResizer::CompleteDrag() {
       gfx::Rect initial_bounds = GetTarget()->GetParent()->ConvertRectToScreen(
           details().initial_bounds_in_parent);
       window_state()->SetRestoreBoundsInScreen(
-          details().restore_bounds.IsEmpty() ?
-          initial_bounds :
-          details().restore_bounds);
+          details().restore_bounds.IsEmpty() ? initial_bounds
+                                             : details().restore_bounds);
     }
     if (!dock_layout_->is_dragged_window_docked()) {
       // TODO(oshima): Add event source type to WMEvent and move
       // metrics recording inside WindowState::OnWMEvent.
-      const wm::WMEvent event(snap_type_ == SNAP_LEFT ?
-                              wm::WM_EVENT_SNAP_LEFT : wm::WM_EVENT_SNAP_RIGHT);
+      const wm::WMEvent event(snap_type_ == SNAP_LEFT
+                                  ? wm::WM_EVENT_SNAP_LEFT
+                                  : wm::WM_EVENT_SNAP_RIGHT);
       window_state()->OnWMEvent(&event);
       globals_->RecordUserMetricsAction(
           snap_type_ == SNAP_LEFT
@@ -529,9 +514,8 @@ WorkspaceWindowResizer::WorkspaceWindowResizer(
   dock_layout_ = DockedWindowLayoutManager::Get(GetTarget());
 
   // Only support attaching to the right/bottom.
-  DCHECK(attached_windows_.empty() ||
-         (details().window_component == HTRIGHT ||
-          details().window_component == HTBOTTOM));
+  DCHECK(attached_windows_.empty() || (details().window_component == HTRIGHT ||
+                                       details().window_component == HTBOTTOM));
 
   // TODO: figure out how to deal with window going off the edge.
 
@@ -553,8 +537,7 @@ WorkspaceWindowResizer::WorkspaceWindowResizer(
   instance = this;
 }
 
-void WorkspaceWindowResizer::LayoutAttachedWindows(
-    gfx::Rect* bounds) {
+void WorkspaceWindowResizer::LayoutAttachedWindows(gfx::Rect* bounds) {
   gfx::Rect work_area(wm::GetDisplayWorkAreaBoundsInParent(GetTarget()));
   int initial_size = PrimaryAxisSize(details().initial_bounds_in_parent.size());
   int current_size = PrimaryAxisSize(bounds->size());
@@ -676,8 +659,7 @@ void WorkspaceWindowResizer::CalculateGrowthRatios(
     total_value += sizes[i]->size();
 
   for (size_t i = 0; i < sizes.size(); ++i)
-    out_ratios->push_back(
-        (static_cast<float>(sizes[i]->size())) / total_value);
+    out_ratios->push_back((static_cast<float>(sizes[i]->size())) / total_value);
 }
 
 void WorkspaceWindowResizer::CreateBucketsForAttached(
@@ -750,8 +732,8 @@ bool WorkspaceWindowResizer::UpdateMagnetismWindow(const gfx::Rect& bounds,
           !other_state->IsNormalOrSnapped() || !other_state->CanResize()) {
         continue;
       }
-      if (matcher.ShouldAttach(
-              other_state->window()->GetBoundsInScreen(), &magnetism_edge_)) {
+      if (matcher.ShouldAttach(other_state->window()->GetBoundsInScreen(),
+                               &magnetism_edge_)) {
         magnetism_window_ = other_state->window();
         window_tracker_.Add(magnetism_window_);
         return true;
@@ -761,9 +743,8 @@ bool WorkspaceWindowResizer::UpdateMagnetismWindow(const gfx::Rect& bounds,
   return false;
 }
 
-void WorkspaceWindowResizer::AdjustBoundsForMainWindow(
-    int sticky_size,
-    gfx::Rect* bounds) {
+void WorkspaceWindowResizer::AdjustBoundsForMainWindow(int sticky_size,
+                                                       gfx::Rect* bounds) {
   gfx::Point last_mouse_location_in_screen =
       GetTarget()->GetParent()->ConvertPointToScreen(last_mouse_location_);
   display::Display display =
@@ -775,8 +756,8 @@ void WorkspaceWindowResizer::AdjustBoundsForMainWindow(
     // Adjust the bounds to the work area where the mouse cursor is located.
     // Always keep kMinOnscreenHeight or the window height (whichever is less)
     // on the bottom.
-    int max_y = work_area.bottom() - std::min(kMinOnscreenHeight,
-                                              bounds->height());
+    int max_y =
+        work_area.bottom() - std::min(kMinOnscreenHeight, bounds->height());
     if (bounds->y() > max_y) {
       bounds->set_y(max_y);
     } else if (bounds->y() <= work_area.y()) {
@@ -811,10 +792,9 @@ void WorkspaceWindowResizer::AdjustBoundsForMainWindow(
   }
 }
 
-bool WorkspaceWindowResizer::StickToWorkAreaOnMove(
-    const gfx::Rect& work_area,
-    int sticky_size,
-    gfx::Rect* bounds) const {
+bool WorkspaceWindowResizer::StickToWorkAreaOnMove(const gfx::Rect& work_area,
+                                                   int sticky_size,
+                                                   gfx::Rect* bounds) const {
   const int left_edge = work_area.x();
   const int right_edge = work_area.right();
   const int top_edge = work_area.y();
@@ -841,10 +821,9 @@ bool WorkspaceWindowResizer::StickToWorkAreaOnMove(
   return updated;
 }
 
-void WorkspaceWindowResizer::StickToWorkAreaOnResize(
-    const gfx::Rect& work_area,
-    int sticky_size,
-    gfx::Rect* bounds) const {
+void WorkspaceWindowResizer::StickToWorkAreaOnResize(const gfx::Rect& work_area,
+                                                     int sticky_size,
+                                                     gfx::Rect* bounds) const {
   const uint32_t edges =
       WindowComponentToMagneticEdge(details().window_component);
   const int left_edge = work_area.x();
@@ -904,8 +883,9 @@ void WorkspaceWindowResizer::UpdateSnapPhantomWindow(const gfx::Point& location,
   }
 
   DCHECK(snap_type_ == SNAP_LEFT || snap_type_ == SNAP_RIGHT);
-  DockedAlignment desired_alignment = (snap_type_ == SNAP_LEFT) ?
-      DOCKED_ALIGNMENT_LEFT : DOCKED_ALIGNMENT_RIGHT;
+  DockedAlignment desired_alignment = (snap_type_ == SNAP_LEFT)
+                                          ? DOCKED_ALIGNMENT_LEFT
+                                          : DOCKED_ALIGNMENT_RIGHT;
   const bool can_dock =
       dock_layout_->CanDockWindow(GetTarget(), desired_alignment) &&
       dock_layout_->GetAlignmentOfWindow(GetTarget()) != DOCKED_ALIGNMENT_NONE;

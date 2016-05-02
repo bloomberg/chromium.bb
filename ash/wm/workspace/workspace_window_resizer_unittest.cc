@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/workspace/workspace_window_resizer.h"
+#include "ash/wm/common/workspace/workspace_window_resizer.h"
 
 #include "ash/display/display_manager.h"
 #include "ash/root_window_controller.h"
@@ -16,9 +16,9 @@
 #include "ash/wm/common/window_positioning_utils.h"
 #include "ash/wm/common/window_state.h"
 #include "ash/wm/common/wm_event.h"
+#include "ash/wm/common/workspace/phantom_window_controller.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm/workspace/phantom_window_controller.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"

@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/panels/panel_layout_manager.h"
+#include "ash/wm/common/panels/panel_layout_manager.h"
 
 #include <algorithm>
 #include <map>
 #include <utility>
 
-#include "ash/shell.h"
 #include "ash/wm/common/shelf/wm_shelf.h"
 #include "ash/wm/common/shelf/wm_shelf_util.h"
 #include "ash/wm/common/window_animation_types.h"
@@ -119,8 +118,8 @@ void FanOutPanels(std::vector<VisiblePanelPositionInfo>::iterator first,
                   std::vector<VisiblePanelPositionInfo>::iterator last) {
   int num_panels = last - first;
   if (num_panels == 1) {
-    (*first).major_pos = std::max((*first).min_major, std::min(
-        (*first).max_major, (*first).major_pos));
+    (*first).major_pos = std::max(
+        (*first).min_major, std::min((*first).max_major, (*first).major_pos));
   }
   if (num_panels <= 1)
     return;
@@ -132,14 +131,14 @@ void FanOutPanels(std::vector<VisiblePanelPositionInfo>::iterator first,
     int separation = (*first).major_length / 2 + (*second).major_length / 2 +
                      kPanelIdealSpacing;
     int overlap = (*first).major_pos + separation - (*second).major_pos;
-    (*first).major_pos = std::max((*first).min_major,
-                                  (*first).major_pos - overlap / 2);
-    (*second).major_pos = std::min((*second).max_major,
-                                   (*first).major_pos + separation);
+    (*first).major_pos =
+        std::max((*first).min_major, (*first).major_pos - overlap / 2);
+    (*second).major_pos =
+        std::min((*second).max_major, (*first).major_pos + separation);
     // Recalculate the first panel position in case the second one was
     // constrained on the right.
-    (*first).major_pos = std::max((*first).min_major,
-                                  (*second).major_pos - separation);
+    (*first).major_pos =
+        std::max((*first).min_major, (*second).major_pos - separation);
     return;
   }
 
@@ -148,18 +147,16 @@ void FanOutPanels(std::vector<VisiblePanelPositionInfo>::iterator first,
   int delta = ((*(last - 1)).max_major - (*first).min_major) / (num_panels - 1);
   int major_pos = (*first).min_major;
   for (std::vector<VisiblePanelPositionInfo>::iterator iter = first;
-      iter != last; ++iter) {
-    (*iter).major_pos = std::max((*iter).min_major,
-                                 std::min((*iter).max_major, major_pos));
+       iter != last; ++iter) {
+    (*iter).major_pos =
+        std::max((*iter).min_major, std::min((*iter).max_major, major_pos));
     major_pos += delta;
   }
 }
 
 bool BoundsAdjacent(const gfx::Rect& bounds1, const gfx::Rect& bounds2) {
-  return bounds1.x() == bounds2.right() ||
-         bounds1.y() == bounds2.bottom() ||
-         bounds1.right() == bounds2.x() ||
-         bounds1.bottom() == bounds2.y();
+  return bounds1.x() == bounds2.right() || bounds1.y() == bounds2.bottom() ||
+         bounds1.right() == bounds2.x() || bounds1.bottom() == bounds2.y();
 }
 
 gfx::Vector2d GetSlideInAnimationOffset(wm::ShelfAlignment alignment) {
@@ -409,12 +406,11 @@ void PanelLayoutManager::SetChildBounds(wm::WmWindow* child,
   // Reposition dragged panel in the panel order.
   if (dragged_panel_ == child) {
     PanelList::iterator dragged_panel_iter =
-      std::find(panel_windows_.begin(), panel_windows_.end(), dragged_panel_);
+        std::find(panel_windows_.begin(), panel_windows_.end(), dragged_panel_);
     DCHECK(dragged_panel_iter != panel_windows_.end());
     PanelList::iterator new_position;
     for (new_position = panel_windows_.begin();
-         new_position != panel_windows_.end();
-         ++new_position) {
+         new_position != panel_windows_.end(); ++new_position) {
       const gfx::Rect& bounds = (*new_position).window->GetBounds();
       if (bounds.x() + bounds.width() / 2 <= requested_bounds.x())
         break;
@@ -437,7 +433,7 @@ void PanelLayoutManager::SetChildBounds(wm::WmWindow* child,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// PanelLayoutManager, ash::ShellObserver implementation:
+// PanelLayoutManager, wm::WmShellObserver implementation:
 
 void PanelLayoutManager::OnOverviewModeEnded() {
   Relayout();
@@ -644,16 +640,16 @@ void PanelLayoutManager::Relayout() {
     gfx::Point icon_origin = icon_bounds.origin();
     VisiblePanelPositionInfo position_info;
     int icon_start = horizontal ? icon_origin.x() : icon_origin.y();
-    int icon_end = icon_start + (horizontal ? icon_bounds.width() :
-                                 icon_bounds.height());
+    int icon_end =
+        icon_start + (horizontal ? icon_bounds.width() : icon_bounds.height());
     position_info.major_length =
         horizontal ? panel->GetBounds().width() : panel->GetBounds().height();
-    position_info.min_major = std::max(
-        panel_start_bounds + position_info.major_length / 2,
-        icon_end - position_info.major_length / 2);
-    position_info.max_major = std::min(
-        icon_start + position_info.major_length / 2,
-        panel_end_bounds - position_info.major_length / 2);
+    position_info.min_major =
+        std::max(panel_start_bounds + position_info.major_length / 2,
+                 icon_end - position_info.major_length / 2);
+    position_info.max_major =
+        std::min(icon_start + position_info.major_length / 2,
+                 panel_end_bounds - position_info.major_length / 2);
     position_info.major_pos = (icon_start + icon_end) / 2;
     position_info.window = panel;
     position_info.slide_in = iter->slide_in;
@@ -670,8 +666,8 @@ void PanelLayoutManager::Relayout() {
   size_t first_overlapping_panel = 0;
   for (size_t i = 1; i < visible_panels.size(); ++i) {
     if (visible_panels[i - 1].major_pos +
-        visible_panels[i - 1].major_length / 2 < visible_panels[i].major_pos -
-        visible_panels[i].major_length / 2) {
+            visible_panels[i - 1].major_length / 2 <
+        visible_panels[i].major_pos - visible_panels[i].major_length / 2) {
       FanOutPanels(visible_panels.begin() + first_overlapping_panel,
                    visible_panels.begin() + i);
       first_overlapping_panel = i;
@@ -756,10 +752,10 @@ void PanelLayoutManager::UpdateStacking(wm::WmWindow* active_panel) {
   for (PanelList::const_iterator it = panel_windows_.begin();
        it != panel_windows_.end(); ++it) {
     gfx::Rect bounds = it->window->GetBounds();
-    window_ordering.insert(std::make_pair(horizontal ?
-                                              bounds.x() + bounds.width() / 2 :
-                                              bounds.y() + bounds.height() / 2,
-                                          it->window));
+    window_ordering.insert(
+        std::make_pair(horizontal ? bounds.x() + bounds.width() / 2
+                                  : bounds.y() + bounds.height() / 2,
+                       it->window));
   }
 
   wm::WmWindow* previous_panel = nullptr;
@@ -810,18 +806,18 @@ void PanelLayoutManager::UpdateCallouts() {
     int slide_distance = horizontal ? slide_vector.x() : slide_vector.y();
     int distance_until_over_panel = 0;
     if (horizontal) {
-      callout_bounds.set_x(
-          icon_bounds.x() + (icon_bounds.width() - callout_bounds.width()) / 2);
-      distance_until_over_panel = std::max(
-          current_bounds.x() - callout_bounds.x(),
-          callout_bounds.right() - current_bounds.right());
+      callout_bounds.set_x(icon_bounds.x() +
+                           (icon_bounds.width() - callout_bounds.width()) / 2);
+      distance_until_over_panel =
+          std::max(current_bounds.x() - callout_bounds.x(),
+                   callout_bounds.right() - current_bounds.right());
     } else {
-      callout_bounds.set_y(
-          icon_bounds.y() + (icon_bounds.height() -
-                             callout_bounds.height()) / 2);
-      distance_until_over_panel = std::max(
-          current_bounds.y() - callout_bounds.y(),
-          callout_bounds.bottom() - current_bounds.bottom());
+      callout_bounds.set_y(icon_bounds.y() +
+                           (icon_bounds.height() - callout_bounds.height()) /
+                               2);
+      distance_until_over_panel =
+          std::max(current_bounds.y() - callout_bounds.y(),
+                   callout_bounds.bottom() - current_bounds.bottom());
     }
     if (shelf_->GetAlignment() == wm::SHELF_ALIGNMENT_LEFT)
       callout_bounds.set_x(bounds.x() - callout_bounds.width());
@@ -844,7 +840,7 @@ void PanelLayoutManager::UpdateCallouts() {
         // If the panel is not yet over the callout, then delay fading in
         // the callout until after the panel should be over it.
         int delay = kPanelSlideDurationMilliseconds *
-            distance_until_over_panel / slide_distance;
+                    distance_until_over_panel / slide_distance;
         layer->SetOpacity(0);
         layer->GetAnimator()->StopAnimating();
         layer->GetAnimator()->SchedulePauseForProperties(
@@ -855,8 +851,7 @@ void PanelLayoutManager::UpdateCallouts() {
       callout_settings.SetPreemptionStrategy(
           ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
       callout_settings.SetTransitionDuration(
-          base::TimeDelta::FromMilliseconds(
-              kCalloutFadeDurationMilliseconds));
+          base::TimeDelta::FromMilliseconds(kCalloutFadeDurationMilliseconds));
       layer->SetOpacity(1);
     }
 
@@ -874,8 +869,7 @@ void PanelLayoutManager::OnKeyboardBoundsChanging(
   gfx::Rect parent_bounds = panel_container_->GetBounds();
   int available_space = parent_bounds.height() - keyboard_bounds.height();
   for (PanelList::iterator iter = panel_windows_.begin();
-       iter != panel_windows_.end();
-       ++iter) {
+       iter != panel_windows_.end(); ++iter) {
     wm::WmWindow* panel = iter->window;
     wm::WindowState* panel_state = panel->GetWindowState();
     if (keyboard_bounds.height() > 0) {

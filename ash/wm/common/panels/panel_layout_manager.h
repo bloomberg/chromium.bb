@@ -2,15 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_PANELS_PANEL_LAYOUT_MANAGER_H_
-#define ASH_WM_PANELS_PANEL_LAYOUT_MANAGER_H_
+#ifndef ASH_WM_COMMON_PANELS_PANEL_LAYOUT_MANAGER_H_
+#define ASH_WM_COMMON_PANELS_PANEL_LAYOUT_MANAGER_H_
 
 #include <list>
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/shelf/shelf_icon_observer.h"
-#include "ash/shell_observer.h"
 #include "ash/wm/common/shelf/wm_shelf_observer.h"
 #include "ash/wm/common/window_state_observer.h"
 #include "ash/wm/common/wm_activation_observer.h"
@@ -59,7 +57,6 @@ class WmShelf;
 
 class ASH_EXPORT PanelLayoutManager
     : public wm::WmLayoutManager,
-      public ShelfIconObserver,
       public wm::WindowStateObserver,
       public wm::WmActivationObserver,
       public wm::WmDisplayObserver,
@@ -214,4 +211,4 @@ class ASH_EXPORT PanelLayoutManager
 
 }  // namespace ash
 
-#endif  // ASH_WM_PANELS_PANEL_LAYOUT_MANAGER_H_
+#endif  // ASH_WM_COMMON_PANELS_PANEL_LAYOUT_MANAGER_H_

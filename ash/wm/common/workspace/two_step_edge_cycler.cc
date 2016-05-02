@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/workspace/two_step_edge_cycler.h"
+#include "ash/wm/common/workspace/two_step_edge_cycler.h"
 
 #include <cstdlib>
 
@@ -31,11 +31,9 @@ TwoStepEdgeCycler::TwoStepEdgeCycler(const gfx::Point& start,
       start_x_(start.x()),
       paused_x_(start.x()),
       paused_(false),
-      direction_(direction) {
-}
+      direction_(direction) {}
 
-TwoStepEdgeCycler::~TwoStepEdgeCycler() {
-}
+TwoStepEdgeCycler::~TwoStepEdgeCycler() {}
 
 void TwoStepEdgeCycler::OnMove(const gfx::Point& location) {
   if (second_mode_)

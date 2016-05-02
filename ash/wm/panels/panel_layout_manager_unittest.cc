@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/panels/panel_layout_manager.h"
+#include "ash/wm/common/panels/panel_layout_manager.h"
 
 #include "ash/ash_switches.h"
 #include "ash/screen_util.h"

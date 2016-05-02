@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_WORKSPACE_TWO_STEP_EDGE_CYCLER_H_
-#define ASH_WM_WORKSPACE_TWO_STEP_EDGE_CYCLER_H_
+#ifndef ASH_WM_COMMON_WORKSPACE_TWO_STEP_EDGE_CYCLER_H_
+#define ASH_WM_COMMON_WORKSPACE_TWO_STEP_EDGE_CYCLER_H_
 
 #include "ash/ash_export.h"
 #include "base/macros.h"
@@ -58,4 +58,4 @@ class ASH_EXPORT TwoStepEdgeCycler {
 
 }  // namespace ash
 
-#endif  // ASH_WM_WORKSPACE_TWO_STEP_EDGE_CYCLER_H_
+#endif  // ASH_WM_COMMON_WORKSPACE_TWO_STEP_EDGE_CYCLER_H_
