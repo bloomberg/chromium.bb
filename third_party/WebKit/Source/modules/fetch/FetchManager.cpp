@@ -74,9 +74,9 @@ public:
     void dispose();
 
     class SRIVerifier final : public GarbageCollectedFinalized<SRIVerifier>, public WebDataConsumerHandle::Client {
+    public:
         // Promptly clear m_handle and m_reader.
         EAGERLY_FINALIZE();
-    public:
         // SRIVerifier takes ownership of |handle| and |response|.
         // |updater| must be garbage collected. The other arguments
         // all must have the lifetime of the give loader.
