@@ -236,7 +236,6 @@ int TestRunner::InternalRunTest(const wchar_t* command) {
                           NULL, NULL, &startup_info, &target)) {
       return SBOX_ERROR_GENERIC;
     }
-    broker_->AddTargetPeer(target.hProcess);
   } else {
     result = broker_->SpawnTarget(prog_name, arguments.c_str(), policy_,
                                   &target);

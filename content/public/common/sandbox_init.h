@@ -42,15 +42,6 @@ class SandboxedProcessLauncherDelegate;
 CONTENT_EXPORT bool InitializeSandbox(
     sandbox::SandboxInterfaceInfo* sandbox_info);
 
-// Inform the current process's sandbox broker (e.g. the broker for
-// 32-bit processes) about a process created under a different sandbox
-// broker (e.g. the broker for 64-bit processes).  This allows
-// BrokerDuplicateHandle() to send handles to a process managed by
-// another broker.  For example, it allows the 32-bit renderer to send
-// handles to 64-bit NaCl processes.  This returns true on success,
-// false otherwise.
-CONTENT_EXPORT bool BrokerAddTargetPeer(HANDLE peer_process);
-
 // Launch a sandboxed process. |delegate| may be NULL. If |delegate| is non-NULL
 // then it just has to outlive this method call. |handles_to_inherit| is a list
 // of handles for the child process to inherit. The caller retains ownership of

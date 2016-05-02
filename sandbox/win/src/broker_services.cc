@@ -51,7 +51,6 @@ sandbox::ResultCode SpawnCleanup(sandbox::TargetProcess* target, DWORD error) {
 // executes TargetEventsThread().
 enum {
   THREAD_CTRL_NONE,
-  THREAD_CTRL_REMOVE_PEER,
   THREAD_CTRL_QUIT,
   THREAD_CTRL_LAST,
 };
@@ -86,27 +85,6 @@ void JobTracker::FreeResources() {
     policy->OnJobEmpty(stale_job_handle);
     policy->Release();
     policy = NULL;
-  }
-}
-
-// Helper structure that allows the broker to track peer processes
-struct PeerTracker {
-  PeerTracker(DWORD process_id, HANDLE broker_job_port)
-      : wait_object(NULL), id(process_id), job_port(broker_job_port) {
-  }
-
-  HANDLE wait_object;
-  base::win::ScopedHandle process;
-  DWORD id;
-  HANDLE job_port;
-};
-
-void DeregisterPeerTracker(PeerTracker* peer) {
-  // Deregistration shouldn't fail, but we leak rather than crash if it does.
-  if (::UnregisterWaitEx(peer->wait_object, INVALID_HANDLE_VALUE)) {
-    delete peer;
-  } else {
-    NOTREACHED();
   }
 }
 
@@ -164,12 +142,6 @@ BrokerServicesBase::~BrokerServicesBase() {
 
   STLDeleteElements(&tracker_list_);
   delete thread_pool_;
-
-  // Cancel the wait events and delete remaining peer trackers.
-  for (PeerTrackerMap::iterator it = peer_map_.begin();
-       it != peer_map_.end(); ++it) {
-    DeregisterPeerTracker(it->second);
-  }
 
   ::DeleteCriticalSection(&lock_);
 }
@@ -283,13 +255,6 @@ DWORD WINAPI BrokerServicesBase::TargetEventsThread(PVOID param) {
           break;
         }
       }
-    } else if (THREAD_CTRL_REMOVE_PEER == key) {
-      // Remove a process from our list of peers.
-      AutoLock lock(&broker->lock_);
-      PeerTrackerMap::iterator it = broker->peer_map_.find(
-          static_cast<DWORD>(reinterpret_cast<uintptr_t>(ovl)));
-      DeregisterPeerTracker(it->second);
-      broker->peer_map_.erase(it);
     } else if (THREAD_CTRL_QUIT == key) {
       // The broker object is being destroyed so the thread needs to exit.
       return 0;
@@ -479,12 +444,6 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
     // not block WaitForAllTargets until we have at least one target with job.
     if (child_process_ids_.empty())
       ::SetEvent(no_targets_.Get());
-    // We can not track the life time of such processes and it is responsibility
-    // of the host application to make sure that spawned targets without jobs
-    // are terminated when the main application don't need them anymore.
-    // Sandbox policy engine needs to know that these processes are valid
-    // targets for e.g. BrokerDuplicateHandle so track them as peer processes.
-    AddTargetPeer(process_info.process_handle());
   }
 
   *target_info = process_info.Take();
@@ -499,46 +458,7 @@ ResultCode BrokerServicesBase::WaitForAllTargets() {
 
 bool BrokerServicesBase::IsActiveTarget(DWORD process_id) {
   AutoLock lock(&lock_);
-  return child_process_ids_.find(process_id) != child_process_ids_.end() ||
-         peer_map_.find(process_id) != peer_map_.end();
-}
-
-VOID CALLBACK BrokerServicesBase::RemovePeer(PVOID parameter, BOOLEAN timeout) {
-  PeerTracker* peer = reinterpret_cast<PeerTracker*>(parameter);
-  // Don't check the return code because we this may fail (safely) at shutdown.
-  ::PostQueuedCompletionStatus(
-      peer->job_port, 0, THREAD_CTRL_REMOVE_PEER,
-      reinterpret_cast<LPOVERLAPPED>(static_cast<uintptr_t>(peer->id)));
-}
-
-ResultCode BrokerServicesBase::AddTargetPeer(HANDLE peer_process) {
-  std::unique_ptr<PeerTracker> peer(
-      new PeerTracker(::GetProcessId(peer_process), job_port_.Get()));
-  if (!peer->id)
-    return SBOX_ERROR_GENERIC;
-
-  HANDLE process_handle;
-  if (!::DuplicateHandle(::GetCurrentProcess(), peer_process,
-                         ::GetCurrentProcess(), &process_handle,
-                         SYNCHRONIZE, FALSE, 0)) {
-    return SBOX_ERROR_GENERIC;
-  }
-  peer->process.Set(process_handle);
-
-  AutoLock lock(&lock_);
-  if (!peer_map_.insert(std::make_pair(peer->id, peer.get())).second)
-    return SBOX_ERROR_BAD_PARAMS;
-
-  if (!::RegisterWaitForSingleObject(
-          &peer->wait_object, peer->process.Get(), RemovePeer, peer.get(),
-          INFINITE, WT_EXECUTEONLYONCE | WT_EXECUTEINWAITTHREAD)) {
-    peer_map_.erase(peer->id);
-    return SBOX_ERROR_GENERIC;
-  }
-
-  // Release the pointer since it will be cleaned up by the callback.
-  ignore_result(peer.release());
-  return SBOX_ALL_OK;
+  return child_process_ids_.find(process_id) != child_process_ids_.end();
 }
 
 }  // namespace sandbox

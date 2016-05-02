@@ -45,7 +45,6 @@
 #endif  // !defined(NACL_WIN64)
 
 static sandbox::BrokerServices* g_broker_services = NULL;
-static sandbox::TargetServices* g_target_services = NULL;
 
 namespace content {
 namespace {
@@ -645,9 +644,7 @@ bool InitBrokerServices(sandbox::BrokerServices* broker_services) {
 
 bool InitTargetServices(sandbox::TargetServices* target_services) {
   DCHECK(target_services);
-  DCHECK(!g_target_services);
   sandbox::ResultCode result = target_services->Init();
-  g_target_services = target_services;
   return sandbox::SBOX_ALL_OK == result;
 }
 
@@ -681,9 +678,6 @@ base::Process StartSandboxedProcess(
       options.handles_to_inherit = &handles;
     }
     base::Process process = base::LaunchProcess(*cmd_line, options);
-
-    // TODO(rvargas) crbug.com/417532: Don't share a raw handle.
-    g_broker_services->AddTargetPeer(process.Handle());
     return process;
   }
 
@@ -803,10 +797,6 @@ base::Process StartSandboxedProcess(
 
   CHECK(ResumeThread(target.thread_handle()) != static_cast<DWORD>(-1));
   return base::Process(target.TakeProcessHandle());
-}
-
-bool BrokerAddTargetPeer(HANDLE peer_process) {
-  return g_broker_services->AddTargetPeer(peer_process) == sandbox::SBOX_ALL_OK;
 }
 
 }  // namespace content
