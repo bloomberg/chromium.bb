@@ -2210,9 +2210,3 @@ skia.dll!skia::BitmapPlatformDevice::Create
 ...
 webcore_shared.dll!blink::ScriptController::createPluginWrapper
 webcore_shared.dll!blink::HTMLPlugInElement::pluginWrapper
-
-UNINITIALIZED READ
-name=bug_604066
-...
-*!base::win::`anonymous namespace'::DeadlockThread::Terminate
-*!base::win::WaitChainTest_Deadlock_Test::TestBody
