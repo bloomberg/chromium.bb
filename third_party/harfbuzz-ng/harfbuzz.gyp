@@ -72,6 +72,7 @@
             'src/hb-ot-map-private.hh',
             'src/hb-ot-maxp-table.hh',
             'src/hb-ot-name-table.hh',
+            'src/hb-ot-post-table.hh',
             'src/hb-ot-shape.cc',
             'src/hb-ot-shape-complex-arabic.cc',
             'src/hb-ot-shape-complex-arabic-fallback.hh',
