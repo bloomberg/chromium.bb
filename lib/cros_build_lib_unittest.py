@@ -1844,8 +1844,17 @@ class CreateTarballTests(cros_test_lib.TempDirTestCase):
     self.inputs = [
         'inputA',
         'inputB',
-        'inputC',
+        'sub/subfile',
+        'sub2/subfile',
     ]
+
+    self.inputsWithDirs = [
+        'inputA',
+        'inputB',
+        'sub',
+        'sub2',
+    ]
+
 
     # Create the input files.
     for i in self.inputs:
@@ -1853,4 +1862,24 @@ class CreateTarballTests(cros_test_lib.TempDirTestCase):
 
   def testSuccess(self):
     """Create a tarfile."""
-    cros_build_lib.CreateTarball(self.target, self.inputDir, inputs=self.inputs)
+    cros_build_lib.CreateTarball(self.target, self.inputDir,
+                                 inputs=self.inputs)
+
+  def testSuccessWithDirs(self):
+    """Create a tarfile."""
+    cros_build_lib.CreateTarball(self.target, self.inputDir,
+                                 inputs=self.inputsWithDirs)
+
+  def testWriting(self):
+    """Create a tarfile."""
+    with self.assertRaises(cros_build_lib.TarOfOpenFileError):
+      with open(os.path.join(self.inputDir, self.inputs[0]), 'a'):
+        cros_build_lib.CreateTarball(self.target, self.inputDir,
+                                     inputs=self.inputs)
+
+  def testWritingWithDirs(self):
+    """Create a tarfile."""
+    with self.assertRaises(cros_build_lib.TarOfOpenFileError):
+      with open(os.path.join(self.inputDir, self.inputs[3]), 'w'):
+        cros_build_lib.CreateTarball(self.target, self.inputDir,
+                                     inputs=self.inputsWithDirs)
