@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/reading_list/reading_list_model_memory.h"
+#include "ios/chrome/browser/reading_list/reading_list_model_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -10,7 +10,7 @@ namespace {
 class ReadingListModelTest : public ReadingListModelObserver,
                              public testing::Test {
  public:
-  ReadingListModelTest() : model_(new ReadingListModelMemory()) {
+  ReadingListModelTest() : model_(new ReadingListModelImpl()) {
     ClearCounts();
     model_->AddObserver(this);
   }
@@ -91,7 +91,7 @@ class ReadingListModelTest : public ReadingListModelObserver,
   int observer_add_read_;
   int observer_did_apply_;
 
-  std::unique_ptr<ReadingListModelMemory> model_;
+  std::unique_ptr<ReadingListModelImpl> model_;
 };
 
 TEST_F(ReadingListModelTest, EmptyLoaded) {

@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/reading_list/reading_list_model_memory.h"
+#include "ios/chrome/browser/reading_list/reading_list_model_impl.h"
+
 #include "ios/chrome/browser/reading_list/reading_list_model_storage.h"
 
 #include "url/gurl.h"
 
-ReadingListModelMemory::ReadingListModelMemory()
-    : ReadingListModelMemory(NULL) {}
+ReadingListModelImpl::ReadingListModelImpl() : ReadingListModelImpl(NULL) {}
 
-ReadingListModelMemory::ReadingListModelMemory(
+ReadingListModelImpl::ReadingListModelImpl(
     std::unique_ptr<ReadingListModelStorage> storage)
     : hasUnseen_(false) {
   if (storage) {
@@ -21,34 +21,34 @@ ReadingListModelMemory::ReadingListModelMemory(
   }
   loaded_ = true;
 }
-ReadingListModelMemory::~ReadingListModelMemory() {}
+ReadingListModelImpl::~ReadingListModelImpl() {}
 
-void ReadingListModelMemory::Shutdown() {
+void ReadingListModelImpl::Shutdown() {
   FOR_EACH_OBSERVER(ReadingListModelObserver, observers_,
                     ReadingListModelBeingDeleted(this));
   loaded_ = false;
 }
 
-bool ReadingListModelMemory::loaded() const {
+bool ReadingListModelImpl::loaded() const {
   return loaded_;
 }
 
-size_t ReadingListModelMemory::unread_size() const {
+size_t ReadingListModelImpl::unread_size() const {
   DCHECK(loaded());
   return unread_.size();
 }
 
-size_t ReadingListModelMemory::read_size() const {
+size_t ReadingListModelImpl::read_size() const {
   DCHECK(loaded());
   return read_.size();
 }
 
-bool ReadingListModelMemory::HasUnseenEntries() const {
+bool ReadingListModelImpl::HasUnseenEntries() const {
   DCHECK(loaded());
   return unread_size() && hasUnseen_;
 }
 
-void ReadingListModelMemory::ResetUnseenEntries() {
+void ReadingListModelImpl::ResetUnseenEntries() {
   DCHECK(loaded());
   hasUnseen_ = false;
   if (storageLayer_ && !IsPerformingBatchUpdates()) {
@@ -57,18 +57,18 @@ void ReadingListModelMemory::ResetUnseenEntries() {
 }
 
 // Returns a specific entry.
-const ReadingListEntry& ReadingListModelMemory::GetUnreadEntryAtIndex(
+const ReadingListEntry& ReadingListModelImpl::GetUnreadEntryAtIndex(
     size_t index) const {
   DCHECK(loaded());
   return unread_[index];
 }
-const ReadingListEntry& ReadingListModelMemory::GetReadEntryAtIndex(
+const ReadingListEntry& ReadingListModelImpl::GetReadEntryAtIndex(
     size_t index) const {
   DCHECK(loaded());
   return read_[index];
 }
 
-void ReadingListModelMemory::RemoveEntryByUrl(const GURL& url) {
+void ReadingListModelImpl::RemoveEntryByUrl(const GURL& url) {
   DCHECK(loaded());
   const ReadingListEntry entry(url, std::string());
 
@@ -101,7 +101,7 @@ void ReadingListModelMemory::RemoveEntryByUrl(const GURL& url) {
   }
 }
 
-const ReadingListEntry& ReadingListModelMemory::AddEntry(
+const ReadingListEntry& ReadingListModelImpl::AddEntry(
     const GURL& url,
     const std::string& title) {
   DCHECK(loaded());
@@ -121,7 +121,7 @@ const ReadingListEntry& ReadingListModelMemory::AddEntry(
   return *unread_.begin();
 }
 
-void ReadingListModelMemory::MarkReadByURL(const GURL& url) {
+void ReadingListModelImpl::MarkReadByURL(const GURL& url) {
   DCHECK(loaded());
   const ReadingListEntry entry(url, std::string());
 
@@ -146,7 +146,7 @@ void ReadingListModelMemory::MarkReadByURL(const GURL& url) {
                     ReadingListDidApplyChanges(this));
 }
 
-void ReadingListModelMemory::EndBatchUpdates() {
+void ReadingListModelImpl::EndBatchUpdates() {
   ReadingListModel::EndBatchUpdates();
   if (IsPerformingBatchUpdates() || !storageLayer_) {
     return;
