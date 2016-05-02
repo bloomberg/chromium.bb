@@ -117,7 +117,7 @@ java_strings_grd("ui_strings_grd") {
     "values-uk/android_ui_strings.xml",
     "values-vi/android_ui_strings.xml",
     "values-zh-rCN/android_ui_strings.xml",
-    "values-zh-rTW/android_ui_strings.xml",
+    "values-zh/android_ui_strings.xml",
   ]
 }
 

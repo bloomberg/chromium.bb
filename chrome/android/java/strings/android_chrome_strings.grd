@@ -75,7 +75,8 @@ CHAR-LIMIT guidelines:
     <output filename="values-uk/android_chrome_strings.xml" lang="uk" type="android" />
     <output filename="values-vi/android_chrome_strings.xml" lang="vi" type="android" />
     <output filename="values-zh-rCN/android_chrome_strings.xml" lang="zh-CN" type="android" />
-    <output filename="values-zh-rTW/android_chrome_strings.xml" lang="zh-TW" type="android" />
+    <!-- Use zh instead of zh-rTW so that Android will let zh-HK fall back to zh-TW. -->
+    <output filename="values-zh/android_chrome_strings.xml" lang="zh-TW" type="android" />
   </outputs>
   <translations>
     <file lang="am" path="translations/android_chrome_strings_am.xtb" />

@@ -353,7 +353,7 @@ grit("generate_components_strings") {
     "java/res/values-uk/components_strings.xml",
     "java/res/values-vi/components_strings.xml",
     "java/res/values-zh-rCN/components_strings.xml",
-    "java/res/values-zh-rTW/components_strings.xml",
+    "java/res/values-zh/components_strings.xml",
     "java/res/values/components_strings.xml",
   ]
 }
@@ -734,7 +734,7 @@ java_strings_grd("strings_grd") {
     "values-uk/android_webview_strings.xml",
     "values-vi/android_webview_strings.xml",
     "values-zh-rCN/android_webview_strings.xml",
-    "values-zh-rTW/android_webview_strings.xml",
+    "values-zh/android_webview_strings.xml",
     "values/android_webview_strings.xml",
   ]
 }

@@ -49,7 +49,7 @@ if (is_android) {
     "java/res/values-uk/components_strings.xml",
     "java/res/values-vi/components_strings.xml",
     "java/res/values-zh-rCN/components_strings.xml",
-    "java/res/values-zh-rTW/components_strings.xml",
+    "java/res/values-zh/components_strings.xml",
     "java/res/values/components_strings.xml",
   ]
 }

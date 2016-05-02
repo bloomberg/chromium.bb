@@ -128,7 +128,7 @@ are declared in build/common.gypi.
       <output filename="java/res/values-uk/generated_resources.xml" lang="uk" type="android" context="android_java" />
       <output filename="java/res/values-vi/generated_resources.xml" lang="vi" type="android" context="android_java" />
       <output filename="java/res/values-zh-rCN/generated_resources.xml" lang="zh-CN" type="android" context="android_java" />
-      <output filename="java/res/values-zh-rTW/generated_resources.xml" lang="zh-TW" type="android" context="android_java" />
+      <output filename="java/res/values-zh/generated_resources.xml" lang="zh-TW" type="android" context="android_java" />
     </if>
   </outputs>
   <translations>

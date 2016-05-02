@@ -51,7 +51,7 @@ if (is_android) {
     "java/res/values-uk/generated_resources.xml",
     "java/res/values-vi/generated_resources.xml",
     "java/res/values-zh-rCN/generated_resources.xml",
-    "java/res/values-zh-rTW/generated_resources.xml",
+    "java/res/values-zh/generated_resources.xml",
     "java/res/values/generated_resources.xml",
   ]
 }

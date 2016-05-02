@@ -175,7 +175,7 @@
       <output filename="remoting/android/res/values-uk/remoting_strings.xml" lang="uk" type="android" context="android_java"/>
       <output filename="remoting/android/res/values-vi/remoting_strings.xml" lang="vi" type="android" context="android_java"/>
       <output filename="remoting/android/res/values-zh-rCN/remoting_strings.xml" lang="zh-CN" type="android" context="android_java"/>
-      <output filename="remoting/android/res/values-zh-rTW/remoting_strings.xml" lang="zh-TW" type="android" context="android_java"/>
+      <output filename="remoting/android/res/values-zh/remoting_strings.xml" lang="zh-TW" type="android" context="android_java"/>
     </if>
 
   </outputs>

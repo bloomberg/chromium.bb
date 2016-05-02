@@ -306,7 +306,7 @@ if (is_android) {
       "values-uk/android_blimp_strings.xml",
       "values-vi/android_blimp_strings.xml",
       "values-zh-rCN/android_blimp_strings.xml",
-      "values-zh-rTW/android_blimp_strings.xml",
+      "values-zh/android_blimp_strings.xml",
     ]
   }
 

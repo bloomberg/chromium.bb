@@ -111,7 +111,7 @@ java_strings_grd("chrome_strings_grd") {
     "values-uk/android_chrome_strings.xml",
     "values-vi/android_chrome_strings.xml",
     "values-zh-rCN/android_chrome_strings.xml",
-    "values-zh-rTW/android_chrome_strings.xml",
+    "values-zh/android_chrome_strings.xml",
   ]
 }
 
