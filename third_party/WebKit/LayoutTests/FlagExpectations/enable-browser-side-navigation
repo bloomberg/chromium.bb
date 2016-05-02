@@ -1,83 +1,109 @@
-# Last updated: 2016-24-2 based on results from the trybot
-# linux_chromium_browser_side_navigation_rel
+# These tests currently fail when run with --enable-browser-side-navigation
+# See https://crbug.com/576261
 
-# Run 1
-# Expected to fail, but passed: (6)
-  editing/pasteboard/4944770-2.html
-  fast/css/absolute-inline-alignment.html
-  fast/dom/shadow/scoped-events-by-ua-stopped.html
-  fast/encoding/invalid-UTF-8.html
-  fast/forms/month/month-appearance-l10n.html
-  fast/inline/nested-text-descendants.html
-  fast/text/ellipsis-stroked.html
-  fast/text/emoticons.html
-  fast/text/international/bdi-dir-default-to-auto.html
-  fast/text/international/hindi-spacing.html
-  fast/text/international/inline-plaintext-is-isolated.html
-  fast/text/selection-multiple-runs.html
-  fast/text/unicode-variation-selector.html
-  http/tests/media/progress-events-generated-correctly.html
-  http/tests/security/contentTypeOptions/nosniff-script-without-content-type-blocked.html
-  http/tests/xmlviewer/dumpAsText/svg.xml
-  ietestcenter/css3/multicolumn/column-width-applies-to-007.htm
-  ietestcenter/css3/multicolumn/column-width-applies-to-009.htm
-  ietestcenter/css3/multicolumn/column-width-applies-to-012.htm
-  ietestcenter/css3/multicolumn/column-width-applies-to-015.htm
-  imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/variables/variable-external-font-face-01.html
-  imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/variables/variable-font-face-01.html
-  imported/web-platform-tests/mediacapture-streams/obtaining-local-multimedia-content/navigatorusermedia/getusermedia-optional-constraint.html
-  virtual/rootlayerscrolls/fast/scrolling/fractional-scroll-offset-fixed-position-non-composited.html
-  virtual/rootlayerscrolls/scrollbars/custom-scrollbar-changing-style.html
-
-# Expected to timeout, but passed: (4)
-  inspector/elements/edit/edit-dom-actions.html
-
-# Regressions: Unexpected crashes (53)
-  editing/execCommand/apply-style-command-crash.html [ Crash ]
+# https://crbug.com/608371: PlzNavigate: properly execute the BeforeUnload event
   editing/pasteboard/file-drag-to-editable.html [ Crash Failure ]
+  fast/events/before-unload-forbidden-navigation.html [ Crash ]
+  fast/events/before-unload-return-value-from-listener.html [ Crash Failure ]
+  fast/events/drop-handler-should-not-stop-navigate.html [ Crash Failure ]
+  fast/loader/recursive-before-unload-crash.html [ Crash Failure ]
+  http/tests/history/back-during-beforeunload.html [ Crash ]
+  virtual/pointerevent/fast/events/before-unload-forbidden-navigation.html [ Crash ]
+  virtual/pointerevent/fast/events/before-unload-return-value-from-listener.html [ Crash Failure ]
+  virtual/pointerevent/fast/events/drop-handler-should-not-stop-navigate.html [ Crash Failure ]
+  virtual/trustedeventsdefaultaction/fast/events/before-unload-forbidden-navigation.html [ Crash ]
+  virtual/trustedeventsdefaultaction/fast/events/before-unload-return-value-from-listener.html [ Crash Failure ]
+  virtual/trustedeventsdefaultaction/fast/events/drop-handler-should-not-stop-navigate.html [ Crash Failure ]
+
+# https://crbug.com/608372: PlzNavigate: support POST navigations
+  fast/forms/state-restore-skip-stateless.html [ Crash ]
+  fast/forms/submit-to-url-fragment.html [ Failure ]
+  fast/forms/xss-auditor-doesnt-crash-on-post-submit.html [ Timeout ]
+  fast/loader/form-state-restore-with-frames.html [ Failure ]
+  http/tests/cache/subresource-failover-to-network.html [ Crash ]
+  http/tests/history/back-to-post.html [ Timeout ]
+  http/tests/history/post-replace-state-reload.html [ Crash Failure ]
+  http/tests/navigation/location-reload-after-post.php [ Crash Failure ]
+  http/tests/navigation/post-frames-goback1.html [ Failure ]
+  http/tests/navigation/post-goback-same-url.html [ Failure ]
+  http/tests/navigation/post-goback1.html [ Crash Failure ]
+  http/tests/security/contentSecurityPolicy/1.1/form-action-src-redirect-blocked.html [ Failure ]
+  http/tests/security/xssAuditor/full-block-post-from-iframe.html [ Failure ]
+  http/tests/security/xssAuditor/post-from-iframe.html [ Failure ]
+  http/tests/security/xssAuditor/script-tag-post-control-char.html [ Failure ]
+  http/tests/security/xssAuditor/script-tag-post-null-char.html [ Failure ]
+  http/tests/security/xssAuditor/script-tag-post.html [ Failure ]
+
+# Failing due to error page supression in layout tests
+  fast/xmlhttprequest/null-document-xmlhttprequest-open.html [ Crash Timeout ]
+
+# Failing due to empty data url
+  editing/execCommand/apply-style-command-crash.html [ Crash ]
   editing/style/apply-style-crash.html [ Crash ]
-  fast/css/acid2-pixel.html [ Crash Timeout Failure ]
-  fast/css/acid2.html [ Crash Timeout Failure ]
-  fast/dom/location-new-window-no-crash.html [ Crash ]
+  fast/frames/iframe-plugin-load-remove-document-crash.html [ Crash ]
+  fast/loader/reload-zero-byte-plugin.html [ Crash ]
+  http/tests/security/contentSecurityPolicy/object-src-does-not-affect-child.html [ Crash ]
+  plugins/iframe-plugin-bgcolor.html [ Crash ]
+  plugins/plugin-document-back-forward.html [ Crash ]
+
+# https://crbug.com/608375: PlzNavigate: Appcache support
+  http/tests/appcache/fallback.html [ Timeout ]
   http/tests/appcache/main-resource-hash.html [ Crash Timeout ]
   http/tests/appcache/main-resource-redirect.html [ Crash Timeout ]
   http/tests/appcache/non-html.xhtml [ Crash Timeout ]
   http/tests/appcache/offline-access.html [ Crash Timeout ]
-  http/tests/cache/iframe-304-crash.html [ Crash Failure ]
-  http/tests/history/cross-origin-redirect-on-back.html [ Crash ]
-  http/tests/history/post-replace-state-reload.html [ Crash Failure ]
-  http/tests/navigation/location-reload-after-post.php [ Crash Failure ]
-  virtual/pointerevent/fast/events/before-unload-return-value-from-listener.html [ Crash Failure ]
-  virtual/pointerevent/fast/events/drop-handler-should-not-stop-navigate.html [ Crash Failure ]
-  virtual/trustedeventsdefaultaction/fast/events/before-unload-return-value-from-listener.html [ Crash Failure ]
-  virtual/trustedeventsdefaultaction/fast/events/drop-handler-should-not-stop-navigate.html [ Crash Failure ]
-
-# Regressions: Unexpected missing results (1)
-  http/tests/security/upgrade-insecure-requests/https-header-top-level.html [ Missing ]
-
-# Regressions: Unexpected text-only failures (69)
-  fast/dom/frame-loading-via-document-write.html [ Failure ]
   http/tests/appcache/remove-cache.html [ Failure Timeout ]
+  http/tests/appcache/top-frame-2.html [ Timeout ]
+
+# https://crbug.com/575210: PlzNavigate: history navigation support
+  fast/history/history-length-append-subframe-with-hash.html [ Failure ]
+  fast/history/same-document-iframes-changing-fragment.html [ Failure ]
+  fast/history/same-document-iframes-changing-pushstate.html [ Failure ]
+  http/tests/history/cross-origin-redirect-on-back.html [ Crash ]
+  http/tests/navigation/back-to-dynamic-iframe.html [ Crash ]
+  http/tests/navigation/history-back-across-form-submission-to-fragment.html [ Timeout ]
+  http/tests/navigation/redirect-on-reload-updates-history-item.html [ Failure ]
+  http/tests/navigation/same-and-different-back.html [ Crash ]
+  imported/web-platform-tests/html/browsers/browsing-the-web/history-traversal/popstate_event.html [ Crash Failure Timeout ]
+  imported/web-platform-tests/html/browsers/browsing-the-web/history-traversal/popstate_event.html [ Timeout ]
+  imported/web-platform-tests/html/browsers/history/the-history-interface/004.html [ Failure ]
+  imported/web-platform-tests/html/browsers/history/the-location-interface/security_location_0.sub.htm [ Failure ]
+
+# https://crbug.com/551000: PlzNavigate: DevTools support
   http/tests/inspector/console-resource-errors.html [ Failure ]
   http/tests/inspector/extensions-ignore-cache.html [ Failure ]
+  http/tests/inspector/extensions-network-redirect.html [ Timeout ]
   http/tests/inspector/network/network-document-initiator.html [ Failure ]
   http/tests/inspector/network/network-initiator.html [ Failure ]
   http/tests/inspector/resource-har-conversion.html [ Failure ]
   http/tests/inspector/resource-parameters.html [ Failure ]
-  http/tests/misc/policy-delegate-called-twice.html [ Failure ]
+  inspector-protocol/page/frameAttachedDetached.html [ Failure ]
+  inspector-protocol/page/frameStartedLoading.html [ Failure ]
+  inspector-protocol/runtime/runtime-execution-contexts-events.html [ Crash Timeout ]
+
+# https://crbug.com/576272: PlzNavigate: Navigation Timing API support
   http/tests/misc/resource-timing-iframe-restored-from-history.html [ Failure ]
+  http/tests/misc/timer-vs-loading.html [ Crash ]
   http/tests/misc/webtiming-cross-origin-and-back.html [ Failure ]
   http/tests/misc/webtiming-one-redirect.php [ Failure ]
   http/tests/misc/webtiming-two-redirects.php [ Failure ]
-  http/tests/misc/window-dot-stop.html [ Failure ]
-  http/tests/navigation/back-to-dynamic-iframe.html [ Failure ]
-  http/tests/navigation/back-to-redirect-with-frame.php [ Failure ]
-  http/tests/navigation/cross-origin-fragment-navigation-is-async.html [ Failure ]
-  http/tests/navigation/post-frames-goback1.html [ Failure ]
-  http/tests/navigation/post-goback-same-url.html [ Failure ]
-  http/tests/navigation/post-goback1.html [ Crash Failure ]
-  http/tests/navigation/redirect-on-reload-updates-history-item.html [ Failure ]
-  http/tests/navigation/same-origin-fragment-navigation-is-sync.html [ Failure ]
+  http/tests/w3c/webperf/approved/navigation-timing/html/test_navigation_type_reload.html [ Failure ]
+  http/tests/w3c/webperf/approved/navigation-timing/html/test_timing_attributes_order.html [ Failure ]
+  http/tests/w3c/webperf/approved/navigation-timing/html/test_timing_reload.html [ Failure ]
+  http/tests/w3c/webperf/approved/navigation-timing/html/test_timing_server_redirect.html [ Failure ]
+  http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_redirects.html [ Failure ]
+  http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_cross_origin_redirect_chain_allow_timing.html [ Timeout ]
+  http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_cross_origin_redirect_chain.html [ Timeout ]
+  http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_cross_origin_redirect_with_timing_allow_origin.html [ Timeout ]
+  http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_cross_origin_redirect.html [ Timeout ]
+  http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_same_origin_redirect.html [ Timeout ]
+  imported/web-platform-tests/web-animations/animation-timeline/document-timeline.html [ Failure ]
+
+# https://crbug.com/555418: Move `X-Frame-Options` and CSP's `frame-ancestor`
+# checks up out of the renderer.
+  http/tests/security/contentSecurityPolicy/1.1/child-src/frame-redirect-blocked.html [ Timeout ]
+  http/tests/security/contentSecurityPolicy/frame-src-redirect-blocked.html [ Timeout ]
+  http/tests/security/contentSecurityPolicy/redirect-does-not-match-paths.html [ Timeout ]
   http/tests/security/XFrameOptions/x-frame-options-allowall.html [ Failure ]
   http/tests/security/XFrameOptions/x-frame-options-deny-meta-tag-in-body.html [ Failure ]
   http/tests/security/XFrameOptions/x-frame-options-deny-meta-tag-parent-same-origin-allow.html [ Failure ]
@@ -89,177 +115,92 @@
   http/tests/security/XFrameOptions/x-frame-options-multiple-headers-sameorigin-allow.html [ Failure ]
   http/tests/security/XFrameOptions/x-frame-options-none.html [ Failure ]
   http/tests/security/XFrameOptions/x-frame-options-parent-same-origin-allow.html [ Failure ]
-  http/tests/security/contentSecurityPolicy/1.1/form-action-src-redirect-blocked.html [ Failure ]
-  http/tests/security/frame-loading-via-document-write.html [ Failure ]
-  http/tests/security/isolatedWorld/bypass-main-world-csp-iframes.html [ Failure ]
+
+# https://crbug.com/576270: Move mixed-content checks that happen during
+# navigation to the browser
   http/tests/security/mixedContent/insecure-iframe-in-main-frame.html [ Failure ]
+  http/tests/security/mixedContent/nonwebby-scheme-in-iframe-allowed.https.html [ Timeout Failure ]
   http/tests/security/mixedContent/redirect-http-to-https-iframe-in-main-frame.html [ Failure ]
   http/tests/security/mixedContent/redirect-https-to-http-iframe-in-main-frame.html [ Failure ]
+
+# https://crbug.com/576271: PlzNavigate: support insecure request upgrade
   http/tests/security/upgrade-insecure-requests/https-header-auxiliary.html [ Failure ]
   http/tests/security/upgrade-insecure-requests/https-header-nested.html [ Failure ]
+  http/tests/security/upgrade-insecure-requests/https-header-top-level.html [ Missing ]
   http/tests/security/w3c/cross-origin-objects.html [ Crash Timeout Failure ]
-  http/tests/security/xssAuditor/full-block-post-from-iframe.html [ Failure ]
-  http/tests/security/xssAuditor/post-from-iframe.html [ Failure ]
-  http/tests/security/xssAuditor/script-tag-post-control-char.html [ Failure ]
-  http/tests/security/xssAuditor/script-tag-post-null-char.html [ Failure ]
-  http/tests/security/xssAuditor/script-tag-post.html [ Failure ]
-  http/tests/security/xssAuditor/xss-filter-bypass-long-string.html [ Failure ]
-  http/tests/security/xssAuditor/xss-protection-parsing-01.html [ Failure ]
+
+# https://crbug.com/440463: Make ServiceWorker and PlzNavigate play well
+# together.
   http/tests/serviceworker/appcache-ordering-main.html [ Failure ]
-  virtual/pointerevent/fast/events/drag-file-crash.html [ Failure ]
-  virtual/pointerevent/fast/events/iframe-object-onload.html [ Failure ]
-  virtual/trustedeventsdefaultaction/fast/events/drag-file-crash.html [ Failure ]
-  virtual/trustedeventsdefaultaction/fast/events/iframe-object-onload.html [ Failure ]
+  http/tests/serviceworker/chromium/register-link-header.html [ Timeout ]
+  http/tests/serviceworker/chromium/sandboxed-iframe-navigator-serviceworker.html [ Failure ]
+  http/tests/serviceworker/fetch-request-fallback.html [ Failure ]
+  http/tests/serviceworker/request-end-to-end.html [ Failure ]
 
-# Regressions: Unexpected image-only failures (5)
-  editing/selection/iframe.html [ Failure ]
-
-# Regressions: Unexpected timeouts (47)
-  http/tests/appcache/fallback.html [ Timeout ]
-  http/tests/appcache/top-frame-2.html [ Timeout ]
-  http/tests/history/back-to-post.html [ Timeout ]
-  http/tests/inspector/extensions-network-redirect.html [ Timeout ]
-  http/tests/misc/window-open-then-write.html [ Timeout ]
+# Untriaged navigation
+  compositing/gestures/gesture-tapHighlight-simple-navigate.html [ Failure ]
+  fast/dom/location-new-window-no-crash.html [ Crash ]
+  fast/loader/document-destruction-within-unload.html [ Crash ]
+  fast/loader/main-document-url-for-non-http-loads.html [ Failure ]
+  fast/loader/scroll-position-restored-on-reload-at-load-event.html [ Failure ]
+  fast/loader/stateobjects/pushstate-with-fragment-urls-and-hashchange.html [ Crash Timeout ]
+  fast/loader/subframe-removes-itself.html [ Failure ]
+  http/tests/cache/iframe-304-crash.html [ Crash Failure ]
+  http/tests/cookies/same-site/popup-same-site-post.html [ Failure ]
+  http/tests/cookies/same-site/popup-same-site.html [ Failure ]
+  http/tests/loading/307-after-303-after-post.html [ Failure ]
+  http/tests/loading/bad-scheme-subframe.html [ Timeout ]
+  http/tests/loading/bad-server-subframe.html [ Crash Timeout ]
+  http/tests/loading/doc-write-sync-third-party-script-reload.html [ Failure ]
+  http/tests/loading/pdf-commit-load-callbacks.html [ Crash ]
+  http/tests/loading/promote-img-in-viewport-priority.html [ Failure ]
+  http/tests/loading/redirect-methods.html [ Crash Failure ]
+  http/tests/loading/redirect-with-no-location-crash.html [ Failure ]
+  http/tests/loading/slow-parsing-subframe.html [ Failure ]
+  http/tests/loading/text-content-type-with-binary-extension.html [ Timeout Failure ]
+  http/tests/navigation/back-to-dynamic-iframe.html [ Failure ]
+  http/tests/navigation/back-to-redirect-with-frame.php [ Failure ]
+  http/tests/navigation/cross-origin-fragment-navigation-is-async.html [ Failure ]
   http/tests/navigation/forward-to-fragment-fires-onload.html [ Timeout ]
-  http/tests/navigation/history-back-across-form-submission-to-fragment.html [ Timeout ]
   http/tests/navigation/response204.html [ Timeout ]
+  http/tests/navigation/same-origin-fragment-navigation-is-sync.html [ Failure ]
   http/tests/navigation/scrollstate-after-http-equiv-refresh-fragment-identifier-2.html [ Timeout ]
   http/tests/navigation/scrollstate-after-http-equiv-refresh-fragment-identifier.html [ Timeout ]
   http/tests/navigation/scrollstate-after-http-equiv-refresh.html [ Timeout ]
   http/tests/navigation/scrollstate-after-location-reload.html [ Timeout ]
-  http/tests/security/contentSecurityPolicy/1.1/child-src/frame-redirect-blocked.html [ Timeout ]
-  http/tests/security/contentSecurityPolicy/frame-src-redirect-blocked.html [ Timeout ]
-  http/tests/security/contentSecurityPolicy/redirect-does-not-match-paths.html [ Timeout ]
-  http/tests/security/mixedContent/nonwebby-scheme-in-iframe-allowed.https.html [ Timeout Failure ]
 
-# Run 2
+# Untriaged security
+  http/tests/security/frame-loading-via-document-write.html [ Failure ]
+  http/tests/security/isolatedWorld/bypass-main-world-csp-iframes.html [ Failure ]
+  http/tests/security/xssAuditor/xss-filter-bypass-long-string.html [ Failure ]
+  http/tests/security/xssAuditor/xss-protection-parsing-01.html [ Failure ]
 
-# Regressions: Unexpected text-only failures (25)
-  fast/events/drag-file-crash.html [ Failure ]
-  fast/forms/submit-to-url-fragment.html [ Failure ]
-  fast/history/history-length-append-subframe-with-hash.html [ Failure ]
-  fast/history/same-document-iframes-changing-fragment.html [ Failure ]
-  fast/history/same-document-iframes-changing-pushstate.html [ Failure ]
-  fast/loader/form-state-restore-with-frames.html [ Failure ]
-  fast/loader/main-document-url-for-non-http-loads.html [ Failure ]
-  fast/loader/scroll-position-restored-on-reload-at-load-event.html [ Failure ]
-  fast/loader/subframe-removes-itself.html [ Failure ]
-  http/tests/loading/307-after-303-after-post.html [ Failure ]
-  http/tests/loading/promote-img-in-viewport-priority.html [ Failure ]
-  http/tests/loading/redirect-with-no-location-crash.html [ Failure ]
-  http/tests/loading/slow-parsing-subframe.html [ Failure ]
-  http/tests/serviceworker/fetch-request-fallback.html [ Failure ]
-  http/tests/serviceworker/request-end-to-end.html [ Failure ]
-  http/tests/w3c/webperf/approved/navigation-timing/html/test_navigation_type_reload.html [ Failure ]
-  http/tests/w3c/webperf/approved/navigation-timing/html/test_timing_attributes_order.html [ Failure ]
-  http/tests/w3c/webperf/approved/navigation-timing/html/test_timing_reload.html [ Failure ]
-  http/tests/w3c/webperf/approved/navigation-timing/html/test_timing_server_redirect.html [ Failure ]
-  http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_redirects.html [ Failure ]
-  imported/web-platform-tests/html/browsers/history/the-history-interface/004.html [ Failure ]
-  imported/web-platform-tests/html/browsers/history/the-location-interface/security_location_0.sub.htm [ Failure ]
-  inspector-protocol/page/frameAttachedDetached.html [ Failure ]
-  inspector-protocol/page/frameStartedLoading.html [ Failure ]
-
-# Regressions: Unexpected image-only failures (1)
-  svg/custom/anchor-on-use.svg [ Failure ]
-
-# Regressions: Unexpected crashes (55)
-  fast/events/before-unload-return-value-from-listener.html [ Crash Failure ]
-  fast/events/drop-handler-should-not-stop-navigate.html [ Crash Failure ]
-  fast/frames/iframe-plugin-load-remove-document-crash.html [ Crash ]
-  fast/loader/recursive-before-unload-crash.html [ Crash Failure ]
-  fast/loader/reload-zero-byte-plugin.html [ Crash ]
-  fast/loader/stateobjects/pushstate-with-fragment-urls-and-hashchange.html [ Crash Timeout ]
-  fast/overflow/overflow-height-float-not-removed-crash.html [ Crash Timeout Failure ]
-  fast/overflow/overflow-height-float-not-removed-crash3.html [ Crash Timeout Failure ]
-  fast/table/giantCellspacing.html [ Crash Timeout Failure ]
-  fast/xmlhttprequest/null-document-xmlhttprequest-open.html [ Crash Timeout ]
-  http/tests/loading/bad-server-subframe.html [ Crash Timeout Failure ]
-  http/tests/loading/pdf-commit-load-callbacks.html [ Crash ]
-  http/tests/loading/redirect-methods.html [ Crash Failure ]
-  imported/web-platform-tests/html/browsers/browsing-the-web/history-traversal/popstate_event.html [ Crash Failure Timeout ]
-  imported/web-platform-tests/html/semantics/embedded-content/the-object-element/object-attributes.html [ Crash Timeout Failure ]
-
-# Regressions: Unexpected timeouts (21)
-  fast/forms/xss-auditor-doesnt-crash-on-post-submit.html [ Timeout ]
-  http/tests/loading/bad-scheme-subframe.html [ Timeout ]
-  http/tests/loading/text-content-type-with-binary-extension.html [ Timeout Failure ]
-  http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_cross_origin_redirect.html [ Timeout ]
-  http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_cross_origin_redirect_chain.html [ Timeout ]
-  http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_cross_origin_redirect_chain_allow_timing.html [ Timeout ]
-  http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_cross_origin_redirect_with_timing_allow_origin.html [ Timeout ]
-  http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_same_origin_redirect.html [ Timeout ]
-  mhtml/multi_frames_contentid.mht [ Timeout Failure ]
-
-# Regressions: Unexpected image and text failures (6)
+# Untriaged other
+  editing/selection/iframe.html [ Failure ]
+  fast/css/acid2-pixel.html [ Crash Timeout Failure ]
+  fast/css/acid2.html [ Crash Timeout Failure ]
   fast/css/preserve-user-specified-zoom-level-on-reload.html [ Failure ]
+  fast/events/drag-file-crash.html [ Failure ]
+  fast/layout/scroll-anchoring/history-restore-anchors.html
+  fast/overflow/overflow-height-float-not-removed-crash.html [ Crash Timeout ]
+  fast/overflow/overflow-height-float-not-removed-crash3.html [ Crash Timeout ]
+  fast/table/giantCellspacing.html [ Crash Timeout ]
+  http/tests/misc/policy-delegate-called-twice.html [ Failure ]
+  http/tests/misc/window-dot-stop.html [ Failure ]
+  http/tests/misc/window-open-then-write.html [ Timeout ]
+  imported/web-platform-tests/html/semantics/embedded-content/the-object-element/object-attributes.html [ Crash Timeout ]
+  imported/web-platform-tests/shadow-dom/untriaged/html-elements-in-shadow-trees/html-forms/test-003.html [ Failure ]
+  mhtml/multi_frames_contentid.mht [ Timeout Failure ]
+  plugins/object-onfocus-mutation-crash.html [ Timeout ]
+  svg/custom/anchor-on-use.svg [ Failure ]
   svg/dynamic-updates/SVGAElement-dom-href-attr.html [ Failure ]
   svg/dynamic-updates/SVGAElement-dom-target-attr.html [ Failure ]
   svg/dynamic-updates/SVGAElement-svgdom-href-prop.html [ Failure ]
   svg/dynamic-updates/SVGAElement-svgdom-target-prop.html [ Failure ]
-
-# Run 3
-
-# Regressions: Unexpected image-only failures (1)
-  compositing/gestures/gesture-tapHighlight-simple-navigate.html [ Failure ]
-
-# Update on 16-3-16
-
-# Regressions: Unexpected text-only failures (2)
-  http/tests/serviceworker/chromium/sandboxed-iframe-navigator-serviceworker.html [ Failure ]
-
-# Regressions: Unexpected crashes (2)
-  http/tests/cache/subresource-failover-to-network.html [ Crash ]
-
-# Regressions: Unexpected timeouts (5)
-  http/tests/serviceworker/chromium/register-link-header.html [ Timeout ]
-  inspector-protocol/runtime/runtime-execution-contexts-events.html [ Timeout ]
-  virtual/spv2/fast/overflow/overflow-height-float-not-removed-crash.html [ Timeout Failure ]
+  virtual/pointerevent/fast/events/drag-file-crash.html [ Failure ]
+  virtual/pointerevent/fast/events/iframe-object-onload.html [ Failure ]
+  virtual/spv2/fast/overflow/overflow-height-float-not-removed-crash.html [ Timeout ]
   virtual/spv2/fast/overflow/overflow-height-float-not-removed-crash2.html [ Timeout ]
-  virtual/spv2/fast/overflow/overflow-height-float-not-removed-crash3.html [ Timeout Failure ]
-
-# Update on 16-3-17
-
-# Regressions: Unexpected timeouts (1)
-  imported/web-platform-tests/html/browsers/browsing-the-web/history-traversal/popstate_event.html [ Timeout ]
-
-# Update on 16-4-8
-
-# Regressions: Unexpected text-only failures (3)
-  http/tests/cookies/same-site/popup-same-site-post.html [ Failure ]
-  http/tests/cookies/same-site/popup-same-site.html [ Failure ]
-
-# Regressions: Unexpected crashes (3)
-  http/tests/security/contentSecurityPolicy/object-src-does-not-affect-child.html [ Crash ]
-  plugins/iframe-plugin-bgcolor.html [ Crash ]
-  plugins/plugin-document-back-forward.html [ Crash ]
-
-# Regressions: Unexpected timeouts (2)
-  plugins/object-onfocus-mutation-crash.html [ Timeout ]
-
-# Update on 16-4-14
-
-# Regressions: Unexpected text-only failures (2)
-  imported/web-platform-tests/web-animations/animation-timeline/document-timeline.html [ Failure ]
-
-# Update on 16-4-26
-
-# Regressions: Unexpected text-only failures (1)
-  http/tests/loading/doc-write-sync-third-party-script-reload.html [ Failure ]
-
-# Regressions: Unexpected crashes (6)
-  fast/events/before-unload-forbidden-navigation.html [ Crash ]
-  fast/forms/state-restore-skip-stateless.html [ Crash ]
-  fast/loader/document-destruction-within-unload.html [ Crash ]
-  http/tests/history/back-during-beforeunload.html [ Crash ]
-  http/tests/misc/timer-vs-loading.html [ Crash ]
-  virtual/trustedeventsdefaultaction/fast/events/before-unload-forbidden-navigation.html [ Crash ]
-
-# Update on 16-4-29
-
-# Regressions: Unexpected text-only failures (2)
-  fast/layout/scroll-anchoring/history-restore-anchors.html [ Failure ]
-  imported/web-platform-tests/shadow-dom/untriaged/html-elements-in-shadow-trees/html-forms/test-003.html [ Failure ]
-
-# Regressions: Unexpected crashes (1)
-  virtual/pointerevent/fast/events/before-unload-forbidden-navigation.html [ Crash ]
+  virtual/spv2/fast/overflow/overflow-height-float-not-removed-crash3.html [ Timeout ]
+  virtual/trustedeventsdefaultaction/fast/events/drag-file-crash.html [ Failure ]
+  virtual/trustedeventsdefaultaction/fast/events/iframe-object-onload.html [ Failure ]

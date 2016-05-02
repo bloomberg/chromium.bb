@@ -1,3 +1,4 @@
+-IFrameZoomBrowserTest.SubframesDontZoomIndependently
 -RenderFrameHostManagerTest.RestoreSubframeFileAccessForHistoryNavigation
 -RenderViewImplTest.OnNavigationHttpPost
 -ServiceWorkerBrowserTest.FetchPageWithSaveData
