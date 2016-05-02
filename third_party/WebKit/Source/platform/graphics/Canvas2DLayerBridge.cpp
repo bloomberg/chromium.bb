@@ -201,6 +201,9 @@ bool Canvas2DLayerBridge::prepareIOSurfaceMailboxFromImage(SkImage* image, WebEx
         return false;
 
     gpu::gles2::GLES2Interface* gl = contextGL();
+    if (!gl)
+        return false;
+
     GLuint imageTexture = skia::GrBackendObjectToGrGLTextureInfo(image->getTextureHandle(true))->fID;
     gl->CopySubTextureCHROMIUM(imageTexture, imageInfo.m_textureId, 0, 0, 0, 0, m_size.width(), m_size.height(), GL_FALSE, GL_FALSE, GL_FALSE);
 
@@ -236,6 +239,9 @@ Canvas2DLayerBridge::ImageInfo Canvas2DLayerBridge::createIOSurfaceBackedTexture
     }
 
     gpu::gles2::GLES2Interface* gl = contextGL();
+    if (!gl)
+        return Canvas2DLayerBridge::ImageInfo();
+
     GLuint imageId = gl->CreateGpuMemoryBufferImageCHROMIUM(m_size.width(), m_size.height(), GL_RGBA, GC3D_SCANOUT_CHROMIUM);
     if (!imageId)
         return Canvas2DLayerBridge::ImageInfo();
@@ -256,7 +262,7 @@ Canvas2DLayerBridge::ImageInfo Canvas2DLayerBridge::createIOSurfaceBackedTexture
 void Canvas2DLayerBridge::deleteCHROMIUMImage(ImageInfo info)
 {
     gpu::gles2::GLES2Interface* gl = contextGL();
-    if (gl->GetGraphicsResetStatusKHR() != GL_NO_ERROR)
+    if (!gl)
         return;
 
     GLenum target = GC3D_TEXTURE_RECTANGLE_ARB;
@@ -322,6 +328,9 @@ bool Canvas2DLayerBridge::prepareMailboxFromImage(PassRefPtr<SkImage> image, Web
     mailboxInfo.m_mailbox.textureTarget = GL_TEXTURE_2D;
 
     gpu::gles2::GLES2Interface* gl = contextGL();
+    if (!gl)
+        return false;
+
     GLuint textureID = skia::GrBackendObjectToGrGLTextureInfo(mailboxInfo.m_image->getTextureHandle(true))->fID;
     gl->BindTexture(GL_TEXTURE_2D, textureID);
     gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, getGLFilter());
@@ -694,8 +703,9 @@ gpu::gles2::GLES2Interface* Canvas2DLayerBridge::contextGL()
     // Check on m_layer is necessary because contextGL() may be called during
     // the destruction of m_layer
     if (m_layer && !m_destructionInProgress) {
-        // Ensure rate limiter is disabled if context is lost.
-        checkSurfaceValid();
+        // Call checkSurfaceValid to ensure rate limiter is disabled if context is lost.
+        if (!checkSurfaceValid())
+            return nullptr;
     }
     return m_contextProvider ? m_contextProvider->contextGL() : nullptr;
 }
