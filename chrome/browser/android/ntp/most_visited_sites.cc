@@ -177,8 +177,11 @@ MostVisitedSites::Suggestion::Suggestion(Suggestion&&) = default;
 MostVisitedSites::Suggestion&
 MostVisitedSites::Suggestion::operator=(Suggestion&&) = default;
 
-MostVisitedSites::MostVisitedSites(Profile* profile)
-    : profile_(profile), top_sites_(TopSitesFactory::GetForProfile(profile)),
+MostVisitedSites::MostVisitedSites(
+    Profile* profile,
+    variations::VariationsService* variations_service)
+    : profile_(profile), variations_service_(variations_service),
+      top_sites_(TopSitesFactory::GetForProfile(profile)),
       suggestions_service_(SuggestionsServiceFactory::GetForProfile(profile_)),
       observer_(nullptr), num_sites_(0),
       received_most_visited_sites_(false), received_popular_sites_(false),
@@ -209,6 +212,7 @@ void MostVisitedSites::SetMostVisitedURLsObserver(
     popular_sites_.reset(new PopularSites(
         profile_->GetPrefs(),
         TemplateURLServiceFactory::GetForProfile(profile_),
+        variations_service_,
         profile_->GetRequestContext(),
         GetPopularSitesCountry(),
         GetPopularSitesVersion(),

@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "chrome/browser/android/ntp/popular_sites.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "jni/MostVisitedSites_jni.h"
 #include "ui/gfx/android/java_bitmap.h"
@@ -99,7 +100,8 @@ void MostVisitedSitesBridge::Observer::OnPopularURLsAvailable(
 }
 
 MostVisitedSitesBridge::MostVisitedSitesBridge(Profile* profile)
-    : most_visited_(profile) {}
+    : most_visited_(profile,
+                    g_browser_process->variations_service()) {}
 
 MostVisitedSitesBridge::~MostVisitedSitesBridge() {}
 

@@ -13,6 +13,7 @@
 #include "base/task_runner_util.h"
 #include "base/values.h"
 #include "chrome/browser/android/ntp/popular_sites.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "components/url_formatter/url_fixer.h"
@@ -60,6 +61,7 @@ void PopularSitesInternalsMessageHandler::HandleRegisterForEvents(
   popular_sites_.reset(new PopularSites(
       profile->GetPrefs(),
       TemplateURLServiceFactory::GetForProfile(profile),
+      g_browser_process->variations_service(),
       profile->GetRequestContext(),
       country, version, false,
       base::Bind(&PopularSitesInternalsMessageHandler::OnPopularSitesAvailable,
@@ -91,6 +93,7 @@ void PopularSitesInternalsMessageHandler::HandleDownload(
   popular_sites_.reset(new PopularSites(
       profile->GetPrefs(),
       TemplateURLServiceFactory::GetForProfile(profile),
+      g_browser_process->variations_service(),
       profile->GetRequestContext(),
       country, version, true, callback));
 }

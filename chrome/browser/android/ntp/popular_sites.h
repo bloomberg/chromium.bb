@@ -25,6 +25,10 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
+namespace variations {
+class VariationsService;
+}
+
 class PrefService;
 class TemplateURLService;
 
@@ -59,6 +63,7 @@ class PopularSites {
   // if it already exists on disk.
   PopularSites(PrefService* prefs,
                const TemplateURLService* template_url_service,
+               variations::VariationsService* variations_service,
                net::URLRequestContextGetter* download_context,
                const std::string& override_country,
                const std::string& override_version,

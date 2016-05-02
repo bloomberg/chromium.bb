@@ -17,7 +17,6 @@
 #include "base/task_runner_util.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/common/chrome_paths.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/ntp_tiles/switches.h"
@@ -30,6 +29,7 @@
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
+using variations::VariationsService;
 
 namespace {
 
@@ -75,21 +75,12 @@ std::string GetDefaultSearchEngineCountryCode(
   return std::string();
 }
 
-// Get the country that the experiment is running under
-std::string GetVariationsServiceCountry() {
-  DCHECK(g_browser_process);
-  variations::VariationsService* variations_service =
-      g_browser_process->variations_service();
-  if (variations_service)
-    return variations_service->GetStoredPermanentCountry();
-  return std::string();
-}
-
 // Find out the country code of the user by using the Google country code if
 // Google is the default search engine set. If Google is not the default search
 // engine use the country provided by VariationsService. Fallback to a default
 // if we can't make an educated guess.
 std::string GetCountryToUse(const TemplateURLService* template_url_service,
+                            VariationsService* variations_service,
                             const std::string& override_country) {
   if (!override_country.empty())
     return override_country;
@@ -97,8 +88,9 @@ std::string GetCountryToUse(const TemplateURLService* template_url_service,
   std::string country_code = GetDefaultSearchEngineCountryCode(
       template_url_service);
 
-  if (country_code.empty())
-    country_code = GetVariationsServiceCountry();
+  // Get the country that the experiment is running under
+  if (country_code.empty() && variations_service)
+    country_code = variations_service->GetStoredPermanentCountry();
 
   if (country_code.empty())
     country_code = kPopularSitesDefaultCountryCode;
@@ -178,6 +170,7 @@ PopularSites::Site::~Site() {}
 
 PopularSites::PopularSites(PrefService* prefs,
                            const TemplateURLService* template_url_service,
+                           VariationsService* variations_service,
                            net::URLRequestContextGetter* download_context,
                            const std::string& override_country,
                            const std::string& override_version,
@@ -186,7 +179,9 @@ PopularSites::PopularSites(PrefService* prefs,
     : PopularSites(prefs,
                    template_url_service,
                    download_context,
-                   GetCountryToUse(template_url_service, override_country),
+                   GetCountryToUse(template_url_service,
+                                   variations_service,
+                                   override_country),
                    GetVersionToUse(override_version),
                    GURL(),
                    force_download,

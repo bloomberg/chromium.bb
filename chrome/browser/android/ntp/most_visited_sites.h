@@ -33,8 +33,9 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
-class PopularSites;
-class Profile;
+namespace variations {
+class VariationsService;
+}
 
 // Tracks the list of most visited sites and their thumbnails.
 //
@@ -85,7 +86,8 @@ class MostVisitedSites : public history::TopSitesObserver,
     DISALLOW_COPY_AND_ASSIGN(Suggestion);
   };
 
-  explicit MostVisitedSites(Profile* profile);
+  MostVisitedSites(Profile* profile,
+                   variations::VariationsService* variations_service);
 
   ~MostVisitedSites() override;
 
@@ -212,6 +214,7 @@ class MostVisitedSites : public history::TopSitesObserver,
   // The profile whose most visited sites will be queried.
   Profile* profile_;
 
+  variations::VariationsService* variations_service_;
   scoped_refptr<history::TopSites> top_sites_;
   suggestions::SuggestionsService* suggestions_service_;
 
