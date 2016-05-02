@@ -118,6 +118,9 @@ bool ProcessorEntityTracker::UpdateIsReflection(int64_t update_version) const {
 
 void ProcessorEntityTracker::RecordIgnoredUpdate(
     const UpdateResponseData& update) {
+  DCHECK(metadata_.server_id().empty() ||
+         metadata_.server_id() == update.entity->id);
+  metadata_.set_server_id(update.entity->id);
   metadata_.set_server_version(update.response_version);
   // Either these already matched, acked was just bumped to squash a pending
   // commit and this should follow, or the pending commit needs to be requeued.
@@ -166,6 +169,7 @@ void ProcessorEntityTracker::MakeLocalChange(std::unique_ptr<EntityData> data) {
 
 void ProcessorEntityTracker::Delete() {
   IncrementSequenceNumber();
+  metadata_.set_modification_time(syncer::TimeToProtoTime(base::Time::Now()));
   metadata_.set_is_deleted(true);
   metadata_.clear_specifics_hash();
   // Clear any cached pending commit data.
@@ -185,6 +189,8 @@ void ProcessorEntityTracker::InitializeCommitRequestData(
     data.client_tag_hash = metadata_.client_tag_hash();
     data.id = metadata_.server_id();
     data.creation_time = syncer::ProtoTimeToTime(metadata_.creation_time());
+    data.modification_time =
+        syncer::ProtoTimeToTime(metadata_.modification_time());
     request->entity = data.PassToPtr();
   }
 
