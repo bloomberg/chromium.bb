@@ -18,7 +18,8 @@ class ExternsChecker(object):
 
   def RunChecks(self):
     bad_files = []
-    affected = [f.AbsoluteLocalPath() for f in self._input_api.AffectedFiles()]
+    affected = [f.AbsoluteLocalPath() for f in
+                   self._input_api.change.AffectedFiles()]
     for path in affected:
       pair = self._api_pairs.get(path)
       if pair != None and pair not in affected:

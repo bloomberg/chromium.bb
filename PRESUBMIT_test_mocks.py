@@ -140,3 +140,7 @@ class MockChange(object):
 
   def LocalPaths(self):
     return self._changed_files
+
+  def AffectedFiles(self, include_dirs=False, include_deletes=True,
+                    file_filter=None):
+    return self._changed_files

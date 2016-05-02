@@ -12,7 +12,8 @@ from externs_checker import ExternsChecker
 sys.path.append(
     os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '..'))
 
-from PRESUBMIT_test_mocks import MockInputApi, MockOutputApi, MockFile
+from PRESUBMIT_test_mocks import (MockInputApi, MockOutputApi, MockFile,
+                                  MockChange)
 
 
 class ExternsCheckerTest(unittest.TestCase):
@@ -22,6 +23,7 @@ class ExternsCheckerTest(unittest.TestCase):
     input_api = MockInputApi()
     input_api.os_path.exists = exists
     input_api.files = [MockFile(f, '') for f in files]
+    input_api.change = MockChange(input_api.files)
     output_api = MockOutputApi()
     checker = ExternsChecker(input_api, output_api, self.API_PAIRS)
     return checker.RunChecks()
