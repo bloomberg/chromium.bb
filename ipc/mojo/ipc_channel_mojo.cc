@@ -240,10 +240,12 @@ ChannelMojo::~ChannelMojo() {
 
 bool ChannelMojo::Connect() {
   WillConnect();
-  base::AutoLock lock(lock_);
-  DCHECK(!task_runner_);
-  task_runner_ = base::ThreadTaskRunnerHandle::Get();
-  DCHECK(!message_reader_);
+  {
+    base::AutoLock lock(lock_);
+    DCHECK(!task_runner_);
+    task_runner_ = base::ThreadTaskRunnerHandle::Get();
+    DCHECK(!message_reader_);
+  }
   bootstrap_->Connect();
   return true;
 }
