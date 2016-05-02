@@ -2127,10 +2127,10 @@ cr.define('options', function() {
      * @private
      */
     onBluetoothAdapterStateChanged_: function(state) {
-      disallow_bluetooth = !loadTimeData.getBoolean('allowBluetooth');
+      var disallowBluetooth = !loadTimeData.getBoolean('allowBluetooth');
       // If allowBluetooth is false, state.available will always be false, so
       // assume Bluetooth is available but disabled by policy.
-      if (!state || (!state.available && !disallow_bluetooth)) {
+      if (!state || (!state.available && !disallowBluetooth)) {
         this.bluetoothAdapterState_ = null;
         $('bluetooth-devices').hidden = true;
         return;
@@ -2139,17 +2139,17 @@ cr.define('options', function() {
       this.bluetoothAdapterState_ = state;
       this.setBluetoothState_(state.powered);
 
-      el = $('enable-bluetooth');
-      if (disallow_bluetooth) {
-        el.setAttribute('pref', 'cros.device.allow_bluetooth');
-        el.setAttribute('controlled-by', 'policy');
-        el.disabled = true;
+      var enableBluetoothEl = $('enable-bluetooth');
+      if (disallowBluetooth) {
+        enableBluetoothEl.setAttribute('pref', 'cros.device.allow_bluetooth');
+        enableBluetoothEl.setAttribute('controlled-by', 'policy');
+        enableBluetoothEl.disabled = true;
         $('bluetooth-controlled-setting-indicator').hidden = false;
         return;
       }
-      el.removeAttribute('pref');
-      el.removeAttribute('controlled-by');
-      el.disabled = false;
+      enableBluetoothEl.removeAttribute('pref');
+      enableBluetoothEl.removeAttribute('controlled-by');
+      enableBluetoothEl.disabled = false;
       $('bluetooth-controlled-setting-indicator').hidden = true;
 
       // Flush the device lists.
