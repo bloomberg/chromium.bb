@@ -70,7 +70,7 @@ static bool rgbPictureImport(const unsigned char* pixels, WebPImporter importRGB
     return importRGB(picture, rgb.get(), picture->width * 3);
 }
 
-static bool encodePixels(IntSize imageSize, const unsigned char* pixels, int quality, Vector<unsigned char>* output)
+static bool encodePixels(const IntSize& imageSize, const unsigned char* pixels, int quality, Vector<unsigned char>* output)
 {
     if (imageSize.width() <= 0 || imageSize.width() > WEBP_MAX_DIMENSION)
         return false;

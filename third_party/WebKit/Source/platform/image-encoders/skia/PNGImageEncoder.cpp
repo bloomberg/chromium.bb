@@ -87,7 +87,7 @@ void PNGImageEncoder::finalizePng(PNGImageEncoderState* encoderState)
     png_write_end(encoderState->png(), encoderState->info());
 }
 
-static bool encodePixels(IntSize imageSize, const unsigned char* inputPixels, Vector<unsigned char>* output)
+static bool encodePixels(const IntSize& imageSize, const unsigned char* inputPixels, Vector<unsigned char>* output)
 {
     OwnPtr<PNGImageEncoderState> encoderState = PNGImageEncoderState::create(imageSize, output);
     if (!encoderState.get())
