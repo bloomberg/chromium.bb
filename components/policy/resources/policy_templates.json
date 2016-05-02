@@ -8328,7 +8328,7 @@
       'supported_on': ['chrome_os:51-'],
       'device_only': True,
       'features': {
-        'dynamic_refresh': True,
+        'dynamic_refresh': False,
       },
       'example_value': [
         {
@@ -8345,7 +8345,7 @@
       'tags': ['system-security'],
       'desc': '''Defines the list of USB devices that are allowed to be detached from their kernel driver in order to be used through the chrome.usb API directly inside a web application. Entries are pairs of USB Vendor Identifier and Product Identifier to identify a specific hardware.
 
-      If this policy is not configured, the list of a detachable USB devices is considered as empty.''',
+      If this policy is not configured, the list of a detachable USB devices is empty.''',
     },
     {
       'name': 'DeviceAllowBluetooth',
