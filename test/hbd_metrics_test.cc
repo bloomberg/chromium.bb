@@ -78,7 +78,7 @@ double compute_hbd_aomssim(const YV12_BUFFER_CONFIG *source,
                            const YV12_BUFFER_CONFIG *dest, uint32_t in_bd,
                            uint32_t bd) {
   double ssim, weight;
-  ssim = aom_highbd_calc_ssim(source, dest, &weight, bd);
+  ssim = aom_highbd_calc_ssim(source, dest, &weight, bd, in_bd);
   return 100 * pow(ssim / weight, 8.0);
 }
 
@@ -200,11 +200,11 @@ INSTANTIATE_TEST_CASE_P(
     ::testing::Values(MetricTestTParam(&compute_aomssim, &compute_hbd_aomssim,
                                        8, 10, kSsim_thresh),
                       MetricTestTParam(&compute_aomssim, &compute_hbd_aomssim,
-                                       10, 10, kSsim_thresh),
+                                       10, 10, kPhvs_thresh),
                       MetricTestTParam(&compute_aomssim, &compute_hbd_aomssim,
                                        8, 12, kSsim_thresh),
                       MetricTestTParam(&compute_aomssim, &compute_hbd_aomssim,
-                                       12, 12, kSsim_thresh)));
+                                       12, 12, kPhvs_thresh)));
 INSTANTIATE_TEST_CASE_P(
     FASTSSIM, HBDMetricsTest,
     ::testing::Values(MetricTestTParam(&compute_fastssim, &compute_hbd_fastssim,

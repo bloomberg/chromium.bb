@@ -230,7 +230,7 @@ static double calc_psnrhvs(const unsigned char *src, int _systride,
       if (d_mask > s_mask) s_mask = d_mask;
       for (i = 0; i < 8; i++) {
         for (j = 0; j < 8; j++) {
-          float err;
+          double err;
           err = fabs((double)(dct_s_coef[i * 8 + j] - dct_d_coef[i * 8 + j]));
           if (i != 0 || j != 0)
             err = err < s_mask / mask[i][j] ? 0 : err - s_mask / mask[i][j];

@@ -9,9 +9,10 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
+#include "aom_dsp/ssim.h"
+#include <assert.h>
 #include <math.h>
 #include "./aom_dsp_rtcd.h"
-#include "aom_dsp/ssim.h"
 #include "aom_ports/mem.h"
 #include "aom_ports/system_state.h"
 
@@ -65,15 +66,30 @@ void aom_highbd_ssim_parms_8x8_c(const uint16_t *s, int sp, const uint16_t *r,
 
 static const int64_t cc1 = 26634;   // (64^2*(.01*255)^2
 static const int64_t cc2 = 239708;  // (64^2*(.03*255)^2
+static const int64_t cc1_10 = 428658;    // (64^2*(.01*1023)^2
+static const int64_t cc2_10 = 3857925;   // (64^2*(.03*1023)^2
+static const int64_t cc1_12 = 6868593;   // (64^2*(.01*4095)^2
+static const int64_t cc2_12 = 61817334;  // (64^2*(.03*4095)^2
 
 static double similarity(uint32_t sum_s, uint32_t sum_r, uint32_t sum_sq_s,
-                         uint32_t sum_sq_r, uint32_t sum_sxr, int count) {
+                         uint32_t sum_sq_r, uint32_t sum_sxr, int count,
+                         uint32_t bd) {
   int64_t ssim_n, ssim_d;
   int64_t c1, c2;
-
-  // scale the constants by number of pixels
-  c1 = (cc1 * count * count) >> 12;
-  c2 = (cc2 * count * count) >> 12;
+  if (bd == 8) {
+    // scale the constants by number of pixels
+    c1 = (cc1 * count * count) >> 12;
+    c2 = (cc2 * count * count) >> 12;
+  } else if (bd == 10) {
+    c1 = (cc1_10 * count * count) >> 12;
+    c2 = (cc2_10 * count * count) >> 12;
+  } else if (bd == 12) {
+    c1 = (cc1_12 * count * count) >> 12;
+    c2 = (cc2_12 * count * count) >> 12;
+  } else {
+    c1 = c2 = 0;
+    assert(0);
+  }
 
   ssim_n = (2 * sum_s * sum_r + c1) *
            ((int64_t)2 * count * sum_sxr - (int64_t)2 * sum_s * sum_r + c2);
@@ -89,18 +105,17 @@ static double ssim_8x8(const uint8_t *s, int sp, const uint8_t *r, int rp) {
   uint32_t sum_s = 0, sum_r = 0, sum_sq_s = 0, sum_sq_r = 0, sum_sxr = 0;
   aom_ssim_parms_8x8(s, sp, r, rp, &sum_s, &sum_r, &sum_sq_s, &sum_sq_r,
                      &sum_sxr);
-  return similarity(sum_s, sum_r, sum_sq_s, sum_sq_r, sum_sxr, 64);
+  return similarity(sum_s, sum_r, sum_sq_s, sum_sq_r, sum_sxr, 64, 8);
 }
 
 #if CONFIG_AOM_HIGHBITDEPTH
 static double highbd_ssim_8x8(const uint16_t *s, int sp, const uint16_t *r,
-                              int rp, unsigned int bd) {
+                              int rp, uint32_t bd, uint32_t shift) {
   uint32_t sum_s = 0, sum_r = 0, sum_sq_s = 0, sum_sq_r = 0, sum_sxr = 0;
-  const int oshift = bd - 8;
   aom_highbd_ssim_parms_8x8(s, sp, r, rp, &sum_s, &sum_r, &sum_sq_s, &sum_sq_r,
                             &sum_sxr);
-  return similarity(sum_s >> oshift, sum_r >> oshift, sum_sq_s >> (2 * oshift),
-                    sum_sq_r >> (2 * oshift), sum_sxr >> (2 * oshift), 64);
+  return similarity(sum_s >> shift, sum_r >> shift, sum_sq_s >> (2 * shift),
+                    sum_sq_r >> (2 * shift), sum_sxr >> (2 * shift), 64, bd);
 }
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 
@@ -130,7 +145,7 @@ static double aom_ssim2(const uint8_t *img1, const uint8_t *img2,
 #if CONFIG_AOM_HIGHBITDEPTH
 static double aom_highbd_ssim2(const uint8_t *img1, const uint8_t *img2,
                                int stride_img1, int stride_img2, int width,
-                               int height, unsigned int bd) {
+                               int height, uint32_t bd, uint32_t shift) {
   int i, j;
   int samples = 0;
   double ssim_total = 0;
@@ -139,9 +154,9 @@ static double aom_highbd_ssim2(const uint8_t *img1, const uint8_t *img2,
   for (i = 0; i <= height - 8;
        i += 4, img1 += stride_img1 * 4, img2 += stride_img2 * 4) {
     for (j = 0; j <= width - 8; j += 4) {
-      double v =
-          highbd_ssim_8x8(CONVERT_TO_SHORTPTR(img1 + j), stride_img1,
-                          CONVERT_TO_SHORTPTR(img2 + j), stride_img2, bd);
+      double v = highbd_ssim_8x8(CONVERT_TO_SHORTPTR(img1 + j), stride_img1,
+                                 CONVERT_TO_SHORTPTR(img2 + j), stride_img2, bd,
+                                 shift);
       ssim_total += v;
       samples++;
     }
@@ -172,27 +187,6 @@ double aom_calc_ssim(const YV12_BUFFER_CONFIG *source,
   return ssimv;
 }
 
-double aom_calc_ssimg(const YV12_BUFFER_CONFIG *source,
-                      const YV12_BUFFER_CONFIG *dest, double *ssim_y,
-                      double *ssim_u, double *ssim_v) {
-  double ssim_all = 0;
-  double a, b, c;
-
-  a = aom_ssim2(source->y_buffer, dest->y_buffer, source->y_stride,
-                dest->y_stride, source->y_crop_width, source->y_crop_height);
-
-  b = aom_ssim2(source->u_buffer, dest->u_buffer, source->uv_stride,
-                dest->uv_stride, source->uv_crop_width, source->uv_crop_height);
-
-  c = aom_ssim2(source->v_buffer, dest->v_buffer, source->uv_stride,
-                dest->uv_stride, source->uv_crop_width, source->uv_crop_height);
-  *ssim_y = a;
-  *ssim_u = b;
-  *ssim_v = c;
-  ssim_all = (a * 4 + b + c) / 6;
-
-  return ssim_all;
-}
 
 // traditional ssim as per: http://en.wikipedia.org/wiki/Structural_similarity
 //
@@ -439,21 +433,25 @@ double aom_get_ssim_metrics(uint8_t *img1, int img1_pitch, uint8_t *img2,
 #if CONFIG_AOM_HIGHBITDEPTH
 double aom_highbd_calc_ssim(const YV12_BUFFER_CONFIG *source,
                             const YV12_BUFFER_CONFIG *dest, double *weight,
-                            unsigned int bd) {
+                            uint32_t bd, uint32_t in_bd) {
   double a, b, c;
   double ssimv;
+  uint32_t shift = 0;
+
+  assert(bd >= in_bd);
+  shift = bd - in_bd;
 
   a = aom_highbd_ssim2(source->y_buffer, dest->y_buffer, source->y_stride,
                        dest->y_stride, source->y_crop_width,
-                       source->y_crop_height, bd);
+                       source->y_crop_height, in_bd, shift);
 
   b = aom_highbd_ssim2(source->u_buffer, dest->u_buffer, source->uv_stride,
                        dest->uv_stride, source->uv_crop_width,
-                       source->uv_crop_height, bd);
+                       source->uv_crop_height, in_bd, shift);
 
   c = aom_highbd_ssim2(source->v_buffer, dest->v_buffer, source->uv_stride,
                        dest->uv_stride, source->uv_crop_width,
-                       source->uv_crop_height, bd);
+                       source->uv_crop_height, in_bd, shift);
 
   ssimv = a * .8 + .1 * (b + c);
 
@@ -462,28 +460,4 @@ double aom_highbd_calc_ssim(const YV12_BUFFER_CONFIG *source,
   return ssimv;
 }
 
-double aom_highbd_calc_ssimg(const YV12_BUFFER_CONFIG *source,
-                             const YV12_BUFFER_CONFIG *dest, double *ssim_y,
-                             double *ssim_u, double *ssim_v, unsigned int bd) {
-  double ssim_all = 0;
-  double a, b, c;
-
-  a = aom_highbd_ssim2(source->y_buffer, dest->y_buffer, source->y_stride,
-                       dest->y_stride, source->y_crop_width,
-                       source->y_crop_height, bd);
-
-  b = aom_highbd_ssim2(source->u_buffer, dest->u_buffer, source->uv_stride,
-                       dest->uv_stride, source->uv_crop_width,
-                       source->uv_crop_height, bd);
-
-  c = aom_highbd_ssim2(source->v_buffer, dest->v_buffer, source->uv_stride,
-                       dest->uv_stride, source->uv_crop_width,
-                       source->uv_crop_height, bd);
-  *ssim_y = a;
-  *ssim_u = b;
-  *ssim_v = c;
-  ssim_all = (a * 4 + b + c) / 6;
-
-  return ssim_all;
-}
 #endif  // CONFIG_AOM_HIGHBITDEPTH
