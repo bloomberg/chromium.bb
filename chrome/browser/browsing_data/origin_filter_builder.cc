@@ -4,7 +4,6 @@
 
 #include "chrome/browser/browsing_data/origin_filter_builder.h"
 
-#include <string>
 #include <vector>
 
 #include "base/bind.h"
@@ -14,7 +13,7 @@ using Relation = ContentSettingsPattern::Relation;
 
 namespace {
 
-bool DontDeleteCookiesFilter(const net::CanonicalCookie& cookie) {
+template<typename T> bool DontDeleteAnythingFilter(const T& data) {
   return false;
 }
 
@@ -74,7 +73,15 @@ OriginFilterBuilder::BuildCookieFilter() const {
   NOTREACHED() <<
       "Origin-based deletion is not suitable for cookies. Please use "
       "different scoping, such as RegistrableDomainFilterBuilder.";
-  return base::Bind(DontDeleteCookiesFilter);
+  return base::Bind(DontDeleteAnythingFilter<net::CanonicalCookie>);
+}
+
+base::Callback<bool(const std::string& channel_id_server_id)>
+OriginFilterBuilder::BuildChannelIDFilter() const {
+  NOTREACHED() <<
+      "Origin-based deletion is not suitable for channel IDs. Please use "
+      "different scoping, such as RegistrableDomainFilterBuilder.";
+  return base::Bind(DontDeleteAnythingFilter<std::string>);
 }
 
 bool OriginFilterBuilder::IsEmpty() const {

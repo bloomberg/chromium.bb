@@ -54,9 +54,11 @@ class NET_EXPORT DefaultChannelIDStore : public ChannelIDStore {
   void SetChannelID(std::unique_ptr<ChannelID> channel_id) override;
   void DeleteChannelID(const std::string& server_identifier,
                        const base::Closure& callback) override;
-  void DeleteAllCreatedBetween(base::Time delete_begin,
-                               base::Time delete_end,
-                               const base::Closure& callback) override;
+  void DeleteForDomainsCreatedBetween(
+      const base::Callback<bool(const std::string&)>& domain_predicate,
+      base::Time delete_begin,
+      base::Time delete_end,
+      const base::Closure& callback) override;
   void DeleteAll(const base::Closure& callback) override;
   void GetAllChannelIDs(const GetChannelIDListCallback& callback) override;
   int GetChannelIDCount() override;
@@ -68,7 +70,7 @@ class NET_EXPORT DefaultChannelIDStore : public ChannelIDStore {
   class GetChannelIDTask;
   class SetChannelIDTask;
   class DeleteChannelIDTask;
-  class DeleteAllCreatedBetweenTask;
+  class DeleteForDomainsCreatedBetweenTask;
   class GetAllChannelIDsTask;
 
   // Deletes all of the certs. Does not delete them from |store_|.
@@ -101,8 +103,10 @@ class NET_EXPORT DefaultChannelIDStore : public ChannelIDStore {
   // initialization is complete.
   void SyncSetChannelID(std::unique_ptr<ChannelID> channel_id);
   void SyncDeleteChannelID(const std::string& server_identifier);
-  void SyncDeleteAllCreatedBetween(base::Time delete_begin,
-                                   base::Time delete_end);
+  void SyncDeleteForDomainsCreatedBetween(
+      const base::Callback<bool(const std::string&)>& domain_predicate,
+      base::Time delete_begin,
+      base::Time delete_end);
   void SyncGetAllChannelIDs(ChannelIDList* channel_id_list);
 
   // Add |task| to |waiting_tasks_|.

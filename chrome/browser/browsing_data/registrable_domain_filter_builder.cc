@@ -78,6 +78,16 @@ RegistrableDomainFilterBuilder::BuildCookieFilter() const {
       base::Owned(domains_and_ips), mode());
 }
 
+base::Callback<bool(const std::string& cookie)>
+RegistrableDomainFilterBuilder::BuildChannelIDFilter() const {
+  std::set<std::string>* domains_and_ips =
+      new std::set<std::string>(domain_list_);
+  return base::Bind(
+      &RegistrableDomainFilterBuilder
+          ::MatchesChannelIDForRegisterableDomainsAndIPs,
+      base::Owned(domains_and_ips), mode());
+}
+
 bool RegistrableDomainFilterBuilder::IsEmpty() const {
   return domain_list_.empty();
 }
@@ -127,4 +137,14 @@ bool RegistrableDomainFilterBuilder::MatchesCookieForRegisterableDomainsAndIPs(
     parsed_cookie_domain = cookie_domain;
   return (mode == WHITELIST) == (domains_and_ips->find(parsed_cookie_domain) !=
                                  domains_and_ips->end());
+}
+
+// static
+bool
+RegistrableDomainFilterBuilder::MatchesChannelIDForRegisterableDomainsAndIPs(
+    std::set<std::string>* domains_and_ips,
+    Mode mode,
+    const std::string& channel_id_server_id) {
+  return ((mode == WHITELIST) == (domains_and_ips->find(channel_id_server_id) !=
+                                  domains_and_ips->end()));
 }

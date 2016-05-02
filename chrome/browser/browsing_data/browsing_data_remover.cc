@@ -247,6 +247,7 @@ void OnClearedChannelIDsOnIOThread(net::URLRequestContextGetter* rq_context,
 }
 
 void ClearChannelIDsOnIOThread(
+    const base::Callback<bool(const std::string&)>& domain_predicate,
     base::Time delete_begin,
     base::Time delete_end,
     scoped_refptr<net::URLRequestContextGetter> rq_context,
@@ -254,8 +255,8 @@ void ClearChannelIDsOnIOThread(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   net::ChannelIDService* channel_id_service =
       rq_context->GetURLRequestContext()->channel_id_service();
-  channel_id_service->GetChannelIDStore()->DeleteAllCreatedBetween(
-      delete_begin, delete_end,
+  channel_id_service->GetChannelIDStore()->DeleteForDomainsCreatedBetween(
+      domain_predicate, delete_begin, delete_end,
       base::Bind(&OnClearedChannelIDsOnIOThread,
                  base::RetainedRef(std::move(rq_context)), callback));
 }
@@ -688,9 +689,10 @@ void BrowsingDataRemover::RemoveImpl(
     waiting_for_clear_channel_ids_ = true;
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&ClearChannelIDsOnIOThread, delete_begin_, delete_end_,
-                    std::move(rq_context),
-                    base::Bind(&BrowsingDataRemover::OnClearedChannelIDs,
+        base::Bind(&ClearChannelIDsOnIOThread,
+                   filter_builder.BuildChannelIDFilter(),
+                   delete_begin_, delete_end_, std::move(rq_context),
+                   base::Bind(&BrowsingDataRemover::OnClearedChannelIDs,
                               weak_ptr_factory_.GetWeakPtr())));
   }
 

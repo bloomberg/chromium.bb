@@ -12,7 +12,6 @@
 #include "base/callback.h"
 #include "chrome/browser/browsing_data/browsing_data_filter_builder.h"
 #include "url/gurl.h"
-#include "url/origin.h"
 
 // A class that constructs URL deletion filters (represented as GURL->bool
 // predicates) that match registerable domains - which is basically an eTLD + 1.
@@ -46,8 +45,8 @@ class RegistrableDomainFilterBuilder : public BrowsingDataFilterBuilder {
   // net::registry_controlled_domains::GetDomainAndRegistry.
   void AddRegisterableDomain(const std::string& domain);
 
-  // Builds a filter that matches URLs whose origins or domains are in the
-  // whitelist, or aren't in the blacklist.
+  // Builds a filter that matches URLs whose domains are in the whitelist,
+  // or aren't in the blacklist.
   base::Callback<bool(const GURL&)> BuildGeneralFilter() const override;
 
   // Builds a filter that calls ContentSettingsPattern::Compare on the given
@@ -66,32 +65,46 @@ class RegistrableDomainFilterBuilder : public BrowsingDataFilterBuilder {
   base::Callback<bool(const net::CanonicalCookie& cookie)>
       BuildCookieFilter() const override;
 
+  // Builds a filter that matches channel IDs whose server identifiers are
+  // identical to one of the registrable domains that are in the whitelist,
+  // or are not in the blacklist.
+  base::Callback<bool(const std::string& cookie)>
+      BuildChannelIDFilter() const override;
+
  protected:
   bool IsEmpty() const override;
 
  private:
-  // True if the origin or domain of |url| is in the whitelist, or isn't in the
-  // blacklist.
-  // The whitelist or blacklist is represented as |origins| and |mode|.
+  // True if the domain of |url| is in the whitelist, or isn't in the blacklist.
+  // The whitelist or blacklist is represented as |registerable_domains|
+  // and |mode|.
   static bool MatchesURL(std::set<std::string>* registerable_domains,
                          Mode mode,
                          const GURL& url);
 
   // True if the pattern something in the whitelist, or doesn't match something
   // in the blacklist.
-  // The whitelist or blacklist is represented as |origins|,  and |mode|.
+  // The whitelist or blacklist is represented as |patterns|,  and |mode|.
   static bool MatchesWebsiteSettingsPattern(
       std::vector<ContentSettingsPattern>* patterns,
       Mode mode,
       const ContentSettingsPattern& pattern);
 
-  // True if no origins can see the given cookie and we're a blacklist, or any
-  // origins can see the cookie and we're a whitelist.
-  // The whitelist or blacklist is represented as |origins| and |mode|.
+  // True if no domains can see the given cookie and we're a blacklist, or any
+  // domains can see the cookie and we're a whitelist.
+  // The whitelist or blacklist is represented as |domains_and_ips| and |mode|.
   static bool MatchesCookieForRegisterableDomainsAndIPs(
       std::set<std::string>* domains_and_ips,
       Mode mode,
       const net::CanonicalCookie& cookie);
+
+  // True if none of the supplied domains matches this Channel ID's server ID
+  // and we're a blacklist, or one of them does and we're a whitelist.
+  // The whitelist or blacklist is represented as |domains_and_ips| and |mode|.
+  static bool MatchesChannelIDForRegisterableDomainsAndIPs(
+      std::set<std::string>* domains_and_ips,
+      Mode mode,
+      const std::string& channel_id_server_id);
 
   // The list of domains and whether they should be interpreted as a whitelist
   // or blacklist.

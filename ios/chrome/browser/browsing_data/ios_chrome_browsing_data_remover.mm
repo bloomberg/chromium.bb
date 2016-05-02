@@ -64,6 +64,10 @@ CallbackList* GetOnBrowsingDataRemovedCallbacks() {
   return g_on_browsing_data_removed_callbacks;
 }
 
+bool AllDomainsPredicate(const std::string& domain) {
+  return true;
+}
+
 }  // namespace
 
 bool IOSChromeBrowsingDataRemover::is_removing_ = false;
@@ -464,8 +468,8 @@ void IOSChromeBrowsingDataRemover::ClearChannelIDsOnIOThread(
   DCHECK_CURRENTLY_ON(WebThread::IO);
   net::ChannelIDService* channel_id_service =
       rq_context->GetURLRequestContext()->channel_id_service();
-  channel_id_service->GetChannelIDStore()->DeleteAllCreatedBetween(
-      delete_begin_, delete_end_,
+  channel_id_service->GetChannelIDStore()->DeleteForDomainsCreatedBetween(
+      base::Bind(&AllDomainsPredicate), delete_begin_, delete_end_,
       base::Bind(&IOSChromeBrowsingDataRemover::OnClearedChannelIDsOnIOThread,
                  base::Unretained(this), rq_context));
 }

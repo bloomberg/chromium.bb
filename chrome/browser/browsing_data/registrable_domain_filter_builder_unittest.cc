@@ -83,6 +83,15 @@ void RunTestCase(
         << cookie->DebugString();
 }
 
+void RunTestCase(
+    TestCase test_case,
+    const base::Callback<bool(const std::string&)>& filter) {
+  std::string channel_id_server_id = test_case.url;
+  EXPECT_EQ(test_case.should_match, filter.Run(channel_id_server_id))
+      << channel_id_server_id << " should "
+      << (test_case.should_match ? "" : "NOT ") << "be matched by the filter.";
+}
+
 }  // namespace
 
 TEST(RegistrableDomainFilterBuilderTest, Noop) {
@@ -336,6 +345,58 @@ TEST(RegistrableDomainFilterBuilderTest, MatchesCookiesBlacklist) {
       // Different hosts in general.
       {"https://www.chrome.com", true},
       {"http://192.168.2.1", true}};
+
+  for (TestCase test_case : test_cases)
+    RunTestCase(test_case, filter);
+}
+
+TEST(RegistrableDomainFilterBuilderTest, MatchesChannelIDsWhitelist) {
+  RegistrableDomainFilterBuilder builder(
+      RegistrableDomainFilterBuilder::WHITELIST);
+  builder.AddRegisterableDomain(std::string(kGoogleDomain));
+  builder.AddRegisterableDomain(std::string(kLongETLDDomain));
+  builder.AddRegisterableDomain(std::string(kIPAddress));
+  base::Callback<bool(const std::string&)> filter =
+      builder.BuildChannelIDFilter();
+
+  TestCase test_cases[] = {
+      // Channel ID server identifiers can be top-level domains...
+      {"google.com", true},
+      {"website.sp.nom.br", true},
+
+      // or IP addresses.
+      {"192.168.1.1", true},
+
+      // Channel IDs not in the whitelist are not matched.
+      {"example.com", false},
+      {"192.168.1.2", false},
+  };
+
+  for (TestCase test_case : test_cases)
+    RunTestCase(test_case, filter);
+}
+
+TEST(RegistrableDomainFilterBuilderTest, MatchesChannelIDsBlacklist) {
+  RegistrableDomainFilterBuilder builder(
+      RegistrableDomainFilterBuilder::BLACKLIST);
+  builder.AddRegisterableDomain(std::string(kGoogleDomain));
+  builder.AddRegisterableDomain(std::string(kLongETLDDomain));
+  builder.AddRegisterableDomain(std::string(kIPAddress));
+  base::Callback<bool(const std::string&)> filter =
+      builder.BuildChannelIDFilter();
+
+  TestCase test_cases[] = {
+      // Channel ID server identifiers can be top-level domains...
+      {"google.com", false},
+      {"website.sp.nom.br", false},
+
+      // or IP addresses.
+      {"192.168.1.1", false},
+
+      // Channel IDs that are not blacklisted are matched.
+      {"example.com", true},
+      {"192.168.1.2", true},
+  };
 
   for (TestCase test_case : test_cases)
     RunTestCase(test_case, filter);

@@ -118,6 +118,14 @@ void MockPersistentStore::SetForceKeepSessionState() {}
 
 MockPersistentStore::~MockPersistentStore() {}
 
+bool DomainEquals(const std::string& domain1, const std::string& domain2) {
+  return domain1 == domain2;
+}
+
+bool DomainNotEquals(const std::string& domain1, const std::string& domain2) {
+  return !DomainEquals(domain1, domain2);
+}
+
 }  // namespace
 
 TEST(DefaultChannelIDStoreTest, TestLoading) {
@@ -239,6 +247,47 @@ TEST(DefaultChannelIDStoreTest, TestDeleteAll) {
   store.DeleteAll(base::Bind(&CallCounter, &delete_finished));
   ASSERT_EQ(1, delete_finished);
   EXPECT_EQ(0, store.GetChannelIDCount());
+}
+
+TEST(DefaultChannelIDStoreTest, TestDeleteForDomains) {
+  scoped_refptr<MockPersistentStore> persistent_store(new MockPersistentStore);
+  DefaultChannelIDStore store(persistent_store.get());
+
+  store.SetChannelID(base::WrapUnique(new ChannelIDStore::ChannelID(
+      "verisign.com", base::Time(),
+      base::WrapUnique(crypto::ECPrivateKey::Create()))));
+  store.SetChannelID(base::WrapUnique(new ChannelIDStore::ChannelID(
+      "google.com", base::Time(),
+      base::WrapUnique(crypto::ECPrivateKey::Create()))));
+  store.SetChannelID(base::WrapUnique(new ChannelIDStore::ChannelID(
+      "harvard.com", base::Time(),
+      base::WrapUnique(crypto::ECPrivateKey::Create()))));
+  // Wait for load & queued set tasks.
+  base::MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(3, store.GetChannelIDCount());
+
+  // Whitelist deletion.
+  int deletions_finished = 0;
+  store.DeleteForDomainsCreatedBetween(
+      base::Bind(&DomainEquals, base::ConstRef(std::string("verisign.com"))),
+      base::Time(), base::Time(),
+      base::Bind(&CallCounter, &deletions_finished));
+  ASSERT_EQ(1, deletions_finished);
+  EXPECT_EQ(2, store.GetChannelIDCount());
+  ChannelIDStore::ChannelIDList channel_ids;
+  store.GetAllChannelIDs(base::Bind(GetAllCallback, &channel_ids));
+  EXPECT_EQ("google.com", channel_ids.begin()->server_identifier());
+  EXPECT_EQ("harvard.com", channel_ids.back().server_identifier());
+
+  // Blacklist deletion.
+  store.DeleteForDomainsCreatedBetween(
+      base::Bind(&DomainNotEquals, base::ConstRef(std::string("google.com"))),
+      base::Time(), base::Time(),
+      base::Bind(&CallCounter, &deletions_finished));
+  ASSERT_EQ(2, deletions_finished);
+  EXPECT_EQ(1, store.GetChannelIDCount());
+  store.GetAllChannelIDs(base::Bind(GetAllCallback, &channel_ids));
+  EXPECT_EQ("google.com", channel_ids.begin()->server_identifier());
 }
 
 TEST(DefaultChannelIDStoreTest, TestAsyncGetAndDeleteAll) {

@@ -62,6 +62,11 @@ class BrowsingDataFilterBuilder {
   virtual base::Callback<bool(const net::CanonicalCookie& pattern)>
       BuildCookieFilter() const = 0;
 
+  // Builds a filter that matches channel IDs whose server identifiers are in
+  // the whitelist, or aren't in the blacklist.
+  virtual base::Callback<bool(const std::string& server_id)>
+      BuildChannelIDFilter() const = 0;
+
   // A convenience method to produce an empty blacklist, a filter that matches
   // everything.
   static base::Callback<bool(const GURL&)> BuildNoopFilter();

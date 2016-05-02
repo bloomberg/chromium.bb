@@ -1329,6 +1329,26 @@ TEST_F(BrowsingDataRemoverTest, RemoveChannelIDLastHour) {
   EXPECT_EQ(kTestOrigin2, channel_ids.front().server_identifier());
 }
 
+TEST_F(BrowsingDataRemoverTest, RemoveChannelIDsForServerIdentifiers) {
+  RemoveChannelIDTester tester(GetProfile());
+
+  tester.AddChannelID(kTestRegisterableDomain1);
+  tester.AddChannelID(kTestRegisterableDomain3);
+  EXPECT_EQ(2, tester.ChannelIDCount());
+
+  RegistrableDomainFilterBuilder filter_builder(
+      RegistrableDomainFilterBuilder::WHITELIST);
+  filter_builder.AddRegisterableDomain(kTestRegisterableDomain1);
+
+  BlockUntilOriginDataRemoved(BrowsingDataRemover::EVERYTHING,
+      BrowsingDataRemover::REMOVE_CHANNEL_IDS, filter_builder);
+
+  EXPECT_EQ(1, tester.ChannelIDCount());
+  net::ChannelIDStore::ChannelIDList channel_ids;
+  tester.GetChannelIDList(&channel_ids);
+  EXPECT_EQ(kTestRegisterableDomain3, channel_ids.front().server_identifier());
+}
+
 TEST_F(BrowsingDataRemoverTest, RemoveUnprotectedLocalStorageForever) {
 #if defined(ENABLE_EXTENSIONS)
   MockExtensionSpecialStoragePolicy* policy = CreateMockPolicy();

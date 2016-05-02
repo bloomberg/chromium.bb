@@ -644,7 +644,8 @@ class FailingChannelIDStore : public ChannelIDStore {
   void SetChannelID(std::unique_ptr<ChannelID> channel_id) override {}
   void DeleteChannelID(const std::string& server_identifier,
                        const base::Closure& completion_callback) override {}
-  void DeleteAllCreatedBetween(
+  void DeleteForDomainsCreatedBetween(
+      const base::Callback<bool(const std::string&)>& domain_predicate,
       base::Time delete_begin,
       base::Time delete_end,
       const base::Closure& completion_callback) override {}
@@ -669,7 +670,8 @@ class AsyncFailingChannelIDStore : public ChannelIDStore {
   void SetChannelID(std::unique_ptr<ChannelID> channel_id) override {}
   void DeleteChannelID(const std::string& server_identifier,
                        const base::Closure& completion_callback) override {}
-  void DeleteAllCreatedBetween(
+  void DeleteForDomainsCreatedBetween(
+      const base::Callback<bool(const std::string&)>& domain_predicate,
       base::Time delete_begin,
       base::Time delete_end,
       const base::Closure& completion_callback) override {}
