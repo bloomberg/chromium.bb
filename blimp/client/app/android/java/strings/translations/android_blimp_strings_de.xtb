@@ -8,6 +8,7 @@
 <translation id="2078561879028077171">Versionsinformationen</translation>
 <translation id="2117453604279487107">Übertragenden-URL</translation>
 <translation id="2353984724370197742">Zuweisung fehlgeschlagen. Netzwerkanfrage fehlgeschlagen.</translation>
+<translation id="2789927415041640472">Bitte starten Sie die App neu, um die neue Übertragendenkonfiguration zu verwenden.</translation>
 <translation id="3046825211487065480">Zuweisung fehlgeschlagen. Zweite Anfrage wurde vor Antwort auf erste Anfrage gesendet.</translation>
 <translation id="3286538390144397061">Jetzt neu starten</translation>
 <translation id="3346106862344060497">Modul verbunden.</translation>
@@ -22,6 +23,7 @@
 <translation id="5860346505531085166">Zuweisung fehlgeschlagen. Konto hat keinen Zugriff.</translation>
 <translation id="6232798399907177395">Infos zu Blimp</translation>
 <translation id="704835510384979817">Zuweisung fehlgeschlagen. Keine übereinstimmende Modulversion.</translation>
+<translation id="7145680970336344212">Starten Sie Blimp neu</translation>
 <translation id="7536363920335771251">Modul getrennt, Grund: %1$s</translation>
 <translation id="7596558890252710462">Betriebssystem</translation>
 <translation id="7608553142876436780">Modul-IP</translation>

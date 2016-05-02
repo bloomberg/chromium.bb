@@ -21,6 +21,7 @@
 <translation id="112840717907525620">Politikas kešatmiņa ir labā stāvoklī.</translation>
 <translation id="113188000913989374">Vietnē <ph name="SITE" /> ir rakstīts:</translation>
 <translation id="1132774398110320017">Chrome automātiskās aizpildes iestatījumi...</translation>
+<translation id="113770840981343808">Verifikācijai ievadiet 4 ciparu CVC kodu, kas norādīts jūsu kartes priekšpusē.</translation>
 <translation id="1146673768181266552">Avārijas ID: <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">Šis serveris nevarēja pierādīt, ka šī ir vietne <ph name="DOMAIN" />; tās drošības sertifikāts netiek uzskatīts par uzticamu jūsu datora operētājsistēmā. Iespējams, tas ir nepareizas konfigurācijas dēļ vai arī kāds ir ļaunprātīgi izmantojis jūsu savienojumu.</translation>
 <translation id="1152921474424827756">Piekļūstiet vietnes <ph name="URL" /> <ph name="BEGIN_LINK" />kešatmiņā saglabātajai kopijai<ph name="END_LINK" /></translation>
@@ -118,7 +119,6 @@
 <translation id="2212735316055980242">Politika netika atrasta.</translation>
 <translation id="2213606439339815911">Notiek ierakstu ienešana...</translation>
 <translation id="2214283295778284209"><ph name="SITE" /> nav pieejama</translation>
-<translation id="2227695659599072496">Pārbaudiet tīkla kabeli vai maršrutētāju.</translation>
 <translation id="2230458221926704099">Labojiet savienojumu, izmantojot <ph name="BEGIN_LINK" />diagnostikas lietotni<ph name="END_LINK" /></translation>
 <translation id="225207911366869382">Šī vērtība vairs netiek atbalstīta šai politikai.</translation>
 <translation id="2262243747453050782">HTTP kļūda</translation>
@@ -131,6 +131,7 @@
 <translation id="2317259163369394535">Vietnē <ph name="DOMAIN" /> ir jāievada lietotājvārds un parole.</translation>
 <translation id="2328300916057834155">Nederīga grāmatzīme ignorēta <ph name="ENTRY_INDEX" />. rādītājā</translation>
 <translation id="2354001756790975382">Citas grāmatzīmes</translation>
+<translation id="2357783041215512127">Maksāt ar: <ph name="CREDIT_CARD" /></translation>
 <translation id="2359808026110333948">Turpināt</translation>
 <translation id="2367567093518048410">Līmenis</translation>
 <translation id="237718015863234333">Nav pieejamas alternatīvas lietotāja saskarnes</translation>
@@ -228,7 +229,6 @@
 <translation id="3254409185687681395">Grāmatot šo lapu</translation>
 <translation id="3270847123878663523">&amp;Pārkārtošanas atsaukšana</translation>
 <translation id="3286538390144397061">Restartēt tūlīt</translation>
-<translation id="3288003805934695103">Atkārtoti ielādējiet lapu.</translation>
 <translation id="3305707030755673451">Jūsu dati tika šifrēti, izmantojot jūsu sinhronizācijas ieejas frāzi šādā datumā: <ph name="TIME" />. Lai sāktu sinhronizāciju, ievadiet ieejas frāzi.</translation>
 <translation id="333371639341676808">Neļaujiet šai lapai veidot papildu dialogus.</translation>
 <translation id="3340978935015468852">Iestatījumi</translation>
@@ -299,7 +299,6 @@
 <translation id="3963721102035795474">Lasītāja režīms</translation>
 <translation id="3973234410852337861">Vietne <ph name="HOST_NAME" /> ir bloķēta</translation>
 <translation id="4021036232240155012">DNS ir tīkla pakalpojums, kurā vietnes nosaukums tiek tulkots uz tās interneta adresi.</translation>
-<translation id="4021376465026729077">Atspējojiet paplašinājumus.</translation>
 <translation id="4030383055268325496">&amp;Atsaukt pievienošanu</translation>
 <translation id="4032534284272647190">Piekļuve vietnei <ph name="URL" /> noraidīta.</translation>
 <translation id="404928562651467259">BRĪDINĀJUMS</translation>
@@ -397,7 +396,6 @@
 <translation id="5251803541071282808">Mākonis</translation>
 <translation id="5299298092464848405">Parsējot politiku, radās kļūda.</translation>
 <translation id="5300589172476337783">Rādīt</translation>
-<translation id="5307361445257083764"><ph name="BEGIN_LINK" />Dzēsiet sīkfailus<ph name="END_LINK" />.</translation>
 <translation id="5308689395849655368">Avāriju pārskatu izveide ir atspējota.</translation>
 <translation id="5317780077021120954">Saglabāt</translation>
 <translation id="5327248766486351172">Nosaukums</translation>
@@ -431,6 +429,7 @@
 <translation id="5629630648637658800">Neizdevās ielādēt politikas iestatījumus.</translation>
 <translation id="5631439013527180824">Ierīces pārvaldības marķieris nav derīgs.</translation>
 <translation id="5650551054760837876">Meklēšanas rezultāti nav atrasti.</translation>
+<translation id="5663999524854166235">Verifikācijai ievadiet 3 ciparu CVC kodu, kas norādīts jūsu kartes aizmugurē.</translation>
 <translation id="5677928146339483299">Bloķēts</translation>
 <translation id="5710435578057952990">Tīmekļa vietnes identitāte nav apstiprināta.</translation>
 <translation id="5720705177508910913">Pašreizējais lietotājs</translation>
@@ -503,7 +502,6 @@
 <translation id="6628463337424475685"><ph name="ENGINE" /> meklēšana</translation>
 <translation id="6634865548447745291">Pašlaik nevarat apmeklēt vietni <ph name="SITE" />, jo <ph name="BEGIN_LINK" />šis sertifikāts ir atsaukts<ph name="END_LINK" />. Tīkla kļūdas un uzbrukumi parasti ir īslaicīgi, tādējādi šī lapa vēlāk, visticamāk, darbosies.</translation>
 <translation id="6637478299472506933">Lejupiel. neizdevās</translation>
-<translation id="6642894344118208103">Atiestatiet modemu vai maršrutētāju.</translation>
 <translation id="6644283850729428850">Šī politika ir izbeigta.</translation>
 <translation id="6646897916597483132">Ievadiet 4 ciparu CVC kodu, kas norādīts jūsu kredītkartes priekšpusē.</translation>
 <translation id="6656103420185847513">Mapes rediģēšana</translation>

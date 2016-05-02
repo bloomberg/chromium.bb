@@ -2,9 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ca">
 <translation id="101438888985615157">Gira la pantalla 180 graus</translation>
-<translation id="1015272884520659144">Defineix la llista de dispositius USB que està permès separar del programa de control de kernel per tal d'utilitzar-los mitjançant l'API de chrome.usb directament dins d'una aplicació web. Les entrades són parells de l'identificador del producte i de l'identificador del proveïdor dels USB, que permeten identificar un maquinari concret.
-
-      Si aquesta política no està configurada, la llista de dispositius USB que es poden separar es considera buida.</translation>
 <translation id="1017967144265860778">Gestió de l'alimentació a la pantalla d'inici de sessió</translation>
 <translation id="1019101089073227242">Estableix el directori de dades de l'usuari</translation>
 <translation id="1022361784792428773">ID de les extensions que l'usuari no pot instal·lar (o bé * per a totes)</translation>
@@ -65,7 +62,6 @@
       Si la política no s'estableix o s'estableix en "false", els sistemes de xifratge RC4 de TLS no s'activaran. En cas contrari, es pot establir en "true" per conservar la compatibilitat amb un servidor obsolet. Es tracta d'una mesura temporal i el servidor s'ha de tornar a configurar.</translation>
 <translation id="1297182715641689552">Fes servir un script de servidor intermediari .pac</translation>
 <translation id="1304973015437969093">Identificadors de les extensions i de les aplicacions i URL de les actualitzacions que s'instal·laran en silenci</translation>
-<translation id="1310699457130669094">Podeu especificar un URL a un fitxer .pac del servidor intermediari. Aquesta política només té efecte si heu seleccionat la configuració manual del servidor intermediari a "Triar la manera d'especificar la configuració del servidor intermediari". No heu de definir aquesta política si heu seleccionat alguna altra manera de definir les polítiques del servidor intermediari. Per obtenir exemples més detallats, visiteu: <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1313457536529613143">Especifica el percentatge d'ajust del temps d'espera d'inactivitat de la pantalla quan s'observa l'activitat de l'usuari amb la pantalla atenuada o poc després de desactivar-la.
 
          Si s'estableix aquesta política, s'especifica el percentatge d'ajust del temps d'espera d'inactivitat de la pantalla quan s'observa l'activitat de l'usuari amb la pantalla atenuada o poc després de desactivar-la. Quan s'ajusta el temps d'espera d'inactivitat de la pantalla, s'ajusten els retards de desconnexió, bloqueig i desactivació de la pantalla per mantenir les mateixes distàncies del temps d'espera d'inactivitat de la pantalla que la configuració original.
@@ -146,18 +142,6 @@
 <translation id="1561424797596341174">La política substitueix les compilacions de depuració de l'amfitrió d'accés remot</translation>
 <translation id="1583248206450240930">Fes servir <ph name="PRODUCT_FRAME_NAME" /> de manera predeterminada</translation>
 <translation id="1608755754295374538">URL als quals els dispositius de captura d'àudio podran accedir sense confirmació.</translation>
-<translation id="1613574633990410986">Us permet especificar el servidor intermediari que <ph name="PRODUCT_NAME" /> i les aplicacions ARC utilitzen. A més, impedeix que els usuaris canviïn la configuració del servidor.
-
-      Si decidiu no utilitzar mai un servidor intermediari i connectar-vos sempre a la xarxa directament, la resta d'opcions s'ignoren.
-
-      Si decidiu detectar automàticament el servidor intermediari, la resta d'opcions s'ignoren.
-
-      Per veure exemples detallats, aneu a:
-      <ph name="PROXY_HELP_URL" />
-
-      Si activeu aquesta opció de configuració, <ph name="PRODUCT_NAME" /> i les aplicacions ARC ignoren totes les opcions relacionades amb el servidor intermediari que s'han especificat des de la línia d'ordres.
-
-      Si deixeu aquestes polítiques sense establir, els usuaris poden triar pel seu compte la configuració del servidor intermediari.</translation>
 <translation id="1617235075406854669">Activa la supressió de l'historial de baixades i del navegador</translation>
 <translation id="1617384279878333801">Permet que s'utilitzi l'opció Afegeix una persona al gestor de perfils</translation>
 <translation id="1655229863189977773">Defineix la mida de la memòria cau del disc en bytes</translation>
@@ -242,7 +226,6 @@
 Si aquesta opció està activada, es mostra un botó gran i vermell de tancament de sessió a la safata del sistema mentre hi ha una sessió activa i la pantalla no està bloquejada.
 
 Si aquesta opció està desactivada o no especificada, no apareix cap botó gran i vermell de tancament de sessió a la safata del sistema.</translation>
-<translation id="1942957375738056236">Podeu especificar l'URL del servidor intermediari. Aquesta política només té efecte si s'ha seleccionat la configuració manual del servidor intermediari a "Tria la manera d'especificar la configuració del servidor intermediari". No heu de definir aquesta política si s'ha seleccionat cap altra manera de definir les polítiques del servidor intermediari. Per obtenir més opcions i exemples detallats, visiteu: <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1956493342242507974">Configuració de la gestió d'energia a la pantalla d'inici de <ph name="PRODUCT_OS_NAME" />
 
       Aquesta política us permet configurar de quina manera es comporta <ph name="PRODUCT_OS_NAME" /> quan no hi ha activitat de l'usuari durant un temps determinat quan es mostra la pantalla d'inici. La política controla diversos paràmetres. Per conèixer la semàntica i els intervals de valors, consulteu les polítiques corresponents que controlen la gestió d'energia d'una sessió. Les úniques desviacions d'aquestes polítiques són les següents:
@@ -606,24 +589,6 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
 <translation id="3072847235228302527">Defineix els Termes i condicions d'un compte local del dispositiu</translation>
 <translation id="3096595567015595053">Llista dels connectors activats</translation>
 <translation id="3101501961102569744">Tria com vols especificar la configuració del servidor intermediari</translation>
-<translation id="3125884964575432854">Us permet especificar el servidor intermediari que <ph name="PRODUCT_NAME" /> i les aplicacions ARC utilitzen. A més, impedeix que els usuaris canviïn la configuració del servidor.
-
-          Si decidiu no utilitzar mai un servidor intermediari i connectar-vos sempre a la xarxa directament, la resta d'opcions s'ignoren.
-
-          Si decidiu utilitzar la configuració del servidor intermediari del sistema, la resta d'opcions s'ignoren.
-
-          Si decidiu detectar automàticament el servidor intermediari, la resta d'opcions s'ignoren.
-
-          Si trieu el mode de servidor intermediari fix, podeu especificar més opcions a Adreça o URL del servidor intermediari i a Llista de regles d'evitació de servidors intermediaris separada per comes. Les aplicacions ARC només utilitzen el servidor intermediari HTTP amb la prioritat més alta.
-
-          Si decidiu utilitzar un script de servidor intermediari .pac, heu d'especificar l'URL a l'script que hi ha a URL d'un fitxer .pac d'un servidor intermediari.
-
-          Per veure exemples detallats, aneu a:
-          <ph name="PROXY_HELP_URL" />
-
-          Si activeu aquesta opció de configuració, <ph name="PRODUCT_NAME" /> i les aplicacions ARC ignoren totes les opcions relacionades amb el servidor intermediari que s'han especificat des de la línia d'ordres.
-
-          Si deixeu aquesta política sense establir, els usuaris poden triar pel seu compte la configuració del servidor intermediari.</translation>
 <translation id="3153348162326497318">Us permet especificar quines extensions NO poden instal·lar els usuaris. Les extensions ja instal·lades s'eliminaran si apareixen a la llista negra. Un valor de llista negra de "*" significa que totes les extensions apareixen a la llista negra llevat que apareguin explícitament a la llista blanca. Si no s'ha definit aquesta política, l'usuari podrà instal·lar qualsevol extensió a <ph name="PRODUCT_NAME" />.</translation>
 <translation id="316778957754360075">Aquesta versió no està disponible des de la versió 29 de <ph name="PRODUCT_NAME" />. La manera recomanada de definir col·leccions d'aplicacions/extensions allotjades per una organització és incloure el lloc que allotja els paquets CRX a ExtensionInstallSources i col·locar enllaços de baixada directa als paquets en una pàgina web. Es pot crear un menú d'aplicacions per a la pàgina web mitjançant la política ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">des de la versió <ph name="SINCE_VERSION" /></translation>
@@ -688,6 +653,7 @@ Si aquesta política no es defineix, els usuaris podran canviar l'ús del client
 Si s'activa aquest paràmetre o si no es configura, els usuaris podran activar el servidor intermediari d'impressió al núvol en autenticar-se amb el seu compte de Google.
 
 Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor intermediari i l'ordinador no podrà compartir les seves impressores amb <ph name="CLOUD_PRINT_NAME" />.</translation>
+<translation id="3297010562646015826">Activa la finalització de processos al gestor de tasques</translation>
 <translation id="3322771899429619102">Us permet definir una llista de patrons d'URL que especifiquin els llocs que estan autoritzats a utilitzar la generació de claus. Si un patró d'URL està configurat com a "KeygenBlockedForUrls", la política substitueix aquestes excepcions.
 
 
@@ -852,22 +818,6 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
           Si aquesta política s'estableix en Conserva les galetes mentre duri la sessió, les galetes s'esborraran quan es tanqui la sessió. Tingueu en compte que, si <ph name="PRODUCT_NAME" /> s'executa en mode de segon pla, és possible que la sessió no es tanqui en tancar l'última finestra. Consulteu la política "BackgroundModeEnabled" per obtenir més informació sobre com es configura aquest comportament.
 
           Si aquesta política no s'estableix, s'utilitzarà "AllowCookies" i l'usuari podrà canviar-la.</translation>
-<translation id="4098957623809244159">Aquesta política està obsoleta; substituïu-la per ProxyMode.
-
-          Us permet especificar el servidor intermediari que <ph name="PRODUCT_NAME" /> i les aplicacions ARC utilitzen. A més, impedeix que els usuaris canviïn la configuració del servidor.
-
-          Si decidiu no utilitzar mai un servidor intermediari i connectar-vos sempre a la xarxa directament, la resta d'opcions s'ignoren.
-
-          Si decidiu detectar automàticament el servidor intermediari o utilitzar-ne la configuració del sistema, la resta d'opcions s'ignoren.
-
-          Si trieu manualment la configuració del servidor intermediari, podeu especificar més opcions a Adreça o URL del servidor intermediari, a URL d'un fitxer .pac d'un servidor intermediari i a Llista de regles d'evitació de servidors intermediaris separada per comes.
-
-          Per veure exemples detallats, aneu a:
-          <ph name="PROXY_HELP_URL" />
-
-          Si activeu aquesta opció de configuració, <ph name="PRODUCT_NAME" /> ignora totes les opcions relacionades amb el servidor intermediari que s'han especificat des de la línia d'ordres.
-
-          Si deixeu aquesta política sense establir, els usuaris poden triar pel seu compte la configuració del servidor intermediari.</translation>
 <translation id="4103289232974211388">Redirigeix al proveïdor d'identitat SAML després de la confirmació de l'usuari</translation>
 <translation id="410478022164847452">Indica el temps sense activitat per part de l'usuari després del qual es duu a terme l'acció d'inactivitat quan el dispositiu funciona amb alimentació.
 
@@ -1295,14 +1245,6 @@ Si la política no es defineix, els usuaris podran triar si el prestatge s'ha d'
 <translation id="5893553533827140852">Si s'activa aquesta opció de configuració, les sol·licituds d'autenticació Gnubby s'enviaran per un servidor intermediari a través d'una connexió d'amfitrió remot.
 
           Si es desactiva o no es configura aquesta opció, les sol·licituds d'autenticació Gnubby s'enviaran per un servidor intermediari.</translation>
-<translation id="5900959132054596599"><ph name="PRODUCT_NAME" /> i les aplicacions ARC evitaran qualsevol servidor intermediari de la llista d'amfitrions proporcionada.
-
-          Aquesta política només té efecte si heu seleccionat la configuració manual del servidor intermediari a Tria com vols especificar la configuració del servidor intermediari.
-
-          Deixeu-la sense establir si heu seleccionat qualsevol altra manera per establir les polítiques del servidor intermediari.
-
-          Per veure exemples més detallats, aneu a:
-          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="5921713479449475707">Permet les baixades d'actualització automàtica mitjançant HTTP</translation>
 <translation id="5921888683953999946">Establiu l'estat predeterminat de la funció d'accessibilitat del cursor gran a la pantalla d'inici de sessió.
 
@@ -1789,9 +1731,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="7632724434767231364">Nom de la biblioteca GSSAPI</translation>
 <translation id="7635471475589566552">Defineix la configuració regional de les aplicacions a <ph name="PRODUCT_NAME" /> i impedeix que els usuaris la modifiquin. Si activeu aquest paràmetre, <ph name="PRODUCT_NAME" /> fa servir la configuració regional especificada. Si aquesta configuració regional no és compatible, es fa servir "en-US" en lloc seu. Si aquest paràmetre està desactivat o bé si no està configurat, <ph name="PRODUCT_NAME" /> fa servir la configuració regional preferida que hagi especificat l'usuari (en cas que n'hagi configurat cap), la configuració regional del sistema o bé la configuració regional alternativa "en-US".</translation>
 <translation id="7651739109954974365">Determina si cal activar la itinerància de dades per al dispositiu. Si es defineix a «true» (cert), es permet la itinerància de dades. Si es deixa sense configurar o es defineix a «false» (fals), la itinerància de dades no estarà disponible.</translation>
-<translation id="7667184304362487902">Configura el servidor intermediari per a <ph name="PRODUCT_NAME" /> i per a les aplicacions ARC.
-
-      Aquesta política encara no està llesta; no la feu servir.</translation>
 <translation id="76810863974142048">URL on els clients d'accés remot han d'obtenir el testimoni d'autenticació.
 
           Si s'estableix aquesta política, l'amfitrió d'accés remot requerirà que els clients que es vulguin autenticar obtinguin un testimoni d'autenticació d'aquest URL per connectar-se. Cal utilitzar la política juntament amb la política RemoteAccessHostTokenValidationUrl.
@@ -2005,6 +1944,7 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
 
       El valor de la política s'ha d'especificar en mil·lisegons.</translation>
 <translation id="8344454543174932833">Importació de les adreces d'interès des del navegador predeterminat en la primera execució</translation>
+<translation id="8359734107661430198">Activa l'API de ExampleDeprecatedFeature fins al 02/09/2008</translation>
 <translation id="8360452361555133173">Activa que es mostri la pàgina de benvinguda la primera vegada que s'inicia el navegador després d'actualitzar el sistema operatiu.
 
       Si aquesta política s'estableix en "true" o no es configura, el navegador tornarà a mostrar la pàgina de benvinguda la primera vegada que s'iniciï després d'actualitzar el sistema operatiu.

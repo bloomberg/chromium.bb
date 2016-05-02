@@ -21,6 +21,7 @@
 <translation id="112840717907525620">Кешът на правилото е в добро състояние</translation>
 <translation id="113188000913989374"><ph name="SITE" /> изпраща подкана:</translation>
 <translation id="1132774398110320017">Настройки за Автоматично попълване в Chrome...</translation>
+<translation id="113770840981343808">За потвърждение въведете четирицифрения код за проверка от лицевата страна на картата си</translation>
 <translation id="1146673768181266552">Идентификатор на срива <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">Сървърът не можа да докаже, че е <ph name="DOMAIN" />; операционната система на компютъра ви няма доверие на сертификата му за сигурност. Това може да се дължи на неправилно конфигуриране или на прихващане на връзката ви от атакуващ.</translation>
 <translation id="1152921474424827756">Вижте <ph name="BEGIN_LINK" />кеширано копие<ph name="END_LINK" /> на <ph name="URL" /></translation>
@@ -118,7 +119,6 @@
 <translation id="2212735316055980242">Правилото не е намерено</translation>
 <translation id="2213606439339815911">Записите се извличат...</translation>
 <translation id="2214283295778284209">Няма достъп до <ph name="SITE" /></translation>
-<translation id="2227695659599072496">Проверете мрежовия кабел или маршрутизатора.</translation>
 <translation id="2230458221926704099">Поправете връзката си посредством <ph name="BEGIN_LINK" />приложението за диагностика<ph name="END_LINK" /></translation>
 <translation id="225207911366869382">Стойността е оттеглена за това правило.</translation>
 <translation id="2262243747453050782">HTTP грешка</translation>
@@ -131,6 +131,7 @@
 <translation id="2317259163369394535">Изискват се потребителско име и парола за <ph name="DOMAIN" />.</translation>
 <translation id="2328300916057834155">Пренебрегната бе невалидна отметка в индекс <ph name="ENTRY_INDEX" /></translation>
 <translation id="2354001756790975382">Други отметки</translation>
+<translation id="2357783041215512127">Плащане чрез <ph name="CREDIT_CARD" /></translation>
 <translation id="2359808026110333948">Напред</translation>
 <translation id="2367567093518048410">Ниво</translation>
 <translation id="237718015863234333">Няма алтернативи на потребителския интерфейс</translation>
@@ -228,7 +229,6 @@
 <translation id="3254409185687681395">Запазване на отметка към тази страница</translation>
 <translation id="3270847123878663523">&amp;Отмяна на пренареждането</translation>
 <translation id="3286538390144397061">Рестартиране сега</translation>
-<translation id="3288003805934695103">Презаредете страницата.</translation>
 <translation id="3305707030755673451">На <ph name="TIME" /> данните ви бяха шифровани с пропуска ви за синхронизиране. Въведете го, за да стартирате синхронизирането.</translation>
 <translation id="333371639341676808">Да не се показват допълнителни диалогови прозорци от тази страница.</translation>
 <translation id="3340978935015468852">настройки</translation>
@@ -300,7 +300,6 @@
 <translation id="3963721102035795474">Режим за четене</translation>
 <translation id="3973234410852337861">Хостът <ph name="HOST_NAME" /> е блокиран</translation>
 <translation id="4021036232240155012">DNS е услугата за мрежи, която преобразува имената на уебсайтовете към техните адреси в интернет.</translation>
-<translation id="4021376465026729077">Деактивирайте разширенията си.</translation>
 <translation id="4030383055268325496">&amp;Отмяна на добавянето</translation>
 <translation id="4032534284272647190">Достъпът до <ph name="URL" /> бе отказан.</translation>
 <translation id="404928562651467259">ПРЕДУПРЕЖДЕНИЕ</translation>
@@ -398,7 +397,6 @@
 <translation id="5251803541071282808">Облак</translation>
 <translation id="5299298092464848405">Грешка при синтактичния анализ на правилото</translation>
 <translation id="5300589172476337783">Показване</translation>
-<translation id="5307361445257083764"><ph name="BEGIN_LINK" />Изчистете „бисквитките“<ph name="END_LINK" />.</translation>
 <translation id="5308689395849655368">Изпращането на сигнали за сривове е деактивирано.</translation>
 <translation id="5317780077021120954">Запазване</translation>
 <translation id="5327248766486351172">Име</translation>
@@ -432,6 +430,7 @@
 <translation id="5629630648637658800">Зареждането на настройките за правилото не бе успешно</translation>
 <translation id="5631439013527180824">Невалидно означение за управление на устройството</translation>
 <translation id="5650551054760837876">Не са намерени резултати от търсенето.</translation>
+<translation id="5663999524854166235">За потвърждение въведете трицифрения код за проверка от гърба на картата си</translation>
 <translation id="5677928146339483299">Блокирано</translation>
 <translation id="5710435578057952990">Самоличността на този уебсайт не е потвърдена.</translation>
 <translation id="5720705177508910913">Текущият потребител</translation>
@@ -504,7 +503,6 @@
 <translation id="6628463337424475685">Търсене с/ъс <ph name="ENGINE" /></translation>
 <translation id="6634865548447745291">В момента не можете да посетите <ph name="SITE" />, защото <ph name="BEGIN_LINK" />този сертификат е анулиран<ph name="END_LINK" />. Обикновено грешките в мрежата и атаките срещу нея са временни, така че тази страница вероятно ще работи по-късно.</translation>
 <translation id="6637478299472506933">Неуспешно изтегляне</translation>
-<translation id="6642894344118208103">Рестартирайте модема или маршрутизатора.</translation>
 <translation id="6644283850729428850">Това правило е оттеглено.</translation>
 <translation id="6646897916597483132">Въведете четирицифрения код за проверка от лицевата страна на картата си</translation>
 <translation id="6656103420185847513">Редактиране на папката</translation>

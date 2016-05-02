@@ -178,7 +178,6 @@
 <translation id="533625276787323658">연결 대상이 없습니다.</translation>
 <translation id="5363265567587775042">액세스하려는 컴퓨터의 사용자에게 '<ph name="SHARE" />'를 클릭하여 액세스 코드를 달라고 요청하세요.</translation>
 <translation id="5379087427956679853">Chrome 원격 데스크톱을 사용하면 웹에서 내 컴퓨터를 안전하게 공유할 수 있습니다. 양쪽 사용자 모두 <ph name="URL" /> 페이지에 있는 Chrome 원격 데스크톱 앱을 실행해야 합니다.</translation>
-<translation id="5394895745784982830">Mac용(OS X 10.6 이상)</translation>
 <translation id="5397086374758643919">Chrome 원격 데스크톱 호스트 제거 프로그램</translation>
 <translation id="5419185025274123272">애플리케이션을 재설정할 수 없지만 버그 보고서를 보낼 수는 있습니다.</translation>
 <translation id="544077782045763683">호스트가 꺼져 있습니다.</translation>
@@ -232,7 +231,6 @@
 <translation id="6930242544192836755">기간</translation>
 <translation id="6939719207673461467">키보드 표시/숨기기</translation>
 <translation id="6944854424004126054">복원 창</translation>
-<translation id="6962773374262604195">Windows용(XP 이상)</translation>
 <translation id="6965382102122355670">확인</translation>
 <translation id="6985691951107243942"><ph name="HOSTNAME" />와(과)의 원격 연결을 사용중지하시겠습니까? 생각이 바뀌면 해당 컴퓨터에서 연결을 다시 사용하도록 설정해야 합니다.</translation>
 <translation id="6998989275928107238">호스트</translation>

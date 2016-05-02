@@ -60,6 +60,7 @@ Debes activar la ubicación y el Bluetooth para utilizar la Web física.</transl
 <translation id="1742134235943978220">Se ha traducido al <ph name="TARGET_LANGUAGE" />.</translation>
 <translation id="1749561566933687563">Sincronizar marcadores</translation>
 <translation id="17513872634828108">Pestañas abiertas</translation>
+<translation id="1756600373018374892">Toca este botón para acceder rápidamente a tus pestañas.</translation>
 <translation id="1807246157184219062">Claro</translation>
 <translation id="1825719650605518411">Primera experiencia de ejecución</translation>
 <translation id="1829244130665387512">Buscar en la página</translation>
@@ -70,6 +71,7 @@ Debes activar la ubicación y el Bluetooth para utilizar la Web física.</transl
 <translation id="194341124344773587">Activa el permiso para Chrome en los <ph name="BEGIN_LINK" />ajustes de Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Guardar contraseñas</translation>
 <translation id="1944384637046898011">Cifrar todo con una contraseña de Google a partir del <ph name="TIME" /></translation>
+<translation id="1946005195648379376">Controla como utiliza Google tu historial de navegación para personalizar la Búsqueda y otros servicios de Google.</translation>
 <translation id="1959930595721737608">Permite JavaScript en el siguiente sitio web.</translation>
 <translation id="1966710179511230534">Actualiza tus datos de inicio de sesión.</translation>
 <translation id="1974060860693918893">Opciones avanzadas</translation>
@@ -95,9 +97,7 @@ Debes activar la ubicación y el Bluetooth para utilizar la Web física.</transl
 <translation id="2206488550163399966"><ph name="APP_NAME" />, una aplicación web disponible en <ph name="APP_URL" /></translation>
 <translation id="2268044343513325586">Restringir</translation>
 <translation id="2315043854645842844">El sistema operativo no admite la selección de certificados de cliente.</translation>
-<translation id="2316129865977710310">No, gracias</translation>
 <translation id="2321958826496381788">Arrastra el control deslizante hasta que puedas leer cómodamente. El texto debe tener al menos este tamaño después de tocar un párrafo dos veces.</translation>
-<translation id="2329597144923131178">Accede para ver marcadores, historial, contraseñas y otros en dispos.</translation>
 <translation id="2343328333327081434">Instalando…</translation>
 <translation id="2351097562818989364">Se han restablecido tus ajustes de traducción.</translation>
 <translation id="2359808026110333948">Continuar</translation>
@@ -138,6 +138,7 @@ Debes activar la ubicación y el Bluetooth para utilizar la Web física.</transl
 <translation id="2842985007712546952">Carpeta principal</translation>
 <translation id="2870560284913253234">Sitio</translation>
 <translation id="2888126860611144412">Información de Chrome</translation>
+<translation id="2889768325388591707">Cambia de pestañas rápidamente</translation>
 <translation id="2891154217021530873">Detener la carga de la página</translation>
 <translation id="2902702728133930130">Se ha producido un error inesperado en Chrome durante el inicio.</translation>
 <translation id="2903493209154104877">Direcciones</translation>
@@ -155,6 +156,9 @@ Debes activar la ubicación y el Bluetooth para utilizar la Web física.</transl
 <translation id="3089395242580810162">Abrir en modo de incógnito</translation>
 <translation id="3090193911106258841">Accediendo a la entrada de vídeo y audio</translation>
 <translation id="3137521801621304719">Salir del modo incógnito</translation>
+<translation id="3149891296864842641">Opción de envío</translation>
+<translation id="3162882791484435636">Seleccionar opción de envío</translation>
+<translation id="3173438333156928404">Error al procesar pago</translation>
 <translation id="3177909033752230686">Idioma de la página:</translation>
 <translation id="3190152372525844641">Activa los permisos para Chrome en los <ph name="BEGIN_LINK" />ajustes de Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> de datos almacenados</translation>
@@ -269,10 +273,8 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="4875622588773761625">¿Quieres que <ph name="PASSWORD_MANAGER_BRAND" /> actualice tu contraseña para este sitio web?</translation>
 <translation id="4881695831933465202">Abrir</translation>
 <translation id="4885273946141277891">Número de instancias de Chrome no admitido.</translation>
+<translation id="4923459931733593730">Pago</translation>
 <translation id="4943872375798546930">Sin resultados</translation>
-<translation id="4970484396410298643">Accede a las pestañas que tengas abiertas en tu ordenador desde aquí.
-
-Solo tienes que abrir Chrome en tu ordenador, ir al menú y seleccionar "Iniciar sesión en Chrome..."</translation>
 <translation id="497421865427891073">Avanzar</translation>
 <translation id="4996978546172906250">Compartir a través de</translation>
 <translation id="5000922062037820727">Bloqueado (recomendado)</translation>
@@ -296,9 +298,7 @@ Solo tienes que abrir Chrome en tu ordenador, ir al menú y seleccionar "Iniciar
 <translation id="5184329579814168207">Abrir en Chrome</translation>
 <translation id="5199929503336119739">Perfil de trabajo</translation>
 <translation id="5210365745912300556">Cerrar pestaña</translation>
-<translation id="5210714456814679336">Aquí aparecerán las pestañas que hayas abierto en Chrome en otros dispositivos.</translation>
 <translation id="5222676887888702881">Cerrar sesión</translation>
-<translation id="5228579091201413441">Habilitar sincronización</translation>
 <translation id="5233638681132016545">Nueva pestaña</translation>
 <translation id="5271967389191913893">El dispositivo no puede abrir el contenido para descargarlo.</translation>
 <translation id="5275558766013849309">Las pestañas aparecerán junto a aplicaciones recientes.</translation>
@@ -342,9 +342,6 @@ Solo tienes que abrir Chrome en tu ordenador, ir al menú y seleccionar "Iniciar
 <translation id="5677928146339483299">Con bloqueo</translation>
 <translation id="5684874026226664614">¡Vaya! No se ha podido traducir esta página.</translation>
 <translation id="5708031556037168012">Los datos actuales se mantienen en tu dispositivo y se importan los datos a <ph name="TO_ACCOUNT" /> de forma permanente.</translation>
-<translation id="5712189971979076230">Ayúdanos a priorizar las funciones y las mejoras en las que debemos trabajar enviando información a Google sobre los archivos, las aplicaciones y los servicios utilizados cuando se produce un error.
-
-Las estadísticas de uso incluyen información sobre preferencias, clics en botones, uso de memoria y otros datos. No incluyen las URL de páginas web ni información personal. Los informes sobre fallos contienen información del sistema en el momento del error y pueden incluir las URL de páginas web o información personal (según lo que haya sucedido en el momento del fallo).</translation>
 <translation id="5719837394786370183">Las páginas que visites a través de las pestañas de incógnito no se mostrarán en el historial del navegador, en el almacén de cookies ni en el historial de búsquedas una vez que cierres todas las pestañas de incógnito. Sí se conservarán los archivos que descargues y los marcadores que crees.
 
 No obstante, tus acciones no serán totalmente invisibles. El uso del modo incógnito no te permite ocultar tu actividad de navegación a tu empresa, a tu proveedor de servicios de Internet o a los sitios web que visites.</translation>
@@ -463,6 +460,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="7180611975245234373">Actualizar</translation>
 <translation id="7191430249889272776">Pestaña abierta en segundo plano.</translation>
 <translation id="7208788139759694678">Economizador de datos inhabilitado</translation>
+<translation id="7220786058474068424">Procesando pago</translation>
 <translation id="7243308994586599757">Opciones disponibles cerca de la parte inferior de la pantalla</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> utiliza tu ubicación para mostrar resultados de búsqueda locales</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Ayuda<ph name="END_LINK" /></translation>
@@ -516,6 +514,7 @@ Es posible que tu cuenta de Google tenga otras formas del historial de navegaci�
 <translation id="7846076177841592234">Cancelar selección</translation>
 <translation id="7851858861565204677">Otros dispositivos</translation>
 <translation id="7876243839304621966">Eliminar todo</translation>
+<translation id="7902333740914687335">Pago procesado</translation>
 <translation id="7947953824732555851">Aceptar y acceder</translation>
 <translation id="7949961459945740081">Obtener las últimas funciones</translation>
 <translation id="7963646190083259054">Proveedor:</translation>
@@ -539,6 +538,7 @@ Puedes controlar la Web física en la configuración de privacidad de Chrome.</t
 <translation id="8168435359814927499">Contenido</translation>
 <translation id="8173098127580644436">el origen de los tiempos</translation>
 <translation id="8200772114523450471">Reanudar</translation>
+<translation id="8202097416529803614">Resumen del pedido</translation>
 <translation id="8209050860603202033">Abrir imagen</translation>
 <translation id="8215250379351058554"><ph name="SITE" /> quiere conectarse a:</translation>
 <translation id="8218346974737627104">Confirmar inicio de sesión</translation>
@@ -595,6 +595,8 @@ Para obtener nuevas licencias, conéctate a Internet y reproduce el contenido de
 <translation id="8942627711005830162">Abrir en otra ventana</translation>
 <translation id="8959122750345127698">No se puede realizar la navegación: <ph name="URL" /></translation>
 <translation id="8979340629087822094">último día</translation>
+<translation id="8981454092730389528">Controles de actividad de Google</translation>
+<translation id="8986494364107987395">Enviar automáticamente estadísticas de uso e informes sobre fallos a Google</translation>
 <translation id="8987061207681586800">Personaliza Chrome</translation>
 <translation id="9019902583201351841">Administrado por tus padres</translation>
 <translation id="9020607083536754075">Cerrar la pestaña actual y volver a la aplicación anterior</translation>

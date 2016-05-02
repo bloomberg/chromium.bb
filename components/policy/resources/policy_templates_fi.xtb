@@ -2,9 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="fi">
 <translation id="101438888985615157">Kierrä näyttöä 180 astetta.</translation>
-<translation id="1015272884520659144">Määrittää luettelon USB-laitteista, jotka voidaan irrottaa kernel-ajurista, jotta laitetta voi käyttää suoraan chrome.usb API:n kautta verkkosovelluksessa. Tiedot näkyvät USB-toimittajan tunnus- ja tuotetunnuspareina, joilla tunnistetaan tietty laitteisto.
-
-      Jos tätä käytäntöä ei määritetä, USB-laitteiden luettelon katsotaan olevan tyhjä.</translation>
 <translation id="1017967144265860778">Virran hallinta kirjautumisruudulla</translation>
 <translation id="1019101089073227242">Aseta käyttäjätietojen hakemisto</translation>
 <translation id="1022361784792428773">Niiden laajennuksien tunnukset, joita käyttäjä ei saa asentaa (tai * = kaikki).</translation>
@@ -65,7 +62,6 @@
       Jos tätä käytäntöä ei aseteta tai jos sen arvo on epätosi, TLS:n RC4-salaustekniikoita ei oteta käyttöön. Jos yhteensopivuus vanhentuneen palvelimen kanssa täytyy varmistaa, arvoksi voidaan asettaa tosi. Tämä on kuitenkin tilapäinen toimenpide, ja palvelimen määritykset tulee tehdä uudelleen.</translation>
 <translation id="1297182715641689552">Käytä .pac-välityspalvelinkoodia</translation>
 <translation id="1304973015437969093">Laajennuksien ja sovellusten tunnukset ja päivitys-URL-osoitteet asennetaan taustalla</translation>
-<translation id="1310699457130669094">Voit määrittää välityspalvelimen .pac-tiedoston URL-osoitteen täällä. Käytäntö tulee voimaan vain, jos olet valinnut manuaaliset välityspalvelimen asetukset kohdassa Valitse, miten välityspalvelimen asetukset määritetään. Jätä tämä käytäntö määrittämättä, jos olet valinnut toisen välityspalvelinkäytäntöjen määritystavan. Lisää asetuksia ja esimerkkejä näet osoitteesta <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1313457536529613143">Määrittää prosenttimäärän, jolla näytön himmennyksen viive skaalataan, kun käyttäjän toimia huomataan näytön ollessa himmennettynä tai pian näytön sammuttamisen jälkeen.
 
           Jos tämä käytäntö on asetettu, se määrittää prosenttimäärän, jolla näytön himmennyksen viive skaalataan, kun käyttäjän toimia huomataan näytön ollessa himmennettynä tai pian näytön sammuttamisen jälkeen. Kun himmennyksen viive on skaalattu, näytön sammutus-, lukitus- ja käyttämättömyysviiveet säädetään ylläpitämään samoja etäisyyksiä näytön himmennyksen viiveestä kuin alunperin määritettiin.
@@ -146,18 +142,6 @@
 <translation id="1561424797596341174">Käytäntöjen ohitus etäkäytön isännän vianetsintäversioissa</translation>
 <translation id="1583248206450240930">Käytä tuotetta <ph name="PRODUCT_FRAME_NAME" /> oletuksena</translation>
 <translation id="1608755754295374538">URL-osoitteet, joille on myönnetty pääsy äänikaappauslaitteisiin ilman erillisen luvan pyytämistä</translation>
-<translation id="1613574633990410986">Voit määrittää välityspalvelimen, jota <ph name="PRODUCT_NAME" /> ja ARC-sovellukset käyttävät, ja estää käyttäjiä muuttamasta välityspalvelimen asetuksia.
-
-      Jos päätät muodostaa aina suoran yhteyden välityspalvelimen käyttämisen sijaan, kaikki muut vaihtoehdot ohitetaan.
-
-      Jos päätät etsiä välityspalvelimen automaattisesti, kaikki muut vaihtoehdot ohitetaan.
-
-      Näet esimerkkejä osoitteessa
-      <ph name="PROXY_HELP_URL" />.
-
-      Jos otat tämän asetuksen käyttöön, <ph name="PRODUCT_NAME" /> ja ARC-sovellukset ohittavat kaikki komentorivillä annetut välityspalvelimiin liittyvät komennot.
-
-      Jos et määritä näitä käytäntöjä, käyttäjät voivat valita välityspalvelinasetukset itse.</translation>
 <translation id="1617235075406854669">Salli selaus- ja lataushistorian poistaminen</translation>
 <translation id="1617384279878333801">Salli profiilien luominen käyttäjäprofiilien hallinnassa</translation>
 <translation id="1655229863189977773">Aseta levyn välimuistin koko tavuina</translation>
@@ -238,7 +222,6 @@
 Jos tämä asetus on käytössä, järjestelmäpalkissa näytetään suuri punainen uloskirjautumispainike käyttökerran ollessa aktiivinen ja ruudun ollessa käytössä.
 
 Jos tämä asetus ei ole käytössä, järjestelmäpalkissa ei näytetä suurta punaista uloskirjautumispainiketta.</translation>
-<translation id="1942957375738056236">Voit määrittää välityspalvelimen URL-osoitteen täällä. Käytäntö tulee voimaan vain, jos olet valinnut manuaaliset välityspalvelimen asetukset kohdassa Valitse, miten välityspalvelimen asetukset määritetään. Jätä tämä käytäntö määrittämättä, jos olet valinnut toisen välityspalvelinkäytäntöjen määritystavan. Lisää asetuksia ja esimerkkejä näet osoitteesta <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1956493342242507974">Määritä virranhallinta-asetukset tuotteen <ph name="PRODUCT_OS_NAME" /> kirjautumisruudulla.
 
       Käytäntö määrittää tuotteen <ph name="PRODUCT_OS_NAME" /> toiminnan, kun käyttäjä ei tee mitään tietyn ajan kuluessa kirjautumisruudun ollessa avoinna. Käytäntö ohjaa useita asetuksia. Voit tarkastella yksittäisten asetusten tietoja ja arvoalueita tutustumalla käytäntöihin, jotka ohjaavat virranhallintaa käyttökerran aikana. Käytäntöjen ainoat poikkeukset ovat:
@@ -601,22 +584,6 @@ Kaikki luettelon kohteet ovat tunnuksia, joiden perusteella erotetaan laitteesee
 <translation id="3072847235228302527">Aseta laitteen paikallisen tilin käyttöehdot</translation>
 <translation id="3096595567015595053">Luettelo käytössä olevista laajennuksista</translation>
 <translation id="3101501961102569744">Valitse, miten välityspalvelimen asetukset määritetään</translation>
-<translation id="3125884964575432854">Voit määrittää välityspalvelimen, jota <ph name="PRODUCT_NAME" /> ja ARC-sovellukset käyttävät, ja estää käyttäjiä muuttamasta välityspalvelimen asetuksia.
-
-          Jos päätät muodostaa aina suoran yhteyden välityspalvelimen käyttämisen sijaan, kaikki muut vaihtoehdot ohitetaan.
-
-          Jos päätät etsiä välityspalvelimen automaattisesti, kaikki muut vaihtoehdot ohitetaan.
-
-          Jos haluat käyttää kiinteää välityspalvelinta, voit määrittää lisää vaihtoehtoja kentissä ”Välityspalvelimen osoite tai URL-osoite” ja ”Välityspalvelimen ohitussääntöjen pilkuilla erotettu luettelo”. ARC-sovellukset käyttävät vain korkeimman prioriteetin HTTP-välityspalvelinta.
-
-          Jos haluat käyttää .pac-välityspalvelinkoodia, kirjoita koodin URL-osoite kenttään ”Välityspalvelimen .pac-tiedoston URL-osoite”.
-
-          Näet esimerkkejä osoitteessa
-          <ph name="PROXY_HELP_URL" />.
-
-          Jos otat tämän asetuksen käyttöön, <ph name="PRODUCT_NAME" /> ja ARC-sovellukset ohittavat kaikki komentorivillä annetut välityspalvelimiin liittyvät komennot.
-
-          Jos et määritä tätä käytäntöä, käyttäjät voivat itse valita välityspalvelinasetukset.</translation>
 <translation id="3153348162326497318">Voit määrittää, mitä laajennuksia käyttäjät EIVÄT saa asentaa. Jo asennetut laajennukset poistetaan, jos ne ovat kiellettyjen luettelossa. Kiellettyjen luettelon arvo * tarkoittaa, että kaikki laajennukset ovat kiellettyjen luettelossa, ellei niitä ole mainittu sallittujen luettelossa. Jos tätä käytäntöä ei ole määritetty, käyttäjä voi asentaa tuotteeseen <ph name="PRODUCT_NAME" /> mitä tahansa laajennuksia.</translation>
 <translation id="316778957754360075">Tämä asetus on poistettu käytöstä tuotteen <ph name="PRODUCT_NAME" /> versiosta 29 lähtien. Suositeltu tapa määrittää organisaation isännöimiä laajennuksia tai sovelluskokoelmia on sisällyttää CRX-paketteja sisältävä sivusto ExtensionInstallSources-luetteloon ja lisätä suorat latauslinkit paketteihin verkkosivulle. Kyseisen verkkosivun käynnistysohjelma voidaan luoda ExtensionInstallForcelist-käytännön avulla.</translation>
 <translation id="3185009703220253572">versiosta <ph name="SINCE_VERSION" /> alkaen</translation>
@@ -681,6 +648,7 @@ Jos tätä käytäntöä ei määritetä, käyttäjät voivat valita, haluavatko
 Jos tämä asetus on käytössä tai sitä ei ole määritetty, käyttäjät voivat ottaa pilvitulostuksen välityspalvelimen käyttöön todentamalla sen Google-tilinsä avulla.
 
 Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta käyttöön eikä kone voi jakaa tulostimiaan palvelussa <ph name="CLOUD_PRINT_NAME" />.</translation>
+<translation id="3297010562646015826">Salli prosessien lopettaminen tehtävänhallinnassa</translation>
 <translation id="3322771899429619102">Voit määrittää URL-mallien luettelon, jossa määritetään sivustot, jotka saavat luoda avaimia. Jos URL-malli on KeygenBlockedForUrls-käytännössä, se ohittaa nämä poikkeukset.
 
           Jos tätä käytäntöä ei ole määritetty, kaikille sivustoille käytetään joko DefaultKeygenSetting-käytännön yleistä oletusarvoa, jos se on asetettu, tai käyttäjän henkilökohtaisia määrityksiä.</translation>
@@ -851,22 +819,6 @@ Jos tätä asetusta ei ole määritetty, kaikentyyppisiä sovelluksia ja laajenn
           Jos tämän käytännön asetus on Säilytä evästeet käyttökerran ajan, evästeet poistetaan käyttökerran päätyttyä. Huom. Jos <ph name="PRODUCT_NAME" /> on käynnissä taustatilassa, käyttökerta ei välttämättä pääty viimeisen ikkunan sulkeutuessa. Katso käytäntö BackgroundModeEnabled, niin saat lisätietoja tämän toiminnallisuuden määrittämisestä.
 
           Jos tätä käytäntöä ei aseteta, sen sijaan käytetään AllowCookies-käytäntöä ja käyttäjä voi muuttaa asetusta.</translation>
-<translation id="4098957623809244159">Tämä käytäntö ei ole enää käytössä, käytä sen sijaan ProxyMode-käytäntöä.
-
-          Voit määrittää välityspalvelimen, jota <ph name="PRODUCT_NAME" /> ja ARC-sovellukset käyttävät, ja estää käyttäjiä muuttamasta välityspalvelimen asetuksia.
-
-          Jos päätät muodostaa aina suoran yhteyden välityspalvelimen käyttämisen sijaan, kaikki muut vaihtoehdot ohitetaan.
-
-          Jos päätät käyttää järjestelmän välityspalvelinasetuksia tai etsiä välityspalvelimen automaattisesti, kaikki muut vaihtoehdot ohitetaan.
-
-          Jos haluat määrittää välityspalvelimen asetukset manuaalisesti, voit määrittää lisää vaihtoehtoja kentissä ”Välityspalvelimen osoite tai URL-osoite”, ”Välityspalvelimen .pac-tiedoston URL-osoite” ja ”Välityspalvelimen ohitussääntöjen pilkuilla erotettu luettelo”.
-
-          Näet esimerkkejä osoitteessa
-          <ph name="PROXY_HELP_URL" />.
-
-          Jos otat tämän asetuksen käyttöön, <ph name="PRODUCT_NAME" /> ohittaa kaikki komentorivillä annetut välityspalvelimiin liittyvät käskyt.
-
-          Jos tätä käytäntöä ei ole määritetty, käyttäjät voivat itse valita välityspalvelimen asetukset.</translation>
 <translation id="4103289232974211388">Uudelleenohjaa SAML IdP:hen käyttäjän todennuksen jälkeen.</translation>
 <translation id="410478022164847452">Määrittää käyttämättömyysajan, jonka kuluttua suoritetaan käyttämättömyystoimenpide, kun laitetta käytetään verkkovirralla.
 
@@ -1296,14 +1248,6 @@ Jos käytäntöä ei määritetä, käyttäjät voivat valita, tuleeko hylly pii
 <translation id="5893553533827140852">Jos asetus on käytössä, gnubby-todennuspyynnöt lähetetään välityspalvelimen kautta etäisäntäyhteyden avulla.
 
           Jos asetus ei ole käytössä tai sitä ei ole määritetty, gnubby-todennuspyyntöjä ei lähetetä välityspalvelimen kautta.</translation>
-<translation id="5900959132054596599"><ph name="PRODUCT_NAME" /> ja ARC-sovellukset ohittavat tässä annettujen isäntien kaikki välityspalvelimet.
-
-          Käytäntö tulee voimaan vain, jos olet valinnut manuaaliset välityspalvelimen asetukset Valitse, miten välityspalvelimen asetukset määritetään -kohdassa.
-
-          Jätä tämä käytäntö määrittämättä, jos olet valinnut toisen välityspalvelinkäytäntöjen määritystavan.
-
-          Lisää esimerkkejä näet osoitteessa
-          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="5921713479449475707">Salli automaattiset päivitykset HTTP:n kautta</translation>
 <translation id="5921888683953999946">Määritä suuren osoittimen käytettävyysominaisuuden oletustila kirjautumisnäytössä.
 
@@ -1785,9 +1729,6 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 <translation id="7632724434767231364">GSSAPI-kirjaston nimi</translation>
 <translation id="7635471475589566552">Määrittää tuotteen <ph name="PRODUCT_NAME" /> sovelluksen kielen ja estää käyttäjiä muuttamasta sitä. Jos otat tämän asetuksen käyttöön, <ph name="PRODUCT_NAME" /> käyttää määritettyä kieltä. Jos tätä kieltä ei tueta, käytetään kieltä en-US. Jos asetus poistetaan käytöstä tai valintaa ei tehdä, <ph name="PRODUCT_NAME" /> käyttää joko käyttäjän määrittämää kieltä (jos valittu), järjestelmän kieltä tai kieltä en-US, jos näitä kieliä ei tueta.</translation>
 <translation id="7651739109954974365">Määrittää, onko mobiilitiedonsiirto roaming-tilassa käytössä laitteessa. Jos arvo on tosi, mobiilitiedonsiirto roaming-tilassa on sallittu. Jos arvoa ei määritetä tai määritetty arvo on epätosi, mobiilitiedonsiirto roaming-tilassa ei ole käytettävissä.</translation>
-<translation id="7667184304362487902">Määrittää välityspalvelimen asetukset tuotteelle <ph name="PRODUCT_NAME" /> ja ARC-sovelluksille.
-
-      Tämä käytäntö ei ole vielä valmis käyttöön – älä käytä sitä.</translation>
 <translation id="76810863974142048">URL-osoite, josta etäkäytön asiakkaiden tulisi saada todennustunnus.
 
           Jos tämä käytäntö asetetaan, etäkäytön isäntä vaatii todennettavia asiakkaita hankkimaan todennustunnuksen tästä URL-osoitteesta ennen yhteyden muodostamista. Tämän käytännön yhteydessä myös RemoteAccessHostTokenValidationUrl täytyy määrittää.
@@ -2000,6 +1941,7 @@ Tämä käytäntö ei ole käytössä tavallisilla käyttäjätileillä.</transl
 
       Käytännön arvo määrittää ajan millisekunteina.</translation>
 <translation id="8344454543174932833">Tuo kirjanmerkit oletusselaimesta ensimmäisellä käyttökerralla</translation>
+<translation id="8359734107661430198">Ota käyttöön ExampleDeprecatedFeature-sovellusliittymä 2.9.2008 saakka</translation>
 <translation id="8360452361555133173">Määrittää tervetulosivun näyttämisen, kun selain käynnistetään ensimmäisen kerran käyttöjärjestelmän päivityksen jälkeen.
 
       Jos tämän käytännön arvo on Tosi tai sitä ei määritetä, tervetulosivu näytetään uudelleen, kun selain käynnistetään ensimmäisen kerran käyttöjärjestelmän päivityksen jälkeen.

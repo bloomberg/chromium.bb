@@ -8,6 +8,7 @@
 <translation id="2078561879028077171">Info versione</translation>
 <translation id="2117453604279487107">URL assegnatore</translation>
 <translation id="2353984724370197742">Assegnazione non riuscita. Richiesta di rete non riuscita.</translation>
+<translation id="2789927415041640472">Riavvia l'applicazione per utilizzare la nuova configurazione dell'assegnatore.</translation>
 <translation id="3046825211487065480">Assegnazione non riuscita. Seconda richiesta inviata prima che la precedente sia stata ricevuta.</translation>
 <translation id="3286538390144397061">Riavvia adesso</translation>
 <translation id="3346106862344060497">Motore connesso.</translation>
@@ -22,6 +23,7 @@
 <translation id="5860346505531085166">Assegnazione non riuscita. All'account non è consentito l'accesso.</translation>
 <translation id="6232798399907177395">Informazioni su Blimp</translation>
 <translation id="704835510384979817">Assegnazione non riuscita. Nessuna versione del motore corrispondente.</translation>
+<translation id="7145680970336344212">Riavvia Blimp</translation>
 <translation id="7536363920335771251">Motore disconnesso. Motivo: %1$s</translation>
 <translation id="7596558890252710462">Sistema operativo</translation>
 <translation id="7608553142876436780">IP del motore</translation>

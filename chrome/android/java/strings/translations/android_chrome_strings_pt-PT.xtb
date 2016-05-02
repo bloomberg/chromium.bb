@@ -60,6 +60,7 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 <translation id="1742134235943978220">Traduzido para <ph name="TARGET_LANGUAGE" />.</translation>
 <translation id="1749561566933687563">Sincronizar os marcadores</translation>
 <translation id="17513872634828108">Separadores abertos</translation>
+<translation id="1756600373018374892">Toque neste botão para aceder rapidamente aos seus separadores.</translation>
 <translation id="1807246157184219062">Claro</translation>
 <translation id="1825719650605518411">Experiência de primeira execução</translation>
 <translation id="1829244130665387512">Localizar na página</translation>
@@ -70,6 +71,7 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 <translation id="194341124344773587">Ative a autorização para o Chrome nas <ph name="BEGIN_LINK" />Definições do Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Guardar palavras-passe</translation>
 <translation id="1944384637046898011">Encriptar tudo com uma palavra-passe do Google a partir de <ph name="TIME" /></translation>
+<translation id="1946005195648379376">Controle a forma como a Google utiliza o seu histórico de navegação para personalizar a Pesquisa Google e outros serviços Google.</translation>
 <translation id="1959930595721737608">Permitir JavaScript no seguinte site.</translation>
 <translation id="1966710179511230534">Atualize os detalhes de início de sessão.</translation>
 <translation id="1974060860693918893">Avançadas</translation>
@@ -95,9 +97,7 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 <translation id="2206488550163399966"><ph name="APP_NAME" />, aplicação Web. <ph name="APP_URL" /></translation>
 <translation id="2268044343513325586">Refinar</translation>
 <translation id="2315043854645842844">O sistema operativo não suporta a seleção do certificado do lado do cliente.</translation>
-<translation id="2316129865977710310">Não, obrigado</translation>
 <translation id="2321958826496381788">Arraste o controlo de deslize até conseguir ler confortavelmente. O texto deve ter, pelo menos, este tamanho depois de tocar duas vezes num parágrafo.</translation>
-<translation id="2329597144923131178">Inicie sessão para aceder aos marcadores, ao histórico, às palavras-passe e a outras definições em todos os dispositivos.</translation>
 <translation id="2343328333327081434">A instalar...</translation>
 <translation id="2351097562818989364">As definições de tradução foram repostas.</translation>
 <translation id="2359808026110333948">Continuar</translation>
@@ -138,6 +138,7 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 <translation id="2842985007712546952">Pasta superior</translation>
 <translation id="2870560284913253234">Site</translation>
 <translation id="2888126860611144412">Acerca do Chrome</translation>
+<translation id="2889768325388591707">Alternar rapidamente entre separadores</translation>
 <translation id="2891154217021530873">Parar carregamento da página</translation>
 <translation id="2902702728133930130">O Chrome falhou durante o arranque com um erro inesperado.</translation>
 <translation id="2903493209154104877">Endereços</translation>
@@ -155,6 +156,9 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 <translation id="3089395242580810162">Abrir no separador anónimo</translation>
 <translation id="3090193911106258841">A aceder à entrada de áudio e de vídeo</translation>
 <translation id="3137521801621304719">Sair do modo de navegação anónima</translation>
+<translation id="3149891296864842641">Opção de envio</translation>
+<translation id="3162882791484435636">Selecionar opção de envio</translation>
+<translation id="3173438333156928404">Erro ao processar o pagamento</translation>
 <translation id="3177909033752230686">Idioma da página:</translation>
 <translation id="3190152372525844641">Ative as autorizações para o Chrome nas <ph name="BEGIN_LINK" />Definições do Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> de dados armazenados</translation>
@@ -269,10 +273,8 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="4875622588773761625">Pretende que o <ph name="PASSWORD_MANAGER_BRAND" /> atualize a sua palavra-passe para este site?</translation>
 <translation id="4881695831933465202">Abrir</translation>
 <translation id="4885273946141277891">Número não suportado de instâncias do Chrome.</translation>
+<translation id="4923459931733593730">Pagamento</translation>
 <translation id="4943872375798546930">Nenhum resultado</translation>
-<translation id="4970484396410298643">Aceda aqui aos separadores abertos no computador.
-
-Basta abrir o Chrome no computador, aceder ao menu e selecionar "Iniciar sessão no Chrome..."</translation>
 <translation id="497421865427891073">Avançar</translation>
 <translation id="4996978546172906250">Partilhar através de</translation>
 <translation id="5000922062037820727">Bloqueado (recomendado)</translation>
@@ -296,9 +298,7 @@ Basta abrir o Chrome no computador, aceder ao menu e selecionar "Iniciar sessão
 <translation id="5184329579814168207">Abrir no Chrome</translation>
 <translation id="5199929503336119739">Perfil de trabalho</translation>
 <translation id="5210365745912300556">Fechar separador</translation>
-<translation id="5210714456814679336">Os separadores que abriu no Chrome noutros dispositivos aparecem aqui.</translation>
 <translation id="5222676887888702881">Terminar sessão</translation>
-<translation id="5228579091201413441">Ativar a sincronização</translation>
 <translation id="5233638681132016545">Novo separador</translation>
 <translation id="5271967389191913893">O dispositivo não consegue abrir o conteúdo a transferir.</translation>
 <translation id="5275558766013849309">Os separadores são apresentados em conjunto com as aplicações recentes.</translation>
@@ -342,9 +342,6 @@ Basta abrir o Chrome no computador, aceder ao menu e selecionar "Iniciar sessão
 <translation id="5677928146339483299">Bloqueado</translation>
 <translation id="5684874026226664614">Ups! Não foi possível traduzir esta página.</translation>
 <translation id="5708031556037168012">Manter os dados existentes no dispositivo e importar permanentemente os dados para <ph name="TO_ACCOUNT" />.</translation>
-<translation id="5712189971979076230">Ajude-nos a dar prioridade às funcionalidades e às melhorias nas quais devemos trabalhar ao enviar à Google informações sobre os ficheiros, as aplicações e os serviços em execução sempre que ocorrer uma falha.
-
-As estatísticas de utilização incluem informações como preferências, cliques em botões e utilização da memória. Estas não incluem URLs de páginas Web nem quaisquer informações pessoais. Os relatórios de falhas contêm informações do sistema no momento em que as falhas ocorreram e podem conter URLs de páginas Web ou informações pessoais, consoante as operações em curso no momento da falha.</translation>
 <translation id="5719837394786370183">As páginas que visualizar em separadores de navegação anónima não serão guardadas no histórico do navegador, no armazenamento de cookies ou no histórico de pesquisas depois de fechar todos os separadores de navegação anónima. Os ficheiros que transferir ou os marcadores que criar manter-se-ão.
 
 No entanto, a navegação não é invisível. Passar para o modo de navegação anónima não oculta a navegação do empregador ou do prestador de serviços de Internet, nem os Websites que visitar.</translation>
@@ -463,6 +460,7 @@ Por exemplo, alguns Websites podem responder a este pedido ao mostrar-lhe anúnc
 <translation id="7180611975245234373">Atualizar</translation>
 <translation id="7191430249889272776">Separador aberto em segundo plano.</translation>
 <translation id="7208788139759694678">Poupança de dados desativada</translation>
+<translation id="7220786058474068424">A processar</translation>
 <translation id="7243308994586599757">Opções disponíveis junto à parte inferior do ecrã</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> utiliza a sua localização para mostrar resultados da pesquisa locais</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Ajuda<ph name="END_LINK" /></translation>
@@ -516,6 +514,7 @@ A sua Conta Google pode ter outras formas do histórico de navegação, como pes
 <translation id="7846076177841592234">Cancelar seleção</translation>
 <translation id="7851858861565204677">Outros aparelhos</translation>
 <translation id="7876243839304621966">Remover tudo</translation>
+<translation id="7902333740914687335">Pagamento processado</translation>
 <translation id="7947953824732555851">Aceitar e in. sessão</translation>
 <translation id="7949961459945740081">Obter funcionalidades recentes</translation>
 <translation id="7963646190083259054">Fornecedor:</translation>
@@ -539,6 +538,7 @@ Pode controlar a Web física nas definições do Chrome.</translation>
 <translation id="8168435359814927499">Conteúdo</translation>
 <translation id="8173098127580644436">desde sempre</translation>
 <translation id="8200772114523450471">Continuar</translation>
+<translation id="8202097416529803614">Resumo da encomenda</translation>
 <translation id="8209050860603202033">Abrir imagem</translation>
 <translation id="8215250379351058554"><ph name="SITE" /> pretende estabelecer ligação a:</translation>
 <translation id="8218346974737627104">Confirmar início de sessão</translation>
@@ -595,6 +595,8 @@ Para obter licenças novas, ligue-se à Internet e reproduza o conteúdo transfe
 <translation id="8942627711005830162">Abrir noutra janela</translation>
 <translation id="8959122750345127698">A navegação está inacessível: <ph name="URL" /></translation>
 <translation id="8979340629087822094">do dia anterior</translation>
+<translation id="8981454092730389528">Controlos da atividade Google</translation>
+<translation id="8986494364107987395">Enviar automaticamente estatísticas de utilização e relatórios de falhas para a Google</translation>
 <translation id="8987061207681586800">Personalizar o Chrome</translation>
 <translation id="9019902583201351841">Gerido pelos teus pais</translation>
 <translation id="9020607083536754075">Fechar o separador atual e regressar à aplicação anterior</translation>

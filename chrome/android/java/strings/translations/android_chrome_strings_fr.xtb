@@ -60,6 +60,7 @@ Vous devez activer le Bluetooth et les services de localisation pour utiliser le
 <translation id="1742134235943978220">Traduction en <ph name="TARGET_LANGUAGE" /> terminée.</translation>
 <translation id="1749561566933687563">Synchroniser vos favoris</translation>
 <translation id="17513872634828108">Onglets ouverts</translation>
+<translation id="1756600373018374892">Appuyez sur ce bouton pour accéder rapidement à vos onglets.</translation>
 <translation id="1807246157184219062">Clair</translation>
 <translation id="1825719650605518411">Expérience de première utilisation</translation>
 <translation id="1829244130665387512">Rechercher sur la page</translation>
@@ -70,6 +71,7 @@ Vous devez activer le Bluetooth et les services de localisation pour utiliser le
 <translation id="194341124344773587">Activer l'autorisation pour Chrome dans les <ph name="BEGIN_LINK" />paramètres Android<ph name="END_LINK" /></translation>
 <translation id="1943432128510653496">Enregistrer les mots de passe</translation>
 <translation id="1944384637046898011">Tout chiffrer avec le mot de passe Google à compter du <ph name="TIME" /></translation>
+<translation id="1946005195648379376">Contrôlez la façon dont Google utilise votre historique de navigation pour personnaliser la recherche et d'autres services Google.</translation>
 <translation id="1959930595721737608">Autorise JavaScript sur le site suivant.</translation>
 <translation id="1966710179511230534">Veuillez mettre à jour vos informations de connexion.</translation>
 <translation id="1974060860693918893">Paramètres avancés</translation>
@@ -95,9 +97,7 @@ Vous devez activer le Bluetooth et les services de localisation pour utiliser le
 <translation id="2206488550163399966"><ph name="APP_NAME" />, application Web : <ph name="APP_URL" /></translation>
 <translation id="2268044343513325586">Affiner</translation>
 <translation id="2315043854645842844">La sélection de certificat côté client n'est pas compatible avec le système d'exploitation.</translation>
-<translation id="2316129865977710310">Non merci</translation>
 <translation id="2321958826496381788">Faites glisser le curseur pour lire le texte aisément. Sa taille doit être similaire à celle-ci lorsque vous appuyez deux fois sur un paragraphe.</translation>
-<translation id="2329597144923131178">Connectez-vous pour synchroniser favoris, historique, mots de passe et autres sur vos appareils. </translation>
 <translation id="2343328333327081434">Installation…</translation>
 <translation id="2351097562818989364">Les paramètres de traduction ont été réinitialisés.</translation>
 <translation id="2359808026110333948">Continuer</translation>
@@ -138,6 +138,7 @@ Vous devez activer le Bluetooth et les services de localisation pour utiliser le
 <translation id="2842985007712546952">Dossier parent</translation>
 <translation id="2870560284913253234">Site</translation>
 <translation id="2888126860611144412">À propos de Chrome</translation>
+<translation id="2889768325388591707">Changez rapidement d'onglet</translation>
 <translation id="2891154217021530873">Arrêter le chargement de la page</translation>
 <translation id="2902702728133930130">Échec du démarrage de Chrome, en raison d'une erreur inattendue.</translation>
 <translation id="2903493209154104877">Adresses</translation>
@@ -155,6 +156,9 @@ Vous devez activer le Bluetooth et les services de localisation pour utiliser le
 <translation id="3089395242580810162">Ouvrir dans un onglet de nav. privée</translation>
 <translation id="3090193911106258841">Accès à l'entrée audio et vidéo en cours…</translation>
 <translation id="3137521801621304719">Désactiver le mode navigation privée</translation>
+<translation id="3149891296864842641">Option d'expédition</translation>
+<translation id="3162882791484435636">Sélectionner une option d'expédition</translation>
+<translation id="3173438333156928404">Erreur lors du traitement de votre paiement.</translation>
 <translation id="3177909033752230686">Langue de la page :</translation>
 <translation id="3190152372525844641">Activer les autorisations pour Chrome dans les <ph name="BEGIN_LINK" />paramètres Android<ph name="END_LINK" /></translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> de données stockées</translation>
@@ -269,10 +273,8 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="4875622588773761625">Voulez-vous que <ph name="PASSWORD_MANAGER_BRAND" /> modifie votre mot de passe pour ce site ?</translation>
 <translation id="4881695831933465202">Ouvrir</translation>
 <translation id="4885273946141277891">Le nombre d'instances de Chrome n'est pas compatible.</translation>
+<translation id="4923459931733593730">Paiement</translation>
 <translation id="4943872375798546930">Aucun résultat</translation>
-<translation id="4970484396410298643">Accédez ici aux onglets ouverts sur votre ordinateur.
-
-Il vous suffit d'ouvrir Chrome sur votre ordinateur, d'accéder au menu, puis de sélectionner "Se connecter à Chrome".</translation>
 <translation id="497421865427891073">Avancer</translation>
 <translation id="4996978546172906250">Partager via</translation>
 <translation id="5000922062037820727">Bloquée (recommandé)</translation>
@@ -296,9 +298,7 @@ Il vous suffit d'ouvrir Chrome sur votre ordinateur, d'accéder au menu, puis de
 <translation id="5184329579814168207">Ouvrir dans Chrome</translation>
 <translation id="5199929503336119739">Profil professionnel</translation>
 <translation id="5210365745912300556">Fermer l'onglet</translation>
-<translation id="5210714456814679336">Les onglets que vous avez ouverts dans Chrome sur vos autres appareils apparaîtront ici.</translation>
 <translation id="5222676887888702881">Déconnexion</translation>
-<translation id="5228579091201413441">Activer la synchronisation</translation>
 <translation id="5233638681132016545">Nouvel onglet</translation>
 <translation id="5271967389191913893">Impossible d'ouvrir le contenu à télécharger sur l'appareil.</translation>
 <translation id="5275558766013849309">Les onglets figureront aux côtés des applications récentes.</translation>
@@ -343,9 +343,6 @@ Il vous suffit d'ouvrir Chrome sur votre ordinateur, d'accéder au menu, puis de
 <translation id="5677928146339483299">Bloqué</translation>
 <translation id="5684874026226664614">Petit problème… Impossible de traduire cette page.</translation>
 <translation id="5708031556037168012">Maintenir les données déjà enregistrées sur votre appareil et importer les données sur le compte <ph name="TO_ACCOUNT" /> de manière permanente.</translation>
-<translation id="5712189971979076230">Aidez-nous à identifier les fonctionnalités et les améliorations sur lesquelles nous devons travailler en priorité en nous envoyant des informations sur les fichiers, les applications et les services en cours d'exécution au moment où vous constatez un plantage.
-
-Les statistiques d'utilisation englobent des informations telles que les préférences, les clics sur les boutons et l'utilisation de la mémoire. Elles n'incluent pas d'URL de pages Web ni d'informations personnelles. Les rapports d'erreur contiennent des informations relatives au système au moment du plantage, et peuvent contenir des URL de pages Web ou des informations personnelles, en fonction des activités en cours lors de l'incident.</translation>
 <translation id="5719837394786370183">Les pages consultées dans les onglets de navigation privée ne sont pas enregistrées dans l'historique de votre navigateur, dans les cookies ni dans l'historique des recherches une fois que vous avez fermé tous les onglets de navigation privée. Les fichiers téléchargés et les favoris ajoutés sont conservés.
 
 Vous n'êtes cependant pas devenu invisible. L'utilisation du mode navigation privée n'empêche pas votre employeur, votre fournisseur d'accès à Internet ou les sites Web que vous avez consultés d'avoir accès aux informations relatives à votre navigation.</translation>
@@ -464,6 +461,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="7180611975245234373">Actualiser</translation>
 <translation id="7191430249889272776">L'onglet a été ouvert en arrière-plan.</translation>
 <translation id="7208788139759694678">Économiseur de données désactivé</translation>
+<translation id="7220786058474068424">Traitement en cours</translation>
 <translation id="7243308994586599757">Options disponibles au bas de l'écran</translation>
 <translation id="7244362611678346589">Le site <ph name="SEARCH_ENGINE_URL" /> utilise votre position pour afficher les résultats de recherche à proximité.</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Aide<ph name="END_LINK" /></translation>
@@ -517,6 +515,7 @@ Votre compte Google conserve peut-être d'autres formes d'historique de navigati
 <translation id="7846076177841592234">Annuler la sélection</translation>
 <translation id="7851858861565204677">Autres appareils</translation>
 <translation id="7876243839304621966">Tout supprimer</translation>
+<translation id="7902333740914687335">Paiement traité</translation>
 <translation id="7947953824732555851">Accepter/Se connecter</translation>
 <translation id="7949961459945740081">Obtenir dernières fonctionnalités</translation>
 <translation id="7963646190083259054">Fournisseur :</translation>
@@ -540,6 +539,7 @@ Vous pouvez contrôler le Web physique dans les paramètres de Chrome.</translat
 <translation id="8168435359814927499">Contenu</translation>
 <translation id="8173098127580644436">depuis le début</translation>
 <translation id="8200772114523450471">Reprendre</translation>
+<translation id="8202097416529803614">Récapitulatif de la commande</translation>
 <translation id="8209050860603202033">Ouvrir l'image</translation>
 <translation id="8215250379351058554"><ph name="SITE" /> tente de se connecter au site suivant :</translation>
 <translation id="8218346974737627104">Confirmer la connexion</translation>
@@ -596,6 +596,8 @@ Pour obtenir de nouvelles licences, connectez-vous à Internet et lisez le conte
 <translation id="8942627711005830162">Ouvrir dans une autre fenêtre</translation>
 <translation id="8959122750345127698">Impossible d'accéder à <ph name="URL" />.</translation>
 <translation id="8979340629087822094">des dernières 24 heures</translation>
+<translation id="8981454092730389528">Commandes Google relatives à l'activité</translation>
+<translation id="8986494364107987395">Envoyer automatiquement les statistiques d'utilisation et les rapports d'erreur à Google</translation>
 <translation id="8987061207681586800">Personnalisez Chrome</translation>
 <translation id="9019902583201351841">Géré par tes parents</translation>
 <translation id="9020607083536754075">Fermer l'onglet actif et revenir à l'application précédente</translation>

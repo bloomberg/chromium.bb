@@ -2,9 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="tr">
 <translation id="101438888985615157">Ekranı 180 derece döndür</translation>
-<translation id="1015272884520659144">chrome.usb API'sı aracılığıyla doğrudan bir web uygulaması içinde kullanılması için çekirdek sürücüsünden çıkarılmasına izin verilen USB cihazlarının listesini tanımlar. Girişler, belirli bir donanımı tanımlamak için kullanılan USB Tedarikçi Tanımlayıcısı ve Ürün Tanımlayıcısı çiftlerinden oluşmaktadır.
-
-      Bu politika yapılandırılmazsa çıkarılabilecek USB cihazları listesi boş olarak değerlendirilir.</translation>
 <translation id="1017967144265860778">Giriş ekranında güç yönetimi</translation>
 <translation id="1019101089073227242">Kullanıcı veri dizinini ayarla</translation>
 <translation id="1022361784792428773">Kullanıcının yüklemesine engel olunacak uzantı kimlikleri (veya tümü için *)</translation>
@@ -73,14 +70,6 @@
       Politika ayarlanmamışsa veya yanlış seçeneğine ayarlanmışsa, TLS'deki RC4 şifre paketleri etkinleştirilmez. Aksi takdirde, eski bir sunucuyla uyumluluğun korunması için doğru seçeneğine ayarlanabilir. Bu geçici bir tedbirdir ve sunucu yeniden yapılandırılmalıdır.</translation>
 <translation id="1297182715641689552">.pac proxy komut dosyası kullan</translation>
 <translation id="1304973015437969093">Uzantı/Uygulama kimlikleri ve güncelleme URL'leri sessizce yüklenir</translation>
-<translation id="1310699457130669094">Bir proxy .pac dosyasının URL'sini burada belirtebilirsiniz.
-
-          Bu politika yalnızca 'Proxy sunucu ayarlarının nasıl belirtileceğini seçin' alanında el ile proxy ayarlarını seçtiyseniz etkili olur.
-
-          Proxy politikalarının ayarlanmasıyla ilgili başka bir mod seçtiyseniz, bu politikayı ayarlamadan bırakmanız gerekir.
-
-          Ayrıntılı örnekler için şu adresi ziyaret edin:
-          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1313457536529613143">Ekran kararmış durumdayken veya kapandıktan hemen sonra bir kullanıcı etkinliği algılandığında, ekranın kararmasındaki gecikmenin ölçekleneceği yüzdeyi belirtir.
 
           Bu politika ayarlanırsa, ekran karardığında veya ekran kapandıktan hemen sonra bir kullanıcı etkinliği algılandığında, ekranın kararmasındaki gecikmenin ölçekleneceği yüzdeyi belirtir. Ekran kararma gecikmesi ölçeklendiğinde, ekran kapanması, ekran kilidi ve boşta bekleme gecikmeleriyle ilgili süreler, orijinal olarak yapılandırılan ekran kararma gecikmesine göre aynı oran korunacak biçimde ayarlanır.
@@ -165,18 +154,6 @@
 <translation id="1561424797596341174">Politika, uzaktan erişim ana makinesinin Hata Ayıklama yapılarını geçersiz kılar</translation>
 <translation id="1583248206450240930">Varsayılan olarak <ph name="PRODUCT_FRAME_NAME" /> ürününü kullan</translation>
 <translation id="1608755754295374538">Soru sorulmadan ses yakalama cihazlarına erişim verilecek URL'ler</translation>
-<translation id="1613574633990410986"><ph name="PRODUCT_NAME" /> ve ARC uygulamaları tarafından kullanılan proxy sunucusunu belirtmenize olanak tanır ve kullanıcıların proxy ayarlarını değiştirmelerini engeller.
-
-      Hiçbir zaman proxy sunucusu kullanmamayı ve her zaman doğrudan bağlanmayı seçerseniz diğer tüm seçenekler yoksayılır.
-
-      Proxy sunucusunu otomatik olarak algılamayı seçerseniz diğer tüm seçenekler yoksayılır.
-
-      Ayrıntılı örnekler için şu sayfayı ziyaret edin:
-      <ph name="PROXY_HELP_URL" />
-
-      Bu ayarı etkinleştirirseniz <ph name="PRODUCT_NAME" /> ve ARC uygulamaları, komut satırından belirtilen proxy ile ilgili tüm seçenekleri yoksayar.
-
-      Bu politikalar ayarlanmadan bırakılırsa kullanıcıların kendi proxy ayarlarını seçmelerine izin verilir.</translation>
 <translation id="1617235075406854669">Tarayıcı ve indirme geçmişinin silinmesini etkinleştir</translation>
 <translation id="1617384279878333801">Profil yöneticisinde kişi eklemeyi etkinleştir</translation>
 <translation id="1655229863189977773">Disk önbelleği boyutunu bayt olarak ayarla</translation>
@@ -271,14 +248,6 @@
       Etkinleştirilirse, bir oturum etkinken sistem tepsisinde büyük, kırmızı bir çıkış düğmesi gösterilir ve ekran kilitlenmez.
 
       Devre dışı bırakılırsa veya hiç belirtilmezse, sistem tepsisinde büyük, kırmızı renkli çıkış düğmesi gösterilmez.</translation>
-<translation id="1942957375738056236">Proxy sunucunun URL'sini burada belirtebilirsiniz.
-
-          Bu politika yalnızca 'Proxy sunucu ayarlarının nasıl belirtileceğini seçin' seçeneğinde el ile proxy ayarlarını seçtiyseniz yürürlüğe girer.
-
-          Proxy politikalarını ayarlamak için başka bir mod seçtiyseniz, bu politikayı ayarlamadan bırakmanız gerekir.
-
-          Diğer seçenekler ve ayrıntılı örnekler için şu sayfayı ziyaret edin:
-          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1956493342242507974"><ph name="PRODUCT_OS_NAME" /> sisteminde güç yönetimini giriş ekranında yapılandır.
 
       Bu politika, giriş ekranı gösterilirken belli bir süre hiçbir kullanıcı etkinliği olmadığında <ph name="PRODUCT_OS_NAME" /> sisteminin ne yapacağını yapılandırmanıza olanak verir. Bu politika çeşitli ayarları denetler. Tek tek anlamları ve değer aralıkları için bir oturum içinde güç yönetimini denetleyen ilgili politikalara bakın. Bu politikalardaki istisnalar şunlardır:
@@ -667,24 +636,6 @@
 <translation id="3072847235228302527">Bir cihaz yerel hesabı için Hizmet Şartları'nı ayarlama</translation>
 <translation id="3096595567015595053">Etkin eklentilerin listesi</translation>
 <translation id="3101501961102569744">Proxy sunucu ayarlarının nasıl belirtileceğini seç</translation>
-<translation id="3125884964575432854"><ph name="PRODUCT_NAME" /> ve ARC uygulamaları tarafından kullanılan proxy sunucusunu belirtmenize olanak tanır ve kullanıcıların proxy ayarlarını değiştirmelerini engeller.
-
-          Hiçbir zaman proxy sunucusu kullanmamayı ve her zaman doğrudan bağlanmayı seçerseniz diğer tüm seçenekler yoksayılır.
-
-          Sistem proxy ayarlarını kullanmayı seçerseniz diğer tüm seçenekler yoksayılır.
-
-          Proxy sunucusunu otomatik olarak algılamayı seçerseniz diğer tüm seçenekler yoksayılır.
-
-          Sabit sunucu proxy modunu seçerseniz "Proxy sunucusunun adresi veya URL'si" ve "Proxy atlama kurallarının virgülle ayrılmış listesi" alanlarında başka seçenekler de belirtebilirsiniz. ARC uygulamaları yalnızca en yüksek önceliğe sahip HTTP proxy sunucusunu kullanır.
-
-          Bir .pac proxy komut dosyası kullanmayı seçerseniz "Proxy .pac dosyasının URL'si" alanında komut dosyasının URL'sini belirtmeniz gerekir.
-
-          Ayrıntılı örnekler için şu sayfayı ziyaret edin:
-          <ph name="PROXY_HELP_URL" />
-
-          Bu ayarı etkinleştirirseniz <ph name="PRODUCT_NAME" /> ve ARC uygulamaları, komut satırından belirtilen proxy ile ilgili tüm seçenekleri yoksayar.
-
-          Bu politika ayarlanmadan bırakılırsa kullanıcıların kendi proxy ayarlarını seçmelerine izin verilir.</translation>
 <translation id="3153348162326497318">Kullanıcıların YÜKLEYEMEYECEĞİ uzantıları belirtmenize olanak tanır. Önceden yüklenen uzantılar, kara listeye alınırlarsa kaldırılırlar.
 
           '*' kara liste değeri, açık bir şekilde beyaz listede listelenmedikçe tüm uzantıların kara listeye alınacağını belirtir.
@@ -757,6 +708,7 @@
       Bu ayar etkinleştirilirse veya yapılandırılmazsa, kullanıcılar kendi Google hesaplarından kimlik doğrulama ile bulut (cloud) yazdırma proxy'sini etkinleştirebilirler.
 
       Bu ayar devre dışı bırakılırsa, kullanıcılar proxy'yi etkinleştiremezler ve makinenin, yazıcılarını <ph name="CLOUD_PRINT_NAME" /> ile paylaşmasına izin verilmez.</translation>
+<translation id="3297010562646015826">Görev Yöneticisi'ndeki işlemlerin sona erdirilebilmesini sağlar</translation>
 <translation id="3322771899429619102">Anahtar oluşturmasına izin verilen sitelerin belirtildiği bir URL kalıpları listesi ayarlamanıza olanak tanır. Bir URL kalıbı "KeygenBlockedForUrls" içindeyse, bu istisnalar geçersiz kılınır.
 
           Bu politika ayarlanmadan bırakıldığında, ayarlandıysa "DefaultKeygenSetting" politikasının değeri, değilse kullanıcının kişisel yapılandırmasındaki değer tüm siteler için genel varsayılan değer olarak kullanılır.</translation>
@@ -930,22 +882,6 @@ Bu ayarı etkinleştirirseniz veya yapılandırmazsanız kullanıcılar şifrele
           Bu politika, "Oturum süresince çerezleri tut" seçeneğine ayarlanırsa, oturum kapatıldığında çerezler temizlenir. <ph name="PRODUCT_NAME" /> "arka plan modunda" çalışıyorsa, son pencere kapatıldığında oturumun kapatılmayabileceğini unutmayın. Bu çalışma biçimini yapılandırma ile ilgili daha fazla bilgi için lütfen "BackgroundModeEnabled" politikasına bakın.
 
           Bu politika ayarlanmamış halde bırakılırsa "AllowCookies" kullanılır ve kullanıcı bunu değiştirebilir.</translation>
-<translation id="4098957623809244159">Bu politika kullanımdan kaldırılmıştır. Bunun yerine ProxyMode politikasını kullanın.
-
-          <ph name="PRODUCT_NAME" /> ve ARC uygulamaları tarafından kullanılan proxy sunucusunu belirtmenize olanak tanır ve kullanıcıların proxy ayarlarını değiştirmelerini engeller.
-
-          Hiçbir zaman proxy sunucusu kullanmamayı ve her zaman doğrudan bağlanmayı seçerseniz diğer tüm seçenekler yoksayılır.
-
-          Sistem proxy ayarlarını kullanmayı veya proxy sunucusunu otomatik algılamayı seçerseniz diğer tüm seçenekler yoksayılır.
-
-          Manuel proxy ayarlarını seçerseniz "Proxy sunucusunun adresi veya URL'si", "Proxy .pac dosyasının URL'si" ve "Proxy atlama kurallarının virgülle ayrılmış listesi" alanlarında başka seçenekler belirtebilirsiniz. 
-
-          Ayrıntılı örnekler için şu sayfayı ziyaret edin:
-          <ph name="PROXY_HELP_URL" />
-
-          Bu ayarı etkinleştirirseniz <ph name="PRODUCT_NAME" />, komut satırından belirtilen proxy ile ilgili tüm seçenekleri yoksayar.
-
-          Bu politika ayarlanmadan bırakılırsa kullanıcıların kendi proxy ayarlarını seçmelerine izin verilir.</translation>
 <translation id="4103289232974211388">Kullanıcı onayından sonra SAML IdP'ye yönlendir</translation>
 <translation id="410478022164847452">AC güçle çalışırken, boşta kalma işleminin uygulanmasından önce kullanıcı girişi olmadan geçecek süreyi belirtir.
 
@@ -1425,14 +1361,6 @@ politikayı geçersiz kılamaz.
 <translation id="5893553533827140852">Bu ayar etkinleştirilirse gnubby kimlik doğrulama isteklerinde uzaktan ana bilgisayar bağlantısı üzerinden proxy kullanılır.
 
           Bu ayar devre dışı bırakılır veya yapılandırılmazsa gnubby kimlik doğrulama isteklerinde proxy kullanılmaz.</translation>
-<translation id="5900959132054596599"><ph name="PRODUCT_NAME" /> ve ARC uygulamaları, burada belirtilen ana makine listesi için tüm proxy'leri atlar.
-
-          Bu politika yalnızca "Proxy sunucu ayarlarının nasıl belirtileceğini seçin" alanında manuel proxy ayarlarını seçtiyseniz uygulanır.
-
-          Proxy politikalarının ayarlanmasıyla ilgili olarak başka bir mod seçtiyseniz, bu politikayı ayarlamadan bırakmanız gerekir.
-
-          Daha ayrıntılı örnekler için şu adresi ziyaret edin:
-          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="5921713479449475707">HTTP aracılığıyla otomatik güncelleme indirmeye izin ver</translation>
 <translation id="5921888683953999946">Giriş ekranında büyük imleç erişilebilirlik özelliğinin varsayılan durumunu ayarla.
 
@@ -1956,9 +1884,6 @@ Ayrıca, RemoteAccessHostClientDomain konusuna bakın.</translation>
 
       Bu ayar devre dışı bırakılırsa veya yapılandırılmazsa, <ph name="PRODUCT_NAME" /> ya kullanıcının belirttiği tercih edilen yerel ayarı (yapılandırıldıysa), ya sistem yerel ayarını ya da yedek yerel ayarı ('en-US') kullanır.</translation>
 <translation id="7651739109954974365">Veri dolaşımının etkin olup olmayacağını belirler. True olarak ayarlanırsa, veri dolaşımına izin verilir. Hiç ayarlanmazsa veya false değerine ayarlanırsa, veri dolaşımına izin verilmez.</translation>
-<translation id="7667184304362487902"><ph name="PRODUCT_NAME" /> ve ARC uygulamaları için proxy ayarlarını yapılandırır.
-
-      Bu politika henüz kullanıma hazır değildir, lütfen kullanmayın.</translation>
 <translation id="76810863974142048">Uzaktan erişim istemcilerinin kimlik doğrulama jetonunu edinmesi gereken URL.
 
           Bu politika ayarlanırsa uzaktan erişim ana makinesi, kimlik doğrulaması yapan istemcilerin bağlanmak için bu URL'den bir kimlik doğrulama jetonu almasını gerektirir. RemoteAccessHostTokenValidationUrl ile birlikte kullanılmalıdır.
@@ -2186,6 +2111,7 @@ Ayrıca, RemoteAccessHostClientDomain konusuna bakın.</translation>
 
       Politika değeri mili saniye olarak belirtilmelidir.</translation>
 <translation id="8344454543174932833">İlk çalıştırmada yer işaretlerini varsayılan tarayıcıdan içe aktar</translation>
+<translation id="8359734107661430198">ExampleDeprecatedFeature API'sını 02.09.2008'e kadar etkinleştirin</translation>
 <translation id="8360452361555133173">OS'nin yeni sürüme geçirilmesinden sonra, tarayıcı ilk başlatıldığında karşılama sayfasının gösterilmesini etkinleştirin.
 
       Bu politika doğru seçeneğine ayarlanırsa veya yapılandırılmazsa, tarayıcı OS'nin yeni sürüme geçirilmesinden sonra ilk başlatmada karşılama sayfasını tekrar gösterir.

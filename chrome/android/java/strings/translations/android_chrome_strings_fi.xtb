@@ -60,6 +60,7 @@ Bluetooothin ja sijaintipalvelun on oltava päällä, jotta Fyysistä webiä voi
 <translation id="1742134235943978220">Käännetty kielelle <ph name="TARGET_LANGUAGE" />.</translation>
 <translation id="1749561566933687563">Synkronoi kirjanmerkit</translation>
 <translation id="17513872634828108">Avoimet välilehdet</translation>
+<translation id="1756600373018374892">Käytä välilehtiäsi kätevästi napauttamalla tätä painiketta.</translation>
 <translation id="1807246157184219062">Vaalea</translation>
 <translation id="1825719650605518411">First Run Experience</translation>
 <translation id="1829244130665387512">Haku sivulta</translation>
@@ -70,6 +71,7 @@ Bluetooothin ja sijaintipalvelun on oltava päällä, jotta Fyysistä webiä voi
 <translation id="194341124344773587">Ota käyttöoikeus käyttöön Chromelle <ph name="BEGIN_LINK" />Android-asetuksissa<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Salasanojen tallentaminen</translation>
 <translation id="1944384637046898011">Salaa kaikki tiedot Google-salasanalla, joka on asetettu <ph name="TIME" />.</translation>
+<translation id="1946005195648379376">Hallinnoi tapaa, jolla Google käyttää selaushistoriaasi haun ja muiden Googlen palveluiden muokkaamiseen.</translation>
 <translation id="1959930595721737608">Sallii JavaScriptin tällä sivustolla.</translation>
 <translation id="1966710179511230534">Päivitä kirjautumistietosi.</translation>
 <translation id="1974060860693918893">Lisäasetukset</translation>
@@ -95,9 +97,7 @@ Bluetooothin ja sijaintipalvelun on oltava päällä, jotta Fyysistä webiä voi
 <translation id="2206488550163399966"><ph name="APP_NAME" />, verkkosovellus. <ph name="APP_URL" /></translation>
 <translation id="2268044343513325586">Tarkenna</translation>
 <translation id="2315043854645842844">Käyttöjärjestelmä ei tue palvelimen varmennevalintaa.</translation>
-<translation id="2316129865977710310">Ei kiitos</translation>
 <translation id="2321958826496381788">Vedä liukusäädintä, kunnes voit lukea tämän mukavasti. Tekstin tulisi olla vähintään näin suurta kaksoisnapautettuasi kappaletta.</translation>
-<translation id="2329597144923131178">Kirjaudu ja käytä kirjanm., historiaa, salasan. ja muita asetuksia kaikissa laitteissasi.</translation>
 <translation id="2343328333327081434">Asennetaan…</translation>
 <translation id="2351097562818989364">Käännösasetukset on nollattu.</translation>
 <translation id="2359808026110333948">Jatka</translation>
@@ -138,6 +138,7 @@ Bluetooothin ja sijaintipalvelun on oltava päällä, jotta Fyysistä webiä voi
 <translation id="2842985007712546952">Ylätason kansio</translation>
 <translation id="2870560284913253234">Sivusto</translation>
 <translation id="2888126860611144412">Tietoja Chromesta</translation>
+<translation id="2889768325388591707">Vaihda välilehtiä nopeasti</translation>
 <translation id="2891154217021530873">Pysäytä sivun lataus</translation>
 <translation id="2902702728133930130">Chromen käynnistys epäonnistui odottamattoman virheen takia.</translation>
 <translation id="2903493209154104877">Osoitteet</translation>
@@ -155,6 +156,9 @@ Bluetooothin ja sijaintipalvelun on oltava päällä, jotta Fyysistä webiä voi
 <translation id="3089395242580810162">Avaa incognito-välilehdessä</translation>
 <translation id="3090193911106258841">Ääni- ja videotuloa käytetään</translation>
 <translation id="3137521801621304719">Poistu incognito-tilasta</translation>
+<translation id="3149891296864842641">Toimitustapa</translation>
+<translation id="3162882791484435636">Valitse toimitustapa</translation>
+<translation id="3173438333156928404">Maksua käsiteltäessä tapahtui virhe.</translation>
 <translation id="3177909033752230686">Sivun kieli:</translation>
 <translation id="3190152372525844641">Ota käyttöoikeudet käyttöön Chromelle <ph name="BEGIN_LINK" />Android-asetuksissa<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> tallennettua tietoa</translation>
@@ -269,10 +273,8 @@ Muokkaa hakutermiä valitsemalla se pitkällä painalluksella. Tarkenna hakua li
 <translation id="4875622588773761625">Haluatko, että <ph name="PASSWORD_MANAGER_BRAND" /> päivittää tämän sivuston salasanasi?</translation>
 <translation id="4881695831933465202">Avaa</translation>
 <translation id="4885273946141277891">Chromen versioiden määrää ei tueta.</translation>
+<translation id="4923459931733593730">Maksu</translation>
 <translation id="4943872375798546930">Ei tuloksia</translation>
-<translation id="4970484396410298643">Voit käyttää tietokoneella avoinna olevia välilehtiä myös täällä.
-
-Avaa Chrome tietokoneella, siirry valikkoon ja valitse Kirjaudu Chromeen…</translation>
 <translation id="497421865427891073">Siirry eteenpäin</translation>
 <translation id="4996978546172906250">Jaa tällä palvelulla:</translation>
 <translation id="5000922062037820727">Estetty (suositus)</translation>
@@ -296,9 +298,7 @@ Avaa Chrome tietokoneella, siirry valikkoon ja valitse Kirjaudu Chromeen…</tra
 <translation id="5184329579814168207">Avaa Chromessa</translation>
 <translation id="5199929503336119739">Työprofiili</translation>
 <translation id="5210365745912300556">Sulje välilehti</translation>
-<translation id="5210714456814679336">Muilla laitteilla Chromessa avaamasi välilehdet näytetään täällä.</translation>
 <translation id="5222676887888702881">Kirjaudu ulos</translation>
-<translation id="5228579091201413441">Ota synkronointi käyttöön</translation>
 <translation id="5233638681132016545">Uusi välilehti</translation>
 <translation id="5271967389191913893">Laite ei voi avata ladattavaa sisältöä.</translation>
 <translation id="5275558766013849309">Välilehdet asustavat tämän jälkeen yhdessä viimeaikaisten sovelluksien kanssa.</translation>
@@ -342,9 +342,6 @@ Avaa Chrome tietokoneella, siirry valikkoon ja valitse Kirjaudu Chromeen…</tra
 <translation id="5677928146339483299">Estetty</translation>
 <translation id="5684874026226664614">Hups, tätä sivua ei voi kääntää.</translation>
 <translation id="5708031556037168012">Säilytä nykyiset tiedot laitteella ja vie tiedot pysyvästi tilille <ph name="TO_ACCOUNT" />.</translation>
-<translation id="5712189971979076230">Voit auttaa Googlea suunnittelemaan ominaisuuksien ja parannuksien tärkeysjärjestystä, jos lähetät meille jokaisen kaatumisen jälkeen tietoja käynnissä olleista tiedostoista, sovelluksista palveluista.
-
-Käyttötilastot sisältävät tietoja esimerkiksi asetuksista, painetuista painikkeista ja muistin käytöstä. Ne eivät sisällä verkkosivujen URL-osoitteita tai henkilötietoja. Kaatumisraportit sisältävät tietoja järjestelmästä kaatumisen aikana, ja niihin voi sisältyä verkkosivujen URL-osoitteita tai henkilökohtaisia tietoja riippuen siitä, mitä kaatumisen aikana tapahtui.</translation>
 <translation id="5719837394786370183">Incognito-välilehdillä avaamasi sivut eivät jää selaimen historiaan, evästeisiin tai hakuhistoriaan, kun olet sulkenut kaikki incognito-välilehdet. Kaikki lataamasi tiedostot ja luomasi kirjanmerkit säilytetään.
 
 Et ole kuitenkaan näkymätön. Incognito-tila ei piilota selaustietojasi työnantajaltasi, internetpalveluntarjoajaltasi tai vierailemiltasi verkkosivustoilta.</translation>
@@ -463,6 +460,7 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="7180611975245234373">Päivitä</translation>
 <translation id="7191430249889272776">Välilehti avattiin taustalla.</translation>
 <translation id="7208788139759694678">Data Saver on poistettu käytöstä.</translation>
+<translation id="7220786058474068424">Käsitellään.</translation>
 <translation id="7243308994586599757">Asetukset löytyvät näytön alalaidasta.</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> käyttää sijaintiasi paikallisten hakutulosten näyttämiseen.</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Ohjeita<ph name="END_LINK" /></translation>
@@ -516,6 +514,7 @@ Google-tililläsi voi olla muita selaushistoriatietoja, kuten hakuja ja toiminta
 <translation id="7846076177841592234">Peruuta valinta</translation>
 <translation id="7851858861565204677">Muut laitteet</translation>
 <translation id="7876243839304621966">Poista kaikki</translation>
+<translation id="7902333740914687335">Maksu käsiteltiin.</translation>
 <translation id="7947953824732555851">Hyväksy ja kirjaudu sisään</translation>
 <translation id="7949961459945740081">Lataa uusimmat ominaisuudet</translation>
 <translation id="7963646190083259054">Toimittaja:</translation>
@@ -539,6 +538,7 @@ Voit hallinnoida Fyysisen webin ominaisuuksia Chromen asetuksissa.</translation>
 <translation id="8168435359814927499">Sisältö</translation>
 <translation id="8173098127580644436">alusta asti</translation>
 <translation id="8200772114523450471">Jatka</translation>
+<translation id="8202097416529803614">Tilauksen yhteenveto</translation>
 <translation id="8209050860603202033">Avaa kuva</translation>
 <translation id="8215250379351058554"><ph name="SITE" /> haluaa muodostaa yhteyden seuraaviin laitteisiin:</translation>
 <translation id="8218346974737627104">Kirjautumisen vahvistaminen</translation>
@@ -595,6 +595,8 @@ Hanki uudet käyttöoik. muodostam. verkkoyhteys ja toistamalla ladattu sisält�
 <translation id="8942627711005830162">Avaa uudessa ikkunassa</translation>
 <translation id="8959122750345127698">Kohde ei ole saatavilla: <ph name="URL" /></translation>
 <translation id="8979340629087822094">viimeisen päivän ajalta</translation>
+<translation id="8981454092730389528">Googlen toimintojen hallinta</translation>
+<translation id="8986494364107987395">Lähetä Googlelle käyttötilastoja ja virheraportteja automaattisesti</translation>
 <translation id="8987061207681586800">Muokkaa Chromea</translation>
 <translation id="9019902583201351841">Vanhempiesi hallinnoima</translation>
 <translation id="9020607083536754075">Sulje nykyinen välilehti ja palaa edelliseen sovellukseen</translation>

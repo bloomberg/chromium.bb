@@ -60,6 +60,7 @@
 <translation id="1742134235943978220">تمت الترجمة إلى <ph name="TARGET_LANGUAGE" />.</translation>
 <translation id="1749561566933687563">مزامنة الإشارات المرجعية</translation>
 <translation id="17513872634828108">علامات التبويب المفتوحة</translation>
+<translation id="1756600373018374892">انقر على هذا الزر للوصول السريع إلى علامات التبويب.</translation>
 <translation id="1807246157184219062">فاتح</translation>
 <translation id="1825719650605518411">تجربة التشغيل لأول مرة</translation>
 <translation id="1829244130665387512">البحث في الصفحة</translation>
@@ -70,6 +71,7 @@
 <translation id="194341124344773587">‏تشغيل الإذن لـ Chrome في <ph name="BEGIN_LINK" />إعدادات Android<ph name="END_LINK" /></translation>
 <translation id="1943432128510653496">حفظ كلمات المرور</translation>
 <translation id="1944384637046898011">‏ترميز الكل باستخدام كلمة مرور Google بدءًا من <ph name="TIME" /></translation>
+<translation id="1946005195648379376">‏يمكنك التحكم في الطريقة التي تتبعها Google عند استخدام سجل التصفح لتخصيص البحث وخدمات Google الأخرى.</translation>
 <translation id="1959930595721737608">السماح بتشغيل جافا سكريبت في الموقع التالي.</translation>
 <translation id="1966710179511230534">الرجاء تحديث تفاصيل تسجيل الدخول.</translation>
 <translation id="1974060860693918893">إعدادات متقدمة</translation>
@@ -95,9 +97,7 @@
 <translation id="2206488550163399966"><ph name="APP_NAME" />، تطبيق ويب. <ph name="APP_URL" /></translation>
 <translation id="2268044343513325586">تحسين</translation>
 <translation id="2315043854645842844">لا يدعم نظام التشغيل تحديد الشهادة من جانب العميل.</translation>
-<translation id="2316129865977710310">لا، شكرًا</translation>
 <translation id="2321958826496381788">يمكنك سحب شريط التمرير حتى تتمكن من قراءة هذا النص بسهولة. يجب أن يظهر النص بهذا الحجم على الأقل بعد النقر مرتين على إحدى الفقرات.</translation>
-<translation id="2329597144923131178">سجّل الدخول للحصول على الإشارات المرجعية، والسجل، وكلمات المرور، والإعدادات الأخرى على كل أجهزتك.</translation>
 <translation id="2343328333327081434">جارٍ التثبيت...</translation>
 <translation id="2351097562818989364">تم إعادة ضبط إعداداتك للترجمة.</translation>
 <translation id="2359808026110333948">المتابعة</translation>
@@ -138,6 +138,7 @@
 <translation id="2842985007712546952">المجلد الرئيسي</translation>
 <translation id="2870560284913253234">الموقع</translation>
 <translation id="2888126860611144412">‏حول Chrome</translation>
+<translation id="2889768325388591707">التبديل السريع لعلامات التبويب</translation>
 <translation id="2891154217021530873">إيقاف تحميل الصفحة</translation>
 <translation id="2902702728133930130">‏أخفق Chrome أثناء بدء التشغيل بسبب خطأ غير متوقع.</translation>
 <translation id="2903493209154104877">العناوين</translation>
@@ -155,6 +156,9 @@
 <translation id="3089395242580810162">فتح في علامة تبويب تصفح متخفي</translation>
 <translation id="3090193911106258841">جارٍ الوصول إلى إدخال الصوت والفيديو</translation>
 <translation id="3137521801621304719">مغادرة وضع التصفح المتخفي</translation>
+<translation id="3149891296864842641">خيار الشحن</translation>
+<translation id="3162882791484435636">حدد خيار الشحن</translation>
+<translation id="3173438333156928404">حدث خطأ أثناء معالجة عملية الدفع</translation>
 <translation id="3177909033752230686">لغة الصفحة:</translation>
 <translation id="3190152372525844641">‏تشغيل الأذونات لـ Chrome في <ph name="BEGIN_LINK" />إعدادات Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> من البيانات المخزنة</translation>
@@ -268,10 +272,8 @@
 <translation id="4875622588773761625">هل تريد تحديث كلمة مرورك لهذا الموقع من خلال <ph name="PASSWORD_MANAGER_BRAND" />؟</translation>
 <translation id="4881695831933465202">فتح</translation>
 <translation id="4885273946141277891">‏عدد نسخ Chrome غير متوافق.</translation>
+<translation id="4923459931733593730">الدفع</translation>
 <translation id="4943872375798546930">لا نتائج</translation>
-<translation id="4970484396410298643">‏يمكنك الدخول إلى علامات التبويب التي فتحتها على جهاز الكمبيوتر، مباشرةً من هنا.
-
-افتح متصفح Chrome على جهاز الكمبيوتر وانتقل إلى القائمة، ثم حدد "تسجيل الدخول إلى Chrome…".</translation>
 <translation id="497421865427891073">انتقال للأمام</translation>
 <translation id="4996978546172906250">مشاركة عن طريق</translation>
 <translation id="5000922062037820727">محظور (موصى به)</translation>
@@ -295,9 +297,7 @@
 <translation id="5184329579814168207">‏فتح في Chrome</translation>
 <translation id="5199929503336119739">الملف الشخصي للعمل</translation>
 <translation id="5210365745912300556">إغلاق علامة التبويب</translation>
-<translation id="5210714456814679336">‏ستظهر هنا علامات التبويب التي فتحتها في Chrome من أجهزتك الأخرى.</translation>
 <translation id="5222676887888702881">الخروج</translation>
-<translation id="5228579091201413441">تمكين المزامنة</translation>
 <translation id="5233638681132016545">علامة تبويب جديدة</translation>
 <translation id="5271967389191913893">لا يمكن للجهاز فتح المحتوى لتنزيله</translation>
 <translation id="5275558766013849309">ستوجد علامات التبويب مع التطبيقات الحديثة.</translation>
@@ -341,9 +341,6 @@
 <translation id="5677928146339483299">تم المنع</translation>
 <translation id="5684874026226664614">عفوًا. تعذرت ترجمة هذه الصفحة.</translation>
 <translation id="5708031556037168012">يمكنك الحفاظ على البيانات الحالية على جهازك واستيراد البيانات نهائيًا إلى <ph name="TO_ACCOUNT" />.</translation>
-<translation id="5712189971979076230">‏ساعدنا على تحديد أولوية الميزات والتحسينات التي يجب علينا العمل عليها من خلال إرسال معلومات إلى Google حول الملفات، والتطبيقات، والخدمات التي تعمل عندما تواجه عطلاً.
-
-يتضمن استخدام الإحصاءات معلومات، مثل التفضيلات، وعدد النقرات على الزر، واستخدام الذاكرة. ولا تتضمن عناوين URL لصفحات الويب أو أي معلومات شخصية. تحتوي تقارير الأعطال على معلومات النظام في وقت العطل، وقد تحتوي على عناوين URL لصفحات ويب أو معلومات شخصية، بناءً على ما كان يجري وقت حدوث العطل.</translation>
 <translation id="5719837394786370183">لن تظهر الصفحات التي تشاهدها في علامات تبويب التصفح المتخفي في سجل متصفحك ولا في وحدة تخزين ملفات تعريف الارتباط ولا في سجل البحث بعد إغلاق جميع علامات تبويب التصفح المتخفي. وستُحفظ أي ملفات تنزلها وأي علامات مرجعية تنشئها.
           
           لكنك لن تكون غير مرئي، فاستخدام وضع التصفح المتخفي لا يخفي تصفحك عن صاحب العمل أو مزود خدمة الإنترنت أو مواقع الويب التي تزورها.</translation>
@@ -462,6 +459,7 @@
 <translation id="7180611975245234373">تحديث</translation>
 <translation id="7191430249889272776">تم فتح علامة التبويب في الخلفية.</translation>
 <translation id="7208788139759694678">تعطيل توفير البيانات</translation>
+<translation id="7220786058474068424">جارٍ المعالجة</translation>
 <translation id="7243308994586599757">الخيارات المتاحة بالقرب من الجزء السفلي من الشاشة</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> يستخدم موقعك لعرض نتائج البحث المحلي</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />مساعدة<ph name="END_LINK" /></translation>
@@ -515,6 +513,7 @@
 <translation id="7846076177841592234">إلغاء التحديد</translation>
 <translation id="7851858861565204677">أجهزة أخرى</translation>
 <translation id="7876243839304621966">إزالة الكل</translation>
+<translation id="7902333740914687335">تمت معالجة عملية الدفع</translation>
 <translation id="7947953824732555851">قبول وتسجيل الدخول</translation>
 <translation id="7949961459945740081">الحصول على أحدث الميزات</translation>
 <translation id="7963646190083259054">المورّد:</translation>
@@ -538,6 +537,7 @@
 <translation id="8168435359814927499">المحتوى</translation>
 <translation id="8173098127580644436">بدايةَ الوقت</translation>
 <translation id="8200772114523450471">استئناف</translation>
+<translation id="8202097416529803614">ملخص الطلب</translation>
 <translation id="8209050860603202033">فتح الصورة</translation>
 <translation id="8215250379351058554">يريد <ph name="SITE" /> الاتصال بـ:</translation>
 <translation id="8218346974737627104">تأكيد تسجيل الدخول</translation>
@@ -594,6 +594,8 @@
 <translation id="8942627711005830162">فتح في نافذة أخرى</translation>
 <translation id="8959122750345127698">التنقل غير قابل للوصول: <ph name="URL" /></translation>
 <translation id="8979340629087822094">اليوم السابق</translation>
+<translation id="8981454092730389528">‏عناصر التحكم في النشاط على Google</translation>
+<translation id="8986494364107987395">‏إرسال إحصائيات الاستخدام وتقارير الأعطال إلى Google تلقائيًا</translation>
 <translation id="8987061207681586800">‏تخصيص Chrome كما تريد</translation>
 <translation id="9019902583201351841">يديره والداك</translation>
 <translation id="9020607083536754075">إغلاق علامة التبويب الحالية والرجوع إلى التطبيق السابق</translation>

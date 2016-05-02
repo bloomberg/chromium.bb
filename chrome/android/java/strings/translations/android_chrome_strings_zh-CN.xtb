@@ -60,6 +60,7 @@
 <translation id="1742134235943978220">已翻译成<ph name="TARGET_LANGUAGE" />。</translation>
 <translation id="1749561566933687563">同步您的书签</translation>
 <translation id="17513872634828108">目前打开的标签页</translation>
+<translation id="1756600373018374892">点按此按钮即可快速访问您的标签页。</translation>
 <translation id="1807246157184219062">浅色调</translation>
 <translation id="1825719650605518411">首次运行体验</translation>
 <translation id="1829244130665387512">在网页中查找</translation>
@@ -70,6 +71,7 @@
 <translation id="194341124344773587">在 <ph name="BEGIN_LINK" />Android 设置<ph name="END_LINK" />中为 Chrome 启用这项权限。</translation>
 <translation id="1943432128510653496">保存密码</translation>
 <translation id="1944384637046898011">自 <ph name="TIME" />起，使用 Google 密码加密所有数据</translation>
+<translation id="1946005195648379376">控制 Google 如何使用您的浏览记录对 Google 搜索和其他 Google 服务进行个性化设置。</translation>
 <translation id="1959930595721737608">在以下网站上允许 JavaScript。</translation>
 <translation id="1966710179511230534">请更新您的登录详细信息。</translation>
 <translation id="1974060860693918893">高级</translation>
@@ -95,9 +97,7 @@
 <translation id="2206488550163399966"><ph name="APP_NAME" />，网络应用。<ph name="APP_URL" /></translation>
 <translation id="2268044343513325586">优化</translation>
 <translation id="2315043854645842844">操作系统不支持选择客户端证书。</translation>
-<translation id="2316129865977710310">不用了，谢谢</translation>
 <translation id="2321958826496381788">拖动该滑块，将文字调整到适合您阅读的大小。点按两次某段落后，显示的文字至少应是这么大。</translation>
-<translation id="2329597144923131178">登录后可获取您所有设备上保存的书签、历史记录、密码和其他设置。</translation>
 <translation id="2343328333327081434">正在安装…</translation>
 <translation id="2351097562818989364">您的翻译设置已重置。</translation>
 <translation id="2359808026110333948">继续</translation>
@@ -138,6 +138,7 @@
 <translation id="2842985007712546952">父文件夹</translation>
 <translation id="2870560284913253234">网站</translation>
 <translation id="2888126860611144412">关于 Chrome</translation>
+<translation id="2889768325388591707">快速切换标签页</translation>
 <translation id="2891154217021530873">停止加载网页</translation>
 <translation id="2902702728133930130">由于出现意外错误，Chrome 启动失败。</translation>
 <translation id="2903493209154104877">地址</translation>
@@ -155,6 +156,9 @@
 <translation id="3089395242580810162">在隐身标签页中打开</translation>
 <translation id="3090193911106258841">正在存取音频和视频输入</translation>
 <translation id="3137521801621304719">退出隐身模式</translation>
+<translation id="3149891296864842641">送货方式</translation>
+<translation id="3162882791484435636">选择送货方式</translation>
+<translation id="3173438333156928404">处理付款时出错</translation>
 <translation id="3177909033752230686">网页语言：</translation>
 <translation id="3190152372525844641">在 <ph name="BEGIN_LINK" />Android 设置<ph name="END_LINK" />中为 Chrome 启用这些权限。</translation>
 <translation id="3198916472715691905">已存储 <ph name="STORAGE_AMOUNT" /> 数据</translation>
@@ -269,10 +273,8 @@
 <translation id="4875622588773761625">要让<ph name="PASSWORD_MANAGER_BRAND" />更新您登录此网站时使用的密码吗？</translation>
 <translation id="4881695831933465202">打开</translation>
 <translation id="4885273946141277891">Chrome 实例数量已超出上限。</translation>
+<translation id="4923459931733593730">付款</translation>
 <translation id="4943872375798546930">找不到结果</translation>
-<translation id="4970484396410298643">您可以在此处直接访问计算机上打开的标签页。
-
-只需在计算机上打开 Chrome，点击菜单，然后选择“登录到 Chrome…”即可。</translation>
 <translation id="497421865427891073">前进</translation>
 <translation id="4996978546172906250">分享方式</translation>
 <translation id="5000922062037820727">已阻止（推荐）</translation>
@@ -296,9 +298,7 @@
 <translation id="5184329579814168207">在 Chrome 中打开</translation>
 <translation id="5199929503336119739">工作资料</translation>
 <translation id="5210365745912300556">关闭标签页</translation>
-<translation id="5210714456814679336">您在其他设备上的 Chrome 中打开的标签页将列在此次。</translation>
 <translation id="5222676887888702881">退出</translation>
-<translation id="5228579091201413441">启用同步功能</translation>
 <translation id="5233638681132016545">打开新的标签页</translation>
 <translation id="5271967389191913893">设备无法打开要下载的内容。</translation>
 <translation id="5275558766013849309">标签页将与最近用过的应用一起显示。</translation>
@@ -342,9 +342,6 @@
 <translation id="5677928146339483299">已屏蔽</translation>
 <translation id="5684874026226664614">糟糕，此网页内容无法翻译。</translation>
 <translation id="5708031556037168012">将现有数据保留在您的设备上，并将这些数据永久导入到 <ph name="TO_ACCOUNT" />。</translation>
-<translation id="5712189971979076230">将发生崩溃时正在运行的文件、应用和服务的相关信息发送给 Google，协助我们确定应优先推出和改进哪些功能。
-
-使用情况统计信息包含偏好设置、按钮点击次数和内存使用情况之类的信息，但不包含网页网址或任何个人信息。崩溃报告包含发生崩溃时的系统信息，并可能包含网页网址或个人信息，具体取决于发生崩溃时的情况。</translation>
 <translation id="5719837394786370183">在您关闭所有隐身标签页后，您在这些标签页中查看的网页不会在浏览器历史记录、Cookie 存储区或搜索记录中留下任何痕迹。不过，您下载的所有文件或创建的书签均会保留下来。
 
 但是，这并不意味着您能完全隐身。即使您进入隐身模式，您的雇主、互联网服务提供商和您访问的网站仍然能看到您的浏览活动。</translation>
@@ -463,6 +460,7 @@
 <translation id="7180611975245234373">刷新</translation>
 <translation id="7191430249889272776">标签页已在后台打开。</translation>
 <translation id="7208788139759694678">流量节省程序已停用</translation>
+<translation id="7220786058474068424">正在处理</translation>
 <translation id="7243308994586599757">选项在靠近屏幕底部的位置</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> 将根据您的位置信息显示本地搜索结果</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />帮助<ph name="END_LINK" /></translation>
@@ -516,6 +514,7 @@
 <translation id="7846076177841592234">取消选择</translation>
 <translation id="7851858861565204677">来自其他设备的同步</translation>
 <translation id="7876243839304621966">全部删除</translation>
+<translation id="7902333740914687335">付款已处理</translation>
 <translation id="7947953824732555851">接受并登录</translation>
 <translation id="7949961459945740081">获取最新功能</translation>
 <translation id="7963646190083259054">供应商：</translation>
@@ -539,6 +538,7 @@
 <translation id="8168435359814927499">内容</translation>
 <translation id="8173098127580644436">自始至今</translation>
 <translation id="8200772114523450471">继续</translation>
+<translation id="8202097416529803614">订单摘要</translation>
 <translation id="8209050860603202033">打开图片</translation>
 <translation id="8215250379351058554"><ph name="SITE" /> 想连接到：</translation>
 <translation id="8218346974737627104">确认登录</translation>
@@ -595,6 +595,8 @@
 <translation id="8942627711005830162">在其他窗口中打开</translation>
 <translation id="8959122750345127698">无法访问 <ph name="URL" /></translation>
 <translation id="8979340629087822094">过去 1 天</translation>
+<translation id="8981454092730389528">Google 活动控件</translation>
+<translation id="8986494364107987395">将使用情况统计信息和崩溃报告自动发送给 Google</translation>
 <translation id="8987061207681586800">定制自己专属的 Chrome</translation>
 <translation id="9019902583201351841">由您父母管理</translation>
 <translation id="9020607083536754075">关闭当前的标签页，并返回到之前的应用</translation>

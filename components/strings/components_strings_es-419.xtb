@@ -117,7 +117,6 @@
 <translation id="2212735316055980242">No se encontró la política.</translation>
 <translation id="2213606439339815911">Recuperando entradas…</translation>
 <translation id="2214283295778284209"><ph name="SITE" /> no está disponible.</translation>
-<translation id="2227695659599072496">Revisar el cable de red o el router.</translation>
 <translation id="2230458221926704099">Corregir la conexión con la <ph name="BEGIN_LINK" />app de diagnóstico<ph name="END_LINK" />.</translation>
 <translation id="225207911366869382">Este valor ya no se utiliza para esta política.</translation>
 <translation id="2262243747453050782">Error de HTTP</translation>
@@ -228,7 +227,6 @@
 <translation id="3254409185687681395">Agregar esta página a Marcadores</translation>
 <translation id="3270847123878663523">&amp;Deshacer Reorganizar</translation>
 <translation id="3286538390144397061">Reiniciar ahora</translation>
-<translation id="3288003805934695103">Volver a cargar la página.</translation>
 <translation id="3305707030755673451">Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph name="TIME" />. Debes ingresarla para iniciar la sincronización.</translation>
 <translation id="333371639341676808">Evita que esta página cree cuadros de diálogo adicionales.</translation>
 <translation id="3340978935015468852">configuración</translation>
@@ -300,7 +298,6 @@
 <translation id="3963721102035795474">Modo de lectura</translation>
 <translation id="3973234410852337861">Se bloqueó <ph name="HOST_NAME" /></translation>
 <translation id="4021036232240155012">DNS es el servicio en red que traduce el nombre de un sitio web en su dirección de Internet.</translation>
-<translation id="4021376465026729077">Inhabilitar las extensiones.</translation>
 <translation id="4030383055268325496">&amp;Deshacer Agregar</translation>
 <translation id="4032534284272647190">Acceso a <ph name="URL" /> denegado.</translation>
 <translation id="404928562651467259">ADVERTENCIA</translation>
@@ -398,7 +395,6 @@
 <translation id="5251803541071282808">Nube</translation>
 <translation id="5299298092464848405">Error al analizar la política</translation>
 <translation id="5300589172476337783">Mostrar</translation>
-<translation id="5307361445257083764"><ph name="BEGIN_LINK" />Borrar las cookies<ph name="END_LINK" />.</translation>
 <translation id="5308689395849655368">Notificación de fallas desactivada.</translation>
 <translation id="5317780077021120954">Guardar</translation>
 <translation id="5327248766486351172">Nombre</translation>
@@ -503,7 +499,6 @@
 <translation id="6628463337424475685"><ph name="ENGINE" /> Búsqueda</translation>
 <translation id="6634865548447745291">No puedes visitar <ph name="SITE" /> ahora porque <ph name="BEGIN_LINK" />este certificado se revocó<ph name="END_LINK" />. Los ataques y errores de red suelen ser temporales, por lo que es posible que esta página funcione más tarde.</translation>
 <translation id="6637478299472506933">Error en la descarga</translation>
-<translation id="6642894344118208103">Reiniciar el módem o router.</translation>
 <translation id="6644283850729428850">Esta política no ha sido aprobada.</translation>
 <translation id="6646897916597483132">Ingresa el CVC de 4 dígitos que figura en el frente de la tarjeta.</translation>
 <translation id="6656103420185847513">Editar carpeta</translation>

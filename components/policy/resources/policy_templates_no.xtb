@@ -2,9 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="no">
 <translation id="101438888985615157">Rotér skjermen 180 grader</translation>
-<translation id="1015272884520659144">Definerer listen over USB-enheter som kan kobles fra kjernedriveren, så de kan brukes via chrome.usb API direkte i nettprogrammer. Oppføringene er par av leverandør- og produktkoder som identifiserer spesifikke USB-enheter.
-
-      Hvis denne regelen ikke er spesifisert, anses listen over frakoblingsbare USB-enheter for å være tom.</translation>
 <translation id="1017967144265860778">Strømstyring på påloggingssiden</translation>
 <translation id="1019101089073227242">Angi katalog for brukerdata</translation>
 <translation id="1022361784792428773">Utvidelses-ID-er brukeren skal hindres i å installere (eller * for alle)</translation>
@@ -68,14 +65,6 @@
       Hvis regelen ikke er angitt eller er satt til false (usann), er ikke RC4-chifferserier i TLS slått på. Ellers kan den settes til true (sann) for å sikre kompatibilitet med en utdatert tjener. Dette er en midlertidig løsning, og tjeneren bør konfigureres på nytt.</translation>
 <translation id="1297182715641689552">Bruk et .pac-skript for mellomtjener</translation>
 <translation id="1304973015437969093">ID-er for utvidelser/apper og oppdateringsnettadresser som skal installeres stille</translation>
-<translation id="1310699457130669094">Du kan angi nettadresse til en .pac-fil til mellomtjener her.
-
-          Denne retningslinjen trer i kraft bare hvis du har valgt manuelle mellomtjenerinnstulinger under «Velg hvordan du skal angi proxytjenerinnstillinger».
-
-          Du bør la være å angi denne retningslinjen hvis du har valgt en annen modus for å stille inn retningslinjer for mellomtjener.
-
-          Hvis du vil ha detaljerte eksempler, kan du gå hit:
-          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1313457536529613143">Angir hvordan prosentandelen for forsinkelse av skjermdemping skaleres når brukeraktiviteten observeres mens skjermen er dempet, eller kort tid etter skjermen er slått av.
 
           Hvis denne innstillingen angis, spesifiserer den hvordan prosentandelen for forsinkelse av skjermdemping skaleres når brukeraktiviteten observeres mens skjermen dempes, eller kort tid etter skjermen er slått av. Når dempingsforsinkelsen er skalert, blir forsinkelsen for avslått, låst og inaktiv skjerm justert slik at de har samme lengde fra skjermdempingsforsinkelsen som i den opprinnelige konfigurasjonen.
@@ -158,18 +147,6 @@
 <translation id="1561424797596341174">Overstyring av regler for delversjoner for feilsøking på fjerntilgangsverten</translation>
 <translation id="1583248206450240930">Bruk <ph name="PRODUCT_FRAME_NAME" /> som standard</translation>
 <translation id="1608755754295374538">Nettadresser som uten forespørsel blir gitt tilgang til enheter med lydopptak</translation>
-<translation id="1613574633990410986">Lar deg spesifisere hvilken proxy-tjener som skal brukes av <ph name="PRODUCT_NAME" /> og ARC-apper, og hindrer brukerne i å endre innstillingene for proxy-tjenere.
-
-      Hvis du velger at det aldri skal brukes proxy-tjenere og alltid kobles til direkte, ignoreres alle andre alternativer.
-
-      Hvis du velger at proxy-tjenere skal oppdages automatisk, ignoreres alle andre alternativer.
-
-      Du finner detaljerte eksempler her:
-      <ph name="PROXY_HELP_URL" />
-
-      Hvis du slår på denne innstillingen, ignorerer <ph name="PRODUCT_NAME" /> og ARC-apper alle proxy-tjenerrelaterte alternativer som spesifiseres fra kommandolinjen.
-
-      Hvis du ikke spesifiserer disse reglene, kan brukerne velge egne innstillinger for proxy-tjenere.</translation>
 <translation id="1617235075406854669">Gjør det mulig å slette nettleser- og nedlastingslogg</translation>
 <translation id="1617384279878333801">Slå på «Legg til person» i profilbehandlingen</translation>
 <translation id="1655229863189977773">Angi størrelse på diskbuffer i byte</translation>
@@ -258,10 +235,6 @@
       Hvis dette aktiveres, vises en rød avlogginsknapp i systemstatusfeltet mens en økt er aktiv og skjermen ikke er låst.
 
       Hvis det deaktiveres eller ikke spesifiseres, vises det ingen stor, rød knapp i systemstatusfeltet.</translation>
-<translation id="1942957375738056236">Du kan angi nettadressen til proxytjeneren her.
-
-          Denne retningslinjen iverksettes bare hvis du har valgt manuelle proxytjenerinnstillinger under «Velg hvordan proxytjenerinnstillinger skal angis».
-          Du bør la være å angi denne retningslinjen hvis du har valgt en annen modus for innstilling av mellomtjenerretningslinjer. Hvis du vil ha flere alternativer og detaljerte eksempler, kan du gå til <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1956493342242507974">Konfigurer strømstrømstyring på påloggingssiden i <ph name="PRODUCT_OS_NAME" />.
 
       Med denne planen kan du konfigurere hvordan <ph name="PRODUCT_OS_NAME" /> skal oppføre seg når det ikke har vært noen brukeraktivitet på en stund mens påloggingsskjermen vises. Planen styrer flere innstillinger. For verdiområder og semantikk for enkeltinnstillinger kan du se tilsvarende planer som kontrollerer strømstyring innad i økten. De eneste avvikene fra disse planene er:
@@ -640,24 +613,6 @@
 <translation id="3072847235228302527">Angi bruksvilkårene for en konto på enheten</translation>
 <translation id="3096595567015595053">Liste over aktiverte programtillegg</translation>
 <translation id="3101501961102569744">Velg hvordan innstillinger for proxy-tjener angis</translation>
-<translation id="3125884964575432854">Lar deg spesifisere hvilken proxy-tjener som skal brukes av <ph name="PRODUCT_NAME" /> og ARC-apper, og hindrer brukerne i å endre innstillingene for proxy-tjenere.
-
-          Hvis du velger at det aldri skal brukes proxy-tjenere og alltid kobles til direkte, ignoreres alle andre alternativer.
-
-          Hvis du velger å bruke systeminnstillingene for proxy-tjenere, ignoreres alle andre alternativer.
-
-          Hvis du velger å oppdage proxy-tjenere automatisk, ignoreres alle andre alternativer.
-
-          Hvis du velger modusen for faste proxy-tjenere, kan du spesifisere flere alternativer i «Adresse eller nettadresse for proxy-tjener» og «Kommadelt liste over regler for å omgå proxy-tjener». ARC-apper bruker bare den HTTP-proxy-tjeneren som har høyest prioritet.
-
-          Hvis du velger å bruke et pac-skript for proxy-tjenere, må du spesifisere nettadressen for skriptet i «Nettadresse til en .pac-fil for proxy-tjener».
-
-          Du finner detaljerte eksempler her:
-          <ph name="PROXY_HELP_URL" />
-
-          Hvis du slår på denne innstillingen, ignorerer <ph name="PRODUCT_NAME" /> og ARC-apper alle proxy-tjenerrelaterte alternativer som spesifiseres fra kommandolinjen.
-
-          Hvis du ikke spesifiserer denne regelen, kan brukerne velge egne innstillinger for proxy-tjenere.</translation>
 <translation id="3153348162326497318">Gjør at du kan angi hvilke utvidelser brukerne IKKE kan installere. Utvidelser som allerede er installert, fjernes eller svartelistes.
 
           En svartelisteverdi på * betyr at alle utvidelser er svartelistet med mindre de er uttrykkelig oppført på godkjenningslisten.
@@ -722,6 +677,7 @@
 <translation id="3273221114520206906">Standard JavaScript-innstilling</translation>
 <translation id="3288595667065905535">Utgivelseskanal</translation>
 <translation id="3292147213643666827">Aktiverer <ph name="PRODUCT_NAME" /> til å fungere som mellomtjener mellom <ph name="CLOUD_PRINT_NAME" /> og tidligere skrivere tilkoblet denne datamaskinen. Hvis innstillingen er aktivert eller ikke konfigurert, kan brukerne aktivere mellomtjener for Google Cloud Print ved hjelp av autentisering i Google-kontoen. Hvis denne innstillingen er deaktivert, kan ikke brukere aktivere mellomtjeneren, og får ikke tilgang til å dele datamaskinens skrivere med <ph name="CLOUD_PRINT_NAME" />.</translation>
+<translation id="3297010562646015826">Slår på muligheten for å avslutte prosesser i oppgavebehandlingen</translation>
 <translation id="3322771899429619102">Gjør det mulig å definere en liste med nettadressemønstre for å spesifisere nettsteder som har tillatelse til å bruke nøkkelgenerering. Hvis det er et nettadressemønster i «KeygenBlockedForUrls», overstyrer det disse unntakene.
 
           Hvis denne regelen ikke angis, brukes den globale standardverdien for alle nettstedene, enten fra regelen «DefaultKeygenSetting» hvis den er angitt, eller fra brukerens personlige konfigurasjon.</translation>
@@ -894,22 +850,6 @@
           Hvis denne regelen settes til «Behold informasjonskapsler så lenge økten varer», blir informasjonskapslene slettet når økten avsluttes. Vær oppmerksom på at hvis <ph name="PRODUCT_NAME" /> kjører i «bakgrunnsmodus», kan det hende økten ikke avsluttes når det siste vinduet lukkes. Se regelen «BackgroundModeEnabled» for å få mer informasjon om konfigurering av denne atferden.
 
           Hvis denne regelen ikke spesifiseres, brukes «AllowCookies», og brukeren kan endre innstillingen.</translation>
-<translation id="4098957623809244159">Denne regelen er avviklet. Bruk ProxyMode i stedet.
-
-          Med denne regelen kan du spesifisere hvilken proxy-tjener som skal brukes av <ph name="PRODUCT_NAME" /> og ARC-apper, og hindre brukere i å endre innstillingene for proxy-tjenere.
-
-          Hvis du velger at det aldri skal brukes proxy-tjenere og alltid kobles til direkte, ignoreres alle andre alternativer.
-
-          Hvis du velger å bruke systeminnstillingene for proxy-tjenere eller oppdage proxy-tjenere automatisk, ignoreres alle andre alternativer.
-
-          Hvis du velger manuelle innstillinger for proxy-tjenere, kan du spesifisere ytterligere alternativer i «Adresse eller nettadresse for proxy-tjener», «Nettadresse til en .pac-fil for proxy-tjener» og «Kommadelt liste over regler for å omgå proxy-tjener».
-
-          Du finner detaljerte eksempler her:
-          <ph name="PROXY_HELP_URL" />
-
-          Hvis du slår på denne innstillingen, ignorerer <ph name="PRODUCT_NAME" /> alle proxy-tjenerrelaterte alternativer som spesifiseres fra kommandolinjen.
-
-          Hvis du ikke spesifiserer denne regelen, kan brukerne velge egne innstillinger for proxy-tjenere.</translation>
 <translation id="4103289232974211388">Viderekoble til SAML IdP etter at brukeren har bekreftet</translation>
 <translation id="410478022164847452">Angir hvor lenge brukeren kan være inaktiv før inaktivitetshandlingen blir utført når enheten kjører på vekselstrøm.
 
@@ -1383,13 +1323,6 @@
 <translation id="5893553533827140852">Hvis denne innstillingen er aktivert sendes gnubby-godkjenningsforespørsler via en proxy-tjener på en ekstern tjenertilkobling.
 
           Hvis denne innstillingen ikke er aktivert sendes ikke gnubby-godkjenningsforespørsler via en proxy-tjener.</translation>
-<translation id="5900959132054596599"><ph name="PRODUCT_NAME" /> og ARC-apper omgår alle proxy-tjenere for listen med verter som spesifiseres her.
-
-          Denne regelen trer bare i kraft hvis du har valgt manuelle innstillinger for proxy-tjenere under «Velg hvordan innstillinger for proxy-tjener angis».
-          Du bør ikke spesifisere denne regelen hvis du har valgt en annen modus for spesifisering av regler for proxy-tjenere.
-
-          Du finner detaljerte eksempler her:
-          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="5921713479449475707">Tillat automatisk oppdatering av nedlastinger via HTTP</translation>
 <translation id="5921888683953999946">Angi standardtilstand for den store musepekerens tilgjengelighet på påloggingssiden.
 
@@ -1909,9 +1842,6 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 
       Hvis denne innstillingen er deakivert eller ikke angis, bruker <ph name="PRODUCT_NAME" /> enten det brukerspesifikke foretrukne språket (hvis dette er konfiguert), systemspråket eller, som siste mulighet, en-US.</translation>
 <translation id="7651739109954974365">Avgjør om datastreifing skal aktiveres for enheten. Hvis innstillingen er angitt som Sann, tillates datastreifing. Hvis innstillingen er angitt som Usann eller ikke er konfigurert, blir ikke datastreifing tilgjengelig.</translation>
-<translation id="7667184304362487902">Konfigurerer innstillingene for proxy-tjenere for <ph name="PRODUCT_NAME" /> og ARC-apper.
-
-      Denne regelen er ikke klar til bruk ennå, så ikke bruk den.</translation>
 <translation id="76810863974142048">Nettadressen fjerntilgangsklienter skal hente autentiseringstoken fra.
 
           Hvis denne regelen spesifiseres, krever fjerntilgangsverten at autentiseringsklientene innhenter et autentiseringstoken fra nettadressen som er oppgitt, før de kobles til. Denne regelen må brukes sammen med RemoteAccessHostTokenValidationUrl.
@@ -2136,6 +2066,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 
       Retningslinjeverdien må angis i millisekunder.</translation>
 <translation id="8344454543174932833">Importer bokmerker fra standard nettleser ved første kjøring</translation>
+<translation id="8359734107661430198">Slå på ExampleDeprecatedFeature API frem til og med 2008/09/02</translation>
 <translation id="8360452361555133173">Slå på visning av velkomstsiden ved den første oppstarten av nettleseren etter at operativsystemet er oppgradert.
 
       Hvis denne regelen settes til «true» (sann) eller ikke konfigureres, vises velkomstsiden på nytt i nettleseren ved den første oppstarten etter at operativsystemet er oppgradert.
@@ -2333,7 +2264,7 @@ programtillegg. Shockwave Flash-programtillegget tilhører for eksempel Adobe Fl
 
       Hvis denne regelen spesifiseres, kan ikke brukerne endre eller overstyre den.
 
-      Når Bluetooth har blitt slått på, må enheten startes på nytt for at endringene skal tre i kraft. (Det er ikke nødvendig å starte enheten på nytt når Bluetooth slås av).</translation>
+      Når Bluetooth er slått på, må enheten startes på nytt for at endringene skal tre i kraft. (Det er ikke nødvendig å starte enheten på nytt når Bluetooth slås av).</translation>
 <translation id="8947415621777543415">Rapportering av enhetsposisjonen</translation>
 <translation id="8951350807133946005">Angi katalog for diskbufring</translation>
 <translation id="8955719471735800169">Tilbake til toppen</translation>

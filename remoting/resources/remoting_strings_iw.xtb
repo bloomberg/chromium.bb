@@ -178,7 +178,6 @@ Chromoting</translation>
 <translation id="533625276787323658">אין מחשבים שניתן להתחבר אליהם</translation>
 <translation id="5363265567587775042">בקש מבעל המחשב שאליו אתה רוצה לגשת שילחץ על “<ph name="SHARE" />” וייתן לך את קוד הגישה.</translation>
 <translation id="5379087427956679853">‏'שולחן עבודה מרוחק של Chrome' מאפשר לך לשתף את המחשב שלך דרך האינטרנט באופן מאובטח. על שני המשתמשים להפעיל את היישום 'שולחן עבודה מרוחק של Chrome', שניתן למצוא בכתובת <ph name="URL" />.</translation>
-<translation id="5394895745784982830">‏עבור Mac (OS X 10.6 ואילך)</translation>
 <translation id="5397086374758643919">‏מסיר ההתקנה של מארח שולחן העבודה המרוחק של Chrome‏</translation>
 <translation id="5419185025274123272">לא ניתן היה לאפס את היישום. תוכל עדיין לשלוח דוח באגים.</translation>
 <translation id="544077782045763683">המארח כבה.</translation>
@@ -232,7 +231,6 @@ Chromoting</translation>
 <translation id="6930242544192836755">משך החיבור</translation>
 <translation id="6939719207673461467">הצג/הסתר מקלדת.</translation>
 <translation id="6944854424004126054">שחזר חלון</translation>
-<translation id="6962773374262604195">‏עבור Windows (XP ואילך)</translation>
 <translation id="6965382102122355670">אישור</translation>
 <translation id="6985691951107243942">האם אתה בטוח שברצונך להשבית את החיבורים המרוחקים אל <ph name="HOSTNAME" />? אם תשנה את דעתך, יהיה עליך להיכנס למחשב זה כדי להפעיל מחדש את החיבורים.</translation>
 <translation id="6998989275928107238">אל</translation>

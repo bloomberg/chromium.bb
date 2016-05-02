@@ -60,6 +60,7 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="1742134235943978220">Đã được dịch sang <ph name="TARGET_LANGUAGE" />.</translation>
 <translation id="1749561566933687563">Đồng bộ hóa dấu trang của bạn</translation>
 <translation id="17513872634828108">Tab đang mở</translation>
+<translation id="1756600373018374892">Nhấn nút này để truy cập nhanh vào các tab của bạn.</translation>
 <translation id="1807246157184219062">Sáng</translation>
 <translation id="1825719650605518411">Trải nghiệm lần chạy đầu tiên</translation>
 <translation id="1829244130665387512">Tìm trong trang</translation>
@@ -70,6 +71,7 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="194341124344773587">Bật quyền cho Chrome trong <ph name="BEGIN_LINK" />Cài đặt Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Lưu mật khẩu</translation>
 <translation id="1944384637046898011">Mã hóa tất cả dữ liệu bằng mật khẩu Google kể từ <ph name="TIME" /></translation>
+<translation id="1946005195648379376">Kiểm soát cách Google sử dụng lịch sử duyệt web của bạn để cá nhân hóa Tìm kiếm và các dịch vụ khác của Google.</translation>
 <translation id="1959930595721737608">Cho phép Javascript trên trang web sau.</translation>
 <translation id="1966710179511230534">Vui lòng cập nhật chi tiết đăng nhập của bạn.</translation>
 <translation id="1974060860693918893">Nâng cao</translation>
@@ -95,9 +97,7 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="2206488550163399966"><ph name="APP_NAME" />, ứng dụng web. <ph name="APP_URL" /></translation>
 <translation id="2268044343513325586">Tinh chỉnh</translation>
 <translation id="2315043854645842844">Lựa chọn chứng chỉ phía ứng dụng khách không được hệ điều hành hỗ trợ.</translation>
-<translation id="2316129865977710310">Không, cảm ơn</translation>
 <translation id="2321958826496381788">Kéo thanh trượt cho đến khi bạn có thể đọc nội dung này thoải mái. Chữ tối thiểu phải to như này sau khi bấm đúp vào một đoạn.</translation>
-<translation id="2329597144923131178">Đăng nhập để nhận dấu trang, lịch sử, mật khẩu và các cài đặt khác trên tất cả các thiết bị của bạn.</translation>
 <translation id="2343328333327081434">Đang cài đặt…</translation>
 <translation id="2351097562818989364">Đã đặt lại cài đặt dịch của bạn.</translation>
 <translation id="2359808026110333948">Tiếp tục</translation>
@@ -138,6 +138,7 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="2842985007712546952">Thư mục gốc</translation>
 <translation id="2870560284913253234">Trang web</translation>
 <translation id="2888126860611144412">Giới thiệu Chrome</translation>
+<translation id="2889768325388591707">Chuyển đổi tab nhanh</translation>
 <translation id="2891154217021530873">Ngừng tải trang</translation>
 <translation id="2902702728133930130">Chrome khởi động không thành công với lỗi không mong muốn.</translation>
 <translation id="2903493209154104877">Địa chỉ</translation>
@@ -155,6 +156,9 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="3089395242580810162">Mở bằng tab ẩn danh</translation>
 <translation id="3090193911106258841">Đang truy cập thiết bị đầu vào video và âm thanh</translation>
 <translation id="3137521801621304719">Thoát chế độ ẩn danh</translation>
+<translation id="3149891296864842641">Tùy chọn giao hàng</translation>
+<translation id="3162882791484435636">Chọn tùy chọn giao hàng</translation>
+<translation id="3173438333156928404">Đã xảy ra lỗi khi xử lý thanh toán</translation>
 <translation id="3177909033752230686">Ngôn ngữ trang:</translation>
 <translation id="3190152372525844641">Bật quyền cho Chrome trong <ph name="BEGIN_LINK" />Cài đặt Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> dữ liệu được lưu trữ</translation>
@@ -269,10 +273,8 @@ Bạn đang đăng nhập bằng tài khoản được quản lý và cung cấp
 <translation id="4875622588773761625">Bạn có muốn <ph name="PASSWORD_MANAGER_BRAND" /> cập nhật mật khẩu của mình cho trang web này không?</translation>
 <translation id="4881695831933465202">Mở</translation>
 <translation id="4885273946141277891">Số phiên bản Chrome không được hỗ trợ.</translation>
+<translation id="4923459931733593730">Thanh toán</translation>
 <translation id="4943872375798546930">Không tìm thấy kết quả nào</translation>
-<translation id="4970484396410298643">Truy cập các tab bạn đã mở trên máy tính của mình, ngay tại đây.
-
-Bạn chỉ cần mở Chrome trên máy tính của mình, chuyển tới menu và chọn "Đăng nhập vào Chrome…”</translation>
 <translation id="497421865427891073">Đi về phía trước</translation>
 <translation id="4996978546172906250">Chia sẻ qua</translation>
 <translation id="5000922062037820727">Bị chặn (được đề xuất)</translation>
@@ -296,9 +298,7 @@ Bạn chỉ cần mở Chrome trên máy tính của mình, chuyển tới menu 
 <translation id="5184329579814168207">Mở trong Chrome</translation>
 <translation id="5199929503336119739">Hồ sơ công việc</translation>
 <translation id="5210365745912300556">Đóng tab</translation>
-<translation id="5210714456814679336">Tab mà bạn đã mở trong Chrome trên thiết bị khác sẽ xuất hiện tại đây.</translation>
 <translation id="5222676887888702881">Đăng xuất</translation>
-<translation id="5228579091201413441">Bật đồng bộ hóa</translation>
 <translation id="5233638681132016545">Tab mới</translation>
 <translation id="5271967389191913893">Thiết bị không thể mở nội dung được tải xuống.</translation>
 <translation id="5275558766013849309">Tab sẽ hoạt động cùng với các ứng dụng gần đây.</translation>
@@ -342,9 +342,6 @@ Bạn chỉ cần mở Chrome trên máy tính của mình, chuyển tới menu 
 <translation id="5677928146339483299">Bị chặn</translation>
 <translation id="5684874026226664614">Rất tiếc. Không thể dịch trang này.</translation>
 <translation id="5708031556037168012">Giữ lại dữ liệu hiện có trên thiết bị của bạn và nhập dữ liệu vĩnh viễn vào <ph name="TO_ACCOUNT" />.</translation>
-<translation id="5712189971979076230">Giúp chúng tôi ưu tiên các tính năng và cải tiến mà chúng tôi nên giải quyết bằng cách gửi cho Google thông tin về các tệp, ứng dụng và dịch vụ đang chạy bất cứ khi nào bạn gặp sự cố.
-
-Số liệu thống kê sử dụng bao gồm thông tin chẳng hạn như tùy chọn, số lần nhấp nút và mức sử dụng bộ nhớ. Số liệu này không bao gồm URL trang web hoặc bất kỳ thông tin cá nhân nào. Báo cáo sự cố chứa thông tin hệ thống tại thời điểm xảy ra sự cố và có thể bao gồm URL của trang web hoặc thông tin cá nhân tùy thuộc vào hiện tượng tại thời điểm xảy ra sự cố.</translation>
 <translation id="5719837394786370183">Trang mà bạn xem ở tab ẩn danh sẽ không bị lưu lại trong lịch sử của trình duyệt, kho cookie hoặc lịch sử tìm kiếm sau khi bạn đóng tất cả tab ẩn danh của bạn. Mọi tệp bạn tải xuống hoặc dấu trang bạn tạo sẽ được giữ nguyên.
 
 Tuy nhiên, bạn vẫn hiển thị. Truy cập ẩn danh sẽ không ẩn thao tác duyệt của bạn khỏi chủ lao động, nhà cung cấp dịch vụ Internet hoặc trang web bạn truy cập.</translation>
@@ -463,6 +460,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7180611975245234373">Làm mới</translation>
 <translation id="7191430249889272776">Tab được mở dưới nền.</translation>
 <translation id="7208788139759694678">Đã tắt Trình tiết kiệm dữ liệu</translation>
+<translation id="7220786058474068424">Đang xử lý</translation>
 <translation id="7243308994586599757">Có các tùy chọn ở gần cuối màn hình</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> sử dụng vị trí của bạn để hiển thị kết quả tìm kiếm địa phương</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Trợ giúp<ph name="END_LINK" /></translation>
@@ -516,6 +514,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="7846076177841592234">Hủy chọn</translation>
 <translation id="7851858861565204677">Thiết bị khác</translation>
 <translation id="7876243839304621966">Xóa tất cả</translation>
+<translation id="7902333740914687335">Đã xử lý thanh toán</translation>
 <translation id="7947953824732555851">Chấp nhận &amp; đăng nhập</translation>
 <translation id="7949961459945740081">Cập nhật tính năng mới nhất</translation>
 <translation id="7963646190083259054">Nhà cung cấp:</translation>
@@ -539,6 +538,7 @@ Bạn có thể kiểm soát cài đặt Web trong cuộc sống trên Chrome.</
 <translation id="8168435359814927499">Nội dung</translation>
 <translation id="8173098127580644436">mọi thứ</translation>
 <translation id="8200772114523450471">Tiếp tục</translation>
+<translation id="8202097416529803614">Tóm tắt đơn đặt hàng</translation>
 <translation id="8209050860603202033">Mở ảnh</translation>
 <translation id="8215250379351058554"><ph name="SITE" /> muốn kết nối với:</translation>
 <translation id="8218346974737627104">Xác nhận đăng nhập</translation>
@@ -595,6 +595,8 @@ Bạn có thể kiểm soát cài đặt Web trong cuộc sống trên Chrome.</
 <translation id="8942627711005830162">Mở trong cửa sổ khác</translation>
 <translation id="8959122750345127698">Không thể tiếp cận điều hướng: <ph name="URL" /></translation>
 <translation id="8979340629087822094">ngày trước</translation>
+<translation id="8981454092730389528">Điều khiển hoạt động của Google</translation>
+<translation id="8986494364107987395">Tự động gửi số liệu thống kê về việc sử dụng và báo cáo sự cố cho Google</translation>
 <translation id="8987061207681586800">Tùy chỉnh riêng Chrome</translation>
 <translation id="9019902583201351841">Do cha mẹ của bạn quản lý</translation>
 <translation id="9020607083536754075">Đóng tab hiện tại và quay lại ứng dụng trước</translation>

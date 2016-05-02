@@ -178,7 +178,6 @@ isäntä</translation>
 <translation id="533625276787323658">Et ole määrittänyt etätietokoneita.</translation>
 <translation id="5363265567587775042">Ota yhteyttä käyttäjään, jonka tietokonetta haluat käyttää. Pyydä häntä klikkaamaan <ph name="SHARE" /> ja antamaan käyttökoodi sinulle.</translation>
 <translation id="5379087427956679853">Chrome-etäkäyttösovelluksen avulla voit jakaa tietokoneesi suojatun verkkoyhteyden kautta. Molempien käyttäjien täytyy käyttää osoitteesta <ph name="URL" /> löytyvää Chrome-etäkäyttösovellusta.</translation>
-<translation id="5394895745784982830">Mac (OS X 10.6 ja uudemmat versiot)</translation>
 <translation id="5397086374758643919">Chrome-etäkäytön isännän asennuksen poisto</translation>
 <translation id="5419185025274123272">Sovelluksen nollaus epäonnistui. Voit silti lähettää vikailmoituksen.</translation>
 <translation id="544077782045763683">Isäntä on offline-tilassa.</translation>
@@ -232,7 +231,6 @@ isäntä</translation>
 <translation id="6930242544192836755">Kesto</translation>
 <translation id="6939719207673461467">Näytä/piilota näppäimistö</translation>
 <translation id="6944854424004126054">Palauta ikkuna</translation>
-<translation id="6962773374262604195">Windows (XP ja uudemmat versiot)</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6985691951107243942">Haluatko varmasti poistaa käytöstä etäyhteydet kohteeseen <ph name="HOSTNAME" />? Jos muutat mieltäsi, yhteydet täytyy palauttaa käyttöön kyseisellä tietokoneella.</translation>
 <translation id="6998989275928107238">Kohde</translation>

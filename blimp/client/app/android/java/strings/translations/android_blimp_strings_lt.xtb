@@ -8,6 +8,7 @@
 <translation id="2078561879028077171">Versijos informacija</translation>
 <translation id="2117453604279487107">Priskyrimo priemonės URL</translation>
 <translation id="2353984724370197742">Priskirti nepavyko. Nepavyko tinklo užklausa.</translation>
+<translation id="2789927415041640472">Norėdami naudoti naują priskyrimo priemonės konfigūraciją, paleiskite programą iš naujo.</translation>
 <translation id="3046825211487065480">Priskirti nepavyko. Antra užklausa išsiųsta prieš pateikiant atsaką į pirmą užklausą.</translation>
 <translation id="3286538390144397061">Paleisti iš naujo dabar</translation>
 <translation id="3346106862344060497">Variklis prijungtas.</translation>
@@ -22,6 +23,7 @@
 <translation id="5860346505531085166">Priskirti nepavyko. Naudojant paskyrą negalima pasiekti duomenų.</translation>
 <translation id="6232798399907177395">Apie „Blimp“</translation>
 <translation id="704835510384979817">Priskirti nepavyko. Nėra atitinkamos versijos variklio.</translation>
+<translation id="7145680970336344212">Iš naujo paleisti „Blimp“</translation>
 <translation id="7536363920335771251">Variklis atjungtas, priežastis: %1$s</translation>
 <translation id="7596558890252710462">Operacinė sistema</translation>
 <translation id="7608553142876436780">Variklio IP protokolas</translation>

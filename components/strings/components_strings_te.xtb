@@ -21,6 +21,7 @@
 <translation id="112840717907525620">విధాన కాష్ సరిపోయింది</translation>
 <translation id="113188000913989374"><ph name="SITE" /> ఇలా చెబుతోంది:</translation>
 <translation id="1132774398110320017">Chrome స్వయంపూర్తి సెట్టింగ్‌లు...</translation>
+<translation id="113770840981343808">ధృవీకరణ కోసం మీ కార్డ్ ముందువైపు ఉన్న 4 అంకెల CVCని నమోదు చేయండి</translation>
 <translation id="1146673768181266552">క్రాష్ ID <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">ఈ సర్వర్ <ph name="DOMAIN" /> అని నిరూపించుకోలేకపోయింది; దీని భద్రతా ప్రమాణపత్రాన్ని మీ కంప్యూటర్ ఆపరేటింగ్ సిస్టమ్ విశ్వసించలేదు. ఇది తప్పుగా కాన్ఫిగర్ చేయడం వలన లేదా దాడిచేసే వ్యక్తి మీ కనెక్షన్‌కి అంతరాయం కలిగించడం వలన జరిగి ఉండవచ్చు.</translation>
 <translation id="1152921474424827756"><ph name="URL" /> యొక్క <ph name="BEGIN_LINK" />కాష్ చేయబడిన కాపీ<ph name="END_LINK" />ని ప్రాప్యత చేయండి</translation>
@@ -118,7 +119,6 @@
 <translation id="2212735316055980242">విధానం కనుగొనబడలేదు</translation>
 <translation id="2213606439339815911">నమోదులను పొందుతోంది...</translation>
 <translation id="2214283295778284209"><ph name="SITE" /> అందుబాటులో లేదు</translation>
-<translation id="2227695659599072496">నెట్‌వర్క్ కేబుల్ లేదా రూటర్‌ను తనిఖీ చేయడం</translation>
 <translation id="2230458221926704099"><ph name="BEGIN_LINK" />విశ్లేషణల అనువర్తనాన్ని<ph name="END_LINK" /> ఉపయోగించి మీ కనెక్షన్‌ను సరి చేయండి</translation>
 <translation id="225207911366869382">ఈ విధానం కోసం ఈ విలువ తగ్గించబడింది.</translation>
 <translation id="2262243747453050782">HTTP లోపం</translation>
@@ -131,6 +131,7 @@
 <translation id="2317259163369394535"><ph name="DOMAIN" />కి వినియోగదారు పేరు మరియు పాస్‌వర్డ్ అవసరం.</translation>
 <translation id="2328300916057834155"><ph name="ENTRY_INDEX" />వ సూచికలో చెల్లని బుక్‌మార్క్ విస్మరించబడింది</translation>
 <translation id="2354001756790975382">ఇతర బుక్‌మార్క్‌లు</translation>
+<translation id="2357783041215512127"><ph name="CREDIT_CARD" />తో చెల్లించండి</translation>
 <translation id="2359808026110333948">కొనసాగు</translation>
 <translation id="2367567093518048410">స్థాయి</translation>
 <translation id="237718015863234333">UI ప్రత్యామ్నాయాలు అందుబాటులో లేవు</translation>
@@ -228,7 +229,6 @@
 <translation id="3254409185687681395">ఈ పేజీని బుక్‌మార్క్ చెయ్యి</translation>
 <translation id="3270847123878663523">&amp;మళ్లీ క్రమం చేయడాన్ని రద్దు చేయి</translation>
 <translation id="3286538390144397061">ఇప్పుడు పునఃప్రారంభించండి</translation>
-<translation id="3288003805934695103">పేజీని మళ్లీ లోడ్ చేయడం</translation>
 <translation id="3305707030755673451"><ph name="TIME" />న మీ సమకాలీకరణ రహస్య పదబంధంతో మీ డేటా గుప్తీకరించబడింది. సమకాలీకరణను ప్రారంభించడానికి దీన్ని నమోదు చేయండి.</translation>
 <translation id="333371639341676808">అదనపు డైలాగ్‌లను సృష్టించకుండా ఈ పేజీని అడ్డుకో</translation>
 <translation id="3340978935015468852">సెట్టింగ్‌లు</translation>
@@ -300,7 +300,6 @@
 <translation id="3963721102035795474">పాఠకుని మోడ్</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> బ్లాక్ చేయబడింది</translation>
 <translation id="4021036232240155012">DNS అనేది వెబ్‌సైట్ పేరును దాని ఇంటర్నెట్ చిరునామాకి అనువదించే నెట్‌వర్క్ సేవ.</translation>
-<translation id="4021376465026729077">మీ పొడిగింపులను నిలిపివేయడం</translation>
 <translation id="4030383055268325496">&amp;జోడించడాన్ని రద్దు చేయి</translation>
 <translation id="4032534284272647190"><ph name="URL" />కు ప్రాప్యత తిరస్కరించబడింది.</translation>
 <translation id="404928562651467259">హెచ్చరిక</translation>
@@ -398,7 +397,6 @@
 <translation id="5251803541071282808">క్లౌడ్</translation>
 <translation id="5299298092464848405">విధానాన్ని అన్వయించడంలో లోపం</translation>
 <translation id="5300589172476337783">చూపించు</translation>
-<translation id="5307361445257083764"><ph name="BEGIN_LINK" />మీ కుక్కీలను తీసివేయడం<ph name="END_LINK" /></translation>
 <translation id="5308689395849655368">క్రాష్ నివేదిక నిలిపివెయ్యబడింది.</translation>
 <translation id="5317780077021120954">సేవ్ చేయి</translation>
 <translation id="5327248766486351172">పేరు</translation>
@@ -432,6 +430,7 @@
 <translation id="5629630648637658800">విధాన సెట్టింగ్‌లను లోడ్ చేయడంలో విఫలమైంది</translation>
 <translation id="5631439013527180824">చెల్లని పరికర నిర్వహణ టోకెన్</translation>
 <translation id="5650551054760837876">శోధన ఫలితాలు ఏవీ దొరకలేదు.</translation>
+<translation id="5663999524854166235">ధృవీకరణ కోసం మీ కార్డ్ వెనుకవైపు ఉన్న 3 అంకెల CVCని నమోదు చేయండి</translation>
 <translation id="5677928146339483299">బ్లాక్ చెయ్యబడింది</translation>
 <translation id="5710435578057952990">ఈ వెబ్‍‌సైట్ యొక్క గుర్తింపు నిర్థారించబడలేదు.</translation>
 <translation id="5720705177508910913">ప్రస్తుత వినియోగదారు</translation>
@@ -503,7 +502,6 @@
 <translation id="6628463337424475685"><ph name="ENGINE" /> శోధన</translation>
 <translation id="6634865548447745291"><ph name="BEGIN_LINK" />ఈ ప్రమాణపత్రం ఉపసంహరించబడింది<ph name="END_LINK" /> కావున మీరు ఇప్పుడు <ph name="SITE" />ని సందర్శించలేరు. నెట్‌వర్క్ లోపాలు మరియు దాడులు సాధారణంగా తాత్కాలికంగానే ఉంటాయి, కావున ఈ పేజీ కాసేపటి తర్వాత పని చేసే అవకాశం ఉంది.</translation>
 <translation id="6637478299472506933">డౌన్‌లోడ్ చేయడం విఫలమైంది</translation>
-<translation id="6642894344118208103">మోడెమ్ లేదా రూటర్‌ను రీసెట్ చేయడం</translation>
 <translation id="6644283850729428850">ఈ విధానం విలువ తగ్గించబడింది.</translation>
 <translation id="6646897916597483132">మీ కార్డ్ ముందువైపు ఉండే 4 అంకెల CVCని నమోదు చేయండి</translation>
 <translation id="6656103420185847513">ఫోల్డర్‌ను సవరించండి</translation>

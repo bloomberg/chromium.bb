@@ -118,7 +118,6 @@
 <translation id="2212735316055980242">Política não encontrada</translation>
 <translation id="2213606439339815911">Buscando entradas...</translation>
 <translation id="2214283295778284209"><ph name="SITE" /> não está disponível</translation>
-<translation id="2227695659599072496">Verificar o cabo de rede ou roteador</translation>
 <translation id="2230458221926704099">Corrija sua conexão usando o <ph name="BEGIN_LINK" />app de diagnóstico<ph name="END_LINK" /></translation>
 <translation id="225207911366869382">Este valor está obsoleto para esta política.</translation>
 <translation id="2262243747453050782">Erro HTTP</translation>
@@ -228,7 +227,6 @@
 <translation id="3254409185687681395">Adicionar esta página aos favoritos</translation>
 <translation id="3270847123878663523">&amp;Desfazer reordenar</translation>
 <translation id="3286538390144397061">Reiniciar agora</translation>
-<translation id="3288003805934695103">Atualizar a página</translation>
 <translation id="3305707030755673451">Seus dados foram criptografados com sua senha longa de sincronização no dia <ph name="TIME" />. Informe-a para começar a sincronização.</translation>
 <translation id="333371639341676808">Impedir que esta página crie caixas de diálogo adicionais.</translation>
 <translation id="3340978935015468852">configurações</translation>
@@ -300,7 +298,6 @@
 <translation id="3963721102035795474">Modo leitor</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> está bloqueado</translation>
 <translation id="4021036232240155012">O DNS é o serviço de rede que converte o nome de um website para o próprio endereço de Internet.</translation>
-<translation id="4021376465026729077">Desativar as extensões</translation>
 <translation id="4030383055268325496">&amp;Desfazer adicionar</translation>
 <translation id="4032534284272647190">O acesso a <ph name="URL" /> foi negado.</translation>
 <translation id="404928562651467259">AVISO</translation>
@@ -398,7 +395,6 @@
 <translation id="5251803541071282808">Nuvem</translation>
 <translation id="5299298092464848405">Política de análise de erros</translation>
 <translation id="5300589172476337783">Mostrar</translation>
-<translation id="5307361445257083764"><ph name="BEGIN_LINK" />Limpar os cookies<ph name="END_LINK" /></translation>
 <translation id="5308689395849655368">O relatório de erros está desativado.</translation>
 <translation id="5317780077021120954">Salvar</translation>
 <translation id="5327248766486351172">Nome</translation>
@@ -504,7 +500,6 @@
 <translation id="6628463337424475685">Pesquisa do <ph name="ENGINE" /></translation>
 <translation id="6634865548447745291">Não é possível acessar <ph name="SITE" /> no momento, porque <ph name="BEGIN_LINK" />este certificado foi revogado<ph name="END_LINK" />. Ataques e erros de rede geralmente são temporários. Portanto, essa página provavelmente funcionará mais tarde.</translation>
 <translation id="6637478299472506933">Falha no download</translation>
-<translation id="6642894344118208103">Redefinir o modem ou roteador</translation>
 <translation id="6644283850729428850">Esta política foi encerrada.</translation>
 <translation id="6646897916597483132">Digite o CVC de quatro dígitos que aparece na parte frontal do seu cartão</translation>
 <translation id="6656103420185847513">Editar pasta</translation>

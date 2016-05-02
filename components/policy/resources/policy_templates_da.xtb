@@ -2,9 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="da">
 <translation id="101438888985615157">Roter skærmen 180 grader</translation>
-<translation id="1015272884520659144">Definerer listen over USB-enheder, der gerne må frigøres fra deres kernedriver, så de kan bruges via chrome.usb API direkte i en webapplikation. Poster er par bestående af et USB-leverandør-id og et produkt-id til identifikation af en bestemt hardware.
-
-      Hvis denne politik ikke konfigureres, regnes listen over USB-enheder, der kan frigøres, som tom.</translation>
 <translation id="1017967144265860778">Strømstyring på loginskærmen</translation>
 <translation id="1019101089073227242">Angiv brugerdatamappe</translation>
 <translation id="1022361784792428773">Udvidelses-id'er, som brugeren skal forhindres i at installere (eller * for alle)</translation>
@@ -65,7 +62,6 @@
       Hvis politikken ikke er angivet eller er angivet til Falsk, aktiveres RC4-krypteringsprogrammer i TLS ikke. Alternativt kan den angives til Sandt for at bevare kompatibiliteten med en forældet server. Dette er en midlertidig løsning, og serveren bør rekonfigureres.</translation>
 <translation id="1297182715641689552">Brug et .pac-proxyscript</translation>
 <translation id="1304973015437969093">Udvidelses-/app-id'er og opdateringswebadresser skal installeres ubemærket</translation>
-<translation id="1310699457130669094">Du kan angive en webadresse til en proxy .pac-fil her. Denne politik fungerer kun, hvis du har valgt indstillinger for manuel proxy i "Vælg, hvordan du kan angive indstillinger for proxyserver". Du bør ikke angive denne politik, hvis du har valgt en anden tilstand for angivelse af proxypolitikker. Få detaljerede eksempler på: <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1313457536529613143">Angiver den procentdel, som nedtoningsforsinkelsen på skærmen skaleres, når der observeres brugeraktivitet, mens skærmen er nedtonet, eller umiddelbart efter skærmen slukkes.
 
           Hvis denne politik indstilles, angiver den den procentdel, som nedtoningsforsinkelsen på skærmen skaleres, når der observeres brugeraktivitet, mens skærmen er nedtonet, eller umiddelbart efter skærmen slukkes. Når nedtoningsforsinkelsen skaleres, tilpasses forsinkelsen for skærmsluk, skærmlås og inaktivitet for at bibeholde samme afstande fra nedtoningsforsinkelsen på skærmen som i den oprindelige konfiguration.
@@ -146,18 +142,6 @@
 <translation id="1561424797596341174">Tilsidesættelser af politik for fejlretningsbuilds på hosten til fjernadgang</translation>
 <translation id="1583248206450240930">Brug <ph name="PRODUCT_FRAME_NAME" /> som standard</translation>
 <translation id="1608755754295374538">Webadresser, der får adgang til lydoptagelsesenheder, uden at du skal give tilladelse hertil</translation>
-<translation id="1613574633990410986">Giver dig mulighed for at angive den proxyserver, der anvendes af <ph name="PRODUCT_NAME" /> og ARC-apps, og forhindrer brugerne i at ændre proxyindstillingerne.
-
-      Hvis du vælger aldrig at bruge en proxyserver og altid oprette direkte forbindelse, ignoreres alle andre valgmuligheder.
-
-      Hvis du vælger at registrere proxyserveren automatisk, ignoreres alle andre valgmuligheder.
-
-      Få flere detaljerede eksempler på:
-      <ph name="PROXY_HELP_URL" />
-
-      Hvis du aktiverer denne indstilling, ignorerer <ph name="PRODUCT_NAME" /> og ARC-apps alle proxyrelaterede valgmuligheder, der angives på kommandolinjen.
-
-      Hvis disse politikker ikke angives, kan brugerne selv vælge proxyindstillingerne.</translation>
 <translation id="1617235075406854669">Aktivér sletning af browser- og downloadhistorik</translation>
 <translation id="1617384279878333801">Aktivér funktionen Tilføj person i profiladministratoren</translation>
 <translation id="1655229863189977773">Angiv diskcache i bytes</translation>
@@ -242,7 +226,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
       Hvis den er aktiveret, vises der en stor, rød log ud-knap i systembakken, når en session er aktiv, og skærmen ikke er låst.
 
       Hvis den er deaktiveret eller ikke angivet, vises der ikke en stor, rød log ud-knap i systembakken.</translation>
-<translation id="1942957375738056236">Du kan angive webadressen på proxyserveren her. Denne politik træder kun i kraft, hvis du har valgt indstillinger for manuel proxy i "Vælg, hvordan du angiver indstillinger for proxyserveren". Du bør ikke angive denne politik, hvis du har valgt en anden tilstand til indstilling af proxypolitikker. Du kan finde flere valgmuligheder og detaljerede eksempler på: <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1956493342242507974">Konfigurer strømstyring på loginskærmen i <ph name="PRODUCT_OS_NAME" />.
 
       Med denne politik kan du konfigurere, hvordan <ph name="PRODUCT_OS_NAME" /> reagerer, når der ikke har været brugeraktivitet i et stykke tid, mens loginskærmen vises. Politikken styrer flere indstillinger. Se de tilsvarende politikker, som styrer strømstyring i en session, for individuelle semantik- og værdiområder. De eneste afvigelser fra disse politikker er:
@@ -605,23 +588,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="3072847235228302527">Konfigurer servicevilkårene for en enhedslokal konto</translation>
 <translation id="3096595567015595053">Liste over aktiverede plugins</translation>
 <translation id="3101501961102569744">Vælg, hvordan du vil angive indstillinger for proxyserveren</translation>
-<translation id="3125884964575432854">Giver dig mulighed for at angive den proxyserver, der anvendes af <ph name="PRODUCT_NAME" /> og ARC-apps, og forhindrer brugerne i at ændre proxyindstillingerne.
-
-      Hvis du vælger aldrig at bruge en proxyserver og altid oprette direkte forbindelse, ignoreres alle andre valgmuligheder.
-
-      Hvis du vælger at bruge systemets proxyindstillinger, ignoreres alle andre valgmuligheder.
-
-      Hvis du vælger at bruge automatisk registrering af proxyserveren, ignoreres alle andre valgmuligheder.
-
-      Hvis du vælger tilstanden for en fast proxyserver, kan du angive yderligere valgmuligheder i "Adresse eller webadresse til proxyserveren" og "Kommasepareret liste over regler for omgåelse af proxy". ARC-apps bruger kun den HTTP-proxyserver, der har højest prioritet. 
-
-      Hvis du vælger at bruge et proxyscript af typen .pac, skal du angive webadressen til scriptet i "Webadresse til en proxyfil af typen .pac".
-
-      Få flere detaljerede eksempler på:
-      <ph name="PROXY_HELP_URL" />
-      Hvis du aktiverer denne indstilling, ignorerer <ph name="PRODUCT_NAME" /> og ARC-apps alle proxyrelaterede valgmuligheder, der angives på kommandolinjen.
-
-      Hvis disse politikker ikke angives, kan brugerne selv vælge proxyindstillingerne.</translation>
 <translation id="3153348162326497318">Giver dig mulighed for at angive, hvilke udvidelser brugerne IKKE kan installere. Udvidelser, der allerede er installeret, fjernes, hvis de bliver sortlistet.
 
           Sortlisteværdien "*" betyder, at alle udvidelser er sortlistet, medmindre de er tydeligt angivet på hvidlisten.
@@ -690,6 +656,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
       Hvis indstillingen er aktiveret eller ikke konfigureret, kan brugerne aktivere proxyen til Cloudprinter ved at godkende med deres Google-konto.
 
       Hvis denne indstilling er deaktiveret, kan brugerne ikke aktivere proxyen, og det vil ikke være tilladt for maskinen at dele sine printere med <ph name="CLOUD_PRINT_NAME" />.</translation>
+<translation id="3297010562646015826">Aktiverer mulighed for at afslutte processer i Jobliste</translation>
 <translation id="3322771899429619102">Giver dig mulighed for at oprette en liste med webadressemønstre, der angiver websites, som har tilladelse til at benytte nøglegenerering. Hvis et webadressemønster findes i "KeygenBlockedForUrls", tilsidesættes disse undtagelser.
 
           Hvis denne politik ikke angives, anvendes den globale standardværdi på alle websites, enten fra politikken "DefaultKeygenSetting", hvis den er angivet, eller brugerens personlige konfiguration.</translation>
@@ -864,22 +831,6 @@ Hvis denne politik ikke er indstillet, er standardfrekvensen 3 minutter. Minimum
           Hvis denne politik er angivet til "Behold cookies under sessionen", så ryddes cookies, når sessionen afsluttes. Bemærk, at sessionen muligvis ikke afsluttes, når det sidste vindue lukkes, hvis <ph name="PRODUCT_NAME" /> kører i "baggrundstilstand". Se politikken "BackgroundModeEnabled" for at få flere oplysninger om konfiguration af denne adfærd.
 
           Hvis denne politik ikke angives, anvendes "AllowCookies", og brugeren kan ændre dette.</translation>
-<translation id="4098957623809244159">Denne politik er udfaset. Brug ProxyMode i stedet.
-
-      Giver dig mulighed for at angive den proxyserver, der anvendes af <ph name="PRODUCT_NAME" /> og ARC-apps, og forhindrer brugerne i at ændre proxyindstillingerne.
-
-      Hvis du vælger aldrig at bruge en proxyserver og altid oprette direkte forbindelse, ignoreres alle andre valgmuligheder.
-
-      Hvis du vælger at bruge systemets proxyindstillinger eller registrere proxyserveren automatisk, ignoreres alle andre valgmuligheder.
-
-      Hvis du vælger manuelle proxyindstillinger, kan du angive yderligere valgmuligheder i "Adresse eller webadresse til proxyserveren", "Webadresse til en proxyfil af typen .pac" og "Kommasepareret liste over regler for omgåelse af proxy".
-
-      Få flere detaljerede eksempler på:
-      <ph name="PROXY_HELP_URL" />
-
-      Hvis du aktiverer denne indstilling, ignorerer <ph name="PRODUCT_NAME" /> alle proxyrelaterede valgmuligheder, der angives på kommandolinjen.
-
-      Hvis denne politik ikke angives, kan brugerne selv vælge proxyindstillingerne.</translation>
 <translation id="4103289232974211388">Omdiriger til SAML IdP efter brugerbekræftelse</translation>
 <translation id="410478022164847452">Angiver den tid uden brugerinput, der udløser inaktivitetshandlingen, når strømforsyningen er tilsluttet.
 
@@ -1313,14 +1264,6 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
 <translation id="5893553533827140852">Hvis denne indstilling er aktiveret, oprettes der en proxyforbindelse for anmodninger om gnubby-godkendelse på tværs af en fjernhostforbindelse.
 
           Hvis denne indstilling er deaktiveret eller ikke er konfigureret, oprettes der ingen proxyforbindelse for anmodninger om gnubby-godkendelse.</translation>
-<translation id="5900959132054596599"><ph name="PRODUCT_NAME" /> og ARC-apps omgår alle proxyservere for den liste over hosts, der vises her.
-
-          Denne politik træder kun i kraft, hvis du har valgt indstillinger for manuel proxy i "Vælg, hvordan indstillinger for proxyservere skal angives".
-
-          Denne politik bør ikke angives, hvis du har valgt en anden tilstand til angivelse af proxypolitikker.
-
-          Få flere detaljerede eksempler på:
-          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="5921713479449475707">Tillad download af automatiske opdateringer via HTTP</translation>
 <translation id="5921888683953999946">Indstil standardtilstanden for hjælpefunktionen med den store markør på loginskærmen.
 
@@ -1801,9 +1744,6 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="7632724434767231364">Navn på GSSAPI-samling</translation>
 <translation id="7635471475589566552">Konfigurerer applikationens landestandard i <ph name="PRODUCT_NAME" /> og forhindrer brugerne i at ændre landestandarden. Hvis du aktiverer denne indstilling, anvender <ph name="PRODUCT_NAME" /> den angivne landestandard. Hvis den konfigurerede landestandard ikke understøttes, bruges "en-US" i stedet. Hvis denne indstilling er deaktiveret eller ikke konfigureret, bruger <ph name="PRODUCT_NAME" /> enten den brugerdefinerede landestandard (hvis denne er konfigureret), systemets landestandard eller reservelandestandarden "en-US".</translation>
 <translation id="7651739109954974365">Bestemmer, om dataroaming skal aktiveres for enheden. Hvis den er indstillet til sand, tillades dataroaming. Hvis den ikke er konfigureret eller er angivet til falsk, vil dataroaming ikke være tilgængelig.</translation>
-<translation id="7667184304362487902">Konfigurerer proxyindstillinger for <ph name="PRODUCT_NAME" /> og ARC-apps.
-
-      Denne politik er ikke klar til brug endnu. Undlad at bruge den.</translation>
 <translation id="76810863974142048">Webadresse, hvor klienter med fjernadgang skal hente deres godkendelsestoken.
 
           Hvis denne politik er indstillet, kræver hosten for fjernadgang, at klienter, der ønsker godkendelse, skal hente et godkendelsestoken på denne webadresse for at oprette forbindelse. Skal bruges i forbindelse med RemoteAccessHostTokenValidationUrl.
@@ -2019,6 +1959,7 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 
       Politikværdien skal angives i millisekunder.</translation>
 <translation id="8344454543174932833">Importer bogmærker fra standardbrowser ved første visning</translation>
+<translation id="8359734107661430198">Aktivér ExampleDeprecatedFeature API frem til 02/09/2008</translation>
 <translation id="8360452361555133173">Aktivér visning af velkomstsiden, når browseren genstartes efter opgradering af operativsystemet.
 
       Hvis denne politik angives som Sand eller ikke er konfigureret, viser browseren velkomstsiden igen, når browseren genstartes efter opgradering af operativsystemet.

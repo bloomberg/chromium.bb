@@ -1469,7 +1469,6 @@ Para ver mais informações, visite nossa <ph name="BEGIN_LINK" />Central de Aju
 <translation id="3065140616557457172">Digite para pesquisar ou insira um URL para navegar - o que você preferir.</translation>
 <translation id="3067198360141518313">Executar este plug-in</translation>
 <translation id="307519606911195071">Permite recursos de acessibilidade adicionais na página de configurações.</translation>
-<translation id="3075239840551149663"><ph name="NEW_PROFILE_NAME" /> foi criado como um usuário supervisionado.</translation>
 <translation id="3075874217500066906">É necessária uma reinicialização para iniciar o processo Powerwash. Após a reinicialização, solicitaremos que você confirme que deseja continuar.</translation>
 <translation id="3076677906922146425">Deixar qualquer um adicionar uma pessoa ao Chrome</translation>
 <translation id="3076909148546628648"><ph name="DOWNLOAD_RECEIVED" />/<ph name="DOWNLOAD_TOTAL" /></translation>
@@ -2013,7 +2012,6 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3790856258139356663">Conecta-se ao servidor de testes para o recurso Sincronização do Google Chrome.</translation>
 <translation id="3790909017043401679">Insira o PIN do cartão SIM</translation>
 <translation id="3792890930871100565">Desconectar impressoras</translation>
-<translation id="3795681127952030401"><ph name="URL" /> deseja enviar notificações a você.</translation>
 <translation id="3796648294839530037">Redes favoritas:</translation>
 <translation id="3797900183766075808">&amp;Pesquisar “<ph name="SEARCH_TERMS" />” no <ph name="SEARCH_ENGINE" /></translation>
 <translation id="3798449238516105146">Versão</translation>
@@ -2991,6 +2989,7 @@ Todos os usuários devem sair para continuar.</translation>
 <translation id="5305688511332277257">Nenhum instalado</translation>
 <translation id="5308380583665731573">Conectar-se</translation>
 <translation id="5311260548612583999">Arq. de chave privada (opcional):</translation>
+<translation id="5313967007315987356">Adicionar site</translation>
 <translation id="5316588172263354223">Pesquisa por voz a qualquer momento</translation>
 <translation id="5316716239522500219">Espelhar monitores</translation>
 <translation id="5317780077021120954">Salvar</translation>
@@ -3342,7 +3341,6 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="5803531701633845775">Escolher frases do fundo, sem mover o cursor</translation>
 <translation id="5804241973901381774">Permissões</translation>
 <translation id="580571955903695899">Reordenar por título</translation>
-<translation id="5808982448801399019">Falha na autorização</translation>
 <translation id="580961539202306967">Perguntar quando um site quiser me enviar mensagens push (recomendado)</translation>
 <translation id="5815645614496570556">Endereço X.400</translation>
 <translation id="5817397429773072584">Chinês tradicional</translation>
@@ -5254,7 +5252,6 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8708671767545720562">&amp;Mais informações</translation>
 <translation id="8711402221661888347">Xis</translation>
 <translation id="8711453844311572806">Quando o smartphone está desbloqueado e nas proximidades, basta clicar para entrar. Caso contrário, você verá um ícone de bloqueio e precisará digitar sua senha.</translation>
-<translation id="8712637175834984815">Entendi</translation>
 <translation id="8713570323158206935">Enviar <ph name="BEGIN_LINK1" />informações do sistema<ph name="END_LINK1" /></translation>
 <translation id="8713979477561846077">Ative a correção automática do teclado físico para o teclado americano, que pode fornecer sugestões enquanto você digita no teclado físico.</translation>
 <translation id="871476437400413057">Senhas salvas do Google</translation>

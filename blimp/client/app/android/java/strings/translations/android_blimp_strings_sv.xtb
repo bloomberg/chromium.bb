@@ -8,6 +8,7 @@
 <translation id="2078561879028077171">Versionsinformation</translation>
 <translation id="2117453604279487107">Tilldelaradress</translation>
 <translation id="2353984724370197742">Tilldelningen misslyckades. Nätverksbegäran misslyckades.</translation>
+<translation id="2789927415041640472">Starta om programmet så att den nya tilldelningskonfigurationen träder i kraft.</translation>
 <translation id="3046825211487065480">Tilldelningen misslyckades. Den andra begäran skickades innan den första begäran hade besvarats.</translation>
 <translation id="3286538390144397061">Starta om nu</translation>
 <translation id="3346106862344060497">Motorn är ansluten.</translation>
@@ -22,6 +23,7 @@
 <translation id="5860346505531085166">Tilldelningen misslyckades. Kontot har ingen åtkomst.</translation>
 <translation id="6232798399907177395">Om Blimp</translation>
 <translation id="704835510384979817">Tilldelningen misslyckades. Det finns ingen matchande motorversion.</translation>
+<translation id="7145680970336344212">Starta om Blimp</translation>
 <translation id="7536363920335771251">Motorn är frånkopplad. Anledning: %1$s</translation>
 <translation id="7596558890252710462">Operativsystem</translation>
 <translation id="7608553142876436780">Motor-IP</translation>

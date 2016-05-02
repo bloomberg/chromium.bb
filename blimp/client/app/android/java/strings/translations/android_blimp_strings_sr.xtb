@@ -8,6 +8,7 @@
 <translation id="2078561879028077171">Информације о верзији</translation>
 <translation id="2117453604279487107">URL додељивача</translation>
 <translation id="2353984724370197742">Пренос права није успео. Захтев мреже није успео.</translation>
+<translation id="2789927415041640472">Рестартујте апликацију да би користила нову конфигурацију додељивача.</translation>
 <translation id="3046825211487065480">Пренос права није успео. Други захтев је послат пре одговора на први захтев.</translation>
 <translation id="3286538390144397061">Поново покрени одмах</translation>
 <translation id="3346106862344060497">Механизам је повезан.</translation>
@@ -22,6 +23,7 @@
 <translation id="5860346505531085166">Пренос права није успео. Налог нема приступ.</translation>
 <translation id="6232798399907177395">О Blimp-у</translation>
 <translation id="704835510384979817">Пренос права није успео. Нема одговарајуће верзије механизма.</translation>
+<translation id="7145680970336344212">Рестартујте Blimp</translation>
 <translation id="7536363920335771251">Прекинута је веза са механизмом, разлог: %1$s</translation>
 <translation id="7596558890252710462">Оперативни систем</translation>
 <translation id="7608553142876436780">IP механизма</translation>

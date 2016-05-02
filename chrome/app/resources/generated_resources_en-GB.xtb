@@ -251,6 +251,7 @@
         Note that Bluetooth will be turned on for all <ph name="USER_DISPLAY_EMAIL" />'s compatible devices, and some hardware information will be sent to Google. &lt;a&gt;Learn more&lt;/a&gt;</translation>
 <translation id="13649080186077898">Manage Auto-fill settings</translation>
 <translation id="1367951781824006909">Choose a file</translation>
+<translation id="136802136832547685">There are no supervised users to add to this device.</translation>
 <translation id="1368265273904755308">Report issue</translation>
 <translation id="1368832886055348810">Left to Right</translation>
 <translation id="1370646789215800222">Remove person?</translation>
@@ -264,6 +265,7 @@
 <translation id="1383876407941801731">Search</translation>
 <translation id="1384211230590313258">Service Discovery Handler</translation>
 <translation id="1386387014181100145">Howdy.</translation>
+<translation id="1386830813511981192">Over a million apps and games now available on your <ph name="DEVICE_TYPE" />.</translation>
 <translation id="1389297115360905376">This can only be added from the <ph name="CHROME_WEB_STORE" />.</translation>
 <translation id="1390548061267426325">Open as a Standard Tab</translation>
 <translation id="1395262318152388157">Seek slider</translation>
@@ -894,6 +896,7 @@ After you create a new supervised user, you can manage their settings at any tim
 <translation id="2280486287150724112">Right margin</translation>
 <translation id="2282146716419988068">GPU Process</translation>
 <translation id="2283117145434822734">F6</translation>
+<translation id="2286407726708507314">New version of User Agent Intervention for WebFonts loading.</translation>
 <translation id="2286454467119466181">Simple</translation>
 <translation id="2286950485307333924">You're now signed in to Chrome</translation>
 <translation id="2287590536030307392">Turn off all wireless connections.</translation>
@@ -1071,6 +1074,7 @@ I don't think this site should be blocked!</translation>
 <translation id="2542049655219295786">Google table</translation>
 <translation id="2546283357679194313">Cookies and site data</translation>
 <translation id="2549646943416322527">Seccomp Detector</translation>
+<translation id="2550212893339833758">Swapped memory</translation>
 <translation id="2553100941515833716">Reset the App Launcher install state on every restart.</translation>
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" /> was unable to connect to <ph name="NETWORK_ID" />. Please select another network or try again.</translation>
 <translation id="2553440850688409052">Hide This Plug-in</translation>
@@ -1103,6 +1107,7 @@ I don't think this site should be blocked!</translation>
 <translation id="2585300050980572691">Default search settings</translation>
 <translation id="2587203970400270934">Operator code:</translation>
 <translation id="2587922270115112871">Creating a supervised user does not create a Google Account, and their settings and data will not follow them to other devices with Chrome Sync. A supervised user applies only to this device.</translation>
+<translation id="2594049137847833442">Important sites options in clear browsing data dialogue</translation>
 <translation id="2594056015203442344">When enabled, the audio indicators in the tab strip double as tab audio mute controls.  This also adds commands in the tab context menu for quickly muting multiple selected tabs.</translation>
 <translation id="259421303766146093">Demagnify</translation>
 <translation id="2597852038534460976">Chrome cannot access wallpapers. Please connect to a network.</translation>
@@ -1470,7 +1475,6 @@ For more information, visit our <ph name="BEGIN_LINK" />Help Centre<ph name="END
 <translation id="3065140616557457172">Type to search or enter a URL to navigate - everything just works.</translation>
 <translation id="3067198360141518313">Run this plug-in</translation>
 <translation id="307519606911195071">Enable additional accessibility features in the Settings page.</translation>
-<translation id="3075239840551149663"><ph name="NEW_PROFILE_NAME" /> has been created as a supervised user!</translation>
 <translation id="3075874217500066906">A restart is required to begin the Powerwash process. After restart you will be asked to confirm that you want to proceed.</translation>
 <translation id="3076677906922146425">Let anyone add a person to Chrome</translation>
 <translation id="3076909148546628648"><ph name="DOWNLOAD_RECEIVED" />/<ph name="DOWNLOAD_TOTAL" /></translation>
@@ -1487,6 +1491,7 @@ For more information, visit our <ph name="BEGIN_LINK" />Help Centre<ph name="END
 <translation id="3088034400796962477">Transliteration (salam ← سلام)</translation>
 <translation id="3088325635286126843">&amp;Rename...</translation>
 <translation id="308903551226753393">Configure automatically</translation>
+<translation id="3089231390674410424">Looks like there's a problem with your credentials. Please make sure that you're signed in properly and try again.</translation>
 <translation id="3090819949319990166">Can't copy external crx file to <ph name="TEMP_CRX_FILE" />.</translation>
 <translation id="3090871774332213558">"<ph name="DEVICE_NAME" />" paired</translation>
 <translation id="3092544800441494315">Include this screenshot:</translation>
@@ -2014,7 +2019,6 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3790856258139356663">Connects to the testing server for Chrome Sync.</translation>
 <translation id="3790909017043401679">Enter SIM card PIN</translation>
 <translation id="3792890930871100565">Disconnect printers</translation>
-<translation id="3795681127952030401"><ph name="URL" /> wants to send you notifications.</translation>
 <translation id="3796648294839530037">Favourite Networks:</translation>
 <translation id="3797900183766075808">&amp;Search <ph name="SEARCH_ENGINE" /> for “<ph name="SEARCH_TERMS" />”</translation>
 <translation id="3798449238516105146">Version</translation>
@@ -2488,6 +2492,7 @@ Press any key to continue exploring.</translation>
 <translation id="4552678318981539154">Buy more storage</translation>
 <translation id="4554591392113183336">External extension is at the same or lower version compared to the existing one.</translation>
 <translation id="4554796861933393312">Material Design Ink Drop Animation Speed</translation>
+<translation id="4555670907822902621">Enable saving bookmarked pages for offline viewing.</translation>
 <translation id="4555769855065597957">Shadow</translation>
 <translation id="4556110439722119938">Your bookmarks, history, passwords and other settings will be synced to your Google Account so that you can use them on all your devices</translation>
 <translation id="4557136421275541763">Warning:</translation>
@@ -2664,6 +2669,7 @@ Press any key to continue exploring.</translation>
 <translation id="4824518112777153488">Support for hover capable touchscreens</translation>
 <translation id="4830573902900904548">Your <ph name="DEVICE_TYPE" /> is unable to connect to the Internet using <ph name="NETWORK_NAME" />. Please choose another network. <ph name="LEARN_MORE_LINK_START" />Find out more<ph name="LEARN_MORE_LINK_END" /></translation>
 <translation id="4830663122372455572">The identity of <ph name="ORGANIZATION" /> at <ph name="LOCALITY" /> has been verified by <ph name="ISSUER" />. Valid Certificate Transparency information was supplied by the server.</translation>
+<translation id="4832537345877333532">Disable retrieval of ICC display files from Quirks Server for display colour calibration.</translation>
 <translation id="4834912470034578916">Enable customised layouts for Web Notifications.</translation>
 <translation id="4835836146030131423">Error signing in.</translation>
 <translation id="4837926214103741331">You are not authorised to use this device. Please contact the device owner for sign-in permission.</translation>
@@ -2851,6 +2857,7 @@ Press any key to continue exploring.</translation>
 <translation id="5120421890733714118">Trust this certificate for identifying websites.</translation>
 <translation id="5121130586824819730">Your hard disk is full.  Please save to another location or make more room on the hard disk.</translation>
 <translation id="5125751979347152379">Invalid URL.</translation>
+<translation id="5126663277159826272">Disable Quirks Client for display calibration.</translation>
 <translation id="5127881134400491887">Manage network connections</translation>
 <translation id="5128590998814119508">Display list 2D canvas</translation>
 <translation id="512903556749061217">attached</translation>
@@ -2992,9 +2999,11 @@ Press any key to continue exploring.</translation>
 <translation id="5301751748813680278">Entering as Guest.</translation>
 <translation id="5301954838959518834">OK, got it</translation>
 <translation id="5302048478445481009">Language</translation>
+<translation id="5304039790201806037">Pointer Events</translation>
 <translation id="5305688511332277257">None installed</translation>
 <translation id="5308380583665731573">Connect</translation>
 <translation id="5311260548612583999">Private key file (optional):</translation>
+<translation id="5313967007315987356">Add site</translation>
 <translation id="5316588172263354223">Voice search at any time</translation>
 <translation id="5316716239522500219">Mirror monitors</translation>
 <translation id="5317780077021120954">Save</translation>
@@ -3297,6 +3306,7 @@ Press any key to continue exploring.</translation>
 <translation id="5734362860645681824">Communications</translation>
 <translation id="573719557377416048">Clear Copresence State</translation>
 <translation id="5741245087700236983"><ph name="PROFILE_NAME" />: select to edit</translation>
+<translation id="5741454054957165976">Enable new version of User Agent Intervention for WebFonts loading.</translation>
 <translation id="574392208103952083">Medium</translation>
 <translation id="5745056705311424885">USB memory stick detected</translation>
 <translation id="5746169159649715125">Save as PDF</translation>
@@ -3345,7 +3355,6 @@ Press any key to continue exploring.</translation>
 <translation id="5803531701633845775">Choose phrases from the back without moving the cursor</translation>
 <translation id="5804241973901381774">Permissions</translation>
 <translation id="580571955903695899">Reorder by Title</translation>
-<translation id="5808982448801399019">Authorisation failed</translation>
 <translation id="580961539202306967">Ask me when a site wants to send me push messages (recommended)</translation>
 <translation id="5815645614496570556">X.400 Address</translation>
 <translation id="5817397429773072584">Traditional Chinese</translation>
@@ -3370,6 +3379,7 @@ Press any key to continue exploring.</translation>
 <translation id="5834581999798853053">About <ph name="TIME" /> minutes left</translation>
 <translation id="5838825566232597749">US Workman international</translation>
 <translation id="5839277899276241121">Same as billing address</translation>
+<translation id="5844550873065695788">This will permanently delete at least <ph name="TOTAL_COUNT" /> items from this device. To retrieve your data later, sign in to chrome as $2.</translation>
 <translation id="5846929185714966548">Tab 4</translation>
 <translation id="5848934677402291689">Saving to PDF in progress</translation>
 <translation id="5849335628409778954">Enter credit card...</translation>
@@ -3616,6 +3626,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="6232017090690406397">Battery</translation>
 <translation id="6241530762627360640">Access information about Bluetooth devices paired with your system and discover nearby Bluetooth devices.</translation>
 <translation id="6243774244933267674">Server unavailable</translation>
+<translation id="6246413617632217567">The supervised user couldn't be imported. Please check your hard drive space and permissions and try again.</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
 <translation id="624789221780392884">Update ready</translation>
 <translation id="6248400709929739064">Enable subtitles</translation>
@@ -3644,6 +3655,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="6277518330158259200">T&amp;ake Screenshot</translation>
 <translation id="6279183038361895380">Press |<ph name="ACCELERATOR" />| to show your cursor</translation>
 <translation id="6280215091796946657">Sign in with a different account</translation>
+<translation id="6280912520669706465">ARC</translation>
 <translation id="6281743458679673853">Experiment to have all APIs reflect the layout viewport. This will make window.scroll properties relative to the layout viewport.</translation>
 <translation id="6285120908535925801">{NUM_PRINTER,plural, =1{New printer on your network}other{New printers on your network}}</translation>
 <translation id="6285395082104474418">The status tray shows you the current state of your network, battery and more.</translation>
@@ -3699,6 +3711,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="6380143666419481200">Accept and continue</translation>
 <translation id="6380224340023442078">Content settings...</translation>
 <translation id="6383194710567510941">Enable the use of chrome.input.ime API.</translation>
+<translation id="6383618109990544268">{NUM_ITEMS,plural, =1{This will permanently delete at least $1 item from this device. To retrieve your data later, sign in to chrome as $2.}other{This will permanently delete at least $1 items from this device. To retrieve your data later, sign in to chrome as $2.}}</translation>
 <translation id="6384275966486438344">Change your search settings to: <ph name="SEARCH_HOST" /></translation>
 <translation id="6390799748543157332">Pages that you view in this window won’t appear in the browser history and they won’t leave other traces, like cookies, on the computer after you close all open Guest windows. Any files that you download, however, will be preserved.</translation>
 <translation id="6391538222494443604">Input directory must exist.</translation>
@@ -3837,6 +3850,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="6575134580692778371">Not configured</translation>
 <translation id="6575251558004911012">Ask when a site requires access to your camera (recommended)</translation>
 <translation id="6579159469348633828">Brotli Content-Encoding.</translation>
+<translation id="6580151766480067746">ARC Version</translation>
 <translation id="6581162200855843583">Google Drive link</translation>
 <translation id="6583070985841601920">Signed in as <ph name="USER_EMAIL_ADDRESS" />. Sync is disabled by your administrator.</translation>
 <translation id="65832705307647870">Pre-populate the New Tab page with popular sites.</translation>
@@ -4002,6 +4016,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="6847758263950452722">Save Page as MHTML</translation>
 <translation id="6853388645642883916">Updater sleeping</translation>
 <translation id="68541483639528434">Close other tabs</translation>
+<translation id="6856701878604560493">Enable offline bookmarks</translation>
 <translation id="6860097299815761905">Proxy settings...</translation>
 <translation id="6860427144121307915">Open in a Tab</translation>
 <translation id="6862635236584086457">All files saved in this folder are backed up online automatically</translation>
@@ -4176,6 +4191,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="7092106376816104">Pop-up exceptions</translation>
 <translation id="7093866338626856921">Exchange data with the devices named: <ph name="HOSTNAMES" /></translation>
 <translation id="7096082900368329802">Want to discover more awesome features?</translation>
+<translation id="7096108453481049031">The supervised user couldn't be imported. Please check your network connection and try again later.</translation>
 <translation id="7100897339030255923"><ph name="COUNT" /> items selected</translation>
 <translation id="710227449793100220">Token Binding.</translation>
 <translation id="7106346894903675391">Buy more storage...</translation>
@@ -4204,6 +4220,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="713888829801648570">Sorry, your password could not be verified because you are offline.</translation>
 <translation id="7140928199327930795">No other available devices.</translation>
 <translation id="7141105143012495934">Sign-in failed because your account details could not be retrieved. Please contact your administrator or try again.</translation>
+<translation id="7141331524324591758">Enables partial experimental support for the Pointer Events API.  This is intended only for testing by web developers; it will cause some websites to be subtly broken.</translation>
 <translation id="7143207342074048698">Connecting ...</translation>
 <translation id="7144878232160441200">Retry</translation>
 <translation id="7148311641502571842"><ph name="PLUGIN_NAME" /> has been disabled. To re-enable it, please go to <ph name="CHROME_PLUGINS_LINK" />.</translation>
@@ -4852,6 +4869,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8119572489781388874">Modify settings</translation>
 <translation id="8119631488458759651">remove this site</translation>
 <translation id="8121385576314601440">Hangul input settings</translation>
+<translation id="8122245494004914423">This will permanently delete your browsing data from this device. To retrieve your data later, sign in to chrome as $2.</translation>
 <translation id="8124313775439841391">Managed ONC</translation>
 <translation id="8126844665673008223">Web Bluetooth</translation>
 <translation id="8127322077195964840">Allow invalid certificates for resources loaded from localhost.</translation>
@@ -4937,6 +4955,7 @@ Calculating remaining time</translation>
 <translation id="8226742006292257240">Below is the randomly generated TPM password that has been assigned to your computer:</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8230421197304563332">Attackers currently on <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> might attempt to install dangerous programmes on your computer that steal or delete your information (for example, photos, passwords, messages and credit cards).</translation>
+<translation id="8233254008506535819">Include the option to whitelist important sites in the clear browsing data dialogue.</translation>
 <translation id="8236231079192337250">Chrome Web Store Gallery app for printer drivers</translation>
 <translation id="8238649969398088015">Help tip</translation>
 <translation id="8240697550402899963">Use Classic theme</translation>
@@ -5261,7 +5280,6 @@ Calculating time until full</translation>
 <translation id="8708671767545720562">&amp;More Information</translation>
 <translation id="8711402221661888347">Ketchup</translation>
 <translation id="8711453844311572806">When your phone is unlocked and nearby, just click to enter. Otherwise, you’ll see a locked icon and need to type your password.</translation>
-<translation id="8712637175834984815">Got it</translation>
 <translation id="8713570323158206935">Send <ph name="BEGIN_LINK1" />system information<ph name="END_LINK1" /></translation>
 <translation id="8713979477561846077">Enable physical keyboard auto-correct for US keyboard, which can provide suggestions while typing on physical keyboard.</translation>
 <translation id="871476437400413057">Google saved passwords</translation>
@@ -5625,6 +5643,7 @@ Calculating time until full</translation>
 <translation id="952992212772159698">Not activated</translation>
 <translation id="953000875543358078">This may take up to a minute or so</translation>
 <translation id="960987915827980018">About 1 hour left</translation>
+<translation id="963785807426584567">{NUM_ITEMS,plural, =1{This will permanently delete $1 item from this device. To retrieve your data later, sign in to chrome as $2.}other{This will permanently delete $1 items from this device. To retrieve your data later, sign in to chrome as $2.}}</translation>
 <translation id="96421021576709873">Wi-Fi network</translation>
 <translation id="965490406356730238">Enable hardware-accelerated mjpeg decode for captured frame where available.</translation>
 <translation id="968174221497644223">Application cache</translation>

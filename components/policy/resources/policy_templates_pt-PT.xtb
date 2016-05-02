@@ -2,9 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="pt-PT">
 <translation id="101438888985615157">Rodar o ecrã 180 graus</translation>
-<translation id="1015272884520659144">Define a lista de dispositivos USB que estão autorizados a ser desligados do respetivo controlador de kernel para serem utilizados diretamente através da API chrome.usb numa aplicação Web. As entradas são pares de identificador de fornecedor de USB e identificador de produto para identificar um hardware específico.
-
-      Se esta política não estiver configurada, a lista de dispositivos USB amovíveis é considerada como estando vazia.</translation>
 <translation id="1017967144265860778">Gestão de energia no ecrã de início de sessão</translation>
 <translation id="1019101089073227242">Definir diretório de dados do utilizador</translation>
 <translation id="1022361784792428773">IDs das extensões que os utilizadores não poderão instalar (ou * para todas)</translation>
@@ -65,14 +62,6 @@
       Se a política não for definida ou for definida como falsa, os conjuntos de cifras RC4 no TLS não estão ativados. Caso contrário, pode ser definida como verdadeira para manter a compatibilidade com um servidor desatualizado. Esta é uma medida temporária e é necessário voltar a configurar o servidor.</translation>
 <translation id="1297182715641689552">Utilizar um script de proxy .pac</translation>
 <translation id="1304973015437969093">Instalar IDs de extensões/aplicações e URLs de atualização silenciosamente</translation>
-<translation id="1310699457130669094">Pode especificar um URL para um ficheiro .pac de proxy aqui.
-
-          Esta política só é aplicada se selecionar definições de proxy manuais em "Escolher como indicar as definições do servidor proxy".
-
-          Deixe esta política por definir se tiver selecionado qualquer outro modo para definir políticas de proxy.
-
-          Para obter exemplos detalhados, visite:
-          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1313457536529613143">Especifica a percentagem que determina a escala do atraso do esbatimento do ecrã quando há atividade da parte do utilizador, enquanto o ecrã é esbatido ou pouco depois de o ecrã ter sido desligado.
 
           Se esta política estiver definida, especifica a percentagem que determina a escala do atraso do esbatimento do ecrã quando há atividade da parte do utilizador, enquanto o ecrã é esbatido ou pouco depois de o ecrã ter sido desligado. Quando se determina a escala do atraso do esbatimento, o bloqueio e a ação de desligar o ecrã e atrasos inativos são ajustados para manter as mesmas distâncias do atraso de esbatimento do ecrã, conforme foi configurado originalmente.
@@ -153,18 +142,6 @@
 <translation id="1561424797596341174">Substituições da política para compilações de Depuração do anfitrião de acesso remoto</translation>
 <translation id="1583248206450240930">Utilizar o <ph name="PRODUCT_FRAME_NAME" /> por predefinição</translation>
 <translation id="1608755754295374538">URLs aos quais será concedido acesso a dispositivos de captura de áudio imediatamente</translation>
-<translation id="1613574633990410986">Permite-lhe especificar o servidor proxy utilizado pelo <ph name="PRODUCT_NAME" /> e pelas aplicações ARC e impede os utilizadores de alterar as definições de proxy.
-
-      Se optar por nunca utilizar um servidor proxy e estabelecer sempre ligação diretamente, todas as outras opções são ignoradas.
-
-      Se optar por detetar automaticamente o servidor proxy, todas as outras opções são ignoradas.
-
-      Para obter exemplos detalhados, aceda a:
-      <ph name="PROXY_HELP_URL" />
-
-      Se ativar esta definição, o <ph name="PRODUCT_NAME" /> e as aplicações ARC ignoram todas as opções relacionadas com o proxy especificadas a partir da linha de comandos.
-
-      Se deixar estas políticas por definir, permite que os utilizadores selecionem as definições de proxy conforme pretendam.</translation>
 <translation id="1617235075406854669">Ativar a eliminação do histórico de transferências e do navegador</translation>
 <translation id="1617384279878333801">Ativar adicionar pessoa no gestor de perfis</translation>
 <translation id="1655229863189977773">Definir o tamanho da cache do disco em bytes</translation>
@@ -249,7 +226,6 @@
       Se estiver ativado, é mostrado um botão vermelho grande para terminar sessão no tabuleiro do sistema enquanto uma sessão estiver ativa e o ecrã não estiver bloqueado.
 
       Se estiver desativado ou não especificado, não é mostrado nenhum botão vermelho grande para terminar sessão no tabuleiro do sistema.</translation>
-<translation id="1942957375738056236">Pode especificar o URL do servidor proxy aqui. Esta política só é aplicada se tiver selecionado definições de proxy manuais em "Escolher como indicar as definições do servidor proxy". Deixe esta política por definir se tiver selecionado qualquer outro modo para definir políticas de proxy. Para mais opções e exemplos detalhados, visite: <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1956493342242507974">Configure a gestão de energia no ecrã de início de sessão no <ph name="PRODUCT_OS_NAME" />.
 
       Esta política permite configurar o comportamento do <ph name="PRODUCT_OS_NAME" /> quando não existe qualquer atividade do utilizador durante um determinado período enquanto o ecrã de início de sessão está a ser apresentado. A política controla várias definições. Para consultar a sua semântica e intervalos de valores individuais, veja as políticas correspondentes que controlam a gestão de energia dentro de uma sessão. As únicas exceções a estas políticas são:
@@ -612,24 +588,6 @@
 <translation id="3072847235228302527">Definir os Termos de Utilização para uma conta local do dispositivo</translation>
 <translation id="3096595567015595053">Lista de plug-ins ativados</translation>
 <translation id="3101501961102569744">Escolher como indicar as definições do servidor proxy</translation>
-<translation id="3125884964575432854">Permite-lhe especificar o servidor proxy utilizado pelo <ph name="PRODUCT_NAME" /> e pelas aplicações ARC e impede os utilizadores de alterar as definições de proxy.
-
-          Se optar por nunca utilizar um servidor proxy e estabelecer sempre ligação diretamente, todas as outras opções são ignoradas.
-
-          Se optar por utilizar as definições de proxy do sistema, todas as outras opções são ignoradas.
-
-          Se optar por detetar automaticamente o servidor proxy, todas as outras opções são ignoradas.
-
-          Se selecionar o modo de servidor proxy fixo, pode especificar outras opções em "Endereço ou URL do servidor proxy" e "Lista separada por vírgulas das regras para ignorar o proxy". As aplicações ARC utilizam apenas o servidor proxy HTTP com a prioridade mais elevada.
-
-          Se optar por utilizar um script de proxy .pac, tem de especificar o URL para o script em "URL para um ficheiro .pac de proxy".
-
-          Para obter exemplos detalhados, aceda a:
-          <ph name="PROXY_HELP_URL" />
-
-          Se ativar esta definição, o <ph name="PRODUCT_NAME" /> e as aplicações ARC ignoram todas as opções relacionadas com o proxy especificadas a partir da linha de comandos.
-
-          Se deixar esta política por definir, permite que os utilizadores selecionem as definições de proxy conforme pretendam.</translation>
 <translation id="3153348162326497318">Permite especificar as extensões que NÃO podem ser instaladas pelos utilizadores. Se constarem da lista negra, as extensões já instaladas serão removidas. Um valor de lista negra "*" significa que todas as extensões constam da lista negra, a menos que estejam expressamente indicadas na lista de autorizações. Se esta política não for definida, o utilizador pode instalar qualquer extensão no <ph name="PRODUCT_NAME" />.</translation>
 <translation id="316778957754360075">Esta definição foi removida a partir da versão 29 do <ph name="PRODUCT_NAME" />. A forma recomendada de configurar coleções de extensões/aplicações alojadas na entidade é incluir no alojamento do site os pacotes CRX em ExtensionInstallSources e colocar links de transferência diretos para os pacotes numa página Web. Pode ser criado um iniciador para essa página Web utilizando a política ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">desde a versão <ph name="SINCE_VERSION" /></translation>
@@ -694,6 +652,7 @@
 Se esta definição estiver ativada ou por configurar, os utilizadores podem ativar o proxy do "cloud print" através da autenticação junto da respetiva Conta Google.
 
 Se esta definição estiver desativada, os utilizadores não podem ativar o proxy e o computador não poderá partilhar as impressoras nele instaladas com o <ph name="CLOUD_PRINT_NAME" />.</translation>
+<translation id="3297010562646015826">Ativa a conclusão de processos no Gestor de tarefas</translation>
 <translation id="3322771899429619102">Permite definir uma lista de padrões de URL que especificam os sites autorizados a utilizar a geração de chaves. Se um padrão do URL estiver incluído em "KeygenBlockedForUrls", tal substitui estas exceções.
 
           Se esta política não for definida, é utilizado o valor global predefinido para todos os sites, seja a partir da política "DefaultKeygenSetting", se estiver definida, ou a partir da configuração pessoal do utilizador.</translation>
@@ -864,22 +823,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
           Se esta política estiver definida como "Manter cookies durante toda a sessão", os cookies são apagados quando a sessão for fechada. Tenha em atenção que se o <ph name="PRODUCT_NAME" /> estiver em execução no "modo de segundo plano", a sessão pode não ser fechada quando a última janela for fechada. Consulte a política "BackgroundModeEnabled" para obter mais informações acerca da configuração deste comportamento.
 
           Se esta política não for definida, "AllowCookies" é utilizada e o utilizador pode alterá-la.</translation>
-<translation id="4098957623809244159">Esta política foi descontinuada. Em alternativa, utilize ProxyMode.
-
-          Permite-lhe especificar o servidor proxy utilizado pelo <ph name="PRODUCT_NAME" /> e pelas aplicações ARC e impede os utilizadores de alterar as definições de proxy.
-
-          Se optar por nunca utilizar um servidor proxy e estabelecer sempre ligação diretamente, todas as outras opções são ignoradas.
-
-          Se optar por utilizar as definições de proxy do sistema ou detetar automaticamente o servidor proxy, todas as outras opções são ignoradas.
-
-          Se selecionar as definições de proxy manuais, pode especificar outras opções em "Endereço ou URL do servidor proxy", "URL para um ficheiro .pac de proxy" e "Lista separada por vírgulas das regras para ignorar o proxy".
-
-          Para obter exemplos detalhados, aceda a:
-          <ph name="PROXY_HELP_URL" />
-
-          Se ativar esta definição, o <ph name="PRODUCT_NAME" /> ignora todas as opções relacionadas com o proxy especificadas a partir da linha de comandos.
-
-          Se deixar esta política por definir, permite que os utilizadores selecionem as definições de proxy conforme pretendam.</translation>
 <translation id="4103289232974211388">Redirecionar para SAML IdP após confirmação do utilizador</translation>
 <translation id="410478022164847452">Especifica o período de tempo sem atividade por parte do utilizador após o qual se realiza a ação de inatividade quando o dispositivo está ligado à eletricidade.
 
@@ -1306,14 +1249,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="5893553533827140852">Se esta definição estiver ativada, os pedidos de autenticação gnubby serão utilizados com proxy numa ligação de anfitrião remoto.
 
           Se esta definição estiver desativada ou não estiver configurada, os pedidos de autenticação não serão utilizados com proxy.</translation>
-<translation id="5900959132054596599">O <ph name="PRODUCT_NAME" /> e as aplicações ARC ignoram qualquer proxy para a lista de anfitriões fornecida aqui.
-
-          Esta política só é aplicada se tiver selecionado as definições de proxy manuais em "Escolher como especificar as definições do servidor proxy".
-
-          Deixe esta política por definir se tiver selecionado qualquer outro modo para a definição de políticas de proxy.
-
-          Para obter exemplos mais detalhados, aceda a:
-          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="5921713479449475707">Permitir transferências de atualização automática por HTTP</translation>
 <translation id="5921888683953999946">Definir o estado predefinido da funcionalidade de acessibilidade do cursor grande no ecrã de início de sessão.
 
@@ -1797,9 +1732,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="7632724434767231364">Nome da biblioteca GSSAPI</translation>
 <translation id="7635471475589566552">Configura o local da aplicação no <ph name="PRODUCT_NAME" /> e impede que os utilizadores o alterem. Se ativar esta definição, o <ph name="PRODUCT_NAME" /> utilizará o local indicado. Se o local configurado não for suportado, será utilizado "en-US". Se esta definição estiver desativada ou não for definida, o <ph name="PRODUCT_NAME" /> utilizará o local preferencial indicado pelo utilizador (se estiver configurado), o local do sistema ou o local alternativo "en-US".</translation>
 <translation id="7651739109954974365">Determina se o roaming de dados deve estar ativado para o aparelho. Se a política estiver definida como verdadeira, o roaming de dados é permitido. Se ficar por configurar ou for definida como falsa, o roaming de dados não estará disponível.</translation>
-<translation id="7667184304362487902">Configura as definições de proxy para o <ph name="PRODUCT_NAME" /> e as aplicações ARC.
-
-      Esta política ainda não está pronta para ser utilizada, por isso, não a utilize.</translation>
 <translation id="76810863974142048">URL onde os clientes de acesso remoto devem obter o respetivo símbolo de autenticação.
 
           Se esta política estiver definida, o anfitrião de acesso remoto exige que os clientes que tentam efetuar a autenticação obtenham um símbolo de autenticação a partir deste URL para estabelecer ligação. Deve utilizá-la em conjunto com a política RemoteAccessHostTokenValidationUrl.
@@ -2012,6 +1944,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
       O valor da política deve ser especificado em milissegundos.</translation>
 <translation id="8344454543174932833">Importar marcadores a partir do navegador predefinido na primeira execução</translation>
+<translation id="8359734107661430198">Ativar a API ExampleDeprecatedFeature através de 2008/09/02</translation>
 <translation id="8360452361555133173">Ativa a apresentação da página de boas-vindas da primeira vez que o navegador for iniciado após uma atualização do SO.
 
       Se esta política estiver definida como verdadeira ou não estiver configurada, o navegador volta a apresentar a página de boas-vindas da primeira vez que for iniciado após uma atualização do SO.

@@ -21,6 +21,7 @@
 <translation id="112840717907525620">حافظه پنهان خط‌مشی مورد تأیید است</translation>
 <translation id="113188000913989374"><ph name="SITE" /> می‌گوید:</translation>
 <translation id="1132774398110320017">‏تنظیمات تکمیل خودکار Chrome...</translation>
+<translation id="113770840981343808">‏کد راستی‌آزمایی چهار رقمی CVC را از روی کارتتان وارد کنید</translation>
 <translation id="1146673768181266552">شناسه خرابی <ph name="CRASH_ID" />‏ (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">این سرور نتوانست اثبات کند که این <ph name="DOMAIN" /> است؛ گواهی امنیتی آن مورد اعتماد سیستم عامل رایانه شما نیست. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجی اتصال شما را قطع کرده است.</translation>
 <translation id="1152921474424827756">دسترسی به یک <ph name="BEGIN_LINK" />نسخه ذخیره شده در حافظه پنهان<ph name="END_LINK" /> از <ph name="URL" /></translation>
@@ -118,7 +119,6 @@
 <translation id="2212735316055980242">خط‌مشی یافت نشد</translation>
 <translation id="2213606439339815911">در حال واکشی موارد...</translation>
 <translation id="2214283295778284209"><ph name="SITE" /> در دسترس نیست</translation>
-<translation id="2227695659599072496">بررسی رهیاب یا کابل شبکه</translation>
 <translation id="2230458221926704099">با استفاده از <ph name="BEGIN_LINK" />برنامه عیب‌یابی<ph name="END_LINK" />، مشکل اتصالتان را برطرف کنید</translation>
 <translation id="225207911366869382">این مقدار برای این خط‌مشی منسوخ شده است؟</translation>
 <translation id="2262243747453050782">‏خطای HTTP</translation>
@@ -131,6 +131,7 @@
 <translation id="2317259163369394535"><ph name="DOMAIN" /> به نام کاربری و گذرواژه نیاز دارد.</translation>
 <translation id="2328300916057834155">نشانک نامعتبر در نمایه <ph name="ENTRY_INDEX" /> نادیده گرفته شد</translation>
 <translation id="2354001756790975382">نشانک‌های دیگر</translation>
+<translation id="2357783041215512127">پرداخت با <ph name="CREDIT_CARD" /></translation>
 <translation id="2359808026110333948">ادامه</translation>
 <translation id="2367567093518048410">سطح</translation>
 <translation id="237718015863234333">هیچ گزینه واسط کاربری موجود نیست</translation>
@@ -228,7 +229,6 @@
 <translation id="3254409185687681395">نشانک گذاری این صفحه</translation>
 <translation id="3270847123878663523">&amp;واگرد ترتیب‌بندی مجدد</translation>
 <translation id="3286538390144397061">راه‌اندازی مجدد اکنون</translation>
-<translation id="3288003805934695103">تازه‌سازی صفحه</translation>
 <translation id="3305707030755673451">داده‌های شما در تاریخ <ph name="TIME" /> با عبارت عبور همگام‌سازی‌تان رمزگذاری شد. برای شروع همگام‌سازی آن را وارد کنید.</translation>
 <translation id="333371639341676808">از ایجاد کادرهای گفتگوی دیگر توسط این صفحه جلوگیری شود.</translation>
 <translation id="3340978935015468852">تنظیمات</translation>
@@ -300,7 +300,6 @@
 <translation id="3963721102035795474">حالت «خواننده»</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> مسدود است</translation>
 <translation id="4021036232240155012">‏DNS خدماتی از شبکه است که نام وب‌سایت را به آدرس اینترنتی آن ترجمه می‌کند.</translation>
-<translation id="4021376465026729077">غیرفعال کردن افزونه‌ها</translation>
 <translation id="4030383055268325496">&amp;واگرد افزودن</translation>
 <translation id="4032534284272647190">دسترسی به <ph name="URL" /> رد شد.</translation>
 <translation id="404928562651467259">اخطار</translation>
@@ -398,7 +397,6 @@
 <translation id="5251803541071282808">Cloud</translation>
 <translation id="5299298092464848405">خطا در تجزیه خط‌‌مشی</translation>
 <translation id="5300589172476337783">نمایش</translation>
-<translation id="5307361445257083764"><ph name="BEGIN_LINK" />پاک کردن کوکی‌ها<ph name="END_LINK" /></translation>
 <translation id="5308689395849655368">گزارش خرابی غیر فعال است.</translation>
 <translation id="5317780077021120954">ذخیره</translation>
 <translation id="5327248766486351172">نام</translation>
@@ -432,6 +430,7 @@
 <translation id="5629630648637658800">تنظیمات خط‌مشی بارگیری نشد</translation>
 <translation id="5631439013527180824">نشانه مدیریت دستگاه نامعتبر است</translation>
 <translation id="5650551054760837876">هیچ نتیجه‌ای برای جستجو یافت نشد.</translation>
+<translation id="5663999524854166235">‏کد راستی‌آزمایی سه رقمی CVC را از پشت کارت‌تان وارد کنید</translation>
 <translation id="5677928146339483299">مسدود است</translation>
 <translation id="5710435578057952990">هویت این وب سایت تأیید نشده است.</translation>
 <translation id="5720705177508910913">کاربر کنونی</translation>
@@ -504,7 +503,6 @@
 <translation id="6628463337424475685">جستجوی <ph name="ENGINE" /></translation>
 <translation id="6634865548447745291">در حال حاضر نمی‌توانید از <ph name="SITE" /> بازدید کنید زیرا <ph name="BEGIN_LINK" />این گواهینامه باطل شده است<ph name="END_LINK" />. معمولاً خطاهای شبکه و حمله‌ها موقتی هستند، بنابراین احتمالاً این صفحه بعداً کار خواهد کرد.</translation>
 <translation id="6637478299472506933">بارگیری نشد</translation>
-<translation id="6642894344118208103">بازنشانی مودم یا رهیاب</translation>
 <translation id="6644283850729428850">این قانون قدیمی شده است.</translation>
 <translation id="6646897916597483132">‏کد تأیید چهار رقمی CVC را از روی کارت‌تان وارد کنید</translation>
 <translation id="6656103420185847513">ویرایش پوشه</translation>
@@ -619,7 +617,7 @@
 <translation id="7791543448312431591">افزودن</translation>
 <translation id="7793809570500803535">ممکن است صفحهٔ وب در <ph name="SITE" /> موقتاً خراب باشد یا ممکن است برای همیشه به یک آدرس وب جدید منتقل شده باشد.</translation>
 <translation id="7800304661137206267">اتصال با استفاده از <ph name="CIPHER" /> و با <ph name="MAC" /> برای تأیید اعتبار پیام و <ph name="KX" /> به‌عنوان مکانیسم تبدیل کلید رمزگذاری می‌شود.</translation>
-<translation id="780301667611848630">نه سپاسگزارم</translation>
+<translation id="780301667611848630">نه متشکرم</translation>
 <translation id="7805768142964895445">وضعیت</translation>
 <translation id="7813600968533626083">‏پیشنهاد فرم از Chrome پاک شود؟</translation>
 <translation id="7825436071901023927">درگاه ناامن <ph name="SITE" /></translation>

@@ -8,6 +8,7 @@
 <translation id="2078561879028077171">Informacije o verziji</translation>
 <translation id="2117453604279487107">URL dodjelitelja</translation>
 <translation id="2353984724370197742">Dodjeljivanje nije uspjelo. Mrežni zahtjev nije uspio.</translation>
+<translation id="2789927415041640472">Ponovo pokrenite aplikaciju da biste upotrebljavali novu konfiguraciju dodjeljivanja.</translation>
 <translation id="3046825211487065480">Dodjeljivanje nije uspjelo. Drugi zahtjev poslan je prije odgovora na prvi zahtjev.</translation>
 <translation id="3286538390144397061">Ponovo pokreni sad</translation>
 <translation id="3346106862344060497">Uređaj je povezan.</translation>
@@ -22,6 +23,7 @@
 <translation id="5860346505531085166">Dodjeljivanje nije uspjelo. Račun nema pristup.</translation>
 <translation id="6232798399907177395">O Blimpu</translation>
 <translation id="704835510384979817">Dodjeljivanje nije uspjelo. Nema podudarne verzije tražilice.</translation>
+<translation id="7145680970336344212">Ponovo pokreni Blimp</translation>
 <translation id="7536363920335771251">Prekinuta je veza s uređajem, razlog: %1$s</translation>
 <translation id="7596558890252710462">Operativni sustav</translation>
 <translation id="7608553142876436780">IP tražilice</translation>

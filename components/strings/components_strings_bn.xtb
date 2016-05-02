@@ -21,6 +21,7 @@
 <translation id="112840717907525620">নীতি ক্যাশেটি ঠিক আছে</translation>
 <translation id="113188000913989374"><ph name="SITE" /> বলছে:</translation>
 <translation id="1132774398110320017">Chrome স্বতঃপূর্ণ সেটিংস...</translation>
+<translation id="113770840981343808">নিশ্চিতকরণের জন্য আপনার কার্ডের সামনে লেখা ৪ সংখ্যার CVC লিখুন</translation>
 <translation id="1146673768181266552">ক্র্যাশ ID <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">এই সার্ভার প্রমাণ করতে পারেনি যে এটি <ph name="DOMAIN" />; এর নিরাপত্তা শংসাপত্রটি আপনার কম্পিউটারের নিকট বিশ্বাসযোগ্য নয়। কোনো ভুল কনফিগারেশনের কারণে অথবা কোনো আক্রমণকারী আপনার সংযোগ মাঝপথে আটকে দিচ্ছে বলে এমনটা হতে পারে।</translation>
 <translation id="1152921474424827756"><ph name="URL" /> এর <ph name="BEGIN_LINK" />ক্যাশে করা অনুলিপি<ph name="END_LINK" /> অ্যাক্সেস করুন</translation>
@@ -119,7 +120,6 @@
 <translation id="2212735316055980242">নীতি পাওয়া যায়নি</translation>
 <translation id="2213606439339815911">এন্ট্রিগুলি আনা হচ্ছে...</translation>
 <translation id="2214283295778284209"><ph name="SITE" /> উপলভ্য নয়</translation>
-<translation id="2227695659599072496">নেটওয়ার্কের তার বা রাউটার পরীক্ষা করে দেখুন</translation>
 <translation id="2230458221926704099"><ph name="BEGIN_LINK" />ডায়াগনস্টিক অ্যাপ্লিকেশান<ph name="END_LINK" /> ব্যবহার করে আপনার সংযোগ ঠিক করুন</translation>
 <translation id="225207911366869382">এই মান এই নীতির জন্য অসমর্থিত হয়েছে৷</translation>
 <translation id="2262243747453050782">HTTP ত্রুটি</translation>
@@ -132,6 +132,7 @@
 <translation id="2317259163369394535"><ph name="DOMAIN" /> এর জন্য একটি ব্যবহারকারীর নাম এবং পাসওয়ার্ড প্রয়োজন।</translation>
 <translation id="2328300916057834155"><ph name="ENTRY_INDEX" /> সূচিতে অবৈধ বুকমার্ক এড়িয়ে যাওয়া হয়েছে</translation>
 <translation id="2354001756790975382">অন্য বুকমার্কস</translation>
+<translation id="2357783041215512127"><ph name="CREDIT_CARD" /> এর মাধ্যমে অর্থপ্রদান করুন</translation>
 <translation id="2359808026110333948">অবিরত</translation>
 <translation id="2367567093518048410">স্তর</translation>
 <translation id="237718015863234333">কোনো UI বিকল্প উপলব্ধ নেই</translation>
@@ -229,7 +230,6 @@
 <translation id="3254409185687681395">এই পৃষ্ঠাটি বুকমার্ক করুন</translation>
 <translation id="3270847123878663523">&amp;পুনর্বিন্যাসকে পূর্বাবস্থায় ফেরান</translation>
 <translation id="3286538390144397061">এখন পুর্নসূচনা করবেন</translation>
-<translation id="3288003805934695103">পৃষ্ঠাটি পুনরায় লোড করে দেখুন</translation>
 <translation id="3305707030755673451">আপনার ডেটা আপনার সিঙ্ক পাসফ্রেজ দিয়ে <ph name="TIME" /> এ এনক্রিপ্ট করা হয়েছে। সিঙ্ক শুরু করার জন্য এটি লিখুন।</translation>
 <translation id="333371639341676808">এই পৃষ্ঠাটিকে অতিরিক্ত কথোপকথন তৈরি করা থেকে আটকান৷</translation>
 <translation id="3340978935015468852">সেটিংস</translation>
@@ -301,7 +301,6 @@
 <translation id="3963721102035795474">পাঠক মোড</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> অবরুদ্ধ হয়ে রয়েছে</translation>
 <translation id="4021036232240155012">DNS সেই নেটওয়ার্ক পরিষেবা যা কোনো ওয়েবসাইটের নামকে ইন্টারনেট ঠিকানায় রুপান্তরিত করে।</translation>
-<translation id="4021376465026729077">আপনার এক্সটেনশানগুলি অক্ষম করে দেখুন</translation>
 <translation id="4030383055268325496">&amp;যোগ করাকে পূর্বাবস্থায় ফেরান</translation>
 <translation id="4032534284272647190"><ph name="URL" />তে অ্যাক্সেস অস্বীকৃত৷</translation>
 <translation id="404928562651467259">সতর্কতা</translation>
@@ -399,7 +398,6 @@
 <translation id="5251803541071282808">ক্লাউড</translation>
 <translation id="5299298092464848405">নীতি বিশ্লেষণ করার সময় ত্রুটি</translation>
 <translation id="5300589172476337783">দেখান</translation>
-<translation id="5307361445257083764"><ph name="BEGIN_LINK" />আপনার কুকিজ সাফ করে দেখুন<ph name="END_LINK" /></translation>
 <translation id="5308689395849655368">ক্র্যাশ প্রতিবেদন অক্ষম আছে৷</translation>
 <translation id="5317780077021120954">সংরক্ষণ করুন</translation>
 <translation id="5327248766486351172">নাম</translation>
@@ -433,6 +431,7 @@
 <translation id="5629630648637658800">নীতি সেটিংস লোড করতে ব্যর্থ হয়েছে</translation>
 <translation id="5631439013527180824">অবৈধ ডিভাইস পরিচালনা টোকেন</translation>
 <translation id="5650551054760837876">কোনো অনুসন্ধান ফলাফল পাওয়া যায় নি৷</translation>
+<translation id="5663999524854166235">নিশ্চিতকরণের জন্য আপনার কার্ডের পিছনে থাকা ৩ সংখ্যার CVC লিখুন</translation>
 <translation id="5677928146339483299">অবরুদ্ধ</translation>
 <translation id="5710435578057952990">এই ওয়েবসাইটির পরিচয় যাচাই করা হয় নি৷</translation>
 <translation id="5720705177508910913">বর্তমান ব্যবহারকারী</translation>
@@ -504,7 +503,6 @@
 <translation id="6628463337424475685"><ph name="ENGINE" /> অনুসন্ধান</translation>
 <translation id="6634865548447745291">আপনি এখন <ph name="SITE" /> এ যেতে পারবেন না কারণ <ph name="BEGIN_LINK" /> এই শংসাপত্র প্রত্যাহার করা হয়েছে<ph name="END_LINK" />। নেটওয়ার্ক ত্রুটি এবং আক্রমণ সাধারণত সাময়িকভাবে হয়, তাই এই পৃষ্ঠা সম্ভবত পরে কাজ করবে।</translation>
 <translation id="6637478299472506933">ডাউনলোড ব্যর্থ হয়েছে</translation>
-<translation id="6642894344118208103">মডেম বা রাউটার পুনরায় সেট করে দেখুন</translation>
 <translation id="6644283850729428850">এই নীতিটি অসমর্থিত হয়েছে৷</translation>
 <translation id="6646897916597483132">আপনার কার্ডের সামনে থেকে ৪ সংখ্যার CVC লিখুন</translation>
 <translation id="6656103420185847513">ফোল্ডার সম্পাদনা করুন</translation>

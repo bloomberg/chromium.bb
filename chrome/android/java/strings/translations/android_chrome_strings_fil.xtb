@@ -60,6 +60,7 @@ Dapat na na-on mo ang Bluetooth at Lokasyon upang magamit ang Pisikal na Web.</t
 <translation id="1742134235943978220">Isinalin sa <ph name="TARGET_LANGUAGE" />.</translation>
 <translation id="1749561566933687563">I-sync ang iyong mga bookmark</translation>
 <translation id="17513872634828108">Mga bukas na tab</translation>
+<translation id="1756600373018374892">I-tap ang button na ito para sa mabilis na access sa iyong mga tab.</translation>
 <translation id="1807246157184219062">Maliwanag</translation>
 <translation id="1825719650605518411">Unang Karanasan sa Pagtakbo</translation>
 <translation id="1829244130665387512">Nahanap sa pahina</translation>
@@ -70,6 +71,7 @@ Dapat na na-on mo ang Bluetooth at Lokasyon upang magamit ang Pisikal na Web.</t
 <translation id="194341124344773587">I-on ang pahintulot para sa Chrome sa <ph name="BEGIN_LINK" />Mga Setting ng Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">I-save ang mga password</translation>
 <translation id="1944384637046898011">I-encrypt lahat gamit ang password ng Google simula sa <ph name="TIME" /></translation>
+<translation id="1946005195648379376">Kontrolin kung paano ginagamit ng Google ang iyong history ng pagba-browse upang i-personalize ang Search at iba pang mga serbisyo ng Google.</translation>
 <translation id="1959930595721737608">Pahintulutan ang JavaScript sa sumusunod na site.</translation>
 <translation id="1966710179511230534">Paki-update ang iyong mga detalye sa pag-sign in.</translation>
 <translation id="1974060860693918893">Advanced</translation>
@@ -95,9 +97,7 @@ Dapat na na-on mo ang Bluetooth at Lokasyon upang magamit ang Pisikal na Web.</t
 <translation id="2206488550163399966"><ph name="APP_NAME" />, web app. <ph name="APP_URL" /></translation>
 <translation id="2268044343513325586">Pinuhin</translation>
 <translation id="2315043854645842844">Hindi sinusuportahan ng operating system ang pagpipilian ng certificate sa panig ng kliyente.</translation>
-<translation id="2316129865977710310">Hindi, salamat</translation>
 <translation id="2321958826496381788">I-drag ang slider hanggang sa mabasa mo ito nang kumportable. Dapat ay halos ganito kalaki ang text pagkatapos mag-double tap sa isang talata.</translation>
-<translation id="2329597144923131178">Mag-sign in upang makuha ang iyong mga bookmark, history, password at ibang mga setting sa lahat ng iyong device.</translation>
 <translation id="2343328333327081434">Ini-install…</translation>
 <translation id="2351097562818989364">Na-reset ang iyong mga setting sa pag-translate.</translation>
 <translation id="2359808026110333948">Magpatuloy</translation>
@@ -138,6 +138,7 @@ Dapat na na-on mo ang Bluetooth at Lokasyon upang magamit ang Pisikal na Web.</t
 <translation id="2842985007712546952">Pangunahing folder</translation>
 <translation id="2870560284913253234">Site</translation>
 <translation id="2888126860611144412">Tungkol sa Chrome</translation>
+<translation id="2889768325388591707">Mabilis na magpalipat-lipat ng mga tab</translation>
 <translation id="2891154217021530873">Ihinto ang pag-load ng page</translation>
 <translation id="2902702728133930130">Nagkaroon ng hindi inaasahang error ang Chrome habang nagsasagawa ng pag-start up.</translation>
 <translation id="2903493209154104877">Mga Address</translation>
@@ -155,6 +156,9 @@ Dapat na na-on mo ang Bluetooth at Lokasyon upang magamit ang Pisikal na Web.</t
 <translation id="3089395242580810162">Buksan sa tab na incognito</translation>
 <translation id="3090193911106258841">Ina-access ang input ng audio at video</translation>
 <translation id="3137521801621304719">Umalis sa mode na incognito</translation>
+<translation id="3149891296864842641">Opsyon sa pagpapadala</translation>
+<translation id="3162882791484435636">Pumili ng opsyon sa pagpapadala</translation>
+<translation id="3173438333156928404">Nagkaroon ng error sa pagproseso sa pagbabayad</translation>
 <translation id="3177909033752230686">Wika ng Page:</translation>
 <translation id="3190152372525844641">I-on ang mga pahintulot para sa Chrome sa <ph name="BEGIN_LINK" />Mga Setting ng Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> ang nakaimbak na data</translation>
@@ -269,10 +273,8 @@ Upang baguhin ang iyong termino para sa paghahanap, pindutin ito nang matagal up
 <translation id="4875622588773761625">Gusto mo bang i-update ng <ph name="PASSWORD_MANAGER_BRAND" /> ang iyong password para sa site na ito?</translation>
 <translation id="4881695831933465202">Buksan</translation>
 <translation id="4885273946141277891">Hindi sinusuportahang bilang ng mga instance ng Chrome.</translation>
+<translation id="4923459931733593730">Pagbabayad</translation>
 <translation id="4943872375798546930">Walang mga resulta</translation>
-<translation id="4970484396410298643">I-access ang mga tab na nakabukas sa iyong computer, dito mismo.
-
-Buksan lang ang Chrome sa iyong computer, pumunta sa menu, at piliin ang "Mag-sign in sa Chrome..."</translation>
 <translation id="497421865427891073">Sumulong</translation>
 <translation id="4996978546172906250">Ibahagi gamit ang</translation>
 <translation id="5000922062037820727">Naka-block (inirerekomenda)</translation>
@@ -296,9 +298,7 @@ Buksan lang ang Chrome sa iyong computer, pumunta sa menu, at piliin ang "Mag-si
 <translation id="5184329579814168207">Buksan sa Chrome</translation>
 <translation id="5199929503336119739">Profile sa trabaho</translation>
 <translation id="5210365745912300556">Isara ang tab</translation>
-<translation id="5210714456814679336">Lalabas dito ang mga binuksan mong tab sa Chrome sa iba mo pang mga device.</translation>
 <translation id="5222676887888702881">Mag-sign out</translation>
-<translation id="5228579091201413441">I-enable ang pag-sync</translation>
 <translation id="5233638681132016545">Bagong tab</translation>
 <translation id="5271967389191913893">Hindi mabuksan ng device ang content na ida-download.</translation>
 <translation id="5275558766013849309">Magsasama-sama ang mga tab at kamakailang app.</translation>
@@ -342,9 +342,6 @@ Buksan lang ang Chrome sa iyong computer, pumunta sa menu, at piliin ang "Mag-si
 <translation id="5677928146339483299">Naka-block</translation>
 <translation id="5684874026226664614">Oops. Hindi maisalin ang pahinang ito.</translation>
 <translation id="5708031556037168012">Panatilihin sa iyong device ang kasalukuyang data at permanenteng i-import ang data sa <ph name="TO_ACCOUNT" />.</translation>
-<translation id="5712189971979076230">Tulungan kaming unahin ang mga feature at pagpapahusay na dapat naming gawin sa pamamagitan ng pagpapadala sa Google ng impormasyon tungkol sa mga file, application at serbisyo na tumatakbo kapag nakaranas ka ng pag-crash.
-
-Kasama sa mga istatistika sa paggamit ang impormasyon tulad ng mga kagustuhan, pag-click ng button at paggamit ng memory. Hindi kasama sa mga ito ang mga URL ng webpage o anumang personal na impormasyon. Naglalaman ang mga ulat ng pag-crash ng mga impormasyon ng system sa oras ng pag-crash, at maaaring maglaman ng mga URL ng web page o personal na impormasyon, depende sa kung ano ang nangyayari sa oras ng pag-crash.</translation>
 <translation id="5719837394786370183">Hindi mananatili ang mga page na tiningnan mo sa mga tab na incognito sa iyong history ng browser, cookie store o history ng paghahanap pagkatapos mong isara ang lahat ng iyong tab na incognito. Itatabi ang anumang file na iyong na-download o bookmark na iyong ginawa.
 
 Gayunpaman, hindi ka invisible. Hindi tinatago ng pagiging incognito ang iyong pagba-browse sa iyong employer, iyong internet service provider o sa mga binibisita mong website.</translation>
@@ -463,6 +460,7 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="7180611975245234373">I-refresh</translation>
 <translation id="7191430249889272776">Binuksan ang tab sa background.</translation>
 <translation id="7208788139759694678">Naka-disable ang Data Saver</translation>
+<translation id="7220786058474068424">Pinoproseso</translation>
 <translation id="7243308994586599757">May mga opsyon malapit sa ibaba ng screen</translation>
 <translation id="7244362611678346589">Ginagamit ng <ph name="SEARCH_ENGINE_URL" /> ang iyong lokasyon upang magpakita ng mga lokal na resulta ng paghahanap</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Tulong<ph name="END_LINK" /></translation>
@@ -516,6 +514,7 @@ Maaaring mayroong ibang mga uri ng history ng pagba-browse ang iyong Google acco
 <translation id="7846076177841592234">Kanselahin ang pinili</translation>
 <translation id="7851858861565204677">Iba pang mga device</translation>
 <translation id="7876243839304621966">Alisin lahat</translation>
+<translation id="7902333740914687335">Naproseso na ang pagbabayad</translation>
 <translation id="7947953824732555851">I-accept, mag-sign in</translation>
 <translation id="7949961459945740081">Kunin ang pinakabagong feature</translation>
 <translation id="7963646190083259054">Vendor:</translation>
@@ -539,6 +538,7 @@ Makokontrol mo ang Pisikal na Web sa Mga Setting ng Chrome.</translation>
 <translation id="8168435359814927499">Content</translation>
 <translation id="8173098127580644436">mula sa umpisa</translation>
 <translation id="8200772114523450471">Resume</translation>
+<translation id="8202097416529803614">Buod ng order</translation>
 <translation id="8209050860603202033">Buksan ang larawan</translation>
 <translation id="8215250379351058554">Gustong kumonekta ng <ph name="SITE" /> sa:</translation>
 <translation id="8218346974737627104">Kumpirmahin ang pag-sign in</translation>
@@ -595,6 +595,8 @@ Upang makakuha ng mga bagong lisensya, kumonekta sa internet at i-play ang iyong
 <translation id="8942627711005830162">Buksan sa ibang window</translation>
 <translation id="8959122750345127698">Hindi gumagana ang navigation: <ph name="URL" /></translation>
 <translation id="8979340629087822094">nakalipas na araw</translation>
+<translation id="8981454092730389528">Mga Kontrol ng Aktibidad ng Google</translation>
+<translation id="8986494364107987395">Awtomatikong ipadala ang mga istatistika ng paggamit at mga ulat ng pag-crash sa Google</translation>
 <translation id="8987061207681586800">I-personalize ang iyong Chrome</translation>
 <translation id="9019902583201351841">Pinamamahalaan ng iyong mga magulang</translation>
 <translation id="9020607083536754075">Isara ang kasalukuyang tab at bumalik sa nakaraang app</translation>

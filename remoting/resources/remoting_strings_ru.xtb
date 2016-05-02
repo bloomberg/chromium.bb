@@ -178,7 +178,6 @@
 <translation id="533625276787323658">Устройств для подключения нет.</translation>
 <translation id="5363265567587775042">Владелец компьютера, к которому вы хотите подключиться, должен нажать "<ph name="SHARE" />" и предоставить вам код доступа.</translation>
 <translation id="5379087427956679853">Удаленный рабочий стол Chrome обеспечит безопасный доступ к компьютеру через Интернет. Приложение должно быть установлено на обоих компьютерах: вашем и удаленном. Загрузить его можно на странице <ph name="URL" />.</translation>
-<translation id="5394895745784982830">Для Mac (OS X 10.6 и выше)</translation>
 <translation id="5397086374758643919">Приложение Chrome Remote Desktop Host Uninstaller</translation>
 <translation id="5419185025274123272">Не удалось сбросить настройки приложения. Вы можете отправить сообщение об ошибке.</translation>
 <translation id="544077782045763683">Хост отключен.</translation>
@@ -232,7 +231,6 @@
 <translation id="6930242544192836755">Продолжительность</translation>
 <translation id="6939719207673461467">Показать/скрыть клавиатуру</translation>
 <translation id="6944854424004126054">Восстановить окно</translation>
-<translation id="6962773374262604195">Для Windows (XP и выше)</translation>
 <translation id="6965382102122355670">ОК</translation>
 <translation id="6985691951107243942">Заблокировать подключения к <ph name="HOSTNAME" />? Восстановить их можно будет только на соответствующем компьютере.</translation>
 <translation id="6998989275928107238">Хост</translation>

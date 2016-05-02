@@ -178,7 +178,6 @@
 <translation id="533625276787323658">沒有可供連線的電腦</translation>
 <translation id="5363265567587775042">請您要存取的電腦的使用者點選 [<ph name="SHARE" />]，並提供存取碼給您。</translation>
 <translation id="5379087427956679853">Chrome 遠端桌面提供了安全的連線機制，可讓您透過網路與他人共用自己的電腦。您和共用對象都必須執行 Chrome 遠端桌面應用程式，請前往 <ph name="URL" /> 安裝。</translation>
-<translation id="5394895745784982830">適用於 Mac (OS X 10.6 以上版本)</translation>
 <translation id="5397086374758643919">Chrome 遠端桌面主機端解除安裝程式</translation>
 <translation id="5419185025274123272">無法重設應用程式。您仍然可以傳送錯誤報告。</translation>
 <translation id="544077782045763683">主機已關閉。</translation>
@@ -232,7 +231,6 @@
 <translation id="6930242544192836755">持續時間</translation>
 <translation id="6939719207673461467">顯示/隱藏鍵盤。</translation>
 <translation id="6944854424004126054">還原視窗</translation>
-<translation id="6962773374262604195">適用於 Windows (XP 以上版本)</translation>
 <translation id="6965382102122355670">確定</translation>
 <translation id="6985691951107243942">您是否確定要停用與 <ph name="HOSTNAME" /> 之間的遠端連線？如果之後改變心意的話，您必須親身前往該電腦所在位置並修改設定後，才能重新啟用連線。</translation>
 <translation id="6998989275928107238">目標電腦</translation>

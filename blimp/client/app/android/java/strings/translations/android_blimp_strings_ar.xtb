@@ -8,6 +8,7 @@
 <translation id="2078561879028077171">معلومات الإصدار</translation>
 <translation id="2117453604279487107">‏عنوان URL للمعيّن</translation>
 <translation id="2353984724370197742">أخفق التعيين.  أخفق طلب الشبكة.</translation>
+<translation id="2789927415041640472">يُرجى إعادة تشغيل التطبيق لاستخدام تهيئة المعيّن الجديدة.</translation>
 <translation id="3046825211487065480">أخفق التعيين. تم إرسال الطلب الثاني قبل استجابة الطلب الأول.</translation>
 <translation id="3286538390144397061">إعادة التشغيل الآن</translation>
 <translation id="3346106862344060497">المحرك متصل.</translation>
@@ -22,6 +23,7 @@
 <translation id="5860346505531085166">أخفق التعيين. لا تتوفر إمكانية الدخول إلى الحساب.</translation>
 <translation id="6232798399907177395">‏حول Blimp</translation>
 <translation id="704835510384979817">أخفق التعيين. لا يوجد إصدار محرك مطابق.</translation>
+<translation id="7145680970336344212">‏إعادة تشغيل Blimp</translation>
 <translation id="7536363920335771251">‏المحرك غير متصل، والسبب: %1$s</translation>
 <translation id="7596558890252710462">نظام التشغيل</translation>
 <translation id="7608553142876436780">‏عنوان IP للمحرك</translation>

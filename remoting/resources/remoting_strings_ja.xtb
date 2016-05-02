@@ -178,7 +178,6 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="533625276787323658">接続先がありません</translation>
 <translation id="5363265567587775042">接続先のパソコンのユーザーに、[<ph name="SHARE" />] をクリックしてアクセスコードを付与してもらってください。</translation>
 <translation id="5379087427956679853">Chrome リモート デスクトップを使用すると、パソコンをウェブ経由で安全に共有できます。共有するには両方のユーザーが Chrome リモート デスクトップ アプリを実行している必要があります。このアプリは <ph name="URL" /> から入手できます。</translation>
-<translation id="5394895745784982830">Mac 版（OS X 10.6 以上）</translation>
 <translation id="5397086374758643919">Chrome リモート デスクトップ ホストのアンインストーラ</translation>
 <translation id="5419185025274123272">アプリケーションをリセットできませんでした。バグレポートの送信は可能です。</translation>
 <translation id="544077782045763683">ホストはシャットダウンしました。</translation>
@@ -232,7 +231,6 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="6930242544192836755">接続時間</translation>
 <translation id="6939719207673461467">キーボードを表示/非表示</translation>
 <translation id="6944854424004126054">ウィンドウを元のサイズに戻す</translation>
-<translation id="6962773374262604195">Windows 版（XP 以上）</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6985691951107243942"><ph name="HOSTNAME" /> へのリモート接続を無効にしてもよろしいですか？元に戻す場合は、該当のパソコンにアクセスして接続を再び有効にする必要があります。</translation>
 <translation id="6998989275928107238">接続先</translation>

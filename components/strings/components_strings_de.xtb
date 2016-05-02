@@ -22,6 +22,7 @@
 <translation id="112840717907525620">Richtlinien-Cache einwandfrei</translation>
 <translation id="113188000913989374">Unter <ph name="SITE" /> wird Folgendes angezeigt:</translation>
 <translation id="1132774398110320017">AutoFill-Einstellungen für Chrome...</translation>
+<translation id="113770840981343808">Geben Sie zur Bestätigung den vierstelligen CVC-Code auf der Vorderseite Ihrer Karte ein</translation>
 <translation id="1146673768181266552">Absturz-ID <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat wird vom Betriebssystem Ihres Computers als nicht vertrauenswürdig eingestuft. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.</translation>
 <translation id="1152921474424827756">Rufen Sie eine <ph name="BEGIN_LINK" />im Cache gespeicherte Kopie<ph name="END_LINK" /> von <ph name="URL" /> auf.</translation>
@@ -119,7 +120,6 @@
 <translation id="2212735316055980242">Richtlinie nicht gefunden</translation>
 <translation id="2213606439339815911">Einträge werden abgerufen...</translation>
 <translation id="2214283295778284209">Nicht verfügbar: <ph name="SITE" /></translation>
-<translation id="2227695659599072496">Netzwerkkabel oder Router prüfen</translation>
 <translation id="2230458221926704099">Beheben Sie den Verbindungsfehler mithilfe der <ph name="BEGIN_LINK" />Diagnose-App<ph name="END_LINK" /></translation>
 <translation id="225207911366869382">Dieser Wert für die Richtlinie ist veraltet.</translation>
 <translation id="2262243747453050782">HTTP-Fehler</translation>
@@ -132,6 +132,7 @@
 <translation id="2317259163369394535">Für <ph name="DOMAIN" /> sind ein Nutzername und ein Passwort erforderlich.</translation>
 <translation id="2328300916057834155">Ungültiges Lesezeichen bei Index <ph name="ENTRY_INDEX" /> ignoriert</translation>
 <translation id="2354001756790975382">Weitere Lesezeichen</translation>
+<translation id="2357783041215512127">Mit <ph name="CREDIT_CARD" /> bezahlen</translation>
 <translation id="2359808026110333948">Weiter</translation>
 <translation id="2367567093518048410">Ebene</translation>
 <translation id="237718015863234333">Keine Alternativen für die Benutzeroberfläche verfügbar</translation>
@@ -229,7 +230,6 @@
 <translation id="3254409185687681395">Lesezeichen für diese Seite erstellen</translation>
 <translation id="3270847123878663523">&amp;Neu anordnen rückgängig machen</translation>
 <translation id="3286538390144397061">Jetzt neu starten</translation>
-<translation id="3288003805934695103">Seite aktualisieren</translation>
 <translation id="3305707030755673451">Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase verschlüsselt. Geben Sie diese ein, um die Synchronisierung zu starten.</translation>
 <translation id="333371639341676808">Diese Seite am Erstellen zusätzlicher Dialoge hindern</translation>
 <translation id="3340978935015468852">Einstellungen</translation>
@@ -300,7 +300,6 @@
 <translation id="3963721102035795474">Lesemodus</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> ist gesperrt</translation>
 <translation id="4021036232240155012">DNS ist der Netzwerkdienst, der den Namen einer Website in die entsprechende Internetadresse umwandelt.</translation>
-<translation id="4021376465026729077">Erweiterungen deaktivieren</translation>
 <translation id="4030383055268325496">&amp;Hinzufügen rückgängig machen</translation>
 <translation id="4032534284272647190">Zugriff auf <ph name="URL" /> verweigert</translation>
 <translation id="404928562651467259">Warnung</translation>
@@ -398,7 +397,6 @@
 <translation id="5251803541071282808">Cloud</translation>
 <translation id="5299298092464848405">Fehler beim Parsen der Richtlinie</translation>
 <translation id="5300589172476337783">Anzeigen</translation>
-<translation id="5307361445257083764"><ph name="BEGIN_LINK" />Cookies löschen<ph name="END_LINK" /></translation>
 <translation id="5308689395849655368">Die Absturzberichtsfunktion ist deaktiviert.</translation>
 <translation id="5317780077021120954">Speichern</translation>
 <translation id="5327248766486351172">Name</translation>
@@ -432,6 +430,7 @@
 <translation id="5629630648637658800">Fehler beim Laden der Richtlinieneinstellungen</translation>
 <translation id="5631439013527180824">Ungültiges Management-Token für das Gerät</translation>
 <translation id="5650551054760837876">Keine Suchergebnisse gefunden.</translation>
+<translation id="5663999524854166235">Geben Sie zur Bestätigung den dreistelligen CVC-Code auf der Rückseite Ihrer Karte ein</translation>
 <translation id="5677928146339483299">Blockiert</translation>
 <translation id="5710435578057952990">Die Identität dieser Website wurde nicht verifiziert.</translation>
 <translation id="5720705177508910913">Aktueller Nutzer</translation>
@@ -504,7 +503,6 @@
 <translation id="6628463337424475685"><ph name="ENGINE" />-Suche</translation>
 <translation id="6634865548447745291">Sie können <ph name="SITE" /> zurzeit nicht aufrufen, da <ph name="BEGIN_LINK" />dieses Zertifikat widerrufen wurde<ph name="END_LINK" />. Netzwerkfehler und Angriffe sind in der Regel nur vorübergehend, sodass die Seite wahrscheinlich später wieder funktioniert.</translation>
 <translation id="6637478299472506933">Fehler beim Download</translation>
-<translation id="6642894344118208103">Modem oder Router zurücksetzen</translation>
 <translation id="6644283850729428850">Diese Richtlinie ist veraltet.</translation>
 <translation id="6646897916597483132">Geben Sie den vierstelligen CVC-Code auf der Vorderseite Ihrer Karte ein.</translation>
 <translation id="6656103420185847513">Ordner bearbeiten</translation>

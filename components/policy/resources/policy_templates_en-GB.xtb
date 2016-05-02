@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="en-GB">
 <translation id="101438888985615157">Rotate screen by 180 degrees</translation>
-<translation id="1015272884520659144">Defines the list of USB devices that are allowed to be detached from their kernel driver in order to be used through the chrome.usb API directly inside a web application. Entries are pairs of USB Vendor Identifier and Product Identifier to identify a specific hardware. If this policy is not configured, the list of a detachable USB devices is considered as empty.</translation>
 <translation id="1017967144265860778">Power management on the login screen</translation>
 <translation id="1019101089073227242">Set user data directory</translation>
 <translation id="1022361784792428773">Extension IDs the user should be prevented from installing (or * for all)</translation>
@@ -71,14 +70,6 @@
       If the policy is not set, or is set to false, then RC4 cipher suites in TLS will not be enabled. Otherwise it may be set to true to retain compatibility with an outdated server. This is a stopgap measure and the server should be reconfigured.</translation>
 <translation id="1297182715641689552">Use a .pac proxy script</translation>
 <translation id="1304973015437969093">Extension/App IDs and update URLs to be silently installed</translation>
-<translation id="1310699457130669094">You can specify a URL to a proxy .pac file here.
-
-          This policy only takes effect if you have selected manual proxy settings at 'Choose how to specify proxy server settings'.
-
-          You should leave this policy unset if you have selected any other mode for setting proxy policies.
-
-          For detailed examples, visit:
-          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1313457536529613143">Specifies the percentage by which the screen dim delay is scaled when user activity is observed while the screen is dimmed or soon after the screen has been turned off.
 
           If this policy is set, it specifies the percentage by which the screen dim delay is scaled when user activity is observed while the screen is dimmed or soon after the screen has been turned off. When the dim delay is scaled, the screen off, screen lock and idle delays get adjusted to maintain the same distances from the screen dim delay as originally configured.
@@ -161,18 +152,6 @@
 <translation id="1561424797596341174">Policy overrides for Debug builds of the remote access host</translation>
 <translation id="1583248206450240930">Use <ph name="PRODUCT_FRAME_NAME" /> by default</translation>
 <translation id="1608755754295374538">URLs that will be granted access to audio capture devices without prompt</translation>
-<translation id="1613574633990410986">Allows you to specify the proxy server used by <ph name="PRODUCT_NAME" /> and ARC-apps and prevents users from changing proxy settings.
-
-      If you choose to never use a proxy server and always connect directly, all other options are ignored.
-
-      If you choose to auto detect the proxy server, all other options are ignored.
-
-      For detailed examples, visit:
-      <ph name="PROXY_HELP_URL" />
-
-      If you enable this setting, <ph name="PRODUCT_NAME" /> and ARC-apps ignore all proxy-related options specified from the command line.
-
-      Leaving these policies not set will allow the users to choose the proxy settings on their own.</translation>
 <translation id="1617235075406854669">Enable deleting browser and download history</translation>
 <translation id="1617384279878333801">Enable add person in profile manager</translation>
 <translation id="1655229863189977773">Set disk cache size in bytes</translation>
@@ -263,14 +242,6 @@
       If enabled, a big, red logout button is shown in the system tray while a session is active and the screen is not locked.
 
       If disabled or not specified, no big, red logout button is shown in the system tray.</translation>
-<translation id="1942957375738056236">You can specify the URL of the proxy server here.
-
-          This policy only takes effect if you have selected manual proxy settings at 'Choose how to specify proxy server settings'.
-
-          You should leave this policy unset if you have selected any other mode for setting proxy policies.
-
-          For more options and detailed examples, visit:
-          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1956493342242507974">Configure power management on the log-in screen in <ph name="PRODUCT_OS_NAME" />.
 
       This policy lets you configure how <ph name="PRODUCT_OS_NAME" /> behaves when there is no user activity for some amount of time while the log-in screen is being shown. The policy controls multiple settings. For their individual semantics and value ranges, see the corresponding policies that control power management within a session. The only deviations from these policies are:
@@ -661,24 +632,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="3072847235228302527">Set the Terms of Service for a device-local account</translation>
 <translation id="3096595567015595053">List of enabled plug-ins</translation>
 <translation id="3101501961102569744">Choose how to specify proxy server settings</translation>
-<translation id="3125884964575432854">Allows you to specify the proxy server used by <ph name="PRODUCT_NAME" /> and ARC-apps and prevents users from changing proxy settings.
-
-          If you choose to never use a proxy server and always connect directly, all other options are ignored.
-
-          If you choose to use system proxy settings, all other options are ignored.
-
-          If you choose to auto detect the proxy server, all other options are ignored.
-
-          If you choose fixed server proxy mode, you can specify further options in 'Address or URL of proxy server' and 'Comma-separated list of proxy bypass rules'. ARC-apps will only use the HTTP proxy server with the highest priority.
-
-          If you choose to use a .pac proxy script, you must specify the URL to the script in 'URL to a proxy .pac file'.
-
-          For detailed examples, visit:
-          <ph name="PROXY_HELP_URL" />
-
-          If you enable this setting, <ph name="PRODUCT_NAME" /> and ARC-apps ignore all proxy-related options specified from the command line.
-
-          Leaving this policy not set will allow the users to choose the proxy settings on their own.</translation>
 <translation id="3153348162326497318">Allows you to specify which extensions the users CANNOT install. Extensions already installed will be removed if blacklisted.
 
           A blacklist value of '*' means all extensions are blacklisted unless they are explicitly listed in the whitelist.
@@ -751,6 +704,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       If this setting is enabled or not configured, users can enable the cloud print proxy by authentication with their Google account.
 
       If this setting is disabled, users cannot enable the proxy, and the machine will not be allowed to share it's printers with <ph name="CLOUD_PRINT_NAME" />.</translation>
+<translation id="3297010562646015826">Enables ending processes in Task Manager</translation>
 <translation id="3322771899429619102">Allows you to set a list of URL patterns that specify sites which are allowed to use key generation. If a URL pattern is in 'KeygenBlockedForUrls', that overrides these exceptions.
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultKeygenSetting' policy if it is set or the user's personal configuration otherwise.</translation>
@@ -938,22 +892,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           If this policy is set to 'Keep cookies for the duration of the session' then cookies will be cleared when the session closes. Note that if <ph name="PRODUCT_NAME" /> is running in 'background mode', the session may not close when the last window is closed. Please see the 'BackgroundModeEnabled' policy for more information about configuring this behaviour.
 
           If this policy is left not set, 'AllowCookies' will be used and the user will be able to change it.</translation>
-<translation id="4098957623809244159">This policy is deprecated, use ProxyMode instead.
-
-          Allows you to specify the proxy server used by <ph name="PRODUCT_NAME" /> and ARC-apps and prevents users from changing proxy settings.
-
-          If you choose to never use a proxy server and always connect directly, all other options are ignored.
-
-          If you choose to use system proxy settings or auto detect the proxy server, all other options are ignored.
-
-          If you choose manual proxy settings, you can specify further options in 'Address or URL of proxy server', 'URL to a proxy .pac file' and 'Comma-separated list of proxy bypass rules'.
-
-          For detailed examples, visit:
-          <ph name="PROXY_HELP_URL" />
-
-          If you enable this setting, <ph name="PRODUCT_NAME" /> ignores all proxy-related options specified from the command line.
-
-          Leaving this policy not set will allow the users to choose the proxy settings on their own.</translation>
 <translation id="4103289232974211388">Redirect to SAML IdP after user confirmation</translation>
 <translation id="410478022164847452">Specifies the length of time without user input after which the idle action is taken when running on AC power.
 
@@ -1438,14 +1376,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="5893553533827140852">If this setting is enabled, then gnubby authentication requests will be proxied across a remote host connection.
 
           If this setting is disabled or not configured, gnubby authentication requests will not be proxied.</translation>
-<translation id="5900959132054596599"><ph name="PRODUCT_NAME" /> and ARC-apps will bypass any proxy for the list of hosts given here.
-
-          This policy only takes effect if you have selected manual proxy settings at 'Choose how to specify proxy server settings'.
-
-          You should leave this policy not set if you have selected any other mode for setting proxy policies.
-
-          For more detailed examples, visit:
-          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="5921713479449475707">Allow autoupdate downloads via HTTP</translation>
 <translation id="5921888683953999946">Set the default state of the large cursor accessibility feature on the login screen.
 
@@ -1971,9 +1901,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
       If this setting is disabled or not set, <ph name="PRODUCT_NAME" /> uses either the user-specified preferred locale (if configured), the system locale or the default locale 'en-US'.</translation>
 <translation id="7651739109954974365">Determines whether data roaming should be enabled for the device. If set to true, data roaming is allowed. If left unconfigured or set to false, data roaming will be unavailable.</translation>
-<translation id="7667184304362487902">Configures the proxy settings for <ph name="PRODUCT_NAME" /> and ARC-apps.
-
-      This policy isn't ready for usage yet, please don't use it.</translation>
 <translation id="76810863974142048">URL where remote access clients should obtain their authentication token.
 
           If this policy is set, the remote access host will require authenticating clients to obtain an authentication token from this URL in order to connect. Must be used in conjunction with RemoteAccessHostTokenValidationUrl.
@@ -2206,6 +2133,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
       The policy value should be specified in milliseconds.</translation>
 <translation id="8344454543174932833">Import bookmarks from default browser on first run</translation>
+<translation id="8359734107661430198">Enable ExampleDeprecatedFeature API through 2008/09/02</translation>
 <translation id="8360452361555133173">Enable showing the welcome page on the first browser launch following OS upgrade.
 
       If this policy is set to true or not configured, the browser will re-show the welcome page on the first launch following an OS upgrade.

@@ -18,6 +18,7 @@
 <translation id="112840717907525620">Vyrovnávacia pamäť pravidla je v poriadku</translation>
 <translation id="113188000913989374">Web <ph name="SITE" /> hovorí:</translation>
 <translation id="1132774398110320017">Nastavenia Automatického dopĺňania prehliadača Chrome...</translation>
+<translation id="113770840981343808">Na účely overenia zadajte štvormiestny kód CVC z prednej strany svojej karty</translation>
 <translation id="1146673768181266552">ID zlyhania <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">Server nedokáže overiť, či ide o doménu <ph name="DOMAIN" />, operačný systém vášho počítača nedôveruje jej bezpečnostnému certifikátu. Môže to byť spôsobené nesprávnou konfiguráciou alebo tým, že vaše pripojenie zachytil útočník.</translation>
 <translation id="1152921474424827756">Prístup ku <ph name="BEGIN_LINK" />kópii vo vyrovnávacej pamäti<ph name="END_LINK" /> stránky <ph name="URL" /></translation>
@@ -112,7 +113,6 @@
 <translation id="2212735316055980242">Pravidlo sa nenašlo</translation>
 <translation id="2213606439339815911">Načítavanie záznamov...</translation>
 <translation id="2214283295778284209">Stránka <ph name="SITE" /> je nedostupná.</translation>
-<translation id="2227695659599072496">Skontrolovať sieťový kábel alebo smerovač</translation>
 <translation id="2230458221926704099">Opravte svoje pripojenie pomocou <ph name="BEGIN_LINK" />diagnostickej aplikácie<ph name="END_LINK" /></translation>
 <translation id="225207911366869382">Táto hodnota už pre toto pravidlo nie je podporovaná.</translation>
 <translation id="2262243747453050782">Chyba protokolu HTTP</translation>
@@ -125,6 +125,7 @@
 <translation id="2317259163369394535">Doména <ph name="DOMAIN" /> vyžaduje používateľské meno a heslo.</translation>
 <translation id="2328300916057834155">Neplatná záložka v indexe <ph name="ENTRY_INDEX" /> bola ignorovaná</translation>
 <translation id="2354001756790975382">Iné záložky</translation>
+<translation id="2357783041215512127">Platba kartou <ph name="CREDIT_CARD" /></translation>
 <translation id="2359808026110333948">Pokračovať</translation>
 <translation id="2367567093518048410">Úroveň</translation>
 <translation id="237718015863234333">Nie sú k dispozícii žiadne alternatívy používateľského rozhrania</translation>
@@ -215,7 +216,6 @@
 <translation id="3254409185687681395">Vytvoriť záložku pre túto stránku</translation>
 <translation id="3270847123878663523">&amp;Vrátiť späť zmenu poradia</translation>
 <translation id="3286538390144397061">Reštartovať</translation>
-<translation id="3288003805934695103">Opätovne načítať stránku</translation>
 <translation id="3305707030755673451">Vaše údaje boli <ph name="TIME" /> zašifrované pomocou vlastnej prístupovej frázy synchronizácie. Keď ju zadáte, synchronizácia sa spustí.</translation>
 <translation id="333371639341676808">Zakázať tejto stránke otvárať ďalšie dialógové okná.</translation>
 <translation id="3340978935015468852">nastavenia</translation>
@@ -286,7 +286,6 @@
 <translation id="3963721102035795474">Režim čítačky</translation>
 <translation id="3973234410852337861">Web <ph name="HOST_NAME" /> je zablokovaný</translation>
 <translation id="4021036232240155012">DNS je sieťová služba, ktorá preloží názov webu do jeho internetovej adresy.</translation>
-<translation id="4021376465026729077">Zakázať rozšírenia</translation>
 <translation id="4030383055268325496">&amp;Vrátiť späť pridanie</translation>
 <translation id="4032534284272647190">Prístup na stránku <ph name="URL" /> bol odmietnutý.</translation>
 <translation id="404928562651467259">UPOZORNENIE</translation>
@@ -384,13 +383,12 @@
 <translation id="5251803541071282808">Cloud</translation>
 <translation id="5299298092464848405">Pri analýze pravidla sa vyskytla chyba</translation>
 <translation id="5300589172476337783">Zobraziť</translation>
-<translation id="5307361445257083764"><ph name="BEGIN_LINK" />Vymazať súbory cookie<ph name="END_LINK" /></translation>
 <translation id="5308689395849655368">Hlásenie zlyhaní je zakázané.</translation>
 <translation id="5317780077021120954">Uložiť</translation>
 <translation id="5327248766486351172">Názov</translation>
 <translation id="536296301121032821">Nastavenia pravidla sa nepodarilo uložiť</translation>
 <translation id="540969355065856584">Server nedokáže overiť, či ide o doménu <ph name="DOMAIN" /> – jej bezpečnostný certifikát je momentálne neplatný. Môže to byť spôsobené nesprávnou konfiguráciou alebo tým, že vaše pripojenie napadol útočník.</translation>
-<translation id="5421136146218899937">Odstrániť údaje prehliadania...</translation>
+<translation id="5421136146218899937">Odstrániť dáta prehliadania…</translation>
 <translation id="5430298929874300616">Odstrániť záložku</translation>
 <translation id="5431657950005405462">Súbor sa nenašiel</translation>
 <translation id="5435775191620395718">Zobrazuje sa história z tohto zariadenia. <ph name="BEGIN_LINK" />Ďalšie informácie<ph name="END_LINK" /></translation>
@@ -418,6 +416,7 @@
 <translation id="5629630648637658800">Nastavenia pravidla sa nepodarilo načítať</translation>
 <translation id="5631439013527180824">Neplatný token správy zariadenia</translation>
 <translation id="5650551054760837876">Nenašli sa žiadne výsledky vyhľadávania.</translation>
+<translation id="5663999524854166235">Na účely overenia zadajte trojmiestny kód CVC zo zadnej strany svojej karty</translation>
 <translation id="5677928146339483299">Zablokované</translation>
 <translation id="5710435578057952990">Identita tejto webovej stránky nebola overená.</translation>
 <translation id="5720705177508910913">Aktuálny používateľ</translation>
@@ -488,7 +487,6 @@
 <translation id="6628463337424475685">Vyhľadávanie <ph name="ENGINE" /></translation>
 <translation id="6634865548447745291">Stránky <ph name="SITE" /> momentálne nemôžete navštíviť, pretože <ph name="BEGIN_LINK" />tento certifikát bol odvolaný<ph name="END_LINK" />. Chyby siete a útoky sú zvyčajne dočasné, takže by táto stránka mala neskôr pravdepodobne fungovať.</translation>
 <translation id="6637478299472506933">Stiahnutie zlyhalo</translation>
-<translation id="6642894344118208103">Resetovať modem alebo smerovač</translation>
 <translation id="6644283850729428850">Toto pravidlo bolo označené ako zastarané.</translation>
 <translation id="6646897916597483132">Zadajte štvormiestny kód CVC z prednej strany svojej karty</translation>
 <translation id="6656103420185847513">Upraviť priečinok</translation>

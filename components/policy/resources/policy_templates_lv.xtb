@@ -2,9 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="lv">
 <translation id="101438888985615157">Pagriezt ekrānu par 180 grādiem</translation>
-<translation id="1015272884520659144">Definē USB ierīces, kuras ir atļauts atvienot no kodola draiveriem, lai tās izmantotu ar chrome.usb API tieši tīmekļa lietojumprogrammā. Katru ierakstu veido USB pakalpojumu sniedzēja identifikators un produkta identifikators, kas identificē aparatūru.
-
-      Ja šī politika netiek konfigurēta, atvienojami USB ierīču saraksts tiek uzskatīts par tukšu.</translation>
 <translation id="1017967144265860778">Barošanas pārvaldība pieteikšanās ekrānā</translation>
 <translation id="1019101089073227242">Iestata lietotāja datu direktoriju</translation>
 <translation id="1022361784792428773">Paplašinājumu ID numuri, kurus lietotājam nav atļauts instalēt (vai *, lai iestatītu visus)</translation>
@@ -73,14 +70,6 @@
       Ja politika nav iestatīta vai ir iestatīta vērtība Nepatiesa, RC4 šifra komplekti standartā TLS netiks iespējoti. Politikai var iestatīt vērtību Patiesa, lai saglabātu saderību ar novecojušu serveri. Tas ir pagaidu risinājums, un serveris ir jākonfigurē atkārtoti.</translation>
 <translation id="1297182715641689552">Izmantot .pac starpniekservera skriptu</translation>
 <translation id="1304973015437969093">Paplašinājumu/lietotņu ID un atjauninājumu vietrāži URL instalēšanai klusajā režīmā</translation>
-<translation id="1310699457130669094">Šeit varat norādīt starpniekservera .pac faila vietrādi URL.
-
-          Šī politika ir spēkā tikai tad, ja iestatījumā Izvēlieties, kādā veidā jānorāda starpniekserveru iestatījumi ir atlasīti manuālie starpniekserveru iestatījumi.
-
-          Šī politika nav jāiestata, ja ir atlasīts jebkurš cits starpniekserveru politiku iestatīšanas režīms.
-
-          Detalizētus piemērus skatiet vietnē:
-          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1313457536529613143">Norāda aizkavi (procentos) līdz ekrāna aptumšošanai, kad tiek novērota lietotāja darbība, kamēr ekrāns ir aptumšots vai drīz pēc ekrāna izslēgšanas.
 
           Ja šī politika ir iestatīta, tā norāda aizkavi (procentos) līdz ekrāna aptumšošanai, kad tiek novērota lietotāja darbība, kamēr ekrāns ir aptumšots vai drīz pēc ekrāna izslēgšanas. Ja aptumšošanas aizkave ir mainīta, ekrāna izslēgšanas, ekrāna bloķēšanas un gaidstāves aizkaves tiek pielāgotas, lai nodrošinātu tādu pašu starplaiku no ekrāna aptumšošanas aizkaves, kāds bija sākotnēji konfigurēts.
@@ -163,18 +152,6 @@
 <translation id="1561424797596341174">Politikas ignorēšana attālās piekļuves saimniekdatora atkļūdošanas versijām</translation>
 <translation id="1583248206450240930">Pēc noklusējuma lietot <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="1608755754295374538">Vietrāži URL, kuriem tiks nodrošināta piekļuve audio tveršanas ierīcēm bez uzvednes parādīšanas.</translation>
-<translation id="1613574633990410986">Ļauj norādīt <ph name="PRODUCT_NAME" /> un ARC lietotņu izmantoto starpniekserveri un neļauj lietotājiem mainīt starpniekserveru iestatījumus.
-
-      Ja tiek izvēlēts nekad nelietot starpniekserveri un vienmēr lietot tiešo savienojumu, visas pārējās opcijas tiek ignorētas.
-
-      Ja tiek izvēlēts automātiski noteikt starpniekserveri, visas pārējās opcijas tiek ignorētas.
-
-      Detalizēti piemēri ir pieejami vietnē:
-      <ph name="PROXY_HELP_URL" />
-
-      Ja šis iestatījums ir iespējots, <ph name="PRODUCT_NAME" /> un ARC lietotnes ignorē visas ar starpniekserveri saistītās komandrindā norādītās opcijas.
-
-      Ja šīs politikas nav iestatītas, lietotāji varēs izvēlēties savus starpniekserveru iestatījumus.</translation>
 <translation id="1617235075406854669">Iespējot pārlūka un lejupielādes vēstures dzēšanu</translation>
 <translation id="1617384279878333801">Personas pievienošanas iespējošana profilu pārvaldniekā</translation>
 <translation id="1655229863189977773">Iestatīt diska kešatmiņas lielumu baitos</translation>
@@ -265,14 +242,6 @@
       Ja opcija būs iespējota, sistēmas teknē tiks attēlota liela atteikšanās poga sarkanā krāsā, kamēr sesija būs aktīva.
 
       Ja opcija būs atspējota vai nebūs norādīta, sistēmas teknē netiks rādīta liela atteikšanās pogas sarkanā krāsā.</translation>
-<translation id="1942957375738056236">Šeit varat norādīt starpniekservera URL.
-
-          Šī politika ir spēkā tikai tad, ja iestatījumā Izvēlieties, kādā veidā jānorāda starpniekserveru iestatījumi ir atlasīti manuālie starpniekserveru iestatījumi.
-
-          Šī politika nav jāiestata, ja ir atlasīts jebkurš cits starpniekserveru politiku iestatīšanas režīms.
-
-          Citas iespējas un detalizētus piemērus skatiet vietnē:
-          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1956493342242507974">Konfigurējiet barošanas pārvaldību operētājsistēmas <ph name="PRODUCT_OS_NAME" /> pieteikšanās ekrānā.
 
       Šī politika ļauj konfigurēt, kā operētājsistēma <ph name="PRODUCT_OS_NAME" /> darbosies, ja lietotājs noteiktā laika periodā neveiks nekādas darbības, kamēr tiek rādīts pieteikšanās ekrāns. Politika nosaka vairākus iestatījumus. Šo iestatījumu nozīmi un vērtību diapazonus skatiet atbilstošajās politikās, kas regulē barošanas pārvaldību sesijas ietvaros. Vienīgās novirzes no šīm politikām ir šādas:
@@ -664,24 +633,6 @@
 <translation id="3072847235228302527">Ierīces lokālā konta pakalpojumu sniegšanas noteikumu iestatīšana</translation>
 <translation id="3096595567015595053">Iespējoto spraudņu saraksts</translation>
 <translation id="3101501961102569744">Izvēlas, kā jānorāda starpniekservera iestatījumi</translation>
-<translation id="3125884964575432854">Ļauj norādīt <ph name="PRODUCT_NAME" /> un ARC lietotņu izmantoto starpniekserveri un neļauj lietotājiem mainīt starpniekserveru iestatījumus.
-
-          Ja tiek izvēlēts nekad nelietot starpniekserveri un vienmēr lietot tiešo savienojumu, visas pārējās opcijas tiek ignorētas.
-
-          Ja tiek izvēlēts lietot sistēmas starpniekservera iestatījumus, visas pārējās opcijas tiek ignorētas.
-
-          Ja tiek izvēlēts automātiski noteikt starpniekserveri, visas pārējās opcijas tiek ignorētas.
-
-          Ja tiek izvēlēts fiksēta servera starpniekservera režīms, laukos “Starpniekservera adrese vai URL” un “Ar komatu atdalītu starpniekserveru apiešanas kārtulu saraksts” var norādīt papildu opcijas. ARC lietotnēs tiks izmantots tikai tas HTTP starpniekserveris, kuram būs augstākā prioritāte.
-
-          Ja tiek izvēlēts izmantot .pac starpniekservera skriptu, laukā “URL uz starpniekservera .pac failu” ir jānorāda šī skripta URL.
-
-          Detalizēti piemēri ir pieejami vietnē:
-          <ph name="PROXY_HELP_URL" />
-
-          Ja šis iestatījums ir iespējots, <ph name="PRODUCT_NAME" /> un ARC lietotnes ignorē visas ar starpniekserveri saistītās komandrindā norādītās opcijas.
-
-          Ja šīs politikas nav iestatītas, lietotāji varēs izvēlēties savus starpniekserveru iestatījumus.</translation>
 <translation id="3153348162326497318">Ļauj norādīt, kurus paplašinājumus lietotājiem NAV atļauts instalēt. Jau instalētie paplašinājumi, ja tie ir iekļauti melnajā sarakstā, tiks noņemti.
 
           Melnā saraksta vērtība * nozīmē to, ka melnajā sarakstā ir iekļauti visi paplašinājumi, ja vien tie nav īpaši iekļauti baltajā sarakstā.
@@ -754,6 +705,7 @@
       Ja šis iestatījums ir iespējots vai nav konfigurēts, lietotāji var iespējot mākoņdrukas starpniekserveri, autentifikācijai izmantojot savu Google kontu.
 
       Ja šis iestatījums ir atspējots, lietotāji nevarēs iespējot starpniekserveri un ierīce nevarēs koplietot tai pievienotos printerus ar <ph name="CLOUD_PRINT_NAME" />.</translation>
+<translation id="3297010562646015826">Iespējo procesu beigšanu uzdevumu pārvaldniekā</translation>
 <translation id="3322771899429619102">Ļauj iestatīt URL šablonu sarakstu, kurā ir norādītas vietnes, kam ir atļauts izmantot atslēgu ģenerēšanu. Ja URL šablons ir iestatīts politikā “KeygenBlockedForUrls”, šie izņēmumi tiek ignorēti.
 
           Ja šī politika nav iestatīta, visām vietnēm tiks izmantota globālā noklusējuma vērtība no politikas “DefaultKeygenSetting” (ja tā ir iestatīta) vai pretējā gadījumā no lietotāja personīgās konfigurācijas.</translation>
@@ -938,22 +890,6 @@
           Ja politikai tiek iestatīta vērtība “Sīkfailu saglabāšana sesijas laikā”, sesijas beigās sīkfaili tiek notīrīti. Ņemiet vērā: ja pārlūks <ph name="PRODUCT_NAME" /> darbojas fona režīmā, sesija var netikt aizvērta līdz ar pārlūka pēdējā loga aizvēršanu. Plašāku informāciju par šādas darbības konfigurēšanu skatiet politikā BackgroundModeEnabled.
 
           Ja šī politika nav iestatīta, tiek izmantota politika AllowCookies, un lietotājs var to mainīt.</translation>
-<translation id="4098957623809244159">Šī politika ir novecojusi. Tās vietā lietojiet ProxyMode.
-
-          Ļauj norādīt <ph name="PRODUCT_NAME" /> un ARC lietotņu izmantoto starpniekserveri un neļauj lietotājiem mainīt starpniekserveru iestatījumus.
-
-          Ja tiek izvēlēts nekad nelietot starpniekserveri un vienmēr lietot tiešo savienojumu, visas pārējās opcijas tiek ignorētas.
-
-          Ja tiek izvēlēts lietot sistēmas starpniekservera iestatījumus vai automātiski noteikt starpniekserveri, visas pārējās opcijas tiek ignorētas.
-
-           Ja tiek izvēlēti manuāli starpniekservera iestatījumi, laukos “Starpniekservera adrese vai URL”, “URL uz starpniekservera .pac failu” un “Ar komatu atdalītu starpniekserveru apiešanas kārtulu saraksts” var norādīt papildu opcijas.
-
-          Detalizēti piemēri ir pieejami vietnē:
-          <ph name="PROXY_HELP_URL" />
-
-          Ja šis iestatījums ir iespējots, <ph name="PRODUCT_NAME" /> ignorē visas ar starpniekserveri saistītās komandrindā norādītās opcijas.
-
-          Ja šīs politikas nav iestatītas, lietotāji varēs izvēlēties savus starpniekserveru iestatījumus.</translation>
 <translation id="4103289232974211388">Pēc lietotāja apstiprinājuma saņemšanas novirzīt uz SAML identitātes nodrošinātāju</translation>
 <translation id="410478022164847452">Tiek norādīts laika periods, kurā lietotājam ir jāveic kāda darbība, pretējā gadījumā rodas dīkstāve (ja ierīce darbojas ar maiņstrāvu).
 
@@ -1437,14 +1373,6 @@
 <translation id="5893553533827140852">Ja šis iestatījums ir iespējots, Gnubby autentifikācijas pieprasījumiem tiks izmantoti starpniekserveri attālā saimniekdatora tīklā.
 
           Ja šis iestatījums ir atspējots vai nav konfigurēts, Gnubby autentifikācijas pieprasījumiem netiks izmantoti starpniekserveri.</translation>
-<translation id="5900959132054596599"><ph name="PRODUCT_NAME" /> un ARC lietotnes apies visus šajā sarakstā iekļauto saimniekdatoru starpniekserverus.
-
-          Šī politika ir spēkā tikai tad, ja iestatījumā “Izvēlieties, kā jānorāda starpniekserveru iestatījumi” ir atlasīti manuālie starpniekserveru iestatījumi.
-
-          Šī politika nav jāiestata, ja ir atlasīts jebkurš cits starpniekserveru politiku iestatīšanas režīms.
-
-          Detalizētus piemērus skatiet vietnē:
-          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="5921713479449475707">Atļaut automātiski atjaunināt lejupielādes, izmantojot HTTP</translation>
 <translation id="5921888683953999946">Iestatiet lielā kursora pieejamības funkcijas noklusējuma stāvokli pieteikšanās ekrānā.
 
@@ -1970,9 +1898,6 @@
 
       Ja šis iestatījums ir atspējots vai nav iestatīts, <ph name="PRODUCT_NAME" /> lieto lietotāja vēlamo lokalizāciju (ja tā ir konfigurēta), sistēmas lokalizāciju vai atkāpšanās lokalizāciju en-US.</translation>
 <translation id="7651739109954974365">Nosaka, vai datu viesabonēšana ir jāiespējo ierīcei. Ja politika ir iestatīta uz Patiesa, datu viesabonēšana ir atļauta. Ja politika nav konfigurēta vai iestatīta uz Aplama, datu viesabonēšana nav atļauta.</translation>
-<translation id="7667184304362487902">Konfigurē pakalpojuma <ph name="PRODUCT_NAME" /> un ARC lietotņu starpniekservera iestatījumus.
-
-      Šī politika nav vēl gatava lietošanai; nelietojiet to.</translation>
 <translation id="76810863974142048">Vietrādis URL, kurā attālās piekļuves klientiem ir jāiegūst autentifikācijas pilnvara.
 
           Ja šī politika ir iestatīta, attālās piekļuves saimniekdatorā klientiem, kas autentificējas, tiek prasīts iegūt autentifikācijas pilnvaru no šī vietrāža URL, lai izveidotu savienojumu. Jāizmanto kopā ar politiku RemoteAccessHostTokenValidationUrl.
@@ -2205,6 +2130,7 @@
 
       Politikas vērtība ir jānorāda milisekundēs.</translation>
 <translation id="8344454543174932833">Grāmatzīmju importēšana no noklusējuma pārlūka pirmajā palaišanas reizē</translation>
+<translation id="8359734107661430198">Iespējot ExampleDeprecatedFeature API, kas bija derīgs līdz 02.09.2008.</translation>
 <translation id="8360452361555133173">Tiek iespējota sveiciena lapas rādīšana, pēc operētājsistēmas jaunināšanas pirmo reizi palaižot pārlūku.
 
       Ja politikai ir iestatīta vērtība Patiesa vai tā nav konfigurēta, pārlūkā tiks atkārtoti rādīta sveiciena lapa, pēc operētājsistēmas jaunināšanas pirmo reizi palaižot pārlūku.

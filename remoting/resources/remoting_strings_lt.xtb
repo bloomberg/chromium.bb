@@ -178,7 +178,6 @@ valdymo priegloba</translation>
 <translation id="533625276787323658">Nėra prie ko prisijungti</translation>
 <translation id="5363265567587775042">Paprašykite naudotojo, kurio kompiuterį norite pasiekti, spustelėti „<ph name="SHARE" />“ ir suteikti pasiekiamumo kodą.</translation>
 <translation id="5379087427956679853">Naudodami „Chrome“ nuotolinį kompiuterio valdymą, galite saugiai bendrinti kompiuterį žiniatinklyje. Abu naudotojai turi paleisti „Chrome“ nuotolinio kompiuterio valdymo programą, kurią galima rasti adresu <ph name="URL" />.</translation>
-<translation id="5394895745784982830">Skirta „Mac“ (10.6 ir naujesnės versijos „OS X“)</translation>
 <translation id="5397086374758643919">„Chrome“ nuotolinio kompiuterio valdymo prieglobos pašalinimo priemonė</translation>
 <translation id="5419185025274123272">Nepavyko iš naujo nustatyti programos. Vis tiek galite išsiųsti rikto ataskaitą.</translation>
 <translation id="544077782045763683">Priegloba išjungta.</translation>
@@ -232,7 +231,6 @@ valdymo priegloba</translation>
 <translation id="6930242544192836755">Trukmė</translation>
 <translation id="6939719207673461467">Rodyti / slėpti klaviatūrą.</translation>
 <translation id="6944854424004126054">Atkurti langą</translation>
-<translation id="6962773374262604195">Skirta „Windows“ (XP ir naujesnės versijos)</translation>
 <translation id="6965382102122355670">Gerai</translation>
 <translation id="6985691951107243942">Ar tikrai norite neleisti nuotolinio ryšio su „<ph name="HOSTNAME" />“? Jei apsigalvosite, turėsite iš naujo įgalinti ryšį tame kompiuteryje.</translation>
 <translation id="6998989275928107238">Ryšys užmezgamas su</translation>

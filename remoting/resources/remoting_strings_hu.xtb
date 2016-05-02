@@ -178,7 +178,6 @@ gazdagép</translation>
 <translation id="533625276787323658">Nincs mihez csatlakozni.</translation>
 <translation id="5363265567587775042">Kérje meg a felhasználót, akinek számítógépéhez megpróbál hozzáférni, hogy kattintson a „<ph name="SHARE" />” lehetőségre, és adja meg Önnek a hozzáférési kódot.</translation>
 <translation id="5379087427956679853">A Chrome távoliasztal-szolgáltatás lehetővé teszi a számítógép biztonságos megosztását az interneten keresztül. Mindkét felhasználónál futnia kell a Chrome távoliasztal-szolgáltatás alkalmazásnak, amely itt található: <ph name="URL" />.</translation>
-<translation id="5394895745784982830">Mac típusú számítógépekhez (OS X 10.6 és újabb)</translation>
 <translation id="5397086374758643919">Chrome távoliasztal-szolgáltatási gazdagép eltávolítóprogramja</translation>
 <translation id="5419185025274123272">Nem sikerült az alkalmazás visszaállítása. Küldhet egy jelentést a programhibáról.</translation>
 <translation id="544077782045763683">A gazdagép leállt.</translation>
@@ -232,7 +231,6 @@ gazdagép</translation>
 <translation id="6930242544192836755">Időtartam</translation>
 <translation id="6939719207673461467">Billentyűzet megjelenítése/elrejtése.</translation>
 <translation id="6944854424004126054">Ablak visszaállítása</translation>
-<translation id="6962773374262604195">Windows rendszerhez (XP és újabb)</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6985691951107243942">Biztosan le szeretné tiltani a távoli kapcsolatokat a(z) <ph name="HOSTNAME" /> gazdagéppel? Ha meggondolja magát, akkor azon a számítógépen kell majd újból engedélyeznie a kapcsolatokat.</translation>
 <translation id="6998989275928107238">Ide:</translation>

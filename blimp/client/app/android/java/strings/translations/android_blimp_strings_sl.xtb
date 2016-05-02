@@ -8,6 +8,7 @@
 <translation id="2078561879028077171">Podatki o različici</translation>
 <translation id="2117453604279487107">URL dodeljevalnika</translation>
 <translation id="2353984724370197742">Dodelitev ni uspela. Omrežna zahteva ni uspela.</translation>
+<translation id="2789927415041640472">Če želite uporabljati novo konfiguracijo dodeljevalnika, znova zaženite aplikacijo.</translation>
 <translation id="3046825211487065480">Dodelitev ni uspela. Pred odgovorom na prvo zahtevo je bila poslana druga zahteva.</translation>
 <translation id="3286538390144397061">Znova zaženi</translation>
 <translation id="3346106862344060497">Povezava z mehanizmom je vzpostavljena.</translation>
@@ -22,6 +23,7 @@
 <translation id="5860346505531085166">Dodelitev ni uspela. Račun nima dostopa.</translation>
 <translation id="6232798399907177395">O mehanizmu Blimp</translation>
 <translation id="704835510384979817">Dodelitev ni uspela. Ni ujemajoče se različice iskalnika.</translation>
+<translation id="7145680970336344212">Znova zaženite Blimp</translation>
 <translation id="7536363920335771251">Povezava z mehanizmom je prekinjena; razlog: %1$s</translation>
 <translation id="7596558890252710462">Operacijski sistem</translation>
 <translation id="7608553142876436780">IP mehanizma</translation>

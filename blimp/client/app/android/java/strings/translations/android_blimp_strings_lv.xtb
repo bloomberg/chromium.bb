@@ -8,6 +8,7 @@
 <translation id="2078561879028077171">Informācija par versiju</translation>
 <translation id="2117453604279487107">Piešķīrēja URL</translation>
 <translation id="2353984724370197742">Piešķires kļūme. Tīkla pieprasījuma kļūme.</translation>
+<translation id="2789927415041640472">Lūdzu, restartējiet lietojumprogrammu, lai izmantotu jaunā piešķīrēja konfigurāciju.</translation>
 <translation id="3046825211487065480">Piešķires kļūme. Otrs pieprasījums nosūtīts, pirms tika saņemta atbilde uz pirmo pieprasījumu.</translation>
 <translation id="3286538390144397061">Restartēt tūlīt</translation>
 <translation id="3346106862344060497">Programma ir pievienota.</translation>
@@ -22,6 +23,7 @@
 <translation id="5860346505531085166">Piešķires kļūme. Kontam nav piekļuves.</translation>
 <translation id="6232798399907177395">Par Blimp</translation>
 <translation id="704835510384979817">Piešķires kļūme. Nav atbilstošas programmas versijas.</translation>
+<translation id="7145680970336344212">Restartēt Blimp</translation>
 <translation id="7536363920335771251">Programma ir atvienota, iemesls: %1$s</translation>
 <translation id="7596558890252710462">Operētājsistēma</translation>
 <translation id="7608553142876436780">Programmas IP</translation>

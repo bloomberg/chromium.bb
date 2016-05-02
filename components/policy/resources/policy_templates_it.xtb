@@ -2,9 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="it">
 <translation id="101438888985615157">Ruota lo schermo di 180°</translation>
-<translation id="1015272884520659144">Definisce l'elenco di dispositivi USB a cui è consentito scollegarsi dal driver del kernel per essere utilizzati tramite l'API chrome.usb direttamente all'interno di un'applicazione web. Le voci sono coppie costituite dall'ID fornitore USB e dall'ID prodotto per identificare un hardware specifico.
-
-      Se la norma non è configurata, l'elenco di dispositivi USB scollegabili è considerato vuoto.</translation>
 <translation id="1017967144265860778">Gestione dell'alimentazione nella schermata di accesso</translation>
 <translation id="1019101089073227242">Imposta directory dati utente</translation>
 <translation id="1022361784792428773">ID delle estensioni (oppure * per tutte le estensioni) per cui non è consentita l'installazione</translation>
@@ -62,7 +59,6 @@
       Se la norma non viene impostata o se viene impostata su false, i pacchetti di crittografia RC4 in TLS non saranno attivati. In alternativa, la norma può essere impostata su true per mantenere la compatibilità con un server obsoleto. Si tratta di una soluzione temporanea ed è necessario configurare nuovamente il server.</translation>
 <translation id="1297182715641689552">Utilizza uno script proxy .pac</translation>
 <translation id="1304973015437969093">ID app/estensioni e URL di aggiornamento da installare automaticamente</translation>
-<translation id="1310699457130669094">Qui puoi specificare un URL che rimanda a un file proxy .pac. Questa norma viene applicata soltanto se sono state selezionate le impostazioni proxy manuali in "Scegli come specificare le impostazioni del server proxy". Se hai selezionato un'altra modalità per l'impostazione delle norme relative al proxy, non dovresti impostare questa norma. Per esempi dettagliati, visita il sito all'indirizzo: <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1313457536529613143">Consente di specificare la percentuale di regolazione del ritardo di oscuramento dello schermo quando viene osservata l'attività dell'utente mentre lo schermo è oscurato o subito dopo lo spegnimento dello schermo.
 
 Se questa norma viene impostata, consente di specificare la percentuale di regolazione del ritardo di oscuramento dello schermo quando viene osservata l'attività dell'utente mentre lo schermo è oscurato o subito dopo lo spegnimento dello schermo. Quando il ritardo di oscuramento viene regolato, i ritardi di spegnimento, blocco e inattività dello schermo vengono regolati per mantenere gli stessi distacchi dal ritardo di oscuramento dello schermo configurato in origine.
@@ -139,18 +135,6 @@ Se l'impostazione è disattivata o non è stata configurata, gli utenti aziendal
 <translation id="1561424797596341174">La norma sostituisce le build di debug dell'host di accesso remoto</translation>
 <translation id="1583248206450240930">Utilizza <ph name="PRODUCT_FRAME_NAME" /> per impostazione predefinita</translation>
 <translation id="1608755754295374538">URL a cui verrà concesso l'accesso ai dispositivi di acquisizione audio senza richieste</translation>
-<translation id="1613574633990410986">Consente di specificare il server proxy utilizzato da <ph name="PRODUCT_NAME" /> e dalle app ARC e impedisce agli utenti di modificare le impostazioni proxy.
-
-      Se scegli di non utilizzare mai un server proxy e di connetterti sempre direttamente, tutte le altre opzioni vengono ignorate.
-
-      Se scegli di rilevare automaticamente il server proxy, tutte le altre opzioni vengono ignorate.
-
-      Per esempi dettagliati, visita il sito:
-      <ph name="PROXY_HELP_URL" />
-
-      Se viene attivata questa impostazione, <ph name="PRODUCT_NAME" /> e le app ARC ignorano tutte le opzioni relative al proxy specificate dalla riga di comando.
-
-      Se queste norme non vengono impostate, gli utenti potranno scegliere autonomamente le impostazioni proxy.</translation>
 <translation id="1617235075406854669">Attiva eliminazione cronologia del browser e dei download</translation>
 <translation id="1617384279878333801">Attiva la funzione Aggiungi persona in Profile Manager</translation>
 <translation id="1655229863189977773">Imposta le dimensioni della cache su disco in byte</translation>
@@ -231,7 +215,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       Se il criterio è attivato, nell'area di notifica viene visualizzato un grosso pulsante di uscita rosso quando è attiva una sessione e lo schermo non è bloccato.
 
       Se il criterio è disattivato o non specificato, non viene visualizzato il grosso pulsante di uscita rosso nell'area di notifica.</translation>
-<translation id="1942957375738056236">Qui puoi specificare l'URL del server proxy. Questa norma viene applicata soltanto se sono state selezionate le impostazioni proxy manuali in "Scegli come specificare le impostazioni del server proxy". Se hai selezionato un'altra modalità per l'impostazione delle norme relative al proxy, non dovresti impostare questa norma. Per ulteriori opzioni ed esempi dettagliati, visita il sito all'indirizzo: <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1956493342242507974">Questa norma consente di configurare la gestione dell'alimentazione in relazione alla schermata di accesso di <ph name="PRODUCT_OS_NAME" />.
 
       Questa norma consente di configurare il comportamento di <ph name="PRODUCT_OS_NAME" /> quando non c'è attività dell'utente per un periodo di tempo mentre è visualizzata la schermata di accesso. La norma consente di controllare diverse impostazioni. Per conoscere la semantica e gli intervalli di valori di ogni impostazione, leggi le norme corrispondenti che consentono di controllare la gestione dell'alimentazione all'interno di una sessione. Le uniche differenze rispetto a queste norme sono:
@@ -588,24 +571,6 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
 <translation id="3072847235228302527">Imposta i Termini di servizio di un account locale del dispositivo</translation>
 <translation id="3096595567015595053">Elenco dei plug-in attivati</translation>
 <translation id="3101501961102569744">Scegli come specificare le impostazioni del server proxy</translation>
-<translation id="3125884964575432854">Consente di specificare il server proxy utilizzato da <ph name="PRODUCT_NAME" /> e dalle app ARC e impedisce agli utenti di modificare le impostazioni proxy.
-
-          Se scegli di non utilizzare mai un server proxy e di connetterti sempre direttamente, tutte le altre opzioni vengono ignorate.
-
-          Se scegli di utilizzare le impostazioni proxy del sistema, tutte le altre opzioni vengono ignorate.
-
-          Se scegli di rilevare automaticamente il server proxy, tutte le altre opzioni vengono ignorate.
-
-          Se scegli di utilizzare la modalità server proxy definito, puoi specificare ulteriori opzioni in "Indirizzo o URL del server proxy" ed "Elenco separato da virgole delle regole bypass proxy". Le app ARC utilizzeranno solo il server proxy HTTP con la priorità più alta.
-
-          Se scegli di utilizzare uno script proxy .pac, devi specificare l'URL per lo script in "URL per file proxy .pac".
-
-          Per esempi dettagliati, visita il sito:
-          <ph name="PROXY_HELP_URL" />
-
-          Se viene attivata questa impostazione, <ph name="PRODUCT_NAME" /> e le app ARC ignorano tutte le opzioni relative al proxy specificate dalla riga di comando.
-
-          Se queste norme non vengono impostate, gli utenti potranno scegliere autonomamente le impostazioni proxy.</translation>
 <translation id="3153348162326497318">Consente di specificare le estensioni che gli utenti NON possono installare. Se presenti nella blacklist, le estensioni precedentemente installate verranno rimosse. Un valore "*" riportato nella blacklist indica che tutte le estensioni sono state inserite nella blacklist a meno che non siano espressamente elencate nella whitelist. Se questa norma non viene impostata, gli utenti potranno installare qualsiasi estensione in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="316778957754360075">Questa impostazione non è più supportata a partire dalla versione 29 di <ph name="PRODUCT_NAME" />. Il metodo consigliato per la configurazione di raccolte di estensioni/app ospitate dall'organizzazione consiste nell'includere il sito che ospita i pacchetti CRX in ExtensionInstallSources e inserire link di download diretti per i pacchetti in una pagina web. È possibile creare una funzione Avvio applicazioni per la pagina web utilizzando la norma ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">a partire dalla versione <ph name="SINCE_VERSION" /></translation>
@@ -670,6 +635,7 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
       Se l'impostazione è attivata o non è configurata, gli utenti possono attivare il proxy Cloud Print attraverso l'autenticazione con il proprio account Google.
 
       Se l'impostazione è disattivata, gli utenti non possono attivare il proxy e il computer non può condividere le stampanti con <ph name="CLOUD_PRINT_NAME" />.</translation>
+<translation id="3297010562646015826">Consente di terminare i processi in Task Manager</translation>
 <translation id="3322771899429619102">Consente di impostare un elenco di pattern URL che specificano i siti in cui è consentito l'utilizzo della generazione di chiavi. Se un pattern URL è indicato nella norma "KeygenBlockedForUrls", quest'ultima ha la precedenza su queste eccezioni.
 
           Se questa norma non viene impostata, per tutti i siti verrà utilizzato il valore predefinito globale della norma "DefaultKeygenSetting", se è impostata, oppure verrà utilizzata la configurazione personale dell'utente.</translation>
@@ -831,22 +797,6 @@ Per impostazione predefinita sono autorizzati tutti gli host di messaggi nativi 
           Se questa norma viene impostata su "Conserva cookie per tutta la durata della sessione", i cookie vengono cancellati alla chiusura della sessione. Quando <ph name="PRODUCT_NAME" /> è in esecuzione in "modalità background", è possibile che la sessione non si chiuda quando viene chiusa l'ultima finestra. Leggere la norma "BackgroundModeEnabled" per avere ulteriori informazioni sulla configurazione di questo comportamento.
 
           Se questa norma non viene impostata, verrà utilizzata la norma "AllowCookies", che potrà essere modificata dall'utente.</translation>
-<translation id="4098957623809244159">Questa norma è obsoleta, utilizza ProxyMode al suo posto.
-
-          Consente di specificare il server proxy utilizzato da <ph name="PRODUCT_NAME" /> e dalle app ARC e impedisce agli utenti di modificare le impostazioni proxy.
-
-          Se scegli di non utilizzare mai un server proxy e di connetterti sempre direttamente, tutte le altre opzioni vengono ignorate.
-
-          Se scegli di utilizzare le impostazioni proxy del sistema o di rilevare automaticamente il server proxy, tutte le altre opzioni vengono ignorate.
-
-          Se scegli le impostazioni proxy manuali, puoi specificare ulteriori opzioni in "Indirizzo o URL del server proxy", "URL per file proxy .pac" ed "Elenco separato da virgole delle regole bypass proxy".
-
-          Per esempi dettagliati, visita il sito:
-          <ph name="PROXY_HELP_URL" />
-
-          Se attivi questa impostazione, <ph name="PRODUCT_NAME" /> ignora tutte le opzioni correlate al proxy specificate dalla riga di comando.
-
-          Se questa norma non viene impostata, gli utenti potranno scegliere autonomamente le impostazioni del proxy.</translation>
 <translation id="4103289232974211388">Reindirizza a IdP SAML dopo la conferma dell'utente</translation>
 <translation id="410478022164847452">Consente di specificare il periodo di tempo senza input dell'utente trascorso il quale viene compiuta l'azione stabilita per l'inattività quando viene utilizzata la corrente alternata.
 
@@ -1266,14 +1216,6 @@ Se la norma non viene impostata, la lettura vocale viene disattivata alla prima 
 <translation id="5893553533827140852">Se questa impostazione è attivata, le richieste di autenticazione Gnubby verranno trasferite al proxy attraverso una connessione host remota.
 
           Se questa impostazione è disattivata o non configurata, le richieste di autenticazione Gnubby non verranno trasferite al proxy.</translation>
-<translation id="5900959132054596599"><ph name="PRODUCT_NAME" /> e le app ARC ignoreranno i proxy relativi all'elenco di host specificato qui.
-
-          Questa norma viene applicata soltanto se sono state selezionate le impostazioni proxy manuali in "Scegli come specificare le impostazioni del server proxy".
-
-          Se hai selezionato un'altra modalità per l'impostazione delle norme relative al proxy, non dovresti impostare questa norma.
-
-          Per esempi più dettagliati, visita il sito:
-          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="5921713479449475707">Permetti download di aggiornamento automatico tramite HTTP</translation>
 <translation id="5921888683953999946">Consente di impostare lo stato predefinito della funzione di accessibilità del puntatore grande nella schermata di accesso.
 
@@ -1742,9 +1684,6 @@ Se questa norma non viene impostata, verranno utilizzate le dimensioni predefini
 <translation id="7632724434767231364">Nome della libreria GSSAPI</translation>
 <translation id="7635471475589566552">Consente di configurare in <ph name="PRODUCT_NAME" /> le impostazioni della lingua e di impedirne la modifica agli utenti. Se attivi questa impostazione, <ph name="PRODUCT_NAME" /> utilizzerà le impostazioni della lingua specificate. Se la lingua configurata non è supportata, verrà utilizzata la lingua "en-US". Se questa impostazione viene disattivata o non viene impostata, <ph name="PRODUCT_NAME" /> utilizzerà la lingua preferita specificata dall'utente (se configurata), quella del sistema o la lingua di fallback "en-US".</translation>
 <translation id="7651739109954974365">È possibile stabilire se attivare o meno il roaming dei dati per il dispositivo. Se la norma viene impostata su true, il roaming dei dati sarà consentito. Se non viene configurata o viene impostata su false, il roaming dei dati non sarà disponibile.</translation>
-<translation id="7667184304362487902">Consente di configurare le impostazioni proxy per <ph name="PRODUCT_NAME" /> e le app ARC.
-
-      Questa norma non è ancora pronta per essere utilizzata, pertanto invitiamo a non utilizzarla.</translation>
 <translation id="76810863974142048">URL in cui i client di accesso remoto devono ottenere il proprio token di autenticazione.
 
           Se viene impostata questa norma, l'host di accesso remoto richiederà che il client di autenticazione ottenga un token di autenticazione da questo URL per consentire la connessione. Deve essere utilizzato insieme a RemoteAccessHostTokenValidationUrl.
@@ -1952,6 +1891,7 @@ Se questa norma non viene impostata, le pagine saranno sottoposte a scansione pe
 
       Il valore della norma deve essere specificato in millisecondi.</translation>
 <translation id="8344454543174932833">Importa Preferiti dal browser predefinito alla prima esecuzione</translation>
+<translation id="8359734107661430198">Attiva l'API ExampleDeprecatedFeature valida fino al 02/09/2008</translation>
 <translation id="8360452361555133173">Consente di attivare la visualizzazione della pagina di benvenuto al primo avvio del browser successivo all'upgrade del sistema operativo.
 
       Se questa norma viene impostata su true o non viene configurata, nel browser viene mostrata di nuovo la pagina di benvenuto al primo avvio successivo a un upgrade del sistema operativo.

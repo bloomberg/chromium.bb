@@ -178,7 +178,6 @@ remot de Chrome</translation>
 <translation id="533625276787323658">No hi ha cap ordinador per connectar-s'hi</translation>
 <translation id="5363265567587775042">Demaneu a l'usuari de l'ordinador al qual voleu accedir que faci clic a <ph name="SHARE" /> i que us faciliti el codi d'accés.</translation>
 <translation id="5379087427956679853">L'escriptori remot de Chrome us permet compartir el vostre ordinador de manera segura al web. Els dos usuaris han d'executar l'aplicació d'escriptori remot de Chrome, que podeu trobar a la pàgina <ph name="URL" />.</translation>
-<translation id="5394895745784982830">Per a Mac (OS X 10.6 i versions posteriors)</translation>
 <translation id="5397086374758643919">Programa de desinstal·lació de l'amfitrió de l'escriptori remot de Chrome</translation>
 <translation id="5419185025274123272">No es pot restablir l'aplicació. Podeu enviar un informe d'errors.</translation>
 <translation id="544077782045763683">L'amfitrió s'ha tancat.</translation>
@@ -232,7 +231,6 @@ remot de Chrome</translation>
 <translation id="6930242544192836755">Durada</translation>
 <translation id="6939719207673461467">Mostra o amaga el teclat</translation>
 <translation id="6944854424004126054">Restaura la finestra</translation>
-<translation id="6962773374262604195">Per a Windows (XP i versions posteriors)</translation>
 <translation id="6965382102122355670">D'acord</translation>
 <translation id="6985691951107243942">Esteu segur que voleu desactivar les connexions remotes a <ph name="HOSTNAME" />? Si canvieu de parer, haureu de visitar aquest ordinador per tornar-les a activar.</translation>
 <translation id="6998989275928107238">Per a</translation>
@@ -272,7 +270,7 @@ remot de Chrome</translation>
 <translation id="8187079423890319756">Copyright 2013 Els autors de Chromium. Tots els drets reservats.</translation>
 <translation id="8196755618196986400">La vostra adreça electrònica s'inclourà en tots els suggeriments que envieu perquè us puguem escriure i proporcionar-vos més informació.</translation>
 <translation id="8244400547700556338">Més informació</translation>
-<translation id="8261506727792406068">Elimina</translation>
+<translation id="8261506727792406068">Suprimeix</translation>
 <translation id="8355326866731426344">Aquest codi d'accés caducarà d'aquí a <ph name="TIMEOUT" /></translation>
 <translation id="8355485110405946777">Inclou registres de l'aplicació per ajudar-nos a resoldre el vostre problema (els registres poden incloure informació privada).</translation>
 <translation id="837021510621780684">Des d'aquest ordinador</translation>

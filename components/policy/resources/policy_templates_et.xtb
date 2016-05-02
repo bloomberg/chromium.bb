@@ -2,9 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="et">
 <translation id="101438888985615157">Ekraani pööramine 180 kraadi</translation>
-<translation id="1015272884520659144">Luuakse loend USB-seadmetest, mis lubatakse eemaldada tuumadraiverist, et neid veebirakenduses otse chrome.usb API kaudu kasutada. Kirjed on USB teenusepakkuja ID-de ja toote ID-de paarid, mille abil konkreetne riistvara tuvastada.
-
-      Kui see reegel jäetakse seadistamata, peetakse eemaldatavate USB-seadmete loendit tühjaks.</translation>
 <translation id="1017967144265860778">Toitehaldus sisselogimiskuval</translation>
 <translation id="1019101089073227242">Kasutaja andmete kataloogi määramine</translation>
 <translation id="1022361784792428773">Laienduste ID-d, mida kasutajatel ei ole lubatud installida (märk * keelab kõik)</translation>
@@ -73,14 +70,6 @@
       Kui reegel on määramata või selle väärtuseks on määratud Väär, siis ei ole RC4 šifreerimiskomplektid TLS-is lubatud. Selle väärtuseks võib olla määratud ka Tõene, et säilitada ühilduvus aegunud serveriga. See on ajutine meede ja server tuleks ümber seadistada.</translation>
 <translation id="1297182715641689552">Kasuta puhverserveri pac-skripti</translation>
 <translation id="1304973015437969093">Taustal installitavate laienduste/rakenduste ID-d ja värskenduste URL-id</translation>
-<translation id="1310699457130669094">Siin saate määrata puhverserveri pac-faili URL-i.
-
-          Reegel kehtib vaid juhul, kui valisite jaotises „Valige puhverserveri seadete määramise viis” puhverserveri käsitsi seadistamise.
-
-          Jätke see reegel määramata, kui valisite puhverserveri reeglite määramiseks muu viisi.
-
-          Vaadake üksikasjalikke näiteid:
-          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1313457536529613143">Määratleb ekraani tumenduse viivituse skaleerimismäära protsentides, kui täheldatakse kasutaja tegevust ekraani tumendamise ajal või peagi pärast ekraani väljalülitumist.
 
           Reegel määratleb ekraani tumenduse viivituse skaleerimismäära protsentides, kui täheldatakse kasutaja tegevust ekraani tumendamise ajal või peagi pärast ekraani väljalülitumist. Tumenduse viivituse skaleerimisel reguleeritakse ekraani väljalülitumise, ekraaniluku ja tegevusetu oleku viivitusi, et säilitada ekraanitumenduse viivitusest samu kaugusi mis algselt seadistatud.
@@ -163,18 +152,6 @@
 <translation id="1561424797596341174">Kaugjuurdepääsu hosti silumisjärkude reeglite alistused</translation>
 <translation id="1583248206450240930">Kasuta vaikimisi rakendust <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="1608755754295374538">URL-id, millele antakse ilma küsimata juurdepääs helijäädvustusseadmetele</translation>
-<translation id="1613574633990410986">Võimaldab määrata puhverserveri, mida kasutavad brauser <ph name="PRODUCT_NAME" /> ja ARC-rakendused, ning takistab kasutajaid puhverserveri seadeid muutmast.
-
-      Kui otsustate puhverserverit mitte kunagi kasutada ja luua ühenduse alati otse, eiratakse kõiki muid valikuid.
-
-      Kui valite puhverserveri automaatse tuvastamise, eiratakse kõiki muid valikuid.
-
-      Vaadake üksikasjalikke näiteid:
-      <ph name="PROXY_HELP_URL" />
-
-      Kui lubate selle seade, eiravad brauser <ph name="PRODUCT_NAME" /> ja ARC-rakendused kõiki käsurealt määratud puhverserveriga seotud valikuid.
-
-      Kui jätate reegli määramata, saavad kasutajad ise puhverserveri seaded valida.</translation>
 <translation id="1617235075406854669">Brauseri ja allalaadimiste ajaloo kustutamise lubamine</translation>
 <translation id="1617384279878333801">Inimese profiilihalduris lisamise lubamine</translation>
 <translation id="1655229863189977773">Määrake ketta vahemälu suurus baitides</translation>
@@ -265,14 +242,6 @@
       Seade lubamisel ilmub süsteemisalves suur punane väljalogimisnupp, kui seanss on aktiivne ja ekraan ei ole lukustatud.
 
       Kui seade on keelatud või määramata, ei kuvata süsteemisalves suurt punast nuppu.</translation>
-<translation id="1942957375738056236">Siin saate määrata puhverserveri URL-i.
-
-          See reegel jõustub vaid juhul, kui valisite jaotises „Valige puhverserveri seadete määramise viis” puhverserveri käsitsi seadistamise.
-
-          Jätke see reegel määramata, kui valisite puhverserveri reeglite määramiseks muu režiimi.
-
-          Vaadake lisavalikuid ja üksikasjalikke näiteid aadressilt:
-          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1956493342242507974">Toitehalduse seadistamine sisselogimisekraanil operatsioonisüsteemis <ph name="PRODUCT_OS_NAME" />.
 
       Selle reegliga saate seadistada, kuidas <ph name="PRODUCT_OS_NAME" /> käitub, kui kuvatakse sisselogimisekraan ja kasutaja ei tee teatud aja jooksul ühtegi toimingut. See reegel juhib mitut seadet. Individuaalset semantikat ja väärtusevahemikke vaadake vastavatest seansi toitehaldust juhtivatest reeglitest. Ainsad kõrvalekalded nendest reeglitest on järgmised.
@@ -661,25 +630,6 @@
 <translation id="3072847235228302527">Teenusetingimuste määramine seadmes kasutatava konto jaoks</translation>
 <translation id="3096595567015595053">Lubatud pistikprogrammide loend</translation>
 <translation id="3101501961102569744">Valimine, kuidas määrata puhverserveri seaded</translation>
-<translation id="3125884964575432854">Võimaldab määrata puhverserveri, mida kasutavad brauser <ph name="PRODUCT_NAME" /> ja ARC-rakendused, ning takistab kasutajaid puhverserveri seadeid muutmast.
-
-          Kui otsustate puhverserverit mitte kunagi kasutada ja luua ühenduse alati otse, eiratakse kõiki muid valikuid.
-
-          Kui otsustate kasutada süsteemi puhverserveri seadeid, eiratakse kõiki muid valikuid.
-
-          Kui valite puhverserveri automaatse tuvastamise, eiratakse kõiki muid valikuid.
-
-
-          Kui valite serveri fikseeritud puhverrežiimi, saate määrata täpsemad valikud jaotistes „Puhverserveri aadress või URL” ja „Puhverserveri möödumisreeglite komaeraldusega loend”. ARC-rakendused kasutavad ainult kõrgeima prioriteediga HTTP-puhverserverit.
-
-          Kui otsustate kasutada puhverserveri PAC-skripti, tuleb teil määrata skripti URL jaotises „Puhverserveri PAC-faili URL”.
-
-          Vaadake üksikasjalikke näiteid:
-          <ph name="PROXY_HELP_URL" />
-
-          Kui lubate selle seade, eiravad brauser <ph name="PRODUCT_NAME" /> ja ARC-rakendused kõiki käsurealt pärinevaid puhverserveriga seotud valikuid.
-
-          Kui jätate reegli määramata, saavad kasutajad ise puhverserveri seaded valida.</translation>
 <translation id="3153348162326497318">Võimaldab määrata, milliseid laiendusi kasutajad EI saa installida. Juba installitud rakendused eemaldatakse, kui need on mustas nimekirjas. Kui mustas nimekirjas on väärtus „*”, siis kantakse kõik laiendused musta nimekirja, kui need ei ole eraldi lisatud lubatud nimekirja. Kui reeglit ei määrata, siis saab kasutaja rakenduses <ph name="PRODUCT_NAME" /> installida kõik laiendused.</translation>
 <translation id="316778957754360075">See seade on alates rakenduse <ph name="PRODUCT_NAME" /> versioonist 29 kasutusest kõrvaldatud. Organisatsiooni majutatud laienduse-/rakendusekogude seadistamiseks on soovitatav kaasata sait, mis hostib üksuses ExtensionInstallSources CRX-pakette ja paneb pakettide allalaadimise otselingid veebilehele. Selle veebilehe käivitaja saab luua reegliga ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">alates versioonist <ph name="SINCE_VERSION" /></translation>
@@ -744,6 +694,7 @@
       Kui seade on lubatud või seadistamata, saavad kasutajad lubada pilvprintimise puhverserveri Google'i kontoga autentides.
 
       Kui seade on keelatud, ei saa kasutajad puhverserverit lubada ja seadmel ei ole lubatud jagada printereid teenusega <ph name="CLOUD_PRINT_NAME" />.</translation>
+<translation id="3297010562646015826">Lubab protsessid tegumihalduris lõpetada</translation>
 <translation id="3322771899429619102">Võimaldab määrata URL-i mustrite loendi, mis määrab saidid, millel on lubatud kasutada võtmete loomist. Kui URL-i muster on loendis „KeygenBlockedForUrls”, alistab see need erandid.
 
           Kui jätate reegli määramata, kasutatakse kõikide saitide puhul globaalset vaikeväärtust, mis pärineb reeglist „DefaultKeygenSetting”, kui see on määratud, või kasutaja isiklikku seadistust.</translation>
@@ -924,22 +875,6 @@
           Kui selle reegli väärtuseks määratakse „Säilita küpsisefailid seansi ajaks”, siis kustutatakse küpsisefailid seansi lõppedes. Pange tähele, et kui teenus <ph name="PRODUCT_NAME" /> töötab „taustarežiimis”, ei pruugi seanss viimase akna sulgemisel lõppeda. Lisateavet sellise toimimise seadistamise kohta leiate reeglist „BackgroundModeEnabled”.
 
           Kui seda reeglit pole määratud, kasutatakse reeglit „AllowCookies” ja kasutaja saab seda muuta.</translation>
-<translation id="4098957623809244159">See reegel on iganenud, kasutage selle asemel reeglit ProxyMode.
-
-          Võimaldab määrata puhverserveri, mida kasutavad brauser <ph name="PRODUCT_NAME" /> ja ARC-rakendused, ning takistab kasutajaid puhverserveri seadeid muutmast.
-
-          Kui otsustate puhverserverit mitte kasutada ja alati otse ühenduse luua, eiratakse kõiki muid valikuid.
-
-          Kui otsustate kasutada süsteemi puhverserveri seadeid või puhverserveri automaatselt tuvastada, eiratakse kõiki muid valikuid.
-
-          Kui valite puhverserveri seaded käsitsi, saate määrata täpsemad valikud jaotistes „Puhverserveri aadress või URL”, „Puhverserveri PAC-faili URL” ja „Puhverserveri möödumisreeglite komaeraldusega loend”.
-
-          Vaadake üksikasjalikke näiteid:
-          <ph name="PROXY_HELP_URL" />.
-
-          Kui lubate selle seade, eirab brauser <ph name="PRODUCT_NAME" /> kõiki käsurealt määratud puhverserveriga seotud valikuid.
-
-          Kui jätate reegli määramata, saavad kasutajad ise valida puhverserveri seaded.</translation>
 <translation id="4103289232974211388">Pärast kasutaja kinnitust SAML IdP-le ümbersuunamine</translation>
 <translation id="410478022164847452">Määrab aja, pärast mida lülitatakse võrgutoite kasutamisel sisse jõudeolek, kui kasutaja pole midagi sisestanud.
 
@@ -1419,14 +1354,6 @@
 <translation id="5893553533827140852">Kui see seade on lubatud, siis edastatakse gnubby autentimistaotlused puhverserverisse kaughosti ühenduse abil.
 
           Kui see seade on keelatud või seadistamata, siis ei edastata gnubby autentimistaotlusi puhverserveri abil.</translation>
-<translation id="5900959132054596599">Brauser <ph name="PRODUCT_NAME" /> ja ARC-rakendused mööduvad siin loetletud hostide puhul kõikidest puhverserveritest.
-
-          Reegel kehtib vaid juhul, kui valisite jaotises „Valige puhverserveri seadete määramise viis” puhverserveri käsitsi seadistamise.
-
-          Jätke see reegel määramata, kui valisite puhverserveri reeglite seadistamiseks muu viisi.
-
-          Vaadake üksikasjalikke näiteid:
-          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="5921713479449475707">Automaatsete allalaadimiste lubamine HTTP kaudu</translation>
 <translation id="5921888683953999946">Sisselogimisekraanil suure kursori hõlbustusfunktsiooni vaikeoleku määramine.
 
@@ -1951,9 +1878,6 @@
 
       Kui keelate seade või jätate selle määramata, kasutab rakendus <ph name="PRODUCT_NAME" /> kasutaja määratud eelistatud lokaati (kui see on seadistatud), süsteemi lokaati või varulokaati „en-US”.</translation>
 <translation id="7651739109954974365">Määrab, kas seadmes on andmeside rändlusteenus lubatud. Selle reegli aktiveerimisel on andmeside rändlusteenus lubatud. Kui jätate selle reegli seadistamata või keelate, siis ei ole andmeside rändlusteenus saadaval.</translation>
-<translation id="7667184304362487902">Seadistab brauseri <ph name="PRODUCT_NAME" /> ja ARC-rakenduste puhverserveri seaded.
-
-      See reegel ei ole veel kasutamiseks valmis, ärge kasutage seda.</translation>
 <translation id="76810863974142048">URL, kust kaugjuurdepääsu kliendid peavad hankima autentimismärgi.
 
           Kui reegel on määratud, nõuab kaugjuurdepääsu host, et kliendid hangiksid autentimiseks ja ühenduse loomiseks sellelt URL-ilt märgi. Reeglit tuleb kasutada koos reegliga RemoteAccessHostTokenValidationUrl.
@@ -2184,6 +2108,7 @@
 
       Määrake reegli väärtus millisekundites.</translation>
 <translation id="8344454543174932833">Impordi järjehoidjad vaikebrauserist esmakordsel käitamisel</translation>
+<translation id="8359734107661430198">Luba ExampleDeprecatedFeature API kuni 02.09.2008</translation>
 <translation id="8360452361555133173">Lubab brauseri esmakordsel käivitamisel pärast operatsioonisüsteemi täiendamist näidata tervituslehte.
 
       Kui reegli väärtuseks määratakse Tõene või seda ei seadistata, kuvab brauser esmakordsel käivitamisel pärast operatsioonisüsteemi täiendamist uuesti tervituslehe.

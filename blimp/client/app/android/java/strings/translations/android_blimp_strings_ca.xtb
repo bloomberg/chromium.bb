@@ -8,6 +8,7 @@
 <translation id="2078561879028077171">Informació de la versió</translation>
 <translation id="2117453604279487107">URL de l'eina d'assignació</translation>
 <translation id="2353984724370197742">No s'ha pogut obtenir l'assignació. S'ha produït un error a la sol·licitud de xarxa.</translation>
+<translation id="2789927415041640472">Reinicieu l'aplicació per poder utilitzar la nova configuració de l'eina d'assignació.</translation>
 <translation id="3046825211487065480">No s'ha pogut obtenir l'assignació. La segona sol·licitud s'ha enviat abans de rebre resposta per a la primera.</translation>
 <translation id="3286538390144397061">Reinicia ara</translation>
 <translation id="3346106862344060497">El motor s'ha connectat.</translation>
@@ -22,6 +23,7 @@
 <translation id="5860346505531085166">No s'ha pogut obtenir l'assignació. El compte no hi té accés.</translation>
 <translation id="6232798399907177395">Sobre Blimp</translation>
 <translation id="704835510384979817">No s'ha pogut obtenir l'assignació. La versió del motor no és correcta.</translation>
+<translation id="7145680970336344212">Reinicieu Blimp</translation>
 <translation id="7536363920335771251">El motor s'ha desconnectat pel motiu següent: %1$s</translation>
 <translation id="7596558890252710462">Sistema operatiu</translation>
 <translation id="7608553142876436780">IP del motor</translation>

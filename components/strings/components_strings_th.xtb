@@ -21,6 +21,7 @@
 <translation id="112840717907525620">แคชนโยบายใช้ได้</translation>
 <translation id="113188000913989374"><ph name="SITE" /> บอกว่า:</translation>
 <translation id="1132774398110320017">การตั้งค่าป้อนข้อความอัตโนมัติของ Chrome...</translation>
+<translation id="113770840981343808">ป้อน CVC 4 หลักจากด้านหน้าบัตรเพื่อยืนยัน</translation>
 <translation id="1146673768181266552">รหัสข้อขัดข้อง <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">เซิร์ฟเวอร์นี้ไม่สามารถพิสูจน์ได้ว่าเป็น <ph name="DOMAIN" /> เพราะระบบปฏิบัติการของคอมพิวเตอร์ของคุณไม่เชื่อถือใบรับรองความปลอดภัย โดยอาจเกิดจากการกำหนดค่าผิดหรือผู้บุกรุกที่ขัดขวางการเชื่อมต่อของคุณ</translation>
 <translation id="1152921474424827756">เข้าถึง<ph name="BEGIN_LINK" />สำเนาแคช<ph name="END_LINK" />ของ <ph name="URL" /></translation>
@@ -118,7 +119,6 @@
 <translation id="2212735316055980242">ไม่พบนโยบาย</translation>
 <translation id="2213606439339815911">กำลังดึงรายการ...</translation>
 <translation id="2214283295778284209"><ph name="SITE" /> ไม่พร้อมใช้งาน</translation>
-<translation id="2227695659599072496">ตรวจสอบสายของเครือข่ายหรือเราเตอร์</translation>
 <translation id="2230458221926704099">แก้ไขการเชื่อมต่อของคุณด้วย<ph name="BEGIN_LINK" />แอปการวินิจฉัย<ph name="END_LINK" /></translation>
 <translation id="225207911366869382">เลิกใช้งานค่านี้กับนโยบายนี้</translation>
 <translation id="2262243747453050782">ข้อผิดพลาดของ HTTP</translation>
@@ -131,6 +131,7 @@
 <translation id="2317259163369394535"><ph name="DOMAIN" /> ต้องใช้ชื่อผู้ใช้และรหัสผ่าน</translation>
 <translation id="2328300916057834155">บุ๊กมาร์กที่ไม่ถูกต้องถูกเพิกเฉยที่ดัชนี <ph name="ENTRY_INDEX" /></translation>
 <translation id="2354001756790975382">บุ๊กมาร์กอื่นๆ</translation>
+<translation id="2357783041215512127">ชำระด้วย <ph name="CREDIT_CARD" /></translation>
 <translation id="2359808026110333948">ดำเนินการต่อ</translation>
 <translation id="2367567093518048410">ระดับ</translation>
 <translation id="237718015863234333">ไม่มีทางเลือก UI ที่พร้อมใช้งาน</translation>
@@ -228,7 +229,6 @@
 <translation id="3254409185687681395">บุ๊กมาร์กหน้านี้</translation>
 <translation id="3270847123878663523">&amp;เลิกทำการจัดลำดับใหม่</translation>
 <translation id="3286538390144397061">รีสตาร์ทเดี๋ยวนี้</translation>
-<translation id="3288003805934695103">โหลดหน้าใหม่</translation>
 <translation id="3305707030755673451">ข้อมูลของคุณได้รับการเข้ารหัสด้วยรหัสผ่านการซิงค์เมื่อวันที่ <ph name="TIME" /> โปรดป้อนรหัสผ่านเพื่อเริ่มซิงค์</translation>
 <translation id="333371639341676808">ป้องกันหน้านี้จากการสร้างการโต้ตอบเพิ่มเติม</translation>
 <translation id="3340978935015468852">การตั้งค่า</translation>
@@ -300,7 +300,6 @@
 <translation id="3963721102035795474">โหมดนักอ่าน</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> ถูกบล็อก</translation>
 <translation id="4021036232240155012">DNS คือบริการเครือข่ายที่แปลชื่อของเว็บไซต์เป็นที่อยู่อินเทอร์เน็ต</translation>
-<translation id="4021376465026729077">ปิดส่วนขยาย</translation>
 <translation id="4030383055268325496">&amp;เลิกทำการเพิ่ม</translation>
 <translation id="4032534284272647190">การเข้าถึง <ph name="URL" /> ถูกปฏิเสธ</translation>
 <translation id="404928562651467259">คำเตือน</translation>
@@ -398,7 +397,6 @@
 <translation id="5251803541071282808">ระบบคลาวด์</translation>
 <translation id="5299298092464848405">ข้อผิดพลาดในการแยกวิเคราะห์นโยบาย</translation>
 <translation id="5300589172476337783">แสดง</translation>
-<translation id="5307361445257083764"><ph name="BEGIN_LINK" />ล้างคุกกี้<ph name="END_LINK" /></translation>
 <translation id="5308689395849655368">การรายงานข้อขัดข้องถูกปิดใช้งาน</translation>
 <translation id="5317780077021120954">บันทึก</translation>
 <translation id="5327248766486351172">ชื่อ</translation>
@@ -432,6 +430,7 @@
 <translation id="5629630648637658800">ไม่สามารถโหลดการตั้งค่านโยบาย</translation>
 <translation id="5631439013527180824">โทเค็นการจัดการอุปกรณ์ไม่ถูกต้อง</translation>
 <translation id="5650551054760837876">ไม่พบผลลัพธ์การค้นหา</translation>
+<translation id="5663999524854166235">ป้อน CVC 3 หลักจากด้านหลังบัตรเพื่อยืนยัน</translation>
 <translation id="5677928146339483299">ถูกบล็อก</translation>
 <translation id="5710435578057952990">ข้อมูลประจำตัวของเว็บไซต์นี้ยังไม่ได้รับการยืนยัน</translation>
 <translation id="5720705177508910913">ผู้ใช้ปัจจุบัน</translation>
@@ -504,7 +503,6 @@
 <translation id="6628463337424475685"><ph name="ENGINE" /> ค้นหา</translation>
 <translation id="6634865548447745291">คุณไม่สามารถไปที่ <ph name="SITE" /> ได้ในขณะนี้ เนื่องจาก<ph name="BEGIN_LINK" />ใบรับรองนี้ถูกเพิกถอนแล้ว<ph name="END_LINK" /> โดยปกติข้อผิดพลาดของเครือข่ายและการบุกรุกจะเกิดขึ้นเพียงชั่วคราว หน้านี้จึงน่าจะใช้งานได้ในภายหลัง</translation>
 <translation id="6637478299472506933">การดาวน์โหลดล้มเหลว</translation>
-<translation id="6642894344118208103">รีเซ็ตโมเด็มหรือเราเตอร์</translation>
 <translation id="6644283850729428850">นโยบายนี้ถูกยกเลิกแล้ว</translation>
 <translation id="6646897916597483132">ป้อน CVC 4 หลักจากด้านหน้าบัตร</translation>
 <translation id="6656103420185847513">แก้ไขโฟลเดอร์</translation>

@@ -60,6 +60,7 @@
 <translation id="1742134235943978220">Переведено на <ph name="TARGET_LANGUAGE" />.</translation>
 <translation id="1749561566933687563">Синхронизируйте закладки</translation>
 <translation id="17513872634828108">Открытые вкладки</translation>
+<translation id="1756600373018374892">Используйте эту кнопку для быстрого доступа к вкладкам.</translation>
 <translation id="1807246157184219062">Светлый</translation>
 <translation id="1825719650605518411">Первый запуск</translation>
 <translation id="1829244130665387512">Найти на странице</translation>
@@ -70,6 +71,7 @@
 <translation id="194341124344773587">Разрешение для Chrome можно предоставить в <ph name="BEGIN_LINK" />настройках Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Сохранение паролей</translation>
 <translation id="1944384637046898011">Зашифровать все с помощью пароля аккаунта Google с <ph name="TIME" /></translation>
+<translation id="1946005195648379376">Укажите, как Google может использовать историю просмотров для персонализации Поиска и других сервисов.</translation>
 <translation id="1959930595721737608">Разрешить JavaScript на указанных сайтах.</translation>
 <translation id="1966710179511230534">Обновите учетные данные</translation>
 <translation id="1974060860693918893">Дополнительные</translation>
@@ -95,9 +97,7 @@
 <translation id="2206488550163399966">Приложение "<ph name="APP_NAME" />" (<ph name="APP_URL" />)</translation>
 <translation id="2268044343513325586">Уточнить</translation>
 <translation id="2315043854645842844">Сертификат, выбранный клиентом, не поддерживается операционной системой.</translation>
-<translation id="2316129865977710310">Спасибо, не надо</translation>
 <translation id="2321958826496381788">Перемещайте ползунок, пока текст не станет удобным для чтения. После двойного нажатия на абзац текст должен быть такого размера.</translation>
-<translation id="2329597144923131178">Войдите, чтобы синхронизировать закладки, пароли, историю и т. д. на всех устройствах.</translation>
 <translation id="2343328333327081434">Установка…</translation>
 <translation id="2351097562818989364">Настройки перевода сброшены</translation>
 <translation id="2359808026110333948">Далее</translation>
@@ -138,6 +138,7 @@
 <translation id="2842985007712546952">Родительская папка</translation>
 <translation id="2870560284913253234">Сайт</translation>
 <translation id="2888126860611144412">О браузере Chrome</translation>
+<translation id="2889768325388591707">Быстрое переключение между вкладками</translation>
 <translation id="2891154217021530873">Остановить загрузку страницы</translation>
 <translation id="2902702728133930130">При запуске Chrome произошла непредвиденная ошибка.</translation>
 <translation id="2903493209154104877">Адреса</translation>
@@ -155,6 +156,9 @@
 <translation id="3089395242580810162">Открыть в режиме инкогнито</translation>
 <translation id="3090193911106258841">Доступ к аудио- и видеовходу</translation>
 <translation id="3137521801621304719">Выключить режим инкогнито</translation>
+<translation id="3149891296864842641">Выберите вариант отправки</translation>
+<translation id="3162882791484435636">Выбрать вариант отправки</translation>
+<translation id="3173438333156928404">Не удалось обработать платеж</translation>
 <translation id="3177909033752230686">Язык страницы:</translation>
 <translation id="3190152372525844641">Разрешения для Chrome можно предоставить в <ph name="BEGIN_LINK" />настройках Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905">В памяти занято: <ph name="STORAGE_AMOUNT" /></translation>
@@ -269,10 +273,8 @@
 <translation id="4875622588773761625">Обновить пароль для этого сайта в сервисе "<ph name="PASSWORD_MANAGER_BRAND" />"?</translation>
 <translation id="4881695831933465202">Открыть</translation>
 <translation id="4885273946141277891">Конфликт версий Chrome</translation>
+<translation id="4923459931733593730">Платеж</translation>
 <translation id="4943872375798546930">Нет результатов</translation>
-<translation id="4970484396410298643">Просматривайте одни и те же вкладки на компьютере и мобильном устройстве.
-
-Для этого откройте меню браузера на компьютере и выберите пункт "Войти в Chrome".</translation>
 <translation id="497421865427891073">Вперед</translation>
 <translation id="4996978546172906250">Способ отправки</translation>
 <translation id="5000922062037820727">Заблокировано (рекомендуется)</translation>
@@ -296,9 +298,7 @@
 <translation id="5184329579814168207">Открыть в Chrome</translation>
 <translation id="5199929503336119739">Рабочий профиль</translation>
 <translation id="5210365745912300556">Закрыть вкладку</translation>
-<translation id="5210714456814679336">Здесь появятся вкладки, открытые в Chrome на других устройствах.</translation>
 <translation id="5222676887888702881">Выйти</translation>
-<translation id="5228579091201413441">Включить синхронизацию</translation>
 <translation id="5233638681132016545">Новая вкладка</translation>
 <translation id="5271967389191913893">Не удается открыть скачанный контент.</translation>
 <translation id="5275558766013849309">Каждая вкладка будет отображаться в виде отдельного окна в списке открытых приложений.</translation>
@@ -342,9 +342,6 @@
 <translation id="5677928146339483299">Заблокировано</translation>
 <translation id="5684874026226664614">Не удалось перевести страницу</translation>
 <translation id="5708031556037168012">Добавленные ранее данные останутся в памяти устройства, а новый контент будет всегда импортироваться в аккаунт <ph name="TO_ACCOUNT" />.</translation>
-<translation id="5712189971979076230">Расскажите, на какие проблемы нам стоит обратить внимание прежде всего. Для этого отправляйте в Google сведения о файлах, приложениях и сервисах, в работе которых возникли сбои.
-
-В статистику использования включаются сведения о настройках, нажатиях кнопок и использовании памяти, но не входят URL веб-страниц и личная информация. Отчеты о сбоях содержат системную информацию на момент сбоя, а иногда также URL веб-страниц и личные данные (в зависимости от того, как использовался браузер).</translation>
 <translation id="5719837394786370183">Страницы, открытые в этом окне, не останутся в истории браузера или поиска. Они не оставят на компьютере следов, таких как файлы cookie, после того как вы закроете все вкладки инкогнито. Скачанные вами файлы и добавленные закладки будут сохранены.
 
 В режиме инкогнито ваши действия видны системному администратору и интернет-провайдеру, а также доступны веб-сайтам, которые вы посещаете.</translation>
@@ -463,6 +460,7 @@
 <translation id="7180611975245234373">Обновить</translation>
 <translation id="7191430249889272776">Вкладка открыта в фоновом режиме</translation>
 <translation id="7208788139759694678">Расширение "Экономия трафика" отключено</translation>
+<translation id="7220786058474068424">Подождите…</translation>
 <translation id="7243308994586599757">Доступные параметры указаны в нижней части экрана</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> использует ваше местоположение, чтобы показывать результаты поиска по адресам.</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Справка<ph name="END_LINK" /></translation>
@@ -516,6 +514,7 @@
 <translation id="7846076177841592234">Отменить выбор</translation>
 <translation id="7851858861565204677">Другие устройства</translation>
 <translation id="7876243839304621966">Удалить все</translation>
+<translation id="7902333740914687335">Платеж обработан</translation>
 <translation id="7947953824732555851">Принять и войти</translation>
 <translation id="7949961459945740081">C новыми функциями</translation>
 <translation id="7963646190083259054">Поставщик:</translation>
@@ -539,6 +538,7 @@
 <translation id="8168435359814927499">Контент</translation>
 <translation id="8173098127580644436">все время</translation>
 <translation id="8200772114523450471">Возобновить</translation>
+<translation id="8202097416529803614">Информация о заказе</translation>
 <translation id="8209050860603202033">Открыть изображение</translation>
 <translation id="8215250379351058554">Сайт <ph name="SITE" /> запрашивает подключение к:</translation>
 <translation id="8218346974737627104">Подтвердите вход</translation>
@@ -595,6 +595,8 @@
 <translation id="8942627711005830162">Открыть в новом окне</translation>
 <translation id="8959122750345127698">Страница не найдена: <ph name="URL" /></translation>
 <translation id="8979340629087822094">вчерашний день</translation>
+<translation id="8981454092730389528">Отслеживание действий в Google</translation>
+<translation id="8986494364107987395">Автоматически отправлять в Google статистику использования и отчеты о сбоях</translation>
 <translation id="8987061207681586800">Ваш персональный Chrome</translation>
 <translation id="9019902583201351841">Управляется вашими родителями</translation>
 <translation id="9020607083536754075">Закрыть текущую вкладку и вернуться к приложению</translation>

@@ -8,6 +8,7 @@
 <translation id="2078561879028077171">Info Versi</translation>
 <translation id="2117453604279487107">URL Pemberi Tugas</translation>
 <translation id="2353984724370197742">Penugasan gagal.  Permintaan jaringan gagal.</translation>
+<translation id="2789927415041640472">Mulai ulang aplikasi untuk menggunakan konfigurasi pemberi tugas yang baru.</translation>
 <translation id="3046825211487065480">Penugasan gagal.  Permintaan kedua dikirim sebelum permintaan pertama ditanggapi.</translation>
 <translation id="3286538390144397061">Mulai Ulang Sekarang</translation>
 <translation id="3346106862344060497">Perangkat tersambung.</translation>
@@ -22,6 +23,7 @@
 <translation id="5860346505531085166">Penugasan gagal.  Akun tidak memiliki akses.</translation>
 <translation id="6232798399907177395">Tentang Blimp</translation>
 <translation id="704835510384979817">Penugasan gagal.  Tidak ada versi mesin yang sesuai.</translation>
+<translation id="7145680970336344212">Mulai ulang Blimp</translation>
 <translation id="7536363920335771251">Sambungan perangkat terputus, alasan: %1$s</translation>
 <translation id="7596558890252710462">Sistem operasi</translation>
 <translation id="7608553142876436780">IP Mesin</translation>

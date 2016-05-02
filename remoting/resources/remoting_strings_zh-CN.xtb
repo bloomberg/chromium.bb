@@ -178,7 +178,6 @@
 <translation id="533625276787323658">没有可连接到的计算机</translation>
 <translation id="5363265567587775042">请让您想访问其计算机的用户点击“<ph name="SHARE" />”，然后向您提供访问代码。</translation>
 <translation id="5379087427956679853">Chrome 远程桌面可让您通过网络安全地共享自己的计算机。双方用户必须同时运行 Chrome 远程桌面应用（下载地址为 <ph name="URL" />）。</translation>
-<translation id="5394895745784982830">适用于 Mac（OS X 10.6 及更高版本）</translation>
 <translation id="5397086374758643919">Chrome 远程桌面主机卸载程序</translation>
 <translation id="5419185025274123272">无法重置该应用。您仍可以发送错误报告。</translation>
 <translation id="544077782045763683">主机已关机。</translation>
@@ -232,7 +231,6 @@
 <translation id="6930242544192836755">持续时间</translation>
 <translation id="6939719207673461467">显示/隐藏键盘。</translation>
 <translation id="6944854424004126054">恢复窗口</translation>
-<translation id="6962773374262604195">适用于 Windows（XP 及更高版本）</translation>
 <translation id="6965382102122355670">确定</translation>
 <translation id="6985691951107243942">您确定要停用与“<ph name="HOSTNAME" />”的远程连接吗？如果您日后想要重新启用连接，需要访问该计算机。</translation>
 <translation id="6998989275928107238">指向</translation>

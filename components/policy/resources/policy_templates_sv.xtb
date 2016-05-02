@@ -2,9 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sv">
 <translation id="101438888985615157">Rotera skärmen 180 grader</translation>
-<translation id="1015272884520659144">Definierar vilka USB-enheter som får kopplas bort från sina kärndrivrutiner så att de kan användas direkt i en webbapp med API:et chrome.usb. Posterna i listan består av id-par för USB, leverantörs-id och produkt-id, som tillsammans identifierar maskinvaran.
-
-      Om principen inte har konfigurerats betraktas listan med frånkopplingsbara USB-enheter som tom.</translation>
 <translation id="1017967144265860778">Energibesparing på inloggningssidan</translation>
 <translation id="1019101089073227242">Ange katalog för användardata</translation>
 <translation id="1022361784792428773">Tilläggs-ID:n som användaren inte får installera (eller * om det gäller alla)</translation>
@@ -73,14 +70,6 @@
       Om principen inte har ställts in eller är inställd på falskt kommer RC4-krypteringssviter inte att aktiveras. Principen kan ställas in som sant om kompatibilitet med en föråldrad server önskas bibehållas. Detta är en nödlösning, och servern bör omkonfigureras.</translation>
 <translation id="1297182715641689552">Använd en PAC-proxyskript</translation>
 <translation id="1304973015437969093">Tilläggs-/app-id:n och uppdateringsadresser som ska installeras obemärkt</translation>
-<translation id="1310699457130669094">Här kan du ange webbadressen till en PAC-fil för proxy.
-
-          Den här policyn gäller bara om du har valt manuella proxyinställningar vid Välj hur inställningar för proxyserver ska anges.
-
-          Ange inte den här policyn om du har valt något annat läge för inställning av proxypolicyer.
-
-          Detaljerade exempel finns på:
-          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1313457536529613143">Anger den procentsats med vilken fördröjningen av skärmdämpningen skalanpassas när användaren gör något då skärmen är dämpad eller strax efter det att skärmen har stängts av.
 
           Om den här principen är inställd anges den procentsats med vilken fördröjningen av skärmdämpningen skalanpassas när användaren gör något eller strax efter det att skärmen har stängts av. När dämpningsfördröjningen skalanpassas anpassas fördröjningen av avstängningen av skärmen, skärmlåset och dödtiden så att samma avstånd från den ursprungligen angivna fördröjningen av skärmdämpningen bibehålls.
@@ -163,18 +152,6 @@
 <translation id="1561424797596341174">Åsidosättningar av policyn för felsökningsversioner av fjärråtkomstvärden</translation>
 <translation id="1583248206450240930">Använd <ph name="PRODUCT_FRAME_NAME" /> som standard</translation>
 <translation id="1608755754295374538">Webbadresser som ska ges tillgång till ljudinspelningsenheter utan meddelande</translation>
-<translation id="1613574633990410986">Med den här principen kan du ange vilken proxyserver som används av <ph name="PRODUCT_NAME" /> och ARC-apparna samt förhindra att användare ändrar sina proxyinställningar.
-
-      Om du väljer att aldrig använda en proxyserver och alltid ansluta direkt ignoreras alla andra alternativ.
-
-      Om du väljer att proxyservrar ska upptäckas automatiskt ignoreras alla andra alternativ.
-
-      Mer ingående exempel hittar du på:
-      <ph name="PROXY_HELP_URL" />
-
-      Om du aktiverar inställningen ignorerar <ph name="PRODUCT_NAME" /> och ARC-appar alla proxyrelaterade alternativ som har angetts i kommandoraden.
-
-      Om du inte anger inställningarna kan användarna själva välja proxyinställningar.</translation>
 <translation id="1617235075406854669">Aktivera borttagning av webb- och nedladdningshistorik</translation>
 <translation id="1617384279878333801">Gör att en person kan läggas till i profilhanteraren</translation>
 <translation id="1655229863189977773">Ange enhetens cachestorlek i byte</translation>
@@ -269,14 +246,6 @@
       Om funktionen aktiveras visas en stor röd utloggningsknapp i systemfältet medan en session är aktiv och skärmen inte är låst.
 
       Om funktionen inaktiveras eller inte används visas ingen stor röd utloggningsknapp i systemfältet.</translation>
-<translation id="1942957375738056236">Här kan du ange proxyserverns webbadress.
-
-          Den här policyn används bara om du har valt manuella proxyinställningar under Välj hur inställningar för proxyserver ska anges.
-
-          Ställ inte in den här policyn om du har valt något annat läge för inställningar av proxypolicyer.
-
-          Fler alternativ och detaljerade exempel finns på:
-          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1956493342242507974">Konfigurera  energihanteringen på inloggningsskärmen i <ph name="PRODUCT_OS_NAME" />.
 
       Med den här principen kan du konfigurera hur <ph name="PRODUCT_OS_NAME" /> ska fungera om inte användaren gör något under en viss tid när inloggningsskärmen visas. Den här principen styr flera inställningar. Deras enskilda semantik och värdeintervaller finns i motsvarande principer som styr energihanteringen under en session. Det här är enda avvikelserna från dessa principer:
@@ -667,24 +636,6 @@
 <translation id="3072847235228302527">Ange användarvillkor för ett lokalt enhetskonto</translation>
 <translation id="3096595567015595053">Lista med aktiverade plugin-program</translation>
 <translation id="3101501961102569744">Välj hur inställningar för proxyserver ska anges</translation>
-<translation id="3125884964575432854">Med den här principen kan du ange vilken proxyserver som används av <ph name="PRODUCT_NAME" /> och ARC-appar samt förhindra att användare ändrar sina proxyinställningar.
-
-          Om du väljer att aldrig använda en proxyserver och alltid ansluta direkt ignoreras alla andra alternativ.
-
-          Om du väljer att använda datorns proxyinställningar ignoreras alla andra alternativ.
-
-          Om du väljer att proxyservrar ska upptäckas automatiskt ignoreras alla andra alternativ.
-
-          Om du väljer läget för fast serverproxy kan du ange fler alternativ i fälten Proxyserverns adress eller webbadress och Kommaavgränsad lista med regler för proxybypass. ARC-appar använder bara den HTTP-proxyserver som har högst prioritet.
-
-          Om du väljer att använda ett pac-proxyskript måste du ange webbadressen till skriptet i fältet Webbadress till en pac-proxyfil.
-
-      Mer ingående exempel hittar du på:
-      <ph name="PROXY_HELP_URL" />
-
-      Om du aktiverar inställningen ignorerar <ph name="PRODUCT_NAME" /> och ARC-appar alla proxyrelaterade alternativ som har angetts i kommandoraden.
-
-      Om du inte anger inställningarna kan användarna själva välja proxyinställningar.</translation>
 <translation id="3153348162326497318">Policyn gör att du kan ange vilka tillägg användarna INTE får installera. Tillägg som redan finns installerade tas bort om du svartlistar dem.
 
           Om du svartlistar värdet * svartlistas alla tillägg som du inte uttryckligen tillåter på vitlistan.
@@ -757,6 +708,7 @@
       Om inställningen är aktiverad eller inte har konfigurerats kan användarna aktivera molnutskriftsproxyn genom autentisering med deras Google-konton.
 
       Om inställningen inte är inaktiverad kan användarna inte aktivera proxyn och datorn tillåts inte att dela skrivare med <ph name="CLOUD_PRINT_NAME" />.</translation>
+<translation id="3297010562646015826">Gör det möjligt att avsluta processer i Aktivitetshanteraren</translation>
 <translation id="3322771899429619102">Policyn gör att du kan ange en lista med webbadressmönster som anger vilka webbplatser som får använda nyckelgenerering. Om ett webbadressmönster har policyn KeygenBlockedForUrls åsidosätts dessa undantag.
 
           Om policyn inte anges används den globala standardpolicyn för alla webbplatser. Standardvärdet hämtas antingen från policyn DefaultKeygenSetting om den har angetts, eller från användarens personliga konfiguration om den inte har det.</translation>
@@ -943,22 +895,6 @@
           Om principen är inställd på Behåll cookies under hela sessionen kommer cookies att tas bort när sessionen avslutas. Observera att om <ph name="PRODUCT_NAME" /> körs i bakgrundsläge kan det hända att sessionen inte avslutas även om det sista fönstret stängs. Se principen BackgroundModeEnabled för mer information om konfigurering av detta.
 
           Om inget värde anges för principen används AllowCookies och användaren kan ändra inställningen.</translation>
-<translation id="4098957623809244159">Den här principen är utfasad. Använd ProxyMode istället.
-
-          Med den här principen kan du ange vilken proxyserver som används av <ph name="PRODUCT_NAME" /> och ARC-appar samt förhindra att användare ändrar sina proxyinställningar.
-
-          Om du väljer att aldrig använda en proxyserver och alltid ansluta direkt ignoreras alla andra alternativ.
-
-          Om du väljer att använda datorns proxyinställningar eller att proxyservern ska upptäckas automatiskt ignoreras alla andra alternativ.
-
-          Om du väljer manuella proxyinställningar kan du ange fler alternativ i fälten Proxyserverns adress eller webbadress och Kommaavgränsad lista med regler för proxybypass.
-
-          Mer ingående exempel hittar du på:
-          <ph name="PROXY_HELP_URL" />
-
-          Om du aktiverar inställningen ignorerar <ph name="PRODUCT_NAME" /> och ARC-appar alla proxyrelaterade alternativ som har angetts i kommandoraden.
-
-          Om du inte anger inställningarna kan användarna själva välja proxyinställningar.</translation>
 <translation id="4103289232974211388">Omdirigera till SAML IdP när användaren har bekräftat</translation>
 <translation id="410478022164847452">Anger efter hur lång tid utan åtgärd från användaren som inaktivitetsåtgärden vidtas när enheten är ansluten till elnätet.
 
@@ -1442,15 +1378,6 @@
 <translation id="5893553533827140852">Om inställningen är aktiverad kommer gnubby-autentiseringsbegäranden att skickas via proxy via en fjärranslutning.
 
           Om inställningen är inaktiverad eller inte konfigurerad kommer gnubby-autentiseringsbegäranden inte att skickas via proxy.</translation>
-<translation id="5900959132054596599"><ph name="PRODUCT_NAME" /> förbigår proxyn för listan med värdenheter som anges här.
-
-          Den här principen används bara om du har valt manuella proxyinställningar i Välj hur inställningar för proxyserver ska anges.
-
-          Ange inte den här principen om du har valt något annat läge för inställning av proxyprinciper.
-
-          Mer ingående exempel hittar du på:
-
-          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="5921713479449475707">Tillåt nedladdning av automatiska uppdateringar via HTTP</translation>
 <translation id="5921888683953999946">Ange standardläget för hjälpmedelsfunktionen med en stor markör på inloggningsskärmen.
 
@@ -1979,9 +1906,6 @@
 
       Om inställningen inaktiveras eller inte är konfigurerad använder <ph name="PRODUCT_NAME" /> antingen den språkversion som användaren anger (om den är konfigurerad), samma språk som datorn eller standardversionen en-US.</translation>
 <translation id="7651739109954974365">Avgör om dataroaming ska vara tillåtet för enheten. Om värdet är sant är dataroaming tillåten. Om policyn inte är konfigurerad eller om värdet är falskt är dataroaming inte tillåten.</translation>
-<translation id="7667184304362487902">Konfigurerar proxyinställningarna för <ph name="PRODUCT_NAME" /> och ARC-appar.
-
-      Använd inte den här principen. Den är inte färdig ännu.</translation>
 <translation id="76810863974142048">Webbadress där fjärråtkomstklienter erhåller sin autentiseringstoken.
 
           Om den här policyn är inställd kräver fjärråtkomstvärden autentisering av klienter för att de ska kunna erhålla en autentiseringstoken från webbadressen och kunna ansluta. Måste användas i samband med RemoteAccessHostTokenValidationUrl.
@@ -2213,6 +2137,7 @@
 
       Policyns värde anges i millisekunder.</translation>
 <translation id="8344454543174932833">Importera bokmärken från standardwebbläsaren första gången den körs</translation>
+<translation id="8359734107661430198">Aktivera API:et ExampleDeprecatedFeature sedan 2008-09-02.</translation>
 <translation id="8360452361555133173">Visa välkomstsidan när webbläsaren startas första gången efter en uppgradering av operativsystemet.
 
       Om policyn är inställd på sant eller inte har konfigurerats visas välkomstsidan på nytt i webbläsaren när den startas för första gången efter en uppgradering av operativsystemet.

@@ -178,7 +178,6 @@ Desktop Host</translation>
 <translation id="533625276787323658">Det finns inget att ansluta till</translation>
 <translation id="5363265567587775042">Be användaren vars dator du vill använda att klicka på <ph name="SHARE" /> och ge dig åtkomstkoden.</translation>
 <translation id="5379087427956679853">Med Chrome Remote Desktop kan du dela din dator via internet på ett säkert sätt. Båda användarna måste köra appen Chrome Remote Desktop som du hittar på <ph name="URL" />.</translation>
-<translation id="5394895745784982830">För Mac (OS X 10.6 eller senare)</translation>
 <translation id="5397086374758643919">Chrome Remote Desktop Host Uninstaller</translation>
 <translation id="5419185025274123272">Det gick inte att återställa programmet. Du kan fortfarande skicka en felrapport.</translation>
 <translation id="544077782045763683">Värdenheten har stängts av.</translation>
@@ -232,7 +231,6 @@ Desktop Host</translation>
 <translation id="6930242544192836755">Varaktighet</translation>
 <translation id="6939719207673461467">Visa/dölj tangentbordet.</translation>
 <translation id="6944854424004126054">Återställ fönstret</translation>
-<translation id="6962773374262604195">För Windows (XP eller senare)</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6985691951107243942">Är du säker på att du vill inaktivera fjärranslutningar till <ph name="HOSTNAME" />? Om du ångrar dig måste du besöka datorn för att kunna aktivera anslutningar igen.</translation>
 <translation id="6998989275928107238">Till</translation>

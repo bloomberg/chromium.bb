@@ -8,6 +8,7 @@
 <translation id="2078561879028077171">버전 정보</translation>
 <translation id="2117453604279487107">할당자 URL</translation>
 <translation id="2353984724370197742">할당하지 못했습니다. 네트워크 요청에 실패했습니다.</translation>
+<translation id="2789927415041640472">새로운 할당자 구성을 사용하려면 애플리케이션을 다시 시작하세요.</translation>
 <translation id="3046825211487065480">할당하지 못했습니다. 첫 번째 요청이 응답되기 전에 두 번째 요청이 전송되었습니다.</translation>
 <translation id="3286538390144397061">지금 다시 시작</translation>
 <translation id="3346106862344060497">엔진이 연결되었습니다.</translation>
@@ -22,6 +23,7 @@
 <translation id="5860346505531085166">할당하지 못했습니다. 계정에 액세스 권한이 없습니다.</translation>
 <translation id="6232798399907177395">Blimp 정보</translation>
 <translation id="704835510384979817">할당하지 못했습니다. 일치하는 엔진 버전이 없습니다.</translation>
+<translation id="7145680970336344212">Blimp 다시 시작</translation>
 <translation id="7536363920335771251">다음 이유로 엔진 연결이 해제되었습니다. %1$s</translation>
 <translation id="7596558890252710462">운영체제</translation>
 <translation id="7608553142876436780">엔진 IP</translation>

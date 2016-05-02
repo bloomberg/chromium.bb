@@ -8,6 +8,7 @@
 <translation id="2078561879028077171">Informations sur la version</translation>
 <translation id="2117453604279487107">URL de l'autorité d'attribution</translation>
 <translation id="2353984724370197742">Échec de l'attribution. Échec de la demande réseau.</translation>
+<translation id="2789927415041640472">Veuillez relancer l'application pour utiliser la nouvelle configuration de l'autorité d'attribution.</translation>
 <translation id="3046825211487065480">Échec de l'attribution. Deuxième demande envoyée avant la réponse de la première demande.</translation>
 <translation id="3286538390144397061">Redémarrer maintenant</translation>
 <translation id="3346106862344060497">Moteur connecté.</translation>
@@ -22,6 +23,7 @@
 <translation id="5860346505531085166">Échec de l'attribution. Le compte ne dispose pas de l'accès.</translation>
 <translation id="6232798399907177395">À propos de Blimp</translation>
 <translation id="704835510384979817">Échec de l'attribution. Aucune version de moteur correspondante.</translation>
+<translation id="7145680970336344212">Relancer Blimp</translation>
 <translation id="7536363920335771251">Moteur déconnecté. Motif : %1$s</translation>
 <translation id="7596558890252710462">Système d'exploitation</translation>
 <translation id="7608553142876436780">Adresse IP du moteur</translation>

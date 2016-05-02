@@ -21,6 +21,7 @@
 <translation id="112840717907525620">ポリシー キャッシュは正常です</translation>
 <translation id="113188000913989374"><ph name="SITE" /> の内容:</translation>
 <translation id="1132774398110320017">Chrome の自動入力設定...</translation>
+<translation id="113770840981343808">確認のため、カードの表側に記載されている 4 桁の CVC を入力してください</translation>
 <translation id="1146673768181266552">クラッシュ ID <ph name="CRASH_ID" />（<ph name="CRASH_LOCAL_ID" />）</translation>
 <translation id="1150979032973867961">このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。このサーバーのセキュリティ証明書は、ご使用のパソコンのオペレーティング システムによって信頼されているものではありません。原因としては、不適切な設定や、悪意のあるユーザーによる接続妨害が考えられます。</translation>
 <translation id="1152921474424827756"><ph name="URL" /> の<ph name="BEGIN_LINK" />キャッシュ コピー<ph name="END_LINK" />にアクセスします</translation>
@@ -118,7 +119,6 @@
 <translation id="2212735316055980242">ポリシーが見つかりません</translation>
 <translation id="2213606439339815911">エントリを取得しています...</translation>
 <translation id="2214283295778284209"><ph name="SITE" /> に接続できません</translation>
-<translation id="2227695659599072496">ネットワーク ケーブルまたはルーターを確認する</translation>
 <translation id="2230458221926704099"><ph name="BEGIN_LINK" />診断アプリ<ph name="END_LINK" />を使用して接続を修正してください</translation>
 <translation id="225207911366869382">この値は、このポリシーではサポートが終了しています。</translation>
 <translation id="2262243747453050782">HTTP エラーです</translation>
@@ -131,6 +131,7 @@
 <translation id="2317259163369394535"><ph name="DOMAIN" /> にはユーザー名とパスワードが必要です。</translation>
 <translation id="2328300916057834155">インデックス <ph name="ENTRY_INDEX" /> の無効なブックマークを無視しました</translation>
 <translation id="2354001756790975382">その他のブックマーク</translation>
+<translation id="2357783041215512127"><ph name="CREDIT_CARD" /> でのお支払い</translation>
 <translation id="2359808026110333948">続行</translation>
 <translation id="2367567093518048410">レベル</translation>
 <translation id="237718015863234333">代替ユーザーインターフェースはありません</translation>
@@ -227,7 +228,6 @@
 <translation id="3254409185687681395">このページをブックマークに追加します</translation>
 <translation id="3270847123878663523">順序変更の取り消し（&amp;U）</translation>
 <translation id="3286538390144397061">今すぐ再起動</translation>
-<translation id="3288003805934695103">ページを再読み込みする</translation>
 <translation id="3305707030755673451">データは <ph name="TIME" /> に同期パスフレーズで暗号化されました。同期を開始するには、同期パスフレーズを入力してください。</translation>
 <translation id="333371639341676808">このページでこれ以上ダイアログボックスを生成しない</translation>
 <translation id="3340978935015468852">設定</translation>
@@ -299,7 +299,6 @@
 <translation id="3963721102035795474">リーダーモード</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> はブロックされています</translation>
 <translation id="4021036232240155012">DNS はウェブサイトの名前をインターネット アドレスに変換するネットワーク サービスです。</translation>
-<translation id="4021376465026729077">拡張機能を無効にする</translation>
 <translation id="4030383055268325496">追加の取り消し（&amp;U）</translation>
 <translation id="4032534284272647190"><ph name="URL" /> へのアクセスが拒否されました。</translation>
 <translation id="404928562651467259">警告</translation>
@@ -397,7 +396,6 @@
 <translation id="5251803541071282808">クラウド</translation>
 <translation id="5299298092464848405">ポリシーの解析中にエラーが発生しました</translation>
 <translation id="5300589172476337783">表示</translation>
-<translation id="5307361445257083764"><ph name="BEGIN_LINK" />Cookie を消去する<ph name="END_LINK" /></translation>
 <translation id="5308689395849655368">障害レポートが無効になっています。</translation>
 <translation id="5317780077021120954">保存</translation>
 <translation id="5327248766486351172">名前</translation>
@@ -431,6 +429,7 @@
 <translation id="5629630648637658800">ポリシー設定を読み込めませんでした</translation>
 <translation id="5631439013527180824">無効なデバイス管理トークンです</translation>
 <translation id="5650551054760837876">一致する情報はありません。</translation>
+<translation id="5663999524854166235">確認のため、カードの裏面に記載されている 3 桁の CVC を入力してください</translation>
 <translation id="5677928146339483299">ブロック</translation>
 <translation id="5710435578057952990">このウェブサイトの ID は確認されていません。</translation>
 <translation id="5720705177508910913">現在のユーザー</translation>
@@ -503,7 +502,6 @@
 <translation id="6628463337424475685"><ph name="ENGINE" /> 検索</translation>
 <translation id="6634865548447745291"><ph name="BEGIN_LINK" />証明書が取り消されている<ph name="END_LINK" />ため、現在 <ph name="SITE" /> にアクセスできません。通常、ネットワーク エラーや不正な操作は一時的なものです。少し時間をおくと、またページにアクセスできるようになる可能性があります。</translation>
 <translation id="6637478299472506933">ダウンロードの失敗</translation>
-<translation id="6642894344118208103">モデムまたはルーターをリセットする</translation>
 <translation id="6644283850729428850">このポリシーは廃止されました。</translation>
 <translation id="6646897916597483132">カードの表側に記載されている 4 桁の CVC を入力します</translation>
 <translation id="6656103420185847513">フォルダの編集</translation>

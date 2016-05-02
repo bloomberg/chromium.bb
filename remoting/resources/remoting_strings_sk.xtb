@@ -178,7 +178,6 @@ Hostiteľ pracovnej plochy</translation>
 <translation id="533625276787323658">Na pripojenie nie sú k dispozícii žiadne zariadenia</translation>
 <translation id="5363265567587775042">Požiadajte používateľa s počítačom, do ktorého chcete získať prístup, aby klikol na tlačidlo <ph name="SHARE" /> a poskytol vám prístupový kód.</translation>
 <translation id="5379087427956679853">Vzdialená plocha Chrome vám umožňuje bezpečne zdieľať váš počítač cez internet. Obaja používatelia musia mať spustenú aplikáciu Vzdialená plocha Chrome, ktorú nájdete na adrese <ph name="URL" />.</translation>
-<translation id="5394895745784982830">Pre počítače Mac (OS X 10.6 a novší)</translation>
 <translation id="5397086374758643919">Nástroj na odinštalovanie hostiteľa Vzdialenej plochy Chrome</translation>
 <translation id="5419185025274123272">Aplikáciu sa nepodarilo resetovať. Stále však môžete odoslať hlásenie o chybách.</translation>
 <translation id="544077782045763683">Hostiteľ je vypnutý</translation>
@@ -232,7 +231,6 @@ Hostiteľ pracovnej plochy</translation>
 <translation id="6930242544192836755">Trvanie</translation>
 <translation id="6939719207673461467">Zobraziť/skryť klávesnicu</translation>
 <translation id="6944854424004126054">Obnovenie okna</translation>
-<translation id="6962773374262604195">Pre systém Windows (XP a novší)</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6985691951107243942">Naozaj chcete zakázať vzdialené pripojenia k počítaču <ph name="HOSTNAME" />? Ak zmeníte názor, pripojenie budete musieť znova povoliť priamo z uvedeného počítača.</translation>
 <translation id="6998989275928107238">Komu</translation>

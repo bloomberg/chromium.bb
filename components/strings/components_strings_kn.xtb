@@ -20,6 +20,7 @@
 <translation id="112840717907525620">ನೀತಿಯ ಸಂಗ್ರಹ ಸರಿಯಾಗಿದೆ</translation>
 <translation id="113188000913989374"><ph name="SITE" /> ಹೀಗೆ ಹೇಳುತ್ತದೆ:</translation>
 <translation id="1132774398110320017">Chrome ಸ್ವಯಂತುಂಬುವಿಕೆ ಸೆಟ್ಟಿಂಗ್‌ಗಳು...</translation>
+<translation id="113770840981343808">ಪರಿಶೀಲನೆಗಾಗಿ ನಿಮ್ಮ ಕಾರ್ಡ್ ಮುಂಭಾಗದಲ್ಲಿರುವ 4-ಅಂಕಿ CVC ಅನ್ನು ನಮೂದಿಸಿ</translation>
 <translation id="1146673768181266552">ಕ್ರ್ಯಾಷ್ ID <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">ಈ ಸರ್ವರ್ <ph name="DOMAIN" /> ಆಗಿದೆ ಎಂಬುದನ್ನು ಸಾಬೀತುಪಡಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ; ಅದರ ಸುರಕ್ಷತಾ ಪ್ರಮಾಣಪತ್ರವು ನಿಮ್ಮ ಸಾಧನದ ಆಪರೇಟಿಂಗ್ ಸಿಸ್ಟಮ್‌ ಪ್ರಕಾರ ವಿಶ್ವಾಸಾರ್ಹವಾಗಿಲ್ಲ. ಇದು ತಪ್ಪು ಕಾನ್ಫಿಗರೇಶನ್‌ನಿಂದ ಅಥವಾ ಆಕ್ರಮಣಕಾರರು ನಿಮ್ಮ ಸಂಪರ್ಕದಲ್ಲಿ ಒಳನುಸುಳಿರುವುದರಿಂದ ಆಗಿರಬಹುದು.</translation>
 <translation id="1152921474424827756"><ph name="URL" /> ನ <ph name="BEGIN_LINK" />ಸಂಗ್ರಹಿಸಲಾಗಿರುವ ನಕಲನ್ನು<ph name="END_LINK" /> ಪ್ರವೇಶಿಸಿ</translation>
@@ -116,7 +117,6 @@
 <translation id="2212735316055980242">ನೀತಿ ಕಂಡು ಬಂದಿಲ್ಲ</translation>
 <translation id="2213606439339815911">ನಮೂದುಗಳನ್ನು ಪಡೆಯಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="2214283295778284209"><ph name="SITE" /> ಲಭ್ಯವಿಲ್ಲ</translation>
-<translation id="2227695659599072496">ನೆಟ್‌ವರ್ಕ್ ಕೇಬಲ್ ಅಥವಾ ರೂಟರ್ ಅನ್ನು ಪರಿಶೀಲಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="2230458221926704099"><ph name="BEGIN_LINK" />ಡಯಾಗ್ನಸ್ಟಿಕ್ಸ್‌‌ ಅಪ್ಲಿಕೇಶನ್‌<ph name="END_LINK" /> ಬಳಸಿಕೊಂಡು ನಿಮ್ಮ ಸಂಪರ್ಕವನ್ನು ಸರಿಪಡಿಸಿ</translation>
 <translation id="225207911366869382">ಈ ನೀತಿಗಾಗಿ ಈ ಮೌಲ್ಯವನ್ನು ಅಸಮ್ಮತಿಸಲಾಗಿದೆ.</translation>
 <translation id="2262243747453050782">HTTP ದೋಷ</translation>
@@ -129,6 +129,7 @@
 <translation id="2317259163369394535"><ph name="DOMAIN" /> ಗೆ ಬಳಕೆದಾರಹೆಸರು ಮತ್ತು ಪಾಸ್‌ವರ್ಡ್ ಅಗತ್ಯವಿದೆ.</translation>
 <translation id="2328300916057834155">ಸೂಚ್ಯಂಕದಲ್ಲಿ <ph name="ENTRY_INDEX" /> ನಿರ್ಲಕ್ಷಿಸಲಾದ ಅಮಾನ್ಯ ಬುಕ್‌ಮಾರ್ಕ್‌</translation>
 <translation id="2354001756790975382">ಇತರ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು</translation>
+<translation id="2357783041215512127"><ph name="CREDIT_CARD" /> ನೊಂದಿಗೆ ಪಾವತಿಸಿ</translation>
 <translation id="2359808026110333948">ಮುಂದುವರಿಸು</translation>
 <translation id="2367567093518048410">ಹಂತ</translation>
 <translation id="237718015863234333">ಯಾವುದೇ UI ಪರ್ಯಾಯಗಳು ಲಭ್ಯವಿಲ್ಲ</translation>
@@ -222,7 +223,6 @@
 <translation id="3254409185687681395">ಈ ಪುಟ ಬುಕ್‌ಮಾರ್ಕ್ ಮಾಡಿ</translation>
 <translation id="3270847123878663523">&amp;ಮರುಕ್ರಮಗೊಳಿಸುವುದನ್ನು ರದ್ದುಗೊಳಿಸು</translation>
 <translation id="3286538390144397061">ಈಗ ಮರುಪ್ರಾರಂಭಿಸಿ</translation>
-<translation id="3288003805934695103">ಪುಟ ಮರುಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ</translation>
 <translation id="3305707030755673451">ನಿಮ್ಮ ಡೇಟಾವನ್ನು <ph name="TIME" /> ರಂದು ನಿಮ್ಮ ಸಿಂಕ್ ಪಾಸ್‌ಫ್ರೇಸ್‌ನೊಂದಿಗೆ ಎನ್‌ಕ್ರಿಪ್ಟ್ ಮಾಡಲಾಗಿದೆ. ಸಿಂಕ್ ಪ್ರಾರಂಭಿಸಲು ಅದನ್ನು ನಮೂದಿಸಿ.</translation>
 <translation id="333371639341676808">ಈ ಪುಟ ಹೆಚ್ಚುವರಿ ಸಂವಾದಗಳನ್ನು ರಚಿಸುವುದನ್ನು ತಡೆಯಿರಿ.</translation>
 <translation id="3340978935015468852">ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
@@ -293,7 +293,6 @@
 <translation id="3963721102035795474">ರೀಡರ್‌ ಮೋಡ್‌</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> ಅನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ</translation>
 <translation id="4021036232240155012">DNS ಎನ್ನುವುದು ನೆಟ್‌ವರ್ಕ್ ಸೇವೆಯಾಗಿದ್ದು ಇದು ವೆಬ್‌ಸೈಟ್ ಹೆಸರನ್ನು ಅದರ ಇಂಟರ್ನೆಟ್ ವಿಳಾಸವಾಗಿ ಪರಿವರ್ತಿಸುತ್ತದೆ.</translation>
-<translation id="4021376465026729077">ನಿಮ್ಮ ವಿಸ್ತರಣೆಗಳನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="4030383055268325496">&amp;ಸೇರಿಸುವುದನ್ನು ರದ್ದುಗೊಳಿಸಿ</translation>
 <translation id="4032534284272647190"><ph name="URL" /> ಗೆ ಪ್ರವೇಶವನ್ನು ನಿರಾಕರಿಸಲಾಗಿದೆ.</translation>
 <translation id="404928562651467259">ಎಚ್ಚರಿಕೆ</translation>
@@ -391,7 +390,6 @@
 <translation id="5251803541071282808">ಮೇಘ</translation>
 <translation id="5299298092464848405">ನೀತಿಯ ಪಾರ್ಸಿಂಗ್‌ನಲ್ಲಿ ದೋಷ</translation>
 <translation id="5300589172476337783">ಪ್ರದರ್ಶಿಸಿ</translation>
-<translation id="5307361445257083764"><ph name="BEGIN_LINK" />ನಿಮ್ಮ ಕುಕೀಗಳನ್ನು ತೆರವುಗೊಳಿಸಲಾಗುತ್ತಿದೆ<ph name="END_LINK" /></translation>
 <translation id="5308689395849655368">ಕ್ರ‍್ಯಾಶ್‌‌ ವರದಿಯನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ.</translation>
 <translation id="5317780077021120954">ಉಳಿಸು</translation>
 <translation id="5327248766486351172">ಹೆಸರು</translation>
@@ -425,6 +423,7 @@
 <translation id="5629630648637658800">ನೀತಿಯ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಲೋಡ್ ಮಾಡುವಲ್ಲಿ ವಿಫಲವಾಗಿದೆ</translation>
 <translation id="5631439013527180824">ಅಮಾನ್ಯವಾದ ಸಾಧನ ನಿರ್ವಹಣೆ ಟೋಕನ್</translation>
 <translation id="5650551054760837876">ಯಾವುದೇ ಫಲಿತಾಂಶಗಳು ಕಂಡುಬಂದಿಲ್ಲ.</translation>
+<translation id="5663999524854166235">ಪರಿಶೀಲನೆಗಾಗಿ ನಿಮ್ಮ ಕಾರ್ಡ್ ಹಿಂಭಾಗದಲ್ಲಿರುವ 3-ಅಂಕಿಗಳ CVC ಅನ್ನು ನಮೂದಿಸಿ</translation>
 <translation id="5677928146339483299">ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ</translation>
 <translation id="5710435578057952990">ಈ ವೆಬ್‌ಸೈಟ್‌ನ ಗುರುತಿಸುವಿಕೆಯನ್ನು ಇನ್ನೂ ಪರಿಶೀಲಿಸಲಾಗಿಲ್ಲ.</translation>
 <translation id="5720705177508910913">ಪ್ರಸ್ತುತ ಬಳಕೆದಾರ</translation>
@@ -442,7 +441,7 @@
 <translation id="5949910269212525572">ಸರ್ವರ್‌ನ DNS ವಿಳಾಸವನ್ನು ಪರಿಹರಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ.</translation>
 <translation id="5966707198760109579">ವಾರ</translation>
 <translation id="5967867314010545767">ಇತಿಹಾಸದಿಂದ ತೆಗೆದುಹಾಕಿ</translation>
-<translation id="5975083100439434680">ಜೂಮ್ ಔಟ್</translation>
+<translation id="5975083100439434680">ಝೂಮ್ ಔಟ್</translation>
 <translation id="5989320800837274978">ಹೊಂದಿಸಿದ ಪ್ರಾಕ್ಸಿ ಸರ್ವರ್‌ಗಳು ಆಗಲಿ ಅಥವಾ .pac ಸ್ಕ್ರಿಪ್ಟ್ URL ಅನ್ನು ನಿರ್ದಿಷ್ಟಪಡಿಸಿಲ್ಲ.</translation>
 <translation id="5990559369517809815">ಸರ್ವರ್‌ಗಳ ವಿನಂತಿಗಳನ್ನು ವಿಸ್ತರಣೆಯಿಂದ ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ.</translation>
 <translation id="6008256403891681546">JCB</translation>
@@ -495,7 +494,6 @@
 <translation id="6628463337424475685"><ph name="ENGINE" /> ಹುಡುಕಾಟ</translation>
 <translation id="6634865548447745291">ನೀವು <ph name="SITE" /> ಗೆ ಭೇಟಿ ನೀಡಲು ಸಾಧ್ಯವಿಲ್ಲ. ಏಕೆಂದರೆ <ph name="BEGIN_LINK" />ಈ ಪ್ರಮಾಣಪತ್ರವನ್ನು ಹಿಂಪಡೆದುಕೊಳ್ಳಲಾಗಿದೆ<ph name="END_LINK" />. ನೆಟ್‌ವರ್ಕ್ ದೋಷಗಳು ಮತ್ತು ಆಕ್ರಮಣಗಳು ತಾತ್ಕಾಲಿಕ, ಹೀಗಾಗಿ ಈ ಪುಟವು ಸ್ವಲ್ಪ ಸಮಯದ ನಂತರ ಕಾರ್ಯ ನಿರ್ವಹಿಸಬಹುದು.</translation>
 <translation id="6637478299472506933">ಡೌನ್‌ಲೋಡ್ ವಿಫಲವಾಗಿದೆ</translation>
-<translation id="6642894344118208103">ಮೋಡೆಮ್‌ ಅಥವಾ ರೂಟರ್‌ ಮರುಹೊಂದಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="6644283850729428850">ಈ ನೀತಿಯನ್ನು ವಿನಂತಿಸಲಾಗಿದೆ.</translation>
 <translation id="6646897916597483132">ನಿಮ್ಮ ಕಾರ್ಡ್ ಮುಂಭಾಗದಲ್ಲಿರುವ 4-ಅಂಕಿ CVC ಅನ್ನು ನಮೂದಿಸಿ</translation>
 <translation id="6656103420185847513">ಫೋಲ್ಡರ್ ಸಂಪಾದಿಸಿ</translation>
@@ -700,7 +698,7 @@
 <translation id="8891727572606052622">ಅಮಾನ್ಯವಾದ ಪ್ರಾಕ್ಸಿ ಮೋಡ್.</translation>
 <translation id="889901481107108152">ಕ್ಷಮಿಸಿ, ಈ ಪ್ರಯೋಗವು ನಿಮ್ಮ ಪ್ಲ್ಯಾಟ್‌ಫಾರ್ಮ್‌ನಲ್ಲಿ ಲಭ್ಯವಿಲ್ಲ.</translation>
 <translation id="890308499387283275">ಈ ಫೈಲ್‌ನಲ್ಲಿ Chrome ಅನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡಲಾಗುವುದಿಲ್ಲ.</translation>
-<translation id="8903921497873541725">ಜೂಮ್ ಇನ್</translation>
+<translation id="8903921497873541725">ಝೂಮ್ ಇನ್</translation>
 <translation id="8931333241327730545">ಈ ಕಾರ್ಡನ್ನು ನಿಮ್ಮ Google ಖಾತೆನಲ್ಲಿ ಉಳಿಸಲು ಬಯಸುವಿರಾ?</translation>
 <translation id="8932102934695377596">ನಿಮ್ಮ ಗಡಿಯಾರ ಹಿಂದೆ ಇದೆ</translation>
 <translation id="8954894007019320973">(ಮುಂದು.)</translation>

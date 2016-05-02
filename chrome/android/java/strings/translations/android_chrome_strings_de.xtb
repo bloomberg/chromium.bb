@@ -60,6 +60,7 @@ Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktivie
 <translation id="1742134235943978220">In folgende Sprache übersetzt: <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="1749561566933687563">Lesezeichen synchronisieren</translation>
 <translation id="17513872634828108">Geöffnete Tabs</translation>
+<translation id="1756600373018374892">Tippen Sie auf diese Schaltfläche, um schnell auf Ihre Tabs zuzugreifen.</translation>
 <translation id="1807246157184219062">Hell</translation>
 <translation id="1825719650605518411">First Run Experience</translation>
 <translation id="1829244130665387512">Seite durchsuchen</translation>
@@ -70,6 +71,7 @@ Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktivie
 <translation id="194341124344773587">Berechtigung für Chrome in den <ph name="BEGIN_LINK" />Android-Einstellungen<ph name="END_LINK" /> aktivieren</translation>
 <translation id="1943432128510653496">Passwörter speichern</translation>
 <translation id="1944384637046898011">Ab <ph name="TIME" /> alle Daten mit Google-Passwort verschlüsseln</translation>
+<translation id="1946005195648379376">Legen Sie fest, wie Google anhand des Browserverlaufs die Suche und andere Google-Dienste für Sie personalisieren soll.</translation>
 <translation id="1959930595721737608">JavaScript auf der folgenden Website zulassen.</translation>
 <translation id="1966710179511230534">Bitte aktualisieren Sie Ihre Anmeldeinformationen.</translation>
 <translation id="1974060860693918893">Erweitert</translation>
@@ -95,9 +97,7 @@ Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktivie
 <translation id="2206488550163399966"><ph name="APP_NAME" />, Web-App. <ph name="APP_URL" /></translation>
 <translation id="2268044343513325586">Verfeinern</translation>
 <translation id="2315043854645842844">Die clientseitige Zertifikatauswahl wird vom Betriebssystem nicht unterstützt.</translation>
-<translation id="2316129865977710310">Kein Interesse</translation>
 <translation id="2321958826496381788">Ziehen Sie den Schieberegler, bis Sie diesen Text problemlos lesen können. Nach dem Doppeltippen auf einen Abschnitt sollte der Text mindestens so groß sein.</translation>
-<translation id="2329597144923131178">Melden Sie sich an, um Ihre Lesezeichen, Ihren Verlauf, Ihre Passwörter und andere Einstellungen auf allen Ihren Geräten aufzurufen.</translation>
 <translation id="2343328333327081434">Wird installiert…</translation>
 <translation id="2351097562818989364">Übersetzungseinstellungen zurückgesetzt</translation>
 <translation id="2359808026110333948">Weiter</translation>
@@ -138,6 +138,7 @@ Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktivie
 <translation id="2842985007712546952">Übergeordneter Ordner</translation>
 <translation id="2870560284913253234">Website</translation>
 <translation id="2888126860611144412">Info zu Chrome</translation>
+<translation id="2889768325388591707">Schnell zwischen Tabs wechseln</translation>
 <translation id="2891154217021530873">Laden der Seite anhalten</translation>
 <translation id="2902702728133930130">Während des Startvorgangs ist in Chrome ein unerwarteter Fehler aufgetreten.</translation>
 <translation id="2903493209154104877">Adressen</translation>
@@ -155,6 +156,9 @@ Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktivie
 <translation id="3089395242580810162">In Inkognito-Tab öffnen</translation>
 <translation id="3090193911106258841">Zugriff auf Audio- und Video-Eingang</translation>
 <translation id="3137521801621304719">Inkognitomodus deaktivieren</translation>
+<translation id="3149891296864842641">Versandoption</translation>
+<translation id="3162882791484435636">Versandoption auswählen</translation>
+<translation id="3173438333156928404">Fehler bei der Zahlungsverarbeitung</translation>
 <translation id="3177909033752230686">Sprache der Seite:</translation>
 <translation id="3190152372525844641">Berechtigungen für Chrome in den <ph name="BEGIN_LINK" />Android-Einstellungen<ph name="END_LINK" /> aktivieren</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> gespeicherte Daten</translation>
@@ -269,10 +273,8 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="4875622588773761625">Soll <ph name="PASSWORD_MANAGER_BRAND" /> Ihr Passwort für diese Website aktualisieren?</translation>
 <translation id="4881695831933465202">Öffnen</translation>
 <translation id="4885273946141277891">Nicht unterstützte Anzahl von Chrome-Instanzen</translation>
+<translation id="4923459931733593730">Zahlung</translation>
 <translation id="4943872375798546930">Keine Ergebnisse</translation>
-<translation id="4970484396410298643">Greifen Sie hier auf die Tabs zu, die Sie auf Ihrem Computer geöffnet haben.
-
-Öffnen Sie dazu Chrome auf Ihrem Computer und wählen Sie im Menü "In Chrome anmelden..." aus.</translation>
 <translation id="497421865427891073">Weiter</translation>
 <translation id="4996978546172906250">Teilen über</translation>
 <translation id="5000922062037820727">Blockiert (empfohlen)</translation>
@@ -296,9 +298,7 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="5184329579814168207">In Chrome öffnen</translation>
 <translation id="5199929503336119739">Arbeitsprofil</translation>
 <translation id="5210365745912300556">Tab schließen</translation>
-<translation id="5210714456814679336">Hier werden Tabs angezeigt, die Sie auf Ihren anderen Geräten in Chrome geöffnet haben.</translation>
 <translation id="5222676887888702881">Abmelden</translation>
-<translation id="5228579091201413441">Synchronisierung aktivieren</translation>
 <translation id="5233638681132016545">Neuer Tab</translation>
 <translation id="5271967389191913893">Das Gerät kann den Inhalt, der heruntergeladen werden soll, nicht öffnen.</translation>
 <translation id="5275558766013849309">Tabs und letzte Apps werden zusammengefasst.</translation>
@@ -342,9 +342,6 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="5677928146339483299">Blockiert</translation>
 <translation id="5684874026226664614">Hoppla! Diese Seite konnte nicht übersetzt werden.</translation>
 <translation id="5708031556037168012">Vorhandene Daten bleiben auf dem Gerät erhalten und Daten werden dauerhaft in <ph name="TO_ACCOUNT" /> importiert.</translation>
-<translation id="5712189971979076230">Helfen Sie uns dabei, den Funktionen und Verbesserungen Priorität einzuräumen, die Ihnen wichtig sind, indem Sie Informationen über die Dateien, Anwendungen und Dienste, die zum Zeitpunkt eines Absturzes ausgeführt wurden, an Google senden.
-
-Nutzungsstatistiken enthalten Informationen wie Einstellungen, Klicks auf Schaltflächen und Speicherauslastung. URLs von Webseiten oder personenbezogene Daten sind darin nicht enthalten. Absturzberichte enthalten Systeminformationen zum Zeitpunkt des Absturzes. Je nachdem, was zu diesem Zeitpunkt gerade geschah, können auch URLs von Webseiten oder personenbezogene Daten erfasst werden.</translation>
 <translation id="5719837394786370183">Seiten, die Sie sich auf Inkognito-Tabs ansehen, werden nach dem Schließen aller Inkognito-Tabs nicht in Ihrem Browserverlauf, Cookie-Speicher oder Suchverlauf gespeichert. Ihre Lesezeichen und Ihre heruntergeladenen Dateien bleiben erhalten.
 
 Sie sind jedoch nicht unsichtbar. Der Inkognitomodus verhindert nicht, dass Informationen zu Ihren Webaktivitäten von Ihrem Arbeitgeber oder Ihrem Internetanbieter erfasst werden. Zudem verzeichnen auch die Websites, die Sie im Inkognitomodus aufrufen, weiterhin Ihren Besuch.</translation>
@@ -463,6 +460,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="7180611975245234373">Aktualisieren</translation>
 <translation id="7191430249889272776">Tab im Hintergrund geöffnet</translation>
 <translation id="7208788139759694678">Datensparmodus deaktiviert</translation>
+<translation id="7220786058474068424">Verarbeitung läuft</translation>
 <translation id="7243308994586599757">Optionen unten auf dem Bildschirm verfügbar</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> zeigt Ihnen lokale Suchergebnisse basierend auf Ihrem Standort.</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Hilfe<ph name="END_LINK" /></translation>
@@ -516,6 +514,7 @@ Eventuell finden Sie unter <ph name="BEGIN_LINK" />history.google.com<ph name="E
 <translation id="7846076177841592234">Auswahl aufheben</translation>
 <translation id="7851858861565204677">Andere Geräte</translation>
 <translation id="7876243839304621966">Alle entfernen</translation>
+<translation id="7902333740914687335">Zahlung verarbeitet</translation>
 <translation id="7947953824732555851">Akzeptieren und anmelden</translation>
 <translation id="7949961459945740081">Neue Funktionen herunterladen</translation>
 <translation id="7963646190083259054">Anbieter:</translation>
@@ -539,6 +538,7 @@ Eventuell finden Sie unter <ph name="BEGIN_LINK" />history.google.com<ph name="E
 <translation id="8168435359814927499">Inhalte</translation>
 <translation id="8173098127580644436">für den gesamten Zeitraum</translation>
 <translation id="8200772114523450471">Fortsetzen</translation>
+<translation id="8202097416529803614">Zusammenfassung der Bestellung</translation>
 <translation id="8209050860603202033">Bild öffnen</translation>
 <translation id="8215250379351058554"><ph name="SITE" /> möchte eine Verbindung herstellen mit:</translation>
 <translation id="8218346974737627104">Anmeldung bestätigen</translation>
@@ -595,6 +595,8 @@ Um neue Lizenzen zu erwerben, stellen Sie eine Internetverbindung her und spiele
 <translation id="8942627711005830162">In anderem Fenster öffnen</translation>
 <translation id="8959122750345127698">Navigation nicht möglich: <ph name="URL" /> ist nicht erreichbar.</translation>
 <translation id="8979340629087822094">für den letzten Tag</translation>
+<translation id="8981454092730389528">Google-Aktivitätseinstellungen</translation>
+<translation id="8986494364107987395">Nutzungsstatistiken und Absturzberichte automatisch an Google senden</translation>
 <translation id="8987061207681586800">Chrome personalisieren</translation>
 <translation id="9019902583201351841">Von deinen Eltern verwaltet</translation>
 <translation id="9020607083536754075">Aktuellen Tab schließen und zur zuvor genutzten App wechseln</translation>

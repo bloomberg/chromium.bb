@@ -8,6 +8,7 @@
 <translation id="2078561879028077171">Oplysninger om version</translation>
 <translation id="2117453604279487107">Tildelerwebadresse</translation>
 <translation id="2353984724370197742">Tildelingen mislykkedes. Netværksanmodningen mislykkedes.</translation>
+<translation id="2789927415041640472">Genstart applikationen for at bruge den nye tildelerkonfiguration.</translation>
 <translation id="3046825211487065480">Tildelingen mislykkedes. Anden anmodning blev sendt, før første anmodning reagerede.</translation>
 <translation id="3286538390144397061">Genstart nu</translation>
 <translation id="3346106862344060497">Maskinen er tilsluttet.</translation>
@@ -22,6 +23,7 @@
 <translation id="5860346505531085166">Tildelingen mislykkedes. Kontoen har ikke adgang.</translation>
 <translation id="6232798399907177395">Om Blimp</translation>
 <translation id="704835510384979817">Tildelingen mislykkedes. Ingen matchende maskinversion.</translation>
+<translation id="7145680970336344212">Genstart Blimp</translation>
 <translation id="7536363920335771251">Forbindelsen til maskinen blev afbrudt. Årsag: %1$s</translation>
 <translation id="7596558890252710462">Operativsystem</translation>
 <translation id="7608553142876436780">IP-adresse for maskinen</translation>

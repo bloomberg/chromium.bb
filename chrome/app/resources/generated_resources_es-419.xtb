@@ -1466,7 +1466,6 @@ Para obtener más información, visita nuestro <ph name="BEGIN_LINK" />Centro de
 <translation id="3065140616557457172">Puedes escribir una consulta o bien la dirección URL de la página que quieres visitar, lo que prefieras.</translation>
 <translation id="3067198360141518313">Ejecutar este complemento</translation>
 <translation id="307519606911195071">Habilita funciones de accesibilidad adicionales en la página Configuración.</translation>
-<translation id="3075239840551149663">Se creó <ph name="NEW_PROFILE_NAME" /> como usuario supervisado</translation>
 <translation id="3075874217500066906">Es necesario reiniciar el dispositivo antes de comenzar el proceso de la función Powerwash. Luego de reiniciar, debes confirmar que quieres continuar.</translation>
 <translation id="3076677906922146425">Permitir que cualquiera agregue una persona a Chrome</translation>
 <translation id="3076909148546628648"><ph name="DOWNLOAD_RECEIVED" />/<ph name="DOWNLOAD_TOTAL" /></translation>
@@ -2010,7 +2009,6 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3790856258139356663">Se conecta al servidor de prueba para la Sincronización de Chrome.</translation>
 <translation id="3790909017043401679">Ingresa el PIN de la tarjeta SIM.</translation>
 <translation id="3792890930871100565">Desconectar impresoras</translation>
-<translation id="3795681127952030401"><ph name="URL" /> quiere enviarte notificaciones.</translation>
 <translation id="3796648294839530037">Redes favoritas:</translation>
 <translation id="3797900183766075808">&amp;Buscar "<ph name="SEARCH_TERMS" />" en <ph name="SEARCH_ENGINE" /></translation>
 <translation id="3798449238516105146">Versión</translation>
@@ -2990,6 +2988,7 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="5305688511332277257">No hay certificados instalados</translation>
 <translation id="5308380583665731573">Conectar</translation>
 <translation id="5311260548612583999">Archivo de clave privada (opcional):</translation>
+<translation id="5313967007315987356">Agregar sitio</translation>
 <translation id="5316588172263354223">Búsqueda por voz en cualquier momento</translation>
 <translation id="5316716239522500219">Reflejar monitores</translation>
 <translation id="5317780077021120954">Guardar</translation>
@@ -3340,7 +3339,6 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="5803531701633845775">Elige frases de la parte posterior sin mover el cursor</translation>
 <translation id="5804241973901381774">Permisos</translation>
 <translation id="580571955903695899">Reordenar por título</translation>
-<translation id="5808982448801399019">Se produjo un error en la autorización</translation>
 <translation id="580961539202306967">Preguntarme cuando un sitio quiera enviarme mensajes de inserción (recomendado)</translation>
 <translation id="5815645614496570556">Dirección X 400</translation>
 <translation id="5817397429773072584">Chino tradicional</translation>
@@ -4971,7 +4969,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8284279544186306258">todos los sitios de <ph name="WEBSITE_1" /></translation>
 <translation id="8286227656784970313">Utilizar diccionario del sistema</translation>
 <translation id="8286817579635702504">Permite habilitar varias funciones de seguridad que tal vez dañen una o más páginas que visitas a diario; por ejemplo, la verificación estricta de contenido mixto y el bloqueo de funciones eficaces para proteger el entorno. Es posible que esta marca represente una molestia.</translation>
-<translation id="8288342810474863437">Las funcionalidades de importación y exportación se encuentran en las opciones de configuración de contraseñas.</translation>
+<translation id="8288342810474863437">Las funciones de importación y exportación se encuentran en las opciones de configuración de contraseñas.</translation>
 <translation id="8297012244086013755">Hangul de triple alternancia (sin presionar mayúsculas)</translation>
 <translation id="8298115750975731693">Es posible que la red Wi-Fi que estás usando (<ph name="WIFI_NAME" />) requiera que accedas a <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
 <translation id="8299269255470343364">Japonés</translation>
@@ -5249,7 +5247,6 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8708671767545720562">&amp;Más información</translation>
 <translation id="8711402221661888347">Condimento</translation>
 <translation id="8711453844311572806">Cuando el teléfono se encuentre cerca y desbloqueado, solo haz clic para ingresar. De lo contrario, verás un ícono de bloqueo y deberás escribir la contraseña.</translation>
-<translation id="8712637175834984815">Entendido</translation>
 <translation id="8713570323158206935">Enviar <ph name="BEGIN_LINK1" />información del sistema<ph name="END_LINK1" /></translation>
 <translation id="8713979477561846077">Habilitar la autocorrección de teclado físico para un teclado de los Estados Unidos que ofrece sugerencias mientras escribes en un teclado físico</translation>
 <translation id="871476437400413057">Contraseñas guardadas por Google</translation>

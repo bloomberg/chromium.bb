@@ -8,6 +8,7 @@
 <translation id="2078561879028077171">Informações da versão</translation>
 <translation id="2117453604279487107">URL do atribuidor</translation>
 <translation id="2353984724370197742">A atribuição falhou. Falha no pedido de rede.</translation>
+<translation id="2789927415041640472">Reinicie a aplicação para utilizar a nova configuração do atribuidor.</translation>
 <translation id="3046825211487065480">A atribuição falhou. O segundo pedido foi enviado antes de o primeiro pedido responder.</translation>
 <translation id="3286538390144397061">Reiniciar agora</translation>
 <translation id="3346106862344060497">Motor ligado.</translation>
@@ -22,6 +23,7 @@
 <translation id="5860346505531085166">A atribuição falhou. A conta não tem acesso.</translation>
 <translation id="6232798399907177395">Acerca do Blimp</translation>
 <translation id="704835510384979817">A atribuição falhou. Não há uma versão do motor correspondente.</translation>
+<translation id="7145680970336344212">Reiniciar o Blimp</translation>
 <translation id="7536363920335771251">Motor desligado, motivo: %1$s</translation>
 <translation id="7596558890252710462">Sistema operativo</translation>
 <translation id="7608553142876436780">IP do motor</translation>

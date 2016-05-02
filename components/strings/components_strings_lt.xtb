@@ -21,6 +21,7 @@
 <translation id="112840717907525620">Gera politikos talpykla</translation>
 <translation id="113188000913989374"><ph name="SITE" /> sakoma:</translation>
 <translation id="1132774398110320017">„Chrome“ automatinio pildymo nustatymai...</translation>
+<translation id="113770840981343808">Įveskite kortelės priekyje nurodytą 4 skaitmenų kortelės saugos kodą (CVC), kad patvirtintumėte</translation>
 <translation id="1146673768181266552">Strigties ID <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">Šiam serveriui nepavyko patvirtinti, kad tai yra <ph name="DOMAIN" />; jo saugos sertifikatas nėra patikimas kompiuterio operacinei sistemai. Taip gali nutikti dėl netinkamos konfigūracijos ar dėl ryšį pertraukusio užgrobėjo.</translation>
 <translation id="1152921474424827756">Pasiekite <ph name="BEGIN_LINK" />talpykloje saugomą <ph name="URL" /> kopiją<ph name="END_LINK" /></translation>
@@ -118,7 +119,6 @@
 <translation id="2212735316055980242">Politika nerasta</translation>
 <translation id="2213606439339815911">Gaunami įrašai...</translation>
 <translation id="2214283295778284209"><ph name="SITE" /> neprieinamas</translation>
-<translation id="2227695659599072496">Patikrinti tinklo laidą ir maršruto parinktuvą</translation>
 <translation id="2230458221926704099">Išspręskite ryšio problemas naudodami <ph name="BEGIN_LINK" />diagnostikos programą<ph name="END_LINK" /></translation>
 <translation id="225207911366869382">Pagal šią politiką ši vertė nepatvirtinta.</translation>
 <translation id="2262243747453050782">HTTP klaida</translation>
@@ -131,6 +131,7 @@
 <translation id="2317259163369394535"><ph name="DOMAIN" /> būtina įvesti naudotojo vardą ir slaptažodį.</translation>
 <translation id="2328300916057834155">Nepaisoma netinkama žymė indekse <ph name="ENTRY_INDEX" /></translation>
 <translation id="2354001756790975382">Kitos žymės</translation>
+<translation id="2357783041215512127">Mokėti naudojant „<ph name="CREDIT_CARD" />“</translation>
 <translation id="2359808026110333948">Tęsti</translation>
 <translation id="2367567093518048410">Lygis</translation>
 <translation id="237718015863234333">Nėra jokių galimų NS alternatyvų</translation>
@@ -229,7 +230,6 @@
 <translation id="3254409185687681395">Įtraukti šį puslapį į žymes</translation>
 <translation id="3270847123878663523">&amp;Anuliuoti pertvarkymą</translation>
 <translation id="3286538390144397061">Paleisti iš naujo dabar</translation>
-<translation id="3288003805934695103">Iš naujo įkelti puslapį</translation>
 <translation id="3305707030755673451"><ph name="TIME" /> duomenys buvo užšifruoti naudojant sinchronizavimo slaptafrazę. Įveskite ją, kad pradėtumėte sinchronizuoti.</translation>
 <translation id="333371639341676808">Neleiskite šiam puslapiui kurti papildomų dialogo langų.</translation>
 <translation id="3340978935015468852">nustatymų</translation>
@@ -301,7 +301,6 @@
 <translation id="3963721102035795474">Skaitytojo režimas</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> užblokuota.</translation>
 <translation id="4021036232240155012">DNS – tai tinklo paslauga, verčianti svetainės pavadinimą į interneto adresą.</translation>
-<translation id="4021376465026729077">Išjungti plėtinius</translation>
 <translation id="4030383055268325496">&amp;Anuliuoti pridėjimą</translation>
 <translation id="4032534284272647190">Prieiga prie <ph name="URL" /> atmesta.</translation>
 <translation id="404928562651467259">ĮSPĖJIMAS</translation>
@@ -399,7 +398,6 @@
 <translation id="5251803541071282808">Debesis</translation>
 <translation id="5299298092464848405">Analizuojant politiką įvyko klaida</translation>
 <translation id="5300589172476337783">Rodyti</translation>
-<translation id="5307361445257083764"><ph name="BEGIN_LINK" />Išvalyti slapukus<ph name="END_LINK" /></translation>
 <translation id="5308689395849655368">Strigčių ataskaitų teikimas neleidžiamas.</translation>
 <translation id="5317780077021120954">Išsaugoti</translation>
 <translation id="5327248766486351172">Pavadinimas</translation>
@@ -433,6 +431,7 @@
 <translation id="5629630648637658800">Įkeliant politikos nustatymus įvyko klaida</translation>
 <translation id="5631439013527180824">Netinkamas įrenginio tvarkymo prieigos raktas</translation>
 <translation id="5650551054760837876">Nerasta paieškos rezultatų.</translation>
+<translation id="5663999524854166235">Įveskite kitoje kortelės pusėje nurodytą 3 skaitmenų kortelės saugos kodą (CVC), kad patvirtintumėte</translation>
 <translation id="5677928146339483299">Užblokuota</translation>
 <translation id="5710435578057952990">Šio tinklalapio tapatybė nenustatyta.</translation>
 <translation id="5720705177508910913">Dabartinis naudotojas</translation>
@@ -505,7 +504,6 @@
 <translation id="6628463337424475685">„<ph name="ENGINE" />“ paieška</translation>
 <translation id="6634865548447745291">Negalite dabar apsilankyti svetainėje <ph name="SITE" />, nes <ph name="BEGIN_LINK" />šis sertifikatas buvo anuliuotas<ph name="END_LINK" />. Paprastai tinklo klaidos ir užpuolimai yra laikini, todėl šis puslapis vėliau tikriausiai veiks.</translation>
 <translation id="6637478299472506933">Atsisiun. įv. klaida</translation>
-<translation id="6642894344118208103">Iš naujo nustatyti modemą arba maršruto parinktuvą</translation>
 <translation id="6644283850729428850">Ši politika nepatvirtinta.</translation>
 <translation id="6646897916597483132">Įveskite 4 skaitmenų kortelės saugos kodą (CVC), nurodytą kortelės priekyje</translation>
 <translation id="6656103420185847513">Redaguoti aplanką</translation>

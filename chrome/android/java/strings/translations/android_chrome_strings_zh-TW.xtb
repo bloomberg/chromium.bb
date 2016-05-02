@@ -60,6 +60,7 @@
 <translation id="1742134235943978220">已翻譯成<ph name="TARGET_LANGUAGE" />。</translation>
 <translation id="1749561566933687563">同步處理您的書籤</translation>
 <translation id="17513872634828108">開啟分頁</translation>
+<translation id="1756600373018374892">輕觸這個按鈕即可快速存取分頁。</translation>
 <translation id="1807246157184219062">淺色</translation>
 <translation id="1825719650605518411">初次使用體驗</translation>
 <translation id="1829244130665387512">在網頁中尋找</translation>
@@ -70,6 +71,7 @@
 <translation id="194341124344773587">請在 <ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />中為 Chrome 啟用這項權限。</translation>
 <translation id="1943432128510653496">儲存密碼</translation>
 <translation id="1944384637046898011">使用截至 <ph name="TIME" />前設定的 Google 密碼為所有資料加密</translation>
+<translation id="1946005195648379376">控制 Google 如何使用您的瀏覽紀錄，為您提供個人化的搜尋服務和其他各項 Google 服務。</translation>
 <translation id="1959930595721737608">允許在下列網站上執行 JavaScript。</translation>
 <translation id="1966710179511230534">請更新您的登入詳細資料。</translation>
 <translation id="1974060860693918893">進階</translation>
@@ -95,9 +97,7 @@
 <translation id="2206488550163399966"><ph name="APP_NAME" />，網路應用程式。<ph name="APP_URL" /></translation>
 <translation id="2268044343513325586">修正搜尋</translation>
 <translation id="2315043854645842844">作業系統不允許您在用戶端選取憑證。</translation>
-<translation id="2316129865977710310">不，謝謝</translation>
 <translation id="2321958826496381788">拖曳滑桿，將文字調整到您可以舒適閱讀的大小。當您輕觸兩下文字段落，文字至少應呈現這樣的大小。</translation>
-<translation id="2329597144923131178">登入後，即可從您使用的任何裝置取得自己的書籤、歷史紀錄、密碼和其他設定。</translation>
 <translation id="2343328333327081434">安裝中…</translation>
 <translation id="2351097562818989364">您的翻譯設定已重設。</translation>
 <translation id="2359808026110333948">繼續</translation>
@@ -138,6 +138,7 @@
 <translation id="2842985007712546952">上層資料夾</translation>
 <translation id="2870560284913253234">網站</translation>
 <translation id="2888126860611144412">關於 Chrome</translation>
+<translation id="2889768325388591707">快速切換分頁</translation>
 <translation id="2891154217021530873">停止載入網頁</translation>
 <translation id="2902702728133930130">發生未預期的錯誤，Chrome 啟動失敗。</translation>
 <translation id="2903493209154104877">地址</translation>
@@ -155,6 +156,9 @@
 <translation id="3089395242580810162">在無痕式分頁中開啟</translation>
 <translation id="3090193911106258841">正在存取音訊和視訊輸入</translation>
 <translation id="3137521801621304719">離開無痕模式</translation>
+<translation id="3149891296864842641">運送方式</translation>
+<translation id="3162882791484435636">選取運送方式</translation>
+<translation id="3173438333156928404">處理付款時發生錯誤</translation>
 <translation id="3177909033752230686">網頁語言：</translation>
 <translation id="3190152372525844641">請在 <ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />中為 Chrome 啟用這些權限。</translation>
 <translation id="3198916472715691905">儲存了 <ph name="STORAGE_AMOUNT" /> 的資料</translation>
@@ -269,10 +273,8 @@
 <translation id="4875622588773761625">您要讓 <ph name="PASSWORD_MANAGER_BRAND" /> 更新您在這個網站設定的密碼嗎？</translation>
 <translation id="4881695831933465202">開啟</translation>
 <translation id="4885273946141277891">Chrome 實例的數量已超出上限。</translation>
+<translation id="4923459931733593730">付款</translation>
 <translation id="4943872375798546930">沒有結果</translation>
-<translation id="4970484396410298643">您可以在這裡使用您在電腦上開啟的所有分頁。
-
-只需在電腦上開啟 Chrome、前往選單，然後選取 [登入 Chrome...] 即可。</translation>
 <translation id="497421865427891073">往前</translation>
 <translation id="4996978546172906250">分享方式：</translation>
 <translation id="5000922062037820727">已封鎖 (建議)</translation>
@@ -296,9 +298,7 @@
 <translation id="5184329579814168207">在 Chrome 中開啟</translation>
 <translation id="5199929503336119739">Work 設定檔</translation>
 <translation id="5210365745912300556">關閉分頁</translation>
-<translation id="5210714456814679336">這裡會顯示您在其他裝置上的 Chrome 中開啟的分頁。</translation>
 <translation id="5222676887888702881">登出</translation>
-<translation id="5228579091201413441">啟用同步功能</translation>
 <translation id="5233638681132016545">新增分頁</translation>
 <translation id="5271967389191913893">裝置無法開啟您要下載的這項內容。</translation>
 <translation id="5275558766013849309">分頁和最近使用的應用程式將會並列顯示。</translation>
@@ -342,9 +342,6 @@
 <translation id="5677928146339483299">已封鎖</translation>
 <translation id="5684874026226664614">糟糕！系統無法翻譯這個網頁的內容。</translation>
 <translation id="5708031556037168012">將現有的資料保留在您的裝置上，並且將資料永久匯入 <ph name="TO_ACCOUNT" />。</translation>
-<translation id="5712189971979076230">發生當機情形時，如果您將當下正在執行的檔案、應用程式和服務的相關資訊傳送給 Google，即可協助我們優先提供重要的功能與改進項目。
-
-使用統計資料包括偏好設定、按鈕點擊次數和記憶體使用量等資訊，不含網頁網址或任何個人資訊。當機報告則包括當機時的系統資訊；而且根據當機時發生的狀況，可能會包含網頁網址和個人資訊。</translation>
 <translation id="5719837394786370183">當您關閉所有無痕式分頁後，您在其中瀏覽的網頁都不會保留在瀏覽器紀錄、Cookie 儲存庫或搜尋紀錄中。不過，系統會將您下載的檔案或建立的書籤全部予以保留。
 
 然而，您並沒有因此隱形。使用無痕模式時，您的雇主和網際網路服務供應商仍然可以追蹤您的瀏覽紀錄，您所造訪的網站也可記錄您的瀏覽行為。</translation>
@@ -463,6 +460,7 @@
 <translation id="7180611975245234373">重新整理</translation>
 <translation id="7191430249889272776">已在背景開啟分頁。</translation>
 <translation id="7208788139759694678">已停用 Data Saver</translation>
+<translation id="7220786058474068424">處理中</translation>
 <translation id="7243308994586599757">選項在接近畫面底部的位置</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> 會使用您的位置資訊來顯示當地搜尋結果</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />說明<ph name="END_LINK" /></translation>
@@ -516,6 +514,7 @@
 <translation id="7846076177841592234">全部取消選取</translation>
 <translation id="7851858861565204677">其他裝置</translation>
 <translation id="7876243839304621966">全部移除</translation>
+<translation id="7902333740914687335">付款已處理完成</translation>
 <translation id="7947953824732555851">接受並登入</translation>
 <translation id="7949961459945740081">取得最新功能</translation>
 <translation id="7963646190083259054">供應商：</translation>
@@ -539,6 +538,7 @@
 <translation id="8168435359814927499">內容</translation>
 <translation id="8173098127580644436">不限時間</translation>
 <translation id="8200772114523450471">繼續</translation>
+<translation id="8202097416529803614">訂單摘要</translation>
 <translation id="8209050860603202033">開啟圖片</translation>
 <translation id="8215250379351058554"><ph name="SITE" /> 要求與以下裝置連線：</translation>
 <translation id="8218346974737627104">確認登入</translation>
@@ -595,6 +595,8 @@
 <translation id="8942627711005830162">在其他視窗中開啟</translation>
 <translation id="8959122750345127698">瀏覽的網址無法存取：<ph name="URL" /></translation>
 <translation id="8979340629087822094">過去 1 天</translation>
+<translation id="8981454092730389528">Google 活動控制項</translation>
+<translation id="8986494364107987395">自動傳送使用統計資料及當機報告給 Google</translation>
 <translation id="8987061207681586800">自訂您專屬的 Chrome</translation>
 <translation id="9019902583201351841">您的家長已停用這項功能</translation>
 <translation id="9020607083536754075">關閉目前的分頁並返回上一個應用程式</translation>

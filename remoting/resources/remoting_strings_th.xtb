@@ -178,7 +178,6 @@ Desktop Host</translation>
 <translation id="533625276787323658">ไม่มีปลายทางให้เชื่อมต่อ</translation>
 <translation id="5363265567587775042">ขอให้ผู้ใช้ที่เป็นเจ้าของคอมพิวเตอร์ที่คุณต้องการใช้งานคลิก “<ph name="SHARE" />” และให้รหัสการเข้าถึงแก่คุณ</translation>
 <translation id="5379087427956679853">Chrome Remote Desktop อนุญาตให้คุณแชร์คอมพิวเตอร์ของคุณผ่านเว็บอย่างปลอดภัย ผู้ใช้ทั้งสองฝ่ายจะต้องเรียกใช้แอปพลิเคชัน Chrome Remote Desktop ซึ่งสามารถรับได้ที่ <ph name="URL" /></translation>
-<translation id="5394895745784982830">สำหรับ Mac (OS X 10.6 ขึ้นไป)</translation>
 <translation id="5397086374758643919">Chrome Remote Desktop Host Uninstaller</translation>
 <translation id="5419185025274123272">ไม่สามารถรีเซ็ตแอปพลิเคชันนี้ คุณยังคงสามารถส่งรายงานข้อบกพร่องได้</translation>
 <translation id="544077782045763683">โฮสต์ปิดตัวลงแล้ว</translation>
@@ -232,7 +231,6 @@ Desktop Host</translation>
 <translation id="6930242544192836755">ระยะเวลา</translation>
 <translation id="6939719207673461467">แสดง/ซ่อนแป้นพิมพ์</translation>
 <translation id="6944854424004126054">กู้คืนหน้าต่าง</translation>
-<translation id="6962773374262604195">สำหรับ Windows (XP ขึ้นไป)</translation>
 <translation id="6965382102122355670">ตกลง</translation>
 <translation id="6985691951107243942">คุณแน่ใจหรือไม่ว่าต้องการปิดใช้งานการเชื่อมต่อระยะไกลกับ <ph name="HOSTNAME" /> หากคุณเปลี่ยนใจภายหลัง คุณจะต้องไปที่คอมพิวเตอร์เครื่องนั้นเพื่อเปิดใช้งานการเชื่อมต่ออีกครั้ง</translation>
 <translation id="6998989275928107238">ถึง</translation>

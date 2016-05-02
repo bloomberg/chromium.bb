@@ -18,6 +18,7 @@
 <translation id="112840717907525620">La memòria cau de la política està en bon estat</translation>
 <translation id="113188000913989374"><ph name="SITE" /> diu:</translation>
 <translation id="1132774398110320017">Configuració d'Emplenament automàtic de Chrome...</translation>
+<translation id="113770840981343808">Per verificar la targeta, introduïu el CVC de quatre dígits que hi ha a la part davantera</translation>
 <translation id="1146673768181266552">Identificador d'error <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">Aquest servidor no ha pogut comprovar que sigui <ph name="DOMAIN" /> perquè el sistema operatiu del vostre ordinador considera que el seu certificat de seguretat no és de confiança. Això pot ser a causa d'una configuració incorrecta o d'un atacant que intercepta la vostra connexió.</translation>
 <translation id="1152921474424827756">Accediu a una <ph name="BEGIN_LINK" />còpia emmagatzemada a la memòria cau<ph name="END_LINK" /> de la pàgina <ph name="URL" />.</translation>
@@ -115,7 +116,6 @@
 <translation id="2212735316055980242">No es troba la política</translation>
 <translation id="2213606439339815911">S'estan recuperant les entrades...</translation>
 <translation id="2214283295778284209"><ph name="SITE" /> no està disponible</translation>
-<translation id="2227695659599072496">Comproveu el cable de xarxa o l'encaminador</translation>
 <translation id="2230458221926704099">Repareu la connexió amb l'<ph name="BEGIN_LINK" />aplicació de diagnòstic<ph name="END_LINK" /></translation>
 <translation id="225207911366869382">El valor d'aquesta política és obsolet.</translation>
 <translation id="2262243747453050782">Error d'HTTP</translation>
@@ -128,6 +128,7 @@
 <translation id="2317259163369394535"><ph name="DOMAIN" /> requereix un nom d'usuari i una contrasenya.</translation>
 <translation id="2328300916057834155">S'ha ignorat l'adreça d'interès no vàlida a l'índex <ph name="ENTRY_INDEX" /></translation>
 <translation id="2354001756790975382">Altres adreces d'interès</translation>
+<translation id="2357783041215512127">Pagueu amb <ph name="CREDIT_CARD" /></translation>
 <translation id="2359808026110333948">Continua</translation>
 <translation id="2367567093518048410">Nivell</translation>
 <translation id="237718015863234333">No hi ha cap alternativa a la IU disponible.</translation>
@@ -225,7 +226,6 @@
 <translation id="3254409185687681395">Afegeix aquesta pàgina a les adreces d'interès</translation>
 <translation id="3270847123878663523">&amp;Desfés el canvi d'ordre</translation>
 <translation id="3286538390144397061">Reinicia ara</translation>
-<translation id="3288003805934695103">Torneu a carregar la pàgina</translation>
 <translation id="3305707030755673451">Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase de contrasenya de sincronització. Introduïu-la per començar la sincronització.</translation>
 <translation id="333371639341676808">Evita que aquesta pàgina creï diàlegs addicionals.</translation>
 <translation id="3340978935015468852">configuració</translation>
@@ -297,7 +297,6 @@
 <translation id="3963721102035795474">Mode de lector</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> està bloquejat</translation>
 <translation id="4021036232240155012">DNS és el servei de xarxa que tradueix el nom d'un lloc web en l'adreça d'Internet corresponent.</translation>
-<translation id="4021376465026729077">Desactiveu les extensions</translation>
 <translation id="4030383055268325496">&amp;Desfés l'addició</translation>
 <translation id="4032534284272647190">S'ha denegat l'accés a <ph name="URL" />.</translation>
 <translation id="404928562651467259">ADVERTIMENT</translation>
@@ -395,7 +394,6 @@
 <translation id="5251803541071282808">Núvol</translation>
 <translation id="5299298092464848405">S'ha produït un error en analitzar la política</translation>
 <translation id="5300589172476337783">Mostra</translation>
-<translation id="5307361445257083764"><ph name="BEGIN_LINK" />Esborreu les galetes<ph name="END_LINK" /></translation>
 <translation id="5308689395849655368">La creació d'informes de bloqueig està desactivada.</translation>
 <translation id="5317780077021120954">Desa</translation>
 <translation id="5327248766486351172">Nom</translation>
@@ -429,6 +427,7 @@
 <translation id="5629630648637658800">No s'ha pogut carregar la configuració de la política</translation>
 <translation id="5631439013527180824">Testimoni de gestió del dispositiu no vàlid</translation>
 <translation id="5650551054760837876">No s'han trobat resultats de cerca.</translation>
+<translation id="5663999524854166235">Per verificar la targeta, introduïu el CVC de tres dígits que hi ha a la part posterior</translation>
 <translation id="5677928146339483299">Bloquejat</translation>
 <translation id="5710435578057952990">La identitat d'aquest lloc web no ha estat verificada.</translation>
 <translation id="5720705177508910913">Usuari actual</translation>
@@ -501,7 +500,6 @@
 <translation id="6628463337424475685">Cerca de <ph name="ENGINE" /></translation>
 <translation id="6634865548447745291">En aquest moment no podeu visitar <ph name="SITE" /> perquè <ph name="BEGIN_LINK" />aquest certificat s'ha revocat<ph name="END_LINK" />. Els errors de la xarxa i els atacs solen ser temporals, de manera que és probable que aquesta pàgina torni a funcionar més tard.</translation>
 <translation id="6637478299472506933">Ha fallat la baixada</translation>
-<translation id="6642894344118208103">Restabliu el mòdem o l'encaminador</translation>
 <translation id="6644283850729428850">Aquesta política ha quedat obsoleta.</translation>
 <translation id="6646897916597483132">Introduïu el CVC de quatre dígits que trobareu a la part davantera de la targeta</translation>
 <translation id="6656103420185847513">Edició de la carpeta</translation>

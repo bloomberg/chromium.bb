@@ -60,6 +60,7 @@
 <translation id="1742134235943978220">תורגם ל<ph name="TARGET_LANGUAGE" />.</translation>
 <translation id="1749561566933687563">סנכרון הסימניות שלך</translation>
 <translation id="17513872634828108">כרטיסיות פתוחות</translation>
+<translation id="1756600373018374892">לחץ על לחצן זה כדי לקבל גישה מהירה לכרטיסיות שלך.</translation>
 <translation id="1807246157184219062">בהיר</translation>
 <translation id="1825719650605518411">חוויית הפעלה ראשונה</translation>
 <translation id="1829244130665387512">חפש בדף</translation>
@@ -70,6 +71,7 @@
 <translation id="194341124344773587">‏הפעל הרשאה בשביל Chrome ב<ph name="BEGIN_LINK" />הגדרות Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">שמור סיסמאות</translation>
 <translation id="1944384637046898011">‏הצפן הכל באמצעות סיסמת Google החל מ-<ph name="TIME" /></translation>
+<translation id="1946005195648379376">‏קבע כיצד Google משתמשת בהיסטוריית הגלישה שלך כדי להתאים אישית את החיפוש ושירותים אחרים של Google.</translation>
 <translation id="1959930595721737608">‏התר JavaScript באתר הבא.</translation>
 <translation id="1966710179511230534">עדכן את פרטי הכניסה שלך.</translation>
 <translation id="1974060860693918893">מתקדם</translation>
@@ -95,9 +97,7 @@
 <translation id="2206488550163399966"><ph name="APP_NAME" />, אפליקציית אינטרנט. <ph name="APP_URL" /></translation>
 <translation id="2268044343513325586">צמצם</translation>
 <translation id="2315043854645842844">מערכת ההפעלה אינה תומכת בבחירת אישור בצד הלקוח.</translation>
-<translation id="2316129865977710310">לא, תודה</translation>
 <translation id="2321958826496381788">גרור את המחוון עד שתוכל לקרוא את הקטע הזה בצורה נוחה. לאחר שתקיש פעמיים על פיסקה, הטקסט אמור להיות מוצג בגודל הזה לפחות.</translation>
-<translation id="2329597144923131178">היכנס כדי לקבל גישה אל הסימניות, ההיסטוריה, הסיסמאות והגדרות נוספות בכל המכשירים שברשותך.</translation>
 <translation id="2343328333327081434">מתקין...</translation>
 <translation id="2351097562818989364">הגדרות התרגום שלך אופסו.</translation>
 <translation id="2359808026110333948">המשך</translation>
@@ -138,6 +138,7 @@
 <translation id="2842985007712546952">תיקיית אב</translation>
 <translation id="2870560284913253234">אתר</translation>
 <translation id="2888126860611144412">‏מידע כללי על Chrome</translation>
+<translation id="2889768325388591707">מעבר מהיר בין כרטיסיות</translation>
 <translation id="2891154217021530873">הפסק את טעינת הדף</translation>
 <translation id="2902702728133930130">‏שגיאה בלתי צפויה גרמה לכשל של Chrome בעת ההפעלה.</translation>
 <translation id="2903493209154104877">כתובות</translation>
@@ -155,6 +156,9 @@
 <translation id="3089395242580810162">פתח בכרטיסיית גלישה בסתר</translation>
 <translation id="3090193911106258841">גישה לקלט אודיו ווידאו</translation>
 <translation id="3137521801621304719">צא ממצב גלישה בסתר</translation>
+<translation id="3149891296864842641">אפשרויות משלוח</translation>
+<translation id="3162882791484435636">בחר באפשרות משלוח</translation>
+<translation id="3173438333156928404">שגיאה בעיבוד התשלום</translation>
 <translation id="3177909033752230686">שפת הדף:</translation>
 <translation id="3190152372525844641">‏הפעל הרשאות בשביל Chrome ב<ph name="BEGIN_LINK" />הגדרות Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905">נתונים מאוחסנים בנפח <ph name="STORAGE_AMOUNT" /></translation>
@@ -269,10 +273,8 @@
 <translation id="4875622588773761625">האם תרצה ש-<ph name="PASSWORD_MANAGER_BRAND" /> יעדכן את הסיסמה שלך בשביל האתר הזה?</translation>
 <translation id="4881695831933465202">פתח</translation>
 <translation id="4885273946141277891">‏מספר בלתי נתמך של מופעי Chrome.</translation>
+<translation id="4923459931733593730">תשלום</translation>
 <translation id="4943872375798546930">אין תוצאות</translation>
-<translation id="4970484396410298643">‏גש מכאן ישירות אל הכרטיסיות שפתחת במחשב.
-
-פתח את Chrome במחשב, עבור אל התפריט ובחר באפשרות 'היכנס אל Chrome…'</translation>
 <translation id="497421865427891073">המשך קדימה</translation>
 <translation id="4996978546172906250">שתף באמצעות</translation>
 <translation id="5000922062037820727">חסומה (מומלץ)</translation>
@@ -296,9 +298,7 @@
 <translation id="5184329579814168207">‏פתח ב-Chrome</translation>
 <translation id="5199929503336119739">פרופיל עבודה</translation>
 <translation id="5210365745912300556">סגור כרטיסייה</translation>
-<translation id="5210714456814679336">‏כרטיסיות שפתחת ב-Chrome במכשירים האחרים שלך יופיעו כאן.</translation>
 <translation id="5222676887888702881">יציאה</translation>
-<translation id="5228579091201413441">הפעל סנכרון</translation>
 <translation id="5233638681132016545">כרטיסייה חדשה</translation>
 <translation id="5271967389191913893">המכשיר לא מצליח לפתוח את התוכן להורדה.</translation>
 <translation id="5275558766013849309">כרטיסיות יאוחסנו ביחד עם יישומים אחרונים.</translation>
@@ -342,9 +342,6 @@
 <translation id="5677928146339483299">במצב חסום</translation>
 <translation id="5684874026226664614">אופס. לא ניתן היה לתרגם את הדף הזה.</translation>
 <translation id="5708031556037168012">שמור את הנתונים הקיימים במכשיר וייבא לצמיתות את הנתונים אל <ph name="TO_ACCOUNT" />.</translation>
-<translation id="5712189971979076230">‏כדי לעזור לנו לקבוע את סדר העדיפויות לגבי תכונות ושיפורים שעלינו לעבוד עליהם, שלח ל-Google מידע על הקבצים, על האפליקציות ועל השירותים הפועלים בזמן שאתה נתקל בקריסה.
-
-סטטיסטיקות השימוש כוללות מידע כגון העדפות, לחיצות על לחצנים ושימוש בזיכרון. הן אינן כוללות כתובות של דפי אינטרנט או מידע אישי. דוחות קריסה מכילים מידע על המערכת בזמן הקריסה, והם עשויים להכיל כתובות של דפי אינטרנט או מידע אישי, בהתאם למתרחש בזמן הקריסה.</translation>
 <translation id="5719837394786370183">‏דפים שאתה מציג בכרטיסיות גלישה בסתר לא יישמרו בהיסטוריית הדפדפן, אחסון קובצי ה-cookie או היסטוריית החיפושים לאחר שתסגור את כל הכרטיסיות של גלישה בסתר. קבצים שתוריד או סימניות שתיצור יישמרו.
 
 עם זאת, אינך בלתי נראה. מעבר למצב גלישה בסתר אינו מסתיר את הגלישה שלך מהמעסיק, ספק שירות האינטרנט או האתרים שבהם אתה מבקר.</translation>
@@ -463,6 +460,7 @@
 <translation id="7180611975245234373">רענן</translation>
 <translation id="7191430249889272776">הכרטיסייה נפתחה ברקע.</translation>
 <translation id="7208788139759694678">‏חוסך הנתונים (Data Saver) מושבת</translation>
+<translation id="7220786058474068424">מעבד</translation>
 <translation id="7243308994586599757">אפשרויות הזמינות באזור החלק התחתון של המסך</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> משתמש במיקום שלך כדי להציג תוצאות חיפוש מקומיות</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />עזרה<ph name="END_LINK" /></translation>
@@ -516,6 +514,7 @@
 <translation id="7846076177841592234">בטל את הבחירה</translation>
 <translation id="7851858861565204677">מכשירים אחרים</translation>
 <translation id="7876243839304621966">הסר הכל</translation>
+<translation id="7902333740914687335">התשלום בוצע</translation>
 <translation id="7947953824732555851">קבל והיכנס</translation>
 <translation id="7949961459945740081">קבלת התכונות האחרונות</translation>
 <translation id="7963646190083259054">ספק:</translation>
@@ -539,6 +538,7 @@
 <translation id="8168435359814927499">תוכן</translation>
 <translation id="8173098127580644436">משחר ההיסטוריה</translation>
 <translation id="8200772114523450471">חדש</translation>
+<translation id="8202097416529803614">סיכום הזמנה</translation>
 <translation id="8209050860603202033">פתח את התמונה</translation>
 <translation id="8215250379351058554"><ph name="SITE" /> רוצה להתחבר אל:</translation>
 <translation id="8218346974737627104">אשר את הכניסה</translation>
@@ -593,6 +593,8 @@
 <translation id="8942627711005830162">פתח בחלון האחר</translation>
 <translation id="8959122750345127698">הניווט לא אפשרי: <ph name="URL" /></translation>
 <translation id="8979340629087822094">מהיום האחרון</translation>
+<translation id="8981454092730389528">‏בחירת הפעילויות ב-Google</translation>
+<translation id="8986494364107987395">‏שלח ל-Google דוחות קריסה וסטטיסטיקת שימוש באופן אוטומטי</translation>
 <translation id="8987061207681586800">‏התאם אישית את Chrome</translation>
 <translation id="9019902583201351841">מנוהל על-ידי ההורים שלך</translation>
 <translation id="9020607083536754075">סגור את הכרטיסייה הנוכחית וחזור לאפליקציה הקודמת</translation>

@@ -8,6 +8,7 @@
 <translation id="2078561879028077171">Verzióinformáció</translation>
 <translation id="2117453604279487107">Hozzárendelő URL-je</translation>
 <translation id="2353984724370197742">A hozzárendelés nem sikerült. Sikertelen hálózati kérés.</translation>
+<translation id="2789927415041640472">Kérjük, indítsa újra az alkalmazást az új hozzárendelői konfiguráció használatához.</translation>
 <translation id="3046825211487065480">A hozzárendelés nem sikerült. Második kérést küldtek az első kérés megválaszolása előtt.</translation>
 <translation id="3286538390144397061">Újraindítás most</translation>
 <translation id="3346106862344060497">Motor csatlakoztatva.</translation>
@@ -22,6 +23,7 @@
 <translation id="5860346505531085166">A hozzárendelés nem sikerült. A fióknak nincs hozzáférése.</translation>
 <translation id="6232798399907177395">A Blimp névjegye</translation>
 <translation id="704835510384979817">A hozzárendelés nem sikerült. Nincs egyező motorverzió.</translation>
+<translation id="7145680970336344212">A Blimp újraindítása</translation>
 <translation id="7536363920335771251">Motor leválasztva, ok: %1$s</translation>
 <translation id="7596558890252710462">Operációs rendszer</translation>
 <translation id="7608553142876436780">Motor IP-címe</translation>

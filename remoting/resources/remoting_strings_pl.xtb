@@ -178,7 +178,6 @@ zdalnego Chrome</translation>
 <translation id="533625276787323658">Brak komputerów zdalnych</translation>
 <translation id="5363265567587775042">Poproś użytkownika, z którego komputera chcesz korzystać, by kliknął „<ph name="SHARE" />” i udostępnił Ci kod dostępu.</translation>
 <translation id="5379087427956679853">Pulpit zdalny Chrome pozwala na bezpieczne udostępnianie komputera przez internet. Obaj użytkownicy muszą mieć uruchomioną aplikację Pulpit zdalny Chrome, którą można znaleźć na <ph name="URL" />.</translation>
-<translation id="5394895745784982830">Mac (OS X 10.6 lub nowszy)</translation>
 <translation id="5397086374758643919">Program do odinstalowywania hosta Pulpitu zdalnego Chrome</translation>
 <translation id="5419185025274123272">Nie można zresetować aplikacji. Wciąż możesz przesłać zgłoszenie błędu.</translation>
 <translation id="544077782045763683">Host został wyłączony.</translation>
@@ -232,7 +231,6 @@ zdalnego Chrome</translation>
 <translation id="6930242544192836755">Czas trwania</translation>
 <translation id="6939719207673461467">Pokaż/ukryj klawiaturę.</translation>
 <translation id="6944854424004126054">Przywróć okno</translation>
-<translation id="6962773374262604195">Windows (XP lub nowszy)</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6985691951107243942">Na pewno chcesz wyłączyć połączenia zdalne z: <ph name="HOSTNAME" />? Jeśli zmienisz zdanie, połączenia będzie trzeba włączyć na tamtym komputerze.</translation>
 <translation id="6998989275928107238">Do</translation>

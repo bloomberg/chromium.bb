@@ -21,6 +21,7 @@
 <translation id="112840717907525620">നയ കാഷെ ശരി</translation>
 <translation id="113188000913989374"><ph name="SITE" /> സൈറ്റ് പറയുന്നത്:</translation>
 <translation id="1132774398110320017">Chrome ഓട്ടോഫിൽ ക്രമീകരണങ്ങൾ...</translation>
+<translation id="113770840981343808">പരിശോധിച്ചുറപ്പിക്കാൻ നിങ്ങളുടെ കാർഡിന് മുന്നിലുള്ള 4 അക്ക CVC നൽകുക</translation>
 <translation id="1146673768181266552">ക്രാഷ് ഐഡി <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">ഈ സെർവറിന് അത് <ph name="DOMAIN" /> ആണെന്ന് തെളിയിക്കാനായില്ല; അതിന്റെ സുരക്ഷ സർട്ടിഫിക്കറ്റിനെ നിങ്ങളുടെ കമ്പ്യൂട്ടറിന്റെ ഓപ്പറേറ്റിംഗ് സിസ്‌റ്റത്തിന് പരിചയമില്ല. തെറ്റായ കോൺഫിഗറേഷൻ കാരണമോ ഒരു അക്രമണകാരി നിങ്ങളുടെ കണക്ഷനെ തടസ്സപ്പെടുത്തുന്നത് കൊണ്ടോ ആയിരിക്കാം ഇത് സംഭവിച്ചത്.</translation>
 <translation id="1152921474424827756"><ph name="URL" />-ന്റെ <ph name="BEGIN_LINK" />കാഷെ ചെയ്‌ത പകർപ്പ്<ph name="END_LINK" /> ആക്‌സസ്സുചെയ്യുക</translation>
@@ -118,7 +119,6 @@
 <translation id="2212735316055980242">നയം കണ്ടെത്തിയില്ല</translation>
 <translation id="2213606439339815911">എൻട്രികൾ ലഭ്യമാക്കുന്നു...</translation>
 <translation id="2214283295778284209"><ph name="SITE" /> ലഭ്യമല്ല</translation>
-<translation id="2227695659599072496">നെറ്റ്‌വർക്ക് കേബിളും റൂട്ടറും പരിശോധിക്കുന്നു</translation>
 <translation id="2230458221926704099"><ph name="BEGIN_LINK" />ഡയഗണോസ്‌റ്റിക്‌സ് ആപ്പ്<ph name="END_LINK" /> ഉപയോഗിച്ച് കണകഷൻ പ്രശ്‌നം പരിഹരിക്കുക</translation>
 <translation id="225207911366869382">ഈ നയത്തിനായി ഈ മൂല്യത്തെ ഒഴിവാക്കി.</translation>
 <translation id="2262243747453050782">HTTP പിശക്</translation>
@@ -131,6 +131,7 @@
 <translation id="2317259163369394535"><ph name="DOMAIN" /> ഡൊമെയ്‌ന് ഒരു ഉപയോക്തൃനാമവും പാസ്‌വേഡും വേണം.</translation>
 <translation id="2328300916057834155"><ph name="ENTRY_INDEX" /> സൂചികയിൽ അസാധുവായ ബുക്ക്‌മാർക്ക് അവഗണിച്ചു</translation>
 <translation id="2354001756790975382">മറ്റ് ബുക്‌മാര്‍ക്കുകള്‍</translation>
+<translation id="2357783041215512127"><ph name="CREDIT_CARD" /> ഉപയോഗിച്ച് പണമടയ്‌ക്കുക</translation>
 <translation id="2359808026110333948">തുടരൂ</translation>
 <translation id="2367567093518048410">നില</translation>
 <translation id="237718015863234333">UI ഇതരമാർഗങ്ങളൊന്നും ലഭ്യമല്ല</translation>
@@ -227,7 +228,6 @@
 <translation id="3254409185687681395">ഈ പേജ് ബുക്‌മാര്‍ക്ക് ചെയ്യുക</translation>
 <translation id="3270847123878663523">&amp;പുനഃക്രമീകരിക്കുന്നത് പഴയപടിയാക്കുക</translation>
 <translation id="3286538390144397061">ഇപ്പോള്‍ പുനരാരംഭിക്കുക</translation>
-<translation id="3288003805934695103">പേജ് റീലോഡുചെയ്യുന്നു</translation>
 <translation id="3305707030755673451"><ph name="TIME" />-ന് നിങ്ങളുടെ സമന്വയ പാസ്‌ഫ്രെയ്‌സ് ഉപയോഗിച്ച് ഡാറ്റ എൻക്രിപ്‌റ്റുചെയ്‌തു. സമന്വയം ആരംഭിക്കുന്നതിന് ഇത് നൽകുക.</translation>
 <translation id="333371639341676808">അധികമുള്ള ഡയലോഗുകള്‍ സൃഷ്ടിക്കുന്നതില്‍ നിന്ന് ഈ പേജിനെ തടയൂ.</translation>
 <translation id="3340978935015468852">ക്രമീകരണങ്ങൾ</translation>
@@ -299,7 +299,6 @@
 <translation id="3963721102035795474">റീഡർ മോഡ്</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> ബ്ലോക്കുചെയ്‌തിരിക്കുന്നു</translation>
 <translation id="4021036232240155012">ഒരു വെബ്‌സൈറ്റിന്റെ പേര് അതിന്റെ ഇന്റർനെറ്റ് വിലാസത്തിലേക്ക് വിവർത്തനം ചെയ്യുന്ന നെറ്റ്‌വർക്ക് സേവനമാണ് DNS.</translation>
-<translation id="4021376465026729077">നിങ്ങളുടെ വിപുലീകരണങ്ങൾ പ്രവർത്തനരഹിതമാക്കുന്നു</translation>
 <translation id="4030383055268325496">&amp;ചേർക്കുന്നത് പഴയപടിയാക്കുക</translation>
 <translation id="4032534284272647190"><ph name="URL" /> എന്നതിലേക്ക് ആക്സസ്സ് നിരസിച്ചു.</translation>
 <translation id="404928562651467259">മുന്നറിയിപ്പ്</translation>
@@ -397,7 +396,6 @@
 <translation id="5251803541071282808">ക്ലൗഡ്</translation>
 <translation id="5299298092464848405">നയം പാഴ്‌സുചെയ്യുന്നതിൽ പിശക്</translation>
 <translation id="5300589172476337783">കാണിക്കുക</translation>
-<translation id="5307361445257083764"><ph name="BEGIN_LINK" />നിങ്ങളുടെ കുക്കികൾ മായ്‌ക്കുന്നു<ph name="END_LINK" /></translation>
 <translation id="5308689395849655368">ക്രാഷ് റിപ്പോര്‍ട്ടുചെയ്യല്‍ അപ്രാപ്തമാക്കി.</translation>
 <translation id="5317780077021120954">സംരക്ഷിക്കുക</translation>
 <translation id="5327248766486351172">പേര്</translation>
@@ -431,6 +429,7 @@
 <translation id="5629630648637658800">നയ ക്രമീകരണങ്ങൾ ലോഡുചെയ്യുന്നതിൽ പരാജയപ്പെട്ടു</translation>
 <translation id="5631439013527180824">ഉപകരണ മാനേജുമെന്റ് ടോക്കൺ അസാധുവാണ്</translation>
 <translation id="5650551054760837876">തിരയൽ ഫലങ്ങള്‍ കണ്ടെത്തിയില്ല.</translation>
+<translation id="5663999524854166235">പരിശോധിച്ചുറപ്പിക്കാൻ, നിങ്ങളുടെ കാർഡിന് പുറകിലുള്ള 3 അക്ക CVC നൽകുക</translation>
 <translation id="5677928146339483299">തടഞ്ഞു</translation>
 <translation id="5710435578057952990">ഈ വെബ്സൈറ്റിന്റെ വ്യക്തിത്വം പരിശോധിച്ചിട്ടില്ല.</translation>
 <translation id="5720705177508910913">നിലവിലെ ഉപയോക്താവ്</translation>
@@ -503,7 +502,6 @@
 <translation id="6628463337424475685"><ph name="ENGINE" /> തിരയൽ</translation>
 <translation id="6634865548447745291"><ph name="BEGIN_LINK" />ഈ സർട്ടിഫിക്കറ്റ് റദ്ദാക്കിയതിനാൽ<ph name="END_LINK" /> നിങ്ങൾക്കിപ്പോൾ <ph name="SITE" /> സന്ദർശിക്കാനാകില്ല. നെറ്റ്‌വർക്ക് പിശകുകളും ആക്രമണങ്ങളും സാധാരണയായി താൽക്കാലികമായതിനാൽ ഈ പേജ് മിക്കവാറും പിന്നീട് പ്രവർത്തിക്കാം.</translation>
 <translation id="6637478299472506933">ഡൗൺലോഡ് പരാജയപ്പെട്ടു</translation>
-<translation id="6642894344118208103">മോഡമോ റൂട്ടറോ റീസെറ്റുചെയ്യുന്നു</translation>
 <translation id="6644283850729428850">ഈ നയം ഒഴിവാക്കി.</translation>
 <translation id="6646897916597483132">നിങ്ങളുടെ കാർഡിന്റെ മുന്നിലുള്ള 4 അക്ക CVC നൽകുക</translation>
 <translation id="6656103420185847513">ഫോൾഡർ എഡിറ്റുചെയ്യുക</translation>

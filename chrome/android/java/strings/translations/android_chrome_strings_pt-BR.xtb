@@ -95,9 +95,7 @@
 <translation id="2206488550163399966"><ph name="APP_NAME" />, aplicativo da Web. <ph name="APP_URL" /></translation>
 <translation id="2268044343513325586">Refinar</translation>
 <translation id="2315043854645842844">A seleção de certificado do cliente não é compatível com o sistema operacional.</translation>
-<translation id="2316129865977710310">Não.</translation>
 <translation id="2321958826496381788">Arraste o controle deslizante até que você possa ler confortavelmente. O texto deve ter pelo menos este tamanho após um toque duplo em um parágrafo.</translation>
-<translation id="2329597144923131178">Faça login para que favoritos, histórico, senhas e outras configurações fiquem disponíveis em todos os seus dispositivos.</translation>
 <translation id="2343328333327081434">Instalando...</translation>
 <translation id="2351097562818989364">As configurações de tradução foram redefinidas.</translation>
 <translation id="2359808026110333948">Continuar</translation>
@@ -270,9 +268,6 @@ Para ajustar seu termo de pesquisa, mantenha-o pressionado para selecionar. Para
 <translation id="4881695831933465202">Abrir</translation>
 <translation id="4885273946141277891">Número de instâncias do Google Chrome não suportado.</translation>
 <translation id="4943872375798546930">Nenhum resultado</translation>
-<translation id="4970484396410298643">Acesse as guias que você abriu no seu computador, bem aqui.
-
-Basta abrir o Chrome no computador, ir até o menu e selecionar “Fazer login no Google Chrome…”</translation>
 <translation id="497421865427891073">Avançar</translation>
 <translation id="4996978546172906250">Compartilhar via</translation>
 <translation id="5000922062037820727">Bloqueada (recomendado)</translation>
@@ -296,9 +291,7 @@ Basta abrir o Chrome no computador, ir até o menu e selecionar “Fazer login n
 <translation id="5184329579814168207">Abrir no Google Chrome</translation>
 <translation id="5199929503336119739">Perfil de trabalho</translation>
 <translation id="5210365745912300556">Fechar guia</translation>
-<translation id="5210714456814679336">As guias que você abriu no Google Chrome nos seus outros dispositivos aparecerão aqui.</translation>
 <translation id="5222676887888702881">Sair</translation>
-<translation id="5228579091201413441">Ativar sincronização</translation>
 <translation id="5233638681132016545">Nova guia</translation>
 <translation id="5271967389191913893">Não é possível abrir no dispositivo o conteúdo a ser transferido por download.</translation>
 <translation id="5275558766013849309">As guias serão mantidas com os aplicativos recentes.</translation>
@@ -342,9 +335,6 @@ Basta abrir o Chrome no computador, ir até o menu e selecionar “Fazer login n
 <translation id="5677928146339483299">Bloqueados</translation>
 <translation id="5684874026226664614">Não foi possível traduzir esta página.</translation>
 <translation id="5708031556037168012">Mantém os dados já existentes no seu dispositivo e os importa permanentemente para <ph name="TO_ACCOUNT" />.</translation>
-<translation id="5712189971979076230">Ajude-nos a priorizar os recursos e aprimoramentos nos quais deveríamos trabalhar, enviando informações ao Google sobre os arquivos, aplicativos e serviços que estão sendo executados quando ocorre uma falha.
-
-        As estatísticas de uso incluem informações como preferências, cliques em botões e uso da memória. Elas não incluem URLs de páginas da Web ou qualquer informação pessoal. Relatórios de erros contêm informações do sistema do momento da falha e podem conter URLs de páginas da Web ou informações pessoais, dependendo de o que estava acontecendo no momento da falha.</translation>
 <translation id="5719837394786370183">As páginas que você visualiza nas guias anônimas não permanecem no histórico do navegador, no armazenamento de cookies nem no histórico de pesquisa depois que você fecha todas as guias anônimas. Os arquivos que você transfere por download ou os favoritos que cria são mantidos.
          No entanto, você não fica invisível. O modo anônimo não oculta sua navegação do seu empregador, do seu provedor de acesso à Internet ou dos websites que você visita.</translation>
 <translation id="572328651809341494">Guias recentes</translation>
@@ -593,6 +583,7 @@ Para receber novas licenças, conecte-se à Internet e use seu conteúdo baixado
 <translation id="8942627711005830162">Abrir em outra janela</translation>
 <translation id="8959122750345127698">A Navegação GPS está inacessível: <ph name="URL" /></translation>
 <translation id="8979340629087822094">do dia anterior</translation>
+<translation id="8986494364107987395">Enviar automaticamente estatísticas de uso e relatórios de erros ao Google</translation>
 <translation id="8987061207681586800">O Chrome é seu</translation>
 <translation id="9019902583201351841">Gerenciado pelos seus pais</translation>
 <translation id="9020607083536754075">Fechar a guia atual e retornar para o app anterior</translation>

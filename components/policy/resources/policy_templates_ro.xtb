@@ -2,9 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ro">
 <translation id="101438888985615157">Rotește ecranul la 180 de grade</translation>
-<translation id="1015272884520659144">Definește lista de dispozitive USB care pot fi detașate de driverul kernel pentru a fi folosite prin API-ul chrome.usb direct într-o aplicație web. Pentru a se identifica un anumit hardware, intrările sunt perechi formate din Identificatorul furnizorului USB și Identificatorul produsului USB.
-
-      Dacă această politică nu este configurată, lista de dispozitive USB detașabile este considerată necompletată.</translation>
 <translation id="1017967144265860778">Gestionarea consumului de energie pe ecranul de conectare</translation>
 <translation id="1019101089073227242">Setează directorul pentru datele utilizatorului</translation>
 <translation id="1022361784792428773">ID-urile extensiilor pe care utilizatorul nu are permisiunea să le instaleze (sau * pentru toate)</translation>
@@ -66,7 +63,6 @@
       Dacă această politică nu este configurată sau dacă este dezactivată, suitele de codificare RC4 din TLS nu vor fi activate. În caz contrar, politica poate fi activată pentru a se menține compatibilitatea cu un server învechit. Aceasta este o măsură temporară, iar serverul trebuie să fie reconfigurat.</translation>
 <translation id="1297182715641689552">Utilizează un script .pac pentru proxy</translation>
 <translation id="1304973015437969093">ID-uri pentru extensii/aplicații și adrese URL pentru actualizări de instalat în fundal</translation>
-<translation id="1310699457130669094">Aici puteți specifica adresa URL a unui fișier .pac pentru proxy. Această politică are efect numai dacă ați selectat manual setările proxy la „Alegeți modul de specificare a setărilor serverului proxy”. Trebuie să lăsați această politică nesetată dacă ați selectat alt mod pentru setarea politicilor de proxy. Pentru mai multe opțiuni și exemple detaliate, accesați: <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1313457536529613143">Specifică procentul de ajustare a intervalului până la reducerea luminozității ecranului atunci când se înregistrează activități ale utilizatorului în timp ce luminozitatea ecranului este redusă sau la scurt timp după ce ecranul a fost oprit.
 
           Dacă această politică este configurată, ea specifică procentul cu care este ajustat intervalul până la reducerea luminozității ecranului când se înregistrează activități ale utilizatorului în timp ce luminozitatea ecranului este redusă sau la scurt timp după ce ecranul a fost oprit. Dacă intervalul până la reducerea luminozității este ajustat, intervalele până la oprirea ecranului, blocarea ecranului sau trecerea la modul inactiv sunt modificate pentru a se păstra aceleași distanțe configurate inițial față de intervalul până la reducerea luminozității ecranului.
@@ -148,18 +144,6 @@
 <translation id="1561424797596341174">Suprascrieri de politici pentru versiunile de depanare ale gazdei de acces la distanță</translation>
 <translation id="1583248206450240930">Utilizează <ph name="PRODUCT_FRAME_NAME" /> în mod prestabilit</translation>
 <translation id="1608755754295374538">Adresele URL cărora li se va acorda acces automat la dispozitivele de capturare a conținutului audio</translation>
-<translation id="1613574633990410986">Îți permite să specifici serverul proxy folosit de <ph name="PRODUCT_NAME" /> și de aplicațiile ARC și împiedică utilizatorii să modifice setările de proxy.
-
-      Dacă alegi să nu folosești niciodată un server proxy și să te conectezi întotdeauna direct, toate celelalte opțiuni sunt ignorate.
-
-      Dacă alegi detectarea automată a serverului proxy, toate celelalte opțiuni sunt ignorate:
-
-      Pentru exemple detaliate, accesează:
-      <ph name="PROXY_HELP_URL" />
-
-      Dacă activezi această setare, <ph name="PRODUCT_NAME" /> și aplicațiile ARC vor ignora toate opțiunile privind serverul proxy specificate din linia de comandă.
-
-      Dacă nu configurezi politicile, utilizatorii vor avea permisiunea să aleagă setările de proxy.</translation>
 <translation id="1617235075406854669">Permite ștergerea istoricului browserului și a istoricului descărcărilor</translation>
 <translation id="1617384279878333801">Activează adăugarea persoanelor în managerul de profiluri</translation>
 <translation id="1655229863189977773">Setați dimensiunea în octeți a memoriei cache pe disc</translation>
@@ -248,7 +232,6 @@
       Dacă este activată, un buton mare, roșu, de deconectare, este afișat în bara de sistem cât timp sesiunea este activă și ecranul nu este blocat.
 
       Dacă este dezactivată sau nu este specificată, în bara de sistem nu apare niciun buton mare, roșu, de deconectare.</translation>
-<translation id="1942957375738056236">Puteți să specificați aici adresa URL a serverului proxy. Această politică are efect numai dacă ați selectat manual setările pentru proxy la „Alegeți cum să specificați setările pentru serverul proxy”. Trebuie să lăsați această politică nesetată dacă ați selectat orice alt mod pentru setarea politicilor de proxy. Pentru mai multe opțiuni și exemple detaliate, accesați: <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1956493342242507974">Configurează gestionarea consumului de energie pe ecranul de conectare din <ph name="PRODUCT_OS_NAME" />.
 
       Această politică vă permite să configurați comportamentul <ph name="PRODUCT_OS_NAME" /> în cazul în care nu a existat o activitate inițiată de utilizator într-un interval de timp în care s-a afișat ecranul de conectare. Politica controlează mai multe setări. Pentru intervalele de valori și semantica fiecăreia dintre acestea, consultați politicile corespunzătoare care controlează gestionarea consumului de energie în timpul unei sesiuni. Singurele abateri de la această politică sunt următoarele:
@@ -613,25 +596,6 @@
 <translation id="3072847235228302527">Setați Termenii și condițiile pentru un cont local de pe dispozitiv</translation>
 <translation id="3096595567015595053">Lista de pluginuri activate</translation>
 <translation id="3101501961102569744">Alege modul de specificare a setărilor serverului proxy</translation>
-<translation id="3125884964575432854">Îți permite să specifici serverul proxy folosit de <ph name="PRODUCT_NAME" /> 
-și de aplicațiile ARC și împiedică utilizatorii să modifice setările de proxy.
-
-          Dacă alegi să nu folosești niciodată un server proxy și să te conectezi întotdeauna direct, toate celelalte opțiuni sunt ignorate.
-
-          Dacă alegi să folosești setările de proxy ale sistemului, toate celelalte opțiuni sunt ignorate.
-
-          Dacă alegi detectarea automată a serverului proxy, toate celelalte opțiuni sunt ignorate.
-
-          Dacă alegi modul server proxy fix, poți specifica opțiuni suplimentare în „Adresa IP sau adresa URL a serverului proxy” și „Lista cu valori separate prin virgulă a regulilor de ocolire a proxy-ului”. Aplicațiile ARC vor folosi numai serverul proxy HTTP cu cea mai mare prioritate.
-
-          Dacă alegi să folosești un script .pac pentru proxy, trebuie să specifici adresa URL a scriptului în „Adresa URL a unui fișier .pac pentru proxy”.
-
-          Pentru exemple detaliate, accesează:
-          <ph name="PROXY_HELP_URL" />
-
-          Dacă activezi această setare, <ph name="PRODUCT_NAME" /> și aplicațiile ARC vor ignora toate opțiunile privind serverul proxy specificate din linia de comandă.
-
-          Dacă nu configurezi politica, utilizatorii vor avea permisiunea să aleagă setările proxy.</translation>
 <translation id="3153348162326497318">Vă permite să specificați extensiile pe care utilizatorii NU le pot instala. Extensiile deja instalate vor fi eliminate, dacă sunt pe lista neagră. O valoare „*” din lista neagră înseamnă că toate extensiile apar în lista neagră, cu excepția cazului în care acestea sunt explicit specificate în lista albă. Dacă această politică este lăsată nesetată, utilizatorul poate instala orice extensie în <ph name="PRODUCT_NAME" />.</translation>
 <translation id="316778957754360075">Această politică a fost retrasă începând cu <ph name="PRODUCT_NAME" /> versiunea 29. Pentru a crea colecții de extensii/aplicații găzduite la nivel de organizație, se recomandă să includeți site-ul care găzduiește pachetele CRX în ExtensionInstallSources și să afișați pe o pagină web linkuri de descărcare directă spre pachete. Puteți crea un lansator pentru respectiva pagină web utilizând politica ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">de la versiunea <ph name="SINCE_VERSION" /></translation>
@@ -696,6 +660,7 @@
       Dacă această setare este activată sau nu este configurată, utilizatorii pot activa proxy-ul Cloud Print autentificându-se cu Contul Google.
 
       Dacă această setare este dezactivată, utilizatorii nu pot activa proxy-ul, iar computerul nu va putea să permită accesul <ph name="CLOUD_PRINT_NAME" /> la imprimantele sale.</translation>
+<translation id="3297010562646015826">Activează oprirea proceselor în Managerul de activități</translation>
 <translation id="3322771899429619102">Îți permite să setezi o listă de șabloane de adrese URL care specifică site-urile ce au permisiunea să folosească generarea cheilor. Dacă în „KeygenBlockedForUrls” este specificat un șablon de adresă URL, această politică va modifica aceste excepții.
 
           Dacă politica nu este configurată, valoarea prestabilită la nivel global va fi folosită pentru toate site-urile, fie din politica „DefaultKeygenSetting”, în cazul în care aceasta este configurată, fie din configurația personală a utilizatorului, în caz contrar.</translation>
@@ -872,22 +837,6 @@
           Dacă această politică este setată la „Păstrează cookie-urile pe durata sesiunii”, cookie-urile vor fi șterse la finalizarea sesiunii. Reține că, dacă <ph name="PRODUCT_NAME" /> rulează în „modul fundal”, este posibil ca sesiunea să nu se închidă atunci când ultima fereastră este închisă. Consultă politica „BackgroundModeEnabled” pentru mai multe informații despre configurarea acestui comportament.
 
           Dacă politica nu este configurată, va fi folosită politica „AllowCookies”, iar utilizatorul o va putea schimba.</translation>
-<translation id="4098957623809244159">Această politică este învechită, folosește ProxyMode.
-
-          Îți permite să specifici serverul proxy folosit de <ph name="PRODUCT_NAME" /> și de aplicațiile ARC și împiedică utilizatorii să modifice setările de proxy.
-
-          Dacă alegi să nu folosești niciodată un server proxy și să te conectezi întotdeauna direct, toate celelalte opțiuni sunt ignorate.
-
-          Dacă alegi să folosești setările de proxy ale sistemului sau detectarea automată a serverului proxy, toate celelalte opțiuni sunt ignorate.
-
-          Dacă alegi setările de proxy manuale, poți specifica opțiuni suplimentare în „Adresa IP sau adresa URL a serverului proxy”, „Adresa URL a unui fișier .pac pentru proxy” și „Lista cu valori separate prin virgulă a regulilor de ocolire a proxy-ului”.
-
-          Pentru exemple detaliate, accesează:
-          <ph name="PROXY_HELP_URL" />
-
-          Dacă activezi această setare, <ph name="PRODUCT_NAME" /> va ignora toate opțiunile privind serverul proxy specificate din linia de comandă.
-
-          Dacă nu configurezi politica, utilizatorii vor avea permisiunea să aleagă setările de proxy.</translation>
 <translation id="4103289232974211388">Redirecționează către furnizorul de identitate SAML după confirmarea utilizatorului</translation>
 <translation id="410478022164847452">Specifică intervalul de timp fără intervenția utilizatorului după care se ia măsura pentru inactivitate la funcționarea pe c.a.
 
@@ -1318,14 +1267,6 @@
 <translation id="5893553533827140852">Dacă această setare este activată, solicitările de autentificare gnubby vor fi trimise printr-un proxy folosindu-se o conexiune a gazdei la distanță.
 
           Dacă această setare este dezactivată sau nu este configurată, solicitările de autentificare gnubby nu vor fi trimise printr-un proxy.</translation>
-<translation id="5900959132054596599"><ph name="PRODUCT_NAME" /> și aplicațiile ARC vor ocoli toate proxy-urile pentru lista de gazde indicată aici.
-
-          Această politică are efect doar dacă ai selectat setările de proxy manuale la „Alege modul de specificare a setărilor serverului proxy”.
-
-          Ar trebui să lași această politică neconfigurată dacă ai selectat oricare alt mod de setare a politicilor de proxy.
-
-          Pentru mai multe exemple detaliate, accesează:
-          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="5921713479449475707">Permite descărcarea actualizărilor automate prin HTTP</translation>
 <translation id="5921888683953999946">Setați funcția de accesibilitate pentru cursorul mare ca stare prestabilită pe ecranul de conectare.
 
@@ -1810,9 +1751,6 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="7632724434767231364">Nume bibliotecă GSSAPI</translation>
 <translation id="7635471475589566552">Configurează limba aplicației din <ph name="PRODUCT_NAME" /> și împiedică modificarea limbii de către utilizatori. Dacă activați această setare, <ph name="PRODUCT_NAME" /> utilizează limba indicată. Dacă limba configurată nu este acceptată, este utilizată „en-US”. Dacă această setare este dezactivată sau nu este configurată, <ph name="PRODUCT_NAME" /> utilizează limba preferată specificată de utilizator (dacă este configurată), limba sistemului sau limba „en-US” alternativă.</translation>
 <translation id="7651739109954974365">Această politică stabilește dacă roamingul de date trebuie să fie activat pentru dispozitiv. Dacă această politică este activată, roamingul de date este permis. Dacă politica nu este configurată sau este neactivată, roamingul de date nu va fi disponibil.</translation>
-<translation id="7667184304362487902">Configurează setările de proxy pentru <ph name="PRODUCT_NAME" /> și aplicațiile ARC.
-
-      Această politică încă nu este gata pentru utilizare. Nu o folosi.</translation>
 <translation id="76810863974142048">Adresa URL de la care clienții cu acces la distanță trebuie să își obțină indicativul de autentificare.
 
           Dacă această politică este setată, gazda de acces de la distanță va solicita clienților care se autentifică să obțină un indicativ de autentificare de la această adresă URL, pentru a se conecta. Trebuie să fie folosită împreună cu RemoteAccessHostTokenValidationUrl.
@@ -2028,6 +1966,7 @@ nu poate fi stabilit de utilizator din setările browserului.
 
       Valoarea politicii ar trebui să fie specificată în milisecunde.</translation>
 <translation id="8344454543174932833">Importați marcaje din browserul prestabilit, la prima rulare</translation>
+<translation id="8359734107661430198">Activează API-ul ExampleDeprecatedFeature până pe 02.09.2008</translation>
 <translation id="8360452361555133173">Activează afișarea paginii de întâmpinare la prima lansare a browserului după upgrade-ul sistemului de operare.
 
       Dacă această politică este activată sau nu este configurată, browserul va afișa din nou pagina de întâmpinare la prima lansare după upgrade-ul sistemului de operare.

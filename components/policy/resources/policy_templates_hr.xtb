@@ -2,9 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="hr">
 <translation id="101438888985615157">Zakreni zaslon 180 stupnjeva</translation>
-<translation id="1015272884520659144">Definira popis USB uređaja za koje je dopušteno odvajanje od upravljačkog programa jezgre radi upotrebe putem API-ja chrome.usb izravno unutar web-aplikacije. Unosi su parovi identifikatora dobavljača i identifikatora proizvoda USB uređaja, a služe za prepoznavanje određenog hardvera.
-
-      Ako se pravilo ne konfigurira, popis uklonjivih USB uređaja smatra se praznim.</translation>
 <translation id="1017967144265860778">Upravljanje napajanjem na zaslonu za prijavu</translation>
 <translation id="1019101089073227242">Postavi imenik korisničkih podataka</translation>
 <translation id="1022361784792428773">ID-jevi proširenja u čijem bi instaliranju korisnik trebao biti spriječen (ili * za sve)</translation>
@@ -65,7 +62,6 @@
       Ako se to pravilo ne postavi ili se postavi na "False", RC4 paketi šifri u TLS-u neće biti omogućeni. U protivnom se može postaviti na "True" radi održanja kompatibilnosti sa zastarjelim poslužiteljem. To je privremena mjera i poslužitelj se treba ponovo konfigurirati.</translation>
 <translation id="1297182715641689552">Upotrijebi .pac proxy skriptu</translation>
 <translation id="1304973015437969093">ID-jevi proširenja/aplikacija i URL-ovi ažuriranja koja će se instalirati u pozadini</translation>
-<translation id="1310699457130669094">Ovdje možete odrediti URL za .pac datoteku proxy poslužitelja. Ovo pravilo vrijedi samo ako ste odabrali ručne postavke proxy poslužitelja u stavci "Odabir načina određivanja postavki proxy poslužitelja". Ne postavljajte ovo pravilo ako ste odabrali bilo koji drugi način postavljanja pravila za proxy poslužitelje. Za podrobne primjere posjetite: <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1313457536529613143">Određuje postotak odgode skaliranja zatamnjivanja zaslona kada se uoči aktivnosti korisnika dok se zaslon zatamnjuje ili ubrzo nakon što se zaslon isključi.
 
           Ako se to pravilo postavi, ono određuje postotak odgode skaliranja zatamnjivanja zaslona kada se uoči aktivnosti korisnika dok se zaslon zatamnjuje ili ubrzo nakon što se zaslon isključi. Kada se odgoda zatamnjivanja skalira, odgode isključivanja zaslona, zaključavanja zaslona i mirovanja podešavaju se kako bi se zadržali isti vremenski odmaci za odgodu zatamnjivanja zaslona koji su izvorno konfigurirani.
@@ -146,18 +142,6 @@
 <translation id="1561424797596341174">Nadjačavanja pravila za međuverzije za otklanjanje pogrešaka hosta daljinskog pristupa</translation>
 <translation id="1583248206450240930">Upotrijebi <ph name="PRODUCT_FRAME_NAME" /> kao zadano</translation>
 <translation id="1608755754295374538">URL-ovi koji će dobiti pristup uređajima za snimanje zvuka bez postavljanja upita</translation>
-<translation id="1613574633990410986">Omogućuje vam da odredite proxy poslužitelj kojim se koriste <ph name="PRODUCT_NAME" /> i ARC aplikacije, a korisnicima onemogućuje promjenu postavki proxyja.
-
-      Ako odaberete da se proxy poslužitelj nikad ne upotrebljava i da se veza uvijek uspostavlja izravno, sve se ostale opcije zanemaruju.
-
-      Ako odaberete automatsko otkrivanje proxy poslužitelja, sve se ostale opcije zanemaruju.
-
-      Detaljne primjere možete pronaći ovdje:
-      <ph name="PROXY_HELP_URL" />
-
-      Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> i ARC aplikacije zanemarivat će sve opcije u vezi s proxy poslužiteljem određene naredbenim retkom.
-
-      Ako se ta pravila ne postave, korisnici će moći sami odabrati postavke proxyja.</translation>
 <translation id="1617235075406854669">Omogući brisanje povijesti preglednika i preuzimanja</translation>
 <translation id="1617384279878333801">Omogućivanje dodavanja osobe u upravitelju profila</translation>
 <translation id="1655229863189977773">Postavite veličinu predmemorije diska u bajtovima</translation>
@@ -242,7 +226,6 @@
       Ako je omogućeno, na programskoj traci prikazuje se veliki, crveni gumb za odjavu dok je sesija aktivna, a zaslon nije zaključan.
 
       Ako je onemogućeno ili nije navedeno, na programskoj traci ne prikazuje se veliki crveni gumb za odjavu.</translation>
-<translation id="1942957375738056236">Ovdje možete odrediti URL proxy poslužitelja. Ovo se pravilo primjenjuje samo ako ste odabrali ručno postavljanje proxy poslužitelja u stavci "Odabir načina određivanja postavki proxy poslužitelja". Ne postavljajte ovo pravilo ako ste odabrali neki drugi način za postavljanje pravila proxy poslužitelja. Za više mogućnosti i podrobne primjere posjetite: <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1956493342242507974">Konfigurira upravljanje potrošnjom energije na zaslonu za prijavu u proizvodu <ph name="PRODUCT_OS_NAME" />.
 
       Tim pravilom možete konfigurirati kako se <ph name="PRODUCT_OS_NAME" /> ponaša kada neko vrijeme nema korisničke aktivnosti dok se prikazuje zaslon za prijavu. Pravilo upravlja većim brojem postavki. Semantika i rasponi vrijednosti pojedinačnih postavki mogu se pronaći u odgovarajućim pravilima koja upravljaju potrošnjom energije u okviru sesije. Jedina su odstupanja od tih pravila sljedeća:
@@ -605,24 +588,6 @@
 <translation id="3072847235228302527">Postavi Uvjete pružanja usluge za lokalni račun na uređaju</translation>
 <translation id="3096595567015595053">Popis omogućenih dodataka</translation>
 <translation id="3101501961102569744">Odaberi način određivanja postavki proxy poslužitelja</translation>
-<translation id="3125884964575432854">Omogućuje vam da odredite proxy poslužitelj kojim se koriste <ph name="PRODUCT_NAME" /> i ARC aplikacije, a korisnicima onemogućuje promjenu postavki proxyja.
-
-          Ako odaberete da se proxy poslužitelj nikada ne upotrebljava i da se veza uvijek uspostavlja izravno, sve se ostale opcije zanemaruju.
-
-          Ako odaberete upotrebu sistemskih postavki proxyja, sve se ostale opcije zanemaruju.
-
-          Ako odaberete automatsko otkrivanje proxy poslužitelja, sve se ostale opcije zanemaruju.
-
-          Ako odaberete način fiksnog proxy poslužitelja, možete odrediti dodatne opcije pod stavkama "Adresa ili URL proxy poslužitelja" i "Popis pravila proxy zaobilaženja odvojenih zarezima". ARC aplikacije upotrebljavat će samo HTTP proxy poslužitelj najvišeg prioriteta.
-
-          Ako odaberete upotrebu .pac skripte proxy poslužitelja, morate navesti URL prema skripti u odjeljku "URL prema .pac datoteci proxy poslužitelja".
-
-          Detaljne primjere možete pronaći ovdje:
-          <ph name="PROXY_HELP_URL" />
-
-          Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> i ARC aplikacije zanemarivat će sve opcije u vezi s proxy poslužiteljem određene naredbenim retkom.
-
-          Ako se to pravilo ne postavi, korisnici će moći sami odabrati postavke proxyja.</translation>
 <translation id="3153348162326497318">Omogućuje da odredite koja proširenja korisnici NE mogu instalirati. Proširenja koja su već instalirana bit će uklonjena ako se nalaze na popisu zabranjenih proširenja. Vrijednost popisa zabranjenih proširenja "*" znači da nije dopušteno nijedno proširenje, osim ako nisu izričito navedena na popisu dopuštenih. Ako pravilo nije postavljeno, korisnik može instalirati bilo koje proširenje u <ph name="PRODUCT_NAME" />.</translation>
 <translation id="316778957754360075">To se pravilo ne upotrebljava od verzije 29 sustava <ph name="PRODUCT_NAME" />. Preporučuje se da se pri postavljanju zbirki proširenja ili aplikacija koje hostira određena organizacija web-lokacija koja hostira CRX pakete uključi u pravilo ExtensionInstallSources te da se u pakete na web-stanici postave izravne veze za preuzimanje. Pokretač za tu web-stranicu može se izraditi pomoću pravila ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">od verzije <ph name="SINCE_VERSION" /></translation>
@@ -683,6 +648,7 @@
 <translation id="3273221114520206906">Zadana postavka JavaScripta</translation>
 <translation id="3288595667065905535">Kanal izdanja</translation>
 <translation id="3292147213643666827">Omogućuje da se proizvod <ph name="PRODUCT_NAME" /> ponaša kao proxy između pisača iz oblaka <ph name="CLOUD_PRINT_NAME" /> i pisača iz starog sustava povezanih s računalom. Ako je ova postavka onemogućena ili nije konfigurirana, korisnici mogu omogućiti proxy ispisivanja na oblaku autentifikacijom putem svojih Google računa. Ako je ova postavka onemogućena, korisnici ne mogu omogućiti proxy, a računalu neće biti dopušteno dijeljenje pisača s oblakom <ph name="CLOUD_PRINT_NAME" />.</translation>
+<translation id="3297010562646015826">Omogućuje završavanje postupaka u Upravitelju zadataka</translation>
 <translation id="3322771899429619102">Omogućuje postavljanje popisa uzoraka URL-ova koji određuju web-lokacije koje smiju upotrebljavati generiranje ključeva. Ako je uzorak URL-ova u pravilu "KeygenBlockedForUrls", to nadjačava ove iznimke.
 
           Ako se to pravilo ne postavi, globalna zadana vrijednost upotrebljavat će se za sve web-lokacije iz pravila "DefaultKeygenSetting" ako je postavljeno, a u suprotnom iz korisnikove osobne konfiguracije.</translation>
@@ -852,22 +818,6 @@
          Ako se pravilo postavi na "Zadrži kolačiće za vrijeme trajanja sesije", kolačići će se izbrisati po završetku sesije. Ako se <ph name="PRODUCT_NAME" /> izvodi u pozadini, sesija se možda neće završiti dok se ne zatvori posljednji prozor. Više informacija o konfiguriranju tog ponašanja potražite u pravilu "BackgroundModeEnabled".
 
           Ako se to pravilo ne postavi, koristit će se pravilo "AllowCookies" i korisnik će ga moći promijeniti.</translation>
-<translation id="4098957623809244159">To je pravilo zastarjelo, a umjesto njega upotrijebite ProxyMode.
-
-          Omogućuje vam da odredite proxy poslužitelj kojim se koriste <ph name="PRODUCT_NAME" /> i ARC aplikacije, a korisnicima onemogućuje promjenu postavki proxyja.
-
-          Ako odaberete da se proxy poslužitelj nikad ne upotrebljava i da se veza uvijek uspostavlja izravno, sve se ostale opcije zanemaruju.
-
-          Ako odaberete upotrebu sistemskih postavki proxyja ili automatsko otkrivanje proxy poslužitelja, sve se ostale opcije zanemaruju.
-
-          Ako odaberete ručne postavke proxy poslužitelja, dodatne opcije možete navesti pod stavkama "Adresa ili URL proxy poslužitelja, "URL prema .pac datoteci proxy poslužitelja" i "Popis pravila proxy zaobilaženja odvojenih zarezima".
-
-          Detaljne primjere možete pronaći ovdje:
-          <ph name="PROXY_HELP_URL" />
-
-          Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcije u vezi s proxy poslužiteljem određene naredbenim retkom.
-
-          Ako se to pravilo ne postavi, korisnici će moći sami odabrati postavke proxy poslužitelja.</translation>
 <translation id="4103289232974211388">Preusmjeri na SAML IdP nakon korisnikove potvrde</translation>
 <translation id="410478022164847452">Određuje koliko vremena treba proteći bez aktivnosti korisnika da bi se izvršila radnja neaktivnosti tijekom napajanja izmjeničnom strujom.
 
@@ -1298,14 +1248,6 @@
 <translation id="5893553533827140852">Ako je ta postavka omogućena, zahtjevi autentifikacije "gnubby" proslijedit će se putem proxyja vezom udaljenog hosta.
 
           Ako je ta postavka onemogućena ili nije konfigurirana, zahtjevi autentifikacije "gnubby" neće se prosljeđivati putem proxyja.</translation>
-<translation id="5900959132054596599"><ph name="PRODUCT_NAME" /> i ARC aplikacije zaobilazit će sve proxy poslužitelje na ovdje navedenom popisu hostova.
-
-          To će pravilo vrijediti samo ako odaberete ručne postavke proxyja pod stavkom "Odaberi način određivanja postavki proxy poslužitelja".
-
-          Ne postavljajte to pravilo ako ste odabrali bilo koji drugi način postavljanja pravila za proxy poslužitelje.
-
-          Detaljne primjere možete pronaći ovdje:
-          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="5921713479449475707">Dopusti preuzimanja automatskog ažuriranja putem HTTP-a</translation>
 <translation id="5921888683953999946">Postavi zadano stanje značajke pristupačnosti velikog pokazivača na zaslonu za prijavu.
 
@@ -1785,9 +1727,6 @@
 <translation id="7632724434767231364">Naziv GSSAPI biblioteke</translation>
 <translation id="7635471475589566552">Konfigurira oznaku zemlje/jezika aplikacije u proizvodu <ph name="PRODUCT_NAME" /> i sprječava korisnike da promijene oznaku zemlje/jezika. Ako omogućite ovu postavku, <ph name="PRODUCT_NAME" /> upotrebljavat će navedenu oznaku zemlje/jezika. Ako konfigurirana oznaka zemlje/jezika nije podržana, upotrebljavat će se "en-US". Ako je ova postavka onemogućena ili nije postavljena, <ph name="PRODUCT_NAME" /> upotrebljavat će oznaku zemlje/jezika koju odredi korisnik (ako je konfigurirana), oznaku zemlje/jezika sustava ili standardnu oznaku zemlje/jezika "en-US".</translation>
 <translation id="7651739109954974365">Utvrđuje treba li roaming podataka biti omogućen za uređaj. Ako je to pravilo postavljeno na "istinito", roaming podataka bit će dopušten. Ako to pravilo nije konfigurirano ili je postavljeno na "lažno", roaming podataka neće biti dostupan.</translation>
-<translation id="7667184304362487902">Konfigurira postavke proxyja za <ph name="PRODUCT_NAME" /> i ARC aplikacije.
-
-      To pravilo još nije spremno za upotrebu, tako da ga nemojte upotrebljavati.</translation>
 <translation id="76810863974142048">URL na kojem klijenti daljinskog pristupa trebaju dobiti autentifikacijsku oznaku.
 
           Ako se to pravilo postavi, host daljinskog pristupa zahtijevat će od klijenata koji se autentificiraju pribavljanje autentifikacijske oznake s tog URL-a da bi se povezali. Pravilo se mora upotrebljavati zajedno s pravilom RemoteAccessHostTokenValidationUrl.
@@ -2000,6 +1939,7 @@
 
       Vrijednost pravila trebala bi biti navedena u milisekundama.</translation>
 <translation id="8344454543174932833">Uvoz oznaka iz zadanog preglednika pri prvom pokretanju</translation>
+<translation id="8359734107661430198">Omogući ExampleDeprecatedFeature API do 2008/09/02</translation>
 <translation id="8360452361555133173">Omogućuje prikazivanje stranice dobrodošlice prilikom prvog pokretanja preglednika nakon nadogradnje OS-a.
 
       Ako se to pravilo postavi na "istinito" ili se ne konfigurira, preglednik će ponovo prikazati stranicu dobrodošlice prilikom prvog pokretanja nakon nadogradnje OS-a.

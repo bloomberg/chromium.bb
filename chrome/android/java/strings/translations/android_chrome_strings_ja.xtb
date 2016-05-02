@@ -60,6 +60,7 @@
 <translation id="1742134235943978220"><ph name="TARGET_LANGUAGE" />に翻訳しました。</translation>
 <translation id="1749561566933687563">ブックマークの同期</translation>
 <translation id="17513872634828108">開いているタブ</translation>
+<translation id="1756600373018374892">このボタンをタップして簡単にタブに移動できます。</translation>
 <translation id="1807246157184219062">明</translation>
 <translation id="1825719650605518411">初回実行時のエクスペリエンス</translation>
 <translation id="1829244130665387512">ページ内検索</translation>
@@ -70,6 +71,7 @@
 <translation id="194341124344773587"><ph name="BEGIN_LINK" />Android の設定<ph name="END_LINK" />で Chrome の権限を有効にしてください。</translation>
 <translation id="1943432128510653496">パスワードを保存する</translation>
 <translation id="1944384637046898011"><ph name="TIME" />時点の Google パスワードですべてのデータを暗号化する</translation>
+<translation id="1946005195648379376">Google が閲覧履歴をどのような方法で使用し、検索やその他の Google サービスをカスタマイズするかを設定します。</translation>
 <translation id="1959930595721737608">次のサイトで JavaScript を許可します。</translation>
 <translation id="1966710179511230534">ログイン情報を更新してください。</translation>
 <translation id="1974060860693918893">詳細設定</translation>
@@ -95,9 +97,7 @@
 <translation id="2206488550163399966"><ph name="APP_NAME" /> はウェブアプリです（<ph name="APP_URL" />）。</translation>
 <translation id="2268044343513325586">絞り込み</translation>
 <translation id="2315043854645842844">オペレーティング システムでサポートされていないため、クライアント側で証明書を選択することはできません。</translation>
-<translation id="2316129865977710310">いいえ</translation>
 <translation id="2321958826496381788">読みやすくなるまでスライダをドラッグしてください。段落をダブルタップするとテキストがこれより大きくなります。</translation>
-<translation id="2329597144923131178">ログインすると、お使いのどのデバイスでも同じブックマーク、履歴、パスワード、その他の設定を利用できるようになります。</translation>
 <translation id="2343328333327081434">インストール中...</translation>
 <translation id="2351097562818989364">翻訳設定をリセットしました。</translation>
 <translation id="2359808026110333948">続行</translation>
@@ -138,6 +138,7 @@
 <translation id="2842985007712546952">親フォルダ</translation>
 <translation id="2870560284913253234">サイト</translation>
 <translation id="2888126860611144412">Chrome について</translation>
+<translation id="2889768325388591707">タブをすばやく切り替える</translation>
 <translation id="2891154217021530873">ページの読み込みを停止</translation>
 <translation id="2902702728133930130">Chrome の起動時に予期しないエラーが発生し、起動できませんでした。</translation>
 <translation id="2903493209154104877">住所</translation>
@@ -155,6 +156,9 @@
 <translation id="3089395242580810162">シークレット タブで開く</translation>
 <translation id="3090193911106258841">音声 / ビデオ入力にアクセスしています</translation>
 <translation id="3137521801621304719">シークレット モードを終了</translation>
+<translation id="3149891296864842641">配送オプション</translation>
+<translation id="3162882791484435636">配送オプションを選択</translation>
+<translation id="3173438333156928404">お支払いの処理中にエラーが発生しました</translation>
 <translation id="3177909033752230686">ページの言語:</translation>
 <translation id="3190152372525844641"><ph name="BEGIN_LINK" />Android の設定<ph name="END_LINK" />で Chrome の権限を有効にしてください。</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> の保存データ</translation>
@@ -269,10 +273,8 @@
 <translation id="4875622588773761625"><ph name="PASSWORD_MANAGER_BRAND" /> でこのサイトのパスワードを更新しますか？</translation>
 <translation id="4881695831933465202">開く</translation>
 <translation id="4885273946141277891">Chrome のインスタンス数の上限を超えています。</translation>
+<translation id="4923459931733593730">お支払い</translation>
 <translation id="4943872375798546930">結果はありません</translation>
-<translation id="4970484396410298643">パソコンで開いたタブにこちらからアクセスできます。
-
-パソコンで Chrome を開き、メニューから [Chrome にログイン] を選択してください。</translation>
 <translation id="497421865427891073">次に進む</translation>
 <translation id="4996978546172906250">共有方法</translation>
 <translation id="5000922062037820727">ブロック（推奨）</translation>
@@ -296,9 +298,7 @@
 <translation id="5184329579814168207">Chromeで開く</translation>
 <translation id="5199929503336119739">仕事用プロファイル</translation>
 <translation id="5210365745912300556">タブを閉じる</translation>
-<translation id="5210714456814679336">他のデバイスの Chrome で開いているタブがここに表示されます。</translation>
 <translation id="5222676887888702881">ログアウト</translation>
-<translation id="5228579091201413441">同期を有効にする</translation>
 <translation id="5233638681132016545">新しいタブ</translation>
 <translation id="5271967389191913893">デバイスでダウンロード コンテンツを開くことができません。</translation>
 <translation id="5275558766013849309">タブは最近使ったアプリと一緒に表示されます。</translation>
@@ -342,9 +342,6 @@
 <translation id="5677928146339483299">ブロック</translation>
 <translation id="5684874026226664614">このページを翻訳できませんでした。</translation>
 <translation id="5708031556037168012">デバイスの既存のデータを保持して、<ph name="TO_ACCOUNT" /> にデータを完全にインポートします。</translation>
-<translation id="5712189971979076230">Google では優先度の高い機能から順に開発や改善に取り組みたいと考えています。そのため、障害が発生した場合は、実行していたファイル、アプリケーション、サービスに関する情報を Google に送信していただけますと幸いです。
-
-使用統計データには、設定、ボタンのクリック数、メモリの使用状況などの情報が含まれ、ウェブページの URL や個人情報は含まれません。障害レポートには、障害発生時のシステム情報が含まれ、障害発生時の状況によってはウェブページの URL や個人情報が含まれることもあります。</translation>
 <translation id="5719837394786370183">シークレット タブで表示したページの記録は、シークレット タブをすべて閉じた後、ブラウザの履歴、Cookieの保存場所、検索履歴から消去されます。ただし、ダウンロードしたファイルや作成したブックマークは保存されます。
 
 あらゆる場所に記録が一切残らないわけではありません。シークレット モードを使っても、雇用主、インターネット サービス プロバイダ、訪問先のウェブサイトに閲覧内容が知られる可能性はあります。</translation>
@@ -463,6 +460,7 @@
 <translation id="7180611975245234373">更新</translation>
 <translation id="7191430249889272776">バックグラウンドでタブを開きました。</translation>
 <translation id="7208788139759694678">データセーバーは無効です</translation>
+<translation id="7220786058474068424">処理しています</translation>
 <translation id="7243308994586599757">画面の下の方にオプションがあります</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> では地域の検索結果を表示するためにユーザーの位置情報が使用されます</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />ヘルプ<ph name="END_LINK" /></translation>
@@ -516,6 +514,7 @@
 <translation id="7846076177841592234">選択解除</translation>
 <translation id="7851858861565204677">その他のデバイス</translation>
 <translation id="7876243839304621966">すべて削除</translation>
+<translation id="7902333740914687335">お支払いの処理を完了しました</translation>
 <translation id="7947953824732555851">同意してログイン</translation>
 <translation id="7949961459945740081">最新機能を取得</translation>
 <translation id="7963646190083259054">ベンダー:</translation>
@@ -539,6 +538,7 @@
 <translation id="8168435359814927499">コンテンツ</translation>
 <translation id="8173098127580644436">始めから</translation>
 <translation id="8200772114523450471">再開</translation>
+<translation id="8202097416529803614">ご注文概要</translation>
 <translation id="8209050860603202033">画像を開く</translation>
 <translation id="8215250379351058554"><ph name="SITE" /> の接続先を選択:</translation>
 <translation id="8218346974737627104">ログインの確認</translation>
@@ -595,6 +595,8 @@
 <translation id="8942627711005830162">別のウィンドウで開く</translation>
 <translation id="8959122750345127698"><ph name="URL" /> にアクセスできません</translation>
 <translation id="8979340629087822094">過去 1 日</translation>
+<translation id="8981454092730389528">Google アクティビティ管理</translation>
+<translation id="8986494364107987395">使用統計データや障害レポートを自動的に Google に送信する</translation>
 <translation id="8987061207681586800">自分だけの Chrome を</translation>
 <translation id="9019902583201351841">保護者により管理されています</translation>
 <translation id="9020607083536754075">現在のタブを閉じて前のアプリに戻る</translation>

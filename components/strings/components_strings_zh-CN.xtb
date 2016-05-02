@@ -19,6 +19,7 @@
 <translation id="112840717907525620">策略缓存良好</translation>
 <translation id="113188000913989374"><ph name="SITE" /> 显示：</translation>
 <translation id="1132774398110320017">Chrome自动填充设置…</translation>
+<translation id="113770840981343808">请输入信用卡正面显示的 4 位数银行卡验证码 (CVC) 以进行验证</translation>
 <translation id="1146673768181266552">崩溃ID <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">此服务器无法证明它是<ph name="DOMAIN" />；您计算机的操作系统不信任其安全证书。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
 <translation id="1152921474424827756">访问<ph name="URL" />的<ph name="BEGIN_LINK" />缓存副本<ph name="END_LINK" /></translation>
@@ -114,7 +115,6 @@
 <translation id="2212735316055980242">找不到策略</translation>
 <translation id="2213606439339815911">正在获取条目…</translation>
 <translation id="2214283295778284209">无法访问 <ph name="SITE" /></translation>
-<translation id="2227695659599072496">检查网线或路由器</translation>
 <translation id="2230458221926704099">请使用<ph name="BEGIN_LINK" />诊断应用<ph name="END_LINK" />修复网络连接</translation>
 <translation id="225207911366869382">适用于该政策的此值已弃用。</translation>
 <translation id="2262243747453050782">HTTP 错误</translation>
@@ -127,6 +127,7 @@
 <translation id="2317259163369394535"><ph name="DOMAIN" /> 要求提供用户名和密码。</translation>
 <translation id="2328300916057834155">已忽略索引<ph name="ENTRY_INDEX" />中的无效书签</translation>
 <translation id="2354001756790975382">其他书签</translation>
+<translation id="2357783041215512127">使用 <ph name="CREDIT_CARD" /> 付款</translation>
 <translation id="2359808026110333948">继续</translation>
 <translation id="2367567093518048410">级别</translation>
 <translation id="237718015863234333">没有可用的界面备选项</translation>
@@ -218,7 +219,6 @@
 <translation id="3254409185687681395">为此页添加书签</translation>
 <translation id="3270847123878663523">撤消顺序调整(&amp;U)</translation>
 <translation id="3286538390144397061">立即重新启动</translation>
-<translation id="3288003805934695103">重新加载网页</translation>
 <translation id="3305707030755673451">您的数据已于 <ph name="TIME" />使用您的同步密码加密。输入该密码即可开始同步。</translation>
 <translation id="333371639341676808">禁止此页再显示对话框。</translation>
 <translation id="3340978935015468852">设置</translation>
@@ -289,7 +289,6 @@
 <translation id="3963721102035795474">阅读器模式</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> 已被屏蔽</translation>
 <translation id="4021036232240155012">DNS 是一项网络服务，可将网站的名称转译为其对应的互联网地址。</translation>
-<translation id="4021376465026729077">停用扩展程序</translation>
 <translation id="4030383055268325496">撤消添加(&amp;U)</translation>
 <translation id="4032534284272647190"><ph name="URL" /> 拒绝访问。</translation>
 <translation id="404928562651467259">警告</translation>
@@ -387,7 +386,6 @@
 <translation id="5251803541071282808">云端</translation>
 <translation id="5299298092464848405">解析策略时出错</translation>
 <translation id="5300589172476337783">显示</translation>
-<translation id="5307361445257083764"><ph name="BEGIN_LINK" />清除 Cookie<ph name="END_LINK" /></translation>
 <translation id="5308689395849655368">已停用崩溃报告。</translation>
 <translation id="5317780077021120954">保存</translation>
 <translation id="5327248766486351172">名称</translation>
@@ -421,6 +419,7 @@
 <translation id="5629630648637658800">无法加载策略设置</translation>
 <translation id="5631439013527180824">设备管理令牌无效</translation>
 <translation id="5650551054760837876">未找到搜索结果。</translation>
+<translation id="5663999524854166235">请输入信用卡背面显示的 3 位数银行卡验证码 (CVC) 以进行验证</translation>
 <translation id="5677928146339483299">已屏蔽</translation>
 <translation id="5710435578057952990">此网站尚未经过身份验证。</translation>
 <translation id="5720705177508910913">当前用户</translation>
@@ -491,7 +490,6 @@
 <translation id="6628463337424475685"><ph name="ENGINE" /> 搜索</translation>
 <translation id="6634865548447745291">您目前无法访问<ph name="SITE" />，因为<ph name="BEGIN_LINK" />此证书已被撤消<ph name="END_LINK" />。网络错误和攻击通常是暂时的，因此，此网页稍后可能会恢复正常。</translation>
 <translation id="6637478299472506933">下载失败</translation>
-<translation id="6642894344118208103">重置调制解调器或路由器</translation>
 <translation id="6644283850729428850">此政策已弃用。</translation>
 <translation id="6646897916597483132">输入信用卡正面显示的 4 位数银行卡验证码 (CVC)</translation>
 <translation id="6656103420185847513">修改文件夹</translation>

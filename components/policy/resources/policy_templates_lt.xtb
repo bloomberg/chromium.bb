@@ -2,9 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="lt">
 <translation id="101438888985615157">Pasukti ekraną 180 laipsnių kampu</translation>
-<translation id="1015272884520659144">Apibrėžiamas USB įrenginių, kuriuos leidžiama atjungti nuo branduolio tvarkyklės, kad būtų galima naudoti naudojant chrome.usb API tiesiai žiniatinklio programoje, sąrašas. Įrašai – tai USB paslaugos teikėjo identifikatoriaus ir produkto identifikatoriaus poros, nurodančios konkrečią aparatinę įrangą.
-
-      Jei ši politika nesukonfigūruota, manoma, kad atjungiamų USB įrenginių sąrašas tuščias.</translation>
 <translation id="1017967144265860778">Energijos valdymas prisijungimo ekrane</translation>
 <translation id="1019101089073227242">Nustatyti naudotojo duomenų katalogą</translation>
 <translation id="1022361784792428773">Plėtinių, kurių diegti naudotojams turi būti neleidžiama (arba „*“, jei neleidžiama nė vieno), ID</translation>
@@ -73,14 +70,6 @@
       Jei politika nenustatyta arba nustatyta į „false“, TLS RC4 šifruotieji programų komplektai nebus įgalinti. Priešingu atveju ją galima nustatyti į „true“, kad būtų išsaugotas suderinamumas su pasenusiu serveriu. Tai laikina priemonė; serverį reikia iš naujo sukonfigūruoti.</translation>
 <translation id="1297182715641689552">Naudoti .pac tarpinio serverio scenarijų</translation>
 <translation id="1304973015437969093">Automatiškai diegiami plėtinių / programų ID ir atnaujinimo URL</translation>
-<translation id="1310699457130669094">Čia galite nurodyti URL, siejantį su įgaliotojo serverio .pac failu.
-
-          Ši politika galioja, tik jei skiltyje „Pasirinkti, kaip nurodyti įgaliotojo serverio nustatymus“ pasirinkote rankinius įgaliotojo serverio nustatymus.
-
-          Jei pasirinkote kokį nors kitą įgaliotojo serverio politikos nustatymo režimą, neturėtumėte nustatyti šios politikos.
-
-          Jei reikia išsamių pavyzdžių, apsilankykite šiuo adresu:
-          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1313457536529613143">Nurodomas ekrano užtemdymo delsos mastelio keitimo procentas, kai aptinkama naudotojo veikla ekranui esant užtemdytam ar iškart po to, kai ekranas išjungiamas.
 
          Jei ši politika nustatyta, ji nurodo ekrano užtemdymo delsos mastelio keitimo procentą, kai aptinkama naudotojo veikla ekranui esant užtemdytam ar iškart po to, kai ekranas išjungiamas. Kai užtemdymo delsa nustatyta, ekrano išjungimo, užrakinimo ir neveikos būsenos delsos koreguojamos siekiant išlaikyti vienodą laiką nuo pirminės sukonfigūruotos užtemdymo delsos.
@@ -163,18 +152,6 @@
 <translation id="1561424797596341174">Nuotolinės prieigos prieglobos derinimo versijų politikos pakeitimai</translation>
 <translation id="1583248206450240930">Naudoti „<ph name="PRODUCT_FRAME_NAME" />“ pagal numatytuosius nustatymus</translation>
 <translation id="1608755754295374538">URL, kuriems bus suteikta prieiga prie garso užfiksavimo įrenginių be paraginimo</translation>
-<translation id="1613574633990410986">Leidžia nurodyti „<ph name="PRODUCT_NAME" />“ ir ARC programų naudojamą tarpinį serverį ir neleidžia naudotojams keisti tarpinio serverio nustatymų.
-
-      Jei pasirinksite niekada nenaudoti tarpinio serverio ir visada prisijungti tiesiogiai, bus nepaisoma visų kitų parinkčių.
-
-      Jei pasirinksite automatiškai aptikti tarpinį serverį, bus nepaisoma visų kitų parinkčių.
-
-      Jei reikia išsamių pavyzdžių, apsilankykite adresu
-      <ph name="PROXY_HELP_URL" />
-
-      Jei įgalinsite šį nustatymą, „<ph name="PRODUCT_NAME" />“ ir ARC programos nepaisys visų su tarpiniu serveriu susijusių parinkčių, nurodytų komandos eilutėje.
-
-      Jei šios politikos nuostatos nebus nustatytos, naudotojai galės patys pasirinkti tarpinio serverio nustatymus.</translation>
 <translation id="1617235075406854669">Įgalinti naršyklės ištrynimą ir atsisiuntimo istoriją</translation>
 <translation id="1617384279878333801">Asmens pridėjimo profilių tvarkymo priemonėje įgalinimas</translation>
 <translation id="1655229863189977773">Nustatyti disko talpyklos dydį baitais</translation>
@@ -265,14 +242,6 @@
       Jei įgalinta, kai sesija aktyvi ir ekranas neužrakintas, sistemos dėkle rodomas didelis, raudonas atsijungimo mygtukas.
 
       Jei neleidžiama arba nenurodyta, sistemos dėkle didelis, raudonas atsijungimo mygtukas nerodomas.</translation>
-<translation id="1942957375738056236">Čia galite nurodyti įgaliotojo serverio URL.
-
-          Ši politika pradeda galioti, tik jei pasirinkote rankinius įgaliotojo serverio nustatymus skiltyje „Pasirinkti, kaip nurodyti įgaliotojo serverio nustatymus“.
-
-          Jei pasirinkote kokį nors kitą įgaliotojo serverio politikos nustatymo režimą, turėtumėte nenustatyti šios politikos.
-
-          Jei reikia daugiau parinkčių ir išsamių pavyzdžių, apsilankykite šiuo adresu:
-          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1956493342242507974">Konfigūruokite maitinimo tvarkymą „<ph name="PRODUCT_OS_NAME" />“ prisijungimo ekrane.
 
       Pagal šią politiką leidžiama konfigūruoti, kaip „<ph name="PRODUCT_OS_NAME" />“ elgiasi, kai tam tikrą laiką naudotojas neatlieka jokių veiksmų, kol rodomas prisijungimo ekranas. Pagal politiką tvarkomi keli nustatymai. Jei norite nustatyti individualią semantiką ir verčių diapazonus, žr. atitinkamą politiką, pagal kurią tvarkomas maitinimas per sesiją. Yra tik du šios politikos nukrypimai:
@@ -663,24 +632,6 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 <translation id="3072847235228302527">Nustatyti vietinės įrenginio paskyros paslaugų teikimo sąlygas</translation>
 <translation id="3096595567015595053">Įgalintų papildinių sąrašas</translation>
 <translation id="3101501961102569744">Pasirinkti, kaip nurodyti tarpinio serverio nustatymus</translation>
-<translation id="3125884964575432854">Leidžiama nurodyti „<ph name="PRODUCT_NAME" />“ ir ARC programų naudojamą tarpinį serverį ir naudotojams neleidžiama keisti tarpinio serverio nustatymų.
-
-          Jei pasirinksite niekada nenaudoti tarpinio serverio ir visada prisijungti tiesiogiai, bus nepaisoma visų kitų parinkčių.
-
-          Jei pasirinksite naudoti sistemos tarpinio serverio nustatymus, bus nepaisoma visų kitų parinkčių.
-
-          Jei pasirinksite automatiškai aptikti tarpinį serverį, bus nepaisoma visų kitų parinkčių.
-
-          Jei pasirinksite naudoti fiksuoto tarpinio serverio režimą, galėsite nurodyti kitas parinktis skiltyse „Tarpinio serverio adresas ar URL“ ir „Kableliais atskirtų tarpinio serverio apėjimo taisyklių sąrašas“. ARC programos HTTP tarpinį serverį naudos tik tuo atveju, jei jam bus nustatytas didžiausias pirmumas.
-
-          Jei pasirinksite naudoti .pac tarpinio serverio scenarijų, turėsite nurodyti scenarijaus URL skiltyje „Tarpinio serverio .pac failo URL“.
-
-          Jei reikia išsamių pavyzdžių, apsilankykite adresu
-          <ph name="PROXY_HELP_URL" />
-
-          Jei įgalinsite šį nustatymą, „<ph name="PRODUCT_NAME" />“ ir ARC programos nepaisys visų su tarpiniu serveriu susijusių parinkčių, nurodytų komandos eilutėje.
-
-          Jei ši politika nebus nustatyta, naudotojai galės patys pasirinkti tarpinio serverio nustatymus.</translation>
 <translation id="3153348162326497318">Leidžiama nurodyti, kurių plėtinių naudotojas (-a) NEGALI įdiegti. Jau įdiegti plėtiniai bus pašalinti, jei jie įtraukti į juodąjį sąrašą.
 
           Juodojo sąrašo vertė „*“ reiškia, kad visi plėtiniai įtraukti į juodąjį sąrašą, nebent jie išskirtinai pateikti baltajame sąraše.
@@ -753,6 +704,7 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
       Jei įgalinsite šį nustatymą arba jo nekonfigūruosite, naudotojai galės įgalinti spausdinimo iš debesies įgaliotąjį serverį, tapatumą nustatydami pagal savo „Google“ paskyrą.
 
       Jei šio nustatymo neleisite, naudotojai negalės įgalinti tarpinio serverio, o kompiuteriui bus neleidžiama bendrinti prijungtų spausdintuvų su „<ph name="CLOUD_PRINT_NAME" />“.</translation>
+<translation id="3297010562646015826">Galėsite užbaigti procesus užduočių tvarkytuvėje</translation>
 <translation id="3322771899429619102">Leidžiama nustatyti URL šablonų, nurodančių svetaines, kuriose leidžiama naudoti rakto generavimą, sąrašą. Jei URL šablonas yra politikoje „KeygenBlockedForUrls“, šių išimčių nepaisoma.
 
           Nenustačius šios politikos visose svetainėse bus naudojama visuotinė numatytoji vertė iš politikos „DefaultKeygenSetting“ (jei nustatyta) arba naudotojo asmeninės konfigūracijos.</translation>
@@ -939,22 +891,6 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
           Jei ši politika nustatyta į „Palikti slapukus, kol sesija aktyvi“, tada slapukai bus išvalyti uždarius sesiją. Atminkite, kad jei „<ph name="PRODUCT_NAME" />“ veikia foninio atkūrimo režimu, sesijos negalima uždaryti, kai uždaromas paskutinis langas. Daugiau informacijos apie šio veikimo konfigūravimą galite gauti peržiūrėję politiką „BackgroundModeEnabled“.
 
           Jei ši politika nenustatyta, bus naudojama parinktis „AllowCookies“ ir naudotojas galės ją pakeisti.</translation>
-<translation id="4098957623809244159">Ši politika nebenaudojama, vietoje jos naudokite „ProxyMode“.
-
-          Leidžiama nustatyti „<ph name="PRODUCT_NAME" />“ ir ARC programų naudojamą tarpinį serverį ir naudotojams neleidžiama keisti tarpinio serverio nustatymų.
-
-          Jei pasirinksite niekada nenaudoti tarpinio serverio ir visada prisijungti tiesiogiai, bus nepaisoma visų kitų parinkčių.
-
-         Jei pasirinksite naudoti sistemos tarpinį serverį arba automatiškai aptikti tarpinį serverį, bus nepaisoma visų kitų parinkčių.
-
-          Jei pasirinksite neautomatinius tarpinio serverio nustatymus, kitas parinktis galėsite nurodyti skiltyse „Tarpinio serverio adresas ar URL“, „Tarpinio serverio .pac failo URL“ ir „Kableliais atskirtų tarpinio serverio apėjimo taisyklių sąrašas“.
-
-          Jei reikia išsamių pavyzdžių, apsilankykite adresu
-          <ph name="PROXY_HELP_URL" />
-
-          Jei įgalinsite šį nustatymą, „<ph name="PRODUCT_NAME" />“ nepaisys visų su tarpiniu serveriu susijusių parinkčių, nurodytų komandos eilutėje.
-
-          Jei ši politika bus nenustatyta, naudotojai galės patys pasirinkti tarpinio serverio nustatymus.</translation>
 <translation id="4103289232974211388">Patvirtinus naudotoją peradresuoti į „SAML IdP“</translation>
 <translation id="410478022164847452">Nurodoma laiko trukmė be naudotojo įvesties, po kurios neveikos veiksmai atliekami, kai naudojama kintamosios srovės energija.
 
@@ -1437,14 +1373,6 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 <translation id="5893553533827140852">Jei šis nustatymas įgalintas, „Gnubby“ autentifikavimo užklausos bus perduotos įgaliotajam serveriui nuotolinės prieglobos ryšiu.
 
           Jei šis nustatymas išjungtas arba nesukonfigūruotas, „Gnubby“ autentifikavimo užklausos nebus perduotos įgaliotajam serveriui.</translation>
-<translation id="5900959132054596599">„<ph name="PRODUCT_NAME" />“ ir ARC programos apeis bet kokį tarpinį serverį iš čia pateikto prieglobų sąrašo.
-
-          Ši politika galioja tik tuo atveju, jei pasirinkote neautomatinius tarpinio serverio nustatymus skiltyje „Pasirinkti, kaip nurodyti tarpinio serverio nustatymus“.
-
-          Jei pasirinkote kokį nors kitą tarpinio serverio politikos nustatymo režimą, šios politikos neturėtumėte nustatyti.
-
-          Jei reikia išsamesnių pavyzdžių, apsilankykite adresu
-          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="5921713479449475707">Leisti automatinio naujinio atsisiuntimus naudojant HTTP</translation>
 <translation id="5921888683953999946">Nustatyti numatytąją didelio žymeklio pasiekiamumo funkciją prisijungimo ekrane.
 
@@ -1973,9 +1901,6 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 
       Jei šio nustatymo neleisite arba nekonfigūruosite, „<ph name="PRODUCT_NAME" />“ naudos naudotojo nurodytą pageidaujamą lokalę (jei ji sukonfigūruota), sistemos lokalę arba atsarginę lokalę „en-US“.</translation>
 <translation id="7651739109954974365">Nustatoma, ar įrenginyje turėtų būti įgalintas duomenų tarptinklinis ryšys. Jei nustatyta į „true“ (tiesa), leidžiamas duomenų tarptinklinis ryšys. Jei nesukonfigūruojama ar nustatoma į „false“, duomenų tarptinklinis ryšys nepasiekiamas.</translation>
-<translation id="7667184304362487902">Sukonfigūruojami „<ph name="PRODUCT_NAME" />“ ir ARC programų tarpinio serverio nustatymai.
-
-      Ši politika dar neparengta naudoti, nenaudokite jos.</translation>
 <translation id="76810863974142048">URL, kur nuotolinės prieigos klientai turėtų gauti autentifikavimo prieigos raktą.
 
           Nustačius šią politiką, nuotolinės prieigos prieglobai reikės autentifikuoti klientus, kad gautų autentifikavimo prieigos raktą iš šio URL, kad galėtų prisijungti. Reikia naudoti su „RemoteAccessHostTokenValidationUrl“.
@@ -2207,6 +2132,7 @@ Jei plėtinio nėra sąraše arba sąrašas nenustatytas, kreipiantis į API įv
 
       Politikos vertė turėtų būti nurodyta milisekundėmis.</translation>
 <translation id="8344454543174932833">Importuoti žymes iš numatytosios naršyklės paleidžiant pirmą kartą</translation>
+<translation id="8359734107661430198">Įgalinkite „ExampleDeprecatedFeature“ API iki 2008-09-02</translation>
 <translation id="8360452361555133173">Įgalinamas darbo pradžios puslapio rodymas pirmą kartą paleidus naršyklę po OS naujovinimo.
 
       Jei ši politika nustatyta į „true“ arba yra nesukonfigūruota, naršyklė iš naujo rodys darbo pradžios puslapį pirmą kartą paleidus naršyklę po OS naujovinimo.

@@ -60,6 +60,7 @@
 <translation id="1742134235943978220"><ph name="TARGET_LANGUAGE" />로 번역했습니다.</translation>
 <translation id="1749561566933687563">북마크 동기화</translation>
 <translation id="17513872634828108">열린 탭</translation>
+<translation id="1756600373018374892">내 탭에 빠르게 액세스하려면 이 버튼을 탭하세요.</translation>
 <translation id="1807246157184219062">밝게</translation>
 <translation id="1825719650605518411">첫 실행</translation>
 <translation id="1829244130665387512">페이지에서 찾기</translation>
@@ -70,6 +71,7 @@
 <translation id="194341124344773587"><ph name="BEGIN_LINK" />Android 설정<ph name="END_LINK" />에서 Chrome 관련 권한을 설정합니다.</translation>
 <translation id="1943432128510653496">비밀번호 저장</translation>
 <translation id="1944384637046898011"><ph name="TIME" />에 Google 비밀번호로 전체 데이터 암호화</translation>
+<translation id="1946005195648379376">검색 및 다른 Google 서비스를 맞춤설정하기 위하여 Google이 내 인터넷 사용 기록을 사용하는 방법을 조정하세요.</translation>
 <translation id="1959930595721737608">다음 사이트에서 자바스크립트를 허용합니다.</translation>
 <translation id="1966710179511230534">로그인 세부정보를 업데이트하세요.</translation>
 <translation id="1974060860693918893">고급</translation>
@@ -95,9 +97,7 @@
 <translation id="2206488550163399966"><ph name="APP_NAME" />, 웹 앱. <ph name="APP_URL" /></translation>
 <translation id="2268044343513325586">상세검색</translation>
 <translation id="2315043854645842844">클라이언트측 인증서 선택이 운영체제에서 지원되지 않습니다.</translation>
-<translation id="2316129865977710310">아니요, 괜찮습니다.</translation>
 <translation id="2321958826496381788">편하게 읽을 수 있을 때까지 슬라이더를 드래그하세요. 단락을 두 번 탭하면 텍스트가 이 이상의 크기로 표시됩니다.</translation>
-<translation id="2329597144923131178">로그인하면 모든 기기에서 북마크, 방문 기록, 비밀번호, 기타 설정을 사용할 수 있습니다.</translation>
 <translation id="2343328333327081434">설치 중...</translation>
 <translation id="2351097562818989364">번역 설정이 재설정되었습니다.</translation>
 <translation id="2359808026110333948">계속</translation>
@@ -138,6 +138,7 @@
 <translation id="2842985007712546952">상위 폴더</translation>
 <translation id="2870560284913253234">사이트</translation>
 <translation id="2888126860611144412">크롬 정보</translation>
+<translation id="2889768325388591707">빠른 탭 전환</translation>
 <translation id="2891154217021530873">페이지 로딩 중지</translation>
 <translation id="2902702728133930130">예기치 않은 오류로 인해 Chrome을 시작하지 못했습니다.</translation>
 <translation id="2903493209154104877">주소</translation>
@@ -155,6 +156,9 @@
 <translation id="3089395242580810162">시크릿 탭에서 열기</translation>
 <translation id="3090193911106258841">오디오 및 비디오 입력 장치에 액세스</translation>
 <translation id="3137521801621304719">시크릿 모드 나가기</translation>
+<translation id="3149891296864842641">배송 옵션</translation>
+<translation id="3162882791484435636">배송 옵션 선택</translation>
+<translation id="3173438333156928404">결제를 처리하는 중에 오류가 발생했습니다.</translation>
 <translation id="3177909033752230686">페이지 언어:</translation>
 <translation id="3190152372525844641"><ph name="BEGIN_LINK" />Android 설정<ph name="END_LINK" />에서 Chrome 관련 권한을 설정합니다.</translation>
 <translation id="3198916472715691905">저장 데이터 <ph name="STORAGE_AMOUNT" /></translation>
@@ -269,10 +273,8 @@
 <translation id="4875622588773761625"><ph name="PASSWORD_MANAGER_BRAND" />에서 이 사이트의 비밀번호를 업데이트하도록 하시겠습니까?</translation>
 <translation id="4881695831933465202">열기</translation>
 <translation id="4885273946141277891">지원되지 않는 Chrome 인스턴스 수입니다.</translation>
+<translation id="4923459931733593730">결제</translation>
 <translation id="4943872375798546930">검색결과가 없습니다.</translation>
-<translation id="4970484396410298643">컴퓨터에서 열어 둔 탭을 여기에서 바로 액세스할 수 있습니다.
-
-컴퓨터에서 Chrome을 열고 메뉴로 이동하여 'Chrome에 로그인...'을 선택하세요.</translation>
 <translation id="497421865427891073">앞으로 이동</translation>
 <translation id="4996978546172906250">공유 방법</translation>
 <translation id="5000922062037820727">차단(권장)</translation>
@@ -296,9 +298,7 @@
 <translation id="5184329579814168207">Chrome에서 열기</translation>
 <translation id="5199929503336119739">직장용 프로필</translation>
 <translation id="5210365745912300556">탭 닫기</translation>
-<translation id="5210714456814679336">다른 기기의 Chrome에서 연 탭이 여기에 표시됩니다.</translation>
 <translation id="5222676887888702881">로그아웃</translation>
-<translation id="5228579091201413441">동기화 사용</translation>
 <translation id="5233638681132016545">새 탭</translation>
 <translation id="5271967389191913893">기기에서 다운로드하려는 콘텐츠를 열 수 없습니다.</translation>
 <translation id="5275558766013849309">탭은 최근 앱과 함께 보유할 수 있습니다.</translation>
@@ -342,9 +342,6 @@
 <translation id="5677928146339483299">차단됨</translation>
 <translation id="5684874026226664614">죄송합니다. 이 페이지를 번역할 수 없습니다.</translation>
 <translation id="5708031556037168012">기기의 기존 데이터를 보관하고 데이터를 <ph name="TO_ACCOUNT" />(으)로 완전히 가져옵니다.</translation>
-<translation id="5712189971979076230">다운이 발생할 때마다 실행 중인 파일, 애플리케이션, 서비스에 관한 정보를 Google에 전송하여 우선적으로 구현해야 할 기능과 개선사항을 정할 수 있도록 도와주세요.
-
-사용 통계에는 환경설정, 버튼 클릭수, 메모리 사용량과 같은 정보가 포함되며 웹페이지 URL이나 개인정보는 포함되어 있지 않습니다. 오류 보고서에는 문제가 발생했을 당시의 시스템 정보가 포함되며 발생 당시 상황에 따라 웹페이지 URL이나 개인정보가 포함될 수도 있습니다.</translation>
 <translation id="5719837394786370183">시크릿 탭을 모두 닫으면 시크릿 탭에서 본 페이지는 브라우저 방문 기록, 쿠키 저장소 또는 방문 기록 어디에도 흔적이 남지 않습니다. 단, 다운로드한 파일이나 생성한 북마크는 유지됩니다.
 
 하지만 완전한 비밀이 보장되는 것은 아닙니다. 시크릿 모드로 탐색해도 회사, 인터넷 서비스 제공업체(IPS), 방문한 웹사이트에 저장된 흔적까지 없앨 수는 없습니다.</translation>
@@ -463,6 +460,7 @@
 <translation id="7180611975245234373">새로고침</translation>
 <translation id="7191430249889272776">탭이 백그라운드에 열림</translation>
 <translation id="7208788139759694678">데이터 세이버 사용 안함</translation>
+<translation id="7220786058474068424">처리 중</translation>
 <translation id="7243308994586599757">화면 하단에서 옵션 선택 가능</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" />이(가) 사용자 위치 정보를 사용하여 지역 검색결과 표시</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />도움말<ph name="END_LINK" /></translation>
@@ -516,6 +514,7 @@
 <translation id="7846076177841592234">선택 취소</translation>
 <translation id="7851858861565204677">다른 기기</translation>
 <translation id="7876243839304621966">모두 삭제</translation>
+<translation id="7902333740914687335">결제 처리됨</translation>
 <translation id="7947953824732555851">수락 및 로그인</translation>
 <translation id="7949961459945740081">최신 기능 다운로드</translation>
 <translation id="7963646190083259054">공급업체:</translation>
@@ -539,6 +538,7 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.</translation>
 <translation id="8168435359814927499">콘텐츠</translation>
 <translation id="8173098127580644436">전체</translation>
 <translation id="8200772114523450471">다시 시작</translation>
+<translation id="8202097416529803614">주문 요약</translation>
 <translation id="8209050860603202033">이미지 열기</translation>
 <translation id="8215250379351058554"><ph name="SITE" />에서 다음과 연결하려고 합니다:</translation>
 <translation id="8218346974737627104">로그인 확인</translation>
@@ -595,6 +595,8 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.</translation>
 <translation id="8942627711005830162">다른 창에서 열기</translation>
 <translation id="8959122750345127698">탐색할 수 없음: <ph name="URL" /></translation>
 <translation id="8979340629087822094">지난 1일</translation>
+<translation id="8981454092730389528">Google 활동 제어</translation>
+<translation id="8986494364107987395">사용 통계 및 오류 보고서를 Google에 자동으로 보내기</translation>
 <translation id="8987061207681586800">나만의 Chrome 만들기</translation>
 <translation id="9019902583201351841">부모님이 관리합니다.</translation>
 <translation id="9020607083536754075">현재 탭을 닫고 이전 앱으로 돌아가기</translation>

@@ -18,6 +18,7 @@
 <translation id="112840717907525620">Cachegeheugen van beleid is OK</translation>
 <translation id="113188000913989374"><ph name="SITE" /> meldt het volgende:</translation>
 <translation id="1132774398110320017">Instellingen voor automatisch aanvullen in Chrome...</translation>
+<translation id="113770840981343808">Geef de viercijferige CVC-code op de voorkant van je kaart op ter verificatie</translation>
 <translation id="1146673768181266552">Crash-ID <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">De server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het beveiligingscertificaat van de server wordt niet vertrouwd door het besturingssysteem van je computer. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept.</translation>
 <translation id="1152921474424827756">Een <ph name="BEGIN_LINK" />gecacht exemplaar<ph name="END_LINK" /> van <ph name="URL" /> openen</translation>
@@ -112,7 +113,6 @@
 <translation id="2212735316055980242">Beleid niet gevonden</translation>
 <translation id="2213606439339815911">Items ophalen…</translation>
 <translation id="2214283295778284209"><ph name="SITE" /> is niet beschikbaar</translation>
-<translation id="2227695659599072496">Controleer de netwerkkabel of router</translation>
 <translation id="2230458221926704099">Los problemen met je verbinding op met de <ph name="BEGIN_LINK" />diagnose-app<ph name="END_LINK" /></translation>
 <translation id="225207911366869382">Deze waarde is verouderd voor dit beleid.</translation>
 <translation id="2262243747453050782">HTTP-fout</translation>
@@ -125,6 +125,7 @@
 <translation id="2317259163369394535">Voor <ph name="DOMAIN" /> zijn een gebruikersnaam en een wachtwoord vereist.</translation>
 <translation id="2328300916057834155">Ongeldige bladwijzer genegeerd bij index <ph name="ENTRY_INDEX" /></translation>
 <translation id="2354001756790975382">Andere bladwijzers</translation>
+<translation id="2357783041215512127">Betalen met <ph name="CREDIT_CARD" /></translation>
 <translation id="2359808026110333948">Doorgaan</translation>
 <translation id="2367567093518048410">Niveau</translation>
 <translation id="237718015863234333">Geen UI-alternatieven beschikbaar</translation>
@@ -215,7 +216,6 @@
 <translation id="3254409185687681395">Bladwijzer instellen voor deze pagina</translation>
 <translation id="3270847123878663523">&amp;Volgorde wijzigen ongedaan maken</translation>
 <translation id="3286538390144397061">Nu herstarten</translation>
-<translation id="3288003805934695103">Laad de pagina opnieuw</translation>
 <translation id="3305707030755673451">Je gegevens zijn op <ph name="TIME" /> versleuteld met je wachtwoordzin voor synchronisatie. Geef deze op om de synchronisatie te starten.</translation>
 <translation id="333371639341676808">Voorkom dat deze pagina extra dialoogvensters weergeeft.</translation>
 <translation id="3340978935015468852">instellingen</translation>
@@ -286,7 +286,6 @@
 <translation id="3963721102035795474">Lezermodus</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> wordt geblokkeerd</translation>
 <translation id="4021036232240155012">DNS is de netwerkservice die de naam van een website omzet naar het bijbehorende internetadres.</translation>
-<translation id="4021376465026729077">Schakel je extensies uit</translation>
 <translation id="4030383055268325496">&amp;Toevoegen ongedaan maken</translation>
 <translation id="4032534284272647190">Toegang tot <ph name="URL" /> geweigerd.</translation>
 <translation id="404928562651467259">WAARSCHUWING</translation>
@@ -384,7 +383,6 @@
 <translation id="5251803541071282808">Cloud</translation>
 <translation id="5299298092464848405">Fout bij het parseren van het beleid</translation>
 <translation id="5300589172476337783">Weergeven</translation>
-<translation id="5307361445257083764"><ph name="BEGIN_LINK" />Wis je cookies<ph name="END_LINK" /></translation>
 <translation id="5308689395849655368">Crashrapportage is uitgeschakeld.</translation>
 <translation id="5317780077021120954">Opslaan</translation>
 <translation id="5327248766486351172">Naam</translation>
@@ -418,6 +416,7 @@
 <translation id="5629630648637658800">Laden van beleidsinstellingen is mislukt</translation>
 <translation id="5631439013527180824">Ongeldige token voor apparaatbeheer</translation>
 <translation id="5650551054760837876">Geen zoekresultaten gevonden.</translation>
+<translation id="5663999524854166235">Geef de driecijferige CVC-code op de achterkant van je kaart op ter verificatie</translation>
 <translation id="5677928146339483299">Geblokkeerd</translation>
 <translation id="5710435578057952990">De identiteit van deze website is niet geverifieerd.</translation>
 <translation id="5720705177508910913">Huidige gebruiker</translation>
@@ -488,7 +487,6 @@
 <translation id="6628463337424475685">Zoeken via <ph name="ENGINE" /></translation>
 <translation id="6634865548447745291">Je kunt <ph name="SITE" /> op dit moment niet bezoeken, omdat <ph name="BEGIN_LINK" />dit certificaat is ingetrokken<ph name="END_LINK" />. Netwerkfouten en aanvallen zijn doorgaans tijdelijk, dus deze pagina werkt later waarschijnlijk correct.</translation>
 <translation id="6637478299472506933">Download is mislukt</translation>
-<translation id="6642894344118208103">Stel de modem of router opnieuw in</translation>
 <translation id="6644283850729428850">Dit beleid is verouderd.</translation>
 <translation id="6646897916597483132">Geef de viercijferige CVC-code op die op de voorkant van je kaart staat</translation>
 <translation id="6656103420185847513">Map bewerken</translation>
