@@ -244,7 +244,7 @@ void calc_highbd_psnr(const YV12_BUFFER_CONFIG *a, const YV12_BUFFER_CONFIG *b,
       aom_sse_to_psnr((double)total_samples, peak, (double)total_sse);
 }
 
-#else   // !CONFIG_AOM_HIGHBITDEPTH
+#endif
 
 void calc_psnr(const YV12_BUFFER_CONFIG *a, const YV12_BUFFER_CONFIG *b,
                PSNR_STATS *psnr) {
@@ -279,4 +279,3 @@ void calc_psnr(const YV12_BUFFER_CONFIG *a, const YV12_BUFFER_CONFIG *b,
   psnr->psnr[0] =
       aom_sse_to_psnr((double)total_samples, peak, (double)total_sse);
 }
-#endif  // CONFIG_AOM_HIGHBITDEPTH

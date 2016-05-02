@@ -14,6 +14,7 @@
 #include <new>
 
 #include "./aom_config.h"
+#include "aom_dsp/psnr.h"
 #include "aom_dsp/ssim.h"
 #include "aom_ports/mem.h"
 #include "aom_ports/msvc.h"
@@ -30,6 +31,20 @@ typedef double (*LBDMetricFunc)(const YV12_BUFFER_CONFIG *source,
                                 const YV12_BUFFER_CONFIG *dest);
 typedef double (*HBDMetricFunc)(const YV12_BUFFER_CONFIG *source,
                                 const YV12_BUFFER_CONFIG *dest, uint32_t bd);
+
+double compute_hbd_psnr(const YV12_BUFFER_CONFIG *source,
+                        const YV12_BUFFER_CONFIG *dest, uint32_t bit_depth) {
+  PSNR_STATS psnr;
+  calc_highbd_psnr(source, dest, &psnr, bit_depth, bit_depth);
+  return psnr.psnr[0];
+}
+
+double compute_psnr(const YV12_BUFFER_CONFIG *source,
+                    const YV12_BUFFER_CONFIG *dest) {
+  PSNR_STATS psnr;
+  calc_psnr(source, dest, &psnr);
+  return psnr.psnr[0];
+}
 
 double compute_hbd_psnrhvs(const YV12_BUFFER_CONFIG *source,
                            const YV12_BUFFER_CONFIG *dest, uint32_t bit_depth) {
@@ -193,4 +208,9 @@ INSTANTIATE_TEST_CASE_P(
                                        10, kPhvs_thresh),
                       MetricTestTParam(&compute_psnrhvs, &compute_hbd_psnrhvs,
                                        12, kPhvs_thresh)));
+INSTANTIATE_TEST_CASE_P(
+    PSNR, HBDMetricsTest,
+    ::testing::Values(
+        MetricTestTParam(&compute_psnr, &compute_hbd_psnr, 10, kPhvs_thresh),
+        MetricTestTParam(&compute_psnr, &compute_hbd_psnr, 12, kPhvs_thresh)));
 }  // namespace
