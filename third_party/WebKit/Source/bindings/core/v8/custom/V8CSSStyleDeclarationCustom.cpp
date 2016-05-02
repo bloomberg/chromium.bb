@@ -166,8 +166,7 @@ void V8CSSStyleDeclaration::namedPropertyEnumeratorCustom(const v8::PropertyCall
     for (unsigned i = 0; i < propertyNamesLength; ++i) {
         String key = propertyNames.at(i);
         ASSERT(!key.isNull());
-        v8::Local<v8::Integer> index = v8::Integer::New(info.GetIsolate(), i);
-        if (!v8CallBoolean(properties->Set(context, index, v8String(info.GetIsolate(), key))))
+        if (!v8CallBoolean(properties->CreateDataProperty(context, i, v8String(info.GetIsolate(), key))))
             return;
     }
 

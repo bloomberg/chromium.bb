@@ -421,7 +421,7 @@ void ScriptController::executeScriptInIsolatedWorld(int worldID, const HeapVecto
         v8::Local<v8::Value> evaluationResult = executeScriptAndReturnValue(scriptState->context(), sources[i]);
         if (evaluationResult.IsEmpty())
             evaluationResult = v8::Local<v8::Value>::New(isolate(), v8::Undefined(isolate()));
-        if (!v8CallBoolean(resultArray->Set(scriptState->context(), v8::Integer::New(scriptState->isolate(), i), evaluationResult)))
+        if (!v8CallBoolean(resultArray->CreateDataProperty(scriptState->context(), i, evaluationResult)))
             return;
     }
 

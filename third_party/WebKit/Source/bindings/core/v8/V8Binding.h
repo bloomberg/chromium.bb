@@ -884,9 +884,10 @@ template<typename Collection> static void indexedPropertyEnumerator(const v8::Pr
     Collection* collection = toScriptWrappable(info.Holder())->toImpl<Collection>();
     int length = collection->length();
     v8::Local<v8::Array> properties = v8::Array::New(info.GetIsolate(), length);
+    v8::Local<v8::Context> context = info.GetIsolate()->GetCurrentContext();
     for (int i = 0; i < length; ++i) {
         v8::Local<v8::Integer> integer = v8::Integer::New(info.GetIsolate(), i);
-        if (!v8CallBoolean(properties->Set(info.GetIsolate()->GetCurrentContext(), integer, integer)))
+        if (!v8CallBoolean(properties->CreateDataProperty(context, i, integer)))
             return;
     }
     v8SetReturnValue(info, properties);

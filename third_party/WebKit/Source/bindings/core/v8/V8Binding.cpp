@@ -862,7 +862,7 @@ bool addHiddenValueToArray(v8::Isolate* isolate, v8::Local<v8::Object> object, v
     }
 
     v8::Local<v8::Array> array = v8::Local<v8::Array>::Cast(arrayValue);
-    return v8CallBoolean(array->Set(isolate->GetCurrentContext(), v8::Integer::New(isolate, array->Length()), value));
+    return v8CallBoolean(array->CreateDataProperty(isolate->GetCurrentContext(), array->Length(), value));
 }
 
 void removeHiddenValueFromArray(v8::Isolate* isolate, v8::Local<v8::Object> object, v8::Local<v8::Value> value, int arrayIndex)

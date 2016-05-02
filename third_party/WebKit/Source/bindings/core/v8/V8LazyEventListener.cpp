@@ -188,7 +188,7 @@ void V8LazyEventListener::prepareListenerObject(ExecutionContext* executionConte
         return;
     String toStringString = "function " + m_functionName + "(" + m_eventParameterName + ") {\n  " + m_code + "\n}";
     V8HiddenValue::setHiddenValue(scriptState, wrappedFunction, V8HiddenValue::toStringString(isolate()), v8String(isolate(), toStringString));
-    if (!v8CallBoolean(wrappedFunction->Set(scriptState->context(), v8AtomicString(isolate(), "toString"), toStringFunction)))
+    if (!v8CallBoolean(wrappedFunction->CreateDataProperty(scriptState->context(), v8AtomicString(isolate(), "toString"), toStringFunction)))
         return;
     wrappedFunction->SetName(v8String(isolate(), m_functionName));
 

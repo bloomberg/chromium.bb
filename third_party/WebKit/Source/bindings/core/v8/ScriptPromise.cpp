@@ -127,8 +127,10 @@ private:
             return;
 
         v8::Local<v8::Array> values = v8::Array::New(value.isolate(), m_values.size());
-        for (size_t i = 0; i < m_values.size(); ++i)
-            values->Set(i, m_values[i].v8Value());
+        for (size_t i = 0; i < m_values.size(); ++i) {
+            if (!v8CallBoolean(values->CreateDataProperty(value.context(), i, m_values[i].v8Value())))
+                return;
+        }
 
         markPromiseSettled();
         m_resolver.resolve(values);
