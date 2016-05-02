@@ -141,7 +141,8 @@ remoting.ConnectionStats.prototype.update = function(stats) {
    * @return {string} "type: avg, max; " e.g. "RTT: 8.0, 13; "
    */
   function formatStat(type, avg, max) {
-    return type + ': ' + avg.toFixed(1) + ', ' + max + '; ';
+    var avgStr = (avg == undefined) ? 'n/a' : avg.toFixed(1);
+    return type + ': ' + avgStr + ', ' + max + '; ';
   }
 
   var statistics = document.getElementById('statistics');
