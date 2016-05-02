@@ -1,5 +1,0 @@
-This is a testharness.js-based test.
-FAIL initEvent Failed to execute 'dispatchEvent' on 'EventTarget': The event provided is uninitialized.
-FAIL Constructor Failed to execute 'dispatchEvent' on 'EventTarget': The event provided is uninitialized.
-Harness: the test ran to completion.
-

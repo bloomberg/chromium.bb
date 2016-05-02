@@ -256,7 +256,7 @@ bool EventTarget::clearAttributeEventListener(const AtomicString& eventType)
 
 bool EventTarget::dispatchEventForBindings(Event* event, ExceptionState& exceptionState)
 {
-    if (event->type().isEmpty()) {
+    if (!event->wasInitialized()) {
         exceptionState.throwDOMException(InvalidStateError, "The event provided is uninitialized.");
         return false;
     }
@@ -360,7 +360,8 @@ void EventTarget::countLegacyEvents(const AtomicString& legacyTypeName, EventLis
 DispatchEventResult EventTarget::fireEventListeners(Event* event)
 {
     ASSERT(!EventDispatchForbiddenScope::isEventDispatchForbidden());
-    ASSERT(event && !event->type().isEmpty());
+    DCHECK(event);
+    DCHECK(event->wasInitialized());
 
     EventTargetData* d = eventTargetData();
     if (!d)

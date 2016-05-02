@@ -51,6 +51,7 @@ static bool defaultScopedFromEventType(const AtomicString& eventType)
 Event::Event()
     : Event("", false, false, false)
 {
+    m_wasInitialized = false;
 }
 
 Event::Event(const AtomicString& eventType, bool canBubbleArg, bool cancelableArg)
@@ -89,6 +90,7 @@ Event::Event(const AtomicString& eventType, bool canBubbleArg, bool cancelableAr
     , m_defaultPrevented(false)
     , m_defaultHandled(false)
     , m_cancelBubble(false)
+    , m_wasInitialized(true)
     , m_isTrusted(false)
     , m_handlingPassive(false)
     , m_eventPhase(0)
@@ -117,6 +119,7 @@ void Event::initEvent(const AtomicString& eventTypeArg, bool canBubbleArg, bool 
     if (isBeingDispatched())
         return;
 
+    m_wasInitialized = true;
     m_propagationStopped = false;
     m_immediatePropagationStopped = false;
     m_defaultPrevented = false;

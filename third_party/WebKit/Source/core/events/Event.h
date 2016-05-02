@@ -170,6 +170,7 @@ public:
 
     bool propagationStopped() const { return m_propagationStopped || m_immediatePropagationStopped; }
     bool immediatePropagationStopped() const { return m_immediatePropagationStopped; }
+    bool wasInitialized() { return m_wasInitialized; }
 
     bool defaultPrevented() const { return m_defaultPrevented; }
     virtual void preventDefault();
@@ -238,6 +239,7 @@ private:
     unsigned m_defaultPrevented:1;
     unsigned m_defaultHandled:1;
     unsigned m_cancelBubble:1;
+    unsigned m_wasInitialized:1;
     unsigned m_isTrusted : 1;
     unsigned m_handlingPassive : 1;
 
