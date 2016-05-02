@@ -476,7 +476,6 @@ void pthread_exit(void *retval) {
   nc_thread_memory_block_t  *stack_node = tdb->stack_node;
   int32_t                   *is_used = &stack_node->is_used;
   nc_basic_thread_data_t    *basic_data = tdb->basic_data;
-  int                       joinable = tdb->joinable;
 
   /* Call cleanup handlers. */
   while (NULL != __nc_cleanup_handlers) {
@@ -502,6 +501,7 @@ void pthread_exit(void *retval) {
 
   basic_data->retval = retval;
 
+  int joinable = tdb->joinable;
   if (joinable) {
     /* If somebody is waiting for this thread, signal. */
     basic_data->status = THREAD_TERMINATED;

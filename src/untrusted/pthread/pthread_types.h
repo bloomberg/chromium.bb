@@ -38,6 +38,11 @@ struct __nc_basic_thread_data;
 /* This struct defines the layout of the TDB */
 typedef struct nc_thread_descriptor {
   void *tls_base;  /* tls accesses are made relative to this base */
+  /*
+   * joinable and join_waiting are always accessed with
+   * __nc_thread_management_lock held (except when the thread is being
+   * created).
+   */
   int joinable;
   int join_waiting;
   nc_thread_memory_block_t *stack_node;
