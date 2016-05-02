@@ -5,6 +5,7 @@
 #ifndef UI_OZONE_PLATFORM_CACA_SCOPED_CACA_TYPES_H_
 #define UI_OZONE_PLATFORM_CACA_SCOPED_CACA_TYPES_H_
 
+#include <memory>
 
 typedef struct caca_canvas caca_canvas_t;
 typedef struct caca_dither caca_dither_t;
