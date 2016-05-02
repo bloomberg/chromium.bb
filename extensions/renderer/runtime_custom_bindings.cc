@@ -157,6 +157,7 @@ void RuntimeCustomBindings::GetExtensionViews(
   std::vector<content::RenderFrame*> frames =
       ExtensionFrameHelper::GetExtensionFrames(extension_id, browser_window_id,
                                                view_type);
+  v8::Local<v8::Context> v8_context = args.GetIsolate()->GetCurrentContext();
   v8::Local<v8::Array> v8_views = v8::Array::New(args.GetIsolate());
   int v8_index = 0;
   for (content::RenderFrame* frame : frames) {
@@ -172,7 +173,9 @@ void RuntimeCustomBindings::GetExtensionViews(
     if (!context.IsEmpty()) {
       v8::Local<v8::Value> window = context->Global();
       DCHECK(!window.IsEmpty());
-      v8_views->Set(v8::Integer::New(args.GetIsolate(), v8_index++), window);
+      v8::Maybe<bool> maybe =
+        v8_views->CreateDataProperty(v8_context, v8_index++, window);
+      DCHECK(maybe.IsJust() && maybe.FromJust());
     }
   }
 
