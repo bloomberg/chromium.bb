@@ -73,9 +73,12 @@ int main(int argc, char** argv) {
   if (found_command != command_map.end()) {
     retval = found_command->second.runner(args);
   } else {
-    Err(Location(),
-        "Command \"" + command + "\" unknown.").PrintToStdout();
-    commands::RunHelp(std::vector<std::string>());
+    Err(Location(), "Command \"" + command + "\" unknown.").PrintToStdout();
+    OutputString(
+        "Available commands (type \"gn help <command>\" for more details):\n");
+    for (const auto& cmd : commands::GetCommands())
+      PrintShortHelp(cmd.second.help_short);
+
     retval = 1;
   }
 
