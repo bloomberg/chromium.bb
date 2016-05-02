@@ -349,6 +349,17 @@ cr.define('print_preview', function() {
      */
     setIsFocused_: function(isFocused) {
       this.isFocused_ = isFocused;
+      // TODO(tkent): This is a workaround of a preview-area scrolling
+      // issue. Blink scrolls preview-area on focus, but we don't want it.  We
+      // should adjust scroll position of PDF preview and positions of
+      // MarginContgrols here, or restructure the HTML so that the PDF review
+      // and MarginControls are on the single scrollable container.
+      // crbug.com/601341
+      if (isFocused) {
+        var previewArea = $('preview-area');
+        previewArea.scrollTop = 0;
+        previewArea.scrollLeft = 0;
+      }
     },
 
     /**
@@ -378,8 +389,9 @@ cr.define('print_preview', function() {
       if (event.propertyName != 'opacity')
         return;
       var elStyle = window.getComputedStyle(this.getElement());
-      var opacity = parseInt(elStyle.getPropertyValue('opacity'), 10);
-      this.textbox_.setAttribute('aria-hidden', opacity == 0);
+      var disabled = parseInt(elStyle.getPropertyValue('opacity'), 10) == 0;
+      this.textbox_.setAttribute('aria-hidden', disabled);
+      this.textbox_.disabled = disabled;
     },
 
     /**
