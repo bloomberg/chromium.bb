@@ -1156,4 +1156,29 @@ TEST_F(GestureEventQueueTest, DebounceDropsDeferredEvents) {
   }
 }
 
+TEST_F(GestureEventQueueTest, CoalescesSyntheticScrollBeginEndEvents) {
+  // Test coalescing of only GestureScrollBegin/End events.
+  SimulateGestureEvent(WebInputEvent::GestureScrollUpdate,
+                       blink::WebGestureDeviceTouchpad);
+  EXPECT_EQ(1U, GetAndResetSentGestureEventCount());
+  EXPECT_EQ(1U, GestureEventQueueSize());
+
+  WebGestureEvent synthetic_end = SyntheticWebGestureEventBuilder::Build(
+      WebInputEvent::GestureScrollEnd, blink::WebGestureDeviceTouchpad);
+  synthetic_end.data.scrollEnd.synthetic = true;
+
+  SimulateGestureEvent(synthetic_end);
+  EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
+  EXPECT_EQ(2U, GestureEventQueueSize());
+
+  // Synthetic begin will remove the unsent synthetic end.
+  WebGestureEvent synthetic_begin = SyntheticWebGestureEventBuilder::Build(
+      WebInputEvent::GestureScrollBegin, blink::WebGestureDeviceTouchpad);
+  synthetic_begin.data.scrollBegin.synthetic = true;
+
+  SimulateGestureEvent(synthetic_begin);
+  EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
+  EXPECT_EQ(1U, GestureEventQueueSize());
+}
+
 }  // namespace content

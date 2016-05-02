@@ -117,6 +117,8 @@ class CONTENT_EXPORT GestureEventQueue {
   friend class GestureEventQueueTest;
   friend class MockRenderWidgetHost;
 
+  bool OnScrollBegin(const GestureEventWithLatencyInfo& gesture_event);
+
   // TODO(mohsen): There are a bunch of ShouldForward.../ShouldDiscard...
   // methods that are getting confusing. This should be somehow fixed. Maybe
   // while refactoring GEQ: http://crbug.com/148443.

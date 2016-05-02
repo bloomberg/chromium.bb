@@ -186,6 +186,9 @@ void GestureEventQueue::QueueAndForwardIfNecessary(
     case WebInputEvent::GestureScrollUpdate:
       QueueScrollOrPinchAndForwardIfNecessary(gesture_event);
       return;
+    case WebInputEvent::GestureScrollBegin:
+      if (OnScrollBegin(gesture_event))
+        return;
     default:
       break;
   }
@@ -193,6 +196,25 @@ void GestureEventQueue::QueueAndForwardIfNecessary(
   coalesced_gesture_events_.push_back(gesture_event);
   if (coalesced_gesture_events_.size() == 1)
     client_->SendGestureEventImmediately(gesture_event);
+}
+
+bool GestureEventQueue::OnScrollBegin(
+    const GestureEventWithLatencyInfo& gesture_event) {
+  // If a synthetic scroll begin is encountered, it can cancel out a previous
+  // synthetic scroll end. This allows a later gesture scroll update to coalesce
+  // with the previous one. crbug.com/607340.
+  bool synthetic = gesture_event.event.data.scrollBegin.synthetic;
+  bool have_unsent_events =
+      EventsInFlightCount() < coalesced_gesture_events_.size();
+  if (synthetic && have_unsent_events) {
+    GestureEventWithLatencyInfo* last_event = &coalesced_gesture_events_.back();
+    if (last_event->event.type == WebInputEvent::GestureScrollEnd &&
+        last_event->event.data.scrollEnd.synthetic) {
+      coalesced_gesture_events_.pop_back();
+      return true;
+    }
+  }
+  return false;
 }
 
 void GestureEventQueue::ProcessGestureAck(InputEventAckState ack_result,
