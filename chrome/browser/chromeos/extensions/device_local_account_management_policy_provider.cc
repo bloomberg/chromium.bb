@@ -432,11 +432,13 @@ bool ArrayContains(const char* const (&char_array)[N],
 // Returns true for platform apps that are considered safe for Public Sessions,
 // which among other things requires the manifest top-level entries to be
 // contained in the |kSafeManifestEntries| whitelist and all permissions to be
-// contained in |kSafePermissionStrings| or |kSafePermissionDicts|.
+// contained in |kSafePermissionStrings| or |kSafePermissionDicts|.  Otherwise
+// returns false and logs all reasons for failure.
 bool IsPlatformAppSafeForPublicSession(const extensions::Extension* extension) {
+  bool safe = true;
   if (extension->GetType() != extensions::Manifest::TYPE_PLATFORM_APP) {
     LOG(ERROR) << extension->id() << " is not a platform app.";
-    return false;
+    safe = false;
   }
 
   for (base::DictionaryValue::Iterator it(*extension->manifest()->value());
@@ -452,7 +454,8 @@ bool IsPlatformAppSafeForPublicSession(const extensions::Extension* extension) {
       const base::ListValue* list_value;
       if (!it.value().GetAsList(&list_value)) {
         LOG(ERROR) << extension->id() << ": " << it.key() << " is not a list.";
-        return false;
+        safe = false;
+        continue;
       }
       for (auto it2 = list_value->begin(); it2 != list_value->end(); ++it2) {
         // Try to read as dictionary.
@@ -462,7 +465,8 @@ bool IsPlatformAppSafeForPublicSession(const extensions::Extension* extension) {
             LOG(ERROR) << extension->id()
                        << " has dict in permission list with size "
                        << dict_value->size() << ".";
-            return false;
+            safe = false;
+            continue;
           }
           for (base::DictionaryValue::Iterator it3(*dict_value);
                !it3.IsAtEnd(); it3.Advance()) {
@@ -470,7 +474,8 @@ bool IsPlatformAppSafeForPublicSession(const extensions::Extension* extension) {
               LOG(ERROR) << extension->id()
                          << " has non-whitelisted dict in permission list: "
                          << it3.key();
-              return false;
+              safe = false;
+              continue;
             }
           }
           continue;
@@ -480,7 +485,8 @@ bool IsPlatformAppSafeForPublicSession(const extensions::Extension* extension) {
         if (!(*it2)->GetAsString(&permission_string)) {
           LOG(ERROR) << extension->id() << ": " << it.key()
                      << " contains a token that's neither a string nor a dict.";
-          return false;
+          safe = false;
+          continue;
         }
         // Accept whitelisted permissions.
         if (ArrayContains(kSafePermissionStrings, permission_string)) {
@@ -496,14 +502,15 @@ bool IsPlatformAppSafeForPublicSession(const extensions::Extension* extension) {
         LOG(ERROR) << extension->id()
                    << " requested non-whitelisted permission: "
                    << permission_string;
-        return false;
+        safe = false;
       }
     // "app" may only contain "background".
     } else if (it.key() == emk::kApp) {
       const base::DictionaryValue *dict_value;
       if (!it.value().GetAsDictionary(&dict_value)) {
         LOG(ERROR) << extension->id() << ": app is not a dictionary.";
-        return false;
+        safe = false;
+        continue;
       }
       for (base::DictionaryValue::Iterator it2(*dict_value);
            !it2.IsAtEnd(); it2.Advance()) {
@@ -511,7 +518,8 @@ bool IsPlatformAppSafeForPublicSession(const extensions::Extension* extension) {
           LOG(ERROR) << extension->id()
                      << " has non-whitelisted manifest entry: "
                      << it.key() << "." << it2.key();
-          return false;
+          safe = false;
+          continue;
         }
       }
     // Require v2 because that's the only version we understand.
@@ -520,29 +528,32 @@ bool IsPlatformAppSafeForPublicSession(const extensions::Extension* extension) {
       if (!it.value().GetAsInteger(&version)) {
         LOG(ERROR) << extension->id() << ": " << emk::kManifestVersion
                    << " is not an integer.";
-        return false;
+        safe = false;
+        continue;
       }
       if (version != 2) {
         LOG(ERROR) << extension->id()
                    << " has non-whitelisted manifest version.";
-        return false;
+        safe = false;
+        continue;
       }
     // URL handlers depend on the web store to confirm ownership of the domain.
     } else if (it.key() == emk::kUrlHandlers) {
       if (!extension->from_webstore()) {
         LOG(ERROR) << extension->id() << " uses emk::kUrlHandlers but was not "
             "installed through the web store.";
-        return false;
+        safe = false;
+        continue;
       }
     // Everything else is an error.
     } else {
       LOG(ERROR) << extension->id()
                  << " has non-whitelisted manifest entry: " << it.key();
-      return false;
+      safe = false;
     }
   }
 
-  return true;
+  return safe;
 }
 
 }  // namespace
