@@ -92292,6 +92292,16 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="NetConnectivity5.StartPacket.First6.SeriesRecv"/>
 </histogram_suffixes>
 
+<histogram_suffixes name="NetErrorCodeSubtype" separator="." ordering="prefix">
+  <owner>csharrison@chromium.org</owner>
+  <suffix name="NTP.Google" label="The Google web NTP"/>
+  <suffix name="NTP.ThirdParty"
+      label="The NTP served by a third party (e.g. Bing)"/>
+  <suffix name="NTP.Local" label="The local NTP"/>
+  <affected-histogram name="Net.RequestTime2.ErrAborted"/>
+  <affected-histogram name="Net.RequestTime2.Success"/>
+</histogram_suffixes>
+
 <histogram_suffixes name="NetProxyResolverExecutionTime">
   <suffix name="UrlOver2K" label="URL length was over 2K"/>
   <suffix name="UrlOver4K" label="URL length was over 4K"/>
