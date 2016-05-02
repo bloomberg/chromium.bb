@@ -65,13 +65,13 @@ double compute_hbd_fastssim(const YV12_BUFFER_CONFIG *source,
                             const YV12_BUFFER_CONFIG *dest, uint32_t in_bd,
                             uint32_t bd) {
   double tempy, tempu, tempv;
-  return aom_calc_fastssim(source, dest, &tempy, &tempu, &tempv, bd);
+  return aom_calc_fastssim(source, dest, &tempy, &tempu, &tempv, bd, in_bd);
 }
 
 double compute_fastssim(const YV12_BUFFER_CONFIG *source,
                         const YV12_BUFFER_CONFIG *dest) {
   double tempy, tempu, tempv;
-  return aom_calc_fastssim(source, dest, &tempy, &tempu, &tempv, 8);
+  return aom_calc_fastssim(source, dest, &tempy, &tempu, &tempv, 8, 8);
 }
 
 double compute_hbd_aomssim(const YV12_BUFFER_CONFIG *source,

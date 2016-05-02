@@ -3604,7 +3604,8 @@ static void compute_internal_stats(AV1_COMP *cpi) {
       }
     }
 
-    frame_all = aom_calc_fastssim(orig, recon, &y, &u, &v, bit_depth);
+    frame_all =
+        aom_calc_fastssim(orig, recon, &y, &u, &v, bit_depth, in_bit_depth);
     adjust_image_stat(y, u, v, frame_all, &cpi->fastssim);
     frame_all = aom_psnrhvs(orig, recon, &y, &u, &v, bit_depth, in_bit_depth);
     adjust_image_stat(y, u, v, frame_all, &cpi->psnrhvs);
