@@ -76,13 +76,6 @@ unsigned int UpdateX11EventButton(int ui_flag, unsigned int old_x_button) {
 
 namespace ui {
 
-void UpdateDeviceList() {
-  XDisplay* display = gfx::GetXDisplay();
-  DeviceListCacheX11::GetInstance()->UpdateDeviceList(display);
-  TouchFactory::GetInstance()->UpdateDeviceList(display);
-  DeviceDataManagerX11::GetInstance()->UpdateDeviceList(display);
-}
-
 EventType EventTypeFromNative(const base::NativeEvent& native_event) {
   return EventTypeFromXEvent(*native_event);
 }

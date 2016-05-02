@@ -20,10 +20,6 @@
 
 namespace ui {
 
-void UpdateDeviceList() {
-  NOTIMPLEMENTED();
-}
-
 EventType EventTypeFromNative(const base::NativeEvent& native_event) {
   NSEventType type = [native_event type];
   switch (type) {

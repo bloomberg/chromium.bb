@@ -8,8 +8,6 @@
 
 namespace ui {
 
-void UpdateDeviceList() { NOTIMPLEMENTED(); }
-
 base::TimeDelta EventTimeFromNative(const base::NativeEvent& native_event) {
   const ui::Event* event = static_cast<const ui::Event*>(native_event);
   return event->time_stamp();

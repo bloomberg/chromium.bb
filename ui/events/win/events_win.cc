@@ -139,10 +139,6 @@ int MouseStateFlagsFromNative(const base::NativeEvent& native_event) {
 
 }  // namespace
 
-void UpdateDeviceList() {
-  NOTIMPLEMENTED();
-}
-
 EventType EventTypeFromNative(const base::NativeEvent& native_event) {
   switch (native_event.message) {
     case WM_KEYDOWN:

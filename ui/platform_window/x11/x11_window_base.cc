@@ -85,6 +85,7 @@ void X11WindowBase::Create() {
       CopyFromParent,  // visual
       CWBackPixmap | CWBitGravity | CWOverrideRedirect, &swa);
 
+  // Setup XInput event mask.
   long event_mask = ButtonPressMask | ButtonReleaseMask | FocusChangeMask |
                     KeyPressMask | KeyReleaseMask | EnterWindowMask |
                     LeaveWindowMask | ExposureMask | VisibilityChangeMask |
@@ -92,6 +93,7 @@ void X11WindowBase::Create() {
                     PointerMotionMask;
   XSelectInput(xdisplay_, xwindow_, event_mask);
 
+  // Setup XInput2 event mask.
   unsigned char mask[XIMaskLen(XI_LASTEVENT)];
   memset(mask, 0, sizeof(mask));
 
@@ -103,6 +105,7 @@ void X11WindowBase::Create() {
   XISetMask(mask, XI_Motion);
   XISetMask(mask, XI_KeyPress);
   XISetMask(mask, XI_KeyRelease);
+  XISetMask(mask, XI_HierarchyChanged);
 
   XIEventMask evmask;
   evmask.deviceid = XIAllDevices;

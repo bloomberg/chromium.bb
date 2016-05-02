@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "ui/events/devices/x11/device_data_manager_x11.h"
+#include "ui/events/devices/x11/touch_factory_x11.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/events/platform/x11/x11_hotplug_event_handler.h"
@@ -68,6 +69,13 @@ Time ExtractTimeFromXEvent(const XEvent& xevent) {
         break;
   }
   return CurrentTime;
+}
+
+void UpdateDeviceList() {
+  XDisplay* display = gfx::GetXDisplay();
+  DeviceListCacheX11::GetInstance()->UpdateDeviceList(display);
+  TouchFactory::GetInstance()->UpdateDeviceList(display);
+  DeviceDataManagerX11::GetInstance()->UpdateDeviceList(display);
 }
 
 }  // namespace
@@ -157,7 +165,7 @@ void X11EventSource::PostDispatchEvent(XEvent* xevent) {
        (xevent->xgeneric.evtype == XI_DeviceChanged &&
         static_cast<XIDeviceChangedEvent*>(xevent->xcookie.data)->reason ==
             XIDeviceChange))) {
-    ui::UpdateDeviceList();
+    UpdateDeviceList();
     hotplug_event_handler_->OnHotplugEvent();
   }
 

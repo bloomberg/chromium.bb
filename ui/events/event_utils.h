@@ -39,9 +39,6 @@ class Event;
 class MouseEvent;
 enum class DomCode;
 
-// Updates the list of devices for cached properties.
-EVENTS_EXPORT void UpdateDeviceList();
-
 // Returns a ui::Event wrapping a native event. Ownership of the returned value
 // is transferred to the caller.
 EVENTS_EXPORT std::unique_ptr<Event> EventFromNative(
