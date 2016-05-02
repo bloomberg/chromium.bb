@@ -10,6 +10,8 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -52,6 +54,27 @@ void TestTaskFactory::RunTaskCallback(size_t task_index,
     PostTask(PostNestedTask::NO, Closure());
 
   EXPECT_TRUE(task_runner_->RunsTasksOnCurrentThread());
+
+  // Verify TaskRunnerHandles are set as expected in the task's scope.
+  switch (execution_mode_) {
+    case ExecutionMode::PARALLEL:
+      EXPECT_FALSE(ThreadTaskRunnerHandle::IsSet());
+      EXPECT_FALSE(SequencedTaskRunnerHandle::IsSet());
+      break;
+    case ExecutionMode::SEQUENCED:
+      EXPECT_FALSE(ThreadTaskRunnerHandle::IsSet());
+      EXPECT_TRUE(SequencedTaskRunnerHandle::IsSet());
+      EXPECT_EQ(task_runner_, SequencedTaskRunnerHandle::Get());
+      break;
+    case ExecutionMode::SINGLE_THREADED:
+      // SequencedTaskRunnerHandle inherits from ThreadTaskRunnerHandle so
+      // both are expected to be "set" in the SINGLE_THREADED case.
+      EXPECT_TRUE(ThreadTaskRunnerHandle::IsSet());
+      EXPECT_TRUE(SequencedTaskRunnerHandle::IsSet());
+      EXPECT_EQ(task_runner_, ThreadTaskRunnerHandle::Get());
+      EXPECT_EQ(task_runner_, SequencedTaskRunnerHandle::Get());
+      break;
+  }
 
   {
     AutoLock auto_lock(lock_);

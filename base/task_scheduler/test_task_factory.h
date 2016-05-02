@@ -29,10 +29,12 @@ namespace test {
 // expected. Generates a test failure when:
 // - The RunsTasksOnCurrentThread() method of the TaskRunner returns false on a
 //   thread on which a Task is run.
+// - The TaskRunnerHandles set in the context of the task don't match what's
+//   expected for the tested ExecutionMode.
 // - The ExecutionMode of the TaskRunner is SEQUENCED or SINGLE_THREADED and
 //   Tasks don't run in posting order.
-// - The ExecutionMode of the TaskRunner is SINGLE_THREADED and Tasks don't
-//   run on the same thread.
+// - The ExecutionMode of the TaskRunner is SINGLE_THREADED and Tasks don't run
+//   on the same thread.
 // - A Task runs more than once.
 class TestTaskFactory {
  public:

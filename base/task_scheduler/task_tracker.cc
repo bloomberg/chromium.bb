@@ -7,6 +7,8 @@
 #include "base/callback.h"
 #include "base/debug/task_annotator.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
 
 namespace base {
@@ -86,8 +88,23 @@ void TaskTracker::RunTask(const Task* task) {
       task->traits.shutdown_behavior() !=
       TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN);
 
-  debug::TaskAnnotator task_annotator;
-  task_annotator.RunTask(kQueueFunctionName, *task);
+  {
+    // Set up TaskRunnerHandle as expected for the scope of the task.
+    std::unique_ptr<SequencedTaskRunnerHandle> sequenced_task_runner_handle;
+    std::unique_ptr<ThreadTaskRunnerHandle> single_thread_task_runner_handle;
+    DCHECK(!task->sequenced_task_runner_ref ||
+           !task->single_thread_task_runner_ref);
+    if (task->sequenced_task_runner_ref) {
+      sequenced_task_runner_handle.reset(
+          new SequencedTaskRunnerHandle(task->sequenced_task_runner_ref));
+    } else if (task->single_thread_task_runner_ref) {
+      single_thread_task_runner_handle.reset(
+          new ThreadTaskRunnerHandle(task->single_thread_task_runner_ref));
+    }
+
+    debug::TaskAnnotator task_annotator;
+    task_annotator.RunTask(kQueueFunctionName, *task);
+  }
 
   AfterRunTask(shutdown_behavior);
 }

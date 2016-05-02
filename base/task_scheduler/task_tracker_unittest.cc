@@ -10,11 +10,17 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/ref_counted.h"
+#include "base/sequenced_task_runner.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task_scheduler/task.h"
 #include "base/task_scheduler/task_traits.h"
 #include "base/task_scheduler/test_utils.h"
+#include "base/test/test_simple_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/platform_thread.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/simple_thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -50,7 +56,7 @@ class ThreadCallingShutdown : public SimpleThread {
 // Runs a task asynchronously.
 class ThreadRunningTask : public SimpleThread {
  public:
-  explicit ThreadRunningTask(TaskTracker* tracker, const Task* task)
+  ThreadRunningTask(TaskTracker* tracker, const Task* task)
       : SimpleThread("ThreadRunningTask"), tracker_(tracker), task_(task) {}
 
  private:
@@ -319,6 +325,86 @@ TEST_P(TaskSchedulerTaskTrackerTest, SingletonAllowed) {
   } else {
     EXPECT_DCHECK_DEATH({ tracker.RunTask(&task); }, "");
   }
+}
+
+static void RunTaskRunnerHandleVerificationTask(TaskTracker* tracker,
+                                         const Task* verify_task) {
+  // Pretend |verify_task| is posted to respect TaskTracker's contract.
+  EXPECT_TRUE(tracker->WillPostTask(verify_task));
+
+  // Confirm that the test conditions are right (no TaskRunnerHandles set
+  // already).
+  EXPECT_FALSE(ThreadTaskRunnerHandle::IsSet());
+  EXPECT_FALSE(SequencedTaskRunnerHandle::IsSet());
+
+  tracker->RunTask(verify_task);
+
+  // TaskRunnerHandle state is reset outside of task's scope.
+  EXPECT_FALSE(ThreadTaskRunnerHandle::IsSet());
+  EXPECT_FALSE(SequencedTaskRunnerHandle::IsSet());
+}
+
+static void VerifyNoTaskRunnerHandle() {
+  EXPECT_FALSE(ThreadTaskRunnerHandle::IsSet());
+  EXPECT_FALSE(SequencedTaskRunnerHandle::IsSet());
+}
+
+TEST_P(TaskSchedulerTaskTrackerTest, TaskRunnerHandleIsNotSetOnParallel) {
+  // Create a task that will verify that TaskRunnerHandles are not set in its
+  // scope per no TaskRunner ref being set to it.
+  std::unique_ptr<Task> verify_task(
+      new Task(FROM_HERE, Bind(&VerifyNoTaskRunnerHandle),
+               TaskTraits().WithShutdownBehavior(GetParam()), TimeDelta()));
+
+  RunTaskRunnerHandleVerificationTask(&tracker_, verify_task.get());
+}
+
+static void VerifySequencedTaskRunnerHandle(
+    const SequencedTaskRunner* expected_task_runner) {
+  EXPECT_FALSE(ThreadTaskRunnerHandle::IsSet());
+  EXPECT_TRUE(SequencedTaskRunnerHandle::IsSet());
+  EXPECT_EQ(expected_task_runner, SequencedTaskRunnerHandle::Get());
+}
+
+TEST_P(TaskSchedulerTaskTrackerTest,
+       SequencedTaskRunnerHandleIsSetOnSequenced) {
+  scoped_refptr<SequencedTaskRunner> test_task_runner(new TestSimpleTaskRunner);
+
+  // Create a task that will verify that SequencedTaskRunnerHandle is properly
+  // set to |test_task_runner| in its scope per |sequenced_task_runner_ref|
+  // being set to it.
+  std::unique_ptr<Task> verify_task(
+      new Task(FROM_HERE, Bind(&VerifySequencedTaskRunnerHandle,
+                               base::Unretained(test_task_runner.get())),
+               TaskTraits().WithShutdownBehavior(GetParam()), TimeDelta()));
+  verify_task->sequenced_task_runner_ref = test_task_runner;
+
+  RunTaskRunnerHandleVerificationTask(&tracker_, verify_task.get());
+}
+
+static void VerifyThreadTaskRunnerHandle(
+    const SingleThreadTaskRunner* expected_task_runner) {
+  EXPECT_TRUE(ThreadTaskRunnerHandle::IsSet());
+  // SequencedTaskRunnerHandle inherits ThreadTaskRunnerHandle for thread.
+  EXPECT_TRUE(SequencedTaskRunnerHandle::IsSet());
+  EXPECT_EQ(expected_task_runner, ThreadTaskRunnerHandle::Get());
+}
+
+TEST_P(TaskSchedulerTaskTrackerTest,
+       ThreadTaskRunnerHandleIsSetOnSingleThreaded) {
+  scoped_refptr<SingleThreadTaskRunner> test_task_runner(
+      new TestSimpleTaskRunner);
+
+  // Create a task that will verify that ThreadTaskRunnerHandle is properly set
+  // to |test_task_runner| in its scope per |single_thread_task_runner_ref|
+  // being set on it.
+  std::unique_ptr<Task> verify_task(
+      new Task(FROM_HERE, Bind(&VerifyThreadTaskRunnerHandle,
+                               base::Unretained(test_task_runner.get())),
+               TaskTraits().WithShutdownBehavior(GetParam()), TimeDelta()));
+  verify_task->single_thread_task_runner_ref = test_task_runner;
+
+  RunTaskRunnerHandleVerificationTask(&tracker_, verify_task.get());
 }
 
 INSTANTIATE_TEST_CASE_P(

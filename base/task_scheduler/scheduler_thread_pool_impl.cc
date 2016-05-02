@@ -78,10 +78,12 @@ class SchedulerSequencedTaskRunner : public SequencedTaskRunner {
   bool PostDelayedTask(const tracked_objects::Location& from_here,
                        const Closure& closure,
                        TimeDelta delay) override {
+    std::unique_ptr<Task> task(new Task(from_here, closure, traits_, delay));
+    task->sequenced_task_runner_ref = this;
+
     // Post the task as part of |sequence_|.
-    return thread_pool_->PostTaskWithSequence(
-        WrapUnique(new Task(from_here, closure, traits_, delay)), sequence_,
-        nullptr);
+    return thread_pool_->PostTaskWithSequence(std::move(task), sequence_,
+                                              nullptr);
   }
 
   bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
@@ -125,10 +127,12 @@ class SchedulerSingleThreadTaskRunner : public SingleThreadTaskRunner {
   bool PostDelayedTask(const tracked_objects::Location& from_here,
                        const Closure& closure,
                        TimeDelta delay) override {
+    std::unique_ptr<Task> task(new Task(from_here, closure, traits_, delay));
+    task->single_thread_task_runner_ref = this;
+
     // Post the task to be executed by |worker_thread_| as part of |sequence_|.
-    return thread_pool_->PostTaskWithSequence(
-        WrapUnique(new Task(from_here, closure, traits_, delay)), sequence_,
-        worker_thread_);
+    return thread_pool_->PostTaskWithSequence(std::move(task), sequence_,
+                                              worker_thread_);
   }
 
   bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,

@@ -22,14 +22,23 @@ class BASE_EXPORT SequencedTaskRunnerHandle {
   static scoped_refptr<SequencedTaskRunner> Get();
 
   // Returns true if one of the following conditions is fulfilled:
-  // a) The current thread has a ThreadTaskRunnerHandle (which includes any
+  // a) A SequencedTaskRunner has been assigned to the current thread by
+  //    instantiating a SequencedTaskRunnerHandle.
+  // b) The current thread has a ThreadTaskRunnerHandle (which includes any
   //    thread that has a MessageLoop associated with it), or
-  // b) The current thread is a worker thread belonging to a
+  // c) The current thread is a worker thread belonging to a
   //    SequencedWorkerPool.
   static bool IsSet();
 
+  // Binds |task_runner| to the current thread.
+  explicit SequencedTaskRunnerHandle(
+      scoped_refptr<SequencedTaskRunner> task_runner);
+  ~SequencedTaskRunnerHandle();
+
  private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(SequencedTaskRunnerHandle);
+  scoped_refptr<SequencedTaskRunner> task_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(SequencedTaskRunnerHandle);
 };
 
 }  // namespace base

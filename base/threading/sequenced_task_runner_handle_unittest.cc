@@ -16,6 +16,8 @@
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/sequenced_worker_pool_owner.h"
+#include "base/test/test_simple_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/simple_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -84,21 +86,18 @@ TEST_F(SequencedTaskRunnerHandleTest, FromUnsequencedTask) {
   event.Wait();
 }
 
-class ThreadRunner : public DelegateSimpleThread::Delegate {
- public:
-  void Run() override {
-    ASSERT_FALSE(SequencedTaskRunnerHandle::IsSet());
+TEST(SequencedTaskRunnerHandleTestWithoutMessageLoop, FromHandleInScope) {
+  scoped_refptr<SequencedTaskRunner> test_task_runner(new TestSimpleTaskRunner);
+  EXPECT_FALSE(SequencedTaskRunnerHandle::IsSet());
+  EXPECT_FALSE(ThreadTaskRunnerHandle::IsSet());
+  {
+    SequencedTaskRunnerHandle handle(test_task_runner);
+    EXPECT_TRUE(SequencedTaskRunnerHandle::IsSet());
+    EXPECT_FALSE(ThreadTaskRunnerHandle::IsSet());
+    EXPECT_EQ(test_task_runner, SequencedTaskRunnerHandle::Get());
   }
-
- private:
-  Closure callback_;
-};
-
-TEST_F(SequencedTaskRunnerHandleTest, FromSimpleThread) {
-  ThreadRunner thread_runner;
-  DelegateSimpleThread thread(&thread_runner, "Background thread");
-  thread.Start();
-  thread.Join();
+  EXPECT_FALSE(SequencedTaskRunnerHandle::IsSet());
+  EXPECT_FALSE(ThreadTaskRunnerHandle::IsSet());
 }
 
 }  // namespace

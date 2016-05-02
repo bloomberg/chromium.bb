@@ -22,6 +22,19 @@ namespace base {
 namespace internal {
 
 // A sequence holds tasks that must be executed in posting order.
+//
+// Note: there is a known refcounted-ownership cycle in the Scheduler
+// architecture: Sequence -> Task -> TaskRunner -> Sequence -> ...
+// This is okay so long as the other owners of Sequence (PriorityQueue and
+// SchedulerWorkerThread in alternance and
+// SchedulerThreadPoolImpl::SchedulerWorkerThreadDelegateImpl::GetWork()
+// temporarily) keep running it (and taking Tasks from it as a result). A
+// dangling reference cycle would only occur should they release their reference
+// to it while it's not empty. In other words, it is only correct for them to
+// release it after PopTask() returns false to indicate it was made empty by
+// that call (in which case the next PushTask() will return true to indicate to
+// the caller that the Sequence should be re-enqueued for execution).
+//
 // This class is thread-safe.
 class BASE_EXPORT Sequence : public RefCountedThreadSafe<Sequence> {
  public:
