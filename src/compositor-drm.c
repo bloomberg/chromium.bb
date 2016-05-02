@@ -2116,6 +2116,9 @@ parse_modeline(const char *s, drmModeModeInfo *mode)
 	else
 		return -1;
 
+	snprintf(mode->name, sizeof mode->name, "%dx%d@%.3f",
+		 mode->hdisplay, mode->vdisplay, fclock);
+
 	return 0;
 }
 
