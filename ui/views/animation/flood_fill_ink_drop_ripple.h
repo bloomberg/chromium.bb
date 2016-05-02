@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_ANIMATION_FLOOD_FILL_INK_DROP_ANIMATION_H_
-#define UI_VIEWS_ANIMATION_FLOOD_FILL_INK_DROP_ANIMATION_H_
+#ifndef UI_VIEWS_ANIMATION_FLOOD_FILL_INK_DROP_RIPPLE_H_
+#define UI_VIEWS_ANIMATION_FLOOD_FILL_INK_DROP_RIPPLE_H_
 
 #include <memory>
 #include <string>
@@ -17,8 +17,8 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/transform.h"
-#include "ui/views/animation/ink_drop_animation.h"
 #include "ui/views/animation/ink_drop_painted_layer_delegates.h"
+#include "ui/views/animation/ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_state.h"
 #include "ui/views/views_export.h"
 
@@ -30,10 +30,10 @@ namespace views {
 class CircleLayerDelegate;
 
 namespace test {
-class FloodFillInkDropAnimationTestApi;
+class FloodFillInkDropRippleTestApi;
 }  // namespace test
 
-// An ink drop animation that starts as a small circle and flood fills a
+// An ink drop ripple that starts as a small circle and flood fills a
 // rectangle of the given size. The circle is clipped to the rectangles bounds.
 //
 // The valid InkDropState transitions are defined below:
@@ -46,22 +46,22 @@ class FloodFillInkDropAnimationTestApi;
 //   {All InkDropStates}      => ACTIVATED
 //   {All InkDropStates}      => DEACTIVATED
 //
-class VIEWS_EXPORT FloodFillInkDropAnimation : public InkDropAnimation {
+class VIEWS_EXPORT FloodFillInkDropRipple : public InkDropRipple {
  public:
-  FloodFillInkDropAnimation(const gfx::Rect& clip_bounds,
-                            const gfx::Point& center_point,
-                            SkColor color);
-  ~FloodFillInkDropAnimation() override;
+  FloodFillInkDropRipple(const gfx::Rect& clip_bounds,
+                         const gfx::Point& center_point,
+                         SkColor color);
+  ~FloodFillInkDropRipple() override;
 
-  // InkDropAnimation:
+  // InkDropRipple:
   void SnapToActivated() override;
   ui::Layer* GetRootLayer() override;
   bool IsVisible() const override;
 
  private:
-  friend class test::FloodFillInkDropAnimationTestApi;
+  friend class test::FloodFillInkDropRippleTestApi;
 
-  // InkDropAnimation:
+  // InkDropRipple:
   void AnimateStateChange(InkDropState old_ink_drop_state,
                           InkDropState new_ink_drop_state,
                           ui::LayerAnimationObserver* observer) override;
@@ -122,9 +122,9 @@ class VIEWS_EXPORT FloodFillInkDropAnimation : public InkDropAnimation {
   // The current ink drop state.
   InkDropState ink_drop_state_;
 
-  DISALLOW_COPY_AND_ASSIGN(FloodFillInkDropAnimation);
+  DISALLOW_COPY_AND_ASSIGN(FloodFillInkDropRipple);
 };
 
 }  // namespace views
 
-#endif  // UI_VIEWS_ANIMATION_FLOOD_FILL_INK_DROP_ANIMATION_H_
+#endif  // UI_VIEWS_ANIMATION_FLOOD_FILL_INK_DROP_RIPPLE_H_

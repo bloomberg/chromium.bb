@@ -58,7 +58,7 @@
 #include "ui/gfx/text_elider.h"
 #include "ui/gfx/text_utils.h"
 #include "ui/gfx/vector_icons_public.h"
-#include "ui/views/animation/flood_fill_ink_drop_animation.h"
+#include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_delegate.h"
 #include "ui/views/animation/ink_drop_hover.h"
 #include "ui/views/border.h"
@@ -473,9 +473,9 @@ void DownloadItemViewMd::AddInkDropLayer(ui::Layer* ink_drop_layer) {
   layer()->SetMasksToBounds(true);
 }
 
-std::unique_ptr<views::InkDropAnimation>
-DownloadItemViewMd::CreateInkDropAnimation() const {
-  return base::WrapUnique(new views::FloodFillInkDropAnimation(
+std::unique_ptr<views::InkDropRipple> DownloadItemViewMd::CreateInkDropRipple()
+    const {
+  return base::WrapUnique(new views::FloodFillInkDropRipple(
       GetLocalBounds(), ink_drop_delegate_.last_ink_drop_location(),
       color_utils::DeriveDefaultIconColor(GetTextColor())));
 }

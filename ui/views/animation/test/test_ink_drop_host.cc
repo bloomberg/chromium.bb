@@ -7,43 +7,43 @@
 #include "base/memory/ptr_util.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/animation/ink_drop_hover.h"
-#include "ui/views/animation/square_ink_drop_animation.h"
+#include "ui/views/animation/square_ink_drop_ripple.h"
 #include "ui/views/animation/test/ink_drop_hover_test_api.h"
-#include "ui/views/animation/test/square_ink_drop_animation_test_api.h"
+#include "ui/views/animation/test/square_ink_drop_ripple_test_api.h"
 
 namespace views {
 
 namespace {
 
-// Test specific subclass of InkDropAnimation that returns a test api from
+// Test specific subclass of InkDropRipple that returns a test api from
 // GetTestApi().
-class TestInkDropAnimation : public SquareInkDropAnimation {
+class TestInkDropRipple : public SquareInkDropRipple {
  public:
-  TestInkDropAnimation(const gfx::Size& large_size,
-                       int large_corner_radius,
-                       const gfx::Size& small_size,
-                       int small_corner_radius,
-                       const gfx::Point& center_point,
-                       SkColor color)
-      : SquareInkDropAnimation(large_size,
-                               large_corner_radius,
-                               small_size,
-                               small_corner_radius,
-                               center_point,
-                               color) {}
+  TestInkDropRipple(const gfx::Size& large_size,
+                    int large_corner_radius,
+                    const gfx::Size& small_size,
+                    int small_corner_radius,
+                    const gfx::Point& center_point,
+                    SkColor color)
+      : SquareInkDropRipple(large_size,
+                            large_corner_radius,
+                            small_size,
+                            small_corner_radius,
+                            center_point,
+                            color) {}
 
-  ~TestInkDropAnimation() override {}
+  ~TestInkDropRipple() override {}
 
-  test::InkDropAnimationTestApi* GetTestApi() override {
+  test::InkDropRippleTestApi* GetTestApi() override {
     if (!test_api_)
-      test_api_.reset(new test::SquareInkDropAnimationTestApi(this));
+      test_api_.reset(new test::SquareInkDropRippleTestApi(this));
     return test_api_.get();
   }
 
  private:
-  std::unique_ptr<test::InkDropAnimationTestApi> test_api_;
+  std::unique_ptr<test::InkDropRippleTestApi> test_api_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestInkDropAnimation);
+  DISALLOW_COPY_AND_ASSIGN(TestInkDropRipple);
 };
 
 // Test specific subclass of InkDropHover that returns a test api from
@@ -87,14 +87,13 @@ void TestInkDropHost::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
   --num_ink_drop_layers_;
 }
 
-std::unique_ptr<InkDropAnimation> TestInkDropHost::CreateInkDropAnimation()
-    const {
+std::unique_ptr<InkDropRipple> TestInkDropHost::CreateInkDropRipple() const {
   gfx::Size size(10, 10);
-  std::unique_ptr<InkDropAnimation> animation(
-      new TestInkDropAnimation(size, 5, size, 5, gfx::Point(), SK_ColorBLACK));
+  std::unique_ptr<InkDropRipple> ripple(
+      new TestInkDropRipple(size, 5, size, 5, gfx::Point(), SK_ColorBLACK));
   if (disable_timers_for_test_)
-    animation->GetTestApi()->SetDisableAnimationTimers(true);
-  return animation;
+    ripple->GetTestApi()->SetDisableAnimationTimers(true);
+  return ripple;
 }
 
 std::unique_ptr<InkDropHover> TestInkDropHost::CreateInkDropHover() const {

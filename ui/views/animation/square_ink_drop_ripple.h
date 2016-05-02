@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_ANIMATION_SQUARE_INK_DROP_ANIMATION_H_
-#define UI_VIEWS_ANIMATION_SQUARE_INK_DROP_ANIMATION_H_
+#ifndef UI_VIEWS_ANIMATION_SQUARE_INK_DROP_RIPPLE_H_
+#define UI_VIEWS_ANIMATION_SQUARE_INK_DROP_RIPPLE_H_
 
 #include <memory>
 #include <string>
@@ -17,7 +17,7 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/transform.h"
-#include "ui/views/animation/ink_drop_animation.h"
+#include "ui/views/animation/ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_state.h"
 #include "ui/views/views_export.h"
 
@@ -30,10 +30,10 @@ class CircleLayerDelegate;
 class RectangleLayerDelegate;
 
 namespace test {
-class SquareInkDropAnimationTestApi;
+class SquareInkDropRippleTestApi;
 }  // namespace test
 
-// An ink drop animation that smoothly animates between a circle and a rounded
+// An ink drop ripple that smoothly animates between a circle and a rounded
 // rectangle of different sizes for each of the different InkDropStates. The
 // final frame for each InkDropState will be bounded by either a |large_size_|
 // rectangle or a |small_size_| rectangle.
@@ -48,23 +48,23 @@ class SquareInkDropAnimationTestApi;
 //   {All InkDropStates}      => ACTIVATED
 //   {All InkDropStates}      => DEACTIVATED
 //
-class VIEWS_EXPORT SquareInkDropAnimation : public InkDropAnimation {
+class VIEWS_EXPORT SquareInkDropRipple : public InkDropRipple {
  public:
-  SquareInkDropAnimation(const gfx::Size& large_size,
-                         int large_corner_radius,
-                         const gfx::Size& small_size,
-                         int small_corner_radius,
-                         const gfx::Point& center_point,
-                         SkColor color);
-  ~SquareInkDropAnimation() override;
+  SquareInkDropRipple(const gfx::Size& large_size,
+                      int large_corner_radius,
+                      const gfx::Size& small_size,
+                      int small_corner_radius,
+                      const gfx::Point& center_point,
+                      SkColor color);
+  ~SquareInkDropRipple() override;
 
-  // InkDropAnimation:
+  // InkDropRipple:
   void SnapToActivated() override;
   ui::Layer* GetRootLayer() override;
   bool IsVisible() const override;
 
  private:
-  friend class test::SquareInkDropAnimationTestApi;
+  friend class test::SquareInkDropRippleTestApi;
 
   // Enumeration of the different shapes that compose the ink drop.
   enum PaintedShape {
@@ -87,7 +87,7 @@ class VIEWS_EXPORT SquareInkDropAnimation : public InkDropAnimation {
 
   float GetCurrentOpacity() const;
 
-  // InkDropAnimation:
+  // InkDropRipple:
   void AnimateStateChange(InkDropState old_ink_drop_state,
                           InkDropState new_ink_drop_state,
                           ui::LayerAnimationObserver* observer) override;
@@ -176,9 +176,9 @@ class VIEWS_EXPORT SquareInkDropAnimation : public InkDropAnimation {
   // ui::Layers for all of the painted shape layers that compose the ink drop.
   std::unique_ptr<ui::Layer> painted_layers_[PAINTED_SHAPE_COUNT];
 
-  DISALLOW_COPY_AND_ASSIGN(SquareInkDropAnimation);
+  DISALLOW_COPY_AND_ASSIGN(SquareInkDropRipple);
 };
 
 }  // namespace views
 
-#endif  // UI_VIEWS_ANIMATION_SQUARE_INK_DROP_ANIMATION_H_
+#endif  // UI_VIEWS_ANIMATION_SQUARE_INK_DROP_RIPPLE_H_

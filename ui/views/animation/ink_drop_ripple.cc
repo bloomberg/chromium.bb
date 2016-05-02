@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/animation/ink_drop_animation.h"
+#include "ui/views/animation/ink_drop_ripple.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -13,9 +13,9 @@
 
 namespace views {
 
-const double InkDropAnimation::kSlowAnimationDurationFactor = 3.0;
+const double InkDropRipple::kSlowAnimationDurationFactor = 3.0;
 
-bool InkDropAnimation::UseFastAnimations() {
+bool InkDropRipple::UseFastAnimations() {
   static bool fast =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           (::switches::kMaterialDesignInkDropAnimationSpeed)) !=
@@ -23,15 +23,15 @@ bool InkDropAnimation::UseFastAnimations() {
   return fast;
 }
 
-const float InkDropAnimation::kHiddenOpacity = 0.f;
-const float InkDropAnimation::kVisibleOpacity = 0.175f;
+const float InkDropRipple::kHiddenOpacity = 0.f;
+const float InkDropRipple::kVisibleOpacity = 0.175f;
 
-InkDropAnimation::InkDropAnimation()
+InkDropRipple::InkDropRipple()
     : target_ink_drop_state_(InkDropState::HIDDEN), observer_(nullptr) {}
 
-InkDropAnimation::~InkDropAnimation() {}
+InkDropRipple::~InkDropRipple() {}
 
-void InkDropAnimation::AnimateToState(InkDropState ink_drop_state) {
+void InkDropRipple::AnimateToState(InkDropState ink_drop_state) {
   // Does not return early if |target_ink_drop_state_| == |ink_drop_state| for
   // two reasons.
   // 1. The attached observers must be notified of all animations started and
@@ -45,9 +45,9 @@ void InkDropAnimation::AnimateToState(InkDropState ink_drop_state) {
   // |animation_observer|.
   ui::CallbackLayerAnimationObserver* animation_observer =
       new ui::CallbackLayerAnimationObserver(
-          base::Bind(&InkDropAnimation::AnimationStartedCallback,
+          base::Bind(&InkDropRipple::AnimationStartedCallback,
                      base::Unretained(this), ink_drop_state),
-          base::Bind(&InkDropAnimation::AnimationEndedCallback,
+          base::Bind(&InkDropRipple::AnimationEndedCallback,
                      base::Unretained(this), ink_drop_state));
 
   InkDropState old_ink_drop_state = target_ink_drop_state_;
@@ -68,7 +68,7 @@ void InkDropAnimation::AnimateToState(InkDropState ink_drop_state) {
   // AnimationEndedCallback which can delete |this|.
 }
 
-void InkDropAnimation::SnapToActivated() {
+void InkDropRipple::SnapToActivated() {
   AbortAllAnimations();
   // |animation_observer| will be deleted when AnimationEndedCallback() returns
   // true.
@@ -76,32 +76,32 @@ void InkDropAnimation::SnapToActivated() {
   // |animation_observer|.
   ui::CallbackLayerAnimationObserver* animation_observer =
       new ui::CallbackLayerAnimationObserver(
-          base::Bind(&InkDropAnimation::AnimationStartedCallback,
+          base::Bind(&InkDropRipple::AnimationStartedCallback,
                      base::Unretained(this), InkDropState::ACTIVATED),
-          base::Bind(&InkDropAnimation::AnimationEndedCallback,
+          base::Bind(&InkDropRipple::AnimationEndedCallback,
                      base::Unretained(this), InkDropState::ACTIVATED));
   GetRootLayer()->SetVisible(true);
   target_ink_drop_state_ = InkDropState::ACTIVATED;
   animation_observer->SetActive();
 }
 
-void InkDropAnimation::HideImmediately() {
+void InkDropRipple::HideImmediately() {
   AbortAllAnimations();
   SetStateToHidden();
   target_ink_drop_state_ = InkDropState::HIDDEN;
 }
 
-test::InkDropAnimationTestApi* InkDropAnimation::GetTestApi() {
+test::InkDropRippleTestApi* InkDropRipple::GetTestApi() {
   return nullptr;
 }
 
-void InkDropAnimation::AnimationStartedCallback(
+void InkDropRipple::AnimationStartedCallback(
     InkDropState ink_drop_state,
     const ui::CallbackLayerAnimationObserver& observer) {
   observer_->AnimationStarted(ink_drop_state);
 }
 
-bool InkDropAnimation::AnimationEndedCallback(
+bool InkDropRipple::AnimationEndedCallback(
     InkDropState ink_drop_state,
     const ui::CallbackLayerAnimationObserver& observer) {
   if (ink_drop_state == InkDropState::HIDDEN)

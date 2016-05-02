@@ -23,7 +23,7 @@ class Layer;
 namespace views {
 
 // Pure virtual base class that manages the lifetime and state of an ink drop
-// animation as well as visual hover state feedback.
+// ripple as well as visual hover state feedback.
 class VIEWS_EXPORT InkDropAnimationController {
  public:
   virtual ~InkDropAnimationController() {}

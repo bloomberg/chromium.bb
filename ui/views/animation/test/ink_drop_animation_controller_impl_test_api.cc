@@ -4,11 +4,11 @@
 
 #include "ui/views/animation/test/ink_drop_animation_controller_impl_test_api.h"
 
-#include "ui/views/animation/ink_drop_animation.h"
 #include "ui/views/animation/ink_drop_animation_controller_impl.h"
 #include "ui/views/animation/ink_drop_hover.h"
-#include "ui/views/animation/test/ink_drop_animation_test_api.h"
+#include "ui/views/animation/ink_drop_ripple.h"
 #include "ui/views/animation/test/ink_drop_hover_test_api.h"
+#include "ui/views/animation/test/ink_drop_ripple_test_api.h"
 
 namespace views {
 namespace test {
@@ -42,13 +42,13 @@ InkDropAnimationControllerImplTestApi::GetLayerAnimators() {
                      ink_drop_hover_animators.end());
   }
 
-  if (ink_drop_controller_->ink_drop_animation_) {
-    InkDropAnimationTestApi* ink_drop_animation_test_api =
-        ink_drop_controller_->ink_drop_animation_->GetTestApi();
-    std::vector<ui::LayerAnimator*> ink_drop_animation_animators =
-        ink_drop_animation_test_api->GetLayerAnimators();
-    animators.insert(animators.end(), ink_drop_animation_animators.begin(),
-                     ink_drop_animation_animators.end());
+  if (ink_drop_controller_->ink_drop_ripple_) {
+    InkDropRippleTestApi* ink_drop_ripple_test_api =
+        ink_drop_controller_->ink_drop_ripple_->GetTestApi();
+    std::vector<ui::LayerAnimator*> ink_drop_ripple_animators =
+        ink_drop_ripple_test_api->GetLayerAnimators();
+    animators.insert(animators.end(), ink_drop_ripple_animators.begin(),
+                     ink_drop_ripple_animators.end());
   }
 
   return animators;

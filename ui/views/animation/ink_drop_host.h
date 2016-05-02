@@ -17,7 +17,7 @@ class Layer;
 
 namespace views {
 
-class InkDropAnimation;
+class InkDropRipple;
 class InkDropHover;
 
 // Used by the InkDropAnimationController to add and remove the ink drop layers
@@ -39,7 +39,7 @@ class VIEWS_EXPORT InkDropHost {
   virtual void RemoveInkDropLayer(ui::Layer* ink_drop_layer) = 0;
 
   // Creates and returns the effect used for press.
-  virtual std::unique_ptr<InkDropAnimation> CreateInkDropAnimation() const = 0;
+  virtual std::unique_ptr<InkDropRipple> CreateInkDropRipple() const = 0;
 
   // Creates and returns the effect used for hover.
   virtual std::unique_ptr<InkDropHover> CreateInkDropHover() const = 0;

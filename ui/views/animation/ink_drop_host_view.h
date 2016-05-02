@@ -14,7 +14,7 @@
 
 namespace views {
 
-class InkDropAnimation;
+class InkDropRipple;
 class InkDropHover;
 
 // A view that provides InkDropHost functionality.
@@ -26,7 +26,7 @@ class VIEWS_EXPORT InkDropHostView : public views::View, public InkDropHost {
   // Overridden from views::InkDropHost:
   void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
   void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
-  std::unique_ptr<InkDropAnimation> CreateInkDropAnimation() const override;
+  std::unique_ptr<InkDropRipple> CreateInkDropRipple() const override;
   std::unique_ptr<InkDropHover> CreateInkDropHover() const override;
 
   void set_ink_drop_size(const gfx::Size& size) { ink_drop_size_ = size; }
@@ -44,6 +44,6 @@ class VIEWS_EXPORT InkDropHostView : public views::View, public InkDropHost {
 
   DISALLOW_COPY_AND_ASSIGN(InkDropHostView);
 };
-}
+}  // namespace views
 
 #endif  // UI_VIEWS_ANIMATION_INK_DROP_HOST_VIEW_H_

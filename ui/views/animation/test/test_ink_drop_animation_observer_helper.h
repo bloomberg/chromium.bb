@@ -1,9 +1,8 @@
 // Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
-#ifndef UI_VIEWS_ANIMATION_TEST_TEST_ANIMATION_OBSERVER_H_
-#define UI_VIEWS_ANIMATION_TEST_TEST_ANIMATION_OBSERVER_H_
+#ifndef UI_VIEWS_ANIMATION_TEST_TEST_INK_DROP_ANIMATION_OBSERVER_H_
+#define UI_VIEWS_ANIMATION_TEST_TEST_INK_DROP_ANIMATION_OBSERVER_H_
 
 #include <algorithm>
 
@@ -66,12 +65,12 @@ class TestInkDropAnimationObserverHelper {
   //
   // Example:
   //
-  //   TestInkDropAnimationObserver observer;
-  //   observer.set_ink_drop_animation(ink_drop_animation);
+  //   TestInkDropAnimationObserverHelper<int> observer;
+  //   event_source.set_observer(observer);
   //   EXPECT_TRUE(observer.AnimationHasNotStarted());
   //
 
-  // Passes *_TRUE assertions when an InkDropAnimationStarted() event has been
+  // Passes *_TRUE assertions when an AnimationStarted() event has been
   // observed.
   testing::AssertionResult AnimationHasStarted() {
     if (last_animation_started_ordinal() > 0) {
@@ -82,8 +81,8 @@ class TestInkDropAnimationObserverHelper {
     return testing::AssertionFailure() << "Animations have not started.";
   }
 
-  // Passes *_TRUE assertions when an InkDropAnimationStarted() event has NOT
-  // been observed.
+  // Passes *_TRUE assertions when an AnimationStarted() event has NOT been
+  // observed.
   testing::AssertionResult AnimationHasNotStarted() {
     if (last_animation_started_ordinal() < 0)
       return testing::AssertionSuccess();
@@ -92,8 +91,7 @@ class TestInkDropAnimationObserverHelper {
                                        << ".";
   }
 
-  // Passes *_TRUE assertions when an InkDropAnimationEnded() event has been
-  // observed.
+  // Passes *_TRUE assertions when an AnimationEnded() event has been observed.
   testing::AssertionResult AnimationHasEnded() {
     if (last_animation_ended_ordinal() > 0) {
       return testing::AssertionSuccess() << "Animations were ended at ordinal="
@@ -103,7 +101,7 @@ class TestInkDropAnimationObserverHelper {
     return testing::AssertionFailure() << "Animations have not ended.";
   }
 
-  // Passes *_TRUE assertions when an InkDropAnimationEnded() event has NOT been
+  // Passes *_TRUE assertions when an AnimationEnded() event has NOT been
   // observed.
   testing::AssertionResult AnimationHasNotEnded() {
     if (last_animation_ended_ordinal() < 0)
@@ -140,4 +138,4 @@ class TestInkDropAnimationObserverHelper {
 }  // namespace test
 }  // namespace views
 
-#endif  // UI_VIEWS_ANIMATION_TEST_TEST_ANIMATION_OBSERVER_H_
+#endif  // UI_VIEWS_ANIMATION_TEST_TEST_INK_DROP_ANIMATION_OBSERVER_H_

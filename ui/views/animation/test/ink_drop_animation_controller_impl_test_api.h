@@ -22,7 +22,7 @@ class InkDropHover;
 namespace test {
 
 // Test API to provide internal access to an InkDropAnimationControllerImpl
-// instance. This can also be used to control the InkDropAnimation and
+// instance. This can also be used to control the InkDropRipple and
 // InkDropHover animations via the ui::test::MultiLayerAnimatorTestController
 // API.
 class InkDropAnimationControllerImplTestApi
@@ -42,7 +42,7 @@ class InkDropAnimationControllerImplTestApi
   std::vector<ui::LayerAnimator*> GetLayerAnimators() override;
 
  private:
-  // The InkDropedAnimation to provide internal access to.
+  // The InkDropAnimationController to provide internal access to.
   InkDropAnimationControllerImpl* ink_drop_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(InkDropAnimationControllerImplTestApi);

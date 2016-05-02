@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_ANIMATION_INK_DROP_ANIMATION_OBSERVER_H_
-#define UI_VIEWS_ANIMATION_INK_DROP_ANIMATION_OBSERVER_H_
+#ifndef UI_VIEWS_ANIMATION_INK_DROP_RIPPLE_OBSERVER_H_
+#define UI_VIEWS_ANIMATION_INK_DROP_RIPPLE_OBSERVER_H_
 
 #include <string>
 
@@ -14,8 +14,8 @@
 
 namespace views {
 
-// Observer to attach to an InkDropAnimation.
-class VIEWS_EXPORT InkDropAnimationObserver {
+// Observer to attach to an InkDropRipple.
+class VIEWS_EXPORT InkDropRippleObserver {
  public:
   // An animation for the given |ink_drop_state| has started.
   virtual void AnimationStarted(InkDropState ink_drop_state) = 0;
@@ -29,13 +29,13 @@ class VIEWS_EXPORT InkDropAnimationObserver {
                               InkDropAnimationEndedReason reason) = 0;
 
  protected:
-  InkDropAnimationObserver() = default;
-  virtual ~InkDropAnimationObserver() = default;
+  InkDropRippleObserver() = default;
+  virtual ~InkDropRippleObserver() = default;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(InkDropAnimationObserver);
+  DISALLOW_COPY_AND_ASSIGN(InkDropRippleObserver);
 };
 
 }  // namespace views
 
-#endif  // UI_VIEWS_ANIMATION_INK_DROP_ANIMATION_OBSERVER_H_
+#endif  // UI_VIEWS_ANIMATION_INK_DROP_RIPPLE_OBSERVER_H_

@@ -9,7 +9,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/views/animation/ink_drop_host.h"
 #include "ui/views/animation/ink_drop_hover.h"
-#include "ui/views/animation/square_ink_drop_animation.h"
+#include "ui/views/animation/square_ink_drop_ripple.h"
 
 namespace views {
 
@@ -25,15 +25,15 @@ const int kHoverFadeOutFromUserInputDurationInMs = 250;
 
 // The duration, in milliseconds, of the hover state fade in animation when it
 // is triggered by an ink drop ripple animation ending.
-const int kHoverFadeInAfterAnimationDurationInMs = 250;
+const int kHoverFadeInAfterRippleDurationInMs = 250;
 
 // The duration, in milliseconds, of the hover state fade out animation when it
 // is triggered by an ink drop ripple animation starting.
-const int kHoverFadeOutBeforeAnimationDurationInMs = 120;
+const int kHoverFadeOutBeforeRippleDurationInMs = 120;
 
 // The amount of time in milliseconds that |hover_| should delay after a ripple
 // animation before fading in.
-const int kHoverFadeInAfterAnimationDelayInMs = 1000;
+const int kHoverFadeInAfterRippleDelayInMs = 1000;
 
 // Returns true if an ink drop with the given |ink_drop_state| should
 // automatically transition to the InkDropState::HIDDEN state.
@@ -56,50 +56,50 @@ InkDropAnimationControllerImpl::InkDropAnimationControllerImpl(
       root_layer_(new ui::Layer(ui::LAYER_NOT_DRAWN)),
       root_layer_added_to_host_(false),
       is_hovered_(false),
-      hover_after_animation_timer_(nullptr) {
+      hover_after_ripple_timer_(nullptr) {
   root_layer_->set_name("InkDropAnimationControllerImpl:RootLayer");
 }
 
 InkDropAnimationControllerImpl::~InkDropAnimationControllerImpl() {
-  // Explicitly destroy the InkDropAnimation so that this still exists if
-  // views::InkDropAnimationObserver methods are called on this.
-  DestroyInkDropAnimation();
+  // Explicitly destroy the InkDropRipple so that this still exists if
+  // views::InkDropRippleObserver methods are called on this.
+  DestroyInkDropRipple();
   DestroyInkDropHover();
 }
 
 InkDropState InkDropAnimationControllerImpl::GetTargetInkDropState() const {
-  if (!ink_drop_animation_)
+  if (!ink_drop_ripple_)
     return InkDropState::HIDDEN;
-  return ink_drop_animation_->target_ink_drop_state();
+  return ink_drop_ripple_->target_ink_drop_state();
 }
 
 bool InkDropAnimationControllerImpl::IsVisible() const {
-  return ink_drop_animation_ && ink_drop_animation_->IsVisible();
+  return ink_drop_ripple_ && ink_drop_ripple_->IsVisible();
 }
 
 void InkDropAnimationControllerImpl::AnimateToState(
     InkDropState ink_drop_state) {
   DestroyHiddenTargetedAnimations();
-  if (!ink_drop_animation_)
-    CreateInkDropAnimation();
+  if (!ink_drop_ripple_)
+    CreateInkDropRipple();
 
   if (ink_drop_state != views::InkDropState::HIDDEN) {
     SetHoveredInternal(false, base::TimeDelta::FromMilliseconds(
-                                  kHoverFadeOutBeforeAnimationDurationInMs),
+                                  kHoverFadeOutBeforeRippleDurationInMs),
                        true);
   }
 
-  ink_drop_animation_->AnimateToState(ink_drop_state);
+  ink_drop_ripple_->AnimateToState(ink_drop_state);
 }
 
 void InkDropAnimationControllerImpl::SnapToActivated() {
   DestroyHiddenTargetedAnimations();
-  if (!ink_drop_animation_)
-    CreateInkDropAnimation();
+  if (!ink_drop_ripple_)
+    CreateInkDropRipple();
 
   SetHoveredInternal(false, base::TimeDelta(), false);
 
-  ink_drop_animation_->SnapToActivated();
+  ink_drop_ripple_->SnapToActivated();
 }
 
 void InkDropAnimationControllerImpl::SetHovered(bool is_hovered) {
@@ -113,26 +113,26 @@ void InkDropAnimationControllerImpl::SetHovered(bool is_hovered) {
 }
 
 void InkDropAnimationControllerImpl::DestroyHiddenTargetedAnimations() {
-  if (ink_drop_animation_ &&
-      (ink_drop_animation_->target_ink_drop_state() == InkDropState::HIDDEN ||
-       ShouldAnimateToHidden(ink_drop_animation_->target_ink_drop_state()))) {
-    DestroyInkDropAnimation();
+  if (ink_drop_ripple_ &&
+      (ink_drop_ripple_->target_ink_drop_state() == InkDropState::HIDDEN ||
+       ShouldAnimateToHidden(ink_drop_ripple_->target_ink_drop_state()))) {
+    DestroyInkDropRipple();
   }
 }
 
-void InkDropAnimationControllerImpl::CreateInkDropAnimation() {
-  DestroyInkDropAnimation();
-  ink_drop_animation_ = ink_drop_host_->CreateInkDropAnimation();
-  ink_drop_animation_->set_observer(this);
-  root_layer_->Add(ink_drop_animation_->GetRootLayer());
+void InkDropAnimationControllerImpl::CreateInkDropRipple() {
+  DestroyInkDropRipple();
+  ink_drop_ripple_ = ink_drop_host_->CreateInkDropRipple();
+  ink_drop_ripple_->set_observer(this);
+  root_layer_->Add(ink_drop_ripple_->GetRootLayer());
   AddRootLayerToHostIfNeeded();
 }
 
-void InkDropAnimationControllerImpl::DestroyInkDropAnimation() {
-  if (!ink_drop_animation_)
+void InkDropAnimationControllerImpl::DestroyInkDropRipple() {
+  if (!ink_drop_ripple_)
     return;
-  root_layer_->Remove(ink_drop_animation_->GetRootLayer());
-  ink_drop_animation_.reset();
+  root_layer_->Remove(ink_drop_ripple_->GetRootLayer());
+  ink_drop_ripple_.reset();
   RemoveRootLayerFromHostIfNeeded();
 }
 
@@ -157,7 +157,7 @@ void InkDropAnimationControllerImpl::DestroyInkDropHover() {
 }
 
 void InkDropAnimationControllerImpl::AddRootLayerToHostIfNeeded() {
-  DCHECK(hover_ || ink_drop_animation_);
+  DCHECK(hover_ || ink_drop_ripple_);
   if (!root_layer_added_to_host_) {
     root_layer_added_to_host_ = true;
     ink_drop_host_->AddInkDropLayer(root_layer_.get());
@@ -165,7 +165,7 @@ void InkDropAnimationControllerImpl::AddRootLayerToHostIfNeeded() {
 }
 
 void InkDropAnimationControllerImpl::RemoveRootLayerFromHostIfNeeded() {
-  if (root_layer_added_to_host_ && !hover_ && !ink_drop_animation_) {
+  if (root_layer_added_to_host_ && !hover_ && !ink_drop_ripple_) {
     root_layer_added_to_host_ = false;
     ink_drop_host_->RemoveInkDropLayer(root_layer_.get());
   }
@@ -176,7 +176,7 @@ bool InkDropAnimationControllerImpl::IsHoverFadingInOrVisible() const {
 }
 
 // -----------------------------------------------------------------------------
-// views::InkDropAnimationObserver:
+// views::InkDropRippleObserver:
 
 void InkDropAnimationControllerImpl::AnimationStarted(
     InkDropState ink_drop_state) {}
@@ -187,14 +187,14 @@ void InkDropAnimationControllerImpl::AnimationEnded(
   if (reason != InkDropAnimationEndedReason::SUCCESS)
     return;
   if (ShouldAnimateToHidden(ink_drop_state)) {
-    ink_drop_animation_->AnimateToState(views::InkDropState::HIDDEN);
+    ink_drop_ripple_->AnimateToState(views::InkDropState::HIDDEN);
   } else if (ink_drop_state == views::InkDropState::HIDDEN) {
     if (is_hovered_)
-      StartHoverAfterAnimationTimer();
+      StartHoverAfterRippleTimer();
     // TODO(bruthig): Investigate whether creating and destroying
-    // InkDropAnimations is expensive and consider creating an
-    // InkDropAnimationPool. See www.crbug.com/522175.
-    DestroyInkDropAnimation();
+    // InkDropRipples is expensive and consider creating an
+    // InkDropRipplePool. See www.crbug.com/522175.
+    DestroyInkDropRipple();
   }
 }
 
@@ -217,7 +217,7 @@ void InkDropAnimationControllerImpl::SetHoveredInternal(
     bool is_hovered,
     base::TimeDelta animation_duration,
     bool explode) {
-  StopHoverAfterAnimationTimer();
+  StopHoverAfterRippleTimer();
 
   if (IsHoverFadingInOrVisible() == is_hovered)
     return;
@@ -231,29 +231,29 @@ void InkDropAnimationControllerImpl::SetHoveredInternal(
   }
 }
 
-void InkDropAnimationControllerImpl::StartHoverAfterAnimationTimer() {
-  StopHoverAfterAnimationTimer();
+void InkDropAnimationControllerImpl::StartHoverAfterRippleTimer() {
+  StopHoverAfterRippleTimer();
 
-  if (!hover_after_animation_timer_)
-    hover_after_animation_timer_.reset(new base::OneShotTimer);
+  if (!hover_after_ripple_timer_)
+    hover_after_ripple_timer_.reset(new base::OneShotTimer);
 
-  hover_after_animation_timer_->Start(
+  hover_after_ripple_timer_->Start(
       FROM_HERE,
-      base::TimeDelta::FromMilliseconds(kHoverFadeInAfterAnimationDelayInMs),
-      base::Bind(&InkDropAnimationControllerImpl::HoverAfterAnimationTimerFired,
+      base::TimeDelta::FromMilliseconds(kHoverFadeInAfterRippleDelayInMs),
+      base::Bind(&InkDropAnimationControllerImpl::HoverAfterRippleTimerFired,
                  base::Unretained(this)));
 }
 
-void InkDropAnimationControllerImpl::StopHoverAfterAnimationTimer() {
-  if (hover_after_animation_timer_)
-    hover_after_animation_timer_.reset();
+void InkDropAnimationControllerImpl::StopHoverAfterRippleTimer() {
+  if (hover_after_ripple_timer_)
+    hover_after_ripple_timer_.reset();
 }
 
-void InkDropAnimationControllerImpl::HoverAfterAnimationTimerFired() {
+void InkDropAnimationControllerImpl::HoverAfterRippleTimerFired() {
   SetHoveredInternal(true, base::TimeDelta::FromMilliseconds(
-                               kHoverFadeInAfterAnimationDurationInMs),
+                               kHoverFadeInAfterRippleDurationInMs),
                      true);
-  hover_after_animation_timer_.reset();
+  hover_after_ripple_timer_.reset();
 }
 
 }  // namespace views

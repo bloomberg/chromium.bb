@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/animation/flood_fill_ink_drop_animation.h"
+#include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 
 #include <algorithm>
 
@@ -96,9 +96,9 @@ int kAnimationDurationInMs[] = {
 // Returns the InkDropState sub animation duration for the given |state|.
 base::TimeDelta GetAnimationDuration(InkDropSubAnimations state) {
   return base::TimeDelta::FromMilliseconds(
-      (views::InkDropAnimation::UseFastAnimations()
+      (views::InkDropRipple::UseFastAnimations()
            ? 1
-           : views::InkDropAnimation::kSlowAnimationDurationFactor) *
+           : views::InkDropRipple::kSlowAnimationDurationFactor) *
       kAnimationDurationInMs[state]);
 }
 
@@ -106,10 +106,9 @@ base::TimeDelta GetAnimationDuration(InkDropSubAnimations state) {
 
 namespace views {
 
-FloodFillInkDropAnimation::FloodFillInkDropAnimation(
-    const gfx::Rect& clip_bounds,
-    const gfx::Point& center_point,
-    SkColor color)
+FloodFillInkDropRipple::FloodFillInkDropRipple(const gfx::Rect& clip_bounds,
+                                               const gfx::Point& center_point,
+                                               SkColor color)
     : clip_bounds_(clip_bounds),
       center_point_(center_point),
       root_layer_(ui::LAYER_NOT_DRAWN),
@@ -117,7 +116,7 @@ FloodFillInkDropAnimation::FloodFillInkDropAnimation(
           color,
           std::max(clip_bounds_.width(), clip_bounds_.height()) / 2.f),
       ink_drop_state_(InkDropState::HIDDEN) {
-  root_layer_.set_name("FloodFillInkDropAnimation:ROOT_LAYER");
+  root_layer_.set_name("FloodFillInkDropRipple:ROOT_LAYER");
   root_layer_.SetMasksToBounds(true);
   root_layer_.SetBounds(clip_bounds);
 
@@ -130,34 +129,34 @@ FloodFillInkDropAnimation::FloodFillInkDropAnimation(
   painted_layer_.SetVisible(true);
   painted_layer_.SetOpacity(1.0);
   painted_layer_.SetMasksToBounds(false);
-  painted_layer_.set_name("FloodFillInkDropAnimation:PAINTED_LAYER");
+  painted_layer_.set_name("FloodFillInkDropRipple:PAINTED_LAYER");
 
   root_layer_.Add(&painted_layer_);
 
   SetStateToHidden();
 }
 
-FloodFillInkDropAnimation::~FloodFillInkDropAnimation() {
+FloodFillInkDropRipple::~FloodFillInkDropRipple() {
   // Explicitly aborting all the animations ensures all callbacks are invoked
   // while this instance still exists.
   AbortAllAnimations();
 }
 
-void FloodFillInkDropAnimation::SnapToActivated() {
-  InkDropAnimation::SnapToActivated();
+void FloodFillInkDropRipple::SnapToActivated() {
+  InkDropRipple::SnapToActivated();
   SetOpacity(kVisibleOpacity);
   painted_layer_.SetTransform(GetMaxSizeTargetTransform());
 }
 
-ui::Layer* FloodFillInkDropAnimation::GetRootLayer() {
+ui::Layer* FloodFillInkDropRipple::GetRootLayer() {
   return &root_layer_;
 }
 
-bool FloodFillInkDropAnimation::IsVisible() const {
+bool FloodFillInkDropRipple::IsVisible() const {
   return root_layer_.visible();
 }
 
-void FloodFillInkDropAnimation::AnimateStateChange(
+void FloodFillInkDropRipple::AnimateStateChange(
     InkDropState old_ink_drop_state,
     InkDropState new_ink_drop_state,
     ui::LayerAnimationObserver* animation_observer) {
@@ -245,18 +244,18 @@ void FloodFillInkDropAnimation::AnimateStateChange(
   }
 }
 
-void FloodFillInkDropAnimation::SetStateToHidden() {
+void FloodFillInkDropRipple::SetStateToHidden() {
   painted_layer_.SetTransform(CalculateTransform(kMinRadius));
-  root_layer_.SetOpacity(InkDropAnimation::kHiddenOpacity);
+  root_layer_.SetOpacity(InkDropRipple::kHiddenOpacity);
   root_layer_.SetVisible(false);
 }
 
-void FloodFillInkDropAnimation::AbortAllAnimations() {
+void FloodFillInkDropRipple::AbortAllAnimations() {
   root_layer_.GetAnimator()->AbortAllAnimations();
   painted_layer_.GetAnimator()->AbortAllAnimations();
 }
 
-void FloodFillInkDropAnimation::AnimateToTransform(
+void FloodFillInkDropRipple::AnimateToTransform(
     const gfx::Transform& transform,
     base::TimeDelta duration,
     ui::LayerAnimator::PreemptionStrategy preemption_strategy,
@@ -277,11 +276,11 @@ void FloodFillInkDropAnimation::AnimateToTransform(
   animator->StartAnimation(sequence);
 }
 
-void FloodFillInkDropAnimation::SetOpacity(float opacity) {
+void FloodFillInkDropRipple::SetOpacity(float opacity) {
   root_layer_.SetOpacity(opacity);
 }
 
-void FloodFillInkDropAnimation::AnimateToOpacity(
+void FloodFillInkDropRipple::AnimateToOpacity(
     float opacity,
     base::TimeDelta duration,
     ui::LayerAnimator::PreemptionStrategy preemption_strategy,
@@ -302,7 +301,7 @@ void FloodFillInkDropAnimation::AnimateToOpacity(
   animator->StartAnimation(animation_sequence);
 }
 
-gfx::Transform FloodFillInkDropAnimation::CalculateTransform(
+gfx::Transform FloodFillInkDropRipple::CalculateTransform(
     float target_radius) const {
   const float target_scale = target_radius / circle_layer_delegate_.radius();
   const gfx::Point drawn_center_point =
@@ -317,7 +316,7 @@ gfx::Transform FloodFillInkDropAnimation::CalculateTransform(
   return transform;
 }
 
-gfx::Transform FloodFillInkDropAnimation::GetMaxSizeTargetTransform() const {
+gfx::Transform FloodFillInkDropRipple::GetMaxSizeTargetTransform() const {
   // TODO(estade): get rid of this 2, but make the fade out start before the
   // active/action transform is done.
   return CalculateTransform(

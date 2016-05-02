@@ -96,7 +96,7 @@
 #include "ui/gfx/vector_icons_public.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/animation/button_ink_drop_delegate.h"
-#include "ui/views/animation/flood_fill_ink_drop_animation.h"
+#include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_hover.h"
 #include "ui/views/button_drag_utils.h"
 #include "ui/views/controls/button/label_button.h"
@@ -238,9 +238,8 @@ class BookmarkButtonBase : public views::LabelButton {
            event_utils::IsPossibleDispositionEvent(e);
   }
 
-  std::unique_ptr<views::InkDropAnimation> CreateInkDropAnimation()
-      const override {
-    return base::WrapUnique(new views::FloodFillInkDropAnimation(
+  std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override {
+    return base::WrapUnique(new views::FloodFillInkDropRipple(
         CalculateInkDropBounds(size()), GetInkDropCenter(),
         GetInkDropBaseColor()));
   }
@@ -340,9 +339,8 @@ class BookmarkMenuButtonBase : public views::MenuButton {
     set_ink_drop_delegate(&ink_drop_delegate_);
   }
 
-  std::unique_ptr<views::InkDropAnimation> CreateInkDropAnimation()
-      const override {
-    return base::WrapUnique(new views::FloodFillInkDropAnimation(
+  std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override {
+    return base::WrapUnique(new views::FloodFillInkDropRipple(
         CalculateInkDropBounds(size()), GetInkDropCenter(),
         GetInkDropBaseColor()));
   }

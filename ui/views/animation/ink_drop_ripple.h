@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_ANIMATION_INK_DROP_ANIMATION_H_
-#define UI_VIEWS_ANIMATION_INK_DROP_ANIMATION_H_
+#ifndef UI_VIEWS_ANIMATION_INK_DROP_RIPPLE_H_
+#define UI_VIEWS_ANIMATION_INK_DROP_RIPPLE_H_
 
 #include "base/macros.h"
 #include "ui/gfx/geometry/point.h"
-#include "ui/views/animation/ink_drop_animation_observer.h"
+#include "ui/views/animation/ink_drop_ripple_observer.h"
 #include "ui/views/animation/ink_drop_state.h"
 #include "ui/views/views_export.h"
 
@@ -20,15 +20,15 @@ class LayerAnimationObserver;
 namespace views {
 
 namespace test {
-class InkDropAnimationTestApi;
+class InkDropRippleTestApi;
 }  // namespace test
 
 // Simple base class for animations that provide visual feedback for View state.
-// Manages the attached InkDropAnimationObservers.
+// Manages the attached InkDropRippleObservers.
 //
 // TODO(bruthig): Document the ink drop ripple on chromium.org and add a link to
 // the doc here.
-class VIEWS_EXPORT InkDropAnimation {
+class VIEWS_EXPORT InkDropRipple {
  public:
   // TODO(bruthig): Remove UseFastAnimations() and kSlowAnimationDurationFactor.
   // See http://crbug.com/584681
@@ -47,16 +47,14 @@ class VIEWS_EXPORT InkDropAnimation {
   // The opacity of the ink drop when it is visible.
   static const float kVisibleOpacity;
 
-  InkDropAnimation();
-  virtual ~InkDropAnimation();
+  InkDropRipple();
+  virtual ~InkDropRipple();
 
   // In the event that an animation is in progress for ink drop state 's1' and
   // an animation to a new state 's2' is triggered, then
   // AnimationEnded(s1, PRE_EMPTED) will be called before
   // AnimationStarted(s2).
-  void set_observer(InkDropAnimationObserver* observer) {
-    observer_ = observer;
-  }
+  void set_observer(InkDropRippleObserver* observer) { observer_ = observer; }
 
   // Animates from the current InkDropState to the new |ink_drop_state|.
   //
@@ -68,8 +66,8 @@ class VIEWS_EXPORT InkDropAnimation {
 
   // Immediately aborts all in-progress animations and hides the ink drop.
   //
-  // NOTE: This will NOT raise InkDropAnimation(Started|Ended) events for the
-  // state transition to HIDDEN!
+  // NOTE: This will NOT raise Animation(Started|Ended) events for the state
+  // transition to HIDDEN!
   void HideImmediately();
 
   // Immediately snaps the ink drop to the ACTIVATED target state. All pending
@@ -88,7 +86,7 @@ class VIEWS_EXPORT InkDropAnimation {
   // Returns a test api to access internals of this. Default implmentations
   // should return nullptr and test specific subclasses can override to return
   // an instance.
-  virtual test::InkDropAnimationTestApi* GetTestApi();
+  virtual test::InkDropRippleTestApi* GetTestApi();
 
  protected:
   // Animates the ripple from the |old_ink_drop_state| to the
@@ -121,11 +119,11 @@ class VIEWS_EXPORT InkDropAnimation {
   // The target InkDropState.
   InkDropState target_ink_drop_state_;
 
-  InkDropAnimationObserver* observer_;
+  InkDropRippleObserver* observer_;
 
-  DISALLOW_COPY_AND_ASSIGN(InkDropAnimation);
+  DISALLOW_COPY_AND_ASSIGN(InkDropRipple);
 };
 
 }  // namespace views
 
-#endif  // UI_VIEWS_ANIMATION_INK_DROP_ANIMATION_H_
+#endif  // UI_VIEWS_ANIMATION_INK_DROP_RIPPLE_H_

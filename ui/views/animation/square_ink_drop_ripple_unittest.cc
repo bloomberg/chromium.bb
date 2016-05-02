@@ -2,10 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_ANIMATION_INK_DROP_ANIMATION_UNITTEST_H_
-#define UI_VIEWS_ANIMATION_INK_DROP_ANIMATION_UNITTEST_H_
-
-#include "ui/views/animation/square_ink_drop_animation.h"
+#include "ui/views/animation/square_ink_drop_ripple.h"
 
 #include <memory>
 
@@ -14,17 +11,17 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/size_f.h"
-#include "ui/views/animation/ink_drop_animation_observer.h"
+#include "ui/views/animation/ink_drop_ripple_observer.h"
 #include "ui/views/animation/ink_drop_state.h"
-#include "ui/views/animation/test/square_ink_drop_animation_test_api.h"
-#include "ui/views/animation/test/test_ink_drop_animation_observer.h"
+#include "ui/views/animation/test/square_ink_drop_ripple_test_api.h"
+#include "ui/views/animation/test/test_ink_drop_ripple_observer.h"
 
 namespace views {
 namespace test {
 
 namespace {
 
-using PaintedShape = views::test::SquareInkDropAnimationTestApi::PaintedShape;
+using PaintedShape = views::test::SquareInkDropRippleTestApi::PaintedShape;
 
 // Transforms a copy of |point| with |transform| and returns it.
 gfx::Point TransformPoint(const gfx::Transform& transform,
@@ -34,10 +31,10 @@ gfx::Point TransformPoint(const gfx::Transform& transform,
   return transformed_point;
 }
 
-class SquareInkDropAnimationCalculateTransformsTest : public testing::Test {
+class SquareInkDropRippleCalculateTransformsTest : public testing::Test {
  public:
-  SquareInkDropAnimationCalculateTransformsTest();
-  ~SquareInkDropAnimationCalculateTransformsTest() override;
+  SquareInkDropRippleCalculateTransformsTest();
+  ~SquareInkDropRippleCalculateTransformsTest() override;
 
  protected:
   // Half the width/height of the drawn ink drop.
@@ -63,66 +60,63 @@ class SquareInkDropAnimationCalculateTransformsTest : public testing::Test {
   static const gfx::Point kDrawnBottomMidPoint;
 
   // The test target.
-  SquareInkDropAnimation ink_drop_animation_;
+  SquareInkDropRipple ink_drop_ripple_;
 
   // Provides internal access to the test target.
-  SquareInkDropAnimationTestApi test_api_;
+  SquareInkDropRippleTestApi test_api_;
 
   // The gfx::Transforms collection that is populated via the
   // Calculate*Transforms() calls.
-  SquareInkDropAnimationTestApi::InkDropTransforms transforms_;
+  SquareInkDropRippleTestApi::InkDropTransforms transforms_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(SquareInkDropAnimationCalculateTransformsTest);
+  DISALLOW_COPY_AND_ASSIGN(SquareInkDropRippleCalculateTransformsTest);
 };
 
-const int SquareInkDropAnimationCalculateTransformsTest::kHalfDrawnSize = 5;
-const int SquareInkDropAnimationCalculateTransformsTest::kDrawnSize =
+const int SquareInkDropRippleCalculateTransformsTest::kHalfDrawnSize = 5;
+const int SquareInkDropRippleCalculateTransformsTest::kDrawnSize =
     2 * kHalfDrawnSize;
 
-const int SquareInkDropAnimationCalculateTransformsTest::kTransformedRadius =
-    10;
-const int SquareInkDropAnimationCalculateTransformsTest::kHalfTransformedSize =
+const int SquareInkDropRippleCalculateTransformsTest::kTransformedRadius = 10;
+const int SquareInkDropRippleCalculateTransformsTest::kHalfTransformedSize =
     100;
-const int SquareInkDropAnimationCalculateTransformsTest::kTransformedSize =
+const int SquareInkDropRippleCalculateTransformsTest::kTransformedSize =
     2 * kHalfTransformedSize;
 
-const gfx::Point
-    SquareInkDropAnimationCalculateTransformsTest::kDrawnCenterPoint =
-        gfx::Point(kHalfDrawnSize, kHalfDrawnSize);
+const gfx::Point SquareInkDropRippleCalculateTransformsTest::kDrawnCenterPoint =
+    gfx::Point(kHalfDrawnSize, kHalfDrawnSize);
 
 const gfx::Point
-    SquareInkDropAnimationCalculateTransformsTest::kDrawnMidLeftPoint =
+    SquareInkDropRippleCalculateTransformsTest::kDrawnMidLeftPoint =
         gfx::Point(0, kHalfDrawnSize);
 
 const gfx::Point
-    SquareInkDropAnimationCalculateTransformsTest::kDrawnMidRightPoint =
+    SquareInkDropRippleCalculateTransformsTest::kDrawnMidRightPoint =
         gfx::Point(kDrawnSize, kHalfDrawnSize);
 
-const gfx::Point
-    SquareInkDropAnimationCalculateTransformsTest::kDrawnTopMidPoint =
-        gfx::Point(kHalfDrawnSize, 0);
+const gfx::Point SquareInkDropRippleCalculateTransformsTest::kDrawnTopMidPoint =
+    gfx::Point(kHalfDrawnSize, 0);
 
 const gfx::Point
-    SquareInkDropAnimationCalculateTransformsTest::kDrawnBottomMidPoint =
+    SquareInkDropRippleCalculateTransformsTest::kDrawnBottomMidPoint =
         gfx::Point(kHalfDrawnSize, kDrawnSize);
 
-SquareInkDropAnimationCalculateTransformsTest::
-    SquareInkDropAnimationCalculateTransformsTest()
-    : ink_drop_animation_(gfx::Size(kDrawnSize, kDrawnSize),
-                          2,
-                          gfx::Size(kHalfDrawnSize, kHalfDrawnSize),
-                          1,
-                          gfx::Point(),
-                          SK_ColorBLACK),
-      test_api_(&ink_drop_animation_) {}
+SquareInkDropRippleCalculateTransformsTest::
+    SquareInkDropRippleCalculateTransformsTest()
+    : ink_drop_ripple_(gfx::Size(kDrawnSize, kDrawnSize),
+                       2,
+                       gfx::Size(kHalfDrawnSize, kHalfDrawnSize),
+                       1,
+                       gfx::Point(),
+                       SK_ColorBLACK),
+      test_api_(&ink_drop_ripple_) {}
 
-SquareInkDropAnimationCalculateTransformsTest::
-    ~SquareInkDropAnimationCalculateTransformsTest() {}
+SquareInkDropRippleCalculateTransformsTest::
+    ~SquareInkDropRippleCalculateTransformsTest() {}
 
 }  // namespace
 
-TEST_F(SquareInkDropAnimationCalculateTransformsTest,
+TEST_F(SquareInkDropRippleCalculateTransformsTest,
        TransformedPointsUsingTransformsFromCalculateCircleTransforms) {
   test_api_.CalculateCircleTransforms(
       gfx::Size(kTransformedSize, kTransformedSize), &transforms_);
@@ -180,7 +174,7 @@ TEST_F(SquareInkDropAnimationCalculateTransformsTest,
   }
 }
 
-TEST_F(SquareInkDropAnimationCalculateTransformsTest,
+TEST_F(SquareInkDropRippleCalculateTransformsTest,
        TransformedPointsUsingTransformsFromCalculateRectTransforms) {
   test_api_.CalculateRectTransforms(
       gfx::Size(kTransformedSize, kTransformedSize), kTransformedRadius,
@@ -245,5 +239,3 @@ TEST_F(SquareInkDropAnimationCalculateTransformsTest,
 
 }  // namespace test
 }  // namespace views
-
-#endif  // UI_VIEWS_ANIMATION_INK_DROP_ANIMATION_UNITTEST_H_

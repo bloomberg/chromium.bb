@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/animation/square_ink_drop_animation.h"
+#include "ui/views/animation/square_ink_drop_ripple.h"
 
 #include <algorithm>
 
@@ -127,9 +127,9 @@ int kAnimationDurationInMs[] = {
 // Returns the InkDropState sub animation duration for the given |state|.
 base::TimeDelta GetAnimationDuration(InkDropSubAnimations state) {
   return base::TimeDelta::FromMilliseconds(
-      (views::InkDropAnimation::UseFastAnimations()
+      (views::InkDropRipple::UseFastAnimations()
            ? 1
-           : views::InkDropAnimation::kSlowAnimationDurationFactor) *
+           : views::InkDropRipple::kSlowAnimationDurationFactor) *
       kAnimationDurationInMs[state]);
 }
 
@@ -163,12 +163,12 @@ gfx::Transform CalculateRectTransform(const gfx::Point& drawn_center_point,
 
 namespace views {
 
-SquareInkDropAnimation::SquareInkDropAnimation(const gfx::Size& large_size,
-                                               int large_corner_radius,
-                                               const gfx::Size& small_size,
-                                               int small_corner_radius,
-                                               const gfx::Point& center_point,
-                                               SkColor color)
+SquareInkDropRipple::SquareInkDropRipple(const gfx::Size& large_size,
+                                         int large_corner_radius,
+                                         const gfx::Size& small_size,
+                                         int small_corner_radius,
+                                         const gfx::Point& center_point,
+                                         SkColor color)
     : large_size_(large_size),
       large_corner_radius_(large_corner_radius),
       small_size_(small_size),
@@ -178,7 +178,7 @@ SquareInkDropAnimation::SquareInkDropAnimation(const gfx::Size& large_size,
           std::min(large_size_.width(), large_size_.height()) / 2)),
       rect_layer_delegate_(new RectangleLayerDelegate(color, large_size_)),
       root_layer_(ui::LAYER_NOT_DRAWN) {
-  root_layer_.set_name("SquareInkDropAnimation:ROOT_LAYER");
+  root_layer_.set_name("SquareInkDropRipple:ROOT_LAYER");
 
   for (int i = 0; i < PAINTED_SHAPE_COUNT; ++i)
     AddPaintLayer(static_cast<PaintedShape>(i));
@@ -193,33 +193,33 @@ SquareInkDropAnimation::SquareInkDropAnimation(const gfx::Size& large_size,
   SetStateToHidden();
 }
 
-SquareInkDropAnimation::~SquareInkDropAnimation() {
+SquareInkDropRipple::~SquareInkDropRipple() {
   // Explicitly aborting all the animations ensures all callbacks are invoked
   // while this instance still exists.
   AbortAllAnimations();
 }
 
-void SquareInkDropAnimation::SnapToActivated() {
-  InkDropAnimation::SnapToActivated();
+void SquareInkDropRipple::SnapToActivated() {
+  InkDropRipple::SnapToActivated();
   SetOpacity(kVisibleOpacity);
   InkDropTransforms transforms;
   GetActivatedTargetTransforms(&transforms);
   SetTransforms(transforms);
 }
 
-ui::Layer* SquareInkDropAnimation::GetRootLayer() {
+ui::Layer* SquareInkDropRipple::GetRootLayer() {
   return &root_layer_;
 }
 
-bool SquareInkDropAnimation::IsVisible() const {
+bool SquareInkDropRipple::IsVisible() const {
   return root_layer_.visible();
 }
 
-float SquareInkDropAnimation::GetCurrentOpacity() const {
+float SquareInkDropRipple::GetCurrentOpacity() const {
   return root_layer_.opacity();
 }
 
-std::string SquareInkDropAnimation::ToLayerName(PaintedShape painted_shape) {
+std::string SquareInkDropRipple::ToLayerName(PaintedShape painted_shape) {
   switch (painted_shape) {
     case TOP_LEFT_CIRCLE:
       return "TOP_LEFT_CIRCLE";
@@ -240,7 +240,7 @@ std::string SquareInkDropAnimation::ToLayerName(PaintedShape painted_shape) {
   return "UNKNOWN";
 }
 
-void SquareInkDropAnimation::AnimateStateChange(
+void SquareInkDropRipple::AnimateStateChange(
     InkDropState old_ink_drop_state,
     InkDropState new_ink_drop_state,
     ui::LayerAnimationObserver* animation_observer) {
@@ -379,22 +379,22 @@ void SquareInkDropAnimation::AnimateStateChange(
   }
 }
 
-void SquareInkDropAnimation::SetStateToHidden() {
+void SquareInkDropRipple::SetStateToHidden() {
   InkDropTransforms transforms;
   // Use non-zero size to avoid visual anomalies.
   CalculateCircleTransforms(gfx::Size(1, 1), &transforms);
   SetTransforms(transforms);
-  root_layer_.SetOpacity(InkDropAnimation::kHiddenOpacity);
+  root_layer_.SetOpacity(InkDropRipple::kHiddenOpacity);
   root_layer_.SetVisible(false);
 }
 
-void SquareInkDropAnimation::AbortAllAnimations() {
+void SquareInkDropRipple::AbortAllAnimations() {
   root_layer_.GetAnimator()->AbortAllAnimations();
   for (int i = 0; i < PAINTED_SHAPE_COUNT; ++i)
     painted_layers_[i]->GetAnimator()->AbortAllAnimations();
 }
 
-void SquareInkDropAnimation::AnimateToTransforms(
+void SquareInkDropRipple::AnimateToTransforms(
     const InkDropTransforms transforms,
     base::TimeDelta duration,
     ui::LayerAnimator::PreemptionStrategy preemption_strategy,
@@ -418,16 +418,16 @@ void SquareInkDropAnimation::AnimateToTransforms(
   }
 }
 
-void SquareInkDropAnimation::SetTransforms(const InkDropTransforms transforms) {
+void SquareInkDropRipple::SetTransforms(const InkDropTransforms transforms) {
   for (int i = 0; i < PAINTED_SHAPE_COUNT; ++i)
     painted_layers_[i]->SetTransform(transforms[i]);
 }
 
-void SquareInkDropAnimation::SetOpacity(float opacity) {
+void SquareInkDropRipple::SetOpacity(float opacity) {
   root_layer_.SetOpacity(opacity);
 }
 
-void SquareInkDropAnimation::AnimateToOpacity(
+void SquareInkDropRipple::AnimateToOpacity(
     float opacity,
     base::TimeDelta duration,
     ui::LayerAnimator::PreemptionStrategy preemption_strategy,
@@ -448,14 +448,14 @@ void SquareInkDropAnimation::AnimateToOpacity(
   animator->StartAnimation(animation_sequence);
 }
 
-void SquareInkDropAnimation::CalculateCircleTransforms(
+void SquareInkDropRipple::CalculateCircleTransforms(
     const gfx::Size& size,
     InkDropTransforms* transforms_out) const {
   CalculateRectTransforms(size, std::min(size.width(), size.height()) / 2.0f,
                           transforms_out);
 }
 
-void SquareInkDropAnimation::CalculateRectTransforms(
+void SquareInkDropRipple::CalculateRectTransforms(
     const gfx::Size& size,
     float corner_radius,
     InkDropTransforms* transforms_out) const {
@@ -509,18 +509,18 @@ void SquareInkDropAnimation::CalculateRectTransforms(
       std::max(kMinimumRectScale, size.height() / rect_delegate_height));
 }
 
-void SquareInkDropAnimation::GetCurrentTransforms(
+void SquareInkDropRipple::GetCurrentTransforms(
     InkDropTransforms* transforms_out) const {
   for (int i = 0; i < PAINTED_SHAPE_COUNT; ++i)
     (*transforms_out)[i] = painted_layers_[i]->transform();
 }
 
-void SquareInkDropAnimation::GetActivatedTargetTransforms(
+void SquareInkDropRipple::GetActivatedTargetTransforms(
     InkDropTransforms* transforms_out) const {
   CalculateRectTransforms(small_size_, small_corner_radius_, transforms_out);
 }
 
-void SquareInkDropAnimation::AddPaintLayer(PaintedShape painted_shape) {
+void SquareInkDropRipple::AddPaintLayer(PaintedShape painted_shape) {
   ui::LayerDelegate* delegate = nullptr;
   switch (painted_shape) {
     case TOP_LEFT_CIRCLE:

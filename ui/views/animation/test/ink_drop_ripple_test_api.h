@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_ANIMATION_TEST_INK_DROP_ANIMATION_TEST_API_H_
-#define UI_VIEWS_ANIMATION_TEST_INK_DROP_ANIMATION_TEST_API_H_
+#ifndef UI_VIEWS_ANIMATION_TEST_INK_DROP_RIPPLE_TEST_API_H_
+#define UI_VIEWS_ANIMATION_TEST_INK_DROP_RIPPLE_TEST_API_H_
 
 #include <vector>
 
@@ -16,19 +16,19 @@ class LayerAnimator;
 }  // namespace ui
 
 namespace views {
-class InkDropAnimation;
+class InkDropRipple;
 
 namespace test {
 
-// Test API to provide internal access to an InkDropAnimation instance. This can
+// Test API to provide internal access to an InkDropRipple instance. This can
 // also be used to control the animations via the
 // ui::test::MultiLayerAnimatorTestController API.
-class InkDropAnimationTestApi
+class InkDropRippleTestApi
     : public ui::test::MultiLayerAnimatorTestController,
       public ui::test::MultiLayerAnimatorTestControllerDelegate {
  public:
-  explicit InkDropAnimationTestApi(InkDropAnimation* ink_drop_animation);
-  ~InkDropAnimationTestApi() override;
+  explicit InkDropRippleTestApi(InkDropRipple* ink_drop_ripple);
+  ~InkDropRippleTestApi() override;
 
   // Gets the opacity of the ink drop.
   virtual float GetCurrentOpacity() const = 0;
@@ -37,21 +37,20 @@ class InkDropAnimationTestApi
   std::vector<ui::LayerAnimator*> GetLayerAnimators() override;
 
  protected:
-  InkDropAnimation* ink_drop_animation() {
-    return static_cast<const InkDropAnimationTestApi*>(this)
-        ->ink_drop_animation();
+  InkDropRipple* ink_drop_ripple() {
+    return static_cast<const InkDropRippleTestApi*>(this)->ink_drop_ripple();
   }
 
-  InkDropAnimation* ink_drop_animation() const { return ink_drop_animation_; }
+  InkDropRipple* ink_drop_ripple() const { return ink_drop_ripple_; }
 
  private:
-  // The InkDropedAnimation to provide internal access to.
-  InkDropAnimation* ink_drop_animation_;
+  // The InkDropedRipple to provide internal access to.
+  InkDropRipple* ink_drop_ripple_;
 
-  DISALLOW_COPY_AND_ASSIGN(InkDropAnimationTestApi);
+  DISALLOW_COPY_AND_ASSIGN(InkDropRippleTestApi);
 };
 
 }  // namespace test
 }  // namespace views
 
-#endif  // UI_VIEWS_ANIMATION_TEST_INK_DROP_ANIMATION_TEST_API_H_
+#endif  // UI_VIEWS_ANIMATION_TEST_INK_DROP_RIPPLE_TEST_API_H_

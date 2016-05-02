@@ -2,19 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/animation/test/ink_drop_animation_test_api.h"
+#include "ui/views/animation/test/ink_drop_ripple_test_api.h"
 
 namespace views {
 namespace test {
 
-InkDropAnimationTestApi::InkDropAnimationTestApi(
-    InkDropAnimation* ink_drop_animation)
+InkDropRippleTestApi::InkDropRippleTestApi(InkDropRipple* ink_drop_ripple)
     : ui::test::MultiLayerAnimatorTestController(this),
-      ink_drop_animation_(ink_drop_animation) {}
+      ink_drop_ripple_(ink_drop_ripple) {}
 
-InkDropAnimationTestApi::~InkDropAnimationTestApi() {}
+InkDropRippleTestApi::~InkDropRippleTestApi() {}
 
-std::vector<ui::LayerAnimator*> InkDropAnimationTestApi::GetLayerAnimators() {
+std::vector<ui::LayerAnimator*> InkDropRippleTestApi::GetLayerAnimators() {
   return std::vector<ui::LayerAnimator*>();
 }
 
