@@ -148,7 +148,40 @@ class TryserverApi(recipe_api.RecipeApi):
       # Since this method is "maybe", we don't raise an Exception.
       pass
 
-  def get_files_affected_by_patch(self):
+  def get_files_affected_by_patch(self, patch_root=None):
+    """Returns list of paths to files affected by the patch.
+
+    Argument:
+      patch_root: path relative to api.path['root'], usually obtained from
+        api.gclient.calculate_patch_root(patch_project)
+
+    Returned paths will be relative to to patch_root.
+
+    TODO(tandrii): remove this doc.
+    Unless you use patch_root=None, in which case old behavior is used
+    which returns paths relative to checkout aka solution[0].name.
+    """
+    # patch_root must be set! None is for backwards compataibility and will be
+    # removed.
+    if patch_root is None:
+      return self._old_get_files_affected_by_patch()
+    step_result = self.m.git('diff', '--cached', '--name-only',
+                             cwd=self.m.path['slave_build'].join(patch_root),
+                             name='git diff to analyze patch',
+                             stdout=self.m.raw_io.output(),
+                             step_test_data=lambda:
+                               self.m.raw_io.test_api.stream_output('foo.cc'))
+    paths = [self.m.path.join(patch_root, p) for p in
+             step_result.stdout.split()]
+    if self.m.platform.is_win:
+      # Looks like "analyze" wants POSIX slashes even on Windows (since git
+      # uses that format even on Windows).
+      paths = [path.replace('\\', '/') for path in paths]
+    step_result.presentation.logs['files'] = paths
+    return paths
+
+
+  def _old_get_files_affected_by_patch(self):
     git_diff_kwargs = {}
     issue_root = self.m.rietveld.calculate_issue_root()
     if issue_root:

@@ -14,7 +14,8 @@ DEPS = [
 def RunSteps(api):
   api.path['checkout'] = api.path['slave_build']
   api.tryserver.maybe_apply_issue()
-  api.tryserver.get_files_affected_by_patch()
+  api.tryserver.get_files_affected_by_patch(
+      api.properties.get('test_patch_root'))
 
   if api.tryserver.is_tryserver:
     api.tryserver.set_subproject_tag('v8')
@@ -43,3 +44,10 @@ def GenTests(api):
          api.properties.tryserver())
 
   yield (api.test('with_wrong_patch') + api.platform('win', 32))
+
+
+  yield (api.test('with_rietveld_patch_new') +
+         api.properties.tryserver(test_patch_root='sub/project'))
+
+  yield (api.test('with_wrong_patch_new') + api.platform('win', 32) +
+         api.properties(test_patch_root='sub\\project'))
