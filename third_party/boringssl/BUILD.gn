@@ -134,6 +134,7 @@ if (build_with_chromium) {
     ]
     deps = [
       ":boringssl",
+      "//build/win:default_exe_manifest",
     ]
   }
 
