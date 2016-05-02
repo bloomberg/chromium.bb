@@ -24,8 +24,10 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node_data.h"
 #import "components/bookmarks/managed/managed_bookmark_service.h"
+#include "grit/ui_resources.h"
 #include "ui/base/clipboard/clipboard_util_mac.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 
 using bookmarks::BookmarkModel;
@@ -317,6 +319,13 @@ NSRect GetFirstButtonFrameForHeight(CGFloat height) {
   NSRect scrollViewFrame = [scrollView_ frame];
   padding_ = NSWidth(windowFrame) - NSWidth(scrollViewFrame);
   verticalScrollArrowHeight_ = NSHeight([scrollUpArrowView_ frame]);
+
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  NSImage* image = rb.GetNativeImageNamed(IDR_MENU_OVERFLOW_DOWN).ToNSImage();
+  [[scrollUpArrowView_.subviews objectAtIndex:0] setImage:image];
+
+  image = rb.GetNativeImageNamed(IDR_MENU_OVERFLOW_UP).ToNSImage();
+  [[scrollDownArrowView_.subviews objectAtIndex:0] setImage:image];
 }
 
 // Overriden from NSWindowController to call childFolderWillShow: before showing

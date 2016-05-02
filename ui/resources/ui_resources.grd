@@ -123,6 +123,8 @@
       <structure type="chrome_scaled_image" name="IDR_FOLDER_CLOSED_RTL" file="common/folder_closed_rtl.png" />
       <if expr="is_macosx">
         <structure type="chrome_scaled_image" name="IDR_MENU_CHECK_CHECKED" file="legacy/menu_check.png" />
+        <structure type="chrome_scaled_image" name="IDR_MENU_OVERFLOW_UP" file="common/menu_overflow_up.png" />
+        <structure type="chrome_scaled_image" name="IDR_MENU_OVERFLOW_DOWN" file="common/menu_overflow_down.png" />
       </if>
       <if expr="is_macosx or is_ios">
         <structure type="chrome_scaled_image" name="IDR_MENU_HIERARCHY_ARROW" file="mac/menu_hierarchy_arrow.png" />

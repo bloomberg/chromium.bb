@@ -39,7 +39,7 @@
                                     <imageView id="106">
                                         <rect key="frame" x="215" y="1" width="48" height="20"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                        <imageCell key="cell" refusesFirstResponder="YES" alignment="left" image="menu_overflow_up" id="107"/>
+                                        <imageCell key="cell" refusesFirstResponder="YES" alignment="left" id="107"/>
                                     </imageView>
                                 </subviews>
                             </customView>
@@ -50,7 +50,7 @@
                                     <imageView id="103">
                                         <rect key="frame" x="215" y="1" width="48" height="20"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                        <imageCell key="cell" refusesFirstResponder="YES" alignment="left" image="menu_overflow_down" id="104"/>
+                                        <imageCell key="cell" refusesFirstResponder="YES" alignment="left" id="104"/>
                                     </imageView>
                                 </subviews>
                             </customView>
@@ -111,8 +111,4 @@
             </view>
         </window>
     </objects>
-    <resources>
-        <image name="menu_overflow_down" width="19" height="19"/>
-        <image name="menu_overflow_up" width="19" height="19"/>
-    </resources>
 </document>
