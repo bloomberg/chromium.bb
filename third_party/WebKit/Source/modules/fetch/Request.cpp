@@ -363,10 +363,14 @@ Request* Request::createRequestWithRequestOrString(ScriptState* scriptState, Req
     // "If |input| is a Request object and |input|'s request's body is
     // non-null, run these substeps:"
     if (inputRequest && inputRequest->bodyBuffer()) {
-        // "Set |input|'s body to an empty byte stream."
-        inputRequest->m_request->setBuffer(new BodyStreamBuffer(scriptState, createFetchDataConsumerHandleFromWebHandle(createDoneDataConsumerHandle())));
-        // "Set |input|'s disturbed flag."
-        inputRequest->bodyBuffer()->setDisturbed();
+        // "Let |dummyStream| be an empty ReadableStream object."
+        auto dummyStream = new BodyStreamBuffer(scriptState, createFetchDataConsumerHandleFromWebHandle(createDoneDataConsumerHandle()));
+        // "Set |input|'s request's body to a new body whose stream is
+        // |dummyStream|."
+        inputRequest->m_request->setBuffer(dummyStream);
+        // "Let |reader| be the result of getting reader from |dummyStream|."
+        // "Read all bytes from |dummyStream| with |reader|."
+        inputRequest->bodyBuffer()->closeAndLockAndDisturb();
     }
 
     // "Return |r|."

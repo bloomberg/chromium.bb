@@ -505,10 +505,6 @@
     return stream[readableStreamBits] & DISTURBED;
   }
 
-  function SetReadableStreamDisturbed(stream) {
-    return stream[readableStreamBits] |= DISTURBED;
-  }
-
   function IsReadableStreamLocked(stream) {
     return stream[readableStreamReader] !== undefined;
   }
@@ -818,7 +814,6 @@
   binding.AcquireReadableStreamReader = AcquireReadableStreamReader;
   binding.IsReadableStream = IsReadableStream;
   binding.IsReadableStreamDisturbed = IsReadableStreamDisturbed;
-  binding.SetReadableStreamDisturbed = SetReadableStreamDisturbed;
   binding.IsReadableStreamLocked = IsReadableStreamLocked;
   binding.IsReadableStreamReadable = IsReadableStreamReadable;
   binding.IsReadableStreamClosed = IsReadableStreamClosed;

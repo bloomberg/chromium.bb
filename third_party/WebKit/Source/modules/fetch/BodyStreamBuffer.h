@@ -66,7 +66,7 @@ public:
     bool isStreamErrored();
     bool isStreamLocked();
     bool isStreamDisturbed();
-    void setDisturbed();
+    void closeAndLockAndDisturb();
 
     DEFINE_INLINE_TRACE()
     {
@@ -79,7 +79,6 @@ public:
 private:
     class LoaderClient;
 
-    void lockAndDisturb();
     void close();
     void error();
     void processData();

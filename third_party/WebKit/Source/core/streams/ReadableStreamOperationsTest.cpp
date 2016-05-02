@@ -359,16 +359,6 @@ TEST_F(ReadableStreamOperationsTest, UnderlyingSourceShouldHavePendingActivityWh
     EXPECT_FALSE(underlyingSource->hasPendingActivity());
 }
 
-TEST_F(ReadableStreamOperationsTest, SetDisturbed)
-{
-    ScriptValue stream = evalWithPrintingError("new ReadableStream()");
-    ASSERT_FALSE(stream.isEmpty());
-
-    EXPECT_FALSE(ReadableStreamOperations::isDisturbed(getScriptState(), stream));
-    ReadableStreamOperations::setDisturbed(getScriptState(), stream);
-    EXPECT_TRUE(ReadableStreamOperations::isDisturbed(getScriptState(), stream));
-}
-
 TEST_F(ReadableStreamOperationsTest, IsReadable)
 {
     ScriptValue readable = evalWithPrintingError("new ReadableStream()");

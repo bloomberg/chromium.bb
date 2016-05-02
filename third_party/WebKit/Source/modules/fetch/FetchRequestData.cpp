@@ -84,7 +84,7 @@ FetchRequestData* FetchRequestData::pass(ScriptState* scriptState)
     if (m_buffer) {
         request->m_buffer = m_buffer;
         m_buffer = new BodyStreamBuffer(scriptState, createFetchDataConsumerHandleFromWebHandle(createDoneDataConsumerHandle()));
-        m_buffer->setDisturbed();
+        m_buffer->closeAndLockAndDisturb();
     }
     return request;
 }

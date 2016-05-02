@@ -65,14 +65,6 @@ bool ReadableStreamOperations::isDisturbed(ScriptState* scriptState, ScriptValue
     return V8ScriptRunner::callExtraOrCrash(scriptState, "IsReadableStreamDisturbed", args)->ToBoolean()->Value();
 }
 
-void ReadableStreamOperations::setDisturbed(ScriptState* scriptState, ScriptValue stream)
-{
-    ASSERT(isReadableStream(scriptState, stream));
-
-    v8::Local<v8::Value> args[] = { stream.v8Value() };
-    V8ScriptRunner::callExtraOrCrash(scriptState, "SetReadableStreamDisturbed", args);
-}
-
 bool ReadableStreamOperations::isLocked(ScriptState* scriptState, ScriptValue stream)
 {
     ASSERT(isReadableStream(scriptState, stream));

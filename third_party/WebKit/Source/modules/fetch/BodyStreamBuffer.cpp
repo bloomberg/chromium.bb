@@ -123,8 +123,7 @@ PassRefPtr<BlobDataHandle> BodyStreamBuffer::drainAsBlobDataHandle(FetchDataCons
 
     RefPtr<BlobDataHandle> blobDataHandle = m_reader->drainAsBlobDataHandle(policy);
     if (blobDataHandle) {
-        lockAndDisturb();
-        close();
+        closeAndLockAndDisturb();
         return blobDataHandle.release();
     }
     return nullptr;
@@ -139,8 +138,7 @@ PassRefPtr<EncodedFormData> BodyStreamBuffer::drainAsFormData()
 
     RefPtr<EncodedFormData> formData = m_reader->drainAsFormData();
     if (formData) {
-        lockAndDisturb();
-        close();
+        closeAndLockAndDisturb();
         return formData.release();
     }
     return nullptr;
@@ -150,16 +148,22 @@ PassOwnPtr<FetchDataConsumerHandle> BodyStreamBuffer::releaseHandle()
 {
     ASSERT(!isStreamLocked());
     ASSERT(!isStreamDisturbed());
-    lockAndDisturb();
+    // We need to call these before calling closeAndLockAndDisturb.
+    const bool isClosed = isStreamClosed();
+    const bool isErrored = isStreamErrored();
+    OwnPtr<FetchDataConsumerHandle> handle = m_handle.release();
 
-    if (isStreamClosed())
+    closeAndLockAndDisturb();
+
+    if (isClosed) {
+        // Note that the stream cannot be "draining", because it doesn't have
+        // the internal buffer.
         return createFetchDataConsumerHandleFromWebHandle(createDoneDataConsumerHandle());
-    if (isStreamErrored())
+    }
+    if (isErrored)
         return createFetchDataConsumerHandleFromWebHandle(createUnexpectedErrorDataConsumerHandle());
 
-    ASSERT(m_handle);
-    OwnPtr<FetchDataConsumerHandle> handle = m_handle.release();
-    close();
+    ASSERT(handle);
     return handle.release();
 }
 
@@ -291,23 +295,19 @@ bool BodyStreamBuffer::isStreamDisturbed()
     return m_stream->isDisturbed();
 }
 
-void BodyStreamBuffer::setDisturbed()
+void BodyStreamBuffer::closeAndLockAndDisturb()
 {
-    if (RuntimeEnabledFeatures::responseBodyWithV8ExtraStreamEnabled()) {
-        ScriptState::Scope scope(m_scriptState.get());
-        ReadableStreamOperations::setDisturbed(m_scriptState.get(), stream());
-    } else {
-        m_stream->setIsDisturbed();
+    if (isStreamReadable()) {
+        // Note that the stream cannot be "draining", because it doesn't have
+        // the internal buffer.
+        close();
     }
-}
 
-void BodyStreamBuffer::lockAndDisturb()
-{
     if (RuntimeEnabledFeatures::responseBodyWithV8ExtraStreamEnabled()) {
         ScriptState::Scope scope(m_scriptState.get());
         NonThrowableExceptionState exceptionState;
-        ReadableStreamOperations::getReader(m_scriptState.get(), stream(), exceptionState);
-        ReadableStreamOperations::setDisturbed(m_scriptState.get(), stream());
+        ScriptValue reader = ReadableStreamOperations::getReader(m_scriptState.get(), stream(), exceptionState);
+        ReadableStreamOperations::read(m_scriptState.get(), reader);
     } else {
         NonThrowableExceptionState exceptionState;
         m_stream->getBytesReader(m_scriptState->getExecutionContext(), exceptionState);
