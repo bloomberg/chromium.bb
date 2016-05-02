@@ -3751,8 +3751,10 @@ void HTMLMediaElement::rejectPlayPromises(ExceptionCode code, const String& mess
 
 void HTMLMediaElement::clearWeakMembers(Visitor* visitor)
 {
-    if (!ThreadHeap::isHeapObjectAlive(m_audioSourceNode))
+    if (!ThreadHeap::isHeapObjectAlive(m_audioSourceNode)) {
         getAudioSourceProvider().setClient(nullptr);
+        m_audioSourceNode = nullptr;
+    }
 }
 
 void HTMLMediaElement::AudioSourceProviderImpl::wrap(WebAudioSourceProvider* provider)
