@@ -19,7 +19,6 @@ namespace content {
 CONTENT_EXPORT extern const char kChromeDevToolsScheme[];
 CONTENT_EXPORT extern const char kChromeUIScheme[];  // Used for WebUIs.
 CONTENT_EXPORT extern const char kGuestScheme[];
-CONTENT_EXPORT extern const char kMetadataScheme[];
 CONTENT_EXPORT extern const char kSwappedOutScheme[];
 CONTENT_EXPORT extern const char kViewSourceScheme[];
 #if defined(OS_CHROMEOS)
