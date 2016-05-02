@@ -37,7 +37,7 @@ namespace blink {
 
 PNGImageEncoderState::~PNGImageEncoderState()
 {
-    png_destroy_write_struct(&m_png, &m_pngInfo);
+    png_destroy_write_struct(&m_png, &m_info);
 }
 
 static void writeOutput(png_structp png, png_bytep data, png_size_t size)
@@ -84,7 +84,7 @@ void PNGImageEncoder::writeOneRowToPng(unsigned char* pixels, PNGImageEncoderSta
 
 void PNGImageEncoder::finalizePng(PNGImageEncoderState* encoderState)
 {
-    png_write_end(encoderState->png(), encoderState->pngInfo());
+    png_write_end(encoderState->png(), encoderState->info());
 }
 
 static bool encodePixels(IntSize imageSize, const unsigned char* inputPixels, Vector<unsigned char>* output)

@@ -50,13 +50,12 @@ public:
     static PassOwnPtr<PNGImageEncoderState> create(const IntSize& imageSize, Vector<unsigned char>* output);
     ~PNGImageEncoderState();
     png_struct* png() { ASSERT(m_png); return m_png; }
-    png_info* pngInfo() { ASSERT(m_pngInfo); return m_pngInfo; }
+    png_info* info() { ASSERT(m_info); return m_info; }
 private:
-    PNGImageEncoderState(png_struct* png_ptr, png_info* png_info_ptr) : m_png(png_ptr), m_pngInfo(png_info_ptr) {}
+    PNGImageEncoderState(png_struct* png, png_info* info) : m_png(png), m_info(info) { }
     png_struct* m_png;
-    png_info* m_pngInfo;
+    png_info* m_info;
 };
-
 
 class PLATFORM_EXPORT PNGImageEncoder {
     STATIC_ONLY(PNGImageEncoder);
