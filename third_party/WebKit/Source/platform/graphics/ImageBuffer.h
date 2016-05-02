@@ -167,6 +167,7 @@ struct ImageDataBuffer {
     String PLATFORM_EXPORT toDataURL(const String& mimeType, const double& quality) const;
     bool PLATFORM_EXPORT encodeImage(const String& mimeType, const double& quality, Vector<unsigned char>* encodedImage) const;
     const unsigned char* pixels() const { return m_data; }
+    const IntSize& size() const { return m_size; }
     int height() const { return m_size.height(); }
     int width() const { return m_size.width(); }
 
