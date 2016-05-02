@@ -56,8 +56,6 @@
 
     'app/framework-Info.plist',
     '<@(mac_all_xibs)',
-    'app/theme/find_next_Template.pdf',
-    'app/theme/find_prev_Template.pdf',
     'browser/mac/install.sh',
     '<(SHARED_INTERMEDIATE_DIR)/repack/chrome_100_percent.pak',
     '<(SHARED_INTERMEDIATE_DIR)/repack/resources.pak',
@@ -84,6 +82,7 @@
     'chrome_resources.gyp:packed_resources',
   ],
   'rules': [
+    # TODO(rsesek): Delete this.
     {
       'rule_name': 'pdfsqueeze',
       'extension': 'pdf',

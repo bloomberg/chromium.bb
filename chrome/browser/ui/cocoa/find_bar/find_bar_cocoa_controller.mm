@@ -29,6 +29,10 @@
 #import "ui/base/cocoa/focus_tracker.h"
 #import "ui/base/cocoa/nsview_additions.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image_skia_util_mac.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icons_public.h"
 #include "ui/resources/grit/ui_resources.h"
 
 using content::NativeWebKeyboardEvent;
@@ -129,6 +133,16 @@ const float kRightEdgeOffset = 25;
   [closeButton_ setTitle:l10n_util::GetNSString(IDS_ACCNAME_CLOSE)];
   [previousButton_ setTitle:l10n_util::GetNSString(IDS_ACCNAME_PREVIOUS)];
   [nextButton_ setTitle:l10n_util::GetNSString(IDS_ACCNAME_NEXT)];
+
+  NSImage* image = NSImageFromImageSkia(
+      gfx::CreateVectorIcon(gfx::VectorIconId::FIND_NEXT, SK_ColorBLACK));
+  [image setTemplate:YES];
+  [nextButton_ setImage:image];
+
+  image = NSImageFromImageSkia(
+      gfx::CreateVectorIcon(gfx::VectorIconId::FIND_PREV, SK_ColorBLACK));
+  [image setTemplate:YES];
+  [previousButton_ setImage:image];
 
   [findBarView_ setFrame:[self hiddenFindBarFrame]];
   defaultWidth_ = NSWidth([findBarView_ frame]);

@@ -43,7 +43,7 @@ Gw
                         <button id="3">
                             <rect key="frame" x="251" y="5" width="26" height="24"/>
                             <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
-                            <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="find_next_Template" imagePosition="overlaps" alignment="center" borderStyle="border" tag="1" imageScaling="proportionallyDown" inset="2" id="12" customClass="GradientButtonCell">
+                            <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" imagePosition="overlaps" alignment="center" borderStyle="border" tag="1" imageScaling="proportionallyDown" inset="2" id="12" customClass="GradientButtonCell">
                                 <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                 <font key="font" metaFont="system"/>
                             </buttonCell>
@@ -54,7 +54,7 @@ Gw
                         <button id="4">
                             <rect key="frame" x="228" y="5" width="24" height="24"/>
                             <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
-                            <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="find_prev_Template" imagePosition="only" alignment="center" borderStyle="border" tag="2" imageScaling="proportionallyDown" inset="2" id="11" customClass="GradientButtonCell">
+                            <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" imagePosition="only" alignment="center" borderStyle="border" tag="2" imageScaling="proportionallyDown" inset="2" id="11" customClass="GradientButtonCell">
                                 <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                 <font key="font" metaFont="system"/>
                             </buttonCell>
@@ -79,8 +79,4 @@ Gw
             </subviews>
         </customView>
     </objects>
-    <resources>
-        <image name="find_next_Template" width="128" height="128"/>
-        <image name="find_prev_Template" width="128" height="128"/>
-    </resources>
 </document>
