@@ -70,16 +70,23 @@ RenderSurfaceImpl::DrawProperties::DrawProperties() {
 RenderSurfaceImpl::DrawProperties::~DrawProperties() {}
 
 gfx::RectF RenderSurfaceImpl::DrawableContentRect() const {
-  gfx::RectF drawable_content_rect =
-      MathUtil::MapClippedRect(draw_transform(), gfx::RectF(content_rect()));
-  if (owning_layer_->has_replica()) {
-    drawable_content_rect.Union(MathUtil::MapClippedRect(
-        replica_draw_transform(), gfx::RectF(content_rect())));
-  }
+  if (content_rect().IsEmpty())
+    return gfx::RectF();
+
+  gfx::Rect surface_content_rect = content_rect();
   if (!owning_layer_->filters().IsEmpty()) {
     int left, top, right, bottom;
     owning_layer_->filters().GetOutsets(&top, &right, &bottom, &left);
-    drawable_content_rect.Inset(-left, -top, -right, -bottom);
+    surface_content_rect.Inset(-left, -top, -right, -bottom);
+  }
+  gfx::RectF drawable_content_rect = MathUtil::MapClippedRect(
+      draw_transform(), gfx::RectF(surface_content_rect));
+  if (owning_layer_->has_replica()) {
+    drawable_content_rect.Union(MathUtil::MapClippedRect(
+        replica_draw_transform(), gfx::RectF(surface_content_rect)));
+  } else if (!owning_layer_->filters().IsEmpty() && is_clipped()) {
+    // Filter could move pixels around, but still need to be clipped.
+    drawable_content_rect.Intersect(gfx::RectF(clip_rect()));
   }
 
   // If the rect has a NaN coordinate, we return empty rect to avoid crashes in

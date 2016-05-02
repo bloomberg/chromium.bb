@@ -576,13 +576,14 @@ TEST_F(DamageTrackerTest, VerifyDamageForImageFilter) {
           root->render_surface()->damage_tracker()->current_damage_rect();
   child_damage_rect =
           child->render_surface()->damage_tracker()->current_damage_rect();
-  EXPECT_EQ(gfx::Rect(100, 100, 30, 30).ToString(),
-            root_damage_rect.ToString());
+  EXPECT_EQ(gfx::Rect(100 - outset_left, 100 - outset_top,
+                      30 + outset_left + outset_right,
+                      30 + outset_top + outset_bottom),
+            root_damage_rect);
   EXPECT_EQ(
       gfx::Rect(-outset_left, -outset_top, 30 + (outset_left + outset_right),
-                30 + (outset_top + outset_bottom))
-          .ToString(),
-      child_damage_rect.ToString());
+                30 + (outset_top + outset_bottom)),
+      child_damage_rect);
 
   // CASE 1: Setting the update rect should damage the whole surface (for now)
   ClearDamageForAllSurfaces(root);
@@ -598,12 +599,70 @@ TEST_F(DamageTrackerTest, VerifyDamageForImageFilter) {
   int expect_width = 1 + outset_left + outset_right;
   int expect_height = 1 + outset_top + outset_bottom;
   EXPECT_EQ(gfx::Rect(100 - outset_left, 100 - outset_top, expect_width,
-                      expect_height)
-                .ToString(),
-            root_damage_rect.ToString());
-  EXPECT_EQ(gfx::Rect(-outset_left, -outset_top, expect_width, expect_height)
-                .ToString(),
-            child_damage_rect.ToString());
+                      expect_height),
+            root_damage_rect);
+  EXPECT_EQ(gfx::Rect(-outset_left, -outset_top, expect_width, expect_height),
+            child_damage_rect);
+}
+
+TEST_F(DamageTrackerTest, VerifyDamageForTransformedImageFilter) {
+  LayerImpl* root = CreateAndSetUpTestTreeWithOneSurface();
+  LayerImpl* child = root->children()[0];
+  gfx::Rect root_damage_rect, child_damage_rect;
+
+  // Allow us to set damage on child too.
+  child->SetDrawsContent(true);
+
+  FilterOperations filters;
+  filters.Append(FilterOperation::CreateReferenceFilter(
+      SkBlurImageFilter::Make(2, 2, nullptr)));
+  int outset_top, outset_right, outset_bottom, outset_left;
+  filters.GetOutsets(&outset_top, &outset_right, &outset_bottom, &outset_left);
+
+  // Setting the filter will damage the whole surface.
+  gfx::Transform transform;
+  transform.RotateAboutYAxis(60);
+  ClearDamageForAllSurfaces(root);
+  child->test_properties()->force_render_surface = true;
+  child->SetTransform(transform);
+  root->layer_tree_impl()->property_trees()->needs_rebuild = true;
+  EmulateDrawingOneFrame(root);
+  child->OnFilterAnimated(filters);
+  EmulateDrawingOneFrame(root);
+  root_damage_rect =
+      root->render_surface()->damage_tracker()->current_damage_rect();
+  child_damage_rect =
+      child->render_surface()->damage_tracker()->current_damage_rect();
+  int rotated_outset_left = outset_left / 2;
+  int expected_rotated_width = (30 + outset_left + outset_right) / 2;
+  gfx::Rect expected_root_damage(100 - rotated_outset_left, 100 - outset_top,
+                                 expected_rotated_width,
+                                 30 + outset_top + outset_bottom);
+  expected_root_damage.Union(gfx::Rect(100, 100, 30, 30));
+  EXPECT_EQ(expected_root_damage, root_damage_rect);
+  EXPECT_EQ(
+      gfx::Rect(-outset_left, -outset_top, 30 + (outset_left + outset_right),
+                30 + (outset_top + outset_bottom)),
+      child_damage_rect);
+
+  // Setting the update rect should damage the whole surface (for now)
+  ClearDamageForAllSurfaces(root);
+  child->SetUpdateRect(gfx::Rect(30, 30));
+  root->layer_tree_impl()->property_trees()->needs_rebuild = true;
+  EmulateDrawingOneFrame(root);
+
+  root_damage_rect =
+      root->render_surface()->damage_tracker()->current_damage_rect();
+  child_damage_rect =
+      child->render_surface()->damage_tracker()->current_damage_rect();
+
+  int expect_width = 30 + outset_left + outset_right;
+  int expect_height = 30 + outset_top + outset_bottom;
+  EXPECT_EQ(gfx::Rect(100 - outset_left / 2, 100 - outset_top, expect_width / 2,
+                      expect_height),
+            root_damage_rect);
+  EXPECT_EQ(gfx::Rect(-outset_left, -outset_top, expect_width, expect_height),
+            child_damage_rect);
 }
 
 TEST_F(DamageTrackerTest, VerifyDamageForBackgroundBlurredChild) {

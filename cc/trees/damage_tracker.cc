@@ -335,32 +335,31 @@ void DamageTracker::ExtendDamageForRenderSurface(
       gfx::ToEnclosingRect(render_surface->DrawableContentRect());
   data.Update(surface_rect_in_target_space, mailboxId_);
 
-  gfx::Rect damage_rect_in_local_space;
   if (surface_is_new || render_surface->SurfacePropertyChanged()) {
     // The entire surface contributes damage.
-    damage_rect_in_local_space = render_surface->content_rect();
+    target_damage_rect->Union(surface_rect_in_target_space);
 
     // The surface's old region is now exposed on the target surface, too.
     target_damage_rect->Union(old_surface_rect);
   } else {
     // Only the surface's damage_rect will damage the target surface.
-    damage_rect_in_local_space =
+    gfx::Rect damage_rect_in_local_space =
         render_surface->damage_tracker()->current_damage_rect();
-  }
 
-  // If there was damage, transform it to target space, and possibly contribute
-  // its reflection if needed.
-  if (!damage_rect_in_local_space.IsEmpty()) {
-    const gfx::Transform& draw_transform = render_surface->draw_transform();
-    gfx::Rect damage_rect_in_target_space = MathUtil::MapEnclosingClippedRect(
-        draw_transform, damage_rect_in_local_space);
-    target_damage_rect->Union(damage_rect_in_target_space);
+    // If there was damage, transform it to target space, and possibly
+    // contribute its reflection if needed.
+    if (!damage_rect_in_local_space.IsEmpty()) {
+      const gfx::Transform& draw_transform = render_surface->draw_transform();
+      gfx::Rect damage_rect_in_target_space = MathUtil::MapEnclosingClippedRect(
+          draw_transform, damage_rect_in_local_space);
+      target_damage_rect->Union(damage_rect_in_target_space);
 
-    if (layer->replica_layer()) {
-      const gfx::Transform& replica_draw_transform =
-          render_surface->replica_draw_transform();
-      target_damage_rect->Union(MathUtil::MapEnclosingClippedRect(
-          replica_draw_transform, damage_rect_in_local_space));
+      if (layer->replica_layer()) {
+        const gfx::Transform& replica_draw_transform =
+            render_surface->replica_draw_transform();
+        target_damage_rect->Union(MathUtil::MapEnclosingClippedRect(
+            replica_draw_transform, damage_rect_in_local_space));
+      }
     }
   }
 
