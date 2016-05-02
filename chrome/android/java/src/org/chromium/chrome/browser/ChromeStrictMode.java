@@ -167,9 +167,14 @@ public class ChromeStrictMode {
             StrictMode.setVmPolicy(vmPolicy.build());
         }
 
-        // Currently testing with local release builds only.
-        // TODO(wnwen): Replace with finch experiment on dev.
-        if (ChromeVersionInfo.isLocalBuild() && !BuildConfig.sIsDebug) {
+        // Enroll 1% of dev sessions into StrictMode watch. This is done client-side rather than
+        // through finch because this decision is as early as possible in the browser initialization
+        // process. We need to detect early start-up StrictMode violations before loading native and
+        // before warming the SharedPreferences (that is a violation in an of itself). We will
+        // closely monitor this on dev channel.
+        boolean enableStrictModeWatch =
+                (ChromeVersionInfo.isDevBuild() && Math.random() < UPLOAD_PROBABILITY);
+        if ((ChromeVersionInfo.isLocalBuild() && !BuildConfig.sIsDebug) || enableStrictModeWatch) {
             initializeStrictModeWatch();
         }
     }
