@@ -141,9 +141,9 @@ public class DownloadNotificationService extends Service {
             String percentText = formatter.format(percentage / 100.0);
             String duration = getDurationString(timeRemainingInMillis);
             builder.setContentText(duration).setContentInfo(percentText);
-            addOrReplaceSharedPreferenceEntry(new DownloadSharedPreferenceEntry(
-                    notificationId, isResumable, canDownloadWhileMetered, downloadGuid, fileName));
         }
+        addOrReplaceSharedPreferenceEntry(new DownloadSharedPreferenceEntry(
+                notificationId, isResumable, canDownloadWhileMetered, downloadGuid, fileName));
         if (startTime > 0) builder.setWhen(startTime);
         builder.addAction(R.drawable.bookmark_cancel_active,
                 mContext.getResources().getString(R.string.download_notification_cancel_button),
