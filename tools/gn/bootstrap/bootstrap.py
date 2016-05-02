@@ -114,22 +114,31 @@ def main(argv):
   return 0
 
 
-def build_gn_with_ninja_manually(tempdir, options):
-  root_gen_dir = os.path.join(tempdir, 'gen')
-  mkdir_p(root_gen_dir)
-
-  mkdir_p(os.path.join(root_gen_dir, 'base', 'allocator'))
+def write_buildflag_header_manually(root_gen_dir, header, flags):
+  mkdir_p(os.path.join(root_gen_dir, os.path.dirname(header)))
   with tempfile.NamedTemporaryFile() as f:
-    f.write('--flags USE_EXPERIMENTAL_ALLOCATOR_SHIM=%s'
-            % ('true' if is_linux else 'false'))
+    f.write('--flags')
+    for name,value in flags.items():
+      f.write(' ' + name + '=' + value)
     f.flush()
 
     check_call([
         os.path.join(SRC_ROOT, 'build', 'write_buildflag_header.py'),
-        '--output', 'base/allocator/features.h',
+        '--output', header,
         '--gen-dir', root_gen_dir,
         '--definitions', f.name,
     ])
+
+
+def build_gn_with_ninja_manually(tempdir, options):
+  root_gen_dir = os.path.join(tempdir, 'gen')
+  mkdir_p(root_gen_dir)
+
+  write_buildflag_header_manually(root_gen_dir, 'base/allocator/features.h',
+      {'USE_EXPERIMENTAL_ALLOCATOR_SHIM': 'true' if is_linux else 'false'})
+
+  write_buildflag_header_manually(root_gen_dir, 'base/debug/debugging_flags.h',
+      {'ENABLE_PROFILING': 'false'})
 
   if is_mac:
     # //base/build_time.cc needs base/generated_build_date.h,
