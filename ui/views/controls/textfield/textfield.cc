@@ -83,8 +83,8 @@ int GetDragSelectionDelay() {
   return 100;
 }
 
-// Get the default command for a given key |event| and selection state.
-int GetCommandForKeyEvent(const ui::KeyEvent& event, bool has_selection) {
+// Get the default command for a given key |event|.
+int GetCommandForKeyEvent(const ui::KeyEvent& event) {
   if (event.type() != ui::ET_KEY_PRESSED || event.IsUnicodeKeyCode())
     return kNoCommand;
 
@@ -129,7 +129,7 @@ int GetCommandForKeyEvent(const ui::KeyEvent& event, bool has_selection) {
       return shift ? IDS_MOVE_TO_END_OF_LINE_AND_MODIFY_SELECTION :
                       IDS_MOVE_TO_END_OF_LINE;
     case ui::VKEY_BACK:
-      if (!control || has_selection)
+      if (!control)
         return IDS_DELETE_BACKWARD;
 #if defined(OS_LINUX)
       // Only erase by line break on Linux and ChromeOS.
@@ -138,14 +138,14 @@ int GetCommandForKeyEvent(const ui::KeyEvent& event, bool has_selection) {
 #endif
       return IDS_DELETE_WORD_BACKWARD;
     case ui::VKEY_DELETE:
-      if (!control || has_selection)
-        return (shift && has_selection) ? IDS_APP_CUT : IDS_DELETE_FORWARD;
 #if defined(OS_LINUX)
       // Only erase by line break on Linux and ChromeOS.
-      if (shift)
+      if (shift && control)
         return IDS_DELETE_TO_END_OF_LINE;
 #endif
-      return IDS_DELETE_WORD_FORWARD;
+      if (control)
+        return IDS_DELETE_WORD_FORWARD;
+      return shift ? IDS_APP_CUT : IDS_DELETE_FORWARD;
     case ui::VKEY_INSERT:
       if (control && !shift)
         return IDS_APP_COPY;
@@ -730,7 +730,7 @@ bool Textfield::OnKeyPressed(const ui::KeyEvent& event) {
 #endif
 
   if (edit_command == kNoCommand)
-    edit_command = GetCommandForKeyEvent(event, HasSelection());
+    edit_command = GetCommandForKeyEvent(event);
 
   if (!handled && IsCommandIdEnabled(edit_command)) {
     ExecuteCommand(edit_command);
@@ -834,7 +834,7 @@ void Textfield::OnGestureEvent(ui::GestureEvent* event) {
 bool Textfield::AcceleratorPressed(const ui::Accelerator& accelerator) {
   ui::KeyEvent event(accelerator.type(), accelerator.key_code(),
                      accelerator.modifiers());
-  ExecuteCommand(GetCommandForKeyEvent(event, HasSelection()));
+  ExecuteCommand(GetCommandForKeyEvent(event));
   return true;
 }
 
@@ -1303,6 +1303,22 @@ bool Textfield::GetAcceleratorForCommandId(int command_id,
 
 void Textfield::ExecuteCommand(int command_id, int event_flags) {
   DestroyTouchSelection();
+
+  // Some codepaths may bypass GetCommandForKeyEvent, so any selection-dependent
+  // modifications of the command should happen here.
+  if (HasSelection()) {
+    switch (command_id) {
+      case IDS_DELETE_WORD_BACKWARD:
+      case IDS_DELETE_TO_BEGINNING_OF_LINE:
+        command_id = IDS_DELETE_BACKWARD;
+        break;
+      case IDS_DELETE_WORD_FORWARD:
+      case IDS_DELETE_TO_END_OF_LINE:
+        command_id = IDS_DELETE_FORWARD;
+        break;
+    }
+  }
+
   if (!IsCommandIdEnabled(command_id))
     return;
 

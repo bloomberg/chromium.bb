@@ -12,10 +12,12 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/format_macros.h"
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
 #include "base/pickle.h"
 #include "base/strings/string16.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "ui/accessibility/ax_view_state.h"
@@ -865,6 +867,33 @@ TEST_F(TextfieldTest, InsertionDeletionTest) {
 #else
   EXPECT_STR_EQ(" two four", textfield_->text());
 #endif
+}
+
+// Test that deletion operations behave correctly with an active selection.
+TEST_F(TextfieldTest, DeletionWithSelection) {
+  struct {
+    ui::KeyboardCode key;
+    bool shift;
+  } cases[] = {
+      {ui::VKEY_BACK, false},
+      {ui::VKEY_BACK, true},
+      {ui::VKEY_DELETE, false},
+      {ui::VKEY_DELETE, true},
+  };
+
+  InitTextfield();
+  // [Ctrl] ([Alt] on Mac) + [Delete]/[Backspace] should delete the active
+  // selection, regardless of [Shift].
+  for (size_t i = 0; i < arraysize(cases); ++i) {
+    SCOPED_TRACE(base::StringPrintf("Testing cases[%" PRIuS "]", i));
+    textfield_->SetText(ASCIIToUTF16("one two three"));
+    textfield_->SelectRange(gfx::Range(2, 6));
+    // Make selection as - on|e tw|o three.
+    SendWordEvent(cases[i].key, cases[i].shift);
+    // Verify state is on|o three.
+    EXPECT_STR_EQ("ono three", textfield_->text());
+    EXPECT_EQ(gfx::Range(2), textfield_->GetSelectedRange());
+  }
 }
 
 TEST_F(TextfieldTest, PasswordTest) {
@@ -1805,6 +1834,17 @@ TEST_F(TextfieldTest, CutCopyPaste) {
   EXPECT_STR_EQ("123", GetClipboardText(ui::CLIPBOARD_TYPE_COPY_PASTE));
   EXPECT_STR_EQ("", textfield_->text());
   EXPECT_EQ(ui::CLIPBOARD_TYPE_COPY_PASTE, GetAndResetCopiedToClipboard());
+
+  // Reset clipboard text.
+  SetClipboardText(ui::CLIPBOARD_TYPE_COPY_PASTE, "");
+
+  // Ensure [Shift]+[Delete] is a no-op in case there is no selection.
+  textfield_->SetText(ASCIIToUTF16("123"));
+  textfield_->SelectRange(gfx::Range(0));
+  SendAlternateCut();
+  EXPECT_STR_EQ("", GetClipboardText(ui::CLIPBOARD_TYPE_COPY_PASTE));
+  EXPECT_STR_EQ("123", textfield_->text());
+  EXPECT_EQ(ui::CLIPBOARD_TYPE_LAST, GetAndResetCopiedToClipboard());
 
   // Ensure IDS_APP_COPY copies.
   textfield_->SetText(ASCIIToUTF16("789"));
