@@ -1334,6 +1334,8 @@ void PaintLayer::insertOnlyThisLayerAfterStyleChange()
         const LayoutBoxModelObject& previousPaintInvalidationContainer = layoutObject()->parent()->containerForPaintInvalidation();
         if (!previousPaintInvalidationContainer.styleRef().isStackingContext()) {
             layoutObject()->invalidatePaintIncludingNonSelfPaintingLayerDescendants(previousPaintInvalidationContainer);
+            // Set needsRepaint along the original compositingContainer chain.
+            layoutObject()->parent()->enclosingLayer()->setNeedsRepaint();
             didSetPaintInvalidation = true;
         }
     }
