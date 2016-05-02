@@ -20,6 +20,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "base/supports_user_data.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/offline_pages/offline_page_archiver.h"
@@ -126,6 +127,7 @@ class OfflinePageModel : public KeyedService, public base::SupportsUserData {
   typedef std::vector<OfflinePageItem> GetAllPagesResult;
   typedef std::set<GURL> CheckPagesExistOfflineResult;
   typedef std::vector<int64_t> MultipleOfflineIdResult;
+  typedef base::Optional<OfflinePageItem> SingleOfflinePageItemResult;
 
   typedef base::Callback<void(SavePageResult, int64_t)> SavePageCallback;
   typedef base::Callback<void(DeletePageResult)> DeletePageCallback;
@@ -135,6 +137,8 @@ class OfflinePageModel : public KeyedService, public base::SupportsUserData {
   typedef base::Callback<void(bool)> HasPagesCallback;
   typedef base::Callback<void(const MultipleOfflineIdResult&)>
       MultipleOfflineIdCallback;
+  typedef base::Callback<void(const SingleOfflinePageItemResult&)>
+      SingleOfflinePageItemCallback;
 
   // Generates a new offline id
   static int64_t GenerateOfflineId();
@@ -211,9 +215,13 @@ class OfflinePageModel : public KeyedService, public base::SupportsUserData {
   const std::vector<int64_t> MaybeGetOfflineIdsForClientId(
       const ClientId& client_id) const;
 
+  // Returns zero or one offline pages associated with a specified |offline_id|.
+  void GetPageByOfflineId(int64_t offline_id,
+                          const SingleOfflinePageItemCallback& callback);
+
   // Returns an offline page associated with a specified |offline_id|. nullptr
   // is returned if not found.
-  const OfflinePageItem* GetPageByOfflineId(int64_t offline_id) const;
+  const OfflinePageItem* MaybeGetPageByOfflineId(int64_t offline_id) const;
 
   // Returns an offline page that is stored as |offline_url|. A nullptr is
   // returned if not found.
@@ -260,6 +268,9 @@ class OfflinePageModel : public KeyedService, public base::SupportsUserData {
   void GetOfflineIdsForClientIdWhenLoadDone(
       const ClientId& client_id,
       const MultipleOfflineIdCallback& callback) const;
+  void GetPageByOfflineIdWhenLoadDone(
+      int64_t offline_id,
+      const SingleOfflinePageItemCallback& callback) const;
 
   // Callback for checking whether we have offline pages.
   void HasPagesAfterLoadDone(const std::string& name_space,

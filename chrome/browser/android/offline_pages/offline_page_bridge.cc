@@ -256,7 +256,7 @@ ScopedJavaLocalRef<jobject> OfflinePageBridge::GetPageByOfflineId(
     const JavaParamRef<jobject>& obj,
     jlong offline_id) {
   const OfflinePageItem* offline_page =
-      offline_page_model_->GetPageByOfflineId(offline_id);
+      offline_page_model_->MaybeGetPageByOfflineId(offline_id);
   if (!offline_page)
     return ScopedJavaLocalRef<jobject>();
   return CreateOfflinePageItem(env, *offline_page);

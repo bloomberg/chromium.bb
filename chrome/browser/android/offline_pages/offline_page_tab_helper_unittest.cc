@@ -184,7 +184,7 @@ TEST_F(OfflinePageTabHelperTest, SwitchToOnlineFromOffline) {
 
   OfflinePageModel* model =
       OfflinePageModelFactory::GetForBrowserContext(browser_context());
-  const OfflinePageItem* page = model->GetPageByOfflineId(offline_id());
+  const OfflinePageItem* page = model->MaybeGetPageByOfflineId(offline_id());
   GURL offline_url = page->GetOfflineURL();
   GURL online_url = page->url;
 
@@ -198,7 +198,7 @@ TEST_F(OfflinePageTabHelperTest, SwitchToOfflineFromOnline) {
 
   OfflinePageModel* model =
       OfflinePageModelFactory::GetForBrowserContext(browser_context());
-  const OfflinePageItem* page = model->GetPageByOfflineId(offline_id());
+  const OfflinePageItem* page = model->MaybeGetPageByOfflineId(offline_id());
   GURL offline_url = page->GetOfflineURL();
   GURL online_url = page->url;
 

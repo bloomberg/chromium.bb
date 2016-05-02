@@ -158,8 +158,10 @@ void OfflinePageUtilsTest::CreateOfflinePages() {
   int64_t offline2 = offline_id();
 
   // Make a copy of local paths of the two pages stored in the model.
-  offline_url_page_1_ = model->GetPageByOfflineId(offline1)->GetOfflineURL();
-  offline_url_page_2_ = model->GetPageByOfflineId(offline2)->GetOfflineURL();
+  offline_url_page_1_ =
+      model->MaybeGetPageByOfflineId(offline1)->GetOfflineURL();
+  offline_url_page_2_ =
+      model->MaybeGetPageByOfflineId(offline2)->GetOfflineURL();
   // Create a file path that is not associated with any offline page.
   offline_url_missing_ = net::FilePathToFileURL(
       profile()

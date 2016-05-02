@@ -330,7 +330,7 @@ void OfflinePageModel::GetAllPagesAfterLoadDone(
     const GetAllPagesCallback& callback) {
   DCHECK(is_loaded_);
 
-  std::vector<OfflinePageItem> offline_pages;
+  GetAllPagesResult offline_pages;
   for (const auto& id_page_pair : offline_pages_)
     offline_pages.push_back(id_page_pair.second);
 
@@ -377,7 +377,25 @@ const std::vector<int64_t> OfflinePageModel::MaybeGetOfflineIdsForClientId(
   return results;
 }
 
-const OfflinePageItem* OfflinePageModel::GetPageByOfflineId(
+void OfflinePageModel::GetPageByOfflineId(
+    int64_t offline_id,
+    const SingleOfflinePageItemCallback& callback) {
+  RunWhenLoaded(base::Bind(&OfflinePageModel::GetPageByOfflineIdWhenLoadDone,
+                           weak_ptr_factory_.GetWeakPtr(), offline_id,
+                           callback));
+}
+
+void OfflinePageModel::GetPageByOfflineIdWhenLoadDone(
+    int64_t offline_id,
+    const SingleOfflinePageItemCallback& callback) const {
+  SingleOfflinePageItemResult result;
+  const OfflinePageItem* match = MaybeGetPageByOfflineId(offline_id);
+  if (match != nullptr)
+    result = *match;
+  callback.Run(result);
+}
+
+const OfflinePageItem* OfflinePageModel::MaybeGetPageByOfflineId(
     int64_t offline_id) const {
   const auto iter = offline_pages_.find(offline_id);
   return iter != offline_pages_.end() ? &(iter->second) : nullptr;
