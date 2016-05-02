@@ -13,7 +13,6 @@
 #include "ipc/ipc_message_macros.h"
 #include "ui/gfx/ipc/geometry/gfx_param_traits.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
-#include "ui/gfx/swap_result.h"
 #include "ui/gl/gpu_preference.h"
 #include "url/ipc/url_param_traits.h"
 
@@ -41,7 +40,6 @@ IPC_STRUCT_TRAITS_END()
 
 IPC_ENUM_TRAITS_MAX_VALUE(gfx::GpuPreference, gfx::GpuPreferenceLast)
 IPC_ENUM_TRAITS_MAX_VALUE(gpu::GpuStreamPriority, gpu::GpuStreamPriority::LAST)
-IPC_ENUM_TRAITS_MAX_VALUE(gfx::SwapResult, gfx::SwapResult::SWAP_RESULT_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(gpu::MemoryAllocation::PriorityCutoff,
                           gpu::MemoryAllocation::CUTOFF_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(gpu::error::ContextLostReason,
