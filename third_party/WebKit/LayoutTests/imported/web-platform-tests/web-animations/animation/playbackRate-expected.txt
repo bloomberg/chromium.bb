@@ -1,0 +1,6 @@
+This is a testharness.js-based test.
+PASS Test the initial effect of setting playbackRate on currentTime 
+FAIL Test the effect of setting playbackRate on currentTime promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'currentTime' of undefined"
+FAIL Test the effect of setting playbackRate while playing animation promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'currentTime' of undefined"
+Harness: the test ran to completion.
+

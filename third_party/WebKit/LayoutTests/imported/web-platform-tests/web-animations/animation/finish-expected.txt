@@ -5,10 +5,10 @@ PASS Test finishing of animation
 FAIL Test finishing of animation with a current time past the effect end animation.effect.getComputedTiming is not a function
 PASS Test finishing of reversed animation 
 PASS Test finishing of reversed animation with a current time less than zero 
-PASS Test finish() while paused 
-PASS Test finish() while pause-pending with positive playbackRate 
-PASS Test finish() while pause-pending with negative playbackRate 
-PASS Test finish() while play-pending 
+FAIL Test finish() while paused promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'currentTime' of undefined"
+FAIL Test finish() while pause-pending with positive playbackRate Cannot read property 'currentTime' of undefined
+FAIL Test finish() while pause-pending with negative playbackRate Cannot read property 'currentTime' of undefined
+FAIL Test finish() while play-pending Cannot read property 'currentTime' of undefined
 PASS Test finish() during aborted pause 
 PASS Test resetting of computed style 
 PASS Test finish() resolves finished promise synchronously 

@@ -9,8 +9,8 @@ PASS Element.animate() accepts a KeyframeAnimationOptions argument
 PASS Element.animate() accepts an absent options argument 
 PASS Element.animate() correctly sets the id attribute when no id is specified 
 PASS Element.animate() correctly sets the id attribute 
-PASS Element.animate() correctly sets the Animation's timeline 
-PASS Element.animate() correctly sets the Animation's timeline when triggered on an element in a different document 
+FAIL Element.animate() correctly sets the Animation's timeline assert_equals: expected (object) object "[object AnimationTimeline]" but got (undefined) undefined
+FAIL Element.animate() correctly sets the Animation's timeline when triggered on an element in a different document assert_equals: expected (object) object "[object AnimationTimeline]" but got (undefined) undefined
 PASS Element.animate() calls play on the Animation 
 FAIL CSSPseudoElement.animate() creates an Animation object document.getAnimations is not a function
 FAIL CSSPseudoElement.animate() creates an Animation object targeting to the correct CSSPseudoElement object document.getAnimations is not a function
