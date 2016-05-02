@@ -205,7 +205,7 @@ run_test(const struct test *t)
 
 	t->run();
 
-	/* turn off timeout (if any) after test completition */
+	/* turn off timeout (if any) after test completion */
 	if (timeouts_enabled)
 		alarm(0);
 
