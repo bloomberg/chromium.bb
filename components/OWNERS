@@ -125,6 +125,8 @@ per-file onc.gypi=file://components/onc/OWNERS
 
 per-file open_from_clipboard.gypi=file://components/open_from_clipboard/OWNERS
 
+per-file os_crypt.gypi=file://components/os_crypt/OWNERS
+
 per-file ownership.gypi=file://components/ownership/OWNERS
 
 per-file packed_ct_ev_whitelist.gypi=file://components/packed_ct_ev_whitelist/OWNERS
