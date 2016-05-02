@@ -1,0 +1,87 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="../network-test.js"></script>
+<script>
+function test()
+{
+    function createNetworkRequest(mimeType, content, statusCode)
+    {
+        InspectorTest.addResult("Creating a NetworkRequest with mimeType: " + mimeType);
+        var request = new WebInspector.NetworkRequest(WebInspector.mainTarget, 0, 'http://localhost');
+        request.mimeType = mimeType;
+        request._content = content;
+        if (statusCode !== undefined)
+            request.statusCode = statusCode;
+        return request;
+    }
+
+    function getViewName(previewer)
+    {
+        if (!previewer)
+            return "** NONE **";
+        if (previewer instanceof WebInspector.SearchableView)
+            return "SearchableView > " + getViewName(previewer._searchProvider);
+        return previewer.contentElement.className;
+    }
+
+    function testPreviewer(request, callback)
+    {
+        var previewView = new WebInspector.RequestPreviewView(request, new WebInspector.RequestResponseView(request));
+
+        previewView._createPreviewView(function(previewer) {
+            InspectorTest.addResult("Its previewer type: " + getViewName(previewer));
+            callback();
+        });
+    }
+
+    function testType(contentType, content, statusCode, callback)
+    {
+        var request = createNetworkRequest(contentType, content, statusCode);
+        testPreviewer(request, callback);
+    }
+    InspectorTest.runTestSuite([
+        function testSimpleJSON(next)
+        {
+            testType("application/json", "[533,3223]", 200, next);
+        },
+        function testMimeJSON(next)
+        {
+            testType("application/vnd.document+json", "{foo0foo: 123}", 200, next);
+        },
+        function testSimpleXML(next)
+        {
+            testType("text/xml", "<bar><foo/></bar>", 200, next);
+        },
+        function testXMLMimeButJSON(next)
+        {
+            testType("text/xml", "{foo0: 'barr', 'barr': 'fooo'}", 200, next);
+        },
+        function testXMLWithUnknownMime(next)
+        {
+            testType("text/foobar", "<bar><foo/></bar>", 200, next);
+        },
+        function testXMLWithError500(next)
+        {
+            testType("text/xml", "<bar><foo/></bar>", 500, next);
+        },
+        function testUnknownMimeTextWithError500(next)
+        {
+            testType("text/foobar", "Foo Bar", 500, next);
+        },
+        function testBinaryImageFile(next)
+        {
+            testType("image/png", "Bin\0ary\1 File\0\0", 200, next);
+        },
+        function testBinaryBlankImageFile(next)
+        {
+            testType("image/png", "", 200, next);
+        },
+    ]);
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests to make sure the proper view is used for the data that is received in network panel.</p>
+</body>
+</html>

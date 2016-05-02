@@ -1,0 +1,39 @@
+Tests to make sure the proper view is used for the data that is received in network panel.
+
+
+Running: testSimpleJSON
+Creating a NetworkRequest with mimeType: application/json
+Its previewer type: widget vbox json-view
+
+Running: testMimeJSON
+Creating a NetworkRequest with mimeType: application/vnd.document+json
+Its previewer type: widget vbox json-view
+
+Running: testSimpleXML
+Creating a NetworkRequest with mimeType: text/xml
+Its previewer type: widget shadow-xml-view source-code
+
+Running: testXMLMimeButJSON
+Creating a NetworkRequest with mimeType: text/xml
+Its previewer type: widget vbox json-view
+
+Running: testXMLWithUnknownMime
+Creating a NetworkRequest with mimeType: text/foobar
+Its previewer type: SearchableView > widget vbox
+
+Running: testXMLWithError500
+Creating a NetworkRequest with mimeType: text/xml
+Its previewer type: widget shadow-xml-view source-code
+
+Running: testUnknownMimeTextWithError500
+Creating a NetworkRequest with mimeType: text/foobar
+Its previewer type: SearchableView > widget vbox
+
+Running: testBinaryImageFile
+Creating a NetworkRequest with mimeType: image/png
+Its previewer type: SearchableView > widget vbox
+
+Running: testBinaryBlankImageFile
+Creating a NetworkRequest with mimeType: image/png
+Its previewer type: widget vbox empty-view
+
