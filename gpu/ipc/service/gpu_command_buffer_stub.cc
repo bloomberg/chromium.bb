@@ -533,15 +533,12 @@ void GpuCommandBufferStub::OnInitialize(
   command_buffer_.reset(new CommandBufferService(
       context_group_->transfer_buffer_manager()));
 
-  bool result = command_buffer_->Initialize();
-  DCHECK(result);
-
   GpuChannelManager* manager = channel_->gpu_channel_manager();
   DCHECK(manager);
 
   decoder_.reset(gles2::GLES2Decoder::Create(context_group_.get()));
-  executor_.reset(new CommandExecutor(command_buffer_.get(),
-                                           decoder_.get(), decoder_.get()));
+  executor_.reset(new CommandExecutor(command_buffer_.get(), decoder_.get(),
+                                      decoder_.get()));
   sync_point_client_ = sync_point_manager_->CreateSyncPointClient(
       channel_->GetSyncPointOrderData(stream_id_),
       CommandBufferNamespace::GPU_IO, command_buffer_id_);

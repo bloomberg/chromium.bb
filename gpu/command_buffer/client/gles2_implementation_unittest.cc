@@ -436,8 +436,6 @@ class GLES2ImplementationTest : public testing::Test {
                     int major_version,
                     int minor_version) {
       command_buffer_.reset(new StrictMock<MockClientCommandBuffer>());
-      if (!command_buffer_->Initialize())
-        return false;
 
       transfer_buffer_.reset(
           new MockTransferBuffer(command_buffer_.get(),

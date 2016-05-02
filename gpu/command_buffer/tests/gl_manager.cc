@@ -306,8 +306,6 @@ void GLManager::InitializeWithCommandLine(
   }
   command_buffer_.reset(new CommandBufferService(
       decoder_->GetContextGroup()->transfer_buffer_manager()));
-  ASSERT_TRUE(command_buffer_->Initialize())
-      << "could not create command buffer service";
 
   executor_.reset(new CommandExecutor(command_buffer_.get(), decoder_.get(),
                                       decoder_.get()));

@@ -134,12 +134,7 @@ bool WebGraphicsContext3DCommandBufferImpl::InitializeCommandBuffer(
   DVLOG_IF(1, gpu::error::IsError(command_buffer_->GetLastError()))
       << "Context dead on arrival. Last error: "
       << command_buffer_->GetLastError();
-  // Initialize the command buffer.
-  bool result = command_buffer_->Initialize();
-  LOG_IF(ERROR, !result) << "CommandBufferProxy::Initialize failed.";
-  if (!result)
-    UmaRecordContextInitFailed(context_type_);
-  return result;
+  return true;
 }
 
 bool WebGraphicsContext3DCommandBufferImpl::CreateContext(

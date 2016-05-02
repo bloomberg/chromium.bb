@@ -53,7 +53,6 @@ class GPU_EXPORT CommandBufferService : public CommandBufferServiceBase {
   ~CommandBufferService() override;
 
   // CommandBuffer implementation:
-  bool Initialize() override;
   State GetLastState() override;
   int32_t GetLastToken() override;
   void Flush(int32_t put_offset) override;

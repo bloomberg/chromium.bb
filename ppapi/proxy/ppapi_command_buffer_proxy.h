@@ -41,7 +41,6 @@ class PPAPI_PROXY_EXPORT PpapiCommandBufferProxy : public gpu::CommandBuffer,
   ~PpapiCommandBufferProxy() override;
 
   // gpu::CommandBuffer implementation:
-  bool Initialize() override;
   State GetLastState() override;
   int32_t GetLastToken() override;
   void Flush(int32_t put_offset) override;

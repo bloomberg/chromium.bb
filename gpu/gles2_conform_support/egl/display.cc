@@ -163,8 +163,6 @@ EGLSurface Display::CreateWindowSurface(EGLConfig config,
   }
   std::unique_ptr<gpu::CommandBufferService> command_buffer(
       new gpu::CommandBufferService(transfer_buffer_manager_.get()));
-  if (!command_buffer->Initialize())
-    return NULL;
 
   scoped_refptr<gpu::gles2::FeatureInfo> feature_info(
       new gpu::gles2::FeatureInfo(gpu_driver_bug_workarounds_));

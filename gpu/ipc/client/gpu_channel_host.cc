@@ -238,6 +238,8 @@ std::unique_ptr<CommandBufferProxyImpl> GpuChannelHost::CreateCommandBuffer(
   std::unique_ptr<CommandBufferProxyImpl> command_buffer =
       base::WrapUnique(new CommandBufferProxyImpl(this, route_id, stream_id));
   AddRoute(route_id, command_buffer->AsWeakPtr());
+  if (!command_buffer->Initialize())
+    return nullptr;
 
   return command_buffer;
 }

@@ -252,9 +252,6 @@ bool PPB_Graphics3D_Impl::InitRaw(PPB_Graphics3D_API* share_context,
 
   command_buffer_->SetGpuControlClient(this);
 
-  if (!command_buffer_->Initialize())
-    return false;
-
   if (shared_state_handle)
     *shared_state_handle = command_buffer_->GetSharedStateHandle();
   if (capabilities)

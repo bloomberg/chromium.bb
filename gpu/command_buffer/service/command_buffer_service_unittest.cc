@@ -35,7 +35,6 @@ class CommandBufferServiceTest : public testing::Test {
     }
     command_buffer_.reset(
         new CommandBufferService(transfer_buffer_manager_.get()));
-    EXPECT_TRUE(command_buffer_->Initialize());
   }
 
   int32_t GetGetOffset() { return command_buffer_->GetLastState().get_offset; }

@@ -140,8 +140,6 @@ bool CommandBufferDriver::Initialize(
 
   command_buffer_.reset(
       new gpu::CommandBufferService(context_group->transfer_buffer_manager()));
-  bool result = command_buffer_->Initialize();
-  DCHECK(result);
 
   decoder_.reset(::gpu::gles2::GLES2Decoder::Create(context_group.get()));
   executor_.reset(new gpu::CommandExecutor(command_buffer_.get(),

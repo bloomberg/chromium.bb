@@ -316,12 +316,6 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
   command_buffer->SetParseErrorCallback(base::Bind(
       &InProcessCommandBuffer::OnContextLostOnGpuThread, gpu_thread_weak_ptr_));
 
-  if (!command_buffer->Initialize()) {
-    LOG(ERROR) << "Could not initialize command buffer.";
-    DestroyOnGpuThread();
-    return false;
-  }
-
   gl_share_group_ = params.context_group
                         ? params.context_group->gl_share_group_
                         : service_->share_group();
@@ -967,11 +961,6 @@ bool InProcessCommandBuffer::CanWaitUnverifiedSyncToken(
 gpu::error::Error InProcessCommandBuffer::GetLastError() {
   CheckSequencedThread();
   return last_state_.error;
-}
-
-bool InProcessCommandBuffer::Initialize() {
-  NOTREACHED();
-  return false;
 }
 
 namespace {

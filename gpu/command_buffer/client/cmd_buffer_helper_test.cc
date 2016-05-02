@@ -106,7 +106,6 @@ class CommandBufferHelperTest : public testing::Test {
     }
     command_buffer_.reset(
         new CommandBufferServiceLocked(transfer_buffer_manager_.get()));
-    EXPECT_TRUE(command_buffer_->Initialize());
 
     executor_.reset(
         new CommandExecutor(command_buffer_.get(), api_mock_.get(), NULL));

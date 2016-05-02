@@ -37,10 +37,6 @@ CommandBufferService::CommandBufferService(
 CommandBufferService::~CommandBufferService() {
 }
 
-bool CommandBufferService::Initialize() {
-  return true;
-}
-
 CommandBufferService::State CommandBufferService::GetLastState() {
   State state;
   state.get_offset = get_offset_;

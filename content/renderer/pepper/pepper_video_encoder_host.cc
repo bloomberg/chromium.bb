@@ -535,11 +535,6 @@ bool PepperVideoEncoderHost::EnsureGpuChannel() {
 
   command_buffer_->SetGpuControlClient(this);
 
-  if (!command_buffer_->Initialize()) {
-    Close();
-    return false;
-  }
-
   return true;
 }
 

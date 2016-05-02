@@ -26,10 +26,6 @@ MockCommandBufferBase::MockCommandBufferBase() : put_offset_(0) {
 MockCommandBufferBase::~MockCommandBufferBase() {
 }
 
-bool MockCommandBufferBase::Initialize() {
-  return true;
-}
-
 CommandBuffer::State MockCommandBufferBase::GetLastState() {
   return state_;
 }

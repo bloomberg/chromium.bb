@@ -34,7 +34,6 @@ class MockCommandBufferBase : public CommandBufferServiceBase {
   MockCommandBufferBase();
   ~MockCommandBufferBase() override;
 
-  bool Initialize() override;
   State GetLastState() override;
   int32_t GetLastToken() override;
   void WaitForTokenInRange(int32_t start, int32_t end) override;

@@ -88,7 +88,6 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
                   ImageFactory* image_factory);
 
   // CommandBuffer implementation:
-  bool Initialize() override;
   State GetLastState() override;
   int32_t GetLastToken() override;
   void Flush(int32_t put_offset) override;

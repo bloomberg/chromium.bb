@@ -41,10 +41,6 @@ PpapiCommandBufferProxy::~PpapiCommandBufferProxy() {
   // deleted, closing the handle in this process.
 }
 
-bool PpapiCommandBufferProxy::Initialize() {
-  return true;
-}
-
 gpu::CommandBuffer::State PpapiCommandBufferProxy::GetLastState() {
   ppapi::ProxyLock::AssertAcquiredDebugOnly();
   return last_state_;

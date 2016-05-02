@@ -36,9 +36,9 @@ class CommandBufferClientImpl
       const std::vector<int32_t>& attribs,
       mojo::ScopedMessagePipeHandle command_buffer_handle);
   ~CommandBufferClientImpl() override;
+  bool Initialize();
 
   // CommandBuffer implementation:
-  bool Initialize() override;
   State GetLastState() override;
   int32_t GetLastToken() override;
   void Flush(int32_t put_offset) override;

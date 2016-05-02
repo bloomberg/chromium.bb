@@ -57,12 +57,12 @@ class CommandBufferLocal : public gpu::CommandBuffer,
                      gfx::AcceleratedWidget widget,
                      const scoped_refptr<GpuState>& gpu_state);
 
+  bool Initialize();
   // Destroy the CommandBufferLocal. The client should not use this class
   // after calling it.
   void Destroy();
 
   // gpu::CommandBuffer implementation:
-  bool Initialize() override;
   gpu::CommandBuffer::State GetLastState() override;
   int32_t GetLastToken() override;
   void Flush(int32_t put_offset) override;

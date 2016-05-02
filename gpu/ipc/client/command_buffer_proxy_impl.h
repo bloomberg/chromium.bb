@@ -70,13 +70,13 @@ class GPU_EXPORT CommandBufferProxyImpl
                          int32_t route_id,
                          int32_t stream_id);
   ~CommandBufferProxyImpl() override;
+  bool Initialize();
 
   // IPC::Listener implementation:
   bool OnMessageReceived(const IPC::Message& message) override;
   void OnChannelError() override;
 
   // CommandBuffer implementation:
-  bool Initialize() override;
   State GetLastState() override;
   int32_t GetLastToken() override;
   void Flush(int32_t put_offset) override;

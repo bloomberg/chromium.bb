@@ -66,7 +66,6 @@ class TransferBufferTest : public testing::Test {
 
 void TransferBufferTest::SetUp() {
   command_buffer_.reset(new StrictMock<MockClientCommandBufferMockFlush>());
-  ASSERT_TRUE(command_buffer_->Initialize());
 
   helper_.reset(new CommandBufferHelper(command_buffer()));
   ASSERT_TRUE(helper_->Initialize(kCommandBufferSizeBytes));
@@ -270,7 +269,6 @@ class TransferBufferExpandContractTest : public testing::Test {
 
 void TransferBufferExpandContractTest::SetUp() {
   command_buffer_.reset(new StrictMock<MockClientCommandBufferCanFail>());
-  ASSERT_TRUE(command_buffer_->Initialize());
 
   EXPECT_CALL(*command_buffer(),
               CreateTransferBuffer(kCommandBufferSizeBytes, _))
