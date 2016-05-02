@@ -207,11 +207,22 @@ class BridgedNativeWidgetTest : public BridgedNativeWidgetTestBase {
   // Returns the current text as std::string.
   std::string GetText();
 
+  // Set the selection range for the installed textfield.
+  void SetSelectionRange(const gfx::Range& range);
+
   // testing::Test:
   void SetUp() override;
   void TearDown() override;
 
  protected:
+  // Test delete to beginning of line or paragraph based on |sel|. |sel| can be
+  // either deleteToBeginningOfLine: or deleteToBeginningOfParagraph:.
+  void TestDeleteBeginning(SEL sel);
+
+  // Test delete to end of line or paragraph based on |sel|. |sel| can be
+  // either deleteToEndOfLine: or deleteToEndOfParagraph:.
+  void TestDeleteEnd(SEL sel);
+
   std::unique_ptr<views::View> view_;
   BridgedContentView* ns_view_;  // Weak. Owned by bridge().
   base::MessageLoopForUI message_loop_;
@@ -255,6 +266,11 @@ std::string BridgedNativeWidgetTest::GetText() {
   return SysNSStringToUTF8([text string]);
 }
 
+void BridgedNativeWidgetTest::SetSelectionRange(const gfx::Range& range) {
+  ui::TextInputClient* client = [ns_view_ textInputClient];
+  client->SetSelectionRange(range);
+}
+
 void BridgedNativeWidgetTest::SetUp() {
   BridgedNativeWidgetTestBase::SetUp();
 
@@ -282,6 +298,56 @@ void BridgedNativeWidgetTest::TearDown() {
     bridge()->SetRootView(nullptr);
   view_.reset();
   BridgedNativeWidgetTestBase::TearDown();
+}
+
+void BridgedNativeWidgetTest::TestDeleteBeginning(SEL sel) {
+  InstallTextField("foo bar baz");
+  EXPECT_EQ_RANGE(NSMakeRange(11, 0), [ns_view_ selectedRange]);
+
+  // Move the caret to the beginning of the line.
+  SetSelectionRange(gfx::Range(0));
+  // Verify no deletion takes place.
+  [ns_view_ doCommandBySelector:sel];
+  EXPECT_EQ("foo bar baz", GetText());
+  EXPECT_EQ_RANGE(NSMakeRange(0, 0), [ns_view_ selectedRange]);
+
+  // Move the caret as- "foo| bar baz".
+  SetSelectionRange(gfx::Range(3, 3));
+  [ns_view_ doCommandBySelector:sel];
+  // Verify state is "| bar baz".
+  EXPECT_EQ(" bar baz", GetText());
+  EXPECT_EQ_RANGE(NSMakeRange(0, 0), [ns_view_ selectedRange]);
+
+  // Make a selection as- " bar |baz|".
+  SetSelectionRange(gfx::Range(5, 8));
+  [ns_view_ doCommandBySelector:sel];
+  // Verify only the selection is deleted so that the state is " bar |".
+  EXPECT_EQ(" bar ", GetText());
+  EXPECT_EQ_RANGE(NSMakeRange(5, 0), [ns_view_ selectedRange]);
+}
+
+void BridgedNativeWidgetTest::TestDeleteEnd(SEL sel) {
+  InstallTextField("foo bar baz");
+  EXPECT_EQ_RANGE(NSMakeRange(11, 0), [ns_view_ selectedRange]);
+
+  // Caret is at the end of the line. Verify no deletion takes place.
+  [ns_view_ doCommandBySelector:sel];
+  EXPECT_EQ("foo bar baz", GetText());
+  EXPECT_EQ_RANGE(NSMakeRange(11, 0), [ns_view_ selectedRange]);
+
+  // Move the caret as- "foo bar| baz".
+  SetSelectionRange(gfx::Range(7, 7));
+  [ns_view_ doCommandBySelector:sel];
+  // Verify state is "foo bar|".
+  EXPECT_EQ("foo bar", GetText());
+  EXPECT_EQ_RANGE(NSMakeRange(7, 0), [ns_view_ selectedRange]);
+
+  // Make a selection as- "|foo |bar".
+  SetSelectionRange(gfx::Range(0, 4));
+  [ns_view_ doCommandBySelector:sel];
+  // Verify only the selection is deleted so that the state is "|bar".
+  EXPECT_EQ("bar", GetText());
+  EXPECT_EQ_RANGE(NSMakeRange(0, 0), [ns_view_ selectedRange]);
 }
 
 // The TEST_VIEW macro expects the view it's testing to have a superview. In
@@ -583,6 +649,76 @@ TEST_F(BridgedNativeWidgetTest, TextInput_DeleteForward) {
   [ns_view_ doCommandBySelector:@selector(deleteForward:)];
   EXPECT_EQ("", GetText());
   EXPECT_EQ_RANGE(NSMakeRange(0, 0), [ns_view_ selectedRange]);
+}
+
+// Test forward word deletion using text input protocol.
+TEST_F(BridgedNativeWidgetTest, TextInput_DeleteWordForward) {
+  InstallTextField("foo bar baz");
+  EXPECT_EQ_RANGE(NSMakeRange(11, 0), [ns_view_ selectedRange]);
+
+  // Caret is at the end of the line. Verify no deletion takes place.
+  [ns_view_ doCommandBySelector:@selector(deleteWordForward:)];
+  EXPECT_EQ("foo bar baz", GetText());
+  EXPECT_EQ_RANGE(NSMakeRange(11, 0), [ns_view_ selectedRange]);
+
+  // Move the caret as- "foo b|ar baz".
+  SetSelectionRange(gfx::Range(5, 5));
+  [ns_view_ doCommandBySelector:@selector(deleteWordForward:)];
+  // Verify state is "foo b| baz"
+  EXPECT_EQ("foo b baz", GetText());
+  EXPECT_EQ_RANGE(NSMakeRange(5, 0), [ns_view_ selectedRange]);
+
+  // Make a selection as- "|fo|o b baz".
+  SetSelectionRange(gfx::Range(0, 2));
+  [ns_view_ doCommandBySelector:@selector(deleteWordForward:)];
+  // Verify only the selection is deleted and state is "|o b baz".
+  EXPECT_EQ("o b baz", GetText());
+  EXPECT_EQ_RANGE(NSMakeRange(0, 0), [ns_view_ selectedRange]);
+}
+
+// Test backward word deletion using text input protocol.
+TEST_F(BridgedNativeWidgetTest, TextInput_DeleteWordBackward) {
+  InstallTextField("foo bar baz");
+  EXPECT_EQ_RANGE(NSMakeRange(11, 0), [ns_view_ selectedRange]);
+
+  // Move the caret to the beginning of the line.
+  SetSelectionRange(gfx::Range(0));
+  // Verify no deletion takes place.
+  [ns_view_ doCommandBySelector:@selector(deleteWordBackward:)];
+  EXPECT_EQ("foo bar baz", GetText());
+  EXPECT_EQ_RANGE(NSMakeRange(0, 0), [ns_view_ selectedRange]);
+
+  // Move the caret as- "foo ba|r baz".
+  SetSelectionRange(gfx::Range(6, 6));
+  [ns_view_ doCommandBySelector:@selector(deleteWordBackward:)];
+  // Verify state is "foo |r baz".
+  EXPECT_EQ("foo r baz", GetText());
+  EXPECT_EQ_RANGE(NSMakeRange(4, 0), [ns_view_ selectedRange]);
+
+  // Make a selection as- "f|oo r b|az".
+  SetSelectionRange(gfx::Range(1, 7));
+  [ns_view_ doCommandBySelector:@selector(deleteWordBackward:)];
+  // Verify only the selection is deleted and state is "f|az"
+  EXPECT_EQ("faz", GetText());
+  EXPECT_EQ_RANGE(NSMakeRange(1, 0), [ns_view_ selectedRange]);
+}
+
+// Test deleting to beginning/end of line/paragraph using text input protocol.
+
+TEST_F(BridgedNativeWidgetTest, TextInput_DeleteToBeginningOfLine) {
+  TestDeleteBeginning(@selector(deleteToBeginningOfLine:));
+}
+
+TEST_F(BridgedNativeWidgetTest, TextInput_DeleteToEndOfLine) {
+  TestDeleteEnd(@selector(deleteToEndOfLine:));
+}
+
+TEST_F(BridgedNativeWidgetTest, TextInput_DeleteToBeginningOfParagraph) {
+  TestDeleteBeginning(@selector(deleteToBeginningOfParagraph:));
+}
+
+TEST_F(BridgedNativeWidgetTest, TextInput_DeleteToEndOfParagraph) {
+  TestDeleteEnd(@selector(deleteToEndOfParagraph:));
 }
 
 // Test firstRectForCharacterRange:actualRange for cases where query range is

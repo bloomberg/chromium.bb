@@ -567,6 +567,9 @@ gfx::Rect GetFirstRectForRangeHelper(const ui::TextInputClient* client,
 // TODO(tapted): Make this list complete, except for insert* methods which are
 // dispatched as regular key events in doCommandBySelector:.
 
+// views::Textfields are single-line only, map Paragraph and Document commands
+// to Line.
+
 // The insertText action message forwards to the TextInputClient unless a menu
 // is active. Note that NSResponder's interpretKeyEvents: implementation doesn't
 // direct insertText: through doCommandBySelector:, so this is still needed to
@@ -704,6 +707,28 @@ gfx::Rect GetFirstRectForRangeHelper(const ui::TextInputClient* client,
              keyCode:ui::VKEY_BACK
              domCode:ui::DomCode::BACKSPACE
           eventFlags:ui::EF_CONTROL_DOWN];
+}
+
+- (void)deleteToBeginningOfLine:(id)sender {
+  [self handleAction:IDS_DELETE_TO_BEGINNING_OF_LINE
+             keyCode:ui::VKEY_BACK
+             domCode:ui::DomCode::BACKSPACE
+          eventFlags:ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN];
+}
+
+- (void)deleteToEndOfLine:(id)sender {
+  [self handleAction:IDS_DELETE_TO_END_OF_LINE
+             keyCode:ui::VKEY_DELETE
+             domCode:ui::DomCode::DEL
+          eventFlags:ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN];
+}
+
+- (void)deleteToBeginningOfParagraph:(id)sender {
+  [self deleteToBeginningOfLine:sender];
+}
+
+- (void)deleteToEndOfParagraph:(id)sender {
+  [self deleteToEndOfLine:sender];
 }
 
 // Cancellation.
