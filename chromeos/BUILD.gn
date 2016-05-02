@@ -39,6 +39,7 @@ component("chromeos") {
     "//crypto",
     "//crypto:platform",
     "//google_apis",
+    "//net",
     "//third_party/icu",
     "//third_party/libxml",
     "//third_party/protobuf:protobuf_lite",
@@ -63,8 +64,15 @@ static_library("test_support") {
     ":chromeos",
     ":cryptohome_proto",
     ":power_manager_proto",
+  ]
+  deps = [
     ":test_support_without_gmock",
+    "//components/signin/core/account_id",
+    "//dbus:test_support",
+    "//google_apis",
+    "//net:test_support",
     "//testing/gmock",
+    "//testing/gtest",
   ]
   sources = [
     "attestation/mock_attestation_flow.cc",
