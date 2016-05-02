@@ -154,16 +154,16 @@ def _PrintUrlSetComparison(ref_url_set, url_set, url_set_name):
     logging.error('+     ' + url)
 
 
-class _RequestOutcome:
+class RequestOutcome:
   All, ServedFromCache, NotServedFromCache = range(3)
 
 
-def _ListUrlRequests(trace, request_kind):
+def ListUrlRequests(trace, request_kind):
   """Lists requested URLs from a trace.
 
   Args:
     trace: (LoadingTrace) loading trace.
-    request_kind: _RequestOutcome indicating the subset of requests to output.
+    request_kind: RequestOutcome indicating the subset of requests to output.
 
   Returns:
     set([str])
@@ -176,13 +176,13 @@ def _ListUrlRequests(trace, request_kind):
       continue
     if not request_event.protocol.startswith('http'):
       raise RuntimeError('Unknown protocol {}'.format(request_event.protocol))
-    if (request_kind == _RequestOutcome.ServedFromCache and
+    if (request_kind == RequestOutcome.ServedFromCache and
         request_event.from_disk_cache):
       urls.add(request_event.url)
-    elif (request_kind == _RequestOutcome.NotServedFromCache and
+    elif (request_kind == RequestOutcome.NotServedFromCache and
         not request_event.from_disk_cache):
       urls.add(request_event.url)
-    elif request_kind == _RequestOutcome.All:
+    elif request_kind == RequestOutcome.All:
       urls.add(request_event.url)
   return urls
 
@@ -216,12 +216,12 @@ def VerifyBenchmarkOutputDirectory(benchmark_setup_path,
     trace = LoadingTrace.FromJsonFile(trace_path)
     logging.info('verifying %s from %s' % (trace.url, trace_path))
     _PrintUrlSetComparison(url_resources,
-        _ListUrlRequests(trace, _RequestOutcome.All), 'All resources')
+        ListUrlRequests(trace, RequestOutcome.All), 'All resources')
     _PrintUrlSetComparison(url_resources.intersection(cache_whitelist),
-        _ListUrlRequests(trace, _RequestOutcome.ServedFromCache),
+        ListUrlRequests(trace, RequestOutcome.ServedFromCache),
         'Cached resources')
     sent_url_requests = \
-        _ListUrlRequests(trace, _RequestOutcome.NotServedFromCache)
+        ListUrlRequests(trace, RequestOutcome.NotServedFromCache)
     _PrintUrlSetComparison(url_resources.difference(cache_whitelist),
         sent_url_requests, 'Non cached resources')
     all_sent_url_requests.update(sent_url_requests)

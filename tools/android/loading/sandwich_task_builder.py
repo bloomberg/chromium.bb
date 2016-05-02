@@ -201,6 +201,7 @@ class SandwichTaskBuilder(task_manager.Builder):
       with open(SetupBenchmark.path, 'w') as output:
         json.dump({
             'cache_whitelist': [url for url in whitelisted_urls],
+            'subresource_discoverer': subresource_discoverer,
             'url_resources': url_resources,
           }, output)
 
@@ -234,7 +235,7 @@ class SandwichTaskBuilder(task_manager.Builder):
           SetupBenchmark.path, RunBenchmark.path)
       trace_metrics_list = \
           sandwich_metrics.ExtractMetricsFromRunnerOutputDirectory(
-              RunBenchmark.path)
+              SetupBenchmark.path, RunBenchmark.path)
       trace_metrics_list.sort(key=lambda e: e['repeat_id'])
       with open(ExtractMetrics.path, 'w') as csv_file:
         writer = csv.DictWriter(csv_file,

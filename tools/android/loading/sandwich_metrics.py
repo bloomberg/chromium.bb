@@ -8,6 +8,7 @@ python pull_sandwich_metrics.py -h
 """
 
 import collections
+import json
 import logging
 import os
 import shutil
@@ -27,12 +28,21 @@ from telemetry.util import rgba_color
 
 import loading_trace as loading_trace_module
 import sandwich_runner
+import sandwich_misc
 import tracing
 
 
 CSV_FIELD_NAMES = [
     'repeat_id',
     'url',
+    'subresource_discoverer',
+    'subresource_count',
+    # The amount of subresources detected at SetupBenchmark step.
+    'subresource_count_theoretic',
+    # Amount of subresources for caching as suggested by the subresource
+    # discoverer.
+    'cached_subresource_count_theoretic',
+    'cached_subresource_count',
     'total_load',
     'js_onload_event',
     'browser_malloc_avg',
@@ -182,6 +192,30 @@ def _ExtractMemoryMetrics(loading_trace):
   }
 
 
+def _ExtractBenchmarkStatistics(benchmark_setup, loading_trace):
+  """Extracts some useful statistics from a benchmark run.
+
+  Args:
+    benchmark_setup: benchmark_setup: dict representing the benchmark setup
+        JSON. The JSON format is according to:
+            SandwichTaskBuilder.PopulateLoadBenchmark.SetupBenchmark.
+    loading_trace: loading_trace_module.LoadingTrace.
+
+  Returns:
+    Dictionary with all extracted fields set.
+  """
+  return {
+    'subresource_discoverer': benchmark_setup['subresource_discoverer'],
+    'subresource_count': len(sandwich_misc.ListUrlRequests(
+        loading_trace, sandwich_misc.RequestOutcome.All)),
+    'subresource_count_theoretic': len(benchmark_setup['url_resources']),
+    'cached_subresource_count': len(sandwich_misc.ListUrlRequests(
+        loading_trace, sandwich_misc.RequestOutcome.ServedFromCache)),
+    'cached_subresource_count_theoretic':
+        len(benchmark_setup['cache_whitelist']),
+  }
+
+
 def _ExtractCompletenessRecordFromVideo(video_path):
   """Extracts the completeness record from a video.
 
@@ -241,10 +275,13 @@ def ComputeSpeedIndex(completeness_record):
   return speed_index
 
 
-def _ExtractMetricsFromRunDirectory(run_directory_path):
+def _ExtractMetricsFromRunDirectory(benchmark_setup, run_directory_path):
   """Extracts all the metrics from traces and video of a sandwich run.
 
   Args:
+    benchmark_setup: benchmark_setup: dict representing the benchmark setup
+        JSON. The JSON format is according to:
+            SandwichTaskBuilder.PopulateLoadBenchmark.SetupBenchmark.
     run_directory_path: Path of the run directory.
 
   Returns:
@@ -256,6 +293,8 @@ def _ExtractMetricsFromRunDirectory(run_directory_path):
   run_metrics = {'url': loading_trace.url}
   run_metrics.update(_ExtractDefaultMetrics(loading_trace))
   run_metrics.update(_ExtractMemoryMetrics(loading_trace))
+  run_metrics.update(
+      _ExtractBenchmarkStatistics(benchmark_setup, loading_trace))
   video_path = os.path.join(run_directory_path, 'video.mp4')
   if os.path.isfile(video_path):
     logging.info('processing speed-index video \'%s\'' % video_path)
@@ -268,17 +307,20 @@ def _ExtractMetricsFromRunDirectory(run_directory_path):
   return run_metrics
 
 
-def ExtractMetricsFromRunnerOutputDirectory(output_directory_path):
+def ExtractMetricsFromRunnerOutputDirectory(benchmark_setup_path,
+                                            output_directory_path):
   """Extracts all the metrics from all the traces of a sandwich runner output
   directory.
 
   Args:
+    benchmark_setup_path: Path of the JSON of the benchmark setup.
     output_directory_path: The sandwich runner's output directory to extract the
         metrics from.
 
   Returns:
     List of dictionaries.
   """
+  benchmark_setup = json.load(open(benchmark_setup_path))
   assert os.path.isdir(output_directory_path)
   metrics = []
   for node_name in os.listdir(output_directory_path):
@@ -289,7 +331,8 @@ def ExtractMetricsFromRunnerOutputDirectory(output_directory_path):
     except ValueError:
       continue
     run_directory_path = os.path.join(output_directory_path, node_name)
-    run_metrics = _ExtractMetricsFromRunDirectory(run_directory_path)
+    run_metrics = _ExtractMetricsFromRunDirectory(
+        benchmark_setup, run_directory_path)
     run_metrics['repeat_id'] = repeat_id
     assert set(run_metrics.keys()) == set(CSV_FIELD_NAMES)
     metrics.append(run_metrics)

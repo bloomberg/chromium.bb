@@ -232,19 +232,6 @@ class PageTrackTest(unittest.TestCase):
     with self.assertRaises(ValueError):
       puller.ComputeSpeedIndex(completness_record)
 
-  def testCommandLine(self):
-    tmp_dir = tempfile.mkdtemp()
-    for dirname in ['1', '2', 'whatever']:
-      os.mkdir(os.path.join(tmp_dir, dirname))
-      LoadingTrace(_MINIMALIST_TRACE_EVENTS).ToJsonFile(
-          os.path.join(tmp_dir, dirname, sandwich_runner.TRACE_FILENAME))
-
-    process = subprocess.Popen(['python', puller.__file__, tmp_dir])
-    process.wait()
-    shutil.rmtree(tmp_dir)
-
-    self.assertEquals(0, process.returncode)
-
 
 if __name__ == '__main__':
   unittest.main()
