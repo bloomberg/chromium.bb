@@ -14,14 +14,12 @@ function testFunction()
     ).then(
         function p2()
         {
-            var dummy = window.foo || 1;
-            return dummy;
+            return window.foo || 1;
         }
     ).then(
         function p3()
         {
-            var dummy = window.foo || 2;
-            return dummy;
+            return window.foo || 2;
         }
     ).catch(function(e) {
         console.error("FAIL: Unexpected exception: " + e);
@@ -43,7 +41,6 @@ function test()
             "Print", // debugger; at p1
             "StepInto", "Print",
             "StepInto", "Print", // entered p2
-            "StepOver", "Print",
             "StepOver", "Print",
             "StepOver", "Print", // entered p3
             "StepOver", "Print",

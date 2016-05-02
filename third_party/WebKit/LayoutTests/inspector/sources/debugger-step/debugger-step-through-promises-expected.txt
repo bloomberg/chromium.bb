@@ -19,14 +19,10 @@ Call stack:
 
 Executing StepOver...
 Call stack:
-    0) p2 (debugger-step-through-promises.html:19)
+    0) p3 (debugger-step-through-promises.html:22)
 
 Executing StepOver...
 Call stack:
     0) p3 (debugger-step-through-promises.html:23)
-
-Executing StepOver...
-Call stack:
-    0) p3 (debugger-step-through-promises.html:24)
 
 
