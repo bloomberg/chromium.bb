@@ -3204,6 +3204,8 @@
             'html/parser/XSSAuditor.h',
             'html/parser/XSSAuditorDelegate.cpp',
             'html/parser/XSSAuditorDelegate.h',
+            'html/shadow/AppearanceSwitchElement.cpp',
+            'html/shadow/AppearanceSwitchElement.h',
             'html/shadow/ClearButtonElement.cpp',
             'html/shadow/ClearButtonElement.h',
             'html/shadow/DateTimeEditElement.cpp',

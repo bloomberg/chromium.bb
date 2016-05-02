@@ -30,76 +30,13 @@
 #include "core/html/HTMLContentElement.h"
 #include "core/html/HTMLDivElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
+#include "core/html/shadow/AppearanceSwitchElement.h"
 #include "core/layout/LayoutObject.h"
 #include "core/style/ComputedStyle.h"
 
 namespace blink {
 
 using namespace HTMLNames;
-
-// ----------------------------------------------------------------
-
-class MeterFallbackElement final : public HTMLDivElement {
-public:
-    DECLARE_NODE_FACTORY(MeterFallbackElement);
-
-private:
-    explicit MeterFallbackElement(Document& doc)
-        : HTMLDivElement(doc)
-    {
-        setHasCustomStyleCallbacks();
-    }
-
-    PassRefPtr<ComputedStyle> customStyleForLayoutObject() override
-    {
-        // We can't use setInlineStyleProperty() because it updates the DOM
-        // tree.  We shouldn't do it during style calculation.
-        // TODO(tkent): Injecting a CSS variable by host is a better approach?
-        Element* host = shadowHost();
-        RefPtr<ComputedStyle> style = originalStyleForLayoutObject();
-        if (!host || !host->computedStyle() || host->computedStyle()->appearance() != MeterPart || style->display() == NONE)
-            return style.release();
-        RefPtr<ComputedStyle> newStyle = ComputedStyle::clone(*style);
-        newStyle->setDisplay(NONE);
-        newStyle->setUnique();
-        return newStyle.release();
-    }
-};
-
-DEFINE_NODE_FACTORY(MeterFallbackElement)
-
-// ----------------------------------------------------------------
-
-class MeterInnerElement final : public HTMLDivElement {
-public:
-    DECLARE_NODE_FACTORY(MeterInnerElement);
-
-private:
-    explicit MeterInnerElement(Document& doc)
-        : HTMLDivElement(doc)
-    {
-        setHasCustomStyleCallbacks();
-    }
-
-    PassRefPtr<ComputedStyle> customStyleForLayoutObject() override
-    {
-        // We can't use setInlineStyleProperty() because it updates the DOM
-        // tree.  We shouldn't do it during style calculation.
-        // TODO(tkent): Injecting a CSS variable by host is a better approach?
-        Element* host = shadowHost();
-        RefPtr<ComputedStyle> style = originalStyleForLayoutObject();
-        if (!host || !host->computedStyle() || host->computedStyle()->appearance() == MeterPart || style->display() == NONE)
-            return style.release();
-        RefPtr<ComputedStyle> newStyle = ComputedStyle::clone(*style);
-        newStyle->setDisplay(NONE);
-        newStyle->setUnique();
-        return newStyle.release();
-    }
-};
-
-DEFINE_NODE_FACTORY(MeterInnerElement)
-
-// ----------------------------------------------------------------
 
 HTMLMeterElement::HTMLMeterElement(Document& document)
     : LabelableElement(meterTag, document)
@@ -258,7 +195,7 @@ void HTMLMeterElement::didAddUserAgentShadowRoot(ShadowRoot& root)
 {
     ASSERT(!m_value);
 
-    MeterInnerElement* inner = MeterInnerElement::create(document());
+    AppearanceSwitchElement* inner = AppearanceSwitchElement::create(document(), AppearanceSwitchElement::ShowIfHostHasAppearance);
     inner->setShadowPseudoId(AtomicString("-webkit-meter-inner-element"));
     root.appendChild(inner);
 
@@ -271,7 +208,7 @@ void HTMLMeterElement::didAddUserAgentShadowRoot(ShadowRoot& root)
 
     inner->appendChild(bar);
 
-    MeterFallbackElement* fallback = MeterFallbackElement::create(document());
+    AppearanceSwitchElement* fallback = AppearanceSwitchElement::create(document(), AppearanceSwitchElement::ShowIfHostHasNoAppearance);
     fallback->appendChild(HTMLContentElement::create(document()));
     root.appendChild(fallback);
 }
