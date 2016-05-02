@@ -803,3 +803,12 @@ DWrite.dll!DWriteCreateFactory
 skia.dll!SkDWriteFontFileStreamWrapper::GetFileSize
 ...
 blink_platform.dll!blink::SimpleFontData::platformWidthForGlyph
+
+UNADDRESSABLE ACCESS
+name=bug_608053
+*!safe_browsing::V4GetHashProtocolManager::Create
+
+UNADDRESSABLE ACCESS
+name=bug_608064
+*!ExtensionService::NotifyExtensionLoaded
+*!ExtensionService::AddExtension
