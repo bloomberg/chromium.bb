@@ -10,7 +10,6 @@ header("Origin-Trial: AlCoOPbezqtrGMzSzbLQC4c+oPqO6yuioemcBPjgcXajF8jtmZr4B8tJRP
 <meta charset="utf-8">
 <title>Test Sample API when trial is enabled</title>
 <script src="../resources/testharness.js"></script>
-<script src="../resources/testharness-helpers.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 <script src="resources/origin_trials.js"></script>
 <script>

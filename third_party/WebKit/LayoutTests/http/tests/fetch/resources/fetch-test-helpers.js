@@ -1,6 +1,5 @@
 if (self.importScripts) {
   importScripts('/resources/testharness.js');
-  importScripts('/resources/testharness-helpers.js');
   importScripts('/serviceworker/resources/test-helpers.js');
   importScripts('/fetch/resources/fetch-test-options.js');
 }
