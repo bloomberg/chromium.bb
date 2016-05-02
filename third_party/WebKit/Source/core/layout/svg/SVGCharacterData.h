@@ -17,17 +17,14 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef SVGTextLayoutAttributes_h
-#define SVGTextLayoutAttributes_h
+#ifndef SVGCharacterData_h
+#define SVGCharacterData_h
 
 #include "wtf/Allocator.h"
 #include "wtf/HashMap.h"
 #include "wtf/MathExtras.h"
-#include "wtf/Noncopyable.h"
 
 namespace blink {
-
-class LayoutSVGInlineText;
 
 struct SVGCharacterData {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
@@ -49,28 +46,6 @@ struct SVGCharacterData {
     float rotate;
 };
 
-typedef HashMap<unsigned, SVGCharacterData> SVGCharacterDataMap;
-
-class SVGTextLayoutAttributes {
-    DISALLOW_NEW();
-    WTF_MAKE_NONCOPYABLE(SVGTextLayoutAttributes);
-public:
-    SVGTextLayoutAttributes(LayoutSVGInlineText*);
-
-    void clear();
-    static float emptyValue() { return std::numeric_limits<float>::quiet_NaN(); }
-    static bool isEmptyValue(float value) { return std::isnan(value); }
-
-    LayoutSVGInlineText* context() const { return m_context; }
-
-    SVGCharacterDataMap& characterDataMap() { return m_characterDataMap; }
-    const SVGCharacterDataMap& characterDataMap() const { return m_characterDataMap; }
-
-private:
-    LayoutSVGInlineText* m_context;
-    SVGCharacterDataMap m_characterDataMap;
-};
-
 inline SVGCharacterData::SVGCharacterData()
     : x(emptyValue())
     , y(emptyValue())
@@ -79,6 +54,8 @@ inline SVGCharacterData::SVGCharacterData()
     , rotate(emptyValue())
 {
 }
+
+typedef HashMap<unsigned, SVGCharacterData> SVGCharacterDataMap;
 
 } // namespace blink
 

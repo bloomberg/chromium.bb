@@ -50,15 +50,15 @@ void SVGRootInlineBox::computePerCharacterLayoutInformation()
 {
     LayoutSVGText& textRoot = toLayoutSVGText(*LineLayoutAPIShim::layoutObjectFrom(block()));
 
-    Vector<SVGTextLayoutAttributes*>& layoutAttributes = textRoot.layoutAttributes();
-    if (layoutAttributes.isEmpty())
+    const Vector<LayoutSVGInlineText*>& descendantTextNodes = textRoot.descendantTextNodes();
+    if (descendantTextNodes.isEmpty())
         return;
 
     if (textRoot.needsReordering())
         reorderValueLists();
 
     // Perform SVG text layout phase two (see SVGTextLayoutEngine for details).
-    SVGTextLayoutEngine characterLayout(layoutAttributes);
+    SVGTextLayoutEngine characterLayout(descendantTextNodes);
     characterLayout.layoutCharactersInTextBoxes(this);
 
     // Perform SVG text layout phase three (see SVGTextChunkBuilder for details).
@@ -156,12 +156,12 @@ InlineBox* SVGRootInlineBox::closestLeafChildForPosition(const LayoutPoint& poin
 static inline void swapPositioningValuesInTextBoxes(SVGInlineTextBox* firstTextBox, SVGInlineTextBox* lastTextBox)
 {
     LineLayoutSVGInlineText firstTextNode = LineLayoutSVGInlineText(firstTextBox->getLineLayoutItem());
-    SVGCharacterDataMap& firstCharacterDataMap = firstTextNode.layoutAttributes().characterDataMap();
+    SVGCharacterDataMap& firstCharacterDataMap = firstTextNode.characterDataMap();
     SVGCharacterDataMap::iterator itFirst = firstCharacterDataMap.find(firstTextBox->start() + 1);
     if (itFirst == firstCharacterDataMap.end())
         return;
     LineLayoutSVGInlineText lastTextNode = LineLayoutSVGInlineText(lastTextBox->getLineLayoutItem());
-    SVGCharacterDataMap& lastCharacterDataMap = lastTextNode.layoutAttributes().characterDataMap();
+    SVGCharacterDataMap& lastCharacterDataMap = lastTextNode.characterDataMap();
     SVGCharacterDataMap::iterator itLast = lastCharacterDataMap.find(lastTextBox->start() + 1);
     if (itLast == lastCharacterDataMap.end())
         return;

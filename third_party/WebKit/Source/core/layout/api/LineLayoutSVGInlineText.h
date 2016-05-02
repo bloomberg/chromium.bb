@@ -32,9 +32,9 @@ public:
         return toSVGInlineText()->metricsList();
     }
 
-    SVGTextLayoutAttributes& layoutAttributes()
+    SVGCharacterDataMap& characterDataMap()
     {
-        return *toSVGInlineText()->layoutAttributes();
+        return toSVGInlineText()->characterDataMap();
     }
 
     bool characterStartsNewTextChunk(int position) const

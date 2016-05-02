@@ -23,8 +23,6 @@
 #include "core/layout/api/LineLayoutSVGInlineText.h"
 #include "core/layout/svg/LayoutSVGInlineText.h"
 #include "core/layout/svg/SVGTextFragment.h"
-#include "core/layout/svg/SVGTextLayoutAttributes.h"
-#include "core/layout/svg/SVGTextMetrics.h"
 #include "wtf/Allocator.h"
 #include "wtf/Vector.h"
 
@@ -36,6 +34,7 @@ class LayoutObject;
 class PathPositionMapper;
 class SVGInlineFlowBox;
 class SVGInlineTextBox;
+class SVGTextMetrics;
 
 // SVGTextLayoutEngine performs the second layout phase for SVG text.
 //
@@ -49,10 +48,8 @@ class SVGTextLayoutEngine {
     STACK_ALLOCATED();
     WTF_MAKE_NONCOPYABLE(SVGTextLayoutEngine);
 public:
-    SVGTextLayoutEngine(Vector<SVGTextLayoutAttributes*>&);
+    SVGTextLayoutEngine(const Vector<LayoutSVGInlineText*>&);
     ~SVGTextLayoutEngine();
-
-    Vector<SVGTextLayoutAttributes*>& layoutAttributes() { return m_layoutAttributes; }
 
     void layoutCharactersInTextBoxes(InlineFlowBox* start);
     void finishLayout();
@@ -71,13 +68,13 @@ private:
     void layoutInlineTextBox(SVGInlineTextBox*);
     void layoutTextOnLineOrPath(SVGInlineTextBox*, LineLayoutSVGInlineText, const ComputedStyle&);
 
-    const SVGTextLayoutAttributes* nextLogicalAttributes();
-    const SVGTextLayoutAttributes* currentLogicalCharacterMetrics(SVGTextMetrics&);
+    const LayoutSVGInlineText* nextLogicalTextNode();
+    const LayoutSVGInlineText* currentLogicalCharacterMetrics(SVGTextMetrics&);
     void advanceToNextLogicalCharacter(const SVGTextMetrics&);
 
     // Logical iteration state.
-    Vector<SVGTextLayoutAttributes*>& m_layoutAttributes;
-    unsigned m_layoutAttributesPosition;
+    const Vector<LayoutSVGInlineText*>& m_descendantTextNodes;
+    unsigned m_currentLogicalTextNodeIndex;
     unsigned m_logicalCharacterOffset;
     unsigned m_logicalMetricsListOffset;
 

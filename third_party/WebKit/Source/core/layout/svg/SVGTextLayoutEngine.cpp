@@ -33,9 +33,9 @@
 
 namespace blink {
 
-SVGTextLayoutEngine::SVGTextLayoutEngine(Vector<SVGTextLayoutAttributes*>& layoutAttributes)
-    : m_layoutAttributes(layoutAttributes)
-    , m_layoutAttributesPosition(0)
+SVGTextLayoutEngine::SVGTextLayoutEngine(const Vector<LayoutSVGInlineText*>& descendantTextNodes)
+    : m_descendantTextNodes(descendantTextNodes)
+    , m_currentLogicalTextNodeIndex(0)
     , m_logicalCharacterOffset(0)
     , m_logicalMetricsListOffset(0)
     , m_isVerticalText(false)
@@ -47,7 +47,7 @@ SVGTextLayoutEngine::SVGTextLayoutEngine(Vector<SVGTextLayoutAttributes*>& layou
     , m_textPathSpacing(0)
     , m_textPathScaling(1)
 {
-    ASSERT(!m_layoutAttributes.isEmpty());
+    ASSERT(!m_descendantTextNodes.isEmpty());
 }
 
 SVGTextLayoutEngine::~SVGTextLayoutEngine() = default;
@@ -156,7 +156,7 @@ void SVGTextLayoutEngine::beginTextPathLayout(SVGInlineFlowBox* flowBox)
 {
     // Build text chunks for all <textPath> children, using the line layout algorithm.
     // This is needeed as text-anchor is just an additional startOffset for text paths.
-    SVGTextLayoutEngine lineLayout(m_layoutAttributes);
+    SVGTextLayoutEngine lineLayout(m_descendantTextNodes);
     lineLayout.m_textLengthSpacingInEffect = m_textLengthSpacingInEffect;
     lineLayout.layoutCharactersInTextBoxes(flowBox);
 
@@ -276,47 +276,47 @@ void SVGTextLayoutEngine::finishLayout()
     m_lineLayoutBoxes.clear();
 }
 
-const SVGTextLayoutAttributes* SVGTextLayoutEngine::nextLogicalAttributes()
+const LayoutSVGInlineText* SVGTextLayoutEngine::nextLogicalTextNode()
 {
-    ASSERT(m_layoutAttributesPosition < m_layoutAttributes.size());
-    ++m_layoutAttributesPosition;
-    if (m_layoutAttributesPosition == m_layoutAttributes.size())
+    ASSERT(m_currentLogicalTextNodeIndex < m_descendantTextNodes.size());
+    ++m_currentLogicalTextNodeIndex;
+    if (m_currentLogicalTextNodeIndex == m_descendantTextNodes.size())
         return nullptr;
 
     m_logicalMetricsListOffset = 0;
     m_logicalCharacterOffset = 0;
-    return m_layoutAttributes[m_layoutAttributesPosition];
+    return m_descendantTextNodes[m_currentLogicalTextNodeIndex];
 }
 
-const SVGTextLayoutAttributes* SVGTextLayoutEngine::currentLogicalCharacterMetrics(SVGTextMetrics& logicalMetrics)
+const LayoutSVGInlineText* SVGTextLayoutEngine::currentLogicalCharacterMetrics(SVGTextMetrics& logicalMetrics)
 {
-    // If we're consumed all layout attributes, there can be no more metrics.
-    if (m_layoutAttributesPosition == m_layoutAttributes.size())
+    // If we're consumed all text nodes, there can be no more metrics.
+    if (m_currentLogicalTextNodeIndex == m_descendantTextNodes.size())
         return nullptr;
 
-    const SVGTextLayoutAttributes* logicalAttributes = m_layoutAttributes[m_layoutAttributesPosition];
+    const LayoutSVGInlineText* logicalTextNode = m_descendantTextNodes[m_currentLogicalTextNodeIndex];
     // If we reached the end of the text node associated with the current set
     // of layout attributes, try to move to the next text node/set of layout
     // attributes.
-    ASSERT(m_logicalCharacterOffset <= logicalAttributes->context()->textLength());
-    if (m_logicalCharacterOffset == logicalAttributes->context()->textLength()) {
-        logicalAttributes = nextLogicalAttributes();
-        if (!logicalAttributes)
+    ASSERT(m_logicalCharacterOffset <= logicalTextNode->textLength());
+    if (m_logicalCharacterOffset == logicalTextNode->textLength()) {
+        logicalTextNode = nextLogicalTextNode();
+        if (!logicalTextNode)
             return nullptr;
     }
 
     // We have set of layout attributes. Find the first non-collapsed text
     // metrics cell.
-    const Vector<SVGTextMetrics>* metricsList = &logicalAttributes->context()->metricsList();
+    const Vector<SVGTextMetrics>* metricsList = &logicalTextNode->metricsList();
     unsigned metricsListSize = metricsList->size();
     while (true) {
         // If we run out of metrics, move to the next set of layout attributes.
         if (m_logicalMetricsListOffset == metricsListSize) {
-            logicalAttributes = nextLogicalAttributes();
-            if (!logicalAttributes)
+            logicalTextNode = nextLogicalTextNode();
+            if (!logicalTextNode)
                 return nullptr;
 
-            metricsList = &logicalAttributes->context()->metricsList();
+            metricsList = &logicalTextNode->metricsList();
             metricsListSize = metricsList->size();
             continue;
         }
@@ -330,7 +330,7 @@ const SVGTextLayoutAttributes* SVGTextLayoutEngine::currentLogicalCharacterMetri
         }
 
         // Stop if we found the next valid logical text metrics object.
-        return logicalAttributes;
+        return logicalTextNode;
     }
 
     ASSERT_NOT_REACHED();
@@ -379,15 +379,11 @@ void SVGTextLayoutEngine::layoutTextOnLineOrPath(SVGInlineTextBox* textBox, Line
         }
 
         SVGTextMetrics logicalMetrics(SVGTextMetrics::SkippedSpaceMetrics);
-        const SVGTextLayoutAttributes* logicalAttributes = currentLogicalCharacterMetrics(logicalMetrics);
-        if (!logicalAttributes)
+        const LayoutSVGInlineText* logicalTextNode = currentLogicalCharacterMetrics(logicalMetrics);
+        if (!logicalTextNode)
             break;
 
-        const SVGCharacterDataMap& characterDataMap = logicalAttributes->characterDataMap();
-        SVGCharacterData data;
-        SVGCharacterDataMap::const_iterator it = characterDataMap.find(m_logicalCharacterOffset + 1);
-        if (it != characterDataMap.end())
-            data = it->value;
+        const SVGCharacterData data = logicalTextNode->characterDataMap().get(m_logicalCharacterOffset + 1);
 
         // TODO(fs): Use the return value to eliminate the additional
         // hash-lookup below when determining if this text box should be tagged
@@ -397,7 +393,7 @@ void SVGTextLayoutEngine::layoutTextOnLineOrPath(SVGInlineTextBox* textBox, Line
         // When we've advanced to the box start offset, determine using the original x/y values,
         // whether this character starts a new text chunk, before doing any further processing.
         if (m_visualMetricsIterator.characterOffset() == textBox->start())
-            textBox->setStartsNewTextChunk(logicalAttributes->context()->characterStartsNewTextChunk(m_logicalCharacterOffset));
+            textBox->setStartsNewTextChunk(logicalTextNode->characterStartsNewTextChunk(m_logicalCharacterOffset));
 
         bool hasRelativePosition = applyRelativePositionAdjustmentsIfNeeded(data);
 

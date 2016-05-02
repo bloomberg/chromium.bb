@@ -20,7 +20,7 @@
 #ifndef SVGTextLayoutAttributesBuilder_h
 #define SVGTextLayoutAttributesBuilder_h
 
-#include "core/layout/svg/SVGTextLayoutAttributes.h"
+#include "core/layout/svg/SVGCharacterData.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Allocator.h"
 #include "wtf/Vector.h"

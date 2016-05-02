@@ -54,7 +54,6 @@ static PassRefPtr<StringImpl> normalizeWhitespace(PassRefPtr<StringImpl> string)
 LayoutSVGInlineText::LayoutSVGInlineText(Node* n, PassRefPtr<StringImpl> string)
     : LayoutText(n, normalizeWhitespace(string))
     , m_scalingFactor(1)
-    , m_layoutAttributes(this)
 {
 }
 
@@ -137,8 +136,8 @@ bool LayoutSVGInlineText::characterStartsNewTextChunk(int position) const
     if (!position && parent()->isSVGTextPath() && !previousSibling())
         return true;
 
-    const SVGCharacterDataMap::const_iterator it = m_layoutAttributes.characterDataMap().find(static_cast<unsigned>(position + 1));
-    if (it == m_layoutAttributes.characterDataMap().end())
+    const SVGCharacterDataMap::const_iterator it = m_characterDataMap.find(static_cast<unsigned>(position + 1));
+    if (it == m_characterDataMap.end())
         return false;
 
     return it->value.hasX() || it->value.hasY();

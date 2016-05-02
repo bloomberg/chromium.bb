@@ -31,7 +31,6 @@
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutAnalyzer.h"
 #include "core/layout/LayoutState.h"
-#include "core/layout/LayoutView.h"
 #include "core/layout/PointerEventsHitRules.h"
 #include "core/layout/api/LineLayoutItem.h"
 #include "core/layout/svg/LayoutSVGInline.h"
@@ -43,10 +42,7 @@
 #include "core/layout/svg/line/SVGRootInlineBox.h"
 #include "core/paint/SVGTextPainter.h"
 #include "core/style/ShadowList.h"
-#include "core/svg/SVGLengthList.h"
 #include "core/svg/SVGTextElement.h"
-#include "core/svg/SVGTransformList.h"
-#include "core/svg/SVGURIReference.h"
 #include "platform/FloatConversion.h"
 #include "platform/geometry/FloatQuad.h"
 
@@ -77,12 +73,12 @@ LayoutSVGText::LayoutSVGText(SVGTextElement* node)
 
 LayoutSVGText::~LayoutSVGText()
 {
-    ASSERT(m_layoutAttributes.isEmpty());
+    ASSERT(m_descendantTextNodes.isEmpty());
 }
 
 void LayoutSVGText::willBeDestroyed()
 {
-    m_layoutAttributes.clear();
+    m_descendantTextNodes.clear();
 
     LayoutSVGBlock::willBeDestroyed();
 }
@@ -102,17 +98,17 @@ const LayoutSVGText* LayoutSVGText::locateLayoutSVGTextAncestor(const LayoutObje
     return findTextRoot(start);
 }
 
-static inline void collectLayoutAttributes(LayoutObject* text, Vector<SVGTextLayoutAttributes*>& attributes)
+static inline void collectDescendantTextNodes(LayoutSVGText& textRoot, Vector<LayoutSVGInlineText*>& descendantTextNodes)
 {
-    for (LayoutObject* descendant = text; descendant; descendant = descendant->nextInPreOrder(text)) {
+    for (LayoutObject* descendant = textRoot.firstChild(); descendant; descendant = descendant->nextInPreOrder(&textRoot)) {
         if (descendant->isSVGInlineText())
-            attributes.append(toLayoutSVGInlineText(descendant)->layoutAttributes());
+            descendantTextNodes.append(toLayoutSVGInlineText(descendant));
     }
 }
 
 void LayoutSVGText::invalidatePositioningValues(LayoutInvalidationReasonForTracing reason)
 {
-    m_layoutAttributes.clear();
+    m_descendantTextNodes.clear();
     setNeedsPositioningValuesUpdate();
     setNeedsLayoutAndFullPaintInvalidation(reason);
 }
@@ -120,7 +116,7 @@ void LayoutSVGText::invalidatePositioningValues(LayoutInvalidationReasonForTraci
 void LayoutSVGText::subtreeChildWasAdded()
 {
     if (beingDestroyed() || !everHadLayout()) {
-        ASSERT(m_layoutAttributes.isEmpty());
+        ASSERT(m_descendantTextNodes.isEmpty());
         return;
     }
     if (documentBeingDestroyed())
@@ -135,7 +131,7 @@ void LayoutSVGText::subtreeChildWasAdded()
 void LayoutSVGText::subtreeChildWillBeRemoved()
 {
     if (beingDestroyed() || !everHadLayout()) {
-        ASSERT(m_layoutAttributes.isEmpty());
+        ASSERT(m_descendantTextNodes.isEmpty());
         return;
     }
 
@@ -149,7 +145,7 @@ void LayoutSVGText::subtreeTextDidChange()
 {
     ASSERT(!beingDestroyed());
     if (!everHadLayout()) {
-        ASSERT(m_layoutAttributes.isEmpty());
+        ASSERT(m_descendantTextNodes.isEmpty());
         return;
     }
 
@@ -172,12 +168,12 @@ static inline void updateFontAndMetrics(LayoutSVGText& textRoot)
     }
 }
 
-static inline void checkLayoutAttributesConsistency(LayoutSVGText* text, Vector<SVGTextLayoutAttributes*>& expectedLayoutAttributes)
+static inline void checkDescendantTextNodeConsistency(LayoutSVGText& text, Vector<LayoutSVGInlineText*>& expectedDescendantTextNodes)
 {
 #if ENABLE(ASSERT)
-    Vector<SVGTextLayoutAttributes*> newLayoutAttributes;
-    collectLayoutAttributes(text, newLayoutAttributes);
-    ASSERT(newLayoutAttributes == expectedLayoutAttributes);
+    Vector<LayoutSVGInlineText*> newDescendantTextNodes;
+    collectDescendantTextNodes(text, newDescendantTextNodes);
+    ASSERT(newDescendantTextNodes == expectedDescendantTextNodes);
 #endif
 }
 
@@ -216,8 +212,8 @@ void LayoutSVGText::layout()
     // When the x/y/dx/dy/rotate lists change, we need to recompute the layout
     // attributes.
     if (m_needsPositioningValuesUpdate) {
-        m_layoutAttributes.clear();
-        collectLayoutAttributes(this, m_layoutAttributes);
+        m_descendantTextNodes.clear();
+        collectDescendantTextNodes(*this, m_descendantTextNodes);
 
         SVGTextLayoutAttributesBuilder(*this).buildLayoutAttributes();
 
@@ -226,7 +222,7 @@ void LayoutSVGText::layout()
         updateParentBoundaries = true;
     }
 
-    checkLayoutAttributesConsistency(this, m_layoutAttributes);
+    checkDescendantTextNodeConsistency(*this, m_descendantTextNodes);
 
     // Reduced version of LayoutBlock::layoutBlock(), which only takes care of SVG text.
     // All if branches that could cause early exit in LayoutBlocks layoutBlock() method are turned into assertions.

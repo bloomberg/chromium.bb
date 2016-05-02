@@ -30,8 +30,8 @@ namespace {
 
 void updateLayoutAttributes(LayoutSVGInlineText& text, unsigned& valueListPosition, const SVGCharacterDataMap& allCharactersMap)
 {
-    SVGTextLayoutAttributes& attributes = *text.layoutAttributes();
-    attributes.clear();
+    SVGCharacterDataMap& characterDataMap = text.characterDataMap();
+    characterDataMap.clear();
 
     const Vector<SVGTextMetrics>& metricsList = text.metricsList();
     auto metricsEnd = metricsList.end();
@@ -42,7 +42,7 @@ void updateLayoutAttributes(LayoutSVGInlineText& text, unsigned& valueListPositi
 
         auto it = allCharactersMap.find(valueListPosition + 1);
         if (it != allCharactersMap.end())
-            attributes.characterDataMap().set(currentPosition + 1, it->value);
+            characterDataMap.set(currentPosition + 1, it->value);
 
         // Increase the position in the value/attribute list with one for each
         // "character unit" (that will be displayed.)

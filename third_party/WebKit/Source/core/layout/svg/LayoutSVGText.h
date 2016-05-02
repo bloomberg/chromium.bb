@@ -23,13 +23,11 @@
 #define LayoutSVGText_h
 
 #include "core/layout/svg/LayoutSVGBlock.h"
-#include "platform/transforms/AffineTransform.h"
 
 namespace blink {
 
 class LayoutSVGInlineText;
 class SVGTextElement;
-class SVGTextLayoutAttributes;
 
 class LayoutSVGText final : public LayoutSVGBlock {
 public:
@@ -50,7 +48,7 @@ public:
     static const LayoutSVGText* locateLayoutSVGTextAncestor(const LayoutObject*);
 
     bool needsReordering() const { return m_needsReordering; }
-    Vector<SVGTextLayoutAttributes*>& layoutAttributes() { return m_layoutAttributes; }
+    const Vector<LayoutSVGInlineText*>& descendantTextNodes() const { return m_descendantTextNodes; }
 
     void subtreeChildWasAdded();
     void subtreeChildWillBeRemoved();
@@ -85,7 +83,7 @@ private:
     bool m_needsPositioningValuesUpdate : 1;
     bool m_needsTransformUpdate : 1;
     bool m_needsTextMetricsUpdate : 1;
-    Vector<SVGTextLayoutAttributes*> m_layoutAttributes;
+    Vector<LayoutSVGInlineText*> m_descendantTextNodes;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSVGText, isSVGText());
