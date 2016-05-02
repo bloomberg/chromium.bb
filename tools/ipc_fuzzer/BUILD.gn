@@ -19,7 +19,7 @@ config("ipc_fuzzer_tool_config") {
   include_dirs = [ "." ]
 }
 
-if (enable_ipc_fuzzer && (is_linux || is_mac || is_win)) {
+if (enable_ipc_fuzzer) {
   assert(!is_component_build, "IPC fuzzer does not support component builds.")
 
   group("ipc_fuzzer_all") {
