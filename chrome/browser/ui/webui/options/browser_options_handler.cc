@@ -726,6 +726,11 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
       "enableExperimentalAccessibilityFeatures",
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kEnableExperimentalAccessibilityFeatures));
+
+  chromeos::CrosSettings* cros_settings = chromeos::CrosSettings::Get();
+  bool allow_bluetooth = true;
+  cros_settings->GetBoolean(chromeos::kAllowBluetooth, &allow_bluetooth);
+  values->SetBoolean("allowBluetooth", allow_bluetooth);
 #endif
 }
 
