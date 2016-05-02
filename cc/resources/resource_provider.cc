@@ -996,7 +996,7 @@ ResourceProvider::ScopedWriteLockGL::ScopedWriteLockGL(
   resource_provider_->LazyAllocate(resource_);
   texture_id_ = resource_->gl_id;
   DCHECK(texture_id_);
-  if (resource_->dirty_image)
+  if (resource_->image_id && resource_->dirty_image)
     resource_provider_->BindImageForSampling(resource_);
 }
 
@@ -1091,9 +1091,8 @@ ResourceProvider::ScopedWriteLockGr::ScopedWriteLockGr(
       set_sync_token_(false) {
   DCHECK(thread_checker_.CalledOnValidThread());
   resource_provider_->LazyAllocate(resource_);
-  if (resource_->dirty_image) {
+  if (resource_->image_id && resource_->dirty_image)
     resource_provider_->BindImageForSampling(resource_);
-  }
 }
 
 ResourceProvider::ScopedWriteLockGr::~ScopedWriteLockGr() {
@@ -1822,6 +1821,8 @@ void ResourceProvider::LazyCreateImage(Resource* resource) {
     resource->image_id = gl->CreateImageCHROMIUM(
         resource->gpu_memory_buffer->AsClientBuffer(), resource->size.width(),
         resource->size.height(), GLInternalFormat(resource->format));
+    DCHECK(resource->image_id || IsGLContextLost());
+
     resource->SetLocallyUsed();
   }
 }
@@ -1883,6 +1884,10 @@ class GrContext* ResourceProvider::GrContext(bool worker_context) const {
       worker_context ? output_surface_->worker_context_provider()
                      : output_surface_->context_provider();
   return context_provider ? context_provider->GrContext() : nullptr;
+}
+
+bool ResourceProvider::IsGLContextLost() const {
+  return ContextGL()->GetGraphicsResetStatusKHR() != GL_NO_ERROR;
 }
 
 bool ResourceProvider::OnMemoryDump(

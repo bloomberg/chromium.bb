@@ -642,6 +642,7 @@ class CC_EXPORT ResourceProvider
   // Returns NULL if the output_surface_ does not have a ContextProvider.
   gpu::gles2::GLES2Interface* ContextGL() const;
   class GrContext* GrContext(bool worker_context) const;
+  bool IsGLContextLost() const;
 
   OutputSurface* output_surface_;
   SharedBitmapManager* shared_bitmap_manager_;
