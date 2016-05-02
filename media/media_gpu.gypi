@@ -245,6 +245,10 @@
       ],
       'conditions': [
         ['use_x11 == 1', {
+          'dependencies': [
+            '../build/linux/system.gyp:x11',
+            '../ui/gfx/x/gfx_x11.gyp:gfx_x11',
+          ],
           'variables': {
             'sig_files': [
               'gpu/va.sigs',

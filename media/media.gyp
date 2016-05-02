@@ -1621,7 +1621,7 @@
     {
       # GN version: //media/gpu
       'target_name': 'media_gpu',
-      'type': 'static_library',
+      'type': '<(component)',
       'includes': [ 'media_gpu.gypi' ],
     },
   ],

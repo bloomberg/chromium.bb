@@ -20,6 +20,7 @@
 #include "base/threading/thread_checker.h"
 #include "media/filters/h264_parser.h"
 #include "media/gpu/gpu_video_decode_accelerator_helpers.h"
+#include "media/gpu/media_gpu_export.h"
 #include "media/gpu/vt_mac.h"
 #include "media/video/h264_poc.h"
 #include "media/video/video_decode_accelerator.h"
@@ -30,7 +31,7 @@
 namespace media {
 
 // Preload VideoToolbox libraries, needed for sandbox warmup.
-bool InitializeVideoToolbox();
+MEDIA_GPU_EXPORT bool InitializeVideoToolbox();
 
 // VideoToolbox.framework implementation of the VideoDecodeAccelerator
 // interface for Mac OS X (currently limited to 10.9+).

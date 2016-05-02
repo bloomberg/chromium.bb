@@ -17,6 +17,7 @@
     '../ipc/ipc.gyp:ipc',
     '../ipc/mojo/ipc_mojo.gyp:ipc_mojo',
     '../media/media.gyp:media',
+    '../media/media.gyp:media_gpu',
     '../media/media.gyp:shared_memory_support',
     '../media/gpu/ipc/media_ipc.gyp:media_gpu_ipc_client',
     '../media/gpu/ipc/media_ipc.gyp:media_gpu_ipc_common',
