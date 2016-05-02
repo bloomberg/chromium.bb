@@ -43,6 +43,9 @@ public:
 
     static void registerRenderingContextFactory(PassOwnPtr<CanvasRenderingContextFactory>);
 
+    bool originClean() const;
+    void setOriginTainted() { m_originClean = false; }
+
     DECLARE_VIRTUAL_TRACE();
 
 private:
@@ -56,6 +59,8 @@ private:
     int m_canvasId = -1; // DOMNodeIds starts from 0, using -1 to indicate no associated canvas element.
     IntSize m_size;
     bool m_isNeutered = false;
+
+    bool m_originClean;
 };
 
 } // namespace blink

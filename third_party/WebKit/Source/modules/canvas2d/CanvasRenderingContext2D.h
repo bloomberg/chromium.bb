@@ -143,7 +143,7 @@ public:
     // BaseRenderingContext2D implementation
     bool originClean() const final;
     void setOriginTainted() final;
-    bool wouldTaintOrigin(CanvasImageSource* source, ScriptState*) final { return CanvasRenderingContext::wouldTaintOrigin(source); }
+    bool wouldTaintOrigin(CanvasImageSource* source, ExecutionContext*) final { return CanvasRenderingContext::wouldTaintOrigin(source); }
 
     int width() const final;
     int height() const final;

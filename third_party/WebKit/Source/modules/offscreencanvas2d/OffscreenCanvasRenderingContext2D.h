@@ -45,7 +45,7 @@ public:
     // BaseRenderingContext2D implementation
     bool originClean() const final;
     void setOriginTainted() final;
-    bool wouldTaintOrigin(CanvasImageSource*, ScriptState*) final;
+    bool wouldTaintOrigin(CanvasImageSource*, ExecutionContext*) final;
 
     int width() const final;
     int height() const final;
@@ -79,7 +79,6 @@ protected:
 
 private:
     bool m_hasAlpha;
-    bool m_originClean = true;
     OwnPtr<ImageBuffer> m_imageBuffer;
 };
 

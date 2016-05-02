@@ -532,6 +532,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method createLinearGradient
 [Worker]     method createPattern
 [Worker]     method createRadialGradient
+[Worker]     method drawImage
 [Worker]     method ellipse
 [Worker]     method fill
 [Worker]     method fillRect

@@ -14,6 +14,7 @@ namespace blink {
 
 OffscreenCanvas::OffscreenCanvas(const IntSize& size)
     : m_size(size)
+    , m_originClean(true)
 {
 }
 
@@ -100,6 +101,13 @@ void OffscreenCanvas::registerRenderingContextFactory(PassOwnPtr<CanvasRendering
     ASSERT(type < CanvasRenderingContext::ContextTypeCount);
     ASSERT(!renderingContextFactories()[type]);
     renderingContextFactories()[type] = std::move(renderingContextFactory);
+}
+
+bool OffscreenCanvas::originClean() const
+{
+    // TODO(crbug.com/607575): Make Settings accessable in worker and use
+    // disableReadingFromCanvas to determine originClean value.
+    return m_originClean;
 }
 
 DEFINE_TRACE(OffscreenCanvas)

@@ -325,33 +325,33 @@ TEST_F(CanvasRenderingContext2DTest, detectOverdrawWithDrawImage)
     createContext(NonOpaque);
     NonThrowableExceptionState exceptionState;
 
-    TEST_OVERDRAW_1(1, drawImage(&m_opaqueBitmap, 0, 0, 10, 10, 0, 0, 10, 10, exceptionState));
+    TEST_OVERDRAW_1(1, drawImage(canvasElement().getExecutionContext(), &m_opaqueBitmap, 0, 0, 10, 10, 0, 0, 10, 10, exceptionState));
     EXPECT_FALSE(exceptionState.hadException());
-    TEST_OVERDRAW_1(1, drawImage(&m_opaqueBitmap, 0, 0, 1, 1, 0, 0, 10, 10, exceptionState));
+    TEST_OVERDRAW_1(1, drawImage(canvasElement().getExecutionContext(), &m_opaqueBitmap, 0, 0, 1, 1, 0, 0, 10, 10, exceptionState));
     EXPECT_FALSE(exceptionState.hadException());
-    TEST_OVERDRAW_2(0, setGlobalAlpha(0.5f), drawImage(&m_opaqueBitmap, 0, 0, 10, 10, 0, 0, 10, 10, exceptionState));
+    TEST_OVERDRAW_2(0, setGlobalAlpha(0.5f), drawImage(canvasElement().getExecutionContext(), &m_opaqueBitmap, 0, 0, 10, 10, 0, 0, 10, 10, exceptionState));
     EXPECT_FALSE(exceptionState.hadException());
-    TEST_OVERDRAW_1(0, drawImage(&m_alphaBitmap, 0, 0, 10, 10, 0, 0, 10, 10, exceptionState));
+    TEST_OVERDRAW_1(0, drawImage(canvasElement().getExecutionContext(), &m_alphaBitmap, 0, 0, 10, 10, 0, 0, 10, 10, exceptionState));
     EXPECT_FALSE(exceptionState.hadException());
-    TEST_OVERDRAW_2(0, setGlobalAlpha(0.5f), drawImage(&m_alphaBitmap, 0, 0, 10, 10, 0, 0, 10, 10, exceptionState));
+    TEST_OVERDRAW_2(0, setGlobalAlpha(0.5f), drawImage(canvasElement().getExecutionContext(), &m_alphaBitmap, 0, 0, 10, 10, 0, 0, 10, 10, exceptionState));
     EXPECT_FALSE(exceptionState.hadException());
-    TEST_OVERDRAW_1(0, drawImage(&m_opaqueBitmap, 0, 0, 10, 10, 1, 0, 10, 10, exceptionState));
+    TEST_OVERDRAW_1(0, drawImage(canvasElement().getExecutionContext(), &m_opaqueBitmap, 0, 0, 10, 10, 1, 0, 10, 10, exceptionState));
     EXPECT_FALSE(exceptionState.hadException());
-    TEST_OVERDRAW_1(0, drawImage(&m_opaqueBitmap, 0, 0, 10, 10, 0, 0, 9, 9, exceptionState));
+    TEST_OVERDRAW_1(0, drawImage(canvasElement().getExecutionContext(), &m_opaqueBitmap, 0, 0, 10, 10, 0, 0, 9, 9, exceptionState));
     EXPECT_FALSE(exceptionState.hadException());
-    TEST_OVERDRAW_1(1, drawImage(&m_opaqueBitmap, 0, 0, 10, 10, 0, 0, 11, 11, exceptionState));
+    TEST_OVERDRAW_1(1, drawImage(canvasElement().getExecutionContext(), &m_opaqueBitmap, 0, 0, 10, 10, 0, 0, 11, 11, exceptionState));
     EXPECT_FALSE(exceptionState.hadException());
-    TEST_OVERDRAW_2(1, translate(-1, 0), drawImage(&m_opaqueBitmap, 0, 0, 10, 10, 1, 0, 10, 10, exceptionState));
+    TEST_OVERDRAW_2(1, translate(-1, 0), drawImage(canvasElement().getExecutionContext(), &m_opaqueBitmap, 0, 0, 10, 10, 1, 0, 10, 10, exceptionState));
     EXPECT_FALSE(exceptionState.hadException());
-    TEST_OVERDRAW_2(0, translate(-1, 0), drawImage(&m_opaqueBitmap, 0, 0, 10, 10, 0, 0, 10, 10, exceptionState));
+    TEST_OVERDRAW_2(0, translate(-1, 0), drawImage(canvasElement().getExecutionContext(), &m_opaqueBitmap, 0, 0, 10, 10, 0, 0, 10, 10, exceptionState));
     EXPECT_FALSE(exceptionState.hadException());
-    TEST_OVERDRAW_2(0, setFillStyle(opaqueGradient()), drawImage(&m_alphaBitmap, 0, 0, 10, 10, 0, 0, 10, 10, exceptionState)); // fillStyle ignored by drawImage
+    TEST_OVERDRAW_2(0, setFillStyle(opaqueGradient()), drawImage(canvasElement().getExecutionContext(), &m_alphaBitmap, 0, 0, 10, 10, 0, 0, 10, 10, exceptionState)); // fillStyle ignored by drawImage
     EXPECT_FALSE(exceptionState.hadException());
-    TEST_OVERDRAW_2(1, setFillStyle(alphaGradient()), drawImage(&m_opaqueBitmap, 0, 0, 10, 10, 0, 0, 10, 10, exceptionState)); // fillStyle ignored by drawImage
+    TEST_OVERDRAW_2(1, setFillStyle(alphaGradient()), drawImage(canvasElement().getExecutionContext(), &m_opaqueBitmap, 0, 0, 10, 10, 0, 0, 10, 10, exceptionState)); // fillStyle ignored by drawImage
     EXPECT_FALSE(exceptionState.hadException());
-    TEST_OVERDRAW_2(1, setGlobalCompositeOperation(String("copy")), drawImage(&m_opaqueBitmap, 0, 0, 10, 10, 1, 0, 10, 10, exceptionState));
+    TEST_OVERDRAW_2(1, setGlobalCompositeOperation(String("copy")), drawImage(canvasElement().getExecutionContext(), &m_opaqueBitmap, 0, 0, 10, 10, 1, 0, 10, 10, exceptionState));
     EXPECT_FALSE(exceptionState.hadException());
-    TEST_OVERDRAW_3(0, rect(0, 0, 5, 5), clip(), drawImage(&m_opaqueBitmap, 0, 0, 10, 10, 0, 0, 10, 10, exceptionState));
+    TEST_OVERDRAW_3(0, rect(0, 0, 5, 5), clip(), drawImage(canvasElement().getExecutionContext(), &m_opaqueBitmap, 0, 0, 10, 10, 0, 0, 10, 10, exceptionState));
     EXPECT_FALSE(exceptionState.hadException());
 }
 
@@ -457,7 +457,7 @@ TEST_F(CanvasRenderingContext2DTest, NoLayerPromotionUnderImageSizeRatioLimit)
     // Go through an ImageBitmap to avoid triggering a display list fallback
     ImageBitmap* sourceImageBitmap = ImageBitmap::create(sourceCanvas, IntRect(IntPoint(0, 0), sourceSize), defaultOptions);
 
-    context2d()->drawImage(sourceImageBitmap, 0, 0, 1, 1, 0, 0, 1, 1, exceptionState);
+    context2d()->drawImage(canvasElement().getExecutionContext(), sourceImageBitmap, 0, 0, 1, 1, 0, 0, 1, 1, exceptionState);
     EXPECT_FALSE(exceptionState.hadException());
 
     EXPECT_FALSE(canvasElement().shouldBeDirectComposited());
@@ -481,7 +481,7 @@ TEST_F(CanvasRenderingContext2DTest, LayerPromotionOverImageSizeRatioLimit)
     // Go through an ImageBitmap to avoid triggering a display list fallback
     ImageBitmap* sourceImageBitmap = ImageBitmap::create(sourceCanvas, IntRect(IntPoint(0, 0), sourceSize), defaultOptions);
 
-    context2d()->drawImage(sourceImageBitmap, 0, 0, 1, 1, 0, 0, 1, 1, exceptionState);
+    context2d()->drawImage(canvasElement().getExecutionContext(), sourceImageBitmap, 0, 0, 1, 1, 0, 0, 1, 1, exceptionState);
     EXPECT_FALSE(exceptionState.hadException());
 
     EXPECT_TRUE(canvasElement().shouldBeDirectComposited());
@@ -676,7 +676,7 @@ TEST_F(CanvasRenderingContext2DTest, ImageResourceLifetime)
     TrackExceptionState exceptionState;
     CanvasImageSourceUnion imageSource;
     imageSource.setImageBitmap(imageBitmapDerived);
-    context->drawImage(imageSource, 0, 0, exceptionState);
+    context->drawImage(canvas->getExecutionContext(), imageSource, 0, 0, exceptionState);
 }
 
 TEST_F(CanvasRenderingContext2DTest, GPUMemoryUpdateForAcceleratedCanvas)

@@ -106,14 +106,14 @@ public:
     void fillRect(double x, double y, double width, double height);
     void strokeRect(double x, double y, double width, double height);
 
-    void drawImage(const CanvasImageSourceUnion&, double x, double y, ExceptionState&);
-    void drawImage(const CanvasImageSourceUnion&, double x, double y, double width, double height, ExceptionState&);
-    void drawImage(const CanvasImageSourceUnion&, double sx, double sy, double sw, double sh, double dx, double dy, double dw, double dh, ExceptionState&);
-    void drawImage(CanvasImageSource*, double sx, double sy, double sw, double sh, double dx, double dy, double dw, double dh, ExceptionState&);
+    void drawImage(ExecutionContext*, const CanvasImageSourceUnion&, double x, double y, ExceptionState&);
+    void drawImage(ExecutionContext*, const CanvasImageSourceUnion&, double x, double y, double width, double height, ExceptionState&);
+    void drawImage(ExecutionContext*, const CanvasImageSourceUnion&, double sx, double sy, double sw, double sh, double dx, double dy, double dw, double dh, ExceptionState&);
+    void drawImage(ExecutionContext*, CanvasImageSource*, double sx, double sy, double sw, double sh, double dx, double dy, double dw, double dh, ExceptionState&);
 
     CanvasGradient* createLinearGradient(double x0, double y0, double x1, double y1);
     CanvasGradient* createRadialGradient(double x0, double y0, double r0, double x1, double y1, double r1, ExceptionState&);
-    CanvasPattern* createPattern(ScriptState*, const CanvasImageSourceUnion&, const String& repetitionType, ExceptionState&);
+    CanvasPattern* createPattern(ExecutionContext*, const CanvasImageSourceUnion&, const String& repetitionType, ExceptionState&);
 
     ImageData* createImageData(ImageData*, ExceptionState&) const;
     ImageData* createImageData(double width, double height, ExceptionState&) const;
@@ -128,7 +128,7 @@ public:
 
     virtual bool originClean() const = 0;
     virtual void setOriginTainted() = 0;
-    virtual bool wouldTaintOrigin(CanvasImageSource*, ScriptState*) = 0;
+    virtual bool wouldTaintOrigin(CanvasImageSource*, ExecutionContext*) = 0;
 
     virtual int width() const = 0;
     virtual int height() const = 0;

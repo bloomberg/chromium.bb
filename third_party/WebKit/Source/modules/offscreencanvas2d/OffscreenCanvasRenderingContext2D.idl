@@ -16,7 +16,7 @@
     attribute (DOMString or CanvasGradient or CanvasPattern) fillStyle; // (default black)
     CanvasGradient createLinearGradient(double x0, double y0, double x1, double y1);
     [RaisesException] CanvasGradient createRadialGradient(double x0, double y0, double r0, double x1, double y1, double r1);
-    [CallWith=ScriptState, RaisesException, Exposed=Worker] CanvasPattern? createPattern(CanvasImageSource image, [TreatNullAs=NullString] DOMString repetitionType);
+    [CallWith=ExecutionContext, RaisesException, Exposed=Worker] CanvasPattern? createPattern(CanvasImageSource image, [TreatNullAs=NullString] DOMString repetitionType);
 
     // CanvasRect interface
     void clearRect(unrestricted double x, unrestricted double y, unrestricted double width, unrestricted double height);
@@ -29,6 +29,12 @@
     void fill(Path2D path, optional CanvasFillRule winding);
     void stroke();
     void stroke(Path2D path);
+
+    // drawing images
+    // TODO(crbug.com/563856): Expose these API to Window with more layout tests
+    [CallWith=ExecutionContext, Exposed=Worker, RaisesException] void drawImage(CanvasImageSource image, unrestricted double x, unrestricted double y);
+    [CallWith=ExecutionContext, Exposed=Worker, RaisesException] void drawImage(CanvasImageSource image, unrestricted double x, unrestricted double y, unrestricted double width, unrestricted double height);
+    [CallWith=ExecutionContext, Exposed=Worker, RaisesException] void drawImage(CanvasImageSource image, unrestricted double sx, unrestricted double sy, unrestricted double sw, unrestricted double sh, unrestricted double dx, unrestricted double dy, unrestricted double dw, unrestricted double dh);
 
     // Line caps/joins
     attribute unrestricted double lineWidth; // (default 1)

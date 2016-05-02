@@ -33,17 +33,17 @@ DEFINE_TRACE(OffscreenCanvasRenderingContext2D)
 // BaseRenderingContext2D implementation
 bool OffscreenCanvasRenderingContext2D::originClean() const
 {
-    return m_originClean;
+    return getOffscreenCanvas()->originClean();
 }
 
 void OffscreenCanvasRenderingContext2D::setOriginTainted()
 {
-    m_originClean = false;
+    return getOffscreenCanvas()->setOriginTainted();
 }
 
-bool OffscreenCanvasRenderingContext2D::wouldTaintOrigin(CanvasImageSource* source, ScriptState* scriptState)
+bool OffscreenCanvasRenderingContext2D::wouldTaintOrigin(CanvasImageSource* source, ExecutionContext* executionContext)
 {
-    if (scriptState->getExecutionContext()->isWorkerGlobalScope()) {
+    if (executionContext->isWorkerGlobalScope()) {
         // Currently, we only support passing in ImageBitmap as source image in
         // drawImage() or createPattern() in a OffscreenCanvas2d in worker.
         ASSERT(source->isImageBitmap());
@@ -91,6 +91,7 @@ ImageBitmap* OffscreenCanvasRenderingContext2D::transferToImageBitmap(ExceptionS
     // TODO: crbug.com/593514 Add support for GPU rendering
     RefPtr<SkImage> skImage = m_imageBuffer->newSkImageSnapshot(PreferNoAcceleration, SnapshotReasonUnknown);
     RefPtr<StaticBitmapImage> image = StaticBitmapImage::create(skImage.release());
+    image->setOriginClean(this->originClean());
     m_imageBuffer.clear(); // "Transfer" means no retained buffer
     return ImageBitmap::create(image.release());
 }

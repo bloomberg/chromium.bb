@@ -858,7 +858,7 @@ static inline CanvasImageSource* toImageSourceInternal(const CanvasImageSourceUn
     return nullptr;
 }
 
-void BaseRenderingContext2D::drawImage(const CanvasImageSourceUnion& imageSource, double x, double y, ExceptionState& exceptionState)
+void BaseRenderingContext2D::drawImage(ExecutionContext* executionContext, const CanvasImageSourceUnion& imageSource, double x, double y, ExceptionState& exceptionState)
 {
     CanvasImageSource* imageSourceInternal = toImageSourceInternal(imageSource, exceptionState);
     if (!imageSourceInternal)
@@ -866,10 +866,10 @@ void BaseRenderingContext2D::drawImage(const CanvasImageSourceUnion& imageSource
     FloatSize defaultObjectSize(width(), height());
     FloatSize sourceRectSize = imageSourceInternal->elementSize(defaultObjectSize);
     FloatSize destRectSize = imageSourceInternal->defaultDestinationSize(defaultObjectSize);
-    drawImage(imageSourceInternal, 0, 0, sourceRectSize.width(), sourceRectSize.height(), x, y, destRectSize.width(), destRectSize.height(), exceptionState);
+    drawImage(executionContext, imageSourceInternal, 0, 0, sourceRectSize.width(), sourceRectSize.height(), x, y, destRectSize.width(), destRectSize.height(), exceptionState);
 }
 
-void BaseRenderingContext2D::drawImage(const CanvasImageSourceUnion& imageSource,
+void BaseRenderingContext2D::drawImage(ExecutionContext* executionContext, const CanvasImageSourceUnion& imageSource,
     double x, double y, double width, double height, ExceptionState& exceptionState)
 {
     CanvasImageSource* imageSourceInternal = toImageSourceInternal(imageSource, exceptionState);
@@ -877,17 +877,17 @@ void BaseRenderingContext2D::drawImage(const CanvasImageSourceUnion& imageSource
         return;
     FloatSize defaultObjectSize(this->width(), this->height());
     FloatSize sourceRectSize = imageSourceInternal->elementSize(defaultObjectSize);
-    drawImage(imageSourceInternal, 0, 0, sourceRectSize.width(), sourceRectSize.height(), x, y, width, height, exceptionState);
+    drawImage(executionContext, imageSourceInternal, 0, 0, sourceRectSize.width(), sourceRectSize.height(), x, y, width, height, exceptionState);
 }
 
-void BaseRenderingContext2D::drawImage(const CanvasImageSourceUnion& imageSource,
+void BaseRenderingContext2D::drawImage(ExecutionContext* executionContext, const CanvasImageSourceUnion& imageSource,
     double sx, double sy, double sw, double sh,
     double dx, double dy, double dw, double dh, ExceptionState& exceptionState)
 {
     CanvasImageSource* imageSourceInternal = toImageSourceInternal(imageSource, exceptionState);
     if (!imageSourceInternal)
         return;
-    drawImage(imageSourceInternal, sx, sy, sw, sh, dx, dy, dw, dh, exceptionState);
+    drawImage(executionContext, imageSourceInternal, sx, sy, sw, sh, dx, dy, dw, dh, exceptionState);
 }
 
 bool BaseRenderingContext2D::shouldDrawImageAntialiased(const FloatRect& destRect) const
@@ -981,7 +981,7 @@ bool shouldDisableDeferral(CanvasImageSource* imageSource, DisableDeferralReason
     return false;
 }
 
-void BaseRenderingContext2D::drawImage(CanvasImageSource* imageSource,
+void BaseRenderingContext2D::drawImage(ExecutionContext* executionContext, CanvasImageSource* imageSource,
     double sx, double sy, double sw, double sh,
     double dx, double dy, double dw, double dh, ExceptionState& exceptionState)
 {
@@ -1052,7 +1052,7 @@ void BaseRenderingContext2D::drawImage(CanvasImageSource* imageSource,
             buffer->setHasExpensiveOp();
     }
 
-    if (originClean() && wouldTaintOrigin(imageSource, nullptr))
+    if (originClean() && wouldTaintOrigin(imageSource, executionContext))
         setOriginTainted();
 }
 
@@ -1089,7 +1089,7 @@ CanvasGradient* BaseRenderingContext2D::createRadialGradient(double x0, double y
     return gradient;
 }
 
-CanvasPattern* BaseRenderingContext2D::createPattern(ScriptState* scriptState, const CanvasImageSourceUnion& imageSource, const String& repetitionType, ExceptionState& exceptionState)
+CanvasPattern* BaseRenderingContext2D::createPattern(ExecutionContext* executionContext, const CanvasImageSourceUnion& imageSource, const String& repetitionType, ExceptionState& exceptionState)
 {
     Pattern::RepeatMode repeatMode = CanvasPattern::parseRepetitionType(repetitionType, exceptionState);
     if (exceptionState.hadException())
@@ -1122,7 +1122,7 @@ CanvasPattern* BaseRenderingContext2D::createPattern(ScriptState* scriptState, c
     }
     ASSERT(imageForRendering);
 
-    bool originClean = !wouldTaintOrigin(imageSourceInternal, scriptState);
+    bool originClean = !wouldTaintOrigin(imageSourceInternal, executionContext);
 
     return CanvasPattern::create(imageForRendering.release(), repeatMode, originClean);
 }
