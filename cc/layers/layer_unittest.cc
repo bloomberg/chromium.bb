@@ -180,7 +180,6 @@ class LayerSerializationTest : public testing::Test {
     EXPECT_EQ(src->use_parent_backface_visibility_,
               dest->use_parent_backface_visibility_);
     EXPECT_EQ(src->transform_, dest->transform_);
-    EXPECT_EQ(src->transform_is_invertible_, dest->transform_is_invertible_);
     EXPECT_EQ(src->sorting_context_id_, dest->sorting_context_id_);
     EXPECT_EQ(src->num_descendants_that_draw_content_,
               dest->num_descendants_that_draw_content_);
@@ -287,7 +286,6 @@ class LayerSerializationTest : public testing::Test {
     gfx::Transform transform;
     transform.Rotate(90);
     layer->transform_ = transform;
-    layer->transform_is_invertible_ = true;
     layer->sorting_context_id_ = 0;
     layer->num_descendants_that_draw_content_ = 5;
     layer->scroll_clip_layer_id_ = Layer::INVALID_ID;
@@ -336,7 +334,6 @@ class LayerSerializationTest : public testing::Test {
     gfx::Transform transform;
     transform.Rotate(90);
     layer->transform_ = transform;
-    layer->transform_is_invertible_ = !layer->transform_is_invertible_;
     layer->sorting_context_id_ = 42;
     layer->num_descendants_that_draw_content_ = 5;
     layer->scroll_clip_layer_id_ = 17;
@@ -1810,69 +1807,6 @@ TEST_F(LayerTest, MaskAndReplicaHasParent) {
   EXPECT_EQ(child.get(), replica_replacement->parent());
 
   EXPECT_EQ(replica.get(), replica->mask_layer()->parent());
-}
-
-TEST_F(LayerTest, CheckTransformIsInvertible) {
-  scoped_refptr<Layer> layer = Layer::Create();
-  std::unique_ptr<LayerImpl> impl_layer =
-      LayerImpl::Create(host_impl_.active_tree(), 1);
-  EXPECT_CALL(*layer_tree_host_, SetNeedsFullTreeSync()).Times(1);
-  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(AnyNumber());
-  layer_tree_host_->SetRootLayer(layer);
-
-  EXPECT_TRUE(layer->transform_is_invertible());
-
-  gfx::Transform singular_transform;
-  singular_transform.Scale3d(
-      SkDoubleToMScalar(1.0), SkDoubleToMScalar(1.0), SkDoubleToMScalar(0.0));
-
-  layer->SetTransform(singular_transform);
-  layer->PushPropertiesTo(impl_layer.get());
-
-  EXPECT_FALSE(layer->transform_is_invertible());
-  EXPECT_FALSE(impl_layer->transform().IsInvertible());
-
-  gfx::Transform rotation_transform;
-  rotation_transform.RotateAboutZAxis(-45.0);
-
-  layer->SetTransform(rotation_transform);
-  layer->PushPropertiesTo(impl_layer.get());
-  EXPECT_TRUE(layer->transform_is_invertible());
-  EXPECT_TRUE(impl_layer->transform().IsInvertible());
-
-  Mock::VerifyAndClearExpectations(layer_tree_host_.get());
-}
-
-TEST_F(LayerTest, TransformIsInvertibleAnimation) {
-  scoped_refptr<Layer> layer = Layer::Create();
-  std::unique_ptr<LayerImpl> impl_layer =
-      LayerImpl::Create(host_impl_.active_tree(), 1);
-  EXPECT_CALL(*layer_tree_host_, SetNeedsFullTreeSync()).Times(1);
-  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(AnyNumber());
-  layer_tree_host_->SetRootLayer(layer);
-
-  EXPECT_TRUE(layer->transform_is_invertible());
-
-  gfx::Transform singular_transform;
-  singular_transform.Scale3d(
-      SkDoubleToMScalar(1.0), SkDoubleToMScalar(1.0), SkDoubleToMScalar(0.0));
-
-  layer->SetTransform(singular_transform);
-  layer->PushPropertiesTo(impl_layer.get());
-
-  EXPECT_FALSE(layer->transform_is_invertible());
-  EXPECT_FALSE(impl_layer->transform().IsInvertible());
-
-  gfx::Transform identity_transform;
-
-  EXPECT_CALL(*layer_tree_host_, SetNeedsUpdateLayers()).Times(1);
-  layer->SetTransform(identity_transform);
-  layer->OnTransformAnimated(singular_transform);
-  layer->PushPropertiesTo(impl_layer.get());
-  EXPECT_FALSE(layer->transform_is_invertible());
-  EXPECT_FALSE(impl_layer->transform().IsInvertible());
-
-  Mock::VerifyAndClearExpectations(layer_tree_host_.get());
 }
 
 class LayerTreeHostFactory {

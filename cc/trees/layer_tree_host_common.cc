@@ -188,7 +188,6 @@ void ScrollAndScaleSet::FromProtobuf(const proto::ScrollAndScaleSet& proto) {
   top_controls_delta = proto.top_controls_delta();
 }
 
-
 static inline void SetMaskLayersAreDrawnRenderSurfaceLayerListMembers(
     LayerImpl* layer) {
   if (layer->mask_layer())

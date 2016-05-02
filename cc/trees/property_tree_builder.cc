@@ -106,16 +106,6 @@ static inline bool IsRootLayer(const Layer* layer) {
   return !layer->parent();
 }
 
-static bool HasInvertibleOrAnimatedTransform(Layer* layer) {
-  return layer->transform_is_invertible() ||
-         layer->HasPotentiallyRunningTransformAnimation();
-}
-
-static bool HasInvertibleOrAnimatedTransformForTesting(LayerImpl* layer) {
-  return layer->transform().IsInvertible() ||
-         layer->HasPotentiallyRunningTransformAnimation();
-}
-
 static bool IsMetaInformationRecomputationNeeded(Layer* layer) {
   return layer->layer_tree_host()->needs_meta_info_recomputation();
 }
@@ -132,12 +122,6 @@ static void PreCalculateMetaInformationInternal(
 
   if (layer->clip_parent())
     recursive_data->num_unclipped_descendants++;
-
-  if (!HasInvertibleOrAnimatedTransform(layer)) {
-    // Layers with singular transforms should not be drawn, the whole subtree
-    // can be skipped.
-    return;
-  }
 
   for (size_t i = 0; i < layer->children().size(); ++i) {
     Layer* child_layer = layer->child_at(i);
@@ -171,12 +155,6 @@ static void PreCalculateMetaInformationInternalForTesting(
     PreCalculateMetaInformationRecursiveData* recursive_data) {
   if (layer->test_properties()->clip_parent)
     recursive_data->num_unclipped_descendants++;
-
-  if (!HasInvertibleOrAnimatedTransformForTesting(layer)) {
-    // Layers with singular transforms should not be drawn, the whole subtree
-    // can be skipped.
-    return;
-  }
 
   for (size_t i = 0; i < layer->children().size(); ++i) {
     LayerImpl* child_layer = layer->child_at(i);

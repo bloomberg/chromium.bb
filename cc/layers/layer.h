@@ -199,7 +199,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   bool HasPotentiallyRunningTransformAnimation() const;
   bool HasOnlyTranslationTransforms() const;
   bool AnimationsPreserveAxisAlignment() const;
-  bool transform_is_invertible() const { return transform_is_invertible_; }
 
   bool MaximumTargetScale(float* max_scale) const;
   bool AnimationStartScale(float* start_scale) const;
@@ -642,7 +641,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   bool use_local_transform_for_backface_visibility_ : 1;
   bool should_check_backface_visibility_ : 1;
   bool force_render_surface_for_testing_ : 1;
-  bool transform_is_invertible_ : 1;
   bool has_render_surface_ : 1;
   bool subtree_property_changed_ : 1;
   Region non_fast_scrollable_region_;

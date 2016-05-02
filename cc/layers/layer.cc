@@ -78,7 +78,6 @@ Layer::Layer()
       use_local_transform_for_backface_visibility_(false),
       should_check_backface_visibility_(false),
       force_render_surface_for_testing_(false),
-      transform_is_invertible_(true),
       has_render_surface_(false),
       subtree_property_changed_(false),
       background_color_(0),
@@ -593,19 +592,19 @@ bool Layer::IsContainerForFixedPositionLayers() const {
   return is_container_for_fixed_position_layers_;
 }
 
-bool Are2dAxisAligned(const gfx::Transform& a,
-                      const gfx::Transform& b,
-                      bool* is_invertible) {
+bool Are2dAxisAligned(const gfx::Transform& a, const gfx::Transform& b) {
   if (a.IsScaleOrTranslation() && b.IsScaleOrTranslation()) {
-    *is_invertible = b.IsInvertible();
     return true;
   }
 
   gfx::Transform inverse(gfx::Transform::kSkipInitialization);
-  *is_invertible = b.GetInverse(&inverse);
-
-  inverse *= a;
-  return inverse.Preserves2dAxisAlignment();
+  if (b.GetInverse(&inverse)) {
+    inverse *= a;
+    return inverse.Preserves2dAxisAlignment();
+  } else {
+    // TODO(weiliangc): Should return false because b is not invertible.
+    return a.Preserves2dAxisAlignment();
+  }
 }
 
 void Layer::SetTransform(const gfx::Transform& transform) {
@@ -622,9 +621,8 @@ void Layer::SetTransform(const gfx::Transform& transform) {
         // We need to trigger a rebuild if we could have affected 2d axis
         // alignment. We'll check to see if transform and transform_ are axis
         // align with respect to one another.
-        bool invertible = false;
         bool preserves_2d_axis_alignment =
-            Are2dAxisAligned(transform_, transform, &invertible);
+            Are2dAxisAligned(transform_, transform);
         transform_node->data.local = transform;
         transform_node->data.needs_local_transform_update = true;
         transform_node->data.transform_changed = true;
@@ -635,14 +633,12 @@ void Layer::SetTransform(const gfx::Transform& transform) {
         else
           SetNeedsCommit();
         transform_ = transform;
-        transform_is_invertible_ = invertible;
         return;
       }
     }
   }
 
   transform_ = transform;
-  transform_is_invertible_ = transform.IsInvertible();
 
   SetNeedsCommit();
 }
@@ -1381,7 +1377,6 @@ void Layer::LayerSpecificPropertiesToProto(proto::LayerProperties* proto) {
   base->set_draw_blend_mode(SkXfermodeModeToProto(draw_blend_mode_));
   base->set_use_parent_backface_visibility(use_parent_backface_visibility_);
   TransformToProto(transform_, base->mutable_transform());
-  base->set_transform_is_invertible(transform_is_invertible_);
   base->set_sorting_context_id(sorting_context_id_);
   base->set_num_descendants_that_draw_content(
       num_descendants_that_draw_content_);
@@ -1461,7 +1456,6 @@ void Layer::FromLayerSpecificPropertiesProto(
   draw_blend_mode_ = SkXfermodeModeFromProto(base.draw_blend_mode());
   use_parent_backface_visibility_ = base.use_parent_backface_visibility();
   transform_ = ProtoToTransform(base.transform());
-  transform_is_invertible_ = base.transform_is_invertible();
   sorting_context_id_ = base.sorting_context_id();
   num_descendants_that_draw_content_ = base.num_descendants_that_draw_content();
 
@@ -1616,7 +1610,6 @@ void Layer::OnTransformAnimated(const gfx::Transform& transform) {
   if (transform_ == transform)
     return;
   transform_ = transform;
-  transform_is_invertible_ = transform.IsInvertible();
   // Changing the transform may change the visible part of this layer, so a new
   // recording may be needed.
   SetNeedsUpdate();
