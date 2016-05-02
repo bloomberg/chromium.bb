@@ -348,10 +348,23 @@ const std::vector<OfflinePageItem> OfflinePageModel::GetPagesToCleanUp() const {
   return offline_pages;
 }
 
-// TODO(fgorski): Remove include_deleted, as it no longer makes sense.
-const std::vector<int64_t> OfflinePageModel::GetOfflineIdsForClientId(
+void OfflinePageModel::GetOfflineIdsForClientId(
     const ClientId& client_id,
-    bool include_deleted) const {
+    const MultipleOfflineIdCallback& callback) {
+  RunWhenLoaded(
+      base::Bind(&OfflinePageModel::GetOfflineIdsForClientIdWhenLoadDone,
+                 weak_ptr_factory_.GetWeakPtr(), client_id, callback));
+}
+
+void OfflinePageModel::GetOfflineIdsForClientIdWhenLoadDone(
+    const ClientId& client_id,
+    const MultipleOfflineIdCallback& callback) const {
+  callback.Run(MaybeGetOfflineIdsForClientId(client_id));
+}
+
+// TODO(fgorski): Remove include_deleted, as it no longer makes sense.
+const std::vector<int64_t> OfflinePageModel::MaybeGetOfflineIdsForClientId(
+    const ClientId& client_id) const {
   DCHECK(is_loaded_);
   std::vector<int64_t> results;
 

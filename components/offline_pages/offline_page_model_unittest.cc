@@ -32,6 +32,8 @@ using DeletePageResult = offline_pages::OfflinePageModel::DeletePageResult;
 using GetAllPagesResult = offline_pages::OfflinePageModel::GetAllPagesResult;
 using CheckPagesExistOfflineResult =
     offline_pages::OfflinePageModel::CheckPagesExistOfflineResult;
+using MultipleOfflineIdResult =
+    offline_pages::OfflinePageModel::MultipleOfflineIdResult;
 
 namespace offline_pages {
 
@@ -81,6 +83,8 @@ class OfflinePageModelTest
   void OnHasPagesDone(bool result);
   void OnCheckPagesExistOfflineDone(const CheckPagesExistOfflineResult& result);
   void OnClearAllDone();
+  void OnGetOfflineIdsForClientIdDone(MultipleOfflineIdResult* storage,
+                                      const MultipleOfflineIdResult& result);
 
   // OfflinePageMetadataStore callbacks.
   void OnStoreUpdateDone(bool /* success */);
@@ -119,6 +123,7 @@ class OfflinePageModelTest
 
   bool HasPages(std::string name_space);
   CheckPagesExistOfflineResult CheckPagesExistOffline(std::set<GURL>);
+  MultipleOfflineIdResult GetOfflineIdsForClientId(const ClientId& client_id);
 
   OfflinePageModel* model() { return model_.get(); }
 
@@ -308,6 +313,23 @@ CheckPagesExistOfflineResult OfflinePageModelTest::CheckPagesExistOffline(
                         AsWeakPtr()));
   PumpLoop();
   return last_pages_exist_result_;
+}
+
+MultipleOfflineIdResult OfflinePageModelTest::GetOfflineIdsForClientId(
+    const ClientId& client_id) {
+  MultipleOfflineIdResult result;
+  model()->GetOfflineIdsForClientId(
+      client_id,
+      base::Bind(&OfflinePageModelTest::OnGetOfflineIdsForClientIdDone,
+                 AsWeakPtr(), base::Unretained(&result)));
+  PumpLoop();
+  return result;
+}
+
+void OfflinePageModelTest::OnGetOfflineIdsForClientIdDone(
+    MultipleOfflineIdResult* storage,
+    const MultipleOfflineIdResult& result) {
+  *storage = result;
 }
 
 bool OfflinePageModelTest::HasPages(std::string name_space) {
@@ -872,8 +894,7 @@ TEST_F(OfflinePageModelTest, SaveRetrieveMultipleClientIds) {
 
   EXPECT_NE(offline1, offline2);
 
-  const std::vector<int64_t> ids =
-      model()->GetOfflineIdsForClientId(kTestClientId1);
+  const std::vector<int64_t> ids = GetOfflineIdsForClientId(kTestClientId1);
 
   EXPECT_EQ(2UL, ids.size());
 

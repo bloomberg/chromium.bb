@@ -125,6 +125,7 @@ class OfflinePageModel : public KeyedService, public base::SupportsUserData {
 
   typedef std::vector<OfflinePageItem> GetAllPagesResult;
   typedef std::set<GURL> CheckPagesExistOfflineResult;
+  typedef std::vector<int64_t> MultipleOfflineIdResult;
 
   typedef base::Callback<void(SavePageResult, int64_t)> SavePageCallback;
   typedef base::Callback<void(DeletePageResult)> DeletePageCallback;
@@ -132,6 +133,8 @@ class OfflinePageModel : public KeyedService, public base::SupportsUserData {
   typedef base::Callback<void(const CheckPagesExistOfflineResult&)>
       CheckPagesExistOfflineCallback;
   typedef base::Callback<void(bool)> HasPagesCallback;
+  typedef base::Callback<void(const MultipleOfflineIdResult&)>
+      MultipleOfflineIdCallback;
 
   // Generates a new offline id
   static int64_t GenerateOfflineId();
@@ -196,12 +199,17 @@ class OfflinePageModel : public KeyedService, public base::SupportsUserData {
   // TODO(fgorski): This needs an update as part of expiration policy work.
   const std::vector<OfflinePageItem> GetPagesToCleanUp() const;
 
-  // Gets all offline ids where the offline page has the matching client id
-  // If |include_deleted| is true, include pages that are marked for deletion
-  // but not actually deleted yet.  Default is false.
-  const std::vector<int64_t> GetOfflineIdsForClientId(
-      const ClientId& client_id,
-      bool include_deleted = false) const;
+  // Gets all offline ids where the offline page has the matching client id.
+  void GetOfflineIdsForClientId(const ClientId& client_id,
+                                const MultipleOfflineIdCallback& callback);
+
+  // Gets all offline ids where the offline page has the matching client id.
+  // Requires that the model is loaded.  May not return matching IDs depending
+  // on the internal state of the model.
+  //
+  // This function is deprecated.  Use |GetOfflineIdsForClientId| instead.
+  const std::vector<int64_t> MaybeGetOfflineIdsForClientId(
+      const ClientId& client_id) const;
 
   // Returns an offline page associated with a specified |offline_id|. nullptr
   // is returned if not found.
@@ -249,6 +257,9 @@ class OfflinePageModel : public KeyedService, public base::SupportsUserData {
   void CheckPagesExistOfflineAfterLoadDone(
       const std::set<GURL>& urls,
       const CheckPagesExistOfflineCallback& callback);
+  void GetOfflineIdsForClientIdWhenLoadDone(
+      const ClientId& client_id,
+      const MultipleOfflineIdCallback& callback) const;
 
   // Callback for checking whether we have offline pages.
   void HasPagesAfterLoadDone(const std::string& name_space,

@@ -246,7 +246,7 @@ ScopedJavaLocalRef<jlongArray> OfflinePageBridge::GetOfflineIdsForClientId(
   client_id.id = ConvertJavaStringToUTF8(env, j_client_id);
 
   std::vector<int64_t> results =
-      offline_page_model_->GetOfflineIdsForClientId(client_id);
+      offline_page_model_->MaybeGetOfflineIdsForClientId(client_id);
 
   return base::android::ToJavaLongArray(env, results);
 }
