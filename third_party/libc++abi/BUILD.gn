@@ -39,6 +39,7 @@ static_library("libc++abi") {
   configs += [
     "//build/config/compiler:no_chromium_code",
     "//build/config/compiler:rtti",
+    "//build/config/gcc:symbol_visibility_default",
     "//buildtools/third_party/libc++:config",
     # Must be after no_chromium_code.
     ":libc++abi_warnings",

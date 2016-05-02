@@ -58,6 +58,7 @@ shared_library("libc++") {
     ":config",
     "//build/config/compiler:no_chromium_code",
     "//build/config/compiler:rtti",
+    "//build/config/gcc:symbol_visibility_default",
     "//build/config/sanitizers:sanitizer_options_link_helper",
   ]
 
