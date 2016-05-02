@@ -53,6 +53,16 @@ const {{constant.kind|cpp_pod_type}} {{interface.name}}::{{constant.name}} = {{c
 {%-   endif %}
 {%- endfor %}
 
+
+{%- for method in interface.methods %}
+{%-   if method.sync %}
+bool {{class_name}}::{{method.name}}({{interface_macros.declare_sync_method_params("", method)}}) {
+  NOTREACHED();
+  return false;
+}
+{%-   endif %}
+{%- endfor %}
+
 {#--- ForwardToCallback definition #}
 {%- for method in interface.methods -%}
 {%-   if method.response_parameters != None %}

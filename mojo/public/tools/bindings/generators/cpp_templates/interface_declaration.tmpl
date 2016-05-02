@@ -45,12 +45,9 @@ class {{interface.name}} {
 {%- for method in interface.methods %}
 {%    if method.response_parameters != None %}
 {%-     if method.sync %}
-  virtual bool {{method.name}}({{interface_macros.declare_sync_method_params("", method)}}) {
-    // Sync method. This signature is used by the client side; the service side
-    // should implement the signature with callback below.
-    NOTREACHED();
-    return false;
-  }
+  // Sync method. This signature is used by the client side; the service side
+  // should implement the signature with callback below.
+  virtual bool {{method.name}}({{interface_macros.declare_sync_method_params("", method)}});
 {%-     endif %}
 
   using {{method.name}}Callback = {{interface_macros.declare_callback(method, for_blink)}};
