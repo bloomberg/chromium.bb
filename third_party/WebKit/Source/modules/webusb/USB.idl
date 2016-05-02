@@ -6,7 +6,7 @@
 
 [
     NoInterfaceObject,
-    OriginTrialEnabled=WebUSB,
+    RuntimeEnabled=WebUSB,
 ] interface USB : EventTarget {
     attribute EventHandler onconnect;
     attribute EventHandler ondisconnect;

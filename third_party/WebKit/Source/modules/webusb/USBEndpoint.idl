@@ -18,7 +18,7 @@ enum USBEndpointType {
 [
     Constructor(USBAlternateInterface alternate, octet endpointNumber, USBDirection direction),
     RaisesException=Constructor,
-    OriginTrialEnabled=WebUSB,
+    RuntimeEnabled=WebUSB,
 ] interface USBEndpoint {
     readonly attribute octet endpointNumber;
     readonly attribute USBDirection direction;

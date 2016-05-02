@@ -6,7 +6,7 @@
 
 [
     Constructor(DOMString type, optional USBConnectionEventInit eventInitDict),
-    OriginTrialEnabled=WebUSB,
+    RuntimeEnabled=WebUSB,
 ] interface USBConnectionEvent : Event {
     readonly attribute USBDevice device;
 };

@@ -8,7 +8,6 @@ CONSOLE WARNING: 'webkitIDBIndex' is deprecated. Please use 'IDBIndex' instead.
 CONSOLE WARNING: 'webkitIDBFactory' is deprecated. Please use 'IDBFactory' instead.
 CONSOLE WARNING: 'webkitIDBDatabase' is deprecated. Please use 'IDBDatabase' instead.
 CONSOLE WARNING: 'webkitIDBCursor' is deprecated. Please use 'IDBCursor' instead.
-CONSOLE ERROR: The 'WebUSB' feature is currently enabled in limited trials. Please see https://bit.ly/OriginTrials for information on enabling a trial for your site.
 CONSOLE WARNING: 'webkitURL' is deprecated. Please use 'URL' instead.
 This test documents all interface attributes and methods on the global window object and element instances.
 
@@ -3350,7 +3349,6 @@ interface Navigator
     getter product
     getter productSub
     getter serviceWorker
-    getter usb
     getter userAgent
     getter vendor
     getter vendorSub
@@ -6428,18 +6426,6 @@ interface webkitURL
     setter username
 [GLOBAL OBJECT]
     attribute GCController
-    attribute USBAlternateInterface
-    attribute USBConfiguration
-    attribute USBConnectionEvent
-    attribute USBDevice
-    attribute USBEndpoint
-    attribute USBInTransferResult
-    attribute USBInterface
-    attribute USBIsochronousInTransferPacket
-    attribute USBIsochronousInTransferResult
-    attribute USBIsochronousOutTransferPacket
-    attribute USBIsochronousOutTransferResult
-    attribute USBOutTransferResult
     attribute accessibilityController
     attribute closed
     attribute console

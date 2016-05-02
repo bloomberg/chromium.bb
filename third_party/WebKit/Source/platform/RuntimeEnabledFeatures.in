@@ -221,7 +221,7 @@ WebAnimationsSVG status=experimental
 WebBluetooth
 WebGLDraftExtensions status=experimental
 WebGLImageChromium
-WebUSB status=experimental, origin_trial_feature_name=WebUSB
+WebUSB status=experimental
 WebVR depends_on=GeometryInterfaces, status=test
 WebVTTRegions status=experimental
 V8IdleTasks
