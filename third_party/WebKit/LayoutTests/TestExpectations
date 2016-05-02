@@ -1251,6 +1251,7 @@ crbug.com/155836 [ Mac Win ] fast/text/ellipsis-ltr-text-in-ltr-flow.html [ Need
 crbug.com/155836 [ Mac Win ] fast/text/ellipsis-ltr-text-in-rtl-flow.html [ NeedsManualRebaseline ]
 crbug.com/155836 [ Mac Win ] fast/text/ellipsis-rtl-text-in-ltr-flow.html [ NeedsManualRebaseline ]
 crbug.com/155836 [ Mac Win ] fast/text/ellipsis-rtl-text-in-rtl-flow.html [ NeedsManualRebaseline ]
+crbug.com/155836 fast/text/emphasis-ellipsis-complextext.html [ Failure Pass ]
 
 crbug.com/577380 [ Linux Debug ] http/tests/serviceworker/chromium/registration-stress.html [ Failure ]
 
@@ -1371,7 +1372,6 @@ crbug.com/601166 [ Mac10.9 ]  fast/text/embed-at-end-of-pre-wrap-line.html [ Fai
 crbug.com/601166 [ Mac10.9 ]  fast/text/emoji-web-font.html [ Failure ]
 crbug.com/601166 [ Mac10.9 ]  fast/text/emoticons.html [ Failure ]
 crbug.com/601166 [ Mac10.9 ]  fast/text/emphasis-complex.html [ Failure ]
-crbug.com/601166 [ Mac10.9 ]  fast/text/emphasis-ellipsis-complextext.html [ Failure ]
 crbug.com/601166 [ Mac10.9 ]  fast/text/emphasis.html [ Failure ]
 crbug.com/601166 [ Mac10.9 ]  fast/text/fake-italic.html [ Failure ]
 crbug.com/601166 [ Mac10.9 ]  fast/text/fallback-for-custom-font.html [ Failure ]
