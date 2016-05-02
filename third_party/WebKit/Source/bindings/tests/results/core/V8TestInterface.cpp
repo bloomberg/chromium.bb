@@ -529,9 +529,9 @@ static void windowExposedAttributeAttributeSetterCallback(const v8::FunctionCall
 
 static void lenientThisAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (!V8TestInterface::hasInstance(info.Holder(), info.GetIsolate()))
+    v8::Local<v8::Object> holder = V8TestInterface::findInstanceInPrototypeChain(info.This(), info.GetIsolate());
+    if (holder.IsEmpty())
         return; // Return silently because of [LenientThis].
-    v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     v8SetReturnValue(info, impl->lenientThisAttribute().v8Value());
 }
@@ -543,9 +543,9 @@ static void lenientThisAttributeAttributeGetterCallback(const v8::FunctionCallba
 
 static void lenientThisAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (!V8TestInterface::hasInstance(info.Holder(), info.GetIsolate()))
+    v8::Local<v8::Object> holder = V8TestInterface::findInstanceInPrototypeChain(info.This(), info.GetIsolate());
+    if (holder.IsEmpty())
         return; // Return silently because of [LenientThis].
-    v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     ScriptValue cppValue = ScriptValue(ScriptState::current(info.GetIsolate()), v8Value);
     impl->setLenientThisAttribute(cppValue);

@@ -21,7 +21,7 @@ function runTests() {
     if (window.testRunner) {
         testRunner.dumpAsText();
     }
-    assertEqual("stringify", JSON.stringify(window.location), '{"hash":"","search":"","pathname":"/dom/location-stringify.html","port":"8000","hostname":"127.0.0.1","host":"127.0.0.1:8000","protocol":"http:","origin":"http://127.0.0.1:8000","href":"http://127.0.0.1:8000/dom/location-stringify.html","ancestorOrigins":{}}');
+    assertEqual("stringify", JSON.stringify(window.location), '{"href":"http://127.0.0.1:8000/dom/location-stringify.html","ancestorOrigins":{},"origin":"http://127.0.0.1:8000","protocol":"http:","host":"127.0.0.1:8000","hostname":"127.0.0.1","port":"8000","pathname":"/dom/location-stringify.html","search":"","hash":""}');
 }
 </script>
 </head>

@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-FAIL Window interface: attribute indexedDB assert_equals: "indexedDB" must have a getter expected "function" but got "undefined"
+PASS Window interface: attribute indexedDB 
 PASS IDBKeyRange interface: existence and properties of interface object 
 PASS IDBKeyRange interface object length 
 PASS IDBKeyRange interface object name 

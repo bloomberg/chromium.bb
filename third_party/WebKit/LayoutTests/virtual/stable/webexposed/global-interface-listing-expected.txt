@@ -1,6 +1,5 @@
 CONSOLE WARNING: 'webkitOfflineAudioContext' is deprecated. Please use 'OfflineAudioContext' instead.
 CONSOLE WARNING: 'webkitAudioContext' is deprecated. Please use 'AudioContext' instead.
-CONSOLE WARNING: 'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.
 CONSOLE WARNING: 'webkitIDBTransaction' is deprecated. Please use 'IDBTransaction' instead.
 CONSOLE WARNING: 'webkitIDBRequest' is deprecated. Please use 'IDBRequest' instead.
 CONSOLE WARNING: 'webkitIDBObjectStore' is deprecated. Please use 'IDBObjectStore' instead.
@@ -9,7 +8,6 @@ CONSOLE WARNING: 'webkitIDBIndex' is deprecated. Please use 'IDBIndex' instead.
 CONSOLE WARNING: 'webkitIDBFactory' is deprecated. Please use 'IDBFactory' instead.
 CONSOLE WARNING: 'webkitIDBDatabase' is deprecated. Please use 'IDBDatabase' instead.
 CONSOLE WARNING: 'webkitIDBCursor' is deprecated. Please use 'IDBCursor' instead.
-CONSOLE WARNING: 'webkitIndexedDB' is deprecated. Please use 'indexedDB' instead.
 CONSOLE ERROR: The 'WebUSB' feature is currently enabled in limited trials. Please see https://bit.ly/OriginTrials for information on enabling a trial for your site.
 CONSOLE WARNING: 'webkitURL' is deprecated. Please use 'URL' instead.
 This test documents all interface attributes and methods on the global window object and element instances.
@@ -6443,155 +6441,156 @@ interface webkitURL
     attribute USBIsochronousOutTransferResult
     attribute USBOutTransferResult
     attribute accessibilityController
-    attribute applicationCache
-    attribute caches
-    attribute clientInformation
     attribute closed
     attribute console
-    attribute crypto
-    attribute defaultStatus
-    attribute defaultstatus
-    attribute devicePixelRatio
-    attribute document
-    attribute event
     attribute eventSender
-    attribute frameElement
     attribute frames
     attribute gamepadController
-    attribute history
-    attribute indexedDB
-    attribute innerHeight
-    attribute innerWidth
     attribute internals
-    attribute isSecureContext
     attribute layoutTestController
     attribute length
-    attribute localStorage
     attribute location
-    attribute locationbar
-    attribute menubar
     attribute mojo
-    attribute name
-    attribute navigator
-    attribute offscreenBuffering
-    attribute onabort
-    attribute onanimationend
-    attribute onanimationiteration
-    attribute onanimationstart
-    attribute onbeforeunload
-    attribute onblur
-    attribute oncancel
-    attribute oncanplay
-    attribute oncanplaythrough
-    attribute onchange
-    attribute onclick
-    attribute onclose
-    attribute oncontextmenu
-    attribute oncuechange
-    attribute ondblclick
-    attribute ondevicemotion
-    attribute ondeviceorientation
-    attribute ondeviceorientationabsolute
-    attribute ondrag
-    attribute ondragend
-    attribute ondragenter
-    attribute ondragleave
-    attribute ondragover
-    attribute ondragstart
-    attribute ondrop
-    attribute ondurationchange
-    attribute onemptied
-    attribute onended
-    attribute onfocus
-    attribute onhashchange
-    attribute oninput
-    attribute oninvalid
-    attribute onkeydown
-    attribute onkeypress
-    attribute onkeyup
-    attribute onlanguagechange
-    attribute onload
-    attribute onloadeddata
-    attribute onloadedmetadata
-    attribute onloadstart
-    attribute onmessage
-    attribute onmousedown
-    attribute onmouseenter
-    attribute onmouseleave
-    attribute onmousemove
-    attribute onmouseout
-    attribute onmouseover
-    attribute onmouseup
-    attribute onmousewheel
-    attribute onoffline
-    attribute ononline
-    attribute onpagehide
-    attribute onpageshow
-    attribute onpause
-    attribute onplay
-    attribute onplaying
-    attribute onpopstate
-    attribute onprogress
-    attribute onratechange
-    attribute onrejectionhandled
-    attribute onreset
-    attribute onresize
-    attribute onscroll
-    attribute onsearch
-    attribute onseeked
-    attribute onseeking
-    attribute onselect
-    attribute onshow
-    attribute onstalled
-    attribute onstorage
-    attribute onsubmit
-    attribute onsuspend
-    attribute ontimeupdate
-    attribute ontoggle
-    attribute ontouchcancel
-    attribute ontouchend
-    attribute ontouchmove
-    attribute ontouchstart
-    attribute ontransitionend
-    attribute onunhandledrejection
-    attribute onunload
-    attribute onvolumechange
-    attribute onwaiting
-    attribute onwebkitanimationend
-    attribute onwebkitanimationiteration
-    attribute onwebkitanimationstart
-    attribute onwebkittransitionend
-    attribute onwheel
     attribute opener
-    attribute outerHeight
-    attribute outerWidth
-    attribute pageXOffset
-    attribute pageYOffset
     attribute parent
-    attribute performance
-    attribute personalbar
     attribute propertyNamesInGlobal
-    attribute screen
-    attribute screenLeft
-    attribute screenTop
-    attribute screenX
-    attribute screenY
-    attribute scrollX
-    attribute scrollY
-    attribute scrollbars
     attribute self
-    attribute sessionStorage
-    attribute speechSynthesis
-    attribute status
-    attribute statusbar
-    attribute styleMedia
     attribute testRunner
     attribute textInputController
-    attribute toolbar
     attribute top
-    attribute webkitIndexedDB
-    attribute webkitStorageInfo
     attribute window
+    getter applicationCache
+    getter caches
+    getter clientInformation
+    getter crypto
+    getter defaultStatus
+    getter defaultstatus
+    getter devicePixelRatio
+    getter document
+    getter event
+    getter frameElement
+    getter history
+    getter indexedDB
+    getter innerHeight
+    getter innerWidth
+    getter isSecureContext
+    getter localStorage
+    getter locationbar
+    getter menubar
+    getter name
+    getter navigator
+    getter offscreenBuffering
+    getter onabort
+    getter onanimationend
+    getter onanimationiteration
+    getter onanimationstart
+    getter onbeforeunload
+    getter onblur
+    getter oncancel
+    getter oncanplay
+    getter oncanplaythrough
+    getter onchange
+    getter onclick
+    getter onclose
+    getter oncontextmenu
+    getter oncuechange
+    getter ondblclick
+    getter ondevicemotion
+    getter ondeviceorientation
+    getter ondeviceorientationabsolute
+    getter ondrag
+    getter ondragend
+    getter ondragenter
+    getter ondragleave
+    getter ondragover
+    getter ondragstart
+    getter ondrop
+    getter ondurationchange
+    getter onemptied
+    getter onended
+    getter onerror
+    getter onfocus
+    getter onhashchange
+    getter oninput
+    getter oninvalid
+    getter onkeydown
+    getter onkeypress
+    getter onkeyup
+    getter onlanguagechange
+    getter onload
+    getter onloadeddata
+    getter onloadedmetadata
+    getter onloadstart
+    getter onmessage
+    getter onmousedown
+    getter onmouseenter
+    getter onmouseleave
+    getter onmousemove
+    getter onmouseout
+    getter onmouseover
+    getter onmouseup
+    getter onmousewheel
+    getter onoffline
+    getter ononline
+    getter onpagehide
+    getter onpageshow
+    getter onpause
+    getter onplay
+    getter onplaying
+    getter onpopstate
+    getter onprogress
+    getter onratechange
+    getter onrejectionhandled
+    getter onreset
+    getter onresize
+    getter onscroll
+    getter onsearch
+    getter onseeked
+    getter onseeking
+    getter onselect
+    getter onshow
+    getter onstalled
+    getter onstorage
+    getter onsubmit
+    getter onsuspend
+    getter ontimeupdate
+    getter ontoggle
+    getter ontouchcancel
+    getter ontouchend
+    getter ontouchmove
+    getter ontouchstart
+    getter ontransitionend
+    getter onunhandledrejection
+    getter onunload
+    getter onvolumechange
+    getter onwaiting
+    getter onwebkitanimationend
+    getter onwebkitanimationiteration
+    getter onwebkitanimationstart
+    getter onwebkittransitionend
+    getter onwheel
+    getter outerHeight
+    getter outerWidth
+    getter pageXOffset
+    getter pageYOffset
+    getter performance
+    getter personalbar
+    getter screen
+    getter screenLeft
+    getter screenTop
+    getter screenX
+    getter screenY
+    getter scrollX
+    getter scrollY
+    getter scrollbars
+    getter sessionStorage
+    getter speechSynthesis
+    getter status
+    getter statusbar
+    getter styleMedia
+    getter toolbar
+    getter webkitIndexedDB
+    getter webkitStorageInfo
     method alert
     method atob
     method blur
@@ -6614,7 +6613,6 @@ interface webkitURL
     method matchMedia
     method moveBy
     method moveTo
-    method onerror
     method open
     method openDatabase
     method postMessage
@@ -6636,6 +6634,123 @@ interface webkitURL
     method webkitRequestAnimationFrame
     method webkitRequestFileSystem
     method webkitResolveLocalFileSystemURL
+    setter clientInformation
+    setter defaultStatus
+    setter defaultstatus
+    setter devicePixelRatio
+    setter event
+    setter innerHeight
+    setter innerWidth
+    setter locationbar
+    setter menubar
+    setter name
+    setter offscreenBuffering
+    setter onabort
+    setter onanimationend
+    setter onanimationiteration
+    setter onanimationstart
+    setter onbeforeunload
+    setter onblur
+    setter oncancel
+    setter oncanplay
+    setter oncanplaythrough
+    setter onchange
+    setter onclick
+    setter onclose
+    setter oncontextmenu
+    setter oncuechange
+    setter ondblclick
+    setter ondevicemotion
+    setter ondeviceorientation
+    setter ondeviceorientationabsolute
+    setter ondrag
+    setter ondragend
+    setter ondragenter
+    setter ondragleave
+    setter ondragover
+    setter ondragstart
+    setter ondrop
+    setter ondurationchange
+    setter onemptied
+    setter onended
+    setter onerror
+    setter onfocus
+    setter onhashchange
+    setter oninput
+    setter oninvalid
+    setter onkeydown
+    setter onkeypress
+    setter onkeyup
+    setter onlanguagechange
+    setter onload
+    setter onloadeddata
+    setter onloadedmetadata
+    setter onloadstart
+    setter onmessage
+    setter onmousedown
+    setter onmouseenter
+    setter onmouseleave
+    setter onmousemove
+    setter onmouseout
+    setter onmouseover
+    setter onmouseup
+    setter onmousewheel
+    setter onoffline
+    setter ononline
+    setter onpagehide
+    setter onpageshow
+    setter onpause
+    setter onplay
+    setter onplaying
+    setter onpopstate
+    setter onprogress
+    setter onratechange
+    setter onrejectionhandled
+    setter onreset
+    setter onresize
+    setter onscroll
+    setter onsearch
+    setter onseeked
+    setter onseeking
+    setter onselect
+    setter onshow
+    setter onstalled
+    setter onstorage
+    setter onsubmit
+    setter onsuspend
+    setter ontimeupdate
+    setter ontoggle
+    setter ontouchcancel
+    setter ontouchend
+    setter ontouchmove
+    setter ontouchstart
+    setter ontransitionend
+    setter onunhandledrejection
+    setter onunload
+    setter onvolumechange
+    setter onwaiting
+    setter onwebkitanimationend
+    setter onwebkitanimationiteration
+    setter onwebkitanimationstart
+    setter onwebkittransitionend
+    setter onwheel
+    setter outerHeight
+    setter outerWidth
+    setter pageXOffset
+    setter pageYOffset
+    setter performance
+    setter personalbar
+    setter screen
+    setter screenLeft
+    setter screenTop
+    setter screenX
+    setter screenY
+    setter scrollX
+    setter scrollY
+    setter scrollbars
+    setter status
+    setter statusbar
+    setter toolbar
 PASS successfullyParsed is true
 
 TEST COMPLETE

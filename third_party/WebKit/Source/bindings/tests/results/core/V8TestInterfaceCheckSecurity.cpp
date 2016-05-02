@@ -38,12 +38,6 @@ static void readonlyLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<
 {
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceCheckSecurity* impl = V8TestInterfaceCheckSecurity::toImpl(holder);
-    ExceptionState exceptionState(ExceptionState::GetterContext, "readonlyLongAttribute", "TestInterfaceCheckSecurity", holder, info.GetIsolate());
-    if (!BindingSecurity::shouldAllowAccessTo(info.GetIsolate(), callingDOMWindow(info.GetIsolate()), impl, exceptionState)) {
-        v8SetReturnValueNull(info);
-        exceptionState.throwIfNeeded();
-        return;
-    }
     v8SetReturnValueInt(info, impl->readonlyLongAttribute());
 }
 
@@ -56,12 +50,6 @@ static void longAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Valu
 {
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceCheckSecurity* impl = V8TestInterfaceCheckSecurity::toImpl(holder);
-    ExceptionState exceptionState(ExceptionState::GetterContext, "longAttribute", "TestInterfaceCheckSecurity", holder, info.GetIsolate());
-    if (!BindingSecurity::shouldAllowAccessTo(info.GetIsolate(), callingDOMWindow(info.GetIsolate()), impl, exceptionState)) {
-        v8SetReturnValueNull(info);
-        exceptionState.throwIfNeeded();
-        return;
-    }
     v8SetReturnValueInt(info, impl->longAttribute());
 }
 
@@ -75,11 +63,6 @@ static void longAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8:
     v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "longAttribute", "TestInterfaceCheckSecurity", holder, info.GetIsolate());
     TestInterfaceCheckSecurity* impl = V8TestInterfaceCheckSecurity::toImpl(holder);
-    if (!BindingSecurity::shouldAllowAccessTo(info.GetIsolate(), callingDOMWindow(info.GetIsolate()), impl, exceptionState)) {
-        v8SetReturnValue(info, v8Value);
-        exceptionState.throwIfNeeded();
-        return;
-    }
     int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
@@ -92,19 +75,19 @@ static void longAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<
     TestInterfaceCheckSecurityV8Internal::longAttributeAttributeSetter(v8Value, info);
 }
 
-static void doNotCheckSecurityLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void doNotCheckSecurityLongAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceCheckSecurity* impl = V8TestInterfaceCheckSecurity::toImpl(holder);
     v8SetReturnValueInt(info, impl->doNotCheckSecurityLongAttribute());
 }
 
-static void doNotCheckSecurityLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void doNotCheckSecurityLongAttributeAttributeGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityLongAttributeAttributeGetter(info);
 }
 
-static void doNotCheckSecurityLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
+static void doNotCheckSecurityLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "doNotCheckSecurityLongAttribute", "TestInterfaceCheckSecurity", holder, info.GetIsolate());
@@ -115,37 +98,36 @@ static void doNotCheckSecurityLongAttributeAttributeSetter(v8::Local<v8::Value> 
     impl->setDoNotCheckSecurityLongAttribute(cppValue);
 }
 
-static void doNotCheckSecurityLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void doNotCheckSecurityLongAttributeAttributeSetterCallback(v8::Local<v8::Name>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
-    v8::Local<v8::Value> v8Value = info[0];
     TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityLongAttributeAttributeSetter(v8Value, info);
 }
 
-static void doNotCheckSecurityReadonlyLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void doNotCheckSecurityReadonlyLongAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceCheckSecurity* impl = V8TestInterfaceCheckSecurity::toImpl(holder);
     v8SetReturnValueInt(info, impl->doNotCheckSecurityReadonlyLongAttribute());
 }
 
-static void doNotCheckSecurityReadonlyLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void doNotCheckSecurityReadonlyLongAttributeAttributeGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityReadonlyLongAttributeAttributeGetter(info);
 }
 
-static void doNotCheckSecurityOnSetterLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void doNotCheckSecurityOnSetterLongAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceCheckSecurity* impl = V8TestInterfaceCheckSecurity::toImpl(holder);
     v8SetReturnValueInt(info, impl->doNotCheckSecurityOnSetterLongAttribute());
 }
 
-static void doNotCheckSecurityOnSetterLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void doNotCheckSecurityOnSetterLongAttributeAttributeGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityOnSetterLongAttributeAttributeGetter(info);
 }
 
-static void doNotCheckSecurityOnSetterLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
+static void doNotCheckSecurityOnSetterLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "doNotCheckSecurityOnSetterLongAttribute", "TestInterfaceCheckSecurity", holder, info.GetIsolate());
@@ -156,34 +138,21 @@ static void doNotCheckSecurityOnSetterLongAttributeAttributeSetter(v8::Local<v8:
     impl->setDoNotCheckSecurityOnSetterLongAttribute(cppValue);
 }
 
-static void doNotCheckSecurityOnSetterLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void doNotCheckSecurityOnSetterLongAttributeAttributeSetterCallback(v8::Local<v8::Name>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
-    v8::Local<v8::Value> v8Value = info[0];
     TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityOnSetterLongAttributeAttributeSetter(v8Value, info);
 }
 
-static void doNotCheckSecurityReplaceableReadonlyLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void doNotCheckSecurityReplaceableReadonlyLongAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceCheckSecurity* impl = V8TestInterfaceCheckSecurity::toImpl(holder);
     v8SetReturnValueInt(info, impl->doNotCheckSecurityReplaceableReadonlyLongAttribute());
 }
 
-static void doNotCheckSecurityReplaceableReadonlyLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void doNotCheckSecurityReplaceableReadonlyLongAttributeAttributeGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityReplaceableReadonlyLongAttributeAttributeGetter(info);
-}
-
-static void doNotCheckSecurityReplaceableReadonlyLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::String> propertyName = v8AtomicString(info.GetIsolate(), "doNotCheckSecurityReplaceableReadonlyLongAttribute");
-    v8CallBoolean(info.This()->CreateDataProperty(info.GetIsolate()->GetCurrentContext(), propertyName, v8Value));
-}
-
-static void doNotCheckSecurityReplaceableReadonlyLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Value> v8Value = info[0];
-    TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityReplaceableReadonlyLongAttributeAttributeSetter(v8Value, info);
 }
 
 bool securityCheck(v8::Local<v8::Context> accessingContext, v8::Local<v8::Object> accessedObject, v8::Local<v8::Value> data)
@@ -424,13 +393,25 @@ static void TestInterfaceCheckSecurityOriginSafeMethodSetterCallback(v8::Local<v
 
 } // namespace TestInterfaceCheckSecurityV8Internal
 
+// Suppress warning: global constructors, because AttributeConfiguration is trivial
+// and does not depend on another global objects.
+#if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wglobal-constructors"
+#endif
+const V8DOMConfiguration::AttributeConfiguration V8TestInterfaceCheckSecurityAttributes[] = {
+    {"doNotCheckSecurityLongAttribute", TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityLongAttributeAttributeGetterCallback, TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::ALL_CAN_READ | v8::ALL_CAN_WRITE), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance, V8DOMConfiguration::CheckHolder},
+    {"doNotCheckSecurityReadonlyLongAttribute", TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityReadonlyLongAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::ALL_CAN_READ), static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance, V8DOMConfiguration::CheckHolder},
+    {"doNotCheckSecurityOnSetterLongAttribute", TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityOnSetterLongAttributeAttributeGetterCallback, TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityOnSetterLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::ALL_CAN_WRITE), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance, V8DOMConfiguration::CheckHolder},
+    {"doNotCheckSecurityReplaceableReadonlyLongAttribute", TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityReplaceableReadonlyLongAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::ALL_CAN_READ), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance, V8DOMConfiguration::CheckHolder},
+};
+#if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
+#pragma clang diagnostic pop
+#endif
+
 const V8DOMConfiguration::AccessorConfiguration V8TestInterfaceCheckSecurityAccessors[] = {
     {"readonlyLongAttribute", TestInterfaceCheckSecurityV8Internal::readonlyLongAttributeAttributeGetterCallback, 0, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance, V8DOMConfiguration::CheckHolder},
     {"longAttribute", TestInterfaceCheckSecurityV8Internal::longAttributeAttributeGetterCallback, TestInterfaceCheckSecurityV8Internal::longAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance, V8DOMConfiguration::CheckHolder},
-    {"doNotCheckSecurityLongAttribute", TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityLongAttributeAttributeGetterCallback, TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityLongAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance, V8DOMConfiguration::CheckHolder},
-    {"doNotCheckSecurityReadonlyLongAttribute", TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityReadonlyLongAttributeAttributeGetterCallback, 0, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance, V8DOMConfiguration::CheckHolder},
-    {"doNotCheckSecurityOnSetterLongAttribute", TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityOnSetterLongAttributeAttributeGetterCallback, TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityOnSetterLongAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance, V8DOMConfiguration::CheckHolder},
-    {"doNotCheckSecurityReplaceableReadonlyLongAttribute", TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityReplaceableReadonlyLongAttributeAttributeGetterCallback, TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityReplaceableReadonlyLongAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance, V8DOMConfiguration::CheckHolder},
 };
 
 const V8DOMConfiguration::MethodConfiguration V8TestInterfaceCheckSecurityMethods[] = {
@@ -448,6 +429,7 @@ static void installV8TestInterfaceCheckSecurityTemplate(v8::Isolate* isolate, co
     v8::Local<v8::ObjectTemplate> prototypeTemplate = interfaceTemplate->PrototypeTemplate();
     ALLOW_UNUSED_LOCAL(prototypeTemplate);
     // Register DOM constants, attributes and operations.
+    V8DOMConfiguration::installAttributes(isolate, world, instanceTemplate, prototypeTemplate, V8TestInterfaceCheckSecurityAttributes, WTF_ARRAY_LENGTH(V8TestInterfaceCheckSecurityAttributes));
     V8DOMConfiguration::installAccessors(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestInterfaceCheckSecurityAccessors, WTF_ARRAY_LENGTH(V8TestInterfaceCheckSecurityAccessors));
     V8DOMConfiguration::installMethods(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestInterfaceCheckSecurityMethods, WTF_ARRAY_LENGTH(V8TestInterfaceCheckSecurityMethods));
 

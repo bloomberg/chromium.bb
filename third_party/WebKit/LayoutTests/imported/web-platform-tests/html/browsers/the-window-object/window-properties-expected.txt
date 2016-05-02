@@ -60,110 +60,110 @@ PASS Window method: matchMedia
 PASS Window method: scroll 
 PASS Window method: scrollTo 
 PASS Window method: scrollBy 
-FAIL Window readonly attribute: history assert_equals: expected "function" but got "undefined"
-FAIL Window readonly attribute: frameElement assert_equals: expected "function" but got "undefined"
-FAIL Window readonly attribute: navigator assert_equals: expected "function" but got "undefined"
-FAIL Window readonly attribute: applicationCache assert_equals: expected "function" but got "undefined"
-FAIL Window readonly attribute: sessionStorage assert_equals: expected "function" but got "undefined"
-FAIL Window readonly attribute: localStorage assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: name assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: status assert_equals: expected "function" but got "undefined"
+PASS Window readonly attribute: history 
+PASS Window readonly attribute: frameElement 
+PASS Window readonly attribute: navigator 
+PASS Window readonly attribute: applicationCache 
+PASS Window readonly attribute: sessionStorage 
+PASS Window readonly attribute: localStorage 
+PASS Window attribute: name 
+PASS Window attribute: status 
 FAIL Window attribute: opener assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: onabort assert_equals: expected "function" but got "undefined"
+PASS Window attribute: onabort 
 FAIL Window attribute: onafterprint assert_true: onafterprint in window expected true got false
 FAIL Window attribute: onbeforeprint assert_true: onbeforeprint in window expected true got false
-FAIL Window attribute: onbeforeunload assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: onblur assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: oncancel assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: oncanplay assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: oncanplaythrough assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: onchange assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: onclick assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: onclose assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: oncontextmenu assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: oncuechange assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: ondblclick assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: ondrag assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: ondragend assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: ondragenter assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: ondragleave assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: ondragover assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: ondragstart assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: ondrop assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: ondurationchange assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: onemptied assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: onended assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: onerror assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: onfocus assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: onhashchange assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: oninput assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: oninvalid assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: onkeydown assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: onkeypress assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: onkeyup assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: onload assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: onloadeddata assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: onloadedmetadata assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: onloadstart assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: onmessage assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: onmousedown assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: onmousemove assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: onmouseout assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: onmouseover assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: onmouseup assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: onmousewheel assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: onoffline assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: ononline assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: onpause assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: onplay assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: onplaying assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: onpagehide assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: onpageshow assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: onpopstate assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: onprogress assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: onratechange assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: onreset assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: onresize assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: onscroll assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: onseeked assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: onseeking assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: onselect assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: onshow assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: onstalled assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: onstorage assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: onsubmit assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: onsuspend assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: ontimeupdate assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: onunload assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: onvolumechange assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: onwaiting assert_equals: expected "function" but got "undefined"
+PASS Window attribute: onbeforeunload 
+PASS Window attribute: onblur 
+PASS Window attribute: oncancel 
+PASS Window attribute: oncanplay 
+PASS Window attribute: oncanplaythrough 
+PASS Window attribute: onchange 
+PASS Window attribute: onclick 
+PASS Window attribute: onclose 
+PASS Window attribute: oncontextmenu 
+PASS Window attribute: oncuechange 
+PASS Window attribute: ondblclick 
+PASS Window attribute: ondrag 
+PASS Window attribute: ondragend 
+PASS Window attribute: ondragenter 
+PASS Window attribute: ondragleave 
+PASS Window attribute: ondragover 
+PASS Window attribute: ondragstart 
+PASS Window attribute: ondrop 
+PASS Window attribute: ondurationchange 
+PASS Window attribute: onemptied 
+PASS Window attribute: onended 
+PASS Window attribute: onerror 
+PASS Window attribute: onfocus 
+PASS Window attribute: onhashchange 
+PASS Window attribute: oninput 
+PASS Window attribute: oninvalid 
+PASS Window attribute: onkeydown 
+PASS Window attribute: onkeypress 
+PASS Window attribute: onkeyup 
+PASS Window attribute: onload 
+PASS Window attribute: onloadeddata 
+PASS Window attribute: onloadedmetadata 
+PASS Window attribute: onloadstart 
+PASS Window attribute: onmessage 
+PASS Window attribute: onmousedown 
+PASS Window attribute: onmousemove 
+PASS Window attribute: onmouseout 
+PASS Window attribute: onmouseover 
+PASS Window attribute: onmouseup 
+PASS Window attribute: onmousewheel 
+PASS Window attribute: onoffline 
+PASS Window attribute: ononline 
+PASS Window attribute: onpause 
+PASS Window attribute: onplay 
+PASS Window attribute: onplaying 
+PASS Window attribute: onpagehide 
+PASS Window attribute: onpageshow 
+PASS Window attribute: onpopstate 
+PASS Window attribute: onprogress 
+PASS Window attribute: onratechange 
+PASS Window attribute: onreset 
+PASS Window attribute: onresize 
+PASS Window attribute: onscroll 
+PASS Window attribute: onseeked 
+PASS Window attribute: onseeking 
+PASS Window attribute: onselect 
+PASS Window attribute: onshow 
+PASS Window attribute: onstalled 
+PASS Window attribute: onstorage 
+PASS Window attribute: onsubmit 
+PASS Window attribute: onsuspend 
+PASS Window attribute: ontimeupdate 
+PASS Window attribute: onunload 
+PASS Window attribute: onvolumechange 
+PASS Window attribute: onwaiting 
 FAIL Window unforgeable attribute: window assert_equals: expected "function" but got "undefined"
-FAIL Window unforgeable attribute: document assert_equals: expected "function" but got "undefined"
+PASS Window unforgeable attribute: document 
 FAIL Window unforgeable attribute: location assert_equals: expected "function" but got "undefined"
 FAIL Window unforgeable attribute: top assert_equals: expected "function" but got "undefined"
 FAIL Window replaceable attribute: self assert_equals: expected "function" but got "undefined"
-FAIL Window replaceable attribute: locationbar assert_equals: expected "function" but got "undefined"
-FAIL Window replaceable attribute: menubar assert_equals: expected "function" but got "undefined"
-FAIL Window replaceable attribute: personalbar assert_equals: expected "function" but got "undefined"
-FAIL Window replaceable attribute: scrollbars assert_equals: expected "function" but got "undefined"
-FAIL Window replaceable attribute: statusbar assert_equals: expected "function" but got "undefined"
-FAIL Window replaceable attribute: toolbar assert_equals: expected "function" but got "undefined"
+PASS Window replaceable attribute: locationbar 
+PASS Window replaceable attribute: menubar 
+PASS Window replaceable attribute: personalbar 
+PASS Window replaceable attribute: scrollbars 
+PASS Window replaceable attribute: statusbar 
+PASS Window replaceable attribute: toolbar 
 FAIL Window replaceable attribute: frames assert_equals: expected "function" but got "undefined"
 FAIL Window replaceable attribute: parent assert_equals: expected "function" but got "undefined"
 FAIL Window replaceable attribute: external assert_true: external in window expected true got false
 FAIL Window replaceable attribute: length assert_equals: expected "function" but got "undefined"
-FAIL Window replaceable attribute: screen assert_equals: expected "function" but got "undefined"
-FAIL Window replaceable attribute: scrollX assert_equals: expected "function" but got "undefined"
-FAIL Window replaceable attribute: scrollY assert_equals: expected "function" but got "undefined"
-FAIL Window replaceable attribute: pageXOffset assert_equals: expected "function" but got "undefined"
-FAIL Window replaceable attribute: pageYOffset assert_equals: expected "function" but got "undefined"
-FAIL Window replaceable attribute: innerWidth assert_equals: expected "function" but got "undefined"
-FAIL Window replaceable attribute: innerHeight assert_equals: expected "function" but got "undefined"
-FAIL Window replaceable attribute: screenX assert_equals: expected "function" but got "undefined"
-FAIL Window replaceable attribute: screenY assert_equals: expected "function" but got "undefined"
-FAIL Window replaceable attribute: outerWidth assert_equals: expected "function" but got "undefined"
-FAIL Window replaceable attribute: outerHeight assert_equals: expected "function" but got "undefined"
-FAIL Window replaceable attribute: devicePixelRatio assert_equals: expected "function" but got "undefined"
+PASS Window replaceable attribute: screen 
+PASS Window replaceable attribute: scrollX 
+PASS Window replaceable attribute: scrollY 
+PASS Window replaceable attribute: pageXOffset 
+PASS Window replaceable attribute: pageYOffset 
+PASS Window replaceable attribute: innerWidth 
+PASS Window replaceable attribute: innerHeight 
+PASS Window replaceable attribute: screenX 
+PASS Window replaceable attribute: screenY 
+PASS Window replaceable attribute: outerWidth 
+PASS Window replaceable attribute: outerHeight 
+PASS Window replaceable attribute: devicePixelRatio 
 PASS constructor 
 Harness: the test ran to completion.
 

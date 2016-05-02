@@ -1,6 +1,6 @@
 This is a testharness.js-based test.
-FAIL Window interface: attribute sessionStorage assert_equals: "sessionStorage" must have a getter expected "function" but got "undefined"
-FAIL Window interface: attribute localStorage assert_equals: "localStorage" must have a getter expected "function" but got "undefined"
+PASS Window interface: attribute sessionStorage 
+PASS Window interface: attribute localStorage 
 PASS Storage interface: existence and properties of interface object 
 PASS Storage interface object length 
 PASS Storage interface object name 
