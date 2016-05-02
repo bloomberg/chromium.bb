@@ -42,10 +42,16 @@ class SigninInvestigatorTest : public testing::Test {
                              const std::string& id,
                              bool equals_expectated,
                              AccountEquality histogram_expected) {
-    base::HistogramTester histogram_tester;
     FakeProvider provider(email, id);
     SigninInvestigator investigator(kSameEmail, kSameId, &provider);
-    bool equals_actual = investigator.AreAccountsEqualWithFallback();
+    AssertAccountEquality(&investigator, equals_expectated, histogram_expected);
+  }
+
+  void AssertAccountEquality(SigninInvestigator* investigator,
+                             bool equals_expectated,
+                             AccountEquality histogram_expected) {
+    base::HistogramTester histogram_tester;
+    bool equals_actual = investigator->AreAccountsEqualWithFallback();
     ASSERT_EQ(equals_expectated, equals_actual);
     histogram_tester.ExpectUniqueSample(
         "Signin.AccountEquality", static_cast<int>(histogram_expected), 1);
@@ -91,6 +97,18 @@ TEST_F(SigninInvestigatorTest, EqualitySameEmailFallback) {
 TEST_F(SigninInvestigatorTest, EqualityDifferentEmailFallback) {
   AssertAccountEquality(kDifferentEmail, kEmptyId, false,
                         AccountEquality::EMAIL_FALLBACK);
+}
+
+TEST_F(SigninInvestigatorTest, EqualitySameEmailFallbackEmptyCurrentId) {
+  FakeProvider provider(kSameEmail, kDifferentId);
+  SigninInvestigator investigator(kSameEmail, kEmptyId, &provider);
+  AssertAccountEquality(&investigator, true, AccountEquality::EMAIL_FALLBACK);
+}
+
+TEST_F(SigninInvestigatorTest, EqualityDifferentEmailFallbackEmptyCurrentId) {
+  FakeProvider provider(kDifferentId, kDifferentId);
+  SigninInvestigator investigator(kSameEmail, kEmptyId, &provider);
+  AssertAccountEquality(&investigator, false, AccountEquality::EMAIL_FALLBACK);
 }
 
 TEST_F(SigninInvestigatorTest, InvestigateSameAccount) {

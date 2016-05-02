@@ -28,7 +28,7 @@ SigninInvestigator::SigninInvestigator(const std::string& current_email,
       current_id_(current_id),
       provider_(provider) {
   DCHECK(!current_email_.empty());
-  DCHECK(!current_id_.empty());
+  DCHECK(provider);
 }
 
 SigninInvestigator::~SigninInvestigator() {}
