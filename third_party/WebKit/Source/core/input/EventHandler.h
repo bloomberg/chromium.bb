@@ -110,6 +110,8 @@ public:
     void dispatchFakeMouseMoveEventSoon();
     void dispatchFakeMouseMoveEventSoonInQuad(const FloatQuad&);
 
+    static HitTestResult hitTestResultInFrame(LocalFrame*, const LayoutPoint&, HitTestRequest::HitTestRequestType hitType = HitTestRequest::ReadOnly | HitTestRequest::Active);
+
     HitTestResult hitTestResultAtPoint(const LayoutPoint&,
         HitTestRequest::HitTestRequestType hitType = HitTestRequest::ReadOnly | HitTestRequest::Active,
         const LayoutSize& padding = LayoutSize());
@@ -327,8 +329,6 @@ private:
     bool isRootScroller(const Node&) const;
     void customizedScroll(const Node& startNode, ScrollState&);
 
-    HitTestResult hitTestResultInFrame(LocalFrame*, const LayoutPoint&, HitTestRequest::HitTestRequestType hitType = HitTestRequest::ReadOnly | HitTestRequest::Active);
-
     void invalidateClick();
 
     Node* updateMouseEventTargetNode(Node*, const PlatformMouseEvent&);
@@ -394,10 +394,6 @@ private:
     // the given element.
     bool slideFocusOnShadowHostIfNecessary(const Element&);
 
-    void dispatchPointerEvents(const PlatformTouchEvent&, HeapVector<TouchInfo>&);
-
-    WebInputEventResult dispatchTouchEvents(const PlatformTouchEvent&, HeapVector<TouchInfo>&, bool);
-
     FrameHost* frameHost();
 
     // NOTE: If adding a new field to this class please ensure that it is
@@ -459,18 +455,6 @@ private:
     PlatformMouseEvent m_mouseDown;
     RefPtr<UserGestureToken> m_lastMouseDownUserGestureToken;
 
-    // The target of each active touch point indexed by the touch ID.
-    using TouchTargetMap = HeapHashMap<unsigned, Member<EventTarget>, DefaultHash<unsigned>::Hash, WTF::UnsignedWithZeroKeyHashTraits<unsigned>>;
-    TouchTargetMap m_targetForTouchID;
-    using TouchRegionMap = HashMap<unsigned, String, DefaultHash<unsigned>::Hash, WTF::UnsignedWithZeroKeyHashTraits<unsigned>>;
-    TouchRegionMap m_regionForTouchID;
-
-    // If set, the document of the active touch sequence. Unset if no touch sequence active.
-    Member<Document> m_touchSequenceDocument;
-    RefPtr<UserGestureToken> m_touchSequenceUserGestureToken;
-
-    bool m_touchPressed;
-
     PointerEventManager m_pointerEventManager;
 
     Member<Node> m_scrollGestureHandlingNode;
@@ -498,9 +482,6 @@ private:
     // scroll which shouldn't propagate can't cause any element to
     // scroll other than the |m_previousGestureScrolledNode|.
     bool m_deltaConsumedForScrollSequence;
-
-    // True if waiting on first touch move after a touch start.
-    bool m_waitingForFirstTouchMove;
 };
 
 } // namespace blink

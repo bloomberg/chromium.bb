@@ -4,6 +4,8 @@
 
 #include "core/events/PointerEventFactory.h"
 
+#include "platform/geometry/FloatSize.h"
+
 namespace blink {
 
 namespace {
@@ -130,8 +132,8 @@ PointerEvent* PointerEventFactory::create(
 
 PointerEvent* PointerEventFactory::create(const AtomicString& type,
     const PlatformTouchPoint& touchPoint, PlatformEvent::Modifiers modifiers,
-    const double width, const double height,
-    const double clientX, const double clientY)
+    const FloatSize& pointRadius,
+    const FloatPoint& pagePoint)
 {
     const PlatformTouchPoint::TouchState pointState = touchPoint.state();
 
@@ -149,14 +151,14 @@ PointerEvent* PointerEventFactory::create(const AtomicString& type,
     setIdTypeButtons(pointerEventInit, touchPoint.pointerProperties(),
         pointerReleasedOrCancelled ? 0 : 1);
 
-    pointerEventInit.setWidth(width);
-    pointerEventInit.setHeight(height);
+    pointerEventInit.setWidth(pointRadius.width());
+    pointerEventInit.setHeight(pointRadius.height());
     pointerEventInit.setTiltX(touchPoint.pointerProperties().tiltX);
     pointerEventInit.setTiltY(touchPoint.pointerProperties().tiltY);
     pointerEventInit.setScreenX(touchPoint.screenPos().x());
     pointerEventInit.setScreenY(touchPoint.screenPos().y());
-    pointerEventInit.setClientX(clientX);
-    pointerEventInit.setClientY(clientY);
+    pointerEventInit.setClientX(pagePoint.x());
+    pointerEventInit.setClientY(pagePoint.y());
     pointerEventInit.setButton(pointerPressedOrReleased ? LeftButton: NoButton);
     pointerEventInit.setPressure(getPointerEventPressure(
         touchPoint.force(), pointerEventInit.buttons()));
@@ -309,7 +311,8 @@ bool PointerEventFactory::remove(const int mappedId)
     return true;
 }
 
-Vector<int> PointerEventFactory::getPointerIdsOfType(WebPointerProperties::PointerType pointerType)
+Vector<int> PointerEventFactory::getPointerIdsOfType(
+    WebPointerProperties::PointerType pointerType) const
 {
     Vector<int> mappedIds;
 
@@ -334,7 +337,7 @@ bool PointerEventFactory::isPrimary(int mappedId) const
 }
 
 WebPointerProperties::PointerType PointerEventFactory::getPointerType(
-    const int pointerId)
+    const int pointerId) const
 {
     if (m_pointerIdMapping.contains(pointerId)) {
         return static_cast<WebPointerProperties::PointerType>(
@@ -343,15 +346,27 @@ WebPointerProperties::PointerType PointerEventFactory::getPointerType(
     return WebPointerProperties::PointerType::Unknown;
 }
 
-bool PointerEventFactory::isActive(const int pointerId)
+bool PointerEventFactory::isActive(const int pointerId) const
 {
     return m_pointerIdMapping.contains(pointerId);
 }
 
-bool PointerEventFactory::isActiveButtonsState(const int pointerId)
+bool PointerEventFactory::isActiveButtonsState(const int pointerId) const
 {
     return m_pointerIdMapping.contains(pointerId)
         && m_pointerIdMapping.get(pointerId).isActiveButtons;
+}
+
+int PointerEventFactory::getPointerEventId(
+    const WebPointerProperties& properties) const
+{
+    if (properties.pointerType
+        == WebPointerProperties::PointerType::Mouse)
+        return PointerEventFactory::s_mouseId;
+    IncomingId id(properties.pointerType, properties.id);
+    if (m_pointerIncomingIdMapping.contains(id))
+        return m_pointerIncomingIdMapping.get(id);
+    return PointerEventFactory::s_invalidId;
 }
 
 } // namespace blink

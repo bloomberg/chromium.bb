@@ -2796,6 +2796,8 @@
             'input/PointerEventManager.h',
             'input/TouchActionUtil.cpp',
             'input/TouchActionUtil.h',
+            'input/TouchEventManager.cpp',
+            'input/TouchEventManager.h',
         ],
         'webcore_html_files': [
             'html/AutoplayExperimentHelper.cpp',

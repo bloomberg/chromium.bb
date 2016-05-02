@@ -36,8 +36,8 @@ public:
 
     PointerEvent* create(const AtomicString& type,
         const PlatformTouchPoint&, PlatformEvent::Modifiers,
-        const double width, const double height,
-        const double clientX, const double clientY);
+        const FloatSize& pointRadius,
+        const FloatPoint& pagePoint);
 
     PointerEvent* createPointerCancelEvent(
         const int pointerId, const WebPointerProperties::PointerType);
@@ -62,16 +62,20 @@ public:
     bool remove(const int);
 
     // Returns all ids of the given pointerType.
-    Vector<int> getPointerIdsOfType(WebPointerProperties::PointerType);
+    Vector<int> getPointerIdsOfType(WebPointerProperties::PointerType) const;
 
-    // Returns whether a pointer id exists and active
-    bool isActive(const int);
+    // Returns whether a pointer id exists and active.
+    bool isActive(const int) const;
 
-    // Returns type of pointer id if exists, otherwise Unknown
-    WebPointerProperties::PointerType getPointerType(const int);
+    // Returns type of pointer id if exists, otherwise Unknown.
+    WebPointerProperties::PointerType getPointerType(const int) const;
 
-    // Returns whether a pointer id exists and has at least one pressed button
-    bool isActiveButtonsState(const int);
+    // Returns whether a pointer id exists and has at least one pressed button.
+    bool isActiveButtonsState(const int) const;
+
+    // Returns the id of the pointer event corresponding to the given pointer
+    // properties if exists otherwise s_invalidId.
+    int getPointerEventId(const WebPointerProperties&) const;
 
 private:
     typedef WTF::UnsignedWithZeroKeyHashTraits<int> UnsignedHash;

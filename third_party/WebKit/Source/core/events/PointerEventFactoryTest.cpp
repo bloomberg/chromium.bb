@@ -101,7 +101,7 @@ PointerEvent* PointerEventFactoryTest::createAndCheckTouchEvent(
     PlatformTouchPoint::TouchState state)
 {
     PointerEvent* pointerEvent = m_pointerEventFactory.create(
-        EventTypeNames::pointerdown, PointerEventFactoryTest::PlatformTouchPointBuilder(pointerType, rawId, state), PlatformEvent::NoModifiers, 0, 0, 0, 0);
+        EventTypeNames::pointerdown, PointerEventFactoryTest::PlatformTouchPointBuilder(pointerType, rawId, state), PlatformEvent::NoModifiers, FloatSize(), FloatPoint());
     EXPECT_EQ(uniqueId, pointerEvent->pointerId());
     EXPECT_EQ(isPrimary, pointerEvent->isPrimary());
     return pointerEvent;

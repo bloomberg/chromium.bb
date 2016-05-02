@@ -7,8 +7,10 @@
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/shadow/FlatTreeTraversal.h"
 #include "core/events/MouseEvent.h"
+#include "core/frame/FrameView.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/input/EventHandler.h"
+#include "platform/PlatformTouchEvent.h"
 
 namespace blink {
 
@@ -375,19 +377,73 @@ void PointerEventManager::unblockTouchPointers()
     m_inCanceledStateForPointerTypeTouch = false;
 }
 
+WebInputEventResult PointerEventManager::handleTouchEvents(
+    const PlatformTouchEvent& event)
+{
+
+    if (event.type() == PlatformEvent::TouchScrollStarted) {
+        blockTouchPointers();
+        return WebInputEventResult::HandledSystem;
+    }
+
+    bool newTouchSequence = true;
+    for (const auto &touchPoint : event.touchPoints()) {
+        if (touchPoint.state() != PlatformTouchPoint::TouchPressed) {
+            newTouchSequence = false;
+            break;
+        }
+    }
+    if (newTouchSequence)
+        unblockTouchPointers();
+    HeapVector<TouchEventManager::TouchInfo> touchInfos;
+
+    // TODO(crbug.com/606822): This will be moved after pointer events so
+    // pointer event operations will get the first shot to fill up this array.
+    if (!m_touchEventManager.generateTouchInfosAfterHittest(event, touchInfos))
+        return WebInputEventResult::NotHandled;
+
+    dispatchTouchPointerEvents(event, touchInfos);
+
+    return m_touchEventManager.handleTouchEvent(event, touchInfos);
+}
+
+void PointerEventManager::dispatchTouchPointerEvents(
+    const PlatformTouchEvent& event,
+    HeapVector<TouchEventManager::TouchInfo>& touchInfos)
+{
+    if (!RuntimeEnabledFeatures::pointerEventEnabled())
+        return;
+
+    if (m_inCanceledStateForPointerTypeTouch)
+        return;
+
+    // Iterate through the touch points, sending PointerEvents to the targets as required.
+    for (auto& touchInfo: touchInfos) {
+        const PlatformTouchPoint &touchPoint = touchInfo.point;
+        WebInputEventResult result = WebInputEventResult::NotHandled;
+        // Do not send pointer events for stationary touches.
+        if (touchPoint.state() != PlatformTouchPoint::TouchStationary) {
+            // TODO(crbug.com/608394): The adjustedPagePoint should be converted
+            // to client coordinates.
+            PointerEvent* pointerEvent = m_pointerEventFactory.create(
+                pointerEventNameForTouchPointState(touchPoint.state()),
+                touchPoint, event.getModifiers(),
+                touchInfo.adjustedRadius,
+                touchInfo.adjustedPagePoint);
+
+            // Consume the touch point if its pointer event is anything but NotHandled
+            // (e.g. preventDefault is called in the listener for the pointer event).
+            result = sendTouchPointerEvent(touchInfo.touchNode, pointerEvent);
+            touchInfo.consumed = result != WebInputEventResult::NotHandled;
+        }
+    }
+}
+
 WebInputEventResult PointerEventManager::sendTouchPointerEvent(
-    EventTarget* target,
-    const PlatformTouchPoint& touchPoint, PlatformEvent::Modifiers modifiers,
-    const double width, const double height,
-    const double clientX, const double clientY)
+    EventTarget* target, PointerEvent* pointerEvent)
 {
     if (m_inCanceledStateForPointerTypeTouch)
         return WebInputEventResult::NotHandled;
-
-    PointerEvent* pointerEvent =
-        m_pointerEventFactory.create(
-        pointerEventNameForTouchPointState(touchPoint.state()),
-        touchPoint, modifiers, width, height, clientX, clientY);
 
     processCaptureAndPositionOfPointerEvent(pointerEvent, target);
 
@@ -397,11 +453,11 @@ WebInputEventResult PointerEventManager::sendTouchPointerEvent(
         pointerEvent);
 
     // Setting the implicit capture for touch
-    if (touchPoint.state() == PlatformTouchPoint::TouchPressed)
+    if (pointerEvent->type() == EventTypeNames::pointerdown)
         setPointerCapture(pointerEvent->pointerId(), target);
 
-    if (touchPoint.state() == PlatformTouchPoint::TouchReleased
-        || touchPoint.state() == PlatformTouchPoint::TouchCancelled) {
+    if (pointerEvent->type() == EventTypeNames::pointerup
+        || pointerEvent->type() == EventTypeNames::pointercancel) {
         releasePointerCapture(pointerEvent->pointerId());
 
         // Sending the leave/out events and lostpointercapture
@@ -468,7 +524,9 @@ WebInputEventResult PointerEventManager::sendMousePointerEvent(
     return result;
 }
 
-PointerEventManager::PointerEventManager()
+PointerEventManager::PointerEventManager(LocalFrame* frame)
+: m_frame(frame)
+, m_touchEventManager(frame)
 {
     clear();
 }
@@ -481,6 +539,7 @@ void PointerEventManager::clear()
 {
     for (auto& entry : m_preventMouseEventForPointerType)
         entry = false;
+    m_touchEventManager.clear();
     m_inCanceledStateForPointerTypeTouch = false;
     m_pointerEventFactory.clear();
     m_nodeUnderPointer.clear();
@@ -641,22 +700,29 @@ void PointerEventManager::releasePointerCapture(int pointerId)
     m_pendingPointerCaptureTarget.remove(pointerId);
 }
 
-bool PointerEventManager::isActive(const int pointerId)
+bool PointerEventManager::isActive(const int pointerId) const
 {
     return m_pointerEventFactory.isActive(pointerId);
 }
 
 WebPointerProperties::PointerType PointerEventManager::getPointerEventType(
-    const int pointerId)
+    const int pointerId) const
 {
     return m_pointerEventFactory.getPointerType(pointerId);
 }
 
+bool PointerEventManager::isAnyTouchActive() const
+{
+    return m_touchEventManager.isAnyTouchActive();
+}
+
 DEFINE_TRACE(PointerEventManager)
 {
+    visitor->trace(m_frame);
     visitor->trace(m_nodeUnderPointer);
     visitor->trace(m_pointerCaptureTarget);
     visitor->trace(m_pendingPointerCaptureTarget);
+    visitor->trace(m_touchEventManager);
 }
 
 

@@ -454,7 +454,6 @@ PlatformTouchPointBuilder::PlatformTouchPointBuilder(Widget* widget, const WebTo
     m_pointerProperties = point;
     m_state = toPlatformTouchPointState(point.state);
 
-    // This assumes convertFromRootFrame does only translations, not scales.
     FloatPoint floatPos = convertHitPointToRootFrame(widget, point.position);
     IntPoint flooredPoint = flooredIntPoint(floatPos);
     m_pos = widget->convertFromRootFrame(flooredPoint) + (floatPos - flooredPoint);
