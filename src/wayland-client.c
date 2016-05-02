@@ -581,7 +581,7 @@ create_outgoing_proxy(struct wl_proxy *proxy, const struct wl_message *message,
  *
  * For new-id arguments, this function will allocate a new wl_proxy
  * and send the ID to the server.  The new wl_proxy will be returned
- * on success or NULL on errror with errno set accordingly.  The newly
+ * on success or NULL on error with errno set accordingly.  The newly
  * created proxy will inherit their version from their parent.
  *
  * \note This is intended to be used by language bindings and not in
@@ -616,7 +616,7 @@ wl_proxy_marshal_array_constructor(struct wl_proxy *proxy,
  *
  * For new-id arguments, this function will allocate a new wl_proxy
  * and send the ID to the server.  The new wl_proxy will be returned
- * on success or NULL on errror with errno set accordingly.  The newly
+ * on success or NULL on error with errno set accordingly.  The newly
  * created proxy will have the version specified.
  *
  * \note This is intended to be used by language bindings and not in
@@ -711,7 +711,7 @@ wl_proxy_marshal(struct wl_proxy *proxy, uint32_t opcode, ...)
  *
  * For new-id arguments, this function will allocate a new wl_proxy
  * and send the ID to the server.  The new wl_proxy will be returned
- * on success or NULL on errror with errno set accordingly.  The newly
+ * on success or NULL on error with errno set accordingly.  The newly
  * created proxy will inherit their version from their parent.
  *
  * \note This should not normally be used by non-generated code.
@@ -749,7 +749,7 @@ wl_proxy_marshal_constructor(struct wl_proxy *proxy, uint32_t opcode,
  *
  * For new-id arguments, this function will allocate a new wl_proxy
  * and send the ID to the server.  The new wl_proxy will be returned
- * on success or NULL on errror with errno set accordingly.  The newly
+ * on success or NULL on error with errno set accordingly.  The newly
  * created proxy will have the version specified.
  *
  * \note This should not normally be used by non-generated code.
