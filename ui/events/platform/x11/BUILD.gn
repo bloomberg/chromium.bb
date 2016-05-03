@@ -28,6 +28,7 @@ component("x11") {
     "//ui/events/devices/x11",
     "//ui/events/platform",
     "//ui/events/x",
+    "//ui/gfx",
     "//ui/gfx/x",
   ]
 

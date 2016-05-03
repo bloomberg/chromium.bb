@@ -16,6 +16,7 @@
     'dependencies': [
       '../../../../base/base.gyp:base',
       '../../../../build/linux/system.gyp:x11',
+      '../../../gfx/gfx.gyp:gfx',
       '../../../gfx/x/gfx_x11.gyp:gfx_x11',
       '../../devices/events_devices.gyp:events_devices',
       '../../devices/x11/events_devices_x11.gyp:events_devices_x11',

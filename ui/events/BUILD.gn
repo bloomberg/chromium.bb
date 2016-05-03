@@ -66,15 +66,12 @@ component("events_base") {
 
   deps = [
     "//base/third_party/dynamic_annotations",
-    "//skia",
-    "//ui/display",
   ]
 
   public_deps = [
     ":dom_keycode_converter",
     "//base",
     "//ui/events/platform",
-    "//ui/gfx",
     "//ui/gfx/geometry",
   ]
 
@@ -303,6 +300,7 @@ source_set("test_support") {
     "//base",
     "//skia",
     "//ui/events/platform",
+    "//ui/gfx",
     "//ui/gfx/geometry",
   ]
 

@@ -40,6 +40,7 @@ if (use_ozone) {
       "//ui/display",
       "//ui/events",
       "//ui/events:events_base",
+      "//ui/gfx",
     ]
 
     defines = [ "EVENTS_OZONE_IMPLEMENTATION" ]
