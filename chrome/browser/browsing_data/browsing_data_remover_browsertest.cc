@@ -25,7 +25,10 @@
 #include "content/public/common/content_paths.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
+#include "net/http/transport_security_state.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
+#include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
@@ -97,6 +100,43 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
   }
 };
 
+class BrowsingDataRemoverTransportSecurityStateBrowserTest
+    : public BrowsingDataRemoverBrowserTest {
+ public:
+  BrowsingDataRemoverTransportSecurityStateBrowserTest() {}
+
+  void SetUpOnMainThread() override {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&BrowsingDataRemoverTransportSecurityStateBrowserTest::
+                       SetUpTransportSecurityState,
+                   this, base::RetainedRef(
+                             browser()->profile()->GetRequestContext())));
+  }
+
+  void CheckTransportSecurityState(
+      scoped_refptr<net::URLRequestContextGetter> context_getter,
+      bool should_be_cleared) {
+    net::TransportSecurityState* state =
+        context_getter->GetURLRequestContext()->transport_security_state();
+    if (should_be_cleared)
+      EXPECT_FALSE(state->ShouldUpgradeToSSL("example.test"));
+    else
+      EXPECT_TRUE(state->ShouldUpgradeToSSL("example.test"));
+  }
+
+ protected:
+  void SetUpTransportSecurityState(
+      scoped_refptr<net::URLRequestContextGetter> context_getter) {
+    net::TransportSecurityState* state =
+        context_getter->GetURLRequestContext()->transport_security_state();
+    base::Time expiry = base::Time::Now() + base::TimeDelta::FromDays(1000);
+    EXPECT_FALSE(state->ShouldUpgradeToSSL("example.test"));
+    state->AddHSTS("example.test", expiry, false);
+    EXPECT_TRUE(state->ShouldUpgradeToSSL("example.test"));
+  }
+};
+
 // Test BrowsingDataRemover for downloads.
 IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, Download) {
   DownloadAnItem();
@@ -136,7 +176,33 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, Database) {
   RunScriptAndCheckResult("getRecords()", "text2");
 }
 
-// Profile::ClearNetworkingHistorySince should be exercised here too see whether
-// the call gets delegated through ProfileIO[Impl]Data properly, which is hard
-// to write unit-tests for. Currently this is done by both of the above tests.
-// Add standalone test if this changes.
+// Verify that TransportSecurityState data is cleared for REMOVE_CACHE.
+IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverTransportSecurityStateBrowserTest,
+                       ClearTransportSecurityState) {
+  RemoveAndWait(BrowsingDataRemover::REMOVE_CACHE);
+  base::RunLoop run_loop;
+  BrowserThread::PostTaskAndReply(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&BrowsingDataRemoverTransportSecurityStateBrowserTest::
+                     CheckTransportSecurityState,
+                 this,
+                 base::RetainedRef(browser()->profile()->GetRequestContext()),
+                 true /* should be cleared */),
+      run_loop.QuitClosure());
+}
+
+// Verify that TransportSecurityState data is not cleared if REMOVE_CACHE is not
+// set.
+IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverTransportSecurityStateBrowserTest,
+                       PreserveTransportSecurityState) {
+  RemoveAndWait(BrowsingDataRemover::REMOVE_SITE_DATA);
+  base::RunLoop run_loop;
+  BrowserThread::PostTaskAndReply(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&BrowsingDataRemoverTransportSecurityStateBrowserTest::
+                     CheckTransportSecurityState,
+                 this,
+                 base::RetainedRef(browser()->profile()->GetRequestContext()),
+                 false /* should not be cleared */),
+      run_loop.QuitClosure());
+}
