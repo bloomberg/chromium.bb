@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -117,8 +118,8 @@ class TestClient : public SafeBrowsingDatabaseManager::Client {
 class SafeBrowsingDatabaseManagerTest : public testing::Test {
  protected:
   void SetUp() override {
-    TestV4GetHashProtocolManagerFactory get_hash_pm_factory;
-    V4GetHashProtocolManager::RegisterFactory(&get_hash_pm_factory);
+    V4GetHashProtocolManager::RegisterFactory(
+        base::WrapUnique(new TestV4GetHashProtocolManagerFactory()));
 
     db_manager_ = new TestSafeBrowsingDatabaseManager();
     db_manager_->StartOnIOThread(NULL, V4ProtocolConfig());
@@ -127,6 +128,7 @@ class SafeBrowsingDatabaseManagerTest : public testing::Test {
   void TearDown() override {
     base::RunLoop().RunUntilIdle();
     db_manager_->StopOnIOThread(false);
+    V4GetHashProtocolManager::RegisterFactory(nullptr);
   }
 
   scoped_refptr<SafeBrowsingDatabaseManager> db_manager_;

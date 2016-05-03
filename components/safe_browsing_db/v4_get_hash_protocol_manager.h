@@ -52,9 +52,8 @@ class V4GetHashProtocolManager : public net::URLFetcherDelegate,
 
   // Makes the passed |factory| the factory used to instantiate
   // a V4GetHashProtocolManager. Useful for tests.
-  static void RegisterFactory(V4GetHashProtocolManagerFactory* factory) {
-    factory_ = factory;
-  }
+  static void RegisterFactory(
+      std::unique_ptr<V4GetHashProtocolManagerFactory> factory);
 
   // Create an instance of the safe browsing v4 protocol manager.
   static V4GetHashProtocolManager* Create(

@@ -122,6 +122,14 @@ V4GetHashProtocolManager::~V4GetHashProtocolManager() {
   hash_requests_.clear();
 }
 
+// static
+void V4GetHashProtocolManager::RegisterFactory(
+    std::unique_ptr<V4GetHashProtocolManagerFactory> factory) {
+  if (factory_)
+    delete factory_;
+  factory_ = factory.release();
+}
+
 std::string V4GetHashProtocolManager::GetHashRequest(
     const std::vector<SBPrefix>& prefixes,
     const std::vector<PlatformType>& platforms,
