@@ -911,7 +911,7 @@ load_x11_backend(struct weston_compositor *c, char const * backend,
 		}
 
 		output_count++;
-		if (option_count && output_count >= option_count)
+		if (output_count >= option_count)
 			break;
 	}
 
