@@ -196,9 +196,7 @@ void WebrtcTransport::Start(
       transport_context_->port_allocator_factory()->CreatePortAllocator(
           transport_context_);
   peer_connection_ = peer_connection_factory_->CreatePeerConnection(
-      rtc_config, &constraints,
-      rtc::scoped_ptr<cricket::PortAllocator>(port_allocator.release()),
-      nullptr, this);
+      rtc_config, &constraints, std::move(port_allocator), nullptr, this);
 
   outgoing_data_stream_adapter_.Initialize(peer_connection_);
   incoming_data_stream_adapter_.Initialize(peer_connection_);

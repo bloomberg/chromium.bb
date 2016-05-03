@@ -117,7 +117,7 @@ class SharedMemoryFactoryImpl : public webrtc::SharedMemoryFactory {
   SharedMemoryFactoryImpl(const SendMessageCallback& send_message_callback)
       : send_message_callback_(send_message_callback) {}
 
-  rtc::scoped_ptr<webrtc::SharedMemory> CreateSharedMemory(
+  std::unique_ptr<webrtc::SharedMemory> CreateSharedMemory(
       size_t size) override {
     base::Closure release_buffer_callback =
         base::Bind(send_message_callback_,
@@ -143,7 +143,7 @@ class SharedMemoryFactoryImpl : public webrtc::SharedMemoryFactory {
               buffer->size())));
     }
 
-    return rtc::scoped_ptr<webrtc::SharedMemory>(buffer.release());
+    return std::move(buffer);
   }
 
  private:
@@ -315,7 +315,7 @@ void DesktopSessionAgent::OnStartSessionAgent(
   video_capturer_ = desktop_environment_->CreateVideoCapturer();
   video_capturer_->Start(this);
   video_capturer_->SetSharedMemoryFactory(
-      rtc::scoped_ptr<webrtc::SharedMemoryFactory>(new SharedMemoryFactoryImpl(
+      std::unique_ptr<webrtc::SharedMemoryFactory>(new SharedMemoryFactoryImpl(
           base::Bind(&DesktopSessionAgent::SendToNetwork, this))));
   mouse_cursor_monitor_ = desktop_environment_->CreateMouseCursorMonitor();
   mouse_cursor_monitor_->Init(this, webrtc::MouseCursorMonitor::SHAPE_ONLY);

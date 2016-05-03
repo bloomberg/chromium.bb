@@ -57,7 +57,7 @@ class MockTransportChannel : public cricket::TransportChannel {
 
   // This can't be a real mock method because gmock doesn't support move-only
   // return values.
-  rtc::scoped_ptr<rtc::SSLCertificate> GetRemoteSSLCertificate()
+  std::unique_ptr<rtc::SSLCertificate> GetRemoteSSLCertificate()
       const override {
     EXPECT_TRUE(false);  // Never called.
     return nullptr;

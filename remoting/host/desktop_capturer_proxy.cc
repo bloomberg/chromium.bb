@@ -84,9 +84,7 @@ void DesktopCapturerProxy::Core::SetSharedMemoryFactory(
     std::unique_ptr<webrtc::SharedMemoryFactory> shared_memory_factory) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (capturer_) {
-    capturer_->SetSharedMemoryFactory(
-        rtc::scoped_ptr<webrtc::SharedMemoryFactory>(
-            shared_memory_factory.release()));
+    capturer_->SetSharedMemoryFactory(std::move(shared_memory_factory));
   }
 }
 
@@ -132,7 +130,7 @@ void DesktopCapturerProxy::Start(Callback* callback) {
 }
 
 void DesktopCapturerProxy::SetSharedMemoryFactory(
-    rtc::scoped_ptr<webrtc::SharedMemoryFactory> shared_memory_factory) {
+    std::unique_ptr<webrtc::SharedMemoryFactory> shared_memory_factory) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   capture_task_runner_->PostTask(

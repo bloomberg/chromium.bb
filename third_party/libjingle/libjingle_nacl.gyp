@@ -160,7 +160,6 @@
         '<(webrtc_base)/ratetracker.h',
         '<(webrtc_base)/scoped_autorelease_pool.h',
         '<(webrtc_base)/scoped_autorelease_pool.mm',
-        '<(webrtc_base)/scoped_ptr.h',
         '<(webrtc_base)/sec_buffer.h',
         '<(webrtc_base)/sha1.cc',
         '<(webrtc_base)/sha1.h',

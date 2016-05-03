@@ -94,7 +94,7 @@ class RequestHandler : public base::RefCountedThreadSafe<RequestHandler> {
 void ObserverOnSuccess(
     const rtc::scoped_refptr<webrtc::DtlsIdentityRequestObserver>& observer,
     std::unique_ptr<rtc::SSLIdentity> identity) {
-  observer->OnSuccess(rtc::scoped_ptr<rtc::SSLIdentity>(identity.release()));
+  observer->OnSuccess(std::move(identity));
 }
 
 }  // namespace
@@ -164,9 +164,6 @@ void PeerConnectionIdentityStore::RequestIdentity(
     // DtlsIdentityStoreInterface implementations have to be async.
     if (identity) {
       // Async call to |observer|->OnSuccess.
-      // Helper function necessary because OnSuccess takes an rtc::scoped_ptr
-      // argument which has to be Pass()-ed. base::Passed gets around this for
-      // scoped_ptr (without rtc namespace), but not for rtc::scoped_ptr.
       signaling_thread_->PostTask(FROM_HERE,
           base::Bind(&ObserverOnSuccess, observer, base::Passed(&identity)));
     } else {

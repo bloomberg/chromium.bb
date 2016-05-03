@@ -76,7 +76,7 @@ class RTCCertificateIdentityObserver
       GURL first_party_for_cookies,
       rtc::Optional<uint64_t> expires_ms) {
     DCHECK(signaling_thread_->BelongsToCurrentThread());
-    rtc::scoped_ptr<PeerConnectionIdentityStore> store(
+    std::unique_ptr<PeerConnectionIdentityStore> store(
         new PeerConnectionIdentityStore(main_thread_, signaling_thread_, url,
                                         first_party_for_cookies));
     // Request identity with |this| as the observer. OnSuccess/OnFailure will be
@@ -103,10 +103,10 @@ class RTCCertificateIdentityObserver
         rtc::kPemTypeRsaPrivateKey,
         reinterpret_cast<const unsigned char*>(der_private_key.data()),
         der_private_key.length());
-    OnSuccess(rtc::scoped_ptr<rtc::SSLIdentity>(
+    OnSuccess(std::unique_ptr<rtc::SSLIdentity>(
         rtc::SSLIdentity::FromPEMStrings(pem_key, pem_cert)));
   }
-  void OnSuccess(rtc::scoped_ptr<rtc::SSLIdentity> identity) override {
+  void OnSuccess(std::unique_ptr<rtc::SSLIdentity> identity) override {
     DCHECK(signaling_thread_->BelongsToCurrentThread());
     DCHECK(observer_);
     rtc::scoped_refptr<rtc::RTCCertificate> certificate =

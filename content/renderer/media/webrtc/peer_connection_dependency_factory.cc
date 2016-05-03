@@ -384,7 +384,7 @@ PeerConnectionDependencyFactory::CreatePeerConnection(
   if (!GetPcFactory().get())
     return NULL;
 
-  rtc::scoped_ptr<PeerConnectionIdentityStore> identity_store(
+  std::unique_ptr<PeerConnectionIdentityStore> identity_store(
       new PeerConnectionIdentityStore(
           base::ThreadTaskRunnerHandle::Get(), GetWebRtcSignalingThread(),
           GURL(web_frame->document().url()),
@@ -493,7 +493,7 @@ PeerConnectionDependencyFactory::CreatePeerConnection(
   } else {
     network_manager.reset(new EmptyNetworkManager(network_manager_));
   }
-  rtc::scoped_ptr<P2PPortAllocator> port_allocator(new P2PPortAllocator(
+  std::unique_ptr<P2PPortAllocator> port_allocator(new P2PPortAllocator(
       p2p_socket_dispatcher_, std::move(network_manager), socket_factory_.get(),
       port_config, requesting_origin, chrome_worker_thread_.task_runner()));
 
@@ -506,7 +506,7 @@ PeerConnectionDependencyFactory::CreatePeerConnection(
 // static
 rtc::scoped_refptr<rtc::RTCCertificate>
 PeerConnectionDependencyFactory::GenerateDefaultCertificate() {
-  rtc::scoped_ptr<rtc::SSLIdentity> identity(rtc::SSLIdentity::Generate(
+  std::unique_ptr<rtc::SSLIdentity> identity(rtc::SSLIdentity::Generate(
       webrtc::kIdentityName, rtc::KeyParams::ECDSA(rtc::EC_NIST_P256)));
   return rtc::RTCCertificate::Create(std::move(identity));
 }
