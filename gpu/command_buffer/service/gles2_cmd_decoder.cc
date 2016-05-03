@@ -1259,6 +1259,15 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
                   int height) override;
 
   // overridden from GLES2Decoder
+  bool ClearCompressedTextureLevel(Texture* texture,
+                                   unsigned target,
+                                   int level,
+                                   unsigned format,
+                                   int width,
+                                   int height) override;
+  bool IsCompressedTextureFormat(unsigned format) override;
+
+  // overridden from GLES2Decoder
   bool ClearLevel3D(Texture* texture,
                     unsigned target,
                     int level,
@@ -10411,6 +10420,52 @@ bool GLES2DecoderImpl::ClearLevel(Texture* texture,
   return true;
 }
 
+bool GLES2DecoderImpl::ClearCompressedTextureLevel(Texture* texture,
+                                                   unsigned target,
+                                                   int level,
+                                                   unsigned format,
+                                                   int width,
+                                                   int height) {
+  DCHECK(target != GL_TEXTURE_3D && target != GL_TEXTURE_2D_ARRAY);
+  // This code path can only be called if the texture was originally
+  // allocated via TexStorage2D. Note that TexStorage2D is exposed
+  // internally for ES 2.0 contexts, but compressed texture support is
+  // not part of that exposure.
+  DCHECK(feature_info_->IsES3Enabled());
+
+  GLsizei bytes_required = 0;
+  if (!GetCompressedTexSizeInBytes(
+          "ClearCompressedTextureLevel", width, height, 1, format,
+          &bytes_required)) {
+    return false;
+  }
+
+  TRACE_EVENT1("gpu", "GLES2DecoderImpl::ClearCompressedTextureLevel",
+               "bytes_required", bytes_required);
+
+  glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+  std::unique_ptr<char[]> zero(new char[bytes_required]);
+  memset(zero.get(), 0, bytes_required);
+  glBindTexture(texture->target(), texture->service_id());
+  glCompressedTexSubImage2D(
+      target, level, 0, 0, width, height, format, bytes_required, zero.get());
+  TextureRef* bound_texture =
+      texture_manager()->GetTextureInfoForTarget(&state_, texture->target());
+  glBindTexture(texture->target(),
+                bound_texture ? bound_texture->service_id() : 0);
+  Buffer* bound_buffer = buffer_manager()->GetBufferInfoForTarget(
+      &state_, GL_PIXEL_UNPACK_BUFFER);
+  if (bound_buffer) {
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, bound_buffer->service_id());
+  }
+  return true;
+}
+
+bool GLES2DecoderImpl::IsCompressedTextureFormat(unsigned format) {
+  return feature_info_->validators()->compressed_texture_format.IsValid(
+      format);
+}
+
 bool GLES2DecoderImpl::ClearLevel3D(Texture* texture,
                                     unsigned target,
                                     int level,
@@ -11627,11 +11682,24 @@ void GLES2DecoderImpl::DoCompressedTexSubImage2D(
     return;
   }
 
+  if (!texture->IsLevelCleared(target, level)) {
+    // This can only happen if the compressed texture was allocated
+    // using TexStorage2D.
+    DCHECK(texture->IsImmutable());
+    GLsizei level_width = 0, level_height = 0;
+    bool success = texture->GetLevelSize(
+        target, level, &level_width, &level_height, nullptr);
+    DCHECK(success);
+    // We can skip the clear if we're uploading the entire level.
+    if (xoffset == 0 && yoffset == 0 &&
+        width == level_width && height == level_height) {
+      texture_manager()->SetLevelCleared(texture_ref, target, level, true);
+    } else {
+      texture_manager()->ClearTextureLevel(this, texture_ref, target, level);
+    }
+    DCHECK(texture->IsLevelCleared(target, level));
+  }
 
-  // Note: There is no need to deal with texture cleared tracking here
-  // because the validation above means you can only get here if the level
-  // is already a matching compressed format and in that case
-  // CompressedTexImage2D already cleared the texture.
   glCompressedTexSubImage2D(
       target, level, xoffset, yoffset, width, height, format, image_size, data);
 
@@ -14328,28 +14396,11 @@ void GLES2DecoderImpl::TexStorageImpl(
         function_name, internal_format, "internal_format");
     return;
   }
-  bool is_compressed_format;
-  switch (internal_format) {
-    case GL_COMPRESSED_R11_EAC:
-    case GL_COMPRESSED_SIGNED_R11_EAC:
-    case GL_COMPRESSED_RG11_EAC:
-    case GL_COMPRESSED_SIGNED_RG11_EAC:
-    case GL_COMPRESSED_RGB8_ETC2:
-    case GL_COMPRESSED_SRGB8_ETC2:
-    case GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2:
-    case GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2:
-    case GL_COMPRESSED_RGBA8_ETC2_EAC:
-    case GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC:
-      is_compressed_format = true;
-      if (target == GL_TEXTURE_3D) {
-        LOCAL_SET_GL_ERROR(
-            GL_INVALID_OPERATION, function_name, "target invalid for format");
-        return;
-      }
-      break;
-    default:
-      is_compressed_format = false;
-      break;
+  bool is_compressed_format = IsCompressedTextureFormat(internal_format);
+  if (is_compressed_format && target == GL_TEXTURE_3D) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_OPERATION, function_name, "target invalid for format");
+    return;
   }
   if (!texture_manager()->ValidForTarget(target, 0, width, height, depth) ||
       TextureManager::ComputeMipMapCount(

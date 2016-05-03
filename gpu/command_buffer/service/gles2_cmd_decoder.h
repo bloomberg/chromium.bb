@@ -242,6 +242,19 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
                           int width,
                           int height) = 0;
 
+  // Clears a level sub area of a compressed 2D texture.
+  // Returns false if a GL error should be generated.
+  virtual bool ClearCompressedTextureLevel(Texture* texture,
+                                           unsigned target,
+                                           int level,
+                                           unsigned format,
+                                           int width,
+                                           int height) = 0;
+
+  // Indicates whether a given internal format is one for a compressed
+  // texture.
+  virtual bool IsCompressedTextureFormat(unsigned format) = 0;
+
   // Clears a level of a 3D texture.
   // Returns false if a GL error should be generated.
   virtual bool ClearLevel3D(Texture* texture,

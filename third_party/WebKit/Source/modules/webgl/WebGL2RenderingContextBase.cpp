@@ -779,7 +779,8 @@ bool WebGL2RenderingContextBase::validateTexStorage(const char* functionName, GL
         return false;
     }
 
-    if (m_supportedInternalFormatsStorage.find(internalformat) == m_supportedInternalFormatsStorage.end()) {
+    if (m_supportedInternalFormatsStorage.find(internalformat) == m_supportedInternalFormatsStorage.end()
+        && (functionType == TexStorageType2D && !m_compressedTextureFormats.contains(internalformat))) {
         synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid internalformat");
         return false;
     }

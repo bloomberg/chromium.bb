@@ -1613,6 +1613,10 @@ TEST_F(TextureTest, SafeUnsafe) {
 TEST_F(TextureTest, ClearTexture) {
   EXPECT_CALL(*decoder_, ClearLevel(_, _, _, _, _, _, _, _, _))
       .WillRepeatedly(Return(true));
+  // The code path taken when IsCompressedTextureFormat returns true
+  // is covered best by the WebGL 2.0 conformance tests.
+  EXPECT_CALL(*decoder_, IsCompressedTextureFormat(_))
+      .WillRepeatedly(Return(false));
   manager_->SetTarget(texture_ref_.get(), GL_TEXTURE_2D);
   manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 0, GL_RGBA, 4, 4, 1,
                          0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect());
@@ -2039,6 +2043,10 @@ TEST_F(ProduceConsumeTextureTest, ProduceConsumeClearRectangle) {
             GetLevelInfo(restored_texture.get(), GL_TEXTURE_RECTANGLE_ARB, 0));
   EXPECT_CALL(*decoder_, ClearLevel(_, _, _, _, _, _, _, _, _))
       .WillRepeatedly(Return(true));
+  // The code path taken when IsCompressedTextureFormat returns true
+  // is covered best by the WebGL 2.0 conformance tests.
+  EXPECT_CALL(*decoder_, IsCompressedTextureFormat(_))
+      .WillRepeatedly(Return(false));
   EXPECT_TRUE(manager_->ClearTextureLevel(
       decoder_.get(), restored_texture.get(), GL_TEXTURE_RECTANGLE_ARB, 0));
 }

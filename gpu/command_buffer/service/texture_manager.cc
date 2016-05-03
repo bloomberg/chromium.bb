@@ -1424,30 +1424,45 @@ bool Texture::ClearLevel(
     if (!cleared)
       return false;
   } else {
-    // Clear all remaining sub regions.
-    const int x[] = {
+    if (decoder->IsCompressedTextureFormat(info.internal_format)) {
+      // An uncleared level of a compressed texture can only occur when
+      // allocating the texture with TexStorage2D. In this case the level
+      // is cleared just before a call to CompressedTexSubImage2D, to avoid
+      // having to clear a sub-rectangle of a compressed texture, which
+      // would be problematic.
+      DCHECK(IsImmutable());
+      DCHECK(info.cleared_rect == gfx::Rect());
+      bool cleared = decoder->ClearCompressedTextureLevel(
+          this, info.target, info.level, info.internal_format,
+          info.width, info.height);
+      if (!cleared)
+        return false;
+    } else {
+      // Clear all remaining sub regions.
+      const int x[] = {
         0, info.cleared_rect.x(), info.cleared_rect.right(), info.width};
-    const int y[] = {
+      const int y[] = {
         0, info.cleared_rect.y(), info.cleared_rect.bottom(), info.height};
 
-    for (size_t j = 0; j < 3; ++j) {
-      for (size_t i = 0; i < 3; ++i) {
-        // Center of nine patch is already cleared.
-        if (j == 1 && i == 1)
-          continue;
+      for (size_t j = 0; j < 3; ++j) {
+        for (size_t i = 0; i < 3; ++i) {
+          // Center of nine patch is already cleared.
+          if (j == 1 && i == 1)
+            continue;
 
-        gfx::Rect rect(x[i], y[j], x[i + 1] - x[i], y[j + 1] - y[j]);
-        if (rect.IsEmpty())
-          continue;
+          gfx::Rect rect(x[i], y[j], x[i + 1] - x[i], y[j + 1] - y[j]);
+          if (rect.IsEmpty())
+            continue;
 
-        // NOTE: It seems kind of gross to call back into the decoder for this
-        // but only the decoder knows all the state (like unpack_alignment_)
-        // that's needed to be able to call GL correctly.
-        bool cleared = decoder->ClearLevel(
-            this, info.target, info.level, info.format, info.type,
-            rect.x(), rect.y(), rect.width(), rect.height());
-        if (!cleared)
-          return false;
+          // NOTE: It seems kind of gross to call back into the decoder for this
+          // but only the decoder knows all the state (like unpack_alignment_)
+          // that's needed to be able to call GL correctly.
+          bool cleared = decoder->ClearLevel(
+              this, info.target, info.level, info.format, info.type,
+              rect.x(), rect.y(), rect.width(), rect.height());
+          if (!cleared)
+            return false;
+        }
       }
     }
   }
