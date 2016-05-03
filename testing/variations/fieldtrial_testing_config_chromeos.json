@@ -86,6 +86,11 @@
             "group_name": "Enabled"
         }
     ],
+    "OutOfProcessPac": [
+        {
+            "group_name": "Enabled"
+        }
+    ],
     "PageRevisitInstrumentation": [
         {
             "group_name": "Enabled"
