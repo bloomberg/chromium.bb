@@ -68,9 +68,7 @@ MediaStreamDispatcher::MediaStreamDispatcher(RenderFrame* render_frame)
       next_ipc_id_(0) {
 }
 
-MediaStreamDispatcher::~MediaStreamDispatcher() {
-  DCHECK(device_change_subscribers_.empty());
-}
+MediaStreamDispatcher::~MediaStreamDispatcher() {}
 
 void MediaStreamDispatcher::GenerateStream(
     int request_id,
@@ -211,43 +209,6 @@ void MediaStreamDispatcher::CloseDevice(const std::string& label) {
   Send(new MediaStreamHostMsg_CloseDevice(routing_id(), label));
 }
 
-void MediaStreamDispatcher::SubscribeToDeviceChangeNotifications(
-    const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler,
-    const url::Origin& security_origin) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(std::find_if(
-             device_change_subscribers_.begin(),
-             device_change_subscribers_.end(),
-             [&event_handler](
-                 const base::WeakPtr<MediaStreamDispatcherEventHandler>& item) {
-               return event_handler.get() == item.get();
-             }) == device_change_subscribers_.end());
-  DVLOG(1) << "MediaStreamDispatcher::SubscribeToDeviceChangeNotifications";
-
-  if (device_change_subscribers_.empty()) {
-    Send(new MediaStreamHostMsg_SubscribeToDeviceChangeNotifications(
-        routing_id(), security_origin));
-  }
-  device_change_subscribers_.push_back(event_handler);
-}
-
-void MediaStreamDispatcher::CancelDeviceChangeNotifications(
-    const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DVLOG(1) << "MediaStreamDispatcher::SubscribeToDeviceChangeNotifications";
-  auto it = std::find_if(
-      device_change_subscribers_.begin(), device_change_subscribers_.end(),
-      [&event_handler](
-          const base::WeakPtr<MediaStreamDispatcherEventHandler>& item) {
-        return event_handler.get() == item.get();
-      });
-  CHECK(it != device_change_subscribers_.end());
-  device_change_subscribers_.erase(it);
-
-  if (device_change_subscribers_.empty())
-    Send(new MediaStreamHostMsg_CancelDeviceChangeNotifications(routing_id()));
-}
-
 void MediaStreamDispatcher::OnDestruct() {
   // Do not self-destruct. UserMediaClientImpl owns |this|.
 }
@@ -276,7 +237,6 @@ bool MediaStreamDispatcher::OnMessageReceived(const IPC::Message& message) {
                         OnDeviceOpened)
     IPC_MESSAGE_HANDLER(MediaStreamMsg_DeviceOpenFailed,
                         OnDeviceOpenFailed)
-    IPC_MESSAGE_HANDLER(MediaStreamMsg_DevicesChanged, OnDevicesChanged)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -415,14 +375,6 @@ void MediaStreamDispatcher::OnDeviceOpenFailed(int request_id) {
       requests_.erase(it);
       break;
     }
-  }
-}
-
-void MediaStreamDispatcher::OnDevicesChanged() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  for (auto event_handler : device_change_subscribers_) {
-    DCHECK(event_handler);
-    event_handler->OnDevicesChanged();
   }
 }
 

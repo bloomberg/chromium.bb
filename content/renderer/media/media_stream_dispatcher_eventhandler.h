@@ -46,8 +46,6 @@ class CONTENT_EXPORT MediaStreamDispatcherEventHandler {
   // Failed to open the device.
   virtual void OnDeviceOpenFailed(int request_id) = 0;
 
-  virtual void OnDevicesChanged() = 0;
-
  protected:
   virtual ~MediaStreamDispatcherEventHandler() {}
 };

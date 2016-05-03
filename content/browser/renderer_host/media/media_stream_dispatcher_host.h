@@ -8,22 +8,22 @@
 #include <map>
 #include <string>
 #include <utility>
-#include <vector>
 
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/media_stream_requester.h"
 #include "content/common/content_export.h"
 #include "content/common/media/media_stream_options.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/resource_context.h"
-#include "url/origin.h"
+
+namespace url {
+class Origin;
+}
 
 namespace content {
 
 class MediaStreamManager;
-class MediaStreamUIProxy;
 class ResourceContext;
 
 // MediaStreamDispatcherHost is a delegate for Media Stream API messages used by
@@ -32,10 +32,10 @@ class ResourceContext;
 class CONTENT_EXPORT MediaStreamDispatcherHost : public BrowserMessageFilter,
                                                  public MediaStreamRequester {
  public:
-  MediaStreamDispatcherHost(int render_process_id,
-                            const ResourceContext::SaltCallback& salt_callback,
-                            MediaStreamManager* media_stream_manager,
-                            bool use_fake_ui = false);
+  MediaStreamDispatcherHost(
+      int render_process_id,
+      const ResourceContext::SaltCallback& salt_callback,
+      MediaStreamManager* media_stream_manager);
 
   // MediaStreamRequester implementation.
   void StreamGenerated(int render_frame_id,
@@ -97,33 +97,13 @@ class CONTENT_EXPORT MediaStreamDispatcherHost : public BrowserMessageFilter,
   void OnCloseDevice(int render_frame_id,
                      const std::string& label);
 
-  void OnSubscribeToDeviceChangeNotifications(
-      int render_frame_id,
-      const url::Origin& security_origin);
-
-  void OnCancelDeviceChangeNotifications(int render_frame_id);
-
   void StoreRequest(int render_frame_id,
                     int page_request_id,
                     const std::string& label);
 
-  std::unique_ptr<MediaStreamUIProxy> CreateMediaStreamUIProxy();
-  void HandleCheckAccessResponse(std::unique_ptr<MediaStreamUIProxy> ui_proxy,
-                                 int render_frame_id,
-                                 bool have_access);
-
   int render_process_id_;
   ResourceContext::SaltCallback salt_callback_;
   MediaStreamManager* media_stream_manager_;
-
-  struct DeviceChangeSubscriberInfo {
-    int render_frame_id;
-    url::Origin security_origin;
-  };
-  std::vector<DeviceChangeSubscriberInfo> device_change_subscribers_;
-  bool use_fake_ui_;
-
-  base::WeakPtrFactory<MediaStreamDispatcherHost> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamDispatcherHost);
 };

@@ -197,8 +197,6 @@ void PepperMediaDeviceManager::OnDeviceOpenFailed(int request_id) {
   NotifyDeviceOpened(request_id, false, std::string());
 }
 
-void PepperMediaDeviceManager::OnDevicesChanged() {}
-
 // static
 MediaStreamType PepperMediaDeviceManager::FromPepperDeviceType(
     PP_DeviceType_Dev type) {
