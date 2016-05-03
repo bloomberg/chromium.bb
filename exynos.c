@@ -45,10 +45,10 @@ static int gbm_exynos_bo_create(struct gbm_bo *bo,
 		return -EINVAL;
 	}
 
+	int ret;
 	for (plane = 0; plane < bo->num_planes; plane++) {
 		size_t size = bo->sizes[plane];
 		struct drm_exynos_gem_create gem_create;
-		int ret;
 
 		memset(&gem_create, 0, sizeof(gem_create));
 		gem_create.size = size;
@@ -58,13 +58,29 @@ static int gbm_exynos_bo_create(struct gbm_bo *bo,
 		if (ret) {
 			fprintf(stderr, "minigbm: DRM_IOCTL_EXYNOS_GEM_CREATE failed "
 					"(size=%zu)\n", size);
-			return ret;
+			goto cleanup_planes;
 		}
 
 		bo->handles[plane].u32 = gem_create.handle;
 	}
 
 	return 0;
+
+cleanup_planes:
+	for ( ; plane != 0; plane--) {
+		struct drm_gem_close gem_close;
+		memset(&gem_close, 0, sizeof(gem_close));
+		gem_close.handle = bo->handles[plane - 1].u32;
+		int gem_close_ret = drmIoctl(bo->gbm->fd, DRM_IOCTL_GEM_CLOSE,
+					     &gem_close);
+		if (gem_close_ret) {
+			fprintf(stderr,
+				"minigbm: DRM_IOCTL_GEM_CLOSE failed: %d\n",
+				gem_close_ret);
+		}
+	}
+
+	return ret;
 }
 
 const struct gbm_driver gbm_driver_exynos =
