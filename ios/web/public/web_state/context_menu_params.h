@@ -1,0 +1,45 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+#ifndef IOS_WEB_PUBLIC_WEB_STATE_CONTEXT_MENU_PARAMS_H_
+#define IOS_WEB_PUBLIC_WEB_STATE_CONTEXT_MENU_PARAMS_H_
+
+#import <UIKit/UIKit.h>
+
+#include "base/mac/scoped_nsobject.h"
+#include "base/strings/string16.h"
+#include "ios/web/public/referrer.h"
+#include "url/gurl.h"
+
+namespace web {
+
+// Wraps information needed to show a context menu.
+struct ContextMenuParams {
+ public:
+  ContextMenuParams();
+  ContextMenuParams(const ContextMenuParams& other);
+  ~ContextMenuParams();
+
+  // The title of the menu.
+  base::string16 menu_title;
+
+  // The URL of the link that encloses the node the context menu was invoked on.
+  GURL link_url;
+
+  // The source URL of the element the context menu was invoked on. Example of
+  // elements with source URLs are img, audio, and video.
+  GURL src_url;
+
+  // The referrer policy to use when opening the link.
+  web::ReferrerPolicy referrer_policy;
+
+  // The view in which to present the menu.
+  base::scoped_nsobject<UIView> view;
+
+  // The location in |view| to present the menu.
+  CGPoint location;
+};
+
+}  // namespace web
+
+#endif  // IOS_WEB_PUBLIC_WEB_STATE_CONTEXT_MENU_PARAMS_H_

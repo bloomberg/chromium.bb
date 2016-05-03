@@ -36,6 +36,7 @@ class HttpResponseHeaders;
 namespace web {
 
 class BrowserState;
+struct ContextMenuParams;
 struct Credential;
 struct FaviconURL;
 struct LoadCommittedDetails;
@@ -261,6 +262,8 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
 
   // Notifies the delegate that the load progress was updated.
   void SendChangeLoadProgress(double progress);
+  // Notifies the delegate that a context menu needs handling.
+  bool HandleContextMenu(const ContextMenuParams& params);
 
   // NavigationManagerDelegate:
   void NavigateToPendingEntry() override;

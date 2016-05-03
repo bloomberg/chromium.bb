@@ -18,6 +18,13 @@
 // between 0.0 (nothing loaded) to 1.0 (page fully loaded).
 - (void)webState:(web::WebState*)webState didChangeProgress:(double)progress;
 
+// Called when the user triggers the context menu with the given
+// |ContextMenuParams|. Returns YES if the context menu operation was
+// handled by the delegate. If this method is not implemented, the system
+// context menu will be displayed.
+- (BOOL)webState:(web::WebState*)webState
+    handleContextMenu:(const web::ContextMenuParams&)params;
+
 @end
 
 namespace web {
@@ -30,6 +37,8 @@ class WebStateDelegateBridge : public web::WebStateDelegate {
 
   // web::WebStateDelegate methods.
   void LoadProgressChanged(WebState* source, double progress) override;
+  bool HandleContextMenu(WebState* source,
+                         const ContextMenuParams& params) override;
 
  private:
   // CRWWebStateDelegate which receives forwarded calls.

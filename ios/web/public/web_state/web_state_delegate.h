@@ -15,6 +15,7 @@ class SSLInfo;
 
 namespace web {
 
+struct ContextMenuParams;
 struct SSLStatus;
 class WebState;
 
@@ -28,6 +29,12 @@ class WebStateDelegate {
   // |progress| is a value between 0.0 (nothing loaded) to 1.0 (page fully
   // loaded).
   virtual void LoadProgressChanged(WebState* source, double progress);
+
+  // Notifies the delegate that the user triggered the context menu with the
+  // given |ContextMenuParams|. Returns true if the context menu operation was
+  // handled by the delegate.
+  virtual bool HandleContextMenu(WebState* source,
+                                 const ContextMenuParams& params);
 
  protected:
   virtual ~WebStateDelegate();

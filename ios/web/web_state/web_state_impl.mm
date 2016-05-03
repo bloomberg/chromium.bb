@@ -17,6 +17,7 @@
 #include "ios/web/public/navigation_item.h"
 #include "ios/web/public/url_util.h"
 #include "ios/web/public/web_client.h"
+#import "ios/web/public/web_state/context_menu_params.h"
 #include "ios/web/public/web_state/credential.h"
 #include "ios/web/public/web_state/ui/crw_content_view.h"
 #include "ios/web/public/web_state/web_state_delegate.h"
@@ -418,6 +419,13 @@ void WebStateImpl::SendChangeLoadProgress(double progress) {
   if (delegate_) {
     delegate_->LoadProgressChanged(this, progress);
   }
+}
+
+bool WebStateImpl::HandleContextMenu(const web::ContextMenuParams& params) {
+  if (delegate_) {
+    return delegate_->HandleContextMenu(this, params);
+  }
+  return false;
 }
 
 WebUIIOS* WebStateImpl::CreateWebUIIOS(const GURL& url) {

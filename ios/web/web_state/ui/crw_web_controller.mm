@@ -64,6 +64,7 @@
 #include "ios/web/public/user_metrics.h"
 #include "ios/web/public/web_client.h"
 #include "ios/web/public/web_kit_constants.h"
+#import "ios/web/public/web_state/context_menu_params.h"
 #include "ios/web/public/web_state/credential.h"
 #import "ios/web/public/web_state/crw_web_controller_observer.h"
 #import "ios/web/public/web_state/crw_web_view_scroll_view_proxy.h"
@@ -734,9 +735,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 // Called when the window has determined there was a long-press and context menu
 // must be shown.
 - (void)showContextMenu:(UIGestureRecognizer*)gestureRecognizer;
-// YES if delegate supports showing context menu by responding to
-// webController:runContextMenu:atPoint:inView: selector.
-- (BOOL)supportsCustomContextMenu;
 // Cancels all touch events in the web view (long presses, tapping, scrolling).
 - (void)cancelAllTouches;
 // Returns the referrer for the current page.
@@ -1319,10 +1317,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 }
 
 - (void)showContextMenu:(UIGestureRecognizer*)gestureRecognizer {
-  // Calling this method if [self supportsCustomContextMenu] returned NO
-  // is a programmer error.
-  DCHECK([self supportsCustomContextMenu]);
-
   // We don't want ongoing notification that the long press is held.
   if ([gestureRecognizer state] != UIGestureRecognizerStateBegan)
     return;
@@ -1334,18 +1328,36 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
       [self contextMenuInfoForElement:_DOMElementForLastTouch.get()];
   CGPoint point = [gestureRecognizer locationInView:_webView];
 
-  // Cancelling all touches has the intended side effect of suppressing the
-  // system's context menu.
-  [self cancelAllTouches];
-  [self.UIDelegate webController:self
-                  runContextMenu:info
-                         atPoint:point
-                          inView:_webView];
-}
-
-- (BOOL)supportsCustomContextMenu {
   SEL runMenuSelector = @selector(webController:runContextMenu:atPoint:inView:);
-  return [self.UIDelegate respondsToSelector:runMenuSelector];
+  if ([self.UIDelegate respondsToSelector:runMenuSelector]) {
+    // Cancelling all touches has the intended side effect of suppressing the
+    // system's context menu.
+    [self cancelAllTouches];
+    [self.UIDelegate webController:self
+                    runContextMenu:info
+                           atPoint:point
+                            inView:_webView];
+  } else {
+    web::ContextMenuParams params;
+    params.menu_title = base::SysNSStringToUTF16(info[web::kContextTitle]);
+    NSString* linkUrl = info[web::kContextLinkURLString];
+    if (linkUrl) {
+      params.link_url = GURL(base::SysNSStringToUTF8(linkUrl));
+    }
+    NSString* srcURL = info[web::kContextImageURLString];
+    if (srcURL) {
+      params.src_url = GURL(base::SysNSStringToUTF8(srcURL));
+    }
+    params.referrer_policy = static_cast<web::ReferrerPolicy>(
+        [info[web::kContextLinkReferrerPolicy] intValue]);
+    params.view.reset([_webView retain]);
+    params.location = point;
+    if (self.webStateImpl->HandleContextMenu(params)) {
+      // Cancelling all touches has the intended side effect of suppressing the
+      // system's context menu.
+      [self cancelAllTouches];
+    }
+  }
 }
 
 - (void)cancelAllTouches {
@@ -3475,11 +3487,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
        shouldReceiveTouch:(UITouch*)touch {
   // Expect only _contextMenuRecognizer.
   DCHECK([gestureRecognizer isEqual:_contextMenuRecognizer]);
-  if (![self supportsCustomContextMenu]) {
-    // Fetching context menu info is not a free operation, early return if a
-    // context menu should not be shown.
-    return YES;
-  }
 
   // This is custom long press gesture recognizer. By the time the gesture is
   // recognized the web controller needs to know if there is a link under the
@@ -3499,7 +3506,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 - (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer*)gestureRecognizer {
   // Expect only _contextMenuRecognizer.
   DCHECK([gestureRecognizer isEqual:_contextMenuRecognizer]);
-  if (!_webView || ![self supportsCustomContextMenu]) {
+  if (!_webView) {
     // Show the context menu iff currently displaying a web view.
     // Do nothing for native views.
     return NO;
