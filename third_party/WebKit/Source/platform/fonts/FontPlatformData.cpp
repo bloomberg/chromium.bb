@@ -41,16 +41,10 @@ namespace blink {
 
 FontPlatformData::FontPlatformData(WTF::HashTableDeletedValueType)
     : m_typeface(nullptr)
-#if !OS(WIN)
-    , m_family(CString())
-#endif
     , m_textSize(0)
     , m_syntheticBold(false)
     , m_syntheticItalic(false)
     , m_orientation(FontOrientation::Horizontal)
-#if !OS(MACOSX)
-    , m_style(FontRenderStyle())
-#endif
     , m_isHashTableDeletedValue(true)
 #if OS(WIN)
     , m_paintTextFlags(0)
@@ -62,16 +56,10 @@ FontPlatformData::FontPlatformData(WTF::HashTableDeletedValueType)
 
 FontPlatformData::FontPlatformData()
     : m_typeface(nullptr)
-#if !OS(WIN)
-    , m_family(CString())
-#endif
     , m_textSize(0)
     , m_syntheticBold(false)
     , m_syntheticItalic(false)
     , m_orientation(FontOrientation::Horizontal)
-#if !OS(MACOSX)
-    , m_style(FontRenderStyle())
-#endif
     , m_isHashTableDeletedValue(false)
 #if OS(WIN)
     , m_paintTextFlags(0)
@@ -83,16 +71,10 @@ FontPlatformData::FontPlatformData()
 
 FontPlatformData::FontPlatformData(float size, bool syntheticBold, bool syntheticItalic, FontOrientation orientation)
     : m_typeface(nullptr)
-#if !OS(WIN)
-    , m_family(CString())
-#endif
     , m_textSize(size)
     , m_syntheticBold(syntheticBold)
     , m_syntheticItalic(syntheticItalic)
     , m_orientation(orientation)
-#if !OS(MACOSX)
-    , m_style(FontRenderStyle())
-#endif
     , m_isHashTableDeletedValue(false)
 #if OS(WIN)
     , m_paintTextFlags(0)
@@ -111,7 +93,7 @@ FontPlatformData::FontPlatformData(const FontPlatformData& source)
     , m_syntheticBold(source.m_syntheticBold)
     , m_syntheticItalic(source.m_syntheticItalic)
     , m_orientation(source.m_orientation)
-#if !OS(MACOSX)
+#if OS(LINUX) || OS(ANDROID)
     , m_style(source.m_style)
 #endif
     , m_harfBuzzFace(nullptr)
@@ -133,7 +115,7 @@ FontPlatformData::FontPlatformData(const FontPlatformData& src, float textSize)
     , m_syntheticBold(src.m_syntheticBold)
     , m_syntheticItalic(src.m_syntheticItalic)
     , m_orientation(src.m_orientation)
-#if !OS(MACOSX)
+#if OS(LINUX) || OS(ANDROID)
     , m_style(src.m_style)
 #endif
     , m_harfBuzzFace(nullptr)
@@ -203,7 +185,7 @@ const FontPlatformData& FontPlatformData::operator=(const FontPlatformData& othe
     m_syntheticItalic = other.m_syntheticItalic;
     m_harfBuzzFace = nullptr;
     m_orientation = other.m_orientation;
-#if !OS(MACOSX)
+#if OS(LINUX) || OS(ANDROID)
     m_style = other.m_style;
 #endif
 
@@ -231,7 +213,7 @@ bool FontPlatformData::operator==(const FontPlatformData& a) const
         && m_isHashTableDeletedValue == a.m_isHashTableDeletedValue
         && m_syntheticBold == a.m_syntheticBold
         && m_syntheticItalic == a.m_syntheticItalic
-#if !OS(MACOSX)
+#if OS(LINUX) || OS(ANDROID)
         && m_style == a.m_style
 #endif
         && m_orientation == a.m_orientation;

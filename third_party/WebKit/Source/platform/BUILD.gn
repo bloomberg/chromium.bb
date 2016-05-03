@@ -410,6 +410,7 @@ component("platform") {
     sources += [
       "exported/linux/WebFontRenderStyle.cpp",
       "fonts/linux/FontPlatformDataLinux.cpp",
+      "fonts/linux/FontRenderStyle.h",
     ]
     set_sources_assignment_filter(sources_assignment_filter)
   } else {

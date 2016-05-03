@@ -37,7 +37,6 @@
 #include "platform/SharedBuffer.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/FontOrientation.h"
-#include "platform/fonts/FontRenderStyle.h"
 #include "platform/fonts/SmallCapsIterator.h"
 #include "platform/fonts/opentype/OpenTypeVerticalData.h"
 #include "wtf/Allocator.h"
@@ -46,6 +45,10 @@
 #include "wtf/RefPtr.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/StringImpl.h"
+
+#if OS(LINUX) || OS(ANDROID)
+#include "platform/fonts/linux/FontRenderStyle.h"
+#endif // OS(LINUX) || OS(ANDROID)
 
 #if OS(MACOSX)
 OBJC_CLASS NSFont;
@@ -117,18 +120,13 @@ public:
     unsigned minSizeForAntiAlias() const { return m_minSizeForAntiAlias; }
     void setMinSizeForSubpixel(float size) { m_minSizeForSubpixel = size; }
     float minSizeForSubpixel() const { return m_minSizeForSubpixel; }
-    void setHinting(SkPaint::Hinting style)
-    {
-        m_style.useAutoHint = 0;
-        m_style.hintStyle = style;
-    }
 #endif
     bool fontContainsCharacter(UChar32 character);
 
     PassRefPtr<OpenTypeVerticalData> verticalData() const;
     PassRefPtr<SharedBuffer> openTypeTable(SkFontTableTag) const;
 
-#if !OS(MACOSX)
+#if OS(LINUX) || OS(ANDROID)
     // The returned styles are all actual styles without FontRenderStyle::NoPreference.
     const FontRenderStyle& getFontRenderStyle() const { return m_style; }
 #endif
@@ -160,7 +158,7 @@ public:
     bool m_syntheticItalic;
     FontOrientation m_orientation;
 private:
-#if !OS(MACOSX)
+#if OS(LINUX) || OS(ANDROID)
     FontRenderStyle m_style;
 #endif
 

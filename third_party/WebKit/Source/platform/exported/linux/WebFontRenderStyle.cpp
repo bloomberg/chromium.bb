@@ -30,7 +30,7 @@
 
 #include "public/platform/linux/WebFontRenderStyle.h"
 
-#include "platform/fonts/FontRenderStyle.h"
+#include "platform/fonts/linux/FontRenderStyle.h"
 
 namespace blink {
 
