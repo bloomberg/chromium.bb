@@ -98,28 +98,29 @@ std::string DetermineTextLanguage(const base::string16& text,
   CLD2::CLDHints cldhints = {code.c_str(), tld_hint, encoding_hint,
                              language_hint};
 
-  cld_language = CLD2::ExtDetectLanguageSummaryCheckUTF8(
+  CLD2::ExtDetectLanguageSummaryCheckUTF8(
       raw_utf8_bytes, num_utf8_bytes, is_plain_text, &cldhints, flags,
       language3, percent3, normalized_score3,
       nullptr /* No ResultChunkVector used */, &text_bytes, &is_reliable,
       &num_bytes_evaluated);
 
   if (num_bytes_evaluated < num_utf8_bytes &&
-      cld_language == CLD2::UNKNOWN_LANGUAGE) {
+      language3[0] == CLD2::UNKNOWN_LANGUAGE) {
     // Invalid UTF8 encountered, see bug http://crbug.com/444258.
     // Retry using only the valid characters. This time the check for valid
     // UTF8 can be skipped since the precise number of valid bytes is known.
-    cld_language = CLD2::ExtDetectLanguageSummary(
+    CLD2::ExtDetectLanguageSummary(
         raw_utf8_bytes, num_utf8_bytes, is_plain_text, &cldhints, flags,
         language3, percent3, normalized_score3,
         nullptr /* No ResultChunkVector used */, &text_bytes, &is_reliable);
   }
+  // Choose top language.
+  cld_language = language3[0];
+
   is_valid_language = cld_language != CLD2::NUM_LANGUAGES &&
                       cld_language != CLD2::UNKNOWN_LANGUAGE &&
                       cld_language != CLD2::TG_UNKNOWN_LANGUAGE;
 
-  // Choose top language.
-  cld_language = language3[0];
   UMA_HISTOGRAM_ENUMERATION("Translate.CLD2.LanguageDetected",
                             cld_language, CLD2::NUM_LANGUAGES);
   if (is_valid_language)
