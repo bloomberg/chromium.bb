@@ -17,9 +17,9 @@ class ScreenIos : public gfx::Screen {
     return gfx::Point(0, 0);
   }
 
-  gfx::NativeWindow GetWindowUnderCursor() override {
+  bool IsWindowUnderCursor(gfx::NativeWindow window) override {
     NOTIMPLEMENTED();
-    return gfx::NativeWindow();
+    return false;
   }
 
   gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point) override {

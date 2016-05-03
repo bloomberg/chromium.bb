@@ -122,8 +122,8 @@ gfx::Point HeadlessScreen::GetCursorScreenPoint() {
   return aura::Env::GetInstance()->last_mouse_location();
 }
 
-gfx::NativeWindow HeadlessScreen::GetWindowUnderCursor() {
-  return GetWindowAtScreenPoint(GetCursorScreenPoint());
+bool HeadlessScreen::IsWindowUnderCursor(gfx::NativeWindow window) {
+  return GetWindowAtScreenPoint(GetCursorScreenPoint()) == window;
 }
 
 gfx::NativeWindow HeadlessScreen::GetWindowAtScreenPoint(

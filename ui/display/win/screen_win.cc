@@ -161,11 +161,11 @@ gfx::Point ScreenWin::GetCursorScreenPoint() {
   return ScreenToDIPPoint(cursor_pos_pixels);
 }
 
-gfx::NativeWindow ScreenWin::GetWindowUnderCursor() {
+bool ScreenWin::IsWindowUnderCursor(gfx::NativeWindow window) {
   POINT cursor_loc;
   HWND hwnd =
       ::GetCursorPos(&cursor_loc) ? ::WindowFromPoint(cursor_loc) : nullptr;
-  return GetNativeWindowFromHWND(hwnd);
+  return GetNativeWindowFromHWND(hwnd) == window;
 }
 
 gfx::NativeWindow ScreenWin::GetWindowAtScreenPoint(const gfx::Point& point) {

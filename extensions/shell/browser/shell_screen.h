@@ -39,7 +39,7 @@ class ShellScreen : public display::Screen, public aura::WindowObserver {
 
   // display::Screen overrides:
   gfx::Point GetCursorScreenPoint() override;
-  gfx::NativeWindow GetWindowUnderCursor() override;
+  bool IsWindowUnderCursor(gfx::NativeWindow window) override;
   gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point) override;
   int GetNumDisplays() const override;
   std::vector<display::Display> GetAllDisplays() const override;

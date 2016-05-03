@@ -48,9 +48,9 @@ gfx::Point CastScreen::GetCursorScreenPoint() {
   return aura::Env::GetInstance()->last_mouse_location();
 }
 
-gfx::NativeWindow CastScreen::GetWindowUnderCursor() {
+bool CastScreen::IsWindowUnderCursor(gfx::NativeWindow window) {
   NOTIMPLEMENTED();
-  return gfx::NativeWindow(nullptr);
+  return false;
 }
 
 gfx::NativeWindow CastScreen::GetWindowAtScreenPoint(const gfx::Point& point) {

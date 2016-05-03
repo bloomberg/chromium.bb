@@ -39,8 +39,8 @@ class GFX_EXPORT Screen {
   // Returns the current absolute position of the mouse pointer.
   virtual gfx::Point GetCursorScreenPoint() = 0;
 
-  // Returns the window under the cursor.
-  virtual gfx::NativeWindow GetWindowUnderCursor() = 0;
+  // Returns true if the cursor is directly over |window|.
+  virtual bool IsWindowUnderCursor(gfx::NativeWindow window) = 0;
 
   // Returns the window at the given screen coordinate |point|.
   virtual gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point) = 0;

@@ -45,9 +45,9 @@ class TestScreen : public display::Screen {
     return gfx::Point();
   }
 
-  gfx::NativeWindow GetWindowUnderCursor() override {
-    NOTREACHED();
-    return NULL;
+  bool IsWindowUnderCursor(gfx::NativeWindow window) override {
+    NOTIMPLEMENTED();
+    return false;
   }
 
   gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point) override {

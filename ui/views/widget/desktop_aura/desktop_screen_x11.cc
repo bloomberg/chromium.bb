@@ -149,8 +149,8 @@ gfx::Point DesktopScreenX11::GetCursorScreenPoint() {
   return PixelToDIPPoint(gfx::Point(root_x, root_y));
 }
 
-gfx::NativeWindow DesktopScreenX11::GetWindowUnderCursor() {
-  return GetWindowAtScreenPoint(GetCursorScreenPoint());
+bool DesktopScreenX11::IsWindowUnderCursor(gfx::NativeWindow window) {
+  return GetWindowAtScreenPoint(GetCursorScreenPoint()) == window;
 }
 
 gfx::NativeWindow DesktopScreenX11::GetWindowAtScreenPoint(

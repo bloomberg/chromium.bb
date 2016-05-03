@@ -18,9 +18,9 @@ class ScreenAndroid : public Screen {
 
   gfx::Point GetCursorScreenPoint() override { return gfx::Point(); }
 
-  gfx::NativeWindow GetWindowUnderCursor() override {
+  bool IsWindowUnderCursor(gfx::NativeWindow window) override {
     NOTIMPLEMENTED();
-    return NULL;
+    return false;
   }
 
   gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point) override {

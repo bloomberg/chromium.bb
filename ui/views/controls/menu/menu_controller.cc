@@ -1443,11 +1443,12 @@ bool MenuController::ShowSiblingMenu(SubmenuView* source,
     return false;
   }
 
-  gfx::NativeWindow window_under_mouse =
-      display::Screen::GetScreen()->GetWindowUnderCursor();
   // TODO(oshima): Replace with views only API.
-  if (!owner_ || window_under_mouse != owner_->GetNativeWindow())
+  if (!owner_ ||
+      !display::Screen::GetScreen()->IsWindowUnderCursor(
+          owner_->GetNativeWindow())) {
     return false;
+  }
 
   // The user moved the mouse outside the menu and over the owning window. See
   // if there is a sibling menu we should show.

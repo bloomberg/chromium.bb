@@ -47,9 +47,9 @@ gfx::Point BlimpScreen::GetCursorScreenPoint() {
   return gfx::Point();
 }
 
-gfx::NativeWindow BlimpScreen::GetWindowUnderCursor() {
+bool BlimpScreen::IsWindowUnderCursor(gfx::NativeWindow window) {
   NOTIMPLEMENTED();
-  return gfx::NativeWindow(nullptr);
+  return false;
 }
 
 gfx::NativeWindow BlimpScreen::GetWindowAtScreenPoint(const gfx::Point& point) {

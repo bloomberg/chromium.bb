@@ -19,8 +19,8 @@ gfx::Point TestScreen::GetCursorScreenPoint() {
   return gfx::Point();
 }
 
-gfx::NativeWindow TestScreen::GetWindowUnderCursor() {
-  return nullptr;
+bool TestScreen::IsWindowUnderCursor(gfx::NativeWindow window) {
+  return false;
 }
 
 gfx::NativeWindow TestScreen::GetWindowAtScreenPoint(const gfx::Point& point) {

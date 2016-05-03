@@ -63,8 +63,8 @@ gfx::Point ShellScreen::GetCursorScreenPoint() {
   return aura::Env::GetInstance()->last_mouse_location();
 }
 
-gfx::NativeWindow ShellScreen::GetWindowUnderCursor() {
-  return GetWindowAtScreenPoint(GetCursorScreenPoint());
+bool ShellScreen::IsWindowUnderCursor(gfx::NativeWindow window) {
+  return GetWindowAtScreenPoint(GetCursorScreenPoint()) == window;
 }
 
 gfx::NativeWindow ShellScreen::GetWindowAtScreenPoint(const gfx::Point& point) {

@@ -40,9 +40,7 @@ class MockScreen : public Screen {
  protected:
   // Overridden from display::Screen:
   gfx::Point GetCursorScreenPoint() override { return gfx::Point(); }
-  gfx::NativeWindow GetWindowUnderCursor() override {
-    return gfx::NativeWindow();
-  }
+  bool IsWindowUnderCursor(gfx::NativeWindow window) override { return false; }
   gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point) override {
     return gfx::NativeWindow();
   }

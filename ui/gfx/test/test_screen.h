@@ -26,7 +26,7 @@ class TestScreen : public gfx::Screen {
 
   // gfx::Screen:
   gfx::Point GetCursorScreenPoint() override;
-  gfx::NativeWindow GetWindowUnderCursor() override;
+  bool IsWindowUnderCursor(gfx::NativeWindow window) override;
   gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point) override;
   int GetNumDisplays() const override;
   std::vector<gfx::Display> GetAllDisplays() const override;

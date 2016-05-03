@@ -1012,8 +1012,8 @@ void PanelView::OnWidgetActivationChanged(views::Widget* widget, bool active) {
 #if defined(OS_WIN)
   if (focused_ && panel_->IsMinimized() &&
       panel_->collection()->type() == PanelCollection::DOCKED &&
-      display::Screen::GetScreen()->GetWindowUnderCursor() !=
-          widget->GetNativeWindow()) {
+      !display::Screen::GetScreen()->IsWindowUnderCursor(
+          widget->GetNativeWindow())) {
     panel_->Restore();
   }
 #endif

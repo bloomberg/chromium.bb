@@ -38,7 +38,7 @@ class ScreenForShutdown : public display::Screen {
 
   // display::Screen overrides:
   gfx::Point GetCursorScreenPoint() override { return gfx::Point(); }
-  gfx::NativeWindow GetWindowUnderCursor() override { return NULL; }
+  bool IsWindowUnderCursor(gfx::NativeWindow window) override { return false; }
   gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point) override {
     return NULL;
   }
@@ -104,9 +104,9 @@ gfx::Point ScreenAsh::GetCursorScreenPoint() {
   return aura::Env::GetInstance()->last_mouse_location();
 }
 
-gfx::NativeWindow ScreenAsh::GetWindowUnderCursor() {
+bool ScreenAsh::IsWindowUnderCursor(gfx::NativeWindow window) {
   return GetWindowAtScreenPoint(
-      display::Screen::GetScreen()->GetCursorScreenPoint());
+             display::Screen::GetScreen()->GetCursorScreenPoint()) == window;
 }
 
 gfx::NativeWindow ScreenAsh::GetWindowAtScreenPoint(const gfx::Point& point) {

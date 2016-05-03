@@ -7,6 +7,7 @@
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "services/shell/public/cpp/connection.h"
 #include "services/shell/public/cpp/connector.h"
+#include "ui/aura/window.h"
 #include "ui/display/display_observer.h"
 #include "ui/gfx/display_finder.h"
 #include "ui/views/mus/screen_mus_delegate.h"
@@ -173,9 +174,12 @@ gfx::Point ScreenMus::GetCursorScreenPoint() {
   return delegate_->GetCursorScreenPoint();
 }
 
-gfx::NativeWindow ScreenMus::GetWindowUnderCursor() {
-  NOTIMPLEMENTED();
-  return nullptr;
+bool ScreenMus::IsWindowUnderCursor(gfx::NativeWindow window) {
+  if (!window)
+    return false;
+
+  return window->IsVisible() &&
+      window->GetBoundsInScreen().Contains(GetCursorScreenPoint());
 }
 
 gfx::NativeWindow ScreenMus::GetWindowAtScreenPoint(const gfx::Point& point) {

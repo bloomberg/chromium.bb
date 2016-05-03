@@ -44,7 +44,7 @@ class VIEWS_MUS_EXPORT ScreenMus
 
   // display::Screen:
   gfx::Point GetCursorScreenPoint() override;
-  gfx::NativeWindow GetWindowUnderCursor() override;
+  bool IsWindowUnderCursor(gfx::NativeWindow window) override;
   gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point) override;
   display::Display GetPrimaryDisplay() const override;
   display::Display GetDisplayNearestWindow(gfx::NativeView view) const override;
