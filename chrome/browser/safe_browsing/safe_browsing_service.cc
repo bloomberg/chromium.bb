@@ -297,8 +297,8 @@ void SafeBrowsingService::Initialize() {
 
   database_manager_ = CreateDatabaseManager();
 
+  services_delegate_->Initialize();
   services_delegate_->InitializeCsdService(url_request_context_getter_.get());
-  services_delegate_->InitializeServices();
 
   // Track the safe browsing preference of existing profiles.
   // The SafeBrowsingService will be started if any existing profile has the
@@ -525,6 +525,8 @@ void SafeBrowsingService::StartOnIOThread(
   SafeBrowsingProtocolConfig config = GetProtocolConfig();
   V4ProtocolConfig v4_config = GetV4ProtocolConfig();
 
+  services_delegate_->StartOnIOThread(url_request_context_getter, v4_config);
+
 #if defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)
   DCHECK(database_manager_.get());
   database_manager_->StartOnIOThread(url_request_context_getter, v4_config);
@@ -552,6 +554,8 @@ void SafeBrowsingService::StopOnIOThread(bool shutdown) {
   database_manager_->StopOnIOThread(shutdown);
 #endif
   ui_manager_->StopOnIOThread(shutdown);
+
+  services_delegate_->StopOnIOThread(shutdown);
 
   if (enabled_) {
     enabled_ = false;

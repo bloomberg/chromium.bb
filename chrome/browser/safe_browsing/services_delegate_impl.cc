@@ -8,11 +8,21 @@
 
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/field_trial.h"
+#include "base/strings/string_util.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/chrome_switches.h"
+#include "components/safe_browsing_db/v4_local_database_manager.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace safe_browsing {
+
+namespace {
+const base::Feature kSafeBrowsingV4LocalDatabaseManagerEnabled {
+    "SafeBrowsingV4LocalDatabaseManagerEnabled",
+    base::FEATURE_DISABLED_BY_DEFAULT
+};
+}  // namespace
 
 // static
 std::unique_ptr<ServicesDelegate> ServicesDelegate::Create(
@@ -52,7 +62,7 @@ void ServicesDelegateImpl::InitializeCsdService(
 #endif  // defined(SAFE_BROWSING_CSD)
 }
 
-void ServicesDelegateImpl::InitializeServices() {
+void ServicesDelegateImpl::Initialize() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   download_service_.reset(
       (services_creator_ &&
@@ -69,6 +79,10 @@ void ServicesDelegateImpl::InitializeServices() {
        services_creator_->CanCreateResourceRequestDetector())
           ? services_creator_->CreateResourceRequestDetector()
           : CreateResourceRequestDetector());
+
+  if (IsV4LocalDatabaseManagerEnabled()) {
+    v4_local_database_manager_ = CreateV4LocalDatabaseManager();
+  }
 }
 
 void ServicesDelegateImpl::ShutdownServices() {
@@ -148,6 +162,30 @@ ServicesDelegateImpl::CreateIncidentReportingService() {
 ResourceRequestDetector* ServicesDelegateImpl::CreateResourceRequestDetector() {
   return new ResourceRequestDetector(safe_browsing_service_->database_manager(),
                                      incident_service_->GetIncidentReceiver());
+}
+
+void ServicesDelegateImpl::StartOnIOThread(
+    net::URLRequestContextGetter* url_request_context_getter,
+    const V4ProtocolConfig& v4_config) {
+  if (v4_local_database_manager_.get()) {
+    v4_local_database_manager_->StartOnIOThread(url_request_context_getter,
+                                                v4_config);
+  }
+}
+
+void ServicesDelegateImpl::StopOnIOThread(bool shutdown) {
+  if (v4_local_database_manager_.get()) {
+    v4_local_database_manager_->StopOnIOThread(shutdown);
+  }
+}
+
+V4LocalDatabaseManager* ServicesDelegateImpl::CreateV4LocalDatabaseManager() {
+  return new V4LocalDatabaseManager();
+}
+
+bool ServicesDelegateImpl::IsV4LocalDatabaseManagerEnabled() {
+  return base::FeatureList::IsEnabled(
+      kSafeBrowsingV4LocalDatabaseManagerEnabled);
 }
 
 }  // namespace safe_browsing

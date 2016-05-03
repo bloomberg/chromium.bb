@@ -30,7 +30,7 @@ ServicesDelegateStub::~ServicesDelegateStub() {}
 void ServicesDelegateStub::InitializeCsdService(
     net::URLRequestContextGetter* context_getter) {}
 
-void ServicesDelegateStub::InitializeServices() {}
+void ServicesDelegateStub::Initialize() {}
 
 void ServicesDelegateStub::ShutdownServices() {}
 
@@ -60,5 +60,11 @@ ClientSideDetectionService* ServicesDelegateStub::GetCsdService() {
 DownloadProtectionService* ServicesDelegateStub::GetDownloadService() {
   return nullptr;
 }
+
+void ServicesDelegateStub::StartOnIOThread(
+    net::URLRequestContextGetter* url_request_context_getter,
+    const V4ProtocolConfig& v4_config) {}
+
+void ServicesDelegateStub::StopOnIOThread(bool shutdown) {}
 
 }  // namespace safe_browsing

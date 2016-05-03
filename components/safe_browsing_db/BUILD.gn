@@ -30,7 +30,7 @@ group("safe_browsing_db_shared") {
 group("safe_browsing_db") {
   deps = [
     ":safe_browsing_db_shared",
-    ":v4_update_protocol_manager",
+    ":v4_local_database_manager",
   ]
 }
 

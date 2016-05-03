@@ -18,9 +18,9 @@ class ServicesDelegateStub : public ServicesDelegate {
 
  private:
   // ServicesDelegate:
+  void Initialize() override;
   void InitializeCsdService(
       net::URLRequestContextGetter* context_getter) override;
-  void InitializeServices() override;
   void ShutdownServices() override;
   void RefreshState(bool enable) override;
   void ProcessResourceRequest(const ResourceRequestInfo* request) override;
@@ -33,6 +33,11 @@ class ServicesDelegateStub : public ServicesDelegate {
   void AddDownloadManager(content::DownloadManager* download_manager) override;
   ClientSideDetectionService* GetCsdService() override;
   DownloadProtectionService* GetDownloadService() override;
+
+  void StartOnIOThread(
+    net::URLRequestContextGetter* url_request_context_getter,
+    const V4ProtocolConfig& v4_config) override;
+  void StopOnIOThread(bool shutdown) override;
 
   DISALLOW_COPY_AND_ASSIGN(ServicesDelegateStub);
 };

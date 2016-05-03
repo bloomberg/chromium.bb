@@ -28,6 +28,7 @@ class IncidentReportingService;
 class ResourceRequestDetector;
 struct ResourceRequestInfo;
 class SafeBrowsingService;
+struct V4ProtocolConfig;
 
 // Abstraction to help organize code for mobile vs full safe browsing modes.
 // This helper class should be owned by a SafeBrowsingService, and it handles
@@ -65,12 +66,12 @@ class ServicesDelegate {
 
   virtual ~ServicesDelegate() {}
 
+  // Initializes internal state using the ServicesCreator.
+  virtual void Initialize() = 0;
+
   // Creates the CSD service for the given |context_getter|.
   virtual void InitializeCsdService(
       net::URLRequestContextGetter* context_getter) = 0;
-
-  // Initializes services using the ServicesCreator.
-  virtual void InitializeServices() = 0;
 
   // Shuts down the download service.
   virtual void ShutdownServices() = 0;
@@ -92,6 +93,11 @@ class ServicesDelegate {
   // Returns nullptr for any service that is not available.
   virtual ClientSideDetectionService* GetCsdService() = 0;
   virtual DownloadProtectionService* GetDownloadService() = 0;
+
+  virtual void StartOnIOThread(
+    net::URLRequestContextGetter* url_request_context_getter,
+    const V4ProtocolConfig& v4_config) = 0;
+  virtual void StopOnIOThread(bool shutdown) = 0;
 };
 
 }  // namespace safe_browsing

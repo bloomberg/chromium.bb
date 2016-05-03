@@ -16,6 +16,8 @@
 
 namespace safe_browsing {
 
+class V4LocalDatabaseManager;
+
 // Actual ServicesDelegate implementation. Create via
 // ServicesDelegate::Create().
 class ServicesDelegateImpl : public ServicesDelegate {
@@ -26,9 +28,9 @@ class ServicesDelegateImpl : public ServicesDelegate {
 
  private:
   // ServicesDelegate:
+  void Initialize() override;
   void InitializeCsdService(
       net::URLRequestContextGetter* context_getter) override;
-  void InitializeServices() override;
   void ShutdownServices() override;
   void RefreshState(bool enable) override;
   void ProcessResourceRequest(const ResourceRequestInfo* request) override;
@@ -42,6 +44,16 @@ class ServicesDelegateImpl : public ServicesDelegate {
   ClientSideDetectionService* GetCsdService() override;
   DownloadProtectionService* GetDownloadService() override;
 
+  void StartOnIOThread(
+    net::URLRequestContextGetter* url_request_context_getter,
+    const V4ProtocolConfig& v4_config) override;
+  void StopOnIOThread(bool shutdown) override;
+
+  // Is the Pver4 database manager enabled? Controlled by Finch.
+  bool IsV4LocalDatabaseManagerEnabled();
+
+  V4LocalDatabaseManager* CreateV4LocalDatabaseManager();
+
   DownloadProtectionService* CreateDownloadProtectionService();
   IncidentReportingService* CreateIncidentReportingService();
   ResourceRequestDetector* CreateResourceRequestDetector();
@@ -53,6 +65,10 @@ class ServicesDelegateImpl : public ServicesDelegate {
 
   SafeBrowsingService* const safe_browsing_service_;
   ServicesDelegate::ServicesCreator* const services_creator_;
+
+  // The Pver4 local database manager handles the database and download logic
+  // Accessed on both UI and IO thread.
+  scoped_refptr<V4LocalDatabaseManager> v4_local_database_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ServicesDelegateImpl);
 };
