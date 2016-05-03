@@ -603,13 +603,14 @@ def main(args):
   command = [] if options.isolated else args
   if options.isolate_server:
     storage = isolateserver.get_storage(
-      options.isolate_server, options.namespace)
+        options.isolate_server, options.namespace)
     # Hashing schemes used by |storage| and |cache| MUST match.
-    assert storage.hash_algo == cache.hash_algo
-    return run_tha_test(
-        command, options.isolated, storage, cache, options.leak_temp_dir,
-        options.json, options.root_dir, options.hard_timeout,
-        options.grace_period, args)
+    with storage:
+      assert storage.hash_algo == cache.hash_algo
+      return run_tha_test(
+          command, options.isolated, storage, cache, options.leak_temp_dir,
+          options.json, options.root_dir, options.hard_timeout,
+          options.grace_period, args)
   else:
     return run_tha_test(
         command, options.isolated, None, cache, options.leak_temp_dir,
