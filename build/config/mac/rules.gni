@@ -166,7 +166,7 @@ template("mac_framework_bundle") {
     forward_variables_from(invoker, [ "testonly" ])
     sources = get_target_outputs(":$_info_plist_target")
     outputs = [
-      "{{bundle_root_dir}}/Info.plist",
+      "{{bundle_resources_dir}}/Info.plist",
     ]
     public_deps = [
       ":$_info_plist_target",
