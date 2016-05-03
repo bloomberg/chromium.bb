@@ -12,6 +12,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/optional.h"
 #include "base/rand_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -402,7 +403,30 @@ const OfflinePageItem* OfflinePageModel::MaybeGetPageByOfflineId(
   return iter != offline_pages_.end() ? &(iter->second) : nullptr;
 }
 
-const OfflinePageItem* OfflinePageModel::GetPageByOfflineURL(
+void OfflinePageModel::GetPageByOfflineURL(
+    const GURL& offline_url,
+    const SingleOfflinePageItemCallback& callback) {
+  RunWhenLoaded(base::Bind(&OfflinePageModel::GetPageByOfflineURLWhenLoadDone,
+                           weak_ptr_factory_.GetWeakPtr(), offline_url,
+                           callback));
+}
+
+void OfflinePageModel::GetPageByOfflineURLWhenLoadDone(
+    const GURL& offline_url,
+    const SingleOfflinePageItemCallback& callback) const {
+  base::Optional<OfflinePageItem> result;
+
+  for (const auto& id_page_pair : offline_pages_) {
+    if (id_page_pair.second.GetOfflineURL() == offline_url) {
+      callback.Run(base::make_optional(id_page_pair.second));
+      return;
+    }
+  }
+
+  callback.Run(base::nullopt);
+}
+
+const OfflinePageItem* OfflinePageModel::MaybeGetPageByOfflineURL(
     const GURL& offline_url) const {
   for (const auto& id_page_pair : offline_pages_) {
     if (id_page_pair.second.GetOfflineURL() == offline_url)

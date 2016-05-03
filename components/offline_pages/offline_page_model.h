@@ -224,9 +224,18 @@ class OfflinePageModel : public KeyedService, public base::SupportsUserData {
   // is returned if not found.
   const OfflinePageItem* MaybeGetPageByOfflineId(int64_t offline_id) const;
 
+  // Returns the offline page that is stored under |offline_url|, if any.
+  void GetPageByOfflineURL(const GURL& offline_url,
+                           const SingleOfflinePageItemCallback& callback);
+
   // Returns an offline page that is stored as |offline_url|. A nullptr is
   // returned if not found.
-  const OfflinePageItem* GetPageByOfflineURL(const GURL& offline_url) const;
+  //
+  // This function is deprecated, and may return |nullptr| even if a page
+  // exists, depending on the implementation details of OfflinePageModel.
+  // Use |GetPageByOfflineURL| instead.
+  const OfflinePageItem* MaybeGetPageByOfflineURL(
+      const GURL& offline_url) const;
 
   // Returns the offline pages that are stored under |offline_url|.
   void GetPagesByOnlineURL(const GURL& offline_url,
@@ -280,6 +289,9 @@ class OfflinePageModel : public KeyedService, public base::SupportsUserData {
   void GetPagesByOnlineURLWhenLoadDone(
       const GURL& offline_url,
       const MultipleOfflinePageItemCallback& callback) const;
+  void GetPageByOfflineURLWhenLoadDone(
+      const GURL& offline_url,
+      const SingleOfflinePageItemCallback& callback) const;
 
   // Callback for checking whether we have offline pages.
   void HasPagesAfterLoadDone(const std::string& name_space,

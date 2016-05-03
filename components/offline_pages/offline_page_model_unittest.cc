@@ -142,6 +142,8 @@ class OfflinePageModelTest
 
   base::Optional<OfflinePageItem> GetPagesByOnlineURL(const GURL& offline_url);
 
+  SingleOfflinePageItemResult GetPageByOfflineURL(const GURL& offline_url);
+
   OfflinePageModel* model() { return model_.get(); }
 
   int64_t last_save_offline_id() const { return last_save_offline_id_; }
@@ -345,11 +347,22 @@ void OfflinePageModelTest::OnGetOfflineIdsForClientIdDone(
   *storage = result;
 }
 
-base::Optional<OfflinePageItem> OfflinePageModelTest::GetPageByOfflineId(
+SingleOfflinePageItemResult OfflinePageModelTest::GetPageByOfflineId(
     int64_t offline_id) {
   SingleOfflinePageItemResult result;
   model()->GetPageByOfflineId(
       offline_id,
+      base::Bind(&OfflinePageModelTest::OnGetSingleOfflinePageItemResult,
+                 AsWeakPtr(), base::Unretained(&result)));
+  PumpLoop();
+  return result;
+}
+
+SingleOfflinePageItemResult OfflinePageModelTest::GetPageByOfflineURL(
+    const GURL& offline_url) {
+  SingleOfflinePageItemResult result;
+  model()->GetPageByOfflineURL(
+      offline_url,
       base::Bind(&OfflinePageModelTest::OnGetSingleOfflinePageItemResult,
                  AsWeakPtr(), base::Unretained(&result)));
   PumpLoop();
@@ -810,20 +823,20 @@ TEST_F(OfflinePageModelTest, GetPageByOfflineURL) {
   GURL offline_url2 = store->last_saved_page().GetOfflineURL();
   int64_t offline2 = last_save_offline_id();
 
-  const OfflinePageItem* page = model()->GetPageByOfflineURL(offline_url2);
-  EXPECT_TRUE(page);
+  SingleOfflinePageItemResult page = GetPageByOfflineURL(offline_url2);
+  EXPECT_TRUE(page != base::nullopt);
   EXPECT_EQ(kTestUrl2, page->url);
   EXPECT_EQ(kTestClientId2, page->client_id);
   EXPECT_EQ(offline2, page->offline_id);
 
-  page = model()->GetPageByOfflineURL(offline_url);
-  EXPECT_TRUE(page);
+  page = GetPageByOfflineURL(offline_url);
+  EXPECT_TRUE(page != base::nullopt);
   EXPECT_EQ(kTestUrl, page->url);
   EXPECT_EQ(kTestClientId1, page->client_id);
   EXPECT_EQ(offline1, page->offline_id);
 
-  page = model()->GetPageByOfflineURL(GURL("http://foo"));
-  EXPECT_FALSE(page);
+  page = GetPageByOfflineURL(GURL("http://foo"));
+  EXPECT_TRUE(page == base::nullopt);
 }
 
 TEST_F(OfflinePageModelTest, GetPagesByOnlineURL) {

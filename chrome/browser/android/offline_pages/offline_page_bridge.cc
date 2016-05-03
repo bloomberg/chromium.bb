@@ -280,7 +280,7 @@ ScopedJavaLocalRef<jobject> OfflinePageBridge::GetPageByOfflineUrl(
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jstring>& j_offline_url) {
   const OfflinePageItem* offline_page =
-      offline_page_model_->GetPageByOfflineURL(
+      offline_page_model_->MaybeGetPageByOfflineURL(
           GURL(ConvertJavaStringToUTF8(env, j_offline_url)));
   if (!offline_page)
     return ScopedJavaLocalRef<jobject>();

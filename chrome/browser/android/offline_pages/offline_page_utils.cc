@@ -57,7 +57,7 @@ const offline_pages::OfflinePageItem* GetOfflinePageForOfflineURL(
   if (!offline_page_model)
     return nullptr;
 
-  return offline_page_model->GetPageByOfflineURL(offline_url);
+  return offline_page_model->MaybeGetPageByOfflineURL(offline_url);
 }
 
 }  // namespace
