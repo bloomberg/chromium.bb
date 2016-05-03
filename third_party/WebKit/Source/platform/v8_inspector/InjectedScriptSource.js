@@ -836,8 +836,14 @@ InjectedScript.RemoteObject = function(object, objectGroupName, doNotBind, force
         this.className = className;
     this.description = injectedScript._describe(object);
 
-    if (generatePreview && this.type === "object" && this.subtype !== "node" && this.subtype !== "proxy")
-        this.preview = this._generatePreview(object, undefined, columnNames, isTable, skipEntriesPreview);
+    if (generatePreview && this.type === "object") {
+        if (this.subtype === "proxy") {
+            this.preview = this._generatePreview(InjectedScriptHost.proxyTargetValue(object), undefined, columnNames, isTable, skipEntriesPreview);
+            this.preview.lossless = false;
+        } else if (this.subtype !== "node") {
+            this.preview = this._generatePreview(object, undefined, columnNames, isTable, skipEntriesPreview);
+        }
+    }
 
     if (injectedScript._customObjectFormatterEnabled) {
         var customPreview = this._customPreview(object, objectGroupName, customObjectConfig);

@@ -7,7 +7,7 @@
 window.accessedGet = false;
 function testFunction()
 {
-    let proxied = new Proxy({}, {
+    let proxied = new Proxy({ boo: 42 }, {
         get: function (target, name, receiver) {
             window.accessedGet = true;
             return target[name];
@@ -17,12 +17,15 @@ function testFunction()
             return value;
         }
     });
+    proxied.foo = 43;
     console.log(proxied);
+    let proxied2 = new Proxy(proxied, {});
+    console.log(proxied2);
 }
 
 function test()
 {
-    InspectorTest.waitUntilMessageReceived(dumpMessages);
+    InspectorTest.waitUntilNthMessageReceived(2, dumpMessages);
     InspectorTest.evaluateInPage("testFunction()");
 
     function dumpMessages()

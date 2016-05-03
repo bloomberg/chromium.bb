@@ -53,6 +53,7 @@ v8::Local<v8::Object> V8InjectedScriptHost::create(v8::Local<v8::Context> contex
     setFunctionProperty(context, injectedScriptHost, "suppressWarningsAndCallFunction", V8InjectedScriptHost::suppressWarningsAndCallFunctionCallback, debuggerExternal);
     setFunctionProperty(context, injectedScriptHost, "setNonEnumProperty", V8InjectedScriptHost::setNonEnumPropertyCallback, debuggerExternal);
     setFunctionProperty(context, injectedScriptHost, "bind", V8InjectedScriptHost::bindCallback, debuggerExternal);
+    setFunctionProperty(context, injectedScriptHost, "proxyTargetValue", V8InjectedScriptHost::proxyTargetValueCallback, debuggerExternal);
     return injectedScriptHost;
 }
 
@@ -255,6 +256,18 @@ void V8InjectedScriptHost::bindCallback(const v8::FunctionCallbackInfo<v8::Value
     String16 groupName = toProtocolStringWithTypeCheck(v8groupName);
     int id = injectedScriptNative->bind(info[0], groupName);
     info.GetReturnValue().Set(id);
+}
+
+void V8InjectedScriptHost::proxyTargetValueCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (info.Length() != 1 || !info[0]->IsProxy()) {
+        ASSERT_NOT_REACHED();
+        return;
+    }
+    v8::Local<v8::Object> target = info[0].As<v8::Proxy>();
+    while (target->IsProxy())
+        target = v8::Local<v8::Proxy>::Cast(target)->GetTarget();
+    info.GetReturnValue().Set(target);
 }
 
 v8::Local<v8::Private> V8Debugger::scopeExtensionPrivate(v8::Isolate* isolate)
