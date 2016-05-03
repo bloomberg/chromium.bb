@@ -22,5 +22,6 @@ use_dbus = false
 use_gconf = false
 use_gio = false
 use_kerberos = false
+use_libpci = false
 use_pulseaudio = false
 use_udev = false
