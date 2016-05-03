@@ -74,6 +74,7 @@ DeviceOrientationAbsolute status=stable
 DisplayList2dCanvas status=stable
 DocumentWriteEvaluator
 DurableStorage status=experimental
+DOMConvenienceAPI status=experimental
 ForceDisplayList2dCanvas
 // See crbug.com/585250.
 ForceDisable2dCanvasCopyOnWrite

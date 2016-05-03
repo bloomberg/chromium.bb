@@ -496,6 +496,7 @@ interface ChannelSplitterNode : AudioNode
     method constructor
 interface CharacterData : Node
     attribute @@toStringTag
+    attribute @@unscopables
     getter data
     getter length
     getter nextElementSibling
@@ -726,6 +727,7 @@ interface DeviceOrientationEvent : Event
     method initDeviceOrientationEvent
 interface Document : Node
     attribute @@toStringTag
+    attribute @@unscopables
     getter URL
     getter activeElement
     getter anchors
@@ -994,6 +996,7 @@ interface Document : Node
     setter xmlVersion
 interface DocumentFragment : Node
     attribute @@toStringTag
+    attribute @@unscopables
     getter childElementCount
     getter children
     getter firstElementChild
@@ -1004,6 +1007,7 @@ interface DocumentFragment : Node
     method querySelectorAll
 interface DocumentType : Node
     attribute @@toStringTag
+    attribute @@unscopables
     getter name
     getter publicId
     getter systemId
@@ -1024,6 +1028,7 @@ interface DynamicsCompressorNode : AudioNode
     method constructor
 interface Element : Node
     attribute @@toStringTag
+    attribute @@unscopables
     getter attributes
     getter childElementCount
     getter children

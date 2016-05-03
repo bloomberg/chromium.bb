@@ -1,8 +1,0 @@
-This is a testharness.js-based test.
-FAIL Document.append() without any argument, on a Document having no child. parent.append is not a function
-FAIL Document.append() with only one element as an argument, on a Document having no child. parent.append is not a function
-FAIL Document.append() with only one element as an argument, on a Document having one child. assert_throws: function "function () { parent.append(y); }" threw object "TypeError: parent.append is not a function" that is not a DOMException HierarchyRequestError: property "code" is equal to undefined, expected 3
-FAIL Document.append() with text as an argument, on a Document having no child. assert_throws: function "function () { parent.append('text'); }" threw object "TypeError: parent.append is not a function" that is not a DOMException HierarchyRequestError: property "code" is equal to undefined, expected 3
-FAIL Document.append() with two elements as the argument, on a Document having no child. assert_throws: function "function () { parent.append(x, y); }" threw object "TypeError: parent.append is not a function" that is not a DOMException HierarchyRequestError: property "code" is equal to undefined, expected 3
-Harness: the test ran to completion.
-

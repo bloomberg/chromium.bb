@@ -63,6 +63,16 @@ public:
         return count;
     }
 
+    static void prepend(Node& node, const HeapVector<NodeOrString>& nodes, ExceptionState& exceptionState)
+    {
+        return node.prepend(nodes, exceptionState);
+    }
+
+    static void append(Node& node, const HeapVector<NodeOrString>& nodes, ExceptionState& exceptionState)
+    {
+        return node.append(nodes, exceptionState);
+    }
+
     static Element* querySelector(ContainerNode& node, const AtomicString& selectors, ExceptionState& exceptionState)
     {
         return node.querySelector(selectors, exceptionState);

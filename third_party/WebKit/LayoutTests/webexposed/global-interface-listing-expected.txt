@@ -659,16 +659,20 @@ interface ChannelSplitterNode : AudioNode
     method constructor
 interface CharacterData : Node
     attribute @@toStringTag
+    attribute @@unscopables
     getter data
     getter length
     getter nextElementSibling
     getter previousElementSibling
+    method after
     method appendData
+    method before
     method constructor
     method deleteData
     method insertData
     method remove
     method replaceData
+    method replaceWith
     method substringData
     setter data
 interface CircularGeofencingRegion : GeofencingRegion
@@ -1057,6 +1061,7 @@ interface DeviceOrientationEvent : Event
     method initDeviceOrientationEvent
 interface Document : Node
     attribute @@toStringTag
+    attribute @@unscopables
     getter URL
     getter activeElement
     getter addressSpace
@@ -1202,6 +1207,7 @@ interface Document : Node
     getter xmlStandalone
     getter xmlVersion
     method adoptNode
+    method append
     method caretRangeFromPoint
     method close
     method constructor
@@ -1237,6 +1243,7 @@ interface Document : Node
     method hasFocus
     method importNode
     method open
+    method prepend
     method queryCommandEnabled
     method queryCommandIndeterm
     method queryCommandState
@@ -1344,21 +1351,28 @@ interface Document : Node
     setter xmlVersion
 interface DocumentFragment : Node
     attribute @@toStringTag
+    attribute @@unscopables
     getter childElementCount
     getter children
     getter firstElementChild
     getter lastElementChild
+    method append
     method constructor
     method getElementById
+    method prepend
     method querySelector
     method querySelectorAll
 interface DocumentType : Node
     attribute @@toStringTag
+    attribute @@unscopables
     getter name
     getter publicId
     getter systemId
+    method after
+    method before
     method constructor
     method remove
+    method replaceWith
 interface DragEvent : MouseEvent
     attribute @@toStringTag
     getter dataTransfer
@@ -1374,6 +1388,7 @@ interface DynamicsCompressorNode : AudioNode
     method constructor
 interface Element : Node
     attribute @@toStringTag
+    attribute @@unscopables
     getter assignedSlot
     getter attributes
     getter childElementCount
@@ -1414,8 +1429,11 @@ interface Element : Node
     getter shadowRoot
     getter slot
     getter tagName
+    method after
     method animate
+    method append
     method attachShadow
+    method before
     method closest
     method constructor
     method createShadowRoot
@@ -1437,12 +1455,14 @@ interface Element : Node
     method insertAdjacentHTML
     method insertAdjacentText
     method matches
+    method prepend
     method querySelector
     method querySelectorAll
     method remove
     method removeAttribute
     method removeAttributeNS
     method removeAttributeNode
+    method replaceWith
     method requestFullscreen
     method requestPointerLock
     method scroll

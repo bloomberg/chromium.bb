@@ -1,8 +1,0 @@
-This is a testharness.js-based test.
-FAIL Document.prepend() without any argument, on a Document having no child. parent.prepend is not a function
-FAIL Document.prepend() with only one element as an argument, on a Document having no child. parent.prepend is not a function
-FAIL Document.append() with only one element as an argument, on a Document having one child. assert_throws: function "function () { parent.prepend(y); }" threw object "TypeError: parent.prepend is not a function" that is not a DOMException HierarchyRequestError: property "code" is equal to undefined, expected 3
-FAIL Document.prepend() with text as an argument, on a Document having no child. assert_throws: function "function () { parent.prepend('text'); }" threw object "TypeError: parent.prepend is not a function" that is not a DOMException HierarchyRequestError: property "code" is equal to undefined, expected 3
-FAIL Document.prepend() with two elements as the argument, on a Document having no child. assert_throws: function "function () { parent.prepend(x, y); }" threw object "TypeError: parent.prepend is not a function" that is not a DOMException HierarchyRequestError: property "code" is equal to undefined, expected 3
-Harness: the test ran to completion.
-

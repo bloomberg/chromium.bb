@@ -27,12 +27,15 @@ namespace http://www.w3.org/1999/xhtml
     property TEXT_NODE
     property accessKey
     property addEventListener
+    property after
     property animate
+    property append
     property appendChild
     property assignedSlot
     property attachShadow
     property attributes
     property baseURI
+    property before
     property blur
     property childElementCount
     property childNodes
@@ -189,6 +192,7 @@ namespace http://www.w3.org/1999/xhtml
     property parentElement
     property parentNode
     property prefix
+    property prepend
     property previousElementSibling
     property previousSibling
     property querySelector
@@ -200,6 +204,7 @@ namespace http://www.w3.org/1999/xhtml
     property removeChild
     property removeEventListener
     property replaceChild
+    property replaceWith
     property requestFullscreen
     property requestPointerLock
     property rootNode
@@ -1117,12 +1122,15 @@ namespace http://www.w3.org/2000/svg
     property TEXT_NODE
     property accessKey
     property addEventListener
+    property after
     property animate
+    property append
     property appendChild
     property assignedSlot
     property attachShadow
     property attributes
     property baseURI
+    property before
     property blur
     property childElementCount
     property childNodes
@@ -1279,6 +1287,7 @@ namespace http://www.w3.org/2000/svg
     property parentElement
     property parentNode
     property prefix
+    property prepend
     property previousElementSibling
     property previousSibling
     property querySelector
@@ -1290,6 +1299,7 @@ namespace http://www.w3.org/2000/svg
     property removeChild
     property removeEventListener
     property replaceChild
+    property replaceWith
     property requestFullscreen
     property requestPointerLock
     property rootNode
