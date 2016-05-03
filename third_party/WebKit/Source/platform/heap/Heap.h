@@ -531,7 +531,9 @@ private:                                               \
 public:                                                \
     typedef int IsEagerlyFinalizedMarker
 #else
-#define EAGERLY_FINALIZE() typedef int IsEagerlyFinalizedMarker
+#define EAGERLY_FINALIZE()                             \
+public:                                                \
+    typedef int IsEagerlyFinalizedMarker
 #endif
 
 inline Address ThreadHeap::allocateOnArenaIndex(ThreadState* state, size_t size, int arenaIndex, size_t gcInfoIndex, const char* typeName)
