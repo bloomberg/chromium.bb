@@ -33,14 +33,15 @@ class CredentialManagerPasswordFormManager : public PasswordFormManager {
  public:
   // Given a |client| and an |observed_form|, kick off the process of fetching
   // matching logins from the password store; if |observed_form| doesn't map to
-  // a blacklisted origin, provisionally save it. Once saved, let the delegate
-  // know that it's safe to poke at the UI.
+  // a blacklisted origin, provisionally save |saved_form|. Once saved, let the
+  // delegate know that it's safe to poke at the UI.
   //
   // This class does not take ownership of |delegate|.
   CredentialManagerPasswordFormManager(
       PasswordManagerClient* client,
       base::WeakPtr<PasswordManagerDriver> driver,
       const autofill::PasswordForm& observed_form,
+      std::unique_ptr<autofill::PasswordForm> saved_form,
       CredentialManagerPasswordFormManagerDelegate* delegate);
   ~CredentialManagerPasswordFormManager() override;
 
@@ -49,6 +50,7 @@ class CredentialManagerPasswordFormManager : public PasswordFormManager {
 
  private:
   CredentialManagerPasswordFormManagerDelegate* delegate_;
+  std::unique_ptr<autofill::PasswordForm> saved_form_;
 
   DISALLOW_COPY_AND_ASSIGN(CredentialManagerPasswordFormManager);
 };

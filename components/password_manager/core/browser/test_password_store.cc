@@ -8,6 +8,7 @@
 
 #include "base/thread_task_runner_handle.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/psl_matching_helper.h"
 #include "components/password_manager/core/browser/statistics_table.h"
 
 namespace password_manager {
@@ -83,10 +84,13 @@ PasswordStoreChangeList TestPasswordStore::RemoveLoginImpl(
 ScopedVector<autofill::PasswordForm> TestPasswordStore::FillMatchingLogins(
     const autofill::PasswordForm& form) {
   ScopedVector<autofill::PasswordForm> matched_forms;
-  std::vector<autofill::PasswordForm> forms =
-      stored_passwords_[form.signon_realm];
-  for (const auto& stored_form : forms) {
-    matched_forms.push_back(new autofill::PasswordForm(stored_form));
+  for (const auto& elements : stored_passwords_) {
+    if (elements.first == form.signon_realm ||
+        (form.scheme == autofill::PasswordForm::SCHEME_HTML &&
+         password_manager::IsFederatedMatch(elements.first, form.origin))) {
+      for (const auto& stored_form : elements.second)
+        matched_forms.push_back(new autofill::PasswordForm(stored_form));
+    }
   }
   return matched_forms;
 }

@@ -251,12 +251,9 @@ void PasswordFormManager::PermanentlyBlacklist() {
   DCHECK(!client_->IsOffTheRecord());
 
   // Configure the form about to be saved for blacklist status.
-  blacklisted_matches_.push_back(
-      new autofill::PasswordForm(pending_credentials_));
+  blacklisted_matches_.push_back(new autofill::PasswordForm(observed_form_));
   blacklisted_matches_.back()->preferred = false;
   blacklisted_matches_.back()->blacklisted_by_user = true;
-  blacklisted_matches_.back()->username_value.clear();
-  blacklisted_matches_.back()->password_value.clear();
   blacklisted_matches_.back()->other_possible_usernames.clear();
   blacklisted_matches_.back()->date_created = Time::Now();
 
@@ -1147,12 +1144,15 @@ void PasswordFormManager::CreatePendingCredentials() {
   pending_credentials_.preferred = provisionally_saved_form_->preferred;
 
   // If we're dealing with an API-driven provisionally saved form, then take
-  // its 'skip_zero_click' value. We don't do this for non-API forms, as
-  // those will never have 'skip_zero_click' set, and we would otherwise
-  // overwrite a user's auto-sign-in preference when they used autofill.
+  // the server provided values. We don't do this for non-API forms, as
+  // those will never have those members set.
   if (provisionally_saved_form_->type == autofill::PasswordForm::TYPE_API) {
     pending_credentials_.skip_zero_click =
         provisionally_saved_form_->skip_zero_click;
+    pending_credentials_.display_name = provisionally_saved_form_->display_name;
+    pending_credentials_.federation_origin =
+        provisionally_saved_form_->federation_origin;
+    pending_credentials_.icon_url = provisionally_saved_form_->icon_url;
   }
 
   if (user_action_ == kUserActionOverridePassword &&

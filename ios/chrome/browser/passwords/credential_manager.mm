@@ -205,7 +205,9 @@ void CredentialManager::SignedIn(int request_id,
   // accordingly.
   form_manager_.reset(
       new password_manager::CredentialManagerPasswordFormManager(
-          client_, driver_->AsWeakPtr(), *form, this));
+          client_, driver_->AsWeakPtr(),
+          *password_manager::CreateObservedPasswordFormFromOrigin(page_url),
+          std::move(form), this));
 }
 
 void CredentialManager::SignedOut(int request_id, const GURL& source_url) {

@@ -61,13 +61,14 @@ void CredentialManagerImpl::Store(mojom::CredentialInfoPtr credential,
   if (!client_->IsSavingAndFillingEnabledForCurrentPage())
     return;
 
+  GURL origin = web_contents()->GetLastCommittedURL().GetOrigin();
   std::unique_ptr<autofill::PasswordForm> form(
-      CreatePasswordFormFromCredentialInfo(
-          info, web_contents()->GetLastCommittedURL().GetOrigin()));
+      CreatePasswordFormFromCredentialInfo(info, origin));
   form->skip_zero_click = !IsZeroClickAllowed();
 
   form_manager_.reset(new CredentialManagerPasswordFormManager(
-      client_, GetDriver(), *form, this));
+      client_, GetDriver(), *CreateObservedPasswordFormFromOrigin(origin),
+      std::move(form), this));
 }
 
 void CredentialManagerImpl::OnProvisionalSaveComplete() {

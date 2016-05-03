@@ -51,6 +51,12 @@ CredentialInfo::CredentialInfo(const CredentialInfo& other) = default;
 CredentialInfo::~CredentialInfo() {
 }
 
+bool CredentialInfo::operator==(const CredentialInfo& rhs) const {
+  return (type == rhs.type && id == rhs.id && name == rhs.name &&
+          icon == rhs.icon && password == rhs.password &&
+          federation.Serialize() == rhs.federation.Serialize());
+}
+
 std::unique_ptr<autofill::PasswordForm> CreatePasswordFormFromCredentialInfo(
     const CredentialInfo& info,
     const GURL& origin) {
@@ -75,10 +81,15 @@ std::unique_ptr<autofill::PasswordForm> CreatePasswordFormFromCredentialInfo(
   form->username_value = info.id;
   return form;
 }
-bool CredentialInfo::operator==(const CredentialInfo& rhs) const {
-  return (type == rhs.type && id == rhs.id && name == rhs.name &&
-          icon == rhs.icon && password == rhs.password &&
-          federation.Serialize() == rhs.federation.Serialize());
+
+std::unique_ptr<autofill::PasswordForm> CreateObservedPasswordFormFromOrigin(
+    const GURL& origin) {
+  std::unique_ptr<autofill::PasswordForm> form(new autofill::PasswordForm);
+  form->origin = origin;
+  form->scheme = autofill::PasswordForm::SCHEME_HTML;
+  form->type = autofill::PasswordForm::TYPE_API;
+  form->signon_realm = origin.spec();
+  return form;
 }
 
 }  // namespace password_manager
