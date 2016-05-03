@@ -4,7 +4,6 @@
 
 package org.chromium.android_webview.test;
 
-import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwQuotaManagerBridge;
@@ -15,7 +14,6 @@ import org.chromium.android_webview.test.util.AwQuotaManagerBridgeTestUtil;
  * use case that user calls WebStorage getInstance() without WebView.
  */
 public class StandaloneAwQuotaManagerBridgeTest extends AwTestBase {
-    @SmallTest
     public void testStartup() throws Exception {
         // AwQuotaManager should run without any issue.
         AwQuotaManagerBridge.Origins origins = AwQuotaManagerBridgeTestUtil.getOrigins(this);

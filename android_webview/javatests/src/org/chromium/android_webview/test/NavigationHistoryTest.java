@@ -187,7 +187,6 @@ public class NavigationHistoryTest extends AwTestBase {
         assertEquals(0, list.getCurrentEntryIndex());
     }
 
-    @SmallTest
     public void testFavicon() throws Throwable {
         mWebServer.setResponseBase64("/" + CommonResources.FAVICON_FILENAME,
                 CommonResources.FAVICON_DATA_BASE64, CommonResources.getImagePngHeaders(false));

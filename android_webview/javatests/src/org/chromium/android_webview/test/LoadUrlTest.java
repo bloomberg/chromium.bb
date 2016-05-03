@@ -377,8 +377,6 @@ public class LoadUrlTest extends AwTestBase {
         }
     }
 
-    @SmallTest
-    @Feature({"AndroidWebView"})
     public void testOnReceivedTitleForUnchangingTitle() throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =

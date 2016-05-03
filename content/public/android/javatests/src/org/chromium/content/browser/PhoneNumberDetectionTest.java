@@ -4,9 +4,6 @@
 
 package org.chromium.content.browser;
 
-import android.test.suitebuilder.annotation.LargeTest;
-import android.test.suitebuilder.annotation.MediumTest;
-
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.common.ContentSwitches;
@@ -24,7 +21,7 @@ public class PhoneNumberDetectionTest extends ContentDetectionTestBase {
         return intentUrl.equals(expectedUrl);
     }
 
-    @LargeTest
+    /* @LargeTest */
     @Feature({"ContentDetection", "TabContents"})
     @CommandLineFlags.Add(ContentSwitches.NETWORK_COUNTRY_ISO + "=US")
     public void testInternationalNumberIntents() throws Throwable {
@@ -141,7 +138,7 @@ public class PhoneNumberDetectionTest extends ContentDetectionTestBase {
         assertTrue(isExpectedTelephoneIntent(intentUrl, "+97144509500"));
     }
 
-    @MediumTest
+    /* @MediumTest */
     @Feature({"ContentDetection", "TabContents"})
     @CommandLineFlags.Add(ContentSwitches.NETWORK_COUNTRY_ISO + "=US")
     public void testLocalUSNumbers() throws Throwable {
@@ -166,7 +163,7 @@ public class PhoneNumberDetectionTest extends ContentDetectionTestBase {
         assertTrue(isExpectedTelephoneIntent(intentUrl, "+31205045100"));
     }
 
-    @MediumTest
+    /* @MediumTest */
     @Feature({"ContentDetection", "TabContents"})
     @CommandLineFlags.Add(ContentSwitches.NETWORK_COUNTRY_ISO + "=GB")
     public void testLocalUKNumbers() throws Throwable {
@@ -191,7 +188,7 @@ public class PhoneNumberDetectionTest extends ContentDetectionTestBase {
         assertTrue(isExpectedTelephoneIntent(intentUrl, "+31205045100"));
     }
 
-    @MediumTest
+    /* @MediumTest */
     @Feature({"ContentDetection", "TabContents"})
     @CommandLineFlags.Add(ContentSwitches.NETWORK_COUNTRY_ISO + "=FR")
     public void testLocalFRNumbers() throws Throwable {
