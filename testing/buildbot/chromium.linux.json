@@ -214,7 +214,7 @@
               "device_type": "hammerhead"
             }
           ],
-          "hard_timeout": 960
+          "hard_timeout": 1200
         },
         "test": "content_browsertests"
       },
