@@ -704,6 +704,13 @@ message DeviceQuirksDownloadEnabledProto {
   optional bool quirks_download_enabled = 1;
 }
 
+// A list of security origins for SAML login pages that are allowed to
+// access the webcam.  No login pages will be allowed to access the
+// webcam if the list is empty.
+message LoginVideoCaptureAllowedUrlsProto {
+  repeated string urls = 1;
+}
+
 message ChromeDeviceSettingsProto {
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
   optional UserWhitelistProto user_whitelist = 2;
@@ -754,4 +761,6 @@ message ChromeDeviceSettingsProto {
   optional UsbDetachableWhitelistProto usb_detachable_whitelist = 42;
   optional AllowBluetoothProto allow_bluetooth = 43;
   optional DeviceQuirksDownloadEnabledProto quirks_download_enabled = 44;
+  optional LoginVideoCaptureAllowedUrlsProto login_video_capture_allowed_urls =
+      45;
 }

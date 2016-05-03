@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/i18n/rtl.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
@@ -19,6 +20,7 @@
 #include "chrome/browser/chromeos/login/ui/proxy_settings_dialog.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_display.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/media_stream_devices_controller.h"
@@ -31,6 +33,8 @@
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "chromeos/settings/cros_settings_names.h"
+#include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/notification_service.h"
@@ -435,8 +439,42 @@ void WebUILoginView::RequestMediaAccessPermission(
     const content::MediaStreamRequest& request,
     const content::MediaResponseCallback& callback) {
   MediaStreamDevicesController controller(web_contents, request, callback);
-  if (controller.IsAskingForVideo() || controller.IsAskingForAudio())
-    NOTREACHED() << "Media stream not allowed for WebUI";
+  if (controller.IsAskingForAudio() || !controller.IsAskingForVideo()) {
+    controller.PermissionDenied();
+    return;
+  }
+
+  const CrosSettings* const settings = CrosSettings::Get();
+  if (!settings) {
+    controller.PermissionDenied();
+    return;
+  }
+
+  const base::Value* const raw_list_value =
+      settings->GetPref(kLoginVideoCaptureAllowedUrls);
+  if (!raw_list_value) {
+    controller.PermissionDenied();
+    return;
+  }
+
+  const base::ListValue* list_value;
+  CHECK(raw_list_value->GetAsList(&list_value));
+  for (base::Value* base_value : *list_value) {
+    std::string value;
+    if (base_value->GetAsString(&value)) {
+      ContentSettingsPattern pattern =
+          ContentSettingsPattern::FromString(value);
+      if (pattern == ContentSettingsPattern::Wildcard()) {
+        LOG(WARNING) << "Ignoring wildcard URL pattern: " << value;
+        continue;
+      }
+      if (pattern.IsValid() && pattern.Matches(request.security_origin)) {
+        controller.PermissionGranted();
+        return;
+      }
+    }
+  }
+  controller.PermissionDenied();
 }
 
 bool WebUILoginView::CheckMediaAccessPermission(

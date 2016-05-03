@@ -325,6 +325,18 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
                     nullptr);
     }
   }
+
+  if (policy.has_login_video_capture_allowed_urls()) {
+    const em::LoginVideoCaptureAllowedUrlsProto& container(
+        policy.login_video_capture_allowed_urls());
+    std::unique_ptr<base::ListValue> urls(new base::ListValue());
+    for (const auto& entry : container.urls()) {
+      urls->Append(new base::StringValue(entry));
+    }
+    policies->Set(key::kLoginVideoCaptureAllowedUrls, POLICY_LEVEL_MANDATORY,
+                  POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD, urls.release(),
+                  nullptr);
+  }
 }
 
 void DecodeNetworkPolicies(const em::ChromeDeviceSettingsProto& policy,

@@ -147,6 +147,14 @@ cr.define('cr.login', function() {
         'loadabort', this.onLoadAbort_.bind(this));
     this.webview_.addEventListener(
         'loadcommit', this.onLoadCommit_.bind(this));
+    this.webview_.addEventListener(
+        'permissionrequest', function(e) {
+          if (e.permission === 'media') {
+            // The actual permission check happens in
+            // WebUILoginView::RequestMediaAccessPermission().
+            e.request.allow();
+          }
+        });
 
     this.webview_.request.onBeforeRequest.addListener(
         this.onInsecureRequest.bind(this),

@@ -2718,6 +2718,14 @@
     ]
   },
 
+  "LoginVideoCaptureAllowedUrls": {
+    "os": ["chromeos"],
+    "test_policy": { "LoginVideoCaptureAllowedUrls": [ "https://example.com" ] },
+    "pref_mappings": [
+      { "pref": "cros.device.login_video_capture_allowed_urls" }
+    ]
+  },
+
   "----- Chrome Frame policies -------------------------------------------": {},
 
   "ChromeFrameRendererSettings": {

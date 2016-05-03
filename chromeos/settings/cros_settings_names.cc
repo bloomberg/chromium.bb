@@ -199,4 +199,9 @@ const char kAllowBluetooth[] = "cros.device.allow_bluetooth";
 const char kDeviceQuirksDownloadEnabled[] =
     "cros.device.quirks_download_enabled";
 
+// A list pref storing the security origins allowed to access the webcam
+// during SAML logins.
+const char kLoginVideoCaptureAllowedUrls[] =
+    "cros.device.login_video_capture_allowed_urls";
+
 }  // namespace chromeos

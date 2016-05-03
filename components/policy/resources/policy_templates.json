@@ -137,7 +137,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 327
+#   For your editing convenience: highest ID currently used: 328
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -8479,6 +8479,28 @@
       'example_value': True,
       'tags': [],
       'id': 327,
+    },
+    {
+      'name': 'LoginVideoCaptureAllowedUrls',
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'supported_on': ['chrome_os:52-'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+      },
+      'example_value': [ "https://example.com" ],
+      'id': 328,
+      'caption': '''URLs that will be granted access to video capture devices on SAML login pages''',
+      'tags': ['website-sharing'],
+      'desc': '''Patterns in this list will be matched against the security
+      origin of the requesting URL.  If a match is found, access to video
+      capture devices will be granted on SAML login pages.  If no match is
+      found, access will be automatically denied.  Wildcard patterns are not
+      allowed.'''
     },
   ],
   'messages': {

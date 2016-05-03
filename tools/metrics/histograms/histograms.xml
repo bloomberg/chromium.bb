@@ -68147,6 +68147,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="325" label="Enable queries to Quirks Server"/>
   <int value="326" label="Configure the automatic timezone detection method"/>
   <int value="327" label="Enable ending processes in Task Manager"/>
+  <int value="328"
+      label="URLs that will be granted access to video capture devices on
+             SAML login pages"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations" type="int">
