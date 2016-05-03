@@ -821,4 +821,13 @@ SkImageInfo GpuImageDecodeController::CreateImageInfoForDrawImage(
       ResourceFormatToClosestSkColorType(format_), kPremul_SkAlphaType);
 }
 
+void GpuImageDecodeController::SetImageDecodingFailedForTesting(
+    const DrawImage& image) {
+  base::AutoLock lock(lock_);
+  auto found = image_data_.Peek(image.image()->uniqueID());
+  DCHECK(found != image_data_.end());
+  ImageData* image_data = found->second.get();
+  image_data->decode.decode_failure = true;
+}
+
 }  // namespace cc

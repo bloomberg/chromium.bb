@@ -357,6 +357,40 @@ TEST(GpuImageDecodeControllerTest,
   controller.UnrefImage(draw_image);
 }
 
+TEST(GpuImageDecodeControllerTest, NoTaskForImageAlreadyFailedDecoding) {
+  auto context_provider = TestContextProvider::Create();
+  context_provider->BindToCurrentThread();
+  GpuImageDecodeController controller(context_provider.get(),
+                                      ResourceFormat::RGBA_8888);
+  bool is_decomposable = true;
+  SkFilterQuality quality = kHigh_SkFilterQuality;
+
+  sk_sp<SkImage> image = CreateImage(100, 100);
+  DrawImage draw_image(image, SkIRect::MakeWH(image->width(), image->height()),
+                       quality,
+                       CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable));
+  scoped_refptr<TileTask> task;
+  bool need_unref = controller.GetTaskForImageAndRef(
+      draw_image, ImageDecodeController::TracingInfo(), &task);
+  EXPECT_TRUE(need_unref);
+  EXPECT_TRUE(task);
+
+  ProcessTask(task->dependencies()[0].get());
+  ScheduleTask(task.get());
+  // Didn't run the task, complete it (it was canceled).
+  CompleteTask(task.get());
+
+  controller.SetImageDecodingFailedForTesting(draw_image);
+
+  scoped_refptr<TileTask> another_task;
+  need_unref = controller.GetTaskForImageAndRef(
+      draw_image, ImageDecodeController::TracingInfo(), &another_task);
+  EXPECT_FALSE(need_unref);
+  EXPECT_EQ(another_task.get(), nullptr);
+
+  controller.UnrefImage(draw_image);
+}
+
 TEST(GpuImageDecodeControllerTest, GetDecodedImageForDraw) {
   auto context_provider = TestContextProvider::Create();
   context_provider->BindToCurrentThread();

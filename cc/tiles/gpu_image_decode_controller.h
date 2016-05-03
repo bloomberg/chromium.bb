@@ -90,6 +90,7 @@ class CC_EXPORT GpuImageDecodeController
     cached_bytes_limit_ = limit;
   }
   size_t GetBytesUsedForTesting() const { return bytes_used_; }
+  void SetImageDecodingFailedForTesting(const DrawImage& image);
 
  private:
   enum class DecodedDataMode { GPU, CPU };
