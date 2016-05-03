@@ -63,10 +63,10 @@ TEST(SoftwareImageDecodeControllerTest, ImageKeyMediumQuality) {
   auto key = ImageDecodeControllerKey::FromDrawImage(draw_image);
   EXPECT_EQ(image->uniqueID(), key.image_id());
   EXPECT_EQ(quality, key.filter_quality());
-  EXPECT_EQ(50, key.target_size().width());
-  EXPECT_EQ(150, key.target_size().height());
+  EXPECT_EQ(100, key.target_size().width());
+  EXPECT_EQ(100, key.target_size().height());
   EXPECT_FALSE(key.can_use_original_decode());
-  EXPECT_EQ(50u * 150u * 4u, key.locked_bytes());
+  EXPECT_EQ(100u * 100u * 4u, key.locked_bytes());
 }
 
 TEST(SoftwareImageDecodeControllerTest,
@@ -164,6 +164,132 @@ TEST(SoftwareImageDecodeControllerTest,
   EXPECT_EQ(100u * 100u * 4u, key.locked_bytes());
 }
 
+TEST(SoftwareImageDecodeControllerTest, ImageKeyMediumQualityAt1_5Scale) {
+  sk_sp<SkImage> image = CreateImage(500, 200);
+  bool is_decomposable = true;
+  SkFilterQuality quality = kMedium_SkFilterQuality;
+
+  DrawImage draw_image(image, SkIRect::MakeWH(image->width(), image->height()),
+                       quality,
+                       CreateMatrix(SkSize::Make(1.5f, 1.5f), is_decomposable));
+
+  auto key = ImageDecodeControllerKey::FromDrawImage(draw_image);
+  EXPECT_EQ(image->uniqueID(), key.image_id());
+  EXPECT_EQ(kLow_SkFilterQuality, key.filter_quality());
+  EXPECT_EQ(500, key.target_size().width());
+  EXPECT_EQ(200, key.target_size().height());
+  EXPECT_TRUE(key.can_use_original_decode());
+  EXPECT_EQ(500u * 200u * 4u, key.locked_bytes());
+}
+
+TEST(SoftwareImageDecodeControllerTest, ImageKeyMediumQualityAt1_0cale) {
+  sk_sp<SkImage> image = CreateImage(500, 200);
+  bool is_decomposable = true;
+  SkFilterQuality quality = kMedium_SkFilterQuality;
+
+  DrawImage draw_image(image, SkIRect::MakeWH(image->width(), image->height()),
+                       quality,
+                       CreateMatrix(SkSize::Make(1.f, 1.f), is_decomposable));
+
+  auto key = ImageDecodeControllerKey::FromDrawImage(draw_image);
+  EXPECT_EQ(image->uniqueID(), key.image_id());
+  EXPECT_EQ(kLow_SkFilterQuality, key.filter_quality());
+  EXPECT_EQ(500, key.target_size().width());
+  EXPECT_EQ(200, key.target_size().height());
+  EXPECT_TRUE(key.can_use_original_decode());
+  EXPECT_EQ(500u * 200u * 4u, key.locked_bytes());
+}
+
+TEST(SoftwareImageDecodeControllerTest, ImageKeyMediumQualityAt0_75Scale) {
+  sk_sp<SkImage> image = CreateImage(500, 200);
+  bool is_decomposable = true;
+  SkFilterQuality quality = kMedium_SkFilterQuality;
+
+  DrawImage draw_image(
+      image, SkIRect::MakeWH(image->width(), image->height()), quality,
+      CreateMatrix(SkSize::Make(0.75f, 0.75f), is_decomposable));
+
+  auto key = ImageDecodeControllerKey::FromDrawImage(draw_image);
+  EXPECT_EQ(image->uniqueID(), key.image_id());
+  EXPECT_EQ(quality, key.filter_quality());
+  EXPECT_EQ(500, key.target_size().width());
+  EXPECT_EQ(200, key.target_size().height());
+  EXPECT_FALSE(key.can_use_original_decode());
+  EXPECT_EQ(500u * 200u * 4u, key.locked_bytes());
+}
+
+TEST(SoftwareImageDecodeControllerTest, ImageKeyMediumQualityAt0_5Scale) {
+  sk_sp<SkImage> image = CreateImage(500, 200);
+  bool is_decomposable = true;
+  SkFilterQuality quality = kMedium_SkFilterQuality;
+
+  DrawImage draw_image(image, SkIRect::MakeWH(image->width(), image->height()),
+                       quality,
+                       CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable));
+
+  auto key = ImageDecodeControllerKey::FromDrawImage(draw_image);
+  EXPECT_EQ(image->uniqueID(), key.image_id());
+  EXPECT_EQ(quality, key.filter_quality());
+  EXPECT_EQ(250, key.target_size().width());
+  EXPECT_EQ(100, key.target_size().height());
+  EXPECT_FALSE(key.can_use_original_decode());
+  EXPECT_EQ(250u * 100u * 4u, key.locked_bytes());
+}
+
+TEST(SoftwareImageDecodeControllerTest, ImageKeyMediumQualityAt0_49Scale) {
+  sk_sp<SkImage> image = CreateImage(500, 200);
+  bool is_decomposable = true;
+  SkFilterQuality quality = kMedium_SkFilterQuality;
+
+  DrawImage draw_image(
+      image, SkIRect::MakeWH(image->width(), image->height()), quality,
+      CreateMatrix(SkSize::Make(0.49f, 0.49f), is_decomposable));
+
+  auto key = ImageDecodeControllerKey::FromDrawImage(draw_image);
+  EXPECT_EQ(image->uniqueID(), key.image_id());
+  EXPECT_EQ(quality, key.filter_quality());
+  EXPECT_EQ(250, key.target_size().width());
+  EXPECT_EQ(100, key.target_size().height());
+  EXPECT_FALSE(key.can_use_original_decode());
+  EXPECT_EQ(250u * 100u * 4u, key.locked_bytes());
+}
+
+TEST(SoftwareImageDecodeControllerTest, ImageKeyMediumQualityAt0_1Scale) {
+  sk_sp<SkImage> image = CreateImage(500, 200);
+  bool is_decomposable = true;
+  SkFilterQuality quality = kMedium_SkFilterQuality;
+
+  DrawImage draw_image(image, SkIRect::MakeWH(image->width(), image->height()),
+                       quality,
+                       CreateMatrix(SkSize::Make(0.1f, 0.1f), is_decomposable));
+
+  auto key = ImageDecodeControllerKey::FromDrawImage(draw_image);
+  EXPECT_EQ(image->uniqueID(), key.image_id());
+  EXPECT_EQ(quality, key.filter_quality());
+  EXPECT_EQ(62, key.target_size().width());
+  EXPECT_EQ(25, key.target_size().height());
+  EXPECT_FALSE(key.can_use_original_decode());
+  EXPECT_EQ(62u * 25u * 4u, key.locked_bytes());
+}
+
+TEST(SoftwareImageDecodeControllerTest, ImageKeyMediumQualityAt0_01Scale) {
+  sk_sp<SkImage> image = CreateImage(500, 200);
+  bool is_decomposable = true;
+  SkFilterQuality quality = kMedium_SkFilterQuality;
+
+  DrawImage draw_image(
+      image, SkIRect::MakeWH(image->width(), image->height()), quality,
+      CreateMatrix(SkSize::Make(0.01f, 0.01f), is_decomposable));
+
+  auto key = ImageDecodeControllerKey::FromDrawImage(draw_image);
+  EXPECT_EQ(image->uniqueID(), key.image_id());
+  EXPECT_EQ(quality, key.filter_quality());
+  EXPECT_EQ(7, key.target_size().width());
+  EXPECT_EQ(3, key.target_size().height());
+  EXPECT_FALSE(key.can_use_original_decode());
+  EXPECT_EQ(7u * 3u * 4u, key.locked_bytes());
+}
+
 TEST(SoftwareImageDecodeControllerTest, ImageKeyHighQuality) {
   sk_sp<SkImage> image = CreateImage(100, 100);
   bool is_decomposable = true;
@@ -198,10 +324,10 @@ TEST(SoftwareImageDecodeControllerTest,
   auto key = ImageDecodeControllerKey::FromDrawImage(draw_image);
   EXPECT_EQ(image->uniqueID(), key.image_id());
   EXPECT_EQ(kMedium_SkFilterQuality, key.filter_quality());
-  EXPECT_EQ(4100, key.target_size().width());
-  EXPECT_EQ(4096, key.target_size().height());
+  EXPECT_EQ(4555, key.target_size().width());
+  EXPECT_EQ(2048, key.target_size().height());
   EXPECT_FALSE(key.can_use_original_decode());
-  EXPECT_EQ(4100u * 4096u * 4u, key.locked_bytes());
+  EXPECT_EQ(4555u * 2048u * 4u, key.locked_bytes());
 }
 
 TEST(SoftwareImageDecodeControllerTest,
@@ -403,10 +529,7 @@ TEST(SoftwareImageDecodeControllerTest,
   need_unref = controller.GetTaskForImageAndRef(
       medium_quality_draw_image, ImageDecodeController::TracingInfo(),
       &medium_quality_task);
-  // Medium quality isn't handled by the controller, so it won't ref it. Note
-  // that this will change when medium quality is handled and will need to be
-  // updated.
-  EXPECT_FALSE(need_unref);
+  EXPECT_TRUE(need_unref);
   EXPECT_TRUE(medium_quality_task);
   EXPECT_TRUE(high_quality_task.get() != medium_quality_task.get());
 
@@ -424,6 +547,7 @@ TEST(SoftwareImageDecodeControllerTest,
   EXPECT_TRUE(medium_quality_task.get() != low_quality_task.get());
 
   controller.UnrefImage(high_quality_draw_image);
+  controller.UnrefImage(medium_quality_draw_image);
   controller.UnrefImage(low_quality_draw_image);
 }
 
@@ -1026,5 +1150,289 @@ TEST(SoftwareImageDecodeControllerTest, NoneQualityScaledSubrectIsHandled) {
   controller.DrawWithImageFinished(draw_image, decoded_draw_image);
   controller.UnrefImage(draw_image);
 }
+
+TEST(SoftwareImageDecodeControllerTest, MediumQualityAt01_5ScaleIsHandled) {
+  SoftwareImageDecodeController controller;
+  bool is_decomposable = true;
+  SkFilterQuality quality = kMedium_SkFilterQuality;
+
+  sk_sp<SkImage> image = CreateImage(500, 200);
+  DrawImage draw_image(image, SkIRect::MakeWH(image->width(), image->height()),
+                       quality,
+                       CreateMatrix(SkSize::Make(1.5f, 1.5f), is_decomposable));
+
+  scoped_refptr<TileTask> task;
+  bool need_unref = controller.GetTaskForImageAndRef(
+      draw_image, ImageDecodeController::TracingInfo(), &task);
+  EXPECT_TRUE(task);
+  EXPECT_TRUE(need_unref);
+
+  DecodedDrawImage decoded_draw_image =
+      controller.GetDecodedImageForDraw(draw_image);
+  EXPECT_TRUE(decoded_draw_image.image());
+  // If we decoded the image and cached it, it would be stored in a different
+  // SkImageObject.
+  EXPECT_TRUE(decoded_draw_image.image() != image);
+  EXPECT_EQ(kLow_SkFilterQuality, decoded_draw_image.filter_quality());
+  EXPECT_EQ(500, decoded_draw_image.image()->width());
+  EXPECT_EQ(200, decoded_draw_image.image()->height());
+
+  controller.DrawWithImageFinished(draw_image, decoded_draw_image);
+  controller.UnrefImage(draw_image);
+}
+
+TEST(SoftwareImageDecodeControllerTest, MediumQualityAt1_0ScaleIsHandled) {
+  SoftwareImageDecodeController controller;
+  bool is_decomposable = true;
+  SkFilterQuality quality = kMedium_SkFilterQuality;
+
+  sk_sp<SkImage> image = CreateImage(500, 200);
+  DrawImage draw_image(image, SkIRect::MakeWH(image->width(), image->height()),
+                       quality,
+                       CreateMatrix(SkSize::Make(1.f, 1.f), is_decomposable));
+
+  scoped_refptr<TileTask> task;
+  bool need_unref = controller.GetTaskForImageAndRef(
+      draw_image, ImageDecodeController::TracingInfo(), &task);
+  EXPECT_TRUE(task);
+  EXPECT_TRUE(need_unref);
+
+  DecodedDrawImage decoded_draw_image =
+      controller.GetDecodedImageForDraw(draw_image);
+  EXPECT_TRUE(decoded_draw_image.image());
+  // If we decoded the image and cached it, it would be stored in a different
+  // SkImageObject.
+  EXPECT_TRUE(decoded_draw_image.image() != image);
+  EXPECT_EQ(kLow_SkFilterQuality, decoded_draw_image.filter_quality());
+  EXPECT_EQ(500, decoded_draw_image.image()->width());
+  EXPECT_EQ(200, decoded_draw_image.image()->height());
+
+  controller.DrawWithImageFinished(draw_image, decoded_draw_image);
+  controller.UnrefImage(draw_image);
+}
+
+TEST(SoftwareImageDecodeControllerTest, MediumQualityAt0_75ScaleIsHandled) {
+  SoftwareImageDecodeController controller;
+  bool is_decomposable = true;
+  SkFilterQuality quality = kMedium_SkFilterQuality;
+
+  sk_sp<SkImage> image = CreateImage(500, 200);
+  DrawImage draw_image(
+      image, SkIRect::MakeWH(image->width(), image->height()), quality,
+      CreateMatrix(SkSize::Make(0.75f, 0.75f), is_decomposable));
+
+  scoped_refptr<TileTask> task;
+  bool need_unref = controller.GetTaskForImageAndRef(
+      draw_image, ImageDecodeController::TracingInfo(), &task);
+  EXPECT_TRUE(task);
+  EXPECT_TRUE(need_unref);
+
+  DecodedDrawImage decoded_draw_image =
+      controller.GetDecodedImageForDraw(draw_image);
+  EXPECT_TRUE(decoded_draw_image.image());
+  // If we decoded the image and cached it, it would be stored in a different
+  // SkImageObject.
+  EXPECT_TRUE(decoded_draw_image.image() != image);
+  EXPECT_EQ(kLow_SkFilterQuality, decoded_draw_image.filter_quality());
+  EXPECT_EQ(500, decoded_draw_image.image()->width());
+  EXPECT_EQ(200, decoded_draw_image.image()->height());
+
+  controller.DrawWithImageFinished(draw_image, decoded_draw_image);
+  controller.UnrefImage(draw_image);
+}
+
+TEST(SoftwareImageDecodeControllerTest, MediumQualityAt0_5ScaleIsHandled) {
+  SoftwareImageDecodeController controller;
+  bool is_decomposable = true;
+  SkFilterQuality quality = kMedium_SkFilterQuality;
+
+  sk_sp<SkImage> image = CreateImage(500, 200);
+  DrawImage draw_image(image, SkIRect::MakeWH(image->width(), image->height()),
+                       quality,
+                       CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable));
+
+  scoped_refptr<TileTask> task;
+  bool need_unref = controller.GetTaskForImageAndRef(
+      draw_image, ImageDecodeController::TracingInfo(), &task);
+  EXPECT_TRUE(task);
+  EXPECT_TRUE(need_unref);
+
+  DecodedDrawImage decoded_draw_image =
+      controller.GetDecodedImageForDraw(draw_image);
+  EXPECT_TRUE(decoded_draw_image.image());
+  // If we decoded the image and cached it, it would be stored in a different
+  // SkImageObject.
+  EXPECT_TRUE(decoded_draw_image.image() != image);
+  EXPECT_EQ(kLow_SkFilterQuality, decoded_draw_image.filter_quality());
+  EXPECT_EQ(250, decoded_draw_image.image()->width());
+  EXPECT_EQ(100, decoded_draw_image.image()->height());
+
+  controller.DrawWithImageFinished(draw_image, decoded_draw_image);
+  controller.UnrefImage(draw_image);
+}
+
+TEST(SoftwareImageDecodeControllerTest, MediumQualityAt0_49ScaleIsHandled) {
+  SoftwareImageDecodeController controller;
+  bool is_decomposable = true;
+  SkFilterQuality quality = kMedium_SkFilterQuality;
+
+  sk_sp<SkImage> image = CreateImage(500, 200);
+  DrawImage draw_image(
+      image, SkIRect::MakeWH(image->width(), image->height()), quality,
+      CreateMatrix(SkSize::Make(0.49f, 0.49f), is_decomposable));
+
+  scoped_refptr<TileTask> task;
+  bool need_unref = controller.GetTaskForImageAndRef(
+      draw_image, ImageDecodeController::TracingInfo(), &task);
+  EXPECT_TRUE(task);
+  EXPECT_TRUE(need_unref);
+
+  DecodedDrawImage decoded_draw_image =
+      controller.GetDecodedImageForDraw(draw_image);
+  EXPECT_TRUE(decoded_draw_image.image());
+  // If we decoded the image and cached it, it would be stored in a different
+  // SkImageObject.
+  EXPECT_TRUE(decoded_draw_image.image() != image);
+  EXPECT_EQ(kLow_SkFilterQuality, decoded_draw_image.filter_quality());
+  EXPECT_EQ(250, decoded_draw_image.image()->width());
+  EXPECT_EQ(100, decoded_draw_image.image()->height());
+
+  controller.DrawWithImageFinished(draw_image, decoded_draw_image);
+  controller.UnrefImage(draw_image);
+}
+
+TEST(SoftwareImageDecodeControllerTest, MediumQualityAt0_1ScaleIsHandled) {
+  SoftwareImageDecodeController controller;
+  bool is_decomposable = true;
+  SkFilterQuality quality = kMedium_SkFilterQuality;
+
+  sk_sp<SkImage> image = CreateImage(500, 200);
+  DrawImage draw_image(image, SkIRect::MakeWH(image->width(), image->height()),
+                       quality,
+                       CreateMatrix(SkSize::Make(0.1f, 0.1f), is_decomposable));
+
+  scoped_refptr<TileTask> task;
+  bool need_unref = controller.GetTaskForImageAndRef(
+      draw_image, ImageDecodeController::TracingInfo(), &task);
+  EXPECT_TRUE(task);
+  EXPECT_TRUE(need_unref);
+
+  DecodedDrawImage decoded_draw_image =
+      controller.GetDecodedImageForDraw(draw_image);
+  EXPECT_TRUE(decoded_draw_image.image());
+  // If we decoded the image and cached it, it would be stored in a different
+  // SkImageObject.
+  EXPECT_TRUE(decoded_draw_image.image() != image);
+  EXPECT_EQ(kLow_SkFilterQuality, decoded_draw_image.filter_quality());
+  EXPECT_EQ(62, decoded_draw_image.image()->width());
+  EXPECT_EQ(25, decoded_draw_image.image()->height());
+
+  controller.DrawWithImageFinished(draw_image, decoded_draw_image);
+  controller.UnrefImage(draw_image);
+}
+
+TEST(SoftwareImageDecodeControllerTest, MediumQualityAt0_01ScaleIsHandled) {
+  SoftwareImageDecodeController controller;
+  bool is_decomposable = true;
+  SkFilterQuality quality = kMedium_SkFilterQuality;
+
+  sk_sp<SkImage> image = CreateImage(500, 200);
+  DrawImage draw_image(
+      image, SkIRect::MakeWH(image->width(), image->height()), quality,
+      CreateMatrix(SkSize::Make(0.01f, 0.01f), is_decomposable));
+
+  scoped_refptr<TileTask> task;
+  bool need_unref = controller.GetTaskForImageAndRef(
+      draw_image, ImageDecodeController::TracingInfo(), &task);
+  EXPECT_TRUE(task);
+  EXPECT_TRUE(need_unref);
+
+  DecodedDrawImage decoded_draw_image =
+      controller.GetDecodedImageForDraw(draw_image);
+  EXPECT_TRUE(decoded_draw_image.image());
+  // If we decoded the image and cached it, it would be stored in a different
+  // SkImageObject.
+  EXPECT_TRUE(decoded_draw_image.image() != image);
+  EXPECT_EQ(kLow_SkFilterQuality, decoded_draw_image.filter_quality());
+  EXPECT_EQ(7, decoded_draw_image.image()->width());
+  EXPECT_EQ(3, decoded_draw_image.image()->height());
+
+  controller.DrawWithImageFinished(draw_image, decoded_draw_image);
+  controller.UnrefImage(draw_image);
+}
+
+TEST(SoftwareImageDecodeControllerTest, MediumQualityAt0_001ScaleIsHandled) {
+  SoftwareImageDecodeController controller;
+  bool is_decomposable = true;
+  SkFilterQuality quality = kMedium_SkFilterQuality;
+
+  sk_sp<SkImage> image = CreateImage(500, 200);
+  DrawImage draw_image(
+      image, SkIRect::MakeWH(image->width(), image->height()), quality,
+      CreateMatrix(SkSize::Make(0.001f, 0.001f), is_decomposable));
+
+  scoped_refptr<TileTask> task;
+  bool need_unref = controller.GetTaskForImageAndRef(
+      draw_image, ImageDecodeController::TracingInfo(), &task);
+  EXPECT_FALSE(task);
+  EXPECT_FALSE(need_unref);
+
+  DecodedDrawImage decoded_draw_image =
+      controller.GetDecodedImageForDraw(draw_image);
+  EXPECT_FALSE(decoded_draw_image.image());
+
+  controller.DrawWithImageFinished(draw_image, decoded_draw_image);
+}
+
+TEST(SoftwareImageDecodeControllerTest,
+     MediumQualityImagesAreTheSameAt0_5And0_49Scale) {
+  SoftwareImageDecodeController controller;
+  bool is_decomposable = true;
+  SkFilterQuality quality = kMedium_SkFilterQuality;
+
+  sk_sp<SkImage> image = CreateImage(500, 200);
+  DrawImage draw_image_50(
+      image, SkIRect::MakeWH(image->width(), image->height()), quality,
+      CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable));
+  DrawImage draw_image_49(
+      image, SkIRect::MakeWH(image->width(), image->height()), quality,
+      CreateMatrix(SkSize::Make(0.49f, 0.49f), is_decomposable));
+
+  scoped_refptr<TileTask> task_50;
+  bool need_unref_50 = controller.GetTaskForImageAndRef(
+      draw_image_50, ImageDecodeController::TracingInfo(), &task_50);
+  EXPECT_TRUE(task_50);
+  EXPECT_TRUE(need_unref_50);
+  scoped_refptr<TileTask> task_49;
+  bool need_unref_49 = controller.GetTaskForImageAndRef(
+      draw_image_49, ImageDecodeController::TracingInfo(), &task_49);
+  EXPECT_TRUE(task_49);
+  EXPECT_TRUE(need_unref_49);
+
+  DecodedDrawImage decoded_draw_image_50 =
+      controller.GetDecodedImageForDraw(draw_image_50);
+  EXPECT_TRUE(decoded_draw_image_50.image());
+  DecodedDrawImage decoded_draw_image_49 =
+      controller.GetDecodedImageForDraw(draw_image_49);
+  EXPECT_TRUE(decoded_draw_image_49.image());
+  // If we decoded the image and cached it, it would be stored in a different
+  // SkImageObject.
+  EXPECT_TRUE(decoded_draw_image_50.image() != image);
+  EXPECT_TRUE(decoded_draw_image_49.image() != image);
+  EXPECT_EQ(kLow_SkFilterQuality, decoded_draw_image_50.filter_quality());
+  EXPECT_EQ(kLow_SkFilterQuality, decoded_draw_image_49.filter_quality());
+  EXPECT_EQ(250, decoded_draw_image_50.image()->width());
+  EXPECT_EQ(250, decoded_draw_image_49.image()->width());
+  EXPECT_EQ(100, decoded_draw_image_50.image()->height());
+  EXPECT_EQ(100, decoded_draw_image_49.image()->height());
+
+  EXPECT_EQ(decoded_draw_image_50.image(), decoded_draw_image_49.image());
+
+  controller.DrawWithImageFinished(draw_image_50, decoded_draw_image_50);
+  controller.UnrefImage(draw_image_50);
+  controller.DrawWithImageFinished(draw_image_49, decoded_draw_image_49);
+  controller.UnrefImage(draw_image_49);
+}
+
 }  // namespace
 }  // namespace cc

@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include <algorithm>
 #include <functional>
 
 #include "base/format_macros.h"
@@ -96,17 +97,62 @@ class ImageDecodeTaskImpl : public TileTask {
   DISALLOW_COPY_AND_ASSIGN(ImageDecodeTaskImpl);
 };
 
+// Most images are scaled from the source image's size to the target size.
+// But in the case of mipmaps, we are scaling from the mip level which is
+// larger than we need.
+// This function gets the scale of the mip level which will be used.
+SkSize GetMipMapScaleAdjustment(const gfx::Size& src_size,
+                                const gfx::Size& target_size) {
+  int src_height = src_size.height();
+  int src_width = src_size.width();
+  int target_height = target_size.height();
+  int target_width = target_size.width();
+  if (target_height == 0 || target_width == 0)
+    return SkSize::Make(-1.f, -1.f);
+
+  int next_mip_height = src_height;
+  int next_mip_width = src_width;
+  for (int current_mip_level = 0;; current_mip_level++) {
+    int mip_height = next_mip_height;
+    int mip_width = next_mip_width;
+
+    next_mip_height = std::max(1, src_height / (1 << (current_mip_level + 1)));
+    next_mip_width = std::max(1, src_width / (1 << (current_mip_level + 1)));
+
+    // Check if an axis on the next mip level would be smaller than the target.
+    // If so, use the current mip level.
+    // This effectively always uses the larger image and always scales down.
+    if (next_mip_height < target_height || next_mip_width < target_width) {
+      SkScalar y_scale = static_cast<float>(mip_height) / src_height;
+      SkScalar x_scale = static_cast<float>(mip_width) / src_width;
+
+      return SkSize::Make(x_scale, y_scale);
+    }
+
+    if (mip_height == 1 && mip_width == 1) {
+      // We have reached the final mip level
+      SkScalar y_scale = static_cast<float>(mip_height) / src_height;
+      SkScalar x_scale = static_cast<float>(mip_width) / src_width;
+
+      return SkSize::Make(x_scale, y_scale);
+    }
+  }
+}
+
 SkSize GetScaleAdjustment(const ImageDecodeControllerKey& key) {
   // If the requested filter quality did not require scale, then the adjustment
   // is identity.
-  if (key.can_use_original_decode())
+  if (key.can_use_original_decode()) {
     return SkSize::Make(1.f, 1.f);
-
-  float x_scale =
-      key.target_size().width() / static_cast<float>(key.src_rect().width());
-  float y_scale =
-      key.target_size().height() / static_cast<float>(key.src_rect().height());
-  return SkSize::Make(x_scale, y_scale);
+  } else if (key.filter_quality() == kMedium_SkFilterQuality) {
+    return GetMipMapScaleAdjustment(key.src_rect().size(), key.target_size());
+  } else {
+    float x_scale =
+        key.target_size().width() / static_cast<float>(key.src_rect().width());
+    float y_scale = key.target_size().height() /
+                    static_cast<float>(key.src_rect().height());
+    return SkSize::Make(x_scale, y_scale);
+  }
 }
 
 SkFilterQuality GetDecodedFilterQuality(const ImageDecodeControllerKey& key) {
@@ -185,25 +231,6 @@ bool SoftwareImageDecodeController::GetTaskForImageAndRef(
   // we don't need to decode it or ref it).
   if (key.target_size().IsEmpty()) {
     *task = nullptr;
-    return false;
-  }
-
-  // If we're not going to do a scale, we will just create a task to preroll the
-  // image the first time we see it. This doesn't need to account for memory.
-  // TODO(vmpstr): We can also lock the original sized image, in which case it
-  // does require memory bookkeeping.
-  if (!CanHandleImage(key)) {
-    base::AutoLock lock(lock_);
-    if (prerolled_images_.count(key.image_id()) == 0) {
-      scoped_refptr<TileTask>& existing_task = pending_image_tasks_[key];
-      if (!existing_task) {
-        existing_task = make_scoped_refptr(
-            new ImageDecodeTaskImpl(this, key, image, tracing_info));
-      }
-      *task = existing_task;
-    } else {
-      *task = nullptr;
-    }
     return false;
   }
 
@@ -289,7 +316,6 @@ void SoftwareImageDecodeController::UnrefImage(const DrawImage& image) {
   //       it yet (or failed to decode it).
   //   2b. Unlock the image but keep it in list.
   const ImageKey& key = ImageKey::FromDrawImage(image);
-  DCHECK(CanHandleImage(key)) << key.ToString();
   TRACE_EVENT1("disabled-by-default-cc.debug",
                "SoftwareImageDecodeController::UnrefImage", "key",
                key.ToString());
@@ -320,20 +346,6 @@ void SoftwareImageDecodeController::DecodeImage(const ImageKey& key,
                                                 const DrawImage& image) {
   TRACE_EVENT1("cc", "SoftwareImageDecodeController::DecodeImage", "key",
                key.ToString());
-  if (!CanHandleImage(key)) {
-    image.image()->preroll();
-
-    base::AutoLock lock(lock_);
-    prerolled_images_.insert(key.image_id());
-    // Erase the pending task from the queue, since the task won't be doing
-    // anything useful after this function terminates. Since we don't preroll
-    // images twice, this is actually not necessary but it behaves similar to
-    // the other code path: when this function finishes, the task isn't in the
-    // pending_image_tasks_ list.
-    pending_image_tasks_.erase(key);
-    return;
-  }
-
   base::AutoLock lock(lock_);
   AutoRemoveKeyFromTaskMap remove_key_from_task_map(&pending_image_tasks_, key);
 
@@ -405,8 +417,6 @@ SoftwareImageDecodeController::DecodeImageInternal(
     case kLow_SkFilterQuality:
       return GetOriginalImageDecode(key, std::move(image));
     case kMedium_SkFilterQuality:
-      NOTIMPLEMENTED();
-      return nullptr;
     case kHigh_SkFilterQuality:
       return GetScaledImageDecode(key, std::move(image));
     default:
@@ -424,9 +434,6 @@ DecodedDrawImage SoftwareImageDecodeController::GetDecodedImageForDraw(
   // If the target size is empty, we can skip this image draw.
   if (key.target_size().IsEmpty())
     return DecodedDrawImage(nullptr, kNone_SkFilterQuality);
-
-  if (!CanHandleImage(key))
-    return DecodedDrawImage(draw_image.image(), draw_image.filter_quality());
 
   return GetDecodedImageForDrawInternal(key, draw_image);
 }
@@ -605,8 +612,8 @@ SoftwareImageDecodeController::GetScaledImageDecode(
   }
   SkPixmap scaled_pixmap(scaled_info, scaled_pixels->data(),
                          scaled_info.minRowBytes());
-  // TODO(vmpstr): Start handling more than just high filter quality.
-  DCHECK_EQ(kHigh_SkFilterQuality, key.filter_quality());
+  DCHECK(key.filter_quality() == kHigh_SkFilterQuality ||
+         key.filter_quality() == kMedium_SkFilterQuality);
   {
     TRACE_EVENT0("disabled-by-default-cc.debug",
                  "SoftwareImageDecodeController::ScaleImage - scale pixels");
@@ -633,7 +640,7 @@ void SoftwareImageDecodeController::DrawWithImageFinished(
                "SoftwareImageDecodeController::DrawWithImageFinished", "key",
                ImageKey::FromDrawImage(image).ToString());
   ImageKey key = ImageKey::FromDrawImage(image);
-  if (!decoded_image.image() || !CanHandleImage(key))
+  if (!decoded_image.image())
     return;
 
   if (decoded_image.is_at_raster_decode())
@@ -698,11 +705,6 @@ void SoftwareImageDecodeController::UnrefAtRasterImage(const ImageKey& key) {
     }
     at_raster_decoded_images_.Erase(at_raster_image_it);
   }
-}
-
-bool SoftwareImageDecodeController::CanHandleImage(const ImageKey& key) {
-  // TODO(vmpstr): Start handling medium filter quality as well.
-  return key.filter_quality() != kMedium_SkFilterQuality;
 }
 
 void SoftwareImageDecodeController::ReduceCacheUsage() {
@@ -855,6 +857,14 @@ ImageDecodeControllerKey ImageDecodeControllerKey::FromDrawImage(
   // update the target size in that case.
   if (can_use_original_decode && !target_size.IsEmpty())
     target_size = gfx::Size(image.image()->width(), image.image()->height());
+
+  if (quality == kMedium_SkFilterQuality && !target_size.IsEmpty()) {
+    SkSize mip_target_size =
+        GetMipMapScaleAdjustment(src_rect.size(), target_size);
+    DCHECK(mip_target_size.width() != -1.f && mip_target_size.height() != -1.f);
+    target_size.set_width(src_rect.width() * mip_target_size.width());
+    target_size.set_height(src_rect.height() * mip_target_size.height());
+  }
 
   return ImageDecodeControllerKey(image.image()->uniqueID(), src_rect,
                                   target_size, quality,

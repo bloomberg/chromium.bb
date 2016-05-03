@@ -231,13 +231,6 @@ class CC_EXPORT SoftwareImageDecodeController
   void RefAtRasterImage(const ImageKey& key);
   void UnrefAtRasterImage(const ImageKey& key);
 
-  // These functions indicate whether the images can be handled and cached by
-  // ImageDecodeController or whether they will fall through to Skia (with
-  // exception of possibly prerolling them). Over time these should return
-  // "false" in less cases, as the ImageDecodeController should start handling
-  // more of them.
-  bool CanHandleImage(const ImageKey& key);
-
   // Helper function which dumps all images in a specific ImageMRUCache.
   void DumpImageMemoryForCache(const ImageMRUCache& cache,
                                const char* cache_name,
@@ -260,11 +253,6 @@ class CC_EXPORT SoftwareImageDecodeController
       at_raster_decoded_images_ref_counts_;
 
   MemoryBudget locked_images_budget_;
-
-  // Note that this is used for cases where the only thing we do is preroll the
-  // image the first time we see it. This mimics the previous behavior and
-  // should over time change as the compositor starts to handle more cases.
-  std::unordered_set<uint32_t> prerolled_images_;
 
   ResourceFormat format_;
 
