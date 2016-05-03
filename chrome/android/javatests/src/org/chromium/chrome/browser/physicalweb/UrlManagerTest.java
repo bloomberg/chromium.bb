@@ -10,6 +10,7 @@ import android.preference.PreferenceManager;
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.test.util.browser.notifications.MockNotificationManagerProxy;
 import org.chromium.chrome.test.util.browser.notifications.MockNotificationManagerProxy.NotificationEntry;
 
@@ -51,7 +52,9 @@ public class UrlManagerTest extends InstrumentationTestCase {
         mSharedPreferences.edit().putInt(PREF_PHYSICAL_WEB, PHYSICAL_WEB_ONBOARDING).apply();
     }
 
+    // Onboarding tests are broken (see bug 608872)
     @SmallTest
+    @DisabledTest
     public void testAddUrlWhileOnboardingMakesNotification() throws Exception {
         setOnboarding();
         ArrayList<PwsResult> results = new ArrayList<>();

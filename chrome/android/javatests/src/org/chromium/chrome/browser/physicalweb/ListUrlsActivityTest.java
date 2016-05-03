@@ -14,6 +14,7 @@ import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.view.View;
 
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
 import org.chromium.chrome.test.util.browser.notifications.MockNotificationManagerProxy;
@@ -103,7 +104,9 @@ public class ListUrlsActivityTest extends InstrumentationTestCase {
         assertEquals(URL, testContextWrapper.startedIntents.get(0).getDataString());
     }
 
+    // Onboarding tests are broken (see bug 608872)
     @SmallTest
+    @DisabledTest
     public void testUrlsListEmptyInOnboarding() {
         // In onboarding, we scan for nearby URLs but do not send them to the resolution service to
         // protect the user's privacy. This test checks that the URL list, which only displays
