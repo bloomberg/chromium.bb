@@ -76,7 +76,6 @@ V8PerIsolateData::~V8PerIsolateData()
 
 v8::Isolate* V8PerIsolateData::mainThreadIsolate()
 {
-    ASSERT(isMainThread());
     ASSERT(mainThreadPerIsolateData);
     return mainThreadPerIsolateData->isolate();
 }
