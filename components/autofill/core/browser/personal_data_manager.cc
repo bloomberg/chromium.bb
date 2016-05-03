@@ -866,10 +866,19 @@ bool PersonalDataManager::IsValidLearnableProfile(
 // static
 std::string PersonalDataManager::MergeProfile(
     const AutofillProfile& new_profile,
-    const std::vector<AutofillProfile*>& existing_profiles,
+    std::vector<AutofillProfile*> existing_profiles,
     const std::string& app_locale,
     std::vector<AutofillProfile>* merged_profiles) {
   merged_profiles->clear();
+
+  // Sort the existing profiles in decreasing order of frecency, so the "best"
+  // profiles are checked first.
+  base::Time comparison_time = base::Time::Now();
+  std::sort(existing_profiles.begin(), existing_profiles.end(),
+            [comparison_time](const AutofillDataModel* a,
+                              const AutofillDataModel* b) {
+              return a->CompareFrecency(b, comparison_time);
+            });
 
   // Set to true if |existing_profiles| already contains an equivalent profile.
   bool matching_profile_found = false;

@@ -4161,4 +4161,41 @@ TEST_F(PersonalDataManagerTest, SaveImportedProfile) {
   }
 }
 
+// Tests that MergeProfile tries to merge the imported profile into the
+// existing profile in decreasing order of frecency.
+TEST_F(PersonalDataManagerTest, MergeProfile_Frecency) {
+  // Create two very similar profiles except with different company names.
+  AutofillProfile profile1(base::GenerateGUID(), "https://www.example.com");
+  test::SetProfileInfo(&profile1, "Homer", "Jay", "Simpson",
+                       "homer.simpson@abc.com", "SNP", "742 Evergreen Terrace",
+                       "", "Springfield", "IL", "91601", "US", "12345678910");
+  AutofillProfile profile2(base::GenerateGUID(), "https://www.example.com");
+  test::SetProfileInfo(&profile2, "Homer", "Jay", "Simpson",
+                       "homer.simpson@abc.com", "Fox", "742 Evergreen Terrace",
+                       "", "Springfield", "IL", "91601", "US", "12345678910");
+
+  // Give the "Fox" profile a bigger frecency score.
+  profile2.set_use_count(15);
+
+  // Create the |existing_profiles| vector.
+  std::vector<AutofillProfile*> existing_profiles;
+  existing_profiles.push_back(&profile1);
+  existing_profiles.push_back(&profile2);
+
+  // Create a new imported profile with no company name.
+  AutofillProfile imported_profile(base::GenerateGUID(),
+                                   "https://www.example.com");
+  test::SetProfileInfo(&imported_profile, "Homer", "Jay", "Simpson",
+                       "homer.simpson@abc.com", "", "742 Evergreen Terrace", "",
+                       "Springfield", "IL", "91601", "US", "12345678910");
+
+  // Merge the imported profile into the existing profiles.
+  std::vector<AutofillProfile> profiles;
+  std::string guid = personal_data_->MergeProfile(
+      imported_profile, existing_profiles, "US-EN", &profiles);
+
+  // The new profile should be merged into the "fox" profile.
+  EXPECT_EQ(profile2.guid(), guid);
+}
+
 }  // namespace autofill

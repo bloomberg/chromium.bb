@@ -216,7 +216,7 @@ class PersonalDataManager : public KeyedService,
   // profile.
   static std::string MergeProfile(
       const AutofillProfile& new_profile,
-      const std::vector<AutofillProfile*>& existing_profiles,
+      std::vector<AutofillProfile*> existing_profiles,
       const std::string& app_locale,
       std::vector<AutofillProfile>* merged_profiles);
 
