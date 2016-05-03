@@ -34,14 +34,16 @@ void ServiceWorkerPageLoadMetricsObserver::OnComplete(
 void ServiceWorkerPageLoadMetricsObserver::LogServiceWorkerHistograms(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  bool foreground_paint = WasStartedInForegroundEventInForeground(
-      timing.first_contentful_paint, info);
-  if (foreground_paint) {
-    PAGE_LOAD_HISTOGRAM(internal::kHistogramServiceWorkerFirstContentfulPaint,
-                        timing.first_contentful_paint);
-  } else {
-    PAGE_LOAD_HISTOGRAM(
-        internal::kBackgroundHistogramServiceWorkerFirstContentfulPaint,
-        timing.first_contentful_paint);
+  if (!timing.first_contentful_paint.is_zero()) {
+    bool foreground_paint = WasStartedInForegroundEventInForeground(
+        timing.first_contentful_paint, info);
+    if (foreground_paint) {
+      PAGE_LOAD_HISTOGRAM(internal::kHistogramServiceWorkerFirstContentfulPaint,
+                          timing.first_contentful_paint);
+    } else {
+      PAGE_LOAD_HISTOGRAM(
+          internal::kBackgroundHistogramServiceWorkerFirstContentfulPaint,
+          timing.first_contentful_paint);
+    }
   }
 }
