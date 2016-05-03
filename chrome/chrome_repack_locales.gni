@@ -163,7 +163,7 @@ template("chrome_repack_locales") {
 
       # Compute the output name. Mac uses a different location.
       if (is_mac || is_ios) {
-        output = "${root_gen_dir}/repack/${output_locale}.lproj/locale.pak"
+        output = "${root_gen_dir}/repack/locales/${output_locale}.pak"
       } else {
         output = "${root_out_dir}/locales/${output_locale}.pak"
       }

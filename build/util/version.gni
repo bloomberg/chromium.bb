@@ -45,3 +45,20 @@ chrome_version_minor = _result.minor
 chrome_version_build = _result.build
 chrome_version_patch = _result.patch
 remoting_version_patch = _result.remoting
+
+if (is_mac) {
+  _result = exec_script("version.py",
+                        [
+                          "-f",
+                          rebase_path(chrome_version_file, root_build_dir),
+                          "-t",
+                          "@BUILD@.@PATCH_HI@.@PATCH_LO@",
+                          "-e",
+                          "PATCH_HI=int(PATCH)/256",
+                          "-e",
+                          "PATCH_LO=int(PATCH)%256",
+                        ],
+                        "trim string",
+                        [ chrome_version_file ])
+  chrome_dylib_version = _result
+}

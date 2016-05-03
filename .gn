@@ -225,6 +225,7 @@ exec_script_whitelist = [
   "//build/toolchain/mac/BUILD.gn",
   "//build/toolchain/nacl/BUILD.gn",
   "//build/toolchain/win/BUILD.gn",
+  "//build/util/branding.gni",
   "//build/util/version.gni",
   "//chrome/android/BUILD.gn",
   "//chrome/browser/BUILD.gn",

@@ -1,0 +1,28 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# This exposes the Chrome branding as GN variables for use in build files.
+#
+# PREFER NOT TO USE THESE. The GYP build uses this kind of thing extensively.
+# However, it is far better to write an action to generate a file at
+# build-time with the information you need. This allows better dependency
+# checking and GN will run faster.
+#
+# These values should only be used if you REALLY need to depend on them at
+# build-time, for example, in the computation of output file names.
+
+import("//build/config/chrome_build.gni")
+
+_branding_file = "//chrome/app/theme/$branding_path_component/BRANDING"
+_result = exec_script("version.py",
+                      [
+                        "-f",
+                        rebase_path(_branding_file, root_build_dir),
+                        "-t",
+                        "@PRODUCT_FULLNAME@",
+                      ],
+                      "trim string",
+                      [ _branding_file ])
+
+chrome_product_full_name = _result
