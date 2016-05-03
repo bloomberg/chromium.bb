@@ -34,7 +34,6 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 
 import java.util.Calendar;
@@ -44,17 +43,12 @@ import java.util.Calendar;
  */
 public class CardUnmaskPrompt
         implements DialogInterface.OnDismissListener, TextWatcher, OnClickListener {
-    /**
-     * The number of milliseconds to display "Card verified" message.
-     */
-    private static final int SHOW_RESULT_DELAY_MS = 1000;
-
-    private static CardUnmaskPrompt sCurrentPromptForTest;
-
     private final CardUnmaskPromptDelegate mDelegate;
     private final AlertDialog mDialog;
+    private boolean mShouldRequestExpirationDate;
     private final int mThisYear;
     private final int mThisMonth;
+
     private final View mMainView;
     private final TextView mInstructions;
     private final TextView mNoRetryErrorMessage;
@@ -66,15 +60,11 @@ public class CardUnmaskPrompt
     private final TextView mErrorMessage;
     private final CheckBox mStoreLocallyCheckbox;
     private final ImageView mStoreLocallyTooltipIcon;
+    private PopupWindow mStoreLocallyTooltipPopup;
     private final ViewGroup mControlsContainer;
     private final View mVerificationOverlay;
     private final ProgressBar mVerificationProgressBar;
     private final TextView mVerificationView;
-    private final Runnable mDismissCallback;
-
-    private boolean mShouldRequestExpirationDate;
-    private PopupWindow mStoreLocallyTooltipPopup;
-    private int mShowResultDelayMs = SHOW_RESULT_DELAY_MS;
 
     /**
      * An interface to handle the interaction with an CardUnmaskPrompt object.
@@ -108,29 +98,11 @@ public class CardUnmaskPrompt
         void onNewCardLinkClicked();
     }
 
-    public static CardUnmaskPrompt create(Context context, CardUnmaskPromptDelegate delegate,
-            String title, String instructions, String confirmButtonLabel, int drawableId,
-            boolean shouldRequestExpirationDate, boolean canStoreLocally,
-            boolean defaultToStoringLocally) {
-        assert sCurrentPromptForTest == null;
-        CardUnmaskPrompt prompt = new CardUnmaskPrompt(context, delegate, title, instructions,
-                confirmButtonLabel, drawableId, shouldRequestExpirationDate, canStoreLocally,
-                defaultToStoringLocally, new Runnable() {
-                    @Override
-                    public void run() {
-                        sCurrentPromptForTest = null;
-                    }
-                });
-        sCurrentPromptForTest = prompt;
-        return prompt;
-    }
-
-    private CardUnmaskPrompt(Context context, CardUnmaskPromptDelegate delegate, String title,
+    public CardUnmaskPrompt(Context context, CardUnmaskPromptDelegate delegate, String title,
             String instructions, String confirmButtonLabel, int drawableId,
             boolean shouldRequestExpirationDate, boolean canStoreLocally,
-            boolean defaultToStoringLocally, Runnable dismissCallback) {
+            boolean defaultToStoringLocally) {
         mDelegate = delegate;
-        mDismissCallback = dismissCallback;
 
         LayoutInflater inflater = LayoutInflater.from(context);
         View v = inflater.inflate(R.layout.autofill_card_unmask_prompt, null);
@@ -243,13 +215,12 @@ public class CardUnmaskPrompt
                 public void run() {
                     dismiss();
                 }
-            }, mShowResultDelayMs);
+            }, 1000);
         }
     }
 
     @Override
     public void onDismiss(DialogInterface dialog) {
-        mDismissCallback.run();
         mDelegate.dismissed();
     }
 
@@ -467,20 +438,5 @@ public class CardUnmaskPrompt
         } catch (NumberFormatException e) {
             return -1;
         }
-    }
-
-    @VisibleForTesting
-    public static CardUnmaskPrompt getCurrentPromptForTest() {
-        return sCurrentPromptForTest;
-    }
-
-    @VisibleForTesting
-    public AlertDialog getDialogForTest() {
-        return mDialog;
-    }
-
-    @VisibleForTesting
-    public void setShowResultDelayForTest(int ms) {
-        mShowResultDelayMs = ms;
     }
 }

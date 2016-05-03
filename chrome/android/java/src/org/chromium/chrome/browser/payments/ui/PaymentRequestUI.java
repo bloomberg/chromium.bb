@@ -24,7 +24,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.chromium.base.Callback;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.ExtraTextSection;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.LineItemBreakdownSection;
@@ -106,11 +105,8 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
      */
     private static final int SHOW_RESULT_DELAY_MS = 3000;
 
-    private static PaymentRequestUI sCurrentUIForTest;
-
     private final Context mContext;
     private final Client mClient;
-    private final Runnable mDismissCallback;
     private final boolean mRequestShipping;
 
     private final Dialog mDialog;
@@ -135,8 +131,6 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
 
     private ViewGroup mSelectedSection;
     private boolean mIsShowingEditDialog;
-    private int mShowResultDelayMs = SHOW_RESULT_DELAY_MS;
-    private boolean mIsClientClosing;
 
     private List<LineItem> mLineItems;
     private SectionInformation mPaymentMethodSectionInformation;
@@ -156,27 +150,11 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
      *               “https://shop.momandpop.com”. If the origin is too long for the UI,
      *               it should elide according to:
      * https://www.chromium.org/Home/chromium-security/enamel#TOC-Eliding-Origin-Names-And-Hostnames
-     * @return The UI for PaymentRequest.
      */
-    public static PaymentRequestUI show(Activity activity, Client client, boolean requestShipping,
-            String title, String origin) {
-        assert sCurrentUIForTest == null;
-        PaymentRequestUI ui = new PaymentRequestUI(activity, client, requestShipping, title, origin,
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        sCurrentUIForTest = null;
-                    }
-                });
-        sCurrentUIForTest = ui;
-        return ui;
-    }
-
-    private PaymentRequestUI(Activity activity, Client client, boolean requestShipping,
-            String title, String origin, Runnable dismissCallback) {
+    public PaymentRequestUI(Activity activity, Client client, boolean requestShipping, String title,
+            String origin) {
         mContext = activity;
         mClient = client;
-        mDismissCallback = dismissCallback;
         mRequestShipping = requestShipping;
 
         mContainer =
@@ -304,7 +282,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
      * @param callback The callback to notify of finished animations.
      */
     public void close(boolean paymentSuccess, final Runnable callback) {
-        mIsClientClosing = true;
+        mDialog.setOnDismissListener(null);
 
         if (mWaitingOverlay.getVisibility() == View.GONE) {
             mDialog.dismiss();
@@ -327,7 +305,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                 mDialog.dismiss();
                 if (callback != null) callback.run();
             }
-        }, mShowResultDelayMs);
+        }, SHOW_RESULT_DELAY_MS);
     }
 
     /**
@@ -528,35 +506,11 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     }
 
     /**
-     * Called when the dialog is dismissed. Can be caused by:
-     * <ul>
-     *  <li>User click on the "back" button on the phone.</li>
-     *  <li>User click on the "X" button in the top-right corner of the dialog.</li>
-     *  <li>User click on the "CANCEL" button on the bottom of the dialog.</li>
-     *  <li>Successfully processing the payment.</li>
-     *  <li>Failure to process the payment.</li>
-     *  <li>The JavaScript calling the abort() method in PaymentRequest API.</li>
-     *  <li>The PaymentRequest JavaScript object being destroyed.</li>
-     * </ul>
+     * Called when the user dismisses the dialog by clicking the "back" button on the phone or the
+     * "X" button in the top-right corner of the dialog.
      */
     @Override
     public void onDismiss(DialogInterface dialog) {
-        mDismissCallback.run();
-        if (!mIsClientClosing) mClient.onDismiss();
-    }
-
-    @VisibleForTesting
-    public static PaymentRequestUI getCurrentUIForTest() {
-        return sCurrentUIForTest;
-    }
-
-    @VisibleForTesting
-    public Dialog getDialogForTest() {
-        return mDialog;
-    }
-
-    @VisibleForTesting
-    public void setShowResultDelayForTest(int ms) {
-        mShowResultDelayMs = ms;
+        mClient.onDismiss();
     }
 }

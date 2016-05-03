@@ -52,7 +52,7 @@ public class AutofillTestHelper {
         }).intValue();
     }
 
-    public String setProfile(final AutofillProfile profile) throws InterruptedException,
+    String setProfile(final AutofillProfile profile) throws InterruptedException,
             ExecutionException {
         String guid = ThreadUtils.runOnUiThreadBlocking(new Callable<String>() {
             @Override
@@ -92,8 +92,7 @@ public class AutofillTestHelper {
         }).intValue();
     }
 
-    public String setCreditCard(final CreditCard card) throws InterruptedException,
-           ExecutionException {
+    String setCreditCard(final CreditCard card) throws InterruptedException, ExecutionException {
         String guid = ThreadUtils.runOnUiThreadBlocking(new Callable<String>() {
             @Override
             public String call() {
