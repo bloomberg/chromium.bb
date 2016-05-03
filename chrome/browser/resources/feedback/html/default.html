@@ -24,6 +24,18 @@
       </button>
     </span>
   </div>
+  <div id="srt-prompt" class="content">
+    <img src="../../../../../components/resources/sadtab.svg" class="srt-image">
+    <p i18n-content="srtPromptBody" class="srt-body"></p>
+    <div class="buttons-pane">
+      <button id="srt-decline-button" class="white-button"
+          i18n-content="srtPromptDeclineButton">
+      </button>
+      <button id="srt-accept-button" class="blue-button"
+          i18n-content="srtPromptAcceptButton">
+      </button>
+    </div>
+  </div>
   <div id="content-pane" class="content">
     <textarea id="description-text" aria-labelledby="title-bar"></textarea>
     <div id="page-url" class="text-field-container">
@@ -67,7 +79,7 @@
       </a>
     </div>
 </if>
-    <!-- Privacy node -->
+    <!-- Privacy note -->
     <div id="privacy-note" i18n-values=".innerHTML:privacy-note"></div>
     <!-- Buttons -->
     <div class="buttons-pane">

@@ -24,11 +24,16 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/feedback/tracing_manager.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "content/public/browser/user_metrics.h"
 #include "extensions/browser/event_router.h"
 #include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "url/url_util.h"
+
+#if defined(OS_WIN)
+#include "chrome/browser/safe_browsing/srt_fetcher_win.h"
+#endif
 
 using extensions::api::feedback_private::SystemInformation;
 using feedback::FeedbackData;
@@ -81,6 +86,17 @@ void FeedbackPrivateAPI::RequestFeedback(
     const std::string& description_template,
     const std::string& category_tag,
     const GURL& page_url) {
+#if defined(OS_WIN)
+  // Show prompt for Software Removal Tool if the Reporter component has found
+  // unwanted software, and the user has never run the cleaner before.
+  if (safe_browsing::ReporterFoundUws() &&
+      !safe_browsing::UserHasRunCleaner()) {
+    RequestFeedbackForFlow(description_template, category_tag, page_url,
+                           FeedbackFlow::FEEDBACK_FLOW_SHOWSRTPROMPT);
+    return;
+  }
+#endif
+
   RequestFeedbackForFlow(description_template, category_tag, page_url,
                          FeedbackFlow::FEEDBACK_FLOW_REGULAR);
 }
@@ -154,6 +170,11 @@ bool FeedbackPrivateGetStringsFunction::RunSync() {
   SET_STRING("sysinfoPageExpandBtn", IDS_ABOUT_SYS_EXPAND);
   SET_STRING("sysinfoPageCollapseBtn", IDS_ABOUT_SYS_COLLAPSE);
   SET_STRING("sysinfoPageStatusLoading", IDS_FEEDBACK_SYSINFO_PAGE_LOADING);
+  // And the localized strings needed for the SRT Download Prompt.
+  SET_STRING("srtPromptBody", IDS_FEEDBACK_SRT_PROMPT_BODY);
+  SET_STRING("srtPromptAcceptButton", IDS_FEEDBACK_SRT_PROMPT_ACCEPT_BUTTON);
+  SET_STRING("srtPromptDeclineButton",
+             IDS_FEEDBACK_SRT_PROMPT_DECLINE_BUTTON);
 #undef SET_STRING
 
   const std::string& app_locale = g_browser_process->GetApplicationLocale();
@@ -267,6 +288,33 @@ void FeedbackPrivateSendFeedbackFunction::OnCompleted(
       success ? feedback_private::STATUS_SUCCESS :
                 feedback_private::STATUS_DELAYED);
   SendResponse(true);
+}
+
+AsyncExtensionFunction::ResponseAction
+FeedbackPrivateLogSrtPromptResultFunction::Run() {
+  std::unique_ptr<feedback_private::LogSrtPromptResult::Params> params(
+      feedback_private::LogSrtPromptResult::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  const feedback_private::SrtPromptResult result = params->result;
+
+  switch (result) {
+    case feedback_private::SRT_PROMPT_RESULT_ACCEPTED:
+      content::RecordAction(
+          base::UserMetricsAction("Feedback.SrtPromptAccepted"));
+      break;
+    case feedback_private::SRT_PROMPT_RESULT_DECLINED:
+      content::RecordAction(
+          base::UserMetricsAction("Feedback.SrtPromptDeclined"));
+      break;
+    case feedback_private::SRT_PROMPT_RESULT_CLOSED:
+      content::RecordAction(
+          base::UserMetricsAction("Feedback.SrtPromptClosed"));
+      break;
+    default:
+      return RespondNow(Error("Invalid arugment."));
+  }
+  return RespondNow(NoArguments());
 }
 
 }  // namespace extensions

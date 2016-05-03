@@ -126,8 +126,12 @@ body {
 }
 
 .content .buttons-pane {
+  bottom: 20px;
   display: -webkit-flex;
-  justify-content: flex-end
+  justify-content: flex-end;
+  left: 20px;
+  position: absolute;
+  right: 20px;
 }
 
 .content .remove-file-button {
@@ -175,4 +179,19 @@ button.white-button {
 button.blue-button {
   color: #fff;
   text-shadow: 1px sharp drop shadow rgb(45, 106, 218);
+}
+
+.srt-image {
+  -webkit-margin-end: auto;
+  -webkit-margin-start: 40px;
+  display: block;
+  height: 50px;
+  margin-bottom: 20px;
+  margin-top: 120px;
+}
+
+.srt-body {
+  font-size: 14px;
+  line-height: 24px;
+  margin: 0 40px;
 }

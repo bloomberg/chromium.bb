@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/common/extensions/api/feedback_private.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
+#include "extensions/browser/extension_function.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace extensions {
@@ -106,6 +107,17 @@ class FeedbackPrivateSendFeedbackFunction
 
  private:
   void OnCompleted(bool success);
+};
+
+class FeedbackPrivateLogSrtPromptResultFunction
+    : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("feedbackPrivate.logSrtPromptResult",
+                             FEEDBACKPRIVATE_LOGSRTPROMPTRESULT);
+
+ protected:
+  ~FeedbackPrivateLogSrtPromptResultFunction() override {}
+  AsyncExtensionFunction::ResponseAction Run() override;
 };
 
 }  // namespace extensions

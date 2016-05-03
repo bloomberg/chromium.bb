@@ -8,6 +8,12 @@
 var FEEDBACK_LANDING_PAGE =
     'https://support.google.com/chrome/go/feedback_confirmation';
 
+/**
+ * @type {string}
+ * @const
+ */
+var SRT_DOWNLOAD_PAGE = 'https://www.google.com/chrome/cleanup-tool/';
+
 /** @type {number}
  * @const
  */
@@ -57,7 +63,18 @@ var STATS_WINDOW_ID = 'stats_window';
  */
 var FeedbackFlow = {
   REGULAR: 'regular',  // Flow in a regular user session.
-  LOGIN: 'login'       // Flow on the login screen.
+  LOGIN: 'login',       // Flow on the login screen.
+  SHOW_SRT_PROMPT: 'showSrtPrompt'  // Prompt user to try Software Removal Tool
+};
+
+/**
+ * SRT Prompt Result defined in feedback_private.idl.
+ * @enum {string}
+ */
+var SrtPromptResult = {
+  ACCEPTED: 'accepted',  // User accepted prompt.
+  DECLINED: 'declined',  // User declined prompt.
+  CLOSED: 'closed',      // User closed window without responding to prompt.
 };
 
 var attachedFileBlob = null;
@@ -69,6 +86,12 @@ var lastReader = null;
  * @type {boolean}
  */
 var isSystemInfoReady = false;
+
+/**
+ * Indicates whether the SRT Prompt is currently being displayed.
+ * @type {boolean}
+ */
+var isShowingSrtPrompt = false;
 
 /**
  * The callback used by the sys_info_page to receive the event that the system
@@ -284,6 +307,32 @@ function initialize() {
       if (!feedbackInfo.flow)
         feedbackInfo.flow = FeedbackFlow.REGULAR;
 
+      if (feedbackInfo.flow == FeedbackFlow.SHOW_SRT_PROMPT) {
+        isShowingSrtPrompt = true;
+        $('content-pane').hidden = true;
+
+        $('srt-decline-button').onclick = function() {
+          isShowingSrtPrompt = false;
+          chrome.feedbackPrivate.logSrtPromptResult(SrtPromptResult.DECLINED);
+          $('srt-prompt').hidden = true;
+          $('content-pane').hidden = false;
+        };
+
+        $('srt-accept-button').onclick = function() {
+          chrome.feedbackPrivate.logSrtPromptResult(SrtPromptResult.ACCEPTED);
+          window.open(SRT_DOWNLOAD_PAGE, '_blank');
+          window.close();
+        };
+
+        $('close-button').addEventListener('click', function() {
+          if (isShowingSrtPrompt) {
+            chrome.feedbackPrivate.logSrtPromptResult(SrtPromptResult.CLOSED);
+          }
+        });
+      } else {
+        $('srt-prompt').hidden = true;
+      }
+
       $('description-text').textContent = feedbackInfo.description;
       if (feedbackInfo.pageUrl)
         $('page-url-text').value = feedbackInfo.pageUrl;
@@ -335,7 +384,6 @@ function initialize() {
         $('performance-info-link').onclick = openSlowTraceWindow;
       }
 </if>
-
       chrome.feedbackPrivate.getStrings(function(strings) {
         loadTimeData.data = strings;
         i18nTemplate.process(document, loadTimeData);

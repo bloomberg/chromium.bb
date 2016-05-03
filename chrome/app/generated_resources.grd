@@ -7524,7 +7524,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <if expr="enable_extensions">
         <!-- Feedback Dialog -->
         <message name="IDS_FEEDBACK_REPORT_PAGE_TITLE" desc="Label showing the title of the page that will be reported">
-          Tell us what is happening.
+          Tell us what's happening.
         </message>
         <message name="IDS_FEEDBACK_REPORT_URL_LABEL" desc="Label showing the URL that will be reported">
           URL (optional):
@@ -7582,6 +7582,17 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
         <message name="IDS_FEEDBACK_SYSINFO_PAGE_LOADING" desc="The message showing the status of the system information preview page that it is still loading">
           Loading...
+        </message>
+
+        <!-- Feedback Dialog SRT Prompt -->
+        <message name="IDS_FEEDBACK_SRT_PROMPT_BODY" desc="Body text explaining what the Chrome Software Removal Tool is">
+          Is Chrome crashing, showing unusual startup pages, toolbars, or unexpected ads you can't get rid of, or otherwise changing your browsing experience? You may be able to fix the problem by running the Chrome Cleanup Tool.
+        </message>
+        <message name="IDS_FEEDBACK_SRT_PROMPT_ACCEPT_BUTTON" desc="Button which takes the user to the Chrome Software Removal Tool download page">
+          Download Chrome Cleanup Tool
+        </message>
+        <message name="IDS_FEEDBACK_SRT_PROMPT_DECLINE_BUTTON" desc="Button which declines a prompt and takes the user to the form for filing feedback">
+          Skip
         </message>
       </if>
 
