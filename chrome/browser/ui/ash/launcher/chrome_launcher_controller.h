@@ -40,6 +40,7 @@ class BrowserShortcutLauncherItemController;
 class BrowserStatusMonitor;
 class ExtensionEnableFlow;
 class GURL;
+class LauncherControllerHelper;
 class LauncherItemController;
 class Profile;
 class AppWindowLauncherController;
@@ -105,25 +106,6 @@ class ChromeLauncherController
     APP_STATE_WINDOW_ACTIVE,
     APP_STATE_INACTIVE,
     APP_STATE_REMOVED
-  };
-
-  // Mockable interface to get app ids from tabs.
-  class AppTabHelper {
-   public:
-    virtual ~AppTabHelper() {}
-
-    // Returns the app id of the specified tab, or an empty string if there is
-    // no app. All known profiles will be queried for this.
-    virtual std::string GetAppID(content::WebContents* tab) = 0;
-
-    // Returns true if |id| is valid for the currently active profile.
-    // Used during restore to ignore no longer valid extensions.
-    // Note that already running applications are ignored by the restore
-    // process.
-    virtual bool IsValidIDForCurrentUser(const std::string& id) = 0;
-
-    // Sets the currently active profile for the usage of |GetAppID|.
-    virtual void SetCurrentUser(Profile* profile) = 0;
   };
 
   ChromeLauncherController(Profile* profile, ash::ShelfModel* model);
@@ -391,9 +373,8 @@ class ChromeLauncherController
   ash::ShelfID CreateAppShortcutLauncherItem(const std::string& app_id,
                                              int index);
 
-  // Sets the AppTabHelper/AppIconLoader, taking ownership of the helper class.
-  // These are intended for testing.
-  void SetAppTabHelperForTest(AppTabHelper* helper);
+  // Sets LauncherControllerHelper/AppIconLoader for test, taking ownership.
+  void SetLauncherControllerHelperForTest(LauncherControllerHelper* helper);
   void SetAppIconLoadersForTest(
       std::vector<std::unique_ptr<AppIconLoader>>& loaders);
   const std::string& GetAppIdFromShelfIdForTest(ash::ShelfID id);
@@ -485,9 +466,6 @@ class ChromeLauncherController
   // Update browser shortcut's index.
   void PersistChromeItemIndex(int index);
 
-  // Get browser shortcut's index from pref.
-  int GetChromeIconIndexFromPref() const;
-
   // Depending on the provided flags, move either the chrome icon, the app icon
   // or none to the given |target_index|. The provided |chrome_index| and
   // |app_list_index| locations will get adjusted within this call to finalize
@@ -506,9 +484,6 @@ class ChromeLauncherController
   // Get the browser shortcut's index in the shelf using the current's systems
   // configuration of pinned and known (but not running) apps.
   int GetChromeIconIndexForCreation();
-
-  // Get the list of pinned programs from the preferences.
-  std::vector<std::string> GetListOfPinnedAppsAndBrowser();
 
   // Close all windowed V1 applications of a certain extension which was already
   // deleted.
@@ -549,9 +524,9 @@ class ChromeLauncherController
       app_window_controllers_;
 
   // Used to get app info for tabs.
-  std::unique_ptr<AppTabHelper> app_tab_helper_;
+  std::unique_ptr<LauncherControllerHelper> launcher_controller_helper_;
 
-  // Used to load the image for an extension app item.
+  // Used to load the images for app items.
   std::vector<std::unique_ptr<AppIconLoader>> app_icon_loaders_;
 
   // Used to handle app load/unload events.

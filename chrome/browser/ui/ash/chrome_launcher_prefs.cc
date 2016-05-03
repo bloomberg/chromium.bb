@@ -12,6 +12,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
+#include "chrome/browser/ui/ash/launcher/launcher_controller_helper.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -171,6 +172,7 @@ const char* AutoHideBehaviorToPref(ShelfAutoHideBehavior behavior) {
 
 const char kPinnedAppsPrefAppIDPath[] = "id";
 const char kPinnedAppsPrefPinnedByPolicy[] = "pinned_by_policy";
+const char kPinnedAppsPlaceholder[] = "AppShelfIDPlaceholder--------";
 
 const char kShelfAutoHideBehaviorAlways[] = "Always";
 const char kShelfAutoHideBehaviorNever[] = "Never";
@@ -266,6 +268,72 @@ void SetShelfAlignmentPref(PrefService* prefs,
     prefs->SetString(prefs::kShelfAlignmentLocal, value);
     prefs->SetString(prefs::kShelfAlignment, value);
   }
+}
+
+std::vector<std::string> GetPinnedAppsFromPrefs(
+    PrefService* prefs,
+    LauncherControllerHelper* helper) {
+  // Adding the app list item to the list of items requires that the ID is not
+  // a valid and known ID for the extension system. The ID was constructed that
+  // way - but just to make sure...
+  DCHECK(!helper->IsValidIDForCurrentUser(kPinnedAppsPlaceholder));
+
+  std::vector<std::string> apps;
+  const auto* pinned = prefs->GetList(prefs::kPinnedLauncherApps);
+  const auto* policy = prefs->GetList(prefs::kPolicyPinnedLauncherApps);
+
+  // Get the sanitized preference value for the index of the Chrome app icon.
+  const size_t chrome_icon_index = std::max<size_t>(
+      0, std::min<size_t>(pinned->GetSize(),
+                          prefs->GetInteger(prefs::kShelfChromeIconIndex)));
+
+  // Check if Chrome is in either of the the preferences lists.
+  std::unique_ptr<base::Value> chrome_app(
+      ash::CreateAppDict(extension_misc::kChromeAppId));
+  bool chrome_listed =
+      (pinned->Find(*chrome_app.get()) != pinned->end() ||
+       (policy && policy->Find(*chrome_app.get()) != policy->end()));
+
+  std::string app_id;
+  for (size_t i = 0; policy && (i < policy->GetSize()); ++i) {
+    const base::DictionaryValue* dictionary = nullptr;
+    if (policy->GetDictionary(i, &dictionary) &&
+        dictionary->GetString(kPinnedAppsPrefAppIDPath, &app_id) &&
+        helper->IsValidIDForCurrentUser(app_id) &&
+        std::find(apps.begin(), apps.end(), app_id) == apps.end()) {
+      apps.push_back(app_id);
+    }
+  }
+
+  for (size_t i = 0; i < pinned->GetSize(); ++i) {
+    // We need to position the chrome icon relative to its place in the pinned
+    // preference list - even if an item of that list isn't shown yet.
+    if (i == chrome_icon_index && !chrome_listed) {
+      apps.push_back(extension_misc::kChromeAppId);
+      chrome_listed = true;
+    }
+    bool pinned_by_policy = false;
+    const base::DictionaryValue* dictionary = nullptr;
+    if (pinned->GetDictionary(i, &dictionary) &&
+        dictionary->GetString(kPinnedAppsPrefAppIDPath, &app_id) &&
+        helper->IsValidIDForCurrentUser(app_id) &&
+        std::find(apps.begin(), apps.end(), app_id) == apps.end() &&
+        (!dictionary->GetBoolean(kPinnedAppsPrefPinnedByPolicy,
+                                 &pinned_by_policy) ||
+         !pinned_by_policy)) {
+      apps.push_back(app_id);
+    }
+  }
+
+  // If not added yet, the chrome item will be the last item in the list.
+  if (!chrome_listed)
+    apps.push_back(extension_misc::kChromeAppId);
+
+  // If not added yet, place the app list item at the beginning of the list.
+  if (std::find(apps.begin(), apps.end(), kPinnedAppsPlaceholder) == apps.end())
+    apps.insert(apps.begin(), kPinnedAppsPlaceholder);
+
+  return apps;
 }
 
 }  // namespace ash

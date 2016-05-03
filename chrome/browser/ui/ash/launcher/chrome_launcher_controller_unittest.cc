@@ -33,6 +33,7 @@
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
 #include "chrome/browser/ui/ash/launcher/extension_app_window_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/launcher_application_menu_item_model.h"
+#include "chrome/browser/ui/ash/launcher/launcher_controller_helper.h"
 #include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -190,14 +191,13 @@ class TestAppIconLoaderImpl : public AppIconLoader {
   DISALLOW_COPY_AND_ASSIGN(TestAppIconLoaderImpl);
 };
 
-// Test implementation of AppTabHelper.
-class TestAppTabHelperImpl : public ChromeLauncherController::AppTabHelper {
+// Test implementation of LauncherControllerHelper.
+class TestLauncherControllerHelper : public LauncherControllerHelper {
  public:
-  TestAppTabHelperImpl() {}
-  ~TestAppTabHelperImpl() override {}
+  TestLauncherControllerHelper() : LauncherControllerHelper(nullptr) {}
+  ~TestLauncherControllerHelper() override {}
 
-  // Sets the id for the specified tab. The id is removed if Remove() is
-  // invoked.
+  // Sets the id for the specified tab.
   void SetAppID(content::WebContents* tab, const std::string& id) {
     tab_id_map_[tab] = id;
   }
@@ -207,7 +207,7 @@ class TestAppTabHelperImpl : public ChromeLauncherController::AppTabHelper {
     return tab_id_map_.find(tab) != tab_id_map_.end();
   }
 
-  // AppTabHelper implementation:
+  // LauncherControllerHelper:
   std::string GetAppID(content::WebContents* tab) override {
     return tab_id_map_.find(tab) != tab_id_map_.end() ? tab_id_map_[tab] :
         std::string();
@@ -231,7 +231,7 @@ class TestAppTabHelperImpl : public ChromeLauncherController::AppTabHelper {
 
   TabToStringMap tab_id_map_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestAppTabHelperImpl);
+  DISALLOW_COPY_AND_ASSIGN(TestLauncherControllerHelper);
 };
 
 // Test implementation of a V2 app launcher item controller.
@@ -501,8 +501,8 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
     launcher_controller_->SetAppIconLoadersForTest(loaders);
   }
 
-  void SetAppTabHelper(ChromeLauncherController::AppTabHelper* helper) {
-    launcher_controller_->SetAppTabHelperForTest(helper);
+  void SetLauncherControllerHelper(LauncherControllerHelper* helper) {
+    launcher_controller_->SetLauncherControllerHelperForTest(helper);
   }
 
   void SetShelfItemDelegateManager(ash::ShelfItemDelegateManager* manager) {
@@ -940,21 +940,20 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
   }
 
   // Creates a running V1 application.
-  // Note that with the use of the app_tab_helper as done below, this is only
-  // usable with a single v1 application.
+  // Note that with the use of the launcher_controller_helper as done below,
+  // this is only usable with a single v1 application.
   V1App* CreateRunningV1App(Profile* profile,
                             const std::string& app_name,
                             const std::string& url) {
     V1App* v1_app = new V1App(profile, app_name);
-    // Create a new app tab helper and assign it to the launcher so that this
-    // app gets properly detected.
-    // TODO(skuhne): Create a more intelligent app tab helper which is able to
-    // detect all running apps properly.
-    TestAppTabHelperImpl* app_tab_helper = new TestAppTabHelperImpl;
-    app_tab_helper->SetAppID(
-        v1_app->browser()->tab_strip_model()->GetWebContentsAt(0),
-        app_name);
-    SetAppTabHelper(app_tab_helper);
+    // Create a new launcher controller helper and assign it to the launcher so
+    // that this app gets properly detected.
+    // TODO(skuhne): Create a more intelligent launcher contrller helper that is
+    // able to detect all running apps properly.
+    TestLauncherControllerHelper* helper = new TestLauncherControllerHelper;
+    helper->SetAppID(v1_app->browser()->tab_strip_model()->GetWebContentsAt(0),
+                     app_name);
+    SetLauncherControllerHelper(helper);
 
     NavigateAndCommitActiveTabWithTitle(
         v1_app->browser(), GURL(url), ASCIIToUTF16(""));
@@ -1590,8 +1589,7 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
        V1AppUpdateOnUserSwitchEdgecases2) {
   // Create a browser item in the LauncherController.
   InitLauncherController();
-  TestAppTabHelperImpl* app_tab_helper = new TestAppTabHelperImpl;
-  SetAppTabHelper(app_tab_helper);
+  SetLauncherControllerHelper(new TestLauncherControllerHelper);
 
   // First test: Create an app when the user is not active.
   std::string user2 = "user2";
@@ -2753,8 +2751,8 @@ TEST_F(ChromeLauncherControllerTest, GmailOfflineMatching) {
 TEST_F(ChromeLauncherControllerTest, PersistLauncherItemPositions) {
   InitLauncherController();
 
-  TestAppTabHelperImpl* app_tab_helper = new TestAppTabHelperImpl;
-  SetAppTabHelper(app_tab_helper);
+  TestLauncherControllerHelper* helper = new TestLauncherControllerHelper;
+  SetLauncherControllerHelper(helper);
 
   EXPECT_EQ(ash::TYPE_APP_LIST, model_->items()[0].type);
   EXPECT_EQ(ash::TYPE_BROWSER_SHORTCUT, model_->items()[1].type);
@@ -2764,8 +2762,8 @@ TEST_F(ChromeLauncherControllerTest, PersistLauncherItemPositions) {
   chrome::NewTab(browser());
   chrome::NewTab(browser());
   EXPECT_EQ(2, tab_strip_model->count());
-  app_tab_helper->SetAppID(tab_strip_model->GetWebContentsAt(0), "1");
-  app_tab_helper->SetAppID(tab_strip_model->GetWebContentsAt(1), "2");
+  helper->SetAppID(tab_strip_model->GetWebContentsAt(0), "1");
+  helper->SetAppID(tab_strip_model->GetWebContentsAt(1), "2");
 
   EXPECT_FALSE(launcher_controller_->IsAppPinned("1"));
   launcher_controller_->PinAppWithID("1");
@@ -2798,10 +2796,10 @@ TEST_F(ChromeLauncherControllerTest, PersistLauncherItemPositions) {
   AddAppListLauncherItem();
   launcher_controller_.reset(
       ChromeLauncherController::CreateInstance(profile(), model_.get()));
-  app_tab_helper = new TestAppTabHelperImpl;
-  app_tab_helper->SetAppID(tab_strip_model->GetWebContentsAt(0), "1");
-  app_tab_helper->SetAppID(tab_strip_model->GetWebContentsAt(1), "2");
-  SetAppTabHelper(app_tab_helper);
+  helper = new TestLauncherControllerHelper;
+  helper->SetAppID(tab_strip_model->GetWebContentsAt(0), "1");
+  helper->SetAppID(tab_strip_model->GetWebContentsAt(1), "2");
+  SetLauncherControllerHelper(helper);
   if (!ash::Shell::HasInstance()) {
     item_delegate_manager_ = new ash::ShelfItemDelegateManager(model_.get());
     SetShelfItemDelegateManager(item_delegate_manager_);
@@ -2823,9 +2821,9 @@ TEST_F(ChromeLauncherControllerTest, PersistPinned) {
   TabStripModel* tab_strip_model = browser()->tab_strip_model();
   EXPECT_EQ(1, tab_strip_model->count());
 
-  TestAppTabHelperImpl* app_tab_helper = new TestAppTabHelperImpl;
-  app_tab_helper->SetAppID(tab_strip_model->GetWebContentsAt(0), "1");
-  SetAppTabHelper(app_tab_helper);
+  TestLauncherControllerHelper* helper = new TestLauncherControllerHelper;
+  helper->SetAppID(tab_strip_model->GetWebContentsAt(0), "1");
+  SetLauncherControllerHelper(helper);
 
   // app_icon_loader is owned by ChromeLauncherController.
   TestAppIconLoaderImpl* app_icon_loader = new TestAppIconLoaderImpl;
@@ -2856,9 +2854,9 @@ TEST_F(ChromeLauncherControllerTest, PersistPinned) {
   AddAppListLauncherItem();
   launcher_controller_.reset(
       ChromeLauncherController::CreateInstance(profile(), model_.get()));
-  app_tab_helper = new TestAppTabHelperImpl;
-  app_tab_helper->SetAppID(tab_strip_model->GetWebContentsAt(0), "1");
-  SetAppTabHelper(app_tab_helper);
+  helper = new TestLauncherControllerHelper;
+  helper->SetAppID(tab_strip_model->GetWebContentsAt(0), "1");
+  SetLauncherControllerHelper(helper);
   // app_icon_loader is owned by ChromeLauncherController.
   app_icon_loader = new TestAppIconLoaderImpl;
   app_icon_loader->AddSupportedApp("1");

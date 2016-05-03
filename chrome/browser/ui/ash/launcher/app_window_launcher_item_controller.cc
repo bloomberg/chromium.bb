@@ -8,6 +8,7 @@
 
 #include "ash/wm/window_util.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/ash/launcher/launcher_controller_helper.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/base/base_window.h"
@@ -137,7 +138,8 @@ AppWindowLauncherItemController::ItemSelected(const ui::Event& event) {
 }
 
 base::string16 AppWindowLauncherItemController::GetTitle() {
-  return GetAppTitle();
+  return LauncherControllerHelper::GetAppTitle(launcher_controller()->profile(),
+                                               app_id());
 }
 
 bool AppWindowLauncherItemController::IsDraggable() {

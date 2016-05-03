@@ -255,12 +255,16 @@ source_set("ui") {
     sources += [
       "ash/keyboard_ui_service.cc",
       "ash/keyboard_ui_service.h",
+      "ash/launcher/chrome_mash_shelf_controller.cc",
+      "ash/launcher/chrome_mash_shelf_controller.h",
     ]
     deps += [
       "//ash",
       "//ash:ash_with_content",
       "//ash/strings",
       "//components/user_manager",
+      "//mash/shelf/public/interfaces",
+      "//skia/public",
       "//ui/app_list/presenter",
       "//ui/keyboard:mojom",
     ]

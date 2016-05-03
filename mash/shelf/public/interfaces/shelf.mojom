@@ -18,6 +18,8 @@ interface ShelfController {
 
   PinItem(ShelfItem item, associated ShelfItemDelegate delegate);
   UnpinItem(string app_id);
+
+  SetItemImage(string app_id, skia.mojom.Bitmap image);
 };
 
 // ShelfObserver is notified on shelf changes; used to persist profile settings.

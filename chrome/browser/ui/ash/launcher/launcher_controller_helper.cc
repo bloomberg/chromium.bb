@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/ash/launcher/launcher_app_tab_helper.h"
+#include "chrome/browser/ui/ash/launcher/launcher_controller_helper.h"
 
 #include <vector>
 
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -33,7 +34,7 @@ const extensions::Extension* GetExtensionForTab(Profile* profile,
   ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
   if (!extension_service || !extension_service->extensions_enabled())
-    return NULL;
+    return nullptr;
 
   // Note: It is possible to come here after a tab got removed form the browser
   // before it gets destroyed, in which case there is no browser.
@@ -59,16 +60,15 @@ const extensions::Extension* GetExtensionForTab(Profile* profile,
   // Bookmark app windows should match their launch url extension despite
   // their web extents.
   if (extensions::util::IsNewBookmarkAppsEnabled()) {
-    for (extensions::ExtensionSet::const_iterator it = extensions.begin();
-         it != extensions.end(); ++it) {
-      if (it->get()->from_bookmark() &&
-          extensions::AppLaunchInfo::GetLaunchWebURL(it->get()) == url &&
-          !extensions::LaunchesInWindow(profile, it->get())) {
-        return it->get();
+    for (const auto& i : extensions) {
+      if (i.get()->from_bookmark() &&
+          extensions::AppLaunchInfo::GetLaunchWebURL(i.get()) == url &&
+          !extensions::LaunchesInWindow(profile, i.get())) {
+        return i.get();
       }
     }
   }
-  return NULL;
+  return nullptr;
 }
 
 const extensions::Extension* GetExtensionByID(Profile* profile,
@@ -79,23 +79,49 @@ const extensions::Extension* GetExtensionByID(Profile* profile,
 
 }  // namespace
 
-LauncherAppTabHelper::LauncherAppTabHelper(Profile* profile)
-    : profile_(profile) {
+LauncherControllerHelper::LauncherControllerHelper(Profile* profile)
+    : profile_(profile) {}
+
+LauncherControllerHelper::~LauncherControllerHelper() {}
+
+// static
+base::string16 LauncherControllerHelper::GetAppTitle(
+    Profile* profile,
+    const std::string& app_id) {
+  base::string16 title;
+  if (app_id.empty())
+    return title;
+
+#if defined(OS_CHROMEOS)
+  // Get title if the app is an Arc app.
+  ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile);
+  DCHECK(arc_prefs);
+  if (arc_prefs->IsRegistered(app_id)) {
+    std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
+        arc_prefs->GetApp(app_id);
+    DCHECK(app_info.get());
+    if (app_info)
+      title = base::UTF8ToUTF16(app_info->name);
+    return title;
+  }
+#endif  // defined(OS_CHROMEOS)
+
+  const extensions::Extension* extension =
+      extensions::ExtensionRegistry::Get(profile)->GetExtensionById(
+          app_id, extensions::ExtensionRegistry::EVERYTHING);
+  if (extension)
+    title = base::UTF8ToUTF16(extension->name());
+  return title;
 }
 
-LauncherAppTabHelper::~LauncherAppTabHelper() {
-}
-
-std::string LauncherAppTabHelper::GetAppID(content::WebContents* tab) {
+std::string LauncherControllerHelper::GetAppID(content::WebContents* tab) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   if (profile_manager) {
     const std::vector<Profile*> profile_list =
         profile_manager->GetLoadedProfiles();
-    if (profile_list.size() > 0) {
-      for (std::vector<Profile*>::const_iterator it = profile_list.begin();
-           it != profile_list.end();
-           ++it) {
-        const extensions::Extension* extension = GetExtensionForTab(*it, tab);
+    if (!profile_list.empty()) {
+      for (const auto& i : profile_list) {
+        const extensions::Extension* extension = GetExtensionForTab(i, tab);
         if (extension)
           return extension->id();
       }
@@ -107,14 +133,14 @@ std::string LauncherAppTabHelper::GetAppID(content::WebContents* tab) {
   return extension ? extension->id() : std::string();
 }
 
-bool LauncherAppTabHelper::IsValidIDForCurrentUser(const std::string& id) {
+bool LauncherControllerHelper::IsValidIDForCurrentUser(const std::string& id) {
 #if defined(OS_CHROMEOS)
   if (ArcAppListPrefs::Get(profile_)->IsRegistered(id))
     return true;
 #endif
-  return GetExtensionByID(profile_, id) != NULL;
+  return GetExtensionByID(profile_, id) != nullptr;
 }
 
-void LauncherAppTabHelper::SetCurrentUser(Profile* profile) {
+void LauncherControllerHelper::SetCurrentUser(Profile* profile) {
   profile_ = profile;
 }

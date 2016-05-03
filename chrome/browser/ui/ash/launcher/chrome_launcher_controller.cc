@@ -45,7 +45,7 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item_browser.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item_tab.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_types.h"
-#include "chrome/browser/ui/ash/launcher/launcher_app_tab_helper.h"
+#include "chrome/browser/ui/ash/launcher/launcher_controller_helper.h"
 #include "chrome/browser/ui/ash/launcher/launcher_extension_app_updater.h"
 #include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
@@ -116,11 +116,6 @@ using content::WebContents;
 ChromeLauncherController* ChromeLauncherController::instance_ = NULL;
 
 namespace {
-
-// This will be used as placeholder in the list of the pinned applciatons.
-// Note that this is NOT a valid extension identifier so that pre M31 versions
-// will ignore it.
-const char kAppShelfIdPlaceholder[] = "AppShelfIDPlaceholder--------";
 
 int64_t GetDisplayIDForShelf(ash::Shelf* shelf) {
   aura::Window* root_window =
@@ -201,25 +196,6 @@ bool IsAppForUserPinned(const std::string& app_id,
   }
   // Default, user added new pins
   return true;
-}
-
-void update_pinned_apps(const std::string& app_id,
-                        bool valid_for_current_user,
-                        std::vector<std::string>* pinned_apps,
-                        bool* chrome_icon_added,
-                        bool* app_list_icon_added) {
-  if (app_id == extension_misc::kChromeAppId) {
-    *chrome_icon_added = true;
-    pinned_apps->push_back(extension_misc::kChromeAppId);
-  } else if (app_id == kAppShelfIdPlaceholder) {
-    *app_list_icon_added = true;
-    pinned_apps->push_back(kAppShelfIdPlaceholder);
-  } else if (valid_for_current_user) {
-    // Note: In multi profile scenarios we only want to show pinnable apps
-    // here which is correct. Running applications from the other users will
-    // continue to run. So no need for multi profile modifications.
-    pinned_apps->push_back(app_id);
-  }
 }
 
 const char* const kPinProhibitedExtensionIds[] = {
@@ -894,8 +870,8 @@ void ChromeLauncherController::PersistPinnedState() {
       } else if (model_->items()[i].type == ash::TYPE_BROWSER_SHORTCUT) {
         PersistChromeItemIndex(i);
       } else if (model_->items()[i].type == ash::TYPE_APP_LIST) {
-        base::DictionaryValue* app_value = ash::CreateAppDict(
-            kAppShelfIdPlaceholder);
+        base::DictionaryValue* app_value =
+            ash::CreateAppDict(ash::kPinnedAppsPlaceholder);
         if (app_value)
           updater->Append(app_value);
       }
@@ -917,7 +893,7 @@ Profile* ChromeLauncherController::profile() {
 
 void ChromeLauncherController::UpdateAppState(content::WebContents* contents,
                                               AppState app_state) {
-  std::string app_id = app_tab_helper_->GetAppID(contents);
+  std::string app_id = launcher_controller_helper_->GetAppID(contents);
 
   // Check if the gMail app is loaded and it matches the given content.
   // This special treatment is needed to address crbug.com/234268.
@@ -956,7 +932,7 @@ ash::ShelfID ChromeLauncherController::GetShelfIDForWebContents(
     content::WebContents* contents) {
   DCHECK(contents);
 
-  std::string app_id = app_tab_helper_->GetAppID(contents);
+  std::string app_id = launcher_controller_helper_->GetAppID(contents);
 
   if (app_id.empty() && ContentCanBeHandledByGmailApp(contents))
     app_id = kGmailAppId;
@@ -1305,8 +1281,9 @@ ash::ShelfID ChromeLauncherController::CreateAppShortcutLauncherItem(
                                                ash::TYPE_APP_SHORTCUT);
 }
 
-void ChromeLauncherController::SetAppTabHelperForTest(AppTabHelper* helper) {
-  app_tab_helper_.reset(helper);
+void ChromeLauncherController::SetLauncherControllerHelperForTest(
+    LauncherControllerHelper* helper) {
+  launcher_controller_helper_.reset(helper);
 }
 
 void ChromeLauncherController::SetAppIconLoadersForTest(
@@ -1518,7 +1495,8 @@ void ChromeLauncherController::UpdateAppLaunchersFromPref() {
   // into the pref state. Therefore we tell |persistPinnedState| to ignore any
   // invocations while we are running.
   base::AutoReset<bool> auto_reset(&ignore_persist_pinned_state_change_, true);
-  std::vector<std::string> pinned_apps = GetListOfPinnedAppsAndBrowser();
+  std::vector<std::string> pinned_apps = ash::GetPinnedAppsFromPrefs(
+      profile_->GetPrefs(), launcher_controller_helper_.get());
 
   int index = 0;
   int max_index = model_->item_count();
@@ -1535,7 +1513,7 @@ void ChromeLauncherController::UpdateAppLaunchersFromPref() {
   for (; index < max_index && pref_app_id != pinned_apps.end(); ++index) {
     // Check if we have an item which we need to handle.
     if (*pref_app_id == extension_misc::kChromeAppId ||
-        *pref_app_id == kAppShelfIdPlaceholder ||
+        *pref_app_id == ash::kPinnedAppsPlaceholder ||
         IsAppPinned(*pref_app_id)) {
       for (; index < max_index; ++index) {
         const ash::ShelfItem& item(model_->items()[index]);
@@ -1544,7 +1522,7 @@ void ChromeLauncherController::UpdateAppLaunchersFromPref() {
         if (item.type != ash::TYPE_APP_SHORTCUT && !is_app_list && !is_chrome)
           continue;
         LauncherItemController* controller = GetLauncherItemController(item.id);
-        if ((kAppShelfIdPlaceholder == *pref_app_id && is_app_list) ||
+        if ((ash::kPinnedAppsPlaceholder == *pref_app_id && is_app_list) ||
             (extension_misc::kChromeAppId == *pref_app_id && is_chrome) ||
             (controller && controller->app_id() == *pref_app_id)) {
           // Check if an item needs to be moved here.
@@ -1630,7 +1608,7 @@ void ChromeLauncherController::UpdateAppLaunchersFromPref() {
   for (; pref_app_id != pinned_apps.end(); ++pref_app_id) {
     // All items but the chrome and / or app list shortcut needs to be added.
     bool is_chrome = *pref_app_id == extension_misc::kChromeAppId;
-    bool is_app_list = *pref_app_id == kAppShelfIdPlaceholder;
+    bool is_app_list = *pref_app_id == ash::kPinnedAppsPlaceholder;
     // Coming here we know the next item which can be finalized, either the
     // chrome item or the app launcher. The final position is the end of the
     // list. The menu model will make sure that the item is grouped according
@@ -1805,14 +1783,6 @@ void ChromeLauncherController::PersistChromeItemIndex(int index) {
   profile_->GetPrefs()->SetInteger(prefs::kShelfChromeIconIndex, index);
 }
 
-int ChromeLauncherController::GetChromeIconIndexFromPref() const {
-  size_t index = profile_->GetPrefs()->GetInteger(prefs::kShelfChromeIconIndex);
-  const base::ListValue* pinned_apps_pref =
-      profile_->GetPrefs()->GetList(prefs::kPinnedLauncherApps);
-  return std::max(static_cast<size_t>(0),
-                  std::min(pinned_apps_pref->GetSize(), index));
-}
-
 void ChromeLauncherController::MoveChromeOrApplistToFinalPosition(
     bool is_chrome,
     bool is_app_list,
@@ -1858,7 +1828,8 @@ int ChromeLauncherController::FindInsertionPoint(bool is_app_list) {
 int ChromeLauncherController::GetChromeIconIndexForCreation() {
   // We get the list of pinned apps as they currently would get pinned.
   // Within this list the chrome icon will be the correct location.
-  std::vector<std::string> pinned_apps = GetListOfPinnedAppsAndBrowser();
+  std::vector<std::string> pinned_apps = ash::GetPinnedAppsFromPrefs(
+      profile_->GetPrefs(), launcher_controller_helper_.get());
 
   std::vector<std::string>::iterator it =
       std::find(pinned_apps.begin(),
@@ -1873,88 +1844,6 @@ int ChromeLauncherController::GetChromeIconIndexForCreation() {
   // next |UpdateAppLaunchersFromPref()| call to correct it - it will come since
   // the pinning will be done then.
   return std::min(model_->item_count(), index);
-}
-
-std::vector<std::string>
-ChromeLauncherController::GetListOfPinnedAppsAndBrowser() {
-  // Adding the app list item to the list of items requires that the ID is not
-  // a valid and known ID for the extension system. The ID was constructed that
-  // way - but just to make sure...
-  DCHECK(!app_tab_helper_->IsValidIDForCurrentUser(kAppShelfIdPlaceholder));
-
-  std::vector<std::string> pinned_apps;
-
-  // Get the new incarnation of the list.
-  const base::ListValue* pinned_apps_pref =
-      profile_->GetPrefs()->GetList(prefs::kPinnedLauncherApps);
-
-  const base::ListValue* policy_pinned_apps_pref =
-      profile_->GetPrefs()->GetList(prefs::kPolicyPinnedLauncherApps);
-
-  // Keep track of the addition of the chrome and the app list icon.
-  bool chrome_icon_added = false;
-  bool app_list_icon_added = false;
-  size_t chrome_icon_index = GetChromeIconIndexFromPref();
-
-  // See if the chrome string is already in the pinned list and remove it if
-  // needed.
-  base::Value* chrome_app = ash::CreateAppDict(extension_misc::kChromeAppId);
-  if (chrome_app) {
-    chrome_icon_added = pinned_apps_pref->Find(*chrome_app) !=
-        pinned_apps_pref->end();
-    delete chrome_app;
-  }
-
-  if (policy_pinned_apps_pref) {
-    for (size_t index = 0; index < policy_pinned_apps_pref->GetSize();
-         ++index) {
-      const base::DictionaryValue* app = NULL;
-      std::string app_id;
-      if (policy_pinned_apps_pref->GetDictionary(index, &app) &&
-          app->GetString(ash::kPinnedAppsPrefAppIDPath, &app_id) &&
-          (std::find(pinned_apps.begin(), pinned_apps.end(), app_id) ==
-           pinned_apps.end()))
-        update_pinned_apps(
-            app_id, app_tab_helper_->IsValidIDForCurrentUser(app_id),
-            &pinned_apps, &chrome_icon_added, &app_list_icon_added);
-    }
-  }
-
-  for (size_t index = 0; index < pinned_apps_pref->GetSize(); ++index) {
-    // We need to position the chrome icon relative to it's place in the pinned
-    // preference list - even if an item of that list isn't shown yet.
-    if (index == chrome_icon_index && !chrome_icon_added) {
-      pinned_apps.push_back(extension_misc::kChromeAppId);
-      chrome_icon_added = true;
-    }
-    const base::DictionaryValue* app = NULL;
-    std::string app_id;
-    if (pinned_apps_pref->GetDictionary(index, &app) &&
-        app->GetString(ash::kPinnedAppsPrefAppIDPath, &app_id) &&
-        (std::find(pinned_apps.begin(), pinned_apps.end(), app_id) ==
-             pinned_apps.end())) {
-      bool pinned_by_policy;
-      if (app->GetBoolean(ash::kPinnedAppsPrefPinnedByPolicy,
-                          &pinned_by_policy) &&
-          pinned_by_policy) {
-        continue;
-      }
-      update_pinned_apps(
-          app_id, app_tab_helper_->IsValidIDForCurrentUser(app_id),
-          &pinned_apps, &chrome_icon_added, &app_list_icon_added);
-    }
-  }
-
-  // If not added yet, the chrome item will be the last item in the list.
-  if (!chrome_icon_added)
-    pinned_apps.push_back(extension_misc::kChromeAppId);
-
-  // If not added yet, add the app list item either at the end or at the
-  // beginning - depending on the shelf layout.
-  if (!app_list_icon_added) {
-    pinned_apps.insert(pinned_apps.begin(), kAppShelfIdPlaceholder);
-  }
-  return pinned_apps;
 }
 
 bool ChromeLauncherController::IsIncognito(
@@ -2004,13 +1893,13 @@ void ChromeLauncherController::SetShelfItemDelegate(
 void ChromeLauncherController::AttachProfile(Profile* profile) {
   profile_ = profile;
   // Either add the profile to the list of known profiles and make it the active
-  // one for some functions of AppTabHelper or create a new one.
-  if (!app_tab_helper_.get())
-    app_tab_helper_.reset(new LauncherAppTabHelper(profile_));
+  // one for some functions of LauncherControllerHelper or create a new one.
+  if (!launcher_controller_helper_.get())
+    launcher_controller_helper_.reset(new LauncherControllerHelper(profile_));
   else
-    app_tab_helper_->SetCurrentUser(profile_);
+    launcher_controller_helper_->SetCurrentUser(profile_);
   // TODO(skuhne): The AppIconLoaderImpl has the same problem. Each loaded
-  // image is associated with a profile (it's loader requires the profile).
+  // image is associated with a profile (its loader requires the profile).
   // Since icon size changes are possible, the icon could be requested to be
   // reloaded. However - having it not multi profile aware would cause problems
   // if the icon cache gets deleted upon user switch.

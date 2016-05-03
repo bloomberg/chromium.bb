@@ -12,12 +12,12 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
-#include "base/strings/string16.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_types.h"
 #include "ui/events/event.h"
 
 class ChromeLauncherController;
 class ChromeLauncherAppMenuItem;
+class Profile;
 
 typedef ScopedVector<ChromeLauncherAppMenuItem> ChromeLauncherAppMenuItems;
 
@@ -48,7 +48,7 @@ class LauncherItemController : public ash::ShelfItemDelegate {
   Type type() const { return type_; }
   ash::ShelfID shelf_id() const { return shelf_id_; }
   void set_shelf_id(ash::ShelfID id) { shelf_id_ = id; }
-  virtual const std::string& app_id() const;
+  const std::string& app_id() const { return app_id_; }
   ChromeLauncherController* launcher_controller() const {
     return launcher_controller_;
   }
@@ -85,11 +85,6 @@ class LauncherItemController : public ash::ShelfItemDelegate {
 
   // Helper function to get the ash::ShelfItemType for the item type.
   ash::ShelfItemType GetShelfItemType() const;
-
- protected:
-  // Helper function to return the title associated with |app_id_|.
-  // Returns an empty title if no matching extension can be found.
-  base::string16 GetAppTitle() const;
 
  private:
   const Type type_;

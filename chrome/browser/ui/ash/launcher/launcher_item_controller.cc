@@ -4,15 +4,7 @@
 
 #include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"
 
-#include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
-#include "extensions/browser/extension_registry.h"
-#include "extensions/common/extension.h"
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
-#endif  // defined(OS_CHROMEOS)
 
 LauncherItemController::LauncherItemController(
     Type type,
@@ -23,44 +15,9 @@ LauncherItemController::LauncherItemController(
       shelf_id_(0),
       launcher_controller_(launcher_controller),
       locked_(0),
-      image_set_by_controller_(false) {
-}
+      image_set_by_controller_(false) {}
 
-LauncherItemController::~LauncherItemController() {
-}
-
-const std::string& LauncherItemController::app_id() const {
-  return app_id_;
-}
-
-base::string16 LauncherItemController::GetAppTitle() const {
-  base::string16 title;
-  if (app_id_.empty())
-    return title;
-
-#if defined(OS_CHROMEOS)
-  // Get title if the app is an Arc app
-  ArcAppListPrefs* arc_prefs =
-      ArcAppListPrefs::Get(launcher_controller_->profile());
-  DCHECK(arc_prefs);
-  if (arc_prefs->IsRegistered(app_id_)) {
-    std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
-        arc_prefs->GetApp(app_id_);
-    DCHECK(app_info.get());
-    if (app_info)
-      title = base::UTF8ToUTF16(app_info->name);
-    return title;
-  }
-#endif  // defined(OS_CHROMEOS)
-
-  const extensions::Extension* extension =
-      extensions::ExtensionRegistry::Get(
-          launcher_controller_->profile())->GetExtensionById(
-              app_id_, extensions::ExtensionRegistry::EVERYTHING);
-  if (extension)
-    title = base::UTF8ToUTF16(extension->name());
-  return title;
-}
+LauncherItemController::~LauncherItemController() {}
 
 ash::ShelfItemType LauncherItemController::GetShelfItemType() const {
   switch (type_) {

@@ -313,6 +313,18 @@ void ShelfDelegateMus::UnpinItem(const mojo::String& app_id) {
   }
 }
 
+void ShelfDelegateMus::SetItemImage(const mojo::String& app_id,
+                                    skia::mojom::BitmapPtr image) {
+  if (!app_id_to_shelf_id_.count(app_id.To<std::string>()))
+    return;
+  ShelfID shelf_id = app_id_to_shelf_id_[app_id.To<std::string>()];
+  int index = model_->ItemIndexByID(shelf_id);
+  DCHECK_GE(index, 0);
+  ShelfItem item = *model_->ItemByID(shelf_id);
+  item.image = GetShelfIconFromBitmap(image.To<SkBitmap>());
+  model_->Set(index, item);
+}
+
 void ShelfDelegateMus::OnUserWindowObserverAdded(
     mojo::Array<mash::wm::mojom::UserWindowPtr> user_windows) {
   for (size_t i = 0; i < user_windows.size(); ++i)

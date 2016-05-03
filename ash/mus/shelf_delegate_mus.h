@@ -50,6 +50,8 @@ class ShelfDelegateMus : public ShelfDelegate,
       mash::shelf::mojom::ShelfItemPtr item,
       mash::shelf::mojom::ShelfItemDelegateAssociatedPtrInfo delegate) override;
   void UnpinItem(const mojo::String& app_id) override;
+  void SetItemImage(const mojo::String& app_id,
+                    skia::mojom::BitmapPtr image) override;
 
   // mash::wm::mojom::UserWindowObserver:
   void OnUserWindowObserverAdded(
