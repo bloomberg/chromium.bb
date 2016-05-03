@@ -10,11 +10,11 @@ package cc.proto;
 
 message SkRegion {
   enum Op {
-    Op_Difference = 0;
-    Op_Intersect = 1;
-    Op_Union = 2;
-    Op_XOR = 3;
-    Op_ReverseDifference = 4;
-    Op_Replace = 5;
+    DIFFERENCE_ = 0;  // On Windows, winuser.h defines DIFFERENCE.
+    INTERSECT = 1;
+    UNION = 2;
+    XOR = 3;
+    REVERSE_DIFFERENCE = 4;
+    REPLACE = 5;
   }
 }
