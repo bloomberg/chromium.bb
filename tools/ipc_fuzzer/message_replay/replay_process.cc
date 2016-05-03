@@ -105,7 +105,8 @@ void ReplayProcess::OpenChannel() {
   std::string process_type =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kProcessType);
-  bool should_use_mojo = process_type == switches::kRendererProcess;
+  bool should_use_mojo = process_type == switches::kRendererProcess &&
+                         content::ShouldUseMojoChannel();
   if (should_use_mojo) {
     std::string token =
         base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
