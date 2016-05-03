@@ -7,6 +7,7 @@
 #include "cc/layers/layer.h"
 #include "cc/layers/ui_resource_layer.h"
 #include "content/public/browser/android/compositor.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "ui/android/resources/crushed_sprite_resource.h"
 #include "ui/android/resources/resource_manager.h"
 #include "ui/gfx/canvas.h"
@@ -53,7 +54,7 @@ void CrushedSpriteLayer::DrawSpriteFrame(
     SkBitmap bitmap;
     bitmap.allocN32Pixels(resource->GetUnscaledSpriteSize().width(),
                           resource->GetUnscaledSpriteSize().height());
-    skia::RefPtr<SkCanvas> canvas = skia::AdoptRef(new SkCanvas(bitmap));
+    sk_sp<SkCanvas> canvas = sk_make_sp<SkCanvas>(bitmap);
 
     if (previous_frame_ == -1 ||
         sprite_frame == resource->GetFrameCount() - 1) {
@@ -103,7 +104,7 @@ void CrushedSpriteLayer::DrawSpriteFrame(
 void CrushedSpriteLayer::DrawRectanglesForFrame(
     ui::CrushedSpriteResource* resource,
     int frame,
-    skia::RefPtr<SkCanvas> canvas) {
+    sk_sp<SkCanvas> canvas) {
   ui::CrushedSpriteResource::FrameSrcDstRects src_dst_rects =
        resource->GetRectanglesForFrame(frame);
   for (const auto& rect : src_dst_rects) {

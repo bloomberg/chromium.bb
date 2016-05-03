@@ -13,7 +13,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "skia/ext/refptr.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 
 class SkPicture;
 
@@ -21,7 +21,7 @@ namespace android_webview {
 
 class AwPicture {
  public:
-  AwPicture(skia::RefPtr<SkPicture> picture);
+  AwPicture(sk_sp<SkPicture> picture);
   ~AwPicture();
 
   // Methods called from Java.
@@ -33,7 +33,7 @@ class AwPicture {
             const base::android::JavaParamRef<jobject>& canvas);
 
  private:
-  skia::RefPtr<SkPicture> picture_;
+  sk_sp<SkPicture> picture_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(AwPicture);
 };

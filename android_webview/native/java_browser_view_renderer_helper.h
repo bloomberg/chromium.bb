@@ -9,7 +9,6 @@
 
 #include <memory>
 
-#include "skia/ext/refptr.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/vector2d.h"
 

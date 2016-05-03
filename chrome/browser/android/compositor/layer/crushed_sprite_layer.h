@@ -7,6 +7,10 @@
 
 #include "base/macros.h"
 #include "chrome/browser/android/compositor/layer/layer.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
+
+class SkCanvas;
 
 namespace cc {
 class UIResourceLayer;
@@ -46,7 +50,7 @@ class CrushedSpriteLayer : public Layer {
   // Draws the rectangles for |frame| to |canvas|.
   void DrawRectanglesForFrame(ui::CrushedSpriteResource* resource,
                               int frame,
-                              skia::RefPtr<SkCanvas> canvas);
+                              sk_sp<SkCanvas> canvas);
 
   scoped_refptr<cc::UIResourceLayer> layer_;
   int frame_count_;

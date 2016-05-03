@@ -10,7 +10,6 @@
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/search_provider_logos/logo_tracker.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 
 class Profile;
 

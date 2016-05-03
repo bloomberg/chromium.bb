@@ -17,7 +17,7 @@
 #include "base/trace_event/trace_event.h"
 #include "content/public/browser/android/synchronous_compositor.h"
 #include "content/public/browser/android/synchronous_compositor_client.h"
-#include "skia/ext/refptr.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/geometry/vector2d_f.h"
@@ -70,7 +70,7 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
   bool OnDrawSoftware(SkCanvas* canvas);
 
   // CapturePicture API methods.
-  skia::RefPtr<SkPicture> CapturePicture(int width, int height);
+  sk_sp<SkPicture> CapturePicture(int width, int height);
   void EnableOnNewPicture(bool enabled);
 
   void ClearView();

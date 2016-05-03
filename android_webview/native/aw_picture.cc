@@ -11,8 +11,8 @@
 
 namespace android_webview {
 
-AwPicture::AwPicture(skia::RefPtr<SkPicture> picture)
-    : picture_(picture) {
+AwPicture::AwPicture(sk_sp<SkPicture> picture)
+    : picture_(std::move(picture)) {
   DCHECK(picture_);
 }
 

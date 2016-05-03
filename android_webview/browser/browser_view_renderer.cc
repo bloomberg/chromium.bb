@@ -309,15 +309,15 @@ bool BrowserViewRenderer::OnDrawSoftware(SkCanvas* canvas) {
   return CanOnDraw() && CompositeSW(canvas);
 }
 
-skia::RefPtr<SkPicture> BrowserViewRenderer::CapturePicture(int width,
-                                                            int height) {
+sk_sp<SkPicture> BrowserViewRenderer::CapturePicture(int width,
+                                                     int height) {
   TRACE_EVENT0("android_webview", "BrowserViewRenderer::CapturePicture");
 
   // Return empty Picture objects for empty SkPictures.
   if (width <= 0 || height <= 0) {
     SkPictureRecorder emptyRecorder;
     emptyRecorder.beginRecording(0, 0);
-    return skia::AdoptRef(emptyRecorder.finishRecordingAsPicture());
+    return emptyRecorder.finishRecordingAsPicture();
   }
 
   SkPictureRecorder recorder;
@@ -332,7 +332,7 @@ skia::RefPtr<SkPicture> BrowserViewRenderer::CapturePicture(int width,
     compositor_->DidChangeRootLayerScrollOffset(
         gfx::ScrollOffset(scroll_offset_dip_));
   }
-  return skia::AdoptRef(recorder.finishRecordingAsPicture());
+  return recorder.finishRecordingAsPicture();
 }
 
 void BrowserViewRenderer::EnableOnNewPicture(bool enabled) {

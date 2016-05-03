@@ -12,7 +12,6 @@
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/readback_types.h"
-#include "third_party/skia/include/core/SkImageInfo.h"
 #include "ui/android/view_android.h"
 #include "ui/gfx/geometry/rect.h"
 

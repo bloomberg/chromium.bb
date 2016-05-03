@@ -7,7 +7,6 @@
 
 #include "base/timer/timer.h"
 #include "content/public/renderer/render_view_observer.h"
-#include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace android_webview {
