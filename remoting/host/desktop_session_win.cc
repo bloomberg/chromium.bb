@@ -86,10 +86,20 @@ const int kSessionAttachTimeoutSeconds = 30;
 // The default port number used for establishing an RDP session.
 const int kDefaultRdpPort = 3389;
 
+// Used for validating the required RDP registry values.
+const int kRdpConnectionsDisabled = 1;
+const int kNetworkLevelAuthEnabled = 1;
+const int kSecurityLayerTlsRequired = 2;
+
 // The values used to establish RDP connections are stored in the registry.
+const wchar_t kRdpSettingsKeyName[] =
+    L"SYSTEM\\CurrentControlSet\\Control\\Terminal Server";
 const wchar_t kRdpTcpSettingsKeyName[] = L"SYSTEM\\CurrentControlSet\\"
     L"Control\\Terminal Server\\WinStations\\RDP-Tcp";
 const wchar_t kRdpPortValueName[] = L"PortNumber";
+const wchar_t kDenyTsConnectionsValueName[] = L"fDenyTSConnections";
+const wchar_t kNetworkLevelAuthValueName[] = L"UserAuthentication";
+const wchar_t kSecurityLayerValueName[] = L"SecurityLayer";
 
 // DesktopSession implementation which attaches to the host's physical console.
 // Receives IPC messages from the desktop process, running in the console
@@ -177,6 +187,11 @@ class RdpSession : public DesktopSessionWin {
     DISALLOW_COPY_AND_ASSIGN(EventHandler);
   };
 
+  // Examines the system settings required to establish an RDP session.
+  // This method returns false if the values are retrieved and any of them would
+  // prevent us from creating an RDP connection.
+  bool VerifyRdpSettings();
+
   // Retrieves a DWORD value from the registry.  Returns true on success.
   bool RetrieveDwordRegistryValue(const wchar_t* key_name,
                                   const wchar_t* value_name,
@@ -238,6 +253,11 @@ RdpSession::~RdpSession() {
 
 bool RdpSession::Initialize(const ScreenResolution& resolution) {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
+
+  if (!VerifyRdpSettings()) {
+    LOG(ERROR) << "Could not create an RDP session due to invalid settings.";
+    return false;
+  }
 
   // Create the RDP wrapper object.
   HRESULT result = rdp_desktop_session_.CreateInstance(
@@ -320,6 +340,41 @@ void RdpSession::InjectSas() {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
   rdp_desktop_session_->InjectSas();
+}
+
+bool RdpSession::VerifyRdpSettings() {
+  // Verify RDP connections are enabled.
+  DWORD deny_ts_connections_flag = 0;
+  if (RetrieveDwordRegistryValue(kRdpSettingsKeyName,
+                                 kDenyTsConnectionsValueName,
+                                 &deny_ts_connections_flag) &&
+      deny_ts_connections_flag == kRdpConnectionsDisabled) {
+    LOG(ERROR) << "RDP Connections must be enabled.";
+    return false;
+  }
+
+  // Verify Network Level Authentication is disabled.
+  DWORD network_level_auth_flag = 0;
+  if (RetrieveDwordRegistryValue(kRdpTcpSettingsKeyName,
+                                 kNetworkLevelAuthValueName,
+                                 &network_level_auth_flag) &&
+      network_level_auth_flag == kNetworkLevelAuthEnabled) {
+    LOG(ERROR) << "Network Level Authentication for RDP must be disabled.";
+    return false;
+  }
+
+  // Verify Security Layer is not set to TLS.  It can be either of the other two
+  // values, but forcing TLS will prevent us from establishing a connection.
+  DWORD security_layer_flag = 0;
+  if (RetrieveDwordRegistryValue(kRdpTcpSettingsKeyName,
+                                 kSecurityLayerValueName,
+                                 &security_layer_flag) &&
+      security_layer_flag == kSecurityLayerTlsRequired) {
+    LOG(ERROR) << "RDP SecurityLayer must not be set to TLS.";
+    return false;
+  }
+
+  return true;
 }
 
 bool RdpSession::RetrieveDwordRegistryValue(const wchar_t* key_name,
