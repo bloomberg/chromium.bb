@@ -73,6 +73,7 @@ def clobber_if_necessary(new_landmines, src_dir):
           fromfiledate=old_date, tofiledate=time.ctime(), n=0)
       sys.stdout.write('Clobbering due to:\n')
       sys.stdout.writelines(diff)
+      sys.stdout.flush()
 
       clobber.clobber(out_dir)
 
