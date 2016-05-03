@@ -45,7 +45,7 @@ TEST(AutocompleteInputTest, InputType) {
     { ASCIIToUTF16("foo/bar/"), metrics::OmniboxInputType::URL },
     { ASCIIToUTF16("foo/bar baz\\"), metrics::OmniboxInputType::URL },
     { ASCIIToUTF16("foo.com/bar"), metrics::OmniboxInputType::URL },
-    { ASCIIToUTF16("foo;bar"), metrics::OmniboxInputType::UNKNOWN },
+    { ASCIIToUTF16("foo;bar"), metrics::OmniboxInputType::QUERY },
     { ASCIIToUTF16("foo/bar baz"), metrics::OmniboxInputType::UNKNOWN },
     { ASCIIToUTF16("foo bar.com"), metrics::OmniboxInputType::QUERY },
     { ASCIIToUTF16("foo bar"), metrics::OmniboxInputType::QUERY },

@@ -422,12 +422,18 @@ std::string SegmentURLInternal(std::string* text, url::Parsed* parts) {
   std::string scheme;
   if (!GetValidScheme(*text, &parts->scheme, &scheme)) {
     // Try again if there is a ';' in the text. If changing it to a ':' results
-    // in a scheme being found, continue processing with the modified text.
+    // in a standard scheme, "about", "chrome" or "file" scheme being found,
+    // continue processing with the modified text.
     bool found_scheme = false;
     size_t semicolon = text->find(';');
     if (semicolon != 0 && semicolon != std::string::npos) {
       (*text)[semicolon] = ':';
-      if (GetValidScheme(*text, &parts->scheme, &scheme))
+      if (GetValidScheme(*text, &parts->scheme, &scheme) &&
+          (url::IsStandard(
+               scheme.c_str(),
+               url::Component(0, static_cast<int>(scheme.length()))) ||
+           scheme == url::kAboutScheme || scheme == kChromeUIScheme ||
+           scheme == url::kFileScheme))
         found_scheme = true;
       else
         (*text)[semicolon] = ';';
