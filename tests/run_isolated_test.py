@@ -176,7 +176,8 @@ class RunIsolatedTest(RunIsolatedTestBase):
           ],
         self.popen_calls)
 
-  def _run_tha_test(self, isolated_hash, files):
+  def _run_tha_test(self, isolated_hash=None, files=None, command=None):
+    files = files or {}
     make_tree_call = []
     def add(i, _):
       make_tree_call.append(i)
@@ -185,6 +186,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
       self.mock(file_path, i, functools.partial(add, i))
 
     ret = run_isolated.run_tha_test(
+        command,
         isolated_hash,
         StorageFake(files),
         isolateserver.MemoryCache(),
@@ -193,7 +195,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
         None,
         None,
         None,
-        [])
+        None)
     self.assertEqual(0, ret)
     return make_tree_call
 
@@ -273,7 +275,14 @@ class RunIsolatedTest(RunIsolatedTestBase):
         [([self.temp_join(u'invalid'), u'command'], {'detached': True})],
         self.popen_calls)
 
+  def mock_popen_with_oserr(self):
+    def r(self, args, **kwargs):
+      old_init(self, args, **kwargs)
+      raise OSError('Unknown')
+    old_init = self.mock(subprocess42.Popen, '__init__', r)
+
   def test_main_naked(self):
+    self.mock_popen_with_oserr()
     self.mock(on_error, 'report', lambda _: None)
     # The most naked .isolated file that can exist.
     self.mock(tools, 'disable_buffering', lambda: None)
@@ -282,11 +291,6 @@ class RunIsolatedTest(RunIsolatedTestBase):
     def get_storage(_isolate_server, _namespace):
       return StorageFake({isolated_hash:isolated})
     self.mock(isolateserver, 'get_storage', get_storage)
-
-    def r(self, args, **kwargs):
-      old_init(self, args, **kwargs)
-      raise OSError('Unknown')
-    old_init = self.mock(subprocess42.Popen, '__init__', r)
 
     cmd = [
         '--no-log',
@@ -299,6 +303,21 @@ class RunIsolatedTest(RunIsolatedTestBase):
     self.assertEqual(1, len(self.popen_calls))
     self.assertEqual(
         [([self.temp_join(u'invalid'), u'command'], {'detached': True})],
+        self.popen_calls)
+
+  def test_main_naked_without_isolated(self):
+    self.mock_popen_with_oserr()
+    cmd = [
+      '--no-log',
+      '/bin/echo',
+      'hello',
+      'world',
+    ]
+    ret = run_isolated.main(cmd)
+    self.assertEqual(1, ret)
+    self.assertEqual(1, len(self.popen_calls))
+    self.assertEqual(
+        [([u'/bin/echo', u'hello', u'world'], {'detached': True})],
         self.popen_calls)
 
   def test_modified_cwd(self):
@@ -329,6 +348,12 @@ class RunIsolatedTest(RunIsolatedTestBase):
           ([sys.executable, os.path.join(u'..', 'out', 'cmd.py'), u'arg'],
             {'detached': True}),
         ],
+        self.popen_calls)
+
+  def test_run_tha_test_non_isolated(self):
+    _ = self._run_tha_test(command=['/bin/echo', 'hello', 'world'])
+    self.assertEqual(
+        [([u'/bin/echo', u'hello', u'world'], {'detached': True})],
         self.popen_calls)
 
 
@@ -364,6 +389,7 @@ class RunIsolatedTestRun(RunIsolatedTestBase):
 
       self.mock(sys, 'stdout', StringIO.StringIO())
       ret = run_isolated.run_tha_test(
+          None,
           isolated_hash,
           store,
           isolateserver.MemoryCache(),

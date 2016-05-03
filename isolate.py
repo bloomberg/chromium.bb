@@ -855,7 +855,7 @@ def CMDarchive(parser, args):
     parser.error('Unsupported argument: %s' % args)
   process_isolate_options(parser, options)
   auth.process_auth_options(parser, options)
-  isolateserver.process_isolate_server_options(parser, options, True)
+  isolateserver.process_isolate_server_options(parser, options, True, True)
   result = isolate_and_archive(
       [(options, unicode(os.getcwd()))],
       options.isolate_server,
@@ -894,7 +894,7 @@ def CMDbatcharchive(parser, args):
       help='Write isolated hashes of archived trees to this file as JSON')
   options, args = parser.parse_args(args)
   auth.process_auth_options(parser, options)
-  isolateserver.process_isolate_server_options(parser, options, True)
+  isolateserver.process_isolate_server_options(parser, options, True, True)
 
   # Validate all incoming options, prepare what needs to be archived as a list
   # of tuples (archival options, working directory).

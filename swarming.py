@@ -924,7 +924,7 @@ def process_trigger_options(parser, options, args):
             for k, v in sorted(options.dimensions.iteritems())))
     inputs_ref = None
   else:
-    isolateserver.process_isolate_server_options(parser, options, False)
+    isolateserver.process_isolate_server_options(parser, options, False, True)
     try:
       command, inputs_ref = isolated_handle_options(options, args)
     except ValueError as e:

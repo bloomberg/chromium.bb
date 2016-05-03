@@ -5,7 +5,7 @@
 
 """Archives a set of files or directories to an Isolate Server."""
 
-__version__ = '0.4.7'
+__version__ = '0.4.8'
 
 import base64
 import functools
@@ -2082,7 +2082,7 @@ def CMDarchive(parser, args):
   add_isolate_server_options(parser)
   add_archive_options(parser)
   options, files = parser.parse_args(args)
-  process_isolate_server_options(parser, options, True)
+  process_isolate_server_options(parser, options, True, True)
   try:
     archive(options.isolate_server, options.namespace, files, options.blacklist)
   except Error as e:
@@ -2112,7 +2112,7 @@ def CMDdownload(parser, args):
   if args:
     parser.error('Unsupported arguments: %s' % args)
 
-  process_isolate_server_options(parser, options, True)
+  process_isolate_server_options(parser, options, True, True)
   if bool(options.isolated) == bool(options.file):
     parser.error('Use one of --isolated or --file, and only one.')
 
@@ -2180,13 +2180,17 @@ def add_isolate_server_options(parser):
       help='The namespace to use on the Isolate Server, default: %default')
 
 
-def process_isolate_server_options(parser, options, set_exception_handler):
-  """Processes the --isolate-server option and aborts if not specified.
+def process_isolate_server_options(
+    parser, options, set_exception_handler, required):
+  """Processes the --isolate-server option.
 
   Returns the identity as determined by the server.
   """
   if not options.isolate_server:
-    parser.error('--isolate-server is required.')
+    if required:
+      parser.error('--isolate-server is required.')
+    return
+
   try:
     options.isolate_server = net.fix_url(options.isolate_server)
   except ValueError as e:

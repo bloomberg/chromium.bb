@@ -3,10 +3,15 @@
 # Use of this source code is governed by the Apache v2.0 license that can be
 # found in the LICENSE file.
 
-"""Reads a .isolated, creates a tree of hardlinks and runs the test.
+"""Runs a command with optional isolated input/output.
 
-To improve performance, it keeps a local cache. The local cache can safely be
-deleted.
+Despite name "run_isolated", can run a generic non-isolated command specified as
+args.
+
+If input isolated hash is provided, fetches it, creates a tree of hard links,
+appends args to the command in the fetched isolated and runs it.
+To improve performance, keeps a local cache.
+The local cache can safely be deleted.
 
 Any ${ISOLATED_OUTDIR} on the command line will be replaced by the location of a
 temporary directory upon execution of the command specified in the .isolated
@@ -14,7 +19,7 @@ file. All content written to this directory will be uploaded upon termination
 and the .isolated file describing this directory will be printed to stdout.
 """
 
-__version__ = '0.6.1'
+__version__ = '0.7.0'
 
 import base64
 import logging
@@ -36,9 +41,10 @@ from utils import tools
 from utils import zip_package
 
 import auth
-import isolated_format
 import isolateserver
 
+
+ISOLATED_OUTDIR_PARAMETER = '${ISOLATED_OUTDIR}'
 
 # Absolute path to this file (can be None if running from zip on Mac).
 THIS_FILE_PATH = os.path.abspath(__file__) if __file__ else None
@@ -137,8 +143,11 @@ def change_tree_read_only(rootdir, read_only):
 def process_command(command, out_dir):
   """Replaces isolated specific variables in a command line."""
   def fix(arg):
-    if '${ISOLATED_OUTDIR}' in arg:
-      return arg.replace('${ISOLATED_OUTDIR}', out_dir).replace('/', os.sep)
+    if ISOLATED_OUTDIR_PARAMETER in arg:
+      arg = arg.replace(ISOLATED_OUTDIR_PARAMETER, out_dir)
+      # Replace slashes only if ISOLATED_OUTDIR_PARAMETER is present
+      # because of arguments like '${ISOLATED_OUTDIR}/foo/bar'
+      arg = arg.replace('/', os.sep)
     return arg
 
   return [fix(arg) for arg in command]
@@ -302,9 +311,15 @@ def delete_and_upload(storage, out_dir, leak_temp_dir):
 
 
 def map_and_run(
-    isolated_hash, storage, cache, leak_temp_dir, root_dir, hard_timeout,
-    grace_period, extra_args):
-  """Maps and run the command. Returns metadata about the result."""
+    command, isolated_hash, storage, cache, leak_temp_dir, root_dir,
+    hard_timeout, grace_period, extra_args):
+  """Runs a command with optional isolated input/output.
+
+  See run_tha_test for argument documentation.
+
+  Returns metadata about the result.
+  """
+  assert bool(command) ^ bool(isolated_hash)
   result = {
     'duration': None,
     'exit_code': None,
@@ -336,26 +351,29 @@ def map_and_run(
   run_dir = make_temp_dir(prefix + u'run', root_dir)
   out_dir = make_temp_dir(prefix + u'out', root_dir)
   tmp_dir = make_temp_dir(prefix + u'tmp', root_dir)
-  try:
-    bundle, result['stats']['download'] = fetch_and_measure(
-        isolated_hash=isolated_hash,
-        storage=storage,
-        cache=cache,
-        outdir=run_dir)
-    if not bundle.command:
-      # Handle this as a task failure, not an internal failure.
-      sys.stderr.write(
-          '<The .isolated doesn\'t declare any command to run!>\n'
-          '<Check your .isolate for missing \'command\' variable>\n')
-      if os.environ.get('SWARMING_TASK_ID'):
-        # Give an additional hint when running as a swarming task.
-        sys.stderr.write('<This occurs at the \'isolate\' step>\n')
-      result['exit_code'] = 1
-      return result
+  cwd = run_dir
 
-    change_tree_read_only(run_dir, bundle.read_only)
-    cwd = os.path.normpath(os.path.join(run_dir, bundle.relative_cwd))
-    command = bundle.command + extra_args
+  try:
+    if isolated_hash:
+      bundle, result['stats']['download'] = fetch_and_measure(
+          isolated_hash=isolated_hash,
+          storage=storage,
+          cache=cache,
+          outdir=run_dir)
+      if not bundle.command:
+        # Handle this as a task failure, not an internal failure.
+        sys.stderr.write(
+            '<The .isolated doesn\'t declare any command to run!>\n'
+            '<Check your .isolate for missing \'command\' variable>\n')
+        if os.environ.get('SWARMING_TASK_ID'):
+          # Give an additional hint when running as a swarming task.
+          sys.stderr.write('<This occurs at the \'isolate\' step>\n')
+        result['exit_code'] = 1
+        return result
+
+      change_tree_read_only(run_dir, bundle.read_only)
+      cwd = os.path.normpath(os.path.join(cwd, bundle.relative_cwd))
+      command = bundle.command + extra_args
     file_path.ensure_command_has_abs_path(command, cwd)
     sys.stdout.flush()
     start = time.time()
@@ -424,18 +442,27 @@ def map_and_run(
 
 
 def run_tha_test(
-    isolated_hash, storage, cache, leak_temp_dir, result_json, root_dir,
-    hard_timeout, grace_period, extra_args):
-  """Downloads the dependencies in the cache, hardlinks them into a temporary
-  directory and runs the executable from there.
+    command, isolated_hash, storage, cache, leak_temp_dir, result_json,
+    root_dir, hard_timeout, grace_period, extra_args):
+  """Runs an executable and records execution metadata.
+
+  Either command or isolated_hash must be specified.
+
+  If isolated_hash is specified, downloads the dependencies in the cache,
+  hardlinks them into a temporary directory and runs the command specified in
+  the .isolated.
 
   A temporary directory is created to hold the output files. The content inside
   this directory will be uploaded back to |storage| packaged as a .isolated
   file.
 
   Arguments:
+    command: the command to run, a list of strings. Mutually exclusive with
+             isolated_hash.
     isolated_hash: the SHA-1 of the .isolated file that must be retrieved to
                    recreate the tree of files to run the target executable.
+                   The command specified in the .isolated is executed.
+                   Mutually exclusive with command argument.
     storage: an isolateserver.Storage object to retrieve remote objects. This
              object has a reference to an isolateserver.StorageApi, which does
              the actual I/O.
@@ -452,11 +479,16 @@ def run_tha_test(
                   seconds.
     grace_period: number of seconds to wait between SIGTERM and SIGKILL.
     extra_args: optional arguments to add to the command stated in the .isolate
-                file.
+                file. Ignored if isolate_hash is empty.
 
   Returns:
     Process exit code that should be used.
   """
+  assert bool(command) ^ bool(isolated_hash)
+  extra_args = extra_args or []
+  if any(ISOLATED_OUTDIR_PARAMETER in a for a in (command or extra_args)):
+    assert storage is not None, 'storage is None although outdir is specified'
+
   if result_json:
     # Write a json output file right away in case we get killed.
     result = {
@@ -470,8 +502,8 @@ def run_tha_test(
 
   # run_isolated exit code. Depends on if result_json is used or not.
   result = map_and_run(
-      isolated_hash, storage, cache, leak_temp_dir, root_dir, hard_timeout,
-      grace_period, extra_args)
+      command, isolated_hash, storage, cache, leak_temp_dir, root_dir,
+      hard_timeout, grace_period, extra_args)
   logging.info('Result:\n%s', tools.format_json(result, dense=True))
   if result_json:
     # We've found tests to delete 'work' when quitting, causing an exception
@@ -498,7 +530,7 @@ def run_tha_test(
 
 def main(args):
   parser = logging_utils.OptionParserWithLogging(
-      usage='%prog <options>',
+      usage='%prog <options> [command to run or extra args]',
       version=__version__,
       log_file=RUN_ISOLATED_LOG_FILE)
   parser.add_option(
@@ -518,7 +550,7 @@ def main(args):
   data_group = optparse.OptionGroup(parser, 'Data source')
   data_group.add_option(
       '-s', '--isolated',
-      help='Hash of the .isolated to grab from the isolate server')
+      help='Hash of the .isolated to grab from the isolate server.')
   isolateserver.add_isolate_server_options(data_group)
   parser.add_option_group(data_group)
 
@@ -530,7 +562,7 @@ def main(args):
       '--leak-temp-dir',
       action='store_true',
       help='Deliberately leak isolate\'s temp dir for later examination '
-          '[default: %default]')
+           '[default: %default]')
   debug_group.add_option(
       '--root-dir', help='Use a directory instead of a random one')
   parser.add_option_group(debug_group)
@@ -549,22 +581,40 @@ def main(args):
     cache.cleanup()
     return 0
 
+  if not options.isolated and not args:
+    parser.error('--isolated or command to run is required.')
+
   auth.process_auth_options(parser, options)
-  isolateserver.process_isolate_server_options(parser, options, True)
+
+  isolateserver.process_isolate_server_options(
+    parser, options, True, False)
+  if not options.isolate_server:
+    if options.isolated:
+      parser.error('--isolated requires --isolate-server')
+    if ISOLATED_OUTDIR_PARAMETER in args:
+      parser.error(
+        '%s in args requires --isolate-server' % ISOLATED_OUTDIR_PARAMETER)
 
   if options.root_dir:
     options.root_dir = unicode(os.path.abspath(options.root_dir))
   if options.json:
     options.json = unicode(os.path.abspath(options.json))
-  if not options.isolated:
-    parser.error('--isolated is required.')
-  with isolateserver.get_storage(
-      options.isolate_server, options.namespace) as storage:
+
+  command = [] if options.isolated else args
+  if options.isolate_server:
+    storage = isolateserver.get_storage(
+      options.isolate_server, options.namespace)
     # Hashing schemes used by |storage| and |cache| MUST match.
     assert storage.hash_algo == cache.hash_algo
     return run_tha_test(
-        options.isolated, storage, cache, options.leak_temp_dir, options.json,
-        options.root_dir, options.hard_timeout, options.grace_period, args)
+        command, options.isolated, storage, cache, options.leak_temp_dir,
+        options.json, options.root_dir, options.hard_timeout,
+        options.grace_period, args)
+  else:
+    return run_tha_test(
+        command, options.isolated, None, cache, options.leak_temp_dir,
+        options.json, options.root_dir, options.hard_timeout,
+        options.grace_period, args)
 
 
 if __name__ == '__main__':
