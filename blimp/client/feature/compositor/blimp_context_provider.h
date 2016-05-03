@@ -39,7 +39,6 @@ class BlimpContextProvider : public cc::ContextProvider {
   gpu::ContextSupport* ContextSupport() override;
   class GrContext* GrContext() override;
   void InvalidateGrContext(uint32_t state) override;
-  void SetupLock() override;
   base::Lock* GetLock() override;
   void DeleteCachedResources() override;
   void SetLostContextCallback(
@@ -57,7 +56,6 @@ class BlimpContextProvider : public cc::ContextProvider {
   base::ThreadChecker main_thread_checker_;
   base::ThreadChecker context_thread_checker_;
 
-  base::Lock context_lock_;
   std::unique_ptr<gpu::GLInProcessContext> context_;
   std::unique_ptr<skia_bindings::GrContextForGLES2Interface> gr_context_;
 

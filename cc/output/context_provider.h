@@ -68,11 +68,6 @@ class ContextProvider : public base::RefCountedThreadSafe<ContextProvider> {
   // See skia GrContext::resetContext for details.
   virtual void InvalidateGrContext(uint32_t state) = 0;
 
-  // Sets up a lock so this context can be used from multiple threads. After
-  // calling this, all functions without explicit thread usage constraints can
-  // be used on any thread while the lock returned by GetLock() is acquired.
-  virtual void SetupLock() = 0;
-
   // Returns the lock that should be held if using this context from multiple
   // threads. This can be called on any thread.
   virtual base::Lock* GetLock() = 0;

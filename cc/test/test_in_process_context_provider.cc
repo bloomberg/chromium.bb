@@ -93,9 +93,6 @@ void TestInProcessContextProvider::InvalidateGrContext(uint32_t state) {
     gr_context_->ResetContext(state);
 }
 
-void TestInProcessContextProvider::SetupLock() {
-}
-
 base::Lock* TestInProcessContextProvider::GetLock() {
   return &context_lock_;
 }

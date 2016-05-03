@@ -97,12 +97,10 @@ void BlimpContextProvider::InvalidateGrContext(uint32_t state) {
     gr_context_->ResetContext(state);
 }
 
-void BlimpContextProvider::SetupLock() {
-  context_->SetLock(&context_lock_);
-}
-
 base::Lock* BlimpContextProvider::GetLock() {
-  return &context_lock_;
+  // This context provider is not used on multiple threads.
+  NOTREACHED();
+  return nullptr;
 }
 
 void BlimpContextProvider::DeleteCachedResources() {

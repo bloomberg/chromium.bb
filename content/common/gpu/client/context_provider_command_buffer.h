@@ -53,12 +53,16 @@ class CONTENT_EXPORT ContextProviderCommandBuffer
   gpu::ContextSupport* ContextSupport() override;
   class GrContext* GrContext() override;
   void InvalidateGrContext(uint32_t state) override;
-  void SetupLock() override;
   base::Lock* GetLock() override;
   gpu::Capabilities ContextCapabilities() override;
   void DeleteCachedResources() override;
   void SetLostContextCallback(
       const LostContextCallback& lost_context_callback) override;
+
+  // Sets up a lock so this context can be used from multiple threads. After
+  // calling this, all functions without explicit thread usage constraints can
+  // be used on any thread while the lock returned by GetLock() is acquired.
+  void SetupLock();
 
  protected:
   ~ContextProviderCommandBuffer() override;

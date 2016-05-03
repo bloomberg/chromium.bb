@@ -54,7 +54,6 @@ class SurfacesContextProvider : public cc::ContextProvider,
   void DeleteCachedResources() override {}
   void SetLostContextCallback(
       const LostContextCallback& lost_context_callback) override;
-  void SetupLock() override;
   base::Lock* GetLock() override;
 
   // SurfacesContextProvider API.

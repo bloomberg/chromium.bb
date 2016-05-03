@@ -29,12 +29,9 @@ scoped_refptr<TestContextProvider> TestContextProvider::Create() {
 scoped_refptr<TestContextProvider> TestContextProvider::CreateWorker() {
   scoped_refptr<TestContextProvider> worker_context_provider =
       Create(TestWebGraphicsContext3D::Create());
-  if (!worker_context_provider)
-    return nullptr;
   // Worker contexts are bound to the thread they are created on.
   if (!worker_context_provider->BindToCurrentThread())
     return nullptr;
-  worker_context_provider->SetupLock();
   return worker_context_provider;
 }
 
@@ -129,9 +126,6 @@ void TestContextProvider::InvalidateGrContext(uint32_t state) {
 
   if (gr_context_)
     gr_context_.get()->resetContext(state);
-}
-
-void TestContextProvider::SetupLock() {
 }
 
 base::Lock* TestContextProvider::GetLock() {

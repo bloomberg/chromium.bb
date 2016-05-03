@@ -130,8 +130,6 @@ void InProcessContextFactory::CreateOutputSurface(
     if (shared_worker_context_provider_ &&
         !shared_worker_context_provider_->BindToCurrentThread())
       shared_worker_context_provider_ = nullptr;
-    if (shared_worker_context_provider_)
-      shared_worker_context_provider_->SetupLock();
   }
 
   gpu::gles2::ContextCreationAttribHelper attribs;

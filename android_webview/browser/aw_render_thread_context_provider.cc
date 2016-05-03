@@ -120,11 +120,6 @@ void AwRenderThreadContextProvider::InvalidateGrContext(uint32_t state) {
     gr_context_->resetContext(state);
 }
 
-void AwRenderThreadContextProvider::SetupLock() {
-  // This context provider is not used on multiple threads.
-  NOTREACHED();
-}
-
 base::Lock* AwRenderThreadContextProvider::GetLock() {
   // This context provider is not used on multiple threads.
   NOTREACHED();

@@ -97,7 +97,6 @@ class PerfContextProvider : public ContextProvider {
     if (gr_context_)
       gr_context_.get()->resetContext(state);
   }
-  void SetupLock() override {}
   base::Lock* GetLock() override { return &context_lock_; }
   void DeleteCachedResources() override {}
   void SetLostContextCallback(const LostContextCallback& cb) override {}

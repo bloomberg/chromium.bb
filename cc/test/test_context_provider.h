@@ -31,7 +31,7 @@ class TestContextProvider : public ContextProvider {
 
   static scoped_refptr<TestContextProvider> Create();
   // Creates a worker context provider that can be used on any thread. This is
-  // equivalent to: Create(); BindToCurrentThread(); SetupLock().
+  // equivalent to: Create(); BindToCurrentThread().
   static scoped_refptr<TestContextProvider> CreateWorker();
   static scoped_refptr<TestContextProvider> Create(
       std::unique_ptr<TestWebGraphicsContext3D> context);
@@ -43,7 +43,6 @@ class TestContextProvider : public ContextProvider {
   gpu::ContextSupport* ContextSupport() override;
   class GrContext* GrContext() override;
   void InvalidateGrContext(uint32_t state) override;
-  void SetupLock() override;
   base::Lock* GetLock() override;
   void DeleteCachedResources() override;
   void SetLostContextCallback(const LostContextCallback& cb) override;

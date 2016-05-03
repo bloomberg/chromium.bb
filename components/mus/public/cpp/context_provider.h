@@ -26,7 +26,6 @@ class ContextProvider : public cc::ContextProvider {
   gpu::ContextSupport* ContextSupport() override;
   class GrContext* GrContext() override;
   void InvalidateGrContext(uint32_t state) override;
-  void SetupLock() override;
   base::Lock* GetLock() override;
   gpu::Capabilities ContextCapabilities() override;
   void DeleteCachedResources() override {}

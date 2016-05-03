@@ -90,8 +90,6 @@ gpu::Capabilities SurfacesContextProvider::ContextCapabilities() {
   return capabilities_;
 }
 
-void SurfacesContextProvider::SetupLock() {}
-
 base::Lock* SurfacesContextProvider::GetLock() {
   // This context provider is not used on multiple threads.
   NOTREACHED();

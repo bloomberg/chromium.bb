@@ -144,9 +144,6 @@ void InProcessContextProvider::InvalidateGrContext(uint32_t state) {
     gr_context_->ResetContext(state);
 }
 
-void InProcessContextProvider::SetupLock() {
-}
-
 base::Lock* InProcessContextProvider::GetLock() {
   return &context_lock_;
 }
