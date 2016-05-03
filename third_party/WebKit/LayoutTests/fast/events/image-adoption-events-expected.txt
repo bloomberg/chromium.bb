@@ -1,5 +1,5 @@
 
-FAIL readystatechange event was dispatched but the handler was suppressed
+PASS readystatechange event handler was executed when complete
 PASS successfullyParsed is true
 
 TEST COMPLETE

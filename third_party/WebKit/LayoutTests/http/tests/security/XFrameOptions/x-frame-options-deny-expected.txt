@@ -1,5 +1,6 @@
 http://127.0.0.1:8000/security/XFrameOptions/resources/x-frame-options-deny.cgi - willSendRequest <NSURLRequest URL http://127.0.0.1:8000/security/XFrameOptions/resources/x-frame-options-deny.cgi, main document URL http://127.0.0.1:8000/security/XFrameOptions/x-frame-options-deny.html, http method GET> redirectResponse (null)
 CONSOLE ERROR: Refused to display 'http://127.0.0.1:8000/security/XFrameOptions/resources/x-frame-options-deny.cgi' in a frame because it set 'X-Frame-Options' to 'deny'.
+http://127.0.0.1:8000/security/XFrameOptions/resources/x-frame-options-deny.cgi - didReceiveResponse <NSURLResponse http://127.0.0.1:8000/security/XFrameOptions/resources/x-frame-options-deny.cgi, http status code 200>
 http://127.0.0.1:8000/security/XFrameOptions/resources/x-frame-options-deny.cgi - didFinishLoading
 CONSOLE MESSAGE: line 14: PASS: Access to contentWindow.location.href threw an exception.
 There should be no content in the iframe below

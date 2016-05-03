@@ -702,7 +702,7 @@ void Resource::allClientsAndObserversRemoved()
 {
     if (!m_loader)
         return;
-    if (m_type == MainResource || m_type == Raw || !memoryCache()->contains(this))
+    if (m_type == Raw)
         cancelTimerFired(&m_cancelTimer);
     else if (!m_cancelTimer.isActive())
         m_cancelTimer.startOneShot(0, BLINK_FROM_HERE);

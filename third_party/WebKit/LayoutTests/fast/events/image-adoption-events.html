@@ -35,9 +35,7 @@ x.onloadend = function() {
     document.adoptNode(img);
     adopting = false;
     if (doc.readyState == "complete" && !readyStateChangeEventHandlerTriggeredWhenComplete) {
-        // TODO: This can be replaced with testFailed once https://crbug.com/606651 is fixed.
-        debug("FAIL readystatechange event was dispatched but the handler was suppressed");
-        finishJSTest();
+        testFailed("readystatechange event was dispatched but the handler was suppressed");
     }
 }
 x.open("get", "data:text/html,");
