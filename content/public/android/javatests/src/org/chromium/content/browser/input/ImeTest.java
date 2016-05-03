@@ -23,11 +23,11 @@ import android.view.inputmethod.InputConnection;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
-import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
+import org.chromium.content.browser.test.util.JavaScriptUtils;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content.browser.test.util.TestInputMethodManagerWrapper;
 import org.chromium.content_public.browser.WebContents;
@@ -45,23 +45,12 @@ import java.util.concurrent.TimeoutException;
  * Integration tests for text input using cases based on fixed regressions.
  */
 public class ImeTest extends ContentShellTestBase {
-    private static final String DATA_URL = UrlUtils.encodeHtmlDataUri(
-            "<html><head><meta name=\"viewport\""
-            + "content=\"width=device-width\" /></head>"
-            + "<body><form action=\"about:blank\">"
-            + "<input id=\"input_text\" type=\"text\" /><br/></form><form>"
-            + "<br/><input id=\"input_radio\" type=\"radio\" style=\"width:50px;height:50px\" />"
-            + "<br/><textarea id=\"textarea\" rows=\"4\" cols=\"20\"></textarea>"
-            + "<br/><textarea id=\"textarea2\" rows=\"4\" cols=\"20\" autocomplete=\"off\">"
-            + "</textarea>"
-            + "<br/><input id=\"input_number1\" type=\"number\" /><br/>"
-            + "<br/><input id=\"input_number2\" type=\"number\" /><br/>"
-            + "<br/><p><span id=\"plain_text\">This is Plain Text One</span></p>"
-            + "</form></body></html>");
-
     protected ChromiumBaseInputConnection mConnection;
     private TestInputConnectionFactory mConnectionFactory;
     private ImeAdapter mImeAdapter;
+
+    private static final String INPUT_FORM_HTML =
+            "content/test/data/android/input/input_forms.html";
 
     private ContentViewCore mContentViewCore;
     private WebContents mWebContents;
@@ -71,9 +60,7 @@ public class ImeTest extends ContentShellTestBase {
     @Override
     public void setUp() throws Exception {
         super.setUp();
-
-        launchContentShellWithUrl(DATA_URL);
-        waitForActiveShellToBeDoneLoading();
+        startActivityWithTestUrl(INPUT_FORM_HTML);
         mContentViewCore = getContentViewCore();
         mWebContents = getWebContents();
 
@@ -442,6 +429,17 @@ public class ImeTest extends ContentShellTestBase {
         });
     }
 
+    private void reloadPage() {
+        // Reload the page, then focus will be lost and keyboard should be hidden.
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                final String currentUrl = getContentViewCore().getWebContents().getUrl();
+                getActivity().getActiveShell().loadUrl(currentUrl);
+            }
+        });
+    }
+
     @SmallTest
     @Feature({"TextInput"})
     public void testPhysicalKeyboard_AttachDetach() throws Exception {
@@ -455,13 +453,8 @@ public class ImeTest extends ContentShellTestBase {
         // Now we really show soft keyboard. We also call restartInput when configuration changes.
         waitForKeyboardStates(2, 0, 2, new Integer[] {TextInputType.TEXT, TextInputType.TEXT});
 
-        // Reload the page, then focus will be lost and keyboard should be hidden.
-        getInstrumentation().runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-                getActivity().getActiveShell().loadUrl(DATA_URL);
-            }
-        });
+        reloadPage();
+
         // Depending on the timing, hideSoftInput and restartInput call counts may vary here
         // because render widget gets restarted. But the end result should be the same.
         assertWaitForKeyboardStatus(false);
@@ -1071,6 +1064,79 @@ public class ImeTest extends ContentShellTestBase {
         assertEquals("ab", getTextBeforeCursor(10, 0));
     }
 
+    @MediumTest
+    @Feature({"TextInput"})
+    public void testContentEditableEvents_SetComposingText() throws Throwable {
+        focusElementAndWaitForStateUpdate("contenteditable_event");
+        beginBatchEdit();
+        setComposingText("a", 1);
+        finishComposingText();
+        endBatchEdit();
+        waitAndVerifyUpdateSelection(0, 1, 1, -1, -1);
+
+        // TODO(changwan): reduce the number of selection changes
+        waitForEventLogs("selectionchange,selectionchange,selectionchange,"
+                + "keydown(229),compositionstart(),compositionupdate(a),input,"
+                + "keyup(229),compositionend(a),input,selectionchange,selectionchange,"
+                + "selectionchange,selectionchange,selectionchange");
+    }
+
+    private void waitForEventLogs(String expectedLogs) throws Throwable {
+        final String code = "getEventLogs()";
+        final String sanitizedExpectedLogs = "\"" + expectedLogs + "\"";
+        if (usingReplicaInputConnection()) {
+            // When using replica input connection, JavaScript update will lands later.
+            CriteriaHelper.pollInstrumentationThread(new Criteria() {
+                @Override
+                public boolean isSatisfied() {
+                    try {
+                        String eventLogs = JavaScriptUtils.executeJavaScriptAndWaitForResult(
+                                getContentViewCore().getWebContents(), code);
+                        updateFailureReason(eventLogs);
+                        return sanitizedExpectedLogs.equals(eventLogs);
+                    } catch (InterruptedException | TimeoutException e) {
+                        updateFailureReason(e.getMessage());
+                        return false;
+                    }
+                }
+            });
+        } else {
+            assertEquals(sanitizedExpectedLogs, JavaScriptUtils.executeJavaScriptAndWaitForResult(
+                    getContentViewCore().getWebContents(), code));
+        }
+    }
+
+    @MediumTest
+    @Feature({"TextInput"})
+    public void testCommitTextDoesNotTriggerCompositionEvents() throws Throwable {
+        if (usingReplicaInputConnection()) return;
+        focusElementAndWaitForStateUpdate("contenteditable0");
+        commitText("a", 1);
+        waitAndVerifyUpdateSelection(0, 1, 1, -1, -1);
+
+        final String code = "getEventLogs()";
+        final String expectedLogs = "\"keydown(229),keyup(229),\"";
+        if (usingReplicaInputConnection()) {
+            CriteriaHelper.pollInstrumentationThread(new Criteria() {
+                @Override
+                public boolean isSatisfied() {
+                    try {
+                        String eventLogs = JavaScriptUtils.executeJavaScriptAndWaitForResult(
+                                getContentViewCore().getWebContents(), code);
+                        updateFailureReason(eventLogs);
+                        return expectedLogs.equals(eventLogs);
+                    } catch (InterruptedException | TimeoutException e) {
+                        updateFailureReason(e.getMessage());
+                        return false;
+                    }
+                }
+            });
+        } else {
+            assertEquals(expectedLogs, JavaScriptUtils.executeJavaScriptAndWaitForResult(
+                    getContentViewCore().getWebContents(), code));
+        }
+    }
+
     private void performGo(TestCallbackHelperContainer testCallbackHelperContainer)
             throws Throwable {
         final InputConnection inputConnection = mConnection;
@@ -1238,6 +1304,26 @@ public class ImeTest extends ContentShellTestBase {
 
     private <T> T runBlockingOnImeThread(Callable<T> c) throws Exception {
         return ImeTestUtils.runBlockingOnHandler(mConnectionFactory.getHandler(), c);
+    }
+
+    private boolean beginBatchEdit() throws Exception {
+        final ChromiumBaseInputConnection connection = mConnection;
+        return runBlockingOnImeThread(new Callable<Boolean>() {
+            @Override
+            public Boolean call() {
+                return connection.beginBatchEdit();
+            }
+        });
+    }
+
+    private boolean endBatchEdit() throws Exception {
+        final ChromiumBaseInputConnection connection = mConnection;
+        return runBlockingOnImeThread(new Callable<Boolean>() {
+            @Override
+            public Boolean call() {
+                return connection.endBatchEdit();
+            }
+        });
     }
 
     private boolean commitText(final CharSequence text, final int newCursorPosition)
