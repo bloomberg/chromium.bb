@@ -231,7 +231,6 @@
       'quic/congestion_control/general_loss_algorithm.h',
       'quic/congestion_control/hybrid_slow_start.cc',
       'quic/congestion_control/hybrid_slow_start.h',
-      'quic/congestion_control/loss_detection_interface.cc',
       'quic/congestion_control/loss_detection_interface.h',
       'quic/congestion_control/pacing_sender.cc',
       'quic/congestion_control/pacing_sender.h',

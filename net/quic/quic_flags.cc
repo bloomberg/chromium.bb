@@ -92,10 +92,6 @@ bool FLAGS_quic_stateless_version_negotiation = true;
 // If true, QUIC connections will defer responding to ACKs to their send alarms.
 bool FLAGS_quic_connection_defer_ack_response = true;
 
-// Enable a connection option allowing connections to time out if more than 5
-// consecutive RTOs are sent.
-bool FLAGS_quic_enable_rto_timeout = true;
-
 // Try to use the socket timestamp to determine the time a packet was
 // received instead of Now().
 bool FLAGS_quic_use_socket_timestamp = true;
@@ -120,3 +116,6 @@ bool FLAGS_quic_simplify_loss_detection = true;
 
 // If true, do not check HasUnackedPackets on retransmission timeout.
 bool FLAGS_quic_always_has_unacked_packets_on_timeout = true;
+
+// If true, respect any configured max pacing rate.
+bool FLAGS_quic_max_pacing_rate = true;

@@ -127,6 +127,8 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
 
   void SetNumOpenStreams(size_t num_streams);
 
+  void SetMaxPacingRate(QuicBandwidth max_pacing_rate);
+
   void SetHandshakeConfirmed() { handshake_confirmed_ = true; }
 
   // Processes the incoming ack.

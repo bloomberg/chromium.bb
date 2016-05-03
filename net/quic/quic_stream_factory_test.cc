@@ -257,7 +257,16 @@ class QuicStreamFactoryTestBase {
         clock_(new MockClock()),
         runner_(new TestTaskRunner(clock_)),
         version_(version),
-        maker_(version_, 0, clock_, kDefaultServerHostName),
+        client_maker_(version_,
+                      0,
+                      clock_,
+                      kDefaultServerHostName,
+                      Perspective::IS_CLIENT),
+        server_maker_(version_,
+                      0,
+                      clock_,
+                      kDefaultServerHostName,
+                      Perspective::IS_SERVER),
         cert_verifier_(CertVerifier::CreateDefault()),
         channel_id_service_(
             new ChannelIDService(new DefaultChannelIDStore(nullptr),
@@ -407,14 +416,14 @@ class QuicStreamFactoryTestBase {
     return socket_factory_.udp_client_socket_ports()[socket_count];
   }
 
-  std::unique_ptr<QuicEncryptedPacket> ConstructConnectionClosePacket(
+  std::unique_ptr<QuicEncryptedPacket> ConstructClientConnectionClosePacket(
       QuicPacketNumber num) {
-    return maker_.MakeConnectionClosePacket(num);
+    return client_maker_.MakeConnectionClosePacket(num);
   }
 
-  std::unique_ptr<QuicEncryptedPacket> ConstructRstPacket() {
+  std::unique_ptr<QuicEncryptedPacket> ConstructClientRstPacket() {
     QuicStreamId stream_id = kClientDataStreamId1;
-    return maker_.MakeRstPacket(
+    return client_maker_.MakeRstPacket(
         1, true, stream_id,
         AdjustErrorForVersion(QUIC_RST_ACKNOWLEDGEMENT, version_));
   }
@@ -441,11 +450,12 @@ class QuicStreamFactoryTestBase {
       QuicStreamId stream_id,
       bool should_include_version,
       bool fin) {
-    SpdyHeaderBlock headers = maker_.GetRequestHeaders("GET", "https", "/");
+    SpdyHeaderBlock headers =
+        client_maker_.GetRequestHeaders("GET", "https", "/");
     SpdyPriority priority =
         ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
     size_t spdy_headers_frame_len;
-    return maker_.MakeRequestHeadersPacket(
+    return client_maker_.MakeRequestHeadersPacket(
         packet_number, stream_id, should_include_version, fin, priority,
         headers, &spdy_headers_frame_len);
   }
@@ -455,11 +465,11 @@ class QuicStreamFactoryTestBase {
       QuicStreamId stream_id,
       bool should_include_version,
       bool fin) {
-    SpdyHeaderBlock headers = maker_.GetResponseHeaders("200 OK");
+    SpdyHeaderBlock headers = server_maker_.GetResponseHeaders("200 OK");
     size_t spdy_headers_frame_len;
-    return maker_.MakeResponseHeadersPacket(packet_number, stream_id,
-                                            should_include_version, fin,
-                                            headers, &spdy_headers_frame_len);
+    return server_maker_.MakeResponseHeadersPacket(
+        packet_number, stream_id, should_include_version, fin, headers,
+        &spdy_headers_frame_len);
   }
 
   MockHostResolver host_resolver_;
@@ -469,7 +479,8 @@ class QuicStreamFactoryTestBase {
   MockClock* clock_;  // Owned by |factory_| once created.
   scoped_refptr<TestTaskRunner> runner_;
   QuicVersion version_;
-  QuicTestPacketMaker maker_;
+  QuicTestPacketMaker client_maker_;
+  QuicTestPacketMaker server_maker_;
   HttpServerPropertiesImpl http_server_properties_;
   std::unique_ptr<CertVerifier> cert_verifier_;
   std::unique_ptr<ChannelIDService> channel_id_service_;
@@ -1105,12 +1116,12 @@ TEST_P(QuicStreamFactoryTest, MaxOpenStream) {
 
   QuicStreamId stream_id = kClientDataStreamId1;
   std::unique_ptr<QuicEncryptedPacket> client_rst(
-      maker_.MakeRstPacket(1, true, stream_id, QUIC_STREAM_CANCELLED));
+      client_maker_.MakeRstPacket(1, true, stream_id, QUIC_STREAM_CANCELLED));
   MockWrite writes[] = {
       MockWrite(ASYNC, client_rst->data(), client_rst->length(), 0),
   };
   std::unique_ptr<QuicEncryptedPacket> server_rst(
-      maker_.MakeRstPacket(1, false, stream_id, QUIC_STREAM_CANCELLED));
+      server_maker_.MakeRstPacket(1, false, stream_id, QUIC_STREAM_CANCELLED));
   MockRead reads[] = {
       MockRead(ASYNC, server_rst->data(), server_rst->length(), 1),
       MockRead(SYNCHRONOUS, ERR_IO_PENDING, 2)};
@@ -1272,7 +1283,7 @@ TEST_P(QuicStreamFactoryTest, CloseAllSessions) {
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  std::unique_ptr<QuicEncryptedPacket> rst(ConstructRstPacket());
+  std::unique_ptr<QuicEncryptedPacket> rst(ConstructClientRstPacket());
   std::vector<MockWrite> writes;
   writes.push_back(MockWrite(ASYNC, rst->data(), rst->length(), 1));
   SequencedSocketData socket_data(reads, arraysize(reads),
@@ -1328,7 +1339,7 @@ TEST_P(QuicStreamFactoryTest, OnIPAddressChanged) {
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  std::unique_ptr<QuicEncryptedPacket> rst(ConstructRstPacket());
+  std::unique_ptr<QuicEncryptedPacket> rst(ConstructClientRstPacket());
   std::vector<MockWrite> writes;
   writes.push_back(MockWrite(ASYNC, rst->data(), rst->length(), 1));
   SequencedSocketData socket_data(reads, arraysize(reads),
@@ -1424,7 +1435,7 @@ TEST_P(QuicStreamFactoryTest, OnNetworkChangeSoonToDisconnect) {
   // Set up second socket data provider that is used after migration.
   // The response to the earlier request is read on this new socket.
   std::unique_ptr<QuicEncryptedPacket> ping(
-      maker_.MakePingPacket(2, /*include_version=*/true));
+      client_maker_.MakePingPacket(2, /*include_version=*/true));
   MockWrite writes1[] = {
       MockWrite(SYNCHRONOUS, ping->data(), ping->length(), 0)};
   std::unique_ptr<QuicEncryptedPacket> response_headers_packet(
@@ -1535,8 +1546,8 @@ TEST_P(QuicStreamFactoryTest, OnNetworkChangeDisconnected) {
 
   // Set up second socket data provider that is used after migration.
   std::unique_ptr<QuicEncryptedPacket> ping(
-      maker_.MakePingPacket(2, /*include_version=*/true));
-  std::unique_ptr<QuicEncryptedPacket> client_rst(maker_.MakeRstPacket(
+      client_maker_.MakePingPacket(2, /*include_version=*/true));
+  std::unique_ptr<QuicEncryptedPacket> client_rst(client_maker_.MakeRstPacket(
       3, true, kClientDataStreamId1, QUIC_STREAM_CANCELLED));
   MockWrite writes1[] = {
       MockWrite(SYNCHRONOUS, ping->data(), ping->length(), 0)};
@@ -1595,7 +1606,7 @@ TEST_P(QuicStreamFactoryTest, OnNetworkChangeSoonToDisconnectNoNetworks) {
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  std::unique_ptr<QuicEncryptedPacket> client_rst(maker_.MakeRstPacket(
+  std::unique_ptr<QuicEncryptedPacket> client_rst(client_maker_.MakeRstPacket(
       1, true, kClientDataStreamId1, QUIC_STREAM_CANCELLED));
   MockWrite writes[] = {
       MockWrite(SYNCHRONOUS, client_rst->data(), client_rst->length(), 1),
@@ -1648,7 +1659,7 @@ TEST_P(QuicStreamFactoryTest, OnNetworkChangeDisconnectedNoNetworks) {
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  std::unique_ptr<QuicEncryptedPacket> client_rst(maker_.MakeRstPacket(
+  std::unique_ptr<QuicEncryptedPacket> client_rst(client_maker_.MakeRstPacket(
       1, true, kClientDataStreamId1, QUIC_RST_ACKNOWLEDGEMENT));
   MockWrite writes[] = {
       MockWrite(ASYNC, client_rst->data(), client_rst->length(), 1),
@@ -1696,7 +1707,7 @@ TEST_P(QuicStreamFactoryTest, OnNetworkChangeSoonToDisconnectNoNewNetwork) {
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  std::unique_ptr<QuicEncryptedPacket> client_rst(maker_.MakeRstPacket(
+  std::unique_ptr<QuicEncryptedPacket> client_rst(client_maker_.MakeRstPacket(
       1, true, kClientDataStreamId1, QUIC_STREAM_CANCELLED));
   MockWrite writes[] = {
       MockWrite(SYNCHRONOUS, client_rst->data(), client_rst->length(), 1),
@@ -1747,7 +1758,7 @@ TEST_P(QuicStreamFactoryTest, OnNetworkChangeDisconnectedNoNewNetwork) {
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  std::unique_ptr<QuicEncryptedPacket> client_rst(maker_.MakeRstPacket(
+  std::unique_ptr<QuicEncryptedPacket> client_rst(client_maker_.MakeRstPacket(
       1, true, kClientDataStreamId1, QUIC_RST_ACKNOWLEDGEMENT));
   MockWrite writes[] = {
       MockWrite(ASYNC, client_rst->data(), client_rst->length(), 1),
@@ -1797,7 +1808,7 @@ TEST_P(QuicStreamFactoryTest,
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  std::unique_ptr<QuicEncryptedPacket> client_rst(maker_.MakeRstPacket(
+  std::unique_ptr<QuicEncryptedPacket> client_rst(client_maker_.MakeRstPacket(
       1, true, kClientDataStreamId1, QUIC_STREAM_CANCELLED));
   MockWrite writes[] = {
       MockWrite(SYNCHRONOUS, client_rst->data(), client_rst->length(), 1),
@@ -1850,7 +1861,7 @@ TEST_P(QuicStreamFactoryTest,
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  std::unique_ptr<QuicEncryptedPacket> client_rst(maker_.MakeRstPacket(
+  std::unique_ptr<QuicEncryptedPacket> client_rst(client_maker_.MakeRstPacket(
       1, true, kClientDataStreamId1, QUIC_STREAM_CANCELLED));
   MockWrite writes[] = {
       MockWrite(SYNCHRONOUS, client_rst->data(), client_rst->length(), 1),
@@ -1905,7 +1916,7 @@ TEST_P(QuicStreamFactoryTest, OnNetworkChangeDisconnectedNonMigratableStream) {
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  std::unique_ptr<QuicEncryptedPacket> client_rst(maker_.MakeRstPacket(
+  std::unique_ptr<QuicEncryptedPacket> client_rst(client_maker_.MakeRstPacket(
       1, true, kClientDataStreamId1, QUIC_RST_ACKNOWLEDGEMENT));
   MockWrite writes[] = {
       MockWrite(ASYNC, client_rst->data(), client_rst->length(), 1),
@@ -1956,7 +1967,7 @@ TEST_P(QuicStreamFactoryTest,
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  std::unique_ptr<QuicEncryptedPacket> client_rst(maker_.MakeRstPacket(
+  std::unique_ptr<QuicEncryptedPacket> client_rst(client_maker_.MakeRstPacket(
       1, true, kClientDataStreamId1, QUIC_RST_ACKNOWLEDGEMENT));
   MockWrite writes[] = {
       MockWrite(ASYNC, client_rst->data(), client_rst->length(), 1),
@@ -2123,7 +2134,7 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionEarly) {
   // Set up second socket data provider that is used after migration.
   // The response to the earlier request is read on this new socket.
   std::unique_ptr<QuicEncryptedPacket> ping(
-      maker_.MakePingPacket(2, /*include_version=*/true));
+      client_maker_.MakePingPacket(2, /*include_version=*/true));
   MockWrite writes1[] = {
       MockWrite(SYNCHRONOUS, ping->data(), ping->length(), 0)};
   std::unique_ptr<QuicEncryptedPacket> response_headers_packet(
@@ -2203,7 +2214,7 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionEarlyNoNewNetwork) {
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  std::unique_ptr<QuicEncryptedPacket> client_rst(maker_.MakeRstPacket(
+  std::unique_ptr<QuicEncryptedPacket> client_rst(client_maker_.MakeRstPacket(
       1, true, kClientDataStreamId1, QUIC_STREAM_CANCELLED));
   MockWrite writes[] = {
       MockWrite(SYNCHRONOUS, client_rst->data(), client_rst->length(), 1),
@@ -2258,7 +2269,7 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionEarlyNonMigratableStream) {
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  std::unique_ptr<QuicEncryptedPacket> client_rst(maker_.MakeRstPacket(
+  std::unique_ptr<QuicEncryptedPacket> client_rst(client_maker_.MakeRstPacket(
       1, true, kClientDataStreamId1, QUIC_STREAM_CANCELLED));
   MockWrite writes[] = {
       MockWrite(SYNCHRONOUS, client_rst->data(), client_rst->length(), 1),
@@ -2313,7 +2324,7 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionEarlyConnectionMigrationDisabled) {
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  std::unique_ptr<QuicEncryptedPacket> client_rst(maker_.MakeRstPacket(
+  std::unique_ptr<QuicEncryptedPacket> client_rst(client_maker_.MakeRstPacket(
       1, true, kClientDataStreamId1, QUIC_STREAM_CANCELLED));
   MockWrite writes[] = {
       MockWrite(SYNCHRONOUS, client_rst->data(), client_rst->length(), 1),
@@ -2371,7 +2382,7 @@ TEST_P(QuicStreamFactoryTest, OnSSLConfigChanged) {
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  std::unique_ptr<QuicEncryptedPacket> rst(ConstructRstPacket());
+  std::unique_ptr<QuicEncryptedPacket> rst(ConstructClientRstPacket());
   std::vector<MockWrite> writes;
   writes.push_back(MockWrite(ASYNC, rst->data(), rst->length(), 1));
   SequencedSocketData socket_data(reads, arraysize(reads),
@@ -2426,7 +2437,7 @@ TEST_P(QuicStreamFactoryTest, OnCertAdded) {
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  std::unique_ptr<QuicEncryptedPacket> rst(ConstructRstPacket());
+  std::unique_ptr<QuicEncryptedPacket> rst(ConstructClientRstPacket());
   std::vector<MockWrite> writes;
   writes.push_back(MockWrite(ASYNC, rst->data(), rst->length(), 1));
   SequencedSocketData socket_data(reads, arraysize(reads),
@@ -2482,7 +2493,7 @@ TEST_P(QuicStreamFactoryTest, OnCACertChanged) {
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  std::unique_ptr<QuicEncryptedPacket> rst(ConstructRstPacket());
+  std::unique_ptr<QuicEncryptedPacket> rst(ConstructClientRstPacket());
   std::vector<MockWrite> writes;
   writes.push_back(MockWrite(ASYNC, rst->data(), rst->length(), 1));
   SequencedSocketData socket_data(reads, arraysize(reads),
@@ -3863,7 +3874,7 @@ TEST_P(QuicStreamFactoryTest, YieldAfterPackets) {
   QuicStreamFactoryPeer::SetYieldAfterPackets(factory_.get(), 0);
 
   std::unique_ptr<QuicEncryptedPacket> close_packet(
-      ConstructConnectionClosePacket(0));
+      ConstructClientConnectionClosePacket(0));
   vector<MockRead> reads;
   reads.push_back(
       MockRead(SYNCHRONOUS, close_packet->data(), close_packet->length(), 0));
@@ -3912,7 +3923,7 @@ TEST_P(QuicStreamFactoryTest, YieldAfterDuration) {
       factory_.get(), QuicTime::Delta::FromMilliseconds(-1));
 
   std::unique_ptr<QuicEncryptedPacket> close_packet(
-      ConstructConnectionClosePacket(0));
+      ConstructClientConnectionClosePacket(0));
   vector<MockRead> reads;
   reads.push_back(
       MockRead(SYNCHRONOUS, close_packet->data(), close_packet->length(), 0));
@@ -3998,7 +4009,7 @@ TEST_P(QuicStreamFactoryTest, ServerPushPrivacyModeMismatch) {
 
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
 
-  std::unique_ptr<QuicEncryptedPacket> client_rst(maker_.MakeRstPacket(
+  std::unique_ptr<QuicEncryptedPacket> client_rst(client_maker_.MakeRstPacket(
       1, true, kServerDataStreamId1, QUIC_STREAM_CANCELLED));
   MockWrite writes[] = {
       MockWrite(SYNCHRONOUS, client_rst->data(), client_rst->length(), 1),

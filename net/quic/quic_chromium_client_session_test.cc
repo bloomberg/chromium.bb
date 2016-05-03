@@ -66,7 +66,16 @@ class QuicChromiumClientSessionTest
         random_(0),
         helper_(&clock_, &random_),
         alarm_factory_(base::ThreadTaskRunnerHandle::Get().get(), &clock_),
-        maker_(GetParam(), 0, &clock_, kServerHostname) {
+        client_maker_(GetParam(),
+                      0,
+                      &clock_,
+                      kServerHostname,
+                      Perspective::IS_CLIENT),
+        server_maker_(GetParam(),
+                      0,
+                      &clock_,
+                      kServerHostname,
+                      Perspective::IS_SERVER) {
     // Advance the time, because timers do not like uninitialized times.
     clock_.AdvanceTime(QuicTime::Delta::FromSeconds(1));
   }
@@ -135,7 +144,8 @@ class QuicChromiumClientSessionTest
   std::unique_ptr<QuicChromiumClientSession> session_;
   QuicConnectionVisitorInterface* visitor_;
   TestCompletionCallback callback_;
-  QuicTestPacketMaker maker_;
+  QuicTestPacketMaker client_maker_;
+  QuicTestPacketMaker server_maker_;
   ProofVerifyDetailsChromium verify_details_;
   QuicClientPushPromiseIndex push_promise_index_;
 };
@@ -151,7 +161,7 @@ TEST_P(QuicChromiumClientSessionTest, CryptoConnect) {
 
 TEST_P(QuicChromiumClientSessionTest, MaxNumStreams) {
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  std::unique_ptr<QuicEncryptedPacket> client_rst(maker_.MakeRstPacket(
+  std::unique_ptr<QuicEncryptedPacket> client_rst(client_maker_.MakeRstPacket(
       1, true, kClientDataStreamId1, QUIC_RST_ACKNOWLEDGEMENT));
   MockWrite writes[] = {
       MockWrite(ASYNC, client_rst->data(), client_rst->length(), 1)};
@@ -186,7 +196,7 @@ TEST_P(QuicChromiumClientSessionTest, MaxNumStreams) {
 
 TEST_P(QuicChromiumClientSessionTest, MaxNumStreamsViaRequest) {
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  std::unique_ptr<QuicEncryptedPacket> client_rst(maker_.MakeRstPacket(
+  std::unique_ptr<QuicEncryptedPacket> client_rst(client_maker_.MakeRstPacket(
       1, true, kClientDataStreamId1, QUIC_RST_ACKNOWLEDGEMENT));
   MockWrite writes[] = {
       MockWrite(ASYNC, client_rst->data(), client_rst->length(), 1)};
@@ -334,16 +344,20 @@ TEST_P(QuicChromiumClientSessionTest, MigrateToSocket) {
   CompleteCryptoHandshake();
 
   char data[] = "ABCD";
-  std::unique_ptr<QuicEncryptedPacket> ping(
-      maker_.MakePingPacket(1, /*include_version=*/false));
+  std::unique_ptr<QuicEncryptedPacket> client_ping(
+      client_maker_.MakePingPacket(1, /*include_version=*/false));
+  std::unique_ptr<QuicEncryptedPacket> server_ping(
+      server_maker_.MakePingPacket(1, /*include_version=*/false));
   std::unique_ptr<QuicEncryptedPacket> ack_and_data_out(
-      maker_.MakeAckAndDataPacket(2, false, 5, 1, 1, false, 0,
-                                  StringPiece(data)));
-  MockRead reads[] = {MockRead(SYNCHRONOUS, ping->data(), ping->length(), 0),
-                      MockRead(SYNCHRONOUS, ERR_IO_PENDING, 1)};
-  MockWrite writes[] = {MockWrite(SYNCHRONOUS, ping->data(), ping->length(), 2),
-                        MockWrite(SYNCHRONOUS, ack_and_data_out->data(),
-                                  ack_and_data_out->length(), 3)};
+      client_maker_.MakeAckAndDataPacket(2, false, 5, 1, 1, false, 0,
+                                         StringPiece(data)));
+  MockRead reads[] = {
+      MockRead(SYNCHRONOUS, server_ping->data(), server_ping->length(), 0),
+      MockRead(SYNCHRONOUS, ERR_IO_PENDING, 1)};
+  MockWrite writes[] = {
+      MockWrite(SYNCHRONOUS, client_ping->data(), client_ping->length(), 2),
+      MockWrite(SYNCHRONOUS, ack_and_data_out->data(),
+                ack_and_data_out->length(), 3)};
   StaticSocketDataProvider socket_data(reads, arraysize(reads), writes,
                                        arraysize(writes));
   socket_factory_.AddSocketDataProvider(&socket_data);
@@ -387,7 +401,7 @@ TEST_P(QuicChromiumClientSessionTest, MigrateToSocketMaxReaders) {
   for (size_t i = 0; i < kMaxReadersPerQuicSession; ++i) {
     MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 1)};
     std::unique_ptr<QuicEncryptedPacket> ping_out(
-        maker_.MakePingPacket(i + 1, /*include_version=*/true));
+        client_maker_.MakePingPacket(i + 1, /*include_version=*/true));
     MockWrite writes[] = {
         MockWrite(SYNCHRONOUS, ping_out->data(), ping_out->length(), i + 2)};
     StaticSocketDataProvider socket_data(reads, arraysize(reads), writes,
@@ -429,10 +443,12 @@ TEST_P(QuicChromiumClientSessionTest, MigrateToSocketMaxReaders) {
 }
 
 TEST_P(QuicChromiumClientSessionTest, MigrateToSocketReadError) {
-  std::unique_ptr<QuicEncryptedPacket> ping(
-      maker_.MakePingPacket(1, /*include_version=*/true));
+  std::unique_ptr<QuicEncryptedPacket> client_ping(
+      client_maker_.MakePingPacket(1, /*include_version=*/false));
+  std::unique_ptr<QuicEncryptedPacket> server_ping(
+      server_maker_.MakePingPacket(1, /*include_version=*/false));
   MockRead old_reads[] = {
-      MockRead(SYNCHRONOUS, ping->data(), ping->length(), 0),
+      MockRead(SYNCHRONOUS, client_ping->data(), client_ping->length(), 0),
       MockRead(ASYNC, ERR_IO_PENDING, 1),  // causes reading to pause.
       MockRead(ASYNC, ERR_NETWORK_CHANGED, 2)};
   socket_data_.reset(
@@ -441,11 +457,11 @@ TEST_P(QuicChromiumClientSessionTest, MigrateToSocketReadError) {
   CompleteCryptoHandshake();
 
   MockWrite writes[] = {
-      MockWrite(SYNCHRONOUS, ping->data(), ping->length(), 1)};
+      MockWrite(SYNCHRONOUS, client_ping->data(), client_ping->length(), 1)};
   MockRead new_reads[] = {
-      MockRead(SYNCHRONOUS, ping->data(), ping->length(), 0),
+      MockRead(SYNCHRONOUS, server_ping->data(), server_ping->length(), 0),
       MockRead(ASYNC, ERR_IO_PENDING, 2),  // pause reading.
-      MockRead(ASYNC, ping->data(), ping->length(), 3),
+      MockRead(ASYNC, server_ping->data(), server_ping->length(), 3),
       MockRead(ASYNC, ERR_IO_PENDING, 4),  // pause reading
       MockRead(ASYNC, ERR_NETWORK_CHANGED, 5)};
   SequencedSocketData new_socket_data(new_reads, arraysize(new_reads), writes,
@@ -497,7 +513,7 @@ TEST_P(QuicChromiumClientSessionTest, MigrateToSocketWriteError) {
   CompleteCryptoHandshake();
 
   std::unique_ptr<QuicEncryptedPacket> ping(
-      maker_.MakePingPacket(1, /*include_version=*/true));
+      client_maker_.MakePingPacket(1, /*include_version=*/true));
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
   MockWrite writes[] = {MockWrite(SYNCHRONOUS, ping->data(), ping->length(), 1),
                         MockWrite(SYNCHRONOUS, ERR_FAILED, 2)};

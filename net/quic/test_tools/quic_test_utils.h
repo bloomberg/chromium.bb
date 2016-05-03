@@ -88,6 +88,23 @@ QuicEncryptedPacket* ConstructEncryptedPacket(
     const std::string& data,
     QuicConnectionIdLength connection_id_length,
     QuicPacketNumberLength packet_number_length,
+    QuicVersionVector* versions,
+    Perspective perspective);
+
+// Create an encrypted packet for testing.
+// If versions == nullptr, uses &QuicSupportedVersions().
+// Note that the packet is encrypted with NullEncrypter, so to decrypt the
+// constructed packet, the framer must be set to use NullDecrypter.
+QuicEncryptedPacket* ConstructEncryptedPacket(
+    QuicConnectionId connection_id,
+    bool version_flag,
+    bool multipath_flag,
+    bool reset_flag,
+    QuicPathId path_id,
+    QuicPacketNumber packet_number,
+    const std::string& data,
+    QuicConnectionIdLength connection_id_length,
+    QuicPacketNumberLength packet_number_length,
     QuicVersionVector* versions);
 
 // This form assumes |versions| == nullptr.
@@ -134,7 +151,8 @@ QuicEncryptedPacket* ConstructMisFramedEncryptedPacket(
     const std::string& data,
     QuicConnectionIdLength connection_id_length,
     QuicPacketNumberLength packet_number_length,
-    QuicVersionVector* versions);
+    QuicVersionVector* versions,
+    Perspective perspective);
 
 void CompareCharArraysWithHexError(const std::string& description,
                                    const char* actual,
@@ -172,6 +190,11 @@ QuicAckFrame MakeAckFrame(QuicPacketNumber largest_observed);
 // nack ranges of width 1 packet, starting from |least_unacked|.
 QuicAckFrame MakeAckFrameWithNackRanges(size_t num_nack_ranges,
                                         QuicPacketNumber least_unacked);
+
+// Testing convenience method to construct a QuicAckFrame with |num_ack_blocks|
+// ack blocks of width 1 packet, starting from |least_unacked| + 2.
+QuicAckFrame MakeAckFrameWithAckBlocks(size_t num_ack_blocks,
+                                       QuicPacketNumber least_unacked);
 
 // Returns a QuicPacket that is owned by the caller, and
 // is populated with the fields in |header| and |frames|, or is nullptr if the
@@ -426,6 +449,7 @@ class MockConnection : public QuicConnection {
   MOCK_METHOD1(OnSendConnectionState, void(const CachedNetworkParameters&));
   MOCK_METHOD2(ResumeConnectionState,
                void(const CachedNetworkParameters&, bool));
+  MOCK_METHOD1(SetMaxPacingRate, void(QuicBandwidth));
 
   MOCK_METHOD1(OnError, void(QuicFramer* framer));
   void QuicConnection_OnError(QuicFramer* framer) {

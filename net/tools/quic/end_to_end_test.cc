@@ -144,15 +144,20 @@ vector<TestParams> GetTestParams() {
   // to do 0-RTT across incompatible versions. Chromium only supports
   // a single version at a time anyway. :)
   QuicVersionVector all_supported_versions = QuicSupportedVersions();
-  QuicVersionVector version_buckets[2];
+  QuicVersionVector version_buckets[3];
   for (const QuicVersion version : all_supported_versions) {
     if (version <= QUIC_VERSION_25) {
       // SPDY/4
       version_buckets[0].push_back(version);
-    } else {
+    } else if (version <= QUIC_VERSION_33) {
       // QUIC_VERSION_26 changes the kdf in a way that is incompatible with
       // version negotiation across the version 26 boundary.
       version_buckets[1].push_back(version);
+    } else {
+      // QUIC_VERSION_34 deprecates entropy and uses new ack and stop waiting
+      // wire formats, so it is incompatible with version negotiation across the
+      // verion 34 boundary.
+      version_buckets[2].push_back(version);
     }
   }
 
@@ -2646,7 +2651,10 @@ TEST_P(EndToEndTest, DISABLED_TestHugeResponseWithPacketLoss) {
   SetPacketLossPercentage(1);
   client_->SendRequest("/huge_response");
   client_->WaitForResponse();
-  VerifyCleanConnection(false);
+  // TODO(fayang): Fix this test to work with stateless rejects.
+  if (!BothSidesSupportStatelessRejects()) {
+    VerifyCleanConnection(false);
+  }
 }
 
 }  // namespace

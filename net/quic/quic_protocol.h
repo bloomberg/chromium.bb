@@ -378,6 +378,8 @@ enum QuicVersion {
   QUIC_VERSION_31 = 31,  // Adds a hash of the client hello to crypto proof.
   QUIC_VERSION_32 = 32,  // FEC related fields are removed from wire format.
   QUIC_VERSION_33 = 33,  // Adds diversification nonces.
+  QUIC_VERSION_34 = 34,  // Deprecates entropy and uses new ack and stop waiting
+                         // wire format.
 };
 
 // This vector contains QUIC versions which we currently support.
@@ -388,9 +390,9 @@ enum QuicVersion {
 // IMPORTANT: if you are adding to this list, follow the instructions at
 // http://sites/quic/adding-and-removing-versions
 static const QuicVersion kSupportedQuicVersions[] = {
-    QUIC_VERSION_33, QUIC_VERSION_32, QUIC_VERSION_31,
-    QUIC_VERSION_30, QUIC_VERSION_29, QUIC_VERSION_28,
-    QUIC_VERSION_27, QUIC_VERSION_26, QUIC_VERSION_25};
+    QUIC_VERSION_34, QUIC_VERSION_33, QUIC_VERSION_32, QUIC_VERSION_31,
+    QUIC_VERSION_30, QUIC_VERSION_29, QUIC_VERSION_28, QUIC_VERSION_27,
+    QUIC_VERSION_26, QUIC_VERSION_25};
 
 typedef std::vector<QuicVersion> QuicVersionVector;
 
@@ -945,6 +947,10 @@ class NET_EXPORT_PRIVATE PacketNumberQueue {
   // Removes |packet_number| from the set of packets in the queue.
   void Remove(QuicPacketNumber packet_number);
 
+  // Removes packets numbers between [lower, higher) to the set of packets in
+  // the queue. It is undefined behavior to call this with |higher| < |lower|.
+  void Remove(QuicPacketNumber lower, QuicPacketNumber higher);
+
   // Removes packets with values less than |higher| from the set of packets in
   // the queue. Returns true if packets were removed.
   bool RemoveUpTo(QuicPacketNumber higher);
@@ -966,6 +972,13 @@ class NET_EXPORT_PRIVATE PacketNumberQueue {
   // Returns the number of unique packets stored in the queue. Inefficient; only
   // exposed for testing.
   size_t NumPacketsSlow() const;
+
+  // Returns the number of disjoint packet number intervals contained in the
+  // queue.
+  size_t NumIntervals() const;
+
+  // Returns the length of last interval.
+  QuicPacketNumber LastIntervalLength() const;
 
   // Returns iterators over the individual packet numbers.
   const_iterator begin() const;
@@ -1015,15 +1028,21 @@ struct NET_EXPORT_PRIVATE QuicAckFrame {
   // Vector of <packet_number, time> for when packets arrived.
   PacketTimeVector received_packet_times;
 
-  // The set of packets which we're expecting and have not received.
-  PacketNumberQueue missing_packets;
+  // Set of packets.
+  PacketNumberQueue packets;
+
+  // If true, |packets| express missing packets. Otherwise, |packets| express
+  // received packets.
+  bool missing;
 };
 
 // True if the packet number is greater than largest_observed or is listed
 // as missing.
 // Always returns false for packet numbers less than least_unacked.
-bool NET_EXPORT_PRIVATE IsAwaitingPacket(const QuicAckFrame& ack_frame,
-                                         QuicPacketNumber packet_number);
+bool NET_EXPORT_PRIVATE
+IsAwaitingPacket(const QuicAckFrame& ack_frame,
+                 QuicPacketNumber packet_number,
+                 QuicPacketNumber peer_least_packet_awaiting_ack);
 
 // Defines for all types of congestion control algorithms that can be used in
 // QUIC. Note that this is separate from the congestion feedback type -

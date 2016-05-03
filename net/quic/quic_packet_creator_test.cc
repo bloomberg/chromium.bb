@@ -964,7 +964,10 @@ TEST_P(QuicPacketCreatorTest, SerializeTruncatedAckFrameWithLargePacketSize) {
 
   // Ensure the packet is successfully created, and the packet size estimate
   // matches the serialized packet length.
-  EXPECT_CALL(entropy_calculator_, EntropyHash(_)).WillOnce(testing::Return(0));
+  if (GetParam().version <= QUIC_VERSION_33) {
+    EXPECT_CALL(entropy_calculator_, EntropyHash(_))
+        .WillOnce(testing::Return(0));
+  }
   EXPECT_CALL(delegate_, OnSerializedPacket(_))
       .WillOnce(Invoke(this, &QuicPacketCreatorTest::SaveSerializedPacket));
   size_t est_packet_size = creator_.PacketSize();
@@ -1002,7 +1005,9 @@ TEST_P(QuicPacketCreatorTest, SerializeTruncatedAckFrameWithSmallPacketSize) {
 
   // Ensure the packet is successfully created, and the packet size estimate
   // may not match the serialized packet length.
-  EXPECT_CALL(entropy_calculator_, EntropyHash(_)).WillOnce(Return(0));
+  if (GetParam().version <= QUIC_VERSION_33) {
+    EXPECT_CALL(entropy_calculator_, EntropyHash(_)).WillOnce(Return(0));
+  }
   size_t est_packet_size = creator_.PacketSize();
   EXPECT_CALL(delegate_, OnSerializedPacket(_))
       .WillOnce(Invoke(this, &QuicPacketCreatorTest::SaveSerializedPacket));

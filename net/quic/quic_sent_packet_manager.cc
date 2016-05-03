@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "net/quic/congestion_control/general_loss_algorithm.h"
 #include "net/quic/congestion_control/pacing_sender.h"
 #include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/proto/cached_network_parameters.pb.h"
@@ -85,7 +86,7 @@ QuicSentPacketManager::QuicSentPacketManager(
                                          congestion_control_type,
                                          stats,
                                          initial_congestion_window_)),
-      loss_algorithm_(LossDetectionInterface::Create(loss_type)),
+      loss_algorithm_(new GeneralLossAlgorithm(loss_type)),
       n_connection_simulation_(false),
       receive_buffer_bytes_(kDefaultSocketReceiveBuffer),
       least_packet_awaited_by_peer_(1),
@@ -165,7 +166,7 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
   }
   if (config.HasReceivedConnectionOptions() &&
       ContainsQuicTag(config.ReceivedConnectionOptions(), kTIME)) {
-    loss_algorithm_.reset(LossDetectionInterface::Create(kTime));
+    loss_algorithm_.reset(new GeneralLossAlgorithm(kTime));
   }
   if (config.HasReceivedSocketReceiveBuffer()) {
     receive_buffer_bytes_ =
@@ -201,6 +202,13 @@ void QuicSentPacketManager::SetNumOpenStreams(size_t num_streams) {
     // Ensure the number of connections is between 1 and 5.
     send_algorithm_->SetNumEmulatedConnections(
         min<size_t>(5, max<size_t>(1, num_streams)));
+  }
+}
+
+void QuicSentPacketManager::SetMaxPacingRate(QuicBandwidth max_pacing_rate) {
+  if (FLAGS_quic_max_pacing_rate && using_pacing_) {
+    static_cast<PacingSender*>(send_algorithm_.get())
+        ->SetMaxPacingRate(max_pacing_rate);
   }
 }
 
@@ -258,10 +266,10 @@ void QuicSentPacketManager::OnIncomingAck(const QuicAckFrame& ack_frame,
 
 void QuicSentPacketManager::UpdatePacketInformationReceivedByPeer(
     const QuicAckFrame& ack_frame) {
-  if (ack_frame.missing_packets.Empty()) {
+  if (ack_frame.packets.Empty()) {
     least_packet_awaited_by_peer_ = ack_frame.largest_observed + 1;
   } else {
-    least_packet_awaited_by_peer_ = ack_frame.missing_packets.Min();
+    least_packet_awaited_by_peer_ = ack_frame.packets.Min();
   }
 }
 
@@ -293,7 +301,8 @@ void QuicSentPacketManager::HandleAckForSentPackets(
       break;
     }
 
-    if (ack_frame.missing_packets.Contains(packet_number)) {
+    if ((ack_frame.missing && ack_frame.packets.Contains(packet_number)) ||
+        (!ack_frame.missing && !ack_frame.packets.Contains(packet_number))) {
       // Don't continue to increase the nack count for packets not in flight.
       if (FLAGS_quic_simplify_loss_detection || !it->in_flight) {
         continue;

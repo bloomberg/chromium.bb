@@ -47,7 +47,18 @@ QuicAckFrame MakeAckFrameWithNackRanges(size_t num_nack_ranges,
   QuicAckFrame ack = MakeAckFrame(2 * num_nack_ranges + least_unacked);
   // Add enough missing packets to get num_nack_ranges nack ranges.
   for (QuicPacketNumber i = 1; i < 2 * num_nack_ranges; i += 2) {
-    ack.missing_packets.Add(least_unacked + i);
+    ack.packets.Add(least_unacked + i);
+  }
+  return ack;
+}
+
+QuicAckFrame MakeAckFrameWithAckBlocks(size_t num_ack_blocks,
+                                       QuicPacketNumber least_unacked) {
+  QuicAckFrame ack = MakeAckFrame(2 * num_ack_blocks + least_unacked);
+  ack.missing = false;
+  // Add enough received packets to get num_ack_blocks ack blocks.
+  for (QuicPacketNumber i = 2; i < 2 * num_ack_blocks + 1; i += 2) {
+    ack.packets.Add(least_unacked + i);
   }
   return ack;
 }
@@ -555,6 +566,23 @@ QuicEncryptedPacket* ConstructEncryptedPacket(
     QuicConnectionIdLength connection_id_length,
     QuicPacketNumberLength packet_number_length,
     QuicVersionVector* versions) {
+  return ConstructEncryptedPacket(connection_id, version_flag, multipath_flag,
+                                  reset_flag, path_id, packet_number, data,
+                                  connection_id_length, packet_number_length,
+                                  versions, Perspective::IS_CLIENT);
+}
+QuicEncryptedPacket* ConstructEncryptedPacket(
+    QuicConnectionId connection_id,
+    bool version_flag,
+    bool multipath_flag,
+    bool reset_flag,
+    QuicPathId path_id,
+    QuicPacketNumber packet_number,
+    const string& data,
+    QuicConnectionIdLength connection_id_length,
+    QuicPacketNumberLength packet_number_length,
+    QuicVersionVector* versions,
+    Perspective perspective) {
   QuicPacketHeader header;
   header.public_header.connection_id = connection_id;
   header.public_header.connection_id_length = connection_id_length;
@@ -574,7 +602,7 @@ QuicEncryptedPacket* ConstructEncryptedPacket(
   QuicFrames frames;
   frames.push_back(frame);
   QuicFramer framer(versions != nullptr ? *versions : QuicSupportedVersions(),
-                    QuicTime::Zero(), Perspective::IS_CLIENT);
+                    QuicTime::Zero(), perspective);
 
   std::unique_ptr<QuicPacket> packet(
       BuildUnsizedDataPacket(&framer, header, frames));
@@ -605,7 +633,8 @@ QuicEncryptedPacket* ConstructMisFramedEncryptedPacket(
     const string& data,
     QuicConnectionIdLength connection_id_length,
     QuicPacketNumberLength packet_number_length,
-    QuicVersionVector* versions) {
+    QuicVersionVector* versions,
+    Perspective perspective) {
   QuicPacketHeader header;
   header.public_header.connection_id = connection_id;
   header.public_header.connection_id_length = connection_id_length;
@@ -625,7 +654,7 @@ QuicEncryptedPacket* ConstructMisFramedEncryptedPacket(
   QuicFrames frames;
   frames.push_back(frame);
   QuicFramer framer(versions != nullptr ? *versions : QuicSupportedVersions(),
-                    QuicTime::Zero(), Perspective::IS_CLIENT);
+                    QuicTime::Zero(), perspective);
 
   std::unique_ptr<QuicPacket> packet(
       BuildUnsizedDataPacket(&framer, header, frames));
@@ -738,7 +767,7 @@ size_t GetPacketLengthForOneStream(QuicVersion version,
           include_diversification_nonce, packet_number_length, 0u);
   const size_t ack_length =
       NullEncrypter().GetCiphertextSize(
-          QuicFramer::GetMinAckFrameSize(PACKET_1BYTE_PACKET_NUMBER)) +
+          QuicFramer::GetMinAckFrameSize(version, PACKET_1BYTE_PACKET_NUMBER)) +
       GetPacketHeaderSize(connection_id_length, include_version,
                           include_path_id, include_diversification_nonce,
                           packet_number_length);

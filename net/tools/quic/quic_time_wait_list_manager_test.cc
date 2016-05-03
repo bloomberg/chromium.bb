@@ -118,17 +118,19 @@ class QuicTimeWaitListManagerTest : public ::testing::Test {
   }
 
   void AddStatelessConnectionId(QuicConnectionId connection_id) {
-    std::vector<QuicEncryptedPacket*> termination_packets;
-    termination_packets.push_back(new QuicEncryptedPacket(nullptr, 0, false));
+    std::vector<std::unique_ptr<QuicEncryptedPacket>> termination_packets;
+    termination_packets.push_back(std::unique_ptr<QuicEncryptedPacket>(
+        new QuicEncryptedPacket(nullptr, 0, false)));
     time_wait_list_manager_.AddConnectionIdToTimeWait(
         connection_id, QuicVersionMax(),
         /*connection_rejected_statelessly=*/true, &termination_packets);
   }
 
-  void AddConnectionId(QuicConnectionId connection_id,
-                       QuicVersion version,
-                       bool connection_rejected_statelessly,
-                       std::vector<QuicEncryptedPacket*>* packets) {
+  void AddConnectionId(
+      QuicConnectionId connection_id,
+      QuicVersion version,
+      bool connection_rejected_statelessly,
+      std::vector<std::unique_ptr<QuicEncryptedPacket>>* packets) {
     time_wait_list_manager_.AddConnectionIdToTimeWait(
         connection_id, version, connection_rejected_statelessly, packets);
   }
@@ -240,9 +242,10 @@ TEST_F(QuicTimeWaitListManagerTest, SendVersionNegotiationPacket) {
 TEST_F(QuicTimeWaitListManagerTest, SendConnectionClose) {
   const size_t kConnectionCloseLength = 100;
   EXPECT_CALL(visitor_, OnConnectionAddedToTimeWaitList(connection_id_));
-  std::vector<QuicEncryptedPacket*> termination_packets;
-  termination_packets.push_back(new QuicEncryptedPacket(
-      new char[kConnectionCloseLength], kConnectionCloseLength, true));
+  std::vector<std::unique_ptr<QuicEncryptedPacket>> termination_packets;
+  termination_packets.push_back(
+      std::unique_ptr<QuicEncryptedPacket>(new QuicEncryptedPacket(
+          new char[kConnectionCloseLength], kConnectionCloseLength, true)));
   AddConnectionId(connection_id_, QuicVersionMax(),
                   /*connection_rejected_statelessly=*/false,
                   &termination_packets);
@@ -258,11 +261,13 @@ TEST_F(QuicTimeWaitListManagerTest, SendConnectionClose) {
 TEST_F(QuicTimeWaitListManagerTest, SendTwoConnectionCloses) {
   const size_t kConnectionCloseLength = 100;
   EXPECT_CALL(visitor_, OnConnectionAddedToTimeWaitList(connection_id_));
-  std::vector<QuicEncryptedPacket*> termination_packets;
-  termination_packets.push_back(new QuicEncryptedPacket(
-      new char[kConnectionCloseLength], kConnectionCloseLength, true));
-  termination_packets.push_back(new QuicEncryptedPacket(
-      new char[kConnectionCloseLength], kConnectionCloseLength, true));
+  std::vector<std::unique_ptr<QuicEncryptedPacket>> termination_packets;
+  termination_packets.push_back(
+      std::unique_ptr<QuicEncryptedPacket>(new QuicEncryptedPacket(
+          new char[kConnectionCloseLength], kConnectionCloseLength, true)));
+  termination_packets.push_back(
+      std::unique_ptr<QuicEncryptedPacket>(new QuicEncryptedPacket(
+          new char[kConnectionCloseLength], kConnectionCloseLength, true)));
   AddConnectionId(connection_id_, QuicVersionMax(),
                   /*connection_rejected_statelessly=*/false,
                   &termination_packets);
@@ -457,9 +462,10 @@ TEST_F(QuicTimeWaitListManagerTest, AddConnectionIdTwice) {
   AddConnectionId(connection_id_);
   EXPECT_TRUE(IsConnectionIdInTimeWait(connection_id_));
   const size_t kConnectionCloseLength = 100;
-  std::vector<QuicEncryptedPacket*> termination_packets;
-  termination_packets.push_back(new QuicEncryptedPacket(
-      new char[kConnectionCloseLength], kConnectionCloseLength, true));
+  std::vector<std::unique_ptr<QuicEncryptedPacket>> termination_packets;
+  termination_packets.push_back(
+      std::unique_ptr<QuicEncryptedPacket>(new QuicEncryptedPacket(
+          new char[kConnectionCloseLength], kConnectionCloseLength, true)));
   AddConnectionId(connection_id_, QuicVersionMax(),
                   /*connection_rejected_statelessly=*/false,
                   &termination_packets);

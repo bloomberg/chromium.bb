@@ -373,6 +373,9 @@ TEST_P(QuicHeadersStreamTest, ProcessPushPromise) {
 }
 
 TEST_P(QuicHeadersStreamTest, EmptyHeaderHOLBlockedTime) {
+  if (!FLAGS_quic_measure_headers_hol_blocking_time) {
+    return;
+  }
   EXPECT_CALL(session_, OnHeadersHeadOfLineBlocking(_)).Times(0);
   testing::InSequence seq;
   bool fin = true;
@@ -405,6 +408,9 @@ TEST_P(QuicHeadersStreamTest, EmptyHeaderHOLBlockedTime) {
 }
 
 TEST_P(QuicHeadersStreamTest, NonEmptyHeaderHOLBlockedTime) {
+  if (!FLAGS_quic_measure_headers_hol_blocking_time) {
+    return;
+  }
   QuicStreamId stream_id;
   bool fin = true;
   QuicStreamFrame stream_frames[10];

@@ -1482,7 +1482,16 @@ class HttpStreamFactoryBidirectionalQuicTest
  protected:
   HttpStreamFactoryBidirectionalQuicTest()
       : clock_(new MockClock),
-        packet_maker_(GetParam(), 0, clock_, "www.example.org"),
+        client_packet_maker_(GetParam(),
+                             0,
+                             clock_,
+                             "www.example.org",
+                             Perspective::IS_CLIENT),
+        server_packet_maker_(GetParam(),
+                             0,
+                             clock_,
+                             "www.example.org",
+                             Perspective::IS_SERVER),
         random_generator_(0),
         proxy_service_(ProxyService::CreateDirect()),
         ssl_config_service_(new SSLConfigServiceDefaults) {
@@ -1533,7 +1542,12 @@ class HttpStreamFactoryBidirectionalQuicTest
         server, alternative_service_info_vector);
   };
 
-  test::QuicTestPacketMaker& packet_maker() { return packet_maker_; }
+  test::QuicTestPacketMaker& client_packet_maker() {
+    return client_packet_maker_;
+  }
+  test::QuicTestPacketMaker& server_packet_maker() {
+    return server_packet_maker_;
+  }
 
   MockClientSocketFactory& socket_factory() { return socket_factory_; }
 
@@ -1541,7 +1555,8 @@ class HttpStreamFactoryBidirectionalQuicTest
 
  private:
   MockClock* clock_;  // Owned by QuicStreamFactory
-  test::QuicTestPacketMaker packet_maker_;
+  test::QuicTestPacketMaker client_packet_maker_;
+  test::QuicTestPacketMaker server_packet_maker_;
   MockClientSocketFactory socket_factory_;
   std::unique_ptr<HttpNetworkSession> session_;
   test::MockRandom random_generator_;
@@ -1567,15 +1582,15 @@ TEST_P(HttpStreamFactoryBidirectionalQuicTest,
   SpdyPriority priority =
       ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
   size_t spdy_headers_frame_length;
-  mock_quic_data.AddWrite(packet_maker().MakeRequestHeadersPacket(
+  mock_quic_data.AddWrite(client_packet_maker().MakeRequestHeadersPacket(
       1, test::kClientDataStreamId1, /*should_include_version=*/true,
       /*fin=*/true, priority,
-      packet_maker().GetRequestHeaders("GET", "https", "/"),
+      client_packet_maker().GetRequestHeaders("GET", "https", "/"),
       &spdy_headers_frame_length));
   size_t spdy_response_headers_frame_length;
-  mock_quic_data.AddRead(packet_maker().MakeResponseHeadersPacket(
+  mock_quic_data.AddRead(server_packet_maker().MakeResponseHeadersPacket(
       1, test::kClientDataStreamId1, /*should_include_version=*/false,
-      /*fin=*/true, packet_maker().GetResponseHeaders("200"),
+      /*fin=*/true, server_packet_maker().GetResponseHeaders("200"),
       &spdy_response_headers_frame_length));
   mock_quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // No more read data.
   mock_quic_data.AddSocketDataToFactory(&socket_factory());
@@ -1693,15 +1708,15 @@ TEST_P(HttpStreamFactoryBidirectionalQuicTest,
   SpdyPriority priority =
       ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
   size_t spdy_headers_frame_length;
-  mock_quic_data.AddWrite(packet_maker().MakeRequestHeadersPacket(
+  mock_quic_data.AddWrite(client_packet_maker().MakeRequestHeadersPacket(
       1, test::kClientDataStreamId1, /*should_include_version=*/true,
       /*fin=*/true, priority,
-      packet_maker().GetRequestHeaders("GET", "https", "/"),
+      client_packet_maker().GetRequestHeaders("GET", "https", "/"),
       &spdy_headers_frame_length));
   size_t spdy_response_headers_frame_length;
-  mock_quic_data.AddRead(packet_maker().MakeResponseHeadersPacket(
+  mock_quic_data.AddRead(server_packet_maker().MakeResponseHeadersPacket(
       1, test::kClientDataStreamId1, /*should_include_version=*/false,
-      /*fin=*/true, packet_maker().GetResponseHeaders("200"),
+      /*fin=*/true, server_packet_maker().GetResponseHeaders("200"),
       &spdy_response_headers_frame_length));
   mock_quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // No more read data.
   mock_quic_data.AddSocketDataToFactory(&socket_factory());

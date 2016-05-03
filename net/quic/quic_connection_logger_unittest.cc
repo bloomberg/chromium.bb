@@ -5,6 +5,7 @@
 #include "net/quic/quic_connection_logger.h"
 
 #include "net/quic/quic_protocol.h"
+#include "net/quic/test_tools/quic_connection_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/socket/socket_performance_watcher.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -38,7 +39,10 @@ class QuicConnectionLoggerTest : public ::testing::Test {
         logger_(&session_,
                 "CONNECTION_UNKNOWN",
                 /*socket_performance_watcher=*/nullptr,
-                net_log_) {}
+                net_log_) {
+    QuicConnectionPeer::GetFramer(session_.connection())
+        ->set_version(QUIC_VERSION_33);
+  }
 
   BoundNetLog net_log_;
   MockConnectionHelper helper_;
@@ -53,7 +57,7 @@ TEST_F(QuicConnectionLoggerTest, TruncatedAcksSentNotChanged) {
   EXPECT_EQ(0u, QuicConnectionLoggerPeer::num_truncated_acks_sent(logger_));
 
   for (QuicPacketNumber i = 0; i < 256; ++i) {
-    frame.missing_packets.Add(i);
+    frame.packets.Add(i);
   }
   logger_.OnFrameAddedToPacket(QuicFrame(&frame));
   EXPECT_EQ(0u, QuicConnectionLoggerPeer::num_truncated_acks_sent(logger_));
@@ -62,7 +66,7 @@ TEST_F(QuicConnectionLoggerTest, TruncatedAcksSentNotChanged) {
 TEST_F(QuicConnectionLoggerTest, TruncatedAcksSent) {
   QuicAckFrame frame;
   for (QuicPacketNumber i = 0; i < 512; i += 2) {
-    frame.missing_packets.Add(i);
+    frame.packets.Add(i);
   }
   logger_.OnFrameAddedToPacket(QuicFrame(&frame));
   EXPECT_EQ(1u, QuicConnectionLoggerPeer::num_truncated_acks_sent(logger_));

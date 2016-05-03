@@ -18,9 +18,6 @@ class RttStats;
 
 class NET_EXPORT_PRIVATE LossDetectionInterface {
  public:
-  // Creates a TCP loss detector.
-  static LossDetectionInterface* Create(LossDetectionType loss_type);
-
   virtual ~LossDetectionInterface() {}
 
   virtual LossDetectionType GetLossDetectionType() const = 0;
