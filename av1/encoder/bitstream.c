@@ -838,7 +838,11 @@ static void write_partition(const AV1_COMMON *const cm,
   const int has_cols = (mi_col + hbs) < cm->mi_cols;
 
   if (has_rows && has_cols) {
+#if CONFIG_DAALA_EC
+    aom_write_tree_cdf(w, p, cm->fc->partition_cdf[ctx], PARTITION_TYPES);
+#else
     av1_write_token(w, av1_partition_tree, probs, &partition_encodings[p]);
+#endif
   } else if (!has_rows && has_cols) {
     assert(p == PARTITION_SPLIT || p == PARTITION_HORZ);
     aom_write(w, p == PARTITION_SPLIT, probs[1]);
@@ -1797,9 +1801,14 @@ static size_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
     prob_diff_update(av1_intra_mode_tree, fc->uv_mode_prob[i],
                      counts->uv_mode[i], INTRA_MODES, header_bc);
 
-  for (i = 0; i < PARTITION_CONTEXTS; ++i)
+  for (i = 0; i < PARTITION_CONTEXTS; ++i) {
     prob_diff_update(av1_partition_tree, fc->partition_prob[i],
                      counts->partition[i], PARTITION_TYPES, header_bc);
+#if CONFIG_DAALA_EC
+    av1_tree_to_cdf(av1_partition_tree, cm->fc->partition_prob[i],
+                    cm->fc->partition_cdf[i]);
+#endif
+  }
 #endif
 
   if (frame_is_intra_only(cm)) {
@@ -1879,9 +1888,14 @@ static size_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
                        counts->y_mode[i], INTRA_MODES, header_bc);
 
 #if !CONFIG_MISC_FIXES
-    for (i = 0; i < PARTITION_CONTEXTS; ++i)
+    for (i = 0; i < PARTITION_CONTEXTS; ++i) {
       prob_diff_update(av1_partition_tree, fc->partition_prob[i],
                        counts->partition[i], PARTITION_TYPES, header_bc);
+#if CONFIG_DAALA_EC
+      av1_tree_to_cdf(av1_partition_tree, cm->fc->partition_prob[i],
+                      cm->fc->partition_cdf[i]);
+#endif
+    }
 #endif
 
     av1_write_nmv_probs(cm, cm->allow_high_precision_mv, header_bc,

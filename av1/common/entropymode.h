@@ -53,6 +53,9 @@ typedef struct frame_contexts {
   aom_prob y_mode_prob[BLOCK_SIZE_GROUPS][INTRA_MODES - 1];
   aom_prob uv_mode_prob[INTRA_MODES][INTRA_MODES - 1];
   aom_prob partition_prob[PARTITION_CONTEXTS][PARTITION_TYPES - 1];
+#if CONFIG_DAALA_EC
+  uint16_t partition_cdf[PARTITION_CONTEXTS][PARTITION_TYPES];
+#endif
   av1_coeff_probs_model coef_probs[TX_SIZES][PLANE_TYPES];
 #if CONFIG_RANS
   coeff_cdf_model coef_cdfs[TX_SIZES][PLANE_TYPES];
