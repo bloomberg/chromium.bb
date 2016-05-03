@@ -20,6 +20,17 @@ import("//build/config/mac/base_rules.gni")
 #         (optional) string array, 'key=value' pairs for extra fields which are
 #         specified in a source Info.plist template.
 template("mac_info_plist") {
+  assert(defined(invoker.info_plist) != defined(invoker.info_plist_target),
+         "Only one of info_plist or info_plist_target may be specified in " +
+             target_name)
+
+  if (defined(invoker.info_plist)) {
+    _info_plist = invoker.info_plist
+  } else {
+    _info_plist_target_output = get_target_outputs(invoker.info_plist_target)
+    _info_plist = _info_plist_target_output[0]
+  }
+
   info_plist(target_name) {
     format = "xml1"
     extra_substitutions = []
@@ -32,9 +43,18 @@ template("mac_info_plist") {
     ]
     plist_templates = [
       "//build/config/mac/BuildInfo.plist",
-      invoker.info_plist,
+      _info_plist,
     ]
-    forward_variables_from(invoker, [ "executable_name" ])
+    if (defined(invoker.info_plist_target)) {
+      deps = [
+        invoker.info_plist_target,
+      ]
+    }
+    forward_variables_from(invoker,
+                           [
+                             "testonly",
+                             "executable_name",
+                           ])
   }
 }
 
@@ -101,7 +121,13 @@ template("mac_xib_bundle_data") {
 # Arguments
 #
 #     info_plist:
-#         string, path to the Info.plist file that will be used for the bundle.
+#         (optional) string, path to the Info.plist file that will be used for
+#         the bundle.
+#
+#     info_plist_target:
+#         (optional) string, if the info_plist is generated from an action,
+#         rather than a regular source file, specify the target name in lieu
+#         of info_plist. The two arguments are mutually exclusive.
 #
 #     output_name:
 #         (optional) string, name of the generated framework without the
@@ -118,8 +144,6 @@ template("mac_xib_bundle_data") {
 template("mac_framework_bundle") {
   assert(defined(invoker.deps),
          "Dependencies must be specified for $target_name")
-  assert(defined(invoker.info_plist),
-         "The Info.plist file must be specified for $target_name")
 
   _info_plist_target = target_name + "_info_plist"
 
@@ -128,7 +152,12 @@ template("mac_framework_bundle") {
     if (defined(invoker.output_name)) {
       executable_name = invoker.output_name
     }
-    forward_variables_from(invoker, [ "info_plist" ])
+    forward_variables_from(invoker,
+                           [
+                             "testonly",
+                             "info_plist",
+                             "info_plist_target",
+                           ])
   }
 
   _info_plist_bundle_data = _info_plist_target + "_bundle_data"
@@ -159,7 +188,13 @@ template("mac_framework_bundle") {
 # Arguments
 #
 #     info_plist:
-#         string, path to the Info.plist file that will be used for the bundle.
+#         (optional) string, path to the Info.plist file that will be used for
+#         the bundle.
+#
+#     info_plist_target:
+#         (optional) string, if the info_plist is generated from an action,
+#         rather than a regular source file, specify the target name in lieu
+#         of info_plist. The two arguments are mutually exclusive.
 #
 #     output_name:
 #         (optional) string, name of the generated app without the
@@ -169,9 +204,6 @@ template("mac_framework_bundle") {
 #         (optional) list of label, additional configs to apply to the
 #         executable target.
 template("mac_app_bundle") {
-  assert(defined(invoker.info_plist),
-         "The Info.plist file must be specified for $target_name")
-
   _target_name = target_name
   _output_name = target_name
   if (defined(invoker.output_name)) {
@@ -180,6 +212,18 @@ template("mac_app_bundle") {
 
   _executable_target = target_name + "_executable"
   _executable_bundle_data = _executable_target + "_bundle_data"
+
+  _info_plist_target = target_name + "_info_plist"
+
+  mac_info_plist(_info_plist_target) {
+    executable_name = _output_name
+    forward_variables_from(invoker,
+                           [
+                             "testonly",
+                             "info_plist",
+                             "info_plist_target",
+                           ])
+  }
 
   executable(_executable_target) {
     visibility = [ ":$_executable_bundle_data" ]
@@ -211,13 +255,6 @@ template("mac_app_bundle") {
     public_deps = [
       ":$_executable_target",
     ]
-  }
-
-  _info_plist_target = target_name + "_info_plist"
-
-  mac_info_plist(_info_plist_target) {
-    executable_name = _output_name
-    forward_variables_from(invoker, [ "info_plist" ])
   }
 
   _info_plist_bundle_data = _info_plist_target + "_bundle_data"

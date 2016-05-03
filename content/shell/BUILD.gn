@@ -16,6 +16,7 @@ if (is_android) {
 } else if (is_mac) {
   import("//build/config/mac/rules.gni")
   import("//build_overrides/v8.gni")
+  import("//build/mac/tweak_info_plist.gni")
 }
 
 declare_args() {
@@ -430,6 +431,15 @@ if (is_android) {
     ]
   }
 } else if (is_mac) {
+  tweak_info_plist("content_shell_plist") {
+    testonly = true
+    info_plist = "app/app-Info.plist"
+    args = [
+      "--scm=1",
+      "--version",
+      content_shell_version,
+    ]
+  }
   mac_app_bundle("content_shell") {
     testonly = true
     output_name = content_shell_product_name
@@ -445,7 +455,7 @@ if (is_android) {
       # the bundle structure.
       "//components/test_runner:resources",
     ]
-    info_plist = "app/app-Info.plist"
+    info_plist_target = ":content_shell_plist"
   }
 } else {
   # TODO(brettw) when GYP is no longer necessary, delete
@@ -572,6 +582,20 @@ if (is_mac) {
   content_shell_framework_name = "$content_shell_product_name Framework"
   content_shell_helper_name = "$content_shell_product_name Helper"
 
+  tweak_info_plist("content_shell_framework_plist") {
+    testonly = true
+    info_plist = "app/framework-Info.plist"
+    args = [
+      "--breakpad=1",
+      "--keystone=0",
+      "--scm=1",
+      "--version",
+      content_shell_version,
+      "--branding",
+      content_shell_product_name,
+    ]
+  }
+
   mac_framework_bundle("content_shell_framework") {
     testonly = true
 
@@ -602,7 +626,19 @@ if (is_mac) {
       "@executable_path/../Frameworks/$output_name.framework/$output_name",
     ]
 
-    info_plist = "app/framework-Info.plist"
+    info_plist_target = ":content_shell_framework_plist"
+  }
+
+  tweak_info_plist("content_shell_helper_plist") {
+    testonly = true
+    info_plist = "app/helper-Info.plist"
+    args = [
+      "--breakpad=0",
+      "--keystone=0",
+      "--scm=0",
+      "--version",
+      content_shell_version,
+    ]
   }
 
   mac_app_bundle("content_shell_helper_app") {
@@ -614,7 +650,7 @@ if (is_mac) {
     deps = [
       ":content_shell_framework+link",
     ]
-    info_plist = "app/helper-Info.plist"
+    info_plist_target = ":content_shell_helper_plist"
   }
 
   # The install_name_tool can only operate in-place, rather than producing a

@@ -64,6 +64,11 @@ template("info_plist") {
           "-f=" + invoker.format,
         ] + rebase_path(sources, root_build_dir)
     args = [ "@{{response_file_name}}" ]
+    forward_variables_from(invoker,
+                           [
+                             "testonly",
+                             "deps",
+                           ])
   }
 }
 

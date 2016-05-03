@@ -203,6 +203,9 @@ def Main(argv):
   parser = optparse.OptionParser('%prog [options]')
   parser.add_option('--plist', dest='plist_path', action='store',
       type='string', default=None, help='The path of the plist to tweak.')
+  parser.add_option('--output', dest='plist_output', action='store',
+      type='string', default=None, help='If specified, the path to output ' + \
+      'the tweaked plist, rather than overwriting the input.')
   parser.add_option('--breakpad', dest='use_breakpad', action='store',
       type='int', default=False, help='Enable Breakpad [1 or 0]')
   parser.add_option('--breakpad_uploads', dest='breakpad_uploads',
@@ -274,8 +277,11 @@ def Main(argv):
 
   # Info.plist will work perfectly well in any plist format, but traditionally
   # applications use xml1 for this, so convert it to ensure that it's valid.
+  output_path = options.plist_path
+  if options.plist_output is not None:
+    output_path = options.plist_output
   proc = subprocess.Popen(['plutil', '-convert', 'xml1',
-                           '-o', options.plist_path,
+                           '-o', output_path,
                            temp_info_plist.name])
   proc.wait()
   return proc.returncode
