@@ -8,8 +8,8 @@
 #include "cc/test/fake_output_surface_client.h"
 #include "cc/test/test_context_provider.h"
 #include "cc/test/test_web_graphics_context_3d.h"
+#include "components/display_compositor/compositor_overlay_candidate_validator.h"
 #include "content/browser/compositor/browser_compositor_output_surface.h"
-#include "content/browser/compositor/browser_compositor_overlay_candidate_validator.h"
 #include "content/browser/compositor/reflector_impl.h"
 #include "content/browser/compositor/reflector_texture.h"
 #include "content/browser/compositor/test/no_transport_image_transport_factory.h"
@@ -19,7 +19,7 @@
 #include "ui/compositor/test/context_factories_for_test.h"
 
 #if defined(USE_OZONE)
-#include "content/browser/compositor/browser_compositor_overlay_candidate_validator_ozone.h"
+#include "components/display_compositor/compositor_overlay_candidate_validator_ozone.h"
 #include "ui/ozone/public/overlay_candidates_ozone.h"
 #endif  // defined(USE_OZONE)
 
@@ -57,11 +57,12 @@ class TestOverlayCandidatesOzone : public ui::OverlayCandidatesOzone {
 };
 #endif  // defined(USE_OZONE)
 
-std::unique_ptr<BrowserCompositorOverlayCandidateValidator>
+std::unique_ptr<display_compositor::CompositorOverlayCandidateValidator>
 CreateTestValidatorOzone() {
 #if defined(USE_OZONE)
-  return std::unique_ptr<BrowserCompositorOverlayCandidateValidator>(
-      new BrowserCompositorOverlayCandidateValidatorOzone(
+  return std::unique_ptr<
+      display_compositor::CompositorOverlayCandidateValidator>(
+      new display_compositor::CompositorOverlayCandidateValidatorOzone(
           std::unique_ptr<ui::OverlayCandidatesOzone>(
               new TestOverlayCandidatesOzone())));
 #else

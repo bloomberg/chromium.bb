@@ -26,9 +26,9 @@
 #include "cc/surfaces/onscreen_display_client.h"
 #include "cc/surfaces/surface_display_output_surface.h"
 #include "cc/surfaces/surface_manager.h"
+#include "components/display_compositor/compositor_overlay_candidate_validator.h"
 #include "components/display_compositor/gl_helper.h"
 #include "content/browser/compositor/browser_compositor_output_surface.h"
-#include "content/browser/compositor/browser_compositor_overlay_candidate_validator.h"
 #include "content/browser/compositor/gpu_browser_compositor_output_surface.h"
 #include "content/browser/compositor/gpu_surfaceless_browser_compositor_output_surface.h"
 #include "content/browser/compositor/offscreen_browser_compositor_output_surface.h"
@@ -63,7 +63,7 @@
 #include "content/browser/compositor/software_output_device_win.h"
 #include "ui/gfx/win/rendering_window_manager.h"
 #elif defined(USE_OZONE)
-#include "content/browser/compositor/browser_compositor_overlay_candidate_validator_ozone.h"
+#include "components/display_compositor/compositor_overlay_candidate_validator_ozone.h"
 #include "content/browser/compositor/software_output_device_ozone.h"
 #include "ui/ozone/public/overlay_candidates_ozone.h"
 #include "ui/ozone/public/overlay_manager_ozone.h"
@@ -72,13 +72,13 @@
 #elif defined(USE_X11)
 #include "content/browser/compositor/software_output_device_x11.h"
 #elif defined(OS_MACOSX)
-#include "content/browser/compositor/browser_compositor_overlay_candidate_validator_mac.h"
+#include "components/display_compositor/compositor_overlay_candidate_validator_mac.h"
 #include "content/browser/compositor/software_output_device_mac.h"
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "ui/base/cocoa/remote_layer_api.h"
 #include "ui/base/ui_base_switches.h"
 #elif defined(OS_ANDROID)
-#include "content/browser/compositor/browser_compositor_overlay_candidate_validator_android.h"
+#include "components/display_compositor/compositor_overlay_candidate_validator_android.h"
 #endif
 #if !defined(GPU_SURFACE_HANDLE_IS_ACCELERATED_WINDOW)
 #include "content/browser/gpu/gpu_surface_tracker.h"
@@ -208,9 +208,10 @@ GpuProcessTransportFactory::CreateSoftwareOutputDevice(
 #endif
 }
 
-std::unique_ptr<BrowserCompositorOverlayCandidateValidator>
+std::unique_ptr<display_compositor::CompositorOverlayCandidateValidator>
 CreateOverlayCandidateValidator(gfx::AcceleratedWidget widget) {
-  std::unique_ptr<BrowserCompositorOverlayCandidateValidator> validator;
+  std::unique_ptr<display_compositor::CompositorOverlayCandidateValidator>
+      validator;
 #if defined(USE_OZONE)
   std::unique_ptr<ui::OverlayCandidatesOzone> overlay_candidates =
       ui::OzonePlatform::GetInstance()
@@ -220,8 +221,9 @@ CreateOverlayCandidateValidator(gfx::AcceleratedWidget widget) {
   if (overlay_candidates &&
       (command_line->HasSwitch(switches::kEnableHardwareOverlays) ||
        command_line->HasSwitch(switches::kOzoneTestSingleOverlaySupport))) {
-    validator.reset(new BrowserCompositorOverlayCandidateValidatorOzone(
-        std::move(overlay_candidates)));
+    validator.reset(
+        new display_compositor::CompositorOverlayCandidateValidatorOzone(
+            std::move(overlay_candidates)));
   }
 #elif defined(OS_MACOSX)
   // Overlays are only supported through the remote layer API.
@@ -233,10 +235,12 @@ CreateOverlayCandidateValidator(gfx::AcceleratedWidget widget) {
         GpuDataManagerImpl::GetInstance()->IsDriverBugWorkaroundActive(
             gpu::DISABLE_OVERLAY_CA_LAYERS);
     validator.reset(
-        new BrowserCompositorOverlayCandidateValidatorMac(ca_layers_disabled));
+        new display_compositor::CompositorOverlayCandidateValidatorMac(
+            ca_layers_disabled));
   }
 #elif defined(OS_ANDROID)
-  validator.reset(new BrowserCompositorOverlayCandidateValidatorAndroid());
+  validator.reset(
+      new display_compositor::CompositorOverlayCandidateValidatorAndroid());
 #endif
 
   return validator;
@@ -443,7 +447,8 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
         surface = base::WrapUnique(new OffscreenBrowserCompositorOutputSurface(
             context_provider, shared_worker_context_provider_,
             compositor->vsync_manager(), compositor->task_runner().get(),
-            std::unique_ptr<BrowserCompositorOverlayCandidateValidator>()));
+            std::unique_ptr<
+                display_compositor::CompositorOverlayCandidateValidator>()));
       } else if (capabilities.surfaceless) {
         GLenum target = GL_TEXTURE_2D;
         GLenum format = GL_RGB;
@@ -459,7 +464,8 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
                 CreateOverlayCandidateValidator(compositor->widget()), target,
                 format, BrowserGpuMemoryBufferManager::current()));
       } else {
-        std::unique_ptr<BrowserCompositorOverlayCandidateValidator> validator;
+        std::unique_ptr<display_compositor::CompositorOverlayCandidateValidator>
+            validator;
 #if !defined(OS_MACOSX)
         // Overlays are only supported on surfaceless output surfaces on Mac.
         validator = CreateOverlayCandidateValidator(compositor->widget());

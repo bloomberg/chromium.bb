@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_COMPOSITOR_OVERLAY_CANDIDATE_VALIDATOR_ANDROID_H_
-#define CONTENT_BROWSER_COMPOSITOR_OVERLAY_CANDIDATE_VALIDATOR_ANDROID_H_
+#ifndef COMPONENTS_DISPLAY_COMPOSITOR_COMPOSITOR_OVERLAY_CANDIDATE_VALIDATOR_ANDROID_H_
+#define COMPONENTS_DISPLAY_COMPOSITOR_COMPOSITOR_OVERLAY_CANDIDATE_VALIDATOR_ANDROID_H_
 
 #include "base/macros.h"
-#include "content/browser/compositor/browser_compositor_overlay_candidate_validator.h"
-#include "content/common/content_export.h"
+#include "components/display_compositor/compositor_overlay_candidate_validator.h"
+#include "components/display_compositor/display_compositor_export.h"
 
-namespace content {
+namespace display_compositor {
 
 // An overlay validator for supporting fullscreen video underlays on Android.
 // Things are a bit different on Android compared with other platforms. By the
@@ -19,11 +19,11 @@ namespace content {
 // the reasons that only fullscreen is supported: we have to be sure that
 // nothing will cause the overlay to be rejected, because there's no fallback to
 // gl compositing.
-class CONTENT_EXPORT BrowserCompositorOverlayCandidateValidatorAndroid
-    : public BrowserCompositorOverlayCandidateValidator {
+class DISPLAY_COMPOSITOR_EXPORT CompositorOverlayCandidateValidatorAndroid
+    : public CompositorOverlayCandidateValidator {
  public:
-  BrowserCompositorOverlayCandidateValidatorAndroid();
-  ~BrowserCompositorOverlayCandidateValidatorAndroid() override;
+  CompositorOverlayCandidateValidatorAndroid();
+  ~CompositorOverlayCandidateValidatorAndroid() override;
 
   void GetStrategies(cc::OverlayProcessor::StrategyList* strategies) override;
   void CheckOverlaySupport(cc::OverlayCandidateList* surfaces) override;
@@ -32,9 +32,9 @@ class CONTENT_EXPORT BrowserCompositorOverlayCandidateValidatorAndroid
   void SetSoftwareMirrorMode(bool enabled) override;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(BrowserCompositorOverlayCandidateValidatorAndroid);
+  DISALLOW_COPY_AND_ASSIGN(CompositorOverlayCandidateValidatorAndroid);
 };
 
-}  // namespace content
+}  // namespace display_compositor
 
-#endif  // CONTENT_BROWSER_COMPOSITOR_OVERLAY_CANDIDATE_VALIDATOR_ANDROID_H_
+#endif  // COMPONENTS_DISPLAY_COMPOSITOR_COMPOSITOR_OVERLAY_CANDIDATE_VALIDATOR_ANDROID_H_

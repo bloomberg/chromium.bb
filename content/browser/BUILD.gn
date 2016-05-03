@@ -467,8 +467,6 @@ source_set("browser") {
 
     if (!use_ozone) {
       sources -= [
-        "compositor/browser_compositor_overlay_candidate_validator_ozone.cc",
-        "compositor/browser_compositor_overlay_candidate_validator_ozone.h",
         "compositor/software_output_device_ozone.cc",
         "compositor/software_output_device_ozone.h",
       ]

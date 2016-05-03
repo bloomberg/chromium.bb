@@ -13,7 +13,7 @@
 #include "cc/output/gl_frame_data.h"
 #include "cc/output/output_surface_client.h"
 #include "cc/resources/resource_provider.h"
-#include "content/browser/compositor/browser_compositor_overlay_candidate_validator.h"
+#include "components/display_compositor/compositor_overlay_candidate_validator.h"
 #include "content/browser/compositor/reflector_impl.h"
 #include "content/browser/compositor/reflector_texture.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
@@ -36,7 +36,7 @@ OffscreenBrowserCompositorOutputSurface::
         const scoped_refptr<ContextProviderCommandBuffer>& worker_context,
         const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager,
         base::SingleThreadTaskRunner* task_runner,
-        std::unique_ptr<BrowserCompositorOverlayCandidateValidator>
+        std::unique_ptr<display_compositor::CompositorOverlayCandidateValidator>
             overlay_candidate_validator)
     : BrowserCompositorOutputSurface(context,
                                      worker_context,

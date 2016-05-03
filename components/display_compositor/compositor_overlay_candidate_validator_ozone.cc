@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/compositor/browser_compositor_overlay_candidate_validator_ozone.h"
+#include "components/display_compositor/compositor_overlay_candidate_validator_ozone.h"
 
 #include <stddef.h>
 
@@ -13,7 +13,7 @@
 #include "cc/output/overlay_strategy_underlay.h"
 #include "ui/ozone/public/overlay_candidates_ozone.h"
 
-namespace content {
+namespace display_compositor {
 
 static gfx::BufferFormat GetBufferFormat(cc::ResourceFormat overlay_format) {
   switch (overlay_format) {
@@ -27,17 +27,16 @@ static gfx::BufferFormat GetBufferFormat(cc::ResourceFormat overlay_format) {
   }
 }
 
-BrowserCompositorOverlayCandidateValidatorOzone::
-    BrowserCompositorOverlayCandidateValidatorOzone(
+CompositorOverlayCandidateValidatorOzone::
+    CompositorOverlayCandidateValidatorOzone(
         std::unique_ptr<ui::OverlayCandidatesOzone> overlay_candidates)
     : overlay_candidates_(std::move(overlay_candidates)),
       software_mirror_active_(false) {}
 
-BrowserCompositorOverlayCandidateValidatorOzone::
-    ~BrowserCompositorOverlayCandidateValidatorOzone() {
-}
+CompositorOverlayCandidateValidatorOzone::
+    ~CompositorOverlayCandidateValidatorOzone() {}
 
-void BrowserCompositorOverlayCandidateValidatorOzone::GetStrategies(
+void CompositorOverlayCandidateValidatorOzone::GetStrategies(
     cc::OverlayProcessor::StrategyList* strategies) {
   strategies->push_back(
       base::WrapUnique(new cc::OverlayStrategySingleOnTop(this)));
@@ -45,11 +44,11 @@ void BrowserCompositorOverlayCandidateValidatorOzone::GetStrategies(
       base::WrapUnique(new cc::OverlayStrategyUnderlay(this)));
 }
 
-bool BrowserCompositorOverlayCandidateValidatorOzone::AllowCALayerOverlays() {
+bool CompositorOverlayCandidateValidatorOzone::AllowCALayerOverlays() {
   return false;
 }
 
-void BrowserCompositorOverlayCandidateValidatorOzone::CheckOverlaySupport(
+void CompositorOverlayCandidateValidatorOzone::CheckOverlaySupport(
     cc::OverlayCandidateList* surfaces) {
   // SW mirroring copies out of the framebuffer, so we can't remove any
   // quads for overlaying, otherwise the output is incorrect.
@@ -83,9 +82,9 @@ void BrowserCompositorOverlayCandidateValidatorOzone::CheckOverlaySupport(
   }
 }
 
-void BrowserCompositorOverlayCandidateValidatorOzone::SetSoftwareMirrorMode(
+void CompositorOverlayCandidateValidatorOzone::SetSoftwareMirrorMode(
     bool enabled) {
   software_mirror_active_ = enabled;
 }
 
-}  // namespace content
+}  // namespace display_compositor

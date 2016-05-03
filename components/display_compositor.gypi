@@ -10,6 +10,7 @@
       'type': '<(component)',
       'dependencies': [
         '../base/base.gyp:base',
+        '../cc/cc.gyp:cc',
         '../gpu/gpu.gyp:command_buffer_client',
         '../gpu/gpu.gyp:command_buffer_common',
         '../skia/skia.gyp:skia',
@@ -33,6 +34,13 @@
       'sources': [
         'display_compositor/buffer_queue.cc',
         'display_compositor/buffer_queue.h',
+        'display_compositor/compositor_overlay_candidate_validator.h',
+        'display_compositor/compositor_overlay_candidate_validator_android.cc',
+        'display_compositor/compositor_overlay_candidate_validator_android.h',
+        'display_compositor/compositor_overlay_candidate_validator_mac.h',
+        'display_compositor/compositor_overlay_candidate_validator_mac.mm',
+        'display_compositor/compositor_overlay_candidate_validator_ozone.cc',
+        'display_compositor/compositor_overlay_candidate_validator_ozone.h',
         'display_compositor/display_compositor_export.h',
         'display_compositor/gl_helper.cc',
         'display_compositor/gl_helper.h',

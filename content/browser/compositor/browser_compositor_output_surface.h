@@ -17,12 +17,15 @@ namespace cc {
 class SoftwareOutputDevice;
 }
 
+namespace display_compositor {
+class CompositorOverlayCandidateValidator;
+}
+
 namespace gfx {
 enum class SwapResult;
 }
 
 namespace content {
-class BrowserCompositorOverlayCandidateValidator;
 class ContextProviderCommandBuffer;
 class ReflectorImpl;
 class WebGraphicsContext3DCommandBufferImpl;
@@ -70,7 +73,7 @@ class CONTENT_EXPORT BrowserCompositorOutputSurface
       const scoped_refptr<cc::ContextProvider>& worker_context,
       const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager,
       base::SingleThreadTaskRunner* task_runner,
-      std::unique_ptr<BrowserCompositorOverlayCandidateValidator>
+      std::unique_ptr<display_compositor::CompositorOverlayCandidateValidator>
           overlay_candidate_validator);
 
   // Constructor used by the software implementation.
@@ -98,7 +101,7 @@ class CONTENT_EXPORT BrowserCompositorOutputSurface
   void UpdateVSyncParametersInternal(base::TimeTicks timebase,
                                      base::TimeDelta interval);
 
-  std::unique_ptr<BrowserCompositorOverlayCandidateValidator>
+  std::unique_ptr<display_compositor::CompositorOverlayCandidateValidator>
       overlay_candidate_validator_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserCompositorOutputSurface);

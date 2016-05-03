@@ -9,8 +9,8 @@
 #include "cc/output/compositor_frame.h"
 #include "cc/output/output_surface_client.h"
 #include "components/display_compositor/buffer_queue.h"
+#include "components/display_compositor/compositor_overlay_candidate_validator.h"
 #include "components/display_compositor/gl_helper.h"
-#include "content/browser/compositor/browser_compositor_overlay_candidate_validator.h"
 #include "content/browser/compositor/reflector_impl.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "gpu/GLES2/gl2extchromium.h"
@@ -25,7 +25,7 @@ GpuSurfacelessBrowserCompositorOutputSurface::
         gpu::SurfaceHandle surface_handle,
         const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager,
         base::SingleThreadTaskRunner* task_runner,
-        std::unique_ptr<BrowserCompositorOverlayCandidateValidator>
+        std::unique_ptr<display_compositor::CompositorOverlayCandidateValidator>
             overlay_candidate_validator,
         unsigned int target,
         unsigned int internalformat,

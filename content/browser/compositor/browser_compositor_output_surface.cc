@@ -12,7 +12,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "cc/base/switches.h"
 #include "cc/output/output_surface_client.h"
-#include "content/browser/compositor/browser_compositor_overlay_candidate_validator.h"
+#include "components/display_compositor/compositor_overlay_candidate_validator.h"
 #include "content/browser/compositor/reflector_impl.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 
@@ -23,7 +23,7 @@ BrowserCompositorOutputSurface::BrowserCompositorOutputSurface(
     const scoped_refptr<cc::ContextProvider>& worker_context_provider,
     const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager,
     base::SingleThreadTaskRunner* task_runner,
-    std::unique_ptr<BrowserCompositorOverlayCandidateValidator>
+    std::unique_ptr<display_compositor::CompositorOverlayCandidateValidator>
         overlay_candidate_validator)
     : OutputSurface(context_provider, worker_context_provider),
       vsync_manager_(vsync_manager),

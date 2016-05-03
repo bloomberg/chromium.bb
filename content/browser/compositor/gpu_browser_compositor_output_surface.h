@@ -13,6 +13,10 @@
 #include "content/browser/compositor/browser_compositor_output_surface.h"
 #include "ui/gfx/swap_result.h"
 
+namespace display_compositor {
+class CompositorOverlayCandidateValidator;
+}
+
 namespace gpu {
 class CommandBufferProxyImpl;
 }
@@ -22,7 +26,6 @@ class CompositorVSyncManager;
 }
 
 namespace content {
-class BrowserCompositorOverlayCandidateValidator;
 class ReflectorTexture;
 
 // Adapts a WebGraphicsContext3DCommandBufferImpl into a
@@ -36,7 +39,7 @@ class GpuBrowserCompositorOutputSurface
       const scoped_refptr<ContextProviderCommandBuffer>& worker_context,
       const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager,
       base::SingleThreadTaskRunner* task_runner,
-      std::unique_ptr<BrowserCompositorOverlayCandidateValidator>
+      std::unique_ptr<display_compositor::CompositorOverlayCandidateValidator>
           overlay_candidate_validator);
 
   ~GpuBrowserCompositorOutputSurface() override;

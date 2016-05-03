@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/compositor/browser_compositor_overlay_candidate_validator_android.h"
+#include "components/display_compositor/compositor_overlay_candidate_validator_android.h"
 
 #include <memory>
 
@@ -11,21 +11,21 @@
 #include "cc/output/overlay_strategy_underlay.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
-namespace content {
+namespace display_compositor {
 
-BrowserCompositorOverlayCandidateValidatorAndroid::
-    BrowserCompositorOverlayCandidateValidatorAndroid() {}
+CompositorOverlayCandidateValidatorAndroid::
+    CompositorOverlayCandidateValidatorAndroid() {}
 
-BrowserCompositorOverlayCandidateValidatorAndroid::
-    ~BrowserCompositorOverlayCandidateValidatorAndroid() {}
+CompositorOverlayCandidateValidatorAndroid::
+    ~CompositorOverlayCandidateValidatorAndroid() {}
 
-void BrowserCompositorOverlayCandidateValidatorAndroid::GetStrategies(
+void CompositorOverlayCandidateValidatorAndroid::GetStrategies(
     cc::OverlayProcessor::StrategyList* strategies) {
   strategies->push_back(
       base::WrapUnique(new cc::OverlayStrategyUnderlay(this)));
 }
 
-void BrowserCompositorOverlayCandidateValidatorAndroid::CheckOverlaySupport(
+void CompositorOverlayCandidateValidatorAndroid::CheckOverlaySupport(
     cc::OverlayCandidateList* candidates) {
   // There should only be at most a single overlay candidate: the video quad.
   // There's no check that the presented candidate is really a video frame for
@@ -42,13 +42,13 @@ void BrowserCompositorOverlayCandidateValidatorAndroid::CheckOverlaySupport(
   }
 }
 
-bool BrowserCompositorOverlayCandidateValidatorAndroid::AllowCALayerOverlays() {
+bool CompositorOverlayCandidateValidatorAndroid::AllowCALayerOverlays() {
   return false;
 }
 
 // Overlays will still be allowed when software mirroring is enabled, even
 // though they won't appear in the mirror.
-void BrowserCompositorOverlayCandidateValidatorAndroid::SetSoftwareMirrorMode(
+void CompositorOverlayCandidateValidatorAndroid::SetSoftwareMirrorMode(
     bool enabled) {}
 
-}  // namespace content
+}  // namespace display_compositor
