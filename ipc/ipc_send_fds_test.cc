@@ -143,12 +143,7 @@ class IPCSendFdsTest : public IPCTestBase {
   }
 };
 
-#if defined(OS_ANDROID)
-#define MAYBE_DescriptorTest DISABLED_DescriptorTest
-#else
-#define MAYBE_DescriptorTest DescriptorTest
-#endif
-TEST_F(IPCSendFdsTest, MAYBE_DescriptorTest) {
+TEST_F(IPCSendFdsTest, DescriptorTest) {
   Init("SendFdsClient");
   RunServer();
 }
