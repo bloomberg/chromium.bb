@@ -54,7 +54,9 @@ std::string ExtensionMessageBubbleBridge::GetAnchorActionId() {
              : std::string();
 }
 
-void ExtensionMessageBubbleBridge::OnBubbleShown() {}
+void ExtensionMessageBubbleBridge::OnBubbleShown() {
+  controller_->OnShown();
+}
 
 void ExtensionMessageBubbleBridge::OnBubbleClosed(CloseAction action) {
   switch (action) {

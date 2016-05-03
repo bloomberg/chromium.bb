@@ -63,6 +63,11 @@ class ExtensionMessageBubbleBrowserTest
   void PreBubbleShowsOnStartup();
   void TestBubbleShowsOnStartup();
 
+  // Tests that the developer mode warning bubble is only shown once per
+  // profile.
+  // Regression test for crbug.com/607099.
+  void TestDevModeBubbleIsntShownTwice();
+
  private:
   std::unique_ptr<extensions::FeatureSwitch::ScopedOverride>
       dev_mode_bubble_override_;

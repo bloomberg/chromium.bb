@@ -122,3 +122,24 @@ void ExtensionMessageBubbleBrowserTest::TestBubbleShowsOnStartup() {
   CheckBubble(browser(), ANCHOR_BROWSER_ACTION);
   CloseBubble(browser());
 }
+
+void ExtensionMessageBubbleBrowserTest::TestDevModeBubbleIsntShownTwice() {
+  scoped_refptr<const extensions::Extension> action_extension =
+      extensions::extension_action_test_util::CreateActionExtension(
+          "action_extension",
+          extensions::extension_action_test_util::BROWSER_ACTION,
+          extensions::Manifest::UNPACKED);
+  extension_service()->AddExtension(action_extension.get());
+
+  Browser* second_browser = new Browser(Browser::CreateParams(profile()));
+  base::RunLoop().RunUntilIdle();
+
+  CheckBubble(second_browser, ANCHOR_BROWSER_ACTION);
+  CloseBubble(second_browser);
+  base::RunLoop().RunUntilIdle();
+
+  // The bubble was already shown, so it shouldn't be shown again.
+  Browser* third_browser = new Browser(Browser::CreateParams(profile()));
+  base::RunLoop().RunUntilIdle();
+  CheckBubbleIsNotPresent(third_browser);
+}

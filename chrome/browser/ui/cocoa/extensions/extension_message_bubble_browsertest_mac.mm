@@ -152,3 +152,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleBrowserTestMac,
                        TestUninstallDangerousExtension) {
   TestUninstallDangerousExtension();
 }
+
+IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleBrowserTestMac,
+                       TestDevModeBubbleIsntShownTwice) {
+  TestDevModeBubbleIsntShownTwice();
+}
