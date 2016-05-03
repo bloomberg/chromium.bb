@@ -188,10 +188,14 @@ if (build_with_chromium) {
         libfuzzer_options = [ "max_len=3072" ]
       } else if ("client" == fuzzer) {
         libfuzzer_options = [ "max_len=20000" ]
+      } else if ("pkcs8" == fuzzer) {
+        libfuzzer_options = [ "max_len=2048" ]
       } else if ("privkey" == fuzzer) {
         libfuzzer_options = [ "max_len=2048" ]
       } else if ("server" == fuzzer) {
         libfuzzer_options = [ "max_len=4096" ]
+      } else if ("spki" == fuzzer) {
+        libfuzzer_options = [ "max_len=1024" ]
       }
     }
   }
