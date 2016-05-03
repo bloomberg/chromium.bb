@@ -114,12 +114,14 @@ public class AccountSigninChooseView extends ScrollView {
             view.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    v.findViewById(R.id.account_selection_mark).setVisibility(View.VISIBLE);
+                    int indexOfClickedAccount =
+                            mRootChildView.indexOfChild(v) - mAccountViewStartIndex;
+                    if (indexOfClickedAccount == mSelectedAccountPosition) return;
                     mRootChildView.getChildAt(mSelectedAccountPosition + mAccountViewStartIndex)
                             .findViewById(R.id.account_selection_mark)
                             .setVisibility(View.GONE);
-                    mSelectedAccountPosition =
-                            mRootChildView.indexOfChild(v) - mAccountViewStartIndex;
+                    v.findViewById(R.id.account_selection_mark).setVisibility(View.VISIBLE);
+                    mSelectedAccountPosition = indexOfClickedAccount;
                 }
             });
 
