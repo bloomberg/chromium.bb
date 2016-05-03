@@ -61,13 +61,15 @@ void DocumentWritePageLoadMetricsObserver::LogDocumentWriteEvaluatorData(
     const page_load_metrics::PageLoadExtraInfo& info) {
   bool foreground_paint = WasStartedInForegroundEventInForeground(
       timing.first_contentful_paint, info);
-  if (foreground_paint) {
-    PAGE_LOAD_HISTOGRAM(internal::kHistogramDocWriteFirstContentfulPaint,
-                        timing.first_contentful_paint);
-  } else {
-    PAGE_LOAD_HISTOGRAM(
-        internal::kBackgroundHistogramDocWriteFirstContentfulPaint,
-        timing.first_contentful_paint);
+  if (!timing.first_contentful_paint.is_zero()) {
+    if (foreground_paint) {
+      PAGE_LOAD_HISTOGRAM(internal::kHistogramDocWriteFirstContentfulPaint,
+                          timing.first_contentful_paint);
+    } else {
+      PAGE_LOAD_HISTOGRAM(
+          internal::kBackgroundHistogramDocWriteFirstContentfulPaint,
+          timing.first_contentful_paint);
+    }
   }
 
   // Log parse based metrics.
