@@ -323,7 +323,7 @@ template <typename T>
 class CC_EXPORT PropertyTree {
  public:
   PropertyTree();
-  virtual ~PropertyTree();
+  ~PropertyTree();
 
   bool operator==(const PropertyTree<T>& other) const;
 
@@ -348,7 +348,7 @@ class CC_EXPORT PropertyTree {
     return size() ? &nodes_[nodes_.size() - 1] : nullptr;
   }
 
-  virtual void clear();
+  void clear();
   size_t size() const { return nodes_.size(); }
 
   void set_needs_update(bool needs_update) { needs_update_ = needs_update; }
@@ -379,11 +379,11 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
  public:
   TransformTree();
   TransformTree(const TransformTree& other);
-  ~TransformTree() override;
+  ~TransformTree();
 
   bool operator==(const TransformTree& other) const;
 
-  void clear() override;
+  void clear();
 
   // Computes the change of basis transform from node |source_id| to |dest_id|.
   // The function returns false iff the inverse of a singular transform was
@@ -571,7 +571,7 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
  public:
   ScrollTree();
   ScrollTree(const ScrollTree& other);
-  ~ScrollTree() override;
+  ~ScrollTree();
 
   ScrollTree& operator=(const ScrollTree& from);
   bool operator==(const ScrollTree& other) const;
@@ -579,7 +579,7 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
   void ToProtobuf(proto::PropertyTree* proto) const;
   void FromProtobuf(const proto::PropertyTree& proto);
 
-  void clear() override;
+  void clear();
 
   typedef std::unordered_map<int, scoped_refptr<SyncedScrollOffset>>
       ScrollOffsetMap;
