@@ -284,6 +284,7 @@ extern const char kValidateCrx[];
 extern const char kVersion[];
 extern const char kWindowPosition[];
 extern const char kWindowSize[];
+extern const char kWindowWorkspace[];
 extern const char kWinHttpProxyResolver[];
 extern const char kWinJumplistAction[];
 

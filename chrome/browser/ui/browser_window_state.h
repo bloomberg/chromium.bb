@@ -49,6 +49,8 @@ void SaveWindowPlacement(const Browser* browser,
                          const gfx::Rect& bounds,
                          ui::WindowShowState show_state);
 
+void SaveWindowWorkspace(const Browser* browser, const std::string& workspace);
+
 // Return the |bounds| for the browser window to be used upon creation.
 // The |show_state| variable will receive the desired initial show state for
 // the window.

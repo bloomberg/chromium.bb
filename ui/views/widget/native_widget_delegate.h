@@ -97,6 +97,9 @@ class VIEWS_EXPORT NativeWidgetDelegate {
   // e.g. maximize.
   virtual void OnNativeWidgetSizeChanged(const gfx::Size& new_size) = 0;
 
+  // Called when NativeWidget changed workspaces.
+  virtual void OnNativeWidgetWorkspaceChanged() = 0;
+
   // Called when the NativeWidget changes its window state.
   // This may happen at the same time as OnNativeWidgetSizeChanged, e.g.
   // maximize.

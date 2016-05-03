@@ -194,6 +194,7 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
 
   void OnHostMoved(const gfx::Point& new_location);
   void OnHostResized(const gfx::Size& new_size);
+  void OnHostWorkspaceChanged();
   void OnHostCloseRequested();
   void OnHostActivated();
   void OnHostLostWindowCapture();

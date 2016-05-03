@@ -90,6 +90,7 @@ class VIEWS_EXPORT DesktopWindowTreeHost {
   virtual gfx::Rect GetWindowBoundsInScreen() const = 0;
   virtual gfx::Rect GetClientAreaBoundsInScreen() const = 0;
   virtual gfx::Rect GetRestoredBounds() const = 0;
+  virtual std::string GetWorkspace() const = 0;
 
   virtual gfx::Rect GetWorkAreaBoundsInScreen() const = 0;
 

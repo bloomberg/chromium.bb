@@ -249,6 +249,9 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     // |bounds| is in the parent's coordinate system. If the parent is not
     // specified, it's in screen's global coordinate system.
     gfx::Rect bounds;
+    // The initial workspace of the Widget.  Default is "", which means the
+    // current workspace.
+    std::string workspace;
     // When set, this value is used as the Widget's NativeWidget implementation.
     // The Widget will not construct a default one. Default is NULL.
     NativeWidget* native_widget;
@@ -423,6 +426,9 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
   // Retrieves the restored bounds for the window.
   gfx::Rect GetRestoredBounds() const;
+
+  // Retrieves the current workspace for the window.
+  std::string GetWorkspace() const;
 
   // Sizes and/or places the widget to the specified bounds, size or position.
   void SetBounds(const gfx::Rect& bounds);
@@ -787,6 +793,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   gfx::Size GetMaximumSize() const override;
   void OnNativeWidgetMove() override;
   void OnNativeWidgetSizeChanged(const gfx::Size& new_size) override;
+  void OnNativeWidgetWorkspaceChanged() override;
   void OnNativeWidgetWindowShowStateChanged() override;
   void OnNativeWidgetBeginUserBoundsChange() override;
   void OnNativeWidgetEndUserBoundsChange() override;

@@ -675,6 +675,11 @@ gfx::Rect DesktopNativeWidgetAura::GetRestoredBounds() const {
       desktop_window_tree_host_->GetRestoredBounds() : gfx::Rect();
 }
 
+std::string DesktopNativeWidgetAura::GetWorkspace() const {
+  return content_window_ ?
+      desktop_window_tree_host_->GetWorkspace() : std::string();
+}
+
 void DesktopNativeWidgetAura::SetBounds(const gfx::Rect& bounds) {
   if (!content_window_)
     return;
@@ -1154,6 +1159,11 @@ void DesktopNativeWidgetAura::OnHostResized(const aura::WindowTreeHost* host) {
   if (content_window_container_)
     content_window_container_->SetBounds(new_bounds);
   native_widget_delegate_->OnNativeWidgetSizeChanged(new_bounds.size());
+}
+
+void DesktopNativeWidgetAura::OnHostWorkspaceChanged(
+    const aura::WindowTreeHost* host) {
+  native_widget_delegate_->OnNativeWidgetWorkspaceChanged();
 }
 
 void DesktopNativeWidgetAura::OnHostMoved(const aura::WindowTreeHost* host,

@@ -371,6 +371,10 @@ gfx::Rect BrowserWindowCocoa::GetRestoredBounds() const {
   return bounds;
 }
 
+std::string BrowserWindowCocoa::GetWorkspace() const {
+  return std::string();
+}
+
 ui::WindowShowState BrowserWindowCocoa::GetRestoredState() const {
   if (IsMaximized())
     return ui::SHOW_STATE_MAXIMIZED;

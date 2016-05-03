@@ -379,6 +379,10 @@ class BrowserWindow : public ui::BaseWindow {
       const base::Callback<void(ImeWarningBubblePermissionStatus status)>&
           callback) = 0;
 
+  // Returns the platform-specific ID of the workspace the browser window
+  // currently resides in.
+  virtual std::string GetWorkspace() const = 0;
+
  protected:
   friend class BrowserCloseManager;
   friend class BrowserView;

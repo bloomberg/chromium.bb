@@ -290,6 +290,10 @@ gfx::Rect DesktopWindowTreeHostWin::GetRestoredBounds() const {
   return display::win::ScreenWin::ScreenToDIPRect(GetHWND(), pixel_bounds);
 }
 
+std::string DesktopWindowTreeHostWin::GetWorkspace() const {
+  return std::string();
+}
+
 gfx::Rect DesktopWindowTreeHostWin::GetWorkAreaBoundsInScreen() const {
   MONITORINFO monitor_info;
   monitor_info.cbSize = sizeof(monitor_info);

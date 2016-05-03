@@ -194,6 +194,10 @@ ExclusiveAccessContext* TestBrowserWindow::GetExclusiveAccessContext() {
   return nullptr;
 }
 
+std::string TestBrowserWindow::GetWorkspace() const {
+  return std::string();
+}
+
 // TestBrowserWindowOwner -----------------------------------------------------
 
 TestBrowserWindowOwner::TestBrowserWindowOwner(TestBrowserWindow* window)

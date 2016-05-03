@@ -68,8 +68,7 @@ SessionWindow::SessionWindow()
     : selected_tab_index(-1),
       type(TYPE_TABBED),
       is_constrained(true),
-      show_state(ui::SHOW_STATE_DEFAULT) {
-}
+      show_state(ui::SHOW_STATE_DEFAULT) {}
 
 SessionWindow::~SessionWindow() {
   STLDeleteElements(&tabs);

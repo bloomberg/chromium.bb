@@ -75,6 +75,7 @@ class SessionServiceTest : public BrowserWithTestWindowTest,
     service()->SetWindowBounds(window_id,
                                window_bounds,
                                ui::SHOW_STATE_NORMAL);
+    service()->SetWindowWorkspace(window_id, window_workspace);
   }
 
   // Upon notification, increment the sync_save_count variable
@@ -178,6 +179,8 @@ class SessionServiceTest : public BrowserWithTestWindowTest,
 
   const gfx::Rect window_bounds;
 
+  const std::string window_workspace = "abc";
+
   SessionID window_id;
 
   int sync_save_count_;
@@ -208,6 +211,7 @@ TEST_F(SessionServiceTest, Basic) {
 
   ASSERT_EQ(1U, windows.size());
   ASSERT_TRUE(window_bounds == windows[0]->bounds);
+  ASSERT_EQ(window_workspace, windows[0]->workspace);
   ASSERT_EQ(0, windows[0]->selected_tab_index);
   ASSERT_EQ(window_id.id(), windows[0]->window_id.id());
   ASSERT_EQ(1U, windows[0]->tabs.size());
@@ -509,6 +513,7 @@ TEST_F(SessionServiceTest, IgnorePopups) {
   service()->SetWindowBounds(window2_id,
                              window_bounds,
                              ui::SHOW_STATE_NORMAL);
+  service()->SetWindowWorkspace(window2_id, window_workspace);
 
   SerializedNavigationEntry nav1 =
       SerializedNavigationEntryTestHelper::CreateNavigation(

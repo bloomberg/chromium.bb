@@ -398,6 +398,10 @@ gfx::Rect NativeWidgetAura::GetRestoredBounds() const {
   return bounds;
 }
 
+std::string NativeWidgetAura::GetWorkspace() const {
+  return std::string();
+}
+
 void NativeWidgetAura::SetBounds(const gfx::Rect& bounds) {
   if (!window_)
     return;

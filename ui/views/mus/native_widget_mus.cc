@@ -634,6 +634,10 @@ gfx::Rect NativeWidgetMus::GetRestoredBounds() const {
   return GetWindowBoundsInScreen();
 }
 
+std::string NativeWidgetMus::GetWorkspace() const {
+  return std::string();
+}
+
 void NativeWidgetMus::SetBounds(const gfx::Rect& bounds) {
   if (!window_tree_host_)
     return;

@@ -306,6 +306,10 @@ gfx::Rect NativeWidgetMac::GetRestoredBounds() const {
   return bridge_ ? bridge_->GetRestoredBounds() : gfx::Rect();
 }
 
+std::string NativeWidgetMac::GetWorkspace() const {
+  return std::string();
+}
+
 void NativeWidgetMac::SetBounds(const gfx::Rect& bounds) {
   if (bridge_)
     bridge_->SetBounds(bounds);

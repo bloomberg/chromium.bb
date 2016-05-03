@@ -169,6 +169,15 @@ void SessionService::SetWindowBounds(const SessionID& window_id,
       sessions::CreateSetWindowBoundsCommand(window_id, bounds, show_state));
 }
 
+void SessionService::SetWindowWorkspace(const SessionID& window_id,
+                                        const std::string& workspace) {
+  if (!ShouldTrackChangesToWindow(window_id))
+    return;
+
+  ScheduleCommand(
+      sessions::CreateSetWindowWorkspaceCommand(window_id, workspace));
+}
+
 void SessionService::SetTabIndexInWindow(const SessionID& window_id,
                                          const SessionID& tab_id,
                                          int new_index) {
@@ -814,6 +823,9 @@ void SessionService::BuildCommandsForBrowser(
             browser->session_id(),
             browser->app_name()));
   }
+
+  sessions::CreateSetWindowWorkspaceCommand(
+      browser->session_id(), browser->window()->GetWorkspace());
 
   windows_to_track->insert(browser->session_id().id());
   TabStripModel* tab_strip = browser->tab_strip_model();

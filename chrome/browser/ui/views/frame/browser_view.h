@@ -366,6 +366,7 @@ class BrowserView : public BrowserWindow,
       const extensions::Extension* extension,
       const base::Callback<void(ImeWarningBubblePermissionStatus status)>&
           callback) override;
+  std::string GetWorkspace() const override;
 
   BookmarkBarView* GetBookmarkBarView() const;
   LocationBarView* GetLocationBarView() const;

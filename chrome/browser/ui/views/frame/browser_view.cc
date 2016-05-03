@@ -2535,6 +2535,10 @@ void BrowserView::ShowImeWarningBubble(
   ImeWarningBubbleView::ShowBubble(extension, this, callback);
 }
 
+std::string BrowserView::GetWorkspace() const {
+  return frame_->GetWorkspace();
+}
+
 bool BrowserView::DoCutCopyPasteForWebContents(
     WebContents* contents,
     void (WebContents::*method)()) {

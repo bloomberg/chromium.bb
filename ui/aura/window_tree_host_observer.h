@@ -24,6 +24,9 @@ class AURA_EXPORT WindowTreeHostObserver {
   virtual void OnHostMoved(const WindowTreeHost* host,
                            const gfx::Point& new_origin) {}
 
+  // Called when the host is moved to a different workspace.
+  virtual void OnHostWorkspaceChanged(const WindowTreeHost* host) {}
+
   // Called when the native window system sends the host request to close.
   virtual void OnHostCloseRequested(const WindowTreeHost* host) {}
 

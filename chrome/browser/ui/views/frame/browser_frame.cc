@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/command_line.h"
 #include "base/debug/leak_annotations.h"
 #include "base/i18n/rtl.h"
 #include "build/build_config.h"
@@ -23,6 +24,7 @@
 #include "chrome/browser/ui/views/frame/native_browser_frame_factory.h"
 #include "chrome/browser/ui/views/frame/system_menu_model_builder.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
+#include "chrome/common/chrome_switches.h"
 #include "ui/base/hit_test.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/font_list.h"
@@ -78,6 +80,15 @@ void BrowserFrame::InitBrowserFrame() {
     chrome::GetSavedWindowBoundsAndShowState(browser_view_->browser(),
                                              &params.bounds,
                                              &params.show_state);
+
+    params.workspace = browser_view_->browser()->initial_workspace();
+    const base::CommandLine& parsed_command_line =
+        *base::CommandLine::ForCurrentProcess();
+
+    if (parsed_command_line.HasSwitch(switches::kWindowWorkspace)) {
+      params.workspace =
+          parsed_command_line.GetSwitchValueASCII(switches::kWindowWorkspace);
+    }
   }
 
   Init(params);
@@ -206,6 +217,11 @@ void BrowserFrame::OnNativeWidgetActivationChanged(bool active) {
     BrowserList::SetLastActive(browser_view_->browser());
   }
   Widget::OnNativeWidgetActivationChanged(active);
+}
+
+void BrowserFrame::OnNativeWidgetWorkspaceChanged() {
+  chrome::SaveWindowWorkspace(browser_view_->browser(), GetWorkspace());
+  Widget::OnNativeWidgetWorkspaceChanged();
 }
 
 void BrowserFrame::ShowContextMenuForView(views::View* source,

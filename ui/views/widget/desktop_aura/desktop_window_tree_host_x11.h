@@ -109,6 +109,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   gfx::Rect GetWindowBoundsInScreen() const override;
   gfx::Rect GetClientAreaBoundsInScreen() const override;
   gfx::Rect GetRestoredBounds() const override;
+  std::string GetWorkspace() const override;
   gfx::Rect GetWorkAreaBoundsInScreen() const override;
   void SetShape(SkRegion* native_region) override;
   void Activate() override;

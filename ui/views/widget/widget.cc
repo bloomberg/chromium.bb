@@ -134,8 +134,7 @@ Widget::InitParams::InitParams(Type type)
       layer_type(ui::LAYER_TEXTURED),
       context(nullptr),
       force_show_in_taskbar(false),
-      force_software_compositing(false) {
-}
+      force_software_compositing(false) {}
 
 Widget::InitParams::InitParams(const InitParams& other) = default;
 
@@ -487,6 +486,10 @@ gfx::Rect Widget::GetClientAreaBoundsInScreen() const {
 
 gfx::Rect Widget::GetRestoredBounds() const {
   return native_widget_->GetRestoredBounds();
+}
+
+std::string Widget::GetWorkspace() const {
+  return native_widget_->GetWorkspace();
 }
 
 void Widget::SetBounds(const gfx::Rect& bounds) {
@@ -1109,6 +1112,8 @@ void Widget::OnNativeWidgetSizeChanged(const gfx::Size& new_size) {
     this,
     GetWindowBoundsInScreen()));
 }
+
+void Widget::OnNativeWidgetWorkspaceChanged() {}
 
 void Widget::OnNativeWidgetWindowShowStateChanged() {
   SaveWindowPlacementIfInitialized();

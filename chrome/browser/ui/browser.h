@@ -185,6 +185,9 @@ class Browser : public TabStripModelObserver,
     // The bounds of the window to open.
     gfx::Rect initial_bounds;
 
+    // The workspace the window should open in, if the platform supports it.
+    std::string initial_workspace;
+
     ui::WindowShowState initial_show_state;
 
     bool is_session_restore;
@@ -239,6 +242,7 @@ class Browser : public TabStripModelObserver,
   bool is_trusted_source() const { return is_trusted_source_; }
   Profile* profile() const { return profile_; }
   gfx::Rect override_bounds() const { return override_bounds_; }
+  const std::string& initial_workspace() const { return initial_workspace_; }
 
   // |window()| will return NULL if called before |CreateBrowserWindow()|
   // is done.
@@ -949,6 +953,7 @@ class Browser : public TabStripModelObserver,
   // shell shortcut's startup info.
   gfx::Rect override_bounds_;
   ui::WindowShowState initial_show_state_;
+  const std::string initial_workspace_;
 
   // Tracks when this browser is being created by session restore.
   bool is_session_restore_;

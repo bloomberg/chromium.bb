@@ -285,6 +285,11 @@ void WindowTreeHost::OnHostResized(const gfx::Size& new_size) {
   FOR_EACH_OBSERVER(WindowTreeHostObserver, observers_, OnHostResized(this));
 }
 
+void WindowTreeHost::OnHostWorkspaceChanged() {
+  FOR_EACH_OBSERVER(WindowTreeHostObserver, observers_,
+                    OnHostWorkspaceChanged(this));
+}
+
 void WindowTreeHost::OnHostCloseRequested() {
   FOR_EACH_OBSERVER(WindowTreeHostObserver, observers_,
                     OnHostCloseRequested(this));

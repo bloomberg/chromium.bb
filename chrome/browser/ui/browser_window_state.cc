@@ -136,6 +136,13 @@ void SaveWindowPlacement(const Browser* browser,
     session_service->SetWindowBounds(browser->session_id(), bounds, show_state);
 }
 
+void SaveWindowWorkspace(const Browser* browser, const std::string& workspace) {
+  SessionService* session_service =
+      SessionServiceFactory::GetForProfileIfExisting(browser->profile());
+  if (session_service)
+    session_service->SetWindowWorkspace(browser->session_id(), workspace);
+}
+
 void GetSavedWindowBoundsAndShowState(const Browser* browser,
                                       gfx::Rect* bounds,
                                       ui::WindowShowState* show_state) {

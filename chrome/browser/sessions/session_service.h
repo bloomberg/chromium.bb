@@ -118,6 +118,10 @@ class SessionService : public sessions::BaseSessionServiceDelegate,
                        const gfx::Rect& bounds,
                        ui::WindowShowState show_state);
 
+  // Sets the workspace the window resides in.
+  void SetWindowWorkspace(const SessionID& window_id,
+                          const std::string& workspace);
+
   // Sets the visual index of the tab in its parent window.
   void SetTabIndexInWindow(const SessionID& window_id,
                            const SessionID& tab_id,

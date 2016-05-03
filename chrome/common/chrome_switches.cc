@@ -1062,6 +1062,9 @@ const char kWindowPosition[]                = "window-position";
 // Specify the initial window size: --window-size=w,h
 const char kWindowSize[]                    = "window-size";
 
+// Specify the initial window workspace: --window-workspace=id
+const char kWindowWorkspace[]               = "window-workspace";
+
 // Uses WinHTTP to fetch and evaluate PAC scripts. Otherwise the default is to
 // use Chromium's network stack to fetch, and V8 to evaluate.
 const char kWinHttpProxyResolver[]          = "winhttp-proxy-resolver";
