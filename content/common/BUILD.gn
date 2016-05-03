@@ -41,7 +41,6 @@ source_set("common") {
     "//cc",
     "//cc/surfaces",
     "//components/mus/public/interfaces",
-    "//components/permissions",
     "//components/tracing",
     "//components/tracing:startup_tracing",
     "//device/bluetooth",

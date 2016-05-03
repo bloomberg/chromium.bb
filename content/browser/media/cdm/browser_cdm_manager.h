@@ -15,7 +15,6 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "components/permissions/permission_status.mojom.h"
 #include "content/common/content_export.h"
 #include "content/common/media/cdm_messages.h"
 #include "content/common/media/cdm_messages_enums.h"
@@ -24,6 +23,7 @@
 #include "media/base/cdm_promise.h"
 #include "media/base/eme_constants.h"
 #include "media/base/media_keys.h"
+#include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
 #include "url/gurl.h"
 
 struct CdmHostMsg_CreateSessionAndGenerateRequest_Params;

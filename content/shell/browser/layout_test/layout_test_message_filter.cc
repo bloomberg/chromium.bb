@@ -150,7 +150,7 @@ void LayoutTestMessageFilter::OnDeleteAllCookies() {
 
 void LayoutTestMessageFilter::OnSetPermission(
     const std::string& name,
-    permissions::mojom::PermissionStatus status,
+    blink::mojom::PermissionStatus status,
     const GURL& origin,
     const GURL& embedding_origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

@@ -37,6 +37,8 @@
             'platform/modules/geolocation/geolocation.mojom',
             'platform/modules/imagecapture/image_capture.mojom',
             'platform/modules/notifications/notification.mojom',
+            'platform/modules/permissions/permission.mojom',
+            'platform/modules/permissions/permission_status.mojom',
             'platform/modules/wake_lock/wake_lock_service.mojom',
         ],
         'blink_android_mojo_sources': [

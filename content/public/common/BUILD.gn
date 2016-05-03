@@ -100,7 +100,6 @@ source_set("common_sources") {
     "//url/ipc:url_ipc",
   ]
   deps = [
-    "//components/permissions",
     "//ipc",
     "//ipc/mojo",
     "//media",

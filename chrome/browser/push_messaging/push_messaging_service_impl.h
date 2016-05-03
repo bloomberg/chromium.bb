@@ -23,10 +23,10 @@
 #include "components/gcm_driver/gcm_app_handler.h"
 #include "components/gcm_driver/gcm_client.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/permissions/permission_status.mojom.h"
 #include "content/public/browser/push_messaging_service.h"
 #include "content/public/common/push_event_payload.h"
 #include "content/public/common/push_messaging_status.h"
+#include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
 #include "third_party/WebKit/public/platform/modules/push_messaging/WebPushPermissionStatus.h"
 
 #if defined(ENABLE_NOTIFICATIONS)
@@ -168,7 +168,7 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
       const PushMessagingAppIdentifier& app_identifier,
       const content::PushSubscriptionOptions& options,
       const content::PushMessagingService::RegisterCallback& callback,
-      permissions::mojom::PermissionStatus permission_status);
+      blink::mojom::PermissionStatus permission_status);
 
   // GetEncryptionInfo method --------------------------------------------------
 

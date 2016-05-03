@@ -14,7 +14,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using permissions::mojom::PermissionStatus;
+using blink::mojom::PermissionStatus;
 using content::PermissionType;
 
 namespace {

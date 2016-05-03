@@ -24,20 +24,20 @@ class BlimpPermissionManager : public content::PermissionManager {
       content::PermissionType permission,
       content::RenderFrameHost* render_frame_host,
       const GURL& requesting_origin,
-      const base::Callback<void(permissions::mojom::PermissionStatus)>&
-          callback) override;
+      const base::Callback<void(blink::mojom::PermissionStatus)>& callback)
+      override;
   int RequestPermissions(
       const std::vector<content::PermissionType>& permission,
       content::RenderFrameHost* render_frame_host,
       const GURL& requesting_origin,
-      const base::Callback<void(
-          const std::vector<permissions::mojom::PermissionStatus>&)>& callback)
+      const base::Callback<
+          void(const std::vector<blink::mojom::PermissionStatus>&)>& callback)
       override;
   void CancelPermissionRequest(int request_id) override;
   void ResetPermission(content::PermissionType permission,
                        const GURL& requesting_origin,
                        const GURL& embedding_origin) override;
-  permissions::mojom::PermissionStatus GetPermissionStatus(
+  blink::mojom::PermissionStatus GetPermissionStatus(
       content::PermissionType permission,
       const GURL& requesting_origin,
       const GURL& embedding_origin) override;
@@ -48,8 +48,8 @@ class BlimpPermissionManager : public content::PermissionManager {
       content::PermissionType permission,
       const GURL& requesting_origin,
       const GURL& embedding_origin,
-      const base::Callback<void(permissions::mojom::PermissionStatus)>&
-          callback) override;
+      const base::Callback<void(blink::mojom::PermissionStatus)>& callback)
+      override;
   void UnsubscribePermissionStatusChange(int subscription_id) override;
 
  private:

@@ -8,7 +8,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "chrome/browser/permissions/permission_context_base.h"
-#include "components/permissions/permission_status.mojom.h"
+#include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
 
 class PermissionRequestID;
 class Profile;
@@ -47,7 +47,7 @@ class PushMessagingPermissionContext : public PermissionContextBase {
       const GURL& requesting_origin,
       const GURL& embedding_origin,
       const BrowserPermissionCallback& callback,
-      permissions::mojom::PermissionStatus notifications_status);
+      blink::mojom::PermissionStatus notifications_status);
 
   Profile* profile_;
 

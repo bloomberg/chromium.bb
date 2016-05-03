@@ -144,7 +144,7 @@ void Notification::schedulePrepareShow()
 void Notification::prepareShow()
 {
     ASSERT(m_state == NotificationStateIdle);
-    if (Notification::checkPermission(getExecutionContext()) != permissions::mojom::PermissionStatus::GRANTED) {
+    if (Notification::checkPermission(getExecutionContext()) != mojom::PermissionStatus::GRANTED) {
         dispatchErrorEvent();
         return;
     }
@@ -333,14 +333,14 @@ HeapVector<NotificationAction> Notification::actions() const
     return actions;
 }
 
-String Notification::permissionString(permissions::mojom::PermissionStatus permission)
+String Notification::permissionString(mojom::PermissionStatus permission)
 {
     switch (permission) {
-    case permissions::mojom::PermissionStatus::GRANTED:
+    case mojom::PermissionStatus::GRANTED:
         return "granted";
-    case permissions::mojom::PermissionStatus::DENIED:
+    case mojom::PermissionStatus::DENIED:
         return "denied";
-    case permissions::mojom::PermissionStatus::ASK:
+    case mojom::PermissionStatus::ASK:
         return "default";
     }
 
@@ -353,7 +353,7 @@ String Notification::permission(ExecutionContext* context)
     return permissionString(checkPermission(context));
 }
 
-permissions::mojom::PermissionStatus Notification::checkPermission(ExecutionContext* context)
+mojom::PermissionStatus Notification::checkPermission(ExecutionContext* context)
 {
     SecurityOrigin* origin = context->getSecurityOrigin();
     ASSERT(origin);

@@ -15,7 +15,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 
-using permissions::mojom::PermissionStatus;
+using blink::mojom::PermissionStatus;
 using content::PermissionType;
 
 namespace android_webview {

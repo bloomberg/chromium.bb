@@ -14,8 +14,8 @@
 #include "third_party/WebKit/public/platform/modules/permissions/WebPermissionObserver.h"
 
 using blink::WebPermissionObserver;
-using permissions::mojom::PermissionName;
-using permissions::mojom::PermissionStatus;
+using blink::mojom::PermissionName;
+using blink::mojom::PermissionStatus;
 
 namespace content {
 
@@ -226,7 +226,7 @@ void PermissionDispatcher::RunPermissionsCallbackOnWorkerThread(
   callback->onSuccess(std::move(statuses));
 }
 
-permissions::mojom::PermissionService*
+blink::mojom::PermissionService*
 PermissionDispatcher::GetPermissionServicePtr() {
   if (!permission_service_.get()) {
     service_registry_->ConnectToRemoteService(

@@ -61,7 +61,7 @@ class NotificationManager : public blink::WebNotificationManager,
                        int64_t persistent_notification_id) override;
   void notifyDelegateDestroyed(
       blink::WebNotificationDelegate* delegate) override;
-  permissions::mojom::PermissionStatus checkPermission(
+  blink::mojom::PermissionStatus checkPermission(
       const blink::WebSecurityOrigin& origin) override;
 
   // Called by the NotificationDispatcher.

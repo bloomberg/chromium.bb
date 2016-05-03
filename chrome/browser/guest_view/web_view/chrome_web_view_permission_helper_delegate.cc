@@ -24,8 +24,8 @@ namespace extensions {
 namespace {
 
 void CallbackWrapper(const base::Callback<void(bool)>& callback,
-                     permissions::mojom::PermissionStatus status) {
-  callback.Run(status == permissions::mojom::PermissionStatus::GRANTED);
+                     blink::mojom::PermissionStatus status) {
+  callback.Run(status == blink::mojom::PermissionStatus::GRANTED);
 }
 
 }  // anonymous namespace
@@ -197,7 +197,7 @@ void ChromeWebViewPermissionHelperDelegate::RequestGeolocationPermission(
 
 void ChromeWebViewPermissionHelperDelegate::OnGeolocationPermissionResponse(
     int bridge_id,
-    const base::Callback<void(permissions::mojom::PermissionStatus)>& callback,
+    const base::Callback<void(blink::mojom::PermissionStatus)>& callback,
     bool allow,
     const std::string& user_input) {
   // The <webview> embedder has allowed the permission. We now need to make sure
@@ -205,7 +205,7 @@ void ChromeWebViewPermissionHelperDelegate::OnGeolocationPermissionResponse(
   RemoveBridgeID(bridge_id);
 
   if (!allow || !web_view_guest()->attached()) {
-    callback.Run(permissions::mojom::PermissionStatus::DENIED);
+    callback.Run(blink::mojom::PermissionStatus::DENIED);
     return;
   }
 

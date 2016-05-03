@@ -929,8 +929,7 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,
   // response once it has started.
   std::unique_ptr<StreamHandle> stream_handle_;
 
-  // Context shared for each permissions::mojom::PermissionService instance
-  // created for this
+  // Context shared for each mojom::PermissionService instance created for this
   // RFH.
   std::unique_ptr<PermissionServiceContext> permission_service_context_;
 

@@ -21,9 +21,8 @@ int BlimpPermissionManager::RequestPermission(
     content::PermissionType permission,
     content::RenderFrameHost* render_frame_host,
     const GURL& origin,
-    const base::Callback<void(permissions::mojom::PermissionStatus)>&
-        callback) {
-  callback.Run(permissions::mojom::PermissionStatus::DENIED);
+    const base::Callback<void(blink::mojom::PermissionStatus)>& callback) {
+  callback.Run(blink::mojom::PermissionStatus::DENIED);
   return kNoPendingOperation;
 }
 
@@ -31,10 +30,10 @@ int BlimpPermissionManager::RequestPermissions(
     const std::vector<content::PermissionType>& permission,
     content::RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
-    const base::Callback<void(
-        const std::vector<permissions::mojom::PermissionStatus>&)>& callback) {
-  callback.Run(std::vector<permissions::mojom::PermissionStatus>(
-      permission.size(), permissions::mojom::PermissionStatus::DENIED));
+    const base::Callback<
+        void(const std::vector<blink::mojom::PermissionStatus>&)>& callback) {
+  callback.Run(std::vector<blink::mojom::PermissionStatus>(
+      permission.size(), blink::mojom::PermissionStatus::DENIED));
   return kNoPendingOperation;
 }
 
@@ -44,11 +43,11 @@ void BlimpPermissionManager::ResetPermission(content::PermissionType permission,
                                              const GURL& requesting_origin,
                                              const GURL& embedding_origin) {}
 
-permissions::mojom::PermissionStatus
-BlimpPermissionManager::GetPermissionStatus(content::PermissionType permission,
-                                            const GURL& requesting_origin,
-                                            const GURL& embedding_origin) {
-  return permissions::mojom::PermissionStatus::DENIED;
+blink::mojom::PermissionStatus BlimpPermissionManager::GetPermissionStatus(
+    content::PermissionType permission,
+    const GURL& requesting_origin,
+    const GURL& embedding_origin) {
+  return blink::mojom::PermissionStatus::DENIED;
 }
 
 void BlimpPermissionManager::RegisterPermissionUsage(
@@ -60,8 +59,7 @@ int BlimpPermissionManager::SubscribePermissionStatusChange(
     content::PermissionType permission,
     const GURL& requesting_origin,
     const GURL& embedding_origin,
-    const base::Callback<void(permissions::mojom::PermissionStatus)>&
-        callback) {
+    const base::Callback<void(blink::mojom::PermissionStatus)>& callback) {
   return -1;
 }
 

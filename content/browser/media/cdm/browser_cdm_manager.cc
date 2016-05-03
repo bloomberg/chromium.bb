@@ -673,13 +673,12 @@ void BrowserCdmManager::CheckPermissionStatusOnUIThread(
     return;
   }
 
-  permissions::mojom::PermissionStatus permission_status =
+  blink::mojom::PermissionStatus permission_status =
       permission_manager->GetPermissionStatus(
           PermissionType::PROTECTED_MEDIA_IDENTIFIER, security_origin,
           web_contents->GetLastCommittedURL().GetOrigin());
 
-  bool allowed =
-      (permission_status == permissions::mojom::PermissionStatus::GRANTED);
+  bool allowed = (permission_status == blink::mojom::PermissionStatus::GRANTED);
   if (!task_runner_->RunsTasksOnCurrentThread()) {
     task_runner_->PostTask(FROM_HERE,
                            base::Bind(permission_status_cb, allowed));

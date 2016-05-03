@@ -23,13 +23,13 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
-#include "components/permissions/permission_status.mojom.h"
 #include "content/public/browser/desktop_notification_delegate.h"
 #include "content/public/common/notification_resources.h"
 #include "content/public/common/platform_notification_data.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
 
 #if defined(ENABLE_EXTENSIONS)
 #include "base/command_line.h"
@@ -395,8 +395,9 @@ TEST_F(PlatformNotificationServiceTest, ExtensionPermissionChecks) {
   // Verify that the service indicates that permission has been granted. We only
   // check the UI thread-method for now, as that's the one guarding the behavior
   // in the browser process.
-  EXPECT_EQ(permissions::mojom::PermissionStatus::GRANTED,
-            service()->CheckPermissionOnUIThread(profile(), extension->url(),
+  EXPECT_EQ(blink::mojom::PermissionStatus::GRANTED,
+            service()->CheckPermissionOnUIThread(profile(),
+                                                 extension->url(),
                                                  kFakeRenderProcessId));
 }
 
