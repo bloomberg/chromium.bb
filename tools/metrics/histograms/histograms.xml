@@ -73009,6 +73009,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="64893984" label="local_east_coordinate.xml"/>
   <int value="67768539" label="alert_category_id_bit_mask"/>
   <int value="79560451" label="sc_control_point"/>
+  <int value="84948752"
+      label="Eddystone Config ADV Slot Data;
+             a3c8750a-8ed3-4bdf-8a39-a01bebede295"/>
   <int value="89070880" label="blood_pressure_measurement"/>
   <int value="102699400" label="cycling_power_feature"/>
   <int value="145478270" label="glucose_feature"/>
@@ -73036,14 +73039,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="358854697" label="bond_management_feature"/>
   <int value="361317539" label="language"/>
   <int value="363167947" label="blood_pressure_feature"/>
+  <int value="364021976"
+      label="nRF candy machine; b6c31338-6c07-453e-961a-d8a8a41bf368"/>
   <int value="405569435" label="boot_keyboard_output_report"/>
   <int value="409618715" label="cycling_power_vector"/>
   <int value="419477741" label="body_composition_feature"/>
   <int value="469191968" label="Playbulb Candle Color; fffc"/>
+  <int value="473092981"
+      label="Eddystone Config Advertising Interval;
+             a3c87503-8ed3-4bdf-8a39-a01bebede295"/>
   <int value="486368335" label="location_name"/>
   <int value="512543326" label="date_of_threshold_assessment"/>
   <int value="531135021" label="cgm_specific_ops_control_point"/>
   <int value="540054581" label="magnetic_declination"/>
+  <int value="546162499"
+      label="Eddystone Config EID Identity Key;
+             a3c87509-8ed3-4bdf-8a39-a01bebede295"/>
   <int value="546355367" label="firmware_revision_string"/>
   <int value="549702960" label="humidity"/>
   <int value="557034058" label="cycling_power_control_point"/>
@@ -73063,6 +73074,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="752820597" label="boot_mouse_input_report"/>
   <int value="762835818" label="tx_power_level"/>
   <int value="765862810" label="cgm_session_start_time"/>
+  <int value="788890283"
+      label="Eddystone Config Factory reset;
+             a3c8750b-8ed3-4bdf-8a39-a01bebede295"/>
   <int value="797118889" label="time_source"/>
   <int value="839366223" label="user_index"/>
   <int value="842908520" label="rsc_measurement"/>
@@ -73080,6 +73094,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="928099812" label="system_id"/>
   <int value="928491064" label="last_name"/>
   <int value="947971228" label="temperature_type"/>
+  <int value="951656105"
+      label="Eddystone Config Remain Connectable;
+             a3c8750c-8ed3-4bdf-8a39-a01bebede295"/>
+  <int value="962656991"
+      label="Eddystone Config Public ECDH Key;
+             a3c87508-8ed3-4bdf-8a39-a01bebede295"/>
   <int value="976761505" label="local_time_information"/>
   <int value="987658962" label="glucose_measurement"/>
   <int value="1002619180" label="exact_time_256"/>
@@ -73096,6 +73116,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1161713439" label="Playbulb Candle Effect; fffb"/>
   <int value="1167525145" label="alert_status"/>
   <int value="1183399370" label="magnetic_flux_density_3D"/>
+  <int value="1186677690"
+      label="Eddystone Config Advertised Tx Power;
+             a3c87505-8ed3-4bdf-8a39-a01bebede295"/>
   <int value="1193066711" label="uv_index"/>
   <int value="1214133688" label="vo2_max"/>
   <int value="1217613737" label="three_zone_heart_rate_limits"/>
@@ -73104,6 +73127,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1245615057" label="pnp_id"/>
   <int value="1254532025" label="user_control_point"/>
   <int value="1288236137" label="hid_control_point"/>
+  <int value="1320278204"
+      label="Eddystone Config Radio Tx Power;
+             a3c87504-8ed3-4bdf-8a39-a01bebede295"/>
+  <int value="1329901812"
+      label="Eddystone Config Lock State;
+             a3c87506-8ed3-4bdf-8a39-a01bebede295"/>
   <int value="1333242790" label="longitude"/>
   <int value="1358488787"
       label="sport_type_for_aerobic_and_anaerobic_thresholds"/>
@@ -73122,11 +73151,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1448457670" label="cgm_feature"/>
   <int value="1479031407" label="five_zone_heart_rate_limits"/>
   <int value="1480262218" label="height"/>
+  <int value="1501299347"
+      label="nRF candy machine; a6c31338-6c07-453e-961a-d8a8a41bf368"/>
   <int value="1502604093" label="serial_number_string"/>
   <int value="1511396316" label="ln_control_point"/>
+  <int value="1511953014"
+      label="Eddystone Config Capabilities;
+             a3c87501-8ed3-4bdf-8a39-a01bebede295"/>
   <int value="1521362289" label="indoor_positioning_configuration"/>
   <int value="1541435682" label="fat_burn_heart_rate_upper_limit"/>
   <int value="1542101224" label="plx_continuous_measurent"/>
+  <int value="1547112406"
+      label="Eddystone Config Active Slot;
+             a3c87502-8ed3-4bdf-8a39-a01bebede295"/>
   <int value="1556918420" label="supported_new_alert_category"/>
   <int value="1562359952" label="bond_management_control_point"/>
   <int value="1594190447" label="anaerobic_threshold"/>
@@ -73160,6 +73197,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="2010182602" label="csc_feature"/>
   <int value="2022949018" label="cgm_status"/>
   <int value="2025615830" label="aggregate"/>
+  <int value="2025816471"
+      label="Eddystone Config Unlock; a3c87507-8ed3-4bdf-8a39-a01bebede295"/>
   <int value="2031294873" label="uncertainty"/>
   <int value="2041423305" label="email_address"/>
   <int value="2042267197" label="age"/>
@@ -73302,6 +73341,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="869682406" label="fe60"/>
   <int value="876407493" label="location_and_navigation"/>
   <int value="878416856" label="fe85"/>
+  <int value="879242624"
+      label="nRF candy machine; a6c31337-6c07-453e-961a-d8a8a41bf368"/>
   <int value="882315332" label="fe55"/>
   <int value="889111031" label="fecd"/>
   <int value="890629650" label="running_speed_and_cadence"/>
@@ -73399,6 +73440,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1513113754" label="fe39"/>
   <int value="1515793787" label="fef1"/>
   <int value="1548928839" label="fec5"/>
+  <int value="1549672811"
+      label="nRF candy machine; b6c31337-6c07-453e-961a-d8a8a41bf368"/>
   <int value="1553614739" label="fe6b"/>
   <int value="1563543855" label="fe72"/>
   <int value="1569655226" label="generic_access"/>
@@ -73458,6 +73501,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1922853101" label="fe28"/>
   <int value="1925022679" label="fe57"/>
   <int value="1940012814" label="fe2a"/>
+  <int value="1942373991"
+      label="Eddystone-URL Beacon Configuration v2;
+             a3c87500-8ed3-4bdf-8a39-a01bebede295"/>
   <int value="1946977319" label="fec1"/>
   <int value="1953707948" label="fe9f"/>
   <int value="1960388103" label="fecb"/>
