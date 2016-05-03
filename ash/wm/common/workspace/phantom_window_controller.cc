@@ -112,13 +112,13 @@ std::unique_ptr<views::Widget> PhantomWindowController::CreatePhantomWidget(
   // the phantom is visible.
   params.keep_on_top = true;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.name = "PhantomWindow";
   root_window->GetRootWindowController()->ConfigureWidgetInitParamsForContainer(
       phantom_widget.get(), kShellWindowId_ShelfContainer, &params);
   phantom_widget->set_focus_on_creation(false);
   phantom_widget->Init(params);
   phantom_widget->SetVisibilityChangedAnimationsEnabled(false);
   wm::WmWindow* phantom_widget_window = wm::WmWindow::Get(phantom_widget.get());
-  phantom_widget_window->SetName("PhantomWindow");
   phantom_widget_window->SetShellWindowId(kShellWindowId_PhantomWindow);
   phantom_widget->SetBounds(bounds_in_screen);
   // TODO(sky): I suspect this is never true, verify that.
