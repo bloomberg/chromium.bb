@@ -15,12 +15,6 @@ Polymer({
   is: 'settings-menu',
 
   properties: {
-    /** @private */
-    advancedOpened_: Boolean,
-
-    /** @private */
-    basicOpened_: Boolean,
-
     /**
      * The current active route.
      */
@@ -33,15 +27,21 @@ Polymer({
 
   /** @private */
   currentRouteChanged_: function() {
-    var submenu = this.shadowRoot.querySelector(
-        'paper-submenu[data-page="' + this.currentRoute.page + '"]');
-    if (submenu)
-      submenu.opened = true;
+    // Sync URL changes to the side nav menu.
+
+    this.$.advancedPage.opened = this.currentRoute.page == 'advanced';
+    this.$.basicPage.opened = this.currentRoute.page == 'basic';
+
+    if (this.$.advancedPage.opened)
+      this.$.advancedMenu.selected = this.currentRoute.section;
+
+    if (this.$.basicPage.opened)
+      this.$.basicMenu.selected = this.currentRoute.section;
   },
 
   /** @private */
   openPage_: function(event) {
-    var submenuRoute = event.currentTarget.dataset.page;
+    var submenuRoute = event.currentTarget.parentNode.dataset.page;
     if (submenuRoute) {
       this.currentRoute = {
         page: submenuRoute,

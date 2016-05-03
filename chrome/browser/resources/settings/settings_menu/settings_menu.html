@@ -67,98 +67,96 @@
       }
     </style>
     <paper-menu name="root-menu">
-      <paper-submenu opened="{{basicOpened_}}">
-        <div class="menu-trigger" data-page="basic" data-section=""
-            on-tap="openPage_">
+      <paper-submenu data-page="basic" id="basicPage">
+        <div class="menu-trigger" data-section="" on-tap="openPage_">
           <span i18n-content="basicPageTitle"></span>
           <iron-icon icon="[[arrowState_(basicOpened_)]]" item-icon></iron-icon>
         </div>
-        <paper-menu class="menu-content">
+        <paper-menu attr-for-selected="data-section" class="menu-content"
+            data-page="basic" id="basicMenu">
 <if expr="chromeos">
-          <div data-page="basic" data-section="internet" on-tap="openPage_">
+          <div data-section="internet" on-tap="openPage_">
             <iron-icon icon="device:network-wifi" item-icon></iron-icon>
             <span i18n-content="internetPageTitle"></span>
           </div>
 </if>
-          <div data-page="basic" data-section="people" on-tap="openPage_">
+          <div data-section="people" on-tap="openPage_">
             <iron-icon icon="social:people" item-icon></iron-icon>
             <span i18n-content="peoplePageTitle"></span>
           </div>
-          <div data-page="basic" data-section="appearance" on-tap="openPage_">
+          <div data-section="appearance" on-tap="openPage_">
             <iron-icon icon="image:palette" item-icon></iron-icon>
             <span i18n-content="appearancePageTitle"></span>
           </div>
 <if expr="chromeos">
-          <div data-page="basic" data-section="device" on-tap="openPage_">
+          <div data-section="device" on-tap="openPage_">
             <iron-icon icon="hardware:laptop-chromebook" item-icon></iron-icon>
             <span i18n-content="devicePageTitle"></span>
           </div>
 </if>
-          <div data-page="basic" data-section="search" on-tap="openPage_">
+          <div data-section="search" on-tap="openPage_">
             <iron-icon icon="search" item-icon></iron-icon>
             <span i18n-content="searchPageTitle"></span>
           </div>
 <if expr="not chromeos">
-          <div data-page="basic" data-section="defaultBrowser"
-              on-tap="openPage_">
+          <div data-section="defaultBrowser" on-tap="openPage_">
             <iron-icon icon="av:web" item-icon></iron-icon>
             <span i18n-content="defaultBrowser"></span>
           </div>
 </if>
-          <div data-page="basic" data-section="onStartup" on-tap="openPage_">
+          <div data-section="onStartup" on-tap="openPage_">
             <iron-icon icon="icons:power-settings-new" item-icon></iron-icon>
             <span i18n-content="onStartup"></span>
           </div>
         </paper-menu>
       </paper-submenu>
-      <paper-submenu opened="{{advancedOpened_}}">
-        <div class="menu-trigger" data-page="advanced" data-section=""
-            on-tap="openPage_">
+      <paper-submenu id="advancedPage" data-page="advanced">
+        <div class="menu-trigger" data-section="" on-tap="openPage_">
           <span i18n-content="advancedPageTitle"></span>
           <iron-icon icon="[[arrowState_(advancedOpened_)]]" item-icon>
           </iron-icon>
         </div>
-        <paper-menu class="menu-content">
+        <paper-menu attr-for-selected="data-section" class="menu-content"
+            data-page="advanced" id="advancedMenu">
 <if expr="chromeos">
-          <div data-page="advanced" data-section="dateTime" on-tap="openPage_">
+          <div data-section="dateTime" on-tap="openPage_">
             <iron-icon icon="device:access-time" item-icon></iron-icon>
             <span i18n-content="dateTimePageTitle"></span>
           </div>
 </if>
-          <div data-page="advanced" data-section="privacy" on-tap="openPage_">
+          <div data-section="privacy" on-tap="openPage_">
             <iron-icon icon="hardware:security" item-icon></iron-icon>
             <span i18n-content="privacyPageTitle"></span>
           </div>
 <if expr="chromeos">
-          <div data-page="advanced" data-section="bluetooth" on-tap="openPage_">
+          <div data-section="bluetooth" on-tap="openPage_">
             <iron-icon icon="device:bluetooth" item-icon></iron-icon>
             <span i18n-content="bluetoothPageTitle"></span>
           </div>
 </if>
-          <div data-page="advanced" data-section="passwordsAndForms"
-              on-tap="openPage_">
+          <div data-section="passwordsAndForms" on-tap="openPage_">
             <iron-icon icon="icons:assignment" item-icon></iron-icon>
             <span i18n-content="passwordsAndAutofillPageTitle"></span>
           </div>
-          <div data-page="advanced" data-section="languages" on-tap="openPage_">
+          <div data-section="languages" on-tap="openPage_">
             <iron-icon icon="icons:language" item-icon></iron-icon>
             <span i18n-content="languagesPageTitle"></span>
           </div>
-          <div data-page="advanced" data-section="downloads" on-tap="openPage_">
+          <div data-section="downloads" on-tap="openPage_">
             <iron-icon icon="icons:file-download" item-icon></iron-icon>
             <span i18n-content="downloadsPageTitle"></span>
           </div>
-          <div data-page="advanced" data-section="a11y" on-tap="openPage_">
+          <div data-section="a11y" on-tap="openPage_">
             <iron-icon icon="icons:accessibility" item-icon></iron-icon>
             <span i18n-content="a11yPageTitle"></span>
           </div>
 <if expr="not chromeos">
-          <div data-page="advanced" data-section="system" on-tap="openPage_">
+          <div data-section="system" on-tap="openPage_">
             <iron-icon icon="icons:build" item-icon></iron-icon>
             <span i18n-content="systemPageTitle"></span>
           </div>
 </if>
-          <div data-page="advanced" data-section="reset" on-tap="openPage_">
+          <div data-section="reset" on-tap="openPage_">
             <iron-icon icon="icons:restore" item-icon></iron-icon>
             <span i18n-content="resetPageTitle"></span>
           </div>
