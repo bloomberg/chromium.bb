@@ -7,8 +7,8 @@ package org.chromium.chrome.browser.widget;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
-import android.animation.TimeAnimator;
-import android.animation.TimeAnimator.TimeListener;
+import android.animation.ValueAnimator;
+import android.animation.ValueAnimator.AnimatorUpdateListener;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -39,6 +39,9 @@ public class ToolbarProgressBarAnimatingView extends ImageView {
     /** The width of the animating bar relative to the current width of the progress bar. */
     private static final float ANIMATING_BAR_SCALE = 0.5f;
 
+    /** Interpolator for enter and exit animation. */
+    private final BakedBezierInterpolator mBezier = BakedBezierInterpolator.TRANSFORM_CURVE;
+
     /** The current width of the progress bar. */
     private float mProgressWidth = 0;
 
@@ -51,46 +54,20 @@ public class ToolbarProgressBarAnimatingView extends ImageView {
     /** If the layout is RTL. */
     private boolean mIsRtl;
 
+    /** The update listener for the animation. */
+    private ProgressBarUpdateListener mListener;
+
+    /** The last fraction of the animation that was drawn. */
+    private float mLastAnimatedFraction;
+
     /**
-     * A time listener that moves an ImageView across the progress bar.
+     * An animation update listener that moves an ImageView across the progress bar.
      */
-    private class ProgressBarTimeListener implements TimeListener {
-        private final BakedBezierInterpolator mBezier =
-                BakedBezierInterpolator.TRANSFORM_CURVE;
-
+    private class ProgressBarUpdateListener implements AnimatorUpdateListener {
         @Override
-        public void onTimeUpdate(TimeAnimator animation, long totalTimeMs, long deltaTimeMs) {
-            if (totalTimeMs >= animation.getDuration()) animation.end();
-
-            float bezierProgress = mBezier.getInterpolation(
-                    (float) (totalTimeMs % animation.getDuration()) / animation.getDuration());
-
-            // Left and right bound change based on if the layout is RTL.
-            float leftBound = mIsRtl ? -mProgressWidth : 0.0f;
-            float rightBound = mIsRtl ? 0.0f : mProgressWidth;
-
-            // Include the width of the animating bar in this computation so it comes from
-            // off-screen.
-            float animatingWidth = mProgressWidth * ANIMATING_BAR_SCALE;
-            float animatorCenter =
-                    ((mProgressWidth + animatingWidth) * bezierProgress) - animatingWidth / 2.0f;
-            if (mIsRtl) animatorCenter *= -1.0f;
-
-            // The left and right x-coordinate of the animating view.
-            float animatorRight = animatorCenter + (animatingWidth / 2.0f);
-            float animatorLeft = animatorCenter - (animatingWidth / 2.0f);
-
-            // "Clip" the view so it doesn't go past where the progress bar starts or ends.
-            if (animatorRight > rightBound) {
-                animatingWidth -= Math.abs(animatorRight - rightBound);
-                animatorCenter -= Math.abs(animatorRight - rightBound) / 2.0f;
-            } else if (animatorLeft < leftBound) {
-                animatingWidth -= Math.abs(animatorLeft - leftBound);
-                animatorCenter += Math.abs(animatorLeft - leftBound) / 2.0f;
-            }
-
-            setScaleX(animatingWidth);
-            setTranslationX(animatorCenter);
+        public void onAnimationUpdate(ValueAnimator animation) {
+            mLastAnimatedFraction = animation.getAnimatedFraction();
+            updateAnimation(mLastAnimatedFraction);
         }
     }
 
@@ -108,16 +85,18 @@ public class ToolbarProgressBarAnimatingView extends ImageView {
 
         setImageDrawable(mAnimationDrawable);
 
-        ProgressBarTimeListener listener = new ProgressBarTimeListener();
+        mListener = new ProgressBarUpdateListener();
         mAnimatorSet = new AnimatorSet();
 
-        TimeAnimator fastAnimation = new TimeAnimator();
+        ValueAnimator fastAnimation = new ValueAnimator();
+        fastAnimation.setFloatValues(0.0f, 1.0f);
         fastAnimation.setDuration(FAST_ANIMATION_DURATION_MS);
-        fastAnimation.setTimeListener(listener);
+        fastAnimation.addUpdateListener(mListener);
 
-        TimeAnimator slowAnimation = new TimeAnimator();
+        ValueAnimator slowAnimation = new ValueAnimator();
+        slowAnimation.setFloatValues(0.0f, 1.0f);
         slowAnimation.setDuration(SLOW_ANIMATION_DURATION_MS);
-        slowAnimation.setTimeListener(listener);
+        slowAnimation.addUpdateListener(mListener);
 
         mAnimatorSet.playSequentially(fastAnimation, slowAnimation);
         mAnimatorSet.setStartDelay(ANIMATION_DELAY_MS);
@@ -150,6 +129,41 @@ public class ToolbarProgressBarAnimatingView extends ImageView {
     }
 
     /**
+     * Update the animating view.
+     * @param animatedFraction The current fraction of completion for the animation.
+     */
+    private void updateAnimation(float animatedFraction) {
+        float bezierProgress = mBezier.getInterpolation(animatedFraction);
+
+        // Left and right bound change based on if the layout is RTL.
+        float leftBound = mIsRtl ? -mProgressWidth : 0.0f;
+        float rightBound = mIsRtl ? 0.0f : mProgressWidth;
+
+        // Include the width of the animating bar in this computation so it comes from
+        // off-screen.
+        float animatingWidth = mProgressWidth * ANIMATING_BAR_SCALE;
+        float animatorCenter =
+                ((mProgressWidth + animatingWidth) * bezierProgress) - animatingWidth / 2.0f;
+        if (mIsRtl) animatorCenter *= -1.0f;
+
+        // The left and right x-coordinate of the animating view.
+        float animatorRight = animatorCenter + (animatingWidth / 2.0f);
+        float animatorLeft = animatorCenter - (animatingWidth / 2.0f);
+
+        // "Clip" the view so it doesn't go past where the progress bar starts or ends.
+        if (animatorRight > rightBound) {
+            animatingWidth -= Math.abs(animatorRight - rightBound);
+            animatorCenter -= Math.abs(animatorRight - rightBound) / 2.0f;
+        } else if (animatorLeft < leftBound) {
+            animatingWidth -= Math.abs(animatorLeft - leftBound);
+            animatorCenter += Math.abs(animatorLeft - leftBound) / 2.0f;
+        }
+
+        setScaleX(animatingWidth);
+        setTranslationX(animatorCenter);
+    }
+
+    /**
      * @return True if the animation is running.
      */
     public boolean isRunning() {
@@ -167,6 +181,7 @@ public class ToolbarProgressBarAnimatingView extends ImageView {
         setTranslationX(0.0f);
         animate().cancel();
         setAlpha(0.0f);
+        mLastAnimatedFraction = 0.0f;
     }
 
     /**
@@ -175,6 +190,7 @@ public class ToolbarProgressBarAnimatingView extends ImageView {
      */
     public void update(float progressWidth) {
         mProgressWidth = progressWidth;
+        updateAnimation(mLastAnimatedFraction);
     }
 
     /**
