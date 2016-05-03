@@ -670,19 +670,21 @@ int Element::clientTop()
 
 int Element::clientWidth()
 {
-    document().updateLayoutIgnorePendingStylesheetsForNode(this);
-
     // When in strict mode, clientWidth for the document element should return the width of the containing frame.
     // When in quirks mode, clientWidth for the body element should return the width of the containing frame.
     bool inQuirksMode = document().inQuirksMode();
     if ((!inQuirksMode && document().documentElement() == this)
         || (inQuirksMode && isHTMLElement() && document().body() == this)) {
         if (LayoutViewItem layoutView = LayoutViewItem(document().layoutView())) {
+            if (!RuntimeEnabledFeatures::overlayScrollbarsEnabled() || !document().frame()->isLocalRoot())
+                document().updateLayoutIgnorePendingStylesheetsForNode(this);
             if (document().page()->settings().forceZeroLayoutHeight())
                 return adjustLayoutUnitForAbsoluteZoom(layoutView.overflowClipRect(LayoutPoint()).width(), layoutView.styleRef()).round();
             return adjustLayoutUnitForAbsoluteZoom(LayoutUnit(layoutView.layoutSize().width()), layoutView.styleRef()).round();
         }
     }
+
+    document().updateLayoutIgnorePendingStylesheetsForNode(this);
 
     if (LayoutBox* layoutObject = layoutBox())
         return adjustLayoutUnitForAbsoluteZoom(LayoutUnit(layoutObject->pixelSnappedClientWidth()), layoutObject->styleRef()).round();
@@ -691,8 +693,6 @@ int Element::clientWidth()
 
 int Element::clientHeight()
 {
-    document().updateLayoutIgnorePendingStylesheetsForNode(this);
-
     // When in strict mode, clientHeight for the document element should return the height of the containing frame.
     // When in quirks mode, clientHeight for the body element should return the height of the containing frame.
     bool inQuirksMode = document().inQuirksMode();
@@ -700,11 +700,15 @@ int Element::clientHeight()
     if ((!inQuirksMode && document().documentElement() == this)
         || (inQuirksMode && isHTMLElement() && document().body() == this)) {
         if (LayoutViewItem layoutView = LayoutViewItem(document().layoutView())) {
+            if (!RuntimeEnabledFeatures::overlayScrollbarsEnabled() || !document().frame()->isLocalRoot())
+                document().updateLayoutIgnorePendingStylesheetsForNode(this);
             if (document().page()->settings().forceZeroLayoutHeight())
                 return adjustLayoutUnitForAbsoluteZoom(layoutView.overflowClipRect(LayoutPoint()).height(), layoutView.styleRef()).round();
             return adjustLayoutUnitForAbsoluteZoom(LayoutUnit(layoutView.layoutSize().height()), layoutView.styleRef()).round();
         }
     }
+
+    document().updateLayoutIgnorePendingStylesheetsForNode(this);
 
     if (LayoutBox* layoutObject = layoutBox())
         return adjustLayoutUnitForAbsoluteZoom(LayoutUnit(layoutObject->pixelSnappedClientHeight()), layoutObject->styleRef()).round();
