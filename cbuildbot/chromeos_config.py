@@ -2825,10 +2825,15 @@ def GetConfig():
       )
   )
 
+  # Nyan-based boards (no leader, yet)
+  _AdjustLeaderFollowerReleaseConfigs(
+      [],
+      ('nyan',),
+  )
+
   # nyan-based boards
   _AddGroupConfig(
-      'nyan', 'nyan', (
-          'nyan_big',
+      'nyan', 'nyan_big', (
           'nyan_blaze',
           'nyan_kitty',
       )

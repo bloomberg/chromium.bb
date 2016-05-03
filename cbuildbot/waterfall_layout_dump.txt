@@ -102,8 +102,8 @@ monroe-paladin
 nyan-chrome-pfq
 nyan-full-compile-paladin
 nyan-paladin
+nyan-release
 [nyan-release-group]
-  nyan-release
   nyan_big-release
   nyan_blaze-release
   nyan_kitty-release

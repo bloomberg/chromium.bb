@@ -13553,33 +13553,17 @@
     "nyan-full-group": {
         "_template": "full",
         "boards": [
-            "nyan"
+            "nyan_big"
         ],
         "child_configs": [
             {
                 "_template": "full",
                 "boards": [
-                    "nyan"
-                ],
-                "grouped": true,
-                "name": "nyan-full",
-                "prebuilts": "public",
-                "useflags": [
-                    "-chrome_internal"
-                ],
-                "vm_tests": []
-            },
-            {
-                "_template": "full",
-                "boards": [
                     "nyan_big"
                 ],
-                "build_packages_in_background": true,
-                "chrome_sdk_build_chrome": false,
                 "grouped": true,
                 "name": "nyan_big-full",
                 "prebuilts": "public",
-                "unittests": null,
                 "useflags": [
                     "-chrome_internal"
                 ],
@@ -13618,7 +13602,7 @@
                 "vm_tests": []
             }
         ],
-        "description": "Full Builds; Group config (boards: nyan, nyan_big, nyan_blaze, nyan_kitty)",
+        "description": "Full Builds; Group config (boards: nyan_big, nyan_blaze, nyan_kitty)",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -13678,9 +13662,13 @@
     },
     "nyan-release": {
         "_template": "release",
+        "active_waterfall": "chromeos",
         "boards": [
             "nyan"
         ],
+        "buildslave_type": "gce_beefy",
+        "chrome_sdk_build_chrome": false,
+        "important": true,
         "vm_tests": []
     },
     "nyan-release-afdo": {
@@ -13728,28 +13716,16 @@
         "_template": "release",
         "active_waterfall": "chromeos",
         "boards": [
-            "nyan"
+            "nyan_big"
         ],
         "child_configs": [
             {
                 "_template": "release",
                 "boards": [
-                    "nyan"
-                ],
-                "grouped": true,
-                "name": "nyan-release",
-                "vm_tests": []
-            },
-            {
-                "_template": "release",
-                "boards": [
                     "nyan_big"
                 ],
-                "build_packages_in_background": true,
-                "chrome_sdk_build_chrome": false,
                 "grouped": true,
                 "name": "nyan_big-release",
-                "unittests": null,
                 "vm_tests": []
             },
             {
@@ -13777,7 +13753,7 @@
                 "vm_tests": []
             }
         ],
-        "description": "Release Builds (canary) (internal); Group config (boards: nyan, nyan_big, nyan_blaze, nyan_kitty)",
+        "description": "Release Builds (canary) (internal); Group config (boards: nyan_big, nyan_blaze, nyan_kitty)",
         "important": true,
         "vm_tests": []
     },
