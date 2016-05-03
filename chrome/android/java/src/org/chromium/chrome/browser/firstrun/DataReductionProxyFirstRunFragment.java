@@ -10,11 +10,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.Button;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionPromoScreen;
-import org.chromium.ui.widget.ButtonCompat;
 
 /**
  * The First Run Experience fragment that allows the user to opt in to Data Saver.
@@ -33,7 +33,7 @@ public class DataReductionProxyFirstRunFragment extends FirstRunPage {
 
         final SwitchCompat enableDataSaverSwitch = (SwitchCompat) view
                 .findViewById(R.id.enable_data_saver_switch);
-        ButtonCompat nextButton = (ButtonCompat) view.findViewById(R.id.next_button);
+        Button nextButton = (Button) view.findViewById(R.id.next_button);
 
         enableDataSaverSwitch.setOnClickListener(new OnClickListener() {
             @Override
@@ -48,7 +48,6 @@ public class DataReductionProxyFirstRunFragment extends FirstRunPage {
             }
         });
 
-        nextButton.setRaised(false);
         nextButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {

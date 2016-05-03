@@ -6,7 +6,6 @@
 -->
 <org.chromium.chrome.browser.firstrun.FirstRunView
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:chrome="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -81,18 +80,26 @@
         </LinearLayout>
     </ScrollView>
 
-    <!-- fre_button_bar_height = 52dp = layout_height + layout_marginBottom -->
-    <org.chromium.ui.widget.ButtonCompat
-        android:id="@+id/next_button"
-        android:layout_width="wrap_content"
-        android:layout_height="36dp"
-        android:layout_marginBottom="16dp"
-        android:layout_gravity="bottom|center_horizontal"
-        android:paddingStart="@dimen/fre_button_padding"
-        android:paddingEnd="@dimen/fre_button_padding"
-        android:text="@string/next"
-        android:textAllCaps="true"
-        android:textColor="@android:color/white"
-        android:textSize="@dimen/fre_button_text_size"
-        chrome:buttonColor="@color/light_active_color"/>
+    <LinearLayout
+        android:id="@+id/button_bar"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/fre_button_bar_height"
+        android:layout_gravity="bottom"
+        android:orientation="vertical">
+
+        <View style="@style/ButtonBarTopDivider" />
+
+        <Button
+            android:id="@+id/next_button"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/fre_button_bar_height"
+            android:layout_gravity="bottom"
+            android:background="?attr/listChoiceBackgroundIndicator"
+            android:padding="16dp"
+            android:text="@string/next"
+            android:textAllCaps="true"
+            android:textColor="@color/light_active_color"
+            android:textSize="@dimen/fre_button_text_size"
+            style="@style/ButtonCompatBorderless" />
+    </LinearLayout>
 </org.chromium.chrome.browser.firstrun.FirstRunView>
