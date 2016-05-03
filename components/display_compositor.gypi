@@ -48,7 +48,14 @@
         'display_compositor/gl_helper_readback_support.h',
         'display_compositor/gl_helper_scaling.cc',
         'display_compositor/gl_helper_scaling.h',
-      ]
+      ],
+      'conditions': [
+        ['use_ozone==1', {
+          'dependencies': [
+            '../ui/ozone/ozone.gyp:ozone_base',
+          ],
+        }],
+      ],
     },
     {
       # GN version: //components/display_compositor:display_compositor_unittests
