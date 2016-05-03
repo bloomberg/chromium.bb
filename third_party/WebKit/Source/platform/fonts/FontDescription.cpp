@@ -107,7 +107,7 @@ FontDescription::Size FontDescription::smallerSize(const Size& size)
 
 FontTraits FontDescription::traits() const
 {
-    return FontTraits(style(), variant(), weight(), stretch());
+    return FontTraits(style(), weight(), stretch());
 }
 
 FontDescription::VariantLigatures FontDescription::getVariantLigatures() const
@@ -140,7 +140,6 @@ const AtomicString& FontDescription::locale(bool includeDefault) const
 void FontDescription::setTraits(FontTraits traits)
 {
     setStyle(traits.style());
-    setVariant(traits.variant());
     setWeight(traits.weight());
     setStretch(traits.stretch());
 }

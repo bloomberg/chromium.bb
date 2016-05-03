@@ -424,7 +424,7 @@ String CanvasRenderingContext2D::font() const
         serializedFont.appendLiteral("italic ");
     if (fontDescription.weight() == FontWeightBold)
         serializedFont.appendLiteral("bold ");
-    if (fontDescription.variant() == FontVariantSmallCaps)
+    if (fontDescription.variantCaps() == FontDescription::SmallCaps)
         serializedFont.appendLiteral("small-caps ");
 
     serializedFont.appendNumber(fontDescription.computedPixelSize());

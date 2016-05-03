@@ -470,6 +470,8 @@ String StylePropertySerializer::getPropertyValue(CSSPropertyID propertyID) const
         return getShorthandValue(gridGapShorthand());
     case CSSPropertyFont:
         return fontValue();
+    case CSSPropertyFontVariant:
+        return fontVariantValue();
     case CSSPropertyMargin:
         return get4Values(marginShorthand());
     case CSSPropertyMotion:
@@ -541,7 +543,8 @@ void StylePropertySerializer::appendFontLonghandValueIfNotNormal(CSSPropertyID p
         break; // No prefix.
     case CSSPropertyFontFamily:
     case CSSPropertyFontStretch:
-    case CSSPropertyFontVariant:
+    case CSSPropertyFontVariantCaps:
+    case CSSPropertyFontVariantLigatures:
     case CSSPropertyFontWeight:
         prefix = ' ';
         break;
@@ -554,7 +557,17 @@ void StylePropertySerializer::appendFontLonghandValueIfNotNormal(CSSPropertyID p
 
     if (prefix && !result.isEmpty())
         result.append(prefix);
-    String value = m_propertySet.propertyAt(foundPropertyIndex).value()->cssText();
+
+    String value;
+    // In the font-variant shorthand a "none" ligatures value needs to be expanded.
+    if (propertyID == CSSPropertyFontVariantLigatures
+        && val->isPrimitiveValue()
+        && toCSSPrimitiveValue(val)->getValueID() == CSSValueNone) {
+        value = "no-common-ligatures no-discretionary-ligatures no-historical-ligatures no-contextual";
+    } else {
+        value = m_propertySet.propertyAt(foundPropertyIndex).value()->cssText();
+    }
+
     result.append(value);
     if (!commonValue.isNull() && commonValue != value)
         commonValue = String();
@@ -567,15 +580,36 @@ String StylePropertySerializer::fontValue() const
 
     int fontSizePropertyIndex = m_propertySet.findPropertyIndex(CSSPropertyFontSize);
     int fontFamilyPropertyIndex = m_propertySet.findPropertyIndex(CSSPropertyFontFamily);
-    ASSERT(fontSizePropertyIndex != -1 && fontFamilyPropertyIndex != -1);
+    int fontVariantCapsPropertyIndex = m_propertySet.findPropertyIndex(CSSPropertyFontVariantCaps);
+    int fontVariantLigaturesPropertyIndex = m_propertySet.findPropertyIndex(CSSPropertyFontVariantLigatures);
+    DCHECK_NE(fontSizePropertyIndex, -1);
+    DCHECK_NE(fontFamilyPropertyIndex, -1);
+    DCHECK_NE(fontVariantCapsPropertyIndex, -1);
+    DCHECK_NE(fontVariantLigaturesPropertyIndex, -1);
 
     PropertyValueForSerializer fontSizeProperty = m_propertySet.propertyAt(fontSizePropertyIndex);
     PropertyValueForSerializer fontFamilyProperty = m_propertySet.propertyAt(fontFamilyPropertyIndex);
+    PropertyValueForSerializer fontVariantCapsProperty = m_propertySet.propertyAt(fontVariantCapsPropertyIndex);
+    PropertyValueForSerializer fontVariantLigaturesProperty = m_propertySet.propertyAt(fontVariantLigaturesPropertyIndex);
+
+    // Check that non-initial font-variant subproperties are not conflicting with this serialization.
+    const CSSValue* ligaturesValue = fontVariantLigaturesProperty.value();
+    if ((ligaturesValue->isPrimitiveValue()
+        && toCSSPrimitiveValue(ligaturesValue)->getValueID() != CSSValueNormal)
+        || ligaturesValue->isValueList())
+        return emptyString();
 
     String commonValue = fontSizeProperty.value()->cssText();
     StringBuilder result;
     appendFontLonghandValueIfNotNormal(CSSPropertyFontStyle, result, commonValue);
-    appendFontLonghandValueIfNotNormal(CSSPropertyFontVariant, result, commonValue);
+
+    const CSSValue* val = fontVariantCapsProperty.value();
+    if (val->isPrimitiveValue()
+        && (toCSSPrimitiveValue(val)->getValueID() != CSSValueSmallCaps
+        && toCSSPrimitiveValue(val)->getValueID() != CSSValueNormal))
+        return emptyString();
+    appendFontLonghandValueIfNotNormal(CSSPropertyFontVariantCaps, result, commonValue);
+
     appendFontLonghandValueIfNotNormal(CSSPropertyFontWeight, result, commonValue);
     appendFontLonghandValueIfNotNormal(CSSPropertyFontStretch, result, commonValue);
     if (!result.isEmpty())
@@ -587,6 +621,30 @@ String StylePropertySerializer::fontValue() const
     result.append(fontFamilyProperty.value()->cssText());
     if (isInitialOrInherit(commonValue))
         return commonValue;
+    return result.toString();
+}
+
+String StylePropertySerializer::fontVariantValue() const
+{
+    if (!isPropertyShorthandAvailable(fontVariantShorthand())) {
+        if (!shorthandHasOnlyInitialOrInheritedValue(fontVariantShorthand()))
+            return String();
+        return m_propertySet.getPropertyValue(CSSPropertyFontVariantLigatures);
+    }
+
+    StringBuilder result;
+
+    // TODO(drott): Decide how we want to return ligature values in shorthands, reduced to "none" or
+    // spelled out, filed as W3C bug:
+    // https://www.w3.org/Bugs/Public/show_bug.cgi?id=29594
+    String dummyCommonValue;
+    appendFontLonghandValueIfNotNormal(CSSPropertyFontVariantLigatures, result, dummyCommonValue);
+    appendFontLonghandValueIfNotNormal(CSSPropertyFontVariantCaps, result, dummyCommonValue);
+
+    if (result.isEmpty()) {
+        return "normal";
+    }
+
     return result.toString();
 }
 

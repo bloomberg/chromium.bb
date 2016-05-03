@@ -48,12 +48,6 @@ oblique
 // The following is only allowed in @font-face:
 all
 
-//
-// font-variant
-//
-//normal
-small-caps
-
 // font-variant-ligatures:
 //
 // normal

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<body>
+<script src="../../resources/js-test.js"></script>
+<script>
+description("Test the return values for the font variant properties on the style object.")
+
+var testContainer = document.createElement("div");
+document.body.appendChild(testContainer);
+
+testContainer.innerHTML = '<div id="testElement">hello</div>';
+var style = testElement.style;
+var computedStyle = getComputedStyle(testElement);
+
+// We need all font longhands to build the shorthand.
+shouldBeEqualToString("style.fontVariant", "");
+shouldBeEqualToString("computedStyle.fontVariant", "normal");
+
+style.fontVariantCaps = "small-caps";
+shouldBeEqualToString("style.fontVariant", "");
+shouldBeEqualToString("computedStyle.fontVariant", "small-caps");
+
+style.fontVariantLigatures = "discretionary-ligatures";
+// All currently supported sub-properties are set.
+shouldBeEqualToString("style.fontVariant", "discretionary-ligatures small-caps");
+shouldBeEqualToString("computedStyle.fontVariant", "discretionary-ligatures small-caps");
+
+style.fontVariantCaps = "normal";
+shouldBeEqualToString("style.fontVariant", "discretionary-ligatures");
+shouldBeEqualToString("computedStyle.fontVariant", "discretionary-ligatures");
+
+style.fontVariantCaps = "small-caps";
+style.fontVariantLigatures = "normal";
+shouldBeEqualToString("style.fontVariant", "small-caps");
+shouldBeEqualToString("computedStyle.fontVariant", "small-caps");
+
+style.fontVariantLigatures = "none";
+shouldBeEqualToString("style.fontVariant", "no-common-ligatures no-discretionary-ligatures no-historical-ligatures no-contextual small-caps");
+shouldBeEqualToString("computedStyle.fontVariant", "no-common-ligatures no-discretionary-ligatures no-historical-ligatures no-contextual small-caps");
+
+style.fontVariantCaps = "initial";
+style.fontVariantLigatures = "initial";
+shouldBeEqualToString("style.fontVariant", "initial");
+
+document.body.removeChild(testContainer);
+</script>
+</body>

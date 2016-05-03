@@ -1,0 +1,22 @@
+Test the return values for the font variant properties on the style object.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS style.fontVariant is ""
+PASS computedStyle.fontVariant is "normal"
+PASS style.fontVariant is ""
+PASS computedStyle.fontVariant is "small-caps"
+PASS style.fontVariant is "discretionary-ligatures small-caps"
+PASS computedStyle.fontVariant is "discretionary-ligatures small-caps"
+PASS style.fontVariant is "discretionary-ligatures"
+PASS computedStyle.fontVariant is "discretionary-ligatures"
+PASS style.fontVariant is "small-caps"
+PASS computedStyle.fontVariant is "small-caps"
+PASS style.fontVariant is "no-common-ligatures no-discretionary-ligatures no-historical-ligatures no-contextual small-caps"
+PASS computedStyle.fontVariant is "no-common-ligatures no-discretionary-ligatures no-historical-ligatures no-contextual small-caps"
+PASS style.fontVariant is "initial"
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

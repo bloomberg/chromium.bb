@@ -72,38 +72,25 @@ enum FontStyle {
     FontStyleItalic = 2
 };
 
-// TODO(drott): crbug.com/516673 Move this from here to FontDescription,
-// what's the spec equivalent of FontTraits?
-// Variant is not used for font matching and should probably
-// not be part of FontTraits.
-enum FontVariant {
-    FontVariantNormal = 0,
-    FontVariantSmallCaps = 1
-};
-
 typedef unsigned FontTraitsBitfield;
 
 struct FontTraits {
     DISALLOW_NEW();
-    FontTraits(FontStyle style, FontVariant variant, FontWeight weight, FontStretch stretch)
+    FontTraits(FontStyle style, FontWeight weight, FontStretch stretch)
     {
         m_traits.m_style = style;
-        // TODO(drott): crbug.com/516673 Variant is not relevant for font selection,
-        // should be removed here.
-        m_traits.m_variant = variant;
         m_traits.m_weight = weight;
         m_traits.m_stretch = stretch;
         m_traits.m_filler = 0;
-        ASSERT(!(m_bitfield >> 11));
+        DCHECK_EQ(m_bitfield >> 10, 0u);
     }
     FontTraits(FontTraitsBitfield bitfield)
         : m_bitfield(bitfield)
     {
-        ASSERT(!m_traits.m_filler);
-        ASSERT(!(m_bitfield >> 11));
+        DCHECK_EQ(m_traits.m_filler, 0u);
+        DCHECK_EQ(m_bitfield >> 10, 0u);
     }
     FontStyle style() const { return static_cast<FontStyle>(m_traits.m_style); }
-    FontVariant variant() const { return static_cast<FontVariant>(m_traits.m_variant); }
     FontWeight weight() const { return static_cast<FontWeight>(m_traits.m_weight); }
     FontStretch stretch() const { return static_cast<FontStretch>(m_traits.m_stretch); }
     FontTraitsBitfield bitfield() const { return m_bitfield; }
@@ -111,10 +98,9 @@ struct FontTraits {
     union {
         struct {
             unsigned m_style : 2;
-            unsigned m_variant : 1;
             unsigned m_weight : 4;
             unsigned m_stretch : 4;
-            unsigned m_filler : 21;
+            unsigned m_filler : 22;
         } m_traits;
         FontTraitsBitfield m_bitfield;
     };

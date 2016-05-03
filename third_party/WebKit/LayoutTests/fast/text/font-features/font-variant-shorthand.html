@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<title>Font Variant Shorthand Parsing</title>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script>
+    var shorthandWriteExpectations = [
+        { writeFontVariant : "normal", readCaps : "normal", readLigatures : "normal" },
+        { writeFontVariant : "none", readCaps : "normal", readLigatures : "none" },
+        { writeFontVariant : "all-small-caps", readCaps : "all-small-caps", readLigatures : "normal" },
+        { writeFontVariant : "historical-ligatures", readCaps : "normal", readLigatures : "historical-ligatures" },
+        { writeFontVariant : "historical-ligatures discretionary-ligatures", readCaps : "normal", readLigatures : "discretionary-ligatures historical-ligatures" },
+        { writeFontVariant : "historical-ligatures petite-caps", readCaps : "petite-caps", readLigatures : "historical-ligatures" },
+        { writeFontVariant : "", readCaps : "normal", readLigatures : "normal" },
+    ];
+
+    var shorthandReadExpectations = [
+        { writeCaps : "", writeLigatures: "", readFontVariant: "normal" },
+        { writeCaps : "normal", writeLigatures: "normal", readFontVariant: "normal" },
+        { writeCaps : "normal", writeLigatures: "none", readFontVariant: "none" },
+        { writeCaps : "all-small-caps", writeLigatures: "none", readFontVariant: "no-common-ligatures no-discretionary-ligatures no-historical-ligatures no-contextual all-small-caps" },
+        { writeCaps : "all-small-caps", writeLigatures: "normal", readFontVariant: "all-small-caps" },
+        { writeCaps : "normal", writeLigatures: "discretionary-ligatures historical-ligatures", readFontVariant: "discretionary-ligatures historical-ligatures" },
+        { writeCaps : "petite-caps", writeLigatures: "discretionary-ligatures", readFontVariant: "discretionary-ligatures petite-caps" },
+    ];
+
+    var writeInvalidExpectations = {
+        "font-variant" : [ "historical-ligaturesTYPO",
+                        "historical-ligaturesTYPO small-caps",
+                        "discretionary-ligatures no-discretionary-ligatures",
+                        "discretionary-ligatures small-caps no-historical-ligatures all-small-caps",
+                        "discretionary-ligatures small-caps all-petite-caps",
+                        "small-caps unicase"],
+        "font-variant-caps" : [ "typotypotypo", "all-small-caps all-petite-caps" ],
+        "font-variant-ligatures" : [ "discretionary-ligatures no-discretionary-ligatures", "typotypotypo", "none discretionary-ligatures" ]
+    };
+</script>
+<div id="testElement"></div>
+
+<div id="log"></div>
+<script>
+    setup({ explicit_done: true });
+
+  function writeFontVariantTests() {
+      for (testParameters of shorthandWriteExpectations) {
+          testElement.style.fontVariant = testParameters.writeFontVariant;
+          test(function(){
+              assert_equals(getComputedStyle(testElement).fontVariantCaps, testParameters.readCaps);
+              assert_equals(getComputedStyle(testElement).fontVariantLigatures, testParameters.readLigatures);
+          }, "Sub properties set from longhand value: " + testParameters.writeFontVariant);
+      }
+  }
+
+  function readFontVariantTests() {
+      for (testParameters of shorthandReadExpectations) {
+          testElement.style.fontVariantCaps = testParameters.writeCaps;
+          testElement.style.fontVariantLigatures = testParameters.writeLigatures;
+          test(function(){
+              assert_equals(getComputedStyle(testElement).fontVariant, testParameters.readFontVariant);
+          }, "Shorthand from written subproperties: " + getComputedStyle(testElement).fontVariant);
+      }
+  }
+
+  function invalidWriteTests() {
+      for (key in writeInvalidExpectations) {
+          for (value of writeInvalidExpectations[key]) {
+              test(function(){
+                  assert_false(CSS.supports(key, value));
+              }, "Value " + value + " invalid for property " + key + ".");
+          }
+      }
+  }
+
+  window.addEventListener("load", function() {
+      writeFontVariantTests();
+      readFontVariantTests();
+      invalidWriteTests();
+      done();
+  });
+</script>

@@ -329,6 +329,11 @@ FontDescription::VariantLigatures StyleBuilderConverter::convertFontVariantLigat
     }
 
     ASSERT_WITH_SECURITY_IMPLICATION(value.isPrimitiveValue());
+
+    if (toCSSPrimitiveValue(value).getValueID() == CSSValueNone) {
+        return FontDescription::VariantLigatures(FontDescription::DisabledLigaturesState);
+    }
+
     ASSERT(toCSSPrimitiveValue(value).getValueID() == CSSValueNormal);
     return FontDescription::VariantLigatures();
 }

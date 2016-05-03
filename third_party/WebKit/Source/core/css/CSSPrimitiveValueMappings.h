@@ -3372,38 +3372,6 @@ template<> inline FontStretch CSSPrimitiveValue::convertTo() const
     return FontStretchNormal;
 }
 
-template<> inline CSSPrimitiveValue::CSSPrimitiveValue(FontVariant smallCaps)
-    : CSSValue(PrimitiveClass)
-{
-    init(UnitType::ValueID);
-    switch (smallCaps) {
-    case FontVariantNormal:
-        m_value.valueID = CSSValueNormal;
-        return;
-    case FontVariantSmallCaps:
-        m_value.valueID = CSSValueSmallCaps;
-        return;
-    }
-
-    ASSERT_NOT_REACHED();
-    m_value.valueID = CSSValueNormal;
-}
-
-template<> inline FontVariant CSSPrimitiveValue::convertTo() const
-{
-    ASSERT(isValueID());
-    switch (m_value.valueID) {
-    case CSSValueSmallCaps:
-        return FontVariantSmallCaps;
-    case CSSValueNormal:
-        return FontVariantNormal;
-    default:
-        break;
-    }
-    ASSERT_NOT_REACHED();
-    return FontVariantNormal;
-}
-
 template<> inline CSSPrimitiveValue::CSSPrimitiveValue(TextRenderingMode e)
     : CSSValue(PrimitiveClass)
 {

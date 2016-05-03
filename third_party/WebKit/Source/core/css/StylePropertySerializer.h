@@ -48,6 +48,7 @@ private:
     String borderSpacingValue(const StylePropertyShorthand&) const;
     String getShorthandValue(const StylePropertyShorthand&, String separator = " ") const;
     String fontValue() const;
+    String fontVariantValue() const;
     void appendFontLonghandValueIfNotNormal(CSSPropertyID, StringBuilder& result, String& value) const;
     String backgroundRepeatPropertyValue() const;
     String getPropertyText(CSSPropertyID, const String& value, bool isImportant, bool isNotFirstDecl) const;

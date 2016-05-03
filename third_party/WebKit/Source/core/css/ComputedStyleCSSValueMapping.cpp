@@ -472,6 +472,59 @@ static CSSValueList* valuesForShorthandProperty(const StylePropertyShorthand& sh
     return list;
 }
 
+static CSSValue* expandNoneLigaturesValue()
+{
+    CSSValueList* list = CSSValueList::createSpaceSeparated();
+    list->append(cssValuePool().createIdentifierValue(CSSValueNoCommonLigatures));
+    list->append(cssValuePool().createIdentifierValue(CSSValueNoDiscretionaryLigatures));
+    list->append(cssValuePool().createIdentifierValue(CSSValueNoHistoricalLigatures));
+    list->append(cssValuePool().createIdentifierValue(CSSValueNoContextual));
+    return list;
+}
+
+static CSSValue* valuesForFontVariantProperty(const ComputedStyle& style, const LayoutObject* layoutObject, Node* styledNode, bool allowVisitedStyle)
+{
+    enum VariantShorthandCases { AllNormal, NoneLigatures, ConcatenateNonNormal };
+    VariantShorthandCases shorthandCase = AllNormal;
+    for (size_t i = 0; i < fontVariantShorthand().length(); ++i) {
+        CSSValue* value = ComputedStyleCSSValueMapping::get(fontVariantShorthand().properties()[i], style, layoutObject, styledNode, allowVisitedStyle);
+
+        if (shorthandCase == AllNormal
+            && value->isPrimitiveValue()
+            && toCSSPrimitiveValue(value)->getValueID() == CSSValueNone
+            && fontVariantShorthand().properties()[i] == CSSPropertyFontVariantLigatures) {
+            shorthandCase = NoneLigatures;
+        } else if (!(value->isPrimitiveValue() && toCSSPrimitiveValue(value)->getValueID() == CSSValueNormal)) {
+            shorthandCase = ConcatenateNonNormal;
+            break;
+        }
+    }
+
+    switch (shorthandCase) {
+    case AllNormal:
+        return cssValuePool().createIdentifierValue(CSSValueNormal);
+    case NoneLigatures:
+        return cssValuePool().createIdentifierValue(CSSValueNone);
+    case ConcatenateNonNormal:
+        {
+        CSSValueList* list = CSSValueList::createSpaceSeparated();
+        for (size_t i = 0; i < fontVariantShorthand().length(); ++i) {
+            CSSValue* value = ComputedStyleCSSValueMapping::get(fontVariantShorthand().properties()[i], style, layoutObject, styledNode, allowVisitedStyle);
+            ASSERT(value);
+            if (value->isPrimitiveValue() && toCSSPrimitiveValue(value)->getValueID() == CSSValueNone) {
+                list->append(expandNoneLigaturesValue());
+            } else if (!(value->isPrimitiveValue() && toCSSPrimitiveValue(value)->getValueID() == CSSValueNormal)) {
+                list->append(value);
+            }
+        }
+        return list;
+        }
+    default:
+        NOTREACHED();
+        return nullptr;
+    }
+}
+
 static CSSValueList* valuesForBackgroundShorthand(const ComputedStyle& style, const LayoutObject* layoutObject, Node* styledNode, bool allowVisitedStyle)
 {
     CSSValueList* ret = CSSValueList::createCommaSeparated();
@@ -570,14 +623,59 @@ static CSSPrimitiveValue* valueForFontStyle(const ComputedStyle& style)
     return cssValuePool().createValue(style.getFontDescription().style());
 }
 
-static CSSPrimitiveValue* valueForFontVariant(const ComputedStyle& style)
-{
-    return cssValuePool().createValue(style.getFontDescription().variant());
-}
-
 static CSSPrimitiveValue* valueForFontWeight(const ComputedStyle& style)
 {
     return cssValuePool().createValue(style.getFontDescription().weight());
+}
+
+static CSSPrimitiveValue* valueForFontVariantCaps(const ComputedStyle& style)
+{
+    FontDescription::FontVariantCaps variantCaps = style.getFontDescription().variantCaps();
+    switch (variantCaps) {
+    case FontDescription::CapsNormal:
+        return cssValuePool().createIdentifierValue(CSSValueNormal);
+    case FontDescription::SmallCaps:
+        return cssValuePool().createIdentifierValue(CSSValueSmallCaps);
+    case FontDescription::AllSmallCaps:
+        return cssValuePool().createIdentifierValue(CSSValueAllSmallCaps);
+    case FontDescription::PetiteCaps:
+        return cssValuePool().createIdentifierValue(CSSValuePetiteCaps);
+    case FontDescription::AllPetiteCaps:
+        return cssValuePool().createIdentifierValue(CSSValueAllPetiteCaps);
+    case FontDescription::Unicase:
+        return cssValuePool().createIdentifierValue(CSSValueUnicase);
+    case FontDescription::TitlingCaps:
+        return cssValuePool().createIdentifierValue(CSSValueTitlingCaps);
+    default:
+        NOTREACHED();
+        return nullptr;
+    }
+}
+
+static CSSValue* valueForFontVariantLigatures(const ComputedStyle& style)
+{
+    FontDescription::LigaturesState commonLigaturesState = style.getFontDescription().commonLigaturesState();
+    FontDescription::LigaturesState discretionaryLigaturesState = style.getFontDescription().discretionaryLigaturesState();
+    FontDescription::LigaturesState historicalLigaturesState = style.getFontDescription().historicalLigaturesState();
+    FontDescription::LigaturesState contextualLigaturesState = style.getFontDescription().contextualLigaturesState();
+    if (commonLigaturesState == FontDescription::NormalLigaturesState && discretionaryLigaturesState == FontDescription::NormalLigaturesState
+        && historicalLigaturesState == FontDescription::NormalLigaturesState && contextualLigaturesState == FontDescription::NormalLigaturesState)
+        return cssValuePool().createIdentifierValue(CSSValueNormal);
+
+    if (commonLigaturesState == FontDescription::DisabledLigaturesState && discretionaryLigaturesState == FontDescription::DisabledLigaturesState
+        && historicalLigaturesState == FontDescription::DisabledLigaturesState && contextualLigaturesState == FontDescription::DisabledLigaturesState)
+        return cssValuePool().createIdentifierValue(CSSValueNone);
+
+    CSSValueList* valueList = CSSValueList::createSpaceSeparated();
+    if (commonLigaturesState != FontDescription::NormalLigaturesState)
+        valueList->append(cssValuePool().createIdentifierValue(commonLigaturesState == FontDescription::DisabledLigaturesState ? CSSValueNoCommonLigatures : CSSValueCommonLigatures));
+    if (discretionaryLigaturesState != FontDescription::NormalLigaturesState)
+        valueList->append(cssValuePool().createIdentifierValue(discretionaryLigaturesState == FontDescription::DisabledLigaturesState ? CSSValueNoDiscretionaryLigatures : CSSValueDiscretionaryLigatures));
+    if (historicalLigaturesState != FontDescription::NormalLigaturesState)
+        valueList->append(cssValuePool().createIdentifierValue(historicalLigaturesState == FontDescription::DisabledLigaturesState ? CSSValueNoHistoricalLigatures : CSSValueHistoricalLigatures));
+    if (contextualLigaturesState != FontDescription::NormalLigaturesState)
+        valueList->append(cssValuePool().createIdentifierValue(contextualLigaturesState == FontDescription::DisabledLigaturesState ? CSSValueNoContextual : CSSValueContextual));
+    return valueList;
 }
 
 static CSSValue* specifiedValueForGridTrackBreadth(const GridLength& trackBreadth, const ComputedStyle& style)
@@ -1337,7 +1435,18 @@ CSSValue* ComputedStyleCSSValueMapping::valueForFont(const ComputedStyle& style)
 
     CSSValueList* list = CSSValueList::createSpaceSeparated();
     list->append(valueForFontStyle(style));
-    list->append(valueForFontVariant(style));
+
+    // Check that non-initial font-variant subproperties are not conflicting with this serialization.
+    CSSValue* ligaturesValue = valueForFontVariantLigatures(style);
+    if (!ligaturesValue->equals(*cssValuePool().createIdentifierValue(CSSValueNormal)))
+        return nullptr;
+
+    CSSPrimitiveValue* capsValue = valueForFontVariantCaps(style);
+    if (!capsValue->equals(*cssValuePool().createIdentifierValue(CSSValueNormal))
+        && !capsValue->equals(*cssValuePool().createIdentifierValue(CSSValueSmallCaps)))
+        return nullptr;
+    list->append(capsValue);
+
     list->append(valueForFontWeight(style));
     list->append(valueForFontStretch(style));
     list->append(sizeAndLineHeight);
@@ -1716,7 +1825,7 @@ CSSValue* ComputedStyleCSSValueMapping::get(CSSPropertyID propertyID, const Comp
     case CSSPropertyFontStyle:
         return valueForFontStyle(style);
     case CSSPropertyFontVariant:
-        return valueForFontVariant(style);
+        return valuesForFontVariantProperty(style, layoutObject, styledNode, allowVisitedStyle);
     case CSSPropertyFontWeight:
         return valueForFontWeight(style);
     case CSSPropertyFontFeatureSettings: {
@@ -2149,45 +2258,10 @@ CSSValue* ComputedStyleCSSValueMapping::get(CSSPropertyID propertyID, const Comp
         return cssValuePool().createValue(style.getFontDescription().getKerning());
     case CSSPropertyWebkitFontSmoothing:
         return cssValuePool().createValue(style.getFontDescription().fontSmoothing());
-    case CSSPropertyFontVariantLigatures: {
-        FontDescription::LigaturesState commonLigaturesState = style.getFontDescription().commonLigaturesState();
-        FontDescription::LigaturesState discretionaryLigaturesState = style.getFontDescription().discretionaryLigaturesState();
-        FontDescription::LigaturesState historicalLigaturesState = style.getFontDescription().historicalLigaturesState();
-        FontDescription::LigaturesState contextualLigaturesState = style.getFontDescription().contextualLigaturesState();
-        if (commonLigaturesState == FontDescription::NormalLigaturesState && discretionaryLigaturesState == FontDescription::NormalLigaturesState
-            && historicalLigaturesState == FontDescription::NormalLigaturesState && contextualLigaturesState == FontDescription::NormalLigaturesState)
-            return cssValuePool().createIdentifierValue(CSSValueNormal);
-
-        CSSValueList* valueList = CSSValueList::createSpaceSeparated();
-        if (commonLigaturesState != FontDescription::NormalLigaturesState)
-            valueList->append(cssValuePool().createIdentifierValue(commonLigaturesState == FontDescription::DisabledLigaturesState ? CSSValueNoCommonLigatures : CSSValueCommonLigatures));
-        if (discretionaryLigaturesState != FontDescription::NormalLigaturesState)
-            valueList->append(cssValuePool().createIdentifierValue(discretionaryLigaturesState == FontDescription::DisabledLigaturesState ? CSSValueNoDiscretionaryLigatures : CSSValueDiscretionaryLigatures));
-        if (historicalLigaturesState != FontDescription::NormalLigaturesState)
-            valueList->append(cssValuePool().createIdentifierValue(historicalLigaturesState == FontDescription::DisabledLigaturesState ? CSSValueNoHistoricalLigatures : CSSValueHistoricalLigatures));
-        if (contextualLigaturesState != FontDescription::NormalLigaturesState)
-            valueList->append(cssValuePool().createIdentifierValue(contextualLigaturesState == FontDescription::DisabledLigaturesState ? CSSValueNoContextual : CSSValueContextual));
-        return valueList;
-    }
-    case CSSPropertyFontVariantCaps: {
-        FontDescription::FontVariantCaps variantCaps = style.getFontDescription().variantCaps();
-        switch (variantCaps) {
-        case FontDescription::CapsNormal:
-            return cssValuePool().createIdentifierValue(CSSValueNormal);
-        case FontDescription::SmallCaps:
-            return cssValuePool().createIdentifierValue(CSSValueSmallCaps);
-        case FontDescription::AllSmallCaps:
-            return cssValuePool().createIdentifierValue(CSSValueAllSmallCaps);
-        case FontDescription::PetiteCaps:
-            return cssValuePool().createIdentifierValue(CSSValuePetiteCaps);
-        case FontDescription::AllPetiteCaps:
-            return cssValuePool().createIdentifierValue(CSSValueAllPetiteCaps);
-        case FontDescription::Unicase:
-            return cssValuePool().createIdentifierValue(CSSValueUnicase);
-        case FontDescription::TitlingCaps:
-            return cssValuePool().createIdentifierValue(CSSValueTitlingCaps);
-        }
-    }
+    case CSSPropertyFontVariantLigatures:
+        return valueForFontVariantLigatures(style);
+    case CSSPropertyFontVariantCaps:
+        return valueForFontVariantCaps(style);
     case CSSPropertyZIndex:
         if (style.hasAutoZIndex())
             return cssValuePool().createIdentifierValue(CSSValueAuto);

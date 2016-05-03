@@ -10,7 +10,7 @@ Tests that console logging dumps properly styled messages, and that the whole me
 console-format-style-whitelist.html:4 Colors are awesome.
 Styled text #0: color: blue;
 console-format-style-whitelist.html:5 So are fonts!
-Styled text #0: font-style: normal; font-variant: normal; font-weight: normal; font-stretch: normal; font-size: 1em; line-height: normal; font-family: Helvetica;
+Styled text #0: font-style: normal; font-variant-caps: normal; font-variant-ligatures: normal; font-weight: normal; font-stretch: normal; font-size: 1em; line-height: normal; font-family: Helvetica;
 console-format-style-whitelist.html:6 And borders and margins and paddings!
 Styled text #0: border: 1px solid red; border-image-source: initial; border-image-slice: initial; border-image-width: initial; border-image-outset: initial; border-image-repeat: initial; margin: 20px; padding: 10px;
 console-format-style-whitelist.html:7 text-* is fine by us!

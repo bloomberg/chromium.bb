@@ -1676,7 +1676,7 @@ void StyleResolver::computeFont(ComputedStyle* style, const StylePropertySet& pr
         CSSPropertyFontFamily,
         CSSPropertyFontStretch,
         CSSPropertyFontStyle,
-        CSSPropertyFontVariant,
+        CSSPropertyFontVariantCaps,
         CSSPropertyFontWeight,
         CSSPropertyLineHeight,
     };

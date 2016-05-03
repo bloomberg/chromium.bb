@@ -454,59 +454,98 @@ static CSSValue* consumeWebkitHighlight(CSSParserTokenRange& range)
     return consumeString(range);
 }
 
-static CSSValue* consumeFontVariantLigatures(CSSParserTokenRange& range)
-{
-    if (range.peek().id() == CSSValueNormal)
-        return consumeIdent(range);
-    CSSValueList* ligatureValues = CSSValueList::createSpaceSeparated();
-    bool sawCommonLigaturesValue = false;
-    bool sawDiscretionaryLigaturesValue = false;
-    bool sawHistoricalLigaturesValue = false;
-    bool sawContextualLigaturesValue = false;
-    do {
-        CSSValueID id = range.peek().id();
-        switch (id) {
+class FontVariantLigaturesParser {
+    STACK_ALLOCATED();
+
+public:
+    FontVariantLigaturesParser()
+        : m_sawCommonLigaturesValue(false)
+        , m_sawDiscretionaryLigaturesValue(false)
+        , m_sawHistoricalLigaturesValue(false)
+        , m_sawContextualLigaturesValue(false)
+        , m_result(CSSValueList::createSpaceSeparated())
+    {
+    }
+
+    enum class ParseResult {
+        ConsumedValue,
+        DisallowedValue,
+        UnknownValue
+    };
+
+    ParseResult consumeLigature(CSSParserTokenRange& range)
+    {
+        CSSValueID valueID = range.peek().id();
+        switch (valueID) {
         case CSSValueNoCommonLigatures:
         case CSSValueCommonLigatures:
-            if (sawCommonLigaturesValue)
-                return nullptr;
-            sawCommonLigaturesValue = true;
+            if (m_sawCommonLigaturesValue)
+                return ParseResult::DisallowedValue;
+            m_sawCommonLigaturesValue = true;
             break;
         case CSSValueNoDiscretionaryLigatures:
         case CSSValueDiscretionaryLigatures:
-            if (sawDiscretionaryLigaturesValue)
-                return nullptr;
-            sawDiscretionaryLigaturesValue = true;
+            if (m_sawDiscretionaryLigaturesValue)
+                return ParseResult::DisallowedValue;
+            m_sawDiscretionaryLigaturesValue = true;
             break;
         case CSSValueNoHistoricalLigatures:
         case CSSValueHistoricalLigatures:
-            if (sawHistoricalLigaturesValue)
-                return nullptr;
-            sawHistoricalLigaturesValue = true;
+            if (m_sawHistoricalLigaturesValue)
+                return ParseResult::DisallowedValue;
+            m_sawHistoricalLigaturesValue = true;
             break;
         case CSSValueNoContextual:
         case CSSValueContextual:
-            if (sawContextualLigaturesValue)
-                return nullptr;
-            sawContextualLigaturesValue = true;
+            if (m_sawContextualLigaturesValue)
+                return ParseResult::DisallowedValue;
+            m_sawContextualLigaturesValue = true;
             break;
         default:
-            return nullptr;
+            return ParseResult::UnknownValue;
         }
-        ligatureValues->append(consumeIdent(range));
+        m_result->append(consumeIdent(range));
+        return ParseResult::ConsumedValue;
+    }
+
+    CSSValue* finalizeValue()
+    {
+        if (!m_result->length())
+            return cssValuePool().createIdentifierValue(CSSValueNormal);
+        return m_result.release();
+    }
+
+private:
+    bool m_sawCommonLigaturesValue;
+    bool m_sawDiscretionaryLigaturesValue;
+    bool m_sawHistoricalLigaturesValue;
+    bool m_sawContextualLigaturesValue;
+    Member<CSSValueList> m_result;
+};
+
+static CSSValue* consumeFontVariantLigatures(CSSParserTokenRange& range)
+{
+    if (range.peek().id() == CSSValueNormal || range.peek().id() == CSSValueNone)
+        return consumeIdent(range);
+
+    FontVariantLigaturesParser ligaturesParser;
+    do {
+        if (ligaturesParser.consumeLigature(range) !=
+            FontVariantLigaturesParser::ParseResult::ConsumedValue)
+            return nullptr;
     } while (!range.atEnd());
 
-    return ligatureValues;
+    return ligaturesParser.finalizeValue();
 }
 
-static CSSValue* consumeFontVariantCaps(CSSParserTokenRange& range)
+static CSSPrimitiveValue* consumeFontVariantCaps(CSSParserTokenRange& range)
 {
     return consumeIdent<CSSValueNormal, CSSValueSmallCaps, CSSValueAllSmallCaps,
         CSSValuePetiteCaps, CSSValueAllPetiteCaps,
         CSSValueUnicase, CSSValueTitlingCaps>(range);
 }
 
-static CSSPrimitiveValue* consumeFontVariant(CSSParserTokenRange& range)
+static CSSPrimitiveValue* consumeFontVariantCSS21(CSSParserTokenRange& range)
 {
     return consumeIdent<CSSValueNormal, CSSValueSmallCaps>(range);
 }
@@ -524,7 +563,7 @@ static CSSValue* consumeFontVariantList(CSSParserTokenRange& range)
                 return nullptr;
             return consumeIdent(range);
         }
-        CSSPrimitiveValue* fontVariant = consumeFontVariant(range);
+        CSSPrimitiveValue* fontVariant = consumeFontVariantCSS21(range);
         if (fontVariant)
             values->append(fontVariant);
     } while (consumeCommaIncludingWhitespace(range));
@@ -3446,8 +3485,6 @@ CSSValue* CSSPropertyParser::parseSingleValue(CSSPropertyID unresolvedProperty, 
         return consumeFontVariantLigatures(m_range);
     case CSSPropertyFontFeatureSettings:
         return consumeFontFeatureSettings(m_range);
-    case CSSPropertyFontVariant:
-        return consumeFontVariant(m_range);
     case CSSPropertyFontFamily:
         return consumeFontFamily(m_range);
     case CSSPropertyFontWeight:
@@ -3953,7 +3990,8 @@ bool CSSPropertyParser::consumeSystemFont(bool important)
     addProperty(CSSPropertyFontFamily, CSSPropertyFont, fontFamilyList, important);
 
     addProperty(CSSPropertyFontStretch, CSSPropertyFont, cssValuePool().createIdentifierValue(CSSValueNormal), important);
-    addProperty(CSSPropertyFontVariant, CSSPropertyFont, cssValuePool().createIdentifierValue(CSSValueNormal), important);
+    addProperty(CSSPropertyFontVariantCaps, CSSPropertyFont, cssValuePool().createIdentifierValue(CSSValueNormal), important);
+    addProperty(CSSPropertyFontVariantLigatures, CSSPropertyFont, cssValuePool().createIdentifierValue(CSSValueNormal), important);
     addProperty(CSSPropertyLineHeight, CSSPropertyFont, cssValuePool().createIdentifierValue(CSSValueNormal), important);
     return true;
 }
@@ -3969,7 +4007,7 @@ bool CSSPropertyParser::consumeFont(bool important)
     }
     // Optional font-style, font-variant, font-stretch and font-weight.
     CSSPrimitiveValue* fontStyle = nullptr;
-    CSSPrimitiveValue* fontVariant = nullptr;
+    CSSPrimitiveValue* fontVariantCaps = nullptr;
     CSSPrimitiveValue* fontWeight = nullptr;
     CSSPrimitiveValue* fontStretch = nullptr;
     while (!m_range.atEnd()) {
@@ -3978,11 +4016,11 @@ bool CSSPropertyParser::consumeFont(bool important)
             fontStyle = consumeIdent(m_range);
             continue;
         }
-        if (!fontVariant) {
+        if (!fontVariantCaps && (id == CSSValueNormal || id == CSSValueSmallCaps)) {
             // Font variant in the shorthand is particular, it only accepts normal or small-caps.
-            // TODO: Make consumeFontVariant only accept the css21 values.
-            fontVariant = consumeFontVariant(m_range);
-            if (fontVariant)
+            // See https://drafts.csswg.org/css-fonts/#propdef-font
+            fontVariantCaps = consumeFontVariantCSS21(m_range);
+            if (fontVariantCaps)
                 continue;
         }
         if (!fontWeight) {
@@ -4000,7 +4038,9 @@ bool CSSPropertyParser::consumeFont(bool important)
         return false;
 
     addProperty(CSSPropertyFontStyle, CSSPropertyFont, fontStyle ? fontStyle : cssValuePool().createIdentifierValue(CSSValueNormal), important);
-    addProperty(CSSPropertyFontVariant, CSSPropertyFont, fontVariant ? fontVariant : cssValuePool().createIdentifierValue(CSSValueNormal), important);
+    addProperty(CSSPropertyFontVariantCaps, CSSPropertyFont, fontVariantCaps ? fontVariantCaps : cssValuePool().createIdentifierValue(CSSValueNormal), important);
+    addProperty(CSSPropertyFontVariantLigatures, CSSPropertyFont, cssValuePool().createIdentifierValue(CSSValueNormal), important);
+
     addProperty(CSSPropertyFontWeight, CSSPropertyFont, fontWeight ? fontWeight : cssValuePool().createIdentifierValue(CSSValueNormal), important);
     addProperty(CSSPropertyFontStretch, CSSPropertyFont, fontStretch ? fontStretch : cssValuePool().createIdentifierValue(CSSValueNormal), important);
 
@@ -4031,6 +4071,46 @@ bool CSSPropertyParser::consumeFont(bool important)
     // "font-stretch", "font-size-adjust", and "font-kerning" be reset to their initial values
     // but we don't seem to support them at the moment. They should also be added here once implemented.
     return m_range.atEnd();
+}
+
+bool CSSPropertyParser::consumeFontVariantShorthand(bool important)
+{
+    if (identMatches<CSSValueNormal, CSSValueNone>(m_range.peek().id())) {
+        addProperty(CSSPropertyFontVariantLigatures, CSSPropertyFontVariant, consumeIdent(m_range), important);
+        addProperty(CSSPropertyFontVariantCaps, CSSPropertyFontVariant, cssValuePool().createIdentifierValue(CSSValueNormal), important);
+        return m_range.atEnd();
+    }
+
+    CSSPrimitiveValue* capsValue = nullptr;
+    FontVariantLigaturesParser ligaturesParser;
+    do {
+        FontVariantLigaturesParser::ParseResult parseResult = ligaturesParser.consumeLigature(m_range);
+        if (parseResult == FontVariantLigaturesParser::ParseResult::ConsumedValue)
+            continue;
+        if (parseResult == FontVariantLigaturesParser::ParseResult::DisallowedValue)
+            return false;
+
+        CSSValueID id = m_range.peek().id();
+        switch (id) {
+        case CSSValueSmallCaps:
+        case CSSValueAllSmallCaps:
+        case CSSValuePetiteCaps:
+        case CSSValueAllPetiteCaps:
+        case CSSValueUnicase:
+        case CSSValueTitlingCaps:
+            // Only one caps value permitted in font-variant grammar.
+            if (capsValue)
+                return false;
+            capsValue = consumeIdent(m_range);
+            break;
+        default:
+            return false;
+        }
+    } while (!m_range.atEnd());
+
+    addProperty(CSSPropertyFontVariantLigatures, CSSPropertyFontVariant, ligaturesParser.finalizeValue(), important);
+    addProperty(CSSPropertyFontVariantCaps, CSSPropertyFontVariant, capsValue ? capsValue : cssValuePool().createIdentifierValue(CSSValueNormal), important);
+    return true;
 }
 
 bool CSSPropertyParser::consumeBorderSpacing(bool important)
@@ -4826,6 +4906,8 @@ bool CSSPropertyParser::parseShorthand(CSSPropertyID unresolvedProperty, bool im
             return consumeSystemFont(important);
         return consumeFont(important);
     }
+    case CSSPropertyFontVariant:
+        return consumeFontVariantShorthand(important);
     case CSSPropertyBorderSpacing:
         return consumeBorderSpacing(important);
     case CSSPropertyColumns:

@@ -500,37 +500,7 @@ FontTraits FontFace::traits() const
         }
     }
 
-    FontVariant variant = FontVariantNormal;
-    if (CSSValue* fontVariant = m_variant) {
-        // font-variant descriptor can be a value list.
-        if (fontVariant->isPrimitiveValue()) {
-            CSSValueList* list = CSSValueList::createCommaSeparated();
-            list->append(fontVariant);
-            fontVariant = list;
-        } else if (!fontVariant->isValueList()) {
-            return 0;
-        }
-
-        CSSValueList* variantList = toCSSValueList(fontVariant);
-        unsigned numVariants = variantList->length();
-        if (!numVariants)
-            return 0;
-
-        for (unsigned i = 0; i < numVariants; ++i) {
-            switch (toCSSPrimitiveValue(variantList->item(i))->getValueID()) {
-            case CSSValueNormal:
-                variant = FontVariantNormal;
-                break;
-            case CSSValueSmallCaps:
-                variant = FontVariantSmallCaps;
-                break;
-            default:
-                break;
-            }
-        }
-    }
-
-    return FontTraits(style, variant, weight, stretch);
+    return FontTraits(style, weight, stretch);
 }
 
 static FontDisplay CSSValueToFontDisplay(CSSValue* value)

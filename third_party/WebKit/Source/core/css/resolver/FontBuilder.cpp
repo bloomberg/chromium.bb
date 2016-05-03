@@ -155,13 +155,6 @@ void FontBuilder::setStyle(FontStyle italic)
     m_fontDescription.setStyle(italic);
 }
 
-void FontBuilder::setVariant(FontVariant smallCaps)
-{
-    set(PropertySetFlag::Variant);
-
-    m_fontDescription.setVariant(smallCaps);
-}
-
 void FontBuilder::setVariantCaps(FontDescription::FontVariantCaps caps)
 {
     set(PropertySetFlag::VariantCaps);
@@ -374,8 +367,6 @@ void FontBuilder::createFont(FontSelector* fontSelector, ComputedStyle& style)
         description.setLocale(m_fontDescription.locale(false));
     if (isSet(PropertySetFlag::Style))
         description.setStyle(m_fontDescription.style());
-    if (isSet(PropertySetFlag::Variant))
-        description.setVariant(m_fontDescription.variant());
     if (isSet(PropertySetFlag::VariantCaps))
         description.setVariantCaps(m_fontDescription.variantCaps());
     if (isSet(PropertySetFlag::VariantLigatures))

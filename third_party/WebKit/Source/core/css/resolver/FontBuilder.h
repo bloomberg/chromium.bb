@@ -62,7 +62,6 @@ public:
     void setFeatureSettings(PassRefPtr<FontFeatureSettings>);
     void setLocale(const AtomicString&);
     void setStyle(FontStyle);
-    void setVariant(FontVariant);
     void setVariantCaps(FontDescription::FontVariantCaps);
     void setVariantLigatures(const FontDescription::VariantLigatures&);
     void setTextRendering(TextRenderingMode);
@@ -82,7 +81,6 @@ public:
     static FontDescription::Size initialSize() { return FontDescription::Size(FontSize::initialKeywordSize(), 0.0f, false); }
     static float initialSizeAdjust() { return FontSizeAdjustNone; }
     static TextRenderingMode initialTextRendering() { return AutoTextRendering; }
-    static FontVariant initialVariant() { return FontVariantNormal; }
     static FontDescription::FontVariantCaps initialVariantCaps() { return FontDescription::CapsNormal; }
     static FontDescription::VariantLigatures initialVariantLigatures() { return FontDescription::VariantLigatures(); }
     static const AtomicString& initialLocale() { return nullAtom; }
@@ -117,7 +115,6 @@ private:
         Locale,
         Style,
         SizeAdjust,
-        Variant,
         VariantCaps,
         VariantLigatures,
         TextRendering,

@@ -61,9 +61,12 @@ PASS Two CSSValues "url(resources/greenbox.png) 0 0, pointer" and "url(resources
 PASS Two CSSValues "italic" for property "font-style" are equal. 
 PASS Two CSSValues "oblique" for property "font-style" are equal. 
 PASS Two CSSValues "italic" and "oblique" for property "font-style" are not equal. 
-PASS Two CSSValues "small-caps" for property "font-variant" are equal. 
-PASS Two CSSValues "normal" for property "font-variant" are equal. 
-PASS Two CSSValues "small-caps" and "normal" for property "font-variant" are not equal. 
+PASS Two CSSValues "normal" for property "font-variant-ligatures" are equal. 
+PASS Two CSSValues "discretionary-ligatures" for property "font-variant-ligatures" are equal. 
+PASS Two CSSValues "normal" and "discretionary-ligatures" for property "font-variant-ligatures" are not equal. 
+PASS Two CSSValues "normal" for property "font-variant-caps" are equal. 
+PASS Two CSSValues "small-caps" for property "font-variant-caps" are equal. 
+PASS Two CSSValues "normal" and "small-caps" for property "font-variant-caps" are not equal. 
 PASS Two CSSValues "bold" for property "font-weight" are equal. 
 PASS Two CSSValues "bolder" for property "font-weight" are equal. 
 PASS Two CSSValues "bold" and "bolder" for property "font-weight" are not equal. 

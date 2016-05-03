@@ -276,7 +276,6 @@ HarfBuzzShaper::CapsFeatureSettingsScopedOverlay::~CapsFeatureSettingsScopedOver
     m_features.remove(0, m_countFeatures);
 }
 
-
 // A port of hb_icu_script_to_script because harfbuzz on CrOS is built
 // without hb-icu. See http://crbug.com/356929
 static inline hb_script_t ICUScriptToHBScript(UScriptCode script)
@@ -526,18 +525,8 @@ PassRefPtr<ShapeResult> HarfBuzzShaper::shapeResult()
     const String& localeString = fontDescription.locale();
     CString locale = localeString.latin1();
     const hb_language_t language = hb_language_from_string(locale.data(), locale.length());
-    FontDescription::FontVariantCaps requestedCaps = fontDescription.variantCaps();
 
-    // TODO(drott): crbug.com/585746 We need to to implement the font-variant
-    // shorthand to map correctly to font-variant-subproperties. This adapter
-    // code here activates small caps processing when either font-variant:
-    // small-caps is specified in the older CSS syntax, or when
-    // font-variant-caps: is specifying a non CapsNormal value.
-    if (requestedCaps == FontDescription::CapsNormal
-        && fontDescription.variant() == FontVariantSmallCaps)
-        requestedCaps = FontDescription::SmallCaps;
-
-    bool needsCapsHandling = requestedCaps != FontDescription::CapsNormal;
+    bool needsCapsHandling = fontDescription.variantCaps() != FontDescription::CapsNormal;
     OpenTypeCapsSupport capsSupport;
 
     RunSegmenter::RunSegmenterRange segmentRange = {
@@ -599,7 +588,7 @@ PassRefPtr<ShapeResult> HarfBuzzShaper::shapeResult()
             SmallCapsIterator::SmallCapsBehavior smallCapsBehavior = SmallCapsIterator::SmallCapsSameCase;
             if (needsCapsHandling) {
                 capsSupport = OpenTypeCapsSupport(currentFont->platformData().harfBuzzFace(),
-                    requestedCaps,
+                    fontDescription.variantCaps(),
                     ICUScriptToHBScript(segmentRange.script));
                 if (capsSupport.needsRunCaseSplitting())
                     splitUntilNextCaseChange(currentQueueItem, smallCapsBehavior);
