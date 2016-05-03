@@ -166,9 +166,8 @@ cr.define('issue_banner', function() {
       // Tests the issue text. While the UI will show only the blocking or
       // non-blocking interface, the issue's info will be set if specified.
       test('issue text', function() {
-        // |issue| is null. Title text should be empty.
-        assertEquals(null, banner.issue);
-        checkIssueText(banner.issue);
+        // |issue| is initially undefined.
+        assertEquals(undefined, banner.issue);
 
         // Set |issue| to be a blocking issue. Title text should be updated.
         banner.issue = fakeBlockingIssueOne;

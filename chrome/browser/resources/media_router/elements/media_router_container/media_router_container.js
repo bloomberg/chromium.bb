@@ -20,11 +20,10 @@ Polymer({
 
     /**
      * The list of CastModes to show.
-     * @type {!Array<!media_router.CastMode>}
+     * @type {!Array<!media_router.CastMode>|undefined}
      */
     castModeList: {
       type: Array,
-      value: [],
       observer: 'checkCurrentCastMode_',
     },
 
@@ -39,30 +38,27 @@ Polymer({
 
     /**
      * The current route.
-     * @private {?media_router.Route}
+     * @private {?media_router.Route|undefined}
      */
     currentRoute_: {
       type: Object,
-      value: null,
     },
 
     /**
      * The current view to be shown.
-     * @private {?media_router.MediaRouterView}
+     * @private {?media_router.MediaRouterView|undefined}
      */
     currentView_: {
       type: String,
-      value: null,
       observer: 'currentViewChanged_',
     },
 
     /**
      * The URL to open when the device missing link is clicked.
-     * @type {string}
+     * @type {string|undefined}
      */
     deviceMissingUrl: {
       type: String,
-      value: '',
     },
 
     /**
@@ -76,57 +72,51 @@ Polymer({
 
     /**
      * The time |this| element calls ready().
-     * @private {number}
+     * @private {number|undefined}
      */
     elementReadyTimeMs_: {
       type: Number,
-      value: 0,
     },
 
     /**
      * The URL to open when the cloud services pref learn more link is clicked.
-     * @type {string}
+     * @type {string|undefined}
      */
     firstRunFlowCloudPrefLearnMoreUrl: {
       type: String,
-      value: '',
     },
 
     /**
      * The URL to open when the first run flow learn more link is clicked.
-     * @type {string}
+     * @type {string|undefined}
      */
     firstRunFlowLearnMoreUrl: {
       type: String,
-      value: '',
     },
 
     /**
      * The header text for the sink list.
-     * @type {string}
+     * @type {string|undefined}
      */
     headerText: {
       type: String,
-      value: '',
     },
 
     /**
      * The header text tooltip. This would be descriptive of the
      * source origin, whether a host name, tab URL, etc.
-     * @type {string}
+     * @type {string|undefined}
      */
     headerTextTooltip: {
       type: String,
-      value: '',
     },
 
     /**
      * Whether the browser is currently incognito.
-     * @type {boolean}
+     * @type {boolean|undefined}
      */
     isOffTheRecord: {
       type: Boolean,
-      value: false,
     },
 
     /**
@@ -171,22 +161,20 @@ Polymer({
 
     /**
      * Whether the user's mouse is positioned over the dialog.
-     * @private {boolean}
+     * @private {boolean|undefined}
      */
     mouseIsPositionedOverDialog_: {
       type: Boolean,
-      value: false,
     },
 
     /**
      * The ID of the route that is currently being created. This is set when
      * route creation is resolved but not ready for its controls to be
      * displayed.
-     * @private {string}
+     * @private {string|undefined}
      */
     pendingCreatedRouteId_: {
       type: String,
-      value: '',
     },
 
     /**
@@ -212,11 +200,10 @@ Polymer({
 
     /**
      * Helps manage the state of creating a sink and a route from a pseudo sink.
-     * @private {PseudoSinkSearchState}
+     * @private {PseudoSinkSearchState|undefined}
      */
     pseudoSinkSearchState_: {
       type: Object,
-      value: null,
     },
 
     /**
@@ -232,21 +219,19 @@ Polymer({
 
     /**
      * The list of current routes.
-     * @type {!Array<!media_router.Route>}
+     * @type {!Array<!media_router.Route>|undefined}
      */
     routeList: {
       type: Array,
-      value: [],
       observer: 'rebuildRouteMaps_',
     },
 
     /**
      * Maps media_router.Route.id to corresponding media_router.Route.
-     * @private {!Object<!string, !media_router.Route>}
+     * @private {!Object<!string, !media_router.Route>|undefined}
      */
     routeMap_: {
       type: Object,
-      value: {},
     },
 
     /**
@@ -262,39 +247,35 @@ Polymer({
     /**
      * Sinks to display that match |searchInputText_|.
      * @private {!Array<!{sinkItem: !media_router.Sink,
-     *                    substrings: Array<!Array<number>>}>}
+     *                    substrings: Array<!Array<number>>}>|undefined}
      */
     searchResultsToShow_: {
       type: Array,
-      value: [],
     },
 
     /**
      * Whether to show the user domain of sinks associated with identity.
-     * @type {boolean}
+     * @type {boolean|undefined}
      */
     showDomain: {
       type: Boolean,
-      value: false,
     },
 
     /**
      * Whether to show the first run flow.
-     * @type {boolean}
+     * @type {boolean|undefined}
      */
     showFirstRunFlow: {
       type: Boolean,
-      value: false,
       observer: 'updateElementPositioning_',
     },
 
     /**
      * Whether to show the cloud preference setting in the first run flow.
-     * @type {boolean}
+     * @type {boolean|undefined}
      */
     showFirstRunFlowCloudPref: {
       type: Boolean,
-      value: false,
     },
 
     /**
@@ -318,11 +299,10 @@ Polymer({
 
     /**
      * Maps media_router.Sink.id to corresponding media_router.Sink.
-     * @private {!Object<!string, !media_router.Sink>}
+     * @private {!Object<!string, !media_router.Sink>|undefined}
      */
     sinkMap_: {
       type: Object,
-      value: {},
     },
 
     /**
@@ -336,11 +316,10 @@ Polymer({
 
     /**
      * Sinks to show for the currently selected cast mode.
-     * @private {!Array<!media_router.Sink>}
+     * @private {!Array<!media_router.Sink>|undefined}
      */
     sinksToShow_: {
       type: Array,
-      value: [],
     },
 
     /**
@@ -613,7 +592,7 @@ Polymer({
   /**
    * @param {?media_router.MediaRouterView} view The current view.
    * @param {string} headerText The header text for the sink list.
-   * @return {string} The text for the header.
+   * @return {string|undefined} The text for the header.
    * @private
    */
   computeHeaderText_: function(view, headerText) {

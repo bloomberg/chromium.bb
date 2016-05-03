@@ -150,8 +150,8 @@ cr.define('media_router.ui', function() {
    *   showDomain - true if the user domain should be shown.
    */
   function setSinkListAndIdentity(data) {
-    container.allSinks = data['sinks'];
     container.showDomain = data['showDomain'];
+    container.allSinks = data['sinks'];
     header.userEmail = data['userEmail'];
     header.showEmail = data['showEmail'];
   }

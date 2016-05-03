@@ -10,11 +10,10 @@ Polymer({
     /**
      * The name of the icon used as the back button. This is set once, when
      * the |this| is ready.
-     * @private {string}
+     * @private {string|undefined}
      */
     arrowDropIcon_: {
       type: String,
-      value: '',
     },
 
     /**
@@ -28,11 +27,10 @@ Polymer({
 
     /**
      * The header text to show.
-     * @type {string}
+     * @type {string|undefined}
      */
     headingText: {
       type: String,
-      value: '',
     },
 
     /**
@@ -57,39 +55,35 @@ Polymer({
 
     /**
      * Whether to show the user email in the header.
-     * @type {boolean}
+     * @type {boolean|undefined}
      */
     showEmail: {
       type: Boolean,
-      value: false,
       observer: 'maybeChangeHeaderHeight_',
     },
 
     /**
      * The text to show in the tooltip.
-     * @type {string}
+     * @type {string|undefined}
      */
     tooltip: {
       type: String,
-      value: '',
     },
 
     /**
      * The user email if they are signed in.
-     * @type {string}
+     * @type {string|undefined}
      */
     userEmail: {
       type: String,
-      value: '',
     },
 
     /**
      * The current view that this header should reflect.
-     * @type {?media_router.MediaRouterView}
+     * @type {?media_router.MediaRouterView|undefined}
      */
     view: {
       type: String,
-      value: null,
       observer: 'updateHeaderCursorStyle_',
     },
   },

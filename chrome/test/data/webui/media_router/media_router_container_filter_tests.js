@@ -183,7 +183,8 @@ cr.define('media_router_container_filter', function() {
           checkCurrentView(media_router.MediaRouterView.SINK_LIST);
           setTimeout(function() {
             item =
-                container.$['sink-list-view'].querySelectorAll('paper-item')[1];
+                container.$$('#sink-list-view')
+                    .querySelectorAll('paper-item')[1];
             // TODO(crbug.com/608551): This condition handles flakiness around
             // the search item getting focus earlier. If it doesn't get focus,
             // the logic that changes focus from a search item to a sink list

@@ -108,18 +108,18 @@ cr.define('route_details', function() {
         checkSpanText(loadTimeData.getString('stopCastingButtonText')
             .toUpperCase(), 'close-route-button');
         checkSpanText(
-            loadTimeData.getString('startCastingButtonText'),
+            loadTimeData.getString('startCastingButtonText').toUpperCase(),
             'start-casting-to-route-button');
         checkSpanText('', 'route-information');
       });
 
-      // Tests when |route| is null or set.
-      test('route is null or set', function() {
-        // |route| is null.
-        assertEquals(null, details.route);
+      // Tests when |route| is undefined or set.
+      test('route is undefined or set', function() {
+        // |route| is initially undefined.
+        assertEquals(undefined, details.route);
         checkDefaultViewIsShown();
 
-        // Set |route| to be non-null.
+        // Set |route|.
         details.route = fakeRouteOne;
         assertEquals(fakeRouteOne, details.route);
         checkSpanText(loadTimeData.getStringF('castingActivityStatus',

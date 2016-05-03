@@ -24,11 +24,11 @@ Polymer({
      * null corresponds to an empty string when the arrays are being combined.
      * So both examples reproduce the text 'living room', but with different
      * words highlighted.
-     * @type {{highlightedText: !Array<?string>, plainText: !Array<?string>}}
+     * @type {{highlightedText: !Array<?string>,
+     *         plainText: !Array<?string>}|undefined}
      */
     data: {
       type: Object,
-      value: null,
       observer: 'dataChanged_',
     },
 
@@ -36,11 +36,10 @@ Polymer({
      * The text that this element is displaying as a plain string. The primary
      * purpose for this property is to make getting this element's textContent
      * easy for testing.
-     * @type {?string}
+     * @type {string|undefined}
      */
     text: {
       type: String,
-      value: null,
       readOnly: true,
       notify: false,
     },

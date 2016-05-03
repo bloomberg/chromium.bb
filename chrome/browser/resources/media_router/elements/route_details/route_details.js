@@ -10,29 +10,26 @@ Polymer({
   properties: {
     /**
      * The text for the current casting activity status.
-     * @private {string}
+     * @private {string|undefined}
      */
     activityStatus_: {
       type: String,
-      value: '',
     },
 
     /**
      * Whether the browser is currently incognito.
-     * @type {boolean}
+     * @type {boolean|undefined}
      */
     isOffTheRecord: {
       type: Boolean,
-      value: false,
     },
 
     /**
      * The route to show.
-     * @type {?media_router.Route}
+     * @type {?media_router.Route|undefined}
      */
     route: {
       type: Object,
-      value: null,
       observer: 'maybeLoadCustomController_',
     },
 
