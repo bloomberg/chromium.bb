@@ -33248,6 +33248,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="NewTabPage.Snippets.NumArticlesZeroDueToDiscarded"
+    units="articles">
+  <owner>mastiz@chromium.org</owner>
+  <summary>
+    Android: The number of snippet articles discarded by the user, logged every
+    time the list is updated resulting in an empty list (all articles
+    discarded).
+  </summary>
+</histogram>
+
 <histogram name="NewTabPage.SuggestedSite">
   <obsolete>
     Deprecated 2016-02 (and not recorded for some time before that).

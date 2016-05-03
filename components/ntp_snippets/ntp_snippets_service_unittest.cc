@@ -421,6 +421,9 @@ TEST_F(NTPSnippetsServiceTest, LogNumArticlesHistogram) {
   EXPECT_THAT(tester.GetAllSamples("NewTabPage.Snippets.NumArticlesFetched"),
               ElementsAre(base::Bucket(/*min=*/0, /*count=*/1),
                           base::Bucket(/*min=*/1, /*count=*/2)));
+  EXPECT_THAT(
+      tester.GetAllSamples("NewTabPage.Snippets.NumArticlesZeroDueToDiscarded"),
+      IsEmpty());
   // Discarding a snippet should decrease the list size. This will only be
   // logged after the next fetch.
   EXPECT_TRUE(service()->DiscardSnippet(GURL("http://localhost/foobar")));
@@ -432,6 +435,9 @@ TEST_F(NTPSnippetsServiceTest, LogNumArticlesHistogram) {
   EXPECT_THAT(tester.GetAllSamples("NewTabPage.Snippets.NumArticlesFetched"),
               ElementsAre(base::Bucket(/*min=*/0, /*count=*/1),
                           base::Bucket(/*min=*/1, /*count=*/3)));
+  EXPECT_THAT(
+      tester.GetAllSamples("NewTabPage.Snippets.NumArticlesZeroDueToDiscarded"),
+      ElementsAre(base::Bucket(/*min=*/1, /*count=*/1)));
   // Recreating the service and loading from prefs shouldn't count as fetched
   // articles.
   CreateSnippetsService();
