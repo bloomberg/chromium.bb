@@ -1312,7 +1312,7 @@ crbug.com/602933 fast/canvas/canvas-incremental-repaint.html [ NeedsManualRebase
 crbug.com/602933 virtual/gpu/fast/canvas/canvas-incremental-repaint.html [ NeedsManualRebaseline ]
 crbug.com/602933 virtual/display_list_2d_canvas/fast/canvas/canvas-incremental-repaint.html [ NeedsManualRebaseline ]
 
-crbug.com/599975 [ Android ] media/video-autoplay.html [ Timeout ]
+crbug.com/599975 [ Android ] media/video-autoplay.html [ Crash Timeout ]
 
 # DocumentWriteEvaluator is still experimental
 crbug.com/599115 http/tests/preload/document-write [ Failure ]
