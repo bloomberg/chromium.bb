@@ -404,6 +404,7 @@ class GPU_EXPORT GpuControlList {
     void SetInProcessGPUInfo(bool value);
 
     bool SetFeatures(const std::vector<std::string>& features,
+                     const std::vector<std::string>& exceptions,
                      const FeatureMap& feature_map,
                      bool supports_feature_type_all);
 

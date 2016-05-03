@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "10.20",
+  "version": "11.0",
   "entries": [
     {
       "id": 1,
@@ -1184,15 +1184,10 @@ LONG_STRING_CONST(
       "gl_vendor": "VMware.*",
       "gl_renderer": ".*Gallium.*llvmpipe.*",
       "features": [
-        "accelerated_2d_canvas",
-        "gpu_compositing",
-        "flash_3d",
-        "flash_stage3d",
-        "flash_stage3d_baseline",
-        "accelerated_video_decode",
-        "accelerated_video_encode",
-        "panel_fitting",
-        "gpu_rasterization"
+        "all",
+        {"exceptions": [
+          "webgl"
+        ]}
       ]
     }
   ]

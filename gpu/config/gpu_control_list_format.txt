@@ -52,6 +52,8 @@
 // 20. "features" is a list of gpu control list options, which can be
 //     configured by a specific list. See its *_json.cc file for a list of
 //     supported features. This field is mandatory.
+//     An "exceptions" list to the features can be added for convenience instead
+//     of listing all features except one.
 // 21. "description" has the description of the entry.
 // 22. "webkit_bugs" is an array of associated webkit bug numbers.
 // 23. "cr_bugs" is an array of associated webkit bug numbers.

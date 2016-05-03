@@ -816,6 +816,53 @@ TEST_F(GpuControlListEntryTest, FeatureTypeAllEntry) {
   EXPECT_EQ(1u, entry->features().count(TEST_FEATURE_2));
 }
 
+TEST_F(GpuControlListEntryTest, FeatureTypeAllEntryWithExceptions) {
+  const std::string json = LONG_STRING_CONST(
+      {
+        "id": 1,
+        "features": [
+          "all",
+          {"exceptions" : [
+            "test_feature_0"
+          ]}
+        ]
+      }
+  );
+  bool supports_feature_type_all = true;
+  ScopedEntry entry(GetEntryFromString(json, supports_feature_type_all));
+  EXPECT_TRUE(entry.get() != NULL);
+  EXPECT_EQ(1u, entry->features().count(TEST_FEATURE_1));
+  EXPECT_EQ(1u, entry->features().count(TEST_FEATURE_2));
+  EXPECT_EQ(2u, entry->features().size());
+
+  supports_feature_type_all = false;
+  entry = ScopedEntry(GetEntryFromString(json, supports_feature_type_all));
+  EXPECT_TRUE(entry.get() == NULL);
+}
+
+TEST_F(GpuControlListEntryTest, FeatureTypeAllEntryWithUnknownField) {
+  const std::string json = LONG_STRING_CONST(
+      {
+        "id": 1,
+        "features": [
+          "all", {
+            "exceptions" : [
+              "test_feature_0"
+            ],
+            "unknown_field" : 0
+          }
+        ]
+      }
+  );
+  bool supports_feature_type_all = true;
+  ScopedEntry entry(GetEntryFromString(json, supports_feature_type_all));
+  EXPECT_TRUE(entry.get() == NULL);
+
+  supports_feature_type_all = false;
+  entry = ScopedEntry(GetEntryFromString(json, supports_feature_type_all));
+  EXPECT_TRUE(entry.get() == NULL);
+}
+
 TEST_F(GpuControlListEntryTest, InvalidVendorIdEntry) {
   const std::string json = LONG_STRING_CONST(
       {
