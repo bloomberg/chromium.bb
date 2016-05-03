@@ -80,6 +80,7 @@
 #include "content/browser/loader/resource_message_filter.h"
 #include "content/browser/loader/resource_scheduler_filter.h"
 #include "content/browser/media/capture/audio_mirroring_manager.h"
+#include "content/browser/media/capture/image_capture_impl.h"
 #include "content/browser/media/media_internals.h"
 #include "content/browser/media/midi_host.h"
 #include "content/browser/memory/memory_message_filter.h"
@@ -1050,6 +1051,10 @@ void RenderProcessHostImpl::RegisterMojoServices() {
   mojo_application_host_->service_registry()->AddService(
       base::Bind(&PermissionServiceContext::CreateService,
                  base::Unretained(permission_service_context_.get())));
+
+  // TODO(mcasas): finalize arguments.
+  mojo_application_host_->service_registry()->AddService(
+      base::Bind(&ImageCaptureImpl::Create));
 
   mojo_application_host_->service_registry()->AddService(base::Bind(
       &BackgroundSyncContextImpl::CreateService,

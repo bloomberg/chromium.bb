@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<script src=../../resources/testharness.js></script>
+<script src=../../resources/testharnessreport.js></script>
+<body>
+<canvas id='canvas0' width=10 height=10/>
+</body>
+<script>
+
+// This test verifies ImageCapture's takePhoto().
+
+var test = async_test(function() {
+  var canvas0 = document.getElementById('canvas0');
+  var context0 = canvas0.getContext("2d");
+  context0.fillStyle = "red";
+  context0.fillRect(0, 0, 10, 10);
+
+  var stream = canvas0.captureStream();
+
+  var capturer = new ImageCapture(stream.getVideoTracks()[0]);
+
+  capturer.takePhoto()
+    .then(blob => {
+      assert_true(blob.type.length > 0);
+      assert_true(blob.size > 0);
+      this.done();
+    })
+    .catch(error => {
+      assert_unreached('Error during takePhoto(): '+ error);
+    });
+}, 'exercises the ImageCapture API takePhoto().');
+
+</script>

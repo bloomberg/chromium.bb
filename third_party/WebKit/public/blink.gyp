@@ -35,6 +35,7 @@
         'blink_mojo_sources': [
             'platform/modules/bluetooth/web_bluetooth.mojom',
             'platform/modules/geolocation/geolocation.mojom',
+            'platform/modules/imagecapture/image_capture.mojom',
             'platform/modules/notifications/notification.mojom',
             'platform/modules/permissions/permission.mojom',
             'platform/modules/permissions/permission_status.mojom',

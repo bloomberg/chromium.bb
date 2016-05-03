@@ -3384,6 +3384,7 @@ interface ImageCapture
     getter videoStreamTrack
     method constructor
     method grabFrame
+    method takePhoto
 interface ImageData
     attribute @@toStringTag
     getter height

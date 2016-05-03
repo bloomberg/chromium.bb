@@ -1068,6 +1068,8 @@
       'browser/media/capture/cursor_renderer_mac.mm',
       'browser/media/capture/desktop_capture_device_uma_types.cc',
       'browser/media/capture/desktop_capture_device_uma_types.h',
+      'browser/media/capture/image_capture_impl.cc',
+      'browser/media/capture/image_capture_impl.h',
       'browser/media/capture/web_contents_audio_input_stream.cc',
       'browser/media/capture/web_contents_audio_input_stream.h',
       'browser/media/capture/web_contents_audio_muter.cc',

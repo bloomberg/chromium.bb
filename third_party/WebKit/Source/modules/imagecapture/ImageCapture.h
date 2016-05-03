@@ -12,6 +12,7 @@
 #include "modules/EventTargetModules.h"
 #include "modules/ModulesExport.h"
 #include "platform/AsyncMethodRunner.h"
+#include "public/platform/modules/imagecapture/image_capture.mojom-blink.h"
 
 namespace blink {
 
@@ -43,6 +44,8 @@ public:
 
     MediaStreamTrack* videoStreamTrack() const { return m_streamTrack.get(); }
 
+    ScriptPromise takePhoto(ScriptState*, ExceptionState&);
+
     ScriptPromise grabFrame(ScriptState*, ExceptionState&);
 
     DECLARE_VIRTUAL_TRACE();
@@ -50,11 +53,17 @@ public:
 private:
     ImageCapture(ExecutionContext*, MediaStreamTrack*);
 
+    void onTakePhoto(ScriptPromiseResolver*, const String& mimeType, mojo::WTFArray<uint8_t> data);
+    void onServiceConnectionError();
+
     // EventTarget implementation.
     bool addEventListenerInternal(const AtomicString& eventType, EventListener*, const EventListenerOptions&) override;
 
     Member<MediaStreamTrack> m_streamTrack;
     OwnPtr<WebImageCaptureFrameGrabber> m_frameGrabber;
+    mojom::blink::ImageCapturePtr m_service;
+
+    HeapHashSet<Member<ScriptPromiseResolver>> m_serviceRequests;
 };
 
 } // namespace blink
