@@ -61,6 +61,9 @@
           'include_dirs' : [
             '../third_party/libsecret/'
           ],
+          'dependencies': [
+            '../build/linux/system.gyp:glib',
+          ],
         }],
       ],
       'target_conditions': [

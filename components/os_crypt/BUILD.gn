@@ -46,6 +46,7 @@ source_set("os_crypt") {
       "libsecret_util_posix.cc",
       "libsecret_util_posix.h",
     ]
+    configs += [ "//build/config/linux:glib" ]
     deps += [ "//third_party/libsecret" ]
     defines = [ "USE_LIBSECRET" ]
   }
