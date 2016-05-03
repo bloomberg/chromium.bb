@@ -22,21 +22,22 @@ class MockContentSettingsClient : public blink::WebContentSettingsClient {
   ~MockContentSettingsClient() override;
 
   // blink::WebContentSettingsClient:
-  bool allowImage(bool enabledPerSettings,
-                  const blink::WebURL& imageURL) override;
-  bool allowMedia(const blink::WebURL& mediaURL) override;
-  bool allowScriptFromSource(bool enabledPerSettings,
-                             const blink::WebURL& scriptURL) override;
+  bool allowImage(bool enabled_per_settings,
+                  const blink::WebURL& image_url) override;
+  bool allowMedia(const blink::WebURL& media_url) override;
+  bool allowScript(bool enabled_per_settings) override;
+  bool allowScriptFromSource(bool enabled_per_settings,
+                             const blink::WebURL& script_url) override;
   bool allowStorage(bool local) override;
-  bool allowPlugins(bool enabledPerSettings) override;
-  bool allowDisplayingInsecureContent(bool enabledPerSettings,
-                                      const blink::WebURL&) override;
-  bool allowRunningInsecureContent(bool enabledPerSettings,
-                                   const blink::WebSecurityOrigin&,
-                                   const blink::WebURL&) override;
-  bool allowAutoplay(bool defaultValue) override;
+  bool allowPlugins(bool enabled_per_settings) override;
+  bool allowDisplayingInsecureContent(bool enabled_per_settings,
+                                      const blink::WebURL& url) override;
+  bool allowRunningInsecureContent(bool enabled_per_settings,
+                                   const blink::WebSecurityOrigin& context,
+                                   const blink::WebURL& url) override;
+  bool allowAutoplay(bool default_value) override;
 
-  void SetDelegate(WebTestDelegate*);
+  void SetDelegate(WebTestDelegate* delegate);
 
  private:
   WebTestDelegate* delegate_;
