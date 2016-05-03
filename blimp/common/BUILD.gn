@@ -40,6 +40,22 @@ component("common") {
   ]
 }
 
+source_set("test_support") {
+  testonly = true
+
+  sources = [
+    "blob_cache/mock_blob_cache.cc",
+    "blob_cache/mock_blob_cache.h",
+  ]
+
+  deps = [
+    ":common",
+    "//blimp/common/proto",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
 
