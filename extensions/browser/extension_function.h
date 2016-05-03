@@ -18,6 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
 #include "base/sequenced_task_runner_helpers.h"
+#include "base/timer/elapsed_timer.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/console_message_level.h"
 #include "extensions/browser/extension_function_histogram_value.h"
@@ -440,6 +441,8 @@ class ExtensionFunction
   int source_process_id_;
 
  private:
+  base::ElapsedTimer timer_;
+
   void OnRespondingLater(ResponseValue response);
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionFunction);

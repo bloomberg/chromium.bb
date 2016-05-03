@@ -13758,6 +13758,37 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Number of calls to extension functions.</summary>
 </histogram>
 
+<histogram name="Extensions.Functions.FailedTotalExecutionTime" units="ms">
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <summary>
+    The total amount of time it took to execute an extension function that
+    failed from the time the extension function is called to the time the
+    function responds. Note that since some extension functions are inherently
+    slow (anything that requires user interaction, for instance), this is not a
+    definitive source for function performance.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.Functions.SucceededTotalExecutionTime" units="ms">
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <summary>
+    The total amount of time it took to execute an extension function that
+    succeeded from the time the extension function is called to the time the
+    function responds. Note that since some extension functions are inherently
+    slow (anything that requires user interaction, for instance), this is not a
+    definitive source for function performance.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.Functions.SynchronousExecutionTime" units="ms">
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <summary>
+    The synchronous amount of time an extension function takes. Note that many
+    extension functions run asynchronously; see also
+    Extensions.Functions.[Succeeded|Failed]TotalExecutionTime.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.GetUserDataTempDir" enum="GetUserDataTempDirResult">
   <obsolete>
     Deprecated 04/2016 as doesn't have data nor owner.

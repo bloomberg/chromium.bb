@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/synchronization/lock.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
@@ -406,6 +407,20 @@ void ExtensionFunction::SendResponseImpl(bool success) {
     results_.reset(new base::ListValue());
 
   response_callback_.Run(type, *results_, GetError(), histogram_value());
+
+  // TODO(devlin): Once we have a baseline metric for how long functions take,
+  // we can create a handful of buckets and record the function name so that we
+  // can find what the fastest/slowest are. See crbug.com/608561.
+  // Note: Certain functions perform actions that are inherently slow - such as
+  // anything waiting on user action. As such, we can't always assume that a
+  // long execution time equates to a poorly-performing function.
+  if (success) {
+    UMA_HISTOGRAM_TIMES("Extensions.Functions.SucceededTotalExecutionTime",
+                        timer_.Elapsed());
+  } else {
+    UMA_HISTOGRAM_TIMES("Extensions.Functions.FailedTotalExecutionTime",
+                        timer_.Elapsed());
+  }
 }
 
 void ExtensionFunction::OnRespondingLater(ResponseValue value) {

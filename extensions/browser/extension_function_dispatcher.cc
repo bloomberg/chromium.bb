@@ -292,7 +292,16 @@ void ExtensionFunctionDispatcher::DispatchOnIOThread(
     tracked_objects::ScopedProfile scoped_profile(
         FROM_HERE_WITH_EXPLICIT_FUNCTION(function->name()),
         tracked_objects::ScopedProfile::ENABLED);
+    base::ElapsedTimer timer;
     function->Run()->Execute();
+    // TODO(devlin): Once we have a baseline metric for how long functions take,
+    // we can create a handful of buckets and record the function name so that
+    // we can find what the fastest/slowest are.
+    // Note: Many functions execute finish asynchronously, so this time is not
+    // always a representation of total time taken. See also
+    // Extensions.Functions.TotalExecutionTime.
+    UMA_HISTOGRAM_TIMES("Extensions.Functions.SynchronousExecutionTime",
+                        timer.Elapsed());
   } else {
     function->OnQuotaExceeded(violation_error);
   }
@@ -402,7 +411,16 @@ void ExtensionFunctionDispatcher::DispatchWithCallbackInternal(
     tracked_objects::ScopedProfile scoped_profile(
         FROM_HERE_WITH_EXPLICIT_FUNCTION(function->name()),
         tracked_objects::ScopedProfile::ENABLED);
+    base::ElapsedTimer timer;
     function->Run()->Execute();
+    // TODO(devlin): Once we have a baseline metric for how long functions take,
+    // we can create a handful of buckets and record the function name so that
+    // we can find what the fastest/slowest are.
+    // Note: Many functions execute finish asynchronously, so this time is not
+    // always a representation of total time taken. See also
+    // Extensions.Functions.TotalExecutionTime.
+    UMA_HISTOGRAM_TIMES("Extensions.Functions.SynchronousExecutionTime",
+                        timer.Elapsed());
   } else {
     function->OnQuotaExceeded(violation_error);
   }
