@@ -82,6 +82,11 @@ void BitmapUploader::SetBitmap(int width,
 }
 
 void BitmapUploader::Upload() {
+  // If the |gpu_service_| has errored than we won't get far. Do nothing,
+  // assuming we are in shutdown.
+  if (gpu_service_.encountered_error())
+    return;
+
   const gfx::Rect bounds(window_->bounds());
   mus::mojom::PassPtr pass = mojo::CreateDefaultPass(1, bounds);
   mus::mojom::CompositorFramePtr frame = mus::mojom::CompositorFrame::New();
