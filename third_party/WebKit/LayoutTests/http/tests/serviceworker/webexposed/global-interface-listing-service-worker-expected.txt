@@ -654,7 +654,7 @@ interface ServiceWorkerRegistration : EventTarget
 interface StorageManager
     method constructor
     method estimate
-    method persistentPermission
+    method persisted
 interface SubtleCrypto
     method constructor
     method decrypt

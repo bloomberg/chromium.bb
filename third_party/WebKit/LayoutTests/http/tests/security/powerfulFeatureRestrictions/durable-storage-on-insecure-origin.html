@@ -9,7 +9,7 @@ if (window.location.origin != get_host_info().UNAUTHENTICATED_ORIGIN) {
     window.location = get_host_info().UNAUTHENTICATED_ORIGIN + window.location.pathname;
 } else {
     promise_test(function() {
-        return assert_promise_rejects(navigator.storage.requestPersistent(), 'SecurityError');
+        return assert_promise_rejects(navigator.storage.persist(), 'SecurityError');
     }, "Requires secure context");
 }
 </script>

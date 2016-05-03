@@ -5893,8 +5893,8 @@ interface StorageManager
     attribute @@toStringTag
     method constructor
     method estimate
-    method persistentPermission
-    method requestPersistent
+    method persist
+    method persisted
 interface Stream
     attribute @@toStringTag
     getter type

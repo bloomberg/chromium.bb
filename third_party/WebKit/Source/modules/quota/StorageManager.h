@@ -16,8 +16,9 @@ class ScriptState;
 class StorageManager final : public GarbageCollected<StorageManager>, public ScriptWrappable {
 DEFINE_WRAPPERTYPEINFO();
 public:
-    ScriptPromise requestPersistent(ScriptState*);
-    ScriptPromise persistentPermission(ScriptState*);
+    ScriptPromise persisted(ScriptState*);
+    ScriptPromise persist(ScriptState*);
+
     ScriptPromise estimate(ScriptState*);
     DECLARE_TRACE();
 };

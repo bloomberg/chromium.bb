@@ -8,26 +8,25 @@ test(function() { assert_true(!!navigator.storage); },
     "These tests requires navigator.storage");
 
 promise_test(function() {
-    var promise = navigator.storage.requestPersistent();
+    var promise = navigator.storage.persist();
     assert_true(promise instanceof Promise,
-        "navigator.storage.requestPersistent() returned a Promise.")
+        "navigator.storage.persist() returned a Promise.");
     return promise.then(function (result) {
         // Layout tests get canned results, not the value per spec. So testing
         // their values here would only be testing our test plumbing. But we can
         // test that the type of the returned value is correct.
         assert_equals(typeof result, "boolean", result + " should be boolean");
     });
-}, "navigator.storage.requestPersistent returns a promise that resolves.");
+}, "navigator.storage.persist returns a promise that resolves.");
 
 promise_test(function() {
-    var promise = navigator.storage.persistentPermission();
+    var promise = navigator.storage.persisted();
     assert_true(promise instanceof Promise,
-        "navigator.storage.persistentPermission() returned a Promise.")
+        "navigator.storage.persisted() returned a Promise.");
     return promise.then(function (result) {
         // See comment above about why the result value isn't being tested here.
-        assert_equals(typeof result, "string", result + " should be a string");
-        assert_greater_than(result.length, 0, "result should have length >0");
+        assert_equals(typeof result, "boolean", result + " should be boolean");
     });
-}, "navigator.storage.persistentPermission returns a promise that resolves.");
+}, "navigator.storage.persisted returns a promise that resolves.");
 
 </script>

@@ -2,13 +2,13 @@
 <script>
 
 function checkPermission() {
-  navigator.storage.persistentPermission().then(function(permission) {
-    window.domAutomationController.send(permission);
+  navigator.storage.persisted().then(function(is_persistent) {
+    window.domAutomationController.send(is_persistent);
   });
 }
 
 function requestPermission() {
-  navigator.storage.requestPersistent().then(function(is_persistent) {
+  navigator.storage.persist().then(function(is_persistent) {
     window.domAutomationController.send(is_persistent);
   });
 }

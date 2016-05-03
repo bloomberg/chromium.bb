@@ -4,14 +4,12 @@
 
 // https://storage.spec.whatwg.org/#storagemanager
 
-enum PersistentStoragePermission { "default", "denied", "granted" };
-
 [
     Exposed=(Window,Worker),
     RuntimeEnabled=DurableStorage,
 ] interface StorageManager {
-    [Exposed=Window, CallWith=ScriptState] Promise<boolean> requestPersistent();
-    [CallWith=ScriptState] Promise<PersistentStoragePermission> persistentPermission();
+    [CallWith=ScriptState] Promise<boolean> persisted();
+    [Exposed=Window, CallWith=ScriptState] Promise<boolean> persist();
 
     [CallWith=ScriptState] Promise<StorageEstimate> estimate();
 };

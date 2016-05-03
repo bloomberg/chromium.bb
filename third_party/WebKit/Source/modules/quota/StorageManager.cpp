@@ -21,41 +21,9 @@ namespace blink {
 
 namespace {
 
-class DurableStorageQueryCallbacks final : public WebPermissionCallback {
+class DurableStorageCallbacks final : public WebPermissionCallback {
 public:
-    DurableStorageQueryCallbacks(ScriptPromiseResolver* resolver)
-        : m_resolver(resolver)
-    {
-    }
-
-    void onSuccess(WebPermissionStatus status) override
-    {
-        String toReturn;
-        switch (status) {
-        case WebPermissionStatusGranted:
-            toReturn = "granted";
-            break;
-        case WebPermissionStatusDenied:
-            toReturn = "denied";
-            break;
-        case WebPermissionStatusPrompt:
-            toReturn = "default";
-            break;
-        }
-        m_resolver->resolve(toReturn);
-    }
-    void onError() override
-    {
-        ASSERT_NOT_REACHED();
-    }
-
-private:
-    Persistent<ScriptPromiseResolver> m_resolver;
-};
-
-class DurableStorageRequestCallbacks final : public WebPermissionCallback {
-public:
-    DurableStorageRequestCallbacks(ScriptPromiseResolver* resolver)
+    DurableStorageCallbacks(ScriptPromiseResolver* resolver)
         : m_resolver(resolver)
     {
     }
@@ -106,7 +74,7 @@ private:
 
 } // namespace
 
-ScriptPromise StorageManager::requestPersistent(ScriptState* scriptState)
+ScriptPromise StorageManager::persist(ScriptState* scriptState)
 {
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
@@ -130,12 +98,12 @@ ScriptPromise StorageManager::requestPersistent(ScriptState* scriptState)
         resolver->reject(DOMException::create(InvalidStateError, "In its current state, the global scope can't request permissions."));
         return promise;
     }
-    permissionClient->requestPermission(WebPermissionTypeDurableStorage, KURL(KURL(), scriptState->getExecutionContext()->getSecurityOrigin()->toString()), new DurableStorageRequestCallbacks(resolver));
+    permissionClient->requestPermission(WebPermissionTypeDurableStorage, KURL(KURL(), scriptState->getExecutionContext()->getSecurityOrigin()->toString()), new DurableStorageCallbacks(resolver));
 
     return promise;
 }
 
-ScriptPromise StorageManager::persistentPermission(ScriptState* scriptState)
+ScriptPromise StorageManager::persisted(ScriptState* scriptState)
 {
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
@@ -144,7 +112,7 @@ ScriptPromise StorageManager::persistentPermission(ScriptState* scriptState)
         resolver->reject(DOMException::create(InvalidStateError, "In its current state, the global scope can't query permissions."));
         return promise;
     }
-    permissionClient->queryPermission(WebPermissionTypeDurableStorage, KURL(KURL(), scriptState->getExecutionContext()->getSecurityOrigin()->toString()), new DurableStorageQueryCallbacks(resolver));
+    permissionClient->queryPermission(WebPermissionTypeDurableStorage, KURL(KURL(), scriptState->getExecutionContext()->getSecurityOrigin()->toString()), new DurableStorageCallbacks(resolver));
     return promise;
 }
 
