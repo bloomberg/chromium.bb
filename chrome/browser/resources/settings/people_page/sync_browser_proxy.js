@@ -142,6 +142,11 @@ cr.define('settings', function() {
      * @return {!Promise<!settings.PageStatus>}
      */
     setSyncPrefs: function(syncPrefs) {},
+
+    /**
+     * Opens the Google Activity Controls url in a new tab.
+     */
+    openActivityControlsUrl: function() {},
   };
 
   /**
@@ -198,6 +203,13 @@ cr.define('settings', function() {
       return cr.sendWithPromise('SyncSetupConfigure',
                                 JSON.stringify(syncPrefs));
     },
+
+    /** @override */
+    openActivityControlsUrl: function() {
+      chrome.metricsPrivate.recordUserAction(
+          'Signin_AccountSettings_GoogleActivityControlsClicked');
+      window.open(loadTimeData.getString('activityControlsUrl'));
+    }
   };
 
   return {

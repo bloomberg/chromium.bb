@@ -35,7 +35,8 @@
         width: 40px;
       }
 
-      #profile-icon:hover {
+      #profile-icon:hover,
+      #activity-controls:hover {
         cursor: pointer;
       }
 
@@ -44,6 +45,19 @@
         cursor: pointer;
       }
 </if>
+      #googleg-logo-container {
+        -webkit-margin-end: 4px;
+        display: flex;
+        justify-content: center;
+        width: 40px;
+      }
+
+      #googleg-logo {
+        background-image: url(../../../../../ui/webui/resources/images/200-logo_googleg.png);
+        background-size: cover;
+        height: var(--iron-icon-height);
+        width: var(--iron-icon-width);
+      }
     </style>
     <settings-animated-pages id="pages" current-route="{{currentRoute}}"
         section="people">
@@ -99,6 +113,17 @@
             </paper-button>
           </div>
         </template>
+
+        <div class="settings-box" id="activity-controls"
+            on-tap="onActivityControlsTap_">
+          <div id="googleg-logo-container">
+            <div id="googleg-logo"></div>
+          </div>
+          <div class="middle">
+            <div>$i18n{personalizeGoogleServicesTitle}</div>
+            <div class="secondary">$i18n{personalizeGoogleServicesText}</div>
+          </div>
+        </div>
 
 <if expr="chromeos">
         <div class="settings-box">

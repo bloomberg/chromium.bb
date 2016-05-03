@@ -683,6 +683,10 @@ void AddPeopleStrings(content::WebUIDataSource* html_source) {
     {"passphrasePlaceholder", IDS_SETTINGS_PASSPHRASE_PLACEHOLDER},
     {"passphraseConfirmationPlaceholder",
      IDS_SETTINGS_PASSPHRASE_CONFIRMATION_PLACEHOLDER},
+    {"personalizeGoogleServicesTitle",
+     IDS_SETTINGS_PERSONALIZE_GOOGLE_SERVICES_TITLE},
+    {"personalizeGoogleServicesText",
+     IDS_SETTINGS_PERSONALIZE_GOOGLE_SERVICES_TEXT},
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
@@ -696,6 +700,9 @@ void AddPeopleStrings(content::WebUIDataSource* html_source) {
       "syncDisconnectExplanation",
       l10n_util::GetStringFUTF16(IDS_SETTINGS_SYNC_DISCONNECT_EXPLANATION,
                                  base::ASCIIToUTF16(disconnect_help_url)));
+  html_source->AddString(
+      "activityControlsUrl",
+      base::ASCIIToUTF16(chrome::kGoogleAccountActivityControlsURL));
 }
 
 void AddPrivacyStrings(content::WebUIDataSource* html_source) {
