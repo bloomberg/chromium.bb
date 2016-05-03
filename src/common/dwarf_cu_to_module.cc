@@ -417,7 +417,8 @@ string DwarfCUToModule::GenericDIEHandler::ComputeQualifiedName() {
 
   // If this DIE was marked as a declaration, record its names in the
   // specification table.
-  if (declaration_ && qualified_name || (unqualified_name && enclosing_name)) {
+  if ((declaration_ && qualified_name) ||
+      (unqualified_name && enclosing_name)) {
     Specification spec;
     if (qualified_name) {
       spec.qualified_name = *qualified_name;
