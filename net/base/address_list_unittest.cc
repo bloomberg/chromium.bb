@@ -52,7 +52,7 @@ TEST(AddressListTest, CreateFromAddrinfo) {
         reinterpret_cast<struct sockaddr_in*>(storage[i].addr);
     storage[i].addr_len = sizeof(struct sockaddr_in);
     // Populating the address with { i, i, i, i }.
-    memset(&addr->sin_addr, i, kIPv4AddressSize);
+    memset(&addr->sin_addr, i, IPAddress::kIPv4AddressSize);
     addr->sin_family = AF_INET;
     // Set port to i << 2;
     addr->sin_port = base::HostToNet16(static_cast<uint16_t>(i << 2));

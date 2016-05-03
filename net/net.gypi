@@ -30,7 +30,6 @@
       'base/io_buffer.h',
       'base/ip_address.cc',
       'base/ip_address.h',
-      'base/ip_address_number.h',
       'base/ip_endpoint.cc',
       'base/ip_endpoint.h',
       'base/load_timing_info.cc',

@@ -1835,7 +1835,7 @@ void SafeBrowsingDatabaseNew::LoadIpBlacklist(
     // We precompute the mask for the given subnet size to speed up lookups.
     // Basically we need to create a 16B long string which has the highest
     // |size| bits sets to one.
-    std::string mask(net::kIPv6AddressSize, '\0');
+    std::string mask(net::IPAddress::kIPv6AddressSize, '\0');
     mask.replace(0, prefix_size / 8, prefix_size / 8, '\xFF');
     if ((prefix_size % 8) != 0) {
       mask[prefix_size / 8] = 0xFF << (8 - (prefix_size % 8));

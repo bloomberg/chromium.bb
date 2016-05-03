@@ -885,14 +885,14 @@ TEST_F(TransportClientSocketPoolTest, IPv6FallbackSocketIPv4FinishesFirst) {
   EXPECT_TRUE(handle.socket());
   IPEndPoint endpoint;
   handle.socket()->GetLocalAddress(&endpoint);
-  EXPECT_EQ(kIPv4AddressSize, endpoint.address().size());
+  EXPECT_TRUE(endpoint.address().IsIPv4());
 
   // Check that the failed connection attempt on the main socket is collected.
   ConnectionAttempts attempts;
   handle.socket()->GetConnectionAttempts(&attempts);
   ASSERT_EQ(1u, attempts.size());
   EXPECT_EQ(ERR_CONNECTION_FAILED, attempts[0].result);
-  EXPECT_EQ(kIPv6AddressSize, attempts[0].endpoint.address().size());
+  EXPECT_TRUE(attempts[0].endpoint.address().IsIPv6());
 
   EXPECT_EQ(2, client_socket_factory_.allocation_count());
 }
@@ -936,7 +936,7 @@ TEST_F(TransportClientSocketPoolTest, IPv6FallbackSocketIPv6FinishesFirst) {
   EXPECT_TRUE(handle.socket());
   IPEndPoint endpoint;
   handle.socket()->GetLocalAddress(&endpoint);
-  EXPECT_EQ(kIPv6AddressSize, endpoint.address().size());
+  EXPECT_TRUE(endpoint.address().IsIPv6());
 
   // Check that the failed connection attempt on the fallback socket is
   // collected.
@@ -944,7 +944,7 @@ TEST_F(TransportClientSocketPoolTest, IPv6FallbackSocketIPv6FinishesFirst) {
   handle.socket()->GetConnectionAttempts(&attempts);
   ASSERT_EQ(1u, attempts.size());
   EXPECT_EQ(ERR_CONNECTION_FAILED, attempts[0].result);
-  EXPECT_EQ(kIPv4AddressSize, attempts[0].endpoint.address().size());
+  EXPECT_TRUE(attempts[0].endpoint.address().IsIPv4());
 
   EXPECT_EQ(2, client_socket_factory_.allocation_count());
 }
@@ -977,7 +977,7 @@ TEST_F(TransportClientSocketPoolTest, IPv6NoIPv4AddressesToFallbackTo) {
   EXPECT_TRUE(handle.socket());
   IPEndPoint endpoint;
   handle.socket()->GetLocalAddress(&endpoint);
-  EXPECT_EQ(kIPv6AddressSize, endpoint.address().size());
+  EXPECT_TRUE(endpoint.address().IsIPv6());
   EXPECT_EQ(0u, handle.connection_attempts().size());
   EXPECT_EQ(1, client_socket_factory_.allocation_count());
 }
@@ -1009,7 +1009,7 @@ TEST_F(TransportClientSocketPoolTest, IPv4HasNoFallback) {
   EXPECT_TRUE(handle.socket());
   IPEndPoint endpoint;
   handle.socket()->GetLocalAddress(&endpoint);
-  EXPECT_EQ(kIPv4AddressSize, endpoint.address().size());
+  EXPECT_TRUE(endpoint.address().IsIPv4());
   EXPECT_EQ(0u, handle.connection_attempts().size());
   EXPECT_EQ(1, client_socket_factory_.allocation_count());
 }
@@ -1093,7 +1093,7 @@ TEST_F(TransportClientSocketPoolTest,
   // Verify that the socket used is connected to the fallback IPv4 address.
   IPEndPoint endpoint;
   handle.socket()->GetPeerAddress(&endpoint);
-  EXPECT_EQ(kIPv4AddressSize, endpoint.address().size());
+  EXPECT_TRUE(endpoint.address().IsIPv4());
   // Verify that TCP FastOpen was not turned on for the socket.
   EXPECT_FALSE(socket_data_1.IsUsingTCPFastOpen());
 }
@@ -1125,7 +1125,7 @@ TEST_F(TransportClientSocketPoolTest,
   IPEndPoint endpoint;
   handle.socket()->GetPeerAddress(&endpoint);
   // Verify that the socket used is connected to the IPv6 address.
-  EXPECT_EQ(kIPv6AddressSize, endpoint.address().size());
+  EXPECT_TRUE(endpoint.address().IsIPv6());
   // Verify that TCP FastOpen was not turned on for the socket.
   EXPECT_FALSE(socket_data.IsUsingTCPFastOpen());
 }

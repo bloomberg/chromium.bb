@@ -108,8 +108,9 @@ class MockTransaction : public DnsTransaction,
           const uint32_t kTTL = 86400;  // One day.
 
           // Size of RDATA which is a IPv4 or IPv6 address.
-          size_t rdata_size = qtype_ == dns_protocol::kTypeA ? kIPv4AddressSize
-                                                             : kIPv6AddressSize;
+          size_t rdata_size = qtype_ == dns_protocol::kTypeA
+                                  ? IPAddress::kIPv4AddressSize
+                                  : IPAddress::kIPv6AddressSize;
 
           // 12 is the sum of sizes of the compressed name reference, TYPE,
           // CLASS, TTL and RDLENGTH.
