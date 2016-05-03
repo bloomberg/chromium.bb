@@ -74,9 +74,8 @@ public class ContentShellTestBase
      * Starts the content shell activity with the provided test url.
      * The url is synchronously loaded.
      * @param url Test url to load.
-     * @throws InterruptedException
      */
-    protected void startActivityWithTestUrl(String url) throws InterruptedException {
+    protected void startActivityWithTestUrl(String url) throws Throwable {
         launchContentShellWithUrl(UrlUtils.getIsolatedTestFileUrl(url));
         assertNotNull(getActivity());
         waitForActiveShellToBeDoneLoading();

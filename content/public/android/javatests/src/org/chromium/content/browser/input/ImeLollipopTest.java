@@ -70,6 +70,18 @@ public class ImeLollipopTest extends ImeTest {
         });
     }
 
+    private void waitForUpdateCursorAnchorInfoCallCount(final int expected)
+            throws InterruptedException {
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                int actual =  mInputMethodManagerWrapper.getUpdateCursorAnchorInfoCounter();
+                updateFailureReason("Expected: {" + expected + "}, Actual: {" + actual + "}");
+                return expected == actual;
+            }
+        });
+    }
+
     private void waitForUpdateCursorAnchorInfoComposingText(final String expected)
             throws InterruptedException {
         CriteriaHelper.pollUiThread(new Criteria() {
