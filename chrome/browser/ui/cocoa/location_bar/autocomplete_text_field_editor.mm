@@ -84,10 +84,9 @@ BOOL ThePasteboardIsTooDamnBig() {
   }
 
   bool inDarkMode = [[self window] inIncognitoModeWithSystemTheme];
-  // Draw a light insertion point for MD Incognito.
+  // Draw a white insertion point for MD Incognito.
   NSColor* insertionPointColor =
-      inDarkMode ? [NSColor colorWithCalibratedWhite:1 alpha:0.75]
-                 : [NSColor blackColor];
+      inDarkMode ? [NSColor whiteColor] : [NSColor blackColor];
   [self setInsertionPointColor:insertionPointColor];
 
   NSColor* textSelectionColor = [NSColor selectedTextBackgroundColor];

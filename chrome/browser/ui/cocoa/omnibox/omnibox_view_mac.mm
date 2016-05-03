@@ -546,6 +546,9 @@ void OmniboxViewMac::ApplyTextAttributes(
     const base::string16& display_text,
     NSMutableAttributedString* attributedString) {
   NSUInteger as_length = [attributedString length];
+  if (as_length == 0) {
+    return;
+  }
   NSRange as_entire_string = NSMakeRange(0, as_length);
   bool in_dark_mode = [[field_ window] inIncognitoModeWithSystemTheme];
 
@@ -556,6 +559,15 @@ void OmniboxViewMac::ApplyTextAttributes(
   [attributedString addAttribute:@"NSLanguage"
                            value:@"en_US_POSIX"
                            range:as_entire_string];
+
+  // Under Material Design, force the text to be a single color white editing.
+  if (ui::MaterialDesignController::IsModeMaterial() &&
+      [field_ currentEditor]) {
+    [attributedString addAttribute:NSForegroundColorAttributeName
+                             value:HostTextColor(in_dark_mode)
+                             range:as_entire_string];
+    return;
+  }
 
   url::Component scheme, host;
   AutocompleteInput::ParseForEmphasizeComponents(
