@@ -42,6 +42,10 @@ class NTPSnippetsFetcher : public net::URLFetcherDelegate {
   // Fetches snippets from the server. |hosts| can be used to restrict the
   // results to a set of hosts, e.g. "www.google.com". If it is empty, no
   // restrictions are applied.
+  //
+  // If an ongoing fetch exists, it will be cancelled and a new one started,
+  // without triggering additional callbacks (i.e. not noticeable by
+  // subscribers).
   void FetchSnippets(const std::set<std::string>& hosts, int count);
 
  private:

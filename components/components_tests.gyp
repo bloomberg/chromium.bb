@@ -403,6 +403,7 @@
     ],
     'ntp_snippets_unittest_sources': [
       'ntp_snippets/inner_iterator_unittest.cc',
+      'ntp_snippets/ntp_snippets_fetcher_unittest.cc',
       'ntp_snippets/ntp_snippets_service_unittest.cc',
     ],
     'offline_pages_background_unittest_sources': [
