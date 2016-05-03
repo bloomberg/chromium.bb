@@ -63,8 +63,8 @@ def PollWorkers(tag, start_time, timeout_hours, email_address, task_url):
   if live_instance_count > 0 or live_instance_count == -1:
     clovis_logger.info('Retry later, instances still alive for tag: ' + tag)
     poll_interval_minutes = 10
-    deferred.defer(PollWorkers, tag, start_time, email_address, task_url,
-                   _countdown=(60 * poll_interval_minutes))
+    deferred.defer(PollWorkers, tag, start_time, timeout_hours, email_address,
+                   task_url, _countdown=(60 * poll_interval_minutes))
     return
 
   Finalize(tag, email_address, 'SUCCESS', task_url)
