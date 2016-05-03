@@ -7,14 +7,17 @@ package org.chromium.chrome.browser.widget;
 import android.animation.TimeAnimator;
 import android.animation.TimeAnimator.TimeListener;
 import android.content.Context;
+import android.graphics.Color;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.ViewGroup;
 import android.widget.FrameLayout.LayoutParams;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CommandLine;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.components.variations.VariationsAssociatedData;
@@ -54,6 +57,10 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
     // The amount of time in ms that the progress bar has to be stopped before the indeterminate
     // animation starts.
     private static final long ANIMATION_START_THRESHOLD = 1000;
+    private static final float THEMED_BACKGROUND_ALPHA = 0.2f;
+    private static final float THEMED_DARKEN_FRACTION = 0.6f;
+    private static final float THEMED_COLOR_ALPHA = 0.4f;
+    private static final float MIN_COLOR_CONTRAST = 3.0f;
 
     private static final long PROGRESS_FRAME_TIME_CAP_MS = 50;
     private long mAlphaAnimationDurationMs = 140;
@@ -179,7 +186,8 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
             animationParams.topMargin = mMarginTop;
 
             mAnimatingView = new ToolbarProgressBarAnimatingView(getContext(), animationParams);
-            mAnimatingView.setColor(ColorUtils.getProgressBarAnimationColor(getForegroundColor()));
+            mAnimatingView.setColor(
+                    ColorUtils.getColorWithOverlay(getForegroundColor(), Color.WHITE, 0.4f));
             UiUtils.insertAfter(mControlContainer, mAnimatingView, this);
         } else if (TextUtils.equals(animation, "fast-start")) {
             mAnimationLogic = new ProgressAnimationFastStart();
@@ -299,12 +307,41 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
         if (mAnimatingView != null) mAnimatingView.setVisibility(visibility);
     }
 
+    /**
+     * Color the progress bar based on the toolbar theme color.
+     * @param color The Android color the toolbar is using.
+     */
+    public void setThemeColor(int color, boolean isIncognito) {
+        int animationColor;
+        int foregroundColor;
+
+        int foregroundWhite = ApiCompatibilityUtils.getColor(getResources(),
+                R.color.progress_bar_foreground_white);
+
+        if (!ColorUtils.shoudUseLightForegroundOnBackground(color) && !isIncognito) {
+            // Light theme.
+            foregroundColor = ColorUtils.findDarkerColorWithMinContrast(color, MIN_COLOR_CONTRAST);
+            animationColor = ColorUtils.getColorWithOverlay(foregroundColor, foregroundWhite,
+                    THEMED_COLOR_ALPHA);
+        } else {
+            // Dark theme.
+            foregroundColor = foregroundWhite;
+            animationColor = ColorUtils.getColorWithOverlay(color, foregroundWhite,
+                    1.0f - THEMED_COLOR_ALPHA);
+        }
+
+        setForegroundColor(foregroundColor);
+        setBackgroundColor(
+                ColorUtils.getColorWithOverlay(foregroundWhite, color, THEMED_BACKGROUND_ALPHA));
+
+        if (mAnimatingView != null) mAnimatingView.setColor(animationColor);
+    }
+
     @Override
     public void setForegroundColor(int color) {
         super.setForegroundColor(color);
-        // Set the animation color to a faded version of the input color.
         if (mAnimatingView != null) {
-            mAnimatingView.setColor(ColorUtils.getProgressBarAnimationColor(color));
+            mAnimatingView.setColor(ColorUtils.getColorWithOverlay(color, Color.WHITE, 0.4f));
         }
     }
 }

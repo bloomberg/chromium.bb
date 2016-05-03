@@ -1995,8 +1995,7 @@ public class ToolbarPhone extends ToolbarLayout
                 visualStateChanged = true;
             } else {
                 updateToolbarBackground(VisualState.BRAND_COLOR);
-                getProgressBar().setBackgroundColor(
-                        ColorUtils.getLightProgressbarBackground(currentPrimaryColor));
+                getProgressBar().setThemeColor(currentPrimaryColor, isIncognito());
             }
         }
 
@@ -2015,16 +2014,17 @@ public class ToolbarPhone extends ToolbarLayout
         mUseLightToolbarDrawables = false;
         mUnfocusedLocationBarUsesTransparentBg = false;
         mUrlBackgroundAlpha = 255;
-        int progressBarBackgroundColor = mProgressBackBackgroundColor;
         updateToolbarBackground(mVisualState);
         if (isInTabSwitcherMode) {
             mUseLightToolbarDrawables = true;
             mUrlBackgroundAlpha = LOCATION_BAR_TRANSPARENT_BACKGROUND_ALPHA;
-            progressBarBackgroundColor = mProgressBackBackgroundColorWhite;
+            getProgressBar().setBackgroundColor(mProgressBackBackgroundColorWhite);
+            getProgressBar().setForegroundColor(ApiCompatibilityUtils.getColor(getResources(),
+                    R.color.progress_bar_foreground_white));
         } else if (isIncognito()) {
             mUseLightToolbarDrawables = true;
             mUrlBackgroundAlpha = LOCATION_BAR_TRANSPARENT_BACKGROUND_ALPHA;
-            progressBarBackgroundColor = mProgressBackBackgroundColorWhite;
+            getProgressBar().setThemeColor(currentPrimaryColor, true);
         } else if (mVisualState == VisualState.BRAND_COLOR) {
             mUseLightToolbarDrawables =
                     ColorUtils.shoudUseLightForegroundOnBackground(currentPrimaryColor);
@@ -2032,16 +2032,12 @@ public class ToolbarPhone extends ToolbarLayout
                     !ColorUtils.shouldUseOpaqueTextboxBackground(currentPrimaryColor);
             mUrlBackgroundAlpha = mUnfocusedLocationBarUsesTransparentBg
                     ? LOCATION_BAR_TRANSPARENT_BACKGROUND_ALPHA : 255;
-            progressBarBackgroundColor =
-                    ColorUtils.getLightProgressbarBackground(currentPrimaryColor);
+            getProgressBar().setThemeColor(currentPrimaryColor, false);
+        } else {
+            getProgressBar().setBackgroundColor(mProgressBackBackgroundColor);
+            getProgressBar().setForegroundColor(ApiCompatibilityUtils.getColor(getResources(),
+                    R.color.progress_bar_foreground));
         }
-
-        getProgressBar().setBackgroundColor(progressBarBackgroundColor);
-        int progressBarForegroundColor = ApiCompatibilityUtils.getColor(getResources(),
-                mUseLightToolbarDrawables
-                ? R.color.progress_bar_foreground_white
-                : R.color.progress_bar_foreground);
-        getProgressBar().setForegroundColor(progressBarForegroundColor);
 
         if (mToggleTabStackButton != null) {
             mToggleTabStackButton.setImageDrawable(mUseLightToolbarDrawables

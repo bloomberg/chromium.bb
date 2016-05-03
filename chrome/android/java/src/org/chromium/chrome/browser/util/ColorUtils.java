@@ -4,8 +4,11 @@
 
 package org.chromium.chrome.browser.util;
 
+import android.content.res.Resources;
 import android.graphics.Color;
 
+import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.tab.Tab;
 
@@ -16,8 +19,6 @@ public class ColorUtils {
     private static final float CONTRAST_LIGHT_ITEM_THRESHOLD = 3f;
     private static final float LIGHTNESS_OPAQUE_BOX_THRESHOLD = 0.82f;
     private static final float LOCATION_BAR_TRANSPARENT_BACKGROUND_ALPHA = 0.2f;
-    private static final float LIGHT_PROGRESSBAR_BACKGROUND_ALPHA = 0.5f;
-    private static final float PROGRESS_BAR_ANIMATION_ALPHA = 0.3f;
 
     /** Percentage to darken a color by when setting the status bar color. */
     private static final float DARKEN_COLOR_FRACTION = 0.6f;
@@ -25,7 +26,7 @@ public class ColorUtils {
     /**
      * Computes the lightness value in HSL standard for the given color.
      */
-    private static float getLightnessForColor(int color) {
+    public static float getLightnessForColor(int color) {
         int red = Color.red(color);
         int green = Color.green(color);
         int blue = Color.blue(color);
@@ -58,13 +59,6 @@ public class ColorUtils {
     }
 
     /**
-     * @return The color of the progress bar animation based on the current progress bar foreground.
-     */
-    public static int getProgressBarAnimationColor(int color) {
-        return getColorWithOverlay(Color.WHITE, color, PROGRESS_BAR_ANIMATION_ALPHA);
-    }
-
-    /**
      * @return Alpha for the textbox given a Tab.
      */
     public static float getTextBoxAlphaForToolbarBackground(Tab tab) {
@@ -77,15 +71,12 @@ public class ColorUtils {
     }
 
     /**
-     * Gets the background color for light theme progress bar.
-     * @param toolbarColor The color of the toolbar.
-     * @return The color of the progress bar in light theme, given the toolbar color.
+     * Get a color when overlayed with a different color.
+     * @param baseColor The base Android color.
+     * @param overlayColor The overlay Android color.
+     * @param overlayAlpha The alpha |overlayColor| should have on the base color.
      */
-    public static int getLightProgressbarBackground(int toolbarColor) {
-        return getColorWithOverlay(Color.WHITE, toolbarColor, LIGHT_PROGRESSBAR_BACKGROUND_ALPHA);
-    }
-
-    private static int getColorWithOverlay(int baseColor, int overlayColor, float overlayAlpha) {
+    public static int getColorWithOverlay(int baseColor, int overlayColor, float overlayAlpha) {
         return Color.rgb(
             (int) (overlayAlpha * Color.red(baseColor)
                     + (1f - overlayAlpha) * Color.red(overlayColor)),
@@ -101,9 +92,19 @@ public class ColorUtils {
      * @return Color that should be used for Android status bar.
      */
     public static int getDarkenedColorForStatusBar(int color) {
+        return getDarkenedColor(color, DARKEN_COLOR_FRACTION);
+    }
+
+    /**
+     * Darken a color to a fraction of its current brightness.
+     * @param color The input color.
+     * @param darkenFraction The fraction of the current brightness the color should be.
+     * @return The new darkened color.
+     */
+    public static int getDarkenedColor(int color, float darkenFraction) {
         float[] hsv = new float[3];
         Color.colorToHSV(color, hsv);
-        hsv[2] *= DARKEN_COLOR_FRACTION;
+        hsv[2] *= darkenFraction;
         return Color.HSVToColor(hsv);
     }
 
@@ -134,5 +135,39 @@ public class ColorUtils {
      */
     public static int getOpaqueColor(int color) {
         return Color.rgb(Color.red(color), Color.green(color), Color.blue(color));
+    }
+
+    /**
+     * Test if the toolbar is using the default color.
+     * @param resources The resources to get the toolbar primary color.
+     * @param color The color that the toolbar is using.
+     * @return If the color is the default toolbar color.
+     */
+    public static boolean isUsingDefaultToolbarColor(Resources resources, int color) {
+        return color == ApiCompatibilityUtils.getColor(resources, R.color.default_primary_color);
+    }
+
+    /**
+     * Find a darker color based on the base color and target contrast. This is a pretty naive
+     * approach that tries to get an approximate color quickly; it starts by multiplying the
+     * base lightness by a number less than 1 and incrementally decreases the lightness if the
+     * desired contrast is not met.
+     * @param color The base color.
+     * @param minContrast The target contrast.
+     * @return A draker color.
+     */
+    public static int findDarkerColorWithMinContrast(int color, float minContrast) {
+        float[] hsl = new float[3];
+        android.support.v4.graphics.ColorUtils.colorToHSL(color, hsl);
+
+        hsl[2] *= 0.6;
+        int newColor = android.support.v4.graphics.ColorUtils.HSLToColor(hsl);
+        double contrast = android.support.v4.graphics.ColorUtils.calculateContrast(newColor, color);
+        for (int maxAttempt = 5; maxAttempt >= 0 && contrast < minContrast; maxAttempt--) {
+            hsl[2] *= 0.7f;
+            newColor = android.support.v4.graphics.ColorUtils.HSLToColor(hsl);
+            contrast = android.support.v4.graphics.ColorUtils.calculateContrast(color, newColor);
+        }
+        return newColor;
     }
 }
