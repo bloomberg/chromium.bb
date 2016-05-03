@@ -3278,18 +3278,25 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     return NO;
   }
 
-  // Check If the URL is handled by a native app.
-  if ([self urlTriggersNativeAppLaunch:requestURL
-                             sourceURL:[self currentNavigationURL]
-                           linkClicked:isLinkClick]) {
-    // External app has been launched successfully. Stop the current page
-    // load operation (e.g. notifying all observers) and record the URL so
-    // that errors reported following the 'NO' reply can be safely ignored.
-    if ([self shouldClosePageOnNativeApplicationLoad])
-      [_delegate webPageOrderedClose];
-    [self stopLoading];
-    [_openedApplicationURL addObject:request.URL];
-    return NO;
+  // Check if the link navigation leads to a launch of an external app.
+  // TODO(crbug.com/607780): Revise the logic of allowing external app launch
+  // and move it to externalAppLauncher.
+  BOOL isOpenInNewTabNavigation =
+      !_webStateImpl->GetNavigationManager()->GetItemCount();
+  if (isLinkClick || isOpenInNewTabNavigation) {
+    // Check If the URL is handled by a native app.
+    if ([self urlTriggersNativeAppLaunch:requestURL
+                               sourceURL:[self currentNavigationURL]
+                             linkClicked:isLinkClick]) {
+      // External app has been launched successfully. Stop the current page
+      // load operation (e.g. notifying all observers) and record the URL so
+      // that errors reported following the 'NO' reply can be safely ignored.
+      if ([self shouldClosePageOnNativeApplicationLoad])
+        [_delegate webPageOrderedClose];
+      [self stopLoading];
+      [_openedApplicationURL addObject:request.URL];
+      return NO;
+    }
   }
 
   // The WebDelegate may instruct the CRWWebController to stop loading, and
