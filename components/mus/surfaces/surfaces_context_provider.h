@@ -10,7 +10,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/synchronization/lock.h"
 #include "base/threading/non_thread_safe.h"
 #include "cc/output/context_provider.h"
 #include "components/mus/gles2/command_buffer_local_client.h"
@@ -85,8 +84,6 @@ class SurfacesContextProvider : public cc::ContextProvider,
   CommandBufferLocal* command_buffer_local_;
 
   gfx::GLSurface::SwapCompletionCallback swap_buffers_completion_callback_;
-
-  base::Lock context_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfacesContextProvider);
 };

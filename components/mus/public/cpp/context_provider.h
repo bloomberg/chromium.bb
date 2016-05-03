@@ -10,7 +10,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/synchronization/lock.h"
 #include "cc/output/context_provider.h"
 #include "mojo/public/c/gles2/gles2_types.h"
 #include "mojo/public/cpp/system/core.h"
@@ -47,8 +46,6 @@ class ContextProvider : public cc::ContextProvider {
   mojo::ScopedMessagePipeHandle command_buffer_handle_;
   MojoGLES2Context context_;
   std::unique_ptr<gpu::gles2::GLES2Interface> context_gl_;
-
-  base::Lock context_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextProvider);
 };

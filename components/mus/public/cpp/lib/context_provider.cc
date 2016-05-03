@@ -54,7 +54,9 @@ gpu::Capabilities ContextProvider::ContextCapabilities() {
 void ContextProvider::SetupLock() {}
 
 base::Lock* ContextProvider::GetLock() {
-  return &context_lock_;
+  // This context provider is not used on multiple threads.
+  NOTREACHED();
+  return nullptr;
 }
 
 ContextProvider::~ContextProvider() {
