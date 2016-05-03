@@ -58,6 +58,44 @@ void TransportClient::ProcessRtpPacket(
       new CastMsg_ReceivedPacket(channel_id_, *packet));
 }
 
+class RtcpClient : public media::cast::RtcpObserver {
+ public:
+  RtcpClient(
+      int32_t channel_id,
+      uint32_t rtp_sender_ssrc,
+      base::WeakPtr<cast::CastTransportHostFilter> cast_transport_host_filter)
+      : channel_id_(channel_id),
+        rtp_sender_ssrc_(rtp_sender_ssrc),
+        cast_transport_host_filter_(cast_transport_host_filter) {}
+
+  void OnReceivedCastMessage(
+      const media::cast::RtcpCastMessage& cast_message) override {
+    if (cast_transport_host_filter_)
+      cast_transport_host_filter_->Send(new CastMsg_RtcpCastMessage(
+          channel_id_, rtp_sender_ssrc_, cast_message));
+  }
+
+  void OnReceivedRtt(base::TimeDelta round_trip_time) override {
+    if (cast_transport_host_filter_)
+      cast_transport_host_filter_->Send(
+          new CastMsg_Rtt(channel_id_, rtp_sender_ssrc_, round_trip_time));
+  }
+
+  void OnReceivedPli() override {
+    if (cast_transport_host_filter_)
+      cast_transport_host_filter_->Send(
+          new CastMsg_Pli(channel_id_, rtp_sender_ssrc_));
+  }
+
+ private:
+  const int32_t channel_id_;
+  const uint32_t rtp_sender_ssrc_;
+  const base::WeakPtr<cast::CastTransportHostFilter>
+      cast_transport_host_filter_;
+
+  DISALLOW_COPY_AND_ASSIGN(RtcpClient);
+};
+
 }  // namespace
 
 namespace cast {
@@ -101,24 +139,6 @@ bool CastTransportHostFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
-}
-
-void CastTransportHostFilter::SendRtt(int32_t channel_id,
-                                      uint32_t rtp_sender_ssrc,
-                                      base::TimeDelta rtt) {
-  Send(new CastMsg_Rtt(channel_id, rtp_sender_ssrc, rtt));
-}
-
-void CastTransportHostFilter::SendCastMessage(
-    int32_t channel_id,
-    uint32_t rtp_sender_ssrc,
-    const media::cast::RtcpCastMessage& cast_message) {
-  Send(new CastMsg_RtcpCastMessage(channel_id, rtp_sender_ssrc, cast_message));
-}
-
-void CastTransportHostFilter::SendReceivedPli(int32_t channel_id,
-                                              uint32_t rtp_sender_ssrc) {
-  Send(new CastMsg_Pli(channel_id, rtp_sender_ssrc));
 }
 
 void CastTransportHostFilter::OnNew(int32_t channel_id,
@@ -171,18 +191,16 @@ void CastTransportHostFilter::OnDelete(int32_t channel_id) {
   }
 }
 
+// TODO(xjz): Replace all the separate "init/start audio" and "init/start video"
+// methods with a single "init/start rtp stream" that handles either media type.
 void CastTransportHostFilter::OnInitializeAudio(
     int32_t channel_id,
     const media::cast::CastTransportRtpConfig& config) {
   media::cast::CastTransport* sender = id_map_.Lookup(channel_id);
   if (sender) {
     sender->InitializeAudio(
-        config, base::Bind(&CastTransportHostFilter::SendCastMessage,
-                           weak_factory_.GetWeakPtr(), channel_id, config.ssrc),
-        base::Bind(&CastTransportHostFilter::SendRtt,
-                   weak_factory_.GetWeakPtr(), channel_id, config.ssrc),
-        base::Bind(&CastTransportHostFilter::SendReceivedPli,
-                   weak_factory_.GetWeakPtr(), channel_id, config.ssrc));
+        config, base::WrapUnique(new RtcpClient(channel_id, config.ssrc,
+                                                weak_factory_.GetWeakPtr())));
   } else {
     DVLOG(1)
         << "CastTransportHostFilter::OnInitializeAudio on non-existing channel";
@@ -195,12 +213,8 @@ void CastTransportHostFilter::OnInitializeVideo(
   media::cast::CastTransport* sender = id_map_.Lookup(channel_id);
   if (sender) {
     sender->InitializeVideo(
-        config, base::Bind(&CastTransportHostFilter::SendCastMessage,
-                           weak_factory_.GetWeakPtr(), channel_id, config.ssrc),
-        base::Bind(&CastTransportHostFilter::SendRtt,
-                   weak_factory_.GetWeakPtr(), channel_id, config.ssrc),
-        base::Bind(&CastTransportHostFilter::SendReceivedPli,
-                   weak_factory_.GetWeakPtr(), channel_id, config.ssrc));
+        config, base::WrapUnique(new RtcpClient(channel_id, config.ssrc,
+                                                weak_factory_.GetWeakPtr())));
   } else {
     DVLOG(1)
         << "CastTransportHostFilter::OnInitializeVideo on non-existing channel";

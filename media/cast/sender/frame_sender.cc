@@ -31,6 +31,27 @@ const int kMaxFrameBurst = 5;
 // Convenience macro used in logging statements throughout this file.
 #define SENDER_SSRC (is_audio_ ? "AUDIO[" : "VIDEO[") << ssrc_ << "] "
 
+FrameSender::RtcpClient::RtcpClient(base::WeakPtr<FrameSender> frame_sender)
+    : frame_sender_(frame_sender) {}
+
+FrameSender::RtcpClient::~RtcpClient() {}
+
+void FrameSender::RtcpClient::OnReceivedCastMessage(
+    const RtcpCastMessage& cast_message) {
+  if (frame_sender_)
+    frame_sender_->OnReceivedCastFeedback(cast_message);
+}
+
+void FrameSender::RtcpClient::OnReceivedRtt(base::TimeDelta round_trip_time) {
+  if (frame_sender_)
+    frame_sender_->OnMeasuredRoundTripTime(round_trip_time);
+}
+
+void FrameSender::RtcpClient::OnReceivedPli() {
+  if (frame_sender_)
+    frame_sender_->OnReceivedPli();
+}
+
 FrameSender::FrameSender(scoped_refptr<CastEnvironment> cast_environment,
                          bool is_audio,
                          CastTransport* const transport_sender,

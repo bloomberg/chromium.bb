@@ -12,6 +12,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "media/cast/net/cast_transport_config.h"
 #include "media/cast/sender/performance_metrics_overlay.h"
@@ -139,11 +140,8 @@ VideoSender::VideoSender(
   transport_config.aes_iv_mask = video_config.aes_iv_mask;
 
   transport_sender->InitializeVideo(
-      transport_config, base::Bind(&VideoSender::OnReceivedCastFeedback,
-                                   weak_factory_.GetWeakPtr()),
-      base::Bind(&VideoSender::OnMeasuredRoundTripTime,
-                 weak_factory_.GetWeakPtr()),
-      base::Bind(&VideoSender::OnReceivedPli, weak_factory_.GetWeakPtr()));
+      transport_config, base::WrapUnique(new FrameSender::RtcpClient(
+                            weak_factory_.GetWeakPtr())));
 }
 
 VideoSender::~VideoSender() {

@@ -50,12 +50,30 @@ struct RtcpTimeData;
 
 // Following the initialization of either audio or video an initialization
 // status will be sent via this callback.
-typedef base::Callback<void(CastTransportStatus status)>
-    CastTransportStatusCallback;
+using CastTransportStatusCallback =
+    base::Callback<void(CastTransportStatus status)>;
 
-typedef base::Callback<void(std::unique_ptr<std::vector<FrameEvent>>,
-                            std::unique_ptr<std::vector<PacketEvent>>)>
-    BulkRawEventsCallback;
+using BulkRawEventsCallback =
+    base::Callback<void(std::unique_ptr<std::vector<FrameEvent>>,
+                        std::unique_ptr<std::vector<PacketEvent>>)>;
+
+// Interface to handle received RTCP messages on RTP sender.
+class RtcpObserver {
+ public:
+  virtual ~RtcpObserver() {}
+
+  // Called on receiving cast message from RTP receiver.
+  virtual void OnReceivedCastMessage(const RtcpCastMessage& cast_message) = 0;
+
+  // Called on receiving Rtt message from RTP receiver.
+  virtual void OnReceivedRtt(base::TimeDelta round_trip_time) = 0;
+
+  // Called on receiving PLI from RTP receiver.
+  virtual void OnReceivedPli() = 0;
+
+  // Called on receiving RTP receiver logs.
+  virtual void OnReceivedReceiverLog(const RtcpReceiverLogMessage& log) {}
+};
 
 // The application should only trigger this class from the transport thread.
 class CastTransport : public base::NonThreadSafe {
@@ -93,13 +111,9 @@ class CastTransport : public base::NonThreadSafe {
   // Encoded frames cannot be transmitted until the relevant initialize method
   // is called.
   virtual void InitializeAudio(const CastTransportRtpConfig& config,
-                               const RtcpCastMessageCallback& cast_message_cb,
-                               const RtcpRttCallback& rtt_cb,
-                               const RtcpPliCallback& pli_cb) = 0;
+                               std::unique_ptr<RtcpObserver> rtcp_observer) {}
   virtual void InitializeVideo(const CastTransportRtpConfig& config,
-                               const RtcpCastMessageCallback& cast_message_cb,
-                               const RtcpRttCallback& rtt_cb,
-                               const RtcpPliCallback& pli_cb) = 0;
+                               std::unique_ptr<RtcpObserver> rtcp_observer) {}
 
   // Encrypt, packetize and transmit |frame|. |ssrc| must refer to a
   // a channel already established with InitializeAudio / InitializeVideo.

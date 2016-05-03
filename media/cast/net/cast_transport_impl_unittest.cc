@@ -30,6 +30,17 @@ const int64_t kStartMillisecond = INT64_C(12345678900000);
 const uint32_t kVideoSsrc = 1;
 const uint32_t kAudioSsrc = 2;
 
+class StubRtcpObserver : public RtcpObserver {
+ public:
+  StubRtcpObserver() {}
+
+  void OnReceivedCastMessage(const RtcpCastMessage& cast_message) final {}
+  void OnReceivedRtt(base::TimeDelta round_trip_time) final {}
+  void OnReceivedPli() final {}
+
+  DISALLOW_COPY_AND_ASSIGN(StubRtcpObserver);
+};
+
 }  // namespace
 
 class FakePacketSender : public PacketTransport {
@@ -96,8 +107,8 @@ class CastTransportImplTest : public ::testing::Test {
     rtp_config.ssrc = kVideoSsrc;
     rtp_config.feedback_ssrc = 2;
     rtp_config.rtp_payload_type = 3;
-    transport_sender_->InitializeVideo(rtp_config, RtcpCastMessageCallback(),
-                                       RtcpRttCallback(), RtcpPliCallback());
+    transport_sender_->InitializeVideo(
+        rtp_config, base::WrapUnique(new StubRtcpObserver()));
   }
 
   void InitializeAudio() {
@@ -105,8 +116,8 @@ class CastTransportImplTest : public ::testing::Test {
     rtp_config.ssrc = kAudioSsrc;
     rtp_config.feedback_ssrc = 3;
     rtp_config.rtp_payload_type = 4;
-    transport_sender_->InitializeAudio(rtp_config, RtcpCastMessageCallback(),
-                                       RtcpRttCallback(), RtcpPliCallback());
+    transport_sender_->InitializeAudio(
+        rtp_config, base::WrapUnique(new StubRtcpObserver()));
   }
 
   base::SimpleTestTickClock testing_clock_;
@@ -131,7 +142,7 @@ class TransportClient : public CastTransport::Client {
     CHECK(cast_transport_sender_impl_test_);
     cast_transport_sender_impl_test_->ReceivedLoggingEvents();
   };
-  void ProcessRtpPacket(std::unique_ptr<Packet> packet) final{};
+  void ProcessRtpPacket(std::unique_ptr<Packet> packet) final {}
 
  private:
   CastTransportImplTest* const cast_transport_sender_impl_test_;
@@ -224,8 +235,7 @@ TEST_F(CastTransportImplTest, NacksCancelRetransmits) {
   cast_message.remote_ssrc = kVideoSsrc;
   cast_message.ack_frame_id = FrameId::first() + 1;
   cast_message.missing_frames_and_packets[fake_frame.frame_id].insert(3);
-  transport_sender_->OnReceivedCastMessage(
-      kVideoSsrc, RtcpCastMessageCallback(), cast_message);
+  transport_sender_->OnReceivedCastMessage(kVideoSsrc, cast_message);
   transport_->SetPaused(false);
   task_runner_->Sleep(base::TimeDelta::FromMilliseconds(10));
   EXPECT_EQ(3, num_times_logging_callback_called_);
@@ -346,8 +356,7 @@ TEST_F(CastTransportImplTest, DedupRetransmissionWithAudio) {
   RtcpCastMessage cast_message;
   cast_message.remote_ssrc = kAudioSsrc;
   cast_message.ack_frame_id = FrameId::first() + 1;
-  transport_sender_->OnReceivedCastMessage(
-      kAudioSsrc, RtcpCastMessageCallback(), cast_message);
+  transport_sender_->OnReceivedCastMessage(kAudioSsrc, cast_message);
   task_runner_->RunTasks();
   EXPECT_EQ(2, transport_->packets_sent());
   EXPECT_EQ(0, num_times_logging_callback_called_);  // Only 4 ms since last.
@@ -368,8 +377,7 @@ TEST_F(CastTransportImplTest, DedupRetransmissionWithAudio) {
   cast_message.ack_frame_id = FrameId::first();
   cast_message.missing_frames_and_packets[fake_video.frame_id].insert(3);
   task_runner_->Sleep(base::TimeDelta::FromMilliseconds(10));
-  transport_sender_->OnReceivedCastMessage(
-      kVideoSsrc, RtcpCastMessageCallback(), cast_message);
+  transport_sender_->OnReceivedCastMessage(kVideoSsrc, cast_message);
   task_runner_->RunTasks();
   EXPECT_EQ(6, transport_->packets_sent());
   EXPECT_EQ(1, num_times_logging_callback_called_);
@@ -379,8 +387,7 @@ TEST_F(CastTransportImplTest, DedupRetransmissionWithAudio) {
   cast_message.ack_frame_id = FrameId::first() + 2;
   cast_message.missing_frames_and_packets.clear();
   task_runner_->Sleep(base::TimeDelta::FromMilliseconds(2));
-  transport_sender_->OnReceivedCastMessage(
-      kAudioSsrc, RtcpCastMessageCallback(), cast_message);
+  transport_sender_->OnReceivedCastMessage(kAudioSsrc, cast_message);
   task_runner_->RunTasks();
   EXPECT_EQ(6, transport_->packets_sent());
   EXPECT_EQ(1, num_times_logging_callback_called_);  // Only 6 ms since last.
@@ -390,8 +397,7 @@ TEST_F(CastTransportImplTest, DedupRetransmissionWithAudio) {
   cast_message.ack_frame_id = FrameId::first() + 1;
   cast_message.missing_frames_and_packets[fake_video.frame_id].insert(3);
   task_runner_->Sleep(base::TimeDelta::FromMilliseconds(2));
-  transport_sender_->OnReceivedCastMessage(
-      kVideoSsrc, RtcpCastMessageCallback(), cast_message);
+  transport_sender_->OnReceivedCastMessage(kVideoSsrc, cast_message);
   task_runner_->RunTasks();
   EXPECT_EQ(7, transport_->packets_sent());
   EXPECT_EQ(1, num_times_logging_callback_called_);  // Only 8 ms since last.

@@ -97,19 +97,15 @@ class CastTransportWrapper : public CastTransport {
   }
 
   void InitializeAudio(const CastTransportRtpConfig& config,
-                       const RtcpCastMessageCallback& cast_message_cb,
-                       const RtcpRttCallback& rtt_cb,
-                       const RtcpPliCallback& key_frame_cb) final {
+                       std::unique_ptr<RtcpObserver> rtcp_observer) final {
     audio_ssrc_ = config.ssrc;
-    transport_->InitializeAudio(config, cast_message_cb, rtt_cb, key_frame_cb);
+    transport_->InitializeAudio(config, std::move(rtcp_observer));
   }
 
   void InitializeVideo(const CastTransportRtpConfig& config,
-                       const RtcpCastMessageCallback& cast_message_cb,
-                       const RtcpRttCallback& rtt_cb,
-                       const RtcpPliCallback& key_frame_cb) final {
+                       std::unique_ptr<RtcpObserver> rtcp_observer) final {
     video_ssrc_ = config.ssrc;
-    transport_->InitializeVideo(config, cast_message_cb, rtt_cb, key_frame_cb);
+    transport_->InitializeVideo(config, std::move(rtcp_observer));
   }
 
   void InsertFrame(uint32_t ssrc, const EncodedFrame& frame) final {

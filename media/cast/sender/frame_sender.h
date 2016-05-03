@@ -62,9 +62,27 @@ class FrameSender {
   virtual base::TimeDelta GetInFlightMediaDuration() const = 0;
 
  protected:
+  class RtcpClient : public RtcpObserver {
+   public:
+    explicit RtcpClient(base::WeakPtr<FrameSender> frame_sender);
+    ~RtcpClient() override;
+
+    void OnReceivedCastMessage(const RtcpCastMessage& cast_message) override;
+    void OnReceivedRtt(base::TimeDelta round_trip_time) override;
+    void OnReceivedPli() override;
+
+   private:
+    const base::WeakPtr<FrameSender> frame_sender_;
+  };
   // Schedule and execute periodic sending of RTCP report.
   void ScheduleNextRtcpReport();
   void SendRtcpReport(bool schedule_future_reports);
+
+  // Protected for testability.
+  void OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback);
+
+  // Called when a Pli message is received.
+  void OnReceivedPli();
 
   void OnMeasuredRoundTripTime(base::TimeDelta rtt);
 
@@ -88,12 +106,6 @@ class FrameSender {
   void ScheduleNextResendCheck();
   void ResendCheck();
   void ResendForKickstart();
-
-  // Protected for testability.
-  void OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback);
-
-  // Called when a Pli message is received.
-  void OnReceivedPli();
 
   // Returns true if too many frames would be in-flight by encoding and sending
   // the next frame having the given |frame_duration|.

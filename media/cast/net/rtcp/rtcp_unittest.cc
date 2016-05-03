@@ -31,8 +31,6 @@ media::cast::RtcpTimeData CreateRtcpTimeData(base::TimeTicks now) {
   return ret;
 }
 
-}  // namespace
-
 using testing::_;
 
 static const uint32_t kSenderSsrc = 0x10203;
@@ -75,24 +73,20 @@ class FakeRtcpTransport : public PacedPacketSender {
   DISALLOW_COPY_AND_ASSIGN(FakeRtcpTransport);
 };
 
-class RtcpTest : public ::testing::Test {
+}  // namespace
+
+class RtcpTest : public ::testing::Test, public RtcpObserver {
  protected:
   RtcpTest()
       : sender_clock_(new base::SimpleTestTickClock()),
         receiver_clock_(new test::SkewedTickClock(sender_clock_.get())),
         rtp_sender_pacer_(sender_clock_.get()),
         rtp_receiver_pacer_(sender_clock_.get()),
-        rtcp_at_rtp_sender_(
-            base::Bind(&RtcpTest::OnReceivedCastFeedback,
-                       base::Unretained(this)),
-            base::Bind(&RtcpTest::OnMeasuredRoundTripTime,
-                       base::Unretained(this)),
-            base::Bind(&RtcpTest::OnReceivedLogs, base::Unretained(this)),
-            base::Bind(&RtcpTest::OnReceivedPli, base::Unretained(this)),
-            sender_clock_.get(),
-            &rtp_sender_pacer_,
-            kSenderSsrc,
-            kReceiverSsrc),
+        rtcp_at_rtp_sender_(sender_clock_.get(),
+                            &rtp_sender_pacer_,
+                            this,
+                            kSenderSsrc,
+                            kReceiverSsrc),
         rtcp_at_rtp_receiver_(receiver_clock_.get(),
                               kReceiverSsrc,
                               kSenderSsrc),
@@ -108,19 +102,18 @@ class RtcpTest : public ::testing::Test {
 
   ~RtcpTest() override {}
 
-  void OnReceivedCastFeedback(const RtcpCastMessage& cast_message) {
+  // RtcpObserver implementation.
+  void OnReceivedCastMessage(const RtcpCastMessage& cast_message) override {
     last_cast_message_ = cast_message;
   }
-
-  void OnMeasuredRoundTripTime(base::TimeDelta rtt) {
-    current_round_trip_time_ = rtt;
+  void OnReceivedRtt(base::TimeDelta round_trip_time) override {
+    current_round_trip_time_ = round_trip_time;
   }
-
-  void OnReceivedLogs(const RtcpReceiverLogMessage& receiver_logs) {
+  void OnReceivedReceiverLog(const RtcpReceiverLogMessage& logs) override {
     RtcpReceiverLogMessage().swap(last_logs_);
 
     // Make a copy of the logs.
-    for (const RtcpReceiverFrameLogMessage& frame_log_msg : receiver_logs) {
+    for (const RtcpReceiverFrameLogMessage& frame_log_msg : logs) {
       last_logs_.push_back(
           RtcpReceiverFrameLogMessage(frame_log_msg.rtp_timestamp_));
       for (const RtcpReceiverEventLogMessage& event_log_msg :
@@ -134,6 +127,8 @@ class RtcpTest : public ::testing::Test {
       }
     }
   }
+
+  void OnReceivedPli() override { received_pli_ = true; }
 
   PacketRef BuildRtcpPacketFromRtpReceiver(
       const RtcpTimeData& time_data,
@@ -181,8 +176,6 @@ class RtcpTest : public ::testing::Test {
       builder.AddReceiverLog(*rtcp_events);
     return builder.Finish();
   }
-
-  void OnReceivedPli() { received_pli_ = true; }
 
   std::unique_ptr<base::SimpleTestTickClock> sender_clock_;
   std::unique_ptr<test::SkewedTickClock> receiver_clock_;

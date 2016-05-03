@@ -68,23 +68,16 @@ std::pair<uint64_t, uint64_t> GetReceiverEventKey(
 
 }  // namespace
 
-SenderRtcpSession::SenderRtcpSession(
-    const RtcpCastMessageCallback& cast_callback,
-    const RtcpRttCallback& rtt_callback,
-    const RtcpLogMessageCallback& log_callback,
-    const RtcpPliCallback pli_callback,
-    base::TickClock* clock,
-    PacedPacketSender* packet_sender,
-    uint32_t local_ssrc,
-    uint32_t remote_ssrc)
+SenderRtcpSession::SenderRtcpSession(base::TickClock* clock,
+                                     PacedPacketSender* packet_sender,
+                                     RtcpObserver* observer,
+                                     uint32_t local_ssrc,
+                                     uint32_t remote_ssrc)
     : clock_(clock),
       packet_sender_(packet_sender),
       local_ssrc_(local_ssrc),
       remote_ssrc_(remote_ssrc),
-      cast_callback_(cast_callback),
-      rtt_callback_(rtt_callback),
-      log_callback_(log_callback),
-      pli_callback_(pli_callback),
+      rtcp_observer_(observer),
       largest_seen_timestamp_(base::TimeTicks::FromInternalValue(
           std::numeric_limits<int64_t>::min())),
       parser_(local_ssrc, remote_ssrc) {}
@@ -115,10 +108,8 @@ bool SenderRtcpSession::IncomingRtcpPacket(const uint8_t* data, size_t length) {
   // Parse this packet.
   base::BigEndianReader reader(reinterpret_cast<const char*>(data), length);
   if (parser_.Parse(&reader)) {
-    if (parser_.has_picture_loss_indicator()) {
-      if (!pli_callback_.is_null())
-        pli_callback_.Run();
-    }
+    if (parser_.has_picture_loss_indicator())
+      rtcp_observer_->OnReceivedPli();
     if (parser_.has_receiver_reference_time_report()) {
       base::TimeTicks t = ConvertNtpToTimeTicks(
           parser_.receiver_reference_time_report().ntp_seconds,
@@ -135,7 +126,7 @@ bool SenderRtcpSession::IncomingRtcpPacket(const uint8_t* data, size_t length) {
     }
     if (parser_.has_receiver_log()) {
       if (DedupeReceiverLog(parser_.mutable_receiver_log())) {
-        OnReceivedReceiverLog(parser_.receiver_log());
+        rtcp_observer_->OnReceivedReceiverLog(parser_.receiver_log());
       }
     }
     if (parser_.has_last_report()) {
@@ -143,7 +134,7 @@ bool SenderRtcpSession::IncomingRtcpPacket(const uint8_t* data, size_t length) {
                                      parser_.delay_since_last_report());
     }
     if (parser_.has_cast_message()) {
-      OnReceivedCastFeedback(parser_.cast_message());
+      rtcp_observer_->OnReceivedCastMessage(parser_.cast_message());
     }
   }
   return true;
@@ -169,8 +160,7 @@ void SenderRtcpSession::OnReceivedDelaySinceLastReport(
   current_round_trip_time_ =
       std::max(current_round_trip_time_, base::TimeDelta::FromMilliseconds(1));
 
-  if (!rtt_callback_.is_null())
-    rtt_callback_.Run(current_round_trip_time_);
+  rtcp_observer_->OnReceivedRtt(current_round_trip_time_);
 }
 
 void SenderRtcpSession::SaveLastSentNtpTime(const base::TimeTicks& now,
@@ -253,20 +243,6 @@ void SenderRtcpSession::SendRtcpReport(
   RtcpBuilder rtcp_builder(local_ssrc_);
   packet_sender_->SendRtcpPacket(local_ssrc_,
                                  rtcp_builder.BuildRtcpFromSender(sender_info));
-}
-
-void SenderRtcpSession::OnReceivedCastFeedback(
-    const RtcpCastMessage& cast_message) {
-  if (cast_callback_.is_null())
-    return;
-  cast_callback_.Run(cast_message);
-}
-
-void SenderRtcpSession::OnReceivedReceiverLog(
-    const RtcpReceiverLogMessage& receiver_log) {
-  if (log_callback_.is_null())
-    return;
-  log_callback_.Run(receiver_log);
 }
 
 }  // namespace cast

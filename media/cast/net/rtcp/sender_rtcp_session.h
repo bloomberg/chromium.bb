@@ -11,6 +11,7 @@
 
 #include "base/containers/hash_tables.h"
 #include "base/time/time.h"
+#include "media/cast/net/cast_transport.h"
 #include "media/cast/net/pacing/paced_sender.h"
 #include "media/cast/net/rtcp/rtcp_defines.h"
 #include "media/cast/net/rtcp/rtcp_session.h"
@@ -19,33 +20,30 @@
 namespace media {
 namespace cast {
 
-typedef std::pair<uint32_t, base::TimeTicks> RtcpSendTimePair;
-typedef std::map<uint32_t, base::TimeTicks> RtcpSendTimeMap;
-typedef std::queue<RtcpSendTimePair> RtcpSendTimeQueue;
+using RtcpSendTimePair = std::pair<uint32_t, base::TimeTicks>;
+using RtcpSendTimeMap = std::map<uint32_t, base::TimeTicks>;
+using RtcpSendTimeQueue = std::queue<RtcpSendTimePair>;
 
 // This class represents a RTCP session on a RTP sender. It provides an
 // interface to send RTCP sender report (SR). RTCP SR packets allow
 // receiver to maintain clock offsets and synchronize between audio and video.
 //
 // RTCP session on sender handles the following incoming RTCP reports
-// from receiver:
+// from receiver and passes the information to a RtcpObserver:
 // - Receiver reference time report: Helps with tracking largest timestamp
 //   seen and as a result rejecting old RTCP reports.
-// - Receiver logs: The sender receives log events from the receiver and
-//   invokes a callback passed.
-// - cast message: Receives feedback from receiver on missing packets/frames
-//   and last frame id received and invokes a callback passed.
+// - Receiver logs: The sender receives log events from the receiver.
+// - cast message: Receives feedback from receiver on missing packets/frames,
+//   later frames received, and last frame id.
 // - Last report: The receiver provides feedback on delay since last report
-//   received which helps it compute round trip time and invoke a callback.
+//   received which helps it compute round trip time.
+// - PLI: Receiver sends PLI when decoding error exists on ultra-low latency
+//   applications.
 class SenderRtcpSession : public RtcpSession {
  public:
-  // TODO(xjz): Simplify the interface. http://crbug.com/588275.
-  SenderRtcpSession(const RtcpCastMessageCallback& cast_callback,
-                    const RtcpRttCallback& rtt_callback,
-                    const RtcpLogMessageCallback& log_callback,
-                    const RtcpPliCallback pli_callback,
-                    base::TickClock* clock,            // Not owned.
+  SenderRtcpSession(base::TickClock* clock,            // Not owned.
                     PacedPacketSender* packet_sender,  // Not owned.
+                    RtcpObserver* observer,            // Not owned.
                     uint32_t local_ssrc,
                     uint32_t remote_ssrc);
 
@@ -104,11 +102,7 @@ class SenderRtcpSession : public RtcpSession {
   PacedPacketSender* packet_sender_;  // Not owned.
   const uint32_t local_ssrc_;
   const uint32_t remote_ssrc_;
-
-  const RtcpCastMessageCallback cast_callback_;
-  const RtcpRttCallback rtt_callback_;
-  const RtcpLogMessageCallback log_callback_;
-  const RtcpPliCallback pli_callback_;
+  RtcpObserver* const rtcp_observer_;  // Owned by |CastTransportImpl|.
 
   // Computed from RTCP RRTR report.
   base::TimeTicks largest_seen_timestamp_;

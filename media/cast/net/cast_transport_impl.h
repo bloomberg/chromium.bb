@@ -66,13 +66,9 @@ class CastTransportImpl final : public CastTransport {
 
   // CastTransport implementation for sending.
   void InitializeAudio(const CastTransportRtpConfig& config,
-                       const RtcpCastMessageCallback& cast_message_cb,
-                       const RtcpRttCallback& rtt_cb,
-                       const RtcpPliCallback& pli_cb) final;
+                       std::unique_ptr<RtcpObserver> rtcp_observer) final;
   void InitializeVideo(const CastTransportRtpConfig& config,
-                       const RtcpCastMessageCallback& cast_message_cb,
-                       const RtcpRttCallback& rtt_cb,
-                       const RtcpPliCallback& pli_cb) final;
+                       std::unique_ptr<RtcpObserver> rtcp_observer) final;
   void InsertFrame(uint32_t ssrc, const EncodedFrame& frame) final;
 
   void SendSenderReport(uint32_t ssrc,
@@ -117,6 +113,9 @@ class CastTransportImpl final : public CastTransport {
   void SendRtcpFromRtpReceiver() final;
 
  private:
+  // Handle received RTCP messages on RTP sender.
+  class RtcpClient;
+
   FRIEND_TEST_ALL_PREFIXES(CastTransportImplTest, NacksCancelRetransmits);
   FRIEND_TEST_ALL_PREFIXES(CastTransportImplTest, CancelRetransmits);
   FRIEND_TEST_ALL_PREFIXES(CastTransportImplTest, Kickstart);
@@ -144,7 +143,6 @@ class CastTransportImpl final : public CastTransport {
 
   // Called when a RTCP Cast message is received.
   void OnReceivedCastMessage(uint32_t ssrc,
-                             const RtcpCastMessageCallback& cast_message_cb,
                              const RtcpCastMessage& cast_message);
 
   base::TickClock* const clock_;  // Not owned by this class.
@@ -169,6 +167,10 @@ class CastTransportImpl final : public CastTransport {
   // Maintains RTCP session for audio and video.
   std::unique_ptr<SenderRtcpSession> audio_rtcp_session_;
   std::unique_ptr<SenderRtcpSession> video_rtcp_session_;
+
+  // RTCP observer for SenderRtcpSession.
+  std::unique_ptr<RtcpObserver> audio_rtcp_observer_;
+  std::unique_ptr<RtcpObserver> video_rtcp_observer_;
 
   // Encrypts data in EncodedFrames before they are sent.  Note that it's
   // important for the encryption to happen here, in code that would execute in

@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "media/cast/common/rtp_time.h"
 #include "media/cast/net/cast_transport_config.h"
@@ -68,11 +69,8 @@ AudioSender::AudioSender(scoped_refptr<CastEnvironment> cast_environment,
   transport_config.aes_iv_mask = audio_config.aes_iv_mask;
 
   transport_sender->InitializeAudio(
-      transport_config, base::Bind(&AudioSender::OnReceivedCastFeedback,
-                                   weak_factory_.GetWeakPtr()),
-      base::Bind(&AudioSender::OnMeasuredRoundTripTime,
-                 weak_factory_.GetWeakPtr()),
-      base::Bind(&AudioSender::OnReceivedPli, weak_factory_.GetWeakPtr()));
+      transport_config, base::WrapUnique(new FrameSender::RtcpClient(
+                            weak_factory_.GetWeakPtr())));
 }
 
 AudioSender::~AudioSender() {}

@@ -18,16 +18,6 @@ class MockCastTransport : public CastTransport {
   MockCastTransport();
   virtual ~MockCastTransport();
 
-  MOCK_METHOD4(InitializeAudio,
-               void(const CastTransportRtpConfig& config,
-                    const RtcpCastMessageCallback& cast_message_cb,
-                    const RtcpRttCallback& rtt_cb,
-                    const RtcpPliCallback& pli_cb));
-  MOCK_METHOD4(InitializeVideo,
-               void(const CastTransportRtpConfig& config,
-                    const RtcpCastMessageCallback& cast_message_cb,
-                    const RtcpRttCallback& rtt_cb,
-                    const RtcpPliCallback& pli_cb));
   MOCK_METHOD2(InsertFrame, void(uint32_t ssrc, const EncodedFrame& frame));
   MOCK_METHOD3(SendSenderReport,
                void(uint32_t ssrc,

@@ -34,14 +34,10 @@ class CastTransportIPC : public media::cast::CastTransport {
   // media::cast::CastTransport implementation.
   void InitializeAudio(
       const media::cast::CastTransportRtpConfig& config,
-      const media::cast::RtcpCastMessageCallback& cast_message_cb,
-      const media::cast::RtcpRttCallback& rtt_cb,
-      const media::cast::RtcpPliCallback& pli_cb) override;
+      std::unique_ptr<media::cast::RtcpObserver> rtcp_observer) override;
   void InitializeVideo(
       const media::cast::CastTransportRtpConfig& config,
-      const media::cast::RtcpCastMessageCallback& cast_message_cb,
-      const media::cast::RtcpRttCallback& rtt_cb,
-      const media::cast::RtcpPliCallback& pli_cb) override;
+      std::unique_ptr<media::cast::RtcpObserver> rtcp_observer) override;
   void InsertFrame(uint32_t ssrc,
                    const media::cast::EncodedFrame& frame) override;
   void SendSenderReport(
@@ -77,23 +73,14 @@ class CastTransportIPC : public media::cast::CastTransport {
   void OnReceivedPacket(const media::cast::Packet& packet);
 
  private:
-  struct ClientCallbacks {
-    ClientCallbacks();
-    ClientCallbacks(const ClientCallbacks& other);
-    ~ClientCallbacks();
-
-    media::cast::RtcpCastMessageCallback cast_message_cb;
-    media::cast::RtcpRttCallback rtt_cb;
-    media::cast::RtcpPliCallback pli_cb;
-  };
-
   void Send(IPC::Message* message);
 
   int32_t channel_id_;
   media::cast::PacketReceiverCallback packet_callback_;
   media::cast::CastTransportStatusCallback status_callback_;
   media::cast::BulkRawEventsCallback raw_events_callback_;
-  typedef std::map<uint32_t, ClientCallbacks> ClientMap;
+  using ClientMap =
+      std::map<uint32_t, std::unique_ptr<media::cast::RtcpObserver>>;
   ClientMap clients_;
 
   DISALLOW_COPY_AND_ASSIGN(CastTransportIPC);

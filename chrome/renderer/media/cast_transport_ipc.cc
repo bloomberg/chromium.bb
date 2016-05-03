@@ -14,11 +14,6 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "media/cast/cast_sender.h"
 
-CastTransportIPC::ClientCallbacks::ClientCallbacks() {}
-CastTransportIPC::ClientCallbacks::ClientCallbacks(
-    const ClientCallbacks& other) = default;
-CastTransportIPC::ClientCallbacks::~ClientCallbacks() {}
-
 CastTransportIPC::CastTransportIPC(
     const net::IPEndPoint& local_end_point,
     const net::IPEndPoint& remote_end_point,
@@ -45,23 +40,17 @@ CastTransportIPC::~CastTransportIPC() {
 
 void CastTransportIPC::InitializeAudio(
     const media::cast::CastTransportRtpConfig& config,
-    const media::cast::RtcpCastMessageCallback& cast_message_cb,
-    const media::cast::RtcpRttCallback& rtt_cb,
-    const media::cast::RtcpPliCallback& pli_cb) {
-  clients_[config.ssrc].cast_message_cb = cast_message_cb;
-  clients_[config.ssrc].rtt_cb = rtt_cb;
-  clients_[config.ssrc].pli_cb = pli_cb;
+    std::unique_ptr<media::cast::RtcpObserver> rtcp_observer) {
+  DCHECK(clients_.find(config.ssrc) == clients_.end());
+  clients_[config.ssrc] = std::move(rtcp_observer);
   Send(new CastHostMsg_InitializeAudio(channel_id_, config));
 }
 
 void CastTransportIPC::InitializeVideo(
     const media::cast::CastTransportRtpConfig& config,
-    const media::cast::RtcpCastMessageCallback& cast_message_cb,
-    const media::cast::RtcpRttCallback& rtt_cb,
-    const media::cast::RtcpPliCallback& pli_cb) {
-  clients_[config.ssrc].cast_message_cb = cast_message_cb;
-  clients_[config.ssrc].rtt_cb = rtt_cb;
-  clients_[config.ssrc].pli_cb = pli_cb;
+    std::unique_ptr<media::cast::RtcpObserver> rtcp_observer) {
+  DCHECK(clients_.find(config.ssrc) == clients_.end());
+  clients_[config.ssrc] = std::move(rtcp_observer);
   Send(new CastHostMsg_InitializeVideo(channel_id_, config));
 }
 
@@ -157,8 +146,7 @@ void CastTransportIPC::OnRtt(uint32_t rtp_sender_ssrc, base::TimeDelta rtt) {
     LOG(ERROR) << "Received RTT report for unknown SSRC: " << rtp_sender_ssrc;
     return;
   }
-  if (!it->second.rtt_cb.is_null())
-    it->second.rtt_cb.Run(rtt);
+  it->second->OnReceivedRtt(rtt);
 }
 
 void CastTransportIPC::OnRtcpCastMessage(
@@ -169,9 +157,7 @@ void CastTransportIPC::OnRtcpCastMessage(
     LOG(ERROR) << "Received cast message for unknown SSRC: " << rtp_sender_ssrc;
     return;
   }
-  if (it->second.cast_message_cb.is_null())
-    return;
-  it->second.cast_message_cb.Run(cast_message);
+  it->second->OnReceivedCastMessage(cast_message);
 }
 
 void CastTransportIPC::OnReceivedPli(uint32_t rtp_sender_ssrc) {
@@ -181,8 +167,7 @@ void CastTransportIPC::OnReceivedPli(uint32_t rtp_sender_ssrc) {
                << rtp_sender_ssrc;
     return;
   }
-  if (!it->second.pli_cb.is_null())
-    it->second.pli_cb.Run();
+  it->second->OnReceivedPli();
 }
 
 void CastTransportIPC::OnReceivedPacket(const media::cast::Packet& packet) {

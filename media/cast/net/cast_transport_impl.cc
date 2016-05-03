@@ -56,6 +56,41 @@ PacketReceiverCallback CastTransport::PacketReceiverForTesting() {
   return PacketReceiverCallback();
 }
 
+class CastTransportImpl::RtcpClient : public RtcpObserver {
+ public:
+  RtcpClient(std::unique_ptr<RtcpObserver> observer,
+             uint32_t rtp_sender_ssrc,
+             EventMediaType media_type,
+             CastTransportImpl* cast_transport_impl)
+      : rtp_sender_ssrc_(rtp_sender_ssrc),
+        rtcp_observer_(std::move(observer)),
+        media_type_(media_type),
+        cast_transport_impl_(cast_transport_impl) {}
+
+  void OnReceivedCastMessage(const RtcpCastMessage& cast_message) override {
+    rtcp_observer_->OnReceivedCastMessage(cast_message);
+    cast_transport_impl_->OnReceivedCastMessage(rtp_sender_ssrc_, cast_message);
+  }
+
+  void OnReceivedRtt(base::TimeDelta round_trip_time) override {
+    rtcp_observer_->OnReceivedRtt(round_trip_time);
+  }
+
+  void OnReceivedReceiverLog(const RtcpReceiverLogMessage& log) override {
+    cast_transport_impl_->OnReceivedLogMessage(media_type_, log);
+  }
+
+  void OnReceivedPli() override { rtcp_observer_->OnReceivedPli(); }
+
+ private:
+  const uint32_t rtp_sender_ssrc_;
+  const std::unique_ptr<RtcpObserver> rtcp_observer_;
+  const EventMediaType media_type_;
+  CastTransportImpl* const cast_transport_impl_;
+
+  DISALLOW_COPY_AND_ASSIGN(RtcpClient);
+};
+
 CastTransportImpl::CastTransportImpl(
     base::TickClock* clock,
     base::TimeDelta logging_flush_interval,
@@ -96,9 +131,7 @@ CastTransportImpl::~CastTransportImpl() {
 
 void CastTransportImpl::InitializeAudio(
     const CastTransportRtpConfig& config,
-    const RtcpCastMessageCallback& cast_message_cb,
-    const RtcpRttCallback& rtt_cb,
-    const RtcpPliCallback& pli_cb) {
+    std::unique_ptr<RtcpObserver> rtcp_observer) {
   LOG_IF(WARNING, config.aes_key.empty() || config.aes_iv_mask.empty())
       << "Unsafe to send audio with encryption DISABLED.";
   if (!audio_encryptor_.Initialize(config.aes_key, config.aes_iv_mask)) {
@@ -118,12 +151,11 @@ void CastTransportImpl::InitializeAudio(
     return;
   }
 
-  audio_rtcp_session_.reset(new SenderRtcpSession(
-      base::Bind(&CastTransportImpl::OnReceivedCastMessage,
-                 weak_factory_.GetWeakPtr(), config.ssrc, cast_message_cb),
-      rtt_cb, base::Bind(&CastTransportImpl::OnReceivedLogMessage,
-                         weak_factory_.GetWeakPtr(), AUDIO_EVENT),
-      pli_cb, clock_, &pacer_, config.ssrc, config.feedback_ssrc));
+  audio_rtcp_observer_.reset(
+      new RtcpClient(std::move(rtcp_observer), config.ssrc, AUDIO_EVENT, this));
+  audio_rtcp_session_.reset(
+      new SenderRtcpSession(clock_, &pacer_, audio_rtcp_observer_.get(),
+                            config.ssrc, config.feedback_ssrc));
   pacer_.RegisterAudioSsrc(config.ssrc);
   valid_sender_ssrcs_.insert(config.feedback_ssrc);
   transport_client_->OnStatusChanged(TRANSPORT_AUDIO_INITIALIZED);
@@ -131,9 +163,7 @@ void CastTransportImpl::InitializeAudio(
 
 void CastTransportImpl::InitializeVideo(
     const CastTransportRtpConfig& config,
-    const RtcpCastMessageCallback& cast_message_cb,
-    const RtcpRttCallback& rtt_cb,
-    const RtcpPliCallback& pli_cb) {
+    std::unique_ptr<RtcpObserver> rtcp_observer) {
   LOG_IF(WARNING, config.aes_key.empty() || config.aes_iv_mask.empty())
       << "Unsafe to send video with encryption DISABLED.";
   if (!video_encryptor_.Initialize(config.aes_key, config.aes_iv_mask)) {
@@ -148,12 +178,11 @@ void CastTransportImpl::InitializeVideo(
     return;
   }
 
-  video_rtcp_session_.reset(new SenderRtcpSession(
-      base::Bind(&CastTransportImpl::OnReceivedCastMessage,
-                 weak_factory_.GetWeakPtr(), config.ssrc, cast_message_cb),
-      rtt_cb, base::Bind(&CastTransportImpl::OnReceivedLogMessage,
-                         weak_factory_.GetWeakPtr(), VIDEO_EVENT),
-      pli_cb, clock_, &pacer_, config.ssrc, config.feedback_ssrc));
+  video_rtcp_observer_.reset(
+      new RtcpClient(std::move(rtcp_observer), config.ssrc, VIDEO_EVENT, this));
+  video_rtcp_session_.reset(
+      new SenderRtcpSession(clock_, &pacer_, video_rtcp_observer_.get(),
+                            config.ssrc, config.feedback_ssrc));
   pacer_.RegisterVideoSsrc(config.ssrc);
   valid_sender_ssrcs_.insert(config.feedback_ssrc);
   transport_client_->OnStatusChanged(TRANSPORT_VIDEO_INITIALIZED);
@@ -349,10 +378,7 @@ void CastTransportImpl::OnReceivedLogMessage(
 
 void CastTransportImpl::OnReceivedCastMessage(
     uint32_t ssrc,
-    const RtcpCastMessageCallback& cast_message_cb,
     const RtcpCastMessage& cast_message) {
-  if (!cast_message_cb.is_null())
-    cast_message_cb.Run(cast_message);
 
   DedupInfo dedup_info;
   if (audio_sender_ && audio_sender_->ssrc() == ssrc) {

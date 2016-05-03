@@ -186,8 +186,7 @@ class VideoSenderTest : public ::testing::Test {
     if (external) {
       vea_factory_.SetInitializationWillSucceed(expect_init_success);
       video_sender_.reset(new PeerVideoSender(
-          cast_environment_,
-          video_config,
+          cast_environment_, video_config,
           base::Bind(&SaveOperationalStatus, &operational_status_),
           base::Bind(
               &FakeVideoEncodeAcceleratorFactory::CreateVideoEncodeAccelerator,
@@ -197,12 +196,10 @@ class VideoSenderTest : public ::testing::Test {
           transport_sender_.get()));
     } else {
       video_sender_.reset(new PeerVideoSender(
-          cast_environment_,
-          video_config,
+          cast_environment_, video_config,
           base::Bind(&SaveOperationalStatus, &operational_status_),
           CreateDefaultVideoEncodeAcceleratorCallback(),
-          CreateDefaultVideoEncodeMemoryCallback(),
-          transport_sender_.get()));
+          CreateDefaultVideoEncodeMemoryCallback(), transport_sender_.get()));
     }
     task_runner_->RunTasks();
   }

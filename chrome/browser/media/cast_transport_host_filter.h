@@ -35,13 +35,6 @@ class CastTransportHostFilter : public content::BrowserMessageFilter {
   // Status callback to create UdpTransport.
   void OnStatusChanged(int32_t channel_id,
                        media::cast::CastTransportStatus status);
-  void SendRtt(int32_t channel_id,
-               uint32_t rtp_sender_ssrc,
-               base::TimeDelta rtt);
-  void SendCastMessage(int32_t channel_id,
-                       uint32_t rtp_sender_ssrc,
-                       const media::cast::RtcpCastMessage& cast_message);
-  void SendReceivedPli(int32_t channel_id, uint32_t rtp_sender_ssrc);
 
   // BrowserMessageFilter implementation.
   bool OnMessageReceived(const IPC::Message& message) override;

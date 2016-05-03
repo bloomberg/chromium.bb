@@ -126,12 +126,6 @@ struct RtcpEvent {
   uint16_t packet_id;
 };
 
-typedef base::Callback<void(const RtcpCastMessage&)> RtcpCastMessageCallback;
-typedef base::Callback<void(base::TimeDelta)> RtcpRttCallback;
-typedef
-base::Callback<void(const RtcpReceiverLogMessage&)> RtcpLogMessageCallback;
-typedef base::Callback<void()> RtcpPliCallback;
-
 // TODO(hubbe): Document members of this struct.
 struct RtpReceiverStatistics {
   RtpReceiverStatistics();
