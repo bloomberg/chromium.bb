@@ -185,7 +185,6 @@ crbug.com/518883 crbug.com/390452 http/tests/security/isolatedWorld/media-query-
 crbug.com/518987 http/tests/xmlhttprequest/navigation-abort-detaches-frame.html [ Pass Timeout ]
 crbug.com/518988 [ Win7 ] http/tests/xmlhttprequest/xmlhttprequest-50ms-download-dispatch.html [ Failure Pass ]
 crbug.com/518989 [ Mac ] imported/csswg-test/css-writing-modes-3/writing-mode-vertical-rl-002.xht [ Failure Pass Timeout ]
-crbug.com/518995 media/track/media-element-move-to-new-document-assert.html [ Failure Pass ]
 crbug.com/518998 media/video-poster-after-loadedmetadata.html [ Failure Pass ]
 
 # These performance-sensitive user-timing tests are flaky in debug on all platforms, and flaky on all configurations of windows.
