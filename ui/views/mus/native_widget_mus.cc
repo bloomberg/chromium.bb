@@ -709,9 +709,11 @@ void NativeWidgetMus::ShowWithWindowState(ui::WindowShowState state) {
 
   window_tree_host_->Show();
   GetNativeWindow()->Show();
-  if (state != ui::SHOW_STATE_INACTIVE)
-    Activate();
-  GetWidget()->SetInitialFocus(state);
+  if (native_widget_delegate_->CanActivate()) {
+    if (state != ui::SHOW_STATE_INACTIVE)
+      Activate();
+    GetWidget()->SetInitialFocus(state);
+  }
 }
 
 bool NativeWidgetMus::IsVisible() const {

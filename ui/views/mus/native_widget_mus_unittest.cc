@@ -132,6 +132,26 @@ TEST_F(NativeWidgetMusTest, OnActivationChanged) {
   WidgetFocusManager::GetInstance()->RemoveFocusChangeListener(&focus_listener);
 }
 
+// Tests that showing a non-activatable widget does not activate it.
+// TODO(jamescook): Remove this test when widget_interactive_uittests.cc runs
+// under mus.
+TEST_F(NativeWidgetMusTest, ShowNonActivatableWidget) {
+  Widget widget;
+  WidgetActivationObserver activation_observer(&widget);
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_BUBBLE);
+  params.activatable = Widget::InitParams::ACTIVATABLE_NO;
+  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.bounds = gfx::Rect(10, 20, 100, 200);
+  widget.Init(params);
+  widget.Show();
+
+  // The widget is not currently active.
+  EXPECT_FALSE(widget.IsActive());
+
+  // The widget was never active.
+  EXPECT_EQ(0u, activation_observer.changes().size());
+}
+
 // Tests that a window with an icon sets the mus::Window icon property.
 TEST_F(NativeWidgetMusTest, AppIcon) {
   // Create a Widget with a bitmap as the icon.
