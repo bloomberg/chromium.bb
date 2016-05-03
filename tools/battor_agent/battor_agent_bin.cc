@@ -135,17 +135,18 @@ class BattOrAgentBin : public BattOrAgent::Listener {
         StartTracing();
       } else if (cmd.find("StopTracing") != std::string::npos) {
         std::vector<std::string> tokens = TokenizeString(cmd);
-        if (tokens.size() == 1 && tokens[0] == "StopTracing") {
-          // No path given.
-          StopTracing();
-        } else if (tokens.size() == 2 && tokens[0] == "StopTracing") {
-          // Path given.
-          StopTracing(tokens[1]);
-        } else {
+        if (tokens[0] != "StopTracing" || tokens.size() > 2) {
           std::cout << "Invalid StopTracing command." << endl;
           std::cout << kUsage << endl;
           continue;
         }
+
+        // tokens[1] contains the optional output file argument, which allows
+        // users to dump the trace to a file instead instead of to STDOUT.
+        std::string trace_output_file =
+            tokens.size() == 2 ? tokens[1] : std::string();
+
+        StopTracing(trace_output_file);
         break;
       } else if (cmd == "SupportsExplicitClockSync") {
         PrintSupportsExplicitClockSync();
@@ -209,8 +210,8 @@ class BattOrAgentBin : public BattOrAgent::Listener {
     done_.Signal();
   }
 
-  void StopTracing(const std::string& path = "") {
-    trace_output_file_ = path;
+  void StopTracing(const std::string& trace_output_file) {
+    trace_output_file_ = trace_output_file;
     io_thread_.task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&BattOrAgent::StopTracing, base::Unretained(agent_.get())));
@@ -223,8 +224,7 @@ class BattOrAgentBin : public BattOrAgent::Listener {
     if (error == BATTOR_ERROR_NONE) {
       if (trace_output_file_.empty()) {
         std::cout << trace;
-      }
-      else {
+      } else {
         std::ofstream trace_stream(trace_output_file_);
         if (!trace_stream.is_open()) {
           std::cout << "Tracing output file could not be opened." << endl;
@@ -298,7 +298,6 @@ class BattOrAgentBin : public BattOrAgent::Listener {
   std::unique_ptr<BattOrAgent> agent_;
 
   std::string trace_output_file_;
-
 };
 
 }  // namespace battor
