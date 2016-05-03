@@ -586,10 +586,14 @@ if (is_linux && is_clang) {
       "-Wl,--no-undefined",
 
       # Silence the warning about the unused '-pthread' argument.
+      # TODO(gn): Come up with a way to remove the -pthread flag instead.
       "-Qunused-arguments",
     ]
     defines = [ "NACL_LINUX=1" ]
     include_dirs = [ "../../../.." ]
+
+    # Do not use any sanitizers tools, which require a few symbols.
+    configs -= [ "//build/config/sanitizers:default_sanitizer_flags" ]
     configs += [ ":nonsfi_libc_free_nexe_config" ]
   }
 
