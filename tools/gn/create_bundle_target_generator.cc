@@ -41,6 +41,14 @@ void CreateBundleTargetGenerator::DoRun() {
                     variables::kBundlePlugInsDir,
                     &bundle_data.plugins_dir()))
     return;
+
+  const Value* value = scope_->GetValue(variables::kProductType, true);
+  if (value) {
+    if (!value->VerifyTypeIs(Value::STRING, err_))
+      return;
+
+    bundle_data.product_type().assign(value->string_value());
+  }
 }
 
 bool CreateBundleTargetGenerator::GetBundleDir(
@@ -53,6 +61,8 @@ bool CreateBundleTargetGenerator::GetBundleDir(
   if (!value->VerifyTypeIs(Value::STRING, err_))
     return false;
   std::string str = value->string_value();
+  if (!str.empty() && str[str.size() - 1] != '/')
+    str.push_back('/');
   if (!EnsureStringIsInOutputDir(GetBuildSettings()->build_dir(), str,
                                  value->origin(), err_))
     return false;

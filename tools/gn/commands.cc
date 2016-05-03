@@ -5,6 +5,7 @@
 #include "tools/gn/commands.h"
 
 #include "base/command_line.h"
+#include "base/strings/string_split.h"
 #include "tools/gn/builder.h"
 #include "tools/gn/filesystem_utils.h"
 #include "tools/gn/item.h"
@@ -466,6 +467,27 @@ void FilterTargetsByPatterns(const std::vector<const Target*>& input,
       }
     }
   }
+}
+
+bool FilterPatternsFromString(const BuildSettings* build_settings,
+                              const std::string& label_list_string,
+                              std::vector<LabelPattern>* filters,
+                              Err* err) {
+  std::vector<std::string> tokens = base::SplitString(
+      label_list_string, ";", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  SourceDir root_dir =
+      SourceDirForCurrentDirectory(build_settings->root_path());
+
+  filters->reserve(tokens.size());
+  for (const std::string& token : tokens) {
+    LabelPattern pattern =
+        LabelPattern::GetPattern(root_dir, Value(nullptr, token), err);
+    if (err->has_error())
+      return false;
+    filters->push_back(pattern);
+  }
+
+  return true;
 }
 
 void FilterAndPrintTargets(bool indent, std::vector<const Target*>* targets) {

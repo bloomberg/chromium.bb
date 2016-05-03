@@ -215,6 +215,10 @@ extern const char kPrecompiledSource[];
 extern const char kPrecompiledSource_HelpShort[];
 extern const char kPrecompiledSource_Help[];
 
+extern const char kProductType[];
+extern const char kProductType_HelpShort[];
+extern const char kProductType_Help[];
+
 extern const char kPublic[];
 extern const char kPublic_HelpShort[];
 extern const char kPublic_Help[];

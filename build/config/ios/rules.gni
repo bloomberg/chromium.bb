@@ -167,10 +167,14 @@ template("ios_app_bundle") {
       data_deps += [ "//testing/iossim" ]
     }
 
+    product_type = "com.apple.product-type.application"
     bundle_root_dir = "$root_out_dir/$_output_name.app"
     bundle_resources_dir = bundle_root_dir
     bundle_executable_dir = bundle_root_dir
     bundle_plugins_dir = "$bundle_root_dir/Plugins"
+    assert(
+        product_type != "",
+        "workaround to allow generation with version of gn that don't support product_type property for create_bundle target => remove once gn has rolled this change")
   }
 
   # TODO(crbug.com/297668):

@@ -98,6 +98,9 @@ class BundleData {
   SourceDir& plugins_dir() { return plugins_dir_; }
   const SourceDir& plugins_dir() const { return plugins_dir_; }
 
+  std::string& product_type() { return product_type_; }
+  const std::string& product_type() const { return product_type_; }
+
   // Recursive collection of all bundle_data that the target depends on.
   const UniqueTargets& bundle_deps() const { return bundle_deps_; }
 
@@ -112,6 +115,12 @@ class BundleData {
   SourceDir resources_dir_;
   SourceDir executable_dir_;
   SourceDir plugins_dir_;
+
+  // This is the target type as known to Xcode. This is only used to generate
+  // the Xcode project file when using --ide=xcode.
+  std::string product_type_;
+
+  DISALLOW_COPY_AND_ASSIGN(BundleData);
 };
 
 #endif  // TOOLS_GN_BUNDLE_DATA_H_

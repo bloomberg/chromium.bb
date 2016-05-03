@@ -12,7 +12,6 @@
 #include <string>
 
 #include "base/logging.h"
-#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "tools/gn/builder.h"
@@ -237,18 +236,10 @@ bool VisualStudioWriter::RunAndWriteFiles(const BuildSettings* build_settings,
   if (dir_filters.empty()) {
     targets = builder->GetAllResolvedTargets();
   } else {
-    std::vector<std::string> tokens = base::SplitString(
-        dir_filters, ";", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-    SourceDir root_dir =
-        SourceDirForCurrentDirectory(build_settings->root_path());
-
     std::vector<LabelPattern> filters;
-    for (const std::string& token : tokens) {
-      LabelPattern pattern =
-          LabelPattern::GetPattern(root_dir, Value(nullptr, token), err);
-      if (err->has_error())
-        return false;
-      filters.push_back(pattern);
+    if (!commands::FilterPatternsFromString(build_settings, dir_filters,
+                                            &filters, err)) {
+      return false;
     }
 
     commands::FilterTargetsByPatterns(builder->GetAllResolvedTargets(), filters,

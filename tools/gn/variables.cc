@@ -1326,6 +1326,19 @@ const char kPrecompiledSource_Help[] =
     "  using \"msvc\"-style precompiled headers. It will be implicitly added\n"
     "  to the sources of the target. See \"gn help precompiled_header\".\n";
 
+const char kProductType[] = "product_type";
+const char kProductType_HelpShort[] =
+    "product_type: [string] Product type for Xcode projects.";
+const char kProductType_Help[] =
+    "product_type: Product type for Xcode projects.\n"
+    "\n"
+    "  Correspond to the type of the product of a create_bundle target. Only\n"
+    "  meaningful to Xcode (used as part of the Xcode project generation).\n"
+    "\n"
+    "  When generating Xcode project files, only create_bundle target with\n"
+    "  a non-empty product_type will have a corresponding target in Xcode\n"
+    "  project.\n";
+
 const char kPublic[] = "public";
 const char kPublic_HelpShort[] =
     "public: [file list] Declare public header files for a target.";
@@ -1698,6 +1711,7 @@ const VariableInfoMap& GetTargetVariables() {
     INSERT_VARIABLE(Outputs)
     INSERT_VARIABLE(PrecompiledHeader)
     INSERT_VARIABLE(PrecompiledSource)
+    INSERT_VARIABLE(ProductType)
     INSERT_VARIABLE(Public)
     INSERT_VARIABLE(PublicConfigs)
     INSERT_VARIABLE(PublicDeps)
