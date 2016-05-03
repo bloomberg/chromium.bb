@@ -308,10 +308,8 @@ void WebBluetoothServiceImpl::RemoteServiceGetCharacteristics(
 
     blink::mojom::WebBluetoothRemoteGATTCharacteristicPtr characteristic_ptr =
         blink::mojom::WebBluetoothRemoteGATTCharacteristic::New();
-    characteristic_ptr->instance_id =
-        mojo::String::From(characteristic_instance_id);
-    characteristic_ptr->uuid =
-        mojo::String::From(characteristic->GetUUID().canonical_value());
+    characteristic_ptr->instance_id = characteristic_instance_id;
+    characteristic_ptr->uuid = characteristic->GetUUID().canonical_value();
     characteristic_ptr->properties =
         static_cast<uint32_t>(characteristic->GetProperties());
     response_characteristics.push_back(std::move(characteristic_ptr));
