@@ -75,6 +75,11 @@ class MEDIA_EXPORT MediaCodecBridge {
   // Returns MEDIA_CODEC_ERROR if an error occurs, or MEDIA_CODEC_OK otherwise.
   virtual MediaCodecStatus GetOutputSamplingRate(int* sampling_rate) = 0;
 
+  // Fills |channel_count| with the number of audio channels. Useful after
+  // INFO_OUTPUT_FORMAT_CHANGED.
+  // Returns MEDIA_CODEC_ERROR if an error occurs, or MEDIA_CODEC_OK otherwise.
+  virtual MediaCodecStatus GetOutputChannelCount(int* channel_count) = 0;
+
   // Submits a byte array to the given input buffer. Call this after getting an
   // available buffer from DequeueInputBuffer(). If |data| is NULL, assume the
   // input buffer has already been populated (but still obey |size|).

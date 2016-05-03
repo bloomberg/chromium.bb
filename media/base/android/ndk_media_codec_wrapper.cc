@@ -26,6 +26,7 @@
 // The constants used in chromium. Those symbols are defined as extern symbols
 // in the NdkMediaFormat headers. They will be initialized to their correct
 // values when the library is loaded.
+const char* AMEDIAFORMAT_KEY_CHANNEL_COUNT;
 const char* AMEDIAFORMAT_KEY_HEIGHT;
 const char* AMEDIAFORMAT_KEY_SAMPLE_RATE;
 const char* AMEDIAFORMAT_KEY_WIDTH;
@@ -50,9 +51,10 @@ base::NativeLibrary IntializeLibraryHandle() {
 
   // The list of defined symbols.
   const SymbolDefinition kSymbols[] = {
+      {"AMEDIAFORMAT_KEY_CHANNEL_COUNT", &AMEDIAFORMAT_KEY_CHANNEL_COUNT},
       {"AMEDIAFORMAT_KEY_HEIGHT", &AMEDIAFORMAT_KEY_HEIGHT},
       {"AMEDIAFORMAT_KEY_SAMPLE_RATE", &AMEDIAFORMAT_KEY_SAMPLE_RATE},
-      {"AMEDIAFORMAT_KEY_SAMPLE_RATE", &AMEDIAFORMAT_KEY_SAMPLE_RATE},
+      {"AMEDIAFORMAT_KEY_WIDTH", &AMEDIAFORMAT_KEY_WIDTH},
   };
 
   for (size_t i = 0; i < sizeof(kSymbols) / sizeof(kSymbols[0]); ++i) {
@@ -158,6 +160,10 @@ LOOKUP_FUNC(AMediaCodecCryptoInfo_delete,
             media_status_t,
             (AMediaCodecCryptoInfo * info),
             (info));
+LOOKUP_FUNC(AMediaFormat_delete,
+            media_status_t,
+            (AMediaFormat * format),
+            (format));
 LOOKUP_FUNC(AMediaFormat_getInt32,
             bool,
             (AMediaFormat * format, const char* name, int32_t* out),

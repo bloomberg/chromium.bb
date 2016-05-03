@@ -85,6 +85,7 @@ MediaCodecStatus NdkMediaCodecBridge::GetOutputSize(gfx::Size* size) {
     AMediaFormat_getInt32(format, AMEDIAFORMAT_KEY_WIDTH, &width);
     AMediaFormat_getInt32(format, AMEDIAFORMAT_KEY_HEIGHT, &height);
   }
+  AMediaFormat_delete(format);
   size->SetSize(width, height);
   return MEDIA_CODEC_OK;
 }
@@ -94,7 +95,18 @@ MediaCodecStatus NdkMediaCodecBridge::GetOutputSamplingRate(
   AMediaFormat* format = AMediaCodec_getOutputFormat(media_codec_.get());
   *sampling_rate = 0;
   AMediaFormat_getInt32(format, AMEDIAFORMAT_KEY_SAMPLE_RATE, sampling_rate);
+  AMediaFormat_delete(format);
   DCHECK_NE(*sampling_rate, 0);
+  return MEDIA_CODEC_OK;
+}
+
+MediaCodecStatus NdkMediaCodecBridge::GetOutputChannelCount(
+    int* channel_count) {
+  AMediaFormat* format = AMediaCodec_getOutputFormat(media_codec_.get());
+  *channel_count = 0;
+  AMediaFormat_getInt32(format, AMEDIAFORMAT_KEY_CHANNEL_COUNT, channel_count);
+  AMediaFormat_delete(format);
+  DCHECK_NE(*channel_count, 0);
   return MEDIA_CODEC_OK;
 }
 

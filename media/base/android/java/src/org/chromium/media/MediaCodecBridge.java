@@ -182,6 +182,11 @@ class MediaCodecBridge {
         private int sampleRate() {
             return mFormat.getInteger(MediaFormat.KEY_SAMPLE_RATE);
         }
+
+        @CalledByNative("GetOutputFormatResult")
+        private int channelCount() {
+            return mFormat.getInteger(MediaFormat.KEY_CHANNEL_COUNT);
+        }
     }
 
     private MediaCodecBridge(

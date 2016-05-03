@@ -138,6 +138,18 @@ MediaCodecStatus SdkMediaCodecBridge::GetOutputSamplingRate(
   return status;
 }
 
+MediaCodecStatus SdkMediaCodecBridge::GetOutputChannelCount(
+    int* channel_count) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> result =
+      Java_MediaCodecBridge_getOutputFormat(env, j_media_codec_.obj());
+  MediaCodecStatus status = static_cast<MediaCodecStatus>(
+      Java_GetOutputFormatResult_status(env, result.obj()));
+  if (status == MEDIA_CODEC_OK)
+    *channel_count = Java_GetOutputFormatResult_channelCount(env, result.obj());
+  return status;
+}
+
 MediaCodecStatus SdkMediaCodecBridge::QueueInputBuffer(
     int index,
     const uint8_t* data,
