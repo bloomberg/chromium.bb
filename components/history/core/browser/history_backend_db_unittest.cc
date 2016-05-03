@@ -1004,8 +1004,8 @@ TEST_F(HistoryBackendDBTest, MigratePresentations) {
   // Re-open the db, triggering migration.
   CreateBackendAndDatabase();
 
-  std::vector<std::unique_ptr<PageUsageData>> results =
-      db_->QuerySegmentUsage(segment_time, 10);
+  std::vector<std::unique_ptr<PageUsageData>> results = db_->QuerySegmentUsage(
+      segment_time, 10, base::Callback<bool(const GURL&)>());
   ASSERT_EQ(1u, results.size());
   EXPECT_EQ(url, results[0]->GetURL());
   EXPECT_EQ(segment_id, results[0]->GetID());
@@ -1047,6 +1047,50 @@ TEST_F(HistoryBackendDBTest, CheckLastCompatibleVersion) {
       EXPECT_EQ(28, meta.GetVersionNumber());
     }
   }
+}
+
+bool FilterURL(const GURL& url) {
+  return url.SchemeIsHTTPOrHTTPS();
+}
+
+TEST_F(HistoryBackendDBTest, QuerySegmentUsage) {
+  CreateBackendAndDatabase();
+
+  const GURL url1("file://bar");
+  const GURL url2("http://www.foo.com");
+  const int visit_count1 = 10;
+  const int visit_count2 = 5;
+  const base::Time time(base::Time::Now());
+
+  URLID url_id1 = db_->AddURL(URLRow(url1));
+  ASSERT_NE(0, url_id1);
+  URLID url_id2 = db_->AddURL(URLRow(url2));
+  ASSERT_NE(0, url_id2);
+
+  SegmentID segment_id1 = db_->CreateSegment(
+      url_id1, VisitSegmentDatabase::ComputeSegmentName(url1));
+  ASSERT_NE(0, segment_id1);
+  SegmentID segment_id2 = db_->CreateSegment(
+      url_id2, VisitSegmentDatabase::ComputeSegmentName(url2));
+  ASSERT_NE(0, segment_id2);
+
+  ASSERT_TRUE(db_->IncreaseSegmentVisitCount(segment_id1, time, visit_count1));
+  ASSERT_TRUE(db_->IncreaseSegmentVisitCount(segment_id2, time, visit_count2));
+
+  // Without a filter, the "file://" URL should win.
+  std::vector<std::unique_ptr<PageUsageData>> results =
+      db_->QuerySegmentUsage(time, 1, base::Callback<bool(const GURL&)>());
+  ASSERT_EQ(1u, results.size());
+  EXPECT_EQ(url1, results[0]->GetURL());
+  EXPECT_EQ(segment_id1, results[0]->GetID());
+
+  // With the filter, the "file://" URL should be filtered out, so the "http://"
+  // URL should win instead.
+  std::vector<std::unique_ptr<PageUsageData>> results2 =
+      db_->QuerySegmentUsage(time, 1, base::Bind(&FilterURL));
+  ASSERT_EQ(1u, results2.size());
+  EXPECT_EQ(url2, results2[0]->GetURL());
+  EXPECT_EQ(segment_id2, results2[0]->GetID());
 }
 
 }  // namespace

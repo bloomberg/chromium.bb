@@ -48,3 +48,7 @@ void HistoryBackendClientImpl::GetBookmarks(
 bool HistoryBackendClientImpl::ShouldReportDatabaseError() {
   return false;
 }
+
+bool HistoryBackendClientImpl::IsWebSafe(const GURL& url) {
+  return url.SchemeIsHTTPOrHTTPS();
+}

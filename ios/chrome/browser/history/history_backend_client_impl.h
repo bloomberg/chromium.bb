@@ -26,6 +26,7 @@ class HistoryBackendClientImpl : public history::HistoryBackendClient {
   bool IsBookmarked(const GURL& url) override;
   void GetBookmarks(std::vector<history::URLAndTitle>* bookmarks) override;
   bool ShouldReportDatabaseError() override;
+  bool IsWebSafe(const GURL& url) override;
 
   // BookmarkModel instance providing access to bookmarks. May be null during
   // testing but must outlive HistoryBackendClientImpl if non-null.

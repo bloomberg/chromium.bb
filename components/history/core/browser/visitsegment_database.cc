@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -201,8 +202,10 @@ bool VisitSegmentDatabase::IncreaseSegmentVisitCount(SegmentID segment_id,
 }
 
 std::vector<std::unique_ptr<PageUsageData>>
-VisitSegmentDatabase::QuerySegmentUsage(base::Time from_time,
-                                        int max_result_count) {
+VisitSegmentDatabase::QuerySegmentUsage(
+    base::Time from_time,
+    int max_result_count,
+    const base::Callback<bool(const GURL&)>& url_filter) {
   // This function gathers the highest-ranked segments in two queries.
   // The first gathers scores for all segments.
   // The second gathers segment data (url, title, etc.) for the highest-ranked
@@ -219,13 +222,13 @@ VisitSegmentDatabase::QuerySegmentUsage(base::Time from_time,
   base::Time ts = from_time.LocalMidnight();
   statement.BindInt64(0, ts.ToInternalValue());
 
-  std::vector<std::unique_ptr<PageUsageData>> results;
+  std::vector<std::unique_ptr<PageUsageData>> segments;
   base::Time now = base::Time::Now();
   SegmentID previous_segment_id = 0;
   while (statement.Step()) {
     SegmentID segment_id = statement.ColumnInt64(0);
     if (segment_id != previous_segment_id) {
-      results.push_back(base::WrapUnique(new PageUsageData(segment_id)));
+      segments.push_back(base::WrapUnique(new PageUsageData(segment_id)));
       previous_segment_id = segment_id;
     }
 
@@ -243,18 +246,15 @@ VisitSegmentDatabase::QuerySegmentUsage(base::Time from_time,
     // at the limit of how far we reach into the past.
     float recency_boost = 1.0f + (2.0f * (1.0f / (1.0f + days_ago/7.0f)));
     float score = recency_boost * day_visits_score;
-    results.back()->SetScore(results.back()->GetScore() + score);
+    segments.back()->SetScore(segments.back()->GetScore() + score);
   }
 
-  // Limit to the top |max_result_count| results.
-  std::sort(results.begin(), results.end(),
+  // Order by descending scores.
+  std::sort(segments.begin(), segments.end(),
             [](const std::unique_ptr<PageUsageData>& lhs,
                const std::unique_ptr<PageUsageData>& rhs) {
               return lhs->GetScore() > rhs->GetScore();
             });
-  DCHECK_GE(max_result_count, 0);
-  if (results.size() > static_cast<size_t>(max_result_count))
-    results.resize(max_result_count);
 
   // Now fetch the details about the entries we care about.
   sql::Statement statement2(GetDB().GetCachedStatement(SQL_FROM_HERE,
@@ -265,11 +265,19 @@ VisitSegmentDatabase::QuerySegmentUsage(base::Time from_time,
   if (!statement2.is_valid())
     return std::vector<std::unique_ptr<PageUsageData>>();
 
-  for (std::unique_ptr<PageUsageData>& pud : results) {
+  std::vector<std::unique_ptr<PageUsageData>> results;
+  DCHECK_GE(max_result_count, 0);
+  for (std::unique_ptr<PageUsageData>& pud : segments) {
     statement2.BindInt64(0, pud->GetID());
     if (statement2.Step()) {
-      pud->SetURL(GURL(statement2.ColumnString(0)));
-      pud->SetTitle(statement2.ColumnString16(1));
+      GURL url(statement2.ColumnString(0));
+      if (url_filter.is_null() || url_filter.Run(url)) {
+        pud->SetURL(url);
+        pud->SetTitle(statement2.ColumnString16(1));
+        results.push_back(std::move(pud));
+        if (results.size() >= static_cast<size_t>(max_result_count))
+          break;
+      }
     }
     statement2.Reset(true);
   }

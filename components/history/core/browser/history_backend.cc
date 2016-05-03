@@ -1356,8 +1356,13 @@ void HistoryBackend::QueryMostVisitedURLs(int result_count,
   if (!db_)
     return;
 
+  auto url_filter = backend_client_
+                        ? base::Bind(&HistoryBackendClient::IsWebSafe,
+                                     base::Unretained(backend_client_.get()))
+                        : base::Callback<bool(const GURL&)>();
   std::vector<std::unique_ptr<PageUsageData>> data = db_->QuerySegmentUsage(
-      base::Time::Now() - base::TimeDelta::FromDays(days_back), result_count);
+      base::Time::Now() - base::TimeDelta::FromDays(days_back), result_count,
+      url_filter);
 
   for (const std::unique_ptr<PageUsageData>& current_data : data) {
     RedirectList redirects;

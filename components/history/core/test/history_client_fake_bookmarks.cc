@@ -81,6 +81,7 @@ class HistoryBackendClientFakeBookmarks : public HistoryBackendClient {
   bool IsBookmarked(const GURL& url) override;
   void GetBookmarks(std::vector<URLAndTitle>* bookmarks) override;
   bool ShouldReportDatabaseError() override;
+  bool IsWebSafe(const GURL& url) override;
 #if defined(OS_ANDROID)
   void OnHistoryBackendInitialized(HistoryBackend* history_backend,
                                    HistoryDatabase* history_database,
@@ -115,6 +116,10 @@ void HistoryBackendClientFakeBookmarks::GetBookmarks(
 
 bool HistoryBackendClientFakeBookmarks::ShouldReportDatabaseError() {
   return false;
+}
+
+bool HistoryBackendClientFakeBookmarks::IsWebSafe(const GURL& url) {
+  return true;
 }
 
 #if defined(OS_ANDROID)

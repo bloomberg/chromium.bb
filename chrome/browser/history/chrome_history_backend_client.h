@@ -24,6 +24,7 @@ class ChromeHistoryBackendClient : public history::HistoryBackendClient {
   bool IsBookmarked(const GURL& url) override;
   void GetBookmarks(std::vector<history::URLAndTitle>* bookmarks) override;
   bool ShouldReportDatabaseError() override;
+  bool IsWebSafe(const GURL& url) override;
 #if defined(OS_ANDROID)
   void OnHistoryBackendInitialized(
       history::HistoryBackend* history_backend,
