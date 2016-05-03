@@ -30,6 +30,9 @@ const int kTimerTaskEstimationSampleCount = 1000;
 const double kTimerTaskEstimationPercentile = 99;
 const int kShortIdlePeriodDurationSampleCount = 10;
 const double kShortIdlePeriodDurationPercentile = 50;
+// Amount of idle time left in a frame (as a ratio of the vsync interval) above
+// which main thread compositing can be considered fast.
+const double kFastCompositingIdleTimeThreshold = .2;
 }  // namespace
 
 RendererSchedulerImpl::RendererSchedulerImpl(
@@ -679,6 +682,14 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
     MainThreadOnly().current_policy_expiration_time = base::TimeTicks();
   }
 
+  // Avoid prioritizing main thread compositing (e.g., rAF) if it is extremely
+  // slow, because that can cause starvation in other task sources.
+  bool main_thread_compositing_is_fast =
+      MainThreadOnly().idle_time_estimator.GetExpectedIdleDuration(
+          MainThreadOnly().compositor_frame_interval) >
+      MainThreadOnly().compositor_frame_interval *
+          kFastCompositingIdleTimeThreshold;
+
   Policy new_policy;
   ExpensiveTaskPolicy expensive_task_policy = ExpensiveTaskPolicy::RUN;
   switch (use_case) {
@@ -697,7 +708,9 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
       break;
 
     case UseCase::SYNCHRONIZED_GESTURE:
-      new_policy.compositor_queue_policy.priority = TaskQueue::HIGH_PRIORITY;
+      new_policy.compositor_queue_policy.priority =
+          main_thread_compositing_is_fast ? TaskQueue::HIGH_PRIORITY
+                                          : TaskQueue::NORMAL_PRIORITY;
       if (touchstart_expected_soon) {
         expensive_task_policy = ExpensiveTaskPolicy::BLOCK;
       } else {
@@ -710,7 +723,9 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
       // things we should be prioritizing, so we don't attempt to block
       // expensive tasks because we don't know whether they were integral to the
       // page's functionality or not.
-      new_policy.compositor_queue_policy.priority = TaskQueue::HIGH_PRIORITY;
+      new_policy.compositor_queue_policy.priority =
+          main_thread_compositing_is_fast ? TaskQueue::HIGH_PRIORITY
+                                          : TaskQueue::NORMAL_PRIORITY;
       break;
 
     case UseCase::TOUCHSTART:

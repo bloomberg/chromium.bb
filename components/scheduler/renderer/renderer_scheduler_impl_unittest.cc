@@ -2808,4 +2808,85 @@ TEST_F(RendererSchedulerImplTest, TestCompositorPolicy_TouchStartDuringFling) {
             ForceUpdatePolicyAndGetCurrentUseCase());
 }
 
+TEST_F(RendererSchedulerImplTest, SYNCHRONIZED_GESTURE_CompositingExpensive) {
+  SimulateCompositorGestureStart(TouchEventPolicy::SEND_TOUCH_START);
+
+  // With the compositor task taking 20ms, there is not enough time to run
+  // other tasks in the same 16ms frame. To avoid starvation, compositing tasks
+  // should therefore not get prioritized.
+  std::vector<std::string> run_order;
+  for (int i = 0; i < 1000; i++)
+    PostTestTasks(&run_order, "T1");
+
+  for (int i = 0; i < 100; i++) {
+    cc::BeginFrameArgs begin_frame_args = cc::BeginFrameArgs::Create(
+        BEGINFRAME_FROM_HERE, clock_->NowTicks(), base::TimeTicks(),
+        base::TimeDelta::FromMilliseconds(16), cc::BeginFrameArgs::NORMAL);
+    begin_frame_args.on_critical_path = true;
+    scheduler_->WillBeginFrame(begin_frame_args);
+    scheduler_->DidHandleInputEventOnCompositorThread(
+        FakeInputEvent(blink::WebInputEvent::GestureScrollUpdate),
+        RendererScheduler::InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
+
+    simulate_compositor_task_ran_ = false;
+    compositor_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&RendererSchedulerImplTest::SimulateMainThreadCompositorTask,
+                   base::Unretained(this),
+                   base::TimeDelta::FromMilliseconds(20)));
+
+    mock_task_runner_->RunTasksWhile(
+        base::Bind(&RendererSchedulerImplTest::SimulatedCompositorTaskPending,
+                   base::Unretained(this)));
+    EXPECT_EQ(UseCase::SYNCHRONIZED_GESTURE, CurrentUseCase()) << "i = " << i;
+  }
+
+  // Timer tasks should not have been starved by the expensive compositor
+  // tasks.
+  EXPECT_EQ(TaskQueue::NORMAL_PRIORITY,
+            scheduler_->CompositorTaskRunner()->GetQueuePriority());
+  EXPECT_EQ(1000u, run_order.size());
+}
+
+TEST_F(RendererSchedulerImplTest, MAIN_THREAD_GESTURE_CompositingExpensive) {
+  SimulateMainThreadGestureStart(TouchEventPolicy::DONT_SEND_TOUCH_START,
+                                 blink::WebInputEvent::GestureScrollBegin);
+
+  // With the compositor task taking 20ms, there is not enough time to run
+  // other tasks in the same 16ms frame. To avoid starvation, compositing tasks
+  // should therefore not get prioritized.
+  std::vector<std::string> run_order;
+  for (int i = 0; i < 1000; i++)
+    PostTestTasks(&run_order, "T1");
+
+  for (int i = 0; i < 100; i++) {
+    cc::BeginFrameArgs begin_frame_args = cc::BeginFrameArgs::Create(
+        BEGINFRAME_FROM_HERE, clock_->NowTicks(), base::TimeTicks(),
+        base::TimeDelta::FromMilliseconds(16), cc::BeginFrameArgs::NORMAL);
+    begin_frame_args.on_critical_path = true;
+    scheduler_->WillBeginFrame(begin_frame_args);
+    scheduler_->DidHandleInputEventOnCompositorThread(
+        FakeInputEvent(blink::WebInputEvent::GestureScrollUpdate),
+        RendererScheduler::InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
+
+    simulate_compositor_task_ran_ = false;
+    compositor_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&RendererSchedulerImplTest::SimulateMainThreadCompositorTask,
+                   base::Unretained(this),
+                   base::TimeDelta::FromMilliseconds(20)));
+
+    mock_task_runner_->RunTasksWhile(
+        base::Bind(&RendererSchedulerImplTest::SimulatedCompositorTaskPending,
+                   base::Unretained(this)));
+    EXPECT_EQ(UseCase::MAIN_THREAD_GESTURE, CurrentUseCase()) << "i = " << i;
+  }
+
+  // Timer tasks should not have been starved by the expensive compositor
+  // tasks.
+  EXPECT_EQ(TaskQueue::NORMAL_PRIORITY,
+            scheduler_->CompositorTaskRunner()->GetQueuePriority());
+  EXPECT_EQ(1000u, run_order.size());
+}
+
 }  // namespace scheduler
