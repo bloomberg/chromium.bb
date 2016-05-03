@@ -132,8 +132,14 @@ int MultiprocessTestHelper::WaitForChildShutdown() {
   CHECK(test_child_.IsValid());
 
   int rv = -1;
+#if defined(OS_ANDROID)
+  // On Android, we need to use a special function to wait for the child.
+  CHECK(AndroidWaitForChildExitWithTimeout(
+      test_child_, TestTimeouts::action_timeout(), &rv));
+#else
   CHECK(
       test_child_.WaitForExitWithTimeout(TestTimeouts::action_timeout(), &rv));
+#endif
   test_child_.Close();
   return rv;
 }

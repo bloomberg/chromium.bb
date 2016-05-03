@@ -1658,13 +1658,7 @@ bool ReadAllData(MojoHandle consumer,
 
 #if !defined(OS_IOS)
 
-#if defined(OS_ANDROID)
-// Android multi-process tests are not executing the new process. This is flaky.
-#define MAYBE_Multiprocess DISABLED_Multiprocess
-#else
-#define MAYBE_Multiprocess Multiprocess
-#endif  // defined(OS_ANDROID)
-TEST_F(DataPipeTest, MAYBE_Multiprocess) {
+TEST_F(DataPipeTest, Multiprocess) {
   const uint32_t kTestDataSize =
       static_cast<uint32_t>(sizeof(kMultiprocessTestData));
   const MojoCreateDataPipeOptions options = {
@@ -1837,13 +1831,7 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReadAndCloseConsumer, DataPipeTest, h) {
   EXPECT_EQ("quit", ReadMessage(h));
 }
 
-#if defined(OS_ANDROID)
-// Android multi-process tests are not executing the new process. This is flaky.
-#define MAYBE_SendConsumerAndCloseProducer DISABLED_SendConsumerAndCloseProducer
-#else
-#define MAYBE_SendConsumerAndCloseProducer SendConsumerAndCloseProducer
-#endif  // defined(OS_ANDROID)
-TEST_F(DataPipeTest, MAYBE_SendConsumerAndCloseProducer) {
+TEST_F(DataPipeTest, SendConsumerAndCloseProducer) {
   // Create a new data pipe.
   MojoHandle p, c;
   EXPECT_EQ(MOJO_RESULT_OK, MojoCreateDataPipe(nullptr, &p ,&c));
@@ -1886,13 +1874,7 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(CreateAndWrite, DataPipeTest, h) {
   EXPECT_EQ("quit", ReadMessage(h));
 }
 
-#if defined(OS_ANDROID)
-// Android multi-process tests are not executing the new process. This is flaky.
-#define MAYBE_CreateInChild DISABLED_CreateInChild
-#else
-#define MAYBE_CreateInChild CreateInChild
-#endif  // defined(OS_ANDROID)
-TEST_F(DataPipeTest, MAYBE_CreateInChild) {
+TEST_F(DataPipeTest, CreateInChild) {
   RUN_CHILD_ON_PIPE(CreateAndWrite, child)
     MojoHandle c;
     std::string expected_message = ReadMessageWithHandles(child, &c, 1);

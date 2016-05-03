@@ -5,6 +5,7 @@
 #include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/test/launcher/unit_test_launcher.h"
+#include "base/test/multiprocess_test.h"
 #include "base/test/test_io_thread.h"
 #include "base/test/test_suite.h"
 #include "build/build_config.h"
@@ -18,6 +19,10 @@
 
 int main(int argc, char** argv) {
 #if defined(OS_ANDROID)
+  // Enable the alternate test child implementation. This is needed because Mojo
+  // tests need to spawn test children after initialising the Mojo system.
+  base::InitAndroidMultiProcessTestHelper(main);
+
   JNIEnv* env = base::android::AttachCurrentThread();
   base::RegisterContentUriTestUtils(env);
 #endif

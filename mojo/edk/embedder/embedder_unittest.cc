@@ -198,13 +198,7 @@ TEST_F(EmbedderTest, ChannelsHandlePassing) {
 
 #if !defined(OS_IOS)
 
-#if defined(OS_ANDROID)
-// Android multi-process tests are not executing the new process. This is flaky.
-#define MAYBE_MultiprocessChannels DISABLED_MultiprocessChannels
-#else
-#define MAYBE_MultiprocessChannels MultiprocessChannels
-#endif  // defined(OS_ANDROID)
-TEST_F(EmbedderTest, MAYBE_MultiprocessChannels) {
+TEST_F(EmbedderTest, MultiprocessChannels) {
   RUN_CHILD_ON_PIPE(MultiprocessChannelsClient, server_mp)
     // 1. Write a message to |server_mp| (attaching nothing).
     WriteMessage(server_mp, "hello");
@@ -290,13 +284,7 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(MultiprocessChannelsClient, EmbedderTest,
   ASSERT_EQ(MOJO_RESULT_OK, MojoClose(mp1));
 }
 
-#if defined(OS_ANDROID)
-// Android multi-process tests are not executing the new process. This is flaky.
-#define MAYBE_MultiprocessBaseSharedMemory DISABLED_MultiprocessBaseSharedMemory
-#else
-#define MAYBE_MultiprocessBaseSharedMemory MultiprocessBaseSharedMemory
-#endif  // defined(OS_ANDROID)
-TEST_F(EmbedderTest, MAYBE_MultiprocessBaseSharedMemory) {
+TEST_F(EmbedderTest, MultiprocessBaseSharedMemory) {
   RUN_CHILD_ON_PIPE(MultiprocessSharedMemoryClient, server_mp)
     // 1. Create a base::SharedMemory object and create a mojo shared buffer
     // from it.

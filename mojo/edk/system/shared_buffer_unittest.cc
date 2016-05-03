@@ -63,13 +63,7 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(CopyToBufferClient, SharedBufferTest, h) {
   EXPECT_EQ("quit", ReadMessage(h));
 }
 
-#if defined(OS_ANDROID)
-// Android multi-process tests are not executing the new process. This is flaky.
-#define MAYBE_PassSharedBufferCrossProcess DISABLED_PassSharedBufferCrossProcess
-#else
-#define MAYBE_PassSharedBufferCrossProcess PassSharedBufferCrossProcess
-#endif
-TEST_F(SharedBufferTest, MAYBE_PassSharedBufferCrossProcess) {
+TEST_F(SharedBufferTest, PassSharedBufferCrossProcess) {
   const std::string message = "hello";
   MojoHandle b = CreateBuffer(message.size());
 
@@ -93,13 +87,7 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(CreateBufferClient, SharedBufferTest, h) {
   EXPECT_EQ("quit", ReadMessage(h));
 }
 
-#if defined(OS_ANDROID)
-// Android multi-process tests are not executing the new process. This is flaky.
-#define MAYBE_PassSharedBufferFromChild DISABLED_PassSharedBufferFromChild
-#else
-#define MAYBE_PassSharedBufferFromChild PassSharedBufferFromChild
-#endif
-TEST_F(SharedBufferTest, MAYBE_PassSharedBufferFromChild) {
+TEST_F(SharedBufferTest, PassSharedBufferFromChild) {
   const std::string message = "hello";
   MojoHandle b;
   RUN_CHILD_ON_PIPE(CreateBufferClient, h)
@@ -144,14 +132,7 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReceiveAndEditBuffer, SharedBufferTest, h) {
   EXPECT_EQ("quit", ReadMessage(h));
 }
 
-#if defined(OS_ANDROID)
-// Android multi-process tests are not executing the new process. This is flaky.
-#define MAYBE_PassSharedBufferFromChildToChild \
-    DISABLED_PassSharedBufferFromChildToChild
-#else
-#define MAYBE_PassSharedBufferFromChildToChild PassSharedBufferFromChildToChild
-#endif
-TEST_F(SharedBufferTest, MAYBE_PassSharedBufferFromChildToChild) {
+TEST_F(SharedBufferTest, PassSharedBufferFromChildToChild) {
   const std::string message = "hello";
   MojoHandle p0, p1;
   CreateMessagePipe(&p0, &p1);

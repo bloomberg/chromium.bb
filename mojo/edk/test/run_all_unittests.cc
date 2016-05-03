@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/test/launcher/unit_test_launcher.h"
+#include "base/test/multiprocess_test.h"
 #include "base/test/test_io_thread.h"
 #include "base/test/test_suite.h"
 #include "mojo/edk/embedder/embedder.h"
@@ -25,6 +26,10 @@ int main(int argc, char** argv) {
   testing::GTEST_FLAG(death_test_style) = "threadsafe";
 #endif
 #if defined(OS_ANDROID)
+  // Enable the alternate test child implementation. This is needed because Mojo
+  // tests need to spawn test children after initialising the Mojo system.
+  base::InitAndroidMultiProcessTestHelper(main);
+
   // On android, the test framework has a signal handler that will print a
   // [ CRASH ] line when the application crashes. This breaks death test has the
   // test runner will consider the death of the child process a test failure.

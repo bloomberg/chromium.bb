@@ -534,13 +534,7 @@ TEST_F(MessagePipeTest, DISABLED_DataPipeProducerHandlePingPong) {
     MojoClose(p[i]);
 }
 
-#if defined(OS_ANDROID)
-// Android multi-process tests are not executing the new process. This is flaky.
-#define MAYBE_SharedBufferHandlePingPong DISABLED_SharedBufferHandlePingPong
-#else
-#define MAYBE_SharedBufferHandlePingPong SharedBufferHandlePingPong
-#endif
-TEST_F(MessagePipeTest, MAYBE_SharedBufferHandlePingPong) {
+TEST_F(MessagePipeTest, SharedBufferHandlePingPong) {
   MojoHandle buffers[kPingPongHandlesPerIteration];
   for (size_t i = 0; i <kPingPongHandlesPerIteration; ++i)
     EXPECT_EQ(MOJO_RESULT_OK, MojoCreateSharedBuffer(nullptr, 1, &buffers[i]));
