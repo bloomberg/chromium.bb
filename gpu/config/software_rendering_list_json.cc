@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "10.21",
+  "version": "10.20",
   "entries": [
     {
       "id": 1,
@@ -33,8 +33,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
       "features": [
         "webgl",
         "flash_3d",
-        "flash_stage3d",
-        "gpu_rasterization"
+        "flash_stage3d"
       ]
     },
     {
@@ -123,8 +122,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
       "features": [
         "webgl",
         "flash_3d",
-        "flash_stage3d",
-        "gpu_rasterization"
+        "flash_stage3d"
       ]
     },
     {
@@ -399,8 +397,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
       "device_id": ["0x0863"],
       "multi_gpu_category": "any",
       "features": [
-        "accelerated_2d_canvas",
-        "gpu_rasterization"
+        "accelerated_2d_canvas"
       ]
     },
     {
@@ -418,8 +415,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
       "device_id": ["0x6760", "0x6720"],
       "multi_gpu_category": "any",
       "features": [
-        "webgl",
-        "gpu_rasterization"
+        "webgl"
       ]
     },
     {
@@ -725,8 +721,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
       "device_id": ["0x0a29", "0x0861", "0x0863"],
       "multi_gpu_category": "any",
       "features": [
-        "webgl",
-        "gpu_rasterization"
+        "webgl"
       ]
     },
     {
@@ -1197,19 +1192,6 @@ LONG_STRING_CONST(
         "accelerated_video_decode",
         "accelerated_video_encode",
         "panel_fitting",
-        "gpu_rasterization"
-      ]
-    },
-    {
-      "id": 111,
-      "description": "Apple Software Renderer used under VMWare experiences synchronization issues with GPU Raster",
-      "cr_bugs": [607829],
-      "os": {
-        "type": "macosx"
-      },
-      "vendor_id": "0x15ad",
-      "multi_gpu_category": "any",
-      "features": [
         "gpu_rasterization"
       ]
     }
