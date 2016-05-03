@@ -631,7 +631,7 @@ var intAttributes = [
     'textStyle'];
 
 var nodeRefAttributes = [
-    ['activedescendantId', 'activedescendant'],
+    ['activedescendantId', 'activeDescendant'],
     ['tableColumnHeaderId', 'tableColumnHeader'],
     ['tableHeaderId', 'tableHeader'],
     ['tableRowHeaderId', 'tableRowHeader'],

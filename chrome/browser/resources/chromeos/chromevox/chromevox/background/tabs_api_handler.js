@@ -199,7 +199,7 @@ cvox.TabsApiHandler.prototype = {
 
     chrome.automation.getTree(tabId, function(node) {
       if (this.handler_)
-        this.handler_.unregister();
+        this.handler_.removeAllListeners();
 
       this.handler_ = new TabsAutomationHandler(node);
     }.bind(this));

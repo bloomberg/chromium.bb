@@ -285,8 +285,10 @@ chrome.automation.FindParams;
 
 /**
  * @constructor
+ * @param {chrome.automation.EventType} type
+ * @param {chrome.automation.AutomationNode} node
  */
-chrome.automation.AutomationEvent = function() {};
+chrome.automation.AutomationEvent = function(type, node) {};
 
 /**
  * @type {!chrome.automation.AutomationNode}
@@ -602,6 +604,11 @@ chrome.automation.AutomationNode.prototype.lineBreaks;
  * @type {(number|undefined)}
  */
 chrome.automation.focusOffset;
+
+/**
+ * @type {(chrome.automation.AutomationNode|undefined)}
+ */
+chrome.automation.AutomationNode.prototype.activeDescendant;
 
 /** @type {function() : !Object} */
 chrome.app.getDetails;

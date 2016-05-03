@@ -160,8 +160,7 @@ cvox.ChromeVoxBackground.prototype.init = function() {
   if (!cvox.ChromeVox.earcons)
     cvox.ChromeVox.earcons = new cvox.ClassicEarcons();
 
-  if (cvox.ChromeVox.isChromeOS &&
-      chrome.accessibilityPrivate.onIntroduceChromeVox) {
+  if (cvox.ChromeVox.isChromeOS) {
     chrome.accessibilityPrivate.onIntroduceChromeVox.addListener(
         this.onIntroduceChromeVox);
   }

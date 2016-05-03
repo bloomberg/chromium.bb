@@ -8,6 +8,7 @@
 
 goog.provide('DesktopAutomationHandler');
 
+goog.require('AutomationObjectConstructorInstaller');
 goog.require('BaseAutomationHandler');
 goog.require('ChromeVoxState');
 goog.require('editing.TextEditHandler');
@@ -16,6 +17,7 @@ goog.scope(function() {
 var AutomationEvent = chrome.automation.AutomationEvent;
 var AutomationNode = chrome.automation.AutomationNode;
 var Dir = constants.Dir;
+var EventType = chrome.automation.EventType;
 var RoleType = chrome.automation.RoleType;
 
 /**
@@ -39,21 +41,34 @@ DesktopAutomationHandler = function(node) {
    */
   this.lastValueChanged_ = new Date(0);
 
-  // The focused state gets set on the containing webView node.
-  var webView = node.find({role: RoleType.webView, state: {focused: true}});
-  if (webView) {
-    var root = webView.find({role: RoleType.rootWebArea});
-    if (root) {
-      this.onLoadComplete(
-          {target: root,
-           type: chrome.automation.EventType.loadComplete});
-    }
-  }
+  var e = EventType;
+  this.addListener_(e.activedescendantchanged, this.onActiveDescendantChanged);
+  this.addListener_(e.alert, this.onAlert);
+  this.addListener_(e.ariaAttributeChanged, this.onEventIfInRange);
+  this.addListener_(e.checkedStateChanged, this.onEventIfInRange);
+  this.addListener_(e.focus, this.onFocus);
+  this.addListener_(e.hover, this.onEventWithFlushedOutput);
+  this.addListener_(e.loadComplete, this.onLoadComplete);
+  this.addListener_(e.menuEnd, this.onMenuEnd);
+  this.addListener_(e.menuListItemSelected, this.onEventDefault);
+  this.addListener_(e.menuStart, this.onMenuStart);
+  this.addListener_(e.scrollPositionChanged, this.onScrollPositionChanged);
+  this.addListener_(e.selection, this.onEventWithFlushedOutput);
+  this.addListener_(e.textChanged, this.onTextChanged);
+  this.addListener_(e.textSelectionChanged, this.onTextSelectionChanged);
+  this.addListener_(e.valueChanged, this.onValueChanged);
 
-  chrome.automation.getFocus((function(focus) {
-    if (focus)
-      this.onFocus({target: focus, type: 'focus'});
-  }).bind(this));
+  AutomationObjectConstructorInstaller.init(node, function() {
+    chrome.automation.getFocus((function(focus) {
+      if (ChromeVoxState.instance.mode != ChromeVoxMode.FORCE_NEXT)
+        return;
+
+      if (focus) {
+        this.onFocus(
+            new chrome.automation.AutomationEvent(EventType.focus, focus));
+      }
+    }).bind(this));
+  }.bind(this));
 };
 
 /**
@@ -118,8 +133,38 @@ DesktopAutomationHandler.prototype = {
   },
 
   /**
+   * @param {!AutomationEvent} evt
+   */
+  onEventIfInRange: function(evt) {
+    // TODO(dtseng): Consider the end of the current range as well.
+    if (AutomationUtil.isDescendantOf(
+        global.backgroundObj.currentRange.start.node, evt.target) ||
+            evt.target.state.focused)
+      this.onEventDefault(evt);
+  },
+
+  /**
+   * @param {!AutomationEvent} evt
+   */
+  onEventWithFlushedOutput: function(evt) {
+    Output.flushNextSpeechUtterance();
+    this.onEventDefault(evt);
+  },
+
+  /**
    * Makes an announcement without changing focus.
-   * @param {Object} evt
+   * @param {!AutomationEvent} evt
+   */
+  onActiveDescendantChanged: function(evt) {
+    if (!evt.target.activeDescendant)
+      return;
+    this.onEventDefault(new chrome.automation.AutomationEvent(
+        EventType.focus, evt.target.activeDescendant));
+  },
+
+  /**
+   * Makes an announcement without changing focus.
+   * @param {!AutomationEvent} evt
    */
   onAlert: function(evt) {
     var node = evt.target;
@@ -139,7 +184,7 @@ DesktopAutomationHandler.prototype = {
 
   /**
    * Provides all feedback once a focus event fires.
-   * @param {Object} evt
+   * @param {!AutomationEvent} evt
    */
   onFocus: function(evt) {
     // Invalidate any previous editable text handler state.
@@ -160,13 +205,12 @@ DesktopAutomationHandler.prototype = {
       Output.flushNextSpeechUtterance();
 
     this.onEventDefault(
-        /** @type {!AutomationEvent} */
-        ({target: node, type: chrome.automation.EventType.focus}));
+        new chrome.automation.AutomationEvent(EventType.focus, node));
   },
 
   /**
    * Provides all feedback once a load complete event fires.
-   * @param {Object} evt
+   * @param {!AutomationEvent} evt
    */
   onLoadComplete: function(evt) {
     ChromeVoxState.instance.refreshMode(evt.target.docUrl);
@@ -193,13 +237,20 @@ DesktopAutomationHandler.prototype = {
     }).bind(this));
   },
 
-  /** @override */
+
+    /**
+   * Provides all feedback once a text changed event fires.
+   * @param {!AutomationEvent} evt
+   */
   onTextChanged: function(evt) {
     if (evt.target.state.editable)
       this.onEditableChanged_(evt);
   },
 
-  /** @override */
+  /**
+   * Provides all feedback once a text selection changed event fires.
+   * @param {!AutomationEvent} evt
+   */
   onTextSelectionChanged: function(evt) {
     if (evt.target.state.editable)
       this.onEditableChanged_(evt);
@@ -266,7 +317,7 @@ DesktopAutomationHandler.prototype = {
 
   /**
    * Handle updating the active indicator when the document scrolls.
-   * @override
+   * @param {!AutomationEvent} evt
    */
   onScrollPositionChanged: function(evt) {
     if (ChromeVoxState.instance.mode === ChromeVoxMode.CLASSIC)
@@ -277,13 +328,19 @@ DesktopAutomationHandler.prototype = {
       new Output().withLocation(currentRange, null, evt.type).go();
   },
 
-  /** @override */
+  /**
+   * Provides all feedback once a menu start event fires.
+   * @param {!AutomationEvent} evt
+   */
   onMenuStart: function(evt) {
     global.backgroundObj.startExcursion();
     this.onEventDefault(evt);
   },
 
-  /** @override */
+  /**
+   * Provides all feedback once a menu end event fires.
+   * @param {!AutomationEvent} evt
+   */
   onMenuEnd: function(evt) {
     this.onEventDefault(evt);
     global.backgroundObj.endExcursion();

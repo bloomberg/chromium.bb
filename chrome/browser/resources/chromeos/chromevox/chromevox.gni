@@ -123,6 +123,7 @@ chromevox_modules = [
   "common/traverse_table.js",
   "common/traverse_util.js",
   "common/xpath_util.js",
+  "cvox2/background/automation_object_constructor_installer.js",
   "cvox2/background/automation_predicate.js",
   "cvox2/background/automation_util.js",
   "cvox2/background/background.js",

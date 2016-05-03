@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var ActiveDescendantAttribute = [ 'activedescendant' ];
+var ActiveDescendantAttribute = [ 'activeDescendant' ];
 var LinkAttributes = [ 'url' ];
 var DocumentAttributes = [ 'docUrl',
                            'docTitle',
@@ -54,11 +54,11 @@ var allTests = [
 
   function testActiveDescendant() {
     var combobox = rootNode.find({ role: 'comboBox' });
-    assertTrue('activedescendant' in combobox,
+    assertTrue('activeDescendant' in combobox,
                'combobox should have an activedescendant attribute');
     var listbox = rootNode.find({ role: 'listBox' });
     var opt6 = listbox.children[5];
-    assertEq(opt6, combobox.activedescendant);
+    assertEq(opt6, combobox.activeDescendant);
     chrome.test.succeed();
   },
 
