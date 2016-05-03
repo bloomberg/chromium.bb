@@ -39,7 +39,7 @@ class MockMediaStreamDispatcherEventHandler
       public base::SupportsWeakPtr<MockMediaStreamDispatcherEventHandler> {
  public:
   MockMediaStreamDispatcherEventHandler()
-      : request_id_(-1) {}
+      : request_id_(-1), did_receive_devices_changed_(false) {}
 
   void OnStreamGenerated(
       int request_id,
@@ -89,6 +89,8 @@ class MockMediaStreamDispatcherEventHandler
 
   void OnDeviceOpenFailed(int request_id) override { request_id_ = request_id; }
 
+  void OnDevicesChanged() override { did_receive_devices_changed_ = true; }
+
   void ResetStoredParameters() {
     request_id_ = -1;
     label_ = "";
@@ -102,6 +104,7 @@ class MockMediaStreamDispatcherEventHandler
   std::string device_stopped_label_;
   StreamDeviceInfo audio_device_;
   StreamDeviceInfo video_device_;
+  bool did_receive_devices_changed_;
 };
 
 class MediaStreamDispatcherUnderTest : public MediaStreamDispatcher {
@@ -117,7 +120,7 @@ class MediaStreamDispatcherTest : public ::testing::Test {
   MediaStreamDispatcherTest()
       : dispatcher_(new MediaStreamDispatcherUnderTest()),
         handler_(new MockMediaStreamDispatcherEventHandler),
-        security_origin_(url::Origin(GURL("http://test.com"))) {}
+        security_origin_(GURL("http://test.com")) {}
 
   // Generates a request for a MediaStream and returns the request id that is
   // used in IPC. Use this returned id in CompleteGenerateStream to identify
@@ -408,6 +411,30 @@ TEST_F(MediaStreamDispatcherTest, DeviceClosed) {
   EXPECT_EQ(label, handler_->device_stopped_label_);
   EXPECT_EQ(dispatcher_->video_session_id(label, 0),
             StreamDeviceInfo::kNoId);
+}
+
+// Test that the MediaStreamDispatcherEventHandler is notified when the message
+// MediaStreamMsg_DevicesChanged is received.
+TEST_F(MediaStreamDispatcherTest, DevicesChanged) {
+  std::unique_ptr<MockMediaStreamDispatcherEventHandler> handler1(
+      new MockMediaStreamDispatcherEventHandler);
+  std::unique_ptr<MockMediaStreamDispatcherEventHandler> handler2(
+      new MockMediaStreamDispatcherEventHandler);
+  dispatcher_->SubscribeToDeviceChangeNotifications(handler1->AsWeakPtr(),
+                                                    security_origin_);
+  dispatcher_->SubscribeToDeviceChangeNotifications(handler2->AsWeakPtr(),
+                                                    security_origin_);
+  EXPECT_DEATH_IF_SUPPORTED(dispatcher_->SubscribeToDeviceChangeNotifications(
+                                handler2->AsWeakPtr(), security_origin_),
+                            "");
+  dispatcher_->OnMessageReceived(MediaStreamMsg_DevicesChanged(kRouteId));
+  dispatcher_->CancelDeviceChangeNotifications(handler1->AsWeakPtr());
+  dispatcher_->CancelDeviceChangeNotifications(handler2->AsWeakPtr());
+
+  EXPECT_TRUE(handler1->did_receive_devices_changed_);
+  EXPECT_TRUE(handler2->did_receive_devices_changed_);
+  EXPECT_DEATH_IF_SUPPORTED(
+      dispatcher_->CancelDeviceChangeNotifications(handler2->AsWeakPtr()), "");
 }
 
 }  // namespace content
