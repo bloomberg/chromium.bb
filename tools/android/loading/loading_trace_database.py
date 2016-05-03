@@ -31,6 +31,10 @@ class LoadingTraceDatabase(object):
     """Returns a dict representing this instance."""
     return self._traces_dict
 
+  def ToJsonString(self):
+    """Returns a string representing this instance."""
+    return json.dumps(self._traces_dict, indent=2)
+
   def ToJsonFile(self, json_path):
     """Saves a json file representing this instance."""
     json_dict = self.ToJsonDict()
@@ -41,6 +45,11 @@ class LoadingTraceDatabase(object):
   def FromJsonDict(cls, json_dict):
     """Returns an instance from a dict returned by ToJsonDict()."""
     return LoadingTraceDatabase(json_dict)
+
+  @classmethod
+  def FromJsonString(cls, json_string):
+    """Returns an instance from a string returned by ToJsonString()."""
+    return LoadingTraceDatabase(json.loads(json_string))
 
   @classmethod
   def FromJsonFile(cls, json_path):

@@ -21,6 +21,7 @@ sys.path.insert(0,
 import controller
 from cloud.common.clovis_task import ClovisTask
 from cloud.common.google_instance_helper import GoogleInstanceHelper
+from failure_database import FailureDatabase
 from google_storage_accessor import GoogleStorageAccessor
 import loading_trace
 from loading_trace_database import LoadingTraceDatabase
@@ -33,9 +34,12 @@ class Worker(object):
     self._project_name = config['project_name']
     self._taskqueue_tag = config['taskqueue_tag']
     self._src_path = config['src_path']
-    self._destruct_instance_name = config.get('destruct_instance_name')
+    self._instance_name = config.get('instance_name')
     self._credentials = GoogleCredentials.get_application_default()
     self._logger = logger
+    self._self_destruct = config.get('self_destruct')
+    if self._self_destruct and not self._instance_name:
+      self._logger.error('Self destruction requires an instance name.')
 
     # Separate the cloud storage path into the bucket and the base path under
     # the bucket.
@@ -51,13 +55,29 @@ class Worker(object):
         credentials=self._credentials, project_name=self._project_name,
         bucket_name=self._bucket_name)
 
+    if self._instance_name:
+      trace_database_filename = 'trace_database_%s.json' % self._instance_name
+      failure_database_filename = \
+          'failure_database_%s.json' % self._instance_name
+    else:
+      trace_database_filename = 'trace_database.json'
+      failure_database_filename = 'failure_dabatase.json'
     self._traces_dir = os.path.join(self._base_path_in_bucket, 'traces')
-    self._trace_database_path = os.path.join(
-        self._traces_dir,
-        config.get('trace_database_filename', 'trace_database.json'))
+    self._trace_database_path = os.path.join(self._traces_dir,
+                                             trace_database_filename)
+    self._failures_dir = os.path.join(self._base_path_in_bucket, 'failures')
+    self._failure_database_path = os.path.join(self._failures_dir,
+                                               failure_database_filename)
 
-    # Recover any existing trace database in case the worker died.
+    # Recover any existing trace database and failures in case the worker died.
     self._DownloadTraceDatabase()
+    self._DownloadFailureDatabase()
+
+    if self._trace_database.ToJsonDict() or self._failure_database.ToJsonDict():
+      # Script is restarting after a crash, or there are already files from a
+      # previous run in the directory.
+      self._failure_database.AddFailure('startup_with_dirty_state')
+      self._UploadFailureDatabase()
 
     # Initialize the global options that will be used during trace generation.
     options.OPTIONS.ParseArgs([])
@@ -96,15 +116,29 @@ class Worker(object):
     self._logger.info('Downloading trace database')
     trace_database_string = self._google_storage_accessor.DownloadAsString(
         self._trace_database_path) or '{}'
-    trace_database_dict = json.loads(trace_database_string)
-    self._trace_database = LoadingTraceDatabase(trace_database_dict)
+    self._trace_database = LoadingTraceDatabase.FromJsonString(
+        trace_database_string)
 
   def _UploadTraceDatabase(self):
     """Uploads the trace database to CloudStorage."""
     self._logger.info('Uploading trace database')
     self._google_storage_accessor.UploadString(
-        json.dumps(self._trace_database.ToJsonDict(), indent=2),
+        self._trace_database.ToJsonString(),
         self._trace_database_path)
+
+  def _DownloadFailureDatabase(self):
+    """Downloads the failure database from CloudStorage."""
+    self._logger.info('Downloading failure database')
+    failure_database_string = self._google_storage_accessor.DownloadAsString(
+        self._failure_database_path)
+    self._failure_database = FailureDatabase(failure_database_string)
+
+  def _UploadFailureDatabase(self):
+    """Uploads the failure database to CloudStorage."""
+    self._logger.info('Uploading failure database')
+    self._google_storage_accessor.UploadString(
+        self._failure_database.ToJsonString(),
+        self._failure_database_path)
 
   def _FetchClovisTask(self, project_name, task_api, queue_name):
     """Fetches a ClovisTask from the task queue.
@@ -132,27 +166,35 @@ class Worker(object):
     # once it is fixed.
     retry_count = google_task['retry_count']
     max_retry_count = 3
-    if retry_count >= max_retry_count:
+    skip_task = retry_count >= max_retry_count
+    if skip_task:
       task_api.tasks().delete(project=project_name, taskqueue=queue_name,
                               task=task_id).execute()
-      return self._FetchClovisTask(project_name, task_api, queue_name)
 
     clovis_task = ClovisTask.FromBase64(google_task['payloadBase64'])
+
+    if retry_count > 0:
+      self._failure_database.AddFailure('task_queue_retry',
+                                        clovis_task.ToJsonString())
+      self._UploadFailureDatabase()
+
+    if skip_task:
+      return self._FetchClovisTask(project_name, task_api, queue_name)
+
     return (clovis_task, task_id)
 
   def _Finalize(self):
     """Called before exiting."""
     self._logger.info('Done')
     # Self destruct.
-    if self._destruct_instance_name:
-      self._logger.info('Starting instance destruction: ' +
-                        self._destruct_instance_name)
+    if self._self_destruct:
+      self._logger.info('Starting instance destruction: ' + self._instance_name)
       google_instance_helper = GoogleInstanceHelper(
           self._credentials, self._project_name, self._logger)
-      success = google_instance_helper.DeleteInstance(
-          self._taskqueue_tag, self._destruct_instance_name)
+      success = google_instance_helper.DeleteInstance(self._taskqueue_tag,
+                                                      self._instance_name)
       if not success:
-        self._logger.error('Self destruction failed')
+        self._logger.error('Self destruction failed.')
     # Do not add anything after this line, as the instance might be killed at
     # any time.
 
@@ -217,6 +259,41 @@ class Worker(object):
 
     return trace_metadata
 
+  def _HandleTraceGenerationResults(self, local_filename, log_filename,
+                                    remote_filename, trace_metadata):
+    """Updates the trace database and the failure database after a trace
+    generation. Uploads the trace and the log.
+    Results related to successful traces are uploaded in the _traces_dir
+    directory, and failures are uploaded in the _failures_dir directory.
+
+    Args:
+      local_filename (str): Path to the local file containing the trace.
+      log_filename (str): Path to the local file containing the log.
+      remote_filename (str): Name of the target remote file where the trace and
+                             the log (with a .log extension added) are uploaded.
+      trace_metadata (dict): Metadata associated with the trace generation.
+    """
+    if trace_metadata['succeeded']:
+      remote_trace_location = os.path.join(self._traces_dir, remote_filename)
+      full_cloud_storage_path = os.path.join('gs://' + self._bucket_name,
+                                             remote_trace_location)
+      self._trace_database.SetTrace(full_cloud_storage_path, trace_metadata)
+    else:
+      remote_trace_location = os.path.join(self._failures_dir, remote_filename)
+      self._failure_database.AddFailure('trace_collection',
+                                        trace_metadata['url'])
+
+    if os.path.isfile(local_filename):
+      self._logger.debug('Uploading: %s' % remote_trace_location)
+      self._google_storage_accessor.UploadFile(local_filename,
+                                               remote_trace_location)
+    else:
+      self._logger.warning('No trace found at: ' + local_filename)
+
+    self._logger.debug('Uploading analyze log')
+    remote_log_location = remote_trace_location + '.log'
+    self._google_storage_accessor.UploadFile(log_filename, remote_log_location)
+
   def _ProcessClovisTask(self, clovis_task):
     """Processes one clovis_task."""
     if clovis_task.Action() != 'trace':
@@ -230,39 +307,33 @@ class Worker(object):
     emulate_device = params.get('emulate_device')
     emulate_network = params.get('emulate_network')
 
-    failures_dir = os.path.join(self._base_path_in_bucket, 'failures')
-    # TODO(blundell): Fix this up.
-    logs_dir = os.path.join(self._base_path_in_bucket, 'analyze_logs')
     log_filename = 'analyze.log'
     # Avoid special characters in storage object names
     pattern = re.compile(r"[#\?\[\]\*/]")
+
+    failure_happened = False
+    success_happened = False
 
     while len(urls) > 0:
       url = urls.pop()
       local_filename = pattern.sub('_', url)
       for repeat in range(repeat_count):
         self._logger.debug('Generating trace for URL: %s' % url)
-        remote_filename = os.path.join(local_filename, str(repeat))
         trace_metadata = self._GenerateTrace(
             url, emulate_device, emulate_network, local_filename, log_filename)
         if trace_metadata['succeeded']:
-          self._logger.debug('Uploading: %s' % remote_filename)
-          remote_trace_location = os.path.join(self._traces_dir,
-                                               remote_filename)
-          self._google_storage_accessor.UploadFile(local_filename,
-                                                   remote_trace_location)
-          full_cloud_storage_path = os.path.join('gs://' + self._bucket_name,
-                                                 remote_trace_location)
-          self._trace_database.SetTrace(full_cloud_storage_path, trace_metadata)
+          success_happened = True
         else:
           self._logger.warning('Trace generation failed for URL: %s' % url)
-          if os.path.isfile(local_filename):
-            self._google_storage_accessor.UploadFile(
-                local_filename, os.path.join(failures_dir, remote_filename))
-        self._logger.debug('Uploading analyze log')
-        self._google_storage_accessor.UploadFile(
-            log_filename, os.path.join(logs_dir, remote_filename))
-    self._UploadTraceDatabase()
+          failure_happened = True
+        remote_filename = os.path.join(local_filename, str(repeat))
+        self._HandleTraceGenerationResults(
+            local_filename, log_filename, remote_filename, trace_metadata)
+
+    if success_happened:
+      self._UploadTraceDatabase()
+    if failure_happened:
+      self._UploadFailureDatabase()
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser(

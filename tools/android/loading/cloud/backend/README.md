@@ -99,12 +99,12 @@ dictionary with the keys:
 -   `src_path` (string): Path to the Chromium source directory.
 -   `taskqueue_tag` (string): Tag used by the worker when pulling tasks from
     `clovis-queue`.
--   `trace_database_filename` (string, optional): Filename for the trace
-    database in Cloud Storage. Must be unique per worker to avoid concurrent
-    access. Defaults to `trace_database.json`.
--   `destruct_instance_name` (string, optional): Name of the instance the worker
-    will destroy when there are no remaining tasks to process. This is only
-    relevant when running in the cloud.
+-   `instance_name` (string, optional): Name of the Compute Engine instance this
+    script is running on.
+-   `self_destruct` (boolean, optional): Whether the worker will destroy the
+    Compute Engine instance when there are no remaining tasks to process. This
+    is only relevant when running in the cloud, and requires `instance_name` to
+    be defined.
 
 ## Use the app
 

@@ -72,20 +72,20 @@ chown -R pythonapp:pythonapp /opt/app
 DEPLOYMENT_CONFIG_PATH=/opt/app/clovis/deployment_config.json
 TASKQUEUE_TAG=`get_instance_metadata taskqueue-tag`
 if [ "$(get_instance_metadata self-destruct)" == "false" ]; then
-  SELF_DESTRUCT_CONFIG_LINE=""
+  SELF_DESTRUCT="False"
 else
-  SELF_DESTRUCT_CONFIG_LINE="\"destruct_instance_name\" : \"$INSTANCE_NAME\","
+  SELF_DESTRUCT="True"
 fi
 
 cat >$DEPLOYMENT_CONFIG_PATH << EOF
 {
-  $SELF_DESTRUCT_CONFIG_LINE
+  "instance_name" : "$INSTANCE_NAME",
   "project_name" : "$PROJECTID",
   "cloud_storage_path" : "$CLOUD_STORAGE_PATH",
   "chrome_path" : "/opt/app/clovis/binaries/chrome",
   "src_path" : "/opt/app/clovis/src",
   "taskqueue_tag" : "$TASKQUEUE_TAG",
-  "trace_database_filename" : "trace_database_${INSTANCE_NAME}.json"
+  "self_destruct" : "$SELF_DESTRUCT"
 }
 EOF
 
@@ -103,7 +103,7 @@ cat >/etc/supervisor/conf.d/python-app.conf << EOF
 directory=/opt/app/clovis/src/tools/android/loading/cloud/backend
 command=python worker.py --config $DEPLOYMENT_CONFIG_PATH
 autostart=true
-autorestart=true
+autorestart=unexpected
 user=pythonapp
 # Environment variables ensure that the application runs inside of the
 # configured virtualenv.
