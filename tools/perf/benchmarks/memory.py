@@ -37,14 +37,3 @@ class MemoryTop7Stress(perf_benchmark.PerfBenchmark):
   def ShouldDisable(cls, possible_browser):
     return cls.IsSvelte(possible_browser)  # http://crbug.com/555092
 
-
-@benchmark.Disabled('android')  # crbug.com/542682
-class MemoryLongRunningIdleGmailBackground(perf_benchmark.PerfBenchmark):
-  """Use (recorded) real world web sites and measure memory consumption
-  of long running idle Gmail page in background tab"""
-  test = memory.Memory
-  page_set = page_sets.LongRunningIdleGmailBackgroundPageSet
-
-  @classmethod
-  def Name(cls):
-    return 'memory.long_running_idle_gmail_background'
