@@ -281,20 +281,20 @@ static inline bool tableHasSpace(hb_face_t* face, hb_set_t* glyphs,
 bool FontPlatformData::hasSpaceInLigaturesOrKerning(
     TypesettingFeatures features) const
 {
-    const HarfBuzzFace* hbFace = harfBuzzFace();
+    HarfBuzzFace* hbFace = harfBuzzFace();
     if (!hbFace)
         return false;
 
     hb_face_t* face = hbFace->face();
     ASSERT(face);
-    OwnPtr<hb_font_t> font = adoptPtr(hbFace->createFont());
+    hb_font_t* font = hbFace->getScaledFont();
     ASSERT(font);
 
     hb_codepoint_t space;
     // If the space glyph isn't present in the font then each space character
     // will be rendering using a fallback font, which grantees that it cannot
     // affect the shape of the preceding word.
-    if (!hb_font_get_glyph(font.get(), spaceCharacter, 0, &space))
+    if (!hb_font_get_glyph(font, spaceCharacter, 0, &space))
         return false;
 
     if (!hb_ot_layout_has_substitution(face)

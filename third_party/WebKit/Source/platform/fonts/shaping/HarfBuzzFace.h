@@ -45,12 +45,11 @@
 namespace blink {
 
 class FontPlatformData;
+struct HarfBuzzFontData;
 
 class HarfBuzzFace : public RefCounted<HarfBuzzFace> {
     WTF_MAKE_NONCOPYABLE(HarfBuzzFace);
 public:
-    static const hb_tag_t vertTag;
-    static const hb_tag_t vrt2Tag;
 
     static PassRefPtr<HarfBuzzFace> create(FontPlatformData* platformData, uint64_t uniqueID)
     {
@@ -61,18 +60,20 @@ public:
     // In order to support the restricting effect of unicode-range optionally a
     // range restriction can be passed in, which will restrict which glyphs we
     // return in the harfBuzzGetGlyph function.
-    hb_font_t* createFont(PassRefPtr<UnicodeRangeSet> = nullptr) const;
+    hb_font_t* getScaledFont(PassRefPtr<UnicodeRangeSet> = nullptr);
     hb_face_t* face() const { return m_face; }
 
 private:
     HarfBuzzFace(FontPlatformData*, uint64_t);
 
     hb_face_t* createFace();
+    void prepareHarfBuzzFontData();
 
     FontPlatformData* m_platformData;
     uint64_t m_uniqueID;
     hb_face_t* m_face;
-    WTF::HashMap<uint32_t, uint16_t>* m_glyphCacheForFaceCacheEntry;
+    OwnPtr<hb_font_t> m_unscaledFont;
+    OwnPtr<HarfBuzzFontData> m_harfBuzzFontData;
 };
 
 } // namespace blink
