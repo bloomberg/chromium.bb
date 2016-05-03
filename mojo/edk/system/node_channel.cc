@@ -187,6 +187,7 @@ void NodeChannel::ShutDown() {
 void NodeChannel::SetRemoteProcessHandle(base::ProcessHandle process_handle) {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
   base::AutoLock lock(remote_process_handle_lock_);
+  CHECK_NE(remote_process_handle_, base::GetCurrentProcessHandle());
   remote_process_handle_ = process_handle;
 }
 

@@ -336,10 +336,17 @@ bool Channel::Message::RewriteHandles(base::ProcessHandle from_process,
         from_process, handles[i].handle, to_process,
         &handles[i].handle, 0, FALSE,
         DUPLICATE_SAME_ACCESS | DUPLICATE_CLOSE_SOURCE);
-    if (result)
+    if (result) {
       handles[i].owning_process = to_process;
-    else
+    } else {
       success = false;
+
+      // If handle duplication fails, the source handle will already be closed
+      // due to DUPLICATE_CLOSE_SOURCE. Replace the handle in the message with
+      // an invalid handle.
+      handles[i].handle = INVALID_HANDLE_VALUE;
+      handles[i].owning_process = base::GetCurrentProcessHandle();
+    }
   }
   return success;
 }
