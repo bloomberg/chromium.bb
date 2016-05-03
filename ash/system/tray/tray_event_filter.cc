@@ -39,15 +39,21 @@ void TrayEventFilter::RemoveWrapper(TrayBubbleWrapper* wrapper) {
     Shell::GetInstance()->RemovePointerWatcher(this);
 }
 
-void TrayEventFilter::OnMousePressed(const ui::MouseEvent& event) {
-  ProcessLocatedEvent(event);
+void TrayEventFilter::OnMousePressed(const ui::MouseEvent& event,
+                                     const gfx::Point& location_in_screen) {
+  ProcessLocatedEvent(event, location_in_screen);
 }
 
-void TrayEventFilter::OnTouchPressed(const ui::TouchEvent& event) {
-  ProcessLocatedEvent(event);
+void TrayEventFilter::OnTouchPressed(const ui::TouchEvent& event,
+                                     const gfx::Point& location_in_screen) {
+  ProcessLocatedEvent(event, location_in_screen);
 }
 
-void TrayEventFilter::ProcessLocatedEvent(const ui::LocatedEvent& event) {
+void TrayEventFilter::ProcessLocatedEvent(
+    const ui::LocatedEvent& event,
+    const gfx::Point& location_in_screen) {
+  // TODO(jamescook): Rewrite this to avoid using event.target() as that will
+  // always be null on mus. http://crbug.com/608570
   if (event.target()) {
     aura::Window* target = static_cast<aura::Window*>(event.target());
     // Don't process events that occurred inside an embedded menu.
@@ -78,19 +84,13 @@ void TrayEventFilter::ProcessLocatedEvent(const ui::LocatedEvent& event) {
 
     gfx::Rect bounds = bubble_widget->GetWindowBoundsInScreen();
     bounds.Inset(wrapper->bubble_view()->GetBorderInsets());
-    aura::Window* root = bubble_widget->GetNativeView()->GetRootWindow();
-    aura::client::ScreenPositionClient* screen_position_client =
-        aura::client::GetScreenPositionClient(root);
-    gfx::Point screen_point(event.root_location());
-    screen_position_client->ConvertPointToScreen(root, &screen_point);
-
-    if (bounds.Contains(screen_point))
+    if (bounds.Contains(location_in_screen))
       return;
     if (wrapper->tray()) {
       // If the user clicks on the parent tray, don't process the event here,
       // let the tray logic handle the event and determine show/hide behavior.
       bounds = wrapper->tray()->GetBoundsInScreen();
-      if (bounds.Contains(screen_point))
+      if (bounds.Contains(location_in_screen))
         return;
     }
   }

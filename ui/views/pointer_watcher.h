@@ -7,6 +7,10 @@
 
 #include "ui/views/views_export.h"
 
+namespace gfx {
+class Point;
+}
+
 namespace ui {
 class MouseEvent;
 class TouchEvent;
@@ -22,8 +26,10 @@ class VIEWS_EXPORT PointerWatcher {
  public:
   virtual ~PointerWatcher() {}
 
-  virtual void OnMousePressed(const ui::MouseEvent& event) = 0;
-  virtual void OnTouchPressed(const ui::TouchEvent& event) = 0;
+  virtual void OnMousePressed(const ui::MouseEvent& event,
+                              const gfx::Point& location_in_screen) = 0;
+  virtual void OnTouchPressed(const ui::TouchEvent& event,
+                              const gfx::Point& location_in_screen) = 0;
 };
 
 }  // namespace views

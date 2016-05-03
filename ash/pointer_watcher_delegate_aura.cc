@@ -5,8 +5,11 @@
 #include "ash/pointer_watcher_delegate_aura.h"
 
 #include "ash/shell.h"
+#include "ui/aura/client/screen_position_client.h"
+#include "ui/aura/window.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/views/pointer_watcher.h"
 
 namespace ash {
@@ -32,13 +35,22 @@ void PointerWatcherDelegateAura::RemovePointerWatcher(
 void PointerWatcherDelegateAura::OnMouseEvent(ui::MouseEvent* event) {
   if (event->type() == ui::ET_MOUSE_PRESSED)
     FOR_EACH_OBSERVER(views::PointerWatcher, pointer_watchers_,
-                      OnMousePressed(*event));
+                      OnMousePressed(*event, GetLocationInScreen(*event)));
 }
 
 void PointerWatcherDelegateAura::OnTouchEvent(ui::TouchEvent* event) {
   if (event->type() == ui::ET_TOUCH_PRESSED)
     FOR_EACH_OBSERVER(views::PointerWatcher, pointer_watchers_,
-                      OnTouchPressed(*event));
+                      OnTouchPressed(*event, GetLocationInScreen(*event)));
+}
+
+gfx::Point PointerWatcherDelegateAura::GetLocationInScreen(
+    const ui::LocatedEvent& event) const {
+  aura::Window* target = static_cast<aura::Window*>(event.target());
+  gfx::Point location_in_screen = event.location();
+  aura::client::GetScreenPositionClient(target->GetRootWindow())
+      ->ConvertPointToScreen(target, &location_in_screen);
+  return location_in_screen;
 }
 
 }  // namespace ash

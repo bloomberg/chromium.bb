@@ -25,10 +25,12 @@ class TestPointerWatcher : public PointerWatcher {
   void Reset() { last_event_.reset(); }
 
   // PointerWatcher:
-  void OnMousePressed(const ui::MouseEvent& event) override {
+  void OnMousePressed(const ui::MouseEvent& event,
+                      const gfx::Point& location_in_screen) override {
     last_event_ = ui::Event::Clone(event);
   }
-  void OnTouchPressed(const ui::TouchEvent& event) override {
+  void OnTouchPressed(const ui::TouchEvent& event,
+                      const gfx::Point& location_in_screen) override {
     last_event_ = ui::Event::Clone(event);
   }
 

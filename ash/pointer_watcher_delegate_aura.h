@@ -8,6 +8,14 @@
 #include "base/observer_list.h"
 #include "ui/events/event_handler.h"
 
+namespace gfx {
+class Point;
+}
+
+namespace ui {
+class LocatedEvent;
+}
+
 namespace ash {
 
 // Support for PointerWatchers in non-mus ash, implemented with a pre-target
@@ -27,6 +35,8 @@ class ASH_EXPORT PointerWatcherDelegateAura : public PointerWatcherDelegate,
   void OnTouchEvent(ui::TouchEvent* event) override;
 
  private:
+  gfx::Point GetLocationInScreen(const ui::LocatedEvent& event) const;
+
   // Must be empty on destruction.
   base::ObserverList<views::PointerWatcher, true> pointer_watchers_;
 

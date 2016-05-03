@@ -10,6 +10,10 @@
 #include "base/macros.h"
 #include "ui/views/pointer_watcher.h"
 
+namespace gfx {
+class Point;
+}
+
 namespace ui {
 class LocatedEvent;
 }
@@ -28,11 +32,14 @@ class TrayEventFilter : public views::PointerWatcher {
   void RemoveWrapper(TrayBubbleWrapper* wrapper);
 
   // views::PointerWatcher:
-  void OnMousePressed(const ui::MouseEvent& event) override;
-  void OnTouchPressed(const ui::TouchEvent& event) override;
+  void OnMousePressed(const ui::MouseEvent& event,
+                      const gfx::Point& location_in_screen) override;
+  void OnTouchPressed(const ui::TouchEvent& event,
+                      const gfx::Point& location_in_screen) override;
 
  private:
-  void ProcessLocatedEvent(const ui::LocatedEvent& event);
+  void ProcessLocatedEvent(const ui::LocatedEvent& event,
+                           const gfx::Point& location_in_screen);
 
   std::set<TrayBubbleWrapper*> wrappers_;
 

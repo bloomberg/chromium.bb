@@ -10,8 +10,6 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/system/tray/tray_background_view.h"
-#include "ui/aura/client/screen_position_client.h"
-#include "ui/aura/window_event_dispatcher.h"
 #include "ui/events/event.h"
 #include "ui/views/widget/widget.h"
 
@@ -21,10 +19,12 @@ OverflowBubble::OverflowBubble()
     : bubble_(NULL),
       anchor_(NULL),
       shelf_view_(NULL) {
+  Shell::GetInstance()->AddPointerWatcher(this);
 }
 
 OverflowBubble::~OverflowBubble() {
   Hide();
+  Shell::GetInstance()->RemovePointerWatcher(this);
 }
 
 void OverflowBubble::Show(views::View* anchor, ShelfView* shelf_view) {
@@ -35,9 +35,6 @@ void OverflowBubble::Show(views::View* anchor, ShelfView* shelf_view) {
   shelf_view_ = shelf_view;
   anchor_ = anchor;
 
-  // TODO(jamescook): Change this to a PointerWatcher.
-  Shell::GetInstance()->AddPreTargetHandler(this);
-
   TrayBackgroundView::InitializeBubbleAnimations(bubble_->GetWidget());
   bubble_->GetWidget()->AddObserver(this);
   bubble_->GetWidget()->Show();
@@ -47,7 +44,6 @@ void OverflowBubble::Hide() {
   if (!IsShowing())
     return;
 
-  Shell::GetInstance()->RemovePreTargetHandler(this);
   bubble_->GetWidget()->RemoveObserver(this);
   bubble_->GetWidget()->Close();
   bubble_ = NULL;
@@ -66,26 +62,23 @@ void OverflowBubble::HideBubbleAndRefreshButton() {
   anchor->SchedulePaint();
 }
 
-void OverflowBubble::ProcessPressedEvent(ui::LocatedEvent* event) {
-  aura::Window* target = static_cast<aura::Window*>(event->target());
-  gfx::Point event_location_in_screen = event->location();
-  aura::client::GetScreenPositionClient(target->GetRootWindow())->
-      ConvertPointToScreen(target, &event_location_in_screen);
-  if (!shelf_view_->IsShowingMenu() &&
+void OverflowBubble::ProcessPressedEvent(
+    const gfx::Point& event_location_in_screen) {
+  if (IsShowing() && !shelf_view_->IsShowingMenu() &&
       !bubble_->GetBoundsInScreen().Contains(event_location_in_screen) &&
       !anchor_->GetBoundsInScreen().Contains(event_location_in_screen)) {
     HideBubbleAndRefreshButton();
   }
 }
 
-void OverflowBubble::OnMouseEvent(ui::MouseEvent* event) {
-  if (event->type() == ui::ET_MOUSE_PRESSED)
-    ProcessPressedEvent(event);
+void OverflowBubble::OnMousePressed(const ui::MouseEvent& event,
+                                    const gfx::Point& location_in_screen) {
+  ProcessPressedEvent(location_in_screen);
 }
 
-void OverflowBubble::OnTouchEvent(ui::TouchEvent* event) {
-  if (event->type() == ui::ET_TOUCH_PRESSED)
-    ProcessPressedEvent(event);
+void OverflowBubble::OnTouchPressed(const ui::TouchEvent& event,
+                                    const gfx::Point& location_in_screen) {
+  ProcessPressedEvent(location_in_screen);
 }
 
 void OverflowBubble::OnWidgetDestroying(views::Widget* widget) {

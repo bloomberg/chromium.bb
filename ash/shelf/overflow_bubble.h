@@ -5,9 +5,8 @@
 #ifndef ASH_SHELF_OVERFLOW_BUBBLE_H_
 #define ASH_SHELF_OVERFLOW_BUBBLE_H_
 
-#include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "ui/events/event_handler.h"
+#include "ui/views/pointer_watcher.h"
 #include "ui/views/widget/widget_observer.h"
 
 namespace ui {
@@ -24,7 +23,7 @@ class ShelfLayoutManager;
 class ShelfView;
 
 // OverflowBubble displays the overflown launcher items in a bubble.
-class OverflowBubble : public ui::EventHandler,
+class OverflowBubble : public views::PointerWatcher,
                        public views::WidgetObserver {
  public:
   OverflowBubble();
@@ -44,11 +43,13 @@ class OverflowBubble : public ui::EventHandler,
   OverflowBubbleView* bubble_view() { return bubble_; }
 
  private:
-  void ProcessPressedEvent(ui::LocatedEvent* event);
+  void ProcessPressedEvent(const gfx::Point& event_location_in_screen);
 
-  // Overridden from ui::EventHandler:
-  void OnMouseEvent(ui::MouseEvent* event) override;
-  void OnTouchEvent(ui::TouchEvent* event) override;
+  // views::PointerWatcher:
+  void OnMousePressed(const ui::MouseEvent& event,
+                      const gfx::Point& location_in_screen) override;
+  void OnTouchPressed(const ui::TouchEvent& event,
+                      const gfx::Point& location_in_screen) override;
 
   // Overridden from views::WidgetObserver:
   void OnWidgetDestroying(views::Widget* widget) override;
