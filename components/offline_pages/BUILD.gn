@@ -9,7 +9,10 @@ if (is_android) {
 # GYP: //components/offline_pages.gypi:offline_pages
 static_library("offline_pages") {
   sources = [
+    "client_policy_controller.cc",
+    "client_policy_controller.h",
     "offline_page_archiver.h",
+    "offline_page_client_policy.h",
     "offline_page_item.cc",
     "offline_page_item.h",
     "offline_page_metadata_store.cc",
@@ -68,6 +71,7 @@ source_set("switches") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "client_policy_controller_unittest.cc",
     "offline_page_metadata_store_impl_unittest.cc",
     "offline_page_model_unittest.cc",
     "snapshot_controller_unittest.cc",
