@@ -11,6 +11,7 @@
       'target_name': 'media_router',
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
+        'media_router_ui_interface',
         'elements/media_router_header/compiled_resources2.gyp:media_router_header',
         'elements/media_router_container/compiled_resources2.gyp:media_router_container',
       ],
@@ -27,6 +28,7 @@
     {
       'target_name': 'media_router_ui_interface',
       'dependencies': [
+        '<(EXTERNS_GYP):chrome_send',
         'elements/media_router_header/compiled_resources2.gyp:media_router_header',
         'elements/media_router_container/compiled_resources2.gyp:media_router_container',
       ],
