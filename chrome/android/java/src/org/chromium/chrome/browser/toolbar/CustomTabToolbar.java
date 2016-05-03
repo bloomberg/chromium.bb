@@ -368,7 +368,7 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
         if (getProgressBar() != null) {
             if (!ColorUtils.isUsingDefaultToolbarColor(getResources(),
                     getBackground().getColor())) {
-                getProgressBar().setThemeColor(getToolbarDataProvider().getPrimaryColor(), false);
+                getProgressBar().setThemeColor(getBackground().getColor(), false);
             } else {
                 getProgressBar().setBackgroundColor(ApiCompatibilityUtils.getColor(resources,
                         R.color.progress_bar_background));
