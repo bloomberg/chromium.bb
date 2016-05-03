@@ -12,6 +12,8 @@ function createIFrame(origin, type) {
         file = "post-addressspace-from-worker.html";
     } else if (type == "sharedworker") {
         file = "post-addressspace-from-sharedworker.html";
+    } else if (type == "serviceworker") {
+        file = "post-addressspace-from-serviceworker.html";
     }
 
     var i = document.createElement('iframe');
@@ -24,8 +26,8 @@ function addressSpaceTest(origin, type, expected, callback) {
         var i = createIFrame(origin, type);
         window.addEventListener("message", t.step_func(function (e) {
             if (e.source == i.contentWindow) {
-                assert_equals(e.data.origin, origin);
-                assert_equals(e.data.addressSpace, expected);
+                assert_equals(e.data.origin, origin, 'origin');
+                assert_equals(e.data.addressSpace, expected, 'addressSpace');
                 if (callback)
                     callback();
                 t.done();

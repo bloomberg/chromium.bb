@@ -53,6 +53,8 @@
 #include "platform/heap/Handle.h"
 #include "platform/network/ContentSecurityPolicyParsers.h"
 #include "platform/network/ContentSecurityPolicyResponseHeaders.h"
+#include "platform/network/NetworkUtils.h"
+#include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerProvider.h"
@@ -131,6 +133,22 @@ void WebEmbeddedWorkerImpl::startWorkerContext(
     DCHECK(!m_mainScriptLoader);
     DCHECK_EQ(m_pauseAfterDownloadState, DontPauseAfterDownload);
     m_workerStartData = data;
+
+    // TODO(mkwst): This really needs to be piped through from the requesting
+    // document, like we're doing for SharedWorkers. That turns out to be
+    // incredibly convoluted, and since ServiceWorkers are locked to the same
+    // origin as the page which requested them, the only time it would come
+    // into play is a DNS poisoning attack after the page load. It's something
+    // we should fix, but we're taking this shortcut for the prototype.
+    //
+    // https://crbug.com/590714
+    KURL scriptURL = m_workerStartData.scriptURL;
+    m_workerStartData.addressSpace = WebAddressSpacePublic;
+    if (NetworkUtils::isReservedIPAddress(scriptURL.host()))
+        m_workerStartData.addressSpace = WebAddressSpacePrivate;
+    if (SecurityOrigin::create(scriptURL)->isLocalhost())
+        m_workerStartData.addressSpace = WebAddressSpaceLocal;
+
     if (data.pauseAfterDownloadMode == WebEmbeddedWorkerStartData::PauseAfterDownload)
         m_pauseAfterDownloadState = DoPauseAfterDownload;
     prepareShadowPageForLoader();
@@ -317,7 +335,7 @@ void WebEmbeddedWorkerImpl::didFinishDocumentLoad(WebLocalFrame* frame)
         *m_mainFrame->frame()->document(),
         m_workerStartData.scriptURL,
         DenyCrossOriginRequests,
-        m_mainFrame->frame()->document()->addressSpace(),
+        m_workerStartData.addressSpace,
         nullptr,
         bind(&WebEmbeddedWorkerImpl::onScriptLoaderFinished, this));
     // Do nothing here since onScriptLoaderFinished() might have been already
@@ -386,6 +404,7 @@ void WebEmbeddedWorkerImpl::startWorkerThread()
 
     KURL scriptURL = m_mainScriptLoader->url();
     WorkerThreadStartMode startMode = m_workerInspectorProxy->workerStartMode(document);
+
     OwnPtr<WorkerThreadStartupData> startupData = WorkerThreadStartupData::create(
         scriptURL,
         m_workerStartData.userAgent,
