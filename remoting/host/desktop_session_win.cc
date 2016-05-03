@@ -22,6 +22,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
+#include "base/win/registry.h"
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_handle.h"
@@ -82,10 +83,18 @@ const int kDefaultRdpDpi = 96;
 // The session attach notification should arrive within 30 seconds.
 const int kSessionAttachTimeoutSeconds = 30;
 
+// The default port number used for establishing an RDP session.
+const int kDefaultRdpPort = 3389;
+
+// The values used to establish RDP connections are stored in the registry.
+const wchar_t kRdpTcpSettingsKeyName[] = L"SYSTEM\\CurrentControlSet\\"
+    L"Control\\Terminal Server\\WinStations\\RDP-Tcp";
+const wchar_t kRdpPortValueName[] = L"PortNumber";
+
 // DesktopSession implementation which attaches to the host's physical console.
 // Receives IPC messages from the desktop process, running in the console
 // session, via |WorkerProcessIpcDelegate|, and monitors console session
-// attach/detach events via |WtsConsoleObserer|.
+// attach/detach events via |WtsConsoleObserver|.
 class ConsoleSession : public DesktopSessionWin {
  public:
   // Same as DesktopSessionWin().
@@ -113,7 +122,7 @@ class ConsoleSession : public DesktopSessionWin {
 // DesktopSession implementation which attaches to virtual RDP console.
 // Receives IPC messages from the desktop process, running in the console
 // session, via |WorkerProcessIpcDelegate|, and monitors console session
-// attach/detach events via |WtsConsoleObserer|.
+// attach/detach events via |WtsConsoleObserver|.
 class RdpSession : public DesktopSessionWin {
  public:
   // Same as DesktopSessionWin().
@@ -167,6 +176,11 @@ class RdpSession : public DesktopSessionWin {
 
     DISALLOW_COPY_AND_ASSIGN(EventHandler);
   };
+
+  // Retrieves a DWORD value from the registry.  Returns true on success.
+  bool RetrieveDwordRegistryValue(const wchar_t* key_name,
+                                  const wchar_t* value_name,
+                                  DWORD* value);
 
   // Used to create an RDP desktop session.
   base::win::ScopedComPtr<IRdpDesktopSession> rdp_desktop_session_;
@@ -255,13 +269,23 @@ bool RdpSession::Initialize(const ScreenResolution& resolution) {
       std::min(kMaxRdpScreenHeight,
                std::max(kMinRdpScreenHeight, host_size.height())));
 
+  // Read the port number used by RDP.
+  DWORD server_port = kDefaultRdpPort;
+  if (RetrieveDwordRegistryValue(kRdpTcpSettingsKeyName, kRdpPortValueName,
+                                 &server_port) &&
+      server_port > 65535) {
+    LOG(ERROR) << "Invalid RDP port specified: " << server_port;
+    return false;
+  }
+
   // Create an RDP session.
   base::win::ScopedComPtr<IRdpDesktopSessionEventHandler> event_handler(
       new EventHandler(weak_factory_.GetWeakPtr()));
   terminal_id_ = base::GenerateGUID();
   base::win::ScopedBstr terminal_id(base::UTF8ToUTF16(terminal_id_).c_str());
   result = rdp_desktop_session_->Connect(host_size.width(), host_size.height(),
-                                         terminal_id, event_handler.get());
+                                         terminal_id, server_port,
+                                         event_handler.get());
   if (FAILED(result)) {
     LOG(ERROR) << "RdpSession::Create() failed, 0x"
                << std::hex << result << std::dec << ".";
@@ -296,6 +320,27 @@ void RdpSession::InjectSas() {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
   rdp_desktop_session_->InjectSas();
+}
+
+bool RdpSession::RetrieveDwordRegistryValue(const wchar_t* key_name,
+                                            const wchar_t* value_name,
+                                            DWORD* value) {
+  DCHECK(key_name);
+  DCHECK(value_name);
+  DCHECK(value);
+
+  base::win::RegKey key(HKEY_LOCAL_MACHINE, key_name, KEY_READ);
+  if (!key.Valid()) {
+    LOG(WARNING) << "Failed to open key: " << key_name;
+    return false;
+  }
+
+  if (key.ReadValueDW(value_name, value) != ERROR_SUCCESS) {
+    LOG(WARNING) << "Failed to read registry value: " << value_name;
+    return false;
+  }
+
+  return true;
 }
 
 RdpSession::EventHandler::EventHandler(

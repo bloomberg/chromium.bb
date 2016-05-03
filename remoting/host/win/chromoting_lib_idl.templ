@@ -33,8 +33,10 @@ interface IRdpDesktopSession : IUnknown {
   [ id(1), helpstring("Initiates a loopback RDP connection to spawn a new "
                       "Windows session. |width| and |height| specify the "
                       "initial screen resolution. |terminal_id| specifies a "
-                      "unique value to be used to identify this connection.") ]
+                      "unique value to be used to identify this connection."
+                      "|port_number| specifies the RDP port number to use.") ]
   HRESULT Connect([in] long width, [in] long height, [in] BSTR terminal_id,
+                  [in] DWORD port_number,
                   [in] IRdpDesktopSessionEventHandler* event_handler);
 
   [ id(2), helpstring("Shuts down the connection created by Connect().") ]

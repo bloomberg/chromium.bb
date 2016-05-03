@@ -21,6 +21,7 @@ STDMETHODIMP RdpDesktopSession::Connect(
     long width,
     long height,
     BSTR terminal_id,
+    DWORD port_number,
     IRdpDesktopSessionEventHandler* event_handler) {
   event_handler_ = event_handler;
 
@@ -28,9 +29,9 @@ STDMETHODIMP RdpDesktopSession::Connect(
       ChromotingModule::task_runner();
   DCHECK(task_runner->BelongsToCurrentThread());
 
-  client_.reset(new RdpClient(task_runner, task_runner,
-                              webrtc::DesktopSize(width, height),
-                              base::UTF16ToUTF8(terminal_id), this));
+  client_.reset(new RdpClient(
+      task_runner, task_runner, webrtc::DesktopSize(width, height),
+      base::UTF16ToUTF8(terminal_id), port_number, this));
   return S_OK;
 }
 

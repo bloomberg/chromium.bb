@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/single_thread_task_runner.h"
-#include "base/win/registry.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "remoting/base/typed_buffer.h"
@@ -27,13 +26,6 @@ namespace {
 // 127.0.0.1 is explicitly blocked by the RDP ActiveX control, so we use
 // 127.0.0.2 instead.
 const unsigned char kRdpLoopbackAddress[] = { 127, 0, 0, 2 };
-
-const int kDefaultRdpPort = 3389;
-
-// The port number used by RDP is stored in the registry.
-const wchar_t kRdpPortKeyName[] = L"SYSTEM\\CurrentControlSet\\Control\\"
-    L"Terminal Server\\WinStations\\RDP-Tcp";
-const wchar_t kRdpPortValueName[] = L"PortNumber";
 
 }  // namespace
 
@@ -51,7 +43,8 @@ class RdpClient::Core
 
   // Initiates a loopback RDP connection.
   void Connect(const webrtc::DesktopSize& screen_size,
-               const std::string& terminal_id);
+               const std::string& terminal_id,
+               DWORD port_number);
 
   // Initiates a graceful shutdown of the RDP connection.
   void Disconnect();
@@ -96,11 +89,12 @@ RdpClient::RdpClient(
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     const webrtc::DesktopSize& screen_size,
     const std::string& terminal_id,
+    DWORD port_number,
     EventHandler* event_handler) {
   DCHECK(caller_task_runner->BelongsToCurrentThread());
 
   core_ = new Core(caller_task_runner, ui_task_runner, event_handler);
-  core_->Connect(screen_size, terminal_id);
+  core_->Connect(screen_size, terminal_id, port_number);
 }
 
 RdpClient::~RdpClient() {
@@ -125,10 +119,12 @@ RdpClient::Core::Core(
 }
 
 void RdpClient::Core::Connect(const webrtc::DesktopSize& screen_size,
-                              const std::string& terminal_id) {
+                              const std::string& terminal_id,
+                              DWORD port_number) {
   if (!ui_task_runner_->BelongsToCurrentThread()) {
     ui_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&Core::Connect, this, screen_size, terminal_id));
+        FROM_HERE, base::Bind(&Core::Connect, this, screen_size, terminal_id,
+                              port_number));
     return;
   }
 
@@ -136,17 +132,8 @@ void RdpClient::Core::Connect(const webrtc::DesktopSize& screen_size,
   DCHECK(!rdp_client_window_);
   DCHECK(!self_.get());
 
-  // Read the port number used by RDP.
-  DWORD server_port;
-  base::win::RegKey key(HKEY_LOCAL_MACHINE, kRdpPortKeyName, KEY_READ);
-  if (!key.Valid() ||
-      (key.ReadValueDW(kRdpPortValueName, &server_port) != ERROR_SUCCESS) ||
-      server_port > 65535) {
-    server_port = kDefaultRdpPort;
-  }
-
   net::IPEndPoint server_endpoint(net::IPAddress(kRdpLoopbackAddress),
-                                  base::checked_cast<uint16_t>(server_port));
+                                  base::checked_cast<uint16_t>(port_number));
 
   // Create the ActiveX control window.
   rdp_client_window_.reset(new RdpClientWindow(server_endpoint, terminal_id,

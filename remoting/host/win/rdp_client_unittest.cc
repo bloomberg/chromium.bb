@@ -35,6 +35,8 @@ namespace {
 const long kDefaultWidth = 1024;
 const long kDefaultHeight = 768;
 
+const DWORD kDefaultRdpPort = 3389;
+
 class MockRdpClientEventHandler : public RdpClient::EventHandler {
  public:
   MockRdpClientEventHandler() {}
@@ -162,10 +164,10 @@ TEST_F(RdpClientTest, Basic) {
       .Times(AtMost(1))
       .WillOnce(InvokeWithoutArgs(this, &RdpClientTest::CloseRdpClient));
 
-  rdp_client_.reset(new RdpClient(
-      task_runner_, task_runner_,
-      webrtc::DesktopSize(kDefaultWidth, kDefaultHeight),
-      terminal_id_, &event_handler_));
+  rdp_client_.reset(
+      new RdpClient(task_runner_, task_runner_,
+                    webrtc::DesktopSize(kDefaultWidth, kDefaultHeight),
+                    terminal_id_, kDefaultRdpPort, &event_handler_));
   task_runner_ = nullptr;
 
   run_loop_.Run();
