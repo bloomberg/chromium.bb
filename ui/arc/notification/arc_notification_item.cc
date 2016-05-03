@@ -12,9 +12,13 @@
 #include "base/task_runner.h"
 #include "base/task_runner_util.h"
 #include "base/threading/worker_pool.h"
+#include "components/arc/bitmap/bitmap_type_converters.h"
+#include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkPaint.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/text_elider.h"
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_types.h"
@@ -37,6 +41,49 @@ SkBitmap DecodeImage(const std::vector<uint8_t>& data) {
   SkBitmap bitmap;
   gfx::PNGCodec::Decode(&data[0], data.size(), &bitmap);
   return bitmap;
+}
+
+// Crops the image to proper size for Chrome Notification. It accepts only
+// specified aspect ratio. Otherwise, it might be letterboxed.
+SkBitmap CropImage(const SkBitmap& original_bitmap) {
+  DCHECK_NE(0, original_bitmap.width());
+  DCHECK_NE(0, original_bitmap.height());
+
+  const SkSize container_size = SkSize::Make(
+      message_center::kNotificationPreferredImageWidth,
+      message_center::kNotificationPreferredImageHeight);
+  const float container_aspect_ratio =
+      static_cast<float>(message_center::kNotificationPreferredImageWidth) /
+      message_center::kNotificationPreferredImageHeight;
+  const float image_aspect_ratio =
+      static_cast<float>(original_bitmap.width()) / original_bitmap.height();
+
+  SkRect source_rect;
+  if (image_aspect_ratio > container_aspect_ratio) {
+    float width = original_bitmap.height() * container_aspect_ratio;
+    source_rect = SkRect::MakeXYWH((original_bitmap.width() - width) / 2,
+                                   0,
+                                   width,
+                                   original_bitmap.height());
+  } else {
+    float height = original_bitmap.width() / container_aspect_ratio;
+    source_rect = SkRect::MakeXYWH(0,
+                                   (original_bitmap.height() - height) / 2,
+                                   original_bitmap.width(),
+                                   height);
+  }
+
+  SkBitmap container_bitmap;
+  container_bitmap.allocN32Pixels(container_size.width(),
+                                  container_size.height());
+  SkPaint paint;
+  paint.setFilterQuality(kHigh_SkFilterQuality);
+  SkCanvas container_image(container_bitmap);
+  container_image.drawColor(message_center::kImageBackgroundColor);
+  container_image.drawBitmapRect(
+      original_bitmap, source_rect, SkRect::MakeSize(container_size), &paint);
+
+  return container_bitmap;
 }
 
 // Converts from Android notification priority to Chrome notification priority.
@@ -134,10 +181,38 @@ void ArcNotificationItem::UpdateWithArcNotificationData(
     case mojom::ArcNotificationType::BASIC:
       type = message_center::NOTIFICATION_TYPE_BASE_FORMAT;
       break;
+    case mojom::ArcNotificationType::LIST:
+      type = message_center::NOTIFICATION_TYPE_MULTIPLE;
+
+      if (data.texts.is_null())
+        break;
+
+      for (size_t i = 0;
+           i < std::min(data.texts.size(),
+                        message_center::kNotificationMaximumItems - 1);
+           i++) {
+        rich_data.items.emplace_back(
+            base::string16(), base::UTF8ToUTF16(data.texts.at(i).get()));
+      }
+
+      if (data.texts.size() > message_center::kNotificationMaximumItems) {
+        // Show an elipsis as the 5th item if there are more than 5 items.
+        rich_data.items.emplace_back(base::string16(), gfx::kEllipsisUTF16);
+      } else if (data.texts.size() ==
+                 message_center::kNotificationMaximumItems) {
+        // Show the 5th item if there are exact 5 items.
+        rich_data.items.emplace_back(
+            base::string16(),
+            base::UTF8ToUTF16(data.texts.at(data.texts.size() - 1).get()));
+      }
+      break;
     case mojom::ArcNotificationType::IMAGE:
-      // TODO(yoshiki): Implement this types.
-      type = message_center::NOTIFICATION_TYPE_BASE_FORMAT;
-      LOG(ERROR) << "Unsupported notification type: image";
+      type = message_center::NOTIFICATION_TYPE_IMAGE;
+
+      if (!data.big_picture.is_null()) {
+        rich_data.image = gfx::Image::CreateFrom1xBitmap(
+            CropImage(data.big_picture.To<SkBitmap>()));
+      }
       break;
     case mojom::ArcNotificationType::PROGRESS:
       type = message_center::NOTIFICATION_TYPE_PROGRESS;
@@ -153,8 +228,8 @@ void ArcNotificationItem::UpdateWithArcNotificationData(
                                       << data.type;
 
   for (size_t i = 0; i < data.buttons.size(); i++) {
-    rich_data.buttons.push_back(message_center::ButtonInfo(
-        base::UTF8ToUTF16(data.buttons.at(i)->label.get())));
+    rich_data.buttons.emplace_back(
+        base::UTF8ToUTF16(data.buttons.at(i)->label.get()));
   }
 
   // If the client is old (version < 1), both |no_clear| and |ongoing_event|

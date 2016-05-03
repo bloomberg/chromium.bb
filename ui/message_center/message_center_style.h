@@ -78,7 +78,8 @@ const int kMessageLineHeight = 18;         // In DIPs.
 
 // Colors.
 extern const SkColor kNotificationBackgroundColor; // Background of the card.
-extern const SkColor kImageBackgroundColor;        // Background of the image.
+// Background of the image.
+MESSAGE_CENTER_EXPORT extern const SkColor kImageBackgroundColor;
 extern const SkColor kIconBackgroundColor;         // Used behind icons smaller
                                                    // than the icon view.
 extern const SkColor kRegularTextColor;            // Title, message, ...
@@ -98,7 +99,8 @@ MESSAGE_CENTER_EXPORT gfx::Size GetImageSizeForContainerSize(
     const gfx::Size& image_size);
 
 extern const int kNotificationMaximumImageHeight;  // For image notifications.
-extern const size_t kNotificationMaximumItems;     // For list notifications.
+MESSAGE_CENTER_EXPORT extern const size_t
+    kNotificationMaximumItems;     // For list notifications.
 
 // Timing.
 extern const int kAutocloseDefaultDelaySeconds;

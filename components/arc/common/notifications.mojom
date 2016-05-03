@@ -4,6 +4,8 @@
 
 module arc.mojom;
 
+import "bitmap.mojom";
+
 // These values must be matched with the NOTIFICATION_EVENT_* constants in
 // com.android.server.ArcNotificationListenerService.
 enum ArcNotificationEvent {
@@ -15,7 +17,6 @@ enum ArcNotificationEvent {
   BUTTON_3_CLICKED = 4,
   BUTTON_4_CLICKED = 5,
   BUTTON_5_CLICKED = 6,
-  MAX = BUTTON_5_CLICKED
 };
 
 // These values must be matched with the NOTIFICATION_TYPE_* constants in
@@ -24,7 +25,7 @@ enum ArcNotificationType {
   BASIC = 0,
   IMAGE = 1,
   PROGRESS = 2,
-  MAX = PROGRESS
+  LIST = 3,
 };
 
 struct ArcNotificationButton {
@@ -61,6 +62,12 @@ struct ArcNotificationData {
   // Flag if the notification has FLAG_ONGOING_EVENT.
   [MinVersion=1]
   bool ongoing_event;
+  // Subtexts for list notifications.
+  [MinVersion=3]
+  array<string>? texts;
+  // Image for image notifications.
+  [MinVersion=3]
+  ArcBitmap? big_picture;
 };
 
 [MinVersion=2]
