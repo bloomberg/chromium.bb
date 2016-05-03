@@ -88,7 +88,7 @@ class PolicyBase final : public TargetPolicy {
 
   // Adds a target process to the internal list of targets. Internally a
   // call to TargetProcess::Init() is issued.
-  bool AddTarget(TargetProcess* target);
+  ResultCode AddTarget(TargetProcess* target);
 
   // Called when there are no more active processes in a Job.
   // Removes a Job object associated with this policy and the target associated
@@ -107,7 +107,7 @@ class PolicyBase final : public TargetPolicy {
   ~PolicyBase();
 
   // Sets up interceptions for a new target.
-  bool SetupAllInterceptions(TargetProcess* target);
+  ResultCode SetupAllInterceptions(TargetProcess* target);
 
   // Sets up the handle closer for a new target.
   bool SetupHandleCloser(TargetProcess* target);

@@ -185,7 +185,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   bool OnMessageReceived(const IPC::Message& message) override;
   void OnChannelConnected(int32_t peer_pid) override;
   void OnProcessLaunched() override;
-  void OnProcessLaunchFailed() override;
+  void OnProcessLaunchFailed(int error_code) override;
   void OnProcessCrashed(int exit_code) override;
 
   // Message handlers.

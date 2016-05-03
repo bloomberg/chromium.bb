@@ -409,17 +409,21 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
       new TargetProcess(std::move(initial_token), std::move(lockdown_token),
                         std::move(lowbox_token), job.Get(), thread_pool_);
 
-  DWORD win_result = target->Create(exe_path, command_line, inherit_handles,
-                                    startup_info, &process_info);
+  DWORD win_result;
+  result = target->Create(exe_path, command_line, inherit_handles, startup_info,
+                          &process_info, &win_result);
 
-  if (ERROR_SUCCESS != win_result) {
+  if (result != SBOX_ALL_OK) {
     SpawnCleanup(target, win_result);
-    return SBOX_ERROR_CREATE_PROCESS;
+    return result;
   }
 
   // Now the policy is the owner of the target.
-  if (!policy_base->AddTarget(target)) {
-    return SpawnCleanup(target, 0);
+  result = policy_base->AddTarget(target);
+
+  if (result != SBOX_ALL_OK) {
+    SpawnCleanup(target, 0);
+    return result;
   }
 
   // We are going to keep a pointer to the policy because we'll call it when
@@ -447,7 +451,7 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
   }
 
   *target_info = process_info.Take();
-  return SBOX_ALL_OK;
+  return result;
 }
 
 

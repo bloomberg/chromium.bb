@@ -45,7 +45,7 @@ class SandboxedDMGAnalyzer : public content::UtilityProcessHostClient {
 
   // content::UtilityProcessHostClient:
   void OnProcessCrashed(int exit_code) override;
-  void OnProcessLaunchFailed() override;
+  void OnProcessLaunchFailed(int error_code) override;
   bool OnMessageReceived(const IPC::Message& message) override;
 
   // Message handler to receive the results of the analysis. Invokes the

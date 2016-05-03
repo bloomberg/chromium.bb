@@ -255,7 +255,7 @@ bool UtilityProcessHostImpl::StartProcess() {
 
   std::string channel_id = process_->GetHost()->CreateChannel();
   if (channel_id.empty()) {
-    NotifyAndDelete();
+    NotifyAndDelete(LAUNCH_RESULT_FAILURE);
     return false;
   }
 
@@ -374,14 +374,15 @@ bool UtilityProcessHostImpl::OnMessageReceived(const IPC::Message& message) {
   return true;
 }
 
-void UtilityProcessHostImpl::OnProcessLaunchFailed() {
+void UtilityProcessHostImpl::OnProcessLaunchFailed(int error_code) {
   if (!client_.get())
     return;
 
   client_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&UtilityProcessHostClient::OnProcessLaunchFailed,
-                 client_.get()));
+                 client_.get(),
+                 error_code));
 }
 
 void UtilityProcessHostImpl::OnProcessCrashed(int exit_code) {
@@ -394,20 +395,22 @@ void UtilityProcessHostImpl::OnProcessCrashed(int exit_code) {
             exit_code));
 }
 
-void UtilityProcessHostImpl::NotifyAndDelete() {
+void UtilityProcessHostImpl::NotifyAndDelete(int error_code) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&UtilityProcessHostImpl::NotifyLaunchFailedAndDelete,
-                 weak_ptr_factory_.GetWeakPtr()));
+                 weak_ptr_factory_.GetWeakPtr(),
+                 error_code));
 }
 
 // static
 void UtilityProcessHostImpl::NotifyLaunchFailedAndDelete(
-    base::WeakPtr<UtilityProcessHostImpl> host) {
+    base::WeakPtr<UtilityProcessHostImpl> host,
+    int error_code) {
   if (!host)
     return;
 
-  host->OnProcessLaunchFailed();
+  host->OnProcessLaunchFailed(error_code);
   delete host.get();
 }
 

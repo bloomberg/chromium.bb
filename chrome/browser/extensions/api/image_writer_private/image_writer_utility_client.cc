@@ -4,6 +4,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -109,12 +110,18 @@ void ImageWriterUtilityClient::StartHost() {
 
 void ImageWriterUtilityClient::OnProcessCrashed(int exit_code) {
   task_runner_->PostTask(
-      FROM_HERE, base::Bind(error_callback_, "Utility process crashed."));
+      FROM_HERE,
+      base::Bind(error_callback_,
+                 base::StringPrintf("Utility process crashed with code %08x.",
+                                    exit_code)));
 }
 
-void ImageWriterUtilityClient::OnProcessLaunchFailed() {
+void ImageWriterUtilityClient::OnProcessLaunchFailed(int error_code) {
   task_runner_->PostTask(
-      FROM_HERE, base::Bind(error_callback_, "Process launch failed."));
+      FROM_HERE,
+      base::Bind(error_callback_,
+                 base::StringPrintf("Process launch failed with code %08x.",
+                                    error_code)));
 }
 
 bool ImageWriterUtilityClient::OnMessageReceived(const IPC::Message& message) {

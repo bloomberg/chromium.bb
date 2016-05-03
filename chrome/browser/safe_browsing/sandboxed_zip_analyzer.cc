@@ -105,7 +105,7 @@ void SandboxedZipAnalyzer::OnProcessCrashed(int exit_code) {
   OnAnalyzeZipFileFinished(zip_analyzer::Results());
 }
 
-void SandboxedZipAnalyzer::OnProcessLaunchFailed() {
+void SandboxedZipAnalyzer::OnProcessLaunchFailed(int error_code) {
   OnAnalyzeZipFileFinished(zip_analyzer::Results());
 }
 

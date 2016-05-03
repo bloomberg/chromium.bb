@@ -244,12 +244,18 @@ bool ServiceUtilityProcessHost::Launch(base::CommandLine* cmd_line,
   if (no_sandbox) {
     cmd_line->AppendSwitch(switches::kNoSandbox);
     process_ = base::LaunchProcess(*cmd_line, base::LaunchOptions());
+    return process_.IsValid();
   } else {
     ServiceSandboxedProcessLauncherDelegate delegate;
-    process_ = content::StartSandboxedProcess(
-        &delegate, cmd_line, base::HandlesToInheritVector());
+    base::Process process;
+    sandbox::ResultCode result = content::StartSandboxedProcess(
+        &delegate, cmd_line, base::HandlesToInheritVector(), &process);
+    if (result == sandbox::SBOX_ALL_OK) {
+      process_ = std::move(process);
+      return true;
+    }
+    return false;
   }
-  return process_.IsValid();
 }
 
 bool ServiceUtilityProcessHost::Send(IPC::Message* msg) {

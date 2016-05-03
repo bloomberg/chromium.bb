@@ -927,7 +927,8 @@ void GpuProcessHost::OnProcessLaunched() {
                       base::TimeTicks::Now() - init_start_time_);
 }
 
-void GpuProcessHost::OnProcessLaunchFailed() {
+void GpuProcessHost::OnProcessLaunchFailed(int error_code) {
+  // TODO(wfh): do something more useful with this error code.
   RecordProcessCrash();
 }
 

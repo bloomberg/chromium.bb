@@ -73,7 +73,7 @@ void SandboxedDMGAnalyzer::OnProcessCrashed(int exit_code) {
   OnAnalysisFinished(zip_analyzer::Results());
 }
 
-void SandboxedDMGAnalyzer::OnProcessLaunchFailed() {
+void SandboxedDMGAnalyzer::OnProcessLaunchFailed(int error_code) {
   OnAnalysisFinished(zip_analyzer::Results());
 }
 

@@ -105,7 +105,7 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
 
   // ChildProcessLauncher::Client implementation.
   void OnProcessLaunched() override;
-  void OnProcessLaunchFailed() override;
+  void OnProcessLaunchFailed(int error_code) override;
 
   // Returns true if the process has successfully launched. Must only be called
   // on the IO thread.

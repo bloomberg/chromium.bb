@@ -25,6 +25,7 @@ namespace bpf_dsl {
 class Policy;
 }
 struct SandboxInterfaceInfo;
+enum ResultCode : int;
 }
 
 namespace content {
@@ -46,10 +47,11 @@ CONTENT_EXPORT bool InitializeSandbox(
 // then it just has to outlive this method call. |handles_to_inherit| is a list
 // of handles for the child process to inherit. The caller retains ownership of
 // the handles.
-CONTENT_EXPORT base::Process StartSandboxedProcess(
+CONTENT_EXPORT sandbox::ResultCode StartSandboxedProcess(
     SandboxedProcessLauncherDelegate* delegate,
     base::CommandLine* cmd_line,
-    const base::HandlesToInheritVector& handles_to_inherit);
+    const base::HandlesToInheritVector& handles_to_inherit,
+    base::Process* process);
 
 #elif defined(OS_MACOSX)
 

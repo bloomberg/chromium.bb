@@ -179,7 +179,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   // ChildProcessLauncher::Client implementation.
   void OnProcessLaunched() override;
-  void OnProcessLaunchFailed() override;
+  void OnProcessLaunchFailed(int error_code) override;
 
   scoped_refptr<AudioRendererHost> audio_renderer_host() const;
 

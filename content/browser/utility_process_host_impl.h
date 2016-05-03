@@ -75,15 +75,16 @@ class CONTENT_EXPORT UtilityProcessHostImpl
 
   // BrowserChildProcessHost:
   bool OnMessageReceived(const IPC::Message& message) override;
-  void OnProcessLaunchFailed() override;
+  void OnProcessLaunchFailed(int error_code) override;
   void OnProcessCrashed(int exit_code) override;
 
   // Cleans up |this| as a result of a failed Start().
-  void NotifyAndDelete();
+  void NotifyAndDelete(int error_code);
 
   // Notifies the client that the launch failed and deletes |host|.
   static void NotifyLaunchFailedAndDelete(
-      base::WeakPtr<UtilityProcessHostImpl> host);
+      base::WeakPtr<UtilityProcessHostImpl> host,
+      int error_code);
 
   // A pointer to our client interface, who will be informed of progress.
   scoped_refptr<UtilityProcessHostClient> client_;

@@ -197,6 +197,8 @@ void StabilityMetricsHelper::LogRendererCrash(bool was_extension_process,
   } else if (status == base::TERMINATION_STATUS_LAUNCH_FAILED) {
     UMA_HISTOGRAM_ENUMERATION("BrowserRenderProcessHost.ChildLaunchFailures",
                               histogram_type, RENDERER_TYPE_COUNT);
+    UMA_HISTOGRAM_SPARSE_SLOWLY(
+        "BrowserRenderProcessHost.ChildLaunchFailureCodes", exit_code);
     if (was_extension_process)
       IncrementPrefValue(prefs::kStabilityExtensionRendererFailedLaunchCount);
     else

@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/common/extensions/api/networking_private/networking_private_crypto.h"
@@ -34,7 +35,7 @@ class CredentialsGetterHostClient : public UtilityProcessHostClient {
   // UtilityProcessHostClient
   bool OnMessageReceived(const IPC::Message& message) override;
   void OnProcessCrashed(int exit_code) override;
-  void OnProcessLaunchFailed() override;
+  void OnProcessLaunchFailed(int error_code) override;
 
   // IPC message handlers.
   void OnGotCredentials(const std::string& key_data, bool success);
@@ -72,11 +73,13 @@ bool CredentialsGetterHostClient::OnMessageReceived(
 }
 
 void CredentialsGetterHostClient::OnProcessCrashed(int exit_code) {
-  callback_.Run("", "Process Crashed");
+  callback_.Run(
+      "", base::StringPrintf("Process Crashed with code %08x.", exit_code));
 }
 
-void CredentialsGetterHostClient::OnProcessLaunchFailed() {
-  callback_.Run("", "Process Launch Failed");
+void CredentialsGetterHostClient::OnProcessLaunchFailed(int error_code) {
+  callback_.Run("", base::StringPrintf("Process Launch Failed with code %08x.",
+                                       error_code));
 }
 
 void CredentialsGetterHostClient::OnGotCredentials(const std::string& key_data,

@@ -42,6 +42,10 @@ class CONTENT_EXPORT RenderProcessHostObserver {
   // active renderer process for the top-level frame; for code that needs to be
   // a WebContentsObserver anyway, consider whether that API might be a better
   // choice.
+  //
+  // If |status| is TERMINATION_STATUS_LAUNCH_FAILED then |exit_code| will
+  // contain a platform specific launch failure error code. Otherwise, it will
+  // contain the exit code for the process.
   virtual void RenderProcessExited(RenderProcessHost* host,
                                    base::TerminationStatus status,
                                    int exit_code) {}

@@ -129,7 +129,7 @@ class ImageDecoder : public content::UtilityProcessHostClient {
 
   // Overidden from UtilityProcessHostClient.
   void OnProcessCrashed(int exit_code) override;
-  void OnProcessLaunchFailed() override;
+  void OnProcessLaunchFailed(int error_code) override;
   bool OnMessageReceived(const IPC::Message& message) override;
 
   // IPC message handlers.

@@ -53,7 +53,7 @@ class SandboxedZipAnalyzer : public content::UtilityProcessHostClient {
   // content::UtilityProcessHostClient implementation.
   // These notifications run on the IO thread.
   void OnProcessCrashed(int exit_code) override;
-  void OnProcessLaunchFailed() override;
+  void OnProcessLaunchFailed(int error_code) override;
   bool OnMessageReceived(const IPC::Message& message) override;
 
   // Launches the utility process.  Must run on the IO thread.

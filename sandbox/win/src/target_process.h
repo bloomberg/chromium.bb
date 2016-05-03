@@ -53,21 +53,23 @@ class TargetProcess {
   void Release() {}
 
   // Creates the new target process. The process is created suspended.
-  DWORD Create(const wchar_t* exe_path,
-               const wchar_t* command_line,
-               bool inherit_handles,
-               const base::win::StartupInformation& startup_info,
-               base::win::ScopedProcessInformation* target_info);
+  ResultCode Create(const wchar_t* exe_path,
+                    const wchar_t* command_line,
+                    bool inherit_handles,
+                    const base::win::StartupInformation& startup_info,
+                    base::win::ScopedProcessInformation* target_info,
+                    DWORD* win_error);
 
   // Destroys the target process.
   void Terminate();
 
   // Creates the IPC objects such as the BrokerDispatcher and the
   // IPC server. The IPC server uses the services of the thread_pool.
-  DWORD Init(Dispatcher* ipc_dispatcher,
-             void* policy,
-             uint32_t shared_IPC_size,
-             uint32_t shared_policy_size);
+  ResultCode Init(Dispatcher* ipc_dispatcher,
+                  void* policy,
+                  uint32_t shared_IPC_size,
+                  uint32_t shared_policy_size,
+                  DWORD* win_error);
 
   // Returns the handle to the target process.
   HANDLE Process() const {

@@ -4046,6 +4046,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="BrowserRenderProcessHost.ChildLaunchFailureCodes"
+    enum="LaunchErrorCodes">
+  <owner>wfh@chromium.org</owner>
+  <summary>
+    The launch error codes for failed renderer process launches.
+  </summary>
+</histogram>
+
 <histogram name="BrowserRenderProcessHost.ChildLaunchFailures"
     enum="RendererType">
   <owner>wfh@chromium.org</owner>
@@ -76069,6 +76077,45 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="6" label="HandleUpdateOrigins Empty"/>
   <int value="7" label="HandleUpdateOrigins Parsed"/>
   <int value="8" label="HandleUpdateOrigins Invalid"/>
+</enum>
+
+<enum name="LaunchErrorCodes" type="int">
+  <int value="0" label="SBOX_ALL_OK"/>
+  <int value="1" label="SBOX_ERROR_GENERIC"/>
+  <int value="2" label="SBOX_ERROR_BAD_PARAMS"/>
+  <int value="3" label="SBOX_ERROR_UNSUPPORTED"/>
+  <int value="4" label="SBOX_ERROR_NO_SPACE"/>
+  <int value="5" label="SBOX_ERROR_INVALID_IPC"/>
+  <int value="6" label="SBOX_ERROR_FAILED_IPC"/>
+  <int value="7" label="SBOX_ERROR_NO_HANDLE"/>
+  <int value="8" label="SBOX_ERROR_UNEXPECTED_CALL"/>
+  <int value="9" label="SBOX_ERROR_WAIT_ALREADY_CALLED"/>
+  <int value="10" label="SBOX_ERROR_CHANNEL_ERROR"/>
+  <int value="11" label="SBOX_ERROR_CANNOT_CREATE_DESKTOP"/>
+  <int value="12" label="SBOX_ERROR_CANNOT_CREATE_WINSTATION"/>
+  <int value="13" label="SBOX_ERROR_FAILED_TO_SWITCH_BACK_WINSTATION"/>
+  <int value="14" label="SBOX_ERROR_INVALID_APP_CONTAINER"/>
+  <int value="15" label="SBOX_ERROR_INVALID_CAPABILITY"/>
+  <int value="16" label="SBOX_ERROR_CANNOT_INIT_APPCONTAINER"/>
+  <int value="17" label="SBOX_ERROR_PROC_THREAD_ATTRIBUTES"/>
+  <int value="18" label="SBOX_ERROR_CREATE_PROCESS"/>
+  <int value="19" label="SBOX_ERROR_DELEGATE_PRE_SPAWN"/>
+  <int value="20" label="SBOX_ERROR_ASSIGN_PROCESS_TO_JOB_OBJECT"/>
+  <int value="21" label="SBOX_ERROR_SET_THREAD_TOKEN"/>
+  <int value="22" label="SBOX_ERROR_GET_THREAD_CONTEXT"/>
+  <int value="23" label="SBOX_ERROR_DUPLICATE_TARGET_INFO"/>
+  <int value="24" label="SBOX_ERROR_SET_LOW_BOX_TOKEN"/>
+  <int value="25" label="SBOX_ERROR_CREATE_FILE_MAPPING"/>
+  <int value="26" label="SBOX_ERROR_DUPLICATE_SHARED_SECTION"/>
+  <int value="27" label="SBOX_ERROR_MAP_VIEW_OF_SHARED_SECTION"/>
+  <int value="28" label="SBOX_ERROR_APPLY_ASLR_MITIGATIONS"/>
+  <int value="29" label="SBOX_ERROR_SETUP_BASIC_INTERCEPTIONS"/>
+  <int value="30" label="SBOX_ERROR_SETUP_INTERCEPTION_SERVICE"/>
+  <int value="31" label="SBOX_ERROR_INITIALIZE_INTERCEPTIONS"/>
+  <int value="32" label="SBOX_ERROR_SETUP_NTDLL_IMPORTS"/>
+  <int value="33" label="SBOX_ERROR_SETUP_HANDLE_CLOSER"/>
+  <int value="1002" label="LAUNCH_RESULT_SUCCESS"/>
+  <int value="1003" label="LAUNCH_RESULT_FAILURE"/>
 </enum>
 
 <enum name="LaunchFromHomeScreen" type="int">

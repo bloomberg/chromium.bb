@@ -395,8 +395,8 @@ bool BrowserChildProcessHostImpl::Send(IPC::Message* message) {
   return child_process_host_->Send(message);
 }
 
-void BrowserChildProcessHostImpl::OnProcessLaunchFailed() {
-  delegate_->OnProcessLaunchFailed();
+void BrowserChildProcessHostImpl::OnProcessLaunchFailed(int error_code) {
+  delegate_->OnProcessLaunchFailed(error_code);
   notify_child_disconnected_ = false;
   delete delegate_;  // Will delete us
 }

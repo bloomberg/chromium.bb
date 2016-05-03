@@ -113,7 +113,7 @@ class PdfToEmfUtilityProcessHostClient
 
   // UtilityProcessHostClient implementation.
   void OnProcessCrashed(int exit_code) override;
-  void OnProcessLaunchFailed() override;
+  void OnProcessLaunchFailed(int exit_code) override;
   bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
@@ -425,7 +425,7 @@ void PdfToEmfUtilityProcessHostClient::OnProcessCrashed(int exit_code) {
   OnFailed();
 }
 
-void PdfToEmfUtilityProcessHostClient::OnProcessLaunchFailed() {
+void PdfToEmfUtilityProcessHostClient::OnProcessLaunchFailed(int exit_code) {
   OnFailed();
 }
 

@@ -23,8 +23,9 @@ class UtilityProcessHostClient
   // Called when the process has crashed.
   virtual void OnProcessCrashed(int exit_code) {}
 
-  // Called when the process fails to launch, i.e. it has no exit code.
-  virtual void OnProcessLaunchFailed() {}
+  // Called when the process fails to launch. |error_code| is one of
+  // LaunchResultCode or sandbox::ResultCode containing the error.
+  virtual void OnProcessLaunchFailed(int error_code) {}
 
   // Allow the client to filter IPC messages.
   virtual bool OnMessageReceived(const IPC::Message& message) = 0;

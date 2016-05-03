@@ -18,11 +18,34 @@
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 
+#if defined(OS_WIN)
+#include "sandbox/win/src/sandbox_types.h"
+#endif
+
 namespace base {
 class CommandLine;
 }
 
 namespace content {
+
+// Note: These codes are listed in a histogram and any new codes should be added
+// at the end.
+enum LaunchResultCode {
+  // Launch start code, to not overlap with sandbox::ResultCode.
+  LAUNCH_RESULT_START = 1001,
+  // Launch success.
+  LAUNCH_RESULT_SUCCESS,
+  // Generic launch failure.
+  LAUNCH_RESULT_FAILURE,
+  // Placeholder for last item of the enum.
+  LAUNCH_RESULT_CODE_LAST_CODE
+};
+
+#if defined(OS_WIN)
+static_assert(static_cast<int>(LAUNCH_RESULT_START) >
+                  static_cast<int>(sandbox::SBOX_ERROR_LAST),
+              "LaunchResultCode must not overlap with sandbox::ResultCode");
+#endif
 
 // Launches a process asynchronously and notifies the client of the process
 // handle when it's available.  It's used to avoid blocking the calling thread
@@ -35,7 +58,7 @@ class CONTENT_EXPORT ChildProcessLauncher : public base::NonThreadSafe {
     // constructed on.
     virtual void OnProcessLaunched() = 0;
 
-    virtual void OnProcessLaunchFailed() {};
+    virtual void OnProcessLaunchFailed(int error_code) {};
 
    protected:
     virtual ~Client() {}
@@ -101,14 +124,16 @@ class CONTENT_EXPORT ChildProcessLauncher : public base::NonThreadSafe {
                         base::ScopedFD ipcfd,
                         base::ScopedFD mojo_fd,
 #endif
-                        base::Process process);
+                        base::Process process,
+                        int error_code);
 
   // Notifies the client about the result of the operation.
   void Notify(ZygoteHandle zygote,
 #if defined(OS_ANDROID)
               base::ScopedFD ipcfd,
 #endif
-              base::Process process);
+              base::Process process,
+              int error_code);
 
 #if defined(MOJO_SHELL_CLIENT)
   // When this process is run from an external Mojo shell, this function will

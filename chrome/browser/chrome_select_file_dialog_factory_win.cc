@@ -50,7 +50,7 @@ class GetOpenFileNameClient : public content::UtilityProcessHostClient {
 
   // UtilityProcessHostClient implementation
   void OnProcessCrashed(int exit_code) override;
-  void OnProcessLaunchFailed() override;
+  void OnProcessLaunchFailed(int error_code) override;
   bool OnMessageReceived(const IPC::Message& message) override;
 
  protected:
@@ -79,7 +79,7 @@ void GetOpenFileNameClient::OnProcessCrashed(int exit_code) {
   event_.Signal();
 }
 
-void GetOpenFileNameClient::OnProcessLaunchFailed() {
+void GetOpenFileNameClient::OnProcessLaunchFailed(int error_code) {
   event_.Signal();
 }
 
@@ -180,7 +180,7 @@ class GetSaveFileNameClient : public content::UtilityProcessHostClient {
 
   // UtilityProcessHostClient implementation
   void OnProcessCrashed(int exit_code) override;
-  void OnProcessLaunchFailed() override;
+  void OnProcessLaunchFailed(int error_code) override;
   bool OnMessageReceived(const IPC::Message& message) override;
 
  protected:
@@ -209,7 +209,7 @@ void GetSaveFileNameClient::OnProcessCrashed(int exit_code) {
   event_.Signal();
 }
 
-void GetSaveFileNameClient::OnProcessLaunchFailed() {
+void GetSaveFileNameClient::OnProcessLaunchFailed(int error_code) {
   event_.Signal();
 }
 

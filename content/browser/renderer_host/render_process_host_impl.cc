@@ -2595,15 +2595,15 @@ void RenderProcessHostImpl::OnProcessLaunched() {
 #endif
 }
 
-void RenderProcessHostImpl::OnProcessLaunchFailed() {
+void RenderProcessHostImpl::OnProcessLaunchFailed(int error_code) {
   // If this object will be destructed soon, then observers have already been
   // sent a RenderProcessHostDestroyed notification, and we must observe our
   // contract that says that will be the last call.
   if (deleting_soon_)
     return;
 
-  // TODO(wfh): Fill in the real error code here see crbug.com/526198.
-  RendererClosedDetails details{base::TERMINATION_STATUS_LAUNCH_FAILED, -1};
+  RendererClosedDetails details{base::TERMINATION_STATUS_LAUNCH_FAILED,
+                                error_code};
   ProcessDied(true, &details);
 }
 

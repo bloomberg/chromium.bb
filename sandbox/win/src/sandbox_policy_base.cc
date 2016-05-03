@@ -503,51 +503,56 @@ PSID PolicyBase::GetLowBoxSid() const {
   return lowbox_sid_;
 }
 
-bool PolicyBase::AddTarget(TargetProcess* target) {
+ResultCode PolicyBase::AddTarget(TargetProcess* target) {
   if (NULL != policy_)
     policy_maker_->Done();
 
   if (!ApplyProcessMitigationsToSuspendedProcess(target->Process(),
                                                  mitigations_)) {
-    return false;
+    return SBOX_ERROR_APPLY_ASLR_MITIGATIONS;
   }
 
-  if (!SetupAllInterceptions(target))
-    return false;
+  ResultCode ret = SetupAllInterceptions(target);
+
+  if (ret != SBOX_ALL_OK)
+    return ret;
 
   if (!SetupHandleCloser(target))
-    return false;
+    return SBOX_ERROR_SETUP_HANDLE_CLOSER;
 
+  DWORD win_error = ERROR_SUCCESS;
   // Initialize the sandbox infrastructure for the target.
-  if (ERROR_SUCCESS !=
-      target->Init(dispatcher_.get(), policy_, kIPCMemSize, kPolMemSize))
-    return false;
+  // TODO(wfh) do something with win_error code here.
+  ret = target->Init(dispatcher_.get(), policy_, kIPCMemSize, kPolMemSize,
+                     &win_error);
+
+  if (ret != SBOX_ALL_OK)
+    return ret;
 
   g_shared_delayed_integrity_level = delayed_integrity_level_;
-  ResultCode ret = target->TransferVariable(
-                       "g_shared_delayed_integrity_level",
-                       &g_shared_delayed_integrity_level,
-                       sizeof(g_shared_delayed_integrity_level));
+  ret = target->TransferVariable("g_shared_delayed_integrity_level",
+                                 &g_shared_delayed_integrity_level,
+                                 sizeof(g_shared_delayed_integrity_level));
   g_shared_delayed_integrity_level = INTEGRITY_LEVEL_LAST;
   if (SBOX_ALL_OK != ret)
-    return false;
+    return ret;
 
   // Add in delayed mitigations and pseudo-mitigations enforced at startup.
   g_shared_delayed_mitigations = delayed_mitigations_ |
       FilterPostStartupProcessMitigations(mitigations_);
   if (!CanSetProcessMitigationsPostStartup(g_shared_delayed_mitigations))
-    return false;
+    return SBOX_ERROR_BAD_PARAMS;
 
   ret = target->TransferVariable("g_shared_delayed_mitigations",
                                  &g_shared_delayed_mitigations,
                                  sizeof(g_shared_delayed_mitigations));
   g_shared_delayed_mitigations = 0;
   if (SBOX_ALL_OK != ret)
-    return false;
+    return ret;
 
   AutoLock lock(&lock_);
   targets_.push_back(target);
-  return true;
+  return SBOX_ALL_OK;
 }
 
 bool PolicyBase::OnJobEmpty(HANDLE job) {
@@ -616,13 +621,13 @@ bool PolicyBase::GetEnableOPMRedirection() {
   return enable_opm_redirection_;
 }
 
-bool PolicyBase::SetupAllInterceptions(TargetProcess* target) {
+ResultCode PolicyBase::SetupAllInterceptions(TargetProcess* target) {
   InterceptionManager manager(target, relaxed_interceptions_);
 
   if (policy_) {
     for (int i = 0; i < IPC_LAST_TAG; i++) {
       if (policy_->entry[i] && !dispatcher_->SetupService(&manager, i))
-        return false;
+        return SBOX_ERROR_SETUP_INTERCEPTION_SERVICE;
     }
   }
 
@@ -634,13 +639,16 @@ bool PolicyBase::SetupAllInterceptions(TargetProcess* target) {
   }
 
   if (!SetupBasicInterceptions(&manager, is_csrss_connected_))
-    return false;
+    return SBOX_ERROR_SETUP_BASIC_INTERCEPTIONS;
 
   if (!manager.InitializeInterceptions())
-    return false;
+    return SBOX_ERROR_INITIALIZE_INTERCEPTIONS;
 
   // Finally, setup imports on the target so the interceptions can work.
-  return SetupNtdllImports(target);
+  if (!SetupNtdllImports(target))
+    return SBOX_ERROR_SETUP_NTDLL_IMPORTS;
+
+  return SBOX_ALL_OK;
 }
 
 bool PolicyBase::SetupHandleCloser(TargetProcess* target) {

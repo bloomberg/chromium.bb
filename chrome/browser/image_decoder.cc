@@ -237,7 +237,7 @@ void ImageDecoder::OnProcessCrashed(int exit_code) {
   FailAllRequests();
 }
 
-void ImageDecoder::OnProcessLaunchFailed() {
+void ImageDecoder::OnProcessLaunchFailed(int error_code) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   FailAllRequests();
 }
