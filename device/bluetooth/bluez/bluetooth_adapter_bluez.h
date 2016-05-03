@@ -23,6 +23,7 @@
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
 #include "device/bluetooth/bluetooth_export.h"
+#include "device/bluetooth/bluetooth_gatt_service.h"
 #include "device/bluetooth/dbus/bluetooth_adapter_client.h"
 #include "device/bluetooth/dbus/bluetooth_agent_service_provider.h"
 #include "device/bluetooth/dbus/bluetooth_device_client.h"
@@ -45,6 +46,7 @@ class BluetoothBlueZTest;
 class BluetoothAdapterProfileBlueZ;
 class BluetoothDeviceBlueZ;
 class BluetoothLocalGattServiceBlueZ;
+class BluetoothGattApplicationServiceProvider;
 class BluetoothPairingBlueZ;
 
 // The BluetoothAdapterBlueZ class implements BluetoothAdapter for platforms
@@ -150,8 +152,24 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
   void ReleaseProfile(const dbus::ObjectPath& device_path,
                       BluetoothAdapterProfileBlueZ* profile);
 
+  // Add a local GATT service to the list of services owned by this adapter.
   void AddLocalGattService(
       std::unique_ptr<BluetoothLocalGattServiceBlueZ> service);
+
+  // Register a GATT service. The service must belong to this adapter.
+  void RegisterGattService(
+      BluetoothLocalGattServiceBlueZ* service,
+      const base::Closure& callback,
+      const device::BluetoothGattService::ErrorCallback& error_callback);
+
+  // Unregister a GATT service. The service must already be registered.
+  void UnregisterGattService(
+      BluetoothLocalGattServiceBlueZ* service,
+      const base::Closure& callback,
+      const device::BluetoothGattService::ErrorCallback& error_callback);
+
+  // Returns the object path of the adapter.
+  dbus::ObjectPath GetApplicationObjectPath() const;
 
  protected:
   // BluetoothAdapter:
@@ -348,6 +366,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
   // ended (with either success or failure).
   void ProcessQueuedDiscoveryRequests();
 
+  // Make the call to GattManager1 to register the services currently exported
+  // by the GATT Application service provider.
+  void RegisterApplication(
+      const base::Closure& callback,
+      const device::BluetoothGattService::ErrorCallback& error_callback);
+
   InitCallback init_callback_;
 
   bool initialized_;
@@ -396,8 +420,18 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
 
   std::unique_ptr<device::BluetoothDiscoveryFilter> current_filter_;
 
+  // List of GATT services that are owned by this adapter.
   std::vector<std::unique_ptr<BluetoothLocalGattServiceBlueZ>>
       owned_gatt_services_;
+
+  // GATT services that are currently available on the GATT server.
+  std::map<dbus::ObjectPath, BluetoothLocalGattServiceBlueZ*>
+      registered_gatt_services_;
+
+  // DBus Object Manager that acts as a service provider for all the services
+  // that are registered with this adapter.
+  std::unique_ptr<BluetoothGattApplicationServiceProvider>
+      gatt_application_provider_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

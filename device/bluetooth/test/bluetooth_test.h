@@ -8,6 +8,8 @@
 #include <stdint.h>
 
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -71,16 +73,16 @@ class BluetoothTestBase : public testing::Test {
   virtual bool PlatformSupportsLowEnergy() = 0;
 
   // Initializes the BluetoothAdapter |adapter_| with the system adapter.
-  virtual void InitWithDefaultAdapter(){};
+  virtual void InitWithDefaultAdapter() {}
 
   // Initializes the BluetoothAdapter |adapter_| with the system adapter forced
   // to be ignored as if it did not exist. This enables tests for when an
   // adapter is not present on the system.
-  virtual void InitWithoutDefaultAdapter(){};
+  virtual void InitWithoutDefaultAdapter() {}
 
   // Initializes the BluetoothAdapter |adapter_| with a fake adapter that can be
   // controlled by this test fixture.
-  virtual void InitWithFakeAdapter(){};
+  virtual void InitWithFakeAdapter() {}
 
   // Configures the fake adapter to lack the necessary permissions to scan for
   // devices.  Returns false if the current platform always has permission.
@@ -212,6 +214,42 @@ class BluetoothTestBase : public testing::Test {
   virtual void SimulateGattDescriptor(
       BluetoothRemoteGattCharacteristic* characteristic,
       const std::string& uuid) {}
+
+  // Simulates reading a value from a locally hosted GATT characteristic by a
+  // remote central device. Returns the value that was read from the local
+  // GATT characteristic in the value callback.
+  virtual void SimulateLocalGattCharacteristicValueReadRequest(
+      BluetoothLocalGattService* service,
+      BluetoothLocalGattCharacteristic* characteristic,
+      const BluetoothLocalGattService::Delegate::ValueCallback& value_callback,
+      const base::Closure& error_callback) {}
+
+  // Simulates write a value to a locally hosted GATT characteristic by a
+  // remote central device.
+  virtual void SimulateLocalGattCharacteristicValueWriteRequest(
+      BluetoothLocalGattService* service,
+      BluetoothLocalGattCharacteristic* characteristic,
+      const std::vector<uint8_t>& value_to_write,
+      const base::Closure& success_callback,
+      const base::Closure& error_callback) {}
+
+  // Simulates reading a value from a locally hosted GATT descriptor by a
+  // remote central device. Returns the value that was read from the local
+  // GATT descriptor in the value callback.
+  virtual void SimulateLocalGattDescriptorValueReadRequest(
+      BluetoothLocalGattService* service,
+      BluetoothLocalGattDescriptor* descriptor,
+      const BluetoothLocalGattService::Delegate::ValueCallback& value_callback,
+      const base::Closure& error_callback) {}
+
+  // Simulates write a value to a locally hosted GATT descriptor by a
+  // remote central device.
+  virtual void SimulateLocalGattDescriptorValueWriteRequest(
+      BluetoothLocalGattService* service,
+      BluetoothLocalGattDescriptor* descriptor,
+      const std::vector<uint8_t>& value_to_write,
+      const base::Closure& success_callback,
+      const base::Closure& error_callback) {}
 
   // Remembers |descriptor|'s platform specific object to be used in a
   // subsequent call to methods such as SimulateGattDescriptorRead that

@@ -4,29 +4,49 @@
 
 #include "device/bluetooth/test/bluetooth_test_bluez.h"
 
-#include <iterator>
-#include <sstream>
+#include <string>
 
-#include "base/logging.h"
+#include "base/bind.h"
+#include "base/callback.h"
+#include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "dbus/object_path.h"
 #include "device/bluetooth/bluez/bluetooth_adapter_bluez.h"
-#include "device/bluetooth/bluez/bluetooth_device_bluez.h"
+#include "device/bluetooth/bluez/bluetooth_gatt_characteristic_bluez.h"
 #include "device/bluetooth/bluez/bluetooth_gatt_descriptor_bluez.h"
-#include "device/bluetooth/bluez/bluetooth_remote_gatt_characteristic_bluez.h"
-#include "device/bluetooth/bluez/bluetooth_remote_gatt_service_bluez.h"
+#include "device/bluetooth/bluez/bluetooth_local_gatt_characteristic_bluez.h"
+#include "device/bluetooth/bluez/bluetooth_local_gatt_descriptor_bluez.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "device/bluetooth/dbus/fake_bluetooth_adapter_client.h"
 #include "device/bluetooth/dbus/fake_bluetooth_device_client.h"
-#include "device/bluetooth/test/test_bluetooth_adapter_observer.h"
+#include "device/bluetooth/dbus/fake_bluetooth_gatt_characteristic_service_provider.h"
+#include "device/bluetooth/dbus/fake_bluetooth_gatt_descriptor_service_provider.h"
+#include "device/bluetooth/dbus/fake_bluetooth_gatt_manager_client.h"
+#include "device/bluetooth/test/bluetooth_gatt_server_test.h"
 
 namespace device {
 
 namespace {
 
-void AdapterCallback(base::Closure quit_closure) {
+void AdapterCallback(const base::Closure& quit_closure) {
   quit_closure.Run();
 }
+
+void GetValueCallback(
+    const base::Closure& quit_closure,
+    const BluetoothLocalGattService::Delegate::ValueCallback& value_callback,
+    const std::vector<uint8_t>& value) {
+  value_callback.Run(value);
+  quit_closure.Run();
 }
+
+void ClosureCallback(const base::Closure& quit_closure,
+                     const base::Closure& callback) {
+  callback.Run();
+  quit_closure.Run();
+}
+
+}  // namespace
 
 BluetoothTestBlueZ::BluetoothTestBlueZ()
     : fake_bluetooth_device_client_(nullptr) {}
@@ -34,6 +54,7 @@ BluetoothTestBlueZ::BluetoothTestBlueZ()
 BluetoothTestBlueZ::~BluetoothTestBlueZ() {}
 
 void BluetoothTestBlueZ::SetUp() {
+  BluetoothTestBase::SetUp();
   std::unique_ptr<bluez::BluezDBusManagerSetter> dbus_setter =
       bluez::BluezDBusManager::GetSetterForTesting();
   fake_bluetooth_device_client_ = new bluez::FakeBluetoothDeviceClient;
@@ -50,6 +71,7 @@ void BluetoothTestBlueZ::SetUp() {
 void BluetoothTestBlueZ::TearDown() {
   adapter_ = nullptr;
   bluez::BluezDBusManager::Shutdown();
+  BluetoothTestBase::TearDown();
 }
 
 bool BluetoothTestBlueZ::PlatformSupportsLowEnergy() {
@@ -100,4 +122,121 @@ BluetoothDevice* BluetoothTestBlueZ::DiscoverLowEnergyDevice(
 
   return device;
 }
+
+void BluetoothTestBlueZ::SimulateLocalGattCharacteristicValueReadRequest(
+    BluetoothLocalGattService* service,
+    BluetoothLocalGattCharacteristic* characteristic,
+    const BluetoothLocalGattService::Delegate::ValueCallback& value_callback,
+    const base::Closure& error_callback) {
+  bluez::BluetoothLocalGattCharacteristicBlueZ* characteristic_bluez =
+      static_cast<bluez::BluetoothLocalGattCharacteristicBlueZ*>(
+          characteristic);
+  bluez::FakeBluetoothGattManagerClient* fake_bluetooth_gatt_manager_client =
+      static_cast<bluez::FakeBluetoothGattManagerClient*>(
+          bluez::BluezDBusManager::Get()->GetBluetoothGattManagerClient());
+  bluez::FakeBluetoothGattCharacteristicServiceProvider*
+      characteristic_provider =
+          fake_bluetooth_gatt_manager_client->GetCharacteristicServiceProvider(
+              characteristic_bluez->object_path());
+
+  bluez::BluetoothLocalGattServiceBlueZ* service_bluez =
+      static_cast<bluez::BluetoothLocalGattServiceBlueZ*>(service);
+  static_cast<TestBluetoothLocalGattServiceDelegate*>(
+      service_bluez->GetDelegate())
+      ->set_expected_characteristic(characteristic);
+
+  base::RunLoop run_loop;
+  characteristic_provider->GetValue(
+      base::Bind(&GetValueCallback, run_loop.QuitClosure(), value_callback),
+      base::Bind(&ClosureCallback, run_loop.QuitClosure(), error_callback));
+  run_loop.Run();
 }
+
+void BluetoothTestBlueZ::SimulateLocalGattCharacteristicValueWriteRequest(
+    BluetoothLocalGattService* service,
+    BluetoothLocalGattCharacteristic* characteristic,
+    const std::vector<uint8_t>& value_to_write,
+    const base::Closure& success_callback,
+    const base::Closure& error_callback) {
+  bluez::BluetoothLocalGattCharacteristicBlueZ* characteristic_bluez =
+      static_cast<bluez::BluetoothLocalGattCharacteristicBlueZ*>(
+          characteristic);
+  bluez::FakeBluetoothGattManagerClient* fake_bluetooth_gatt_manager_client =
+      static_cast<bluez::FakeBluetoothGattManagerClient*>(
+          bluez::BluezDBusManager::Get()->GetBluetoothGattManagerClient());
+  bluez::FakeBluetoothGattCharacteristicServiceProvider*
+      characteristic_provider =
+          fake_bluetooth_gatt_manager_client->GetCharacteristicServiceProvider(
+              characteristic_bluez->object_path());
+
+  bluez::BluetoothLocalGattServiceBlueZ* service_bluez =
+      static_cast<bluez::BluetoothLocalGattServiceBlueZ*>(service);
+  static_cast<TestBluetoothLocalGattServiceDelegate*>(
+      service_bluez->GetDelegate())
+      ->set_expected_characteristic(characteristic);
+
+  base::RunLoop run_loop;
+  characteristic_provider->SetValue(
+      value_to_write,
+      base::Bind(&ClosureCallback, run_loop.QuitClosure(), success_callback),
+      base::Bind(&ClosureCallback, run_loop.QuitClosure(), error_callback));
+  run_loop.Run();
+}
+
+void BluetoothTestBlueZ::SimulateLocalGattDescriptorValueReadRequest(
+    BluetoothLocalGattService* service,
+    BluetoothLocalGattDescriptor* descriptor,
+    const BluetoothLocalGattService::Delegate::ValueCallback& value_callback,
+    const base::Closure& error_callback) {
+  bluez::BluetoothLocalGattDescriptorBlueZ* descriptor_bluez =
+      static_cast<bluez::BluetoothLocalGattDescriptorBlueZ*>(descriptor);
+  bluez::FakeBluetoothGattManagerClient* fake_bluetooth_gatt_manager_client =
+      static_cast<bluez::FakeBluetoothGattManagerClient*>(
+          bluez::BluezDBusManager::Get()->GetBluetoothGattManagerClient());
+  bluez::FakeBluetoothGattDescriptorServiceProvider* descriptor_provider =
+      fake_bluetooth_gatt_manager_client->GetDescriptorServiceProvider(
+          descriptor_bluez->object_path());
+
+  bluez::BluetoothLocalGattServiceBlueZ* service_bluez =
+      static_cast<bluez::BluetoothLocalGattServiceBlueZ*>(service);
+  static_cast<TestBluetoothLocalGattServiceDelegate*>(
+      service_bluez->GetDelegate())
+      ->set_expected_descriptor(descriptor);
+
+  base::RunLoop run_loop;
+  descriptor_provider->GetValue(
+      base::Bind(&GetValueCallback, run_loop.QuitClosure(), value_callback),
+      base::Bind(&ClosureCallback, run_loop.QuitClosure(), error_callback));
+  run_loop.Run();
+}
+
+void BluetoothTestBlueZ::SimulateLocalGattDescriptorValueWriteRequest(
+    BluetoothLocalGattService* service,
+    BluetoothLocalGattDescriptor* descriptor,
+    const std::vector<uint8_t>& value_to_write,
+    const base::Closure& success_callback,
+    const base::Closure& error_callback) {
+  bluez::BluetoothLocalGattDescriptorBlueZ* descriptor_bluez =
+      static_cast<bluez::BluetoothLocalGattDescriptorBlueZ*>(descriptor);
+  bluez::FakeBluetoothGattManagerClient* fake_bluetooth_gatt_manager_client =
+      static_cast<bluez::FakeBluetoothGattManagerClient*>(
+          bluez::BluezDBusManager::Get()->GetBluetoothGattManagerClient());
+  bluez::FakeBluetoothGattDescriptorServiceProvider* descriptor_provider =
+      fake_bluetooth_gatt_manager_client->GetDescriptorServiceProvider(
+          descriptor_bluez->object_path());
+
+  bluez::BluetoothLocalGattServiceBlueZ* service_bluez =
+      static_cast<bluez::BluetoothLocalGattServiceBlueZ*>(service);
+  static_cast<TestBluetoothLocalGattServiceDelegate*>(
+      service_bluez->GetDelegate())
+      ->set_expected_descriptor(descriptor);
+
+  base::RunLoop run_loop;
+  descriptor_provider->SetValue(
+      value_to_write,
+      base::Bind(&ClosureCallback, run_loop.QuitClosure(), success_callback),
+      base::Bind(&ClosureCallback, run_loop.QuitClosure(), error_callback));
+  run_loop.Run();
+}
+
+}  // namespace device

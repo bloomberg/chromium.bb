@@ -26,6 +26,7 @@
 #include "device/bluetooth/bluez/bluetooth_advertisement_bluez.h"
 #include "device/bluetooth/bluez/bluetooth_audio_sink_bluez.h"
 #include "device/bluetooth/bluez/bluetooth_device_bluez.h"
+#include "device/bluetooth/bluez/bluetooth_gatt_service_bluez.h"
 #include "device/bluetooth/bluez/bluetooth_local_gatt_service_bluez.h"
 #include "device/bluetooth/bluez/bluetooth_pairing_bluez.h"
 #include "device/bluetooth/bluez/bluetooth_socket_bluez.h"
@@ -33,6 +34,8 @@
 #include "device/bluetooth/dbus/bluetooth_agent_manager_client.h"
 #include "device/bluetooth/dbus/bluetooth_agent_service_provider.h"
 #include "device/bluetooth/dbus/bluetooth_device_client.h"
+#include "device/bluetooth/dbus/bluetooth_gatt_application_service_provider.h"
+#include "device/bluetooth/dbus/bluetooth_gatt_manager_client.h"
 #include "device/bluetooth/dbus/bluetooth_input_client.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -54,6 +57,7 @@ namespace {
 // The agent path is relatively meaningless since BlueZ only permits one to
 // exist per D-Bus connection, it just has to be unique within Chromium.
 const char kAgentPath[] = "/org/chromium/bluetooth_agent";
+const char kGattApplicationObjectPath[] = "/gatt_application";
 
 void OnUnregisterAgentError(const std::string& error_name,
                             const std::string& error_message) {
@@ -98,6 +102,20 @@ base::WeakPtr<BluetoothAdapter> BluetoothAdapter::CreateAdapter(
 }  // namespace device
 
 namespace bluez {
+
+namespace {
+
+void OnRegisterationErrorCallback(
+    const device::BluetoothGattService::ErrorCallback& error_callback,
+    const std::string& error_name,
+    const std::string& error_message) {
+  VLOG(1) << "Failed to [Un]register service: " << error_name << ", "
+          << error_message;
+  error_callback.Run(
+      BluetoothGattServiceBlueZ::DBusErrorToServiceError(error_name));
+}
+
+}  // namespace
 
 // static
 base::WeakPtr<BluetoothAdapter> BluetoothAdapterBlueZ::CreateAdapter(
@@ -1046,6 +1064,73 @@ void BluetoothAdapterBlueZ::AddLocalGattService(
   owned_gatt_services_.push_back(std::move(service));
 }
 
+void BluetoothAdapterBlueZ::RegisterGattService(
+    BluetoothLocalGattServiceBlueZ* service,
+    const base::Closure& callback,
+    const device::BluetoothGattService::ErrorCallback& error_callback) {
+  if (registered_gatt_services_.count(service->object_path()) > 0) {
+    LOG(WARNING) << "Re-registering a service that is already registered!";
+    error_callback.Run(device::BluetoothGattService::GATT_ERROR_FAILED);
+    return;
+  }
+
+  registered_gatt_services_[service->object_path()] = service;
+  gatt_application_provider_ = BluetoothGattApplicationServiceProvider::Create(
+      bluez::BluezDBusManager::Get()->GetSystemBus(),
+      GetApplicationObjectPath(), registered_gatt_services_);
+
+  RegisterApplication(callback, error_callback);
+}
+
+void BluetoothAdapterBlueZ::UnregisterGattService(
+    BluetoothLocalGattServiceBlueZ* service,
+    const base::Closure& callback,
+    const device::BluetoothGattService::ErrorCallback& error_callback) {
+  DCHECK(bluez::BluezDBusManager::Get());
+
+  if (registered_gatt_services_.count(service->object_path()) == 0) {
+    LOG(WARNING) << "Unregistering a service that isn't registered! path: "
+                 << service->object_path().value();
+    error_callback.Run(device::BluetoothGattService::GATT_ERROR_FAILED);
+    return;
+  }
+
+  registered_gatt_services_.erase(service->object_path());
+
+  // If we have no GATT services left, unregister our application.
+  if (registered_gatt_services_.size() == 0) {
+    bluez::BluezDBusManager::Get()
+        ->GetBluetoothGattManagerClient()
+        ->UnregisterApplication(
+            GetApplicationObjectPath(), callback,
+            base::Bind(&OnRegisterationErrorCallback, error_callback));
+    return;
+  }
+
+  // Otherwise, this is tricky (since at the moment, BlueZ does not support
+  // adding/removing services individually). We need to update our list of
+  // services, then unregister our application, then re-register it with the
+  // updated services. TODO(rkc): Fix this once BlueZ is fixed.
+  gatt_application_provider_ = BluetoothGattApplicationServiceProvider::Create(
+      bluez::BluezDBusManager::Get()->GetSystemBus(), object_path_,
+      registered_gatt_services_);
+
+  // Unregister our current application. If we are successful, make a call to
+  // register the application again with the current set of services.
+  bluez::BluezDBusManager::Get()
+      ->GetBluetoothGattManagerClient()
+      ->UnregisterApplication(
+          GetApplicationObjectPath(),
+          base::Bind(&BluetoothAdapterBlueZ::RegisterApplication,
+                     weak_ptr_factory_.GetWeakPtr(), callback, error_callback),
+          base::Bind(&OnRegisterationErrorCallback, error_callback));
+}
+
+// Returns the object path of the adapter.
+dbus::ObjectPath BluetoothAdapterBlueZ::GetApplicationObjectPath() const {
+  return dbus::ObjectPath(object_path_.value() + kGattApplicationObjectPath);
+}
+
 void BluetoothAdapterBlueZ::OnRegisterProfile(
     const BluetoothUUID& uuid,
     std::unique_ptr<BluetoothAdapterProfileBlueZ> profile) {
@@ -1478,6 +1563,17 @@ void BluetoothAdapterBlueZ::ProcessQueuedDiscoveryRequests() {
     if (discovery_request_pending_)
       return;
   }
+}
+
+void BluetoothAdapterBlueZ::RegisterApplication(
+    const base::Closure& callback,
+    const device::BluetoothGattService::ErrorCallback& error_callback) {
+  DCHECK(bluez::BluezDBusManager::Get());
+  bluez::BluezDBusManager::Get()
+      ->GetBluetoothGattManagerClient()
+      ->RegisterApplication(
+          GetApplicationObjectPath(), BluetoothGattManagerClient::Options(),
+          callback, base::Bind(&OnRegisterationErrorCallback, error_callback));
 }
 
 }  // namespace bluez

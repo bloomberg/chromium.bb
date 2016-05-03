@@ -16,6 +16,10 @@
 #include "build/build_config.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
+#include "device/bluetooth/bluetooth_gatt_service.h"
+#include "device/bluetooth/bluetooth_local_gatt_characteristic.h"
+#include "device/bluetooth/bluetooth_local_gatt_descriptor.h"
+#include "device/bluetooth/bluetooth_local_gatt_service.h"
 #include "device/bluetooth/test/bluetooth_test.h"
 #include "device/bluetooth/test/test_bluetooth_adapter_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -549,6 +553,7 @@ TEST_F(BluetoothTest, NoPermissions) {
 }
 #endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
 
+#if defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 // Discovers a device.
 TEST_F(BluetoothTest, DiscoverLowEnergyDevice) {
   if (!PlatformSupportsLowEnergy()) {
@@ -565,7 +570,9 @@ TEST_F(BluetoothTest, DiscoverLowEnergyDevice) {
   BluetoothDevice* device = adapter_->GetDevice(observer.last_device_address());
   EXPECT_TRUE(device);
 }
+#endif  // defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 
+#if defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 // Discovers the same device multiple times.
 TEST_F(BluetoothTest, DiscoverLowEnergyDeviceTwice) {
   if (!PlatformSupportsLowEnergy()) {
@@ -589,6 +596,7 @@ TEST_F(BluetoothTest, DiscoverLowEnergyDeviceTwice) {
   EXPECT_EQ(0, observer.device_added_count());
   EXPECT_EQ(1u, adapter_->GetDevices().size());
 }
+#endif  // defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 
 #if defined(OS_ANDROID) || defined(OS_MACOSX)
 // Discovers a device, and then again with new Service UUIDs.
@@ -641,6 +649,7 @@ TEST_F(BluetoothTest, DiscoverLowEnergyDeviceWithUpdatedUUIDs) {
 }
 #endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
 
+#if defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 // Discovers multiple devices when addresses vary.
 TEST_F(BluetoothTest, DiscoverMultipleLowEnergyDevices) {
   if (!PlatformSupportsLowEnergy()) {
@@ -657,6 +666,7 @@ TEST_F(BluetoothTest, DiscoverMultipleLowEnergyDevices) {
   EXPECT_EQ(2, observer.device_added_count());
   EXPECT_EQ(2u, adapter_->GetDevices().size());
 }
+#endif  // defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 
 #if defined(OS_ANDROID)
 TEST_F(BluetoothTest, TogglePowerFakeAdapter) {
@@ -715,5 +725,43 @@ TEST_F(BluetoothTest, TogglePowerBeforeScan) {
   EXPECT_TRUE(discovery_sessions_[0]->IsActive());
 }
 #endif  // defined(OS_ANDROID)
+
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+TEST_F(BluetoothTest, RegisterLocalGattServices) {
+  InitWithFakeAdapter();
+  base::WeakPtr<BluetoothLocalGattService> service =
+      BluetoothLocalGattService::Create(
+          adapter_.get(), BluetoothUUID(kTestUUIDGenericAttribute), true,
+          nullptr, nullptr);
+  base::WeakPtr<BluetoothLocalGattCharacteristic> characteristic1 =
+      BluetoothLocalGattCharacteristic::Create(
+          BluetoothUUID(kTestUUIDGenericAttribute),
+          device::BluetoothLocalGattCharacteristic::Properties(),
+          device::BluetoothLocalGattCharacteristic::Permissions(),
+          service.get());
+
+  base::WeakPtr<BluetoothLocalGattCharacteristic> characteristic2 =
+      BluetoothLocalGattCharacteristic::Create(
+          BluetoothUUID(kTestUUIDGenericAttribute),
+          device::BluetoothLocalGattCharacteristic::Properties(),
+          device::BluetoothLocalGattCharacteristic::Permissions(),
+          service.get());
+
+  base::WeakPtr<BluetoothLocalGattDescriptor> descriptor =
+      BluetoothLocalGattDescriptor::Create(
+          BluetoothUUID(kTestUUIDGenericAttribute),
+          device::BluetoothLocalGattCharacteristic::Permissions(),
+          characteristic1.get());
+
+  service->Register(GetCallback(Call::EXPECTED),
+                    GetGattErrorCallback(Call::NOT_EXPECTED));
+  service->Register(GetCallback(Call::NOT_EXPECTED),
+                    GetGattErrorCallback(Call::EXPECTED));
+  service->Unregister(GetCallback(Call::EXPECTED),
+                      GetGattErrorCallback(Call::NOT_EXPECTED));
+  service->Unregister(GetCallback(Call::NOT_EXPECTED),
+                      GetGattErrorCallback(Call::EXPECTED));
+}
+#endif  // defined(OS_CHROMEOS) || defined(OS_LINUX)
 
 }  // namespace device

@@ -5,6 +5,14 @@
 #ifndef DEVICE_BLUETOOTH_TEST_BLUETOOTH_TEST_BLUEZ_H_
 #define DEVICE_BLUETOOTH_TEST_BLUETOOTH_TEST_BLUEZ_H_
 
+#include <cstdint>
+#include <vector>
+
+#include "base/callback_forward.h"
+#include "device/bluetooth/bluetooth_device.h"
+#include "device/bluetooth/bluetooth_local_gatt_characteristic.h"
+#include "device/bluetooth/bluetooth_local_gatt_descriptor.h"
+#include "device/bluetooth/bluetooth_local_gatt_service.h"
 #include "device/bluetooth/test/bluetooth_test.h"
 
 namespace bluez {
@@ -27,6 +35,30 @@ class BluetoothTestBlueZ : public BluetoothTestBase {
   bool PlatformSupportsLowEnergy() override;
   void InitWithFakeAdapter() override;
   BluetoothDevice* DiscoverLowEnergyDevice(int device_ordinal) override;
+
+  void SimulateLocalGattCharacteristicValueReadRequest(
+      BluetoothLocalGattService* service,
+      BluetoothLocalGattCharacteristic* characteristic,
+      const BluetoothLocalGattService::Delegate::ValueCallback& value_callback,
+      const base::Closure& error_callback) override;
+  void SimulateLocalGattCharacteristicValueWriteRequest(
+      BluetoothLocalGattService* service,
+      BluetoothLocalGattCharacteristic* characteristic,
+      const std::vector<uint8_t>& value_to_write,
+      const base::Closure& success_callback,
+      const base::Closure& error_callback) override;
+
+  void SimulateLocalGattDescriptorValueReadRequest(
+      BluetoothLocalGattService* service,
+      BluetoothLocalGattDescriptor* descriptor,
+      const BluetoothLocalGattService::Delegate::ValueCallback& value_callback,
+      const base::Closure& error_callback) override;
+  void SimulateLocalGattDescriptorValueWriteRequest(
+      BluetoothLocalGattService* service,
+      BluetoothLocalGattDescriptor* descriptor,
+      const std::vector<uint8_t>& value_to_write,
+      const base::Closure& success_callback,
+      const base::Closure& error_callback) override;
 
  private:
   bluez::FakeBluetoothDeviceClient* fake_bluetooth_device_client_;

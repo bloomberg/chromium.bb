@@ -28,7 +28,7 @@ base::WeakPtr<BluetoothLocalGattService> BluetoothLocalGattService::Create(
   return service->weak_ptr_factory_.GetWeakPtr();
 }
 
-}  // device
+}  // namespace device
 
 namespace bluez {
 
@@ -37,12 +37,14 @@ BluetoothLocalGattServiceBlueZ::BluetoothLocalGattServiceBlueZ(
     const device::BluetoothUUID& uuid,
     bool is_primary,
     device::BluetoothLocalGattService::Delegate* delegate)
-    : BluetoothGattServiceBlueZ(adapter, AddGuidToObjectPath("/service")),
+    : BluetoothGattServiceBlueZ(
+          adapter,
+          AddGuidToObjectPath(adapter->GetApplicationObjectPath().value() +
+                              "/service")),
       uuid_(uuid),
       is_primary_(is_primary),
       delegate_(delegate),
       weak_ptr_factory_(this) {
-  // TODO(rkc): Get base application path from adapter and prefix it here.
   VLOG(1) << "Creating local GATT service with identifier: " << GetIdentifier();
   adapter->AddLocalGattService(base::WrapUnique(this));
 }
@@ -60,14 +62,14 @@ bool BluetoothLocalGattServiceBlueZ::IsPrimary() const {
 void BluetoothLocalGattServiceBlueZ::Register(
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
-  //  GetAdapter()->RegisterGattService(this, callback, error_callback);
+  GetAdapter()->RegisterGattService(this, callback, error_callback);
 }
 
 void BluetoothLocalGattServiceBlueZ::Unregister(
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
   DCHECK(GetAdapter());
-  //  GetAdapter()->UnregisterGattService(this, callback, error_callback);
+  GetAdapter()->UnregisterGattService(this, callback, error_callback);
 }
 
 const std::vector<std::unique_ptr<BluetoothLocalGattCharacteristicBlueZ>>&

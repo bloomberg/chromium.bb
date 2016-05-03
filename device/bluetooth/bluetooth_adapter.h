@@ -23,6 +23,7 @@
 #include "device/bluetooth/bluetooth_audio_sink.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_export.h"
+#include "device/bluetooth/bluetooth_local_gatt_service.h"
 
 namespace device {
 
@@ -206,27 +207,27 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
 
   // The ErrorCallback is used for methods that can fail in which case it is
   // called, in the success case the callback is simply not called.
-  typedef base::Closure ErrorCallback;
+  using ErrorCallback = base::Closure;
 
   // The InitCallback is used to trigger a callback after asynchronous
   // initialization, if initialization is asynchronous on the platform.
-  typedef base::Callback<void()> InitCallback;
+  using InitCallback = base::Callback<void()>;
 
-  typedef base::Callback<void(std::unique_ptr<BluetoothDiscoverySession>)>
-      DiscoverySessionCallback;
-  typedef std::vector<BluetoothDevice*> DeviceList;
-  typedef std::vector<const BluetoothDevice*> ConstDeviceList;
-  typedef std::vector<BluetoothUUID> UUIDList;
-  typedef base::Callback<void(scoped_refptr<BluetoothSocket>)>
-      CreateServiceCallback;
-  typedef base::Callback<void(const std::string& message)>
-      CreateServiceErrorCallback;
-  typedef base::Callback<void(scoped_refptr<BluetoothAudioSink>)>
-      AcquiredCallback;
-  typedef base::Callback<void(scoped_refptr<BluetoothAdvertisement>)>
-      CreateAdvertisementCallback;
-  typedef base::Callback<void(BluetoothAdvertisement::ErrorCode)>
-      CreateAdvertisementErrorCallback;
+  using DiscoverySessionCallback =
+      base::Callback<void(std::unique_ptr<BluetoothDiscoverySession>)>;
+  using DeviceList = std::vector<BluetoothDevice*>;
+  using ConstDeviceList = std::vector<const BluetoothDevice*>;
+  using UUIDList = std::vector<BluetoothUUID>;
+  using CreateServiceCallback =
+      base::Callback<void(scoped_refptr<BluetoothSocket>)>;
+  using CreateServiceErrorCallback =
+      base::Callback<void(const std::string& message)>;
+  using AcquiredCallback =
+      base::Callback<void(scoped_refptr<BluetoothAudioSink>)>;
+  using CreateAdvertisementCallback =
+      base::Callback<void(scoped_refptr<BluetoothAdvertisement>)>;
+  using CreateAdvertisementErrorCallback =
+      base::Callback<void(BluetoothAdvertisement::ErrorCode)>;
 
   // Returns a weak pointer to a new adapter.  For platforms with asynchronous
   // initialization, the returned adapter will run the |init_callback| once
@@ -412,7 +413,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
       const BluetoothAudioSink::ErrorCallback& error_callback) = 0;
 
   // Creates and registers an advertisement for broadcast over the LE channel.
-  // The created advertisement will be returned via the success callback.
+  // The created advertisement will be returned via the success callback. An
+  // advertisement can unregister itself at any time by calling its unregister
+  // function.
   virtual void RegisterAdvertisement(
       std::unique_ptr<BluetoothAdvertisement::Data> advertisement_data,
       const CreateAdvertisementCallback& callback,
