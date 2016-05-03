@@ -270,7 +270,7 @@ public class BrowserAccessibilityManager {
                     selectionStart = arguments.getInt(
                             AccessibilityNodeInfo.ACTION_ARGUMENT_SELECTION_START_INT);
                     selectionEnd = arguments.getInt(
-                            AccessibilityNodeInfo.ACTION_ARGUMENT_SELECTION_START_INT);
+                            AccessibilityNodeInfo.ACTION_ARGUMENT_SELECTION_END_INT);
                 }
                 nativeSetSelection(mNativeObj, virtualViewId, selectionStart, selectionEnd);
                 return true;
