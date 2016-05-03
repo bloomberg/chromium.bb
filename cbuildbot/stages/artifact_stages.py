@@ -108,8 +108,7 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
     It attempts to load a JSON file, scripts/artifacts.json, from the
     overlay directories for this board. This file specifies the artifacts
     to generate, if it can't be found, it will use a default set that
-    uploads every .bin file as a .tar.xz file except for
-    chromiumos_qemu_image.bin.
+    uploads every .bin file as a .tar.xz file.
 
     See BuildStandaloneArchive in cbuildbot_commands.py for format docs.
     """
@@ -125,9 +124,8 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
       artifacts = []
       for image_file in glob.glob(os.path.join(image_dir, '*.bin')):
         basename = os.path.basename(image_file)
-        if basename != constants.VM_IMAGE_BIN:
-          info = {'input': [basename], 'archive': 'tar', 'compress': 'xz'}
-          artifacts.append(info)
+        info = {'input': [basename], 'archive': 'tar', 'compress': 'xz'}
+        artifacts.append(info)
 
     for artifact in artifacts:
       # Resolve the (possible) globs in the input list, and store
