@@ -48,6 +48,7 @@ from chrome_telemetry_build import chromium_config
 sys.path.append(chromium_config.GetTelemetryDir())
 sys.path.append(os.path.join(REPOSITORY_ROOT, 'build', 'android'))
 
+import android_rndis_forwarder
 import lighttpd_server
 from pylib import constants
 from pylib import pexpect
@@ -58,8 +59,6 @@ from telemetry import benchmark
 from telemetry import benchmark_runner
 from telemetry import project_config
 from telemetry import story
-from telemetry.internal import forwarders
-from telemetry.internal.forwarders import android_forwarder
 from telemetry.value import scalar
 from telemetry.web_perf import timeline_based_measurement
 
@@ -118,12 +117,12 @@ def GetDevice():
   return devices[0]
 
 
-def GetForwarderFactory(device):
-  return android_forwarder.AndroidForwarderFactory(device, True)
+def GetAndroidRndisConfig(device):
+  return android_rndis_forwarder.AndroidRndisConfigurator(device)
 
 
 def GetServersHost(device):
-  return GetForwarderFactory(device).host_ip
+  return GetAndroidRndisConfig(device).host_ip
 
 
 def GetHttpServerURL(device, resource):
@@ -297,11 +296,8 @@ def main():
   device.EnableRoot()
   device.Install(APP_APK)
   # Start USB reverse tethering.
-  # Port map is ignored for tethering; must create one to placate assertions.
-  named_port_pair_map = {'http': (forwarders.PortPair(0, 0)),
-      'https': None, 'dns': None}
-  port_pairs = forwarders.PortPairs(**named_port_pair_map)
-  forwarder = GetForwarderFactory(device).Create(port_pairs)
+  android_rndis_forwarder.AndroidRndisForwarder(device,
+      GetAndroidRndisConfig(device))
   # Start HTTP server.
   http_server_doc_root = GenerateHttpTestResources()
   config_file = tempfile.NamedTemporaryFile()
@@ -332,7 +328,6 @@ def main():
       default_chrome_root=REPOSITORY_ROOT)
   sys.argv.insert(1, 'run')
   sys.argv.insert(2, 'run.CronetPerfTestBenchmark')
-  sys.argv.insert(3, '--android-rndis')
   benchmark_runner.main(runner_config)
   # Shutdown.
   quic_server.ShutdownQuicServer()
