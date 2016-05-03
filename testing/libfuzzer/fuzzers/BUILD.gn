@@ -284,4 +284,5 @@ fuzzer_test("convert_woff2ttf_fuzzer") {
     "//third_party/woff2:woff2_dec",
   ]
   seed_corpus = "//testing/libfuzzer/fuzzers/woff2_corpus"
+  libfuzzer_options = [ "max_len=803500" ]
 }
