@@ -8,6 +8,8 @@ import("//build/config/sysroot.gni")
 
 assert(is_android)
 
+use_gold = current_cpu == "x86" || current_cpu == "x64" || current_cpu == "arm"
+
 # This is included by reference in the //build/config/compiler config that
 # is applied to all targets. It is here to separate out the logic that is
 # Android-only.
@@ -43,7 +45,7 @@ config("compiler") {
   }
 
   # Use gold for Android for most CPU architectures.
-  if (current_cpu == "x86" || current_cpu == "x64" || current_cpu == "arm") {
+  if (use_gold) {
     ldflags += [ "-fuse-ld=gold" ]
     if (is_clang) {
       # Let clang find the ld.gold in the NDK.
@@ -179,6 +181,12 @@ config("executable_config") {
   cflags = [ "-fPIE" ]
   asmflags = [ "-fPIE" ]
   ldflags = [ "-pie" ]
+
+  if (!use_gold) {
+    # ld needs help finding libraries when linking.
+    _rebased_sysroot = rebase_path(sysroot, root_build_dir)
+    ldflags += [ "-Wl,-rpath-link=.:$_rebased_sysroot/usr/lib" ]
+  }
 }
 
 config("hide_native_jni_exports") {
