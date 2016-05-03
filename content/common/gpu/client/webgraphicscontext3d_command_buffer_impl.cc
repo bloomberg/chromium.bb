@@ -54,10 +54,7 @@ WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl(
 }
 
 WebGraphicsContext3DCommandBufferImpl::
-    ~WebGraphicsContext3DCommandBufferImpl() {
-  if (real_gl_)
-    real_gl_->SetLostContextCallback(base::Closure());
-}
+    ~WebGraphicsContext3DCommandBufferImpl() {}
 
 bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL(
     const gpu::SharedMemoryLimits& memory_limits,
@@ -116,10 +113,6 @@ bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL(
     return false;
   }
 
-  real_gl_->SetLostContextCallback(
-      base::Bind(&WebGraphicsContext3DCommandBufferImpl::OnContextLost,
-                 // The callback is unset in the destructor.
-                 base::Unretained(this)));
   real_gl_->TraceBeginCHROMIUM("WebGraphicsContext3D", "CommandBufferContext");
   return true;
 }
@@ -140,11 +133,6 @@ bool WebGraphicsContext3DCommandBufferImpl::InitializeOnCurrentThread(
   }
 
   return true;
-}
-
-void WebGraphicsContext3DCommandBufferImpl::OnContextLost() {
-  if (context_lost_callback_)
-    context_lost_callback_->onContextLost();
 }
 
 }  // namespace content

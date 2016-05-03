@@ -80,6 +80,7 @@ class CONTENT_EXPORT ContextProviderCommandBuffer
   base::ThreadChecker main_thread_checker_;
   base::ThreadChecker context_thread_checker_;
 
+  bool bind_succeeded_ = false;
   scoped_refptr<SharedProviders> shared_providers_;
 
   base::Lock context_lock_;  // Referenced by context3d_.
@@ -92,9 +93,6 @@ class CONTENT_EXPORT ContextProviderCommandBuffer
   command_buffer_metrics::ContextType context_type_;
 
   LostContextCallback lost_context_callback_;
-
-  class LostContextCallbackProxy;
-  std::unique_ptr<LostContextCallbackProxy> lost_context_callback_proxy_;
 };
 
 }  // namespace content

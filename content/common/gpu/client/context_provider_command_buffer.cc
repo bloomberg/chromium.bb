@@ -27,25 +27,6 @@ namespace content {
 ContextProviderCommandBuffer::SharedProviders::SharedProviders() = default;
 ContextProviderCommandBuffer::SharedProviders::~SharedProviders() = default;
 
-class ContextProviderCommandBuffer::LostContextCallbackProxy
-    : public WebGraphicsContext3DCommandBufferImpl::
-          WebGraphicsContextLostCallback {
- public:
-  explicit LostContextCallbackProxy(ContextProviderCommandBuffer* provider)
-      : provider_(provider) {
-    provider_->context3d_->SetContextLostCallback(this);
-  }
-
-  ~LostContextCallbackProxy() override {
-    provider_->context3d_->SetContextLostCallback(nullptr);
-  }
-
-  void onContextLost() override { provider_->OnLostContext(); }
-
- private:
-  ContextProviderCommandBuffer* provider_;
-};
-
 ContextProviderCommandBuffer::ContextProviderCommandBuffer(
     std::unique_ptr<WebGraphicsContext3DCommandBufferImpl> context3d,
     const gpu::SharedMemoryLimits& memory_limits,
@@ -76,12 +57,12 @@ ContextProviderCommandBuffer::~ContextProviderCommandBuffer() {
       shared_providers_->list.erase(it);
   }
 
-  if (lost_context_callback_proxy_) {
+  if (bind_succeeded_) {
     // Clear the lock to avoid DCHECKs that the lock is being held during
     // shutdown.
     context3d_->GetCommandBufferProxy()->SetLock(nullptr);
     // Disconnect lost callbacks during destruction.
-    lost_context_callback_proxy_.reset();
+    context3d_->GetImplementation()->SetLostContextCallback(base::Closure());
   }
 }
 
@@ -96,7 +77,7 @@ bool ContextProviderCommandBuffer::BindToCurrentThread() {
 
   if (!context3d_)
     return false;  // Already failed.
-  if (lost_context_callback_proxy_)
+  if (bind_succeeded_)
     return true;  // Already succeeded.
 
   // It's possible to be running BindToCurrentThread on two contexts
@@ -147,7 +128,11 @@ bool ContextProviderCommandBuffer::BindToCurrentThread() {
     shared_providers_->list.push_back(this);
   }
 
-  lost_context_callback_proxy_.reset(new LostContextCallbackProxy(this));
+  context3d_->GetImplementation()->SetLostContextCallback(
+      base::Bind(&ContextProviderCommandBuffer::OnLostContext,
+                 // |this| owns the GLES2Implementation which holds the
+                 // callback.
+                 base::Unretained(this)));
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableGpuClientTracing)) {
@@ -156,6 +141,8 @@ bool ContextProviderCommandBuffer::BindToCurrentThread() {
     trace_impl_.reset(new gpu::gles2::GLES2TraceImplementation(
         context3d_->GetImplementation()));
   }
+
+  bind_succeeded_ = true;
 
   // Do this last once the context is set up.
   std::string type_name =
@@ -172,7 +159,7 @@ void ContextProviderCommandBuffer::DetachFromThread() {
 
 gpu::gles2::GLES2Interface* ContextProviderCommandBuffer::ContextGL() {
   DCHECK(context3d_);
-  DCHECK(lost_context_callback_proxy_);  // Is bound to thread.
+  DCHECK(bind_succeeded_);
   DCHECK(context_thread_checker_.CalledOnValidThread());
 
   if (trace_impl_)
@@ -185,7 +172,7 @@ gpu::ContextSupport* ContextProviderCommandBuffer::ContextSupport() {
 }
 
 class GrContext* ContextProviderCommandBuffer::GrContext() {
-  DCHECK(lost_context_callback_proxy_);  // Is bound to thread.
+  DCHECK(bind_succeeded_);
   DCHECK(context_thread_checker_.CalledOnValidThread());
 
   if (gr_context_)
@@ -203,14 +190,14 @@ class GrContext* ContextProviderCommandBuffer::GrContext() {
 
 void ContextProviderCommandBuffer::InvalidateGrContext(uint32_t state) {
   if (gr_context_) {
-    DCHECK(lost_context_callback_proxy_);  // Is bound to thread.
+    DCHECK(bind_succeeded_);
     DCHECK(context_thread_checker_.CalledOnValidThread());
     gr_context_->ResetContext(state);
   }
 }
 
 void ContextProviderCommandBuffer::SetupLock() {
-  DCHECK(lost_context_callback_proxy_);  // Is bound to thread.
+  DCHECK(bind_succeeded_);
   DCHECK(context_thread_checker_.CalledOnValidThread());
   context3d_->GetCommandBufferProxy()->SetLock(&context_lock_);
 }
@@ -220,7 +207,7 @@ base::Lock* ContextProviderCommandBuffer::GetLock() {
 }
 
 gpu::Capabilities ContextProviderCommandBuffer::ContextCapabilities() {
-  DCHECK(lost_context_callback_proxy_);  // Is bound to thread.
+  DCHECK(bind_succeeded_);
   DCHECK(context_thread_checker_.CalledOnValidThread());
   // Skips past the trace_impl_ as it doesn't have capabilities.
   return context3d_->GetImplementation()->capabilities();

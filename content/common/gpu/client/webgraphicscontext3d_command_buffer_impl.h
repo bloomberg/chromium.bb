@@ -49,14 +49,6 @@ class WebGraphicsContext3DCommandBufferImpl {
     kNoLimit = 0,
   };
 
-  class WebGraphicsContextLostCallback {
-   public:
-    virtual void onContextLost() = 0;
-
-   protected:
-    virtual ~WebGraphicsContextLostCallback() {}
-  };
-
   // If surface_handle is not kNullSurfaceHandle, this creates a
   // CommandBufferProxy that renders directly to a view. The view and
   // the associated window must not be destroyed until the returned
@@ -79,10 +71,6 @@ class WebGraphicsContext3DCommandBufferImpl {
     return real_gl_.get();
   }
 
-  void SetContextLostCallback(WebGraphicsContextLostCallback* callback) {
-    context_lost_callback_ = callback;
-  }
-
   CONTENT_EXPORT bool InitializeOnCurrentThread(
       const gpu::SharedMemoryLimits& memory_limits,
       gpu::CommandBufferProxyImpl* shared_command_buffer,
@@ -97,10 +85,6 @@ class WebGraphicsContext3DCommandBufferImpl {
       scoped_refptr<gpu::gles2::ShareGroup> share_group,
       const gpu::gles2::ContextCreationAttribHelper& attributes,
       command_buffer_metrics::ContextType context_type);
-
-  void OnContextLost();
-
-  WebGraphicsContextLostCallback* context_lost_callback_ = nullptr;
 
   bool automatic_flushes_;
   gpu::SurfaceHandle surface_handle_;
