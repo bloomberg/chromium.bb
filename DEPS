@@ -8,13 +8,13 @@ vars = {
   # directories contain commits at each revision, you will need to select
   # revisions at latest revision up to a high watermark from each slice.
   # Document the high watermark here:
-  # chrome_rev: 390457
-  "build_rev": "10ea72091524e848511f0ad4729fd647526355fa", # from cr commit position 390424
+  # chrome_rev: 391106
+  "build_rev": "2d2c819fe089c3e31f3dd9d3c69c5ec24318dc78", # from cr commit position 391106
   "binutils_rev": "3a125b5a41761bc85d71aa4a478f88d667712267", # from cr commit position 378721
   "libcxx_static_rev": "fd8f9a82862aa40dab0c5bcdea6e498715284f5a", # from cr commit position 369150
   # NOTE: be sure to update clang_lib_version in SConstruct whenever
   # updating this clang_rev (e.g., if LLVM changes from version 3.7 to 3.8).
-  "clang_rev": "e18fbfd9a57db60c8667acfc60f5296337c7f4ab", # from cr commit position 390421
+  "clang_rev": "a14766ac344d97871f75e60c4dd39385a6cd2865", # from cr commit position 390875
 
   # NOTE!  These five should be kept up to date with their counterparts in
   # chromium/src/DEPS.
@@ -23,12 +23,12 @@ vars = {
   # in the build that goes into Chromium.  But we might as well update it too.)
   # You should now use the roll-dep script in depot_tools to do this update.
   "gtest_rev": "6f8a66431cb592dad629028a50b3dd418a408c87",
-  "gyp_rev": "4cf07e8d616739f6484e46c9359b2a35196b2585",
+  "gyp_rev": "e24c83726b7294179f479a683eeb351568fcc4ee",
   "breakpad_rev": "a4eb2e302cefff9908ec955e761fef5d813d1b00", # from svn revision 1416
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling build tools
   # and whatever else without interference from each other.
-  'buildtools_revision': 'cdbd50759bf2289d2c9d3f1f7d02239b4b4b1209',
+  'buildtools_revision': 'b4232ffa4e00eb04cb76deffe9a0c19e9b2e0e65',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling lss
   # and whatever else without interference from each other.
@@ -44,7 +44,7 @@ vars = {
   "validator_snapshots_rev": "ef053694ef9b0d98d9bed0b9bb649963084bfc81",
   # Rolls of build_overrides_rev should done at the same time as a roll of
   # build_rev as build_overrides/ is tightly coupled with build/.
-  "build_overrides_rev": "7858afa5620b83855e381f7399b3494849d1902e",
+  "build_overrides_rev": "2881125066dcf38dae595d92eac8a6b477529116",
 
   "chromium_git": "https://chromium.googlesource.com",
 }
