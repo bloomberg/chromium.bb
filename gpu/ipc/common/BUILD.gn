@@ -39,7 +39,6 @@ source_set("command_buffer_traits_sources") {
     "gpu_command_buffer_traits.cc",
     "gpu_command_buffer_traits.h",
     "gpu_command_buffer_traits_multi.h",
-    "id_type_traits.h",
   ]
 
   configs += [

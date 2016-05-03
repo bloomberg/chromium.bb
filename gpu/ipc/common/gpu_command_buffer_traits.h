@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GPU_IPC_GPU_PARAM_TRAITS_H_
-#define GPU_IPC_GPU_PARAM_TRAITS_H_
+#ifndef GPU_IPC_COMMON_GPU_COMMAND_BUFFER_TRAITS_H_
+#define GPU_IPC_COMMON_GPU_COMMAND_BUFFER_TRAITS_H_
 
 #include "gpu/command_buffer/common/command_buffer.h"
+#include "gpu/command_buffer/common/id_type.h"
 #include "gpu/gpu_export.h"
 #include "gpu/ipc/common/gpu_command_buffer_traits_multi.h"
-#include "gpu/ipc/common/id_type_traits.h"
 #include "ipc/ipc_message_utils.h"
+#include "ipc/ipc_param_traits.h"
 
 namespace gpu {
 struct Mailbox;
@@ -21,7 +22,7 @@ namespace IPC {
 
 template <>
 struct GPU_EXPORT ParamTraits<gpu::CommandBuffer::State> {
-  typedef gpu::CommandBuffer::State param_type;
+  using param_type = gpu::CommandBuffer::State;
   static void GetSize(base::PickleSizer* s, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
@@ -32,7 +33,7 @@ struct GPU_EXPORT ParamTraits<gpu::CommandBuffer::State> {
 
 template <>
 struct GPU_EXPORT ParamTraits<gpu::SyncToken> {
-  typedef gpu::SyncToken param_type;
+  using param_type = gpu::SyncToken;
   static void GetSize(base::PickleSizer* s, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
@@ -43,7 +44,7 @@ struct GPU_EXPORT ParamTraits<gpu::SyncToken> {
 
 template<>
 struct GPU_EXPORT ParamTraits<gpu::Mailbox> {
-  typedef gpu::Mailbox param_type;
+  using param_type = gpu::Mailbox;
   static void GetSize(base::PickleSizer* s, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
@@ -54,7 +55,7 @@ struct GPU_EXPORT ParamTraits<gpu::Mailbox> {
 
 template <>
 struct GPU_EXPORT ParamTraits<gpu::MailboxHolder> {
-  typedef gpu::MailboxHolder param_type;
+  using param_type = gpu::MailboxHolder;
   static void GetSize(base::PickleSizer* s, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
@@ -63,6 +64,29 @@ struct GPU_EXPORT ParamTraits<gpu::MailboxHolder> {
   static void Log(const param_type& p, std::string* l);
 };
 
+template <typename TypeMarker, typename WrappedType, WrappedType kInvalidValue>
+struct ParamTraits<gpu::IdType<TypeMarker, WrappedType, kInvalidValue>> {
+  using param_type = gpu::IdType<TypeMarker, WrappedType, kInvalidValue>;
+  static void GetSize(base::PickleSizer* sizer, const param_type& p) {
+    GetParamSize(sizer, p.GetUnsafeValue());
+  }
+  static void Write(base::Pickle* m, const param_type& p) {
+    WriteParam(m, p.GetUnsafeValue());
+  }
+  static bool Read(const base::Pickle* m,
+                   base::PickleIterator* iter,
+                   param_type* r) {
+    WrappedType value;
+    if (!ReadParam(m, iter, &value))
+      return false;
+    *r = param_type::FromUnsafeValue(value);
+    return true;
+  }
+  static void Log(const param_type& p, std::string* l) {
+    LogParam(p.GetUnsafeValue(), l);
+  }
+};
+
 }  // namespace IPC
 
-#endif  // GPU_IPC_GPU_PARAM_TRAITS_H_
+#endif  // GPU_IPC_COMMON_GPU_COMMAND_BUFFER_TRAITS_H_

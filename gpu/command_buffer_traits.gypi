@@ -14,7 +14,6 @@
   'sources': [
     'ipc/common/gpu_command_buffer_traits.cc',
     'ipc/common/gpu_command_buffer_traits.h',
-    'ipc/common/id_type_traits.h',
     'ipc/common/memory_stats.cc',
     'ipc/common/memory_stats.h',
     'ipc/common/surface_handle.h',

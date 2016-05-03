@@ -35,7 +35,7 @@
 // - it can be used as an argument to DCHECK_EQ or streamed to LOG(ERROR);
 // - it has the same memory footprint and runtime overhead as int32_t;
 // - it can be copied by memcpy.
-// - it can be used in IPC messages (for now via gpu/ipc/id_type_traits.h)
+// - it can be used in IPC messages.
 //
 // IdType32<Foo> has the following differences from a bare int32_t:
 // - it forces coercions to go through GetUnsafeValue and FromUnsafeValue;
