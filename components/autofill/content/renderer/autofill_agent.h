@@ -115,6 +115,7 @@ class AutofillAgent : public content::RenderFrameObserver,
   void WillSubmitForm(const blink::WebFormElement& form) override;
   void DidChangeScrollOffset() override;
   void FocusedNodeChanged(const blink::WebNode& node) override;
+  void OnDestruct() override;
 
   // Pass-through from LegacyAutofillAgent. This correlates with the
   // RenderViewObserver method.

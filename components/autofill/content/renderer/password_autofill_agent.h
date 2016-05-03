@@ -154,6 +154,7 @@ class PasswordAutofillAgent : public content::RenderFrameObserver {
                                 bool is_same_page_navigation) override;
   void WillSendSubmitEvent(const blink::WebFormElement& form) override;
   void WillSubmitForm(const blink::WebFormElement& form) override;
+  void OnDestruct() override;
 
   // RenderView IPC handlers:
   void OnFillPasswordForm(int key, const PasswordFormFillData& form_data);
