@@ -20,14 +20,14 @@ function testQuoteString() {
   assertEquals(null, match);
 }
 
-// Test the case where the origin URL is passed.
-function testGetFaviconImageSet_Origin() {
+// Test the case where a non-favicon URL is passed.
+function testGetFaviconImageSet_NonFavicon() {
   var url = 'http://foo.com';
   var expectedDesktop = '-webkit-image-set(' +
-      'url("chrome://favicon/size/16@1x/origin/http://foo.com") 1x, ' +
-      'url("chrome://favicon/size/16@2x/origin/http://foo.com") 2x)';
+      'url("chrome://favicon/size/16@1x/http://foo.com") 1x, ' +
+      'url("chrome://favicon/size/16@2x/http://foo.com") 2x)';
   var expectedOther = '-webkit-image-set(' +
-      'url("chrome://favicon/size/16@1x/origin/http://foo.com") ' +
+      'url("chrome://favicon/size/16@1x/http://foo.com") ' +
       window.devicePixelRatio + 'x)';
 
   var isDesktop = cr.isMac || cr.isChromeOS || cr.isWindows || cr.isLinux;

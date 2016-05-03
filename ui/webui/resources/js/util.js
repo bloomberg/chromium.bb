@@ -345,13 +345,11 @@ function getFaviconImageSet(url, opt_size, opt_type) {
   var size = opt_size || 16;
   var type = opt_type || 'favicon';
 
-  // Note: Literals 'iconurl' and 'origin' must match |kIconURLParameter| and
-  // |kOriginParameter| in components/favicon_base/favicon_url_parser.cc.
-  var urlType = FAVICON_URL_REGEX.test(url) ? 'iconurl' : 'origin';
-
   return imageset(
       'chrome://' + type + '/size/' + size + '@scalefactorx/' +
-      urlType + '/' + url);
+      // Note: Literal 'iconurl' must match |kIconURLParameter| in
+      // components/favicon_base/favicon_url_parser.cc.
+      (FAVICON_URL_REGEX.test(url) ? 'iconurl/' : '') + url);
 }
 
 /**
