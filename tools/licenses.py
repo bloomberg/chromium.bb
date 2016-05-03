@@ -29,6 +29,9 @@ PRUNE_PATHS = set([
     # Placeholder directory only, not third-party code.
     os.path.join('third_party','adobe'),
 
+    # Already covered by //third_party/android_tools.
+    os.path.join('third_party','android_tools_internal'),
+
     # Apache 2.0 license. See crbug.com/140478
     os.path.join('third_party','bidichecker'),
 
@@ -42,11 +45,13 @@ PRUNE_PATHS = set([
     os.path.join('build','secondary'),
     os.path.join('third_party','bison'),
     os.path.join('third_party','blanketjs'),
+    os.path.join('third_party','chromite'),
     os.path.join('third_party','cygwin'),
     os.path.join('third_party','gles2_conform'),
     os.path.join('third_party','gnu_binutils'),
     os.path.join('third_party','gold'),
     os.path.join('third_party','gperf'),
+    os.path.join('third_party','jarjar'),
     os.path.join('third_party','kasko'),
     os.path.join('third_party','lighttpd'),
     os.path.join('third_party','llvm'),
@@ -56,6 +61,7 @@ PRUNE_PATHS = set([
     os.path.join('third_party','pefile'),
     os.path.join('third_party','perl'),
     os.path.join('third_party','psyco_win32'),
+    os.path.join('third_party','pyelftools'),
     os.path.join('third_party','pylib'),
     os.path.join('third_party','pywebsocket'),
     os.path.join('third_party','qunit'),
