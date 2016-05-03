@@ -5,7 +5,7 @@
 /* Test 1: Invalid font data */
 @font-face {
     font-family: myfont1;
-    src: url('resources/invalidfont.png') format(opentype);
+    src: url('resources/invalidfont.png') format("opentype");
 }
 
 /* Test 2: Download error */
@@ -17,7 +17,7 @@
 /* Test 3: Empty data url */
 @font-face {
     font-family: myfont3;
-    src: url(data:application/x-truetype-font,) format(truetype);
+    src: url(data:application/x-truetype-font,) format("truetype");
 }
 
 /* Test 4: Download error followed by existing local font */
@@ -29,7 +29,7 @@
 /* Test 5: Multiple errors */
 @font-face {
     font-family: myfont5;
-    src: url('resources/DownLoadErrorAhem.otf'), url(data:application/x-truetype-font,) format(truetype);
+    src: url('resources/DownLoadErrorAhem.otf'), url(data:application/x-truetype-font,) format("truetype");
 }
 </style>
 <script>

@@ -3843,10 +3843,9 @@ static CSSValue* consumeFontFaceSrcURI(CSSParserTokenRange& range, const CSSPars
 
     // FIXME: https://drafts.csswg.org/css-fonts says that format() contains a comma-separated list of strings,
     // but CSSFontFaceSrcValue stores only one format. Allowing one format for now.
-    // FIXME: IdentToken should not be supported here.
     CSSParserTokenRange args = consumeFunction(range);
     const CSSParserToken& arg = args.consumeIncludingWhitespace();
-    if ((arg.type() != StringToken && arg.type() != IdentToken) || !args.atEnd())
+    if ((arg.type() != StringToken) || !args.atEnd())
         return nullptr;
     uriValue->setFormat(arg.value());
     return uriValue;
