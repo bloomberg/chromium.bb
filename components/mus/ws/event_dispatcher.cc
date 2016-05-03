@@ -4,6 +4,8 @@
 
 #include "components/mus/ws/event_dispatcher.h"
 
+#include <set>
+
 #include "base/time/time.h"
 #include "cc/surfaces/surface_hittest.h"
 #include "components/mus/surfaces/surfaces_state.h"
@@ -70,18 +72,21 @@ EventDispatcher::EventDispatcher(EventDispatcherDelegate* delegate)
       root_(nullptr),
       capture_window_(nullptr),
       capture_window_in_nonclient_area_(false),
-      modal_window_controller_(this),
       mouse_button_down_(false),
       mouse_cursor_source_window_(nullptr) {}
 
 EventDispatcher::~EventDispatcher() {
+  std::set<ServerWindow*> pointer_targets;
   if (capture_window_) {
-    UnobserveWindow(capture_window_);
+    pointer_targets.insert(capture_window_);
+    capture_window_->RemoveObserver(this);
     capture_window_ = nullptr;
   }
   for (const auto& pair : pointer_targets_) {
-    if (pair.second.window)
-      UnobserveWindow(pair.second.window);
+    if (pair.second.window &&
+        pointer_targets.insert(pair.second.window).second) {
+      pair.second.window->RemoveObserver(this);
+    }
   }
   pointer_targets_.clear();
 }
@@ -115,21 +120,23 @@ bool EventDispatcher::SetCaptureWindow(ServerWindow* window,
     return true;
 
   // A window that is blocked by a modal window cannot gain capture.
-  if (window && modal_window_controller_.IsWindowBlocked(window))
+  if (window && window->IsBlockedByModalWindow())
     return false;
 
   if (capture_window_) {
     // Stop observing old capture window. |pointer_targets_| are cleared on
     // initial setting of a capture window.
     delegate_->OnServerWindowCaptureLost(capture_window_);
-    UnobserveWindow(capture_window_);
+    capture_window_->RemoveObserver(this);
   } else {
     // Cancel implicit capture to all other windows.
+    std::set<ServerWindow*> unobserved_windows;
     for (const auto& pair : pointer_targets_) {
       ServerWindow* target = pair.second.window;
       if (!target)
         continue;
-      UnobserveWindow(target);
+      if (unobserved_windows.insert(target).second)
+        target->RemoveObserver(this);
       if (target == window)
         continue;
 
@@ -151,7 +158,7 @@ bool EventDispatcher::SetCaptureWindow(ServerWindow* window,
 
   // Begin tracking the capture window if it is not yet being observed.
   if (window) {
-    ObserveWindow(window);
+    window->AddObserver(this);
     if (!capture_window_)
       delegate_->SetNativeCapture();
   } else {
@@ -163,29 +170,6 @@ bool EventDispatcher::SetCaptureWindow(ServerWindow* window,
   capture_window_ = window;
   capture_window_in_nonclient_area_ = in_nonclient_area;
   return true;
-}
-
-void EventDispatcher::AddSystemModalWindow(ServerWindow* window) {
-  modal_window_controller_.AddSystemModalWindow(window);
-}
-
-void EventDispatcher::ReleaseCaptureBlockedByModalWindow(
-    const ServerWindow* modal_window) {
-  if (!capture_window_)
-    return;
-
-  if (modal_window_controller_.IsWindowBlockedBy(capture_window_,
-                                                 modal_window)) {
-    SetCaptureWindow(nullptr, false);
-  }
-}
-
-void EventDispatcher::ReleaseCaptureBlockedByAnyModalWindow() {
-  if (!capture_window_)
-    return;
-
-  if (modal_window_controller_.IsWindowBlocked(capture_window_))
-    SetCaptureWindow(nullptr, false);
 }
 
 void EventDispatcher::UpdateCursorProviderByLastKnownLocation() {
@@ -333,7 +317,8 @@ void EventDispatcher::StartTrackingPointer(
     int32_t pointer_id,
     const PointerTarget& pointer_target) {
   DCHECK(!IsTrackingPointer(pointer_id));
-  ObserveWindow(pointer_target.window);
+  if (!IsObservingWindow(pointer_target.window))
+    pointer_target.window->AddObserver(this);
   pointer_targets_[pointer_id] = pointer_target;
 }
 
@@ -341,8 +326,8 @@ void EventDispatcher::StopTrackingPointer(int32_t pointer_id) {
   DCHECK(IsTrackingPointer(pointer_id));
   ServerWindow* window = pointer_targets_[pointer_id].window;
   pointer_targets_.erase(pointer_id);
-  if (window)
-    UnobserveWindow(window);
+  if (window && !IsObservingWindow(window))
+    window->RemoveObserver(this);
 }
 
 void EventDispatcher::UpdateTargetForPointer(int32_t pointer_id,
@@ -384,8 +369,7 @@ EventDispatcher::PointerTarget EventDispatcher::PointerTargetForEvent(
   gfx::Point location(event.location());
   ServerWindow* target_window =
       FindDeepestVisibleWindowForEvents(root_, surface_id_, &location);
-  pointer_target.window =
-      modal_window_controller_.GetTargetForWindow(target_window);
+  pointer_target.window = target_window->GetModalTarget();
   pointer_target.is_mouse_event = event.IsMousePointerEvent();
   pointer_target.in_nonclient_area =
       target_window != pointer_target.window ||
@@ -421,8 +405,9 @@ void EventDispatcher::DispatchToPointerTarget(const PointerTarget& target,
 }
 
 void EventDispatcher::CancelPointerEventsToTarget(ServerWindow* window) {
+  window->RemoveObserver(this);
+
   if (capture_window_ == window) {
-    UnobserveWindow(window);
     capture_window_ = nullptr;
     mouse_button_down_ = false;
     // A window only cares to be informed that it lost capture if it explicitly
@@ -435,29 +420,17 @@ void EventDispatcher::CancelPointerEventsToTarget(ServerWindow* window) {
   }
 
   for (auto& pair : pointer_targets_) {
-    if (pair.second.window == window) {
-      UnobserveWindow(window);
+    if (pair.second.window == window)
       pair.second.window = nullptr;
-    }
   }
 }
 
-void EventDispatcher::ObserveWindow(ServerWindow* window) {
-  auto res = observed_windows_.insert(std::make_pair(window, 0u));
-  res.first->second++;
-  if (res.second)
-    window->AddObserver(this);
-}
-
-void EventDispatcher::UnobserveWindow(ServerWindow* window) {
-  auto it = observed_windows_.find(window);
-  DCHECK(it != observed_windows_.end());
-  DCHECK_LT(0u, it->second);
-  it->second--;
-  if (!it->second) {
-    window->RemoveObserver(this);
-    observed_windows_.erase(it);
+bool EventDispatcher::IsObservingWindow(ServerWindow* window) {
+  for (const auto& pair : pointer_targets_) {
+    if (pair.second.window == window)
+      return true;
   }
+  return false;
 }
 
 Accelerator* EventDispatcher::FindAccelerator(

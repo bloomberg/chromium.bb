@@ -208,9 +208,8 @@ class EventDispatcherTest : public testing::Test {
   // Creates a window which is a child of |root_window_|.
   std::unique_ptr<ServerWindow> CreateChildWindow(const WindowId& id);
   bool IsMouseButtonDown() const;
-  bool IsWindowPointerTarget(const ServerWindow* window) const;
+  bool IsWindowPointerTarget(ServerWindow* window) const;
   int NumberPointerTargetsForWindow(ServerWindow* window) const;
-  ServerWindow* GetActiveSystemModalWindow() const;
 
  protected:
   // testing::Test:
@@ -256,22 +255,15 @@ bool EventDispatcherTest::IsMouseButtonDown() const {
   return EventDispatcherTestApi(event_dispatcher_.get()).is_mouse_button_down();
 }
 
-bool EventDispatcherTest::IsWindowPointerTarget(
-    const ServerWindow* window) const {
+bool EventDispatcherTest::IsWindowPointerTarget(ServerWindow* window) const {
   return EventDispatcherTestApi(event_dispatcher_.get())
-      .IsWindowPointerTarget(window);
+      .IsObservingWindow(window);
 }
 
 int EventDispatcherTest::NumberPointerTargetsForWindow(
     ServerWindow* window) const {
   return EventDispatcherTestApi(event_dispatcher_.get())
       .NumberPointerTargetsForWindow(window);
-}
-
-ServerWindow* EventDispatcherTest::GetActiveSystemModalWindow() const {
-  ModalWindowController* mwc =
-      EventDispatcherTestApi(event_dispatcher_.get()).modal_window_controller();
-  return ModalWindowControllerTestApi(mwc).GetActiveSystemModalWindow();
 }
 
 void EventDispatcherTest::SetUp() {
@@ -1338,62 +1330,6 @@ TEST_F(EventDispatcherTest, ModalWindowEventOnDescendantOfModalParent) {
   EXPECT_EQ(gfx::Point(-25, 15), dispatched_event->location());
 }
 
-// Tests that events on a system modal window target the modal window itself.
-TEST_F(EventDispatcherTest, ModalWindowEventOnSystemModal) {
-  std::unique_ptr<ServerWindow> w1 = CreateChildWindow(WindowId(1, 3));
-
-  root_window()->SetBounds(gfx::Rect(0, 0, 100, 100));
-  w1->SetBounds(gfx::Rect(10, 10, 30, 30));
-  w1->SetModal();
-
-  // Send event that is over |w1|.
-  const ui::PointerEvent mouse_pressed(ui::MouseEvent(
-      ui::ET_MOUSE_PRESSED, gfx::Point(15, 15), gfx::Point(15, 15),
-      base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
-  event_dispatcher()->ProcessEvent(mouse_pressed);
-
-  std::unique_ptr<DispatchedEventDetails> details =
-      test_event_dispatcher_delegate()->GetAndAdvanceDispatchedEventDetails();
-  ASSERT_TRUE(details);
-  EXPECT_EQ(w1.get(), details->window);
-  EXPECT_FALSE(details->in_nonclient_area);
-
-  ASSERT_TRUE(details->event);
-  ASSERT_TRUE(details->event->IsPointerEvent());
-
-  ui::PointerEvent* dispatched_event = details->event->AsPointerEvent();
-  EXPECT_EQ(gfx::Point(15, 15), dispatched_event->root_location());
-  EXPECT_EQ(gfx::Point(5, 5), dispatched_event->location());
-}
-
-// Tests that events outside of system modal window target the modal window.
-TEST_F(EventDispatcherTest, ModalWindowEventOutsideSystemModal) {
-  std::unique_ptr<ServerWindow> w1 = CreateChildWindow(WindowId(1, 3));
-
-  root_window()->SetBounds(gfx::Rect(0, 0, 100, 100));
-  w1->SetBounds(gfx::Rect(10, 10, 30, 30));
-  w1->SetModal();
-  event_dispatcher()->AddSystemModalWindow(w1.get());
-
-  // Send event that is over |w1|.
-  const ui::PointerEvent mouse_pressed(ui::MouseEvent(
-      ui::ET_MOUSE_PRESSED, gfx::Point(45, 15), gfx::Point(45, 15),
-      base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
-  event_dispatcher()->ProcessEvent(mouse_pressed);
-
-  std::unique_ptr<DispatchedEventDetails> details =
-      test_event_dispatcher_delegate()->GetAndAdvanceDispatchedEventDetails();
-  ASSERT_TRUE(details);
-  EXPECT_EQ(w1.get(), details->window);
-  EXPECT_TRUE(details->in_nonclient_area);
-
-  ASSERT_TRUE(details->event);
-  ASSERT_TRUE(details->event->IsPointerEvent());
-
-  ui::PointerEvent* dispatched_event = details->event->AsPointerEvent();
-  EXPECT_EQ(gfx::Point(45, 15), dispatched_event->root_location());
-  EXPECT_EQ(gfx::Point(35, 5), dispatched_event->location());
-}
 
 // Tests that setting capture to a descendant of a modal parent fails.
 TEST_F(EventDispatcherTest, ModalWindowSetCaptureDescendantOfModalParent) {
@@ -1417,8 +1353,8 @@ TEST_F(EventDispatcherTest, ModalWindowSetCaptureDescendantOfModalParent) {
 // Tests that setting capture to a window unrelated to a modal parent works.
 TEST_F(EventDispatcherTest, ModalWindowSetCaptureUnrelatedWindow) {
   std::unique_ptr<ServerWindow> w1 = CreateChildWindow(WindowId(1, 3));
-  std::unique_ptr<ServerWindow> w2 = CreateChildWindow(WindowId(1, 4));
-  std::unique_ptr<ServerWindow> w3 = CreateChildWindow(WindowId(1, 5));
+  std::unique_ptr<ServerWindow> w2 = CreateChildWindow(WindowId(1, 5));
+  std::unique_ptr<ServerWindow> w3 = CreateChildWindow(WindowId(1, 6));
 
   root_window()->SetBounds(gfx::Rect(0, 0, 100, 100));
   w1->SetBounds(gfx::Rect(10, 10, 30, 30));
@@ -1430,64 +1366,6 @@ TEST_F(EventDispatcherTest, ModalWindowSetCaptureUnrelatedWindow) {
 
   EXPECT_TRUE(event_dispatcher()->SetCaptureWindow(w3.get(), false));
   EXPECT_EQ(w3.get(), event_dispatcher()->capture_window());
-}
-
-// Tests that setting capture fails when there is a system modal window.
-TEST_F(EventDispatcherTest, ModalWindowSystemSetCapture) {
-  std::unique_ptr<ServerWindow> w1 = CreateChildWindow(WindowId(1, 3));
-  std::unique_ptr<ServerWindow> w2 = CreateChildWindow(WindowId(1, 4));
-
-  root_window()->SetBounds(gfx::Rect(0, 0, 100, 100));
-  w1->SetBounds(gfx::Rect(10, 10, 30, 30));
-  w2->SetBounds(gfx::Rect(50, 10, 10, 10));
-
-  event_dispatcher()->AddSystemModalWindow(w2.get());
-
-  EXPECT_FALSE(event_dispatcher()->SetCaptureWindow(w1.get(), false));
-  EXPECT_EQ(nullptr, event_dispatcher()->capture_window());
-}
-
-// Tests having multiple system modal windows.
-TEST_F(EventDispatcherTest, ModalWindowMultipleSystemModals) {
-  std::unique_ptr<ServerWindow> w1 = CreateChildWindow(WindowId(1, 3));
-  std::unique_ptr<ServerWindow> w2 = CreateChildWindow(WindowId(1, 4));
-  std::unique_ptr<ServerWindow> w3 = CreateChildWindow(WindowId(1, 5));
-
-  w2->SetVisible(false);
-
-  // In the beginning, there should be no active system modal window.
-  EXPECT_EQ(nullptr, GetActiveSystemModalWindow());
-
-  // Add a visible system modal window. It should become the active one.
-  event_dispatcher()->AddSystemModalWindow(w1.get());
-  EXPECT_EQ(w1.get(), GetActiveSystemModalWindow());
-
-  // Add an invisible system modal window. It should not change the active one.
-  event_dispatcher()->AddSystemModalWindow(w2.get());
-  EXPECT_EQ(w1.get(), GetActiveSystemModalWindow());
-
-  // Add another visible system modal window. It should become the active one.
-  event_dispatcher()->AddSystemModalWindow(w3.get());
-  EXPECT_EQ(w3.get(), GetActiveSystemModalWindow());
-
-  // Make an existing system modal window visible. It should become the active
-  // one.
-  w2->SetVisible(true);
-  EXPECT_EQ(w2.get(), GetActiveSystemModalWindow());
-
-  // Remove the active system modal window. Next one should become active.
-  w2.reset();
-  EXPECT_EQ(w3.get(), GetActiveSystemModalWindow());
-
-  // Remove an inactive system modal window. It should not change the active
-  // one.
-  w1.reset();
-  EXPECT_EQ(w3.get(), GetActiveSystemModalWindow());
-
-  // Remove the last remaining system modal window. There should be no active
-  // one anymore.
-  w3.reset();
-  EXPECT_EQ(nullptr, GetActiveSystemModalWindow());
 }
 
 }  // namespace test

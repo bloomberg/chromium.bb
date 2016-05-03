@@ -234,7 +234,8 @@ bool WindowTree::AddTransientWindow(const ClientWindowId& window_id,
   if (window && transient_window && !transient_window->Contains(window) &&
       access_policy_->CanAddTransientWindow(window, transient_window)) {
     Operation op(this, window_server_, OperationType::ADD_TRANSIENT_WINDOW);
-    return window->AddTransientWindow(transient_window);
+    window->AddTransientWindow(transient_window);
+    return true;
   }
   return false;
 }
@@ -242,15 +243,8 @@ bool WindowTree::AddTransientWindow(const ClientWindowId& window_id,
 bool WindowTree::SetModal(const ClientWindowId& window_id) {
   ServerWindow* window = GetWindowByClientId(window_id);
   if (window && access_policy_->CanSetModal(window)) {
+    window->SetModal();
     WindowManagerState* wms = GetWindowManagerState(window);
-    if (window->transient_parent()) {
-      window->SetModal();
-    } else if (user_id_ != InvalidUserId()) {
-      if (wms)
-        wms->AddSystemModalWindow(window);
-    } else {
-      return false;
-    }
     if (wms)
       wms->ReleaseCaptureBlockedByModalWindow(window);
     return true;

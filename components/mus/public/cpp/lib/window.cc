@@ -343,9 +343,6 @@ bool Window::Contains(const Window* child) const {
 }
 
 void Window::AddTransientWindow(Window* transient_window) {
-  // A system modal window cannot become a transient child.
-  DCHECK(!transient_window->is_modal() || transient_window->transient_parent());
-
   if (connection_)
     CHECK_EQ(transient_window->connection(), connection_);
   LocalAddTransientWindow(transient_window);

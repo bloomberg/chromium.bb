@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "cc/surfaces/surface_id.h"
 #include "components/mus/public/interfaces/event_matcher.mojom.h"
-#include "components/mus/ws/modal_window_controller.h"
 #include "components/mus/ws/server_window_observer.h"
 #include "ui/gfx/geometry/rect_f.h"
 
@@ -60,20 +59,6 @@ class EventDispatcher : public ServerWindowObserver {
   // Setting capture can fail if the window is blocked by a modal window
   // (indicated by returning |false|).
   bool SetCaptureWindow(ServerWindow* capture_window, bool in_nonclient_area);
-
-  // Adds a system modal window. The window remains modal to system until it is
-  // destroyed. There can exist multiple system modal windows, in which case the
-  // one that is visible and added most recently or shown most recently would be
-  // the active one.
-  void AddSystemModalWindow(ServerWindow* window);
-
-  // Checks if |modal_window| is a visible modal window that blocks current
-  // capture window and if that's the case, releases the capture.
-  void ReleaseCaptureBlockedByModalWindow(const ServerWindow* modal_window);
-
-  // Checks if the current capture window is blocked by any visible modal window
-  // and if that's the case, releases the capture.
-  void ReleaseCaptureBlockedByAnyModalWindow();
 
   // Retrieves the ServerWindow of the last mouse move.
   ServerWindow* mouse_cursor_source_window() const {
@@ -163,11 +148,9 @@ class EventDispatcher : public ServerWindowObserver {
   // way we continue to eat events until the up/cancel is received.
   void CancelPointerEventsToTarget(ServerWindow* window);
 
-  // Used to observe a window. Can be called multiple times on a window. To
-  // unobserve a window, UnobserveWindow() should be called the same number of
-  // times.
-  void ObserveWindow(ServerWindow* winodw);
-  void UnobserveWindow(ServerWindow* winodw);
+  // Returns true if we're currently an observer for |window|. We are an
+  // observer for a window if any pointer events are targeting it.
+  bool IsObservingWindow(ServerWindow* window);
 
   // Returns an Accelerator bound to the specified code/flags, and of the
   // matching |phase|. Otherwise returns null.
@@ -183,12 +166,9 @@ class EventDispatcher : public ServerWindowObserver {
 
   EventDispatcherDelegate* delegate_;
   ServerWindow* root_;
-
   ServerWindow* capture_window_;
+
   bool capture_window_in_nonclient_area_;
-
-  ModalWindowController modal_window_controller_;
-
   bool mouse_button_down_;
   ServerWindow* mouse_cursor_source_window_;
 
@@ -207,9 +187,6 @@ class EventDispatcher : public ServerWindowObserver {
   // touch based pointers the pointer is active while down and removed on
   // cancel or up.
   PointerIdToTargetMap pointer_targets_;
-
-  // Keeps track of number of observe requests for each observed window.
-  std::map<const ServerWindow*, uint8_t> observed_windows_;
 
   DISALLOW_COPY_AND_ASSIGN(EventDispatcher);
 };

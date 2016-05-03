@@ -53,8 +53,9 @@ class ModalWindow : public views::WidgetDelegateView,
   ~ModalWindow() override {}
 
   static void OpenModalWindow(aura::Window* parent, ui::ModalType modal_type) {
-    views::Widget* widget = views::Widget::CreateWindowWithParent(
-        new ModalWindow(modal_type), parent);
+    views::Widget* widget =
+        views::Widget::CreateWindowWithParent(new ModalWindow(modal_type),
+                                              parent);
     widget->GetNativeView()->SetName("ModalWindow");
     widget->Show();
   }
@@ -83,10 +84,7 @@ class ModalWindow : public views::WidgetDelegateView,
   // Overridden from views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override {
     DCHECK(sender == open_button_);
-    OpenModalWindow(modal_type_ == ui::MODAL_TYPE_SYSTEM
-                        ? nullptr
-                        : GetWidget()->GetNativeView(),
-                    modal_type_);
+    OpenModalWindow(GetWidget()->GetNativeView(), modal_type_);
   }
 
  private:
@@ -310,7 +308,8 @@ class WindowTypeLauncherView : public views::WidgetDelegateView,
       NOTIMPLEMENTED();
     }
     else if (sender == system_modal_button_) {
-      ModalWindow::OpenModalWindow(nullptr, ui::MODAL_TYPE_SYSTEM);
+      ModalWindow::OpenModalWindow(GetWidget()->GetNativeView(),
+                                   ui::MODAL_TYPE_SYSTEM);
     } else if (sender == window_modal_button_) {
       ModalWindow::OpenModalWindow(GetWidget()->GetNativeView(),
                                    ui::MODAL_TYPE_WINDOW);

@@ -170,12 +170,11 @@ interface WindowTree {
   // visible to connection B.
   RemoveWindowFromParent(uint32 change_id, uint32 window_id);
 
-  // Ties the lifetime of |transient_window_id| to the lifetime of |window_id|.
-  // This also places |transient_window_id| on top of |window_id|.
+  // Ties the lifetime of |child| to the lifetime of |parent|. This also
+  // places |child| always on top of |parent|.
   // This fails for any of the following reasons:
   // . |window_id| or |transient_window_id| does not identify a valid window.
   // . |transient_window_id| is an ancestor of |window_id|.
-  // . |transient_window_id| is modal to system.
   AddTransientWindow(uint32 change_id,
                      uint32 window_id,
                      uint32 transient_window_id);
@@ -184,12 +183,11 @@ interface WindowTree {
   // This does not change transient window's position in the window hierarchy.
   RemoveTransientWindowFromParent(uint32 change_id, uint32 transient_window_id);
 
-  // Sets |window_id| to be modal. If the window has a transient parent, then
-  // the window is modal to the transient parent. Otherwise, the window is modal
-  // to the system. This releases capture if necessary.
-  // This fails for any of the following reasons:
-  // . |window_id| does not identify a valid window.
-  // . Client does not have a valid user id (i.e., it is an embedded app).
+  // Sets |window_id| to be modal to its transient parent.
+  // This fails if |window_id| does not identify a valid window.
+  // TODO(mohsen): If |window_id| does not have a transient parent, this will
+  // have no effect. Plan is to make a window modal to system if it does not
+  // have a transient parent.
   SetModal(uint32 change_id, uint32 window_id);
 
   // Reorders a window in its parent, relative to |relative_window_id| according

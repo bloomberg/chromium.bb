@@ -122,15 +122,6 @@ DisplayTestApi::~DisplayTestApi() {}
 
 // EventDispatcherTestApi  ----------------------------------------------------
 
-bool EventDispatcherTestApi::IsWindowPointerTarget(
-    const ServerWindow* window) const {
-  for (const auto& pair : ed_->pointer_targets_) {
-    if (pair.second.window == window)
-      return true;
-  }
-  return false;
-}
-
 int EventDispatcherTestApi::NumberPointerTargetsForWindow(
     ServerWindow* window) {
   int count = 0;

@@ -31,8 +31,6 @@ source_set("lib") {
     "focus_controller.h",
     "focus_controller_delegate.h",
     "focus_controller_observer.h",
-    "modal_window_controller.cc",
-    "modal_window_controller.h",
     "operation.cc",
     "operation.h",
     "platform_display.cc",

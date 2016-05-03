@@ -127,16 +127,23 @@ bool WindowManagerState::SetCapture(ServerWindow* window,
 
 void WindowManagerState::ReleaseCaptureBlockedByModalWindow(
     const ServerWindow* modal_window) {
-  event_dispatcher_.ReleaseCaptureBlockedByModalWindow(modal_window);
+  if (!capture_window() || !modal_window->is_modal() ||
+      !modal_window->IsDrawn())
+    return;
+
+  if (modal_window->transient_parent() &&
+      !modal_window->transient_parent()->Contains(capture_window())) {
+    return;
+  }
+
+  SetCapture(nullptr, false);
 }
 
 void WindowManagerState::ReleaseCaptureBlockedByAnyModalWindow() {
-  event_dispatcher_.ReleaseCaptureBlockedByAnyModalWindow();
-}
+  if (!capture_window() || !capture_window()->IsBlockedByModalWindow())
+    return;
 
-void WindowManagerState::AddSystemModalWindow(ServerWindow* window) {
-  DCHECK(!window->transient_parent());
-  event_dispatcher_.AddSystemModalWindow(window);
+  SetCapture(nullptr, false);
 }
 
 mojom::DisplayPtr WindowManagerState::ToMojomDisplay() const {
