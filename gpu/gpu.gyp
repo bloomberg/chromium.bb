@@ -337,6 +337,9 @@
       ],
       'conditions': [
         ['OS == "android"', {
+          'dependencies': [
+            '../testing/android/native_test.gyp:native_test_native_code',
+          ],
           'sources': [
             'ipc/service/gpu_memory_buffer_factory_surface_texture_unittest.cc',
           ],
@@ -494,6 +497,9 @@
       'target_name': 'gpu_ipc_service_test_support',
       'type': 'static_library',
       'dependencies': [
+        # TODO(markdittmer): Shouldn't depend on client code for server tests.
+        # See crbug.com/608800.
+        'gpu_ipc_client',
       ],
       'include_dirs': [
         '..',

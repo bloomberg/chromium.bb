@@ -19,7 +19,7 @@ namespace gpu {
 
 class GPU_EXPORT InProcessSurfaceTextureManager : public SurfaceTextureManager {
  public:
-  static InProcessSurfaceTextureManager* GetInstance();
+  static GPU_EXPORT InProcessSurfaceTextureManager* GetInstance();
 
   // Overridden from SurfaceTextureManager:
   void RegisterSurfaceTexture(int surface_texture_id,

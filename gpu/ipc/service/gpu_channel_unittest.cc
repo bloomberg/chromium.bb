@@ -70,6 +70,10 @@ const SurfaceHandle kFakeSurfaceHandle = 1;
 #endif
 
 TEST_F(GpuChannelTest, CreateViewCommandBufferAllowed) {
+  // We need GL bindings to actually initialize command buffers.
+  gfx::SetGLGetProcAddressProc(gfx::MockGLInterface::GetGLProcAddress);
+  gfx::GLSurfaceTestSupport::InitializeOneOffWithMockBindings();
+
   int32_t kClientId = 1;
   bool allow_view_command_buffers = true;
   GpuChannel* channel =

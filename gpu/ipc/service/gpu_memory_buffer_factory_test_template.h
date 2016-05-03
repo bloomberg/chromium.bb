@@ -8,8 +8,16 @@
 #ifndef GPU_IPC_SERVICE_GPU_MEMORY_BUFFER_FACTORY_TEST_TEMPLATE_H_
 #define GPU_IPC_SERVICE_GPU_MEMORY_BUFFER_FACTORY_TEST_TEMPLATE_H_
 
-#include "gpu/ipc/service/gpu_memory_buffer_factory.h"
+#if defined(OS_ANDROID)
+// TODO(markdittmer): Service code shouldn't depend on client code.
+// See crbug.com/608800.
+#include "gpu/ipc/client/android/in_process_surface_texture_manager.h"
+
+#include "gpu/ipc/common/android/surface_texture_manager.h"
+#endif
+
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
+#include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/buffer_format_util.h"
 
@@ -24,6 +32,11 @@ class GpuMemoryBufferFactoryTest : public testing::Test {
 TYPED_TEST_CASE_P(GpuMemoryBufferFactoryTest);
 
 TYPED_TEST_P(GpuMemoryBufferFactoryTest, CreateGpuMemoryBuffer) {
+#if defined(OS_ANDROID)
+  SurfaceTextureManager::SetInstance(
+      InProcessSurfaceTextureManager::GetInstance());
+#endif
+
   const gfx::GpuMemoryBufferId kBufferId(1);
   const int kClientId = 1;
 

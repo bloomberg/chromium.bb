@@ -113,6 +113,9 @@ source_set("test_support") {
     "//testing/gtest:gtest",
   ]
   deps = [
+    # TODO(markdittmer): Shouldn't depend on client code for server tests.
+    # See crbug.com/608800.
+    "//gpu/ipc/client",
     "//gpu/ipc/common",
   ]
 }
