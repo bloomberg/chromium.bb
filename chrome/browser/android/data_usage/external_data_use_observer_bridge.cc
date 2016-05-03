@@ -78,7 +78,7 @@ void ExternalDataUseObserverBridge::Init(
       reinterpret_cast<intptr_t>(this)));
   DCHECK(!j_external_data_use_observer_.is_null());
 
-  Java_ExternalDataUseObserver_setControlAppPackageName(
+  Java_ExternalDataUseObserver_initControlAppManager(
       env, j_external_data_use_observer_.obj(),
       ConvertUTF8ToJavaString(env, GetControlAppPackageName()).obj());
 }

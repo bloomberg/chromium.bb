@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.datausage;
 
 import android.content.Context;
+import android.text.TextUtils;
 
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
@@ -56,16 +57,17 @@ public class ExternalDataUseObserver {
             if (mNativeExternalDataUseObserverBridge == 0) {
                 return;
             }
-            if (mControlAppPackageName != null && !mControlAppPackageName.isEmpty()) {
-                boolean isControlAppInstalled =
-                        PackageUtils.getPackageVersion(
-                                ApplicationStatus.getApplicationContext(), mControlAppPackageName)
-                        != -1;
-                if (isControlAppInstalled != mInstalled) {
-                    mInstalled = isControlAppInstalled;
-                    nativeOnControlAppInstallStateChange(
-                            mNativeExternalDataUseObserverBridge, mInstalled);
-                }
+            if (TextUtils.isEmpty(mControlAppPackageName)) {
+                return;
+            }
+            boolean isControlAppInstalled =
+                    PackageUtils.getPackageVersion(
+                            ApplicationStatus.getApplicationContext(), mControlAppPackageName)
+                    != -1;
+            if (isControlAppInstalled != mInstalled) {
+                mInstalled = isControlAppInstalled;
+                nativeOnControlAppInstallStateChange(
+                        mNativeExternalDataUseObserverBridge, mInstalled);
             }
         }
     }
@@ -95,11 +97,22 @@ public class ExternalDataUseObserver {
     }
 
     /**
-     * Sets the package name of the control app.
-     * @param controlAppPackageName package name of the control app.
+     * @return the default control app package name.
+     */
+    protected String getDefaultControlAppPackageName() {
+        return "";
+    }
+
+    /**
+     * Initializes the control app manager with package name of the control app.
+     * @param controlAppPackageName package name of the control app. If this is empty the default
+     * control app package name from {@link getDefaultControlAppPackageName} will be used.
      */
     @CalledByNative
-    protected void setControlAppPackageName(String controlAppPackageName) {
+    protected void initControlAppManager(String controlAppPackageName) {
+        if (TextUtils.isEmpty(controlAppPackageName)) {
+            controlAppPackageName = getDefaultControlAppPackageName();
+        }
         mControlAppManager = new ControlAppManager(controlAppPackageName);
     }
 
