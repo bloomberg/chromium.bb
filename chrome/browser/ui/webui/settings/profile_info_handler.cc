@@ -31,7 +31,11 @@ namespace settings {
 const char ProfileInfoHandler::kProfileInfoChangedEventName[] =
     "profile-info-changed";
 
-ProfileInfoHandler::ProfileInfoHandler(Profile* profile) : profile_(profile) {}
+ProfileInfoHandler::ProfileInfoHandler(Profile* profile)
+    : profile_(profile),
+      profile_observer_(this) {}
+
+ProfileInfoHandler::~ProfileInfoHandler() {}
 
 void ProfileInfoHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
@@ -40,9 +44,8 @@ void ProfileInfoHandler::RegisterMessages() {
 }
 
 void ProfileInfoHandler::OnJavascriptAllowed() {
-  g_browser_process->profile_manager()
-      ->GetProfileAttributesStorage()
-      .AddObserver(this);
+  profile_observer_.Add(
+      &g_browser_process->profile_manager()->GetProfileAttributesStorage());
 
 #if defined(OS_CHROMEOS)
   registrar_.Add(this, chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED,
@@ -51,9 +54,8 @@ void ProfileInfoHandler::OnJavascriptAllowed() {
 }
 
 void ProfileInfoHandler::OnJavascriptDisallowed() {
-  g_browser_process->profile_manager()
-      ->GetProfileAttributesStorage()
-      .RemoveObserver(this);
+  profile_observer_.Remove(
+      &g_browser_process->profile_manager()->GetProfileAttributesStorage());
 
 #if defined(OS_CHROMEOS)
   registrar_.RemoveAll();

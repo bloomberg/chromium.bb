@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/scoped_observer.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
@@ -30,7 +31,7 @@ class ProfileInfoHandler : public SettingsPageUIHandler,
   static const char kProfileInfoChangedEventName[];
 
   explicit ProfileInfoHandler(Profile* profile);
-  ~ProfileInfoHandler() override {}
+  ~ProfileInfoHandler() override;
 
   // SettingsPageUIHandler implementation.
   void RegisterMessages() override;
@@ -62,6 +63,9 @@ class ProfileInfoHandler : public SettingsPageUIHandler,
 
   // Weak pointer.
   Profile* profile_;
+
+  ScopedObserver<ProfileAttributesStorage, ProfileInfoHandler>
+      profile_observer_;
 
 #if defined(OS_CHROMEOS)
   // Used to listen to ChromeOS user image changes.
