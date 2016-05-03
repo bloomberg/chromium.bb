@@ -774,6 +774,11 @@ void UserMediaClientImpl::OnDeviceOpenFailed(int request_id) {
   NOTIMPLEMENTED();
 }
 
+void UserMediaClientImpl::OnDevicesChanged() {
+  DVLOG(1) << "UserMediaClientImpl::OnDevicesChanged()";
+  NOTIMPLEMENTED();
+}
+
 void UserMediaClientImpl::GetUserMediaRequestSucceeded(
     const blink::WebMediaStream& stream,
     blink::WebUserMediaRequest request_info) {

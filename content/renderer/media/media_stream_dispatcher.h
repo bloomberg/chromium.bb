@@ -9,6 +9,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -82,6 +83,17 @@ class CONTENT_EXPORT MediaStreamDispatcher
   // Close a started device. |label| is provided in OnDeviceOpened.
   void CloseDevice(const std::string& label);
 
+  // Register and unregister event handlers for device-change notifications.
+  // It is an error to try to subscribe a handler that is already subscribed or
+  // to cancel the subscription of a handler that is not subscribed. Also,
+  // each subscribed handler must make sure to invoke
+  // CancelDeviceChangeNotifications() before the handler is destroyed.
+  void SubscribeToDeviceChangeNotifications(
+      const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler,
+      const url::Origin& security_origin);
+  void CancelDeviceChangeNotifications(
+      const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler);
+
   // Check if the label is a valid stream.
   virtual bool IsStream(const std::string& label);
   // Get the video session_id given a label. The label identifies a stream.
@@ -128,6 +140,7 @@ class CONTENT_EXPORT MediaStreamDispatcher
       const std::string& label,
       const StreamDeviceInfo& device_info);
   void OnDeviceOpenFailed(int request_id);
+  void OnDevicesChanged();
 
   // Used for DCHECKs so methods calls won't execute in the wrong thread.
   base::ThreadChecker thread_checker_;
@@ -140,6 +153,9 @@ class CONTENT_EXPORT MediaStreamDispatcher
   // been canceled.
   typedef std::list<Request> RequestList;
   RequestList requests_;
+
+  std::vector<base::WeakPtr<MediaStreamDispatcherEventHandler>>
+      device_change_subscribers_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamDispatcher);
 };
