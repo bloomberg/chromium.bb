@@ -82,6 +82,12 @@ http/tests/misc/copy-resolves-urls.html [ Failure ]
 # https://crbug.com/607981 - trouble with application/x-blink-deprecated-test-plugin
 http/tests/plugins/cross-frame-object-access.html [ Failure ]
 
+# https://crbug.com/608780 - window.performance doesn't work with OOPIFs
+http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_cross_origin_redirect.html [ Timeout ]
+http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_cross_origin_redirect_with_timing_allow_origin.html [ Timeout ]
+http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_cross_origin_resource_request.html [ Timeout ]
+http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_timing_allow_cross_origin_resource_request.html [ Timeout ]
+
 # TODO(alexmos,lukasza): Triage these failures and assign more specific bugs.
 # Uninvestigated failures under http/tests/security:
 http/tests/security/cross-frame-access-enumeration.html [ Timeout ]
@@ -113,7 +119,3 @@ http/tests/local/drag-over-remote-content.html [ Crash Timeout ]
 http/tests/navigation/redirect-on-back-updates-history-item.html [ Timeout ]
 http/tests/navigation/redirect-on-reload-updates-history-item.html [ Timeout ]
 http/tests/serviceworker/http-to-https-redirect-and-register.html [ Timeout ]
-http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_cross_origin_redirect.html [ Timeout ]
-http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_cross_origin_redirect_with_timing_allow_origin.html [ Timeout ]
-http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_cross_origin_resource_request.html [ Timeout ]
-http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_timing_allow_cross_origin_resource_request.html [ Timeout ]
