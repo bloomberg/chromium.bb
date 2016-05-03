@@ -339,17 +339,6 @@ void OfflinePageModel::GetAllPagesAfterLoadDone(
   callback.Run(offline_pages);
 }
 
-const std::vector<OfflinePageItem> OfflinePageModel::GetPagesToCleanUp() const {
-  DCHECK(is_loaded_);
-  std::vector<OfflinePageItem> offline_pages;
-  base::Time now = base::Time::Now();
-  for (const auto& id_page_pair : offline_pages_) {
-    if (now - id_page_pair.second.last_access_time > kPageCleanUpThreshold)
-      offline_pages.push_back(id_page_pair.second);
-  }
-  return offline_pages;
-}
-
 void OfflinePageModel::GetOfflineIdsForClientId(
     const ClientId& client_id,
     const MultipleOfflineIdCallback& callback) {

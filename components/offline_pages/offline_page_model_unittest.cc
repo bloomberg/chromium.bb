@@ -871,47 +871,6 @@ TEST_F(OfflinePageModelTest, CheckPagesExistOffline) {
   EXPECT_EQ(existing_pages.end(), existing_pages.find(kTestUrl3));
 }
 
-// Test that model returns pages that are older than 30 days as candidates for
-// clean up, hence the numbers in time delta.
-TEST_F(OfflinePageModelTest, GetPagesToCleanUp) {
-  base::Time now = base::Time::Now();
-
-  SavePage(kTestUrl, kTestClientId1);
-  GetStore()->UpdateLastAccessTime(last_save_offline_id(),
-                                   now - base::TimeDelta::FromDays(40));
-
-  SavePage(kTestUrl2, kTestClientId2);
-  GetStore()->UpdateLastAccessTime(last_save_offline_id(),
-                                   now - base::TimeDelta::FromDays(31));
-
-  SavePage(kTestUrl3, kTestClientId3);
-  GetStore()->UpdateLastAccessTime(last_save_offline_id(),
-                                   now - base::TimeDelta::FromDays(29));
-
-  ResetModel();
-
-  // Only page_1 and page_2 are expected to be picked up by the model as page_3
-  // has not been in the store long enough.
-  std::vector<OfflinePageItem> pages_to_clean_up = model()->GetPagesToCleanUp();
-  // Offline IDs are random, so the order of the pages is also random
-  // So load in the right page for the validation below.
-  const OfflinePageItem* page1;
-  const OfflinePageItem* page2;
-  if (pages_to_clean_up[0].client_id == kTestClientId1) {
-    page1 = &pages_to_clean_up[0];
-    page2 = &pages_to_clean_up[1];
-  } else {
-    page1 = &pages_to_clean_up[1];
-    page2 = &pages_to_clean_up[0];
-  }
-
-  EXPECT_EQ(2UL, pages_to_clean_up.size());
-  EXPECT_EQ(kTestUrl, page1->url);
-  EXPECT_EQ(kTestClientId1, page1->client_id);
-  EXPECT_EQ(kTestUrl2, page2->url);
-  EXPECT_EQ(kTestClientId2, page2->client_id);
-}
-
 TEST_F(OfflinePageModelTest, CanSavePage) {
   EXPECT_TRUE(OfflinePageModel::CanSavePage(GURL("http://foo")));
   EXPECT_TRUE(OfflinePageModel::CanSavePage(GURL("https://foo")));

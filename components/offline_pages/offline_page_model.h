@@ -199,11 +199,6 @@ class OfflinePageModel : public KeyedService, public base::SupportsUserData {
   // Gets all available offline pages. Requires that the model is loaded.
   void GetAllPages(const MultipleOfflinePageItemCallback& callback);
 
-  // Gets pages that should be removed to clean up storage. Requires that the
-  // model is loaded.
-  // TODO(fgorski): This needs an update as part of expiration policy work.
-  const std::vector<OfflinePageItem> GetPagesToCleanUp() const;
-
   // Gets all offline ids where the offline page has the matching client id.
   void GetOfflineIdsForClientId(const ClientId& client_id,
                                 const MultipleOfflineIdCallback& callback);
