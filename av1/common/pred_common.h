@@ -63,7 +63,7 @@ static INLINE int av1_get_skip_context(const MACROBLOCKD *xd) {
 }
 
 static INLINE aom_prob av1_get_skip_prob(const AV1_COMMON *cm,
-                                          const MACROBLOCKD *xd) {
+                                         const MACROBLOCKD *xd) {
   return cm->fc->skip_probs[av1_get_skip_context(xd)];
 }
 
@@ -72,23 +72,22 @@ int av1_get_pred_context_switchable_interp(const MACROBLOCKD *xd);
 int av1_get_intra_inter_context(const MACROBLOCKD *xd);
 
 static INLINE aom_prob av1_get_intra_inter_prob(const AV1_COMMON *cm,
-                                                 const MACROBLOCKD *xd) {
+                                                const MACROBLOCKD *xd) {
   return cm->fc->intra_inter_prob[av1_get_intra_inter_context(xd)];
 }
 
-int av1_get_reference_mode_context(const AV1_COMMON *cm,
-                                    const MACROBLOCKD *xd);
+int av1_get_reference_mode_context(const AV1_COMMON *cm, const MACROBLOCKD *xd);
 
 static INLINE aom_prob av1_get_reference_mode_prob(const AV1_COMMON *cm,
-                                                    const MACROBLOCKD *xd) {
+                                                   const MACROBLOCKD *xd) {
   return cm->fc->comp_inter_prob[av1_get_reference_mode_context(cm, xd)];
 }
 
 int av1_get_pred_context_comp_ref_p(const AV1_COMMON *cm,
-                                     const MACROBLOCKD *xd);
+                                    const MACROBLOCKD *xd);
 
 static INLINE aom_prob av1_get_pred_prob_comp_ref_p(const AV1_COMMON *cm,
-                                                     const MACROBLOCKD *xd) {
+                                                    const MACROBLOCKD *xd) {
   const int pred_context = av1_get_pred_context_comp_ref_p(cm, xd);
   return cm->fc->comp_ref_prob[pred_context];
 }
@@ -96,14 +95,14 @@ static INLINE aom_prob av1_get_pred_prob_comp_ref_p(const AV1_COMMON *cm,
 int av1_get_pred_context_single_ref_p1(const MACROBLOCKD *xd);
 
 static INLINE aom_prob av1_get_pred_prob_single_ref_p1(const AV1_COMMON *cm,
-                                                        const MACROBLOCKD *xd) {
+                                                       const MACROBLOCKD *xd) {
   return cm->fc->single_ref_prob[av1_get_pred_context_single_ref_p1(xd)][0];
 }
 
 int av1_get_pred_context_single_ref_p2(const MACROBLOCKD *xd);
 
 static INLINE aom_prob av1_get_pred_prob_single_ref_p2(const AV1_COMMON *cm,
-                                                        const MACROBLOCKD *xd) {
+                                                       const MACROBLOCKD *xd) {
   return cm->fc->single_ref_prob[av1_get_pred_context_single_ref_p2(xd)][1];
 }
 

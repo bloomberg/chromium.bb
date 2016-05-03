@@ -9,7 +9,6 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
 */
 
-
 #include <string>
 #include <vector>
 #include "third_party/googletest/src/include/gtest/gtest.h"
@@ -127,7 +126,7 @@ TEST_P(AVxEncoderThreadTest, EncoderResultTest) {
 }
 
 AV1_INSTANTIATE_TEST_CASE(AVxEncoderThreadTest,
-                           ::testing::Values(::libaom_test::kTwoPassGood,
-                                             ::libaom_test::kOnePassGood),
-                           ::testing::Range(1, 3));
+                          ::testing::Values(::libaom_test::kTwoPassGood,
+                                            ::libaom_test::kOnePassGood),
+                          ::testing::Range(1, 3));
 }  // namespace

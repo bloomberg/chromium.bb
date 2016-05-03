@@ -527,12 +527,12 @@ TEST_P(ResizeCspTest, TestResizeCspWorks) {
 }
 
 AV1_INSTANTIATE_TEST_CASE(ResizeTest,
-                           ::testing::Values(::libaom_test::kRealTime));
+                          ::testing::Values(::libaom_test::kRealTime));
 AV1_INSTANTIATE_TEST_CASE(ResizeInternalTest,
-                           ::testing::Values(::libaom_test::kOnePassBest));
+                          ::testing::Values(::libaom_test::kOnePassBest));
 AV1_INSTANTIATE_TEST_CASE(ResizeRealtimeTest,
-                           ::testing::Values(::libaom_test::kRealTime),
-                           ::testing::Range(5, 9));
+                          ::testing::Values(::libaom_test::kRealTime),
+                          ::testing::Range(5, 9));
 AV1_INSTANTIATE_TEST_CASE(ResizeCspTest,
-                           ::testing::Values(::libaom_test::kRealTime));
+                          ::testing::Values(::libaom_test::kRealTime));
 }  // namespace

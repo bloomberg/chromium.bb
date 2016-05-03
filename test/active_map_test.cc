@@ -82,6 +82,6 @@ TEST_P(ActiveMapTest, Test) {
 }
 
 AV1_INSTANTIATE_TEST_CASE(ActiveMapTest,
-                           ::testing::Values(::libaom_test::kRealTime),
-                           ::testing::Range(0, 6));
+                          ::testing::Values(::libaom_test::kRealTime),
+                          ::testing::Range(0, 6));
 }  // namespace

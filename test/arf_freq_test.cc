@@ -9,7 +9,6 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
 */
 
-
 #include "third_party/googletest/src/include/gtest/gtest.h"
 
 #include "test/codec_factory.h"
@@ -218,14 +217,14 @@ TEST_P(ArfFreqTest, MinArfFreqTest) {
 INSTANTIATE_TEST_CASE_P(
     DISABLED_AV1, ArfFreqTest,
     ::testing::Combine(
-        ::testing::Values(static_cast<const libaom_test::CodecFactory *>(
-            &libaom_test::kAV1)),
+        ::testing::Values(
+            static_cast<const libaom_test::CodecFactory *>(&libaom_test::kAV1)),
         ::testing::ValuesIn(kTestVectors), ::testing::ValuesIn(kEncodeVectors),
         ::testing::ValuesIn(kMinArfVectors)));
 #endif  // CONFIG_AV1_ENCODER
 #else
 AV1_INSTANTIATE_TEST_CASE(ArfFreqTest, ::testing::ValuesIn(kTestVectors),
-                           ::testing::ValuesIn(kEncodeVectors),
-                           ::testing::ValuesIn(kMinArfVectors));
+                          ::testing::ValuesIn(kEncodeVectors),
+                          ::testing::ValuesIn(kMinArfVectors));
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 }  // namespace

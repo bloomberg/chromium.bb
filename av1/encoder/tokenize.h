@@ -52,7 +52,7 @@ struct AV1_COMP;
 struct ThreadData;
 
 void av1_tokenize_sb(struct AV1_COMP *cpi, struct ThreadData *td,
-                      TOKENEXTRA **t, int dry_run, BLOCK_SIZE bsize);
+                     TOKENEXTRA **t, int dry_run, BLOCK_SIZE bsize);
 
 extern const int16_t *av1_dct_value_cost_ptr;
 /* TODO: The Token field should be broken out into a separate char array to
@@ -66,7 +66,7 @@ extern const int av1_cat6_high_cost[64];
 extern const int av1_cat6_high10_high_cost[256];
 extern const int av1_cat6_high12_high_cost[1024];
 static INLINE int av1_get_cost(int16_t token, EXTRABIT extrabits,
-                                const int *cat6_high_table) {
+                               const int *cat6_high_table) {
   if (token != CATEGORY6_TOKEN)
     return av1_extra_bits[token].cost[extrabits >> 1];
   return av1_cat6_low_cost[(extrabits >> 1) & 0xff] +
@@ -86,8 +86,7 @@ static INLINE const int *av1_get_high_cost_table(int bit_depth) {
 }
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 
-static INLINE void av1_get_token_extra(int v, int16_t *token,
-                                        EXTRABIT *extra) {
+static INLINE void av1_get_token_extra(int v, int16_t *token, EXTRABIT *extra) {
   if (v >= CAT6_MIN_VAL || v <= -CAT6_MIN_VAL) {
     *token = CATEGORY6_TOKEN;
     if (v >= CAT6_MIN_VAL)

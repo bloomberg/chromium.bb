@@ -21,13 +21,13 @@ extern "C" {
 void av1_entropy_mv_init(void);
 
 void av1_write_nmv_probs(AV1_COMMON *cm, int usehp, aom_writer *w,
-                          nmv_context_counts *const counts);
+                         nmv_context_counts *const counts);
 
 void av1_encode_mv(AV1_COMP *cpi, aom_writer *w, const MV *mv, const MV *ref,
-                    const nmv_context *mvctx, int usehp);
+                   const nmv_context *mvctx, int usehp);
 
 void av1_build_nmv_cost_table(int *mvjoint, int *mvcost[2],
-                               const nmv_context *mvctx, int usehp);
+                              const nmv_context *mvctx, int usehp);
 
 void av1_update_mv_count(ThreadData *td);
 

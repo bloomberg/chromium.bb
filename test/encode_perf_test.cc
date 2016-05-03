@@ -185,5 +185,5 @@ TEST_P(AV1EncodePerfTest, PerfTest) {
 }
 
 AV1_INSTANTIATE_TEST_CASE(AV1EncodePerfTest,
-                           ::testing::Values(::libaom_test::kRealTime));
+                          ::testing::Values(::libaom_test::kRealTime));
 }  // namespace

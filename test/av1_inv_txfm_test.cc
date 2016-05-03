@@ -9,7 +9,6 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
 */
 
-
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
@@ -91,7 +90,7 @@ class TransTestBase {
 
 typedef std::tr1::tuple<IdctFunc, IdctFuncRef, int, int> IdctParam;
 class AV1InvTxfm : public TransTestBase,
-                    public ::testing::TestWithParam<IdctParam> {
+                   public ::testing::TestWithParam<IdctParam> {
  public:
   virtual void SetUp() {
     fwd_txfm_ = GET_PARAM(0);

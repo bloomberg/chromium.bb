@@ -143,8 +143,7 @@ struct AV1_COMP;
 
 void av1_init_first_pass(struct AV1_COMP *cpi);
 void av1_rc_get_first_pass_params(struct AV1_COMP *cpi);
-void av1_first_pass(struct AV1_COMP *cpi,
-                     const struct lookahead_entry *source);
+void av1_first_pass(struct AV1_COMP *cpi, const struct lookahead_entry *source);
 void av1_end_first_pass(struct AV1_COMP *cpi);
 
 void av1_init_second_pass(struct AV1_COMP *cpi);
@@ -157,7 +156,7 @@ void av1_twopass_postencode_update(struct AV1_COMP *cpi);
 void av1_init_subsampling(struct AV1_COMP *cpi);
 
 void av1_calculate_coded_size(struct AV1_COMP *cpi, int *scaled_frame_width,
-                               int *scaled_frame_height);
+                              int *scaled_frame_height);
 
 #ifdef __cplusplus
 }  // extern "C"

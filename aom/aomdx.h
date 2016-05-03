@@ -64,7 +64,7 @@ enum aom_dec_control_id {
    * a callback function and opaque context pointer.
    */
   AOMD_SET_DECRYPTOR,
- // AOMD_SET_DECRYPTOR = AOMD_SET_DECRYPTOR,
+  // AOMD_SET_DECRYPTOR = AOMD_SET_DECRYPTOR,
 
   /** control function to get the dimensions that the current frame is decoded
    * at. This may be different to the intended display size for the frame as
@@ -144,7 +144,7 @@ AOM_CTRL_USE_TYPE(AOMD_GET_LAST_REF_USED, int *)
 #define AOM_CTRL_AOMD_GET_LAST_REF_USED
 AOM_CTRL_USE_TYPE(AOMD_SET_DECRYPTOR, aom_decrypt_init *)
 #define AOM_CTRL_AOMD_SET_DECRYPTOR
-//AOM_CTRL_USE_TYPE(AOMD_SET_DECRYPTOR, aom_decrypt_init *)
+// AOM_CTRL_USE_TYPE(AOMD_SET_DECRYPTOR, aom_decrypt_init *)
 //#define AOM_CTRL_AOMD_SET_DECRYPTOR
 AOM_CTRL_USE_TYPE(AV1D_GET_DISPLAY_SIZE, int *)
 #define AOM_CTRL_AV1D_GET_DISPLAY_SIZE
@@ -163,4 +163,3 @@ AOM_CTRL_USE_TYPE(AV1_INVERT_TILE_DECODE_ORDER, int)
 #endif
 
 #endif  // AOM_AOMDX_H_
-

@@ -9,7 +9,6 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
 */
 
-
 #include "third_party/googletest/src/include/gtest/gtest.h"
 
 #include "test/codec_factory.h"
@@ -177,16 +176,16 @@ TEST_P(EndToEndTestLarge, EndtoEndPSNRTest) {
 INSTANTIATE_TEST_CASE_P(
     DISABLED_AV1, EndToEndTestLarge,
     ::testing::Combine(
-        ::testing::Values(static_cast<const libaom_test::CodecFactory *>(
-            &libaom_test::kAV1)),
+        ::testing::Values(
+            static_cast<const libaom_test::CodecFactory *>(&libaom_test::kAV1)),
         ::testing::ValuesIn(kEncodingModeVectors),
         ::testing::ValuesIn(kTestVectors),
         ::testing::ValuesIn(kCpuUsedVectors)));
 #endif  // CONFIG_AV1_ENCODER
 #else
 AV1_INSTANTIATE_TEST_CASE(EndToEndTestLarge,
-                           ::testing::ValuesIn(kEncodingModeVectors),
-                           ::testing::ValuesIn(kTestVectors),
-                           ::testing::ValuesIn(kCpuUsedVectors));
+                          ::testing::ValuesIn(kEncodingModeVectors),
+                          ::testing::ValuesIn(kTestVectors),
+                          ::testing::ValuesIn(kCpuUsedVectors));
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 }  // namespace

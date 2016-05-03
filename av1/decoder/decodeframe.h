@@ -21,11 +21,11 @@ struct aom_read_bit_buffer;
 
 int av1_read_sync_code(struct aom_read_bit_buffer *const rb);
 void av1_read_frame_size(struct aom_read_bit_buffer *rb, int *width,
-                          int *height);
+                         int *height);
 BITSTREAM_PROFILE av1_read_profile(struct aom_read_bit_buffer *rb);
 
 void av1_decode_frame(struct AV1Decoder *pbi, const uint8_t *data,
-                       const uint8_t *data_end, const uint8_t **p_data_end);
+                      const uint8_t *data_end, const uint8_t **p_data_end);
 
 #ifdef __cplusplus
 }  // extern "C"

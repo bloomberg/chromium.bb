@@ -9,7 +9,6 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
 */
 
-
 #include "third_party/googletest/src/include/gtest/gtest.h"
 
 #include "test/codec_factory.h"

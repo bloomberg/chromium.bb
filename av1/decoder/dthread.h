@@ -58,7 +58,7 @@ void av1_frameworker_signal_stats(AVxWorker *const worker);
 // start decoding next frame. So need to check whether worker is still decoding
 // ref_buf.
 void av1_frameworker_wait(AVxWorker *const worker, RefCntBuffer *const ref_buf,
-                           int row);
+                          int row);
 
 // FrameWorker broadcasts its decoding progress so other workers that are
 // waiting on it can resume decoding.
@@ -66,7 +66,7 @@ void av1_frameworker_broadcast(RefCntBuffer *const buf, int row);
 
 // Copy necessary decoding context from src worker to dst worker.
 void av1_frameworker_copy_context(AVxWorker *const dst_worker,
-                                   AVxWorker *const src_worker);
+                                  AVxWorker *const src_worker);
 
 #ifdef __cplusplus
 }  // extern "C"

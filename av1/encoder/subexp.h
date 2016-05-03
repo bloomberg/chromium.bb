@@ -21,21 +21,20 @@ extern "C" {
 struct aom_writer;
 
 void av1_write_prob_diff_update(struct aom_writer *w, aom_prob newp,
-                                 aom_prob oldp);
+                                aom_prob oldp);
 
 void av1_cond_prob_diff_update(struct aom_writer *w, aom_prob *oldp,
-                                const unsigned int ct[2]);
+                               const unsigned int ct[2]);
 
 int av1_prob_diff_update_savings_search(const unsigned int *ct, aom_prob oldp,
-                                         aom_prob *bestp, aom_prob upd);
+                                        aom_prob *bestp, aom_prob upd);
 
 int av1_prob_diff_update_savings_search_model(const unsigned int *ct,
-                                               const aom_prob *oldp,
-                                               aom_prob *bestp, aom_prob upd,
-                                               int stepsize);
+                                              const aom_prob *oldp,
+                                              aom_prob *bestp, aom_prob upd,
+                                              int stepsize);
 
-int av1_cond_prob_diff_update_savings(aom_prob *oldp,
-                                       const unsigned int ct[2]);
+int av1_cond_prob_diff_update_savings(aom_prob *oldp, const unsigned int ct[2]);
 #ifdef __cplusplus
 }  // extern "C"
 #endif

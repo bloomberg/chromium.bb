@@ -41,7 +41,7 @@ int16_t av1_dc_quant(int qindex, int delta, aom_bit_depth_t bit_depth);
 int16_t av1_ac_quant(int qindex, int delta, aom_bit_depth_t bit_depth);
 
 int av1_get_qindex(const struct segmentation *seg, int segment_id,
-                    int base_qindex);
+                   int base_qindex);
 #if CONFIG_AOM_QM
 // Reduce the large number of quantizers to a smaller number of levels for which
 // different matrices may be defined

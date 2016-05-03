@@ -152,4 +152,3 @@ AOM_CTRL_USE_TYPE(AV1_GET_REFERENCE, av1_ref_frame_t *)
 #endif
 
 #endif  // AOM_AOM_H_
-

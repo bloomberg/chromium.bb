@@ -242,12 +242,13 @@ static INLINE int_mv get_sub_block_mv(const MODE_INFO *candidate, int which_mv,
 
 #if CONFIG_REF_MV
 static INLINE int_mv get_sub_block_pred_mv(const MODE_INFO *candidate,
-                                           int which_mv,
-                                           int search_col, int block_idx) {
-  return block_idx >= 0 && candidate->mbmi.sb_type < BLOCK_8X8 ?
-      candidate->bmi[idx_n_column_to_subblock[block_idx]
-                    [search_col == 0]].pred_mv[which_mv] :
-      candidate->mbmi.pred_mv[which_mv];
+                                           int which_mv, int search_col,
+                                           int block_idx) {
+  return block_idx >= 0 && candidate->mbmi.sb_type < BLOCK_8X8
+             ? candidate
+                   ->bmi[idx_n_column_to_subblock[block_idx][search_col == 0]]
+                   .pred_mv[which_mv]
+             : candidate->mbmi.pred_mv[which_mv];
 }
 #endif
 
@@ -316,18 +317,15 @@ static INLINE int is_inside(const TileInfo *const tile, int mi_col, int mi_row,
 static INLINE void lower_mv_precision(MV *mv, int allow_hp) {
   const int use_hp = allow_hp && av1_use_mv_hp(mv);
   if (!use_hp) {
-    if (mv->row & 1)
-      mv->row += (mv->row > 0 ? -1 : 1);
-    if (mv->col & 1)
-      mv->col += (mv->col > 0 ? -1 : 1);
+    if (mv->row & 1) mv->row += (mv->row > 0 ? -1 : 1);
+    if (mv->col & 1) mv->col += (mv->col > 0 ? -1 : 1);
   }
 }
 
 #if CONFIG_REF_MV
 static INLINE int av1_nmv_ctx(const uint8_t ref_mv_count,
                               const CANDIDATE_MV *ref_mv_stack) {
-  if (ref_mv_stack[0].weight >= REF_CAT_LEVEL &&
-      ref_mv_count > 0) {
+  if (ref_mv_stack[0].weight >= REF_CAT_LEVEL && ref_mv_count > 0) {
     if (abs(ref_mv_stack[0].this_mv.as_mv.row -
             ref_mv_stack[0].pred_mv.as_mv.row) <= 4 &&
         abs(ref_mv_stack[0].this_mv.as_mv.col -
@@ -340,8 +338,7 @@ static INLINE int av1_nmv_ctx(const uint8_t ref_mv_count,
 }
 
 static int8_t av1_ref_frame_type(const MV_REFERENCE_FRAME *const rf) {
-  if (rf[1] > INTRA_FRAME)
-    return rf[0] + ALTREF_FRAME;
+  if (rf[1] > INTRA_FRAME) return rf[0] + ALTREF_FRAME;
 
   return rf[0];
 }
@@ -376,7 +373,7 @@ static int16_t av1_mode_context_analyzer(const int16_t *const mode_context,
 }
 
 static INLINE uint8_t av1_drl_ctx(const CANDIDATE_MV *ref_mv_stack,
-                                   int ref_idx) {
+                                  int ref_idx) {
   if (ref_mv_stack[ref_idx].weight >= REF_CAT_LEVEL &&
       ref_mv_stack[ref_idx + 1].weight >= REF_CAT_LEVEL) {
     if (ref_mv_stack[ref_idx].weight == ref_mv_stack[ref_idx + 1].weight)
@@ -406,8 +403,7 @@ typedef void (*find_mv_refs_sync)(void *const data, int mi_row);
 void av1_find_mv_refs(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                       MODE_INFO *mi, MV_REFERENCE_FRAME ref_frame,
 #if CONFIG_REF_MV
-                      uint8_t *ref_mv_count,
-                      CANDIDATE_MV *ref_mv_stack,
+                      uint8_t *ref_mv_count, CANDIDATE_MV *ref_mv_stack,
 #endif
                       int_mv *mv_ref_list, int mi_row, int mi_col,
                       find_mv_refs_sync sync, void *const data,
@@ -417,7 +413,7 @@ void av1_find_mv_refs(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 // above and a number cols of pixels in the left to select the one with best
 // score to use as ref motion vector
 void av1_find_best_ref_mvs(int allow_hp, int_mv *mvlist, int_mv *nearest_mv,
-                            int_mv *near_mv);
+                           int_mv *near_mv);
 
 void av1_append_sub8x8_mvs_for_idx(AV1_COMMON *cm, MACROBLOCKD *xd, int block,
                                    int ref, int mi_row, int mi_col,

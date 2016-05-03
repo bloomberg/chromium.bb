@@ -133,7 +133,7 @@ TEST_P(CpuSpeedTest, TestLowBitrate) {
 }
 
 AV1_INSTANTIATE_TEST_CASE(CpuSpeedTest,
-                           ::testing::Values(::libaom_test::kTwoPassGood,
-                                             ::libaom_test::kOnePassGood),
-                           ::testing::Range(0, 3));
+                          ::testing::Values(::libaom_test::kTwoPassGood,
+                                            ::libaom_test::kOnePassGood),
+                          ::testing::Range(0, 3));
 }  // namespace

@@ -9,7 +9,6 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
 */
 
-
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
@@ -806,14 +805,14 @@ INSTANTIATE_TEST_CASE_P(
                                  &aom_idct16x16_256_add_sse2, 0, AOM_BITS_8)));
 INSTANTIATE_TEST_CASE_P(
     SSE2, Trans16x16HT,
-    ::testing::Values(make_tuple(&av1_fht16x16_sse2,
-                                 &av1_iht16x16_256_add_sse2, 0, AOM_BITS_8),
-                      make_tuple(&av1_fht16x16_sse2,
-                                 &av1_iht16x16_256_add_sse2, 1, AOM_BITS_8),
-                      make_tuple(&av1_fht16x16_sse2,
-                                 &av1_iht16x16_256_add_sse2, 2, AOM_BITS_8),
-                      make_tuple(&av1_fht16x16_sse2,
-                                 &av1_iht16x16_256_add_sse2, 3, AOM_BITS_8)));
+    ::testing::Values(make_tuple(&av1_fht16x16_sse2, &av1_iht16x16_256_add_sse2,
+                                 0, AOM_BITS_8),
+                      make_tuple(&av1_fht16x16_sse2, &av1_iht16x16_256_add_sse2,
+                                 1, AOM_BITS_8),
+                      make_tuple(&av1_fht16x16_sse2, &av1_iht16x16_256_add_sse2,
+                                 2, AOM_BITS_8),
+                      make_tuple(&av1_fht16x16_sse2, &av1_iht16x16_256_add_sse2,
+                                 3, AOM_BITS_8)));
 #endif  // HAVE_SSE2 && !CONFIG_AOM_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
 
 #if HAVE_SSE2 && CONFIG_AOM_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
@@ -830,14 +829,12 @@ INSTANTIATE_TEST_CASE_P(
                    AOM_BITS_8)));
 INSTANTIATE_TEST_CASE_P(
     SSE2, Trans16x16HT,
-    ::testing::Values(make_tuple(&av1_fht16x16_sse2, &av1_iht16x16_256_add_c,
-                                 0, AOM_BITS_8),
-                      make_tuple(&av1_fht16x16_sse2, &av1_iht16x16_256_add_c,
-                                 1, AOM_BITS_8),
-                      make_tuple(&av1_fht16x16_sse2, &av1_iht16x16_256_add_c,
-                                 2, AOM_BITS_8),
-                      make_tuple(&av1_fht16x16_sse2, &av1_iht16x16_256_add_c,
-                                 3, AOM_BITS_8)));
+    ::testing::Values(
+        make_tuple(&av1_fht16x16_sse2, &av1_iht16x16_256_add_c, 0, AOM_BITS_8),
+        make_tuple(&av1_fht16x16_sse2, &av1_iht16x16_256_add_c, 1, AOM_BITS_8),
+        make_tuple(&av1_fht16x16_sse2, &av1_iht16x16_256_add_c, 2, AOM_BITS_8),
+        make_tuple(&av1_fht16x16_sse2, &av1_iht16x16_256_add_c, 3,
+                   AOM_BITS_8)));
 // Optimizations take effect at a threshold of 3155, so we use a value close to
 // that to test both branches.
 INSTANTIATE_TEST_CASE_P(
@@ -859,13 +856,11 @@ INSTANTIATE_TEST_CASE_P(MSA, Trans16x16DCT,
                                                      0, AOM_BITS_8)));
 INSTANTIATE_TEST_CASE_P(
     MSA, Trans16x16HT,
-    ::testing::Values(make_tuple(&av1_fht16x16_msa, &av1_iht16x16_256_add_msa,
-                                 0, AOM_BITS_8),
-                      make_tuple(&av1_fht16x16_msa, &av1_iht16x16_256_add_msa,
-                                 1, AOM_BITS_8),
-                      make_tuple(&av1_fht16x16_msa, &av1_iht16x16_256_add_msa,
-                                 2, AOM_BITS_8),
-                      make_tuple(&av1_fht16x16_msa, &av1_iht16x16_256_add_msa,
-                                 3, AOM_BITS_8)));
+    ::testing::Values(
+        make_tuple(&av1_fht16x16_msa, &av1_iht16x16_256_add_msa, 0, AOM_BITS_8),
+        make_tuple(&av1_fht16x16_msa, &av1_iht16x16_256_add_msa, 1, AOM_BITS_8),
+        make_tuple(&av1_fht16x16_msa, &av1_iht16x16_256_add_msa, 2, AOM_BITS_8),
+        make_tuple(&av1_fht16x16_msa, &av1_iht16x16_256_add_msa, 3,
+                   AOM_BITS_8)));
 #endif  // HAVE_MSA && !CONFIG_AOM_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
 }  // namespace

@@ -39,20 +39,20 @@ void av1_cyclic_refresh_free(CYCLIC_REFRESH *cr);
 // Estimate the bits, incorporating the delta-q from segment 1, after encoding
 // the frame.
 int av1_cyclic_refresh_estimate_bits_at_q(const struct AV1_COMP *cpi,
-                                           double correction_factor);
+                                          double correction_factor);
 
 // Estimate the bits per mb, for a given q = i and a corresponding delta-q
 // (for segment 1), prior to encoding the frame.
 int av1_cyclic_refresh_rc_bits_per_mb(const struct AV1_COMP *cpi, int i,
-                                       double correction_factor);
+                                      double correction_factor);
 
 // Prior to coding a given prediction block, of size bsize at (mi_row, mi_col),
 // check if we should reset the segment_id, and update the cyclic_refresh map
 // and segmentation map.
 void av1_cyclic_refresh_update_segment(struct AV1_COMP *const cpi,
-                                        MB_MODE_INFO *const mbmi, int mi_row,
-                                        int mi_col, BLOCK_SIZE bsize,
-                                        int64_t rate, int64_t dist, int skip);
+                                       MB_MODE_INFO *const mbmi, int mi_row,
+                                       int mi_col, BLOCK_SIZE bsize,
+                                       int64_t rate, int64_t dist, int skip);
 
 // Update the segmentation map, and related quantities: cyclic refresh map,
 // refresh sb_index, and target number of blocks to be refreshed.

@@ -9,7 +9,6 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
 */
 
-
 #include "third_party/googletest/src/include/gtest/gtest.h"
 
 #include "./aom_config.h"
@@ -121,6 +120,6 @@ TEST_P(LosslessTest, TestLossLessEncodingCtrl) {
 }
 
 AV1_INSTANTIATE_TEST_CASE(LosslessTest,
-                           ::testing::Values(::libaom_test::kOnePassGood,
-                                             ::libaom_test::kTwoPassGood));
+                          ::testing::Values(::libaom_test::kOnePassGood,
+                                            ::libaom_test::kTwoPassGood));
 }  // namespace

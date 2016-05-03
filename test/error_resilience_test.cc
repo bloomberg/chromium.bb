@@ -9,7 +9,6 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
 */
 
-
 #include "third_party/googletest/src/include/gtest/gtest.h"
 #include "test/codec_factory.h"
 #include "test/encode_test_driver.h"
@@ -574,5 +573,5 @@ TEST_P(ErrorResilienceTestLargeCodecControls, CodecControl3TemporalLayers) {
 
 // SVC-related tests don't run for AV1 since SVC is not supported.
 AV1_INSTANTIATE_TEST_CASE(ErrorResilienceTestLarge, ONE_PASS_TEST_MODES,
-                           ::testing::Values(false));
+                          ::testing::Values(false));
 }  // namespace

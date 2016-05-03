@@ -79,7 +79,7 @@ class AV1Decoder : public Decoder {
       : Decoder(cfg, deadline) {}
 
   AV1Decoder(aom_codec_dec_cfg_t cfg, const aom_codec_flags_t flag,
-              unsigned long deadline)  // NOLINT
+             unsigned long deadline)  // NOLINT
       : Decoder(cfg, flag, deadline) {}
 
  protected:
@@ -95,7 +95,7 @@ class AV1Decoder : public Decoder {
 class AV1Encoder : public Encoder {
  public:
   AV1Encoder(aom_codec_enc_cfg_t cfg, unsigned long deadline,
-              const unsigned long init_flags, TwopassStatsStore* stats)
+             const unsigned long init_flags, TwopassStatsStore* stats)
       : Encoder(cfg, deadline, init_flags, stats) {}
 
  protected:
@@ -150,12 +150,12 @@ class AV1CodecFactory : public CodecFactory {
 
 const libaom_test::AV1CodecFactory kAV1;
 
-#define AV1_INSTANTIATE_TEST_CASE(test, ...)                              \
+#define AV1_INSTANTIATE_TEST_CASE(test, ...)                               \
   INSTANTIATE_TEST_CASE_P(                                                 \
-      AV1, test,                                                          \
+      AV1, test,                                                           \
       ::testing::Combine(                                                  \
           ::testing::Values(static_cast<const libaom_test::CodecFactory*>( \
-              &libaom_test::kAV1)),                                       \
+              &libaom_test::kAV1)),                                        \
           __VA_ARGS__))
 #else
 #define AV1_INSTANTIATE_TEST_CASE(test, ...)

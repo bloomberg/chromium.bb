@@ -20,46 +20,46 @@ extern "C" {
 #endif
 
 void av1_resize_plane(const uint8_t *const input, int height, int width,
-                       int in_stride, uint8_t *output, int height2, int width2,
-                       int out_stride);
+                      int in_stride, uint8_t *output, int height2, int width2,
+                      int out_stride);
 void av1_resize_frame420(const uint8_t *const y, int y_stride,
-                          const uint8_t *const u, const uint8_t *const v,
-                          int uv_stride, int height, int width, uint8_t *oy,
-                          int oy_stride, uint8_t *ou, uint8_t *ov,
-                          int ouv_stride, int oheight, int owidth);
+                         const uint8_t *const u, const uint8_t *const v,
+                         int uv_stride, int height, int width, uint8_t *oy,
+                         int oy_stride, uint8_t *ou, uint8_t *ov,
+                         int ouv_stride, int oheight, int owidth);
 void av1_resize_frame422(const uint8_t *const y, int y_stride,
-                          const uint8_t *const u, const uint8_t *const v,
-                          int uv_stride, int height, int width, uint8_t *oy,
-                          int oy_stride, uint8_t *ou, uint8_t *ov,
-                          int ouv_stride, int oheight, int owidth);
+                         const uint8_t *const u, const uint8_t *const v,
+                         int uv_stride, int height, int width, uint8_t *oy,
+                         int oy_stride, uint8_t *ou, uint8_t *ov,
+                         int ouv_stride, int oheight, int owidth);
 void av1_resize_frame444(const uint8_t *const y, int y_stride,
-                          const uint8_t *const u, const uint8_t *const v,
-                          int uv_stride, int height, int width, uint8_t *oy,
-                          int oy_stride, uint8_t *ou, uint8_t *ov,
-                          int ouv_stride, int oheight, int owidth);
+                         const uint8_t *const u, const uint8_t *const v,
+                         int uv_stride, int height, int width, uint8_t *oy,
+                         int oy_stride, uint8_t *ou, uint8_t *ov,
+                         int ouv_stride, int oheight, int owidth);
 
 #if CONFIG_AOM_HIGHBITDEPTH
 void av1_highbd_resize_plane(const uint8_t *const input, int height, int width,
-                              int in_stride, uint8_t *output, int height2,
-                              int width2, int out_stride, int bd);
+                             int in_stride, uint8_t *output, int height2,
+                             int width2, int out_stride, int bd);
 void av1_highbd_resize_frame420(const uint8_t *const y, int y_stride,
-                                 const uint8_t *const u, const uint8_t *const v,
-                                 int uv_stride, int height, int width,
-                                 uint8_t *oy, int oy_stride, uint8_t *ou,
-                                 uint8_t *ov, int ouv_stride, int oheight,
-                                 int owidth, int bd);
+                                const uint8_t *const u, const uint8_t *const v,
+                                int uv_stride, int height, int width,
+                                uint8_t *oy, int oy_stride, uint8_t *ou,
+                                uint8_t *ov, int ouv_stride, int oheight,
+                                int owidth, int bd);
 void av1_highbd_resize_frame422(const uint8_t *const y, int y_stride,
-                                 const uint8_t *const u, const uint8_t *const v,
-                                 int uv_stride, int height, int width,
-                                 uint8_t *oy, int oy_stride, uint8_t *ou,
-                                 uint8_t *ov, int ouv_stride, int oheight,
-                                 int owidth, int bd);
+                                const uint8_t *const u, const uint8_t *const v,
+                                int uv_stride, int height, int width,
+                                uint8_t *oy, int oy_stride, uint8_t *ou,
+                                uint8_t *ov, int ouv_stride, int oheight,
+                                int owidth, int bd);
 void av1_highbd_resize_frame444(const uint8_t *const y, int y_stride,
-                                 const uint8_t *const u, const uint8_t *const v,
-                                 int uv_stride, int height, int width,
-                                 uint8_t *oy, int oy_stride, uint8_t *ou,
-                                 uint8_t *ov, int ouv_stride, int oheight,
-                                 int owidth, int bd);
+                                const uint8_t *const u, const uint8_t *const v,
+                                int uv_stride, int height, int width,
+                                uint8_t *oy, int oy_stride, uint8_t *ou,
+                                uint8_t *ov, int ouv_stride, int oheight,
+                                int owidth, int bd);
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 
 #ifdef __cplusplus

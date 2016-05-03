@@ -31,14 +31,14 @@ struct ThreadData;
 #define VAR_HIST_SMALL_CUT_OFF 45
 
 void av1_setup_src_planes(struct macroblock *x,
-                           const struct yv12_buffer_config *src, int mi_row,
-                           int mi_col);
+                          const struct yv12_buffer_config *src, int mi_row,
+                          int mi_col);
 
 void av1_encode_frame(struct AV1_COMP *cpi);
 
 void av1_init_tile_data(struct AV1_COMP *cpi);
-void av1_encode_tile(struct AV1_COMP *cpi, struct ThreadData *td,
-                      int tile_row, int tile_col);
+void av1_encode_tile(struct AV1_COMP *cpi, struct ThreadData *td, int tile_row,
+                     int tile_col);
 
 void av1_set_variance_partition_thresholds(struct AV1_COMP *cpi, int q);
 

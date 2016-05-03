@@ -9,7 +9,6 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
 */
 
-
 #include <string>
 #include "test/codec_factory.h"
 #include "test/decode_test_driver.h"
@@ -258,5 +257,5 @@ TEST_P(AV1NewEncodeDecodePerfTest, PerfTest) {
 }
 
 AV1_INSTANTIATE_TEST_CASE(AV1NewEncodeDecodePerfTest,
-                           ::testing::Values(::libaom_test::kTwoPassGood));
+                          ::testing::Values(::libaom_test::kTwoPassGood));
 }  // namespace

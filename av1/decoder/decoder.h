@@ -83,17 +83,17 @@ typedef struct AV1Decoder {
 } AV1Decoder;
 
 int av1_receive_compressed_data(struct AV1Decoder *pbi, size_t size,
-                                 const uint8_t **dest);
+                                const uint8_t **dest);
 
 int av1_get_raw_frame(struct AV1Decoder *pbi, YV12_BUFFER_CONFIG *sd);
 
 aom_codec_err_t av1_copy_reference_dec(struct AV1Decoder *pbi,
-                                        AOM_REFFRAME ref_frame_flag,
-                                        YV12_BUFFER_CONFIG *sd);
-
-aom_codec_err_t av1_set_reference_dec(AV1_COMMON *cm,
                                        AOM_REFFRAME ref_frame_flag,
                                        YV12_BUFFER_CONFIG *sd);
+
+aom_codec_err_t av1_set_reference_dec(AV1_COMMON *cm,
+                                      AOM_REFFRAME ref_frame_flag,
+                                      YV12_BUFFER_CONFIG *sd);
 
 static INLINE uint8_t read_marker(aom_decrypt_cb decrypt_cb,
                                   void *decrypt_state, const uint8_t *data) {
@@ -108,9 +108,9 @@ static INLINE uint8_t read_marker(aom_decrypt_cb decrypt_cb,
 // This function is exposed for use in tests, as well as the inlined function
 // "read_marker".
 aom_codec_err_t av1_parse_superframe_index(const uint8_t *data, size_t data_sz,
-                                            uint32_t sizes[8], int *count,
-                                            aom_decrypt_cb decrypt_cb,
-                                            void *decrypt_state);
+                                           uint32_t sizes[8], int *count,
+                                           aom_decrypt_cb decrypt_cb,
+                                           void *decrypt_state);
 
 struct AV1Decoder *av1_decoder_create(BufferPool *const pool);
 

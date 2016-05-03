@@ -897,9 +897,9 @@ TEST_P(DatarateOnePassCbrSvc, OnePassCbrSvc4threads) {
 }
 
 AV1_INSTANTIATE_TEST_CASE(DatarateTestAV1Large,
-                           ::testing::Values(::libaom_test::kOnePassGood,
-                                             ::libaom_test::kRealTime),
-                           ::testing::Range(2, 7));
+                          ::testing::Values(::libaom_test::kOnePassGood,
+                                            ::libaom_test::kRealTime),
+                          ::testing::Range(2, 7));
 
 /* AV1 does not support multiple layers yet.
 AV1_INSTANTIATE_TEST_CASE(DatarateOnePassCbrSvc,

@@ -55,8 +55,8 @@ typedef struct frame_contexts {
   aom_prob partition_prob[PARTITION_CONTEXTS][PARTITION_TYPES - 1];
   av1_coeff_probs_model coef_probs[TX_SIZES][PLANE_TYPES];
   aom_prob
-      switchable_interp_prob[SWITCHABLE_FILTER_CONTEXTS]
-                            [SWITCHABLE_FILTERS - 1];
+      switchable_interp_prob[SWITCHABLE_FILTER_CONTEXTS][SWITCHABLE_FILTERS -
+                                                         1];
 
 #if CONFIG_REF_MV
   aom_prob newmv_prob[NEWMV_MODE_CONTEXTS];
@@ -142,11 +142,11 @@ void av1_adapt_intra_frame_probs(struct AV1Common *cm);
 void av1_adapt_inter_frame_probs(struct AV1Common *cm);
 
 void av1_tx_counts_to_branch_counts_32x32(const unsigned int *tx_count_32x32p,
-                                           unsigned int (*ct_32x32p)[2]);
+                                          unsigned int (*ct_32x32p)[2]);
 void av1_tx_counts_to_branch_counts_16x16(const unsigned int *tx_count_16x16p,
-                                           unsigned int (*ct_16x16p)[2]);
+                                          unsigned int (*ct_16x16p)[2]);
 void av1_tx_counts_to_branch_counts_8x8(const unsigned int *tx_count_8x8p,
-                                         unsigned int (*ct_8x8p)[2]);
+                                        unsigned int (*ct_8x8p)[2]);
 
 extern const aom_tree_index av1_ext_tx_tree[TREE_SIZE(TX_TYPES)];
 

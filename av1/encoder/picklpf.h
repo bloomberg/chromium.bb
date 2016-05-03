@@ -22,7 +22,7 @@ struct yv12_buffer_config;
 struct AV1_COMP;
 
 void av1_pick_filter_level(const struct yv12_buffer_config *sd,
-                            struct AV1_COMP *cpi, LPF_PICK_METHOD method);
+                           struct AV1_COMP *cpi, LPF_PICK_METHOD method);
 #ifdef __cplusplus
 }  // extern "C"
 #endif

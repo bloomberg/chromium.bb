@@ -9,7 +9,6 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
 */
 
-
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
@@ -690,8 +689,7 @@ INSTANTIATE_TEST_CASE_P(
         make_tuple(&av1_fht8x8_sse2, &av1_iht8x8_64_add_sse2, 0, AOM_BITS_8),
         make_tuple(&av1_fht8x8_sse2, &av1_iht8x8_64_add_sse2, 1, AOM_BITS_8),
         make_tuple(&av1_fht8x8_sse2, &av1_iht8x8_64_add_sse2, 2, AOM_BITS_8),
-        make_tuple(&av1_fht8x8_sse2, &av1_iht8x8_64_add_sse2, 3,
-                   AOM_BITS_8)));
+        make_tuple(&av1_fht8x8_sse2, &av1_iht8x8_64_add_sse2, 3, AOM_BITS_8)));
 #endif  // HAVE_SSE2 && !CONFIG_AOM_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
 
 #if HAVE_SSE2 && CONFIG_AOM_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE

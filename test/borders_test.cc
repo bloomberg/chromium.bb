@@ -82,5 +82,5 @@ TEST_P(BordersTest, TestLowBitrate) {
 }
 
 AV1_INSTANTIATE_TEST_CASE(BordersTest,
-                           ::testing::Values(::libaom_test::kTwoPassGood));
+                          ::testing::Values(::libaom_test::kTwoPassGood));
 }  // namespace

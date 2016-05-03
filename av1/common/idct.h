@@ -40,41 +40,41 @@ typedef struct {
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 
 void av1_iwht4x4_add(const tran_low_t *input, uint8_t *dest, int stride,
-                      int eob);
+                     int eob);
 void av1_idct4x4_add(const tran_low_t *input, uint8_t *dest, int stride,
-                      int eob);
+                     int eob);
 
 void av1_inv_txfm_add_4x4(const tran_low_t *input, uint8_t *dest, int stride,
-                           int eob, TX_TYPE tx_type, int lossless);
+                          int eob, TX_TYPE tx_type, int lossless);
 void av1_inv_txfm_add_8x8(const tran_low_t *input, uint8_t *dest, int stride,
-                           int eob, TX_TYPE tx_type);
+                          int eob, TX_TYPE tx_type);
 void av1_inv_txfm_add_16x16(const tran_low_t *input, uint8_t *dest, int stride,
-                             int eob, TX_TYPE tx_type);
+                            int eob, TX_TYPE tx_type);
 void av1_inv_txfm_add_32x32(const tran_low_t *input, uint8_t *dest, int stride,
-                             int eob, TX_TYPE tx_type);
+                            int eob, TX_TYPE tx_type);
 
 #if CONFIG_AOM_HIGHBITDEPTH
 void av1_highbd_iwht4x4_add(const tran_low_t *input, uint8_t *dest, int stride,
-                             int eob, int bd);
+                            int eob, int bd);
 void av1_highbd_idct4x4_add(const tran_low_t *input, uint8_t *dest, int stride,
-                             int eob, int bd);
+                            int eob, int bd);
 void av1_highbd_idct8x8_add(const tran_low_t *input, uint8_t *dest, int stride,
-                             int eob, int bd);
+                            int eob, int bd);
 void av1_highbd_idct16x16_add(const tran_low_t *input, uint8_t *dest,
-                               int stride, int eob, int bd);
+                              int stride, int eob, int bd);
 void av1_highbd_idct32x32_add(const tran_low_t *input, uint8_t *dest,
-                               int stride, int eob, int bd);
+                              int stride, int eob, int bd);
 void av1_highbd_inv_txfm_add_4x4(const tran_low_t *input, uint8_t *dest,
-                                  int stride, int eob, int bd, TX_TYPE tx_type,
-                                  int lossless);
+                                 int stride, int eob, int bd, TX_TYPE tx_type,
+                                 int lossless);
 void av1_highbd_inv_txfm_add_8x8(const tran_low_t *input, uint8_t *dest,
-                                  int stride, int eob, int bd, TX_TYPE tx_type);
+                                 int stride, int eob, int bd, TX_TYPE tx_type);
 void av1_highbd_inv_txfm_add_16x16(const tran_low_t *input, uint8_t *dest,
-                                    int stride, int eob, int bd,
-                                    TX_TYPE tx_type);
+                                   int stride, int eob, int bd,
+                                   TX_TYPE tx_type);
 void av1_highbd_inv_txfm_add_32x32(const tran_low_t *input, uint8_t *dest,
-                                    int stride, int eob, int bd,
-                                    TX_TYPE tx_type);
+                                   int stride, int eob, int bd,
+                                   TX_TYPE tx_type);
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 #ifdef __cplusplus
 }  // extern "C"
