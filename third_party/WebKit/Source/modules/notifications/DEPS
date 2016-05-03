@@ -1,5 +1,6 @@
 include_rules = [
     "+bindings",
+    "+components/permissions",
     "+core",
     "+heap",
     "-modules",

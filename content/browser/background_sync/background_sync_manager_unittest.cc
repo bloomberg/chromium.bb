@@ -20,6 +20,7 @@
 #include "base/test/mock_entropy_provider.h"
 #include "base/test/simple_test_clock.h"
 #include "base/thread_task_runner_handle.h"
+#include "components/permissions/permission_status.mojom.h"
 #include "content/browser/background_sync/background_sync_network_observer.h"
 #include "content/browser/background_sync/background_sync_status.h"
 #include "content/browser/browser_thread_impl.h"
@@ -39,7 +40,6 @@
 #include "net/base/network_change_notifier.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
 
 namespace content {
 
@@ -129,7 +129,7 @@ class BackgroundSyncManagerTest : public testing::Test {
         new testing::NiceMock<MockPermissionManager>());
     ON_CALL(*mock_permission_manager,
             GetPermissionStatus(PermissionType::BACKGROUND_SYNC, _, _))
-        .WillByDefault(Return(blink::mojom::PermissionStatus::GRANTED));
+        .WillByDefault(Return(permissions::mojom::PermissionStatus::GRANTED));
     helper_->browser_context()->SetPermissionManager(
         std::move(mock_permission_manager));
 
@@ -472,7 +472,7 @@ TEST_F(BackgroundSyncManagerTest, RegisterPermissionDenied) {
   EXPECT_CALL(*mock_permission_manager,
               GetPermissionStatus(PermissionType::BACKGROUND_SYNC,
                                   expected_origin, expected_origin))
-      .WillOnce(testing::Return(blink::mojom::PermissionStatus::DENIED));
+      .WillOnce(testing::Return(permissions::mojom::PermissionStatus::DENIED));
   EXPECT_FALSE(Register(sync_options_1_));
 }
 
@@ -483,7 +483,7 @@ TEST_F(BackgroundSyncManagerTest, RegisterPermissionGranted) {
   EXPECT_CALL(*mock_permission_manager,
               GetPermissionStatus(PermissionType::BACKGROUND_SYNC,
                                   expected_origin, expected_origin))
-      .WillOnce(testing::Return(blink::mojom::PermissionStatus::GRANTED));
+      .WillOnce(testing::Return(permissions::mojom::PermissionStatus::GRANTED));
   EXPECT_TRUE(Register(sync_options_1_));
 }
 

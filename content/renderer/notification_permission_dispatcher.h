@@ -8,8 +8,8 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "components/permissions/permission.mojom.h"
 #include "content/public/renderer/render_frame_observer.h"
-#include "third_party/WebKit/public/platform/modules/permissions/permission.mojom.h"
 
 namespace blink {
 class WebNotificationPermissionCallback;
@@ -35,9 +35,9 @@ class NotificationPermissionDispatcher : public RenderFrameObserver {
  private:
   void OnPermissionRequestComplete(
       std::unique_ptr<blink::WebNotificationPermissionCallback> callback,
-      blink::mojom::PermissionStatus status);
+      permissions::mojom::PermissionStatus status);
 
-  blink::mojom::PermissionServicePtr permission_service_;
+  permissions::mojom::PermissionServicePtr permission_service_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationPermissionDispatcher);
 };

@@ -10,7 +10,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 
-namespace blink {
+namespace permissions {
 namespace mojom {
 class PermissionService;
 }
@@ -34,7 +34,7 @@ class PermissionServiceContext : public WebContentsObserver {
   ~PermissionServiceContext() override;
 
   void CreateService(
-      mojo::InterfaceRequest<blink::mojom::PermissionService> request);
+      mojo::InterfaceRequest<permissions::mojom::PermissionService> request);
 
   // Called by a PermissionServiceImpl identified as |service| when it has a
   // connection error in order to get unregistered and killed.

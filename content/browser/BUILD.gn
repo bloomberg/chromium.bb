@@ -36,6 +36,7 @@ source_set("browser") {
     "//components/filesystem:lib",
     "//components/leveldb:lib",
     "//components/mime_util",
+    "//components/permissions",
     "//components/scheduler:common",
     "//components/tracing",
     "//components/tracing:startup_tracing",

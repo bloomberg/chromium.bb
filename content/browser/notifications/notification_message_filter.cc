@@ -123,7 +123,7 @@ void NotificationMessageFilter::OverrideThreadForMessage(
 
 void NotificationMessageFilter::OnCheckNotificationPermission(
     const GURL& origin,
-    blink::mojom::PermissionStatus* permission_status) {
+    permissions::mojom::PermissionStatus* permission_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   *permission_status = GetPermissionForOriginOnIO(origin);
@@ -170,7 +170,7 @@ void NotificationMessageFilter::OnShowPersistentNotification(
     const NotificationResources& notification_resources) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (GetPermissionForOriginOnIO(origin) !=
-      blink::mojom::PermissionStatus::GRANTED) {
+      permissions::mojom::PermissionStatus::GRANTED) {
     bad_message::ReceivedBadMessage(this, bad_message::NMF_NO_PERMISSION_SHOW);
     return;
   }
@@ -229,7 +229,7 @@ void NotificationMessageFilter::OnGetNotifications(
     const std::string& filter_tag) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (GetPermissionForOriginOnIO(origin) !=
-      blink::mojom::PermissionStatus::GRANTED) {
+      permissions::mojom::PermissionStatus::GRANTED) {
     // No permission has been granted for the given origin. It is harmless to
     // try to get notifications without permission, so return an empty vector
     // indicating that no (accessible) notifications exist at this time.
@@ -283,7 +283,7 @@ void NotificationMessageFilter::OnClosePersistentNotification(
     int64_t persistent_notification_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (GetPermissionForOriginOnIO(origin) !=
-      blink::mojom::PermissionStatus::GRANTED) {
+      permissions::mojom::PermissionStatus::GRANTED) {
     bad_message::ReceivedBadMessage(this, bad_message::NMF_NO_PERMISSION_CLOSE);
     return;
   }
@@ -314,7 +314,7 @@ void NotificationMessageFilter::DidDeletePersistentNotificationData(
   // has been closed.
 }
 
-blink::mojom::PermissionStatus
+permissions::mojom::PermissionStatus
 NotificationMessageFilter::GetPermissionForOriginOnIO(
     const GURL& origin) const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -322,7 +322,7 @@ NotificationMessageFilter::GetPermissionForOriginOnIO(
   PlatformNotificationService* service =
       GetContentClient()->browser()->GetPlatformNotificationService();
   if (!service)
-    return blink::mojom::PermissionStatus::DENIED;
+    return permissions::mojom::PermissionStatus::DENIED;
 
   return service->CheckPermissionOnIOThread(resource_context_, origin,
                                             process_id_);
@@ -333,10 +333,10 @@ bool NotificationMessageFilter::VerifyNotificationPermissionGranted(
     const GURL& origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  blink::mojom::PermissionStatus permission_status =
+  permissions::mojom::PermissionStatus permission_status =
       service->CheckPermissionOnUIThread(browser_context_, origin, process_id_);
 
-  if (permission_status == blink::mojom::PermissionStatus::GRANTED)
+  if (permission_status == permissions::mojom::PermissionStatus::GRANTED)
     return true;
 
   bad_message::ReceivedBadMessage(this, bad_message::NMF_NO_PERMISSION_VERIFY);

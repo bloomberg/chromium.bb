@@ -35,6 +35,7 @@ source_set("renderer") {
     "//cc/proto",
     "//cc/surfaces",
     "//cc/surfaces:surface_id",
+    "//components/permissions",
     "//components/scheduler:scheduler",
     "//components/url_formatter",
     "//content:resources",

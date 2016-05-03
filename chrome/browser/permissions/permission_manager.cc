@@ -38,7 +38,7 @@
 #include "chrome/browser/geolocation/geolocation_permission_context.h"
 #endif
 
-using blink::mojom::PermissionStatus;
+using permissions::mojom::PermissionStatus;
 using content::PermissionType;
 
 namespace {

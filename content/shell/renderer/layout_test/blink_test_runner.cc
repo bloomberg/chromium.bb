@@ -613,16 +613,16 @@ void BlinkTestRunner::SetPermission(const std::string& name,
                                     const std::string& value,
                                     const GURL& origin,
                                     const GURL& embedding_origin) {
-  blink::mojom::PermissionStatus status;
+  permissions::mojom::PermissionStatus status;
   if (value == "granted")
-    status = blink::mojom::PermissionStatus::GRANTED;
+    status = permissions::mojom::PermissionStatus::GRANTED;
   else if (value == "prompt")
-    status = blink::mojom::PermissionStatus::ASK;
+    status = permissions::mojom::PermissionStatus::ASK;
   else if (value == "denied")
-    status = blink::mojom::PermissionStatus::DENIED;
+    status = permissions::mojom::PermissionStatus::DENIED;
   else {
     NOTREACHED();
-    status = blink::mojom::PermissionStatus::DENIED;
+    status = permissions::mojom::PermissionStatus::DENIED;
   }
 
   Send(new LayoutTestHostMsg_SetPermission(

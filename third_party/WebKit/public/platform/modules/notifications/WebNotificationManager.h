@@ -13,11 +13,13 @@
 #include <memory>
 #include <stdint.h>
 
-namespace blink {
-
+namespace permissions {
 namespace mojom {
 enum class PermissionStatus;
 }
+}
+
+namespace blink {
 
 class WebNotificationDelegate;
 class WebSecurityOrigin;
@@ -62,7 +64,7 @@ public:
     virtual void notifyDelegateDestroyed(WebNotificationDelegate*) = 0;
 
     // Synchronously checks the permission level for the given origin.
-    virtual mojom::PermissionStatus checkPermission(const WebSecurityOrigin&) = 0;
+    virtual permissions::mojom::PermissionStatus checkPermission(const WebSecurityOrigin&) = 0;
 };
 
 } // namespace blink

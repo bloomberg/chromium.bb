@@ -19,9 +19,9 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/permissions/permission_status.mojom.h"
 #include "content/public/browser/platform_notification_service.h"
 #include "content/public/common/persistent_notification_status.h"
-#include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
 
 class NotificationDelegate;
 class NotificationDisplayService;
@@ -84,11 +84,11 @@ class PlatformNotificationServiceImpl
   void OpenNotificationSettings(content::BrowserContext* browser_context);
 
   // content::PlatformNotificationService implementation.
-  blink::mojom::PermissionStatus CheckPermissionOnUIThread(
+  permissions::mojom::PermissionStatus CheckPermissionOnUIThread(
       content::BrowserContext* browser_context,
       const GURL& origin,
       int render_process_id) override;
-  blink::mojom::PermissionStatus CheckPermissionOnIOThread(
+  permissions::mojom::PermissionStatus CheckPermissionOnIOThread(
       content::ResourceContext* resource_context,
       const GURL& origin,
       int render_process_id) override;

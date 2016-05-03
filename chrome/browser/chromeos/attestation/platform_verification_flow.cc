@@ -27,6 +27,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
+#include "components/permissions/permission_status.mojom.h"
 #include "components/user_manager/user.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -38,7 +39,6 @@
 #include "content/public/common/url_constants.h"
 #include "net/cert/pem_tokenizer.h"
 #include "net/cert/x509_certificate.h"
-#include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
 
 namespace {
 
@@ -112,14 +112,14 @@ class DefaultDelegate : public PlatformVerificationFlow::Delegate {
     const GURL& requesting_origin = GetURL(web_contents).GetOrigin();
 
     GURL embedding_origin = web_contents->GetLastCommittedURL().GetOrigin();
-    blink::mojom::PermissionStatus status =
+    permissions::mojom::PermissionStatus status =
         PermissionManager::Get(
             Profile::FromBrowserContext(web_contents->GetBrowserContext()))
             ->GetPermissionStatus(
                 content::PermissionType::PROTECTED_MEDIA_IDENTIFIER,
                 requesting_origin, embedding_origin);
 
-    return status == blink::mojom::PermissionStatus::GRANTED;
+    return status == permissions::mojom::PermissionStatus::GRANTED;
   }
 
   bool IsInSupportedMode(content::WebContents* web_contents) override {

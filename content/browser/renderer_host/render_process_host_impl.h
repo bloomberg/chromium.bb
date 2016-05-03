@@ -490,7 +490,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // for UMA.
   int max_worker_count_;
 
-  // Context shared for each mojom::PermissionService instance created for this
+  // Context shared for each permissions::mojom::PermissionService instance
+  // created for this
   // RPH.
   std::unique_ptr<PermissionServiceContext> permission_service_context_;
 

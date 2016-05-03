@@ -4,7 +4,7 @@
 
 #include "content/test/mock_permission_manager.h"
 
-#include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
+#include "components/permissions/permission_status.mojom.h"
 
 namespace content {
 
@@ -16,7 +16,8 @@ int MockPermissionManager::RequestPermission(
     PermissionType permission,
     RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
-    const base::Callback<void(blink::mojom::PermissionStatus)>& callback) {
+    const base::Callback<void(permissions::mojom::PermissionStatus)>&
+        callback) {
   return kNoPendingOperation;
 }
 
@@ -24,8 +25,8 @@ int MockPermissionManager::RequestPermissions(
     const std::vector<PermissionType>& permission,
     RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
-    const base::Callback<
-        void(const std::vector<blink::mojom::PermissionStatus>&)>& callback) {
+    const base::Callback<void(
+        const std::vector<permissions::mojom::PermissionStatus>&)>& callback) {
   return kNoPendingOperation;
 }
 
@@ -33,7 +34,8 @@ int MockPermissionManager::SubscribePermissionStatusChange(
     PermissionType permission,
     const GURL& requesting_origin,
     const GURL& embedding_origin,
-    const base::Callback<void(blink::mojom::PermissionStatus)>& callback) {
+    const base::Callback<void(permissions::mojom::PermissionStatus)>&
+        callback) {
   // Return a fake subscription_id.
   return 0;
 }

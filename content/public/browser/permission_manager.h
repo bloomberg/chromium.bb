@@ -5,8 +5,8 @@
 #ifndef CONTENT_PUBLIC_BROWSER_PERMISSION_MANAGER_H_
 #define CONTENT_PUBLIC_BROWSER_PERMISSION_MANAGER_H_
 
+#include "components/permissions/permission_status.mojom.h"
 #include "content/common/content_export.h"
-#include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
 
 class GURL;
 
@@ -37,7 +37,8 @@ class CONTENT_EXPORT PermissionManager {
       PermissionType permission,
       RenderFrameHost* render_frame_host,
       const GURL& requesting_origin,
-      const base::Callback<void(blink::mojom::PermissionStatus)>& callback) = 0;
+      const base::Callback<void(permissions::mojom::PermissionStatus)>&
+          callback) = 0;
 
   // Requests multiple permissions on behalf of a frame identified by
   // render_frame_host.
@@ -53,8 +54,9 @@ class CONTENT_EXPORT PermissionManager {
       const std::vector<PermissionType>& permission,
       RenderFrameHost* render_frame_host,
       const GURL& requesting_origin,
-      const base::Callback<void(
-          const std::vector<blink::mojom::PermissionStatus>&)>& callback) = 0;
+      const base::Callback<
+          void(const std::vector<permissions::mojom::PermissionStatus>&)>&
+          callback) = 0;
 
   // Cancels a previous permission request specified by |request_id|. Cancelling
   // an already cancelled request or providing the |request_id|
@@ -64,7 +66,7 @@ class CONTENT_EXPORT PermissionManager {
   // Returns the permission status of a given requesting_origin/embedding_origin
   // tuple. This is not taking a RenderFrameHost because the call might happen
   // outside of a frame context.
-  virtual blink::mojom::PermissionStatus GetPermissionStatus(
+  virtual permissions::mojom::PermissionStatus GetPermissionStatus(
       PermissionType permission,
       const GURL& requesting_origin,
       const GURL& embedding_origin) = 0;
@@ -89,7 +91,8 @@ class CONTENT_EXPORT PermissionManager {
       PermissionType permission,
       const GURL& requesting_origin,
       const GURL& embedding_origin,
-      const base::Callback<void(blink::mojom::PermissionStatus)>& callback) = 0;
+      const base::Callback<void(permissions::mojom::PermissionStatus)>&
+          callback) = 0;
 
   // Unregisters from permission status change notifications.
   // The |subscription_id| must match the value returned by the

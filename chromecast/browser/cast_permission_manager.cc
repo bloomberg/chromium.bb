@@ -22,9 +22,10 @@ int CastPermissionManager::RequestPermission(
     content::PermissionType permission,
     content::RenderFrameHost* render_frame_host,
     const GURL& origin,
-    const base::Callback<void(blink::mojom::PermissionStatus)>& callback) {
+    const base::Callback<void(permissions::mojom::PermissionStatus)>&
+        callback) {
   LOG(INFO) << __FUNCTION__ << ": " << static_cast<int>(permission);
-  callback.Run(blink::mojom::PermissionStatus::GRANTED);
+  callback.Run(permissions::mojom::PermissionStatus::GRANTED);
   return kNoPendingOperation;
 }
 
@@ -32,10 +33,10 @@ int CastPermissionManager::RequestPermissions(
     const std::vector<content::PermissionType>& permissions,
     content::RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
-    const base::Callback<
-        void(const std::vector<blink::mojom::PermissionStatus>&)>& callback) {
-  callback.Run(std::vector<blink::mojom::PermissionStatus>(
-      permissions.size(), blink::mojom::PermissionStatus::GRANTED));
+    const base::Callback<void(
+        const std::vector<permissions::mojom::PermissionStatus>&)>& callback) {
+  callback.Run(std::vector<permissions::mojom::PermissionStatus>(
+      permissions.size(), permissions::mojom::PermissionStatus::GRANTED));
   return kNoPendingOperation;
 }
 
@@ -48,12 +49,12 @@ void CastPermissionManager::ResetPermission(
     const GURL& embedding_origin) {
 }
 
-blink::mojom::PermissionStatus CastPermissionManager::GetPermissionStatus(
+permissions::mojom::PermissionStatus CastPermissionManager::GetPermissionStatus(
     content::PermissionType permission,
     const GURL& requesting_origin,
     const GURL& embedding_origin) {
   LOG(INFO) << __FUNCTION__ << ": " << static_cast<int>(permission);
-  return blink::mojom::PermissionStatus::GRANTED;
+  return permissions::mojom::PermissionStatus::GRANTED;
 }
 
 void CastPermissionManager::RegisterPermissionUsage(
@@ -66,7 +67,8 @@ int CastPermissionManager::SubscribePermissionStatusChange(
     content::PermissionType permission,
     const GURL& requesting_origin,
     const GURL& embedding_origin,
-    const base::Callback<void(blink::mojom::PermissionStatus)>& callback) {
+    const base::Callback<void(permissions::mojom::PermissionStatus)>&
+        callback) {
   return kNoPendingOperation;
 }
 
