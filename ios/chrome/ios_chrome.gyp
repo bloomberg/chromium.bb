@@ -452,7 +452,6 @@
         'browser/reading_list/reading_list_model_observer.h',
         'browser/reading_list/reading_list_model_factory.cc',
         'browser/reading_list/reading_list_model_factory.h',
-        'browser/reading_list/reading_list_model_memory.h',
         'browser/reading_list/reading_list_model_observer.h',
         'browser/reading_list/reading_list_model_storage.h',
         'browser/reading_list/reading_list_model_storage_defaults.h',
