@@ -33240,6 +33240,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="NewTabPage.Snippets.NumArticlesFetched" units="articles">
+  <owner>mastiz@chromium.org</owner>
+  <summary>
+    Android: The number of valid snippet articles fetched from the server,
+    logged every time a fetch finishes successfully.
+  </summary>
+</histogram>
+
 <histogram name="NewTabPage.SuggestedSite">
   <obsolete>
     Deprecated 2016-02 (and not recorded for some time before that).

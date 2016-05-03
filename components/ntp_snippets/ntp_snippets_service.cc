@@ -34,6 +34,8 @@ namespace ntp_snippets {
 
 namespace {
 
+// Number of snippets requested to the server. Consider replacing sparse UMA
+// histograms with COUNTS() if this number increases beyond 50.
 const int kMaxSnippetCount = 10;
 
 const int kFetchingIntervalWifiChargingSeconds = 30 * 60;
@@ -364,7 +366,7 @@ void NTPSnippetsService::OnSnippetsDownloaded(
 
 void NTPSnippetsService::OnJsonParsed(const std::string& snippets_json,
                                       std::unique_ptr<base::Value> parsed) {
-  if (!LoadFromValue(*parsed)) {
+  if (!LoadFromFetchedValue(*parsed)) {
     LOG(WARNING) << "Received invalid snippets: " << snippets_json;
     last_fetch_status_ = kStatusMessageEmptyList;
   } else {
@@ -383,7 +385,7 @@ void NTPSnippetsService::OnJsonError(const std::string& snippets_json,
   LoadingSnippetsFinished();
 }
 
-bool NTPSnippetsService::LoadFromValue(const base::Value& value) {
+bool NTPSnippetsService::LoadFromFetchedValue(const base::Value& value) {
   const base::DictionaryValue* top_dict = nullptr;
   if (!value.GetAsDictionary(&top_dict))
     return false;
@@ -392,14 +394,20 @@ bool NTPSnippetsService::LoadFromValue(const base::Value& value) {
   if (!top_dict->GetList("recos", &list))
     return false;
 
-  return LoadFromListValue(*list);
-}
-
-bool NTPSnippetsService::LoadFromListValue(const base::ListValue& list) {
   NTPSnippetStorage new_snippets;
-  if (!AddSnippetsFromListValue(list, &new_snippets))
+  if (!AddSnippetsFromListValue(*list, &new_snippets))
     return false;
 
+  // Sparse histogram used because the number of snippets is small (bound by
+  // kMaxSnippetCount).
+  DCHECK_LE(new_snippets.size(), static_cast<size_t>(kMaxSnippetCount));
+  UMA_HISTOGRAM_SPARSE_SLOWLY("NewTabPage.Snippets.NumArticlesFetched",
+                              new_snippets.size());
+
+  return MergeSnippets(std::move(new_snippets));
+}
+
+bool NTPSnippetsService::MergeSnippets(NTPSnippetStorage new_snippets) {
   // Remove new snippets that we already have, or that have been discarded.
   new_snippets.erase(
       std::remove_if(new_snippets.begin(), new_snippets.end(),
@@ -429,7 +437,10 @@ bool NTPSnippetsService::LoadFromListValue(const base::ListValue& list) {
 }
 
 void NTPSnippetsService::LoadSnippetsFromPrefs() {
-  bool success = LoadFromListValue(*pref_service_->GetList(prefs::kSnippets));
+  NTPSnippetStorage prefs_snippets;
+  bool success = AddSnippetsFromListValue(
+      *pref_service_->GetList(prefs::kSnippets), &prefs_snippets) &&
+      MergeSnippets(std::move(prefs_snippets));
   DCHECK(success) << "Failed to parse snippets from prefs";
 
   LoadingSnippetsFinished();

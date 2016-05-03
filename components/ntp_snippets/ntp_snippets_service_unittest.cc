@@ -24,6 +24,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using testing::ElementsAre;
+using testing::IsEmpty;
 using testing::_;
 
 namespace ntp_snippets {
@@ -391,23 +393,49 @@ TEST_F(NTPSnippetsServiceTest, LogNumArticlesHistogram) {
   base::HistogramTester tester;
   SetExpectJsonParseSuccess(false);
   LoadFromJSONString(GetInvalidJson());
-  tester.ExpectUniqueSample("NewTabPage.Snippets.NumArticles", /*sample=*/0,
-                            /*expected_count=*/1);
+  EXPECT_THAT(tester.GetAllSamples("NewTabPage.Snippets.NumArticles"),
+              ElementsAre(base::Bucket(/*min=*/0, /*count=*/1)));
+  // Invalid JSON shouldn't contribute to NumArticlesFetched.
+  EXPECT_THAT(tester.GetAllSamples("NewTabPage.Snippets.NumArticlesFetched"),
+              IsEmpty());
   SetExpectJsonParseSuccess(true);
+  // Valid JSON with empty list.
+  LoadFromJSONString("{ \"recos\": []}");
+  EXPECT_THAT(tester.GetAllSamples("NewTabPage.Snippets.NumArticles"),
+              ElementsAre(base::Bucket(/*min=*/0, /*count=*/2)));
+  EXPECT_THAT(tester.GetAllSamples("NewTabPage.Snippets.NumArticlesFetched"),
+              ElementsAre(base::Bucket(/*min=*/0, /*count=*/1)));
+  // Snippet list should be populated with size 1.
   LoadFromJSONString(GetTestJson());
-  tester.ExpectBucketCount("NewTabPage.Snippets.NumArticles", /*sample=*/1,
-                            /*expected_count=*/1);
+  EXPECT_THAT(tester.GetAllSamples("NewTabPage.Snippets.NumArticles"),
+              ElementsAre(base::Bucket(/*min=*/0, /*count=*/2),
+                          base::Bucket(/*min=*/1, /*count=*/1)));
+  EXPECT_THAT(tester.GetAllSamples("NewTabPage.Snippets.NumArticlesFetched"),
+              ElementsAre(base::Bucket(/*min=*/0, /*count=*/1),
+                          base::Bucket(/*min=*/1, /*count=*/1)));
   // Duplicate snippet shouldn't increase the list size.
   LoadFromJSONString(GetTestJson());
-  tester.ExpectBucketCount("NewTabPage.Snippets.NumArticles", /*sample=*/1,
-                            /*expected_count=*/2);
+  EXPECT_THAT(tester.GetAllSamples("NewTabPage.Snippets.NumArticles"),
+              ElementsAre(base::Bucket(/*min=*/0, /*count=*/2),
+                          base::Bucket(/*min=*/1, /*count=*/2)));
+  EXPECT_THAT(tester.GetAllSamples("NewTabPage.Snippets.NumArticlesFetched"),
+              ElementsAre(base::Bucket(/*min=*/0, /*count=*/1),
+                          base::Bucket(/*min=*/1, /*count=*/2)));
   // Discarding a snippet should decrease the list size. This will only be
   // logged after the next fetch.
   EXPECT_TRUE(service()->DiscardSnippet(GURL("http://localhost/foobar")));
   LoadFromJSONString(GetTestJson());
-  tester.ExpectBucketCount("NewTabPage.Snippets.NumArticles", /*sample=*/0,
-                            /*expected_count=*/2);
-  tester.ExpectTotalCount("NewTabPage.Snippets.NumArticles", 4);
+  EXPECT_THAT(tester.GetAllSamples("NewTabPage.Snippets.NumArticles"),
+              ElementsAre(base::Bucket(/*min=*/0, /*count=*/3),
+                          base::Bucket(/*min=*/1, /*count=*/2)));
+  // Discarded snippets shouldn't influence NumArticlesFetched.
+  EXPECT_THAT(tester.GetAllSamples("NewTabPage.Snippets.NumArticlesFetched"),
+              ElementsAre(base::Bucket(/*min=*/0, /*count=*/1),
+                          base::Bucket(/*min=*/1, /*count=*/3)));
+  // Recreating the service and loading from prefs shouldn't count as fetched
+  // articles.
+  CreateSnippetsService();
+  tester.ExpectTotalCount("NewTabPage.Snippets.NumArticlesFetched", 4);
 }
 
 }  // namespace ntp_snippets

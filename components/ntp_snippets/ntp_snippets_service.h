@@ -144,15 +144,12 @@ class NTPSnippetsService : public KeyedService {
                     std::unique_ptr<base::Value> parsed);
   void OnJsonError(const std::string& snippets_json, const std::string& error);
 
-  // Expects a top-level dictionary containing a "recos" list, which will be
-  // passed to LoadFromListValue().
-  bool LoadFromValue(const base::Value& value);
+  // Expects a top-level dictionary containing a "recos" list, each element of
+  // which will be parsed as a snippet.
+  bool LoadFromFetchedValue(const base::Value& value);
 
-  // Expects a list of dictionaries each containing a "contentInfo" dictionary
-  // with keys matching the properties of a snippet (url, title, site_title,
-  // etc...). The URL is the only mandatory value.
-  bool LoadFromListValue(const base::ListValue& list);
-
+  // Merges newly available snippets with the previously available list.
+  bool MergeSnippets(NTPSnippetStorage new_snippets);
   // TODO(treib): Investigate a better storage, maybe LevelDB or SQLite?
   void LoadSnippetsFromPrefs();
   void StoreSnippetsToPrefs();
