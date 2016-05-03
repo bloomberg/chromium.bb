@@ -12,7 +12,6 @@ source_set("capture") {
     "content/animated_content_sampler.h",
     "content/capture_resolution_chooser.cc",
     "content/capture_resolution_chooser.h",
-    "content/feedback_signal_accumulator.cc",
     "content/feedback_signal_accumulator.h",
     "content/screen_capture_device_core.cc",
     "content/screen_capture_device_core.h",

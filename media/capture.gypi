@@ -13,7 +13,6 @@
       'capture/content/animated_content_sampler.h',
       'capture/content/capture_resolution_chooser.cc',
       'capture/content/capture_resolution_chooser.h',
-      'capture/content/feedback_signal_accumulator.cc',
       'capture/content/feedback_signal_accumulator.h',
       'capture/content/screen_capture_device_core.cc',
       'capture/content/screen_capture_device_core.h',

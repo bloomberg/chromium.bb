@@ -33,11 +33,17 @@ class FeedbackSignalAccumulator {
   // move the accumulated average value halfway in-between.  Example: If
   // |half_life| is one second, then calling Reset(0.0, t=0s) and then
   // Update(1.0, t=1s) will result in an accumulated average value of 0.5.
-  explicit FeedbackSignalAccumulator(base::TimeDelta half_life);
+  explicit FeedbackSignalAccumulator(base::TimeDelta half_life)
+      : half_life_(half_life), average_(NAN) {
+    DCHECK(half_life_ > base::TimeDelta());
+  }
 
   // Erase all memory of historical values, re-starting with the given
   // |starting_value|.
-  void Reset(double starting_value, TimeType timestamp);
+  void Reset(double starting_value, TimeType timestamp) {
+    average_ = update_value_ = prior_average_ = starting_value;
+    reset_time_ = update_time_ = prior_update_time_ = timestamp;
+  }
 
   TimeType reset_time() const { return reset_time_; }
 
@@ -47,7 +53,37 @@ class FeedbackSignalAccumulator {
   // effect and false is returned.  If there are two or more updates at the same
   // |timestamp|, only the one with the greatest value will be accounted for
   // (see class comments for elaboration).
-  bool Update(double value, TimeType timestamp);
+  bool Update(double value, TimeType timestamp) {
+    DCHECK(!std::isnan(average_)) << "Reset() must be called once.";
+
+    if (timestamp < update_time_) {
+      return false;  // Not in chronological order.
+    } else if (timestamp == update_time_) {
+      if (timestamp == reset_time_) {
+        // Edge case: Multiple updates at reset timestamp.
+        average_ = update_value_ = prior_average_ =
+            std::max(value, update_value_);
+        return true;
+      }
+      if (value <= update_value_)
+        return true;
+      update_value_ = value;
+    } else {
+      prior_average_ = average_;
+      prior_update_time_ = update_time_;
+      update_value_ = value;
+      update_time_ = timestamp;
+    }
+
+    const double elapsed_us = static_cast<double>(
+        (update_time_ - prior_update_time_).InMicroseconds());
+    const double weight =
+        elapsed_us / (elapsed_us + half_life_.InMicroseconds());
+    average_ = weight * update_value_ + (1.0 - weight) * prior_average_;
+    DCHECK(std::isfinite(average_));
+
+    return true;
+  }
 
   TimeType update_time() const { return update_time_; }
 
