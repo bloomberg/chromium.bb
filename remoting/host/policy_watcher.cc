@@ -52,7 +52,7 @@ namespace {
 std::unique_ptr<base::DictionaryValue> CopyValuesAndAddDefaults(
     const base::DictionaryValue& from,
     const base::DictionaryValue& default_values) {
-  std::unique_ptr<base::DictionaryValue> to(default_values.DeepCopy());
+  std::unique_ptr<base::DictionaryValue> to(default_values.CreateDeepCopy());
   for (base::DictionaryValue::Iterator i(default_values); !i.IsAtEnd();
        i.Advance()) {
     const base::Value* value = nullptr;
@@ -63,7 +63,7 @@ std::unique_ptr<base::DictionaryValue> CopyValuesAndAddDefaults(
     }
 
     CHECK(value->IsType(i.value().GetType()));
-    to->Set(i.key(), value->DeepCopy());
+    to->Set(i.key(), value->CreateDeepCopy());
   }
 
   return to;
@@ -99,7 +99,7 @@ std::unique_ptr<base::DictionaryValue> CopyChromotingPoliciesIntoDictionary(
     // TODO(lukasza): Removing this somewhat brittle filtering will be possible
     //                after having separate, Chromoting-specific schema.
     if (key.find(kPolicyNameSubstring) != std::string::npos) {
-      policy_dict->Set(key, value->DeepCopy());
+      policy_dict->Set(key, value->CreateDeepCopy());
     }
   }
 
@@ -243,7 +243,7 @@ void CopyDictionaryValue(const base::DictionaryValue& from,
                          std::string key) {
   const base::Value* value;
   if (from.Get(key, &value)) {
-    to.Set(key, value->DeepCopy());
+    to.Set(key, value->CreateDeepCopy());
   }
 }
 }  // namespace
@@ -259,7 +259,7 @@ PolicyWatcher::StoreNewAndReturnChangedPolicies(
     base::Value* old_policy;
     if (!(old_policies_->Get(iter.key(), &old_policy) &&
           old_policy->Equals(&iter.value()))) {
-      changed_policies->Set(iter.key(), iter.value().DeepCopy());
+      changed_policies->Set(iter.key(), iter.value().CreateDeepCopy());
     }
     iter.Advance();
   }

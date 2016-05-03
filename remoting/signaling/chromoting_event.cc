@@ -25,7 +25,7 @@ ChromotingEvent::ChromotingEvent(Type type) : ChromotingEvent() {
 
 ChromotingEvent::ChromotingEvent(const ChromotingEvent& other) {
   try_count_ = other.try_count_;
-  values_map_.reset(other.values_map_->DeepCopy());
+  values_map_ = other.values_map_->CreateDeepCopy();
 }
 
 ChromotingEvent::ChromotingEvent(ChromotingEvent&& other) {
@@ -38,7 +38,7 @@ ChromotingEvent::~ChromotingEvent() {}
 ChromotingEvent& ChromotingEvent::operator=(const ChromotingEvent& other) {
   if (this != &other) {
     try_count_ = other.try_count_;
-    values_map_.reset(other.values_map_->DeepCopy());
+    values_map_ = other.values_map_->CreateDeepCopy();
   }
   return *this;
 }
@@ -94,7 +94,7 @@ void ChromotingEvent::IncrementTryCount() {
 
 std::unique_ptr<base::DictionaryValue> ChromotingEvent::CopyDictionaryValue()
     const {
-  return std::unique_ptr<base::DictionaryValue>(values_map_->DeepCopy());
+  return values_map_->CreateDeepCopy();
 }
 
 // static

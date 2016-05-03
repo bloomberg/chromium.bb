@@ -63,7 +63,7 @@ std::unique_ptr<base::DictionaryValue> ConfigDictionaryFromMessage(
   std::unique_ptr<base::DictionaryValue> result;
   const base::DictionaryValue* config_dict;
   if (message->GetDictionary("config", &config_dict)) {
-    result.reset(config_dict->DeepCopy());
+    result = config_dict->CreateDeepCopy();
   } else {
     LOG(ERROR) << "'config' dictionary not found";
   }
@@ -127,7 +127,7 @@ void Me2MeNativeMessagingHost::OnMessage(std::unique_ptr<base::Value> message) {
   // might be a string or a number, so cope with both.
   const base::Value* id;
   if (message_dict->Get("id", &id))
-    response->Set("id", id->DeepCopy());
+    response->Set("id", id->CreateDeepCopy());
 
   std::string type;
   if (!message_dict->GetString("type", &type)) {

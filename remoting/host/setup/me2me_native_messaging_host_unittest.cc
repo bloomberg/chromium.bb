@@ -498,14 +498,14 @@ TEST_F(Me2MeNativeMessagingHostTest, All) {
   // Following messages require a "config" dictionary.
   base::DictionaryValue config;
   config.SetBoolean("update", true);
-  message.Set("config", config.DeepCopy());
+  message.Set("config", config.CreateDeepCopy());
   message.SetInteger("id", next_id++);
   message.SetString("type", "updateDaemonConfig");
   WriteMessageToInputPipe(message);
 
   config.Clear();
   config.SetBoolean("start", true);
-  message.Set("config", config.DeepCopy());
+  message.Set("config", config.CreateDeepCopy());
   message.SetBoolean("consent", true);
   message.SetInteger("id", next_id++);
   message.SetString("type", "startDaemon");
@@ -625,7 +625,7 @@ TEST_F(Me2MeNativeMessagingHostTest, StartDaemonInvalidConfig) {
 TEST_F(Me2MeNativeMessagingHostTest, StartDaemonNoConsent) {
   base::DictionaryValue message;
   message.SetString("type", "startDaemon");
-  message.Set("config", base::DictionaryValue().DeepCopy());
+  message.Set("config", base::DictionaryValue().CreateDeepCopy());
   TestBadRequest(message);
 }
 
