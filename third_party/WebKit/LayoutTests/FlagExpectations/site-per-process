@@ -24,13 +24,24 @@ http/tests/security/xssAuditor/block-does-not-leak-location.html [ Failure ]
 http/tests/security/xssAuditor/block-does-not-leak-referrer.html [ Failure ]
 http/tests/security/xssAuditor/full-block-script-tag-cross-domain.html [ Failure ]
 
-# https://crbug.com/582211 - sometimes XSS is not blocked
+# https://crbug.com/582211 - body of POST request is not delivered to XSSAuditor.
 http/tests/security/xssAuditor/full-block-post-from-iframe.html [ Failure ]
 http/tests/security/xssAuditor/xss-protection-parsing-01.html [ Failure ]
+http/tests/security/xssAuditor/post-from-iframe.html [ Failure ]
+http/tests/security/xssAuditor/script-tag-post.html [ Failure ]
+http/tests/security/xssAuditor/xss-filter-bypass-long-string.html [ Failure ]
+http/tests/security/xssAuditor/script-tag-post-control-char.html [ Failure ]
+http/tests/security/xssAuditor/script-tag-post-null-char.html [ Failure ]
 
 # https://crbug.com/582176 - InspectorTest.changeExecutionContext doesn't like OOPIFs.
 http/tests/inspector/console-cd-completions.html [ Failure ]
 http/tests/inspector/console-cd.html [ Failure ]
+
+# https://crbug.com/608015 - node.contentDocument is undefined.
+http/tests/inspector-protocol/access-inspected-object.html [ Failure Timeout ]
+
+# https://crbug.com/608023 - does injecting injections work with OOPIFs?
+http/tests/inspector/injected-script-for-origin.html [ Failure ]
 
 # https://crbug.com/554119 - Popup menu is in the wrong location.
 http/tests/webfont/popup-menu-load-webfont-after-open.html [ Failure ]
@@ -62,8 +73,16 @@ http/tests/xmlhttprequest/origin-whitelisting-ip-addresses.html [ Failure ]
 #                            cross-origin-iframe.html layout test failure
 http/tests/bluetooth/https/requestDevice/cross-origin-iframe.html [ Failure ]
 
-# TODO(alexmos,lukasza): Triage these failures and assign more specific bugs.
+# https://crbug.com/606594 - UaF of delegate_ in WebFrameTestClient::willSendRequest
+http/tests/local/serviceworker/fetch-request-body-file.html [ Failure Crash ]
 
+# https://crbug.com/607991 - MockWebClipboardImpl not replicated across OOPIFs.
+http/tests/misc/copy-resolves-urls.html [ Failure ]
+
+# https://crbug.com/607981 - trouble with application/x-blink-deprecated-test-plugin
+http/tests/plugins/cross-frame-object-access.html [ Failure ]
+
+# TODO(alexmos,lukasza): Triage these failures and assign more specific bugs.
 # Uninvestigated failures under http/tests/security:
 http/tests/security/cross-frame-access-enumeration.html [ Timeout ]
 http/tests/security/cross-frame-access-get-custom-property-cached.html [ Timeout ]
@@ -77,17 +96,7 @@ http/tests/security/cross-origin-worker-indexeddb-allowed.html [ Failure Timeout
 http/tests/security/frameNavigation/not-opener.html [ Timeout ]
 http/tests/security/frameNavigation/xss-DENIED-targeted-link-navigation.html [ Timeout ]
 http/tests/security/referrer-policy-redirect-link.html [ Timeout ]
-http/tests/security/xssAuditor/post-from-iframe.html [ Failure ]
-http/tests/security/xssAuditor/script-tag-post-control-char.html [ Failure ]
-http/tests/security/xssAuditor/script-tag-post.html [ Failure ]
-http/tests/security/xssAuditor/script-tag-post-null-char.html [ Failure ]
-http/tests/security/xssAuditor/xss-filter-bypass-long-string.html [ Failure ]
-
 # Uninvestigated failures under http/tests (but outside of http/tests/security):
-http/tests/appcache/remove-cache.html [ Failure ]
-http/tests/inspector-protocol/access-inspected-object.html [ Failure ]
-http/tests/inspector/injected-script-for-origin.html [ Failure ]
-http/tests/local/serviceworker/fetch-request-body-file.html [ Failure Crash ]
 http/tests/inspector-protocol/request-mixed-content-status-blockable.html [ Timeout ]
 http/tests/inspector-protocol/request-mixed-content-status-none.html [ Timeout ]
 http/tests/inspector-protocol/request-mixed-content-status-optionally-blockable.html [ Timeout ]
@@ -101,10 +110,8 @@ http/tests/inspector/indexeddb/resources-panel.html [ Timeout ]
 http/tests/inspector/inspect-iframe-from-different-domain.html [ Timeout ]
 http/tests/intersection-observer/iframe-cross-origin.html [ Timeout ]
 http/tests/local/drag-over-remote-content.html [ Crash Timeout ]
-http/tests/misc/copy-resolves-urls.html [ Failure ]
 http/tests/navigation/redirect-on-back-updates-history-item.html [ Timeout ]
 http/tests/navigation/redirect-on-reload-updates-history-item.html [ Timeout ]
-http/tests/plugins/cross-frame-object-access.html [ Failure ]
 http/tests/serviceworker/http-to-https-redirect-and-register.html [ Timeout ]
 http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_cross_origin_redirect.html [ Timeout ]
 http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_cross_origin_redirect_with_timing_allow_origin.html [ Timeout ]
