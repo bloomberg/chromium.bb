@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/bluetooth/bluetooth-helpers.js"></script>
+<script>
+'use strict';
+promise_test(() => {
+  return setBluetoothFakeAdapter('HeartRateAdapter')
+    .then(() => requestDeviceWithKeyDown({
+      filters: [{services: ['heart_rate']}],
+      optionalServices: ['generic_access']}))
+    .then(device => device.gatt.connect())
+    .then(gattServer => Promise.all([
+      gattServer.getPrimaryService('generic_access'),
+      gattServer.getPrimaryService('generic_access')]))
+    .then(services => {
+      // getPrimaryService should return the same object if it was created
+      // earlier. https://crbug.com/495270
+      // TODO(ortuno): Change to assert_equals.
+      for (let i = 1; i < services.length; i++) {
+        assert_not_equals(services[0], services[i],
+                          'Should return the same service as the first call.');
+      }
+    });
+}, 'Calls to get the same service should return the same object.');
+</script>
