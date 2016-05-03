@@ -13,6 +13,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
@@ -386,7 +387,7 @@ public class MediaNotificationManager {
 
     private Bitmap mNotificationIcon;
 
-    private final Bitmap mDefaultMediaSessionImage;
+    private final Bitmap mDefaultLargeIcon;
 
     // |mMediaNotificationInfo| should be not null if and only if the notification is showing.
     private MediaNotificationInfo mMediaNotificationInfo;
@@ -414,11 +415,8 @@ public class MediaNotificationManager {
         mPauseDescription = context.getResources().getString(R.string.accessibility_pause);
         mStopDescription = context.getResources().getString(R.string.accessibility_stop);
 
-        // The MediaSession icon is a plain color.
-        int size = context.getResources().getDimensionPixelSize(R.dimen.media_session_icon_size);
-        mDefaultMediaSessionImage = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
-        mDefaultMediaSessionImage.eraseColor(ApiCompatibilityUtils.getColor(
-                context.getResources(), R.color.media_session_icon_color));
+        mDefaultLargeIcon = BitmapFactory.decodeResource(
+                context.getResources(), R.drawable.ic_music_video);
     }
 
     /**
@@ -491,30 +489,20 @@ public class MediaNotificationManager {
     private MediaMetadataCompat createMetadata() {
         MediaMetadataCompat.Builder metadataBuilder = new MediaMetadataCompat.Builder();
 
-        // Choose the image to use as the icon.
-        Bitmap mediaSessionImage = mMediaNotificationInfo.largeIcon == null
-                ? mDefaultMediaSessionImage
-                : mMediaNotificationInfo.largeIcon;
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             metadataBuilder.putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE,
                     mMediaNotificationInfo.metadata.getTitle());
             metadataBuilder.putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE,
                     mMediaNotificationInfo.origin);
-            metadataBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON,
-                    scaleBitmapForWearable(mediaSessionImage));
-            // METADATA_KEY_ART is optional and should only be used if we can provide something
-            // better than the default image.
-            if (mMediaNotificationInfo.largeIcon != null) {
-                metadataBuilder.putBitmap(
-                        MediaMetadataCompat.METADATA_KEY_ART, mMediaNotificationInfo.largeIcon);
-            }
         } else {
             metadataBuilder.putString(MediaMetadataCompat.METADATA_KEY_TITLE,
                     mMediaNotificationInfo.metadata.getTitle());
             metadataBuilder.putString(MediaMetadataCompat.METADATA_KEY_ARTIST,
                     mMediaNotificationInfo.origin);
-            metadataBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_ART, mediaSessionImage);
+        }
+        if (mMediaNotificationInfo.largeIcon != null) {
+            metadataBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_ART,
+                    scaleBitmapForWearable(mMediaNotificationInfo.largeIcon));
         }
 
         if (!TextUtils.isEmpty(mMediaNotificationInfo.metadata.getArtist())) {
@@ -641,12 +629,11 @@ public class MediaNotificationManager {
 
     private void setMediaStyleLayoutForNotificationBuilder(NotificationCompat.Builder builder) {
         setMediaStyleNotificationText(builder);
-        // TODO(zqzhang): Update the default icon when a new one in provided.
-        // See http://crbug.com/600396.
         if (mMediaNotificationInfo.largeIcon != null) {
             builder.setLargeIcon(mMediaNotificationInfo.largeIcon);
-        } else {
-            builder.setLargeIcon(mDefaultMediaSessionImage);
+        } else if (!TextUtils.equals(Build.VERSION.CODENAME, "N")
+                && mMediaNotificationInfo.supportsPlayPause()) {
+            builder.setLargeIcon(mDefaultLargeIcon);
         }
         // TODO(zqzhang): It's weird that setShowWhen() don't work on K. Calling setWhen() to force
         // removing the time.

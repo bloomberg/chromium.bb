@@ -168,7 +168,7 @@
     <dimen name="signin_image_carousel_width">240dp</dimen>
     <dimen name="signin_chooser_padding">16dp</dimen>
     <dimen name="signin_screen_top_padding">50dp</dimen>
-    
+
     <!-- Autofill card unmasking prompt dimensions -->
     <dimen name="autofill_card_unmask_tooltip_horizontal_padding">16dp</dimen>
     <dimen name="autofill_card_unmask_tooltip_vertical_padding">4dp</dimen>
@@ -300,11 +300,6 @@
 
     <!-- Favicon dimensions -->
     <dimen name="default_favicon_size">16dp</dimen>
-
-    <!-- Media UI dimensions -->
-    <!-- The media_session_icon_size is just big enough to make sure Android doesn't discard the
-         icon but otherwise, the icon is meant to be a flat color so it doesn't really matter. -->
-    <dimen name="media_session_icon_size">48dp</dimen>
 
     <!-- Account chooser dialog dimensions -->
     <dimen name="account_chooser_dialog_margin">24dp</dimen>

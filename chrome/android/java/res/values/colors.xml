@@ -164,9 +164,6 @@
     <!-- Bookmark widget colors -->
     <color name="bookmark_widget_pressed_highlight">#1D000000</color>
 
-    <!-- Media UI Colors -->
-    <color name="media_session_icon_color">#14181C</color>
-
     <!-- Physical Web colors -->
     <color name="physical_web_header_color">#333</color>
     <color name="physical_web_url_color">#969696</color>
