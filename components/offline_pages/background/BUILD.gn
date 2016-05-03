@@ -12,6 +12,10 @@ static_library("background_offliner") {
     "offliner.h",
     "request_coordinator.cc",
     "request_coordinator.h",
+    "request_queue.cc",
+    "request_queue.h",
+    "save_page_request.cc",
+    "save_page_request.h",
     "scheduler.h",
   ]
 
@@ -19,6 +23,21 @@ static_library("background_offliner") {
     "//base",
     "//components/offline_pages:offline_pages",
     "//net",
+    "//url",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "save_page_request_unittest.cc",
+  ]
+
+  deps = [
+    ":background_offliner",
+    "//base",
+    "//components/offline_pages:offline_pages",
+    "//testing/gtest",
     "//url",
   ]
 }

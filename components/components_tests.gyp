@@ -405,7 +405,10 @@
       'ntp_snippets/inner_iterator_unittest.cc',
       'ntp_snippets/ntp_snippets_service_unittest.cc',
     ],
-    'offline_page_unittest_sources': [
+    'offline_pages_background_unittest_sources': [
+      'offline_pages/background/save_page_request_unittest.cc',
+    ],
+    'offline_pages_unittest_sources': [
       'offline_pages/offline_page_metadata_store_impl_unittest.cc',
       'offline_pages/offline_page_model_unittest.cc',
       'offline_pages/snapshot_controller_unittest.cc',
@@ -992,7 +995,8 @@
         '<@(mime_util_unittest_sources)',
         '<@(network_time_unittest_sources)',
         '<@(ntp_snippets_unittest_sources)',
-        '<@(offline_page_unittest_sources)',
+        '<@(offline_pages_background_unittest_sources)',
+        '<@(offline_pages_unittest_sources)',
         '<@(omnibox_unittest_sources)',
         '<@(open_from_clipboard_unittest_sources)',
         '<@(os_crypt_unittest_sources)',
@@ -1115,6 +1119,7 @@
         'components.gyp:network_time',
         'components.gyp:ntp_snippets',
         'components.gyp:offline_pages',
+        'components.gyp:offline_pages_background_offliner',
         'components.gyp:offline_pages_test_support',
         'components.gyp:omnibox_browser',
         'components.gyp:omnibox_test_support',

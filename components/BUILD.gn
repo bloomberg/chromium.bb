@@ -96,6 +96,7 @@ test("components_unittests") {
     "//components/network_time:unit_tests",
     "//components/ntp_snippets:unit_tests",
     "//components/offline_pages:unit_tests",
+    "//components/offline_pages/background:unit_tests",
     "//components/omnibox/browser:unit_tests",
     "//components/open_from_clipboard:unit_tests",
     "//components/os_crypt:unit_tests",

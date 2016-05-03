@@ -38,7 +38,7 @@
     },
     {
       # GN: //components/offline_pages/background:background_offliner
-      'target_name': 'background_offliner',
+      'target_name': 'offline_pages_background_offliner',
       'type': 'static_library',
       'include_dirs': [
         '..',
@@ -53,6 +53,10 @@
         'offline_pages/background/offliner.h',
         'offline_pages/background/request_coordinator.cc',
         'offline_pages/background/request_coordinator.h',
+        'offline_pages/background/request_queue.cc',
+        'offline_pages/background/request_queue.h',
+        'offline_pages/background/save_page_request.cc',
+        'offline_pages/background/save_page_request.h',
         'offline_pages/background/scheduler.h',
       ],
     },
