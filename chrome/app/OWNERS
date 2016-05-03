@@ -16,9 +16,7 @@ per-file google_chrome_strings.grd=*
 
 per-file media_router_strings.grdp*=apacible@chromium.org
 per-file media_router_strings.grdp*=imcheng@chromium.org
-per-file media_router_strings.grdp*=kmarshall@chromium.org
 per-file media_router_strings.grdp*=mfoltz@chromium.org
-per-file media_router_strings.grdp*=wez@chromium.org
 
 per-file settings*strings*=dbeam@chromium.org
 per-file settings*strings*=dpapad@chromium.org

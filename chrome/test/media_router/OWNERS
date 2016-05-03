@@ -1,10 +1,10 @@
-# Owners with committer privileges
-apacible@chromium.org
+# OWNERS with committer privileges.
 imcheng@chromium.org
-kmarshall@chromium.org
+apacible@chromium.org
 mfoltz@chromium.org
+
+# Fallback OWNER, if others are not available.
 wez@chromium.org
 
 # Team members without committer privileges, for potential FYI reviews.
-haibinlu@chromium.org
 leilei@chromium.org

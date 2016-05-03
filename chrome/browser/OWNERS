@@ -50,9 +50,7 @@ per-file *_mac.h=thakis@chromium.org
 
 per-file media_router_resources.grdp*=apacible@chromium.org
 per-file media_router_resources.grdp*=imcheng@chromium.org
-per-file media_router_resources.grdp*=kmarshall@chromium.org
 per-file media_router_resources.grdp*=mfoltz@chromium.org
-per-file media_router_resources.grdp*=wez@chromium.org
 
 per-file shell_integration_win*=gab@chromium.org
 per-file shell_integration_win*=grt@chromium.org
