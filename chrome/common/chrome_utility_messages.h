@@ -181,14 +181,6 @@ IPC_MESSAGE_CONTROL1(ChromeUtilityMsg_AnalyzeDmgFileForDownloadProtection,
 #endif  // defined(FULL_SAFE_BROWSING)
 
 #if defined(OS_WIN)
-// Invokes ui::base::win::OpenFileViaShell from the utility process.
-IPC_MESSAGE_CONTROL1(ChromeUtilityMsg_OpenFileViaShell,
-                     base::FilePath /* full_path */)
-
-// Invokes ui::base::win::OpenFolderViaShell from the utility process.
-IPC_MESSAGE_CONTROL1(ChromeUtilityMsg_OpenFolderViaShell,
-                     base::FilePath /* full_path */)
-
 // Instructs the utility process to invoke GetOpenFileName. |owner| is the
 // parent of the modal dialog, |flags| are OFN_* flags. |filter| constrains the
 // user's file choices. |initial_directory| and |filename| select the directory
