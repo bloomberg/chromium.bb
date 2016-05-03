@@ -159,6 +159,8 @@ base::TimeDelta V4UpdateProtocolManager::GetNextUpdateInterval(bool back_off) {
     next = V4ProtocolManagerUtil::GetNextBackOffInterval(
         &update_error_count_, &update_back_off_mult_);
   }
+  DVLOG(1) << "V4UpdateProtocolManager::GetNextUpdateInterval: "
+           << "next_interval: " << next;
   return next;
 }
 
@@ -311,8 +313,11 @@ void V4UpdateProtocolManager::OnURLFetchComplete(
 
 GURL V4UpdateProtocolManager::GetUpdateUrl(
     const std::string& req_base64) const {
-  return V4ProtocolManagerUtil::GetRequestUrl(req_base64, "encodedUpdates",
-                                              config_);
+  GURL url = V4ProtocolManagerUtil::GetRequestUrl(req_base64, "encodedUpdates",
+                                                  config_);
+  DVLOG(1) << "V4UpdateProtocolManager::GetUpdateUrl: "
+           << "url: " << url;
+  return url;
 }
 
 }  // namespace safe_browsing

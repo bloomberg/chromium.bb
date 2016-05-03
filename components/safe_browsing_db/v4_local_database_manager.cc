@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "components/safe_browsing_db/safebrowsing.pb.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -138,9 +139,23 @@ void V4LocalDatabaseManager::CancelCheck(Client* client) {
 void V4LocalDatabaseManager::StartOnIOThread(
     net::URLRequestContextGetter* request_context_getter,
     const V4ProtocolConfig& config) {
-  // TODO(vakh): Implement this skeleton.
-  VLOG(1) << "V4LocalDatabaseManager starting";
   SafeBrowsingDatabaseManager::StartOnIOThread(request_context_getter, config);
+
+#if defined(OS_WIN) || defined (OS_LINUX) || defined (OS_MACOSX)
+  // TODO(vakh): Remove this if/endif block when the V4Database is implemented.
+  // Filed as http://crbug.com/608075
+  UpdateListIdentifier update_list_identifier;
+#if defined(OS_WIN)
+  update_list_identifier.platform_type = WINDOWS_PLATFORM;
+#elif defined (OS_LINUX)
+  update_list_identifier.platform_type = LINUX_PLATFORM;
+#else
+  update_list_identifier.platform_type = OSX_PLATFORM;
+#endif
+  update_list_identifier.threat_entry_type = URL_EXPRESSION;
+  update_list_identifier.threat_type = MALWARE_THREAT;
+  current_list_states_[update_list_identifier] = "";
+#endif
 
   V4UpdateCallback callback = base::Bind(
       &V4LocalDatabaseManager::UpdateRequestCompleted, base::Unretained(this));
@@ -152,7 +167,6 @@ void V4LocalDatabaseManager::StartOnIOThread(
 
 void V4LocalDatabaseManager::StopOnIOThread(bool shutdown) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DVLOG(1) << "V4LocalDatabaseManager stopping";
 
   // Delete the V4UpdateProtocolManager.
   // This cancels any in-flight update request.
