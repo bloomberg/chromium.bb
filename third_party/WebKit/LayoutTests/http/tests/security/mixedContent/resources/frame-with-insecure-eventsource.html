@@ -1,8 +1,7 @@
 <script>
-var es = new EventSource("http://127.0.0.1:8000/eventsource/resources/simple-event-stream.asis");
-
-window.onload = function() {
+var es = new EventSource("http://127.0.0.1:8000/security/mixedContent/resources/simple-event-stream.pl");
+es.addEventListener("error", function() {
     if (window.opener)
         window.opener.postMessage('done', '*');
-};
+});
 </script>

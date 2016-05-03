@@ -64,9 +64,6 @@ http/tests/bluetooth/https/requestDevice/cross-origin-iframe.html [ Failure ]
 
 # TODO(alexmos,lukasza): Triage these failures and assign more specific bugs.
 
-# No repro (maybe flaky? maybe really fixed? maybe repros only in debug build?):
-http/tests/security/mixedContent/insecure-eventsource-in-main-frame.html [ Failure ]
-
 # Uninvestigated failures under http/tests/security:
 http/tests/security/cross-frame-access-enumeration.html [ Timeout ]
 http/tests/security/cross-frame-access-get-custom-property-cached.html [ Timeout ]
