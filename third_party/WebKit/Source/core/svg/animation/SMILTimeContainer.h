@@ -62,7 +62,7 @@ public:
     void resume();
     void setElapsed(SMILTime);
 
-    void serviceAnimations(double monotonicAnimationStartTime);
+    void serviceAnimations();
     bool hasAnimations() const;
 
     void setDocumentOrderIndexesDirty() { m_documentOrderIndexesDirty = true; }

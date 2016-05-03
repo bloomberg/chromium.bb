@@ -55,7 +55,7 @@ public:
     void removeResource(const AtomicString& id);
     LayoutSVGResourceContainer* resourceById(const AtomicString& id) const;
 
-    static void serviceOnAnimationFrame(Document&, double monotonicAnimationStartTime);
+    static void serviceOnAnimationFrame(Document&);
 
     void startAnimations();
     void pauseAnimations();
@@ -107,7 +107,7 @@ public:
     void removeElementFromPendingResources(Element*);
     SVGPendingElements* removePendingResource(const AtomicString& id);
 
-    void serviceAnimations(double monotonicAnimationStartTime);
+    void serviceAnimations();
 
     // The following two functions are used for scheduling a pending resource to be removed.
     void markPendingResourcesForRemoval(const AtomicString&);

@@ -86,20 +86,20 @@ LayoutSVGResourceContainer* SVGDocumentExtensions::resourceById(const AtomicStri
     return m_resources.get(id);
 }
 
-void SVGDocumentExtensions::serviceOnAnimationFrame(Document& document, double monotonicAnimationStartTime)
+void SVGDocumentExtensions::serviceOnAnimationFrame(Document& document)
 {
     if (!document.svgExtensions())
         return;
-    document.accessSVGExtensions().serviceAnimations(monotonicAnimationStartTime);
+    document.accessSVGExtensions().serviceAnimations();
 }
 
-void SVGDocumentExtensions::serviceAnimations(double monotonicAnimationStartTime)
+void SVGDocumentExtensions::serviceAnimations()
 {
     if (RuntimeEnabledFeatures::smilEnabled()) {
         HeapVector<Member<SVGSVGElement>> timeContainers;
         copyToVector(m_timeContainers, timeContainers);
         for (const auto& container : timeContainers)
-            container->timeContainer()->serviceAnimations(monotonicAnimationStartTime);
+            container->timeContainer()->serviceAnimations();
     }
 
     SVGElementSet webAnimationsPendingSVGElements;

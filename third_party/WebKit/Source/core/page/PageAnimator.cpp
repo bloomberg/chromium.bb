@@ -57,9 +57,9 @@ void PageAnimator::serviceScriptedAnimations(double monotonicAnimationStartTime)
                 for (ScrollableArea* scrollableArea : animatingScrollableAreasCopy)
                     scrollableArea->serviceScrollAnimations(monotonicAnimationStartTime);
             }
+            SVGDocumentExtensions::serviceOnAnimationFrame(*document);
         }
-        // TODO(skyostil): These functions should not run for documents without views.
-        SVGDocumentExtensions::serviceOnAnimationFrame(*document, monotonicAnimationStartTime);
+        // TODO(skyostil): This function should not run for documents without views.
         document->serviceScriptedAnimations(monotonicAnimationStartTime);
     }
 

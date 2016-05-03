@@ -409,7 +409,7 @@ void SMILTimeContainer::serviceOnNextFrame()
     }
 }
 
-void SMILTimeContainer::serviceAnimations(double monotonicAnimationStartTime)
+void SMILTimeContainer::serviceAnimations()
 {
     if (m_frameSchedulingState != AnimationFrame)
         return;
