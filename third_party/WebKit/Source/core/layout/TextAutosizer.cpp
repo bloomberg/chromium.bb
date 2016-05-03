@@ -398,8 +398,6 @@ void TextAutosizer::inflateAutoTable(LayoutTable* table)
                 if (!cell->needsLayout())
                     continue;
 
-                // TODO(kojii): Callers should pass SubtreeLayoutScope to give
-                // to beginLayout/inflate.
                 beginLayout(cell, nullptr);
                 inflate(cell, nullptr, DescendToInnerBlocks);
                 endLayout(cell);
@@ -993,10 +991,8 @@ void TextAutosizer::applyMultiplier(LayoutObject* layoutObject, float multiplier
         m_stylesRetainedDuringLayout.append(&currentStyle);
 
         layoutObject->setStyleInternal(style.release());
-        // TODO(kojii): layouter should not be nullptr once all callers are
-        // fixed to pass SubtreeLayoutScope.
         DCHECK(!layouter || layoutObject->isDescendantOf(&layouter->root()));
-        layoutObject->setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::TextAutosizing, MarkContainerChainInLayout, layouter);
+        layoutObject->setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::TextAutosizing, MarkContainerChain, layouter);
         break;
 
     case LayoutNeeded:

@@ -88,7 +88,6 @@ enum HitTestFilter {
 enum MarkingBehavior {
     MarkOnlyThis,
     MarkContainerChain,
-    MarkContainerChainInLayout,
 };
 
 enum MapCoordinatesMode {
@@ -2013,8 +2012,8 @@ inline void LayoutObject::setNeedsLayout(LayoutInvalidationReasonForTracing reas
             TRACE_EVENT_SCOPE_THREAD,
             "data",
             InspectorLayoutInvalidationTrackingEvent::data(this, reason));
-        if (markParents != MarkOnlyThis && (!layouter || layouter->root() != this))
-            markContainerChainForLayout(!layouter && markParents == MarkContainerChain, layouter);
+        if (markParents == MarkContainerChain && (!layouter || layouter->root() != this))
+            markContainerChainForLayout(!layouter, layouter);
     }
 }
 
@@ -2050,8 +2049,8 @@ inline void LayoutObject::setChildNeedsLayout(MarkingBehavior markParents, Subtr
     bool alreadyNeededLayout = normalChildNeedsLayout();
     setNormalChildNeedsLayout(true);
     // FIXME: Replace MarkOnlyThis with the SubtreeLayoutScope code path and remove the MarkingBehavior argument entirely.
-    if (!alreadyNeededLayout && markParents != MarkOnlyThis && (!layouter || layouter->root() != this))
-        markContainerChainForLayout(!layouter && markParents == MarkContainerChain, layouter);
+    if (!alreadyNeededLayout && markParents == MarkContainerChain && (!layouter || layouter->root() != this))
+        markContainerChainForLayout(!layouter, layouter);
 }
 
 inline void LayoutObject::setNeedsPositionedMovementLayout()

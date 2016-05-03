@@ -73,8 +73,6 @@ public:
     class LayoutScope {
         STACK_ALLOCATED();
     public:
-        // TODO(kojii): SubtreeLayoutScope should not be optional once all
-        // callers are fixed.
         explicit LayoutScope(LayoutBlock*, SubtreeLayoutScope* = nullptr);
         ~LayoutScope();
     protected:
