@@ -189,8 +189,7 @@ class MiscTests(Base):
         s = self._exp.get_test_set(CRASH)
         self.assertEqual(s, set(['failures/expected/crash.html', 'failures/expected/image_checksum.html']))
 
-    # TODO(crbug.com/603753) - reenable this when the ARB is restarted.
-    def disabled_test_needs_rebaseline_reftest(self):
+    def test_needs_rebaseline_reftest(self):
         try:
             filesystem = self._port.host.filesystem
             filesystem.write_text_file(filesystem.join(self._port.layout_tests_dir(),
@@ -209,8 +208,7 @@ Bug(user) failures/expected/needsmanualrebaseline.html [ NeedsManualRebaseline ]
 expectations:2 A reftest cannot be marked as NeedsRebaseline/NeedsManualRebaseline failures/expected/needsmanualrebaseline.html"""
             self.assertEqual(str(e), warnings)
 
-    # TODO(crbug.com/603753) - reenable this when the ARB is restarted.
-    def disabled_test_parse_warning(self):
+    def test_parse_warning(self):
         try:
             filesystem = self._port.host.filesystem
             filesystem.write_text_file(filesystem.join(self._port.layout_tests_dir(), 'disabled-test.html-disabled'), 'content')

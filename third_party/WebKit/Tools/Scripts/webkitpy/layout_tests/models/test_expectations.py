@@ -170,10 +170,6 @@ class TestExpectationParser(object):
         if self.REBASELINE_MODIFIER in expectations:
             expectation_line.warnings.append('REBASELINE should only be used for running rebaseline.py. Cannot be checked in.')
 
-        # TODO(crbug.com/603753) - Don't let NeedsRebaseline be checked in while the auto-rebaseline-bot is down.
-        if self.NEEDS_REBASELINE_MODIFIER in expectations:
-            expectation_line.warnings.append('NeedsRebaseline is broken at the moment. See crbug.com/603753.')
-
         if self.NEEDS_REBASELINE_MODIFIER in expectations or self.NEEDS_MANUAL_REBASELINE_MODIFIER in expectations:
             for test in expectation_line.matching_tests:
                 if self._port.reference_files(test):
