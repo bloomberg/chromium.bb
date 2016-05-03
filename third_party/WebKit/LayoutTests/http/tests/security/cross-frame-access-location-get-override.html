@@ -9,19 +9,9 @@
                 testRunner.waitUntilDone();
             }
 
-            window.addEventListener('message', function ()
-            {
-                runTest();
-                if (window.testRunner)
-                    testRunner.notifyDone();
-            });
-        }
-
-        runTest = function()
-        {
             window.targetWindow = frames[0];
 
-            log("----- tests for getting a targetWindow's location object's functions which have custom overrides.  The" + 
+            log("----- tests for getting a targetWindow's location object's functions which have custom overrides.  The" +
                 " desired behavior is for the targetWindow to return the builtin function, not the override -----\n");
 
             // We should test overriding using window.location.__proto__ once the Location object has a proper prototype.
@@ -36,6 +26,9 @@
             // Overriden using window.location.reload = "new replace"
             shouldBeTrue("canGet('targetWindow.location.replace')");
             shouldBe("toString('targetWindow.location.replace')", "toString('window.location.replace')");
+
+            if (window.testRunner)
+                testRunner.notifyDone();
         }
     </script>
 </head>

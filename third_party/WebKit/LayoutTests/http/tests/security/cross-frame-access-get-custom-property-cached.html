@@ -9,12 +9,14 @@
                 testRunner.waitUntilDone();
             }
 
-            window.addEventListener('message', function ()
-            {
-                runTest();
-                if (window.testRunner)
-                    testRunner.notifyDone();
-            });
+            window.targetWindow = frames[0];
+
+            shouldBeTrue("customPropertyAccessThrowsException(targetWindow)");
+            shouldBeTrue("customPropertyAccessThrowsException(targetWindow)");
+            shouldBeTrue("customPropertyAccessThrowsException(targetWindow)");
+
+            if (window.testRunner)
+                testRunner.notifyDone();
         }
 
         function customPropertyAccessThrowsException(o)
@@ -25,15 +27,6 @@
             } catch (e) {
                 return true;
             }
-        }
-
-        runTest = function()
-        {
-            window.targetWindow = frames[0];
-
-            shouldBeTrue("customPropertyAccessThrowsException(targetWindow)");
-            shouldBeTrue("customPropertyAccessThrowsException(targetWindow)");
-            shouldBeTrue("customPropertyAccessThrowsException(targetWindow)");
         }
     </script>
 </head>

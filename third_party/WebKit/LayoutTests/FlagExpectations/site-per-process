@@ -90,13 +90,6 @@ http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_tim
 
 # TODO(alexmos,lukasza): Triage these failures and assign more specific bugs.
 # Uninvestigated failures under http/tests/security:
-http/tests/security/cross-frame-access-enumeration.html [ Timeout ]
-http/tests/security/cross-frame-access-get-custom-property-cached.html [ Timeout ]
-http/tests/security/cross-frame-access-get.html [ Timeout ]
-http/tests/security/cross-frame-access-get-override.html [ Timeout ]
-http/tests/security/cross-frame-access-getOwnPropertyDescriptor.html [ Timeout ]
-http/tests/security/cross-frame-access-location-get.html [ Timeout ]
-http/tests/security/cross-frame-access-location-get-override.html [ Timeout ]
 http/tests/security/cross-origin-shared-worker-allowed.html [ Failure Timeout ]
 http/tests/security/cross-origin-worker-indexeddb-allowed.html [ Failure Timeout ]
 http/tests/security/frameNavigation/not-opener.html [ Timeout ]

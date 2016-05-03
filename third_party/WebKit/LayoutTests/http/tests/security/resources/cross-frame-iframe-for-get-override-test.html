@@ -5,11 +5,6 @@
         window.focus = function() { return "new focus"; }
         window.__proto__.blur = function() { return "new blur"; }
         window.history.close = "new close";
-
-        window.onload = function()
-        {
-            window.parent.postMessage('ready', '*');
-        }
     </script>
 </head>
 <body>

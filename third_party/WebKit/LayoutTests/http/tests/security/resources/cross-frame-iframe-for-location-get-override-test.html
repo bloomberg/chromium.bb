@@ -4,11 +4,6 @@
         window.location.assign = function() { return "new assign"; }
         window.location.reload = "new reload";
         window.location.replace = "new replace";
-
-        window.onload = function()
-        {
-            window.parent.postMessage('ready', '*');
-        }
     </script>
 </head>
 <body>
