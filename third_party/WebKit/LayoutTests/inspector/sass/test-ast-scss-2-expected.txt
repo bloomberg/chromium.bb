@@ -13,7 +13,7 @@ $class-slug: box;
 }
 
 === AST === 
-rule 0: "variables"
+rule 0: ""
     property 0
         name: "$my-color"
             range: {"startLine":0,"startColumn":0,"endLine":0,"endColumn":9}
@@ -35,7 +35,7 @@ rule 0: "variables"
             range: {"startLine":2,"startColumn":12,"endLine":2,"endColumn":16}
         range: {"startLine":2,"startColumn":0,"endLine":2,"endColumn":17}
         disabled: false
-rule 1: "properties"
+rule 1: ".#{$class-slug}#{$i}"
     property 0
         name: "background-color"
             range: {"startLine":6,"startColumn":8,"endLine":6,"endColumn":24}
@@ -57,7 +57,6 @@ rule 1: "properties"
             range: {"startLine":8,"startColumn":17,"endLine":8,"endColumn":27}
         range: {"startLine":8,"startColumn":8,"endLine":8,"endColumn":31}
         disabled: true
-rule 2: "mixins"
 ======
 Ranges OK.
 

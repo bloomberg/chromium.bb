@@ -9,8 +9,8 @@ input::-moz-focus-inner {
   padding: 0;
 }
 === AST === 
-rule 0: "variables"
-rule 1: "properties"
+rule 0: "button::-moz-focus-inner,
+input::-moz-focus-inner"
     property 0
         name: "border"
             range: {"startLine":5,"startColumn":2,"endLine":5,"endColumn":8}
@@ -25,7 +25,6 @@ rule 1: "properties"
             range: {"startLine":6,"startColumn":10,"endLine":6,"endColumn":12}
         range: {"startLine":6,"startColumn":2,"endLine":6,"endColumn":13}
         disabled: false
-rule 2: "mixins"
 ======
 Ranges OK.
 

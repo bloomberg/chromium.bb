@@ -10,8 +10,7 @@ Verifies AST of SCSS with media query.
 }
 
 === AST === 
-rule 0: "variables"
-rule 1: "properties"
+rule 0: "body"
     property 0
         name: "width"
             range: {"startLine":2,"startColumn":8,"endLine":2,"endColumn":13}
@@ -40,7 +39,6 @@ rule 1: "properties"
             range: {"startLine":5,"startColumn":15,"endLine":5,"endColumn":22}
         range: {"startLine":5,"startColumn":8,"endLine":5,"endColumn":23}
         disabled: false
-rule 2: "mixins"
 ======
 Ranges OK.
 

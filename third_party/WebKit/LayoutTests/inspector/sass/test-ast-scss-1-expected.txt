@@ -19,8 +19,7 @@ div {
     }
 }
 === AST === 
-rule 0: "variables"
-rule 1: "properties"
+rule 0: "div"
     property 0
         name: "display"
             range: {"startLine":1,"startColumn":7,"endLine":1,"endColumn":14}
@@ -49,49 +48,50 @@ rule 1: "properties"
             range: {"startLine":4,"startColumn":16,"endLine":4,"endColumn":25}
         range: {"startLine":4,"startColumn":4,"endLine":4,"endColumn":29}
         disabled: true
-    property 4
+rule 1: ".className"
+    property 0
         name: "padding"
             range: {"startLine":7,"startColumn":8,"endLine":7,"endColumn":15}
         value: " 10px 0 0 10px"
             range: {"startLine":7,"startColumn":16,"endLine":7,"endColumn":30}
         range: {"startLine":7,"startColumn":8,"endLine":7,"endColumn":31}
         disabled: false
-    property 5
+    property 1
         name: "font-family"
             range: {"startLine":8,"startColumn":11,"endLine":8,"endColumn":22}
         value: " "Times New Roman""
             range: {"startLine":8,"startColumn":23,"endLine":8,"endColumn":41}
         range: {"startLine":8,"startColumn":8,"endLine":8,"endColumn":45}
         disabled: true
-    property 6
+    property 2
         name: "background-image"
             range: {"startLine":9,"startColumn":8,"endLine":9,"endColumn":24}
         value: " url(assets/no-image-set.png)"
             range: {"startLine":9,"startColumn":25,"endLine":9,"endColumn":54}
         range: {"startLine":9,"startColumn":8,"endLine":9,"endColumn":55}
         disabled: false
-    property 7
+rule 2: "#test::before"
+    property 0
         name: "margin"
             range: {"startLine":12,"startColumn":12,"endLine":12,"endColumn":18}
         value: " 10px 10px"
             range: {"startLine":12,"startColumn":19,"endLine":12,"endColumn":29}
         range: {"startLine":12,"startColumn":12,"endLine":12,"endColumn":30}
         disabled: false
-    property 8
+    property 1
         name: "content"
             range: {"startLine":13,"startColumn":12,"endLine":13,"endColumn":19}
         value: " "test me""
             range: {"startLine":13,"startColumn":20,"endLine":13,"endColumn":30}
         range: {"startLine":13,"startColumn":12,"endLine":13,"endColumn":31}
         disabled: false
-    property 9
+    property 2
         name: "border"
             range: {"startLine":14,"startColumn":15,"endLine":14,"endColumn":21}
         value: " 1px solid black"
             range: {"startLine":14,"startColumn":22,"endLine":14,"endColumn":38}
         range: {"startLine":14,"startColumn":12,"endLine":14,"endColumn":42}
         disabled: true
-rule 2: "mixins"
 ======
 Ranges OK.
 
