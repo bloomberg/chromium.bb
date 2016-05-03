@@ -169,7 +169,7 @@ bool LaunchAppWithRect(content::BrowserContext* context,
 }
 
 bool LaunchApp(content::BrowserContext* context, const std::string& app_id) {
-  return LaunchApp(context, app_id, false);
+  return LaunchApp(context, app_id, true);
 }
 
 bool LaunchApp(content::BrowserContext* context,
