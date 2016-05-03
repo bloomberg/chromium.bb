@@ -507,9 +507,13 @@ void AndroidVideoDecodeAccelerator::DoIOTask(bool start_timer) {
     return;
 
   strategy_->MaybeRenderEarly();
-  bool did_work = QueueInput();
-  while (DequeueOutput())
-    did_work = true;
+  bool did_work = false, did_input = false, did_output = false;
+  do {
+    did_input = QueueInput();
+    did_output = DequeueOutput();
+    if (did_input || did_output)
+      did_work = true;
+  } while (did_input || did_output);
 
   ManageTimer(did_work || start_timer);
 }
