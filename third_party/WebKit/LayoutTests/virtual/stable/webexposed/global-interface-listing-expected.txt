@@ -412,6 +412,7 @@ interface CanvasRenderingContext2D
     attribute @@toStringTag
     getter canvas
     getter fillStyle
+    getter filter
     getter font
     getter globalAlpha
     getter globalCompositeOperation
@@ -471,6 +472,7 @@ interface CanvasRenderingContext2D
     method transform
     method translate
     setter fillStyle
+    setter filter
     setter font
     setter globalAlpha
     setter globalCompositeOperation

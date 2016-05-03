@@ -56,7 +56,7 @@ enum ImageSmoothingQuality {"low", "medium", "high"};
     // compositing
     attribute unrestricted double globalAlpha; // (default 1.0)
     attribute DOMString globalCompositeOperation; // (default source-over)
-    [RuntimeEnabled=ExperimentalCanvasFeatures] attribute DOMString filter; // (default 'none')
+    attribute DOMString filter; // (default 'none')
 
     // image smoothing
     [ImplementedAs=imageSmoothingEnabled, DeprecateAs=PrefixedImageSmoothingEnabled] attribute boolean webkitImageSmoothingEnabled;
