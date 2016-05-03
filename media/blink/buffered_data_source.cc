@@ -11,6 +11,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
+#include "build/build_config.h"
 #include "media/base/media_log.h"
 #include "net/base/net_errors.h"
 
@@ -387,7 +388,19 @@ void BufferedDataSource::StartCallback(
     loader_->Stop();
     return;
   }
+
   response_original_url_ = loader_->response_original_url();
+#if defined(OS_ANDROID)
+  // The response original url is the URL of this resource after following
+  // redirects. Update |url_| to this so that we only follow redirects once.
+  // We do this on Android only to preserve the behavior we had before the
+  // unified media pipeline. This behavior will soon exist on all platforms
+  // as we switch to MultiBufferDataSource (http://crbug.com/514719).
+  // If the response URL is empty (which happens when it's from a Service
+  // Worker), keep the original one.
+  if (!response_original_url_.is_empty())
+    url_ = response_original_url_;
+#endif  // defined(OS_ANDROID)
 
   // All responses must be successful. Resources that are assumed to be fully
   // buffered must have a known content length.

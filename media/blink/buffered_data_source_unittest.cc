@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "build/build_config.h"
 #include "media/base/media_log.h"
 #include "media/base/mock_filters.h"
 #include "media/base/test_helpers.h"
@@ -296,6 +297,7 @@ class BufferedDataSourceTest : public testing::Test {
   void set_might_be_reused_from_cache_in_future(bool value) {
     loader()->might_be_reused_from_cache_in_future_ = value;
   }
+  GURL url() { return data_source_->url_; }
 
   std::unique_ptr<MockBufferedDataSource> data_source_;
 
@@ -498,6 +500,67 @@ TEST_F(BufferedDataSourceTest, Http_RetryOnError) {
   EXPECT_FALSE(data_source_->loading());
   Stop();
 }
+
+#if defined(OS_ANDROID)
+// If the initial response is a redirect, BDS saves it and uses it for future
+// requests.
+TEST_F(BufferedDataSourceTest, Http_InitialReponseRedirectsAreCached) {
+  Initialize(kHttpUrl, true);
+
+  WebURLResponse redirect =
+      response_generator_->GeneratePartial206(0, kDataSize - 1);
+  redirect.setURL(GURL(kHttpDifferentPathUrl));
+
+  EXPECT_CALL(host_, SetTotalBytes(kFileSize));
+  Respond(redirect);
+  ASSERT_TRUE(url() == GURL(kHttpDifferentPathUrl));
+}
+
+TEST_F(BufferedDataSourceTest,
+       Http_RedirectsAfterTheInitialReponseAreNotCached) {
+  Initialize(kHttpUrl, true);
+
+  WebURLResponse response =
+      response_generator_->GeneratePartial206(0, kDataSize - 1);
+  response.setURL(GURL(kHttpUrl));
+
+  EXPECT_CALL(host_, SetTotalBytes(kFileSize));
+  EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize - 1));
+  EXPECT_CALL(host_, AddBufferedByteRange(kDataSize, kDataSize * 2 - 1));
+  EXPECT_CALL(*this, ReadCallback(kDataSize)).Times(2);
+
+  Respond(response);
+  ReadAt(0);
+  ReceiveData(kDataSize);
+
+  WebURLResponse redirect =
+      response_generator_->GeneratePartial206(kDataSize, kDataSize * 2 - 1);
+  redirect.setURL(GURL(kHttpDifferentPathUrl));
+
+  ExpectCreateResourceLoader();
+  FinishLoading();
+  ReadAt(kDataSize);
+  Respond(redirect);
+  // The redirect isn't cached.
+  ASSERT_TRUE(url() == GURL(kHttpUrl));
+  ReceiveData(kDataSize);
+  FinishLoading();
+  Stop();
+}
+
+TEST_F(BufferedDataSourceTest, Http_ServiceWorkerRedirectsAreNotCached) {
+  Initialize(kHttpUrl, true);
+
+  WebURLResponse redirect =
+      response_generator_->GeneratePartial206(0, kDataSize - 1);
+  redirect.setURL(GURL(kHttpDifferentPathUrl));
+  redirect.setWasFetchedViaServiceWorker(true);
+
+  EXPECT_CALL(host_, SetTotalBytes(kFileSize));
+  Respond(redirect);
+  ASSERT_TRUE(url() == GURL(kHttpUrl));
+}
+#endif  // defined(OS_ANDROID)
 
 TEST_F(BufferedDataSourceTest, Http_PartialResponse) {
   Initialize(kHttpUrl, true);
