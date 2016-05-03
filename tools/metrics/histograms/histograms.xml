@@ -60682,6 +60682,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.Video.Screenshare.InputFramesPerSecond" units="fps">
+  <owner>asapersson@chromium.org</owner>
+  <summary>
+    The number of incoming frames per second for a sent (screen content) video
+    stream. Recorded when a stream is removed. The total number of frames is
+    divided by the time the video stream exists.
+  </summary>
+</histogram>
+
 <histogram name="WebRTC.Video.Screenshare.InputHeightInPixels" units="pixels">
   <owner>sprang@chromium.org</owner>
   <summary>
