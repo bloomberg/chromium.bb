@@ -151,6 +151,7 @@ test("display_unittests") {
     "chromeos/x11/display_util_x11_unittest.cc",
     "chromeos/x11/native_display_event_dispatcher_x11_unittest.cc",
     "manager/display_layout_builder_unittest.cc",
+    "manager/display_layout_unittest.cc",
     "util/display_util_unittest.cc",
     "util/edid_parser_unittest.cc",
     "win/screen_win_unittest.cc",
