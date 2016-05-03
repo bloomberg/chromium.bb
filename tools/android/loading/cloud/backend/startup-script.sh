@@ -65,7 +65,7 @@ cp /opt/app/clovis/binaries/chrome_sandbox /usr/local/sbin/chrome-devel-sandbox
 chown root:root /usr/local/sbin/chrome-devel-sandbox
 chmod 4755 /usr/local/sbin/chrome-devel-sandbox
 
-# Make sure the pythonapp user owns the application code
+# Make sure the pythonapp user owns the application code.
 chown -R pythonapp:pythonapp /opt/app
 
 # Create the configuration file for this deployment.
@@ -76,6 +76,7 @@ if [ "$(get_instance_metadata self-destruct)" == "false" ]; then
 else
   SELF_DESTRUCT="True"
 fi
+WORKER_LOG_PATH=/opt/app/clovis/worker.log
 
 cat >$DEPLOYMENT_CONFIG_PATH << EOF
 {
@@ -85,6 +86,7 @@ cat >$DEPLOYMENT_CONFIG_PATH << EOF
   "chrome_path" : "/opt/app/clovis/binaries/chrome",
   "src_path" : "/opt/app/clovis/src",
   "taskqueue_tag" : "$TASKQUEUE_TAG",
+  "worker_log_path" : "$WORKER_LOG_PATH",
   "self_destruct" : "$SELF_DESTRUCT"
 }
 EOF
@@ -101,7 +103,7 @@ fi
 cat >/etc/supervisor/conf.d/python-app.conf << EOF
 [program:pythonapp]
 directory=/opt/app/clovis/src/tools/android/loading/cloud/backend
-command=python worker.py --config $DEPLOYMENT_CONFIG_PATH
+command=python -u worker.py --config $DEPLOYMENT_CONFIG_PATH
 autostart=true
 autorestart=unexpected
 user=pythonapp
@@ -111,8 +113,8 @@ environment=VIRTUAL_ENV="/opt/app/clovis/env", \
     PATH="/opt/app/clovis/env/bin:/usr/bin", \
     HOME="/home/pythonapp",USER="pythonapp", \
     CHROME_DEVEL_SANDBOX="/usr/local/sbin/chrome-devel-sandbox"
-stdout_logfile=syslog
-stderr_logfile=syslog
+stdout_logfile=$WORKER_LOG_PATH
+stderr_logfile=$WORKER_LOG_PATH
 EOF
 
 supervisorctl reread

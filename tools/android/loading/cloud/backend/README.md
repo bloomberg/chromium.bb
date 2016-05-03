@@ -101,6 +101,8 @@ dictionary with the keys:
     `clovis-queue`.
 -   `instance_name` (string, optional): Name of the Compute Engine instance this
     script is running on.
+-   `worker_log_file` (string, optional): Path to the log file capturing the
+    output of `worker.py`, to be uploaded to Cloud Storage.
 -   `self_destruct` (boolean, optional): Whether the worker will destroy the
     Compute Engine instance when there are no remaining tasks to process. This
     is only relevant when running in the cloud, and requires `instance_name` to

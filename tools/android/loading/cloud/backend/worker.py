@@ -35,6 +35,7 @@ class Worker(object):
     self._taskqueue_tag = config['taskqueue_tag']
     self._src_path = config['src_path']
     self._instance_name = config.get('instance_name')
+    self._worker_log_path = config.get('worker_log_path')
     self._credentials = GoogleCredentials.get_application_default()
     self._logger = logger
     self._self_destruct = config.get('self_destruct')
@@ -186,6 +187,14 @@ class Worker(object):
   def _Finalize(self):
     """Called before exiting."""
     self._logger.info('Done')
+    # Upload the worker log.
+    if self._worker_log_path:
+      self._logger.info('Uploading worker log.')
+      remote_log_path = os.path.join(self._base_path_in_bucket, 'worker_log')
+      if self._instance_name:
+        remote_log_path += '_' + self._instance_name
+      self._google_storage_accessor.UploadFile(self._worker_log_path,
+                                               remote_log_path)
     # Self destruct.
     if self._self_destruct:
       self._logger.info('Starting instance destruction: ' + self._instance_name)
