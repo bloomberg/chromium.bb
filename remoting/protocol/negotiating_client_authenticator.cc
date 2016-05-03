@@ -42,6 +42,8 @@ NegotiatingClientAuthenticator::NegotiatingClientAuthenticator(
 
   AddMethod(Method::SHARED_SECRET_SPAKE2_CURVE25519);
   AddMethod(Method::SHARED_SECRET_SPAKE2_P224);
+
+  AddMethod(Method::SHARED_SECRET_PLAIN_SPAKE2_P224);
 }
 
 NegotiatingClientAuthenticator::~NegotiatingClientAuthenticator() {}
@@ -164,6 +166,7 @@ void NegotiatingClientAuthenticator::CreateAuthenticatorForCurrentMethod(
       break;
     }
 
+    case Method::SHARED_SECRET_PLAIN_SPAKE2_P224:
     case Method::SHARED_SECRET_SPAKE2_P224:
     case Method::SHARED_SECRET_SPAKE2_CURVE25519:
       config_.fetch_secret_callback.Run(
@@ -194,7 +197,10 @@ void NegotiatingClientAuthenticator::CreateSharedSecretAuthenticator(
     const base::Closure& resume_callback,
     const std::string& shared_secret) {
   std::string shared_secret_hash =
-      GetSharedSecretHash(config_.host_id, shared_secret);
+      (current_method_ == Method::SHARED_SECRET_PLAIN_SPAKE2_P224)
+          ? shared_secret
+          : GetSharedSecretHash(config_.host_id, shared_secret);
+
   if (current_method_ == Method::SHARED_SECRET_SPAKE2_CURVE25519) {
     current_authenticator_ = Spake2Authenticator::CreateForClient(
         local_id_, remote_id_, shared_secret_hash, initial_state);

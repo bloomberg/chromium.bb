@@ -24,6 +24,9 @@ namespace {
 
 const NameMapElement<NegotiatingAuthenticatorBase::Method>
     kAuthenticationMethodStrings[] = {
+        {NegotiatingAuthenticatorBase::Method::SHARED_SECRET_PLAIN_SPAKE2_P224,
+         "spake2_plain"},
+
         {NegotiatingAuthenticatorBase::Method::SHARED_SECRET_SPAKE2_P224,
          "spake2_hmac"},
         {NegotiatingAuthenticatorBase::Method::SHARED_SECRET_SPAKE2_CURVE25519,

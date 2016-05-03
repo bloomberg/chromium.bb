@@ -231,6 +231,7 @@ void NegotiatingHostAuthenticator::CreateAuthenticator(
       resume_callback.Run();
       break;
 
+    case Method::SHARED_SECRET_PLAIN_SPAKE2_P224:
     case Method::SHARED_SECRET_SPAKE2_P224:
       current_authenticator_ = V2Authenticator::CreateForHost(
           local_cert_, local_key_pair_, shared_secret_hash_,
