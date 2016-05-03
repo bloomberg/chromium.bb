@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.os.Handler;
+import android.text.TextUtils.TruncateAt;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,8 +28,11 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.ExtraTextSection;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.LineItemBreakdownSection;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.OptionSection;
+import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.SectionSeparator;
 import org.chromium.chrome.browser.widget.AlwaysDismissedDialog;
+import org.chromium.chrome.browser.widget.DualControlLayout;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -108,7 +112,8 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     private final Dialog mDialog;
     private final ViewGroup mContainer;
     private final View mPaymentContainer;
-    private final View mButtonBar;
+    private final ViewGroup mPaymentContainerLayout;
+    private final DualControlLayout mButtonBar;
     private final View mWaitingOverlay;
     private final View mWaitingProgressBar;
     private final View mWaitingSuccess;
@@ -122,8 +127,10 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     private final OptionSection mShippingAddressSection;
     private final OptionSection mShippingOptionSection;
     private final OptionSection mPaymentMethodSection;
+    private final List<SectionSeparator> mSectionSeparators;
 
     private ViewGroup mSelectedSection;
+    private boolean mIsShowingEditDialog;
 
     private List<LineItem> mLineItems;
     private SectionInformation mPaymentMethodSectionInformation;
@@ -156,24 +163,29 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         ((TextView) mContainer.findViewById(R.id.hostname)).setText(origin);
 
         mPaymentContainer = mContainer.findViewById(R.id.paymentContainer);
-        mButtonBar = mContainer.findViewById(R.id.buttonBar);
         mWaitingOverlay = mContainer.findViewById(R.id.waitingOverlay);
         mWaitingProgressBar = mContainer.findViewById(R.id.waitingProgressBar);
         mWaitingSuccess = mContainer.findViewById(R.id.waitingSuccess);
         mWaitingMessage = (TextView) mContainer.findViewById(R.id.waitingMessage);
 
-        mEditButton = (Button) mContainer.findViewById(R.id.editButton);
-        mEditButton.setOnClickListener(this);
-
-        mPayButton = (Button) mContainer.findViewById(R.id.payButton);
-        mPayButton.setOnClickListener(this);
-
         mCloseButton = mContainer.findViewById(R.id.close_button);
         mCloseButton.setOnClickListener(this);
 
-        // Add all the possible sections.
-        LinearLayout paymentContainerLayout =
-                ((LinearLayout) mContainer.findViewById(R.id.paymentContainerLayout));
+        // Set up the buttons.
+        mPayButton = DualControlLayout.createButtonForLayout(
+                activity, true, activity.getString(R.string.payments_pay_button), this);
+        mEditButton = DualControlLayout.createButtonForLayout(
+                activity, false, activity.getString(R.string.payments_edit_button), this);
+        mButtonBar = (DualControlLayout) mContainer.findViewById(R.id.buttonBar);
+        mButtonBar.setAlignment(DualControlLayout.ALIGN_END);
+        mButtonBar.setStackedMargin(activity.getResources().getDimensionPixelSize(
+                R.dimen.infobar_margin_between_stacked_buttons));
+        mButtonBar.addView(mPayButton);
+        mButtonBar.addView(mEditButton);
+
+        // Create all the possible sections.
+        mSectionSeparators = new ArrayList<SectionSeparator>();
+        mPaymentContainerLayout = (ViewGroup) mContainer.findViewById(R.id.paymentContainerLayout);
         mOrderSummarySection = new LineItemBreakdownSection(activity,
                 activity.getString(R.string.payments_order_summary_label), this);
         mShippingSummarySection = new ExtraTextSection(activity,
@@ -187,20 +199,18 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         mPaymentMethodSection = new OptionSection(activity,
                 activity.getString(R.string.payments_method_of_payment_label), null, this);
 
-        paymentContainerLayout.addView(mOrderSummarySection, new LinearLayout.LayoutParams(
+        // Add the necessary sections to the layout.
+        mPaymentContainerLayout.addView(mOrderSummarySection, new LinearLayout.LayoutParams(
                 LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
-        paymentContainerLayout.addView(mShippingSummarySection, new LinearLayout.LayoutParams(
+        mSectionSeparators.add(new SectionSeparator(mPaymentContainerLayout));
+        if (mRequestShipping) {
+            // The shipping breakout sections are only added if they are needed.
+            mPaymentContainerLayout.addView(mShippingSummarySection, new LinearLayout.LayoutParams(
+                    LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+            mSectionSeparators.add(new SectionSeparator(mPaymentContainerLayout));
+        }
+        mPaymentContainerLayout.addView(mPaymentMethodSection, new LinearLayout.LayoutParams(
                 LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
-        paymentContainerLayout.addView(mShippingAddressSection, new LinearLayout.LayoutParams(
-                LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
-        paymentContainerLayout.addView(mShippingOptionSection, new LinearLayout.LayoutParams(
-                LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
-        paymentContainerLayout.addView(mPaymentMethodSection, new LinearLayout.LayoutParams(
-                LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
-
-        mShippingSummarySection.setVisibility(mRequestShipping ? View.VISIBLE : View.GONE);
-        mShippingAddressSection.setVisibility(View.GONE);
-        mShippingOptionSection.setVisibility(View.GONE);
 
         // Set up the dialog.
         mDialog = new AlwaysDismissedDialog(activity, R.style.DialogWhenLarge);
@@ -225,17 +235,23 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                     updateShippingAddressSection(result.getShippingAddresses());
                     updateShippingOptionsSection(result.getShippingOptions());
 
-                    String selectedAddressLabel = result.getSelectedShippingAddressLabel();
+                    String selectedShippingAddress = result.getSelectedShippingAddressLabel();
+                    String selectedShippingName = result.getSelectedShippingAddressSublabel();
                     String selectedShippingOptionLabel = result.getSelectedShippingOptionLabel();
-                    if (selectedAddressLabel == null && selectedShippingOptionLabel == null) {
+                    if (selectedShippingAddress == null && selectedShippingOptionLabel == null) {
                         mShippingSummarySection.setSummaryText(mContext.getString(
                                 R.string.payments_select_shipping_prompt), null);
+                        mShippingSummarySection.setSummaryProperties(null, false, null, false);
                     } else {
-                        // TODO(dfalcantara): Figure out how to break apart the address.
-                        mShippingSummarySection.setSummaryText(selectedAddressLabel == null
+                        // Show the shipping address and the name in the summary section.
+                        mShippingSummarySection.setSummaryText(selectedShippingAddress == null
                                 ? mContext.getString(
                                         R.string.payments_select_shipping_address_prompt)
-                                : selectedAddressLabel, null);
+                                : selectedShippingAddress, selectedShippingName);
+                        mShippingSummarySection.setSummaryProperties(
+                                TruncateAt.MIDDLE, true, null, true);
+
+                        // Indicate the shipping option below the address.
                         mShippingSummarySection.setExtraText(selectedShippingOptionLabel == null
                                 ? mContext.getString(
                                         R.string.payments_select_shipping_option_prompt)
@@ -412,15 +428,33 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     }
 
     private void expand(ViewGroup section) {
-        mEditButton.setText(mContext.getString(R.string.payments_cancel_button));
-        mDialog.getWindow().setLayout(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        if (!mIsShowingEditDialog) {
+            // Swap out Views that combine multiple fields with individual fields.
+            if (mRequestShipping && mShippingSummarySection.getParent() != null) {
+                int summaryIndex = mPaymentContainerLayout.indexOfChild(mShippingSummarySection);
+                mPaymentContainerLayout.removeView(mShippingSummarySection);
 
-        // The edit dialog has been requested.  Get rid of the combined views & show the full ones.
-        if (mRequestShipping && mShippingSummarySection.getVisibility() != View.GONE) {
-            mShippingSummarySection.setVisibility(View.GONE);
-            mShippingAddressSection.setVisibility(View.VISIBLE);
-            mShippingOptionSection.setVisibility(View.VISIBLE);
+                mPaymentContainerLayout.addView(mShippingAddressSection, summaryIndex,
+                        new LinearLayout.LayoutParams(
+                                LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+                mSectionSeparators.add(
+                        new SectionSeparator(mPaymentContainerLayout, summaryIndex + 1));
+                mPaymentContainerLayout.addView(mShippingOptionSection, summaryIndex + 2,
+                        new LinearLayout.LayoutParams(
+                                LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+            }
+
+            // Expand all the dividers.
+            for (int i = 0; i < mSectionSeparators.size(); i++) mSectionSeparators.get(i).expand();
+            mPaymentContainerLayout.requestLayout();
+
+            // Switch the 'edit' button to a 'cancel' button.
+            mEditButton.setText(mContext.getString(R.string.payments_cancel_button));
+
+            // Make the dialog take the whole screen.
+            mDialog.getWindow().setLayout(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+            mIsShowingEditDialog = true;
         }
 
         // Update the display status of each expandable section.

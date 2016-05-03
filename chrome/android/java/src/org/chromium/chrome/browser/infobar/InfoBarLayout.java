@@ -8,7 +8,6 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.text.SpannableStringBuilder;
@@ -25,6 +24,7 @@ import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.widget.DualControlLayout;
 import org.chromium.ui.widget.ButtonCompat;
 
 import java.util.ArrayList;
@@ -86,7 +86,7 @@ public final class InfoBarLayout extends ViewGroup implements View.OnClickListen
 
     private TextView mMessageTextView;
     private ImageView mIconView;
-    private InfoBarDualControlLayout mButtonRowLayout;
+    private DualControlLayout mButtonRowLayout;
 
     private CharSequence mMessageMainText;
     private String mMessageLinkText;
@@ -216,14 +216,11 @@ public final class InfoBarLayout extends ViewGroup implements View.OnClickListen
 
         Button secondaryButton = null;
         if (!TextUtils.isEmpty(secondaryText)) {
-            secondaryButton = ButtonCompat.createBorderlessButton(getContext());
-            secondaryButton.setId(R.id.button_secondary);
-            secondaryButton.setOnClickListener(this);
-            secondaryButton.setText(secondaryText);
-            secondaryButton.setTextColor(mAccentColor);
+            secondaryButton = DualControlLayout.createButtonForLayout(
+                    getContext(), false, secondaryText, this);
         }
 
-        setBottomViews(primaryText, secondaryButton, InfoBarDualControlLayout.ALIGN_END);
+        setBottomViews(primaryText, secondaryButton, DualControlLayout.ALIGN_END);
     }
 
     /**
@@ -235,19 +232,15 @@ public final class InfoBarLayout extends ViewGroup implements View.OnClickListen
      *                    created.
      * @param secondaryView View that is aligned with the primary button.  May be null.
      * @param alignment One of ALIGN_START, ALIGN_APART, or ALIGN_END from
-     *                  {@link InfoBarDualControlLayout}.
+     *                  {@link DualControlLayout}.
      */
     public void setBottomViews(String primaryText, View secondaryView, int alignment) {
         assert !TextUtils.isEmpty(primaryText);
-        ButtonCompat primaryButton = new ButtonCompat(getContext(), mAccentColor);
-        primaryButton.setId(R.id.button_primary);
-        primaryButton.setOnClickListener(this);
-        primaryButton.setText(primaryText);
-        primaryButton.setTextColor(Color.WHITE);
-        primaryButton.setRaised(false);
+        Button primaryButton = DualControlLayout.createButtonForLayout(
+                getContext(), true, primaryText, this);
 
         assert mButtonRowLayout == null;
-        mButtonRowLayout = new InfoBarDualControlLayout(getContext(), null);
+        mButtonRowLayout = new DualControlLayout(getContext(), null);
         mButtonRowLayout.setAlignment(alignment);
         mButtonRowLayout.setStackedMargin(getResources().getDimensionPixelSize(
                 R.dimen.infobar_margin_between_stacked_buttons));

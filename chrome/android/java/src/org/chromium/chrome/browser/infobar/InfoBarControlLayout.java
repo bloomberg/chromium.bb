@@ -23,6 +23,7 @@ import android.widget.TextView;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.widget.DualControlLayout;
 
 /**
  * Lays out a group of controls (e.g. switches, spinners, or additional text) for InfoBars that need
@@ -70,12 +71,12 @@ public final class InfoBarControlLayout extends ViewGroup {
         }
 
         @Override
-        public InfoBarDualControlLayout getView(int position, View convertView, ViewGroup parent) {
-            InfoBarDualControlLayout view;
-            if (convertView instanceof InfoBarDualControlLayout) {
-                view = (InfoBarDualControlLayout) convertView;
+        public DualControlLayout getView(int position, View convertView, ViewGroup parent) {
+            DualControlLayout view;
+            if (convertView instanceof DualControlLayout) {
+                view = (DualControlLayout) convertView;
             } else {
-                view = (InfoBarDualControlLayout) LayoutInflater.from(getContext())
+                view = (DualControlLayout) LayoutInflater.from(getContext())
                         .inflate(R.layout.infobar_control_spinner_view, parent, false);
             }
 
@@ -98,7 +99,7 @@ public final class InfoBarControlLayout extends ViewGroup {
          * causing another layout pass when switching values.
          */
         int computeMinWidthRequiredForValues() {
-            InfoBarDualControlLayout layout = getView(0, null, null);
+            DualControlLayout layout = getView(0, null, null);
             TextView container = (TextView) layout.getChildAt(1);
 
             Paint textPaint = container.getPaint();

@@ -61,6 +61,16 @@ public class PaymentInformation {
     }
 
     /**
+     * Returns the sublabel for the selected shipping address.
+     *
+     * @return The sublabel for the selected shipping address or null.
+     */
+    public String getSelectedShippingAddressSublabel() {
+        PaymentOption address = mShippingAddresses.getSelectedItem();
+        return address != null ? address.getSublabel() : null;
+    }
+
+    /**
      * Returns the shipping options.
      *
      * @return The shipping options.

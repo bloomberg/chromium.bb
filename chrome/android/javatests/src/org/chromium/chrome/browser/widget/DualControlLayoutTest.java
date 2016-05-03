@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.infobar;
+package org.chromium.chrome.browser.widget;
 
-import static org.chromium.chrome.browser.infobar.InfoBarDualControlLayout.ALIGN_APART;
-import static org.chromium.chrome.browser.infobar.InfoBarDualControlLayout.ALIGN_END;
-import static org.chromium.chrome.browser.infobar.InfoBarDualControlLayout.ALIGN_START;
+import static org.chromium.chrome.browser.widget.DualControlLayout.ALIGN_APART;
+import static org.chromium.chrome.browser.widget.DualControlLayout.ALIGN_END;
+import static org.chromium.chrome.browser.widget.DualControlLayout.ALIGN_START;
 
 import android.content.Context;
 import android.test.InstrumentationTestCase;
@@ -21,9 +21,9 @@ import android.widget.Space;
 import org.chromium.chrome.R;
 
 /**
- * Tests for InfoBarDualControlLayout.
+ * Tests for DualControlLayout.
  */
-public class InfoBarDualControlLayoutTest extends InstrumentationTestCase {
+public class DualControlLayoutTest extends InstrumentationTestCase {
     private static final int PRIMARY_HEIGHT = 16;
     private static final int SECONDARY_HEIGHT = 8;
     private static final int STACKED_MARGIN = 4;
@@ -61,7 +61,7 @@ public class InfoBarDualControlLayoutTest extends InstrumentationTestCase {
 
     /** Lays out two controls that fit on the same line. */
     private void runLayoutTest(int alignment, boolean isRtl, boolean addSecondView) {
-        InfoBarDualControlLayout layout = new InfoBarDualControlLayout(mContext, null);
+        DualControlLayout layout = new DualControlLayout(mContext, null);
         layout.setAlignment(alignment);
         layout.setLayoutDirection(isRtl ? View.LAYOUT_DIRECTION_RTL : View.LAYOUT_DIRECTION_LTR);
         layout.setLayoutParams(
@@ -157,7 +157,7 @@ public class InfoBarDualControlLayoutTest extends InstrumentationTestCase {
 
     /** Runs a test where the controls don't fit on the same line. */
     private void runStackedLayoutTest(int alignment, boolean isRtl) {
-        InfoBarDualControlLayout layout = new InfoBarDualControlLayout(mContext, null);
+        DualControlLayout layout = new DualControlLayout(mContext, null);
         layout.setAlignment(alignment);
         layout.setStackedMargin(STACKED_MARGIN);
         layout.setLayoutDirection(isRtl ? View.LAYOUT_DIRECTION_RTL : View.LAYOUT_DIRECTION_LTR);

@@ -2,16 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.infobar;
+package org.chromium.chrome.browser.widget;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.Color;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.ui.widget.ButtonCompat;
 
 /**
  * Automatically lays out one or two Views for an infobar, placing them on the same row if possible
@@ -35,10 +38,40 @@ import org.chromium.chrome.R;
  * | SECONDARY---------------- |
  * -----------------------------
  */
-public final class InfoBarDualControlLayout extends ViewGroup {
+public final class DualControlLayout extends ViewGroup {
     public static final int ALIGN_START = 0;
     public static final int ALIGN_END = 1;
     public static final int ALIGN_APART = 2;
+
+    /**
+     * Creates a standardized Button that can be used for DualControlLayouts showing buttons.
+     *
+     * @param isPrimary Whether or not the button is meant to act as a "Confirm" button.
+     * @param text      Text to display on the button.
+     * @param listener  Listener to alert when the button has been clicked.
+     * @return Button that can be used in the view.
+     */
+    public static Button createButtonForLayout(
+            Context context, boolean isPrimary, String text, OnClickListener listener) {
+        int lightActiveColor = context.getResources().getColor(R.color.light_active_color);
+
+        if (isPrimary) {
+            ButtonCompat primaryButton = new ButtonCompat(context, lightActiveColor);
+            primaryButton.setId(R.id.button_primary);
+            primaryButton.setOnClickListener(listener);
+            primaryButton.setText(text);
+            primaryButton.setTextColor(Color.WHITE);
+            primaryButton.setRaised(false);
+            return primaryButton;
+        } else {
+            Button secondaryButton = ButtonCompat.createBorderlessButton(context);
+            secondaryButton.setId(R.id.button_secondary);
+            secondaryButton.setOnClickListener(listener);
+            secondaryButton.setText(text);
+            secondaryButton.setTextColor(lightActiveColor);
+            return secondaryButton;
+        }
+    }
 
     private final int mHorizontalMarginBetweenViews;
 
@@ -50,11 +83,11 @@ public final class InfoBarDualControlLayout extends ViewGroup {
     private View mSecondaryView;
 
     /**
-     * Construct a new InfoBarDualControlLayout.
+     * Construct a new DualControlLayout.
      *
      * See {@link ViewGroup} for parameter details.  attrs may be null if constructed dynamically.
      */
-    public InfoBarDualControlLayout(Context context, AttributeSet attrs) {
+    public DualControlLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
 
         // Cache dimensions.
@@ -68,14 +101,14 @@ public final class InfoBarDualControlLayout extends ViewGroup {
      *
      * @param alignment One of ALIGN_START, ALIGN_APART, ALIGN_END.
      */
-    void setAlignment(int alignment) {
+    public void setAlignment(int alignment) {
         mAlignment = alignment;
     }
 
     /**
      * Sets the margin between the controls when they're stacked.  By default, there is no margin.
      */
-    void setStackedMargin(int stackedMargin) {
+    public void setStackedMargin(int stackedMargin) {
         mStackedMargin = stackedMargin;
     }
 
@@ -88,7 +121,7 @@ public final class InfoBarDualControlLayout extends ViewGroup {
         } else if (mSecondaryView == null) {
             mSecondaryView = child;
         } else {
-            throw new IllegalStateException("Too many children added to InfoBarDualControlLayout");
+            throw new IllegalStateException("Too many children added to DualControlLayout");
         }
     }
 

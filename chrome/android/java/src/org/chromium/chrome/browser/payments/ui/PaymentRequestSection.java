@@ -5,10 +5,12 @@
 package org.chromium.chrome.browser.payments.ui;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
+import android.text.TextUtils.TruncateAt;
 import android.text.style.StyleSpan;
 import android.view.Gravity;
 import android.view.View;
@@ -82,7 +84,7 @@ public abstract class PaymentRequestSection extends LinearLayout {
     static final int DISPLAY_MODE_FOCUSED = 2;
 
     protected final PaymentsSectionListener mListener;
-    protected final int mSideSpacing;
+    protected final int mLargeSpacing;
 
     private final int mVerticalSpacing;
     private final int mFocusedBackgroundColor;
@@ -117,7 +119,8 @@ public abstract class PaymentRequestSection extends LinearLayout {
         // Set the styling of the view.
         mFocusedBackgroundColor = ApiCompatibilityUtils.getColor(
                 getResources(), R.color.payments_section_edit_background);
-        mSideSpacing = getResources().getDimensionPixelSize(R.dimen.payments_section_side_spacing);
+        mLargeSpacing =
+                getResources().getDimensionPixelSize(R.dimen.payments_section_large_spacing);
         mVerticalSpacing =
                 getResources().getDimensionPixelSize(R.dimen.payments_section_vertical_spacing);
         setPadding(0, mVerticalSpacing, 0, mVerticalSpacing);
@@ -184,6 +187,21 @@ public abstract class PaymentRequestSection extends LinearLayout {
     }
 
     /**
+     * Sets how the summary text should be displayed.
+     *
+     * @param leftTruncate How to truncate the left summary text.  Set to null to clear.
+     * @param rightTruncate How to truncate the right summary text.  Set to null to clear.
+     */
+    public void setSummaryProperties(@Nullable TruncateAt leftTruncate, boolean leftIsSingleLine,
+            @Nullable TruncateAt rightTruncate, boolean rightIsSingleLine) {
+        mSummaryLeftTextView.setEllipsize(leftTruncate);
+        mSummaryLeftTextView.setSingleLine(leftIsSingleLine);
+
+        mSummaryRightTextView.setEllipsize(rightTruncate);
+        mSummaryRightTextView.setSingleLine(rightIsSingleLine);
+    }
+
+    /**
      * Subclasses may override this method to add additional controls to the layout.
      *
      * @param mainSectionLayout Layout containing all of the main content of the section.
@@ -217,8 +235,8 @@ public abstract class PaymentRequestSection extends LinearLayout {
         mainSectionLayout.setOrientation(VERTICAL);
         LinearLayout.LayoutParams mainParams = new LayoutParams(0, LayoutParams.WRAP_CONTENT);
         mainParams.weight = 1;
-        ApiCompatibilityUtils.setMarginStart(mainParams, mSideSpacing);
-        ApiCompatibilityUtils.setMarginEnd(mainParams, mSideSpacing);
+        ApiCompatibilityUtils.setMarginStart(mainParams, mLargeSpacing);
+        ApiCompatibilityUtils.setMarginEnd(mainParams, mLargeSpacing);
         addView(mainSectionLayout, mainParams);
 
         // The title is always displayed for the row at the top of the main section.
@@ -268,7 +286,7 @@ public abstract class PaymentRequestSection extends LinearLayout {
         view.setImageDrawable(drawable);
         LayoutParams params =
                 new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-        ApiCompatibilityUtils.setMarginEnd(params, mSideSpacing);
+        ApiCompatibilityUtils.setMarginEnd(params, mLargeSpacing);
         addView(view, params);
         return view;
     }
@@ -486,7 +504,7 @@ public abstract class PaymentRequestSection extends LinearLayout {
                 mRadioButton.setChecked(isSelected);
                 LinearLayout.LayoutParams radioParams = new LinearLayout.LayoutParams(
                         LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-                ApiCompatibilityUtils.setMarginEnd(radioParams, mSideSpacing);
+                ApiCompatibilityUtils.setMarginEnd(radioParams, mLargeSpacing);
                 addView(mRadioButton, radioParams);
 
                 // The description takes up all leftover space.
@@ -506,7 +524,7 @@ public abstract class PaymentRequestSection extends LinearLayout {
                     iconView.setImageResource(resourceId);
                     LinearLayout.LayoutParams logoParams = new LinearLayout.LayoutParams(
                             LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-                    ApiCompatibilityUtils.setMarginStart(logoParams, mSideSpacing);
+                    ApiCompatibilityUtils.setMarginStart(logoParams, mLargeSpacing);
                     addView(iconView, logoParams);
                 }
 
@@ -625,6 +643,40 @@ public abstract class PaymentRequestSection extends LinearLayout {
 
         private CharSequence convertOptionToString(PaymentOption item) {
             return new StringBuilder(item.getLabel()).append("\n").append(item.getSublabel());
+        }
+    }
+
+    /**
+     * Drawn as a 1dp separator.  Initially drawn without being expanded to the full width of the
+     * UI, but can be expanded to separate sections fully.
+     */
+    public static class SectionSeparator extends View {
+        /** Creates the View and adds it to the parent. */
+        public SectionSeparator(ViewGroup parent) {
+            this(parent, -1);
+        }
+
+        /** Creates the View and adds it to the parent at the given index. */
+        public SectionSeparator(ViewGroup parent, int index) {
+            super(parent.getContext());
+            Resources resources = parent.getContext().getResources();
+            setBackgroundColor(ApiCompatibilityUtils.getColor(
+                    resources, R.color.payments_section_separator));
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                    LayoutParams.MATCH_PARENT,
+                    resources.getDimensionPixelSize(R.dimen.payments_section_separator_height));
+
+            int margin = resources.getDimensionPixelSize(R.dimen.payments_section_large_spacing);
+            ApiCompatibilityUtils.setMarginStart(params, margin);
+            ApiCompatibilityUtils.setMarginEnd(params, margin);
+            parent.addView(this, index, params);
+        }
+
+        /** Expand the separator to be the full width of the dialog. */
+        public void expand() {
+            LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) getLayoutParams();
+            ApiCompatibilityUtils.setMarginStart(params, 0);
+            ApiCompatibilityUtils.setMarginEnd(params, 0);
         }
     }
 }

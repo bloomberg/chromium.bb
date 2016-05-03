@@ -81,39 +81,15 @@
         </LinearLayout>
     </org.chromium.chrome.browser.payments.ui.FadingEdgeScrollView>
 
-    <LinearLayout
-        style="?android:attr/buttonBarStyle"
+    <org.chromium.chrome.browser.widget.DualControlLayout
         android:id="@+id/buttonBar"
-        android:layout_gravity="end"
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
-        android:orientation="horizontal"
-        android:padding="16dp">
-
-        <Button
-            android:id="@+id/editButton"
-            android:layout_gravity="bottom"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_width="0dp"
-            android:text="@string/payments_edit_button"
-            android:layout_marginEnd="8dp"
-            android:textColor="#0000ff"
-            android:background="#ffffff"
-            style="?android:attr/buttonBarButtonStyle" />
-
-        <Button
-            android:id="@+id/payButton"
-            android:layout_gravity="bottom"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_width="0dp"
-            android:enabled="false"
-            android:text="@string/payments_pay_button"
-            android:textColor="#ffffff"
-            android:background="#0000ff"
-            style="?android:attr/buttonBarButtonStyle" />
-    </LinearLayout>
+        android:layout_marginStart="@dimen/payments_section_large_spacing"
+        android:layout_marginEnd="@dimen/payments_section_large_spacing"
+        android:layout_marginTop="@dimen/payments_section_large_spacing"
+        android:layout_marginBottom="@dimen/payments_section_large_spacing" >
+    </org.chromium.chrome.browser.widget.DualControlLayout>
 
     <LinearLayout
         android:id="@+id/waitingOverlay"

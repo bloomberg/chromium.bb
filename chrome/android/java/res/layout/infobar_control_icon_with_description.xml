@@ -18,8 +18,7 @@
         android:scaleType="centerInside"
         android:contentDescription="@null" />
 
-    <org.chromium.chrome.browser.infobar.InfoBarDualControlLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
+    <org.chromium.chrome.browser.widget.DualControlLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1" >
@@ -38,6 +37,6 @@
             android:textSize="@dimen/infobar_text_size"
             android:textColor="@color/infobar_descriptive_text_color" />
 
-    </org.chromium.chrome.browser.infobar.InfoBarDualControlLayout>
+    </org.chromium.chrome.browser.widget.DualControlLayout>
 
 </LinearLayout>
