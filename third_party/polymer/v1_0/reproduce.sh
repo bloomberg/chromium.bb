@@ -21,12 +21,13 @@ check_dep() {
 check_dep "which npm" "npm" "visiting https://nodejs.org/en/"
 check_dep "which bower" "bower" "npm install -g bower"
 check_dep "which crisper" "crisper" "npm install -g crisper"
+check_dep "which uglifyjs" "uglifyjs" "npm install -g uglifyjs"
 check_dep "which rsync" "rsync" "apt-get install rsync"
 check_dep "python -c 'import bs4'" "bs4" "apt-get install python-bs4"
 
 set -e
 
-cd "$(dirname "$0")"
+pushd "$(dirname "$0")" > /dev/null
 
 rm -rf components
 rm -rf ../../web-animations-js/sources
@@ -105,3 +106,8 @@ echo 'Creating GYP files for interfaces and externs...'
 
 echo 'Vulcanizing dependent UIs (i.e. downloads)...'
 python ../../../chrome/browser/resources/md_downloads/vulcanize.py
+
+popd > /dev/null
+
+echo 'Searching for unused elements...'
+"$(dirname "$0")"/find_unused_elements.py
