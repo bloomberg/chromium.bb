@@ -27,11 +27,10 @@ body {
     backface-visibility: hidden;
 }
 </style>
-<div id="indicator"></div>
+<div id="indicator">The test fails if you see this.</div>
 <div id="composited-non-stacking-context">
-    <div id="block"></div>
+    <div id="block">The test passes if there is no red.</div>
 </div>
-This test passes if there is a green square without red.
 <script src="../../resources/run-after-layout-and-paint.js"></script>
 <script>
 runAfterLayoutAndPaint(function() {

@@ -920,12 +920,6 @@ crbug.com/552556 [ Win Linux ] virtual/threaded/fast/scroll-behavior/overflow-sc
 crbug.com/552556 [ Win Linux ] virtual/threaded/fast/scroll-behavior/overflow-scroll-animates.html [ Pass Timeout ]
 crbug.com/552556 virtual/threaded/fast/scroll-behavior/smooth-scroll/mousewheel-scroll.html [ Pass Failure ]
 
-crbug.com/524596 paint/invalidation/composited-non-stacking-context-descendant-change-color.html [ Failure ]
-crbug.com/524596 paint/invalidation/composited-non-stacking-context-descendant-move.html [ Failure ]
-crbug.com/524596 paint/invalidation/fixed-position-descendant-paint-offset-indirect.html [ Failure ]
-crbug.com/524596 virtual/spv2/paint/invalidation/composited-non-stacking-context-descendant-move.html [ Skip ]
-crbug.com/524596 virtual/spv2/paint/invalidation/fixed-position-descendant-paint-offset-indirect.html [ Skip ]
-
 crbug.com/425113 svg/clip-path/clip-path-multiple-children.svg [ Failure ]
 
 crbug.com/480769 http/tests/inspector/service-workers/service-workers-redundant.html [ Crash Pass Failure ]
