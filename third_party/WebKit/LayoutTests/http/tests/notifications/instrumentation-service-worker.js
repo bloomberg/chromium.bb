@@ -1,25 +1,21 @@
-importScripts('/resources/testharness-helpers.js');
-
-// For copying Notification.data. Currently a deep copy algorithm is used. Note
-// that the robustness of this function (and also |assert_object_equals| in
+// Deep-copies the attributes of |notification|. Note that the
+// robustness of this function (and also |assert_object_equals| in
 // testharness.js) affects the types of possible testing can be done.
 // TODO(peter): change this to a structured clone algorithm.
-function cloneObject(src) {
-    if (typeof src != 'object' || src === null)
-        return src;
-    var dst = Array.isArray(src) ? [] : {};
-    for (var property in src) {
-        if (src.hasOwnProperty(property))
-            dst[property] = cloneObject(src[property]);
-    }
-    return dst;
-}
-
-// Copies the serializable attributes of |notification|.
 function cloneNotification(notification) {
-    var copiedNotification = JSON.parse(stringifyDOMObject(notification));
-    copiedNotification.data = cloneObject(notification.data);
-    return copiedNotification;
+    function deepCopy(src) {
+        if (typeof src !== 'object' || src === null)
+            return src;
+        var dst = Array.isArray(src) ? [] : {};
+        for (var property in src) {
+            if (typeof src[property] === 'function')
+                continue;
+            dst[property] = deepCopy(src[property]);
+        }
+        return dst;
+    }
+
+    return deepCopy(notification);
 }
 
 // Allows a document to exercise the Notifications API within a service worker by sending commands.
