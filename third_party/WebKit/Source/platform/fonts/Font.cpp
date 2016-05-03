@@ -409,14 +409,10 @@ int Font::offsetForPosition(const TextRun& run, float x, bool includePartialGlyp
 
 CodePath Font::codePath(const TextRunPaintInfo& runInfo) const
 {
-// TODO(eae): Disable the always use complex text feature on Android for now as
-// it caused a memory regression for webview. crbug.com/577306
-#if !OS(ANDROID)
     if (RuntimeEnabledFeatures::alwaysUseComplexTextEnabled()
         || LayoutTestSupport::alwaysUseComplexTextForTest()) {
         return ComplexPath;
     }
-#endif
 
     const TextRun& run = runInfo.run;
 
