@@ -16,13 +16,36 @@
 #include "base/strings/stringprintf.h"
 #include "cc/output/managed_memory_policy.h"
 #include "content/common/gpu/client/command_buffer_metrics.h"
-#include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
+#include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/gles2_trace_implementation.h"
 #include "gpu/command_buffer/client/gpu_switches.h"
+#include "gpu/command_buffer/client/transfer_buffer.h"
+#include "gpu/command_buffer/common/constants.h"
+#include "gpu/ipc/client/command_buffer_proxy_impl.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "gpu/skia_bindings/grcontext_for_gles2_interface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
+
+namespace {
+
+// Similar to base::AutoReset but it sets the variable to the new value
+// when it is destroyed. Use reset() to cancel setting the variable.
+class AutoSet {
+ public:
+  AutoSet(bool* b, bool set) : b_(b), set_(set) {}
+  ~AutoSet() {
+    if (b_)
+      *b_ = set_;
+  }
+  // Stops us from setting _b on destruction.
+  void Reset() { b_ = nullptr; }
+
+ private:
+  bool* b_;
+  const bool set_;
+};
+}
 
 namespace content {
 
@@ -49,8 +72,7 @@ ContextProviderCommandBuffer::ContextProviderCommandBuffer(
       shared_providers_(shared_context_provider
                             ? shared_context_provider->shared_providers_
                             : new SharedProviders),
-      channel_(std::move(channel)),
-      context3d_(new WebGraphicsContext3DCommandBufferImpl) {
+      channel_(std::move(channel)) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   DCHECK(channel_);
   context_thread_checker_.DetachFromThread();
@@ -71,25 +93,28 @@ ContextProviderCommandBuffer::~ContextProviderCommandBuffer() {
   if (bind_succeeded_) {
     // Clear the lock to avoid DCHECKs that the lock is being held during
     // shutdown.
-    context3d_->GetCommandBufferProxy()->SetLock(nullptr);
+    command_buffer_->SetLock(nullptr);
     // Disconnect lost callbacks during destruction.
-    context3d_->GetImplementation()->SetLostContextCallback(base::Closure());
+    gles2_impl_->SetLostContextCallback(base::Closure());
   }
 }
 
 gpu::CommandBufferProxyImpl*
 ContextProviderCommandBuffer::GetCommandBufferProxy() {
-  return context3d_->GetCommandBufferProxy();
+  return command_buffer_.get();
 }
 
 bool ContextProviderCommandBuffer::BindToCurrentThread() {
   // This is called on the thread the context will be used.
   DCHECK(context_thread_checker_.CalledOnValidThread());
 
-  if (!context3d_)
-    return false;  // Already failed.
+  if (bind_failed_)
+    return false;
   if (bind_succeeded_)
-    return true;  // Already succeeded.
+    return true;
+
+  // Early outs should report failure.
+  AutoSet set_bind_failed(&bind_failed_, true);
 
   // It's possible to be running BindToCurrentThread on two contexts
   // on different threads at the same time, but which will be in the same share
@@ -105,17 +130,62 @@ bool ContextProviderCommandBuffer::BindToCurrentThread() {
 
     if (!shared_providers_->list.empty()) {
       shared_context_provider = shared_providers_->list.front();
-      shared_command_buffer =
-          shared_context_provider->context3d_->GetCommandBufferProxy();
-      share_group = shared_context_provider->context3d_->GetImplementation()
-                        ->share_group();
+      shared_command_buffer = shared_context_provider->command_buffer_.get();
+      share_group = shared_context_provider->gles2_impl_->share_group();
+      DCHECK_EQ(!!shared_command_buffer, !!share_group);
     }
 
-    if (!context3d_->InitializeOnCurrentThread(
-            surface_handle_, active_url_, channel_.get(), gpu_preference_,
-            automatic_flushes_, memory_limits_, shared_command_buffer,
-            share_group, attributes_, context_type_)) {
-      context3d_ = nullptr;
+    DCHECK(attributes_.buffer_preserved);
+    std::vector<int32_t> serialized_attributes;
+    attributes_.Serialize(&serialized_attributes);
+
+    // This command buffer is a client-side proxy to the command buffer in the
+    // GPU process.
+    command_buffer_ = channel_->CreateCommandBuffer(
+        surface_handle_, gfx::Size(), shared_command_buffer,
+        gpu::GpuChannelHost::kDefaultStreamId,
+        gpu::GpuChannelHost::kDefaultStreamPriority, serialized_attributes,
+        active_url_, gpu_preference_);
+    // The command buffer takes ownership of the |channel_|, so no need to keep
+    // a reference around here.
+    channel_ = nullptr;
+    if (!command_buffer_) {
+      DLOG(ERROR) << "GpuChannelHost failed to create command buffer.";
+      command_buffer_metrics::UmaRecordContextInitFailed(context_type_);
+      return false;
+    }
+
+    // The GLES2 helper writes the command buffer protocol.
+    gles2_helper_.reset(new gpu::gles2::GLES2CmdHelper(command_buffer_.get()));
+    gles2_helper_->SetAutomaticFlushes(automatic_flushes_);
+    if (!gles2_helper_->Initialize(memory_limits_.command_buffer_size)) {
+      DLOG(ERROR) << "Failed to initialize GLES2CmdHelper.";
+      return false;
+    }
+
+    // The transfer buffer is used to copy resources between the client
+    // process and the GPU process.
+    transfer_buffer_.reset(new gpu::TransferBuffer(gles2_helper_.get()));
+
+    // The GLES2Implementation exposes the OpenGLES2 API, as well as the
+    // gpu::ContextSupport interface.
+    constexpr bool support_client_side_arrays = false;
+    gles2_impl_.reset(new gpu::gles2::GLES2Implementation(
+        gles2_helper_.get(), share_group, transfer_buffer_.get(),
+        attributes_.bind_generates_resource,
+        attributes_.lose_context_when_out_of_memory, support_client_side_arrays,
+        command_buffer_.get()));
+    if (!gles2_impl_->Initialize(memory_limits_.start_transfer_buffer_size,
+                                 memory_limits_.min_transfer_buffer_size,
+                                 memory_limits_.max_transfer_buffer_size,
+                                 memory_limits_.mapped_memory_reclaim_limit)) {
+      DLOG(ERROR) << "Failed to initialize GLES2Implementation.";
+      return false;
+    }
+
+    if (command_buffer_->GetLastError() != gpu::error::kNoError) {
+      DLOG(ERROR) << "Context dead on arrival. Last error: "
+                  << command_buffer_->GetLastError();
       return false;
     }
 
@@ -132,15 +202,15 @@ bool ContextProviderCommandBuffer::BindToCurrentThread() {
     // context provider. If we check sooner, the shared context may be lost in
     // between these two states and our context here would be left in an orphan
     // share group.
-    if (share_group && share_group->IsLost()) {
-      context3d_ = nullptr;
+    if (share_group && share_group->IsLost())
       return false;
-    }
 
     shared_providers_->list.push_back(this);
   }
+  set_bind_failed.Reset();
+  bind_succeeded_ = true;
 
-  context3d_->GetImplementation()->SetLostContextCallback(
+  gles2_impl_->SetLostContextCallback(
       base::Bind(&ContextProviderCommandBuffer::OnLostContext,
                  // |this| owns the GLES2Implementation which holds the
                  // callback.
@@ -150,17 +220,15 @@ bool ContextProviderCommandBuffer::BindToCurrentThread() {
           switches::kEnableGpuClientTracing)) {
     // This wraps the real GLES2Implementation and we should always use this
     // instead when it's present.
-    trace_impl_.reset(new gpu::gles2::GLES2TraceImplementation(
-        context3d_->GetImplementation()));
+    trace_impl_.reset(
+        new gpu::gles2::GLES2TraceImplementation(gles2_impl_.get()));
   }
-
-  bind_succeeded_ = true;
 
   // Do this last once the context is set up.
   std::string type_name =
       command_buffer_metrics::ContextTypeToString(context_type_);
   std::string unique_context_name =
-      base::StringPrintf("%s-%p", type_name.c_str(), context3d_.get());
+      base::StringPrintf("%s-%p", type_name.c_str(), gles2_impl_.get());
   ContextGL()->TraceBeginCHROMIUM("gpu_toplevel", unique_context_name.c_str());
   return true;
 }
@@ -170,17 +238,16 @@ void ContextProviderCommandBuffer::DetachFromThread() {
 }
 
 gpu::gles2::GLES2Interface* ContextProviderCommandBuffer::ContextGL() {
-  DCHECK(context3d_);
   DCHECK(bind_succeeded_);
   DCHECK(context_thread_checker_.CalledOnValidThread());
 
   if (trace_impl_)
     return trace_impl_.get();
-  return context3d_->GetImplementation();
+  return gles2_impl_.get();
 }
 
 gpu::ContextSupport* ContextProviderCommandBuffer::ContextSupport() {
-  return context3d_->GetImplementation();
+  return gles2_impl_.get();
 }
 
 class GrContext* ContextProviderCommandBuffer::GrContext() {
@@ -211,7 +278,7 @@ void ContextProviderCommandBuffer::InvalidateGrContext(uint32_t state) {
 void ContextProviderCommandBuffer::SetupLock() {
   DCHECK(bind_succeeded_);
   DCHECK(context_thread_checker_.CalledOnValidThread());
-  context3d_->GetCommandBufferProxy()->SetLock(&context_lock_);
+  command_buffer_->SetLock(&context_lock_);
 }
 
 base::Lock* ContextProviderCommandBuffer::GetLock() {
@@ -222,7 +289,7 @@ gpu::Capabilities ContextProviderCommandBuffer::ContextCapabilities() {
   DCHECK(bind_succeeded_);
   DCHECK(context_thread_checker_.CalledOnValidThread());
   // Skips past the trace_impl_ as it doesn't have capabilities.
-  return context3d_->GetImplementation()->capabilities();
+  return gles2_impl_->capabilities();
 }
 
 void ContextProviderCommandBuffer::DeleteCachedResources() {

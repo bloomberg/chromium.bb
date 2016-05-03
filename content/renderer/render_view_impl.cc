@@ -47,7 +47,6 @@
 #include "content/common/drag_messages.h"
 #include "content/common/frame_messages.h"
 #include "content/common/frame_replication_state.h"
-#include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/common/input/input_event_utils.h"
 #include "content/common/input_messages.h"
 #include "content/common/page_messages.h"

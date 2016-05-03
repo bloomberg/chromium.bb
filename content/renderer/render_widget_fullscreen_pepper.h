@@ -14,6 +14,7 @@
 #include "content/renderer/pepper/fullscreen_container.h"
 #include "content/renderer/render_widget_fullscreen.h"
 #include "third_party/WebKit/public/web/WebWidget.h"
+#include "url/gurl.h"
 
 namespace blink {
 class WebLayer;

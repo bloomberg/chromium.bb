@@ -25,7 +25,10 @@
 namespace gpu {
 class CommandBufferProxyImpl;
 class GpuChannelHost;
+class TransferBuffer;
 namespace gles2 {
+class GLES2CmdHelper;
+class GLES2Implementation;
 class GLES2TraceImplementation;
 }
 }
@@ -94,6 +97,7 @@ class CONTENT_EXPORT ContextProviderCommandBuffer
   base::ThreadChecker context_thread_checker_;
 
   bool bind_succeeded_ = false;
+  bool bind_failed_ = false;
 
   gpu::SurfaceHandle surface_handle_;
   GURL active_url_;
@@ -106,8 +110,11 @@ class CONTENT_EXPORT ContextProviderCommandBuffer
   scoped_refptr<SharedProviders> shared_providers_;
   scoped_refptr<gpu::GpuChannelHost> channel_;
 
-  base::Lock context_lock_;  // Referenced by context3d_.
-  std::unique_ptr<WebGraphicsContext3DCommandBufferImpl> context3d_;
+  base::Lock context_lock_;  // Referenced by command_buffer_.
+  std::unique_ptr<gpu::CommandBufferProxyImpl> command_buffer_;
+  std::unique_ptr<gpu::gles2::GLES2CmdHelper> gles2_helper_;
+  std::unique_ptr<gpu::TransferBuffer> transfer_buffer_;
+  std::unique_ptr<gpu::gles2::GLES2Implementation> gles2_impl_;
   std::unique_ptr<gpu::gles2::GLES2TraceImplementation> trace_impl_;
   std::unique_ptr<skia_bindings::GrContextForGLES2Interface> gr_context_;
 
