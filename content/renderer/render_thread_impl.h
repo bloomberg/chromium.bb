@@ -458,6 +458,9 @@ class CONTENT_EXPORT RenderThreadImpl
                    std::unique_ptr<scheduler::RendererScheduler> scheduler);
 
  private:
+  // IPC::Listener
+  void OnChannelError() override;
+
   // ChildThread
   bool OnControlMessageReceived(const IPC::Message& msg) override;
   void OnProcessBackgrounded(bool backgrounded) override;

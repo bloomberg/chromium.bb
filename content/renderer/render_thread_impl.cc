@@ -1628,6 +1628,16 @@ void RenderThreadImpl::DoNotNotifyWebKitOfModalLoop() {
   notify_webkit_of_modal_loop_ = false;
 }
 
+void RenderThreadImpl::OnChannelError() {
+  // In single-process mode, the renderer can't be restarted after shutdown.
+  // So, if we get a channel error, crash the whole process right now to get a
+  // more informative stack, since we will otherwise just crash later when we
+  // try to restart it.
+  CHECK(!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSingleProcess));
+  ChildThreadImpl::OnChannelError();
+}
+
 bool RenderThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
   base::ObserverListBase<RenderThreadObserver>::Iterator it(&observers_);
   RenderThreadObserver* observer;
