@@ -359,29 +359,27 @@ Polymer({
 
   ready: function() {
     this.elementReadyTimeMs_ = performance.now();
-
-    // If this is not on a Mac platform, remove the placeholder. See
-    // onFocus_() for more details. ready() is only called once, so no need
-    // to check if the placeholder exist before removing.
-    if (!cr.isMac)
-      this.$$('#focus-placeholder').remove();
-
-    document.addEventListener('keydown', this.onKeydown_.bind(this), true);
-    this.setSearchFocusHandlers_();
     this.showSinkList_();
-  },
 
-  attached: function() {
-    this.updateElementPositioning_();
+    Polymer.RenderStatus.afterNextRender(this, function() {
+      // If this is not on a Mac platform, remove the placeholder. See
+      // onFocus_() for more details. ready() is only called once, so no need
+      // to check if the placeholder exist before removing.
+      if (!cr.isMac)
+        this.$$('#focus-placeholder').remove();
 
-    // Turn off the spinner after 3 seconds, then report the current number of
-    // sinks.
-    this.async(function() {
-      this.justOpened_ = false;
-      this.fire('report-sink-count', {
-        sinkCount: this.allSinks.length,
-      });
-    }, 3000 /* 3 seconds */);
+      document.addEventListener('keydown', this.onKeydown_.bind(this), true);
+      this.setSearchFocusHandlers_();
+
+      // Turn off the spinner after 3 seconds, then report the current number of
+      // sinks.
+      this.async(function() {
+        this.justOpened_ = false;
+        this.fire('report-sink-count', {
+          sinkCount: this.allSinks.length,
+        });
+      }, 3000 /* 3 seconds */);
+    });
   },
 
   /**
