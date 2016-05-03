@@ -23,13 +23,14 @@ import perf_tests_results_helper # pylint: disable=import-error
 _METHOD_IDS_SIZE_RE = re.compile(r'^method_ids_size +: +(\d+)$')
 
 def ExtractIfZip(dexfile, tmpdir):
-  if not dexfile.endswith('.zip'):
+  if not os.path.splitext(dexfile)[1] in ('.zip', '.apk', '.jar'):
     return [dexfile]
 
   with zipfile.ZipFile(dexfile, 'r') as z:
-    z.extractall(tmpdir)
+    dex_files = [n for n in z.namelist() if n.endswith('.dex')]
+    z.extractall(tmpdir, dex_files)
 
-  return [os.path.join(tmpdir, f) for f in os.listdir(tmpdir)]
+  return [os.path.join(tmpdir, f) for f in dex_files]
 
 def SingleMethodCount(dexfile):
   for line in dexdump.DexDump(dexfile, file_summary=True):
