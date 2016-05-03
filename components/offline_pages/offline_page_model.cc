@@ -315,7 +315,8 @@ void OfflinePageModel::CheckPagesExistOfflineAfterLoadDone(
   callback.Run(result);
 }
 
-void OfflinePageModel::GetAllPages(const GetAllPagesCallback& callback) {
+void OfflinePageModel::GetAllPages(
+    const MultipleOfflinePageItemCallback& callback) {
   if (!is_loaded_) {
     delayed_tasks_.push_back(
         base::Bind(&OfflinePageModel::GetAllPagesAfterLoadDone,
@@ -327,10 +328,10 @@ void OfflinePageModel::GetAllPages(const GetAllPagesCallback& callback) {
 }
 
 void OfflinePageModel::GetAllPagesAfterLoadDone(
-    const GetAllPagesCallback& callback) {
+    const MultipleOfflinePageItemCallback& callback) {
   DCHECK(is_loaded_);
 
-  GetAllPagesResult offline_pages;
+  MultipleOfflinePageItemResult offline_pages;
   for (const auto& id_page_pair : offline_pages_)
     offline_pages.push_back(id_page_pair.second);
 
@@ -410,7 +411,28 @@ const OfflinePageItem* OfflinePageModel::GetPageByOfflineURL(
   return nullptr;
 }
 
-const OfflinePageItem* OfflinePageModel::GetPageByOnlineURL(
+void OfflinePageModel::GetPagesByOnlineURL(
+    const GURL& online_url,
+    const MultipleOfflinePageItemCallback& callback) {
+  RunWhenLoaded(base::Bind(&OfflinePageModel::GetPagesByOnlineURLWhenLoadDone,
+                           weak_ptr_factory_.GetWeakPtr(), online_url,
+                           callback));
+}
+
+void OfflinePageModel::GetPagesByOnlineURLWhenLoadDone(
+    const GURL& online_url,
+    const MultipleOfflinePageItemCallback& callback) const {
+  std::vector<OfflinePageItem> result;
+
+  for (const auto& id_page_pair : offline_pages_) {
+    if (id_page_pair.second.url == online_url)
+      result.push_back(id_page_pair.second);
+  }
+
+  callback.Run(result);
+}
+
+const OfflinePageItem* OfflinePageModel::MaybeGetPageByOnlineURL(
     const GURL& online_url) const {
   for (const auto& id_page_pair : offline_pages_) {
     if (id_page_pair.second.url == online_url)

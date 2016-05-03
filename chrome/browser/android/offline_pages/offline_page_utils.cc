@@ -33,7 +33,7 @@ const offline_pages::OfflinePageItem* GetOfflinePageForOnlineURL(
   if (!offline_page_model)
     return nullptr;
 
-  return offline_page_model->GetPageByOnlineURL(online_url);
+  return offline_page_model->MaybeGetPageByOnlineURL(online_url);
 }
 
 // Returns an offline page that is stored as the |offline_url|.

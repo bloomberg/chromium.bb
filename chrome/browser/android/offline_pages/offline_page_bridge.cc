@@ -68,9 +68,10 @@ void CheckPagesExistOfflineCallback(
       env, j_callback_obj.obj(), j_result_array.obj());
 }
 
-void GetAllPagesCallback(const ScopedJavaGlobalRef<jobject>& j_result_obj,
-                         const ScopedJavaGlobalRef<jobject>& j_callback_obj,
-                         const OfflinePageModel::GetAllPagesResult& result) {
+void GetAllPagesCallback(
+    const ScopedJavaGlobalRef<jobject>& j_result_obj,
+    const ScopedJavaGlobalRef<jobject>& j_callback_obj,
+    const OfflinePageModel::MultipleOfflinePageItemResult& result) {
   JNIEnv* env = base::android::AttachCurrentThread();
   ToJavaOfflinePageList(env, j_result_obj.obj(), result);
 
@@ -266,8 +267,9 @@ ScopedJavaLocalRef<jobject> OfflinePageBridge::GetPageByOnlineURL(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jstring>& online_url) {
-  const OfflinePageItem* offline_page = offline_page_model_->GetPageByOnlineURL(
-      GURL(ConvertJavaStringToUTF8(env, online_url)));
+  const OfflinePageItem* offline_page =
+      offline_page_model_->MaybeGetPageByOnlineURL(
+          GURL(ConvertJavaStringToUTF8(env, online_url)));
   if (!offline_page)
     return ScopedJavaLocalRef<jobject>();
   return CreateOfflinePageItem(env, *offline_page);

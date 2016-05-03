@@ -124,14 +124,13 @@ class OfflinePageModel : public KeyedService, public base::SupportsUserData {
     virtual ~Observer() {}
   };
 
-  typedef std::vector<OfflinePageItem> GetAllPagesResult;
   typedef std::set<GURL> CheckPagesExistOfflineResult;
   typedef std::vector<int64_t> MultipleOfflineIdResult;
   typedef base::Optional<OfflinePageItem> SingleOfflinePageItemResult;
+  typedef std::vector<OfflinePageItem> MultipleOfflinePageItemResult;
 
   typedef base::Callback<void(SavePageResult, int64_t)> SavePageCallback;
   typedef base::Callback<void(DeletePageResult)> DeletePageCallback;
-  typedef base::Callback<void(const GetAllPagesResult&)> GetAllPagesCallback;
   typedef base::Callback<void(const CheckPagesExistOfflineResult&)>
       CheckPagesExistOfflineCallback;
   typedef base::Callback<void(bool)> HasPagesCallback;
@@ -139,6 +138,8 @@ class OfflinePageModel : public KeyedService, public base::SupportsUserData {
       MultipleOfflineIdCallback;
   typedef base::Callback<void(const SingleOfflinePageItemResult&)>
       SingleOfflinePageItemCallback;
+  typedef base::Callback<void(const MultipleOfflinePageItemResult&)>
+      MultipleOfflinePageItemCallback;
 
   // Generates a new offline id
   static int64_t GenerateOfflineId();
@@ -196,7 +197,7 @@ class OfflinePageModel : public KeyedService, public base::SupportsUserData {
                               const CheckPagesExistOfflineCallback& callback);
 
   // Gets all available offline pages. Requires that the model is loaded.
-  void GetAllPages(const GetAllPagesCallback& callback);
+  void GetAllPages(const MultipleOfflinePageItemCallback& callback);
 
   // Gets pages that should be removed to clean up storage. Requires that the
   // model is loaded.
@@ -227,9 +228,13 @@ class OfflinePageModel : public KeyedService, public base::SupportsUserData {
   // returned if not found.
   const OfflinePageItem* GetPageByOfflineURL(const GURL& offline_url) const;
 
+  // Returns the offline pages that are stored under |offline_url|.
+  void GetPagesByOnlineURL(const GURL& offline_url,
+                           const MultipleOfflinePageItemCallback& callback);
+
   // Returns an offline page saved for |online_url|. A nullptr is returned if
   // not found.
-  const OfflinePageItem* GetPageByOnlineURL(const GURL& online_url) const;
+  const OfflinePageItem* MaybeGetPageByOnlineURL(const GURL& online_url) const;
 
   // Checks that all of the offline pages have corresponding offline copies.
   // If a page is discovered to be missing an offline copy, its offline page
@@ -261,7 +266,8 @@ class OfflinePageModel : public KeyedService, public base::SupportsUserData {
   // Callback for ensuring archive directory is created.
   void OnEnsureArchivesDirCreatedDone();
 
-  void GetAllPagesAfterLoadDone(const GetAllPagesCallback& callback);
+  void GetAllPagesAfterLoadDone(
+      const MultipleOfflinePageItemCallback& callback);
   void CheckPagesExistOfflineAfterLoadDone(
       const std::set<GURL>& urls,
       const CheckPagesExistOfflineCallback& callback);
@@ -271,6 +277,9 @@ class OfflinePageModel : public KeyedService, public base::SupportsUserData {
   void GetPageByOfflineIdWhenLoadDone(
       int64_t offline_id,
       const SingleOfflinePageItemCallback& callback) const;
+  void GetPagesByOnlineURLWhenLoadDone(
+      const GURL& offline_url,
+      const MultipleOfflinePageItemCallback& callback) const;
 
   // Callback for checking whether we have offline pages.
   void HasPagesAfterLoadDone(const std::string& name_space,
