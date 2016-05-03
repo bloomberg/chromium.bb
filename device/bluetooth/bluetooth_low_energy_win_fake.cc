@@ -261,7 +261,6 @@ HRESULT BluetoothLowEnergyWrapperFake::RegisterGattEvents(
   observer->callback = callback;
   observer->context = context;
   *out_handle = (BLUETOOTH_GATT_EVENT_HANDLE)observer.get();
-  gatt_characteristic_observers_[*out_handle] = std::move(observer);
 
   PBLUETOOTH_GATT_VALUE_CHANGED_EVENT_REGISTRATION parameter =
       (PBLUETOOTH_GATT_VALUE_CHANGED_EVENT_REGISTRATION)event_parameter;
@@ -269,8 +268,18 @@ HRESULT BluetoothLowEnergyWrapperFake::RegisterGattEvents(
     GattCharacteristic* target_characteristic = GetSimulatedGattCharacteristic(
         service_path, &parameter->Characteristics[i]);
     CHECK(target_characteristic);
+
+    // Return error simulated by SimulateGattCharacteristicSetNotifyError.
+    if (target_characteristic->notify_errors.size()) {
+      HRESULT error = target_characteristic->notify_errors[0];
+      target_characteristic->notify_errors.erase(
+          target_characteristic->notify_errors.begin());
+      return error;
+    }
+
     target_characteristic->observers.push_back(*out_handle);
   }
+  gatt_characteristic_observers_[*out_handle] = std::move(observer);
 
   if (observer_)
     observer_->OnStartCharacteristicNotification();
@@ -479,6 +488,12 @@ void BluetoothLowEnergyWrapperFake::
                            it->second->context);
     }
   }
+}
+
+void BluetoothLowEnergyWrapperFake::SimulateGattCharacteristicSetNotifyError(
+    GattCharacteristic* characteristic,
+    HRESULT error) {
+  characteristic->notify_errors.push_back(error);
 }
 
 void BluetoothLowEnergyWrapperFake::SimulateGattCharacteristicReadError(

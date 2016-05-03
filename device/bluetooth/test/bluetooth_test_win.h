@@ -62,6 +62,9 @@ class BluetoothTestWin : public BluetoothTestBase,
                               const std::string& uuid) override;
   void SimulateGattNotifySessionStarted(
       BluetoothRemoteGattCharacteristic* characteristic) override;
+  void SimulateGattNotifySessionStartError(
+      BluetoothRemoteGattCharacteristic* characteristic,
+      BluetoothRemoteGattService::GattErrorCode error_code) override;
   void SimulateGattCharacteristicChanged(
       BluetoothRemoteGattCharacteristic* characteristic,
       const std::vector<uint8_t>& value) override;

@@ -271,6 +271,15 @@ class BluetoothTestBase : public testing::Test {
                             enum BluetoothDevice::ConnectErrorCode);
   void GattErrorCallback(Call expected,
                          BluetoothRemoteGattService::GattErrorCode);
+  void ReentrantStartNotifySessionSuccessCallback(
+      Call expected,
+      BluetoothRemoteGattCharacteristic* characteristic,
+      std::unique_ptr<BluetoothGattNotifySession> notify_session);
+  void ReentrantStartNotifySessionErrorCallback(
+      Call expected,
+      BluetoothRemoteGattCharacteristic* characteristic,
+      bool error_in_reentrant,
+      BluetoothGattService::GattErrorCode error_code);
 
   // Accessors to get callbacks bound to this fixture:
   base::Closure GetCallback(Call expected);
@@ -286,6 +295,15 @@ class BluetoothTestBase : public testing::Test {
   BluetoothDevice::ConnectErrorCallback GetConnectErrorCallback(Call expected);
   base::Callback<void(BluetoothRemoteGattService::GattErrorCode)>
   GetGattErrorCallback(Call expected);
+  BluetoothRemoteGattCharacteristic::NotifySessionCallback
+  GetReentrantStartNotifySessionSuccessCallback(
+      Call expected,
+      BluetoothRemoteGattCharacteristic* characteristic);
+  base::Callback<void(BluetoothGattService::GattErrorCode)>
+  GetReentrantStartNotifySessionErrorCallback(
+      Call expected,
+      BluetoothRemoteGattCharacteristic* characteristic,
+      bool error_in_reentrant);
 
   // Reset all event count members to 0.
   void ResetEventCounts();

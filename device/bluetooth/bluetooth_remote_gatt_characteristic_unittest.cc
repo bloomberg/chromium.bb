@@ -991,6 +991,117 @@ TEST_F(BluetoothRemoteGattCharacteristicTest, StartNotifySession_AfterDeleted) {
 }
 #endif  // defined(OS_ANDROID)
 
+#if defined(OS_WIN)
+// Tests StartNotifySession reentrant in start notify session success callback
+// and the reentrant start notify session success.
+TEST_F(BluetoothRemoteGattCharacteristicTest,
+       StartNotifySession_Reentrant_Success_Success) {
+  ASSERT_NO_FATAL_FAILURE(
+      FakeCharacteristicBoilerplate(/* properties: NOTIFY */ 0x10));
+  SimulateGattDescriptor(
+      characteristic1_,
+      BluetoothGattDescriptor::ClientCharacteristicConfigurationUuid().value());
+  ASSERT_EQ(1u, characteristic1_->GetDescriptors().size());
+
+  characteristic1_->StartNotifySession(
+      GetReentrantStartNotifySessionSuccessCallback(Call::EXPECTED,
+                                                    characteristic1_),
+      GetReentrantStartNotifySessionErrorCallback(
+          Call::NOT_EXPECTED, characteristic1_,
+          false /* error_in_reentrant */));
+  EXPECT_EQ(0, callback_count_);
+  SimulateGattNotifySessionStarted(characteristic1_);
+  EXPECT_EQ(1, gatt_notify_characteristic_attempts_);
+
+  // Simulate reentrant StartNotifySession request from
+  // BluetoothTestBase::ReentrantStartNotifySessionSuccessCallback.
+  SimulateGattNotifySessionStarted(characteristic1_);
+  EXPECT_EQ(1, gatt_notify_characteristic_attempts_);
+  EXPECT_EQ(2, callback_count_);
+  EXPECT_EQ(0, error_callback_count_);
+  ASSERT_EQ(2u, notify_sessions_.size());
+  for (unsigned int i = 0; i < notify_sessions_.size(); i++) {
+    ASSERT_TRUE(notify_sessions_[i]);
+    EXPECT_EQ(characteristic1_->GetIdentifier(),
+              notify_sessions_[i]->GetCharacteristicIdentifier());
+    EXPECT_TRUE(notify_sessions_[i]->IsActive());
+  }
+}
+#endif  // defined(OS_WIN)
+
+#if defined(OS_WIN)
+// Tests StartNotifySession reentrant in start notify session error callback
+// and the reentrant start notify session success.
+TEST_F(BluetoothRemoteGattCharacteristicTest,
+       StartNotifySession_Reentrant_Error_Success) {
+  ASSERT_NO_FATAL_FAILURE(
+      FakeCharacteristicBoilerplate(/* properties: NOTIFY */ 0x10));
+  SimulateGattDescriptor(
+      characteristic1_,
+      BluetoothGattDescriptor::ClientCharacteristicConfigurationUuid().value());
+  ASSERT_EQ(1u, characteristic1_->GetDescriptors().size());
+
+  SimulateGattNotifySessionStartError(
+      characteristic1_, BluetoothRemoteGattService::GATT_ERROR_UNKNOWN);
+
+  characteristic1_->StartNotifySession(
+      GetReentrantStartNotifySessionSuccessCallback(Call::NOT_EXPECTED,
+                                                    characteristic1_),
+      GetReentrantStartNotifySessionErrorCallback(
+          Call::EXPECTED, characteristic1_, false /* error_in_reentrant */));
+  EXPECT_EQ(0, callback_count_);
+  SimulateGattNotifySessionStarted(characteristic1_);
+  EXPECT_EQ(0, gatt_notify_characteristic_attempts_);
+  EXPECT_EQ(1, error_callback_count_);
+
+  // Simulate reentrant StartNotifySession request from
+  // BluetoothTestBase::ReentrantStartNotifySessionErrorCallback.
+  SimulateGattNotifySessionStarted(characteristic1_);
+  EXPECT_EQ(1, gatt_notify_characteristic_attempts_);
+  EXPECT_EQ(1, callback_count_);
+  EXPECT_EQ(1, error_callback_count_);
+  ASSERT_EQ(1u, notify_sessions_.size());
+  ASSERT_TRUE(notify_sessions_[0]);
+  EXPECT_EQ(characteristic1_->GetIdentifier(),
+            notify_sessions_[0]->GetCharacteristicIdentifier());
+  EXPECT_TRUE(notify_sessions_[0]->IsActive());
+}
+#endif  // defined(OS_WIN)
+
+#if defined(OS_WIN)
+// Tests StartNotifySession reentrant in start notify session error callback
+// and the reentrant start notify session error.
+TEST_F(BluetoothRemoteGattCharacteristicTest,
+       StartNotifySession_Reentrant_Error_Error) {
+  ASSERT_NO_FATAL_FAILURE(
+      FakeCharacteristicBoilerplate(/* properties: NOTIFY */ 0x10));
+  SimulateGattDescriptor(
+      characteristic1_,
+      BluetoothGattDescriptor::ClientCharacteristicConfigurationUuid().value());
+  ASSERT_EQ(1u, characteristic1_->GetDescriptors().size());
+
+  SimulateGattNotifySessionStartError(
+      characteristic1_, BluetoothRemoteGattService::GATT_ERROR_UNKNOWN);
+
+  characteristic1_->StartNotifySession(
+      GetReentrantStartNotifySessionSuccessCallback(Call::NOT_EXPECTED,
+                                                    characteristic1_),
+      GetReentrantStartNotifySessionErrorCallback(
+          Call::EXPECTED, characteristic1_, true /* error_in_reentrant */));
+  EXPECT_EQ(0, callback_count_);
+  SimulateGattNotifySessionStarted(characteristic1_);
+  EXPECT_EQ(0, gatt_notify_characteristic_attempts_);
+
+  // Simulate reentrant StartNotifySession request from
+  // BluetoothTestBase::ReentrantStartNotifySessionErrorCallback.
+  SimulateGattNotifySessionStarted(characteristic1_);
+  EXPECT_EQ(0, gatt_notify_characteristic_attempts_);
+  EXPECT_EQ(0, callback_count_);
+  EXPECT_EQ(2, error_callback_count_);
+  ASSERT_EQ(0u, notify_sessions_.size());
+}
+#endif  // defined(OS_WIN)
+
 #if defined(OS_ANDROID) || defined(OS_WIN)
 // Tests Characteristic Value changes during a Notify Session.
 TEST_F(BluetoothRemoteGattCharacteristicTest, GattCharacteristicValueChanged) {

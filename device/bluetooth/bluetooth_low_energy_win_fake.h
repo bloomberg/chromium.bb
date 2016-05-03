@@ -65,6 +65,7 @@ struct GattCharacteristic {
   GattDescriptorsMap included_descriptors;
   std::vector<HRESULT> read_errors;
   std::vector<HRESULT> write_errors;
+  std::vector<HRESULT> notify_errors;
   std::vector<BLUETOOTH_GATT_EVENT_HANDLE> observers;
 };
 
@@ -177,6 +178,9 @@ class BluetoothLowEnergyWrapperFake : public BluetoothLowEnergyWrapper {
                                        const std::vector<uint8_t>& value);
   void SimulateCharacteristicValueChangeNotification(
       GattCharacteristic* characteristic);
+  void SimulateGattCharacteristicSetNotifyError(
+      GattCharacteristic* characteristic,
+      HRESULT error);
   void SimulateGattCharacteristicReadError(GattCharacteristic* characteristic,
                                            HRESULT error);
   void SimulateGattCharacteristicWriteError(GattCharacteristic* characteristic,

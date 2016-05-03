@@ -381,6 +381,17 @@ void BluetoothTestWin::SimulateGattNotifySessionStarted(
   FinishPendingTasks();
 }
 
+void BluetoothTestWin::SimulateGattNotifySessionStartError(
+    BluetoothRemoteGattCharacteristic* characteristic,
+    BluetoothRemoteGattService::GattErrorCode error_code) {
+  win::GattCharacteristic* simulated_characteristic =
+      GetSimulatedCharacteristic(characteristic);
+  DCHECK(simulated_characteristic);
+  DCHECK(error_code == BluetoothRemoteGattService::GATT_ERROR_UNKNOWN);
+  fake_bt_le_wrapper_->SimulateGattCharacteristicSetNotifyError(
+      simulated_characteristic, E_BLUETOOTH_ATT_UNKNOWN_ERROR);
+}
+
 void BluetoothTestWin::SimulateGattCharacteristicChanged(
     BluetoothRemoteGattCharacteristic* characteristic,
     const std::vector<uint8_t>& value) {
