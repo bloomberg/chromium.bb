@@ -122,7 +122,10 @@ test("media_blink_unittests") {
     "//url",
   ]
 
-  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+  configs += [
+    "//build/config/compiler:no_size_t_to_int_warning",
+    "//v8:external_startup_data",
+  ]
 
   sources = [
     "buffered_data_source_host_impl_unittest.cc",
@@ -147,8 +150,10 @@ test("media_blink_unittests") {
   ]
 
   if (is_android) {
-    deps += [ "//ui/gl" ]
+    deps += [
+      "//media/base/android",
+      "//media/base/android:media_java",
+      "//v8:v8_external_startup_data_assets",
+    ]
   }
-
-  configs += [ "//v8:external_startup_data" ]
 }

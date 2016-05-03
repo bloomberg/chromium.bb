@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
-#include "base/rand_util.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
 #include "build/build_config.h"
@@ -25,7 +24,6 @@
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
 #include "media/base/android/media_jni_registrar.h"
-#include "ui/gl/android/gl_jni_registrar.h"
 #endif
 
 #ifdef V8_USE_EXTERNAL_STARTUP_DATA
@@ -107,11 +105,7 @@ void BlinkMediaTestSuite::Initialize() {
   base::TestSuite::Initialize();
 
 #if defined(OS_ANDROID)
-  // Register JNI bindings for android.
-  JNIEnv* env = base::android::AttachCurrentThread();
-  // Needed for surface texture support.
-  ui::gl::android::RegisterJni(env);
-  media::RegisterJni(env);
+  media::RegisterJni(base::android::AttachCurrentThread());
 #endif
 
   // Run this here instead of main() to ensure an AtExitManager is already
