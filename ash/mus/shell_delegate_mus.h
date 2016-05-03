@@ -15,11 +15,14 @@ class KeyboardUI;
 }
 
 namespace ash {
+
+class AppListPresenterMus;
+
 namespace sysui {
 
 class ShellDelegateMus : public ash::ShellDelegate {
  public:
-  ShellDelegateMus();
+  explicit ShellDelegateMus(std::unique_ptr<AppListPresenterMus>);
   ~ShellDelegateMus() override;
 
   bool IsFirstRunAfterBoot() const override;

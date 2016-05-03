@@ -10,6 +10,8 @@ import("//tools/grit/repack.gni")
 
 source_set("lib") {
   sources = [
+    "app_list_presenter_mus.cc",
+    "app_list_presenter_mus.h",
     "context_menu_mus.cc",
     "context_menu_mus.h",
     "keyboard_ui_mus.cc",
@@ -45,6 +47,7 @@ source_set("lib") {
     "//services/tracing/public/cpp",
     "//skia/public",
     "//ui/app_list/presenter",
+    "//ui/app_list/presenter:mojom",
     "//ui/aura",
     "//ui/events",
     "//ui/events/devices",

@@ -12,6 +12,7 @@
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/host/ash_window_tree_host_init_params.h"
 #include "ash/host/ash_window_tree_host_platform.h"
+#include "ash/mus/app_list_presenter_mus.h"
 #include "ash/mus/keyboard_ui_mus.h"
 #include "ash/mus/shelf_delegate_mus.h"
 #include "ash/mus/shell_delegate_mus.h"
@@ -206,6 +207,7 @@ class AshInit {
     // Uninstall the ScreenMus installed by WindowManagerConnection, so that ash
     // installs and uses the ScreenAsh. This can be removed once ash learns to
     // talk to mus for managing displays.
+    // TODO(mfomitchev): We need to fix this. http://crbug.com/607300
     display::Screen::SetScreenInstance(nullptr);
 
     // Install some hook so that the WindowTreeHostMus created for widgets can
@@ -213,7 +215,10 @@ class AshInit {
     native_widget_factory_.reset(new NativeWidgetFactory());
 
     ash::AshWindowTreeHost::SetFactory(base::Bind(&CreateWindowTreeHostMus));
-    ash_delegate_ = new ShellDelegateMus;
+
+    std::unique_ptr<ash::AppListPresenterMus> app_list_presenter =
+        base::WrapUnique(new ash::AppListPresenterMus(connector));
+    ash_delegate_ = new ShellDelegateMus(std::move(app_list_presenter));
 
     InitializeComponents();
 

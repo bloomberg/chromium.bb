@@ -8,6 +8,7 @@
 #include "ash/default_user_wallpaper_delegate.h"
 #include "ash/gpu_support_stub.h"
 #include "ash/media_delegate.h"
+#include "ash/mus/app_list_presenter_mus.h"
 #include "ash/mus/context_menu_mus.h"
 #include "ash/mus/pointer_watcher_delegate_mus.h"
 #include "ash/mus/shelf_delegate_mus.h"
@@ -96,28 +97,11 @@ class MediaDelegateStub : public MediaDelegate {
   DISALLOW_COPY_AND_ASSIGN(MediaDelegateStub);
 };
 
-class AppListPresenterMus : public app_list::AppListPresenter {
- public:
-  AppListPresenterMus() {}
-  ~AppListPresenterMus() override {}
-
-  // app_list::AppListPresenter:
-  void Show(int64_t display_id) override { NOTIMPLEMENTED(); }
-  void Dismiss() override { NOTIMPLEMENTED(); }
-  void ToggleAppList(int64_t display_id) override { NOTIMPLEMENTED(); }
-  bool GetTargetVisibility() const override {
-    NOTIMPLEMENTED();
-    return false;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AppListPresenterMus);
-};
-
 }  // namespace
 
-ShellDelegateMus::ShellDelegateMus()
-    : app_list_presenter_(new AppListPresenterMus) {}
+ShellDelegateMus::ShellDelegateMus(
+    std::unique_ptr<AppListPresenterMus> app_list_presenter)
+    : app_list_presenter_(std::move(app_list_presenter)) {}
 
 ShellDelegateMus::~ShellDelegateMus() {}
 
