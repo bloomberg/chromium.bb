@@ -1,73 +1,67 @@
 # Closure Compilation
 
-## I just need to fix the compile!
+## What is type safety?
 
-### Pre-requisites
+[Strongly-typed languages](https://en.wikipedia.org/wiki/Strong_and_weak_typing)
+like C++ and Java have the notion of variable types.
 
-You'll need Java 7 (preferably the OpenJDK version).  To install on Ubuntu:
+This is typically baked into how you declare variables:
 
-```shell
-sudo apt-get install openjdk-7-jre
+```c++
+const int32 kUniversalAnswer = 42;  // type = 32-bit integer
 ```
 
-On Mac or Windows, visit:
-[http://www.oracle.com/technetwork/java/javase/downloads/index.html](http://www.oracle.com/technetwork/java/javase/downloads/index.html)
+or as [templates](https://en.wikipedia.org/wiki/Template_metaprogramming) for
+containers or generics:
 
-### Using ninja to compile the code
-
-To compile the JavaScript, run this script:
-
-```shell
-third_party/closure_compiler/run_compiler
+```c++
+std::vector<int64> fibonacci_numbers;  // a vector of 64-bit integers
 ```
 
-The output should look something like this:
+When differently-typed variables interact with each other, the compiler can warn
+you if there's no sane default action to take.
 
-```shell
-ninja: Entering directory `out/Default/'
-[30/106] ACTION Compiling chrome/browser/resources/md_history/constants.js
+Typing can also be manually annotated via mechanisms like `dynamic_cast` and
+`static_cast` or older C-style casts (i.e. `(Type)`).
+
+Using stongly-typed languages provide _some_ level of protection against
+accidentally using variables in the wrong context.
+
+JavaScript is weakly-typed and doesn't offer this safety by default. This makes
+writing JavaScript more error prone, and various type errors have resulted in
+real bugs seen by many users.
+
+## Chrome's solution to typechecking JavaScript
+
+Enter [Closure Compiler](https://developers.google.com/closure/compiler/), a
+tool for analyzing JavaScript and checking for syntax errors, variable
+references, and other common JavaScript pitfalls.
+
+To get the fullest type safety possible, it's often required to annotate your
+JavaScript explicitly with [Closure-flavored @jsdoc
+tags](https://developers.google.com/closure/compiler/docs/js-for-compiler)
+
+```js
+/**
+ * @param {string} version A software version number (i.e. "50.0.2661.94").
+ * @return {!Array<number>} Numbers corresponing to |version| (i.e. [50, 0, 2661, 94]).
+ */
+function versionSplit(version) {
+  return version.split('.').map(Number);
+}
 ```
-
-To compile only a specific target, add an argument after the script name:
-
-```shell
-third_party/closure_compiler/run_compiler people_page
-```
-
-## Background
-
-In C++ and Java, compiling the code gives you _some_ level of protection against
-misusing variables based on their type information. JavaScript is loosely typed
-and therefore doesn't offer this safety. This makes writing JavaScript more
-error prone as it's _one more thing_ to mess up.
-
-Because having this safety is handy, Chrome now has a way to optionally
-typecheck your JavaScript and produce compiled output with
-[Closure Compiler](https://developers.google.com/closure/compiler/).
-The type information is
-[annotated in comment tags](https://developers.google.com/closure/compiler/docs/js-for-compiler)
-that are briefly described below.
 
 See also:
 [the design doc](https://docs.google.com/a/chromium.org/document/d/1Ee9ggmp6U-lM-w9WmxN5cSLkK9B5YAq14939Woo-JY0/edit).
 
-## Assumptions
-
-A working Chrome checkout. See here:
-https://www.chromium.org/developers/how-tos/get-the-code
-
 ## Typechecking Your Javascript
 
-So you'd like to compile your JavaScript!
+Given an example file structure of:
 
-Maybe you're working on a page that looks like this:
+  + lib/does_the_hard_stuff.js
+  + ui/makes_things_pretty.js
 
-```html
-<script src="other_file.js"></script>
-<script src="my_product/my_file.js"></script>
-```
-
-Where `other_file.js` contains:
+`lib/does_the_hard_stuff.js`:
 
 ```javascript
 var wit = 100;
@@ -77,18 +71,22 @@ var wit = 100;
 wit += ' IQ';  // '100 IQ'
 ```
 
-and `src/my_product/my_file.js` contains:
+`ui/makes_things_pretty.js`:
 
 ```javascript
 /** @type {number} */ var mensa = wit + 50;
+
 alert(mensa);  // '100 IQ50' instead of 150
 ```
 
-In order to check that our code acts as we'd expect, we can create a
+Closure compiler can notify us if we're using `string`s and `number`s in
+dangerous ways.
 
-    my_project/compiled_resources2.gyp
+To do this, we can create:
 
-with the contents:
+  + ui/compiled_resources2.gyp
+
+With these contents:
 
 ```
 # Copyright 2016 The Chromium Authors. All rights reserved.
@@ -97,36 +95,89 @@ with the contents:
 {
   'targets': [
     {
-      'target_name': 'my_file',  # file name without ".js"
-      'dependencies': [  # No need to specify empty lists.
-        '../compiled_resources2.gyp:other_file',
-        '<(EXTERNS_GYP):any_needed_externs'  # e.g. chrome.send(), chrome.app.window, etc.
+      # Target names is typically just without ".js"
+      'target_name': 'makes_things_pretty',
+
+      'dependencies': [
+        '../lib/compiled_resources2.gyp:does_the_hard_stuff',
+
+        # Teaches closure about non-standard environments/APIs, e.g.
+        # chrome.send(), chrome.app.window, etc.
+        '<(EXTERNS_GYP):extern_name_goes_here'
       ],
-      'includes': ['../third_party/closure_compiler/compile_js2.gypi'],
+
+      'includes': ['../path/to/third_party/closure_compiler/compile_js2.gypi'],
     },
   ],
 }
 ```
 
-You should get results like:
+## Running Closure compiler locally
+
+You can locally test that your code compiles on Linux or Mac.  This requires
+[Java](http://www.oracle.com/technetwork/java/javase/downloads/index.html) and a
+[Chrome checkout](http://www.chromium.org/developers/how-tos/get-the-code) (i.e.
+python, depot_tools). Note: on Ubuntu, you can probably just run `sudo apt-get
+install openjdk-7-jre`.
+
+Now you should be able to run:
+
+```shell
+third_party/closure_compiler/run_compiler
+```
+
+and should see output like this:
+
+```shell
+ninja: Entering directory `out/Default/'
+[0/1] ACTION Compiling ui/makes_things_pretty.js
+```
+
+To compile only a specific target, add an argument after the script name:
+
+```shell
+third_party/closure_compiler/run_compiler makes_things_pretty
+```
+
+In our example code, this error should appear:
 
 ```
-(ERROR) Error in: my_project/my_file.js
-## /my/home/chromium/src/my_project/my_file.js:1: ERROR - initializing variable
+(ERROR) Error in: ui/makes_things_pretty.js
+## /my/home/chromium/src/ui/makes_things_pretty.js:1: ERROR - initializing variable
 ## found   : string
 ## required: number
 ## /** @type {number} */ var mensa = wit + 50;
 ##                                   ^
 ```
 
-Yay! We can easily find our unexpected type errors and write less error-prone
-code!
+Hooray! We can catch type errors in JavaScript!
 
-## Continuous Checking
+## Trying your change
 
-To compile your code on every commit, add a line to
-/third_party/closure_compiler/compiled_resources.gyp
-like this:
+Closure compilation also has [try
+bots](https://build.chromium.org/p/tryserver.chromium.linux/builders/closure_compilation)
+which can check whether you could *would* break the build if it was committed.
+
+From the command line, you try your change with:
+
+```shell
+git cl try -b closure_compilation
+```
+
+To automatically check that your code typechecks cleanly before submitting, you
+can add this line to your CL description:
+
+```
+CQ_INCLUDE_TRYBOTS=tryserver.chromium.linux:closure_compilation
+```
+
+Working in common resource directories in Chrome automatically adds this line
+for you.
+
+## Integrating with the continuous build
+
+To compile your code on every commit, add your file to the `'dependencies'` list
+in `src/third_party/closure_compiler/compiled_resources2.gyp`:
 
 ```
 {
@@ -142,158 +193,6 @@ like this:
 }
 ```
 
-and the
+This file is used by the
 [Closure compiler bot](http://build.chromium.org/p/chromium.fyi/builders/Closure%20Compilation%20Linux)
-will [re-]compile your code whenever relevant .js files change.
-
-## Using Compiled JavaScript
-
-Compiled JavaScript is output in
-`src/out/<Debug|Release>/gen/closure/my_project/my_file.js` along with a source
-map for use in debugging. In order to use the compiled JavaScript, we can create
-a
-
-    my_project/my_project_resources.gyp
-
-with the contents:
-
-```
-# Copyright 2015 The Chromium Authors. All rights reserved.
-# Use of this source code is governed by a BSD-style license that can be
-# found in the LICENSE file.
-
-{
-  'targets': [
-    {
-      # GN version: //my_project/resources
-      'target_name': 'my_project_resources',
-      'type': 'none',
-      'variables': {
-        'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/my_project',
-        'my_file_gen_js': '<(SHARED_INTERMEDIATE_DIR)/closure/my_project/my_file.js',
-      },
-      'actions': [
-        {
-          # GN version: //my_project/resources:my_project_resources
-          'action_name': 'generate_my_project_resources',
-          'variables': {
-            'grit_grd_file': 'resources/my_project_resources.grd',
-            'grit_additional_defines': [
-              '-E', 'my_file_gen_js=<(my_file_gen_js)',
-            ],
-          },
-          'includes': [ '../build/grit_action.gypi' ],
-        },
-      ],
-      'includes': [ '../build/grit_target.gypi' ],
-    },
-  ],
-}
-```
-
-The variables can also be defined in an existing .gyp file if appropriate. The
-variables can then be used in to create a
-
-    my_project/my_project_resources.grd
-
-with the contents:
-
-```
-<?xml version="1.0" encoding="utf-8"?>
-<grit-part>
-  <include name="IDR_MY_FILE_GEN_JS" file="${my_file_gen_js}" use_base_dir="false" type="BINDATA" />
-</grit-part>
-```
-
-In your C++, the resource can be retrieved like this:
-
-```
-base::string16 my_script =
-    base::UTF8ToUTF16(
-        ResourceBundle::GetSharedInstance()
-            .GetRawDataResource(IDR_MY_FILE_GEN_JS)
-            .as_string());
-```
-
-## Debugging Compiled JavaScript
-
-Along with the compiled JavaScript, a source map is created:
-`src/out/<Debug|Release>/gen/closure/my_project/my_file.js.map`
-
-Chrome DevTools has built in support for working with source maps:
-https://developer.chrome.com/devtools/docs/javascript-debugging#source-maps
-
-In order to use the source map, you must first manually edit the path to the
-'sources' in the .js.map file that was generated. For example, if the source map
-looks like this:
-
-```
-{
-"version":3,
-"file":"/tmp/gen/test_script.js",
-"lineCount":1,
-"mappings":"A,aAAA,IAAIA,OAASA,QAAQ,EAAG,CACtBC,KAAA,CAAM,OAAN,CADsB;",
-"sources":["/tmp/tmp70_QUi"],
-"names":["fooBar","alert"]
-}
-```
-
-sources should be changed to:
-
-```
-...
-"sources":["/tmp/test_script.js"],
-...
-```
-
-In your browser, the source map can be loaded through the Chrome DevTools
-context menu that appears when you right click in the compiled JavaScript source
-body. A dialog will pop up prompting you for the path to the source map file.
-Once the source map is loaded, the uncompiled version of the JavaScript will
-appear in the Sources panel on the left. You can set break points in the
-uncompiled version to help debug; behind the scenes Chrome will still be running
-the compiled version of the JavaScript.
-
-## Additional Arguments
-
-`compile_js.gypi` accepts an optional `script_args` variable, which passes
-additional arguments to `compile.py`, as well as an optional `closure_args`
-variable, which passes additional arguments to the closure compiler. You may
-also override the `disabled_closure_args` for more strict compilation.
-
-For example, if you would like to specify multiple sources, strict compilation,
-and an output wrapper, you would create a
-
-```
-my_project/compiled_resources.gyp
-```
-
-with contents similar to this:
-
-```
-# Copyright 2015 The Chromium Authors. All rights reserved.
-# Use of this source code is governed by a BSD-style license that can be
-# found in the LICENSE file.
-{
-  'targets' :[
-    {
-      'target_name': 'my_file',
-      'variables': {
-        'source_files': [
-          'my_file.js',
-          'my_file2.js',
-        ],
-        'script_args': ['--no-single-file'], # required to process multiple files at once
-        'closure_args': [
-          'output_wrapper=\'(function(){%output%})();\'',
-          'jscomp_error=reportUnknownTypes',     # the following three provide more strict compilation
-          'jscomp_error=duplicate',
-          'jscomp_error=misplacedTypeAnnotation',
-        ],
-        'disabled_closure_args': [], # remove the disabled closure args for more strict compilation
-      },
-      'includes': ['../third_party/closure_compiler/compile_js.gypi'],
-    },
-  ],
-}
-```
+to automatically compile your code on every commit.
