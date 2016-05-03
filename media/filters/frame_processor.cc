@@ -354,7 +354,7 @@ bool FrameProcessor::HandlePartialAppendWindowTrimming(
     base::TimeDelta append_window_start,
     base::TimeDelta append_window_end,
     const scoped_refptr<StreamParserBuffer>& buffer) {
-  DCHECK(buffer->duration() > base::TimeDelta());
+  DCHECK(buffer->duration() >= base::TimeDelta());
   DCHECK_EQ(DemuxerStream::AUDIO, buffer->type());
   DCHECK(buffer->is_key_frame());
 

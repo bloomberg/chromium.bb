@@ -67,9 +67,9 @@ class FrameProcessorTest : public testing::TestWithParam<bool> {
                 base::Unretained(&callbacks_)),
             new MediaLog())),
         append_window_end_(kInfiniteDuration()),
+        frame_duration_(base::TimeDelta::FromMilliseconds(10)),
         audio_id_(FrameProcessor::kAudioTrackId),
-        video_id_(FrameProcessor::kVideoTrackId),
-        frame_duration_(base::TimeDelta::FromMilliseconds(10)) {}
+        video_id_(FrameProcessor::kVideoTrackId) {}
 
   enum StreamFlags {
     HAS_AUDIO = 1 << 0,
@@ -258,11 +258,11 @@ class FrameProcessorTest : public testing::TestWithParam<bool> {
   base::TimeDelta append_window_start_;
   base::TimeDelta append_window_end_;
   base::TimeDelta timestamp_offset_;
+  base::TimeDelta frame_duration_;
   std::unique_ptr<ChunkDemuxerStream> audio_;
   std::unique_ptr<ChunkDemuxerStream> video_;
   const TrackId audio_id_;
   const TrackId video_id_;
-  const base::TimeDelta frame_duration_;  // Currently the same for all streams.
   const BufferQueue empty_queue_;
   const TextBufferQueueMap empty_text_buffers_;
 
@@ -739,6 +739,60 @@ TEST_F(FrameProcessorTest, AudioOnly_SequenceModeContinuityAcrossReset) {
   EXPECT_TRUE(in_coded_frame_group());
   CheckExpectedRangesByTimestamp(audio_.get(), "{ [0,20) }");
   CheckReadsThenReadStalls(audio_.get(), "0 10:100");
+}
+
+TEST_P(FrameProcessorTest, PartialAppendWindowZeroDurationPreroll) {
+  InSequence s;
+  AddTestTracks(HAS_AUDIO);
+  bool is_sequence_mode = GetParam();
+  frame_processor_->SetSequenceMode(is_sequence_mode);
+
+  append_window_start_ = base::TimeDelta::FromMilliseconds(5);
+
+  // Append a 0 duration frame that falls just before the append window.
+  frame_duration_ = base::TimeDelta::FromMilliseconds(0);
+  EXPECT_FALSE(in_coded_frame_group());
+  EXPECT_CALL(callbacks_, PossibleDurationIncrease(frame_duration_));
+  ProcessFrames("4K", "");
+  // Verify buffer is not part of ranges. It should be silently saved for
+  // preroll for future append.
+  CheckExpectedRangesByTimestamp(audio_.get(), "{ }");
+  CheckReadsThenReadStalls(audio_.get(), "");
+  EXPECT_FALSE(in_coded_frame_group());
+
+  // Abort the reads from last stall. We don't want those reads to "complete"
+  // when we append below. We will initiate new reads to confirm the buffer
+  // looks as we expect.
+  audio_->AbortReads();
+  audio_->Seek(base::TimeDelta());
+  audio_->StartReturningData();
+
+  // Append a frame with 10ms duration, with 9ms falling after the window start.
+  base::TimeDelta expected_duration =
+      base::TimeDelta::FromMilliseconds(is_sequence_mode ? 10 : 14);
+  EXPECT_CALL(callbacks_, PossibleDurationIncrease(expected_duration));
+  frame_duration_ = base::TimeDelta::FromMilliseconds(10);
+  ProcessFrames("4K", "");
+  EXPECT_TRUE(in_coded_frame_group());
+
+  // Verify range updated to reflect last append was processed and trimmed, and
+  // also that zero duration buffer was saved and attached as preroll.
+  if (is_sequence_mode) {
+    // For sequence mode, append window trimming is applied after the append
+    // is adjusted for timestampOffset. Basically, everything gets rebased to 0
+    // and trimming then removes 5 seconds from the front.
+    CheckExpectedRangesByTimestamp(audio_.get(), "{ [5,10) }");
+    CheckReadsThenReadStalls(audio_.get(), "5:4P 5:4");
+  } else {  // segments mode
+    CheckExpectedRangesByTimestamp(audio_.get(), "{ [5,14) }");
+    CheckReadsThenReadStalls(audio_.get(), "5:4P 5:4");
+  }
+
+  // Verify the preroll buffer still has zero duration.
+  StreamParserBuffer* last_read_parser_buffer =
+      static_cast<StreamParserBuffer*>(last_read_buffer_.get());
+  ASSERT_EQ(base::TimeDelta::FromMilliseconds(0),
+            last_read_parser_buffer->preroll_buffer()->duration());
 }
 
 INSTANTIATE_TEST_CASE_P(SequenceMode, FrameProcessorTest, Values(true));
