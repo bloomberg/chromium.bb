@@ -4,10 +4,16 @@
 
 #include "content/browser/renderer_host/media/media_stream_dispatcher_host.h"
 
+#include <algorithm>
+
+#include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "content/browser/browser_main_loop.h"
+#include "content/browser/renderer_host/media/media_stream_ui_proxy.h"
 #include "content/common/media/media_stream_messages.h"
 #include "content/common/media/media_stream_options.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/common/content_switches.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -15,12 +21,14 @@ namespace content {
 MediaStreamDispatcherHost::MediaStreamDispatcherHost(
     int render_process_id,
     const ResourceContext::SaltCallback& salt_callback,
-    MediaStreamManager* media_stream_manager)
+    MediaStreamManager* media_stream_manager,
+    bool use_fake_ui)
     : BrowserMessageFilter(MediaStreamMsgStart),
       render_process_id_(render_process_id),
       salt_callback_(salt_callback),
-      media_stream_manager_(media_stream_manager) {
-}
+      media_stream_manager_(media_stream_manager),
+      use_fake_ui_(use_fake_ui),
+      weak_factory_(this) {}
 
 void MediaStreamDispatcherHost::StreamGenerated(
     int render_frame_id,
@@ -44,7 +52,6 @@ void MediaStreamDispatcherHost::StreamGenerationFailed(
   DVLOG(1) << "MediaStreamDispatcherHost::StreamGenerationFailed("
            << ", {page_request_id = " << page_request_id <<  "}"
            << ", { result= " << result << "})";
-
 
   Send(new MediaStreamMsg_StreamGenerationFailed(render_frame_id,
                                                  page_request_id,
@@ -93,8 +100,16 @@ void MediaStreamDispatcherHost::DevicesChanged(MediaStreamType type) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DVLOG(1) << "MediaStreamDispatcherHost::DevicesChanged("
            << "{type = " << type << "})";
-  // TODO(guidou): check permissions and forward notifications to renderer.
-  //               crbug.com/388648
+  for (const auto& subscriber : device_change_subscribers_) {
+    std::unique_ptr<MediaStreamUIProxy> ui_proxy = CreateMediaStreamUIProxy();
+    ui_proxy->CheckAccess(
+        subscriber.security_origin, type, render_process_id_,
+        subscriber.render_frame_id,
+        base::Bind(&MediaStreamDispatcherHost::HandleCheckAccessResponse,
+                   weak_factory_.GetWeakPtr(),
+                   base::Passed(std::move(ui_proxy)),
+                   subscriber.render_frame_id));
+  }
 }
 
 bool MediaStreamDispatcherHost::OnMessageReceived(const IPC::Message& message) {
@@ -113,6 +128,10 @@ bool MediaStreamDispatcherHost::OnMessageReceived(const IPC::Message& message) {
                         OnOpenDevice)
     IPC_MESSAGE_HANDLER(MediaStreamHostMsg_CloseDevice,
                         OnCloseDevice)
+    IPC_MESSAGE_HANDLER(MediaStreamHostMsg_SubscribeToDeviceChangeNotifications,
+                        OnSubscribeToDeviceChangeNotifications)
+    IPC_MESSAGE_HANDLER(MediaStreamHostMsg_CancelDeviceChangeNotifications,
+                        OnCancelDeviceChangeNotifications)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -123,6 +142,8 @@ void MediaStreamDispatcherHost::OnChannelClosing() {
 
   // Since the IPC sender is gone, close all requesting/requested streams.
   media_stream_manager_->CancelAllRequests(render_process_id_);
+  if (!device_change_subscribers_.empty())
+    media_stream_manager_->CancelDeviceChangeNotifications(this);
 }
 
 MediaStreamDispatcherHost::~MediaStreamDispatcherHost() {
@@ -220,6 +241,63 @@ void MediaStreamDispatcherHost::OnCloseDevice(
            << label << ")";
 
   media_stream_manager_->CancelRequest(label);
+}
+
+void MediaStreamDispatcherHost::OnSubscribeToDeviceChangeNotifications(
+    int render_frame_id,
+    const url::Origin& security_origin) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DVLOG(1)
+      << "MediaStreamDispatcherHost::OnSubscribeToDeviceChangeNotifications("
+      << render_frame_id << ", " << security_origin << ")";
+  DCHECK(
+      std::find_if(
+          device_change_subscribers_.begin(), device_change_subscribers_.end(),
+          [render_frame_id](const DeviceChangeSubscriberInfo& subscriber_info) {
+            return subscriber_info.render_frame_id == render_frame_id;
+          }) == device_change_subscribers_.end());
+
+  if (device_change_subscribers_.empty())
+    media_stream_manager_->SubscribeToDeviceChangeNotifications(this);
+
+  device_change_subscribers_.push_back({render_frame_id, security_origin});
+}
+
+void MediaStreamDispatcherHost::OnCancelDeviceChangeNotifications(
+    int render_frame_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DVLOG(1) << "MediaStreamDispatcherHost::CancelDeviceChangeNotifications("
+           << render_frame_id << ")";
+  auto it = std::find_if(
+      device_change_subscribers_.begin(), device_change_subscribers_.end(),
+      [render_frame_id](const DeviceChangeSubscriberInfo& subscriber_info) {
+        return subscriber_info.render_frame_id == render_frame_id;
+      });
+  CHECK(it != device_change_subscribers_.end());
+  device_change_subscribers_.erase(it);
+  if (device_change_subscribers_.empty())
+    media_stream_manager_->CancelDeviceChangeNotifications(this);
+}
+
+std::unique_ptr<MediaStreamUIProxy>
+MediaStreamDispatcherHost::CreateMediaStreamUIProxy() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (use_fake_ui_ ||
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUseFakeUIForMediaStream)) {
+    return base::WrapUnique(new FakeMediaStreamUIProxy());
+  }
+
+  return MediaStreamUIProxy::Create();
+}
+
+void MediaStreamDispatcherHost::HandleCheckAccessResponse(
+    std::unique_ptr<MediaStreamUIProxy> ui_proxy,
+    int render_frame_id,
+    bool have_access) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (have_access)
+    Send(new MediaStreamMsg_DevicesChanged(render_frame_id));
 }
 
 }  // namespace content
