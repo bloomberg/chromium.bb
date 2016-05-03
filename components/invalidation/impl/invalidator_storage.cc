@@ -29,14 +29,12 @@ bool ValueToUnackedInvalidationStorageMap(
     const base::ListValue& value,
     syncer::UnackedInvalidationsMap* map) {
   for (size_t i = 0; i != value.GetSize(); ++i) {
-    invalidation::ObjectId invalid_id;
-    syncer::UnackedInvalidationSet storage(invalid_id);
     const base::DictionaryValue* dict;
-    if (!value.GetDictionary(i, &dict) || !storage.ResetFromValue(*dict)) {
+    if (!value.GetDictionary(i, &dict) ||
+        !syncer::UnackedInvalidationSet::DeserializeSetIntoMap(*dict, map)) {
       DLOG(WARNING) << "Failed to parse ObjectState at position " << i;
       return false;
     }
-    map->insert(std::make_pair(storage.object_id(), storage));
   }
   return true;
 }

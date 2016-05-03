@@ -125,6 +125,38 @@ void UnackedInvalidationSet::Drop(const AckHandle& handle) {
   invalidations_.insert(unknown_version);
 }
 
+// static
+bool UnackedInvalidationSet::DeserializeSetIntoMap(
+    const base::DictionaryValue& dict,
+    UnackedInvalidationsMap* map) {
+  std::string source_str;
+  if (!dict.GetString(kSourceKey, &source_str)) {
+    DLOG(WARNING) << "Unable to deserialize source";
+    return false;
+  }
+  int source = 0;
+  if (!base::StringToInt(source_str, &source)) {
+    DLOG(WARNING) << "Invalid source: " << source_str;
+    return false;
+  }
+  std::string name;
+  if (!dict.GetString(kNameKey, &name)) {
+    DLOG(WARNING) << "Unable to deserialize name";
+    return false;
+  }
+  invalidation::ObjectId id(source, name);
+  UnackedInvalidationSet storage(id);
+  const base::ListValue* invalidation_list = nullptr;
+  if (!dict.GetList(kInvalidationListKey, &invalidation_list) ||
+      !storage.ResetListFromValue(*invalidation_list)) {
+    // Earlier versions of this class did not set this field, so we don't treat
+    // parsing errors here as a fatal failure.
+    DLOG(WARNING) << "Unable to deserialize invalidation list.";
+  }
+  map->insert(std::make_pair(id, storage));
+  return true;
+}
+
 std::unique_ptr<base::DictionaryValue> UnackedInvalidationSet::ToValue() const {
   std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue);
   value->SetString(kSourceKey, base::IntToString(object_id_.source()));
