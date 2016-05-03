@@ -133,10 +133,6 @@ void MdDownloadsDOMHandler::RegisterMessages() {
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void MdDownloadsDOMHandler::OnJavascriptAllowed() {
-  list_tracker_.StartAndSendChunk();
-}
-
 void MdDownloadsDOMHandler::OnJavascriptDisallowed() {
   list_tracker_.Stop();
   list_tracker_.Reset();
@@ -144,13 +140,15 @@ void MdDownloadsDOMHandler::OnJavascriptDisallowed() {
 }
 
 void MdDownloadsDOMHandler::HandleGetDownloads(const base::ListValue* args) {
+  AllowJavascript();
+
   CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_GET_DOWNLOADS);
 
   bool terms_changed = list_tracker_.SetSearchTerms(*args);
   if (terms_changed)
     list_tracker_.Reset();
 
-  AllowJavascript();
+  list_tracker_.StartAndSendChunk();
 }
 
 void MdDownloadsDOMHandler::HandleOpenFile(const base::ListValue* args) {
