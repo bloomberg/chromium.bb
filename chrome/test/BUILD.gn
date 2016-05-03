@@ -1886,6 +1886,11 @@ test("unit_tests") {
             ".",
             "//chrome")
     deps += [ ":test_proto" ]
+
+    if (is_mac) {
+      deps += [ ":mac_safe_browsing_test_data" ]
+      data += [ "$root_out_dir/test_data/chrome/safe_browsing_dmg/" ]
+    }
   } else if (safe_browsing_mode == 2) {
     sources += rebase_path(
             chrome_tests_unit_gypi_values.chrome_unit_tests_shared_safe_browsing_sources,
@@ -2166,6 +2171,54 @@ test("unit_tests") {
   }
   if (enable_plugins && !enable_plugin_installation) {
     sources -= [ "../browser/plugins/plugin_installer_unittest.cc" ]
+  }
+}
+
+if (safe_browsing_mode == 1 && is_mac) {
+  action("mac_safe_browsing_test_data") {
+    script = "//build/gn_run_binary.py"
+    shell_script = "//chrome/test/data/safe_browsing/dmg/generate_test_data.sh"
+    inputs = [
+      script,
+      shell_script,
+      "data/safe_browsing/dmg/make_hfs.sh",
+      "data/safe_browsing/mach_o/executablefat",
+      "data/safe_browsing/mach_o/lib64.dylib",
+    ]
+    _output_dir = "$root_out_dir/test_data/chrome/safe_browsing_dmg"
+    outputs = [
+      "$_output_dir/dmg_UDBZ_GPTSPUD.dmg",
+      "$_output_dir/dmg_UDBZ_NONE.dmg",
+      "$_output_dir/dmg_UDBZ_SPUD.dmg",
+      "$_output_dir/dmg_UDCO_GPTSPUD.dmg",
+      "$_output_dir/dmg_UDCO_NONE.dmg",
+      "$_output_dir/dmg_UDCO_SPUD.dmg",
+      "$_output_dir/dmg_UDRO_GPTSPUD.dmg",
+      "$_output_dir/dmg_UDRO_NONE.dmg",
+      "$_output_dir/dmg_UDRO_SPUD.dmg",
+      "$_output_dir/dmg_UDRW_GPTSPUD.dmg",
+      "$_output_dir/dmg_UDRW_NONE.dmg",
+      "$_output_dir/dmg_UDRW_SPUD.dmg",
+      "$_output_dir/dmg_UDSP_GPTSPUD.sparseimage",
+      "$_output_dir/dmg_UDSP_NONE.sparseimage",
+      "$_output_dir/dmg_UDSP_SPUD.sparseimage",
+      "$_output_dir/dmg_UDTO_GPTSPUD.cdr",
+      "$_output_dir/dmg_UDTO_NONE.cdr",
+      "$_output_dir/dmg_UDTO_SPUD.cdr",
+      "$_output_dir/dmg_UDZO_GPTSPUD.dmg",
+      "$_output_dir/dmg_UDZO_NONE.dmg",
+      "$_output_dir/dmg_UDZO_SPUD.dmg",
+      "$_output_dir/dmg_UFBI_GPTSPUD.dmg",
+      "$_output_dir/dmg_UFBI_NONE.dmg",
+      "$_output_dir/dmg_UFBI_SPUD.dmg",
+      "$_output_dir/hfs_plus.img",
+      "$_output_dir/hfsx_case_sensitive.img",
+      "$_output_dir/mach_o_in_dmg.dmg",
+    ]
+    args = [
+      rebase_path(shell_script, root_out_dir),
+      rebase_path(_output_dir, root_out_dir),
+    ]
   }
 }
 
