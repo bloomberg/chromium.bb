@@ -6,7 +6,6 @@
 
 #include "ash/accessibility_delegate.h"
 #include "ash/app_list/app_list_presenter_delegate_factory.h"
-#include "ash/app_list/app_list_view_delegate_factory.h"
 #include "ash/default_accessibility_delegate.h"
 #include "ash/default_user_wallpaper_delegate.h"
 #include "ash/gpu_support_stub.h"
@@ -28,6 +27,7 @@
 #include "components/user_manager/user_info_impl.h"
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/presenter/app_list_presenter_impl.h"
+#include "ui/app_list/presenter/app_list_view_delegate_factory.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
@@ -139,7 +139,8 @@ class SessionStateDelegateImpl : public SessionStateDelegate {
   DISALLOW_COPY_AND_ASSIGN(SessionStateDelegateImpl);
 };
 
-class AppListViewDelegateFactoryImpl : public ash::AppListViewDelegateFactory {
+class AppListViewDelegateFactoryImpl
+    : public app_list::AppListViewDelegateFactory {
  public:
   AppListViewDelegateFactoryImpl() {}
   ~AppListViewDelegateFactoryImpl() override {}

@@ -4,7 +4,6 @@
 
 #include "ash/app_list/app_list_presenter_delegate.h"
 
-#include "ash/app_list/app_list_view_delegate_factory.h"
 #include "ash/ash_switches.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/root_window_controller.h"
@@ -19,6 +18,7 @@
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/presenter/app_list_presenter.h"
+#include "ui/app_list/presenter/app_list_view_delegate_factory.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/aura/window.h"
 #include "ui/events/event.h"
@@ -28,16 +28,10 @@
 namespace ash {
 namespace {
 
-// Offset in pixels to animation away/towards the shelf.
-const int kAnimationOffset = 8;
-
 // The minimal anchor position offset to make sure that the bubble is still on
 // the screen with 8 pixels spacing on the left / right. This constant is a
 // result of minimal bubble arrow sizes and offsets.
 const int kMinimalAnchorPositionOffset = 57;
-
-// The minimal margin (in pixels) around the app list when in centered mode.
-const int kMinimalCenteredAppListMargin = 10;
 
 // Gets arrow location based on shelf alignment.
 views::BubbleBorder::Arrow GetBubbleArrow(aura::Window* window) {
@@ -104,11 +98,6 @@ gfx::Point GetCenterOfDisplayForView(const views::View* view,
   return bounds.CenterPoint();
 }
 
-// Gets the minimum height of the rectangle to center the app list in.
-int GetMinimumBoundsHeightForAppList(const app_list::AppListView* app_list) {
-  return app_list->bounds().height() + 2 * kMinimalCenteredAppListMargin;
-}
-
 bool IsFullscreenAppListEnabled() {
 #if defined(OS_CHROMEOS)
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -126,7 +115,7 @@ bool IsFullscreenAppListEnabled() {
 
 AppListPresenterDelegate::AppListPresenterDelegate(
     app_list::AppListPresenter* presenter,
-    AppListViewDelegateFactory* view_delegate_factory)
+    app_list::AppListViewDelegateFactory* view_delegate_factory)
     : presenter_(presenter), view_delegate_factory_(view_delegate_factory) {
   Shell::GetInstance()->AddShellObserver(this);
 }

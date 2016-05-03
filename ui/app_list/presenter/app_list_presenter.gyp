@@ -28,11 +28,14 @@
       'sources': [
         # Note: sources list duplicated in GN build.
         'app_list_presenter.h',
+        'app_list_presenter_delegate.cc',
         'app_list_presenter_delegate.h',
         'app_list_presenter_delegate_factory.h',
         'app_list_presenter_export.h',
         'app_list_presenter_impl.cc',
         'app_list_presenter_impl.h',
+        'app_list_view_delegate_factory.cc',
+        'app_list_view_delegate_factory.h',
       ],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],

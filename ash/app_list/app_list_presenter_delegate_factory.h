@@ -13,24 +13,23 @@
 
 namespace app_list {
 class AppListPresenter;
+class AppListViewDelegateFactory;
 }
 
 namespace ash {
-
-class AppListViewDelegateFactory;
 
 class ASH_EXPORT AppListPresenterDelegateFactory
     : public app_list::AppListPresenterDelegateFactory {
  public:
   explicit AppListPresenterDelegateFactory(
-      std::unique_ptr<AppListViewDelegateFactory> view_delegate_factory);
+      std::unique_ptr<app_list::AppListViewDelegateFactory>);
   ~AppListPresenterDelegateFactory() override;
 
   std::unique_ptr<app_list::AppListPresenterDelegate> GetDelegate(
       app_list::AppListPresenter* presenter) override;
 
  private:
-  std::unique_ptr<AppListViewDelegateFactory> view_delegate_factory_;
+  std::unique_ptr<app_list::AppListViewDelegateFactory> view_delegate_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListPresenterDelegateFactory);
 };

@@ -9,8 +9,10 @@
 #include "mash/public/interfaces/launchable.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/shell/public/cpp/interface_factory.h"
+#include "ui/app_list/presenter/app_list_presenter.mojom.h"
 #include "ui/keyboard/keyboard.mojom.h"
 
+class AppListPresenterService;
 class ChromeLaunchable;
 class KeyboardUIService;
 
@@ -20,6 +22,7 @@ namespace chromeos {
 class ChromeInterfaceFactory
     : public content::MojoShellConnection::Listener,
       public shell::InterfaceFactory<mash::mojom::Launchable>,
+      public shell::InterfaceFactory<app_list::mojom::AppListPresenter>,
       public shell::InterfaceFactory<keyboard::mojom::Keyboard> {
  public:
   ChromeInterfaceFactory();
@@ -38,9 +41,17 @@ class ChromeInterfaceFactory
   void Create(shell::Connection* connection,
               mash::mojom::LaunchableRequest request) override;
 
+  // mojo::InterfaceFactory<app_list::AppListPresenter>:
+  void Create(shell::Connection* connection,
+              mojo::InterfaceRequest<app_list::mojom::AppListPresenter> request)
+      override;
+
   std::unique_ptr<KeyboardUIService> keyboard_ui_service_;
   mojo::BindingSet<keyboard::mojom::Keyboard> keyboard_bindings_;
   std::unique_ptr<ChromeLaunchable> launchable_;
+  std::unique_ptr<AppListPresenterService> app_list_presenter_service_;
+  mojo::BindingSet<app_list::mojom::AppListPresenter>
+      app_list_presenter_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeInterfaceFactory);
 };

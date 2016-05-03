@@ -111,6 +111,7 @@ source_set("chromeos") {
     "//third_party/re2",
     "//third_party/zlib",
     "//ui/app_list",
+    "//ui/app_list/presenter:mojom",
     "//ui/aura",
     "//ui/base",
     "//ui/chromeos:ui_chromeos",

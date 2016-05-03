@@ -6,7 +6,6 @@
 
 #include "ash/app_list/app_list_presenter_delegate.h"
 #include "ash/app_list/app_list_presenter_delegate_factory.h"
-#include "ash/app_list/app_list_view_delegate_factory.h"
 #include "ash/shell.h"
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
@@ -16,18 +15,21 @@
 #include "chrome/browser/ui/app_list/app_list_view_delegate.h"
 #include "chrome/browser/ui/app_list/start_page_service.h"
 #include "chrome/browser/ui/ash/app_list/app_list_controller_ash.h"
+#include "chrome/browser/ui/ash/app_list/app_list_presenter_delegate_mus.h"
+#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/session_util.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/presenter/app_list_presenter_delegate_factory.h"
 #include "ui/app_list/presenter/app_list_presenter_impl.h"
+#include "ui/app_list/presenter/app_list_view_delegate_factory.h"
 #include "ui/app_list/views/app_list_main_view.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/app_list/views/contents_view.h"
 
 namespace {
 
-class ViewDelegateFactoryImpl : public ash::AppListViewDelegateFactory {
+class ViewDelegateFactoryImpl : public app_list::AppListViewDelegateFactory {
  public:
   explicit ViewDelegateFactoryImpl(AppListServiceImpl* factory)
       : factory_(factory) {}
@@ -45,6 +47,28 @@ class ViewDelegateFactoryImpl : public ash::AppListViewDelegateFactory {
   DISALLOW_COPY_AND_ASSIGN(ViewDelegateFactoryImpl);
 };
 
+class AppListPresenterDelegateFactoryMus
+    : public app_list::AppListPresenterDelegateFactory {
+ public:
+  explicit AppListPresenterDelegateFactoryMus(
+      std::unique_ptr<app_list::AppListViewDelegateFactory>
+          view_delegate_factory)
+      : view_delegate_factory_(std::move(view_delegate_factory)) {}
+
+  ~AppListPresenterDelegateFactoryMus() override {}
+
+  std::unique_ptr<app_list::AppListPresenterDelegate> GetDelegate(
+      app_list::AppListPresenter* presenter) override {
+    return base::WrapUnique(
+        new AppListPresenterDelegateMus(view_delegate_factory_.get()));
+  }
+
+ private:
+  std::unique_ptr<app_list::AppListViewDelegateFactory> view_delegate_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(AppListPresenterDelegateFactoryMus);
+};
+
 }  // namespace
 
 // static
@@ -53,9 +77,14 @@ AppListServiceAsh* AppListServiceAsh::GetInstance() {
                          base::LeakySingletonTraits<AppListServiceAsh>>::get();
 }
 
-AppListServiceAsh::AppListServiceAsh()
-    : presenter_delegate_factory_(new ash::AppListPresenterDelegateFactory(
-          base::WrapUnique(new ViewDelegateFactoryImpl(this)))) {
+AppListServiceAsh::AppListServiceAsh() {
+  if (chrome::IsRunningInMash()) {
+    presenter_delegate_factory_.reset(new AppListPresenterDelegateFactoryMus(
+        base::WrapUnique(new ViewDelegateFactoryImpl(this))));
+  } else {
+    presenter_delegate_factory_.reset(new ash::AppListPresenterDelegateFactory(
+        base::WrapUnique(new ViewDelegateFactoryImpl(this))));
+  }
   app_list_presenter_.reset(
       new app_list::AppListPresenterImpl(presenter_delegate_factory_.get()));
   controller_delegate_.reset(

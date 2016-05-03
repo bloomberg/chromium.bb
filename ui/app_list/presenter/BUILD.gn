@@ -2,19 +2,23 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//testing/test.gni")
 import("//build/config/ui.gni")
+import("//mojo/public/tools/bindings/mojom.gni")
+import("//testing/test.gni")
 
 assert(use_aura)
 
 component("presenter") {
   sources = [
     "app_list_presenter.h",
+    "app_list_presenter_delegate.cc",
     "app_list_presenter_delegate.h",
     "app_list_presenter_delegate_factory.h",
     "app_list_presenter_export.h",
     "app_list_presenter_impl.cc",
     "app_list_presenter_impl.h",
+    "app_list_view_delegate_factory.cc",
+    "app_list_view_delegate_factory.h",
   ]
 
   defines = [ "APP_LIST_PRESENTER_IMPLEMENTATION" ]
@@ -26,6 +30,15 @@ component("presenter") {
     "//ui/compositor",
     "//ui/gfx/geometry",
     "//ui/views",
+  ]
+}
+
+mojom("mojom") {
+  sources = [
+    "app_list_presenter.mojom",
+  ]
+  deps = [
+    "//components/mus/public/interfaces",
   ]
 }
 

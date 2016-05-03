@@ -510,6 +510,8 @@
     'chrome_browser_ui_ash_sources': [
       'browser/ui/ash/app_list/app_list_controller_ash.cc',
       'browser/ui/ash/app_list/app_list_controller_ash.h',
+      'browser/ui/ash/app_list/app_list_presenter_delegate_mus.cc',
+      'browser/ui/ash/app_list/app_list_presenter_delegate_mus.h',
       'browser/ui/ash/app_list/app_list_service_ash.cc',
       'browser/ui/ash/app_list/app_list_service_ash.h',
       'browser/ui/ash/app_list/app_sync_ui_state_watcher.cc',

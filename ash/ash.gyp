@@ -32,7 +32,6 @@
       'app_list/app_list_presenter_delegate.h',
       'app_list/app_list_presenter_delegate_factory.cc',
       'app_list/app_list_presenter_delegate_factory.h',
-      'app_list/app_list_view_delegate_factory.h',
       'ash_constants.cc',
       'ash_constants.h',
       'ash_export.h',

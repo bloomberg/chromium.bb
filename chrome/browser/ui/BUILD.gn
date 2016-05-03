@@ -253,6 +253,8 @@ source_set("ui") {
     sources +=
         rebase_path(gypi_values.chrome_browser_ui_ash_sources, ".", "//chrome")
     sources += [
+      "ash/app_list/app_list_presenter_service.cc",
+      "ash/app_list/app_list_presenter_service.h",
       "ash/keyboard_ui_service.cc",
       "ash/keyboard_ui_service.h",
       "ash/launcher/chrome_mash_shelf_controller.cc",
@@ -266,6 +268,7 @@ source_set("ui") {
       "//mash/shelf/public/interfaces",
       "//skia/public",
       "//ui/app_list/presenter",
+      "//ui/app_list/presenter:mojom",
       "//ui/keyboard:mojom",
     ]
     if (!is_chromeos) {

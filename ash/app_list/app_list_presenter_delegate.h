@@ -20,6 +20,7 @@ namespace app_list {
 class ApplicationDragAndDropHost;
 class AppListPresenter;
 class AppListView;
+class AppListViewDelegateFactory;
 }
 
 namespace ui {
@@ -32,8 +33,7 @@ namespace test {
 class AppListPresenterAshTestApi;
 }
 
-class AppListViewDelegateFactory;
-
+// Non-Mus+ash implementation of AppListPresetnerDelegate.
 // Responsible for laying out the app list UI as well as updating the Shelf
 // launch icon as the state of the app list changes. Listens to shell events
 // and touches/mouse clicks outside the app list to auto dismiss the UI or
@@ -45,8 +45,9 @@ class ASH_EXPORT AppListPresenterDelegate
       public ShellObserver,
       public ShelfIconObserver {
  public:
-  AppListPresenterDelegate(app_list::AppListPresenter* presenter,
-                           AppListViewDelegateFactory* view_delegate_factory);
+  AppListPresenterDelegate(
+      app_list::AppListPresenter* presenter,
+      app_list::AppListViewDelegateFactory* view_delegate_factory);
   ~AppListPresenterDelegate() override;
 
   // app_list::AppListPresenterDelegate:
@@ -88,7 +89,7 @@ class ASH_EXPORT AppListPresenterDelegate
   app_list::AppListPresenter* presenter_;
 
   // Not owned. Pointer is guaranteed to be valid while this object is alive.
-  AppListViewDelegateFactory* view_delegate_factory_;
+  app_list::AppListViewDelegateFactory* view_delegate_factory_;
 
   // Owned by its widget.
   app_list::AppListView* view_ = nullptr;
