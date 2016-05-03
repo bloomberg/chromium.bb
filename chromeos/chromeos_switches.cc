@@ -65,10 +65,10 @@ const char kDefaultWallpaperIsOem[] = "default-wallpaper-is-oem";
 const char kDefaultWallpaperLarge[] = "default-wallpaper-large";
 const char kDefaultWallpaperSmall[] = "default-wallpaper-small";
 
-// Time before a machine at OOBE is considered derelict.
+// Time in seconds before a machine at OOBE is considered derelict.
 const char kDerelictDetectionTimeout[] = "derelict-detection-timeout";
 
-// Time before a derelict machines starts demo mode.
+// Time in seconds before a derelict machines starts demo mode.
 const char kDerelictIdleTimeout[] = "derelict-idle-timeout";
 
 // Disables ARC Opt-in verification process and ARC is enabled by default.
