@@ -54,6 +54,18 @@ void ForwardValuesFromList(Scope* source,
         return;
       }
 
+      // Don't allow clobbering existing values.
+      const Value* existing_value = dest->GetValue(storage_key);
+      if (existing_value) {
+        *err = Err(cur, "Clobbering existing value.",
+            "The current scope already defines a value \"" +
+             cur.string_value() + "\".\nforward_variables_from() won't clobber "
+             "existing values. If you want to\nmerge lists, you'll need to "
+             "do this explicitly.");
+        err->AppendSubErr(Err(*existing_value, "value being clobbered."));
+        return;
+      }
+
       // Keep the origin information from the original value. The normal
       // usage is for this to be used in a template, and if there's an error,
       // the user expects to see the line where they set the variable

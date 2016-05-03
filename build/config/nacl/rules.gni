@@ -21,8 +21,6 @@ template("generate_nmf") {
   assert(defined(invoker.nmf), "Must define nmf")
 
   action(target_name) {
-    nmfflags = []
-
     forward_variables_from(invoker,
                            [
                              "deps",
@@ -36,6 +34,9 @@ template("generate_nmf") {
                              "testonly",
                              "visibility",
                            ])
+    if (!defined(nmfflags)) {
+      nmfflags = []
+    }
 
     # TODO(phosek): Remove this conditional once
     # https://bugs.chromium.org/p/nativeclient/issues/detail?id=4339 is
@@ -119,15 +120,12 @@ template("generate_nonsfi_test_nmf") {
   assert(defined(invoker.nmf), "Must define nmf")
 
   action(target_name) {
-    nmfflags = []
-
     forward_variables_from(invoker,
                            [
                              "deps",
                              "data_deps",
                              "executable",
                              "nmf",
-                             "nmfflags",
                              "testonly",
                              "public_deps",
                              "visibility",
@@ -152,9 +150,12 @@ template("generate_nonsfi_test_nmf") {
       arch = target_cpu
     }
     args = [
-             "--program=" + rebase_path(executable, root_build_dir),
-             "--arch=${arch}",
-             "--output=" + rebase_path(nmf, root_build_dir),
-           ] + nmfflags
+      "--program=" + rebase_path(executable, root_build_dir),
+      "--arch=${arch}",
+      "--output=" + rebase_path(nmf, root_build_dir),
+    ]
+    if (defined(invoker.nmfflags)) {
+      args += invoker.nmfflags
+    }
   }
 }

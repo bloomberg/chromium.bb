@@ -27,5 +27,5 @@ java_binary("jmake") {
     "src/org/pantsbuild/jmake/BinaryProjectDatabaseReader.java",
   ]
   main_class = "org.pantsbuild.jmake.Main"
-  enable_incremental_javac = false
+  enable_incremental_javac_override = false
 }

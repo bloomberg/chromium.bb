@@ -98,7 +98,7 @@ android_library("netty-tcnative") {
     "src/java/src/org/apache/tomcat/jni/Time.java",
     "src/java/src/org/apache/tomcat/jni/User.java",
   ]
-  run_findbugs = false
+  run_findbugs_override = false
   deps = [
     "//base:base_java",
   ]

@@ -9,5 +9,5 @@ android_library("gif_player_java") {
     "src/jp/tomorrowkey/android/gifplayer/BaseGifDrawable.java",
     "src/jp/tomorrowkey/android/gifplayer/BaseGifImage.java",
   ]
-  run_findbugs = false
+  run_findbugs_override = false
 }

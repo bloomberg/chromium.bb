@@ -412,13 +412,20 @@ template("gcc_toolchain") {
 
       forward_variables_from(invoker,
                              [
-                               "is_clang",
-                               "is_component_build",
-                               "is_nacl_glibc",
                                "use_allocator",
                                "use_gold",
                                "symbol_level",
                              ])
+
+      if (defined(invoker.is_clang)) {
+        is_clang = invoker.is_clang
+      }
+      if (defined(invoker.is_component_build)) {
+        is_component_build = invoker.is_component_build
+      }
+      if (defined(invoker.is_nacl_glibc)) {
+        is_nacl_glibc = invoker.is_nacl_glibc
+      }
 
       if (defined(invoker.clear_sanitizers) && invoker.clear_sanitizers) {
         is_asan = false

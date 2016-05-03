@@ -85,13 +85,15 @@ template("generate_jni") {
   }
 
   group(target_name) {
-    public_deps = []
     forward_variables_from(invoker,
                            [
                              "deps",
                              "public_deps",
                              "visibility",
                            ])
+    if (!defined(public_deps)) {
+      public_deps = []
+    }
     public_deps += [ ":$foreach_target_name" ]
     public_configs = [ ":jni_includes_${target_name}" ]
   }
@@ -637,7 +639,6 @@ template("android_resources") {
 
   process_resources(process_resources_target_name) {
     visibility = [ ":$final_target_name" ]
-    deps = []
     forward_variables_from(invoker,
                            [
                              "app_as_shared_lib",
@@ -650,6 +651,9 @@ template("android_resources") {
                              "shared_resources",
                              "v14_skip",
                            ])
+    if (!defined(deps)) {
+      deps = []
+    }
     deps += [ ":$build_config_target_name" ]
 
     # Always generate R.onResourcesLoaded() method, it is required for
@@ -908,7 +912,8 @@ template("java_strings_grd_prebuilt") {
 #     android_library target, for example.
 #   chromium_code: If true, extra analysis warning/errors will be enabled.
 #   enable_errorprone: If true, enables the errorprone compiler.
-#   enable_incremental_javac: Overrides the global enable_incremental_javac.
+#   enable_incremental_javac_override: Overrides the
+#     global enable_incremental_javac.
 #   main_class: When specified, a wrapper script is created within
 #     $root_build_dir/bin to launch the binary with the given class as the
 #     entrypoint.
@@ -1007,7 +1012,8 @@ template("junit_binary") {
 #
 #   chromium_code: If true, extra analysis warning/errors will be enabled.
 #   enable_errorprone: If true, enables the errorprone compiler.
-#   enable_incremental_javac: Overrides the global enable_incremental_javac.
+#   enable_incremental_javac_override: Overrides the global
+#     enable_incremental_javac.
 #
 #   jar_excluded_patterns: List of patterns of .class files to exclude from the
 #     final jar.
@@ -1096,7 +1102,8 @@ template("java_prebuilt") {
 #
 #   chromium_code: If true, extra analysis warning/errors will be enabled.
 #   enable_errorprone: If true, enables the errorprone compiler.
-#   enable_incremental_javac: Overrides the global enable_incremental_javac.
+#   enable_incremental_javac_override: Overrides the global
+#     enable_incremental_javac.
 #
 #   jar_excluded_patterns: List of patterns of .class files to exclude from the
 #     final jar.
@@ -1269,6 +1276,8 @@ template("android_java_prebuilt") {
 #     installation only on Android M or later. In these releases the system
 #     linker does relocation unpacking, so we can enable it unconditionally.
 #   secondary_native_libs: the path of native libraries for secondary app abi.
+#   run_findbugs_override: Forces run_findbugs on or off. If undefined, the
+#     default will use the build arg run_findbugs.
 #
 # Example
 #   android_apk("foo_apk") {
@@ -1556,7 +1565,7 @@ template("android_apk") {
                            [
                              "chromium_code",
                              "java_files",
-                             "run_findbugs",
+                             "run_findbugs_override",
                            ])
     supports_android = true
     requires_android = true
@@ -1659,7 +1668,6 @@ template("android_apk") {
   }
 
   dex("$final_dex_target_name") {
-    forward_variables_from(invoker, [ "enable_multidex" ])
     deps = _dex_deps + [ ":$build_config_target" ]
     inputs = [
       _build_config,
@@ -1750,7 +1758,6 @@ template("android_apk") {
 
   _final_deps += [ ":${_template_name}__create" ]
   create_apk("${_template_name}__create") {
-    deps = []
     forward_variables_from(invoker,
                            [
                              "alternative_android_sdk_jar",
@@ -1766,6 +1773,9 @@ template("android_apk") {
                              "uncompress_shared_libraries",
                              "write_asset_list",
                            ])
+    if (!defined(deps)) {
+      deps = []
+    }
     apk_path = _final_apk_path
     android_manifest = _android_manifest
     assets_build_config = _build_config
@@ -1929,12 +1939,14 @@ template("android_apk") {
     public_deps = _final_deps
   }
   group("${target_name}_incremental") {
-    data_deps = []
     forward_variables_from(invoker,
                            [
                              "data",
                              "data_deps",
                            ])
+    if (!defined(data_deps)) {
+      data_deps = []
+    }
 
     # device/commands is used by the installer script to push files via .zip.
     data_deps += [ "//build/android/pylib/device/commands" ] +
@@ -2037,8 +2049,11 @@ template("instrumentation_test_apk") {
     }
 
     create_dist_ijar = true
-    run_findbugs = defined(invoker.run_findbugs) && invoker.run_findbugs &&
-                   defined(invoker.java_files)
+    if (defined(invoker.run_findbugs_override)) {
+      # Only allow findbugs when there are java files.
+      run_findbugs_override =
+          invoker.run_findbugs_override && defined(invoker.java_files)
+    }
   }
 
   group(target_name) {

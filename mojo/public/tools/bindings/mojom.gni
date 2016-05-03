@@ -388,7 +388,7 @@ template("mojom") {
         }
 
         srcjar_deps = [ ":$java_srcjar_target_name" ]
-        run_findbugs = false
+        run_findbugs_override = false
       }
     }
   }

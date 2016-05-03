@@ -267,7 +267,7 @@ android_library("cronet_api") {
     ":network_quality_observations_java",
   ]
 
-  run_findbugs = true
+  run_findbugs_override = true
 }
 
 android_library("cronet_java") {
@@ -304,7 +304,7 @@ android_library("cronet_java") {
     ":net_request_priority_java",
   ]
 
-  run_findbugs = true
+  run_findbugs_override = true
 }
 
 android_resources("cronet_sample_apk_resources") {
@@ -325,7 +325,7 @@ android_library("cronet_sample_apk_java") {
     "//base:base_java",
   ]
 
-  run_findbugs = true
+  run_findbugs_override = true
 }
 
 android_apk("cronet_sample_apk") {
@@ -341,7 +341,7 @@ android_apk("cronet_sample_apk") {
     "//third_party/jsr-305:jsr_305_javalib",
   ]
 
-  run_findbugs = true
+  run_findbugs_override = true
   if (!is_debug) {
     proguard_enabled = true
     proguard_configs = [
@@ -380,7 +380,7 @@ instrumentation_test_apk("cronet_sample_test_apk") {
   ]
   additional_apks = [ "//net/android:net_test_support_apk" ]
 
-  run_findbugs = true
+  run_findbugs_override = true
   proguard_enabled = !is_debug
 }
 
@@ -485,7 +485,7 @@ android_library("cronet_test_apk_java") {
     "//third_party/netty4:netty_all",
   ]
 
-  run_findbugs = true
+  run_findbugs_override = true
 }
 
 android_assets("cronet_test_apk_assets") {
@@ -544,7 +544,7 @@ android_apk("cronet_test_apk") {
     "//third_party/netty-tcnative:netty-tcnative_all",
   ]
 
-  run_findbugs = true
+  run_findbugs_override = true
 }
 
 android_library("cronet_javatests") {
@@ -597,7 +597,7 @@ android_library("cronet_javatests") {
     "//net/android:net_java_test_support",
   ]
 
-  run_findbugs = true
+  run_findbugs_override = true
 }
 
 instrumentation_test_apk("cronet_test_instrumentation_apk") {
@@ -627,7 +627,7 @@ instrumentation_test_apk("cronet_test_instrumentation_apk") {
   # TODO(jbudorick): Remove this once GN uses the generated .isolate files.
   isolate_file = "cronet_test_instrumentation_apk.isolate"
 
-  run_findbugs = true
+  run_findbugs_override = true
 }
 
 android_library("cronet_perf_test_apk_java") {
@@ -643,7 +643,7 @@ android_library("cronet_perf_test_apk_java") {
     "//base:base_java",
   ]
 
-  run_findbugs = true
+  run_findbugs_override = true
 }
 
 android_apk("cronet_perf_test_apk") {
@@ -659,7 +659,7 @@ android_apk("cronet_perf_test_apk") {
     "//base:base_java",
   ]
 
-  run_findbugs = true
+  run_findbugs_override = true
   proguard_enabled = true
   proguard_configs = [
     "proguard.cfg",

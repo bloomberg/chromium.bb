@@ -97,7 +97,6 @@ template("test") {
       _device_isolate_path = "$root_out_dir/gen.runtime/$_target_dir_name/$target_name.device.isolate"
       _gen_isolate_target_name = "${target_name}__isolate"
       _gen_isolate(_gen_isolate_target_name) {
-        data_deps = []
         forward_variables_from(invoker,
                                [
                                  "data",

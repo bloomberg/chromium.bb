@@ -38,8 +38,6 @@ template("nacl_toolchain") {
                              "cc",
                              "cxx",
                              "deps",
-                             "is_clang",
-                             "is_nacl_glibc",
                              "ld",
                              "link_outputs",
                              "nm",
@@ -48,6 +46,13 @@ template("nacl_toolchain") {
                              "symbol_level",
                              "toolchain_cpu",
                            ])
+
+    if (defined(invoker.is_clang)) {
+      is_clang = invoker.is_clang
+    }
+    if (defined(invoker.is_nacl_glibc)) {
+      is_nacl_glibc = invoker.is_nacl_glibc
+    }
 
     # We do not support component builds or sanitizers with the NaCl toolchains.
     is_component_build = false
