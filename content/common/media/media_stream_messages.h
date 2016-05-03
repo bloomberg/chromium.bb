@@ -95,9 +95,6 @@ IPC_MESSAGE_ROUTED3(MediaStreamMsg_DeviceOpened,
 IPC_MESSAGE_ROUTED1(MediaStreamMsg_DeviceOpenFailed,
                     int /* request id */)
 
-// The browser has detected a change in the set of media devices.
-IPC_MESSAGE_ROUTED0(MediaStreamMsg_DevicesChanged)
-
 // Messages sent from the renderer to the browser.
 
 // Request a new media stream.
@@ -143,12 +140,3 @@ IPC_MESSAGE_CONTROL5(MediaStreamHostMsg_OpenDevice,
 IPC_MESSAGE_CONTROL2(MediaStreamHostMsg_CloseDevice,
                      int /* render frame id */,
                      std::string /*label*/)
-
-// Subscribe to notifications about changes in the set of media devices.
-IPC_MESSAGE_CONTROL2(MediaStreamHostMsg_SubscribeToDeviceChangeNotifications,
-                     int /* render frame id */,
-                     url::Origin /* security origin */)
-
-// Cancel notifications about changes in the set of media devices.
-IPC_MESSAGE_CONTROL1(MediaStreamHostMsg_CancelDeviceChangeNotifications,
-                     int /* render frame id */)

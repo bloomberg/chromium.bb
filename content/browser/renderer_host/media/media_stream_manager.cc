@@ -2095,7 +2095,7 @@ void MediaStreamManager::CancelDeviceChangeNotifications(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   auto it = std::find(device_change_subscribers_.begin(),
                       device_change_subscribers_.end(), subscriber);
-  CHECK(it != device_change_subscribers_.end());
+  DCHECK(it != device_change_subscribers_.end());
   device_change_subscribers_.erase(it);
 }
 

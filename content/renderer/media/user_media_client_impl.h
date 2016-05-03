@@ -83,7 +83,6 @@ class CONTENT_EXPORT UserMediaClientImpl
                       const std::string& label,
                       const StreamDeviceInfo& device_info) override;
   void OnDeviceOpenFailed(int request_id) override;
-  void OnDevicesChanged() override;
 
   // RenderFrameObserver override
   void FrameWillClose() override;
