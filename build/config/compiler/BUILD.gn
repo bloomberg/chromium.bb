@@ -298,7 +298,7 @@ config("compiler") {
 
   # Linux-specific compiler flags setup.
   # ------------------------------------
-  if (is_posix && use_lld) {
+  if (is_posix && use_lld && !is_nacl) {
     ldflags += [ "-fuse-ld=lld" ]
   } else if (use_gold) {
     ldflags += [
@@ -336,7 +336,7 @@ config("compiler") {
     ldflags += [ "-fuse-ld=bfd" ]
   }
 
-  if (is_posix && (use_gold || use_lld) && !using_sanitizer &&
+  if (is_posix && (use_gold || (use_lld && !is_nacl)) && !using_sanitizer &&
       !(is_android && use_order_profiling)) {
     ldflags += [ "-Wl,--icf=all" ]
   }
