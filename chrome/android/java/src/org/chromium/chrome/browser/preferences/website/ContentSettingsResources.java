@@ -87,6 +87,17 @@ public class ContentSettingsResources {
         ThreadUtils.assertOnUiThread();
         if (sResourceInfo == null) {
             Map<Integer, ResourceItem> localMap = new HashMap<Integer, ResourceItem>();
+            localMap.put(ContentSettingsType.CONTENT_SETTINGS_TYPE_AUTOPLAY,
+                    new ResourceItem(R.drawable.settings_autoplay, R.string.autoplay_title,
+                                 R.string.autoplay_title, ContentSetting.ALLOW,
+                                 ContentSetting.BLOCK,
+                                 R.string.website_settings_category_autoplay_allowed, 0));
+            localMap.put(ContentSettingsType.CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC,
+                    new ResourceItem(R.drawable.permission_background_sync,
+                                 R.string.background_sync_permission_title,
+                                 R.string.background_sync_permission_title, ContentSetting.ALLOW,
+                                 ContentSetting.BLOCK,
+                                 R.string.website_settings_category_allowed_recommended, 0));
             localMap.put(ContentSettingsType.CONTENT_SETTINGS_TYPE_COOKIES,
                     new ResourceItem(R.drawable.permission_cookie, R.string.cookies_title,
                                  R.string.cookies_title, ContentSetting.ALLOW, ContentSetting.BLOCK,
@@ -109,6 +120,12 @@ public class ContentSettingsResources {
                                  R.string.javascript_permission_title, ContentSetting.ALLOW,
                                  ContentSetting.BLOCK,
                                  R.string.website_settings_category_allowed_recommended, 0));
+            localMap.put(ContentSettingsType.CONTENT_SETTINGS_TYPE_KEYGEN,
+                    new ResourceItem(R.drawable.permission_keygen,
+                                 R.string.keygen_permission_title,
+                                 R.string.keygen_permission_title, ContentSetting.ALLOW,
+                                 ContentSetting.BLOCK,
+                                 0, R.string.website_settings_category_blocked_recommended));
             localMap.put(
                     ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
                     new ResourceItem(R.drawable.permission_camera,
@@ -139,18 +156,6 @@ public class ContentSettingsResources {
                                  org.chromium.chrome.R.string.protected_content,
                                  org.chromium.chrome.R.string.protected_content,
                                  ContentSetting.ASK, ContentSetting.BLOCK, 0, 0));
-            localMap.put(ContentSettingsType.CONTENT_SETTINGS_TYPE_KEYGEN,
-                    new ResourceItem(R.drawable.permission_keygen,
-                                 R.string.keygen_permission_title,
-                                 R.string.keygen_permission_title, ContentSetting.ALLOW,
-                                 ContentSetting.BLOCK,
-                                 0, R.string.website_settings_category_blocked_recommended));
-            localMap.put(ContentSettingsType.CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC,
-                    new ResourceItem(R.drawable.permission_background_sync,
-                                 R.string.background_sync_permission_title,
-                                 R.string.background_sync_permission_title, ContentSetting.ALLOW,
-                                 ContentSetting.BLOCK,
-                                 R.string.website_settings_category_allowed_recommended, 0));
             sResourceInfo = localMap;
         }
         return sResourceInfo;

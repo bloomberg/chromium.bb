@@ -70,6 +70,7 @@ public class SingleWebsitePreferences extends PreferenceFragment
     // Buttons:
     public static final String PREF_RESET_SITE = "reset_site_button";
     // Website permissions (if adding new, see hasPermissionsPreferences and resetSite below):
+    public static final String PREF_AUTOPLAY_PERMISSION = "autoplay_permission_list";
     public static final String PREF_BACKGROUND_SYNC_PERMISSION = "background_sync_permission_list";
     public static final String PREF_CAMERA_CAPTURE_PERMISSION = "camera_permission_list";
     public static final String PREF_COOKIES_PERMISSION = "cookies_permission_list";
@@ -87,6 +88,7 @@ public class SingleWebsitePreferences extends PreferenceFragment
     // All permissions from the permissions preference category must be listed here.
     // TODO(mvanouwerkerk): Use this array in more places to reduce verbosity.
     private static final String[] PERMISSION_PREFERENCE_KEYS = {
+            PREF_AUTOPLAY_PERMISSION,
             PREF_BACKGROUND_SYNC_PERMISSION,
             PREF_CAMERA_CAPTURE_PERMISSION,
             PREF_COOKIES_PERMISSION,
@@ -300,6 +302,8 @@ public class SingleWebsitePreferences extends PreferenceFragment
                 }
             } else if (PREF_RESET_SITE.equals(preference.getKey())) {
                 preference.setOnPreferenceClickListener(this);
+            } else if (PREF_AUTOPLAY_PERMISSION.equals(preference.getKey())) {
+                setUpListPreference(preference, mSite.getAutoplayPermission());
             } else if (PREF_BACKGROUND_SYNC_PERMISSION.equals(preference.getKey())) {
                 setUpListPreference(preference, mSite.getBackgroundSyncPermission());
             } else if (PREF_CAMERA_CAPTURE_PERMISSION.equals(preference.getKey())) {
@@ -529,6 +533,8 @@ public class SingleWebsitePreferences extends PreferenceFragment
 
     private int getContentSettingsTypeFromPreferenceKey(String preferenceKey) {
         switch (preferenceKey) {
+            case PREF_AUTOPLAY_PERMISSION:
+                return ContentSettingsType.CONTENT_SETTINGS_TYPE_AUTOPLAY;
             case PREF_BACKGROUND_SYNC_PERMISSION:
                 return ContentSettingsType.CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC;
             case PREF_CAMERA_CAPTURE_PERMISSION:
@@ -591,7 +597,9 @@ public class SingleWebsitePreferences extends PreferenceFragment
     @Override
     public boolean onPreferenceChange(Preference preference, Object newValue) {
         ContentSetting permission = ContentSetting.fromString((String) newValue);
-        if (PREF_BACKGROUND_SYNC_PERMISSION.equals(preference.getKey())) {
+        if (PREF_AUTOPLAY_PERMISSION.equals(preference.getKey())) {
+            mSite.setAutoplayPermission(permission);
+        } else if (PREF_BACKGROUND_SYNC_PERMISSION.equals(preference.getKey())) {
             mSite.setBackgroundSyncPermission(permission);
         } else if (PREF_CAMERA_CAPTURE_PERMISSION.equals(preference.getKey())) {
             mSite.setCameraPermission(permission);
@@ -654,6 +662,7 @@ public class SingleWebsitePreferences extends PreferenceFragment
         }
 
         // Clear the permissions.
+        mSite.setAutoplayPermission(ContentSetting.DEFAULT);
         mSite.setBackgroundSyncPermission(ContentSetting.DEFAULT);
         mSite.setCameraPermission(ContentSetting.DEFAULT);
         mSite.setCookiePermission(ContentSetting.DEFAULT);

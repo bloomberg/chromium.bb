@@ -27,6 +27,7 @@ public class Website implements Serializable {
     private final String mTitle;
     private String mSummary;
 
+    private ContentSettingException mAutoplayExceptionInfo;
     private ContentSettingException mBackgroundSyncExceptionInfo;
     private CameraInfo mCameraInfo;
     private ContentSettingException mCookieException;
@@ -71,6 +72,29 @@ public class Website implements Serializable {
     public int compareByStorageTo(Website to) {
         if (this == to) return 0;
         return MathUtils.compareLongs(to.getTotalUsage(), getTotalUsage());
+    }
+
+    /**
+     * Returns what permission governs Autoplay access.
+     */
+    public ContentSetting getAutoplayPermission() {
+        return mAutoplayExceptionInfo != null ? mAutoplayExceptionInfo.getContentSetting() : null;
+    }
+
+    /**
+     * Configure Autoplay permission access setting for this site.
+     */
+    public void setAutoplayPermission(ContentSetting value) {
+        if (mAutoplayExceptionInfo != null) {
+            mAutoplayExceptionInfo.setContentSetting(value);
+        }
+    }
+
+    /**
+     * Sets the Autoplay exception info for this Website.
+     */
+    public void setAutoplayException(ContentSettingException exception) {
+        mAutoplayExceptionInfo = exception;
     }
 
     /**

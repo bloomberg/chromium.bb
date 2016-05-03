@@ -318,6 +318,8 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
         });
     }
 
+    // TODO(finnur): Write test for Autoplay.
+
     /**
      * Tests that disabling cookies turns off the third-party cookie toggle.
      * @throws Exception

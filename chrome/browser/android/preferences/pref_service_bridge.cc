@@ -208,6 +208,11 @@ static jboolean GetAcceptCookiesManaged(JNIEnv* env,
   return IsContentSettingManaged(CONTENT_SETTINGS_TYPE_COOKIES);
 }
 
+static jboolean GetAutoplayEnabled(JNIEnv* env,
+                                   const JavaParamRef<jobject>& obj) {
+  return GetBooleanForContentSetting(CONTENT_SETTINGS_TYPE_AUTOPLAY);
+}
+
 static jboolean GetBackgroundSyncEnabled(JNIEnv* env,
                                          const JavaParamRef<jobject>& obj) {
   return GetBooleanForContentSetting(CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC);
@@ -673,6 +678,16 @@ static void RequestInfoAboutOtherFormsOfBrowsingHistory(
       WebHistoryServiceFactory::GetForProfile(GetOriginalProfile()),
       base::Bind(&EnableDialogAboutOtherFormsOfBrowsingHistory,
                  base::Owned(new ScopedJavaGlobalRef<jobject>(env, listener))));
+}
+
+static void SetAutoplayEnabled(JNIEnv* env,
+                               const JavaParamRef<jobject>& obj,
+                               jboolean allow) {
+  HostContentSettingsMap* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
+  host_content_settings_map->SetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_AUTOPLAY,
+      allow ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK);
 }
 
 static void SetAllowCookiesEnabled(JNIEnv* env,

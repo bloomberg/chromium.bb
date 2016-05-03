@@ -33,6 +33,7 @@ import org.chromium.ui.text.SpanApplier.SpanInfo;
 public class SiteSettingsCategory {
     // Valid values for passing to fromString() in this class.
     public static final String CATEGORY_ALL_SITES = "all_sites";
+    public static final String CATEGORY_AUTOPLAY = "autoplay";
     public static final String CATEGORY_BACKGROUND_SYNC = "background_sync";
     public static final String CATEGORY_CAMERA = "camera";
     public static final String CATEGORY_COOKIES = "cookies";
@@ -79,6 +80,10 @@ public class SiteSettingsCategory {
         assert !category.isEmpty();
         if (CATEGORY_ALL_SITES.equals(category)) {
             return new SiteSettingsCategory(CATEGORY_ALL_SITES, "", -1);
+        }
+        if (CATEGORY_AUTOPLAY.equals(category)) {
+            return new SiteSettingsCategory(CATEGORY_AUTOPLAY, "",
+                    ContentSettingsType.CONTENT_SETTINGS_TYPE_AUTOPLAY);
         }
         if (CATEGORY_BACKGROUND_SYNC.equals(category)) {
             return new SiteSettingsCategory(CATEGORY_BACKGROUND_SYNC, "",
@@ -136,6 +141,9 @@ public class SiteSettingsCategory {
      * fromString().
      */
     public static SiteSettingsCategory fromContentSettingsType(int contentSettingsType) {
+        if (contentSettingsType == ContentSettingsType.CONTENT_SETTINGS_TYPE_AUTOPLAY) {
+            return fromString(CATEGORY_AUTOPLAY);
+        }
         if (contentSettingsType == ContentSettingsType.CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC) {
             return fromString(CATEGORY_BACKGROUND_SYNC);
         }
@@ -183,6 +191,13 @@ public class SiteSettingsCategory {
      */
     public boolean showAllSites() {
         return CATEGORY_ALL_SITES.equals(mCategory);
+    }
+
+    /**
+     * Returns whether this category is the Autoplay category.
+     */
+    public boolean showAutoplaySites() {
+        return mContentSettingsType == ContentSettingsType.CONTENT_SETTINGS_TYPE_AUTOPLAY;
     }
 
     /**

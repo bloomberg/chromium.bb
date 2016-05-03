@@ -84,6 +84,8 @@ public class WebsitePermissionsFetcher {
         queue.add(new MicrophoneCaptureInfoFetcher());
         // Background sync permission is per-origin.
         queue.add(new BackgroundSyncExceptionInfoFetcher());
+        // Autoplay permission is per-origin.
+        queue.add(new AutoplayInfoFetcher());
 
         queue.add(new PermissionsAvailableCallbackRunner());
 
@@ -139,6 +141,9 @@ public class WebsitePermissionsFetcher {
         } else if (category.showProtectedMediaSites()) {
             // Protected media identifier permission is per-origin and per-embedder.
             queue.add(new ProtectedMediaIdentifierInfoFetcher());
+        } else if (category.showAutoplaySites()) {
+            // Autoplay permission is per-origin.
+            queue.add(new AutoplayInfoFetcher());
         }
         queue.add(new PermissionsAvailableCallbackRunner());
         queue.next();
@@ -195,6 +200,24 @@ public class WebsitePermissionsFetcher {
     private static class TaskQueue extends LinkedList<Task> {
         void next() {
             if (!isEmpty()) removeFirst().runAsync(this);
+        }
+    }
+
+    private class AutoplayInfoFetcher extends Task {
+        @Override
+        public void run() {
+            for (ContentSettingException exception
+                    : WebsitePreferenceBridge.getContentSettingsExceptions(
+                            ContentSettingsType.CONTENT_SETTINGS_TYPE_AUTOPLAY)) {
+                // The pattern "*" represents the default setting, not a specific website.
+                if (exception.getPattern().equals("*")) continue;
+                WebsiteAddress address = WebsiteAddress.create(exception.getPattern());
+                if (address == null) continue;
+                Set<Website> sites = findOrCreateSitesByHost(address);
+                for (Website site : sites) {
+                    site.setAutoplayException(exception);
+                }
+            }
         }
     }
 

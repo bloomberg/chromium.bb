@@ -44,6 +44,10 @@
     <Preference
         android:fragment="org.chromium.chrome.browser.preferences.website.SingleCategoryPreferences"
         android:key="notifications" />
+    <!-- Autoplay -->
+    <Preference
+        android:fragment="org.chromium.chrome.browser.preferences.website.SingleCategoryPreferences"
+        android:key="autoplay" />
     <!-- Protected content -->
     <Preference
         android:fragment="org.chromium.chrome.browser.preferences.website.SingleCategoryPreferences"

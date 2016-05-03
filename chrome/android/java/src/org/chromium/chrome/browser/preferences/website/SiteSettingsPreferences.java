@@ -10,6 +10,7 @@ import android.preference.Preference;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceFragment;
 
+import org.chromium.base.FieldTrialList;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ContentSettingsType;
 import org.chromium.chrome.browser.preferences.LocationSettings;
@@ -28,6 +29,7 @@ public class SiteSettingsPreferences extends PreferenceFragment
         implements OnPreferenceClickListener {
     // The keys for each category shown on the Site Settings page.
     static final String ALL_SITES_KEY = "all_sites";
+    static final String AUTOPLAY_KEY = "autoplay";
     static final String BACKGROUND_SYNC_KEY = "background_sync";
     static final String CAMERA_KEY = "camera";
     static final String COOKIES_KEY = "cookies";
@@ -40,6 +42,8 @@ public class SiteSettingsPreferences extends PreferenceFragment
     static final String PROTECTED_CONTENT_KEY = "protected_content";
     static final String STORAGE_KEY = "use_storage";
 
+    boolean mAutoplayExperimentEnabled = false;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -50,11 +54,20 @@ public class SiteSettingsPreferences extends PreferenceFragment
             getPreferenceScreen().removePreference(findPreference(PROTECTED_CONTENT_KEY));
         }
 
+        String autoplayTrialGroupName =
+                FieldTrialList.findFullName("MediaElementGestureOverrideExperiment");
+        mAutoplayExperimentEnabled = autoplayTrialGroupName.startsWith("Enabled");
+        if (!mAutoplayExperimentEnabled) {
+            getPreferenceScreen().removePreference(findPreference(AUTOPLAY_KEY));
+        }
+
         updatePreferenceStates();
     }
 
     private int keyToContentSettingsType(String key) {
-        if (BACKGROUND_SYNC_KEY.equals(key)) {
+        if (AUTOPLAY_KEY.equals(key)) {
+            return ContentSettingsType.CONTENT_SETTINGS_TYPE_AUTOPLAY;
+        } else if (BACKGROUND_SYNC_KEY.equals(key)) {
             return ContentSettingsType.CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC;
         } else if (CAMERA_KEY.equals(key)) {
             return ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA;
@@ -87,6 +100,9 @@ public class SiteSettingsPreferences extends PreferenceFragment
         if (Build.VERSION.SDK_INT >= 19) {
             websitePrefs.add(PROTECTED_CONTENT_KEY);
         }
+        if (mAutoplayExperimentEnabled) {
+            websitePrefs.add(AUTOPLAY_KEY);
+        }
         websitePrefs.add(BACKGROUND_SYNC_KEY);
         websitePrefs.add(CAMERA_KEY);
         websitePrefs.add(COOKIES_KEY);
@@ -100,7 +116,9 @@ public class SiteSettingsPreferences extends PreferenceFragment
         for (String prefName : websitePrefs) {
             Preference p = findPreference(prefName);
             boolean checked = false;
-            if (BACKGROUND_SYNC_KEY.equals(prefName)) {
+            if (AUTOPLAY_KEY.equals(prefName)) {
+                checked = PrefServiceBridge.getInstance().isAutoplayEnabled();
+            } else if (BACKGROUND_SYNC_KEY.equals(prefName)) {
                 checked = PrefServiceBridge.getInstance().isBackgroundSyncAllowed();
             } else if (CAMERA_KEY.equals(prefName)) {
                 checked = PrefServiceBridge.getInstance().isCameraEnabled();

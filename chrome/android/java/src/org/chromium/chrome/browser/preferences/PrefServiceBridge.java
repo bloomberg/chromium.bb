@@ -257,6 +257,13 @@ public final class PrefServiceBridge {
         return null;
     }
 
+    /**
+     * @return whether autoplay is enabled.
+     */
+    public boolean isAutoplayEnabled() {
+        return nativeGetAutoplayEnabled();
+    }
+
     public boolean isAcceptCookiesEnabled() {
         return nativeGetAcceptCookiesEnabled();
     }
@@ -808,6 +815,10 @@ public final class PrefServiceBridge {
         nativeSetAllowCookiesEnabled(allow);
     }
 
+    public void setAutoplayEnabled(boolean allow) {
+        nativeSetAutoplayEnabled(allow);
+    }
+
     public void setBlockThirdPartyCookiesEnabled(boolean enabled) {
         nativeSetBlockThirdPartyCookiesEnabled(enabled);
     }
@@ -1051,6 +1062,7 @@ public final class PrefServiceBridge {
 
     private native boolean nativeGetAcceptCookiesEnabled();
     private native boolean nativeGetAcceptCookiesManaged();
+    private native boolean nativeGetAutoplayEnabled();
     private native boolean nativeGetBackgroundSyncEnabled();
     private native boolean nativeGetBlockThirdPartyCookiesEnabled();
     private native boolean nativeGetBlockThirdPartyCookiesManaged();
@@ -1100,6 +1112,7 @@ public final class PrefServiceBridge {
             OtherFormsOfBrowsingHistoryListener listener);
     private native boolean nativeCanDeleteBrowsingHistory();
     private static native void nativeFetchImportantSites(ImportantSitesCallback callback);
+    private native void nativeSetAutoplayEnabled(boolean allow);
     private native void nativeSetAllowCookiesEnabled(boolean allow);
     private native void nativeSetBackgroundSyncEnabled(boolean allow);
     private native void nativeSetBlockThirdPartyCookiesEnabled(boolean enabled);

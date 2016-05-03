@@ -207,7 +207,9 @@ public class SingleCategoryPreferences extends PreferenceFragment
      */
     private boolean isOnBlockList(WebsitePreference website) {
         // This list is ordered alphabetically by permission.
-        if (mCategory.showBackgroundSyncSites()) {
+        if (mCategory.showAutoplaySites()) {
+            return website.site().getAutoplayPermission() == ContentSetting.BLOCK;
+        } else if (mCategory.showBackgroundSyncSites()) {
             return website.site().getBackgroundSyncPermission() == ContentSetting.BLOCK;
         } else if (mCategory.showCameraSites()) {
             return website.site().getCameraPermission() == ContentSetting.BLOCK;
@@ -396,7 +398,9 @@ public class SingleCategoryPreferences extends PreferenceFragment
         if (READ_WRITE_TOGGLE_KEY.equals(preference.getKey())) {
             if (mCategory.isManaged()) return false;
 
-            if (mCategory.showBackgroundSyncSites()) {
+            if (mCategory.showAutoplaySites()) {
+                PrefServiceBridge.getInstance().setAutoplayEnabled((boolean) newValue);
+            } else if (mCategory.showBackgroundSyncSites()) {
                 PrefServiceBridge.getInstance().setBackgroundSyncEnabled((boolean) newValue);
             } else if (mCategory.showCameraSites()) {
                 PrefServiceBridge.getInstance().setCameraEnabled((boolean) newValue);
@@ -421,7 +425,8 @@ public class SingleCategoryPreferences extends PreferenceFragment
             }
 
             // Categories that support adding exceptions also manage the 'Add site' preference.
-            if (mCategory.showJavaScriptSites() || mCategory.showBackgroundSyncSites()) {
+            if (mCategory.showAutoplaySites() || mCategory.showBackgroundSyncSites()
+                    || mCategory.showJavaScriptSites()) {
                 if ((boolean) newValue) {
                     Preference addException = getPreferenceScreen().findPreference(
                             ADD_EXCEPTION_KEY);
@@ -448,10 +453,12 @@ public class SingleCategoryPreferences extends PreferenceFragment
 
     private String getAddExceptionDialogMessage() {
         int resource = 0;
-        if (mCategory.showJavaScriptSites()) {
-            resource = R.string.website_settings_add_site_description_javascript;
+        if (mCategory.showAutoplaySites()) {
+            resource = R.string.website_settings_add_site_description_autoplay;
         } else if (mCategory.showBackgroundSyncSites()) {
             resource = R.string.website_settings_add_site_description_background_sync;
+        } else if (mCategory.showJavaScriptSites()) {
+            resource = R.string.website_settings_add_site_description_javascript;
         }
         assert resource > 0;
         return getResources().getString(resource);
@@ -503,7 +510,9 @@ public class SingleCategoryPreferences extends PreferenceFragment
 
         configureGlobalToggles();
 
-        if ((mCategory.showJavaScriptSites()
+        if ((mCategory.showAutoplaySites()
+                    && !PrefServiceBridge.getInstance().isAutoplayEnabled())
+                || (mCategory.showJavaScriptSites()
                     && !PrefServiceBridge.getInstance().javaScriptEnabled())
                 || (mCategory.showBackgroundSyncSites()
                            && !PrefServiceBridge.getInstance().isBackgroundSyncAllowed())) {
@@ -592,7 +601,10 @@ public class SingleCategoryPreferences extends PreferenceFragment
                 if (mCategory.isManaged() && !mCategory.isManagedByCustodian()) {
                     globalToggle.setIcon(R.drawable.controlled_setting_mandatory);
                 }
-                if (mCategory.showBackgroundSyncSites()) {
+                if (mCategory.showAutoplaySites()) {
+                    globalToggle.setChecked(
+                            PrefServiceBridge.getInstance().isAutoplayEnabled());
+                } else if (mCategory.showBackgroundSyncSites()) {
                     globalToggle.setChecked(
                             PrefServiceBridge.getInstance().isBackgroundSyncAllowed());
                 } else if (mCategory.showCameraSites()) {
