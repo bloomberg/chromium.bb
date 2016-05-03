@@ -2234,7 +2234,7 @@
               # no need to load it dynamically.
               'clang_dynlib_flags%': '',
             }],
-            ['(OS=="android" or OS=="linux") and chromecast==0 and chromeos==0', {
+            ['(OS=="android" or OS=="linux") and chromecast==0', {
               'clang_plugin_check_ipc_arg': '-Xclang -plugin-arg-find-bad-constructs -Xclang check-ipc',
             }, {
               'clang_plugin_check_ipc_arg': '',

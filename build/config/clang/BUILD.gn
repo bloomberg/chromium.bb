@@ -51,7 +51,7 @@ config("find_bad_constructs") {
       "check-implicit-copy-ctors",
     ]
 
-    if ((is_linux || is_android) && !is_chromeos && !is_chromecast) {
+    if ((is_linux || is_android) && !is_chromecast) {
       cflags += [
         "-Xclang",
         "-plugin-arg-find-bad-constructs",
