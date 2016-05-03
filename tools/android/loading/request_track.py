@@ -664,7 +664,8 @@ class RequestTrack(devtools_monitor.Track):
     _CopyFromDictToObject(redirect_response, r,
                           (('headers', 'response_headers'),
                            ('encodedDataLength', 'encoded_data_length'),
-                           ('fromDiskCache', 'from_disk_cache')))
+                           ('fromDiskCache', 'from_disk_cache'),
+                           ('protocol', 'protocol'), ('status', 'status')))
     r.timing = Timing.FromDevToolsDict(redirect_response['timing'])
 
     redirect_index = self._redirects_count_by_id[request_id]

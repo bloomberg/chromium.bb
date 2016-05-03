@@ -75,6 +75,13 @@ def PatchWpr(wpr_archive_path):
   wpr_archive.Persist()
 
 
+def _FilterOutDataRequests(requests):
+  for request in filter(lambda r: not r.IsDataRequest(), requests):
+    if request.protocol not in {'http/0.9', 'http/1.0', 'http/1.1'}:
+      raise RuntimeError('Unknown request protocol {}'.format(request.protocol))
+    yield request
+
+
 def ExtractDiscoverableUrls(loading_trace_path, subresource_discoverer):
   """Extracts discoverable resource urls from a loading trace according to a
   sub-resource discoverer.
@@ -117,16 +124,7 @@ def ExtractDiscoverableUrls(loading_trace_path, subresource_discoverer):
   # Prune out data:// requests.
   whitelisted_urls = set()
   logging.info('white-listing %s' % first_resource_request.url)
-  for request in discovered_requests:
-    # Work-around where the protocol may be none for an unclear reason yet.
-    # TODO(gabadie): Follow up on this with Clovis guys and possibly remove
-    #   this work-around.
-    if not request.protocol:
-      logging.warning('ignoring %s (no protocol)' % request.url)
-      continue
-    # Ignore data protocols.
-    if not request.protocol.startswith('http'):
-      continue
+  for request in _FilterOutDataRequests(discovered_requests):
     logging.info('white-listing %s' % request.url)
     whitelisted_urls.add(request.url)
   return whitelisted_urls
@@ -169,13 +167,7 @@ def ListUrlRequests(trace, request_kind):
     set([str])
   """
   urls = set()
-  for request_event in trace.request_track.GetEvents():
-    if request_event.protocol == None:
-      continue
-    if request_event.protocol.startswith('data'):
-      continue
-    if not request_event.protocol.startswith('http'):
-      raise RuntimeError('Unknown protocol {}'.format(request_event.protocol))
+  for request_event in _FilterOutDataRequests(trace.request_track.GetEvents()):
     if (request_kind == RequestOutcome.ServedFromCache and
         request_event.from_disk_cache):
       urls.add(request_event.url)
@@ -278,9 +270,8 @@ def ReadSubresourceMapFromBenchmarkOutput(benchmark_output_directory_path):
       continue
     logging.info('lists resources of %s from %s' % (trace.url, trace_path))
     urls_set = set()
-    for request_event in trace.request_track.GetEvents():
-      if not request_event.protocol.startswith('http'):
-        continue
+    for request_event in _FilterOutDataRequests(
+        trace.request_track.GetEvents()):
       if request_event.url not in urls_set:
         logging.info('  %s' % request_event.url)
         urls_set.add(request_event.url)
