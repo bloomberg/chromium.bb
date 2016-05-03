@@ -9,10 +9,8 @@
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
 #include "base/debug/leak_annotations.h"
-#include "base/feature_list.h"
 #include "base/i18n/rtl.h"
 #include "base/message_loop/message_loop.h"
-#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/pending_task.h"
@@ -154,24 +152,6 @@ int RendererMain(const MainFunctionParams& parameters) {
   // If we have a pending chromium android linker histogram, record it.
   base::android::RecordChromiumAndroidLinkerRendererHistogram();
 #endif
-
-  // Initialize statistical testing infrastructure.  We set the entropy provider
-  // to NULL to disallow the renderer process from creating its own one-time
-  // randomized trials; they should be created in the browser process.
-  base::FieldTrialList field_trial_list(NULL);
-  // Ensure any field trials in browser are reflected into renderer.
-  if (parsed_command_line.HasSwitch(switches::kForceFieldTrials)) {
-    bool result = base::FieldTrialList::CreateTrialsFromString(
-        parsed_command_line.GetSwitchValueASCII(switches::kForceFieldTrials),
-        std::set<std::string>());
-    DCHECK(result);
-  }
-
-  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-  feature_list->InitializeFromCommandLine(
-      parsed_command_line.GetSwitchValueASCII(switches::kEnableFeatures),
-      parsed_command_line.GetSwitchValueASCII(switches::kDisableFeatures));
-  base::FeatureList::SetInstance(std::move(feature_list));
 
   std::unique_ptr<scheduler::RendererScheduler> renderer_scheduler(
       scheduler::RendererScheduler::Create());

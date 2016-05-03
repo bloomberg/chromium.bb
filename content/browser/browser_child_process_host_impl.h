@@ -54,6 +54,11 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
   // instance.
   static void TerminateAll();
 
+  // Copies kEnableFeatures and kDisableFeatures to the command line. Generates
+  // them from the FeatureList override state, to take into account overrides
+  // from FieldTrials.
+  static void CopyFeatureAndFieldTrialFlags(base::CommandLine* cmd_line);
+
   // BrowserChildProcessHost implementation:
   bool Send(IPC::Message* message) override;
   void Launch(SandboxedProcessLauncherDelegate* delegate,

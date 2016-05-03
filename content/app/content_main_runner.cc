@@ -15,15 +15,18 @@
 #include "base/allocator/allocator_check.h"
 #include "base/allocator/allocator_extension.h"
 #include "base/at_exit.h"
+#include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
 #include "base/debug/stack_trace.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/i18n/icu_util.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
+#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/path_service.h"
@@ -124,6 +127,42 @@ extern int DownloadMain(const MainFunctionParams&);
 }  // namespace content
 
 namespace content {
+
+namespace {
+
+// This sets up two singletons responsible for managing field trials. The
+// |field_trial_list| singleton lives on the stack and must outlive the Run()
+// method of the process.
+void InitializeFieldTrialAndFeatureList(
+    std::unique_ptr<base::FieldTrialList>* field_trial_list) {
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  std::string process_type =
+      command_line.GetSwitchValueASCII(switches::kProcessType);
+
+  // Initialize statistical testing infrastructure.  We set the entropy
+  // provider to nullptr to disallow non-browser processes from creating
+  // their own one-time randomized trials; they should be created in the
+  // browser process.
+  field_trial_list->reset(new base::FieldTrialList(nullptr));
+
+  // Ensure any field trials in browser are reflected into the child
+  // process.
+  if (command_line.HasSwitch(switches::kForceFieldTrials)) {
+    bool result = base::FieldTrialList::CreateTrialsFromString(
+        command_line.GetSwitchValueASCII(switches::kForceFieldTrials),
+        std::set<std::string>());
+    DCHECK(result);
+  }
+
+  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
+  feature_list->InitializeFromCommandLine(
+      command_line.GetSwitchValueASCII(switches::kEnableFeatures),
+      command_line.GetSwitchValueASCII(switches::kDisableFeatures));
+  base::FeatureList::SetInstance(std::move(feature_list));
+}
+
+}  // namespace
 
 #if !defined(CHROME_MULTIPLE_DLL_CHILD)
 base::LazyInstance<ContentBrowserClient>
@@ -300,6 +339,9 @@ int RunZygote(const MainFunctionParams& main_function_params,
 
   MainFunctionParams main_params(command_line);
   main_params.zygote_child = true;
+
+  std::unique_ptr<base::FieldTrialList> field_trial_list;
+  InitializeFieldTrialAndFeatureList(&field_trial_list);
 
   for (size_t i = 0; i < arraysize(kMainFunctions); ++i) {
     if (process_type == kMainFunctions[i].name)
@@ -728,6 +770,12 @@ class ContentMainRunnerImpl : public ContentMainRunner {
         *base::CommandLine::ForCurrentProcess();
     std::string process_type =
         command_line.GetSwitchValueASCII(switches::kProcessType);
+
+    // Run this logic on all child processes. Zygotes will run this at a later
+    // point in time when the command line has been updated.
+    std::unique_ptr<base::FieldTrialList> field_trial_list;
+    if (!process_type.empty() && process_type != switches::kZygoteProcess)
+      InitializeFieldTrialAndFeatureList(&field_trial_list);
 
     base::HistogramBase::EnableActivityReportHistogram(process_type);
 

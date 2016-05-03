@@ -26,7 +26,6 @@
 #include "base/macros.h"
 #include "base/memory/shared_memory.h"
 #include "base/memory/shared_memory_handle.h"
-#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/persistent_histogram_allocator.h"
 #include "base/metrics/persistent_memory_allocator.h"
@@ -445,24 +444,6 @@ std::string UintVectorToString(const std::vector<unsigned>& vector) {
     str += base::UintToString(it);
   }
   return str;
-}
-
-// Copies kEnableFeatures and kDisableFeatures to the renderer command line.
-// Generates them from the FeatureList override state, to take into account
-// overrides from FieldTrials.
-void CopyEnableDisableFeatureFlagsToRenderer(base::CommandLine* renderer_cmd) {
-  std::string enabled_features;
-  std::string disabled_features;
-  base::FeatureList::GetInstance()->GetFeatureOverrides(&enabled_features,
-                                                        &disabled_features);
-  if (!enabled_features.empty()) {
-    renderer_cmd->AppendSwitchASCII(switches::kEnableFeatures,
-                                    enabled_features);
-  }
-  if (!disabled_features.empty()) {
-    renderer_cmd->AppendSwitchASCII(switches::kDisableFeatures,
-                                    disabled_features);
-  }
 }
 
 }  // namespace
@@ -1305,16 +1286,6 @@ void RenderProcessHostImpl::AppendRendererCommandLine(
       GetContentClient()->browser()->GetApplicationLocale();
   command_line->AppendSwitchASCII(switches::kLang, locale);
 
-  // If we run base::FieldTrials, we want to pass to their state to the
-  // renderer so that it can act in accordance with each state, or record
-  // histograms relating to the base::FieldTrial states.
-  std::string field_trial_states;
-  base::FieldTrialList::AllStatesToString(&field_trial_states);
-  if (!field_trial_states.empty()) {
-    command_line->AppendSwitchASCII(switches::kForceFieldTrials,
-                                    field_trial_states);
-  }
-
   GetContentClient()->browser()->AppendExtraCommandLineSwitches(command_line,
                                                                 GetID());
 
@@ -1541,7 +1512,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
   renderer_cmd->CopySwitchesFrom(browser_cmd, kSwitchNames,
                                  arraysize(kSwitchNames));
 
-  CopyEnableDisableFeatureFlagsToRenderer(renderer_cmd);
+  BrowserChildProcessHostImpl::CopyFeatureAndFieldTrialFlags(renderer_cmd);
 
   if (browser_cmd.HasSwitch(switches::kTraceStartup) &&
       BrowserMainLoop::GetInstance()->is_tracing_startup_for_duration()) {

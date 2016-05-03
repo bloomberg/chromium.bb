@@ -8,10 +8,12 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/dump_without_crashing.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -173,6 +175,28 @@ void BrowserChildProcessHostImpl::TerminateAll() {
   for (BrowserChildProcessList::iterator it = copy.begin();
        it != copy.end(); ++it) {
     delete (*it)->delegate();  // ~*HostDelegate deletes *HostImpl.
+  }
+}
+
+// static
+void BrowserChildProcessHostImpl::CopyFeatureAndFieldTrialFlags(
+    base::CommandLine* cmd_line) {
+  std::string enabled_features;
+  std::string disabled_features;
+  base::FeatureList::GetInstance()->GetFeatureOverrides(&enabled_features,
+                                                        &disabled_features);
+  if (!enabled_features.empty())
+    cmd_line->AppendSwitchASCII(switches::kEnableFeatures, enabled_features);
+  if (!disabled_features.empty())
+    cmd_line->AppendSwitchASCII(switches::kDisableFeatures, disabled_features);
+
+  // If we run base::FieldTrials, we want to pass to their state to the
+  // child process so that it can act in accordance with each state.
+  std::string field_trial_states;
+  base::FieldTrialList::AllStatesToString(&field_trial_states);
+  if (!field_trial_states.empty()) {
+    cmd_line->AppendSwitchASCII(switches::kForceFieldTrials,
+                                field_trial_states);
   }
 }
 
