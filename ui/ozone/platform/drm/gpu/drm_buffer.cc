@@ -7,6 +7,7 @@
 #include <drm_fourcc.h>
 
 #include "base/logging.h"
+#include "third_party/skia/include/core/SkSurface.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
 
 namespace ui {

@@ -4,6 +4,7 @@
 
 #include "ui/ozone/platform/drm/gpu/mock_dumb_buffer_generator.h"
 
+#include "third_party/skia/include/core/SkImageInfo.h"
 #include "ui/ozone/platform/drm/gpu/drm_buffer.h"
 
 namespace ui {

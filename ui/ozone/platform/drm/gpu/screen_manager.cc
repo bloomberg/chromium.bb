@@ -60,11 +60,10 @@ void FillModesetBuffer(const scoped_refptr<DrmDevice>& drm,
     return;
   }
 
-  skia::RefPtr<SkImage> image = saved_buffer.image();
   SkPaint paint;
   // Copy the source buffer. Do not perform any blending.
   paint.setXfermodeMode(SkXfermode::kSrc_Mode);
-  modeset_buffer.canvas()->drawImage(image.get(), 0, 0, &paint);
+  modeset_buffer.canvas()->drawImage(saved_buffer.image(), 0, 0, &paint);
 }
 
 CrtcController* GetCrtcController(HardwareDisplayController* controller,

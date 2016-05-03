@@ -9,9 +9,12 @@
 #include <stdint.h>
 
 #include "base/macros.h"
-#include "skia/ext/refptr.h"
-#include "third_party/skia/include/core/SkSurface.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "ui/ozone/platform/drm/gpu/scanout_buffer.h"
+
+class SkCanvas;
+struct SkImageInfo;
+class SkSurface;
 
 namespace ui {
 

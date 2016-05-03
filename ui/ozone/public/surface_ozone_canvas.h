@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "skia/ext/refptr.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "ui/ozone/ozone_base_export.h"
 
 class SkSurface;

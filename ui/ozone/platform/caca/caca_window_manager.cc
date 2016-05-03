@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/trace_event/trace_event.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/vsync_provider.h"
@@ -28,7 +29,7 @@ class CacaSurface : public ui::SurfaceOzoneCanvas {
   bool Initialize();
 
   // ui::SurfaceOzoneCanvas overrides:
-  skia::RefPtr<SkSurface> GetSurface() override;
+  sk_sp<SkSurface> GetSurface() override;
   void ResizeCanvas(const gfx::Size& viewport_size) override;
   void PresentCanvas(const gfx::Rect& damage) override;
   std::unique_ptr<gfx::VSyncProvider> CreateVSyncProvider() override;
@@ -38,7 +39,7 @@ class CacaSurface : public ui::SurfaceOzoneCanvas {
 
   ScopedCacaDither dither_;
 
-  skia::RefPtr<SkSurface> surface_;
+  sk_sp<SkSurface> surface_;
 
   DISALLOW_COPY_AND_ASSIGN(CacaSurface);
 };
@@ -54,7 +55,7 @@ bool CacaSurface::Initialize() {
   return true;
 }
 
-skia::RefPtr<SkSurface> CacaSurface::GetSurface() {
+sk_sp<SkSurface> CacaSurface::GetSurface() {
   return surface_;
 }
 
@@ -68,7 +69,7 @@ void CacaSurface::ResizeCanvas(const gfx::Size& viewport_size) {
                                        kN32_SkColorType,
                                        kPremul_SkAlphaType);
 
-  surface_ = skia::AdoptRef(SkSurface::NewRaster(info));
+  surface_ = SkSurface::MakeRaster(info);
   if (!surface_)
     LOG(ERROR) << "Failed to create SkSurface";
 
