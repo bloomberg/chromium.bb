@@ -49,8 +49,7 @@ class NTPSnippetsFetcherTest : public testing::Test {
   NTPSnippetsFetcherTest()
       : fake_url_fetcher_factory_(
             /*default_factory=*/&failing_url_fetcher_factory_),
-        snippets_fetcher_(scoped_refptr<base::SequencedTaskRunner>(),
-                          scoped_refptr<net::TestURLRequestContextGetter>(
+        snippets_fetcher_(scoped_refptr<net::TestURLRequestContextGetter>(
                               new net::TestURLRequestContextGetter(
                                   base::ThreadTaskRunnerHandle::Get())),
                           /*is_stable_channel=*/true),

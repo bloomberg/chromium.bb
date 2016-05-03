@@ -89,7 +89,6 @@ IOSChromeNTPSnippetsServiceFactory::BuildServiceInstanceFor(
       chrome_browser_state->GetPrefs(), suggestions_service, task_runner,
       GetApplicationContext()->GetApplicationLocale(), scheduler,
       base::WrapUnique(new ntp_snippets::NTPSnippetsFetcher(
-          task_runner, request_context,
-          GetChannel() == version_info::Channel::STABLE)),
+          request_context, GetChannel() == version_info::Channel::STABLE)),
       base::Bind(&ParseJson)));
 }

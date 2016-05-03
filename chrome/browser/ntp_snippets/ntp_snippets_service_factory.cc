@@ -75,7 +75,7 @@ KeyedService* NTPSnippetsServiceFactory::BuildServiceInstanceFor(
       profile->GetPrefs(), suggestions_service, task_runner,
       g_browser_process->GetApplicationLocale(), scheduler,
       base::WrapUnique(new ntp_snippets::NTPSnippetsFetcher(
-          task_runner, request_context,
+          request_context,
           chrome::GetChannel() == version_info::Channel::STABLE)),
       base::Bind(&safe_json::SafeJsonParser::Parse));
 }

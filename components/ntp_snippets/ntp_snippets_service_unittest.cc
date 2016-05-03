@@ -150,7 +150,7 @@ class NTPSnippetsServiceTest : public testing::Test {
         pref_service_.get(), nullptr, task_runner, std::string("fr"),
         scheduler_.get(),
         base::WrapUnique(new NTPSnippetsFetcher(
-            task_runner, std::move(request_context_getter), true)),
+            std::move(request_context_getter), true)),
         base::Bind(&ParseJson, true)));
     if (enabled)
       EXPECT_CALL(*scheduler_, Schedule(_, _, _, _));

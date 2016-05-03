@@ -12,7 +12,6 @@
 #include "base/callback.h"
 #include "base/callback_list.h"
 #include "base/memory/weak_ptr.h"
-#include "base/sequenced_task_runner.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -30,7 +29,6 @@ class NTPSnippetsFetcher : public net::URLFetcherDelegate {
       base::CallbackList<void(const std::string&, const std::string&)>;
 
   NTPSnippetsFetcher(
-      scoped_refptr<base::SequencedTaskRunner> file_task_runner,
       scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
       bool is_stable_channel);
   ~NTPSnippetsFetcher() override;
@@ -51,9 +49,6 @@ class NTPSnippetsFetcher : public net::URLFetcherDelegate {
  private:
   // URLFetcherDelegate implementation.
   void OnURLFetchComplete(const net::URLFetcher* source) override;
-
-  // The SequencedTaskRunner on which file system operations will be run.
-  scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
 
   // Holds the URL request context.
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;

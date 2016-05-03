@@ -10,7 +10,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/task_runner_util.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
@@ -70,11 +69,9 @@ const char kHostRestrictFormat[] =
 }  // namespace
 
 NTPSnippetsFetcher::NTPSnippetsFetcher(
-    scoped_refptr<base::SequencedTaskRunner> file_task_runner,
     scoped_refptr<URLRequestContextGetter> url_request_context_getter,
     bool is_stable_channel)
-    : file_task_runner_(file_task_runner),
-      url_request_context_getter_(url_request_context_getter),
+    : url_request_context_getter_(url_request_context_getter),
       is_stable_channel_(is_stable_channel) {}
 
 NTPSnippetsFetcher::~NTPSnippetsFetcher() {}
