@@ -9,6 +9,7 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "blimp/engine/app/blimp_metrics_service_client.h"
 #include "blimp/engine/app/blimp_system_url_request_context_getter.h"
 #include "blimp/engine/app/blimp_url_request_context_getter.h"
 #include "content/public/browser/browser_context.h"
@@ -66,6 +67,10 @@ class BlimpBrowserContext : public content::BrowserContext {
   // Performs initialization of the BlimpBrowserContext while IO is still
   // allowed on the current thread.
   void InitWhileIOAllowed();
+
+  // Used in metrics initialization to get a PrefService to store logs
+  // temporarily.
+  std::unique_ptr<PrefService> GetPrefService();
 
   std::unique_ptr<BlimpResourceContext> resource_context_;
   scoped_refptr<BlimpSystemURLRequestContextGetter> system_context_getter_;
