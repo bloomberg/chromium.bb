@@ -142,6 +142,15 @@ private:
 #if ENABLE(ASSERT)
     bool m_didUpdateForChildren;
 #endif
+
+#if ENABLE(ASSERT) && !defined(NDEBUG)
+// #define CHECK_FAST_PATH_SLOW_PATH_EQUALITY
+#endif
+
+#ifdef CHECK_FAST_PATH_SLOW_PATH_EQUALITY
+    void assertFastPathAndSlowPathRectsEqual(const LayoutRect& fastPathRect, const LayoutRect& slowPathRect) const;
+    bool m_canCheckFastPathSlowPathEquality;
+#endif
 };
 
 } // namespace blink
