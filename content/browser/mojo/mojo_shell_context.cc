@@ -248,10 +248,10 @@ MojoShellContext::MojoShellContext() {
 
   catalog_.reset(new catalog::Catalog(file_task_runner.get(), nullptr,
                                       manifest_provider_.get()));
-  shell_.reset(new shell::Shell(std::move(native_runner_factory),
-                                catalog_->TakeShellClient()));
 
   if (!IsRunningInMojoShell()) {
+    shell_.reset(new shell::Shell(std::move(native_runner_factory),
+                                  catalog_->TakeShellClient()));
     MojoShellConnection::Create(
         shell_->InitInstanceForEmbedder(kBrowserMojoApplicationName),
         false /* is_external */);
