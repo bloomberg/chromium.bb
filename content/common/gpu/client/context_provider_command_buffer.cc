@@ -30,7 +30,7 @@
 namespace {
 
 // Similar to base::AutoReset but it sets the variable to the new value
-// when it is destroyed. Use reset() to cancel setting the variable.
+// when it is destroyed. Use Reset() to cancel setting the variable.
 class AutoSet {
  public:
   AutoSet(bool* b, bool set) : b_(b), set_(set) {}
@@ -38,7 +38,7 @@ class AutoSet {
     if (b_)
       *b_ = set_;
   }
-  // Stops us from setting _b on destruction.
+  // Stops us from setting b_ on destruction.
   void Reset() { b_ = nullptr; }
 
  private:
