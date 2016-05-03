@@ -1140,7 +1140,7 @@ Polymer({
       // issue was non-blocking, this would be a no-op. It is expected that
       // the only way to clear an issue is by user action; the IssueManager
       // (C++ side) does not clear issues in the UI.
-      this.currentView_ = media_router.MediaRouterView.SINK_LIST;
+      this.showSinkList_();
     }
 
     if (!!this.pendingCreatedRouteId_ && !!issue &&

@@ -212,8 +212,7 @@
       <template is="dom-if"
           if="[[computeIssueBannerShown_(currentView_, issue)]]">
         <issue-banner id="issue-banner" issue="[[issue]]"
-            class$="[[computeIssueBannerClass_(issue)]]"
-            on-issue-action-click="showSinkList_">
+            class$="[[computeIssueBannerClass_(issue)]]">
         </issue-banner>
       </template>
     </div>
