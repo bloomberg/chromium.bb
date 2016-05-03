@@ -15,12 +15,23 @@
 
 namespace content {
 
+#if defined(OS_ANDROID)
+extern bool g_browser_main_loop_shutting_down;
+#endif
+
 InProcessRendererThread::InProcessRendererThread(
     const InProcessChildThreadParams& params)
     : Thread("Chrome_InProcRendererThread"), params_(params) {
 }
 
 InProcessRendererThread::~InProcessRendererThread() {
+#if defined(OS_ANDROID)
+  // Don't allow the render thread to be shut down in single process mode on
+  // Android unless the browser is shutting down.
+  // Temporary CHECK() to debug http://crbug.com/514141
+  CHECK(g_browser_main_loop_shutting_down);
+#endif
+
   Stop();
 }
 
@@ -31,12 +42,22 @@ void InProcessRendererThread::Init() {
   // will not change the thread name kept in Java VM.
 #if defined(OS_ANDROID)
   base::android::AttachCurrentThreadWithName(thread_name());
+  // Make sure we aren't somehow reinitialising the inprocess renderer thread on
+  // Android. Temporary CHECK() to debug http://crbug.com/514141
+  CHECK(!render_process_);
 #endif
   render_process_.reset(new RenderProcessImpl());
   RenderThreadImpl::Create(params_);
 }
 
 void InProcessRendererThread::CleanUp() {
+#if defined(OS_ANDROID)
+  // Don't allow the render thread to be shut down in single process mode on
+  // Android unless the browser is shutting down.
+  // Temporary CHECK() to debug http://crbug.com/514141
+  CHECK(g_browser_main_loop_shutting_down);
+#endif
+
   render_process_.reset();
 
   // It's a little lame to manually set this flag.  But the single process

@@ -401,6 +401,10 @@ base::win::MemoryPressureMonitor* CreateWinMemoryPressureMonitor(
 // The currently-running BrowserMainLoop.  There can be one or zero.
 BrowserMainLoop* g_current_browser_main_loop = NULL;
 
+#if defined(OS_ANDROID)
+bool g_browser_main_loop_shutting_down = false;
+#endif
+
 // For measuring memory usage after each task. Behind a command line flag.
 class BrowserMainLoop::MemoryObserver : public base::MessageLoop::TaskObserver {
  public:
@@ -987,6 +991,10 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
       BrowserThread::IO, FROM_HERE,
       base::Bind(base::IgnoreResult(&base::ThreadRestrictions::SetIOAllowed),
                  true));
+
+#if defined(OS_ANDROID)
+  g_browser_main_loop_shutting_down = true;
+#endif
 
   if (RenderProcessHost::run_renderer_in_process())
     RenderProcessHostImpl::ShutDownInProcessRenderer();
