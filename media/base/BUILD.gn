@@ -13,6 +13,7 @@ import("//testing/libfuzzer/fuzzer_test.gni")
 source_set("base") {
   # This is part of the media component.
   visibility = [
+    ":*",
     "//media",
     "//media/capture",
   ]
@@ -385,12 +386,17 @@ source_set("test_support") {
     "test_helpers.cc",
     "test_helpers.h",
     "test_random.h",
+    "vector_math_testing.h",
   ]
   configs += [ "//media:media_config" ]
   deps = [
+    "//base",
+    "//base/test:test_support",
+    "//media",
     "//media:media_features",
     "//media:shared_memory_support",
     "//testing/gmock",
+    "//ui/gfx/geometry",
   ]
 }
 
@@ -445,7 +451,6 @@ source_set("unittests") {
     "text_renderer_unittest.cc",
     "time_delta_interpolator_unittest.cc",
     "user_input_monitor_unittest.cc",
-    "vector_math_testing.h",
     "vector_math_unittest.cc",
     "video_decoder_config_unittest.cc",
     "video_frame_pool_unittest.cc",
@@ -460,6 +465,7 @@ source_set("unittests") {
   ]
   deps = [
     ":test_support",
+    "//base/test:test_support",
     "//gpu/command_buffer/common",
     "//media",
     "//skia",
@@ -498,9 +504,12 @@ source_set("perftests") {
   configs += [ "//media:media_config" ]
   deps = [
     ":test_support",
+    "//base",
+    "//base/test:test_support",
     "//media",
     "//testing/gmock",
     "//testing/gtest",
+    "//testing/perf",
     "//third_party/libyuv",
   ]
 
@@ -580,6 +589,7 @@ fuzzer_test("media_bit_reader_fuzzer") {
     "bit_reader_fuzzertest.cc",
   ]
   deps = [
+    ":test_support",
     "//base",
     "//media",
   ]
