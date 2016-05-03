@@ -12,18 +12,18 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/input_method.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/screen.h"
 
 namespace headless {
 
 namespace {
 
-bool IsRotationPortrait(gfx::Display::Rotation rotation) {
-  return rotation == gfx::Display::ROTATE_90 ||
-         rotation == gfx::Display::ROTATE_270;
+bool IsRotationPortrait(display::Display::Rotation rotation) {
+  return rotation == display::Display::ROTATE_90 ||
+         rotation == display::Display::ROTATE_270;
 }
 
 }  // namespace
@@ -52,7 +52,7 @@ void HeadlessScreen::SetDeviceScaleFactor(float device_scale_factor) {
   display_.SetScaleAndBounds(device_scale_factor, bounds_in_pixel);
 }
 
-void HeadlessScreen::SetDisplayRotation(gfx::Display::Rotation rotation) {
+void HeadlessScreen::SetDisplayRotation(display::Display::Rotation rotation) {
   gfx::Rect bounds_in_pixel(display_.GetSizeInPixel());
   gfx::Rect new_bounds(bounds_in_pixel);
   if (IsRotationPortrait(rotation) != IsRotationPortrait(display_.rotation())) {
@@ -80,17 +80,17 @@ void HeadlessScreen::SetWorkAreaInsets(const gfx::Insets& insets) {
 gfx::Transform HeadlessScreen::GetRotationTransform() const {
   gfx::Transform rotate;
   switch (display_.rotation()) {
-    case gfx::Display::ROTATE_0:
+    case display::Display::ROTATE_0:
       break;
-    case gfx::Display::ROTATE_90:
+    case display::Display::ROTATE_90:
       rotate.Translate(display_.bounds().height(), 0);
       rotate.Rotate(90);
       break;
-    case gfx::Display::ROTATE_270:
+    case display::Display::ROTATE_270:
       rotate.Translate(0, display_.bounds().width());
       rotate.Rotate(270);
       break;
-    case gfx::Display::ROTATE_180:
+    case display::Display::ROTATE_180:
       rotate.Translate(display_.bounds().width(), display_.bounds().height());
       rotate.Rotate(180);
       break;
@@ -137,32 +137,32 @@ int HeadlessScreen::GetNumDisplays() const {
   return 1;
 }
 
-std::vector<gfx::Display> HeadlessScreen::GetAllDisplays() const {
-  return std::vector<gfx::Display>(1, display_);
+std::vector<display::Display> HeadlessScreen::GetAllDisplays() const {
+  return std::vector<display::Display>(1, display_);
 }
 
-gfx::Display HeadlessScreen::GetDisplayNearestWindow(
+display::Display HeadlessScreen::GetDisplayNearestWindow(
     gfx::NativeWindow window) const {
   return display_;
 }
 
-gfx::Display HeadlessScreen::GetDisplayNearestPoint(
+display::Display HeadlessScreen::GetDisplayNearestPoint(
     const gfx::Point& point) const {
   return display_;
 }
 
-gfx::Display HeadlessScreen::GetDisplayMatching(
+display::Display HeadlessScreen::GetDisplayMatching(
     const gfx::Rect& match_rect) const {
   return display_;
 }
 
-gfx::Display HeadlessScreen::GetPrimaryDisplay() const {
+display::Display HeadlessScreen::GetPrimaryDisplay() const {
   return display_;
 }
 
-void HeadlessScreen::AddObserver(gfx::DisplayObserver* observer) {}
+void HeadlessScreen::AddObserver(display::DisplayObserver* observer) {}
 
-void HeadlessScreen::RemoveObserver(gfx::DisplayObserver* observer) {}
+void HeadlessScreen::RemoveObserver(display::DisplayObserver* observer) {}
 
 HeadlessScreen::HeadlessScreen(const gfx::Rect& screen_bounds)
     : host_(NULL), ui_scale_(1.0f) {

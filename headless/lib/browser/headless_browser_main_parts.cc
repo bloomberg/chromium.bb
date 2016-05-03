@@ -10,7 +10,7 @@
 #include "headless/lib/browser/headless_devtools.h"
 #include "headless/lib/browser/headless_screen.h"
 #include "ui/aura/env.h"
-#include "ui/gfx/screen.h"
+#include "ui/display/screen.h"
 
 namespace headless {
 
@@ -18,7 +18,7 @@ namespace {
 
 void PlatformInitialize() {
   HeadlessScreen* screen = HeadlessScreen::Create(gfx::Size());
-  gfx::Screen::SetScreenInstance(screen);
+  display::Screen::SetScreenInstance(screen);
 }
 
 void PlatformExit() {

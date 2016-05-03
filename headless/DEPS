@@ -4,6 +4,7 @@ include_rules = [
   "+net",
   "+ui/base",
   "+ui/base/resource",
+  "+ui/display",
   "+ui/gfx",
   "+ui/gfx/geometry",
   "+ui/ozone/public",

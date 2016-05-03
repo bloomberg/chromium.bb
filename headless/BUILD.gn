@@ -260,6 +260,7 @@ static_library("headless_lib") {
     "//ui/aura",
     "//ui/base",
     "//ui/compositor",
+    "//ui/display",
     "//ui/ozone",
     "//url",
   ]
