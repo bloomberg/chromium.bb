@@ -34,6 +34,7 @@ class WorkerEntityTrackerTest : public ::testing::Test {
         kClientTagHash(
             syncer::syncable::GenerateSyncableHash(syncer::PREFERENCES,
                                                    kClientTag)),
+        kSpecificsHash("somehash"),
         kCtime(base::Time::UnixEpoch() + base::TimeDelta::FromDays(10)),
         kMtime(base::Time::UnixEpoch() + base::TimeDelta::FromDays(20)),
         entity_(new WorkerEntityTracker(kServerId, kClientTagHash)) {
@@ -57,6 +58,7 @@ class WorkerEntityTrackerTest : public ::testing::Test {
     request_data.entity = data.PassToPtr();
     request_data.sequence_number = sequence_number;
     request_data.base_version = base_version;
+    request_data.specifics_hash = kSpecificsHash;
     return request_data;
   }
 
@@ -74,6 +76,7 @@ class WorkerEntityTrackerTest : public ::testing::Test {
   const std::string kServerId;
   const std::string kClientTag;
   const std::string kClientTagHash;
+  const std::string kSpecificsHash;
   const base::Time kCtime;
   const base::Time kMtime;
   sync_pb::EntitySpecifics specifics;
@@ -96,9 +99,7 @@ TEST_F(WorkerEntityTrackerTest, FromCommitRequest) {
 
   ASSERT_TRUE(entity_->HasPendingCommit());
   sync_pb::SyncEntity pb_entity;
-  int64_t sequence_number = 0;
-  entity_->PopulateCommitProto(&pb_entity, &sequence_number);
-  EXPECT_EQ(kSequenceNumber, sequence_number);
+  entity_->PopulateCommitProto(&pb_entity);
   EXPECT_EQ(kServerId, pb_entity.id_string());
   EXPECT_EQ(kClientTagHash, pb_entity.client_defined_unique_tag());
   EXPECT_EQ(kBaseVersion, pb_entity.version());
@@ -109,6 +110,15 @@ TEST_F(WorkerEntityTrackerTest, FromCommitRequest) {
             pb_entity.specifics().preference().name());
   EXPECT_EQ(specifics.preference().value(),
             pb_entity.specifics().preference().value());
+
+  CommitResponseData ack;
+  ack.response_version = kBaseVersion + 1;
+  ack.id = kServerId;
+  entity_->ReceiveCommitResponse(&ack);
+
+  EXPECT_EQ(kSequenceNumber, ack.sequence_number);
+  EXPECT_EQ(kSpecificsHash, ack.specifics_hash);
+  EXPECT_FALSE(entity_->HasPendingCommit());
 }
 
 // Start with a server initiated entity.  Commit over top of it.

@@ -19,12 +19,10 @@ namespace syncer_v2 {
 NonBlockingTypeCommitContribution::NonBlockingTypeCommitContribution(
     const sync_pb::DataTypeContext& context,
     const google::protobuf::RepeatedPtrField<sync_pb::SyncEntity>& entities,
-    const std::vector<int64_t>& sequence_numbers,
     ModelTypeWorker* worker)
     : worker_(worker),
       context_(context),
       entities_(entities),
-      sequence_numbers_(sequence_numbers),
       cleaned_up_(false) {}
 
 NonBlockingTypeCommitContribution::~NonBlockingTypeCommitContribution() {
@@ -54,7 +52,7 @@ syncer::SyncerError NonBlockingTypeCommitContribution::ProcessCommitResponse(
 
   CommitResponseDataList response_list;
 
-  for (size_t i = 0; i < sequence_numbers_.size(); ++i) {
+  for (int i = 0; i < entities_.size(); ++i) {
     const sync_pb::CommitResponse_EntryResponse& entry_response =
         commit_response.entryresponse(entries_start_index_ + i);
 
@@ -76,7 +74,6 @@ syncer::SyncerError NonBlockingTypeCommitContribution::ProcessCommitResponse(
         response_data.id = entry_response.id_string();
         response_data.client_tag_hash =
             entities_.Get(i).client_defined_unique_tag();
-        response_data.sequence_number = sequence_numbers_[i];
         response_data.response_version = entry_response.version();
         response_list.push_back(response_data);
         break;
@@ -95,7 +92,7 @@ syncer::SyncerError NonBlockingTypeCommitContribution::ProcessCommitResponse(
 
   // Send whatever successful responses we did get back to our parent.
   // It's the schedulers job to handle the failures.
-  worker_->OnCommitResponse(response_list);
+  worker_->OnCommitResponse(&response_list);
 
   // Let the scheduler know about the failures.
   if (unknown_error) {
@@ -118,7 +115,7 @@ void NonBlockingTypeCommitContribution::CleanUp() {
 }
 
 size_t NonBlockingTypeCommitContribution::GetNumEntries() const {
-  return sequence_numbers_.size();
+  return entities_.size();
 }
 
 }  // namespace syncer_v2

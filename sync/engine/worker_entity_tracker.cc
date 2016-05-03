@@ -32,8 +32,7 @@ bool WorkerEntityTracker::HasPendingCommit() const {
 }
 
 void WorkerEntityTracker::PopulateCommitProto(
-    sync_pb::SyncEntity* commit_entity,
-    int64_t* sequence_number) const {
+    sync_pb::SyncEntity* commit_entity) const {
   DCHECK(HasPendingCommit());
   DCHECK(!client_tag_hash_.empty());
 
@@ -58,8 +57,6 @@ void WorkerEntityTracker::PopulateCommitProto(
     commit_entity->set_mtime(syncer::TimeToProtoTime(entity.modification_time));
     commit_entity->mutable_specifics()->CopyFrom(entity.specifics);
   }
-
-  *sequence_number = sequence_number_;
 }
 
 void WorkerEntityTracker::RequestCommit(const CommitRequestData& data) {
@@ -72,6 +69,7 @@ void WorkerEntityTracker::RequestCommit(const CommitRequestData& data) {
   // Update our book-keeping counters.
   base_version_ = data.base_version;
   sequence_number_ = data.sequence_number;
+  pending_commit_specifics_hash_ = data.specifics_hash;
 
   // Don't commit deletions of server-unknown items.
   if (data.entity->is_deleted() && !IsServerKnown()) {
@@ -105,23 +103,20 @@ void WorkerEntityTracker::RequestCommit(const CommitRequestData& data) {
   // so it can be committed at the next possible opportunity.
 }
 
-void WorkerEntityTracker::ReceiveCommitResponse(const std::string& response_id,
-                                                int64_t response_version,
-                                                int64_t sequence_number) {
-  // Commit responses, especially after the first commit, can update our ID.
-  id_ = response_id;
-
-  DCHECK_GT(response_version, highest_commit_response_version_)
+void WorkerEntityTracker::ReceiveCommitResponse(CommitResponseData* ack) {
+  DCHECK_GT(ack->response_version, highest_commit_response_version_)
       << "Had expected higher response version."
       << " id: " << id_;
 
-  // Commits are synchronous, so there's no reason why the sequence numbers
-  // wouldn't match.
-  DCHECK_EQ(sequence_number_, sequence_number)
-      << "Unexpected sequence number mismatch."
-      << " id: " << id_;
+  // Commit responses, especially after the first commit, can update our ID.
+  id_ = ack->id;
+  highest_commit_response_version_ = ack->response_version;
 
-  highest_commit_response_version_ = response_version;
+  // Fill in some cached info for the response data. Since commits happen
+  // synchronously on the sync thread, our item's state is guaranteed to be
+  // the same at the end of the commit as it was at the start.
+  ack->sequence_number = sequence_number_;
+  ack->specifics_hash = pending_commit_specifics_hash_;
 
   // Because an in-progress commit blocks the sync thread, we can assume that
   // the item we just committed successfully is exactly the one we have now.
@@ -199,6 +194,7 @@ bool WorkerEntityTracker::IsServerKnown() const {
 
 void WorkerEntityTracker::ClearPendingCommit() {
   pending_commit_.reset();
+  pending_commit_specifics_hash_.clear();
 }
 
 }  // namespace syncer_v2

@@ -93,7 +93,7 @@ class SYNC_EXPORT ModelTypeWorker : public syncer::UpdateHandler,
       size_t max_entries) override;
 
   // Callback for when our contribution gets a response.
-  void OnCommitResponse(const CommitResponseDataList& response_list);
+  void OnCommitResponse(CommitResponseDataList* response_list);
 
   base::WeakPtr<ModelTypeWorker> AsWeakPtr();
 

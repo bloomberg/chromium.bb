@@ -27,7 +27,6 @@ class NonBlockingTypeCommitContribution : public syncer::CommitContribution {
   NonBlockingTypeCommitContribution(
       const sync_pb::DataTypeContext& context,
       const google::protobuf::RepeatedPtrField<sync_pb::SyncEntity>& entities,
-      const std::vector<int64_t>& sequence_numbers,
       ModelTypeWorker* worker);
   ~NonBlockingTypeCommitContribution() override;
 
@@ -48,10 +47,6 @@ class NonBlockingTypeCommitContribution : public syncer::CommitContribution {
 
   // The set of entities to be committed, serialized as SyncEntities.
   const google::protobuf::RepeatedPtrField<sync_pb::SyncEntity> entities_;
-
-  // The sequence numbers associated with the pending commits.  These match up
-  // with the entities_ vector.
-  const std::vector<int64_t> sequence_numbers_;
 
   // The index in the commit message where this contribution's entities are
   // added.  Used to correlate per-item requests with per-item responses.

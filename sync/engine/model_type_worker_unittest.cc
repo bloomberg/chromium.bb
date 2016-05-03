@@ -720,6 +720,8 @@ TEST_F(ModelTypeWorkerTest, SimpleCommit) {
 
   EXPECT_EQ(client_tag_hash, commit_response.client_tag_hash);
   EXPECT_LT(0, commit_response.response_version);
+  EXPECT_LT(0, commit_response.sequence_number);
+  EXPECT_FALSE(commit_response.specifics_hash.empty());
 }
 
 TEST_F(ModelTypeWorkerTest, SimpleDelete) {

@@ -17,6 +17,7 @@
 
 namespace syncer_v2 {
 struct CommitRequestData;
+struct CommitResponseData;
 struct UpdateResponseData;
 
 // Manages the pending commit and update state for an entity on the sync
@@ -43,24 +44,17 @@ class SYNC_EXPORT WorkerEntityTracker {
   // Returns true if this entity should be commited to the server.
   bool HasPendingCommit() const;
 
-  // Populates a sync_pb::SyncEntity for a commit.  Also sets the
-  // |sequence_number|, so we can track it throughout the commit process.
-  void PopulateCommitProto(sync_pb::SyncEntity* commit_entity,
-                           int64_t* sequence_number) const;
+  // Populates a sync_pb::SyncEntity for a commit.
+  void PopulateCommitProto(sync_pb::SyncEntity* commit_entity) const;
 
   // Updates this entity with data from the latest version that the
   // model asked us to commit.  May clobber state related to the
   // model's previous commit attempt(s).
   void RequestCommit(const CommitRequestData& data);
 
-  // Handles the receipt of a commit response.
-  //
-  // Since commits happen entirely on the sync thread, we can safely assume
-  // that our item's state at the end of the commit is the same as it was at
-  // the start.
-  void ReceiveCommitResponse(const std::string& response_id,
-                             int64_t response_version,
-                             int64_t sequence_number);
+  // Tracks the receipt of a commit response and fills in some local-only data
+  // on it to be passed back to the processor.
+  void ReceiveCommitResponse(CommitResponseData* ack);
 
   // Handles receipt of an update from the server.
   void ReceiveUpdate(int64_t version);
@@ -114,6 +108,9 @@ class SYNC_EXPORT WorkerEntityTracker {
 
   // A commit for this entity waiting for a sync cycle to be committed.
   std::unique_ptr<CommitRequestData> pending_commit_;
+
+  // The specifics hash for the pending commit if there is one, "" otherwise.
+  std::string pending_commit_specifics_hash_;
 
   // An update for this entity which can't be applied right now. The presence
   // of an pending update prevents commits.  As of this writing, the only

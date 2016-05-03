@@ -7,7 +7,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/base64.h"
 #include "base/bind.h"
+#include "base/sha1.h"
 #include "sync/engine/commit_queue.h"
 
 namespace syncer_v2 {
@@ -90,6 +92,8 @@ CommitRequestData MockModelTypeProcessor::CommitRequest(
   request_data.entity = data.PassToPtr();
   request_data.sequence_number = GetNextSequenceNumber(tag_hash);
   request_data.base_version = base_version;
+  base::Base64Encode(base::SHA1HashString(specifics.SerializeAsString()),
+                     &request_data.specifics_hash);
 
   return request_data;
 }
