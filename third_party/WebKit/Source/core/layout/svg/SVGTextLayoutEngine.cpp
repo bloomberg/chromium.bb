@@ -290,51 +290,40 @@ const LayoutSVGInlineText* SVGTextLayoutEngine::nextLogicalTextNode()
 
 const LayoutSVGInlineText* SVGTextLayoutEngine::currentLogicalCharacterMetrics(SVGTextMetrics& logicalMetrics)
 {
-    // If we're consumed all text nodes, there can be no more metrics.
+    // If we've consumed all text nodes, there can be no more metrics.
     if (m_currentLogicalTextNodeIndex == m_descendantTextNodes.size())
         return nullptr;
 
     const LayoutSVGInlineText* logicalTextNode = m_descendantTextNodes[m_currentLogicalTextNodeIndex];
-    // If we reached the end of the text node associated with the current set
-    // of layout attributes, try to move to the next text node/set of layout
-    // attributes.
-    ASSERT(m_logicalCharacterOffset <= logicalTextNode->textLength());
-    if (m_logicalCharacterOffset == logicalTextNode->textLength()) {
-        logicalTextNode = nextLogicalTextNode();
-        if (!logicalTextNode)
-            return nullptr;
-    }
-
-    // We have set of layout attributes. Find the first non-collapsed text
-    // metrics cell.
     const Vector<SVGTextMetrics>* metricsList = &logicalTextNode->metricsList();
     unsigned metricsListSize = metricsList->size();
+    ASSERT(m_logicalMetricsListOffset <= metricsListSize);
+
+    // Find the next non-collapsed text metrics cell.
     while (true) {
-        // If we run out of metrics, move to the next set of layout attributes.
+        // If we run out of metrics, move to the next set of non-empty layout
+        // attributes.
         if (m_logicalMetricsListOffset == metricsListSize) {
             logicalTextNode = nextLogicalTextNode();
             if (!logicalTextNode)
                 return nullptr;
-
             metricsList = &logicalTextNode->metricsList();
             metricsListSize = metricsList->size();
+            // Return to the while so that we check if the new metrics list is
+            // non-empty before using it.
             continue;
         }
 
         ASSERT(metricsListSize);
-        ASSERT(m_logicalMetricsListOffset < metricsListSize);
         logicalMetrics = metricsList->at(m_logicalMetricsListOffset);
-        if (logicalMetrics.isEmpty() || (!logicalMetrics.width() && !logicalMetrics.height())) {
-            advanceToNextLogicalCharacter(logicalMetrics);
-            continue;
-        }
-
         // Stop if we found the next valid logical text metrics object.
-        return logicalTextNode;
+        if (!logicalMetrics.isEmpty())
+            break;
+
+        advanceToNextLogicalCharacter(logicalMetrics);
     }
 
-    ASSERT_NOT_REACHED();
-    return nullptr;
+    return logicalTextNode;
 }
 
 void SVGTextLayoutEngine::advanceToNextLogicalCharacter(const SVGTextMetrics& logicalMetrics)
