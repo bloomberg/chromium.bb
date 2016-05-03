@@ -728,7 +728,9 @@ group("browser_dependencies") {
       # build this is OK because all of content is linked into one library.
       # Note that the blink_headers target is OK, so we can't do a wildcard for
       # all blink targets.
-      "//third_party/WebKit/public:blink",
+      # TODO(brettw) bug 582206: Blink should not be linked into the browser
+      # process, and then we can enable this.
+      #"//third_party/WebKit/public:blink",
       # TODO(brettw) bug 581766: V8 should not be linked into the browser
       # process, and then we can enable this.
       #"//v8/*",
