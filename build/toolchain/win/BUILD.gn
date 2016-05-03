@@ -238,11 +238,15 @@ template("msvc_toolchain") {
         current_os = invoker.toolchain_os
       }
 
-      forward_variables_from(invoker,
-                             [
-                               "is_clang",
-                               "is_component_build",
-                             ])
+      # These share a name with global variables that are already defined, and
+      # forward_variables_from won't clobber the existing value, so we need to
+      # set it explicitly.
+      if (defined(invoker.is_clang)) {
+        is_clang = invoker.is_clang
+      }
+      if (defined(invoker.is_component_build)) {
+        is_component_build = invoker.is_component_build
+      }
 
       # This value needs to be passed through unchanged.
       host_toolchain = host_toolchain
@@ -313,7 +317,11 @@ template("win_x64_toolchains") {
     cl = "${goma_prefix}\"${x64_toolchain_data.vc_bin_dir}/cl.exe\""
     is_clang = false
 
-    forward_variables_from(invoker, [ "is_component_build" ])
+    # This shares a name with a global and forward_variables_from won't clobber
+    # the existing value, so we need to set it explicitly.
+    if (defined(invoker.is_component_build)) {
+      is_component_build = invoker.is_component_build
+    }
   }
 
   msvc_toolchain("clang_" + target_name) {
@@ -325,7 +333,11 @@ template("win_x64_toolchains") {
     toolchain_os = "win"
     is_clang = true
 
-    forward_variables_from(invoker, [ "is_component_build" ])
+    # This shares a name with a global and forward_variables_from won't clobber
+    # the existing value, so we need to set it explicitly.
+    if (defined(invoker.is_component_build)) {
+      is_component_build = invoker.is_component_build
+    }
   }
 }
 
