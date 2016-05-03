@@ -124,6 +124,8 @@
         'web_test_runner.h',
         'web_view_test_client.cc',
         'web_view_test_client.h',
+        'web_widget_test_client.cc',
+        'web_widget_test_client.h',
       ],
       'msvs_settings': {
         'VCLinkerTool': {

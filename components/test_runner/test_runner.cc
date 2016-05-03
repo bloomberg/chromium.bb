@@ -1621,7 +1621,7 @@ void TestRunner::Reset() {
   layout_test_runtime_flags_.Reset();
   mock_screen_orientation_client_->ResetData();
   drag_image_.reset();
-  views_with_scheduled_animations_.clear();
+  widgets_with_scheduled_animations_.clear();
 
   WebSecurityPolicy::resetOriginAccessWhitelists();
 #if defined(__linux__) || defined(ANDROID)
@@ -2397,16 +2397,16 @@ void TestRunner::SetPluginsEnabled(bool enabled) {
 }
 
 bool TestRunner::GetAnimationScheduled() const {
-  bool is_animation_scheduled = !views_with_scheduled_animations_.empty();
+  bool is_animation_scheduled = !widgets_with_scheduled_animations_.empty();
   return is_animation_scheduled;
 }
 
-void TestRunner::OnAnimationScheduled(blink::WebView* view) {
-  views_with_scheduled_animations_.insert(view);
+void TestRunner::OnAnimationScheduled(blink::WebWidget* widget) {
+  widgets_with_scheduled_animations_.insert(widget);
 }
 
-void TestRunner::OnAnimationBegun(blink::WebView* view) {
-  views_with_scheduled_animations_.erase(view);
+void TestRunner::OnAnimationBegun(blink::WebWidget* widget) {
+  widgets_with_scheduled_animations_.erase(widget);
 }
 
 void TestRunner::DumpEditingCallbacks() {

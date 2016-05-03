@@ -36,6 +36,7 @@ class WebTestDelegate;
 class WebTestProxyBase;
 class WebTestRunner;
 class WebViewTestClient;
+class WebWidgetTestClient;
 
 class TEST_RUNNER_EXPORT WebTestInterfaces {
  public:
@@ -78,6 +79,13 @@ class TEST_RUNNER_EXPORT WebTestInterfaces {
   // the returned pointer won't be used beyond the lifetime of WebTestInterfaces
   // and/or the lifetime of |web_test_proxy_base|.
   std::unique_ptr<WebViewTestClient> CreateWebViewTestClient(
+      WebTestProxyBase* web_test_proxy_base);
+
+  // Creates a WebWidgetClient implementation providing test behavior (i.e.
+  // providing a mocked screen orientation).  The caller should guarantee that
+  // the returned pointer won't be used beyond the lifetime of WebTestInterfaces
+  // and/or the lifetime of |web_test_proxy_base|.
+  std::unique_ptr<WebWidgetTestClient> CreateWebWidgetTestClient(
       WebTestProxyBase* web_test_proxy_base);
 
   // Gets a list of currently opened windows created by the current test.

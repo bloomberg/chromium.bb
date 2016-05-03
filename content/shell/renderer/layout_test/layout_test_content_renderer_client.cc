@@ -71,6 +71,9 @@ void WebTestProxyCreated(RenderView* render_view,
   proxy->set_view_test_client(LayoutTestRenderThreadObserver::GetInstance()
                                   ->test_interfaces()
                                   ->CreateWebViewTestClient(proxy));
+  proxy->set_widget_test_client(LayoutTestRenderThreadObserver::GetInstance()
+                                    ->test_interfaces()
+                                    ->CreateWebWidgetTestClient(proxy));
   proxy->SetInterfaces(interfaces);
 }
 

@@ -6,7 +6,6 @@
 #define COMPONENTS_TEST_RUNNER_WEB_VIEW_TEST_CLIENT_H_
 
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "third_party/WebKit/public/web/WebViewClient.h"
 
 namespace blink {
@@ -41,7 +40,6 @@ class WebViewTestClient : public blink::WebViewClient {
                              blink::WebTextDirection sub_message_hint) override;
   bool runFileChooser(const blink::WebFileChooserParams& params,
                       blink::WebFileChooserCompletion* completion) override;
-  void scheduleAnimation() override;
   void startDragging(blink::WebLocalFrame* frame,
                      const blink::WebDragData& data,
                      blink::WebDragOperationsMask mask,
@@ -57,26 +55,14 @@ class WebViewTestClient : public blink::WebViewClient {
   void setStatusText(const blink::WebString& text) override;
   void printPage(blink::WebLocalFrame* frame) override;
   blink::WebSpeechRecognizer* speechRecognizer() override;
-  bool requestPointerLock() override;
-  void requestPointerUnlock() override;
-  bool isPointerLocked() override;
-  void didFocus() override;
-  void setToolTipText(const blink::WebString& text,
-                      blink::WebTextDirection direction) override;
-  void resetInputMethod() override;
   blink::WebString acceptLanguages() override;
 
  private:
-  void AnimateNow();
   WebTestDelegate* delegate();
 
   // Borrowed pointers to other parts of Layout Tests state.
   TestRunner* test_runner_;
   WebTestProxyBase* web_test_proxy_base_;
-
-  bool animation_scheduled_;
-
-  base::WeakPtrFactory<WebViewTestClient> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewTestClient);
 };

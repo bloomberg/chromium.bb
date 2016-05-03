@@ -30,6 +30,7 @@ class WebFrame;
 class WebLocalFrame;
 class WebString;
 class WebView;
+class WebWidget;
 }
 
 namespace gin {
@@ -98,8 +99,8 @@ class TestRunner : public WebTestRunner {
   void SetFocus(blink::WebView* web_view, bool focus) override;
 
   // Methods used by WebViewTestClient and WebFrameTestClient.
-  void OnAnimationScheduled(blink::WebView* view);
-  void OnAnimationBegun(blink::WebView* view);
+  void OnAnimationScheduled(blink::WebWidget* widget);
+  void OnAnimationBegun(blink::WebWidget* widget);
   std::string GetAcceptLanguages() const;
   bool shouldStayOnPageAfterHandlingBeforeUnload() const;
   MockScreenOrientationClient* getMockScreenOrientationClient();
@@ -641,7 +642,7 @@ class TestRunner : public WebTestRunner {
   // is ok, because this is taken care of in WebTestDelegate::SetFocus).
   blink::WebView* previously_focused_view_;
 
-  std::set<blink::WebView*> views_with_scheduled_animations_;
+  std::set<blink::WebWidget*> widgets_with_scheduled_animations_;
 
   base::WeakPtrFactory<TestRunner> weak_factory_;
 

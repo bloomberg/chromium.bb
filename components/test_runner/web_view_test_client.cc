@@ -31,45 +31,12 @@ namespace test_runner {
 WebViewTestClient::WebViewTestClient(TestRunner* test_runner,
                                      WebTestProxyBase* web_test_proxy_base)
     : test_runner_(test_runner),
-      web_test_proxy_base_(web_test_proxy_base),
-      animation_scheduled_(false),
-      weak_factory_(this) {
+      web_test_proxy_base_(web_test_proxy_base) {
   DCHECK(test_runner);
   DCHECK(web_test_proxy_base);
 }
 
 WebViewTestClient::~WebViewTestClient() {}
-
-void WebViewTestClient::scheduleAnimation() {
-  if (!test_runner_->TestIsRunning())
-    return;
-
-  if (!animation_scheduled_) {
-    animation_scheduled_ = true;
-    test_runner_->OnAnimationScheduled(web_test_proxy_base_->web_view());
-
-    delegate()->PostDelayedTask(
-        new WebCallbackTask(base::Bind(&WebViewTestClient::AnimateNow,
-                                       weak_factory_.GetWeakPtr())),
-        1);
-  }
-}
-
-void WebViewTestClient::AnimateNow() {
-  if (animation_scheduled_) {
-    blink::WebWidget* web_widget = web_test_proxy_base_->web_widget();
-    animation_scheduled_ = false;
-    test_runner_->OnAnimationBegun(web_test_proxy_base_->web_view());
-
-    base::TimeDelta animate_time = base::TimeTicks::Now() - base::TimeTicks();
-    web_widget->beginFrame(animate_time.InSecondsF());
-    web_widget->updateAllLifecyclePhases();
-    if (blink::WebPagePopup* popup = web_widget->pagePopup()) {
-      popup->beginFrame(animate_time.InSecondsF());
-      popup->updateAllLifecyclePhases();
-    }
-  }
-}
 
 void WebViewTestClient::startDragging(blink::WebLocalFrame* frame,
                                       const blink::WebDragData& data,
@@ -177,34 +144,6 @@ void WebViewTestClient::showValidationMessage(
 
 blink::WebSpeechRecognizer* WebViewTestClient::speechRecognizer() {
   return test_runner_->getMockWebSpeechRecognizer();
-}
-
-bool WebViewTestClient::requestPointerLock() {
-  return web_test_proxy_base_->view_test_runner()->RequestPointerLock();
-}
-
-void WebViewTestClient::requestPointerUnlock() {
-  web_test_proxy_base_->view_test_runner()->RequestPointerUnlock();
-}
-
-bool WebViewTestClient::isPointerLocked() {
-  return web_test_proxy_base_->view_test_runner()->isPointerLocked();
-}
-
-void WebViewTestClient::didFocus() {
-  test_runner_->SetFocus(web_test_proxy_base_->web_view(), true);
-}
-
-void WebViewTestClient::setToolTipText(const blink::WebString& text,
-                                       blink::WebTextDirection direction) {
-  test_runner_->setToolTipText(text);
-}
-
-void WebViewTestClient::resetInputMethod() {
-  // If a composition text exists, then we need to let the browser process
-  // to cancel the input method's ongoing composition session.
-  if (web_test_proxy_base_)
-    web_test_proxy_base_->web_widget()->confirmComposition();
 }
 
 blink::WebString WebViewTestClient::acceptLanguages() {

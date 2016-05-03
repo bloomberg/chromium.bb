@@ -38,6 +38,7 @@
 #include "public/platform/WebRect.h"
 #include "public/platform/WebScreenInfo.h"
 #include "public/web/WebMeaningfulLayout.h"
+#include "public/web/WebTextDirection.h"
 #include "public/web/WebTouchAction.h"
 
 namespace blink {

@@ -56,15 +56,4 @@ void WebTestProxyBase::BindTo(blink::WebLocalFrame* frame) {
   view_test_runner_->Install(frame);
 }
 
-void WebTestProxyBase::GetScreenOrientationForTesting(
-    blink::WebScreenInfo& screen_info) {
-  MockScreenOrientationClient* mock_client =
-      test_interfaces_->GetTestRunner()->getMockScreenOrientationClient();
-  if (mock_client->IsDisabled())
-    return;
-  // Override screen orientation information with mock data.
-  screen_info.orientationType = mock_client->CurrentOrientationType();
-  screen_info.orientationAngle = mock_client->CurrentOrientationAngle();
-}
-
 }  // namespace test_runner
