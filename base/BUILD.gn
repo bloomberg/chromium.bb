@@ -1241,7 +1241,7 @@ component("base") {
         ]
       }
       if (is_asan) {
-        data += [ "//third_party/llvm-build/Release+Asserts/lib/clang/3.9.0/lib/windows/clang_rt.asan_dynamic-i386.dll" ]
+        data += [ "//third_party/llvm-build/Release+Asserts/lib/clang/$clang_version/lib/windows/clang_rt.asan_dynamic-i386.dll" ]
       }
     }
 

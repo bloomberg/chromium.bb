@@ -17,6 +17,11 @@ declare_args() {
   # LLVM toolchain (see llvm_force_head_revision in
   # build/config/compiler/BUILD.gn).
   use_lld = false
+
+  if (is_clang) {
+    # Clang compiler version. Clang files are placed at version-dependent paths.
+    clang_version = "3.9.0"
+  }
 }
 
 # Subdirectory within root_out_dir for shared library files.

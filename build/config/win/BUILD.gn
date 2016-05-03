@@ -5,6 +5,7 @@
 import("//build/config/compiler/compiler.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/win/visual_studio_version.gni")
+import("//build/toolchain/toolchain.gni")
 
 assert(is_win)
 
@@ -95,7 +96,7 @@ config("compiler") {
     }
 
     # Clang runtime libraries, such as the sanitizer runtimes, live here.
-    lib_dirs = [ "//third_party/llvm-build/Release+Asserts/lib/clang/3.9.0/lib/windows" ]
+    lib_dirs = [ "//third_party/llvm-build/Release+Asserts/lib/clang/$clang_version/lib/windows" ]
   }
 
   if (is_syzyasan) {
