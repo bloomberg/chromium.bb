@@ -54,6 +54,8 @@ per-file devtools_discovery.gypi=file://components/devtools_discovery/OWNERS
 
 per-file devtools_http_handler.gypi=file://components/devtools_http_handler/OWNERS
 
+per-file display_compositor.gypi=file://components/display_compositor/OWNERS
+
 per-file dom_distiller.gypi=file://components/dom_distiller/OWNERS
 per-file dom_distiller_strings.grdp=file://components/dom_distiller/OWNERS
 
