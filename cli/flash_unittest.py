@@ -10,6 +10,7 @@ import mock
 import os
 
 from chromite.cli import flash
+from chromite.lib import auto_updater
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_build_lib_unittest
@@ -23,8 +24,9 @@ from chromite.lib import remote_access
 
 class RemoteDeviceUpdaterMock(partial_mock.PartialCmdMock):
   """Mock out RemoteDeviceUpdater."""
-  TARGET = 'chromite.cli.flash.RemoteDeviceUpdater'
-  ATTRS = ('UpdateStateful', 'UpdateRootfs', 'SetupRootfsUpdate', 'Verify')
+  TARGET = 'chromite.lib.auto_updater.ChromiumOSUpdater'
+  ATTRS = ('UpdateStateful', 'UpdateRootfs', 'SetupRootfsUpdate',
+           'RebootAndVerify')
 
   def __init__(self):
     partial_mock.PartialCmdMock.__init__(self)
@@ -38,8 +40,8 @@ class RemoteDeviceUpdaterMock(partial_mock.PartialCmdMock):
   def SetupRootfsUpdate(self, _inst, *_args, **_kwargs):
     """Mock out SetupRootfsUpdate."""
 
-  def Verify(self, _inst, *_args, **_kwargs):
-    """Mock out SetupRootfsUpdate."""
+  def RebootAndVerify(self, _inst, *_args, **_kwargs):
+    """Mock out RebootAndVerify."""
 
 
 class RemoteDeviceUpdaterTest(cros_test_lib.MockTempDirTestCase):
@@ -86,7 +88,8 @@ class RemoteDeviceUpdaterTest(cros_test_lib.MockTempDirTestCase):
   def testMissingPayloads(self):
     """Tests we raise FlashError when payloads are missing."""
     with mock.patch('os.path.exists', return_value=False):
-      self.assertRaises(flash.FlashError, flash.Flash, self.DEVICE, self.IMAGE)
+      self.assertRaises(auto_updater.ChromiumOSUpdateError, flash.Flash,
+                        self.DEVICE, self.IMAGE)
 
 
 class USBImagerMock(partial_mock.PartialCmdMock):
