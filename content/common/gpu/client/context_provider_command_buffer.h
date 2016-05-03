@@ -82,6 +82,7 @@ class CONTENT_EXPORT ContextProviderCommandBuffer
 
   scoped_refptr<SharedProviders> shared_providers_;
 
+  base::Lock context_lock_;  // Referenced by context3d_.
   std::unique_ptr<WebGraphicsContext3DCommandBufferImpl> context3d_;
   std::unique_ptr<gpu::gles2::GLES2TraceImplementation> trace_impl_;
   std::unique_ptr<skia_bindings::GrContextForGLES2Interface> gr_context_;
@@ -91,8 +92,6 @@ class CONTENT_EXPORT ContextProviderCommandBuffer
   command_buffer_metrics::ContextType context_type_;
 
   LostContextCallback lost_context_callback_;
-
-  base::Lock context_lock_;
 
   class LostContextCallbackProxy;
   std::unique_ptr<LostContextCallbackProxy> lost_context_callback_proxy_;

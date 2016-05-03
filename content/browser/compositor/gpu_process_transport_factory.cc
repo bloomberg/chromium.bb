@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/metrics/histogram.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/simple_thread.h"
@@ -365,6 +366,13 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
         shared_worker_context_provider_ = CreateContextCommon(
             gpu_channel_host, gpu::kNullSurfaceHandle, nullptr,
             command_buffer_metrics::BROWSER_WORKER_CONTEXT);
+        // TODO(vadimt): Remove ScopedTracker below once crbug.com/125248 is
+        // fixed. Tracking time in BindToCurrentThread.
+        tracked_objects::ScopedTracker tracking_profile(
+            FROM_HERE_WITH_EXPLICIT_FUNCTION(
+                "125248"
+                " GpuProcessTransportFactory::EstablishedGpuChannel"
+                "::Worker"));
         if (shared_worker_context_provider_->BindToCurrentThread())
           shared_worker_context_provider_->SetupLock();
         else
@@ -379,6 +387,13 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
             std::move(gpu_channel_host), data->surface_handle,
             shared_worker_context_provider_.get(),
             command_buffer_metrics::DISPLAY_COMPOSITOR_ONSCREEN_CONTEXT);
+        // TODO(vadimt): Remove ScopedTracker below once crbug.com/125248 is
+        // fixed. Tracking time in BindToCurrentThread.
+        tracked_objects::ScopedTracker tracking_profile(
+            FROM_HERE_WITH_EXPLICIT_FUNCTION(
+                "125248"
+                " GpuProcessTransportFactory::EstablishedGpuChannel"
+                "::Compositor"));
         if (!context_provider->BindToCurrentThread())
           context_provider = nullptr;
       }
@@ -692,6 +707,12 @@ GpuProcessTransportFactory::SharedMainThreadContextProvider() {
   shared_main_thread_contexts_->SetLostContextCallback(base::Bind(
       &GpuProcessTransportFactory::OnLostMainThreadSharedContextInsideCallback,
       callback_factory_.GetWeakPtr()));
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/125248 is
+  // fixed. Tracking time in BindToCurrentThread.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "125248"
+          " GpuProcessTransportFactory::SharedMainThreadContextProvider"));
   if (!shared_main_thread_contexts_->BindToCurrentThread())
     shared_main_thread_contexts_ = nullptr;
   return shared_main_thread_contexts_;

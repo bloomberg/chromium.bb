@@ -46,11 +46,10 @@ WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl(
     gfx::GpuPreference gpu_preference,
     bool automatic_flushes)
     : automatic_flushes_(automatic_flushes),
-      host_(std::move(host)),
       surface_handle_(surface_handle),
       active_url_(active_url),
       gpu_preference_(gpu_preference),
-      weak_ptr_factory_(this) {
+      host_(std::move(host)) {
   DCHECK(host_);
 }
 
@@ -58,8 +57,6 @@ WebGraphicsContext3DCommandBufferImpl::
     ~WebGraphicsContext3DCommandBufferImpl() {
   if (real_gl_)
     real_gl_->SetLostContextCallback(base::Closure());
-
-  Destroy();
 }
 
 bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL(
@@ -68,45 +65,8 @@ bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL(
     scoped_refptr<gpu::gles2::ShareGroup> share_group,
     const gpu::gles2::ContextCreationAttribHelper& attributes,
     command_buffer_metrics::ContextType context_type) {
-  if (initialized_)
-    return true;
-
-  if (initialize_failed_)
-    return false;
-
+  DCHECK_EQ(!!shared_command_buffer, !!share_group);
   TRACE_EVENT0("gpu", "WebGfxCtx3DCmdBfrImpl::MaybeInitializeGL");
-
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/125248 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "125248 WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL"));
-
-  if (!CreateContext(memory_limits, shared_command_buffer,
-                     std::move(share_group), attributes, context_type)) {
-    Destroy();
-
-    initialize_failed_ = true;
-    return false;
-  }
-
-  real_gl_->SetLostContextCallback(
-      base::Bind(&WebGraphicsContext3DCommandBufferImpl::OnContextLost,
-                 // The callback is unset in the destructor.
-                 base::Unretained(this)));
-
-  real_gl_->TraceBeginCHROMIUM("WebGraphicsContext3D",
-                               "CommandBufferContext");
-
-  initialized_ = true;
-  return true;
-}
-
-bool WebGraphicsContext3DCommandBufferImpl::InitializeCommandBuffer(
-    gpu::CommandBufferProxyImpl* shared_command_buffer,
-    const gpu::gles2::ContextCreationAttribHelper& attributes,
-    command_buffer_metrics::ContextType context_type) {
-  if (!host_.get())
-    return false;
 
   DCHECK(attributes.buffer_preserved);
   std::vector<int32_t> serialized_attributes;
@@ -125,48 +85,25 @@ bool WebGraphicsContext3DCommandBufferImpl::InitializeCommandBuffer(
     return false;
   }
 
-  DVLOG_IF(1, gpu::error::IsError(command_buffer_->GetLastError()))
-      << "Context dead on arrival. Last error: "
-      << command_buffer_->GetLastError();
-  return true;
-}
-
-bool WebGraphicsContext3DCommandBufferImpl::CreateContext(
-    const gpu::SharedMemoryLimits& memory_limits,
-    gpu::CommandBufferProxyImpl* shared_command_buffer,
-    scoped_refptr<gpu::gles2::ShareGroup> share_group,
-    const gpu::gles2::ContextCreationAttribHelper& attributes,
-    command_buffer_metrics::ContextType context_type) {
-  TRACE_EVENT0("gpu", "WebGfxCtx3DCmdBfrImpl::CreateContext");
-  DCHECK_EQ(!!shared_command_buffer, !!share_group);
-
-  if (!InitializeCommandBuffer(shared_command_buffer, attributes,
-                               context_type)) {
-    LOG(ERROR) << "Failed to initialize command buffer.";
-    return false;
-  }
-
-  // Create the GLES2 helper, which writes the command buffer protocol.
+  // The GLES2 helper writes the command buffer protocol.
   gles2_helper_.reset(new gpu::gles2::GLES2CmdHelper(command_buffer_.get()));
+  gles2_helper_->SetAutomaticFlushes(automatic_flushes_);
   if (!gles2_helper_->Initialize(memory_limits.command_buffer_size)) {
-    LOG(ERROR) << "Failed to initialize GLES2CmdHelper.";
+    DLOG(ERROR) << "Failed to initialize GLES2CmdHelper.";
     return false;
   }
 
-  if (!automatic_flushes_)
-    gles2_helper_->SetAutomaticFlushes(false);
-  // Create a transfer buffer used to copy resources between the renderer
+  // The transfer buffer is used to copy resources between the client
   // process and the GPU process.
   transfer_buffer_ .reset(new gpu::TransferBuffer(gles2_helper_.get()));
-
-  DCHECK(host_.get());
 
   const bool bind_generates_resource = attributes.bind_generates_resource;
   const bool lose_context_when_out_of_memory =
       attributes.lose_context_when_out_of_memory;
   const bool support_client_side_arrays = false;
 
-  // Create the object exposing the OpenGL API.
+  // The GLES2Implementation exposes the OpenGLES2 API, as well as the
+  // gpu::ContextSupport interface.
   real_gl_.reset(new gpu::gles2::GLES2Implementation(
       gles2_helper_.get(), std::move(share_group), transfer_buffer_.get(),
       bind_generates_resource, lose_context_when_out_of_memory,
@@ -175,10 +112,15 @@ bool WebGraphicsContext3DCommandBufferImpl::CreateContext(
                             memory_limits.min_transfer_buffer_size,
                             memory_limits.max_transfer_buffer_size,
                             memory_limits.mapped_memory_reclaim_limit)) {
-    LOG(ERROR) << "Failed to initialize GLES2Implementation.";
+    DLOG(ERROR) << "Failed to initialize GLES2Implementation.";
     return false;
   }
 
+  real_gl_->SetLostContextCallback(
+      base::Bind(&WebGraphicsContext3DCommandBufferImpl::OnContextLost,
+                 // The callback is unset in the destructor.
+                 base::Unretained(this)));
+  real_gl_->TraceBeginCHROMIUM("WebGraphicsContext3D", "CommandBufferContext");
   return true;
 }
 
@@ -189,33 +131,15 @@ bool WebGraphicsContext3DCommandBufferImpl::InitializeOnCurrentThread(
     const gpu::gles2::ContextCreationAttribHelper& attributes,
     command_buffer_metrics::ContextType context_type) {
   if (!MaybeInitializeGL(memory_limits, shared_command_buffer,
-                         std::move(share_group), attributes, context_type)) {
-    DLOG(ERROR) << "Failed to initialize context.";
+                         std::move(share_group), attributes, context_type))
     return false;
-  }
   if (gpu::error::IsError(command_buffer_->GetLastError())) {
-    LOG(ERROR) << "Context dead on arrival. Last error: "
-               << command_buffer_->GetLastError();
+    DLOG(ERROR) << "Context dead on arrival. Last error: "
+                << command_buffer_->GetLastError();
     return false;
   }
 
   return true;
-}
-
-void WebGraphicsContext3DCommandBufferImpl::Destroy() {
-  trace_gl_.reset();
-  real_gl_.reset();
-  transfer_buffer_.reset();
-  gles2_helper_.reset();
-  real_gl_.reset();
-  command_buffer_.reset();
-
-  host_ = nullptr;
-}
-
-gpu::ContextSupport*
-WebGraphicsContext3DCommandBufferImpl::GetContextSupport() {
-  return real_gl_.get();
 }
 
 void WebGraphicsContext3DCommandBufferImpl::OnContextLost() {

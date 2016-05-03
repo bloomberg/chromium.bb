@@ -75,8 +75,6 @@ class WebGraphicsContext3DCommandBufferImpl {
     return command_buffer_.get();
   }
 
-  CONTENT_EXPORT gpu::ContextSupport* GetContextSupport();
-
   gpu::gles2::GLES2Implementation* GetImplementation() {
     return real_gl_.get();
   }
@@ -93,10 +91,6 @@ class WebGraphicsContext3DCommandBufferImpl {
       command_buffer_metrics::ContextType context_type);
 
  private:
-  // Initialize the underlying GL context. May be called multiple times; second
-  // and subsequent calls are ignored. Must be called from the thread that is
-  // going to use this object to issue GL commands (which might not be the main
-  // thread).
   bool MaybeInitializeGL(
       const gpu::SharedMemoryLimits& memory_limits,
       gpu::CommandBufferProxyImpl* shared_command_buffer,
@@ -104,44 +98,21 @@ class WebGraphicsContext3DCommandBufferImpl {
       const gpu::gles2::ContextCreationAttribHelper& attributes,
       command_buffer_metrics::ContextType context_type);
 
-  bool InitializeCommandBuffer(
-      gpu::CommandBufferProxyImpl* shared_command_buffer,
-      const gpu::gles2::ContextCreationAttribHelper& attributes,
-      command_buffer_metrics::ContextType context_type);
-
-  void Destroy();
-
-  bool CreateContext(const gpu::SharedMemoryLimits& memory_limits,
-                     gpu::CommandBufferProxyImpl* shared_command_buffer,
-                     scoped_refptr<gpu::gles2::ShareGroup> share_group,
-                     const gpu::gles2::ContextCreationAttribHelper& attributes,
-                     command_buffer_metrics::ContextType context_type);
-
   void OnContextLost();
 
-  bool initialized_ = false;
-  bool initialize_failed_ = false;
   WebGraphicsContextLostCallback* context_lost_callback_ = nullptr;
 
   bool automatic_flushes_;
-
-  // State needed by MaybeInitializeGL.
-  scoped_refptr<gpu::GpuChannelHost> host_;
   gpu::SurfaceHandle surface_handle_;
   GURL active_url_;
-
   gfx::GpuPreference gpu_preference_;
 
+  scoped_refptr<gpu::GpuChannelHost> host_;
   std::unique_ptr<gpu::CommandBufferProxyImpl> command_buffer_;
   std::unique_ptr<gpu::gles2::GLES2CmdHelper> gles2_helper_;
   std::unique_ptr<gpu::TransferBuffer> transfer_buffer_;
   std::unique_ptr<gpu::gles2::GLES2Implementation> real_gl_;
   std::unique_ptr<gpu::gles2::GLES2Interface> trace_gl_;
-
-  // Member variables should appear before the WeakPtrFactory, to ensure
-  // that any WeakPtrs to Controller are invalidated before its members
-  // variable's destructors are executed, rendering them invalid.
-  base::WeakPtrFactory<WebGraphicsContext3DCommandBufferImpl> weak_ptr_factory_;
 };
 
 }  // namespace content

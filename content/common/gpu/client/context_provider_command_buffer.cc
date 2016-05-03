@@ -76,12 +76,10 @@ ContextProviderCommandBuffer::~ContextProviderCommandBuffer() {
       shared_providers_->list.erase(it);
   }
 
-  // Destroy references to the context3d_ before leaking it.
-  // TODO(danakj): Delete this.
-  if (context3d_->GetCommandBufferProxy())
-    context3d_->GetCommandBufferProxy()->SetLock(nullptr);
-
   if (lost_context_callback_proxy_) {
+    // Clear the lock to avoid DCHECKs that the lock is being held during
+    // shutdown.
+    context3d_->GetCommandBufferProxy()->SetLock(nullptr);
     // Disconnect lost callbacks during destruction.
     lost_context_callback_proxy_.reset();
   }
@@ -96,8 +94,10 @@ bool ContextProviderCommandBuffer::BindToCurrentThread() {
   // This is called on the thread the context will be used.
   DCHECK(context_thread_checker_.CalledOnValidThread());
 
+  if (!context3d_)
+    return false;  // Already failed.
   if (lost_context_callback_proxy_)
-    return true;
+    return true;  // Already succeeded.
 
   // It's possible to be running BindToCurrentThread on two contexts
   // on different threads at the same time, but which will be in the same share
@@ -121,8 +121,10 @@ bool ContextProviderCommandBuffer::BindToCurrentThread() {
 
     if (!context3d_->InitializeOnCurrentThread(
             memory_limits_, shared_command_buffer, std::move(share_group),
-            attributes_, context_type_))
+            attributes_, context_type_)) {
+      context3d_ = nullptr;
       return false;
+    }
 
     // If any context in the share group has been lost, then abort and don't
     // continue since we need to go back to the caller of the constructor to
@@ -137,8 +139,10 @@ bool ContextProviderCommandBuffer::BindToCurrentThread() {
     // context provider. If we check sooner, the shared context may be lost in
     // between these two states and our context here would be left in an orphan
     // share group.
-    if (share_group && share_group->IsLost())
+    if (share_group && share_group->IsLost()) {
+      context3d_ = nullptr;
       return false;
+    }
 
     shared_providers_->list.push_back(this);
   }
@@ -177,7 +181,7 @@ gpu::gles2::GLES2Interface* ContextProviderCommandBuffer::ContextGL() {
 }
 
 gpu::ContextSupport* ContextProviderCommandBuffer::ContextSupport() {
-  return context3d_->GetContextSupport();
+  return context3d_->GetImplementation();
 }
 
 class GrContext* ContextProviderCommandBuffer::GrContext() {
@@ -206,7 +210,8 @@ void ContextProviderCommandBuffer::InvalidateGrContext(uint32_t state) {
 }
 
 void ContextProviderCommandBuffer::SetupLock() {
-  DCHECK(context3d_);
+  DCHECK(lost_context_callback_proxy_);  // Is bound to thread.
+  DCHECK(context_thread_checker_.CalledOnValidThread());
   context3d_->GetCommandBufferProxy()->SetLock(&context_lock_);
 }
 
