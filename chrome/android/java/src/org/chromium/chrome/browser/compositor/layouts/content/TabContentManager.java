@@ -340,7 +340,7 @@ public class TabContentManager {
                         if (TabModelUtils.getTabById(modelSelector.getModel(false), id) == null
                                 && TabModelUtils.getTabById(modelSelector.getModel(true), id)
                                         == null) {
-                            nativeRemoveTabThumbnail(mNativeTabContentManager, id);
+                            removeTabThumbnail(id);
                         }
                     } catch (NumberFormatException expected) {
                         // This is an unknown file name, we'll leave it there.
