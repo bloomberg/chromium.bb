@@ -139,23 +139,25 @@ public class ChromeStrictMode {
                 || BuildConfig.sIsDebug
                 || ChromeVersionInfo.isLocalBuild()
                 || commandLine.hasSwitch(ChromeSwitches.STRICT_MODE)) {
-            StrictMode.enableDefaults();
-            StrictMode.ThreadPolicy.Builder threadPolicy =
-                    new StrictMode.ThreadPolicy.Builder(StrictMode.getThreadPolicy());
+            StrictMode.ThreadPolicy.Builder threadPolicy = new StrictMode.ThreadPolicy.Builder();
+            StrictMode.VmPolicy.Builder vmPolicy = new StrictMode.VmPolicy.Builder();
+
             threadPolicy = threadPolicy.detectAll()
                     .penaltyFlashScreen()
                     .penaltyDeathOnNetwork();
-            /*
-             * Explicitly enable detection of all violations except file URI leaks, as that results
-             * in false positives when file URI intents are passed between Chrome activities in
-             * separate processes. See http://crbug.com/508282#c11.
-             */
-            StrictMode.VmPolicy.Builder vmPolicy = new StrictMode.VmPolicy.Builder();
-            vmPolicy = vmPolicy.detectActivityLeaks()
-                    .detectLeakedClosableObjects()
-                    .detectLeakedRegistrationObjects()
-                    .detectLeakedSqlLiteObjects()
-                    .penaltyLog();
+            if (Build.VERSION.CODENAME.equals("N")) {
+                vmPolicy = vmPolicy.detectAll();
+            } else {
+                // Explicitly enable detection of all violations except file URI leaks, as that
+                // results in false positives when file URI intents are passed between Chrome
+                // activities in separate processes. See http://crbug.com/508282#c11.
+                vmPolicy = vmPolicy.detectActivityLeaks()
+                        .detectLeakedClosableObjects()
+                        .detectLeakedRegistrationObjects()
+                        .detectLeakedSqlLiteObjects();
+            }
+            vmPolicy.penaltyLog();
+
             if ("death".equals(commandLine.getSwitchValue(ChromeSwitches.STRICT_MODE))) {
                 threadPolicy = threadPolicy.penaltyDeath();
                 vmPolicy = vmPolicy.penaltyDeath();
