@@ -1093,9 +1093,10 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
       prefs.resue_global_for_unowned_main_frame);
   settings->setPreferHiddenVolumeControls(true);
   settings->setShrinksViewportContentToFit(true);
+#endif
+
   settings->setAutoplayExperimentMode(
       blink::WebString::fromUTF8(prefs.autoplay_experiment_mode));
-#endif
 
   settings->setViewportEnabled(prefs.viewport_enabled);
   settings->setViewportMetaEnabled(prefs.viewport_meta_enabled);

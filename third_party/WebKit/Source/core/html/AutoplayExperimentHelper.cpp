@@ -39,7 +39,7 @@ AutoplayExperimentHelper::AutoplayExperimentHelper(Client* client)
 {
     m_mode = fromString(this->client().autoplayExperimentMode());
 
-    if (m_mode != Mode::ExperimentOff) {
+    if (isExperimentEnabled()) {
         WTF_LOG(Media, "HTMLMediaElement: autoplay experiment set to %d",
             m_mode);
     }
@@ -498,6 +498,11 @@ void AutoplayExperimentHelper::loadingStarted()
 bool AutoplayExperimentHelper::requiresViewportVisibility() const
 {
     return enabled(IfViewport) || enabled(IfPartialViewport);
+}
+
+bool AutoplayExperimentHelper::isExperimentEnabled()
+{
+    return m_mode != Mode::ExperimentOff;
 }
 
 } // namespace blink

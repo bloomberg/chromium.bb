@@ -224,8 +224,11 @@ struct CONTENT_EXPORT WebPreferences {
   // Used by Android_WebView only to support legacy apps that inject script into
   // a top-level initial empty document and expect it to persist on navigation.
   bool resue_global_for_unowned_main_frame;
-  std::string autoplay_experiment_mode;
 #endif
+
+  // String that describes how media element autoplay behavior should be
+  // affected by experiment.
+  std::string autoplay_experiment_mode;
 
   // Default (used if the page or UA doesn't override these) values for page
   // scale limits. These are set directly on the WebView so there's no analogue

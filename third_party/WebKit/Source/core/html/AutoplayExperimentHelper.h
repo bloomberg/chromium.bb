@@ -155,6 +155,10 @@ public:
     void playbackStopped();
     void initialPlayWithUserGesture();
 
+    // Returns true if and only if any experiment is enabled (i.e., |m_mode|
+    // is not ExperimentOff).
+    bool isExperimentEnabled();
+
     // Clean up.  For Oilpan, this means "early in HTMLMediaElement's dispose".
     // For non-Oilpan, just delete the object.
     void dispose();

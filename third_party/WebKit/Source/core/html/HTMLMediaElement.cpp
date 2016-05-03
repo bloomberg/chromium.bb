@@ -443,8 +443,12 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
 
     WTF_LOG(Media, "HTMLMediaElement::HTMLMediaElement(%p)", this);
 
-    if (document.settings() && document.settings()->mediaPlaybackRequiresUserGesture())
+    // If any experiment is enabled, then we want to enable a user gesture by
+    // default, otherwise the experiment does nothing.
+    if ((document.settings() && document.settings()->mediaPlaybackRequiresUserGesture())
+        || m_autoplayHelper->isExperimentEnabled()) {
         m_userGestureRequiredForPlay = true;
+    }
 
     setHasCustomStyleCallbacks();
     addElementToDocumentMap(this, &document);
