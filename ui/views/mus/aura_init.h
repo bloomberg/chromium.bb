@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "skia/ext/refptr.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "ui/views/mus/mus_export.h"
 
 namespace aura {
@@ -39,7 +39,7 @@ class VIEWS_MUS_EXPORT AuraInit {
   void InitializeResources(shell::Connector* connector);
 
 #if defined(OS_LINUX) && !defined(OS_ANDROID)
-  skia::RefPtr<font_service::FontLoader> font_loader_;
+  sk_sp<font_service::FontLoader> font_loader_;
 #endif
 
   const std::string resource_file_;

@@ -5,7 +5,6 @@
 #include "ui/views/style/mac/dialog_button_border_mac.h"
 
 #include "base/logging.h"
-#include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkDrawLooper.h"
 #include "third_party/skia/include/core/SkPaint.h"
