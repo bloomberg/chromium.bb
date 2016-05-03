@@ -607,12 +607,6 @@ LayoutTestBluetoothAdapterProvider::GetBaseDevice(
       .WillByDefault(
           Invoke(device.get(), &MockBluetoothDevice::GetMockService));
 
-  ON_CALL(*device, GetVendorIDSource())
-      .WillByDefault(Return(BluetoothDevice::VENDOR_ID_BLUETOOTH));
-  ON_CALL(*device, GetVendorID()).WillByDefault(Return(0xFFFF));
-  ON_CALL(*device, GetProductID()).WillByDefault(Return(1));
-  ON_CALL(*device, GetDeviceID()).WillByDefault(Return(2));
-
   return device;
 }
 

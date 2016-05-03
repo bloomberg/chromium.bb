@@ -924,11 +924,6 @@ void BluetoothDispatcherHost::FinishClosingChooser(
           device->GetInquiryTxPower()),  // tx_power
       content::BluetoothDevice::ValidatePower(
           device->GetInquiryRSSI()),  // rssi
-      device->GetBluetoothClass(),    // device_class
-      device->GetVendorIDSource(),    // vendor_id_source
-      device->GetVendorID(),          // vendor_id
-      device->GetProductID(),         // product_id
-      device->GetDeviceID(),          // product_version
       content::BluetoothDevice::UUIDsFromBluetoothUUIDs(
           filtered_uuids));  // uuids
   RecordRequestDeviceOutcome(UMARequestDeviceOutcome::SUCCESS);

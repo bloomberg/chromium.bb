@@ -355,17 +355,6 @@ class LayoutTestBluetoothAdapterProvider {
   //      Returns: address
   //  - GetName:
   //      Returns: device_name.
-  //  - GetBluetoothClass:
-  //      Returns: 0x1F00. “Unspecified Device Class” see
-  //      bluetooth.org/en-us/specification/assigned-numbers/baseband
-  //  - GetVendorIDSource:
-  //      Returns: BluetoothDevice::VENDOR_ID_BLUETOOTH.
-  //  - GetVendorID:
-  //      Returns: 0xFFFF.
-  //  - GetProductID:
-  //      Returns: 1.
-  //  - GetDeviceID:
-  //      Returns: 2.
   //  - IsPaired:
   //      Returns true.
   static std::unique_ptr<testing::NiceMock<device::MockBluetoothDevice>>

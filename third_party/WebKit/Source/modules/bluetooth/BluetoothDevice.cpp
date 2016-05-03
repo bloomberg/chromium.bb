@@ -72,41 +72,6 @@ DEFINE_TRACE(BluetoothDevice)
     visitor->trace(m_gatt);
 }
 
-unsigned BluetoothDevice::deviceClass(bool& isNull)
-{
-    isNull = false;
-    return m_webDevice->deviceClass;
-}
-
-String BluetoothDevice::vendorIDSource()
-{
-    switch (m_webDevice->vendorIDSource) {
-    case WebBluetoothDevice::VendorIDSource::Unknown: return String();
-    case WebBluetoothDevice::VendorIDSource::Bluetooth: return "bluetooth";
-    case WebBluetoothDevice::VendorIDSource::USB: return "usb";
-    }
-    ASSERT_NOT_REACHED();
-    return String();
-}
-
-unsigned BluetoothDevice::vendorID(bool& isNull)
-{
-    isNull = false;
-    return m_webDevice->vendorID;
-}
-
-unsigned BluetoothDevice::productID(bool& isNull)
-{
-    isNull = false;
-    return m_webDevice->productID;
-}
-
-unsigned BluetoothDevice::productVersion(bool& isNull)
-{
-    isNull = false;
-    return m_webDevice->productVersion;
-}
-
 Vector<String> BluetoothDevice::uuids()
 {
     Vector<String> uuids(m_webDevice->uuids.size());

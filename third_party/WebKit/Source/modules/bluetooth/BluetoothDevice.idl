@@ -6,11 +6,6 @@
 
 // Implement BluetoothDevice interface: http://crbug.com/421668
 
-enum VendorIDSource {
-    "bluetooth",
-    "usb"
-};
-
 [
     DependentLifetime,
     RuntimeEnabled=WebBluetooth,
@@ -23,11 +18,6 @@ enum VendorIDSource {
     readonly    attribute DOMString id;
     readonly    attribute DOMString?                 name;
     readonly    attribute BluetoothAdvertisingData   adData;
-    readonly    attribute unsigned long?             deviceClass;
-    readonly    attribute VendorIDSource?            vendorIDSource;
-    readonly    attribute unsigned long?             vendorID;
-    readonly    attribute unsigned long?             productID;
-    readonly    attribute unsigned long?             productVersion;
     readonly    attribute BluetoothRemoteGATTServer  gatt;
     readonly    attribute UUID[]                     uuids;
     [CallWith=ScriptState, DeprecateAs=BluetoothDeviceConnectGATT] Promise<BluetoothRemoteGATTServer> connectGATT ();

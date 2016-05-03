@@ -13,12 +13,6 @@ BluetoothDevice::BluetoothDevice()
       name(base::string16()),
       tx_power(device::BluetoothDevice::kUnknownPower),
       rssi(device::BluetoothDevice::kUnknownPower),
-      device_class(0),
-      vendor_id_source(
-          device::BluetoothDevice::VendorIDSource::VENDOR_ID_UNKNOWN),
-      vendor_id(0),
-      product_id(0),
-      product_version(0),
       uuids() {}
 
 BluetoothDevice::BluetoothDevice(
@@ -26,21 +20,11 @@ BluetoothDevice::BluetoothDevice(
     const base::string16& name,
     int8_t tx_power,
     int8_t rssi,
-    uint32_t device_class,
-    device::BluetoothDevice::VendorIDSource vendor_id_source,
-    uint16_t vendor_id,
-    uint16_t product_id,
-    uint16_t product_version,
     const std::vector<std::string>& uuids)
     : id(id),
       name(name),
       tx_power(tx_power),
       rssi(rssi),
-      device_class(device_class),
-      vendor_id_source(vendor_id_source),
-      vendor_id(vendor_id),
-      product_id(product_id),
-      product_version(product_version),
       uuids(uuids) {}
 
 BluetoothDevice::~BluetoothDevice() {

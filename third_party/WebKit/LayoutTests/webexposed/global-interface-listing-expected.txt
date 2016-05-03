@@ -339,17 +339,12 @@ interface BluetoothCharacteristicProperties
 interface BluetoothDevice : EventTarget
     attribute @@toStringTag
     getter adData
-    getter deviceClass
     getter gatt
     getter id
     getter instanceID
     getter name
     getter ongattserverdisconnected
-    getter productID
-    getter productVersion
     getter uuids
-    getter vendorID
-    getter vendorIDSource
     method connectGATT
     method constructor
     setter ongattserverdisconnected

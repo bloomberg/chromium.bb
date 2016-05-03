@@ -73,11 +73,6 @@ public:
     String id() { return m_webDevice->id; }
     String name() { return m_webDevice->name; }
     BluetoothAdvertisingData* adData() { return m_adData; }
-    unsigned deviceClass(bool& isNull);
-    String vendorIDSource();
-    unsigned vendorID(bool& isNull);
-    unsigned productID(bool& isNull);
-    unsigned productVersion(bool& isNull);
     BluetoothRemoteGATTServer* gatt() { return m_gatt; }
     Vector<String> uuids();
     // TODO(ortuno): Remove connectGATT

@@ -23,11 +23,6 @@ struct CONTENT_EXPORT BluetoothDevice {
                   const base::string16& name,
                   int8_t tx_power,
                   int8_t rssi,
-                  uint32_t device_class,
-                  device::BluetoothDevice::VendorIDSource vendor_id_source,
-                  uint16_t vendor_id,
-                  uint16_t product_id,
-                  uint16_t product_version,
                   const std::vector<std::string>& uuids);
   ~BluetoothDevice();
 
@@ -45,11 +40,6 @@ struct CONTENT_EXPORT BluetoothDevice {
   base::string16 name;
   int8_t tx_power;
   int8_t rssi;
-  uint32_t device_class;
-  device::BluetoothDevice::VendorIDSource vendor_id_source;
-  uint16_t vendor_id;
-  uint16_t product_id;
-  uint16_t product_version;
   std::vector<std::string> uuids;  // 128bit UUIDs with dashes. 36 chars.
 };
 

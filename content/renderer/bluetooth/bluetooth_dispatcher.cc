@@ -45,20 +45,6 @@ int CurrentWorkerId() {
   return WorkerThread::GetCurrentId();
 }
 
-WebBluetoothDevice::VendorIDSource GetWebVendorIdSource(
-    device::BluetoothDevice::VendorIDSource vendor_id_source) {
-  switch (vendor_id_source) {
-    case device::BluetoothDevice::VENDOR_ID_UNKNOWN:
-      return WebBluetoothDevice::VendorIDSource::Unknown;
-    case device::BluetoothDevice::VENDOR_ID_BLUETOOTH:
-      return WebBluetoothDevice::VendorIDSource::Bluetooth;
-    case device::BluetoothDevice::VENDOR_ID_USB:
-      return WebBluetoothDevice::VendorIDSource::USB;
-  }
-  NOTREACHED();
-  return WebBluetoothDevice::VendorIDSource::Unknown;
-}
-
 }  // namespace
 
 BluetoothDispatcher::BluetoothDispatcher(ThreadSafeSender* sender)
@@ -165,9 +151,7 @@ void BluetoothDispatcher::OnRequestDeviceSuccess(
   pending_requests_.Lookup(request_id)
       ->onSuccess(base::WrapUnique(new WebBluetoothDevice(
           WebString::fromUTF8(device.id), WebString(device.name),
-          device.tx_power, device.rssi, device.device_class,
-          GetWebVendorIdSource(device.vendor_id_source), device.vendor_id,
-          device.product_id, device.product_version, uuids)));
+          device.tx_power, device.rssi, uuids)));
   pending_requests_.Remove(request_id);
 }
 
