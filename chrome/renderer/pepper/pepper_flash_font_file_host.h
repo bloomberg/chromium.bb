@@ -17,7 +17,7 @@
 #if defined(OS_LINUX) || defined(OS_OPENBSD)
 #include "base/files/scoped_file.h"
 #elif defined(OS_WIN)
-#include "skia/ext/refptr.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #endif
 
@@ -53,7 +53,7 @@ class PepperFlashFontFileHost : public ppapi::host::ResourceHost {
 #if defined(OS_LINUX) || defined(OS_OPENBSD)
   base::ScopedFD fd_;
 #elif defined(OS_WIN)
-  skia::RefPtr<SkTypeface> typeface_;
+  sk_sp<SkTypeface> typeface_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(PepperFlashFontFileHost);

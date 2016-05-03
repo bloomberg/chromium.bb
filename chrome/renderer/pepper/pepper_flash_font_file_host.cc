@@ -41,8 +41,8 @@ PepperFlashFontFileHost::PepperFlashFontFileHost(
   SkFontStyle style(weight, SkFontStyle::kNormal_Width,
                     description.italic ? SkFontStyle::kItalic_Slant
                                        : SkFontStyle::kUpright_Slant);
-  skia::RefPtr<SkFontMgr> font_mgr = skia::AdoptRef(SkFontMgr::RefDefault());
-  typeface_ = skia::AdoptRef(
+  sk_sp<SkFontMgr> font_mgr(SkFontMgr::RefDefault());
+  typeface_ = sk_sp<SkTypeface>(
       font_mgr->matchFamilyStyle(description.face.c_str(), style));
 #endif  // defined(OS_LINUX) || defined(OS_OPENBSD)
 }

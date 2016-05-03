@@ -12,8 +12,9 @@
 #include "chrome/browser/image_decoder.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "url/gurl.h"
+
+class SkBitmap;
 
 namespace net {
 class URLFetcher;

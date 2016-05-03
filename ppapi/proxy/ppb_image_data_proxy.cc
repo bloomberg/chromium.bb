@@ -392,9 +392,9 @@ void* PlatformImageData::Map() {
 
     const bool is_opaque = false;
     mapped_canvas_ =
-        skia::AdoptRef(transport_dib_->GetPlatformCanvas(desc_.size.width,
-                                                         desc_.size.height,
-                                                         is_opaque));
+        sk_sp<SkCanvas>(transport_dib_->GetPlatformCanvas(desc_.size.width,
+                                                          desc_.size.height,
+                                                          is_opaque));
     if (!mapped_canvas_.get())
       return NULL;
   }

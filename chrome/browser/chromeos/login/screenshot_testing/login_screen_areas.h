@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SCREENSHOT_TESTING_LOGIN_SCREEN_AREAS_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SCREENSHOT_TESTING_LOGIN_SCREEN_AREAS_H_
 
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkRect.h"
 
 namespace chromeos {

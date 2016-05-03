@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/extension_action.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkPaint.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -67,7 +68,7 @@ SkPaint* GetBadgeTextPaintSingleton() {
     text_paint->setAntiAlias(true);
     text_paint->setTextAlign(SkPaint::kLeft_Align);
 
-    skia::RefPtr<SkTypeface> typeface = skia::AdoptRef(
+    sk_sp<SkTypeface> typeface(
         SkTypeface::CreateFromName(kPreferredTypeface, SkTypeface::kBold));
     // Skia doesn't do any font fallback---if the user is missing the font then
     // typeface will be NULL. If we don't do manual fallback then we'll crash.
@@ -80,7 +81,7 @@ SkPaint* GetBadgeTextPaintSingleton() {
       // that don't have Arial.
       ResourceBundle& rb = ResourceBundle::GetSharedInstance();
       const gfx::Font& base_font = rb.GetFont(ResourceBundle::BaseFont);
-      typeface = skia::AdoptRef(SkTypeface::CreateFromName(
+      typeface = sk_sp<SkTypeface>(SkTypeface::CreateFromName(
           base_font.GetFontName().c_str(), SkTypeface::kNormal));
       DCHECK(typeface);
     }

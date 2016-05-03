@@ -6,6 +6,8 @@
 
 #include <dwmapi.h>
 
+#include <algorithm>
+
 #include "base/logging.h"
 #include "base/win/scoped_hdc.h"
 #include "skia/ext/image_operations.h"

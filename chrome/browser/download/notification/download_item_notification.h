@@ -15,11 +15,12 @@
 #include "chrome/browser/notifications/notification_test_util.h"
 #include "content/public/browser/download_item.h"
 #include "grit/theme_resources.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_observer.h"
 #include "ui/native_theme/native_theme.h"
+
+class SkBitmap;
 
 namespace test {
 class DownloadItemNotificationTest;

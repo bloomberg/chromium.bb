@@ -9,7 +9,8 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "third_party/skia/include/core/SkBitmap.h"
+
+class SkBitmap;
 
 namespace content {
 class WebContents;

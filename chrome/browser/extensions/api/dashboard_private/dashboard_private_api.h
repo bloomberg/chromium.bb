@@ -15,9 +15,9 @@
 #include "chrome/browser/extensions/webstore_install_helper.h"
 #include "chrome/common/extensions/api/dashboard_private.h"
 #include "extensions/browser/extension_function.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 
 class GURL;
+class SkBitmap;
 
 namespace chrome {
 class BitmapFetcher;

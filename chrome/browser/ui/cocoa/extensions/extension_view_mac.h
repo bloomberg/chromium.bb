@@ -9,12 +9,10 @@
 
 #include "base/macros.h"
 #include "chrome/browser/extensions/extension_view.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
 
 class Browser;
-class SkBitmap;
 
 namespace content {
 class RenderViewHost;

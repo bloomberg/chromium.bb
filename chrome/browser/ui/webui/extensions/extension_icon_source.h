@@ -15,10 +15,10 @@
 #include "content/public/browser/url_data_source.h"
 #include "extensions/common/extension_icon_set.h"
 #include "extensions/common/extension_resource.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 
 class ExtensionIconSet;
 class Profile;
+class SkBitmap;
 
 namespace extensions {
 class Extension;
