@@ -99,6 +99,13 @@ const char* WebNavigationPolicyToString(
   }
 }
 
+blink::WebString V8StringToWebString(v8::Local<v8::String> v8_str) {
+  int length = v8_str->Utf8Length() + 1;
+  std::unique_ptr<char[]> chars(new char[length]);
+  v8_str->WriteUtf8(chars.get(), length);
+  return blink::WebString::fromUTF8(chars.get());
+}
+
 void EnsureBlinkInitialized() {
   g_mock_blink_platform.Get();
 }

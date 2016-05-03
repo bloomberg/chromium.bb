@@ -75,6 +75,8 @@ component("test_runner") {
     "test_runner.cc",
     "test_runner.h",
     "test_runner_export.h",
+    "test_runner_for_specific_view.cc",
+    "test_runner_for_specific_view.h",
     "text_input_controller.cc",
     "text_input_controller.h",
     "tracked_dictionary.cc",

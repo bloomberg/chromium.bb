@@ -12,6 +12,7 @@
 #include "components/test_runner/mock_screen_orientation_client.h"
 #include "components/test_runner/test_interfaces.h"
 #include "components/test_runner/test_runner.h"
+#include "components/test_runner/test_runner_for_specific_view.h"
 #include "components/test_runner/text_input_controller.h"
 #include "components/test_runner/web_test_delegate.h"
 #include "components/test_runner/web_test_interfaces.h"

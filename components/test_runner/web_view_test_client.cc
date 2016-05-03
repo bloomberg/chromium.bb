@@ -14,6 +14,7 @@
 #include "components/test_runner/mock_web_speech_recognizer.h"
 #include "components/test_runner/test_common.h"
 #include "components/test_runner/test_runner.h"
+#include "components/test_runner/test_runner_for_specific_view.h"
 #include "components/test_runner/web_task.h"
 #include "components/test_runner/web_test_delegate.h"
 #include "components/test_runner/web_test_proxy.h"
