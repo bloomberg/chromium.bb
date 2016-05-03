@@ -126,6 +126,7 @@ public:
 
         // Frame
         virtual bool isCrossOrigin() const = 0;
+        virtual bool isAutoplayAllowedPerSettings() const = 0;
 
         // LayoutObject
         virtual void setRequestPositionUpdates(bool) = 0;

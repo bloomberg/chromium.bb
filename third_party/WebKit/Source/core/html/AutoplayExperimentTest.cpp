@@ -54,6 +54,8 @@ public:
             .WillByDefault(Return(PageVisibilityStateVisible));
         ON_CALL(*this, isCrossOrigin())
             .WillByDefault(Return(false));
+        ON_CALL(*this, isAutoplayAllowedPerSettings())
+            .WillByDefault(Return(true));
         ON_CALL(*this, absoluteBoundingBoxRect())
             .WillByDefault(Return(
                 IntRect(10, 10, 100, 100)));
@@ -88,6 +90,7 @@ public:
     MOCK_CONST_METHOD0(pageVisibilityState, PageVisibilityState());
     MOCK_CONST_METHOD0(autoplayExperimentMode, String());
     MOCK_CONST_METHOD0(isCrossOrigin, bool());
+    MOCK_CONST_METHOD0(isAutoplayAllowedPerSettings, bool());
     MOCK_METHOD1(setRequestPositionUpdates, void(bool));
     MOCK_CONST_METHOD0(absoluteBoundingBoxRect, IntRect());
 

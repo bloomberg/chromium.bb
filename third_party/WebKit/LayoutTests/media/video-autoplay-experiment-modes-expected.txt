@@ -1,17 +1,21 @@
 CONSOLE WARNING: Failed to execute 'play' on 'HTMLMediaElement': API can only be initiated by a user gesture.
-CONSOLE ERROR: line 141: Uncaught (in promise) NotAllowedError: play() can only be initiated by a user gesture.
+CONSOLE ERROR: line 71: Uncaught (in promise) NotAllowedError: play() can only be initiated by a user gesture.
 CONSOLE WARNING: Failed to execute 'play' on 'HTMLMediaElement': API can only be initiated by a user gesture.
-CONSOLE ERROR: line 141: Uncaught (in promise) NotAllowedError: play() can only be initiated by a user gesture.
+CONSOLE ERROR: line 71: Uncaught (in promise) NotAllowedError: play() can only be initiated by a user gesture.
 CONSOLE WARNING: Failed to execute 'play' on 'HTMLMediaElement': API can only be initiated by a user gesture.
-CONSOLE ERROR: line 141: Uncaught (in promise) NotAllowedError: play() can only be initiated by a user gesture.
+CONSOLE ERROR: line 71: Uncaught (in promise) NotAllowedError: play() can only be initiated by a user gesture.
 CONSOLE WARNING: Failed to execute 'play' on 'HTMLMediaElement': API can only be initiated by a user gesture.
-CONSOLE ERROR: line 141: Uncaught (in promise) NotAllowedError: play() can only be initiated by a user gesture.
+CONSOLE ERROR: line 71: Uncaught (in promise) NotAllowedError: play() can only be initiated by a user gesture.
 CONSOLE WARNING: Failed to execute 'play' on 'HTMLMediaElement': API can only be initiated by a user gesture.
-CONSOLE ERROR: line 141: Uncaught (in promise) NotAllowedError: play() can only be initiated by a user gesture.
+CONSOLE ERROR: line 71: Uncaught (in promise) NotAllowedError: play() can only be initiated by a user gesture.
 CONSOLE WARNING: Failed to execute 'play' on 'HTMLMediaElement': API can only be initiated by a user gesture.
-CONSOLE ERROR: line 141: Uncaught (in promise) NotAllowedError: play() can only be initiated by a user gesture.
+CONSOLE ERROR: line 71: Uncaught (in promise) NotAllowedError: play() can only be initiated by a user gesture.
 CONSOLE WARNING: Failed to execute 'play' on 'HTMLMediaElement': API can only be initiated by a user gesture.
-CONSOLE ERROR: line 141: Uncaught (in promise) NotAllowedError: play() can only be initiated by a user gesture.
+CONSOLE ERROR: line 71: Uncaught (in promise) NotAllowedError: play() can only be initiated by a user gesture.
+CONSOLE WARNING: Failed to execute 'play' on 'HTMLMediaElement': API can only be initiated by a user gesture.
+CONSOLE ERROR: line 71: Uncaught (in promise) NotAllowedError: play() can only be initiated by a user gesture.
+CONSOLE WARNING: Failed to execute 'play' on 'HTMLMediaElement': API can only be initiated by a user gesture.
+CONSOLE ERROR: line 71: Uncaught (in promise) NotAllowedError: play() can only be initiated by a user gesture.
 END OF TEST
   Check if the autoplay gesture override experiment works.  There are a lot
   of config options, so this test just runs all of them.
@@ -30,48 +34,39 @@ END OF TEST
                For example, vM means '-forvideo-ifmuted".
   Type   - audio or video element?
                audio  - 
-#	Flags	Type	Play w/	Mute	Mobile	View	Early?	Played?	Muted?
-0		video	none	no	no	onscree	-	no	-
-2	v	video	none	no	no	onscree	-	no	-
-6	vV	video	none	no	no	onscree	-	no	-
-8	vVM	video	none	no	no	onscree	-	no	-
-10	vVp	video	none	no	no	onscree	-	no	-
-18		video	attr	no	no	onscree	-	no	-
-20	v	video	attr	no	no	onscree	-	played	unmuted
-22	vP	video	attr	no	no	onscree	-	played	unmuted
-24	vV	video	attr	no	no	onscree	-	played	unmuted
-26	vVM	video	attr	no	no	onscree	-	no	-
-28	vVp	video	attr	no	no	onscree	-	played	muted
-30	a	video	attr	no	no	onscree	-	no	-
-32	vm	video	attr	no	no	onscree	-	no	-
-34	aV	video	attr	no	no	onscree	-	no	-
-36		video	play()	no	no	onscree	-	no	-
-38	v	video	play()	no	no	onscree	-	played	unmuted
-42	vV	video	play()	no	no	onscree	-	played	unmuted
-44	vVM	video	play()	no	no	onscree	-	no	-
-46	vVp	video	play()	no	no	onscree	-	played	muted
-62	vVM	video	none	yes	no	onscree	-	no	-
-80	vVM	video	attr	yes	no	onscree	-	played	muted
-98	vVM	video	play()	yes	no	onscree	-	played	muted
-126		video	attr	no	no	scroll	no	no	-
-127		audio	attr	no	no	scroll	no	no	-
-128	v	video	attr	no	no	scroll	yes	played	unmuted
-132	vV	video	attr	no	no	scroll	no	played	unmuted
-136	vVp	video	attr	no	no	scroll	no	played	muted
-139	a	audio	attr	no	no	scroll	yes	played	unmuted
-143	aV	audio	attr	no	no	scroll	no	played	unmuted
-144		video	play()	no	no	scroll	no	no	-
-145		audio	play()	no	no	scroll	no	no	-
-146	v	video	play()	no	no	scroll	yes	played	unmuted
-150	vV	video	play()	no	no	scroll	no	played	unmuted
-154	vVp	video	play()	no	no	scroll	no	played	muted
-157	a	audio	play()	no	no	scroll	yes	played	unmuted
-161	aV	audio	play()	no	no	scroll	no	played	unmuted
-234		video	attr	no	no	offscre	-	no	-
-236	v	video	attr	no	no	offscre	-	played	unmuted
-240	vV	video	attr	no	no	offscre	-	no	-
-244	vVp	video	attr	no	no	offscre	-	no	-
-346	vP	video	attr	no	no	obscure	-	no	-
-452	v	video	attr	no	yes	onscree	-	played	unmuted
-464	vm	video	attr	no	yes	onscree	-	played	unmuted
-
+#	Flags	Type	Play w/	Mute	Mobile	View	Setting	Early?	Played?	Muted?
+0		video	none	no	no	onscree	enabled	-	no	-
+1	v	video	none	no	no	onscree	enabled	-	no	-
+3	vVM	video	none	no	no	onscree	enabled	-	no	-
+4	vVp	video	none	no	no	onscree	enabled	-	no	-
+7		video	attr	no	no	onscree	enabled	-	no	-
+8	v	video	attr	no	no	onscree	enabled	-	played	unmuted
+9	vP	video	attr	no	no	onscree	enabled	-	played	unmuted
+10	vVM	video	attr	no	no	onscree	enabled	-	no	-
+11	vVp	video	attr	no	no	onscree	enabled	-	played	muted
+12	vm	video	attr	no	no	onscree	enabled	-	no	-
+13	a	video	attr	no	no	onscree	enabled	-	no	-
+14		video	play()	no	no	onscree	enabled	-	no	-
+15	v	video	play()	no	no	onscree	enabled	-	played	unmuted
+17	vVM	video	play()	no	no	onscree	enabled	-	no	-
+18	vVp	video	play()	no	no	onscree	enabled	-	played	muted
+24	vVM	video	none	yes	no	onscree	enabled	-	no	-
+31	vVM	video	attr	yes	no	onscree	enabled	-	played	muted
+38	vVM	video	play()	yes	no	onscree	enabled	-	played	muted
+49		video	attr	no	no	scroll	enabled	no	no	-
+50	v	video	attr	no	no	scroll	enabled	yes	played	unmuted
+53	vVp	video	attr	no	no	scroll	enabled	no	played	muted
+56		video	play()	no	no	scroll	enabled	no	no	-
+57	v	video	play()	no	no	scroll	enabled	yes	played	unmuted
+60	vVp	video	play()	no	no	scroll	enabled	no	played	muted
+91		video	attr	no	no	offscre	enabled	-	no	-
+92	v	video	attr	no	no	offscre	enabled	-	played	unmuted
+95	vVp	video	attr	no	no	offscre	enabled	-	no	-
+135	vP	video	attr	no	no	obscure	enabled	-	no	-
+182		video	play()	no	no	onscree	disable	-	no	-
+183	v	video	play()	no	no	onscree	disable	-	no	-
+185	vVM	video	play()	no	no	onscree	disable	-	no	-
+186	vVp	video	play()	no	no	onscree	disable	-	no	-
+206	vVM	video	play()	yes	no	onscree	disable	-	no	-
+344	v	video	attr	no	yes	onscree	enabled	-	played	unmuted
+348	vm	video	attr	no	yes	onscree	enabled	-	played	unmuted

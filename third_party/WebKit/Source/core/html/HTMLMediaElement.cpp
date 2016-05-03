@@ -324,6 +324,8 @@ public:
         return frame && frame->isCrossOrigin();
     }
 
+    bool isAutoplayAllowedPerSettings() const override;
+
     // LayoutObject
     void setRequestPositionUpdates(bool) override;
     IntRect absoluteBoundingBoxRect() const override;
@@ -3838,6 +3840,15 @@ String HTMLMediaElement::AutoplayHelperClientImpl::autoplayExperimentMode() cons
         mode = m_element->document().settings()->autoplayExperimentMode();
 
     return mode;
+}
+
+bool HTMLMediaElement::AutoplayHelperClientImpl::isAutoplayAllowedPerSettings() const
+{
+    LocalFrame* frame = m_element->document().frame();
+    if (!frame)
+        return false;
+    FrameLoaderClient* frameLoaderClient = frame->loader().client();
+    return frameLoaderClient && frameLoaderClient->allowAutoplay(false);
 }
 
 void HTMLMediaElement::AutoplayHelperClientImpl::setRequestPositionUpdates(bool request)

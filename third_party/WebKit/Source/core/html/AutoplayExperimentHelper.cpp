@@ -301,6 +301,10 @@ bool AutoplayExperimentHelper::isEligible() const
     if (m_mode == Mode::ExperimentOff)
         return false;
 
+    // If autoplay is disabled, no one is eligible.
+    if (!client().isAutoplayAllowedPerSettings())
+        return false;
+
     // If no user gesture is required, then the experiment doesn't apply.
     // This is what prevents us from starting playback more than once.
     // Since this flag is never set to true once it's cleared, it will block

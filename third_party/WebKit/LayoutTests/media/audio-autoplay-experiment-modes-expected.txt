@@ -1,0 +1,29 @@
+CONSOLE WARNING: Failed to execute 'play' on 'HTMLMediaElement': API can only be initiated by a user gesture.
+CONSOLE ERROR: line 71: Uncaught (in promise) NotAllowedError: play() can only be initiated by a user gesture.
+CONSOLE WARNING: Failed to execute 'play' on 'HTMLMediaElement': API can only be initiated by a user gesture.
+CONSOLE ERROR: line 71: Uncaught (in promise) NotAllowedError: play() can only be initiated by a user gesture.
+END OF TEST
+  Check if the autoplay gesture override experiment works.  There are a lot
+  of config options, so this test just runs all of them.
+
+  The "results" table contains one row per config tested.
+  == Test Inputs ==
+  #      - config number, in case you'd like to run just one.
+  Flags  - autoplay experiment setting being tested.
+               a      - "foraudio"
+               v      - "forvideo"
+               V      - "ifviewport"
+               P      - "ifpagevisible"
+               M      - "ifmuted"
+               p      - "playmuted"
+               m      - "ifmobile"
+               For example, vM means '-forvideo-ifmuted".
+  Type   - audio or video element?
+               audio  - 
+#	Flags	Type	Play w/	Mute	Mobile	View	Setting	Early?	Played?	Muted?
+28		audio	attr	no	no	scroll	enabled	no	no	-
+30	a	audio	attr	no	no	scroll	enabled	yes	played	unmuted
+31	aV	audio	attr	no	no	scroll	enabled	no	played	unmuted
+32		audio	play()	no	no	scroll	enabled	no	no	-
+34	a	audio	play()	no	no	scroll	enabled	yes	played	unmuted
+35	aV	audio	play()	no	no	scroll	enabled	no	played	unmuted
