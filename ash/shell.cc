@@ -165,6 +165,14 @@ namespace {
 using aura::Window;
 using views::Widget;
 
+// Returns the display id corresponding to window, or |GetTargetDisplayId()|
+// if |window| is null.
+int64_t GetDisplayIdForWindow(aura::Window* window) {
+  if (!window)
+    return Shell::GetTargetDisplayId();
+  return gfx::Screen::GetScreen()->GetDisplayNearestWindow(window).id();
+}
+
 // A Corewm VisibilityController subclass that calls the Ash animation routine
 // so we can pick up our extended animations. See ash/wm/window_animations.h.
 class AshVisibilityController : public ::wm::VisibilityController {
@@ -255,6 +263,13 @@ aura::Window* Shell::GetTargetRootWindow() {
 }
 
 // static
+int64_t Shell::GetTargetDisplayId() {
+  return gfx::Screen::GetScreen()
+      ->GetDisplayNearestWindow(GetTargetRootWindow())
+      .id();
+}
+
+// static
 aura::Window::Windows Shell::GetAllRootWindows() {
   CHECK(HasInstance());
   return Shell::GetInstance()->window_tree_host_manager()->GetAllRootWindows();
@@ -308,9 +323,7 @@ void Shell::ShowContextMenu(const gfx::Point& location_in_screen,
 
 void Shell::ShowAppList(aura::Window* window) {
   // If the context window is not given, show it on the target root window.
-  if (!window)
-    window = GetTargetRootWindow();
-  delegate_->GetAppListPresenter()->Show(window);
+  delegate_->GetAppListPresenter()->Show(GetDisplayIdForWindow(window));
 }
 
 void Shell::DismissAppList() {
@@ -318,12 +331,9 @@ void Shell::DismissAppList() {
 }
 
 void Shell::ToggleAppList(aura::Window* window) {
-  if (delegate_->GetAppListPresenter()->IsVisible()) {
-    DismissAppList();
-    return;
-  }
-
-  ShowAppList(window);
+  // If the context window is not given, show it on the target root window.
+  delegate_->GetAppListPresenter()->ToggleAppList(
+      GetDisplayIdForWindow(window));
 }
 
 bool Shell::GetAppListTargetVisibility() const {

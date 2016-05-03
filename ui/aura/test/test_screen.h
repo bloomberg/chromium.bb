@@ -37,6 +37,9 @@ class TestScreen : public display::Screen, public WindowObserver {
   void SetUIScale(float ui_scale);
   void SetWorkAreaInsets(const gfx::Insets& insets);
 
+  // gfx::Screen overrides:
+  display::Display GetPrimaryDisplay() const override;
+
  protected:
   gfx::Transform GetRotationTransform() const;
   gfx::Transform GetUIScaleTransform() const;
@@ -58,7 +61,6 @@ class TestScreen : public display::Screen, public WindowObserver {
       const gfx::Point& point) const override;
   display::Display GetDisplayMatching(
       const gfx::Rect& match_rect) const override;
-  display::Display GetPrimaryDisplay() const override;
   void AddObserver(display::DisplayObserver* observer) override;
   void RemoveObserver(display::DisplayObserver* observer) override;
 

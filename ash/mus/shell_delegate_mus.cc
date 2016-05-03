@@ -102,12 +102,9 @@ class AppListPresenterMus : public app_list::AppListPresenter {
   ~AppListPresenterMus() override {}
 
   // app_list::AppListPresenter:
-  void Show(aura::Window* window) override { NOTIMPLEMENTED(); }
+  void Show(int64_t display_id) override { NOTIMPLEMENTED(); }
   void Dismiss() override { NOTIMPLEMENTED(); }
-  bool IsVisible() const override {
-    NOTIMPLEMENTED();
-    return false;
-  }
+  void ToggleAppList(int64_t display_id) override { NOTIMPLEMENTED(); }
   bool GetTargetVisibility() const override {
     NOTIMPLEMENTED();
     return false;

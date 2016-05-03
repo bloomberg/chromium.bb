@@ -5,6 +5,8 @@
 #ifndef UI_APP_LIST_PRESENTER_APP_LIST_PRESENTER_DELEGATE_H_
 #define UI_APP_LIST_PRESENTER_APP_LIST_PRESENTER_DELEGATE_H_
 
+#include <stdint.h>
+
 #include "ui/app_list/presenter/app_list_presenter_export.h"
 
 namespace aura {
@@ -33,11 +35,11 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterDelegate {
 
   // Called to initialize the layout of the app list.
   virtual void Init(AppListView* view,
-                    aura::Window* root_window,
+                    int64_t display_id,
                     int current_apps_page) = 0;
 
   // Called when app list is shown.
-  virtual void OnShown(aura::Window* root_window) = 0;
+  virtual void OnShown(int64_t display_id) = 0;
 
   // Called when app list is dismissed
   virtual void OnDismissed() = 0;

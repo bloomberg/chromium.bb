@@ -6,6 +6,7 @@
 
 #include "ash/app_list/app_list_view_delegate_factory.h"
 #include "ash/ash_switches.h"
+#include "ash/display/window_tree_host_manager.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
@@ -147,7 +148,7 @@ app_list::AppListViewDelegate* AppListPresenterDelegate::GetViewDelegate() {
 }
 
 void AppListPresenterDelegate::Init(app_list::AppListView* view,
-                                    aura::Window* root_window,
+                                    int64_t display_id,
                                     int current_apps_page) {
   // App list needs to know the new shelf layout in order to calculate its
   // UI layout when AppListView visibility changes.
@@ -155,6 +156,9 @@ void AppListPresenterDelegate::Init(app_list::AppListView* view,
       ->GetShelfLayoutManager()
       ->UpdateAutoHideState();
   view_ = view;
+  aura::Window* root_window = Shell::GetInstance()
+                                  ->window_tree_host_manager()
+                                  ->GetRootWindowForDisplayId(display_id);
   aura::Window* container = GetRootWindowController(root_window)
                                 ->GetContainer(kShellWindowId_AppListContainer);
   views::View* applist_button =
@@ -208,9 +212,12 @@ void AppListPresenterDelegate::Init(app_list::AppListView* view,
       Shelf::ForWindow(root_window)->GetDragAndDropHostForAppList());
 }
 
-void AppListPresenterDelegate::OnShown(aura::Window* root_window) {
+void AppListPresenterDelegate::OnShown(int64_t display_id) {
   is_visible_ = true;
   // Update applist button status when app list visibility is changed.
+  aura::Window* root_window = Shell::GetInstance()
+                                  ->window_tree_host_manager()
+                                  ->GetRootWindowForDisplayId(display_id);
   Shelf::ForWindow(root_window)->GetAppListButtonView()->SchedulePaint();
 }
 

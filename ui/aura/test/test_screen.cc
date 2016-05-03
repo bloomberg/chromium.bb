@@ -81,6 +81,10 @@ void TestScreen::SetWorkAreaInsets(const gfx::Insets& insets) {
   display_.UpdateWorkAreaFromInsets(insets);
 }
 
+display::Display TestScreen::GetPrimaryDisplay() const {
+  return display_;
+}
+
 gfx::Transform TestScreen::GetRotationTransform() const {
   gfx::Transform rotate;
   switch (display_.rotation()) {
@@ -156,10 +160,6 @@ display::Display TestScreen::GetDisplayNearestPoint(
 
 display::Display TestScreen::GetDisplayMatching(
     const gfx::Rect& match_rect) const {
-  return display_;
-}
-
-display::Display TestScreen::GetPrimaryDisplay() const {
   return display_;
 }
 

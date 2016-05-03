@@ -5,6 +5,8 @@
 #ifndef ASH_APP_LIST_APP_LIST_PRESENTER_DELEGATE_H_
 #define ASH_APP_LIST_APP_LIST_PRESENTER_DELEGATE_H_
 
+#include <stdint.h>
+
 #include "ash/ash_export.h"
 #include "ash/shelf/shelf_icon_observer.h"
 #include "ash/shell_observer.h"
@@ -16,11 +18,8 @@
 
 namespace app_list {
 class ApplicationDragAndDropHost;
-class AppListView;
-}
-
-namespace app_list {
 class AppListPresenter;
+class AppListView;
 }
 
 namespace ui {
@@ -53,9 +52,9 @@ class ASH_EXPORT AppListPresenterDelegate
   // app_list::AppListPresenterDelegate:
   app_list::AppListViewDelegate* GetViewDelegate() override;
   void Init(app_list::AppListView* view,
-            aura::Window* root_window,
+            int64_t display_id,
             int current_apps_page) override;
-  void OnShown(aura::Window* root_window) override;
+  void OnShown(int64_t display_id) override;
   void OnDismissed() override;
   void UpdateBounds() override;
   gfx::Vector2d GetVisibilityAnimationOffset(
@@ -91,7 +90,7 @@ class ASH_EXPORT AppListPresenterDelegate
   // Not owned. Pointer is guaranteed to be valid while this object is alive.
   AppListViewDelegateFactory* view_delegate_factory_;
 
-  // The AppListView this class manages, owned by its widget.
+  // Owned by its widget.
   app_list::AppListView* view_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(AppListPresenterDelegate);

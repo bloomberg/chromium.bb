@@ -89,7 +89,7 @@ void AppListServiceAsh::ShowAndSwitchToState(
     // TODO(calamity): This may cause the app list to show briefly before the
     // state change. If this becomes an issue, add the ability to ash::Shell to
     // load the app list without showing it.
-    app_list_presenter_->Show(ash::Shell::GetTargetRootWindow());
+    app_list_presenter_->Show(ash::Shell::GetTargetDisplayId());
     app_list_was_open = false;
     app_list_view = app_list_presenter_->GetView();
     DCHECK(app_list_view);
@@ -112,7 +112,7 @@ void AppListServiceAsh::ShowForProfile(Profile* /*default_profile*/) {
   // This may not work correctly if the profile passed in is different from the
   // one the ash Shell is currently using.
   // TODO(ananta): Handle profile changes correctly when !defined(OS_CHROMEOS).
-  app_list_presenter_->Show(ash::Shell::GetTargetRootWindow());
+  app_list_presenter_->Show(ash::Shell::GetTargetDisplayId());
 }
 
 void AppListServiceAsh::ShowForAppInstall(Profile* profile,

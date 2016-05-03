@@ -13,6 +13,7 @@
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/test/aura_test_base.h"
+#include "ui/aura/test/test_screen.h"
 #include "ui/aura/window.h"
 #include "ui/wm/core/default_activation_client.h"
 #include "ui/wm/core/window_util.h"
@@ -38,14 +39,14 @@ class AppListPresenterDelegateTest : public AppListPresenterDelegate {
   // AppListPresenterDelegate:
   AppListViewDelegate* GetViewDelegate() override { return view_delegate_; }
   void Init(AppListView* view,
-            aura::Window* root_window,
+            int64_t display_id,
             int current_apps_page) override {
     init_called_ = true;
     view_ = view;
     view->InitAsFramelessWindow(container_, current_apps_page,
                                 gfx::Rect(100, 50, 300, 200));
   }
-  void OnShown(aura::Window*) override { on_shown_called_ = true; }
+  void OnShown(int64_t display_id) override { on_shown_called_ = true; }
   void OnDismissed() override { on_dismissed_called_ = true; }
   void UpdateBounds() override { update_bounds_called_ = true; }
   gfx::Vector2d GetVisibilityAnimationOffset(aura::Window*) override {
@@ -100,6 +101,7 @@ class AppListPresenterImplTest : public aura::test::AuraTestBase {
 
   AppListPresenterImpl* presenter() { return presenter_.get(); }
   aura::Window* container() { return container_.get(); }
+  int64_t GetDisplayId() { return test_screen()->GetPrimaryDisplay().id(); }
 
   // Don't cache the return of this method - a new delegate is created every
   // time the app list is shown.
@@ -143,7 +145,7 @@ void AppListPresenterImplTest::TearDown() {
 TEST_F(AppListPresenterImplTest, HideOnFocusOut) {
   aura::client::FocusClient* focus_client =
       aura::client::GetFocusClient(root_window());
-  presenter()->Show(container());
+  presenter()->Show(GetDisplayId());
   EXPECT_TRUE(delegate()->init_called());
   EXPECT_TRUE(delegate()->on_shown_called());
   EXPECT_FALSE(delegate()->on_dismissed_called());
@@ -166,7 +168,7 @@ TEST_F(AppListPresenterImplTest, HideOnFocusOut) {
 TEST_F(AppListPresenterImplTest, RemainVisibleWhenFocusingToSibling) {
   aura::client::FocusClient* focus_client =
       aura::client::GetFocusClient(root_window());
-  presenter()->Show(container());
+  presenter()->Show(GetDisplayId());
   focus_client->FocusWindow(presenter()->GetWindow());
   EXPECT_TRUE(presenter()->GetTargetVisibility());
   EXPECT_TRUE(delegate()->init_called());
@@ -187,7 +189,7 @@ TEST_F(AppListPresenterImplTest, RemainVisibleWhenFocusingToSibling) {
 // Tests that UpdateBounds is called on the delegate when the root window
 // is resized.
 TEST_F(AppListPresenterImplTest, RootWindowResize) {
-  presenter()->Show(container());
+  presenter()->Show(GetDisplayId());
   EXPECT_FALSE(delegate()->update_bounds_called());
   gfx::Rect bounds = root_window()->bounds();
   bounds.Inset(-10, 0);
@@ -198,7 +200,7 @@ TEST_F(AppListPresenterImplTest, RootWindowResize) {
 // Tests that the app list is dismissed and the delegate is destroyed when the
 // app list's widget is destroyed.
 TEST_F(AppListPresenterImplTest, WidgetDestroyed) {
-  presenter()->Show(container());
+  presenter()->Show(GetDisplayId());
   EXPECT_TRUE(presenter()->GetTargetVisibility());
   presenter()->GetView()->GetWidget()->CloseNow();
   EXPECT_FALSE(presenter()->GetTargetVisibility());
