@@ -7,9 +7,17 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animated-pages.html">
 
 <dom-module id="user-manager-pages">
-  <link rel="import" type="css"
-      href="chrome://md-user-manager/user_manager_pages.css">
   <template>
+    <style>
+      neon-animated-pages {
+        height: 100%;
+      }
+
+      neon-animated-pages > div {
+        display: flex;
+        justify-content: center;
+      }
+    </style>
     <neon-animated-pages id="animatedPages" attr-for-selected="id"
         selected="[[selectedPage_]]" entry-animation="slide-from-left-animation"
         exit-animation="slide-right-animation">

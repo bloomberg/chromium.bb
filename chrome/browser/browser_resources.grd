@@ -404,10 +404,8 @@
         <include name="IDR_USER_MANAGER_HTML" file="resources\user_manager\user_manager.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       </if>
       <if expr="not is_android and not is_ios and not chromeos">
-        <include name="IDR_MD_CONTROL_BAR_CSS" file="resources\md_user_manager\control_bar.css" flattenhtml="true" type="BINDATA" />
         <include name="IDR_MD_CONTROL_BAR_HTML" file="resources\md_user_manager\control_bar.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_MD_CONTROL_BAR_JS" file="resources\md_user_manager\control_bar.js" type="BINDATA" />
-        <include name="IDR_MD_CREATE_PROFILE_CSS" file="resources\md_user_manager\create_profile.css" flattenhtml="true" type="BINDATA" />
         <include name="IDR_MD_CREATE_PROFILE_HTML" file="resources\md_user_manager\create_profile.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_MD_CREATE_PROFILE_JS" file="resources\md_user_manager\create_profile.js" type="BINDATA" />
         <include name="IDR_MD_IMPORT_SUPERVISED_USER_HTML" file="resources\md_user_manager\import_supervised_user.html" flattenhtml="true" type="BINDATA" />
@@ -416,18 +414,15 @@
         <include name="IDR_MD_PROFILE_BROWSER_PROXY_JS" file="resources\md_user_manager\profile_browser_proxy.js" type="BINDATA" />
         <include name="IDR_MD_SUPERVISED_USER_CREATE_CONFIRM_HTML" file="resources\md_user_manager\supervised_user_create_confirm.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_MD_SUPERVISED_USER_CREATE_CONFIRM_JS" file="resources\md_user_manager\supervised_user_create_confirm.js" type="BINDATA" />
-        <include name="IDR_MD_SUPERVISED_USER_LEARN_MORE_CSS" file="resources\md_user_manager\supervised_user_learn_more.css" flattenhtml="true" type="BINDATA" />
         <include name="IDR_MD_SUPERVISED_USER_LEARN_MORE_HTML" file="resources\md_user_manager\supervised_user_learn_more.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_MD_SUPERVISED_USER_LEARN_MORE_JS" file="resources\md_user_manager\supervised_user_learn_more.js" type="BINDATA" />
         <include name="IDR_MD_USER_MANAGER_HTML" file="resources\md_user_manager\user_manager.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
         <include name="IDR_MD_USER_MANAGER_JS" file="resources\md_user_manager\user_manager.js" flattenhtml="true" type="BINDATA" />
-        <include name="IDR_MD_USER_MANAGER_PAGES_CSS" file="resources\md_user_manager\user_manager_pages.css" flattenhtml="true" type="BINDATA" />
         <include name="IDR_MD_USER_MANAGER_PAGES_HTML" file="resources\md_user_manager\user_manager_pages.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_MD_USER_MANAGER_PAGES_JS" file="resources\md_user_manager\user_manager_pages.js" type="BINDATA" />
         <include name="IDR_MD_USER_MANAGER_SHARED_STYLES_HTML" file="resources\md_user_manager\shared_styles.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_MD_USER_MANAGER_STRINGS_HTML" file="resources\md_user_manager\strings.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_MD_USER_MANAGER_STYLES_HTML" file="resources\md_user_manager\user_manager_styles.html" flattenhtml="true" type="BINDATA" />
-        <include name="IDR_MD_USER_MANAGER_TUTORIAL_CSS" file="resources\md_user_manager\user_manager_tutorial.css" flattenhtml="true" type="BINDATA" />
         <include name="IDR_MD_USER_MANAGER_TUTORIAL_HTML" file="resources\md_user_manager\user_manager_tutorial.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_MD_USER_MANAGER_TUTORIAL_JS" file="resources\md_user_manager\user_manager_tutorial.js" type="BINDATA" />
       </if>

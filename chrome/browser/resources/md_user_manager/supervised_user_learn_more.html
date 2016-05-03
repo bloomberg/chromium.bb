@@ -5,10 +5,61 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 
 <dom-module id="supervised-user-learn-more">
-  <link rel="import" type="css"
-      href="chrome://md-user-manager/supervised_user_learn_more.css">
   <template>
-    <style include="shared-styles"></style>
+    <style include="shared-styles">
+      :host {
+        align-self: center;
+      }
+
+      #container {
+        color: var(--paper-grey-800);
+        line-height: 20px;
+        width: 624px;
+      }
+
+      #title-area {
+        border-bottom: 1px solid rgba(0, 0, 0, .12);
+        font-size: 16px;
+        padding-bottom: 16px;
+      }
+
+      #title-area iron-icon {
+        --iron-icon-height: 20px;
+        --iron-icon-width: 20px;
+        color: var(--google-grey-500);
+      }
+
+      .content-area {
+        padding-top: 32px;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+      }
+
+      #actions {
+        bottom: 16px;
+        position: absolute;
+        right: 16px;
+      }
+
+      :host-context([dir='rtl']) #actions {
+        left: 16px;
+        right: auto;
+      }
+
+      #actions paper-button {
+        border-radius: 2px;
+        font-weight: 500;
+        line-height: 32px;
+        margin: 0;
+        min-width: 52px;
+        padding: 0 16px;
+      }
+
+      #actions #done {
+        background: var(--google-blue-500);
+        color: white;
+      }
+    </style>
     <div id="container">
       <div id="title-area" class="horizontal justified layout">
         <span id="title" i18n-content="supervisedUserLearnMoreTitle"></span>
