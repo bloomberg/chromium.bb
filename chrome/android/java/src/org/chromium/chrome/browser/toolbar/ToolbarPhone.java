@@ -1346,6 +1346,7 @@ public class ToolbarPhone extends ToolbarLayout
         enterAnimation.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
+                onTabSwitcherModeAnimationEnd();
                 // This is to deal with the view going invisible when resuming the activity and
                 // running this animation.  The view is still there and clickable but does not
                 // render and only a layout triggers a refresh.  See crbug.com/306890.
@@ -1367,11 +1368,26 @@ public class ToolbarPhone extends ToolbarLayout
         exitAnimation.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
+                onTabSwitcherModeAnimationEnd();
                 updateViewsForTabSwitcherMode(mIsInTabSwitcherMode);
             }
         });
 
         return exitAnimation;
+    }
+
+    private void onTabSwitcherModeAnimationEnd() {
+        // The Android framework calls onAnimationEnd() on listeners before
+        // Animator#isRunning() returns false (see crbug.com/606419). In order for
+        // ToolbarPhone#isTabSwitcherAnimationRunning() to return the correct value,
+        // set mTabSwitcherModeAnimation = null here.
+        mTabSwitcherModeAnimation = null;
+
+        // Set the alpha to the final tab switcher mode percent and clear the clip rect. This is
+        // necessary so that the NTP toolbar gets drawn correctly when exiting the tab switcher.
+        // See crbug.com/606419.
+        setAlpha(mTabSwitcherModePercent);
+        mClipRect = null;
     }
 
     private ObjectAnimator createPostExitTabSwitcherAnimation() {
