@@ -6,6 +6,7 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -117,6 +118,11 @@ void NTPSnippetsFetcher::OnURLFetchComplete(const URLFetcher* source) {
 
   std::string message;
   const URLRequestStatus& status = source->GetStatus();
+
+  UMA_HISTOGRAM_SPARSE_SLOWLY(
+      "NewTabPage.Snippets.FetchHttpResponseOrErrorCode",
+      status.is_success() ? source->GetResponseCode() : status.error());
+
   if (!status.is_success()) {
     message = base::StringPrintf(kStatusMessageURLRequestErrorFormat,
                                  status.error());

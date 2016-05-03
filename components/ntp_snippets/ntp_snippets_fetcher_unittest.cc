@@ -8,6 +8,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/histogram_tester.h"
 #include "base/thread_task_runner_handle.h"
 #include "google_apis/google_api_keys.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -18,6 +19,7 @@
 namespace ntp_snippets {
 namespace {
 
+using testing::ElementsAre;
 using testing::IsEmpty;
 using testing::IsNull;
 using testing::Not;
@@ -69,6 +71,8 @@ class NTPSnippetsFetcherTest : public testing::Test {
   void RunUntilIdle() { message_loop_.RunUntilIdle(); }
   const GURL& test_url() { return test_url_; }
 
+  base::HistogramTester& histogram_tester() { return histogram_tester_; }
+
  private:
   FailingFakeURLFetcherFactory failing_url_fetcher_factory_;
   // Instantiation of factory automatically sets itself as URLFetcher's factory.
@@ -81,6 +85,7 @@ class NTPSnippetsFetcherTest : public testing::Test {
       NTPSnippetsFetcher::SnippetsAvailableCallbackList::Subscription>
       snippets_fetcher_subscription_;
   const GURL test_url_;
+  base::HistogramTester histogram_tester_;
 
   DISALLOW_COPY_AND_ASSIGN(NTPSnippetsFetcherTest);
 };
@@ -88,6 +93,9 @@ class NTPSnippetsFetcherTest : public testing::Test {
 TEST_F(NTPSnippetsFetcherTest, ShouldNotFetchOnCreation) {
   // The lack of registered baked in responses would cause any fetch to fail.
   RunUntilIdle();
+  EXPECT_THAT(histogram_tester().GetAllSamples(
+                  "NewTabPage.Snippets.FetchHttpResponseOrErrorCode"),
+              IsEmpty());
 }
 
 TEST_F(NTPSnippetsFetcherTest, ShouldFetchSuccessfully) {
@@ -101,6 +109,9 @@ TEST_F(NTPSnippetsFetcherTest, ShouldFetchSuccessfully) {
   snippets_fetcher().FetchSnippets(/*hosts=*/std::set<std::string>(),
                                    /*count=*/1);
   RunUntilIdle();
+  EXPECT_THAT(histogram_tester().GetAllSamples(
+                  "NewTabPage.Snippets.FetchHttpResponseOrErrorCode"),
+              ElementsAre(base::Bucket(/*min=*/200, /*count=*/1)));
 }
 
 TEST_F(NTPSnippetsFetcherTest, ShouldReportUrlStatusError) {
@@ -115,6 +126,9 @@ TEST_F(NTPSnippetsFetcherTest, ShouldReportUrlStatusError) {
   snippets_fetcher().FetchSnippets(/*hosts=*/std::set<std::string>(),
                                    /*count=*/1);
   RunUntilIdle();
+  EXPECT_THAT(histogram_tester().GetAllSamples(
+                  "NewTabPage.Snippets.FetchHttpResponseOrErrorCode"),
+              ElementsAre(base::Bucket(/*min=*/-2, /*count=*/1)));
 }
 
 TEST_F(NTPSnippetsFetcherTest, ShouldReportHttpError) {
@@ -128,6 +142,9 @@ TEST_F(NTPSnippetsFetcherTest, ShouldReportHttpError) {
   snippets_fetcher().FetchSnippets(/*hosts=*/std::set<std::string>(),
                                    /*count=*/1);
   RunUntilIdle();
+  EXPECT_THAT(histogram_tester().GetAllSamples(
+                  "NewTabPage.Snippets.FetchHttpResponseOrErrorCode"),
+              ElementsAre(base::Bucket(/*min=*/404, /*count=*/1)));
 }
 
 // This test actually verifies that the test setup itself is sane, to prevent
@@ -156,6 +173,9 @@ TEST_F(NTPSnippetsFetcherTest, ShouldCancelOngoingFetch) {
   snippets_fetcher().FetchSnippets(/*hosts=*/std::set<std::string>(),
                                    /*count=*/1);
   RunUntilIdle();
+  EXPECT_THAT(histogram_tester().GetAllSamples(
+                  "NewTabPage.Snippets.FetchHttpResponseOrErrorCode"),
+              ElementsAre(base::Bucket(/*min=*/200, /*count=*/1)));
 }
 
 }  // namespace

@@ -33224,6 +33224,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="NewTabPage.Snippets.FetchHttpResponseOrErrorCode"
+    enum="CombinedHttpResponseAndNetErrorCode">
+  <owner>mastiz@chromium.org</owner>
+  <summary>
+    Response or error codes encountered when attempting to fetch snippets.
+  </summary>
+</histogram>
+
 <histogram name="NewTabPage.Snippets.Interactions" enum="SnippetsInteractions">
   <owner>knn@chromium.org</owner>
   <summary>
