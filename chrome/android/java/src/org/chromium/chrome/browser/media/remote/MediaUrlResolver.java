@@ -123,7 +123,7 @@ public class MediaUrlResolver extends AsyncTask<Void, Void, MediaUrlResolver.Res
 
     // We don't want to necessarily fetch the whole video but we don't want to miss the CORS header.
     // Assume that 64k should be more than enough to keep all the headers.
-    private static final String RANGE_HEADER_VALUE = "bytes: 0-65536";
+    private static final String RANGE_HEADER_VALUE = "bytes=0-65536";
 
     private final Delegate mDelegate;
     private final boolean mDebug;

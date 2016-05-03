@@ -42,7 +42,7 @@ public class MediaUrlResolverTest {
     private static final String COOKIES_HEADER_NAME = "Cookies";
     private static final String CORS_HEADER_NAME = "Access-Control-Allow-Origin";
     private static final String RANGE_HEADER_NAME = "Range";
-    private static final String RANGE_HEADER_VALUE = "bytes: 0-65536";
+    private static final String RANGE_HEADER_VALUE = "bytes=0-65536";
 
     private static final String USER_AGENT_HEADER_NAME = "User-Agent";
     private static final String CHROMECAST_ORIGIN = "https://www.gstatic.com";
