@@ -161,7 +161,7 @@ TEST_F(PolicyValueStoreTest, NotifyOnChanges) {
   const base::StringValue value("111");
   {
     ValueStoreChangeList changes;
-    changes.push_back(ValueStoreChange("aaa", NULL, value.DeepCopy()));
+    changes.push_back(ValueStoreChange("aaa", nullptr, value.CreateDeepCopy()));
     EXPECT_CALL(observer_,
                 OnSettingsChanged(kTestExtensionId,
                                   settings_namespace::MANAGED,
@@ -178,7 +178,7 @@ TEST_F(PolicyValueStoreTest, NotifyOnChanges) {
   // Notify when new policies are added.
   {
     ValueStoreChangeList changes;
-    changes.push_back(ValueStoreChange("bbb", NULL, value.DeepCopy()));
+    changes.push_back(ValueStoreChange("bbb", nullptr, value.CreateDeepCopy()));
     EXPECT_CALL(observer_,
                 OnSettingsChanged(kTestExtensionId,
                                   settings_namespace::MANAGED,
@@ -195,8 +195,8 @@ TEST_F(PolicyValueStoreTest, NotifyOnChanges) {
   const base::StringValue new_value("222");
   {
     ValueStoreChangeList changes;
-    changes.push_back(
-        ValueStoreChange("bbb", value.DeepCopy(), new_value.DeepCopy()));
+    changes.push_back(ValueStoreChange("bbb", value.CreateDeepCopy(),
+                                       new_value.CreateDeepCopy()));
     EXPECT_CALL(observer_,
                 OnSettingsChanged(kTestExtensionId,
                                   settings_namespace::MANAGED,
@@ -212,7 +212,8 @@ TEST_F(PolicyValueStoreTest, NotifyOnChanges) {
   // Notify when policies are removed.
   {
     ValueStoreChangeList changes;
-    changes.push_back(ValueStoreChange("bbb", new_value.DeepCopy(), NULL));
+    changes.push_back(
+        ValueStoreChange("bbb", new_value.CreateDeepCopy(), nullptr));
     EXPECT_CALL(observer_,
                 OnSettingsChanged(kTestExtensionId,
                                   settings_namespace::MANAGED,

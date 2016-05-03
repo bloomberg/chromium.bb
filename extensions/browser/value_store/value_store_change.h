@@ -22,9 +22,9 @@ class ValueStoreChange {
   // { "foo": { "key": "foo", "oldValue": "bar", "newValue": "baz" } }
   static std::string ToJson(const ValueStoreChangeList& changes);
 
-  // Ownership of |old_value| and |new_value| taken.
-  ValueStoreChange(
-      const std::string& key, base::Value* old_value, base::Value* new_value);
+  ValueStoreChange(const std::string& key,
+                   std::unique_ptr<base::Value> old_value,
+                   std::unique_ptr<base::Value> new_value);
 
   ValueStoreChange(const ValueStoreChange& other);
 
@@ -44,8 +44,9 @@ class ValueStoreChange {
  private:
   class Inner : public base::RefCountedThreadSafe<Inner> {
    public:
-    Inner(
-        const std::string& key, base::Value* old_value, base::Value* new_value);
+    Inner(const std::string& key,
+          std::unique_ptr<base::Value> old_value,
+          std::unique_ptr<base::Value> new_value);
 
     const std::string key_;
     const std::unique_ptr<base::Value> old_value_;

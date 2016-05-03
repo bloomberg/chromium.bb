@@ -193,7 +193,7 @@ ValueStore::WriteResult LeveldbValueStore::Remove(
       return MakeWriteResult(status);
 
     if (old_value) {
-      changes->push_back(ValueStoreChange(key, old_value.release(), NULL));
+      changes->push_back(ValueStoreChange(key, std::move(old_value), nullptr));
       batch.Delete(key);
     }
   }
@@ -220,7 +220,8 @@ ValueStore::WriteResult LeveldbValueStore::Clear() {
     std::string next_key = base::DictionaryValue::Iterator(whole_db).key();
     std::unique_ptr<base::Value> next_value;
     whole_db.RemoveWithoutPathExpansion(next_key, &next_value);
-    changes->push_back(ValueStoreChange(next_key, next_value.release(), NULL));
+    changes->push_back(
+        ValueStoreChange(next_key, std::move(next_value), nullptr));
   }
 
   DeleteDbFile();
@@ -280,7 +281,7 @@ ValueStore::Status LeveldbValueStore::AddToBatch(
       return status;
     if (!old_value || !old_value->Equals(&value)) {
       changes->push_back(
-          ValueStoreChange(key, old_value.release(), value.DeepCopy()));
+          ValueStoreChange(key, std::move(old_value), value.CreateDeepCopy()));
     } else {
       write_new_value = false;
     }
