@@ -23,6 +23,12 @@
 static const char kMainWebrtcTestHtmlPage[] =
     "/webrtc/webrtc_jsep01_test.html";
 
+static const char kKeygenAlgorithmRsa[] =
+    "{ name: \"RSASSA-PKCS1-v1_5\", modulusLength: 2048, publicExponent: "
+    "new Uint8Array([1, 0, 1]), hash: \"SHA-256\" }";
+static const char kKeygenAlgorithmEcdsa[] =
+    "{ name: \"ECDSA\", namedCurve: \"P-256\" }";
+
 // Top-level integration test for WebRTC. It always uses fake devices; see
 // WebRtcWebcamBrowserTest for a test that acquires any real webcam on the
 // system.
@@ -44,8 +50,11 @@ class WebRtcBrowserTest : public WebRtcTestBase {
   }
 
   void RunsAudioVideoWebRTCCallInTwoTabs(
-      std::string certificate_keygen_algorithm,
-      std::string video_codec) {
+      const std::string& video_codec = WebRtcTestBase::kUseDefaultVideoCodec,
+      const std::string& offer_cert_keygen_alg =
+          WebRtcTestBase::kUseDefaultCertKeygen,
+      const std::string& answer_cert_keygen_alg =
+          WebRtcTestBase::kUseDefaultCertKeygen) {
     if (OnWinXp()) return;
 
     ASSERT_TRUE(embedded_test_server()->Start());
@@ -55,8 +64,8 @@ class WebRtcBrowserTest : public WebRtcTestBase {
     content::WebContents* right_tab =
         OpenTestPageAndGetUserMediaInNewTab(kMainWebrtcTestHtmlPage);
 
-    SetupPeerconnectionWithLocalStream(left_tab, certificate_keygen_algorithm);
-    SetupPeerconnectionWithLocalStream(right_tab, certificate_keygen_algorithm);
+    SetupPeerconnectionWithLocalStream(left_tab, offer_cert_keygen_alg);
+    SetupPeerconnectionWithLocalStream(right_tab, answer_cert_keygen_alg);
 
     NegotiateCall(left_tab, right_tab, video_codec);
 
@@ -75,30 +84,41 @@ class WebRtcBrowserTest : public WebRtcTestBase {
 };
 
 IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
-                       RunsAudioVideoWebRTCCallInTwoTabsRSACertificate) {
-  RunsAudioVideoWebRTCCallInTwoTabs(
-      "{ name: \"RSASSA-PKCS1-v1_5\", modulusLength: 2048, publicExponent: "
-      "new Uint8Array([1, 0, 1]), hash: \"SHA-256\" }",
-      WebRtcTestBase::kUseDefaultVideoCodec);
+                       RunsAudioVideoWebRTCCallInTwoTabsOfferRsaAnswerRsa) {
+  RunsAudioVideoWebRTCCallInTwoTabs(WebRtcTestBase::kUseDefaultVideoCodec,
+                                    kKeygenAlgorithmRsa,
+                                    kKeygenAlgorithmRsa);
 }
 
 IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
-                       RunsAudioVideoWebRTCCallInTwoTabsECDSACertificate) {
-  RunsAudioVideoWebRTCCallInTwoTabs(
-      "{ name: \"ECDSA\", namedCurve: \"P-256\" }",
-      WebRtcTestBase::kUseDefaultVideoCodec);
+                       RunsAudioVideoWebRTCCallInTwoTabsOfferEcdsaAnswerEcdsa) {
+  RunsAudioVideoWebRTCCallInTwoTabs(WebRtcTestBase::kUseDefaultVideoCodec,
+                                    kKeygenAlgorithmEcdsa,
+                                    kKeygenAlgorithmEcdsa);
+}
+
+IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
+                       RunsAudioVideoWebRTCCallInTwoTabsOfferRsaAnswerEcdsa) {
+  RunsAudioVideoWebRTCCallInTwoTabs(WebRtcTestBase::kUseDefaultVideoCodec,
+                                    kKeygenAlgorithmRsa,
+                                    kKeygenAlgorithmEcdsa);
+}
+
+IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
+                       RunsAudioVideoWebRTCCallInTwoTabsOfferEcdsaAnswerRsa) {
+  RunsAudioVideoWebRTCCallInTwoTabs(WebRtcTestBase::kUseDefaultVideoCodec,
+                                    kKeygenAlgorithmEcdsa,
+                                    kKeygenAlgorithmRsa);
 }
 
 IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
                        RunsAudioVideoWebRTCCallInTwoTabsVP8) {
-  RunsAudioVideoWebRTCCallInTwoTabs(
-      WebRtcTestBase::kUseDefaultCertKeygen, "VP8");
+  RunsAudioVideoWebRTCCallInTwoTabs("VP8");
 }
 
 IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
                        RunsAudioVideoWebRTCCallInTwoTabsVP9) {
-  RunsAudioVideoWebRTCCallInTwoTabs(
-      WebRtcTestBase::kUseDefaultCertKeygen, "VP9");
+  RunsAudioVideoWebRTCCallInTwoTabs("VP9");
 }
 
 #if BUILDFLAG(RTC_USE_H264)
@@ -112,8 +132,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
         "(test \"OK\")";
     return;
   }
-  RunsAudioVideoWebRTCCallInTwoTabs(
-      WebRtcTestBase::kUseDefaultCertKeygen, "H264");
+  RunsAudioVideoWebRTCCallInTwoTabs("H264");
 }
 
 #endif  // BUILDFLAG(RTC_USE_H264)
