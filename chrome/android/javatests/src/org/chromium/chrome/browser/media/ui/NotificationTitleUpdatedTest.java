@@ -48,33 +48,33 @@ public class NotificationTitleUpdatedTest extends ChromeActivityTestCaseBase<Chr
         simulateUpdateTitle(mTab, "title1");
     }
 
-    private void testSessionStatePlayingInternal() throws InterruptedException {
+    private void doTestSessionStatePlaying() throws InterruptedException {
         simulateMediaSessionStateChanged(mTab, true, false);
         assertTitleMatches("title1");
         simulateUpdateTitle(mTab, "title2");
         assertTitleMatches("title2");
     }
 
-    private void testSessionStatePausedInternal() throws InterruptedException {
+    private void doTestSessionStatePaused() throws InterruptedException {
         simulateMediaSessionStateChanged(mTab, true, true);
         assertTitleMatches("title1");
         simulateUpdateTitle(mTab, "title2");
         assertTitleMatches("title2");
     }
 
-    private void testSessionStateUncontrollableInternal() throws InterruptedException {
+    private void doTestSessionStateUncontrollable() throws InterruptedException {
         simulateMediaSessionStateChanged(mTab, true, false);
         assertTitleMatches("title1");
         simulateMediaSessionStateChanged(mTab, false, false);
         simulateUpdateTitle(mTab, "title2");
     }
 
-    private void testMediaMetadataSetsTitleInternal() throws InterruptedException {
+    private void doTestMediaMetadataSetsTitle() throws InterruptedException {
         simulateMediaSessionStateChanged(mTab, true, false, new MediaMetadata("title2", "", ""));
         assertTitleMatches("title2");
     }
 
-    private void testMediaMetadataOverridesTitleInternal() throws InterruptedException {
+    private void doTestMediaMetadataOverridesTitle() throws InterruptedException {
         simulateMediaSessionStateChanged(mTab, true, false, new MediaMetadata("title2", "", ""));
         assertTitleMatches("title2");
 
@@ -91,7 +91,7 @@ public class NotificationTitleUpdatedTest extends ChromeActivityTestCaseBase<Chr
      *   4. change the title of newTab and then mTab to different names,
      *      the notification should have the title of newTab.
      */
-    private void testMultipleTabsInternal() throws Throwable {
+    private void doTestMultipleTabs() throws Throwable {
         simulateMediaSessionStateChanged(mTab, true, false);
         assertTitleMatches("title1");
         simulateMediaSessionStateChanged(mTab, false, false);
@@ -108,77 +108,77 @@ public class NotificationTitleUpdatedTest extends ChromeActivityTestCaseBase<Chr
     @SmallTest
     @CommandLineFlags.Add("enable-features=MediaStyleNotification")
     public void testSessionStatePlaying_MediaStyleNotification() throws InterruptedException {
-        testSessionStatePlayingInternal();
+        doTestSessionStatePlaying();
     }
 
     @SmallTest
     @CommandLineFlags.Add("enable-features=MediaStyleNotification")
     public void testSessionStatePaused_MediaStyleNotification() throws InterruptedException {
-        testSessionStatePausedInternal();
+        doTestSessionStatePaused();
     }
 
     @SmallTest
     @CommandLineFlags.Add("enable-features=MediaStyleNotification")
     public void testSessionStateUncontrollable_MediaStyleNotification()
             throws InterruptedException {
-        testSessionStateUncontrollableInternal();
+        doTestSessionStateUncontrollable();
     }
 
     @SmallTest
     @CommandLineFlags.Add("enable-features=MediaStyleNotification")
     public void testMediaMetadataSetsTitle_MediaStyleNotification() throws InterruptedException {
-        testMediaMetadataSetsTitleInternal();
+        doTestMediaMetadataSetsTitle();
     }
 
     @SmallTest
     @CommandLineFlags.Add("enable-features=MediaStyleNotification")
     public void testMediaMetadataOverridesTitle_MediaStyleNotification()
             throws InterruptedException {
-        testMediaMetadataOverridesTitleInternal();
+        doTestMediaMetadataOverridesTitle();
     }
 
     @SmallTest
     @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @CommandLineFlags.Add("enable-features=MediaStyleNotification")
     public void testMultipleTabs_MediaStyleNotification() throws Throwable {
-        testMultipleTabsInternal();
+        doTestMultipleTabs();
     }
 
     @SmallTest
     @CommandLineFlags.Add("disable-features=MediaStyleNotification")
     public void testSessionStatePlaying_CustomNotification() throws InterruptedException {
-        testSessionStatePlayingInternal();
+        doTestSessionStatePlaying();
     }
 
     @SmallTest
     @CommandLineFlags.Add("disable-features=MediaStyleNotification")
     public void testSessionStatePaused_CustomNotification() throws InterruptedException {
-        testSessionStatePausedInternal();
+        doTestSessionStatePaused();
     }
 
     @SmallTest
     @CommandLineFlags.Add("disable-features=MediaStyleNotification")
     public void testSessionStateUncontrollable_CustomNotification() throws InterruptedException {
-        testSessionStateUncontrollableInternal();
+        doTestSessionStateUncontrollable();
     }
 
     @SmallTest
     @CommandLineFlags.Add("disable-features=MediaStyleNotification")
     public void testMediaMetadataSetsTitle_CustomNotification() throws InterruptedException {
-        testMediaMetadataSetsTitleInternal();
+        doTestMediaMetadataSetsTitle();
     }
 
     @SmallTest
     @CommandLineFlags.Add("disable-features=MediaStyleNotification")
     public void testMediaMetadataOverridesTitle_CustomNotification() throws InterruptedException {
-        testMediaMetadataOverridesTitleInternal();
+        doTestMediaMetadataOverridesTitle();
     }
 
     @SmallTest
     @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @CommandLineFlags.Add("disable-features=MediaStyleNotification")
     public void testMultipleTabs_CustomNotification() throws Throwable {
-        testMultipleTabsInternal();
+        doTestMultipleTabs();
     }
 
     @Override

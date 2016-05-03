@@ -586,6 +586,7 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
      * Helper function to test allowing and blocking background sync.
      * @param enabled true to test enabling background sync, false to test disabling the feature.
      */
+    @SmallTest
     private void testBackgroundSyncPermission(final boolean enabled) {
         setEnableBackgroundSync(enabled);
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {

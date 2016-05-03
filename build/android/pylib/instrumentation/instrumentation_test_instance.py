@@ -33,6 +33,8 @@ _DEFAULT_ANNOTATIONS = [
     'EnormousTest', 'IntegrationTest']
 _EXCLUDE_UNLESS_REQUESTED_ANNOTATIONS = [
     'DisabledTest', 'FlakyTest']
+_VALID_ANNOTATIONS = set(['Manual', 'PerfTest'] + _DEFAULT_ANNOTATIONS +
+                         _EXCLUDE_UNLESS_REQUESTED_ANNOTATIONS)
 _EXTRA_DRIVER_TEST_LIST = (
     'org.chromium.test.driver.OnDeviceInstrumentationDriver.TestList')
 _EXTRA_DRIVER_TEST_LIST_FILE = (
@@ -48,6 +50,13 @@ _PARAMETERIZED_TEST_ANNOTATION = 'ParameterizedTest'
 _PARAMETERIZED_TEST_SET_ANNOTATION = 'ParameterizedTest$Set'
 _NATIVE_CRASH_RE = re.compile('native crash', re.IGNORECASE)
 _PICKLE_FORMAT_VERSION = 10
+
+
+class MissingSizeAnnotationError(Exception):
+  def __init__(self, class_name):
+    super(MissingSizeAnnotationError, self).__init__(class_name +
+        ': Test method is missing required size annotation. Add one of: ' +
+        ', '.join('@' + a for a in _VALID_ANNOTATIONS))
 
 
 # TODO(jbudorick): Make these private class methods of
@@ -579,6 +588,11 @@ class InstrumentationTestInstance(test_instance.TestInstance):
 
         all_annotations = dict(c['annotations'])
         all_annotations.update(m['annotations'])
+
+        # Enforce that all tests declare their size.
+        if not any(a in _VALID_ANNOTATIONS for a in all_annotations):
+          raise MissingSizeAnnotationError('%s.%s' % (c['class'], m['method']))
+
         if (not annotation_filter(all_annotations)
             or not excluded_annotation_filter(all_annotations)):
           continue
