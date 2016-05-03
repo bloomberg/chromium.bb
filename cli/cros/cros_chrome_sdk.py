@@ -528,6 +528,9 @@ class ChromeSDKCommand(command.CliCommand):
         'cmd', nargs='*', default=None,
         help='The command to execute in the SDK environment.  Defaults to '
              'starting a bash shell.')
+    parser.add_argument(
+        '--download-vm', action='store_true', default=False,
+        help='Additionally downloads a VM image from cloud storage.')
 
     parser.add_option_to_group(
         parser.caching_group, '--clear-sdk-cache', action='store_true',
@@ -951,6 +954,8 @@ class ChromeSDKCommand(command.CliCommand):
     components = [self.sdk.TARGET_TOOLCHAIN_KEY, constants.CHROME_ENV_TAR]
     if not self.options.chroot:
       components.append(constants.CHROME_SYSROOT_TAR)
+    if self.options.download_vm:
+      components.append(constants.VM_IMAGE_TAR)
 
     goma_dir = None
     goma_port = None
@@ -965,6 +970,14 @@ class ChromeSDKCommand(command.CliCommand):
                           toolchain_url=self.options.toolchain_url) as ctx:
       env = self._SetupEnvironment(self.options.board, ctx, self.options,
                                    goma_dir=goma_dir, goma_port=goma_port)
+
+      if constants.VM_IMAGE_TAR in ctx.key_map:
+        vm_image_path = os.path.join(ctx.key_map[constants.VM_IMAGE_TAR].path,
+                                     constants.VM_IMAGE_BIN)
+        if os.path.exists(vm_image_path):
+          env['VM_IMAGE_PATH'] = vm_image_path
+
+
       with self._GetRCFile(env, self.options.bashrc) as rcfile:
         bash_cmd = ['/bin/bash']
 
