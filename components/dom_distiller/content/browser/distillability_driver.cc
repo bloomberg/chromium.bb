@@ -21,19 +21,20 @@ class DistillabilityServiceImpl : public DistillabilityService {
  public:
   DistillabilityServiceImpl(
       mojo::InterfaceRequest<DistillabilityService> request,
-      DistillabilityDriver* distillability_driver)
+      base::WeakPtr<DistillabilityDriver> distillability_driver)
       : binding_(this, std::move(request)),
         distillability_driver_(distillability_driver) {}
 
   ~DistillabilityServiceImpl() override {}
 
   void NotifyIsDistillable(bool is_distillable, bool is_last_update) override {
+    if (!distillability_driver_) return;
     distillability_driver_->OnDistillability(is_distillable, is_last_update);
   }
 
  private:
   mojo::StrongBinding<DistillabilityService> binding_;
-  DistillabilityDriver* distillability_driver_;
+  base::WeakPtr<DistillabilityDriver> distillability_driver_;
 };
 
 DistillabilityDriver::DistillabilityDriver(
@@ -49,7 +50,7 @@ DistillabilityDriver::~DistillabilityDriver() {
 
 void DistillabilityDriver::CreateDistillabilityService(
     mojo::InterfaceRequest<DistillabilityService> request) {
-  new DistillabilityServiceImpl(std::move(request), this);
+  new DistillabilityServiceImpl(std::move(request), weak_factory_.GetWeakPtr());
 }
 
 void DistillabilityDriver::SetDelegate(
@@ -62,11 +63,6 @@ void DistillabilityDriver::OnDistillability(
   if (m_delegate_.is_null()) return;
 
   m_delegate_.Run(distillable, is_last);
-
-  if (web_contents() && is_last) {
-    web_contents()->GetMainFrame()->GetServiceRegistry()
-        ->RemoveService<DistillabilityService>();
-  }
 }
 
 void DistillabilityDriver::DidStartProvisionalLoadForFrame(
