@@ -58,8 +58,9 @@ class RasterTaskImpl : public TileTask {
                  uint64_t resource_content_id,
                  int source_frame_number,
                  const base::Callback<void(bool)>& reply,
-                 TileTask::Vector* dependencies)
-      : TileTask(true, dependencies),
+                 TileTask::Vector* dependencies,
+                 bool supports_concurrent_execution)
+      : TileTask(supports_concurrent_execution, dependencies),
         resource_(resource),
         raster_source_(std::move(raster_source)),
         content_rect_(content_rect),
@@ -131,6 +132,31 @@ class RasterTaskImpl : public TileTask {
   DISALLOW_COPY_AND_ASSIGN(RasterTaskImpl);
 };
 
+TaskCategory TaskCategoryForTileTask(TileTask* task,
+                                     bool use_foreground_category) {
+  if (!task->supports_concurrent_execution())
+    return TASK_CATEGORY_NONCONCURRENT_FOREGROUND;
+
+  if (use_foreground_category)
+    return TASK_CATEGORY_FOREGROUND;
+
+  return TASK_CATEGORY_BACKGROUND;
+}
+
+bool IsForegroundCategory(uint16_t category) {
+  TaskCategory enum_category = static_cast<TaskCategory>(category);
+  switch (enum_category) {
+    case TASK_CATEGORY_NONCONCURRENT_FOREGROUND:
+    case TASK_CATEGORY_FOREGROUND:
+      return true;
+    case TASK_CATEGORY_BACKGROUND:
+      return false;
+  }
+
+  DCHECK(false);
+  return false;
+}
+
 // Task priorities that make sure that the task set done tasks run before any
 // other remaining tasks.
 const size_t kRequiredForActivationDoneTaskPriority = 1u;
@@ -156,21 +182,21 @@ void InsertNodeForTask(TaskGraph* graph,
 
 void InsertNodeForDecodeTask(TaskGraph* graph,
                              TileTask* task,
-                             uint16_t category,
+                             bool use_foreground_category,
                              uint16_t priority) {
   uint32_t dependency_count = 0u;
   if (task->dependencies().size()) {
     DCHECK_EQ(task->dependencies().size(), 1u);
     auto* dependency = task->dependencies()[0].get();
     if (!dependency->HasCompleted()) {
-      InsertNodeForDecodeTask(graph, dependency, category, priority);
+      InsertNodeForDecodeTask(graph, dependency, use_foreground_category,
+                              priority);
       graph->edges.push_back(TaskGraph::Edge(dependency, task));
       dependency_count = 1u;
     }
   }
-  InsertNodeForTask(graph, task, task->supports_concurrent_execution()
-                                     ? category
-                                     : TASK_CATEGORY_NONCONCURRENT_FOREGROUND,
+  InsertNodeForTask(graph, task,
+                    TaskCategoryForTileTask(task, use_foreground_category),
                     priority, dependency_count);
 }
 
@@ -178,26 +204,8 @@ void InsertNodesForRasterTask(TaskGraph* graph,
                               TileTask* raster_task,
                               const TileTask::Vector& decode_tasks,
                               size_t priority,
-                              bool use_gpu_rasterization,
-                              bool high_priority) {
+                              bool use_foreground_category) {
   size_t dependencies = 0u;
-
-  // Determine the TaskCategory for raster tasks - if a task uses GPU, it
-  // cannot run concurrently and is assigned
-  // TASK_CATEGORY_NONCONCURRENT_FOREGROUND, regardless of its priority.
-  // Otherwise its category is based on its priority.
-  TaskCategory raster_task_category;
-  if (use_gpu_rasterization) {
-    raster_task_category = TASK_CATEGORY_NONCONCURRENT_FOREGROUND;
-  } else {
-    raster_task_category =
-        high_priority ? TASK_CATEGORY_FOREGROUND : TASK_CATEGORY_BACKGROUND;
-  }
-
-  // Determine the TaskCategory for decode tasks. This category is based on
-  // the priority of the raster task which depends on it.
-  TaskCategory decode_task_category =
-      high_priority ? TASK_CATEGORY_FOREGROUND : TASK_CATEGORY_BACKGROUND;
 
   // Insert image decode tasks.
   for (TileTask::Vector::const_iterator it = decode_tasks.begin();
@@ -217,26 +225,30 @@ void InsertNodesForRasterTask(TaskGraph* graph,
                        return node.task == decode_task;
                      });
 
-    // In rare circumstances, a low priority task may come in before a high
-    // priority task. In these cases, upgrade any low-priority dependencies of
-    // the current task.
+    // In rare circumstances, a background category task may come in before a
+    // foreground category task. In these cases, upgrade any background category
+    // dependencies of the current task.
     // TODO(ericrk): Task iterators should be updated to avoid this.
     // crbug.com/594851
-    if (decode_it != graph->nodes.end() && high_priority &&
-        decode_it->category != decode_task_category) {
-      decode_it->category = decode_task_category;
+    // TODO(ericrk): This should handle dependencies recursively.
+    // crbug.com/605234
+    if (decode_it != graph->nodes.end() && use_foreground_category &&
+        !IsForegroundCategory(decode_it->category)) {
+      decode_it->category = TASK_CATEGORY_FOREGROUND;
     }
 
     if (decode_it == graph->nodes.end()) {
-      InsertNodeForDecodeTask(graph, decode_task, decode_task_category,
+      InsertNodeForDecodeTask(graph, decode_task, use_foreground_category,
                               priority);
     }
 
     graph->edges.push_back(TaskGraph::Edge(decode_task, raster_task));
   }
 
-  InsertNodeForTask(graph, raster_task, raster_task_category, priority,
-                    dependencies);
+  InsertNodeForTask(
+      graph, raster_task,
+      TaskCategoryForTileTask(raster_task, use_foreground_category), priority,
+      dependencies);
 }
 
 class TaskSetFinishedTaskImpl : public TileTask {
@@ -798,19 +810,19 @@ void TileManager::ScheduleTasks(
     all_count++;
     graph_.edges.push_back(TaskGraph::Edge(task, all_done_task.get()));
 
-    // A tile is high priority if it is either blocking future compositing
-    // (required for draw or required for activation), or if it has a priority
-    // bin of NOW for another reason (low resolution tiles).
-    bool high_priority =
+    // A tile should use a foreground task cateogry if it is either blocking
+    // future compositing (required for draw or required for activation), or if
+    // it has a priority bin of NOW for another reason (low resolution tiles).
+    bool use_foreground_category =
         tile->required_for_draw() || tile->required_for_activation() ||
         prioritized_tile.priority().priority_bin == TilePriority::NOW;
     InsertNodesForRasterTask(&graph_, task, task->dependencies(), priority++,
-                             use_gpu_rasterization_, high_priority);
+                             use_foreground_category);
   }
 
   // Insert nodes for our task completion tasks. We enqueue these using
-  // NONCONCURRENT_FOREGROUND priority as this is the highest prioirty and we'd
-  // like to run these tasks as soon as possible.
+  // NONCONCURRENT_FOREGROUND category this is the highest prioirty category and
+  // we'd like to run these tasks as soon as possible.
   InsertNodeForTask(&graph_, required_for_activation_done_task.get(),
                     TASK_CATEGORY_NONCONCURRENT_FOREGROUND,
                     kRequiredForActivationDoneTaskPriority,
@@ -902,6 +914,7 @@ scoped_refptr<TileTask> TileManager::CreateRasterTask(
       it = images.erase(it);
   }
 
+  bool supports_concurrent_execution = !use_gpu_rasterization_;
   return make_scoped_refptr(new RasterTaskImpl(
       resource, prioritized_tile.raster_source(), tile->content_rect(),
       tile->invalidated_content_rect(), tile->contents_scale(),
@@ -911,7 +924,7 @@ scoped_refptr<TileTask> TileManager::CreateRasterTask(
       tile->source_frame_number(),
       base::Bind(&TileManager::OnRasterTaskCompleted, base::Unretained(this),
                  tile->id(), resource),
-      &decode_tasks));
+      &decode_tasks, supports_concurrent_execution));
 }
 
 void TileManager::OnRasterTaskCompleted(
