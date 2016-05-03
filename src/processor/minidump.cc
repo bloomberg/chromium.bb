@@ -2327,6 +2327,13 @@ const MDImageDebugMisc* MinidumpModule::GetMiscRecord(uint32_t* size) {
   return reinterpret_cast<MDImageDebugMisc*>(&(*misc_record_)[0]);
 }
 
+void MinidumpModule::set_base_address_and_size(uint64_t base_address,
+                                                  uint64_t size) {
+  if (valid_) {
+    module_.base_of_image = base_address;
+    module_.size_of_image = size;
+  }
+}
 
 void MinidumpModule::Print() {
   if (!valid_) {
@@ -2635,6 +2642,7 @@ bool MinidumpModuleList::Read(uint32_t expected_size) {
                               HexString(module_size) << ", after adjusting";
               return false;
             }
+            module->set_base_address_and_size(base_address, module_size);
           } else {
             BPLOG(ERROR) << "MinidumpModuleList could not store module " <<
                             module_index << "/" << module_count << ", " <<

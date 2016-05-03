@@ -382,6 +382,11 @@ class MinidumpModule : public MinidumpObject,
 
   const MDRawModule* module() const { return valid_ ? &module_ : NULL; }
 
+  // This method is intented to handle the case on Android where the module
+  // could overlap with ashmem, and is not supposed to be used in anywhere
+  // else.
+  void set_base_address_and_size(uint64_t base_address, uint64_t size);
+
   // CodeModule implementation
   virtual uint64_t base_address() const {
     return valid_ ? module_.base_of_image : static_cast<uint64_t>(-1);
