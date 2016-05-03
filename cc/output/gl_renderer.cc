@@ -1010,6 +1010,14 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
             filter->filterBounds(gfx::RectToSkIRect(quad->rect), scale_matrix,
                                  SkImageFilter::kForward_MapDirection);
         gfx::RectF dst_rect = gfx::SkRectToRectF(SkRect::Make(result_rect));
+        // If the destination rect is not the same as the source rect, the edges
+        // previously computed for AA will be wrong. Rather than recompute them
+        // here, disable antialiasing and use a 1-pixel transparent
+        // border to achieve a similar effect.
+        if (use_aa && dst_rect != rect) {
+          dst_rect.Inset(-1.0f, -1.0f);
+          use_aa = false;
+        }
         gfx::Rect clip_rect = quad->shared_quad_state->clip_rect;
         if (clip_rect.IsEmpty()) {
           clip_rect = current_draw_rect_;
@@ -1052,6 +1060,8 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
   if (filter_image_id) {
     DCHECK_EQ(GL_TEXTURE0, GetActiveTextureUnit(gl_));
     gl_->BindTexture(GL_TEXTURE_2D, filter_image_id);
+    gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   } else {
     contents_resource_lock =
         base::WrapUnique(new ResourceProvider::ScopedSamplerGL(

@@ -492,20 +492,32 @@ void SoftwareRenderer::DrawRenderPassQuad(const DrawingFrame* frame,
                                       gfx::RectF(quad->visible_rect)));
   SkRect content_rect = SkRect::MakeWH(quad->rect.width(), quad->rect.height());
 
-  SkMatrix content_mat;
-  content_mat.setRectToRect(content_rect, dest_rect,
-                            SkMatrix::kFill_ScaleToFit);
-
   const SkBitmap* content = lock.sk_bitmap();
 
   sk_sp<SkImage> filter_image;
   if (!quad->filters.IsEmpty()) {
     sk_sp<SkImageFilter> filter = RenderSurfaceFilters::BuildImageFilter(
         quad->filters, gfx::SizeF(content_texture->size()));
+    SkMatrix localM;
+    localM.setScale(quad->filters_scale.x(), quad->filters_scale.y());
+    SkIRect result_rect =
+        filter->filterBounds(gfx::RectToSkIRect(quad->rect), localM,
+                             SkImageFilter::kForward_MapDirection);
     // TODO(ajuma): Apply the filter in the same pass as the content where
     // possible (e.g. when there's no origin offset). See crbug.com/308201.
-    filter_image = ApplyImageFilter(filter.get(), quad, content);
+    filter_image = ApplyImageFilter(filter.get(), quad, result_rect, content);
+    if (filter_image) {
+      gfx::RectF rect = gfx::SkRectToRectF(SkRect::Make(result_rect));
+      dest_rect = dest_visible_rect =
+          gfx::RectFToSkRect(MathUtil::ScaleRectProportional(
+              QuadVertexRect(), gfx::RectF(quad->rect), rect));
+      content_rect = SkRect::MakeWH(result_rect.width(), result_rect.height());
+    }
   }
+
+  SkMatrix content_mat;
+  content_mat.setRectToRect(content_rect, dest_rect,
+                            SkMatrix::kFill_ScaleToFit);
 
   sk_sp<SkShader> shader;
   if (!filter_image) {
@@ -631,22 +643,23 @@ bool SoftwareRenderer::ShouldApplyBackgroundFilters(
 sk_sp<SkImage> SoftwareRenderer::ApplyImageFilter(
     SkImageFilter* filter,
     const RenderPassDrawQuad* quad,
+    const SkIRect& dst_rect,
     const SkBitmap* to_filter) const {
   if (!filter)
     return nullptr;
 
   SkImageInfo dst_info =
-      SkImageInfo::MakeN32Premul(to_filter->width(), to_filter->height());
+      SkImageInfo::MakeN32Premul(dst_rect.width(), dst_rect.height());
   sk_sp<SkSurface> surface = SkSurface::MakeRaster(dst_info);
 
-  SkMatrix localM;
-  localM.setTranslate(SkIntToScalar(-quad->rect.origin().x()),
-                      SkIntToScalar(-quad->rect.origin().y()));
-  localM.preScale(quad->filters_scale.x(), quad->filters_scale.y());
+  SkMatrix local_matrix;
+  local_matrix.setScale(quad->filters_scale.x(), quad->filters_scale.y());
 
   SkPaint paint;
-  paint.setImageFilter(filter->makeWithLocalMatrix(localM));
-  surface->getCanvas()->drawBitmap(*to_filter, 0, 0, &paint);
+  paint.setImageFilter(filter->makeWithLocalMatrix(local_matrix));
+  surface->getCanvas()->translate(-dst_rect.x(), -dst_rect.y());
+  surface->getCanvas()->drawBitmap(*to_filter, quad->rect.x(), quad->rect.y(),
+                                   &paint);
 
   return surface->makeImageSnapshot();
 }
@@ -711,8 +724,8 @@ sk_sp<SkShader> SoftwareRenderer::GetBackgroundFilterShader(
   sk_sp<SkImageFilter> filter = RenderSurfaceFilters::BuildImageFilter(
       quad->background_filters,
       gfx::SizeF(backdrop_bitmap.width(), backdrop_bitmap.height()));
-  sk_sp<SkImage> filter_backdrop_image =
-      ApplyImageFilter(filter.get(), quad, &backdrop_bitmap);
+  sk_sp<SkImage> filter_backdrop_image = ApplyImageFilter(
+      filter.get(), quad, backdrop_bitmap.bounds(), &backdrop_bitmap);
 
   if (!filter_backdrop_image)
     return nullptr;

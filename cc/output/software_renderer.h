@@ -90,6 +90,7 @@ class CC_EXPORT SoftwareRenderer : public DirectRenderer {
   bool ShouldApplyBackgroundFilters(const RenderPassDrawQuad* quad) const;
   sk_sp<SkImage> ApplyImageFilter(SkImageFilter* filter,
                                   const RenderPassDrawQuad* quad,
+                                  const SkIRect& dst_rect,
                                   const SkBitmap* to_filter) const;
   gfx::Rect GetBackdropBoundingBoxForRenderPassQuad(
       const DrawingFrame* frame,
