@@ -203,29 +203,6 @@ content::RenderWidgetInputHandlerDelegate* GetRenderWidgetInputHandlerDelegate(
   return widget;
 }
 
-std::unique_ptr<content::WebGraphicsContext3DCommandBufferImpl>
-CreateOffscreenContext(scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
-                       const GURL& url) {
-  DCHECK(gpu_channel_host);
-
-  // This is for an offscreen context for the compositor. So the default
-  // framebuffer doesn't need alpha, depth, stencil, antialiasing.
-  gpu::gles2::ContextCreationAttribHelper attributes;
-  attributes.alpha_size = -1;
-  attributes.depth_size = 0;
-  attributes.stencil_size = 0;
-  attributes.samples = 0;
-  attributes.sample_buffers = 0;
-  attributes.bind_generates_resource = false;
-  attributes.lose_context_when_out_of_memory = true;
-
-  bool automatic_flushes = false;
-
-  return base::WrapUnique(new content::WebGraphicsContext3DCommandBufferImpl(
-      gpu::kNullSurfaceHandle, url, std::move(gpu_channel_host), attributes,
-      gfx::PreferIntegratedGpu, automatic_flushes));
-}
-
 }  // namespace
 
 namespace content {
@@ -785,11 +762,27 @@ std::unique_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(
       return nullptr;
     }
 
+    // This is for an offscreen context for the compositor. So the default
+    // framebuffer doesn't need alpha, depth, stencil, antialiasing.
+    gpu::gles2::ContextCreationAttribHelper attributes;
+    attributes.alpha_size = -1;
+    attributes.depth_size = 0;
+    attributes.stencil_size = 0;
+    attributes.samples = 0;
+    attributes.sample_buffers = 0;
+    attributes.bind_generates_resource = false;
+    attributes.lose_context_when_out_of_memory = true;
+
+    bool automatic_flushes = false;
+
     // The compositor context shares resources with the worker context.
     context_provider = new ContextProviderCommandBuffer(
-        CreateOffscreenContext(std::move(gpu_channel_host),
-                               GetURLForGraphicsContext3D()),
-        limits, worker_context_provider.get(), RENDER_COMPOSITOR_CONTEXT);
+        base::WrapUnique(new content::WebGraphicsContext3DCommandBufferImpl(
+            gpu::kNullSurfaceHandle, GetURLForGraphicsContext3D(),
+            std::move(gpu_channel_host), gfx::PreferIntegratedGpu,
+            automatic_flushes)),
+        limits, attributes, worker_context_provider.get(),
+        command_buffer_metrics::RENDER_COMPOSITOR_CONTEXT);
 
 #if defined(OS_ANDROID)
     if (RenderThreadImpl::current() &&

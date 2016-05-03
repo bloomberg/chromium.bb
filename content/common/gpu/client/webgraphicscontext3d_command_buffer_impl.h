@@ -66,7 +66,6 @@ class WebGraphicsContext3DCommandBufferImpl {
       gpu::SurfaceHandle surface_handle,
       const GURL& active_url,
       scoped_refptr<gpu::GpuChannelHost> host,
-      const gpu::gles2::ContextCreationAttribHelper& attributes,
       gfx::GpuPreference gpu_preference,
       bool automatic_flushes);
 
@@ -89,35 +88,34 @@ class WebGraphicsContext3DCommandBufferImpl {
   CONTENT_EXPORT bool InitializeOnCurrentThread(
       const gpu::SharedMemoryLimits& memory_limits,
       gpu::CommandBufferProxyImpl* shared_command_buffer,
-      scoped_refptr<gpu::gles2::ShareGroup> share_group);
+      scoped_refptr<gpu::gles2::ShareGroup> share_group,
+      const gpu::gles2::ContextCreationAttribHelper& attributes,
+      command_buffer_metrics::ContextType context_type);
 
-  void SetContextType(CommandBufferContextType type) {
-    context_type_ = type;
-  }
  private:
-  // These are the same error codes as used by EGL.
-  enum Error {
-    SUCCESS               = 0x3000,
-    BAD_ATTRIBUTE         = 0x3004,
-    CONTEXT_LOST          = 0x300E
-  };
-
   // Initialize the underlying GL context. May be called multiple times; second
   // and subsequent calls are ignored. Must be called from the thread that is
   // going to use this object to issue GL commands (which might not be the main
   // thread).
-  bool MaybeInitializeGL(const gpu::SharedMemoryLimits& memory_limits,
-                         gpu::CommandBufferProxyImpl* shared_command_buffer,
-                         scoped_refptr<gpu::gles2::ShareGroup> share_group);
+  bool MaybeInitializeGL(
+      const gpu::SharedMemoryLimits& memory_limits,
+      gpu::CommandBufferProxyImpl* shared_command_buffer,
+      scoped_refptr<gpu::gles2::ShareGroup> share_group,
+      const gpu::gles2::ContextCreationAttribHelper& attributes,
+      command_buffer_metrics::ContextType context_type);
 
   bool InitializeCommandBuffer(
-      gpu::CommandBufferProxyImpl* shared_command_buffer);
+      gpu::CommandBufferProxyImpl* shared_command_buffer,
+      const gpu::gles2::ContextCreationAttribHelper& attributes,
+      command_buffer_metrics::ContextType context_type);
 
   void Destroy();
 
   bool CreateContext(const gpu::SharedMemoryLimits& memory_limits,
                      gpu::CommandBufferProxyImpl* shared_command_buffer,
-                     scoped_refptr<gpu::gles2::ShareGroup> share_group);
+                     scoped_refptr<gpu::gles2::ShareGroup> share_group,
+                     const gpu::gles2::ContextCreationAttribHelper& attributes,
+                     command_buffer_metrics::ContextType context_type);
 
   void OnContextLost();
 
@@ -126,13 +124,11 @@ class WebGraphicsContext3DCommandBufferImpl {
   WebGraphicsContextLostCallback* context_lost_callback_ = nullptr;
 
   bool automatic_flushes_;
-  gpu::gles2::ContextCreationAttribHelper attributes_;
 
   // State needed by MaybeInitializeGL.
   scoped_refptr<gpu::GpuChannelHost> host_;
   gpu::SurfaceHandle surface_handle_;
   GURL active_url_;
-  CommandBufferContextType context_type_;
 
   gfx::GpuPreference gpu_preference_;
 

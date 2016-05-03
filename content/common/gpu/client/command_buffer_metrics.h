@@ -10,8 +10,9 @@
 #include "gpu/command_buffer/common/constants.h"
 
 namespace content {
+namespace command_buffer_metrics {
 
-enum CommandBufferContextType {
+enum ContextType {
   DISPLAY_COMPOSITOR_ONSCREEN_CONTEXT,
   BROWSER_OFFSCREEN_MAINTHREAD_CONTEXT,
   BROWSER_WORKER_CONTEXT,
@@ -25,14 +26,15 @@ enum CommandBufferContextType {
   OFFSCREEN_CONTEXT_FOR_TESTING = CONTEXT_TYPE_UNKNOWN,
 };
 
-std::string CommandBufferContextTypeToString(CommandBufferContextType type);
+std::string ContextTypeToString(ContextType type);
 
-void UmaRecordContextInitFailed(CommandBufferContextType type);
+void UmaRecordContextInitFailed(ContextType type);
 
-void UmaRecordContextLost(CommandBufferContextType type,
+void UmaRecordContextLost(ContextType type,
                           gpu::error::Error error,
                           gpu::error::ContextLostReason reason);
 
+}  // namespace command_buffer_metrics
 }  // namespace content
 
 #endif  // CONTENT_COMMON_GPU_CLIENT_COMMAND_BUFFER_METRICS_H_

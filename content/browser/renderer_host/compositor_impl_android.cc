@@ -572,9 +572,10 @@ void CompositorImpl::CreateOutputSurface() {
   scoped_refptr<ContextProviderCommandBuffer> context_provider(
       new ContextProviderCommandBuffer(
           base::WrapUnique(new WebGraphicsContext3DCommandBufferImpl(
-              surface_handle_, url, gpu_channel_host.get(), attributes,
+              surface_handle_, url, gpu_channel_host.get(),
               gfx::PreferIntegratedGpu, automatic_flushes)),
-          limits, nullptr, DISPLAY_COMPOSITOR_ONSCREEN_CONTEXT));
+          limits, attributes, nullptr,
+          command_buffer_metrics::DISPLAY_COMPOSITOR_ONSCREEN_CONTEXT));
   DCHECK(context_provider.get());
 
   std::unique_ptr<cc::OutputSurface> real_output_surface(

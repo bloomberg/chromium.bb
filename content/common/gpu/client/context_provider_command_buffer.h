@@ -40,8 +40,9 @@ class CONTENT_EXPORT ContextProviderCommandBuffer
   ContextProviderCommandBuffer(
       std::unique_ptr<WebGraphicsContext3DCommandBufferImpl> context3d,
       const gpu::SharedMemoryLimits& memory_limits,
+      const gpu::gles2::ContextCreationAttribHelper& attributes,
       ContextProviderCommandBuffer* shared_context_provider,
-      CommandBufferContextType type);
+      command_buffer_metrics::ContextType type);
 
   gpu::CommandBufferProxyImpl* GetCommandBufferProxy();
 
@@ -86,8 +87,8 @@ class CONTENT_EXPORT ContextProviderCommandBuffer
   std::unique_ptr<skia_bindings::GrContextForGLES2Interface> gr_context_;
 
   gpu::SharedMemoryLimits memory_limits_;
-  CommandBufferContextType context_type_;
-  std::string debug_name_;
+  gpu::gles2::ContextCreationAttribHelper attributes_;
+  command_buffer_metrics::ContextType context_type_;
 
   LostContextCallback lost_context_callback_;
 

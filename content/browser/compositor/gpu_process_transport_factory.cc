@@ -95,9 +95,11 @@ namespace {
 
 const int kNumRetriesBeforeSoftwareFallback = 4;
 
-std::unique_ptr<content::WebGraphicsContext3DCommandBufferImpl>
-CreateContextCommon(scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
-                    gpu::SurfaceHandle surface_handle) {
+scoped_refptr<content::ContextProviderCommandBuffer> CreateContextCommon(
+    scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
+    gpu::SurfaceHandle surface_handle,
+    content::ContextProviderCommandBuffer* shared_context_provider,
+    content::command_buffer_metrics::ContextType type) {
   DCHECK(
       content::GpuDataManagerImpl::GetInstance()->CanUseGpuBrowserCompositor());
   DCHECK(gpu_channel_host);
@@ -126,9 +128,11 @@ CreateContextCommon(scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
   bool automatic_flushes = false;
 
   GURL url("chrome://gpu/GpuProcessTransportFactory::CreateContextCommon");
-  return base::WrapUnique(new content::WebGraphicsContext3DCommandBufferImpl(
-      surface_handle, url, gpu_channel_host.get(), attributes,
-      gfx::PreferIntegratedGpu, automatic_flushes));
+  return make_scoped_refptr(new content::ContextProviderCommandBuffer(
+      base::WrapUnique(new content::WebGraphicsContext3DCommandBufferImpl(
+          surface_handle, url, gpu_channel_host.get(), gfx::PreferIntegratedGpu,
+          automatic_flushes)),
+      gpu::SharedMemoryLimits(), attributes, shared_context_provider, type));
 }
 
 #if defined(OS_MACOSX)
@@ -358,9 +362,9 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
       shared_worker_context_provider_ = nullptr;
     } else {
       if (!shared_worker_context_provider_) {
-        shared_worker_context_provider_ = new ContextProviderCommandBuffer(
-            CreateContextCommon(gpu_channel_host, gpu::kNullSurfaceHandle),
-            gpu::SharedMemoryLimits(), nullptr, BROWSER_WORKER_CONTEXT);
+        shared_worker_context_provider_ = CreateContextCommon(
+            gpu_channel_host, gpu::kNullSurfaceHandle, nullptr,
+            command_buffer_metrics::BROWSER_WORKER_CONTEXT);
         if (shared_worker_context_provider_->BindToCurrentThread())
           shared_worker_context_provider_->SetupLock();
         else
@@ -371,11 +375,10 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
       // display compositor. It shares resources with the worker context, so if
       // we failed to make a worker context, just start over and try again.
       if (shared_worker_context_provider_) {
-        context_provider = new ContextProviderCommandBuffer(
-            CreateContextCommon(std::move(gpu_channel_host),
-                                data->surface_handle),
-            gpu::SharedMemoryLimits(), shared_worker_context_provider_.get(),
-            DISPLAY_COMPOSITOR_ONSCREEN_CONTEXT);
+        context_provider = CreateContextCommon(
+            std::move(gpu_channel_host), data->surface_handle,
+            shared_worker_context_provider_.get(),
+            command_buffer_metrics::DISPLAY_COMPOSITOR_ONSCREEN_CONTEXT);
         if (!context_provider->BindToCurrentThread())
           context_provider = nullptr;
       }
@@ -683,9 +686,9 @@ GpuProcessTransportFactory::SharedMainThreadContextProvider() {
 
   // We need a separate context from the compositor's so that skia and gl_helper
   // don't step on each other.
-  shared_main_thread_contexts_ = new ContextProviderCommandBuffer(
-      CreateContextCommon(std::move(gpu_channel_host), gpu::kNullSurfaceHandle),
-      gpu::SharedMemoryLimits(), nullptr, BROWSER_OFFSCREEN_MAINTHREAD_CONTEXT);
+  shared_main_thread_contexts_ = CreateContextCommon(
+      std::move(gpu_channel_host), gpu::kNullSurfaceHandle, nullptr,
+      command_buffer_metrics::BROWSER_OFFSCREEN_MAINTHREAD_CONTEXT);
   shared_main_thread_contexts_->SetLostContextCallback(base::Bind(
       &GpuProcessTransportFactory::OnLostMainThreadSharedContextInsideCallback,
       callback_factory_.GetWeakPtr()));

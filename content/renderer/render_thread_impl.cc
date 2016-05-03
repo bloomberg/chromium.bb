@@ -400,8 +400,9 @@ void StringToUintVector(const std::string& str, std::vector<unsigned>* vector) {
   }
 }
 
-std::unique_ptr<WebGraphicsContext3DCommandBufferImpl> CreateOffscreenContext(
-    scoped_refptr<gpu::GpuChannelHost> gpu_channel_host) {
+scoped_refptr<ContextProviderCommandBuffer> CreateOffscreenContext(
+    scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
+    command_buffer_metrics::ContextType type) {
   DCHECK(gpu_channel_host);
   // This is used to create a few different offscreen contexts:
   // - The shared main thread context (offscreen) used by blink for canvas.
@@ -417,11 +418,13 @@ std::unique_ptr<WebGraphicsContext3DCommandBufferImpl> CreateOffscreenContext(
   attributes.bind_generates_resource = false;
   attributes.lose_context_when_out_of_memory = true;
   constexpr bool automatic_flushes = false;
-  return base::WrapUnique(new WebGraphicsContext3DCommandBufferImpl(
-      gpu::kNullSurfaceHandle,
-      GURL("chrome://gpu/RenderThreadImpl::CreateOffscreenContext3d"),
-      std::move(gpu_channel_host), attributes, gfx::PreferIntegratedGpu,
-      automatic_flushes));
+  return make_scoped_refptr(new ContextProviderCommandBuffer(
+      base::WrapUnique(new WebGraphicsContext3DCommandBufferImpl(
+          gpu::kNullSurfaceHandle,
+          GURL("chrome://gpu/RenderThreadImpl::CreateOffscreenContext"),
+          std::move(gpu_channel_host), gfx::PreferIntegratedGpu,
+          automatic_flushes)),
+      gpu::SharedMemoryLimits(), attributes, nullptr, type));
 }
 
 }  // namespace
@@ -1443,9 +1446,9 @@ RenderThreadImpl::SharedMainThreadContextProvider() {
     return nullptr;
   }
 
-  shared_main_thread_contexts_ = new ContextProviderCommandBuffer(
-      CreateOffscreenContext(std::move(gpu_channel_host)),
-      gpu::SharedMemoryLimits(), nullptr, RENDERER_MAINTHREAD_CONTEXT);
+  shared_main_thread_contexts_ = CreateOffscreenContext(
+      std::move(gpu_channel_host),
+      command_buffer_metrics::RENDERER_MAINTHREAD_CONTEXT);
   if (!shared_main_thread_contexts_->BindToCurrentThread())
     shared_main_thread_contexts_ = nullptr;
   return shared_main_thread_contexts_;
@@ -1942,9 +1945,9 @@ RenderThreadImpl::SharedWorkerContextProvider() {
     return shared_worker_context_provider_;
   }
 
-  shared_worker_context_provider_ = new ContextProviderCommandBuffer(
-      CreateOffscreenContext(std::move(gpu_channel_host)),
-      gpu::SharedMemoryLimits(), nullptr, RENDER_WORKER_CONTEXT);
+  shared_worker_context_provider_ =
+      CreateOffscreenContext(std::move(gpu_channel_host),
+                             command_buffer_metrics::RENDER_WORKER_CONTEXT);
   if (!shared_worker_context_provider_->BindToCurrentThread())
     shared_worker_context_provider_ = nullptr;
   if (shared_worker_context_provider_)

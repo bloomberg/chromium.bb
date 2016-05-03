@@ -15,6 +15,7 @@
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
 #include "cc/output/managed_memory_policy.h"
+#include "content/common/gpu/client/command_buffer_metrics.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/gles2_trace_implementation.h"
 #include "gpu/command_buffer/client/gpu_switches.h"
@@ -48,15 +49,16 @@ class ContextProviderCommandBuffer::LostContextCallbackProxy
 ContextProviderCommandBuffer::ContextProviderCommandBuffer(
     std::unique_ptr<WebGraphicsContext3DCommandBufferImpl> context3d,
     const gpu::SharedMemoryLimits& memory_limits,
+    const gpu::gles2::ContextCreationAttribHelper& attributes,
     ContextProviderCommandBuffer* shared_context_provider,
-    CommandBufferContextType type)
+    command_buffer_metrics::ContextType type)
     : shared_providers_(shared_context_provider
                             ? shared_context_provider->shared_providers_
                             : new SharedProviders),
       context3d_(std::move(context3d)),
       memory_limits_(memory_limits),
-      context_type_(type),
-      debug_name_(CommandBufferContextTypeToString(type)) {
+      attributes_(attributes),
+      context_type_(type) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   DCHECK(context3d_);
   context_thread_checker_.DetachFromThread();
@@ -97,8 +99,6 @@ bool ContextProviderCommandBuffer::BindToCurrentThread() {
   if (lost_context_callback_proxy_)
     return true;
 
-  context3d_->SetContextType(context_type_);
-
   // It's possible to be running BindToCurrentThread on two contexts
   // on different threads at the same time, but which will be in the same share
   // group. To ensure they end up in the same group, hold the lock on the
@@ -120,7 +120,8 @@ bool ContextProviderCommandBuffer::BindToCurrentThread() {
     }
 
     if (!context3d_->InitializeOnCurrentThread(
-            memory_limits_, shared_command_buffer, std::move(share_group)))
+            memory_limits_, shared_command_buffer, std::move(share_group),
+            attributes_, context_type_))
       return false;
 
     // If any context in the share group has been lost, then abort and don't
@@ -153,8 +154,10 @@ bool ContextProviderCommandBuffer::BindToCurrentThread() {
   }
 
   // Do this last once the context is set up.
+  std::string type_name =
+      command_buffer_metrics::ContextTypeToString(context_type_);
   std::string unique_context_name =
-      base::StringPrintf("%s-%p", debug_name_.c_str(), context3d_.get());
+      base::StringPrintf("%s-%p", type_name.c_str(), context3d_.get());
   ContextGL()->TraceBeginCHROMIUM("gpu_toplevel", unique_context_name.c_str());
   return true;
 }
@@ -232,6 +235,10 @@ void ContextProviderCommandBuffer::OnLostContext() {
     lost_context_callback_.Run();
   if (gr_context_)
     gr_context_->OnLostContext();
+
+  gpu::CommandBuffer::State state = GetCommandBufferProxy()->GetLastState();
+  command_buffer_metrics::UmaRecordContextLost(context_type_, state.error,
+                                               state.context_lost_reason);
 }
 
 void ContextProviderCommandBuffer::SetLostContextCallback(

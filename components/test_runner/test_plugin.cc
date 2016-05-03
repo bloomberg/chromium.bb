@@ -180,6 +180,7 @@ bool TestPlugin::initialize(blink::WebPluginContainer* container) {
   container_ = container;
 
   blink::Platform::ContextAttributes attrs;
+  attrs.webGLVersion = 1;  // We are creating a context through the WebGL APIs.
   DCHECK(!container->element().isNull());
   DCHECK(!container->element().document().isNull());
   blink::WebURL url = container->element().document().url();

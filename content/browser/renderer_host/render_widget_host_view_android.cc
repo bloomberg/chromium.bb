@@ -189,11 +189,11 @@ void GLHelperHolder::Initialize() {
   std::unique_ptr<WebGraphicsContext3DCommandBufferImpl> context(
       new WebGraphicsContext3DCommandBufferImpl(
           gpu::kNullSurfaceHandle,  // offscreen
-          url, gpu_channel_host.get(), attributes, gfx::PreferIntegratedGpu,
+          url, gpu_channel_host.get(), gfx::PreferIntegratedGpu,
           automatic_flushes));
-  provider_ =
-      new ContextProviderCommandBuffer(std::move(context), limits, nullptr,
-                                       BROWSER_OFFSCREEN_MAINTHREAD_CONTEXT);
+  provider_ = new ContextProviderCommandBuffer(
+      std::move(context), limits, attributes, nullptr,
+      command_buffer_metrics::BROWSER_OFFSCREEN_MAINTHREAD_CONTEXT);
   if (!provider_->BindToCurrentThread())
     return;
   provider_->ContextGL()->TraceBeginCHROMIUM(

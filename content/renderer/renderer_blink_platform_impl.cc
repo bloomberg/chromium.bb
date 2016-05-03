@@ -1061,11 +1061,12 @@ RendererBlinkPlatformImpl::createOffscreenGraphicsContext3DProvider(
 
   attributes.fail_if_major_perf_caveat =
       web_attributes.failIfMajorPerformanceCaveat;
+  DCHECK_GT(web_attributes.webGLVersion, 0u);
   DCHECK_LE(web_attributes.webGLVersion, 2u);
-  if (web_attributes.webGLVersion == 1)
-    attributes.context_type = gpu::gles2::CONTEXT_TYPE_WEBGL1;
-  else if (web_attributes.webGLVersion == 2)
+  if (web_attributes.webGLVersion == 2)
     attributes.context_type = gpu::gles2::CONTEXT_TYPE_WEBGL2;
+  else
+    attributes.context_type = gpu::gles2::CONTEXT_TYPE_WEBGL1;
 
   bool automatic_flushes = true;
   // Prefer discrete GPU for WebGL.
@@ -1076,10 +1077,9 @@ RendererBlinkPlatformImpl::createOffscreenGraphicsContext3DProvider(
       new ContextProviderCommandBuffer(
           base::WrapUnique(new WebGraphicsContext3DCommandBufferImpl(
               gpu::kNullSurfaceHandle, GURL(top_document_web_url),
-              std::move(gpu_channel_host), attributes, gpu_preference,
-              automatic_flushes)),
-          gpu::SharedMemoryLimits(), share_context,
-          RENDERER_MAINTHREAD_CONTEXT));
+              std::move(gpu_channel_host), gpu_preference, automatic_flushes)),
+          gpu::SharedMemoryLimits(), attributes, share_context,
+          command_buffer_metrics::OFFSCREEN_CONTEXT_FOR_WEBGL));
   if (!provider->BindToCurrentThread()) {
     // Collect Graphicsinfo if there is a context failure or it is failed
     // purposefully in case of layout tests.
