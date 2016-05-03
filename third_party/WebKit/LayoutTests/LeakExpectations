@@ -166,3 +166,5 @@ crbug.com/595155 intersection-observer/same-document-root.html [ Leak ]
 crbug.com/595155 intersection-observer/same-document-zero-size-target.html [ Leak ]
 crbug.com/595155 intersection-observer/timestamp.html [ Leak ]
 crbug.com/595155 intersection-observer/unclipped-root.html [ Leak ]
+
+crbug.com/608577 http/tests/security/link-crossorigin-stylesheet-no-cors.html [ Pass Text ]
