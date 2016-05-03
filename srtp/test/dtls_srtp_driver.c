@@ -176,6 +176,7 @@ test_dtls_srtp(void) {
   /* 
    * set keys to known values for testing
    */
+  memset(&policy, 0, sizeof(policy));
   profile = srtp_profile_aes128_cm_sha1_80;
   key_len = srtp_profile_get_master_key_length(profile);
   salt_len = srtp_profile_get_master_salt_length(profile);

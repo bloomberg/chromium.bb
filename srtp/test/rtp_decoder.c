@@ -186,6 +186,7 @@ main (int argc, char *argv[]) {
   fprintf(stderr, "\n");
   
   /* set up the srtp policy and master key */    
+  memset(&policy, 0, sizeof(policy));
   if (sec_servs) {
     /* 
      * create policy structure, using the default mechanisms but 
