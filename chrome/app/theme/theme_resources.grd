@@ -942,16 +942,6 @@
         <structure type="chrome_scaled_image" name="IDR_ZOOM_PLUS" file="legacy/zoom_plus.png" />
         <structure type="chrome_scaled_image" name="IDR_ZOOM_NORMAL" file="legacy/zoom_reset.png" />
       </if>
-
-      <!-- People search images -->
-      <if expr="enable_app_list">
-        <structure type="chrome_scaled_image" name="IDR_PEOPLE_SEARCH_ACTION_EMAIL" file="common/mail.png" />
-        <structure type="chrome_scaled_image" name="IDR_PEOPLE_SEARCH_ACTION_EMAIL_HOVER" file="common/mail_hover.png" />
-        <structure type="chrome_scaled_image" name="IDR_PEOPLE_SEARCH_ACTION_EMAIL_PRESSED" file="common/mail_pressed.png" />
-        <structure type="chrome_scaled_image" name="IDR_PEOPLE_SEARCH_ACTION_CHAT" file="common/chat.png" />
-        <structure type="chrome_scaled_image" name="IDR_PEOPLE_SEARCH_ACTION_CHAT_HOVER" file="common/chat_hover.png" />
-        <structure type="chrome_scaled_image" name="IDR_PEOPLE_SEARCH_ACTION_CHAT_PRESSED" file="common/chat_pressed.png" />
-      </if>
     </structures>
   </release>
 </grit>

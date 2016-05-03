@@ -31,7 +31,6 @@ const size_t kMaxAppsGroupResults = 4;
 // Ignored unless AppListMixer field trial is "Blended".
 const size_t kMaxOmniboxResults = 4;
 const size_t kMaxWebstoreResults = 2;
-const size_t kMaxPeopleResults = 2;
 
 class TestSearchResult : public SearchResult {
  public:
@@ -136,7 +135,6 @@ class MixerTest : public testing::Test,
     providers_.push_back(new TestSearchProvider("app"));
     providers_.push_back(new TestSearchProvider("omnibox"));
     providers_.push_back(new TestSearchProvider("webstore"));
-    providers_.push_back(new TestSearchProvider("people"));
 
     is_voice_query_ = false;
 
@@ -146,12 +144,10 @@ class MixerTest : public testing::Test,
     size_t omnibox_group_id =
         mixer_->AddOmniboxGroup(kMaxOmniboxResults, 2.0, 1.0);
     size_t webstore_group_id = mixer_->AddGroup(kMaxWebstoreResults, 1.0, 0.5);
-    size_t people_group_id = mixer_->AddGroup(kMaxPeopleResults, 0.0, 1.0);
 
     mixer_->AddProviderToGroup(apps_group_id, providers_[0]);
     mixer_->AddProviderToGroup(omnibox_group_id, providers_[1]);
     mixer_->AddProviderToGroup(webstore_group_id, providers_[2]);
-    mixer_->AddProviderToGroup(people_group_id, providers_[3]);
   }
 
   void RunQuery() {
@@ -181,7 +177,6 @@ class MixerTest : public testing::Test,
   TestSearchProvider* app_provider() { return providers_[0]; }
   TestSearchProvider* omnibox_provider() { return providers_[1]; }
   TestSearchProvider* webstore_provider() { return providers_[2]; }
-  TestSearchProvider* people_provider() { return providers_[3]; }
 
   // Sets whether test runs should be treated as a voice query.
   void set_is_voice_query(bool is_voice_query) {
@@ -215,130 +210,49 @@ TEST_P(MixerTest, Basic) {
     const size_t app_results;
     const size_t omnibox_results;
     const size_t webstore_results;
-    const size_t people_results;
     const char* expected_default;  // Expected results with trial off.
     const char* expected_blended;  // Expected results with trial on.
   } kTestCases[] = {
-      {0, 0, 0, 0, "", ""},
-      {10,
-       0,
-       0,
-       0,
-       "app0,app1,app2,app3",
+      {0, 0, 0, "", ""},
+      {10, 0, 0, "app0,app1,app2,app3",
        "app0,app1,app2,app3,app4,app5,app6,app7,app8,app9"},
-      {0,
-       0,
-       10,
-       0,
-       "webstore0,webstore1",
+      {0, 0, 10, "webstore0,webstore1",
        "webstore0,webstore1,webstore2,webstore3,webstore4,webstore5,webstore6,"
        "webstore7,webstore8,webstore9"},
-      {0,
-       0,
-       0,
-       10,
-       "people0,people1",
-       "people0,people1,people2,people3,people4,people5,people6,people7,"
-       "people8,people9"},
-      {4,
-       6,
-       0,
-       0,
-       "app0,app1,app2,app3,omnibox0,omnibox1",
+      {4, 6, 0, "app0,app1,app2,app3,omnibox0,omnibox1",
        "app0,omnibox0,app1,omnibox1,app2,omnibox2,app3,omnibox3"},
-      {4,
-       6,
-       2,
-       0,
-       "app0,app1,app2,app3,omnibox0,webstore0",
+      {4, 6, 2, "app0,app1,app2,app3,omnibox0,webstore0",
        "app0,omnibox0,app1,omnibox1,app2,omnibox2,app3,omnibox3,webstore0,"
        "webstore1"},
-      {4,
-       6,
-       0,
-       2,
-       "app0,app1,app2,app3,omnibox0,people0",
-       "app0,omnibox0,people0,app1,omnibox1,people1,app2,omnibox2,app3,"
-       "omnibox3"},
-      {10,
-       10,
-       10,
-       0,
-       "app0,app1,app2,app3,omnibox0,webstore0",
+      {10, 10, 10, "app0,app1,app2,app3,omnibox0,webstore0",
        "app0,omnibox0,app1,omnibox1,app2,omnibox2,app3,omnibox3,webstore0,"
        "webstore1"},
-      {0,
-       10,
-       0,
-       0,
-       "omnibox0,omnibox1,omnibox2,omnibox3,omnibox4,omnibox5",
+      {0, 10, 0, "omnibox0,omnibox1,omnibox2,omnibox3,omnibox4,omnibox5",
        "omnibox0,omnibox1,omnibox2,omnibox3,omnibox4,omnibox5,omnibox6,"
        "omnibox7,omnibox8,omnibox9"},
-      {0,
-       10,
-       1,
-       0,
-       "omnibox0,omnibox1,omnibox2,omnibox3,omnibox4,webstore0",
+      {0, 10, 1, "omnibox0,omnibox1,omnibox2,omnibox3,omnibox4,webstore0",
        "omnibox0,omnibox1,omnibox2,omnibox3,webstore0,omnibox4,omnibox5,"
        "omnibox6,omnibox7,omnibox8,omnibox9"},
-      {0,
-       10,
-       2,
-       0,
-       "omnibox0,omnibox1,omnibox2,omnibox3,webstore0,webstore1",
+      {0, 10, 2, "omnibox0,omnibox1,omnibox2,omnibox3,webstore0,webstore1",
        "omnibox0,omnibox1,omnibox2,omnibox3,webstore0,webstore1"},
-      {1,
-       10,
-       0,
-       0,
-       "app0,omnibox0,omnibox1,omnibox2,omnibox3,omnibox4",
+      {1, 10, 0, "app0,omnibox0,omnibox1,omnibox2,omnibox3,omnibox4",
        "app0,omnibox0,omnibox1,omnibox2,omnibox3,omnibox4,omnibox5,omnibox6,"
        "omnibox7,omnibox8,omnibox9"},
-      {2,
-       10,
-       0,
-       0,
-       "app0,app1,omnibox0,omnibox1,omnibox2,omnibox3",
+      {2, 10, 0, "app0,app1,omnibox0,omnibox1,omnibox2,omnibox3",
        "app0,omnibox0,app1,omnibox1,omnibox2,omnibox3"},
-      {2,
-       10,
-       1,
-       0,
-       "app0,app1,omnibox0,omnibox1,omnibox2,webstore0",
+      {2, 10, 1, "app0,app1,omnibox0,omnibox1,omnibox2,webstore0",
        "app0,omnibox0,app1,omnibox1,omnibox2,omnibox3,webstore0"},
-      {2,
-       10,
-       2,
-       0,
-       "app0,app1,omnibox0,omnibox1,webstore0,webstore1",
+      {2, 10, 2, "app0,app1,omnibox0,omnibox1,webstore0,webstore1",
        "app0,omnibox0,app1,omnibox1,omnibox2,omnibox3,webstore0,webstore1"},
-      {2,
-       0,
-       2,
-       0,
-       "app0,app1,webstore0,webstore1",
+      {2, 0, 2, "app0,app1,webstore0,webstore1",
        "app0,app1,webstore0,webstore1"},
-      {10,
-       0,
-       10,
-       10,
-       "app0,app1,app2,app3,webstore0,webstore1",
-       "app0,people0,app1,people1,app2,app3,webstore0,webstore1"},
-      {10,
-       10,
-       10,
-       10,
-       "app0,app1,app2,app3,omnibox0,webstore0",
-       "app0,omnibox0,people0,app1,omnibox1,people1,app2,omnibox2,app3,"
-       "omnibox3,webstore0,webstore1"},
-      {0, 0, 0, 0, "", ""},
+      {0, 0, 0, "", ""},
   };
 
   for (size_t i = 0; i < arraysize(kTestCases); ++i) {
     app_provider()->set_count(kTestCases[i].app_results);
     omnibox_provider()->set_count(kTestCases[i].omnibox_results);
     webstore_provider()->set_count(kTestCases[i].webstore_results);
-    people_provider()->set_count(kTestCases[i].people_results);
     RunQuery();
 
     const char* expected = GetParam() ? kTestCases[i].expected_blended
@@ -426,25 +340,6 @@ TEST_P(MixerTest, VoiceQuery) {
   omnibox_provider()->set_as_voice_result(2);
   RunQuery();
   EXPECT_EQ("omnibox1,omnibox2,omnibox0", GetResults());
-}
-
-TEST_P(MixerTest, BadRelevanceRange) {
-  // This gives relevance scores: (10.0, 0.0). Even though providers are
-  // supposed to give scores within the range [0.0, 1.0], we cannot rely on
-  // providers to do this, since they retrieve results from disparate and
-  // unreliable sources (like the Google+ API).
-  people_provider()->set_bad_relevance_range();
-  people_provider()->set_count(2);
-
-  // Give a massive boost to the second result.
-  AddKnownResult("people1", PERFECT_PRIMARY);
-
-  RunQuery();
-
-  // If the results are correctly clamped to the range [0.0, 1.0], the boost to
-  // "people1" will push it over the first result. If not, the massive base
-  // score of "people0" will erroneously keep it on top.
-  EXPECT_EQ("people1,people0", GetResults());
 }
 
 TEST_P(MixerTest, Publish) {

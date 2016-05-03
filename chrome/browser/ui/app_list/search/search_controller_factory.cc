@@ -16,7 +16,6 @@
 #include "chrome/browser/ui/app_list/search/app_search_provider.h"
 #include "chrome/browser/ui/app_list/search/history_factory.h"
 #include "chrome/browser/ui/app_list/search/omnibox_provider.h"
-#include "chrome/browser/ui/app_list/search/people/people_provider.h"
 #include "chrome/browser/ui/app_list/search/suggestions/suggestions_search_provider.h"
 #include "chrome/browser/ui/app_list/search/webstore/webstore_provider.h"
 #include "chrome/common/chrome_switches.h"
@@ -38,7 +37,6 @@ const size_t kMaxAppsGroupResults = 4;
 // Ignored unless AppListMixer field trial is "Blended".
 const size_t kMaxOmniboxResults = 4;
 const size_t kMaxWebstoreResults = 2;
-const size_t kMaxPeopleResults = 2;
 const size_t kMaxSuggestionsResults = 6;
 
 #if defined(OS_CHROMEOS)
@@ -68,9 +66,9 @@ std::unique_ptr<SearchController> CreateSearchController(
       new SearchController(model->search_box(), model->results(),
                            HistoryFactory::GetForBrowserContext(profile)));
 
-  // Add mixer groups. There are four main groups: apps, people, webstore and
+  // Add mixer groups. There are three main groups: apps, webstore and
   // omnibox. The behaviour depends on the AppListMixer field trial:
-  // - If default: The apps, people and webstore groups each have a fixed
+  // - If default: The apps and webstore groups each have a fixed
   //   maximum number of results. The omnibox group fills the remaining slots
   //   (with a minimum of one result).
   // - If "Blended": Each group has a "soft" maximum number of results. However,
@@ -81,7 +79,6 @@ std::unique_ptr<SearchController> CreateSearchController(
       controller->AddOmniboxGroup(kMaxOmniboxResults, 2.0, 1.0);
   size_t webstore_group_id =
       controller->AddGroup(kMaxWebstoreResults, 1.0, 0.4);
-  size_t people_group_id = controller->AddGroup(kMaxPeopleResults, 0.0, 0.85);
 
   // Add search providers.
   controller->AddProvider(
@@ -95,9 +92,6 @@ std::unique_ptr<SearchController> CreateSearchController(
   controller->AddProvider(webstore_group_id,
                           std::unique_ptr<SearchProvider>(
                               new WebstoreProvider(profile, list_controller)));
-  controller->AddProvider(people_group_id,
-                          std::unique_ptr<SearchProvider>(
-                              new PeopleProvider(profile, list_controller)));
   if (IsSuggestionsSearchProviderEnabled()) {
     size_t suggestions_group_id =
         controller->AddGroup(kMaxSuggestionsResults, 3.0, 1.0);

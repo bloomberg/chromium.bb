@@ -13758,13 +13758,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
           Don't show this again
         </message>
       </if>
-      <!-- People search strings -->
-      <message name="IDS_PEOPLE_SEARCH_ACTION_EMAIL_TOOLTIP" desc="Tooltip text for sending an email to the person in the result">
-        Email this person
-      </message>
-      <message name="IDS_PEOPLE_SEARCH_ACTION_CHAT_TOOLTIP" desc="Tooltip text for starting a chat with the person in the result">
-        Chat with this person
-      </message>
       <message name="IDS_LOCAL_DISCOVERY_REGISTER_CANCELED_ON_PRINTER" desc="Label for when registration is canceled on the printer side">
         Printer registration has been canceled.
       </message>

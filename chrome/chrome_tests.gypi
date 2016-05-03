@@ -923,7 +923,6 @@
       'browser/apps/drive/drive_app_provider_browsertest.cc',
       'browser/ui/app_list/app_list_controller_browsertest.cc',
       'browser/ui/app_list/app_list_service_impl_browsertest.cc',
-      'browser/ui/app_list/search/people/people_provider_browsertest.cc',
       'browser/ui/app_list/search/webstore/webstore_provider_browsertest.cc',
       'browser/ui/app_list/speech_recognizer_browsertest.cc',
     ],
