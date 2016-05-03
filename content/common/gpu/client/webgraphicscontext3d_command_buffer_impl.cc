@@ -39,24 +39,18 @@
 
 namespace content {
 
-WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl(
-    gpu::SurfaceHandle surface_handle,
-    const GURL& active_url,
-    scoped_refptr<gpu::GpuChannelHost> host,
-    gfx::GpuPreference gpu_preference,
-    bool automatic_flushes)
-    : automatic_flushes_(automatic_flushes),
-      surface_handle_(surface_handle),
-      active_url_(active_url),
-      gpu_preference_(gpu_preference),
-      host_(std::move(host)) {
-  DCHECK(host_);
+WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl() {
 }
 
 WebGraphicsContext3DCommandBufferImpl::
     ~WebGraphicsContext3DCommandBufferImpl() {}
 
 bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL(
+    gpu::SurfaceHandle surface_handle,
+    const GURL& active_url,
+    gpu::GpuChannelHost* host,
+    gfx::GpuPreference gpu_preference,
+    bool automatic_flushes,
     const gpu::SharedMemoryLimits& memory_limits,
     gpu::CommandBufferProxyImpl* shared_command_buffer,
     scoped_refptr<gpu::gles2::ShareGroup> share_group,
@@ -70,11 +64,11 @@ bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL(
   attributes.Serialize(&serialized_attributes);
 
   // Create a proxy to a command buffer in the GPU process.
-  command_buffer_ = host_->CreateCommandBuffer(
-      surface_handle_, gfx::Size(), shared_command_buffer,
+  command_buffer_ = host->CreateCommandBuffer(
+      surface_handle, gfx::Size(), shared_command_buffer,
       gpu::GpuChannelHost::kDefaultStreamId,
       gpu::GpuChannelHost::kDefaultStreamPriority, serialized_attributes,
-      active_url_, gpu_preference_);
+      active_url, gpu_preference);
 
   if (!command_buffer_) {
     DLOG(ERROR) << "GpuChannelHost failed to create command buffer.";
@@ -84,7 +78,7 @@ bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL(
 
   // The GLES2 helper writes the command buffer protocol.
   gles2_helper_.reset(new gpu::gles2::GLES2CmdHelper(command_buffer_.get()));
-  gles2_helper_->SetAutomaticFlushes(automatic_flushes_);
+  gles2_helper_->SetAutomaticFlushes(automatic_flushes);
   if (!gles2_helper_->Initialize(memory_limits.command_buffer_size)) {
     DLOG(ERROR) << "Failed to initialize GLES2CmdHelper.";
     return false;
@@ -118,13 +112,20 @@ bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL(
 }
 
 bool WebGraphicsContext3DCommandBufferImpl::InitializeOnCurrentThread(
+    gpu::SurfaceHandle surface_handle,
+    const GURL& active_url,
+    gpu::GpuChannelHost* host,
+    gfx::GpuPreference gpu_preference,
+    bool automatic_flushes,
     const gpu::SharedMemoryLimits& memory_limits,
     gpu::CommandBufferProxyImpl* shared_command_buffer,
     scoped_refptr<gpu::gles2::ShareGroup> share_group,
     const gpu::gles2::ContextCreationAttribHelper& attributes,
     command_buffer_metrics::ContextType context_type) {
-  if (!MaybeInitializeGL(memory_limits, shared_command_buffer,
-                         std::move(share_group), attributes, context_type))
+  if (!MaybeInitializeGL(surface_handle, active_url, host, gpu_preference,
+                         automatic_flushes, memory_limits,
+                         shared_command_buffer, std::move(share_group),
+                         attributes, context_type))
     return false;
   if (gpu::error::IsError(command_buffer_->GetLastError())) {
     DLOG(ERROR) << "Context dead on arrival. Last error: "

@@ -39,10 +39,9 @@ scoped_refptr<content::ContextProviderCommandBuffer> CreateContext(
   attributes.bind_generates_resource = false;
   bool automatic_flushes = false;
   return make_scoped_refptr(new content::ContextProviderCommandBuffer(
-      base::WrapUnique(new content::WebGraphicsContext3DCommandBufferImpl(
-          gpu::kNullSurfaceHandle, GURL(), std::move(gpu_channel_host),
-          gfx::PreferIntegratedGpu, automatic_flushes)),
-      gpu::SharedMemoryLimits(), attributes, nullptr,
+      std::move(gpu_channel_host), gpu::kNullSurfaceHandle, GURL(),
+      gfx::PreferIntegratedGpu, automatic_flushes, gpu::SharedMemoryLimits(),
+      attributes, nullptr,
       content::command_buffer_metrics::OFFSCREEN_CONTEXT_FOR_TESTING));
 }
 

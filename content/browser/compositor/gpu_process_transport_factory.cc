@@ -40,7 +40,6 @@
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
-#include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/common/gpu_process_launch_causes.h"
 #include "content/common/host_shared_bitmap_manager.h"
 #include "content/public/common/content_switches.h"
@@ -130,10 +129,9 @@ scoped_refptr<content::ContextProviderCommandBuffer> CreateContextCommon(
 
   GURL url("chrome://gpu/GpuProcessTransportFactory::CreateContextCommon");
   return make_scoped_refptr(new content::ContextProviderCommandBuffer(
-      base::WrapUnique(new content::WebGraphicsContext3DCommandBufferImpl(
-          surface_handle, url, gpu_channel_host.get(), gfx::PreferIntegratedGpu,
-          automatic_flushes)),
-      gpu::SharedMemoryLimits(), attributes, shared_context_provider, type));
+      std::move(gpu_channel_host), surface_handle, url,
+      gfx::PreferIntegratedGpu, automatic_flushes, gpu::SharedMemoryLimits(),
+      attributes, shared_context_provider, type));
 }
 
 #if defined(OS_MACOSX)

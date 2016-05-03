@@ -419,12 +419,10 @@ scoped_refptr<ContextProviderCommandBuffer> CreateOffscreenContext(
   attributes.lose_context_when_out_of_memory = true;
   constexpr bool automatic_flushes = false;
   return make_scoped_refptr(new ContextProviderCommandBuffer(
-      base::WrapUnique(new WebGraphicsContext3DCommandBufferImpl(
-          gpu::kNullSurfaceHandle,
-          GURL("chrome://gpu/RenderThreadImpl::CreateOffscreenContext"),
-          std::move(gpu_channel_host), gfx::PreferIntegratedGpu,
-          automatic_flushes)),
-      gpu::SharedMemoryLimits(), attributes, nullptr, type));
+      std::move(gpu_channel_host), gpu::kNullSurfaceHandle,
+      GURL("chrome://gpu/RenderThreadImpl::CreateOffscreenContext"),
+      gfx::PreferIntegratedGpu, automatic_flushes, gpu::SharedMemoryLimits(),
+      attributes, nullptr, type));
 }
 
 }  // namespace

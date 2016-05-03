@@ -16,11 +16,15 @@
 #include "cc/output/context_provider.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/client/command_buffer_metrics.h"
-#include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
+#include "gpu/command_buffer/common/gles2_cmd_utils.h"
+#include "gpu/ipc/common/surface_handle.h"
+#include "ui/gl/gpu_preference.h"
+#include "url/gurl.h"
 
 namespace gpu {
 class CommandBufferProxyImpl;
+class GpuChannelHost;
 namespace gles2 {
 class GLES2TraceImplementation;
 }
@@ -31,14 +35,19 @@ class GrContextForGLES2Interface;
 }
 
 namespace content {
+class WebGraphicsContext3DCommandBufferImpl;
 
-// Implementation of cc::ContextProvider that provides a
-// WebGraphicsContext3DCommandBufferImpl context and a GrContext.
+// Implementation of cc::ContextProvider that provides a GL implementation over
+// command buffer to the GPU process.
 class CONTENT_EXPORT ContextProviderCommandBuffer
     : NON_EXPORTED_BASE(public cc::ContextProvider) {
  public:
   ContextProviderCommandBuffer(
-      std::unique_ptr<WebGraphicsContext3DCommandBufferImpl> context3d,
+      scoped_refptr<gpu::GpuChannelHost> channel,
+      gpu::SurfaceHandle surface_handle,
+      const GURL& active_url,
+      gfx::GpuPreference gpu_preference,
+      bool automatic_flushes,
       const gpu::SharedMemoryLimits& memory_limits,
       const gpu::gles2::ContextCreationAttribHelper& attributes,
       ContextProviderCommandBuffer* shared_context_provider,
@@ -85,16 +94,22 @@ class CONTENT_EXPORT ContextProviderCommandBuffer
   base::ThreadChecker context_thread_checker_;
 
   bool bind_succeeded_ = false;
+
+  gpu::SurfaceHandle surface_handle_;
+  GURL active_url_;
+  gfx::GpuPreference gpu_preference_;
+  bool automatic_flushes_;
+  gpu::SharedMemoryLimits memory_limits_;
+  gpu::gles2::ContextCreationAttribHelper attributes_;
+  command_buffer_metrics::ContextType context_type_;
+
   scoped_refptr<SharedProviders> shared_providers_;
+  scoped_refptr<gpu::GpuChannelHost> channel_;
 
   base::Lock context_lock_;  // Referenced by context3d_.
   std::unique_ptr<WebGraphicsContext3DCommandBufferImpl> context3d_;
   std::unique_ptr<gpu::gles2::GLES2TraceImplementation> trace_impl_;
   std::unique_ptr<skia_bindings::GrContextForGLES2Interface> gr_context_;
-
-  gpu::SharedMemoryLimits memory_limits_;
-  gpu::gles2::ContextCreationAttribHelper attributes_;
-  command_buffer_metrics::ContextType context_type_;
 
   LostContextCallback lost_context_callback_;
 };

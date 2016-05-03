@@ -1075,9 +1075,8 @@ RendererBlinkPlatformImpl::createOffscreenGraphicsContext3DProvider(
 
   scoped_refptr<ContextProviderCommandBuffer> provider(
       new ContextProviderCommandBuffer(
-          base::WrapUnique(new WebGraphicsContext3DCommandBufferImpl(
-              gpu::kNullSurfaceHandle, GURL(top_document_web_url),
-              std::move(gpu_channel_host), gpu_preference, automatic_flushes)),
+          std::move(gpu_channel_host), gpu::kNullSurfaceHandle,
+          GURL(top_document_web_url), gpu_preference, automatic_flushes,
           gpu::SharedMemoryLimits(), attributes, share_context,
           command_buffer_metrics::OFFSCREEN_CONTEXT_FOR_WEBGL));
   if (!provider->BindToCurrentThread()) {

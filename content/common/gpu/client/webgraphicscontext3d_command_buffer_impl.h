@@ -54,13 +54,7 @@ class WebGraphicsContext3DCommandBufferImpl {
   // the associated window must not be destroyed until the returned
   // CommandBufferProxy has been destroyed, otherwise the GPU process might
   // attempt to render to an invalid window handle.
-  CONTENT_EXPORT WebGraphicsContext3DCommandBufferImpl(
-      gpu::SurfaceHandle surface_handle,
-      const GURL& active_url,
-      scoped_refptr<gpu::GpuChannelHost> host,
-      gfx::GpuPreference gpu_preference,
-      bool automatic_flushes);
-
+  CONTENT_EXPORT WebGraphicsContext3DCommandBufferImpl();
   CONTENT_EXPORT ~WebGraphicsContext3DCommandBufferImpl();
 
   gpu::CommandBufferProxyImpl* GetCommandBufferProxy() {
@@ -72,6 +66,11 @@ class WebGraphicsContext3DCommandBufferImpl {
   }
 
   CONTENT_EXPORT bool InitializeOnCurrentThread(
+      gpu::SurfaceHandle surface_handle,
+      const GURL& active_url,
+      gpu::GpuChannelHost* host,
+      gfx::GpuPreference gpu_preference,
+      bool automatic_flushes,
       const gpu::SharedMemoryLimits& memory_limits,
       gpu::CommandBufferProxyImpl* shared_command_buffer,
       scoped_refptr<gpu::gles2::ShareGroup> share_group,
@@ -80,18 +79,17 @@ class WebGraphicsContext3DCommandBufferImpl {
 
  private:
   bool MaybeInitializeGL(
+      gpu::SurfaceHandle surface_handle,
+      const GURL& active_url,
+      gpu::GpuChannelHost* host,
+      gfx::GpuPreference gpu_preference,
+      bool automatic_flushes,
       const gpu::SharedMemoryLimits& memory_limits,
       gpu::CommandBufferProxyImpl* shared_command_buffer,
       scoped_refptr<gpu::gles2::ShareGroup> share_group,
       const gpu::gles2::ContextCreationAttribHelper& attributes,
       command_buffer_metrics::ContextType context_type);
 
-  bool automatic_flushes_;
-  gpu::SurfaceHandle surface_handle_;
-  GURL active_url_;
-  gfx::GpuPreference gpu_preference_;
-
-  scoped_refptr<gpu::GpuChannelHost> host_;
   std::unique_ptr<gpu::CommandBufferProxyImpl> command_buffer_;
   std::unique_ptr<gpu::gles2::GLES2CmdHelper> gles2_helper_;
   std::unique_ptr<gpu::TransferBuffer> transfer_buffer_;

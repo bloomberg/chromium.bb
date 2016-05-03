@@ -33,7 +33,6 @@
 #include "components/scheduler/renderer/renderer_scheduler.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
-#include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/common/gpu_process_launch_causes.h"
 #include "content/common/input/synthetic_gesture_packet.h"
 #include "content/common/input/web_input_event_traits.h"
@@ -777,11 +776,9 @@ std::unique_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(
 
     // The compositor context shares resources with the worker context.
     context_provider = new ContextProviderCommandBuffer(
-        base::WrapUnique(new content::WebGraphicsContext3DCommandBufferImpl(
-            gpu::kNullSurfaceHandle, GetURLForGraphicsContext3D(),
-            std::move(gpu_channel_host), gfx::PreferIntegratedGpu,
-            automatic_flushes)),
-        limits, attributes, worker_context_provider.get(),
+        std::move(gpu_channel_host), gpu::kNullSurfaceHandle,
+        GetURLForGraphicsContext3D(), gfx::PreferIntegratedGpu,
+        automatic_flushes, limits, attributes, worker_context_provider.get(),
         command_buffer_metrics::RENDER_COMPOSITOR_CONTEXT);
 
 #if defined(OS_ANDROID)

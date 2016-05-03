@@ -16,9 +16,11 @@
 #include "base/strings/stringprintf.h"
 #include "cc/output/managed_memory_policy.h"
 #include "content/common/gpu/client/command_buffer_metrics.h"
+#include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/gles2_trace_implementation.h"
 #include "gpu/command_buffer/client/gpu_switches.h"
+#include "gpu/ipc/client/gpu_channel_host.h"
 #include "gpu/skia_bindings/grcontext_for_gles2_interface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 
@@ -28,20 +30,29 @@ ContextProviderCommandBuffer::SharedProviders::SharedProviders() = default;
 ContextProviderCommandBuffer::SharedProviders::~SharedProviders() = default;
 
 ContextProviderCommandBuffer::ContextProviderCommandBuffer(
-    std::unique_ptr<WebGraphicsContext3DCommandBufferImpl> context3d,
+    scoped_refptr<gpu::GpuChannelHost> channel,
+    gpu::SurfaceHandle surface_handle,
+    const GURL& active_url,
+    gfx::GpuPreference gpu_preference,
+    bool automatic_flushes,
     const gpu::SharedMemoryLimits& memory_limits,
     const gpu::gles2::ContextCreationAttribHelper& attributes,
     ContextProviderCommandBuffer* shared_context_provider,
     command_buffer_metrics::ContextType type)
-    : shared_providers_(shared_context_provider
-                            ? shared_context_provider->shared_providers_
-                            : new SharedProviders),
-      context3d_(std::move(context3d)),
+    : surface_handle_(surface_handle),
+      active_url_(active_url),
+      gpu_preference_(gpu_preference),
+      automatic_flushes_(automatic_flushes),
       memory_limits_(memory_limits),
       attributes_(attributes),
-      context_type_(type) {
+      context_type_(type),
+      shared_providers_(shared_context_provider
+                            ? shared_context_provider->shared_providers_
+                            : new SharedProviders),
+      channel_(std::move(channel)),
+      context3d_(new WebGraphicsContext3DCommandBufferImpl) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
-  DCHECK(context3d_);
+  DCHECK(channel_);
   context_thread_checker_.DetachFromThread();
 }
 
@@ -101,8 +112,9 @@ bool ContextProviderCommandBuffer::BindToCurrentThread() {
     }
 
     if (!context3d_->InitializeOnCurrentThread(
-            memory_limits_, shared_command_buffer, std::move(share_group),
-            attributes_, context_type_)) {
+            surface_handle_, active_url_, channel_.get(), gpu_preference_,
+            automatic_flushes_, memory_limits_, shared_command_buffer,
+            share_group, attributes_, context_type_)) {
       context3d_ = nullptr;
       return false;
     }

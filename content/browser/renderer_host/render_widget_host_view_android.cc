@@ -186,13 +186,9 @@ void GLHelperHolder::Initialize() {
   bool automatic_flushes = false;
   GURL url("chrome://gpu/RenderWidgetHostViewAndroid");
 
-  std::unique_ptr<WebGraphicsContext3DCommandBufferImpl> context(
-      new WebGraphicsContext3DCommandBufferImpl(
-          gpu::kNullSurfaceHandle,  // offscreen
-          url, gpu_channel_host.get(), gfx::PreferIntegratedGpu,
-          automatic_flushes));
   provider_ = new ContextProviderCommandBuffer(
-      std::move(context), limits, attributes, nullptr,
+      std::move(gpu_channel_host), gpu::kNullSurfaceHandle, url,
+      gfx::PreferIntegratedGpu, automatic_flushes, limits, attributes, nullptr,
       command_buffer_metrics::BROWSER_OFFSCREEN_MAINTHREAD_CONTEXT);
   if (!provider_->BindToCurrentThread())
     return;
