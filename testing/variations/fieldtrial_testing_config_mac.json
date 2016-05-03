@@ -90,6 +90,11 @@
             "group_name": "Enforce"
         }
     ],
+    "GoogleBrandedContextMenu": [
+        {
+            "group_name": "branded"
+        }
+    ],
     "InstanceID": [
         {
             "group_name": "Enabled"

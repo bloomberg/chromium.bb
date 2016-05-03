@@ -107,6 +107,11 @@
             "group_name": "Enforce"
         }
     ],
+    "GoogleBrandedContextMenu": [
+        {
+            "group_name": "branded"
+        }
+    ],
     "GoogleNow": [
         {
             "group_name": "Enable"

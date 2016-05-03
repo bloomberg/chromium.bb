@@ -61,6 +61,11 @@
             "group_name": "Enabled"
         }
     ],
+    "GoogleBrandedContextMenu": [
+        {
+            "group_name": "branded"
+        }
+    ],
     "LocalNTPSuggestionsService": [
         {
             "group_name": "Enabled"

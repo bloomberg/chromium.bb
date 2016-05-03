@@ -79,6 +79,11 @@
             "group_name": "Enabled"
         }
     ],
+    "GoogleBrandedContextMenu": [
+        {
+            "group_name": "branded"
+        }
+    ],
     "InstanceID": [
         {
             "group_name": "Enabled"
