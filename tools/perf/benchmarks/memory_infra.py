@@ -110,16 +110,13 @@ class DualBrowserBenchmark(_MemoryInfra):
   on a webview-based browser (a stand in for the Search app), and loading
   pages on a select browser.
   """
+  TBM_VERSION = 2
   page_set = page_sets.DualBrowserStorySet
   options = {'pageset_repeat': 5}
 
   @classmethod
   def Name(cls):
     return 'memory.dual_browser_test'
-
-  def SetupBenchmarkDefaultTraceRerunOptions(self, tbm_options):
-    # This is a TBMv2 benchmark.
-    tbm_options.SetTimelineBasedMetric('memoryMetric')
 
 
 # TODO(bashi): Workaround for http://crbug.com/532075
