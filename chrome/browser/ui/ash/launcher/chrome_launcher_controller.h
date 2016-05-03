@@ -28,7 +28,6 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_types.h"
 #include "chrome/browser/ui/ash/launcher/launcher_app_updater.h"
-#include "chrome/browser/ui/extensions/extension_enable_flow_delegate.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/syncable_prefs/pref_service_syncable_observer.h"
 #include "extensions/common/constants.h"
@@ -38,7 +37,6 @@ class AppSyncUIState;
 class Browser;
 class BrowserShortcutLauncherItemController;
 class BrowserStatusMonitor;
-class ExtensionEnableFlow;
 class GURL;
 class LauncherControllerHelper;
 class LauncherItemController;
@@ -90,7 +88,6 @@ class ChromeLauncherController
       public AppIconLoaderDelegate,
       public syncable_prefs::PrefServiceSyncableObserver,
       public AppSyncUIStateObserver,
-      public ExtensionEnableFlowDelegate,
       public LauncherAppUpdater::Delegate,
       public ash::ShelfItemDelegateManagerObserver {
  public:
@@ -289,10 +286,6 @@ class ChromeLauncherController
 
   // AppSyncUIStateObserver:
   void OnAppSyncUIStatusChanged() override;
-
-  // ExtensionEnableFlowDelegate:
-  void ExtensionEnableFlowFinished() override;
-  void ExtensionEnableFlowAborted(bool user_initiated) override;
 
   // AppIconLoaderDelegate:
   void OnAppImageUpdated(const std::string& app_id,
@@ -535,8 +528,6 @@ class ChromeLauncherController
   PrefChangeRegistrar pref_change_registrar_;
 
   AppSyncUIState* app_sync_ui_state_;
-
-  std::unique_ptr<ExtensionEnableFlow> extension_enable_flow_;
 
   // The owned browser status monitor.
   std::unique_ptr<BrowserStatusMonitor> browser_status_monitor_;

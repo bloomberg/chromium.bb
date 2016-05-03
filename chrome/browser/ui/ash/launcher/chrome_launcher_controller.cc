@@ -56,9 +56,6 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/extensions/app_launch_params.h"
-#include "chrome/browser/ui/extensions/application_launch.h"
-#include "chrome/browser/ui/extensions/extension_enable_flow.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_switches.h"
@@ -84,7 +81,6 @@
 #include "extensions/common/url_pattern.h"
 #include "grit/ash_resources.h"
 #include "grit/theme_resources.h"
-#include "net/base/url_util.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -98,7 +94,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon_loader.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/chrome_shell_delegate.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/launcher_arc_app_updater.h"
@@ -137,16 +132,6 @@ void MaybePropagatePrefToLocal(
     // First time the user is using this machine, propagate from remote to
     // local.
     pref_service->SetString(local_path, pref_service->GetString(synced_path));
-  }
-}
-
-std::string GetSourceFromAppListSource(ash::LaunchSource source) {
-  switch (source) {
-    case ash::LAUNCH_FROM_APP_LIST:
-      return std::string(extension_urls::kLaunchSourceAppList);
-    case ash::LAUNCH_FROM_APP_LIST_SEARCH:
-      return std::string(extension_urls::kLaunchSourceAppListSearch);
-    default: return std::string();
   }
 }
 
@@ -632,44 +617,7 @@ bool ChromeLauncherController::IsPlatformApp(ash::ShelfID id) {
 void ChromeLauncherController::LaunchApp(const std::string& app_id,
                                          ash::LaunchSource source,
                                          int event_flags) {
-#if defined(OS_CHROMEOS)
-  if (ArcAppListPrefs::Get(profile_)->IsRegistered(app_id)) {
-    arc::LaunchApp(profile_, app_id);
-    return;
-  }
-#endif
-
-  // |extension| could be NULL when it is being unloaded for updating.
-  const Extension* extension = GetExtensionForAppID(app_id);
-  if (!extension)
-    return;
-
-  if (!extensions::util::IsAppLaunchableWithoutEnabling(app_id, profile_)) {
-    // Do nothing if there is already a running enable flow.
-    if (extension_enable_flow_)
-      return;
-
-    extension_enable_flow_.reset(
-        new ExtensionEnableFlow(profile_, app_id, this));
-    extension_enable_flow_->StartForNativeWindow(NULL);
-    return;
-  }
-
-  // The app will be created for the currently active profile.
-  AppLaunchParams params = CreateAppLaunchParamsWithEventFlags(
-      profile_, extension, event_flags, extensions::SOURCE_APP_LAUNCHER);
-  if (source != ash::LAUNCH_FROM_UNKNOWN &&
-      app_id == extensions::kWebStoreAppId) {
-    // Get the corresponding source string.
-    std::string source_value = GetSourceFromAppListSource(source);
-
-    // Set an override URL to include the source.
-    GURL extension_url = extensions::AppLaunchInfo::GetFullLaunchURL(extension);
-    params.override_url = net::AppendQueryParameter(
-        extension_url, extension_urls::kWebstoreSourceField, source_value);
-  }
-
-  OpenApplication(params);
+  launcher_controller_helper_->LaunchApp(app_id, source, event_flags);
 }
 
 void ChromeLauncherController::ActivateApp(const std::string& app_id,
@@ -1164,17 +1112,6 @@ void ChromeLauncherController::OnAppSyncUIStatusChanged() {
     model_->set_status(ash::ShelfModel::STATUS_LOADING);
   else
     model_->set_status(ash::ShelfModel::STATUS_NORMAL);
-}
-
-void ChromeLauncherController::ExtensionEnableFlowFinished() {
-  LaunchApp(extension_enable_flow_->extension_id(),
-            ash::LAUNCH_FROM_UNKNOWN,
-            ui::EF_NONE);
-  extension_enable_flow_.reset();
-}
-
-void ChromeLauncherController::ExtensionEnableFlowAborted(bool user_initiated) {
-  extension_enable_flow_.reset();
 }
 
 ChromeLauncherAppMenuItems ChromeLauncherController::GetApplicationList(

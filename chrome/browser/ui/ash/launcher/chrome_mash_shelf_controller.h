@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "chrome/browser/ui/app_icon_loader.h"
+#include "chrome/browser/ui/ash/launcher/launcher_controller_helper.h"
 #include "mash/shelf/public/interfaces/shelf.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 
@@ -27,6 +28,8 @@ class ChromeMashShelfController : public mash::shelf::mojom::ShelfObserver,
 
   // Returns the single ChromeMashShelfController instance.
   static ChromeMashShelfController* instance() { return instance_; }
+
+  void LaunchItem(const std::string& app_id);
 
  private:
   ChromeMashShelfController();
@@ -48,6 +51,7 @@ class ChromeMashShelfController : public mash::shelf::mojom::ShelfObserver,
 
   static ChromeMashShelfController* instance_;
 
+  LauncherControllerHelper helper_;
   mash::shelf::mojom::ShelfControllerPtr shelf_controller_;
   mojo::AssociatedBinding<mash::shelf::mojom::ShelfObserver> observer_binding_;
   std::map<std::string, std::unique_ptr<ChromeShelfItemDelegate>>

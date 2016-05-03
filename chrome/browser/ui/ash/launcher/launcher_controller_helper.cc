@@ -14,6 +14,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/extensions/app_launch_params.h"
+#include "chrome/browser/ui/extensions/application_launch.h"
+#include "chrome/browser/ui/extensions/extension_enable_flow.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "content/public/browser/navigation_entry.h"
@@ -22,9 +25,12 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
+#include "net/base/url_util.h"
+#include "ui/events/event_constants.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #endif
 
 namespace {
@@ -77,6 +83,17 @@ const extensions::Extension* GetExtensionByID(Profile* profile,
       id, extensions::ExtensionRegistry::EVERYTHING);
 }
 
+std::string GetSourceFromAppListSource(ash::LaunchSource source) {
+  switch (source) {
+    case ash::LAUNCH_FROM_APP_LIST:
+      return std::string(extension_urls::kLaunchSourceAppList);
+    case ash::LAUNCH_FROM_APP_LIST_SEARCH:
+      return std::string(extension_urls::kLaunchSourceAppListSearch);
+    default:
+      return std::string();
+  }
+}
+
 }  // namespace
 
 LauncherControllerHelper::LauncherControllerHelper(Profile* profile)
@@ -106,9 +123,7 @@ base::string16 LauncherControllerHelper::GetAppTitle(
   }
 #endif  // defined(OS_CHROMEOS)
 
-  const extensions::Extension* extension =
-      extensions::ExtensionRegistry::Get(profile)->GetExtensionById(
-          app_id, extensions::ExtensionRegistry::EVERYTHING);
+  const extensions::Extension* extension = GetExtensionByID(profile, app_id);
   if (extension)
     title = base::UTF8ToUTF16(extension->name());
   return title;
@@ -143,4 +158,57 @@ bool LauncherControllerHelper::IsValidIDForCurrentUser(const std::string& id) {
 
 void LauncherControllerHelper::SetCurrentUser(Profile* profile) {
   profile_ = profile;
+}
+
+void LauncherControllerHelper::LaunchApp(const std::string& app_id,
+                                         ash::LaunchSource source,
+                                         int event_flags) {
+#if defined(OS_CHROMEOS)
+  if (ArcAppListPrefs::Get(profile_)->IsRegistered(app_id)) {
+    arc::LaunchApp(profile_, app_id);
+    return;
+  }
+#endif
+
+  // |extension| could be null when it is being unloaded for updating.
+  const extensions::Extension* extension = GetExtensionByID(profile_, app_id);
+  if (!extension)
+    return;
+
+  if (!extensions::util::IsAppLaunchableWithoutEnabling(app_id, profile_)) {
+    // Do nothing if there is already a running enable flow.
+    if (extension_enable_flow_)
+      return;
+
+    extension_enable_flow_.reset(
+        new ExtensionEnableFlow(profile_, app_id, this));
+    extension_enable_flow_->StartForNativeWindow(nullptr);
+    return;
+  }
+
+  // The app will be created for the currently active profile.
+  AppLaunchParams params = CreateAppLaunchParamsWithEventFlags(
+      profile_, extension, event_flags, extensions::SOURCE_APP_LAUNCHER);
+  if (source != ash::LAUNCH_FROM_UNKNOWN &&
+      app_id == extensions::kWebStoreAppId) {
+    // Get the corresponding source string.
+    std::string source_value = GetSourceFromAppListSource(source);
+
+    // Set an override URL to include the source.
+    GURL extension_url = extensions::AppLaunchInfo::GetFullLaunchURL(extension);
+    params.override_url = net::AppendQueryParameter(
+        extension_url, extension_urls::kWebstoreSourceField, source_value);
+  }
+
+  OpenApplication(params);
+}
+
+void LauncherControllerHelper::ExtensionEnableFlowFinished() {
+  LaunchApp(extension_enable_flow_->extension_id(), ash::LAUNCH_FROM_UNKNOWN,
+            ui::EF_NONE);
+  extension_enable_flow_.reset();
+}
+
+void LauncherControllerHelper::ExtensionEnableFlowAborted(bool user_initiated) {
+  extension_enable_flow_.reset();
 }

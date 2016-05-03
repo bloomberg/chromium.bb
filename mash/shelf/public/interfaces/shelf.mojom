@@ -30,6 +30,9 @@ interface ShelfObserver {
 
 // ShelfItemDelegate handles command execution and observes shelf item changes.
 interface ShelfItemDelegate {
+  // Called when a pinned shelf item is invoked without an open window.
+  LaunchItem();
+
   // Called on invocation of a shelf item's context menu command.
   ExecuteCommand(uint32 command_id, int32 event_flags);
 

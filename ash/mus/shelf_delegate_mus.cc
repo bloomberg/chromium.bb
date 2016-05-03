@@ -42,6 +42,11 @@ class ShelfItemDelegateMus : public ShelfItemDelegate {
       : user_window_controller_(user_window_controller) {}
   ~ShelfItemDelegateMus() override {}
 
+  void SetDelegate(
+      mash::shelf::mojom::ShelfItemDelegateAssociatedPtrInfo delegate) {
+    delegate_.Bind(std::move(delegate));
+  }
+
   bool pinned() const { return pinned_; }
   void set_pinned(bool pinned) { pinned_ = pinned; }
 
@@ -102,6 +107,10 @@ class ShelfItemDelegateMus : public ShelfItemDelegate {
   // ShelfItemDelegate:
   ShelfItemDelegate::PerformedAction ItemSelected(
       const ui::Event& event) override {
+    if (window_id_to_title_.empty()) {
+      delegate_->LaunchItem();
+      return kNewWindowCreated;
+    }
     if (window_id_to_title_.size() == 1) {
       user_window_controller_->FocusUserWindow(
           window_id_to_title_.begin()->first);
@@ -133,6 +142,7 @@ class ShelfItemDelegateMus : public ShelfItemDelegate {
 
   void Close() override { NOTIMPLEMENTED(); }
 
+  mash::shelf::mojom::ShelfItemDelegateAssociatedPtr delegate_;
   bool pinned_ = false;
   std::map<uint32_t, base::string16> window_id_to_title_;
   base::string16 title_;
@@ -277,6 +287,7 @@ void ShelfDelegateMus::PinItem(
   if (app_id_to_shelf_id_.count(app_id)) {
     ShelfID shelf_id = app_id_to_shelf_id_[app_id];
     ShelfItemDelegateMus* item_delegate = GetShelfItemDelegate(shelf_id);
+    item_delegate->SetDelegate(std::move(delegate));
     item_delegate->set_pinned(true);
     return;
   }
@@ -293,6 +304,7 @@ void ShelfDelegateMus::PinItem(
 
   std::unique_ptr<ShelfItemDelegateMus> item_delegate(
       new ShelfItemDelegateMus(user_window_controller_.get()));
+  item_delegate->SetDelegate(std::move(delegate));
   item_delegate->set_pinned(true);
   item_delegate->set_title(item->app_title.To<base::string16>());
   Shell::GetInstance()->shelf_item_delegate_manager()->SetShelfItemDelegate(

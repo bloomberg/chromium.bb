@@ -5,11 +5,15 @@
 #ifndef CHROME_BROWSER_UI_ASH_LAUNCHER_LAUNCHER_CONTROLLER_HELPER_H_
 #define CHROME_BROWSER_UI_ASH_LAUNCHER_LAUNCHER_CONTROLLER_HELPER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_types.h"
+#include "chrome/browser/ui/extensions/extension_enable_flow_delegate.h"
 
+class ExtensionEnableFlow;
 class Profile;
 
 namespace content {
@@ -17,10 +21,10 @@ class WebContents;
 }
 
 // Assists the LauncherController with ExtensionService interaction.
-class LauncherControllerHelper {
+class LauncherControllerHelper : public ExtensionEnableFlowDelegate {
  public:
   explicit LauncherControllerHelper(Profile* profile);
-  virtual ~LauncherControllerHelper();
+  ~LauncherControllerHelper() override;
 
   // Helper function to return the title associated with |app_id|.
   // Returns an empty title if no matching extension can be found.
@@ -39,8 +43,17 @@ class LauncherControllerHelper {
   // Sets the currently active profile for the usage of |GetAppID|.
   virtual void SetCurrentUser(Profile* profile);
 
+  void LaunchApp(const std::string& app_id,
+                 ash::LaunchSource source,
+                 int event_flags);
+
  private:
+  // ExtensionEnableFlowDelegate:
+  void ExtensionEnableFlowFinished() override;
+  void ExtensionEnableFlowAborted(bool user_initiated) override;
+
   Profile* profile_;
+  std::unique_ptr<ExtensionEnableFlow> extension_enable_flow_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherControllerHelper);
 };
