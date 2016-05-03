@@ -470,7 +470,7 @@ void NavigatorImpl::DidNavigate(
               ->render_manager()
               ->current_frame_host()) {
     bad_message::ReceivedBadMessage(render_frame_host->GetProcess(),
-                                    bad_message::NC_IN_PAGE_NAVIGATION);
+                                    bad_message::NI_IN_PAGE_NAVIGATION);
     is_navigation_within_page = false;
   }
 

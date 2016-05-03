@@ -143,6 +143,7 @@ enum BadMessageReason {
   IDBDH_INVALID_ORIGIN = 119,
   RFH_FAIL_PROVISIONAL_LOAD_NO_HANDLE = 120,
   RFH_FAIL_PROVISIONAL_LOAD_NO_ERROR = 121,
+  NI_IN_PAGE_NAVIGATION = 122,
 
   // Please add new elements here. The naming convention is abbreviated class
   // name (e.g. RenderFrameHost becomes RFH) plus a unique description of the

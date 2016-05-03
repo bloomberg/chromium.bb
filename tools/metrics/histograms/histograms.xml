@@ -62761,6 +62761,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="119" label="IDBDH_INVALID_ORIGIN"/>
   <int value="120" label="RFH_FAIL_PROVISIONAL_LOAD_NO_HANDLE"/>
   <int value="121" label="RFH_FAIL_PROVISIONAL_LOAD_NO_ERROR"/>
+  <int value="122" label="NI_IN_PAGE_NAVIGATION"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions" type="int">
