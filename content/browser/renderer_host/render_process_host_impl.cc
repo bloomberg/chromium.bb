@@ -801,22 +801,20 @@ std::unique_ptr<IPC::ChannelProxy> RenderProcessHostImpl::CreateChannelProxy(
     const std::string& channel_id) {
   scoped_refptr<base::SingleThreadTaskRunner> runner =
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
-  if (ShouldUseMojoChannel()) {
-    VLOG(1) << "Mojo Channel is enabled on host";
-    mojo_channel_token_ = mojo::edk::GenerateRandomToken();
-    mojo::ScopedMessagePipeHandle handle =
-        mojo::edk::CreateParentMessagePipe(mojo_channel_token_);
+  mojo_channel_token_ = mojo::edk::GenerateRandomToken();
+  mojo::ScopedMessagePipeHandle handle =
+      mojo::edk::CreateParentMessagePipe(mojo_channel_token_);
 
-    // Do NOT expand ifdef or run time condition checks here! Synchronous
-    // IPCs from browser process are banned. It is only narrowly allowed
-    // for Android WebView to maintain backward compatibility.
-    // See crbug.com/526842 for details.
+  // Do NOT expand ifdef or run time condition checks here! Synchronous
+  // IPCs from browser process are banned. It is only narrowly allowed
+  // for Android WebView to maintain backward compatibility.
+  // See crbug.com/526842 for details.
 #if defined(OS_ANDROID)
-    if (GetContentClient()->UsingSynchronousCompositing()) {
-      return IPC::SyncChannel::Create(
-          IPC::ChannelMojo::CreateServerFactory(std::move(handle)), this,
-          runner.get(), true, &never_signaled_);
-    }
+  if (GetContentClient()->UsingSynchronousCompositing()) {
+    return IPC::SyncChannel::Create(
+        IPC::ChannelMojo::CreateServerFactory(std::move(handle)), this,
+        runner.get(), true, &never_signaled_);
+  }
 #endif  // OS_ANDROID
 
   std::unique_ptr<IPC::ChannelProxy> channel(
@@ -827,25 +825,6 @@ std::unique_ptr<IPC::ChannelProxy> RenderProcessHostImpl::CreateChannelProxy(
       content::BrowserThread::IO));
 #endif
   channel->Init(IPC::ChannelMojo::CreateServerFactory(std::move(handle)), true);
-  return channel;
-  }
-
-    // Do NOT expand ifdef or run time condition checks here! See comment above.
-#if defined(OS_ANDROID)
-  if (GetContentClient()->UsingSynchronousCompositing()) {
-    return IPC::SyncChannel::Create(channel_id, IPC::Channel::MODE_SERVER, this,
-                                    runner.get(), true, &never_signaled_);
-  }
-#endif  // OS_ANDROID
-
-  std::unique_ptr<IPC::ChannelProxy> channel(
-      new IPC::ChannelProxy(this, runner.get()));
-#if USE_ATTACHMENT_BROKER
-  IPC::AttachmentBroker::GetGlobal()->RegisterCommunicationChannel(
-      channel.get(), content::BrowserThread::GetMessageLoopProxyForThread(
-      content::BrowserThread::IO));
-#endif
-  channel->Init(channel_id, IPC::Channel::MODE_SERVER, true);
   return channel;
 }
 
@@ -1430,7 +1409,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableLinkDisambiguationPopup,
     switches::kEnableLowResTiling,
     switches::kEnableMediaSuspend,
-    switches::kEnableMojoChannel,
     switches::kEnableInbandTextTracks,
     switches::kEnableLCDText,
     switches::kEnableLogging,
