@@ -200,7 +200,7 @@ class HWTestList(object):
     # Allows kwargs overrides to default_dict for pfq.
     default_dict.update(kwargs)
     return [config_lib.HWTestConfig(constants.HWTEST_COMMIT_SUITE,
-                                    **default_dict),
+                                    num=8, **default_dict),
             config_lib.HWTestConfig(constants.HWTEST_ARC_COMMIT_SUITE,
                                     num=1, **default_dict)]
 
