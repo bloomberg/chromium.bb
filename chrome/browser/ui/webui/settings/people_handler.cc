@@ -409,7 +409,8 @@ void PeopleHandler::HandleConfigure(const base::ListValue* args) {
         ProfileSyncService::STOP_FROM_ADVANCED_DIALOG);
 
     CloseSyncSetup();
-    ResolveJavascriptCallback(*callback_id, base::StringValue(kDonePageStatus));
+    ResolveJavascriptCallback(*callback_id,
+                              base::StringValue(kConfigurePageStatus));
 
     service->RequestStop(ProfileSyncService::CLEAR_DATA);
     service->SetSetupInProgress(false);
@@ -505,9 +506,8 @@ void PeopleHandler::HandleConfigure(const base::ListValue* args) {
       service->SetFirstSetupComplete();
     }
 
-    // No passphrase is required from the user so mark the configuration as
-    // complete and close the sync setup overlay.
-    ResolveJavascriptCallback(*callback_id, base::StringValue(kDonePageStatus));
+    ResolveJavascriptCallback(*callback_id,
+                              base::StringValue(kConfigurePageStatus));
   }
 
   ProfileMetrics::LogProfileSyncInfo(ProfileMetrics::SYNC_CUSTOMIZE);

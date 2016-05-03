@@ -527,9 +527,7 @@ TEST_F(PeopleHandlerTest, TestSyncEverything) {
   EXPECT_CALL(*mock_pss_, OnUserChoseDatatypes(true, _));
   handler_->HandleConfigure(&list_args);
 
-  // Ensure that we navigated to the "done" state since we don't need a
-  // passphrase.
-  ExpectPageStatusResponse(PeopleHandler::kDonePageStatus);
+  ExpectPageStatusResponse(PeopleHandler::kConfigurePageStatus);
 }
 
 TEST_F(PeopleHandlerTest, TestSyncNothing) {
@@ -542,7 +540,7 @@ TEST_F(PeopleHandlerTest, TestSyncNothing) {
   SetupInitializedProfileSyncService();
   handler_->HandleConfigure(&list_args);
 
-  ExpectPageStatusResponse(PeopleHandler::kDonePageStatus);
+  ExpectPageStatusResponse(PeopleHandler::kConfigurePageStatus);
 }
 
 TEST_F(PeopleHandlerTest, TurnOnEncryptAll) {
@@ -562,9 +560,7 @@ TEST_F(PeopleHandlerTest, TurnOnEncryptAll) {
   EXPECT_CALL(*mock_pss_, OnUserChoseDatatypes(true, _));
   handler_->HandleConfigure(&list_args);
 
-  // Ensure that we navigated to the "done" state since we don't need a
-  // passphrase.
-  ExpectPageStatusResponse(PeopleHandler::kDonePageStatus);
+  ExpectPageStatusResponse(PeopleHandler::kConfigurePageStatus);
 }
 
 TEST_F(PeopleHandlerTest, TestPassphraseStillRequired) {
@@ -612,9 +608,7 @@ TEST_F(PeopleHandlerTest, SuccessfullySetPassphrase) {
       WillOnce(Return(true));
 
   handler_->HandleConfigure(&list_args);
-  // We should navigate to PeopleHandler::kDonePageStatus page since we finished
-  // configuring.
-  ExpectPageStatusResponse(PeopleHandler::kDonePageStatus);
+  ExpectPageStatusResponse(PeopleHandler::kConfigurePageStatus);
 }
 
 TEST_F(PeopleHandlerTest, SelectCustomEncryption) {
@@ -641,9 +635,7 @@ TEST_F(PeopleHandlerTest, SelectCustomEncryption) {
                                       ProfileSyncService::EXPLICIT));
 
   handler_->HandleConfigure(&list_args);
-  // We should navigate to PeopleHandler::kDonePageStatus page since we finished
-  // configuring.
-  ExpectPageStatusResponse(PeopleHandler::kDonePageStatus);
+  ExpectPageStatusResponse(PeopleHandler::kConfigurePageStatus);
 }
 
 TEST_F(PeopleHandlerTest, UnsuccessfullySetPassphrase) {
@@ -700,8 +692,7 @@ TEST_F(PeopleHandlerTest, TestSyncIndividualTypes) {
                 OnUserChoseDatatypes(false, ModelTypeSetMatches(type_to_set)));
 
     handler_->HandleConfigure(&list_args);
-
-    ExpectPageStatusResponse(PeopleHandler::kDonePageStatus);
+    ExpectPageStatusResponse(PeopleHandler::kConfigurePageStatus);
     Mock::VerifyAndClearExpectations(mock_pss_);
   }
 }
@@ -724,7 +715,7 @@ TEST_F(PeopleHandlerTest, TestSyncAllManually) {
               OnUserChoseDatatypes(false, ModelTypeSetMatches(GetAllTypes())));
   handler_->HandleConfigure(&list_args);
 
-  ExpectPageStatusResponse(PeopleHandler::kDonePageStatus);
+  ExpectPageStatusResponse(PeopleHandler::kConfigurePageStatus);
 }
 
 TEST_F(PeopleHandlerTest, ShowSyncSetup) {
@@ -943,9 +934,7 @@ TEST_F(PeopleHandlerTest, TurnOnEncryptAllDisallowed) {
   EXPECT_CALL(*mock_pss_, OnUserChoseDatatypes(true, _));
   handler_->HandleConfigure(&list_args);
 
-  // Ensure that we navigated to the "done" state since we don't need a
-  // passphrase.
-  ExpectPageStatusResponse(PeopleHandler::kDonePageStatus);
+  ExpectPageStatusResponse(PeopleHandler::kConfigurePageStatus);
 }
 
 }  // namespace settings

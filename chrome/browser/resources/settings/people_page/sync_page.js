@@ -143,23 +143,31 @@ Polymer({
       this.set('syncPrefs.passwordsSynced', true);
       this.set('syncPrefs.tabsSynced', true);
     }
-  },
 
-  /** @private */
-  onCancelTap_: function() {
-    if (this.currentRoute.section == 'people' &&
-        this.currentRoute.subpage.length == 1 &&
-        this.currentRoute.subpage[0] == 'sync') {
-      // Event is caught by settings-animated-pages.
-      this.fire('subpage-back');
-    }
+    this.onSingleSyncDataTypeChanged_();
   },
 
   /**
-   * Sets the sync data by sending it to the browser.
+   * Handler for when any sync data type checkbox is changed.
    * @private
    */
-  onOkTap_: function() {
+  onSingleSyncDataTypeChanged_: function() {
+    // The usePassphrase field is true if and only if the user is creating a
+    // new passphrase or confirming an existing one. See the comment on the
+    // syncPrefs property.
+    // TODO(tommycli): Clean up the C++ handler to handle passwords separately.
+    this.syncPrefs.usePassphrase = false;
+
+    this.browserProxy_.setSyncPrefs(this.syncPrefs).then(
+        this.handlePageStatusChanged_.bind(this));
+  },
+
+  /**
+   * TODO(tommycli): Hook this up to a password submit button.
+   * Sends the entered password to the browser.
+   * @private
+   */
+  onPasswordSubmitTap_: function() {
     if (this.creatingNewPassphrase) {
       // If a new password has been entered but it is invalid, do not send the
       // sync state to the API.
@@ -191,7 +199,12 @@ Polymer({
    */
   handlePageStatusChanged_: function(pageStatus) {
     if (pageStatus == settings.PageStatus.DONE) {
-      this.onCancelTap_();
+      if (this.currentRoute.section == 'people' &&
+          this.currentRoute.subpage.length == 1 &&
+          this.currentRoute.subpage[0] == 'sync') {
+        // Event is caught by settings-animated-pages.
+        this.fire('subpage-back');
+      }
     } else if (pageStatus == settings.PageStatus.TIMEOUT) {
       this.$.pages.selected = 'timeout';
     } else if (pageStatus == settings.PageStatus.PASSPHRASE_FAILED) {

@@ -1,7 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-pages/iron-pages.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-dropdown-menu/paper-dropdown-menu.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
@@ -28,46 +27,55 @@
 
           <div id="sync-item-list">
             <paper-checkbox checked="{{syncPrefs.appsSynced}}"
+                on-change="onSingleSyncDataTypeChanged_"
                 hidden="[[!syncPrefs.appsRegistered]]"
                 disabled="[[shouldSyncCheckboxBeDisabled_(syncPrefs.syncAllDataTypes, syncPrefs.appsEnforced)]]">
               <span i18n-content="appCheckboxLabel"></span>
             </paper-checkbox>
             <paper-checkbox checked="{{syncPrefs.autofillSynced}}"
+                on-change="onSingleSyncDataTypeChanged_"
                 hidden="[[!syncPrefs.autofillRegistered]]"
                 disabled="[[shouldSyncCheckboxBeDisabled_(syncPrefs.syncAllDataTypes, syncPrefs.autofillEnforced)]]">
               <span i18n-content="autofillCheckboxLabel"></span>
             </paper-checkbox>
             <paper-checkbox checked="{{syncPrefs.bookmarksSynced}}"
+                on-change="onSingleSyncDataTypeChanged_"
                 hidden="[[!syncPrefs.bookmarksRegistered]]"
                 disabled="[[shouldSyncCheckboxBeDisabled_(syncPrefs.syncAllDataTypes, syncPrefs.bookmarksEnforced)]]">
               <span i18n-content="bookmarksCheckboxLabel"></span>
             </paper-checkbox>
             <paper-checkbox checked="{{syncPrefs.extensionsSynced}}"
+                on-change="onSingleSyncDataTypeChanged_"
                 hidden="[[!syncPrefs.extensionsRegistered]]"
                 disabled="[[shouldSyncCheckboxBeDisabled_(syncPrefs.syncAllDataTypes, syncPrefs.extensionsEnforced)]]">
               <span i18n-content="extensionsCheckboxLabel"></span>
             </paper-checkbox>
             <paper-checkbox checked="{{syncPrefs.typedUrlsSynced}}"
+                on-change="onSingleSyncDataTypeChanged_"
                 hidden="[[!syncPrefs.typedUrlsRegistered]]"
                 disabled="[[shouldSyncCheckboxBeDisabled_(syncPrefs.syncAllDataTypes, syncPrefs.typedUrlsEnforced)]]">
               <span i18n-content="historyCheckboxLabel"></span>
             </paper-checkbox>
             <paper-checkbox checked="{{syncPrefs.passwordsSynced}}"
+                on-change="onSingleSyncDataTypeChanged_"
                 hidden="[[!syncPrefs.passwordsRegistered]]"
                 disabled="[[shouldSyncCheckboxBeDisabled_(syncPrefs.syncAllDataTypes, syncPrefs.passwordsEnforced)]]">
               <span i18n-content="passwordsCheckboxLabel"></span>
             </paper-checkbox>
             <paper-checkbox checked="{{syncPrefs.preferencesSynced}}"
+                on-change="onSingleSyncDataTypeChanged_"
                 hidden="[[!syncPrefs.preferencesRegistered]]"
                 disabled="[[shouldSyncCheckboxBeDisabled_(syncPrefs.syncAllDataTypes, syncPrefs.preferencesEnforced)]]">
               <span i18n-content="settingsCheckboxLabel"></span>
             </paper-checkbox>
             <paper-checkbox checked="{{syncPrefs.themesSynced}}"
+                on-change="onSingleSyncDataTypeChanged_"
                 hidden="[[!syncPrefs.themesRegistered]]"
                 disabled="[[shouldSyncCheckboxBeDisabled_(syncPrefs.syncAllDataTypes, syncPrefs.themesEnforced)]]">
               <span i18n-content="themesAndWallpapersCheckboxLabel"></span>
             </paper-checkbox>
             <paper-checkbox checked="{{syncPrefs.tabsSynced}}"
+                on-change="onSingleSyncDataTypeChanged_"
                 hidden="[[!syncPrefs.tabsRegistered]]"
                 disabled="[[shouldSyncCheckboxBeDisabled_(syncPrefs.syncAllDataTypes, syncPrefs.tabsEnforced)]]">
               <span i18n-content="openTabsCheckboxLabel"></span>
@@ -116,14 +124,6 @@
             </paper-input>
             <div id="incorrectPassphraseError" hidden>[[i18n('incorrectPassphraseError')]]</div>
           </template>
-        </div>
-
-        <div class="settings-box">
-          <paper-button i18n-content="cancel" on-tap="onCancelTap_">
-          </paper-button>
-          <paper-button i18n-content="ok" on-tap="onOkTap_"
-              class="action-button">
-          </paper-button>
         </div>
       </div>
     </iron-pages>
