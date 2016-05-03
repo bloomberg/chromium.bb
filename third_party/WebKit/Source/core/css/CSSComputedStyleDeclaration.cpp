@@ -514,6 +514,12 @@ Node* CSSComputedStyleDeclaration::styledNode() const
 
 CSSValue* CSSComputedStyleDeclaration::getPropertyCSSValue(AtomicString customPropertyName) const
 {
+    Node* styledNode = this->styledNode();
+    if (!styledNode)
+        return nullptr;
+
+    styledNode->document().updateLayoutTreeForNode(styledNode);
+
     const ComputedStyle* style = computeComputedStyle();
     if (!style)
         return nullptr;
@@ -533,19 +539,16 @@ CSSValue* CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropertyID propert
     Node* styledNode = this->styledNode();
     if (!styledNode)
         return nullptr;
-    LayoutObject* layoutObject = styledNode->layoutObject();
-    const ComputedStyle* style;
 
     Document& document = styledNode->document();
-
     document.updateLayoutTreeForNode(styledNode);
 
     // The style recalc could have caused the styled node to be discarded or replaced
     // if it was a PseudoElement so we need to update it.
     styledNode = this->styledNode();
-    layoutObject = styledNode->layoutObject();
+    LayoutObject* layoutObject = styledNode->layoutObject();
 
-    style = computeComputedStyle();
+    const ComputedStyle* style = computeComputedStyle();
 
     bool forceFullLayout = isLayoutDependent(propertyID, style, layoutObject)
         || styledNode->isInShadowTree()
