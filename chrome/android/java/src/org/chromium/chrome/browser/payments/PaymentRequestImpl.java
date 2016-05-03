@@ -505,6 +505,21 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         PaymentResponse response = new PaymentResponse();
         response.methodName = methodName;
         response.stringifiedDetails = stringifiedDetails;
+
+        PaymentOption selectedShippingAddress = mShippingAddresses.getSelectedItem();
+        if (selectedShippingAddress != null) {
+            // Shipping addresses are created in show(). The should all be instances of
+            // AutofillAddress.
+            assert selectedShippingAddress instanceof AutofillAddress;
+            response.shippingAddress =
+                    ((AutofillAddress) selectedShippingAddress).toShippingAddress();
+        }
+
+        PaymentOption selectedShippingOption = mShippingOptions.getSelectedItem();
+        if (selectedShippingOption != null && selectedShippingOption.getIdentifier() != null) {
+            response.shippingOptionId = selectedShippingOption.getIdentifier();
+        }
+
         mClient.onPaymentResponse(response);
     }
 
@@ -513,7 +528,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
      */
     @Override
     public void onInstrumentDetailsError() {
-        disconnectFromClientWithDebugMessage("Fialed to retrieve payment instrument details");
+        disconnectFromClientWithDebugMessage("Failed to retrieve payment instrument details");
         closeUI(false);
     }
 

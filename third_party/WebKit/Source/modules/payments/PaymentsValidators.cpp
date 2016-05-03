@@ -64,4 +64,25 @@ bool PaymentsValidators::isValidScriptCodeFormat(const String& code, String* opt
     return false;
 }
 
+bool PaymentsValidators::isValidShippingAddress(const mojom::blink::ShippingAddressPtr& address, String* optionalErrorMessage)
+{
+    if (!isValidRegionCodeFormat(address->region_code, optionalErrorMessage))
+        return false;
+
+    if (!isValidLanguageCodeFormat(address->language_code, optionalErrorMessage))
+        return false;
+
+    if (!isValidScriptCodeFormat(address->script_code, optionalErrorMessage))
+        return false;
+
+    if (address->language_code.isEmpty() && !address->script_code.isEmpty()) {
+        if (optionalErrorMessage)
+            *optionalErrorMessage = "If language code is empty, then script code should also be empty";
+
+        return false;
+    }
+
+    return true;
+}
+
 } // namespace blink

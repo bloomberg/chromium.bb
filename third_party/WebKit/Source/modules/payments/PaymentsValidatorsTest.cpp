@@ -167,5 +167,51 @@ INSTANTIATE_TEST_CASE_P(ScriptCodes,
         TestCase("latn", false),
         TestCase("LATN", false)));
 
+struct ShippingAddressTestCase {
+    ShippingAddressTestCase(const char* regionCode, const char* languageCode, const char* scriptCode, bool expectedValid)
+        : regionCode(regionCode)
+        , languageCode(languageCode)
+        , scriptCode(scriptCode)
+        , expectedValid(expectedValid)
+    {
+    }
+    ~ShippingAddressTestCase() {}
+
+    const char* regionCode;
+    const char* languageCode;
+    const char* scriptCode;
+    bool expectedValid;
+};
+
+class PaymentsShippingAddressValidatorTest : public testing::TestWithParam<ShippingAddressTestCase> {
+};
+
+TEST_P(PaymentsShippingAddressValidatorTest, IsValidShippingAddress)
+{
+    mojom::blink::ShippingAddressPtr address = mojom::blink::ShippingAddress::New();
+    address->region_code = GetParam().regionCode;
+    address->language_code = GetParam().languageCode;
+    address->script_code = GetParam().scriptCode;
+
+    String errorMessage;
+    EXPECT_EQ(GetParam().expectedValid, PaymentsValidators::isValidShippingAddress(address, &errorMessage)) << errorMessage;
+    EXPECT_EQ(GetParam().expectedValid, errorMessage.isEmpty()) << errorMessage;
+
+    EXPECT_EQ(GetParam().expectedValid, PaymentsValidators::isValidShippingAddress(address, nullptr));
+}
+
+INSTANTIATE_TEST_CASE_P(ShippingAddresses,
+    PaymentsShippingAddressValidatorTest,
+    testing::Values(
+        ShippingAddressTestCase("US", "en", "Latn", true),
+        ShippingAddressTestCase("US", "en", "", true),
+        ShippingAddressTestCase("US", "", "", true),
+        // Invalid shipping addresses
+        ShippingAddressTestCase("", "", "", false),
+        ShippingAddressTestCase("InvalidRegionCode", "", "", false),
+        ShippingAddressTestCase("US", "InvalidLanguageCode", "", false),
+        ShippingAddressTestCase("US", "en", "InvalidScriptCode", false),
+        ShippingAddressTestCase("US", "", "Latn", false)));
+
 } // namespace
 } // namespace blink

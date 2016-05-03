@@ -309,16 +309,8 @@ void PaymentRequest::OnShippingAddressChange(mojom::blink::ShippingAddressPtr ad
     DCHECK(!m_completeResolver);
 
     String errorMessage;
-    if (!PaymentsValidators::isValidRegionCodeFormat(address->region_code, &errorMessage)
-        || !PaymentsValidators::isValidLanguageCodeFormat(address->language_code, &errorMessage)
-        || !PaymentsValidators::isValidScriptCodeFormat(address->script_code, &errorMessage)) {
+    if (!PaymentsValidators::isValidShippingAddress(address, &errorMessage)) {
         m_showResolver->reject(DOMException::create(SyntaxError, errorMessage));
-        cleanUp();
-        return;
-    }
-
-    if (address->language_code.isEmpty() && !address->script_code.isEmpty()) {
-        m_showResolver->reject(DOMException::create(SyntaxError, "If language code is empty, then script code should also be empty"));
         cleanUp();
         return;
     }
@@ -343,6 +335,19 @@ void PaymentRequest::OnPaymentResponse(mojom::blink::PaymentResponsePtr response
 {
     DCHECK(m_showResolver);
     DCHECK(!m_completeResolver);
+
+    if (response->shipping_address) {
+        String errorMessage;
+        if (!PaymentsValidators::isValidShippingAddress(response->shipping_address, &errorMessage)) {
+            m_showResolver->reject(DOMException::create(SyntaxError, errorMessage));
+            cleanUp();
+            return;
+        }
+
+        m_shippingAddress = new ShippingAddress(std::move(response->shipping_address));
+        m_shippingOption = response->shipping_option_id;
+    }
+
     m_showResolver->resolve(new PaymentResponse(std::move(response), this));
 }
 
