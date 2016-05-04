@@ -73,26 +73,6 @@ WATERFALL = {
       'swarming': True,
       'os_type': 'mac',
     },
-    'Mac Retina Release': {
-      'swarming_dimensions': {
-        'gpu': '10de:0fe9',
-        'hidpi': '1',
-        'os': 'Mac'
-      },
-      'build_config': 'Release',
-      'swarming': True,
-      'os_type': 'mac',
-    },
-    'Mac Retina Debug': {
-      'swarming_dimensions': {
-        'gpu': '10de:0fe9',
-        'hidpi': '1',
-        'os': 'Mac'
-      },
-      'build_config': 'Debug',
-      'swarming': True,
-      'os_type': 'mac',
-    },
     'Mac 10.10 Retina Release (AMD)': {
       'swarming_dimensions': {
         'gpu': '1002:6821',
@@ -595,7 +575,6 @@ COMMON_GTESTS = {
   'angle_end2end_tests': {
     'tester_configs': [
       {
-        'allow_on_mac_nvidia': True,
         'fyi_only': True,
         'run_on_optional': True,
       },
@@ -719,11 +698,6 @@ TELEMETRY_TESTS = {
   'hardware_accelerated_feature': {},
   'maps_pixel_test': {
     'target_name': 'maps',
-    'tester_configs': [
-      {
-        'allow_on_mac_nvidia': True,
-      },
-    ],
   },
   'memory_test': {},
   'pixel_test': {
@@ -744,20 +718,10 @@ TELEMETRY_TESTS = {
     'precommit_args': [
       '--download-refimg-from-cloud-storage',
     ],
-    'tester_configs': [
-      {
-        'allow_on_mac_nvidia': True,
-      },
-    ],
   },
   'screenshot_sync': {},
   'trace_test': {},
   'webgl_conformance': {
-    'tester_configs': [
-      {
-        'allow_on_mac_nvidia': True,
-      },
-    ],
   },
   'webgl_conformance_d3d9_tests': {
     'tester_configs': [
@@ -820,7 +784,6 @@ TELEMETRY_TESTS = {
   'webgl2_conformance_tests': {
     'tester_configs': [
       {
-        'allow_on_mac_nvidia': True,
          # The WebGL 2.0 conformance tests take over an hour to run on
          # the Debug bots, which is too long.
         'build_configs': ['Release', 'Release_x64'],
@@ -865,12 +828,6 @@ def matches_swarming_dimensions(tester_config, dimension_sets):
       return True
   return False
 
-def is_mac_nvidia_retina(tester_config):
-  dims = tester_config['swarming_dimensions']
-  return (dims['gpu'] == '10de:0fe9' and
-          dims['hidpi'] == '1' and
-          dims['os'] == 'Mac')
-
 def is_android(tester_config):
   return tester_config['os_type'] == 'android'
 
@@ -898,26 +855,6 @@ def tester_config_matches_tester(tester_name, tester_config, tc, is_fyi,
     if not matches_swarming_dimensions(tester_config,
                                        tc['swarming_dimension_sets']):
       return False
-  # The NVIDIA based MacBook Pro Retinas are oversubscribed and this
-  # is causing severe problems with Chromium's commit queue
-  # (http://crbug.com/572793). As a short-term strategy, run only
-  # critical tests on this configuration; this means removing
-  # everything except the ANGLE end-to-end tests and WebGL 1.0 and 2.0
-  # conformance tests. This also disables all tests on the Debug
-  # NVIDIA bots, because they will effectively lock up some 3 Swarming
-  # bots permanently due to repeatedly launching WebGL 1.0 conformance
-  # tests on the chromium.gpu waterfall, and WebGL 1.0 and 2.0
-  # conformance tests on the chromium.gpu.fyi waterfall.
-  if is_mac_nvidia_retina(tester_config):
-    # Disable all tests on the Debug NVIDIA Retina bots for now. Even
-    # though these aren't part of the highest-volume
-    # mac_chromium_rel_ng tryserver configuration, these tests are
-    # slow, and will lock up a certain number of crucial Swarming
-    # machines essentially permanently.
-    if tester_config['build_config'] == 'Debug':
-      return False
-    if not tc.get('allow_on_mac_nvidia', False):
-      return False
   if is_android(tester_config):
     if not tc.get('allow_on_android', False):
       return False
@@ -939,8 +876,7 @@ def should_run_on_tester(tester_name, tester_config, test_config, is_fyi):
   else:
     # If tester_configs is unspecified, run nearly all tests by default,
     # but let tester_config_matches_tester filter out any undesired
-    # tests, such as ones that should only run on the Optional bots, or
-    # not run on the NVIDIA Retina MacBook Pros.
+    # tests, such as ones that should only run on the Optional bots.
     return tester_config_matches_tester(tester_name, tester_config, {},
                                         is_fyi, True)
 
