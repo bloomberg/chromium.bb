@@ -805,6 +805,9 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
 
     @Override
     public String getTranslateServiceTargetLanguage() {
+        // TODO(donnd): remove once issue 607127 has been resolved.
+        if (mNativeContextualSearchManagerPtr == 0)
+            throw new RuntimeException("mNativeContextualSearchManagerPtr is 0!");
         return nativeGetTargetLanguage(mNativeContextualSearchManagerPtr);
     }
 
