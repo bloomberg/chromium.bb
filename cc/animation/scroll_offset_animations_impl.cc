@@ -74,6 +74,8 @@ bool ScrollOffsetAnimationsImpl::ScrollAnimationUpdateTarget(
     scroll_offset_animation_player_->DetachElement();
     return false;
   }
+  if (scroll_delta.IsZero())
+    return true;
 
   ScrollOffsetAnimationCurve* curve =
       animation->curve()->ToScrollOffsetAnimationCurve();

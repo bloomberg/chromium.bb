@@ -10075,6 +10075,47 @@ TEST_F(LayerTreeHostImplTimelinesTest, ScrollAnimatedNotUserScrollable) {
   host_impl_->DidFinishImplFrame();
 }
 
+// Test that smooth scrolls clamp correctly when bounds change mid-animation.
+TEST_F(LayerTreeHostImplTimelinesTest, ScrollAnimatedChangingBounds) {
+  const gfx::Size old_content_size(1000, 1000);
+  const gfx::Size new_content_size(750, 750);
+  const gfx::Size viewport_size(500, 500);
+
+  LayerImpl* content_layer =
+      CreateBasicVirtualViewportLayers(viewport_size, old_content_size);
+  SetNeedsRebuildPropertyTrees();
+  DrawFrame();
+
+  base::TimeTicks start_time =
+      base::TimeTicks() + base::TimeDelta::FromMilliseconds(100);
+  BeginFrameArgs begin_frame_args =
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE);
+
+  host_impl_->ScrollAnimated(gfx::Point(), gfx::Vector2d(500, 500));
+  LayerImpl* scrolling_layer = host_impl_->CurrentlyScrollingLayer();
+
+  begin_frame_args.frame_time = start_time;
+  host_impl_->WillBeginImplFrame(begin_frame_args);
+  host_impl_->Animate();
+  host_impl_->UpdateAnimationState(true);
+  host_impl_->DidFinishImplFrame();
+
+  content_layer->SetBounds(new_content_size);
+  scrolling_layer->SetBounds(new_content_size);
+  SetNeedsRebuildPropertyTrees();
+  DrawFrame();
+
+  begin_frame_args.frame_time =
+      start_time + base::TimeDelta::FromMilliseconds(200);
+  host_impl_->WillBeginImplFrame(begin_frame_args);
+  host_impl_->Animate();
+  host_impl_->UpdateAnimationState(true);
+  host_impl_->DidFinishImplFrame();
+
+  EXPECT_EQ(gfx::ScrollOffset(250, 250),
+            scrolling_layer->CurrentScrollOffset());
+}
+
 TEST_F(LayerTreeHostImplTest, InvalidLayerNotAddedToRasterQueue) {
   host_impl_->CreatePendingTree();
 

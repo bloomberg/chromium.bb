@@ -781,7 +781,7 @@ void LayerImpl::OnScrollOffsetAnimated(const gfx::ScrollOffset& scroll_offset) {
   if (!IsActive())
     return;
 
-  SetCurrentScrollOffset(scroll_offset);
+  SetCurrentScrollOffset(ClampScrollOffsetToLimits(scroll_offset));
 
   layer_tree_impl_->DidAnimateScrollOffset();
 }

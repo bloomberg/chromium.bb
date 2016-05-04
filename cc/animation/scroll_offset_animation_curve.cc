@@ -182,6 +182,11 @@ static double VelocityBasedDurationBound(gfx::Vector2dF old_delta,
 void ScrollOffsetAnimationCurve::UpdateTarget(
     double t,
     const gfx::ScrollOffset& new_target) {
+  if (std::abs(MaximumDimension(target_value_.DeltaFrom(new_target))) <
+      kEpsilon) {
+    target_value_ = new_target;
+    return;
+  }
   gfx::ScrollOffset current_position =
       GetValue(base::TimeDelta::FromSecondsD(t));
   gfx::Vector2dF old_delta = target_value_.DeltaFrom(initial_value_);
