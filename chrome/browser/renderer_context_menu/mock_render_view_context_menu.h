@@ -13,28 +13,33 @@
 #include "base/strings/string16.h"
 #include "components/renderer_context_menu/render_view_context_menu_proxy.h"
 #include "ui/base/models/simple_menu_model.h"
+#include "ui/gfx/image/image.h"
 
 class PrefService;
 class Profile;
 class RenderViewContextMenuObserver;
 class TestingProfile;
 
-// A mock context menu used in tests. This class overrides virtual methods
-// derived from the RenderViewContextMenuProxy class to monitor calls from the
-// SpellingMenuObserver class.
+// A mock context menu proxy used in tests. This class overrides virtual methods
+// derived from the RenderViewContextMenuProxy class to monitor calls from a
+// MenuObserver class.
 class MockRenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
                                   public RenderViewContextMenuProxy {
  public:
   // A menu item used in this test.
   struct MockMenuItem {
     MockMenuItem();
+    MockMenuItem(const MockMenuItem& other);
     ~MockMenuItem();
+
+    MockMenuItem& operator=(const MockMenuItem& other);
 
     int command_id;
     bool enabled;
     bool checked;
     bool hidden;
     base::string16 title;
+    gfx::Image icon;
   };
 
   explicit MockRenderViewContextMenu(bool incognito);
@@ -91,7 +96,7 @@ class MockRenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
   // Either |original_profile_| or its incognito profile.
   Profile* profile_;
 
-  // A list of menu items added by the SpellingMenuObserver class.
+  // A list of menu items added.
   std::vector<MockMenuItem> items_;
 
   DISALLOW_COPY_AND_ASSIGN(MockRenderViewContextMenu);

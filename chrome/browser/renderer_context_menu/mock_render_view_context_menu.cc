@@ -17,7 +17,14 @@
 MockRenderViewContextMenu::MockMenuItem::MockMenuItem()
     : command_id(0), enabled(false), checked(false), hidden(true) {}
 
+MockRenderViewContextMenu::MockMenuItem::MockMenuItem(
+    const MockMenuItem& other) = default;
+
 MockRenderViewContextMenu::MockMenuItem::~MockMenuItem() {}
+
+MockRenderViewContextMenu::MockMenuItem&
+MockRenderViewContextMenu::MockMenuItem::operator=(const MockMenuItem& other) =
+    default;
 
 MockRenderViewContextMenu::MockRenderViewContextMenu(bool incognito)
     : observer_(nullptr),
@@ -85,11 +92,29 @@ void MockRenderViewContextMenu::AddSubMenu(int command_id,
                                            const base::string16& label,
                                            ui::MenuModel* model) {
   MockMenuItem item;
-  item.command_id = -1;
-  item.enabled = false;
-  item.checked = false;
+  item.command_id = command_id;
+  item.enabled = observer_->IsCommandIdEnabled(command_id);
+  item.checked = observer_->IsCommandIdChecked(command_id);
   item.hidden = false;
+  item.title = label;
   items_.push_back(item);
+
+  // Add items in the submenu |model| to |items_| so that the items can be
+  // updated later via the RenderViewContextMenuProxy interface.
+  // NOTE: this is a hack for the mock class. Ideally, RVCMProxy should neither
+  // know (directly) about submenu items nor it should be responsible to update
+  // them. This works in non-mock because of toolkit_delegate_ in RVCMBase.
+  // TODO(yusukes,lazyboy): This is a hack. RVCMProxy should neither directly
+  // know about but submenu items nor it should update them.
+  for (int i = 0; i < model->GetItemCount(); ++i) {
+    MockMenuItem sub_item;
+    sub_item.command_id = model->GetCommandIdAt(i);
+    sub_item.enabled = model->IsEnabledAt(i);
+    sub_item.checked = model->IsItemCheckedAt(i);
+    sub_item.hidden = false;
+    sub_item.title = model->GetSublabelAt(i);
+    items_.push_back(sub_item);
+  }
 }
 
 void MockRenderViewContextMenu::UpdateMenuItem(int command_id,
@@ -105,11 +130,22 @@ void MockRenderViewContextMenu::UpdateMenuItem(int command_id,
     }
   }
 
-  FAIL() << "Menu observer is trying to change a menu item it doesn't own.";
+  FAIL() << "Menu observer is trying to change a menu item it doesn't own."
+         << " command_id: " << command_id;
 }
 
 void MockRenderViewContextMenu::UpdateMenuIcon(int command_id,
-                                               const gfx::Image& image) {}
+                                               const gfx::Image& image) {
+  for (auto& item : items_) {
+    if (item.command_id == command_id) {
+      item.icon = image;
+      return;
+    }
+  }
+
+  FAIL() << "Menu observer is trying to change a menu item it doesn't own."
+         << " command_id: " << command_id;
+}
 
 void MockRenderViewContextMenu::AddSpellCheckServiceItem(bool is_checked) {
   AddCheckItem(
@@ -142,11 +178,7 @@ bool MockRenderViewContextMenu::GetMenuItem(size_t index,
                                             MockMenuItem* item) const {
   if (index >= items_.size())
     return false;
-  item->command_id = items_[index].command_id;
-  item->enabled = items_[index].enabled;
-  item->checked = items_[index].checked;
-  item->hidden = items_[index].hidden;
-  item->title = items_[index].title;
+  *item = items_[index];
   return true;
 }
 

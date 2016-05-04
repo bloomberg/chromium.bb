@@ -27,7 +27,9 @@ class SpellingOptionsSubMenuObserverTest : public InProcessBrowserTest {
   void SetUpOnMainThread() override {
     menu_.reset(new MockRenderViewContextMenu(false));
     observer_.reset(
-        new SpellingOptionsSubMenuObserver(menu_.get(), menu_.get(), 1));
+        // Pass nullptr as a delegate so that submenu items do not get put into
+        // MockRenderViewContextMenu::items_.
+        new SpellingOptionsSubMenuObserver(menu_.get(), nullptr, 1));
     menu_->SetObserver(observer_.get());
   }
 

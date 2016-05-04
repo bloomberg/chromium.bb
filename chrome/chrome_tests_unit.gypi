@@ -695,6 +695,8 @@
     ],
     'chrome_unit_tests_ash_sources': [
       'browser/media/desktop_media_list_ash_unittest.cc',
+      'browser/renderer_context_menu/mock_render_view_context_menu.cc',
+      'browser/renderer_context_menu/mock_render_view_context_menu.h',
       'browser/renderer_context_menu/open_with_menu_factory_ash_unittest.cc',
       'browser/signin/signin_error_notifier_ash_unittest.cc',
       'browser/sync/sync_error_notifier_ash_unittest.cc',
