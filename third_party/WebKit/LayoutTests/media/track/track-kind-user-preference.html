@@ -1,92 +1,9 @@
 <!DOCTYPE html>
-<script src=../media-file.js></script>
-<!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
-     (Please avoid writing new tests using video-test.js) -->
-<script src=../video-test.js></script>
-<script src=../media-controls.js></script>
-<script>
-
-    var tracks;
-    var expectedTrack;
-    function setPreferences() {
-        if (!window.internals) {
-            consoleWrite("<b>** This test only works in DRT! **<" + "/b>");
-            return;
-        }
-        run("internals.setUserPreferredLanguages(['jp', 'es', 'en', 'fr'])");
-    }
-
-    function checkExpected(mode, kind, language) {
-        testExpected("expectedTrack.mode", mode);
-        testExpected("expectedTrack.kind", kind);
-        testExpected("expectedTrack.language", language);
-    }
-
-    function runTests() {
-        consoleWrite("");
-        tracks = video.textTracks;
-        testExpected("tracks.length", 7);
-        testUserPrefersDefault();
-        testUserPrefersSubtitles();
-        testUserPrefersCaptions();
-    }
-
-    function testUserPrefersDefault() {
-        consoleWrite("");
-        // User preference is initialized to pick tracks marked as default.
-        // When multiple default tracks exist, pick the first default track.
-        expectedTrack = tracks[5];
-        checkExpected("showing", "subtitles", "ar");
-    }
-
-    function testUserPrefersSubtitles() {
-        if (window.internals)
-            internals.settings.setTextTrackKindUserPreference("subtitles");
-        consoleWrite("");
-        // Displays subtitle track over caption track when both exist in the same language.
-        expectedTrack = tracks[4];
-        checkExpected("showing", "subtitles", "es");
-    }
-
-    function testUserPrefersCaptions() {
-        if (window.internals)
-            internals.settings.setTextTrackKindUserPreference("captions");
-        consoleWrite("");
-        expectedTrack = tracks[1];
-        checkExpected("showing", "captions", "es");
-
-        consoleWrite("");
-        // Add a subtitle track in user's first preferred language "jp". This track must
-        // be displayed over a caption track with a language less preferred by the user.
-        var track = document.createElement('track');
-        track.setAttribute('kind', "subtitles");
-        track.setAttribute('src', "captions-webvtt/styling.vtt");
-        track.setAttribute('srclang', "jp");
-        track.setAttribute('onload', 'trackLoaded()');
-        video.appendChild(track);
-    }
-
-    function trackLoaded() {
-        consoleWrite("EVENT(load)");
-
-        // Don't log the event name because the order of the two events in not predictable.
-        track = event.target;
-        expectedTrack = track.track;
-        testExpected("track.readyState", HTMLTrackElement.LOADED);
-        checkExpected("showing", "subtitles", "jp");
-        consoleWrite("");
-        endTest();
-    }
-
-    window.onload = function() {
-        consoleWrite("Test that user preference for text track kind is honored");
-        findMediaElement();
-        setPreferences();
-        video.src = findMediaFile('video', '../content/test');
-        video.currentTime = 0.1;
-        waitForEvent('canplaythrough', runTests);
-    }
-</script>
+<title>Test that user preference for text track kind is honored.</title>
+<script src="../media-file.js"></script>
+<script src="../media-controls.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 <video>
     <track src="captions-webvtt/styling.vtt" kind="captions" srclang="de">
     <track src="captions-webvtt/styling.vtt" kind="captions" srclang="es">
@@ -96,3 +13,64 @@
     <track src="captions-webvtt/styling.vtt" kind="subtitles" srclang="ar" default>
     <track src="captions-webvtt/styling.vtt" kind="captions" srclang="fr" default>
 </video>
+<script>
+async_test(function(t) {
+    var video = document.querySelector("video");
+    internals.setUserPreferredLanguages(["jp", "es", "en", "fr"]);
+    video.src = findMediaFile("video", "../content/test");
+
+    var tracks;
+    var expectedTrack;
+    video.oncanplaythrough = t.step_func(function() {
+        tracks = video.textTracks;
+        assert_equals(tracks.length, 7);
+        testUserPreferencesDefault();
+        testUserPreferencesSubtitles();
+        testUserPreferencesCaptions();
+    });
+
+    function testUserPreferencesDefault() {
+        // User preference is initialized to pick tracks marked as default.
+        // When multiple default tracks exist, pick the first default track.
+        expectedTrack = tracks[5];
+        checkExpected("showing", "subtitles", "ar");
+    }
+
+    function testUserPreferencesSubtitles() {
+        internals.settings.setTextTrackKindUserPreference("subtitles");
+        // Displays subtitle track over caption track when both exist in the same language.
+        expectedTrack = tracks[4];
+        checkExpected("showing", "subtitles", "es");
+    }
+
+    function testUserPreferencesCaptions() {
+        internals.settings.setTextTrackKindUserPreference("captions");
+        expectedTrack = tracks[1];
+        checkExpected("showing", "captions", "es");
+
+        // Add a subtitle track in user"s first preferred language "jp".
+        // This track must be displayed over a caption track with a
+        // language less preferred by the user.
+        var track = document.createElement("track");
+        track.setAttribute("kind", "subtitles");
+        track.setAttribute("src", "captions-webvtt/styling.vtt");
+        track.setAttribute("srclang", "jp");
+
+        track.onload = t.step_func_done(trackLoaded);
+        video.appendChild(track);
+    }
+
+    function trackLoaded() {
+        track = event.target;
+        expectedTrack = track.track;
+        assert_equals(track.readyState, HTMLTrackElement.LOADED);
+        checkExpected("showing", "subtitles", "jp");
+    }
+
+    function checkExpected(mode, kind, language) {
+        assert_equals(expectedTrack.mode, mode);
+        assert_equals(expectedTrack.kind, kind);
+        assert_equals(expectedTrack.language, language);
+    }
+});
+</script>
