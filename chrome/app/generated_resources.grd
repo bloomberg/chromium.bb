@@ -14786,6 +14786,15 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       Adjusts scroll position to prevent visible jumps when offscreen content changes.
     </message>
 
+    <if expr="chromeos">
+      <message name="IDS_FLAGS_ENABLE_NATIVE_CUPS_NAME" desc="Name of the native cups flag.">
+        Native CUPS
+      </message>
+      <message name="IDS_FLAGS_ENABLE_NATIVE_CUPS_DESCRIPTION" desc="Description of the native CUPS flag">
+        Enables the use of the native CUPS printing backend.
+      </message>
+    </if>
+
     <if expr="is_android">
       <message name="IDS_FLAGS_ENABLE_NTP_SNIPPETS_NAME" desc="Name for the flag to enable snippets on the New Tab page." translateable="false">
         Show content snippets on the New Tab page

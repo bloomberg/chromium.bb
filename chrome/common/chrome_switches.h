@@ -126,6 +126,9 @@ extern const char kEnableMaterialDesignExtensions[];
 extern const char kEnableMaterialDesignFeedback[];
 extern const char kEnableMaterialDesignPolicyPage[];
 extern const char kEnableNaCl[];
+#if defined(OS_CHROMEOS)
+extern const char kEnableNativeCups[];
+#endif // defined(OS_CHROMEOS)
 extern const char kEnableNativeNotifications[];
 extern const char kEnableNavigationTracing[];
 extern const char kEnableNetBenchmarking[];

@@ -1804,7 +1804,11 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_ENABLE_SYSTEM_TIMEZONE_AUTOMATIC_DETECTION_DESCRIPTION, kOsCrOS,
      SINGLE_VALUE_TYPE(
          chromeos::switches::kEnableSystemTimezoneAutomaticDetectionPolicy)},
-#endif
+    {"enable-native-cups",  // FLAGS:RECORD_UMA
+     IDS_FLAGS_ENABLE_NATIVE_CUPS_NAME,
+     IDS_FLAGS_ENABLE_NATIVE_CUPS_DESCRIPTION, kOsCrOS,
+     SINGLE_VALUE_TYPE(switches::kEnableNativeCups)},
+#endif // defined(OS_CHROMEOS)
 #if !defined(OS_ANDROID) && !defined(OS_IOS) && defined(GOOGLE_CHROME_BUILD)
     {"enable-google-branded-context-menu",
      IDS_FLAGS_GOOGLE_BRANDED_CONTEXT_MENU_NAME,

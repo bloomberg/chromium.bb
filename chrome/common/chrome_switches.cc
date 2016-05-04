@@ -431,6 +431,11 @@ const char kEnableMaterialDesignPolicyPage[]  = "enable-md-policy-page";
 // (internally adds lEnableGpuPlugin to the command line).
 const char kEnableNaCl[]                    = "enable-nacl";
 
+#if defined(OS_CHROMEOS)
+// Enables native cups integration
+const char kEnableNativeCups[] = "enable-native-cups";
+#endif // defined(OS_CHROMEOS)
+
 // Enables the use of native notifications instead of using the Chrome based
 // ones.
 const char kEnableNativeNotifications[] = "enable-native-notifications";
