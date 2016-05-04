@@ -187,8 +187,6 @@ config("asan_flags") {
         "-mllvm",
         "-asan-globals=0",
       ]
-      libs = [ "clang_rt.asan_osx_dynamic" ]
-
       # TODO(GYP): deal with mac_bundles.
     } else if (is_win) {
       assert(target_cpu == "x86", "WinASan is 32-bit only currently")
