@@ -704,9 +704,6 @@
                  type="chrome_html"
                  flattenhtml="true"
                  allowexternalscript="true" />
-      <structure name="IDR_SETTINGS_SYNC_PAGE_CSS"
-                 file="people_page/sync_page.css"
-                 type="chrome_html" />
       <structure name="IDR_SETTINGS_SYSTEM_PAGE_BROWSER_PROXY_HTML"
                  file="system_page/system_page_browser_proxy.html"
                  type="chrome_html" />

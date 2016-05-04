@@ -12,70 +12,69 @@
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 
 <dom-module id="settings-sync-page">
-  <link rel="import" type="css" href="sync_page.css">
   <template>
     <style include="settings-shared"></style>
     <iron-pages id="pages" selected="loading" attr-for-selected="id">
       <div id="loading" i18n-content="syncLoading"></div>
       <div id="timeout" i18n-content="syncTimeout"></div>
       <div id="main">
-        <div class="settings-box">
+        <div class="settings-box first block">
           <paper-checkbox checked="{{syncPrefs.syncAllDataTypes}}"
               on-change="onSyncAllDataTypesChanged_">
             <span i18n-content="syncEverythingCheckboxLabel">
           </paper-checkbox>
 
-          <div id="sync-item-list">
+          <div class="list-frame">
             <paper-checkbox checked="{{syncPrefs.appsSynced}}"
-                on-change="onSingleSyncDataTypeChanged_"
+                on-change="onSingleSyncDataTypeChanged_" class="list-item"
                 hidden="[[!syncPrefs.appsRegistered]]"
                 disabled="[[shouldSyncCheckboxBeDisabled_(syncPrefs.syncAllDataTypes, syncPrefs.appsEnforced)]]">
               <span i18n-content="appCheckboxLabel"></span>
             </paper-checkbox>
             <paper-checkbox checked="{{syncPrefs.autofillSynced}}"
-                on-change="onSingleSyncDataTypeChanged_"
+                on-change="onSingleSyncDataTypeChanged_" class="list-item"
                 hidden="[[!syncPrefs.autofillRegistered]]"
                 disabled="[[shouldSyncCheckboxBeDisabled_(syncPrefs.syncAllDataTypes, syncPrefs.autofillEnforced)]]">
               <span i18n-content="autofillCheckboxLabel"></span>
             </paper-checkbox>
             <paper-checkbox checked="{{syncPrefs.bookmarksSynced}}"
-                on-change="onSingleSyncDataTypeChanged_"
+                on-change="onSingleSyncDataTypeChanged_" class="list-item"
                 hidden="[[!syncPrefs.bookmarksRegistered]]"
                 disabled="[[shouldSyncCheckboxBeDisabled_(syncPrefs.syncAllDataTypes, syncPrefs.bookmarksEnforced)]]">
               <span i18n-content="bookmarksCheckboxLabel"></span>
             </paper-checkbox>
             <paper-checkbox checked="{{syncPrefs.extensionsSynced}}"
-                on-change="onSingleSyncDataTypeChanged_"
+                on-change="onSingleSyncDataTypeChanged_" class="list-item"
                 hidden="[[!syncPrefs.extensionsRegistered]]"
                 disabled="[[shouldSyncCheckboxBeDisabled_(syncPrefs.syncAllDataTypes, syncPrefs.extensionsEnforced)]]">
               <span i18n-content="extensionsCheckboxLabel"></span>
             </paper-checkbox>
             <paper-checkbox checked="{{syncPrefs.typedUrlsSynced}}"
-                on-change="onSingleSyncDataTypeChanged_"
+                on-change="onSingleSyncDataTypeChanged_" class="list-item"
                 hidden="[[!syncPrefs.typedUrlsRegistered]]"
                 disabled="[[shouldSyncCheckboxBeDisabled_(syncPrefs.syncAllDataTypes, syncPrefs.typedUrlsEnforced)]]">
               <span i18n-content="historyCheckboxLabel"></span>
             </paper-checkbox>
             <paper-checkbox checked="{{syncPrefs.passwordsSynced}}"
-                on-change="onSingleSyncDataTypeChanged_"
+                on-change="onSingleSyncDataTypeChanged_" class="list-item"
                 hidden="[[!syncPrefs.passwordsRegistered]]"
                 disabled="[[shouldSyncCheckboxBeDisabled_(syncPrefs.syncAllDataTypes, syncPrefs.passwordsEnforced)]]">
               <span i18n-content="passwordsCheckboxLabel"></span>
             </paper-checkbox>
             <paper-checkbox checked="{{syncPrefs.preferencesSynced}}"
-                on-change="onSingleSyncDataTypeChanged_"
+                on-change="onSingleSyncDataTypeChanged_" class="list-item"
                 hidden="[[!syncPrefs.preferencesRegistered]]"
                 disabled="[[shouldSyncCheckboxBeDisabled_(syncPrefs.syncAllDataTypes, syncPrefs.preferencesEnforced)]]">
               <span i18n-content="settingsCheckboxLabel"></span>
             </paper-checkbox>
             <paper-checkbox checked="{{syncPrefs.themesSynced}}"
-                on-change="onSingleSyncDataTypeChanged_"
+                on-change="onSingleSyncDataTypeChanged_" class="list-item"
                 hidden="[[!syncPrefs.themesRegistered]]"
                 disabled="[[shouldSyncCheckboxBeDisabled_(syncPrefs.syncAllDataTypes, syncPrefs.themesEnforced)]]">
               <span i18n-content="themesAndWallpapersCheckboxLabel"></span>
             </paper-checkbox>
             <paper-checkbox checked="{{syncPrefs.tabsSynced}}"
-                on-change="onSingleSyncDataTypeChanged_"
+                on-change="onSingleSyncDataTypeChanged_" class="list-item"
                 hidden="[[!syncPrefs.tabsRegistered]]"
                 disabled="[[shouldSyncCheckboxBeDisabled_(syncPrefs.syncAllDataTypes, syncPrefs.tabsEnforced)]]">
               <span i18n-content="openTabsCheckboxLabel"></span>
@@ -83,48 +82,56 @@
           </div>
         </div>
 
-        <div class="settings-box">
-          <h2 i18n-content="encryptionOptionsTitle"></h2>
-          <p i18n-content="syncDataEncryptedText"></p>
+        <div class="settings-box two-line">
+          <div class="start">
+            $i18n{encryptionOptionsTitle}
+            <div class="secondary">
+              $i18n{syncDataEncryptedText}
+            </div>
+          </div>
+        </div>
 
-          <template is="dom-if" if="[[!syncPrefs.showPassphrase]]">
+        <template is="dom-if" if="[[!syncPrefs.showPassphrase]]">
+          <div class="list-frame">
             <paper-radio-group id="encryptRadioGroup"
                 selected="[[selectedEncryptionRadio_(syncPrefs.usePassphrase, syncPrefs.encryptAllData)]]"
                 on-paper-radio-group-changed="onEncryptionRadioSelectionChanged_">
               <paper-radio-button name="encrypt-with-google"
+                  class="list-item"
                   disabled="[[encryptionRadiosDisabled_(syncPrefs.usePassphrase, syncPrefs.encryptAllData)]]">
                 <span>[[i18n('encryptWithGoogleCredentialsLabel')]]</span>
               </paper-radio-button>
               <paper-radio-button name="encrypt-with-passphrase"
+                  class="list-item"
                   disabled="[[encryptionRadiosDisabled_(syncPrefs.usePassphrase, syncPrefs.encryptAllData)]]">
                 <span>[[encryptWithPassphraseBody_(syncPrefs.fullEncryptionBody)]]</span>
               </paper-radio-button>
             </paper-radio-group>
-          </template>
+          </div>
+        </template>
 
-          <template is="dom-if" if="[[creatingNewPassphrase]]">
-            <div>[[i18n('passphraseExplanationText')]]</div>
-            <paper-input id="passphraseInput" type="password"
-                placeholder="[[i18n('passphrasePlaceholder')]]">
-            </paper-input>
-            <paper-input id="passphraseConfirmationInput" type="password"
-                placeholder="[[i18n('passphraseConfirmationPlaceholder')]]">
-            </paper-input>
-            <div id="emptyPassphraseError" hidden>[[i18n('emptyPassphraseError')]]</div>
-            <div id="mismatchedPassphraseError" hidden>[[i18n('mismatchedPassphraseError')]]</div>
-          </template>
+        <template is="dom-if" if="[[creatingNewPassphrase]]">
+          <div>[[i18n('passphraseExplanationText')]]</div>
+          <paper-input id="passphraseInput" type="password"
+              placeholder="[[i18n('passphrasePlaceholder')]]">
+          </paper-input>
+          <paper-input id="passphraseConfirmationInput" type="password"
+              placeholder="[[i18n('passphraseConfirmationPlaceholder')]]">
+          </paper-input>
+          <div id="emptyPassphraseError" hidden>[[i18n('emptyPassphraseError')]]</div>
+          <div id="mismatchedPassphraseError" hidden>[[i18n('mismatchedPassphraseError')]]</div>
+        </template>
 
-          <template is="dom-if" if="[[syncPrefs.showPassphrase]]">
-            <div id="askCustomPassphraseMessage"
-                hidden="[[askOldGooglePassphrase]]">[[syncPrefs.enterPassphraseBody]]</div>
-            <div id="askOldGooglePassphraseMessage"
-                hidden="[[!askOldGooglePassphrase]]">[[syncPrefs.enterGooglePassphraseBody]]</div>
-            <paper-input id="existingPassphraseInput" type="password"
-                placeholder="[[i18n('passphrasePlaceholder')]]">
-            </paper-input>
-            <div id="incorrectPassphraseError" hidden>[[i18n('incorrectPassphraseError')]]</div>
-          </template>
-        </div>
+        <template is="dom-if" if="[[syncPrefs.showPassphrase]]">
+          <div id="askCustomPassphraseMessage"
+              hidden="[[askOldGooglePassphrase]]">[[syncPrefs.enterPassphraseBody]]</div>
+          <div id="askOldGooglePassphraseMessage"
+              hidden="[[!askOldGooglePassphrase]]">[[syncPrefs.enterGooglePassphraseBody]]</div>
+          <paper-input id="existingPassphraseInput" type="password"
+              placeholder="[[i18n('passphrasePlaceholder')]]">
+          </paper-input>
+          <div id="incorrectPassphraseError" hidden>[[i18n('incorrectPassphraseError')]]</div>
+        </template>
       </div>
     </iron-pages>
   </template>
