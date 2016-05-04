@@ -1,57 +1,37 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Tests that a "metadata" track does not load automatically, but does load when the mode is changed.</title>
+<script src="../media-file.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<video>
+    <track kind="metadata" src="captions-webvtt/metadata.vtt">
+</video>
+<script>
+async_test(function(t) {
+    var video = document.querySelector("video");
 
-        <script src=../media-file.js></script>
-        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=../video-test.js></script>
-        <script>
+    // Check initial metadata track state.
+    var track = document.querySelectorAll("track")[0];
+    assert_equals(track.readyState, HTMLTrackElement.NONE);
+    assert_equals(video.textTracks[0].mode, "disabled");
 
-            function trackLoaded()
-            {
-                consoleWrite("EVENT(load) -- &lt;track&gt;");
-                consoleWrite("<i>**check metadata track state<" + "/i>");
-                testExpected("track.readyState", HTMLTrackElement.LOADED);
-                testExpected("track.track.mode", "hidden");
-                testExpected("video.textTracks[0].cues.length", 12);
-                testExpected("video.textTracks[0].cues[11].startTime", 22);
-                consoleWrite("");
-                endTest();
-            }
+    video.src = findMediaFile("video", "../content/test");
+    video.oncanplaythrough = t.step_func(canplaythrough);
+    track.onload = t.step_func_done(trackLoaded);
 
-            function canplaythrough()
-            {
-                consoleWrite("EVENT(canplaythrough) -- &lt;video&gt;");
-                consoleWrite("<i>**change metadata track mode so it loads<" + "/i>");
-                testExpected("track.readyState", HTMLTrackElement.NONE);
-                testExpected("video.textTracks[0].mode", "disabled");
-                testExpected("video.textTracks[0].cues", null);
-                run("video.textTracks[0].mode = 'hidden'");
-                consoleWrite("");
-            }
+    function trackLoaded() {
+        assert_equals(track.readyState, HTMLTrackElement.LOADED);
+        assert_equals(track.track.mode, "hidden");
+        assert_equals(video.textTracks[0].cues.length, 12);
+        assert_equals(video.textTracks[0].cues[11].startTime, 22);
+    }
 
-            function start()
-            {
-                consoleWrite("<br>EVENT(load) -- &lt;body&gt;");
-                findMediaElement();
-
-                consoleWrite("<i>**check initial metadata track state<" + "/i>");
-                track = document.querySelectorAll('track')[0];
-                testExpected("track.readyState", HTMLTrackElement.NONE);
-                testExpected("video.textTracks[0].mode", "disabled");
-
-                video.src = findMediaFile("video", "../content/test");
-                consoleWrite("");
-            }
-        </script>
-    </head>
-
-    <body onload="start()">
-        <p>Tests that a 'metadata' track does not load automatically, but does load when the mode is changed.</p>
-        <video oncanplaythrough="canplaythrough()" >
-            <track kind="metadata" src="captions-webvtt/metadata.vtt" onload="trackLoaded()">
-        </video>
-    </body>
-</html>
+    function canplaythrough() {
+        assert_equals(track.readyState, HTMLTrackElement.NONE);
+        assert_equals(video.textTracks[0].mode, "disabled");
+        assert_equals(video.textTracks[0].cues, null);
+        // Change metadata track mode so it loads.
+        video.textTracks[0].mode = "hidden";
+    }
+});
+</script>

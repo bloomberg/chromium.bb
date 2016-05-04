@@ -1,55 +1,35 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Tests that cues are properly removed from the active cue list when their track changes mode to disabled.</title>
+<script src="../media-file.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<video>
+    <track src="captions-webvtt/captions-gaps.vtt" kind="captions" default >
+</video>
+<script>
+async_test(function(t) {
+    var video = document.querySelector("video");
+    var testTrack = document.querySelector("track");
 
-        <script src=../media-file.js></script>
-        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=../video-test.js></script>
-        <script>
-            var testTrack;
+    video.src = findMediaFile("video", "../content/counting");
+    video.oncanplaythrough = t.step_func(startTest);
+    video.onseeked = t.step_func_done(seeked);
 
-            function seeked()
-            {
-                consoleWrite("** Set the mode of the text track to hidden, then showing again. **");
-                testTrack.track.mode = "hidden";
-                testTrack.track.mode = "showing";
+    function startTest() {
+        // Set the mode of the text track to showing.
+        testTrack.track.mode = "showing";
+        // Seek to a time with a caption.
+        video.currentTime = 1.5;
+    }
 
-                consoleWrite("** Set the mode of the text track to disabled. **");
-                testTrack.track.mode = "disabled";
+    function seeked() {
+        // Set the mode of the text track to hidden, then showing again.
+        testTrack.track.mode = "hidden";
+        testTrack.track.mode = "showing";
 
-                consoleWrite("");
-                consoleWrite("No crash. PASS.");
-                consoleWrite("");
-
-                endTest();
-            }
-
-            function startTest()
-            {
-                consoleWrite("** Set the mode of the text track to showing. **");
-                testTrack.track.mode = "showing";
-                consoleWrite("** Seek to a time with a caption. **");
-                video.currentTime = 1.5;
-            }
-
-            function loaded()
-            {
-                findMediaElement();
-                testTrack = document.querySelector('track');
-
-                video.src = findMediaFile('video', '../content/counting');
-                waitForEvent('seeked', seeked);
-                waitForEvent('canplaythrough', startTest);
-            }
-
-        </script>
-    </head>
-    <body onload="loaded()">
-        <video controls >
-            <track src="captions-webvtt/captions-gaps.vtt" kind="captions" default >
-        </video>
-      <p>Tests that cues are properly removed from the active cue list when their track changes mode to disabled.</p>
-    </body>
-</html>
+        // Set the mode of the text track to disabled.
+        testTrack.track.mode = "disabled";
+        // No crash, PASS.
+    }
+});
+</script>

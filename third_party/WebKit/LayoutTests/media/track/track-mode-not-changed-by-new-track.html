@@ -1,102 +1,73 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Tests that a track appended after the initial track configuration does not change other tracks.</title>
+<script src="../media-file.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<video>
+    <track kind="metadata" src="captions-webvtt/metadata.vtt">
+</video>
+<script>
+async_test(function(t) {
+    var video = document.querySelector('video');
 
-        <script src=../media-file.js></script>
-        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=../video-test.js></script>
-        <script>
+    var track1 = document.querySelectorAll('track')[0];
+    assert_equals(track1.readyState, HTMLTrackElement.NONE);
+    assert_equals(track1.track.mode, 'disabled');
 
-            function trackAdded()
-            {
-                consoleWrite("EVENT(" + event.type + ")");
-                consoleWrite("<i>**check that metadata track state has not changed<" + "/i>");
-                testExpected("track1.readyState", HTMLTrackElement.LOADED);
-                testExpected("track1.track.mode", "hidden");
-                consoleWrite("<i>**and that the caption track state has not changed<" + "/i>");
-                testExpected("track2.readyState", HTMLTrackElement.LOADED);
-                testExpected("track2.track.mode", "showing");
-                consoleWrite("<i>**and that the subtitle track state is correct<" + "/i>");
-                testExpected("event.target", video.textTracks);
-                testExpected("event instanceof window.TrackEvent", true);
-                testExpected("event.track", video.textTracks[video.textTracks.length - 1]);
-                testExpected("track3.mode", "showing");
+    video.src = findMediaFile('video', '../content/test');
+    video.oncanplaythrough = t.step_func(canplaythrough);
+    track1.onload = t.step_func(metadataTrackLoaded);
 
-                consoleWrite("");
-                endTest();
-            }
+    function canplaythrough() {
+        // check initial metadata track state.
+        assert_equals(track1.readyState, HTMLTrackElement.NONE);
+        assert_equals(track1.track.mode, 'disabled');
+        assert_equals(track1.track.cues, null);
+        track1.track.mode = 'hidden';
+    }
 
-            function captionsTrackLoaded()
-            {
-                consoleWrite("EVENT(load) -- &lt;track kind='captions' &gt;");
-                consoleWrite("<i>**check that metadata track state has not changed<" + "/i>");
-                testExpected("track1.readyState", HTMLTrackElement.LOADED);
-                testExpected("track1.track.mode", "hidden");
-                consoleWrite("<i>**and that the caption track state is correct<" + "/i>");
-                testExpected("track2.readyState", HTMLTrackElement.LOADED);
-                testExpected("track2.track.mode", "showing");
-                consoleWrite("");
+    function metadataTrackLoaded() {
+        // check metadata track state.
+        assert_equals(track1.readyState, HTMLTrackElement.LOADED);
+        assert_equals(track1.track.mode, 'hidden');
+        assert_equals(track1.track.cues.length, 12);
+        assert_equals(track1.track.cues[11].startTime, 22);
 
-                video.textTracks.addEventListener("addtrack", trackAdded);
-                consoleWrite("<i>**add a subtitle track with video.addTextTrack()<" + "/i>");
-                run("track3 = video.addTextTrack('subtitles', 'Subtitle Track', 'en')");
-                run("track3.mode = 'showing'");
+        // Add a caption track, configured to load automatically.
+        track2 = document.createElement('track');
+        track2.setAttribute('kind', 'captions');
+        track2.setAttribute('default', 'default');
+        track2.setAttribute('src', 'captions-webvtt/tc004-webvtt-file.vtt');
+        track2.onload = t.step_func(captionsTrackLoaded);
+        video.appendChild(track2);
+    }
 
-                consoleWrite("");
-            }
+    function captionsTrackLoaded() {
+        // Check that metadata track state has not changed.
+        assert_equals(track1.readyState, HTMLTrackElement.LOADED);
+        assert_equals(track1.track.mode, 'hidden');
+        // and that the caption track state is correct.
+        assert_equals(track2.readyState, HTMLTrackElement.LOADED);
+        assert_equals(track2.track.mode, 'showing');
 
-            function metadataTrackLoaded()
-            {
-                consoleWrite("EVENT(load) -- &lt;track kind='metadata' &gt;");
-                consoleWrite("<i>**check metadata track state<" + "/i>");
-                testExpected("track1.readyState", HTMLTrackElement.LOADED);
-                testExpected("track1.track.mode", "hidden");
-                testExpected("track1.track.cues.length", 12);
-                testExpected("track1.track.cues[11].startTime", 22);
+        video.textTracks.onaddtrack = t.step_func_done(trackAdded);
+        // add a subtitle track with video.addTextTrack().
+        track3 = video.addTextTrack('subtitles', 'Subtitle Track', 'en');
+        track3.mode = 'showing';
+    }
 
-                consoleWrite("<br><i>**add a caption track, configured to load automatically<" + "/i>");
-                run("track2 = document.createElement('track')");
-                run("track2.setAttribute('kind', 'captions')");
-                run("track2.setAttribute('default', 'default')");
-                run("track2.setAttribute('onload', 'captionsTrackLoaded()')");
-                run("track2.setAttribute('src', 'captions-webvtt/tc004-webvtt-file.vtt')");
-                run("video.appendChild(track2)");
-
-                consoleWrite("");
-            }
-
-            function canplaythrough()
-            {
-                consoleWrite("EVENT(canplaythrough) -- &lt;video&gt;");
-                consoleWrite("<i>**check initial metadata track state<" + "/i>");
-                testExpected("track1.readyState", HTMLTrackElement.NONE);
-                testExpected("track1.track.mode", "disabled");
-                testExpected("track1.track.cues", null);
-                run("track1.track.mode = 'hidden'");
-                consoleWrite("");
-            }
-
-            function start()
-            {
-                consoleWrite("<br>EVENT(load) -- &lt;body&gt;");
-                findMediaElement();
-
-                track1 = document.querySelectorAll('track')[0];
-                testExpected("track1.readyState", HTMLTrackElement.NONE);
-                testExpected("track1.track.mode", "disabled");
-
-                video.src = findMediaFile("video", "../content/test");
-                consoleWrite("");
-            }
-        </script>
-    </head>
-
-    <body onload="start()">
-        <p>Tests that a track appended after the initial track configuration does not change other tracks.</p>
-        <video oncanplaythrough="canplaythrough()" >
-            <track kind="metadata" src="captions-webvtt/metadata.vtt" onload="metadataTrackLoaded()">
-        </video>
-    </body>
-</html>
+    function trackAdded() {
+        // Check that metadata track state has not changed.
+        assert_equals(track1.readyState, HTMLTrackElement.LOADED);
+        assert_equals(track1.track.mode, 'hidden');
+        // and that the caption track state has not changed.
+        assert_equals(track2.readyState, HTMLTrackElement.LOADED);
+        assert_equals(track2.track.mode, 'showing');
+        // and that the subtitle track state is correct.
+        assert_equals(event.target, video.textTracks);
+        assert_true(event instanceof window.TrackEvent);
+        assert_equals(event.track, video.textTracks[video.textTracks.length - 1]);
+        assert_equals(track3.mode, 'showing');
+    }
+});
+</script>

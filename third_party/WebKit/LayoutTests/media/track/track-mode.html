@@ -1,93 +1,61 @@
 <!DOCTYPE html>
-<html>
-    <head>
+<title>Tests that the TextTrack mode attribute is appropriately set.</title>
+<script src="../media-file.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<video>
+    <track src="captions-webvtt/captions-fast.vtt" default>
+</video>
+<script>
+async_test(function(t) {
+    var video = document.querySelector("video");
+    var track = document.querySelector("track");
+    track.onload = t.step_func(trackLoaded);
 
-        <script src=../media-file.js></script>
-        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=../video-test.js></script>
-        <script>
+    var cueCount = 0;
+    var textTrack;
+    function trackLoaded() {
+        textTrack = track.track;
+        // Test default attribute value.
+        assert_equals(textTrack.mode, "showing");
+        assert_equals(video.textTracks[0].mode, "showing");
+        // Set to bogus value, should return default.
+        var value = "bogus";
+        textTrack.mode = value;
+        assert_equals(textTrack.mode, "showing");
+        assert_equals(video.textTracks[0].mode, "showing");
 
-            var textTrack;
-            var cueCount;
+        // Set to numeric value (no longer supported), should return default.
+        textTrack.mode = 2;
+        assert_equals(textTrack.mode, "showing");
+        assert_equals(video.textTracks[0].mode, "showing");
 
-            function setMode(value)
-            {
-                run("textTrack.mode = '" + value + "'");
-                testExpected("textTrack.mode", value);
-                testExpected("video.textTracks[0].mode", value);
-                if (value == "disabled")
-                    testExpected("textTrack.cues", null);
-                else
-                    testExpected("textTrack.cues.length", textTrack.cues.length);
-                consoleWrite("");
-            }
+        // Set to known values.
+        setModeAndCheck("disabled");
 
-            function start()
-            {
-                findMediaElement();
-                cueCount = 0;
-                consoleWrite("");
+        video.src = findMediaFile("video", "../content/test");
+        video.play();
+        // Wait for end of first cue (no events should fire while track is disabled).
+        setTimeout(testHiddenAndShowing, 400);
+    }
 
-                textTrack = document.getElementById('track_1').track;
+    track.oncuechange = t.step_func(function(event) {
+        cueCount++;
+        if (cueCount == textTrack.cues.length)
+            t.done();
+    });
 
-                consoleWrite("<b>++ Test default attribute value</b>");
-                testExpected("textTrack.mode", "showing");
-                testExpected("video.textTracks[0].mode", "showing");
-                consoleWrite("");
+    function setModeAndCheck(value) {
+        textTrack.mode =  value;
+        assert_equals(textTrack.mode, value);
+        assert_equals(video.textTracks[0].mode, value);
+        if (value == "disabled")
+            assert_equals(textTrack.cues, null);
+    }
 
-                consoleWrite("<b>*** Set to bogus value, should return default</b>");
-                var value = "bogus";
-                run("textTrack.mode = '" + value + "'");
-                testExpected("textTrack.mode", "showing");
-                testExpected("video.textTracks[0].mode", "showing");
-                consoleWrite("");
-
-                consoleWrite("<b>*** Set to numeric value (no longer supported), should return default</b>");
-                run("textTrack.mode = 2");
-                testExpected("textTrack.mode", "showing");
-                testExpected("video.textTracks[0].mode", "showing");
-                consoleWrite("");
-
-                consoleWrite("<b>*** Set to known values</b>");
-                consoleWrite("<b>++ 'disabled'</b>");
-                setMode("disabled");
-
-                video.src = findMediaFile("video", "../content/test");
-                video.play();
-                // Wait for end of first cue (no events should fire while track is disabled).
-                setTimeout(testHiddenAndShowing, 400);
-                consoleWrite("++ 0 events expected while mode = disabled");
-                consoleWrite("");
-            }
-
-            function testHiddenAndShowing()
-            {
-                consoleWrite("<b>++ 'hidden'</b>");
-                setMode("hidden");
-
-                consoleWrite("<b>++ 'showing'</b>");
-                setMode("showing");
-
-                consoleWrite("++ at least " + textTrack.cues.length + " events expected while mode = showing");
-            }
-
-            waitForEvent('cuechange',
-                function (event)
-                {
-                    cueCount++;
-                    if (cueCount == textTrack.cues.length)
-                        endTest();
-
-                }
-            );
-
-        </script>
-    </head>
-    <body>
-        <p>Tests that the TextTrack mode attribute is appropriately set.</p>
-        <video>
-            <track id=track_1 src="captions-webvtt/captions-fast.vtt" onload="start()" default>
-        </video>
-    </body>
-</html>
+    function testHiddenAndShowing() {
+        setModeAndCheck("hidden");
+        setModeAndCheck("showing");
+    }
+});
+</script>
