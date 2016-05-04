@@ -75,6 +75,12 @@
     'apps': {
       'filepath': '^apps/',
     },
+    'arc': {
+      'filepath': 'arc/',
+    },
+    'arc_net': {
+      'filepath': 'components/arc/net/',
+    },
     'ash': {
       'filepath': 'ash/',
     },
@@ -1312,6 +1318,12 @@
     'app_shortcuts': ['mgiuca@chromium.org', 'tapted@chromium.org'],
     'appcache': ['michaeln@chromium.org'],
     'apps': ['tfarina@chromium.org', 'chromium-apps-reviews@chromium.org'],
+    'arc': ['elijahtaylor+arcwatch@chromium.org',
+            'lhchavez+watch@chromium.org',
+            'yusukes+watch@chromium.org'],
+    'arc_net': ['abhishekbh@chromium.org',
+                'cernekee@chromium.org',
+                'snanda@chromium.org'],
     'ash': ['sadrul@chromium.org',
             'kalyan.kondapally@intel.com'],
     'aura': ['sadrul@chromium.org',
