@@ -27969,6 +27969,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicHpackCompressionPercentage" units="%">
+  <owner>ckrasic@chromium.org</owner>
+  <summary>
+    The compression percentage, logged for each sent HPACK compressed header
+    frame.
+  </summary>
+</histogram>
+
+<histogram name="Net.QuicHpackDecompressionPercentage" units="%">
+  <owner>ckrasic@chromium.org</owner>
+  <summary>
+    The decompression percentage, logged for each received HPACK compressed
+    header frame.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicInchoateClientHelloReason"
     enum="QuicServerConfigState">
   <owner>rtenneti@chromium.org</owner>
