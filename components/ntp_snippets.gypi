@@ -16,6 +16,7 @@
         '../google_apis/google_apis.gyp:google_apis',
         '../net/net.gyp:net',
         '../url/url.gyp:url_lib',
+        'data_use_measurement_core',
         'keyed_service_core',
         'prefs/prefs.gyp:prefs',
         'signin_core_browser',
