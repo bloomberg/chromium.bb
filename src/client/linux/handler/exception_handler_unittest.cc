@@ -93,10 +93,6 @@ void FlushInstructionCache(const char* memory, uint32_t memory_size) {
 #endif
 }
 
-// Length of a formatted GUID string =
-// sizeof(MDGUID) * 2 + 4 (for dashes) + 1 (null terminator)
-const int kGUIDStringSize = 37;
-
 void sigchld_handler(int signo) { }
 
 int CreateTMPFile(const string& dir, string* path) {
