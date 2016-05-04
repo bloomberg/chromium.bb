@@ -33,6 +33,7 @@ static_library("browser") {
     "//base",
     "//base:i18n",
     "//components/autofill/content/common",
+    "//components/autofill/content/public/interfaces",
     "//components/autofill/core/browser",
     "//components/autofill/core/common",
     "//components/os_crypt",

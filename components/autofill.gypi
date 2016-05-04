@@ -312,6 +312,35 @@
     ['OS != "ios"', {
       'targets': [
         {
+          # GN version: //components/autofill/content/public/interfaces
+          'target_name': 'autofill_content_mojo_bindings_mojom',
+          'type': 'none',
+          'variables': {
+            'mojom_files': [
+              'autofill/content/public/interfaces/autofill_agent.mojom',
+              'autofill/content/public/interfaces/autofill_driver.mojom',
+            ],
+          },
+          'include_dirs': [
+            '..',
+          ],
+          'includes': [
+            '../mojo/mojom_bindings_generator_explicit.gypi',
+          ],
+        },
+        {
+          # GN version: //components/autofill/content/public/interfaces
+          'target_name': 'autofill_content_mojo_bindings',
+          'type': 'static_library',
+          'export_dependent_settings': [
+            '../mojo/mojo_public.gyp:mojo_cpp_bindings',
+           ],
+          'dependencies': [
+            '../mojo/mojo_public.gyp:mojo_cpp_bindings',
+            'autofill_content_mojo_bindings_mojom',
+          ],
+        },
+        {
           # GN version: //content/autofill/content/common
           'target_name': 'autofill_content_common',
           'type': 'static_library',
@@ -402,6 +431,7 @@
             '../ui/gfx/gfx.gyp:gfx_geometry',
             '../url/url.gyp:url_lib',
             'autofill_content_common',
+            'autofill_content_mojo_bindings',
             'autofill_content_risk_proto',
             'autofill_core_browser',
             'autofill_core_common',
@@ -458,6 +488,7 @@
             '../third_party/WebKit/public/blink.gyp:blink',
             '../ui/base/ui_base.gyp:ui_base',
             'autofill_content_common',
+            'autofill_content_mojo_bindings',
             'autofill_core_common',
             'components_strings.gyp:components_strings',
           ],

@@ -35,6 +35,7 @@
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/password_form.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/service_registry.h"
 #include "content/public/common/ssl_status.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/render_frame.h"
@@ -178,6 +179,10 @@ AutofillAgent::AutofillAgent(content::RenderFrame* render_frame,
       weak_ptr_factory_(this) {
   render_frame->GetWebFrame()->setAutofillClient(this);
 
+  // AutofillAgent is guaranteed to outlive |render_frame|.
+  render_frame->GetServiceRegistry()->AddService(
+      base::Bind(&AutofillAgent::BindRequest, base::Unretained(this)));
+
   // This owns itself, and will delete itself when |render_frame| is destructed
   // (same as AutofillAgent). This object must be constructed after
   // AutofillAgent so that password generation UI is shown before password
@@ -186,6 +191,10 @@ AutofillAgent::AutofillAgent(content::RenderFrame* render_frame,
 }
 
 AutofillAgent::~AutofillAgent() {}
+
+void AutofillAgent::BindRequest(mojom::AutofillAgentRequest request) {
+  bindings_.AddBinding(this, std::move(request));
+}
 
 bool AutofillAgent::FormDataCompare::operator()(const FormData& lhs,
                                                 const FormData& rhs) const {
@@ -196,8 +205,6 @@ bool AutofillAgent::FormDataCompare::operator()(const FormData& lhs,
 bool AutofillAgent::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(AutofillAgent, message)
-  IPC_MESSAGE_HANDLER(AutofillMsg_FirstUserGestureObservedInTab,
-                      OnFirstUserGestureObservedInTab)
     IPC_MESSAGE_HANDLER(AutofillMsg_FillForm, OnFillForm)
     IPC_MESSAGE_HANDLER(AutofillMsg_PreviewForm, OnPreviewForm)
     IPC_MESSAGE_HANDLER(AutofillMsg_FieldTypePredictionsAvailable,
@@ -501,7 +508,9 @@ void AutofillAgent::dataListOptionsChanged(const WebInputElement& element) {
 
 void AutofillAgent::firstUserGestureObserved() {
   password_autofill_agent_->FirstUserGestureObserved();
-  Send(new AutofillHostMsg_FirstUserGestureObserved(routing_id()));
+
+  ConnectToMojoAutofillDriverIfNeeded();
+  mojo_autofill_driver_->FirstUserGestureObserved();
 }
 
 void AutofillAgent::AcceptDataListSuggestion(
@@ -554,7 +563,8 @@ void AutofillAgent::OnFillForm(int query_id, const FormData& form) {
                                                    base::TimeTicks::Now()));
 }
 
-void AutofillAgent::OnFirstUserGestureObservedInTab() {
+// mojom::AutofillAgent:
+void AutofillAgent::FirstUserGestureObservedInTab() {
   password_autofill_agent_->FirstUserGestureObserved();
 }
 
@@ -831,6 +841,14 @@ void AutofillAgent::didAssociateFormControls(const WebVector<WebNode>& nodes) {
 void AutofillAgent::ajaxSucceeded() {
   OnSamePageNavigationCompleted();
   password_autofill_agent_->AJAXSucceeded();
+}
+
+void AutofillAgent::ConnectToMojoAutofillDriverIfNeeded() {
+  if (mojo_autofill_driver_)
+    return;
+
+  render_frame()->GetServiceRegistry()->ConnectToRemoteService(
+      mojo::GetProxy(&mojo_autofill_driver_));
 }
 
 // LegacyAutofillAgent ---------------------------------------------------------

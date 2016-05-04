@@ -27,6 +27,7 @@ static_library("renderer") {
     "//base",
     "//base:i18n",
     "//components/autofill/content/common",
+    "//components/autofill/content/public/interfaces",
     "//components/autofill/core/common",
     "//components/strings",
     "//content/public/common",

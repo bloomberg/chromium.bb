@@ -120,10 +120,6 @@ using FormsPredictionsMap =
 
 // Autofill messages sent from the browser to the renderer.
 
-// Tells the render frame that a user gesture was observed somewhere in the tab
-// (including in a different frame).
-IPC_MESSAGE_ROUTED0(AutofillMsg_FirstUserGestureObservedInTab)
-
 // Instructs the renderer to fill the active form with the given form data.
 IPC_MESSAGE_ROUTED2(AutofillMsg_FillForm,
                     int /* query_id */,
@@ -227,9 +223,6 @@ IPC_MESSAGE_ROUTED1(AutofillMsg_AutofillUsernameAndPasswordDataReceived,
 
 // TODO(creis): check in the browser that the renderer actually has permission
 // for the URL to avoid compromised renderers talking to the browser.
-
-// Notification that there has been a user gesture.
-IPC_MESSAGE_ROUTED0(AutofillHostMsg_FirstUserGestureObserved)
 
 // Notification that forms have been seen that are candidates for
 // filling/submitting by the AutofillManager.

@@ -34,6 +34,7 @@
 #include "chrome/common/features.h"
 #include "chrome/common/url_constants.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
+#include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/content/common/autofill_messages.h"
 #include "components/autofill/core/browser/ui/card_unmask_prompt_view.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
@@ -350,8 +351,15 @@ void ChromeAutofillClient::DidFillOrPreviewField(
 }
 
 void ChromeAutofillClient::OnFirstUserGestureObserved() {
-  web_contents()->SendToAllFrames(
-      new AutofillMsg_FirstUserGestureObservedInTab(routing_id()));
+  ContentAutofillDriverFactory* factory =
+      ContentAutofillDriverFactory::FromWebContents(web_contents());
+  DCHECK(factory);
+
+  for (content::RenderFrameHost* frame : web_contents()->GetAllFrames()) {
+    ContentAutofillDriver* driver = factory->DriverForFrame(frame);
+    DCHECK(driver);
+    driver->NotifyFirstUserGestureObservedInTab();
+  }
 }
 
 bool ChromeAutofillClient::IsContextSecure(const GURL& form_origin) {
