@@ -10,8 +10,8 @@
 #include "base/memory/ref_counted.h"
 #include "media/mojo/interfaces/service_factory.mojom.h"
 #include "services/shell/public/cpp/interface_factory.h"
-#include "services/shell/public/cpp/message_loop_ref.h"
 #include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/shell_connection_ref.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -32,7 +32,8 @@ class CastMojoMediaApplication
  public:
   CastMojoMediaApplication(
       std::unique_ptr<CastMojoMediaClient> mojo_media_client,
-      scoped_refptr<base::SingleThreadTaskRunner> media_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
+      const base::Closure& quit_closure);
   ~CastMojoMediaApplication() final;
 
  private:
@@ -50,7 +51,7 @@ class CastMojoMediaApplication
   std::unique_ptr<CastMojoMediaClient> mojo_media_client_;
   scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
   scoped_refptr<::media::MediaLog> media_log_;
-  ::shell::MessageLoopRefFactory ref_factory_;
+  ::shell::ShellConnectionRefFactory ref_factory_;
 };
 
 }  // namespace media

@@ -652,7 +652,8 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   using StaticMojoApplicationMap =
       std::map<std::string,
-               base::Callback<std::unique_ptr<shell::ShellClient>()>>;
+               base::Callback<std::unique_ptr<shell::ShellClient>(
+                   const base::Closure& quit_closure)>>;
 
   // Registers Mojo applications to be loaded in the browser process by the
   // browser's global Mojo shell.

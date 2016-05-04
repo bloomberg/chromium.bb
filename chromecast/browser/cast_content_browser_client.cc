@@ -70,14 +70,16 @@ namespace shell {
 namespace {
 #if defined(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
 static std::unique_ptr<::shell::ShellClient> CreateCastMojoMediaApplication(
-    CastContentBrowserClient* browser_client) {
+    CastContentBrowserClient* browser_client,
+    const base::Closure& quit_closure) {
   std::unique_ptr<media::CastMojoMediaClient> mojo_media_client(
       new media::CastMojoMediaClient(
           base::Bind(&CastContentBrowserClient::CreateMediaPipelineBackend,
                      base::Unretained(browser_client))));
   return std::unique_ptr<::shell::ShellClient>(
       new media::CastMojoMediaApplication(
-          std::move(mojo_media_client), browser_client->GetMediaTaskRunner()));
+          std::move(mojo_media_client), browser_client->GetMediaTaskRunner(),
+          quit_closure));
 }
 #endif  // ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS
 }  // namespace

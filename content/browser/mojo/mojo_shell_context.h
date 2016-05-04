@@ -20,7 +20,7 @@ namespace catalog {
 class Catalog;
 }
 
-namespace mojo {
+namespace shell {
 class ShellClient;
 }
 
@@ -32,7 +32,8 @@ class CONTENT_EXPORT MojoShellContext {
  public:
   using StaticApplicationMap =
       std::map<std::string,
-               base::Callback<std::unique_ptr<shell::ShellClient>()>>;
+               base::Callback<std::unique_ptr<shell::ShellClient>(
+                   const base::Closure& quit_closure)>>;
 
   MojoShellContext();
   ~MojoShellContext();

@@ -12,14 +12,11 @@
 #include "media/mojo/services/mojo_cdm_service_context.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/shell/public/cpp/connector.h"
-#include "services/shell/public/cpp/message_loop_ref.h"
+#include "services/shell/public/cpp/shell_connection_ref.h"
 
-namespace mojo {
-class MessageLoopRef;
 namespace shell {
 namespace mojom {
 class InterfaceProvider;
-}
 }
 }
 
@@ -35,7 +32,7 @@ class ServiceFactoryImpl : public interfaces::ServiceFactory {
   ServiceFactoryImpl(mojo::InterfaceRequest<interfaces::ServiceFactory> request,
                      shell::mojom::InterfaceProvider* interfaces,
                      scoped_refptr<MediaLog> media_log,
-                     std::unique_ptr<shell::MessageLoopRef> parent_app_refcount,
+                     std::unique_ptr<shell::ShellConnectionRef> connection_ref,
                      MojoMediaClient* mojo_media_client);
   ~ServiceFactoryImpl() final;
 
@@ -64,7 +61,7 @@ class ServiceFactoryImpl : public interfaces::ServiceFactory {
   mojo::StrongBinding<interfaces::ServiceFactory> binding_;
   shell::mojom::InterfaceProvider* interfaces_;
   scoped_refptr<MediaLog> media_log_;
-  std::unique_ptr<shell::MessageLoopRef> parent_app_refcount_;
+  std::unique_ptr<shell::ShellConnectionRef> connection_ref_;
   MojoMediaClient* mojo_media_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceFactoryImpl);

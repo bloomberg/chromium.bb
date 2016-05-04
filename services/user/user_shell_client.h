@@ -18,7 +18,8 @@ namespace user_service {
 
 std::unique_ptr<shell::ShellClient> CreateUserShellClient(
     scoped_refptr<base::SingleThreadTaskRunner> user_service_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> leveldb_service_runner);
+    scoped_refptr<base::SingleThreadTaskRunner> leveldb_service_runner,
+    const base::Closure& quit_closure);
 
 class UserShellClient
     : public shell::ShellClient,

@@ -13,7 +13,8 @@ namespace content {
 
 namespace {
 
-std::unique_ptr<shell::ShellClient> CreateTestApp() {
+std::unique_ptr<shell::ShellClient> CreateTestApp(
+    const base::Closure& quit_closure) {
   return std::unique_ptr<shell::ShellClient>(new TestMojoApp);
 }
 

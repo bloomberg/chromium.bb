@@ -33,8 +33,10 @@ class EmbeddedApplicationRunner::Instance
   void BindShellClientRequest(shell::mojom::ShellClientRequest request) {
     DCHECK(thread_checker_.CalledOnValidThread());
 
-    if (!shell_client_)
-      shell_client_ = factory_callback_.Run();
+    if (!shell_client_) {
+      shell_client_ = factory_callback_.Run(
+          base::Bind(&Instance::Quit, base::Unretained(this)));
+    }
 
     shell::ShellConnection* new_connection =
         new shell::ShellConnection(shell_client_.get(), std::move(request));
@@ -59,11 +61,11 @@ class EmbeddedApplicationRunner::Instance
         break;
       }
     }
+  }
 
-    if (shell_connections_.empty()) {
-      shell_client_.reset();
-      quit_task_runner_->PostTask(FROM_HERE, quit_closure_);
-    }
+  void Quit() {
+    shell_client_.reset();
+    quit_task_runner_->PostTask(FROM_HERE, quit_closure_);
   }
 
   base::ThreadChecker thread_checker_;

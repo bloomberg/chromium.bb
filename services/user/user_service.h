@@ -16,10 +16,6 @@ namespace filesystem {
 class LockTable;
 }
 
-namespace shell {
-class MessageLoopRef;
-}
-
 namespace user_service {
 
 // A service which serves directories to callers.

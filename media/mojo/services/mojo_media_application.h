@@ -13,8 +13,8 @@
 #include "base/memory/ref_counted.h"
 #include "media/mojo/interfaces/service_factory.mojom.h"
 #include "services/shell/public/cpp/interface_factory.h"
-#include "services/shell/public/cpp/message_loop_ref.h"
 #include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/shell_connection_ref.h"
 #include "url/gurl.h"
 
 namespace media {
@@ -26,8 +26,8 @@ class MojoMediaApplication
     : public shell::ShellClient,
       public shell::InterfaceFactory<interfaces::ServiceFactory> {
  public:
-  explicit MojoMediaApplication(
-      std::unique_ptr<MojoMediaClient> mojo_media_client);
+  MojoMediaApplication(std::unique_ptr<MojoMediaClient> mojo_media_client,
+                       const base::Closure& quit_closure);
   ~MojoMediaApplication() final;
 
  private:
@@ -49,7 +49,7 @@ class MojoMediaApplication
 
   shell::Connector* connector_;
   scoped_refptr<MediaLog> media_log_;
-  shell::MessageLoopRefFactory ref_factory_;
+  shell::ShellConnectionRefFactory ref_factory_;
 };
 
 }  // namespace media

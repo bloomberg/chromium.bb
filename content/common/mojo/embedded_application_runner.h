@@ -25,12 +25,17 @@ namespace content {
 // EmbeddedApplicationRunner instance.
 class EmbeddedApplicationRunner {
  public:
-  using FactoryCallback = base::Callback<std::unique_ptr<shell::ShellClient>()>;
+  // Callback used to construct a new instance of the embedded application. Note
+  // that |quit_closure| destroys the returned ShellClient instance when run.
+  using FactoryCallback = base::Callback<
+      std::unique_ptr<shell::ShellClient>(const base::Closure& quit_closure)>;
 
   // Constructs a runner which hosts the application on |task_runner|'s thread.
   // If an existing instance of the app is not running when an incoming
   // connection is made, |callback| will be run on |task_runner|'s thread to
   // create a new instance which will live on that thread.
+  //
+  // If |task_runner| is null, the calling thread's TaskRunner is used.
   EmbeddedApplicationRunner(
       const FactoryCallback& callback,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);

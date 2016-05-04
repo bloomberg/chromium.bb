@@ -26,7 +26,8 @@ class CONTENT_EXPORT ContentUtilityClient {
  public:
   using StaticMojoApplicationMap =
       std::map<std::string,
-               base::Callback<std::unique_ptr<shell::ShellClient>()>>;
+               base::Callback<std::unique_ptr<shell::ShellClient>(
+                   const base::Closure& quit_closure)>>;
 
   virtual ~ContentUtilityClient() {}
 

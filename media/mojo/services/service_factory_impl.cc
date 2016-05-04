@@ -29,12 +29,12 @@ ServiceFactoryImpl::ServiceFactoryImpl(
     mojo::InterfaceRequest<interfaces::ServiceFactory> request,
     shell::mojom::InterfaceProvider* interfaces,
     scoped_refptr<MediaLog> media_log,
-    std::unique_ptr<shell::MessageLoopRef> parent_app_refcount,
+    std::unique_ptr<shell::ShellConnectionRef> connection_ref,
     MojoMediaClient* mojo_media_client)
     : binding_(this, std::move(request)),
       interfaces_(interfaces),
       media_log_(media_log),
-      parent_app_refcount_(std::move(parent_app_refcount)),
+      connection_ref_(std::move(connection_ref)),
       mojo_media_client_(mojo_media_client) {
   DVLOG(1) << __FUNCTION__;
 }

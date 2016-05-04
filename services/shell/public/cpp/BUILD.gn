@@ -40,14 +40,14 @@ source_set("sources") {
     "lib/identity.cc",
     "lib/interface_factory_binder.h",
     "lib/interface_registry.cc",
-    "lib/message_loop_ref.cc",
     "lib/names.cc",
     "lib/shell_client.cc",
     "lib/shell_connection.cc",
-    "message_loop_ref.h",
+    "lib/shell_connection_ref.cc",
     "names.h",
     "shell_client.h",
     "shell_connection.h",
+    "shell_connection_ref.h",
   ]
 
   deps = [

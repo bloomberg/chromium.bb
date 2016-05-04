@@ -16,11 +16,11 @@ void CreateServiceFactory(
     mojo::InterfaceRequest<media::interfaces::ServiceFactory> request,
     shell::mojom::InterfaceProvider* interfaces,
     scoped_refptr<media::MediaLog> media_log,
-    std::unique_ptr<shell::MessageLoopRef> app_refcount,
+    std::unique_ptr<shell::ShellConnectionRef> connection_ref,
     media::MojoMediaClient* mojo_media_client) {
   new ::media::ServiceFactoryImpl(std::move(request), interfaces,
-                                  std::move(media_log), std::move(app_refcount),
-                                  mojo_media_client);
+                                  std::move(media_log),
+                                  std::move(connection_ref), mojo_media_client);
 }
 }  // namespace
 
@@ -29,10 +29,12 @@ namespace media {
 
 CastMojoMediaApplication::CastMojoMediaApplication(
     std::unique_ptr<CastMojoMediaClient> mojo_media_client,
-    scoped_refptr<base::SingleThreadTaskRunner> media_task_runner)
+    scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
+    const base::Closure& quit_closure)
     : mojo_media_client_(std::move(mojo_media_client)),
       media_task_runner_(media_task_runner),
-      media_log_(new ::media::MediaLog()) {
+      media_log_(new ::media::MediaLog()),
+      ref_factory_(quit_closure) {
   DCHECK(mojo_media_client_);
   DCHECK(media_task_runner_);
 }
@@ -52,18 +54,15 @@ bool CastMojoMediaApplication::AcceptConnection(
 void CastMojoMediaApplication::Create(
     ::shell::Connection* connection,
     mojo::InterfaceRequest<::media::interfaces::ServiceFactory> request) {
-  // Create the app refcount here on the application task runner so that
-  // 1. It is bound to the application task runner, which in turn will
-  //    stop the app message loop when destroyed on the app task runner.
-  // 2. It will prevent CastMojoMediaApplication from getting destroyed until
-  //    the task posted to the media thread is run.
-  std::unique_ptr<shell::MessageLoopRef> app_refcount =
+  // Create a connection ref here to keep the app alive until the ServiceFactory
+  // is done with it.
+  std::unique_ptr<shell::ShellConnectionRef> connection_ref =
       ref_factory_.CreateRef();
   media_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&CreateServiceFactory, base::Passed(&request),
                  connection->GetRemoteInterfaces(), media_log_,
-                 base::Passed(&app_refcount), mojo_media_client_.get()));
+                 base::Passed(&connection_ref), mojo_media_client_.get()));
 }
 
 }  // namespace media

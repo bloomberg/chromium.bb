@@ -72,7 +72,8 @@ class UserShellClient::LevelDBServiceObjects
 
 std::unique_ptr<shell::ShellClient> CreateUserShellClient(
     scoped_refptr<base::SingleThreadTaskRunner> user_service_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> leveldb_service_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> leveldb_service_runner,
+    const base::Closure& quit_closure) {
   return base::WrapUnique(new UserShellClient(
       std::move(user_service_runner), std::move(leveldb_service_runner)));
 }
