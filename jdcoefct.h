@@ -5,11 +5,11 @@
  * Copyright (C) 1994-1997, Thomas G. Lane.
  * libjpeg-turbo Modifications:
  * Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
- * For conditions of distribution and use, see the accompanying README file.
+ * For conditions of distribution and use, see the accompanying README.ijg
+ * file.
  */
 
 #define JPEG_INTERNALS
-#include "jinclude.h"
 #include "jpeglib.h"
 
 
@@ -41,7 +41,7 @@ typedef struct {
   JBLOCKROW MCU_buffer[D_MAX_BLOCKS_IN_MCU];
 
   /* Temporary workspace for one MCU */
-  JCOEF * workspace;
+  JCOEF *workspace;
 
 #ifdef D_MULTISCAN_FILES_SUPPORTED
   /* In multi-pass modes, we need a virtual block array for each component. */
@@ -50,12 +50,12 @@ typedef struct {
 
 #ifdef BLOCK_SMOOTHING_SUPPORTED
   /* When doing block smoothing, we latch coefficient Al values here */
-  int * coef_bits_latch;
+  int *coef_bits_latch;
 #define SAVED_COEFS  6          /* we save coef_bits[0..5] */
 #endif
 } my_coef_controller;
 
-typedef my_coef_controller * my_coef_ptr;
+typedef my_coef_controller *my_coef_ptr;
 
 
 LOCAL(void)

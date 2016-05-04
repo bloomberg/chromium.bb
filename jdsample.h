@@ -3,19 +3,19 @@
  *
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-1996, Thomas G. Lane.
- * For conditions of distribution and use, see the accompanying README file.
+ * For conditions of distribution and use, see the accompanying README.ijg
+ * file.
  */
 
 #define JPEG_INTERNALS
-#include "jinclude.h"
 #include "jpeglib.h"
 
 
 /* Pointer to routine to upsample a single component */
 typedef void (*upsample1_ptr) (j_decompress_ptr cinfo,
-                               jpeg_component_info * compptr,
+                               jpeg_component_info *compptr,
                                JSAMPARRAY input_data,
-                               JSAMPARRAY * output_data_ptr);
+                               JSAMPARRAY *output_data_ptr);
 
 /* Private subobject */
 
@@ -47,4 +47,4 @@ typedef struct {
   UINT8 v_expand[MAX_COMPONENTS];
 } my_upsampler;
 
-typedef my_upsampler * my_upsample_ptr;
+typedef my_upsampler *my_upsample_ptr;

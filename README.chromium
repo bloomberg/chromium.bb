@@ -1,37 +1,24 @@
 Name: libjpeg-turbo
-URL: http://sourceforge.net/projects/libjpeg-turbo/
-Version: 1.3.1
+URL: https://github.com/libjpeg-turbo/libjpeg-turbo/
+Version: 1.4.90
 License: Custom license
-License File: LICENSE.txt
+License File: LICENSE.md
 Security Critical: yes
 License Android Compatible: yes
 
 Description:
 This consists of the components:
-* A partial copy of libjpeg-turbo 1.3.1 (r1219);
-* Revision r1188 cherry-picked from upstream trunk into config.h to fix
-  compiler warning on newer versions of gcc;
-* Revision r1220 cherry-picked from upstream trunk into jchuff.c to use
-  clz/bsr instructions on ARM for bit counting rather than the lookup table
-  (reduces memory footprint and can improve performance in some cases);
-* Revisions r1108, r1109, r1333, r1375, r1386, r1389 and r1390 cherry-picked
-  from upstream trunk for Arm64 NEON SIMD support;
-* Revisions r1582, r1583, r1586, r1587, r1591, and
-  commit 91eceba0a132a3fc70388a82c75616e67725a93a (code moved to GitHub)
-  cherry-picked from upstream trunk for partial decoding optimization;
-  http://crbug.com/515694
-* Revisions r1295, r1385, r1398, and r1402 (r1386 is also required but has
-  already been cherry-picked) cherry-picked from upstream trunk to enable
-  decoding to 565 as a memory optimization;
-  http://crbug.com/516761
-* Commit 8b2c04f774d18e05e321ee67a9a38b4d7e84f168 from upstream to zero-extend
-  32-bit arguments before using them as 64-bit values: http://crbug.com/532214
-* A build file (libjpeg.gyp), and;
-* Patched header files used by Chromium.
-
-More details on cherry-picked revisions and commits can be found at:
-https://sourceforge.net/p/libjpeg-turbo/code/commit_browser
-https://github.com/libjpeg-turbo/libjpeg-turbo/commits/master
+* libjpeg-turbo 1.4.90
+* Cherry picked clang fix for Arm32 assembly from upstream master:
+  https://github.com/libjpeg-turbo/libjpeg-turbo/commit/5e576386b57663bbe9d934edf7c276eb0150cd59
+  https://github.com/libjpeg-turbo/libjpeg-turbo/commit/2e480fa2a3285d9ff83a780ab3417badeb3f2d37
+* Cherry picked uninitialized memory fix from upstream master:
+  https://github.com/libjpeg-turbo/libjpeg-turbo/commit/a572622dd654305c86585724c2a1ea34e22c2103
+* This file (README.chromium)
+* A build file (libjpeg.gyp)
+* Patched header files used by Chromium
+* Deleted unused directories: cmakescripts, doc, java, md5, release, sharedlib,
+* testimages, and win
 
 This libjpeg-turbo can replace our libjpeg-6b without any modifications in the
 Chromium code.
@@ -42,9 +29,6 @@ externally visible functions to chromium_* so that we can avoid conflicts that
 arise when system libraries attempt to use our libjpeg. Also, we applied the
 following changes which are not merged to upstream:
 
-* Added the 'private_extern' flags on Mac (or the 'hidden' flags on Linux) to
-  all the global symbols in '.asm' files to prevent making them external ones.
-* Supported motion-JPEG frames that do not have DHT markers.
 * Fix libjpeg_turbo svn r64 libjpeg6b compat issue: make the fast path Huffman
   decoder fallback to slow decoding if the Huffman decoding bit sentinel > 16,
   this to match the exact behavior of jpeg_huff_decode().
