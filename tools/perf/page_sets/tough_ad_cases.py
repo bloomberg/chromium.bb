@@ -215,9 +215,10 @@ class ToughAdCasesPageSet(story.StorySet):
     #    bidirectional_scroll=bidirectional_scroll))
     self.AddStory(AdPage('http://www.theguardian.com/uk', self, scroll=scroll,
         bidirectional_scroll=bidirectional_scroll))
-    self.AddStory(AdPage('http://m.tmz.com', self, scroll=scroll,
-        y_scroll_distance_multiplier=0.25,
-        bidirectional_scroll=bidirectional_scroll))
+    # Disabled: http://crbug.com/597656
+    # self.AddStory(AdPage('http://m.tmz.com', self, scroll=scroll,
+    #     y_scroll_distance_multiplier=0.25,
+    #     bidirectional_scroll=bidirectional_scroll))
     self.AddStory(AdPage('http://androidpolice.com', self, scroll=scroll,
         bidirectional_scroll=bidirectional_scroll,
         wait_for_interactive_or_better=True))
