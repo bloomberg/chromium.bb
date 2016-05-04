@@ -156,23 +156,14 @@ class MEDIA_EXPORT MediaCodecBridge {
                                           uint8_t** data,
                                           size_t* capacity) = 0;
 
-  // Gives the access to buffer's data which is referenced by |index| and
-  // |offset|. The size of available data for reading is written to |*capacity|
-  // and the address is written to |*addr|.
-  // Returns MEDIA_CODEC_ERROR if a error occurs, or MEDIA_CODEC_OK otherwise.
-  virtual MediaCodecStatus GetOutputBufferAddress(int index,
-                                                  size_t offset,
-                                                  const uint8_t** addr,
-                                                  size_t* capacity) = 0;
-
-  // Copies |num| bytes from output buffer |index|'s |offset| into the memory
+  // Copy |num| bytes from output buffer |index|'s |offset| into the memory
   // region pointed to by |dst|. To avoid overflows, the size of both source
   // and destination must be at least |num| bytes, and should not overlap.
   // Returns MEDIA_CODEC_ERROR if an error occurs, or MEDIA_CODEC_OK otherwise.
-  MediaCodecStatus CopyFromOutputBuffer(int index,
-                                        size_t offset,
-                                        void* dst,
-                                        size_t num);
+  virtual MediaCodecStatus CopyFromOutputBuffer(int index,
+                                                size_t offset,
+                                                void* dst,
+                                                size_t num) = 0;
 
  protected:
   MediaCodecBridge();

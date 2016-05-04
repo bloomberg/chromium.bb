@@ -64,10 +64,10 @@ class MEDIA_EXPORT SdkMediaCodecBridge : public MediaCodecBridge {
   MediaCodecStatus GetInputBuffer(int input_buffer_index,
                                   uint8_t** data,
                                   size_t* capacity) override;
-  MediaCodecStatus GetOutputBufferAddress(int index,
-                                          size_t offset,
-                                          const uint8_t** addr,
-                                          size_t* capacity) override;
+  MediaCodecStatus CopyFromOutputBuffer(int index,
+                                        size_t offset,
+                                        void* dst,
+                                        size_t num) override;
 
   static bool RegisterSdkMediaCodecBridge(JNIEnv* env);
 
@@ -76,6 +76,14 @@ class MEDIA_EXPORT SdkMediaCodecBridge : public MediaCodecBridge {
                       bool is_secure,
                       MediaCodecDirection direction);
 
+  // Called to get the buffer address given the output buffer index and offset.
+  // The size of available data to read is written to |*capacity| and the
+  // address to read from is written to |*addr|.
+  // Returns MEDIA_CODEC_ERROR if a error occurs, or MEDIA_CODEC_OK otherwise.
+  MediaCodecStatus GetOutputBufferAddress(int index,
+                                          size_t offset,
+                                          void** addr,
+                                          size_t* capacity);
 
   jobject media_codec() { return j_media_codec_.obj(); }
   MediaCodecDirection direction_;

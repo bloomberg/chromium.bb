@@ -237,15 +237,15 @@ MediaCodecStatus NdkMediaCodecBridge::GetInputBuffer(int input_buffer_index,
   return MEDIA_CODEC_OK;
 }
 
-MediaCodecStatus NdkMediaCodecBridge::GetOutputBufferAddress(
-    int index,
-    size_t offset,
-    const uint8_t** addr,
-    size_t* capacity) {
+MediaCodecStatus NdkMediaCodecBridge::CopyFromOutputBuffer(int index,
+                                                           size_t offset,
+                                                           void* dst,
+                                                           size_t num) {
+  size_t capacity;
   const uint8_t* src_data =
-      AMediaCodec_getOutputBuffer(media_codec_.get(), index, capacity);
-  *addr = src_data + offset;
-  *capacity -= offset;
+      AMediaCodec_getOutputBuffer(media_codec_.get(), index, &capacity);
+  CHECK_GE(capacity, offset + num);
+  memcpy(dst, src_data + offset, num);
   return MEDIA_CODEC_OK;
 }
 
