@@ -55,7 +55,9 @@ class BASE_EXPORT GlobalDescriptors {
 #if !defined(OS_ANDROID)
   static const int kBaseDescriptor = 3;  // 0, 1, 2 are already taken.
 #else
-  static const int kBaseDescriptor = 4;  // 3 used by __android_log_write().
+  // 3 used by __android_log_write().
+  // 4 used by... something important on Android M.
+  static const int kBaseDescriptor = 5;
 #endif
 
   // Return the singleton instance of GlobalDescriptors.

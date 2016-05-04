@@ -103,7 +103,7 @@ class LaunchHelper {
                                    int* exit_code);
 
   bool IsReady() const { return child_fd_ != -1; }
-  bool IsChild() const { return parent_fd_ != -1; }
+  bool IsChild() const { return is_child_; }
 
  private:
   // Wrappers around sendmsg/recvmsg that supports message fragmentation.
@@ -118,6 +118,8 @@ class LaunchHelper {
   void StartProcessInHelper(const StartProcessRequest* request,
                            std::vector<ScopedFD> fds);
   void WaitForChildInHelper(const WaitProcessRequest* request);
+
+  bool is_child_ = false;
 
   // Parent vars.
   int child_fd_ = -1;
@@ -204,6 +206,7 @@ void LaunchHelper::DoParent(int fd) {
 
 void LaunchHelper::DoHelper(int fd) {
   parent_fd_ = fd;
+  is_child_ = true;
   std::unique_ptr<char[]> buf(new char[kMaxMessageSize]);
   while (true) {
     // Wait for a message from the parent.
@@ -247,6 +250,7 @@ void LaunchHelper::StartProcessInHelper(const StartProcessRequest* request,
   } else {
     // Child.
     PCHECK(close(parent_fd_) == 0);
+    parent_fd_ = -1;
     CommandLine::Reset();
 
     Pickle serialised_extra(reinterpret_cast<const char*>(request + 1),
@@ -264,10 +268,12 @@ void LaunchHelper::StartProcessInHelper(const StartProcessRequest* request,
       int new_fd;
       CHECK(iter.ReadInt(&new_fd));
       int old_fd = fds[i].release();
-      if (dup2(old_fd, new_fd) < 0) {
-        PLOG(FATAL) << "dup2";
+      if (new_fd != old_fd) {
+        if (dup2(old_fd, new_fd) < 0) {
+          PLOG(FATAL) << "dup2";
+        }
+        PCHECK(close(old_fd) == 0);
       }
-      PCHECK(close(old_fd) == 0);
     }
 
     std::unique_ptr<char*[]> argv(new char*[args.size()]);
@@ -368,6 +374,10 @@ void InitAndroidMultiProcessTestHelper(int (*main)(int, char**)) {
   if (g_launch_helper.Get().IsChild())
     return;
   g_launch_helper.Get().Init(main);
+}
+
+bool AndroidIsChildProcess() {
+  return g_launch_helper.Get().IsChild();
 }
 
 bool AndroidWaitForChildExitWithTimeout(

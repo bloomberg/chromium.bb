@@ -14,6 +14,7 @@
 #include "base/message_loop/message_pump_android.h"
 #include "base/path_service.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/multiprocess_test.h"
 
 namespace {
 
@@ -176,8 +177,10 @@ void InitAndroidTestMessageLoop() {
 }
 
 void InitAndroidTest() {
-  InitAndroidTestLogging();
-  InitAndroidTestPaths();
+  if (!base::AndroidIsChildProcess()) {
+    InitAndroidTestLogging();
+    InitAndroidTestPaths();
+  }
   InitAndroidTestMessageLoop();
 }
 }  // namespace base
