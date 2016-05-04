@@ -394,14 +394,6 @@ Polymer({
     I18nBehavior,
   ],
 
-  listeners: {
-    'focus': 'onFocus_',
-    'header-height-changed': 'updateElementPositioning_',
-    'header-or-arrow-click': 'toggleCastModeHidden_',
-    'mouseleave': 'onMouseLeave_',
-    'mouseenter': 'onMouseEnter_',
-  },
-
   observers: [
     'maybeUpdateStartSinkDisplayStartTime_(currentView_, sinksToShow_)',
   ],
@@ -420,6 +412,11 @@ Polymer({
 
       document.addEventListener('keydown', this.onKeydown_.bind(this), true);
       this.setSearchFocusHandlers_();
+      this.listen(this, 'focus', 'onFocus_');
+      this.listen(this, 'header-height-changed', 'updateElementPositioning_');
+      this.listen(this, 'header-or-arrow-click', 'toggleCastModeHidden_');
+      this.listen(this, 'mouseleave', 'onMouseLeave_');
+      this.listen(this, 'mouseenter', 'onMouseEnter_');
 
       // Turn off the spinner after 3 seconds, then report the current number of
       // sinks.
