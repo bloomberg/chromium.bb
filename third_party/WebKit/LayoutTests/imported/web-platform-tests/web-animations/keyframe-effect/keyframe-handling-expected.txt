@@ -1,7 +1,0 @@
-This is a testharness.js-based test.
-FAIL Overlapping keyframes at 0 and 1 use the appropriate value when the progress is outside the range [0, 1] assert_equals: When progress is negative, the first keyframe with a 0 offset should be used expected "0" but got "0.151456"
-PASS Overlapping keyframes between 0 and 1 use the appropriate value on each side of the overlap point 
-PASS Test visibility clamping behavior. 
-PASS Test visibility clamping behavior with an easing that has a negative component 
-Harness: the test ran to completion.
-

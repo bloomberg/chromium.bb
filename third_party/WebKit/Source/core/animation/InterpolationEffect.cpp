@@ -14,7 +14,8 @@ void InterpolationEffect::getActiveInterpolations(double fraction, double iterat
     for (const auto& record : m_interpolations) {
         if (fraction >= record.m_applyFrom && fraction < record.m_applyTo) {
             RefPtr<Interpolation> interpolation = record.m_interpolation;
-            double localFraction = (fraction - record.m_start) / (record.m_end - record.m_start);
+            double recordLength = record.m_end - record.m_start;
+            double localFraction = recordLength ? (fraction - record.m_start) / recordLength : 0.0;
             if (record.m_easing)
                 localFraction = record.m_easing->evaluate(localFraction, accuracyForDuration(iterationDuration));
             interpolation->interpolate(0, localFraction);

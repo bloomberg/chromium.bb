@@ -207,12 +207,35 @@ void KeyframeEffectModelBase::ensureInterpolationEffectPopulated() const
     for (const auto& entry : *m_keyframeGroups) {
         const PropertySpecificKeyframeVector& keyframes = entry.value->keyframes();
         for (size_t i = 0; i < keyframes.size() - 1; i++) {
-            double applyFrom = i ? keyframes[i]->offset() : (-std::numeric_limits<double>::infinity());
-            double applyTo = i == keyframes.size() - 2 ? std::numeric_limits<double>::infinity() : keyframes[i + 1]->offset();
-            if (applyTo == 1)
-                applyTo = std::numeric_limits<double>::infinity();
+            size_t startIndex = i;
+            size_t endIndex = i+1;
+            double startOffset = keyframes[startIndex]->offset();
+            double endOffset = keyframes[endIndex]->offset();
+            double applyFrom = startOffset;
+            double applyTo = endOffset;
 
-            m_interpolationEffect.addInterpolationsFromKeyframes(entry.key, *keyframes[i], *keyframes[i + 1], applyFrom, applyTo);
+            if (i == 0) {
+                applyFrom = -std::numeric_limits<double>::infinity();
+                ASSERT(startOffset == 0.0);
+                if (endOffset == 0.0) {
+                    ASSERT(keyframes[endIndex + 1]->offset() != 0.0);
+                    endIndex = startIndex;
+                }
+            }
+            if (i == keyframes.size() - 2) {
+                applyTo = std::numeric_limits<double>::infinity();
+                ASSERT(endOffset == 1.0);
+                if (startOffset == 1.0) {
+                    ASSERT(keyframes[startIndex - 1]->offset() != 1.0);
+                    startIndex = endIndex;
+                }
+            }
+
+            if (applyFrom != applyTo) {
+                m_interpolationEffect.addInterpolationsFromKeyframes(
+                    entry.key, *keyframes[startIndex], *keyframes[endIndex], applyFrom, applyTo);
+            }
+            // else the interpolation will never be used in sampling
         }
     }
 
@@ -247,17 +270,15 @@ void KeyframeEffectModelBase::PropertySpecificKeyframeGroup::appendKeyframe(Pass
 
 void KeyframeEffectModelBase::PropertySpecificKeyframeGroup::removeRedundantKeyframes()
 {
-    // As an optimization, removes keyframes in the following categories, as
-    // they will never be used by sample().
-    // - End keyframes with the same offset as their neighbor
-    // - Interior keyframes with the same offset as both their neighbors
+    // As an optimization, removes interior keyframes that have the same offset
+    // as both their neighbours, as they will never be used by sample().
     // Note that synthetic keyframes must be added before this method is
     // called.
     ASSERT(m_keyframes.size() >= 2);
-    for (int i = m_keyframes.size() - 1; i >= 0; --i) {
+    for (int i = m_keyframes.size() - 2; i > 0; --i) {
         double offset = m_keyframes[i]->offset();
-        bool hasSameOffsetAsPreviousNeighbor = !i || m_keyframes[i - 1]->offset() == offset;
-        bool hasSameOffsetAsNextNeighbor = i == static_cast<int>(m_keyframes.size() - 1) || m_keyframes[i + 1]->offset() == offset;
+        bool hasSameOffsetAsPreviousNeighbor = m_keyframes[i - 1]->offset() == offset;
+        bool hasSameOffsetAsNextNeighbor = m_keyframes[i + 1]->offset() == offset;
         if (hasSameOffsetAsPreviousNeighbor && hasSameOffsetAsNextNeighbor)
             m_keyframes.remove(i);
     }
