@@ -8,6 +8,7 @@
 #include <deque>
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -236,6 +237,9 @@ class MEDIA_EXPORT MediaCodecAudioDecoder : public AudioDecoder {
 
   // Cached decoder config.
   AudioDecoderConfig config_;
+
+  // Actual channel count that comes from decoder may be different than config.
+  int channel_count_;
 
   // Callback that delivers output frames.
   OutputCB output_cb_;

@@ -64,12 +64,36 @@ std::unique_ptr<MediaCodecBridge> CreateMediaCodec(
   return std::move(audio_codec_bridge);
 }
 
+// Converts interleaved data into planar data and writes it to |planes|.
+// The planes are populated in the order of channels in the interleaved frame.
+// If |channel_count| is less than the number of available planes the extra
+// destination planes will not be touched.
+void SeparatePlanes(const uint8_t* interleaved_data,
+                    size_t frame_count,
+                    size_t bytes_per_frame,
+                    size_t channel_count,
+                    const std::vector<uint8_t*>& planes) {
+  DCHECK(interleaved_data);
+  DCHECK_LE(channel_count, planes.size());
+
+  const uint8_t* src_frame = interleaved_data;
+  for (size_t i = 0; i < frame_count; ++i, src_frame += bytes_per_frame) {
+    for (size_t ch = 0; ch < channel_count; ++ch) {
+      const int16_t* src_sample =
+          reinterpret_cast<const int16_t*>(src_frame) + ch;
+      int16_t* dst_sample = reinterpret_cast<int16_t*>(planes[ch]) + i;
+      *dst_sample = *src_sample;
+    }
+  }
+}
+
 }  // namespace (anonymous)
 
 MediaCodecAudioDecoder::MediaCodecAudioDecoder(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : task_runner_(task_runner),
       state_(STATE_UNINITIALIZED),
+      channel_count_(0),
       pending_input_buf_index_(kInvalidBufferIndex),
       media_drm_bridge_cdm_context_(nullptr),
       cdm_registration_id_(0),
@@ -596,14 +620,54 @@ void MediaCodecAudioDecoder::OnDecodedFrame(const OutputBufferInfo& out) {
   DCHECK_NE(out.buf_index, kInvalidBufferIndex);
   DCHECK(media_codec_);
 
+  // For proper |frame_count| calculation we need to use the actual number
+  // of channels which can be different from |config_| value.
+  const int bytes_per_frame = kBytesPerOutputSample * channel_count_;
+  const size_t frame_count = (out.size - out.offset) / bytes_per_frame;
+
   // Create AudioOutput buffer based on configuration.
-  const int channel_count = GetChannelCount(config_);
-  const int bytes_per_frame = kBytesPerOutputSample * channel_count;
-  const size_t frame_count = out.size / bytes_per_frame;
+  const int config_channel_count = GetChannelCount(config_);
+  const SampleFormat sample_format = config_channel_count == channel_count_
+                                         ? kSampleFormatS16         // can copy
+                                         : kSampleFormatPlanarS16;  // upsample
 
   scoped_refptr<AudioBuffer> audio_buffer = AudioBuffer::CreateBuffer(
-      kSampleFormatS16, config_.channel_layout(), channel_count,
+      sample_format, config_.channel_layout(), config_channel_count,
       config_.samples_per_second(), frame_count);
+
+  if (config_channel_count == channel_count_) {
+    // Copy data into AudioBuffer.
+    CHECK_LE(out.size, audio_buffer->data_size());
+
+    MediaCodecStatus status = media_codec_->CopyFromOutputBuffer(
+        out.buf_index, out.offset, audio_buffer->channel_data()[0],
+        out.size - out.offset);
+
+    // TODO(timav,watk): This CHECK maintains the behavior of this call before
+    // we started catching CodecException and returning it as MEDIA_CODEC_ERROR.
+    // It needs to be handled some other way. http://crbug.com/585978
+    CHECK_EQ(status, MEDIA_CODEC_OK);
+  } else {
+    // Separate the planes while copying MediaCodec buffer into AudioBuffer.
+    DCHECK_LT(channel_count_, config_channel_count);
+
+    const uint8_t* interleaved_data = nullptr;
+    size_t interleaved_capacity = 0;
+    MediaCodecStatus status = media_codec_->GetOutputBufferAddress(
+        out.buf_index, out.offset, &interleaved_data, &interleaved_capacity);
+
+    // TODO(timav): Handle wrong status properly, http://crbug.com/585978.
+    CHECK_EQ(status, MEDIA_CODEC_OK);
+
+    DCHECK_LE(out.size - out.offset, interleaved_capacity);
+
+    memset(audio_buffer->channel_data()[0], 0, audio_buffer->data_size());
+    SeparatePlanes(interleaved_data, frame_count, bytes_per_frame,
+                   channel_count_, audio_buffer->channel_data());
+  }
+
+  // Release MediaCodec output buffer.
+  media_codec_->ReleaseOutputBuffer(out.buf_index, false);
 
   // Calculate and set buffer timestamp.
 
@@ -617,20 +681,6 @@ void MediaCodecAudioDecoder::OnDecodedFrame(const OutputBufferInfo& out) {
   audio_buffer->set_timestamp(timestamp_helper_->GetTimestamp());
   timestamp_helper_->AddFrames(frame_count);
 
-  // Copy data into AudioBuffer.
-  CHECK_LE(out.size, audio_buffer->data_size());
-
-  MediaCodecStatus status = media_codec_->CopyFromOutputBuffer(
-      out.buf_index, out.offset, audio_buffer->channel_data()[0],
-      audio_buffer->data_size());
-  // TODO(timav,watk): This CHECK maintains the behavior of this call before
-  // we started catching CodecException and returning it as MEDIA_CODEC_ERROR.
-  // It needs to be handled some other way. http://crbug.com/585978
-  CHECK_EQ(status, MEDIA_CODEC_OK);
-
-  // Release MediaCodec output buffer.
-  media_codec_->ReleaseOutputBuffer(out.buf_index, false);
-
   // Call the |output_cb_|.
   output_cb_.Run(audio_buffer);
 }
@@ -638,18 +688,40 @@ void MediaCodecAudioDecoder::OnDecodedFrame(const OutputBufferInfo& out) {
 void MediaCodecAudioDecoder::OnOutputFormatChanged() {
   DVLOG(2) << __FUNCTION__;
 
-  int new_sampling_rate;
+  int new_sampling_rate = 0;
   MediaCodecStatus status =
       media_codec_->GetOutputSamplingRate(&new_sampling_rate);
   if (status != MEDIA_CODEC_OK) {
-    DVLOG(0) << "GetOutputSamplingRate failed.";
+    DLOG(ERROR) << "GetOutputSamplingRate failed.";
     SetState(STATE_ERROR);
-  } else if (new_sampling_rate != config_.samples_per_second()) {
+    return;
+  }
+  if (new_sampling_rate != config_.samples_per_second()) {
     // We do not support the change of sampling rate on the fly
-    DVLOG(0) << "Sampling rate change is not supported by" << GetDisplayName()
-             << " (detected change " << config_.samples_per_second() << "->"
-             << new_sampling_rate << ")";
+    DLOG(ERROR) << "Sampling rate change is not supported by "
+                << GetDisplayName() << " (detected change "
+                << config_.samples_per_second() << "->" << new_sampling_rate
+                << ")";
     SetState(STATE_ERROR);
+    return;
+  }
+
+  status = media_codec_->GetOutputChannelCount(&channel_count_);
+  if (status != MEDIA_CODEC_OK) {
+    DLOG(ERROR) << "GetOutputChannelCount failed.";
+    SetState(STATE_ERROR);
+    return;
+  }
+
+  const int config_channel_count = GetChannelCount(config_);
+  DVLOG(1) << __FUNCTION__ << ": new channel count:" << channel_count_
+           << " (configured for " << config_channel_count << ")";
+
+  if (channel_count_ > config_channel_count) {
+    DLOG(ERROR) << "Actual channel count " << channel_count_
+                << " is greater than configured " << config_channel_count;
+    SetState(STATE_ERROR);
+    return;
   }
 }
 
