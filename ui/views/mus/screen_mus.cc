@@ -10,55 +10,11 @@
 #include "ui/aura/window.h"
 #include "ui/display/display_observer.h"
 #include "ui/gfx/display_finder.h"
+#include "ui/mojo/display/display_type_converters.h"
 #include "ui/views/mus/screen_mus_delegate.h"
 #include "ui/views/mus/window_manager_frame_values.h"
 
 namespace mojo {
-
-template <>
-struct TypeConverter<display::Display, mus::mojom::DisplayPtr> {
-  static display::Display Convert(const mus::mojom::DisplayPtr& input) {
-    display::Display result(input->id);
-    gfx::Rect pixel_bounds = input->bounds.To<gfx::Rect>();
-    gfx::Rect pixel_work_area = input->work_area.To<gfx::Rect>();
-    float pixel_ratio = input->device_pixel_ratio;
-
-    gfx::Rect dip_bounds =
-        gfx::ScaleToEnclosingRect(pixel_bounds, 1.f / pixel_ratio);
-    gfx::Rect dip_work_area =
-        gfx::ScaleToEnclosingRect(pixel_work_area, 1.f / pixel_ratio);
-    result.set_bounds(dip_bounds);
-    result.set_work_area(dip_work_area);
-    result.set_device_scale_factor(input->device_pixel_ratio);
-
-    switch (input->rotation) {
-      case mus::mojom::Rotation::VALUE_0:
-        result.set_rotation(display::Display::ROTATE_0);
-        break;
-      case mus::mojom::Rotation::VALUE_90:
-        result.set_rotation(display::Display::ROTATE_90);
-        break;
-      case mus::mojom::Rotation::VALUE_180:
-        result.set_rotation(display::Display::ROTATE_180);
-        break;
-      case mus::mojom::Rotation::VALUE_270:
-        result.set_rotation(display::Display::ROTATE_270);
-        break;
-    }
-    switch (input->touch_support) {
-      case mus::mojom::TouchSupport::UNKNOWN:
-        result.set_touch_support(display::Display::TOUCH_SUPPORT_UNKNOWN);
-        break;
-      case mus::mojom::TouchSupport::AVAILABLE:
-        result.set_touch_support(display::Display::TOUCH_SUPPORT_AVAILABLE);
-        break;
-      case mus::mojom::TouchSupport::UNAVAILABLE:
-        result.set_touch_support(display::Display::TOUCH_SUPPORT_UNAVAILABLE);
-        break;
-    }
-    return result;
-  }
-};
 
 template <>
 struct TypeConverter<views::WindowManagerFrameValues,

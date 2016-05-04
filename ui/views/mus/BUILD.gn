@@ -79,6 +79,7 @@ component("mus") {
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/gl",
+    "//ui/mojo/display",
     "//ui/mojo/ime:interfaces_cpp_sources",
     "//ui/native_theme",
     "//ui/platform_window",
