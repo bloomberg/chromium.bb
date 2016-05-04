@@ -1237,14 +1237,6 @@ void PasswordAutofillAgent::WillSubmitForm(const blink::WebFormElement& form) {
   }
 }
 
-void PasswordAutofillAgent::OnDestruct() {
-  // As described in http://crbug.com/608100, there might be an AutofillAgent
-  // method in-progress lower on the stack. Destroying |this| would cause
-  // use-after-free once the lower stack frame becomes active. Instead, a task
-  // needs to be posted to delete this.
-  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
-}
-
 void PasswordAutofillAgent::DidStartProvisionalLoad() {
   std::unique_ptr<RendererSavePasswordProgressLogger> logger;
   if (logging_state_active_) {

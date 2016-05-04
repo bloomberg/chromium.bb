@@ -312,14 +312,6 @@ void AutofillAgent::FocusedNodeChanged(const WebNode& node) {
   element_ = *element;
 }
 
-void AutofillAgent::OnDestruct() {
-  // As described in http://crbug.com/608100, there might be an AutofillAgent
-  // method in-progress lower on the stack. Destroying |this| would cause
-  // use-after-free once the lower stack frame becomes active. Instead, a task
-  // needs to be posted to delete this.
-  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
-}
-
 void AutofillAgent::FocusChangeComplete() {
   WebDocument doc = render_frame()->GetWebFrame()->document();
   WebElement focused_element;
