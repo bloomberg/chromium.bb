@@ -48,6 +48,13 @@ using password_manager::PasswordManager;
 using password_manager::PasswordManagerClient;
 using password_manager::PasswordManagerDriver;
 
+@interface PasswordController ()
+
+// This is set to YES as soon as the associated WebState is destroyed.
+@property(readonly) BOOL isWebStateDestroyed;
+
+@end
+
 @interface PasswordController ()<FormSuggestionProvider>
 
 // Parses the |jsonString| which contatins the password forms found on a web
@@ -242,6 +249,8 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
   std::unique_ptr<web::WebStateObserverBridge> webStateObserverBridge_;
 }
 
+@synthesize isWebStateDestroyed = isWebStateDestroyed_;
+
 - (instancetype)initWithWebState:(web::WebState*)webState
              passwordsUiDelegate:(id<PasswordsUiDelegate>)UIDelegate {
   self = [self initWithWebState:webState
@@ -383,7 +392,7 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
   // the race.
   // TODO(crbug.com/418827): Fix this by passing in more data from the JS side.
   id completionHandler = ^(BOOL found, const autofill::PasswordForm& form) {
-    if (weakSelf) {
+    if (weakSelf && ![weakSelf isWebStateDestroyed]) {
       weakSelf.get()->passwordManager_->OnPasswordFormSubmitted(
           weakSelf.get()->passwordManagerDriver_.get(), form);
     }
@@ -393,6 +402,7 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
 }
 
 - (void)webStateDestroyed:(web::WebState*)webState {
+  isWebStateDestroyed_ = YES;
   [self detach];
 }
 
