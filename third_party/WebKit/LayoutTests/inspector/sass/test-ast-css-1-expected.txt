@@ -23,73 +23,73 @@ rule 0: "div"
     property 0
         name: "display"
             range: {"startLine":1,"startColumn":7,"endLine":1,"endColumn":14}
-        value: " flex"
-            range: {"startLine":1,"startColumn":15,"endLine":1,"endColumn":20}
+        value: "flex"
+            range: {"startLine":1,"startColumn":16,"endLine":1,"endColumn":20}
         range: {"startLine":1,"startColumn":4,"endLine":1,"endColumn":24}
         disabled: true
     property 1
         name: "color"
             range: {"startLine":2,"startColumn":4,"endLine":2,"endColumn":9}
-        value: " red"
-            range: {"startLine":2,"startColumn":10,"endLine":2,"endColumn":14}
+        value: "red"
+            range: {"startLine":2,"startColumn":11,"endLine":2,"endColumn":14}
         range: {"startLine":2,"startColumn":4,"endLine":2,"endColumn":15}
         disabled: false
     property 2
         name: "background-color"
             range: {"startLine":3,"startColumn":4,"endLine":3,"endColumn":20}
-        value: " blue"
-            range: {"startLine":3,"startColumn":21,"endLine":3,"endColumn":26}
+        value: "blue"
+            range: {"startLine":3,"startColumn":22,"endLine":3,"endColumn":26}
         range: {"startLine":3,"startColumn":4,"endLine":3,"endColumn":27}
         disabled: false
     property 3
         name: "position"
             range: {"startLine":4,"startColumn":7,"endLine":4,"endColumn":15}
-        value: " absolute"
-            range: {"startLine":4,"startColumn":16,"endLine":4,"endColumn":25}
+        value: "absolute"
+            range: {"startLine":4,"startColumn":17,"endLine":4,"endColumn":25}
         range: {"startLine":4,"startColumn":4,"endLine":4,"endColumn":29}
         disabled: true
 rule 1: "div .className"
     property 0
         name: "padding"
             range: {"startLine":8,"startColumn":4,"endLine":8,"endColumn":11}
-        value: " 10px 0 0 10px"
-            range: {"startLine":8,"startColumn":12,"endLine":8,"endColumn":26}
+        value: "10px 0 0 10px"
+            range: {"startLine":8,"startColumn":13,"endLine":8,"endColumn":26}
         range: {"startLine":8,"startColumn":4,"endLine":8,"endColumn":27}
         disabled: false
     property 1
         name: "font-family"
             range: {"startLine":9,"startColumn":7,"endLine":9,"endColumn":18}
-        value: " "Times New Roman""
-            range: {"startLine":9,"startColumn":19,"endLine":9,"endColumn":37}
+        value: ""Times New Roman""
+            range: {"startLine":9,"startColumn":20,"endLine":9,"endColumn":37}
         range: {"startLine":9,"startColumn":4,"endLine":9,"endColumn":41}
         disabled: true
     property 2
         name: "background-image"
             range: {"startLine":10,"startColumn":4,"endLine":10,"endColumn":20}
-        value: " url(assets/no-image-set.png)"
-            range: {"startLine":10,"startColumn":21,"endLine":10,"endColumn":50}
+        value: "url(assets/no-image-set.png)"
+            range: {"startLine":10,"startColumn":22,"endLine":10,"endColumn":50}
         range: {"startLine":10,"startColumn":4,"endLine":10,"endColumn":51}
         disabled: false
 rule 2: "div .className #test::before"
     property 0
         name: "margin"
             range: {"startLine":14,"startColumn":4,"endLine":14,"endColumn":10}
-        value: " 10px 10px"
-            range: {"startLine":14,"startColumn":11,"endLine":14,"endColumn":21}
+        value: "10px 10px"
+            range: {"startLine":14,"startColumn":12,"endLine":14,"endColumn":21}
         range: {"startLine":14,"startColumn":4,"endLine":14,"endColumn":22}
         disabled: false
     property 1
         name: "content"
             range: {"startLine":15,"startColumn":4,"endLine":15,"endColumn":11}
-        value: " "test me""
-            range: {"startLine":15,"startColumn":12,"endLine":15,"endColumn":22}
+        value: ""test me""
+            range: {"startLine":15,"startColumn":13,"endLine":15,"endColumn":22}
         range: {"startLine":15,"startColumn":4,"endLine":15,"endColumn":23}
         disabled: false
     property 2
         name: "border"
             range: {"startLine":16,"startColumn":7,"endLine":16,"endColumn":13}
-        value: " 1px solid black"
-            range: {"startLine":16,"startColumn":14,"endLine":16,"endColumn":30}
+        value: "1px solid black"
+            range: {"startLine":16,"startColumn":15,"endLine":16,"endColumn":30}
         range: {"startLine":16,"startColumn":4,"endLine":16,"endColumn":34}
         disabled: true
 ======

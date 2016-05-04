@@ -17,44 +17,44 @@ rule 0: ""
     property 0
         name: "$my-color"
             range: {"startLine":0,"startColumn":0,"endLine":0,"endColumn":9}
-        value: " red"
-            range: {"startLine":0,"startColumn":10,"endLine":0,"endColumn":14}
+        value: "red"
+            range: {"startLine":0,"startColumn":11,"endLine":0,"endColumn":14}
         range: {"startLine":0,"startColumn":0,"endLine":0,"endColumn":15}
         disabled: false
     property 1
         name: "$my-font"
             range: {"startLine":1,"startColumn":0,"endLine":1,"endColumn":8}
-        value: " Arial"
-            range: {"startLine":1,"startColumn":9,"endLine":1,"endColumn":15}
+        value: "Arial"
+            range: {"startLine":1,"startColumn":10,"endLine":1,"endColumn":15}
         range: {"startLine":1,"startColumn":0,"endLine":1,"endColumn":16}
         disabled: false
     property 2
         name: "$class-slug"
             range: {"startLine":2,"startColumn":0,"endLine":2,"endColumn":11}
-        value: " box"
-            range: {"startLine":2,"startColumn":12,"endLine":2,"endColumn":16}
+        value: "box"
+            range: {"startLine":2,"startColumn":13,"endLine":2,"endColumn":16}
         range: {"startLine":2,"startColumn":0,"endLine":2,"endColumn":17}
         disabled: false
 rule 1: ".#{$class-slug}#{$i}"
     property 0
         name: "background-color"
             range: {"startLine":6,"startColumn":8,"endLine":6,"endColumn":24}
-        value: " $my-color"
-            range: {"startLine":6,"startColumn":25,"endLine":6,"endColumn":35}
+        value: "$my-color"
+            range: {"startLine":6,"startColumn":26,"endLine":6,"endColumn":35}
         range: {"startLine":6,"startColumn":8,"endLine":6,"endColumn":36}
         disabled: false
     property 1
         name: "font-family"
             range: {"startLine":7,"startColumn":8,"endLine":7,"endColumn":19}
-        value: " $my-font"
-            range: {"startLine":7,"startColumn":20,"endLine":7,"endColumn":29}
+        value: "$my-font"
+            range: {"startLine":7,"startColumn":21,"endLine":7,"endColumn":29}
         range: {"startLine":7,"startColumn":8,"endLine":7,"endColumn":30}
         disabled: false
     property 2
         name: "color"
             range: {"startLine":8,"startColumn":11,"endLine":8,"endColumn":16}
-        value: " $my-color"
-            range: {"startLine":8,"startColumn":17,"endLine":8,"endColumn":27}
+        value: "$my-color"
+            range: {"startLine":8,"startColumn":18,"endLine":8,"endColumn":27}
         range: {"startLine":8,"startColumn":8,"endLine":8,"endColumn":31}
         disabled: true
 ======

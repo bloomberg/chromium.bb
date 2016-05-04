@@ -14,15 +14,15 @@ input::-moz-focus-inner"
     property 0
         name: "border"
             range: {"startLine":5,"startColumn":2,"endLine":5,"endColumn":8}
-        value: " 0"
-            range: {"startLine":5,"startColumn":9,"endLine":5,"endColumn":11}
+        value: "0"
+            range: {"startLine":5,"startColumn":10,"endLine":5,"endColumn":11}
         range: {"startLine":5,"startColumn":2,"endLine":5,"endColumn":12}
         disabled: false
     property 1
         name: "padding"
             range: {"startLine":6,"startColumn":2,"endLine":6,"endColumn":9}
-        value: " 0"
-            range: {"startLine":6,"startColumn":10,"endLine":6,"endColumn":12}
+        value: "0"
+            range: {"startLine":6,"startColumn":11,"endLine":6,"endColumn":12}
         range: {"startLine":6,"startColumn":2,"endLine":6,"endColumn":13}
         disabled: false
 ======

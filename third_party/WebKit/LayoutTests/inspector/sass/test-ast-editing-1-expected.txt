@@ -19,9 +19,9 @@ div {
 Running: testSetPropertyValue
 div {
     /* This is a regular comment */
-    color:NEW-VALUE;
-    /* position:NEW-VALUE; */
-    display:NEW-VALUE
+    color: NEW-VALUE;
+    /* position: NEW-VALUE; */
+    display: NEW-VALUE
 }
 
 
@@ -125,7 +125,7 @@ div {
 Running: testComplexChange
 div {
     /* This is a regular comment */
-    color:CHANGED;
+    color: CHANGED;
     /* position: absolute; */
     CHANGED: block
 ;

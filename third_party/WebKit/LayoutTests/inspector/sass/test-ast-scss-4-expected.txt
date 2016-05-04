@@ -14,29 +14,29 @@ rule 0: "body"
     property 0
         name: "width"
             range: {"startLine":2,"startColumn":8,"endLine":2,"endColumn":13}
-        value: " 720px"
-            range: {"startLine":2,"startColumn":14,"endLine":2,"endColumn":20}
+        value: "720px"
+            range: {"startLine":2,"startColumn":15,"endLine":2,"endColumn":20}
         range: {"startLine":2,"startColumn":8,"endLine":2,"endColumn":21}
         disabled: false
     property 1
         name: "padding-top"
             range: {"startLine":3,"startColumn":11,"endLine":3,"endColumn":22}
-        value: " 5em"
-            range: {"startLine":3,"startColumn":23,"endLine":3,"endColumn":27}
+        value: "5em"
+            range: {"startLine":3,"startColumn":24,"endLine":3,"endColumn":27}
         range: {"startLine":3,"startColumn":8,"endLine":3,"endColumn":31}
         disabled: true
     property 2
         name: "height"
             range: {"startLine":4,"startColumn":8,"endLine":4,"endColumn":14}
-        value: " 100%"
-            range: {"startLine":4,"startColumn":15,"endLine":4,"endColumn":20}
+        value: "100%"
+            range: {"startLine":4,"startColumn":16,"endLine":4,"endColumn":20}
         range: {"startLine":4,"startColumn":8,"endLine":4,"endColumn":21}
         disabled: false
     property 3
         name: "margin"
             range: {"startLine":5,"startColumn":8,"endLine":5,"endColumn":14}
-        value: " 0 auto"
-            range: {"startLine":5,"startColumn":15,"endLine":5,"endColumn":22}
+        value: "0 auto"
+            range: {"startLine":5,"startColumn":16,"endLine":5,"endColumn":22}
         range: {"startLine":5,"startColumn":8,"endLine":5,"endColumn":23}
         disabled: false
 ======

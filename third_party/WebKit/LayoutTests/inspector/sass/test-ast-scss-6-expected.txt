@@ -11,15 +11,15 @@ rule 0: ".box#{$i}"
     property 0
         name: "color"
             range: {"startLine":2,"startColumn":8,"endLine":2,"endColumn":13}
-        value: " $color"
-            range: {"startLine":2,"startColumn":14,"endLine":2,"endColumn":21}
+        value: "$color"
+            range: {"startLine":2,"startColumn":15,"endLine":2,"endColumn":21}
         range: {"startLine":2,"startColumn":8,"endLine":2,"endColumn":22}
         disabled: false
     property 1
         name: "margin"
             range: {"startLine":3,"startColumn":8,"endLine":3,"endColumn":14}
-        value: " 10px"
-            range: {"startLine":3,"startColumn":15,"endLine":3,"endColumn":20}
+        value: "10px"
+            range: {"startLine":3,"startColumn":16,"endLine":3,"endColumn":20}
         range: {"startLine":3,"startColumn":8,"endLine":3,"endColumn":21}
         disabled: false
 ======

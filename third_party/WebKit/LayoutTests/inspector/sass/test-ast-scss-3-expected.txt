@@ -22,44 +22,44 @@ rule 0: ""
     property 0
         name: "width"
             range: {"startLine":1,"startColumn":4,"endLine":1,"endColumn":9}
-        value: " 100%"
-            range: {"startLine":1,"startColumn":10,"endLine":1,"endColumn":15}
+        value: "100%"
+            range: {"startLine":1,"startColumn":11,"endLine":1,"endColumn":15}
         range: {"startLine":1,"startColumn":4,"endLine":1,"endColumn":16}
         disabled: false
     property 1
         name: "height"
             range: {"startLine":2,"startColumn":4,"endLine":2,"endColumn":10}
-        value: " 100%"
-            range: {"startLine":2,"startColumn":11,"endLine":2,"endColumn":16}
+        value: "100%"
+            range: {"startLine":2,"startColumn":12,"endLine":2,"endColumn":16}
         range: {"startLine":2,"startColumn":4,"endLine":2,"endColumn":17}
         disabled: false
 rule 1: ""
     property 0
         name: "-webkit-border-radius"
             range: {"startLine":6,"startColumn":2,"endLine":6,"endColumn":23}
-        value: " $radius"
-            range: {"startLine":6,"startColumn":24,"endLine":6,"endColumn":32}
+        value: "$radius"
+            range: {"startLine":6,"startColumn":25,"endLine":6,"endColumn":32}
         range: {"startLine":6,"startColumn":2,"endLine":6,"endColumn":33}
         disabled: false
     property 1
         name: "-moz-border-radius"
             range: {"startLine":7,"startColumn":5,"endLine":7,"endColumn":23}
-        value: " $radius"
-            range: {"startLine":7,"startColumn":24,"endLine":7,"endColumn":32}
+        value: "$radius"
+            range: {"startLine":7,"startColumn":25,"endLine":7,"endColumn":32}
         range: {"startLine":7,"startColumn":5,"endLine":7,"endColumn":33}
         disabled: false
     property 2
         name: "-ms-border-radius"
             range: {"startLine":8,"startColumn":6,"endLine":8,"endColumn":23}
-        value: " $radius"
-            range: {"startLine":8,"startColumn":24,"endLine":8,"endColumn":32}
+        value: "$radius"
+            range: {"startLine":8,"startColumn":25,"endLine":8,"endColumn":32}
         range: {"startLine":8,"startColumn":6,"endLine":8,"endColumn":33}
         disabled: false
     property 3
         name: "border-radius"
             range: {"startLine":9,"startColumn":10,"endLine":9,"endColumn":23}
-        value: " $radius"
-            range: {"startLine":9,"startColumn":24,"endLine":9,"endColumn":32}
+        value: "$radius"
+            range: {"startLine":9,"startColumn":25,"endLine":9,"endColumn":32}
         range: {"startLine":9,"startColumn":10,"endLine":9,"endColumn":33}
         disabled: false
 rule 2: "div"

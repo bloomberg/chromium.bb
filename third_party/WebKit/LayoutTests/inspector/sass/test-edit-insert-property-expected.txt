@@ -40,17 +40,17 @@ Edits:
     {1, 2, 1, 7} 'color' => 'border: 1px solid black;color'
 ===== test-edit-insert-property.css =====
     .box1.{
-    ..border:..1px.solid.black;
+    ..border:.1px.solid.black;
     ..color:.red;
     ..margin:.10px;.}
     
     .box2.{
-    ..border:..1px.solid.black;
+    ..border:.1px.solid.black;
     ..color:.red;
     ..margin:.10px;.}
     
     .box3.{
-    ..border:..1px.solid.black;
+    ..border:.1px.solid.black;
     ..color:.red;
     ..margin:.10px;.}
     
@@ -64,7 +64,7 @@ Edits:
     
     @for.$i.from.1.through.3.{
     .....box#{$i}.{
-    ........border:..1px.solid.black;
+    ........border:.1px.solid.black;
     ........color:.$color;
     ........margin:.10px;
     ....}
@@ -82,17 +82,17 @@ Edits:
 ===== test-edit-insert-property.css =====
     .box1.{
     ..color:.red;
-    ..border:..1px.solid.black;
+    ..border:.1px.solid.black;
     ..margin:.10px;.}
     
     .box2.{
     ..color:.red;
-    ..border:..1px.solid.black;
+    ..border:.1px.solid.black;
     ..margin:.10px;.}
     
     .box3.{
     ..color:.red;
-    ..border:..1px.solid.black;
+    ..border:.1px.solid.black;
     ..margin:.10px;.}
     
     body.{
@@ -106,7 +106,7 @@ Edits:
     @for.$i.from.1.through.3.{
     .....box#{$i}.{
     ........color:.$color;
-    ........border:..1px.solid.black;
+    ........border:.1px.solid.black;
     ........margin:.10px;
     ....}
     }
@@ -124,17 +124,17 @@ Edits:
     .box1.{
     ..color:.red;
     ..margin:.10px;
-    ..border:..1px.solid.black;.}
+    ..border:.1px.solid.black;.}
     
     .box2.{
     ..color:.red;
     ..margin:.10px;
-    ..border:..1px.solid.black;.}
+    ..border:.1px.solid.black;.}
     
     .box3.{
     ..color:.red;
     ..margin:.10px;
-    ..border:..1px.solid.black;.}
+    ..border:.1px.solid.black;.}
     
     body.{
     ..font-family:."arial";.}
@@ -148,7 +148,7 @@ Edits:
     .....box#{$i}.{
     ........color:.$color;
     ........margin:.10px;
-    ........border:..1px.solid.black;
+    ........border:.1px.solid.black;
     ....}
     }
     
@@ -164,17 +164,17 @@ Edits:
     {9, 2, 9, 7} 'color' => 'border: 1px solid black;color'
 ===== test-edit-insert-property.css =====
     .box1.{
-    ..border:..1px.solid.black;
+    ..border:.1px.solid.black;
     ..color:.red;
     ..margin:.10px;.}
     
     .box2.{
-    ..border:..1px.solid.black;
+    ..border:.1px.solid.black;
     ..color:.red;
     ..margin:.10px;.}
     
     .box3.{
-    ..border:..1px.solid.black;
+    ..border:.1px.solid.black;
     ..color:.red;
     ..margin:.10px;.}
     
@@ -188,7 +188,7 @@ Edits:
     
     @for.$i.from.1.through.3.{
     .....box#{$i}.{
-    ........border:..1px.solid.black;
+    ........border:.1px.solid.black;
     ........color:.$color;
     ........margin:.10px;
     ....}
@@ -299,19 +299,19 @@ Edits:
     ..margin:.10px;
     ..color:.red;
     ..margin:.10px;
-    ..border:..1px.solid.black;.}
+    ..border:.1px.solid.black;.}
     
     .box2.{
     ..margin:.10px;
     ..color:.red;
     ..margin:.10px;
-    ..border:..1px.solid.black;.}
+    ..border:.1px.solid.black;.}
     
     .box3.{
     ..margin:.10px;
     ..color:.red;
     ..margin:.10px;
-    ..border:..1px.solid.black;.}
+    ..border:.1px.solid.black;.}
     
     body.{
     ..font-family:."arial";.}
@@ -326,7 +326,7 @@ Edits:
     ........margin:.10px;
     ........color:.$color;
     ........margin:.10px;
-    ........border:..1px.solid.black;
+    ........border:.1px.solid.black;
     ....}
     }
     
