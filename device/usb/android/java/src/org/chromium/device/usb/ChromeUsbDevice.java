@@ -74,16 +74,19 @@ final class ChromeUsbDevice {
         return Integer.parseInt(parts[0]) << 8 | Integer.parseInt(parts[1]);
     }
 
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @CalledByNative
     private String getManufacturerName() {
         return mDevice.getManufacturerName();
     }
 
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @CalledByNative
     private String getProductName() {
         return mDevice.getProductName();
     }
 
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @CalledByNative
     private String getSerialNumber() {
         return mDevice.getSerialNumber();
