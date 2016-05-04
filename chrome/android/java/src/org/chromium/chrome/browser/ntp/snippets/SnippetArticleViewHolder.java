@@ -111,7 +111,7 @@ public class SnippetArticleViewHolder extends NewTabPageViewHolder implements Vi
         mHeadlineTextView.setText(item.mTitle);
         mPublisherTextView.setText(String.format(PUBLISHER_FORMAT_STRING, item.mPublisher,
                 DateUtils.getRelativeTimeSpanString(item.mTimestamp, System.currentTimeMillis(),
-                        DateUtils.MINUTE_IN_MILLIS, DateUtils.FORMAT_ABBREV_RELATIVE)));
+                        DateUtils.MINUTE_IN_MILLIS)));
 
         mArticleSnippetTextView.setText(item.mPreviewText);
         mUrl = item.mUrl;
