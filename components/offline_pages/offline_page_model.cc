@@ -781,7 +781,7 @@ void OfflinePageModel::RunWhenLoaded(const base::Closure& task) {
     return;
   }
 
-  task_runner_->PostTask(FROM_HERE, task);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, task);
 }
 
 }  // namespace offline_pages
