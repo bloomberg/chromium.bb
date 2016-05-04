@@ -12,8 +12,11 @@
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/memory/memory_pressure_monitor_chromeos.h"
 #include "base/process/process_handle.h"  // kNullProcessHandle.
+#include "base/process/process_metrics.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -207,11 +210,75 @@ class TabManagerDelegate::FocusedProcess {
   base::Lock lock_;
 };
 
+// TabManagerDelegate::MemoryStat implementation.
+
+// static
+int TabManagerDelegate::MemoryStat::ReadIntFromFile(
+    const char* file_name, const int default_val) {
+  std::string file_string;
+  if (!base::ReadFileToString(base::FilePath(file_name), &file_string)) {
+    LOG(WARNING) << "Unable to read file" << file_name;
+    return default_val;
+  }
+  int val = default_val;
+  if (!base::StringToInt(
+          base::TrimWhitespaceASCII(file_string, base::TRIM_TRAILING),
+          &val)) {
+    LOG(WARNING) << "Unable to parse string" << file_string;
+    return default_val;
+  }
+  return val;
+}
+
+// static
+int TabManagerDelegate::MemoryStat::LowMemoryMarginKB() {
+  static const int kDefaultLowMemoryMarginMb = 50;
+  static const char kLowMemoryMarginConfig[] =
+      "/sys/kernel/mm/chromeos-low_mem/margin";
+  return ReadIntFromFile(
+      kLowMemoryMarginConfig, kDefaultLowMemoryMarginMb) * 1024;
+}
+
+// The logic of available memory calculation is copied from
+// _is_low_mem_situation() in kernel file include/linux/low-mem-notify.h.
+// Maybe we should let kernel report the number directly.
+int TabManagerDelegate::MemoryStat::TargetMemoryToFreeKB() {
+  static const int kRamVsSwapWeight = 4;
+  static const char kMinFilelistConfig[] = "/proc/sys/vm/min_filelist_kbytes";
+
+  base::SystemMemoryInfoKB system_mem;
+  base::GetSystemMemoryInfo(&system_mem);
+  const int file_mem_kb = system_mem.active_file + system_mem.inactive_file;
+  const int min_filelist_kb = ReadIntFromFile(kMinFilelistConfig, 0);
+  // Calculate current available memory in system.
+  // File-backed memory should be easy to reclaim, unless they're dirty.
+  const int available_mem_kb = system_mem.free +
+      file_mem_kb - system_mem.dirty - min_filelist_kb +
+      system_mem.swap_free / kRamVsSwapWeight;
+
+  return LowMemoryMarginKB() - available_mem_kb;
+}
+
+int TabManagerDelegate::MemoryStat::EstimatedMemoryFreedKB(
+    base::ProcessHandle pid) {
+  std::unique_ptr<base::ProcessMetrics> process_metrics(
+      base::ProcessMetrics::CreateProcessMetrics(pid));
+  base::WorkingSetKBytes mem_usage;
+  process_metrics->GetWorkingSetKBytes(&mem_usage);
+  return mem_usage.priv;
+}
 
 TabManagerDelegate::TabManagerDelegate(
     const base::WeakPtr<TabManager>& tab_manager)
+  : TabManagerDelegate(tab_manager, new MemoryStat()) {
+}
+
+TabManagerDelegate::TabManagerDelegate(
+    const base::WeakPtr<TabManager>& tab_manager,
+    TabManagerDelegate::MemoryStat* mem_stat)
     : tab_manager_(tab_manager),
       focused_process_(new FocusedProcess()),
+      mem_stat_(mem_stat),
       arc_process_instance_(nullptr),
       arc_process_instance_version_(0),
       weak_ptr_factory_(this) {
@@ -480,22 +547,26 @@ void TabManagerDelegate::AdjustOomPriorities(const TabStatsList& tab_list) {
   AdjustOomPrioritiesImpl(tab_list, std::vector<arc::ArcProcess>());
 }
 
+// Excludes persistent ARC apps, but still preserves active chrome tabs and
+// top ARC apps. The latter ones should not be killed by TabManager since
+// we still want to adjust their oom_score_adj.
 // static
-std::vector<TabManagerDelegate::KillCandidate>
-TabManagerDelegate::GetSortedKillCandidates(
+std::vector<TabManagerDelegate::Candidate>
+TabManagerDelegate::GetSortedCandidates(
     const TabStatsList& tab_list,
     const std::vector<arc::ArcProcess>& arc_processes) {
 
-  std::vector<KillCandidate> candidates;
+  std::vector<Candidate> candidates;
   candidates.reserve(tab_list.size() + arc_processes.size());
 
   for (const auto& tab : tab_list) {
-    candidates.push_back(KillCandidate(&tab, TabStatsToPriority(tab)));
+    candidates.push_back(Candidate(&tab, TabStatsToPriority(tab)));
   }
 
   for (const auto& app : arc_processes) {
-    KillCandidate candidate(&app, AppStateToPriority(app.process_state));
-    // Skip persistent processes since we should never kill them.
+    Candidate candidate(&app, AppStateToPriority(app.process_state));
+    // Skip persistent android processes since we should never kill them.
+    // Also don't ajust OOM score so their score remains min oom_score_adj.
     if (candidate.priority >= ProcessPriority::ANDROID_PERSISTENT)
       continue;
     candidates.push_back(candidate);
@@ -508,29 +579,51 @@ TabManagerDelegate::GetSortedKillCandidates(
   return candidates;
 }
 
+bool TabManagerDelegate::KillArcProcess(const int nspid) {
+  if (!arc_process_instance_)
+    return false;
+  arc_process_instance_->KillProcess(nspid, "LowMemoryKill");
+  return true;
+}
+
+bool TabManagerDelegate::KillTab(int64_t tab_id) {
+  // Check |tab_manager_| is alive before taking tabs into consideration.
+  return tab_manager_ &&
+      tab_manager_->CanDiscardTab(tab_id) &&
+      tab_manager_->DiscardTabById(tab_id);
+}
+
 void TabManagerDelegate::LowMemoryKillImpl(
     const TabStatsList& tab_list,
     const std::vector<arc::ArcProcess>& arc_processes) {
 
-  std::vector<TabManagerDelegate::KillCandidate> candidates =
-      GetSortedKillCandidates(tab_list, arc_processes);
+  std::vector<TabManagerDelegate::Candidate> candidates =
+      GetSortedCandidates(tab_list, arc_processes);
+
+  int target_memory_to_free_kb = mem_stat_->TargetMemoryToFreeKB();
   for (const auto& entry : candidates) {
-    // Ensure we never kill persistent apps.
-    DCHECK(entry.priority != ProcessPriority::ANDROID_PERSISTENT);
+    // Never kill selected tab or Android foreground app, regardless whether
+    // they're in the active window. Since the user experience would be bad.
+    if ((!entry.is_arc_app &&
+         entry.priority >= ProcessPriority::CHROME_SELECTED) ||
+        (entry.is_arc_app &&
+         entry.priority >= ProcessPriority::ANDROID_TOP_INACTIVE)) {
+      continue;
+    }
     if (entry.is_arc_app) {
-      if (arc_process_instance_) {
-        arc_process_instance_->KillProcess(entry.app->nspid, "LowMemoryKill");
-        break;
-      }
+        int estimated_memory_freed_kb =
+            mem_stat_->EstimatedMemoryFreedKB(entry.app->pid);
+        if (KillArcProcess(entry.app->nspid))
+          target_memory_to_free_kb -= estimated_memory_freed_kb;
     } else {
       int64_t tab_id = entry.tab->tab_contents_id;
-      // Check |tab_manager_| is alive before taking tabs into consideration.
-      if (tab_manager_ &&
-          tab_manager_->CanDiscardTab(tab_id) &&
-          tab_manager_->DiscardTabById(tab_id)) {
-        break;
-      }
+      int estimated_memory_freed_kb =
+          mem_stat_->EstimatedMemoryFreedKB(entry.tab->renderer_handle);
+      if (KillTab(tab_id))
+        target_memory_to_free_kb -= estimated_memory_freed_kb;
     }
+    if (target_memory_to_free_kb < 0)
+      break;
   }
 }
 
@@ -538,7 +631,7 @@ void TabManagerDelegate::AdjustOomPrioritiesImpl(
     const TabStatsList& tab_list,
     const std::vector<arc::ArcProcess>& arc_processes) {
   // Least important first.
-  auto candidates = GetSortedKillCandidates(tab_list, arc_processes);
+  auto candidates = GetSortedCandidates(tab_list, arc_processes);
 
   // Now we assign priorities based on the sorted list. We're assigning
   // priorities in the range of kLowestRendererOomScore to
@@ -610,8 +703,8 @@ void TabManagerDelegate::SetOomScoreAdjForTabsOnFileThread(
 }
 
 void TabManagerDelegate::DistributeOomScoreInRange(
-    std::vector<TabManagerDelegate::KillCandidate>::reverse_iterator rbegin,
-    std::vector<TabManagerDelegate::KillCandidate>::reverse_iterator rend,
+    std::vector<TabManagerDelegate::Candidate>::reverse_iterator rbegin,
+    std::vector<TabManagerDelegate::Candidate>::reverse_iterator rend,
     int range_begin,
     int range_end,
     ProcessScoreMap* new_map) {
