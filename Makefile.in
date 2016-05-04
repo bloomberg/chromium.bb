@@ -691,6 +691,7 @@ am__src_common_dumper_unittest_SOURCES_DIST =  \
 	src/common/dwarf/dwarf2reader.cc \
 	src/common/dwarf/dwarf2reader_cfi_unittest.cc \
 	src/common/dwarf/dwarf2reader_die_unittest.cc \
+	src/common/dwarf/elf_reader.cc \
 	src/common/linux/crc32.cc src/common/linux/dump_symbols.cc \
 	src/common/linux/dump_symbols_unittest.cc \
 	src/common/linux/elf_core_dump.cc \
@@ -732,6 +733,7 @@ am__src_common_dumper_unittest_SOURCES_DIST =  \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dwarf/src_common_dumper_unittest-dwarf2reader.$(OBJEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dwarf/src_common_dumper_unittest-dwarf2reader_cfi_unittest.$(OBJEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dwarf/src_common_dumper_unittest-dwarf2reader_die_unittest.$(OBJEXT) \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@  src/common/dwarf/src_common_dumper_unittest-elf_reader.$(OBJEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/linux/src_common_dumper_unittest-crc32.$(OBJEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/linux/src_common_dumper_unittest-dump_symbols.$(OBJEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/linux/src_common_dumper_unittest-dump_symbols_unittest.$(OBJEXT) \
@@ -767,6 +769,7 @@ am__src_common_mac_macho_reader_unittest_SOURCES_DIST =  \
 	src/common/dwarf/cfi_assembler.cc \
 	src/common/dwarf/dwarf2diehandler.cc \
 	src/common/dwarf/dwarf2reader.cc \
+	src/common/dwarf/elf_reader.cc \
 	src/common/mac/arch_utilities.cc src/common/mac/file_id.cc \
 	src/common/mac/macho_id.cc src/common/mac/macho_reader.cc \
 	src/common/mac/macho_reader_unittest.cc \
@@ -785,6 +788,7 @@ am__src_common_mac_macho_reader_unittest_SOURCES_DIST =  \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dwarf/src_common_mac_macho_reader_unittest-cfi_assembler.$(OBJEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dwarf/src_common_mac_macho_reader_unittest-dwarf2diehandler.$(OBJEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dwarf/src_common_mac_macho_reader_unittest-dwarf2reader.$(OBJEXT) \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@  src/common/dwarf/src_common_mac_macho_reader_unittest-elf_reader.$(OBJEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/mac/src_common_mac_macho_reader_unittest-arch_utilities.$(OBJEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/mac/src_common_mac_macho_reader_unittest-file_id.$(OBJEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/mac/src_common_mac_macho_reader_unittest-macho_id.$(OBJEXT) \
@@ -1343,7 +1347,8 @@ am__src_tools_linux_dump_syms_dump_syms_SOURCES_DIST =  \
 	src/common/module.cc src/common/stabs_reader.cc \
 	src/common/stabs_to_module.cc src/common/dwarf/bytereader.cc \
 	src/common/dwarf/dwarf2diehandler.cc \
-	src/common/dwarf/dwarf2reader.cc src/common/linux/crc32.cc \
+	src/common/dwarf/dwarf2reader.cc \
+	src/common/dwarf/elf_reader.cc src/common/linux/crc32.cc \
 	src/common/linux/dump_symbols.cc \
 	src/common/linux/elf_symbols_to_module.cc \
 	src/common/linux/elfutils.cc src/common/linux/file_id.cc \
@@ -1361,6 +1366,7 @@ am__src_tools_linux_dump_syms_dump_syms_SOURCES_DIST =  \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dwarf/bytereader.$(OBJEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dwarf/dwarf2diehandler.$(OBJEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dwarf/dwarf2reader.$(OBJEXT) \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@  src/common/dwarf/elf_reader.$(OBJEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/linux/crc32.$(OBJEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/linux/dump_symbols.$(OBJEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/linux/elf_symbols_to_module.$(OBJEXT) \
@@ -1415,6 +1421,7 @@ am__src_tools_mac_dump_syms_dump_syms_mac_SOURCES_DIST =  \
 	src/common/dwarf/bytereader.cc \
 	src/common/dwarf/dwarf2diehandler.cc \
 	src/common/dwarf/dwarf2reader.cc \
+	src/common/dwarf/elf_reader.cc \
 	src/common/mac/arch_utilities.cc src/common/mac/dump_syms.cc \
 	src/common/mac/file_id.cc src/common/mac/macho_id.cc \
 	src/common/mac/macho_reader.cc \
@@ -1432,6 +1439,7 @@ am__src_tools_mac_dump_syms_dump_syms_mac_SOURCES_DIST =  \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dwarf/src_tools_mac_dump_syms_dump_syms_mac-bytereader.$(OBJEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dwarf/src_tools_mac_dump_syms_dump_syms_mac-dwarf2diehandler.$(OBJEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dwarf/src_tools_mac_dump_syms_dump_syms_mac-dwarf2reader.$(OBJEXT) \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@  src/common/dwarf/src_tools_mac_dump_syms_dump_syms_mac-elf_reader.$(OBJEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/mac/src_tools_mac_dump_syms_dump_syms_mac-arch_utilities.$(OBJEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/mac/src_tools_mac_dump_syms_dump_syms_mac-dump_syms.$(OBJEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/mac/src_tools_mac_dump_syms_dump_syms_mac-file_id.$(OBJEXT) \
@@ -2306,6 +2314,7 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dwarf/bytereader.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dwarf/dwarf2diehandler.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dwarf/dwarf2reader.cc \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@  src/common/dwarf/elf_reader.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/linux/crc32.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/linux/dump_symbols.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/linux/elf_symbols_to_module.cc \
@@ -2343,6 +2352,7 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dwarf/bytereader.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dwarf/dwarf2diehandler.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dwarf/dwarf2reader.cc \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@  src/common/dwarf/elf_reader.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/mac/arch_utilities.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/mac/dump_syms.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/mac/file_id.cc \
@@ -2381,6 +2391,7 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dwarf/dwarf2reader.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dwarf/dwarf2reader_cfi_unittest.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dwarf/dwarf2reader_die_unittest.cc \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@  src/common/dwarf/elf_reader.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/linux/crc32.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/linux/dump_symbols.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/linux/dump_symbols_unittest.cc \
@@ -2423,6 +2434,7 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dwarf/cfi_assembler.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dwarf/dwarf2diehandler.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dwarf/dwarf2reader.cc \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@  src/common/dwarf/elf_reader.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/mac/arch_utilities.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/mac/file_id.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/mac/macho_id.cc \
@@ -3790,6 +3802,9 @@ src/common/dwarf/src_common_dumper_unittest-dwarf2reader_cfi_unittest.$(OBJEXT):
 src/common/dwarf/src_common_dumper_unittest-dwarf2reader_die_unittest.$(OBJEXT):  \
 	src/common/dwarf/$(am__dirstamp) \
 	src/common/dwarf/$(DEPDIR)/$(am__dirstamp)
+src/common/dwarf/src_common_dumper_unittest-elf_reader.$(OBJEXT):  \
+        src/common/dwarf/$(am__dirstamp) \
+        src/common/dwarf/$(DEPDIR)/$(am__dirstamp)
 src/common/linux/src_common_dumper_unittest-crc32.$(OBJEXT):  \
 	src/common/linux/$(am__dirstamp) \
 	src/common/linux/$(DEPDIR)/$(am__dirstamp)
@@ -3890,6 +3905,9 @@ src/common/dwarf/src_common_mac_macho_reader_unittest-dwarf2diehandler.$(OBJEXT)
 src/common/dwarf/src_common_mac_macho_reader_unittest-dwarf2reader.$(OBJEXT):  \
 	src/common/dwarf/$(am__dirstamp) \
 	src/common/dwarf/$(DEPDIR)/$(am__dirstamp)
+src/common/dwarf/src_common_mac_macho_reader_unittest-elf_reader.$(OBJEXT):  \
+        src/common/dwarf/$(am__dirstamp) \
+        src/common/dwarf/$(DEPDIR)/$(am__dirstamp)
 src/common/mac/$(am__dirstamp):
 	@$(MKDIR_P) src/common/mac
 	@: > src/common/mac/$(am__dirstamp)
@@ -4222,6 +4240,9 @@ src/common/dwarf/dwarf2diehandler.$(OBJEXT):  \
 src/common/dwarf/dwarf2reader.$(OBJEXT):  \
 	src/common/dwarf/$(am__dirstamp) \
 	src/common/dwarf/$(DEPDIR)/$(am__dirstamp)
+src/common/dwarf/elf_reader.$(OBJEXT):  \
+        src/common/dwarf/$(am__dirstamp) \
+        src/common/dwarf/$(DEPDIR)/$(am__dirstamp)
 src/common/linux/crc32.$(OBJEXT): src/common/linux/$(am__dirstamp) \
 	src/common/linux/$(DEPDIR)/$(am__dirstamp)
 src/common/linux/dump_symbols.$(OBJEXT):  \
@@ -4322,6 +4343,9 @@ src/common/dwarf/src_tools_mac_dump_syms_dump_syms_mac-dwarf2diehandler.$(OBJEXT
 src/common/dwarf/src_tools_mac_dump_syms_dump_syms_mac-dwarf2reader.$(OBJEXT):  \
 	src/common/dwarf/$(am__dirstamp) \
 	src/common/dwarf/$(DEPDIR)/$(am__dirstamp)
+src/common/dwarf/src_tools_mac_dump_syms_dump_syms_mac-elf_reader.$(OBJEXT):  \
+        src/common/dwarf/$(am__dirstamp) \
+        src/common/dwarf/$(DEPDIR)/$(am__dirstamp)
 src/common/mac/src_tools_mac_dump_syms_dump_syms_mac-arch_utilities.$(OBJEXT):  \
 	src/common/mac/$(am__dirstamp) \
 	src/common/mac/$(DEPDIR)/$(am__dirstamp)
@@ -4472,6 +4496,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/dwarf/$(DEPDIR)/bytereader.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/dwarf/$(DEPDIR)/dwarf2diehandler.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/dwarf/$(DEPDIR)/dwarf2reader.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/common/dwarf/$(DEPDIR)/elf_reader.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/dwarf/$(DEPDIR)/src_common_dumper_unittest-bytereader.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/dwarf/$(DEPDIR)/src_common_dumper_unittest-bytereader_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/dwarf/$(DEPDIR)/src_common_dumper_unittest-cfi_assembler.Po@am__quote@
@@ -4480,13 +4505,16 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/dwarf/$(DEPDIR)/src_common_dumper_unittest-dwarf2reader.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/dwarf/$(DEPDIR)/src_common_dumper_unittest-dwarf2reader_cfi_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/dwarf/$(DEPDIR)/src_common_dumper_unittest-dwarf2reader_die_unittest.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/common/dwarf/$(DEPDIR)/src_common_dumper_unittest-elf_reader.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/dwarf/$(DEPDIR)/src_common_mac_macho_reader_unittest-bytereader.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/dwarf/$(DEPDIR)/src_common_mac_macho_reader_unittest-cfi_assembler.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/dwarf/$(DEPDIR)/src_common_mac_macho_reader_unittest-dwarf2diehandler.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/dwarf/$(DEPDIR)/src_common_mac_macho_reader_unittest-dwarf2reader.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/common/dwarf/$(DEPDIR)/src_common_mac_macho_reader_unittest-elf_reader.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/dwarf/$(DEPDIR)/src_tools_mac_dump_syms_dump_syms_mac-bytereader.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/dwarf/$(DEPDIR)/src_tools_mac_dump_syms_dump_syms_mac-dwarf2diehandler.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/dwarf/$(DEPDIR)/src_tools_mac_dump_syms_dump_syms_mac-dwarf2reader.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/common/dwarf/$(DEPDIR)/src_tools_mac_dump_syms_dump_syms_mac-elf_reader.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/linux/$(DEPDIR)/crc32.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/linux/$(DEPDIR)/dump_symbols.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/linux/$(DEPDIR)/elf_core_dump.Po@am__quote@
@@ -6706,6 +6734,20 @@ src/common/dwarf/src_tools_mac_dump_syms_dump_syms_mac-dwarf2reader.obj: src/com
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/dwarf/dwarf2reader.cc' object='src/common/dwarf/src_tools_mac_dump_syms_dump_syms_mac-dwarf2reader.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_mac_dump_syms_dump_syms_mac_CXXFLAGS) $(CXXFLAGS) -c -o src/common/dwarf/src_tools_mac_dump_syms_dump_syms_mac-dwarf2reader.obj `if test -f 'src/common/dwarf/dwarf2reader.cc'; then $(CYGPATH_W) 'src/common/dwarf/dwarf2reader.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/dwarf/dwarf2reader.cc'; fi`
+
+src/common/dwarf/src_tools_mac_dump_syms_dump_syms_mac-elf_reader.o: src/common/dwarf/elf_reader.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_mac_dump_syms_dump_syms_mac_CXXFLAGS) $(CXXFLAGS) -MT src/common/dwarf/src_tools_mac_dump_syms_dump_syms_mac-elf_reader.o -MD -MP -MF src/common/dwarf/$(DEPDIR)/src_tools_mac_dump_syms_dump_syms_mac-elf_reader.Tpo -c -o src/common/dwarf/src_tools_mac_dump_syms_dump_syms_mac-elf_reader.o `test -f 'src/common/dwarf/elf_reader.cc' || echo '$(srcdir)/'`src/common/dwarf/elf_reader.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/common/dwarf/$(DEPDIR)/src_tools_mac_dump_syms_dump_syms_mac-elf_reader.Tpo src/common/dwarf/$(DEPDIR)/src_tools_mac_dump_syms_dump_syms_mac-elf_reader.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/dwarf/elf_reader.cc' object='src/common/dwarf/src_tools_mac_dump_syms_dump_syms_mac-elf_reader.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_mac_dump_syms_dump_syms_mac_CXXFLAGS) $(CXXFLAGS) -c -o src/common/dwarf/src_tools_mac_dump_syms_dump_syms_mac-elf_reader.o `test -f 'src/common/dwarf/elf_reader.cc' || echo '$(srcdir)/'`src/common/dwarf/elf_reader.cc
+
+src/common/dwarf/src_tools_mac_dump_syms_dump_syms_mac-elf_reader.obj: src/common/dwarf/elf_reader.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_mac_dump_syms_dump_syms_mac_CXXFLAGS) $(CXXFLAGS) -MT src/common/dwarf/src_tools_mac_dump_syms_dump_syms_mac-elf_reader.obj -MD -MP -MF src/common/dwarf/$(DEPDIR)/src_tools_mac_dump_syms_dump_syms_mac-elf_reader.Tpo -c -o src/common/dwarf/src_tools_mac_dump_syms_dump_syms_mac-elf_reader.obj `if test -f 'src/common/dwarf/elf_reader.cc'; then $(CYGPATH_W) 'src/common/dwarf/elf_reader.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/dwarf/elf_reader.cc'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/common/dwarf/$(DEPDIR)/src_tools_mac_dump_syms_dump_syms_mac-elf_reader.Tpo src/common/dwarf/$(DEPDIR)/src_tools_mac_dump_syms_dump_syms_mac-elf_reader.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/dwarf/elf_reader.cc' object='src/common/dwarf/src_tools_mac_dump_syms_dump_syms_mac-elf_reader.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_mac_dump_syms_dump_syms_mac_CXXFLAGS) $(CXXFLAGS) -c -o src/common/dwarf/src_tools_mac_dump_syms_dump_syms_mac-elf_reader.obj `if test -f 'src/common/dwarf/elf_reader.cc'; then $(CYGPATH_W) 'src/common/dwarf/elf_reader.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/dwarf/elf_reader.cc'; fi`
 
 src/common/mac/src_tools_mac_dump_syms_dump_syms_mac-arch_utilities.o: src/common/mac/arch_utilities.cc
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_mac_dump_syms_dump_syms_mac_CXXFLAGS) $(CXXFLAGS) -MT src/common/mac/src_tools_mac_dump_syms_dump_syms_mac-arch_utilities.o -MD -MP -MF src/common/mac/$(DEPDIR)/src_tools_mac_dump_syms_dump_syms_mac-arch_utilities.Tpo -c -o src/common/mac/src_tools_mac_dump_syms_dump_syms_mac-arch_utilities.o `test -f 'src/common/mac/arch_utilities.cc' || echo '$(srcdir)/'`src/common/mac/arch_utilities.cc

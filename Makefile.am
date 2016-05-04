@@ -564,6 +564,7 @@ src_tools_linux_dump_syms_dump_syms_SOURCES = \
 	src/common/dwarf/bytereader.cc \
 	src/common/dwarf/dwarf2diehandler.cc \
 	src/common/dwarf/dwarf2reader.cc \
+	src/common/dwarf/elf_reader.cc \
 	src/common/linux/crc32.cc \
 	src/common/linux/dump_symbols.cc \
 	src/common/linux/elf_symbols_to_module.cc \
@@ -601,6 +602,7 @@ src_tools_mac_dump_syms_dump_syms_mac_SOURCES = \
 	src/common/dwarf/bytereader.cc \
 	src/common/dwarf/dwarf2diehandler.cc \
 	src/common/dwarf/dwarf2reader.cc \
+	src/common/dwarf/elf_reader.cc \
 	src/common/mac/arch_utilities.cc \
 	src/common/mac/dump_syms.cc \
 	src/common/mac/file_id.cc \
@@ -636,6 +638,7 @@ src_common_dumper_unittest_SOURCES = \
 	src/common/dwarf/dwarf2diehandler.cc \
 	src/common/dwarf/dwarf2diehandler_unittest.cc \
 	src/common/dwarf/dwarf2reader.cc \
+	src/common/dwarf/elf_reader.cc \
 	src/common/dwarf/dwarf2reader_cfi_unittest.cc \
 	src/common/dwarf/dwarf2reader_die_unittest.cc \
 	src/common/linux/crc32.cc \
@@ -678,6 +681,7 @@ src_common_mac_macho_reader_unittest_SOURCES = \
 	src/common/dwarf/cfi_assembler.cc \
 	src/common/dwarf/dwarf2diehandler.cc \
 	src/common/dwarf/dwarf2reader.cc \
+	src/common/dwarf/elf_reader.cc \
 	src/common/mac/arch_utilities.cc \
 	src/common/mac/file_id.cc \
 	src/common/mac/macho_id.cc \

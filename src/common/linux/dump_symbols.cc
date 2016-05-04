@@ -288,7 +288,8 @@ bool LoadDwarf(const string& dwarf_filename,
     // Make a Dwarf2Handler that drives the DIEHandler.
     dwarf2reader::DIEDispatcher die_dispatcher(&root_handler);
     // Make a DWARF parser for the compilation unit at OFFSET.
-    dwarf2reader::CompilationUnit reader(file_context.section_map(),
+    dwarf2reader::CompilationUnit reader(dwarf_filename,
+                                         file_context.section_map(),
                                          offset,
                                          &byte_reader,
                                          &die_dispatcher);

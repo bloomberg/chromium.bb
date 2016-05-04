@@ -44,6 +44,8 @@
 #include <string>
 #include <utility>
 
+#include <sys/stat.h>
+
 #include "common/dwarf/bytereader-inl.h"
 #include "common/dwarf/bytereader.h"
 #include "common/dwarf/line_state_machine.h"
@@ -51,11 +53,38 @@
 
 namespace dwarf2reader {
 
-CompilationUnit::CompilationUnit(const SectionMap& sections, uint64 offset,
+CompilationUnit::CompilationUnit(const string& path,
+                                 const SectionMap& sections, uint64 offset,
                                  ByteReader* reader, Dwarf2Handler* handler)
-    : offset_from_section_start_(offset), reader_(reader),
-      sections_(sections), handler_(handler), abbrevs_(NULL),
-      string_buffer_(NULL), string_buffer_length_(0) {}
+    : path_(path), offset_from_section_start_(offset), reader_(reader),
+      sections_(sections), handler_(handler), abbrevs_(),
+      string_buffer_(NULL), string_buffer_length_(0),
+      str_offsets_buffer_(NULL), str_offsets_buffer_length_(0),
+      addr_buffer_(NULL), addr_buffer_length_(0),
+      is_split_dwarf_(false), dwo_id_(0), dwo_name_(),
+      skeleton_dwo_id_(0), ranges_base_(0), addr_base_(0),
+      have_checked_for_dwp_(false), dwp_path_(),
+      dwp_byte_reader_(), dwp_reader_() {}
+
+// Initialize a compilation unit from a .dwo or .dwp file.
+// In this case, we need the .debug_addr section from the
+// executable file that contains the corresponding skeleton
+// compilation unit.  We also inherit the Dwarf2Handler from
+// the executable file, and call it as if we were still
+// processing the original compilation unit.
+
+void CompilationUnit::SetSplitDwarf(const uint8_t* addr_buffer,
+                                    uint64 addr_buffer_length,
+                                    uint64 addr_base,
+                                    uint64 ranges_base,
+                                    uint64 dwo_id) {
+  is_split_dwarf_ = true;
+  addr_buffer_ = addr_buffer;
+  addr_buffer_length_ = addr_buffer_length;
+  addr_base_ = addr_base;
+  ranges_base_ = ranges_base;
+  skeleton_dwo_id_ = dwo_id;
+}
 
 // Read a DWARF2/3 abbreviation section.
 // Each abbrev consists of a abbreviation number, a tag, a byte
@@ -174,6 +203,8 @@ const uint8_t *CompilationUnit::SkipAttribute(const uint8_t *start,
       return start + strlen(reinterpret_cast<const char *>(start)) + 1;
     case DW_FORM_udata:
     case DW_FORM_ref_udata:
+    case DW_FORM_GNU_str_index:
+    case DW_FORM_GNU_addr_index:
       reader_->ReadUnsignedLEB128(start, &len);
       return start + len;
 
@@ -296,8 +327,30 @@ uint64 CompilationUnit::Start() {
     string_buffer_length_ = iter->second.second;
   }
 
+  // Set the string offsets section if we have one.
+  iter = sections_.find(".debug_str_offsets");
+  if (iter != sections_.end()) {
+    str_offsets_buffer_ = iter->second.first;
+    str_offsets_buffer_length_ = iter->second.second;
+  }
+
+  // Set the address section if we have one.
+  iter = sections_.find(".debug_addr");
+  if (iter != sections_.end()) {
+    addr_buffer_ = iter->second.first;
+    addr_buffer_length_ = iter->second.second;
+  }
+
   // Now that we have our abbreviations, start processing DIE's.
   ProcessDIEs();
+
+  // If this is a skeleton compilation unit generated with split DWARF,
+  // and the client needs the full debug info, we need to find the full
+  // compilation unit in a .dwo or .dwp file.
+  if (!is_split_dwarf_
+      && dwo_name_ != NULL
+      && handler_->NeedSplitDebugInfo())
+    ProcessSplitDwarf();
 
   return ourlength;
 }
@@ -320,48 +373,46 @@ const uint8_t *CompilationUnit::ProcessAttribute(
       return ProcessAttribute(dieoffset, start, attr, form);
 
     case DW_FORM_flag_present:
-      handler_->ProcessAttributeUnsigned(dieoffset, attr, form, 1);
+      ProcessAttributeUnsigned(dieoffset, attr, form, 1);
       return start;
     case DW_FORM_data1:
     case DW_FORM_flag:
-      handler_->ProcessAttributeUnsigned(dieoffset, attr, form,
-                                         reader_->ReadOneByte(start));
+      ProcessAttributeUnsigned(dieoffset, attr, form,
+                               reader_->ReadOneByte(start));
       return start + 1;
     case DW_FORM_data2:
-      handler_->ProcessAttributeUnsigned(dieoffset, attr, form,
-                                         reader_->ReadTwoBytes(start));
+      ProcessAttributeUnsigned(dieoffset, attr, form,
+                               reader_->ReadTwoBytes(start));
       return start + 2;
     case DW_FORM_data4:
-      handler_->ProcessAttributeUnsigned(dieoffset, attr, form,
-                                         reader_->ReadFourBytes(start));
+      ProcessAttributeUnsigned(dieoffset, attr, form,
+                               reader_->ReadFourBytes(start));
       return start + 4;
     case DW_FORM_data8:
-      handler_->ProcessAttributeUnsigned(dieoffset, attr, form,
-                                         reader_->ReadEightBytes(start));
+      ProcessAttributeUnsigned(dieoffset, attr, form,
+                               reader_->ReadEightBytes(start));
       return start + 8;
     case DW_FORM_string: {
       const char *str = reinterpret_cast<const char *>(start);
-      handler_->ProcessAttributeString(dieoffset, attr, form,
-                                       str);
+      ProcessAttributeString(dieoffset, attr, form, str);
       return start + strlen(str) + 1;
     }
     case DW_FORM_udata:
-      handler_->ProcessAttributeUnsigned(dieoffset, attr, form,
-                                         reader_->ReadUnsignedLEB128(start,
-                                                                     &len));
+      ProcessAttributeUnsigned(dieoffset, attr, form,
+                               reader_->ReadUnsignedLEB128(start, &len));
       return start + len;
 
     case DW_FORM_sdata:
-      handler_->ProcessAttributeSigned(dieoffset, attr, form,
-                                      reader_->ReadSignedLEB128(start, &len));
+      ProcessAttributeSigned(dieoffset, attr, form,
+                             reader_->ReadSignedLEB128(start, &len));
       return start + len;
     case DW_FORM_addr:
-      handler_->ProcessAttributeUnsigned(dieoffset, attr, form,
-                                         reader_->ReadAddress(start));
+      ProcessAttributeUnsigned(dieoffset, attr, form,
+                               reader_->ReadAddress(start));
       return start + reader_->AddressSize();
     case DW_FORM_sec_offset:
-      handler_->ProcessAttributeUnsigned(dieoffset, attr, form,
-                                         reader_->ReadOffset(start));
+      ProcessAttributeUnsigned(dieoffset, attr, form,
+                               reader_->ReadOffset(start));
       return start + reader_->OffsetSize();
 
     case DW_FORM_ref1:
@@ -441,9 +492,31 @@ const uint8_t *CompilationUnit::ProcessAttribute(
       assert(string_buffer_ + offset < string_buffer_ + string_buffer_length_);
 
       const char *str = reinterpret_cast<const char *>(string_buffer_ + offset);
-      handler_->ProcessAttributeString(dieoffset, attr, form,
-                                       str);
+      ProcessAttributeString(dieoffset, attr, form, str);
       return start + reader_->OffsetSize();
+    }
+
+    case DW_FORM_GNU_str_index: {
+      uint64 str_index = reader_->ReadUnsignedLEB128(start, &len);
+      const uint8_t* offset_ptr =
+          str_offsets_buffer_ + str_index * reader_->OffsetSize();
+      const uint64 offset = reader_->ReadOffset(offset_ptr);
+      if (offset >= string_buffer_length_) {
+        return NULL;
+      }
+
+      const char* str = reinterpret_cast<const char *>(string_buffer_) + offset;
+      ProcessAttributeString(dieoffset, attr, form, str);
+      return start + len;
+      break;
+    }
+    case DW_FORM_GNU_addr_index: {
+      uint64 addr_index = reader_->ReadUnsignedLEB128(start, &len);
+      const uint8_t* addr_ptr =
+          addr_buffer_ + addr_base_ + addr_index * reader_->AddressSize();
+      ProcessAttributeUnsigned(dieoffset, attr, form,
+                               reader_->ReadAddress(addr_ptr));
+      return start + len;
     }
   }
   fprintf(stderr, "Unhandled form type\n");
@@ -458,6 +531,16 @@ const uint8_t *CompilationUnit::ProcessDIE(uint64 dieoffset,
        i++)  {
     start = ProcessAttribute(dieoffset, start, i->first, i->second);
   }
+
+  // If this is a compilation unit in a split DWARF object, verify that
+  // the dwo_id matches. If it does not match, we will ignore this
+  // compilation unit.
+  if (abbrev.tag == DW_TAG_compile_unit
+      && is_split_dwarf_
+      && dwo_id_ != skeleton_dwo_id_) {
+    return NULL;
+  }
+
   return start;
 }
 
@@ -513,6 +596,307 @@ void CompilationUnit::ProcessDIEs() {
       handler_->EndDIE(absolute_offset);
     }
   }
+}
+
+// Check for a valid ELF file and return the Address size.
+// Returns 0 if not a valid ELF file.
+inline int GetElfWidth(const ElfReader& elf) {
+  if (elf.IsElf32File())
+    return 4;
+  if (elf.IsElf64File())
+    return 8;
+  return 0;
+}
+
+void CompilationUnit::ProcessSplitDwarf() {
+  struct stat statbuf;
+  if (!have_checked_for_dwp_) {
+    // Look for a .dwp file in the same directory as the executable.
+    have_checked_for_dwp_ = true;
+    string dwp_suffix(".dwp");
+    dwp_path_ = path_ + dwp_suffix;
+    if (stat(dwp_path_.c_str(), &statbuf) != 0) {
+      // Fall back to a split .debug file in the same directory.
+      string debug_suffix(".debug");
+      dwp_path_ = path_;
+      size_t found = path_.rfind(debug_suffix);
+      if (found + debug_suffix.length() == path_.length())
+        dwp_path_ = dwp_path_.replace(found, debug_suffix.length(), dwp_suffix);
+    }
+    if (stat(dwp_path_.c_str(), &statbuf) == 0) {
+      ElfReader* elf = new ElfReader(dwp_path_);
+      int width = GetElfWidth(*elf);
+      if (width != 0) {
+        dwp_byte_reader_.reset(new ByteReader(reader_->GetEndianness()));
+        dwp_byte_reader_->SetAddressSize(width);
+        dwp_reader_.reset(new DwpReader(*dwp_byte_reader_, elf));
+        dwp_reader_->Initialize();
+      } else {
+        delete elf;
+      }
+    }
+  }
+  bool found_in_dwp = false;
+  if (dwp_reader_ != NULL) {
+    // If we have a .dwp file, read the debug sections for the requested CU.
+    SectionMap sections;
+    dwp_reader_->ReadDebugSectionsForCU(dwo_id_, &sections);
+    if (!sections.empty()) {
+      found_in_dwp = true;
+      CompilationUnit dwp_comp_unit(dwp_path_, sections, 0,
+                                    dwp_byte_reader_.get(), handler_);
+      dwp_comp_unit.SetSplitDwarf(addr_buffer_, addr_buffer_length_, addr_base_,
+                                  ranges_base_, dwo_id_);
+      dwp_comp_unit.Start();
+    }
+  }
+  if (!found_in_dwp) {
+    // If no .dwp file, try to open the .dwo file.
+    if (stat(dwo_name_, &statbuf) == 0) {
+      ElfReader elf(dwo_name_);
+      int width = GetElfWidth(elf);
+      if (width != 0) {
+        ByteReader reader(ENDIANNESS_LITTLE);
+        reader.SetAddressSize(width);
+        SectionMap sections;
+        ReadDebugSectionsFromDwo(&elf, &sections);
+        CompilationUnit dwo_comp_unit(dwo_name_, sections, 0, &reader,
+                                      handler_);
+        dwo_comp_unit.SetSplitDwarf(addr_buffer_, addr_buffer_length_,
+                                    addr_base_, ranges_base_, dwo_id_);
+        dwo_comp_unit.Start();
+      }
+    }
+  }
+}
+
+void CompilationUnit::ReadDebugSectionsFromDwo(ElfReader* elf_reader,
+                                               SectionMap* sections) {
+  static const char* const section_names[] = {
+    ".debug_abbrev",
+    ".debug_info",
+    ".debug_str_offsets",
+    ".debug_str"
+  };
+  for (unsigned int i = 0u;
+       i < sizeof(section_names)/sizeof(*(section_names)); ++i) {
+    string base_name = section_names[i];
+    string dwo_name = base_name + ".dwo";
+    size_t section_size;
+    const char* section_data = elf_reader->GetSectionByName(dwo_name,
+                                                            &section_size);
+    if (section_data != NULL)
+      sections->insert(std::make_pair(
+          base_name, std::make_pair(
+             reinterpret_cast<const uint8_t *>(section_data),
+             section_size)));
+  }
+}
+
+DwpReader::DwpReader(const ByteReader& byte_reader, ElfReader* elf_reader)
+    : elf_reader_(elf_reader), byte_reader_(byte_reader),
+      cu_index_(NULL), cu_index_size_(0), string_buffer_(NULL),
+      string_buffer_size_(0), version_(0), ncolumns_(0), nunits_(0),
+      nslots_(0), phash_(NULL), pindex_(NULL), shndx_pool_(NULL),
+      offset_table_(NULL), size_table_(NULL), abbrev_data_(NULL),
+      abbrev_size_(0), info_data_(NULL), info_size_(0),
+      str_offsets_data_(NULL), str_offsets_size_(0) {}
+
+DwpReader::~DwpReader() {
+  if (elf_reader_) delete elf_reader_;
+}
+
+void DwpReader::Initialize() {
+  cu_index_ = elf_reader_->GetSectionByName(".debug_cu_index",
+                                            &cu_index_size_);
+  if (cu_index_ == NULL) {
+    return;
+  }
+  // The .debug_str.dwo section is shared by all CUs in the file.
+  string_buffer_ = elf_reader_->GetSectionByName(".debug_str.dwo",
+                                                 &string_buffer_size_);
+
+  version_ = byte_reader_.ReadFourBytes(
+      reinterpret_cast<const uint8_t *>(cu_index_));
+
+  if (version_ == 1) {
+    nslots_ = byte_reader_.ReadFourBytes(
+        reinterpret_cast<const uint8_t *>(cu_index_)
+        + 3 * sizeof(uint32));
+    phash_ = cu_index_ + 4 * sizeof(uint32);
+    pindex_ = phash_ + nslots_ * sizeof(uint64);
+    shndx_pool_ = pindex_ + nslots_ * sizeof(uint32);
+    if (shndx_pool_ >= cu_index_ + cu_index_size_) {
+      version_ = 0;
+    }
+  } else if (version_ == 2) {
+    ncolumns_ = byte_reader_.ReadFourBytes(
+        reinterpret_cast<const uint8_t *>(cu_index_) + sizeof(uint32));
+    nunits_ = byte_reader_.ReadFourBytes(
+        reinterpret_cast<const uint8_t *>(cu_index_) + 2 * sizeof(uint32));
+    nslots_ = byte_reader_.ReadFourBytes(
+        reinterpret_cast<const uint8_t *>(cu_index_) + 3 * sizeof(uint32));
+    phash_ = cu_index_ + 4 * sizeof(uint32);
+    pindex_ = phash_ + nslots_ * sizeof(uint64);
+    offset_table_ = pindex_ + nslots_ * sizeof(uint32);
+    size_table_ = offset_table_ + ncolumns_ * (nunits_ + 1) * sizeof(uint32);
+    abbrev_data_ = elf_reader_->GetSectionByName(".debug_abbrev.dwo",
+                                                 &abbrev_size_);
+    info_data_ = elf_reader_->GetSectionByName(".debug_info.dwo", &info_size_);
+    str_offsets_data_ = elf_reader_->GetSectionByName(".debug_str_offsets.dwo",
+                                                      &str_offsets_size_);
+    if (size_table_ >= cu_index_ + cu_index_size_) {
+      version_ = 0;
+    }
+  }
+}
+
+void DwpReader::ReadDebugSectionsForCU(uint64 dwo_id,
+                                       SectionMap* sections) {
+  if (version_ == 1) {
+    int slot = LookupCU(dwo_id);
+    if (slot == -1) {
+      return;
+    }
+
+    // The index table points to the section index pool, where we
+    // can read a list of section indexes for the debug sections
+    // for the CU whose dwo_id we are looking for.
+    int index = byte_reader_.ReadFourBytes(
+        reinterpret_cast<const uint8_t *>(pindex_)
+        + slot * sizeof(uint32));
+    const char* shndx_list = shndx_pool_ + index * sizeof(uint32);
+    for (;;) {
+      if (shndx_list >= cu_index_ + cu_index_size_) {
+        version_ = 0;
+        return;
+      }
+      unsigned int shndx = byte_reader_.ReadFourBytes(
+          reinterpret_cast<const uint8_t *>(shndx_list));
+      shndx_list += sizeof(uint32);
+      if (shndx == 0)
+        break;
+      const char* section_name = elf_reader_->GetSectionName(shndx);
+      size_t section_size;
+      const char* section_data;
+      // We're only interested in these four debug sections.
+      // The section names in the .dwo file end with ".dwo", but we
+      // add them to the sections table with their normal names.
+      if (!strncmp(section_name, ".debug_abbrev", strlen(".debug_abbrev"))) {
+        section_data = elf_reader_->GetSectionByIndex(shndx, &section_size);
+        sections->insert(std::make_pair(
+            ".debug_abbrev",
+            std::make_pair(reinterpret_cast<const uint8_t *> (section_data),
+                                                              section_size)));
+      } else if (!strncmp(section_name, ".debug_info", strlen(".debug_info"))) {
+        section_data = elf_reader_->GetSectionByIndex(shndx, &section_size);
+        sections->insert(std::make_pair(
+            ".debug_info",
+            std::make_pair(reinterpret_cast<const uint8_t *> (section_data),
+                           section_size)));
+      } else if (!strncmp(section_name, ".debug_str_offsets",
+                          strlen(".debug_str_offsets"))) {
+        section_data = elf_reader_->GetSectionByIndex(shndx, &section_size);
+        sections->insert(std::make_pair(
+            ".debug_str_offsets",
+            std::make_pair(reinterpret_cast<const uint8_t *> (section_data),
+                           section_size)));
+      }
+    }
+    sections->insert(std::make_pair(
+        ".debug_str",
+        std::make_pair(reinterpret_cast<const uint8_t *> (string_buffer_),
+                       string_buffer_size_)));
+  } else if (version_ == 2) {
+    uint32 index = LookupCUv2(dwo_id);
+    if (index == 0) {
+      return;
+    }
+
+    // The index points to a row in each of the section offsets table
+    // and the section size table, where we can read the offsets and sizes
+    // of the contributions to each debug section from the CU whose dwo_id
+    // we are looking for. Row 0 of the section offsets table has the
+    // section ids for each column of the table. The size table begins
+    // with row 1.
+    const char* id_row = offset_table_;
+    const char* offset_row = offset_table_
+                             + index * ncolumns_ * sizeof(uint32);
+    const char* size_row =
+        size_table_ + (index - 1) * ncolumns_ * sizeof(uint32);
+    if (size_row + ncolumns_ * sizeof(uint32) > cu_index_ + cu_index_size_) {
+      version_ = 0;
+      return;
+    }
+    for (unsigned int col = 0u; col < ncolumns_; ++col) {
+      uint32 section_id =
+          byte_reader_.ReadFourBytes(reinterpret_cast<const uint8_t *>(id_row)
+                                     + col * sizeof(uint32));
+      uint32 offset = byte_reader_.ReadFourBytes(
+          reinterpret_cast<const uint8_t *>(offset_row)
+          + col * sizeof(uint32));
+      uint32 size = byte_reader_.ReadFourBytes(
+          reinterpret_cast<const uint8_t *>(size_row) + col * sizeof(uint32));
+      if (section_id == DW_SECT_ABBREV) {
+        sections->insert(std::make_pair(
+            ".debug_abbrev",
+            std::make_pair(reinterpret_cast<const uint8_t *> (abbrev_data_)
+                           + offset, size)));
+      } else if (section_id == DW_SECT_INFO) {
+        sections->insert(std::make_pair(
+            ".debug_info",
+            std::make_pair(reinterpret_cast<const uint8_t *> (info_data_)
+                           + offset, size)));
+      } else if (section_id == DW_SECT_STR_OFFSETS) {
+        sections->insert(std::make_pair(
+            ".debug_str_offsets",
+            std::make_pair(reinterpret_cast<const uint8_t *> (str_offsets_data_)
+                           + offset, size)));
+      }
+    }
+    sections->insert(std::make_pair(
+        ".debug_str",
+        std::make_pair(reinterpret_cast<const uint8_t *> (string_buffer_),
+                       string_buffer_size_)));
+  }
+}
+
+int DwpReader::LookupCU(uint64 dwo_id) {
+  uint32 slot = static_cast<uint32>(dwo_id) & (nslots_ - 1);
+  uint64 probe = byte_reader_.ReadEightBytes(
+      reinterpret_cast<const uint8_t *>(phash_) + slot * sizeof(uint64));
+  if (probe != 0 && probe != dwo_id) {
+    uint32 secondary_hash =
+        (static_cast<uint32>(dwo_id >> 32) & (nslots_ - 1)) | 1;
+    do {
+      slot = (slot + secondary_hash) & (nslots_ - 1);
+      probe = byte_reader_.ReadEightBytes(
+          reinterpret_cast<const uint8_t *>(phash_) + slot * sizeof(uint64));
+    } while (probe != 0 && probe != dwo_id);
+  }
+  if (probe == 0)
+    return -1;
+  return slot;
+}
+
+uint32 DwpReader::LookupCUv2(uint64 dwo_id) {
+  uint32 slot = static_cast<uint32>(dwo_id) & (nslots_ - 1);
+  uint64 probe = byte_reader_.ReadEightBytes(
+      reinterpret_cast<const uint8_t *>(phash_) + slot * sizeof(uint64));
+  uint32 index = byte_reader_.ReadFourBytes(
+      reinterpret_cast<const uint8_t *>(pindex_) + slot * sizeof(uint32));
+  if (index != 0 && probe != dwo_id) {
+    uint32 secondary_hash =
+        (static_cast<uint32>(dwo_id >> 32) & (nslots_ - 1)) | 1;
+    do {
+      slot = (slot + secondary_hash) & (nslots_ - 1);
+      probe = byte_reader_.ReadEightBytes(
+          reinterpret_cast<const uint8_t *>(phash_) + slot * sizeof(uint64));
+      index = byte_reader_.ReadFourBytes(
+          reinterpret_cast<const uint8_t *>(pindex_) + slot * sizeof(uint32));
+    } while (index != 0 && probe != dwo_id);
+  }
+  return index;
 }
 
 LineInfo::LineInfo(const uint8_t *buffer, uint64 buffer_length,

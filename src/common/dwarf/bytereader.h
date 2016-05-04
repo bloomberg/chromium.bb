@@ -280,6 +280,7 @@ class ByteReader {
                             DwarfPointerEncoding encoding,
                             size_t *len) const;
 
+  Endianness GetEndianness() const;
  private:
 
   // Function pointer type for our address and offset readers.

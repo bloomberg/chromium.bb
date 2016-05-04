@@ -75,6 +75,8 @@
         'dwarf/dwarf2reader.cc',
         'dwarf/dwarf2reader.h',
         'dwarf/dwarf2reader_test_common.h',
+	'dwarf/elf_reader.cc',
+	'dwarf/elf_reader.h',
         'dwarf/functioninfo.cc',
         'dwarf/functioninfo.h',
         'dwarf/line_state_machine.h',

@@ -243,4 +243,8 @@ uint64 ByteReader::ReadEncodedPointer(const uint8_t *buffer,
   return pointer;
 }
 
+Endianness ByteReader::GetEndianness() const {
+  return endian_;
+}
+
 }  // namespace dwarf2reader
