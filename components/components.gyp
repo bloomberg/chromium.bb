@@ -64,6 +64,7 @@
     'os_crypt.gypi',
     'ownership.gypi',
     'password_manager.gypi',
+    'permissions.gypi',
     'plugins.gypi',
     'policy.gypi',
     'precache.gypi',

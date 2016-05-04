@@ -217,6 +217,7 @@ static_library("content_shell_lib") {
     "//components/crash/content/app:app_breakpad_mac_win_to_be_deleted",
     "//components/devtools_discovery",
     "//components/devtools_http_handler",
+    "//components/permissions",
     "//components/plugins/renderer",
     "//components/test_runner:test_runner",
     "//components/url_formatter",

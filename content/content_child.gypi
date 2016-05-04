@@ -4,6 +4,7 @@
 {
   'dependencies': [
     '../base/base.gyp:base',
+    '../components/components.gyp:permissions_mojo_bindings',
     '../components/mime_util/mime_util.gyp:mime_util',
     '../components/scheduler/scheduler.gyp:scheduler',
     '../components/tracing.gyp:tracing',

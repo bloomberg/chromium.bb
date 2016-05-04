@@ -37,8 +37,6 @@
             'platform/modules/geolocation/geolocation.mojom',
             'platform/modules/imagecapture/image_capture.mojom',
             'platform/modules/notifications/notification.mojom',
-            'platform/modules/permissions/permission.mojom',
-            'platform/modules/permissions/permission_status.mojom',
             'platform/modules/wake_lock/wake_lock_service.mojom',
         ],
         'blink_android_mojo_sources': [
@@ -57,6 +55,7 @@
                 '<(DEPTH)/mojo/mojo_edk.gyp:mojo_system_impl',
                 'blink_headers.gyp:blink_headers',
                 'blink_minimal',
+                '../../../components/components.gyp:permissions_mojo_bindings',
             ],
             'export_dependent_settings': [
                 '../Source/web/web.gyp:blink_web',

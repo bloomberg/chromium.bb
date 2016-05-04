@@ -41,6 +41,7 @@
         '../components/components.gyp:crash_component_breakpad_to_be_deleted',
         '../components/components.gyp:devtools_discovery',
         '../components/components.gyp:devtools_http_handler',
+        '../components/components.gyp:permissions_mojo_bindings',
         '../components/components.gyp:web_cache_renderer',
         '../components/components.gyp:plugins_renderer',
         '../components/test_runner/test_runner.gyp:test_runner',

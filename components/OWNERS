@@ -144,6 +144,8 @@ per-file pdf.gypi=file://components/pdf/OWNERS
 per-file pdf_strings.grdp=raymes@chromium.org
 per-file pdf_strings.grdp=tsergeant@chromium.org
 
+per-file permissions.gypi=file://components/permissions/OWNERS
+
 per-file plugins.gypi=file://components/plugins/OWNERS
 
 per-file policy.gypi=file://components/policy/OWNERS

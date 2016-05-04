@@ -8,6 +8,7 @@
     '../cc/cc.gyp:cc',
     '../cc/cc.gyp:cc_surfaces',
     '../components/components.gyp:display_compositor',
+    '../components/components.gyp:permissions_mojo_bindings',
     '../components/leveldb/leveldb.gyp:leveldb_lib',
     '../components/mime_util/mime_util.gyp:mime_util',
     '../components/scheduler/scheduler.gyp:scheduler_common',

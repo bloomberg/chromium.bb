@@ -18,8 +18,8 @@ namespace content {
 
 struct LayoutTestPermissionManager::Subscription {
   PermissionDescription permission;
-  base::Callback<void(blink::mojom::PermissionStatus)> callback;
-  blink::mojom::PermissionStatus current_value;
+  base::Callback<void(permissions::mojom::PermissionStatus)> callback;
+  permissions::mojom::PermissionStatus current_value;
 };
 
 LayoutTestPermissionManager::PermissionDescription::PermissionDescription(
@@ -65,7 +65,8 @@ int LayoutTestPermissionManager::RequestPermission(
     PermissionType permission,
     RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
-    const base::Callback<void(blink::mojom::PermissionStatus)>& callback) {
+    const base::Callback<void(permissions::mojom::PermissionStatus)>&
+        callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   callback.Run(GetPermissionStatus(
@@ -79,11 +80,11 @@ int LayoutTestPermissionManager::RequestPermissions(
     const std::vector<PermissionType>& permissions,
     content::RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
-    const base::Callback<
-        void(const std::vector<blink::mojom::PermissionStatus>&)>& callback) {
+    const base::Callback<void(
+        const std::vector<permissions::mojom::PermissionStatus>&)>& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  std::vector<blink::mojom::PermissionStatus> result(permissions.size());
+  std::vector<permissions::mojom::PermissionStatus> result(permissions.size());
   const GURL& embedding_origin =
       WebContents::FromRenderFrameHost(render_frame_host)
           ->GetLastCommittedURL().GetOrigin();
@@ -115,10 +116,10 @@ void LayoutTestPermissionManager::ResetPermission(
   permissions_.erase(it);
 }
 
-blink::mojom::PermissionStatus LayoutTestPermissionManager::GetPermissionStatus(
-    PermissionType permission,
-    const GURL& requesting_origin,
-    const GURL& embedding_origin) {
+permissions::mojom::PermissionStatus
+LayoutTestPermissionManager::GetPermissionStatus(PermissionType permission,
+                                                 const GURL& requesting_origin,
+                                                 const GURL& embedding_origin) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::IO));
 
@@ -127,7 +128,7 @@ blink::mojom::PermissionStatus LayoutTestPermissionManager::GetPermissionStatus(
   auto it = permissions_.find(
       PermissionDescription(permission, requesting_origin, embedding_origin));
   if (it == permissions_.end())
-    return blink::mojom::PermissionStatus::DENIED;
+    return permissions::mojom::PermissionStatus::DENIED;
   return it->second;
 }
 
@@ -142,7 +143,8 @@ int LayoutTestPermissionManager::SubscribePermissionStatusChange(
     PermissionType permission,
     const GURL& requesting_origin,
     const GURL& embedding_origin,
-    const base::Callback<void(blink::mojom::PermissionStatus)>& callback) {
+    const base::Callback<void(permissions::mojom::PermissionStatus)>&
+        callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   Subscription* subscription = new Subscription();
@@ -167,7 +169,7 @@ void LayoutTestPermissionManager::UnsubscribePermissionStatusChange(
 
 void LayoutTestPermissionManager::SetPermission(
     PermissionType permission,
-    blink::mojom::PermissionStatus status,
+    permissions::mojom::PermissionStatus status,
     const GURL& origin,
     const GURL& embedding_origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -179,7 +181,7 @@ void LayoutTestPermissionManager::SetPermission(
   auto it = permissions_.find(description);
   if (it == permissions_.end()) {
     permissions_.insert(
-        std::pair<PermissionDescription, blink::mojom::PermissionStatus>(
+        std::pair<PermissionDescription, permissions::mojom::PermissionStatus>(
             description, status));
   } else {
     it->second = status;
@@ -197,7 +199,7 @@ void LayoutTestPermissionManager::ResetPermissions() {
 
 void LayoutTestPermissionManager::OnPermissionChanged(
     const PermissionDescription& permission,
-    blink::mojom::PermissionStatus status) {
+    permissions::mojom::PermissionStatus status) {
   std::list<base::Closure> callbacks;
 
   for (SubscriptionsMap::iterator iter(&subscriptions_);

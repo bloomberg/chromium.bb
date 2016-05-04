@@ -80,7 +80,7 @@ BackgroundSyncController* GetBackgroundSyncControllerOnUIThread(
 
 // Returns PermissionStatus::DENIED if the permission manager cannot be
 // accessed for any reason.
-blink::mojom::PermissionStatus GetBackgroundSyncPermissionOnUIThread(
+permissions::mojom::PermissionStatus GetBackgroundSyncPermissionOnUIThread(
     const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context,
     const GURL& origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -88,12 +88,12 @@ blink::mojom::PermissionStatus GetBackgroundSyncPermissionOnUIThread(
   BrowserContext* browser_context =
       GetBrowserContextOnUIThread(service_worker_context);
   if (!browser_context)
-    return blink::mojom::PermissionStatus::DENIED;
+    return permissions::mojom::PermissionStatus::DENIED;
 
   PermissionManager* permission_manager =
       browser_context->GetPermissionManager();
   if (!permission_manager)
-    return blink::mojom::PermissionStatus::DENIED;
+    return permissions::mojom::PermissionStatus::DENIED;
 
   // The requesting origin always matches the embedding origin.
   return permission_manager->GetPermissionStatus(
@@ -466,15 +466,15 @@ void BackgroundSyncManager::RegisterDidAskForPermission(
     int64_t sw_registration_id,
     const BackgroundSyncRegistrationOptions& options,
     const StatusAndRegistrationCallback& callback,
-    blink::mojom::PermissionStatus permission_status) {
+    permissions::mojom::PermissionStatus permission_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (permission_status == blink::mojom::PermissionStatus::DENIED) {
+  if (permission_status == permissions::mojom::PermissionStatus::DENIED) {
     RecordFailureAndPostError(BACKGROUND_SYNC_STATUS_PERMISSION_DENIED,
                               callback);
     return;
   }
-  DCHECK(permission_status == blink::mojom::PermissionStatus::GRANTED);
+  DCHECK(permission_status == permissions::mojom::PermissionStatus::GRANTED);
 
   ServiceWorkerRegistration* sw_registration =
       service_worker_context_->GetLiveRegistration(sw_registration_id);

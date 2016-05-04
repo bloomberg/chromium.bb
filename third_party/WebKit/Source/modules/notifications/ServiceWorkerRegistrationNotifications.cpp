@@ -59,7 +59,7 @@ ScriptPromise ServiceWorkerRegistrationNotifications::showNotification(ScriptSta
         return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "No active registration available on the ServiceWorkerRegistration."));
 
     // If permission for notification's origin is not "granted", reject promise with a TypeError exception, and terminate these substeps.
-    if (Notification::checkPermission(executionContext) != mojom::PermissionStatus::GRANTED)
+    if (Notification::checkPermission(executionContext) != permissions::mojom::PermissionStatus::GRANTED)
         return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "No notification permission has been granted for this origin."));
 
     // Validate the developer-provided values to get a WebNotificationData object.

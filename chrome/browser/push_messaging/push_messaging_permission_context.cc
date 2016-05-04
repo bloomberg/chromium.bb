@@ -40,16 +40,17 @@ ContentSetting PushMessagingPermissionContext::GetPermissionStatus(
       PermissionContextBase::GetPermissionStatus(requesting_origin,
                                                  embedding_origin);
 
-  blink::mojom::PermissionStatus notifications_permission =
+  permissions::mojom::PermissionStatus notifications_permission =
       PermissionManager::Get(profile_)->GetPermissionStatus(
           content::PermissionType::NOTIFICATIONS, requesting_origin,
           embedding_origin);
 
-  if (notifications_permission == blink::mojom::PermissionStatus::DENIED ||
+  if (notifications_permission ==
+          permissions::mojom::PermissionStatus::DENIED ||
       push_content_setting == CONTENT_SETTING_BLOCK) {
     return CONTENT_SETTING_BLOCK;
   }
-  if (notifications_permission == blink::mojom::PermissionStatus::ASK)
+  if (notifications_permission == permissions::mojom::PermissionStatus::ASK)
     return CONTENT_SETTING_ASK;
 
   DCHECK(push_content_setting == CONTENT_SETTING_ALLOW ||
@@ -105,9 +106,9 @@ void PushMessagingPermissionContext::DecidePushPermission(
     const GURL& requesting_origin,
     const GURL& embedding_origin,
     const BrowserPermissionCallback& callback,
-    blink::mojom::PermissionStatus notification_status) {
+    permissions::mojom::PermissionStatus notification_status) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK_NE(notification_status, blink::mojom::PermissionStatus::ASK);
+  DCHECK_NE(notification_status, permissions::mojom::PermissionStatus::ASK);
 
   ContentSetting push_content_setting =
       HostContentSettingsMapFactory::GetForProfile(profile_)
@@ -123,7 +124,7 @@ void PushMessagingPermissionContext::DecidePushPermission(
     return;
   }
 
-  if (notification_status == blink::mojom::PermissionStatus::DENIED) {
+  if (notification_status == permissions::mojom::PermissionStatus::DENIED) {
     DVLOG(1) << "Notification permission has not been granted.";
     NotifyPermissionSet(id, requesting_origin, embedding_origin, callback,
                         false /* persist */, CONTENT_SETTING_BLOCK);
