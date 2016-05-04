@@ -448,12 +448,6 @@ void RenderWidgetCompositor::Initialize(float device_scale_factor) {
     settings.renderer_settings.preferred_tile_format = cc::ETC1;
   }
 
-  if (delegate_->ForOOPIF()) {
-    // TODO(simonhong): Apply BeginFrame scheduling for OOPIF.
-    // See crbug.com/471411.
-    settings.use_external_begin_frame_source = false;
-  }
-
   settings.max_staging_buffer_usage_in_bytes = 32 * 1024 * 1024;  // 32MB
   // Use 1/4th of staging buffers on low-end devices.
   if (base::SysInfo::IsLowEndDevice())

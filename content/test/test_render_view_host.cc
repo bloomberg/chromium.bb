@@ -28,6 +28,10 @@
 #include "media/base/video_frame.h"
 #include "ui/gfx/geometry/rect.h"
 
+namespace {
+static uint32_t s_next_surface_id_namespace = 1;
+}
+
 namespace content {
 
 void InitNavigateParams(FrameHostMsg_DidCommitProvisionalLoad_Params* params,
@@ -55,6 +59,7 @@ void InitNavigateParams(FrameHostMsg_DidCommitProvisionalLoad_Params* params,
 
 TestRenderWidgetHostView::TestRenderWidgetHostView(RenderWidgetHost* rwh)
     : rwh_(RenderWidgetHostImpl::From(rwh)),
+      surface_id_namespace_(s_next_surface_id_namespace++),
       is_showing_(false),
       is_occluded_(false),
       did_swap_compositor_frame_(false) {
@@ -73,11 +78,11 @@ gfx::Vector2dF TestRenderWidgetHostView::GetLastScrollOffset() const {
 }
 
 gfx::NativeView TestRenderWidgetHostView::GetNativeView() const {
-  return NULL;
+  return nullptr;
 }
 
 gfx::NativeViewAccessible TestRenderWidgetHostView::GetNativeViewAccessible() {
-  return NULL;
+  return nullptr;
 }
 
 ui::TextInputClient* TestRenderWidgetHostView::GetTextInputClient() {
@@ -193,6 +198,10 @@ bool TestRenderWidgetHostView::LockMouse() {
 void TestRenderWidgetHostView::UnlockMouse() {
 }
 
+uint32_t TestRenderWidgetHostView::GetSurfaceIdNamespace() {
+  return surface_id_namespace_;
+}
+
 TestRenderViewHost::TestRenderViewHost(
     SiteInstance* instance,
     std::unique_ptr<RenderWidgetHostImpl> widget,
@@ -205,7 +214,7 @@ TestRenderViewHost::TestRenderViewHost(
                          main_frame_routing_id,
                          swapped_out,
                          false /* has_initialized_audio_host */),
-      delete_counter_(NULL),
+      delete_counter_(nullptr),
       opener_frame_route_id_(MSG_ROUTING_NONE) {
   // TestRenderWidgetHostView installs itself into this->view_ in its
   // constructor, and deletes itself when TestRenderWidgetHostView::Destroy() is
@@ -300,7 +309,7 @@ TestRenderViewHost* RenderViewHostImplTestHarness::test_rvh() {
 TestRenderViewHost* RenderViewHostImplTestHarness::pending_test_rvh() {
   return contents()->GetPendingMainFrame() ?
       contents()->GetPendingMainFrame()->GetRenderViewHost() :
-      NULL;
+      nullptr;
 }
 
 TestRenderViewHost* RenderViewHostImplTestHarness::active_test_rvh() {

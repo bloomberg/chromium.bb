@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "cc/resources/returned_resource.h"
+#include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/surface_factory_client.h"
 #include "cc/surfaces/surface_id_allocator.h"
 #include "content/browser/compositor/image_transport_factory.h"
@@ -51,15 +52,14 @@ struct TextInputState;
 // See comments in render_widget_host_view.h about this class and its members.
 class CONTENT_EXPORT RenderWidgetHostViewChildFrame
     : public RenderWidgetHostViewBase,
-      public cc::SurfaceFactoryClient {
+      public cc::SurfaceFactoryClient,
+      public cc::BeginFrameObserver {
  public:
   explicit RenderWidgetHostViewChildFrame(RenderWidgetHost* widget);
   ~RenderWidgetHostViewChildFrame() override;
 
-  void set_cross_process_frame_connector(
-      CrossProcessFrameConnector* frame_connector) {
-    frame_connector_ = frame_connector;
-  }
+  void SetCrossProcessFrameConnector(
+      CrossProcessFrameConnector* frame_connector);
 
   // This functions registers single-use callbacks that want to be notified when
   // the next frame is swapped. The callback is triggered by
@@ -71,6 +71,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   void RegisterFrameSwappedCallback(std::unique_ptr<base::Closure> callback);
 
   // RenderWidgetHostView implementation.
+  bool OnMessageReceived(const IPC::Message& msg) override;
   void InitAsChild(gfx::NativeView parent_view) override;
   RenderWidgetHost* GetRenderWidgetHost() const override;
   void SetSize(const gfx::Size& size) override;
@@ -162,7 +163,14 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
 
   // cc::SurfaceFactoryClient implementation.
   void ReturnResources(const cc::ReturnedResourceArray& resources) override;
-  void SetBeginFrameSource(cc::BeginFrameSource* begin_frame_source) override;
+  void SetBeginFrameSource(cc::BeginFrameSource* source) override;
+
+  // cc::BeginFrameObserver implementation.
+  void OnBeginFrame(const cc::BeginFrameArgs& args) override;
+  const cc::BeginFrameArgs& LastUsedBeginFrameArgs() const override;
+  void OnBeginFrameSourcePausedChanged(bool paused) override;
+
+  void OnSetNeedsBeginFrames(bool needs_begin_frames);
 
   // Declared 'public' instead of 'protected' here to allow derived classes
   // to Bind() to it.
@@ -225,6 +233,13 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   // Since frame-drawn callbacks are "fire once", we use std::deque to make
   // it convenient to swap() when processing the list.
   FrameSwappedCallbackList frame_swapped_callbacks_;
+
+  // The begin frame source being observed.  Null if none.
+  cc::BeginFrameSource* begin_frame_source_;
+  cc::BeginFrameArgs last_begin_frame_args_;
+  bool observing_begin_frame_source_;
+  // The surface id namespace of the parent RenderWidgetHostView.  0 if none.
+  uint32_t parent_surface_id_namespace_;
 
   base::WeakPtrFactory<RenderWidgetHostViewChildFrame> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewChildFrame);

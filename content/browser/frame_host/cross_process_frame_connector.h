@@ -108,7 +108,7 @@ class CONTENT_EXPORT CrossProcessFrameConnector {
   void FocusRootView();
 
   // Returns the parent RenderWidgetHostView or nullptr it it doesn't have one.
-  RenderWidgetHostViewBase* GetParentRenderWidgetHostView();
+  virtual RenderWidgetHostViewBase* GetParentRenderWidgetHostView();
 
   // Returns the view for the top-level frame under the same WebContents.
   RenderWidgetHostViewBase* GetRootRenderWidgetHostView();

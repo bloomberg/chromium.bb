@@ -25,13 +25,13 @@ namespace content {
 CrossProcessFrameConnector::CrossProcessFrameConnector(
     RenderFrameProxyHost* frame_proxy_in_parent_renderer)
     : frame_proxy_in_parent_renderer_(frame_proxy_in_parent_renderer),
-      view_(NULL),
+      view_(nullptr),
       device_scale_factor_(1) {
 }
 
 CrossProcessFrameConnector::~CrossProcessFrameConnector() {
   if (view_)
-    view_->set_cross_process_frame_connector(NULL);
+    view_->SetCrossProcessFrameConnector(nullptr);
 }
 
 bool CrossProcessFrameConnector::OnMessageReceived(const IPC::Message& msg) {
@@ -55,13 +55,13 @@ void CrossProcessFrameConnector::set_view(
     RenderWidgetHostViewChildFrame* view) {
   // Detach ourselves from the previous |view_|.
   if (view_)
-    view_->set_cross_process_frame_connector(NULL);
+    view_->SetCrossProcessFrameConnector(nullptr);
 
   view_ = view;
 
   // Attach ourselves to the new view and size it appropriately.
   if (view_) {
-    view_->set_cross_process_frame_connector(this);
+    view_->SetCrossProcessFrameConnector(this);
     SetDeviceScaleFactor(device_scale_factor_);
     SetRect(child_frame_rect_);
   }

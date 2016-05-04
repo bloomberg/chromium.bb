@@ -284,8 +284,11 @@ void SurfaceManager::RegisterSurfaceNamespaceHierarchy(
 void SurfaceManager::UnregisterSurfaceNamespaceHierarchy(
     uint32_t parent_namespace,
     uint32_t child_namespace) {
-  DCHECK_EQ(valid_surface_id_namespaces_.count(parent_namespace), 1u);
-  DCHECK_EQ(valid_surface_id_namespaces_.count(child_namespace), 1u);
+  // Deliberately do not check validity of either parent or child namespace
+  // here.  They were valid during the registration, so were valid at some
+  // point in time.  This makes it possible to invalidate parent and child
+  // namespaces independently of each other and not have an ordering dependency
+  // of unregistering the hierarchy first before either of them.
   DCHECK_EQ(namespace_client_map_.count(parent_namespace), 1u);
 
   auto iter = namespace_client_map_.find(parent_namespace);

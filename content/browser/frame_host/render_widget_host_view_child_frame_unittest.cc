@@ -56,6 +56,10 @@ class MockCrossProcessFrameConnector : public CrossProcessFrameConnector {
     last_scale_factor_received_ = scale_factor;
   }
 
+  RenderWidgetHostViewBase* GetParentRenderWidgetHostView() override {
+    return nullptr;
+  }
+
   cc::SurfaceId last_surface_id_received_;
   gfx::Size last_frame_size_received_;
   float last_scale_factor_received_;
@@ -84,7 +88,7 @@ class RenderWidgetHostViewChildFrameTest : public testing::Test {
     view_ = new RenderWidgetHostViewChildFrame(widget_host_);
 
     test_frame_connector_ = new MockCrossProcessFrameConnector();
-    view_->set_cross_process_frame_connector(test_frame_connector_);
+    view_->SetCrossProcessFrameConnector(test_frame_connector_);
   }
 
   void TearDown() override {

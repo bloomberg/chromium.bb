@@ -54,11 +54,6 @@ class CONTENT_EXPORT RenderWidgetCompositorDelegate {
   // process.
   virtual void DidCompleteSwapBuffers() = 0;
 
-  // TODO(simonhong, fsamuel): Remove this once crbug.com/471411 is resolved.
-  // Indicates whether this RenderWidgetCompositor is for an out-of-process
-  // iframe or not.
-  virtual bool ForOOPIF() const = 0;
-
   // Called by the compositor to forward a proto that represents serialized
   // compositor state.
   virtual void ForwardCompositorProto(const std::vector<uint8_t>& proto) = 0;

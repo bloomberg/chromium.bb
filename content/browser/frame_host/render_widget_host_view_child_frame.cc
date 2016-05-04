@@ -43,6 +43,9 @@ RenderWidgetHostViewChildFrame::RenderWidgetHostViewChildFrame(
       current_surface_scale_factor_(1.f),
       ack_pending_count_(0),
       frame_connector_(nullptr),
+      begin_frame_source_(nullptr),
+      observing_begin_frame_source_(false),
+      parent_surface_id_namespace_(0),
       weak_factory_(this) {
   id_allocator_ = CreateSurfaceIdAllocator();
   RegisterSurfaceNamespaceId();
@@ -55,9 +58,51 @@ RenderWidgetHostViewChildFrame::~RenderWidgetHostViewChildFrame() {
     surface_factory_->Destroy(surface_id_);
 }
 
+void RenderWidgetHostViewChildFrame::SetCrossProcessFrameConnector(
+    CrossProcessFrameConnector* frame_connector) {
+  if (frame_connector_ == frame_connector)
+    return;
+
+  if (frame_connector_) {
+    if (parent_surface_id_namespace_) {
+      GetSurfaceManager()->UnregisterSurfaceNamespaceHierarchy(
+          parent_surface_id_namespace_, GetSurfaceIdNamespace());
+    }
+    // Unregister the client here, as it is not guaranteed in tests that the
+    // destructor will be called.
+    GetSurfaceManager()->UnregisterSurfaceFactoryClient(
+        id_allocator_->id_namespace());
+
+    parent_surface_id_namespace_ = 0;
+  }
+  frame_connector_ = frame_connector;
+  if (frame_connector_) {
+    GetSurfaceManager()->RegisterSurfaceFactoryClient(
+        id_allocator_->id_namespace(), this);
+    RenderWidgetHostViewBase* parent_view =
+        frame_connector_->GetParentRenderWidgetHostView();
+    if (parent_view) {
+      parent_surface_id_namespace_ = parent_view->GetSurfaceIdNamespace();
+      DCHECK_NE(parent_surface_id_namespace_, 0u);
+      GetSurfaceManager()->RegisterSurfaceNamespaceHierarchy(
+          parent_surface_id_namespace_, GetSurfaceIdNamespace());
+    }
+  }
+}
+
 void RenderWidgetHostViewChildFrame::InitAsChild(
     gfx::NativeView parent_view) {
   NOTREACHED();
+}
+
+bool RenderWidgetHostViewChildFrame::OnMessageReceived(
+    const IPC::Message& message) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(RenderWidgetHostViewChildFrame, message)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_SetNeedsBeginFrames, OnSetNeedsBeginFrames)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
 }
 
 RenderWidgetHost* RenderWidgetHostViewChildFrame::GetRenderWidgetHost() const {
@@ -150,13 +195,13 @@ gfx::Vector2dF RenderWidgetHostViewChildFrame::GetLastScrollOffset() const {
 
 gfx::NativeView RenderWidgetHostViewChildFrame::GetNativeView() const {
   NOTREACHED();
-  return NULL;
+  return nullptr;
 }
 
 gfx::NativeViewAccessible
 RenderWidgetHostViewChildFrame::GetNativeViewAccessible() {
   NOTREACHED();
-  return NULL;
+  return nullptr;
 }
 
 void RenderWidgetHostViewChildFrame::SetBackgroundColor(SkColor color) {
@@ -233,8 +278,8 @@ void RenderWidgetHostViewChildFrame::Destroy() {
   // have already been cleared when RenderWidgetHostViewBase notified its
   // observers of our impending destruction.
   if (frame_connector_) {
-    frame_connector_->set_view(NULL);
-    frame_connector_ = NULL;
+    frame_connector_->set_view(nullptr);
+    SetCrossProcessFrameConnector(nullptr);
   }
 
   // We notify our observers about shutdown here since we are about to release
@@ -242,8 +287,8 @@ void RenderWidgetHostViewChildFrame::Destroy() {
   // RenderWidgetHostInputEventRouter afterwards.
   NotifyObserversAboutShutdown();
 
-  host_->SetView(NULL);
-  host_ = NULL;
+  host_->SetView(nullptr);
+  host_ = nullptr;
   base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
@@ -561,8 +606,42 @@ void RenderWidgetHostViewChildFrame::ReturnResources(
 }
 
 void RenderWidgetHostViewChildFrame::SetBeginFrameSource(
-    cc::BeginFrameSource* begin_frame_source) {
-  // TODO(tansell): Hook this up.
+    cc::BeginFrameSource* source) {
+  if (begin_frame_source_ && observing_begin_frame_source_)
+    begin_frame_source_->RemoveObserver(this);
+  begin_frame_source_ = source;
+  if (begin_frame_source_ && observing_begin_frame_source_)
+    begin_frame_source_->AddObserver(this);
+}
+
+void RenderWidgetHostViewChildFrame::OnBeginFrame(
+    const cc::BeginFrameArgs& args) {
+  host_->Send(new ViewMsg_BeginFrame(host_->GetRoutingID(), args));
+  last_begin_frame_args_ = args;
+}
+
+const cc::BeginFrameArgs&
+RenderWidgetHostViewChildFrame::LastUsedBeginFrameArgs() const {
+  return last_begin_frame_args_;
+}
+
+void RenderWidgetHostViewChildFrame::OnBeginFrameSourcePausedChanged(
+    bool paused) {
+  // Only used on Android WebView.
+}
+
+void RenderWidgetHostViewChildFrame::OnSetNeedsBeginFrames(
+    bool needs_begin_frames) {
+  if (observing_begin_frame_source_ == needs_begin_frames)
+    return;
+
+  observing_begin_frame_source_ = needs_begin_frames;
+  if (begin_frame_source_) {
+    if (observing_begin_frame_source_)
+      begin_frame_source_->AddObserver(this);
+    else
+      begin_frame_source_->RemoveObserver(this);
+  }
 }
 
 BrowserAccessibilityManager*

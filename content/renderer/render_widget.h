@@ -194,7 +194,6 @@ class CONTENT_EXPORT RenderWidget
   void DidCommitCompositorFrame() override;
   void DidCompletePageScaleAnimation() override;
   void DidCompleteSwapBuffers() override;
-  bool ForOOPIF() const override;
   void ForwardCompositorProto(const std::vector<uint8_t>& proto) override;
   bool IsClosing() const override;
   void OnSwapBuffersAborted() override;
@@ -651,8 +650,6 @@ class CONTENT_EXPORT RenderWidget
   // swapped out, the process can exit.
   bool is_swapped_out_;
 
-  // TODO(simonhong): Remove this when we enable BeginFrame scheduling for
-  // OOPIF(crbug.com/471411).
   // Whether this RenderWidget is for an out-of-process iframe or not.
   bool for_oopif_;
 

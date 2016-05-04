@@ -869,12 +869,6 @@ void RenderWidget::DidCompleteSwapBuffers() {
   need_update_rect_for_auto_resize_ = false;
 }
 
-bool RenderWidget::ForOOPIF() const {
-  // TODO(simonhong): Remove this when we enable BeginFrame scheduling for
-  // OOPIF(crbug.com/471411).
-  return for_oopif_;
-}
-
 void RenderWidget::ForwardCompositorProto(const std::vector<uint8_t>& proto) {
   Send(new ViewHostMsg_ForwardCompositorProto(routing_id_, proto));
 }

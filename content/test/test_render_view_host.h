@@ -128,6 +128,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   gfx::Rect GetBoundsInRootWindow() override;
   bool LockMouse() override;
   void UnlockMouse() override;
+  uint32_t GetSurfaceIdNamespace() override;
 
   bool is_showing() const { return is_showing_; }
   bool is_occluded() const { return is_occluded_; }
@@ -137,6 +138,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   RenderWidgetHostImpl* rwh_;
 
  private:
+  uint32_t surface_id_namespace_;
   bool is_showing_;
   bool is_occluded_;
   bool did_swap_compositor_frame_;
