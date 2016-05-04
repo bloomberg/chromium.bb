@@ -44,8 +44,32 @@ struct SerializationContext;
 template <typename T>
 struct ShouldUseNativeSerializer;
 
-template <typename MojomType, typename InputUserType>
+template <typename MojomType, typename MaybeConstUserType>
 struct Serializer;
+
+template <typename MojomType, typename InputUserType, typename... Args>
+size_t PrepareToSerialize(InputUserType&& input, Args&&... args) {
+  return Serializer<MojomType,
+                    typename std::remove_reference<InputUserType>::type>::
+      PrepareToSerialize(std::forward<InputUserType>(input),
+                         std::forward<Args>(args)...);
+}
+
+template <typename MojomType, typename InputUserType, typename... Args>
+void Serialize(InputUserType&& input, Args&&... args) {
+  Serializer<MojomType, typename std::remove_reference<InputUserType>::type>::
+      Serialize(std::forward<InputUserType>(input),
+                std::forward<Args>(args)...);
+}
+
+template <typename MojomType,
+          typename DataType,
+          typename InputUserType,
+          typename... Args>
+bool Deserialize(DataType&& input, InputUserType* output, Args&&... args) {
+  return Serializer<MojomType, InputUserType>::Deserialize(
+      std::forward<DataType>(input), output, std::forward<Args>(args)...);
+}
 
 }  // namespace internal
 

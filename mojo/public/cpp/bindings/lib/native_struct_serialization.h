@@ -30,15 +30,14 @@ struct ShouldUseNativeSerializer {
   static const bool value = false;
 };
 
-template <typename InputUserType,
+template <typename MaybeConstUserType,
           bool unmapped = std::is_same<
               NativeStructPtr,
-              typename std::remove_const<typename std::remove_reference<
-                  InputUserType>::type>::type>::value>
+              typename std::remove_const<MaybeConstUserType>::type>::value>
 struct NativeStructSerializerImpl;
 
-template <typename InputUserType>
-struct NativeStructSerializerImpl<InputUserType, true> {
+template <typename MaybeConstUserType>
+struct NativeStructSerializerImpl<MaybeConstUserType, true> {
   static size_t PrepareToSerialize(const NativeStructPtr& input,
                                    SerializationContext* context) {
     if (!input)
@@ -79,10 +78,8 @@ struct NativeStructSerializerImpl<InputUserType, true> {
   }
 };
 
-template <typename InputUserType>
-struct NativeStructSerializerImpl<InputUserType, false> {
-  using MaybeConstUserType =
-      typename std::remove_reference<InputUserType>::type;
+template <typename MaybeConstUserType>
+struct NativeStructSerializerImpl<MaybeConstUserType, false> {
   using UserType = typename std::remove_const<MaybeConstUserType>::type;
   using Traits = IPC::ParamTraits<UserType>;
 
@@ -154,9 +151,9 @@ struct NativeStructSerializerImpl<InputUserType, false> {
   }
 };
 
-template <typename InputUserType>
-struct Serializer<NativeStructPtr, InputUserType>
-    : public NativeStructSerializerImpl<InputUserType> {};
+template <typename MaybeConstUserType>
+struct Serializer<NativeStructPtr, MaybeConstUserType>
+    : public NativeStructSerializerImpl<MaybeConstUserType> {};
 
 }  // namespace internal
 }  // namespace mojo

@@ -31,9 +31,8 @@
 
 {%-     if kind|is_struct_kind or kind|is_string_kind %}
 {%-       set serializer_type = kind|unmapped_type_for_serializer %}
-  size += mojo::internal::Serializer<
-      {{serializer_type}}, decltype({{input_field}})>::PrepareToSerialize(
-          {{input_field}}, {{context}});
+  size += mojo::internal::PrepareToSerialize<{{serializer_type}}>(
+      {{input_field}}, {{context}});
 {%-     elif kind|is_union_kind %}
   size += GetSerializedSize_({{input_field}}, true, {{context}});
 {%-     else %}
@@ -86,9 +85,8 @@
       &{{output}}->{{name}}.ptr, &{{name}}_validate_params, {{context}});
 {%-     elif kind|is_struct_kind or kind|is_string_kind %}
 {%-       set serializer_type = kind|unmapped_type_for_serializer %}
-  mojo::internal::Serializer<
-      {{serializer_type}}, decltype({{input_field}})>::Serialize(
-          {{input_field}}, {{buffer}}, &{{output}}->{{name}}.ptr, {{context}});
+  mojo::internal::Serialize<{{serializer_type}}>(
+      {{input_field}}, {{buffer}}, &{{output}}->{{name}}.ptr, {{context}});
 {%-     elif kind|is_union_kind %}
   auto {{name}}_ptr = &{{output}}->{{name}};
   SerializeUnion_(std::move({{input_field}}), {{buffer}}, &{{name}}_ptr, true,
@@ -176,8 +174,7 @@
 {%-     endif %}
 {%-     if kind|is_struct_kind or kind|is_string_kind %}
 {%-       set serializer_type = kind|unmapped_type_for_serializer %}
-    if (!mojo::internal::Serializer<
-        {{serializer_type}}, decltype({{output_field}})>::Deserialize(
+    if (!mojo::internal::Deserialize<{{serializer_type}}>(
             {{input}}->{{name}}.ptr, &{{output_field}}, {{context}})) {
       {{success}} = false;
     }

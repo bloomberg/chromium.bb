@@ -17,10 +17,8 @@
 namespace mojo {
 namespace internal {
 
-template <typename InputUserType>
-struct Serializer<String, InputUserType> {
-  using MaybeConstUserType =
-      typename std::remove_reference<InputUserType>::type;
+template <typename MaybeConstUserType>
+struct Serializer<String, MaybeConstUserType> {
   using UserType = typename std::remove_const<MaybeConstUserType>::type;
   using Traits = StringTraits<UserType>;
 

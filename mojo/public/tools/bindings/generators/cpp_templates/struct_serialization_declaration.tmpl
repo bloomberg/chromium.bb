@@ -35,10 +35,8 @@ struct StructTraits<{{mojom_type}}, {{mojom_type}}Ptr> {
 
 namespace internal {
 
-template <typename InputUserType>
-struct Serializer<{{mojom_type}}Ptr, InputUserType> {
-  using MaybeConstUserType =
-      typename std::remove_reference<InputUserType>::type;
+template <typename MaybeConstUserType>
+struct Serializer<{{mojom_type}}Ptr, MaybeConstUserType> {
   using UserType = typename std::remove_const<MaybeConstUserType>::type;
   using Traits = StructTraits<{{mojom_type}}, UserType>;
 

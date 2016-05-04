@@ -33,25 +33,21 @@
 size_t GetSerializedSize_(const {{struct.name}}Ptr& input,
                           mojo::internal::SerializationContext* context) {
 
-  return mojo::internal::Serializer<
-      {{serializer_type}}, const {{struct.name}}Ptr>::PrepareToSerialize(
-          input, context);
+  return mojo::internal::PrepareToSerialize<{{serializer_type}}>(
+      input, context);
 }
 
 void Serialize_({{struct.name}}Ptr input, mojo::internal::Buffer* buf,
                 internal::{{struct.name}}_Data** output,
                 mojo::internal::SerializationContext* context) {
-  mojo::internal::Serializer<
-      {{serializer_type}}, {{struct.name}}Ptr>::Serialize(
-          input, buf, output, context);
+  mojo::internal::Serialize<{{serializer_type}}>(input, buf, output, context);
 }
 
 bool Deserialize_(internal::{{struct.name}}_Data* input,
                   {{struct.name}}Ptr* output,
                   mojo::internal::SerializationContext* context) {
-  return mojo::internal::Serializer<
-      {{serializer_type}}, {{struct.name}}Ptr>::Deserialize(
-          input, output, context);
+  return mojo::internal::Deserialize<{{serializer_type}}>(
+      input, output, context);
 }
 
 {{struct.name}}_Reader::{{struct.name}}_Reader(
