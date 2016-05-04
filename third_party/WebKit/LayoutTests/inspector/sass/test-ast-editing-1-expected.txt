@@ -21,7 +21,8 @@ div {
     /* This is a regular comment */
     color:NEW-VALUE;
     /* position:NEW-VALUE; */
-    display:NEW-VALUE}
+    display:NEW-VALUE
+}
 
 
 Running: testDisableProperties

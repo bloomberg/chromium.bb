@@ -22,9 +22,8 @@ rule 0: "body"
     property 1
         name: "margin"
             range: {"startLine":2,"startColumn":4,"endLine":2,"endColumn":10}
-        value: " 0 auto
-"
-            range: {"startLine":2,"startColumn":11,"endLine":3,"endColumn":0}
+        value: " 0 auto"
+            range: {"startLine":2,"startColumn":11,"endLine":2,"endColumn":18}
         range: {"startLine":2,"startColumn":4,"endLine":3,"endColumn":0}
         disabled: false
 rule 1: "body"
@@ -38,8 +37,8 @@ rule 1: "body"
     property 1
         name: "margin"
             range: {"startLine":7,"startColumn":7,"endLine":7,"endColumn":13}
-        value: " 0 auto "
-            range: {"startLine":7,"startColumn":14,"endLine":7,"endColumn":22}
+        value: " 0 auto"
+            range: {"startLine":7,"startColumn":14,"endLine":7,"endColumn":21}
         range: {"startLine":7,"startColumn":4,"endLine":7,"endColumn":24}
         disabled: true
 ======

@@ -2,15 +2,6 @@ var initialize_SassTest = function() {
 
 InspectorTest.preloadModule("sass");
 
-var cssParserService = null;
-
-InspectorTest.cssParserService = function()
-{
-    if (!cssParserService)
-        cssParserService = new WebInspector.CSSParserService();
-    return cssParserService;
-}
-
 var sassSourceMapFactory = null;
 InspectorTest.sassSourceMapFactory = function()
 {
@@ -19,15 +10,11 @@ InspectorTest.sassSourceMapFactory = function()
     return sassSourceMapFactory;
 }
 
-InspectorTest.parseCSS = function(url, text)
-{
-    return WebInspector.SASSSupport.parseCSS(url, text);
-}
-
 InspectorTest.parseSCSS = function(url, text)
 {
     return WebInspector.SASSSupport.parseSCSS(url, text);
 }
+InspectorTest.parseCSS = InspectorTest.parseSCSS;
 
 InspectorTest.loadASTMapping = function(header, callback)
 {
