@@ -19,7 +19,9 @@ namespace content {
 
 namespace {
 
-const char FAKE_URL[] = "http://fake.com";
+const char FAKE_URL[] = "http://www.fake.com";
+const char FAKE_SITE[] = "http://fake.com";
+const char OTHER_SITE[] = "https://other.com";
 const char FAKE_FIRST_PARTY_URL[] = "http://fake.firstparty.com";
 const char FAKE_IDENTITY_NAME[] = "fake identity";
 const char FAKE_COMMON_NAME[] = "fake common name";
@@ -231,10 +233,20 @@ TEST_F(WebRTCIdentityServiceHostTest, TestOnRequestFailed) {
 TEST_F(WebRTCIdentityServiceHostTest, TestOriginAccessDenied) {
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
-  policy->Remove(FAKE_RENDERER_ID);
+  policy->LockToOrigin(FAKE_RENDERER_ID, GURL(OTHER_SITE));
 
   SendRequestToHost();
   VerifyRequestFailedMessage(net::ERR_ACCESS_DENIED);
+}
+
+TEST_F(WebRTCIdentityServiceHostTest, TestOriginAccessAllowed) {
+  ChildProcessSecurityPolicyImpl* policy =
+      ChildProcessSecurityPolicyImpl::GetInstance();
+  policy->LockToOrigin(FAKE_RENDERER_ID, GURL(FAKE_SITE));
+
+  SendRequestToHost();
+  store_->RunCompletionCallback(net::OK, FAKE_CERTIFICATE, FAKE_PRIVATE_KEY);
+  VerifyIdentityReadyMessage(FAKE_CERTIFICATE, FAKE_PRIVATE_KEY);
 }
 
 // Verifies that we do not crash if we try to cancel a completed request.

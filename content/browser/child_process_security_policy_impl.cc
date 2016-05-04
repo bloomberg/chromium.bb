@@ -821,8 +821,11 @@ bool ChildProcessSecurityPolicyImpl::CanAccessDataForOrigin(int child_id,
                                                             const GURL& gurl) {
   base::AutoLock lock(lock_);
   SecurityStateMap::iterator state = security_state_.find(child_id);
-  if (state == security_state_.end())
-    return false;
+  if (state == security_state_.end()) {
+    // TODO(nick): Returning true instead of false here is a temporary
+    // workaround for https://crbug.com/600441
+    return true;
+  }
   return state->second->CanAccessDataForOrigin(gurl);
 }
 
