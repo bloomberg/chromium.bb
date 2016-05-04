@@ -1,4 +1,4 @@
-# Copyright 2014 The Chromium Authors. All rights reserved.
+ # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -410,6 +410,7 @@
       'ntp_snippets/ntp_snippets_service_unittest.cc',
     ],
     'offline_pages_background_unittest_sources': [
+      'offline_pages/background/request_coordinator_unittest.cc',
       'offline_pages/background/request_queue_in_memory_store_unittest.cc',
       'offline_pages/background/save_page_request_unittest.cc',
     ],

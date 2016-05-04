@@ -9,15 +9,13 @@
 
 namespace offline_pages {
 
+class SavePageRequest;
+
 // Coordinates queueing and processing save page later requests.
 class RequestCoordinator {
  public:
   // Callback to report when the processing of a triggered task is complete.
   typedef base::Callback<void()> ProcessingDoneCallback;
-
-  struct SavePageRequest {
-    // TODO(dougarnett): define and consider making stand-alone.
-  };
 
   // TODO(dougarnett): How to inject Offliner factories and policy objects.
   RequestCoordinator();
@@ -25,6 +23,7 @@ class RequestCoordinator {
   ~RequestCoordinator();
 
   // Queues |request| to later load and save when system conditions allow.
+  // Returns true if the page could be queued successfully.
   bool SavePageLater(const SavePageRequest& request);
 
   // Starts processing of one or more queued save page later requests.

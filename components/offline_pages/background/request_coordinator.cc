@@ -4,7 +4,7 @@
 
 #include "components/offline_pages/background/request_coordinator.h"
 
-// TODO(fgorski): include file with SavePageRequest definition.
+#include "components/offline_pages/background/save_page_request.h"
 
 namespace offline_pages {
 
