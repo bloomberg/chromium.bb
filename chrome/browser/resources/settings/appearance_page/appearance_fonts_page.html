@@ -24,7 +24,7 @@
       <div class="start">$i18n{minimumFont}</div>
       <div class="list-item" style$="[[computeStyle_(minimumFontSize_, prefs.webkit.webprefs.fonts.standard.Zyyy.value)]]">
         <span>[[minimumFontSize_]]</span>:&nbsp;
-        <span i18n-content="quickBrownFox"></span>
+        $i18n{quickBrownFox}
       </div>
       <paper-slider class="slider-labels" id="minimumSizeSlider"
         value="{{minimumSizeIndex_}}"
@@ -34,7 +34,7 @@
     </div>
     <div class="settings-box">
       <div class="start">
-        <h2 i18n-content="standardFont"></h2>
+        <h2>$i18n{standardFont}</h2>
         <div class="list-frame">
           <div class="list-item">
             <settings-dropdown-menu class="start" id="standardFont"
@@ -45,10 +45,10 @@
           <div class="list-item underbar"
               style$="[[computeStyle_(defaultFontSize_, prefs.webkit.webprefs.fonts.standard.Zyyy.value)]]">
             <span>[[defaultFontSize_]]</span>:&nbsp;
-            <span i18n-content="quickBrownFox"></span>
+            $i18n{quickBrownFox}
           </div>
         </div>
-        <h2 i18n-content="serifFont"></h2>
+        <h2>$i18n{serifFont}</h2>
         <div class="list-frame">
           <div class="list-item">
             <settings-dropdown-menu class="start" id="serifFont"
@@ -59,10 +59,10 @@
           <div class="list-item underbar"
               style$="[[computeStyle_(defaultFontSize_, prefs.webkit.webprefs.fonts.serif.Zyyy.value)]]">
             <span>[[defaultFontSize_]]</span>:&nbsp;
-            <span i18n-content="quickBrownFox"></span>
+            $i18n{quickBrownFox}
           </div>
         </div>
-        <h2 i18n-content="sansSerifFont"></h2>
+        <h2>$i18n{sansSerifFont}</h2>
         <div class="list-frame">
           <div class="list-item">
             <settings-dropdown-menu class="start" id="sansSerifFont"
@@ -73,10 +73,10 @@
           <div class="list-item underbar"
               style$="{{computeStyle_(defaultFontSize_, prefs.webkit.webprefs.fonts.sansserif.Zyyy.value)}}">
             <span>[[defaultFontSize_]]</span>:&nbsp;
-            <span i18n-content="quickBrownFox"></span>
+            $i18n{quickBrownFox}
           </div>
         </div>
-        <h2 i18n-content="fixedWidthFont"></h2>
+        <h2>$i18n{fixedWidthFont}</h2>
         <div class="list-frame">
           <div class="list-item">
             <settings-dropdown-menu class="start" id="fixedFont"
@@ -87,13 +87,13 @@
           <div class="list-item"
               style$="[[computeStyle_(defaultFontSize_, prefs.webkit.webprefs.fonts.fixed.Zyyy.value)]]">
             <span>[[defaultFontSize_]]</span>:&nbsp;
-            <span i18n-content="quickBrownFox"></span>
+            $i18n{quickBrownFox}
           </div>
         </div>
       </div>
     </div>
     <div class="settings-box">
-      <div class="start" i18n-content="encoding"></div>
+      <div class="start">$i18n{encoding}</div>
       <settings-dropdown-menu id="encoding"
           pref="{{prefs.intl.charset_default}}"
           menu-options="[[encodingOptions_]]" no-label-float>
@@ -102,7 +102,7 @@
     <div class="settings-box two-line" id="advancedButton"
         on-tap="openAdvancedExtension_">
       <div class="start">
-        <div i18n-content="advancedFontSettings"></div>
+        <div>$i18n{advancedFontSettings}</div>
         <div class="secondary" id="advancedButtonSublabel">
           [[advancedExtensionSublabel_]]
         </div>
