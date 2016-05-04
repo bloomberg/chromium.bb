@@ -25,7 +25,7 @@
         var supportedMIMETypes = [
             "image/png",
             "image/jpeg",
-            "image/gif",
+            "image/webp",
         ];
 
         function testToDataURL()
@@ -41,6 +41,7 @@
             testMIMEType(undefined);
 
             // Test other formats that we don't support
+            testMIMEType("image/gif");
             testMIMEType("image/x-webkitbitmap");
         }
 

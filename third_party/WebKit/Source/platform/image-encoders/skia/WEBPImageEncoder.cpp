@@ -34,40 +34,12 @@
 #include "platform/graphics/ImageBuffer.h"
 #include "webp/encode.h"
 
-typedef int (*WebPImporter)(WebPPicture* const, const uint8_t* const data, int rowStride);
-
 namespace blink {
 
 static int writeOutput(const uint8_t* data, size_t size, const WebPPicture* const picture)
 {
     static_cast<Vector<unsigned char>*>(picture->custom_ptr)->append(data, size);
     return 1;
-}
-
-static bool rgbPictureImport(const unsigned char* pixels, WebPImporter importRGB, WebPPicture* picture)
-{
-    // Write the RGB pixels to an rgb data buffer, alpha premultiplied, then import the rgb data.
-
-    size_t pixelCount = picture->height * picture->width;
-
-    OwnPtr<unsigned char[]> rgb = adoptArrayPtr(new unsigned char[pixelCount * 3]);
-    if (!rgb.get())
-        return false;
-
-    for (unsigned char* data = rgb.get(); pixelCount-- > 0; pixels += 4) {
-        unsigned char alpha = pixels[3];
-        if (alpha != 255) {
-            *data++ = SkMulDiv255Round(pixels[0], alpha);
-            *data++ = SkMulDiv255Round(pixels[1], alpha);
-            *data++ = SkMulDiv255Round(pixels[2], alpha);
-        } else {
-            *data++ = pixels[0];
-            *data++ = pixels[1];
-            *data++ = pixels[2];
-        }
-    }
-
-    return importRGB(picture, rgb.get(), picture->width * 3);
 }
 
 static bool encodePixels(const IntSize& imageSize, const unsigned char* pixels, int quality, Vector<unsigned char>* output)
@@ -87,13 +59,23 @@ static bool encodePixels(const IntSize& imageSize, const unsigned char* pixels, 
     picture.width = imageSize.width();
     picture.height = imageSize.height();
 
-    if (!rgbPictureImport(pixels, &WebPPictureImportRGB, &picture))
+    bool useLosslessEncoding = (quality >= 100);
+    if (useLosslessEncoding)
+        picture.use_argb = 1;
+    if (!WebPPictureImportRGBA(&picture, pixels, picture.width * 4))
         return false;
 
     picture.custom_ptr = output;
     picture.writer = &writeOutput;
-    config.quality = quality;
-    config.method = 3;
+
+    if (useLosslessEncoding) {
+        config.lossless = 1;
+        config.quality = 75;
+        config.method = 0;
+    } else {
+        config.quality = quality;
+        config.method = 3;
+    }
 
     bool success = WebPEncode(&config, &picture);
     WebPPictureFree(&picture);

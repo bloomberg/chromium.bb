@@ -20,3 +20,9 @@ if (tryMimeType("image/jpeg") == "image/jpeg") {
     shouldBe("tryMimeType('imAgE/jPEg')", "'image/jpeg'");
     shouldBe("tryMimeType('IMAGE/JPEG')", "'image/jpeg'");
 }
+
+if (tryMimeType("image/webp") == "image/webp") {
+    shouldBe("tryMimeType('image/webp')", "'image/webp'");
+    shouldBe("tryMimeType('imAgE/wEBp')", "'image/webp'");
+    shouldBe("tryMimeType('IMAGE/WEBP')", "'image/webp'");
+}

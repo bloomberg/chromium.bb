@@ -1,4 +1,4 @@
-<!-- The letters in the right image should be blurry compared to the letters in the left image. -->
+<!-- The letters in the right image should be crisp like the letters in the left image. -->
 <canvas></canvas>
 <img id="result">
 <pre id="error"></pre>
@@ -17,14 +17,12 @@ image.onload = function() {
     canvas.height = this.height;
     canvas.getContext('2d').drawImage(this, 0, 0);
 
-    var dataURL = canvas.toDataURL('image/webp', 0.3); // low quality
+    var dataURL = canvas.toDataURL('image/webp', 1.0); // maximum quality
 
     if (!dataURL.match(/^data:image\/webp[;,]/))
         error.textContent += "FAIL: the dataURL should have 'image/webp' type.";
     else
         result.src = dataURL;
-
-    document.body.style.zoom = 1.3; // zoom in to see the low quality
 
     if (window.testRunner)
         window.testRunner.notifyDone();
