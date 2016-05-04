@@ -9,10 +9,10 @@
 #include "ash/shelf/shelf_layout_manager_observer.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/strings/string16.h"
 #include "base/timer/timer.h"
 #include "ui/aura/window_observer.h"
 #include "ui/events/event_handler.h"
+#include "ui/views/pointer_watcher.h"
 
 namespace views {
 class BubbleDialogDelegateView;
@@ -31,6 +31,7 @@ class ShelfViewTest;
 // ShelfTooltipManager manages the tooltip bubble that appears for shelf items.
 class ASH_EXPORT ShelfTooltipManager : public ui::EventHandler,
                                        public aura::WindowObserver,
+                                       public views::PointerWatcher,
                                        public ShelfLayoutManagerObserver {
  public:
   explicit ShelfTooltipManager(ShelfView* shelf_view);
@@ -61,6 +62,12 @@ class ASH_EXPORT ShelfTooltipManager : public ui::EventHandler,
 
   // aura::WindowObserver overrides:
   void OnWindowDestroying(aura::Window* window) override;
+
+  // views::PointerWatcher overrides:
+  void OnMousePressed(const ui::MouseEvent& event,
+                      const gfx::Point& location_in_screen) override;
+  void OnTouchPressed(const ui::TouchEvent& event,
+                      const gfx::Point& location_in_screen) override;
 
   // ShelfLayoutManagerObserver overrides:
   void WillDeleteShelf() override;

@@ -11,6 +11,7 @@
 #include "ash/shell_window_ids.h"
 #include "ash/wm/window_animations.h"
 #include "base/bind.h"
+#include "base/strings/string16.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "ui/aura/window.h"
@@ -101,6 +102,9 @@ ShelfTooltipManager::ShelfTooltipManager(ShelfView* shelf_view)
 
 ShelfTooltipManager::~ShelfTooltipManager() {
   WillDeleteShelf();
+
+  Shell::GetInstance()->RemovePointerWatcher(this);
+
   if (root_window_) {
     root_window_->RemoveObserver(this);
     root_window_->RemovePreTargetHandler(this);
@@ -112,10 +116,11 @@ void ShelfTooltipManager::Init() {
   shelf_layout_manager_ = shelf_view_->shelf()->shelf_layout_manager();
   shelf_layout_manager_->AddObserver(this);
 
-  // TODO(msw): Observe events outside the shelf in mash, to close tooltips.
   root_window_ = shelf_view_->GetWidget()->GetNativeWindow()->GetRootWindow();
   root_window_->AddPreTargetHandler(this);
   root_window_->AddObserver(this);
+
+  Shell::GetInstance()->AddPointerWatcher(this);
 }
 
 void ShelfTooltipManager::Close() {
@@ -168,9 +173,26 @@ void ShelfTooltipManager::ShowTooltipWithDelay(views::View* view) {
   }
 }
 
+void ShelfTooltipManager::OnMousePressed(const ui::MouseEvent& event,
+                                         const gfx::Point& location_in_screen) {
+  // Close on any mouse press events inside or outside the tooltip.
+  Close();
+}
+
+void ShelfTooltipManager::OnTouchPressed(const ui::TouchEvent& event,
+                                         const gfx::Point& location_in_screen) {
+  // Close on any touch press events inside or outside the tooltip.
+  Close();
+}
+
 void ShelfTooltipManager::OnEvent(ui::Event* event) {
+  // Mouse and touch press events are handled via views::PointerWatcher.
   if (event->type() == ui::ET_MOUSE_PRESSED ||
-      event->type() == ui::ET_MOUSE_EXITED || !event->IsMouseEvent() ||
+      event->type() == ui::ET_TOUCH_PRESSED) {
+    return;
+  }
+
+  if (event->type() == ui::ET_MOUSE_EXITED || !event->IsMouseEvent() ||
       event->target() != shelf_view_->GetWidget()->GetNativeWindow()) {
     if (!event->IsKeyEvent())
       Close();
