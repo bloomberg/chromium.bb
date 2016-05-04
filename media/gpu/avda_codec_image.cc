@@ -8,7 +8,6 @@
 
 #include <memory>
 
-#include "base/metrics/histogram_macros.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/context_state.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
@@ -225,22 +224,27 @@ void AVDACodecImage::ReleaseOutputBuffer(UpdateMode update_mode) {
   DCHECK(update_mode == UpdateMode::RENDER_TO_BACK_BUFFER ||
          update_mode == UpdateMode::RENDER_TO_FRONT_BUFFER);
 
-  // If we've already released to the back buffer, there's nothing left to do.
-  if (codec_buffer_index_ == kUpdateOnly)
-    return;
-
-  media_codec_->ReleaseOutputBuffer(codec_buffer_index_, true);
-  codec_buffer_index_ = kUpdateOnly;
-
-  // If we're using a SurfaceView we're done!
   if (!surface_texture_) {
+    DCHECK(update_mode == UpdateMode::RENDER_TO_FRONT_BUFFER);
+    DCHECK_GE(codec_buffer_index_, 0);
+    media_codec_->ReleaseOutputBuffer(codec_buffer_index_, true);
     codec_buffer_index_ = kInvalidCodecBufferIndex;
     return;
   }
 
-  // This must be synchronous, so wait for OnFrameAvailable.
-  SCOPED_UMA_HISTOGRAM_TIMER("Media.AvdaCodecImage.WaitTimeForFrame");
-  shared_state_->WaitForFrameAvailable();
+  // If we've already released to the back buffer, there's nothing left to do,
+  // but wait for the previously released buffer if necessary.
+  if (codec_buffer_index_ != kUpdateOnly) {
+    DCHECK(surface_texture_);
+    DCHECK_GE(codec_buffer_index_, 0);
+    shared_state_->RenderCodecBufferToSurfaceTexture(media_codec_,
+                                                     codec_buffer_index_);
+    codec_buffer_index_ = kUpdateOnly;
+  }
+
+  // Only wait for the SurfaceTexture update if we're rendering to the front.
+  if (update_mode == UpdateMode::RENDER_TO_FRONT_BUFFER)
+    shared_state_->WaitForFrameAvailable();
 }
 
 void AVDACodecImage::AttachSurfaceTextureToContext() {

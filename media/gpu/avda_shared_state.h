@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_GPU_AVDA_SHARED_STATE_H_
-#define CONTENT_COMMON_GPU_AVDA_SHARED_STATE_H_
+#ifndef MEDIA_GPU_AVDA_SHARED_STATE_H_
+#define MEDIA_GPU_AVDA_SHARED_STATE_H_
 
 #include "base/synchronization/waitable_event.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
@@ -77,6 +77,26 @@ class AVDASharedState : public base::RefCounted<AVDASharedState> {
   // will cause us to forget the last binding.
   void DidDetachSurfaceTexture();
 
+  // Helper method for coordinating the interactions between
+  // MediaCodec::ReleaseOutputBuffer() and WaitForFrameAvailable() when
+  // rendering to a SurfaceTexture; this method should never be called when
+  // rendering to a SurfaceView.
+  //
+  // The release of the codec buffer to the surface texture is asynchronous, by
+  // using this helper we can attempt to let this process complete in a non
+  // blocking fashion before the SurfaceTexture is used.
+  //
+  // Clients should call this method to release the codec buffer for rendering
+  // and then call WaitForFrameAvailable() before using the SurfaceTexture. In
+  // the ideal case the SurfaceTexture has already been updated, otherwise the
+  // method will wait for a pro-rated amount of time based on elapsed time up
+  // to a short deadline.
+  //
+  // Some devices do not reliably notify frame availability, so we use a very
+  // short deadline of only a few milliseconds to avoid indefinite stalls.
+  void RenderCodecBufferToSurfaceTexture(media::MediaCodecBridge* codec,
+                                         int codec_buffer_index);
+
  protected:
   virtual ~AVDASharedState();
 
@@ -102,9 +122,14 @@ class AVDASharedState : public base::RefCounted<AVDASharedState> {
   // Maps a picture buffer id to a AVDACodecImage.
   std::map<int, AVDACodecImage*> codec_images_;
 
+  // The time of the last call to RenderCodecBufferToSurfaceTexture(), null if
+  // if there has been no last call or WaitForFrameAvailable() has been called
+  // since the last call.
+  base::TimeTicks release_time_;
+
   DISALLOW_COPY_AND_ASSIGN(AVDASharedState);
 };
 
 }  // namespace media
 
-#endif  // CONTENT_COMMON_GPU_AVDA_SHARED_STATE_H_
+#endif  // MEDIA_GPU_AVDA_SHARED_STATE_H_
