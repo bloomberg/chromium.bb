@@ -23,9 +23,11 @@ BluetoothGattServiceServiceProviderImpl::
         dbus::Bus* bus,
         const dbus::ObjectPath& object_path,
         const std::string& uuid,
+        bool is_primary,
         const std::vector<dbus::ObjectPath>& includes)
     : origin_thread_id_(base::PlatformThread::CurrentId()),
       uuid_(uuid),
+      is_primary_(is_primary),
       includes_(includes),
       bus_(bus),
       object_path_(object_path),
@@ -69,9 +71,11 @@ BluetoothGattServiceServiceProviderImpl::
 
 BluetoothGattServiceServiceProviderImpl::
     BluetoothGattServiceServiceProviderImpl(const dbus::ObjectPath& object_path,
-                                            const std::string& uuid)
+                                            const std::string& uuid,
+                                            bool is_primary)
     : origin_thread_id_(base::PlatformThread::CurrentId()),
       uuid_(uuid),
+      is_primary_(is_primary),
       bus_(nullptr),
       object_path_(object_path),
       weak_ptr_factory_(this) {}
@@ -202,6 +206,11 @@ void BluetoothGattServiceServiceProviderImpl::WriteProperties(
   array_writer.OpenDictEntry(&dict_entry_writer);
   dict_entry_writer.AppendString(bluetooth_gatt_service::kUUIDProperty);
   dict_entry_writer.AppendVariantOfString(uuid_);
+  array_writer.CloseContainer(&dict_entry_writer);
+
+  array_writer.OpenDictEntry(&dict_entry_writer);
+  dict_entry_writer.AppendString(bluetooth_gatt_service::kPrimaryProperty);
+  dict_entry_writer.AppendVariantOfBool(is_primary_);
   array_writer.CloseContainer(&dict_entry_writer);
 
   array_writer.OpenDictEntry(&dict_entry_writer);

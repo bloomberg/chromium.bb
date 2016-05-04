@@ -5,10 +5,12 @@
 #include "device/bluetooth/dbus/bluetooth_gatt_manager_client.h"
 
 #include "base/bind.h"
-#include "base/macros.h"
+#include "base/callback_forward.h"
+#include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
+#include "dbus/object_manager.h"
 #include "dbus/object_proxy.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -21,12 +23,13 @@ const char BluetoothGattManagerClient::kNoResponseError[] =
 class BluetoothGattManagerClientImpl : public BluetoothGattManagerClient {
  public:
   BluetoothGattManagerClientImpl()
-      : object_proxy_(NULL), weak_ptr_factory_(this) {}
+      : object_manager_(nullptr), weak_ptr_factory_(this) {}
 
   ~BluetoothGattManagerClientImpl() override {}
 
   // BluetoothGattManagerClient override.
-  void RegisterApplication(const dbus::ObjectPath& application_path,
+  void RegisterApplication(const dbus::ObjectPath& adapter_object_path,
+                           const dbus::ObjectPath& application_path,
                            const Options& options,
                            const base::Closure& callback,
                            const ErrorCallback& error_callback) override {
@@ -44,8 +47,11 @@ class BluetoothGattManagerClientImpl : public BluetoothGattManagerClient {
     writer.OpenArray("{sv}", &array_writer);
     writer.CloseContainer(&array_writer);
 
-    DCHECK(object_proxy_);
-    object_proxy_->CallMethodWithErrorCallback(
+    DCHECK(object_manager_);
+    dbus::ObjectProxy* object_proxy =
+        object_manager_->GetObjectProxy(adapter_object_path);
+    DCHECK(object_proxy);
+    object_proxy->CallMethodWithErrorCallback(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::Bind(&BluetoothGattManagerClientImpl::OnSuccess,
                    weak_ptr_factory_.GetWeakPtr(), callback),
@@ -54,7 +60,8 @@ class BluetoothGattManagerClientImpl : public BluetoothGattManagerClient {
   }
 
   // BluetoothGattManagerClient override.
-  void UnregisterApplication(const dbus::ObjectPath& application_path,
+  void UnregisterApplication(const dbus::ObjectPath& adapter_object_path,
+                             const dbus::ObjectPath& application_path,
                              const base::Closure& callback,
                              const ErrorCallback& error_callback) override {
     dbus::MethodCall method_call(
@@ -64,8 +71,11 @@ class BluetoothGattManagerClientImpl : public BluetoothGattManagerClient {
     dbus::MessageWriter writer(&method_call);
     writer.AppendObjectPath(application_path);
 
-    DCHECK(object_proxy_);
-    object_proxy_->CallMethodWithErrorCallback(
+    DCHECK(object_manager_);
+    dbus::ObjectProxy* object_proxy =
+        object_manager_->GetObjectProxy(adapter_object_path);
+    DCHECK(object_proxy);
+    object_proxy->CallMethodWithErrorCallback(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::Bind(&BluetoothGattManagerClientImpl::OnSuccess,
                    weak_ptr_factory_.GetWeakPtr(), callback),
@@ -77,10 +87,11 @@ class BluetoothGattManagerClientImpl : public BluetoothGattManagerClient {
   // bluez::DBusClient override.
   void Init(dbus::Bus* bus) override {
     DCHECK(bus);
-    object_proxy_ = bus->GetObjectProxy(
-        bluetooth_gatt_manager::kBluetoothGattManagerServiceName,
+    DCHECK(bus);
+    object_manager_ = bus->GetObjectManager(
+        bluetooth_object_manager::kBluetoothObjectManagerServiceName,
         dbus::ObjectPath(
-            bluetooth_gatt_manager::kBluetoothGattManagerInterface));
+            bluetooth_object_manager::kBluetoothObjectManagerServicePath));
   }
 
  private:
@@ -106,8 +117,8 @@ class BluetoothGattManagerClientImpl : public BluetoothGattManagerClient {
     error_callback.Run(error_name, error_message);
   }
 
-  // The proxy to the remote GATT manager object.
-  dbus::ObjectProxy* object_proxy_;
+  // The proxy to the bluez object manager.
+  dbus::ObjectManager* object_manager_;
 
   // Weak pointer factory for generating 'this' pointers that might live longer
   // than we do.

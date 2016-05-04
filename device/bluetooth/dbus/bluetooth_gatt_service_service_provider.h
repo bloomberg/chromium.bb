@@ -45,6 +45,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattServiceServiceProvider {
       dbus::Bus* bus,
       const dbus::ObjectPath& object_path,
       const std::string& uuid,
+      bool is_primary,
       const std::vector<dbus::ObjectPath>& includes);
 
  protected:

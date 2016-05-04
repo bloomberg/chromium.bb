@@ -28,13 +28,15 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattServiceServiceProviderImpl
       dbus::Bus* bus,
       const dbus::ObjectPath& object_path,
       const std::string& uuid,
+      bool is_primary,
       const std::vector<dbus::ObjectPath>& includes);
 
   ~BluetoothGattServiceServiceProviderImpl() override;
 
   // For testing.
   BluetoothGattServiceServiceProviderImpl(const dbus::ObjectPath& object_path,
-                                          const std::string& uuid);
+                                          const std::string& uuid,
+                                          bool is_primary);
 
  private:
   // Returns true if the current thread is on the origin thread.
@@ -69,6 +71,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattServiceServiceProviderImpl
 
   // 128-bit service UUID of this object.
   std::string uuid_;
+
+  // Flag indicating that this is a primary service.
+  bool is_primary_;
 
   // List of object paths that represent other exported GATT services that are
   // included from this service.

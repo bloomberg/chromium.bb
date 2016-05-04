@@ -20,10 +20,11 @@ BluetoothGattServiceServiceProvider::Create(
     dbus::Bus* bus,
     const dbus::ObjectPath& object_path,
     const std::string& uuid,
+    bool is_primary,
     const std::vector<dbus::ObjectPath>& includes) {
   if (!bluez::BluezDBusManager::Get()->IsUsingFakes()) {
     return new BluetoothGattServiceServiceProviderImpl(bus, object_path, uuid,
-                                                       includes);
+                                                       is_primary, includes);
   }
   return new FakeBluetoothGattServiceServiceProvider(object_path, uuid,
                                                      includes);

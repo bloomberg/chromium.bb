@@ -1102,7 +1102,7 @@ void BluetoothAdapterBlueZ::UnregisterGattService(
     bluez::BluezDBusManager::Get()
         ->GetBluetoothGattManagerClient()
         ->UnregisterApplication(
-            GetApplicationObjectPath(), callback,
+            object_path_, GetApplicationObjectPath(), callback,
             base::Bind(&OnRegisterationErrorCallback, error_callback));
     return;
   }
@@ -1120,7 +1120,7 @@ void BluetoothAdapterBlueZ::UnregisterGattService(
   bluez::BluezDBusManager::Get()
       ->GetBluetoothGattManagerClient()
       ->UnregisterApplication(
-          GetApplicationObjectPath(),
+          object_path_, GetApplicationObjectPath(),
           base::Bind(&BluetoothAdapterBlueZ::RegisterApplication,
                      weak_ptr_factory_.GetWeakPtr(), callback, error_callback),
           base::Bind(&OnRegisterationErrorCallback, error_callback));
@@ -1572,8 +1572,9 @@ void BluetoothAdapterBlueZ::RegisterApplication(
   bluez::BluezDBusManager::Get()
       ->GetBluetoothGattManagerClient()
       ->RegisterApplication(
-          GetApplicationObjectPath(), BluetoothGattManagerClient::Options(),
-          callback, base::Bind(&OnRegisterationErrorCallback, error_callback));
+          object_path_, GetApplicationObjectPath(),
+          BluetoothGattManagerClient::Options(), callback,
+          base::Bind(&OnRegisterationErrorCallback, error_callback));
 }
 
 }  // namespace bluez

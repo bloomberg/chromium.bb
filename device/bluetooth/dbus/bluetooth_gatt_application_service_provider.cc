@@ -42,7 +42,7 @@ void BluetoothGattApplicationServiceProvider::CreateAttributeServiceProviders(
     service_providers->push_back(
         base::WrapUnique(BluetoothGattServiceServiceProvider::Create(
             bus, service.second->object_path(),
-            service.second->GetUUID().value(),
+            service.second->GetUUID().value(), service.second->IsPrimary(),
             std::vector<dbus::ObjectPath>())));
     for (const auto& characteristic : service.second->GetCharacteristics()) {
       characteristic_providers->push_back(

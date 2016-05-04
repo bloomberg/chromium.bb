@@ -97,6 +97,7 @@ void FakeBluetoothGattManagerClient::Init(dbus::Bus* bus) {}
 
 // BluetoothGattManagerClient overrides.
 void FakeBluetoothGattManagerClient::RegisterApplication(
+    const dbus::ObjectPath& adapter_object_path,
     const dbus::ObjectPath& application_path,
     const Options& options,
     const base::Closure& callback,
@@ -114,6 +115,7 @@ void FakeBluetoothGattManagerClient::RegisterApplication(
 
 // BluetoothGattManagerClient overrides.
 void FakeBluetoothGattManagerClient::UnregisterApplication(
+    const dbus::ObjectPath& adapter_object_path,
     const dbus::ObjectPath& application_path,
     const base::Closure& callback,
     const ErrorCallback& error_callback) {

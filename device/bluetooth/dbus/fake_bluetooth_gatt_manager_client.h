@@ -40,11 +40,13 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothGattManagerClient
   void Init(dbus::Bus* bus) override;
 
   // BluetoothGattManagerClient overrides.
-  void RegisterApplication(const dbus::ObjectPath& application_path,
+  void RegisterApplication(const dbus::ObjectPath& adapter_object_path,
+                           const dbus::ObjectPath& application_path,
                            const Options& options,
                            const base::Closure& callback,
                            const ErrorCallback& error_callback) override;
-  void UnregisterApplication(const dbus::ObjectPath& application_path,
+  void UnregisterApplication(const dbus::ObjectPath& adapter_object_path,
+                             const dbus::ObjectPath& application_path,
                              const base::Closure& callback,
                              const ErrorCallback& error_callback) override;
 

@@ -53,13 +53,13 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattApplicationServiceProviderImpl
   bool OnOriginThread();
 
   template <typename Attribute>
-  void WriteObjectStruct(dbus::MessageWriter* writer,
-                         const std::string& attribute_interface,
-                         Attribute* attribute);
+  void WriteObjectDict(dbus::MessageWriter* writer,
+                       const std::string& attribute_interface,
+                       Attribute* attribute);
   template <typename Attribute>
-  void WriteInterfaceStruct(dbus::MessageWriter* writer,
-                            const std::string& attribute_interface,
-                            Attribute* attribute);
+  void WriteInterfaceDict(dbus::MessageWriter* writer,
+                          const std::string& attribute_interface,
+                          Attribute* attribute);
 
   void WriteAttributeProperties(
       dbus::MessageWriter* writer,

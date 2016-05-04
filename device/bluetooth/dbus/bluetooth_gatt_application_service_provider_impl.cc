@@ -62,43 +62,43 @@ bool BluetoothGattApplicationServiceProviderImpl::OnOriginThread() {
 }
 
 template <typename AttributeProvider>
-void BluetoothGattApplicationServiceProviderImpl::WriteObjectStruct(
+void BluetoothGattApplicationServiceProviderImpl::WriteObjectDict(
     dbus::MessageWriter* writer,
     const std::string& attribute_interface,
     AttributeProvider* attribute_provider) {
-  // Open a struct entry for { object_path : interface_list }.
-  dbus::MessageWriter object_struct_writer(NULL);
-  // [ (oa(sa{sv}) ]
-  writer->OpenStruct(&object_struct_writer);
+  // Open a dict entry for { object_path : interface_list }.
+  dbus::MessageWriter object_dict_writer(NULL);
+  // [ {oa{sa{sv}} ]
+  writer->OpenDictEntry(&object_dict_writer);
 
-  // Key: Object path. [ (o ]
-  object_struct_writer.AppendObjectPath(attribute_provider->object_path());
+  // Key: Object path. [ {o ]
+  object_dict_writer.AppendObjectPath(attribute_provider->object_path());
 
-  // Value: Open array for single entry interface_list. [ a(sa{sv}) ]
+  // Value: Open array for single entry interface_list. [ a{sa{sv}} ]
   dbus::MessageWriter interface_array_writer(NULL);
-  object_struct_writer.OpenArray("(sa{sv})", &interface_array_writer);
-  WriteInterfaceStruct(&interface_array_writer, attribute_interface,
-                       attribute_provider);
-  object_struct_writer.CloseContainer(&interface_array_writer);
+  object_dict_writer.OpenArray("(sa{sv})", &interface_array_writer);
+  WriteInterfaceDict(&interface_array_writer, attribute_interface,
+                     attribute_provider);
+  object_dict_writer.CloseContainer(&interface_array_writer);
 
-  writer->CloseContainer(&object_struct_writer);
+  writer->CloseContainer(&object_dict_writer);
 }
 
 template <typename AttributeProvider>
-void BluetoothGattApplicationServiceProviderImpl::WriteInterfaceStruct(
+void BluetoothGattApplicationServiceProviderImpl::WriteInterfaceDict(
     dbus::MessageWriter* writer,
     const std::string& attribute_interface,
     AttributeProvider* attribute_provider) {
-  // Open a struct entry for { interface_name : properties_list }.
-  dbus::MessageWriter interface_struct_writer(NULL);
-  // [ (sa{sv}) ]
-  writer->OpenStruct(&interface_struct_writer);
+  // Open a dict entry for { interface_name : properties_list }.
+  dbus::MessageWriter interface_dict_writer(NULL);
+  // [ {sa{sv}} ]
+  writer->OpenDictEntry(&interface_dict_writer);
 
-  // Key: Interface name. [ (s ]
-  interface_struct_writer.AppendString(attribute_interface);
-  // Value: Open a array for properties_list. [ a{sv}) ]
-  WriteAttributeProperties(&interface_struct_writer, attribute_provider);
-  writer->CloseContainer(&interface_struct_writer);
+  // Key: Interface name. [ {s ]
+  interface_dict_writer.AppendString(attribute_interface);
+  // Value: Open a array for properties_list. [ a{sv}} ]
+  WriteAttributeProperties(&interface_dict_writer, attribute_provider);
+  writer->CloseContainer(&interface_dict_writer);
 }
 
 void BluetoothGattApplicationServiceProviderImpl::WriteAttributeProperties(
@@ -131,32 +131,31 @@ void BluetoothGattApplicationServiceProviderImpl::GetManagedObjects(
   std::unique_ptr<dbus::Response> response =
       dbus::Response::FromMethodCall(method_call);
 
-  // The expected format by GetAll is [ a(oa(sa{sv})) ]
+  // The expected format by GetAll is [ a{oa{sa{sv}}} ]
   dbus::MessageWriter writer(response.get());
   dbus::MessageWriter array_writer(nullptr);
 
-  writer.OpenArray("(oa(sa{sv}))", &array_writer);
+  writer.OpenArray("{oa{sa{sv}}}", &array_writer);
 
   for (const auto& service_provider : service_providers_) {
-    WriteObjectStruct(&array_writer,
-                      bluetooth_gatt_service::kBluetoothGattServiceInterface,
-                      service_provider.get());
+    WriteObjectDict(&array_writer,
+                    bluetooth_gatt_service::kBluetoothGattServiceInterface,
+                    service_provider.get());
   }
   for (const auto& characteristic_provider : characteristic_providers_) {
-    WriteObjectStruct(
+    WriteObjectDict(
         &array_writer,
         bluetooth_gatt_characteristic::kBluetoothGattCharacteristicInterface,
         characteristic_provider.get());
   }
   for (const auto& descriptor_provider : descriptor_providers_) {
-    WriteObjectStruct(
+    WriteObjectDict(
         &array_writer,
         bluetooth_gatt_descriptor::kBluetoothGattDescriptorInterface,
         descriptor_provider.get());
   }
 
   writer.CloseContainer(&array_writer);
-
   response_sender.Run(std::move(response));
 }
 
