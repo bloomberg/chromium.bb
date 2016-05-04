@@ -55,10 +55,6 @@ source_set("app") {
     "app/blimp_content_main_delegate.h",
   ]
 
-  public_deps = [
-    ":app_metrics",
-  ]
-
   deps = [
     ":app_config",
     ":app_net",
@@ -75,14 +71,6 @@ source_set("app") {
     "//blimp/common/proto",
     "//blimp/engine:blob_channel_mojo_cpp_sources",
     "//blimp/net",
-    "//components/metrics",
-    "//components/metrics:gpu",
-    "//components/metrics:net",
-    "//components/metrics:profiler",
-    "//components/metrics:ui",
-    "//components/prefs",
-    "//components/web_cache/renderer",
-    "//content",
     "//content/public/app:both",
     "//content/public/browser",
     "//content/public/common",
@@ -100,30 +88,6 @@ source_set("app_config") {
   deps = [
     ":app_switches",
     "//base",
-  ]
-}
-
-source_set("app_metrics") {
-  sources = [
-    "app/blimp_metrics_service_client.cc",
-    "app/blimp_metrics_service_client.h",
-  ]
-
-  public_deps = [
-    "//components/metrics",
-    "//content/public/browser",
-  ]
-
-  deps = [
-    "//base",
-    "//base:i18n",
-    "//components/metrics:gpu",
-    "//components/metrics:net",
-    "//components/metrics:profiler",
-    "//components/metrics:ui",
-    "//components/prefs",
-    "//components/version_info",
-    "//net",
   ]
 }
 
@@ -211,15 +175,11 @@ source_set("common") {
   ]
 
   deps = [
-    ":app_metrics",
     ":app_net",
     ":app_permissions",
     ":common_user_agent",
     "//base",
-    "//components/metrics",
-    "//components/pref_registry",
-    "//components/prefs",
-    "//components/version_info",
+    "//content/public/browser",
     "//content/public/common",
     "//net",
     "//ui/base",
@@ -334,7 +294,6 @@ source_set("app_unit_tests") {
 
   sources = [
     "app/blimp_engine_config_unittest.cc",
-    "app/blimp_metrics_service_client_unittest.cc",
     "app/settings_manager_unittest.cc",
     "app/ui/blimp_screen_unittest.cc",
   ]
@@ -342,16 +301,12 @@ source_set("app_unit_tests") {
   deps = [
     ":app",
     ":app_config",
-    ":app_metrics",
     ":app_settings",
     ":app_switches",
     "//base",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
     "//blimp/engine:app_ui",
-    "//components/pref_registry:pref_registry",
-    "//components/prefs:prefs",
-    "//net:test_support",
     "//testing/gmock",
     "//testing/gtest",
     "//ui/display",
