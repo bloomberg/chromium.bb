@@ -11,3 +11,10 @@ include_rules = [
   "+sync/android",
   "+sync/test/fake_server/android",
 ]
+
+specific_include_rules = {
+  # Special-case where monochrome composes chrome+webview
+  "monochrome_entry_point\.cc": [
+    "+android_webview",
+  ]
+}

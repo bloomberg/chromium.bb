@@ -17,6 +17,10 @@ if (is_android) {
     import("//clank/config.gni")
   }
 
+  if (!defined(extra_chrome_shared_library_configs)) {
+    extra_chrome_shared_library_configs = []
+  }
+
   if (!defined(default_android_sdk_root)) {
     default_android_sdk_root = "//third_party/android_tools/sdk"
     default_android_sdk_version = "23"

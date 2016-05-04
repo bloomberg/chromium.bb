@@ -428,12 +428,46 @@ jinja_template_resources("chrome_sync_shell_apk_template_resources") {
 }
 
 # GYP: //chrome/android/chrome_apk.gyp:libchrome_public
+# TODO(yfriedman): Remove and re-use chrome target.
 shared_library("chrome_public") {
   deps = [
     "//build/config/sanitizers:deps",
     "//chrome:chrome_android_core",
   ]
-  sources = chrome_apk_gypi.chrome_public_app_native_sources
+  sources = chrome_apk_gypi.chrome_app_native_sources
+}
+
+# GYP: none
+shared_library("chrome") {
+  sources = chrome_apk_gypi.chrome_app_native_sources
+  deps = [
+    "//build/config/sanitizers:deps",
+    "//chrome:chrome_android_core",
+  ]
+
+  if (is_android && use_order_profiling) {
+    deps += [ "//tools/cygprofile" ]
+  }
+
+  public_configs = extra_chrome_shared_library_configs
+}
+
+# GYP: none
+if (!defined(webview_only_libmonochrome) || !webview_only_libmonochrome) {
+  shared_library("monochrome") {
+    sources = chrome_apk_gypi.monochrome_app_native_sources
+    deps = [
+      "//android_webview:common",
+      "//chrome:chrome_android_core",
+    ]
+
+    configs -= [ "//build/config/android:hide_native_jni_exports" ]
+    if (is_android && use_order_profiling) {
+      deps += [ "//tools/cygprofile" ]
+    }
+
+    public_configs = extra_chrome_shared_library_configs
+  }
 }
 
 # GYP: //chrome/android/chrome_apk.gyp:libchrome_sync_shell

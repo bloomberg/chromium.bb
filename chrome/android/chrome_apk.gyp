@@ -16,12 +16,18 @@
     'chrome_sync_shell_apk_manifest': '<(SHARED_INTERMEDIATE_DIR)/chrome_sync_shell_apk_manifest/AndroidManifest.xml',
     'chrome_sync_shell_test_apk_manifest': '<(SHARED_INTERMEDIATE_DIR)/chrome_sync_shell_test_apk_manifest/AndroidManifest.xml',
     # This list is shared with GN.
-    # Defines a list of source files should be present in the open-source
-    # chrome-apk but not in the published static_library which is included in the
-    # real chrome for android.
-    'chrome_public_app_native_sources': [
+    # Defines a list of source files should be present in the Chrome app.
+    'chrome_app_native_sources': [
       '../app/android/chrome_main_delegate_android_initializer.cc',
       '../browser/android/chrome_entry_point.cc',
+    ],
+    # This list is only used by GN but kept here to mirror
+    # chrome_app_native_sources.
+    # Defines a list of source files should be present in the Chrome app when
+    # distributed as monochrome.
+    'monochrome_app_native_sources': [
+      '../app/android/chrome_main_delegate_android_initializer.cc',
+      '../browser/android/monochrome_entry_point.cc',
     ],
 
     # This list is shared with GN.
@@ -120,10 +126,11 @@
     },
     {
       # GN: //chrome/android:chrome_public
+      # TODO(yfriedman): Replace with libchrome.
       'target_name': 'libchrome_public',
       'type': 'shared_library',
       'sources': [
-        '<@(chrome_public_app_native_sources)',
+        '<@(chrome_app_native_sources)',
       ],
       'dependencies': [
         'libchrome_public_base',
