@@ -95,7 +95,7 @@ dictionary with the keys:
 -   `project_name` (string): Name of the Google Cloud project
 -   `cloud_storage_path` (string): Path in Google Storage where generated traces
     will be stored.
--   `chrome_path` (string): Path to the Chrome executable.
+-   `binaries_path` (string): Path to the executables (Containing chrome).
 -   `src_path` (string): Path to the Chromium source directory.
 -   `taskqueue_tag` (string): Tag used by the worker when pulling tasks from
     `clovis-queue`.
@@ -161,7 +161,7 @@ cat >$CONFIG_FILE << EOF
 {
   "project_name" : "$PROJECT_NAME",
   "cloud_storage_path" : "$CLOUD_STORAGE_PATH",
-  "chrome_path" : "$CHROME_PATH",
+  "binaries_path" : "$BUILD_DIR",
   "src_path" : "$CHROMIUM_SRC",
   "taskqueue_tag" : "some-tag"
 }

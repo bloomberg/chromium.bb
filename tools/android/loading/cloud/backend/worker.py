@@ -81,8 +81,7 @@ class Worker(object):
       self._UploadFailureDatabase()
 
     # Initialize the global options that will be used during trace generation.
-    options.OPTIONS.ParseArgs([])
-    options.OPTIONS.local_binary = config['chrome_path']
+    options.OPTIONS.ParseArgs(['--local_build_dir', config['binaries_path']])
 
   def Start(self):
     """Main worker loop.

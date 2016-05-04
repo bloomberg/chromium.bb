@@ -31,17 +31,6 @@ OPTIONS = options.OPTIONS
 # Cache back-end types supported by cachetool.
 BACKEND_TYPES = ['simple']
 
-# Default build output directory.
-OUT_DIRECTORY = os.getenv('CR_OUT_FULL', os.path.join(
-    os.path.dirname(__file__), '../../../out/Release'))
-
-# Default cachetool binary location.
-CACHETOOL_BIN_PATH = os.path.join(OUT_DIRECTORY, 'cachetool')
-
-# Default content_decoder_tool binary location.
-CONTENT_DECODER_TOOL_BIN_PATH = os.path.join(OUT_DIRECTORY,
-                                             'content_decoder_tool')
-
 # Regex used to parse HTTP headers line by line.
 HEADER_PARSING_REGEX = re.compile(r'^(?P<header>\S+):(?P<value>.*)$')
 
@@ -247,22 +236,18 @@ class CacheBackend(object):
   """Takes care of reading and deleting cached keys.
   """
 
-  def __init__(self, cache_directory_path, cache_backend_type,
-               cachetool_bin_path=CACHETOOL_BIN_PATH):
+  def __init__(self, cache_directory_path, cache_backend_type):
     """Chrome cache back-end constructor.
 
     Args:
       cache_directory_path: The directory path where the cache is locally
         stored.
       cache_backend_type: A cache back-end type in BACKEND_TYPES.
-      cachetool_bin_path: Path of the cachetool binary.
     """
     assert os.path.isdir(cache_directory_path)
     assert cache_backend_type in BACKEND_TYPES
-    assert os.path.isfile(cachetool_bin_path), 'invalid ' + cachetool_bin_path
     self._cache_directory_path = cache_directory_path
     self._cache_backend_type = cache_backend_type
-    self._cachetool_bin_path = cachetool_bin_path
     # Make sure cache_directory_path is a valid cache.
     self._CachetoolCmd('validate')
 
@@ -308,7 +293,7 @@ class CacheBackend(object):
       Cachetool's stdout string.
     """
     editor_tool_cmd = [
-        self._cachetool_bin_path,
+        OPTIONS.LocalBinary('cachetool'),
         self._cache_directory_path,
         self._cache_backend_type,
         operation]
@@ -345,7 +330,7 @@ class CacheBackend(object):
     if content_encoding == None:
       return encoded_content
 
-    cmd = [CONTENT_DECODER_TOOL_BIN_PATH]
+    cmd = [OPTIONS.LocalBinary('content_decoder_tool')]
     cmd.extend([s.strip() for s in content_encoding.split(',')])
     process = subprocess.Popen(cmd,
                                stdin=subprocess.PIPE,

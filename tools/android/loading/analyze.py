@@ -288,6 +288,14 @@ COMMAND_MAP = {
 def main():
   logging.basicConfig(level=logging.WARNING)
   OPTIONS.AddGlobalArgument(
+      'clear_cache', True, 'clear browser cache before loading')
+  OPTIONS.AddGlobalArgument(
+      'emulate_device', '',
+      'Name of the device to emulate. Must be present '
+      'in --devices_file, or empty for no emulation.')
+  OPTIONS.AddGlobalArgument('emulate_network', '',
+      'Type of network emulation. Empty for no emulation.')
+  OPTIONS.AddGlobalArgument(
       'local', False,
       'run against local desktop chrome rather than device '
       '(see also --local_binary and local_profile_dir)')

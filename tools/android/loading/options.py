@@ -18,9 +18,7 @@ class Options(object):
   be available as instance attributes (eg, OPTIONS.clear_cache).
   """
   # Tuples of (argument name, default value, help string).
-  _ARGS = [ ('clear_cache', True,
-             'clear browser cache before loading'),
-            ('clear_device_data', False,
+  _ARGS = [ ('clear_device_data', False,
              'Clear Chrome data from device before loading'),
             ('chrome_package_name', 'chrome',
              'build/android/pylib/constants package description'),
@@ -28,8 +26,8 @@ class Options(object):
              'hostname for devtools websocket connection'),
             ('devtools_port', 9222,
              'port for devtools websocket connection'),
-            ('local_binary', os.path.join(_SRC_DIR, 'out/Release/chrome'),
-             'chrome binary for local runs'),
+            ('local_build_dir', None,
+             'Build directory for local binary files such as chrome'),
             ('local_noisy', False,
              'Enable local chrome console output'),
             ('local_profile_dir', None,
@@ -40,11 +38,7 @@ class Options(object):
              'docs/linux_suid_sandbox_development.md)'),
             ('devices_file', _SRC_DIR + '/third_party/WebKit/Source/devtools'
              '/front_end/emulated_devices/module.json', 'File containing a'
-             ' list of emulated devices characteristics.'),
-            ('emulate_device', '', 'Name of the device to emulate. Must be '
-             'present in --devices_file, or empty for no emulation.'),
-            ('emulate_network', '', 'Type of network emulation. Empty for no'
-             ' emulation.')
+             ' list of emulated devices characteristics.')
           ]
 
 
@@ -169,5 +163,14 @@ class Options(object):
 
   def ChromePackage(self):
     return constants.PACKAGE_INFO[self.chrome_package_name]
+
+  def LocalBinary(self, binary_name):
+    """Get local binary path from its name."""
+    assert self.local_build_dir, '--local_build_dir needs to be set.'
+    path = os.path.join(self.local_build_dir, binary_name)
+    assert os.path.isfile(path), \
+        'Missing binary file {} (wrong --local_build_dir?).'.format(path)
+    return path
+
 
 OPTIONS = Options()

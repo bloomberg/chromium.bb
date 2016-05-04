@@ -322,7 +322,7 @@ class LocalChromeController(ChromeControllerBase):
   def OpenWithRedirection(self, stdout, stderr):
     """Override for connection context. stdout and stderr are passed to the
        child processes used to run Chrome and XVFB."""
-    chrome_cmd = [OPTIONS.local_binary]
+    chrome_cmd = [OPTIONS.LocalBinary('chrome')]
     chrome_cmd.extend(self._GetChromeArguments())
     # Force use of simple cache.
     chrome_cmd.append('--use-simple-cache-backend=on')

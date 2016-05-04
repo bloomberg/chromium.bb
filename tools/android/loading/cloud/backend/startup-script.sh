@@ -83,7 +83,7 @@ cat >$DEPLOYMENT_CONFIG_PATH << EOF
   "instance_name" : "$INSTANCE_NAME",
   "project_name" : "$PROJECTID",
   "cloud_storage_path" : "$CLOUD_STORAGE_PATH",
-  "chrome_path" : "/opt/app/clovis/binaries/chrome",
+  "binaries_path" : "/opt/app/clovis/binaries",
   "src_path" : "/opt/app/clovis/src",
   "taskqueue_tag" : "$TASKQUEUE_TAG",
   "worker_log_path" : "$WORKER_LOG_PATH",
