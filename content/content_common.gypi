@@ -6,7 +6,6 @@
   'dependencies': [
     '../base/base.gyp:base',
     '../cc/cc.gyp:cc',
-    '../components/components.gyp:permissions_mojo_bindings',
     '../components/tracing.gyp:tracing',
     '../device/bluetooth/bluetooth.gyp:device_bluetooth',
     '../gpu/command_buffer/command_buffer.gyp:gles2_utils',

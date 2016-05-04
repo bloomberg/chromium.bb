@@ -1,9 +1,7 @@
 # Do NOT add chrome to the list below. We shouldn't be including files
-# from src/chrome in src/content.
+# from src/chrome in src/content. Also, we may only depend on files in
+# src/components that are shared with the mojo html_viewer.
 include_rules = [
-  # For permission mojo interfaces.
-  "+components/permissions",
-
   # The subdirectories in content/ will manually allow their own include
   # directories in content/ so we disallow all of them.
   "-content",
@@ -112,7 +110,6 @@ include_rules = [
 
   # For generated JNI includes.
   "+jni",
-
 ]
 
 # content -> content/shell dependency is not allowed, except for browser tests.

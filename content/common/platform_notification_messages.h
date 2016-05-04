@@ -10,11 +10,11 @@
 #include <utility>
 #include <vector>
 
-#include "components/permissions/permission_status.mojom.h"
 #include "content/public/common/common_param_traits_macros.h"
 #include "content/public/common/notification_resources.h"
 #include "content/public/common/platform_notification_data.h"
 #include "ipc/ipc_message_macros.h"
+#include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 // Singly-included section for type definitions.
@@ -129,4 +129,4 @@ IPC_MESSAGE_CONTROL2(PlatformNotificationHostMsg_ClosePersistent,
 IPC_SYNC_MESSAGE_CONTROL1_1(
     PlatformNotificationHostMsg_CheckPermission,
     GURL /* origin */,
-    permissions::mojom::PermissionStatus /* permission_status */)
+    blink::mojom::PermissionStatus /* permission_status */)

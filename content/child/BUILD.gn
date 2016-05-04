@@ -38,7 +38,6 @@ source_set("child") {
   deps = [
     "//base",
     "//components/mime_util",
-    "//components/permissions",
     "//components/scheduler:scheduler",
     "//components/tracing",
     "//components/tracing:startup_tracing",

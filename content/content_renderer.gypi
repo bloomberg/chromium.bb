@@ -9,7 +9,6 @@
     '../cc/cc.gyp:cc',
     '../cc/cc.gyp:cc_proto',
     '../cc/blink/cc_blink.gyp:cc_blink',
-    '../components/components.gyp:permissions_mojo_bindings',
     '../components/scheduler/scheduler.gyp:scheduler',
     '../components/url_formatter/url_formatter.gyp:url_formatter',
     '../device/battery/battery.gyp:device_battery',

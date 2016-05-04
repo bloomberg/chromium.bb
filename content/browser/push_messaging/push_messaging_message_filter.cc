@@ -150,9 +150,8 @@ class PushMessagingMessageFilter::Core {
 
   // Private Register methods on UI thread -------------------------------------
 
-  void DidRequestPermissionInIncognito(
-      const RegisterData& data,
-      permissions::mojom::PermissionStatus status);
+  void DidRequestPermissionInIncognito(const RegisterData& data,
+                                       blink::mojom::PermissionStatus status);
 
   void DidRegister(const RegisterData& data,
                    const std::string& push_registration_id,
@@ -469,10 +468,10 @@ void PushMessagingMessageFilter::Core::RegisterOnUI(
 
 void PushMessagingMessageFilter::Core::DidRequestPermissionInIncognito(
     const RegisterData& data,
-    permissions::mojom::PermissionStatus status) {
+    blink::mojom::PermissionStatus status) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Notification permission should always be denied in incognito.
-  DCHECK_EQ(permissions::mojom::PermissionStatus::DENIED, status);
+  DCHECK_EQ(blink::mojom::PermissionStatus::DENIED, status);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&PushMessagingMessageFilter::SendSubscriptionError, io_parent_,

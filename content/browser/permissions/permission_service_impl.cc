@@ -12,8 +12,8 @@
 #include "content/public/browser/permission_manager.h"
 #include "content/public/browser/permission_type.h"
 
-using permissions::mojom::PermissionName;
-using permissions::mojom::PermissionStatus;
+using blink::mojom::PermissionName;
+using blink::mojom::PermissionStatus;
 
 namespace content {
 
@@ -93,7 +93,7 @@ PermissionServiceImpl::PendingSubscription::~PendingSubscription() {
 
 PermissionServiceImpl::PermissionServiceImpl(
     PermissionServiceContext* context,
-    mojo::InterfaceRequest<permissions::mojom::PermissionService> request)
+    mojo::InterfaceRequest<blink::mojom::PermissionService> request)
     : context_(context),
       binding_(this, std::move(request)),
       weak_factory_(this) {

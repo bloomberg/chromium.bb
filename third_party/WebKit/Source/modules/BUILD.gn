@@ -46,7 +46,6 @@ component("modules") {
 
   deps = [
     ":make_modules_generated",
-    "//components/permissions",
     "//device/battery:mojo_bindings",
     "//device/usb/public/interfaces:interfaces_blink",
     "//mojo/public/c/system:for_component",

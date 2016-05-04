@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module permissions.mojom;
+module blink.mojom;
 
-import "components/permissions/permission_status.mojom";
+import "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom";
 
 enum PermissionName {
   GEOLOCATION,

@@ -209,10 +209,10 @@ void NotificationManager::notifyDelegateDestroyed(
   }
 }
 
-permissions::mojom::PermissionStatus NotificationManager::checkPermission(
+blink::mojom::PermissionStatus NotificationManager::checkPermission(
     const blink::WebSecurityOrigin& origin) {
-  permissions::mojom::PermissionStatus permission_status =
-      permissions::mojom::PermissionStatus::DENIED;
+  blink::mojom::PermissionStatus permission_status =
+      blink::mojom::PermissionStatus::DENIED;
 
   // TODO(mkwst): This is potentially doing the wrong thing with unique
   // origins. Perhaps also 'file:', 'blob:' and 'filesystem:'. See

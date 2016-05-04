@@ -35,7 +35,6 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
-#include "components/permissions/permission_status.mojom.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/DOMTimeStamp.h"
 #include "modules/EventTargetModules.h"
@@ -47,6 +46,7 @@
 #include "public/platform/WebVector.h"
 #include "public/platform/modules/notifications/WebNotificationData.h"
 #include "public/platform/modules/notifications/WebNotificationDelegate.h"
+#include "public/platform/modules/permissions/permission_status.mojom.h"
 
 namespace blink {
 
@@ -99,9 +99,9 @@ public:
     ScriptValue data(ScriptState*);
     HeapVector<NotificationAction> actions() const;
 
-    static String permissionString(permissions::mojom::PermissionStatus);
+    static String permissionString(mojom::PermissionStatus);
     static String permission(ExecutionContext*);
-    static permissions::mojom::PermissionStatus checkPermission(ExecutionContext*);
+    static mojom::PermissionStatus checkPermission(ExecutionContext*);
     static ScriptPromise requestPermission(ScriptState*, NotificationPermissionCallback*);
 
     static size_t maxActions();

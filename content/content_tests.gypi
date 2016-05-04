@@ -836,7 +836,6 @@
         '../cc/cc.gyp:cc',
         '../cc/cc_tests.gyp:cc_test_support',
         '../components/components.gyp:display_compositor',
-        '../components/components.gyp:permissions_mojo_bindings',
         '../components/scheduler/scheduler.gyp:scheduler',
         '../components/scheduler/scheduler.gyp:scheduler_test_support',
         '../gpu/gpu.gyp:gpu_ipc_common',

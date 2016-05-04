@@ -28,7 +28,7 @@ public:
 
     ~WebNotificationPermissionCallbackImpl() override { }
 
-    void permissionRequestComplete(permissions::mojom::PermissionStatus permissionStatus) override
+    void permissionRequestComplete(mojom::PermissionStatus permissionStatus) override
     {
         String permissionString = Notification::permissionString(permissionStatus);
         if (m_deprecatedCallback)

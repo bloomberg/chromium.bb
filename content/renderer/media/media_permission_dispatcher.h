@@ -13,9 +13,9 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "components/permissions/permission.mojom.h"
 #include "content/common/content_export.h"
 #include "media/base/media_permission.h"
+#include "third_party/WebKit/public/platform/modules/permissions/permission.mojom.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -27,7 +27,7 @@ namespace content {
 class CONTENT_EXPORT MediaPermissionDispatcher : public media::MediaPermission {
  public:
   using ConnectToServiceCB = base::Callback<void(
-      mojo::InterfaceRequest<permissions::mojom::PermissionService>)>;
+      mojo::InterfaceRequest<blink::mojom::PermissionService>)>;
 
   explicit MediaPermissionDispatcher(
       const ConnectToServiceCB& connect_to_service_cb);
@@ -54,13 +54,13 @@ class CONTENT_EXPORT MediaPermissionDispatcher : public media::MediaPermission {
 
   // Callback for |permission_service_| calls.
   void OnPermissionStatus(uint32_t request_id,
-                          permissions::mojom::PermissionStatus status);
+                          blink::mojom::PermissionStatus status);
 
   ConnectToServiceCB connect_to_service_cb_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   uint32_t next_request_id_;
   RequestMap requests_;
-  permissions::mojom::PermissionServicePtr permission_service_;
+  blink::mojom::PermissionServicePtr permission_service_;
 
   // Used to safely post MediaPermission calls for execution on |task_runner_|.
   base::WeakPtr<MediaPermissionDispatcher> weak_ptr_;

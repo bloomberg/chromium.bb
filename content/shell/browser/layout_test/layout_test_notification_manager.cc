@@ -137,7 +137,7 @@ void LayoutTestNotificationManager::SimulateClose(const std::string& title,
           base::Bind(&OnEventDispatchComplete));
 }
 
-permissions::mojom::PermissionStatus
+blink::mojom::PermissionStatus
 LayoutTestNotificationManager::CheckPermissionOnUIThread(
     BrowserContext* browser_context,
     const GURL& origin,
@@ -146,7 +146,7 @@ LayoutTestNotificationManager::CheckPermissionOnUIThread(
   return CheckPermission(origin);
 }
 
-permissions::mojom::PermissionStatus
+blink::mojom::PermissionStatus
 LayoutTestNotificationManager::CheckPermissionOnIOThread(
     ResourceContext* resource_context,
     const GURL& origin,
@@ -195,7 +195,7 @@ void LayoutTestNotificationManager::ReplaceNotificationIfNeeded(
   replacements_[tag] = base::UTF16ToUTF8(notification_data.title);
 }
 
-permissions::mojom::PermissionStatus
+blink::mojom::PermissionStatus
 LayoutTestNotificationManager::CheckPermission(const GURL& origin) {
   return LayoutTestContentBrowserClient::Get()
       ->GetLayoutTestBrowserContext()

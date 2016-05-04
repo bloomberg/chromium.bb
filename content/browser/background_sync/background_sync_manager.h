@@ -20,7 +20,6 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/clock.h"
-#include "components/permissions/permission_status.mojom.h"
 #include "content/browser/background_sync/background_sync.pb.h"
 #include "content/browser/background_sync/background_sync_registration.h"
 #include "content/browser/background_sync/background_sync_status.h"
@@ -32,9 +31,10 @@
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/public/browser/background_sync_parameters.h"
 #include "content/public/browser/browser_thread.h"
+#include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
 #include "url/gurl.h"
 
-namespace permissions {
+namespace blink {
 namespace mojom {
 enum class PermissionStatus;
 }
@@ -209,7 +209,7 @@ class CONTENT_EXPORT BackgroundSyncManager
       int64_t sw_registration_id,
       const BackgroundSyncRegistrationOptions& options,
       const StatusAndRegistrationCallback& callback,
-      permissions::mojom::PermissionStatus permission_status);
+      blink::mojom::PermissionStatus permission_status);
   void RegisterDidStore(int64_t sw_registration_id,
                         const BackgroundSyncRegistration& new_registration,
                         const StatusAndRegistrationCallback& callback,

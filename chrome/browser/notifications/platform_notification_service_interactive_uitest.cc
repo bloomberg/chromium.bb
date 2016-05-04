@@ -23,13 +23,13 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/permissions/permission_status.mojom.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/base/filename_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 
 // -----------------------------------------------------------------------------
@@ -404,13 +404,13 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
   PermissionManager* permission_manager =
       PermissionManager::Get(browser()->profile());
 
-  EXPECT_EQ(permissions::mojom::PermissionStatus::ASK,
+  EXPECT_EQ(blink::mojom::PermissionStatus::ASK,
             permission_manager->GetPermissionStatus(
                 content::PermissionType::NOTIFICATIONS, TestPageUrl(),
                 TestPageUrl()));
 
   RequestAndAcceptPermission();
-  EXPECT_EQ(permissions::mojom::PermissionStatus::GRANTED,
+  EXPECT_EQ(blink::mojom::PermissionStatus::GRANTED,
             permission_manager->GetPermissionStatus(
                 content::PermissionType::NOTIFICATIONS, TestPageUrl(),
                 TestPageUrl()));
@@ -424,12 +424,12 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
 
   ui_test_utils::NavigateToURL(browser(), file_url);
 
-  EXPECT_EQ(permissions::mojom::PermissionStatus::ASK,
+  EXPECT_EQ(blink::mojom::PermissionStatus::ASK,
             permission_manager->GetPermissionStatus(
                 content::PermissionType::NOTIFICATIONS, file_url, file_url));
 
   RequestAndAcceptPermission();
-  EXPECT_EQ(permissions::mojom::PermissionStatus::ASK,
+  EXPECT_EQ(blink::mojom::PermissionStatus::ASK,
             permission_manager->GetPermissionStatus(
                 content::PermissionType::NOTIFICATIONS, file_url, file_url))
       << "If this test fails, you may have fixed a bug preventing file origins "

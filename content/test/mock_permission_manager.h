@@ -23,23 +23,22 @@ class MockPermissionManager : public PermissionManager {
   ~MockPermissionManager() override;
 
   // PermissionManager:
-  MOCK_METHOD3(
-      GetPermissionStatus,
-      permissions::mojom::PermissionStatus(PermissionType permission,
-                                           const GURL& requesting_origin,
-                                           const GURL& embedding_origin));
+  MOCK_METHOD3(GetPermissionStatus,
+               blink::mojom::PermissionStatus(PermissionType permission,
+                                              const GURL& requesting_origin,
+                                              const GURL& embedding_origin));
   int RequestPermission(
       PermissionType permission,
       RenderFrameHost* render_frame_host,
       const GURL& requesting_origin,
-      const base::Callback<void(permissions::mojom::PermissionStatus)>&
-          callback) override;
+      const base::Callback<void(blink::mojom::PermissionStatus)>& callback)
+      override;
   int RequestPermissions(
       const std::vector<PermissionType>& permission,
       RenderFrameHost* render_frame_host,
       const GURL& requesting_origin,
-      const base::Callback<void(
-          const std::vector<permissions::mojom::PermissionStatus>&)>& callback)
+      const base::Callback<
+          void(const std::vector<blink::mojom::PermissionStatus>&)>& callback)
       override;
   void CancelPermissionRequest(int request_id) override {}
   void ResetPermission(PermissionType permission,
@@ -52,8 +51,8 @@ class MockPermissionManager : public PermissionManager {
       PermissionType permission,
       const GURL& requesting_origin,
       const GURL& embedding_origin,
-      const base::Callback<void(permissions::mojom::PermissionStatus)>&
-          callback) override;
+      const base::Callback<void(blink::mojom::PermissionStatus)>& callback)
+      override;
   void UnsubscribePermissionStatusChange(int subscription_id) override {}
 
  private:

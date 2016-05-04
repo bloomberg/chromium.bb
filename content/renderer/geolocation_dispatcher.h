@@ -7,9 +7,9 @@
 
 #include <memory>
 
-#include "components/permissions/permission.mojom.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "third_party/WebKit/public/platform/modules/geolocation/geolocation.mojom.h"
+#include "third_party/WebKit/public/platform/modules/permissions/permission.mojom.h"
 #include "third_party/WebKit/public/web/WebGeolocationClient.h"
 #include "third_party/WebKit/public/web/WebGeolocationController.h"
 
@@ -50,7 +50,7 @@ class GeolocationDispatcher
 
   // Permission for using geolocation has been set.
   void OnPermissionSet(int permission_request_id,
-                       permissions::mojom::PermissionStatus status);
+                       blink::mojom::PermissionStatus status);
 
   std::unique_ptr<blink::WebGeolocationController> controller_;
 
@@ -58,7 +58,7 @@ class GeolocationDispatcher
       pending_permissions_;
   blink::mojom::GeolocationServicePtr geolocation_service_;
   bool enable_high_accuracy_;
-  permissions::mojom::PermissionServicePtr permission_service_;
+  blink::mojom::PermissionServicePtr permission_service_;
 };
 
 }  // namespace content

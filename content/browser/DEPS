@@ -1,11 +1,11 @@
 include_rules = [
-  # Allow inclusion of specific components that we depend on.
+  # Allow inclusion of specific components that we depend on. We may only
+  # depend on components which we share with the mojo html_viewer.
   "+components/filesystem",
   "+components/leveldb",
   "+components/mime_util",
   "+components/mus/public/interfaces",
   "+components/mus/public",
-  "+components/permission",
   "+components/profile_service",
   "+components/scheduler/common",
   "+components/tracing",
@@ -71,6 +71,8 @@ include_rules = [
   "+third_party/WebKit/public/platform/modules/indexeddb/WebIDBTypes.h",
   "+third_party/WebKit/public/platform/modules/notifications/WebNotificationConstants.h",
   "+third_party/WebKit/public/platform/modules/notifications/notification.mojom.h",
+  "+third_party/WebKit/public/platform/modules/permissions/permission.mojom.h",
+  "+third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h",
   "+third_party/WebKit/public/platform/modules/push_messaging/WebPushPermissionStatus.h",
   "+third_party/WebKit/public/platform/modules/screen_orientation/WebLockOrientationError.h",
   "+third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationLockType.h",
