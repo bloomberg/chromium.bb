@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <unordered_map>
 #include <vector>
 
@@ -15,6 +16,12 @@
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/transform.h"
+
+namespace base {
+namespace trace_event {
+class TracedValue;
+}
+}
 
 namespace cc {
 
@@ -55,6 +62,8 @@ struct CC_EXPORT TreeNode {
 
   void ToProtobuf(proto::TreeNode* proto) const;
   void FromProtobuf(const proto::TreeNode& proto);
+
+  void AsValueInto(base::trace_event::TracedValue* value) const;
 };
 
 struct CC_EXPORT TransformNodeData {
@@ -198,6 +207,8 @@ struct CC_EXPORT TransformNodeData {
 
   void ToProtobuf(proto::TreeNode* proto) const;
   void FromProtobuf(const proto::TreeNode& proto);
+
+  void AsValueInto(base::trace_event::TracedValue* value) const;
 };
 
 typedef TreeNode<TransformNodeData> TransformNode;
@@ -252,6 +263,7 @@ struct CC_EXPORT ClipNodeData {
 
   void ToProtobuf(proto::TreeNode* proto) const;
   void FromProtobuf(const proto::TreeNode& proto);
+  void AsValueInto(base::trace_event::TracedValue* value) const;
 };
 
 typedef TreeNode<ClipNodeData> ClipNode;
@@ -284,6 +296,7 @@ struct CC_EXPORT EffectNodeData {
 
   void ToProtobuf(proto::TreeNode* proto) const;
   void FromProtobuf(const proto::TreeNode& proto);
+  void AsValueInto(base::trace_event::TracedValue* value) const;
 };
 
 typedef TreeNode<EffectNodeData> EffectNode;
@@ -313,6 +326,7 @@ struct CC_EXPORT ScrollNodeData {
 
   void ToProtobuf(proto::TreeNode* proto) const;
   void FromProtobuf(const proto::TreeNode& proto);
+  void AsValueInto(base::trace_event::TracedValue* value) const;
 };
 
 typedef TreeNode<ScrollNodeData> ScrollNode;
@@ -366,6 +380,8 @@ class CC_EXPORT PropertyTree {
     property_trees_ = property_trees;
   }
   PropertyTrees* property_trees() const { return property_trees_; }
+
+  void AsValueInto(base::trace_event::TracedValue* value) const;
 
  private:
   // Copy and assign are permitted. This is how we do tree sync.
@@ -683,6 +699,8 @@ class CC_EXPORT PropertyTrees final {
   gfx::Vector2dF inner_viewport_scroll_bounds_delta() const {
     return inner_viewport_scroll_bounds_delta_;
   }
+
+  std::unique_ptr<base::trace_event::TracedValue> AsTracedValue() const;
 
  private:
   gfx::Vector2dF inner_viewport_container_bounds_delta_;

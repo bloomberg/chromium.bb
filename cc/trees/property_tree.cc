@@ -8,6 +8,8 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
+#include "base/trace_event/trace_event_argument.h"
 #include "cc/base/math_util.h"
 #include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/input/scroll_state.h"
@@ -45,6 +47,14 @@ void TreeNode<T>::FromProtobuf(const proto::TreeNode& proto) {
   parent_id = proto.parent_id();
   owner_id = proto.owner_id();
   data.FromProtobuf(proto);
+}
+
+template <typename T>
+void TreeNode<T>::AsValueInto(base::trace_event::TracedValue* value) const {
+  value->SetInteger("id", id);
+  value->SetInteger("parent_id", parent_id);
+  value->SetInteger("owner_id", owner_id);
+  data.AsValueInto(value);
 }
 
 template struct TreeNode<TransformNodeData>;
@@ -123,6 +133,17 @@ void PropertyTree<T>::FromProtobuf(const proto::PropertyTree& proto) {
   }
 
   needs_update_ = proto.needs_update();
+}
+
+template <typename T>
+void PropertyTree<T>::AsValueInto(base::trace_event::TracedValue* value) const {
+  value->BeginArray("nodes");
+  for (const auto& node : nodes_) {
+    value->BeginDictionary();
+    node.AsValueInto(value);
+    value->EndDictionary();
+  }
+  value->EndArray();
 }
 
 template class PropertyTree<TransformNode>;
@@ -374,6 +395,17 @@ void TransformNodeData::FromProtobuf(const proto::TreeNode& proto) {
   source_to_parent = ProtoToVector2dF(data.source_to_parent());
 }
 
+void TransformNodeData::AsValueInto(
+    base::trace_event::TracedValue* value) const {
+  MathUtil::AddToTracedValue("pre_local", pre_local, value);
+  MathUtil::AddToTracedValue("local", local, value);
+  MathUtil::AddToTracedValue("post_local", post_local, value);
+  value->SetInteger("target_id", target_id);
+  value->SetInteger("content_target_id", content_target_id);
+  value->SetInteger("source_node_id", source_node_id);
+  value->SetInteger("sorting_context_id", sorting_context_id);
+}
+
 ClipNodeData::ClipNodeData()
     : transform_id(-1),
       target_id(-1),
@@ -441,6 +473,20 @@ void ClipNodeData::FromProtobuf(const proto::TreeNode& proto) {
   layers_are_clipped_when_surfaces_disabled =
       data.layers_are_clipped_when_surfaces_disabled();
   resets_clip = data.resets_clip();
+}
+
+void ClipNodeData::AsValueInto(base::trace_event::TracedValue* value) const {
+  MathUtil::AddToTracedValue("clip", clip, value);
+  value->SetInteger("transform_id", transform_id);
+  value->SetInteger("target_id", target_id);
+  value->SetBoolean("applies_local_clip", applies_local_clip);
+  value->SetBoolean("layer_clipping_uses_only_local_clip",
+                    layer_clipping_uses_only_local_clip);
+  value->SetBoolean("target_is_clipped", target_is_clipped);
+  value->SetBoolean("layers_are_clipped", layers_are_clipped);
+  value->SetBoolean("layers_are_clipped_when_surfaces_disabled",
+                    layers_are_clipped_when_surfaces_disabled);
+  value->SetBoolean("resets_clip", resets_clip);
 }
 
 EffectNodeData::EffectNodeData()
@@ -514,6 +560,22 @@ void EffectNodeData::FromProtobuf(const proto::TreeNode& proto) {
   transform_id = data.transform_id();
   clip_id = data.clip_id();
   target_id = data.target_id();
+}
+
+void EffectNodeData::AsValueInto(base::trace_event::TracedValue* value) const {
+  value->SetDouble("opacity", opacity);
+  value->SetBoolean("has_render_surface", has_render_surface);
+  value->SetBoolean("has_copy_request", has_copy_request);
+  value->SetBoolean("has_background_filters", has_background_filters);
+  value->SetBoolean("double_sided", double_sided);
+  value->SetBoolean("is_drawn", is_drawn);
+  value->SetBoolean("has_animated_opacity", has_animated_opacity);
+  value->SetBoolean("effect_changed", effect_changed);
+  value->SetInteger("num_copy_requests_in_subtree",
+                    num_copy_requests_in_subtree);
+  value->SetInteger("transform_id", transform_id);
+  value->SetInteger("clip_id", clip_id);
+  value->SetInteger("target_id", target_id);
 }
 
 ScrollNodeData::ScrollNodeData()
@@ -597,6 +659,20 @@ void ScrollNodeData::FromProtobuf(const proto::TreeNode& proto) {
   user_scrollable_vertical = data.user_scrollable_vertical();
   element_id = data.element_id();
   transform_id = data.transform_id();
+}
+
+void ScrollNodeData::AsValueInto(base::trace_event::TracedValue* value) const {
+  value->SetBoolean("scrollable", scrollable);
+  MathUtil::AddToTracedValue("scroll_clip_layer_bounds",
+                             scroll_clip_layer_bounds, value);
+  MathUtil::AddToTracedValue("bounds", bounds, value);
+  MathUtil::AddToTracedValue("offset_to_transform_parent",
+                             offset_to_transform_parent, value);
+  value->SetBoolean("should_flatten", should_flatten);
+  value->SetBoolean("user_scrollable_horizontal", user_scrollable_horizontal);
+  value->SetBoolean("user_scrollable_vertical", user_scrollable_vertical);
+  value->SetInteger("element_id", element_id);
+  value->SetInteger("transform_id", transform_id);
 }
 
 void TransformTree::clear() {
@@ -1960,6 +2036,31 @@ void PropertyTrees::ResetAllChangeTracking(ResetFlags flag) {
   }
   changed = false;
   full_tree_damaged = false;
+}
+
+std::unique_ptr<base::trace_event::TracedValue> PropertyTrees::AsTracedValue()
+    const {
+  auto value = base::WrapUnique(new base::trace_event::TracedValue);
+
+  value->SetInteger("sequence_number", sequence_number);
+
+  value->BeginDictionary("transform_tree");
+  transform_tree.AsValueInto(value.get());
+  value->EndDictionary();
+
+  value->BeginDictionary("effect_tree");
+  effect_tree.AsValueInto(value.get());
+  value->EndDictionary();
+
+  value->BeginDictionary("clip_tree");
+  clip_tree.AsValueInto(value.get());
+  value->EndDictionary();
+
+  value->BeginDictionary("scroll_tree");
+  scroll_tree.AsValueInto(value.get());
+  value->EndDictionary();
+
+  return value;
 }
 
 }  // namespace cc
