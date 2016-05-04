@@ -15,11 +15,11 @@ import re
 import subprocess
 
 
-class UnusedElementsDetector:
+class UnusedElementsDetector(object):
   """Finds unused Polymer elements."""
 
   # Unused elements to ignore because we plan to use them soon.
-  __whitelist = (
+  __WHITELIST = (
     # TODO(dschuyler): Use element or remove from whitelist.
     'carbon-route',
     # TODO(tsergeant): Use element or remove from whitelist.
@@ -27,6 +27,10 @@ class UnusedElementsDetector:
     # Necessary for closure.
     'polymer-externs',
   )
+
+  def __init__(self):
+    polymer_dir = os.path.dirname(os.path.realpath(__file__))
+    self.__COMPONENTS_DIR = os.path.join(polymer_dir, 'components-chromium')
 
   @staticmethod
   def __StripHtmlComments(filename):
@@ -41,7 +45,7 @@ class UnusedElementsDetector:
       A string consisting of the file contents with comments removed.
     """
     with open(filename) as f:
-      return re.sub('<!--.*?-->', '', f.read(), flags=re.MULTILINE|re.DOTALL)
+      return re.sub('<!--.*?-->', '', f.read(), flags=re.MULTILINE | re.DOTALL)
 
   @staticmethod
   def __StripJsComments(filename):
@@ -57,8 +61,8 @@ class UnusedElementsDetector:
     """
     with open(filename) as f:
       text = f.read()
-    text = re.sub('<if .*?>', '', text)
-    text = re.sub('</if>', '', text)
+    text = re.sub('<if .*?>', '', text, flags=re.IGNORECASE)
+    text = re.sub('</if>', '', text, flags=re.IGNORECASE)
 
     proc = subprocess.Popen(['uglifyjs', filename], stdout=subprocess.PIPE)
     return proc.stdout.read()
@@ -82,19 +86,16 @@ class UnusedElementsDetector:
       assert False, 'Invalid filename: %s' % filename
     return text
 
-  @staticmethod
-  def Run():
+  def Run(self):
     """Finds unused Polymer elements and prints a summary."""
     proc = subprocess.Popen(
       ['git', 'rev-parse', '--show-toplevel'],
       stdout=subprocess.PIPE)
     src_dir = proc.stdout.read().strip()
-    polymer_dir = os.path.dirname(os.path.realpath(__file__))
-    components_dir = os.path.join(polymer_dir, 'components-chromium')
 
     elements = []
-    for name in os.listdir(components_dir):
-      path = os.path.join(components_dir, name)
+    for name in os.listdir(self.__COMPONENTS_DIR):
+      path = os.path.join(self.__COMPONENTS_DIR, name)
       if os.path.isdir(path):
         elements.append(name)
 
@@ -102,26 +103,21 @@ class UnusedElementsDetector:
       os.path.join(src_dir, 'chrome'),
       os.path.join(src_dir, 'ui'),
       os.path.join(src_dir, 'components'),
-      components_dir
+      self.__COMPONENTS_DIR
     )
-
-    for element in elements:
-      if element in UnusedElementsDetector.__whitelist:
-        continue
 
     unused_elements = []
     for element in elements:
-      if (element not in UnusedElementsDetector.__whitelist and
-          not UnusedElementsDetector.__IsImported(element, relevant_src_dirs)):
+      if (element not in self.__WHITELIST and
+          not self.__IsImported(element, relevant_src_dirs)):
         unused_elements.append(element)
 
-    if len(unused_elements):
+    if unused_elements:
       print 'Found unused elements: %s\nRemove from bower.json and re-run ' \
         'reproduce.sh, or add to whitelist in %s' % (
           ', '.join(unused_elements), os.path.basename(__file__))
 
-  @staticmethod
-  def __IsImported(element_dir, dirs):
+  def __IsImported(self, element_dir, dirs):
     """Returns whether the element directory is used in HTML or JavaScript.
 
     Args:
@@ -131,13 +127,12 @@ class UnusedElementsDetector:
     Returns:
       True if the element's directory is used in |dirs|.
     """
-    polymer_dir = os.path.dirname(os.path.realpath(__file__))
-    components_dir = os.path.join(polymer_dir, 'components-chromium')
     for path in dirs:
       # Find an import or script referencing the tag's directory.
       for (dirpath, _, filenames) in os.walk(path):
         # Ignore the element's own files.
-        if dirpath.startswith(os.path.join(components_dir, element_dir)):
+        if dirpath.startswith(os.path.join(
+            self.__COMPONENTS_DIR, element_dir)):
           continue
 
         for filename in filenames:
@@ -156,10 +151,11 @@ class UnusedElementsDetector:
           # Check the file again, ignoring comments (e.g. example imports and
           # scripts).
           if re.search('/%s' % element_dir,
-                       UnusedElementsDetector.__StripComments(
+                       self.__StripComments(
                          os.path.join(dirpath, filename))):
             return True
     return False
 
 
-UnusedElementsDetector.Run()
+if __name__ == '__main__':
+  UnusedElementsDetector().Run()
