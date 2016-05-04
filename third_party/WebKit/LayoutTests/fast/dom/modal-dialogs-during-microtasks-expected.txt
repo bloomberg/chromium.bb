@@ -1,0 +1,3 @@
+CONSOLE WARNING: Invoking 'alert()' during microtask execution is deprecated and will be removed in M53, around September 2016. See https://www.chromestatus.com/features/5647113010544640 for more details.
+CONSOLE ERROR: Ignored call to 'alert()' during microtask execution.
+Passes if no alert() is displayed

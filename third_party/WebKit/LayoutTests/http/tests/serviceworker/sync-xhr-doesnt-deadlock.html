@@ -15,8 +15,10 @@ async_test(function(t) {
         })
       .then(function() { return with_iframe(scope); })
       .then(function(frame) {
-          frame.contentWindow.performSyncXHR();
-          service_worker_unregister_and_done(t, scope);
+          setTimeout(function() {
+              frame.contentWindow.performSyncXHR();
+              service_worker_unregister_and_done(t, scope);
+          }, 0);
         })
       .catch(unreached_rejection(t));
   }, 'Verify SyncXHR does not deadlock');

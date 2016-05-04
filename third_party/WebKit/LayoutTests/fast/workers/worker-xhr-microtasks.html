@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<script>
+if (window.testRunner) {
+    testRunner.dumpAsText();
+    testRunner.waitUntilDone();
+}
+
+var worker = new Worker("resources/worker-xhr-microtasks.js");
+worker.onmessage = function(evt) {
+    if (window.testRunner)
+        testRunner.notifyDone();
+};
+worker.postMessage("run");
+</script>

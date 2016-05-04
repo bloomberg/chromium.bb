@@ -72164,6 +72164,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1331" label="Entry_Remove_Method_IsolatedFileSystem"/>
   <int value="1332" label="Entry_GetParent_Method_IsolatedFileSystem"/>
   <int value="1333" label="Entry_ToURL_Method_IsolatedFileSystem"/>
+  <int value="1334" label="During_Microtask_Alert"/>
+  <int value="1335" label="During_Microtask_Confirm"/>
+  <int value="1336" label="During_Microtask_Print"/>
+  <int value="1337" label="During_Microtask_Prompt"/>
+  <int value="1338" label="During_Microtask_SyncXHR"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

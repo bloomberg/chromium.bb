@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<p>Passes if no alert() is displayed</p>
+<script>
+if (window.testRunner) {
+    testRunner.dumpAsText();
+    testRunner.waitUntilDone();
+}
+
+new Promise(function(res, rej) { res(); }).then(function() {
+    alert('this should not be shown');
+    if (window.testRunner)
+        testRunner.notifyDone();
+});
+</script>

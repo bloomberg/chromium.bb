@@ -35,6 +35,7 @@ class LocalDOMWindow;
 class MediaQueryList;
 class Navigator;
 class Screen;
+class ScriptState;
 class ScrollToOptions;
 class SerializedScriptValue;
 class Storage;
@@ -133,12 +134,12 @@ public:
     void focus(ExecutionContext*);
     virtual void blur() = 0;
     void close(ExecutionContext*);
-    virtual void print() = 0;
+    virtual void print(ScriptState*) = 0;
     virtual void stop() = 0;
 
-    virtual void alert(const String& message = String()) = 0;
-    virtual bool confirm(const String& message) = 0;
-    virtual String prompt(const String& message, const String& defaultValue) = 0;
+    virtual void alert(ScriptState*, const String& message = String()) = 0;
+    virtual bool confirm(ScriptState*, const String& message) = 0;
+    virtual String prompt(ScriptState*, const String& message, const String& defaultValue) = 0;
 
     virtual bool find(const String&, bool caseSensitive, bool backwards, bool wrap, bool wholeWord, bool searchInFrames, bool showDialog) const = 0;
 

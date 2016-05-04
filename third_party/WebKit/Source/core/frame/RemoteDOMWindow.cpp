@@ -208,7 +208,7 @@ void RemoteDOMWindow::blur()
     // FIXME: Implement.
 }
 
-void RemoteDOMWindow::print()
+void RemoteDOMWindow::print(ScriptState*)
 {
     ASSERT_NOT_REACHED();
 }
@@ -218,18 +218,18 @@ void RemoteDOMWindow::stop()
     // FIXME: Implement.
 }
 
-void RemoteDOMWindow::alert(const String& message)
+void RemoteDOMWindow::alert(ScriptState*, const String& message)
 {
     ASSERT_NOT_REACHED();
 }
 
-bool RemoteDOMWindow::confirm(const String& message)
+bool RemoteDOMWindow::confirm(ScriptState*, const String& message)
 {
     ASSERT_NOT_REACHED();
     return false;
 }
 
-String RemoteDOMWindow::prompt(const String& message, const String& defaultValue)
+String RemoteDOMWindow::prompt(ScriptState*, const String& message, const String& defaultValue)
 {
     ASSERT_NOT_REACHED();
     return String();

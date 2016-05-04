@@ -12,12 +12,12 @@ if (window.testRunner) {
 console.log("If a Suborigin makes a request, a response without an Access-Control-Allow-Suborigin header should fail and should output a reasonable error message.");
 
 function success() {
-    alert("PASS: Fetch correctly failed");
+    console.log("PASS: Fetch correctly failed");
     next();
 }
 
 function failure() {
-    alert("FAIL: Fetch incorrectly succeeded");
+    console.log("FAIL: Fetch incorrectly succeeded");
     next();
 }
 

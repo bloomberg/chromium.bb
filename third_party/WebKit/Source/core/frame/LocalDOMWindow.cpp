@@ -735,7 +735,7 @@ void LocalDOMWindow::blur()
 {
 }
 
-void LocalDOMWindow::print()
+void LocalDOMWindow::print(ScriptState* scriptState)
 {
     if (!frame())
         return;
@@ -748,6 +748,14 @@ void LocalDOMWindow::print()
         UseCounter::count(frame()->document(), UseCounter::DialogInSandboxedContext);
         if (RuntimeEnabledFeatures::sandboxBlocksModalsEnabled()) {
             frameConsole()->addMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, "Ignored call to 'print()'. The document is sandboxed, and the 'allow-modals' keyword is not set."));
+            return;
+        }
+    }
+
+    if (scriptState && v8::MicrotasksScope::IsRunningMicrotasks(scriptState->isolate())) {
+        Deprecation::countDeprecation(frame()->document(), UseCounter::During_Microtask_Print);
+        if (RuntimeEnabledFeatures::disableBlockingMethodsDuringMicrotasksEnabled()) {
+            frameConsole()->addMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, "Ignored call to 'print()' during microtask execution."));
             return;
         }
     }
@@ -767,7 +775,7 @@ void LocalDOMWindow::stop()
     frame()->loader().stopAllLoaders();
 }
 
-void LocalDOMWindow::alert(const String& message)
+void LocalDOMWindow::alert(ScriptState* scriptState, const String& message)
 {
     if (!frame())
         return;
@@ -776,6 +784,14 @@ void LocalDOMWindow::alert(const String& message)
         UseCounter::count(frame()->document(), UseCounter::DialogInSandboxedContext);
         if (RuntimeEnabledFeatures::sandboxBlocksModalsEnabled()) {
             frameConsole()->addMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, "Ignored call to 'alert()'. The document is sandboxed, and the 'allow-modals' keyword is not set."));
+            return;
+        }
+    }
+
+    if (v8::MicrotasksScope::IsRunningMicrotasks(scriptState->isolate())) {
+        Deprecation::countDeprecation(frame()->document(), UseCounter::During_Microtask_Alert);
+        if (RuntimeEnabledFeatures::disableBlockingMethodsDuringMicrotasksEnabled()) {
+            frameConsole()->addMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, "Ignored call to 'alert()' during microtask execution."));
             return;
         }
     }
@@ -789,7 +805,7 @@ void LocalDOMWindow::alert(const String& message)
     host->chromeClient().openJavaScriptAlert(frame(), message);
 }
 
-bool LocalDOMWindow::confirm(const String& message)
+bool LocalDOMWindow::confirm(ScriptState* scriptState, const String& message)
 {
     if (!frame())
         return false;
@@ -798,6 +814,14 @@ bool LocalDOMWindow::confirm(const String& message)
         UseCounter::count(frame()->document(), UseCounter::DialogInSandboxedContext);
         if (RuntimeEnabledFeatures::sandboxBlocksModalsEnabled()) {
             frameConsole()->addMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, "Ignored call to 'confirm()'. The document is sandboxed, and the 'allow-modals' keyword is not set."));
+            return false;
+        }
+    }
+
+    if (v8::MicrotasksScope::IsRunningMicrotasks(scriptState->isolate())) {
+        Deprecation::countDeprecation(frame()->document(), UseCounter::During_Microtask_Confirm);
+        if (RuntimeEnabledFeatures::disableBlockingMethodsDuringMicrotasksEnabled()) {
+            frameConsole()->addMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, "Ignored call to 'confirm()' during microtask execution."));
             return false;
         }
     }
@@ -811,7 +835,7 @@ bool LocalDOMWindow::confirm(const String& message)
     return host->chromeClient().openJavaScriptConfirm(frame(), message);
 }
 
-String LocalDOMWindow::prompt(const String& message, const String& defaultValue)
+String LocalDOMWindow::prompt(ScriptState* scriptState, const String& message, const String& defaultValue)
 {
     if (!frame())
         return String();
@@ -820,6 +844,14 @@ String LocalDOMWindow::prompt(const String& message, const String& defaultValue)
         UseCounter::count(frame()->document(), UseCounter::DialogInSandboxedContext);
         if (RuntimeEnabledFeatures::sandboxBlocksModalsEnabled()) {
             frameConsole()->addMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, "Ignored call to 'prompt()'. The document is sandboxed, and the 'allow-modals' keyword is not set."));
+            return String();
+        }
+    }
+
+    if (v8::MicrotasksScope::IsRunningMicrotasks(scriptState->isolate())) {
+        Deprecation::countDeprecation(frame()->document(), UseCounter::During_Microtask_Prompt);
+        if (RuntimeEnabledFeatures::disableBlockingMethodsDuringMicrotasksEnabled()) {
+            frameConsole()->addMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, "Ignored call to 'prompt()' during microtask execution."));
             return String();
         }
     }
@@ -1404,7 +1436,7 @@ void LocalDOMWindow::finishedLoading()
 {
     if (m_shouldPrintWhenFinishedLoading) {
         m_shouldPrintWhenFinishedLoading = false;
-        print();
+        print(nullptr);
     }
 }
 

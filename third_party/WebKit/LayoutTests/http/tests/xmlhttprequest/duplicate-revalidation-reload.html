@@ -8,17 +8,19 @@ window.jsTestIsAsync = true;
 var url = 'resources/get.txt';
 function get(xhr, async) {
     return new Promise(function(resolve, reject) {
-        xhr.onreadystatechange = function() {
-            if (xhr.readyState === xhr.DONE) {
-                if (xhr.status === 200) {
-                    resolve(xhr.responseText);
-                } else {
-                    reject(xhr.status);
+        setTimeout(function() {
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === xhr.DONE) {
+                    if (xhr.status === 200) {
+                        resolve(xhr.responseText);
+                    } else {
+                        reject(xhr.status);
+                    }
                 }
-            }
-        };
-        xhr.open('GET', url, async);
-        xhr.send();
+            };
+            xhr.open('GET', url, async);
+            xhr.send();
+        }, 0);
     });
 }
 var xhr1 = new XMLHttpRequest();

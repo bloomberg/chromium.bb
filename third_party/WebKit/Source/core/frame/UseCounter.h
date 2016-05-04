@@ -1149,6 +1149,11 @@ public:
         Entry_Remove_Method_IsolatedFileSystem = 1331,
         Entry_GetParent_Method_IsolatedFileSystem = 1332,
         Entry_ToURL_Method_IsolatedFileSystem = 1333,
+        During_Microtask_Alert = 1334,
+        During_Microtask_Confirm = 1335,
+        During_Microtask_Print = 1336,
+        During_Microtask_Prompt = 1337,
+        During_Microtask_SyncXHR = 1338,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

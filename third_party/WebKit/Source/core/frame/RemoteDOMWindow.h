@@ -55,11 +55,11 @@ public:
     int orientation() const override;
     DOMSelection* getSelection() override;
     void blur() override;
-    void print() override;
+    void print(ScriptState*) override;
     void stop() override;
-    void alert(const String& message = String()) override;
-    bool confirm(const String& message) override;
-    String prompt(const String& message, const String& defaultValue) override;
+    void alert(ScriptState*, const String& message = String()) override;
+    bool confirm(ScriptState*, const String& message) override;
+    String prompt(ScriptState*, const String& message, const String& defaultValue) override;
     bool find(const String&, bool caseSensitive, bool backwards, bool wrap, bool wholeWord, bool searchInFrames, bool showDialog) const override;
     void scrollBy(double x, double y, ScrollBehavior = ScrollBehaviorAuto) const override;
     void scrollBy(const ScrollToOptions&) const override;

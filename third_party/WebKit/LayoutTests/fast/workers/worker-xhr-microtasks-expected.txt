@@ -1,0 +1,3 @@
+CONSOLE WARNING: Invoking 'send()' on a sync XHR during microtask execution is deprecated and will be removed in M53, around September 2016. See https://www.chromestatus.com/features/5647113010544640 for more details.
+CONSOLE MESSAGE: line 9: PASS: xhr.send() throws as expected
+

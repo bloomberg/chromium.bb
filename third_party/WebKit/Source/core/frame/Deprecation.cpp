@@ -373,6 +373,21 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature)
     case UseCounter::V8KeyboardEvent_KeyIdentifier_AttributeGetter:
         return willBeRemoved("'KeyboardEvent.keyIdentifier'", 53, "5316065118650368");
 
+    case UseCounter::During_Microtask_Alert:
+        return willBeRemoved("Invoking 'alert()' during microtask execution", 53, "5647113010544640");
+
+    case UseCounter::During_Microtask_Confirm:
+        return willBeRemoved("Invoking 'confirm()' during microtask execution", 53, "5647113010544640");
+
+    case UseCounter::During_Microtask_Print:
+        return willBeRemoved("Invoking 'print()' during microtask execution", 53, "5647113010544640");
+
+    case UseCounter::During_Microtask_Prompt:
+        return willBeRemoved("Invoking 'prompt()' during microtask execution", 53, "5647113010544640");
+
+    case UseCounter::During_Microtask_SyncXHR:
+        return willBeRemoved("Invoking 'send()' on a sync XHR during microtask execution", 53, "5647113010544640");
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();

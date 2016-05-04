@@ -7,6 +7,14 @@ description("Test that a cross-origin redirect does not result in a non-simple r
 
 window.jsTestIsAsync = true;
 
+function setImmediate(f)
+{
+    var channel = new MessageChannel();
+    channel.port1.onmessage = function() { channel.port1.close(); f(); };
+    channel.port2.postMessage("abusingmessagechannelsforfunandprofit");
+    channel.port2.close();
+}
+
 function resetTripmine()
 {
     var req = new XMLHttpRequest;
@@ -31,19 +39,24 @@ function checkResult()
 function testAsync(method, code)
 {
     debug("Asynchronous XMLHttpRequest " + code + " " + method + " redirect:");
-    resetTripmine();
 
     var req = new XMLHttpRequest;
-    req.open(method, "/resources/redirect.php?code=" + code + "&url=http://localhost:8000/resources/tripmine.php", true);
-    req.setRequestHeader("X-WebKit-Test", "*");
-    req.setRequestHeader("Content-Type", "application/xml");
-    req.send("data");
+
+    setImmediate(function() {
+        resetTripmine();
+        req.open(method, "/resources/redirect.php?code=" + code + "&url=http://localhost:8000/resources/tripmine.php", true);
+        req.setRequestHeader("X-WebKit-Test", "*");
+        req.setRequestHeader("Content-Type", "application/xml");
+        req.send("data");
+    });
 
     return new Promise(function(resolve, reject)
     {
         req.onloadend = function() {
-            checkResult();
-            resolve();
+            setImmediate(function() {
+                checkResult();
+                resolve();
+            });
         };
     });
 }
@@ -103,18 +116,17 @@ for (var i = 0; i < ASYNC_TEST_CASES.length; ++i) {
 }
 prevPromise.then(function()
 {
-    for (var i = 0; i < SYNC_TEST_CASES.length; ++i) {
-        var method = SYNC_TEST_CASES[i][0];
-        var code = SYNC_TEST_CASES[i][1];
-        testSync(method, code);
-    }
-}).then(function()
-{
-    finish();
-}, function(e)
-{
-    testFailed(e);
-    finish();
+    setImmediate(function() {
+        try {
+            for (var i = 0; i < SYNC_TEST_CASES.length; ++i) {
+                var method = SYNC_TEST_CASES[i][0];
+                var code = SYNC_TEST_CASES[i][1];
+                testSync(method, code);
+            }
+        } catch (e) {
+            testFailed(e.toString());
+        }
+        finish();
+    });
 });
-
 </script>

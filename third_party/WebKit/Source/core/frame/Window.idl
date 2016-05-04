@@ -72,11 +72,11 @@
     [RuntimeEnabled=ApplicationCache, LogActivity=GetterOnly] readonly attribute ApplicationCache applicationCache;
 
     // user prompts
-    [Measure] void alert();
-    [Measure] void alert(DOMString message);
-    [Measure] boolean confirm(optional DOMString message = "");
-    [Measure] DOMString? prompt(optional DOMString message = "", optional DOMString defaultValue = "");
-    [Measure] void print();
+    [Measure, CallWith=ScriptState] void alert();
+    [Measure, CallWith=ScriptState] void alert(DOMString message);
+    [Measure, CallWith=ScriptState] boolean confirm(optional DOMString message = "");
+    [Measure, CallWith=ScriptState] DOMString? prompt(optional DOMString message = "", optional DOMString defaultValue = "");
+    [Measure, CallWith=ScriptState] void print();
 
     [MeasureAs=UnprefixedRequestAnimationFrame] long requestAnimationFrame(FrameRequestCallback callback);
     void cancelAnimationFrame(long handle);
