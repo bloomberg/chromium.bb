@@ -351,6 +351,7 @@ blink::WebGestureEvent MakeWebGestureEventFlingCancel() {
 
   // All other fields are ignored on a GestureFlingCancel event.
   gesture_event.type = blink::WebInputEvent::GestureFlingCancel;
+  gesture_event.timeStampSeconds = ui::EventTimeForNow().InSecondsF();
   gesture_event.sourceDevice = blink::WebGestureDeviceTouchpad;
   return gesture_event;
 }

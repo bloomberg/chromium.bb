@@ -225,7 +225,8 @@ void BuildSimpleWebKeyEvent(blink::WebInputEvent::Type type,
   event->type = type;
   event->modifiers = modifiers;
   event->isSystemKey = false;
-  event->timeStampSeconds = base::Time::Now().ToDoubleT();
+  event->timeStampSeconds =
+      (base::TimeTicks::Now() - base::TimeTicks()).InSecondsF();
   event->skip_in_browser = true;
 
   if (type == blink::WebInputEvent::Char ||
