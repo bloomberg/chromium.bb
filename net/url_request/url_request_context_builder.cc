@@ -182,7 +182,7 @@ URLRequestContextBuilder::HttpNetworkSessionParams::HttpNetworkSessionParams()
       testing_fixed_https_port(0),
       enable_spdy31(false),
       enable_http2(true),
-      parse_alternative_services(false),
+      parse_alternative_services(true),
       enable_alternative_service_with_different_host(false),
       enable_quic(false),
       quic_max_server_configs_stored_in_properties(0),

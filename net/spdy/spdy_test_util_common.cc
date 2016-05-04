@@ -354,7 +354,7 @@ SpdySessionDependencies::SpdySessionDependencies(NextProto protocol)
       stream_max_recv_window_size(
           SpdySession::GetDefaultInitialWindowSize(protocol)),
       time_func(&base::TimeTicks::Now),
-      parse_alternative_services(false),
+      parse_alternative_services(true),
       enable_alternative_service_with_different_host(false),
       net_log(NULL) {
   DCHECK(next_proto_is_spdy(protocol)) << "Invalid protocol: " << protocol;
@@ -393,7 +393,7 @@ SpdySessionDependencies::SpdySessionDependencies(
       stream_max_recv_window_size(
           SpdySession::GetDefaultInitialWindowSize(protocol)),
       time_func(&base::TimeTicks::Now),
-      parse_alternative_services(false),
+      parse_alternative_services(true),
       enable_alternative_service_with_different_host(false),
       net_log(NULL) {
   DCHECK(next_proto_is_spdy(protocol)) << "Invalid protocol: " << protocol;

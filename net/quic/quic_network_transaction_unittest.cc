@@ -268,7 +268,6 @@ class QuicNetworkTransactionTest
     request_.load_flags = 0;
     clock_->AdvanceTime(QuicTime::Delta::FromMilliseconds(20));
 
-    params_.parse_alternative_services = true;
     params_.enable_alternative_service_with_different_host = true;
 
     scoped_refptr<X509Certificate> cert(
@@ -707,7 +706,6 @@ TEST_P(QuicNetworkTransactionTest, ForceQuic) {
 
   mock_quic_data.AddSocketDataToFactory(&socket_factory_);
 
-  params_.parse_alternative_services = false;
   params_.enable_alternative_service_with_different_host = false;
   CreateSession();
 
@@ -781,7 +779,6 @@ TEST_P(QuicNetworkTransactionTest, QuicProxy) {
   // no attempt will be made to speak to the proxy over TCP.
 
   request_.url = GURL("http://mail.example.org/");
-  params_.parse_alternative_services = false;
   params_.enable_alternative_service_with_different_host = false;
   CreateSession();
 
@@ -891,7 +888,6 @@ TEST_P(QuicNetworkTransactionTest, ForceQuicWithErrorConnecting) {
   mock_quic_data1.AddSocketDataToFactory(&socket_factory_);
   mock_quic_data2.AddSocketDataToFactory(&socket_factory_);
 
-  params_.parse_alternative_services = false;
   params_.enable_alternative_service_with_different_host = false;
   CreateSession();
 
@@ -922,7 +918,6 @@ TEST_P(QuicNetworkTransactionTest, DoNotForceQuicForHttps) {
   SSLSocketDataProvider ssl(ASYNC, OK);
   socket_factory_.AddSSLSocketDataProvider(&ssl);
 
-  params_.parse_alternative_services = false;
   params_.enable_alternative_service_with_different_host = false;
   CreateSession();
 
@@ -1720,7 +1715,6 @@ TEST_P(QuicNetworkTransactionTest, ConfirmAlternateProtocol) {
 }
 
 TEST_P(QuicNetworkTransactionTest, UseAlternateProtocolForQuicForHttps) {
-  params_.parse_alternative_services = false;
   MockRead http_reads[] = {
       MockRead("HTTP/1.1 200 OK\r\n"), MockRead(kQuicAlternateProtocolHeader),
       MockRead("hello world"),
@@ -2289,7 +2283,6 @@ TEST_P(QuicNetworkTransactionTest, QuicUpload) {
                                   arraysize(writes));
   socket_factory_.AddSocketDataProvider(&socket_data);
 
-  params_.parse_alternative_services = false;
   params_.enable_alternative_service_with_different_host = false;
   CreateSession();
   request_.method = "POST";
