@@ -11,6 +11,7 @@ import android.test.suitebuilder.annotation.MediumTest;
 import junit.framework.ComparisonFailure;
 
 import org.chromium.base.Log;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.webview_shell.WebViewLayoutTestActivity;
 
 import java.io.BufferedReader;
@@ -243,7 +244,11 @@ public class WebViewLayoutTest
                 "blink-apis/battery-status/battery-callback-expected.txt");
     }
 
+    /*
     @MediumTest
+    currently failing on aosp bots, see crbug.com/607350
+    */
+    @DisabledTest
     public void testEMEPermission() throws Exception {
         mTestActivity.setGrantPermission(true);
         runWebViewLayoutTest("blink-apis/eme/eme.html", "blink-apis/eme/eme-expected.txt");
