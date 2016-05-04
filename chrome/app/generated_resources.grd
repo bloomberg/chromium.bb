@@ -12818,6 +12818,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
         <message name="IDS_PROFILES_CREATE_SUPERVISED_MULTI_SIGNED_IN_LABEL" desc="Label for the 'Supervised user' checkbox in the create-profile dialog when user can choose from a list of signed in users.">
           Supervise this person to control and view the websites they visit from your Google Account.
         </message>
+        <message name="IDS_PROFILES_CREATE_SUPERVISED_NO_SIGNED_IN_USER_TEXT" desc="Informative text displayed below the 'Supervised user' checkbox in the create-profile dialog when there are no signed in users to choose as the custodian.">
+          To supervise this person, <ph name="BEGIN_LINK">&lt;a id="sign-in-to-chrome" href="https://support.google.com/chrome/answer/185277"&gt;</ph>sign in to Chrome<ph name="END_LINK">&lt;/a&gt;</ph>.
+        </message>
         <message name="IDS_PROFILES_CREATE_SUPERVISED_SENTINEL_MENU_ITEM_TEXT" desc="Label for the dropdown menu containing signed in users from which the user can choose a custodian account.">
           Select an account
         </message>

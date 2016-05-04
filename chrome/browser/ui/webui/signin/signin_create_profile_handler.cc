@@ -64,6 +64,10 @@ void SigninCreateProfileHandler::GetLocalizedValues(
       "manageProfilesSupervisedSignedInLabel",
       l10n_util::GetStringUTF16(
           IDS_PROFILES_CREATE_SUPERVISED_MULTI_SIGNED_IN_LABEL));
+  localized_strings->SetString(
+      "noSignedInUserMessage",
+      l10n_util::GetStringUTF16(
+          IDS_PROFILES_CREATE_SUPERVISED_NO_SIGNED_IN_USER_TEXT));
   localized_strings->SetString("createProfileConfirm",
                                l10n_util::GetStringUTF16(IDS_SAVE));
   localized_strings->SetString("learnMore",

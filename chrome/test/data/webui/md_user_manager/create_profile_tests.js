@@ -56,9 +56,9 @@ cr.define('user_manager.create_profile_tests', function() {
                        createProfileElement.signedInUsers_[0].profilePath);
 
           // The 'learn more' link is visible.
-          assertTrue(!!createProfileElement.$$('#learn-more'));
+          assertTrue(!!createProfileElement.$$('#learn-more > a'));
 
-          // The dropdown menu is visible only when the checkbox is checked.
+          // The dropdown menu becomes visible when the checkbox is checked.
           assertFalse(!!createProfileElement.$$('paper-dropdown-menu'));
 
           // Simulate checking the checkbox.
@@ -81,9 +81,9 @@ cr.define('user_manager.create_profile_tests', function() {
           Polymer.dom.flush();
 
           var dropdownMenu = createProfileElement.$$('paper-dropdown-menu');
-          var paperMenu = dropdownMenu.querySelector('paper-menu');
+          var selector = dropdownMenu.querySelector('paper-listbox');
           assertEquals(loadTimeData.getString('selectAnAccount'),
-                       paperMenu.selectedItem.textContent.trim());
+                       selector.selectedItem.textContent.trim());
         });
       });
 
@@ -145,8 +145,8 @@ cr.define('user_manager.create_profile_tests', function() {
 
         // Select the first signed in user.
         var dropdownMenu = createProfileElement.$$('paper-dropdown-menu');
-        var paperMenu = dropdownMenu.querySelector('paper-menu');
-        paperMenu.selected = 0;
+        var selector = dropdownMenu.querySelector('paper-listbox');
+        selector.selected = 0;
 
         // Simulate clicking 'Create'.
         MockInteractions.tap(createProfileElement.$.save);
@@ -174,8 +174,8 @@ cr.define('user_manager.create_profile_tests', function() {
 
         // Select the first signed in user.
         var dropdownMenu = createProfileElement.$$('paper-dropdown-menu');
-        var paperMenu = dropdownMenu.querySelector('paper-menu');
-        paperMenu.selected = 0;
+        var selector = dropdownMenu.querySelector('paper-listbox');
+        selector.selected = 0;
 
         // Simulate clicking 'Create'.
         MockInteractions.tap(createProfileElement.$.save);
@@ -200,8 +200,8 @@ cr.define('user_manager.create_profile_tests', function() {
 
         // Select the first signed in user.
         var dropdownMenu = createProfileElement.$$('paper-dropdown-menu');
-        var paperMenu = dropdownMenu.querySelector('paper-menu');
-        paperMenu.selected = 0;
+        var selector = dropdownMenu.querySelector('paper-listbox');
+        selector.selected = 0;
 
         // Simulate clicking 'Create'.
         MockInteractions.tap(createProfileElement.$.save);
@@ -355,7 +355,7 @@ cr.define('user_manager.create_profile_tests', function() {
           });
 
           // Simulate clicking 'Learn more'.
-          MockInteractions.tap(createProfileElement.$$('#learn-more'));
+          MockInteractions.tap(createProfileElement.$$('#learn-more > a'));
         });
       });
     });
@@ -378,9 +378,16 @@ cr.define('user_manager.create_profile_tests', function() {
         return browserProxy.whenCalled('getSignedInUsers').then(function() {
           assertEquals(0, createProfileElement.signedInUsers_.length);
 
-          // '#supervised-user-container' is not present in the DOM.
-          var container = createProfileElement.$$('#supervised-user-container');
-          assertFalse(!!container);
+          // Simulate checking the checkbox.
+          MockInteractions.tap(createProfileElement.$$('paper-checkbox'));
+          Polymer.dom.flush();
+
+          // The dropdown menu is not visible when there are no signed in users.
+          assertFalse(!!createProfileElement.$$('paper-dropdown-menu'));
+
+          // Instead a message containing a link to the Help Center on how
+          // to sign in to Chrome is displaying.
+          assertTrue(!!createProfileElement.$$('#sign-in-to-chrome'));
         });
       });
 

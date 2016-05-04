@@ -8,7 +8,7 @@
  */
 (function() {
 /**
- * It means the sentinel menu item is selected.
+ * Sentinel signed-in user's index value.
  * @const {number}
  */
 var NO_USER_SELECTED = -1;
@@ -94,6 +94,16 @@ Polymer({
       value: NO_USER_SELECTED
     },
 
+    /**
+     * Sentinel signed-in user's index value.
+     * @private {number}
+     */
+    sentinelSignedInUserIndex_: {
+      type: Number,
+      value: NO_USER_SELECTED,
+      readOnly: true
+    },
+
     /** @private {!signin.ProfileBrowserProxy} */
     browserProxy_: Object
   },
@@ -125,14 +135,12 @@ Polymer({
 
     this.browserProxy_.getAvailableIcons();
     this.browserProxy_.getSignedInUsers();
-
-    // Alias on 'this' to use in html.
-    this.NO_USER_SELECTED = NO_USER_SELECTED;
   },
 
   /**
-   * Handles tap events from dynamically created links in warning/error messages
-   * pushed by the browser.
+   * Handles tap events from:
+   * - links within dynamic warning/error messages pushed from the browser.
+   * - the 'noSignedInUserMessage' i18n string.
    * @param {!Event} event
    * @private
    */
@@ -141,6 +149,9 @@ Polymer({
 
     if (element.id == 'supervised-user-import-existing') {
       this.onImportUserTap_(event);
+      event.preventDefault();
+    } else if (element.id == 'sign-in-to-chrome') {
+      this.browserProxy_.openUrlInLastActiveProfileBrowser(element.href);
       event.preventDefault();
     }
     // TODO(mahmadi): handle tap event on '#reauth' to re-auth the custodian.

@@ -13,7 +13,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-dropdown-menu/paper-dropdown-menu.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-menu/paper-menu.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-listbox/paper-listbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner.html">
 
 <dom-module id="create-profile">
@@ -60,9 +60,6 @@
 
       #nameInput,
       paper-dropdown-menu {
-        --paper-input-container: {
-          padding: 0;
-        };
         --paper-input-container-input: {
           color: inherit;
           font-size: inherit;
@@ -73,26 +70,6 @@
         margin-bottom: 24px;
         margin-top: 32px;
         width: 300px;
-      }
-
-      paper-dropdown-menu {
-        margin-top: 12px;
-        width: 200px;
-      }
-
-      paper-menu {
-        --paper-menu: {
-          color: inherit;
-          padding: 0;
-        };
-        --paper-menu-selected-item: {
-          font-weight: normal;
-        }
-      }
-
-      paper-menu paper-item {
-        font-size: inherit;
-        min-height: 40px;
       }
 
       #icons #wrapper {
@@ -117,26 +94,49 @@
         outline: 1px dotted #666;
       }
 
-      #supervised-user-container {
+      paper-checkbox {
+        --paper-checkbox-label-spacing: 16px;
+        --paper-checkbox-size: 20px;
+        --primary-text-color: var(--paper-grey-800);
         margin-top: 24px;
       }
 
-      #supervised-user-container paper-checkbox {
-        --paper-checkbox-label-spacing: 16px;
-        --paper-checkbox-size: 20px;
-      }
-
-      #supervised-user-container #learn-more-accounts {
-        -webkit-margin-start: 36px;
+      #supervised-user-container {
+        -webkit-padding-start: 36px;
       }
 
       #supervised-user-container #learn-more {
-        display: block;
         line-height: 20px;
+      }
+
+      #supervised-user-container paper-dropdown-menu {
+        margin-top: 4px;
+        width: 200px;
+      }
+
+      #supervised-user-container paper-listbox {
+        --paper-listbox: {
+          color: inherit;
+          padding: 0;
+        };
+      }
+
+      #supervised-user-container paper-listbox paper-item {
+        --paper-item: {
+          font-size: inherit;
+          min-height: 40px;
+        };
+        --paper-item-selected: {
+          font-weight: normal;
+        };
       }
 
       #supervised-user-container #import-user {
         -webkit-margin-start: 16px;
+      }
+
+      #supervised-user-container #sign-in-howto-message {
+        margin-top: 12px;
       }
 
       #actions {
@@ -199,39 +199,41 @@
         </template>
         </div>
       </div>
-      <template is="dom-if" if="[[isSignedIn_(signedInUsers_)]]">
-        <div id="supervised-user-container">
-          <paper-checkbox checked="{{isSupervised_}}">
-            [[i18n('manageProfilesSupervisedSignedInLabel')]]
-          </paper-checkbox>
-          <div id="learn-more-accounts">
-            <a id="learn-more" is="action-link" on-tap="onLearnMoreTap_">
-              [[i18n('learnMore')]]
-            </a>
-            <template is="dom-if" if="[[isSupervised_]]">
-              <paper-dropdown-menu no-label-float>
-                <paper-menu class="dropdown-content"
-                    selected="{{signedInUserIndex_}}"
-                    attr-for-selected="data-user-index">
-                  <paper-item data-user-index$="[[NO_USER_SELECTED]]">
-                    [[i18n('selectAnAccount')]]
+      <paper-checkbox checked="{{isSupervised_}}">
+        [[i18n('manageProfilesSupervisedSignedInLabel')]]
+      </paper-checkbox>
+      <div id="supervised-user-container">
+        <div id="learn-more" >
+          <a is="action-link" on-tap="onLearnMoreTap_">[[i18n('learnMore')]]</a>
+        <div>
+        <template is="dom-if" if="[[isSupervised_]]">
+          <template is="dom-if" if="[[isSignedIn_(signedInUsers_)]]">
+            <paper-dropdown-menu no-label-float>
+              <paper-listbox class="dropdown-content"
+                  selected="{{signedInUserIndex_}}"
+                  attr-for-selected="data-user-index">
+                <paper-item data-user-index$="[[sentinelSignedInUserIndex_]]">
+                  [[i18n('selectAnAccount')]]
+                </paper-item>
+                <template is="dom-repeat" items="[[signedInUsers_]]">
+                  <paper-item data-user-index$="[[index]]">
+                    [[item.username]]
                   </paper-item>
-                  <template is="dom-repeat" items="[[signedInUsers_]]">
-                    <paper-item data-user-index$="[[index]]">
-                      [[item.username]]
-                    </paper-item>
-                  </template>
-                </paper-menu>
-              </paper-dropdown-menu>
-              <a id="import-user" is="action-link" on-tap="onImportUserTap_"
-                  hidden="[[isImportUserLinkHidden_(createInProgress_,
-                                                    signedInUserIndex_)]]">
-                [[i18n('importExistingSupervisedUserLink')]]
-              </a>
-            </template>
+                </template>
+              </paper-listbox>
+            </paper-dropdown-menu>
+            <a id="import-user" is="action-link" on-tap="onImportUserTap_"
+                hidden="[[isImportUserLinkHidden_(createInProgress_,
+                                                  signedInUserIndex_)]]">
+              [[i18n('importExistingSupervisedUserLink')]]
+            </a>
+          </template>
+          <div id="sign-in-howto-message"
+              hidden="[[isSignedIn_(signedInUsers_)]]"
+              inner-h-t-m-l="[[i18n('noSignedInUserMessage')]]">
           </div>
-        </div>
-      </template>
+        </template>
+      </div>
       <div id="actions">
         <paper-spinner active="[[createInProgress_]]"></paper-spinner>
         <paper-button id="cancel" on-tap="onCancelTap_" i18n-content="cancel">
