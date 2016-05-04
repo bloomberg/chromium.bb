@@ -363,7 +363,7 @@ video {
 img {
   display: block;
   height: auto;
-  margin: 0.6rem auto 0.4rem 0;
+  margin: 0.6rem auto 0.4rem auto;
 }
 
 /* TODO(nyquist): set these classes directly in the dom distiller. */
