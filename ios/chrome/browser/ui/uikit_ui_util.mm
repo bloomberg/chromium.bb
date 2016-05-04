@@ -566,6 +566,15 @@ void AddSameCenterYConstraint(UIView* unused_parentView,
   AddSameCenterYConstraint(subview1, subview2);
 }
 
+void AddSameSizeConstraint(UIView* view1, UIView* view2) {
+  [NSLayoutConstraint activateConstraints:@[
+    [view1.leadingAnchor constraintEqualToAnchor:view2.leadingAnchor],
+    [view1.trailingAnchor constraintEqualToAnchor:view2.trailingAnchor],
+    [view1.topAnchor constraintEqualToAnchor:view2.topAnchor],
+    [view1.bottomAnchor constraintEqualToAnchor:view2.bottomAnchor]
+  ]];
+}
+
 bool IsCompact(id<UITraitEnvironment> environment) {
   if (base::ios::IsRunningOnIOS8OrLater()) {
     return environment.traitCollection.horizontalSizeClass ==

@@ -239,6 +239,10 @@ void AddSameCenterYConstraint(UIView* unused_parentView,
                               UIView* subview1,
                               UIView* subview2);
 
+// Adds constraints to make two views' sizes equal by pinning leading, trailing,
+// top and bottom anchors.
+void AddSameSizeConstraint(UIView* view1, UIView* view2);
+
 // Whether the |environment| has a compact horizontal size class.
 bool IsCompact(id<UITraitEnvironment> environment);
 
