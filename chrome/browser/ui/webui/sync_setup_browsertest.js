@@ -81,13 +81,12 @@ SyncSetupWebUITestAsync.prototype = {
   },
 };
 
-// This test is flaky on Linux bot (crbug.com/579666) and Windows bot
-// (crbug.com/608975).
-GEN('#if defined(OS_LINUX) || defined(OS_WIN)');
+// This test is flaky on Linux bot. See crbug.com/579666
+GEN('#if defined(OS_LINUX)');
 GEN('#define MAYBE_VerifySignIn DISABLED_VerifySignIn');
 GEN('#else');
 GEN('#define MAYBE_VerifySignIn VerifySignIn');
-GEN('#endif  // defined(OS_LINUX) || defined(OS_WIN)');
+GEN('#endif  // defined(OS_LINUX)');
 TEST_F('SyncSetupWebUITestAsync', 'MAYBE_VerifySignIn', function() {
   // Handle SyncSetupStartSignIn by displaying the sync setup dialog, verifying
   // that a confirmation dialog appears, and clicking OK to dismiss the dialog.
