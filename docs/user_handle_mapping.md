@@ -33,6 +33,7 @@ For Chromium contributors that have different nicks on other domains.
 | feng              | feng            | fqian           |
 | fmeawad           | fmeawad-cr      | fmeawad         |
 | gab               | gabc            | gab             |
+| gsathya           | gsathya         | gunasekaran     |
 | hans              | hwennborg       | hwennborg       |
 | haven             | periodic        | haven           |
 | ian               | ifette          | ifette          |
