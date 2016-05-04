@@ -48,15 +48,15 @@
     </style>
     <div id="container">
       <div id="title-area" class="horizontal justified layout">
-        <span id="title" i18n-content="supervisedUserLearnMoreTitle"></span>
+        <span id="title">$i18n{supervisedUserLearnMoreTitle}</span>
         <iron-icon icon="supervisor-account"></iron-icon>
       </div>
       <div class="content-area"
           i18n-values=".innerHTML:supervisedUserLearnMoreText">
       </div>
       <div id="actions">
-        <paper-button id="done" class="action primary" on-tap="onDoneTap_"
-            i18n-content="supervisedUserLearnMoreDone">
+        <paper-button id="done" class="action primary" on-tap="onDoneTap_">
+          $i18n{supervisedUserLearnMoreDone}
         </paper-button>
       </div>
     </div>

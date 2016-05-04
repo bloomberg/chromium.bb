@@ -20,10 +20,6 @@ var TutorialSteps = {
 Polymer({
   is: 'user-manager-tutorial',
 
-  behaviors: [
-    I18nBehavior,
-  ],
-
   properties: {
     /**
      * True if the tutorial is currently hidden.

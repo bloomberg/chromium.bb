@@ -86,7 +86,7 @@
       <div id="backdrop">
         <div id="dialog">
           <div id="title-bar" class="horizontal justified layout">
-            <span id="title">[[i18n('supervisedUserImportTitle')]]</span>
+            <span id="title">$i18n{supervisedUserImportTitle}</span>
             <iron-icon icon="close" on-tap="onCancelTap_"></iron-icon>
           </div>
           <div id="message">[[getMessage_(supervisedUsers_)]]</div>
@@ -98,7 +98,7 @@
                   <img class="profile-img" src="[[item.iconURL]]"></img>
                   <div class="profile-name">[[item.name]]</div>
                   <div class="on-device" hidden="[[!item.onCurrentDevice]]">
-                    [[i18n('supervisedUserAlreadyOnThisDevice')]]
+                    $i18n{supervisedUserAlreadyOnThisDevice}
                   </div>
                 </div>
               </template>
@@ -107,12 +107,12 @@
           <div id="actions" class="horizontal end-justified layout">
             <paper-button id="cancel" class="action secondary"
                 on-tap="onCancelTap_">
-              [[i18n('cancel')]]
+              $i18n{cancel}
             </paper-button>
             <paper-button id="import" class="action primary"
                 on-tap="onImportTap_"
                 disabled="[[isImportDisabled_(supervisedUserIndex_)]]">
-              [[i18n('supervisedUserImportOk')]]
+              $i18n{supervisedUserImportOk}
             </paper-button>
           </div>
         </div>

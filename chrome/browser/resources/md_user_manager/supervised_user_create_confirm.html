@@ -76,14 +76,14 @@
         </div>
         <div id="childlock-button-example">
           <iron-icon icon="lock"></iron-icon>
-          <span i18n-content="exitAndChildlockLabel"></span>
+          <span>$i18n{exitAndChildlockLabel}</span>
         </div>
         <div class="content" inner-h-t-m-l="[[htmlMessage2_(profileInfo)]]">
         </div>
       </div>
       <div id="actions">
-        <paper-button id="ok" class="action secondary" on-tap="onOkTap_"
-            i18n-content="supervisedUserCreatedDone">
+        <paper-button id="ok" class="action secondary" on-tap="onOkTap_">
+          $i18n{supervisedUserCreatedDone}
         </paper-button>
         <paper-button id="switchUser" class="action primary"
             on-tap="onSwitchUserTap_">

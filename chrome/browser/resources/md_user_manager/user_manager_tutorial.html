@@ -1,5 +1,4 @@
 <link rel="import" href="chrome://md-user-manager/shared_styles.html">
-<link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
@@ -170,12 +169,12 @@
         <div class="tutorial-slide" id="[[steps_.YOUR_CHROME]]">
           <div class="slide-image"></div>
           <div class="slide-contents">
-            <div class="slide-title">[[i18n('slideYourChromeTitle')]]</div>
-            <div class="slide-text">[[i18n('slideYourChromeText')]]</div>
+            <div class="slide-title">$i18n{slideYourChromeTitle}</div>
+            <div class="slide-text">$i18n{slideYourChromeText}</div>
           </div>
           <div class="slide-buttons">
             <paper-button on-tap="onNextTap_" data-next$="[[steps_.GUESTS]]">
-              [[i18n('tutorialNext')]]
+              $i18n{tutorialNext}
             </paper-button>
           </div>
         </div>
@@ -185,12 +184,12 @@
         <div class="tutorial-slide" id="[[steps_.GUESTS]]">
           <div class="slide-image"></div>
           <div class="slide-contents">
-            <div class="slide-title">[[i18n('slideGuestsTitle')]]</div>
-            <div class="slide-text">[[i18n('slideGuestsText')]]</div>
+            <div class="slide-title">$i18n{slideGuestsTitle}</div>
+            <div class="slide-text">$i18n{slideGuestsText}</div>
           </div>
           <div class="slide-buttons">
             <paper-button on-tap="onNextTap_" data-next$="[[steps_.FRIENDS]]">
-              [[i18n('tutorialNext')]]
+              $i18n{tutorialNext}
             </paper-button>
           </div>
           <div class="arrow-down"></div>
@@ -201,12 +200,12 @@
         <div class="tutorial-slide" id="[[steps_.FRIENDS]]">
           <div class="slide-image"></div>
           <div class="slide-contents">
-            <div class="slide-title">[[i18n('slideFriendsTitle')]]</div>
-            <div class="slide-text">[[i18n('slideFriendsText')]]</div>
+            <div class="slide-title">$i18n{slideFriendsTitle}</div>
+            <div class="slide-text">$i18n{slideFriendsText}</div>
           </div>
           <div class="slide-buttons">
             <paper-button on-tap="onNextTap_" data-next$="[[steps_.COMPLETE]]">
-              [[i18n('tutorialNext')]]
+              $i18n{tutorialNext}
             </paper-button>
           </div>
           <div class="arrow-down"></div>
@@ -217,12 +216,12 @@
         <div class="tutorial-slide" id="[[steps_.COMPLETE]]">
           <div class="slide-image"></div>
           <div class="slide-contents">
-            <div class="slide-title">[[i18n('slideCompleteTitle')]]</div>
-            <div class="slide-text">[[i18n('slideCompleteText')]]</div>
+            <div class="slide-title">$i18n{slideCompleteTitle}</div>
+            <div class="slide-text">$i18n{slideCompleteText}</div>
           </div>
           <div class="slide-buttons">
             <paper-button on-tap="onNextTap_" data-next$="[[steps_.NOT_YOU]]">
-              [[i18n('tutorialDone')]]
+              $i18n{tutorialDone}
             </paper-button>
           </div>
         </div>
@@ -233,11 +232,11 @@
           </iron-icon>
           <div class="slide-buttons">
             <div class="slide-text">
-              [[i18n('slideCompleteUserNotFound')]]
+              $i18n{slideCompleteUserNotFound}
             </div>
             <div id="slide-add-user">
               <a id="addUser" is="action-link" on-tap="onAddUserTap_">
-                [[i18n('slideCompleteAddUser')]]
+                $i18n{slideCompleteAddUser}
               </a>
             </div>
           </div>

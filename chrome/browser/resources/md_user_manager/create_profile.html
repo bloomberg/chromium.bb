@@ -160,7 +160,7 @@
       <span id="message" inner-h-t-m-l="[[message_]]"></span>
     </div>
     <div class="container">
-      <div id="title-bar" i18n-content="createProfileTitle"></div>
+      <div id="title-bar">$i18n{createProfileTitle}</div>
       <paper-input id="nameInput" value="{{profileName_}}" pattern=".*\S.*"
           no-label-float auto-validate>
       </paper-input>
@@ -173,11 +173,11 @@
         </template>
       </div>
       <paper-checkbox checked="{{isSupervised_}}">
-        [[i18n('manageProfilesSupervisedSignedInLabel')]]
+        $i18n{manageProfilesSupervisedSignedInLabel}
       </paper-checkbox>
       <div id="supervised-user-container">
         <div id="learn-more" >
-          <a is="action-link" on-tap="onLearnMoreTap_">[[i18n('learnMore')]]</a>
+          <a is="action-link" on-tap="onLearnMoreTap_">$i18n{learnMore}</a>
         <div>
         <template is="dom-if" if="[[isSupervised_]]">
           <template is="dom-if" if="[[isSignedIn_(signedInUsers_)]]">
@@ -186,7 +186,7 @@
                   selected="{{signedInUserIndex_}}"
                   attr-for-selected="data-user-index">
                 <paper-item data-user-index$="[[sentinelSignedInUserIndex_]]">
-                  [[i18n('selectAnAccount')]]
+                  $i18n{selectAnAccount}
                 </paper-item>
                 <template is="dom-repeat" items="[[signedInUsers_]]">
                   <paper-item data-user-index$="[[index]]">
@@ -198,7 +198,7 @@
             <a id="import-user" is="action-link" on-tap="onImportUserTap_"
                 hidden="[[isImportUserLinkHidden_(createInProgress_,
                                                   signedInUserIndex_)]]">
-              [[i18n('importExistingSupervisedUserLink')]]
+              $i18n{importExistingSupervisedUserLink}
             </a>
           </template>
           <div id="sign-in-howto-message"
@@ -209,12 +209,13 @@
       </div>
       <div id="actions">
         <paper-spinner active="[[createInProgress_]]"></paper-spinner>
-        <paper-button id="cancel" class="action secondary" i18n-content="cancel"
+        <paper-button id="cancel" class="action secondary"
             on-tap="onCancelTap_">
+          $i18n{cancel}
         </paper-button>
         <paper-button id="save" class="action primary" on-tap="onSaveTap_"
-            i18n-content="createProfileConfirm"
             disabled="[[isSaveDisabled_(createInProgress_, profileName_)]]">
+          $i18n{createProfileConfirm}
         </paper-button>
       </div>
       <import-supervised-user id="importUserPopup"></import-supervised-user>
