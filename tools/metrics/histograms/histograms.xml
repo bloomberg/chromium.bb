@@ -56312,7 +56312,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="UMA.LogUpload.Canceled.CellularConstraint">
+<histogram name="UMA.LogUpload.Canceled.CellularConstraint"
+    enum="BooleanCanceled">
   <owner>asvitkine@chromium.org</owner>
   <owner>gayane@chromium.org</owner>
   <summary>
@@ -63183,6 +63184,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <enum name="BooleanCacheHit" type="int">
   <int value="0" label="Miss"/>
   <int value="1" label="Hit"/>
+</enum>
+
+<enum name="BooleanCanceled" type="int">
+  <int value="0" label="Not Canceled"/>
+  <int value="1" label="Canceled"/>
 </enum>
 
 <enum name="BooleanCanCheckUrl" type="int">
