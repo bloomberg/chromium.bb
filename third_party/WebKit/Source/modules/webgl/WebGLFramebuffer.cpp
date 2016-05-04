@@ -92,7 +92,7 @@ void WebGLRenderbufferAttachment::onDetached(gpu::gles2::GLES2Interface* gl)
 
 void WebGLRenderbufferAttachment::attach(gpu::gles2::GLES2Interface* gl, GLenum target, GLenum attachment)
 {
-    Platform3DObject object = objectOrZero(m_renderbuffer.get());
+    GLuint object = objectOrZero(m_renderbuffer.get());
     gl->FramebufferRenderbuffer(target, attachment, GL_RENDERBUFFER, object);
 }
 
@@ -165,7 +165,7 @@ void WebGLTextureAttachment::onDetached(gpu::gles2::GLES2Interface* gl)
 
 void WebGLTextureAttachment::attach(gpu::gles2::GLES2Interface* gl, GLenum target, GLenum attachment)
 {
-    Platform3DObject object = objectOrZero(m_texture.get());
+    GLuint object = objectOrZero(m_texture.get());
     if (m_target == GL_TEXTURE_3D || m_target == GL_TEXTURE_2D_ARRAY) {
         gl->FramebufferTextureLayer(target, attachment, object, m_level, m_layer);
     } else {

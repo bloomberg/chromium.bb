@@ -135,7 +135,7 @@ bool WebGLDrawBuffers::satisfiesWebGLRequirements(WebGLRenderingContextBase* web
         gl->TexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 1, 1, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, buffer);
     }
 
-    Vector<Platform3DObject> colors;
+    Vector<GLuint> colors;
     bool ok = true;
     GLint maxAllowedBuffers = std::min(maxDrawBuffers, maxColorAttachments);
     for (GLint i = 0; i < maxAllowedBuffers; ++i) {

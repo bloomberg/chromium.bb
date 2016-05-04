@@ -31,7 +31,7 @@
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/canvas/CanvasImageSource.h"
 #include "core/imagebitmap/ImageBitmapSource.h"
-#include "platform/graphics/GraphicsTypes3D.h"
+#include "third_party/khronos/GLES2/gl2.h"
 
 class SkPaint;
 
@@ -45,12 +45,6 @@ namespace blink {
 class ExceptionState;
 class GraphicsContext;
 class ImageBitmapOptions;
-
-// GL types as defined in OpenGL ES 2.0 header file gl2.h from khronos.org.
-// That header cannot be included directly due to a conflict with NPAPI headers.
-// See crbug.com/328085.
-typedef unsigned GLenum;
-typedef int GC3Dint;
 
 class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement, public CanvasImageSource, public ImageBitmapSource {
     DEFINE_WRAPPERTYPEINFO();
@@ -76,7 +70,7 @@ public:
     void paintCurrentFrame(SkCanvas*, const IntRect&, const SkPaint*) const;
 
     // Used by WebGL to do GPU-GPU textures copy if possible.
-    bool copyVideoTextureToPlatformTexture(gpu::gles2::GLES2Interface*, Platform3DObject texture, GLenum internalFormat, GLenum type, bool premultiplyAlpha, bool flipY);
+    bool copyVideoTextureToPlatformTexture(gpu::gles2::GLES2Interface*, GLuint texture, GLenum internalFormat, GLenum type, bool premultiplyAlpha, bool flipY);
 
     bool shouldDisplayPosterImage() const { return getDisplayMode() == Poster; }
 

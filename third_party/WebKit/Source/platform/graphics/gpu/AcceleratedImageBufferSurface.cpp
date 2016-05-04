@@ -64,7 +64,7 @@ PassRefPtr<SkImage> AcceleratedImageBufferSurface::newImageSnapshot(Acceleration
     return adoptRef(m_surface->newImageSnapshot());
 }
 
-Platform3DObject AcceleratedImageBufferSurface::getBackingTextureHandleForOverwrite()
+GLuint AcceleratedImageBufferSurface::getBackingTextureHandleForOverwrite()
 {
     if (!m_surface)
         return 0;

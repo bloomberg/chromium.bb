@@ -34,7 +34,7 @@
 #include "platform/PlatformExport.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/GraphicsTypes.h"
-#include "platform/graphics/GraphicsTypes3D.h"
+#include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
@@ -75,7 +75,7 @@ public:
     virtual void finalizeFrame(const FloatRect &dirtyRect) { }
     virtual void draw(GraphicsContext&, const FloatRect& destRect, const FloatRect& srcRect, SkXfermode::Mode);
     virtual void setHasExpensiveOp() { }
-    virtual Platform3DObject getBackingTextureHandleForOverwrite() { return 0; }
+    virtual GLuint getBackingTextureHandleForOverwrite() { return 0; }
     virtual void flush(FlushReason); // Execute all deferred rendering immediately
     virtual void flushGpu(FlushReason reason) { flush(reason); } // Like flush, but flushes all the way down to the GPU context if the surface uses the GPU
     virtual void prepareSurfaceForPaintingIfNeeded() { }

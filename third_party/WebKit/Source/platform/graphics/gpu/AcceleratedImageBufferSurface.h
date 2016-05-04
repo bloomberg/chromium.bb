@@ -48,7 +48,7 @@ public:
     bool isValid() const override { return m_surface; }
     bool isAccelerated() const override { return true; }
     PassRefPtr<SkImage> newImageSnapshot(AccelerationHint, SnapshotReason) override;
-    Platform3DObject getBackingTextureHandleForOverwrite() override;
+    GLuint getBackingTextureHandleForOverwrite() override;
 
 private:
     OwnPtr<WebGraphicsContext3DProvider> m_contextProvider;

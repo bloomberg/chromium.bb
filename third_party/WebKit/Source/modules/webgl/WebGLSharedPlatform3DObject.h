@@ -16,15 +16,15 @@ class WebGLSharedPlatform3DObject : public WebGLSharedObject {
 public:
     ~WebGLSharedPlatform3DObject() override;
 
-    Platform3DObject object() const { return m_object; }
-    void setObject(Platform3DObject);
+    GLuint object() const { return m_object; }
+    void setObject(GLuint);
 
 protected:
     explicit WebGLSharedPlatform3DObject(WebGLRenderingContextBase*);
 
     bool hasObject() const override;
 
-    Platform3DObject m_object;
+    GLuint m_object;
 };
 
 } // namespace blink

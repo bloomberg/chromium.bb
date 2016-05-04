@@ -28,8 +28,8 @@
 #define WebGLShaderPrecisionFormat_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
-#include "platform/graphics/GraphicsTypes3D.h"
 #include "platform/heap/Handle.h"
+#include "third_party/khronos/GLES2/gl2.h"
 
 namespace blink {
 

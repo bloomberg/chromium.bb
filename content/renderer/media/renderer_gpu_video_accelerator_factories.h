@@ -31,7 +31,6 @@ class GpuMemoryBufferManager;
 
 namespace content {
 class ContextProviderCommandBuffer;
-class WebGraphicsContext3DCommandBufferImpl;
 
 // Glue code to expose functionality needed by media::GpuVideoAccelerator to
 // RenderViewImpl.  This class is entirely an implementation detail of

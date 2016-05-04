@@ -19,6 +19,7 @@ include_rules = [
     "+base/trace_event",
     "+base/values.h",
     "+device",
+    "+gpu/GLES2",
     "+mozilla",
     "+platform",
     "+public/platform",

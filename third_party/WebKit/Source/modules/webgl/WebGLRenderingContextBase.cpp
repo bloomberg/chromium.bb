@@ -2230,7 +2230,7 @@ void WebGLRenderingContextBase::framebufferRenderbuffer(ScriptState* scriptState
         synthesizeGLError(GL_INVALID_OPERATION, "framebufferRenderbuffer", "no framebuffer bound");
         return;
     }
-    Platform3DObject bufferObject = objectOrZero(buffer);
+    GLuint bufferObject = objectOrZero(buffer);
     if (isWebGL2OrHigher() && attachment == GL_DEPTH_STENCIL_ATTACHMENT) {
         // On ES3, DEPTH_STENCIL_ATTACHMENT is like an alias for DEPTH_ATTACHMENT + STENCIL_ATTACHMENT.
         // We divide it here so in WebGLFramebuffer, we don't have to handle DEPTH_STENCIL_ATTACHMENT in WebGL 2.
@@ -2264,7 +2264,7 @@ void WebGLRenderingContextBase::framebufferTexture2D(ScriptState* scriptState, G
         synthesizeGLError(GL_INVALID_OPERATION, "framebufferTexture2D", "no framebuffer bound");
         return;
     }
-    Platform3DObject textureObject = objectOrZero(texture);
+    GLuint textureObject = objectOrZero(texture);
     if (isWebGL2OrHigher() && attachment == GL_DEPTH_STENCIL_ATTACHMENT) {
         // On ES3, DEPTH_STENCIL_ATTACHMENT is like an alias for DEPTH_ATTACHMENT + STENCIL_ATTACHMENT.
         // We divide it here so in WebGLFramebuffer, we don't have to handle DEPTH_STENCIL_ATTACHMENT in WebGL 2.
@@ -4061,7 +4061,7 @@ void WebGLRenderingContextBase::texImageCanvasByGPU(TexImageByGPUType functionTy
 {
     ScopedTexture2DRestorer restorer(this);
 
-    Platform3DObject targetTexture = texture->object();
+    GLuint targetTexture = texture->object();
     GLenum targetType = type;
     GLenum targetInternalformat = internalformat;
     GLint targetLevel = level;

@@ -20,7 +20,7 @@ public:
 
     ~WebGLVertexArrayObjectBase() override;
 
-    Platform3DObject object() const { return m_object; }
+    GLuint object() const { return m_object; }
 
     bool isDefaultObject() const { return m_type == VaoTypeDefault; }
 
@@ -44,7 +44,7 @@ private:
     bool hasObject() const override { return m_object != 0; }
     void deleteObjectImpl(gpu::gles2::GLES2Interface*) override;
 
-    Platform3DObject m_object;
+    GLuint m_object;
 
     VaoType m_type;
     bool m_hasEverBeenBound;

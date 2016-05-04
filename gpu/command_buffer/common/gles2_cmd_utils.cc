@@ -1373,9 +1373,9 @@ bool GLES2Util::IsFloatFormat(uint32_t internal_format) {
 
 namespace {
 
-// WebGraphicsContext3DCommandBufferImpl configuration attributes. Those in
-// the 16-bit range are the same as used by EGL. Those outside the 16-bit range
-// are unique to Chromium. Attributes are matched using a closest fit algorithm.
+// GL context configuration attributes. Those in the 16-bit range are the same
+// as used by EGL. Those outside the 16-bit range are unique to Chromium.
+// Attributes are matched using a closest fit algorithm.
 
 // From <EGL/egl.h>.
 #include <stddef.h>

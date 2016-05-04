@@ -118,7 +118,6 @@ class RendererGpuVideoAcceleratorFactories;
 class ResourceDispatchThrottler;
 class V8SamplingProfiler;
 class VideoCaptureImplManager;
-class WebGraphicsContext3DCommandBufferImpl;
 class WebRTCIdentityService;
 
 #if defined(OS_ANDROID)

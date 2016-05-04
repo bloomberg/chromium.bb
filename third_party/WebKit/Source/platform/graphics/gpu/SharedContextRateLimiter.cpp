@@ -4,13 +4,11 @@
 
 #include "platform/graphics/gpu/SharedContextRateLimiter.h"
 
+#include "gpu/GLES2/gl2extchromium.h"
 #include "platform/graphics/gpu/Extensions3DUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
-
-#ifndef GL_COMMANDS_COMPLETED_CHROMIUM
-#define GL_COMMANDS_COMPLETED_CHROMIUM 0x84F7
-#endif
+#include "third_party/khronos/GLES2/gl2.h"
 
 namespace blink {
 
