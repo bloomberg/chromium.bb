@@ -138,10 +138,16 @@ IPC_SYNC_MESSAGE_ROUTED1_2(GpuCommandBufferMsg_Initialize,
 IPC_SYNC_MESSAGE_ROUTED1_0(GpuCommandBufferMsg_SetGetBuffer,
                            int32_t /* shm_id */)
 
-// Produces the front buffer into a mailbox. This allows another context to draw
+// Takes the front buffer into a mailbox. This allows another context to draw
 // the output of this context.
-IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_ProduceFrontBuffer,
+IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_TakeFrontBuffer,
                     gpu::Mailbox /* mailbox */)
+
+// Returns a front buffer taken with GpuCommandBufferMsg_TakeFrontBuffer. This
+// allows it to be reused.
+IPC_MESSAGE_ROUTED2(GpuCommandBufferMsg_ReturnFrontBuffer,
+                    gpu::Mailbox /* mailbox */,
+                    bool /* is_lost */)
 
 // Wait until the token is in a specific range, inclusive.
 IPC_SYNC_MESSAGE_ROUTED2_1(GpuCommandBufferMsg_WaitForTokenInRange,
@@ -194,6 +200,12 @@ IPC_MESSAGE_ROUTED2(GpuCommandBufferMsg_UpdateVSyncParameters,
                     base::TimeTicks /* timebase */,
                     base::TimeDelta /* interval */)
 
+// The receiver will stop processing messages until the Synctoken is signaled.
+IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_WaitSyncToken,
+                    gpu::SyncToken /* sync_token */)
+
+// The receiver will asynchronously wait until the SyncToken is signaled, and
+// then return a GpuCommandBufferMsg_SignalAck message.
 IPC_MESSAGE_ROUTED2(GpuCommandBufferMsg_SignalSyncToken,
                     gpu::SyncToken /* sync_token */,
                     uint32_t /* signal_id */)

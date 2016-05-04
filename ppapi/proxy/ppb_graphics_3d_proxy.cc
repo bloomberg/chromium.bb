@@ -105,6 +105,10 @@ void Graphics3D::EnsureWorkVisible() {
   NOTREACHED();
 }
 
+void Graphics3D::TakeFrontBuffer() {
+  NOTREACHED();
+}
+
 gpu::CommandBuffer* Graphics3D::GetCommandBuffer() {
   return command_buffer_.get();
 }
@@ -119,6 +123,11 @@ int32_t Graphics3D::DoSwapBuffers(const gpu::SyncToken& sync_token) {
 
   gpu::gles2::GLES2Implementation* gl = gles2_impl();
   gl->SwapBuffers();
+
+  PluginDispatcher::GetForResource(this)->Send(
+      new PpapiHostMsg_PPBGraphics3D_TakeFrontBuffer(API_ID_PPB_GRAPHICS_3D,
+                                                     host_resource()));
+
   const GLuint64 fence_sync = gl->InsertFenceSyncCHROMIUM();
   gl->ShallowFlushCHROMIUM();
 
@@ -212,6 +221,8 @@ bool PPB_Graphics3D_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnMsgDestroyTransferBuffer)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBGraphics3D_SwapBuffers,
                         OnMsgSwapBuffers)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBGraphics3D_TakeFrontBuffer,
+                        OnMsgTakeFrontBuffer)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBGraphics3D_EnsureWorkVisible,
                         OnMsgEnsureWorkVisible)
 #endif  // !defined(OS_NACL)
@@ -343,6 +354,12 @@ void PPB_Graphics3D_Proxy::OnMsgSwapBuffers(const HostResource& context,
   if (enter.succeeded())
     enter.SetResult(
         enter.object()->SwapBuffersWithSyncToken(enter.callback(), sync_token));
+}
+
+void PPB_Graphics3D_Proxy::OnMsgTakeFrontBuffer(const HostResource& context) {
+  EnterHostFromHostResource<PPB_Graphics3D_API> enter(context);
+  if (enter.succeeded())
+    enter.object()->TakeFrontBuffer();
 }
 
 void PPB_Graphics3D_Proxy::OnMsgEnsureWorkVisible(const HostResource& context) {

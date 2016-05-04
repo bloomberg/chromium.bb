@@ -28,6 +28,7 @@
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
+#include "third_party/khronos/GLES2/gl2.h"
 
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_Graphics3D_API;
@@ -114,6 +115,22 @@ void PPB_Graphics3D_Impl::EnsureWorkVisible() {
   command_buffer_->EnsureWorkVisible();
 }
 
+void PPB_Graphics3D_Impl::TakeFrontBuffer() {
+  if (!taken_front_buffer_.IsZero()) {
+    DLOG(ERROR)
+        << "TakeFrontBuffer should only be called once before DoSwapBuffers";
+    return;
+  }
+  taken_front_buffer_ = GenerateMailbox();
+  command_buffer_->TakeFrontBuffer(taken_front_buffer_);
+}
+
+void PPB_Graphics3D_Impl::ReturnFrontBuffer(const gpu::Mailbox& mailbox,
+                                            const gpu::SyncToken& sync_token,
+                                            bool is_lost) {
+  command_buffer_->ReturnFrontBuffer(mailbox, sync_token, is_lost);
+}
+
 bool PPB_Graphics3D_Impl::BindToInstance(bool bind) {
   bound_to_instance_ = bind;
   return true;
@@ -143,8 +160,10 @@ gpu::GpuControl* PPB_Graphics3D_Impl::GetGpuControl() {
 
 int32_t PPB_Graphics3D_Impl::DoSwapBuffers(const gpu::SyncToken& sync_token) {
   DCHECK(command_buffer_);
-  if (sync_token.HasData())
-    sync_token_ = sync_token;
+  if (taken_front_buffer_.IsZero()) {
+    DLOG(ERROR) << "TakeFrontBuffer should be called before DoSwapBuffers";
+    return PP_ERROR_FAILED;
+  }
 
   if (bound_to_instance_) {
     // If we are bound to the instance, we need to ask the compositor
@@ -154,14 +173,18 @@ int32_t PPB_Graphics3D_Impl::DoSwapBuffers(const gpu::SyncToken& sync_token) {
     //
     // Don't need to check for NULL from GetPluginInstance since when we're
     // bound, we know our instance is valid.
-    HostGlobals::Get()->GetInstance(pp_instance())->CommitBackingTexture();
+    cc::TextureMailbox texture_mailbox(taken_front_buffer_, sync_token,
+                                       GL_TEXTURE_2D);
+    taken_front_buffer_.SetZero();
+    HostGlobals::Get()
+        ->GetInstance(pp_instance())
+        ->CommitTextureMailbox(texture_mailbox);
     commit_pending_ = true;
   } else {
     // Wait for the command to complete on the GPU to allow for throttling.
     command_buffer_->SignalSyncToken(
-        sync_token_,
-        base::Bind(&PPB_Graphics3D_Impl::OnSwapBuffers,
-                   weak_ptr_factory_.GetWeakPtr()));
+        sync_token, base::Bind(&PPB_Graphics3D_Impl::OnSwapBuffers,
+                               weak_ptr_factory_.GetWeakPtr()));
   }
 
   return PP_OK_COMPLETIONPENDING;
@@ -260,10 +283,6 @@ bool PPB_Graphics3D_Impl::InitRaw(PPB_Graphics3D_API* share_context,
   if (command_buffer_id)
     *command_buffer_id = command_buffer_->GetCommandBufferID();
 
-  mailbox_ = gpu::Mailbox::Generate();
-  if (!command_buffer_->ProduceFrontBuffer(mailbox_))
-    return false;
-
   return true;
 }
 
@@ -339,6 +358,16 @@ void PPB_Graphics3D_Impl::SendContextLost() {
   // GetInstance check covers both cases.
   if (ppp_graphics_3d && HostGlobals::Get()->GetInstance(this_pp_instance))
     ppp_graphics_3d->Graphics3DContextLost(this_pp_instance);
+}
+
+gpu::Mailbox PPB_Graphics3D_Impl::GenerateMailbox() {
+  if (!mailboxes_to_reuse_.empty()) {
+    gpu::Mailbox mailbox = mailboxes_to_reuse_.back();
+    mailboxes_to_reuse_.pop_back();
+    return mailbox;
+  }
+
+  return gpu::Mailbox::Generate();
 }
 
 }  // namespace content

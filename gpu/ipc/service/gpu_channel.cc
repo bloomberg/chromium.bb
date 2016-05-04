@@ -792,8 +792,9 @@ void GpuChannel::HandleMessage(
   HandleMessageHelper(msg);
 
   // If we get descheduled or yield while processing a message.
-  if (stub && stub->HasUnprocessedCommands()) {
-    DCHECK_EQ((uint32_t)GpuCommandBufferMsg_AsyncFlush::ID, msg.type());
+  if (!message_queue->IsScheduled()) {
+    DCHECK((uint32_t)GpuCommandBufferMsg_AsyncFlush::ID == msg.type() ||
+           (uint32_t)GpuCommandBufferMsg_WaitSyncToken::ID == msg.type());
     message_queue->PauseMessageProcessing();
   } else {
     message_queue->FinishMessageProcessing();

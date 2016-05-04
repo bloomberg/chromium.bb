@@ -159,7 +159,8 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
   // Set the surface associated with the default FBO.
   virtual void SetSurface(const scoped_refptr<gfx::GLSurface>& surface) = 0;
 
-  virtual void ProduceFrontBuffer(const Mailbox& mailbox) = 0;
+  virtual void TakeFrontBuffer(const Mailbox& mailbox) = 0;
+  virtual void ReturnFrontBuffer(const Mailbox& mailbox, bool is_lost) = 0;
 
   // Resize an offscreen frame buffer.
   virtual bool ResizeOffscreenFrameBuffer(const gfx::Size& size) = 0;
@@ -201,6 +202,8 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
   virtual void SetIgnoreCachedStateForTest(bool ignore) = 0;
   virtual void SetForceShaderNameHashingForTest(bool force) = 0;
   virtual uint32_t GetAndClearBackbufferClearBitsForTest();
+  virtual size_t GetSavedBackTextureCountForTest() = 0;
+  virtual size_t GetCreatedBackTextureCountForTest() = 0;
 
   // Gets the QueryManager for this context.
   virtual QueryManager* GetQueryManager() = 0;

@@ -114,7 +114,10 @@ class GPU_EXPORT CommandBufferProxyImpl
                        const base::Closure& callback) override;
   bool CanWaitUnverifiedSyncToken(const gpu::SyncToken* sync_token) override;
 
-  bool ProduceFrontBuffer(const gpu::Mailbox& mailbox);
+  void TakeFrontBuffer(const gpu::Mailbox& mailbox);
+  void ReturnFrontBuffer(const gpu::Mailbox& mailbox,
+                         const gpu::SyncToken& sync_token,
+                         bool is_lost);
 
   void AddDeletionObserver(DeletionObserver* observer);
   void RemoveDeletionObserver(DeletionObserver* observer);

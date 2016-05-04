@@ -608,13 +608,23 @@ void CommandBufferProxyImpl::SignalQuery(uint32_t query,
   signal_tasks_.insert(std::make_pair(signal_id, callback));
 }
 
-bool CommandBufferProxyImpl::ProduceFrontBuffer(const gpu::Mailbox& mailbox) {
+void CommandBufferProxyImpl::TakeFrontBuffer(const gpu::Mailbox& mailbox) {
   CheckLock();
   if (last_state_.error != gpu::error::kNoError)
-    return false;
+    return;
 
-  Send(new GpuCommandBufferMsg_ProduceFrontBuffer(route_id_, mailbox));
-  return true;
+  Send(new GpuCommandBufferMsg_TakeFrontBuffer(route_id_, mailbox));
+}
+
+void CommandBufferProxyImpl::ReturnFrontBuffer(const gpu::Mailbox& mailbox,
+                                               const gpu::SyncToken& sync_token,
+                                               bool is_lost) {
+  CheckLock();
+  if (last_state_.error != gpu::error::kNoError)
+    return;
+
+  Send(new GpuCommandBufferMsg_WaitSyncToken(route_id_, sync_token));
+  Send(new GpuCommandBufferMsg_ReturnFrontBuffer(route_id_, mailbox, is_lost));
 }
 
 gpu::error::Error CommandBufferProxyImpl::GetLastError() {
