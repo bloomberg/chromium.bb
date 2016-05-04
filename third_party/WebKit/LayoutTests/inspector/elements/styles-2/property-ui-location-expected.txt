@@ -1,7 +1,13 @@
 Verifies WebInspector.cssWorkspaceBinding.propertyUILocation functionality
 
-font-family: arial; -> source-url.css:2:4
-margin: 10px; -> source-url.css:0:13
-color: blue; -> property-ui-location.html:8:4
-background-image: url(); -> empty-background-url.css:1:4
+font-family -> source-url.css:2:4
+arial -> source-url.css:2:17
+font-size -> source-url.css:3:7
+20px -> source-url.css:3:18
+margin -> source-url.css:0:13
+10px -> source-url.css:0:21
+color -> property-ui-location.html:8:4
+blue -> property-ui-location.html:8:11
+background-image -> empty-background-url.css:1:4
+url() -> empty-background-url.css:1:22
 

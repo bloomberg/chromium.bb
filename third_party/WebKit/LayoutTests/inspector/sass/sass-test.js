@@ -292,7 +292,7 @@ InspectorTest.createEdit = function(source, pattern, newText, matchNumber)
     if (!match)
         return null;
     var sourceRange = new WebInspector.SourceRange(match.index, match[0].length);
-    var textRange = sourceRange.toTextRange(new WebInspector.Text(source));
+    var textRange = new WebInspector.Text(source).toTextRange(sourceRange);
     return new WebInspector.SourceEdit("", textRange, newText);
 }
 

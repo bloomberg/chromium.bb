@@ -12,6 +12,7 @@
 <style>#inspected { margin: 10px; }
 #inspected {
     font-family: arial;
+    /* font-size: 20px; */
 }
 /*# sourceURL=source-url.css */
 </style>
@@ -41,7 +42,9 @@ function test()
                 if (!property.range)
                     continue;
                 var uiLocation = WebInspector.cssWorkspaceBinding.propertyUILocation(property, true);
-                InspectorTest.addResult(String.sprintf("%s -> %s:%d:%d", property.text, uiLocation.uiSourceCode.name(), uiLocation.lineNumber, uiLocation.columnNumber));
+                InspectorTest.addResult(String.sprintf("%s -> %s:%d:%d", property.name, uiLocation.uiSourceCode.name(), uiLocation.lineNumber, uiLocation.columnNumber));
+                var uiLocation = WebInspector.cssWorkspaceBinding.propertyUILocation(property, false);
+                InspectorTest.addResult(String.sprintf("%s -> %s:%d:%d", property.value, uiLocation.uiSourceCode.name(), uiLocation.lineNumber, uiLocation.columnNumber));
             }
         }
         InspectorTest.completeTest();
