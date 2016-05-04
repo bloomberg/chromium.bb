@@ -8,6 +8,8 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/DOMException.h"
+#include "core/dom/ExceptionCode.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "modules/bluetooth/BluetoothError.h"
 #include "modules/bluetooth/BluetoothRemoteGATTCharacteristic.h"
 #include "modules/bluetooth/BluetoothSupplement.h"
@@ -69,6 +71,13 @@ private:
 
 ScriptPromise BluetoothRemoteGATTService::getCharacteristic(ScriptState* scriptState, const StringOrUnsignedLong& characteristic, ExceptionState& exceptionState)
 {
+#if OS(MACOSX)
+    // TODO(jlebel): Remove when getCharacteristic is implemented.
+    return ScriptPromise::rejectWithDOMException(scriptState,
+        DOMException::create(NotSupportedError,
+            "getCharacteristic is not implemented yet. See https://goo.gl/J6ASzs"));
+#endif // OS(MACOSX)
+
     String characteristicUUID = BluetoothUUID::getCharacteristic(characteristic, exceptionState);
     if (exceptionState.hadException())
         return exceptionState.reject(scriptState);
@@ -92,6 +101,13 @@ ScriptPromise BluetoothRemoteGATTService::getCharacteristics(ScriptState* script
 
 ScriptPromise BluetoothRemoteGATTService::getCharacteristicsImpl(ScriptState* scriptState, mojom::WebBluetoothGATTQueryQuantity quantity, String characteristicsUUID)
 {
+#if OS(MACOSX)
+    // TODO(jlebel): Remove when getCharacteristics is implemented.
+    return ScriptPromise::rejectWithDOMException(scriptState,
+        DOMException::create(NotSupportedError,
+            "getCharacteristics is not implemented yet. See https://goo.gl/J6ASzs"));
+#endif // OS(MACOSX)
+
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 

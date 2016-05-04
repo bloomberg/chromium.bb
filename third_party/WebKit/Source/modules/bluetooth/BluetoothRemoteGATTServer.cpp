@@ -9,6 +9,7 @@
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "modules/bluetooth/BluetoothError.h"
 #include "modules/bluetooth/BluetoothRemoteGATTService.h"
 #include "modules/bluetooth/BluetoothSupplement.h"
@@ -80,6 +81,13 @@ void BluetoothRemoteGATTServer::disconnect(ScriptState* scriptState)
 
 ScriptPromise BluetoothRemoteGATTServer::getPrimaryService(ScriptState* scriptState, const StringOrUnsignedLong& service, ExceptionState& exceptionState)
 {
+#if OS(MACOSX)
+    // TODO(jlebel): Remove when getPrimaryService is implemented.
+    return ScriptPromise::rejectWithDOMException(scriptState,
+        DOMException::create(NotSupportedError,
+            "getPrimaryService is not implemented yet. See https://goo.gl/J6ASzs"));
+#endif // OS(MACOSX)
+
     WebBluetooth* webbluetooth = BluetoothSupplement::fromScriptState(scriptState);
 
     String serviceUUID = BluetoothUUID::getService(service, exceptionState);

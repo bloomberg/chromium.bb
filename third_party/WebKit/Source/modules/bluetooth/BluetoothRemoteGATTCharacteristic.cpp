@@ -11,6 +11,7 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/events/Event.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "modules/bluetooth/BluetoothCharacteristicProperties.h"
 #include "modules/bluetooth/BluetoothError.h"
 #include "modules/bluetooth/BluetoothSupplement.h"
@@ -132,6 +133,13 @@ private:
 
 ScriptPromise BluetoothRemoteGATTCharacteristic::readValue(ScriptState* scriptState)
 {
+#if OS(MACOSX)
+    // TODO(jlebel): Remove when readValue is implemented.
+    return ScriptPromise::rejectWithDOMException(scriptState,
+        DOMException::create(NotSupportedError,
+            "readValue is not implemented yet. See https://goo.gl/J6ASzs"));
+#endif // OS(MACOSX)
+
     WebBluetooth* webbluetooth = BluetoothSupplement::fromScriptState(scriptState);
 
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
@@ -170,6 +178,13 @@ private:
 
 ScriptPromise BluetoothRemoteGATTCharacteristic::writeValue(ScriptState* scriptState, const DOMArrayPiece& value)
 {
+#if OS(MACOSX)
+    // TODO(jlebel): Remove when writeValue is implemented.
+    return ScriptPromise::rejectWithDOMException(scriptState,
+        DOMException::create(NotSupportedError,
+            "writeValue is not implemented yet. See https://goo.gl/J6ASzs"));
+#endif // OS(MACOSX)
+
     WebBluetooth* webbluetooth = BluetoothSupplement::fromScriptState(scriptState);
     // Partial implementation of writeValue algorithm:
     // https://webbluetoothchrome.github.io/web-bluetooth/#dom-bluetoothgattcharacteristic-writevalue
@@ -193,6 +208,13 @@ ScriptPromise BluetoothRemoteGATTCharacteristic::writeValue(ScriptState* scriptS
 
 ScriptPromise BluetoothRemoteGATTCharacteristic::startNotifications(ScriptState* scriptState)
 {
+#if OS(MACOSX)
+    // TODO(jlebel): Remove when startNotifications is implemented.
+    return ScriptPromise::rejectWithDOMException(scriptState,
+        DOMException::create(NotSupportedError,
+            "startNotifications is not implemented yet. See https://goo.gl/J6ASzs"));
+#endif // OS(MACOSX)
+
     WebBluetooth* webbluetooth = BluetoothSupplement::fromScriptState(scriptState);
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
@@ -202,6 +224,14 @@ ScriptPromise BluetoothRemoteGATTCharacteristic::startNotifications(ScriptState*
 
 ScriptPromise BluetoothRemoteGATTCharacteristic::stopNotifications(ScriptState* scriptState)
 {
+#if OS(MACOSX) || OS(ANDROID)
+    // TODO(jlebel): Remove when stopNotifications is implemented.
+    // TODO(scheib): Remove when stopNotifications is implemented.
+    return ScriptPromise::rejectWithDOMException(scriptState,
+        DOMException::create(NotSupportedError,
+            "stopNotifications is not implemented yet. See https://goo.gl/J6ASzs"));
+#endif // OS(MACOSX) || OS(ANDROID)
+
     WebBluetooth* webbluetooth = BluetoothSupplement::fromScriptState(scriptState);
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
