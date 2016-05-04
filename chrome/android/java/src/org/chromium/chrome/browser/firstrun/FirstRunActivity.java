@@ -20,8 +20,10 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.EmbedContentViewActivity;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
+import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionPromoScreen;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionProxyUma;
@@ -115,6 +117,16 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
         }
     }
 
+    /**
+     * Returns whether metrics reporting is currently opt-in. This is used to determine if the
+     * enable metrics reporting checkbox on first-run should be initially checked. Opt-in means it
+     * is not initially checked, opt-out means it is. This is not guaranteed to be correct outside
+     * of the first-run situation, as the default may change over time.
+     */
+    private static boolean isMetricsReportingOptIn() {
+        return ChromeVersionInfo.isStableBuild();
+    }
+
     // Activity:
 
     @Override
@@ -138,7 +150,7 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
 
         mProfileDataCache = new ProfileDataCache(FirstRunActivity.this, null);
         mProfileDataCache.setProfile(Profile.getLastUsedProfile());
-        new FirstRunFlowSequencer(this, mFreProperties) {
+        new FirstRunFlowSequencer(this, mFreProperties, isMetricsReportingOptIn()) {
             @Override
             public void onFlowIsKnown(Bundle freProperties) {
                 if (freProperties == null) {
@@ -342,6 +354,7 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
 
     @Override
     public void acceptTermsOfService(boolean allowCrashUpload) {
+        UmaUtils.recordMetricsReportingDefaultOptIn(isMetricsReportingOptIn());
         sGlue.acceptTermsOfService(getApplicationContext(), allowCrashUpload);
         flushPersistentData();
         stopProgressionIfNotAcceptedTermsOfService();

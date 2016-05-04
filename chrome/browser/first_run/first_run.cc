@@ -645,7 +645,7 @@ bool IsMetricsReportingOptIn() {
 #if defined(OS_CHROMEOS)
   return false;
 #elif defined(OS_ANDROID)
-  return chrome::GetChannel() == version_info::Channel::STABLE;
+#error This file shouldn not be compiled on Android.
 #elif defined(OS_MACOSX)
   return chrome::GetChannel() != version_info::Channel::CANARY;
 #elif defined(OS_LINUX) || defined(OS_BSD) || defined(OS_SOLARIS)
@@ -658,6 +658,8 @@ bool IsMetricsReportingOptIn() {
   // it's opt-in or out can change without changes to Chrome. We should get this
   // information directly from the download page for it to be accurate.
   return chrome::GetChannel() == version_info::Channel::STABLE;
+#else
+#error Unsupported platform.
 #endif
 }
 

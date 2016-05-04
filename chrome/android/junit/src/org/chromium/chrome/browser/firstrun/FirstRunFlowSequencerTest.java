@@ -54,12 +54,11 @@ public class FirstRunFlowSequencerTest {
         public Account[] googleAccounts;
         public boolean hasAnyUserSeenToS;
         public boolean shouldSkipFirstUseHints;
-        public boolean isStableBuild;
         public boolean isFirstRunEulaAccepted;
         public boolean shouldShowDataReductionPage;
 
         public TestFirstRunFlowSequencer(Activity activity, Bundle launcherProvidedProperties) {
-            super(activity, launcherProvidedProperties);
+            super(activity, launcherProvidedProperties, true);
         }
 
         @Override
@@ -96,11 +95,6 @@ public class FirstRunFlowSequencerTest {
         @Override
         public boolean shouldSkipFirstUseHints() {
             return shouldSkipFirstUseHints;
-        }
-
-        @Override
-        public boolean isStableBuild() {
-            return isStableBuild;
         }
 
         @Override
@@ -152,7 +146,6 @@ public class FirstRunFlowSequencerTest {
         mSequencer.googleAccounts = null;
         mSequencer.hasAnyUserSeenToS = true;
         mSequencer.shouldSkipFirstUseHints = false;
-        mSequencer.isStableBuild = true;
         mSequencer.isFirstRunEulaAccepted = true;
         mSequencer.processFreEnvironment(
                 false, // androidEduDevice
@@ -171,7 +164,6 @@ public class FirstRunFlowSequencerTest {
         mSequencer.googleAccounts = new Account[0];
         mSequencer.hasAnyUserSeenToS = false;
         mSequencer.shouldSkipFirstUseHints = false;
-        mSequencer.isStableBuild = true;
         mSequencer.shouldShowDataReductionPage = false;
         mSequencer.processFreEnvironment(
                 false, // androidEduDevice
@@ -198,7 +190,6 @@ public class FirstRunFlowSequencerTest {
         mSequencer.googleAccounts = accounts;
         mSequencer.hasAnyUserSeenToS = true;
         mSequencer.shouldSkipFirstUseHints = false;
-        mSequencer.isStableBuild = true;
         mSequencer.shouldShowDataReductionPage = false;
         mSequencer.processFreEnvironment(
                 false, // androidEduDevice
@@ -227,7 +218,7 @@ public class FirstRunFlowSequencerTest {
         mSequencer.googleAccounts = new Account[0];
         mSequencer.hasAnyUserSeenToS = false;
         mSequencer.shouldSkipFirstUseHints = false;
-        mSequencer.isStableBuild = false;
+        mSequencer.mIsMetricsReportingOptIn = false;
         mSequencer.shouldShowDataReductionPage = false;
         mSequencer.processFreEnvironment(
                 false, // androidEduDevice
@@ -254,7 +245,6 @@ public class FirstRunFlowSequencerTest {
         mSequencer.googleAccounts = accounts;
         mSequencer.hasAnyUserSeenToS = false;
         mSequencer.shouldSkipFirstUseHints = false;
-        mSequencer.isStableBuild = true;
         mSequencer.shouldShowDataReductionPage = false;
         mSequencer.processFreEnvironment(
                 false, // androidEduDevice
@@ -283,7 +273,6 @@ public class FirstRunFlowSequencerTest {
         mSequencer.googleAccounts = new Account[0];
         mSequencer.hasAnyUserSeenToS = false;
         mSequencer.shouldSkipFirstUseHints = false;
-        mSequencer.isStableBuild = true;
         mSequencer.shouldShowDataReductionPage = true;
         mSequencer.processFreEnvironment(
                 false, // androidEduDevice

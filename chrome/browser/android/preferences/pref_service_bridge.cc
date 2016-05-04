@@ -472,8 +472,8 @@ static jboolean HasSetMetricsReporting(JNIEnv* env,
 }
 
 static void SetClickedUpdateMenuItem(JNIEnv* env,
-                                       const JavaParamRef<jobject>& obj,
-                                       jboolean clicked) {
+                                     const JavaParamRef<jobject>& obj,
+                                     jboolean clicked) {
   GetPrefService()->SetBoolean(prefs::kClickedUpdateMenuItem, clicked);
 }
 

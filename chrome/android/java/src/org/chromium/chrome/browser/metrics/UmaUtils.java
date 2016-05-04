@@ -7,12 +7,13 @@ package org.chromium.chrome.browser.metrics;
 import android.os.SystemClock;
 
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
 
 /**
  * Utilities to support startup metrics - Android version.
  */
+@JNINamespace("chrome::android")
 public class UmaUtils {
-
     private static long sApplicationStartWallClockMs;
 
     private static boolean sRunningApplicationStart;
@@ -48,9 +49,19 @@ public class UmaUtils {
         sRunningApplicationStart = isAppStart;
     }
 
+    /**
+     * Sets whether metrics reporting was opt-in or not. If it was opt-in, then the enable checkbox
+     * on first-run was default unchecked. If it was opt-out, then the checkbox was default checked.
+     * This should only be set once, and only during first-run.
+     */
+    public static void recordMetricsReportingDefaultOptIn(boolean optIn) {
+        nativeRecordMetricsReportingDefaultOptIn(optIn);
+    }
+
     @CalledByNative
     public static long getMainEntryPointTime() {
         return sApplicationStartWallClockMs;
     }
 
+    private static native void nativeRecordMetricsReportingDefaultOptIn(boolean optIn);
 }
