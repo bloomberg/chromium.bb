@@ -1,27 +1,9 @@
 <!DOCTYPE html>
-<script src="../resources/testharness.js"></script>
-<script src="../resources/testharnessreport.js"></script>
-<script src="../resources/bluetooth/bluetooth-helpers.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/bluetooth/bluetooth-helpers.js"></script>
 <script>
 'use strict';
-
-test(t => { assert_true(window.testRunner instanceof Object); t.done(); },
-     'window.testRunner is required for the following tests.');
-
-promise_test(() => {
-  return setBluetoothFakeAdapter('HeartRateAdapter')
-    .then(() => requestDeviceWithKeyDown({
-      filters: [{services: ['heart_rate']}]}))
-    .then(device => {
-      return setBluetoothFakeAdapter('EmptyAdapter')
-        .then(() => assert_promise_rejects_with_message(
-          device.gatt.connect(),
-          new DOMException('Bluetooth Device is no longer in range.',
-                           'NetworkError'),
-          'Device went out of range.'));
-    });
-}, 'Device goes out of range. Reject with NetworkError.');
-
 // The following tests make sure the Web Bluetooth implementation
 // responds correctly to the different types of errors the
 // underlying platform might throw.
@@ -30,7 +12,8 @@ promise_test(() => {
 // that result in different errors thus increasing code coverage
 // when testing. Therefore some of these devices might not be useful
 // for all implementations.
-[{
+
+let connection_test_specs = [{
   testName: 'Unknown error when connnecting.',
   uuid: errorUUID(0x0),
   error: new DOMException('Unknown error when connecting to the device.',
@@ -105,50 +88,30 @@ promise_test(() => {
   uuid: errorUUID(0xe),
   error: new DOMException('Write not permitted.',
                           'NetworkError')
-}].forEach(testSpec => {
-  promise_test(() => {
-    return setBluetoothFakeAdapter('FailingConnectionsAdapter')
-      .then(() => requestDeviceWithKeyDown({
-        filters: [{services: [testSpec.uuid]}]}))
-      // This test was not returning the assert_promise_rejects_with_message
-      // promise so when the underlying implementation of BluetoothDevice
-      // changed no one noticed that the promise started to reject.
-      // Furthermore, no platform returns the new errors added so they
-      // need to be cleaned up.
-      // TODO(ortuno): Re-enable the test when the errors are cleaned up.
-      // http://crbug.com/598341
-      // .then(device => assert_promise_rejects_with_message(
-      //   device.gatt.connect(),
-      //   testSpec.error,
-      //   'Adapter failed to connect to device.'))
-  }, testSpec.testName);
-});
+}];
 
 promise_test(() => {
-  return setBluetoothFakeAdapter('HeartRateAdapter')
-    .then(() => requestDeviceWithKeyDown({
-      filters: [{services: ['heart_rate']}]}))
-    .then(device => device.gatt.connect())
-    .then(gattServer => assert_true(gattServer.connected));
-}, 'Device will connect');
-
-promise_test(() => {
-  return setBluetoothFakeAdapter('HeartRateAdapter')
-    .then(() => requestDeviceWithKeyDown({
-      filters: [{services: ['heart_rate']}]}))
-    .then(device => {
-      return Promise.all([device.gatt.connect(), device.gatt.connect()])
-    }).then(gattServers => {
-      assert_equals(gattServers[0], gattServers[1]);
-    });
-});
-
-// TODO(ortuno): Remove connectGATT in M52.
-// http://crbug.com/582292
-promise_test(() => {
-  return setBluetoothFakeAdapter('HeartRateAdapter')
-    .then(() => requestDeviceWithKeyDown({
-      filters: [{services: ['heart_rate']}]}))
-    .then(device => device.connectGATT())
-}, 'Make sure deprecated method is still usable.')
+  return setBluetoothFakeAdapter('FailingConnectionsAdapter')
+      .then(() => {
+        let test_promises = Promise.resolve();
+        connection_test_specs.forEach(testSpec => {
+          test_promises = test_promises
+            .then(() => requestDeviceWithKeyDown({
+              filters: [{services: [testSpec.uuid]}]}));
+            // This test was not returning the assert_promise_rejects_with_message
+            // promise so when the underlying implementation of BluetoothDevice
+            // changed no one noticed that the promise started to reject.
+            // Furthermore, no platform returns the new errors added so they
+            // need to be cleaned up.
+            // TODO(ortuno): Re-enable the test when the errors are cleaned up.
+            // http://crbug.com/598341
+            // .then(device => assert_promise_rejects_with_message(
+            //   device.gatt.connect(),
+            //   testSpec.error,
+            //   testSpec.testName));
+          });
+        return test_promises;
+      });
+}, 'Adapter fails to connect to device. Should reject with the correct ' +
+   'exception.');
 </script>

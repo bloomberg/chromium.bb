@@ -4,20 +4,22 @@
 <script src="../../resources/bluetooth/bluetooth-helpers.js"></script>
 <script>
 'use strict';
-gatt_errors_tests.forEach(testSpec => {
-  promise_test(() => {
-    return setBluetoothFakeAdapter('FailingGATTOperationsAdapter')
-      .then(() => requestDeviceWithKeyDown({
-        filters: [{services: [errorUUID(0xA0)]}]}))
-      .then(device => device.gatt.connect())
-      .then(gattServer => gattServer.getPrimaryService(errorUUID(0xA0)))
-      .then(service => service.getCharacteristic(testSpec.uuid))
-      .then(characteristic => {
-        return assert_promise_rejects_with_message(
-          characteristic.writeValue(new Uint8Array([1])),
-          testSpec.error,
-          'Trying to write to a characteristic failed.');
+promise_test(() => {
+  return setBluetoothFakeAdapter('FailingGATTOperationsAdapter')
+    .then(() => requestDeviceWithKeyDown({
+      filters: [{services: [errorUUID(0xA0)]}]}))
+    .then(device => device.gatt.connect())
+    .then(gattServer => gattServer.getPrimaryService(errorUUID(0xA0)))
+    .then(service => {
+      let tests = Promise.resolve();
+      gatt_errors_tests.forEach(testSpec => {
+        tests = tests.then(() => service.getCharacteristic(testSpec.uuid))
+          .then(characteristic => assert_promise_rejects_with_message(
+            characteristic.writeValue(new Uint8Array([1])),
+            testSpec.error,
+            testSpec.testName));
       });
-  }, testSpec.testName);
+      return tests;
+    });
 });
 </script>

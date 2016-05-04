@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/bluetooth/bluetooth-helpers.js"></script>
+<script>
+'use strict';
+// TODO(ortuno): Remove connectGATT in M52.
+// http://crbug.com/582292
+promise_test(() => {
+  return setBluetoothFakeAdapter('HeartRateAdapter')
+    .then(() => requestDeviceWithKeyDown({
+      filters: [{services: ['heart_rate']}]}))
+    .then(device => device.connectGATT())
+}, 'Make sure deprecated method is still usable.')
+</script></script>

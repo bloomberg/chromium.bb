@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/bluetooth/bluetooth-helpers.js"></script>
+<script>
+'use strict';
+promise_test(() => {
+  return setBluetoothFakeAdapter('HeartRateAdapter')
+    .then(() => requestDeviceWithKeyDown({
+      filters: [{services: ['heart_rate']}]}))
+    .then(device => {
+      return device.gatt.connect()
+      .then(gattServer => {
+        gattServer.disconnect();
+        assert_false(gattServer.connected);
+      })
+      .then(() => device.gatt.connect()).then(gattServer => {
+        gattServer.disconnect();
+        assert_false(gattServer.connected);
+      });
+    });
+}, 'Connect + Disconnect twice still results in \'connected\' being false.');
+</script>
