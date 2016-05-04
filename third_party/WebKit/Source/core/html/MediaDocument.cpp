@@ -184,7 +184,7 @@ void MediaDocumentParser::createDocumentStructure()
             "padding: 0 16px 0 16px;"
             "height: 36px;"
             "background: #000000;"
-            "-webkit-tap-highlight-color: rgb(12%, 12%, 12%);"
+            "-webkit-tap-highlight-color: rgb(255, 255, 255, 0.12);"
             "font-family: Roboto;"
             "font-size: 14px;"
             "border-radius: 5px;"
