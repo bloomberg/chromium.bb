@@ -7,10 +7,12 @@ package org.chromium.chrome.browser.signin;
 import android.content.Context;
 import android.content.Intent;
 import android.provider.Settings;
+import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
@@ -26,17 +28,20 @@ import org.chromium.sync.signin.ChromeSigninController;
  * A View that shows the user the next step they must complete to start syncing their data (eg.
  * Recent Tabs or Bookmarks). For example, if the user is not signed in, the View will prompt them
  * to do so and link to the AccountSigninActivity.
+ * If inflated manually, {@link SigninAndSyncView#init()} must be called before attaching this View
+ * to a ViewGroup.
  */
-public class SigninAndSyncView extends FrameLayout
+public class SigninAndSyncView extends LinearLayout
         implements AndroidSyncSettingsObserver, SignInStateObserver {
-    private final Listener mListener;
-    @AccessPoint private final int mAccessPoint;
+    private Listener mListener;
+    @AccessPoint private int mAccessPoint;
+    private boolean mInitialized;
     private final SigninManager mSigninManager;
 
-    private final TextView mTitle;
-    private final TextView mDescription;
-    private final Button mNegativeButton;
-    private final Button mPositiveButton;
+    private TextView mTitle;
+    private TextView mDescription;
+    private Button mNegativeButton;
+    private Button mPositiveButton;
 
     /**
      * A listener for the container of the SigninAndSyncView to be informed of certain user
@@ -50,27 +55,51 @@ public class SigninAndSyncView extends FrameLayout
     }
 
     /**
-     * Constructor for use from Java.
+     * A convenience method to inflate and initialize a SigninAndSyncView.
+     * @param parent A parent used to provide LayoutParams (the SigninAndSyncView will not be
+     *     attached).
+     * @param listener Listener for user interactions.
+     * @param accessPoint Where the SigninAndSyncView is used.
      */
-    public SigninAndSyncView(Context context, Listener listener, @AccessPoint int accessPoint) {
-        // TODO(peconn): Simplify BookmarkPromoHeader
-        super(context);
-        mListener = listener;
-        mAccessPoint = accessPoint;
+    public static SigninAndSyncView create(ViewGroup parent, Listener listener,
+            @AccessPoint int accessPoint) {
+        SigninAndSyncView signinView = (SigninAndSyncView) LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.signin_and_sync_view, parent, false);
+        signinView.init(listener, accessPoint);
+        return signinView;
+    }
 
-        assert mAccessPoint == SigninAccessPoint.BOOKMARK_MANAGER
-                || mAccessPoint == SigninAccessPoint.RECENT_TABS
-                : "SigninAndSyncView only has strings for bookmark manager and recent tabs.";
-
+    /**
+     * Constructor for inflating from xml.
+     */
+    public SigninAndSyncView(Context context, AttributeSet attrs) {
+        super(context, attrs);
         mSigninManager = SigninManager.get(getContext());
+    }
 
-        addView(LayoutInflater.from(getContext())
-                .inflate(R.layout.signin_and_sync_view, this, false));
+    @Override
+    protected void onFinishInflate() {
+        super.onFinishInflate();
 
         mTitle = (TextView) findViewById(R.id.title);
         mDescription = (TextView) findViewById(R.id.description);
         mNegativeButton = (Button) findViewById(R.id.no_thanks);
         mPositiveButton = (Button) findViewById(R.id.sign_in);
+    }
+
+    /**
+     * Provide the information necessary for this class to function.
+     * @param listener Listener for user interactions.
+     * @param accessPoint Where this UI component is used.
+     */
+    public void init(Listener listener, @AccessPoint int accessPoint) {
+        mListener = listener;
+        mAccessPoint = accessPoint;
+        mInitialized = true;
+
+        assert mAccessPoint == SigninAccessPoint.BOOKMARK_MANAGER
+                || mAccessPoint == SigninAccessPoint.RECENT_TABS
+                : "SigninAndSyncView only has strings for bookmark manager and recent tabs.";
 
         // The title stays the same no matter what action the user must take.
         if (mAccessPoint == SigninAccessPoint.BOOKMARK_MANAGER) {
@@ -79,7 +108,7 @@ public class SigninAndSyncView extends FrameLayout
             mTitle.setVisibility(View.GONE);
         }
 
-        // We don't need to call update() here as it will be called in onAttachedToWindow().
+        // We don't call update() here as it will be called in onAttachedToWindow().
     }
 
     private void update() {
@@ -124,18 +153,18 @@ public class SigninAndSyncView extends FrameLayout
      * Classes to represent the state of a button that we are interested in, used to keep ViewState
      * tidy and provide some convenience methods.
      */
-    private abstract static class ButtonState {
-        public abstract void apply(Button button);
+    private interface ButtonState {
+        void apply(Button button);
     }
 
-    private static class ButtonAbsent extends ButtonState {
+    private static class ButtonAbsent implements ButtonState {
         @Override
         public void apply(Button button) {
             button.setVisibility(View.GONE);
         }
     }
 
-    private static class ButtonPresent extends ButtonState {
+    private static class ButtonPresent implements ButtonState {
         private final int mTextResource;
         private final OnClickListener mOnClickListener;
 
@@ -232,6 +261,8 @@ public class SigninAndSyncView extends FrameLayout
 
     @Override
     protected void onAttachedToWindow() {
+        assert mInitialized : "init(...) must be called on SigninAndSyncView before use.";
+
         super.onAttachedToWindow();
         mSigninManager.addSignInStateObserver(this);
         AndroidSyncSettings.registerObserver(getContext(), this);

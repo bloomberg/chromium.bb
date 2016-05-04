@@ -9,7 +9,6 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
-import android.view.View;
 import android.view.ViewGroup;
 
 import org.chromium.base.metrics.RecordUserAction;
@@ -105,8 +104,8 @@ class BookmarkPromoHeader implements AndroidSyncSettingsObserver,
             }
         };
 
-        View view = new SigninAndSyncView(mContext, listener, SigninAccessPoint.BOOKMARK_MANAGER);
-        return new ViewHolder(view) {};
+        return new ViewHolder(
+                SigninAndSyncView.create(parent, listener, SigninAccessPoint.BOOKMARK_MANAGER)) {};
     }
 
     /**

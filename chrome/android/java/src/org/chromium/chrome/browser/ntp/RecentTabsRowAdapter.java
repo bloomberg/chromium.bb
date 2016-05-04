@@ -603,7 +603,7 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
                 };
 
                 convertView =
-                        new SigninAndSyncView(mActivity, listener, SigninAccessPoint.RECENT_TABS);
+                        SigninAndSyncView.create(parent, listener, SigninAccessPoint.RECENT_TABS);
             }
             if (!mRecentTabsManager.isSignedIn()) {
                 RecordUserAction.record("Signin_Impression_FromRecentTabs");
