@@ -67,7 +67,7 @@ QuicPacket* BuildUnsizedDataPacket(QuicFramer* framer,
                                    const QuicPacketHeader& header,
                                    const QuicFrames& frames) {
   const size_t max_plaintext_size = framer->GetMaxPlaintextSize(kMaxPacketSize);
-  size_t packet_size = GetPacketHeaderSize(header);
+  size_t packet_size = GetPacketHeaderSize(framer->version(), header);
   for (size_t i = 0; i < frames.size(); ++i) {
     DCHECK_LE(packet_size, max_plaintext_size);
     bool first_frame = i == 0;
@@ -367,16 +367,6 @@ MockQuicSpdySession::MockQuicSpdySession(QuicConnection* connection)
 
 MockQuicSpdySession::~MockQuicSpdySession() {}
 
-// static
-QuicConsumedData MockQuicSpdySession::ConsumeAllData(
-    QuicStreamId /*id*/,
-    const QuicIOVector& data,
-    QuicStreamOffset /*offset*/,
-    bool fin,
-    QuicAckListenerInterface* /*ack_notifier_delegate*/) {
-  return QuicConsumedData(data.total_length, fin);
-}
-
 TestQuicSpdyServerSession::TestQuicSpdyServerSession(
     QuicConnection* connection,
     const QuicConfig& config,
@@ -660,11 +650,20 @@ QuicEncryptedPacket* ConstructMisFramedEncryptedPacket(
       BuildUnsizedDataPacket(&framer, header, frames));
   EXPECT_TRUE(packet != nullptr);
 
-  // Now set the packet's private flags byte to 0xFF, which is an invalid value.
-  reinterpret_cast<unsigned char*>(
-      packet->mutable_data())[GetStartOfEncryptedData(
-      connection_id_length, version_flag, multipath_flag,
-      false /* no diversification nonce */, packet_number_length)] = 0xFF;
+  if (framer.version() <= QUIC_VERSION_33) {
+    // Now set the packet's private flags byte to 0xFF, which is an invalid
+    // value.
+    reinterpret_cast<unsigned char*>(
+        packet->mutable_data())[GetStartOfEncryptedData(
+        framer.version(), connection_id_length, version_flag, multipath_flag,
+        false /* no diversification nonce */, packet_number_length)] = 0xFF;
+  } else {
+    // Now set the frame type to 0x1F, which is an invalid frame type.
+    reinterpret_cast<unsigned char*>(
+        packet->mutable_data())[GetStartOfEncryptedData(
+        framer.version(), connection_id_length, version_flag, multipath_flag,
+        false /* no diversification nonce */, packet_number_length)] = 0x1F;
+  }
 
   char* buffer = new char[kMaxPacketSize];
   size_t encrypted_length = framer.EncryptPayload(
@@ -763,12 +762,12 @@ size_t GetPacketLengthForOneStream(QuicVersion version,
   const size_t stream_length =
       NullEncrypter().GetCiphertextSize(*payload_length) +
       QuicPacketCreator::StreamFramePacketOverhead(
-          PACKET_8BYTE_CONNECTION_ID, include_version, include_path_id,
+          version, PACKET_8BYTE_CONNECTION_ID, include_version, include_path_id,
           include_diversification_nonce, packet_number_length, 0u);
   const size_t ack_length =
       NullEncrypter().GetCiphertextSize(
           QuicFramer::GetMinAckFrameSize(version, PACKET_1BYTE_PACKET_NUMBER)) +
-      GetPacketHeaderSize(connection_id_length, include_version,
+      GetPacketHeaderSize(version, connection_id_length, include_version,
                           include_path_id, include_diversification_nonce,
                           packet_number_length);
   if (stream_length < ack_length) {
@@ -777,7 +776,7 @@ size_t GetPacketLengthForOneStream(QuicVersion version,
 
   return NullEncrypter().GetCiphertextSize(*payload_length) +
          QuicPacketCreator::StreamFramePacketOverhead(
-             connection_id_length, include_version, include_path_id,
+             version, connection_id_length, include_version, include_path_id,
              include_diversification_nonce, packet_number_length, 0u);
 }
 

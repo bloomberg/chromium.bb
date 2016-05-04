@@ -378,8 +378,8 @@ enum QuicVersion {
   QUIC_VERSION_31 = 31,  // Adds a hash of the client hello to crypto proof.
   QUIC_VERSION_32 = 32,  // FEC related fields are removed from wire format.
   QUIC_VERSION_33 = 33,  // Adds diversification nonces.
-  QUIC_VERSION_34 = 34,  // Deprecates entropy and uses new ack and stop waiting
-                         // wire format.
+  QUIC_VERSION_34 = 34,  // Deprecates entropy, removes private flag from packet
+                         // header, uses new ack and stop waiting wire format.
 };
 
 // This vector contains QUIC versions which we currently support.
@@ -434,10 +434,12 @@ NET_EXPORT_PRIVATE bool ContainsQuicTag(const QuicTagVector& tag_vector,
                                         QuicTag tag);
 
 // Size in bytes of the data packet header.
-NET_EXPORT_PRIVATE size_t GetPacketHeaderSize(const QuicPacketHeader& header);
+NET_EXPORT_PRIVATE size_t GetPacketHeaderSize(QuicVersion version,
+                                              const QuicPacketHeader& header);
 
 NET_EXPORT_PRIVATE size_t
-GetPacketHeaderSize(QuicConnectionIdLength connection_id_length,
+GetPacketHeaderSize(QuicVersion version,
+                    QuicConnectionIdLength connection_id_length,
                     bool include_version,
                     bool include_path_id,
                     bool include_diversification_nonce,
@@ -445,10 +447,11 @@ GetPacketHeaderSize(QuicConnectionIdLength connection_id_length,
 
 // Index of the first byte in a QUIC packet of encrypted data.
 NET_EXPORT_PRIVATE size_t
-GetStartOfEncryptedData(const QuicPacketHeader& header);
+GetStartOfEncryptedData(QuicVersion version, const QuicPacketHeader& header);
 
 NET_EXPORT_PRIVATE size_t
-GetStartOfEncryptedData(QuicConnectionIdLength connection_id_length,
+GetStartOfEncryptedData(QuicVersion version,
+                        QuicConnectionIdLength connection_id_length,
                         bool include_version,
                         bool include_path_id,
                         bool include_diversification_nonce,
@@ -492,6 +495,10 @@ enum QuicRstStreamErrorCode {
   // No error. Used as bound while iterating.
   QUIC_STREAM_LAST_ERROR,
 };
+// QUIC error codes are encoded to a single octet on-the-wire.
+static_assert(static_cast<int>(QUIC_STREAM_LAST_ERROR) <=
+                  std::numeric_limits<uint8_t>::max(),
+              "QuicErrorCode exceeds single octet");
 
 // Because receiving an unknown QuicRstStreamErrorCode results in connection
 // teardown, we use this to make sure any errors predating a given version are
@@ -1057,8 +1064,9 @@ enum CongestionControlType {
 };
 
 enum LossDetectionType {
-  kNack,  // Used to mimic TCP's loss detection.
-  kTime,  // Time based loss detection.
+  kNack,          // Used to mimic TCP's loss detection.
+  kTime,          // Time based loss detection.
+  kAdaptiveTime,  // Adaptive time based loss detection.
 };
 
 struct NET_EXPORT_PRIVATE QuicRstStreamFrame {
@@ -1270,8 +1278,8 @@ class NET_EXPORT_PRIVATE QuicPacket : public QuicData {
              bool includes_diversification_nonce,
              QuicPacketNumberLength packet_number_length);
 
-  base::StringPiece AssociatedData() const;
-  base::StringPiece Plaintext() const;
+  base::StringPiece AssociatedData(QuicVersion version) const;
+  base::StringPiece Plaintext(QuicVersion version) const;
 
   char* mutable_data() { return buffer_; }
 

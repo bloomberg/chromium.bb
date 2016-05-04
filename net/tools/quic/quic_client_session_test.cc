@@ -377,7 +377,7 @@ TEST_P(QuicClientSessionTest, PushPromiseAlreadyClosed) {
   CompleteCryptoHandshake();
 
   session_->CreateOutgoingDynamicStream(kDefaultPriority);
-  session_->GetStream(promised_stream_id_);
+  session_->GetOrCreateStream(promised_stream_id_);
 
   EXPECT_CALL(*connection_,
               SendRstStream(promised_stream_id_, QUIC_REFUSED_STREAM, 0));
@@ -447,7 +447,7 @@ TEST_P(QuicClientSessionTest, IsClosedTrueAfterResetPromisedAlreadyOpen) {
   // Initialize crypto before the client session will create a stream.
   CompleteCryptoHandshake();
 
-  session_->GetStream(promised_stream_id_);
+  session_->GetOrCreateStream(promised_stream_id_);
   session_->ResetPromised(promised_stream_id_, QUIC_REFUSED_STREAM);
   EXPECT_TRUE(session_->IsClosedStream(promised_stream_id_));
 }
@@ -463,7 +463,7 @@ TEST_P(QuicClientSessionTest, IsClosedTrueAfterResetPromisedNonexistant) {
 TEST_P(QuicClientSessionTest, OnInitialHeadersCompleteIsPush) {
   // Initialize crypto before the client session will create a stream.
   CompleteCryptoHandshake();
-  session_->GetStream(promised_stream_id_);
+  session_->GetOrCreateStream(promised_stream_id_);
   session_->HandlePromised(associated_stream_id_, promised_stream_id_,
                            push_promise_);
   EXPECT_NE(session_->GetPromisedById(promised_stream_id_), nullptr);
@@ -483,7 +483,7 @@ TEST_P(QuicClientSessionTest, OnInitialHeadersCompleteIsNotPush) {
 TEST_P(QuicClientSessionTest, DeletePromised) {
   // Initialize crypto before the client session will create a stream.
   CompleteCryptoHandshake();
-  session_->GetStream(promised_stream_id_);
+  session_->GetOrCreateStream(promised_stream_id_);
   session_->HandlePromised(associated_stream_id_, promised_stream_id_,
                            push_promise_);
   QuicClientPromisedInfo* promised =
@@ -500,7 +500,7 @@ TEST_P(QuicClientSessionTest, DeletePromised) {
 TEST_P(QuicClientSessionTest, ResetPromised) {
   // Initialize crypto before the client session will create a stream.
   CompleteCryptoHandshake();
-  session_->GetStream(promised_stream_id_);
+  session_->GetOrCreateStream(promised_stream_id_);
   session_->HandlePromised(associated_stream_id_, promised_stream_id_,
                            push_promise_);
   EXPECT_CALL(*connection_, SendRstStream(promised_stream_id_,

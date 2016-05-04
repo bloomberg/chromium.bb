@@ -85,9 +85,10 @@ bool IsInitializedIPEndPoint(const IPEndPoint& address) {
 }
 
 // An alarm that is scheduled to send an ack if a timeout occurs.
-class AckAlarm : public QuicAlarm::Delegate {
+class AckAlarmDelegate : public QuicAlarm::Delegate {
  public:
-  explicit AckAlarm(QuicConnection* connection) : connection_(connection) {}
+  explicit AckAlarmDelegate(QuicConnection* connection)
+      : connection_(connection) {}
 
   void OnAlarm() override {
     DCHECK(connection_->ack_frame_updated());
@@ -98,15 +99,15 @@ class AckAlarm : public QuicAlarm::Delegate {
  private:
   QuicConnection* connection_;
 
-  DISALLOW_COPY_AND_ASSIGN(AckAlarm);
+  DISALLOW_COPY_AND_ASSIGN(AckAlarmDelegate);
 };
 
 // This alarm will be scheduled any time a data-bearing packet is sent out.
 // When the alarm goes off, the connection checks to see if the oldest packets
 // have been acked, and retransmit them if they have not.
-class RetransmissionAlarm : public QuicAlarm::Delegate {
+class RetransmissionAlarmDelegate : public QuicAlarm::Delegate {
  public:
-  explicit RetransmissionAlarm(QuicConnection* connection)
+  explicit RetransmissionAlarmDelegate(QuicConnection* connection)
       : connection_(connection) {}
 
   void OnAlarm() override { connection_->OnRetransmissionTimeout(); }
@@ -114,50 +115,53 @@ class RetransmissionAlarm : public QuicAlarm::Delegate {
  private:
   QuicConnection* connection_;
 
-  DISALLOW_COPY_AND_ASSIGN(RetransmissionAlarm);
+  DISALLOW_COPY_AND_ASSIGN(RetransmissionAlarmDelegate);
 };
 
 // An alarm that is scheduled when the SentPacketManager requires a delay
 // before sending packets and fires when the packet may be sent.
-class SendAlarm : public QuicAlarm::Delegate {
+class SendAlarmDelegate : public QuicAlarm::Delegate {
  public:
-  explicit SendAlarm(QuicConnection* connection) : connection_(connection) {}
+  explicit SendAlarmDelegate(QuicConnection* connection)
+      : connection_(connection) {}
 
   void OnAlarm() override { connection_->WriteAndBundleAcksIfNotBlocked(); }
 
  private:
   QuicConnection* connection_;
 
-  DISALLOW_COPY_AND_ASSIGN(SendAlarm);
+  DISALLOW_COPY_AND_ASSIGN(SendAlarmDelegate);
 };
 
-class TimeoutAlarm : public QuicAlarm::Delegate {
+class TimeoutAlarmDelegate : public QuicAlarm::Delegate {
  public:
-  explicit TimeoutAlarm(QuicConnection* connection) : connection_(connection) {}
+  explicit TimeoutAlarmDelegate(QuicConnection* connection)
+      : connection_(connection) {}
 
   void OnAlarm() override { connection_->CheckForTimeout(); }
 
  private:
   QuicConnection* connection_;
 
-  DISALLOW_COPY_AND_ASSIGN(TimeoutAlarm);
+  DISALLOW_COPY_AND_ASSIGN(TimeoutAlarmDelegate);
 };
 
-class PingAlarm : public QuicAlarm::Delegate {
+class PingAlarmDelegate : public QuicAlarm::Delegate {
  public:
-  explicit PingAlarm(QuicConnection* connection) : connection_(connection) {}
+  explicit PingAlarmDelegate(QuicConnection* connection)
+      : connection_(connection) {}
 
   void OnAlarm() override { connection_->OnPingTimeout(); }
 
  private:
   QuicConnection* connection_;
 
-  DISALLOW_COPY_AND_ASSIGN(PingAlarm);
+  DISALLOW_COPY_AND_ASSIGN(PingAlarmDelegate);
 };
 
-class MtuDiscoveryAlarm : public QuicAlarm::Delegate {
+class MtuDiscoveryAlarmDelegate : public QuicAlarm::Delegate {
  public:
-  explicit MtuDiscoveryAlarm(QuicConnection* connection)
+  explicit MtuDiscoveryAlarmDelegate(QuicConnection* connection)
       : connection_(connection) {}
 
   void OnAlarm() override { connection_->DiscoverMtu(); }
@@ -165,7 +169,7 @@ class MtuDiscoveryAlarm : public QuicAlarm::Delegate {
  private:
   QuicConnection* connection_;
 
-  DISALLOW_COPY_AND_ASSIGN(MtuDiscoveryAlarm);
+  DISALLOW_COPY_AND_ASSIGN(MtuDiscoveryAlarmDelegate);
 };
 
 // Listens for acks of MTU discovery packets and raises the maximum packet size
@@ -255,22 +259,26 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
       pending_retransmission_alarm_(false),
       defer_send_in_response_to_packets_(false),
       arena_(),
-      ack_alarm_(
-          alarm_factory_->CreateAlarm(arena_.New<AckAlarm>(this), &arena_)),
-      retransmission_alarm_(
-          alarm_factory_->CreateAlarm(arena_.New<RetransmissionAlarm>(this),
-                                      &arena_)),
+      ack_alarm_(alarm_factory_->CreateAlarm(arena_.New<AckAlarmDelegate>(this),
+                                             &arena_)),
+      retransmission_alarm_(alarm_factory_->CreateAlarm(
+          arena_.New<RetransmissionAlarmDelegate>(this),
+          &arena_)),
       send_alarm_(
-          alarm_factory_->CreateAlarm(arena_.New<SendAlarm>(this), &arena_)),
-      resume_writes_alarm_(
-          alarm_factory_->CreateAlarm(arena_.New<SendAlarm>(this), &arena_)),
-      timeout_alarm_(
-          alarm_factory_->CreateAlarm(arena_.New<TimeoutAlarm>(this), &arena_)),
-      ping_alarm_(
-          alarm_factory_->CreateAlarm(arena_.New<PingAlarm>(this), &arena_)),
-      mtu_discovery_alarm_(
-          alarm_factory_->CreateAlarm(arena_.New<MtuDiscoveryAlarm>(this),
+          alarm_factory_->CreateAlarm(arena_.New<SendAlarmDelegate>(this),
                                       &arena_)),
+      resume_writes_alarm_(
+          alarm_factory_->CreateAlarm(arena_.New<SendAlarmDelegate>(this),
+                                      &arena_)),
+      timeout_alarm_(
+          alarm_factory_->CreateAlarm(arena_.New<TimeoutAlarmDelegate>(this),
+                                      &arena_)),
+      ping_alarm_(
+          alarm_factory_->CreateAlarm(arena_.New<PingAlarmDelegate>(this),
+                                      &arena_)),
+      mtu_discovery_alarm_(alarm_factory_->CreateAlarm(
+          arena_.New<MtuDiscoveryAlarmDelegate>(this),
+          &arena_)),
       visitor_(nullptr),
       debug_visitor_(nullptr),
       packet_generator_(connection_id_,

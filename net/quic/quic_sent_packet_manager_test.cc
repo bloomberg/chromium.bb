@@ -193,13 +193,20 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<TestParams> {
 
   void RetransmitAndSendPacket(QuicPacketNumber old_packet_number,
                                QuicPacketNumber new_packet_number) {
+    RetransmitAndSendPacket(old_packet_number, new_packet_number,
+                            TLP_RETRANSMISSION);
+  }
+
+  void RetransmitAndSendPacket(QuicPacketNumber old_packet_number,
+                               QuicPacketNumber new_packet_number,
+                               TransmissionType transmission_type) {
     QuicSentPacketManagerPeer::MarkForRetransmission(
-        &manager_, old_packet_number, TLP_RETRANSMISSION);
+        &manager_, old_packet_number, transmission_type);
     EXPECT_TRUE(manager_.HasPendingRetransmissions());
     PendingRetransmission next_retransmission =
         manager_.NextPendingRetransmission();
     EXPECT_EQ(old_packet_number, next_retransmission.packet_number);
-    EXPECT_EQ(TLP_RETRANSMISSION, next_retransmission.transmission_type);
+    EXPECT_EQ(transmission_type, next_retransmission.transmission_type);
 
     EXPECT_CALL(*send_algorithm_,
                 OnPacketSent(_, BytesInFlight(), new_packet_number,
@@ -207,7 +214,7 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<TestParams> {
         .WillOnce(Return(true));
     SerializedPacket packet(CreatePacket(new_packet_number, false));
     manager_.OnPacketSent(&packet, old_packet_number, clock_.Now(),
-                          TLP_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA);
+                          transmission_type, HAS_RETRANSMITTABLE_DATA);
     EXPECT_TRUE(QuicSentPacketManagerPeer::IsRetransmission(&manager_,
                                                             new_packet_number));
   }
@@ -528,7 +535,47 @@ TEST_P(QuicSentPacketManagerTest, RetransmitTwiceThenAckFirst) {
   EXPECT_EQ(2u, stats_.packets_spuriously_retransmitted);
 }
 
+TEST_P(QuicSentPacketManagerTest, AckOriginalTransmission) {
+  FLAGS_quic_adaptive_loss_recovery = true;
+  MockLossAlgorithm* loss_algorithm = new MockLossAlgorithm();
+  QuicSentPacketManagerPeer::SetLossAlgorithm(&manager_, loss_algorithm);
+
+  SendDataPacket(1);
+  RetransmitAndSendPacket(1, 2);
+
+  // Ack original transmission, but that wasn't lost via fast retransmit,
+  // so no call on OnSpuriousRetransmission is expected.
+  {
+    QuicAckFrame ack_frame = InitAckFrame(1);
+    ExpectAck(1);
+    EXPECT_CALL(*loss_algorithm, DetectLosses(_, _, _, _, _));
+    manager_.OnIncomingAck(ack_frame, clock_.Now());
+  }
+
+  SendDataPacket(3);
+  SendDataPacket(4);
+  // Ack 4, which causes 3 to be retransmitted.
+  {
+    QuicAckFrame ack_frame = InitAckFrame(4);
+    NackPackets(2, 4, &ack_frame);
+    ExpectAck(4);
+    EXPECT_CALL(*loss_algorithm, DetectLosses(_, _, _, _, _));
+    manager_.OnIncomingAck(ack_frame, clock_.Now());
+    RetransmitAndSendPacket(3, 5, LOSS_RETRANSMISSION);
+  }
+
+  // Ack 3, which causes SpuriousRetransmitDetected to be called.
+  {
+    QuicAckFrame ack_frame = InitAckFrame(4);
+    NackPackets(2, 3, &ack_frame);
+    EXPECT_CALL(*loss_algorithm, DetectLosses(_, _, _, _, _));
+    EXPECT_CALL(*loss_algorithm, SpuriousRetransmitDetected(_, _, _, 5));
+    manager_.OnIncomingAck(ack_frame, clock_.Now());
+  }
+}
+
 TEST_P(QuicSentPacketManagerTest, AckPreviousTransmissionThenTruncatedAck) {
+  FLAGS_quic_loss_recovery_use_largest_acked = false;
   if (!GetParam().missing) {
     return;
   }
@@ -699,9 +746,13 @@ TEST_P(QuicSentPacketManagerTest, TailLossProbeTimeout) {
   EXPECT_TRUE(QuicSentPacketManagerPeer::HasPendingPackets(&manager_));
 
   // Acking two more packets will lose both of them due to nacks.
-  ack_frame.largest_observed = 5;
+  SendDataPacket(4);
+  SendDataPacket(5);
+  ack_frame = InitAckFrame(5);
+  NackPackets(1, 3, &ack_frame);
+  QuicPacketNumber acked[] = {4, 5};
   QuicPacketNumber lost[] = {1, 2};
-  ExpectAcksAndLosses(false, nullptr, 0, lost, arraysize(lost));
+  ExpectAcksAndLosses(true, acked, arraysize(acked), lost, arraysize(lost));
   manager_.OnIncomingAck(ack_frame, clock_.ApproximateNow());
 
   EXPECT_FALSE(manager_.HasPendingRetransmissions());
@@ -1314,7 +1365,7 @@ TEST_P(QuicSentPacketManagerTest, GetLossDelay) {
   // Handle an ack which causes the loss algorithm to be evaluated and
   // set the loss timeout.
   ExpectAck(2);
-  EXPECT_CALL(*loss_algorithm, DetectLosses(_, _, _, _));
+  EXPECT_CALL(*loss_algorithm, DetectLosses(_, _, _, _, _));
   QuicAckFrame ack_frame = InitAckFrame(2);
   NackPackets(1, 2, &ack_frame);
   manager_.OnIncomingAck(ack_frame, clock_.Now());
@@ -1326,7 +1377,7 @@ TEST_P(QuicSentPacketManagerTest, GetLossDelay) {
 
   // Fire the retransmission timeout and ensure the loss detection algorithm
   // is invoked.
-  EXPECT_CALL(*loss_algorithm, DetectLosses(_, _, _, _));
+  EXPECT_CALL(*loss_algorithm, DetectLosses(_, _, _, _, _));
   manager_.OnRetransmissionTimeout();
 }
 

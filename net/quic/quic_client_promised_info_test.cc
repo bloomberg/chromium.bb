@@ -252,8 +252,8 @@ TEST_F(QuicClientPromisedInfoTest, PushPromiseMismatch) {
 
   // Need to send the promised response headers and initiate the
   // rendezvous for secondary validation to proceed.
-  QuicSpdyClientStream* promise_stream =
-      static_cast<QuicSpdyClientStream*>(session_.GetStream(promise_id_));
+  QuicSpdyClientStream* promise_stream = static_cast<QuicSpdyClientStream*>(
+      session_.GetOrCreateStream(promise_id_));
   promise_stream->OnStreamHeaders(headers_string_);
   promise_stream->OnStreamHeadersComplete(false, headers_string_.size());
 
@@ -279,8 +279,8 @@ TEST_F(QuicClientPromisedInfoTest, PushPromiseVaryWaits) {
   EXPECT_NE(session_.GetPromisedById(promise_id_), nullptr);
 
   // Send Response, should trigger promise validation and complete rendezvous
-  QuicSpdyClientStream* promise_stream =
-      static_cast<QuicSpdyClientStream*>(session_.GetStream(promise_id_));
+  QuicSpdyClientStream* promise_stream = static_cast<QuicSpdyClientStream*>(
+      session_.GetOrCreateStream(promise_id_));
   ASSERT_NE(promise_stream, nullptr);
   promise_stream->OnStreamHeaders(headers_string_);
   promise_stream->OnStreamHeadersComplete(false, headers_string_.size());
@@ -295,8 +295,8 @@ TEST_F(QuicClientPromisedInfoTest, PushPromiseVaryNoWait) {
   QuicClientPromisedInfo* promised = session_.GetPromisedById(promise_id_);
   ASSERT_NE(promised, nullptr);
 
-  QuicSpdyClientStream* promise_stream =
-      static_cast<QuicSpdyClientStream*>(session_.GetStream(promise_id_));
+  QuicSpdyClientStream* promise_stream = static_cast<QuicSpdyClientStream*>(
+      session_.GetOrCreateStream(promise_id_));
   ASSERT_NE(promise_stream, nullptr);
 
   // Send Response, should trigger promise validation and complete rendezvous
@@ -329,7 +329,7 @@ TEST_F(QuicClientPromisedInfoTest, PushPromiseWaitCancels) {
   EXPECT_NE(session_.GetPromisedById(promise_id_), nullptr);
 
   // Create response stream, but no data yet.
-  session_.GetStream(promise_id_);
+  session_.GetOrCreateStream(promise_id_);
 
   // Fire the alarm that will cancel the promised stream.
   EXPECT_CALL(session_, CloseStream(promise_id_));
@@ -347,8 +347,8 @@ TEST_F(QuicClientPromisedInfoTest, PushPromiseDataClosed) {
   QuicClientPromisedInfo* promised = session_.GetPromisedById(promise_id_);
   ASSERT_NE(promised, nullptr);
 
-  QuicSpdyClientStream* promise_stream =
-      static_cast<QuicSpdyClientStream*>(session_.GetStream(promise_id_));
+  QuicSpdyClientStream* promise_stream = static_cast<QuicSpdyClientStream*>(
+      session_.GetOrCreateStream(promise_id_));
   ASSERT_NE(promise_stream, nullptr);
 
   // Send response, rendezvous will be able to finish synchronously.

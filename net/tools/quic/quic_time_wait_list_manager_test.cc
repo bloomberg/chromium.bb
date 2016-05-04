@@ -360,12 +360,6 @@ TEST_F(QuicTimeWaitListManagerTest, CleanUpOldConnectionIds) {
                             time_wait_period.Subtract(offset).ToMicroseconds();
   EXPECT_CALL(epoll_server_, RegisterAlarm(next_alarm_time, _));
 
-  for (size_t connection_id = 1; connection_id <= kConnectionIdCount;
-       ++connection_id) {
-    if (connection_id <= kOldConnectionIdCount) {
-      EXPECT_CALL(visitor_, OnConnectionRemovedFromTimeWaitList(connection_id));
-    }
-  }
   time_wait_list_manager_.CleanUpOldConnectionIds();
   for (size_t connection_id = 1; connection_id <= kConnectionIdCount;
        ++connection_id) {
@@ -491,7 +485,6 @@ TEST_F(QuicTimeWaitListManagerTest, AddConnectionIdTwice) {
       epoll_server_.ApproximateNowInUsec() + time_wait_period.ToMicroseconds();
 
   EXPECT_CALL(epoll_server_, RegisterAlarm(next_alarm_time, _));
-  EXPECT_CALL(visitor_, OnConnectionRemovedFromTimeWaitList(connection_id_));
   time_wait_list_manager_.CleanUpOldConnectionIds();
   EXPECT_FALSE(IsConnectionIdInTimeWait(connection_id_));
   EXPECT_EQ(0u, time_wait_list_manager_.num_connections());
@@ -522,7 +515,6 @@ TEST_F(QuicTimeWaitListManagerTest, ConnectionIdsOrderedByTime) {
 
   EXPECT_CALL(epoll_server_, RegisterAlarm(_, _));
 
-  EXPECT_CALL(visitor_, OnConnectionRemovedFromTimeWaitList(connection_id1));
   time_wait_list_manager_.CleanUpOldConnectionIds();
   EXPECT_FALSE(IsConnectionIdInTimeWait(connection_id1));
   EXPECT_TRUE(IsConnectionIdInTimeWait(connection_id2));
@@ -554,7 +546,6 @@ TEST_F(QuicTimeWaitListManagerTest, MaxConnectionsTest) {
         current_connection_id - FLAGS_quic_time_wait_list_max_connections;
     EXPECT_TRUE(IsConnectionIdInTimeWait(id_to_evict));
     EXPECT_FALSE(IsConnectionIdInTimeWait(current_connection_id));
-    EXPECT_CALL(visitor_, OnConnectionRemovedFromTimeWaitList(id_to_evict));
     EXPECT_CALL(visitor_,
                 OnConnectionAddedToTimeWaitList(current_connection_id));
     AddConnectionId(current_connection_id);

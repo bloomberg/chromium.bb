@@ -294,9 +294,7 @@ bool QuicTimeWaitListManager::MaybeExpireOldestConnection(
     return false;
   }
   // This connection_id has lived its age, retire it now.
-  const QuicConnectionId connection_id = it->first;
   connection_id_map_.erase(it);
-  visitor_->OnConnectionRemovedFromTimeWaitList(connection_id);
   return true;
 }
 

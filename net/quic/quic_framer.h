@@ -63,8 +63,6 @@ const size_t kMaxNackRanges = (1 << (kNumberOfNackRangesSize * 8)) - 1;
 const size_t kMaxAckBlocks = (1 << (kNumberOfAckBlocksSize * 8)) - 1;
 // Size in bytes reserved for the number of revived packets in ack frames.
 const size_t kNumberOfRevivedPacketsSize = 1;
-// Maximum number of revived packets that can fit within an ack frame.
-const size_t kMaxRevivedPackets = (1 << (kNumberOfRevivedPacketsSize * 8)) - 1;
 
 // This class receives callbacks from the framer when packets
 // are processed.
@@ -270,6 +268,7 @@ class NET_EXPORT_PRIVATE QuicFramer {
   // Returns the associated data from the encrypted packet |encrypted| as a
   // stringpiece.
   static base::StringPiece GetAssociatedDataFromEncryptedPacket(
+      QuicVersion version,
       const QuicEncryptedPacket& encrypted,
       QuicConnectionIdLength connection_id_length,
       bool includes_version,
@@ -469,6 +468,10 @@ class NET_EXPORT_PRIVATE QuicFramer {
   // and sets |last_packet_number| if the path is not closed. Returns false
   // otherwise.
   bool IsValidPath(QuicPathId path_id, QuicPacketNumber* last_packet_number);
+
+  // Sets last_packet_number_. This can only be called after the packet is
+  // successfully decrypted.
+  void SetLastPacketNumber(const QuicPacketHeader& header);
 
   // Returns the full packet number from the truncated
   // wire format version and the last seen packet number.

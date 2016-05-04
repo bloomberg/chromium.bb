@@ -99,6 +99,7 @@ QuicSentPacketManager::QuicSentPacketManager(
       enable_half_rtt_tail_loss_probe_(false),
       using_pacing_(false),
       use_new_rto_(false),
+      largest_newly_acked_(0),
       handshake_confirmed_(false) {}
 
 QuicSentPacketManager::~QuicSentPacketManager() {}
@@ -168,6 +169,11 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
       ContainsQuicTag(config.ReceivedConnectionOptions(), kTIME)) {
     loss_algorithm_.reset(new GeneralLossAlgorithm(kTime));
   }
+  if (FLAGS_quic_adaptive_loss_recovery &&
+      config.HasReceivedConnectionOptions() &&
+      ContainsQuicTag(config.ReceivedConnectionOptions(), kATIM)) {
+    loss_algorithm_.reset(new GeneralLossAlgorithm(kAdaptiveTime));
+  }
   if (config.HasReceivedSocketReceiveBuffer()) {
     receive_buffer_bytes_ =
         max(kMinSocketReceiveBuffer,
@@ -214,8 +220,8 @@ void QuicSentPacketManager::SetMaxPacingRate(QuicBandwidth max_pacing_rate) {
 
 void QuicSentPacketManager::OnIncomingAck(const QuicAckFrame& ack_frame,
                                           QuicTime ack_receive_time) {
+  DCHECK_LE(ack_frame.largest_observed, unacked_packets_.largest_sent_packet());
   QuicByteCount bytes_in_flight = unacked_packets_.bytes_in_flight();
-
   UpdatePacketInformationReceivedByPeer(ack_frame);
   bool rtt_updated = MaybeUpdateRTT(ack_frame, ack_receive_time);
   DCHECK_GE(ack_frame.largest_observed, unacked_packets_.largest_observed());
@@ -417,6 +423,13 @@ void QuicSentPacketManager::RecordSpuriousRetransmissions(
         unacked_packets_.GetTransmissionInfo(retransmission);
     retransmission = retransmit_info.retransmission;
     RecordOneSpuriousRetransmission(retransmit_info);
+  }
+  // Only inform the loss detection of spurious retransmits it caused.
+  if (FLAGS_quic_adaptive_loss_recovery &&
+      unacked_packets_.GetTransmissionInfo(info.retransmission)
+              .transmission_type == LOSS_RETRANSMISSION) {
+    loss_algorithm_->SpuriousRetransmitDetected(
+        unacked_packets_, clock_->Now(), rtt_stats_, info.retransmission);
   }
 }
 
@@ -709,8 +722,12 @@ QuicSentPacketManager::GetRetransmissionMode() const {
 }
 
 void QuicSentPacketManager::InvokeLossDetection(QuicTime time) {
+  if (FLAGS_quic_loss_recovery_use_largest_acked && !packets_acked_.empty()) {
+    DCHECK_LE(packets_acked_.front().first, packets_acked_.back().first);
+    largest_newly_acked_ = packets_acked_.back().first;
+  }
   loss_algorithm_->DetectLosses(unacked_packets_, time, rtt_stats_,
-                                &packets_lost_);
+                                largest_newly_acked_, &packets_lost_);
   for (const pair<QuicPacketNumber, QuicByteCount>& pair : packets_lost_) {
     ++stats_->packets_lost;
     if (debug_delegate_ != nullptr) {

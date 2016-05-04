@@ -1645,6 +1645,8 @@
       'quic/test_tools/quic_config_peer.h',
       'quic/test_tools/quic_connection_peer.cc',
       'quic/test_tools/quic_connection_peer.h',
+      'quic/test_tools/quic_crypto_server_config_peer.cc',
+      'quic/test_tools/quic_crypto_server_config_peer.h',
       'quic/test_tools/quic_flow_controller_peer.cc',
       'quic/test_tools/quic_flow_controller_peer.h',
       'quic/test_tools/quic_framer_peer.cc',

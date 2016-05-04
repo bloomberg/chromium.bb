@@ -191,12 +191,6 @@ size_t QuicFramer::GetStopWaitingFrameSize(
 }
 
 // static
-size_t QuicFramer::GetMinRstStreamFrameSize() {
-  return kQuicFrameTypeSize + kQuicMaxStreamIdSize + kQuicMaxStreamOffsetSize +
-         kQuicErrorCodeSize + kQuicErrorDetailsLengthSize;
-}
-
-// static
 size_t QuicFramer::GetRstStreamFrameSize() {
   return kQuicFrameTypeSize + kQuicMaxStreamIdSize + kQuicMaxStreamOffsetSize +
          kQuicErrorCodeSize;
@@ -617,10 +611,16 @@ bool QuicFramer::ProcessDataPacket(QuicDataReader* encrypted_reader,
   }
 
   QuicDataReader reader(decrypted_buffer, decrypted_length);
-  if (!ProcessAuthenticatedHeader(&reader, &header)) {
-    DLOG(WARNING) << "Unable to process packet header.  Stopping parsing.";
-    return false;
+  if (quic_version_ <= QUIC_VERSION_33) {
+    if (!ProcessAuthenticatedHeader(&reader, &header)) {
+      DLOG(WARNING) << "Unable to process packet header.  Stopping parsing.";
+      return false;
+    }
   }
+
+  // Set the last packet number after we have decrypted the packet
+  // so we are confident is not attacker controlled.
+  SetLastPacketNumber(header);
 
   if (!visitor_->OnPacketHeader(header)) {
     // The visitor suppresses further processing of the packet.
@@ -752,6 +752,9 @@ bool QuicFramer::AppendPacketHeader(const QuicPacketHeader& header,
                                   header.packet_number, writer)) {
     return false;
   }
+  if (quic_version_ > QUIC_VERSION_33) {
+    return true;
+  }
 
   uint8_t private_flags = 0;
   if (header.entropy_flag) {
@@ -806,6 +809,18 @@ bool QuicFramer::IsValidPath(QuicPathId path_id,
   }
 
   return true;
+}
+
+void QuicFramer::SetLastPacketNumber(const QuicPacketHeader& header) {
+  if (header.public_header.multipath_flag && header.path_id != last_path_id_) {
+    if (last_path_id_ != kInvalidPathId) {
+      // Save current last packet number before changing path.
+      last_packet_numbers_[last_path_id_] = last_packet_number_;
+    }
+    // Change path.
+    last_path_id_ = header.path_id;
+  }
+  last_packet_number_ = header.packet_number;
 }
 
 void QuicFramer::OnPathClosed(QuicPathId path_id) {
@@ -1108,18 +1123,6 @@ bool QuicFramer::ProcessAuthenticatedHeader(QuicDataReader* reader,
   }
 
   header->entropy_hash = GetPacketEntropyHash(*header);
-  // Set the last packet number after we have decrypted the packet
-  // so we are confident is not attacker controlled.
-  if (header->public_header.multipath_flag &&
-      header->path_id != last_path_id_) {
-    if (last_path_id_ != kInvalidPathId) {
-      // Save current last packet number before changing path.
-      last_packet_numbers_[last_path_id_] = last_packet_number_;
-    }
-    // Change path.
-    last_path_id_ = header->path_id;
-  }
-  last_packet_number_ = header->packet_number;
   return true;
 }
 
@@ -1772,6 +1775,7 @@ bool QuicFramer::ProcessPathCloseFrame(QuicDataReader* reader,
 
 // static
 StringPiece QuicFramer::GetAssociatedDataFromEncryptedPacket(
+    QuicVersion version,
     const QuicEncryptedPacket& encrypted,
     QuicConnectionIdLength connection_id_length,
     bool includes_version,
@@ -1781,7 +1785,7 @@ StringPiece QuicFramer::GetAssociatedDataFromEncryptedPacket(
   // TODO(ianswett): This is identical to QuicData::AssociatedData.
   return StringPiece(
       encrypted.data(),
-      GetStartOfEncryptedData(connection_id_length, includes_version,
+      GetStartOfEncryptedData(version, connection_id_length, includes_version,
                               includes_path_id, includes_diversification_nonce,
                               packet_number_length));
 }
@@ -1844,7 +1848,7 @@ size_t QuicFramer::EncryptPayload(EncryptionLevel level,
                                   size_t buffer_len) {
   DCHECK(encrypter_[level].get() != nullptr);
 
-  StringPiece associated_data = packet.AssociatedData();
+  StringPiece associated_data = packet.AssociatedData(quic_version_);
   // Copy in the header, because the encrypter only populates the encrypted
   // plaintext content.
   const size_t ad_len = associated_data.length();
@@ -1852,8 +1856,9 @@ size_t QuicFramer::EncryptPayload(EncryptionLevel level,
   // Encrypt the plaintext into the buffer.
   size_t output_length = 0;
   if (!encrypter_[level]->EncryptPacket(path_id, packet_number, associated_data,
-                                        packet.Plaintext(), buffer + ad_len,
-                                        &output_length, buffer_len - ad_len)) {
+                                        packet.Plaintext(quic_version_),
+                                        buffer + ad_len, &output_length,
+                                        buffer_len - ad_len)) {
     RaiseError(QUIC_ENCRYPTION_FAILURE);
     return 0;
   }
@@ -1887,7 +1892,7 @@ bool QuicFramer::DecryptPayload(QuicDataReader* encrypted_reader,
   StringPiece encrypted = encrypted_reader->ReadRemainingPayload();
   DCHECK(decrypter_.get() != nullptr);
   StringPiece associated_data = GetAssociatedDataFromEncryptedPacket(
-      packet, header.public_header.connection_id_length,
+      quic_version_, packet, header.public_header.connection_id_length,
       header.public_header.version_flag, header.public_header.multipath_flag,
       header.public_header.nonce != nullptr,
       header.public_header.packet_number_length);

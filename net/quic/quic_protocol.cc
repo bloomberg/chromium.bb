@@ -19,15 +19,17 @@ namespace net {
 
 const char* const kFinalOffsetHeaderKey = ":final-offset";
 
-size_t GetPacketHeaderSize(const QuicPacketHeader& header) {
-  return GetPacketHeaderSize(header.public_header.connection_id_length,
+size_t GetPacketHeaderSize(QuicVersion version,
+                           const QuicPacketHeader& header) {
+  return GetPacketHeaderSize(version, header.public_header.connection_id_length,
                              header.public_header.version_flag,
                              header.public_header.multipath_flag,
                              header.public_header.nonce != nullptr,
                              header.public_header.packet_number_length);
 }
 
-size_t GetPacketHeaderSize(QuicConnectionIdLength connection_id_length,
+size_t GetPacketHeaderSize(QuicVersion version,
+                           QuicConnectionIdLength connection_id_length,
                            bool include_version,
                            bool include_path_id,
                            bool include_diversification_nonce,
@@ -36,23 +38,26 @@ size_t GetPacketHeaderSize(QuicConnectionIdLength connection_id_length,
          (include_version ? kQuicVersionSize : 0) +
          (include_path_id ? kQuicPathIdSize : 0) + packet_number_length +
          (include_diversification_nonce ? kDiversificationNonceSize : 0) +
-         kPrivateFlagsSize;
+         (version <= QUIC_VERSION_33 ? kPrivateFlagsSize : 0);
 }
 
-size_t GetStartOfEncryptedData(const QuicPacketHeader& header) {
-  return GetPacketHeaderSize(header) - kPrivateFlagsSize;
+size_t GetStartOfEncryptedData(QuicVersion version,
+                               const QuicPacketHeader& header) {
+  return GetPacketHeaderSize(version, header) -
+         (version <= QUIC_VERSION_33 ? kPrivateFlagsSize : 0);
 }
 
-size_t GetStartOfEncryptedData(QuicConnectionIdLength connection_id_length,
+size_t GetStartOfEncryptedData(QuicVersion version,
+                               QuicConnectionIdLength connection_id_length,
                                bool include_version,
                                bool include_path_id,
                                bool include_diversification_nonce,
                                QuicPacketNumberLength packet_number_length) {
   // Encryption starts before private flags.
-  return GetPacketHeaderSize(connection_id_length, include_version,
+  return GetPacketHeaderSize(version, connection_id_length, include_version,
                              include_path_id, include_diversification_nonce,
                              packet_number_length) -
-         kPrivateFlagsSize;
+         (version <= QUIC_VERSION_33 ? kPrivateFlagsSize : 0);
 }
 
 QuicPacketPublicHeader::QuicPacketPublicHeader()
@@ -328,9 +333,9 @@ QuicRstStreamFrame::QuicRstStreamFrame()
 QuicRstStreamFrame::QuicRstStreamFrame(QuicStreamId stream_id,
                                        QuicRstStreamErrorCode error_code,
                                        QuicStreamOffset bytes_written)
-    : stream_id(stream_id), error_code(error_code), byte_offset(bytes_written) {
-  DCHECK_LE(error_code, numeric_limits<uint8_t>::max());
-}
+    : stream_id(stream_id),
+      error_code(error_code),
+      byte_offset(bytes_written) {}
 
 QuicConnectionCloseFrame::QuicConnectionCloseFrame()
     : error_code(QUIC_NO_ERROR) {}
@@ -682,9 +687,7 @@ QuicGoAwayFrame::QuicGoAwayFrame(QuicErrorCode error_code,
                                  const string& reason)
     : error_code(error_code),
       last_good_stream_id(last_good_stream_id),
-      reason_phrase(reason) {
-  DCHECK_LE(error_code, numeric_limits<uint8_t>::max());
-}
+      reason_phrase(reason) {}
 
 QuicData::QuicData(const char* buffer, size_t length)
     : buffer_(buffer), length_(length), owns_buffer_(false) {}
@@ -765,16 +768,17 @@ ostream& operator<<(ostream& os, const QuicReceivedPacket& s) {
   return os;
 }
 
-StringPiece QuicPacket::AssociatedData() const {
+StringPiece QuicPacket::AssociatedData(QuicVersion version) const {
   return StringPiece(
-      data(), GetStartOfEncryptedData(
-                  connection_id_length_, includes_version_, includes_path_id_,
-                  includes_diversification_nonce_, packet_number_length_));
+      data(), GetStartOfEncryptedData(version, connection_id_length_,
+                                      includes_version_, includes_path_id_,
+                                      includes_diversification_nonce_,
+                                      packet_number_length_));
 }
 
-StringPiece QuicPacket::Plaintext() const {
+StringPiece QuicPacket::Plaintext(QuicVersion version) const {
   const size_t start_of_encrypted_data = GetStartOfEncryptedData(
-      connection_id_length_, includes_version_, includes_path_id_,
+      version, connection_id_length_, includes_version_, includes_path_id_,
       includes_diversification_nonce_, packet_number_length_);
   return StringPiece(data() + start_of_encrypted_data,
                      length() - start_of_encrypted_data);

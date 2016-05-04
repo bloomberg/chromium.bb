@@ -616,15 +616,6 @@ class MockQuicSpdySession : public QuicSpdySession {
 
   using QuicSession::ActivateStream;
 
-  // Returns a QuicConsumedData that indicates all of |data| (and |fin| if set)
-  // has been consumed.
-  static QuicConsumedData ConsumeAllData(
-      QuicStreamId id,
-      const QuicIOVector& data,
-      QuicStreamOffset offset,
-      bool fin,
-      QuicAckListenerInterface* ack_notifier_delegate);
-
  private:
   std::unique_ptr<QuicCryptoStream> crypto_stream_;
 
@@ -757,12 +748,18 @@ class MockLossAlgorithm : public LossDetectionInterface {
   ~MockLossAlgorithm() override;
 
   MOCK_CONST_METHOD0(GetLossDetectionType, LossDetectionType());
-  MOCK_METHOD4(DetectLosses,
+  MOCK_METHOD5(DetectLosses,
                void(const QuicUnackedPacketMap& unacked_packets,
                     QuicTime time,
                     const RttStats& rtt_stats,
+                    QuicPacketNumber largest_recently_acked,
                     SendAlgorithmInterface::CongestionVector* packets_lost));
   MOCK_CONST_METHOD0(GetLossTimeout, QuicTime());
+  MOCK_METHOD4(SpuriousRetransmitDetected,
+               void(const QuicUnackedPacketMap&,
+                    QuicTime,
+                    const RttStats&,
+                    QuicPacketNumber));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockLossAlgorithm);

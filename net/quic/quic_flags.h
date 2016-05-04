@@ -41,4 +41,9 @@ NET_EXPORT_PRIVATE extern bool FLAGS_quic_sslr_limit_reduction;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_simplify_loss_detection;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_always_has_unacked_packets_on_timeout;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_max_pacing_rate;
+NET_EXPORT_PRIVATE extern bool FLAGS_quic_avoid_empty_nonfin_writes;
+NET_EXPORT_PRIVATE extern bool FLAGS_quic_auto_tune_receive_window;
+NET_EXPORT_PRIVATE extern bool FLAGS_quic_adaptive_loss_recovery;
+NET_EXPORT_PRIVATE extern bool FLAGS_quic_enable_autotune_by_default;
+NET_EXPORT_PRIVATE extern bool FLAGS_quic_loss_recovery_use_largest_acked;
 #endif  // NET_QUIC_QUIC_FLAGS_H_
