@@ -420,6 +420,12 @@
       # Enable with GYP_DEFINES=win_fastlink=1
       'win_fastlink%': 0,
 
+      # Experimental setting to optimize Chrome's DLLs with PGO.
+      'chrome_pgo_phase%': '0',
+
+      # Experimental setting to build the official builds with full WPO.
+      'full_wpo_on_official%': '0',
+
       # Set to select the Title Case versions of strings in GRD files.
       'use_titlecase_in_grd%': 0,
 
@@ -1187,6 +1193,8 @@
     'component%': '<(component)',
     'win_analyze%': '<(win_analyze)',
     'win_fastlink%': '<(win_fastlink)',
+    'chrome_pgo_phase%': '<(chrome_pgo_phase)',
+    'full_wpo_on_official%': '<(full_wpo_on_official)',
     'enable_resource_whitelist_generation%': '<(enable_resource_whitelist_generation)',
     'use_titlecase_in_grd%': '<(use_titlecase_in_grd)',
     'remoting%': '<(remoting)',
@@ -1376,12 +1384,6 @@
     # Experimental setting to break chrome.dll into multiple pieces based on
     # process type.
     'chrome_multiple_dll%': '0',
-
-    # Experimental setting to optimize Chrome's DLLs with PGO.
-    'chrome_pgo_phase%': '0',
-
-    # Experimental setting to build the official builds with full WPO.
-    'full_wpo_on_official%': '0',
 
     # Whether the VS xtree header has been patched to disable warning 4702. If
     # it has, then we don't need to disable 4702 (unreachable code warning).
@@ -2033,6 +2035,9 @@
             'msvs_large_module_debug_link_mode%': '1',  # No
           },{
             'msvs_large_module_debug_link_mode%': '2',  # Yes
+          }],
+          ['chrome_pgo_phase!= 0', {
+            'full_wpo_on_official%': 1,
           }],
         ],
         'nacl_win64_defines': [

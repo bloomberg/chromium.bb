@@ -20,6 +20,15 @@ declare_args() {
   # example, don't omit the frame pointer and leave in symbols.
   enable_profiling = false
 
+  # Specify the current PGO phase, only used for the Windows MSVS build. Here's
+  # the different values that can be used:
+  #     0 : Means that PGO is turned off.
+  #     1 : Used during the PGI (instrumentation) phase.
+  #     2 : Used during the PGO (optimization) phase.
+  #
+  # TODO(sebmarchand): Add support for the PGU (update) phase.
+  chrome_pgo_phase = 0
+
   # Whether or not the official builds should be build with full WPO.
   full_wpo_on_official = false
 }
@@ -46,4 +55,9 @@ if (symbol_level == -1) {
   } else {
     symbol_level = 0
   }
+}
+
+# PGO requires full WPO.
+if (chrome_pgo_phase > 0) {
+  full_wpo_on_official = true
 }
