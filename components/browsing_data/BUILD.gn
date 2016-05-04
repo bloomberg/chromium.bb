@@ -5,6 +5,8 @@
 static_library("browsing_data") {
   output_name = "browsing_data"
   sources = [
+    "conditional_cache_deletion_helper.cc",
+    "conditional_cache_deletion_helper.h",
     "storage_partition_http_cache_data_remover.cc",
     "storage_partition_http_cache_data_remover.h",
   ]

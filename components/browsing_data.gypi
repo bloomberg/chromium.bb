@@ -17,6 +17,8 @@
       ],
       'sources': [
         # Note: sources list duplicated in GN build.
+        'browsing_data/conditional_cache_deletion_helper.cc',
+        'browsing_data/conditional_cache_deletion_helper.h',
         'browsing_data/storage_partition_http_cache_data_remover.cc',
         'browsing_data/storage_partition_http_cache_data_remover.h',
       ],

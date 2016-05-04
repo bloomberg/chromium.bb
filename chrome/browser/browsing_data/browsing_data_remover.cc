@@ -840,11 +840,20 @@ void BrowsingDataRemover::RemoveImpl(
 
     waiting_for_clear_cache_ = true;
     // StoragePartitionHttpCacheDataRemover deletes itself when it is done.
-    browsing_data::StoragePartitionHttpCacheDataRemover::CreateForRange(
-        BrowserContext::GetDefaultStoragePartition(profile_), delete_begin_,
-        delete_end_)
-        ->Remove(base::Bind(&BrowsingDataRemover::ClearedCache,
-                            weak_ptr_factory_.GetWeakPtr()));
+    if (filter_builder.IsEmptyBlacklist()) {
+      browsing_data::StoragePartitionHttpCacheDataRemover::CreateForRange(
+          BrowserContext::GetDefaultStoragePartition(profile_),
+          delete_begin_, delete_end_)
+          ->Remove(base::Bind(&BrowsingDataRemover::ClearedCache,
+                              weak_ptr_factory_.GetWeakPtr()));
+    } else {
+      browsing_data::StoragePartitionHttpCacheDataRemover::
+          CreateForURLsAndRange(
+              BrowserContext::GetDefaultStoragePartition(profile_),
+              filter, delete_begin_, delete_end_)
+              ->Remove(base::Bind(&BrowsingDataRemover::ClearedCache,
+                                  weak_ptr_factory_.GetWeakPtr()));
+    }
 
 #if !defined(DISABLE_NACL)
     waiting_for_clear_nacl_cache_ = true;

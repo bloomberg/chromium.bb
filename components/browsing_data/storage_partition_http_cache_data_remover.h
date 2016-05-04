@@ -12,6 +12,7 @@
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/time/time.h"
 #include "net/base/completion_callback.h"
+#include "url/gurl.h"
 
 namespace content {
 class StoragePartition;
@@ -30,8 +31,20 @@ namespace browsing_data {
 // Helper to remove http cache data from a StoragePartition.
 class StoragePartitionHttpCacheDataRemover {
  public:
+  // Creates a StoragePartitionHttpCacheDataRemover that deletes cache entries
+  // in the time range between |delete_begin| (inclusively) and |delete_end|
+  // (exclusively).
   static StoragePartitionHttpCacheDataRemover* CreateForRange(
       content::StoragePartition* storage_partition,
+      base::Time delete_begin,
+      base::Time delete_end);
+
+  // Similar to CreateForRange(), but only deletes URLs that are matched by
+  // |url_predicate|. Note that the deletion with URL filtering is not built in
+  // to the cache interface and might be slower.
+  static StoragePartitionHttpCacheDataRemover* CreateForURLsAndRange(
+      content::StoragePartition* storage_partition,
+      const base::Callback<bool(const GURL&)>& url_predicate,
       base::Time delete_begin,
       base::Time delete_end);
 
@@ -53,6 +66,7 @@ class StoragePartitionHttpCacheDataRemover {
   };
 
   StoragePartitionHttpCacheDataRemover(
+      base::Callback<bool(const GURL&)> url_predicate,
       base::Time delete_begin,
       base::Time delete_end,
       net::URLRequestContextGetter* main_context_getter,
@@ -75,6 +89,7 @@ class StoragePartitionHttpCacheDataRemover {
   void DoClearCache(int rv);
   void DoCountCache(int rv);
 
+  base::Callback<bool(const GURL&)> url_predicate_;
   const base::Time delete_begin_;
   const base::Time delete_end_;
 

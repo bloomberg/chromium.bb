@@ -84,6 +84,7 @@
       'browser/browsing_data/browsing_data_remover_test_util.cc',
       'browser/browsing_data/browsing_data_remover_test_util.h',
       'browser/browsing_data/cache_counter_browsertest.cc',
+      'browser/browsing_data/conditional_cache_deletion_helper_browsertest.cc',
       'browser/browsing_data/history_counter_browsertest.cc',
       'browser/browsing_data/passwords_counter_browsertest.cc',
       'browser/chrome_browser_main_mac_browsertest.mm',

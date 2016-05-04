@@ -4,6 +4,7 @@
 
 #include "components/browsing_data/storage_partition_http_cache_data_remover.h"
 
+#include "components/browsing_data/conditional_cache_deletion_helper.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "net/base/sdch_manager.h"
@@ -20,11 +21,13 @@ using content::BrowserThread;
 namespace browsing_data {
 
 StoragePartitionHttpCacheDataRemover::StoragePartitionHttpCacheDataRemover(
+    base::Callback<bool(const GURL&)> url_predicate,
     base::Time delete_begin,
     base::Time delete_end,
     net::URLRequestContextGetter* main_context_getter,
     net::URLRequestContextGetter* media_context_getter)
-    : delete_begin_(delete_begin),
+    : url_predicate_(url_predicate),
+      delete_begin_(delete_begin),
       delete_end_(delete_end),
       main_context_getter_(main_context_getter),
       media_context_getter_(media_context_getter),
@@ -43,7 +46,22 @@ StoragePartitionHttpCacheDataRemover::CreateForRange(
     base::Time delete_begin,
     base::Time delete_end) {
   return new StoragePartitionHttpCacheDataRemover(
-      delete_begin, delete_end, storage_partition->GetURLRequestContext(),
+      base::Callback<bool(const GURL&)>(),  // Null callback.
+      delete_begin, delete_end,
+      storage_partition->GetURLRequestContext(),
+      storage_partition->GetMediaURLRequestContext());
+}
+
+// static.
+StoragePartitionHttpCacheDataRemover*
+StoragePartitionHttpCacheDataRemover::CreateForURLsAndRange(
+    content::StoragePartition* storage_partition,
+    const base::Callback<bool(const GURL&)>& url_predicate,
+    base::Time delete_begin,
+    base::Time delete_end) {
+  return new StoragePartitionHttpCacheDataRemover(
+      url_predicate, delete_begin, delete_end,
+      storage_partition->GetURLRequestContext(),
       storage_partition->GetMediaURLRequestContext());
 }
 
@@ -159,7 +177,17 @@ void StoragePartitionHttpCacheDataRemover::DoClearCache(int rv) {
 
         // |cache_| can be null if it cannot be initialized.
         if (cache_) {
-          if (delete_begin_.is_null() && delete_end_.is_max()) {
+          if (!url_predicate_.is_null()) {
+            (new ConditionalCacheDeletionHelper(
+                cache_,
+                ConditionalCacheDeletionHelper::CreateURLAndTimeCondition(
+                    url_predicate_,
+                    delete_begin_,
+                    delete_end_)))->DeleteAndDestroySelfWhenFinished(
+                        base::Bind(
+                            &StoragePartitionHttpCacheDataRemover::DoClearCache,
+                            base::Unretained(this)));
+          } else if (delete_begin_.is_null() && delete_end_.is_max()) {
             rv = cache_->DoomAllEntries(base::Bind(
                 &StoragePartitionHttpCacheDataRemover::DoClearCache,
                 base::Unretained(this)));
