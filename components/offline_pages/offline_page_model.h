@@ -196,7 +196,7 @@ class OfflinePageModel : public KeyedService, public base::SupportsUserData {
   void CheckPagesExistOffline(const std::set<GURL>& urls,
                               const CheckPagesExistOfflineCallback& callback);
 
-  // Gets all available offline pages. Requires that the model is loaded.
+  // Gets all available offline pages.
   void GetAllPages(const MultipleOfflinePageItemCallback& callback);
 
   // Gets all offline ids where the offline page has the matching client id.

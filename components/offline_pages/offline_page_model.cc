@@ -318,14 +318,8 @@ void OfflinePageModel::CheckPagesExistOfflineAfterLoadDone(
 
 void OfflinePageModel::GetAllPages(
     const MultipleOfflinePageItemCallback& callback) {
-  if (!is_loaded_) {
-    delayed_tasks_.push_back(
-        base::Bind(&OfflinePageModel::GetAllPagesAfterLoadDone,
-                   weak_ptr_factory_.GetWeakPtr(), callback));
-    return;
-  }
-
-  GetAllPagesAfterLoadDone(callback);
+  RunWhenLoaded(base::Bind(&OfflinePageModel::GetAllPagesAfterLoadDone,
+                           weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
 void OfflinePageModel::GetAllPagesAfterLoadDone(
