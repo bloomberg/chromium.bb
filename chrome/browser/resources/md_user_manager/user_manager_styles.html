@@ -30,8 +30,7 @@
         min-height: 0;
         overflow-x: hidden;
         overflow-y: auto;
-        padding-bottom: 40px;
-        padding-top: 40px;
+        padding: 40px 0 30px;
         z-index: initial;
       }
 
@@ -59,11 +58,6 @@
                     0 14px 28px 0 rgba(0, 0, 0, .25);
       }
 
-      .pod.focused.locked {
-        box-shadow: 0 12px 21px rgba(0, 0, 0, .2);
-        height: auto;
-      }
-
       .pod .user-image-pane {
         border-top-left-radius: 2px;
         border-top-right-radius: 2px;
@@ -87,13 +81,14 @@
         width: auto;
       }
 
-      .pod .main-pane .name-container .name {
+      .pod .main-pane .name-container .name,
+      .reauth-hint-container .reauth-name-hint {
         color: inherit;
         font-size: inherit;
         margin: 0;
         padding: 0;
         text-align: initial;
-        width: 118px;
+        width: 120px;
       }
 
       .pod .indicator-container {
@@ -193,18 +188,14 @@
       }
 
       .pod[auth-type='onlineSignIn'] .reauth-hint-container {
+        flex-direction: row-reverse;
         margin: 0;
-        padding: 10px 0;
+        padding: 10px;
       }
 
       .reauth-hint-container .reauth-warning {
         height: 20px;
         width: 20px;
-      }
-
-      .reauth-hint-container .reauth-name-hint {
-        color: inherit;
-        font-size: inherit;
       }
 
       .action-box-area.active .action-box-button {
