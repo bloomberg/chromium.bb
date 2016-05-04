@@ -1,40 +1,13 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-
-        <style>
-            video { background-color: yellow; width: 320px; height: 240px;}
-        </style>
-        <script src=../media-file.js></script>
-        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=../video-test.js></script>
-        <script>
-            function setPreferences()
-            {
-                if (!window.internals) {
-                    consoleWrite("<b>** This test only works in DRT! **<" + "/b>");
-                    return;
-                }
-
-                consoleWrite("<i>**Set user preferred languages<" + "/i>");
-                run("internals.setUserPreferredLanguages(['jp', 'es-ES', 'en', 'fr'])");
-                window.internals.settings.setTextTrackKindUserPreference('captions');
-            }
-
-            function setup()
-            {
-                var video = document.createElement("video");
-                setPreferences();
-                endTest();
-            }
-
-        </script>
-    </head>
-    <body onload="setup()">
-        <p>Tests that setting preferences on a track-less video element does not crash.</p>
-        <video>
-        </video>
-    </body>
-</html>
+<title>Tests that setting preferences on a track-less video element does not crash.</title>
+<script src="../media-file.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script>
+test(function() {
+    var video = document.createElement('video');
+    // Set user preferred languages.
+    internals.setUserPreferredLanguages(['jp', 'es-ES', 'en', 'fr']);
+    internals.settings.setTextTrackKindUserPreference('captions');
+});
+</script>

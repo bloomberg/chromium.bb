@@ -1,6 +1,0 @@
-Tests that setting preferences on a track-less video element does not crash.
-
-**Set user preferred languages
-RUN(internals.setUserPreferredLanguages(['jp', 'es-ES', 'en', 'fr']))
-END OF TEST
-
