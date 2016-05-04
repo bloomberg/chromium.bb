@@ -99,6 +99,8 @@
 #include "wtf/text/StringUTF8Adaptor.h"
 #include "wtf/typed_arrays/ArrayBufferContents.h"
 
+#include <memory>
+
 namespace blink {
 
 namespace {
@@ -122,6 +124,22 @@ WebGLRenderingContextBaseMap& forciblyEvictedContexts()
 }
 
 } // namespace
+
+ScopedRGBEmulationColorMask::ScopedRGBEmulationColorMask(gpu::gles2::GLES2Interface* contextGL, GLboolean* colorMask, DrawingBuffer* drawingBuffer)
+    : m_contextGL(contextGL)
+    , m_requiresEmulation(drawingBuffer->requiresRGBEmulation())
+{
+    if (m_requiresEmulation) {
+        memcpy(m_colorMask, colorMask, 4 * sizeof(GLboolean));
+        m_contextGL->ColorMask(m_colorMask[0], m_colorMask[1], m_colorMask[2], false);
+    }
+}
+
+ScopedRGBEmulationColorMask::~ScopedRGBEmulationColorMask()
+{
+    if (m_requiresEmulation)
+        m_contextGL->ColorMask(m_colorMask[0], m_colorMask[1], m_colorMask[2], m_colorMask[3]);
+}
 
 void WebGLRenderingContextBase::forciblyLoseOldestContext(const String& reason)
 {
@@ -902,10 +920,12 @@ void WebGLRenderingContextBase::initializeNewContext()
     m_numGLErrorsToConsoleAllowed = maxGLErrorsAllowedToConsole;
 
     m_clearColor[0] = m_clearColor[1] = m_clearColor[2] = m_clearColor[3] = 0;
+    drawingBuffer()->setClearColor(m_clearColor);
     m_scissorEnabled = false;
     m_clearDepth = 1;
     m_clearStencil = 0;
     m_colorMask[0] = m_colorMask[1] = m_colorMask[2] = m_colorMask[3] = true;
+    drawingBuffer()->setColorMask(m_colorMask);
 
     GLint numCombinedTextureImageUnits = 0;
     contextGL()->GetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &numCombinedTextureImageUnits);
@@ -1144,7 +1164,7 @@ WebGLRenderingContextBase::HowToClear WebGLRenderingContextBase::clearIfComposit
     } else {
         contextGL()->ClearColor(0, 0, 0, 0);
     }
-    contextGL()->ColorMask(true, true, true, true);
+    contextGL()->ColorMask(true, true, true, !drawingBuffer()->requiresRGBEmulation());
     GLbitfield clearMask = GL_COLOR_BUFFER_BIT;
     if (contextAttributes.get().depth()) {
         if (!combinedClear || !m_depthMask || !(mask & GL_DEPTH_BUFFER_BIT))
@@ -1436,6 +1456,9 @@ void WebGLRenderingContextBase::bindRenderbuffer(ScriptState* scriptState, GLenu
     m_renderbufferBinding = renderBuffer;
     contextGL()->BindRenderbuffer(target, objectOrZero(renderBuffer));
     preserveObjectWrapper(scriptState, this, "renderbuffer", 0, renderBuffer);
+
+    drawingBuffer()->setRenderbufferBinding(objectOrZero(renderBuffer));
+
     if (renderBuffer)
         renderBuffer->setHasEverBeenBound();
 }
@@ -1674,6 +1697,9 @@ void WebGLRenderingContextBase::clear(GLbitfield mask)
         synthesizeGLError(GL_INVALID_FRAMEBUFFER_OPERATION, "clear", reason);
         return;
     }
+
+    ScopedRGBEmulationColorMask emulationColorMask(contextGL(), m_colorMask, m_drawingBuffer.get());
+
     if (clearIfComposited(mask) != CombinedClear) {
         // If clearing the default back buffer's depth buffer, also clear the stencil buffer, if one
         // was allocated implicitly. This avoids performance problems on some GPUs.
@@ -1703,6 +1729,7 @@ void WebGLRenderingContextBase::clearColor(GLfloat r, GLfloat g, GLfloat b, GLfl
     m_clearColor[1] = g;
     m_clearColor[2] = b;
     m_clearColor[3] = a;
+    drawingBuffer()->setClearColor(m_clearColor);
     contextGL()->ClearColor(r, g, b, a);
 }
 
@@ -1730,6 +1757,7 @@ void WebGLRenderingContextBase::colorMask(GLboolean red, GLboolean green, GLbool
     m_colorMask[1] = green;
     m_colorMask[2] = blue;
     m_colorMask[3] = alpha;
+    drawingBuffer()->setColorMask(m_colorMask);
     contextGL()->ColorMask(red, green, blue, alpha);
 }
 
@@ -1945,8 +1973,10 @@ void WebGLRenderingContextBase::deleteRenderbuffer(WebGLRenderbuffer* renderbuff
 {
     if (!deleteObject(renderbuffer))
         return;
-    if (renderbuffer == m_renderbufferBinding)
+    if (renderbuffer == m_renderbufferBinding) {
         m_renderbufferBinding = nullptr;
+        drawingBuffer()->setRenderbufferBinding(0);
+    }
     if (m_framebufferBinding)
         m_framebufferBinding->removeAttachmentFromBoundFramebuffer(GL_FRAMEBUFFER, renderbuffer);
     if (getFramebufferBinding(GL_READ_FRAMEBUFFER))
@@ -2094,6 +2124,7 @@ void WebGLRenderingContextBase::drawArrays(GLenum mode, GLint first, GLsizei cou
     if (!validateDrawArrays("drawArrays"))
         return;
 
+    ScopedRGBEmulationColorMask emulationColorMask(contextGL(), m_colorMask, m_drawingBuffer.get());
     clearIfComposited();
     contextGL()->DrawArrays(mode, first, count);
     markContextChanged(CanvasChanged);
@@ -2109,6 +2140,7 @@ void WebGLRenderingContextBase::drawElements(GLenum mode, GLsizei count, GLenum 
         return;
     }
 
+    ScopedRGBEmulationColorMask emulationColorMask(contextGL(), m_colorMask, m_drawingBuffer.get());
     clearIfComposited();
     contextGL()->DrawElements(mode, count, type, reinterpret_cast<void*>(static_cast<intptr_t>(offset)));
     markContextChanged(CanvasChanged);
@@ -2119,6 +2151,7 @@ void WebGLRenderingContextBase::drawArraysInstancedANGLE(GLenum mode, GLint firs
     if (!validateDrawArrays("drawArraysInstancedANGLE"))
         return;
 
+    ScopedRGBEmulationColorMask emulationColorMask(contextGL(), m_colorMask, m_drawingBuffer.get());
     clearIfComposited();
     contextGL()->DrawArraysInstancedANGLE(mode, first, count, primcount);
     markContextChanged(CanvasChanged);
@@ -2129,6 +2162,7 @@ void WebGLRenderingContextBase::drawElementsInstancedANGLE(GLenum mode, GLsizei 
     if (!validateDrawElements("drawElementsInstancedANGLE", type, offset))
         return;
 
+    ScopedRGBEmulationColorMask emulationColorMask(contextGL(), m_colorMask, m_drawingBuffer.get());
     clearIfComposited();
     contextGL()->DrawElementsInstancedANGLE(mode, count, type, reinterpret_cast<void*>(static_cast<intptr_t>(offset)), primcount);
     markContextChanged(CanvasChanged);
@@ -2560,6 +2594,8 @@ ScriptValue WebGLRenderingContextBase::getParameter(ScriptState* scriptState, GL
     case GL_ALIASED_POINT_SIZE_RANGE:
         return getWebGLFloatArrayParameter(scriptState, pname);
     case GL_ALPHA_BITS:
+        if (m_drawingBuffer->requiresRGBEmulation())
+            return WebGLAny(scriptState, 0);
         return getIntParameter(scriptState, pname);
     case GL_ARRAY_BUFFER_BINDING:
         return WebGLAny(scriptState, m_boundArrayBuffer.get());
@@ -4981,6 +5017,7 @@ void WebGLRenderingContextBase::loseContextImpl(WebGLRenderingContextBase::LostC
     // Make absolutely sure we do not refer to an already-deleted texture or framebuffer.
     drawingBuffer()->setTexture2DBinding(0);
     drawingBuffer()->setFramebufferBinding(GL_FRAMEBUFFER, 0);
+    drawingBuffer()->setRenderbufferBinding(0);
 
     detachAndRemoveAllObjects();
 

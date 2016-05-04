@@ -332,6 +332,7 @@ component("platform") {
     "//cc",
     "//gpu/command_buffer/client:gles2_c_lib",
     "//gpu/command_buffer/client:gles2_interface",
+    "//gpu/command_buffer/common:common",
     "//net",
     "//skia",
     "//third_party:jpeg",

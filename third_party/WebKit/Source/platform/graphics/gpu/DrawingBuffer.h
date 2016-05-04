@@ -141,6 +141,25 @@ public:
         }
     }
 
+    // The DrawingBuffer needs to track the color mask and clear color so that
+    // it can restore it when needed.
+    void setClearColor(GLfloat* clearColor)
+    {
+        memcpy(m_clearColor, clearColor, 4 * sizeof(GLfloat));
+    }
+
+    void setColorMask(GLboolean* colorMask)
+    {
+        memcpy(m_colorMask, colorMask, 4 * sizeof(GLboolean));
+    }
+
+    // The DrawingBuffer needs to track the currently bound renderbuffer so it
+    // restore the binding when needed.
+    void setRenderbufferBinding(GLuint renderbuffer)
+    {
+        m_renderbufferBinding = renderbuffer;
+    }
+
     // Track the currently active texture unit. Texture unit 0 is used as host for a scratch
     // texture.
     void setActiveTextureUnit(GLint textureUnit) { m_activeTextureUnit = textureUnit; }
@@ -156,6 +175,12 @@ public:
     bool bufferClearNeeded() const;
     void setIsHidden(bool);
     void setFilterQuality(SkFilterQuality);
+
+    // Indicates that the currently bound framebuffer has internalformat
+    // GL_RGBA, but is emulating GL_RGB. This happens to the backbuffer when the
+    // client requests alpha:False, but GL_RGB textures are unusable because of
+    // driver bugs.
+    bool requiresRGBEmulation();
 
     WebLayer* platformLayer();
 
@@ -199,12 +224,18 @@ private:
         DISALLOW_NEW();
         GLenum target;
         GLenum internalColorFormat;
+
+        // The internal color format used when allocating storage for the
+        // texture. This may be different from internalColorFormat if RGB
+        // emulation is required.
+        GLenum creationInternalColorFormat;
         GLenum colorFormat;
         GLenum internalRenderbufferFormat;
 
         TextureParameters()
             : target(0)
             , internalColorFormat(0)
+            , creationInternalColorFormat(0)
             , colorFormat(0)
             , internalRenderbufferFormat(0)
         {
@@ -290,6 +321,11 @@ private:
     // Allocate buffer storage to be sent to compositor using either texImage2D or CHROMIUM_image based on available support.
     void deleteChromiumImageForTexture(TextureInfo*);
 
+    // If RGB emulation is required, then the CHROMIUM image's alpha channel
+    // must be immediately cleared after it is bound to a texture. Nothing
+    // should be allowed to change the alpha channel after this.
+    void clearChromiumImageAlpha(const TextureInfo&);
+
     // Tries to create a CHROMIUM_image backed texture if
     // RuntimeEnabledFeatures::webGLImageChromiumEnabled() is true. On failure,
     // or if the flag is false, creates a default texture.
@@ -307,7 +343,10 @@ private:
     GLuint m_texture2DBinding;
     GLuint m_drawFramebufferBinding;
     GLuint m_readFramebufferBinding;
+    GLuint m_renderbufferBinding;
     GLenum m_activeTextureUnit;
+    GLfloat m_clearColor[4];
+    GLboolean m_colorMask[4];
 
     OwnPtr<WebGraphicsContext3DProvider> m_contextProvider;
     // Lifetime is tied to the m_contextProvider.
@@ -334,6 +373,8 @@ private:
 
     // For multisampling.
     GLuint m_multisampleFBO;
+    GLuint m_intermediateFBO;
+    GLuint m_intermediateRenderbuffer;
     GLuint m_multisampleColorBuffer;
 
     // True if our contents have been modified since the last presentation of this buffer.

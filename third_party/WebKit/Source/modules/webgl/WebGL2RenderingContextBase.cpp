@@ -1513,6 +1513,7 @@ void WebGL2RenderingContextBase::drawArraysInstanced(GLenum mode, GLint first, G
     if (!validateDrawArrays("drawArraysInstanced"))
         return;
 
+    ScopedRGBEmulationColorMask emulationColorMask(contextGL(), m_colorMask, m_drawingBuffer.get());
     clearIfComposited();
     contextGL()->DrawArraysInstancedANGLE(mode, first, count, instanceCount);
     markContextChanged(CanvasChanged);
@@ -1528,6 +1529,7 @@ void WebGL2RenderingContextBase::drawElementsInstanced(GLenum mode, GLsizei coun
         return;
     }
 
+    ScopedRGBEmulationColorMask emulationColorMask(contextGL(), m_colorMask, m_drawingBuffer.get());
     clearIfComposited();
     contextGL()->DrawElementsInstancedANGLE(mode, count, type, reinterpret_cast<void*>(static_cast<intptr_t>(offset)), instanceCount);
     markContextChanged(CanvasChanged);
@@ -1543,6 +1545,7 @@ void WebGL2RenderingContextBase::drawRangeElements(GLenum mode, GLuint start, GL
         return;
     }
 
+    ScopedRGBEmulationColorMask emulationColorMask(contextGL(), m_colorMask, m_drawingBuffer.get());
     clearIfComposited();
     contextGL()->DrawRangeElements(mode, start, end, count, type, reinterpret_cast<void*>(static_cast<intptr_t>(offset)));
     markContextChanged(CanvasChanged);
@@ -1553,6 +1556,7 @@ void WebGL2RenderingContextBase::drawBuffers(const Vector<GLenum>& buffers)
     if (isContextLost())
         return;
 
+    ScopedRGBEmulationColorMask emulationColorMask(contextGL(), m_colorMask, m_drawingBuffer.get());
     GLsizei n = buffers.size();
     const GLenum* bufs = buffers.data();
     for (GLsizei i = 0; i < n; ++i) {

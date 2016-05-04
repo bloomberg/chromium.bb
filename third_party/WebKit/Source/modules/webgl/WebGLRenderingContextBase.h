@@ -138,6 +138,19 @@ private:
     Member<WebGLFramebuffer> m_readFramebufferBinding;
 };
 
+// This class uses the color mask to prevent drawing to the alpha channel, if
+// the DrawingBuffer requires RGB emulation.
+class ScopedRGBEmulationColorMask {
+public:
+    ScopedRGBEmulationColorMask(gpu::gles2::GLES2Interface*, GLboolean* colorMask, DrawingBuffer*);
+    ~ScopedRGBEmulationColorMask();
+
+private:
+    gpu::gles2::GLES2Interface* m_contextGL;
+    GLboolean m_colorMask[4];
+    const bool m_requiresEmulation;
+};
+
 class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext {
 public:
     ~WebGLRenderingContextBase() override;
