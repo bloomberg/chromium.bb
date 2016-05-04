@@ -50,6 +50,7 @@ gale-release
   peppy-toolchain-gcc
   x86-alex-toolchain-gcc
 [glados-b-release-group]
+  asuka-release
   cave-release
   chell-cheets-release
 glados-cheets-android-pfq
@@ -186,6 +187,8 @@ stout-paladin
   umaro-release
 [strago-d-release-group]
   celes-cheets-release
+  kefka-release
+  relm-release
 strago-paladin
 [strago-release-group]
   celes-release

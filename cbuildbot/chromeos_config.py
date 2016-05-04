@@ -396,6 +396,7 @@ _arm_external_boards = frozenset([
 
 _x86_internal_release_boards = frozenset([
     'amd64-generic-goofy',
+    'asuka',
     'auron',
     'auron_paine',
     'auron_yuna',
@@ -429,6 +430,7 @@ _x86_internal_release_boards = frozenset([
     'guado_moblab',
     'heli',
     'jecht',
+    'kefka',
     'kip',
     'kunimitsu',
     'lakitu',
@@ -453,6 +455,7 @@ _x86_internal_release_boards = frozenset([
     'quawks',
     'rambi',
     'reks',
+    'relm',
     'rikku',
     'samus',
     'samus-cheets',
@@ -2926,6 +2929,8 @@ def GetConfig():
 
   _AddGroupConfig(
       'strago-d', 'celes-cheets', (
+          'kefka',
+          'relm',
       ),
       important=False,
   )
@@ -2951,6 +2956,7 @@ def GetConfig():
   _AddGroupConfig(
       'glados-b', 'cave', (
           'chell-cheets',
+          'asuka',
       ),
       important=False,
   )
@@ -3050,6 +3056,7 @@ def GetConfig():
   )
 
   _firmware_boards = frozenset([
+      'asuka',
       'auron',
       'banjo',
       'banon',
@@ -3070,6 +3077,7 @@ def GetConfig():
       'glimmer',
       'gnawty',
       'jecht',
+      'kefka',
       'kip',
       'lars',
       'leon',
@@ -3087,6 +3095,7 @@ def GetConfig():
       'quawks',
       'rambi',
       'reks',
+      'relm',
       'rikku',
       'samus',
       'sentry',

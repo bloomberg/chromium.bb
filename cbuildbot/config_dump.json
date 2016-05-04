@@ -2082,6 +2082,171 @@
         ],
         "vm_tests": []
     },
+    "asuka-chrome-pfq": {
+        "_template": "chrome-pfq",
+        "boards": [
+            "asuka"
+        ],
+        "important": false,
+        "manifest": "official.xml"
+    },
+    "asuka-chromium-pfq": {
+        "_template": "chromium-pfq",
+        "boards": [
+            "asuka"
+        ],
+        "description": "Preflight Chromium Uprev & Build (internal)",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
+        "important": false,
+        "internal": true,
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "asuka-compile-only-pre-cq": {
+        "_template": "compile-only-pre-cq",
+        "boards": [
+            "asuka"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "asuka-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "asuka"
+        ],
+        "manifest": "official.xml",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty"
+        ]
+    },
+    "asuka-full": {
+        "_template": "full",
+        "boards": [
+            "asuka"
+        ],
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "asuka-no-vmtest-pre-cq": {
+        "_template": "no-vmtest-pre-cq",
+        "boards": [
+            "asuka"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "asuka-paladin": {
+        "_template": "paladin",
+        "boards": [
+            "asuka"
+        ],
+        "description": "Commit Queue (internal)",
+        "important": false,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "prebuilts": "private",
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "asuka-payloads": {
+        "_template": "payloads",
+        "boards": [
+            "asuka"
+        ]
+    },
+    "asuka-pre-cq": {
+        "_template": "pre-cq",
+        "boards": [
+            "asuka"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "asuka-release": {
+        "_template": "release",
+        "boards": [
+            "asuka"
+        ]
+    },
+    "asuka-release-afdo": {
+        "_template": "release-afdo-generate",
+        "boards": [
+            "asuka"
+        ],
+        "child_configs": [
+            {
+                "_template": "release-afdo-generate",
+                "boards": [
+                    "asuka"
+                ],
+                "grouped": true,
+                "name": "asuka-release-afdo-generate"
+            },
+            {
+                "_template": "release-afdo-use",
+                "boards": [
+                    "asuka"
+                ],
+                "grouped": true,
+                "name": "asuka-release-afdo-use"
+            }
+        ]
+    },
+    "asuka-release-afdo-generate": {
+        "_template": "release-afdo-generate",
+        "boards": [
+            "asuka"
+        ]
+    },
+    "asuka-release-afdo-use": {
+        "_template": "release-afdo-use",
+        "boards": [
+            "asuka"
+        ]
+    },
+    "asuka-tot-chrome-pfq-informational": {
+        "_template": "chrome-pfq-informational",
+        "boards": [
+            "asuka"
+        ],
+        "manifest": "official.xml"
+    },
+    "asuka-tot-chromium-pfq-informational": {
+        "_template": "chromium-pfq-informational",
+        "boards": [
+            "asuka"
+        ],
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
     "auron-b-full-group": {
         "_template": "full",
         "boards": [
@@ -8252,9 +8417,25 @@
                     "-chrome_internal"
                 ],
                 "vm_tests": []
+            },
+            {
+                "_template": "full",
+                "boards": [
+                    "asuka"
+                ],
+                "build_packages_in_background": true,
+                "chrome_sdk_build_chrome": false,
+                "grouped": true,
+                "name": "asuka-full",
+                "prebuilts": "public",
+                "unittests": null,
+                "useflags": [
+                    "-chrome_internal"
+                ],
+                "vm_tests": []
             }
         ],
-        "description": "Full Builds; Group config (boards: cave, chell-cheets)",
+        "description": "Full Builds; Group config (boards: cave, chell-cheets, asuka)",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -8286,9 +8467,21 @@
                 "name": "chell-cheets-release",
                 "unittests": null,
                 "vm_tests": []
+            },
+            {
+                "_template": "release",
+                "boards": [
+                    "asuka"
+                ],
+                "build_packages_in_background": true,
+                "chrome_sdk_build_chrome": false,
+                "grouped": true,
+                "name": "asuka-release",
+                "unittests": null,
+                "vm_tests": []
             }
         ],
-        "description": "Release Builds (canary) (internal); Group config (boards: cave, chell-cheets)"
+        "description": "Release Builds (canary) (internal); Group config (boards: cave, chell-cheets, asuka)"
     },
     "glados-cheets-android-pfq": {
         "_template": "android-pfq",
@@ -10449,6 +10642,171 @@
         "_template": "chromium-pfq-informational",
         "boards": [
             "jecht"
+        ],
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "kefka-chrome-pfq": {
+        "_template": "chrome-pfq",
+        "boards": [
+            "kefka"
+        ],
+        "important": false,
+        "manifest": "official.xml"
+    },
+    "kefka-chromium-pfq": {
+        "_template": "chromium-pfq",
+        "boards": [
+            "kefka"
+        ],
+        "description": "Preflight Chromium Uprev & Build (internal)",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
+        "important": false,
+        "internal": true,
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "kefka-compile-only-pre-cq": {
+        "_template": "compile-only-pre-cq",
+        "boards": [
+            "kefka"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "kefka-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "kefka"
+        ],
+        "manifest": "official.xml",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty"
+        ]
+    },
+    "kefka-full": {
+        "_template": "full",
+        "boards": [
+            "kefka"
+        ],
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "kefka-no-vmtest-pre-cq": {
+        "_template": "no-vmtest-pre-cq",
+        "boards": [
+            "kefka"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "kefka-paladin": {
+        "_template": "paladin",
+        "boards": [
+            "kefka"
+        ],
+        "description": "Commit Queue (internal)",
+        "important": false,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "prebuilts": "private",
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "kefka-payloads": {
+        "_template": "payloads",
+        "boards": [
+            "kefka"
+        ]
+    },
+    "kefka-pre-cq": {
+        "_template": "pre-cq",
+        "boards": [
+            "kefka"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "kefka-release": {
+        "_template": "release",
+        "boards": [
+            "kefka"
+        ]
+    },
+    "kefka-release-afdo": {
+        "_template": "release-afdo-generate",
+        "boards": [
+            "kefka"
+        ],
+        "child_configs": [
+            {
+                "_template": "release-afdo-generate",
+                "boards": [
+                    "kefka"
+                ],
+                "grouped": true,
+                "name": "kefka-release-afdo-generate"
+            },
+            {
+                "_template": "release-afdo-use",
+                "boards": [
+                    "kefka"
+                ],
+                "grouped": true,
+                "name": "kefka-release-afdo-use"
+            }
+        ]
+    },
+    "kefka-release-afdo-generate": {
+        "_template": "release-afdo-generate",
+        "boards": [
+            "kefka"
+        ]
+    },
+    "kefka-release-afdo-use": {
+        "_template": "release-afdo-use",
+        "boards": [
+            "kefka"
+        ]
+    },
+    "kefka-tot-chrome-pfq-informational": {
+        "_template": "chrome-pfq-informational",
+        "boards": [
+            "kefka"
+        ],
+        "manifest": "official.xml"
+    },
+    "kefka-tot-chromium-pfq-informational": {
+        "_template": "chromium-pfq-informational",
+        "boards": [
+            "kefka"
         ],
         "useflags": [
             "-chrome_internal"
@@ -18058,6 +18416,171 @@
             "-chrome_internal"
         ]
     },
+    "relm-chrome-pfq": {
+        "_template": "chrome-pfq",
+        "boards": [
+            "relm"
+        ],
+        "important": false,
+        "manifest": "official.xml"
+    },
+    "relm-chromium-pfq": {
+        "_template": "chromium-pfq",
+        "boards": [
+            "relm"
+        ],
+        "description": "Preflight Chromium Uprev & Build (internal)",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
+        "important": false,
+        "internal": true,
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "relm-compile-only-pre-cq": {
+        "_template": "compile-only-pre-cq",
+        "boards": [
+            "relm"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "relm-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "relm"
+        ],
+        "manifest": "official.xml",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty"
+        ]
+    },
+    "relm-full": {
+        "_template": "full",
+        "boards": [
+            "relm"
+        ],
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "relm-no-vmtest-pre-cq": {
+        "_template": "no-vmtest-pre-cq",
+        "boards": [
+            "relm"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "relm-paladin": {
+        "_template": "paladin",
+        "boards": [
+            "relm"
+        ],
+        "description": "Commit Queue (internal)",
+        "important": false,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "prebuilts": "private",
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "relm-payloads": {
+        "_template": "payloads",
+        "boards": [
+            "relm"
+        ]
+    },
+    "relm-pre-cq": {
+        "_template": "pre-cq",
+        "boards": [
+            "relm"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "relm-release": {
+        "_template": "release",
+        "boards": [
+            "relm"
+        ]
+    },
+    "relm-release-afdo": {
+        "_template": "release-afdo-generate",
+        "boards": [
+            "relm"
+        ],
+        "child_configs": [
+            {
+                "_template": "release-afdo-generate",
+                "boards": [
+                    "relm"
+                ],
+                "grouped": true,
+                "name": "relm-release-afdo-generate"
+            },
+            {
+                "_template": "release-afdo-use",
+                "boards": [
+                    "relm"
+                ],
+                "grouped": true,
+                "name": "relm-release-afdo-use"
+            }
+        ]
+    },
+    "relm-release-afdo-generate": {
+        "_template": "release-afdo-generate",
+        "boards": [
+            "relm"
+        ]
+    },
+    "relm-release-afdo-use": {
+        "_template": "release-afdo-use",
+        "boards": [
+            "relm"
+        ]
+    },
+    "relm-tot-chrome-pfq-informational": {
+        "_template": "chrome-pfq-informational",
+        "boards": [
+            "relm"
+        ],
+        "manifest": "official.xml"
+    },
+    "relm-tot-chromium-pfq-informational": {
+        "_template": "chromium-pfq-informational",
+        "boards": [
+            "relm"
+        ],
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
     "rikku-chrome-pfq": {
         "_template": "chrome-pfq",
         "boards": [
@@ -20949,9 +21472,41 @@
                     "-chrome_internal"
                 ],
                 "vm_tests": []
+            },
+            {
+                "_template": "full",
+                "boards": [
+                    "kefka"
+                ],
+                "build_packages_in_background": true,
+                "chrome_sdk_build_chrome": false,
+                "grouped": true,
+                "name": "kefka-full",
+                "prebuilts": "public",
+                "unittests": null,
+                "useflags": [
+                    "-chrome_internal"
+                ],
+                "vm_tests": []
+            },
+            {
+                "_template": "full",
+                "boards": [
+                    "relm"
+                ],
+                "build_packages_in_background": true,
+                "chrome_sdk_build_chrome": false,
+                "grouped": true,
+                "name": "relm-full",
+                "prebuilts": "public",
+                "unittests": null,
+                "useflags": [
+                    "-chrome_internal"
+                ],
+                "vm_tests": []
             }
         ],
-        "description": "Full Builds; Group config (boards: celes-cheets)",
+        "description": "Full Builds; Group config (boards: celes-cheets, kefka, relm)",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -20973,9 +21528,33 @@
                 "grouped": true,
                 "name": "celes-cheets-release",
                 "vm_tests": []
+            },
+            {
+                "_template": "release",
+                "boards": [
+                    "kefka"
+                ],
+                "build_packages_in_background": true,
+                "chrome_sdk_build_chrome": false,
+                "grouped": true,
+                "name": "kefka-release",
+                "unittests": null,
+                "vm_tests": []
+            },
+            {
+                "_template": "release",
+                "boards": [
+                    "relm"
+                ],
+                "build_packages_in_background": true,
+                "chrome_sdk_build_chrome": false,
+                "grouped": true,
+                "name": "relm-release",
+                "unittests": null,
+                "vm_tests": []
             }
         ],
-        "description": "Cheets release builders; Group config (boards: celes-cheets)",
+        "description": "Cheets release builders; Group config (boards: celes-cheets, kefka, relm)",
         "vm_tests": []
     },
     "strago-depthcharge-firmware": {
