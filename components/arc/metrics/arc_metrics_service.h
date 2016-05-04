@@ -12,7 +12,7 @@
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service.h"
 #include "components/arc/common/arc_bridge.mojom.h"
-#include "components/arc/metrics/arc_low_memory_killer_monitor.h"
+#include "components/arc/metrics/oom_kills_monitor.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace arc {
@@ -50,7 +50,7 @@ class ArcMetricsService : public ArcService,
   base::ThreadChecker thread_checker_;
   base::RepeatingTimer timer_;
 
-  ArcLowMemoryKillerMonitor low_memory_killer_minotor_;
+  OomKillsMonitor oom_kills_monitor_;
 
   base::TimeTicks arc_start_time_;
 

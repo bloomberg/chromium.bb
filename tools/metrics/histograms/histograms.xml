@@ -933,17 +933,40 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Arc.LowMemoryKiller.Count">
   <owner>elijahtaylor@google.com</owner>
+  <owner>mitsuji@google.com</owner>
   <summary>Cumulative count of low memory kills in one user session.</summary>
 </histogram>
 
 <histogram name="Arc.LowMemoryKiller.FreedSize" units="KB">
   <owner>elijahtaylor@google.com</owner>
+  <owner>mitsuji@google.com</owner>
   <summary>The memory size freed by each low memory kill event.</summary>
 </histogram>
 
 <histogram name="Arc.LowMemoryKiller.TimeDelta" units="ms">
   <owner>elijahtaylor@google.com</owner>
+  <owner>mitsuji@google.com</owner>
   <summary>The elapsed time to last low memory kill event.</summary>
+</histogram>
+
+<histogram name="Arc.OOMKills.Count" units="kills">
+  <owner>elijahtaylor@google.com</owner>
+  <owner>mitsuji@google.com</owner>
+  <summary>Cumulative count of OOM kills in one user session.</summary>
+</histogram>
+
+<histogram name="Arc.OOMKills.Score" units="badness score">
+  <owner>elijahtaylor@google.com</owner>
+  <owner>mitsuji@google.com</owner>
+  <summary>
+    The oom_badness score of a OOM killed process as reported by kernel.
+  </summary>
+</histogram>
+
+<histogram name="Arc.OOMKills.TimeDelta" units="ms">
+  <owner>elijahtaylor@google.com</owner>
+  <owner>mitsuji@google.com</owner>
+  <summary>The elapsed time since last OOM kill event.</summary>
 </histogram>
 
 <histogram name="Arc.OptInAction" enum="ArcOptInAction">

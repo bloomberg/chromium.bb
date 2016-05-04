@@ -24,7 +24,7 @@ namespace arc {
 ArcMetricsService::ArcMetricsService(ArcBridgeService* bridge_service)
     : ArcService(bridge_service), binding_(this), weak_ptr_factory_(this) {
   arc_bridge_service()->AddObserver(this);
-  low_memory_killer_minotor_.Start();
+  oom_kills_monitor_.Start();
 }
 
 ArcMetricsService::~ArcMetricsService() {
