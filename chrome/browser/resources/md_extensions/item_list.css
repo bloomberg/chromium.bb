@@ -6,18 +6,11 @@
   @apply(--layout-vertical);
 }
 
-h2 {
-  color: #5a5a5a;
-  font-size: 1.1em;
-  font-weight: normal;
-  margin-bottom: 0;
-  margin-top: 30px;
-}
-
 iron-list {
   @apply(--layout-flex);
+  margin-top: 18px;
 }
 
 .wrapper {
-  padding: 10px 0;
+  padding: 6px;
 }

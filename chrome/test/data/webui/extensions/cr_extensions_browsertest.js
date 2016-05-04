@@ -107,12 +107,6 @@ TEST_F('CrExtensionsBrowserTest', 'ExtensionItemNormalStateTest', function() {
   mocha.grep(assert(TestNames.ElementVisibilityNormalState)).run();
 });
 
-TEST_F('CrExtensionsBrowserTest', 'ExtensionItemDetailStateTest', function() {
-  extension_item_tests.registerTests();
-  var TestNames = extension_item_tests.TestNames;
-  mocha.grep(assert(TestNames.ElementVisibilityDetailState)).run();
-});
-
 TEST_F('CrExtensionsBrowserTest', 'ExtensionItemDeveloperStateTest',
        function() {
   extension_item_tests.registerTests();

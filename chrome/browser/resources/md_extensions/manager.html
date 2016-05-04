@@ -20,8 +20,8 @@
       </extensions-sidebar>
       <neon-animated-pages id="pages" selected="0">
         <extensions-item-list id="items-list" items="[[extensions]]"
-            delegate="[[itemDelegate]]" header="[[i18n('sidebarExtensions')]]"
-            in-dev-mode="[[inDevMode]]" filter="[[filter]]"
+            delegate="[[itemDelegate]]" in-dev-mode="[[inDevMode]]"
+            filter="[[filter]]"
             hidden$="[[computeListHidden_(extensions, extensions.splices, apps, apps.splices)]]">
         </extensions-item-list>
         <extensions-detail-view id="details-view"

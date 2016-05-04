@@ -78,29 +78,19 @@ cr.define('extensions', function() {
     },
 
     /** @private */
-    onShowDetailsTap_: function() {
-      this.showingDetails_ = !this.showingDetails_;
-    },
-
-    /** @private */
-    onDeleteTap_: function() {
+    onRemoveTap_: function() {
       this.delegate.deleteItem(this.data.id);
     },
 
     /** @private */
     onEnableChange_: function() {
-      this.delegate.setItemEnabled(this.data.id, this.$.enabled.checked);
+      this.delegate.setItemEnabled(this.data.id,
+                                   this.$['enable-toggle'].checked);
     },
 
     /** @private */
     onDetailsTap_: function() {
       this.fire('extension-item-show-details', {element: this});
-    },
-
-    /** @private */
-    onAllowIncognitoChange_: function() {
-      this.delegate.setItemAllowedIncognito(
-          this.data.id, this.$$('#allow-incognito').checked);
     },
 
     /**
@@ -131,16 +121,6 @@ cr.define('extensions', function() {
     /** @private */
     computeClasses_: function() {
       return this.isEnabled_() ? 'enabled' : 'disabled';
-    },
-
-    /** @private */
-    computeExpandIcon_: function() {
-      return this.showingDetails_ ? 'expand-less' : 'expand-more';
-    },
-
-    /** @private */
-    computeEnableCheckboxLabel_: function() {
-      return this.i18n(this.isEnabled_() ? 'itemEnabled' : 'itemDisabled');
     },
 
     /**

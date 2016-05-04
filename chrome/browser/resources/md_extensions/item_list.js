@@ -31,8 +31,6 @@ cr.define('extensions', function() {
       /** @type {extensions.ItemDelegate} */
       delegate: Object,
 
-      header: String,
-
       inDevMode: {
         type: Boolean,
         value: false,

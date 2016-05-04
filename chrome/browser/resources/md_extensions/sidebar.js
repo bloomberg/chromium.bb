@@ -12,7 +12,6 @@ extensions.ShowingType = {
 };
 
 cr.define('extensions', function() {
-
   /** @interface */
   var SidebarDelegate = function() {};
 

@@ -37,21 +37,16 @@ cr.define('extension_item_tests', function() {
   // The normal elements, which should always be shown.
   var normalElements = [
     {selector: '#name', text: extensionData.name},
+    {selector: '#icon'},
     {selector: '#description', text: extensionData.description},
-    {selector: '#version', text: extensionData.version},
-    {selector: '#enabled'},
-    {selector: '#show-details'},
-    {selector: '#delete-button'},
-  ];
-  // The elements in the details panel, which should only be shown if
-  // the isShowingDetails bit is set.
-  var detailElements = [
-    {selector: '#allow-incognito'},
+    {selector: '#enable-toggle'},
     {selector: '#details-button'},
+    {selector: '#remove-button'},
   ];
   // The developer elements, which should only be shown if in developer
   // mode *and* showing details.
   var devElements = [
+    {selector: '#version', text: extensionData.version},
     {selector: '#extension-id', text: 'ID:' + extensionData.id},
     {selector: '#inspect-views'},
     {selector: '#inspect-views paper-button', text: 'foo.html'},
@@ -82,16 +77,6 @@ cr.define('extension_item_tests', function() {
     testElementsVisibility(item, normalElements, false);
   }
 
-  /** Tests that detail elements are visible. */
-  function testDetailElementsAreVisible(item) {
-    testElementsVisibility(item, detailElements, true);
-  }
-
-  /** Tests that detail elements are hidden. */
-  function testDetailElementsAreHidden(item) {
-    testElementsVisibility(item, detailElements, false);
-  }
-
   /** Tests that dev elements are visible. */
   function testDeveloperElementsAreVisible(item) {
     testElementsVisibility(item, devElements, true);
@@ -105,8 +90,6 @@ cr.define('extension_item_tests', function() {
   /** @enum {string} */
   var TestNames = {
     ElementVisibilityNormalState: 'element visibility: normal state',
-    ElementVisibilityDetailState:
-        'element visibility: after tapping show details',
     ElementVisibilityDeveloperState:
         'element visibility: after enabling developer mode',
     ClickableItems: 'clickable items',
@@ -140,50 +123,28 @@ cr.define('extension_item_tests', function() {
 
       test(assert(TestNames.ElementVisibilityNormalState), function() {
         testNormalElementsAreVisible(item);
-        testDetailElementsAreHidden(item);
         testDeveloperElementsAreHidden(item);
 
-        expectTrue(item.$.enabled.checked);
-        expectEquals('Enabled', item.$.enabled.textContent.trim());
+        expectTrue(item.$['enable-toggle'].checked);
         item.set('data.state', 'DISABLED');
-        expectFalse(item.$.enabled.checked);
-        expectEquals('Disabled', item.$.enabled.textContent.trim());
-      });
-
-      test(assert(TestNames.ElementVisibilityDetailState), function() {
-        MockInteractions.tap(item.$['show-details']);
-        testNormalElementsAreVisible(item);
-        testDetailElementsAreVisible(item);
-        testDeveloperElementsAreHidden(item);
+        expectFalse(item.$['enable-toggle'].checked);
       });
 
       test(assert(TestNames.ElementVisibilityDeveloperState), function() {
-        MockInteractions.tap(item.$['show-details']);
         item.set('inDevMode', true);
 
         testNormalElementsAreVisible(item);
-        testDetailElementsAreVisible(item);
         testDeveloperElementsAreVisible(item);
-
-        // Toggling "show details" should also hide the developer elements.
-        MockInteractions.tap(item.$['show-details']);
-        testNormalElementsAreVisible(item);
-        testDetailElementsAreHidden(item);
-        testDeveloperElementsAreHidden(item);
       });
 
       /** Tests that the delegate methods are correctly called. */
       test(assert(TestNames.ClickableItems), function() {
-        MockInteractions.tap(item.$['show-details']);
         item.set('inDevMode', true);
 
         mockDelegate.testClickingCalls(
-            item.$['delete-button'], 'deleteItem', [item.data.id]);
+            item.$['remove-button'], 'deleteItem', [item.data.id]);
         mockDelegate.testClickingCalls(
-            item.$.enabled, 'setItemEnabled', [item.data.id, false]);
-        mockDelegate.testClickingCalls(
-            item.$$('#allow-incognito'), 'setItemAllowedIncognito',
-            [item.data.id, true]);
+            item.$['enable-toggle'], 'setItemEnabled', [item.data.id, false]);
         mockDelegate.testClickingCalls(
             item.$$('#inspect-views paper-button'),
             'inspectItemView', [item.data.id, item.data.views[0]]);

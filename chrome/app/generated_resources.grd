@@ -4481,14 +4481,11 @@ Even if you have downloaded files from this website before, the website might ha
         <message name="IDS_MD_EXTENSIONS_ITEM_DETAILS" desc="The text on the button to show more details for a given extension.">
           Details
         </message>
-        <message name="IDS_MD_EXTENSIONS_ITEM_ENABLED" desc="The text to indicate that an extension is now enabled.">
-          Enabled
-        </message>
-        <message name="IDS_MD_EXTENSIONS_ITEM_DISABLED" desc="The text to indicate that an extension is now disabled.">
-          Disabled
-        </message>
         <message name="IDS_MD_EXTENSIONS_ITEM_PERMISSIONS" desc="The label above the list of an extension's permissions.">
           Permissions
+        </message>
+        <message name="IDS_MD_EXTENSIONS_ITEM_REMOVE" desc="The label of the button to remove an extension.">
+          Remove
         </message>
         <message name="IDS_MD_EXTENSIONS_ITEM_SOURCE" desc="The label above an extension's source, which indicates where the extension came from (webstore, third-party, local disk, etc).">
           Source

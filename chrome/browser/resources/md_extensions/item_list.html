@@ -8,9 +8,8 @@
 
 <dom-module id="extensions-item-list">
   <template>
-    <h2>[[header]]</h2>
     <iron-list id="list" items="[[computeShownItems_(items.*, filter)]]"
-        as="item">
+        as="item" grid>
       <template>
         <div class="wrapper">
           <extensions-item data="[[item]]" delegate="[[delegate]]"

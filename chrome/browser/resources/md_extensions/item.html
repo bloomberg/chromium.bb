@@ -5,61 +5,50 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://extensions/strings.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
 
 <dom-module id="extensions-item">
   <template>
     <div id="card-wrapper" class$="[[computeClasses_(data.state)]]">
       <div id="card">
-        <div id="icon-wrapper">
-          <img alt="" id="icon" src="[[data.iconUrl]]">
-        </div>
-        <div id="content">
-          <div class="content-section">
+        <div id="main">
+          <div id="icon-wrapper">
+            <img alt="" id="icon" src="[[data.iconUrl]]">
+          </div>
+          <div id="content">
             <div class="layout horizontal justified center">
               <div id="name">[[data.name]]</div>
-              <paper-icon-button icon="[[computeExpandIcon_(showingDetails_)]]"
-                  id="show-details" on-tap="onShowDetailsTap_">
-              </paper-icon-button>
+              <template is="dom-if" if="[[inDevMode]]">
+                <span id="version">[[data.version]]</span>
+              </template>
             </div>
             <div id="description">[[data.description]]</div>
-            <div id="controls" class="layout horizontal center">
-              <paper-checkbox id="enabled" class="checkbox"
-                  checked="[[isEnabled_(data.state)]]"
-                  on-change="onEnableChange_">
-                [[computeEnableCheckboxLabel_(data.state)]]
-              </paper-checkbox>
-              <span id="version">[[data.version]]</span>
-              <paper-icon-button icon="delete" id="delete-button"
-                  on-tap="onDeleteTap_"></paper-icon-button>
-            </div>
-          </div>
-          <template is="dom-if" if="[[showingDetails_]]">
-            <div id="details-container" class="content-section">
-              <template is="dom-if" if="[[inDevMode]]">
-                <div id="extension-id"></div>
+            <template is="dom-if" if="[[inDevMode]]">
+              <div id="extension-id">[[data.id]]</div>
                 <div id="inspect-views">
-                  <span>[[i18n('itemInspectViews')]]</span>
+                  <span>$i18n{itemInspectViews}</span>
                   <template is="dom-repeat" items="[[data.views]]">
                     <paper-button on-tap="onInspectTap_">
                       [[computeInspectLabel_(item)]]
                     </paper-button>
                   </template>
                 </div>
-              </template>
-              <div class="layout horizontal justified center">
-                <paper-checkbox id="allow-incognito" class="checkbox"
-                    checked="[[data.incognitoAccess.isActive]]"
-                    on-change="onAllowIncognitoChange_">
-                  [[i18n('itemAllowIncognito')]]
-                </paper-checkbox>
-                <paper-button id="details-button" on-tap="onDetailsTap_">
-                  [[i18n('itemDetails')]]
-                </paper-button>
               </div>
-            </div>
-          </template>
+            </template>
+          </div>
+        </div>
+        <div id="button-strip" class="layout horizontal">
+          <div class="layout flex horizontal center">
+            <paper-button id="details-button" on-tap="onDetailsTap_">
+              $i18n{itemDetails}
+            </paper-button>
+            <paper-button id="remove-button" on-tap="onRemoveTap_">
+              $i18n{itemRemove}
+            </paper-button>
+          </div>
+          <paper-toggle-button id="enable-toggle"
+              checked="[[isEnabled_(data.state)]]" on-change="onEnableChange_">
+          </paper-toggle-button>
         </div>
       </div>
       <template is="dom-if" if="[[hasWarnings_(data.*)]]">
@@ -69,11 +58,11 @@
           <div>
             <div id="corrupted-warning"
                 hidden="[[!data.disableReasons.corruptInstall]]">
-              [[i18n('itemCorruptInstall')]]
+              $i18n{itemCorruptInstall}
             </div>
             <div id="suspicious-warning"
                 hidden="[[!data.disableReasons.suspiciousInstall]]">
-              [[i18n('itemSuspiciousInstall')]]
+              $i18n{itemSuspiciousInstall}
             </div>
             <div id="blacklisted-warning">[[data.blacklistText]]</div>
           </div>
