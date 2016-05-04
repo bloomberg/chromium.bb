@@ -636,4 +636,11 @@ public class ThreadedInputConnection implements ChromiumBaseInputConnection {
         });
         return true;
     }
+
+    /**
+     * @see InputConnection#closeConnection()
+     */
+    public void closeConnection() {
+        // TODO(changwan): Implement this. http://crbug.com/595525
+    }
 }
