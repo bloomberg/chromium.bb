@@ -35,7 +35,7 @@ class BluetoothGattManagerClientImpl : public BluetoothGattManagerClient {
                            const ErrorCallback& error_callback) override {
     dbus::MethodCall method_call(
         bluetooth_gatt_manager::kBluetoothGattManagerInterface,
-        bluetooth_gatt_manager::kRegisterService);
+        bluetooth_gatt_manager::kRegisterApplication);
 
     dbus::MessageWriter writer(&method_call);
     writer.AppendObjectPath(application_path);
@@ -66,7 +66,7 @@ class BluetoothGattManagerClientImpl : public BluetoothGattManagerClient {
                              const ErrorCallback& error_callback) override {
     dbus::MethodCall method_call(
         bluetooth_gatt_manager::kBluetoothGattManagerInterface,
-        bluetooth_gatt_manager::kUnregisterService);
+        bluetooth_gatt_manager::kUnregisterApplication);
 
     dbus::MessageWriter writer(&method_call);
     writer.AppendObjectPath(application_path);
