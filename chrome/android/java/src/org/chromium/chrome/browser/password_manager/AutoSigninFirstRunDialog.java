@@ -5,12 +5,12 @@
 package org.chromium.chrome.browser.password_manager;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.method.LinkMovementMethod;
@@ -106,12 +106,15 @@ public class AutoSigninFirstRunDialog
     }
 
     @Override
-    public void onClick(DialogInterface dialog, int whichButton) {}
+    public void onClick(DialogInterface dialog, int whichButton) {
+        if (whichButton == DialogInterface.BUTTON_NEGATIVE) {
+            nativeOnTurnOffClicked(mNativeAutoSigninFirstRunDialog);
+        }
+    }
 
     @Override
     public void onDismiss(DialogInterface dialog) {
         super.onDismiss(dialog);
-        nativeOnTurnOffClicked(mNativeAutoSigninFirstRunDialog);
         destroy();
         mDialog = null;
     }
