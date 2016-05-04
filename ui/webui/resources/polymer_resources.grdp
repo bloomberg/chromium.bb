@@ -287,6 +287,12 @@
   <structure name="IDR_POLYMER_1_0_NEON_ANIMATION_ANIMATIONS_OPAQUE_ANIMATION_EXTRACTED_JS"
              file="../../../third_party/polymer/v1_0/components-chromium/neon-animation/animations/opaque-animation-extracted.js"
              type="chrome_html" />
+  <structure name="IDR_POLYMER_1_0_NEON_ANIMATION_ANIMATIONS_SCALE_DOWN_ANIMATION_HTML"
+             file="../../../third_party/polymer/v1_0/components-chromium/neon-animation/animations/scale-down-animation.html"
+             type="chrome_html" />
+  <structure name="IDR_POLYMER_1_0_NEON_ANIMATION_ANIMATIONS_SCALE_DOWN_ANIMATION_EXTRACTED_JS"
+             file="../../../third_party/polymer/v1_0/components-chromium/neon-animation/animations/scale-down-animation-extracted.js"
+             type="chrome_html" />
   <structure name="IDR_POLYMER_1_0_NEON_ANIMATION_ANIMATIONS_OPAQUE_ANIMATION_HTML"
              file="../../../third_party/polymer/v1_0/components-chromium/neon-animation/animations/opaque-animation.html"
              type="chrome_html" />

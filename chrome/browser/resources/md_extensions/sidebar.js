@@ -2,7 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+cr.exportPath('extensions');
+
+// Declare this here to make closure compiler happy, and us sad.
+/** @enum {number} */
+extensions.ShowingType = {
+  EXTENSIONS: 0,
+  APPS: 1,
+};
+
 cr.define('extensions', function() {
+
   /** @interface */
   var SidebarDelegate = function() {};
 
@@ -24,17 +34,14 @@ cr.define('extensions', function() {
   };
 
   /** @interface */
-  var SidebarScrollDelegate = function() {};
+  var SidebarListDelegate = function() {};
 
-  SidebarScrollDelegate.prototype = {
-    /** Scrolls to the extensions section. */
-    scrollToExtensions: assertNotReached,
-
-    /** Scrolls to the apps section. */
-    scrollToApps: assertNotReached,
-
-    /** Scrolls to the websites section. */
-    scrollToWebsites: assertNotReached,
+  SidebarListDelegate.prototype = {
+    /**
+     * Shows the given type of item.
+     * @param {extensions.ShowingType} type
+     */
+    showType: assertNotReached,
   };
 
   var Sidebar = Polymer({
@@ -45,26 +52,9 @@ cr.define('extensions', function() {
         type: Boolean,
         value: false,
       },
-
-      hideExtensionsButton: {
-        type: Boolean,
-        value: false,
-      },
-
-      hideAppsButton: {
-        type: Boolean,
-        value: false,
-      },
-
-      hideWebsitesButton: {
-        type: Boolean,
-        value: false,
-      },
     },
 
-    behaviors: [
-      I18nBehavior,
-    ],
+    behaviors: [I18nBehavior],
 
     /** @param {extensions.SidebarDelegate} delegate */
     setDelegate: function(delegate) {
@@ -72,25 +62,20 @@ cr.define('extensions', function() {
       this.delegate_ = delegate;
     },
 
-    /** @param {extensions.SidebarScrollDelegate} scrollDelegate */
-    setScrollDelegate: function(scrollDelegate) {
-      /** @private {extensions.SidebarScrollDelegate} */
-      this.scrollDelegate_ = scrollDelegate;
+    /** @param {extensions.SidebarListDelegate} listDelegate */
+    setListDelegate: function(listDelegate) {
+      /** @private {extensions.SidebarListDelegate} */
+      this.listDelegate_ = listDelegate;
     },
 
     /** @private */
     onExtensionsTap_: function() {
-      this.scrollDelegate_.scrollToExtensions();
+      this.listDelegate_.showType(extensions.ShowingType.EXTENSIONS);
     },
 
     /** @private */
     onAppsTap_: function() {
-      this.scrollDelegate_.scrollToApps();
-    },
-
-    /** @private */
-    onWebsitesTap_: function() {
-      this.scrollDelegate_.scrollToWebsites();
+      this.listDelegate_.showType(extensions.ShowingType.APPS);
     },
 
     /** @private */
@@ -118,7 +103,7 @@ cr.define('extensions', function() {
   return {
     Sidebar: Sidebar,
     SidebarDelegate: SidebarDelegate,
-    SidebarScrollDelegate: SidebarScrollDelegate,
+    SidebarListDelegate: SidebarListDelegate,
   };
 });
 

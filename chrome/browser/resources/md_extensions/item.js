@@ -16,9 +16,6 @@ cr.define('extensions', function() {
      */
     setItemEnabled: assertNotReached,
 
-    /** @param {string} id */
-    showItemDetails: assertNotReached,
-
     /**
      * @param {string} id
      * @param {boolean} isAllowedIncognito
@@ -97,7 +94,7 @@ cr.define('extensions', function() {
 
     /** @private */
     onDetailsTap_: function() {
-      this.delegate.showItemDetails(this.data.id);
+      this.fire('extension-item-show-details', {element: this});
     },
 
     /** @private */

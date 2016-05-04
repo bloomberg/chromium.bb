@@ -3,6 +3,9 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/html/promise_resolver.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-header-panel/paper-header-panel.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animated-pages.html">
+<link rel="import" href="chrome://extensions/detail_view.html">
 <link rel="import" href="chrome://extensions/item_list.html">
 <link rel="import" href="chrome://extensions/service.html">
 <link rel="import" href="chrome://extensions/sidebar.html">
@@ -13,28 +16,18 @@
     <paper-header-panel id="panel">
       <extensions-toolbar class="paper-header" id="toolbar">
       </extensions-toolbar>
-      <extensions-sidebar in-dev-mode="[[inDevMode]]"
-          hide-extensions-button="[[computeListHidden_(extensions, extensions.splices)]]"
-          hide-apps-button="[[computeListHidden_(apps, apps.splices)]]"
-          hide-websites-button="[[computeListHidden_(websites, websites.splices)]]">
+      <extensions-sidebar in-dev-mode="[[inDevMode]]">
       </extensions-sidebar>
-      <div id="items">
-        <extensions-item-list id="extensions-list" items="[[extensions]]"
+      <neon-animated-pages id="pages" selected="0">
+        <extensions-item-list id="items-list" items="[[extensions]]"
             delegate="[[itemDelegate]]" header="[[i18n('sidebarExtensions')]]"
             in-dev-mode="[[inDevMode]]" filter="[[filter]]"
-            hidden$="[[computeListHidden_(extensions, extensions.splices)]]">
+            hidden$="[[computeListHidden_(extensions, extensions.splices, apps, apps.splices)]]">
         </extensions-item-list>
-        <extensions-item-list id="apps-list" items="[[apps]]"
-            delegate="[[itemDelegate]]" header="[[i18n('sidebarApps')]]"
-            in-dev-mode="[[inDevMode]]" filter="[[filter]]"
-            hidden$="[[computeListHidden_(apps, apps.splices)]]">
-        </extensions-item-list>
-        <extensions-item-list id="websites-list" items="[[websites]]"
-            delegate="[[itemDelegate]]" header="[[i18n('sidebarWebsites')]]"
-            in-dev-mode="[[inDevMode]]" filter="[[filter]]"
-            hidden$="[[computeListHidden_(websites, websites.splices)]]">
-        </extensions-item-list>
-      </div>
+        <extensions-detail-view id="details-view"
+            on-close="onDetailsViewClose_">
+        </extensions-detail-view>
+      </neon-animated-pages>
     </paper-header-panel>
   </template>
   <link rel="import" type="css" href="chrome://extensions/manager.css">

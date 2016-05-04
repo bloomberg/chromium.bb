@@ -60,17 +60,15 @@ cr.define('extensions', function() {
         type: Array,
         value: function() { return []; },
       },
-
-      /** @type {!Array<!chrome.developerPrivate.ExtensionInfo>} */
-      websites: {
-        type: Array,
-        value: function() { return []; },
-      },
     },
 
     behaviors: [
       I18nBehavior,
     ],
+
+    listeners: {
+      'items-list.extension-item-show-details': 'showItemDetails_',
+    },
 
     created: function() {
       this.readyPromiseResolver = new PromiseResolver();
@@ -80,8 +78,8 @@ cr.define('extensions', function() {
       /** @type {extensions.Sidebar} */
       this.sidebar =
           /** @type {extensions.Sidebar} */(this.$$('extensions-sidebar'));
-      this.scrollHelper_ = new ScrollHelper(this);
-      this.sidebar.setScrollDelegate(this.scrollHelper_);
+      this.listHelper_ = new ListHelper(this);
+      this.sidebar.setListDelegate(this.listHelper_);
       this.$.toolbar.setSearchDelegate(new SearchHelper(this));
       this.readyPromiseResolver.resolve();
     },
@@ -97,8 +95,6 @@ cr.define('extensions', function() {
       switch (type) {
         case ExtensionType.HOSTED_APP:
         case ExtensionType.LEGACY_PACKAGED_APP:
-          listId = 'websites';
-          break;
         case ExtensionType.PLATFORM_APP:
           listId = 'apps';
           break;
@@ -128,11 +124,11 @@ cr.define('extensions', function() {
     },
 
     /**
-     * @param {!Array<!chrome.developerPrivate.ExtensionInfo>} list
      * @return {boolean} Whether the list should be visible.
+     * @private
      */
-    computeListHidden_: function(list) {
-      return list.length == 0;
+    computeListHidden_: function() {
+      return this.$['items-list'].items.length == 0;
     },
 
     /**
@@ -176,35 +172,46 @@ cr.define('extensions', function() {
       assert(index >= 0);
       this.splice(listId, index, 1);
     },
+
+    /**
+     * Shows the detailed view for a given item.
+     * @param {CustomEvent} e
+     * @private
+     */
+    showItemDetails_: function(e) {
+      this.$['details-view'].set('data', assert(e.detail.element.data));
+      this.$.pages.selected = 1;
+    },
+
+    /** @private */
+    onDetailsViewClose_: function() {
+      this.$.pages.selected = 0;
+    }
   });
 
   /**
    * @param {extensions.Manager} manager
    * @constructor
-   * @implements {extensions.SidebarScrollDelegate}
+   * @implements {extensions.SidebarListDelegate}
    */
-  function ScrollHelper(manager) {
-    this.items_ = manager.$.items;
+  function ListHelper(manager) {
+    this.manager_ = manager;
   }
 
-  ScrollHelper.prototype = {
+  ListHelper.prototype = {
     /** @override */
-    scrollToExtensions: function() {
-      this.items_.scrollTop =
-          this.items_.querySelector('#extensions-list').offsetTop;
-    },
-
-    /** @override */
-    scrollToApps: function() {
-      this.items_.scrollTop =
-          this.items_.querySelector('#apps-list').offsetTop;
-    },
-
-    /** @override */
-    scrollToWebsites: function() {
-      this.items_.scrollTop =
-          this.items_.querySelector('#websites-list').offsetTop;
-    },
+    showType: function(type) {
+      var items;
+      switch (type) {
+        case extensions.ShowingType.EXTENSIONS:
+          items = this.manager_.extensions;
+          break;
+        case extensions.ShowingType.APPS:
+          items = this.manager_.apps;
+          break;
+      }
+      this.manager_.$['items-list'].set('items', assert(items));
+    }
   };
 
   /**

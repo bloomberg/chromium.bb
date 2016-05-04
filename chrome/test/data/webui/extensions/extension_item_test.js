@@ -22,13 +22,7 @@ cr.define('extension_item_tests', function() {
     setItemEnabled: function(id, enabled) {},
 
     /** @override */
-    showItemDetails: function(id) {},
-
-    /** @override */
     setItemAllowedIncognito: function(id, enabled) {},
-
-    /** @override */
-    isInDevMode: function() { return false; },
 
     /** @override: */
     inspectItemView: function(id, view) {},
@@ -191,13 +185,21 @@ cr.define('extension_item_tests', function() {
             item.$$('#allow-incognito'), 'setItemAllowedIncognito',
             [item.data.id, true]);
         mockDelegate.testClickingCalls(
-            item.$$('#details-button'), 'showItemDetails', [item.data.id]);
-        mockDelegate.testClickingCalls(
             item.$$('#inspect-views paper-button'),
             'inspectItemView', [item.data.id, item.data.views[0]]);
         mockDelegate.testClickingCalls(
             item.$$('#inspect-views paper-button:nth-of-type(0n + 2)'),
             'inspectItemView', [item.data.id, item.data.views[1]]);
+
+        var satisfied = false;
+        var listener = function(e) {
+          expectTrue(e.detail.element == item);
+          satisfied = true;
+        };
+        item.addEventListener('extension-item-show-details', listener);
+        MockInteractions.tap(item.$$('#details-button'));
+        expectTrue(satisfied);
+        item.removeEventListener('extension-item-show-details', listener);
       });
 
       test(assert(TestNames.Warnings), function() {

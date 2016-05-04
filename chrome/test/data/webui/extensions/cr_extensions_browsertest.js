@@ -170,41 +170,20 @@ TEST_F('CrExtensionsBrowserTestWithInstalledExtension',
 ////////////////////////////////////////////////////////////////////////////////
 // Extension Manager Tests
 
-TEST_F('CrExtensionsBrowserTestWithMultipleExtensionTypesInstalled',
-       'ExtensionManagerSplitSectionsTest', function() {
-  extension_manager_tests.registerTests();
-  mocha.grep(assert(extension_manager_tests.TestNames.SplitSections)).run();
-});
-
 TEST_F('CrExtensionsBrowserTest', 'ExtensionManagerItemOrderTest', function() {
   extension_manager_tests.registerTests();
   mocha.grep(assert(extension_manager_tests.TestNames.ItemOrder)).run();
 });
 
 TEST_F('CrExtensionsBrowserTestWithMultipleExtensionTypesInstalled',
-       'ExtensionManagerExtensionSectionVisibilityTest', function() {
+       'ExtensionManagerItemListVisibilityTest', function() {
   extension_manager_tests.registerTests();
   mocha.grep(
-      assert(extension_manager_tests.TestNames.ExtensionSectionVisibility)).
-          run();
+      assert(extension_manager_tests.TestNames.ItemListVisibility)).run();
 });
 
 TEST_F('CrExtensionsBrowserTestWithMultipleExtensionTypesInstalled',
-       'ExtensionManagerAppSectionVisibilityTest', function() {
+       'ExtensionManagerShowItemsTest', function() {
   extension_manager_tests.registerTests();
-  mocha.grep(
-      assert(extension_manager_tests.TestNames.AppSectionVisibility)).run();
-});
-
-TEST_F('CrExtensionsBrowserTestWithMultipleExtensionTypesInstalled',
-       'ExtensionManagerWebsiteSectionVisibilityTest', function() {
-  extension_manager_tests.registerTests();
-  mocha.grep(
-      assert(extension_manager_tests.TestNames.WebsiteSectionVisibility)).run();
-});
-
-TEST_F('CrExtensionsBrowserTestWithMultipleExtensionTypesInstalled',
-       'ExtensionManagerScrollingTest', function() {
-  extension_manager_tests.registerTests();
-  mocha.grep(assert(extension_manager_tests.TestNames.Scrolling)).run();
+  mocha.grep(assert(extension_manager_tests.TestNames.ShowItems)).run();
 });

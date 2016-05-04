@@ -1,0 +1,95 @@
+<link rel="import" href="chrome://resources/html/cr.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/animations/hero-animation.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/animations/scale-down-animation.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable-behavior.html">
+
+<dom-module id="extensions-detail-view">
+  <template>
+    <style>
+      #main {
+        background-color: white;
+        height: 800px;
+        width: 90%;
+      }
+      #top-bar {
+        align-items: center;
+        color: var(--paper-grey-600);
+        display: flex;
+        height: 40px;
+        margin-bottom: 30px;
+        padding: 8px 12px 0;
+      }
+      #name {
+        flex-grow: 1;
+      }
+      .section {
+        border-bottom: var(--paper-grey-600);
+        padding: 12px 20px;
+      }
+      .section:last-child {
+        border: none;
+      }
+      .section-title {
+        color: var(--paper-grey-800);
+      }
+      .section-content {
+        color: var(--paper-grey-600);
+      }
+      .checkbox {
+        --paper-checkbox-checked-color: var(--google-blue-500);
+        --primary-text-color: var(--paper-grey-800);
+      }
+    </style>
+    <div id="main">
+      <div id="top-bar">
+        <paper-icon-button id="close-button" icon="arrow-back"
+            on-click="onCloseButtonClick_"></paper-icon-button>
+        <span id="name">[[data.name]]</span>
+        <paper-icon-button id="open-in-webstore" icon="open-in-new">
+        </paper-icon-button>
+        <paper-icon-button id="options" icon="settings">
+        </paper-icon-button>
+      </div>
+      <div class="section">
+        <div class="section-title">$i18n{itemDescriptionLabel}</div>
+        <div class="section-content">[[data.description]]</div>
+      </div>
+      <div class="section">
+        <div class="section-title">$i18n{itemVersion}</div>
+        <div class="section-content">[[data.version]]</div>
+      </div>
+      <div class="section">
+        <div class="section-title">$i18n{itemPermissions}</div>
+        <div class="section-content">TODO</div>
+      </div>
+      <template is="dom-if"
+          if="[[hasDependentExtensions_(data.dependentExtensions.splices)]]">
+        <div class="section">
+          <div class="section-title">$i18n{itemDependencies}</div>
+          <div class="section-content">TODO</div>
+        </div>
+      </template>
+      <template is="dom-if" if="[[shouldShowOptionsSection_(data.*)]]">
+        <div class="section">
+          <template is="dom-if" if="[[data.incognitoAccess.isEnabled]]">
+            <paper-checkbox id="allow-incognito" class="checkbox"
+                checked="[[data.incognitoAccess.isActive]]"
+                on-change="onAllowIncognitoChange_">
+              $i18n{itemAllowIncognito}
+            </paper-checkbox>
+          </template>
+        </div>
+      </template>
+      <div class="section">
+        <div class="section-title">$i18n{itemSource}</div>
+        <div class="section-content">TODO</div>
+      </div>
+    </div>
+  </template>
+  <script src="chrome://extensions/detail_view.js"></script>
+</dom-module>

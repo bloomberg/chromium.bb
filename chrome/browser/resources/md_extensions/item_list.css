@@ -2,12 +2,20 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
+:host {
+  @apply(--layout-vertical);
+}
+
 h2 {
   color: #5a5a5a;
   font-size: 1.1em;
   font-weight: normal;
   margin-bottom: 0;
   margin-top: 30px;
+}
+
+iron-list {
+  @apply(--layout-flex);
 }
 
 .wrapper {

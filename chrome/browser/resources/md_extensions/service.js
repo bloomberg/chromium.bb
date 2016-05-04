@@ -108,9 +108,6 @@ cr.define('extensions', function() {
     },
 
     /** @override */
-    showItemDetails: function(id) {},
-
-    /** @override */
     setItemAllowedIncognito: function(id, isAllowedIncognito) {
       chrome.developerPrivate.updateExtensionConfiguration({
         extensionId: id,

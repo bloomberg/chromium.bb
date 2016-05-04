@@ -47,8 +47,6 @@ content::WebUIDataSource* CreateMdExtensionsSource() {
   source->AddLocalizedString("sidebarPack", IDS_MD_EXTENSIONS_SIDEBAR_PACK);
   source->AddLocalizedString("sidebarUpdateNow",
                              IDS_MD_EXTENSIONS_SIDEBAR_UPDATE_NOW);
-  source->AddLocalizedString("sidebarWebsites",
-                             IDS_MD_EXTENSIONS_SIDEBAR_WEBSITES);
   source->AddLocalizedString("developerMode",
                              IDS_MD_EXTENSIONS_SIDEBAR_DEVELOPER_MODE);
   source->AddLocalizedString("getMoreExtensions",
@@ -60,9 +58,19 @@ content::WebUIDataSource* CreateMdExtensionsSource() {
                              IDS_MD_EXTENSIONS_ITEM_INSPECT_VIEWS);
   source->AddLocalizedString("itemAllowIncognito",
                              IDS_MD_EXTENSIONS_ITEM_ALLOW_INCOGNITO);
+  source->AddLocalizedString("itemDescriptionLabel",
+                             IDS_MD_EXTENSIONS_ITEM_DESCRIPTION);
+  source->AddLocalizedString("itemDependencies",
+                             IDS_MD_EXTENSIONS_ITEM_DEPENDENCIES);
   source->AddLocalizedString("itemDetails", IDS_MD_EXTENSIONS_ITEM_DETAILS);
   source->AddLocalizedString("itemEnabled", IDS_MD_EXTENSIONS_ITEM_ENABLED);
   source->AddLocalizedString("itemDisabled", IDS_MD_EXTENSIONS_ITEM_DISABLED);
+  source->AddLocalizedString("itemPermissions",
+                             IDS_MD_EXTENSIONS_ITEM_PERMISSIONS);
+  source->AddLocalizedString("itemSource",
+                             IDS_MD_EXTENSIONS_ITEM_SOURCE);
+  source->AddLocalizedString("itemVersion",
+                             IDS_MD_EXTENSIONS_ITEM_SOURCE);
   source->AddLocalizedString("itemCorruptInstall",
                              IDS_EXTENSIONS_CORRUPTED_EXTENSION);
   source->AddString(
@@ -80,6 +88,9 @@ content::WebUIDataSource* CreateMdExtensionsSource() {
                              IDS_EXTENSIONS_VIEW_IFRAME);
 
   source->AddResourcePath("extensions.js", IDR_MD_EXTENSIONS_EXTENSIONS_JS);
+  source->AddResourcePath("detail_view.html",
+                          IDR_MD_EXTENSIONS_DETAIL_VIEW_HTML);
+  source->AddResourcePath("detail_view.js", IDR_MD_EXTENSIONS_DETAIL_VIEW_JS);
   source->AddResourcePath("manager.css", IDR_MD_EXTENSIONS_MANAGER_CSS);
   source->AddResourcePath("manager.html", IDR_MD_EXTENSIONS_MANAGER_HTML);
   source->AddResourcePath("manager.js", IDR_MD_EXTENSIONS_MANAGER_JS);

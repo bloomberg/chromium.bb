@@ -86,8 +86,7 @@ cr.define('extension_service_tests', function() {
       var getItemData = function(id) {
         var elMatches = function(el) { return el.id == id; };
         return manager.extensions.find(elMatches) ||
-               manager.apps.find(elMatches) ||
-               manager.websites.find(elMatches);
+               manager.apps.find(elMatches);
       };
 
       suiteSetup(function() {

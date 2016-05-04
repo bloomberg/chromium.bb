@@ -4472,6 +4472,12 @@ Even if you have downloaded files from this website before, the website might ha
         <message name="IDS_MD_EXTENSIONS_ITEM_ALLOW_INCOGNITO" desc="The text next to the checkbox to enable an extension in incognito mode.">
           Allow in incognito
         </message>
+        <message name="IDS_MD_EXTENSIONS_ITEM_DEPENDENCIES" desc="The label above a list of any extensions that depend on this extension.">
+          The following extensions depend on this extension:
+        </message>
+        <message name="IDS_MD_EXTENSIONS_ITEM_DESCRIPTION" desc="The label above the description for a given item.">
+          Description
+        </message>
         <message name="IDS_MD_EXTENSIONS_ITEM_DETAILS" desc="The text on the button to show more details for a given extension.">
           Details
         </message>
@@ -4480,6 +4486,15 @@ Even if you have downloaded files from this website before, the website might ha
         </message>
         <message name="IDS_MD_EXTENSIONS_ITEM_DISABLED" desc="The text to indicate that an extension is now disabled.">
           Disabled
+        </message>
+        <message name="IDS_MD_EXTENSIONS_ITEM_PERMISSIONS" desc="The label above the list of an extension's permissions.">
+          Permissions
+        </message>
+        <message name="IDS_MD_EXTENSIONS_ITEM_SOURCE" desc="The label above an extension's source, which indicates where the extension came from (webstore, third-party, local disk, etc).">
+          Source
+        </message>
+        <message name="IDS_MD_EXTENSIONS_ITEM_VERSION" desc="The label above an extension's version.">
+          Version
         </message>
         <message name="IDS_MD_EXTENSIONS_TOOLBAR_TITLE" desc="The text displayed in the toolbar of the chrome://extensions page.">
           Extensions &amp; Apps
@@ -4501,9 +4516,6 @@ Even if you have downloaded files from this website before, the website might ha
         </message>
         <message name="IDS_MD_EXTENSIONS_SIDEBAR_UPDATE_NOW" desc="The text displayed in the sidebar to update existing extensions now.">
           Update extensions now
-        </message>
-        <message name="IDS_MD_EXTENSIONS_SIDEBAR_WEBSITES" desc="The text displayed in the sidebar to go to the websites section of the page.">
-          Websites
         </message>
         <message name="IDS_MD_EXTENSIONS_SIDEBAR_DEVELOPER_MODE" desc="The text displayed next to the checkbox to toggle developer mode in the extensions page.">
           Developer mode
