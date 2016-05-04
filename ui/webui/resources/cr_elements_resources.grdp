@@ -33,6 +33,9 @@
   <structure name="IDR_CR_ELEMENTS_CR_EXPAND_BUTTON_JS"
              file="../../webui/resources/cr_elements/cr_expand_button/cr_expand_button.js"
              type="chrome_html" />
+  <structure name="IDR_CR_ELEMENTS_CR_ICONS_HTML"
+             file="../../webui/resources/cr_elements/cr_icons.html"
+             type="chrome_html" />
   <structure name="IDR_CR_ELEMENTS_CR_NETWORK_ICON_CSS"
              file="../../webui/resources/cr_elements/network/cr_network_icon.css"
              type="chrome_html" />

@@ -30,27 +30,32 @@ var CrPolicyIndicatorBehavior = {
 
   /**
    * @param {CrPolicyIndicatorType} type
-   * @return {string} The iron-icons icon name.
+   * @return {string} The iron-icon icon name.
    * @private
    */
   getPolicyIndicatorIcon: function(type) {
+    var icon = '';
     switch (type) {
       case CrPolicyIndicatorType.NONE:
-        return '';
+        return icon;
       case CrPolicyIndicatorType.PRIMARY_USER:
-        return 'social:group';
+        icon = 'group';
+        break;
       case CrPolicyIndicatorType.OWNER:
-        return 'social:person';
+        icon = 'person';
+        break;
       case CrPolicyIndicatorType.USER_POLICY:
       case CrPolicyIndicatorType.DEVICE_POLICY:
-        return 'social:domain';
-      case CrPolicyIndicatorType.EXTENSION:
-        return 'extension';
       case CrPolicyIndicatorType.RECOMMENDED:
-        return 'social:domain';
+        icon = 'domain';
+        break;
+      case CrPolicyIndicatorType.EXTENSION:
+        icon = 'extension';
+        break;
+      default:
+        assertNotReached();
     }
-    assertNotReached();
-    return '';
+    return 'cr-icons:' + icon;
   },
 
   /**

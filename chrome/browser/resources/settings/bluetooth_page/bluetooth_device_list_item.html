@@ -1,3 +1,4 @@
+<link rel="import" href="chrome://resources/cr_elements/cr_icons.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-dropdown/iron-dropdown.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
@@ -37,7 +38,8 @@
       <span hidden$="[[!device.connecting]]"
           i18n-content="bluetoothConnecting"></span>
       <div hidden$="[[!device.paired]]" on-tap="doNothing_">
-        <paper-icon-button icon="more-vert" toggles active="{{dropdownOpened}}">
+        <paper-icon-button icon="cr-icons:more-vert" toggles
+            active="{{dropdownOpened}}">
         </paper-icon-button>
         <iron-dropdown opened="{{dropdownOpened}}" on-tap="menuSelected_">
           <div class="dropdown-content">

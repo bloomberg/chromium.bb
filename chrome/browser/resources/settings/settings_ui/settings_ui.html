@@ -1,3 +1,4 @@
+<link rel="import" href="chrome://resources/cr_elements/cr_icons.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-drawer-panel/paper-drawer-panel.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-header-panel/paper-header-panel.html">
@@ -8,7 +9,6 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://md-settings/direction_delegate.html">
 <link rel="import" href="chrome://md-settings/i18n_setup.html">
-<link rel="import" href="chrome://md-settings/icons.html">
 <link rel="import" href="chrome://md-settings/settings_main/settings_main.html">
 <link rel="import" href="chrome://md-settings/settings_menu/settings_menu.html">
 <link rel="import" href="chrome://md-settings/settings_page/settings_router.html">
@@ -151,12 +151,12 @@
             $i18n{settings}
           </div>
           <div class="last">
-            <paper-icon-button icon="md-settings-icons:search" toggles>
+            <paper-icon-button icon="cr-icons:search" toggles>
             </paper-icon-button>
             <paper-input id="search-input" label="$i18n{internalSearch}"
                 no-label-float>
               <!-- TODO(dschuyler): implement internal search. -->
-              <paper-icon-button suffix icon="md-settings-icons:cancel">
+              <paper-icon-button suffix icon="cr-icons:cancel">
               </paper-icon-button>
             </paper-input>
           </div>
