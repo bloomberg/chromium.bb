@@ -1,18 +1,13 @@
 # Updating clang
 
 1.  Sync your Chromium tree to the latest revision to pick up any plugin
-    changes and test the new compiler against ToT
-1.  Update clang revision in tools/clang/scripts/update.py, upload CL to
-    rietveld
-1.  Run tools/clang/scripts/package.py to create a tgz of the binary (mac and
-    linux)
-1.  Do a local clobber build with that clang (mac and linux). Check that
-    everything builds fine and no new warnings appear. (Optional if the
-    revision picked in 1 was vetted by other means already.)
-1.  Upload the binaries using gsutil, they will appear at
-    http://commondatastorage.googleapis.com/chromium-browser-clang/index.html
-1.  Run goma package update script to push these packages to goma, send email
-1.  `git cl try &&
+    changes
+1.  Run `python tools/clang/scripts/upload_revision.py --clang_revision=NNNN`
+    with the target LLVM SVN revision number
+1.  If the clang upload trybots succeed, run the goma package update script to
+    push these packages to goma. If you do not have the necessary credentials to
+    do the upload, ask clang@chromium.org to find someone who does
+1.  Run an exhaustive set of try jobs to test the new compiler: `git cl try &&
     git cl try -m tryserver.chromium.mac -b mac_chromium_rel_ng -b
     mac_chromium_asan_rel_ng -b mac_chromium_gn_dbg -b ios_rel_device_ninja &&
     git cl try -m tryserver.chromium.linux -b linux_chromium_chromeos_dbg_ng
