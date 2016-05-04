@@ -34,6 +34,7 @@ USHORT DeviceUsages[] = {
 
 const uint32_t kAxisMinimumUsageNumber = 0x30;
 const uint32_t kGameControlsUsagePage = 0x05;
+const uint32_t kButtonUsagePage = 0x09;
 
 }  // namespace
 
@@ -296,7 +297,8 @@ RawGamepadInfo* RawInputDataFetcher::ParseGamepadInfo(HANDLE hDevice) {
     DCHECK_EQ(HIDP_STATUS_SUCCESS, status);
 
     for (uint32_t i = 0; i < count; ++i) {
-      if (button_caps[i].Range.UsageMin <= WebGamepad::buttonsLengthCap) {
+      if (button_caps[i].Range.UsageMin <= WebGamepad::buttonsLengthCap &&
+          button_caps[i].UsagePage == kButtonUsagePage) {
         uint32_t max_index =
             std::min(WebGamepad::buttonsLengthCap,
                      static_cast<size_t>(button_caps[i].Range.UsageMax));
@@ -395,7 +397,8 @@ void RawInputDataFetcher::UpdateGamepad(
       // Set each reported button to true.
       for (uint32_t j = 0; j < buttons_length; j++) {
         int32_t button_index = usages[j].Usage - 1;
-        if (button_index >= 0 &&
+        if (usages[j].UsagePage == kButtonUsagePage &&
+            button_index >= 0 &&
             button_index <
                 static_cast<int>(blink::WebGamepad::buttonsLengthCap)) {
           gamepad_info->buttons[button_index] = true;
