@@ -21,6 +21,7 @@
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
+#include "ui/base/material_design/material_design_controller.h"
 
 using ::testing::Return;
 using ::testing::StrictMock;
@@ -162,7 +163,11 @@ TEST_F(AutocompleteTextFieldCellTest, TextFrame) {
   textFrame = [cell textFrameForFrame:bounds];
   EXPECT_FALSE(NSIsEmptyRect(textFrame));
   EXPECT_TRUE(NSContainsRect(bounds, textFrame));
-  EXPECT_EQ(NSMinX(bounds), NSMinX(textFrame));
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    EXPECT_EQ(1, NSMinX(textFrame));
+  } else {
+    EXPECT_EQ(NSMinX(bounds), NSMinX(textFrame));
+  }
   EXPECT_EQ(NSMaxX(bounds), NSMaxX(textFrame));
   EXPECT_TRUE(NSContainsRect(cursorFrame, textFrame));
 
