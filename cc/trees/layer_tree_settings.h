@@ -73,9 +73,9 @@ class CC_EXPORT LayerTreeSettings {
   gfx::Size default_tile_size;
   gfx::Size max_untiled_layer_size;
   gfx::Size minimum_occlusion_tracking_size;
-  size_t tiling_interest_area_padding;
+  int tiling_interest_area_padding;
   float skewport_target_time_in_seconds;
-  int skewport_extrapolation_limit_in_content_pixels;
+  int skewport_extrapolation_limit_in_screen_pixels;
   size_t max_memory_for_prepaint_percentage;
   bool use_zero_copy;
   bool use_partial_raster;

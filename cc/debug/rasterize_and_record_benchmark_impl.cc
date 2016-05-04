@@ -174,7 +174,7 @@ void RasterizeAndRecordBenchmarkImpl::RunOnLayer(PictureLayerImpl* layer) {
       PictureLayerTilingSet::Create(
           layer->GetTree(), &client, settings.tiling_interest_area_padding,
           settings.skewport_target_time_in_seconds,
-          settings.skewport_extrapolation_limit_in_content_pixels);
+          settings.skewport_extrapolation_limit_in_screen_pixels);
 
   PictureLayerTiling* tiling =
       tiling_set->AddTiling(1.f, layer->GetRasterSource());

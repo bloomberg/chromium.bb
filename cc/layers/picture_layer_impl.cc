@@ -510,7 +510,7 @@ void PictureLayerImpl::UpdateViewportRectForTilePriorityInContentSpace() {
       gfx::Rect padded_bounds(bounds());
       int padding_amount = layer_tree_impl()
                                ->settings()
-                               .skewport_extrapolation_limit_in_content_pixels *
+                               .skewport_extrapolation_limit_in_screen_pixels *
                            MaximumTilingContentsScale();
       padded_bounds.Inset(-padding_amount, -padding_amount);
       visible_rect_in_content_space.Intersect(padded_bounds);
@@ -1192,7 +1192,7 @@ PictureLayerImpl::CreatePictureLayerTilingSet() {
       layer_tree_impl()->use_gpu_rasterization()
           ? settings.gpu_rasterization_skewport_target_time_in_seconds
           : settings.skewport_target_time_in_seconds,
-      settings.skewport_extrapolation_limit_in_content_pixels);
+      settings.skewport_extrapolation_limit_in_screen_pixels);
 }
 
 void PictureLayerImpl::UpdateIdealScales() {

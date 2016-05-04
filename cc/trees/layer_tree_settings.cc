@@ -86,7 +86,7 @@ LayerTreeSettings::LayerTreeSettings()
       // 3000 pixels should give sufficient area for prepainting.
       tiling_interest_area_padding(3000),
       skewport_target_time_in_seconds(1.0f),
-      skewport_extrapolation_limit_in_content_pixels(2000),
+      skewport_extrapolation_limit_in_screen_pixels(2000),
       max_memory_for_prepaint_percentage(100),
       use_zero_copy(false),
       use_partial_raster(false),
@@ -152,8 +152,8 @@ bool LayerTreeSettings::operator==(const LayerTreeSettings& other) const {
          tiling_interest_area_padding == other.tiling_interest_area_padding &&
          skewport_target_time_in_seconds ==
              other.skewport_target_time_in_seconds &&
-         skewport_extrapolation_limit_in_content_pixels ==
-             other.skewport_extrapolation_limit_in_content_pixels &&
+         skewport_extrapolation_limit_in_screen_pixels ==
+             other.skewport_extrapolation_limit_in_screen_pixels &&
          max_memory_for_prepaint_percentage ==
              other.max_memory_for_prepaint_percentage &&
          use_zero_copy == other.use_zero_copy &&
@@ -212,8 +212,8 @@ void LayerTreeSettings::ToProtobuf(proto::LayerTreeSettings* proto) const {
               proto->mutable_minimum_occlusion_tracking_size());
   proto->set_tiling_interest_area_padding(tiling_interest_area_padding);
   proto->set_skewport_target_time_in_seconds(skewport_target_time_in_seconds);
-  proto->set_skewport_extrapolation_limit_in_content_pixels(
-      skewport_extrapolation_limit_in_content_pixels);
+  proto->set_skewport_extrapolation_limit_in_screen_pixels(
+      skewport_extrapolation_limit_in_screen_pixels);
   proto->set_max_memory_for_prepaint_percentage(
       max_memory_for_prepaint_percentage);
   proto->set_use_zero_copy(use_zero_copy);
@@ -273,8 +273,8 @@ void LayerTreeSettings::FromProtobuf(const proto::LayerTreeSettings& proto) {
       ProtoToSize(proto.minimum_occlusion_tracking_size());
   tiling_interest_area_padding = proto.tiling_interest_area_padding();
   skewport_target_time_in_seconds = proto.skewport_target_time_in_seconds();
-  skewport_extrapolation_limit_in_content_pixels =
-      proto.skewport_extrapolation_limit_in_content_pixels();
+  skewport_extrapolation_limit_in_screen_pixels =
+      proto.skewport_extrapolation_limit_in_screen_pixels();
   max_memory_for_prepaint_percentage =
       proto.max_memory_for_prepaint_percentage();
   use_zero_copy = proto.use_zero_copy();

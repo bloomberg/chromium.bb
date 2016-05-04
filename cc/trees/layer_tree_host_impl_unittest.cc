@@ -10093,8 +10093,8 @@ TEST_F(LayerTreeHostImplTest, InvalidLayerNotAddedToRasterQueue) {
   layer->tilings()->tiling_at(0)->set_resolution(
       TileResolution::HIGH_RESOLUTION);
   layer->tilings()->tiling_at(0)->CreateAllTilesForTesting();
-  layer->tilings()->tiling_at(0)->ComputeTilePriorityRects(
-      gfx::Rect(gfx::Size(10, 10)), 1.f, 1.0, Occlusion());
+  layer->tilings()->UpdateTilePriorities(gfx::Rect(gfx::Size(10, 10)), 1.f, 1.0,
+                                         Occlusion(), true);
   host_impl_->pending_tree()->SetRootLayer(std::move(layer));
 
   FakePictureLayerImpl* root_layer = static_cast<FakePictureLayerImpl*>(

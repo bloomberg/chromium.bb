@@ -70,8 +70,8 @@ TEST(LayerTreeSettingsTest, AllMembersChanged) {
   settings.tiling_interest_area_padding =
       settings.tiling_interest_area_padding * 3 + 1;
   settings.skewport_target_time_in_seconds = 0.53f;
-  settings.skewport_extrapolation_limit_in_content_pixels =
-      settings.skewport_extrapolation_limit_in_content_pixels * 3 + 1;
+  settings.skewport_extrapolation_limit_in_screen_pixels =
+      settings.skewport_extrapolation_limit_in_screen_pixels * 3 + 1;
   settings.max_memory_for_prepaint_percentage =
       settings.max_memory_for_prepaint_percentage * 3 + 1;
   settings.use_zero_copy = !settings.use_zero_copy;
@@ -130,7 +130,7 @@ TEST(LayerTreeSettingsTest, ArbitraryValues) {
   settings.minimum_occlusion_tracking_size = gfx::Size(57, 58);
   settings.tiling_interest_area_padding = 59;
   settings.skewport_target_time_in_seconds = 0.6f;
-  settings.skewport_extrapolation_limit_in_content_pixels = 61;
+  settings.skewport_extrapolation_limit_in_screen_pixels = 61;
   settings.max_memory_for_prepaint_percentage = 62;
   settings.use_zero_copy = true;
   settings.use_partial_raster = true;

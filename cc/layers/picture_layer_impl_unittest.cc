@@ -2277,7 +2277,8 @@ TEST_F(PictureLayerImplTest, ShareTilesOnNextFrame) {
   EXPECT_TRUE(pending_tiling->TileAt(1, 1));
 
   // Drop the tiles on the active tree and recreate them.
-  active_tiling->ComputeTilePriorityRects(gfx::Rect(), 1.f, 1.0, Occlusion());
+  active_layer_->tilings()->UpdateTilePriorities(gfx::Rect(), 1.f, 1.0,
+                                                 Occlusion(), true);
   EXPECT_TRUE(active_tiling->AllTilesForTesting().empty());
   active_tiling->CreateAllTilesForTesting();
 

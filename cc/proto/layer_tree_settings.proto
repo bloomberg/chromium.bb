@@ -52,7 +52,7 @@ message LayerTreeSettings {
   optional Size minimum_occlusion_tracking_size = 29;
   optional uint32 tiling_interest_area_padding = 30;
   optional float skewport_target_time_in_seconds = 31;
-  optional int32 skewport_extrapolation_limit_in_content_pixels = 32;
+  optional int32 skewport_extrapolation_limit_in_screen_pixels = 32;
   optional uint32 max_memory_for_prepaint_percentage = 33;
   optional bool use_zero_copy = 35;
   optional bool use_partial_raster = 36;
