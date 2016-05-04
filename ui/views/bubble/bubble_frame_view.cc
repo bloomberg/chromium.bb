@@ -302,6 +302,7 @@ void BubbleFrameView::Layout() {
 
   gfx::Size title_icon_pref_size(title_icon_->GetPreferredSize());
   int padding = 0;
+  int title_height = title_icon_pref_size.height();
 
   if (title_->visible() && !title_->text().empty()) {
     if (title_icon_pref_size.width() > 0)
@@ -310,11 +311,11 @@ void BubbleFrameView::Layout() {
     const int title_label_x =
         bounds.x() + title_icon_pref_size.width() + padding;
     title_->SizeToFit(std::max(1, close_->x() - title_label_x));
-    title_->SetPosition(gfx::Point(title_label_x, bounds.y()));
+    title_height = std::max(title_height, title_->height());
+    title_->SetPosition(gfx::Point(
+        title_label_x, bounds.y() + (title_height - title_->height()) / 2));
   }
 
-  const int title_height =
-      std::max(title_icon_pref_size.height(), title_->height());
   title_icon_->SetBounds(bounds.x(), bounds.y(), title_icon_pref_size.width(),
                          title_height);
   bounds.set_width(title_->bounds().right() - bounds.x());

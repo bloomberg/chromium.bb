@@ -218,7 +218,6 @@ bool ExtensionInstalledBubbleView::ShouldShowCloseButton() const {
 }
 
 void ExtensionInstalledBubbleView::Init() {
-  gfx::Insets insets = margins();
   UpdateAnchorView();
 
   // The Extension Installed bubble takes on various forms, depending on the
@@ -237,9 +236,6 @@ void ExtensionInstalledBubbleView::Init() {
   // ... for other types, either a description of how to manage the extension
   //     or a link to configure the keybinding shortcut (if one exists).
   // Extra info can include a promo for signing into sync.
-
-  // Move explanatory text closer to the title.
-  set_margins(gfx::Insets(0, insets.left(), insets.bottom(), insets.right()));
 
   std::unique_ptr<views::BoxLayout> layout(
       new views::BoxLayout(views::BoxLayout::kVertical, 0, 0,
