@@ -35,7 +35,6 @@
 
 namespace v8 {
 class Isolate;
-enum class MemoryPressureLevel;
 }
 
 namespace blink {
@@ -84,10 +83,6 @@ BLINK_EXPORT void resetPluginCache(bool reloadPages = false);
 // The embedder should call this periodically in an attempt to balance overall
 // performance and memory usage.
 BLINK_EXPORT void decommitFreeableMemory();
-
-// Send memory pressure notification to worker thread isolate.
-BLINK_EXPORT void MemoryPressureNotificationToWorkerThreadIsolates(
-    v8::MemoryPressureLevel);
 
 } // namespace blink
 
