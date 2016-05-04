@@ -27,7 +27,7 @@ void STHDistributor::NewSTHObserved(const SignedTreeHead& sth) {
   FOR_EACH_OBSERVER(STHObserver, observer_list_, NewSTHObserved(sth));
 
   if (sth.log_id.compare(0, sth.log_id.size(), kPilotLogID,
-                         arraysize(kPilotLogID)) != 0)
+                         arraysize(kPilotLogID) - 1) != 0)
     return;
 
   const base::TimeDelta sth_age = base::Time::Now() - sth.timestamp;
