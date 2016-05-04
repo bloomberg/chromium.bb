@@ -19,7 +19,7 @@ class ScopedTargetHandler;
 
 namespace views {
 
-class InkDropAnimationController;
+class InkDrop;
 class InkDropHost;
 class View;
 
@@ -58,7 +58,7 @@ class VIEWS_EXPORT ButtonInkDropDelegate : public InkDropDelegate,
   gfx::Point last_ink_drop_location_;
 
   // Animation controller for the ink drop ripple effect.
-  std::unique_ptr<InkDropAnimationController> ink_drop_animation_controller_;
+  std::unique_ptr<InkDrop> ink_drop_;
 
   DISALLOW_COPY_AND_ASSIGN(ButtonInkDropDelegate);
 };

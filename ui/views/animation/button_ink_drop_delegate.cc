@@ -6,8 +6,8 @@
 
 #include "ui/events/event.h"
 #include "ui/events/scoped_target_handler.h"
-#include "ui/views/animation/ink_drop_animation_controller.h"
-#include "ui/views/animation/ink_drop_animation_controller_factory.h"
+#include "ui/views/animation/ink_drop.h"
+#include "ui/views/animation/ink_drop_factory.h"
 #include "ui/views/animation/ink_drop_host.h"
 #include "ui/views/animation/ink_drop_state.h"
 #include "ui/views/view.h"
@@ -18,23 +18,21 @@ ButtonInkDropDelegate::ButtonInkDropDelegate(InkDropHost* ink_drop_host,
                                              View* view)
     : target_handler_(new ui::ScopedTargetHandler(view, this)),
       ink_drop_host_(ink_drop_host),
-      ink_drop_animation_controller_(
-          InkDropAnimationControllerFactory::CreateInkDropAnimationController(
-              ink_drop_host_)) {}
+      ink_drop_(InkDropFactory::CreateInkDrop(ink_drop_host_)) {}
 
 ButtonInkDropDelegate::~ButtonInkDropDelegate() {
 }
 
 void ButtonInkDropDelegate::OnAction(InkDropState state) {
-  ink_drop_animation_controller_->AnimateToState(state);
+  ink_drop_->AnimateToState(state);
 }
 
 void ButtonInkDropDelegate::SnapToActivated() {
-  ink_drop_animation_controller_->SnapToActivated();
+  ink_drop_->SnapToActivated();
 }
 
 void ButtonInkDropDelegate::SetHovered(bool is_hovered) {
-  ink_drop_animation_controller_->SetHovered(is_hovered);
+  ink_drop_->SetHovered(is_hovered);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -54,8 +52,7 @@ void ButtonInkDropDelegate::OnMouseEvent(ui::MouseEvent* event) {
 }
 
 void ButtonInkDropDelegate::OnGestureEvent(ui::GestureEvent* event) {
-  InkDropState current_ink_drop_state =
-      ink_drop_animation_controller_->GetTargetInkDropState();
+  InkDropState current_ink_drop_state = ink_drop_->GetTargetInkDropState();
 
   InkDropState ink_drop_state = InkDropState::HIDDEN;
   switch (event->type()) {
@@ -93,7 +90,7 @@ void ButtonInkDropDelegate::OnGestureEvent(ui::GestureEvent* event) {
     // would prematurely pre-empt these animations.
     return;
   }
-  ink_drop_animation_controller_->AnimateToState(ink_drop_state);
+  ink_drop_->AnimateToState(ink_drop_state);
 }
 
 }  // namespace views

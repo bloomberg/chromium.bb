@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_ANIMATION_INK_DROP_ANIMATION_CONTROLLER_H_
-#define UI_VIEWS_ANIMATION_INK_DROP_ANIMATION_CONTROLLER_H_
+#ifndef UI_VIEWS_ANIMATION_INK_DROP_H_
+#define UI_VIEWS_ANIMATION_INK_DROP_H_
 
 #include <memory>
 
@@ -24,9 +24,9 @@ namespace views {
 
 // Pure virtual base class that manages the lifetime and state of an ink drop
 // ripple as well as visual hover state feedback.
-class VIEWS_EXPORT InkDropAnimationController {
+class VIEWS_EXPORT InkDrop {
  public:
-  virtual ~InkDropAnimationController() {}
+  virtual ~InkDrop() {}
 
   // Gets the target state of the ink drop.
   virtual InkDropState GetTargetInkDropState() const = 0;
@@ -48,12 +48,12 @@ class VIEWS_EXPORT InkDropAnimationController {
   virtual void SetHovered(bool is_hovered) = 0;
 
  protected:
-  InkDropAnimationController() {}
+  InkDrop() {}
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(InkDropAnimationController);
+  DISALLOW_COPY_AND_ASSIGN(InkDrop);
 };
 
 }  // namespace views
 
-#endif  // UI_VIEWS_ANIMATION_INK_DROP_ANIMATION_CONTROLLER_H_
+#endif  // UI_VIEWS_ANIMATION_INK_DROP_H_

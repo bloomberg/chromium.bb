@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_ANIMATION_INK_DROP_ANIMATION_CONTROLLER_IMPL_H_
-#define UI_VIEWS_ANIMATION_INK_DROP_ANIMATION_CONTROLLER_IMPL_H_
+#ifndef UI_VIEWS_ANIMATION_INK_DROP_IMPL_H_
+#define UI_VIEWS_ANIMATION_INK_DROP_IMPL_H_
 
 #include <memory>
 
 #include "base/macros.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/views/animation/ink_drop_animation_controller.h"
+#include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_hover_observer.h"
 #include "ui/views/animation/ink_drop_ripple_observer.h"
 #include "ui/views/views_export.h"
@@ -21,26 +21,25 @@ class Timer;
 
 namespace views {
 namespace test {
-class InkDropAnimationControllerImplTestApi;
+class InkDropImplTestApi;
 }  // namespace test
 
 class InkDropRipple;
 class InkDropHost;
 class InkDropHover;
-class InkDropAnimationControllerFactoryTest;
+class InkDropFactoryTest;
 
-// A functional implementation of an InkDropAnimationController.
-class VIEWS_EXPORT InkDropAnimationControllerImpl
-    : public InkDropAnimationController,
-      public InkDropRippleObserver,
-      public InkDropHoverObserver {
+// A functional implementation of an InkDrop.
+class VIEWS_EXPORT InkDropImpl : public InkDrop,
+                                 public InkDropRippleObserver,
+                                 public InkDropHoverObserver {
  public:
-  // Constructs an ink drop controller that will attach the ink drop to the
-  // given |ink_drop_host|.
-  explicit InkDropAnimationControllerImpl(InkDropHost* ink_drop_host);
-  ~InkDropAnimationControllerImpl() override;
+  // Constructs an ink drop that will attach the ink drop to the given
+  // |ink_drop_host|.
+  explicit InkDropImpl(InkDropHost* ink_drop_host);
+  ~InkDropImpl() override;
 
-  // InkDropAnimationController:
+  // InkDrop:
   InkDropState GetTargetInkDropState() const override;
   bool IsVisible() const override;
   void AnimateToState(InkDropState ink_drop_state) override;
@@ -48,7 +47,7 @@ class VIEWS_EXPORT InkDropAnimationControllerImpl
   void SetHovered(bool is_hovered) override;
 
  private:
-  friend class test::InkDropAnimationControllerImplTestApi;
+  friend class test::InkDropImplTestApi;
 
   // Destroys |ink_drop_ripple_| if it's targeted to the HIDDEN state.
   void DestroyHiddenTargetedAnimations();
@@ -134,9 +133,9 @@ class VIEWS_EXPORT InkDropAnimationControllerImpl
   // animation.
   std::unique_ptr<base::Timer> hover_after_ripple_timer_;
 
-  DISALLOW_COPY_AND_ASSIGN(InkDropAnimationControllerImpl);
+  DISALLOW_COPY_AND_ASSIGN(InkDropImpl);
 };
 
 }  // namespace views
 
-#endif  // UI_VIEWS_ANIMATION_INK_DROP_ANIMATION_CONTROLLER_IMPL_H_
+#endif  // UI_VIEWS_ANIMATION_INK_DROP_IMPL_H_
