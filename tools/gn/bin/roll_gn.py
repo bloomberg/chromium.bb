@@ -432,8 +432,7 @@ class GNRoller(object):
       '\n'
       'TBR=%s\n'
       'CQ_EXTRA_TRYBOTS=tryserver.chromium.mac:mac_chromium_gn_dbg;'
-      'tryserver.chromium.win:win8_chromium_gn_dbg,'
-      'win_chromium_gn_x64_rel\n' % (
+      'tryserver.chromium.win:win8_chromium_gn_dbg\n' % (
         old_buildtools_commitish[:COMMITISH_DIGITS],
         new_buildtools_commitish[:COMMITISH_DIGITS],
         self.old_gn_commitish[:COMMITISH_DIGITS],
