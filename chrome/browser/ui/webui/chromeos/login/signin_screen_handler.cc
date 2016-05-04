@@ -53,6 +53,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/signin/easy_unlock_service.h"
+#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
@@ -272,8 +273,12 @@ SigninScreenHandler::SigninScreenHandler(
   if (keyboard)
     keyboard->AddObserver(this);
 
-  max_mode_delegate_.reset(new TouchViewControllerDelegate());
-  max_mode_delegate_->AddObserver(this);
+  if (!chrome::IsRunningInMash()) {
+    max_mode_delegate_.reset(new TouchViewControllerDelegate());
+    max_mode_delegate_->AddObserver(this);
+  } else {
+    NOTIMPLEMENTED();
+  }
 }
 
 SigninScreenHandler::~SigninScreenHandler() {

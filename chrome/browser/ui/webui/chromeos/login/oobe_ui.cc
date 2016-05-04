@@ -29,6 +29,7 @@
 #include "chrome/browser/extensions/signin/gaia_auth_extension_loader.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/webui/about_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/app_launch_splash_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/auto_enrollment_check_screen_handler.h"
@@ -350,9 +351,13 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
 OobeUI::~OobeUI() {
   core_handler_->SetDelegate(nullptr);
   network_dropdown_handler_->RemoveObserver(error_screen_handler_);
-  ash::ScreenDimmer::GetForContainer(
-      ash::kShellWindowId_LockScreenContainersContainer)
-      ->SetDimming(false);
+  if (!chrome::IsRunningInMash()) {
+    ash::ScreenDimmer::GetForContainer(
+        ash::kShellWindowId_LockScreenContainersContainer)
+        ->SetDimming(false);
+  } else {
+    NOTIMPLEMENTED();
+  }
 }
 
 CoreOobeActor* OobeUI::GetCoreOobeActor() {
@@ -570,10 +575,14 @@ void OobeUI::OnCurrentScreenChanged(const std::string& screen) {
       std::find(std::begin(kDimOverlayScreenIds),
                 std::end(kDimOverlayScreenIds),
                 new_screen) != std::end(kDimOverlayScreenIds);
-  ash::ScreenDimmer* screen_dimmer = ash::ScreenDimmer::GetForContainer(
-      ash::kShellWindowId_LockScreenContainersContainer);
-  screen_dimmer->set_at_bottom(true);
-  screen_dimmer->SetDimming(should_dim);
+  if (!chrome::IsRunningInMash()) {
+    ash::ScreenDimmer* screen_dimmer = ash::ScreenDimmer::GetForContainer(
+        ash::kShellWindowId_LockScreenContainersContainer);
+    screen_dimmer->set_at_bottom(true);
+    screen_dimmer->SetDimming(should_dim);
+  } else {
+    NOTIMPLEMENTED();
+  }
 
   FOR_EACH_OBSERVER(Observer,
                     observer_list_,

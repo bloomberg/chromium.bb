@@ -124,7 +124,7 @@ UserSelectionScreen::UserSelectionScreen(const std::string& display_type)
 UserSelectionScreen::~UserSelectionScreen() {
   proximity_auth::ScreenlockBridge::Get()->SetLockHandler(nullptr);
   ui::UserActivityDetector* activity_detector = ui::UserActivityDetector::Get();
-  if (activity_detector->HasObserver(this))
+  if (activity_detector && activity_detector->HasObserver(this))
     activity_detector->RemoveObserver(this);
 }
 
@@ -262,7 +262,7 @@ void UserSelectionScreen::Init(const user_manager::UserList& users,
   show_guest_ = show_guest;
 
   ui::UserActivityDetector* activity_detector = ui::UserActivityDetector::Get();
-  if (!activity_detector->HasObserver(this))
+  if (activity_detector && !activity_detector->HasObserver(this))
     activity_detector->AddObserver(this);
 }
 

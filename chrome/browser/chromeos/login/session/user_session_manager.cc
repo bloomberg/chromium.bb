@@ -76,6 +76,7 @@
 #include "chrome/browser/supervised_user/child_accounts/child_account_service.h"
 #include "chrome/browser/supervised_user/child_accounts/child_account_service_factory.h"
 #include "chrome/browser/ui/app_list/start_page_service.h"
+#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/common/chrome_switches.h"
@@ -1725,6 +1726,12 @@ void UserSessionManager::RespectLocalePreferenceWrapper(
     const base::Closure& callback) {
   if (browser_shutdown::IsTryingToQuit())
     return;
+
+  // InputEventsBlocker is not available in Mash
+  if (chrome::IsRunningInMash()) {
+    callback.Run();
+    return;
+  }
 
   const user_manager::User* const user =
       ProfileHelper::Get()->GetUserByProfile(profile);

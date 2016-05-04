@@ -27,6 +27,7 @@
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
+#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -171,9 +172,12 @@ WebUILoginView::~WebUILoginView() {
                     observer_list_,
                     OnHostDestroying());
 
-  if (ash::Shell::GetInstance()->HasPrimaryStatusArea()) {
+  if (!chrome::IsRunningInMash() &&
+      ash::Shell::GetInstance()->HasPrimaryStatusArea()) {
     ash::Shell::GetInstance()->GetPrimarySystemTray()->
         SetNextFocusableView(NULL);
+  } else {
+    NOTIMPLEMENTED();
   }
 }
 
@@ -311,7 +315,8 @@ void WebUILoginView::OnPostponedShow() {
 }
 
 void WebUILoginView::SetStatusAreaVisible(bool visible) {
-  if (ash::Shell::GetInstance()->HasPrimaryStatusArea()) {
+  if (!chrome::IsRunningInMash() &&
+      ash::Shell::GetInstance()->HasPrimaryStatusArea()) {
     ash::SystemTray* tray = ash::Shell::GetInstance()->GetPrimarySystemTray();
     tray->SetVisible(visible);
     if (visible) {
@@ -320,11 +325,17 @@ void WebUILoginView::SetStatusAreaVisible(bool visible) {
     } else {
       tray->GetWidget()->Hide();
     }
+  } else {
+    NOTIMPLEMENTED();
   }
 }
 
 void WebUILoginView::SetUIEnabled(bool enabled) {
   forward_keyboard_event_ = enabled;
+  if (chrome::IsRunningInMash()) {
+    NOTIMPLEMENTED();
+    return;
+  }
   ash::SystemTray* tray = ash::Shell::GetInstance()->GetPrimarySystemTray();
 
   // We disable the UI to prevent user from interracting with UI elements,
@@ -423,6 +434,11 @@ bool WebUILoginView::TakeFocus(content::WebContents* source, bool reverse) {
   // we should not process focus change events.
   if (!forward_keyboard_event_)
     return false;
+
+  // Focus is accepted, but the Ash system tray is not available in Mash, so
+  // exit early.
+  if (chrome::IsRunningInMash())
+    return true;
 
   ash::SystemTray* tray = ash::Shell::GetInstance()->GetPrimarySystemTray();
   if (tray && tray->GetWidget()->IsVisible()) {

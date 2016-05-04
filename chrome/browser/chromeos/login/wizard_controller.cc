@@ -57,6 +57,7 @@
 #include "chrome/browser/metrics/metrics_reporting_state.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/browser/ui/webui/help/help_utils_chromeos.h"
@@ -237,11 +238,15 @@ WizardController::WizardController(LoginDisplayHost* host, OobeUI* oobe_ui)
     : host_(host), oobe_ui_(oobe_ui), weak_factory_(this) {
   DCHECK(default_controller_ == nullptr);
   default_controller_ = this;
-  AccessibilityManager* accessibility_manager = AccessibilityManager::Get();
-  CHECK(accessibility_manager);
-  accessibility_subscription_ = accessibility_manager->RegisterCallback(
-      base::Bind(&WizardController::OnAccessibilityStatusChanged,
-                 base::Unretained(this)));
+  if (!chrome::IsRunningInMash()) {
+    AccessibilityManager* accessibility_manager = AccessibilityManager::Get();
+    CHECK(accessibility_manager);
+    accessibility_subscription_ = accessibility_manager->RegisterCallback(
+        base::Bind(&WizardController::OnAccessibilityStatusChanged,
+                   base::Unretained(this)));
+  } else {
+    NOTIMPLEMENTED();
+  }
 }
 
 WizardController::~WizardController() {

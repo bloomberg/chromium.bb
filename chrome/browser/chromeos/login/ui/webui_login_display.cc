@@ -35,7 +35,7 @@ WebUILoginDisplay::~WebUILoginDisplay() {
   if (webui_handler_)
     webui_handler_->ResetSigninScreenHandlerDelegate();
   ui::UserActivityDetector* activity_detector = ui::UserActivityDetector::Get();
-  if (activity_detector->HasObserver(this))
+  if (activity_detector && activity_detector->HasObserver(this))
     activity_detector->RemoveObserver(this);
 }
 
@@ -61,7 +61,7 @@ void WebUILoginDisplay::Init(const user_manager::UserList& users,
   show_new_user_ = show_new_user;
 
   ui::UserActivityDetector* activity_detector = ui::UserActivityDetector::Get();
-  if (!activity_detector->HasObserver(this))
+  if (activity_detector && !activity_detector->HasObserver(this))
     activity_detector->AddObserver(this);
 }
 

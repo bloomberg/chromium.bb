@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/common/channel_info.h"
@@ -51,11 +52,15 @@ CoreOobeHandler::CoreOobeHandler(OobeUI* oobe_ui)
       show_oobe_ui_(false),
       version_info_updater_(this),
       delegate_(NULL) {
-  AccessibilityManager* accessibility_manager = AccessibilityManager::Get();
-  CHECK(accessibility_manager);
-  accessibility_subscription_ = accessibility_manager->RegisterCallback(
-      base::Bind(&CoreOobeHandler::OnAccessibilityStatusChanged,
-                 base::Unretained(this)));
+  if (!chrome::IsRunningInMash()) {
+    AccessibilityManager* accessibility_manager = AccessibilityManager::Get();
+    CHECK(accessibility_manager);
+    accessibility_subscription_ = accessibility_manager->RegisterCallback(
+        base::Bind(&CoreOobeHandler::OnAccessibilityStatusChanged,
+                   base::Unretained(this)));
+  } else {
+    NOTIMPLEMENTED();
+  }
 }
 
 CoreOobeHandler::~CoreOobeHandler() {
@@ -336,6 +341,10 @@ void CoreOobeHandler::UpdateShutdownAndRebootVisibility(
 }
 
 void CoreOobeHandler::UpdateA11yState() {
+  if (chrome::IsRunningInMash()) {
+    NOTIMPLEMENTED();
+    return;
+  }
   // TODO(dpolukhin): crbug.com/412891
   DCHECK(MagnificationManager::Get());
   base::DictionaryValue a11y_info;
