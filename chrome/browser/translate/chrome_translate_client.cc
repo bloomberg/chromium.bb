@@ -190,12 +190,8 @@ void ChromeTranslateClient::ShowTranslateUI(
         step != translate::TRANSLATE_STEP_BEFORE_TRANSLATE,
         translate_manager_->GetWeakPtr(),
         InfoBarService::FromWebContents(web_contents()),
-        web_contents()->GetBrowserContext()->IsOffTheRecord(),
-        step,
-        source_language,
-        target_language,
-        error_type,
-        triggered_from_menu);
+        web_contents()->GetBrowserContext()->IsOffTheRecord(), step,
+        source_language, target_language, error_type, triggered_from_menu);
     return;
   }
 #endif
@@ -204,8 +200,12 @@ void ChromeTranslateClient::ShowTranslateUI(
   if (step == translate::TRANSLATE_STEP_BEFORE_TRANSLATE) {
     // TODO(droger): Move this logic out of UI code.
     GetLanguageState().SetTranslateEnabled(true);
-    if (!GetLanguageState().HasLanguageChanged())
+    // In the new UI, continue offering translation after the user navigates to
+    // another page.
+    if (!base::FeatureList::IsEnabled(translate::kTranslateUI2016Q2) &&
+        !GetLanguageState().HasLanguageChanged()) {
       return;
+    }
 
     if (!triggered_from_menu) {
       if (web_contents()->GetBrowserContext()->IsOffTheRecord())
@@ -268,8 +268,8 @@ void ChromeTranslateClient::ShowReportLanguageDetectionErrorUI(
     return;
   }
 
-  chrome::AddSelectedTabWithURL(
-      browser, report_url, ui::PAGE_TRANSITION_AUTO_BOOKMARK);
+  chrome::AddSelectedTabWithURL(browser, report_url,
+                                ui::PAGE_TRANSITION_AUTO_BOOKMARK);
 #endif  // defined(OS_ANDROID)
 }
 
@@ -341,8 +341,8 @@ void ChromeTranslateClient::ShowBubble(
       return;
   }
 
-  TranslateBubbleFactory::Show(
-      browser->window(), web_contents(), step, error_type);
+  TranslateBubbleFactory::Show(browser->window(), web_contents(), step,
+                               error_type);
 #else
   NOTREACHED();
 #endif

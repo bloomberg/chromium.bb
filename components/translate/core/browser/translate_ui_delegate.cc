@@ -71,8 +71,7 @@ TranslateUIDelegate::TranslateUIDelegate(
 
   languages_.reserve(language_codes.size());
   for (std::vector<std::string>::const_iterator iter = language_codes.begin();
-       iter != language_codes.end();
-       ++iter) {
+       iter != language_codes.end(); ++iter) {
     std::string language_code = *iter;
 
     base::string16 language_name =
@@ -81,9 +80,8 @@ TranslateUIDelegate::TranslateUIDelegate(
     std::vector<LanguageNamePair>::iterator iter2;
     if (collator) {
       for (iter2 = languages_.begin(); iter2 != languages_.end(); ++iter2) {
-        int result = base::i18n::CompareString16WithCollator(*collator,
-                                                             language_name,
-                                                             iter2->second);
+        int result = base::i18n::CompareString16WithCollator(
+            *collator, language_name, iter2->second);
         if (result == UCOL_LESS)
           break;
       }
@@ -98,8 +96,7 @@ TranslateUIDelegate::TranslateUIDelegate(
     languages_.insert(iter2, LanguageNamePair(language_code, language_name));
   }
   for (std::vector<LanguageNamePair>::const_iterator iter = languages_.begin();
-       iter != languages_.end();
-       ++iter) {
+       iter != languages_.end(); ++iter) {
     std::string language_code = iter->first;
     if (language_code == original_language) {
       original_language_index_ = iter - languages_.begin();
@@ -121,8 +118,8 @@ void TranslateUIDelegate::OnErrorShown(TranslateErrors::Type error_type) {
   if (error_type == TranslateErrors::NONE)
     return;
 
-  UMA_HISTOGRAM_ENUMERATION(
-      kShowErrorUI, error_type, TranslateErrors::TRANSLATE_ERROR_MAX);
+  UMA_HISTOGRAM_ENUMERATION(kShowErrorUI, error_type,
+                            TranslateErrors::TRANSLATE_ERROR_MAX);
 }
 
 const LanguageState& TranslateUIDelegate::GetLanguageState() {
@@ -191,9 +188,9 @@ base::string16 TranslateUIDelegate::GetLanguageNameAt(size_t index) const {
 }
 
 std::string TranslateUIDelegate::GetOriginalLanguageCode() const {
-  return (GetOriginalLanguageIndex() == kNoIndex) ?
-      translate::kUnknownLanguageCode :
-      GetLanguageCodeAt(GetOriginalLanguageIndex());
+  return (GetOriginalLanguageIndex() == kNoIndex)
+             ? translate::kUnknownLanguageCode
+             : GetLanguageCodeAt(GetOriginalLanguageIndex());
 }
 
 std::string TranslateUIDelegate::GetTargetLanguageCode() const {
@@ -205,12 +202,13 @@ std::string TranslateUIDelegate::GetTargetLanguageCode() const {
 void TranslateUIDelegate::Translate() {
   if (!translate_driver_->IsOffTheRecord()) {
     prefs_->ResetTranslationDeniedCount(GetOriginalLanguageCode());
+    prefs_->ResetTranslationIgnoredCount(GetOriginalLanguageCode());
     prefs_->IncrementTranslationAcceptedCount(GetOriginalLanguageCode());
   }
 
   if (translate_manager_) {
-    translate_manager_->TranslatePage(
-        GetOriginalLanguageCode(), GetTargetLanguageCode(), false);
+    translate_manager_->TranslatePage(GetOriginalLanguageCode(),
+                                      GetTargetLanguageCode(), false);
     UMA_HISTOGRAM_BOOLEAN(kPerformTranslate, true);
   }
 }
@@ -223,11 +221,15 @@ void TranslateUIDelegate::RevertTranslation() {
 }
 
 void TranslateUIDelegate::TranslationDeclined(bool explicitly_closed) {
-  if (explicitly_closed && !translate_driver_->IsOffTheRecord()) {
+  if (!translate_driver_->IsOffTheRecord()) {
     const std::string& language = GetOriginalLanguageCode();
-    prefs_->ResetTranslationAcceptedCount(language);
-    prefs_->IncrementTranslationDeniedCount(language);
-    prefs_->UpdateLastDeniedTime(language);
+    if (explicitly_closed) {
+      prefs_->ResetTranslationAcceptedCount(language);
+      prefs_->IncrementTranslationDeniedCount(language);
+      prefs_->UpdateLastDeniedTime(language);
+    } else {
+      prefs_->IncrementTranslationIgnoredCount(language);
+    }
   }
 
   // Remember that the user declined the translation so as to prevent showing a
@@ -252,7 +254,12 @@ bool TranslateUIDelegate::IsLanguageBlocked() {
 void TranslateUIDelegate::SetLanguageBlocked(bool value) {
   if (value) {
     prefs_->BlockLanguage(GetOriginalLanguageCode());
-    if (translate_manager_) {
+    // In the new UI, we will keep showing the translate omnibar icon
+    // even if the language is blocked so in case the user just wants to
+    // translate that page the user can invoke the translate bubble from
+    // the omnibar icon.
+    if (!base::FeatureList::IsEnabled(kTranslateUI2016Q2) &&
+        translate_manager_) {
       translate_manager_->GetLanguageState().SetTranslateEnabled(false);
     }
   } else {
@@ -274,7 +281,12 @@ void TranslateUIDelegate::SetSiteBlacklist(bool value) {
 
   if (value) {
     prefs_->BlacklistSite(host);
-    if (translate_manager_) {
+    // In the new UI, we will keep showing the translate omnibar icon
+    // even if the site is blocked so in case the user just wants to
+    // translate that page the user can invoke the translate bubble from
+    // the omnibar icon.
+    if (!base::FeatureList::IsEnabled(kTranslateUI2016Q2) &&
+        translate_manager_) {
       translate_manager_->GetLanguageState().SetTranslateEnabled(false);
     }
   } else {
@@ -287,6 +299,17 @@ void TranslateUIDelegate::SetSiteBlacklist(bool value) {
 bool TranslateUIDelegate::ShouldAlwaysTranslate() {
   return prefs_->IsLanguagePairWhitelisted(GetOriginalLanguageCode(),
                                            GetTargetLanguageCode());
+}
+
+bool TranslateUIDelegate::ShouldAlwaysTranslateBeCheckedByDefault() {
+  // After 2 clicks on Translate for the same language.
+  // We check for == 2 instead of >= 2 because if the user translates with the
+  // "Always do this?" on, then the next time the bubble won't show up.
+  // The only chance the bubble will show up is after the user manually unchecks
+  // "Always do this?". In that case, since it is after user explictly unchecks,
+  // we should show as it as unchecked so we only check == 2 instead of >= 2.
+  return ShouldAlwaysTranslate() ||
+         prefs_->GetTranslationAcceptedCount(GetOriginalLanguageCode()) == 2;
 }
 
 void TranslateUIDelegate::SetAlwaysTranslate(bool value) {

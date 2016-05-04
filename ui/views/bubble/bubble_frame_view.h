@@ -85,6 +85,8 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
 
   bool close_button_clicked() const { return close_button_clicked_; }
 
+  LabelButton* GetCloseButtonForTest() { return close_; }
+
  protected:
   // Returns the available screen bounds if the frame were to show in |rect|.
   virtual gfx::Rect GetAvailableScreenBounds(const gfx::Rect& rect) const;

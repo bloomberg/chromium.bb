@@ -8,6 +8,65 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/translate/translate_bubble_model.h"
 
+namespace translate {
+
+enum TranslateBubbleUiEvent {
+  // The user clicked the advanced option.
+  SET_STATE_OPTIONS,
+
+  // The user clicked "Done" and went back from the advanced option.
+  LEAVE_STATE_OPTIONS,
+
+  // The user clicked the advanced link.
+  ADVANCED_LINK_CLICKED,
+
+  // The user checked the "always translate" checkbox.
+  ALWAYS_TRANSLATE_CHECKED,
+
+  // The user unchecked the "always translate" checkbox.
+  ALWAYS_TRANSLATE_UNCHECKED,
+
+  // The user selected "Nope" in the "Options" menu.
+  NOPE_MENU_CLICKED,
+
+  // The user selected "Never translate language" in the "Options" menu.
+  NEVER_TRANSLATE_LANGUAGE_MENU_CLICKED,
+
+  // The user selected "Never translate this site" in the "Options" menu.
+  NEVER_TRANSLATE_SITE_MENU_CLICKED,
+
+  // The user clicked the "Translate" button.
+  TRANSLATE_BUTTON_CLICKED,
+
+  // The user clicked the "Done" button.
+  DONE_BUTTON_CLICKED,
+
+  // The user clicked the "Cancel" button.
+  CANCEL_BUTTON_CLICKED,
+
+  // The user clicked the "Closed" [X] button.
+  CLOSE_BUTTON_CLICKED,
+
+  // The user clicked the "Try Again" button.
+  TRY_AGAIN_BUTTON_CLICKED,
+
+  // The user clicked the "Show Original" button.
+  SHOW_ORIGINAL_BUTTON_CLICKED,
+
+  // The user clicked the "Settings" link.
+  SETTINGS_LINK_CLICKED,
+
+  // The user changed the "Source language".
+  SOURCE_LANGUAGE_MENU_CLICKED,
+
+  // The user changed the "Target language".
+  TARGET_LANGUAGE_MENU_CLICKED,
+
+  TRANSLATE_BUBBLE_UI_EVENT_MAX
+};
+
+}  // namespace translate
+
 // The class which manages the transition of the view state of the Translate
 // bubble.
 class TranslateBubbleViewStateTransition {

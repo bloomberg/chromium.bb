@@ -22,10 +22,11 @@ namespace translate {
 
 const char TranslatePrefs::kPrefTranslateSiteBlacklist[] =
     "translate_site_blacklist";
-const char TranslatePrefs::kPrefTranslateWhitelists[] =
-    "translate_whitelists";
+const char TranslatePrefs::kPrefTranslateWhitelists[] = "translate_whitelists";
 const char TranslatePrefs::kPrefTranslateDeniedCount[] =
     "translate_denied_count_for_language";
+const char TranslatePrefs::kPrefTranslateIgnoredCount[] =
+    "translate_ignored_count_for_language";
 const char TranslatePrefs::kPrefTranslateAcceptedCount[] =
     "translate_accepted_count";
 const char TranslatePrefs::kPrefTranslateBlockedLanguages[] =
@@ -55,8 +56,8 @@ void GetBlacklistedLanguages(const PrefService* prefs,
 
   const char* key = kPrefTranslateLanguageBlacklist;
   const base::ListValue* list = prefs->GetList(key);
-  for (base::ListValue::const_iterator it = list->begin();
-       it != list->end(); ++it) {
+  for (base::ListValue::const_iterator it = list->begin(); it != list->end();
+       ++it) {
     std::string lang;
     (*it)->GetAsString(&lang);
     languages->push_back(lang);
@@ -95,6 +96,9 @@ void ExpandLanguageCodes(const std::vector<std::string>& languages,
 }
 
 }  // namespace
+
+const base::Feature kTranslateUI2016Q2{"TranslateUI2016Q2",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
 DenialTimeUpdate::DenialTimeUpdate(PrefService* prefs,
                                    const std::string& language,
@@ -153,8 +157,7 @@ void DenialTimeUpdate::AddDenialTime(base::Time denial_time) {
 TranslatePrefs::TranslatePrefs(PrefService* user_prefs,
                                const char* accept_languages_pref,
                                const char* preferred_languages_pref)
-    : accept_languages_pref_(accept_languages_pref),
-      prefs_(user_prefs) {
+    : accept_languages_pref_(accept_languages_pref), prefs_(user_prefs) {
 #if defined(OS_CHROMEOS)
   preferred_languages_pref_ = preferred_languages_pref;
 #else
@@ -178,10 +181,11 @@ void TranslatePrefs::ResetToDefaults() {
   std::vector<std::string> languages;
   GetLanguageList(&languages);
   for (std::vector<std::string>::const_iterator it = languages.begin();
-      it != languages.end(); ++it) {
+       it != languages.end(); ++it) {
     const std::string& language = *it;
     ResetTranslationAcceptedCount(language);
     ResetTranslationDeniedCount(language);
+    ResetTranslationIgnoredCount(language);
   }
 
   prefs_->ClearPref(kPrefTranslateLastDeniedTimeForLanguage);
@@ -190,8 +194,7 @@ void TranslatePrefs::ResetToDefaults() {
 
 bool TranslatePrefs::IsBlockedLanguage(
     const std::string& original_language) const {
-  return IsValueBlacklisted(kPrefTranslateBlockedLanguages,
-                            original_language);
+  return IsValueBlacklisted(kPrefTranslateBlockedLanguages, original_language);
 }
 
 void TranslatePrefs::BlockLanguage(const std::string& original_language) {
@@ -316,6 +319,29 @@ void TranslatePrefs::ResetTranslationDeniedCount(const std::string& language) {
   update.Get()->SetInteger(language, 0);
 }
 
+int TranslatePrefs::GetTranslationIgnoredCount(
+    const std::string& language) const {
+  const base::DictionaryValue* dict =
+      prefs_->GetDictionary(kPrefTranslateIgnoredCount);
+  int count = 0;
+  return dict->GetInteger(language, &count) ? count : 0;
+}
+
+void TranslatePrefs::IncrementTranslationIgnoredCount(
+    const std::string& language) {
+  DictionaryPrefUpdate update(prefs_, kPrefTranslateIgnoredCount);
+  base::DictionaryValue* dict = update.Get();
+
+  int count = 0;
+  dict->GetInteger(language, &count);
+  dict->SetInteger(language, count + 1);
+}
+
+void TranslatePrefs::ResetTranslationIgnoredCount(const std::string& language) {
+  DictionaryPrefUpdate update(prefs_, kPrefTranslateIgnoredCount);
+  update.Get()->SetInteger(language, 0);
+}
+
 int TranslatePrefs::GetTranslationAcceptedCount(const std::string& language) {
   const base::DictionaryValue* dict =
       prefs_->GetDictionary(kPrefTranslateAcceptedCount);
@@ -358,10 +384,17 @@ void TranslatePrefs::UpdateLastDeniedTime(const std::string& language) {
 }
 
 bool TranslatePrefs::IsTooOftenDenied(const std::string& language) const {
-  const base::DictionaryValue* dict =
-    prefs_->GetDictionary(kPrefTranslateTooOftenDeniedForLanguage);
-  bool result = false;
-  return dict->GetBoolean(language, &result) ? result : false;
+  if (base::FeatureList::IsEnabled(kTranslateUI2016Q2)) {
+    // In the new logic, we only hide the bubble if user denied it more than
+    // 3 times or the user ignored it more than 10 times.
+    return (GetTranslationDeniedCount(language) > 3) ||
+           (GetTranslationIgnoredCount(language) > 10);
+  } else {
+    const base::DictionaryValue* dict =
+        prefs_->GetDictionary(kPrefTranslateTooOftenDeniedForLanguage);
+    bool result = false;
+    return dict->GetBoolean(language, &result) ? result : false;
+  }
 }
 
 void TranslatePrefs::ResetDenialState() {
@@ -453,6 +486,9 @@ void TranslatePrefs::RegisterProfilePrefs(
       kPrefTranslateDeniedCount,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterDictionaryPref(
+      kPrefTranslateIgnoredCount,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterDictionaryPref(
       kPrefTranslateAcceptedCount,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterListPref(kPrefTranslateBlockedLanguages,
@@ -517,13 +553,13 @@ void TranslatePrefs::MigrateUserPrefs(PrefService* user_prefs,
     std::vector<std::string> blacklisted_languages;
     GetBlacklistedLanguages(user_prefs, &blacklisted_languages);
 
-    std::vector<std::string> accept_languages = base::SplitString(
-        user_prefs->GetString(accept_languages_pref), ",",
-        base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+    std::vector<std::string> accept_languages =
+        base::SplitString(user_prefs->GetString(accept_languages_pref), ",",
+                          base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
     std::vector<std::string> blocked_languages;
-    CreateBlockedLanguages(
-        &blocked_languages, blacklisted_languages, accept_languages);
+    CreateBlockedLanguages(&blocked_languages, blacklisted_languages,
+                           accept_languages);
 
     // Create the new preference kPrefTranslateBlockedLanguages.
     {
@@ -594,8 +630,8 @@ void TranslatePrefs::CreateBlockedLanguages(
     result.insert(lang);
   }
 
-  blocked_languages->insert(
-      blocked_languages->begin(), result.begin(), result.end());
+  blocked_languages->insert(blocked_languages->begin(), result.begin(),
+                            result.end());
 }
 
 bool TranslatePrefs::IsValueInList(const base::ListValue* list,

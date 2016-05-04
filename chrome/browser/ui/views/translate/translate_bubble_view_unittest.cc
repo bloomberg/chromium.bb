@@ -7,11 +7,17 @@
 #include <memory>
 #include <utility>
 
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/translate/translate_bubble_model.h"
 #include "chrome/browser/ui/translate/translate_bubble_view_state_transition.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/events/event_constants.h"
+#include "ui/events/event_utils.h"
+#include "ui/gfx/range/range.h"
+#include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/combobox/combobox.h"
+#include "ui/views/controls/styled_label.h"
 #include "ui/views/test/combobox_test_api.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
@@ -28,6 +34,7 @@ class MockTranslateBubbleModel : public TranslateBubbleModel {
         never_translate_language_(false),
         never_translate_site_(false),
         should_always_translate_(false),
+        always_translate_checked_(false),
         set_always_translate_called_count_(0),
         translate_called_(false),
         revert_translation_called_(false),
@@ -54,7 +61,7 @@ class MockTranslateBubbleModel : public TranslateBubbleModel {
   int GetNumberOfLanguages() const override { return 1000; }
 
   base::string16 GetLanguageNameAt(int index) const override {
-    return base::string16();
+    return base::ASCIIToUTF16("English");
   }
 
   int GetOriginalLanguageIndex() const override {
@@ -81,6 +88,10 @@ class MockTranslateBubbleModel : public TranslateBubbleModel {
     never_translate_site_ = value;
   }
 
+  bool ShouldAlwaysTranslateBeCheckedByDefault() const override {
+    return always_translate_checked_;
+  }
+
   bool ShouldAlwaysTranslate() const override {
     return should_always_translate_;
   }
@@ -102,8 +113,8 @@ class MockTranslateBubbleModel : public TranslateBubbleModel {
 
   bool IsPageTranslatedInCurrentLanguages() const override {
     return original_language_index_on_translation_ ==
-        original_language_index_ &&
-        target_language_index_on_translation_ == target_language_index_;
+               original_language_index_ &&
+           target_language_index_on_translation_ == target_language_index_;
   }
 
   TranslateBubbleViewStateTransition view_state_transition_;
@@ -113,6 +124,7 @@ class MockTranslateBubbleModel : public TranslateBubbleModel {
   bool never_translate_language_;
   bool never_translate_site_;
   bool should_always_translate_;
+  bool always_translate_checked_;
   int set_always_translate_called_count_;
   bool translate_called_;
   bool revert_translation_called_;
@@ -125,8 +137,7 @@ class MockTranslateBubbleModel : public TranslateBubbleModel {
 
 class TranslateBubbleViewTest : public views::ViewsTestBase {
  public:
-  TranslateBubbleViewTest() {
-  }
+  TranslateBubbleViewTest() {}
 
  protected:
   void SetUp() override {
@@ -143,6 +154,20 @@ class TranslateBubbleViewTest : public views::ViewsTestBase {
 
     mock_model_ = new MockTranslateBubbleModel(
         TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE);
+
+    base::FeatureList::ClearInstanceForTesting();
+    base::FeatureList::SetInstance(base::WrapUnique(new base::FeatureList));
+  }
+
+  void TurnOnTranslate2016Q2UIFlag() {
+    base::FeatureList::ClearInstanceForTesting();
+    std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
+    feature_list->InitializeFromCommandLine(translate::kTranslateUI2016Q2.name,
+                                            std::string());
+    base::FeatureList::SetInstance(std::move(feature_list));
+  }
+
+  void CreateAndShowBubble() {
     std::unique_ptr<TranslateBubbleModel> model(mock_model_);
     bubble_ = new TranslateBubbleView(anchor_widget_->GetContentsView(),
                                       std::move(model),
@@ -166,6 +191,7 @@ class TranslateBubbleViewTest : public views::ViewsTestBase {
 };
 
 TEST_F(TranslateBubbleViewTest, TranslateButton) {
+  CreateAndShowBubble();
   EXPECT_FALSE(mock_model_->translate_called_);
 
   // Press the "Translate" button.
@@ -173,7 +199,35 @@ TEST_F(TranslateBubbleViewTest, TranslateButton) {
   EXPECT_TRUE(mock_model_->translate_called_);
 }
 
+TEST_F(TranslateBubbleViewTest, TranslateButtonIn2016Q2UI) {
+  TurnOnTranslate2016Q2UIFlag();
+  CreateAndShowBubble();
+  EXPECT_FALSE(mock_model_->translate_called_);
+
+  // Press the "Translate" button.
+  bubble_->HandleButtonPressed(TranslateBubbleView::BUTTON_ID_TRANSLATE);
+  EXPECT_TRUE(mock_model_->translate_called_);
+}
+
+TEST_F(TranslateBubbleViewTest, CloseButtonIn2016Q2UI) {
+  TurnOnTranslate2016Q2UIFlag();
+  CreateAndShowBubble();
+  EXPECT_FALSE(mock_model_->translate_called_);
+  EXPECT_FALSE(mock_model_->translation_declined_);
+  EXPECT_FALSE(bubble_->GetWidget()->IsClosed());
+
+  // Press the "Close" button.
+  bubble_->GetBubbleFrameView()->ButtonPressed(
+      bubble_->GetBubbleFrameView()->GetCloseButtonForTest(),
+      ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+                     ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE));
+
+  EXPECT_FALSE(mock_model_->translate_called_);
+  EXPECT_TRUE(mock_model_->translation_declined_);
+}
+
 TEST_F(TranslateBubbleViewTest, ComboboxNope) {
+  CreateAndShowBubble();
   views::test::ComboboxTestApi test_api(denial_combobox());
   EXPECT_FALSE(denial_button_clicked());
   EXPECT_FALSE(bubble_->GetWidget()->IsClosed());
@@ -185,6 +239,7 @@ TEST_F(TranslateBubbleViewTest, ComboboxNope) {
 }
 
 TEST_F(TranslateBubbleViewTest, ComboboxNeverTranslateLanguage) {
+  CreateAndShowBubble();
   views::test::ComboboxTestApi test_api(denial_combobox());
   EXPECT_FALSE(bubble_->GetWidget()->IsClosed());
   EXPECT_FALSE(mock_model_->never_translate_language_);
@@ -198,6 +253,7 @@ TEST_F(TranslateBubbleViewTest, ComboboxNeverTranslateLanguage) {
 }
 
 TEST_F(TranslateBubbleViewTest, ComboboxNeverTranslateSite) {
+  CreateAndShowBubble();
   views::test::ComboboxTestApi test_api(denial_combobox());
   EXPECT_FALSE(mock_model_->never_translate_site_);
   EXPECT_FALSE(denial_button_clicked());
@@ -210,7 +266,38 @@ TEST_F(TranslateBubbleViewTest, ComboboxNeverTranslateSite) {
   EXPECT_TRUE(bubble_->GetWidget()->IsClosed());
 }
 
+TEST_F(TranslateBubbleViewTest, MenuButtonNeverTranslateLanguage) {
+  TurnOnTranslate2016Q2UIFlag();
+  CreateAndShowBubble();
+  EXPECT_FALSE(bubble_->GetWidget()->IsClosed());
+  EXPECT_FALSE(mock_model_->never_translate_language_);
+  EXPECT_FALSE(denial_button_clicked());
+
+  bubble_->ExecuteCommand(
+      TranslateBubbleView::DenialMenuItem::NEVER_TRANSLATE_LANGUAGE, 0);
+
+  EXPECT_TRUE(denial_button_clicked());
+  EXPECT_TRUE(mock_model_->never_translate_language_);
+  EXPECT_TRUE(bubble_->GetWidget()->IsClosed());
+}
+
+TEST_F(TranslateBubbleViewTest, MenuButtonNeverTranslateSite) {
+  TurnOnTranslate2016Q2UIFlag();
+  CreateAndShowBubble();
+  EXPECT_FALSE(mock_model_->never_translate_site_);
+  EXPECT_FALSE(denial_button_clicked());
+  EXPECT_FALSE(bubble_->GetWidget()->IsClosed());
+
+  bubble_->ExecuteCommand(
+      TranslateBubbleView::DenialMenuItem::NEVER_TRANSLATE_SITE, 0);
+
+  EXPECT_TRUE(denial_button_clicked());
+  EXPECT_TRUE(mock_model_->never_translate_site_);
+  EXPECT_TRUE(bubble_->GetWidget()->IsClosed());
+}
+
 TEST_F(TranslateBubbleViewTest, AdvancedLink) {
+  CreateAndShowBubble();
   EXPECT_EQ(TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE,
             bubble_->GetViewState());
 
@@ -219,7 +306,20 @@ TEST_F(TranslateBubbleViewTest, AdvancedLink) {
   EXPECT_EQ(TranslateBubbleModel::VIEW_STATE_ADVANCED, bubble_->GetViewState());
 }
 
+TEST_F(TranslateBubbleViewTest, AdvancedLinkIn2016Q2UI) {
+  TurnOnTranslate2016Q2UIFlag();
+  CreateAndShowBubble();
+  EXPECT_EQ(TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE,
+            bubble_->GetViewState());
+
+  // Click the styled label link.
+  views::StyledLabel styled_label(base::ASCIIToUTF16("test"), nullptr);
+  bubble_->StyledLabelLinkClicked(&styled_label, gfx::Range(), ui::EF_NONE);
+  EXPECT_EQ(TranslateBubbleModel::VIEW_STATE_ADVANCED, bubble_->GetViewState());
+}
+
 TEST_F(TranslateBubbleViewTest, ShowOriginalButton) {
+  CreateAndShowBubble();
   bubble_->SwitchView(TranslateBubbleModel::VIEW_STATE_AFTER_TRANSLATE);
 
   // Click the "Show original" button to revert translation.
@@ -229,6 +329,7 @@ TEST_F(TranslateBubbleViewTest, ShowOriginalButton) {
 }
 
 TEST_F(TranslateBubbleViewTest, TryAgainButton) {
+  CreateAndShowBubble();
   bubble_->SwitchToErrorView(translate::TranslateErrors::NETWORK);
 
   EXPECT_EQ(translate::TranslateErrors::NETWORK, mock_model_->error_type_);
@@ -240,6 +341,7 @@ TEST_F(TranslateBubbleViewTest, TryAgainButton) {
 }
 
 TEST_F(TranslateBubbleViewTest, AlwaysTranslateCheckboxAndCancelButton) {
+  CreateAndShowBubble();
   bubble_->SwitchView(TranslateBubbleModel::VIEW_STATE_ADVANCED);
 
   // Click the "Always Translate" checkbox. Changing the state of this checkbox
@@ -263,6 +365,7 @@ TEST_F(TranslateBubbleViewTest, AlwaysTranslateCheckboxAndCancelButton) {
 }
 
 TEST_F(TranslateBubbleViewTest, AlwaysTranslateCheckboxAndDoneButton) {
+  CreateAndShowBubble();
   bubble_->SwitchView(TranslateBubbleModel::VIEW_STATE_ADVANCED);
 
   // Click the "Always Translate" checkbox. Changing the state of this checkbox
@@ -286,6 +389,7 @@ TEST_F(TranslateBubbleViewTest, AlwaysTranslateCheckboxAndDoneButton) {
 }
 
 TEST_F(TranslateBubbleViewTest, DoneButton) {
+  CreateAndShowBubble();
   bubble_->SwitchView(TranslateBubbleModel::VIEW_STATE_ADVANCED);
 
   // Click the "Done" button to translate. The selected languages by the user
@@ -304,6 +408,7 @@ TEST_F(TranslateBubbleViewTest, DoneButton) {
 }
 
 TEST_F(TranslateBubbleViewTest, DoneButtonWithoutTranslating) {
+  CreateAndShowBubble();
   EXPECT_EQ(TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE,
             bubble_->GetViewState());
 
@@ -331,6 +436,7 @@ TEST_F(TranslateBubbleViewTest, DoneButtonWithoutTranslating) {
 }
 
 TEST_F(TranslateBubbleViewTest, CancelButtonReturningBeforeTranslate) {
+  CreateAndShowBubble();
   bubble_->SwitchView(TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE);
   bubble_->SwitchView(TranslateBubbleModel::VIEW_STATE_ADVANCED);
 
@@ -342,6 +448,7 @@ TEST_F(TranslateBubbleViewTest, CancelButtonReturningBeforeTranslate) {
 }
 
 TEST_F(TranslateBubbleViewTest, CancelButtonReturningAfterTranslate) {
+  CreateAndShowBubble();
   bubble_->SwitchView(TranslateBubbleModel::VIEW_STATE_AFTER_TRANSLATE);
   bubble_->SwitchView(TranslateBubbleModel::VIEW_STATE_ADVANCED);
 
@@ -353,6 +460,7 @@ TEST_F(TranslateBubbleViewTest, CancelButtonReturningAfterTranslate) {
 }
 
 TEST_F(TranslateBubbleViewTest, CancelButtonReturningError) {
+  CreateAndShowBubble();
   bubble_->SwitchView(TranslateBubbleModel::VIEW_STATE_ERROR);
   bubble_->SwitchView(TranslateBubbleModel::VIEW_STATE_ADVANCED);
 

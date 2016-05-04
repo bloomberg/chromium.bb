@@ -21,8 +21,7 @@ TranslateBubbleModelImpl::TranslateBubbleModelImpl(
     translate_executed_ = true;
 }
 
-TranslateBubbleModelImpl::~TranslateBubbleModelImpl() {
-}
+TranslateBubbleModelImpl::~TranslateBubbleModelImpl() {}
 
 // static
 TranslateBubbleModel::ViewState
@@ -45,6 +44,10 @@ TranslateBubbleModelImpl::TranslateStepToViewState(
 
 TranslateBubbleModel::ViewState TranslateBubbleModelImpl::GetViewState() const {
   return view_state_transition_.view_state();
+}
+
+bool TranslateBubbleModelImpl::ShouldAlwaysTranslateBeCheckedByDefault() const {
+  return ui_delegate_->ShouldAlwaysTranslateBeCheckedByDefault();
 }
 
 void TranslateBubbleModelImpl::SetViewState(
@@ -123,7 +126,7 @@ bool TranslateBubbleModelImpl::IsPageTranslatedInCurrentLanguages() const {
   const translate::LanguageState& language_state =
       ui_delegate_->GetLanguageState();
   return ui_delegate_->GetOriginalLanguageCode() ==
-      language_state.original_language() &&
-      ui_delegate_->GetTargetLanguageCode() ==
-      language_state.current_language();
+             language_state.original_language() &&
+         ui_delegate_->GetTargetLanguageCode() ==
+             language_state.current_language();
 }

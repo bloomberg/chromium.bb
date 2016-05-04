@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/feature_list.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/time/time.h"
@@ -30,6 +31,9 @@ class PrefRegistrySyncable;
 }
 
 namespace translate {
+
+// Feature flag for "Translate UI 2016 Q2" project.
+extern const base::Feature kTranslateUI2016Q2;
 
 class TranslateAcceptLanguages;
 
@@ -70,6 +74,7 @@ class TranslatePrefs {
   static const char kPrefTranslateSiteBlacklist[];
   static const char kPrefTranslateWhitelists[];
   static const char kPrefTranslateDeniedCount[];
+  static const char kPrefTranslateIgnoredCount[];
   static const char kPrefTranslateAcceptedCount[];
   static const char kPrefTranslateBlockedLanguages[];
   static const char kPrefTranslateLastDeniedTimeForLanguage[];
@@ -123,6 +128,12 @@ class TranslatePrefs {
   int GetTranslationDeniedCount(const std::string& language) const;
   void IncrementTranslationDeniedCount(const std::string& language);
   void ResetTranslationDeniedCount(const std::string& language);
+
+  // These methods are used to track how many times the user has ignored the
+  // translation bubble for a specific language.
+  int GetTranslationIgnoredCount(const std::string& language) const;
+  void IncrementTranslationIgnoredCount(const std::string& language);
+  void ResetTranslationIgnoredCount(const std::string& language);
 
   // These methods are used to track how many times the user has accepted the
   // translation for a specific language. (So we can present a UI to white-list

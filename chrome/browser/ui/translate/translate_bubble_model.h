@@ -82,6 +82,9 @@ class TranslateBubbleModel {
   // translated into the current target language automatically.
   virtual bool ShouldAlwaysTranslate() const = 0;
 
+  // Returns true if the Always Translate checkbox should be checked by default.
+  virtual bool ShouldAlwaysTranslateBeCheckedByDefault() const = 0;
+
   // Sets the value if the webpage in the current original language should be
   // translated into the current target language automatically.
   virtual void SetAlwaysTranslate(bool value) = 0;

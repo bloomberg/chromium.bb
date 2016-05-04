@@ -195,6 +195,7 @@
         <structure type="chrome_scaled_image" name="IDR_TOUCH_DRAG_TIP_LINK" file="common/drag_tip_link.png" />
         <structure type="chrome_scaled_image" name="IDR_TOUCH_DRAG_TIP_NODROP" file="common/drag_tip_nodrop.png" />
       </if>
+      <structure type="chrome_scaled_image" name="IDR_TRANSLATE_ICON_BUBBLE" file="common/translate.png" />
     </structures>
   </release>
 </grit>

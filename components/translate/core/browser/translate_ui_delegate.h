@@ -119,6 +119,9 @@ class TranslateUIDelegate {
   // translated into the current target language automatically.
   void SetAlwaysTranslate(bool value);
 
+  // Returns true if the Always Translate checkbox should be checked by default.
+  bool ShouldAlwaysTranslateBeCheckedByDefault();
+
  private:
   // Gets the host of the page being translated, or an empty string if no URL is
   // associated with the current page.

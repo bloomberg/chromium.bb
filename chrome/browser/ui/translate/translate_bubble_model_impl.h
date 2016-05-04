@@ -44,6 +44,7 @@ class TranslateBubbleModelImpl : public TranslateBubbleModel {
   void SetNeverTranslateLanguage(bool value) override;
   void SetNeverTranslateSite(bool value) override;
   bool ShouldAlwaysTranslate() const override;
+  bool ShouldAlwaysTranslateBeCheckedByDefault() const override;
   void SetAlwaysTranslate(bool value) override;
   void Translate() override;
   void RevertTranslation() override;

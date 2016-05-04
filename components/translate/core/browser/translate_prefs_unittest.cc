@@ -6,12 +6,14 @@
 
 #include <algorithm>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "build/build_config.h"
 #include "components/pref_registry/testing_pref_service_syncable.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/translate/core/browser/translate_download_manager.h"
+#include "components/translate/core/browser/translate_prefs.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -47,9 +49,8 @@ TEST(TranslatePrefsTest, CreateBlockedLanguages) {
 
   std::vector<std::string> blocked_languages;
 
-  TranslatePrefs::CreateBlockedLanguages(&blocked_languages,
-                                         blacklisted_languages,
-                                         accept_languages);
+  TranslatePrefs::CreateBlockedLanguages(
+      &blocked_languages, blacklisted_languages, accept_languages);
 
   // The order of the elements cannot be determined.
   std::vector<std::string> expected;
@@ -66,10 +67,8 @@ TEST(TranslatePrefsTest, CreateBlockedLanguages) {
   EXPECT_EQ(expected.size(), blocked_languages.size());
   for (std::vector<std::string>::const_iterator it = expected.begin();
        it != expected.end(); ++it) {
-    EXPECT_NE(blocked_languages.end(),
-              std::find(blocked_languages.begin(),
-                        blocked_languages.end(),
-                        *it));
+    EXPECT_NE(blocked_languages.end(), std::find(blocked_languages.begin(),
+                                                 blocked_languages.end(), *it));
   }
 }
 
@@ -86,9 +85,8 @@ TEST(TranslatePrefsTest, CreateBlockedLanguagesNonEnglishUI) {
   {
     TranslateDownloadManager::GetInstance()->set_application_locale("en");
     std::vector<std::string> blocked_languages;
-    TranslatePrefs::CreateBlockedLanguages(&blocked_languages,
-                                           blacklisted_languages,
-                                           accept_languages);
+    TranslatePrefs::CreateBlockedLanguages(
+        &blocked_languages, blacklisted_languages, accept_languages);
     std::vector<std::string> expected;
     expected.push_back("en");
     expected.push_back("fr");
@@ -98,10 +96,9 @@ TEST(TranslatePrefsTest, CreateBlockedLanguagesNonEnglishUI) {
     EXPECT_EQ(expected.size(), blocked_languages.size());
     for (std::vector<std::string>::const_iterator it = expected.begin();
          it != expected.end(); ++it) {
-      EXPECT_NE(blocked_languages.end(),
-                std::find(blocked_languages.begin(),
-                          blocked_languages.end(),
-                          *it));
+      EXPECT_NE(
+          blocked_languages.end(),
+          std::find(blocked_languages.begin(), blocked_languages.end(), *it));
     }
   }
 
@@ -111,9 +108,8 @@ TEST(TranslatePrefsTest, CreateBlockedLanguagesNonEnglishUI) {
   {
     TranslateDownloadManager::GetInstance()->set_application_locale("ja");
     std::vector<std::string> blocked_languages;
-    TranslatePrefs::CreateBlockedLanguages(&blocked_languages,
-                                           blacklisted_languages,
-                                           accept_languages);
+    TranslatePrefs::CreateBlockedLanguages(
+        &blocked_languages, blacklisted_languages, accept_languages);
     std::vector<std::string> expected;
     expected.push_back("fr");
     expected.push_back("ja");
@@ -122,10 +118,9 @@ TEST(TranslatePrefsTest, CreateBlockedLanguagesNonEnglishUI) {
     EXPECT_EQ(expected.size(), blocked_languages.size());
     for (std::vector<std::string>::const_iterator it = expected.begin();
          it != expected.end(); ++it) {
-      EXPECT_NE(blocked_languages.end(),
-                std::find(blocked_languages.begin(),
-                          blocked_languages.end(),
-                          *it));
+      EXPECT_NE(
+          blocked_languages.end(),
+          std::find(blocked_languages.begin(), blocked_languages.end(), *it));
     }
   }
 }
@@ -156,6 +151,19 @@ class TranslatePrefTest : public testing::Test {
     return update.GetOldestDenialTime();
   }
 
+  void SetUp() override {
+    base::FeatureList::ClearInstanceForTesting();
+    base::FeatureList::SetInstance(base::WrapUnique(new base::FeatureList()));
+  }
+
+  void TurnOnTranslate2016Q2UIFlag() {
+    base::FeatureList::ClearInstanceForTesting();
+    std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
+    feature_list->InitializeFromCommandLine(translate::kTranslateUI2016Q2.name,
+                                            std::string());
+    base::FeatureList::SetInstance(std::move(feature_list));
+  }
+
   std::unique_ptr<user_prefs::TestingPrefServiceSyncable> prefs_;
   std::unique_ptr<translate::TranslatePrefs> translate_prefs_;
 
@@ -163,6 +171,36 @@ class TranslatePrefTest : public testing::Test {
   base::Time now_;
   base::Time two_days_ago_;
 };
+
+TEST_F(TranslatePrefTest, IsTooOftenDeniedIn2016Q2UI) {
+  TurnOnTranslate2016Q2UIFlag();
+
+  translate_prefs_->ResetDenialState();
+  EXPECT_FALSE(translate_prefs_->IsTooOftenDenied(kTestLanguage));
+
+  for (int i = 0; i < 3; i++) {
+    translate_prefs_->IncrementTranslationDeniedCount(kTestLanguage);
+    EXPECT_FALSE(translate_prefs_->IsTooOftenDenied(kTestLanguage));
+  }
+
+  translate_prefs_->IncrementTranslationDeniedCount(kTestLanguage);
+  EXPECT_TRUE(translate_prefs_->IsTooOftenDenied(kTestLanguage));
+}
+
+TEST_F(TranslatePrefTest, IsTooOftenIgnoredIn2016Q2UI) {
+  TurnOnTranslate2016Q2UIFlag();
+
+  translate_prefs_->ResetDenialState();
+  EXPECT_FALSE(translate_prefs_->IsTooOftenDenied(kTestLanguage));
+
+  for (int i = 0; i < 10; i++) {
+    translate_prefs_->IncrementTranslationIgnoredCount(kTestLanguage);
+    EXPECT_FALSE(translate_prefs_->IsTooOftenDenied(kTestLanguage));
+  }
+
+  translate_prefs_->IncrementTranslationIgnoredCount(kTestLanguage);
+  EXPECT_TRUE(translate_prefs_->IsTooOftenDenied(kTestLanguage));
+}
 
 TEST_F(TranslatePrefTest, UpdateLastDeniedTime) {
   // Test that denials with more than 24 hours difference between them do not
@@ -215,16 +253,16 @@ TEST_F(TranslatePrefTest, DenialTimeUpdate_ForceListExistence) {
   DictionaryPrefUpdate dict_update(
       prefs_.get(), TranslatePrefs::kPrefTranslateLastDeniedTimeForLanguage);
   base::DictionaryValue* denial_dict = dict_update.Get();
-  ASSERT_TRUE(denial_dict);
+  EXPECT_TRUE(denial_dict);
 
   base::ListValue* list_value = nullptr;
   bool has_list = denial_dict->GetList(kTestLanguage, &list_value);
-  ASSERT_FALSE(has_list);
+  EXPECT_FALSE(has_list);
 
   // Calling GetDenialTimes will force creation of a properly populated list.
   DenialTimeUpdate update(prefs_.get(), kTestLanguage, 2);
   base::ListValue* time_list = update.GetDenialTimes();
-  ASSERT_TRUE(time_list);
+  EXPECT_TRUE(time_list);
   EXPECT_EQ(0U, time_list->GetSize());
 }
 
@@ -235,20 +273,20 @@ TEST_F(TranslatePrefTest, DenialTimeUpdate_Migrate) {
   DictionaryPrefUpdate dict_update(
       prefs_.get(), TranslatePrefs::kPrefTranslateLastDeniedTimeForLanguage);
   base::DictionaryValue* denial_dict = dict_update.Get();
-  ASSERT_TRUE(denial_dict);
+  EXPECT_TRUE(denial_dict);
   denial_dict->SetDouble(kTestLanguage, two_days_ago_.ToJsTime());
 
   base::ListValue* list_value = nullptr;
   bool has_list = denial_dict->GetList(kTestLanguage, &list_value);
-  ASSERT_FALSE(has_list);
+  EXPECT_FALSE(has_list);
 
   // Calling GetDenialTimes will force creation of a properly populated list.
   DenialTimeUpdate update(prefs_.get(), kTestLanguage, 2);
   base::ListValue* time_list = update.GetDenialTimes();
-  ASSERT_TRUE(time_list);
+  EXPECT_TRUE(time_list);
 
   has_list = denial_dict->GetList(kTestLanguage, &list_value);
-  ASSERT_TRUE(has_list);
+  EXPECT_TRUE(has_list);
   EXPECT_EQ(time_list, list_value);
   EXPECT_EQ(1U, time_list->GetSize());
   EXPECT_EQ(two_days_ago_, update.GetOldestDenialTime());
