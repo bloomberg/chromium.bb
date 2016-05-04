@@ -313,10 +313,12 @@ WallpaperUtil.saveWallpaperInfo = function(url, layout, source, appName) {
   chrome.wallpaperPrivate.recordWallpaperUMA(source);
 
   // In order to keep the wallpaper sync working across different versions, we
-  // have to revert DAILY type wallpaper info to ONLINE type after record the
-  // correct UMA stats.
+  // have to revert DAILY/THIRDPARTY type wallpaper info to ONLINE/CUSTOM type
+  // after record the correct UMA stats.
   source = (source == Constants.WallpaperSourceEnum.Daily) ?
       Constants.WallpaperSourceEnum.Online : source;
+  source = (source == Constants.WallpaperSourceEnum.ThirdParty) ?
+      Constants.WallpaperSourceEnum.Custom : source;
   var wallpaperInfo = {
       url: url,
       layout: layout,

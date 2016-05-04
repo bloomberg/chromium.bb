@@ -476,5 +476,5 @@ chrome.wallpaperPrivate.onWallpaperChangedBy3rdParty.addListener(function(
   WallpaperUtil.storeWallpaperToSyncFS(filename, wallpaper);
   WallpaperUtil.storeWallpaperToSyncFS(thumbnailFilename, thumbnail);
   WallpaperUtil.saveWallpaperInfo(
-      filename, layout, Constants.WallpaperSourceEnum.Custom, appName);
+      filename, layout, Constants.WallpaperSourceEnum.ThirdParty, appName);
 });

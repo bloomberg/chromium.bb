@@ -13,7 +13,7 @@
       {
         "id": "WallpaperSource",
         "type": "string",
-        "enum": [ "ONLINE", "OEM", "DAILY", "CUSTOM" ]
+        "enum": [ "ONLINE", "OEM", "DAILY", "CUSTOM", "THIRDPARTY" ]
       }
     ],
     "functions": [

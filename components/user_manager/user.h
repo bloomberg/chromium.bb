@@ -68,8 +68,6 @@ class USER_MANAGER_EXPORT User : public UserInfo {
   // Hence,
   //   (a) existing enumerated constants should never be deleted or reordered,
   //   (b) new constants should only be appended at the end of the enumeration.
-  // TODO(xdai): Add THIRDPARTY enum to keep track of third party wallpapers.
-  // See http://crbug.com/563627.
   enum WallpaperType {
     DAILY = 0,         // Surprise wallpaper. Changes once a day if enabled.
     CUSTOMIZED = 1,    // Selected by user.
@@ -77,7 +75,8 @@ class USER_MANAGER_EXPORT User : public UserInfo {
     /* UNKNOWN = 3 */  // Removed.
     ONLINE = 4,        // WallpaperInfo.location denotes an URL.
     POLICY = 5,        // Controlled by policy, can't be changed by the user.
-    WALLPAPER_TYPE_COUNT = 6
+    THIRDPARTY = 6,    // Current wallpaper is set by a third party app.
+    WALLPAPER_TYPE_COUNT = 7
   };
 
   // Returns true if user type has gaia account.

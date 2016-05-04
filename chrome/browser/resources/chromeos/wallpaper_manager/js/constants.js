@@ -67,6 +67,7 @@
       Daily: 'DAILY',
       OEM: 'OEM',
       Custom: 'CUSTOM',
+      ThirdParty: 'THIRDPARTY',
       AddNew: 'ADDNEW',
       Default: 'DEFAULT'
   },

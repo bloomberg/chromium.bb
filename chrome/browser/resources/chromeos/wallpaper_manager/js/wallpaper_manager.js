@@ -670,8 +670,7 @@ function WallpaperManager(dialogDom) {
         });
         break;
       case Constants.WallpaperSourceEnum.Daily:
-        console.error('Unsupported wallpaper source.');
-        break;
+      case Constants.WallpaperSourceEnum.ThirdParty:
       default:
         console.error('Unsupported wallpaper source.');
     }

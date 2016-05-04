@@ -283,6 +283,8 @@ user_manager::User::WallpaperType getWallpaperType(
       return user_manager::User::CUSTOMIZED;
     case wallpaper_private::WALLPAPER_SOURCE_OEM:
       return user_manager::User::DEFAULT;
+    case wallpaper_private::WALLPAPER_SOURCE_THIRDPARTY:
+      return user_manager::User::THIRDPARTY;
     default:
       return user_manager::User::ONLINE;
   }
