@@ -119,13 +119,12 @@ class Shell::Instance : public mojom::Connector,
   Instance(shell::Shell* shell,
            const Identity& identity,
            const CapabilitySpec& capability_spec)
-    : shell_(shell),
-      id_(GenerateUniqueID()),
-      identity_(identity),
-      capability_spec_(capability_spec),
-      allow_any_application_(capability_spec.required.count("*") == 1),
-      pid_receiver_binding_(this),
-      weak_factory_(this) {
+      : shell_(shell),
+        id_(GenerateUniqueID()),
+        identity_(identity),
+        capability_spec_(capability_spec),
+        allow_any_application_(capability_spec.required.count("*") == 1),
+        pid_receiver_binding_(this) {
     if (identity_.name() == kShellName || identity_.name() == kCatalogName)
       pid_ = base::Process::Current().Pid();
     DCHECK_NE(mojom::kInvalidInstanceID, id_);
@@ -138,6 +137,19 @@ class Shell::Instance : public mojom::Connector,
     std::set<Instance*> children = children_;
     for (auto child : children)
       shell_->OnInstanceError(child);
+
+    // Shutdown all bindings before we close the runner. This way the process
+    // should see the pipes closed and exit, as well as waking up any potential
+    // sync/WaitForIncomingResponse().
+    shell_client_.reset();
+    if (pid_receiver_binding_.is_bound())
+      pid_receiver_binding_.Close();
+    connectors_.CloseAllBindings();
+    shell_bindings_.CloseAllBindings();
+    // Release |runner_| so that if we are called back to OnRunnerCompleted()
+    // we know we're in the destructor.
+    std::unique_ptr<NativeRunner> runner = std::move(runner_);
+    runner.reset();
   }
 
   Instance* parent() { return parent_; }
@@ -204,15 +216,13 @@ class Shell::Instance : public mojom::Connector,
 
   void StartWithFilePath(const base::FilePath& path) {
     CHECK(!shell_client_);
-    std::unique_ptr<NativeRunner> runner =
-        shell_->native_runner_factory_->Create(path);
+    runner_ = shell_->native_runner_factory_->Create(path);
     bool start_sandboxed = false;
-    mojom::ShellClientPtr client = runner->Start(
+    // We own |runner_|, so Unretained is safe here.
+    mojom::ShellClientPtr client = runner_->Start(
         path, identity_, start_sandboxed,
-        base::Bind(&Instance::PIDAvailable, weak_factory_.GetWeakPtr()),
-        base::Bind(&shell::Shell::CleanupRunner,
-                   shell_->weak_ptr_factory_.GetWeakPtr(), runner.get()));
-    shell_->native_runners_.push_back(std::move(runner));
+        base::Bind(&Instance::PIDAvailable, base::Unretained(this)),
+        base::Bind(&Instance::OnRunnerCompleted, base::Unretained(this)));
     StartWithClient(std::move(client));
   }
 
@@ -421,6 +431,14 @@ class Shell::Instance : public mojom::Connector,
     }
   }
 
+  // Callback when NativeRunner completes.
+  void OnRunnerCompleted() {
+    if (!runner_.get())
+      return;  // We're in the destructor.
+
+    shell_->OnInstanceError(this);
+  }
+
   shell::Shell* const shell_;
 
   // An id that identifies this instance. Distinct from pid, as a single process
@@ -430,15 +448,14 @@ class Shell::Instance : public mojom::Connector,
   const Identity identity_;
   const CapabilitySpec capability_spec_;
   const bool allow_any_application_;
+  std::unique_ptr<NativeRunner> runner_;
   mojom::ShellClientPtr shell_client_;
   mojo::Binding<mojom::PIDReceiver> pid_receiver_binding_;
   mojo::BindingSet<mojom::Connector> connectors_;
   mojo::BindingSet<mojom::Shell> shell_bindings_;
-  NativeRunner* runner_ = nullptr;
   base::ProcessId pid_ = base::kNullProcessId;
   Instance* parent_ = nullptr;
   std::set<Instance*> children_;
-  base::WeakPtrFactory<Instance> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Instance);
 };
@@ -480,8 +497,6 @@ Shell::~Shell() {
   while (!identity_to_instance_.empty())
     OnInstanceError(identity_to_instance_.begin()->second);
   identity_to_resolver_.clear();
-  for (auto& runner : native_runners_)
-    runner.reset();
 }
 
 void Shell::SetInstanceQuitCallback(
@@ -569,11 +584,11 @@ void Shell::OnInstanceError(Instance* instance) {
   auto it = identity_to_instance_.find(identity);
   DCHECK(it != identity_to_instance_.end());
   int id = instance->id();
-  delete it->second;
   identity_to_instance_.erase(it);
   instance_listeners_.ForAllPtrs([this, id](mojom::InstanceListener* listener) {
                                    listener->InstanceDestroyed(id);
                                  });
+  delete instance;
   if (!instance_quit_callback_.is_null())
     instance_quit_callback_.Run(identity);
 }
@@ -648,10 +663,9 @@ Shell::Instance* Shell::CreateInstance(const Identity& source,
     source_instance->AddChild(instance);
   identity_to_instance_[target] = instance;
   mojom::InstanceInfoPtr info = instance->CreateInstanceInfo();
-  instance_listeners_.ForAllPtrs(
-      [this, &info](mojom::InstanceListener* listener) {
-        listener->InstanceCreated(info.Clone());
-      });
+  instance_listeners_.ForAllPtrs([&info](mojom::InstanceListener* listener) {
+    listener->InstanceCreated(info.Clone());
+  });
   return instance;
 }
 
@@ -775,15 +789,6 @@ void Shell::OnGotResolvedName(std::unique_ptr<ConnectParams> params,
 
 base::WeakPtr<Shell> Shell::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
-}
-
-void Shell::CleanupRunner(NativeRunner* runner) {
-  for (auto it = native_runners_.begin(); it != native_runners_.end(); ++it) {
-    if (it->get() == runner) {
-      native_runners_.erase(it);
-      return;
-    }
-  }
 }
 
 }  // namespace shell

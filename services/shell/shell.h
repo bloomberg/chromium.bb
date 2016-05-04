@@ -143,8 +143,6 @@ class Shell : public ShellClient {
 
   base::WeakPtr<Shell> GetWeakPtr();
 
-  void CleanupRunner(NativeRunner* runner);
-
   std::map<Identity, Instance*> identity_to_instance_;
 
   // Tracks the names of instances that are allowed to field connection requests
@@ -161,7 +159,6 @@ class Shell : public ShellClient {
 
   base::Callback<void(const Identity&)> instance_quit_callback_;
   std::unique_ptr<NativeRunnerFactory> native_runner_factory_;
-  std::vector<std::unique_ptr<NativeRunner>> native_runners_;
   std::unique_ptr<ShellConnection> shell_connection_;
   base::WeakPtrFactory<Shell> weak_ptr_factory_;
 

@@ -305,27 +305,6 @@ TEST_F(LifecycleTest, PackagedApp_Crash) {
   EXPECT_EQ(0u, instances()->GetNewInstanceCount());
 }
 
-TEST_F(LifecycleTest, PackagedApp_CloseShellConnection) {
-  test::mojom::LifecycleControlPtr lifecycle = ConnectTo(kTestPackageAppNameA);
-
-  EXPECT_TRUE(instances()->HasInstanceForName(kTestPackageAppNameA));
-  EXPECT_TRUE(instances()->HasInstanceForName(kTestPackageName));
-  EXPECT_EQ(2u, instances()->GetNewInstanceCount());
-
-  base::RunLoop loop;
-  lifecycle.set_connection_error_handler(base::Bind(&QuitLoop, &loop));
-  lifecycle->CloseShellConnection();
-
-  WaitForInstanceDestruction();
-  EXPECT_FALSE(instances()->HasInstanceForName(kTestPackageAppNameA));
-  EXPECT_FALSE(instances()->HasInstanceForName(kTestPackageName));
-  EXPECT_EQ(0u, instances()->GetNewInstanceCount());
-
-  // |lifecycle| pipe should still be valid.
-  PingPong(lifecycle.get());
-}
-
-
 // When a single package provides multiple apps out of one process, crashing one
 // app crashes all.
 TEST_F(LifecycleTest, PackagedApp_CrashCrashesOtherProvidedApp) {
