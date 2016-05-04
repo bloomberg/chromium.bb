@@ -244,6 +244,7 @@
 
     'chromium.gpu.fyi': {
       # These all use the 'trybot' mixins to ensure that dcheck is on.
+      'Android Debug (Nexus 5X)': 'android_gn_debug_static_trybot_arm64',
       'Android Debug (Nexus 9)': 'android_gn_debug_static_trybot_arm64',
       'GPU Linux Builder (dbg)': 'swarming_gpu_fyi_tests_gn_debug_trybot',
       'GPU Linux Builder': 'swarming_gpu_fyi_tests_gn_release_trybot',
