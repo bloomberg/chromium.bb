@@ -177,16 +177,13 @@ component("gpu") {
                ] + get_target_outputs(":libvt_generate_stubs")
     deps += [ ":libvt_generate_stubs" ]
     lib_dirs = [ "$mac_sdk_path/usr/lib" ]
-
-    # TODO(markdittmer): Determine which libs are needed here.
-    libs += [
-      # "AVFoundation.framework",
-      # "CoreMedia.framework",
-      # "CoreVideo.framework",
-      # "IOSurface.framework",
-      # "OpenGL.framework",
-      # "QuartzCore.framework",
-      # "sandbox",
+    libs = [
+      "AVFoundation.framework",
+      "CoreMedia.framework",
+      "CoreVideo.framework",
+      "IOSurface.framework",
+      "QuartzCore.framework",
+      "sandbox",
     ]
   }
 
