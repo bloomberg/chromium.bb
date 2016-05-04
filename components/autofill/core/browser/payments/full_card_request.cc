@@ -100,7 +100,6 @@ void FullCardRequest::OnUnmaskPromptClosed() {
     delegate_->OnFullCardError();
 
   Reset();
-  payments_client_->CancelRequest();
 }
 
 void FullCardRequest::OnDidGetUnmaskRiskData(const std::string& risk_data) {
@@ -137,6 +136,8 @@ void FullCardRequest::OnDidGetRealPan(AutofillClient::PaymentsRpcResult result,
 }
 
 void FullCardRequest::Reset() {
+  weak_ptr_factory_.InvalidateWeakPtrs();
+  payments_client_->CancelRequest();
   delegate_ = nullptr;
   request_.reset();
   should_unmask_card_ = false;

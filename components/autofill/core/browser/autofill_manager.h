@@ -286,10 +286,6 @@ class AutofillManager : public AutofillDownloadManager::Observer,
                          const base::string16& cvc) override;
   void OnFullCardError() override;
 
-  // Saves risk data in |unmasking_risk_data_| and calls UnmaskCard if the user
-  // has accepted the prompt.
-  void OnDidGetUnmaskRiskData(const std::string& risk_data);
-
   // Sets |user_did_accept_upload_prompt_| and calls UploadCard if the risk data
   // is available.
   void OnUserDidAcceptUpload();
@@ -300,10 +296,6 @@ class AutofillManager : public AutofillDownloadManager::Observer,
 
   // Returns false if Autofill is disabled or if no Autofill data is available.
   bool RefreshDataModels();
-
-  // Returns true if the unique_id refers to a credit card and false if
-  // it refers to a profile.
-  bool IsCreditCard(int unique_id);
 
   // Gets the profile referred by |unique_id|. Returns true if the profile
   // exists.

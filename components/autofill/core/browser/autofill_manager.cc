@@ -1323,15 +1323,6 @@ bool AutofillManager::RefreshDataModels() {
   return true;
 }
 
-bool AutofillManager::IsCreditCard(int unique_id) {
-  // Unpack the |unique_id| into component parts.
-  std::string credit_card_id;
-  std::string profile_id;
-  SplitFrontendID(unique_id, &credit_card_id, &profile_id);
-  DCHECK(!base::IsValidGUID(credit_card_id) || !base::IsValidGUID(profile_id));
-  return base::IsValidGUID(credit_card_id);
-}
-
 bool AutofillManager::GetProfile(int unique_id,
                                  const AutofillProfile** profile) {
   // Unpack the |unique_id| into component parts.
