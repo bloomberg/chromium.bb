@@ -8,10 +8,12 @@
 #include "cc/output/copy_output_request.h"
 #include "components/mus/surfaces/surfaces_state.h"
 #include "components/mus/ws/display_binding.h"
+#include "components/mus/ws/server_window_surface_manager_test_api.h"
 #include "components/mus/ws/window_manager_access_policy.h"
 #include "components/mus/ws/window_manager_factory_service.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "services/shell/public/interfaces/connector.mojom.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace mus {
 namespace ws {
@@ -346,6 +348,93 @@ void TestWindowServerDelegate::CreateDefaultDisplays() {
 bool TestWindowServerDelegate::IsTestConfig() const {
   return true;
 }
+
+// WindowEventTargetingHelper ------------------------------------------------
+
+WindowEventTargetingHelper::WindowEventTargetingHelper()
+    : wm_client_(nullptr),
+      cursor_id_(0),
+      platform_display_factory_(&cursor_id_),
+      display_binding_(nullptr),
+      display_(nullptr),
+      surfaces_state_(new SurfacesState()),
+      window_server_(nullptr) {
+  PlatformDisplay::set_factory_for_testing(&platform_display_factory_);
+  window_server_.reset(
+      new WindowServer(&window_server_delegate_, surfaces_state_));
+  PlatformDisplayInitParams display_init_params;
+  display_init_params.surfaces_state = surfaces_state_;
+  display_ = new Display(window_server_.get(), display_init_params);
+  display_binding_ = new TestDisplayBinding(display_, window_server_.get());
+  display_->Init(base::WrapUnique(display_binding_));
+  wm_client_ = window_server_delegate_.last_client();
+  wm_client_->tracker()->changes()->clear();
+}
+
+WindowEventTargetingHelper::~WindowEventTargetingHelper() {}
+
+ServerWindow* WindowEventTargetingHelper::CreatePrimaryTree(
+    const gfx::Rect& root_window_bounds,
+    const gfx::Rect& window_bounds) {
+  WindowTree* wm_tree = window_server_->GetTreeWithId(1);
+  const ClientWindowId embed_window_id(
+      WindowIdToTransportId(WindowId(wm_tree->id(), 1)));
+  EXPECT_TRUE(wm_tree->NewWindow(embed_window_id, ServerWindow::Properties()));
+  EXPECT_TRUE(wm_tree->SetWindowVisibility(embed_window_id, true));
+  EXPECT_TRUE(wm_tree->AddWindow(FirstRootId(wm_tree), embed_window_id));
+  display_->root_window()->SetBounds(root_window_bounds);
+  mojom::WindowTreeClientPtr client;
+  mojom::WindowTreeClientRequest client_request = GetProxy(&client);
+  wm_client_->Bind(std::move(client_request));
+  wm_tree->Embed(embed_window_id, std::move(client));
+  ServerWindow* embed_window = wm_tree->GetWindowByClientId(embed_window_id);
+  WindowTree* tree1 = window_server_->GetTreeWithRoot(embed_window);
+  EXPECT_NE(nullptr, tree1);
+  EXPECT_NE(tree1, wm_tree);
+  WindowTreeTestApi(tree1).set_user_id(wm_tree->user_id());
+
+  embed_window->SetBounds(window_bounds);
+
+  return embed_window;
+}
+
+void WindowEventTargetingHelper::CreateSecondaryTree(
+    ServerWindow* embed_window,
+    const gfx::Rect& window_bounds,
+    TestWindowTreeClient** out_client,
+    WindowTree** window_tree,
+    ServerWindow** window) {
+  WindowTree* tree1 = window_server_->GetTreeWithRoot(embed_window);
+  ASSERT_TRUE(tree1 != nullptr);
+  const ClientWindowId child1_id(
+      WindowIdToTransportId(WindowId(tree1->id(), 1)));
+  EXPECT_TRUE(tree1->NewWindow(child1_id, ServerWindow::Properties()));
+  ServerWindow* child1 = tree1->GetWindowByClientId(child1_id);
+  ASSERT_TRUE(child1);
+  EXPECT_TRUE(tree1->AddWindow(ClientWindowIdForWindow(tree1, embed_window),
+                               child1_id));
+  tree1->GetDisplay(embed_window)->AddActivationParent(embed_window);
+
+  child1->SetVisible(true);
+  child1->SetBounds(window_bounds);
+  EnableHitTest(child1);
+
+  TestWindowTreeClient* embed_connection =
+      window_server_delegate_.last_client();
+  embed_connection->tracker()->changes()->clear();
+  wm_client_->tracker()->changes()->clear();
+
+  *out_client = embed_connection;
+  *window_tree = tree1;
+  *window = child1;
+}
+
+void WindowEventTargetingHelper::SetTaskRunner(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  message_loop_.SetTaskRunner(task_runner);
+}
+
+// ----------------------------------------------------------------------------
 
 ServerWindow* FirstRoot(WindowTree* tree) {
   return tree->roots().size() == 1u

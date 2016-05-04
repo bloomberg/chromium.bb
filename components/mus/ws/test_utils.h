@@ -395,6 +395,61 @@ class TestWindowServerDelegate : public WindowServerDelegate {
 
 // -----------------------------------------------------------------------------
 
+// Helper class which owns all of the necessary objects to test event targeting
+// of ServerWindow objects.
+class WindowEventTargetingHelper {
+ public:
+  WindowEventTargetingHelper();
+  ~WindowEventTargetingHelper();
+
+  // Creates |window| as an embeded window of the primary tree. This window is a
+  // root window of its own tree, with bounds |window_bounds|. The bounds of the
+  // root window of |display_| are defined by |root_window_bounds|.
+  ServerWindow* CreatePrimaryTree(const gfx::Rect& root_window_bounds,
+                                  const gfx::Rect& window_bounds);
+  // Creates a secondary tree, embedded as a child of |embed_window|. The
+  // resulting |window| is setup for event targeting, with bounds
+  // |window_bounds|.
+  void CreateSecondaryTree(ServerWindow* embed_window,
+                           const gfx::Rect& window_bounds,
+                           TestWindowTreeClient** out_client,
+                           WindowTree** window_tree,
+                           ServerWindow** window);
+  // Sets the task runner for |message_loop_|
+  void SetTaskRunner(scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+
+  int32_t cursor_id() { return cursor_id_; }
+  Display* display() { return display_; }
+  TestWindowTreeBinding* last_binding() {
+    return window_server_delegate_.last_binding();
+  }
+  TestWindowTreeClient* last_window_tree_client() {
+    return window_server_delegate_.last_client();
+  }
+  TestWindowTreeClient* wm_client() { return wm_client_; }
+  WindowServer* window_server() { return window_server_.get(); }
+
+ private:
+  // TestWindowTreeClient that is used for the WM connection. Owned by
+  // |window_server_delegate_|
+  TestWindowTreeClient* wm_client_;
+  int32_t cursor_id_;
+  TestPlatformDisplayFactory platform_display_factory_;
+  TestWindowServerDelegate window_server_delegate_;
+  // Owned by WindowServer
+  TestDisplayBinding* display_binding_;
+  // Owned by WindowServer's DisplayManager.
+  Display* display_;
+  scoped_refptr<SurfacesState> surfaces_state_;
+  std::unique_ptr<WindowServer> window_server_;
+  // Needed to Bind to |wm_client_|
+  base::MessageLoop message_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(WindowEventTargetingHelper);
+};
+
+// -----------------------------------------------------------------------------
+
 // Returns the first and only root of |tree|. If |tree| has zero or more than
 // one root returns null.
 ServerWindow* FirstRoot(WindowTree* tree);
