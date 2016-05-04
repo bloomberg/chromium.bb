@@ -19,7 +19,9 @@ div .className #test::before {
     /* border: 1px solid black; */
 }
 === AST === 
-rule 0: "div"
+rule 0
+    selector 0: "div"
+        range: {"startLine":0,"startColumn":0,"endLine":0,"endColumn":3}
     property 0
         name: "display"
             range: {"startLine":1,"startColumn":7,"endLine":1,"endColumn":14}
@@ -48,7 +50,9 @@ rule 0: "div"
             range: {"startLine":4,"startColumn":17,"endLine":4,"endColumn":25}
         range: {"startLine":4,"startColumn":4,"endLine":4,"endColumn":29}
         disabled: true
-rule 1: "div .className"
+rule 1
+    selector 0: "div .className"
+        range: {"startLine":7,"startColumn":0,"endLine":7,"endColumn":14}
     property 0
         name: "padding"
             range: {"startLine":8,"startColumn":4,"endLine":8,"endColumn":11}
@@ -70,7 +74,9 @@ rule 1: "div .className"
             range: {"startLine":10,"startColumn":22,"endLine":10,"endColumn":50}
         range: {"startLine":10,"startColumn":4,"endLine":10,"endColumn":51}
         disabled: false
-rule 2: "div .className #test::before"
+rule 2
+    selector 0: "div .className #test::before"
+        range: {"startLine":13,"startColumn":0,"endLine":13,"endColumn":28}
     property 0
         name: "margin"
             range: {"startLine":14,"startColumn":4,"endLine":14,"endColumn":10}

@@ -13,7 +13,7 @@ $class-slug: box;
 }
 
 === AST === 
-rule 0: ""
+rule 0
     property 0
         name: "$my-color"
             range: {"startLine":0,"startColumn":0,"endLine":0,"endColumn":9}
@@ -35,7 +35,9 @@ rule 0: ""
             range: {"startLine":2,"startColumn":13,"endLine":2,"endColumn":16}
         range: {"startLine":2,"startColumn":0,"endLine":2,"endColumn":17}
         disabled: false
-rule 1: ".#{$class-slug}#{$i}"
+rule 1
+    selector 0: ".#{$class-slug}#{$i}"
+        range: {"startLine":5,"startColumn":4,"endLine":5,"endColumn":24}
     property 0
         name: "background-color"
             range: {"startLine":6,"startColumn":8,"endLine":6,"endColumn":24}

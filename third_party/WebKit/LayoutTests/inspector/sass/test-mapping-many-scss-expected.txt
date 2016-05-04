@@ -1,6 +1,6 @@
 Verifies mapping correctly loads multiple SCSS files.
 
-Mapped CSS: 8
-Mapped SCSS: 8
+Mapped CSS: 13
+Mapped SCSS: 10
 No stale entries found.
 

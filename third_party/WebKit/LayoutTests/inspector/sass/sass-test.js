@@ -33,7 +33,7 @@ InspectorTest.dumpAST = function(ast)
     var lines = [String.sprintf("=== AST === %s", ast.document.url)];
     for (var i = 0; i < ast.rules.length; ++i) {
         var rule = ast.rules[i];
-        lines.push(String.sprintf("rule %d: \"%s\"", i, rule.selector));
+        lines.push(String.sprintf("rule %d", i));
         var ruleLines = dumpRule(rule);
         lines = lines.concat(indent(ruleLines));
     }
@@ -44,6 +44,12 @@ InspectorTest.dumpAST = function(ast)
     function dumpRule(rule)
     {
         var lines = [];
+        for (var i = 0; i < rule.selectors.length; ++i) {
+            var selector = rule.selectors[i];
+            lines.push(`selector ${i}: "${selector.text}"`);
+            var selectorLines = dumpTextNode(selector);
+            lines = lines.concat(indent(selectorLines));
+        }
         for (var i = 0; i < rule.properties.length; ++i) {
             var property = rule.properties[i];
             lines.push("property " + i);
@@ -122,7 +128,8 @@ InspectorTest.dumpASTDiff = function(diff)
                 break;
             }
         }
-        InspectorTest.addResult("Changes for rule: " + rule.selector);
+        var selectorText = rule.selectors.map(selector => selector.text).join(",");
+        InspectorTest.addResult("Changes for rule: " + selectorText);
         names = indent(names);
         for (var i = 0; i < names.length; ++i)
             InspectorTest.addResult(names[i] + ": " + values[i]);

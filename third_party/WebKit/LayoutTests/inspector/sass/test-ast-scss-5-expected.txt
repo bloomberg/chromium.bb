@@ -11,7 +11,9 @@ body {
 }
 
 === AST === 
-rule 0: "body"
+rule 0
+    selector 0: "body"
+        range: {"startLine":0,"startColumn":0,"endLine":0,"endColumn":4}
     property 0
         name: "padding-top"
             range: {"startLine":1,"startColumn":7,"endLine":1,"endColumn":18}
@@ -26,7 +28,9 @@ rule 0: "body"
             range: {"startLine":2,"startColumn":12,"endLine":2,"endColumn":18}
         range: {"startLine":2,"startColumn":4,"endLine":3,"endColumn":0}
         disabled: false
-rule 1: "body"
+rule 1
+    selector 0: "body"
+        range: {"startLine":5,"startColumn":0,"endLine":5,"endColumn":4}
     property 0
         name: "color"
             range: {"startLine":6,"startColumn":4,"endLine":6,"endColumn":9}

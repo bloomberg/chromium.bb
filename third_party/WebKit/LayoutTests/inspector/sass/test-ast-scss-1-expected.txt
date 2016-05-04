@@ -19,7 +19,9 @@ div {
     }
 }
 === AST === 
-rule 0: "div"
+rule 0
+    selector 0: "div"
+        range: {"startLine":0,"startColumn":0,"endLine":0,"endColumn":3}
     property 0
         name: "display"
             range: {"startLine":1,"startColumn":7,"endLine":1,"endColumn":14}
@@ -48,7 +50,9 @@ rule 0: "div"
             range: {"startLine":4,"startColumn":17,"endLine":4,"endColumn":25}
         range: {"startLine":4,"startColumn":4,"endLine":4,"endColumn":29}
         disabled: true
-rule 1: ".className"
+rule 1
+    selector 0: ".className"
+        range: {"startLine":6,"startColumn":4,"endLine":6,"endColumn":14}
     property 0
         name: "padding"
             range: {"startLine":7,"startColumn":8,"endLine":7,"endColumn":15}
@@ -70,7 +74,9 @@ rule 1: ".className"
             range: {"startLine":9,"startColumn":26,"endLine":9,"endColumn":54}
         range: {"startLine":9,"startColumn":8,"endLine":9,"endColumn":55}
         disabled: false
-rule 2: "#test::before"
+rule 2
+    selector 0: "#test::before"
+        range: {"startLine":11,"startColumn":8,"endLine":11,"endColumn":21}
     property 0
         name: "margin"
             range: {"startLine":12,"startColumn":12,"endLine":12,"endColumn":18}

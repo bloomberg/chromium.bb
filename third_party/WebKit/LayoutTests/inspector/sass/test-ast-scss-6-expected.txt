@@ -7,7 +7,9 @@ Verifies AST of SCSS with @for control statement.
     }
 }
 === AST === 
-rule 0: ".box#{$i}"
+rule 0
+    selector 0: ".box#{$i}"
+        range: {"startLine":1,"startColumn":4,"endLine":1,"endColumn":13}
     property 0
         name: "color"
             range: {"startLine":2,"startColumn":8,"endLine":2,"endColumn":13}

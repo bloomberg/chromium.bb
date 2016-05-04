@@ -10,7 +10,9 @@ Verifies AST of CSS with media query.
 }
 
 === AST === 
-rule 0: "body"
+rule 0
+    selector 0: "body"
+        range: {"startLine":1,"startColumn":4,"endLine":1,"endColumn":8}
     property 0
         name: "width"
             range: {"startLine":2,"startColumn":8,"endLine":2,"endColumn":13}
