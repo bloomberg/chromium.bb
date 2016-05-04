@@ -75,7 +75,9 @@ class FullCardRequestTest : public testing::Test,
 
   FullCardRequest* request() { return &request_; }
 
-  CardUnmaskDelegate* ui_delegate() { return (CardUnmaskDelegate*)&request_; }
+  CardUnmaskDelegate* ui_delegate() {
+    return static_cast<CardUnmaskDelegate*>(&request_);
+  }
 
   MockDelegate* delegate() { return &delegate_; }
 

@@ -939,7 +939,8 @@ class AutofillManagerTest : public testing::Test {
   // Convenience method to cast the FullCardRequest into a CardUnmaskDelegate.
   CardUnmaskDelegate* full_card_unmask_delegate() {
     DCHECK(autofill_manager_->full_card_request_);
-    return (CardUnmaskDelegate*)autofill_manager_->full_card_request_.get();
+    return static_cast<CardUnmaskDelegate*>(
+        autofill_manager_->full_card_request_.get());
   }
 
  protected:
