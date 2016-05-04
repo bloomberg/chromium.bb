@@ -58488,6 +58488,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebAudio.AudioDestination.CallbackBufferSize">
+  <owner>rtoy@chromium.org</owner>
+  <owner>hongchan@chromium.org</owner>
+  <summary>
+    The callback buffer size (in audio frames) for WebAudio rendering between
+    the WebAudio graph and the audio device thread.  This can differ from the
+    value recommended by the audio hardware due to internal constraints in
+    WebAudio. Recorded for every WebAudio AudioContext that is created.
+  </summary>
+</histogram>
+
+<histogram name="WebAudio.AudioDestination.HardwareBufferSize">
+  <owner>rtoy@chromium.org</owner>
+  <owner>hongchan@chromium.org</owner>
+  <summary>
+    The buffer size (in audio frames) for WebAudio rendering recommended by the
+    audio hardware.  Recorded for every WebAudio AudioContext that is created.
+  </summary>
+</histogram>
+
 <histogram name="WebAudio.IIRFilterNode.Order">
   <owner>rtoy@chromium.org</owner>
   <owner>hongchan@chromium.org</owner>

@@ -27,6 +27,8 @@
  */
 
 #include "platform/audio/AudioDestination.h"
+
+#include "platform/Histogram.h"
 #include "platform/audio/AudioFIFO.h"
 #include "platform/audio/AudioPullFIFO.h"
 #include "public/platform/Platform.h"
@@ -54,8 +56,17 @@ AudioDestination::AudioDestination(AudioIOCallback& callback, const String& inpu
     , m_sampleRate(sampleRate)
     , m_isPlaying(false)
 {
+    // Histogram for audioHardwareBufferSize
+    DEFINE_STATIC_LOCAL(SparseHistogram, hardwareBufferSizeHistogram,
+        ("WebAudio.AudioDestination.HardwareBuffersize"));
+    // Histogram for the actual callback size used.  Typically, this is the same as
+    // audioHardwareBufferSize, but can be adjusted depending on some heuristics below.
+    DEFINE_STATIC_LOCAL(SparseHistogram, callbackBufferSizeHistogram,
+        ("WebAudio.AudioDestination.CallbackBufferSize"));
+
     // Use the optimal buffer size recommended by the audio backend.
-    m_callbackBufferSize = Platform::current()->audioHardwareBufferSize();
+    size_t recommendedHardwareBufferSize = Platform::current()->audioHardwareBufferSize();
+    m_callbackBufferSize = recommendedHardwareBufferSize;
 
 #if OS(ANDROID)
     // The optimum low-latency hardware buffer size is usually too small on Android for WebAudio to
@@ -80,6 +91,10 @@ AudioDestination::AudioDestination(AudioIOCallback& callback, const String& inpu
 
     m_audioDevice = adoptPtr(Platform::current()->createAudioDevice(m_callbackBufferSize, numberOfInputChannels, numberOfOutputChannels, sampleRate, this, inputDeviceId, securityOrigin));
     ASSERT(m_audioDevice);
+
+    // Record the sizes if we successfully created an output device.
+    hardwareBufferSizeHistogram.sample(recommendedHardwareBufferSize);
+    callbackBufferSizeHistogram.sample(m_callbackBufferSize);
 
     // Create a FIFO to handle the possibility of the callback size
     // not being a multiple of the render size. If the FIFO already
