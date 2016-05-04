@@ -55,18 +55,16 @@ class PopularSites {
 
   using FinishedCallback = base::Callback<void(bool /* success */)>;
 
-  // Usually, the name of the file that's downloaded is based on the user's
-  // locale. |override_country| (if non-empty) is used to override the
-  // auto-detected country. |override_version|, if non-empty, will
-  // override the baked-in default version.
   // Set |force_download| to enforce re-downloading the suggestions file, even
   // if it already exists on disk.
+  // TODO(treib): PopularSites should query the variation params itself instead
+  // of having them passed in.
   PopularSites(PrefService* prefs,
                const TemplateURLService* template_url_service,
                variations::VariationsService* variations_service,
                net::URLRequestContextGetter* download_context,
-               const std::string& override_country,
-               const std::string& override_version,
+               const std::string& variation_param_country,
+               const std::string& variation_param_version,
                bool force_download,
                const FinishedCallback& callback);
 

@@ -14,5 +14,11 @@ const char kNTPSuggestionsURL[] = "ntp.suggestions_url";
 // Whether the suggestion was derived from personal data.
 const char kNTPSuggestionsIsPersonal[] = "ntp.suggestions_is_personal";
 
+// If set, this will override the country detection for popular sites.
+const char kPopularSitesOverrideCountry[] = "popular_sites.override_country";
+
+// If set, this will override the default file version for popular sites.
+const char kPopularSitesOverrideVersion[] = "popular_sites.override_version";
+
 }  // namespace prefs
 }  // namespace ntp_tiles

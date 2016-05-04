@@ -30,9 +30,10 @@ class PopularSitesInternalsMessageHandler
   void RegisterMessages() override;
 
   void HandleRegisterForEvents(const base::ListValue* args);
-  void HandleDownload(const base::ListValue* args);
+  void HandleUpdate(const base::ListValue* args);
   void HandleViewJson(const base::ListValue* args);
 
+  void SendOverrides();
   void SendDownloadResult(bool success);
   void SendSites();
   void SendJson(const std::string& json);
