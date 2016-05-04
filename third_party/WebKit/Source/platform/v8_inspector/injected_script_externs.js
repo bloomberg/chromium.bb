@@ -77,6 +77,12 @@ InjectedScriptHostClass.prototype.setNonEnumProperty = function(obj, key, value)
  */
 InjectedScriptHostClass.prototype.bind = function(value, groupName) {}
 
+/**
+ * @param {!Object} object
+ * @return {!Object}
+ */
+InjectedScriptHostClass.prototype.proxyTargetValue = function(object) {}
+
 /** @type {!InjectedScriptHostClass} */
 var InjectedScriptHost;
 /** @type {!Window} */
