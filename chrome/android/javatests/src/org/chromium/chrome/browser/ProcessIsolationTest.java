@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser;
 
+import android.test.suitebuilder.annotation.MediumTest;
 import android.text.TextUtils;
 
 import org.chromium.base.BuildInfo;
@@ -33,8 +34,8 @@ public class ProcessIsolationTest extends ChromeActivityTestCaseBase<ChromeActiv
      * Verifies that process isolation works, i.e., that the browser and
      * renderer processes use different user IDs.
      * @throws InterruptedException
-     * @MediumTest
      */
+    @MediumTest
     @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/517611")
     @Feature({"Browser", "Security"})
     public void testProcessIsolationForRenderers() throws InterruptedException {

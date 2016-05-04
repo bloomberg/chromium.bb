@@ -586,7 +586,7 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
      * Helper function to test allowing and blocking background sync.
      * @param enabled true to test enabling background sync, false to test disabling the feature.
      */
-    private void testBackgroundSyncPermission(final boolean enabled) {
+    private void doTestBackgroundSyncPermission(final boolean enabled) {
         setEnableBackgroundSync(enabled);
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -600,13 +600,13 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
     @SmallTest
     @Feature({"Preferences"})
     public void testAllowBackgroundSync() {
-        testBackgroundSyncPermission(true);
+        doTestBackgroundSyncPermission(true);
     }
 
     @SmallTest
     @Feature({"Preferences"})
     public void testBlockBackgroundSync() {
-        testBackgroundSyncPermission(false);
+        doTestBackgroundSyncPermission(false);
     }
 
     private int getTabCount() {
