@@ -484,7 +484,10 @@ bool AutofillProfile::IsSubsetOfForFieldSet(
 
 bool AutofillProfile::OverwriteName(const NameInfo& imported_name,
                                     const std::string& app_locale) {
+  // Check if the names parts are equal.
   if (name_.ParsedNamesAreEqual(imported_name)) {
+    // If the current |name_| has an empty NAME_FULL but the the |imported_name|
+    // has not, overwrite only NAME_FULL.
     if (name_.GetRawInfo(NAME_FULL).empty() &&
         !imported_name.GetRawInfo(NAME_FULL).empty()) {
       name_.SetRawInfo(NAME_FULL, imported_name.GetRawInfo(NAME_FULL));
@@ -525,16 +528,20 @@ bool AutofillProfile::OverwriteWith(const AutofillProfile& profile,
   if (profile.use_date() > use_date())
     set_use_date(profile.use_date());
 
-  ServerFieldTypeSet field_types;
-  profile.GetNonEmptyTypes(app_locale, &field_types);
+  // |types_to_overwrite| is initially populated with all types that have
+  //  non-empty data in the incoming |profile|. After adjustment, all data from
+  // |profile| corresponding to types in |types_to_overwrite| is overwritten in
+  // |this| profile.
+  ServerFieldTypeSet types_to_overwrite;
+  profile.GetNonEmptyTypes(app_locale, &types_to_overwrite);
 
   // Only transfer "full" types (e.g. full name) and not fragments (e.g.
   // first name, last name).
-  CollapseCompoundFieldTypes(&field_types);
+  CollapseCompoundFieldTypes(&types_to_overwrite);
 
   // Remove ADDRESS_HOME_STREET_ADDRESS to ensure a merge of the address line by
   // line. See comment below.
-  field_types.erase(ADDRESS_HOME_STREET_ADDRESS);
+  types_to_overwrite.erase(ADDRESS_HOME_STREET_ADDRESS);
 
   l10n::CaseInsensitiveCompare compare;
 
@@ -548,25 +555,24 @@ bool AutofillProfile::OverwriteWith(const AutofillProfile& profile,
           CanonicalizeProfileString(GetRawInfo(ADDRESS_HOME_STREET_ADDRESS))) &&
       !GetRawInfo(ADDRESS_HOME_LINE2).empty() &&
       profile.GetRawInfo(ADDRESS_HOME_LINE2).empty()) {
-    field_types.erase(ADDRESS_HOME_LINE1);
-    field_types.erase(ADDRESS_HOME_LINE2);
+    types_to_overwrite.erase(ADDRESS_HOME_LINE1);
+    types_to_overwrite.erase(ADDRESS_HOME_LINE2);
   }
 
   bool did_overwrite = false;
 
-  for (ServerFieldTypeSet::const_iterator iter = field_types.begin();
-       iter != field_types.end(); ++iter) {
-    FieldTypeGroup group = AutofillType(*iter).group();
-
-    // Special case names.
-    if (group == NAME) {
-      did_overwrite = OverwriteName(profile.name_, app_locale) || did_overwrite;
+  for (const ServerFieldType field_type : types_to_overwrite) {
+    // Special case for names.
+    if (AutofillType(field_type).group() == NAME) {
+      did_overwrite |= OverwriteName(profile.name_, app_locale);
       continue;
     }
 
-    base::string16 new_value = profile.GetRawInfo(*iter);
-    if (!compare.StringsEqual(GetRawInfo(*iter), new_value)) {
-      SetRawInfo(*iter, new_value);
+    base::string16 new_value = profile.GetRawInfo(field_type);
+    // Overwrite the data in |this| profile for the field type and set
+    // |did_overwrite| if the previous data was different than the |new_value|.
+    if (GetRawInfo(field_type) != new_value) {
+      SetRawInfo(field_type, new_value);
       did_overwrite = true;
     }
   }

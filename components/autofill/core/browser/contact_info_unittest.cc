@@ -188,22 +188,22 @@ TEST(NameInfoTest, ParsedNamesAreEqual) {
        {"Marion", "Mitchell", "Morrison"},
        true},
 
-      // Case-insensative comparisons.
+      // Case-sensitive comparisons.
       {{"Marion", "Mitchell", "Morrison"},
        {"Marion", "Mitchell", "MORRISON"},
-       true},
+       false},
       {{"Marion", "Mitchell", "Morrison"},
        {"MARION", "Mitchell", "MORRISON"},
-       true},
+       false},
       {{"Marion", "Mitchell", "Morrison"},
        {"MARION", "MITCHELL", "MORRISON"},
-       true},
+       false},
       {{"Marion", "", "Mitchell Morrison"},
        {"MARION", "", "MITCHELL MORRISON"},
-       true},
+       false},
       {{"Marion Mitchell", "", "Morrison"},
        {"MARION MITCHELL", "", "MORRISON"},
-       true},
+       false},
 
       // Identical full names but different canonical forms.
       {{"Marion", "Mitchell", "Morrison"},
@@ -222,7 +222,7 @@ TEST(NameInfoTest, ParsedNamesAreEqual) {
 
       // Non-ASCII characters.
       {{"M\xc3\xa1rion Mitchell", "", "Morrison"},
-       {"M\xc3\x81RION MITCHELL", "", "MORRISON"},
+       {"M\xc3\xa1rion Mitchell", "", "Morrison"},
        true},
   };
 

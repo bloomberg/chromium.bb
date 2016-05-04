@@ -114,8 +114,10 @@ class AutofillProfile : public AutofillDataModel {
                              const std::string& app_locale,
                              const ServerFieldTypeSet& types) const;
 
-  // Overwrites the field data in |profile| with this Profile. Returns |true| if
-  // at least one field was overwritten.
+  // Overwrites the field data in this Profile with the non-empty fields in
+  // |profile|. Returns |true| if at least one field was overwritten.
+  // The usage stats, the origin and the language code are always updated and
+  // have no effect on the return value.
   bool OverwriteWith(const AutofillProfile& profile,
                      const std::string& app_locale);
 

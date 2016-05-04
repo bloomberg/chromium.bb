@@ -22,8 +22,8 @@ class NameInfo : public FormGroup {
 
   NameInfo& operator=(const NameInfo& info);
 
-  // Compares |NameInfo| objects for |given_|, |middle_| and |family_| names,
-  // ignoring their case differences.
+  // Compares |NameInfo| objects for |given_|, |middle_| and |family_| names.
+  // The comparison is case sensitive.
   bool ParsedNamesAreEqual(const NameInfo& info) const;
 
   // FormGroup:

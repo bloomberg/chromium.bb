@@ -38,10 +38,8 @@ NameInfo& NameInfo::operator=(const NameInfo& info) {
 }
 
 bool NameInfo::ParsedNamesAreEqual(const NameInfo& info) const {
-  l10n::CaseInsensitiveCompare compare;
-  return compare.StringsEqual(given_, info.given_) &&
-         compare.StringsEqual(middle_, info.middle_) &&
-         compare.StringsEqual(family_, info.family_);
+  return given_ == info.given_ && middle_ == info.middle_ &&
+         family_ == info.family_;
 }
 
 void NameInfo::GetSupportedTypes(ServerFieldTypeSet* supported_types) const {
