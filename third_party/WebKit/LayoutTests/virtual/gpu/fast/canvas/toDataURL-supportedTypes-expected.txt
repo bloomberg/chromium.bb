@@ -7,9 +7,9 @@ Given MIMEType: image/jpeg
 Used MIMEType: image/jpeg
 MIME types are the SAME.
 
-Given MIMEType: image/gif
-Used MIMEType: image/png
-MIME types DIFFER.
+Given MIMEType: image/webp
+Used MIMEType: image/webp
+MIME types are the SAME.
 
 Given MIMEType: 
 Used MIMEType: image/png
@@ -20,6 +20,10 @@ Used MIMEType: image/png
 MIME types DIFFER.
 
 Given MIMEType: undefined
+Used MIMEType: image/png
+MIME types DIFFER.
+
+Given MIMEType: image/gif
 Used MIMEType: image/png
 MIME types DIFFER.
 

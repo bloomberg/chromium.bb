@@ -9,9 +9,6 @@ PASS tryMimeType('IMAGE/PNG') is 'image/png'
 PASS tryMimeType('image/jpeg') is 'image/jpeg'
 PASS tryMimeType('imAgE/jPEg') is 'image/jpeg'
 PASS tryMimeType('IMAGE/JPEG') is 'image/jpeg'
-PASS tryMimeType('image/webp') is 'image/webp'
-PASS tryMimeType('imAgE/wEBp') is 'image/webp'
-PASS tryMimeType('IMAGE/WEBP') is 'image/webp'
 PASS successfullyParsed is true
 
 TEST COMPLETE
