@@ -126,7 +126,12 @@ class BluetoothLowEnergyExtensionFunction : public UIThreadExtensionFunction {
   // BluetoothAdapter.
   virtual void DoWork() = 0;
 
+  BluetoothLowEnergyEventRouter* event_router_;
+
  private:
+  // Internal method to do common setup before actual DoWork is called.
+  void PreDoWork();
+
   DISALLOW_COPY_AND_ASSIGN(BluetoothLowEnergyExtensionFunction);
 };
 

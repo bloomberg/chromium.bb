@@ -98,6 +98,8 @@ class MockBluetoothAdapter : public BluetoothAdapter {
                void(const BluetoothAudioSink::Options& options,
                     const AcquiredCallback& callback,
                     const BluetoothAudioSink::ErrorCallback& error_callback));
+  MOCK_CONST_METHOD1(GetGattService,
+                     BluetoothLocalGattService*(const std::string& identifier));
 
   void StartDiscoverySessionWithFilter(
       std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,

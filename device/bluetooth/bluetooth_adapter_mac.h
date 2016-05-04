@@ -85,6 +85,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterMac
       std::unique_ptr<BluetoothAdvertisement::Data> advertisement_data,
       const CreateAdvertisementCallback& callback,
       const CreateAdvertisementErrorCallback& error_callback) override;
+  BluetoothLocalGattService* GetGattService(
+      const std::string& identifier) const override;
 
   // BluetoothDiscoveryManagerMac::Observer overrides:
   void ClassicDeviceFound(IOBluetoothDevice* device) override;

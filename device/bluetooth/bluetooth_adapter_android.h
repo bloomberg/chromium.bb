@@ -85,6 +85,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterAndroid final
       std::unique_ptr<BluetoothAdvertisement::Data> advertisement_data,
       const CreateAdvertisementCallback& callback,
       const CreateAdvertisementErrorCallback& error_callback) override;
+  BluetoothLocalGattService* GetGattService(
+      const std::string& identifier) const override;
 
   // Called when adapter state changes.
   void OnAdapterStateChanged(JNIEnv* env,

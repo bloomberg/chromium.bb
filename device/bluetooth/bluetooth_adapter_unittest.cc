@@ -103,6 +103,11 @@ class TestBluetoothAdapter : public BluetoothAdapter {
       const CreateAdvertisementCallback& callback,
       const CreateAdvertisementErrorCallback& error_callback) override {}
 
+  BluetoothLocalGattService* GetGattService(
+      const std::string& identifier) const override {
+    return nullptr;
+  }
+
   void TestErrorCallback() {}
 
   ScopedVector<BluetoothDiscoverySession> discovery_sessions_;

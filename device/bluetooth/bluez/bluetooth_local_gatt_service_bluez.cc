@@ -72,7 +72,15 @@ void BluetoothLocalGattServiceBlueZ::Unregister(
   GetAdapter()->UnregisterGattService(this, callback, error_callback);
 }
 
-const std::vector<std::unique_ptr<BluetoothLocalGattCharacteristicBlueZ>>&
+device::BluetoothLocalGattCharacteristic*
+BluetoothLocalGattServiceBlueZ::GetCharacteristic(
+    const std::string& identifier) {
+  const auto& service = characteristics_.find(dbus::ObjectPath(identifier));
+  return service == characteristics_.end() ? nullptr : service->second.get();
+};
+
+const std::map<dbus::ObjectPath,
+               std::unique_ptr<BluetoothLocalGattCharacteristicBlueZ>>&
 BluetoothLocalGattServiceBlueZ::GetCharacteristics() const {
   return characteristics_;
 }
@@ -88,7 +96,7 @@ dbus::ObjectPath BluetoothLocalGattServiceBlueZ::AddGuidToObjectPath(
 
 void BluetoothLocalGattServiceBlueZ::AddCharacteristic(
     std::unique_ptr<BluetoothLocalGattCharacteristicBlueZ> characteristic) {
-  characteristics_.push_back(std::move(characteristic));
+  characteristics_[characteristic->object_path()] = std::move(characteristic);
 }
 
 }  // namespace bluez

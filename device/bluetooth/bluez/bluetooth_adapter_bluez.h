@@ -119,6 +119,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
       const CreateAdvertisementCallback& callback,
       const CreateAdvertisementErrorCallback& error_callback) override;
 
+  device::BluetoothLocalGattService* GetGattService(
+      const std::string& identifier) const override;
+
   // Locates the device object by object path (the devices map and
   // BluetoothDevice methods are by address).
   BluetoothDeviceBlueZ* GetDeviceWithPath(const dbus::ObjectPath& object_path);
@@ -421,7 +424,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
   std::unique_ptr<device::BluetoothDiscoveryFilter> current_filter_;
 
   // List of GATT services that are owned by this adapter.
-  std::vector<std::unique_ptr<BluetoothLocalGattServiceBlueZ>>
+  std::map<dbus::ObjectPath, std::unique_ptr<BluetoothLocalGattServiceBlueZ>>
       owned_gatt_services_;
 
   // GATT services that are currently available on the GATT server.

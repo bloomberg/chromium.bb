@@ -19,6 +19,7 @@
 #include "device/bluetooth/bluetooth_discovery_session.h"
 #include "device/bluetooth/bluetooth_gatt_connection.h"
 #include "device/bluetooth/bluetooth_gatt_notify_session.h"
+#include "device/bluetooth/bluetooth_local_gatt_service.h"
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_remote_gatt_descriptor.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service.h"
@@ -28,6 +29,8 @@ namespace device {
 
 class BluetoothAdapter;
 class BluetoothDevice;
+class BluetoothLocalGattCharacteristic;
+class BluetoothLocalGattDescriptor;
 
 // A test fixture for Bluetooth that abstracts platform specifics for creating
 // and controlling fake low level objects.

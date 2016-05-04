@@ -108,5 +108,27 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTestChromeOs,
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTestChromeOs, CreateService) {
+  ASSERT_TRUE(
+      RunPlatformAppTest("api_test/bluetooth_low_energy/"
+                         "create_service"))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTestChromeOs,
+                       CreateCharacteristic) {
+  ASSERT_TRUE(
+      RunPlatformAppTest("api_test/bluetooth_low_energy/"
+                         "create_characteristic"))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTestChromeOs, CreateDescriptor) {
+  ASSERT_TRUE(
+      RunPlatformAppTest("api_test/bluetooth_low_energy/"
+                         "create_descriptor"))
+      << message_;
+}
+
 }  // namespace
 }  // namespace extensions

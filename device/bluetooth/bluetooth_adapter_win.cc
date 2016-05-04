@@ -202,6 +202,11 @@ void BluetoothAdapterWin::RegisterAdvertisement(
   error_callback.Run(BluetoothAdvertisement::ERROR_UNSUPPORTED_PLATFORM);
 }
 
+BluetoothLocalGattService* BluetoothAdapterWin::GetGattService(
+    const std::string& identifier) const {
+  return nullptr;
+}
+
 void BluetoothAdapterWin::RemovePairingDelegateInternal(
     BluetoothDevice::PairingDelegate* pairing_delegate) {
 }

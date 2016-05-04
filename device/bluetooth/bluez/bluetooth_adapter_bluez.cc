@@ -423,6 +423,13 @@ void BluetoothAdapterBlueZ::RegisterAdvertisement(
   advertisement->Register(base::Bind(callback, advertisement), error_callback);
 }
 
+device::BluetoothLocalGattService* BluetoothAdapterBlueZ::GetGattService(
+    const std::string& identifier) const {
+  const auto& service = owned_gatt_services_.find(dbus::ObjectPath(identifier));
+  return service == owned_gatt_services_.end() ? nullptr
+                                               : service->second.get();
+}
+
 void BluetoothAdapterBlueZ::RemovePairingDelegateInternal(
     BluetoothDevice::PairingDelegate* pairing_delegate) {
   // Check if any device is using the pairing delegate.
@@ -1061,7 +1068,7 @@ void BluetoothAdapterBlueZ::RemoveProfile(const BluetoothUUID& uuid) {
 
 void BluetoothAdapterBlueZ::AddLocalGattService(
     std::unique_ptr<BluetoothLocalGattServiceBlueZ> service) {
-  owned_gatt_services_.push_back(std::move(service));
+  owned_gatt_services_[service->object_path()] = std::move(service);
 }
 
 void BluetoothAdapterBlueZ::RegisterGattService(

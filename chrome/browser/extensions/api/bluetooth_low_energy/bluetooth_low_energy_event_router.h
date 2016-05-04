@@ -37,6 +37,7 @@ class BrowserContext;
 namespace device {
 
 class BluetoothGattNotifySession;
+class BluetoothLocalGattCharacteristic;
 
 }  // namespace device
 
@@ -276,6 +277,14 @@ class BluetoothLowEnergyEventRouter
       device::BluetoothAdapter* adapter,
       device::BluetoothRemoteGattDescriptor* descriptor,
       const std::vector<uint8_t>& value) override;
+
+  // Adds a mapping for a local characteristic ID to its service ID
+  void AddLocalCharacteristic(const std::string& id,
+                              const std::string& service_id);
+  // Returns a BluetoothGattCharacteristic by its ID |id|.
+  // Returns NULL, if the characteristic cannot be found.
+  device::BluetoothLocalGattCharacteristic* GetLocalCharacteristic(
+      const std::string& id) const;
 
   device::BluetoothAdapter* adapter() { return adapter_.get(); }
 

@@ -15,11 +15,17 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/bluetooth_low_energy/utils.h"
 #include "chrome/common/extensions/api/bluetooth_low_energy.h"
 #include "content/public/browser/browser_thread.h"
 #include "device/bluetooth/bluetooth_adapter.h"
+#include "device/bluetooth/bluetooth_gatt_characteristic.h"
+#include "device/bluetooth/bluetooth_local_gatt_characteristic.h"
+#include "device/bluetooth/bluetooth_local_gatt_descriptor.h"
+#include "device/bluetooth/bluetooth_local_gatt_service.h"
+#include "device/bluetooth/bluetooth_uuid.h"
 #include "extensions/common/api/bluetooth/bluetooth_manifest_data.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/switches.h"
@@ -64,6 +70,9 @@ const char kErrorRequestNotSupported[] = "Request not supported";
 const char kErrorTimeout[] = "Operation timed out";
 const char kErrorUnsupportedDevice[] =
     "This device is not supported on the current platform";
+const char kErrorInvalidServiceId[] = "The service ID doesn't exist.";
+const char kErrorInvalidCharacteristicId[] =
+    "The characteristic ID doesn't exist.";
 const char kStatusAdvertisementAlreadyExists[] =
     "An advertisement is already advertising";
 const char kStatusAdvertisementDoesNotExist[] =
@@ -225,7 +234,8 @@ bool BluetoothLowEnergyExtensionFunctionDeprecated::RunAsync() {
   return true;
 }
 
-BluetoothLowEnergyExtensionFunction::BluetoothLowEnergyExtensionFunction() {}
+BluetoothLowEnergyExtensionFunction::BluetoothLowEnergyExtensionFunction()
+    : event_router_(nullptr) {}
 
 BluetoothLowEnergyExtensionFunction::~BluetoothLowEnergyExtensionFunction() {}
 
@@ -235,20 +245,29 @@ ExtensionFunction::ResponseAction BluetoothLowEnergyExtensionFunction::Run() {
   if (!BluetoothManifestData::CheckLowEnergyPermitted(extension()))
     return RespondNow(Error(kErrorPermissionDenied));
 
-  BluetoothLowEnergyEventRouter* event_router =
-      GetEventRouter(browser_context());
-  if (!event_router->IsBluetoothSupported())
+  event_router_ = GetEventRouter(browser_context());
+  if (!event_router_->IsBluetoothSupported())
     return RespondNow(Error(kErrorPlatformNotSupported));
 
   // It is safe to pass |this| here as ExtensionFunction is refcounted.
-  if (!event_router->InitializeAdapterAndInvokeCallback(base::Bind(
+  if (!event_router_->InitializeAdapterAndInvokeCallback(base::Bind(
           &DoWorkCallback<void>,
-          base::Bind(&BluetoothLowEnergyExtensionFunction::DoWork, this)))) {
+          base::Bind(&BluetoothLowEnergyExtensionFunction::PreDoWork, this)))) {
     // DoWork will respond when the adapter gets initialized.
     return RespondNow(Error(kErrorAdapterNotInitialized));
   }
 
   return RespondLater();
+}
+
+void BluetoothLowEnergyExtensionFunction::PreDoWork() {
+  // The adapter must be initialized at this point, but return an error instead
+  // of asserting.
+  if (!event_router_->HasAdapter()) {
+    Respond(Error(kErrorAdapterNotInitialized));
+    return;
+  }
+  DoWork();
 }
 
 template <typename Params>
@@ -260,6 +279,12 @@ BLEPeripheralExtensionFunction<Params>::~BLEPeripheralExtensionFunction() {}
 template <typename Params>
 ExtensionFunction::ResponseAction
 BLEPeripheralExtensionFunction<Params>::Run() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  // Check permissions in manifest.
+  if (!BluetoothManifestData::CheckPeripheralPermitted(extension()))
+    return RespondNow(Error(kErrorPermissionDenied));
+
 // Causes link error on Windows. API will never be on Windows, so #ifdefing.
 #if !defined(OS_WIN)
   params_ = Params::Create(*args_);
@@ -1122,7 +1147,14 @@ void BluetoothLowEnergyCreateServiceFunction::DoWork() {
 // code doesn't even compile on OSes it isn't being used on, but currently this
 // is not possible.
 #if !defined(OS_WIN)
-  Respond(ArgumentList(apibtle::CreateService::Results::Create(std::string())));
+  base::WeakPtr<device::BluetoothLocalGattService> service =
+      device::BluetoothLocalGattService::Create(
+          event_router_->adapter(),
+          device::BluetoothUUID(params_->service.uuid),
+          params_->service.is_primary, nullptr, nullptr);
+
+  Respond(ArgumentList(
+      apibtle::CreateService::Results::Create(service->GetIdentifier())));
 #else
   Respond(Error(kErrorPlatformNotSupported));
 #endif
@@ -1132,18 +1164,46 @@ template class BLEPeripheralExtensionFunction<
     apibtle::CreateCharacteristic::Params>;
 
 void BluetoothLowEnergyCreateCharacteristicFunction::DoWork() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  Respond(ArgumentList(
-      apibtle::CreateCharacteristic::Results::Create(std::string())));
+  device::BluetoothLocalGattService* service =
+      event_router_->adapter()->GetGattService(params_->service_id);
+  if (!service) {
+    Respond(Error(kErrorInvalidServiceId));
+    return;
+  }
+
+  base::WeakPtr<device::BluetoothLocalGattCharacteristic> characteristic =
+      device::BluetoothLocalGattCharacteristic::Create(
+          device::BluetoothUUID(params_->characteristic.uuid),
+          device::BluetoothGattCharacteristic::Properties(),
+          device::BluetoothGattCharacteristic::Permissions(), service);
+
+  // Keep a track of this characteristic so we can look it up later if a
+  // descriptor lists it as its parent.
+  event_router_->AddLocalCharacteristic(characteristic->GetIdentifier(),
+                                        service->GetIdentifier());
+
+  Respond(ArgumentList(apibtle::CreateCharacteristic::Results::Create(
+      characteristic->GetIdentifier())));
 }
 
 template class BLEPeripheralExtensionFunction<
     apibtle::CreateDescriptor::Params>;
 
 void BluetoothLowEnergyCreateDescriptorFunction::DoWork() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  Respond(
-      ArgumentList(apibtle::CreateDescriptor::Results::Create(std::string())));
+  device::BluetoothLocalGattCharacteristic* characteristic =
+      event_router_->GetLocalCharacteristic(params_->characteristic_id);
+  if (!characteristic) {
+    Respond(Error(kErrorInvalidCharacteristicId));
+    return;
+  }
+
+  base::WeakPtr<device::BluetoothLocalGattDescriptor> descriptor =
+      device::BluetoothLocalGattDescriptor::Create(
+          device::BluetoothUUID(params_->descriptor.uuid),
+          device::BluetoothGattCharacteristic::Permissions(), characteristic);
+
+  Respond(ArgumentList(
+      apibtle::CreateDescriptor::Results::Create(descriptor->GetIdentifier())));
 }
 
 template class BLEPeripheralExtensionFunction<apibtle::RegisterService::Params>;

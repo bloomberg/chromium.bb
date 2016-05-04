@@ -24,6 +24,7 @@
 #include "device/bluetooth/bluetooth_gatt_connection.h"
 #include "device/bluetooth/bluetooth_gatt_notify_session.h"
 #include "device/bluetooth/bluetooth_gatt_service.h"
+#include "device/bluetooth/bluetooth_local_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_remote_gatt_descriptor.h"
 #include "device/bluetooth/bluetooth_uuid.h"
@@ -1055,6 +1056,33 @@ void BluetoothLowEnergyEventRouter::GattDescriptorValueChanged(
       apibtle::OnDescriptorValueChanged::kEventName,
       characteristic->GetService()->GetUUID(), "" /* characteristic_id */,
       std::move(args));
+}
+
+void BluetoothLowEnergyEventRouter::AddLocalCharacteristic(
+    const std::string& id,
+    const std::string& service_id) {
+  if (chrc_id_to_service_id_.find(id) != chrc_id_to_service_id_.end())
+    VLOG(1) << "Local characteristic with id " << id
+            << " already exists. Replacing.";
+  chrc_id_to_service_id_[id] = service_id;
+}
+
+device::BluetoothLocalGattCharacteristic*
+BluetoothLowEnergyEventRouter::GetLocalCharacteristic(
+    const std::string& id) const {
+  if (chrc_id_to_service_id_.find(id) == chrc_id_to_service_id_.end()) {
+    VLOG(1) << "Characteristic with id " << id << " not found.";
+    return nullptr;
+  }
+  device::BluetoothLocalGattService* service =
+      adapter_->GetGattService(chrc_id_to_service_id_.at(id));
+  if (!service) {
+    VLOG(1) << "Parent service of characteristic with id " << id
+            << " not found.";
+    return nullptr;
+  }
+
+  return service->GetCharacteristic(id);
 }
 
 void BluetoothLowEnergyEventRouter::OnGetAdapter(

@@ -141,6 +141,11 @@ void BluetoothAdapterAndroid::RegisterAdvertisement(
   error_callback.Run(BluetoothAdvertisement::ERROR_UNSUPPORTED_PLATFORM);
 }
 
+BluetoothLocalGattService* BluetoothAdapterAndroid::GetGattService(
+    const std::string& identifier) const {
+  return nullptr;
+}
+
 void BluetoothAdapterAndroid::OnAdapterStateChanged(
     JNIEnv* env,
     const JavaParamRef<jobject>& caller,

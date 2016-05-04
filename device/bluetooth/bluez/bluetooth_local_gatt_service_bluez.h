@@ -58,8 +58,11 @@ class BluetoothLocalGattServiceBlueZ
                 const ErrorCallback& error_callback) override;
   void Unregister(const base::Closure& callback,
                   const ErrorCallback& error_callback) override;
+  device::BluetoothLocalGattCharacteristic* GetCharacteristic(
+      const std::string& identifier) override;
 
-  const std::vector<std::unique_ptr<BluetoothLocalGattCharacteristicBlueZ>>&
+  const std::map<dbus::ObjectPath,
+                 std::unique_ptr<BluetoothLocalGattCharacteristicBlueZ>>&
   GetCharacteristics() const;
 
   Delegate* GetDelegate() { return delegate_; }
@@ -91,7 +94,8 @@ class BluetoothLocalGattServiceBlueZ
   device::BluetoothLocalGattService::Delegate* delegate_;
 
   // Characteristics contained by this service.
-  std::vector<std::unique_ptr<BluetoothLocalGattCharacteristicBlueZ>>
+  std::map<dbus::ObjectPath,
+           std::unique_ptr<BluetoothLocalGattCharacteristicBlueZ>>
       characteristics_;
 
   // Note: This should remain the last member so it'll be destroyed and

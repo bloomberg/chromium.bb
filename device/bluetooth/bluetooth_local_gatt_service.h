@@ -150,6 +150,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLocalGattService
   virtual void Unregister(const base::Closure& callback,
                           const ErrorCallback& error_callback) = 0;
 
+  virtual BluetoothLocalGattCharacteristic* GetCharacteristic(
+      const std::string& identifier) = 0;
+
  protected:
   BluetoothLocalGattService();
   ~BluetoothLocalGattService() override;

@@ -207,6 +207,11 @@ void BluetoothAdapterMac::RegisterAdvertisement(
   error_callback.Run(BluetoothAdvertisement::ERROR_UNSUPPORTED_PLATFORM);
 }
 
+BluetoothLocalGattService* BluetoothAdapterMac::GetGattService(
+    const std::string& identifier) const {
+  return nullptr;
+}
+
 void BluetoothAdapterMac::ClassicDeviceFound(IOBluetoothDevice* device) {
   ClassicDeviceAdded(device);
 }

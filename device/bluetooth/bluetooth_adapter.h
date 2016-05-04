@@ -23,13 +23,13 @@
 #include "device/bluetooth/bluetooth_audio_sink.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_export.h"
-#include "device/bluetooth/bluetooth_local_gatt_service.h"
 
 namespace device {
 
 class BluetoothAdvertisement;
 class BluetoothDiscoveryFilter;
 class BluetoothDiscoverySession;
+class BluetoothLocalGattService;
 class BluetoothRemoteGattCharacteristic;
 class BluetoothRemoteGattDescriptor;
 class BluetoothRemoteGattService;
@@ -420,6 +420,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
       std::unique_ptr<BluetoothAdvertisement::Data> advertisement_data,
       const CreateAdvertisementCallback& callback,
       const CreateAdvertisementErrorCallback& error_callback) = 0;
+
+  // Returns the local GATT services associated with this adapter with the
+  // given identifier. Returns NULL if the service doesn't exist.
+  virtual BluetoothLocalGattService* GetGattService(
+      const std::string& identifier) const = 0;
 
   // The following methods are used to send various events to observers.
   void NotifyAdapterStateChanged(bool powered);
