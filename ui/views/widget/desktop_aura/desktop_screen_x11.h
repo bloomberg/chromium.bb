@@ -88,9 +88,6 @@ class VIEWS_EXPORT DesktopScreenX11 : public display::Screen,
   // The display objects we present to chrome.
   std::vector<display::Display> displays_;
 
-  // The index into displays_ that represents the primary display.
-  size_t primary_display_index_;
-
   // The timer to delay configuring outputs. See also the comments in
   // Dispatch().
   std::unique_ptr<base::OneShotTimer> configure_timer_;

@@ -92,7 +92,6 @@ DesktopScreenX11::DesktopScreenX11()
       x_root_window_(DefaultRootWindow(xdisplay_)),
       has_xrandr_(false),
       xrandr_event_base_(0),
-      primary_display_index_(0),
       atom_cache_(xdisplay_, kAtomsToCache) {
   // We only support 1.3+. There were library changes before this and we should
   // use the new interface instead of the 1.2 one.
@@ -223,8 +222,7 @@ display::Display DesktopScreenX11::GetDisplayMatching(
 }
 
 display::Display DesktopScreenX11::GetPrimaryDisplay() const {
-  DCHECK(!displays_.empty());
-  return displays_[primary_display_index_];
+  return displays_.front();
 }
 
 void DesktopScreenX11::AddObserver(display::DisplayObserver* observer) {
@@ -299,9 +297,6 @@ std::vector<display::Display> DesktopScreenX11::BuildDisplaysFromXRandRInfo() {
     return GetFallbackDisplayList();
   }
 
-  primary_display_index_ = 0;
-  RROutput primary_display_id = XRRGetOutputPrimary(xdisplay_, x_root_window_);
-
   bool has_work_area = false;
   gfx::Rect work_area_in_pixels;
   std::vector<int> value;
@@ -370,9 +365,6 @@ std::vector<display::Display> DesktopScreenX11::BuildDisplaysFromXRandRInfo() {
           display.set_rotation(display::Display::ROTATE_270);
           break;
       }
-
-      if (output_id == primary_display_id)
-        primary_display_index_ = displays.size();
 
       displays.push_back(display);
     }
