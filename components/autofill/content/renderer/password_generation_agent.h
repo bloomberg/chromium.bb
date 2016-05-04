@@ -78,6 +78,7 @@ class PasswordGenerationAgent : public content::RenderFrameObserver {
 
   // RenderFrameObserver:
   void DidFinishDocumentLoad() override;
+  void OnDestruct() override;
 
   // Message handlers.
   void OnFormNotBlacklisted(const PasswordForm& form);

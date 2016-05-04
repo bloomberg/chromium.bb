@@ -319,6 +319,16 @@ void AutofillAgent::FocusedNodeChanged(const WebNode& node) {
   element_ = *element;
 }
 
+void AutofillAgent::OnDestruct() {
+  Shutdown();
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
+}
+
+void AutofillAgent::Shutdown() {
+  legacy_.Shutdown();
+  weak_ptr_factory_.InvalidateWeakPtrs();
+}
+
 void AutofillAgent::FocusChangeComplete() {
   WebDocument doc = render_frame()->GetWebFrame()->document();
   WebElement focused_element;
@@ -862,12 +872,17 @@ AutofillAgent::LegacyAutofillAgent::LegacyAutofillAgent(
 AutofillAgent::LegacyAutofillAgent::~LegacyAutofillAgent() {
 }
 
+void AutofillAgent::LegacyAutofillAgent::Shutdown() {
+  agent_ = nullptr;
+}
+
 void AutofillAgent::LegacyAutofillAgent::OnDestruct() {
   // No-op. Don't delete |this|.
 }
 
 void AutofillAgent::LegacyAutofillAgent::FocusChangeComplete() {
-  agent_->FocusChangeComplete();
+  if (agent_)
+    agent_->FocusChangeComplete();
 }
 
 }  // namespace autofill

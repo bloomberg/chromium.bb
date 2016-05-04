@@ -893,6 +893,10 @@ void FillFormField(const FormFieldData& data,
     }
     field->setValue(value, true);
   }
+  // Setting the form might trigger JavaScript, which is capable of
+  // destroying the frame.
+  if (!field->document().frame())
+    return;
 
   field->setAutofilled(true);
 

@@ -179,12 +179,16 @@ void PasswordGenerationAgent::DidFinishDocumentLoad() {
   FindPossibleGenerationForm();
 }
 
+void PasswordGenerationAgent::OnDestruct() {
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
+}
+
 void PasswordGenerationAgent::OnDynamicFormsSeen() {
   FindPossibleGenerationForm();
 }
 
 void PasswordGenerationAgent::FindPossibleGenerationForm() {
-  if (!enabled_)
+  if (!enabled_ || !render_frame())
     return;
 
   // We don't want to generate passwords if the browser won't store or sync
@@ -237,9 +241,12 @@ void PasswordGenerationAgent::FindPossibleGenerationForm() {
 bool PasswordGenerationAgent::ShouldAnalyzeDocument() const {
   // Make sure that this security origin is allowed to use password manager.
   // Generating a password that can't be saved is a bad idea.
-  blink::WebSecurityOrigin origin =
-      render_frame()->GetWebFrame()->document().getSecurityOrigin();
-  if (!origin.canAccessPasswordManager()) {
+  if (!render_frame() ||
+      !render_frame()
+           ->GetWebFrame()
+           ->document()
+           .getSecurityOrigin()
+           .canAccessPasswordManager()) {
     VLOG(1) << "No PasswordManager access";
     return false;
   }
@@ -275,6 +282,9 @@ void PasswordGenerationAgent::OnPasswordAccepted(
       password_generation::PASSWORD_ACCEPTED);
   for (auto& password_element : generation_form_data_->password_elements) {
     password_element.setValue(password, true /* sendEvents */);
+    // setValue() above may have resulted in JavaScript closing the frame.
+    if (!render_frame())
+      return;
     password_element.setAutofilled(true);
     // Needed to notify password_autofill_agent that the content of the field
     // has changed. Without this we will overwrite the generated
@@ -480,6 +490,8 @@ bool PasswordGenerationAgent::TextDidChangeInTextField(
 }
 
 void PasswordGenerationAgent::ShowGenerationPopup() {
+  if (!render_frame())
+    return;
   Send(new AutofillHostMsg_ShowPasswordGenerationPopup(
       routing_id(),
       render_frame()->GetRenderView()->ElementBoundsInWindow(
@@ -492,6 +504,8 @@ void PasswordGenerationAgent::ShowGenerationPopup() {
 }
 
 void PasswordGenerationAgent::ShowEditingPopup() {
+  if (!render_frame())
+    return;
   Send(new AutofillHostMsg_ShowPasswordEditingPopup(
            routing_id(),
            render_frame()->GetRenderView()->ElementBoundsInWindow(
@@ -505,7 +519,7 @@ void PasswordGenerationAgent::HidePopup() {
 }
 
 void PasswordGenerationAgent::OnUserTriggeredGeneratePassword() {
-  if (last_focused_password_element_.isNull())
+  if (last_focused_password_element_.isNull() || !render_frame())
     return;
 
   blink::WebFormElement form = last_focused_password_element_.form();

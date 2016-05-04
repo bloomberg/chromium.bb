@@ -73,6 +73,10 @@ class AutofillAgent : public content::RenderFrameObserver,
     LegacyAutofillAgent(content::RenderView* render_view, AutofillAgent* agent);
     ~LegacyAutofillAgent() override;
 
+    // Shuts the LegacyAutofillAgent down on RenderFrame deletion. Safe to call
+    // multiple times.
+    void Shutdown();
+
    private:
     // content::RenderViewObserver:
     void OnDestruct() override;
@@ -121,6 +125,11 @@ class AutofillAgent : public content::RenderFrameObserver,
   void WillSubmitForm(const blink::WebFormElement& form) override;
   void DidChangeScrollOffset() override;
   void FocusedNodeChanged(const blink::WebNode& node) override;
+  void OnDestruct() override;
+
+  // Shuts the AutofillAgent down on RenderFrame deletion. Safe to call multiple
+  // times.
+  void Shutdown();
 
   // Pass-through from LegacyAutofillAgent. This correlates with the
   // RenderViewObserver method.
