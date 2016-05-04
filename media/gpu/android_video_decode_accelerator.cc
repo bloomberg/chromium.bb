@@ -1407,9 +1407,8 @@ AndroidVideoDecodeAccelerator::GetCapabilities(
   Capabilities capabilities;
   SupportedProfiles& profiles = capabilities.supported_profiles;
 
-  SupportedProfile profile;
-
   if (media::MediaCodecUtil::IsVp8DecoderAvailable()) {
+    SupportedProfile profile;
     profile.profile = media::VP8PROFILE_ANY;
     profile.min_resolution.SetSize(0, 0);
     profile.max_resolution.SetSize(1920, 1088);
@@ -1424,6 +1423,7 @@ AndroidVideoDecodeAccelerator::GetCapabilities(
   }
 
   if (media::MediaCodecUtil::IsVp9DecoderAvailable()) {
+    SupportedProfile profile;
     profile.min_resolution.SetSize(0, 0);
     profile.max_resolution.SetSize(1920, 1088);
     // If we know MediaCodec will just create a software codec, prefer our
@@ -1454,11 +1454,11 @@ AndroidVideoDecodeAccelerator::GetCapabilities(
     profiles.push_back(profile);
   }
 
+  capabilities.flags = media::VideoDecodeAccelerator::Capabilities::
+      SUPPORTS_DEFERRED_INITIALIZATION;
   if (UseDeferredRenderingStrategy(gpu_preferences)) {
-    capabilities.flags = media::VideoDecodeAccelerator::Capabilities::
-                             NEEDS_ALL_PICTURE_BUFFERS_TO_DECODE |
-                         media::VideoDecodeAccelerator::Capabilities::
-                             SUPPORTS_DEFERRED_INITIALIZATION;
+    capabilities.flags |= media::VideoDecodeAccelerator::Capabilities::
+        NEEDS_ALL_PICTURE_BUFFERS_TO_DECODE;
     if (media::MediaCodecUtil::IsSurfaceViewOutputSupported()) {
       capabilities.flags |= media::VideoDecodeAccelerator::Capabilities::
           SUPPORTS_EXTERNAL_OUTPUT_SURFACE;
