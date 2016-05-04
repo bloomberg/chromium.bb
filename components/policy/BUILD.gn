@@ -8,6 +8,10 @@ import("//components/policy/resources/policy_templates.gni")
 import("//third_party/protobuf/proto_library.gni")
 import("//tools/grit/grit_rule.gni")
 
+if (is_mac) {
+  import("//build/util/branding.gni")
+}
+
 # About the policy component:
 #
 # There should really be two components. One called "policy" that includes all
@@ -142,13 +146,7 @@ if (enable_configuration_policy) {
     if (is_mac) {
       outputs += policy_templates_mac_outputs
 
-      # TODO(knn) : Move this out once more targets use this.
-      if (is_chrome_branded) {
-        mac_bundle_id = "com.google.Chrome"
-      } else {
-        mac_bundle_id = "org.chromium.Chromium"
-      }
-      defines = [ "mac_bundle_id=$mac_bundle_id" ]
+      defines = [ "mac_bundle_id=$chrome_mac_bundle_id" ]
     }
     if (is_win) {
       outputs += policy_templates_windows_outputs
@@ -334,6 +332,65 @@ if (enable_configuration_policy) {
         ":$zip_target_name",
       ]
     }
+  } else if (is_mac) {
+    action("convert_mcx_plist") {
+      script = "//build/config/mac/xcrun.py"
+      sources = [
+        "$policy_templates_base_dir/mac/app-Manifest.plist",
+      ]
+      inputs = [
+        script,
+      ]
+      outputs = [
+        "$target_gen_dir/$chrome_mac_bundle_id.plist",
+      ]
+
+      args = [
+               "xcrun",
+               "plutil",
+               "-convert",
+               "xml1",
+             ] + rebase_path(sources, root_out_dir) + [ "-o" ] +
+             rebase_path(outputs, root_out_dir)
+
+      deps = [
+        ":policy_templates",
+      ]
+    }
+
+    bundle_data("manifest_bundle_data") {
+      sources = get_target_outputs(":convert_mcx_plist")
+      outputs = [
+        "{{bundle_resources_dir}}/{{source_file_part}}",
+      ]
+      public_deps = [
+        ":convert_mcx_plist",
+      ]
+    }
+
+    # The reason we are not enumerating all the locales is that
+    # the translations would eat up 3.5MB disk space in the
+    # application bundle.
+    bundle_data("manifest_strings_bundle_data") {
+      sources = [
+        "$policy_templates_base_dir/mac/strings/en.lproj/Localizable.strings",
+      ]
+      outputs = [
+        "{{bundle_resources_dir}}/en.lproj/{{source_file_part}}",
+      ]
+      public_deps = [
+        ":policy_templates",
+      ]
+    }
+
+    create_bundle("chrome_manifest_bundle") {
+      bundle_root_dir = "$root_out_dir/$chrome_mac_bundle_id.manifest/Contents"
+      bundle_resources_dir = "$bundle_root_dir/Resources"
+
+      deps = [
+        ":manifest_bundle_data",
+        ":manifest_strings_bundle_data",
+      ]
+    }
   }
 }
-#TODO(GYP) chrome_manifest_bundle

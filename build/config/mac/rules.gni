@@ -139,6 +139,10 @@ template("mac_xib_bundle_data") {
 #         structure will not be created, and build output will go directly
 #         into the framework subdirectory.
 #
+#     extra_substitutions:
+#         (optional) string array, 'key=value' pairs for extra fields which are
+#         specified in a source Info.plist template.
+#
 # See "gn help shared_library" for more information on arguments supported
 # by shared library target.
 template("mac_framework_bundle") {
@@ -154,9 +158,10 @@ template("mac_framework_bundle") {
     }
     forward_variables_from(invoker,
                            [
-                             "testonly",
+                             "extra_substitutions",
                              "info_plist",
                              "info_plist_target",
+                             "testonly",
                            ])
   }
 
@@ -203,6 +208,10 @@ template("mac_framework_bundle") {
 #     extra_configs:
 #         (optional) list of label, additional configs to apply to the
 #         executable target.
+#
+#     extra_substitutions:
+#         (optional) string array, 'key=value' pairs for extra fields which are
+#         specified in a source Info.plist template.
 template("mac_app_bundle") {
   _target_name = target_name
   _output_name = target_name
@@ -219,9 +228,10 @@ template("mac_app_bundle") {
     executable_name = _output_name
     forward_variables_from(invoker,
                            [
-                             "testonly",
+                             "extra_substitutions",
                              "info_plist",
                              "info_plist_target",
+                             "testonly",
                            ])
   }
 

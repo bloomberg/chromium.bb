@@ -419,6 +419,11 @@ if (is_win) {
     output_name = chrome_product_full_name
 
     info_plist = "app/app-Info.plist"
+    extra_substitutions = [
+      "CHROMIUM_BUNDLE_ID=$chrome_mac_bundle_id",
+      "CHROMIUM_SHORT_NAME=$chrome_product_short_name",
+      "CHROMIUM_CREATOR=$chrome_mac_creator_code",
+    ]
 
     sources = [
       "app/chrome_exe_main_mac.c",
@@ -502,19 +507,17 @@ if (is_win) {
 
   bundle_data("chrome_resources") {
     sources = [
+      "$root_out_dir/$chrome_mac_bundle_id.manifest",
       "app/theme/$branding_path_component/mac/app.icns",
       "app/theme/$branding_path_component/mac/document.icns",
       "browser/ui/cocoa/applescript/scripting.sdef",
-
-      # TODO(rsesek): mac_bundle_id.manifest
     ]
-
     outputs = [
       "{{bundle_resources_dir}}/{{source_file_part}}",
     ]
-
-    deps = [
+    public_deps = [
       ":chrome_app_strings",
+      "//components/policy:chrome_manifest_bundle",
     ]
   }
 
@@ -536,6 +539,10 @@ if (is_win) {
     output_name = chrome_helper_name
 
     info_plist = "app/helper-Info.plist"
+    extra_substitutions = [
+      "CHROMIUM_BUNDLE_ID=$chrome_mac_bundle_id",
+      "CHROMIUM_SHORT_NAME=$chrome_product_short_name",
+    ]
 
     sources = [
       "app/chrome_exe_main_mac.c",
@@ -645,6 +652,10 @@ if (is_win) {
     ]
 
     info_plist = "app/framework-Info.plist"
+    extra_substitutions = [
+      "CHROMIUM_BUNDLE_ID=$chrome_mac_bundle_id",
+      "CHROMIUM_SHORT_NAME=$chrome_product_short_name",
+    ]
 
     deps = [
       ":browser_dependencies",
