@@ -29,9 +29,17 @@ instance_helper = common.google_instance_helper.GoogleInstanceHelper(
 app = flask.Flask(__name__)
 
 
-def Render(message, memory_logs):
-  return flask.render_template(
-      'log.html', body=message, log=memory_logs.Flush().split('\n'))
+def Render(message, memory_logs=None):
+  """Renders the log.html template.
+
+  Args:
+    message (str): Main content of the page.
+    memory_logs (MemoryLogs): Optional logs.
+  """
+  log = None
+  if memory_logs:
+    log = memory_logs.Flush().split('\n')
+  return flask.render_template('log.html', body=message, log=log)
 
 
 def PollWorkers(tag, start_time, timeout_hours, email_address, task_url):
@@ -243,8 +251,8 @@ def EnqueueTasks(tasks, task_tag):
 
 @app.route('/')
 def Root():
-  """Home page: redirect to the static form."""
-  return flask.redirect('/static/form.html')
+  """Home page: show the new task form."""
+  return flask.render_template('form.html')
 
 
 @app.route('/form_sent', methods=['POST'])
@@ -252,7 +260,7 @@ def StartFromForm():
   """HTML form endpoint."""
   data_stream = flask.request.files.get('json_task')
   if not data_stream:
-    return 'failed'
+    return Render('Failed, no content.')
   http_body_str = data_stream.read()
   return StartFromJsonString(http_body_str)
 

@@ -1,14 +1,17 @@
+{# Copyright 2016 The Chromium Authors. All rights reserved.
+   Use of this source code is governed by a BSD-style license that can be
+   found in the LICENSE file.
+#}
+
 {# Template for a page displaying a body and logs (optional) under a collapsible
    section.
 #}
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="utf-8">
-<title>Clovis</title>
-</head>
+{% extends "base.html" %}
 
-<body>
+{% block content %}
+
+<h2> Task Creation Status </h2>
+
 {{ body }}
 
 {% if log %}
@@ -16,7 +19,9 @@
 <p><a onclick="javascript:ShowHide('HiddenDiv'); return false;" href="#">
   Show/hide details
 </a></p>
-<div id="HiddenDiv" style="display:none";>
+
+<div id="HiddenDiv"
+  style="display:none; font: 0.8em 'Droid Sans Mono', monospace;">
 
 {# Loop over the lines of the log to add linebreaks. #}
 {%- for line in log -%}
@@ -34,6 +39,4 @@ function ShowHide(divId) {
 
 {% endif %}
 
-</body>
-
-</html>
+{% endblock %}
