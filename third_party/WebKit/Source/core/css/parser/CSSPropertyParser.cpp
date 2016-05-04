@@ -2365,11 +2365,7 @@ static CSSValue* consumeAttr(CSSParserTokenRange args, CSSParserContext context)
         return nullptr;
 
     String attrName = args.consumeIncludingWhitespace().value();
-    // CSS allows identifiers with "-" at the start, like "-webkit-mask-image".
-    // But HTML attribute names can't have those characters, and we should not
-    // even parse them inside attr().
-    // TODO(timloh): We should allow any <ident-token> here.
-    if (attrName[0] == '-' || !args.atEnd())
+    if (!args.atEnd())
         return nullptr;
 
     if (context.isHTMLDocument())
