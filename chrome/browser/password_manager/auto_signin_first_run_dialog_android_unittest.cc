@@ -41,12 +41,12 @@ PrefService* AutoSigninFirstRunDialogAndroidTest::prefs() {
 }
 
 TEST_F(AutoSigninFirstRunDialogAndroidTest,
-       CheckResetOfPrefAfterFirstRunMessageWasShown) {
+       CheckPrefValueAfterFirstRunMessageWasShown) {
   prefs()->SetBoolean(
       password_manager::prefs::kWasAutoSignInFirstRunExperienceShown, false);
   std::unique_ptr<AutoSigninFirstRunDialogAndroid> dialog(CreateDialog());
   dialog.reset();
-  EXPECT_TRUE(prefs()->GetBoolean(
+  EXPECT_FALSE(prefs()->GetBoolean(
       password_manager::prefs::kWasAutoSignInFirstRunExperienceShown));
 }
 

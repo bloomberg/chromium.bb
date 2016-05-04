@@ -22,16 +22,22 @@
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF16ToJavaString;
 
+namespace {
+
+void MarkAutoSignInFirstRunExperienceShown(content::WebContents* web_contents) {
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  password_bubble_experiment::RecordAutoSignInPromptFirstRunExperienceWasShown(
+      profile->GetPrefs());
+}
+
+}  // namespace
+
 AutoSigninFirstRunDialogAndroid::AutoSigninFirstRunDialogAndroid(
     content::WebContents* web_contents)
     : web_contents_(web_contents) {}
 
-AutoSigninFirstRunDialogAndroid::~AutoSigninFirstRunDialogAndroid() {
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents_->GetBrowserContext());
-  password_bubble_experiment::RecordAutoSignInPromptFirstRunExperienceWasShown(
-      profile->GetPrefs());
-}
+AutoSigninFirstRunDialogAndroid::~AutoSigninFirstRunDialogAndroid() {}
 
 void AutoSigninFirstRunDialogAndroid::ShowDialog() {
   JNIEnv* env = AttachCurrentThread();
@@ -73,13 +79,16 @@ void AutoSigninFirstRunDialogAndroid::Destroy(JNIEnv* env, jobject obj) {
   delete this;
 }
 
-void AutoSigninFirstRunDialogAndroid::OnOkClicked(JNIEnv* env, jobject obj) {}
+void AutoSigninFirstRunDialogAndroid::OnOkClicked(JNIEnv* env, jobject obj) {
+  MarkAutoSignInFirstRunExperienceShown(web_contents_);
+}
 
 void AutoSigninFirstRunDialogAndroid::OnTurnOffClicked(JNIEnv* env,
                                                        jobject obj) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents_->GetBrowserContext());
   password_bubble_experiment::TurnOffAutoSignin(profile->GetPrefs());
+  MarkAutoSignInFirstRunExperienceShown(web_contents_);
 }
 
 void AutoSigninFirstRunDialogAndroid::CancelDialog(JNIEnv* env, jobject obj) {}
