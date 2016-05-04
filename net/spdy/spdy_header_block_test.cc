@@ -30,6 +30,7 @@ TEST(SpdyHeaderBlockTest, EmptyBlock) {
   EXPECT_TRUE(block.empty());
   EXPECT_EQ(0u, block.size());
   EXPECT_EQ(block.end(), block.find("foo"));
+  EXPECT_EQ("", block.GetHeader("foo"));
   EXPECT_TRUE(block.end() == block.begin());
 
   // Should have no effect.
@@ -47,12 +48,15 @@ TEST(SpdyHeaderBlockTest, AddHeaders) {
 
   EXPECT_EQ(Pair("foo", string(300, 'x')), *block1.find("foo"));
   EXPECT_EQ("baz", block1["bar"]);
+  EXPECT_EQ("baz", block1.GetHeader("bar"));
   string qux("qux");
   EXPECT_EQ("qux2", block1[qux]);
+  EXPECT_EQ("qux2", block1.GetHeader(qux));
   EXPECT_EQ(Pair("key", "value"), *block1.find("key"));
 
   block1.erase("key");
   EXPECT_EQ(block1.end(), block1.find("key"));
+  EXPECT_EQ("", block1.GetHeader("key"));
 }
 
 // This test verifies that SpdyHeaderBlock can be copied.
