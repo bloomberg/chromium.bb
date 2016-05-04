@@ -75,7 +75,7 @@ class MediaNetworkSimulation(perf_benchmark.PerfBenchmark):
     return 'media.media_cns_cases'
 
 
-@benchmark.Disabled('all')  # crbug.com/448092
+@benchmark.Enabled('android')
 @benchmark.Disabled('l', 'android-webview')  # WebView: crbug.com/419689
 class MediaAndroid(perf_benchmark.PerfBenchmark):
   """Obtains media metrics for key user scenarios on Android."""
@@ -84,6 +84,11 @@ class MediaAndroid(perf_benchmark.PerfBenchmark):
   page_set = page_sets.ToughVideoCasesPageSet
   # Exclude is_4k and 50 fps media files (garden* & crowd*).
   options = {'story_label_filter_exclude': 'is_4k,is_50fps'}
+
+  @classmethod
+  def ShouldDisable(cls, possible_browser):  # crbug.com/448092
+    """Disable test for Android One device."""
+    return cls.IsSvelte(possible_browser)
 
   @classmethod
   def Name(cls):
