@@ -19,10 +19,6 @@ var DropdownMenuOptionList;
 Polymer({
   is: 'settings-keyboard',
 
-  behaviors: [
-    I18nBehavior,
-  ],
-
   properties: {
     /** Preferences state. */
     prefs: {

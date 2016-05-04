@@ -10,22 +10,24 @@
     <!-- TODO(michaelpg): Add touchpad speed slider. -->
     <div class="settings-box block first">
       <settings-checkbox pref="{{prefs.settings.touchpad.enable_tap_to_click}}"
-          i18n-values="label:touchpadTapToClickEnabledLabel">
+          label="$i18n{touchpadTapToClickEnabledLabel}">
       </settings-checkbox>
       <settings-checkbox pref="{{prefs.settings.touchpad.enable_tap_dragging}}"
-          i18n-values="label:tapDraggingLabel">
+          label="$i18n{tapDraggingLabel}">
       </settings-checkbox>
     </div>
-    <div class="settings-box" i18n-content="scrollLabel"></div>
+    <div class="settings-box">$i18n{scrollLabel}</div>
     <div class="list-frame">
       <settings-radio-group pref="{{prefs.settings.touchpad.natural_scroll}}">
-        <paper-radio-button name="false" i18n-content="traditionalScrollLabel">
+        <paper-radio-button name="false">
+          $i18n{traditionalScrollLabel}
         </paper-radio-button>
         <!-- TODO(michaelpg): Make link inside label clickable.
              https://github.com/PolymerElements/paper-radio-button/issues/86
              -->
-        <paper-radio-button name="true"
-            i18n-values=".innerHTML:naturalScrollLabel"></paper-radio-button>
+        <paper-radio-button name="true">
+          $i18nRaw{naturalScrollLabel}
+        </paper-radio-button>
       </settings-radio-group>
     </div>
   </template>
