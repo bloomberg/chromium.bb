@@ -289,4 +289,19 @@ void PermissionUmaUtil::PermissionPromptShown(
       "Permissions.Prompt.Shown",
       static_cast<base::HistogramBase::Sample>(permission_prompt_type),
       static_cast<base::HistogramBase::Sample>(PermissionBubbleType::NUM));
+
+  UMA_HISTOGRAM_ENUMERATION(
+      "Permissions.Prompt.RequestsPerPrompt",
+      static_cast<base::HistogramBase::Sample>(requests.size()),
+      static_cast<base::HistogramBase::Sample>(10));
+
+  if (requests.size() > 1) {
+    for (const auto* request : requests) {
+      UMA_HISTOGRAM_ENUMERATION(
+          "Permissions.Prompt.MergedBubbleTypes",
+          static_cast<base::HistogramBase::Sample>(
+              request->GetPermissionBubbleType()),
+          static_cast<base::HistogramBase::Sample>(PermissionBubbleType::NUM));
+    }
+  }
 }
