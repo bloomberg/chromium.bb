@@ -518,16 +518,12 @@ void DataPipeConsumerDispatcher::UpdateSignalsStateNoLock() {
   size_t previous_bytes_available = bytes_available_;
 
   ports::PortStatus port_status;
-  if (node_controller_->node()->GetStatus(control_port_, &port_status) !=
-          ports::OK ||
-      !port_status.receiving_messages) {
+  int rv = node_controller_->node()->GetStatus(control_port_, &port_status);
+  if (rv != ports::OK || !port_status.receiving_messages) {
     DVLOG(1) << "Data pipe consumer " << pipe_id_ << " is aware of peer closure"
              << " [control_port=" << control_port_.name() << "]";
-
     peer_closed_ = true;
-  }
-
-  if (port_status.has_messages && !in_transit_) {
+  } else if (rv == ports::OK && port_status.has_messages && !in_transit_) {
     ports::ScopedMessage message;
     do {
       int rv = node_controller_->node()->GetMessageIf(control_port_, nullptr,

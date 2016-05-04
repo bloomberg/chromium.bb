@@ -499,22 +499,23 @@ void MessagePipeDispatcher::OnPortStatusChanged() {
 
 #if !defined(NDEBUG)
   ports::PortStatus port_status;
-  node_controller_->node()->GetStatus(port_, &port_status);
-  if (port_status.has_messages) {
-    ports::ScopedMessage unused;
-    size_t message_size = 0;
-    node_controller_->node()->GetMessageIf(
-        port_, [&message_size](const ports::Message& message) {
-          message_size = message.num_payload_bytes();
-          return false;
-        }, &unused);
-    DVLOG(1) << "New message detected on message pipe " << pipe_id_
-             << " endpoint " << endpoint_ << " [port=" << port_.name()
-             << "; size=" << message_size << "]";
-  }
-  if (port_status.peer_closed) {
-    DVLOG(1) << "Peer closure detected on message pipe " << pipe_id_
-             << " endpoint " << endpoint_ << " [port=" << port_.name() << "]";
+  if (node_controller_->node()->GetStatus(port_, &port_status) == ports::OK) {
+    if (port_status.has_messages) {
+      ports::ScopedMessage unused;
+      size_t message_size = 0;
+      node_controller_->node()->GetMessageIf(
+          port_, [&message_size](const ports::Message& message) {
+            message_size = message.num_payload_bytes();
+            return false;
+          }, &unused);
+      DVLOG(1) << "New message detected on message pipe " << pipe_id_
+               << " endpoint " << endpoint_ << " [port=" << port_.name()
+               << "; size=" << message_size << "]";
+    }
+    if (port_status.peer_closed) {
+      DVLOG(1) << "Peer closure detected on message pipe " << pipe_id_
+               << " endpoint " << endpoint_ << " [port=" << port_.name() << "]";
+    }
   }
 #endif
 
