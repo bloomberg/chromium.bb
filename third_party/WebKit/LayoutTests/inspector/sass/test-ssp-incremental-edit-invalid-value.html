@@ -1,0 +1,77 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/elements-test.js"></script>
+<script src="../../http/tests/inspector/debugger-test.js"></script>
+<link rel="stylesheet">
+<script>
+
+function insertStyleSheet()
+{
+    var link = document.querySelector("link");
+    link.setAttribute("href", "resources/test-ssp-editing.css");
+}
+
+function test()
+{
+    var sourceCode;
+    Runtime.experiments.enableForTest("liveSASS");
+    InspectorTest.evaluateInPage("insertStyleSheet()", onStyleSheet);
+
+    function onStyleSheet()
+    {
+        InspectorTest.waitForScriptSource("test-ssp-editing.scss", onSASS);
+    }
+
+    function onSASS(sc)
+    {
+        sourceCode = sc;
+        InspectorTest.selectNodeAndWaitForStyles("inspected", setInvalidValue);
+    }
+
+    function setInvalidValue()
+    {
+        setColorPropertyValue("!!!<invalid>", false, setEmptyValue);
+    }
+
+    function setEmptyValue()
+    {
+        setColorPropertyValue("", false, setValidValue);
+    }
+
+    function setValidValue()
+    {
+        setColorPropertyValue("magenta", true, onEditingEnded);
+    }
+
+    function onEditingEnded()
+    {
+        InspectorTest.addResult(sourceCode.workingCopy());
+        InspectorTest.completeTest();
+    }
+
+    function setColorPropertyValue(value, commit, callback)
+    {
+        var treeElement = InspectorTest.getMatchedStylePropertyTreeItem("color");
+        treeElement.startEditing(treeElement.valueElement);
+        treeElement.valueElement.textContent = value;
+        if (commit)
+            treeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
+        else
+            treeElement.kickFreeFlowStyleEditForTest();
+        InspectorTest.waitForStyleApplied(callback);
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that setting invalid values for CSS property value does
+not break LiveSASS.
+</p>
+
+<div id="inspected"></div>
+</body>
+</html>
