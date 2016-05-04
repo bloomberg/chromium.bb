@@ -316,6 +316,8 @@ component("gpu") {
 
   if (is_win) {
     sources += [
+      "dxva_picture_buffer_win.cc",
+      "dxva_picture_buffer_win.h",
       "dxva_video_decode_accelerator_win.cc",
       "dxva_video_decode_accelerator_win.h",
     ]

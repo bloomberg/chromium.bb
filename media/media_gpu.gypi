@@ -341,6 +341,8 @@
         },
       },
       'sources': [
+        'gpu/dxva_picture_buffer_win.cc',
+        'gpu/dxva_picture_buffer_win.h',
         'gpu/dxva_video_decode_accelerator_win.cc',
         'gpu/dxva_video_decode_accelerator_win.h',
       ],

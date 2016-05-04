@@ -504,6 +504,9 @@ const char kEnableWheelGestures[] = "enable-wheel-gestures";
 // Enable rasterizer that writes directly to GPU memory associated with tiles.
 const char kEnableZeroCopy[]                = "enable-zero-copy";
 
+// Enable the video decoder to draw directly to a texture.
+const char kEnableZeroCopyDxgiVideo[] = "enable-zero-copy-dxgi-video";
+
 // Explicitly allows additional ports using a comma-separated list of port
 // numbers.
 const char kExplicitlyAllowedPorts[]        = "explicitly-allowed-ports";

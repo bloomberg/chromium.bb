@@ -50,6 +50,9 @@ struct GPU_EXPORT GpuPreferences {
 #if defined(OS_WIN)
   // Enables experimental hardware acceleration for VP8/VP9 video decoding.
   bool enable_accelerated_vpx_decode = false;
+
+  // Enables support for avoiding copying DXGI NV12 textures.
+  bool enable_zero_copy_dxgi_video = false;
 #endif
 
   // ===================================

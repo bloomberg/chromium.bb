@@ -160,8 +160,7 @@ GpuVideoDecodeAcceleratorFactoryImpl::CreateDXVAVDA(
   if (base::win::GetVersion() >= base::win::VERSION_WIN7) {
     DVLOG(0) << "Initializing DXVA HW decoder for windows.";
     decoder.reset(new DXVAVideoDecodeAccelerator(
-        get_gl_context_cb_, make_context_current_cb_,
-        gpu_preferences.enable_accelerated_vpx_decode));
+        get_gl_context_cb_, make_context_current_cb_, gpu_preferences));
   }
   return decoder;
 }

@@ -34,7 +34,9 @@
 #include "base/trace_event/trace_event.h"
 #include "base/win/windows_version.h"
 #include "build/build_config.h"
+#include "gpu/command_buffer/service/gpu_preferences.h"
 #include "media/base/win/mf_initializer.h"
+#include "media/gpu/dxva_picture_buffer_win.h"
 #include "media/video/video_decode_accelerator.h"
 #include "third_party/angle/include/EGL/egl.h"
 #include "third_party/angle/include/EGL/eglext.h"
@@ -551,316 +553,6 @@ bool H264ConfigChangeDetector::DetectConfig(const uint8_t* stream,
   return true;
 }
 
-// Maintains information about a DXVA picture buffer, i.e. whether it is
-// available for rendering, the texture information, etc.
-struct DXVAVideoDecodeAccelerator::DXVAPictureBuffer {
- public:
-  static linked_ptr<DXVAPictureBuffer> Create(
-      const DXVAVideoDecodeAccelerator& decoder,
-      const media::PictureBuffer& buffer,
-      EGLConfig egl_config);
-  ~DXVAPictureBuffer();
-
-  bool InitializeTexture(const DXVAVideoDecodeAccelerator& decoder,
-                         bool use_rgb);
-
-  bool ReusePictureBuffer();
-  void ResetReuseFence();
-  // Copies the output sample data to the picture buffer provided by the
-  // client.
-  // The dest_surface parameter contains the decoded bits.
-  bool CopyOutputSampleDataToPictureBuffer(DXVAVideoDecodeAccelerator* decoder,
-                                           IDirect3DSurface9* dest_surface,
-                                           ID3D11Texture2D* dx11_texture,
-                                           int input_buffer_id);
-
-  bool available() const { return available_; }
-
-  void set_available(bool available) { available_ = available; }
-
-  int id() const { return picture_buffer_.id(); }
-
-  gfx::Size size() const { return picture_buffer_.size(); }
-
-  bool waiting_to_reuse() const { return waiting_to_reuse_; }
-
-  gfx::GLFence* reuse_fence() { return reuse_fence_.get(); }
-
-  // Called when the source surface |src_surface| is copied to the destination
-  // |dest_surface|
-  bool CopySurfaceComplete(IDirect3DSurface9* src_surface,
-                           IDirect3DSurface9* dest_surface);
-
- private:
-  explicit DXVAPictureBuffer(const media::PictureBuffer& buffer);
-
-  bool available_;
-
-  // This is true if the decoder is currently waiting on the fence before
-  // reusing the buffer.
-  bool waiting_to_reuse_;
-  media::PictureBuffer picture_buffer_;
-  EGLSurface decoding_surface_;
-  std::unique_ptr<gfx::GLFence> reuse_fence_;
-
-  HANDLE texture_share_handle_;
-  base::win::ScopedComPtr<IDirect3DTexture9> decoding_texture_;
-  base::win::ScopedComPtr<ID3D11Texture2D> dx11_decoding_texture_;
-
-  base::win::ScopedComPtr<IDXGIKeyedMutex> egl_keyed_mutex_;
-  base::win::ScopedComPtr<IDXGIKeyedMutex> dx11_keyed_mutex_;
-
-  // This is the last value that was used to release the keyed mutex.
-  uint64_t keyed_mutex_value_;
-
-  // The following |IDirect3DSurface9| interface pointers are used to hold
-  // references on the surfaces during the course of a StretchRect operation
-  // to copy the source surface to the target. The references are released
-  // when the StretchRect operation i.e. the copy completes.
-  base::win::ScopedComPtr<IDirect3DSurface9> decoder_surface_;
-  base::win::ScopedComPtr<IDirect3DSurface9> target_surface_;
-
-  // This ID3D11Texture2D interface pointer is used to hold a reference to the
-  // decoder texture during the course of a copy operation. This reference is
-  // released when the copy completes.
-  base::win::ScopedComPtr<ID3D11Texture2D> decoder_dx11_texture_;
-
-  // Set to true if RGB is supported by the texture.
-  // Defaults to true.
-  bool use_rgb_;
-
-  DISALLOW_COPY_AND_ASSIGN(DXVAPictureBuffer);
-};
-
-// static
-linked_ptr<DXVAVideoDecodeAccelerator::DXVAPictureBuffer>
-DXVAVideoDecodeAccelerator::DXVAPictureBuffer::Create(
-    const DXVAVideoDecodeAccelerator& decoder,
-    const media::PictureBuffer& buffer,
-    EGLConfig egl_config) {
-  linked_ptr<DXVAPictureBuffer> picture_buffer(new DXVAPictureBuffer(buffer));
-
-  EGLDisplay egl_display = gfx::GLSurfaceEGL::GetHardwareDisplay();
-
-  EGLint use_rgb = 1;
-  eglGetConfigAttrib(egl_display, egl_config, EGL_BIND_TO_TEXTURE_RGB,
-                     &use_rgb);
-
-  if (!picture_buffer->InitializeTexture(decoder, !!use_rgb))
-    return linked_ptr<DXVAPictureBuffer>(nullptr);
-
-  EGLint attrib_list[] = {EGL_WIDTH,
-                          buffer.size().width(),
-                          EGL_HEIGHT,
-                          buffer.size().height(),
-                          EGL_TEXTURE_FORMAT,
-                          use_rgb ? EGL_TEXTURE_RGB : EGL_TEXTURE_RGBA,
-                          EGL_TEXTURE_TARGET,
-                          EGL_TEXTURE_2D,
-                          EGL_NONE};
-
-  picture_buffer->decoding_surface_ = eglCreatePbufferFromClientBuffer(
-      egl_display, EGL_D3D_TEXTURE_2D_SHARE_HANDLE_ANGLE,
-      picture_buffer->texture_share_handle_, egl_config, attrib_list);
-  RETURN_ON_FAILURE(picture_buffer->decoding_surface_,
-                    "Failed to create surface",
-                    linked_ptr<DXVAPictureBuffer>(NULL));
-  if (decoder.d3d11_device_ && decoder.use_keyed_mutex_) {
-    void* keyed_mutex = nullptr;
-    EGLBoolean ret = eglQuerySurfacePointerANGLE(
-        egl_display, picture_buffer->decoding_surface_,
-        EGL_DXGI_KEYED_MUTEX_ANGLE, &keyed_mutex);
-    RETURN_ON_FAILURE(keyed_mutex && ret == EGL_TRUE,
-                      "Failed to query ANGLE keyed mutex",
-                      linked_ptr<DXVAPictureBuffer>(nullptr));
-    picture_buffer->egl_keyed_mutex_ = base::win::ScopedComPtr<IDXGIKeyedMutex>(
-        static_cast<IDXGIKeyedMutex*>(keyed_mutex));
-  }
-  picture_buffer->use_rgb_ = !!use_rgb;
-  return picture_buffer;
-}
-
-bool DXVAVideoDecodeAccelerator::DXVAPictureBuffer::InitializeTexture(
-    const DXVAVideoDecodeAccelerator& decoder,
-    bool use_rgb) {
-  DCHECK(!texture_share_handle_);
-  if (decoder.d3d11_device_) {
-    D3D11_TEXTURE2D_DESC desc;
-    desc.Width = picture_buffer_.size().width();
-    desc.Height = picture_buffer_.size().height();
-    desc.MipLevels = 1;
-    desc.ArraySize = 1;
-    desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
-    desc.SampleDesc.Count = 1;
-    desc.SampleDesc.Quality = 0;
-    desc.Usage = D3D11_USAGE_DEFAULT;
-    desc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
-    desc.CPUAccessFlags = 0;
-    desc.MiscFlags = decoder.use_keyed_mutex_
-                         ? D3D11_RESOURCE_MISC_SHARED_KEYEDMUTEX
-                         : D3D11_RESOURCE_MISC_SHARED;
-
-    HRESULT hr = decoder.d3d11_device_->CreateTexture2D(
-        &desc, nullptr, dx11_decoding_texture_.Receive());
-    RETURN_ON_HR_FAILURE(hr, "Failed to create texture", false);
-    if (decoder.use_keyed_mutex_) {
-      hr = dx11_keyed_mutex_.QueryFrom(dx11_decoding_texture_.get());
-      RETURN_ON_HR_FAILURE(hr, "Failed to get keyed mutex", false);
-    }
-
-    base::win::ScopedComPtr<IDXGIResource> resource;
-    hr = resource.QueryFrom(dx11_decoding_texture_.get());
-    DCHECK(SUCCEEDED(hr));
-    hr = resource->GetSharedHandle(&texture_share_handle_);
-    RETURN_ON_FAILURE(SUCCEEDED(hr) && texture_share_handle_,
-                      "Failed to query shared handle", false);
-
-  } else {
-    HRESULT hr = E_FAIL;
-    hr = decoder.d3d9_device_ex_->CreateTexture(
-        picture_buffer_.size().width(), picture_buffer_.size().height(), 1,
-        D3DUSAGE_RENDERTARGET, use_rgb ? D3DFMT_X8R8G8B8 : D3DFMT_A8R8G8B8,
-        D3DPOOL_DEFAULT, decoding_texture_.Receive(), &texture_share_handle_);
-    RETURN_ON_HR_FAILURE(hr, "Failed to create texture", false);
-    RETURN_ON_FAILURE(texture_share_handle_, "Failed to query shared handle",
-                      false);
-  }
-  return true;
-}
-
-DXVAVideoDecodeAccelerator::DXVAPictureBuffer::DXVAPictureBuffer(
-    const media::PictureBuffer& buffer)
-    : available_(true),
-      waiting_to_reuse_(false),
-      picture_buffer_(buffer),
-      decoding_surface_(NULL),
-      texture_share_handle_(nullptr),
-      keyed_mutex_value_(0),
-      use_rgb_(true) {}
-
-DXVAVideoDecodeAccelerator::DXVAPictureBuffer::~DXVAPictureBuffer() {
-  if (decoding_surface_) {
-    EGLDisplay egl_display = gfx::GLSurfaceEGL::GetHardwareDisplay();
-
-    eglReleaseTexImage(egl_display, decoding_surface_, EGL_BACK_BUFFER);
-
-    eglDestroySurface(egl_display, decoding_surface_);
-    decoding_surface_ = NULL;
-  }
-}
-
-bool DXVAVideoDecodeAccelerator::DXVAPictureBuffer::ReusePictureBuffer() {
-  DCHECK(decoding_surface_);
-  EGLDisplay egl_display = gfx::GLSurfaceEGL::GetHardwareDisplay();
-  eglReleaseTexImage(egl_display, decoding_surface_, EGL_BACK_BUFFER);
-  decoder_surface_.Release();
-  target_surface_.Release();
-  decoder_dx11_texture_.Release();
-  waiting_to_reuse_ = false;
-  set_available(true);
-  if (egl_keyed_mutex_) {
-    HRESULT hr = egl_keyed_mutex_->ReleaseSync(++keyed_mutex_value_);
-    RETURN_ON_FAILURE(hr == S_OK, "Could not release sync mutex", false);
-  }
-  return true;
-}
-
-void DXVAVideoDecodeAccelerator::DXVAPictureBuffer::ResetReuseFence() {
-  if (!reuse_fence_ || !reuse_fence_->ResetSupported())
-    reuse_fence_.reset(gfx::GLFence::Create());
-  else
-    reuse_fence_->ResetState();
-  waiting_to_reuse_ = true;
-}
-
-bool DXVAVideoDecodeAccelerator::DXVAPictureBuffer::
-    CopyOutputSampleDataToPictureBuffer(DXVAVideoDecodeAccelerator* decoder,
-                                        IDirect3DSurface9* dest_surface,
-                                        ID3D11Texture2D* dx11_texture,
-                                        int input_buffer_id) {
-  DCHECK(dest_surface || dx11_texture);
-  if (dx11_texture) {
-    // Grab a reference on the decoder texture. This reference will be released
-    // when we receive a notification that the copy was completed or when the
-    // DXVAPictureBuffer instance is destroyed.
-    decoder_dx11_texture_ = dx11_texture;
-    decoder->CopyTexture(dx11_texture, dx11_decoding_texture_.get(),
-                         dx11_keyed_mutex_, keyed_mutex_value_, NULL, id(),
-                         input_buffer_id);
-    return true;
-  }
-  D3DSURFACE_DESC surface_desc;
-  HRESULT hr = dest_surface->GetDesc(&surface_desc);
-  RETURN_ON_HR_FAILURE(hr, "Failed to get surface description", false);
-
-  D3DSURFACE_DESC texture_desc;
-  decoding_texture_->GetLevelDesc(0, &texture_desc);
-
-  if (texture_desc.Width != surface_desc.Width ||
-      texture_desc.Height != surface_desc.Height) {
-    NOTREACHED() << "Decode surface of different dimension than texture";
-    return false;
-  }
-
-  hr = decoder->d3d9_->CheckDeviceFormatConversion(
-      D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, surface_desc.Format,
-      use_rgb_ ? D3DFMT_X8R8G8B8 : D3DFMT_A8R8G8B8);
-  RETURN_ON_HR_FAILURE(hr, "Device does not support format converision", false);
-
-  // The same picture buffer can be reused for a different frame. Release the
-  // target surface and the decoder references here.
-  target_surface_.Release();
-  decoder_surface_.Release();
-
-  // Grab a reference on the decoder surface and the target surface. These
-  // references will be released when we receive a notification that the
-  // copy was completed or when the DXVAPictureBuffer instance is destroyed.
-  // We hold references here as it is easier to manage their lifetimes.
-  hr = decoding_texture_->GetSurfaceLevel(0, target_surface_.Receive());
-  RETURN_ON_HR_FAILURE(hr, "Failed to get surface from texture", false);
-
-  decoder_surface_ = dest_surface;
-
-  decoder->CopySurface(decoder_surface_.get(), target_surface_.get(), id(),
-                       input_buffer_id);
-  return true;
-}
-
-bool DXVAVideoDecodeAccelerator::DXVAPictureBuffer::CopySurfaceComplete(
-    IDirect3DSurface9* src_surface,
-    IDirect3DSurface9* dest_surface) {
-  DCHECK(!available());
-
-  GLint current_texture = 0;
-  glGetIntegerv(GL_TEXTURE_BINDING_2D, &current_texture);
-
-  glBindTexture(GL_TEXTURE_2D, picture_buffer_.texture_ids()[0]);
-
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-
-  if (src_surface && dest_surface) {
-    DCHECK_EQ(src_surface, decoder_surface_.get());
-    DCHECK_EQ(dest_surface, target_surface_.get());
-    decoder_surface_.Release();
-    target_surface_.Release();
-  } else {
-    DCHECK(decoder_dx11_texture_.get());
-    decoder_dx11_texture_.Release();
-  }
-  if (egl_keyed_mutex_) {
-    keyed_mutex_value_++;
-    HRESULT result =
-        egl_keyed_mutex_->AcquireSync(keyed_mutex_value_, kAcquireSyncWaitMs);
-    RETURN_ON_FAILURE(result == S_OK, "Could not acquire sync mutex", false);
-  }
-
-  EGLDisplay egl_display = gfx::GLSurfaceEGL::GetHardwareDisplay();
-  eglBindTexImage(egl_display, decoding_surface_, EGL_BACK_BUFFER);
-
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glBindTexture(GL_TEXTURE_2D, current_texture);
-  return true;
-}
 
 DXVAVideoDecodeAccelerator::PendingSampleInfo::PendingSampleInfo(
     int32_t buffer_id,
@@ -877,7 +569,7 @@ DXVAVideoDecodeAccelerator::PendingSampleInfo::~PendingSampleInfo() {}
 DXVAVideoDecodeAccelerator::DXVAVideoDecodeAccelerator(
     const GetGLContextCallback& get_gl_context_cb,
     const MakeGLContextCurrentCallback& make_context_current_cb,
-    bool enable_accelerated_vpx_decode)
+    const gpu::GpuPreferences& gpu_preferences)
     : client_(NULL),
       dev_manager_reset_token_(0),
       dx11_dev_manager_reset_token_(0),
@@ -891,11 +583,13 @@ DXVAVideoDecodeAccelerator::DXVAVideoDecodeAccelerator(
       codec_(media::kUnknownVideoCodec),
       decoder_thread_("DXVAVideoDecoderThread"),
       pending_flush_(false),
+      share_nv12_textures_(gpu_preferences.enable_zero_copy_dxgi_video),
       use_dx11_(false),
       use_keyed_mutex_(false),
       dx11_video_format_converter_media_type_needs_init_(true),
       using_angle_device_(false),
-      enable_accelerated_vpx_decode_(enable_accelerated_vpx_decode),
+      enable_accelerated_vpx_decode_(
+          gpu_preferences.enable_accelerated_vpx_decode),
       weak_this_factory_(this) {
   weak_ptr_ = weak_this_factory_.GetWeakPtr();
   memset(&input_stream_info_, 0, sizeof(input_stream_info_));
@@ -1080,27 +774,35 @@ bool DXVAVideoDecodeAccelerator::CreateDX11DevManager() {
   HRESULT hr = create_dxgi_device_manager_(&dx11_dev_manager_reset_token_,
                                            d3d11_device_manager_.Receive());
   RETURN_ON_HR_FAILURE(hr, "MFCreateDXGIDeviceManager failed", false);
+  if (share_nv12_textures_) {
+    base::win::ScopedComPtr<ID3D11Device> angle_device =
+        QueryDeviceObjectFromANGLE<ID3D11Device>(EGL_D3D11_DEVICE_ANGLE);
+    RETURN_ON_FAILURE(angle_device.get(), "Failed to get d3d11 device", false);
 
-  // This array defines the set of DirectX hardware feature levels we support.
-  // The ordering MUST be preserved. All applications are assumed to support
-  // 9.1 unless otherwise stated by the application.
-  D3D_FEATURE_LEVEL feature_levels[] = {
-      D3D_FEATURE_LEVEL_11_1, D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_1,
-      D3D_FEATURE_LEVEL_10_0, D3D_FEATURE_LEVEL_9_3,  D3D_FEATURE_LEVEL_9_2,
-      D3D_FEATURE_LEVEL_9_1};
+    using_angle_device_ = true;
+    d3d11_device_ = angle_device;
+  } else {
+    // This array defines the set of DirectX hardware feature levels we support.
+    // The ordering MUST be preserved. All applications are assumed to support
+    // 9.1 unless otherwise stated by the application.
+    D3D_FEATURE_LEVEL feature_levels[] = {
+        D3D_FEATURE_LEVEL_11_1, D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_1,
+        D3D_FEATURE_LEVEL_10_0, D3D_FEATURE_LEVEL_9_3,  D3D_FEATURE_LEVEL_9_2,
+        D3D_FEATURE_LEVEL_9_1};
 
-  UINT flags = D3D11_CREATE_DEVICE_VIDEO_SUPPORT;
+    UINT flags = D3D11_CREATE_DEVICE_VIDEO_SUPPORT;
 
 #if defined _DEBUG
-  flags |= D3D11_CREATE_DEVICE_DEBUG;
+    flags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
 
-  D3D_FEATURE_LEVEL feature_level_out = D3D_FEATURE_LEVEL_11_0;
-  hr = D3D11CreateDevice(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, flags,
-                         feature_levels, arraysize(feature_levels),
-                         D3D11_SDK_VERSION, d3d11_device_.Receive(),
-                         &feature_level_out, d3d11_device_context_.Receive());
-  RETURN_ON_HR_FAILURE(hr, "Failed to create DX11 device", false);
+    D3D_FEATURE_LEVEL feature_level_out = D3D_FEATURE_LEVEL_11_0;
+    hr = D3D11CreateDevice(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, flags,
+                           feature_levels, arraysize(feature_levels),
+                           D3D11_SDK_VERSION, d3d11_device_.Receive(),
+                           &feature_level_out, d3d11_device_context_.Receive());
+    RETURN_ON_HR_FAILURE(hr, "Failed to create DX11 device", false);
+  }
 
   // Enable multithreaded mode on the device. This ensures that accesses to
   // context are synchronized across threads. We have multiple threads
@@ -1203,6 +905,9 @@ void DXVAVideoDecodeAccelerator::AssignPictureBuffers(
           << buffers.size() << ", requested " << kNumPictureBuffers << ")",
       INVALID_ARGUMENT, );
 
+  RETURN_AND_NOTIFY_ON_FAILURE(make_context_current_cb_.Run(),
+                               "Failed to make context current",
+                               PLATFORM_FAILURE, );
   // Copy the picture buffers provided by the client to the available list,
   // and mark these buffers as available for use.
   for (size_t buffer_index = 0; buffer_index < buffers.size(); ++buffer_index) {
@@ -1785,6 +1490,14 @@ bool DXVAVideoDecodeAccelerator::CheckDecoderDxvaSupport() {
   use_keyed_mutex_ =
       use_dx11_ && gfx::GLSurfaceEGL::HasEGLExtension("EGL_ANGLE_keyed_mutex");
 
+  if (!use_dx11_ ||
+      !gfx::g_driver_egl.ext.b_EGL_ANGLE_stream_producer_d3d_texture_nv12 ||
+      !gfx::g_driver_egl.ext.b_EGL_KHR_stream ||
+      !gfx::g_driver_egl.ext.b_EGL_KHR_stream_consumer_gltexture ||
+      !gfx::g_driver_egl.ext.b_EGL_NV_stream_consumer_gltexture_yuv) {
+    share_nv12_textures_ = false;
+  }
+
   return true;
 }
 
@@ -1827,7 +1540,18 @@ bool DXVAVideoDecodeAccelerator::SetDecoderInputMediaType() {
 
 bool DXVAVideoDecodeAccelerator::SetDecoderOutputMediaType(
     const GUID& subtype) {
-  return SetTransformOutputType(decoder_.get(), subtype, 0, 0);
+  bool result = SetTransformOutputType(decoder_.get(), subtype, 0, 0);
+
+  if (share_nv12_textures_) {
+    base::win::ScopedComPtr<IMFAttributes> out_attributes;
+    HRESULT hr =
+        decoder_->GetOutputStreamAttributes(0, out_attributes.Receive());
+    RETURN_ON_HR_FAILURE(hr, "Failed to get stream attributes", false);
+    out_attributes->SetUINT32(MF_SA_D3D11_BINDFLAGS,
+                              D3D11_BIND_SHADER_RESOURCE);
+  }
+
+  return result;
 }
 
 bool DXVAVideoDecodeAccelerator::SendMFTMessage(MFT_MESSAGE_TYPE msg,
@@ -2009,6 +1733,19 @@ void DXVAVideoDecodeAccelerator::ProcessPendingSamples() {
         return;
       }
 
+      pending_sample->picture_buffer_id = index->second->id();
+      index->second->set_available(false);
+      if (share_nv12_textures_) {
+        main_thread_task_runner_->PostTask(
+            FROM_HERE,
+            base::Bind(&DXVAVideoDecodeAccelerator::BindPictureBufferToSample,
+                       weak_this_factory_.GetWeakPtr(),
+                       pending_sample->output_sample,
+                       pending_sample->picture_buffer_id,
+                       pending_sample->input_buffer_id));
+        continue;
+      }
+
       base::win::ScopedComPtr<IMFMediaBuffer> output_buffer;
       HRESULT hr = pending_sample->output_sample->GetBufferByIndex(
           0, output_buffer.Receive());
@@ -2034,15 +1771,12 @@ void DXVAVideoDecodeAccelerator::ProcessPendingSamples() {
       RETURN_AND_NOTIFY_ON_HR_FAILURE(
           hr, "Failed to get surface from output sample", PLATFORM_FAILURE, );
 
-      pending_sample->picture_buffer_id = index->second->id();
-
       RETURN_AND_NOTIFY_ON_FAILURE(
           index->second->CopyOutputSampleDataToPictureBuffer(
               this, surface.get(), d3d11_texture.get(),
               pending_sample->input_buffer_id),
           "Failed to copy output sample", PLATFORM_FAILURE, );
 
-      index->second->set_available(false);
     }
   }
 }
@@ -2137,8 +1871,14 @@ void DXVAVideoDecodeAccelerator::RequestPictureBuffers(int width, int height) {
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
   // This task could execute after the decoder has been torn down.
   if (GetState() != kUninitialized && client_) {
-    client_->ProvidePictureBuffers(kNumPictureBuffers, 1,
-                                   gfx::Size(width, height), GL_TEXTURE_2D);
+    // When sharing NV12 textures, the client needs to provide 2 texture IDs
+    // per picture buffer, 1 for the Y channel and 1 for the UV channels.
+    // They're shared to ANGLE using EGL_NV_stream_consumer_gltexture_yuv, so
+    // they need to be GL_TEXTURE_EXTERNAL_OES.
+    client_->ProvidePictureBuffers(
+        kNumPictureBuffers, share_nv12_textures_ ? 2 : 1,
+        gfx::Size(width, height),
+        share_nv12_textures_ ? GL_TEXTURE_EXTERNAL_OES : GL_TEXTURE_2D);
   }
 }
 
@@ -2471,7 +2211,6 @@ void DXVAVideoDecodeAccelerator::CopySurfaceComplete(
   // 1. A resolution change.
   // 2. Decoder instance was destroyed.
   // Ignore copy surface notifications for such buffers.
-  // copy surface notifications for such buffers.
   OutputBuffers::iterator it = output_picture_buffers_.find(picture_buffer_id);
   if (it == output_picture_buffers_.end())
     return;
@@ -2489,6 +2228,56 @@ void DXVAVideoDecodeAccelerator::CopySurfaceComplete(
   DCHECK(!output_picture_buffers_.empty());
 
   bool result = picture_buffer->CopySurfaceComplete(src_surface, dest_surface);
+  RETURN_AND_NOTIFY_ON_FAILURE(result, "Failed to complete copying surface",
+                               PLATFORM_FAILURE, );
+
+  NotifyPictureReady(picture_buffer->id(), input_buffer_id);
+
+  {
+    base::AutoLock lock(decoder_lock_);
+    if (!pending_output_samples_.empty())
+      pending_output_samples_.pop_front();
+  }
+
+  if (pending_flush_) {
+    decoder_thread_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&DXVAVideoDecodeAccelerator::FlushInternal,
+                              base::Unretained(this)));
+    return;
+  }
+  decoder_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&DXVAVideoDecodeAccelerator::DecodePendingInputBuffers,
+                 base::Unretained(this)));
+}
+
+void DXVAVideoDecodeAccelerator::BindPictureBufferToSample(
+    base::win::ScopedComPtr<IMFSample> sample,
+    int picture_buffer_id,
+    int input_buffer_id) {
+  DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
+
+  // The output buffers may have changed in the following scenarios:-
+  // 1. A resolution change.
+  // 2. Decoder instance was destroyed.
+  // Ignore copy surface notifications for such buffers.
+  OutputBuffers::iterator it = output_picture_buffers_.find(picture_buffer_id);
+  if (it == output_picture_buffers_.end())
+    return;
+
+  // If the picture buffer is marked as available it probably means that there
+  // was a Reset operation which dropped the output frame.
+  DXVAPictureBuffer* picture_buffer = it->second.get();
+  if (picture_buffer->available())
+    return;
+
+  RETURN_AND_NOTIFY_ON_FAILURE(make_context_current_cb_.Run(),
+                               "Failed to make context current",
+                               PLATFORM_FAILURE, );
+
+  DCHECK(!output_picture_buffers_.empty());
+
+  bool result = picture_buffer->BindSampleToTexture(sample);
   RETURN_AND_NOTIFY_ON_FAILURE(result, "Failed to complete copying surface",
                                PLATFORM_FAILURE, );
 

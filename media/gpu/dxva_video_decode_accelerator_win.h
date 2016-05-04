@@ -43,11 +43,18 @@ namespace gfx {
 class GLContext;
 }
 
+namespace gpu {
+struct GpuPreferences;
+}
+
 typedef HRESULT(WINAPI* CreateDXGIDeviceManager)(
     UINT* reset_token,
     IMFDXGIDeviceManager** device_manager);
 
 namespace media {
+class DXVAPictureBuffer;
+class EGLStreamPictureBuffer;
+class PbufferPictureBuffer;
 
 // Provides functionality to detect H.264 stream configuration changes.
 // TODO(ananta)
@@ -103,7 +110,7 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
   DXVAVideoDecodeAccelerator(
       const GetGLContextCallback& get_gl_context_cb,
       const MakeGLContextCurrentCallback& make_context_current_cb,
-      bool enable_accelerated_vpx_decode);
+      const gpu::GpuPreferences& gpu_preferences);
   ~DXVAVideoDecodeAccelerator() override;
 
   // media::VideoDecodeAccelerator implementation.
@@ -128,6 +135,9 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
   static void PreSandboxInitialization();
 
  private:
+  friend class DXVAPictureBuffer;
+  friend class EGLStreamPictureBuffer;
+  friend class PbufferPictureBuffer;
   typedef void* EGLConfig;
   typedef void* EGLSurface;
 
@@ -234,7 +244,6 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
   // Handles mid stream resolution changes.
   void HandleResolutionChanged(int width, int height);
 
-  struct DXVAPictureBuffer;
   typedef std::map<int32_t, linked_ptr<DXVAPictureBuffer>> OutputBuffers;
 
   // Tells the client to dismiss the stale picture buffers passed in.
@@ -272,6 +281,10 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
                            IDirect3DSurface9* dest_surface,
                            int picture_buffer_id,
                            int input_buffer_id);
+
+  void BindPictureBufferToSample(base::win::ScopedComPtr<IMFSample> sample,
+                                 int picture_buffer_id,
+                                 int input_buffer_id);
 
   // Copies the source texture |src_texture| to the destination |dest_texture|.
   // The copying is done on the decoder thread. The |video_frame| parameter
@@ -445,6 +458,8 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
   // Set to true if we are in the context of a Flush operation. Used to prevent
   // multiple flush done notifications being sent out.
   bool pending_flush_;
+
+  bool share_nv12_textures_;
 
   // Defaults to false. Indicates if we should use D3D or DX11 interfaces for
   // H/W decoding.

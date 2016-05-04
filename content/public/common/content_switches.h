@@ -151,6 +151,7 @@ CONTENT_EXPORT extern const char kEnableWebGLImageChromium[];
 CONTENT_EXPORT extern const char kEnableWebVR[];
 CONTENT_EXPORT extern const char kEnableWheelGestures[];
 CONTENT_EXPORT extern const char kEnableZeroCopy[];
+CONTENT_EXPORT extern const char kEnableZeroCopyDxgiVideo[];
 CONTENT_EXPORT extern const char kExplicitlyAllowedPorts[];
 CONTENT_EXPORT extern const char kForceDisplayList2dCanvas[];
 CONTENT_EXPORT extern const char kForceGpuRasterization[];

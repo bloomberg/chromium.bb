@@ -50,6 +50,8 @@ const gpu::GpuPreferences GetGpuPreferencesFromCommandLine() {
 #if defined(OS_WIN)
   gpu_preferences.enable_accelerated_vpx_decode =
       command_line->HasSwitch(switches::kEnableAcceleratedVpxDecode);
+  gpu_preferences.enable_zero_copy_dxgi_video =
+      command_line->HasSwitch(switches::kEnableZeroCopyDxgiVideo);
 #endif
   gpu_preferences.compile_shader_always_succeeds =
       command_line->HasSwitch(switches::kCompileShaderAlwaysSucceeds);
