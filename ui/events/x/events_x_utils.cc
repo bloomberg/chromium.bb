@@ -266,6 +266,9 @@ ui::EventType GetTouchEventType(const XEvent& xev) {
       if (!(event->flags & XIPointerEmulated) && GetButtonMaskForX2Event(event))
         return ui::ET_TOUCH_MOVED;
       return ui::ET_UNKNOWN;
+    case XI_DeviceChanged:
+      // This can happen when --touch-devices flag is used.
+      return ui::ET_UNKNOWN;
     default:
       NOTREACHED();
   }
