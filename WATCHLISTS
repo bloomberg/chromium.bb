@@ -313,6 +313,9 @@
       'filepath': 'net/cookies/|'\
                   'chrome/browser/net/sqlite_persistent_cookie_store',
     },
+    'courgette': {
+      'filepath': 'courgette/',
+    },
     'cr_elements': {
       'filepath': 'ui/webui/resources/cr_element',
     },
@@ -1424,6 +1427,8 @@
                       'peter@chromium.org'],
     'content_worker': ['blink-worker-reviews@chromium.org',
                        'kinuko+watch@chromium.org'],
+    'courgette': ['wfh+watch@chromium.org',
+                  'huangs+watch@chromium.org'],
     'cr_elements': ['dbeam+watch-elements@chromium.org',
                     'michaelpg+watch-elements@chromium.org',
                     'stevenjb+watch-md-settings@chromium.org'],
