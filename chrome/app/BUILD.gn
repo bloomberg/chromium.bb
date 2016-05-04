@@ -374,10 +374,6 @@ if (use_aura) {
     source = "mojo/chrome_manifest.json"
     base_manifest = "${root_out_dir}/content_browser_manifest.json"
     base_deps = [ "//content/public/app:browser_manifest" ]
-    deps = [
-      "//components/mus:manifest",
-    ]
-    packaged_applications = [ "mus" ]
   }
 
   mojo_application_manifest("chrome_renderer_manifest") {
