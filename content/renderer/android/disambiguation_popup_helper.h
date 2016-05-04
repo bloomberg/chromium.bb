@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_DISAMBIGUATION_POPUP_HELPER_H_
-#define CONTENT_RENDERER_DISAMBIGUATION_POPUP_HELPER_H_
+#ifndef CONTENT_RENDERER_ANDROID_DISAMBIGUATION_POPUP_HELPER_H_
+#define CONTENT_RENDERER_ANDROID_DISAMBIGUATION_POPUP_HELPER_H_
 
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
@@ -33,4 +33,4 @@ class DisambiguationPopupHelper {
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_DISAMBIGUATION_POPUP_HELPER_H_
+#endif  // CONTENT_RENDERER_ANDROID_DISAMBIGUATION_POPUP_HELPER_H_

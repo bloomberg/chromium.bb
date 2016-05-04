@@ -82,22 +82,6 @@ class CONTENT_EXPORT RenderViewHostDelegateView {
   virtual void HidePopupMenu() {};
 #endif
 
-#if defined(USE_AURA)
-  // Shows a Link Disambiguation Popup. |target_rect| is the area the user
-  // touched that resulted in ambiguity, in DIPs in the host's coordinate
-  // system, |zoomed_bitmap| is an enlarged image of that |target_rect|, and
-  // |callback| is for forwarding on to the original scale web content.
-  virtual void ShowDisambiguationPopup(
-      const gfx::Rect& target_rect,
-      const SkBitmap& zoomed_bitmap,
-      const base::Callback<void(ui::GestureEvent*)>& gesture_cb,
-      const base::Callback<void(ui::MouseEvent*)>& mouse_cb) {}
-
-  // Hides the Link Disambiguation Popup, if it was showing, otherwise does
-  // nothing.
-  virtual void HideDisambiguationPopup() {}
-#endif
-
  protected:
   virtual ~RenderViewHostDelegateView() {}
 };

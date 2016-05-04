@@ -180,8 +180,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
       BrowserAccessibilityDelegate* delegate, bool for_root_frame) override;
   gfx::AcceleratedWidget AccessibilityGetAcceleratedWidget() override;
   gfx::NativeViewAccessible AccessibilityGetNativeViewAccessible() override;
-  void ShowDisambiguationPopup(const gfx::Rect& rect_pixels,
-                               const SkBitmap& zoomed_bitmap) override;
   bool LockMouse() override;
   void UnlockMouse() override;
   void OnSwapCompositorFrame(
@@ -292,15 +290,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // Notification that the LegacyRenderWidgetHostHWND was destroyed.
   void OnLegacyWindowDestroyed();
 #endif
-
-  void DisambiguationPopupRendered(const SkBitmap& result,
-                                   ReadbackResponse response);
-
-  void HideDisambiguationPopup();
-
-  void ProcessDisambiguationGesture(ui::GestureEvent* event);
-
-  void ProcessDisambiguationMouse(ui::MouseEvent* event);
 
   // Method to indicate if this instance is shutting down or closing.
   // TODO(shrikant): Discuss around to see if it makes sense to add this method
@@ -670,13 +659,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // True when this view acts as a platform view hack for a
   // RenderWidgetHostViewGuest.
   bool is_guest_view_hack_;
-
-  gfx::Rect disambiguation_target_rect_;
-
-  // The last scroll offset when we start to render the link disambiguation
-  // view, so we can ensure the window hasn't moved between copying from the
-  // compositing surface and showing the disambiguation popup.
-  gfx::Vector2dF disambiguation_scroll_offset_;
 
   // This flag when set ensures that we send over a notification to blink that
   // the current view has focus. Defaults to false.

@@ -10,18 +10,6 @@
 
 namespace switches {
 
-bool IsLinkDisambiguationPopupEnabled() {
-#if defined(OS_ANDROID)
-  return true;
-#else
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableLinkDisambiguationPopup)) {
-    return true;
-  }
-  return false;
-#endif
-}
-
 bool IsTouchDragDropEnabled() {
 #if defined(OS_CHROMEOS)
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(

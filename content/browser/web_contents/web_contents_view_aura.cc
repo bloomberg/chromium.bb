@@ -883,22 +883,6 @@ void WebContentsViewAura::TakeFocus(bool reverse) {
   }
 }
 
-void WebContentsViewAura::ShowDisambiguationPopup(
-    const gfx::Rect& target_rect,
-    const SkBitmap& zoomed_bitmap,
-    const base::Callback<void(ui::GestureEvent*)>& gesture_cb,
-    const base::Callback<void(ui::MouseEvent*)>& mouse_cb) {
-  if (delegate_) {
-    delegate_->ShowDisambiguationPopup(target_rect, zoomed_bitmap,
-        window_.get(), gesture_cb, mouse_cb);
-  }
-}
-
-void WebContentsViewAura::HideDisambiguationPopup() {
-  if (delegate_)
-    delegate_->HideDisambiguationPopup();
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // WebContentsViewAura, OverscrollControllerDelegate implementation:
 

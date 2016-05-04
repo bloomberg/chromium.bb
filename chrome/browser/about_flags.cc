@@ -1199,10 +1199,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsCrOS | kOsWin | kOsLinux,
      SINGLE_DISABLE_VALUE_TYPE(
          views::switches::kDisableViewsRectBasedTargeting)},
-    {"enable-link-disambiguation-popup",
-     IDS_FLAGS_LINK_DISAMBIGUATION_POPUP_NAME,
-     IDS_FLAGS_LINK_DISAMBIGUATION_POPUP_DESCRIPTION, kOsCrOS | kOsWin,
-     SINGLE_VALUE_TYPE(switches::kEnableLinkDisambiguationPopup)},
 #endif
 #if defined(ENABLE_EXTENSIONS)
     {"enable-apps-show-on-first-paint", IDS_FLAGS_APPS_SHOW_ON_FIRST_PAINT_NAME,

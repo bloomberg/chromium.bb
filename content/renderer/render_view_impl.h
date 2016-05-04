@@ -402,7 +402,7 @@ class CONTENT_EXPORT RenderViewImpl
   void focusedNodeChanged(const blink::WebNode& fromNode,
                           const blink::WebNode& toNode) override;
   void didUpdateLayout() override;
-#if defined(OS_ANDROID) || defined(USE_AURA)
+#if defined(OS_ANDROID)
   bool didTapMultipleTargets(
       const blink::WebSize& inner_viewport_offset,
       const blink::WebRect& touch_rect,

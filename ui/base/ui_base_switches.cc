@@ -46,10 +46,6 @@ const char kDisableTouchFeedback[] = "disable-touch-feedback";
 // Enables large icons on the New Tab page.
 const char kEnableIconNtp[] = "enable-icon-ntp";
 
-// Enables a zoomed popup bubble that allows the user to select a link.
-const char kEnableLinkDisambiguationPopup[] =
-    "enable-link-disambiguation-popup";
-
 // Enables touch event based drag and drop.
 const char kEnableTouchDragDrop[] = "enable-touch-drag-drop";
 

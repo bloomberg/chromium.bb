@@ -30,7 +30,6 @@ UI_BASE_EXPORT extern const char kDisableTouchAdjustment[];
 UI_BASE_EXPORT extern const char kDisableTouchDragDrop[];
 UI_BASE_EXPORT extern const char kDisableTouchFeedback[];
 UI_BASE_EXPORT extern const char kEnableIconNtp[];
-UI_BASE_EXPORT extern const char kEnableLinkDisambiguationPopup[];
 UI_BASE_EXPORT extern const char kEnableTouchDragDrop[];
 UI_BASE_EXPORT extern const char kLang[];
 UI_BASE_EXPORT extern const char kMaterialDesignInkDropAnimationSpeed[];

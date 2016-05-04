@@ -37,17 +37,6 @@ bool WebContentsViewDelegate::Focus() {
 void WebContentsViewDelegate::TakeFocus(bool reverse) {
 }
 
-void WebContentsViewDelegate::ShowDisambiguationPopup(
-    const gfx::Rect& target_rect,
-    const SkBitmap& zoomed_bitmap,
-    const gfx::NativeView content,
-    const base::Callback<void(ui::GestureEvent*)>& gesture_cb,
-    const base::Callback<void(ui::MouseEvent*)>& mouse_cb) {
-}
-
-void WebContentsViewDelegate::HideDisambiguationPopup() {
-}
-
 void WebContentsViewDelegate::SizeChanged(const gfx::Size& size) {
 }
 

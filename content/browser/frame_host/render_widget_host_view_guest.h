@@ -117,12 +117,6 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   void StopSpeaking() override;
 #endif  // defined(OS_MACOSX)
 
-#if defined(OS_ANDROID) || defined(USE_AURA)
-  // RenderWidgetHostViewBase implementation.
-  void ShowDisambiguationPopup(const gfx::Rect& rect_pixels,
-                               const SkBitmap& zoomed_bitmap) override;
-#endif  // defined(OS_ANDROID) || defined(USE_AURA)
-
   void LockCompositingSurface() override;
   void UnlockCompositingSurface() override;
 

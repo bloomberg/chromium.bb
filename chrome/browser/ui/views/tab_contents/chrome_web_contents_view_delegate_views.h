@@ -12,7 +12,6 @@
 #include "components/renderer_context_menu/context_menu_delegate.h"
 #include "content/public/browser/web_contents_view_delegate.h"
 
-class LinkDisambiguationPopup;
 class RenderViewContextMenuBase;
 
 namespace aura {
@@ -50,13 +49,6 @@ class ChromeWebContentsViewDelegateViews
   void ShowContextMenu(content::RenderFrameHost* render_frame_host,
                        const content::ContextMenuParams& params) override;
   void SizeChanged(const gfx::Size& size) override;
-  void ShowDisambiguationPopup(
-      const gfx::Rect& target_rect,
-      const SkBitmap& zoomed_bitmap,
-      const gfx::NativeView content,
-      const base::Callback<void(ui::GestureEvent*)>& gesture_cb,
-      const base::Callback<void(ui::MouseEvent*)>& mouse_cb) override;
-  void HideDisambiguationPopup() override;
 
   // Overridden from ContextMenuDelegate.
   std::unique_ptr<RenderViewContextMenuBase> BuildMenu(
@@ -81,8 +73,6 @@ class ChromeWebContentsViewDelegateViews
   std::unique_ptr<content::WebDragDestDelegate> bookmark_handler_;
 
   content::WebContents* web_contents_;
-
-  std::unique_ptr<LinkDisambiguationPopup> link_disambiguation_popup_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeWebContentsViewDelegateViews);
 };

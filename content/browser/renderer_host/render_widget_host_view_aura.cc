@@ -1285,105 +1285,6 @@ RenderWidgetHostViewAura::AccessibilityGetNativeViewAccessible() {
   return NULL;
 }
 
-void RenderWidgetHostViewAura::ShowDisambiguationPopup(
-    const gfx::Rect& rect_pixels,
-    const SkBitmap& zoomed_bitmap) {
-  RenderViewHost* rvh = RenderViewHost::From(host_);
-  if (rvh) {
-    RenderViewHostDelegate* delegate = rvh->GetDelegate();
-    // Suppress the link disambiguation popup if the virtual keyboard is
-    // currently requested, as it doesn't interact well with the keyboard.
-    if (delegate && delegate->IsVirtualKeyboardRequested())
-      return;
-  }
-
-  // |target_rect| is provided in pixels, not DIPs. So we convert it to DIPs
-  // by scaling it by the inverse of the device scale factor.
-  gfx::RectF screen_target_rect_f(rect_pixels);
-  screen_target_rect_f.Scale(1.0f / current_device_scale_factor_);
-  disambiguation_target_rect_ = gfx::ToEnclosingRect(screen_target_rect_f);
-
-  float scale = static_cast<float>(zoomed_bitmap.width()) /
-                static_cast<float>(rect_pixels.width());
-  gfx::Size zoomed_size =
-      gfx::ScaleToCeiledSize(disambiguation_target_rect_.size(), scale);
-
-  // Save of a copy of the |last_scroll_offset_| for comparison when the copy
-  // callback fires, to ensure that we haven't scrolled.
-  disambiguation_scroll_offset_ = last_scroll_offset_;
-
-  CopyFromCompositingSurface(
-      disambiguation_target_rect_,
-      zoomed_size,
-      base::Bind(&RenderWidgetHostViewAura::DisambiguationPopupRendered,
-                 weak_ptr_factory_.GetWeakPtr()),
-                 kN32_SkColorType);
-}
-
-void RenderWidgetHostViewAura::DisambiguationPopupRendered(
-    const SkBitmap& result,
-    ReadbackResponse response) {
-  if ((response != READBACK_SUCCESS) ||
-      disambiguation_scroll_offset_ != last_scroll_offset_)
-    return;
-
-  // Use RenderViewHostDelegate to get to the WebContentsViewAura, which will
-  // actually show the disambiguation popup.
-  RenderViewHost* rvh = RenderViewHost::From(host_);
-  if (!rvh)
-    return;
-
-  RenderViewHostDelegate* delegate = rvh->GetDelegate();
-  if (!delegate)
-    return;
-
-  if (delegate->IsVirtualKeyboardRequested())
-    return;
-
-  RenderViewHostDelegateView* delegate_view = delegate->GetDelegateView();
-  if (delegate_view) {
-    delegate_view->ShowDisambiguationPopup(
-        disambiguation_target_rect_,
-        result,
-        base::Bind(&RenderWidgetHostViewAura::ProcessDisambiguationGesture,
-                   weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&RenderWidgetHostViewAura::ProcessDisambiguationMouse,
-                   weak_ptr_factory_.GetWeakPtr()));
-  }
-}
-
-void RenderWidgetHostViewAura::HideDisambiguationPopup() {
-  RenderViewHost* rvh = RenderViewHost::From(host_);
-  if (!rvh)
-    return;
-
-  RenderViewHostDelegate* delegate = rvh->GetDelegate();
-  if (!delegate)
-    return;
-
-  RenderViewHostDelegateView* delegate_view = delegate->GetDelegateView();
-  if (delegate_view)
-    delegate_view->HideDisambiguationPopup();
-}
-
-void RenderWidgetHostViewAura::ProcessDisambiguationGesture(
-    ui::GestureEvent* event) {
-  blink::WebGestureEvent web_gesture = content::MakeWebGestureEvent(*event);
-  // If we fail to make a WebGestureEvent that is a Tap from the provided event,
-  // don't forward it to Blink.
-  if (web_gesture.type < blink::WebInputEvent::Type::GestureTap ||
-      web_gesture.type > blink::WebInputEvent::Type::GestureTapCancel)
-    return;
-
-  host_->ForwardGestureEvent(web_gesture);
-}
-
-void RenderWidgetHostViewAura::ProcessDisambiguationMouse(
-    ui::MouseEvent* event) {
-  blink::WebMouseEvent web_mouse = content::MakeWebMouseEvent(*event);
-  host_->ForwardMouseEvent(web_mouse);
-}
-
 bool RenderWidgetHostViewAura::LockMouse() {
   aura::Window* root_window = window_->GetRootWindow();
   if (!root_window)
@@ -1992,10 +1893,6 @@ void RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
                         reinterpret_cast<LPARAM>(toplevel_hwnd));
     }
 #endif
-    // The Disambiguation popup does not parent itself from this window, so we
-    // manually dismiss it.
-    HideDisambiguationPopup();
-
     blink::WebMouseWheelEvent mouse_wheel_event =
         MakeWebMouseWheelEvent(static_cast<ui::MouseWheelEvent&>(*event));
     if (mouse_wheel_event.deltaX != 0 || mouse_wheel_event.deltaY != 0) {

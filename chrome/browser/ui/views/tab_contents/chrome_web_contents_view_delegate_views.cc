@@ -24,10 +24,6 @@
 #include "ui/views/focus/view_storage.h"
 #include "ui/views/widget/widget.h"
 
-#if defined(USE_AURA)
-#include "chrome/browser/ui/views/link_disambiguation/link_disambiguation_popup.h"
-#endif
-
 ChromeWebContentsViewDelegateViews::ChromeWebContentsViewDelegateViews(
     content::WebContents* web_contents)
     : ContextMenuDelegate(web_contents),
@@ -151,36 +147,6 @@ void ChromeWebContentsViewDelegateViews::ShowContextMenu(
   ShowMenu(
       BuildMenu(content::WebContents::FromRenderFrameHost(render_frame_host),
                 params));
-}
-
-void ChromeWebContentsViewDelegateViews::ShowDisambiguationPopup(
-    const gfx::Rect& target_rect,
-    const SkBitmap& zoomed_bitmap,
-    const gfx::NativeView content,
-    const base::Callback<void(ui::GestureEvent*)>& gesture_cb,
-    const base::Callback<void(ui::MouseEvent*)>& mouse_cb) {
-#if defined(USE_AURA)
-  // If we are attempting to show a link disambiguation popup while already
-  // showing one this means that the popup itself received an ambiguous touch.
-  // Don't show another popup in this case.
-  if (link_disambiguation_popup_) {
-    link_disambiguation_popup_.reset();
-    return;
-  }
-
-  link_disambiguation_popup_.reset(new LinkDisambiguationPopup);
-  link_disambiguation_popup_->Show(
-      views::Widget::GetTopLevelWidgetForNativeView(GetActiveNativeView()),
-      zoomed_bitmap,
-      target_rect,
-      content,
-      gesture_cb,
-      mouse_cb);
-#endif
-}
-
-void ChromeWebContentsViewDelegateViews::HideDisambiguationPopup() {
-  link_disambiguation_popup_.reset();
 }
 
 void ChromeWebContentsViewDelegateViews::SizeChanged(const gfx::Size& size) {

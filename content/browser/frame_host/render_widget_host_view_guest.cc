@@ -474,13 +474,6 @@ void RenderWidgetHostViewGuest::StopSpeaking() {
 }
 #endif  // defined(OS_MACOSX)
 
-#if defined(OS_ANDROID) || defined(USE_AURA)
-void RenderWidgetHostViewGuest::ShowDisambiguationPopup(
-    const gfx::Rect& rect_pixels,
-    const SkBitmap& zoomed_bitmap) {
-}
-#endif  // defined(OS_ANDROID) || defined(USE_AURA)
-
 void RenderWidgetHostViewGuest::LockCompositingSurface() {
   NOTIMPLEMENTED();
 }

@@ -76,7 +76,6 @@
 #include "content/public/renderer/render_view_visitor.h"
 #include "content/renderer/browser_plugin/browser_plugin.h"
 #include "content/renderer/browser_plugin/browser_plugin_manager.h"
-#include "content/renderer/disambiguation_popup_helper.h"
 #include "content/renderer/dom_storage/webstoragenamespace_impl.h"
 #include "content/renderer/drop_data_builder.h"
 #include "content/renderer/gpu/render_widget_compositor.h"
@@ -182,6 +181,7 @@
 
 #include "content/renderer/android/address_detector.h"
 #include "content/renderer/android/content_detector.h"
+#include "content/renderer/android/disambiguation_popup_helper.h"
 #include "content/renderer/android/email_detector.h"
 #include "content/renderer/android/phone_number_detector.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -1014,8 +1014,6 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   settings->setDeviceSupportsTouch(prefs.device_supports_touch);
   settings->setDeviceSupportsMouse(prefs.device_supports_mouse);
   settings->setEnableTouchAdjustment(prefs.touch_adjustment_enabled);
-  settings->setMultiTargetTapNotificationEnabled(
-      switches::IsLinkDisambiguationPopupEnabled());
 
   WebRuntimeFeatures::enableImageColorProfiles(
       prefs.image_color_profiles_enabled);
@@ -3241,13 +3239,11 @@ void RenderViewImpl::OnShowContextMenu(
   has_host_context_menu_location_ = false;
 }
 
-#if defined(OS_ANDROID) || defined(USE_AURA)
+#if defined(OS_ANDROID)
 bool RenderViewImpl::didTapMultipleTargets(
     const WebSize& inner_viewport_offset,
     const WebRect& touch_rect,
     const WebVector<WebRect>& target_rects) {
-  DCHECK(switches::IsLinkDisambiguationPopupEnabled());
-
   // Never show a disambiguation popup when accessibility is enabled,
   // as this interferes with "touch exploration".
   AccessibilityMode accessibility_mode =
@@ -3324,7 +3320,7 @@ bool RenderViewImpl::didTapMultipleTargets(
 
   return handled;
 }
-#endif  // defined(OS_ANDROID) || defined(USE_AURA)
+#endif  // defined(OS_ANDROID)
 
 unsigned RenderViewImpl::GetLocalSessionHistoryLengthForTesting() const {
   return history_list_length_;

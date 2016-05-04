@@ -6464,14 +6464,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_EASY_UNLOCK_PROXIMITY_DETECTION_DESCRIPTION" desc="Description for the flag that enables Smart Lock to require close proximity between the phone and the Chromebook in order to unlock the Chromebook.">
         Enables a Smart Lock setting that restricts unlocking to only work when your phone is very close to (roughly, within an arm's length of) the Chrome device.
       </message>
-      <if expr="toolkit_views">
-        <message name="IDS_FLAGS_LINK_DISAMBIGUATION_POPUP_NAME" desc="Title for the flag to enable the Link Disambiguation Popup, a bubble that appears over the web content screen when the user uses a touchscreen to touch a link but accidentally touches more than one link in a single gesture. The bubble appears with a zoomed-in view of the area around their touch, allowing them to more easily select the element they wanted.">
-          Link Disambiguation Popup
-        </message>
-        <message name="IDS_FLAGS_LINK_DISAMBIGUATION_POPUP_DESCRIPTION" desc="Description for the flag to enable the Link Disambiguation Popup, a feature on touchscreens that when enabled will cause a small zoomed popup to appear over a group of links the user has touched, allowing for selection of links on pages not yet optimized for touch input.">
-          Enable the zoomed bubble that appears on touchscreens when accidentally touching more than one link at a time.
-        </message>
-      </if>
       <message name="IDS_FLAGS_WIFI_CREDENTIAL_SYNC_NAME" desc="Title for the flag to enable WiFi credential sync, a feature which enables synchronizing WiFi network settings across devices.">
         WiFi credential sync
       </message>

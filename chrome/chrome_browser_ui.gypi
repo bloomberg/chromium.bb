@@ -689,8 +689,6 @@
       'browser/ui/views/ime/ime_window_frame_view.h',
       'browser/ui/views/ime/ime_window_view.cc',
       'browser/ui/views/ime/ime_window_view.h',
-      'browser/ui/views/link_disambiguation/link_disambiguation_popup.cc',
-      'browser/ui/views/link_disambiguation/link_disambiguation_popup.h',
       'browser/ui/views/renderer_context_menu/render_view_context_menu_views.cc',
       'browser/ui/views/renderer_context_menu/render_view_context_menu_views.h',
       'browser/ui/views/tab_contents/chrome_web_contents_view_delegate_views.cc',
