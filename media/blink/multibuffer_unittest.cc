@@ -266,7 +266,7 @@ TEST_F(MultiBufferTest, ReadAll) {
   multibuffer_.SetMustReadWholeFile(true);
   MultiBufferReader reader(&multibuffer_, pos, end,
                            base::Callback<void(int64_t, int64_t)>());
-  reader.SetMaxBuffer(2000, 5000);
+  reader.SetPinRange(2000, 5000);
   reader.SetPreload(1000, 1000);
   while (pos < end) {
     unsigned char buffer[27];
@@ -294,7 +294,7 @@ TEST_F(MultiBufferTest, ReadAllAdvanceFirst) {
   multibuffer_.SetMustReadWholeFile(true);
   MultiBufferReader reader(&multibuffer_, pos, end,
                            base::Callback<void(int64_t, int64_t)>());
-  reader.SetMaxBuffer(2000, 5000);
+  reader.SetPinRange(2000, 5000);
   reader.SetPreload(1000, 1000);
   while (pos < end) {
     unsigned char buffer[27];
@@ -324,7 +324,7 @@ TEST_F(MultiBufferTest, ReadAllAdvanceFirst_NeverDefer) {
   multibuffer_.SetRangeSupported(true);
   MultiBufferReader reader(&multibuffer_, pos, end,
                            base::Callback<void(int64_t, int64_t)>());
-  reader.SetMaxBuffer(2000, 5000);
+  reader.SetPinRange(2000, 5000);
   reader.SetPreload(1000, 1000);
   while (pos < end) {
     unsigned char buffer[27];
@@ -355,7 +355,7 @@ TEST_F(MultiBufferTest, ReadAllAdvanceFirst_NeverDefer2) {
   multibuffer_.SetMaxBlocksAfterDefer(-10000);
   MultiBufferReader reader(&multibuffer_, pos, end,
                            base::Callback<void(int64_t, int64_t)>());
-  reader.SetMaxBuffer(2000, 5000);
+  reader.SetPinRange(2000, 5000);
   reader.SetPreload(1000, 1000);
   while (pos < end) {
     unsigned char buffer[27];
@@ -462,7 +462,7 @@ class ReadHelper {
                 pos_,
                 end_,
                 base::Callback<void(int64_t, int64_t)>()) {
-    reader_.SetMaxBuffer(2000, 5000);
+    reader_.SetPinRange(2000, 5000);
     reader_.SetPreload(1000, 1000);
   }
 

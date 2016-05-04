@@ -78,7 +78,12 @@ class MEDIA_BLINK_EXPORT MultiBufferReader
   // The range [current_position - backward ... current_position + forward)
   // will be locked in the cache. Calling Wait() or TryRead() with values
   // larger than |forward| is not supported.
-  void SetMaxBuffer(int64_t backward, int64_t forward);
+  void SetPinRange(int64_t backward, int64_t forward);
+
+  // Set how much memory usage we target. This memory is added to the global
+  // LRU and shared between all multibuffers. We may end up using more memory
+  // if no memory can be freed due to pinning.
+  void SetMaxBuffer(int64_t bytes);
 
   // Returns true if we are currently loading data.
   bool IsLoading() const;
@@ -135,6 +140,9 @@ class MEDIA_BLINK_EXPORT MultiBufferReader
   // Pin this much data in the cache from the current position.
   int64_t max_buffer_forward_;
   int64_t max_buffer_backward_;
+
+  // The amount of buffer we've added to the global LRU.
+  int64_t current_buffer_size_;
 
   // Currently pinned range.
   Interval<MultiBuffer::BlockId> pinned_range_;

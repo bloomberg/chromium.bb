@@ -567,16 +567,25 @@ void MultibufferDataSource::UpdateBufferSizes() {
 
   int64_t preload = clamp(kTargetSecondsBufferedAhead * bytes_per_second,
                           kMinBufferPreload, kMaxBufferPreload);
+  int64_t preload_high = preload + kPreloadHighExtra;
+
+  // Assert that kMaxBufferSize is big enough that the subtraction on the next
+  // line cannot go negative.
+  static_assert(kMaxBufferSize > kMaxBufferPreload + kPreloadHighExtra,
+                "kMaxBufferSize too small to contain preload.");
   int64_t back_buffer = clamp(kTargetSecondsBufferedBehind * bytes_per_second,
-                              kMinBufferPreload, kMaxBufferPreload);
-  int64_t pin_forwards = kMaxBufferSize - back_buffer;
-  DCHECK_LE(preload + kPreloadHighExtra, pin_forwards);
-  reader_->SetMaxBuffer(back_buffer, preload + kPreloadHighExtra);
+                              kMinBufferPreload, kMaxBufferSize - preload_high);
+  int64_t buffer_size =
+      std::min((kTargetSecondsBufferedAhead + kTargetSecondsBufferedBehind) *
+                   bytes_per_second,
+               kMaxBufferSize);
+  reader_->SetMaxBuffer(buffer_size);
+  reader_->SetPinRange(back_buffer, kMaxBufferPreload + kPreloadHighExtra);
 
   if (preload_ == METADATA) {
     reader_->SetPreload(0, 0);
   } else {
-    reader_->SetPreload(preload + kPreloadHighExtra, preload);
+    reader_->SetPreload(preload_high, preload);
   }
 }
 

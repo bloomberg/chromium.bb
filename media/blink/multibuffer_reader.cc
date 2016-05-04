@@ -24,6 +24,7 @@ MultiBufferReader::MultiBufferReader(
       preload_low_(0),
       max_buffer_forward_(0),
       max_buffer_backward_(0),
+      current_buffer_size_(0),
       pinned_range_(0, 0),
       pos_(start),
       preload_pos_(-1),
@@ -38,8 +39,7 @@ MultiBufferReader::MultiBufferReader(
 MultiBufferReader::~MultiBufferReader() {
   PinRange(0, 0);
   multibuffer_->RemoveReader(preload_pos_, this);
-  multibuffer_->IncrementMaxSize(
-      -block_ceil(max_buffer_forward_ + max_buffer_backward_));
+  multibuffer_->IncrementMaxSize(-current_buffer_size_);
   multibuffer_->CleanupWriters(preload_pos_);
 }
 
@@ -58,17 +58,19 @@ void MultiBufferReader::Seek(int64_t pos) {
   multibuffer_->CleanupWriters(old_preload_pos);
 }
 
-void MultiBufferReader::SetMaxBuffer(int64_t backward, int64_t forward) {
+void MultiBufferReader::SetMaxBuffer(int64_t buffer_size) {
   // Safe, because we know this doesn't actually prune the cache right away.
-  multibuffer_->IncrementMaxSize(
-      -block_ceil(max_buffer_forward_ + max_buffer_backward_));
+  int64_t new_buffer_size = block_ceil(buffer_size);
+  multibuffer_->IncrementMaxSize(new_buffer_size - current_buffer_size_);
+  current_buffer_size_ = new_buffer_size;
+}
+
+void MultiBufferReader::SetPinRange(int64_t backward, int64_t forward) {
+  // Safe, because we know this doesn't actually prune the cache right away.
   max_buffer_backward_ = backward;
   max_buffer_forward_ = forward;
   PinRange(block(pos_ - max_buffer_backward_),
            block_ceil(pos_ + max_buffer_forward_));
-
-  multibuffer_->IncrementMaxSize(
-      block_ceil(max_buffer_forward_ + max_buffer_backward_));
 }
 
 int64_t MultiBufferReader::Available() const {
