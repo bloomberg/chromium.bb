@@ -10,7 +10,7 @@
 namespace web {
 namespace test {
 
-void SetUpSimpleHttpServer(std::map<GURL, std::string> responses) {
+void SetUpSimpleHttpServer(const std::map<GURL, std::string>& responses) {
   web::test::HttpServer& server = web::test::HttpServer::GetSharedInstance();
   DCHECK(server.IsRunning());
   std::unique_ptr<web::ResponseProvider> provider;
