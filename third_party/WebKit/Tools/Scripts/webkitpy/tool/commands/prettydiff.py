@@ -27,7 +27,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from webkitpy.tool.commands.abstractsequencedcommand import AbstractSequencedCommand
-from webkitpy.tool import steps
+from webkitpy.tool.steps.confirmdiff import ConfirmDiff
 
 
 class PrettyDiff(AbstractSequencedCommand):
@@ -35,5 +35,5 @@ class PrettyDiff(AbstractSequencedCommand):
     help_text = "Shows the pretty diff in the default browser"
     show_in_main_help = True
     steps = [
-        steps.ConfirmDiff,
+        ConfirmDiff,
     ]

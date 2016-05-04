@@ -29,7 +29,7 @@
 import logging
 import sys
 
-from webkitpy.tool import steps
+from webkitpy.tool.steps.options import Options
 
 from webkitpy.common.system.executive import ScriptError
 
@@ -54,8 +54,8 @@ class StepSequence(object):
 
     def options(self):
         collected_options = [
-            steps.Options.parent_command,
-            steps.Options.quiet,
+            Options.parent_command,
+            Options.quiet,
         ]
         for step in self._steps:
             collected_options = collected_options + step.options()
