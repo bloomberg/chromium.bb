@@ -64,10 +64,16 @@
       'variables': {
         'application_type': 'exe',
         'application_name': 'content_browser',
+        'packaged_manifests': [
+          '<(PRODUCT_DIR)/Mojo Applications/user/manifest.json',
+        ],
         'source_manifest': '<(DEPTH)/content/public/app/mojo/content_browser_manifest.json',
       },
       'includes': [
         '../mojo/public/mojo_application_manifest.gypi',
+      ],
+      'dependencies': [
+        '../services/user/user.gyp:user_app_manifest',
       ],
       'hard_dependency': 1,
     },
