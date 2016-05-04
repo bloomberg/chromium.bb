@@ -185,6 +185,9 @@ using ScopedDrmColorCtmPtr = std::unique_ptr<DrmColorCtm, base::FreeDeleter>;
 ScopedDrmColorLutPtr CreateLutBlob(
     const std::vector<GammaRampRGBEntry>& source) {
   TRACE_EVENT0("drm", "CreateLutBlob");
+  if (source.empty())
+    return nullptr;
+
   ScopedDrmColorLutPtr lut(
       static_cast<DrmColorLut*>(malloc(sizeof(DrmColorLut) * source.size())));
   DrmColorLut* p = lut.get();
@@ -198,6 +201,9 @@ ScopedDrmColorLutPtr CreateLutBlob(
 
 ScopedDrmColorCtmPtr CreateCTMBlob(
     const std::vector<float>& correction_matrix) {
+  if (correction_matrix.empty())
+    return nullptr;
+
   ScopedDrmColorCtmPtr ctm(
       static_cast<DrmColorCtm*>(malloc(sizeof(DrmColorCtm))));
   for (size_t i = 0; i < arraysize(ctm->ctm_coeff); ++i) {
@@ -220,29 +226,38 @@ bool SetBlobProperty(int fd,
                      const char* property_name,
                      unsigned char* data,
                      size_t length) {
-  uint32_t blob_id;
+  uint32_t blob_id = 0;
   int res;
-  res = CreatePropertyBlob(fd, data, length, &blob_id);
-  if (res != 0) {
-    LOG(ERROR) << "Error creating property blob: " << base::safe_strerror(res)
-               << " for property " << property_name;
-    return false;
+
+  if (data) {
+    res = CreatePropertyBlob(fd, data, length, &blob_id);
+    if (res != 0) {
+      LOG(ERROR) << "Error creating property blob: " << base::safe_strerror(res)
+                 << " for property " << property_name;
+      return false;
+    }
   }
+
+  bool success = false;
   res = drmModeObjectSetProperty(fd, object_id, object_type, prop_id, blob_id);
   if (res != 0) {
     LOG(ERROR) << "Error updating property: " << base::safe_strerror(res)
                << " for property " << property_name;
-    DestroyPropertyBlob(fd, blob_id);
-    return false;
+  } else {
+    success = true;
   }
-  DestroyPropertyBlob(fd, blob_id);
-  return true;
+  if (blob_id != 0)
+    DestroyPropertyBlob(fd, blob_id);
+  return success;
 }
 
 std::vector<GammaRampRGBEntry> ResampleLut(
     const std::vector<GammaRampRGBEntry>& lut_in,
     size_t desired_size) {
   TRACE_EVENT1("drm", "ResampleLut", "desired_size", desired_size);
+  if (lut_in.empty())
+    return std::vector<GammaRampRGBEntry>();
+
   if (lut_in.size() == desired_size)
     return lut_in;
 
@@ -674,23 +689,35 @@ bool DrmDevice::DropMaster() {
 bool DrmDevice::SetGammaRamp(uint32_t crtc_id,
                              const std::vector<GammaRampRGBEntry>& lut) {
   ScopedDrmCrtcPtr crtc = GetCrtc(crtc_id);
+  size_t gamma_size = static_cast<size_t>(crtc->gamma_size);
 
   // TODO(robert.bradford) resample the incoming ramp to match what the kernel
   // expects.
-  if (static_cast<size_t>(crtc->gamma_size) != lut.size()) {
+  if (!lut.empty() && gamma_size != lut.size()) {
     LOG(ERROR) << "Gamma table size mismatch: supplied " << lut.size()
-               << " expected " << crtc->gamma_size;
+               << " expected " << gamma_size;
+    return false;
   }
 
   std::vector<uint16_t> r, g, b;
-  r.reserve(lut.size());
-  g.reserve(lut.size());
-  b.reserve(lut.size());
+  r.reserve(gamma_size);
+  g.reserve(gamma_size);
+  b.reserve(gamma_size);
 
-  for (size_t i = 0; i < lut.size(); ++i) {
-    r.push_back(lut[i].r);
-    g.push_back(lut[i].g);
-    b.push_back(lut[i].b);
+  if (lut.empty()) {
+    // Create a linear gamma ramp table to deactivate the feature.
+    for (size_t i = 0; i < gamma_size; ++i) {
+      uint16_t value = (i * ((1 << 16) - 1)) / (gamma_size - 1);
+      r.push_back(value);
+      g.push_back(value);
+      b.push_back(value);
+    }
+  } else {
+    for (size_t i = 0; i < gamma_size; ++i) {
+      r.push_back(lut[i].r);
+      g.push_back(lut[i].g);
+      b.push_back(lut[i].b);
+    }
   }
 
   DCHECK(file_.IsValid());
@@ -723,9 +750,10 @@ bool DrmDevice::SetColorCorrection(
       break;
   }
 
+  // If we can't find the degamma & gamma lut size, it means the properties
+  // aren't available. We should then use the legacy gamma ramp ioctl.
   if (degamma_lut_size == 0 || gamma_lut_size == 0) {
-    LOG(WARNING) << "No available (de)gamma tables.";
-    return false;
+    return SetGammaRamp(crtc_id, gamma_lut);
   }
 
   ScopedDrmColorLutPtr degamma_blob_data =

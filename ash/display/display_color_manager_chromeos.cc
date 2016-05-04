@@ -164,6 +164,11 @@ DisplayColorManager::~DisplayColorManager() {
 void DisplayColorManager::OnDisplayModeChanged(
     const ui::DisplayConfigurator::DisplayStateList& display_states) {
   for (const ui::DisplaySnapshot* state : display_states) {
+    // Ensure we always reset the configuration before setting a new one.
+    configurator_->SetColorCorrection(
+        state->display_id(), std::vector<ui::GammaRampRGBEntry>(),
+        std::vector<ui::GammaRampRGBEntry>(), std::vector<float>());
+
     if (calibration_map_[state->product_id()]) {
       ApplyDisplayColorCalibration(state->display_id(), state->product_id());
     } else {
