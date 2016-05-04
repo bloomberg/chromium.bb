@@ -99,7 +99,8 @@ class _InfiniteScrollBenchmark(perf_benchmark.PerfBenchmark):
 
   def CreateTimelineBasedMeasurementOptions(self):
     v8_categories = [
-        'blink.console', 'renderer.scheduler', 'v8', 'webkit.console']
+        'blink.console', 'disabled-by-default-v8.gc',
+        'renderer.scheduler', 'v8', 'webkit.console']
     smoothness_categories = [
         'webkit.console', 'blink.console', 'benchmark', 'trace_event_overhead']
     memory_categories = ['blink.console', 'disabled-by-default-memory-infra']
