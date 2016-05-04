@@ -162,6 +162,7 @@ test("components_unittests") {
       "//components/data_reduction_proxy/content/browser:unit_tests",
       "//components/data_use_measurement/content:unit_tests",
       "//components/devtools_http_handler:unit_tests",
+      "//components/display_compositor:unit_tests",
       "//components/dom_distiller/content/browser:unit_tests",
       "//components/domain_reliability:unit_tests",
       "//components/error_page/renderer:unit_tests",

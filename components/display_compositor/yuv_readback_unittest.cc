@@ -473,6 +473,7 @@ class YUVReadbackTest : public testing::Test {
   gpu::gles2::GLES2Interface* gl_;
   std::unique_ptr<display_compositor::GLHelper> helper_;
   gfx::DisableNullDrawGLBindings enable_pixel_output_;
+  base::MessageLoop message_loop_;
 };
 
 TEST_F(YUVReadbackTest, YUVReadbackOptTest) {

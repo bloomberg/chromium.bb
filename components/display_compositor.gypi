@@ -58,8 +58,8 @@
       ],
     },
     {
-      # GN version: //components/display_compositor:display_compositor_unittests
-      'target_name': 'display_compositor_unittests',
+      # GN version: //components/display_compositor:display_compositor_gl_tests
+      'target_name': 'display_compositor_gl_tests',
       'type': '<(gtest_target_type)',
       'dependencies': [
         'display_compositor',
@@ -78,7 +78,6 @@
       'msvs_disabled_warnings': [4267, ],
 
       'sources': [
-        "display_compositor/buffer_queue_unittest.cc",
         "display_compositor/display_compositor_test_suite.cc",
         "display_compositor/display_compositor_test_suite.h",
         "display_compositor/gl_helper_unittest.cc",

@@ -175,6 +175,9 @@
     'devtools_http_handler_unittest_sources': [
       'devtools_http_handler/devtools_http_handler_unittest.cc',
     ],
+    'display_compositor_unittest_sources': [
+      'display_compositor/buffer_queue_unittest.cc',
+    ],
     'dom_distiller_unittest_sources': [
       'dom_distiller/content/browser/dom_distiller_viewer_source_unittest.cc',
       'dom_distiller/content/browser/web_contents_main_frame_observer_unittest.cc',
@@ -1226,6 +1229,7 @@
             '<@(certificate_transparency_unittest_sources)',
             '<@(child_trace_message_filter_unittest_sources)',
             '<@(devtools_http_handler_unittest_sources)',
+            '<@(display_compositor_unittest_sources)',
             '<@(domain_reliability_unittest_sources)',
             '<@(error_page_unittest_sources)',
             '<@(guest_view_unittest_sources)',
@@ -1257,6 +1261,7 @@
             'components.gyp:data_reduction_proxy_content_browser',
             'components.gyp:data_use_measurement_content',
             'components.gyp:devtools_http_handler',
+            'components.gyp:display_compositor',
             'components.gyp:dom_distiller_content_browser',
             'components.gyp:dom_distiller_content_renderer',
             'components.gyp:domain_reliability',
@@ -1320,6 +1325,11 @@
               ],
               'sources': [
                 '<@(safe_browsing_db_mobile_unittest_sources)',
+              ],
+            }],
+            ['OS != "mac" and use_aura == 0', {
+              'sources!': [
+                'display_compositor/buffer_queue_unittest.cc',
               ],
             }],
           ],

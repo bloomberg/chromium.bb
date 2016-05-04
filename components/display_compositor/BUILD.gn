@@ -57,9 +57,43 @@ component("display_compositor") {
   }
 }
 
-test("display_compositor_unittests") {
+source_set("unit_tests") {
+  testonly = true
   sources = [
     "buffer_queue_unittest.cc",
+  ]
+
+  if (!use_aura && !is_mac) {
+    sources -= [ "buffer_queue_unittest.cc" ]
+  }
+
+  configs += [
+    "//build/config/compiler:no_size_t_to_int_warning",
+    "//third_party/khronos:khronos_headers",
+  ]
+
+  deps = [
+    ":display_compositor",
+    "//base",
+    "//base/test:test_support",
+    "//cc:test_support",
+    "//gpu/command_buffer/client",
+    "//gpu/command_buffer/client:gl_in_process_context",
+    "//gpu/command_buffer/client:gles2_implementation",
+    "//media",
+    "//skia",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//ui/gl:test_support",
+  ]
+
+  data_deps = [
+    "//third_party/mesa:osmesa",
+  ]
+}
+
+test("display_compositor_gl_tests") {
+  sources = [
     "display_compositor_test_suite.cc",
     "display_compositor_test_suite.h",
     "gl_helper_unittest.cc",

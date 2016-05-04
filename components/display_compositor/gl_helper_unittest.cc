@@ -1263,6 +1263,7 @@ class GLHelperTest : public testing::Test {
   std::unique_ptr<display_compositor::GLHelper> helper_;
   std::unique_ptr<display_compositor::GLHelperScaling> helper_scaling_;
   std::deque<GLHelperScaling::ScaleOp> x_ops_, y_ops_;
+  base::MessageLoop message_loop_;
 };
 
 class GLHelperPixelTest : public GLHelperTest {
