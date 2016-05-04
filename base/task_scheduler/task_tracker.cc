@@ -10,6 +10,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/trace_event/trace_event.h"
 
 namespace base {
 namespace internal {
@@ -17,6 +18,10 @@ namespace internal {
 namespace {
 
 const char kQueueFunctionName[] = "base::PostTask";
+
+// This name conveys that a Task is run by the task scheduler without revealing
+// its implementation details.
+const char kRunFunctionName[] = "TaskSchedulerRunTask";
 
 // Upper bound for the
 // TaskScheduler.BlockShutdownTasksPostedDuringShutdown histogram.
@@ -101,6 +106,8 @@ void TaskTracker::RunTask(const Task* task) {
       single_thread_task_runner_handle.reset(
           new ThreadTaskRunnerHandle(task->single_thread_task_runner_ref));
     }
+
+    TRACE_TASK_EXECUTION(kRunFunctionName, *task);
 
     debug::TaskAnnotator task_annotator;
     task_annotator.RunTask(kQueueFunctionName, *task);
