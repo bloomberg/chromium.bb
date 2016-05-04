@@ -42,6 +42,21 @@ MediaCodecStatus MediaCodecBridge::QueueSecureInputBuffer(
                                 subsamples.size(), presentation_time);
 }
 
+MediaCodecStatus MediaCodecBridge::CopyFromOutputBuffer(int index,
+                                                        size_t offset,
+                                                        void* dst,
+                                                        size_t num) {
+  const uint8_t* src_data = nullptr;
+  size_t src_capacity = 0;
+  MediaCodecStatus status =
+      GetOutputBufferAddress(index, offset, &src_data, &src_capacity);
+  if (status == MEDIA_CODEC_OK) {
+    CHECK_GE(src_capacity, num);
+    memcpy(dst, src_data, num);
+  }
+  return status;
+}
+
 bool MediaCodecBridge::FillInputBuffer(int index,
                                        const uint8_t* data,
                                        size_t size) {
