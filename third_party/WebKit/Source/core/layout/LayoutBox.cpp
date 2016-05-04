@@ -1969,12 +1969,29 @@ LayoutRect LayoutBox::localOverflowRectForPaintInvalidation() const
     return visualOverflowRect();
 }
 
+void LayoutBox::inflateVisualRectForReflectionAndFilterUnderContainer(LayoutRect& rect, const LayoutObject& container, const LayoutBoxModelObject* ancestorToStopAt) const
+{
+    // Apply visual overflow caused by reflections and filters defined on objects between this object
+    // and container (not included) or ancestorToStopAt (included).
+    LayoutSize offsetFromContainer = this->offsetFromContainer(&container);
+    rect.move(offsetFromContainer);
+    for (LayoutObject* parent = this->parent(); parent && parent != container; parent = parent->parent()) {
+        if (parent->isBox()) {
+            // Convert rect into coordinate space of parent to apply parent's reflection and filter.
+            LayoutSize parentOffset = parent->offsetFromAncestorContainer(&container);
+            rect.move(-parentOffset);
+            toLayoutBox(parent)->inflateVisualRectForReflectionAndFilter(rect);
+            rect.move(parentOffset);
+        }
+        if (parent == ancestorToStopAt)
+            break;
+    }
+    rect.move(-offsetFromContainer);
+}
+
 bool LayoutBox::mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect& rect, VisualRectFlags visualRectFlags) const
 {
-    // We need to inflate the paint invalidation rect before we use paintInvalidationState,
-    // else we would forget to inflate it for the current layoutObject. FIXME: If these were
-    // included into the visual overflow for paint invalidation, we wouldn't have this issue.
-    inflatePaintInvalidationRectForReflectionAndFilter(rect);
+    inflateVisualRectForReflectionAndFilter(rect);
 
     if (ancestor == this) {
         // The final rect returned is always in the physical coordinate space of the ancestor.
@@ -1983,9 +2000,13 @@ bool LayoutBox::mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* ances
     }
 
     bool ancestorSkipped;
-    LayoutObject* container = this->container(ancestor, &ancestorSkipped);
+    bool filterOrReflectionSkipped;
+    LayoutObject* container = this->container(ancestor, &ancestorSkipped, &filterOrReflectionSkipped);
     if (!container)
         return true;
+
+    if (filterOrReflectionSkipped)
+        inflateVisualRectForReflectionAndFilterUnderContainer(rect, *container, ancestor);
 
     // The rect we compute at each step is shifted by our x/y offset in the parent container's coordinate space.
     // Only when we cross a writing mode boundary will we have to possibly flipForWritingMode (to convert into a more
@@ -2043,7 +2064,7 @@ bool LayoutBox::mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* ances
         return container->mapToVisualRectInAncestorSpace(ancestor, rect, visualRectFlags);
 }
 
-void LayoutBox::inflatePaintInvalidationRectForReflectionAndFilter(LayoutRect& paintInvalidationRect) const
+void LayoutBox::inflateVisualRectForReflectionAndFilter(LayoutRect& paintInvalidationRect) const
 {
     if (!RuntimeEnabledFeatures::cssBoxReflectFilterEnabled() && hasReflection())
         paintInvalidationRect.unite(reflectedRect(paintInvalidationRect));

@@ -854,8 +854,17 @@ inline void LayoutObject::invalidateContainerPreferredLogicalWidths()
     }
 }
 
-LayoutObject* LayoutObject::containerForAbsolutePosition(const LayoutBoxModelObject* ancestor, bool* ancestorSkipped) const
+bool LayoutObject::hasFilterOrReflection() const
 {
+    return (!RuntimeEnabledFeatures::cssBoxReflectFilterEnabled() && hasReflection())
+        || (hasLayer() && toLayoutBoxModelObject(this)->layer()->hasFilterInducingProperty());
+}
+
+LayoutObject* LayoutObject::containerForAbsolutePosition(const LayoutBoxModelObject* ancestor, bool* ancestorSkipped, bool* filterOrReflectionSkipped) const
+{
+    ASSERT(!ancestorSkipped || !*ancestorSkipped);
+    ASSERT(!filterOrReflectionSkipped || !*filterOrReflectionSkipped);
+
     // We technically just want our containing block, but
     // we may not have one if we're part of an uninstalled
     // subtree. We'll climb as high as we can though.
@@ -865,19 +874,26 @@ LayoutObject* LayoutObject::containerForAbsolutePosition(const LayoutBoxModelObj
 
         if (ancestorSkipped && object == ancestor)
             *ancestorSkipped = true;
+
+        if (filterOrReflectionSkipped && object->hasFilterOrReflection())
+            *filterOrReflectionSkipped = true;
     }
     return nullptr;
 }
 
-LayoutBlock* LayoutObject::containerForFixedPosition(const LayoutBoxModelObject* ancestor, bool* ancestorSkipped) const
+LayoutBlock* LayoutObject::containerForFixedPosition(const LayoutBoxModelObject* ancestor, bool* ancestorSkipped, bool* filterOrReflectionSkipped) const
 {
     ASSERT(!ancestorSkipped || !*ancestorSkipped);
+    ASSERT(!filterOrReflectionSkipped || !*filterOrReflectionSkipped);
     ASSERT(!isText());
 
     LayoutObject* object = parent();
     for (; object && !object->canContainFixedPositionObjects(); object = object->parent()) {
         if (ancestorSkipped && object == ancestor)
             *ancestorSkipped = true;
+
+        if (filterOrReflectionSkipped && object->hasFilterOrReflection())
+            *filterOrReflectionSkipped = true;
     }
 
     ASSERT(!object || !object->isAnonymousBlock());
@@ -2564,10 +2580,12 @@ RespectImageOrientationEnum LayoutObject::shouldRespectImageOrientation(const La
     return DoNotRespectImageOrientation;
 }
 
-LayoutObject* LayoutObject::container(const LayoutBoxModelObject* ancestor, bool* ancestorSkipped) const
+LayoutObject* LayoutObject::container(const LayoutBoxModelObject* ancestor, bool* ancestorSkipped, bool* filterOrReflectionSkipped) const
 {
     if (ancestorSkipped)
         *ancestorSkipped = false;
+    if (filterOrReflectionSkipped)
+        *filterOrReflectionSkipped = false;
 
     LayoutObject* o = parent();
 
@@ -2576,21 +2594,21 @@ LayoutObject* LayoutObject::container(const LayoutBoxModelObject* ancestor, bool
 
     EPosition pos = m_style->position();
     if (pos == FixedPosition)
-        return containerForFixedPosition(ancestor, ancestorSkipped);
+        return containerForFixedPosition(ancestor, ancestorSkipped, filterOrReflectionSkipped);
 
     if (pos == AbsolutePosition)
-        return containerForAbsolutePosition(ancestor, ancestorSkipped);
+        return containerForAbsolutePosition(ancestor, ancestorSkipped, filterOrReflectionSkipped);
 
     if (isColumnSpanAll()) {
         LayoutObject* multicolContainer = spannerPlaceholder()->container();
-        if (ancestorSkipped && ancestor) {
+        if ((ancestorSkipped && ancestor) || filterOrReflectionSkipped) {
             // We jumped directly from the spanner to the multicol container. Need to check if
-            // we skipped |paintInvalidationContainer| on the way.
+            // we skipped |ancestor| or filter/reflection on the way.
             for (LayoutObject* walker = parent(); walker && walker != multicolContainer; walker = walker->parent()) {
-                if (walker == ancestor) {
+                if (ancestorSkipped && walker == ancestor)
                     *ancestorSkipped = true;
-                    break;
-                }
+                if (filterOrReflectionSkipped && walker->hasFilterOrReflection())
+                    *filterOrReflectionSkipped = true;
             }
         }
         return multicolContainer;

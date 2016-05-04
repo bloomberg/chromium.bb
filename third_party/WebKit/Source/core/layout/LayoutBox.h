@@ -1058,7 +1058,8 @@ private:
     // min/max.
     mutable LayoutUnit m_intrinsicContentLogicalHeight;
 
-    void inflatePaintInvalidationRectForReflectionAndFilter(LayoutRect&) const;
+    void inflateVisualRectForReflectionAndFilter(LayoutRect&) const;
+    void inflateVisualRectForReflectionAndFilterUnderContainer(LayoutRect&, const LayoutObject& container, const LayoutBoxModelObject* ancestorToStopAt) const;
 
     LayoutRectOutsets m_marginBoxOutsets;
 

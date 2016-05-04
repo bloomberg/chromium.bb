@@ -1,0 +1,28 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow DIV id='box'",
+          "rect": [0, 0, 100, 220],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutReplica (anonymous)",
+          "rect": [0, 0, 100, 220],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='positioned'",
+          "rect": [400, 10, 50, 200],
+          "reason": "style change"
+        }
+      ]
+    }
+  ]
+}
+

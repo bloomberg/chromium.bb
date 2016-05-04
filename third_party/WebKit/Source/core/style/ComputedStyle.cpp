@@ -535,9 +535,6 @@ bool ComputedStyle::diffNeedsFullLayoutAndPaintInvalidation(const ComputedStyle&
             && *rareNonInheritedData->m_flexibleBox.get() != *other.rareNonInheritedData->m_flexibleBox.get())
             return true;
 
-        if (!rareNonInheritedData->reflectionDataEquivalent(*other.rareNonInheritedData.get()))
-            return true;
-
         if (rareNonInheritedData->m_multiCol.get() != other.rareNonInheritedData->m_multiCol.get()
             && *rareNonInheritedData->m_multiCol.get() != *other.rareNonInheritedData->m_multiCol.get())
             return true;
@@ -698,6 +695,9 @@ bool ComputedStyle::diffNeedsFullLayout(const ComputedStyle& other) const
             || rareNonInheritedData->m_justifyItems != other.rareNonInheritedData->m_justifyItems
             || rareNonInheritedData->m_justifySelf != other.rareNonInheritedData->m_justifySelf)
             return true;
+
+        if (!RuntimeEnabledFeatures::cssBoxReflectFilterEnabled() && !rareNonInheritedData->reflectionDataEquivalent(*other.rareNonInheritedData.get()))
+            return true;
     }
 
     return false;
@@ -715,6 +715,9 @@ bool ComputedStyle::diffNeedsPaintInvalidationLayer(const ComputedStyle& other) 
 
         if (rareNonInheritedData->m_mask != other.rareNonInheritedData->m_mask
             || rareNonInheritedData->m_maskBoxImage != other.rareNonInheritedData->m_maskBoxImage)
+            return true;
+
+        if (!RuntimeEnabledFeatures::cssBoxReflectFilterEnabled() && !rareNonInheritedData->reflectionDataEquivalent(*other.rareNonInheritedData.get()))
             return true;
     }
 
@@ -784,7 +787,7 @@ void ComputedStyle::updatePropertySpecificDifferences(const ComputedStyle& other
         if (rareNonInheritedData->m_backdropFilter != other.rareNonInheritedData->m_backdropFilter)
             diff.setBackdropFilterChanged();
 
-        if (RuntimeEnabledFeatures::cssBoxReflectFilterEnabled() && rareNonInheritedData->m_boxReflect != other.rareNonInheritedData->m_boxReflect)
+        if (RuntimeEnabledFeatures::cssBoxReflectFilterEnabled() && !rareNonInheritedData->reflectionDataEquivalent(*other.rareNonInheritedData.get()))
             diff.setFilterChanged();
     }
 

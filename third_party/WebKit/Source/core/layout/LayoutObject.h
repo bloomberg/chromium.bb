@@ -778,6 +778,8 @@ public:
     // of flex box. crbug.com/226252.
     bool canHaveFirstLineOrFirstLetterStyle() const { return isLayoutBlockFlow() || isLayoutButton(); }
 
+    bool hasFilterOrReflection() const;
+
     // This function returns the containing block of the object.
     // Due to CSS being inconsistent, a containing block can be a relatively
     // positioned inline, thus we can't return a LayoutBlock from this function.
@@ -800,9 +802,9 @@ public:
     //
     // If |ancestor| and |ancestorSkipped| are not null, on return *ancestorSkipped
     // is true if the layoutObject returned is an ancestor of |ancestor|.
-    LayoutObject* container(const LayoutBoxModelObject* ancestor = nullptr, bool* ancestorSkipped = nullptr) const;
+    LayoutObject* container(const LayoutBoxModelObject* ancestor = nullptr, bool* ancestorSkipped = nullptr, bool* filterOrReflectionSkipped = nullptr) const;
     // Finds the container as if this object is fixed-position.
-    LayoutBlock* containerForFixedPosition(const LayoutBoxModelObject* ancestor = nullptr, bool* ancestorSkipped = nullptr) const;
+    LayoutBlock* containerForFixedPosition(const LayoutBoxModelObject* ancestor = nullptr, bool* ancestorSkipped = nullptr, bool* filterOrReflectionSkipped = nullptr) const;
     // Finds the containing block as if this object is absolute-position.
     LayoutBlock* containingBlockForAbsolutePosition() const;
 
@@ -1620,7 +1622,7 @@ private:
     LayoutRect previousSelectionRectForPaintInvalidation() const;
     void setPreviousSelectionRectForPaintInvalidation(const LayoutRect&);
 
-    LayoutObject* containerForAbsolutePosition(const LayoutBoxModelObject* ancestor = nullptr, bool* ancestorSkipped = nullptr) const;
+    LayoutObject* containerForAbsolutePosition(const LayoutBoxModelObject* ancestor = nullptr, bool* ancestorSkipped = nullptr, bool* filterOrReflectionSkipped = nullptr) const;
 
     const LayoutBoxModelObject* enclosingCompositedContainer() const;
 

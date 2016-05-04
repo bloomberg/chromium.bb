@@ -1083,8 +1083,8 @@ bool LayoutInline::mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* an
     if (ancestor == this)
         return true;
 
-    bool ancestorSkipped;
-    LayoutObject* container = this->container(ancestor, &ancestorSkipped);
+    LayoutObject* container = this->container();
+    ASSERT(container == parent());
     if (!container)
         return true;
 
@@ -1104,13 +1104,6 @@ bool LayoutInline::mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* an
 
     if (container->isBox() && !toLayoutBox(container)->mapScrollingContentsRectToBoxSpace(rect, container == ancestor ? ApplyNonScrollOverflowClip : ApplyOverflowClip, visualRectFlags))
         return false;
-
-    if (ancestorSkipped) {
-        // If the paintInvalidationContainer is below o, then we need to map the rect into paintInvalidationContainer's coordinates.
-        LayoutSize containerOffset = ancestor->offsetFromAncestorContainer(container);
-        rect.move(-containerOffset);
-        return true;
-    }
 
     return container->mapToVisualRectInAncestorSpace(ancestor, rect, visualRectFlags);
 }
