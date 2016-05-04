@@ -19,6 +19,19 @@ Polymer({
     },
 
     /**
+     * The last promise in a chain that will be fulfilled when the current
+     * animation has finished. It does not return a value; it is strictly a
+     * synchronization mechanism.
+     * @private {!Promise}
+     */
+    animationPromise_: {
+      type: Object,
+      value: function() {
+        return Promise.resolve();
+      },
+    },
+
+    /**
      * The list of CastModes to show.
      * @type {!Array<!media_router.CastMode>|undefined}
      */
@@ -79,6 +92,15 @@ Polymer({
     },
 
     /**
+     * Animation player used for running filter transition animations.
+     * @private {?Animation}
+     */
+    filterTransitionPlayer_: {
+      type: Object,
+      value: null,
+    },
+
+    /**
      * The URL to open when the cloud services pref learn more link is clicked.
      * @type {string|undefined}
      */
@@ -112,11 +134,30 @@ Polymer({
     },
 
     /**
+     * An animation player that is used for running dialog height adjustments.
+     * @private {?Animation}
+     */
+    heightAdjustmentPlayer_: {
+      type: Object,
+      value: null,
+    },
+
+    /**
+     * Whether the sink list is being hidden for animation purposes.
+     * @private {boolean}
+     */
+    hideSinkListForAnimation_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
      * Whether the browser is currently incognito.
-     * @type {boolean|undefined}
+     * @type {boolean}
      */
     isOffTheRecord: {
       type: Boolean,
+      value: false,
     },
 
     /**
@@ -131,13 +172,12 @@ Polymer({
     },
 
     /**
-     * Whether the user is currently searching for a sink.
+     * Whether the search list is currently hidden.
      * @private {boolean}
      */
-    isUserSearching_: {
+    isSearchListHidden_: {
       type: Boolean,
-      value: false,
-      observer: 'isUserSearchingChanged_',
+      value: true,
     },
 
     /**
@@ -298,6 +338,15 @@ Polymer({
     },
 
     /**
+     * Max height for the sink list.
+     * @private {number}
+     */
+    sinkListMaxHeight_: {
+      type: Number,
+      value: 0,
+    },
+
+    /**
      * Maps media_router.Sink.id to corresponding media_router.Sink.
      * @private {!Object<!string, !media_router.Sink>|undefined}
      */
@@ -360,6 +409,7 @@ Polymer({
   ready: function() {
     this.elementReadyTimeMs_ = performance.now();
     this.showSinkList_();
+    this.putSearchAtBottom_();
 
     Polymer.RenderStatus.afterNextRender(this, function() {
       // If this is not on a Mac platform, remove the placeholder. See
@@ -500,6 +550,18 @@ Polymer({
       return 1;
     }
     return 0;
+  },
+
+  /**
+   * Returns a duration in ms from a distance in pixels using a default speed of
+   * 1000 pixels per second.
+   * @param {number} distance Number of pixels that will be traveled.
+   * @private
+   */
+  computeAnimationDuration_: function(distance) {
+    // The duration of the animation can be found by abs(distance)/speed, where
+    // speed is fixed at 1000 pixels per second, or 1 pixel per millisecond.
+    return Math.abs(distance);
   },
 
   /**
@@ -655,12 +717,12 @@ Polymer({
    * @param {!Array<!{sinkItem: !media_router.Sink,
    *                  substrings: Array<!Array<number>>}>} searchResultsToShow
    *     The sinks currently matching the search text.
-   * @param {boolean} isUserSearching Whether the user is searching for sinks.
+   * @param {boolean} isSearchListHidden Whether the search list is hidden.
    * @return {boolean} Whether or not the 'no matches' message is hidden.
    * @private
    */
-  computeNoMatchesHidden_: function(searchResultsToShow, isUserSearching) {
-    return !isUserSearching || this.searchInputText_.length == 0 ||
+  computeNoMatchesHidden_: function(searchResultsToShow, isSearchListHidden) {
+    return isSearchListHidden || this.searchInputText_.length == 0 ||
            searchResultsToShow.length != 0;
   },
 
@@ -726,15 +788,16 @@ Polymer({
 
   /**
    * Computes whether the search results list should be hidden.
-   * @param {boolean} isUserSearching Whether the user is searching for sinks.
    * @param {!Array<!{sinkItem: !media_router.Sink,
    *                  substrings: Array<!Array<number>>}>} searchResultsToShow
    *     The sinks currently matching the search text.
+   * @param {boolean} isSearchListHidden Whether the search list is hidden.
    * @return {boolean} Whether the search results list should be hidden.
    * @private
    */
-  computeSearchResultsHidden_: function(isUserSearching, searchResultsToShow) {
-    return !isUserSearching || searchResultsToShow.length == 0;
+  computeSearchResultsHidden_: function(searchResultsToShow,
+                                        isSearchListHidden) {
+    return isSearchListHidden || searchResultsToShow.length == 0;
   },
 
   /**
@@ -804,12 +867,11 @@ Polymer({
 
   /**
    * @param {!Array<!media_router.Sink>} sinksToShow The list of sinks.
-   * @param {boolean} isUserSearching Whether the user is searching for sinks.
    * @return {boolean} Whether or not to hide the sink list.
    * @private
    */
-  computeSinkListHidden_: function(sinksToShow, isUserSearching) {
-    return sinksToShow.length == 0 || isUserSearching;
+  computeSinkListHidden_: function(sinksToShow) {
+    return sinksToShow.length == 0;
   },
 
   /**
@@ -880,22 +942,6 @@ Polymer({
   },
 
   /**
-   * Computes the CSS class for #sink-search depending on whether it is the
-   * first or last item in the list, as indicated by |currentView|.
-   * @param {?media_router.MediaRouterView} currentView The current view of the
-   *     dialog.
-   * @param {!Array<!media_router.Sink>} sinksToShow The sinks available to
-   *     display for the current cast mode.
-   * @return {string} The CSS that correctly sets the padding of #sink-search
-   *     for the current view.
-   * @private
-   */
-  computeSinkSearchClass_: function(currentView, sinksToShow) {
-    return (currentView == media_router.MediaRouterView.FILTER &&
-            sinksToShow.length > 0) ? '' : 'bottom';
-  },
-
-  /**
    * Returns the subtext to be shown for |sink|. Only called if
    * |computeSinkSubtextHidden_| returns false for the same |sink| and
    * |sinkToRouteMap|.
@@ -937,6 +983,24 @@ Polymer({
   },
 
   /**
+   * Computes the height of the sink list view element when search results are
+   * being shown.
+   *
+   * @param {?Element} noMatches No search matches element.
+   * @param {?Element} results Search results list element.
+   * @param {?Element} search Search input container element.
+   * @param {number} maxHeight Max height of the list elements.
+   * @return {number} The height of the sink list view when search results are
+   *     being shown.
+   * @private
+   */
+  computeTotalSearchHeight_: function(noMatches, results, search, maxHeight) {
+    var contentHeight = (noMatches.hasAttribute('hidden')) ?
+        results.offsetHeight : noMatches.offsetHeight;
+    return Math.min(contentHeight, maxHeight) + search.offsetHeight;
+  },
+
+  /**
    * Updates element positioning when the view changes and possibly triggers
    * reporting of a user filter action. If there is no filter text, it defers
    * the reporting until some text is entered, but otherwise it reports the
@@ -966,7 +1030,6 @@ Polymer({
       });
       return;
     }
-    this.isUserSearching_ = true;
 
     var searchResultsToShow = [];
     for (var i = 0; i < this.sinksToShow_.length; ++i) {
@@ -1034,6 +1097,17 @@ Polymer({
   },
 
   /**
+   * @param {?Element} element Conditionally-templated element to check.
+   * @return {boolean} Whether |element| is considered present in the document
+   *     as a conditionally-templated element. This does not check the |hidden|
+   *     attribute.
+   */
+  hasConditionalElement_: function(element) {
+    return !!element &&
+        (!element.style.display || element.style.display != 'none');
+  },
+
+  /**
    * Returns whether given string is undefined, null, empty, or whitespace only.
    * @param {?string} str String to be tested.
    * @return {boolean} |true| if the string is undefined, null, empty, or
@@ -1042,20 +1116,6 @@ Polymer({
    */
   isEmptyOrWhitespace_: function(str) {
     return str === undefined || str === null || (/^\s*$/).test(str);
-  },
-
-  /**
-   * Updates sink list when user is searching.
-   * @param {boolean} isUserSearching Whether the user is searching for sinks.
-   */
-  isUserSearchingChanged_: function(isUserSearching) {
-    if (isUserSearching) {
-      this.currentView_ = media_router.MediaRouterView.FILTER;
-      this.updateElementPositioning_();
-      this.filterSinks_(this.searchInputText_);
-    } else {
-      this.currentView_ = media_router.MediaRouterView.SINK_LIST;
-    }
   },
 
   /**
@@ -1176,6 +1236,178 @@ Polymer({
       // or if there aren't any sinks available for display.
       this.populatedSinkListSeenTimeMs_ = -1;
     }
+  },
+
+  /**
+   * Animates the transition from the filter view, where the search field is at
+   * the top of the list, to the sink list view, where the search field is at
+   * the bottom of the list.
+   *
+   * If this is called while another animation is in progress, it queues itself
+   * to be run at the end of the current animation.
+   *
+   * @param {!function()} resolve Resolves the animation promise that is waiting
+   *     on this animation.
+   * @private
+   */
+  moveSearchToBottom_: function(resolve) {
+    var deviceMissing = this.$['device-missing'];
+    var list = this.$$('#sink-list');
+    var resultsContainer = this.$$('#search-results-container');
+    var search = this.$['sink-search'];
+    var view = this.$['sink-list-view'];
+
+    var hasList = this.hasConditionalElement_(list);
+    // Same reason for omission of |search.offsetHeight| as above.
+    var initialHeight = resultsContainer.offsetHeight;
+    // Force the view height to be max height.
+    view.style['overflow'] = 'hidden';
+
+    var finalHeight = 0;
+    // Get final view height ahead of animation.
+    if (hasList) {
+      list.style['position'] = 'absolute';
+      list.style['opacity'] = '0';
+      this.hideSinkListForAnimation_ = false;
+      finalHeight += list.offsetHeight;
+      list.style['position'] = 'relative';
+    }
+
+    var searchInitialTop = hasList ? 0 : deviceMissing.offsetHeight;
+    var searchFinalTop = hasList ? list.offsetHeight - search.offsetHeight :
+                                   deviceMissing.offsetHeight;
+    resultsContainer.style['position'] = 'absolute';
+    resultsContainer.style['overflow-y'] = '';
+
+    var duration =
+        this.computeAnimationDuration_(searchFinalTop - searchInitialTop);
+
+    // This GroupEffect does the reverse of |moveSearchToTop_|. It fades the
+    // sink list in while sliding the search input and search results list down.
+    // The dialog height is also adjusted smoothly to the sink list height.
+    var listEffect = new KeyframeEffect(list,
+        [{'opacity': '0'}, {'opacity': '1'}],
+        {duration: duration, easing: 'ease-in-out', fill: 'forwards'});
+    var resultsEffect = new KeyframeEffect(resultsContainer,
+        [{'top': '0px', 'paddingTop': resultsContainer.style['padding-top']},
+         {'top': '100%', 'paddingTop': '0px'}],
+        {duration: duration, easing: 'ease-in-out', fill: 'forwards'});
+    var searchEffect = new KeyframeEffect(search,
+        [{'top': searchInitialTop + 'px', 'marginTop': '0px'},
+         {'top': '100%', 'marginTop': '-' + (search.offsetHeight + 16) + 'px'}],
+        {duration: duration, easing: 'ease-in-out', fill: 'forwards'});
+    var viewEffect = new KeyframeEffect(view,
+        [{'height': initialHeight + 'px'}, {'height': finalHeight + 'px'}],
+        {duration: duration, easing: 'ease-in-out', fill: 'forwards'});
+    var player = document.timeline.play(new GroupEffect(hasList ?
+          [listEffect, resultsEffect, searchEffect, viewEffect] :
+          [resultsEffect, searchEffect, viewEffect]));
+
+    var that = this;
+    var finalizeAnimation = function() {
+      view.style['overflow'] = '';
+      that.putSearchAtBottom_();
+      that.filterTransitionPlayer_.cancel();
+      that.filterTransitionPlayer_ = null;
+      that.isSearchListHidden_ = true;
+      resolve();
+    };
+
+    player.finished.then(finalizeAnimation);
+    this.filterTransitionPlayer_ = player;
+  },
+
+  /**
+   * Animates the transition from the sink list view, where the search field is
+   * at the bottom of the list, to the filter view, where the search field is at
+   * the top of the list.
+   *
+   * If this is called while another animation is in progress, it queues itself
+   * to be run at the end of the current animation.
+   *
+   * @param {!function()} resolve Resolves the animation promise that is waiting
+   *     on this animation.
+   * @private
+   */
+  moveSearchToTop_: function(resolve) {
+    var deviceMissing = this.$['device-missing'];
+    var list = this.$$('#sink-list');
+    var noMatches = this.$$('#no-search-matches');
+    var results = this.$$('#search-results');
+    var resultsContainer = this.$$('#search-results-container');
+    var search = this.$['sink-search'];
+    var view = this.$['sink-list-view'];
+
+    // Saves current search container |offsetHeight| which includes bottom
+    // padding.
+    var searchOffsetHeight = search.offsetHeight;
+    var hasList = this.hasConditionalElement_(list);
+    var searchInitialTop = hasList ? list.offsetHeight - searchOffsetHeight :
+                                     deviceMissing.offsetHeight;
+    var searchFinalTop = hasList ? 0 : deviceMissing.offsetHeight;
+    resultsContainer.style['max-height'] = this.sinkListMaxHeight_ + 'px';
+
+    // Omitting |search.offsetHeight| because |list| is padded with
+    // |search.offsetHeight| and |offsetHeight| includes padding.
+    var initialHeight = hasList ?
+        list.offsetHeight :
+        deviceMissing.offsetHeight + searchOffsetHeight;
+    view.style['overflow'] = 'hidden';
+    search.className = '';
+
+    var finalHeight = this.computeTotalSearchHeight_(noMatches, results, search,
+        this.sinkListMaxHeight_);
+
+    var duration =
+        this.computeAnimationDuration_(searchFinalTop - searchInitialTop);
+
+    // This GroupEffect will cause the sink list to fade out while the search
+    // input and search results list slide up. The dialog will also resize
+    // smoothly to the new search result list height.
+    var listEffect = new KeyframeEffect(list,
+        [{'opacity': '1'}, {'opacity': '0'}],
+        {duration: duration, easing: 'ease-in-out', fill: 'forwards'});
+    var resultsEffect = new KeyframeEffect(resultsContainer,
+        [{'top': '100%', 'paddingTop': '0px'},
+         {'top': searchFinalTop + 'px',
+           'paddingTop': search.offsetHeight + 'px'}],
+        {duration: duration, easing: 'ease-in-out', fill: 'forwards'});
+    var searchEffect = new KeyframeEffect(search,
+        [{'top': '100%', 'marginTop': '-' + searchOffsetHeight + 'px'},
+         {'top': searchFinalTop + 'px', 'marginTop': '0px'}],
+        {duration: duration, easing: 'ease-in-out', fill: 'forwards'});
+    var viewEffect = new KeyframeEffect(view,
+        [{'height': initialHeight + 'px'}, {'height': finalHeight + 'px'}],
+        {duration: duration, easing: 'ease-in-out', fill: 'forwards'});
+    var player = document.timeline.play(new GroupEffect(hasList ?
+          [listEffect, resultsEffect, searchEffect, viewEffect] :
+          [resultsEffect, searchEffect, viewEffect]));
+
+    var that = this;
+    var finalizeAnimation = function() {
+      // When we are moving the search results up into view, the user may type
+      // more text or delete text which may change the height of the search
+      // results list. In this case, the dialog height that the animation ends
+      // on will now be wrong. In order to correct this smoothly,
+      // |putSearchAtTop_| will queue another animation just to adjust the
+      // dialog height.
+      //
+      // The |filterTransitionPlayer_| will hold all of the animated elements in
+      // their final keyframe state until it is canceled or another player
+      // overrides it because we used |fill: 'forwards'| in all of the effects.
+      // So unlike |moveSearchToBottom_|, we don't know for sure whether we want
+      // to cancel |filterTransitionPlayer_| after |putSearchAtTop_| because
+      // another animation may have been run to correct the dialog height.
+      //
+      // If |putSearchAtTop_| has to adjust the dialog height, it also queues
+      // itself to run again when that animation is finished. When the height is
+      // finally correct at the end of an animation, it will cancel
+      // |filterTransitionPlayer_| itself.
+      that.putSearchAtTop_(resolve);
+    };
+
+    player.finished.then(finalizeAnimation);
+    this.filterTransitionPlayer_ = player;
   },
 
   /**
@@ -1316,7 +1548,7 @@ Polymer({
     if (e.key == media_router.KEY_ESC && !e.shiftKey &&
         !e.ctrlKey && !e.altKey && !e.metaKey) {
       // When searching, allow ESC as a mechanism to leave the filter view.
-      if (this.isUserSearching_) {
+      if (this.currentView_ == media_router.MediaRouterView.FILTER) {
         // If the user tabbed to an item in the search results, or otherwise has
         // an item in the list focused, focus will seem to vanish when we
         // transition back to the sink list. Instead we should move focus to the
@@ -1364,7 +1596,7 @@ Polymer({
     this.rebuildSinksToShow_();
     // If we're in filter view, make sure the |sinksToShow_| change is picked
     // up.
-    if (this.isUserSearching_) {
+    if (this.currentView_ == media_router.MediaRouterView.FILTER) {
       this.filterSinks_(this.searchInputText_);
     }
   },
@@ -1376,11 +1608,153 @@ Polymer({
    * @private
    */
   onSinkClick_: function(event) {
-    var clickedSink = (this.isUserSearching_) ?
+    var clickedSink =
+        (this.currentView_ == media_router.MediaRouterView.FILTER) ?
         this.$$('#searchResults').itemForElement(event.target).sinkItem :
         this.$$('#sinkList').itemForElement(event.target);
     this.showOrCreateRoute_(clickedSink);
     this.fire('sink-click', {index: event['model'].index});
+  },
+
+  /**
+   * Sets the positioning of the sink list, search input, and search results so
+   * that everything is in the correct state for the sink list view.
+   *
+   * @private
+   */
+  putSearchAtBottom_: function() {
+    var deviceMissing = this.$['device-missing'];
+    var list = this.$$('#sink-list');
+    var resultsContainer = this.$$('#search-results-container');
+    var search = this.$['sink-search'];
+    search.className = 'bottom';
+    search.style['margin-top'] = '-' + search.offsetHeight + 'px';
+    search.style['top'] = '';
+    if (resultsContainer) {
+      resultsContainer.style['position'] = '';
+      resultsContainer.style['padding-top'] = '';
+      resultsContainer.style['top'] = '';
+    }
+    this.hideSinkListForAnimation_ = false;
+    var hasList = this.hasConditionalElement_(list);
+    if (hasList) {
+      list.style['padding-bottom'] = search.offsetHeight + 'px';
+      list.style['opacity'] = '';
+    } else {
+      deviceMissing.style['margin-bottom'] = search.offsetHeight + 'px';
+    }
+  },
+
+  /**
+   * Sets the positioning of the sink list, search input, and search results so
+   * that everything is in the correct state for the filter view.
+   *
+   * If the user was searching while the |moveSearchToTop_| animation was
+   * happening then the dialog height that animation ends at could be different
+   * than the current height of the search results. If this is the case, this
+   * function first spawns a new animation that smoothly corrects the height
+   * problem. This is iterative, but once we enter a call where the heights
+   * match up, the elements will become static again.
+   *
+   * @param {!function()} resolve Resolves the animation promise that is waiting
+   *     on this animation.
+   * @private
+   */
+  putSearchAtTop_: function(resolve) {
+    var deviceMissing = this.$['device-missing'];
+    var list = this.$$('#sink-list');
+    var noMatches = this.$$('#no-search-matches');
+    var results = this.$$('#search-results');
+    var resultsContainer = this.$$('#search-results-container');
+    var search = this.$['sink-search'];
+    var view = this.$['sink-list-view'];
+
+    // If there is a height mismatch between where the animation calculated the
+    // height should be and where it is now because the search results changed
+    // during the animation, correct it with... another animation.
+    var finalHeight = this.computeTotalSearchHeight_(noMatches, results, search,
+        this.sinkListMaxHeight_);
+    if (finalHeight != view.offsetHeight) {
+      var viewEffect = new KeyframeEffect(view,
+          [{'height': view.offsetHeight + 'px'},
+           {'height': finalHeight + 'px'}],
+          {duration:
+              this.computeAnimationDuration_(finalHeight - view.offsetHeight),
+           easing: 'ease-in-out', fill: 'forwards'});
+      var that = this;
+      var player = document.timeline.play(viewEffect);
+      if (this.heightAdjustmentPlayer_) {
+        this.heightAdjustmentPlayer_.cancel();
+      }
+      this.heightAdjustmentPlayer_ = player;
+      player.finished.then(this.putSearchAtTop_.bind(this, resolve));
+      return;
+    }
+
+    var hasList = this.hasConditionalElement_(list);
+    search.style['margin-top'] = '';
+    var searchFinalTop = hasList ? 0 : deviceMissing.offsetHeight;
+    var resultsPaddingTop = hasList ? search.offsetHeight + 'px' : '0px';
+    search.style['top'] = searchFinalTop + 'px';
+    this.hideSinkListForAnimation_ = true;
+    resultsContainer.style['position'] = 'relative';
+    resultsContainer.style['padding-top'] = resultsPaddingTop;
+    resultsContainer.style['top'] = '';
+    resultsContainer.style['overflow-y'] = 'auto';
+
+    view.style['overflow'] = '';
+    if (this.filterTransitionPlayer_) {
+      this.filterTransitionPlayer_.cancel();
+      this.filterTransitionPlayer_ = null;
+    }
+
+    if (this.heightAdjustmentPlayer_) {
+      this.heightAdjustmentPlayer_.cancel();
+      this.heightAdjustmentPlayer_ = null;
+    }
+
+    resolve();
+  },
+
+  /**
+   * Queues a call to |moveSearchToBottom_| by adding it as a continuation to
+   * |animationPromise_| and updating |animationPromise_|.
+   */
+  queueMoveSearchToBottom_: function() {
+    var oldPromise = this.animationPromise_;
+    var that = this;
+    this.animationPromise_ = new Promise(function(resolve) {
+      oldPromise.then(that.moveSearchToBottom_.bind(that, resolve));
+    });
+  },
+
+  /**
+   * Queues a call to |moveSearchToTop_| by adding it as a continuation to
+   * |animationPromise_| and updating |animationPromise_|. The new promise will
+   * not resolve until |putSearchAtTop_| is finished, including any potential
+   * dialog height adjustment animations.
+   */
+  queueMoveSearchToTop_: function() {
+    var oldPromise = this.animationPromise_;
+    var that = this;
+    this.animationPromise_ = new Promise(function(resolve) {
+      oldPromise.then(function() {
+        that.isSearchListHidden_ = false;
+        setTimeout(that.moveSearchToTop_.bind(that, resolve));
+      });
+    });
+  },
+
+  /**
+   * Queues a call to |putSearchAtTop_| by adding it as a continuation to
+   * |animationPromise_| and updating |animationPromise_|.
+   */
+  queuePutSearchAtTop_: function() {
+    var that = this;
+    var oldPromise = this.animationPromise_;
+    this.animationPromise_ = new Promise(function(resolve) {
+      oldPromise.then(that.putSearchAtTop_.bind(that, resolve));
+    });
   },
 
   /**
@@ -1492,8 +1866,19 @@ Polymer({
       return sink.isPseudoSink && !!sink.domain;
     });
     this.rebuildSinksToShow_();
-    if (this.isUserSearching_) {
-      this.filterSinks_(this.searchInputText_);
+    this.filterSinks_(this.searchInputText_ || '');
+    if (this.currentView_ != media_router.MediaRouterView.FILTER) {
+      // This code is in the unique position of seeing |animationPromise_| as
+      // null on startup. |allSinks| is initialized before |animationPromise_|
+      // and this listener runs when |allSinks| is initialized.
+      if (this.animationPromise_) {
+        this.animationPromise_ =
+            this.animationPromise_.then(this.putSearchAtBottom_.bind(this));
+      } else {
+        this.putSearchAtBottom_();
+      }
+    } else {
+      this.queuePutSearchAtTop_();
     }
   },
 
@@ -1521,8 +1906,22 @@ Polymer({
     // already focused. In the case that user typed text, hit escape, then
     // clicks the search button, a focus event will not fire and so its event
     // handler from ready() will not run.
-    this.isUserSearching_ = true;
+    this.showSearchResults_();
     this.$['sink-search-input'].focus();
+  },
+
+  /**
+   * Filters the sink list when the input text changes and shows the search
+   * results if |searchInputText| is not empty.
+   * @param {string} searchInputText The currently entered search text.
+   * @private
+   */
+  searchInputTextChanged_: function(searchInputText) {
+    this.filterSinks_(searchInputText);
+    if (searchInputText.length != 0) {
+      this.showSearchResults_();
+      this.maybeReportFilter_();
+    }
   },
 
   /**
@@ -1539,33 +1938,20 @@ Polymer({
     // document to the beginning. To handle both cases, we save whether the
     // search input was focused during the window blur event.
     //
-    // When the search input receives focus it could be as part of window focus
-    // and if the search input was also focused on window blur, it shouldn't
-    // change the value of |isUserSearching_|. Otherwise, focusing the search
-    // input should activate the FILTER view by setting |isUserSearching_|.
+    // When the search input receives focus, it could be as part of window
+    // focus. If the search input was also focused on window blur, it shouldn't
+    // show search results if they aren't already being shown. Otherwise,
+    // focusing the search input should activate the FILTER view by calling
+    // |showSearchResults_()|.
     window.addEventListener('blur', function() {
       that.isSearchFocusedOnWindowBlur_ =
           that.shadowRoot.activeElement == search;
     });
     search.addEventListener('focus', function() {
       if (!that.isSearchFocusedOnWindowBlur_) {
-        that.isUserSearching_ = true;
+        that.showSearchResults_();
       }
     });
-  },
-
-  /**
-   * Filters the  sink list when the input text changes and shows the search
-   * results if |searchInputText| is not empty.
-   * @param {string} searchInputText The currently entered search text.
-   * @private
-   */
-  searchInputTextChanged_: function(searchInputText) {
-    this.filterSinks_(searchInputText);
-    if (searchInputText.length != 0) {
-      this.isUserSearching_ = true;
-      this.maybeReportFilter_();
-    }
   },
 
   /**
@@ -1658,13 +2044,27 @@ Polymer({
   },
 
   /**
+   * Shows the search results.
+   *
+   * @private
+   */
+  showSearchResults_: function() {
+    if (this.currentView_ != media_router.MediaRouterView.FILTER) {
+      this.currentView_ = media_router.MediaRouterView.FILTER;
+      this.queueMoveSearchToTop_();
+    }
+  },
+
+  /**
    * Shows the sink list.
    *
    * @private
    */
   showSinkList_: function() {
+    if (this.currentView_ == media_router.MediaRouterView.FILTER) {
+      this.queueMoveSearchToBottom_();
+    }
     this.currentView_ = media_router.MediaRouterView.SINK_LIST;
-    this.isUserSearching_ = false;
   },
 
   /**
@@ -1717,11 +2117,11 @@ Polymer({
       this.$['content'].style.marginTop =
           firstRunFlowHeight + headerHeight + 'px';
 
+      this.sinkListMaxHeight_ = this.dialogHeight_ - headerHeight -
+          firstRunFlowHeight - issueHeight - searchHeight;
       var sinkList = this.$$('#sink-list');
       if (sinkList) {
-        sinkList.style.maxHeight =
-            this.dialogHeight_ - headerHeight - firstRunFlowHeight -
-                issueHeight - searchHeight + 'px';
+        sinkList.style.maxHeight = this.sinkListMaxHeight_ + 'px';
         var searchResults = this.$$('#search-results');
         if (searchResults)
           searchResults.style.maxHeight = sinkList.style.maxHeight;

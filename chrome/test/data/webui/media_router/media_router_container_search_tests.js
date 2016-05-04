@@ -8,6 +8,24 @@
 cr.define('media_router_container_search', function() {
   function registerTests() {
     suite('MediaRouterContainerSearch', function() {
+      /**
+       * Wrapper that lets a function |f| run after the container animation
+       * promise completes but also lets any UI logic run before setting up the
+       * call. This is important because |container.animationPromise_| may not
+       * exist until the UI logic runs or it may be updated to a new Promise.
+       * This wrapper also carries assertion errors (and any other exceptions)
+       * outside of the promise back into the test since throwing in a then() or
+       * catch() doesn't stop the test.
+       *
+       * @param {function()} f
+       */
+      var chainOnAnimationPromise = function(f) {
+        setTimeout(function() {
+          container.animationPromise_.then(f).catch(function(err) {
+            setTimeout(function() { throw err; });
+          });
+        });
+      };
 
       /**
        * Checks whether |view| matches the current view of |container|.
@@ -347,13 +365,13 @@ cr.define('media_router_container_search', function() {
 
         var searchInput = container.$['sink-search-input'];
         searchInput.value = foundSink.name;
-        setTimeout(function() {
+        chainOnAnimationPromise(function() {
           var searchResults =
               container.$$('#search-results').querySelectorAll('paper-item');
           MockInteractions.tap(searchResults[0]);
           MockInteractions.tap(
               container.$['container-header'].$$('#back-button'));
-          setTimeout(function() {
+          chainOnAnimationPromise(function() {
             var sinkList =
                 container.$$('#sink-list').querySelectorAll('paper-item');
             sinkList = [...sinkList];
@@ -363,19 +381,19 @@ cr.define('media_router_container_search', function() {
             });
             MockInteractions.tap(sink);
             container.allSinks = fakeSinkListWithPseudoSink.concat([foundSink]);
-            setTimeout(function() {
+            chainOnAnimationPromise(function() {
               container.onReceiveSearchResult(foundSink.id);
               MockInteractions.tap(sink);
               container.onCreateRouteResponseReceived(
                   pseudoSink.id, route, true);
-              setTimeout(function() {
+              chainOnAnimationPromise(function() {
                 checkCurrentView(media_router.MediaRouterView.ROUTE_DETAILS);
                 MockInteractions.tap(
                     container.$['container-header'].$$('#back-button'));
                 container.removeEventListener(
                     'create-route', checkNoCreateRoute);
                 container.addEventListener('create-route', checkCreateRoute);
-                setTimeout(function() {
+                chainOnAnimationPromise(function() {
                   checkCurrentView(media_router.MediaRouterView.SINK_LIST);
                   MockInteractions.tap(sink);
                 });

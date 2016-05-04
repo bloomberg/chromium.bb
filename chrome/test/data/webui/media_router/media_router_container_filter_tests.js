@@ -9,6 +9,25 @@ cr.define('media_router_container_filter', function() {
   function registerTests() {
     suite('MediaRouterContainerFilter', function() {
       /**
+       * Wrapper that lets a function |f| run after the container animation
+       * promise completes but also lets any UI logic run before setting up the
+       * call. This is important because |container.animationPromise_| may not
+       * exist until the UI logic runs or it may be updated to a new Promise.
+       * This wrapper also carries assertion errors (and any other exceptions)
+       * outside of the promise back into the test since throwing in a then() or
+       * catch() doesn't stop the test.
+       *
+       * @param {function()} f
+       */
+      var chainOnAnimationPromise = function(f) {
+        setTimeout(function() {
+          container.animationPromise_.then(f).catch(function(err) {
+            setTimeout(function() { throw err; });
+          });
+        });
+      };
+
+      /**
        * Checks whether |view| matches the current view of |container|.
        *
        * @param {!media_router.MediaRouterView} view Expected view type.
@@ -180,17 +199,15 @@ cr.define('media_router_container_filter', function() {
           container.allSinks = fakeSinkList;
           MockInteractions.tap(container.$['sink-search-icon']);
           setTimeout(function() {
-            var item =
-                container.$$('#search-results')
-                    .querySelectorAll('paper-item')[1];
+            var item = container.$$('#search-results')
+                           .querySelectorAll('paper-item')[1];
             item.focus();
             var focusedSuccess = item.focused;
             pressEscapeOnElement(item);
             checkCurrentView(media_router.MediaRouterView.SINK_LIST);
             setTimeout(function() {
-              item =
-                  container.$$('#sink-list-view')
-                      .querySelectorAll('paper-item')[1];
+              item = container.$$('#sink-list-view')
+                         .querySelectorAll('paper-item')[1];
               // TODO(crbug.com/608551): This condition handles flakiness around
               // the search item getting focus earlier. If it doesn't get focus,
               // the logic that changes focus from a search item to a sink list
@@ -238,7 +255,7 @@ cr.define('media_router_container_filter', function() {
         // Clicking the search icon should transition |container| to FILTER
         // view.
         MockInteractions.tap(container.$['sink-search-icon']);
-        setTimeout(function() {
+        chainOnAnimationPromise(function() {
           checkElementsVisibleWithId(['container-header',
                                       'device-missing',
                                       'sink-search',
@@ -246,7 +263,7 @@ cr.define('media_router_container_filter', function() {
 
           // Adding sinks should populate the search list.
           container.allSinks = fakeSinkList;
-          setTimeout(function() {
+          chainOnAnimationPromise(function() {
             checkElementsVisibleWithId(['container-header',
                                         'search-results',
                                         'sink-search',
@@ -261,62 +278,61 @@ cr.define('media_router_container_filter', function() {
             // Changing that text to something that matches at least one sink
             // should show the matching sinks again.
             container.$['sink-search-input'].value = searchTextOne;
-            setTimeout(function() {
+            // maybe inside setTimeout
+            checkElementsVisibleWithId(['container-header',
+                                        'search-results',
+                                        'sink-search',
+                                        'sink-list-view']);
+            // Clicking the back button should leave |searchTextOne| in the
+            // input but return to the SINK_LIST view.
+            MockInteractions.tap(
+                container.shadowRoot.getElementById('container-header')
+                    .shadowRoot.getElementById('back-button'));
+            chainOnAnimationPromise(function() {
               checkElementsVisibleWithId(['container-header',
-                                          'search-results',
                                           'sink-search',
+                                          'sink-list',
                                           'sink-list-view']);
-              // Clicking the back button should leave |searchTextOne| in the
-              // input but return to the SINK_LIST view.
-              MockInteractions.tap(
-                  container.shadowRoot.getElementById('container-header')
-                      .shadowRoot.getElementById('back-button'));
-              setTimeout(function() {
+              // When the search button is clicked again, the matching sinks
+              // should be shown again. This doesn't prove that the matching
+              // worked when returning to the FILTER view though, just that it
+              // at least shows some sort of sink list as search results.
+              MockInteractions.tap(container.$['sink-search-icon']);
+              chainOnAnimationPromise(function() {
                 checkElementsVisibleWithId(['container-header',
+                                            'search-results',
                                             'sink-search',
-                                            'sink-list',
                                             'sink-list-view']);
-                // When the search button is clicked again, the matching sinks
-                // should be shown again. This doesn't prove that the matching
-                // worked when returning to the FILTER view though, just that it
-                // at least shows some sort of sink list as search results.
-                MockInteractions.tap(container.$['sink-search-icon']);
-                setTimeout(function() {
-                  checkElementsVisibleWithId(['container-header',
-                                              'search-results',
-                                              'sink-search',
-                                              'sink-list-view']);
 
-                  container.$['sink-search-input'].value = searchTextNone;
-                  // Clicking the back button should leave |searchTextNone| in
-                  // the input but return to the SINK_LIST view.
-                  MockInteractions.tap(
-                      container.shadowRoot.getElementById('container-header')
-                          .shadowRoot.getElementById('back-button'));
-                  setTimeout(function() {
+                container.$['sink-search-input'].value = searchTextNone;
+                // Clicking the back button should leave |searchTextNone| in the
+                // input but return to the SINK_LIST view.
+                MockInteractions.tap(
+                    container.shadowRoot.getElementById('container-header')
+                        .shadowRoot.getElementById('back-button'));
+                chainOnAnimationPromise(function() {
+                  checkElementsVisibleWithId(['container-header',
+                                              'sink-search',
+                                              'sink-list',
+                                              'sink-list-view']);
+                  // When the search button is clicked again, there should be no
+                  // matches because |searchTextNone| should still be used to
+                  // filter.
+                  MockInteractions.tap(container.$['sink-search-icon']);
+                  chainOnAnimationPromise(function() {
                     checkElementsVisibleWithId(['container-header',
+                                                'no-search-matches',
                                                 'sink-search',
-                                                'sink-list',
                                                 'sink-list-view']);
-                    // When the search button is clicked again, there should be
-                    // no matches because |searchTextNone| should still be used
-                    // to filter.
-                    MockInteractions.tap(container.$['sink-search-icon']);
-                    setTimeout(function() {
+                    // Pressing the Escape key in FILTER view should return
+                    // |container| to SINK_LIST view and not exit the dialog.
+                    pressEscapeOnElement(container);
+                    chainOnAnimationPromise(function() {
                       checkElementsVisibleWithId(['container-header',
-                                                  'no-search-matches',
                                                   'sink-search',
+                                                  'sink-list',
                                                   'sink-list-view']);
-                      // Pressing the Escape key in FILTER view should return
-                      // |container| to SINK_LIST view and not exit the dialog.
-                      pressEscapeOnElement(container);
-                      setTimeout(function() {
-                        checkElementsVisibleWithId(['container-header',
-                                                    'sink-search',
-                                                    'sink-list',
-                                                    'sink-list-view']);
-                        done();
-                      });
+                      done();
                     });
                   });
                 });
@@ -337,7 +353,7 @@ cr.define('media_router_container_filter', function() {
         // Set a non-blocking issue. The issue should be shown.
         container.issue = fakeNonBlockingIssue;
         MockInteractions.tap(container.$['sink-search-icon']);
-        setTimeout(function() {
+        chainOnAnimationPromise(function() {
           checkElementsVisibleWithId(['container-header',
                                       'issue-banner',
                                       'search-results',
@@ -544,7 +560,7 @@ cr.define('media_router_container_filter', function() {
         var expectReportThen = function(cause, continuation) {
           var internalExpect = function() {
             container.removeEventListener('report-filter', internalExpect);
-            continuation();
+            chainOnAnimationPromise(continuation);
           };
           container.addEventListener('report-filter', internalExpect);
           cause();
@@ -559,7 +575,7 @@ cr.define('media_router_container_filter', function() {
         // without typing any text doesn't report a filter action.
         container.addEventListener('report-filter', expectNoReport);
         MockInteractions.tap(container.$['sink-search-icon']);
-        setTimeout(function() {
+        chainOnAnimationPromise(function() {
           MockInteractions.tap(
               container.shadowRoot.getElementById('container-header')
                   .shadowRoot.getElementById('back-button'));

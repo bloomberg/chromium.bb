@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/web-animations.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
@@ -103,9 +104,9 @@
             [[i18n('deviceMissingText')]]
           </a>
         </div>
-        <template is="dom-if"
-            if="[[!computeSinkListHidden_(sinksToShow_, isUserSearching_)]]">
-          <paper-menu id="sink-list" role="presentation">
+        <template is="dom-if" if="[[!computeSinkListHidden_(sinksToShow_)]]">
+          <paper-menu id="sink-list" role="presentation"
+              hidden$="[[hideSinkListForAnimation_]]">
             <template is="dom-repeat" id="sinkList" items="[[sinksToShow_]]">
               <paper-item on-tap="onSinkClick_">
                 <div class="sink-content">
@@ -144,8 +145,7 @@
             </template>
           </paper-menu>
         </template>
-        <div id="sink-search"
-            class$="[[computeSinkSearchClass_(currentView_, sinksToShow_)]]">
+        <div id="sink-search">
           <div class="sink-content">
             <div>
               <paper-icon-button id="sink-search-icon" icon="media-router:search"
@@ -159,54 +159,56 @@
             </div>
           </div>
         </div>
-        <template is="dom-if" if="[[isUserSearching_]]">
-          <div id="no-search-matches"
-              hidden$="[[computeNoMatchesHidden_(searchResultsToShow_, isUserSearching_)]]">
-            <span>[[i18n('searchNoMatchesText')]]</span>
-          </div>
-          <paper-menu id="search-results" selected="0" role="presentation"
-              hidden$="[[computeSearchResultsHidden_(isUserSearching_, searchResultsToShow_)]]">
-            <template is="dom-repeat" id="searchResults"
-                items="[[searchResultsToShow_]]">
-              <paper-item class="search-item" on-tap="onSinkClick_">
-                <div class="sink-content">
-                  <div>
-                    <iron-icon icon="[[computeSinkIcon_(item.sinkItem)]]"
-                        hidden$="[[computeSinkIsLaunching_(currentLaunchingSinkId_, item.sinkItem.id)]]"
-                        class$="[[computeSinkIconClass_(item.sinkItem.id, sinkToRouteMap_)]]">
-                    </iron-icon>
-                    <template is="dom-if"
-                        if="[[computeSinkIsLaunching_(currentLaunchingSinkId_, item.sinkItem.id)]]">
-                      <paper-spinner class="sink-icon" active>
-                      </paper-spinner>
-                    </template>
-                  </div>
-                  <div>
-                    <div class="sink-text">
-                      <media-router-search-highlighter class="sink-name"
-                          data="[[computeSinkMatchingText_(item)]]"
-                          title="[[item.sinkItem.name]]">
-                      </media-router-search-highlighter>
+        <template is="dom-if" if="[[!isSearchListHidden_]]">
+          <div id="search-results-container">
+            <div id="no-search-matches"
+                hidden$="[[computeNoMatchesHidden_(searchResultsToShow_, isSearchListHidden_)]]">
+              <span>[[i18n('searchNoMatchesText')]]</span>
+            </div>
+            <paper-menu id="search-results" selected="0"
+                hidden$="[[computeSearchResultsHidden_(searchResultsToShow_, isSearchListHidden_)]]">
+              <template is="dom-repeat" id="searchResults"
+                  items="[[searchResultsToShow_]]">
+                <paper-item class="search-item" on-tap="onSinkClick_">
+                  <div class="sink-content">
+                    <div>
+                      <iron-icon icon="[[computeSinkIcon_(item.sinkItem)]]"
+                          hidden$="[[computeSinkIsLaunching_(currentLaunchingSinkId_, item.sinkItem.id)]]"
+                          class$="[[computeSinkIconClass_(item.sinkItem.id, sinkToRouteMap_)]]">
+                      </iron-icon>
                       <template is="dom-if"
-                          if="[[!computeSinkDomainHidden_(item.sinkItem)]]">
-                        <span class="sink-domain" title="[[item.sinkItem.domain]]">
-                          [[item.sinkItem.domain]]
-                        </span>
+                          if="[[computeSinkIsLaunching_(currentLaunchingSinkId_, item.sinkItem.id)]]">
+                        <paper-spinner class="sink-icon" active>
+                        </paper-spinner>
                       </template>
                     </div>
-                    <template is="dom-if"
-                        if="[[!computeSinkSubtextHidden_(item.sinkItem, sinkToRouteMap_)]]">
-                      <div class="sink-text sink-subtext">
-                        <span>
-                          [[computeSinkSubtext_(item.sinkItem, sinkToRouteMap_)]]
-                        </span>
+                    <div>
+                      <div class="sink-text">
+                        <media-router-search-highlighter class="sink-name"
+                            data="[[computeSinkMatchingText_(item)]]"
+                            title="[[item.sinkItem.name]]">
+                        </media-router-search-highlighter>
+                        <template is="dom-if"
+                            if="[[!computeSinkDomainHidden_(item.sinkItem)]]">
+                          <span class="sink-domain" title="[[item.sinkItem.domain]]">
+                            [[item.sinkItem.domain]]
+                          </span>
+                        </template>
                       </div>
-                    </template>
+                      <template is="dom-if"
+                          if="[[!computeSinkSubtextHidden_(item.sinkItem, sinkToRouteMap_)]]">
+                        <div class="sink-text sink-subtext">
+                          <span>
+                            [[computeSinkSubtext_(item.sinkItem, sinkToRouteMap_)]]
+                          </span>
+                        </div>
+                      </template>
+                    </div>
                   </div>
-                </div>
-              </paper-item>
-            </template>
-          </paper-menu>
+                </paper-item>
+              </template>
+            </paper-menu>
+          </div>
         </template>
       </div>
       <template is="dom-if"
