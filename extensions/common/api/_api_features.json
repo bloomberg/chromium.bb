@@ -103,6 +103,36 @@
     "dependencies": ["manifest:bluetooth"],
     "contexts": ["blessed_extension"]
   },
+  "bluetoothLowEnergy.createService": {
+    "dependencies": ["manifest:bluetooth"],
+    "contexts": ["blessed_extension"],
+    "platforms": ["chromeos", "linux"]
+  },
+  "bluetoothLowEnergy.createCharacteristic": {
+    "dependencies": ["manifest:bluetooth"],
+    "contexts": ["blessed_extension"],
+    "platforms": ["chromeos", "linux"]
+  },
+  "bluetoothLowEnergy.createDescriptor": {
+    "dependencies": ["manifest:bluetooth"],
+    "contexts": ["blessed_extension"],
+    "platforms": ["chromeos", "linux"]
+  },
+  "bluetoothLowEnergy.registerService": {
+    "dependencies": ["manifest:bluetooth"],
+    "contexts": ["blessed_extension"],
+    "platforms": ["chromeos", "linux"]
+  },
+  "bluetoothLowEnergy.unregisterService": {
+    "dependencies": ["manifest:bluetooth"],
+    "contexts": ["blessed_extension"],
+    "platforms": ["chromeos", "linux"]
+  },
+  "bluetoothLowEnergy.sendRequestResponse": {
+    "dependencies": ["manifest:bluetooth"],
+    "contexts": ["blessed_extension"],
+    "platforms": ["chromeos", "linux"]
+  },
   "bluetoothPrivate": [{
     "dependencies": ["permission:bluetoothPrivate"],
     "contexts": ["blessed_extension"]

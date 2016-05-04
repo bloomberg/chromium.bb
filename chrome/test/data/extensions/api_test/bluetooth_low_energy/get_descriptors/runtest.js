@@ -13,7 +13,6 @@ function testGetDescriptors() {
 
   chrome.test.assertEq('desc_id0', descrs[0].instanceId);
   chrome.test.assertEq('00001221-0000-1000-8000-00805f9b34fb', descrs[0].uuid);
-  chrome.test.assertEq(false, descrs[0].isLocal);
   chrome.test.assertEq(charId, descrs[0].characteristic.instanceId);
 
   var valueBytes = new Uint8Array(descrs[0].value);
@@ -24,7 +23,6 @@ function testGetDescriptors() {
 
   chrome.test.assertEq('desc_id1', descrs[1].instanceId);
   chrome.test.assertEq('00001222-0000-1000-8000-00805f9b34fb', descrs[1].uuid);
-  chrome.test.assertEq(false, descrs[1].isLocal);
   chrome.test.assertEq(charId, descrs[1].characteristic.instanceId);
 
   valueBytes = new Uint8Array(descrs[1].value);

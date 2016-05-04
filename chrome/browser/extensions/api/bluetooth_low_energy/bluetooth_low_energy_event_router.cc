@@ -4,22 +4,35 @@
 
 #include "chrome/browser/extensions/api/bluetooth_low_energy/bluetooth_low_energy_event_router.h"
 
+#include <iterator>
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback_forward.h"
+#include "base/containers/hash_tables.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
+#include "base/memory/ref_counted.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/bluetooth_low_energy/bluetooth_low_energy_connection.h"
 #include "chrome/browser/extensions/api/bluetooth_low_energy/bluetooth_low_energy_notify_session.h"
 #include "chrome/browser/extensions/api/bluetooth_low_energy/utils.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
+#include "device/bluetooth/bluetooth_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_gatt_connection.h"
+#include "device/bluetooth/bluetooth_gatt_notify_session.h"
+#include "device/bluetooth/bluetooth_gatt_service.h"
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_remote_gatt_descriptor.h"
+#include "device/bluetooth/bluetooth_uuid.h"
+#include "extensions/browser/api/api_resource_manager.h"
+#include "extensions/browser/event_listener_map.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/api/bluetooth/bluetooth_manifest_data.h"
+#include "extensions/common/extension.h"
 
 using content::BrowserThread;
 
@@ -41,7 +54,6 @@ void PopulateService(const BluetoothRemoteGattService* service,
 
   out->uuid = service->GetUUID().canonical_value();
   out->is_primary = service->IsPrimary();
-  out->is_local = false;
   out->instance_id.reset(new std::string(service->GetIdentifier()));
 
   if (!service->GetDevice())
@@ -99,10 +111,10 @@ void PopulateCharacteristic(
   DCHECK(out);
 
   out->uuid = characteristic->GetUUID().canonical_value();
-  out->is_local = false;
   out->instance_id.reset(new std::string(characteristic->GetIdentifier()));
 
-  PopulateService(characteristic->GetService(), &out->service);
+  out->service = base::WrapUnique(new apibtle::Service());
+  PopulateService(characteristic->GetService(), out->service.get());
   PopulateCharacteristicProperties(characteristic->GetProperties(),
                                    &out->properties);
 
@@ -118,10 +130,11 @@ void PopulateDescriptor(const BluetoothRemoteGattDescriptor* descriptor,
   DCHECK(out);
 
   out->uuid = descriptor->GetUUID().canonical_value();
-  out->is_local = false;
   out->instance_id.reset(new std::string(descriptor->GetIdentifier()));
 
-  PopulateCharacteristic(descriptor->GetCharacteristic(), &out->characteristic);
+  out->characteristic = base::WrapUnique(new apibtle::Characteristic());
+  PopulateCharacteristic(descriptor->GetCharacteristic(),
+                         out->characteristic.get());
 
   const std::vector<uint8_t>& value = descriptor->GetValue();
   if (value.empty())

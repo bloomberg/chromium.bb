@@ -6,20 +6,22 @@
 
 #include <stdint.h>
 #include <algorithm>
-#include <utility>
+#include <iterator>
+#include <vector>
 
 #include "base/bind.h"
+#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
-#include "base/strings/stringprintf.h"
-#include "build/build_config.h"
-#include "chrome/browser/extensions/api/bluetooth_low_energy/bluetooth_api_advertisement.h"
+#include "base/logging.h"
+#include "base/values.h"
 #include "chrome/browser/extensions/api/bluetooth_low_energy/utils.h"
 #include "chrome/common/extensions/api/bluetooth_low_energy.h"
 #include "content/public/browser/browser_thread.h"
-#include "extensions/browser/event_router.h"
+#include "device/bluetooth/bluetooth_adapter.h"
 #include "extensions/common/api/bluetooth/bluetooth_manifest_data.h"
-#include "extensions/common/permissions/permissions_data.h"
+#include "extensions/common/extension.h"
 #include "extensions/common/switches.h"
 
 #if defined(OS_CHROMEOS)
@@ -127,7 +129,8 @@ extensions::BluetoothLowEnergyEventRouter* GetEventRouter(
   return extensions::BluetoothLowEnergyAPI::Get(context)->event_router();
 }
 
-void DoWorkCallback(const base::Callback<bool()>& callback) {
+template <typename T>
+void DoWorkCallback(const base::Callback<T()>& callback) {
   DCHECK(!callback.is_null());
   callback.Run();
 }
@@ -189,13 +192,13 @@ void BluetoothLowEnergyAPI::Shutdown() {
 
 namespace api {
 
-BluetoothLowEnergyExtensionFunction::BluetoothLowEnergyExtensionFunction() {
-}
+BluetoothLowEnergyExtensionFunctionDeprecated::
+    BluetoothLowEnergyExtensionFunctionDeprecated() {}
 
-BluetoothLowEnergyExtensionFunction::~BluetoothLowEnergyExtensionFunction() {
-}
+BluetoothLowEnergyExtensionFunctionDeprecated::
+    ~BluetoothLowEnergyExtensionFunctionDeprecated() {}
 
-bool BluetoothLowEnergyExtensionFunction::RunAsync() {
+bool BluetoothLowEnergyExtensionFunctionDeprecated::RunAsync() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!BluetoothManifestData::CheckLowEnergyPermitted(extension())) {
@@ -212,13 +215,58 @@ bool BluetoothLowEnergyExtensionFunction::RunAsync() {
 
   // It is safe to pass |this| here as ExtensionFunction is refcounted.
   if (!event_router->InitializeAdapterAndInvokeCallback(base::Bind(
-          &DoWorkCallback,
-          base::Bind(&BluetoothLowEnergyExtensionFunction::DoWork, this)))) {
+          &DoWorkCallback<bool>,
+          base::Bind(&BluetoothLowEnergyExtensionFunctionDeprecated::DoWork,
+                     this)))) {
     SetError(kErrorAdapterNotInitialized);
     return false;
   }
 
   return true;
+}
+
+BluetoothLowEnergyExtensionFunction::BluetoothLowEnergyExtensionFunction() {}
+
+BluetoothLowEnergyExtensionFunction::~BluetoothLowEnergyExtensionFunction() {}
+
+ExtensionFunction::ResponseAction BluetoothLowEnergyExtensionFunction::Run() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  if (!BluetoothManifestData::CheckLowEnergyPermitted(extension()))
+    return RespondNow(Error(kErrorPermissionDenied));
+
+  BluetoothLowEnergyEventRouter* event_router =
+      GetEventRouter(browser_context());
+  if (!event_router->IsBluetoothSupported())
+    return RespondNow(Error(kErrorPlatformNotSupported));
+
+  // It is safe to pass |this| here as ExtensionFunction is refcounted.
+  if (!event_router->InitializeAdapterAndInvokeCallback(base::Bind(
+          &DoWorkCallback<void>,
+          base::Bind(&BluetoothLowEnergyExtensionFunction::DoWork, this)))) {
+    // DoWork will respond when the adapter gets initialized.
+    return RespondNow(Error(kErrorAdapterNotInitialized));
+  }
+
+  return RespondLater();
+}
+
+template <typename Params>
+BLEPeripheralExtensionFunction<Params>::BLEPeripheralExtensionFunction() {}
+
+template <typename Params>
+BLEPeripheralExtensionFunction<Params>::~BLEPeripheralExtensionFunction() {}
+
+template <typename Params>
+ExtensionFunction::ResponseAction
+BLEPeripheralExtensionFunction<Params>::Run() {
+// Causes link error on Windows. API will never be on Windows, so #ifdefing.
+#if !defined(OS_WIN)
+  params_ = Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params_.get() != NULL);
+#endif
+
+  return BluetoothLowEnergyExtensionFunction::Run();
 }
 
 bool BluetoothLowEnergyConnectFunction::DoWork() {
@@ -874,7 +922,7 @@ void BluetoothLowEnergyAdvertisementFunction::RemoveAdvertisement(
 
 bool BluetoothLowEnergyAdvertisementFunction::RunAsync() {
   Initialize();
-  return BluetoothLowEnergyExtensionFunction::RunAsync();
+  return BluetoothLowEnergyExtensionFunctionDeprecated::RunAsync();
 }
 
 void BluetoothLowEnergyAdvertisementFunction::Initialize() {
@@ -1063,6 +1111,64 @@ void BluetoothLowEnergyUnregisterAdvertisementFunction::ErrorCallback(
       SetError(kErrorOperationFailed);
   }
   SendResponse(false);
+}
+
+template class BLEPeripheralExtensionFunction<apibtle::CreateService::Params>;
+
+void BluetoothLowEnergyCreateServiceFunction::DoWork() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+// Causes link error on Windows. API will never be on Windows, so #ifdefing.
+// TODO: Ideally this should be handled by our feature system, so that this
+// code doesn't even compile on OSes it isn't being used on, but currently this
+// is not possible.
+#if !defined(OS_WIN)
+  Respond(ArgumentList(apibtle::CreateService::Results::Create(std::string())));
+#else
+  Respond(Error(kErrorPlatformNotSupported));
+#endif
+}
+
+template class BLEPeripheralExtensionFunction<
+    apibtle::CreateCharacteristic::Params>;
+
+void BluetoothLowEnergyCreateCharacteristicFunction::DoWork() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  Respond(ArgumentList(
+      apibtle::CreateCharacteristic::Results::Create(std::string())));
+}
+
+template class BLEPeripheralExtensionFunction<
+    apibtle::CreateDescriptor::Params>;
+
+void BluetoothLowEnergyCreateDescriptorFunction::DoWork() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  Respond(
+      ArgumentList(apibtle::CreateDescriptor::Results::Create(std::string())));
+}
+
+template class BLEPeripheralExtensionFunction<apibtle::RegisterService::Params>;
+
+void BluetoothLowEnergyRegisterServiceFunction::DoWork() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  Respond(ArgumentList(apibtle::RegisterService::Results::Create(
+      apibtle::SERVICE_RESULT_SUCCESS)));
+}
+
+template class BLEPeripheralExtensionFunction<
+    apibtle::UnregisterService::Params>;
+
+void BluetoothLowEnergyUnregisterServiceFunction::DoWork() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  Respond(ArgumentList(apibtle::UnregisterService::Results::Create(
+      apibtle::SERVICE_RESULT_SUCCESS)));
+}
+
+template class BLEPeripheralExtensionFunction<
+    apibtle::SendRequestResponse::Params>;
+
+void BluetoothLowEnergySendRequestResponseFunction::DoWork() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  Respond(NoArguments());
 }
 
 }  // namespace api

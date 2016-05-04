@@ -17,8 +17,6 @@ namespace device {
 class BluetoothAdvertisement;
 }  // namespace device
 
-namespace apibtle = extensions::api::bluetooth_low_energy;
-
 namespace extensions {
 
 // Representation of advertisement instances from the "bluetooth" namespace,

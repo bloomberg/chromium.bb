@@ -14,7 +14,6 @@ function testGetCharacteristic() {
   chrome.test.assertEq('char_id0', characteristic.instanceId);
   chrome.test.assertEq('00001211-0000-1000-8000-00805f9b34fb',
                        characteristic.uuid);
-  chrome.test.assertEq(false, characteristic.isLocal);
   chrome.test.assertEq(serviceId, characteristic.service.instanceId);
   chrome.test.assertEq(4, characteristic.properties.length);
   chrome.test.assertTrue(characteristic.properties.indexOf('broadcast') > -1,

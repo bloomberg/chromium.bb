@@ -15,14 +15,12 @@ function testGetServices() {
   chrome.test.assertEq('00001234-0000-1000-8000-00805f9b34fb',
                        services[0].uuid);
   chrome.test.assertEq(true , services[0].isPrimary);
-  chrome.test.assertEq(false, services[0].isLocal);
   chrome.test.assertEq(deviceAddress, services[0].deviceAddress);
 
   chrome.test.assertEq('service_id1', services[1].instanceId);
   chrome.test.assertEq('00005678-0000-1000-8000-00805f9b34fb',
                        services[1].uuid);
   chrome.test.assertEq(false , services[1].isPrimary);
-  chrome.test.assertEq(false, services[1].isLocal);
   chrome.test.assertEq(deviceAddress, services[1].deviceAddress);
 
   chrome.test.succeed();

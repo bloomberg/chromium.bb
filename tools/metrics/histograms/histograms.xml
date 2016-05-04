@@ -70085,6 +70085,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1119" label="PASSWORDSPRIVATE_GETPASSWORDEXCEPTIONLIST"/>
   <int value="1120" label="INPUTMETHODPRIVATE_OPENOPTIONSPAGE"/>
   <int value="1121" label="FEEDBACKPRIVATE_LOGSRTPROMPTRESULT"/>
+  <int value="1122" label="BLUETOOTHLOWENERGY_CREATESERVICE"/>
+  <int value="1123" label="BLUETOOTHLOWENERGY_CREATECHARACTERISTIC"/>
+  <int value="1124" label="BLUETOOTHLOWENERGY_CREATEDESCRIPTOR"/>
+  <int value="1125" label="BLUETOOTHLOWENERGY_REGISTERSERVICE"/>
+  <int value="1126" label="BLUETOOTHLOWENERGY_UNREGISTERSERVICE"/>
+  <int value="1127" label="BLUETOOTHLOWENERGY_SENDREQUESTRESPONSE"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

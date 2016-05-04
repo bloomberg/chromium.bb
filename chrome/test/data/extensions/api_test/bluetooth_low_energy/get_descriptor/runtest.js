@@ -13,7 +13,6 @@ function testGetDescriptor() {
 
   chrome.test.assertEq('desc_id0', descriptor.instanceId);
   chrome.test.assertEq('00001221-0000-1000-8000-00805f9b34fb', descriptor.uuid);
-  chrome.test.assertEq(false, descriptor.isLocal);
   chrome.test.assertEq(charId, descriptor.characteristic.instanceId);
 
   var valueBytes = new Uint8Array(descriptor.value);

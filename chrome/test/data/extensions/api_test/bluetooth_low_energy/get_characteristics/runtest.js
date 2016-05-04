@@ -13,7 +13,6 @@ function testGetCharacteristics() {
 
   chrome.test.assertEq('char_id0', chrcs[0].instanceId);
   chrome.test.assertEq('00001211-0000-1000-8000-00805f9b34fb', chrcs[0].uuid);
-  chrome.test.assertEq(false, chrcs[0].isLocal);
   chrome.test.assertEq(serviceId, chrcs[0].service.instanceId);
   chrome.test.assertEq(4, chrcs[0].properties.length);
   chrome.test.assertTrue(chrcs[0].properties.indexOf('broadcast') > -1,
@@ -36,7 +35,6 @@ function testGetCharacteristics() {
 
   chrome.test.assertEq('char_id1', chrcs[1].instanceId),
   chrome.test.assertEq('00001212-0000-1000-8000-00805f9b34fb', chrcs[1].uuid);
-  chrome.test.assertEq(false, chrcs[1].isLocal);
   chrome.test.assertEq(serviceId, chrcs[1].service.instanceId);
   chrome.test.assertEq(3, chrcs[1].properties.length);
   chrome.test.assertTrue(chrcs[1].properties.indexOf('read') > -1,
