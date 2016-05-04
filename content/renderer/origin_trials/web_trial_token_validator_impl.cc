@@ -11,7 +11,7 @@ namespace content {
 WebTrialTokenValidatorImpl::WebTrialTokenValidatorImpl() {}
 WebTrialTokenValidatorImpl::~WebTrialTokenValidatorImpl() {}
 
-bool WebTrialTokenValidatorImpl::validateToken(
+blink::WebOriginTrialTokenStatus WebTrialTokenValidatorImpl::validateToken(
     const blink::WebString& token,
     const blink::WebSecurityOrigin& origin,
     const blink::WebString& featureName) {

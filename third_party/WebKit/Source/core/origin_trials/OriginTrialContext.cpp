@@ -5,9 +5,11 @@
 #include "core/origin_trials/OriginTrialContext.h"
 
 #include "core/dom/ExecutionContext.h"
+#include "platform/Histogram.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebOriginTrialTokenStatus.h"
 #include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/WebTrialTokenValidator.h"
 #include "wtf/text/StringBuilder.h"
@@ -15,6 +17,28 @@
 namespace blink {
 
 namespace {
+
+// The enum entries below are written to histograms and thus cannot be deleted
+// or reordered.
+// New entries must be added immediately before the end.
+enum MessageGeneratedResult {
+    MessageGeneratedResultNotRequested = 0,
+    MessageGeneratedResultYes = 1,
+    MessageGeneratedResultNo = 2,
+    MessageGeneratedResultLast = MessageGeneratedResultNo
+};
+
+static EnumerationHistogram& enabledResultHistogram()
+{
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(EnumerationHistogram, histogram, new EnumerationHistogram("OriginTrials.FeatureEnabled", static_cast<int>(WebOriginTrialTokenStatus::Last)));
+    return histogram;
+}
+
+static EnumerationHistogram& messageGeneratedResultHistogram()
+{
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(EnumerationHistogram, histogram, new EnumerationHistogram("OriginTrials.FeatureEnabled.MessageGenerated", MessageGeneratedResultLast));
+    return histogram;
+}
 
 String getDisabledMessage(const String& featureName)
 {
@@ -24,6 +48,69 @@ String getDisabledMessage(const String& featureName)
 String getInvalidTokenMessage(const String& featureName)
 {
     return "The provided token(s) are not valid for the '" + featureName + "' feature.";
+}
+
+String getNotSupportedMessage()
+{
+    return "This browser does not support origin trials.";
+}
+
+int getTokenValidationResultPriority(
+    WebOriginTrialTokenStatus validationResult)
+{
+    // There could be zero, one or multiple trial tokens provided for a given
+    // context, and any number of them could be invalid. The tokens could be
+    // invalid for a variety of reasons. For multiple invalid tokens, the
+    // failures are collected into a single result for collecting metrics. At a
+    // high level, the idea is to report on the tokens that were closest to
+    // being valid for enabling a feature. This gives the priority as:
+    //   1. Expired, but otherwise valid
+    //   2. Wrong feature, but correct origin
+    //   3. Wrong origin, but correct format for token data
+    //   4. Invalid signature for token
+    //   5. Wrong version for token (not currently supported version number(s))
+    //   6. Invalid data in token (can be before/after validating signature)
+    //   7. Embedder does not support origin trials
+    //   8. No tokens provided
+    // NOTE: Lower numbers are higher priority
+    // See this document for details:
+    // https://docs.google.com/document/d/1qVP2CK1lbfmtIJRIm6nwuEFFhGhYbtThLQPo3CSTtmg/edit#bookmark=id.k1j0q938so3b
+    switch (validationResult) {
+    case WebOriginTrialTokenStatus::Success:
+    case WebOriginTrialTokenStatus::Insecure:
+        // This function should only be used for token validation failures
+        NOTREACHED();
+        return 99;
+    case WebOriginTrialTokenStatus::Expired:
+        return 1;
+    case WebOriginTrialTokenStatus::WrongFeature:
+        return 2;
+    case WebOriginTrialTokenStatus::WrongOrigin:
+        return 3;
+    case WebOriginTrialTokenStatus::InvalidSignature:
+        return 4;
+    case WebOriginTrialTokenStatus::WrongVersion:
+        return 5;
+    case WebOriginTrialTokenStatus::Malformed:
+        return 6;
+    case WebOriginTrialTokenStatus::NotSupported:
+        return 7;
+    case WebOriginTrialTokenStatus::NoTokens:
+        return 8;
+    }
+
+    NOTREACHED();
+    return 99;
+}
+
+WebOriginTrialTokenStatus UpdateResultFromValidationFailure(
+    WebOriginTrialTokenStatus newResult,
+    WebOriginTrialTokenStatus currentResult)
+{
+    if (getTokenValidationResultPriority(newResult) < getTokenValidationResultPriority(currentResult)) {
+        return newResult;
+    }
+    return currentResult;
 }
 
 bool isWhitespace(UChar chr)
@@ -137,11 +224,62 @@ void OriginTrialContext::addToken(const String& token)
 bool OriginTrialContext::isFeatureEnabled(const String& featureName, String* errorMessage, WebTrialTokenValidator* validator)
 {
     if (!RuntimeEnabledFeatures::experimentalFrameworkEnabled()) {
-        // TODO(iclelland): Set an error message here, the first time the
-        // context is accessed in this renderer.
+        // Do not set an error message. When the framework is disabled, it
+        // should behave the same as when only runtime flags are used.
         return false;
     }
 
+    WebOriginTrialTokenStatus result = checkFeatureEnabled(featureName, errorMessage, validator);
+
+    // Record metrics for the enabled result, but only once per context.
+    if (!m_enabledResultCountedForFeature.contains(featureName)) {
+        enabledResultHistogram().count(static_cast<int>(result));
+        m_enabledResultCountedForFeature.add(featureName);
+    }
+
+    if (result == WebOriginTrialTokenStatus::Success) {
+        return true;
+    }
+
+    // If an error message has already been generated in this context, for this
+    // feature, do not generate another one. This avoids cluttering the console
+    // with error messages on every attempt to access the feature.
+    // Metrics are also recorded, to track whether too many messages are being
+    // generated over time.
+    MessageGeneratedResult generateMessage = MessageGeneratedResultYes;
+    if (!errorMessage) {
+        generateMessage = MessageGeneratedResultNotRequested;
+    } else if (m_errorMessageGeneratedForFeature.contains(featureName)) {
+        *errorMessage = "";
+        generateMessage = MessageGeneratedResultNo;
+    }
+    messageGeneratedResultHistogram().count(generateMessage);
+
+    if (generateMessage != MessageGeneratedResultYes) {
+        return false;
+    }
+
+    // Generate an error message, only if one was not already provided by the
+    // enabled check.
+    if (!errorMessage->length()) {
+        switch (result) {
+        case WebOriginTrialTokenStatus::NotSupported:
+            *errorMessage = getNotSupportedMessage();
+            break;
+        case WebOriginTrialTokenStatus::NoTokens:
+            *errorMessage = getDisabledMessage(featureName);
+            break;
+        default:
+            *errorMessage = getInvalidTokenMessage(featureName);
+            break;
+        }
+    }
+    m_errorMessageGeneratedForFeature.add(featureName);
+    return false;
+}
+
+WebOriginTrialTokenStatus OriginTrialContext::checkFeatureEnabled(const String& featureName, String* errorMessage, WebTrialTokenValidator* validator)
+{
     // Feature trials are only enabled for secure origins
     bool isSecure = errorMessage
         ? m_host->isSecureContext(*errorMessage)
@@ -152,45 +290,29 @@ bool OriginTrialContext::isFeatureEnabled(const String& featureName, String* err
         // not, and decide whether the OriginTrialContext should be using its
         // own error messages for this case.
         DCHECK(!errorMessage || !errorMessage->isEmpty());
-        return false;
+        return WebOriginTrialTokenStatus::Insecure;
     }
 
     if (!validator) {
         validator = Platform::current()->trialTokenValidator();
         if (!validator) {
-            // TODO(iclelland): Set an error message here, the first time the
-            // context is accessed in this renderer.
-            return false;
+            return WebOriginTrialTokenStatus::NotSupported;
         }
     }
 
-
+    WebOriginTrialTokenStatus failedValidationResult = WebOriginTrialTokenStatus::NoTokens;
     WebSecurityOrigin origin(m_host->getSecurityOrigin());
     for (const String& token : m_tokens) {
-        // Check with the validator service to verify the signature.
-        if (validator->validateToken(token, origin, featureName)) {
-            return true;
+        // Check with the validator service to verify the signature and that
+        // the token is valid for the combination of origin and feature.
+        WebOriginTrialTokenStatus tokenResult = validator->validateToken(token, origin, featureName);
+        if (tokenResult == WebOriginTrialTokenStatus::Success) {
+            return WebOriginTrialTokenStatus::Success;
         }
+        failedValidationResult = UpdateResultFromValidationFailure(tokenResult, failedValidationResult);
     }
 
-    if (!errorMessage)
-        return false;
-
-    // If an error message has already been generated in this context, for this
-    // feature, do not generate another one. (This avoids cluttering the console
-    // with error messages on every attempt to access the feature.)
-    if (m_errorMessageGeneratedForFeature.contains(featureName)) {
-        *errorMessage = "";
-        return false;
-    }
-
-    if (m_tokens.size()) {
-        *errorMessage = getInvalidTokenMessage(featureName);
-    } else {
-        *errorMessage = getDisabledMessage(featureName);
-    }
-    m_errorMessageGeneratedForFeature.add(featureName);
-    return false;
+    return failedValidationResult;
 }
 
 DEFINE_TRACE(OriginTrialContext)

@@ -11,13 +11,14 @@
 
 namespace blink {
 
+enum class WebOriginTrialTokenStatus;
+
 // This interface abstracts the task of validating a token for an experimental
 // feature. Experimental features can be turned on and off at runtime for a
 // specific renderer, depending on the presence of a valid token provided by
 // the origin.
 //
-// More documentation on the design of the experimental framework is at
-// https://docs.google.com/document/d/1qVP2CK1lbfmtIJRIm6nwuEFFhGhYbtThLQPo3CSTtmg
+// For more information, see https://github.com/jpchase/OriginTrials.
 
 class WebTrialTokenValidator {
 public:
@@ -25,7 +26,7 @@ public:
 
     // Returns true if the given token is valid for the specified origin and
     // feature name.
-    virtual bool validateToken(const WebString& token, const WebSecurityOrigin&, const WebString& featureName) = 0;
+    virtual WebOriginTrialTokenStatus validateToken(const WebString& token, const WebSecurityOrigin&, const WebString& featureName) = 0;
 };
 
 } // namespace blink

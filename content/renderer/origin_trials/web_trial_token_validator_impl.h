@@ -13,8 +13,8 @@
 
 namespace content {
 
-// The TrialTokenValidator is called by the Experimental Framework code in Blink
-// to validate tokens to enable experimental features.
+// The TrialTokenValidator is called by the Origin Trials Framework code in
+// Blink to validate tokens to enable experimental features.
 //
 // This class is thread-safe.
 class CONTENT_EXPORT WebTrialTokenValidatorImpl
@@ -24,9 +24,10 @@ class CONTENT_EXPORT WebTrialTokenValidatorImpl
   ~WebTrialTokenValidatorImpl() override;
 
   // blink::WebTrialTokenValidator implementation
-  bool validateToken(const blink::WebString& token,
-                     const blink::WebSecurityOrigin& origin,
-                     const blink::WebString& featureName) override;
+  blink::WebOriginTrialTokenStatus validateToken(
+      const blink::WebString& token,
+      const blink::WebSecurityOrigin& origin,
+      const blink::WebString& featureName) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebTrialTokenValidatorImpl);

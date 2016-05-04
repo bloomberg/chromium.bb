@@ -15,22 +15,23 @@
 namespace blink {
 
 class ExecutionContext;
+enum class WebOriginTrialTokenStatus;
 class WebTrialTokenValidator;
 
-// The Experimental Framework (EF) provides limited access to experimental
-// features, on a per-origin basis (origin trials). This class provides the
-// implementation to check if the experimental feature should be enabled for the
-// current context.  This class is not for direct use by feature implementers.
+// The Origin Trials Framework provides limited access to experimental features,
+// on a per-origin basis (origin trials). This class provides the implementation
+// to check if the experimental feature should be enabled for the current
+// context.  This class is not for direct use by feature implementers.
 // Instead, the OriginTrials generated namespace provides a method for each
 // feature to check if it is enabled. Experimental features must be defined in
 // RuntimeEnabledFeatures.in, which is used to generate OriginTrials.h/cpp.
 //
 // Experimental features are defined by string names, provided by the
-// implementers. The EF code does not maintain an enum or constant list for
-// feature names. Instead, the EF validates the name provided by the feature
-// implementation against any provided tokens.
+// implementers. The framework does not maintain an enum or constant list for
+// feature names. Instead, the name provided by the feature implementation
+// is validated against any provided tokens.
 //
-// TODO(chasej): Link to documentation, or provide more detail on keys, .etc
+// For more information, see https://github.com/jpchase/OriginTrials.
 class CORE_EXPORT OriginTrialContext final : public GarbageCollectedFinalized<OriginTrialContext>, public Supplement<ExecutionContext> {
 USING_GARBAGE_COLLECTED_MIXIN(OriginTrialContext)
 public:
@@ -50,9 +51,10 @@ public:
     void addToken(const String& token);
 
     // Returns true if the feature should be considered enabled for the current
-    // execution context. This method usually makes use of the token validator
-    // object in the platform, but this may be overridden if a custom validator
-    // is required (for testing, for instance).
+    // execution context. If non-null, the |errorMessage| parameter will be used
+    // to provide a message for features that are not enabled. If non-null, the
+    // optional WebTrialTokenValidator parameter will override the platform
+    // token validator object that is normally used (e.g. for testing).
     bool isFeatureEnabled(const String& featureName, String* errorMessage, WebTrialTokenValidator* = nullptr);
 
     DECLARE_VIRTUAL_TRACE();
@@ -60,6 +62,21 @@ public:
 private:
     Member<ExecutionContext> m_host;
     Vector<String> m_tokens;
+
+    // The public isFeatureEnabled method delegates to this method to do the
+    // core logic to check if the feature can be enabled for the current
+    // context. Returns a code to indicate if the feature is enabled, or to
+    // indicate a specific reason why the feature is disabled. If the
+    // |errorMessage| parameter is non-null, and the feature is disabled due to
+    // an insecure context, it will be updated with a message. For other
+    // disabled reasons, the |errorMessage| parameter will not be updated. The
+    // caller is responsible for providing a message as appropriate.
+    WebOriginTrialTokenStatus checkFeatureEnabled(const String& featureName, String* errorMessage, WebTrialTokenValidator* = nullptr);
+
+    // Records whether metrics about the enabled status have been recorded, for
+    // each feature name. Only one result should be recorded per context,
+    // regardless of how many times the enabled check is actually done.
+    HashSet<String> m_enabledResultCountedForFeature;
 
     // Records whether an error message has been generated, for each feature
     // name. Since these messages are generally written to the console, this is

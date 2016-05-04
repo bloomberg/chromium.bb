@@ -16,6 +16,7 @@
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "third_party/WebKit/public/platform/WebOriginTrialTokenStatus.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -44,48 +45,68 @@ const uint8_t kVersion2 = 2;
 TrialToken::~TrialToken() {}
 
 // static
-std::unique_ptr<TrialToken> TrialToken::From(const std::string& token_text,
-                                             base::StringPiece public_key) {
-  std::unique_ptr<std::string> token_payload = Extract(token_text, public_key);
-  if (!token_payload) {
+std::unique_ptr<TrialToken> TrialToken::From(
+    const std::string& token_text,
+    base::StringPiece public_key,
+    blink::WebOriginTrialTokenStatus* out_status) {
+  DCHECK(out_status);
+  std::string token_payload;
+  *out_status = Extract(token_text, public_key, &token_payload);
+  if (*out_status != blink::WebOriginTrialTokenStatus::Success) {
     return nullptr;
   }
-  return Parse(*token_payload);
+  std::unique_ptr<TrialToken> token = Parse(token_payload);
+  *out_status = token ? blink::WebOriginTrialTokenStatus::Success
+                      : blink::WebOriginTrialTokenStatus::Malformed;
+  return token;
 }
 
-bool TrialToken::IsValidForFeature(const url::Origin& origin,
-                                   base::StringPiece feature_name,
-                                   const base::Time& now) const {
-  return ValidateOrigin(origin) && ValidateFeatureName(feature_name) &&
-         ValidateDate(now);
+blink::WebOriginTrialTokenStatus TrialToken::IsValidForFeature(
+    const url::Origin& origin,
+    base::StringPiece feature_name,
+    const base::Time& now) const {
+  // The order of these checks is intentional. For example, will only report a
+  // token as expired if it is valid for the origin + feature combination.
+  if (!ValidateOrigin(origin)) {
+    return blink::WebOriginTrialTokenStatus::WrongOrigin;
+  }
+  if (!ValidateFeatureName(feature_name)) {
+    return blink::WebOriginTrialTokenStatus::WrongFeature;
+  }
+  if (!ValidateDate(now)) {
+    return blink::WebOriginTrialTokenStatus::Expired;
+  }
+  return blink::WebOriginTrialTokenStatus::Success;
 }
 
-std::unique_ptr<std::string> TrialToken::Extract(
-    const std::string& token_payload,
-    base::StringPiece public_key) {
-  if (token_payload.empty()) {
-    return nullptr;
+// static
+blink::WebOriginTrialTokenStatus TrialToken::Extract(
+    const std::string& token_text,
+    base::StringPiece public_key,
+    std::string* out_token_payload) {
+  if (token_text.empty()) {
+    return blink::WebOriginTrialTokenStatus::Malformed;
   }
 
   // Token is base64-encoded; decode first.
   std::string token_contents;
-  if (!base::Base64Decode(token_payload, &token_contents)) {
-    return nullptr;
+  if (!base::Base64Decode(token_text, &token_contents)) {
+    return blink::WebOriginTrialTokenStatus::Malformed;
   }
 
   // Only version 2 currently supported.
   if (token_contents.length() < (kVersionOffset + kVersionSize)) {
-    return nullptr;
+    return blink::WebOriginTrialTokenStatus::Malformed;
   }
   uint8_t version = token_contents[kVersionOffset];
   if (version != kVersion2) {
-    return nullptr;
+    return blink::WebOriginTrialTokenStatus::WrongVersion;
   }
 
   // Token must be large enough to contain a version, signature, and payload
   // length.
   if (token_contents.length() < (kPayloadLengthOffset + kPayloadLengthSize)) {
-    return nullptr;
+    return blink::WebOriginTrialTokenStatus::Malformed;
   }
 
   // Extract the length of the signed data (Big-endian).
@@ -94,7 +115,7 @@ std::unique_ptr<std::string> TrialToken::Extract(
 
   // Validate that the stated length matches the actual payload length.
   if (payload_length != token_contents.length() - kPayloadOffset) {
-    return nullptr;
+    return blink::WebOriginTrialTokenStatus::Malformed;
   }
 
   // Extract the version-specific contents of the token.
@@ -110,17 +131,19 @@ std::unique_ptr<std::string> TrialToken::Extract(
 
   // Validate the signature on the data before proceeding.
   if (!TrialToken::ValidateSignature(signature, signed_data, public_key)) {
-    return nullptr;
+    return blink::WebOriginTrialTokenStatus::InvalidSignature;
   }
 
   // Return just the payload, as a new string.
-  return base::WrapUnique(
-      new std::string(token_contents, kPayloadOffset, payload_length));
+  *out_token_payload = token_contents.substr(kPayloadOffset, payload_length);
+  return blink::WebOriginTrialTokenStatus::Success;
 }
 
-std::unique_ptr<TrialToken> TrialToken::Parse(const std::string& token_json) {
+// static
+std::unique_ptr<TrialToken> TrialToken::Parse(
+    const std::string& token_payload) {
   std::unique_ptr<base::DictionaryValue> datadict =
-      base::DictionaryValue::From(base::JSONReader::Read(token_json));
+      base::DictionaryValue::From(base::JSONReader::Read(token_payload));
   if (!datadict) {
     return nullptr;
   }

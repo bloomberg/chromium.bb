@@ -144,6 +144,7 @@
       "platform/WebMockClipboard.h",
       "platform/WebNativeScrollBehavior.h",
       "platform/WebNonCopyable.h",
+      "platform/WebOriginTrialTokenStatus.h",
       "platform/WebPageVisibilityState.h",
       "platform/WebPasswordCredential.h",
       "platform/WebPlatformEventListener.h",

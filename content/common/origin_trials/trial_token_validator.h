@@ -10,14 +10,19 @@
 #include "content/common/content_export.h"
 #include "url/origin.h"
 
+namespace blink {
+enum class WebOriginTrialTokenStatus;
+}
+
 namespace content {
 
 namespace TrialTokenValidator {
 
 // This method is thread-safe.
-CONTENT_EXPORT bool ValidateToken(const std::string& token,
-                                  const url::Origin& origin,
-                                  base::StringPiece feature_name);
+CONTENT_EXPORT blink::WebOriginTrialTokenStatus ValidateToken(
+    const std::string& token,
+    const url::Origin& origin,
+    base::StringPiece feature_name);
 
 }  // namespace TrialTokenValidator
 

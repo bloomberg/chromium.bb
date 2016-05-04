@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "content/public/common/content_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/WebOriginTrialTokenStatus.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -120,41 +121,51 @@ class TrialTokenValidatorTest : public testing::Test {
 };
 
 TEST_F(TrialTokenValidatorTest, ValidateValidToken) {
-  EXPECT_TRUE(TrialTokenValidator::ValidateToken(
-      kSampleToken, appropriate_origin_, kAppropriateFeatureName));
+  EXPECT_EQ(blink::WebOriginTrialTokenStatus::Success,
+            TrialTokenValidator::ValidateToken(
+                kSampleToken, appropriate_origin_, kAppropriateFeatureName));
 }
 
 TEST_F(TrialTokenValidatorTest, ValidateInappropriateOrigin) {
-  EXPECT_FALSE(TrialTokenValidator::ValidateToken(
-      kSampleToken, inappropriate_origin_, kAppropriateFeatureName));
-  EXPECT_FALSE(TrialTokenValidator::ValidateToken(
-      kSampleToken, insecure_origin_, kAppropriateFeatureName));
+  EXPECT_EQ(blink::WebOriginTrialTokenStatus::WrongOrigin,
+            TrialTokenValidator::ValidateToken(
+                kSampleToken, inappropriate_origin_, kAppropriateFeatureName));
+  EXPECT_EQ(blink::WebOriginTrialTokenStatus::WrongOrigin,
+            TrialTokenValidator::ValidateToken(kSampleToken, insecure_origin_,
+                                               kAppropriateFeatureName));
 }
 
 TEST_F(TrialTokenValidatorTest, ValidateInappropriateFeature) {
-  EXPECT_FALSE(TrialTokenValidator::ValidateToken(
-      kSampleToken, appropriate_origin_, kInappropriateFeatureName));
+  EXPECT_EQ(blink::WebOriginTrialTokenStatus::WrongFeature,
+            TrialTokenValidator::ValidateToken(
+                kSampleToken, appropriate_origin_, kInappropriateFeatureName));
 }
 
 TEST_F(TrialTokenValidatorTest, ValidateInvalidSignature) {
-  EXPECT_FALSE(TrialTokenValidator::ValidateToken(
-      kInvalidSignatureToken, appropriate_origin_, kAppropriateFeatureName));
+  EXPECT_EQ(blink::WebOriginTrialTokenStatus::InvalidSignature,
+            TrialTokenValidator::ValidateToken(kInvalidSignatureToken,
+                                               appropriate_origin_,
+                                               kAppropriateFeatureName));
 }
 
 TEST_F(TrialTokenValidatorTest, ValidateUnparsableToken) {
-  EXPECT_FALSE(TrialTokenValidator::ValidateToken(
-      kUnparsableToken, appropriate_origin_, kAppropriateFeatureName));
+  EXPECT_EQ(blink::WebOriginTrialTokenStatus::Malformed,
+            TrialTokenValidator::ValidateToken(kUnparsableToken,
+                                               appropriate_origin_,
+                                               kAppropriateFeatureName));
 }
 
 TEST_F(TrialTokenValidatorTest, ValidateExpiredToken) {
-  EXPECT_FALSE(TrialTokenValidator::ValidateToken(
-      kExpiredToken, appropriate_origin_, kAppropriateFeatureName));
+  EXPECT_EQ(blink::WebOriginTrialTokenStatus::Expired,
+            TrialTokenValidator::ValidateToken(
+                kExpiredToken, appropriate_origin_, kAppropriateFeatureName));
 }
 
 TEST_F(TrialTokenValidatorTest, ValidateValidTokenWithIncorrectKey) {
   SetPublicKey(kTestPublicKey2);
-  EXPECT_FALSE(TrialTokenValidator::ValidateToken(
-      kSampleToken, appropriate_origin_, kAppropriateFeatureName));
+  EXPECT_EQ(blink::WebOriginTrialTokenStatus::InvalidSignature,
+            TrialTokenValidator::ValidateToken(
+                kSampleToken, appropriate_origin_, kAppropriateFeatureName));
 }
 
 }  // namespace content

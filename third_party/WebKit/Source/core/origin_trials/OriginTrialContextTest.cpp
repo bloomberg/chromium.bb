@@ -12,8 +12,10 @@
 #include "core/html/HTMLMetaElement.h"
 #include "core/testing/DummyPageHolder.h"
 #include "core/testing/NullExecutionContext.h"
+#include "platform/testing/HistogramTester.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "public/platform/WebOriginTrialTokenStatus.h"
 #include "public/platform/WebTrialTokenValidator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/Vector.h"
@@ -26,34 +28,37 @@ const char kFrobulateFeatureName[] = "Frobulate";
 const char kFrobulateEnabledOrigin[] = "https://www.example.com";
 const char kFrobulateEnabledOriginUnsecure[] = "http://www.example.com";
 
-// Trial token which will appear valid
-const char kGoodToken[] = "AnySignatureWillDo|https://www.example.com|Frobulate|2000000000";
+// Names of UMA histograms
+const char kEnabledHistogram[] = "OriginTrials.FeatureEnabled";
+const char kMessageHistogram[] = "OriginTrials.FeatureEnabled.MessageGenerated";
+
+// Values for message generated histogram
+const int kMessageHistogramValueNotRequested = 0;
+const int kMessageHistogramValueYes = 1;
+
+// Trial token placeholder for mocked calls to validator
+const char kTokenPlaceholder[] = "The token contents are not used";
 
 class MockTokenValidator : public WebTrialTokenValidator {
 public:
     MockTokenValidator()
-        : m_response(false)
+        : m_response(WebOriginTrialTokenStatus::NotSupported)
         , m_callCount(0)
     {
     }
     ~MockTokenValidator() override {}
 
     // blink::WebTrialTokenValidator implementation
-    bool validateToken(const blink::WebString& token, const blink::WebSecurityOrigin& origin, const blink::WebString& featureName) override
+    WebOriginTrialTokenStatus validateToken(const blink::WebString& token, const blink::WebSecurityOrigin& origin, const blink::WebString& featureName) override
     {
         m_callCount++;
         return m_response;
     }
 
     // Useful methods for controlling the validator
-    void setResponse(bool response)
+    void setResponse(WebOriginTrialTokenStatus response)
     {
         m_response = response;
-    }
-    void reset()
-    {
-        m_response = false;
-        m_callCount = 0;
     }
     int callCount()
     {
@@ -61,7 +66,7 @@ public:
     }
 
 private:
-    bool m_response;
+    WebOriginTrialTokenStatus m_response;
     int m_callCount;
 
     DISALLOW_COPY_AND_ASSIGN(MockTokenValidator);
@@ -76,6 +81,7 @@ protected:
         , m_executionContext(new NullExecutionContext())
         , m_tokenValidator(adoptPtr(new MockTokenValidator()))
         , m_originTrialContext(new OriginTrialContext(m_executionContext.get()))
+        , m_histogramTester(new HistogramTester())
     {
         RuntimeEnabledFeatures::setExperimentalFrameworkEnabled(true);
     }
@@ -95,16 +101,39 @@ protected:
         m_executionContext->setIsSecureContext(SecurityOrigin::isSecure(pageURL));
     }
 
-    bool isFeatureEnabled(const String& origin, const String& featureName, const String& token, String* errorMessage)
+    bool isFeatureEnabled(const String& origin, const String& featureName, String* errorMessage)
     {
         updateSecurityOrigin(origin);
-        m_originTrialContext->addToken(token);
+        // Need at least one token to ensure the token validator is called.
+        m_originTrialContext->addToken(kTokenPlaceholder);
         return m_originTrialContext->isFeatureEnabled(featureName, errorMessage, tokenValidator());
     }
 
-    bool isFeatureEnabledWithoutErrorMessage(const String& origin, const String& featureName, const char* token)
+    bool isFeatureEnabledWithoutErrorMessage(const String& origin, const String& featureName)
     {
-        return isFeatureEnabled(origin, featureName, token, nullptr);
+        return isFeatureEnabled(origin, featureName, nullptr);
+    }
+
+    void expectEnabledUniqueMetric(WebOriginTrialTokenStatus status, int count)
+    {
+        m_histogramTester->expectUniqueSample(
+            kEnabledHistogram, static_cast<int>(status), count);
+    }
+
+    void expectEnabledTotalMetric(int total)
+    {
+        m_histogramTester->expectTotalCount(kEnabledHistogram, total);
+    }
+
+    void expectMessageUniqueMetric(int messageGeneratedValue, int count)
+    {
+        m_histogramTester->expectUniqueSample(
+            kMessageHistogram, messageGeneratedValue, count);
+    }
+
+    void expectMessageTotalMetric(int total)
+    {
+        m_histogramTester->expectTotalCount(kMessageHistogram, total);
     }
 
 private:
@@ -112,14 +141,15 @@ private:
     Persistent<NullExecutionContext> m_executionContext;
     OwnPtr<MockTokenValidator> m_tokenValidator;
     Persistent<OriginTrialContext> m_originTrialContext;
+    std::unique_ptr<HistogramTester> m_histogramTester;
 };
 
 TEST_F(OriginTrialContextTest, EnabledNonExistingFeature)
 {
     String errorMessage;
+    tokenValidator()->setResponse(WebOriginTrialTokenStatus::WrongFeature);
     bool isNonExistingFeatureEnabled = isFeatureEnabled(kFrobulateEnabledOrigin,
         kNonExistingFeatureName,
-        kGoodToken,
         &errorMessage);
     EXPECT_FALSE(isNonExistingFeatureEnabled);
     EXPECT_EQ(("The provided token(s) are not valid for the 'This feature does not exist' feature."), errorMessage);
@@ -129,8 +159,7 @@ TEST_F(OriginTrialContextTest, EnabledNonExistingFeatureWithoutErrorMessage)
 {
     bool isNonExistingFeatureEnabled = isFeatureEnabledWithoutErrorMessage(
         kFrobulateEnabledOrigin,
-        kNonExistingFeatureName,
-        kGoodToken);
+        kNonExistingFeatureName);
     EXPECT_FALSE(isNonExistingFeatureEnabled);
 }
 
@@ -138,14 +167,18 @@ TEST_F(OriginTrialContextTest, EnabledNonExistingFeatureWithoutErrorMessage)
 TEST_F(OriginTrialContextTest, EnabledSecureRegisteredOrigin)
 {
     String errorMessage;
-    tokenValidator()->setResponse(true);
+    tokenValidator()->setResponse(WebOriginTrialTokenStatus::Success);
     bool isOriginEnabled = isFeatureEnabled(kFrobulateEnabledOrigin,
         kFrobulateFeatureName,
-        kGoodToken,
         &errorMessage);
     EXPECT_TRUE(isOriginEnabled);
     EXPECT_TRUE(errorMessage.isEmpty()) << "Message should be empty, was: " << errorMessage;
     EXPECT_EQ(1, tokenValidator()->callCount());
+
+    // Enabled metric should be updated, but the message generated metric
+    // should not be updated on success.
+    expectEnabledUniqueMetric(WebOriginTrialTokenStatus::Success, 1);
+    expectMessageTotalMetric(0);
 }
 
 // ... but if the browser says it's invalid for any reason, that's enough to
@@ -153,34 +186,48 @@ TEST_F(OriginTrialContextTest, EnabledSecureRegisteredOrigin)
 TEST_F(OriginTrialContextTest, InvalidTokenResponseFromPlatform)
 {
     String errorMessage;
-    tokenValidator()->setResponse(false);
+    tokenValidator()->setResponse(WebOriginTrialTokenStatus::Malformed);
     bool isOriginEnabled = isFeatureEnabled(kFrobulateEnabledOrigin,
         kFrobulateFeatureName,
-        kGoodToken,
         &errorMessage);
     EXPECT_FALSE(isOriginEnabled);
     EXPECT_EQ(("The provided token(s) are not valid for the 'Frobulate' feature."), errorMessage);
     EXPECT_EQ(1, tokenValidator()->callCount());
+
+    // Enabled and message generated metrics should be updated
+    expectEnabledUniqueMetric(WebOriginTrialTokenStatus::Malformed, 1);
+    expectMessageUniqueMetric(kMessageHistogramValueYes, 1);
 }
 
 TEST_F(OriginTrialContextTest, OnlyOneErrorMessageGenerated)
 {
     String errorMessage1;
     String errorMessage2;
-    tokenValidator()->setResponse(false);
-    isFeatureEnabled(kFrobulateEnabledOrigin, kFrobulateFeatureName, kGoodToken, &errorMessage1);
-    isFeatureEnabled(kFrobulateEnabledOrigin, kFrobulateFeatureName, kGoodToken, &errorMessage2);
+    tokenValidator()->setResponse(WebOriginTrialTokenStatus::NotSupported);
+    isFeatureEnabled(kFrobulateEnabledOrigin, kFrobulateFeatureName, &errorMessage1);
+
+    // After the first call, should be one sample recorded for both the enabled
+    // and message generated metrics
+    expectMessageUniqueMetric(kMessageHistogramValueYes, 1);
+    expectEnabledUniqueMetric(WebOriginTrialTokenStatus::NotSupported, 1);
+
+    isFeatureEnabled(kFrobulateEnabledOrigin, kFrobulateFeatureName, &errorMessage2);
     EXPECT_FALSE(errorMessage1.isEmpty());
     EXPECT_TRUE(errorMessage2.isEmpty());
+
+    // Should only be one sample recorded for the enabled metric, but two
+    // samples for message generation.
+    expectEnabledTotalMetric(1);
+    expectMessageTotalMetric(2);
 }
 
 TEST_F(OriginTrialContextTest, ErrorMessageClearedIfStringReused)
 {
     String errorMessage;
-    tokenValidator()->setResponse(false);
-    isFeatureEnabled(kFrobulateEnabledOrigin, kFrobulateFeatureName, kGoodToken, &errorMessage);
+    tokenValidator()->setResponse(WebOriginTrialTokenStatus::NotSupported);
+    isFeatureEnabled(kFrobulateEnabledOrigin, kFrobulateFeatureName, &errorMessage);
     EXPECT_FALSE(errorMessage.isEmpty());
-    isFeatureEnabled(kFrobulateEnabledOrigin, kFrobulateFeatureName, kGoodToken, &errorMessage);
+    isFeatureEnabled(kFrobulateEnabledOrigin, kFrobulateFeatureName, &errorMessage);
     EXPECT_TRUE(errorMessage.isEmpty());
 }
 
@@ -188,20 +235,24 @@ TEST_F(OriginTrialContextTest, ErrorMessageGeneratedPerFeature)
 {
     String errorMessage1;
     String errorMessage2;
-    tokenValidator()->setResponse(false);
-    isFeatureEnabled(kFrobulateEnabledOrigin, kFrobulateFeatureName, kGoodToken, &errorMessage1);
-    isFeatureEnabled(kFrobulateEnabledOrigin, kNonExistingFeatureName, kGoodToken, &errorMessage2);
+    tokenValidator()->setResponse(WebOriginTrialTokenStatus::NotSupported);
+    isFeatureEnabled(kFrobulateEnabledOrigin, kFrobulateFeatureName, &errorMessage1);
+    isFeatureEnabled(kFrobulateEnabledOrigin, kNonExistingFeatureName, &errorMessage2);
     EXPECT_FALSE(errorMessage1.isEmpty());
     EXPECT_FALSE(errorMessage2.isEmpty());
+
+    // Enabled and message generated metrics should have same number of samples
+    // as different features used for each call.
+    expectEnabledUniqueMetric(WebOriginTrialTokenStatus::NotSupported, 2);
+    expectMessageUniqueMetric(kMessageHistogramValueYes, 2);
 }
 
 TEST_F(OriginTrialContextTest, EnabledSecureRegisteredOriginWithoutErrorMessage)
 {
-    tokenValidator()->setResponse(true);
+    tokenValidator()->setResponse(WebOriginTrialTokenStatus::Success);
     bool isOriginEnabled = isFeatureEnabledWithoutErrorMessage(
         kFrobulateEnabledOrigin,
-        kFrobulateFeatureName,
-        kGoodToken);
+        kFrobulateFeatureName);
     EXPECT_TRUE(isOriginEnabled);
     EXPECT_EQ(1, tokenValidator()->callCount());
 }
@@ -213,21 +264,21 @@ TEST_F(OriginTrialContextTest, EnabledNonSecureRegisteredOrigin)
     String errorMessage;
     bool isOriginEnabled = isFeatureEnabled(kFrobulateEnabledOriginUnsecure,
         kFrobulateFeatureName,
-        kGoodToken,
         &errorMessage);
     EXPECT_FALSE(isOriginEnabled);
     EXPECT_EQ(0, tokenValidator()->callCount());
     EXPECT_FALSE(errorMessage.isEmpty());
+    expectEnabledUniqueMetric(WebOriginTrialTokenStatus::Insecure, 1);
 }
 
 TEST_F(OriginTrialContextTest, EnabledNonSecureRegisteredOriginWithoutErrorMessage)
 {
     bool isOriginEnabled = isFeatureEnabledWithoutErrorMessage(
         kFrobulateEnabledOriginUnsecure,
-        kFrobulateFeatureName,
-        kGoodToken);
+        kFrobulateFeatureName);
     EXPECT_FALSE(isOriginEnabled);
     EXPECT_EQ(0, tokenValidator()->callCount());
+    expectMessageUniqueMetric(kMessageHistogramValueNotRequested, 1);
 }
 
 TEST_F(OriginTrialContextTest, ParseHeaderValue)

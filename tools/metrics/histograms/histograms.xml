@@ -34783,6 +34783,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>The number of clicks on the origin chip.</summary>
 </histogram>
 
+<histogram name="OriginTrials.FeatureEnabled" enum="OriginTrialEnableResult">
+  <owner>chasej@chromium.org</owner>
+  <owner>iclelland@chromium.org</owner>
+  <summary>
+    Counts the results of origin trial checks to enable experimental features.
+    The result for each feature check is counted at most once per execution
+    context (e.g. page, worker).
+  </summary>
+</histogram>
+
+<histogram name="OriginTrials.FeatureEnabled.MessageGenerated"
+    enum="OriginTrialMessageGeneratedResult">
+  <owner>chasej@chromium.org</owner>
+  <owner>iclelland@chromium.org</owner>
+  <summary>
+    Counts how often an error message is generated for each origin trial check
+    to enable an experimental feature.
+  </summary>
+</histogram>
+
 <histogram name="OSX.BluetoothAvailability" enum="BluetoothAvailability">
   <owner>erikchen@chromium.org</owner>
   <summary>
@@ -80027,6 +80047,25 @@ To add a new entry, add it with any value and run test to compute valid value.
 <enum name="OpenLinkAsUserProfilesState" type="int">
   <int value="0" label="No other active profiles."/>
   <int value="1" label="Active other profiles."/>
+</enum>
+
+<enum name="OriginTrialEnableResult" type="int">
+  <int value="0" label="Success"/>
+  <int value="1" label="NotSupported"/>
+  <int value="2" label="Insecure"/>
+  <int value="3" label="NoTokens"/>
+  <int value="4" label="Expired"/>
+  <int value="5" label="WrongFeature"/>
+  <int value="6" label="WrongOrigin"/>
+  <int value="7" label="InvalidSignature"/>
+  <int value="8" label="Malformed"/>
+  <int value="9" label="WrongVersion"/>
+</enum>
+
+<enum name="OriginTrialMessageGeneratedResult" type="int">
+  <int value="0" label="NotRequested"/>
+  <int value="1" label="Yes"/>
+  <int value="2" label="No"/>
 </enum>
 
 <enum name="OSAgnosticErrno" type="int">
