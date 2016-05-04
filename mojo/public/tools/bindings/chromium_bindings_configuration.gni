@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 _typemap_imports = [
-  "//components/typemaps.gni",
   "//gpu/ipc/common/typemaps.gni",
   "//mojo/common/typemaps.gni",
   "//mojo/public/cpp/bindings/tests/chromium_typemaps.gni",

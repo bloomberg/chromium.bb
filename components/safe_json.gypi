@@ -9,7 +9,7 @@
       'target_name': 'safe_json',
       'type': 'static_library',
       'dependencies': [
-        'safe_json_mojo_bindings',
+        'safe_json_parser_message_filter',
         '../base/base.gyp:base',
         '../components/components_strings.gyp:components_strings',
         '../content/content.gyp:content_browser',
@@ -61,24 +61,9 @@
       ],
     },
     {
-      # GN version: //components/safe_json/public/interfaces
-      'target_name': 'safe_json_mojo_bindings',
-      'type': 'static_library',
-      'variables': {
-        'mojom_typemaps': [
-          'safe_json/public/interfaces/safe_json.typemap',
-        ],
-      },
-      'sources': [
-        'safe_json/public/interfaces/safe_json.mojom',
-      ],
-      'includes': [ '../mojo/mojom_bindings_generator.gypi'],
-    },
-    {
-      'target_name': 'safe_json_parser_mojo',
+      'target_name': 'safe_json_parser_message_filter',
       'type': 'static_library',
       'dependencies': [
-        'safe_json_mojo_bindings',
         '../base/base.gyp:base',
         '../content/content.gyp:content_common',
         '../content/content.gyp:content_utility',
@@ -88,8 +73,10 @@
         '..',
       ],
       'sources': [
-        'safe_json/utility/safe_json_parser_mojo_impl.cc',
-        'safe_json/utility/safe_json_parser_mojo_impl.h',
+        'safe_json/safe_json_parser_message_filter.cc',
+        'safe_json/safe_json_parser_message_filter.h',
+        'safe_json/safe_json_parser_messages.cc',
+        'safe_json/safe_json_parser_messages.h',
       ],
     },
   ],

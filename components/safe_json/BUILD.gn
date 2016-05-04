@@ -23,12 +23,11 @@ source_set("safe_json") {
   ]
 
   deps = [
+    ":messages",
     "//base",
-    "//components/safe_json/public/interfaces",
     "//components/strings",
     "//content/public/browser",
-    "//content/public/common",
-    "//mojo/edk/system",
+    "//ipc",
     "//ui/base",
   ]
 
@@ -40,9 +39,9 @@ source_set("safe_json") {
     ]
     deps += [ "android:safe_json_jni_headers" ]
     deps -= [
-      "//components/safe_json/public/interfaces",
+      ":messages",
       "//content/public/browser",
-      "//mojo/edk/system",
+      "//ipc",
     ]
   }
 }
@@ -73,5 +72,36 @@ source_set("test_support") {
   deps = [
     ":safe_json",
     "//base",
+  ]
+}
+
+# This is a separate source set so that it can be shared between safe_json
+# (which can be used from any process) and the message filter (which depends on
+# the utility process and hence indirectly Blink.
+source_set("messages") {
+  sources = [
+    "safe_json_parser_messages.cc",
+    "safe_json_parser_messages.h",
+  ]
+
+  deps = [
+    "//content/public/common",
+    "//ipc",
+  ]
+}
+
+# GYP version: components/safe_json.gypi:safe_json_parser_message_filter
+source_set("safe_json_parser_message_filter") {
+  sources = [
+    "safe_json_parser_message_filter.cc",
+    "safe_json_parser_message_filter.h",
+  ]
+
+  deps = [
+    ":messages",
+    "//base",
+    "//content/public/common",
+    "//content/public/utility",
+    "//ipc",
   ]
 }
