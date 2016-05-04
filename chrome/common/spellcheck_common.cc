@@ -140,6 +140,7 @@ base::FilePath GetVersionedFileName(const std::string& input_language,
 }
 
 std::string GetCorrespondingSpellCheckLanguage(const std::string& language) {
+  std::string best_match;
   // Look for exact match in the Spell Check language list.
   for (size_t i = 0; i < arraysize(g_supported_spellchecker_languages);
        ++i) {
@@ -152,12 +153,14 @@ std::string GetCorrespondingSpellCheckLanguage(const std::string& language) {
     // Next, look for exact match in the language_region part of the list.
     std::string spellcheck_language_region(
         g_supported_spellchecker_languages[i].language_region);
-    if (spellcheck_language_region == language)
-      return g_supported_spellchecker_languages[i].language;
+    if (spellcheck_language_region == language) {
+      if (best_match.empty())
+        best_match = g_supported_spellchecker_languages[i].language;
+    }
   }
 
-  // No match found - return blank.
-  return std::string();
+  // No match found - return best match, if any.
+  return best_match;
 }
 
 void SpellCheckLanguages(std::vector<std::string>* languages) {

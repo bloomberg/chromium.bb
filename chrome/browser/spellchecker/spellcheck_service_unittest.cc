@@ -112,8 +112,10 @@ INSTANTIATE_TEST_CASE_P(
     TestCases,
     SpellcheckServiceUnitTest,
     testing::Values(
+        TestCase("en,aa", "aa", "", ""),
         TestCase("en,en-JP,fr,aa", "fr", "fr", "fr"),
         TestCase("en,en-JP,fr,zz,en-US", "fr", "fr,en-US", "fr"),
+        TestCase("en,en-US,en-GB", "en-GB", "en-US,en-GB", "en-GB"),
         TestCase("en,en-US,en-AU", "en-AU", "en-US,en-AU", "en-AU"),
         TestCase("en,en-US,en-AU", "en-US", "en-US,en-AU", "en-US"),
         TestCase("en,en-US", "en-US", "en-US", "en-US"),
