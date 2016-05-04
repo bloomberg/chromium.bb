@@ -8,7 +8,7 @@
 #include <memory>
 #include <vector>
 
-#include "ash/ash_export.h"
+#include "ash/wm/common/ash_wm_common_export.h"
 #include "base/time/time.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/wm/core/window_animations.h"
@@ -29,10 +29,6 @@ namespace ui {
 class Layer;
 }
 
-namespace views {
-class Widget;
-}
-
 namespace ash {
 namespace wm {
 
@@ -47,10 +43,8 @@ class WindowState;
 // This class exists as a porting layer to allow ash/wm to work with
 // aura::Window
 // or mus::Window. See aura::Window for details on the functions.
-class ASH_EXPORT WmWindow {
+class ASH_WM_COMMON_EXPORT WmWindow {
  public:
-  static WmWindow* Get(views::Widget* widget);
-
   WmWindow* GetRootWindow() {
     return const_cast<WmWindow*>(
         const_cast<const WmWindow*>(this)->GetRootWindow());

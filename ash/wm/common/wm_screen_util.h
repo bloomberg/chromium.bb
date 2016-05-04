@@ -5,7 +5,7 @@
 #ifndef ASH_WM_COMMON_WM_SCREEN_UTIL_H_
 #define ASH_WM_COMMON_WM_SCREEN_UTIL_H_
 
-#include "ash/ash_export.h"
+#include "ash/wm/common/ash_wm_common_export.h"
 
 namespace gfx {
 class Rect;
@@ -16,10 +16,12 @@ namespace wm {
 
 class WmWindow;
 
-ASH_EXPORT gfx::Rect GetDisplayWorkAreaBoundsInParent(WmWindow* window);
-ASH_EXPORT gfx::Rect GetDisplayWorkAreaBounds(WmWindow* window);
-ASH_EXPORT gfx::Rect GetDisplayBoundsInParent(WmWindow* window);
-ASH_EXPORT gfx::Rect GetMaximizedWindowBoundsInParent(WmWindow* window);
+ASH_WM_COMMON_EXPORT gfx::Rect GetDisplayWorkAreaBoundsInParent(
+    WmWindow* window);
+ASH_WM_COMMON_EXPORT gfx::Rect GetDisplayWorkAreaBounds(WmWindow* window);
+ASH_WM_COMMON_EXPORT gfx::Rect GetDisplayBoundsInParent(WmWindow* window);
+ASH_WM_COMMON_EXPORT gfx::Rect GetMaximizedWindowBoundsInParent(
+    WmWindow* window);
 
 }  // namespace wm
 }  // namespace ash

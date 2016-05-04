@@ -12,6 +12,21 @@
 
 namespace ash {
 namespace wm {
+namespace {
+
+// This classes is used so that the WindowState constructor can be made
+// protected. GetWindowState() is the only place that should be creating
+// WindowState.
+class WindowStateAura : public wm::WindowState {
+ public:
+  explicit WindowStateAura(WmWindow* window) : wm::WindowState(window) {}
+  ~WindowStateAura() override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WindowStateAura);
+};
+
+}  // namespace
 
 WindowState* GetActiveWindowState() {
   aura::Window* active = GetActiveWindow();
@@ -23,7 +38,7 @@ WindowState* GetWindowState(aura::Window* window) {
     return nullptr;
   WindowState* settings = window->GetProperty(kWindowStateKey);
   if (!settings) {
-    settings = new WindowState(WmWindowAura::Get(window));
+    settings = new WindowStateAura(WmWindowAura::Get(window));
     window->SetProperty(kWindowStateKey, settings);
   }
   return settings;

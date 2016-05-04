@@ -5,14 +5,14 @@
 #ifndef ASH_WM_COMMON_WINDOW_STATE_DELEGATE_H_
 #define ASH_WM_COMMON_WINDOW_STATE_DELEGATE_H_
 
-#include "ash/ash_export.h"
+#include "ash/wm/common/ash_wm_common_export.h"
 #include "base/macros.h"
 
 namespace ash {
 namespace wm {
 class WindowState;
 
-class ASH_EXPORT WindowStateDelegate {
+class ASH_WM_COMMON_EXPORT WindowStateDelegate {
  public:
   WindowStateDelegate();
   virtual ~WindowStateDelegate();

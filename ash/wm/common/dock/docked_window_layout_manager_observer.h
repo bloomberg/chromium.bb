@@ -5,7 +5,7 @@
 #ifndef ASH_WM_COMMON_DOCK_DOCKED_WINDOW_LAYOUT_MANAGER_OBSERVER_H_
 #define ASH_WM_COMMON_DOCK_DOCKED_WINDOW_LAYOUT_MANAGER_OBSERVER_H_
 
-#include "ash/ash_export.h"
+#include "ash/wm/common/ash_wm_common_export.h"
 
 namespace gfx {
 class Rect;
@@ -15,7 +15,7 @@ namespace ash {
 
 // Observers to the DockedWindowLayoutManager are notified of significant
 // events that occur with the docked windows, such as the bounds change.
-class ASH_EXPORT DockedWindowLayoutManagerObserver {
+class ASH_WM_COMMON_EXPORT DockedWindowLayoutManagerObserver {
  public:
   // Reason for notification. Allows selectively ignoring notifications to
   // prevent a notification loop.

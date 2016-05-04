@@ -10,7 +10,7 @@
 #include <utility>
 #include <vector>
 
-#include "ash/ash_export.h"
+#include "ash/wm/common/ash_wm_common_export.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -157,7 +157,7 @@ struct MatchedEdge {
 //   attach to it using ShouldAttach().
 // . Use AreEdgesObscured() to test if no other windows can match (because all
 //   edges are completely obscured).
-class ASH_EXPORT MagnetismMatcher {
+class ASH_WM_COMMON_EXPORT MagnetismMatcher {
  public:
   static const int kMagneticDistance;
 

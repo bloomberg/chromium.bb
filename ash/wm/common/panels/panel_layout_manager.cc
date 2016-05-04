@@ -14,6 +14,7 @@
 #include "ash/wm/common/window_parenting_utils.h"
 #include "ash/wm/common/window_state.h"
 #include "ash/wm/common/wm_globals.h"
+#include "ash/wm/common/wm_lookup.h"
 #include "ash/wm/common/wm_root_window_controller.h"
 #include "ash/wm/common/wm_shell_window_ids.h"
 #include "ash/wm/common/wm_window.h"
@@ -209,7 +210,7 @@ class PanelCalloutWidget : public views::Widget {
         this, parent->GetShellWindowId(), &params);
     set_focus_on_creation(false);
     Init(params);
-    wm::WmWindow* widget_window = wm::WmWindow::Get(this);
+    wm::WmWindow* widget_window = wm::WmLookup::Get()->GetWindowForWidget(this);
     DCHECK_EQ(widget_window->GetRootWindow(), parent->GetRootWindow());
     views::View* content_view = new views::View;
     background_ = new CalloutWidgetBackground;
@@ -788,7 +789,8 @@ void PanelLayoutManager::UpdateCallouts() {
        iter != panel_windows_.end(); ++iter) {
     wm::WmWindow* panel = iter->window;
     views::Widget* callout_widget = iter->callout_widget;
-    wm::WmWindow* callout_widget_window = wm::WmWindow::Get(callout_widget);
+    wm::WmWindow* callout_widget_window =
+        wm::WmLookup::Get()->GetWindowForWidget(callout_widget);
 
     gfx::Rect current_bounds = panel->GetBoundsInScreen();
     gfx::Rect bounds =

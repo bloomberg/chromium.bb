@@ -5,7 +5,7 @@
 #ifndef ASH_WM_COMMON_WM_EVENT_H_
 #define ASH_WM_COMMON_WM_EVENT_H_
 
-#include "ash/ash_export.h"
+#include "ash/wm/common/ash_wm_common_export.h"
 #include "ash/wm/common/wm_types.h"
 #include "base/macros.h"
 #include "ui/gfx/geometry/rect.h"
@@ -91,7 +91,7 @@ enum WMEventType {
   WM_EVENT_WORKAREA_BOUNDS_CHANGED,
 };
 
-class ASH_EXPORT WMEvent {
+class ASH_WM_COMMON_EXPORT WMEvent {
  public:
   explicit WMEvent(WMEventType type);
   virtual ~WMEvent();
@@ -104,7 +104,7 @@ class ASH_EXPORT WMEvent {
 };
 
 // An WMEvent to request new bounds for the window.
-class SetBoundsEvent : public WMEvent {
+class ASH_WM_COMMON_EXPORT SetBoundsEvent : public WMEvent {
  public:
   SetBoundsEvent(WMEventType type, const gfx::Rect& requested_bounds);
   ~SetBoundsEvent() override;

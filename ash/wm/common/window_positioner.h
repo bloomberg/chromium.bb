@@ -5,7 +5,7 @@
 #ifndef ASH_WM_COMMON_WINDOW_POSITIONER_H_
 #define ASH_WM_COMMON_WINDOW_POSITIONER_H_
 
-#include "ash/ash_export.h"
+#include "ash/wm/common/ash_wm_common_export.h"
 #include "base/macros.h"
 #include "ui/base/ui_base_types.h"
 
@@ -30,7 +30,7 @@ class WindowPositionerTest;
 
 // WindowPositioner is used by the browser to move new popups automatically to
 // a usable position on the closest work area (of the active window).
-class ASH_EXPORT WindowPositioner {
+class ASH_WM_COMMON_EXPORT WindowPositioner {
  public:
   // When the screen resolution width is smaller then this size, The algorithm
   // will default to maximized.

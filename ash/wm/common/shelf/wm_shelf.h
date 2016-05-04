@@ -5,7 +5,7 @@
 #ifndef ASH_WM_COMMON_SHELF_WM_SHELF_H_
 #define ASH_WM_COMMON_SHELF_WM_SHELF_H_
 
-#include "ash/ash_export.h"
+#include "ash/wm/common/ash_wm_common_export.h"
 #include "ash/wm/common/shelf/wm_shelf_types.h"
 
 namespace gfx {
@@ -19,7 +19,7 @@ class WmShelfObserver;
 class WmWindow;
 
 // Used for accessing global state.
-class ASH_EXPORT WmShelf {
+class ASH_WM_COMMON_EXPORT WmShelf {
  public:
   // Returns the window showing the shelf.
   virtual WmWindow* GetWindow() = 0;

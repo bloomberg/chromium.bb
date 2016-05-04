@@ -7,8 +7,8 @@
 
 #include <memory>
 
+#include "ash/wm/common/ash_wm_common_export.h"
 #include "ash/wm/common/window_resizer.h"
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 
@@ -22,7 +22,7 @@ namespace ash {
 // PanelWindowResizer is used by ToplevelWindowEventFilter to handle dragging,
 // moving or resizing panel window. These can be attached and detached from the
 // launcher.
-class ASH_EXPORT PanelWindowResizer : public WindowResizer {
+class ASH_WM_COMMON_EXPORT PanelWindowResizer : public WindowResizer {
  public:
   ~PanelWindowResizer() override;
 

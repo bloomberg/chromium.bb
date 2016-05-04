@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "ash/ash_export.h"
+#include "ash/wm/common/ash_wm_common_export.h"
 #include "base/macros.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -23,7 +23,7 @@ class WmWindow;
 // PhantomWindowController is responsible for showing a phantom representation
 // of a window. It's used to show a preview of how snapping or docking a window
 // will affect the window's bounds.
-class ASH_EXPORT PhantomWindowController {
+class ASH_WM_COMMON_EXPORT PhantomWindowController {
  public:
   explicit PhantomWindowController(wm::WmWindow* window);
 

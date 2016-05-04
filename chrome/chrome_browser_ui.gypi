@@ -3045,6 +3045,7 @@
             '../ash/ash.gyp:ash',
             '../ash/ash.gyp:ash_with_content',
             '../ash/ash_strings.gyp:ash_strings',
+            '../ash/wm/common/ash_wm_common.gyp:ash_wm_common',
             '../components/components.gyp:user_manager',
             '../ui/app_list/presenter/app_list_presenter.gyp:app_list_presenter',
           ],

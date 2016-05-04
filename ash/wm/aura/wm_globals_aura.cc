@@ -22,25 +22,14 @@
 
 namespace ash {
 namespace wm {
-namespace {
-
-WmGlobalsAura* instance_ = nullptr;
-
-}  // namespace
-
-// static
-WmGlobals* WmGlobals::Get() {
-  return instance_;
-}
 
 WmGlobalsAura::WmGlobalsAura() {
-  DCHECK(!instance_);
-  instance_ = this;
+  WmGlobals::Set(this);
   Shell::GetInstance()->AddShellObserver(this);
 }
 
 WmGlobalsAura::~WmGlobalsAura() {
-  instance_ = nullptr;
+  WmGlobals::Set(nullptr);
   if (added_activation_observer_) {
     aura::client::GetActivationClient(Shell::GetPrimaryRootWindow())
         ->RemoveObserver(this);
@@ -49,13 +38,6 @@ WmGlobalsAura::~WmGlobalsAura() {
     Shell::GetInstance()->window_tree_host_manager()->RemoveObserver(this);
 
   Shell::GetInstance()->RemoveShellObserver(this);
-}
-
-// static
-WmGlobalsAura* WmGlobalsAura::Get() {
-  if (!instance_)
-    new WmGlobalsAura;
-  return instance_;
 }
 
 WmWindow* WmGlobalsAura::GetFocusedWindow() {

@@ -24,6 +24,7 @@ component("ash") {
   public_deps = [
     "//ash/resources",
     "//ash/strings",
+    "//ash/wm/common:ash_wm_common",
   ]
   deps = [
     "//base",

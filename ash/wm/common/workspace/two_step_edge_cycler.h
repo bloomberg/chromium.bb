@@ -5,7 +5,7 @@
 #ifndef ASH_WM_COMMON_WORKSPACE_TWO_STEP_EDGE_CYCLER_H_
 #define ASH_WM_COMMON_WORKSPACE_TWO_STEP_EDGE_CYCLER_H_
 
-#include "ash/ash_export.h"
+#include "ash/wm/common/ash_wm_common_export.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "ui/gfx/geometry/point.h"
@@ -17,7 +17,7 @@ namespace ash {
 // to get back to the first mode once the second mode is reached.
 // TwoStepEdgeCycler should be destroyed once the mouse moves off the edge of
 // the workspace.
-class ASH_EXPORT TwoStepEdgeCycler {
+class ASH_WM_COMMON_EXPORT TwoStepEdgeCycler {
  public:
   // The direction in which a mouse should travel to switch mode.
   enum Direction { DIRECTION_LEFT, DIRECTION_RIGHT };

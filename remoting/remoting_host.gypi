@@ -105,6 +105,7 @@
                 ['use_ash==1', {
                   'dependencies': [
                     '../ash/ash.gyp:ash',
+                    '../ash/wm/common/ash_wm_common.gyp:ash_wm_common',
                   ],
                 }],
                 ['use_ozone==0', {

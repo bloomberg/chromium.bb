@@ -5,7 +5,7 @@
 #ifndef ASH_WM_COMMON_WORKSPACE_WORKSPACE_LAYOUT_MANAGER_BACKDROP_DELEGATE_H_
 #define ASH_WM_COMMON_WORKSPACE_WORKSPACE_LAYOUT_MANAGER_BACKDROP_DELEGATE_H_
 
-#include "ash/ash_export.h"
+#include "ash/wm/common/ash_wm_common_export.h"
 #include "ash/wm/common/wm_types.h"
 
 namespace ash {
@@ -16,7 +16,7 @@ class WmWindow;
 
 // A delegate which can be set to create and control a backdrop which gets
 // placed below the top level window.
-class ASH_EXPORT WorkspaceLayoutManagerBackdropDelegate {
+class ASH_WM_COMMON_EXPORT WorkspaceLayoutManagerBackdropDelegate {
  public:
   virtual ~WorkspaceLayoutManagerBackdropDelegate() {}
 

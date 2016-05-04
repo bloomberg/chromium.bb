@@ -8,7 +8,7 @@
 #include <list>
 #include <memory>
 
-#include "ash/ash_export.h"
+#include "ash/wm/common/ash_wm_common_export.h"
 #include "ash/wm/common/shelf/wm_shelf_observer.h"
 #include "ash/wm/common/window_state_observer.h"
 #include "ash/wm/common/wm_activation_observer.h"
@@ -55,7 +55,7 @@ class WmShelf;
 // its layout manager to this instance, e.g.:
 // panel_container->SetLayoutManager(new PanelLayoutManager(panel_container));
 
-class ASH_EXPORT PanelLayoutManager
+class ASH_WM_COMMON_EXPORT PanelLayoutManager
     : public wm::WmLayoutManager,
       public wm::WindowStateObserver,
       public wm::WmActivationObserver,
@@ -136,7 +136,7 @@ class ASH_EXPORT PanelLayoutManager
 
   views::Widget* CreateCalloutWidget();
 
-  struct ASH_EXPORT PanelInfo {
+  struct ASH_WM_COMMON_EXPORT PanelInfo {
     PanelInfo() : window(NULL), callout_widget(NULL), slide_in(false) {}
 
     bool operator==(const wm::WmWindow* other_window) const {

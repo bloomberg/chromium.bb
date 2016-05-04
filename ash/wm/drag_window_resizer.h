@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "ash/ash_export.h"
 #include "ash/wm/common/window_resizer.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"

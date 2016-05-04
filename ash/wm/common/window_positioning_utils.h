@@ -5,7 +5,7 @@
 #ifndef ASH_WM_COMMON_WINDOW_POSITIONING_UTILS_H_
 #define ASH_WM_COMMON_WINDOW_POSITIONING_UTILS_H_
 
-#include "ash/ash_export.h"
+#include "ash/wm/common/ash_wm_common_export.h"
 
 namespace gfx {
 class Rect;
@@ -21,13 +21,13 @@ class WmWindow;
 const int kMinimumOnScreenArea = 25;
 
 // Adjusts |bounds| so that the size does not exceed |max_size|.
-ASH_EXPORT void AdjustBoundsSmallerThan(const gfx::Size& max_size,
-                                        gfx::Rect* bounds);
+ASH_WM_COMMON_EXPORT void AdjustBoundsSmallerThan(const gfx::Size& max_size,
+                                                  gfx::Rect* bounds);
 
 // Move the given bounds inside the given |visible_area| in parent coordinates,
 // including a safety margin given by |min_width| and |min_height|.
 // This also ensures that the top of the bounds is visible.
-ASH_EXPORT void AdjustBoundsToEnsureWindowVisibility(
+ASH_WM_COMMON_EXPORT void AdjustBoundsToEnsureWindowVisibility(
     const gfx::Rect& visible_area,
     int min_width,
     int min_height,
@@ -36,18 +36,18 @@ ASH_EXPORT void AdjustBoundsToEnsureWindowVisibility(
 // Move the given bounds inside the given |visible_area| in parent coordinates,
 // including a safety margin given by |kMinimumOnScreenArea|.
 // This also ensures that the top of the bounds is visible.
-ASH_EXPORT void AdjustBoundsToEnsureMinimumWindowVisibility(
+ASH_WM_COMMON_EXPORT void AdjustBoundsToEnsureMinimumWindowVisibility(
     const gfx::Rect& visible_area,
     gfx::Rect* bounds);
 
 // Returns the bounds of a left snapped window with default width in parent
 // coordinates.
-ASH_EXPORT gfx::Rect GetDefaultLeftSnappedWindowBoundsInParent(
+ASH_WM_COMMON_EXPORT gfx::Rect GetDefaultLeftSnappedWindowBoundsInParent(
     WmWindow* window);
 
 // Returns the bounds of a right snapped window with default width in parent
 // coordinates.
-ASH_EXPORT gfx::Rect GetDefaultRightSnappedWindowBoundsInParent(
+ASH_WM_COMMON_EXPORT gfx::Rect GetDefaultRightSnappedWindowBoundsInParent(
     WmWindow* window);
 
 }  // namespace wm

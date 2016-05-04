@@ -5,7 +5,6 @@
 #ifndef ASH_WM_COMMON_WINDOW_ANIMATION_TYPES_H_
 #define ASH_WM_COMMON_WINDOW_ANIMATION_TYPES_H_
 
-#include "ash/ash_export.h"
 #include "ui/wm/core/window_animations.h"
 
 namespace ash {

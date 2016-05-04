@@ -17,6 +17,7 @@
 #include "ash/wm/common/window_state.h"
 #include "ash/wm/common/wm_event.h"
 #include "ash/wm/common/wm_globals.h"
+#include "ash/wm/common/wm_lookup.h"
 #include "ash/wm/common/wm_root_window_controller.h"
 #include "ash/wm/common/wm_screen_util.h"
 #include "ash/wm/common/wm_shell_window_ids.h"
@@ -362,8 +363,9 @@ void WorkspaceWindowResizer::Drag(const gfx::Point& location_in_parent,
   // Track the last screen that the pointer was on to keep the snap phantom
   // window there.
   if (display.bounds().Contains(location_in_screen)) {
-    root =
-        wm::WmRootWindowController::GetWithDisplayId(display.id())->GetWindow();
+    root = wm::WmLookup::Get()
+               ->GetRootWindowControllerWithDisplayId(display.id())
+               ->GetWindow();
   }
   if (!attached_windows_.empty())
     LayoutAttachedWindows(&bounds);

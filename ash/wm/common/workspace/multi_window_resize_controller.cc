@@ -4,6 +4,7 @@
 
 #include "ash/wm/common/workspace/multi_window_resize_controller.h"
 
+#include "ash/wm/common/wm_lookup.h"
 #include "ash/wm/common/wm_root_window_controller.h"
 #include "ash/wm/common/wm_shell_window_ids.h"
 #include "ash/wm/common/wm_window.h"
@@ -383,7 +384,8 @@ void MultiWindowResizeController::ShowNow() {
   ResizeView* view = new ResizeView(this, windows_.direction);
   resize_widget_->set_focus_on_creation(false);
   resize_widget_->Init(params);
-  wm::WmWindow::Get(resize_widget_.get())
+  wm::WmLookup::Get()
+      ->GetWindowForWidget(resize_widget_.get())
       ->SetVisibilityAnimationType(::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
   resize_widget_->SetContentsView(view);
   show_bounds_in_screen_ = windows_.window1->GetParent()->ConvertRectToScreen(

@@ -5,8 +5,6 @@
 #ifndef ASH_WM_COMMON_WM_WINDOW_PROPERTY_H_
 #define ASH_WM_COMMON_WM_WINDOW_PROPERTY_H_
 
-#include "ash/ash_export.h"
-
 namespace ash {
 namespace wm {
 

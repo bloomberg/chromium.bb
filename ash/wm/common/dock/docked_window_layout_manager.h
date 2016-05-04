@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "ash/ash_export.h"
+#include "ash/wm/common/ash_wm_common_export.h"
 #include "ash/wm/common/dock/dock_types.h"
 #include "ash/wm/common/dock/docked_window_layout_manager_observer.h"
 #include "ash/wm/common/window_state_observer.h"
@@ -45,7 +45,7 @@ class WmShelf;
 //
 // TODO(varkha): extend BaseLayoutManager instead of LayoutManager to inherit
 // common functionality.
-class ASH_EXPORT DockedWindowLayoutManager
+class ASH_WM_COMMON_EXPORT DockedWindowLayoutManager
     : public wm::WmSnapToPixelLayoutManager,
       public wm::WmRootWindowControllerObserver,
       public wm::WmWindowObserver,

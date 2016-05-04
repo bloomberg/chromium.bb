@@ -8,6 +8,7 @@
 #include "ash/wm/common/window_parenting_utils.h"
 #include "ash/wm/common/window_state.h"
 #include "ash/wm/common/wm_event.h"
+#include "ash/wm/common/wm_lookup.h"
 #include "ash/wm/common/wm_root_window_controller.h"
 #include "ash/wm/common/wm_shell_window_ids.h"
 #include "ash/wm/common/wm_window.h"
@@ -27,7 +28,9 @@ DockedWindowLayoutManager* GetDockedLayoutManagerAtPoint(
     return nullptr;
 
   return DockedWindowLayoutManager::Get(
-      wm::WmRootWindowController::GetWithDisplayId(display.id())->GetWindow());
+      wm::WmLookup::Get()
+          ->GetRootWindowControllerWithDisplayId(display.id())
+          ->GetWindow());
 }
 
 }  // namespace

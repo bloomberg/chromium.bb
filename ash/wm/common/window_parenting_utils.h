@@ -5,8 +5,6 @@
 #ifndef ASH_WM_COMMON_WINDOW_PARENTING_UTILS_H_
 #define ASH_WM_COMMON_WINDOW_PARENTING_UTILS_H_
 
-#include "ash/ash_export.h"
-
 namespace ash {
 namespace wm {
 

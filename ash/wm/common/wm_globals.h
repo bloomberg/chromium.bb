@@ -10,7 +10,7 @@
 #include <memory>
 #include <vector>
 
-#include "ash/ash_export.h"
+#include "ash/wm/common/ash_wm_common_export.h"
 
 namespace gfx {
 class Rect;
@@ -31,12 +31,13 @@ class WmWindow;
 enum class WmUserMetricsAction;
 
 // Used for accessing global state.
-class ASH_EXPORT WmGlobals {
+class ASH_WM_COMMON_EXPORT WmGlobals {
  public:
   virtual ~WmGlobals() {}
 
   // This is necessary for a handful of places that is difficult to plumb
   // through context.
+  static void Set(WmGlobals* instance);
   static WmGlobals* Get();
 
   virtual WmWindow* GetFocusedWindow() = 0;
@@ -88,6 +89,9 @@ class ASH_EXPORT WmGlobals {
 
   virtual void AddOverviewModeObserver(WmOverviewModeObserver* observer) = 0;
   virtual void RemoveOverviewModeObserver(WmOverviewModeObserver* observer) = 0;
+
+ private:
+  static WmGlobals* instance_;
 };
 
 }  // namespace wm

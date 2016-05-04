@@ -76,11 +76,6 @@ WmWindowAura::WmWindowAura(aura::Window* window)
 }
 
 // static
-WmWindow* WmWindow::Get(views::Widget* widget) {
-  return WmWindowAura::Get(widget->GetNativeWindow());
-}
-
-// static
 WmWindow* WmWindowAura::Get(aura::Window* window) {
   if (!window)
     return nullptr;
@@ -117,7 +112,7 @@ WmRootWindowController* WmWindowAura::GetRootWindowController() {
 }
 
 WmGlobals* WmWindowAura::GetGlobals() const {
-  return WmGlobalsAura::Get();
+  return WmGlobals::Get();
 }
 
 void WmWindowAura::SetShellWindowId(int id) {

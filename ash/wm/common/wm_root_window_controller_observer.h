@@ -5,14 +5,14 @@
 #ifndef ASH_WM_COMMON_WM_ROOT_WINDOW_CONTROLLER_OBSERVER_H_
 #define ASH_WM_COMMON_WM_ROOT_WINDOW_CONTROLLER_OBSERVER_H_
 
-#include "ash/ash_export.h"
+#include "ash/wm/common/ash_wm_common_export.h"
 
 namespace ash {
 namespace wm {
 
 class WmWindow;
 
-class ASH_EXPORT WmRootWindowControllerObserver {
+class ASH_WM_COMMON_EXPORT WmRootWindowControllerObserver {
  public:
   virtual void OnWorkAreaChanged() {}
   virtual void OnFullscreenStateChanged(bool is_fullscreen) {}

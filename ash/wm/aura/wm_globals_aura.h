@@ -10,6 +10,7 @@
 #include "ash/ash_export.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/shell_observer.h"
+#include "ash/wm/aura/wm_lookup_aura.h"
 #include "ash/wm/common/wm_globals.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -64,6 +65,7 @@ class ASH_EXPORT WmGlobalsAura : public WmGlobals,
   // ShellObserver:
   void OnOverviewModeEnded() override;
 
+  WmLookupAura wm_lookup_;
   bool added_activation_observer_ = false;
   base::ObserverList<WmActivationObserver> activation_observers_;
 

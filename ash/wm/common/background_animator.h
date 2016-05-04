@@ -5,7 +5,7 @@
 #ifndef ASH_WM_COMMON_BACKGROUND_ANIMATOR_H_
 #define ASH_WM_COMMON_BACKGROUND_ANIMATOR_H_
 
-#include "ash/ash_export.h"
+#include "ash/wm/common/ash_wm_common_export.h"
 #include "base/macros.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/slide_animation.h"
@@ -19,7 +19,7 @@ enum BackgroundAnimatorChangeType {
 };
 
 // Delegate is notified any time the background changes.
-class ASH_EXPORT BackgroundAnimatorDelegate {
+class ASH_WM_COMMON_EXPORT BackgroundAnimatorDelegate {
  public:
   virtual void UpdateBackground(int alpha) = 0;
 
@@ -28,7 +28,7 @@ class ASH_EXPORT BackgroundAnimatorDelegate {
 };
 
 // BackgroundAnimator is used by the shelf to animate the background (alpha).
-class ASH_EXPORT BackgroundAnimator : public gfx::AnimationDelegate {
+class ASH_WM_COMMON_EXPORT BackgroundAnimator : public gfx::AnimationDelegate {
  public:
   BackgroundAnimator(BackgroundAnimatorDelegate* delegate,
                      int min_alpha,

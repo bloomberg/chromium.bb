@@ -7,7 +7,7 @@
 
 #include <stddef.h>
 
-#include "ash/ash_export.h"
+#include "ash/wm/common/ash_wm_common_export.h"
 #include "base/macros.h"
 
 namespace ash {
@@ -16,13 +16,13 @@ namespace wm {
 class WmWindow;
 
 // List of containers which contain windows that can be switched via Alt+Tab to.
-ASH_EXPORT extern const int kSwitchableWindowContainerIds[];
+ASH_WM_COMMON_EXPORT extern const int kSwitchableWindowContainerIds[];
 
 // The number of elements in kSwitchableWindowContainerIds.
-ASH_EXPORT extern const size_t kSwitchableWindowContainerIdsLength;
+ASH_WM_COMMON_EXPORT extern const size_t kSwitchableWindowContainerIdsLength;
 
 // Returns true if |window| is a container for windows which can be switched to.
-ASH_EXPORT bool IsSwitchableContainer(const WmWindow* window);
+ASH_WM_COMMON_EXPORT bool IsSwitchableContainer(const WmWindow* window);
 
 }  // namespace wm
 }  // namespace ash

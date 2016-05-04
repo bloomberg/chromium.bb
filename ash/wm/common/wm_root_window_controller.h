@@ -5,9 +5,7 @@
 #ifndef ASH_WM_COMMON_WM_ROOT_CONTROLLER_H_
 #define ASH_WM_COMMON_WM_ROOT_CONTROLLER_H_
 
-#include <stdint.h>
-
-#include "ash/ash_export.h"
+#include "ash/wm/common/ash_wm_common_export.h"
 #include "ash/wm/common/workspace/workspace_types.h"
 #include "ui/views/widget/widget.h"
 
@@ -27,11 +25,9 @@ class WmShelf;
 class WmWindow;
 
 // Provides state associated with a root of a window hierarchy.
-class ASH_EXPORT WmRootWindowController {
+class ASH_WM_COMMON_EXPORT WmRootWindowController {
  public:
   virtual ~WmRootWindowController() {}
-
-  static WmRootWindowController* GetWithDisplayId(int64_t id);
 
   virtual bool HasShelf() = 0;
 

@@ -5,10 +5,9 @@
 #ifndef ASH_WM_COMMON_WM_TYPES_H_
 #define ASH_WM_COMMON_WM_TYPES_H_
 
-#include "ash/ash_export.h"
+#include "ash/wm/common/ash_wm_common_export.h"
 #include "ui/base/ui_base_types.h"
 
-// TODO(sky): move to common.
 namespace ash {
 namespace wm {
 
@@ -47,12 +46,15 @@ enum WindowStateType {
 // Utility functions to convert WindowStateType <-> ui::WindowShowState.
 // Note: LEFT/RIGHT MAXIMIZED, AUTO_POSITIONED type will be lost when
 // converting to ui::WindowShowState.
-ASH_EXPORT WindowStateType ToWindowStateType(ui::WindowShowState state);
-ASH_EXPORT ui::WindowShowState ToWindowShowState(WindowStateType type);
+ASH_WM_COMMON_EXPORT WindowStateType
+ToWindowStateType(ui::WindowShowState state);
+ASH_WM_COMMON_EXPORT ui::WindowShowState ToWindowShowState(
+    WindowStateType type);
 
 // Returns true if |type| is WINDOW_STATE_TYPE_MAXIMIZED or
 // WINDOW_STATE_TYPE_FULLSCREEN.
-ASH_EXPORT bool IsMaximizedOrFullscreenWindowStateType(WindowStateType type);
+ASH_WM_COMMON_EXPORT bool IsMaximizedOrFullscreenWindowStateType(
+    WindowStateType type);
 
 }  // namespace wm
 }  // namespace ash

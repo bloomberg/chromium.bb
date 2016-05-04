@@ -5,7 +5,7 @@
 #ifndef ASH_WM_COMMON_SHELF_WM_SHELF_OBSERVER_H_
 #define ASH_WM_COMMON_SHELF_WM_SHELF_OBSERVER_H_
 
-#include "ash/ash_export.h"
+#include "ash/wm/common/ash_wm_common_export.h"
 #include "ash/wm/common/background_animator.h"
 #include "ash/wm/common/shelf/wm_shelf_types.h"
 
@@ -15,7 +15,7 @@ namespace wm {
 class WmWindow;
 
 // Used to observe changes to the shelf.
-class ASH_EXPORT WmShelfObserver {
+class ASH_WM_COMMON_EXPORT WmShelfObserver {
  public:
   virtual void OnBackgroundUpdated(ShelfBackgroundType background_type,
                                    BackgroundAnimatorChangeType change_type) {}

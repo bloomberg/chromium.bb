@@ -7,6 +7,7 @@
 #include <math.h>
 
 #include "ash/wm/common/root_window_finder.h"
+#include "ash/wm/common/wm_lookup.h"
 #include "ash/wm/common/wm_root_window_controller.h"
 #include "ash/wm/common/wm_shell_window_ids.h"
 #include "ash/wm/common/wm_window.h"
@@ -60,7 +61,10 @@ void AnimateToBounds(views::Widget* widget,
     return;
 
   ui::ScopedLayerAnimationSettings scoped_setter(
-      wm::WmWindow::Get(widget)->GetLayer()->GetAnimator());
+      wm::WmLookup::Get()
+          ->GetWindowForWidget(widget)
+          ->GetLayer()
+          ->GetAnimator());
   scoped_setter.SetTweenType(gfx::Tween::EASE_IN);
   scoped_setter.SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
@@ -118,7 +122,8 @@ std::unique_ptr<views::Widget> PhantomWindowController::CreatePhantomWidget(
   phantom_widget->set_focus_on_creation(false);
   phantom_widget->Init(params);
   phantom_widget->SetVisibilityChangedAnimationsEnabled(false);
-  wm::WmWindow* phantom_widget_window = wm::WmWindow::Get(phantom_widget.get());
+  wm::WmWindow* phantom_widget_window =
+      wm::WmLookup::Get()->GetWindowForWidget(phantom_widget.get());
   phantom_widget_window->SetShellWindowId(kShellWindowId_PhantomWindow);
   phantom_widget->SetBounds(bounds_in_screen);
   // TODO(sky): I suspect this is never true, verify that.

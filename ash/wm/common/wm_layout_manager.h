@@ -5,7 +5,7 @@
 #ifndef ASH_WM_COMMON_WM_LAYOUT_MANAGER_H_
 #define ASH_WM_COMMON_WM_LAYOUT_MANAGER_H_
 
-#include "ash/ash_export.h"
+#include "ash/wm/common/ash_wm_common_export.h"
 
 namespace gfx {
 class Rect;
@@ -19,7 +19,7 @@ class WmWindow;
 // Used to position the child WmWindows of a WmWindow. WmLayoutManager is called
 // at key points in a WmWindows life cycle thats allow sthe WmLayoutManager to
 // position or change child WmWindows.
-class ASH_EXPORT WmLayoutManager {
+class ASH_WM_COMMON_EXPORT WmLayoutManager {
  public:
   virtual ~WmLayoutManager() {}
 

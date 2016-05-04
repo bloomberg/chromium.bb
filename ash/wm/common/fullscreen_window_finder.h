@@ -5,7 +5,7 @@
 #ifndef ASH_WM_COMMON_FULLSCREEN_WINDOW_FINDER_H_
 #define ASH_WM_COMMON_FULLSCREEN_WINDOW_FINDER_H_
 
-#include "ash/ash_export.h"
+#include "ash/wm/common/ash_wm_common_export.h"
 
 namespace ash {
 namespace wm {
@@ -14,7 +14,7 @@ class WmWindow;
 
 // Returns the topmost window or one of its transient parents, if any of them
 // are in fullscreen mode. This searches for a window in the root of |context|.
-ASH_EXPORT WmWindow* GetWindowForFullscreenMode(WmWindow* context);
+ASH_WM_COMMON_EXPORT WmWindow* GetWindowForFullscreenMode(WmWindow* context);
 
 }  // namespace wm
 }  // namespace ash

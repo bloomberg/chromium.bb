@@ -81,7 +81,7 @@ void WindowPositionerTest::SetUp() {
   // as he needs it.
   window()->Hide();
   popup()->Hide();
-  window_positioner_.reset(new WindowPositioner(wm::WmGlobalsAura::Get()));
+  window_positioner_.reset(new WindowPositioner(wm::WmGlobals::Get()));
 }
 
 void WindowPositionerTest::TearDown() {

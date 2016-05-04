@@ -32,7 +32,7 @@ Shelf* WmShelfAura::GetShelf(WmShelf* shelf) {
 }
 
 WmWindow* WmShelfAura::GetWindow() {
-  return WmWindow::Get(shelf_->shelf_widget());
+  return WmWindowAura::Get(shelf_->shelf_widget()->GetNativeView());
 }
 
 ShelfAlignment WmShelfAura::GetAlignment() const {

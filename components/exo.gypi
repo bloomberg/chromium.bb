@@ -13,6 +13,7 @@
       ],
       'dependencies': [
         '../ash/ash.gyp:ash',
+        '../ash/wm/common/ash_wm_common.gyp:ash_wm_common',
         '../base/base.gyp:base',
         '../cc/cc.gyp:cc',
         '../gpu/gpu.gyp:gpu',

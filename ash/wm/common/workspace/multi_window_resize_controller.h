@@ -8,7 +8,7 @@
 #include <memory>
 #include <vector>
 
-#include "ash/ash_export.h"
+#include "ash/wm/common/ash_wm_common_export.h"
 #include "ash/wm/common/wm_window_observer.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
@@ -32,7 +32,7 @@ enum Direction {
 // MultiWindowResizeController is responsible for determining and showing a
 // widget that allows resizing multiple windows at the same time.
 // MultiWindowResizeController is driven by WorkspaceEventFilter.
-class ASH_EXPORT MultiWindowResizeController
+class ASH_WM_COMMON_EXPORT MultiWindowResizeController
     : public views::MouseWatcherListener,
       public wm::WmWindowObserver {
  public:

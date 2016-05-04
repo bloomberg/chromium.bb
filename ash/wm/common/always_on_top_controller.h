@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "ash/ash_export.h"
+#include "ash/wm/common/ash_wm_common_export.h"
 #include "ash/wm/common/wm_window_observer.h"
 #include "base/macros.h"
 
@@ -18,7 +18,7 @@ class WorkspaceLayoutManager;
 // 'AlwaysOnTop' property. That is, putting a window into the worskpace
 // container if its "AlwaysOnTop" property is false. Otherwise, put it in
 // |always_on_top_container_|.
-class ASH_EXPORT AlwaysOnTopController : public wm::WmWindowObserver {
+class ASH_WM_COMMON_EXPORT AlwaysOnTopController : public wm::WmWindowObserver {
  public:
   explicit AlwaysOnTopController(wm::WmWindow* viewport);
   ~AlwaysOnTopController() override;

@@ -8,6 +8,7 @@
 #include "ash/wm/common/shelf/wm_shelf.h"
 #include "ash/wm/common/window_parenting_utils.h"
 #include "ash/wm/common/window_state.h"
+#include "ash/wm/common/wm_lookup.h"
 #include "ash/wm/common/wm_root_window_controller.h"
 #include "ash/wm/common/wm_shell_window_ids.h"
 #include "ash/wm/common/wm_window.h"
@@ -53,7 +54,8 @@ void PanelWindowResizer::Drag(const gfx::Point& location, int event_flags) {
     if (GetTarget()->GetParent() != panel_container_)
       PanelLayoutManager::Get(panel_container_)->FinishDragging();
     wm::WmWindow* dst_root =
-        wm::WmRootWindowController::GetWithDisplayId(dst_display.id())
+        wm::WmLookup::Get()
+            ->GetRootWindowControllerWithDisplayId(dst_display.id())
             ->GetWindow();
     panel_container_ =
         dst_root->GetChildByShellWindowId(kShellWindowId_PanelContainer);

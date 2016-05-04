@@ -33,7 +33,7 @@ class WmGlobals;
 // are moved outside the work area they are shrunk. We remember the height of
 // the window before it was moved so that if the window is again moved up we
 // attempt to restore the old height.
-class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
+class ASH_WM_COMMON_EXPORT WorkspaceWindowResizer : public WindowResizer {
  public:
   // When dragging an attached window this is the min size we'll make sure is
   // visible. In the vertical direction we take the max of this and that from

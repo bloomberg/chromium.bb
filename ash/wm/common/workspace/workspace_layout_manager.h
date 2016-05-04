@@ -8,7 +8,7 @@
 #include <memory>
 #include <set>
 
-#include "ash/ash_export.h"
+#include "ash/wm/common/ash_wm_common_export.h"
 #include "ash/wm/common/window_state_observer.h"
 #include "ash/wm/common/wm_activation_observer.h"
 #include "ash/wm/common/wm_layout_manager.h"
@@ -30,7 +30,7 @@ class WMEvent;
 }
 
 // LayoutManager used on the window created for a workspace.
-class ASH_EXPORT WorkspaceLayoutManager
+class ASH_WM_COMMON_EXPORT WorkspaceLayoutManager
     : public wm::WmLayoutManager,
       public wm::WmWindowObserver,
       public wm::WmActivationObserver,

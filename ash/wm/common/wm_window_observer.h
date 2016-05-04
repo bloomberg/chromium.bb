@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include "ash/ash_export.h"
+#include "ash/wm/common/ash_wm_common_export.h"
 
 namespace gfx {
 class Rect;
@@ -19,7 +19,7 @@ namespace wm {
 class WmWindow;
 enum class WmWindowProperty;
 
-class ASH_EXPORT WmWindowObserver {
+class ASH_WM_COMMON_EXPORT WmWindowObserver {
  public:
   struct TreeChangeParams {
     WmWindow* target = nullptr;

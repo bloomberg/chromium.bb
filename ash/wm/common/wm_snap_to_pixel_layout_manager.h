@@ -5,7 +5,7 @@
 #ifndef ASH_WM_COMMON_WM_SNAP_TO_PIXEL_LAYOUT_MANAGER_H_
 #define ASH_WM_COMMON_WM_SNAP_TO_PIXEL_LAYOUT_MANAGER_H_
 
-#include "ash/ash_export.h"
+#include "ash/wm/common/ash_wm_common_export.h"
 #include "ash/wm/common/wm_layout_manager.h"
 #include "base/macros.h"
 
@@ -14,7 +14,7 @@ namespace wm {
 
 // A layout manager that places children's layer at the physical pixel
 // boundaries.
-class ASH_EXPORT WmSnapToPixelLayoutManager : public WmLayoutManager {
+class ASH_WM_COMMON_EXPORT WmSnapToPixelLayoutManager : public WmLayoutManager {
  public:
   WmSnapToPixelLayoutManager();
   ~WmSnapToPixelLayoutManager() override;

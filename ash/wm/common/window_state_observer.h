@@ -5,14 +5,14 @@
 #ifndef ASH_WM_COMMON_WINDOW_STATE_OBSERVER_H_
 #define ASH_WM_COMMON_WINDOW_STATE_OBSERVER_H_
 
-#include "ash/ash_export.h"
+#include "ash/wm/common/ash_wm_common_export.h"
 #include "ash/wm/common/wm_types.h"
 
 namespace ash {
 namespace wm {
 class WindowState;
 
-class ASH_EXPORT WindowStateObserver {
+class ASH_WM_COMMON_EXPORT WindowStateObserver {
  public:
   // Following observer methods are different from kWindowShowStatekey
   // property change as they will be invoked when the window

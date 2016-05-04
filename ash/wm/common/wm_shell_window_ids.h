@@ -5,8 +5,6 @@
 #ifndef ASH_WM_COMMON_WM_SHELL_WINDOW_IDS_H_
 #define ASH_WM_COMMON_WM_SHELL_WINDOW_IDS_H_
 
-#include "ash/ash_export.h"
-
 // Defines the ids assigned to known containers. The id for a WmWindow is
 // accessed via GetShellWindowId().
 

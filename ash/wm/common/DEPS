@@ -3,6 +3,4 @@ include_rules = [
   "+ash/wm/common",
   "+ui",
   "-ui/aura",
-  # TODO(sky): nuke this. Temporary until introduce separate dll.
-  "+ash/ash_export.h",
 ]

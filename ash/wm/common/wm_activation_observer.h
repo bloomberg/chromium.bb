@@ -5,7 +5,7 @@
 #ifndef ASH_WM_COMMON_WM_ACTIVATION_OBSERVER_H_
 #define ASH_WM_COMMON_WM_ACTIVATION_OBSERVER_H_
 
-#include "ash/ash_export.h"
+#include "ash/wm/common/ash_wm_common_export.h"
 
 namespace ash {
 namespace wm {
@@ -13,7 +13,7 @@ namespace wm {
 class WmWindow;
 
 // Used to track changes in activation.
-class ASH_EXPORT WmActivationObserver {
+class ASH_WM_COMMON_EXPORT WmActivationObserver {
  public:
   virtual void OnWindowActivated(WmWindow* gained_active,
                                  WmWindow* lost_active) = 0;

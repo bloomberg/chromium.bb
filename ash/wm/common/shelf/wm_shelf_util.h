@@ -5,14 +5,14 @@
 #ifndef ASH_WM_COMMON_SHELF_WM_SHELF_UTIL_H_
 #define ASH_WM_COMMON_SHELF_WM_SHELF_UTIL_H_
 
-#include "ash/ash_export.h"
+#include "ash/wm/common/ash_wm_common_export.h"
 #include "ash/wm/common/shelf/wm_shelf_types.h"
 
 namespace ash {
 namespace wm {
 
 // Returns true if the shelf |alignment| is horizontal.
-ASH_EXPORT bool IsHorizontalAlignment(ShelfAlignment alignment);
+ASH_WM_COMMON_EXPORT bool IsHorizontalAlignment(ShelfAlignment alignment);
 
 }  // namespace wm
 }  // namespace ash

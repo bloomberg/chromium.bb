@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "ash/ash_export.h"
+#include "ash/wm/common/ash_wm_common_export.h"
 #include "ash/wm/common/drag_details.h"
 #include "ash/wm/common/wm_types.h"
 #include "base/gtest_prod_util.h"
@@ -44,7 +44,7 @@ class WmWindow;
 // Prefer using this class instead of passing aura::Window* around in
 // ash code as this is often what you need to interact with, and
 // accessing the window using |window()| is cheap.
-class ASH_EXPORT WindowState {
+class ASH_WM_COMMON_EXPORT WindowState {
  public:
   // A subclass of State class represents one of the window's states
   // that corresponds to WindowStateType in Ash environment, e.g.
@@ -78,7 +78,7 @@ class ASH_EXPORT WindowState {
   };
 
   // Call GetWindowState() to instantiate this class.
-  ~WindowState();
+  virtual ~WindowState();
 
   WmWindow* window() { return window_; }
   const WmWindow* window() const { return window_; }
@@ -298,16 +298,16 @@ class ASH_EXPORT WindowState {
   // Called from the associated WmWindow once the show state changes.
   void OnWindowShowStateChanged();
 
+ protected:
+  explicit WindowState(WmWindow* window);
+
  private:
   friend class DefaultState;
   friend class ash::LockWindowState;
   friend class ash::MaximizeModeWindowState;
-  friend ASH_EXPORT WindowState* GetWindowState(aura::Window*);
   FRIEND_TEST_ALL_PREFIXES(WindowAnimationsTest, CrossFadeToBounds);
   FRIEND_TEST_ALL_PREFIXES(WindowAnimationsTest,
                            CrossFadeToBoundsFromTransform);
-
-  explicit WindowState(WmWindow* window);
 
   WindowStateDelegate* delegate() { return delegate_.get(); }
 

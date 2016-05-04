@@ -29,13 +29,6 @@ DEFINE_OWNED_WINDOW_PROPERTY_KEY(ash::wm::WmRootWindowControllerAura,
                                  kWmRootWindowControllerKey,
                                  nullptr);
 
-// static
-WmRootWindowController* WmRootWindowController::GetWithDisplayId(int64_t id) {
-  return WmRootWindowControllerAura::Get(Shell::GetInstance()
-                                             ->window_tree_host_manager()
-                                             ->GetRootWindowForDisplayId(id));
-}
-
 WmRootWindowControllerAura::WmRootWindowControllerAura(
     RootWindowController* root_window_controller)
     : root_window_controller_(root_window_controller) {
@@ -74,7 +67,7 @@ bool WmRootWindowControllerAura::HasShelf() {
 }
 
 WmGlobals* WmRootWindowControllerAura::GetGlobals() {
-  return WmGlobalsAura::Get();
+  return WmGlobals::Get();
 }
 
 WorkspaceWindowState WmRootWindowControllerAura::GetWorkspaceWindowState() {
