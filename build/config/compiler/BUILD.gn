@@ -445,14 +445,7 @@ config("compiler") {
 
     # TODO(pcc): Make these flags work correctly with CFI.
     if (!is_cfi) {
-      cflags += [
-        "-fwhole-program-vtables",
-
-        # TODO(pcc): Remove this flag once the upstream interface change
-        # (http://reviews.llvm.org/D18635) lands.
-        "-fwhole-program-vtables-blacklist=" +
-            rebase_path("//tools/cfi/blacklist.txt", root_build_dir),
-      ]
+      cflags += [ "-fwhole-program-vtables" ]
       ldflags += [ "-fwhole-program-vtables" ]
     }
   }

@@ -6267,9 +6267,6 @@
           ['_toolset=="target"', {
             'cflags': [
               '-fwhole-program-vtables',
-              # TODO(pcc): Remove this flag once the upstream interface change
-              # (http://reviews.llvm.org/D18635) lands.
-              '-fwhole-program-vtables-blacklist=<(cfi_blacklist)',
             ],
             'ldflags': [
               '-fwhole-program-vtables',
