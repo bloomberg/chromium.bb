@@ -24,7 +24,7 @@ libxdamage1 (>= 1:1.1)
 libxext6
 libxfixes3
 libxi6 (>= 2:1.2.99.4)
-libxrandr2 (>= 2:1.2.99.2)
+libxrandr2 (>= 2:1.2.99.3)
 libxrender1
 libxss1
 libxtst6
