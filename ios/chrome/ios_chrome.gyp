@@ -400,6 +400,8 @@
         'browser/net/proxy_service_factory.h',
         'browser/net/retryable_url_fetcher.h',
         'browser/net/retryable_url_fetcher.mm',
+        'browser/notification_promo.h',
+        'browser/notification_promo.cc',
         'browser/ntp_snippets/ios_chrome_ntp_snippets_service_factory.cc',
         'browser/ntp_snippets/ios_chrome_ntp_snippets_service_factory.h',
         'browser/open_from_clipboard/create_clipboard_recent_content.h',

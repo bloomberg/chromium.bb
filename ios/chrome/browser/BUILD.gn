@@ -267,6 +267,8 @@ source_set("browser") {
     "net/proxy_service_factory.h",
     "net/retryable_url_fetcher.h",
     "net/retryable_url_fetcher.mm",
+    "notification_promo.cc",
+    "notification_promo.h",
     "ntp_snippets/ios_chrome_ntp_snippets_service_factory.cc",
     "open_from_clipboard/create_clipboard_recent_content.h",
     "open_from_clipboard/create_clipboard_recent_content.mm",

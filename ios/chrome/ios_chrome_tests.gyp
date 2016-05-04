@@ -59,6 +59,7 @@
         'browser/net/image_fetcher_unittest.mm',
         'browser/net/metrics_network_client_unittest.mm',
         'browser/net/retryable_url_fetcher_unittest.mm',
+        'browser/notification_promo_unittest.cc',
         'browser/passwords/password_controller_unittest.mm',
         'browser/reading_list/reading_list_entry_unittest.cc',
         'browser/reading_list/reading_list_model_unittest.cc',
