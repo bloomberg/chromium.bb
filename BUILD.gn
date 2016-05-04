@@ -899,6 +899,7 @@ group("chromium_builder_perf") {
     if (is_win) {
       deps += [
         # "//gpu:angle_perftests", TODO(GYP): crbug.com/537008
+        "//chrome/installer/mini_installer:mini_installer",
       ]
     } else {
       deps += [ "//breakpad:minidump_stackwalk($host_toolchain)" ]

@@ -587,6 +587,7 @@
             }],
             ['OS=="win"', {
               'dependencies': [
+                '../chrome/installer/mini_installer.gyp:mini_installer',
                 '../gpu/gpu.gyp:angle_perftests',
               ],
             }],
