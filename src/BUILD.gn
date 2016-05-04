@@ -29,6 +29,15 @@ group("trusted_targets") {
   }
 }
 
+group("tests") {
+  testonly = true
+  deps = [
+    "//native_client/tests:large_tests",
+    "//native_client/tests:medium_tests",
+    "//native_client/tests:small_tests",
+  ]
+}
+
 if (is_nacl) {
   group("untrusted_targets") {
     deps = [
