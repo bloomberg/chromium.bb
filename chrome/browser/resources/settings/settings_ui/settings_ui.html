@@ -26,13 +26,30 @@
 
       paper-drawer-panel {
         @apply(--layout-center);
-        --paper-drawer-panel-left-drawer-container: {
-          background-color: var(--settings-background-color);
-        };
-        --paper-drawer-panel-right-drawer-container: {
-          background-color: var(--settings-background-color);
+        --paper-drawer-panel-drawer-container: {
+          background: none;  /* Remove default background styling. */
         };
         position: relative;
+      }
+
+      #drawer {
+        /* Explicitly set this so that transitions work and look good. */
+        background-color: var(--settings-background-color);
+      }
+
+      #drawer,
+      #drawer .toolbar {
+        transition: background-color .3s, color .3s;
+      }
+
+      :host(:not(.narrowing)) [narrow] #drawer,
+      :host(:not(.narrowing)) [narrow] #drawer .toolbar {
+        background-color: white;
+        transition: none;  /* Transition only when removing [narrow]. */
+      }
+
+      :host(:not(.narrowing)) [narrow] #drawer .toolbar {
+        color: black;
       }
 
       paper-icon-button {
@@ -90,10 +107,9 @@
 
       /* Prevent paper-toolbar from setting the margin-right to 24px. */
       paper-icon-button#menu-button {
-        /*
-         * TODO(dschuyler): this margin is on the right regardless of language
-         * direction (e.g. rtl). Make a patch for paper-toolbar in Polymer.
-         */
+        flex-shrink: 0;
+        /* TODO(dschuyler): this margin is on the right regardless of language
+         * direction (e.g. rtl). Make a patch for paper-toolbar in Polymer. */
         margin-right: 0;
       }
 
@@ -120,7 +136,7 @@
     </settings-router>
     <paper-drawer-panel drawer-width="256px" id="panel" narrow="{{isNarrow_}}"
         responsive-width="900px">
-      <paper-header-panel drawer>
+      <paper-header-panel drawer id="drawer">
         <paper-toolbar class="toolbar">
           <div class="heading flex">$i18n{settings}</div>
         </paper-toolbar>

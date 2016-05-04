@@ -27,6 +27,29 @@ Polymer({
     },
   },
 
+  listeners: {
+    'iron-select': 'onIronSelect_',
+    'paper-responsive-change': 'onPaperResponsiveChange_',
+  },
+
+  /**
+   * @param {!CustomEvent} e
+   * @private
+   */
+  onIronSelect_: function(e) {
+    if (Polymer.dom(e).path.indexOf(this.$.panel) >= 0)
+      this.classList.remove('narrowing');
+  },
+
+  /**
+   * @param {!CustomEvent} e
+   * @private
+   */
+  onPaperResponsiveChange_: function(e) {
+    if (Polymer.dom(e).rootTarget == this.$.panel)
+      this.classList.toggle('narrowing', e.detail.narrow);
+  },
+
   /** @private */
   directionDelegateChanged_: function() {
     this.$.panel.rightDrawer = this.directionDelegate.isRtl();
