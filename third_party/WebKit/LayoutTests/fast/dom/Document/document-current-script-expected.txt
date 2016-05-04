@@ -17,6 +17,8 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 <script id="i">
 <script id="j">
 <script id="i">
+<script id="svg_in_html">
+<script id="svg script">
 <script id="defer-1" src="..." defer>
 <script id="defer-2" src="..." defer>
 PASS document.currentScript is null

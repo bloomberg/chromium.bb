@@ -29,6 +29,8 @@ enum VisibilityState { "hidden", "visible", "prerender", "unloaded" };
 // https://mikewest.github.io/cors-rfc1918/#feature-detect
 enum AddressSpace { "local", "private", "public" };
 
+typedef (HTMLScriptElement or SVGScriptElement) HTMLOrSVGScriptElement;
+
 // https://dom.spec.whatwg.org/#interface-document
 
 // FIXME: Document should have a constructor. crbug.com/238234
@@ -114,7 +116,7 @@ interface Document : Node {
     [SameObject, Measure] readonly attribute HTMLCollection forms;
     [SameObject, Measure] readonly attribute HTMLCollection scripts;
     [PerWorldBindings] NodeList getElementsByName(DOMString elementName);
-    [ImplementedAs=currentScriptForBinding] readonly attribute HTMLScriptElement? currentScript;
+    [ImplementedAs=currentScriptForBinding] readonly attribute HTMLOrSVGScriptElement? currentScript;
 
     // dynamic markup insertion
     // FIXME: There are two open() methods in the spec.

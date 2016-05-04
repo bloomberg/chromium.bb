@@ -62,6 +62,17 @@ document.head.appendChild(script);
 logCurrentScript();
 </script>
 
+<script id="svg_in_html">
+logCurrentScript();
+
+var svg = document.createElementNS("htttp://www.w3.org/2000/svg", "svg");
+var script = document.createElementNS("http://www.w3.org/2000/svg", "script");
+script.id = "svg script";
+script.textContent = 'logCurrentScript();';
+svg.appendChild(script);
+document.head.appendChild(script);
+</script>
+
 <script>
 window.onload = function() {
   shouldBeNull('document.currentScript');

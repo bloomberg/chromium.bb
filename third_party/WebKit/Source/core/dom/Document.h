@@ -122,7 +122,7 @@ class HTMLHeadElement;
 class HTMLImportLoader;
 class HTMLImportsController;
 class HTMLLinkElement;
-class HTMLScriptElement;
+class HTMLScriptElementOrSVGScriptElement;
 class HitTestRequest;
 class IdleRequestCallback;
 class IdleRequestOptions;
@@ -793,9 +793,9 @@ public:
 
     ScriptRunner* scriptRunner() { return m_scriptRunner.get(); }
 
-    HTMLScriptElement* currentScript() const { return !m_currentScriptStack.isEmpty() ? m_currentScriptStack.last().get() : nullptr; }
-    HTMLScriptElement* currentScriptForBinding() const;
-    void pushCurrentScript(HTMLScriptElement*);
+    Element* currentScript() const { return !m_currentScriptStack.isEmpty() ? m_currentScriptStack.last().get() : nullptr; }
+    void currentScriptForBinding(HTMLScriptElementOrSVGScriptElement&) const;
+    void pushCurrentScript(Element*);
     void popCurrentScript();
 
     void setTransformSource(PassOwnPtr<TransformSource>);
@@ -1275,7 +1275,7 @@ private:
 
     Member<ScriptRunner> m_scriptRunner;
 
-    HeapVector<Member<HTMLScriptElement>> m_currentScriptStack;
+    HeapVector<Member<Element>> m_currentScriptStack;
 
     OwnPtr<TransformSource> m_transformSource;
 

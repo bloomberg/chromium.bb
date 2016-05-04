@@ -425,15 +425,15 @@ bool ScriptLoader::executeScript(const ScriptSourceCode& sourceCode, double* com
     // with additional support for HTML imports.
     IgnoreDestructiveWriteCountIncrementer ignoreDestructiveWriteCountIncrementer(m_isExternalScript || isImportedScript ? contextDocument : 0);
 
-    if (isHTMLScriptLoader(m_element))
-        contextDocument->pushCurrentScript(toHTMLScriptElement(m_element));
+    if (isHTMLScriptLoader(m_element) || isSVGScriptLoader(m_element))
+        contextDocument->pushCurrentScript(m_element);
 
     // Create a script from the script element node, using the script
     // block's source and the script block's type.
     // Note: This is where the script is compiled and actually executed.
     frame->script().executeScriptInMainWorld(sourceCode, accessControlStatus, compilationFinishTime);
 
-    if (isHTMLScriptLoader(m_element)) {
+    if (isHTMLScriptLoader(m_element) || isSVGScriptLoader(m_element)) {
         DCHECK(contextDocument->currentScript() == m_element);
         contextDocument->popCurrentScript();
     }

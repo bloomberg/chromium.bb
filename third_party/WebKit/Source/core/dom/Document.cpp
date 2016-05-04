@@ -196,6 +196,7 @@
 #include "core/page/scrolling/RootScroller.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/svg/SVGDocumentExtensions.h"
+#include "core/svg/SVGScriptElement.h"
 #include "core/svg/SVGTitleElement.h"
 #include "core/svg/SVGUseElement.h"
 #include "core/timing/DOMWindowPerformance.h"
@@ -4588,16 +4589,22 @@ KURL Document::openSearchDescriptionURL()
     return KURL();
 }
 
-HTMLScriptElement* Document::currentScriptForBinding() const
+void Document::currentScriptForBinding(HTMLScriptElementOrSVGScriptElement& scriptElement) const
 {
-    if (HTMLScriptElement* script = currentScript())
-        return script->isInV1ShadowTree() ? nullptr : script;
-    return nullptr;
+    if (Element* script = currentScript()) {
+        if (script->isInV1ShadowTree())
+            return;
+        if (isHTMLScriptElement(script))
+            scriptElement.setHTMLScriptElement(toHTMLScriptElement(script));
+        else if (isSVGScriptElement(script))
+            scriptElement.setSVGScriptElement(toSVGScriptElement(script));
+    }
 }
 
-void Document::pushCurrentScript(HTMLScriptElement* newCurrentScript)
+void Document::pushCurrentScript(Element* newCurrentScript)
 {
     DCHECK(newCurrentScript);
+    DCHECK(isHTMLScriptElement(newCurrentScript) || isSVGScriptElement(newCurrentScript));
     m_currentScriptStack.append(newCurrentScript);
 }
 
