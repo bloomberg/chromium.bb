@@ -1696,21 +1696,28 @@ void LayoutGrid::offsetAndBreadthForPositionedChild(const LayoutBox& child, Grid
         || (endLine < firstExplicitLine)
         || (endLine > lastExplicitLine);
 
-    // We're normalizing the positions to avoid issues with RTL (as they're stored in the same order than LTR but adding an offset).
     LayoutUnit start;
     if (!startIsAuto) {
-        if (isForColumns)
-            start = m_columnPositions[startLine] - m_columnPositions[0] + paddingStart();
-        else
-            start = m_rowPositions[startLine] - m_rowPositions[0] + paddingBefore();
+        if (isForColumns) {
+            if (styleRef().isLeftToRightDirection())
+                start = m_columnPositions[startLine] - borderLogicalLeft();
+            else
+                start = logicalWidth() - translateRTLCoordinate(m_columnPositions[startLine]) - borderLogicalRight();
+        } else {
+            start = m_rowPositions[startLine] - borderBefore();
+        }
     }
 
     LayoutUnit end = isForColumns ? clientLogicalWidth() : clientLogicalHeight();
     if (!endIsAuto) {
-        if (isForColumns)
-            end = m_columnPositions[endLine] - m_columnPositions[0] + paddingStart();
-        else
-            end = m_rowPositions[endLine] - m_rowPositions[0] + paddingBefore();
+        if (isForColumns) {
+            if (styleRef().isLeftToRightDirection())
+                end = m_columnPositions[endLine] - borderLogicalLeft();
+            else
+                end = logicalWidth() - translateRTLCoordinate(m_columnPositions[endLine]) - borderLogicalRight();
+        } else {
+            end = m_rowPositions[endLine] - borderBefore();
+        }
 
         // These vectors store line positions including gaps, but we shouldn't consider them for the edges of the grid.
         if (endLine > firstExplicitLine && endLine < lastExplicitLine) {
@@ -1718,15 +1725,6 @@ void LayoutGrid::offsetAndBreadthForPositionedChild(const LayoutBox& child, Grid
             end -= isForColumns ? m_offsetBetweenColumns : m_offsetBetweenRows;
         }
     }
-
-    LayoutUnit alignmentOffset = isForColumns ? m_columnPositions[0] - borderAndPaddingLogicalLeft() : m_rowPositions[0] - borderAndPaddingBefore();
-    if (isForColumns && !styleRef().isLeftToRightDirection())
-        alignmentOffset = contentLogicalWidth() - (m_columnPositions[m_columnPositions.size() - 1] - borderAndPaddingLogicalLeft());
-
-    if (!startIsAuto)
-        start += alignmentOffset;
-    if (!endIsAuto)
-        end += alignmentOffset;
 
     breadth = end - start;
     offset = start;
