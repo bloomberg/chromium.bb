@@ -299,7 +299,10 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
     EXPECT_CALL(*gl_, ActiveTexture(GL_TEXTURE0 + tt))
         .Times(1)
         .RetiresOnSaturation();
-    if (group_->feature_info()->feature_flags().oes_egl_image_external) {
+    if (group_->feature_info()->feature_flags().oes_egl_image_external ||
+        group_->feature_info()
+            ->feature_flags()
+            .nv_egl_stream_consumer_external) {
       EXPECT_CALL(*gl_,
                   BindTexture(GL_TEXTURE_EXTERNAL_OES,
                               use_default_textures

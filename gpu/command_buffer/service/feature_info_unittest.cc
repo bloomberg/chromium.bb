@@ -174,6 +174,7 @@ TEST_P(FeatureInfoTest, Basic) {
   EXPECT_FALSE(info_->feature_flags().enable_texture_float_linear);
   EXPECT_FALSE(info_->feature_flags().enable_texture_half_float_linear);
   EXPECT_FALSE(info_->feature_flags().oes_egl_image_external);
+  EXPECT_FALSE(info_->feature_flags().nv_egl_stream_consumer_external);
   EXPECT_FALSE(info_->feature_flags().oes_depth24);
   EXPECT_FALSE(info_->feature_flags().packed_depth24_stencil8);
   EXPECT_FALSE(info_->feature_flags().angle_translated_shader_source);
@@ -1067,6 +1068,21 @@ TEST_P(FeatureInfoTest, InitializeOES_EGL_image_external) {
       GL_REQUIRED_TEXTURE_IMAGE_UNITS_OES));
   EXPECT_TRUE(info_->validators()->g_l_state.IsValid(
       GL_TEXTURE_BINDING_EXTERNAL_OES));
+}
+
+TEST_P(FeatureInfoTest, InitializeNV_EGL_stream_consumer_external) {
+  SetupInitExpectations("GL_NV_EGL_stream_consumer_external");
+  EXPECT_THAT(info_->extensions(),
+              HasSubstr("GL_NV_EGL_stream_consumer_external"));
+  EXPECT_TRUE(info_->feature_flags().nv_egl_stream_consumer_external);
+  EXPECT_TRUE(info_->validators()->texture_bind_target.IsValid(
+      GL_TEXTURE_EXTERNAL_OES));
+  EXPECT_TRUE(info_->validators()->get_tex_param_target.IsValid(
+      GL_TEXTURE_EXTERNAL_OES));
+  EXPECT_TRUE(info_->validators()->texture_parameter.IsValid(
+      GL_REQUIRED_TEXTURE_IMAGE_UNITS_OES));
+  EXPECT_TRUE(
+      info_->validators()->g_l_state.IsValid(GL_TEXTURE_BINDING_EXTERNAL_OES));
 }
 
 TEST_P(FeatureInfoTest, InitializeOES_compressed_ETC1_RGB8_texture) {

@@ -44,6 +44,7 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     bool chromium_screen_space_antialiasing;
     bool oes_standard_derivatives;
     bool oes_egl_image_external;
+    bool nv_egl_stream_consumer_external;
     bool oes_depth24;
     bool oes_compressed_etc1_rgb8_texture;
     bool packed_depth24_stencil8;

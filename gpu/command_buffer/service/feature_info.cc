@@ -91,6 +91,7 @@ FeatureInfo::FeatureFlags::FeatureFlags()
       chromium_screen_space_antialiasing(false),
       oes_standard_derivatives(false),
       oes_egl_image_external(false),
+      nv_egl_stream_consumer_external(false),
       oes_depth24(false),
       oes_compressed_etc1_rgb8_texture(false),
       packed_depth24_stencil8(false),
@@ -871,6 +872,14 @@ void FeatureInfo::InitializeFeatures() {
   if (extensions.Contains("GL_OES_EGL_image_external")) {
     AddExtensionString("GL_OES_EGL_image_external");
     feature_flags_.oes_egl_image_external = true;
+  }
+  if (extensions.Contains("GL_NV_EGL_stream_consumer_external")) {
+    AddExtensionString("GL_NV_EGL_stream_consumer_external");
+    feature_flags_.nv_egl_stream_consumer_external = true;
+  }
+
+  if (feature_flags_.oes_egl_image_external ||
+      feature_flags_.nv_egl_stream_consumer_external) {
     validators_.texture_bind_target.AddValue(GL_TEXTURE_EXTERNAL_OES);
     validators_.get_tex_param_target.AddValue(GL_TEXTURE_EXTERNAL_OES);
     validators_.texture_parameter.AddValue(GL_REQUIRED_TEXTURE_IMAGE_UNITS_OES);

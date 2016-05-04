@@ -160,8 +160,10 @@ std::string GetFragmentShaderSource(bool premultiply_alpha,
         source += std::string("#define TextureLookup texture2DRect\n");
         break;
       case GL_TEXTURE_EXTERNAL_OES:
+        source +=
+            std::string("#extension GL_OES_EGL_image_external : enable\n");
         source += std::string(
-            "#extension GL_OES_EGL_image_external : require\n");
+            "#extension GL_NV_EGL_stream_consumer_external : enable\n");
         source += std::string("#define TextureLookup texture2D\n");
         break;
       default:

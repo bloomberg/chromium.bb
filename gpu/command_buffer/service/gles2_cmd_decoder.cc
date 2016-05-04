@@ -2846,7 +2846,8 @@ bool GLES2DecoderImpl::Initialize(const scoped_refptr<gfx::GLSurface>& surface,
     glActiveTexture(GL_TEXTURE0 + tt);
     // We want the last bind to be 2D.
     TextureRef* ref;
-    if (features().oes_egl_image_external) {
+    if (features().oes_egl_image_external ||
+        features().nv_egl_stream_consumer_external) {
       ref = texture_manager()->GetDefaultTextureInfo(
           GL_TEXTURE_EXTERNAL_OES);
       state_.texture_units[tt].bound_texture_external_oes = ref;
@@ -3393,6 +3394,8 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
           features().arb_texture_rectangle ? 1 : 0;
       resources.OES_EGL_image_external =
           features().oes_egl_image_external ? 1 : 0;
+      resources.NV_EGL_stream_consumer_external =
+          features().nv_egl_stream_consumer_external ? 1 : 0;
       resources.EXT_draw_buffers =
           features().ext_draw_buffers ? 1 : 0;
       resources.EXT_frag_depth =
@@ -3410,6 +3413,8 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
           features().arb_texture_rectangle ? 1 : 0;
       resources.OES_EGL_image_external =
           features().oes_egl_image_external ? 1 : 0;
+      resources.NV_EGL_stream_consumer_external =
+          features().nv_egl_stream_consumer_external ? 1 : 0;
       resources.EXT_blend_func_extended =
           features().ext_blend_func_extended ? 1 : 0;
       break;

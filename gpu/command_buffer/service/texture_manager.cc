@@ -1755,7 +1755,8 @@ bool TextureManager::Initialize() {
         GL_TEXTURE_2D_ARRAY, &black_texture_ids_[kTexture2DArray]);
   }
 
-  if (feature_info_->feature_flags().oes_egl_image_external) {
+  if (feature_info_->feature_flags().oes_egl_image_external ||
+      feature_info_->feature_flags().nv_egl_stream_consumer_external) {
     default_textures_[kExternalOES] = CreateDefaultAndBlackTextures(
         GL_TEXTURE_EXTERNAL_OES, &black_texture_ids_[kExternalOES]);
   }

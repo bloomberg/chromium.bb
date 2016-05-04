@@ -69,7 +69,8 @@ bool TargetIsSupported(const FeatureInfo* feature_info, GLuint target) {
     case GL_TEXTURE_RECTANGLE_ARB:
       return feature_info->feature_flags().arb_texture_rectangle;
     case GL_TEXTURE_EXTERNAL_OES:
-      return feature_info->feature_flags().oes_egl_image_external;
+      return feature_info->feature_flags().oes_egl_image_external ||
+             feature_info->feature_flags().nv_egl_stream_consumer_external;
     default:
       NOTREACHED();
       return false;
@@ -227,7 +228,9 @@ void ContextState::RestoreTextureUnitBindings(
 
   bool bind_texture_2d = true;
   bool bind_texture_cube = true;
-  bool bind_texture_oes = feature_info_->feature_flags().oes_egl_image_external;
+  bool bind_texture_oes =
+      feature_info_->feature_flags().oes_egl_image_external ||
+      feature_info_->feature_flags().nv_egl_stream_consumer_external;
   bool bind_texture_arb = feature_info_->feature_flags().arb_texture_rectangle;
 
   if (prev_state) {
