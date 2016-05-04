@@ -2019,6 +2019,9 @@ void PropertyTrees::PushChangeTrackingTo(PropertyTrees* tree) {
       target_node->data.transform_changed = true;
     }
   }
+  // Ensure that change tracking is updated even if property trees don't have
+  // other reasons to get updated.
+  tree->UpdateChangeTracking();
   tree->full_tree_damaged = full_tree_damaged;
 }
 

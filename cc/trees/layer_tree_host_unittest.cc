@@ -828,6 +828,79 @@ class LayerTreeHostTestPropertyTreesChangedSync : public LayerTreeHostTest {
 
 SINGLE_THREAD_TEST_F(LayerTreeHostTestPropertyTreesChangedSync);
 
+// Verify damage status is updated even when the transform tree doesn't need
+// to be updated at draw time.
+class LayerTreeHostTestTransformTreeDamageIsUpdated : public LayerTreeHostTest {
+ protected:
+  void SetupTree() override {
+    root_ = Layer::Create();
+    child_ = Layer::Create();
+    grand_child_ = Layer::Create();
+
+    root_->SetBounds(gfx::Size(50, 50));
+
+    // Make sure child and grand_child have transform nodes.
+    gfx::Transform rotation;
+    rotation.RotateAboutZAxis(45.0);
+    child_->SetTransform(rotation);
+    grand_child_->SetTransform(rotation);
+
+    root_->AddChild(child_);
+    child_->AddChild(grand_child_);
+    layer_tree_host()->SetRootLayer(root_);
+    LayerTreeHostTest::SetupTree();
+  }
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void DidCommit() override {
+    if (layer_tree_host()->source_frame_number() == 1) {
+      gfx::Transform scale;
+      scale.Scale(2.0, 2.0);
+      child_->OnTransformAnimated(scale);
+    }
+  }
+
+  void CommitCompleteOnThread(LayerTreeHostImpl* impl) override {
+    if (impl->sync_tree()->source_frame_number() == 0)
+      PostSetNeedsCommitToMainThread();
+  }
+
+  DrawResult PrepareToDrawOnThread(LayerTreeHostImpl* impl,
+                                   LayerTreeHostImpl::FrameData* frame_data,
+                                   DrawResult draw_result) override {
+    if (impl->active_tree()->source_frame_number() == 1) {
+      EXPECT_FALSE(
+          impl->active_tree()->LayerById(root_->id())->LayerPropertyChanged());
+      EXPECT_TRUE(
+          impl->active_tree()->LayerById(child_->id())->LayerPropertyChanged());
+      EXPECT_TRUE(impl->active_tree()
+                      ->LayerById(grand_child_->id())
+                      ->LayerPropertyChanged());
+      EndTest();
+    }
+
+    return draw_result;
+  }
+
+  void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
+    if (impl->active_tree()->source_frame_number() == 0) {
+      gfx::Transform scale;
+      scale.Scale(2.0, 2.0);
+      impl->active_tree()->LayerById(child_->id())->OnTransformAnimated(scale);
+    }
+  }
+
+  void AfterTest() override {}
+
+ private:
+  scoped_refptr<Layer> root_;
+  scoped_refptr<Layer> child_;
+  scoped_refptr<Layer> grand_child_;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestTransformTreeDamageIsUpdated);
+
 // Test that when mask layers switches layers, this gets pushed onto impl.
 // Also test that mask layer is in the layer update list even if its owning
 // layer isn't.
