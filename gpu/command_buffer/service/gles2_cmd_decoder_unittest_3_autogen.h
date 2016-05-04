@@ -306,30 +306,6 @@ TEST_P(GLES2DecoderTest3, ViewportInvalidArgs3_0) {
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 }
 
-TEST_P(GLES2DecoderTest3, BeginTransformFeedbackValidArgs) {
-  EXPECT_CALL(*gl_, BeginTransformFeedback(GL_POINTS));
-  SpecializedSetup<cmds::BeginTransformFeedback, 0>(true);
-  cmds::BeginTransformFeedback cmd;
-  cmd.Init(GL_POINTS);
-  decoder_->set_unsafe_es3_apis_enabled(true);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  decoder_->set_unsafe_es3_apis_enabled(false);
-  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
-}
-
-TEST_P(GLES2DecoderTest3, EndTransformFeedbackValidArgs) {
-  EXPECT_CALL(*gl_, EndTransformFeedback());
-  SpecializedSetup<cmds::EndTransformFeedback, 0>(true);
-  cmds::EndTransformFeedback cmd;
-  cmd.Init();
-  decoder_->set_unsafe_es3_apis_enabled(true);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  decoder_->set_unsafe_es3_apis_enabled(false);
-  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
-}
-
 TEST_P(GLES2DecoderTest3, PopGroupMarkerEXTValidArgs) {
   SpecializedSetup<cmds::PopGroupMarkerEXT, 0>(true);
   cmds::PopGroupMarkerEXT cmd;

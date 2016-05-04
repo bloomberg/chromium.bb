@@ -295,6 +295,7 @@ class GPU_EXPORT BufferManager : public base::trace_event::MemoryDumpProvider {
   friend class Buffer;
   friend class TestHelper;  // Needs access to DoBufferData.
   friend class BufferManagerTestBase;  // Needs access to DoBufferSubData.
+  friend class IndexedBufferBindingHostTest;  // Needs access to SetInfo.
 
   void StartTracking(Buffer* buffer);
   void StopTracking(Buffer* buffer);

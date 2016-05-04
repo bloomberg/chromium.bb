@@ -28,6 +28,7 @@
 #include "gpu/command_buffer/service/shader_manager.h"
 #include "gpu/command_buffer/service/test_helper.h"
 #include "gpu/command_buffer/service/texture_manager.h"
+#include "gpu/command_buffer/service/transform_feedback_manager.h"
 #include "gpu/command_buffer/service/vertex_array_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_mock.h"
@@ -141,9 +142,9 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
     return group_->sampler_manager()->GetSampler(client_id);
   }
 
-  bool GetTransformFeedbackServiceId(
-      GLuint client_id, GLuint* service_id) const {
-    return group_->GetTransformFeedbackServiceId(client_id, service_id);
+  TransformFeedback* GetTransformFeedback(GLuint client_id) {
+    return decoder_->GetTransformFeedbackManager()->GetTransformFeedback(
+        client_id);
   }
 
   bool GetSyncServiceId(GLuint client_id, GLsync* service_id) const {
@@ -510,7 +511,8 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
   static const GLuint kServiceQueryId = 309;
   static const GLuint kServiceVertexArrayId = 310;
   static const GLuint kServiceTransformFeedbackId = 311;
-  static const GLuint kServiceSyncId = 312;
+  static const GLuint kServiceDefaultTransformFeedbackId = 312;
+  static const GLuint kServiceSyncId = 313;
 
   static const int32_t kSharedMemoryId = 401;
   static const size_t kSharedBufferSize = 2048;

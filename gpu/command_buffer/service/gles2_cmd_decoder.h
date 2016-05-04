@@ -43,6 +43,7 @@ class ImageManager;
 class Logger;
 class QueryManager;
 class Texture;
+class TransformFeedbackManager;
 class VertexArrayManager;
 struct ContextState;
 
@@ -203,6 +204,9 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
 
   // Gets the QueryManager for this context.
   virtual QueryManager* GetQueryManager() = 0;
+
+  // Gets the TransformFeedbackManager for this context.
+  virtual TransformFeedbackManager* GetTransformFeedbackManager() = 0;
 
   // Gets the VertexArrayManager for this context.
   virtual VertexArrayManager* GetVertexArrayManager() = 0;

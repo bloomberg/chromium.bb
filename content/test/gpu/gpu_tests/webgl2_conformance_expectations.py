@@ -353,8 +353,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/vertexarrays.html',
         ['mac'], bug=483282)
 
-    self.Fail('conformance2/buffers/buffer-overflow-test.html',
-        ['mac'], bug=483282)
     self.Fail('conformance2/buffers/buffer-type-restrictions.html',
         ['mac'], bug=483282)
     self.Fail('conformance2/reading/read-pixels-from-fbo-test.html',

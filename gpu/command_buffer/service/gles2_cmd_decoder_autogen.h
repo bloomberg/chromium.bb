@@ -150,13 +150,7 @@ error::Error GLES2DecoderImpl::HandleBindTransformFeedback(
   (void)c;
   GLenum target = static_cast<GLenum>(c.target);
   GLuint transformfeedback = c.transformfeedback;
-  if (!group_->GetTransformFeedbackServiceId(transformfeedback,
-                                             &transformfeedback)) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBindTransformFeedback",
-                       "invalid transformfeedback id");
-    return error::kNoError;
-  }
-  glBindTransformFeedback(target, transformfeedback);
+  DoBindTransformFeedback(target, transformfeedback);
   return error::kNoError;
 }
 
@@ -912,13 +906,7 @@ error::Error GLES2DecoderImpl::HandleDeleteTransformFeedbacksImmediate(
   if (ids == NULL) {
     return error::kOutOfBounds;
   }
-  for (GLsizei ii = 0; ii < n; ++ii) {
-    GLuint service_id = 0;
-    if (group_->GetTransformFeedbackServiceId(ids[ii], &service_id)) {
-      glDeleteTransformFeedbacks(1, &service_id);
-      group_->RemoveTransformFeedbackId(ids[ii]);
-    }
-  }
+  DeleteTransformFeedbacksHelper(n, ids);
   return error::kNoError;
 }
 
@@ -1305,15 +1293,8 @@ error::Error GLES2DecoderImpl::HandleGenTransformFeedbacksImmediate(
   if (ids == NULL) {
     return error::kOutOfBounds;
   }
-  for (GLsizei ii = 0; ii < n; ++ii) {
-    if (group_->GetTransformFeedbackServiceId(ids[ii], NULL)) {
-      return error::kInvalidArguments;
-    }
-  }
-  std::unique_ptr<GLuint[]> service_ids(new GLuint[n]);
-  glGenTransformFeedbacks(n, service_ids.get());
-  for (GLsizei ii = 0; ii < n; ++ii) {
-    group_->AddTransformFeedbackId(ids[ii], service_ids[ii]);
+  if (!GenTransformFeedbacksHelper(n, ids)) {
+    return error::kInvalidArguments;
   }
   return error::kNoError;
 }
@@ -2313,9 +2294,7 @@ error::Error GLES2DecoderImpl::HandleIsTransformFeedback(
   if (!result_dst) {
     return error::kOutOfBounds;
   }
-  GLuint service_transformfeedback = 0;
-  *result_dst = group_->GetTransformFeedbackServiceId(
-      transformfeedback, &service_transformfeedback);
+  *result_dst = DoIsTransformFeedback(transformfeedback);
   return error::kNoError;
 }
 
@@ -2354,7 +2333,7 @@ error::Error GLES2DecoderImpl::HandlePauseTransformFeedback(
   const gles2::cmds::PauseTransformFeedback& c =
       *static_cast<const gles2::cmds::PauseTransformFeedback*>(cmd_data);
   (void)c;
-  glPauseTransformFeedback();
+  DoPauseTransformFeedback();
   return error::kNoError;
 }
 
@@ -2435,7 +2414,7 @@ error::Error GLES2DecoderImpl::HandleResumeTransformFeedback(
   const gles2::cmds::ResumeTransformFeedback& c =
       *static_cast<const gles2::cmds::ResumeTransformFeedback*>(cmd_data);
   (void)c;
-  glResumeTransformFeedback();
+  DoResumeTransformFeedback();
   return error::kNoError;
 }
 
@@ -4308,7 +4287,7 @@ error::Error GLES2DecoderImpl::HandleBeginTransformFeedback(
       *static_cast<const gles2::cmds::BeginTransformFeedback*>(cmd_data);
   (void)c;
   GLenum primitivemode = static_cast<GLenum>(c.primitivemode);
-  glBeginTransformFeedback(primitivemode);
+  DoBeginTransformFeedback(primitivemode);
   return error::kNoError;
 }
 
@@ -4320,7 +4299,7 @@ error::Error GLES2DecoderImpl::HandleEndTransformFeedback(
   const gles2::cmds::EndTransformFeedback& c =
       *static_cast<const gles2::cmds::EndTransformFeedback*>(cmd_data);
   (void)c;
-  glEndTransformFeedback();
+  DoEndTransformFeedback();
   return error::kNoError;
 }
 

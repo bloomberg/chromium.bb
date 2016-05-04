@@ -2413,6 +2413,7 @@ _FUNCTION_INFO = {
     'type': 'Bind',
     'decoder_func': 'DoBindBufferRange',
     'gen_func': 'GenBuffersARB',
+    'unit_test': False,
     'valid_args': {
       '3': '4',
       '4': '4'
@@ -2448,8 +2449,10 @@ _FUNCTION_INFO = {
   },
   'BindTransformFeedback': {
     'type': 'Bind',
-    'id_mapping': [ 'TransformFeedback' ],
+    'decoder_func': 'DoBindTransformFeedback',
     'unsafe': True,
+    'use_helper': True,
+    'unit_test': False,
   },
   'BlitFramebufferCHROMIUM': {
     'decoder_func': 'DoBlitFramebufferCHROMIUM',
@@ -2796,6 +2799,8 @@ _FUNCTION_INFO = {
     'resource_type': 'TransformFeedback',
     'resource_types': 'TransformFeedbacks',
     'unsafe': True,
+    'use_helper': True,
+    'unit_test': False,
   },
   'DepthRangef': {
     'decoder_func': 'DoDepthRangef',
@@ -2936,6 +2941,8 @@ _FUNCTION_INFO = {
     'resource_type': 'TransformFeedback',
     'resource_types': 'TransformFeedbacks',
     'unsafe': True,
+    'use_helper': True,
+    'unit_test': False,
   },
   'GetActiveAttrib': {
     'type': 'Custom',
@@ -3414,9 +3421,10 @@ _FUNCTION_INFO = {
   },
   'IsTransformFeedback': {
     'type': 'Is',
-    'id_mapping': [ 'TransformFeedback' ],
+    'decoder_func': 'DoIsTransformFeedback',
     'expectation': False,
     'unsafe': True,
+    'use_helper': True,
   },
   'GetLastFlushIdCHROMIUM': {
     'gen_cmd': False,
@@ -3464,6 +3472,8 @@ _FUNCTION_INFO = {
     'trace_level': 1,
   },
   'PauseTransformFeedback': {
+    'decoder_func': 'DoPauseTransformFeedback',
+    'unit_test': False,
     'unsafe': True,
   },
   'PixelStorei': {'type': 'Manual'},
@@ -3561,6 +3571,8 @@ _FUNCTION_INFO = {
     'unit_test': False,
   },
   'ResumeTransformFeedback': {
+    'decoder_func': 'DoResumeTransformFeedback',
+    'unit_test': False,
     'unsafe': True,
   },
   'SamplerParameterf': {
@@ -4126,6 +4138,8 @@ _FUNCTION_INFO = {
     'extension': "occlusion_query_EXT",
   },
   'BeginTransformFeedback': {
+    'decoder_func': 'DoBeginTransformFeedback',
+    'unit_test': False,
     'unsafe': True,
   },
   'EndQueryEXT': {
@@ -4137,6 +4151,8 @@ _FUNCTION_INFO = {
     'extension': "occlusion_query_EXT",
   },
   'EndTransformFeedback': {
+    'decoder_func': 'DoEndTransformFeedback',
+    'unit_test': False,
     'unsafe': True,
   },
   'FlushDriverCachesCHROMIUM': {

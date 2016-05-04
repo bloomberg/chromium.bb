@@ -13,6 +13,8 @@
 #ifndef MOJO_GPU_MOJO_GLES2_IMPL_AUTOGEN_H_
 #define MOJO_GPU_MOJO_GLES2_IMPL_AUTOGEN_H_
 
+#include <memory>
+
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "mojo/public/c/gles2/gles2.h"
 

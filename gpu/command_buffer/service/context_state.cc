@@ -14,6 +14,7 @@
 #include "gpu/command_buffer/service/framebuffer_manager.h"
 #include "gpu/command_buffer/service/program_manager.h"
 #include "gpu/command_buffer/service/renderbuffer_manager.h"
+#include "gpu/command_buffer/service/transform_feedback_manager.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_version_info.h"
@@ -293,6 +294,24 @@ void ContextState::RestoreProgramBindings() const {
   glUseProgram(current_program.get() ? current_program->service_id() : 0);
 }
 
+void ContextState::RestoreTransformFeedbackBindings(
+    const ContextState* prev_state) {
+  if (!feature_info_->IsES3Capable())
+    return;
+  if (prev_state) {
+    if (prev_state->bound_transform_feedback.get() &&
+        prev_state->bound_transform_feedback->active() &&
+        !prev_state->bound_transform_feedback->paused()) {
+      glPauseTransformFeedback();
+    }
+  }
+  if (bound_transform_feedback.get()) {
+    bound_transform_feedback->DoBindTransformFeedback(GL_TRANSFORM_FEEDBACK);
+  } else {
+    glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, 0);
+  }
+}
+
 void ContextState::RestoreActiveTexture() const {
   glActiveTexture(GL_TEXTURE0 + active_texture_unit);
 }
@@ -426,6 +445,7 @@ void ContextState::RestoreState(const ContextState* prev_state) {
   RestoreBufferBindings();
   RestoreRenderbufferBindings();
   RestoreProgramBindings();
+  RestoreTransformFeedbackBindings(prev_state);
   RestoreGlobalState(prev_state);
 }
 

@@ -198,31 +198,6 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
 
   bool GetBufferServiceId(GLuint client_id, GLuint* service_id) const;
 
-  void AddTransformFeedbackId(GLuint client_id, GLuint service_id) {
-    transformfeedbacks_id_map_[client_id] = service_id;
-  }
-
-  bool GetTransformFeedbackServiceId(
-      GLuint client_id, GLuint* service_id) const {
-    if (client_id == 0) {
-      // Default one.
-      if (service_id)
-        *service_id = 0;
-      return true;
-    }
-    base::hash_map<GLuint, GLuint>::const_iterator iter =
-        transformfeedbacks_id_map_.find(client_id);
-    if (iter == transformfeedbacks_id_map_.end())
-      return false;
-    if (service_id)
-      *service_id = iter->second;
-    return true;
-  }
-
-  void RemoveTransformFeedbackId(GLuint client_id) {
-    transformfeedbacks_id_map_.erase(client_id);
-  }
-
   void AddSyncId(GLuint client_id, GLsync service_id) {
     syncs_id_map_[client_id] = service_id;
   }
@@ -304,7 +279,6 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
   std::vector<base::WeakPtr<gles2::GLES2Decoder> > decoders_;
 
   // Mappings from client side IDs to service side IDs.
-  base::hash_map<GLuint, GLuint> transformfeedbacks_id_map_;
   base::hash_map<GLuint, GLsync> syncs_id_map_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextGroup);

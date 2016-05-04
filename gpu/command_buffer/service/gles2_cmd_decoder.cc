@@ -56,6 +56,7 @@
 #include "gpu/command_buffer/service/shader_manager.h"
 #include "gpu/command_buffer/service/shader_translator.h"
 #include "gpu/command_buffer/service/texture_manager.h"
+#include "gpu/command_buffer/service/transform_feedback_manager.h"
 #include "gpu/command_buffer/service/vertex_array_manager.h"
 #include "gpu/command_buffer/service/vertex_attrib_manager.h"
 #include "third_party/smhasher/src/City.h"
@@ -629,6 +630,9 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   void RestoreAllAttributes() const override;
 
   QueryManager* GetQueryManager() override { return query_manager_.get(); }
+  TransformFeedbackManager* GetTransformFeedbackManager() override {
+    return transform_feedback_manager_.get();
+  }
   VertexArrayManager* GetVertexArrayManager() override {
     return vertex_array_manager_.get();
   }
@@ -751,6 +755,8 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   bool DeletePathsCHROMIUMHelper(GLuint first_client_id, GLsizei range);
   bool GenSamplersHelper(GLsizei n, const GLuint* client_ids);
   void DeleteSamplersHelper(GLsizei n, const GLuint* client_ids);
+  bool GenTransformFeedbacksHelper(GLsizei n, const GLuint* client_ids);
+  void DeleteTransformFeedbacksHelper(GLsizei n, const GLuint* client_ids);
 
   // Workarounds
   void OnFboChanged() const;
@@ -852,6 +858,24 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   // Deletes the sampler info for the given sampler.
   void RemoveSampler(GLuint client_id) {
     sampler_manager()->RemoveSampler(client_id);
+  }
+
+  // Creates a TransformFeedback for the given transformfeedback.
+  TransformFeedback* CreateTransformFeedback(
+      GLuint client_id, GLuint service_id) {
+    return transform_feedback_manager_->CreateTransformFeedback(
+        client_id, service_id);
+  }
+
+  // Gets the TransformFeedback info for the given transformfeedback.
+  // Returns nullptr if none exists.
+  TransformFeedback* GetTransformFeedback(GLuint client_id) {
+    return transform_feedback_manager_->GetTransformFeedback(client_id);
+  }
+
+  // Deletes the TransformFeedback info for the given transformfeedback.
+  void RemoveTransformFeedback(GLuint client_id) {
+    transform_feedback_manager_->RemoveTransformFeedback(client_id);
   }
 
   // Get the size (in pixels) of the currently bound frame buffer (either FBO
@@ -1383,6 +1407,22 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   // Wrapper for glBindSampler since we need to track the current targets.
   void DoBindSampler(GLuint unit, GLuint sampler);
 
+  // Wrapper for glBindTransformFeedback since we need to emulate ES3 behaviors
+  // for BindBufferRange on Desktop GL lower than 4.2.
+  void DoBindTransformFeedback(GLenum target, GLuint transform_feedback);
+
+  // Wrapper for glBeginTransformFeedback.
+  void DoBeginTransformFeedback(GLenum primitive_mode);
+
+  // Wrapper for glEndTransformFeedback.
+  void DoEndTransformFeedback();
+
+  // Wrapper for glPauseTransformFeedback.
+  void DoPauseTransformFeedback();
+
+  // Wrapper for glResumeTransformFeedback.
+  void DoResumeTransformFeedback();
+
   // Wrapper for glBindVertexArrayOES
   void DoBindVertexArrayOES(GLuint array);
   void EmulateVertexArrayState();
@@ -1558,6 +1598,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   bool DoIsShader(GLuint client_id);
   bool DoIsTexture(GLuint client_id);
   bool DoIsSampler(GLuint client_id);
+  bool DoIsTransformFeedback(GLuint client_id);
   bool DoIsVertexArrayOES(GLuint client_id);
   bool DoIsPathCHROMIUM(GLuint client_id);
 
@@ -1961,6 +2002,8 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
 
   // All the state for this context.
   ContextState state_;
+
+  std::unique_ptr<TransformFeedbackManager> transform_feedback_manager_;
 
   // Current width and height of the offscreen frame buffer.
   gfx::Size offscreen_size_;
@@ -2730,6 +2773,11 @@ bool GLES2DecoderImpl::Initialize(const scoped_refptr<gfx::GLSurface>& surface,
     return false;
   }
   CHECK_GL_ERROR();
+
+  bool needs_emulation = feature_info_->gl_version_info().IsLowerThanGL(4, 2);
+  transform_feedback_manager_.reset(new TransformFeedbackManager(
+      group_->max_transform_feedback_separate_attribs(), needs_emulation));
+
   if (feature_info_->context_type() == CONTEXT_TYPE_WEBGL2 ||
       feature_info_->context_type() == CONTEXT_TYPE_OPENGLES3) {
     if (!feature_info_->IsES3Capable()) {
@@ -2743,6 +2791,15 @@ bool GLES2DecoderImpl::Initialize(const scoped_refptr<gfx::GLSurface>& surface,
     frag_depth_explicitly_enabled_ = true;
     draw_buffers_explicitly_enabled_ = true;
     // TODO(zmo): Look into shader_texture_lod_explicitly_enabled_ situation.
+
+    // Create a fake default transform feedback and bind to it.
+    GLuint default_transform_feedback = 0;
+    glGenTransformFeedbacks(1, &default_transform_feedback);
+    state_.default_transform_feedback =
+        transform_feedback_manager_->CreateTransformFeedback(
+            0, default_transform_feedback);
+    glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, default_transform_feedback);
+    state_.bound_transform_feedback = state_.default_transform_feedback.get();
   }
 
   state_.attrib_values.resize(group_->max_vertex_attribs());
@@ -3486,6 +3543,21 @@ bool GLES2DecoderImpl::GenSamplersHelper(GLsizei n, const GLuint* client_ids) {
   return true;
 }
 
+bool GLES2DecoderImpl::GenTransformFeedbacksHelper(
+    GLsizei n, const GLuint* client_ids) {
+  for (GLsizei ii = 0; ii < n; ++ii) {
+    if (GetTransformFeedback(client_ids[ii])) {
+      return false;
+    }
+  }
+  std::unique_ptr<GLuint[]> service_ids(new GLuint[n]);
+  glGenTransformFeedbacks(n, service_ids.get());
+  for (GLsizei ii = 0; ii < n; ++ii) {
+    CreateTransformFeedback(client_ids[ii], service_ids[ii]);
+  }
+  return true;
+}
+
 bool GLES2DecoderImpl::GenPathsCHROMIUMHelper(GLuint first_client_id,
                                               GLsizei range) {
   GLuint last_client_id;
@@ -3529,6 +3601,7 @@ void GLES2DecoderImpl::DeleteBuffersHelper(
     if (buffer && !buffer->IsDeleted()) {
       buffer->RemoveMappedRange();
       state_.RemoveBoundBuffer(buffer);
+      transform_feedback_manager_->RemoveBoundBuffer(buffer);
       RemoveBuffer(client_ids[ii]);
     }
   }
@@ -3654,7 +3727,24 @@ void GLES2DecoderImpl::DeleteSamplersHelper(
   }
 }
 
-// }  // anonymous namespace
+void GLES2DecoderImpl::DeleteTransformFeedbacksHelper(
+    GLsizei n, const GLuint* client_ids) {
+  for (GLsizei ii = 0; ii < n; ++ii) {
+    TransformFeedback* transform_feedback = GetTransformFeedback(
+        client_ids[ii]);
+    if (transform_feedback) {
+      if (state_.bound_transform_feedback.get() == transform_feedback) {
+        // Bind to the default transform feedback.
+        DCHECK(state_.default_transform_feedback.get());
+        state_.default_transform_feedback->DoBindTransformFeedback(
+            GL_TRANSFORM_FEEDBACK);
+        state_.bound_transform_feedback =
+            state_.default_transform_feedback.get();
+      }
+      RemoveTransformFeedback(client_ids[ii]);
+    }
+  }
+}
 
 bool GLES2DecoderImpl::MakeCurrent() {
   if (!context_.get())
@@ -4056,23 +4146,25 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
   if (!initialized())
     return;
 
-  DCHECK(!have_context || context_->IsCurrent(NULL));
+  DCHECK(!have_context || context_->IsCurrent(nullptr));
 
   // Unbind everything.
-  state_.vertex_attrib_manager = NULL;
-  state_.default_vertex_attrib_manager = NULL;
+  state_.vertex_attrib_manager = nullptr;
+  state_.default_vertex_attrib_manager = nullptr;
   state_.texture_units.clear();
   state_.sampler_units.clear();
-  state_.bound_array_buffer = NULL;
-  state_.bound_copy_read_buffer = NULL;
-  state_.bound_copy_write_buffer = NULL;
-  state_.bound_pixel_pack_buffer = NULL;
-  state_.bound_pixel_unpack_buffer = NULL;
-  state_.bound_transform_feedback_buffer = NULL;
-  state_.bound_uniform_buffer = NULL;
-  framebuffer_state_.bound_read_framebuffer = NULL;
-  framebuffer_state_.bound_draw_framebuffer = NULL;
-  state_.bound_renderbuffer = NULL;
+  state_.bound_array_buffer = nullptr;
+  state_.bound_copy_read_buffer = nullptr;
+  state_.bound_copy_write_buffer = nullptr;
+  state_.bound_pixel_pack_buffer = nullptr;
+  state_.bound_pixel_unpack_buffer = nullptr;
+  state_.bound_transform_feedback_buffer = nullptr;
+  state_.bound_uniform_buffer = nullptr;
+  framebuffer_state_.bound_read_framebuffer = nullptr;
+  framebuffer_state_.bound_draw_framebuffer = nullptr;
+  state_.bound_renderbuffer = nullptr;
+  state_.bound_transform_feedback = nullptr;
+  state_.default_transform_feedback = nullptr;
 
   if (offscreen_saved_color_texture_info_.get()) {
     DCHECK(offscreen_target_color_texture_);
@@ -4164,6 +4256,14 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
   if (vertex_array_manager_ .get()) {
     vertex_array_manager_->Destroy(have_context);
     vertex_array_manager_.reset();
+  }
+
+  if (transform_feedback_manager_.get()) {
+    if (!have_context) {
+      transform_feedback_manager_->MarkContextLost();
+    }
+    transform_feedback_manager_->Destroy();
+    transform_feedback_manager_.reset();
   }
 
   if (image_manager_.get()) {
@@ -4609,7 +4709,12 @@ void GLES2DecoderImpl::BindIndexedBufferImpl(
                            "index out of range");
         return;
       }
-      // TODO(zmo): Check transform feedback isn't currently active.
+      DCHECK(state_.bound_transform_feedback.get());
+      if (state_.bound_transform_feedback->active()) {
+        LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name,
+                           "bound transform feedback is active");
+        return;
+      }
       break;
     }
     case GL_UNIFORM_BUFFER: {
@@ -4680,17 +4785,36 @@ void GLES2DecoderImpl::BindIndexedBufferImpl(
   }
   LogClientServiceForInfo(buffer, client_id, function_name);
 
-  switch (function_type) {
-    case kBindBufferBase:
-      glBindBufferBase(target, index, service_id);
+  switch (target) {
+    case GL_TRANSFORM_FEEDBACK_BUFFER:
+      DCHECK(state_.bound_transform_feedback.get());
+      switch (function_type) {
+        case kBindBufferBase:
+          state_.bound_transform_feedback->DoBindBufferBase(
+              target, index, buffer);
+          break;
+        case kBindBufferRange:
+          state_.bound_transform_feedback->DoBindBufferRange(
+              target, index, buffer, offset, size);
+          break;
+      }
       break;
-    case kBindBufferRange:
-      // TODO(zmo): On Desktop GL 4.1 or lower, clamp the offset/size not to
-      // exceed the size of the buffer. crbug.com/604436.
-      glBindBufferRange(target, index, service_id, offset, size);
+    case GL_UNIFORM_BUFFER:
+      // TODO(zmo): emulate Desktop GL 4.1 or lower behavior and keep track of
+      // indexed buffer bindings.
+      switch (function_type) {
+        case kBindBufferBase:
+          glBindBufferBase(target, index, service_id);
+          break;
+        case kBindBufferRange:
+          glBindBufferRange(target, index, service_id, offset, size);
+          break;
+      }
+      break;
+    default:
+      NOTREACHED();
       break;
   }
-  // TODO(kbr): track indexed bound buffers.
 }
 
 void GLES2DecoderImpl::DoBindBufferBase(GLenum target, GLuint index,
@@ -5014,6 +5138,89 @@ void GLES2DecoderImpl::DoBindSampler(GLuint unit, GLuint client_id) {
   }
 
   state_.sampler_units[unit] = sampler;
+}
+
+void GLES2DecoderImpl::DoBindTransformFeedback(
+    GLenum target, GLuint client_id) {
+  const char* function_name = "glBindTransformFeedback";
+  if (!validators_->transform_feedback_bind_target.IsValid(target)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM(function_name, target, "target");
+    return;
+  }
+
+  TransformFeedback* transform_feedback = nullptr;
+  if (client_id != 0) {
+    transform_feedback = GetTransformFeedback(client_id);
+    if (!transform_feedback) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name,
+                         "id not generated by glGenTransformFeedbacks");
+      return;
+    }
+  } else {
+    transform_feedback = state_.default_transform_feedback.get();
+  }
+  DCHECK(transform_feedback);
+  if (transform_feedback == state_.bound_transform_feedback.get())
+    return;
+  if (state_.bound_transform_feedback->active() &&
+      !state_.bound_transform_feedback->paused()) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name,
+                       "currently bound transform feedback is active");
+    return;
+  }
+  LogClientServiceForInfo(transform_feedback, client_id, function_name);
+  transform_feedback->DoBindTransformFeedback(target);
+  state_.bound_transform_feedback = transform_feedback;
+}
+
+void GLES2DecoderImpl::DoBeginTransformFeedback(GLenum primitive_mode) {
+  const char* function_name = "glBeginTransformFeedback";
+  DCHECK(state_.bound_transform_feedback.get());
+  if (!validators_->transform_feedback_primitive_mode.IsValid(primitive_mode)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM(
+        function_name, primitive_mode, "primitiveMode");
+    return;
+  }
+  if (state_.bound_transform_feedback->active()) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name,
+                       "transform feedback is already active");
+    return;
+  }
+  state_.bound_transform_feedback->DoBeginTransformFeedback(primitive_mode);
+}
+
+void GLES2DecoderImpl::DoEndTransformFeedback() {
+  const char* function_name = "glEndTransformFeedback";
+  DCHECK(state_.bound_transform_feedback.get());
+  if (!state_.bound_transform_feedback->active()) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name,
+                       "transform feedback is not active");
+    return;
+  }
+  // TODO(zmo): Validate binding points.
+  state_.bound_transform_feedback->DoEndTransformFeedback();
+}
+
+void GLES2DecoderImpl::DoPauseTransformFeedback() {
+  DCHECK(state_.bound_transform_feedback.get());
+  if (!state_.bound_transform_feedback->active() ||
+      state_.bound_transform_feedback->paused()) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glPauseTransformFeedback",
+                       "transform feedback is not active or already paused");
+    return;
+  }
+  state_.bound_transform_feedback->DoPauseTransformFeedback();
+}
+
+void GLES2DecoderImpl::DoResumeTransformFeedback() {
+  DCHECK(state_.bound_transform_feedback.get());
+  if (!state_.bound_transform_feedback->active() ||
+      !state_.bound_transform_feedback->paused()) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glResumeTransformFeedback",
+                       "transform feedback is not active or not paused");
+    return;
+  }
+  state_.bound_transform_feedback->DoResumeTransformFeedback();
 }
 
 void GLES2DecoderImpl::DoDisableVertexAttribArray(GLuint index) {
@@ -8717,6 +8924,12 @@ bool GLES2DecoderImpl::DoIsTexture(GLuint client_id) {
 bool GLES2DecoderImpl::DoIsSampler(GLuint client_id) {
   const Sampler* sampler = GetSampler(client_id);
   return sampler && !sampler->IsDeleted();
+}
+
+bool GLES2DecoderImpl::DoIsTransformFeedback(GLuint client_id) {
+  const TransformFeedback* transform_feedback =
+      GetTransformFeedback(client_id);
+  return transform_feedback && transform_feedback->has_been_bound();
 }
 
 void GLES2DecoderImpl::DoAttachShader(
@@ -13204,6 +13417,10 @@ void GLES2DecoderImpl::MarkContextLost(error::ContextLostReason reason) {
   context_lost_reason_ = reason;
   current_decoder_error_ = error::kLostContext;
   context_was_lost_ = true;
+
+  if (transform_feedback_manager_.get()) {
+    transform_feedback_manager_->MarkContextLost();
+  }
 }
 
 bool GLES2DecoderImpl::CheckResetStatus() {

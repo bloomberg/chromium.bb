@@ -243,6 +243,14 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
     EXPECT_CALL(*gl_, GetIntegerv(GL_MAX_DRAW_BUFFERS, _))
         .WillOnce(SetArgumentPointee<1>(kMaxDrawBuffers))
         .RetiresOnSaturation();
+
+    EXPECT_CALL(*gl_, GenTransformFeedbacks(1, _))
+        .WillOnce(SetArgumentPointee<1>(kServiceDefaultTransformFeedbackId))
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, BindTransformFeedback(GL_TRANSFORM_FEEDBACK,
+                                            kServiceDefaultTransformFeedbackId))
+        .Times(1)
+        .RetiresOnSaturation();
   }
 
   if (group_->feature_info()->feature_flags().native_vertex_array_object) {
@@ -519,6 +527,19 @@ void GLES2DecoderTestBase::ResetDecoder() {
     if (group_->feature_info()->feature_flags().native_vertex_array_object) {
       EXPECT_CALL(*gl_,
                   DeleteVertexArraysOES(1, Pointee(kServiceVertexArrayId)))
+          .Times(1)
+          .RetiresOnSaturation();
+    }
+    if (group_->feature_info()->IsES3Capable()) {
+      // fake default transform feedback.
+      EXPECT_CALL(*gl_, DeleteTransformFeedbacks(1, _))
+          .Times(1)
+          .RetiresOnSaturation();
+    }
+    if (group_->feature_info()->gl_version_info().IsAtLeastGL(4, 0) ||
+        group_->feature_info()->gl_version_info().IsAtLeastGLES(3, 0)) {
+      // |client_transformfeedback_id_|
+      EXPECT_CALL(*gl_, DeleteTransformFeedbacks(1, _))
           .Times(1)
           .RetiresOnSaturation();
     }
@@ -1480,6 +1501,7 @@ const GLuint GLES2DecoderTestBase::kServiceElementBufferId;
 const GLuint GLES2DecoderTestBase::kServiceQueryId;
 const GLuint GLES2DecoderTestBase::kServiceVertexArrayId;
 const GLuint GLES2DecoderTestBase::kServiceTransformFeedbackId;
+const GLuint GLES2DecoderTestBase::kServiceDefaultTransformFeedbackId;
 const GLuint GLES2DecoderTestBase::kServiceSyncId;
 
 const int32_t GLES2DecoderTestBase::kSharedMemoryId;

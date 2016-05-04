@@ -727,18 +727,6 @@ TEST_P(GLES2DecoderTest2, LinkProgramValidArgs) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
-TEST_P(GLES2DecoderTest2, PauseTransformFeedbackValidArgs) {
-  EXPECT_CALL(*gl_, PauseTransformFeedback());
-  SpecializedSetup<cmds::PauseTransformFeedback, 0>(true);
-  cmds::PauseTransformFeedback cmd;
-  cmd.Init();
-  decoder_->set_unsafe_es3_apis_enabled(true);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  decoder_->set_unsafe_es3_apis_enabled(false);
-  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
-}
-
 TEST_P(GLES2DecoderTest2, PolygonOffsetValidArgs) {
   EXPECT_CALL(*gl_, PolygonOffset(1, 2));
   SpecializedSetup<cmds::PolygonOffset, 0>(true);
@@ -793,18 +781,6 @@ TEST_P(GLES2DecoderTest2, RenderbufferStorageInvalidArgs3_0) {
   cmd.Init(GL_RENDERBUFFER, GL_RGBA4, 3, -1);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
-}
-
-TEST_P(GLES2DecoderTest2, ResumeTransformFeedbackValidArgs) {
-  EXPECT_CALL(*gl_, ResumeTransformFeedback());
-  SpecializedSetup<cmds::ResumeTransformFeedback, 0>(true);
-  cmds::ResumeTransformFeedback cmd;
-  cmd.Init();
-  decoder_->set_unsafe_es3_apis_enabled(true);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  decoder_->set_unsafe_es3_apis_enabled(false);
-  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
 }
 
 TEST_P(GLES2DecoderTest2, SampleCoverageValidArgs) {

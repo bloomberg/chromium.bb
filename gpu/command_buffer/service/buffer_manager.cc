@@ -18,8 +18,10 @@
 #include "gpu/command_buffer/service/error_state.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
+#include "gpu/command_buffer/service/transform_feedback_manager.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_implementation.h"
+#include "ui/gl/gl_version_info.h"
 #include "ui/gl/trace_util.h"
 
 namespace gpu {
@@ -412,6 +414,12 @@ void BufferManager::ValidateAndDoBufferData(
   }
 
   DoBufferData(error_state, buffer, target, size, usage, data);
+
+  if (context_state->bound_transform_feedback.get()) {
+    // buffer size might have changed, and on Desktop GL lower than 4.2,
+    // we might need to reset transform feedback buffer range.
+    context_state->bound_transform_feedback->OnBufferData(target, buffer);
+  }
 }
 
 

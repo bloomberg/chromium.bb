@@ -1424,6 +1424,67 @@ TEST_P(GLES2DecoderTest, LoseContextCHROMIUMInvalidArgs1_0) {
   EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
 }
 
+TEST_P(GLES3DecoderTest, TransformFeedbackStates) {
+  cmds::BeginTransformFeedback begin_cmd;
+  begin_cmd.Init(GL_POINTS);
+  cmds::EndTransformFeedback end_cmd;
+  end_cmd.Init();
+  cmds::PauseTransformFeedback pause_cmd;
+  pause_cmd.Init();
+  cmds::ResumeTransformFeedback resume_cmd;
+  resume_cmd.Init();
+
+  // Before Begin: Pause, Resume, and End is invalid.
+  EXPECT_EQ(error::kNoError, ExecuteCmd(end_cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+
+  EXPECT_EQ(error::kNoError, ExecuteCmd(pause_cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+
+  EXPECT_EQ(error::kNoError, ExecuteCmd(resume_cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+
+  // Begin
+  EXPECT_CALL(*gl_, BeginTransformFeedback(GL_POINTS))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_EQ(error::kNoError, ExecuteCmd(begin_cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+  // Begin again is invalid.
+  EXPECT_EQ(error::kNoError, ExecuteCmd(begin_cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+
+  // Before Pause: Resume is invalid.
+  EXPECT_EQ(error::kNoError, ExecuteCmd(resume_cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+
+  // Pause
+  EXPECT_CALL(*gl_, PauseTransformFeedback())
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_EQ(error::kNoError, ExecuteCmd(pause_cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+  // Pause again is invalid.
+  EXPECT_EQ(error::kNoError, ExecuteCmd(pause_cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+
+  // Resume
+  EXPECT_CALL(*gl_, ResumeTransformFeedback())
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_EQ(error::kNoError, ExecuteCmd(resume_cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+  // End
+  EXPECT_CALL(*gl_, EndTransformFeedback())
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_EQ(error::kNoError, ExecuteCmd(end_cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
 class GLES2DecoderDoCommandsTest : public GLES2DecoderTest {
  public:
   GLES2DecoderDoCommandsTest() {
@@ -1442,6 +1503,60 @@ class GLES2DecoderDoCommandsTest : public GLES2DecoderTest {
   Enable cmds_[3];
   int entries_per_cmd_;
 };
+
+TEST_P(GLES3DecoderTest, BindTransformFeedbackValidArgs) {
+  EXPECT_CALL(*gl_, BindTransformFeedback(GL_TRANSFORM_FEEDBACK,
+                                          kServiceTransformFeedbackId));
+  SpecializedSetup<cmds::BindTransformFeedback, 0>(true);
+  cmds::BindTransformFeedback cmd;
+  cmd.Init(GL_TRANSFORM_FEEDBACK, client_transformfeedback_id_);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+TEST_P(GLES3DecoderTest, GenDeleteTransformFeedbacksImmediateValidArgs) {
+  EXPECT_CALL(*gl_, GenTransformFeedbacks(1, _))
+      .WillOnce(SetArgPointee<1>(kNewServiceId));
+  cmds::GenTransformFeedbacksImmediate* gen_cmd =
+      GetImmediateAs<cmds::GenTransformFeedbacksImmediate>();
+  GLuint temp = kNewClientId;
+  SpecializedSetup<cmds::GenTransformFeedbacksImmediate, 0>(true);
+  gen_cmd->Init(1, &temp);
+  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(*gen_cmd, sizeof(temp)));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  EXPECT_TRUE(GetTransformFeedback(kNewClientId) != nullptr);
+
+  EXPECT_CALL(*gl_,
+              DeleteTransformFeedbacks(1, Pointee(kNewServiceId)))
+      .Times(1);
+  cmds::DeleteTransformFeedbacksImmediate& delete_cmd =
+      *GetImmediateAs<cmds::DeleteTransformFeedbacksImmediate>();
+  SpecializedSetup<cmds::DeleteTransformFeedbacksImmediate, 0>(true);
+  delete_cmd.Init(1, &temp);
+  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(delete_cmd, sizeof(&temp)));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  EXPECT_TRUE(GetTransformFeedback(kNewClientId) == nullptr);
+}
+
+TEST_P(GLES3DecoderTest, DeleteTransformFeedbacksImmediateInvalidArgs) {
+  cmds::DeleteTransformFeedbacksImmediate& cmd =
+      *GetImmediateAs<cmds::DeleteTransformFeedbacksImmediate>();
+  SpecializedSetup<cmds::DeleteTransformFeedbacksImmediate, 0>(false);
+  GLuint temp = kInvalidClientId;
+  cmd.Init(1, &temp);
+  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+TEST_P(GLES3DecoderTest, GenTransformFeedbacksImmediateInvalidArgs) {
+  EXPECT_CALL(*gl_, GenTransformFeedbacks(_, _)).Times(0);
+  cmds::GenTransformFeedbacksImmediate* cmd =
+      GetImmediateAs<cmds::GenTransformFeedbacksImmediate>();
+  SpecializedSetup<cmds::GenTransformFeedbacksImmediate, 0>(false);
+  cmd->Init(1, &client_transformfeedback_id_);
+  EXPECT_EQ(error::kInvalidArguments,
+            ExecuteImmediateCmd(*cmd, sizeof(&client_transformfeedback_id_)));
+}
 
 // Test that processing with 0 entries does nothing.
 TEST_P(GLES2DecoderDoCommandsTest, DoCommandsOneOfZero) {
