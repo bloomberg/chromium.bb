@@ -324,7 +324,7 @@ def AddGnuWinToPath():
     return
 
   gnuwin_dir = os.path.join(LLVM_BUILD_TOOLS_DIR, 'gnuwin')
-  GNUWIN_VERSION = '3'
+  GNUWIN_VERSION = '4'
   GNUWIN_STAMP = os.path.join(gnuwin_dir, 'stamp')
   if ReadStampFile(GNUWIN_STAMP) == GNUWIN_VERSION:
     print 'GNU Win tools already up to date.'
