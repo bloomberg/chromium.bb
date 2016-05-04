@@ -665,6 +665,7 @@ net::URLRequestContext* ProfileImplIOData::InitializeAppRequestContext(
       new net::ChannelIDService(
           new net::DefaultChannelIDStore(channel_id_db.get()),
           base::WorkerPool::GetTaskRunner(true)));
+  cookie_store->SetChannelIDServiceID(channel_id_service->GetUniqueID());
 
   // Build a new HttpNetworkSession that uses the new ChannelIDService.
   net::HttpNetworkSession::Params network_params =

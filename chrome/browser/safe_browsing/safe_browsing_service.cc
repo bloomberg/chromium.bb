@@ -181,6 +181,7 @@ SafeBrowsingURLRequestContextGetter::GetURLRequestContext() {
             CookieFilePath(),
             content::CookieStoreConfig::EPHEMERAL_SESSION_COOKIES, nullptr,
             nullptr));
+
     safe_browsing_request_context_->set_cookie_store(
         safe_browsing_cookie_store_.get());
 
@@ -195,6 +196,8 @@ SafeBrowsingURLRequestContextGetter::GetURLRequestContext() {
         base::WorkerPool::GetTaskRunner(true)));
     safe_browsing_request_context_->set_channel_id_service(
         channel_id_service_.get());
+    safe_browsing_cookie_store_->SetChannelIDServiceID(
+        channel_id_service_->GetUniqueID());
 
     // Rebuild the HttpNetworkSession and the HttpTransactionFactory to use the
     // new ChannelIDService.

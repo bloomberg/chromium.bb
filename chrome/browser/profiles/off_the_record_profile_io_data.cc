@@ -330,11 +330,13 @@ net::URLRequestContext* OffTheRecordProfileIOData::InitializeAppRequestContext(
   // Use a separate in-memory cookie store for the app.
   // TODO(creis): We should have a cookie delegate for notifying the cookie
   // extensions API, but we need to update it to understand isolated apps first.
-  context->SetCookieStore(
-      content::CreateCookieStore(content::CookieStoreConfig()));
+  std::unique_ptr<net::CookieStore> cookie_store =
+      content::CreateCookieStore(content::CookieStoreConfig());
   std::unique_ptr<net::ChannelIDService> channel_id_service(
       new net::ChannelIDService(new net::DefaultChannelIDStore(nullptr),
                                 base::WorkerPool::GetTaskRunner(true)));
+  cookie_store->SetChannelIDServiceID(channel_id_service->GetUniqueID());
+  context->SetCookieStore(std::move(cookie_store));
 
   // Build a new HttpNetworkSession that uses the new ChannelIDService.
   net::HttpNetworkSession::Params network_params =
