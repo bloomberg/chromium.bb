@@ -90,10 +90,12 @@ WebTestInterfaces::CreateAppBannerClient() {
 }
 
 std::unique_ptr<WebFrameTestClient> WebTestInterfaces::CreateWebFrameTestClient(
-    WebTestProxyBase* web_test_proxy_base) {
+    WebTestProxyBase* web_test_proxy_base,
+    WebFrameTestProxyBase* web_frame_test_proxy_base) {
   return base::WrapUnique(new WebFrameTestClient(interfaces_->GetTestRunner(),
                                                  interfaces_->GetDelegate(),
-                                                 web_test_proxy_base));
+                                                 web_test_proxy_base,
+                                                 web_frame_test_proxy_base));
 }
 
 std::unique_ptr<WebViewTestClient> WebTestInterfaces::CreateWebViewTestClient(

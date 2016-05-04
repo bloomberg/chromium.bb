@@ -65,6 +65,7 @@ window.onload = function()
 
     dragDrop(drop1);
     dragDrop(drop2);
+    window.stop();
     window.setTimeout(function () {
         // Deadman's switch to fail quickly.
         if (!beforeUnloadReceived)

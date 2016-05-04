@@ -125,11 +125,6 @@ public:
     // Returns true if the current frame's load event has not completed.
     virtual bool isLoading() const = 0;
 
-    // Returns true if any resource load is currently in progress. Exposed
-    // primarily for use in layout tests. You probably want isLoading()
-    // instead.
-    virtual bool isResourceLoadInProgress() const = 0;
-
     // Returns true if there is a pending redirect or location change
     // within specified interval (in seconds). This could be caused by:
     // * an HTTP Refresh header

@@ -217,7 +217,6 @@ public:
         const WebURL& baseURL, const WebURL& unreachableURL, bool replace, WebFrameLoadType,
         const WebHistoryItem&, WebHistoryLoadType, bool isClientRedirect) override;
     bool isLoading() const override;
-    bool isResourceLoadInProgress() const override;
     bool isNavigationScheduledWithin(double interval) const override;
     void setCommittedFirstRealLoad() override;
     void sendOrientationChangeEvent() override;

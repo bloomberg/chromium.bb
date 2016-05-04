@@ -11,6 +11,7 @@ window.onload = function() {
     window.location.href = "resources/does-not-exist.html";
     setTimeout(function() {
         shouldBeEqualToString("testEvent.returnValue", "");
+        window.stop();
         finishJSTest();
     }, 0);
 }

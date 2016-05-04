@@ -1924,13 +1924,6 @@ bool WebLocalFrameImpl::isLoading() const
     return frame()->loader().stateMachine()->isDisplayingInitialEmptyDocument() || frame()->loader().provisionalDocumentLoader() || !frame()->document()->loadEventFinished();
 }
 
-bool WebLocalFrameImpl::isResourceLoadInProgress() const
-{
-    if (!frame() || !frame()->document())
-        return false;
-    return frame()->document()->fetcher()->requestCount();
-}
-
 bool WebLocalFrameImpl::isNavigationScheduledWithin(double intervalInSeconds) const
 {
     return frame() && frame()->navigationScheduler().isNavigationScheduledWithin(intervalInSeconds);

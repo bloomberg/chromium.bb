@@ -54,8 +54,14 @@ void EnableBrowserLayoutTestMode();
 void EnableRendererLayoutTestMode();
 
 // "Casts" |render_view| to |WebTestProxyBase|.  Caller has to ensure that prior
-// to construciton of |render_view|, EnableWebTestProxyCreation was called.
+// to construction of |render_view|, EnableWebTestProxyCreation was called.
 test_runner::WebTestProxyBase* GetWebTestProxyBase(RenderView* render_view);
+
+// "Casts" |render_frame| to |WebFrameTestProxyBase|.  Caller has to ensure
+// that prior to construction of |render_frame|, EnableWebTestProxyCreation was
+// called.
+test_runner::WebFrameTestProxyBase* GetWebFrameTestProxyBase(
+    RenderFrame* render_frame);
 
 // Enable injecting of a WebTestProxy between WebViews and RenderViews
 // and WebFrameTestProxy between WebFrames and RenderFrames.

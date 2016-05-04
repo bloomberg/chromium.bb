@@ -19,8 +19,10 @@ function test() {
     document.getElementById("image").href.baseVal = "resources/green-checker.png";
     document.getElementById("image").setAttribute("display", "inherit");
 
-    if (window.testRunner)
-        testRunner.notifyDone();
+    document.getElementById("image").onload = function() {
+        if (window.testRunner)
+            testRunner.notifyDone();
+    }
 }
 
 </script>

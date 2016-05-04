@@ -25,7 +25,10 @@ function test(frame) {
     };
 
     frame.contentWindow.location.href = "resources/does-not-exist.html";
-    setTimeout(finishJSTest, 0);
+    setTimeout(function() {
+        window.stop();
+        finishJSTest();
+    }, 0);
 }
 </script>
 </head>

@@ -26,6 +26,13 @@ class TEST_RUNNER_EXPORT WebFrameTestProxyBase {
     test_client_ = std::move(client);
   }
 
+  blink::WebLocalFrame* web_frame() const { return web_frame_; }
+  void set_web_frame(blink::WebLocalFrame* frame) {
+    DCHECK(frame);
+    DCHECK(!web_frame_);
+    web_frame_ = frame;
+  }
+
  protected:
   WebFrameTestProxyBase();
   ~WebFrameTestProxyBase();
@@ -33,6 +40,7 @@ class TEST_RUNNER_EXPORT WebFrameTestProxyBase {
 
  private:
   std::unique_ptr<WebFrameTestClient> test_client_;
+  blink::WebLocalFrame* web_frame_;
 
   DISALLOW_COPY_AND_ASSIGN(WebFrameTestProxyBase);
 };
@@ -153,6 +161,11 @@ class WebFrameTestProxy : public Base, public WebFrameTestProxyBase {
   void didFinishLoad(blink::WebLocalFrame* frame) override {
     Base::didFinishLoad(frame);
     test_client()->didFinishLoad(frame);
+  }
+
+  void didStopLoading() override {
+    Base::didStopLoading();
+    test_client()->didStopLoading();
   }
 
   void didChangeSelection(bool is_selection_empty) override {

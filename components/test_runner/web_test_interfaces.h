@@ -32,6 +32,7 @@ namespace test_runner {
 class AppBannerClient;
 class TestInterfaces;
 class WebFrameTestClient;
+class WebFrameTestProxyBase;
 class WebTestDelegate;
 class WebTestProxyBase;
 class WebTestRunner;
@@ -72,7 +73,8 @@ class TEST_RUNNER_EXPORT WebTestInterfaces {
   // should guarantee that the returned object won't be used beyond the lifetime
   // of WebTestInterfaces and/or the lifetime of |web_test_proxy_base|.
   std::unique_ptr<WebFrameTestClient> CreateWebFrameTestClient(
-      WebTestProxyBase* web_test_proxy_base);
+      WebTestProxyBase* web_test_proxy_base,
+      WebFrameTestProxyBase* web_frame_test_proxy_base);
 
   // Creates a WebViewClient implementation providing test behavior (i.e.
   // providing a mocked speech recognizer).  The caller should guarantee that

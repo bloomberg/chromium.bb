@@ -20,6 +20,7 @@ function dragFilesOntoEditableArea(files)
     eventSender.beginDragWithFiles(files);
     moveMouseToCenterOfElement(editableArea);
     eventSender.mouseUp();
+    window.stop();
 }
 
 function runTest()

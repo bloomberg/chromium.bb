@@ -15,6 +15,7 @@ namespace test_runner {
 
 class AccessibilityController;
 class TestRunner;
+class WebFrameTestProxyBase;
 class WebTestDelegate;
 class WebTestProxyBase;
 
@@ -28,7 +29,8 @@ class WebFrameTestClient : public blink::WebFrameClient {
   // forth) live longer than |this|.
   WebFrameTestClient(TestRunner* test_runner,
                      WebTestDelegate* delegate,
-                     WebTestProxyBase* web_test_proxy_base);
+                     WebTestProxyBase* web_test_proxy_base,
+                     WebFrameTestProxyBase* web_frame_test_proxy_base);
 
   ~WebFrameTestClient() override;
 
@@ -82,6 +84,7 @@ class WebFrameTestClient : public blink::WebFrameClient {
                    const blink::WebURLError& error,
                    blink::WebHistoryCommitType commit_type) override;
   void didFinishLoad(blink::WebLocalFrame* frame) override;
+  void didStopLoading() override;
   void didDetectXSS(const blink::WebURL& insecure_url,
                     bool did_block_entire_page) override;
   void didDispatchPingLoader(const blink::WebURL& url) override;
@@ -114,6 +117,7 @@ class WebFrameTestClient : public blink::WebFrameClient {
   TestRunner* test_runner_;
   WebTestDelegate* delegate_;
   WebTestProxyBase* web_test_proxy_base_;
+  WebFrameTestProxyBase* web_frame_test_proxy_base_;
 
   // Map from request identifier into resource url description.  The map is used
   // to track resource requests spanning willSendRequest, didReceiveResponse,

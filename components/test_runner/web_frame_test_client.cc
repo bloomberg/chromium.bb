@@ -19,6 +19,7 @@
 #include "components/test_runner/test_interfaces.h"
 #include "components/test_runner/test_plugin.h"
 #include "components/test_runner/test_runner.h"
+#include "components/test_runner/web_frame_test_proxy.h"
 #include "components/test_runner/web_test_delegate.h"
 #include "components/test_runner/web_test_proxy.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -180,29 +181,17 @@ const char* WebNavigationTypeToString(blink::WebNavigationType type) {
   return kIllegalString;
 }
 
-enum CheckDoneReason {
-  LoadFinished,
-  MainResourceLoadFailed,
-  ResourceLoadCompleted
-};
-void CheckDone(blink::WebLocalFrame* frame,
-               CheckDoneReason reason,
-               TestRunner* test_runner) {
-  if (reason != MainResourceLoadFailed &&
-      (frame->isResourceLoadInProgress() || frame->isLoading()))
-    return;
-  test_runner->tryToClearTopLoadingFrame(frame);
-}
-
 }  // namespace
 
 WebFrameTestClient::WebFrameTestClient(
     TestRunner* test_runner,
     WebTestDelegate* delegate,
-    WebTestProxyBase* web_test_proxy_base)
+    WebTestProxyBase* web_test_proxy_base,
+    WebFrameTestProxyBase* web_frame_test_proxy_base)
     : test_runner_(test_runner),
       delegate_(delegate),
-      web_test_proxy_base_(web_test_proxy_base) {
+      web_test_proxy_base_(web_test_proxy_base),
+      web_frame_test_proxy_base_(web_frame_test_proxy_base) {
   DCHECK(test_runner);
   DCHECK(delegate_);
   DCHECK(web_test_proxy_base_);
@@ -458,7 +447,6 @@ void WebFrameTestClient::didFailProvisionalLoad(
     PrintFrameDescription(delegate_, frame);
     delegate_->PrintMessage(" - didFailProvisionalLoadWithError\n");
   }
-  CheckDone(frame, MainResourceLoadFailed, test_runner_);
 }
 
 void WebFrameTestClient::didCommitProvisionalLoad(
@@ -514,7 +502,6 @@ void WebFrameTestClient::didFailLoad(blink::WebLocalFrame* frame,
     PrintFrameDescription(delegate_, frame);
     delegate_->PrintMessage(" - didFailLoadWithError\n");
   }
-  CheckDone(frame, MainResourceLoadFailed, test_runner_);
 }
 
 void WebFrameTestClient::didFinishLoad(blink::WebLocalFrame* frame) {
@@ -522,7 +509,11 @@ void WebFrameTestClient::didFinishLoad(blink::WebLocalFrame* frame) {
     PrintFrameDescription(delegate_, frame);
     delegate_->PrintMessage(" - didFinishLoadForFrame\n");
   }
-  CheckDone(frame, LoadFinished, test_runner_);
+}
+
+void WebFrameTestClient::didStopLoading() {
+  test_runner_->tryToClearTopLoadingFrame(
+      web_frame_test_proxy_base_->web_frame());
 }
 
 void WebFrameTestClient::didDetectXSS(const blink::WebURL& insecure_url,
@@ -665,7 +656,6 @@ void WebFrameTestClient::didFinishResourceLoad(blink::WebLocalFrame* frame,
     delegate_->PrintMessage(" - didFinishLoading\n");
   }
   resource_identifier_map_.erase(identifier);
-  CheckDone(frame, ResourceLoadCompleted, test_runner_);
 }
 
 void WebFrameTestClient::didAddMessageToConsole(

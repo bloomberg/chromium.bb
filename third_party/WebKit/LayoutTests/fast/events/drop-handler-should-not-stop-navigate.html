@@ -39,6 +39,7 @@ document.body.addEventListener('drop', function (event)
     eventSender.beginDragWithFiles(['DRTFakeFile']);
     eventSender.mouseMoveTo(document.body.offsetLeft + 10, document.body.offsetTop + 10);
     eventSender.mouseUp();
+    window.stop();
     window.setTimeout(function ()
     {
         // Deadman's switch so we don't need to wait for the test to timeout to fail.

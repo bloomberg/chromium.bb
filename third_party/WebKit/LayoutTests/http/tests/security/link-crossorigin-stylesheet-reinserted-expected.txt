@@ -1,5 +1,4 @@
 CONSOLE ERROR: CSS stylesheet from origin 'http://127.0.0.1:8080' has been blocked from loading by Cross-Origin Resource Sharing policy: No 'Access-Control-Allow-Origin' header is present on the requested resource. Origin 'http://127.0.0.1:8000' is therefore not allowed access.
-CONSOLE ERROR: CSS stylesheet from origin 'http://127.0.0.1:8080' has been blocked from loading by Cross-Origin Resource Sharing policy: No 'Access-Control-Allow-Origin' header is present on the requested resource. Origin 'http://127.0.0.1:8000' is therefore not allowed access.
 Test that re-inserting a CORS-loading stylesheet is correctly handled.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

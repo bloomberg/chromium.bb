@@ -16,6 +16,7 @@ function test()
     eventSender.beginDragWithFiles(["fakefile"]);
     moveMouseToCenterOfElement(document.getElementById("target"));
     eventSender.mouseUp();
+    window.stop();
 }
 
 </script>

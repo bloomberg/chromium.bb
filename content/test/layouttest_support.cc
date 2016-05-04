@@ -68,6 +68,9 @@ base::LazyInstance<FrameProxyCreationCallback>::Leaky
 using WebTestProxyType = test_runner::WebTestProxy<RenderViewImpl,
                                                    CompositorDependencies*,
                                                    const ViewMsg_New_Params&>;
+using WebFrameTestProxyType =
+    test_runner::WebFrameTestProxy<RenderFrameImpl,
+                                   const RenderFrameImpl::CreateParams&>;
 
 RenderViewImpl* CreateWebTestProxy(CompositorDependencies* compositor_deps,
                                    const ViewMsg_New_Params& params) {
@@ -81,10 +84,7 @@ RenderViewImpl* CreateWebTestProxy(CompositorDependencies* compositor_deps,
 
 RenderFrameImpl* CreateWebFrameTestProxy(
     const RenderFrameImpl::CreateParams& params) {
-  typedef test_runner::WebFrameTestProxy<
-      RenderFrameImpl, const RenderFrameImpl::CreateParams&> FrameProxy;
-
-  FrameProxy* render_frame_proxy = new FrameProxy(params);
+  WebFrameTestProxyType* render_frame_proxy = new WebFrameTestProxyType(params);
   if (g_frame_test_proxy_callback == 0)
     return render_frame_proxy;
   g_frame_test_proxy_callback.Get().Run(render_frame_proxy, render_frame_proxy);
@@ -111,6 +111,13 @@ test_runner::WebTestProxyBase* GetWebTestProxyBase(RenderView* render_view) {
   WebTestProxyType* render_view_proxy =
       static_cast<WebTestProxyType*>(render_view);
   return static_cast<test_runner::WebTestProxyBase*>(render_view_proxy);
+}
+
+test_runner::WebFrameTestProxyBase* GetWebFrameTestProxyBase(
+    RenderFrame* render_frame) {
+  WebFrameTestProxyType* render_frame_proxy =
+      static_cast<WebFrameTestProxyType*>(render_frame);
+  return static_cast<test_runner::WebFrameTestProxyBase*>(render_frame_proxy);
 }
 
 void EnableWebTestProxyCreation(

@@ -20,6 +20,7 @@ function startTest()
         // FIXME: This test fails and got rebaselinend to expect the failure, we should fix this. See http://crbug.com/443143
         shouldBeEqualToString('result', '<div>LayoutTests/editing/pasteboard/foo</div><div>LayoutTests/editing/pasteboard/bar</div><div>LayoutTests/editing/pasteboard/baz</div>');
         editable.innerHTML = '';
+        window.stop();
     }
 }
 

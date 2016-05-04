@@ -6,7 +6,7 @@
 
 namespace test_runner {
 
-WebFrameTestProxyBase::WebFrameTestProxyBase() {}
+WebFrameTestProxyBase::WebFrameTestProxyBase() : web_frame_(nullptr) {}
 WebFrameTestProxyBase::~WebFrameTestProxyBase() {}
 
 }  // namespace test_runner

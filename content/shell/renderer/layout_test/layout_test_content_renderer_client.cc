@@ -81,9 +81,10 @@ void WebFrameTestProxyCreated(RenderFrame* render_frame,
                               test_runner::WebFrameTestProxyBase* proxy) {
   test_runner::WebTestProxyBase* web_test_proxy_base =
       GetWebTestProxyBase(render_frame->GetRenderView());
-  proxy->set_test_client(LayoutTestRenderThreadObserver::GetInstance()
-                             ->test_interfaces()
-                             ->CreateWebFrameTestClient(web_test_proxy_base));
+  proxy->set_test_client(
+      LayoutTestRenderThreadObserver::GetInstance()
+          ->test_interfaces()
+          ->CreateWebFrameTestClient(web_test_proxy_base, proxy));
 }
 
 }  // namespace
@@ -103,6 +104,9 @@ void LayoutTestContentRendererClient::RenderThreadStarted() {
 
 void LayoutTestContentRendererClient::RenderFrameCreated(
     RenderFrame* render_frame) {
+  test_runner::WebFrameTestProxyBase* proxy =
+      GetWebFrameTestProxyBase(render_frame);
+  proxy->set_web_frame(render_frame->GetWebFrame());
   new LayoutTestRenderFrameObserver(render_frame);
 }
 
