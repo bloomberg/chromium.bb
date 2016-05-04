@@ -238,6 +238,10 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #   define SK_SUPPORT_LEGACY_EVAL_CUBIC
 #endif
 
+#ifndef    SK_SUPPORT_LEGACY_COMPUTESAVELAYER_FLAG
+#   define SK_SUPPORT_LEGACY_COMPUTESAVELAYER_FLAG
+#endif
+
 #ifndef    SK_SUPPORT_LEGACY_TYPEFACE_PTR
 #   define SK_SUPPORT_LEGACY_TYPEFACE_PTR
 #endif
