@@ -18,18 +18,6 @@
 using device::BluetoothDevice;
 using device::BluetoothLowEnergyDeviceMac;
 
-namespace {
-
-// Converts a CBUUID to a BluetoothUUID.
-device::BluetoothUUID BluetoothUUIDWithCBUUID(CBUUID* uuid) {
-  // UUIDString only available OS X >= 10.8.
-  DCHECK(base::mac::IsOSMountainLionOrLater());
-  std::string uuid_c_string = base::SysNSStringToUTF8([uuid UUIDString]);
-  return device::BluetoothUUID(uuid_c_string);
-}
-
-}  // namespace
-
 BluetoothLowEnergyDeviceMac::BluetoothLowEnergyDeviceMac(
     BluetoothAdapterMac* adapter,
     CBPeripheral* peripheral,
@@ -62,7 +50,8 @@ void BluetoothLowEnergyDeviceMac::Update(NSDictionary* advertisement_data,
       [advertisement_data objectForKey:CBAdvertisementDataServiceDataKey];
   for (CBUUID* uuid in service_data) {
     NSData* data = [service_data objectForKey:uuid];
-    BluetoothUUID service_uuid = BluetoothUUIDWithCBUUID(uuid);
+    BluetoothUUID service_uuid =
+        BluetoothAdapterMac::BluetoothUUIDWithCBUUID(uuid);
     SetServiceData(service_uuid, static_cast<const char*>([data bytes]),
                    [data length]);
   }

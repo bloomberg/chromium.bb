@@ -23,7 +23,9 @@
 #include "device/bluetooth/bluetooth_export.h"
 #include "device/bluetooth/bluetooth_low_energy_device_mac.h"
 #include "device/bluetooth/bluetooth_low_energy_discovery_manager_mac.h"
+#include "device/bluetooth/bluetooth_uuid.h"
 
+@class CBUUID;
 @class IOBluetoothDevice;
 @class NSArray;
 @class NSDate;
@@ -48,6 +50,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterMac
       std::string name,
       std::string address,
       scoped_refptr<base::SequencedTaskRunner> ui_task_runner);
+
+  // Converts CBUUID into std::string
+  static std::string StringWithCBUUID(CBUUID* UUID);
+  // Converts CBUUID into BluetoothUUID
+  static BluetoothUUID BluetoothUUIDWithCBUUID(CBUUID* UUID);
 
   // BluetoothAdapter overrides:
   std::string GetAddress() const override;

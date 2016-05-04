@@ -29,7 +29,6 @@
 #include "device/bluetooth/bluetooth_discovery_session_outcome.h"
 #include "device/bluetooth/bluetooth_low_energy_central_manager_delegate.h"
 #include "device/bluetooth/bluetooth_socket_mac.h"
-#include "device/bluetooth/bluetooth_uuid.h"
 
 namespace {
 
@@ -67,6 +66,19 @@ base::WeakPtr<BluetoothAdapterMac> BluetoothAdapterMac::CreateAdapterForTest(
   adapter->name_ = name;
   adapter->address_ = address;
   return adapter->weak_ptr_factory_.GetWeakPtr();
+}
+
+// static
+std::string BluetoothAdapterMac::StringWithCBUUID(CBUUID* uuid) {
+  return BluetoothUUIDWithCBUUID(uuid).canonical_value();
+}
+
+// static
+BluetoothUUID BluetoothAdapterMac::BluetoothUUIDWithCBUUID(CBUUID* uuid) {
+  // UUIDString only available OS X >= 10.10.
+  DCHECK(base::mac::IsOSYosemiteOrLater());
+  std::string uuid_c_string = base::SysNSStringToUTF8([uuid UUIDString]);
+  return device::BluetoothUUID(uuid_c_string);
 }
 
 BluetoothAdapterMac::BluetoothAdapterMac()
