@@ -533,9 +533,9 @@ crbug.com/412381 imported/web-platform-tests/mediacapture-streams/GUM-trivial-co
 crbug.com/412381 imported/web-platform-tests/mediacapture-streams/GUM-unknownkey-option-param.html [ Failure ]
 crbug.com/412381 imported/web-platform-tests/mediacapture-streams/MediaStream-MediaElement-preload-none.html [ Pass Timeout Failure ]
 
-crbug.com/325673 imported/web-platform-tests/custom-elements/concepts/custom-elements-type-allowed-chars-first-char.html [ Failure Timeout ]
-crbug.com/325673 imported/web-platform-tests/custom-elements/concepts/custom-elements-type-allowed-chars.html [ Failure Timeout ]
-crbug.com/325673 imported/web-platform-tests/custom-elements/concepts/custom-elements-type-naming.html [ Failure ]
+crbug.com/325673 imported/web-platform-tests/custom-elements/pre-v1/concepts/custom-elements-type-allowed-chars-first-char.html [ Failure Timeout ]
+crbug.com/325673 imported/web-platform-tests/custom-elements/pre-v1/concepts/custom-elements-type-allowed-chars.html [ Failure Timeout ]
+crbug.com/325673 imported/web-platform-tests/custom-elements/pre-v1/concepts/custom-elements-type-naming.html [ Failure ]
 
 crbug.com/396825 fast/repaint/outline-change-invalidation.html [ NeedsManualRebaseline ]
 crbug.com/396825 fast/repaint/outline-clip-change.html [ NeedsManualRebaseline ]
@@ -555,7 +555,7 @@ crbug.com/505364 imported/web-platform-tests/shadow-dom/untriaged/styles/test-00
 crbug.com/505364 imported/web-platform-tests/shadow-dom/untriaged/user-interaction/focus-navigation/test-002.html [ Failure ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/untriaged/user-interaction/focus-navigation/test-003.html [ Failure ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/untriaged/user-interaction/focus-navigation/test-004.html [ Failure ]
-crbug.com/505364 imported/web-platform-tests/custom-elements/instantiating-custom-elements/extensions-to-document-interface/create-element-interface-type-is-a-type-extension.html [ Failure ]
+crbug.com/505364 imported/web-platform-tests/custom-elements/pre-v1/instantiating-custom-elements/extensions-to-document-interface/create-element-interface-type-is-a-type-extension.html [ Failure ]
 crbug.com/505364 imported/csswg-test/css-scoping-1/css-scoping-shadow-slot-display-override.html [ Failure ]
 
 crbug.com/517840 imported/web-platform-tests/webrtc/rtcpeerconnection/rtcpeerconnection-idl.html [ Failure Timeout ]
