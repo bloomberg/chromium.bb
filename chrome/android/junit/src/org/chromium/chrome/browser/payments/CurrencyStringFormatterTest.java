@@ -33,40 +33,40 @@ public class CurrencyStringFormatterTest {
     @Parameters
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
-            {"55.00", "USD", "en-US", "$ 55.00", ExpectedValidity.VALID_AMOUNT},
-            {"55.00", "USD", "en-CA", "$ 55.00", ExpectedValidity.VALID_AMOUNT},
-            {"55.00", "USD", "fr-CA", "$ 55,00", ExpectedValidity.VALID_AMOUNT},
-            {"55.00", "USD", "fr-FR", "$ 55,00", ExpectedValidity.VALID_AMOUNT},
+            {"55.00", "USD", "en-US", "$55.00", ExpectedValidity.VALID_AMOUNT},
+            {"55.00", "USD", "en-CA", "$55.00", ExpectedValidity.VALID_AMOUNT},
+            {"55.00", "USD", "fr-CA", "$55,00", ExpectedValidity.VALID_AMOUNT},
+            {"55.00", "USD", "fr-FR", "$55,00", ExpectedValidity.VALID_AMOUNT},
 
-            // "EUR" becomes "€" on a mobile device.
-            {"55.00", "EUR", "en-US", "EUR 55.00", ExpectedValidity.VALID_AMOUNT},
-            {"55.00", "EUR", "en-CA", "EUR 55.00", ExpectedValidity.VALID_AMOUNT},
-            {"55.00", "EUR", "fr-CA", "EUR 55,00", ExpectedValidity.VALID_AMOUNT},
-            {"55.00", "EUR", "fr-FR", "EUR 55,00", ExpectedValidity.VALID_AMOUNT},
+            {"55.00", "EUR", "en-US", "55.00", ExpectedValidity.VALID_AMOUNT},
+            {"55.00", "EUR", "en-CA", "55.00", ExpectedValidity.VALID_AMOUNT},
+            {"55.00", "EUR", "fr-CA", "55,00", ExpectedValidity.VALID_AMOUNT},
+            {"55.00", "EUR", "fr-FR", "55,00", ExpectedValidity.VALID_AMOUNT},
 
-            {"55.00", "CAD", "en-US", "CAD 55.00", ExpectedValidity.VALID_AMOUNT},
-            {"55.00", "CAD", "en-CA", "CAD 55.00", ExpectedValidity.VALID_AMOUNT},
-            {"55.00", "CAD", "fr-CA", "CAD 55,00", ExpectedValidity.VALID_AMOUNT},
-            {"55.00", "CAD", "fr-FR", "CAD 55,00", ExpectedValidity.VALID_AMOUNT},
+            {"55.00", "CAD", "en-US", "55.00", ExpectedValidity.VALID_AMOUNT},
+            {"55.00", "CAD", "en-CA", "55.00", ExpectedValidity.VALID_AMOUNT},
+            {"55.00", "CAD", "fr-CA", "55,00", ExpectedValidity.VALID_AMOUNT},
+            {"55.00", "CAD", "fr-FR", "55,00", ExpectedValidity.VALID_AMOUNT},
 
             // Unofficial ISO 4217 currency code.
-            {"55.00", "BTX", "en-US", "BTX 55.00", ExpectedValidity.VALID_AMOUNT},
+            {"55.00", "BTX", "en-US", "55.00", ExpectedValidity.VALID_AMOUNT},
+            {"-55.00", "BTX", "en-US", "-55.00", ExpectedValidity.VALID_AMOUNT},
 
-            {"55.5", "USD", "en-US", "$ 55.50", ExpectedValidity.VALID_AMOUNT},
-            {"55", "USD", "en-US", "$ 55.00", ExpectedValidity.VALID_AMOUNT},
-            {"123", "USD", "en-US", "$ 123.00", ExpectedValidity.VALID_AMOUNT},
-            {"1234", "USD", "en-US", "$ 1,234.00", ExpectedValidity.VALID_AMOUNT},
+            {"55.5", "USD", "en-US", "$55.50", ExpectedValidity.VALID_AMOUNT},
+            {"55", "USD", "en-US", "$55.00", ExpectedValidity.VALID_AMOUNT},
+            {"123", "USD", "en-US", "$123.00", ExpectedValidity.VALID_AMOUNT},
+            {"1234", "USD", "en-US", "$1,234.00", ExpectedValidity.VALID_AMOUNT},
 
-            {"-123", "USD", "en-US", "$ -123.00", ExpectedValidity.VALID_AMOUNT},
-            {"-1234", "USD", "en-US", "$ -1,234.00", ExpectedValidity.VALID_AMOUNT},
+            {"-123", "USD", "en-US", "-$123.00", ExpectedValidity.VALID_AMOUNT},
+            {"-1234", "USD", "en-US", "-$1,234.00", ExpectedValidity.VALID_AMOUNT},
 
             {"123456789012345678901234567890.123456789012345678901234567890", "USD", "fr-FR",
-                    "$ 123" + SPACE + "456" + SPACE + "789" + SPACE + "012" + SPACE + "345"
+                    "$123" + SPACE + "456" + SPACE + "789" + SPACE + "012" + SPACE + "345"
                             + SPACE + "678" + SPACE + "901" + SPACE + "234" + SPACE + "567"
                             + SPACE + "890,123456789012345678901234567890",
                     ExpectedValidity.VALID_AMOUNT},
             {"123456789012345678901234567890.123456789012345678901234567890", "USD", "en-US",
-                    "$ 123,456,789,012,345,678,901,234,567,890.123456789012345678901234567890",
+                    "$123,456,789,012,345,678,901,234,567,890.123456789012345678901234567890",
                     ExpectedValidity.VALID_AMOUNT},
 
             // Invalid amount currency codes.

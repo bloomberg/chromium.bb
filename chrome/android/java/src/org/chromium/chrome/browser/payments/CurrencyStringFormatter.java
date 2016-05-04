@@ -70,7 +70,11 @@ public class CurrencyStringFormatter {
             // 4217 currency code, but is allowed by the spec.
             currencySymbol = currencyCode;
         }
-        mCurrencySymbol = currencySymbol;
+
+        // If the currency symobl is the same as the currency code, do not display it as part of the
+        // amount. The UI already shows the currency code, so there's no need to show duplicate
+        // information.
+        mCurrencySymbol = currencySymbol.equals(currencyCode) ? "" : currencySymbol;
 
         // Use the symbols from user's current locale. For example, use "," for decimal separator in
         // France, even if paying in "USD".
@@ -118,9 +122,8 @@ public class CurrencyStringFormatter {
         boolean matches = m.matches();
         assert matches;
 
-        StringBuilder result = new StringBuilder(mCurrencySymbol);
-        result.append(" ");
-        result.append(m.group(OPTIONAL_NEGATIVE_GROUP));
+        StringBuilder result = new StringBuilder(m.group(OPTIONAL_NEGATIVE_GROUP));
+        result.append(mCurrencySymbol);
         int digitStart = result.length();
 
         result.append(m.group(DIGITS_BETWEEN_NEGATIVE_AND_PERIOD_GROUP));
