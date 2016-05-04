@@ -64,6 +64,7 @@ source_set("app") {
     ":app_ui",
     ":blob_channel",
     ":common",
+    ":crash",
     ":renderer",
     ":session",
     "//base",
@@ -71,6 +72,8 @@ source_set("app") {
     "//blimp/common/proto",
     "//blimp/engine:blob_channel_mojo_cpp_sources",
     "//blimp/net",
+    "//components/crash/content/app:app_breakpad_mac_win_to_be_deleted",
+    "//components/crash/content/app:lib",
     "//content/public/app:both",
     "//content/public/browser",
     "//content/public/common",
@@ -163,6 +166,25 @@ source_set("app_ui") {
     "//ui/platform_window",
     "//ui/platform_window",
     "//ui/platform_window/stub/",
+  ]
+}
+
+source_set("crash") {
+  sources = [
+    "app/blimp_engine_crash_keys.cc",
+    "app/blimp_engine_crash_keys.h",
+    "app/blimp_engine_crash_reporter_client.cc",
+    "app/blimp_engine_crash_reporter_client.h",
+  ]
+
+  deps = [
+    "//base",
+    "//components/crash/content/app:app_breakpad_mac_win_to_be_deleted",
+    "//components/crash/content/app:lib",
+    "//components/crash/core/common",
+    "//components/version_info",
+    "//components/version_info:generate_version_info",
+    "//content/public/common",
   ]
 }
 

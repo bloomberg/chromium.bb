@@ -7,7 +7,7 @@ RUN apt-get update && \
   apt-get install -yq libdrm2 libfontconfig1 libfreetype6 libgraphite2-3 \
   libharfbuzz0b libnspr4 libnss3 libstdc++6
 
-RUN apt-get install -yq stunnel4
+RUN apt-get update && apt-get install -yq stunnel4 wget
 
 RUN mkdir /engine
 

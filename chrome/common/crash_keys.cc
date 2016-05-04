@@ -88,6 +88,9 @@ const char kZeroEncodeDetails[] = "zero-encode-details";
 size_t RegisterChromeCrashKeys() {
   // The following keys may be chunked by the underlying crash logging system,
   // but ultimately constitute a single key-value pair.
+  //
+  // If you're adding keys here, please also add them to the list in
+  // //blimp/engine/app/blimp_engine_crash_keys.cc
   base::debug::CrashKey fixed_keys[] = {
 #if defined(OS_MACOSX) || defined(OS_WIN)
     { kMetricsClientId, kSmallSize },
