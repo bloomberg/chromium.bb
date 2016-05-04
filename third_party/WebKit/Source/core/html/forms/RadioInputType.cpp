@@ -92,6 +92,9 @@ void RadioInputType::handleKeydownEvent(KeyboardEvent* event)
     if (key != "Up" && key != "Down" && key != "Left" && key != "Right")
         return;
 
+    if (event->ctrlKey() || event->metaKey() || event->altKey())
+        return;
+
     // Left and up mean "previous radio button".
     // Right and down mean "next radio button".
     // Tested in WinIE, and even for RTL, left still means previous radio button
