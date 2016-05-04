@@ -84,14 +84,6 @@ namespace {
 // view.
 const CGFloat kUseFullAvailableWidth = -1.0;
 
-// The amount by which tabs overlap.
-// Needs to be <= the x position of the favicon within a tab. Else, every time
-// the throbber is painted, the throbber's invalidation will also invalidate
-// parts of the tab to the left, and two tabs's backgrounds need to be painted
-// on each throbber frame instead of one.
-const CGFloat kTabOverlap = 18.0;
-const CGFloat kTabOverlapNonMD = 19.0;
-
 // The amount by which pinned tabs are separated from normal tabs.
 const CGFloat kLastPinnedTabSpacing = 2.0;
 
@@ -559,6 +551,20 @@ private:
   return 70.0;
 }
 
++ (CGFloat)tabOverlap {
+  // The overlap value needs to be <= the x position of the favicon within a
+  // tab. Else, every time the throbber is painted, the throbber's invalidation
+  // will also invalidate parts of the tab to the left, and two tabs's
+  // backgrounds need to be painted on each throbber frame instead of one.
+  const CGFloat kTabOverlap = 18.0;
+  const CGFloat kTabOverlapNonMD = 19.0;
+
+  if (!ui::MaterialDesignController::IsModeMaterial()) {
+    return kTabOverlapNonMD;
+  }
+  return kTabOverlap;
+}
+
 // Finds the TabContentsController associated with the given index into the tab
 // model and swaps out the sole child of the contentArea to display its
 // contents.
@@ -912,6 +918,7 @@ private:
   const CGFloat kMinTabWidth = [TabController minTabWidth];
   const CGFloat kMinActiveTabWidth = [TabController minActiveTabWidth];
   const CGFloat kPinnedTabWidth = [TabController pinnedTabWidth];
+  const CGFloat kTabOverlap = [TabStripController tabOverlap];
 
   NSRect enclosingRect = NSZeroRect;
   ScopedNSAnimationContextGroup mainAnimationGroup(animate);
@@ -935,7 +942,7 @@ private:
     if (!ui::MaterialDesignController::IsModeMaterial()) {
       availableSpace -=
           NSWidth([newTabButton_ frame]) + kNewTabButtonOffsetNonMD -
-              kTabOverlapNonMD;
+              kTabOverlap;
     } else {
       availableSpace -=
           NSWidth([newTabButton_ frame]) + kNewTabButtonOffset - kTabOverlap;
@@ -966,8 +973,8 @@ private:
   CGFloat nonPinnedTabWidthFraction = 0;
   NSInteger numberOfNonPinnedTabs = MIN(
       [self numberOfOpenNonPinnedTabs],
-      (availableSpaceForNonPinned - kTabOverlap) / (kMinTabWidth -
-          kTabOverlap));
+      (availableSpaceForNonPinned - kTabOverlap) /
+          (kMinTabWidth - kTabOverlap));
 
   if (numberOfNonPinnedTabs) {
     // Find the width of a non-pinned tab. This only applies to horizontal
@@ -990,14 +997,12 @@ private:
     // of 10.
     if (numberOfNonPinnedTabs > 1 && nonPinnedTabWidth < kMinActiveTabWidth) {
       nonPinnedTabWidth = (availableSpaceForNonPinned - kMinActiveTabWidth) /
-                            (numberOfNonPinnedTabs - 1) +
-                        kTabOverlap;
+                            (numberOfNonPinnedTabs - 1) + kTabOverlap;
       if (nonPinnedTabWidth < kMinTabWidth) {
         // The above adjustment caused the tabs to not fit, show 1 less tab.
         --numberOfNonPinnedTabs;
         nonPinnedTabWidth = ((availableSpaceForNonPinned - kTabOverlap) /
-                                numberOfNonPinnedTabs) +
-                            kTabOverlap;
+                                numberOfNonPinnedTabs) + kTabOverlap;
       }
     }
 
@@ -1979,6 +1984,7 @@ private:
   // to drop on that tab).
   const double kMiddleProportion = 0.5;
   const double kLRProportion = (1.0 - kMiddleProportion) / 2.0;
+  const CGFloat kTabOverlap = [TabStripController tabOverlap];
 
   DCHECK(index && disposition);
   NSInteger i = 0;
@@ -2100,6 +2106,7 @@ private:
 
   // The minimum y-coordinate at which one should consider place the arrow.
   const CGFloat arrowBaseY = 25;
+  const CGFloat kTabOverlap = [TabStripController tabOverlap];
 
   NSInteger index;
   WindowOpenDisposition disposition;
