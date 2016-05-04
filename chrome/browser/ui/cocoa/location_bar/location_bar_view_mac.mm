@@ -459,6 +459,10 @@ void LocationBarViewMac::Layout() {
     location_icon_decoration_->SetVisible(false);
     selected_keyword_decoration_->SetVisible(true);
     selected_keyword_decoration_->SetKeyword(short_name, is_extension_keyword);
+    // Note: the first time through this code path the
+    // |selected_keyword_decoration_| has no image set because under Material
+    // Design we need to set its color, which we cannot do until we know the
+    // theme (by being installed in a browser window).
     selected_keyword_decoration_->SetImage(GetKeywordImage(keyword));
   } else if (ShouldShowEVBubble()) {
     // Switch from location icon to show the EV bubble instead.

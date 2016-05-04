@@ -21,6 +21,14 @@ SelectedKeywordDecoration::SelectedKeywordDecoration() {
     SetTextColor([NSColor blackColor]);
     return;
   }
+  // Note: the unit test
+  // SelectedKeywordDecorationTest.UsesPartialKeywordIfNarrow expects to work
+  // with a fully-initialized SelectedKeywordDecoration (i.e. one that has a
+  // text color and image). During ordinary operation,
+  // LocationBarViewMac::Layout() sets the image before the decoration is
+  // actually used, which the unit test does as well. If
+  // SelectedKeywordDecoration's initialization process changes, the unit test
+  // should also be updated.
   SetTextColor(GetBackgroundBorderColor());
 }
 
