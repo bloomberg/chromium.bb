@@ -300,6 +300,8 @@ protected:
 
     void addOverflowFromFloats();
 
+    void computeSelfHitTestRects(Vector<LayoutRect>&, const LayoutPoint& layerOffset) const override;
+
     LayoutUnit logicalRightOffsetForLine(LayoutUnit logicalTop, LayoutUnit fixedOffset, IndentTextOrNot applyTextIndent, LayoutUnit logicalHeight = LayoutUnit()) const
     {
         return adjustLogicalRightOffsetForLine(logicalRightFloatOffsetForLine(logicalTop, fixedOffset, logicalHeight), applyTextIndent);

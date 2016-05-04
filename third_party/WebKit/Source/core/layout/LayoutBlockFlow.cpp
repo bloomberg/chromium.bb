@@ -1918,6 +1918,23 @@ void LayoutBlockFlow::computeOverflow(LayoutUnit oldClientAfterEdge, bool recomp
         addOverflowFromFloats();
 }
 
+void LayoutBlockFlow::computeSelfHitTestRects(Vector<LayoutRect>& rects, const LayoutPoint& layerOffset) const
+{
+    LayoutBlock::computeSelfHitTestRects(rects, layerOffset);
+
+    if (!hasHorizontalLayoutOverflow() && !hasVerticalLayoutOverflow())
+        return;
+
+    for (RootInlineBox* curr = firstRootBox(); curr; curr = curr->nextRootBox()) {
+        LayoutUnit top = std::max<LayoutUnit>(curr->lineTop(), curr->top());
+        LayoutUnit bottom = std::min<LayoutUnit>(curr->lineBottom(), curr->top() + curr->height());
+        LayoutRect rect(layerOffset.x() + curr->x(), layerOffset.y() + top, curr->width(), bottom - top);
+        // It's common for this rect to be entirely contained in our box, so exclude that simple case.
+        if (!rect.isEmpty() && (rects.isEmpty() || !rects[0].contains(rect)))
+            rects.append(rect);
+    }
+}
+
 RootInlineBox* LayoutBlockFlow::createAndAppendRootInlineBox()
 {
     RootInlineBox* rootBox = createRootInlineBox();
