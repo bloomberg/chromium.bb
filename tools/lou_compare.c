@@ -32,6 +32,7 @@ static int out_more = 0, out_pos = 0, in_line = 0, paused = 0;
 static unsigned short uni = 0xfeff, space = 0x0020, dash = 0x002d,
 	              bar = 0x007c, plus = 0x002b, tab = 0x0009;
 static unsigned int nl = 0x000a000d;//TODO:  doall.pl chokes on ueb-08
+//static unsigned int nl = 0x000a;//TODO:  doall.pl chokes on ueb-08
 
 widechar underText[BUF_MAX];
 char underLine[BUF_MAX];

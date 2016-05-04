@@ -303,6 +303,10 @@ sufword songhai 234-135-1345-126-1-24
 
 # ing
 match !%[^_~] ing - 346
+#nofor endword ing's 346-3-234
+#nofor endword ingly 346-123-13456
+nofor midendword ing 346
+nofor always ing 35-1245
 
 sufword disingenuous 256-35-1245-26-136-1256-234
 sufword leningrad 123-26-35-1245-1235-1-145
@@ -439,6 +443,7 @@ match %[^_]|%[^_~]%<*[([{] his %[^_]|[;:)}\\]]%>*%[^_~] 236
 
 # in
 match %[^_]!%[_1]* in !%[_1]*%[^_] 35
+nofor always in 35
 
 # was
 match %[^_]|%[^_~]%<*[([{] was %[^_]|[;:)}\\]]%>*%[^_~] 356
@@ -461,6 +466,8 @@ match %[^_]|%[^_~]%<*[([{] were %[^_]|[;:)}\\]]%>*%[^_~] 2356
 
 # bb   10.6.5   10.6.6
 match %a bb %a 23
+
+nofor always bb 23
 
 sufword dumbbell 145-136-134-12-12-15-123-123
 sufword subbasement 234-136-12-12-1-234-15-56-2345
@@ -492,6 +499,8 @@ match %[^_~]%<* be [bfhjmopqwxz] 23
 # cc   10.6.5   10.6.6
 match %a cc %a 25
 
+nofor always cc 25
+
 sufword arccosine 345-14-14-135-234-35-15
 sufword bacchanal 12-1-14-16-1-1345-1-123
 sufword bacchus 12-1-14-16-136-234
@@ -511,6 +520,8 @@ match %[^_~]%<* con [abdfghijlmnopqrtuvwxyz] 25
 sufword conakry 14-135-1345-1-13-1235-13456
 sufword conan  14-135-1345-1-1345
 
+nofor begword con 25
+
 # dis   10.6.1   10.6.2   10.6.3   10.6.4
 word diss 145-24-234-234
 match %[^_~]%<* dis c![s'] 256
@@ -521,6 +532,9 @@ match %[^_~]%<* dis [abdefgijlmnoqrstuvwxyz] 256
 
 # ea   10.6.5   10.6.6   10.6.7
 match %a ea %a 2
+
+nofor always ea 2
+
 always ear 15-345
 midendword eand 15-12346 meander
 begword givea = giveaway
@@ -562,6 +576,9 @@ word leanne 123-15-1-1345-1345-15   leanness
 match %[^_~]%<* en %>*%[_~^] =   must be first
 match !%[_1]%1* en - 26
 match - en %1*!%[_1] 26
+
+nofor always en 26
+
 midendword eness 15-56-234 closeness
 sufword bluenose 12-123-136-15-1345-135-234-15
 sufword bottleneck 12-135-2345-2345-123-15-1345-15-14-13
@@ -573,6 +590,8 @@ sufword turtleneck 2345-136-1235-2345-123-15-1345-15-14-13
 # ff   10.6.5   10.6.6
 match %a ff %a 235
 
+nofor always ff 235
+
 sufword afford 1-124-123456-145
 sufword afforest 1-124-123456-15-34
 sufword clifford 14-123-24-124-123456-145
@@ -581,6 +600,8 @@ sufword stafford 34-1-124-123456-145
 
 # gg   10.6.5   10.6.6
 match %a gg %a 2356
+
+nofor always gg 2356
 
 # in   10.6.8
 match !%[_1]%1* in - 35

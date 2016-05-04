@@ -90,7 +90,7 @@ display % 146
 sign % 46-356
 display & 12346
 sign & 4-12346
-noback punctuation ' 3
+punctuation ' 3
 display ( 12356
 punctuation ( 5-126
 display ) 23456
