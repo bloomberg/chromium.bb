@@ -59,6 +59,8 @@ DecoderStream<StreamType>::DecoderStream(
       decoding_eos_(false),
       pending_decode_requests_(0),
       duration_tracker_(8),
+      received_config_change_during_reinit_(false),
+      pending_demuxer_read_(false),
       weak_factory_(this),
       fallback_weak_factory_(this) {}
 
@@ -157,11 +159,21 @@ void DecoderStream<StreamType>::Reset(const base::Closure& closure) {
   reset_cb_ = closure;
 
   if (!read_cb_.is_null()) {
-    task_runner_->PostTask(FROM_HERE, base::Bind(
-        base::ResetAndReturn(&read_cb_), ABORTED, scoped_refptr<Output>()));
+    task_runner_->PostTask(FROM_HERE,
+                           base::Bind(base::ResetAndReturn(&read_cb_), ABORTED,
+                                      scoped_refptr<Output>()));
   }
 
   ready_outputs_.clear();
+
+  // It's possible to have received a DECODE_ERROR and entered STATE_ERROR right
+  // before a Reset() is executed. If we are still waiting for a demuxer read,
+  // OnBufferReady() will handle the reset callback.
+  // See crbug.com/597605 and crbug.com/607454.
+  if (state_ == STATE_ERROR && !pending_demuxer_read_) {
+    task_runner_->PostTask(FROM_HERE, base::ResetAndReturn(&reset_cb_));
+    return;
+  }
 
   // During decoder reinitialization, the Decoder does not need to be and
   // cannot be Reset(). |decrypting_demuxer_stream_| was reset before decoder
@@ -169,17 +181,20 @@ void DecoderStream<StreamType>::Reset(const base::Closure& closure) {
   if (state_ == STATE_REINITIALIZING_DECODER)
     return;
 
-  // During pending demuxer read and when not using DecryptingDemuxerStream,
-  // the Decoder will be reset after demuxer read is returned
-  // (in OnBufferReady()).
-  if (state_ == STATE_PENDING_DEMUXER_READ && !decrypting_demuxer_stream_)
-    return;
-
+  // |decrypting_demuxer_stream_| will fire all of its read requests when
+  // it resets. |reset_cb_| will be fired in OnDecoderReset(), after the
+  // decrypting demuxer stream finishes its reset.
   if (decrypting_demuxer_stream_) {
     decrypting_demuxer_stream_->Reset(base::Bind(
         &DecoderStream<StreamType>::ResetDecoder, weak_factory_.GetWeakPtr()));
     return;
   }
+
+  // During pending demuxer read and when not using DecryptingDemuxerStream,
+  // the Decoder will be reset after demuxer read is returned
+  // (in OnBufferReady()).
+  if (pending_demuxer_read_)
+    return;
 
   ResetDecoder();
 }
@@ -246,9 +261,7 @@ void DecoderStream<StreamType>::OnDecoderSelected(
                     << (selected_decoder ? selected_decoder->GetDisplayName()
                                          : "No decoder selected.");
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK(state_ == STATE_INITIALIZING ||
-         state_ == STATE_REINITIALIZING_DECODER ||
-         state_ == STATE_CONFIG_CHANGE_RECEIVED_WHILE_REINITIALIZING_DECODER)
+  DCHECK(state_ == STATE_INITIALIZING || state_ == STATE_REINITIALIZING_DECODER)
       << state_;
   if (state_ == STATE_INITIALIZING) {
     DCHECK(!init_cb_.is_null());
@@ -267,7 +280,7 @@ void DecoderStream<StreamType>::OnDecoderSelected(
   }
 
   // TODO(tguilbert): crbug.com/603713 support config changes on decoder reinit.
-  if (state_ == STATE_CONFIG_CHANGE_RECEIVED_WHILE_REINITIALIZING_DECODER) {
+  if (received_config_change_during_reinit_) {
     CompleteDecoderReinitialization(false);
     return;
   }
@@ -506,6 +519,11 @@ void DecoderStream<StreamType>::ReadFromDemuxerStream() {
     return;
   }
 
+  // Set a flag in addition to the state, because the state can be overwritten
+  // when encountering an error. See crbug.com/597605.
+  DCHECK(!pending_demuxer_read_);
+  pending_demuxer_read_ = true;
+
   state_ = STATE_PENDING_DEMUXER_READ;
   stream_->Read(base::Bind(&DecoderStream<StreamType>::OnBufferReady,
                            weak_factory_.GetWeakPtr()));
@@ -530,6 +548,10 @@ void DecoderStream<StreamType>::OnBufferReady(
   }
   DCHECK_EQ(buffer.get() != NULL, status == DemuxerStream::kOk) << status;
 
+  // Unset the flag. STATE_PENDING_DEMUXER_READ might have been overwritten.
+  // See crbug.com/597605.
+  pending_demuxer_read_ = false;
+
   // If parallel decode requests are supported, multiple read requests might
   // have been sent to the demuxer. The buffers might arrive while the decoder
   // is reinitializing after falling back on first decode error.
@@ -547,7 +569,7 @@ void DecoderStream<StreamType>::OnBufferReady(
         // |decoder_| might have a stale config by the time it is reinitialized.
         // Ideally, we would save the config from |stream_| and reinitialize the
         // decoder by playing back the sequence of buffers and config changes.
-        state_ = STATE_CONFIG_CHANGE_RECEIVED_WHILE_REINITIALIZING_DECODER;
+        received_config_change_during_reinit_ = true;
         pending_buffers_.clear();
         break;
       case DemuxerStream::kAborted:
@@ -563,6 +585,13 @@ void DecoderStream<StreamType>::OnBufferReady(
   if (state_ != STATE_PENDING_DEMUXER_READ) {
     DCHECK(state_ == STATE_ERROR);
     DCHECK(read_cb_.is_null());
+
+    if (!reset_cb_.is_null()) {
+      // If we are using DecryptingDemuxerStream, we already called DDS::Reset()
+      // which will continue the resetting process in its callback.
+      if (!decrypting_demuxer_stream_)
+        Reset(base::ResetAndReturn(&reset_cb_));
+    }
     return;
   }
 
@@ -598,7 +627,7 @@ void DecoderStream<StreamType>::OnBufferReady(
     state_ = STATE_FLUSHING_DECODER;
     if (!reset_cb_.is_null()) {
       // If we are using DecryptingDemuxerStream, we already called DDS::Reset()
-      // which will continue the resetting process in it's callback.
+      // which will continue the resetting process in its callback.
       if (!decrypting_demuxer_stream_)
         Reset(base::ResetAndReturn(&reset_cb_));
       // Reinitialization will continue after Reset() is done.
@@ -610,7 +639,7 @@ void DecoderStream<StreamType>::OnBufferReady(
 
   if (!reset_cb_.is_null()) {
     // If we are using DecryptingDemuxerStream, we already called DDS::Reset()
-    // which will continue the resetting process in it's callback.
+    // which will continue the resetting process in its callback.
     if (!decrypting_demuxer_stream_)
       Reset(base::ResetAndReturn(&reset_cb_));
     return;

@@ -83,6 +83,8 @@ class MEDIA_EXPORT DecoderStream {
   // Note that |closure| is always called asynchronously. This method should
   // only be called after initialization has succeeded and must not be called
   // during pending Reset().
+  // N.B: If the decoder stream has run into an error, calling this method does
+  // not 'reset' it to a normal state.
   void Reset(const base::Closure& closure);
 
   // Returns true if the decoder currently has the ability to decode and return
@@ -140,9 +142,6 @@ class MEDIA_EXPORT DecoderStream {
     STATE_REINITIALIZING_DECODER,
     STATE_END_OF_STREAM,  // End of stream reached; returns EOS on all reads.
     STATE_ERROR,
-    // TODO(tguilbert): support config changes during decoder fallback, see
-    // crbug.com/603713
-    STATE_CONFIG_CHANGE_RECEIVED_WHILE_REINITIALIZING_DECODER
   };
 
   void SelectDecoder(CdmContext* cdm_context);
@@ -248,6 +247,14 @@ class MEDIA_EXPORT DecoderStream {
   // more from the demuxer stream. All buffers in this queue first were in
   // |pending_buffers_|.
   std::deque<scoped_refptr<DecoderBuffer>> fallback_buffers_;
+
+  // TODO(tguilbert): support config changes during decoder fallback, see
+  // crbug.com/603713
+  bool received_config_change_during_reinit_;
+
+  // Used to track read requests in case the STATE_PENDIND_DEMUXER_READ get
+  // overwritten by an error.
+  bool pending_demuxer_read_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<DecoderStream<StreamType>> weak_factory_;
