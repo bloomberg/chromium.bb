@@ -24,7 +24,6 @@
 #include "platform/LengthFunctions.h"
 
 #include "platform/LayoutUnit.h"
-#include "platform/LengthPoint.h"
 #include "platform/LengthSize.h"
 
 namespace blink {
@@ -121,11 +120,6 @@ LayoutUnit valueForLength(const Length& length, LayoutUnit maximumValue)
 FloatSize floatSizeForLengthSize(const LengthSize& lengthSize, const FloatSize& boxSize)
 {
     return FloatSize(floatValueForLength(lengthSize.width(), boxSize.width()), floatValueForLength(lengthSize.height(), boxSize.height()));
-}
-
-FloatPoint floatPointForLengthPoint(const LengthPoint& LengthPoint, const FloatSize& boxSize)
-{
-    return FloatPoint(floatValueForLength(LengthPoint.x(), boxSize.width()), floatValueForLength(LengthPoint.y(), boxSize.height()));
 }
 
 } // namespace blink

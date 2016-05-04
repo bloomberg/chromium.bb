@@ -1023,10 +1023,10 @@ public:
     ScrollBehavior getScrollBehavior() const { return static_cast<ScrollBehavior>(rareNonInheritedData->m_scrollBehavior); }
 
     ScrollSnapType getScrollSnapType() const { return static_cast<ScrollSnapType>(rareNonInheritedData->m_scrollSnapType); }
-    const ScrollSnapPoints& scrollSnapPointsX() const { return rareNonInheritedData->m_scrollSnap->m_xPoints; }
-    const ScrollSnapPoints& scrollSnapPointsY() const { return rareNonInheritedData->m_scrollSnap->m_yPoints; }
-    const Vector<LengthPoint>& scrollSnapCoordinate() const { return rareNonInheritedData->m_scrollSnap->m_coordinates; }
-    const LengthPoint& scrollSnapDestination() const { return rareNonInheritedData->m_scrollSnap->m_destination; }
+    ScrollSnapPoints scrollSnapPointsX() const { return rareNonInheritedData->m_scrollSnap->m_xPoints; }
+    ScrollSnapPoints scrollSnapPointsY() const { return rareNonInheritedData->m_scrollSnap->m_yPoints; }
+    Vector<LengthPoint> scrollSnapCoordinate() const { return rareNonInheritedData->m_scrollSnap->m_coordinates; }
+    LengthPoint scrollSnapDestination() const { return rareNonInheritedData->m_scrollSnap->m_destination; }
 
     const Vector<CSSPropertyID>& willChangeProperties() const { return rareNonInheritedData->m_willChange->m_properties; }
     bool willChangeContents() const { return rareNonInheritedData->m_willChange->m_contents; }
