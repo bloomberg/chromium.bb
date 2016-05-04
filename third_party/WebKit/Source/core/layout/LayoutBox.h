@@ -57,6 +57,8 @@ enum ApplyOverflowClipFlag {
     ApplyNonScrollOverflowClip
 };
 
+using SnapAreaSet = HashSet<const LayoutBox*>;
+
 struct LayoutBoxRareData {
     WTF_MAKE_NONCOPYABLE(LayoutBoxRareData); USING_FAST_MALLOC(LayoutBoxRareData);
 public:
@@ -66,6 +68,8 @@ public:
         , m_overrideLogicalContentWidth(-1)
         , m_previousBorderBoxSize(LayoutUnit(-1), LayoutUnit(-1))
         , m_percentHeightContainer(nullptr)
+        , m_snapContainer(nullptr)
+        , m_snapAreas(nullptr)
     {
     }
 
@@ -85,6 +89,19 @@ public:
     LayoutUnit m_paginationStrut;
 
     LayoutBlock* m_percentHeightContainer;
+    // For snap area, the owning snap container.
+    LayoutBox* m_snapContainer;
+    // For snap container, the descendant snap areas that contribute snap
+    // points.
+    OwnPtr<SnapAreaSet> m_snapAreas;
+
+    SnapAreaSet& ensureSnapAreas()
+    {
+        if (!m_snapAreas)
+            m_snapAreas = adoptPtr(new SnapAreaSet);
+
+        return *m_snapAreas;
+    }
 };
 
 // LayoutBox implements the full CSS box model.
@@ -917,6 +934,12 @@ public:
     void setPercentHeightContainer(LayoutBlock*);
     void removeFromPercentHeightContainer();
     void clearPercentHeightDescendants();
+    // For snap areas, returns the snap container that owns us.
+    LayoutBox* snapContainer() const;
+    void setSnapContainer(LayoutBox*);
+    // For snap containers, returns all associated snap areas.
+    SnapAreaSet* snapAreas() const;
+    void clearSnapAreas();
 
     bool hitTestClippedOutByRoundedBorder(const HitTestLocation& locationInContainer, const LayoutPoint& borderBoxLocation) const;
 
@@ -978,6 +1001,9 @@ private:
 
     void updateShapeOutsideInfoAfterStyleChange(const ComputedStyle&, const ComputedStyle* oldStyle);
     void updateGridPositionAfterStyleChange(const ComputedStyle*);
+    void updateScrollSnapMappingAfterStyleChange(const ComputedStyle*, const ComputedStyle* oldStyle);
+    void clearScrollSnapMapping();
+    void addScrollSnapMapping();
 
     bool autoWidthShouldFitContent() const;
     LayoutUnit shrinkToFitLogicalWidth(LayoutUnit availableLogicalWidth, LayoutUnit bordersPlusPadding) const;
@@ -1062,6 +1088,9 @@ private:
     void inflateVisualRectForReflectionAndFilterUnderContainer(LayoutRect&, const LayoutObject& container, const LayoutBoxModelObject* ancestorToStopAt) const;
 
     LayoutRectOutsets m_marginBoxOutsets;
+
+    void addSnapArea(const LayoutBox&);
+    void removeSnapArea(const LayoutBox&);
 
 protected:
     // The logical width of the element if it were to break its lines at every

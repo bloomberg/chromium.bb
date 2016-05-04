@@ -56,6 +56,7 @@
 #include "core/layout/shapes/ShapeOutsideInfo.h"
 #include "core/page/AutoscrollController.h"
 #include "core/page/Page.h"
+#include "core/page/scrolling/SnapCoordinator.h"
 #include "core/paint/BackgroundImageGeometry.h"
 #include "core/paint/BoxPainter.h"
 #include "core/paint/PaintLayer.h"
@@ -145,6 +146,7 @@ void LayoutBox::willBeDestroyed()
 void LayoutBox::insertedIntoTree()
 {
     LayoutBoxModelObject::insertedIntoTree();
+    addScrollSnapMapping();
 
     if (isOrthogonalWritingModeRoot())
         markOrthogonalWritingModeRoot();
@@ -155,6 +157,7 @@ void LayoutBox::willBeRemovedFromTree()
     if (!documentBeingDestroyed() && isOrthogonalWritingModeRoot())
         unmarkOrthogonalWritingModeRoot();
 
+    clearScrollSnapMapping();
     LayoutBoxModelObject::willBeRemovedFromTree();
 }
 
@@ -301,6 +304,8 @@ void LayoutBox::styleDidChange(StyleDifference diff, const ComputedStyle* oldSty
         LayoutFlowThread* flowThread = flowThreadContainingBlock();
         if (flowThread && flowThread != this)
             flowThread->flowThreadDescendantStyleDidChange(this, diff, *oldStyle);
+
+        updateScrollSnapMappingAfterStyleChange(&newStyle, oldStyle);
     }
 
     ASSERT(!isInline() || isAtomicInlineLevel()); // Non-atomic inlines should be LayoutInline or LayoutText, not LayoutBox.
@@ -371,6 +376,38 @@ void LayoutBox::updateGridPositionAfterStyleChange(const ComputedStyle* oldStyle
     // It should be possible to not dirty the grid in some cases (like moving an explicitly placed grid item).
     // For now, it's more simple to just always recompute the grid.
     toLayoutGrid(parent())->dirtyGrid();
+}
+
+void LayoutBox::updateScrollSnapMappingAfterStyleChange(const ComputedStyle* newStyle, const ComputedStyle* oldStyle)
+{
+    SnapCoordinator* snapCoordinator = document().snapCoordinator();
+    if (!snapCoordinator)
+        return;
+
+    // Scroll snap type has no effect on the viewport defining element instead
+    // they are handled by the LayoutView.
+    bool allowsSnapContainer = node() != document().viewportDefiningElement();
+
+    ScrollSnapType oldSnapType = oldStyle ? oldStyle->getScrollSnapType() : ScrollSnapTypeNone;
+    ScrollSnapType newSnapType = newStyle && allowsSnapContainer ? newStyle->getScrollSnapType() : ScrollSnapTypeNone;
+    if (oldSnapType != newSnapType)
+        snapCoordinator->snapContainerDidChange(*this, newSnapType);
+
+    Vector<LengthPoint> emptyVector;
+    const Vector<LengthPoint>& oldSnapCoordinate = oldStyle ? oldStyle->scrollSnapCoordinate() : emptyVector;
+    const Vector<LengthPoint>& newSnapCoordinate = newStyle ? newStyle->scrollSnapCoordinate() : emptyVector;
+    if (oldSnapCoordinate != newSnapCoordinate)
+        snapCoordinator->snapAreaDidChange(*this, newSnapCoordinate);
+}
+
+void LayoutBox::addScrollSnapMapping()
+{
+    updateScrollSnapMappingAfterStyleChange(style(), nullptr);
+}
+
+void LayoutBox::clearScrollSnapMapping()
+{
+    updateScrollSnapMappingAfterStyleChange(nullptr, style());
 }
 
 void LayoutBox::updateFromStyle()
@@ -4776,6 +4813,52 @@ void LayoutBox::clearPercentHeightDescendants()
         if (curr->isBox())
             toLayoutBox(curr)->removeFromPercentHeightContainer();
     }
+}
+
+LayoutBox* LayoutBox::snapContainer() const
+{
+    return m_rareData ? m_rareData->m_snapContainer : nullptr;
+}
+
+void LayoutBox::setSnapContainer(LayoutBox* newContainer)
+{
+    LayoutBox* oldContainer = snapContainer();
+    if (oldContainer == newContainer)
+        return;
+
+    if (oldContainer)
+        oldContainer->removeSnapArea(*this);
+
+    ensureRareData().m_snapContainer = newContainer;
+
+    if (newContainer)
+        newContainer->addSnapArea(*this);
+}
+
+void LayoutBox::clearSnapAreas()
+{
+    if (SnapAreaSet* areas = snapAreas()) {
+        for (auto& snapArea : *areas)
+            snapArea->m_rareData->m_snapContainer = nullptr;
+        areas->clear();
+    }
+}
+
+void LayoutBox::addSnapArea(const LayoutBox& snapArea)
+{
+    ensureRareData().ensureSnapAreas().add(&snapArea);
+}
+
+void LayoutBox::removeSnapArea(const LayoutBox& snapArea)
+{
+    if (m_rareData && m_rareData->m_snapAreas) {
+        m_rareData->m_snapAreas->remove(&snapArea);
+    }
+}
+
+SnapAreaSet* LayoutBox::snapAreas() const
+{
+    return m_rareData ? m_rareData->m_snapAreas.get() : nullptr;
 }
 
 } // namespace blink
