@@ -41,6 +41,7 @@ class CONTENT_EXPORT V8ValueConverterImpl : public V8ValueConverter {
   friend class ScopedAvoidIdentityHashForTesting;
 
   class FromV8ValueState;
+  class ScopedUniquenessGuard;
 
   v8::Local<v8::Value> ToV8ValueImpl(v8::Isolate* isolate,
                                      v8::Local<v8::Object> creation_context,

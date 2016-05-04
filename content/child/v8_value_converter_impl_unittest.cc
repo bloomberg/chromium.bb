@@ -849,6 +849,75 @@ TEST_F(V8ValueConverterImplTest, DetectCycles) {
   EXPECT_TRUE(expected_dictionary.Equals(actual_dictionary.get()));
 }
 
+// Tests that reused object values with no cycles do not get nullified.
+TEST_F(V8ValueConverterImplTest, ReuseObjects) {
+  v8::HandleScope handle_scope(isolate_);
+  v8::Local<v8::Context> context =
+      v8::Local<v8::Context>::New(isolate_, context_);
+  v8::Context::Scope context_scope(context);
+  v8::MicrotasksScope microtasks(
+      isolate_, v8::MicrotasksScope::kDoNotRunMicrotasks);
+  V8ValueConverterImpl converter;
+
+  // Object with reused values in different keys.
+  {
+    const char* source = "(function() {"
+        "var objA = {key: 'another same value'};"
+        "var obj = {one: objA, two: objA};"
+        "return obj;"
+        "})();";
+    v8::Local<v8::Script> script(
+        v8::Script::Compile(v8::String::NewFromUtf8(isolate_, source)));
+    v8::Local<v8::Object> object = script->Run().As<v8::Object>();
+    ASSERT_FALSE(object.IsEmpty());
+
+    // The actual result.
+    std::unique_ptr<base::DictionaryValue> result(
+        static_cast<base::DictionaryValue*>(
+            converter.FromV8Value(object, context)));
+    ASSERT_TRUE(result.get());
+    EXPECT_EQ(2u, result->size());
+
+    {
+      base::DictionaryValue* one_dict = nullptr;
+      const char* key1 = "one";
+      ASSERT_TRUE(result->GetDictionary(key1, &one_dict));
+      EXPECT_EQ("another same value", GetString(one_dict, "key"));
+    }
+    {
+      base::DictionaryValue* two_dict = nullptr;
+      const char* key2 = "two";
+      ASSERT_TRUE(result->GetDictionary(key2, &two_dict));
+      EXPECT_EQ("another same value", GetString(two_dict, "key"));
+    }
+  }
+
+  // Array with reused values.
+  {
+    const char* source = "(function() {"
+        "var objA = {key: 'same value'};"
+        "var arr = [objA, objA];"
+        "return arr;"
+        "})();";
+    v8::Local<v8::Script> script(
+        v8::Script::Compile(v8::String::NewFromUtf8(isolate_, source)));
+    v8::Local<v8::Array> array = script->Run().As<v8::Array>();
+    ASSERT_FALSE(array.IsEmpty());
+
+    // The actual result.
+    std::unique_ptr<base::ListValue> list_result(
+        static_cast<base::ListValue*>(converter.FromV8Value(array, context)));
+    ASSERT_TRUE(list_result.get());
+    ASSERT_EQ(2u, list_result->GetSize());
+    for (size_t i = 0; i < list_result->GetSize(); ++i) {
+      ASSERT_FALSE(IsNull(list_result.get(), i));
+      base::DictionaryValue* dict_value = nullptr;
+      ASSERT_TRUE(list_result->GetDictionary(0u, &dict_value));
+      EXPECT_EQ("same value", GetString(dict_value, "key"));
+    }
+  }
+}
+
 TEST_F(V8ValueConverterImplTest, MaxRecursionDepth) {
   v8::HandleScope handle_scope(isolate_);
   v8::Local<v8::Context> context =

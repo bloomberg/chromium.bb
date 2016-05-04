@@ -373,9 +373,7 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest, ReusedActionInstance) {
   // This navigation matches both rules.
   NavigateInRenderer(tab, GURL("http://test1/"));
 
-  // Because the declarative rules were reusing action instance, addRules will
-  // fail and the page action won't be visible.
-  EXPECT_FALSE(page_action->GetIsVisible(tab_id));
+  EXPECT_TRUE(page_action->GetIsVisible(tab_id));
 }
 
 // Tests that the rules are evaluated at the time they are added or removed.
