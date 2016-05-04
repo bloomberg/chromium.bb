@@ -59,6 +59,11 @@ class RenderTextTestApi {
     return renderer->paint_;
   }
 
+  static internal::TextRunList* GetHarfbuzzRunList(
+      RenderTextHarfBuzz* harfbuzz) {
+    return harfbuzz->GetRunList();
+  }
+
   void DrawVisualText(internal::SkiaTextRenderer* renderer) {
     render_text_->EnsureLayout();
     render_text_->DrawVisualText(renderer);
@@ -273,9 +278,12 @@ class RenderTextAllBackends {
     renderer_.GetTextLogAndReset(log);
   }
 
-  SkTypeface* GetTypeface() {
-    SkPaint& paint = test::RenderTextTestApi::GetRendererPaint(&renderer_);
-    return paint.getTypeface();
+  SkPaint& paint() {
+    return test::RenderTextTestApi::GetRendererPaint(&renderer_);
+  }
+
+  internal::TextRunList* GetHarfbuzzRunList() {
+    return test::RenderTextTestApi::GetHarfbuzzRunList(&render_text_harfbuzz_);
   }
 
  private:
@@ -3275,19 +3283,53 @@ TEST_F(RenderTextTest, StylePropagated) {
     backend->SetFontList(font_list);
 
     backend.DrawVisualText();
-    EXPECT_EQ(SkTypeface::kNormal, backend.GetTypeface()->style());
+    EXPECT_EQ(SkTypeface::kNormal, backend.paint().getTypeface()->style());
 
     backend->SetStyle(TextStyle::BOLD, true);
     backend.DrawVisualText();
-    EXPECT_EQ(SkTypeface::kBold, backend.GetTypeface()->style());
+    EXPECT_EQ(SkTypeface::kBold, backend.paint().getTypeface()->style());
 
     backend->SetStyle(TextStyle::ITALIC, true);
     backend.DrawVisualText();
-    EXPECT_EQ(SkTypeface::kBoldItalic, backend.GetTypeface()->style());
+    EXPECT_EQ(SkTypeface::kBoldItalic, backend.paint().getTypeface()->style());
 
     backend->SetStyle(TextStyle::BOLD, false);
     backend.DrawVisualText();
-    EXPECT_EQ(SkTypeface::kItalic, backend.GetTypeface()->style());
+    EXPECT_EQ(SkTypeface::kItalic, backend.paint().getTypeface()->style());
+  }
+}
+
+// Ensure the painter adheres to RenderText::subpixel_rendering_suppressed().
+TEST_F(RenderTextTest, SubpixelRenderingSuppressed) {
+  RenderTextAllBackends backend;
+
+  while (backend.Advance()) {
+    SCOPED_TRACE(testing::Message() << "backend: " << backend.GetName());
+    backend->SetText(ASCIIToUTF16("x"));
+
+    backend.DrawVisualText();
+#if defined(OS_LINUX)
+    // On Linux, whether subpixel AA is supported is determined by the platform
+    // FontConfig. Force it into a particular style after computing runs. Other
+    // platforms use a known default FontRenderParams from a static local.
+    backend.GetHarfbuzzRunList()->runs()[0]->render_params.subpixel_rendering =
+        FontRenderParams::SUBPIXEL_RENDERING_RGB;
+    backend.DrawVisualText();
+#endif
+    EXPECT_TRUE(backend.paint().isLCDRenderText());
+
+    backend->set_subpixel_rendering_suppressed(true);
+    backend.DrawVisualText();
+#if defined(OS_LINUX)
+    // For Linux, runs shouldn't be re-calculated, and the suppression of the
+    // SUBPIXEL_RENDERING_RGB set above should now take effect. But, after
+    // checking, apply the override anyway to be explicit that it is suppressed.
+    EXPECT_FALSE(backend.paint().isLCDRenderText());
+    backend.GetHarfbuzzRunList()->runs()[0]->render_params.subpixel_rendering =
+        FontRenderParams::SUBPIXEL_RENDERING_RGB;
+    backend.DrawVisualText();
+#endif
+    EXPECT_FALSE(backend.paint().isLCDRenderText());
   }
 }
 
