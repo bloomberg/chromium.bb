@@ -107,7 +107,13 @@ public:
 
     Page* page() const;
 
+    // TODO(pilgrim) replace all instances of layoutView() with layoutViewItem()
+    // https://crbug.com/499321
     LayoutView* layoutView() const;
+    LayoutViewItem layoutViewItem() const
+    {
+        return LayoutViewItem(this->layoutView());
+    }
 
     void setCanHaveScrollbars(bool);
 
@@ -762,11 +768,6 @@ private:
     // PaintInvalidationCapableScrollableArea
     LayoutBox& boxForScrollControlPaintInvalidation() const override;
     LayoutScrollbarPart* resizer() const override { return nullptr; }
-
-    LayoutViewItem layoutViewItem() const
-    {
-        return LayoutViewItem(this->layoutView());
-    }
 
     LayoutSize m_size;
 

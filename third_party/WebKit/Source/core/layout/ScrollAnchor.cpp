@@ -28,12 +28,23 @@ ScrollAnchor::~ScrollAnchor()
 {
 }
 
+// TODO(pilgrim) replace all instances of scrollerLayoutBox with scrollerLayoutBoxItem
+// https://crbug.com/499321
 static LayoutBox* scrollerLayoutBox(const ScrollableArea* scroller)
 {
     LayoutBox* box = scroller->isFrameView()
         ? toFrameView(scroller)->layoutView()
         : &toPaintLayerScrollableArea(scroller)->box();
     ASSERT(box);
+    return box;
+}
+
+static LayoutBoxItem scrollerLayoutBoxItem(const ScrollableArea* scroller)
+{
+    LayoutBoxItem box = scroller->isFrameView()
+        ? toFrameView(scroller)->layoutViewItem()
+        : LayoutBoxItem(&toPaintLayerScrollableArea(scroller)->box());
+    ASSERT(!box.isNull());
     return box;
 }
 
@@ -110,7 +121,7 @@ ScrollAnchor::ExamineResult ScrollAnchor::examine(const LayoutObject* candidate)
         return ExamineResult(Skip);
 
     LayoutRect candidateRect = relativeBounds(candidate, m_scroller);
-    LayoutRect visibleRect = scrollerLayoutBox(m_scroller)->overflowClipRect(LayoutPoint());
+    LayoutRect visibleRect = scrollerLayoutBoxItem(m_scroller).overflowClipRect(LayoutPoint());
 
     bool occupiesSpace = candidateRect.width() > 0 && candidateRect.height() > 0;
     if (occupiesSpace && visibleRect.intersects(candidateRect)) {

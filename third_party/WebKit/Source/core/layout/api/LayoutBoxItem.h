@@ -57,6 +57,11 @@ public:
         return toBox()->minPreferredLogicalWidth();
     }
 
+    LayoutRect overflowClipRect(const LayoutPoint& location, OverlayScrollbarClipBehavior behavior = IgnoreOverlayScrollbarSize) const
+    {
+        return toBox()->overflowClipRect(location, behavior);
+    }
+
 private:
     LayoutBox* toBox()
     {
