@@ -80,13 +80,7 @@ class TabManagerDelegate : public arc::ArcBridgeService::Observer,
                            public content::NotificationObserver,
                            public chrome::BrowserListObserver {
  public:
-  class MemoryStat;
-
   explicit TabManagerDelegate(const base::WeakPtr<TabManager>& tab_manager);
-
-  TabManagerDelegate(const base::WeakPtr<TabManager>& tab_manager,
-                     TabManagerDelegate::MemoryStat* mem_stat);
-
   ~TabManagerDelegate() override;
 
   void OnBrowserSetLastActive(Browser* browser) override;
@@ -119,27 +113,18 @@ class TabManagerDelegate : public arc::ArcBridgeService::Observer,
   virtual void SetOomScoreAdjForTabs(
       const std::vector<std::pair<base::ProcessHandle, int>>& entries);
 
-  // Kills an Arc process. Returns true if the kill request is successfully sent
-  // to Android. Virtual for unit testing.
-  virtual bool KillArcProcess(const int nspid);
-
-  // Kills a tab. Returns true if the tab is killed successfully.
-  // Virtual for unit testing.
-  virtual bool KillTab(int64_t tab_id);
-
  private:
-  FRIEND_TEST_ALL_PREFIXES(TabManagerDelegateTest, CandidatesSorted);
-  FRIEND_TEST_ALL_PREFIXES(TabManagerDelegateTest, KillMultipleProcesses);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerDelegateTest, KillCandidatesSorted);
   FRIEND_TEST_ALL_PREFIXES(TabManagerDelegateTest, SetOomScoreAdj);
 
   // On ARC enabled machines, either a tab or an app could be a possible
   // victim of low memory kill process. This is a helper struct which holds a
   // pointer to an app or a tab (but not both) to facilitate prioritizing the
   // victims.
-  struct Candidate {
-    Candidate(const TabStats* _tab, int _priority)
+  struct KillCandidate {
+    KillCandidate(const TabStats* _tab, int _priority)
         : tab(_tab), priority(_priority), is_arc_app(false) {}
-    Candidate(const arc::ArcProcess* _app, int _priority)
+    KillCandidate(const arc::ArcProcess* _app, int _priority)
         : app(_app), priority(_priority), is_arc_app(true) {}
     union {
       const TabStats* tab;
@@ -148,7 +133,7 @@ class TabManagerDelegate : public arc::ArcBridgeService::Observer,
     int priority;
     bool is_arc_app;
 
-    bool operator<(const Candidate& rhs) const {
+    bool operator<(const KillCandidate& rhs) const {
       return priority < rhs.priority;
     }
   };
@@ -167,7 +152,7 @@ class TabManagerDelegate : public arc::ArcBridgeService::Observer,
   typedef base::hash_map<base::ProcessHandle, int> ProcessScoreMap;
 
   // Get the list of candidates to kill, sorted by reversed importance.
-  static std::vector<Candidate> GetSortedCandidates(
+  static std::vector<KillCandidate> GetSortedKillCandidates(
       const TabStatsList& tab_list,
       const std::vector<arc::ArcProcess>& arc_processes);
 
@@ -204,8 +189,8 @@ class TabManagerDelegate : public arc::ArcBridgeService::Observer,
   // distributed evenly in [|range_begin|, |range_end|).
   // The new score is set in |new_map|.
   void DistributeOomScoreInRange(
-      std::vector<TabManagerDelegate::Candidate>::reverse_iterator rbegin,
-      std::vector<TabManagerDelegate::Candidate>::reverse_iterator rend,
+      std::vector<TabManagerDelegate::KillCandidate>::reverse_iterator rbegin,
+      std::vector<TabManagerDelegate::KillCandidate>::reverse_iterator rend,
       int range_begin,
       int range_end,
       ProcessScoreMap* new_map);
@@ -232,9 +217,6 @@ class TabManagerDelegate : public arc::ArcBridgeService::Observer,
   // |oom_score_lock_|.
   ProcessScoreMap oom_score_map_;
 
-  // Util for getting system memory satatus.
-  std::unique_ptr<TabManagerDelegate::MemoryStat> mem_stat_;
-
   // Holds a weak pointer to arc::mojom::ProcessInstance.
   arc::mojom::ProcessInstance* arc_process_instance_;
   // Current ProcessInstance version.
@@ -244,29 +226,6 @@ class TabManagerDelegate : public arc::ArcBridgeService::Observer,
   base::WeakPtrFactory<TabManagerDelegate> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TabManagerDelegate);
-};
-
-// A thin wrapper over library process_metric.h to get memory status so unit
-// test get a chance to mock out.
-class TabManagerDelegate::MemoryStat {
- public:
-  MemoryStat() {}
-  ~MemoryStat() {}
-
-  // Returns target size of memory to free given current memory pressure and
-  // pre-configured low memory margin.
-  virtual int TargetMemoryToFreeKB();
-
-  // Returns estimated memory to be freed if the process |pid| is killed.
-  virtual int EstimatedMemoryFreedKB(base::ProcessHandle pid);
-
- private:
-  // Returns the low memory margin system config. Low memory condition is
-  // reported if available memory is under the number.
-  static int LowMemoryMarginKB();
-
-  // Reads in an integer.
-  static int ReadIntFromFile(const char* file_name, int default_val);
 };
 
 }  // namespace memory
