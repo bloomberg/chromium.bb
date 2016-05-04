@@ -1319,12 +1319,15 @@ void LayerTreeHostImpl::NotifyAllTileTasksCompleted() {
   // The tile tasks started by the most recent call to PrepareTiles have
   // completed. Now is a good time to free resources if necessary.
   if (global_tile_state_.hard_memory_limit_in_bytes == 0) {
-    if (output_surface_) {
-      output_surface_->SetWorkerContextShouldAggressivelyFreeResources(
-          true /* aggressively_free_resources */);
-    }
+    // Free image decode controller resources before worker context resources.
+    // This ensures that the imaged decode controller has released all Skia refs
+    // at the time Skia's cleanup executes (within worker context's cleanup).
     if (image_decode_controller_) {
       image_decode_controller_->SetShouldAggressivelyFreeResources(
+          true /* aggressively_free_resources */);
+    }
+    if (output_surface_) {
+      output_surface_->SetWorkerContextShouldAggressivelyFreeResources(
           true /* aggressively_free_resources */);
     }
   }
