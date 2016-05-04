@@ -41,11 +41,14 @@ crbug.com/508725 imported/web-platform-tests/html/browsers/offline/application-c
 crbug.com/508725 imported/web-platform-tests/html/dom/elements/global-attributes/the-lang-attribute-003.html [ Failure ]
 crbug.com/508725 imported/web-platform-tests/html/webappapis/system-state-and-capabilities/the-navigator-object/protocol.html [ Failure ]
 
-# Requires HTTPS for getUserMedia()
-imported/web-platform-tests/mediacapture-streams/obtaining-local-multimedia-content/navigatorusermedia/getusermedia-impossible-constraint.html [ Failure ]
-imported/web-platform-tests/mediacapture-streams/stream-api/mediastream/mediastream-addtrack.html [ Failure ]
-imported/web-platform-tests/mediacapture-streams/stream-api/mediastream/mediastream-gettrackid.html [ Failure ]
-imported/web-platform-tests/mediacapture-streams/stream-api/mediastream/stream-ended.html [ Failure ]
-imported/web-platform-tests/mediacapture-streams/stream-api/mediastream/video.html [ Failure ]
-imported/web-platform-tests/mediacapture-streams/stream-api/mediastreamtrack/mediastreamtrack-id.html [ Failure ]
-imported/web-platform-tests/webrtc/simplecall.html [ Failure ]
+# Requires HTTPS (requires "secure origin") for getUserMedia()
+crbug.com/608457 imported/web-platform-tests/mediacapture-streams/GUM-optional-constraint.html [ Failure ]
+crbug.com/608457 imported/web-platform-tests/mediacapture-streams/MediaDevices-getUserMedia.html [ Failure ]
+crbug.com/608457 imported/web-platform-tests/mediacapture-streams/MediaStream-gettrackid.html [ Failure ]
+crbug.com/608457 imported/web-platform-tests/mediacapture-streams/MediaStreamTrack-id.html [ Failure ]
+crbug.com/608457 imported/web-platform-tests/webrtc/simplecall.html [ Failure ]
+
+# These tests time out because they are async tests that use getUserMedia().
+crbug.com/608457 imported/web-platform-tests/mediacapture-streams/MediaStream-video-only.html [ Timeout ]
+crbug.com/608457 imported/web-platform-tests/mediacapture-streams/MediaStream-MediaElement-srcObject.html [ Timeout ]
+crbug.com/608457 imported/web-platform-tests/mediacapture-streams/MediaStream-add-audio-track.html [ Timeout ]
