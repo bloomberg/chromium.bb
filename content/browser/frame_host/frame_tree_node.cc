@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/stl_util.h"
 #include "content/browser/frame_host/frame_tree.h"
@@ -40,6 +41,10 @@ base::LazyInstance<FrameTreeNodeIdMap> g_frame_tree_node_id_map =
 const double kLoadingProgressNotStarted = 0.0;
 const double kLoadingProgressMinimum = 0.1;
 const double kLoadingProgressDone = 1.0;
+
+void RecordUniqueNameLength(size_t length) {
+  UMA_HISTOGRAM_COUNTS("SessionRestore.FrameUniqueNameLength", length);
+}
 
 }  // namespace
 
@@ -107,6 +112,7 @@ FrameTreeNode::FrameTreeNode(
           std::make_pair(frame_tree_node_id_, this));
   CHECK(result.second);
 
+  RecordUniqueNameLength(unique_name.size());
   TRACE_EVENT_OBJECT_CREATED_WITH_ID(
       "navigation", "FrameTreeNode",
       TRACE_ID_WITH_SCOPE("FrameTreeNode", frame_tree_node_id_));
@@ -233,6 +239,7 @@ void FrameTreeNode::SetFrameName(const std::string& name,
     DCHECK_EQ(unique_name, replication_state_.unique_name);
     return;
   }
+  RecordUniqueNameLength(unique_name.size());
   render_manager_.OnDidUpdateName(name, unique_name);
   replication_state_.name = name;
   replication_state_.unique_name = unique_name;

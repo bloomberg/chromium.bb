@@ -48654,6 +48654,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SessionRestore.FrameUniqueNameLength" units="bytes">
+  <owner>dcheng@chromium.org</owner>
+  <summary>
+    Records the length of unique names for web frames that are saved as part of
+    session restore data. It is logged each time the unique name changes, which
+    typically happens when a web frame is first created or its name is changed
+    by mutating window.name.
+  </summary>
+</histogram>
+
 <histogram name="SessionRestore.last_session_file_size" units="KB">
   <owner>jeremy@chromium.org</owner>
   <owner>sky@chromium.org</owner>
