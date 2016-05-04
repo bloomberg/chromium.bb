@@ -124,13 +124,6 @@ const {{constant.kind|cpp_pod_type}} {{struct.name}}::{{constant.name}} = {{cons
 {%-   include "interface_definition.tmpl" %}
 {%- endfor %}
 
-{#--- Struct Serialization Helpers #}
-{%- for struct in structs %}
-{%-   if not struct|is_native_only_kind %}
-{%-     include "struct_serialization_definition.tmpl" %}
-{%-   endif %}
-{%- endfor %}
-
 {#--- Union Serialization Helpers #}
 {%- for union in unions %}
 {%-   include "union_serialization_definition.tmpl" %}
@@ -142,6 +135,18 @@ const {{constant.kind|cpp_pod_type}} {{struct.name}}::{{constant.name}} = {{cons
 {%- for namespace in namespaces_as_array|reverse %}
 }  // namespace {{namespace}}
 {%- endfor %}
+
+namespace mojo {
+
+{#--- Struct Serialization Helpers -#}
+{%  for struct in structs %}
+{%-   if not struct|is_native_only_kind %}
+{%      include "struct_serialization_definition.tmpl" %}
+{%-   endif %}
+{%- endfor %}
+
+}  // namespace mojo
+
 
 #if defined(__clang__)
 #pragma clang diagnostic pop

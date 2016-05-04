@@ -153,6 +153,18 @@ inline void InterfaceDataToPointer(Interface_Data* input,
 }
 
 template <typename T>
+struct HasReadFromRawDataMethod {
+  template <typename U>
+  static char Test(decltype(U::ReadFromRawData)*);
+  template <typename U>
+  static int Test(...);
+  static const bool value = sizeof(Test<T>(0)) == sizeof(char);
+
+ private:
+  EnsureTypeIsComplete<T> check_t_;
+};
+
+template <typename T>
 struct HasIsNullMethod {
   template <typename U>
   static char Test(decltype(U::IsNull)*);

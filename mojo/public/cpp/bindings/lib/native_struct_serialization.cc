@@ -7,45 +7,28 @@
 #include "mojo/public/cpp/bindings/lib/serialization.h"
 
 namespace mojo {
+namespace {
+
+using Serializer = internal::Serializer<NativeStructPtr, const NativeStructPtr>;
+
+}  // namespace
 
 size_t GetSerializedSize_(const NativeStructPtr& input,
                           internal::SerializationContext* context) {
-  if (!input)
-    return 0;
-  return GetSerializedSize_(input->data, context);
+  return Serializer::PrepareToSerialize(input, context);
 }
 
 void Serialize_(NativeStructPtr input,
                 internal::Buffer* buffer,
                 internal::NativeStruct_Data** output,
                 internal::SerializationContext* context) {
-  if (!input) {
-    *output = nullptr;
-    return;
-  }
-
-  internal::Array_Data<uint8_t>* data = nullptr;
-  const internal::ArrayValidateParams params(0, false, nullptr);
-  SerializeArray_(std::move(input->data), buffer, &data, &params, context);
-  *output = reinterpret_cast<internal::NativeStruct_Data*>(data);
+  return Serializer::Serialize(input, buffer, output, context);
 }
 
 bool Deserialize_(internal::NativeStruct_Data* input,
                   NativeStructPtr* output,
                   internal::SerializationContext* context) {
-  internal::Array_Data<uint8_t>* data =
-      reinterpret_cast<internal::Array_Data<uint8_t>*>(input);
-
-  NativeStructPtr result(NativeStruct::New());
-  if (!Deserialize_(data, &result->data, context)) {
-    output = nullptr;
-    return false;
-  }
-  if (!result->data)
-    *output = nullptr;
-  else
-    result.Swap(output);
-  return true;
+  return Serializer::Deserialize(input, output, context);
 }
 
 }  // namespace mojo

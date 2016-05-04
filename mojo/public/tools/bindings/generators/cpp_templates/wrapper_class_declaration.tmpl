@@ -1,7 +1,5 @@
 {% from "enum_macros.tmpl" import enum_decl -%}
 
-class {{struct.name}}_Reader;
-
 class {{struct.name}} {
  public:
   using Data_ = internal::{{struct.name}}_Data;
@@ -59,4 +57,58 @@ class {{struct.name}} {
 {%-   set name = field.name %}
   {{type}} {{name}};
 {%- endfor %}
+};
+
+{# TODO(yzshen): Remove these wrappers of the Serializer interface. #}
+size_t GetSerializedSize_(const {{struct.name}}Ptr& input,
+                          mojo::internal::SerializationContext* context);
+void Serialize_({{struct.name}}Ptr input, mojo::internal::Buffer* buffer,
+                internal::{{struct.name}}_Data** output,
+                mojo::internal::SerializationContext* context);
+bool Deserialize_(internal::{{struct.name}}_Data* input,
+                  {{struct.name}}Ptr* output,
+                  mojo::internal::SerializationContext* context);
+
+{# TODO(yzshen): Redo the Reader interface. #}
+{# NOTE: Generated Reader instances are intentionally cheap to copy and devoid
+   of heap allocations. They should stay this way. #}
+class {{struct.name}}_Reader {
+ public:
+  {{struct.name}}_Reader(internal::{{struct.name}}_Data* data,
+                         mojo::internal::SerializationContext* context);
+
+{%-   for pf in struct.packed.packed_fields_in_ordinal_order %}
+{%-     set kind = pf.field.kind -%}
+{%-     set name = pf.field.name -%}
+{%-     if kind|is_nullable_kind %}
+  bool has_{{name}}() const;
+{%-     endif %}
+{%-     if kind|is_struct_kind and not kind|is_native_only_kind %}
+  {{kind|get_name_for_kind}}_Reader {{name}}() const;
+{%-     elif kind|is_string_kind %}
+  base::StringPiece {{name}}() const;
+{%-     elif kind|is_union_kind %}
+  // TODO(rockot): Support reading unions. ({{name}}() omitted)
+{%-     elif kind|is_object_kind %}
+  // TODO(rockot): Support reading other object kinds. ({{name}}() omitted)
+{%-     elif kind|is_any_handle_kind %}
+  // TODO(rockot): Support reading handles. ({{name}}() omitted)
+{%-     elif kind|is_interface_kind %}
+  // TODO(rockot): Support reading interfaces. ({{name}}() omitted)
+{%-     elif kind|is_interface_request_kind %}
+  // TODO(rockot): Support reading interface requests. ({{name}}() omitted)
+{%-     elif kind|is_associated_kind %}
+  // TODO(rockot): Support reading associated kinds. ({{name}}() omitted)
+{%-     elif kind|is_enum_kind %}
+  {{kind|cpp_result_type}} {{name}}() const {
+    return static_cast<{{kind|cpp_result_type}}>(data_->{{name}});
+  }
+{%-     else %}
+  {{kind|cpp_result_type}} {{name}}() const { return data_->{{name}}; }
+{%-     endif %}
+{%-   endfor %}
+
+ private:
+  internal::{{struct.name}}_Data* data_;
+  mojo::internal::SerializationContext* context_;
 };

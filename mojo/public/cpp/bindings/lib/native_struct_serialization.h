@@ -30,75 +30,133 @@ struct ShouldUseNativeSerializer {
   static const bool value = false;
 };
 
-template <typename T>
-size_t GetSerializedSizeNative_(const T& value, SerializationContext* context) {
-  base::PickleSizer sizer;
-  IPC::ParamTraits<T>::GetSize(&sizer, value);
-  return Align(sizer.payload_size() + sizeof(ArrayHeader));
-}
+template <typename InputUserType,
+          bool unmapped = std::is_same<
+              NativeStructPtr,
+              typename std::remove_const<typename std::remove_reference<
+                  InputUserType>::type>::type>::value>
+struct NativeStructSerializerImpl;
 
-template <typename T>
-void SerializeNative_(const T& value,
-                      Buffer* buffer,
-                      NativeStruct_Data** out,
-                      SerializationContext* context) {
-  base::Pickle pickle;
-  IPC::ParamTraits<T>::Write(&pickle, value);
-
-  size_t total_size = pickle.payload_size() + sizeof(ArrayHeader);
-  DCHECK_LT(total_size, std::numeric_limits<uint32_t>::max());
-  DCHECK_EQ(Align(total_size), GetSerializedSizeNative_(value, context));
-
-  // Allocate a uint8 array, initialize its header, and copy the Pickle in.
-  ArrayHeader* header =
-      reinterpret_cast<ArrayHeader*>(buffer->Allocate(total_size));
-  header->num_bytes = static_cast<uint32_t>(total_size);
-  header->num_elements = static_cast<uint32_t>(pickle.payload_size());
-  memcpy(reinterpret_cast<char*>(header) + sizeof(ArrayHeader),
-         pickle.payload(), pickle.payload_size());
-
-  *out = reinterpret_cast<NativeStruct_Data*>(header);
-}
-
-template <typename T>
-bool DeserializeNative_(NativeStruct_Data* data,
-                        T* out,
-                        SerializationContext* context) {
-  if (!data)
-    return true;
-
-  // Construct a temporary base::Pickle view over the array data. Note that
-  // the Array_Data is laid out like this:
-  //
-  //   [num_bytes (4 bytes)] [num_elements (4 bytes)] [elements...]
-  //
-  // and base::Pickle expects to view data like this:
-  //
-  //   [payload_size (4 bytes)] [header bytes ...] [payload...]
-  //
-  // Because ArrayHeader's num_bytes includes the length of the header and
-  // Pickle's payload_size does not, we need to adjust the stored value
-  // momentarily so Pickle can view the data.
-  ArrayHeader* header = reinterpret_cast<ArrayHeader*>(data);
-  DCHECK_GE(header->num_bytes, sizeof(ArrayHeader));
-  header->num_bytes -= sizeof(ArrayHeader);
-
-  {
-    // Construct a view over the full Array_Data, including our hacked up
-    // header. Pickle will infer from this that the header is 8 bytes long,
-    // and the payload will contain all of the pickled bytes.
-    base::Pickle pickle_view(reinterpret_cast<const char*>(header),
-                             header->num_bytes + sizeof(ArrayHeader));
-    base::PickleIterator iter(pickle_view);
-    if (!IPC::ParamTraits<T>::Read(&pickle_view, &iter, out))
-      return false;
+template <typename InputUserType>
+struct NativeStructSerializerImpl<InputUserType, true> {
+  static size_t PrepareToSerialize(const NativeStructPtr& input,
+                                   SerializationContext* context) {
+    if (!input)
+      return 0;
+    return GetSerializedSize_(input->data, context);
   }
 
-  // Return the header to its original state.
-  header->num_bytes += sizeof(ArrayHeader);
+  static void Serialize(NativeStructPtr& input,
+                        Buffer* buffer,
+                        NativeStruct_Data** output,
+                        SerializationContext* context) {
+    if (!input) {
+      *output = nullptr;
+      return;
+    }
 
-  return true;
-}
+    Array_Data<uint8_t>* data = nullptr;
+    const ArrayValidateParams params(0, false, nullptr);
+    SerializeArray_(std::move(input->data), buffer, &data, &params, context);
+    *output = reinterpret_cast<NativeStruct_Data*>(data);
+  }
+
+  static bool Deserialize(NativeStruct_Data* input,
+                          NativeStructPtr* output,
+                          SerializationContext* context) {
+    Array_Data<uint8_t>* data = reinterpret_cast<Array_Data<uint8_t>*>(input);
+
+    NativeStructPtr result(NativeStruct::New());
+    if (!Deserialize_(data, &result->data, context)) {
+      output = nullptr;
+      return false;
+    }
+    if (!result->data)
+      *output = nullptr;
+    else
+      result.Swap(output);
+    return true;
+  }
+};
+
+template <typename InputUserType>
+struct NativeStructSerializerImpl<InputUserType, false> {
+  using MaybeConstUserType =
+      typename std::remove_reference<InputUserType>::type;
+  using UserType = typename std::remove_const<MaybeConstUserType>::type;
+  using Traits = IPC::ParamTraits<UserType>;
+
+  static size_t PrepareToSerialize(MaybeConstUserType& value,
+                                   SerializationContext* context) {
+    base::PickleSizer sizer;
+    Traits::GetSize(&sizer, value);
+    return Align(sizer.payload_size() + sizeof(ArrayHeader));
+  }
+
+  static void Serialize(MaybeConstUserType& value,
+                        Buffer* buffer,
+                        NativeStruct_Data** out,
+                        SerializationContext* context) {
+    base::Pickle pickle;
+    Traits::Write(&pickle, value);
+
+    size_t total_size = pickle.payload_size() + sizeof(ArrayHeader);
+    DCHECK_LT(total_size, std::numeric_limits<uint32_t>::max());
+
+    // Allocate a uint8 array, initialize its header, and copy the Pickle in.
+    ArrayHeader* header =
+        reinterpret_cast<ArrayHeader*>(buffer->Allocate(total_size));
+    header->num_bytes = static_cast<uint32_t>(total_size);
+    header->num_elements = static_cast<uint32_t>(pickle.payload_size());
+    memcpy(reinterpret_cast<char*>(header) + sizeof(ArrayHeader),
+           pickle.payload(), pickle.payload_size());
+
+    *out = reinterpret_cast<NativeStruct_Data*>(header);
+  }
+
+  static bool Deserialize(NativeStruct_Data* data,
+                          UserType* out,
+                          SerializationContext* context) {
+    if (!data)
+      return true;
+
+    // Construct a temporary base::Pickle view over the array data. Note that
+    // the Array_Data is laid out like this:
+    //
+    //   [num_bytes (4 bytes)] [num_elements (4 bytes)] [elements...]
+    //
+    // and base::Pickle expects to view data like this:
+    //
+    //   [payload_size (4 bytes)] [header bytes ...] [payload...]
+    //
+    // Because ArrayHeader's num_bytes includes the length of the header and
+    // Pickle's payload_size does not, we need to adjust the stored value
+    // momentarily so Pickle can view the data.
+    ArrayHeader* header = reinterpret_cast<ArrayHeader*>(data);
+    DCHECK_GE(header->num_bytes, sizeof(ArrayHeader));
+    header->num_bytes -= sizeof(ArrayHeader);
+
+    {
+      // Construct a view over the full Array_Data, including our hacked up
+      // header. Pickle will infer from this that the header is 8 bytes long,
+      // and the payload will contain all of the pickled bytes.
+      base::Pickle pickle_view(reinterpret_cast<const char*>(header),
+                               header->num_bytes + sizeof(ArrayHeader));
+      base::PickleIterator iter(pickle_view);
+      if (!Traits::Read(&pickle_view, &iter, out))
+        return false;
+    }
+
+    // Return the header to its original state.
+    header->num_bytes += sizeof(ArrayHeader);
+
+    return true;
+  }
+};
+
+template <typename InputUserType>
+struct Serializer<NativeStructPtr, InputUserType>
+    : public NativeStructSerializerImpl<InputUserType> {};
 
 }  // namespace internal
 }  // namespace mojo

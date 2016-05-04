@@ -1,118 +1,100 @@
-size_t GetSerializedSize_(const {{struct.name}}Ptr& input,
-                          mojo::internal::SerializationContext* context);
-void Serialize_({{struct.name}}Ptr input, mojo::internal::Buffer* buffer,
-                internal::{{struct.name}}_Data** output,
-                mojo::internal::SerializationContext* context);
-bool Deserialize_(internal::{{struct.name}}_Data* input,
-                  {{struct.name}}Ptr* output,
-                  mojo::internal::SerializationContext* context);
+{%- import "struct_macros.tmpl" as struct_macros %}
+{%- set mojom_type = struct|get_qualified_name_for_kind %}
+{%- set data_type = struct|get_qualified_name_for_kind(internal=True) %}
 
-{# NOTE: Generated Reader instances are intentionally cheap to copy and devoid
-   of heap allocations. They should stay this way. #}
-class {{struct.name}}_Reader {
- public:
-  {{struct.name}}_Reader(internal::{{struct.name}}_Data* data,
-                         mojo::internal::SerializationContext* context);
+template <>
+struct StructTraits<{{mojom_type}}, {{mojom_type}}Ptr> {
+  static bool IsNull(const {{mojom_type}}Ptr& input) { return !input; }
 
-{%-   for pf in struct.packed.packed_fields_in_ordinal_order %}
-{%-     set kind = pf.field.kind -%}
-{%-     set name = pf.field.name -%}
-{%-     if kind|is_nullable_kind %}
-  bool has_{{name}}() const;
-{%-     endif %}
-{%-     if kind|is_struct_kind and not kind|is_native_only_kind %}
-  {{kind|get_name_for_kind}}::Reader {{name}}() const;
-{%-     elif kind|is_string_kind %}
-  base::StringPiece {{name}}() const;
-{%-     elif kind|is_union_kind %}
-  // TODO(rockot): Support reading unions. ({{name}}() omitted)
-{%-     elif kind|is_object_kind %}
-  // TODO(rockot): Support reading other object kinds. ({{name}}() omitted)
-{%-     elif kind|is_any_handle_kind %}
-  // TODO(rockot): Support reading handles. ({{name}}() omitted)
-{%-     elif kind|is_interface_kind %}
-  // TODO(rockot): Support reading interfaces. ({{name}}() omitted)
-{%-     elif kind|is_interface_request_kind %}
-  // TODO(rockot): Support reading interface requests. ({{name}}() omitted)
-{%-     elif kind|is_associated_kind %}
-  // TODO(rockot): Support reading associated kinds. ({{name}}() omitted)
-{%-     elif kind|is_enum_kind %}
-  {{kind|cpp_result_type}} {{name}}() const {
-    return static_cast<{{kind|cpp_result_type}}>(data_->{{name}});
+{%- for field in struct.fields %}
+{%-   set return_ref = field.kind|is_object_kind or
+                       field.kind|is_any_handle_kind or
+                       field.kind|is_interface_kind or
+                       field.kind|is_associated_kind %}
+{%-   if return_ref %}
+  static decltype({{mojom_type}}::{{field.name}})& {{field.name}}(
+      {{mojom_type}}Ptr& input) {
+    return input->{{field.name}};
   }
-{%-     else %}
-  {{kind|cpp_result_type}} {{name}}() const { return data_->{{name}}; }
-{%-     endif %}
-{%-   endfor %}
+  static const decltype({{mojom_type}}::{{field.name}})& {{field.name}}(
+      const {{mojom_type}}Ptr& input) {
+    return input->{{field.name}};
+  }
+{%-   else %}
+  static decltype({{mojom_type}}::{{field.name}}) {{field.name}}(
+      const {{mojom_type}}Ptr& input) {
+    return input->{{field.name}};
+  }
+{%-   endif %}
+{%- endfor %}
 
- private:
-  internal::{{struct.name}}_Data* data_;
-  mojo::internal::SerializationContext* context_;
+  static bool ReadFromRawData({{data_type}}* input,
+                              {{mojom_type}}Ptr* output,
+                              internal::SerializationContext* context);
 };
 
-{#- TODO(yzshen): Unify with the non-typemapped path. #}
-template <typename NativeType>
-struct {{struct.name}}_SerializerTraits_ {
-  static size_t GetSize(const NativeType& input) {
-    size_t size = sizeof(internal::{{struct.name}}_Data);
-{%- for pf in struct.packed.packed_fields_in_ordinal_order %}
-    do {
-{%-   if pf.field.kind|is_nullable_kind %}
-      if (!mojo::StructTraits<{{struct.name}}, NativeType>
-              ::has_{{pf.field.name}}(input))
-        break;
-{%-   endif %}
-{%-   if pf.field.kind|is_string_kind %}
-      size += mojo::internal::Serializer<
-          mojo::String, const base::StringPiece>::PrepareToSerialize(
-              mojo::StructTraits<{{struct.name}},
-                                 NativeType>::{{pf.field.name}}(input),
-              nullptr);
-{%-   elif pf.field.kind|is_object_kind %}
-      NOTREACHED() << "Unsupported field type for StructTraits: "
-                   << "{{pf.field.name}}";
-{%-   endif %}
-    } while (false);
-{%- endfor %}
+namespace internal {
+
+template <typename InputUserType>
+struct Serializer<{{mojom_type}}Ptr, InputUserType> {
+  using MaybeConstUserType =
+      typename std::remove_reference<InputUserType>::type;
+  using UserType = typename std::remove_const<MaybeConstUserType>::type;
+  using Traits = StructTraits<{{mojom_type}}, UserType>;
+
+  static size_t PrepareToSerialize(MaybeConstUserType& input,
+                                   SerializationContext* context) {
+    if (CallIsNullIfExists<Traits>(input))
+      return 0;
+    {{struct_macros.get_serialized_size(struct, "Traits::%s(input)", "context",
+                                        True)|indent(2)}}
     return size;
   }
 
-  static void Serialize(const NativeType& input,
-                        mojo::internal::Buffer* buffer,
-                        internal::{{struct.name}}_Data** output) {
-    internal::{{struct.name}}_Data* result =
-        internal::{{struct.name}}_Data::New(buffer);
-{%- for pf in struct.packed.packed_fields_in_ordinal_order -%}
-{%-   set name = pf.field.name -%}
-{%-   set kind = pf.field.kind %}
-    do {
-{%-   if kind|is_nullable_kind %}
-      if (!mojo::StructTraits<{{struct.name}}, NativeType>
-              ::has_{{name}}(input))
-        break;
-{%-   endif %}
-{%-   if kind|is_string_kind %}
-      mojo::internal::Serializer<mojo::String,
-                                 const base::StringPiece>::Serialize(
-          mojo::StructTraits<{{struct.name}}, NativeType>::{{pf.field.name}}(
-              input),
-          buffer, &result->{{name}}.ptr, nullptr);
-{%-   elif kind|is_object_kind %}
-      NOTREACHED() << "Unsupported field type for StructTraits: "
-                   << "{{pf.field.name}}";
-{%-   else %}
-      result->{{name}} = mojo::StructTraits<{{struct.name}}, NativeType>
-          ::{{name}}(input);
-{%-   endif %}
-    } while (false);
-{%- endfor %}
-    *output = result;
+  static void Serialize(MaybeConstUserType& input,
+                        Buffer* buffer,
+                        {{data_type}}** output,
+                        SerializationContext* context) {
+    if (!CallIsNullIfExists<Traits>(input)) {
+      {{struct_macros.serialize(struct, struct.name ~ " struct",
+                                "Traits::%s(input)", "result", "buffer",
+                                "context", True)|indent(4)}}
+      *output = result;
+    } else {
+      *output = nullptr;
+    }
   }
 
-  static bool Deserialize(internal::{{struct.name}}_Data* input,
-                          NativeType* output,
-                          mojo::internal::SerializationContext* context) {
-    return mojo::StructTraits<{{struct.name}}, NativeType>::Read(
-        {{struct.name}}_Reader(input, context), output);
+  static bool Deserialize({{data_type}}* input,
+                          UserType* output,
+                          SerializationContext* context) {
+    return ReadCaller<Traits, HasReadFromRawDataMethod<Traits>::value>::Run(
+        input, output, context);
   }
+
+
+ public:
+  template <typename Traits, bool use_read_from_raw_data>
+  struct ReadCaller;
+
+  template <typename Traits>
+  struct ReadCaller<Traits, false> {
+    static bool Run({{data_type}}* input,
+                    UserType* output,
+                    SerializationContext* context) {
+      {{mojom_type}}_Reader reader(input, context);
+      return Traits::Read(reader, output);
+    }
+  };
+
+  template <typename Traits>
+  struct ReadCaller<Traits, true> {
+    static bool Run({{data_type}}* input,
+                    UserType* output,
+                    SerializationContext* context) {
+      return Traits::ReadFromRawData(input, output, context);
+    }
+  };
 };
+
+}  // namespace internal

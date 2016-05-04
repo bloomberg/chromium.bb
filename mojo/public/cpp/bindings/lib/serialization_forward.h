@@ -44,27 +44,16 @@ struct SerializationContext;
 template <typename T>
 struct ShouldUseNativeSerializer;
 
-// -----------------------------------------------------------------------------
-// Forward declaration for native types.
-
-template <typename T>
-size_t GetSerializedSizeNative_(const T& value, SerializationContext* context);
-
-template <typename T>
-void SerializeNative_(const T& value,
-                      Buffer* buffer,
-                      Array_Data<uint8_t>** out,
-                      SerializationContext* context);
-
-template <typename T>
-bool DeserializeNative_(Array_Data<uint8_t>* data,
-                        T* out,
-                        SerializationContext* context);
-
 template <typename MojomType, typename InputUserType>
 struct Serializer;
 
 }  // namespace internal
+
+// TODO(yzshen): The following functions eventually will become simple wrappers
+// of the Serializer interface. Remove them.
+
+// -----------------------------------------------------------------------------
+// Forward declaration for native types.
 
 size_t GetSerializedSize_(const NativeStructPtr& input,
                           internal::SerializationContext* context);
@@ -147,8 +136,6 @@ inline bool Deserialize_(internal::Map_Data<DataKey, DataValue>* input,
 // -----------------------------------------------------------------------------
 // Forward declaration for String.
 
-// TODO(yzshen): These methods are simply wrappers of the Serializer interface.
-// Remove them.
 size_t GetSerializedSize_(const String& input,
                           internal::SerializationContext* context);
 void Serialize_(const String& input,

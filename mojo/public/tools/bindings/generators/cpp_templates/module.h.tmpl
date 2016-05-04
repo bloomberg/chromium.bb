@@ -174,9 +174,7 @@ typedef mojo::StructPtr<{{union.name}}> {{union.name}}Ptr;
 
 {#--- Struct Serialization Helpers -#}
 {%  for struct in structs %}
-{%-   if not struct|is_native_only_kind %}
-{%    include "struct_serialization_declaration.tmpl" %}
-{%-   elif struct|is_typemapped_kind %}
+{%-   if struct|is_native_only_kind and struct|is_typemapped_kind %}
 {# This helps the array serializer understand how to serialize arrays of this
    native-only type.
    TODO(yzshen): Remove these specializations once the array serializtion code
@@ -241,5 +239,16 @@ namespace {{variant}} {
 {%- for namespace in namespaces_as_array|reverse %}
 }  // namespace {{namespace}}
 {%- endfor %}
+
+namespace mojo {
+
+{#--- Struct Serialization Helpers -#}
+{%  for struct in structs %}
+{%-   if not struct|is_native_only_kind %}
+{%      include "struct_serialization_declaration.tmpl" %}
+{%-   endif %}
+{%- endfor %}
+
+}  // namespace mojo
 
 #endif  // {{header_guard}}

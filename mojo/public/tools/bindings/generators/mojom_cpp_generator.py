@@ -375,6 +375,41 @@ def GetUnionGetterReturnType(kind):
     return "%s&" % GetCppWrapperType(kind)
   return GetCppResultWrapperType(kind)
 
+# TODO(yzshen): It is unfortunate that we have so many functions for returning
+# types. Refactor them.
+def GetUnmappedTypeForSerializer(kind):
+  if mojom.IsEnumKind(kind):
+    return GetQualifiedNameForKind(kind)
+  if mojom.IsStructKind(kind) or mojom.IsUnionKind(kind):
+    return "%sPtr" % GetQualifiedNameForKind(kind)
+  if mojom.IsArrayKind(kind):
+    return "mojo::Array<%s>" % GetUnmappedTypeForSerializer(kind.kind)
+  if mojom.IsMapKind(kind):
+    return "mojo::Map<%s, %s>" % (
+        GetUnmappedTypeForSerializer(kind.key_kind),
+        GetUnmappedTypeForSerializer(kind.value_kind))
+  if mojom.IsInterfaceKind(kind):
+    return "%sPtr" % GetQualifiedNameForKind(kind)
+  if mojom.IsInterfaceRequestKind(kind):
+    return "%sRequest" % GetQualifiedNameForKind(kind.kind)
+  if mojom.IsAssociatedInterfaceKind(kind):
+    return "%sAssociatedPtrInfo" % GetQualifiedNameForKind(kind.kind)
+  if mojom.IsAssociatedInterfaceRequestKind(kind):
+    return "%sAssociatedRequest" % GetQualifiedNameForKind(kind.kind)
+  if mojom.IsStringKind(kind):
+    return "mojo::String"
+  if mojom.IsGenericHandleKind(kind):
+    return "mojo::ScopedHandle"
+  if mojom.IsDataPipeConsumerKind(kind):
+    return "mojo::ScopedDataPipeConsumerHandle"
+  if mojom.IsDataPipeProducerKind(kind):
+    return "mojo::ScopedDataPipeProducerHandle"
+  if mojom.IsMessagePipeKind(kind):
+    return "mojo::ScopedMessagePipeHandle"
+  if mojom.IsSharedBufferKind(kind):
+    return "mojo::ScopedSharedBufferHandle"
+  return _kind_to_cpp_type[kind]
+
 def TranslateConstants(token, kind):
   if isinstance(token, mojom.NamedValue):
     return _NameFormatter(token, _variant).FormatForCpp()
@@ -475,7 +510,6 @@ class Generator(generator.Generator):
     "cpp_union_field_type": GetCppUnionFieldType,
     "cpp_pod_type": GetCppPodType,
     "cpp_result_type": GetCppResultWrapperType,
-    "cpp_type": GetCppType,
     "cpp_union_getter_return_type": GetUnionGetterReturnType,
     "cpp_wrapper_type": GetCppWrapperType,
     "default_value": DefaultValue,
@@ -513,6 +547,7 @@ class Generator(generator.Generator):
     "struct_size": lambda ps: ps.GetTotalSize() + _HEADER_SIZE,
     "stylize_method": generator.StudlyCapsToCamel,
     "under_to_camel": generator.UnderToCamel,
+    "unmapped_type_for_serializer": GetUnmappedTypeForSerializer,
   }
 
   def GetExtraTraitsHeaders(self):

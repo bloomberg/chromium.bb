@@ -414,6 +414,8 @@ template <typename MojomType, typename UserType>
 struct ArraySerializationStrategy<MojomType, UserType, true> {
   using Traits = ArrayTraits<UserType>;
   using Data = typename MojomType::Data_;
+  using Element = typename MojomType::Element;
+  using ElementSerializer = Serializer<NativeStructPtr, const Element>;
 
   static_assert(
       std::is_same<Data, Array_Data<NativeStruct_Data*>>::value,
@@ -428,8 +430,8 @@ struct ArraySerializationStrategy<MojomType, UserType, true> {
     size_t size = ArrayDataTraits<NativeStruct_Data*>::GetStorageSize(
         static_cast<uint32_t>(element_count));
     for (size_t i = 0; i < element_count; ++i) {
-      size_t element_size =
-          GetSerializedSizeNative_(Traits::GetAt(input, i), context);
+      size_t element_size = ElementSerializer::PrepareToSerialize(
+          Traits::GetAt(input, i), context);
       DCHECK_LT(element_size, std::numeric_limits<uint32_t>::max());
       size += static_cast<uint32_t>(element_size);
     }
@@ -449,7 +451,8 @@ struct ArraySerializationStrategy<MojomType, UserType, true> {
     size_t element_count = Traits::GetSize(input);
     Data* result = Data::New(element_count, buf);
     for (size_t i = 0; i < element_count; ++i)
-      SerializeNative_(Traits::GetAt(input, i), buf, &result->at(i), context);
+      ElementSerializer::Serialize(Traits::GetAt(input, i), buf, &result->at(i),
+                                   context);
     *output = result;
   }
 
@@ -463,8 +466,8 @@ struct ArraySerializationStrategy<MojomType, UserType, true> {
     for (size_t i = 0; i < input->size(); ++i) {
       // We don't short-circuit on failure since we can't know what the native
       // type's ParamTraits' expectations are.
-      if (!DeserializeNative_(input->at(i), &Traits::GetAt(*output, i),
-                              context))
+      if (!ElementSerializer::Deserialize(input->at(i),
+                                          &Traits::GetAt(*output, i), context))
         success = false;
     }
     return success;
