@@ -9,6 +9,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/macros.h"
+#include "blimp/client/app/android/blimp_compositor_manager_android.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace gfx {
@@ -18,13 +19,12 @@ class Size;
 namespace blimp {
 namespace client {
 
-class BlimpCompositorManagerAndroid;
 class RenderWidgetFeature;
 
 // The native component of org.chromium.blimp.BlimpView.  This builds and
 // maintains a BlimpCompositorAndroid and handles notifying the compositor of
 // SurfaceView surface changes (size, creation, destruction, etc.).
-class BlimpView {
+class BlimpView : public BlimpCompositorManagerClient {
  public:
   static bool RegisterJni(JNIEnv* env);
 
@@ -91,6 +91,9 @@ class BlimpView {
   virtual ~BlimpView();
 
   void ReleaseAcceleratedWidget();
+
+  // BlimpCompositorManagerClient implementation.
+  void OnSwapBuffersCompleted() override;
 
   // Reference to the Java object which owns this class.
   base::android::ScopedJavaGlobalRef<jobject> java_obj_;

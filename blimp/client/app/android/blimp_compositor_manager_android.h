@@ -35,7 +35,8 @@ class BlimpCompositorManagerAndroid : public BlimpCompositorManager {
   static std::unique_ptr<BlimpCompositorManagerAndroid> Create(
       const gfx::Size& real_size,
       const gfx::Size& size,
-      RenderWidgetFeature* render_widget_feature);
+      RenderWidgetFeature* render_widget_feature,
+      BlimpCompositorManagerClient* client);
 
   ~BlimpCompositorManagerAndroid() override;
 
@@ -45,8 +46,9 @@ class BlimpCompositorManagerAndroid : public BlimpCompositorManager {
   // not including the system decorations.  |dp_to_px| is the scale factor that
   // is required to convert from dp (device pixels) to px.
   BlimpCompositorManagerAndroid(const gfx::Size& size,
-                         bool real_size_supported,
-                         RenderWidgetFeature* render_widget_feature);
+                                bool real_size_supported,
+                                RenderWidgetFeature* render_widget_feature,
+                                BlimpCompositorManagerClient* client);
 
   // BlimpCompositor implementation.
   void GenerateLayerTreeSettings(cc::LayerTreeSettings* settings) override;

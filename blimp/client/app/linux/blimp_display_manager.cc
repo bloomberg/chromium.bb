@@ -4,7 +4,6 @@
 
 #include "blimp/client/app/linux/blimp_display_manager.h"
 
-#include "blimp/client/feature/compositor/blimp_compositor_manager.h"
 #include "blimp/client/feature/render_widget_feature.h"
 #include "blimp/client/feature/tab_control_feature.h"
 #include "ui/events/event.h"
@@ -24,7 +23,7 @@ BlimpDisplayManager::BlimpDisplayManager(
       delegate_(delegate),
       tab_control_feature_(tab_control_feature),
       blimp_compositor_manager_(
-          new BlimpCompositorManager(render_widget_feature)),
+          new BlimpCompositorManager(render_widget_feature, this)),
       platform_window_(new ui::X11Window(this)) {
   platform_window_->SetBounds(gfx::Rect(window_size));
   platform_window_->Show();
@@ -78,6 +77,8 @@ void BlimpDisplayManager::OnAcceleratedWidgetDestroyed() {
 }
 
 void BlimpDisplayManager::OnActivationChanged(bool active) {}
+
+void BlimpDisplayManager::OnSwapBuffersCompleted() {}
 
 }  // namespace client
 }  // namespace blimp

@@ -187,6 +187,7 @@ class CC_EXPORT RemoteChannelImpl : public ChannelImpl,
 
   // called on main thread.
   void HandleProto(const proto::CompositorMessageToImpl& proto);
+  void DidCompleteSwapBuffersOnMain();
   void DidLoseOutputSurfaceOnMain();
   void RequestNewOutputSurfaceOnMain();
   void DidInitializeOutputSurfaceOnMain(

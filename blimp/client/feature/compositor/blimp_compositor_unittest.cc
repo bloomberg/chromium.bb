@@ -38,6 +38,7 @@ class MockBlimpCompositorClient : public BlimpCompositorClient {
   cc::ImageSerializationProcessor* GetImageSerializationProcessor() override {
     return &image_serialization_processor_;
   }
+  void DidCompleteSwapBuffers() override {}
 
   void SendWebGestureEvent(
       int render_widget_id,

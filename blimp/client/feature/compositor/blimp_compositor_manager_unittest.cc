@@ -53,7 +53,7 @@ class BlimpCompositorManagerForTesting : public BlimpCompositorManager {
  public:
   explicit BlimpCompositorManagerForTesting(
       RenderWidgetFeature* render_widget_feature)
-  : BlimpCompositorManager(render_widget_feature) {}
+      : BlimpCompositorManager(render_widget_feature, nullptr) {}
 
   using BlimpCompositorManager::GetCompositor;
 

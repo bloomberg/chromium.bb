@@ -331,7 +331,12 @@ bool RemoteChannelImpl::MainFrameWillHappenForTesting() {
   return main_frame_will_happen;
 }
 
-void RemoteChannelImpl::DidCompleteSwapBuffers() {}
+void RemoteChannelImpl::DidCompleteSwapBuffers() {
+  DCHECK(task_runner_provider_->IsImplThread());
+  MainThreadTaskRunner()->PostTask(
+      FROM_HERE, base::Bind(&RemoteChannelImpl::DidCompleteSwapBuffersOnMain,
+                            impl().remote_channel_weak_ptr));
+}
 
 void RemoteChannelImpl::SetRendererCapabilitiesMainCopy(
     const RendererCapabilities& capabilities) {}
@@ -396,6 +401,11 @@ void RemoteChannelImpl::SendMessageProto(
       FROM_HERE,
       base::Bind(&RemoteChannelImpl::SendMessageProtoOnMain,
                  impl().remote_channel_weak_ptr, base::Passed(&proto)));
+}
+
+void RemoteChannelImpl::DidCompleteSwapBuffersOnMain() {
+  DCHECK(task_runner_provider_->IsMainThread());
+  main().layer_tree_host->DidCompleteSwapBuffers();
 }
 
 void RemoteChannelImpl::DidLoseOutputSurfaceOnMain() {

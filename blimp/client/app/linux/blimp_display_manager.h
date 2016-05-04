@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "blimp/client/feature/compositor/blimp_compositor_manager.h"
 #include "ui/platform_window/platform_window_delegate.h"
 
 namespace gfx {
@@ -30,7 +31,8 @@ class BlimpDisplayManagerDelegate {
   virtual void OnClosed() = 0;
 };
 
-class BlimpDisplayManager : public ui::PlatformWindowDelegate {
+class BlimpDisplayManager : public ui::PlatformWindowDelegate,
+                            BlimpCompositorManagerClient {
  public:
   BlimpDisplayManager(const gfx::Size& window_size,
                       BlimpDisplayManagerDelegate* delegate,
@@ -52,6 +54,9 @@ class BlimpDisplayManager : public ui::PlatformWindowDelegate {
   void OnActivationChanged(bool active) override;
 
  private:
+  // BlimpCompositorManagerClient implementation.
+  void OnSwapBuffersCompleted() override;
+
   float device_pixel_ratio_;
 
   BlimpDisplayManagerDelegate* delegate_;

@@ -7,7 +7,6 @@
 #include <android/native_window_jni.h>
 
 #include "blimp/client/app/android/blimp_client_session_android.h"
-#include "blimp/client/app/android/blimp_compositor_manager_android.h"
 #include "jni/BlimpView_jni.h"
 #include "ui/events/android/motion_event_android.h"
 #include "ui/gfx/geometry/size.h"
@@ -48,9 +47,11 @@ BlimpView::BlimpView(JNIEnv* env,
                      float dp_to_px,
                      RenderWidgetFeature* render_widget_feature)
     : device_scale_factor_(dp_to_px),
-      compositor_manager_(BlimpCompositorManagerAndroid::Create(real_size,
-                                                 size,
-                                                 render_widget_feature)),
+      compositor_manager_(
+          BlimpCompositorManagerAndroid::Create(real_size,
+                                                size,
+                                                render_widget_feature,
+                                                this)),
       current_surface_format_(0),
       window_(gfx::kNullAcceleratedWidget) {
   java_obj_.Reset(env, jobj);
@@ -172,6 +173,11 @@ jboolean BlimpView::OnTouchEvent(JNIEnv* env,
                                pointer1);
 
   return compositor_manager_->OnTouchEvent(event);
+}
+
+void BlimpView::OnSwapBuffersCompleted() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_BlimpView_onSwapBuffersCompleted(env, java_obj_.obj());
 }
 
 }  // namespace client

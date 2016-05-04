@@ -108,7 +108,9 @@ void BlimpCompositor::DidCommit() {}
 
 void BlimpCompositor::DidCommitAndDrawFrame() {}
 
-void BlimpCompositor::DidCompleteSwapBuffers() {}
+void BlimpCompositor::DidCompleteSwapBuffers() {
+  client_->DidCompleteSwapBuffers();
+}
 
 void BlimpCompositor::DidCompletePageScaleAnimation() {}
 
