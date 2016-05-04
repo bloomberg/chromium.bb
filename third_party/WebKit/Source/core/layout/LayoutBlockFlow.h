@@ -141,6 +141,9 @@ public:
     // if specified.
     int lineCount(const RootInlineBox* stopRootInlineBox = nullptr) const;
 
+    int firstLineBoxBaseline() const override;
+    int inlineBlockBaseline(LineDirectionMode) const override;
+
     void removeFloatingObjectsFromDescendants();
     void markAllDescendantsWithFloatsForLayout(LayoutBox* floatToRemove = nullptr, bool inLayout = true);
     void markSiblingsWithFloatsForLayout(LayoutBox* floatToRemove = nullptr);

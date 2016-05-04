@@ -1968,6 +1968,46 @@ int LayoutBlockFlow::lineCount(const RootInlineBox* stopRootInlineBox) const
     return count;
 }
 
+int LayoutBlockFlow::firstLineBoxBaseline() const
+{
+    if (isWritingModeRoot() && !isRubyRun())
+        return -1;
+    if (!childrenInline())
+        return LayoutBlock::firstLineBoxBaseline();
+    if (firstLineBox())
+        return firstLineBox()->logicalTop() + style(true)->getFontMetrics().ascent(firstRootBox()->baselineType());
+    return -1;
+}
+
+int LayoutBlockFlow::inlineBlockBaseline(LineDirectionMode lineDirection) const
+{
+    // CSS2.1 states that the baseline of an 'inline-block' is:
+    // the baseline of the last line box in the normal flow, unless it has
+    // either no in-flow line boxes or if its 'overflow' property has a computed
+    // value other than 'visible', in which case the baseline is the bottom
+    // margin edge.
+    // We likewise avoid using the last line box in the case of size containment,
+    // where the block's contents shouldn't be considered when laying out its
+    // ancestors or siblings.
+
+    if ((!style()->isOverflowVisible() && !shouldIgnoreOverflowPropertyForInlineBlockBaseline()) || style()->containsSize()) {
+        // We are not calling baselinePosition here because the caller should add the margin-top/margin-right, not us.
+        return lineDirection == HorizontalLine ? size().height() + marginBottom() : size().width() + marginLeft();
+    }
+    if (isWritingModeRoot() && !isRubyRun())
+        return -1;
+    if (!childrenInline())
+        return LayoutBlock::inlineBlockBaseline(lineDirection);
+    if (lastLineBox())
+        return lastLineBox()->logicalTop() + style(lastLineBox() == firstLineBox())->getFontMetrics().ascent(lastRootBox()->baselineType());
+    if (!hasLineIfEmpty())
+        return -1;
+    const FontMetrics& fontMetrics = firstLineStyle()->getFontMetrics();
+    return fontMetrics.ascent()
+        + (lineHeight(true, lineDirection, PositionOfInteriorLineBoxes) - fontMetrics.height()) / 2
+        + (lineDirection == HorizontalLine ? borderTop() + paddingTop() : borderRight() + paddingRight());
+}
+
 void LayoutBlockFlow::removeFloatingObjectsFromDescendants()
 {
     if (!containsFloats())

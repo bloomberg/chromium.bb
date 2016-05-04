@@ -40,7 +40,6 @@
 #include "core/layout/HitTestLocation.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutAnalyzer.h"
-#include "core/layout/LayoutDeprecatedFlexibleBox.h"
 #include "core/layout/LayoutFlexibleBox.h"
 #include "core/layout/LayoutFlowThread.h"
 #include "core/layout/LayoutGrid.h"
@@ -2089,16 +2088,17 @@ LayoutUnit LayoutBlock::minLineHeightForReplacedObject(bool isFirstLine, LayoutU
     return std::max<LayoutUnit>(replacedHeight, lineHeight(isFirstLine, isHorizontalWritingMode() ? HorizontalLine : VerticalLine, PositionOfInteriorLineBoxes));
 }
 
+// TODO(mstensho): Figure out if all of this baseline code is needed here, or if it should be moved
+// down to LayoutBlockFlow. LayoutDeprecatedFlexibleBox and LayoutGrid lack baseline calculation
+// overrides, so the code is here just for them. Just walking the block children in logical order
+// seems rather wrong for those two layout modes, though.
+
 int LayoutBlock::firstLineBoxBaseline() const
 {
+    ASSERT(!childrenInline());
     if (isWritingModeRoot() && !isRubyRun())
         return -1;
 
-    if (childrenInline()) {
-        if (firstLineBox())
-            return firstLineBox()->logicalTop() + style(true)->getFontMetrics().ascent(firstRootBox()->baselineType());
-        return -1;
-    }
     for (LayoutBox* curr = firstChildBox(); curr; curr = curr->nextSiblingBox()) {
         if (!curr->isFloatingOrOutOfFlowPositioned()) {
             int result = curr->firstLineBoxBaseline();
@@ -2111,15 +2111,7 @@ int LayoutBlock::firstLineBoxBaseline() const
 
 int LayoutBlock::inlineBlockBaseline(LineDirectionMode lineDirection) const
 {
-    // CSS2.1 states that the baseline of an 'inline-block' is:
-    // the baseline of the last line box in the normal flow, unless it has
-    // either no in-flow line boxes or if its 'overflow' property has a computed
-    // value other than 'visible', in which case the baseline is the bottom
-    // margin edge.
-    // We likewise avoid using the last line box in the case of size containment,
-    // where the block's contents shouldn't be considered when laying out its
-    // ancestors or siblings.
-
+    ASSERT(!childrenInline());
     if ((!style()->isOverflowVisible() && !shouldIgnoreOverflowPropertyForInlineBlockBaseline()) || style()->containsSize()) {
         // We are not calling LayoutBox::baselinePosition here because the caller should add the margin-top/margin-right, not us.
         return lineDirection == HorizontalLine ? size().height() + marginBottom() : size().width() + marginLeft();
@@ -2127,18 +2119,6 @@ int LayoutBlock::inlineBlockBaseline(LineDirectionMode lineDirection) const
 
     if (isWritingModeRoot() && !isRubyRun())
         return -1;
-
-    if (childrenInline()) {
-        if (!firstLineBox() && hasLineIfEmpty()) {
-            const FontMetrics& fontMetrics = firstLineStyle()->getFontMetrics();
-            return fontMetrics.ascent()
-                + (lineHeight(true, lineDirection, PositionOfInteriorLineBoxes) - fontMetrics.height()) / 2
-                + (lineDirection == HorizontalLine ? borderTop() + paddingTop() : borderRight() + paddingRight());
-        }
-        if (lastLineBox())
-            return lastLineBox()->logicalTop() + style(lastLineBox() == firstLineBox())->getFontMetrics().ascent(lastRootBox()->baselineType());
-        return -1;
-    }
 
     bool haveNormalFlowChild = false;
     for (LayoutBox* curr = lastChildBox(); curr; curr = curr->previousSiblingBox()) {
