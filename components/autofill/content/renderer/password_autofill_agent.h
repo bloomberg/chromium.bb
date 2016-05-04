@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "components/autofill/content/renderer/password_form_conversion_utils.h"
 #include "components/autofill/core/common/form_data_predictions.h"
 #include "components/autofill/core/common/password_form_field_prediction_map.h"
@@ -239,8 +238,6 @@ class PasswordAutofillAgent : public content::RenderFrameObserver {
   // Contains server predictions for username, password and/or new password
   // fields for individual forms.
   FormsPredictionsMap form_predictions_;
-
-  base::WeakPtrFactory<PasswordAutofillAgent> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordAutofillAgent);
 };
