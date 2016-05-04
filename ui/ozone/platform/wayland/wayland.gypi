@@ -55,6 +55,7 @@
           ],
           'dependencies': [
             '../../build/linux/system.gyp:wayland-egl',
+            '../../third_party/khronos/khronos.gyp:khronos_headers',
           ],
           'sources': [
             'wayland_egl_surface.cc',

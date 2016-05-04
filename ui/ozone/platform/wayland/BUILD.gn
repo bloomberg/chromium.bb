@@ -55,7 +55,10 @@ source_set("wayland") {
       "wayland_egl_surface.cc",
       "wayland_egl_surface.h",
     ]
-    configs += [ ":wayland-egl" ]
+    configs += [
+      ":wayland-egl",
+      "//third_party/khronos:khronos_headers",
+    ]
     defines += [ "USE_WAYLAND_EGL" ]
   }
 }
