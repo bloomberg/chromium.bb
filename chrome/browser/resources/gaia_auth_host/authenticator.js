@@ -650,6 +650,14 @@ cr.define('cr.login', function() {
       // password when it is available but not a mandatory requirement.
       console.warn('Authenticator: No password scraped for SAML.');
     } else if (this.needPassword) {
+      if (this.samlHandler_.scrapedPasswordCount == 1) {
+        // If we scraped exactly one password, we complete the authentication
+        // right away.
+        this.password = this.samlHandler_.firstScrapedPassword;
+        this.onAuthCompleted_();
+        return;
+      }
+
       if (this.confirmPasswordCallback) {
         // Confirm scraped password. The flow follows in
         // verifyConfirmedPassword.

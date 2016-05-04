@@ -198,6 +198,15 @@ cr.define('cr.login', function() {
     },
 
     /**
+     * Returns the first scraped password if any, or an empty string otherwise.
+     * @return {string}
+     */
+    get firstScrapedPassword() {
+      var scraped = this.getConsolidatedScrapedPasswords_();
+      return scraped.length ? scraped[0] : '';
+    },
+
+    /**
      * Returns the number of scraped passwords.
      * @return {number}
      */
