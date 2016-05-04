@@ -20,14 +20,15 @@ enum class OptInActionType : int {
 };
 
 enum class OptInCancelReason {
-  USER_CANCEL = 0,                // Canceled by user.
-  UNKNOWN_ERROR = 1,              // Unclassified failure.
-  NETWORK_ERROR = 2,              // Network failure.
-  SERVICE_UNAVAILABLE = 3,        // GMS Services are not available.
-  BAD_AUTHENTICATION = 4,         // Bad authentication returned by server.
-  GMS_CORE_NOT_AVAILABLE = 5,     // GMS Core is not available.
-  CLOUD_PROVISION_FLOW_FAIL = 6,  // Cloud provision flow failed.
-  SIZE,                           // The size of this enum; keep last.
+  USER_CANCEL = 0,                  // Canceled by user.
+  UNKNOWN_ERROR = 1,                // Unclassified failure.
+  NETWORK_ERROR = 2,                // Network failure.
+  SERVICE_UNAVAILABLE = 3,          // GMS Services are not available.
+  BAD_AUTHENTICATION = 4,           // Bad authentication returned by server.
+  GMS_CORE_NOT_AVAILABLE = 5,       // GMS Core is not available.
+  CLOUD_PROVISION_FLOW_FAIL = 6,    // Cloud provision flow failed.
+  ANDROID_MANAGEMENT_REQUIRED = 7,  // Android management is required for user.
+  SIZE,                             // The size of this enum; keep last.
 };
 
 void UpdateOptInActionUMA(OptInActionType type);

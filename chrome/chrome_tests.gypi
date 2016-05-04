@@ -714,6 +714,7 @@
       'browser/chromeos/app_mode/kiosk_crash_restore_browsertest.cc',
       'browser/chromeos/app_mode/kiosk_app_manager_browsertest.cc',
       'browser/chromeos/app_mode/kiosk_app_update_service_browsertest.cc',
+      'browser/chromeos/arc/arc_auth_service_browsertest.cc',
       'browser/chromeos/attestation/attestation_policy_browsertest.cc',
       'browser/chromeos/customization/customization_document_browsertest.cc',
       'browser/chromeos/customization/customization_wallpaper_downloader_browsertest.cc',
