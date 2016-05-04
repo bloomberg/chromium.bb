@@ -1313,7 +1313,10 @@ if (!is_android) {
       ]
     }
     if (enable_mdns) {
-      sources += [ "../browser/ui/webui/local_discovery/local_discovery_ui_browsertest.cc" ]
+      sources += [
+        "../browser/extensions/api/gcd_private/gcd_private_apitest.cc",
+        "../browser/ui/webui/local_discovery/local_discovery_ui_browsertest.cc",
+      ]
     }
     if (use_brlapi) {
       deps += [ "//build/linux/libbrlapi" ]
