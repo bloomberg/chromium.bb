@@ -130,8 +130,6 @@ std::set<std::string> GetSuggestionsHostsImpl(
   return hosts;
 }
 
-const char kContentInfo[] = "contentInfo";
-
 // Parses snippets from |list| and adds them to |snippets|. Returns true on
 // success, false if anything went wrong.
 bool AddSnippetsFromListValue(const base::ListValue& list,
@@ -141,11 +139,8 @@ bool AddSnippetsFromListValue(const base::ListValue& list,
     if (!value->GetAsDictionary(&dict))
       return false;
 
-    const base::DictionaryValue* content = nullptr;
-    if (!dict->GetDictionary(kContentInfo, &content))
-      return false;
     std::unique_ptr<NTPSnippet> snippet =
-        NTPSnippet::CreateFromDictionary(*content);
+        NTPSnippet::CreateFromDictionary(*dict);
     if (!snippet)
       return false;
 
@@ -158,8 +153,7 @@ std::unique_ptr<base::ListValue> SnippetsToListValue(
     const NTPSnippetsService::NTPSnippetStorage& snippets) {
   std::unique_ptr<base::ListValue> list(new base::ListValue);
   for (const auto& snippet : snippets) {
-    std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
-    dict->Set(kContentInfo, snippet->ToDictionary());
+    std::unique_ptr<base::DictionaryValue> dict = snippet->ToDictionary();
     list->Append(std::move(dict));
   }
   return list;

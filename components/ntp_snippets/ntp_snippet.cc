@@ -10,6 +10,8 @@
 
 namespace {
 
+const char kContentInfo[] = "contentInfo";
+
 const char kUrl[] = "url";
 const char kTitle[] = "title";
 const char kSalientImageUrl[] = "thumbnailUrl";
@@ -35,9 +37,13 @@ NTPSnippet::~NTPSnippet() {}
 // static
 std::unique_ptr<NTPSnippet> NTPSnippet::CreateFromDictionary(
     const base::DictionaryValue& dict) {
+  const base::DictionaryValue* content = nullptr;
+  if (!dict.GetDictionary(kContentInfo, &content))
+    return nullptr;
+
   // Need at least the url.
   std::string url_str;
-  if (!dict.GetString("url", &url_str))
+  if (!content->GetString("url", &url_str))
     return nullptr;
   GURL url(url_str);
   if (!url.is_valid())
@@ -46,24 +52,24 @@ std::unique_ptr<NTPSnippet> NTPSnippet::CreateFromDictionary(
   std::unique_ptr<NTPSnippet> snippet(new NTPSnippet(url));
 
   std::string title;
-  if (dict.GetString(kTitle, &title))
+  if (content->GetString(kTitle, &title))
     snippet->set_title(title);
   std::string salient_image_url;
-  if (dict.GetString(kSalientImageUrl, &salient_image_url))
+  if (content->GetString(kSalientImageUrl, &salient_image_url))
     snippet->set_salient_image_url(GURL(salient_image_url));
   std::string snippet_str;
-  if (dict.GetString(kSnippet, &snippet_str))
+  if (content->GetString(kSnippet, &snippet_str))
     snippet->set_snippet(snippet_str);
   // The creation and expiry timestamps are uint64s which are stored as strings.
   std::string creation_timestamp_str;
-  if (dict.GetString(kPublishDate, &creation_timestamp_str))
+  if (content->GetString(kPublishDate, &creation_timestamp_str))
     snippet->set_publish_date(TimeFromJsonString(creation_timestamp_str));
   std::string expiry_timestamp_str;
-  if (dict.GetString(kExpiryDate, &expiry_timestamp_str))
+  if (content->GetString(kExpiryDate, &expiry_timestamp_str))
     snippet->set_expiry_date(TimeFromJsonString(expiry_timestamp_str));
 
   const base::ListValue* corpus_infos_list = nullptr;
-  if (!dict.GetList(kSourceCorpusInfo, &corpus_infos_list)) {
+  if (!content->GetList(kSourceCorpusInfo, &corpus_infos_list)) {
     DLOG(WARNING) << "No sources found for article " << title;
     return nullptr;
   }
@@ -172,7 +178,10 @@ std::unique_ptr<base::DictionaryValue> NTPSnippet::ToDictionary() const {
 
   dict->Set(kSourceCorpusInfo, std::move(corpus_infos_list));
 
-  return dict;
+  std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue);
+  result->Set(kContentInfo, std::move(dict));
+
+  return result;
 }
 
 // static
