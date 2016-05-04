@@ -36,6 +36,7 @@ class SavePageRequest {
                   const ClientId& client_id,
                   const base::Time& creation_time,
                   const base::Time& activation_time);
+  SavePageRequest(const SavePageRequest& other);
   ~SavePageRequest();
 
   // Status of this request.

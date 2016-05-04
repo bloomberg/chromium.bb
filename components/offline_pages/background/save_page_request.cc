@@ -29,6 +29,15 @@ SavePageRequest::SavePageRequest(int64_t request_id,
       activation_time_(activation_time),
       attempt_count_(0) {}
 
+SavePageRequest::SavePageRequest(const SavePageRequest& other)
+    : request_id_(other.request_id_),
+      url_(other.url_),
+      client_id_(other.client_id_),
+      creation_time_(other.creation_time_),
+      activation_time_(other.activation_time_),
+      attempt_count_(other.attempt_count_),
+      last_attempt_time_(other.last_attempt_time_) {}
+
 SavePageRequest::~SavePageRequest() {}
 
 // TODO(fgorski): Introduce policy parameter, once policy is available.
