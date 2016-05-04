@@ -42,8 +42,10 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/run_loop.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "tools/battor_agent/battor_agent.h"
 #include "tools/battor_agent/battor_error.h"
@@ -57,7 +59,6 @@ namespace {
 
 const char kIoThreadName[] = "BattOr IO Thread";
 const char kFileThreadName[] = "BattOr File Thread";
-const char kUiThreadName[] = "BattOr UI Thread";
 
 const char kUsage[] =
     "Start the battor_agent shell with:\n"
@@ -107,11 +108,7 @@ std::vector<std::string> TokenizeString(std::string cmd) {
 // use a BattOrAgent to communicate with a BattOr.
 class BattOrAgentBin : public BattOrAgent::Listener {
  public:
-  BattOrAgentBin()
-      : done_(false, false),
-        io_thread_(kIoThreadName),
-        file_thread_(kFileThreadName),
-        ui_thread_(kUiThreadName) {}
+  BattOrAgentBin() : io_thread_(kIoThreadName), file_thread_(kFileThreadName) {}
 
   ~BattOrAgentBin() { DCHECK(!agent_); }
 
@@ -127,44 +124,10 @@ class BattOrAgentBin : public BattOrAgent::Listener {
 
     SetUp(path);
 
-    std::string cmd;
-    for (;;) {
-      std::getline(std::cin, cmd);
-
-      if (cmd == "StartTracing") {
-        StartTracing();
-      } else if (cmd.find("StopTracing") != std::string::npos) {
-        std::vector<std::string> tokens = TokenizeString(cmd);
-        if (tokens[0] != "StopTracing" || tokens.size() > 2) {
-          std::cout << "Invalid StopTracing command." << endl;
-          std::cout << kUsage << endl;
-          continue;
-        }
-
-        // tokens[1] contains the optional output file argument, which allows
-        // users to dump the trace to a file instead instead of to STDOUT.
-        std::string trace_output_file =
-            tokens.size() == 2 ? tokens[1] : std::string();
-
-        StopTracing(trace_output_file);
-        break;
-      } else if (cmd == "SupportsExplicitClockSync") {
-        PrintSupportsExplicitClockSync();
-      } else if (cmd.find("RecordClockSyncMarker") != std::string::npos) {
-        std::vector<std::string> tokens = TokenizeString(cmd);
-        if (tokens.size() != 2 || tokens[0] != "RecordClockSyncMarker") {
-          std::cout << "Invalid RecordClockSyncMarker command." << endl;
-          std::cout << kUsage << endl;
-          continue;
-        }
-
-        RecordClockSyncMarker(tokens[1]);
-      } else if (cmd == "Exit") {
-        break;
-      } else {
-        std::cout << kUsage << endl;
-      }
-    }
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::Bind(&BattOrAgentBin::RunNextCommand, base::Unretained(this)));
+    ui_thread_run_loop_.Run();
 
     TearDown();
     return 0;
@@ -172,8 +135,6 @@ class BattOrAgentBin : public BattOrAgent::Listener {
 
   // Performs any setup necessary for the BattOr binary to run.
   void SetUp(const std::string& path) {
-    // TODO(charliea): Investigate whether it's possible to replace this
-    // separate thread with a combination of MessageLoopForIO and RunLoop.
     base::Thread::Options io_thread_options;
     io_thread_options.message_loop_type = base::MessageLoopForIO::TYPE_IO;
     if (!io_thread_.StartWithOptions(io_thread_options)) {
@@ -182,23 +143,73 @@ class BattOrAgentBin : public BattOrAgent::Listener {
 
     io_thread_.task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(&BattOrAgentBin::CreateAgent, base::Unretained(this), path));
-    done_.Wait();
+        base::Bind(&BattOrAgentBin::CreateAgent, base::Unretained(this), path,
+                   base::ThreadTaskRunnerHandle::Get()));
   }
 
   // Performs any cleanup necessary after the BattOr binary is done running.
   void TearDown() {
+    base::WaitableEvent done(false, false);
     io_thread_.task_runner()->PostTask(
+        FROM_HERE, base::Bind(&BattOrAgentBin::DeleteAgent,
+                              base::Unretained(this), &done));
+    done.Wait();
+  }
+
+  void RunNextCommand() {
+    std::string cmd;
+    std::getline(std::cin, cmd);
+
+    if (cmd == "StartTracing") {
+      StartTracing();
+    } else if (cmd.find("StopTracing") != std::string::npos) {
+      std::vector<std::string> tokens = TokenizeString(cmd);
+
+      if (tokens[0] != "StopTracing" || tokens.size() > 2) {
+        std::cout << "Invalid StopTracing command." << endl;
+        std::cout << kUsage << endl;
+        PostRunNextCommand();
+        return;
+      }
+
+      // tokens[1] contains the optional output file argument, which allows
+      // users to dump the trace to a file instead instead of to STDOUT.
+      std::string trace_output_file =
+          tokens.size() == 2 ? tokens[1] : std::string();
+
+      StopTracing(trace_output_file);
+    } else if (cmd == "SupportsExplicitClockSync") {
+      PrintSupportsExplicitClockSync();
+      PostRunNextCommand();
+    } else if (cmd.find("RecordClockSyncMarker") != std::string::npos) {
+      std::vector<std::string> tokens = TokenizeString(cmd);
+      if (tokens.size() != 2 || tokens[0] != "RecordClockSyncMarker") {
+        std::cout << "Invalid RecordClockSyncMarker command." << endl;
+        std::cout << kUsage << endl;
+        PostRunNextCommand();
+        return;
+      }
+
+      RecordClockSyncMarker(tokens[1]);
+    } else if (cmd == "Exit") {
+      ui_thread_message_loop_.task_runner()->PostTask(
+          FROM_HERE, ui_thread_run_loop_.QuitClosure());
+    } else {
+      std::cout << kUsage << endl;
+      PostRunNextCommand();
+    }
+  }
+
+  void PostRunNextCommand() {
+    ui_thread_message_loop_.task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(&BattOrAgentBin::DeleteAgent, base::Unretained(this)));
-    done_.Wait();
+        base::Bind(&BattOrAgentBin::RunNextCommand, base::Unretained(this)));
   }
 
   void StartTracing() {
     io_thread_.task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&BattOrAgent::StartTracing, base::Unretained(agent_.get())));
-    done_.Wait();
   }
 
   void OnStartTracingComplete(BattOrError error) override {
@@ -207,7 +218,7 @@ class BattOrAgentBin : public BattOrAgent::Listener {
     else
       HandleError(error);
 
-    done_.Signal();
+    PostRunNextCommand();
   }
 
   void StopTracing(const std::string& trace_output_file) {
@@ -215,8 +226,6 @@ class BattOrAgentBin : public BattOrAgent::Listener {
     io_thread_.task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&BattOrAgent::StopTracing, base::Unretained(agent_.get())));
-    done_.Wait();
-    trace_output_file_ = std::string();
   }
 
   void OnStopTracingComplete(const std::string& trace,
@@ -238,14 +247,14 @@ class BattOrAgentBin : public BattOrAgent::Listener {
       HandleError(error);
     }
 
-    done_.Signal();
+    ui_thread_message_loop_.task_runner()->PostTask(
+        FROM_HERE, ui_thread_run_loop_.QuitClosure());
   }
 
   void RecordClockSyncMarker(const std::string& marker) {
     io_thread_.task_runner()->PostTask(
         FROM_HERE, base::Bind(&BattOrAgent::RecordClockSyncMarker,
                               base::Unretained(agent_.get()), marker));
-    done_.Wait();
   }
 
   void OnRecordClockSyncMarkerComplete(BattOrError error) override {
@@ -254,45 +263,41 @@ class BattOrAgentBin : public BattOrAgent::Listener {
     else
       HandleError(error);
 
-    done_.Signal();
+    PostRunNextCommand();
   }
 
   // Postable task for creating the BattOrAgent. Because the BattOrAgent has
   // uber thread safe dependencies, all interactions with it, including creating
   // and deleting it, MUST happen on the IO thread.
-  void CreateAgent(const std::string& path) {
-    // In Chrome, we already have file and UI threads running. Because the
-    // Chrome serial libraries rely on having those threads available, we have
-    // to spin up our own because we're in a separate binary.
+  void CreateAgent(
+      const std::string& path,
+      scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner) {
+    // In Chrome, we already have a file thread running. Because the Chrome
+    // serial library relies on having it available, we have to spin up our own.
     if (!file_thread_.Start())
       ExitFromThreadStartFailure(kFileThreadName);
 
-    base::Thread::Options ui_thread_options;
-    ui_thread_options.message_loop_type = base::MessageLoopForIO::TYPE_UI;
-    if (!ui_thread_.StartWithOptions(ui_thread_options)) {
-      ExitFromThreadStartFailure(kUiThreadName);
-    }
-
     agent_.reset(new BattOrAgent(path, this, file_thread_.task_runner(),
-                                 ui_thread_.task_runner()));
-    done_.Signal();
+                                 ui_thread_task_runner));
   }
 
   // Postable task for deleting the BattOrAgent. See the comment for
   // CreateAgent() above regarding why this is necessary.
-  void DeleteAgent() {
-    agent_.reset(nullptr);
-    done_.Signal();
+  void DeleteAgent(base::WaitableEvent* done) {
+    agent_.reset();
+    done->Signal();
   }
 
  private:
-  // Event signaled when an async task has finished executing.
-  base::WaitableEvent done_;
+  // NOTE: ui_thread_message_loop_ must appear before ui_thread_run_loop_ here
+  // because ui_thread_run_loop_ checks for the current MessageLoop during
+  // initialization.
+  base::MessageLoopForUI ui_thread_message_loop_;
+  base::RunLoop ui_thread_run_loop_;
 
   // Threads needed for serial communication.
   base::Thread io_thread_;
   base::Thread file_thread_;
-  base::Thread ui_thread_;
 
   // The agent capable of asynchronously communicating with the BattOr.
   std::unique_ptr<BattOrAgent> agent_;
