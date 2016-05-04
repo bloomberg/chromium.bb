@@ -212,6 +212,12 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         mPaymentContainerLayout.addView(mPaymentMethodSection, new LinearLayout.LayoutParams(
                 LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
 
+        // Enabled in updatePayButtonEnabled() when the user has selected all payment options.
+        mPayButton.setEnabled(false);
+
+        // Enabled in getDefaultPaymentInformation() callback.
+        mEditButton.setEnabled(false);
+
         // Set up the dialog.
         mDialog = new AlwaysDismissedDialog(activity, R.style.DialogWhenLarge);
         mDialog.setOnDismissListener(this);
@@ -261,6 +267,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
 
                 updatePaymentMethodSection(result.getPaymentMethods());
                 updatePayButtonEnabled();
+                mEditButton.setEnabled(true);
             }
         });
     }
@@ -376,6 +383,14 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
      */
     @Override
     public void onClick(View v) {
+        if (v == mCloseButton) {
+            mDialog.dismiss();
+            return;
+        }
+
+        // Disable UI interaction until getDefaultPaymentInformation() callback fires.
+        if (mPaymentMethodSectionInformation == null) return;
+
         if (v == mOrderSummarySection) {
             expand(mOrderSummarySection);
         } else if (v == mShippingSummarySection || v == mShippingAddressSection) {
@@ -405,9 +420,6 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
             } else {
                 mDialog.dismiss();
             }
-        } else if (v == mCloseButton) {
-            mDialog.dismiss();
-            return;
         }
 
         updatePayButtonEnabled();
