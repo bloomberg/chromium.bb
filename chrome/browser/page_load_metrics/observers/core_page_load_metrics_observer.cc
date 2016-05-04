@@ -297,14 +297,8 @@ void CorePageLoadMetricsObserver::RecordTimingHistograms(
       PAGE_LOAD_HISTOGRAM(internal::kHistogramParseStartToFirstContentfulPaint,
                           timing.first_contentful_paint - timing.parse_start);
     }
-    const bool incomplete_parse_in_foreground =
-        timing.parse_stop.is_zero() && info.started_in_foreground &&
-        info.first_background_time.is_zero();
-    // If the parse did not complete but the entire page load duration happened
-    // in the foreground, or if the parse completed and happened entirely in the
-    // foreground, record a foreground histogram.
-    if (incomplete_parse_in_foreground ||
-        WasStartedInForegroundEventInForeground(timing.parse_stop, info)) {
+
+    if (WasParseInForeground(timing.parse_start, timing.parse_stop, info)) {
       PAGE_LOAD_HISTOGRAM(internal::kHistogramParseBlockedOnScriptLoad,
                           timing.parse_blocked_on_script_load_duration);
       PAGE_LOAD_HISTOGRAM(
@@ -319,6 +313,7 @@ void CorePageLoadMetricsObserver::RecordTimingHistograms(
           timing.parse_blocked_on_script_load_from_document_write_duration);
     }
   }
+
   if (!timing.parse_stop.is_zero()) {
     base::TimeDelta parse_duration = timing.parse_stop - timing.parse_start;
     if (WasStartedInForegroundEventInForeground(timing.parse_stop, info)) {

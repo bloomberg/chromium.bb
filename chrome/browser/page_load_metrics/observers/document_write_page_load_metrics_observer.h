@@ -10,8 +10,10 @@
 
 namespace internal {
 
-// Just expose one metric for tests.
+// Expose metrics for tests.
 extern const char kHistogramDocWriteParseStartToFirstContentfulPaint[];
+extern const char kHistogramDocWriteBlockParseStartToFirstContentfulPaint[];
+extern const char kHistogramDocWriteBlockReloadCount[];
 
 }  // namespace internal
 
@@ -26,6 +28,10 @@ class DocumentWritePageLoadMetricsObserver
 
  private:
   void LogDocumentWriteEvaluatorData(
+      const page_load_metrics::PageLoadTiming& timing,
+      const page_load_metrics::PageLoadExtraInfo& info);
+
+  void LogDocumentWriteBlockData(
       const page_load_metrics::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& info);
 

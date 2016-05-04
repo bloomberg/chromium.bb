@@ -35243,6 +35243,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PageLoad.Clients.DocWrite.Block.ReloadCount">
+  <owner>shivanisha@chromium.org</owner>
+  <owner>bmcquade@chromium.org</owner>
+  <summary>
+    This metric measures reloads in pages that have synchronous, cross-origin
+    document.written scripts that could be blocked if document.write script
+    blocking feature is enabled.
+  </summary>
+</histogram>
+
 <histogram name="PageLoad.Clients.GoogleCaptcha.Events"
     enum="GoogleCaptchaEvent">
   <owner>mdw@chromium.org</owner>
@@ -92733,6 +92743,16 @@ To add a new entry, add it with any value and run test to compute valid value.
 
 <histogram_suffixes name="PageLoadBackgrounded2" separator=".">
   <affected-histogram
+      name="PageLoad.Clients.DocWrite.Block.Timing2.ParseBlockedOnScriptLoad"/>
+  <affected-histogram
+      name="PageLoad.Clients.DocWrite.Block.Timing2.ParseBlockedOnScriptLoad.ParseComplete"/>
+  <affected-histogram
+      name="PageLoad.Clients.DocWrite.Block.Timing2.ParseBlockedOnScriptLoadFromDocumentWrite"/>
+  <affected-histogram
+      name="PageLoad.Clients.DocWrite.Block.Timing2.ParseBlockedOnScriptLoadFromDocumentWrite.ParseComplete"/>
+  <affected-histogram
+      name="PageLoad.Clients.DocWrite.Block.Timing2.ParseDuration"/>
+  <affected-histogram
       name="PageLoad.Clients.DocWrite.Evaluator.Timing2.NavigationToFirstContentfulPaint"/>
   <affected-histogram
       name="PageLoad.Clients.DocWrite.Evaluator.Timing2.ParseBlockedOnScriptLoad"/>
@@ -92822,6 +92842,10 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram
       name="PageLoad.Timing2.DOMLoadingToDOMContentLoadedEventFired"/>
   <affected-histogram name="PageLoad.Timing2.DOMLoadingToFirstContentfulPaint"/>
+  <suffix name="Clients.DocWrite.Block"
+      label="PageLoadMetrics from a page that has synchronous, cross-origin
+             document.written scripts that could be blocked if the
+             document.write script blocking feature is enabled."/>
   <affected-histogram
       name="PageLoad.Timing2.NavigationToDOMContentLoadedEventFired"/>
   <affected-histogram name="PageLoad.Timing2.NavigationToFirstContentfulPaint"/>

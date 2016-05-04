@@ -89,19 +89,6 @@ bool shouldDisallowFetchForMainFrameScript(const ResourceRequest& request, Fetch
     if (!document.frame())
         return false;
 
-    // Do not block scripts if it is a page reload. This is to enable pages to
-    // recover if blocking of a script is leading to a page break and the user
-    // reloads the page.
-    const FrameLoadType loadType = document.frame()->loader().loadType();
-    const bool isReload = (loadType == FrameLoadTypeReload || loadType == FrameLoadTypeReloadBypassingCache || loadType == FrameLoadTypeSame);
-    if (isReload)
-        return false;
-
-    const bool isSlowConnection = networkStateNotifier().connectionType() == WebConnectionTypeCellular2G;
-    const bool disallowFetch = document.settings()->disallowFetchForDocWrittenScriptsInMainFrame() || (document.settings()->disallowFetchForDocWrittenScriptsInMainFrameOnSlowConnections() && isSlowConnection);
-    if (!disallowFetch)
-        return false;
-
     // Only block synchronously loaded (parser blocking) scripts.
     if (defer != FetchRequest::NoDefer)
         return false;
@@ -112,7 +99,27 @@ bool shouldDisallowFetchForMainFrameScript(const ResourceRequest& request, Fetch
     if (request.url().host() == document.getSecurityOrigin()->domain())
         return false;
 
-    return true;
+    // Do not block scripts if it is a page reload. This is to enable pages to
+    // recover if blocking of a script is leading to a page break and the user
+    // reloads the page.
+    const FrameLoadType loadType = document.frame()->loader().loadType();
+    const bool isReload = loadType == FrameLoadTypeReload || loadType == FrameLoadTypeReloadBypassingCache || loadType == FrameLoadTypeSame;
+    if (isReload) {
+        // Recording this metric since an increase in number of reloads for pages
+        // where a script was blocked could be indicative of a page break.
+        document.loader()->didObserveLoadingBehavior(WebLoadingBehaviorFlag::WebLoadingBehaviorDocumentWriteBlockReload);
+        return false;
+    }
+
+    // Add the metadata that this page has scripts inserted via document.write
+    // that are eligible for blocking. Note that if there are multiple scripts
+    // the flag will be conveyed to the browser process only once.
+    document.loader()->didObserveLoadingBehavior(WebLoadingBehaviorFlag::WebLoadingBehaviorDocumentWriteBlock);
+
+    const bool isSlowConnection = networkStateNotifier().connectionType() == WebConnectionTypeCellular2G;
+    const bool disallowFetch = document.settings()->disallowFetchForDocWrittenScriptsInMainFrame() || (document.settings()->disallowFetchForDocWrittenScriptsInMainFrameOnSlowConnections() && isSlowConnection);
+
+    return disallowFetch;
 }
 
 } // namespace

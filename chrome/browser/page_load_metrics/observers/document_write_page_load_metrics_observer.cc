@@ -41,6 +41,39 @@ const char kBackgroundHistogramDocWriteParseBlockedOnScriptLoadDocumentWrite[] =
     "PageLoad.Clients.DocWrite.Evaluator.Timing2."
     "ParseBlockedOnScriptLoadFromDocumentWrite.Background";
 
+// document.write blocking histograms
+const char kHistogramDocWriteBlockParseStartToFirstContentfulPaint[] =
+    "PageLoad.Clients.DocWrite.Block.Timing2.ParseStartToFirstContentfulPaint";
+const char kHistogramDocWriteBlockParseBlockedOnScript[] =
+    "PageLoad.Clients.DocWrite.Block.Timing2.ParseBlockedOnScriptLoad";
+const char kHistogramDocWriteBlockParseBlockedOnScriptLoadDocumentWrite[] =
+    "PageLoad.Clients.DocWrite.Block.Timing2."
+    "ParseBlockedOnScriptLoadFromDocumentWrite";
+const char kHistogramDocWriteBlockParseDuration[] =
+    "PageLoad.Clients.DocWrite.Block.Timing2.ParseDuration";
+const char kHistogramDocWriteBlockParseBlockedOnScriptParseComplete[] =
+    "PageLoad.Clients.DocWrite.Block.Timing2.ParseBlockedOnScriptLoad."
+    "ParseComplete";
+const char kDocWriteBlockParseBlockedOnScriptLoadDocumentWriteParseComplete[] =
+    "PageLoad.Clients.DocWrite.Block.Timing2."
+    "ParseBlockedOnScriptLoadFromDocumentWrite.ParseComplete";
+const char kHistogramDocWriteBlockReloadCount[] =
+    "PageLoad.Clients.DocWrite.Block.ReloadCount";
+
+const char kBackgroundHistogramDocWriteBlockParseBlockedOnScript[] =
+    "PageLoad.Clients.DocWrite.Block.Timing2.ParseBlockedOnScriptLoad."
+    "Background";
+const char kBackgroundHistogramDocWriteBlockParseBlockedOnScriptComplete[] =
+    "PageLoad.Clients.DocWrite.Block.Timing2.ParseBlockedOnScriptLoad."
+    "ParseComplete.Background";
+const char kBackgroundDocWriteBlockParseBlockedOnScriptLoadDocumentWrite[] =
+    "PageLoad.Clients.DocWrite.Block.Timing2."
+    "ParseBlockedOnScriptLoadFromDocumentWrite.Background";
+const char kBackgroundDocWriteBlockParseBlockedOnScriptLoadDocWriteComplete[] =
+    "PageLoad.Clients.DocWrite.Block.Timing2."
+    "ParseBlockedOnScriptLoadFromDocumentWrite.ParseComplete.Background";
+const char kBackgroundHistogramDocWriteBlockParseDuration[] =
+    "PageLoad.Clients.DocWrite.Block.Timing2.ParseDuration.Background";
 }  // namespace internal
 
 DocumentWritePageLoadMetricsObserver::DocumentWritePageLoadMetricsObserver() {}
@@ -53,6 +86,18 @@ void DocumentWritePageLoadMetricsObserver::OnComplete(
   if (info.metadata.behavior_flags &
       blink::WebLoadingBehaviorFlag::WebLoadingBehaviorDocumentWriteEvaluator) {
     LogDocumentWriteEvaluatorData(timing, info);
+  }
+  if (info.metadata.behavior_flags &
+      blink::WebLoadingBehaviorFlag::WebLoadingBehaviorDocumentWriteBlock) {
+    LogDocumentWriteBlockData(timing, info);
+  }
+  if (info.metadata.behavior_flags &
+      blink::WebLoadingBehaviorFlag::
+          WebLoadingBehaviorDocumentWriteBlockReload) {
+    DCHECK(
+        !(info.metadata.behavior_flags &
+          blink::WebLoadingBehaviorFlag::WebLoadingBehaviorDocumentWriteBlock));
+    UMA_HISTOGRAM_COUNTS(internal::kHistogramDocWriteBlockReloadCount, 1);
   }
 }
 
@@ -80,11 +125,7 @@ void DocumentWritePageLoadMetricsObserver::LogDocumentWriteEvaluatorData(
           timing.first_contentful_paint - timing.parse_start);
     }
 
-    const bool incomplete_parse_in_foreground =
-        timing.parse_stop.is_zero() && info.started_in_foreground &&
-        info.first_background_time.is_zero();
-    if (incomplete_parse_in_foreground ||
-        WasStartedInForegroundEventInForeground(timing.parse_stop, info)) {
+    if (WasParseInForeground(timing.parse_start, timing.parse_stop, info)) {
       PAGE_LOAD_HISTOGRAM(internal::kHistogramDocWriteParseBlockedOnScript,
                           timing.parse_blocked_on_script_load_duration);
       PAGE_LOAD_HISTOGRAM(
@@ -118,5 +159,63 @@ void DocumentWritePageLoadMetricsObserver::LogDocumentWriteEvaluatorData(
                             parse_duration);
       }
     }
+  }
+}
+
+void DocumentWritePageLoadMetricsObserver::LogDocumentWriteBlockData(
+    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& info) {
+  if (timing.parse_start.is_zero()) {
+    return;
+  }
+
+  if (WasStartedInForegroundEventInForeground(timing.first_contentful_paint,
+                                              info)) {
+    PAGE_LOAD_HISTOGRAM(
+        internal::kHistogramDocWriteBlockParseStartToFirstContentfulPaint,
+        timing.first_contentful_paint - timing.parse_start);
+  }
+
+  if (WasParseInForeground(timing.parse_start, timing.parse_stop, info)) {
+    PAGE_LOAD_HISTOGRAM(internal::kHistogramDocWriteBlockParseBlockedOnScript,
+                        timing.parse_blocked_on_script_load_duration);
+    PAGE_LOAD_HISTOGRAM(
+        internal::kHistogramDocWriteBlockParseBlockedOnScriptLoadDocumentWrite,
+        timing.parse_blocked_on_script_load_from_document_write_duration);
+  } else {
+    PAGE_LOAD_HISTOGRAM(
+        internal::kBackgroundHistogramDocWriteBlockParseBlockedOnScript,
+        timing.parse_blocked_on_script_load_duration);
+    PAGE_LOAD_HISTOGRAM(
+        internal::kBackgroundDocWriteBlockParseBlockedOnScriptLoadDocumentWrite,
+        timing.parse_blocked_on_script_load_from_document_write_duration);
+  }
+
+  if (timing.parse_stop.is_zero()) {
+    return;
+  }
+
+  base::TimeDelta parse_duration = timing.parse_stop - timing.parse_start;
+  if (WasStartedInForegroundEventInForeground(timing.parse_stop, info)) {
+    PAGE_LOAD_HISTOGRAM(internal::kHistogramDocWriteBlockParseDuration,
+                        parse_duration);
+    PAGE_LOAD_HISTOGRAM(
+        internal::kHistogramDocWriteBlockParseBlockedOnScriptParseComplete,
+        timing.parse_blocked_on_script_load_duration);
+    PAGE_LOAD_HISTOGRAM(
+        internal::
+            kDocWriteBlockParseBlockedOnScriptLoadDocumentWriteParseComplete,
+        timing.parse_blocked_on_script_load_from_document_write_duration);
+  } else {
+    PAGE_LOAD_HISTOGRAM(
+        internal::kBackgroundHistogramDocWriteBlockParseDuration,
+        parse_duration);
+    PAGE_LOAD_HISTOGRAM(
+        internal::kBackgroundHistogramDocWriteBlockParseBlockedOnScriptComplete,
+        timing.parse_blocked_on_script_load_duration);
+    PAGE_LOAD_HISTOGRAM(
+        internal::
+            kBackgroundDocWriteBlockParseBlockedOnScriptLoadDocWriteComplete,
+        timing.parse_blocked_on_script_load_from_document_write_duration);
   }
 }

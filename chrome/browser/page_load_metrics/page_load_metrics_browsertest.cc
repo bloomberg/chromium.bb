@@ -97,4 +97,96 @@ IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest, NoDocumentWrite) {
                                embedded_test_server()->GetURL("/title2.html"));
   histogram_tester_.ExpectTotalCount(
       internal::kHistogramDocWriteParseStartToFirstContentfulPaint, 0);
+  histogram_tester_.ExpectTotalCount(
+      internal::kHistogramDocWriteBlockParseStartToFirstContentfulPaint, 0);
+}
+
+IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest,
+                       DocumentWriteBlock) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(
+                     "/page_load_metrics/document_write_script_block.html"));
+
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL("/title2.html"));
+
+  histogram_tester_.ExpectTotalCount(
+      internal::kHistogramDocWriteBlockParseStartToFirstContentfulPaint, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest,
+                       DocumentWriteReload) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(
+                     "/page_load_metrics/document_write_script_block.html"));
+
+  // Reload should not log the histogram as the script is not blocked.
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(
+                     "/page_load_metrics/document_write_script_block.html"));
+
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(
+                     "/page_load_metrics/document_write_script_block.html"));
+
+  histogram_tester_.ExpectTotalCount(
+      internal::kHistogramDocWriteBlockParseStartToFirstContentfulPaint, 1);
+
+  histogram_tester_.ExpectTotalCount(
+      internal::kHistogramDocWriteBlockReloadCount, 1);
+
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL("/title2.html"));
+
+  histogram_tester_.ExpectTotalCount(
+      internal::kHistogramDocWriteBlockParseStartToFirstContentfulPaint, 1);
+
+  histogram_tester_.ExpectTotalCount(
+      internal::kHistogramDocWriteBlockReloadCount, 2);
+}
+
+IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest,
+                       DocumentWriteASync) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(
+                     "/page_load_metrics/document_write_script_async.html"));
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL("/title2.html"));
+
+  histogram_tester_.ExpectTotalCount(
+      internal::kHistogramDocWriteBlockParseStartToFirstContentfulPaint, 0);
+}
+
+IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest,
+                       DocumentWriteSameDomain) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(
+                     "/page_load_metrics/document_write_external_script.html"));
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL("/title2.html"));
+
+  histogram_tester_.ExpectTotalCount(
+      internal::kHistogramDocWriteBlockParseStartToFirstContentfulPaint, 0);
+}
+
+IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest,
+                       NoDocumentWriteScript) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(
+                     "/page_load_metrics/document_write_no_script.html"));
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL("/title2.html"));
+
+  histogram_tester_.ExpectTotalCount(
+      internal::kHistogramDocWriteBlockParseStartToFirstContentfulPaint, 0);
 }
