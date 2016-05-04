@@ -49,6 +49,7 @@
       'dependencies' : [
         '../chrome/common_constants.gyp:version_header',
         '../chrome/chrome_features.gyp:chrome_common_features',
+        '../third_party/kasko/kasko.gyp:kasko_features',
       ],
       # Name the exe chrome.exe, not chrome_initial.exe.
       'product_name': 'chrome',
@@ -410,7 +411,6 @@
             '../components/components.gyp:startup_metric_utils_common',
             '../crypto/crypto.gyp:crypto',
             '../sandbox/sandbox.gyp:sandbox',
-            '../third_party/kasko/kasko.gyp:kasko_features',
             '../ui/gfx/gfx.gyp:gfx',
             '../win8/win8.gyp:visual_elements_resources',
           ],
