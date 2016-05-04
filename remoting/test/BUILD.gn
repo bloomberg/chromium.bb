@@ -90,6 +90,9 @@ executable("chromoting_test_driver") {
 
   sources = [
     "chromoting_test_driver.cc",
+    "chromoting_test_driver_tests.cc",
+    "chromoting_test_fixture.cc",
+    "chromoting_test_fixture.h",
   ]
 
   deps = [

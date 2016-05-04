@@ -54,6 +54,7 @@ source_set("unit_tests") {
     "key_event_mapper_unittest.cc",
     "normalizing_input_filter_cros_unittest.cc",
     "normalizing_input_filter_mac_unittest.cc",
+    "normalizing_input_filter_win_unittest.cc",
     "server_log_entry_client_unittest.cc",
     "software_video_renderer_unittest.cc",
     "touch_input_scaler_unittest.cc",
