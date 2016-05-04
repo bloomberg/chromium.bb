@@ -7757,6 +7757,30 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_DEL_AUTOFILL_COUNTER_THREE_TYPES" desc="A counter showing that the user has three types of form data. The types and their counts will be substituted, this message only provides the comma separators.">
         <ph name="TYPE_1">$1<ex>2 credit cards</ex></ph>, <ph name="TYPE_2">$2<ex>1 address</ex></ph>, <ph name="TYPE_3">$3<ex>5 others</ex></ph>
       </message>
+      <message name="IDS_DEL_COOKIES_COUNTER" desc="A static message shown in the Clear Browsing Data dialog explaining to the user that deleting cookies and site data will result in the user being signed out of most websites.">
+        This will sign you out of most websites.
+      </message>
+      <message name="IDS_DEL_CONTENT_LICENSES_COUNTER" desc="A static message shown in the Clear Browsing Data dialog explaining to the user that the 'Content licenses' option will deauthorize their Flash Player licenses for protected content.">
+        This will deauthorize Flash Player licenses for protected content.
+      </message>
+      <message name="IDS_DEL_DOWNLOADS_COUNTER" desc="A counter showing how many items of downloads history the user has.">
+        {COUNT, plural,
+         =0 {none}
+         =1 {1 item}
+         other {# items}}
+      </message>
+      <message name="IDS_DEL_HOSTED_APPS_COUNTER" desc="A counter showing how many hosted apps the user has. We show the number of apps, and in the cases where there is one or two apps, we will also give two example app names, denoted as placeholders $1 and $2. If there are more than two apps, we will give two examples and say 'and X more'. The 'and X more' string, denoted by the placeholder $3, will be supplied from another message.">
+        {COUNT, plural,
+         =0 {none}
+         =1 {1 app ($1)}
+         =2 {2 apps ($1, $2)}
+         other {# apps ($1, $2, $3)}}
+      </message>
+      <message name="IDS_DEL_HOSTED_APPS_COUNTER_AND_X_MORE" desc="This message stands at the end of a sentence enumerating hosted apps the user has installed, e.g.: 'App1, App2, and 5 more'">
+        {COUNT, plural,
+         =1 {and 1 more}
+         other {and # more}}
+      </message>
 
       <!-- Supervised User (Legacy and Accounts for Kids) Avatar Menu -->
       <message name="IDS_LEGACY_SUPERVISED_USER_INFO" desc="Text which explains that a supervised user is managed by a custodian.">
