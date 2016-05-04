@@ -610,6 +610,18 @@ public class OmahaClient extends IntentService {
     }
 
     /**
+     * Retrieves the latest version we know about from disk.
+     * This function incurs I/O, so make sure you don't use it from the main thread.
+     *
+     * @return A string representing the latest version.
+     */
+    static String getLatestVersionNumberString(Context context) {
+        assert Looper.myLooper() != Looper.getMainLooper();
+        VersionNumberGetter getter = getVersionNumberGetter();
+        return getter.getLatestKnownVersion(context, PREF_PACKAGE, PREF_LATEST_VERSION);
+    }
+
+    /**
      * Determine how the Chrome APK arrived on the device.
      * @param context Context to pull resources from.
      * @return A String indicating the install source.

@@ -478,8 +478,25 @@ static void SetClickedUpdateMenuItem(JNIEnv* env,
 }
 
 static jboolean GetClickedUpdateMenuItem(JNIEnv* env,
-                                       const JavaParamRef<jobject>& obj) {
+                                         const JavaParamRef<jobject>& obj) {
   return GetPrefService()->GetBoolean(prefs::kClickedUpdateMenuItem);
+}
+
+static void SetLatestVersionWhenClickedUpdateMenuItem(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& version) {
+  GetPrefService()->SetString(
+      prefs::kLatestVersionWhenClickedUpdateMenuItem,
+      ConvertJavaStringToUTF8(env, version));
+}
+
+static ScopedJavaLocalRef<jstring> GetLatestVersionWhenClickedUpdateMenuItem(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  return ConvertUTF8ToJavaString(
+      env, GetPrefService()->GetString(
+          prefs::kLatestVersionWhenClickedUpdateMenuItem));
 }
 
 namespace {

@@ -796,6 +796,7 @@ extern const char kAllowDinosaurEasterEgg[];
 
 #if defined(OS_ANDROID)
 extern const char kClickedUpdateMenuItem[];
+extern const char kLatestVersionWhenClickedUpdateMenuItem[];
 #endif
 
 #if defined(ENABLE_MEDIA_ROUTER)

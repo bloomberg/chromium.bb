@@ -2183,6 +2183,10 @@ const char kAllowDinosaurEasterEgg[] =
 // Whether the update menu item was clicked. Used to facilitate logging whether
 // Chrome was updated after the menu item is clicked.
 const char kClickedUpdateMenuItem[] = "omaha.clicked_update_menu_item";
+// The latest version of Chrome available when the user clicked on the update
+// menu item.
+const char kLatestVersionWhenClickedUpdateMenuItem[] =
+    "omaha.latest_version_when_clicked_upate_menu_item";
 #endif
 
 #if defined(ENABLE_MEDIA_ROUTER)

@@ -1055,6 +1055,21 @@ public final class PrefServiceBridge {
         return nativeGetClickedUpdateMenuItem();
     }
 
+    /**
+     * @param version The latest version of Chrome available when the update menu item
+     *                was clicked.
+     */
+    public void setLatestVersionWhenClickedUpdateMenuItem(String version) {
+        nativeSetLatestVersionWhenClickedUpdateMenuItem(version);
+    }
+
+    /**
+     * @return The latest version of Chrome available when the update menu item was clicked.
+     */
+    public String getLatestVersionWhenClickedUpdateMenuItem() {
+        return nativeGetLatestVersionWhenClickedUpdateMenuItem();
+    }
+
     @VisibleForTesting
     public void setSupervisedUserId(String supervisedUserId) {
         nativeSetSupervisedUserId(supervisedUserId);
@@ -1164,5 +1179,7 @@ public final class PrefServiceBridge {
     private native boolean nativeHasSetMetricsReporting();
     private native void nativeSetClickedUpdateMenuItem(boolean clicked);
     private native boolean nativeGetClickedUpdateMenuItem();
+    private native void nativeSetLatestVersionWhenClickedUpdateMenuItem(String version);
+    private native String nativeGetLatestVersionWhenClickedUpdateMenuItem();
     private native void nativeSetSupervisedUserId(String supervisedUserId);
 }
