@@ -725,7 +725,7 @@ TEST_F(FrameThrottlingTest, ThrottleSubtreeAtomically)
     frameElement->setAttribute(styleAttr, "transform: translateY(480px)");
     compositor().beginFrame();
     EXPECT_FALSE(frameElement->contentDocument()->view()->canThrottleRendering());
-    EXPECT_FALSE(frameElement->contentDocument()->view()->canThrottleRendering());
+    EXPECT_FALSE(childFrameElement->contentDocument()->view()->canThrottleRendering());
 
     // Only run the intersection observer for the parent frame. Both frames
     // should immediately become throttled. This simulates the case where a task
@@ -733,12 +733,12 @@ TEST_F(FrameThrottlingTest, ThrottleSubtreeAtomically)
     // observer notifications.
     frameElement->contentDocument()->view()->notifyRenderThrottlingObserversForTesting();
     EXPECT_TRUE(frameElement->contentDocument()->view()->canThrottleRendering());
-    EXPECT_TRUE(frameElement->contentDocument()->view()->canThrottleRendering());
+    EXPECT_TRUE(childFrameElement->contentDocument()->view()->canThrottleRendering());
 
     // Both frames should still be throttled after the second notification.
     childFrameElement->contentDocument()->view()->notifyRenderThrottlingObserversForTesting();
     EXPECT_TRUE(frameElement->contentDocument()->view()->canThrottleRendering());
-    EXPECT_TRUE(frameElement->contentDocument()->view()->canThrottleRendering());
+    EXPECT_TRUE(childFrameElement->contentDocument()->view()->canThrottleRendering());
 }
 
 } // namespace blink

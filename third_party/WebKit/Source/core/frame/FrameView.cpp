@@ -4047,7 +4047,7 @@ void FrameView::notifyRenderThrottlingObservers()
 {
     TRACE_EVENT0("blink", "FrameView::notifyRenderThrottlingObservers");
     DCHECK(!isInPerformLayout());
-    DCHECK(!m_frame->document()->inStyleRecalc());
+    DCHECK(!m_frame->document() || !m_frame->document()->inStyleRecalc());
     bool wasThrottled = canThrottleRendering();
 
     updateThrottlingStatus();
@@ -4078,7 +4078,7 @@ void FrameView::notifyRenderThrottlingObservers()
             layoutView->invalidatePaintForViewAndCompositedLayers();
     }
 
-    bool hasHandlers = m_frame->document()->frameHost()->eventHandlerRegistry().hasEventHandlers(EventHandlerRegistry::TouchStartOrMoveEventBlocking);
+    bool hasHandlers = m_frame->host() && m_frame->host()->eventHandlerRegistry().hasEventHandlers(EventHandlerRegistry::TouchStartOrMoveEventBlocking);
     if (wasThrottled != canThrottleRendering() && scrollingCoordinator && hasHandlers)
         scrollingCoordinator->touchEventTargetRectsDidChange();
 
