@@ -39,6 +39,7 @@ class Connector;
 }
 
 namespace wm {
+class CursorManager;
 class FocusController;
 }
 
@@ -229,6 +230,7 @@ class VIEWS_MUS_EXPORT NativeWidgetMus : public internal::NativeWidgetPrivate,
   std::unique_ptr<aura::client::DefaultCaptureClient> capture_client_;
   std::unique_ptr<aura::client::WindowTreeClient> window_tree_client_;
   std::unique_ptr<aura::client::ScreenPositionClient> screen_position_client_;
+  std::unique_ptr<wm::CursorManager> cursor_manager_;
   base::WeakPtrFactory<NativeWidgetMus> close_widget_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetMus);

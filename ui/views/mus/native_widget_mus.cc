@@ -11,6 +11,7 @@
 #include "components/mus/public/cpp/window_observer.h"
 #include "components/mus/public/cpp/window_property.h"
 #include "components/mus/public/cpp/window_tree_connection.h"
+#include "components/mus/public/interfaces/cursor.mojom.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/client/window_tree_client.h"
@@ -32,8 +33,10 @@
 #include "ui/views/window/custom_frame_view.h"
 #include "ui/wm/core/base_focus_rules.h"
 #include "ui/wm/core/capture_controller.h"
+#include "ui/wm/core/cursor_manager.h"
 #include "ui/wm/core/default_screen_position_client.h"
 #include "ui/wm/core/focus_controller.h"
+#include "ui/wm/core/native_cursor_manager.h"
 
 DECLARE_WINDOW_PROPERTY_TYPE(mus::Window*);
 
@@ -133,6 +136,61 @@ class ScreenPositionClientMus : public wm::DefaultScreenPositionClient {
   mus::Window* mus_window_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenPositionClientMus);
+};
+
+class NativeCursorManagerMus : public wm::NativeCursorManager {
+ public:
+  explicit NativeCursorManagerMus(mus::Window* mus_window)
+      : mus_window_(mus_window) {}
+  ~NativeCursorManagerMus() override {}
+
+  // wm::NativeCursorManager:
+  void SetDisplay(const display::Display& display,
+                  wm::NativeCursorManagerDelegate* delegate) override {
+    // We ignore this entirely, as cursor are set on the client.
+  }
+
+  void SetCursor(gfx::NativeCursor cursor,
+                 wm::NativeCursorManagerDelegate* delegate) override {
+    mus_window_->SetPredefinedCursor(mus::mojom::Cursor(cursor.native_type()));
+    delegate->CommitCursor(cursor);
+  }
+
+  void SetVisibility(bool visible,
+                     wm::NativeCursorManagerDelegate* delegate) override {
+    delegate->CommitVisibility(visible);
+
+    if (visible)
+      SetCursor(delegate->GetCursor(), delegate);
+    else
+      mus_window_->SetPredefinedCursor(mus::mojom::Cursor::NONE);
+  }
+
+  void SetCursorSet(ui::CursorSetType cursor_set,
+                    wm::NativeCursorManagerDelegate* delegate) override {
+    // TODO(erg): For now, ignore the difference between SET_NORMAL and
+    // SET_LARGE here. This feels like a thing that mus should decide instead.
+    //
+    // Also, it's NOTIMPLEMENTED() in the desktop version!? Including not
+    // acknowledging the call in the delegate.
+    NOTIMPLEMENTED();
+  }
+
+  void SetMouseEventsEnabled(
+      bool enabled,
+      wm::NativeCursorManagerDelegate* delegate) override {
+    // TODO(erg): How do we actually implement this?
+    //
+    // Mouse event dispatch is potentially done in a different process,
+    // definitely in a different mojo service. Each app is fairly locked down.
+    delegate->CommitMouseEventsEnabled(enabled);
+    NOTIMPLEMENTED();
+  }
+
+ private:
+  mus::Window* mus_window_;
+
+  DISALLOW_COPY_AND_ASSIGN(NativeCursorManagerMus);
 };
 
 // As the window manager renderers the non-client decorations this class does
@@ -329,6 +387,8 @@ void NativeWidgetMus::OnPlatformWindowClosed() {
   window_tree_client_.reset();  // Uses |content_|.
   capture_client_.reset();      // Uses |content_|.
 
+  cursor_manager_.reset();      // Uses |window_|.
+
   window_tree_host_->RemoveObserver(this);
   window_tree_host_.reset();
 
@@ -427,6 +487,16 @@ void NativeWidgetMus::InitNativeWidget(const Widget::InitParams& params) {
   screen_position_client_.reset(new ScreenPositionClientMus(window_));
   aura::client::SetScreenPositionClient(window_tree_host_->window(),
                                         screen_position_client_.get());
+
+  // TODO(erg): Remove this check when mash/wm/frame/move_event_handler.cc's
+  // direct usage of mus::Window::SetPredefinedCursor() is switched to a
+  // private method on WindowManagerClient.
+  if (surface_type_ == mus::mojom::SurfaceType::DEFAULT) {
+    cursor_manager_.reset(new wm::CursorManager(
+        base::WrapUnique(new NativeCursorManagerMus(window_))));
+    aura::client::SetCursorClient(window_tree_host_->window(),
+                                  cursor_manager_.get());
+  }
 
   window_tree_client_.reset(
       new NativeWidgetMusWindowTreeClient(window_tree_host_->window()));
