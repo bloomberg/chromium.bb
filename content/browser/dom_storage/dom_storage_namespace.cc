@@ -176,6 +176,13 @@ unsigned int DOMStorageNamespace::CountInMemoryAreas() const {
   return area_count;
 }
 
+void DOMStorageNamespace::OnMemoryDump(
+    base::trace_event::ProcessMemoryDump* pmd) {
+  DCHECK(task_runner_->IsRunningOnPrimarySequence());
+  for (const auto& it : areas_)
+    it.second.area_->OnMemoryDump(pmd);
+}
+
 DOMStorageNamespace::AreaHolder*
 DOMStorageNamespace::GetAreaHolder(const GURL& origin) {
   AreaMap::iterator found = areas_.find(origin);

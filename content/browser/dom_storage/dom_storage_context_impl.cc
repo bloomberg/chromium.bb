@@ -14,6 +14,8 @@
 #include "base/guid.h"
 #include "base/location.h"
 #include "base/time/time.h"
+#include "base/trace_event/memory_dump_manager.h"
+#include "base/trace_event/process_memory_dump.h"
 #include "content/browser/dom_storage/dom_storage_area.h"
 #include "content/browser/dom_storage/dom_storage_database.h"
 #include "content/browser/dom_storage/dom_storage_namespace.h"
@@ -50,9 +52,20 @@ DOMStorageContextImpl::DOMStorageContextImpl(
   // namespace ids at one since zero is reserved for the
   // kLocalStorageNamespaceId.
   session_id_sequence_.GetNext();
+
+  // Tests may run without task runners.
+  if (task_runner_) {
+    // Registering dump provider is safe even outside the task runner.
+    base::trace_event::MemoryDumpManager::GetInstance()
+        ->RegisterDumpProviderWithSequencedTaskRunner(
+            this, "DOMStorage", task_runner_->GetSequencedTaskRunner(
+                                    DOMStorageTaskRunner::PRIMARY_SEQUENCE),
+            base::trace_event::MemoryDumpProvider::Options());
+  }
 }
 
 DOMStorageContextImpl::~DOMStorageContextImpl() {
+  DCHECK(is_shutdown_);
   if (session_storage_database_.get()) {
     // SessionStorageDatabase shouldn't be deleted right away: deleting it will
     // potentially involve waiting in leveldb::DBImpl::~DBImpl, and waiting
@@ -174,10 +187,14 @@ void DOMStorageContextImpl::Flush() {
 }
 
 void DOMStorageContextImpl::Shutdown() {
+  DCHECK(!task_runner_ || task_runner_->IsRunningOnPrimarySequence());
   is_shutdown_ = true;
   StorageNamespaceMap::const_iterator it = namespaces_.begin();
   for (; it != namespaces_.end(); ++it)
     it->second->Shutdown();
+
+  base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
+      this);
 
   if (localstorage_directory_.empty() && !session_storage_database_.get())
     return;
@@ -355,6 +372,17 @@ void DOMStorageContextImpl::StartScavengingUnusedSessionStorage() {
                               this),
         base::TimeDelta::FromSeconds(kSessionStoraceScavengingSeconds));
   }
+}
+
+bool DOMStorageContextImpl::OnMemoryDump(
+    const base::trace_event::MemoryDumpArgs& args,
+    base::trace_event::ProcessMemoryDump* pmd) {
+  for (const auto& it : namespaces_) {
+    it.second->OnMemoryDump(pmd);
+  }
+  if (session_storage_database_)
+    session_storage_database_->OnMemoryDump(pmd);
+  return true;
 }
 
 void DOMStorageContextImpl::FindUnusedNamespaces() {

@@ -51,7 +51,11 @@ class DOMStorageContextImplTest : public testing::Test {
                                          task_runner_.get());
   }
 
-  void TearDown() override { base::MessageLoop::current()->RunUntilIdle(); }
+  void TearDown() override {
+    if (context_)
+      context_->Shutdown();
+    base::MessageLoop::current()->RunUntilIdle();
+  }
 
   void VerifySingleOriginRemains(const GURL& origin) {
     // Use a new instance to examine the contexts of temp_dir_.
@@ -62,6 +66,7 @@ class DOMStorageContextImplTest : public testing::Test {
     context->GetLocalStorageUsage(&infos, kDontIncludeFileInfo);
     ASSERT_EQ(1u, infos.size());
     EXPECT_EQ(origin, infos[0].origin);
+    context->Shutdown();
   }
 
   int session_id_offset() { return context_->session_id_offset_; }
@@ -195,6 +200,7 @@ TEST_F(DOMStorageContextImplTest, PersistentIds) {
 
 TEST_F(DOMStorageContextImplTest, DeleteSessionStorage) {
   // Create a DOMStorageContextImpl which will save sessionStorage on disk.
+  context_->Shutdown();
   context_ = new DOMStorageContextImpl(temp_dir_.path(),
                                        temp_dir_.path(),
                                        storage_policy_.get(),

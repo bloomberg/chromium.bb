@@ -18,6 +18,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
+#include "base/trace_event/memory_dump_provider.h"
 #include "content/common/content_export.h"
 #include "url/gurl.h"
 
@@ -61,7 +62,8 @@ struct SessionStorageUsageInfo;
 // DOMStorageHost, and DOMStorageSession. The other classes are for
 // internal consumption.
 class CONTENT_EXPORT DOMStorageContextImpl
-    : public base::RefCountedThreadSafe<DOMStorageContextImpl> {
+    : public base::RefCountedThreadSafe<DOMStorageContextImpl>,
+      public base::trace_event::MemoryDumpProvider {
  public:
   // An interface for observing Local and Session Storage events on the
   // background thread.
@@ -173,6 +175,10 @@ class CONTENT_EXPORT DOMStorageContextImpl
   // unclean exit.
   void StartScavengingUnusedSessionStorage();
 
+  // base::trace_event::MemoryDumpProvider implementation.
+  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
+                    base::trace_event::ProcessMemoryDump* pmd) override;
+
  private:
   friend class DOMStorageContextImplTest;
   FRIEND_TEST_ALL_PREFIXES(DOMStorageContextImplTest, Basics);
@@ -180,7 +186,7 @@ class CONTENT_EXPORT DOMStorageContextImpl
   typedef std::map<int64_t, scoped_refptr<DOMStorageNamespace>>
       StorageNamespaceMap;
 
-  ~DOMStorageContextImpl();
+  ~DOMStorageContextImpl() override;
 
   void ClearSessionOnlyOrigins();
 

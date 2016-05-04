@@ -60,6 +60,9 @@ class CONTENT_EXPORT DOMStorageTaskRunner
     return IsRunningOnSequence(COMMIT_SEQUENCE);
   }
 
+  virtual scoped_refptr<base::SequencedTaskRunner> GetSequencedTaskRunner(
+      SequenceID sequence_id) = 0;
+
  protected:
   ~DOMStorageTaskRunner() override {}
 };
@@ -85,6 +88,9 @@ class CONTENT_EXPORT DOMStorageWorkerPoolTaskRunner :
                                 const base::Closure& task) override;
 
   bool IsRunningOnSequence(SequenceID sequence_id) const override;
+
+  scoped_refptr<base::SequencedTaskRunner> GetSequencedTaskRunner(
+      SequenceID sequence_id) override;
 
  protected:
   ~DOMStorageWorkerPoolTaskRunner() override;
@@ -118,6 +124,9 @@ class CONTENT_EXPORT MockDOMStorageTaskRunner :
                                 const base::Closure& task) override;
 
   bool IsRunningOnSequence(SequenceID sequence_id) const override;
+
+  scoped_refptr<base::SequencedTaskRunner> GetSequencedTaskRunner(
+      SequenceID sequence_id) override;
 
  protected:
   ~MockDOMStorageTaskRunner() override;

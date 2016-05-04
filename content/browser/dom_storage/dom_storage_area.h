@@ -21,6 +21,12 @@
 #include "content/common/dom_storage/dom_storage_types.h"
 #include "url/gurl.h"
 
+namespace base {
+namespace trace_event {
+class ProcessMemoryDump;
+}
+}
+
 namespace content {
 
 class DOMStorageDatabaseAdapter;
@@ -95,6 +101,9 @@ class CONTENT_EXPORT DOMStorageArea
 
   // Returns true if the data is loaded in memory.
   bool IsLoadedInMemory() const { return is_initial_import_done_; }
+
+  // Adds memory statistics to |pmd| for chrome://tracing.
+  void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd);
 
  private:
   friend class DOMStorageAreaTest;

@@ -68,6 +68,11 @@ bool DOMStorageWorkerPoolTaskRunner::IsRunningOnSequence(
       IDtoToken(sequence_id));
 }
 
+scoped_refptr<base::SequencedTaskRunner>
+DOMStorageWorkerPoolTaskRunner::GetSequencedTaskRunner(SequenceID sequence_id) {
+  return sequenced_worker_pool_->GetSequencedTaskRunner(IDtoToken(sequence_id));
+}
+
 base::SequencedWorkerPool::SequenceToken
 DOMStorageWorkerPoolTaskRunner::IDtoToken(SequenceID id) const {
   if (id == PRIMARY_SEQUENCE)
@@ -102,6 +107,11 @@ bool MockDOMStorageTaskRunner::PostShutdownBlockingTask(
 
 bool MockDOMStorageTaskRunner::IsRunningOnSequence(SequenceID) const {
   return task_runner_->RunsTasksOnCurrentThread();
+}
+
+scoped_refptr<base::SequencedTaskRunner>
+MockDOMStorageTaskRunner::GetSequencedTaskRunner(SequenceID sequence_id) {
+  return task_runner_;
 }
 
 }  // namespace content

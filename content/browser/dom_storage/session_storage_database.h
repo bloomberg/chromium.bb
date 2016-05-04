@@ -27,6 +27,12 @@ struct ReadOptions;
 class WriteBatch;
 }  // namespace leveldb
 
+namespace base {
+namespace trace_event {
+class ProcessMemoryDump;
+}
+}
+
 namespace content {
 
 // SessionStorageDatabase holds the data from multiple namespaces and multiple
@@ -74,6 +80,9 @@ class CONTENT_EXPORT SessionStorageDatabase :
   // Reads the namespace IDs and origins present in the database.
   bool ReadNamespacesAndOrigins(
       std::map<std::string, std::vector<GURL> >* namespaces_and_origins);
+
+  // Adds memory statistics to |pmd| for chrome://tracing.
+  void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd);
 
  private:
   friend class base::RefCountedThreadSafe<SessionStorageDatabase>;
