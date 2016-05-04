@@ -14,7 +14,14 @@
 #include "base/callback.h"
 #include "chrome/browser/android/ntp/popular_sites.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/history/top_sites_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
+#include "chrome/browser/search/suggestions/suggestions_service_factory.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/thumbnails/thumbnail_list_source.h"
+#include "components/history/core/browser/top_sites.h"
+#include "content/public/browser/url_data_source.h"
 #include "jni/MostVisitedSites_jni.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "url/gurl.h"
@@ -24,6 +31,7 @@ using base::android::ConvertJavaStringToUTF8;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
 using base::android::ToJavaArrayOfStrings;
+using suggestions::SuggestionsServiceFactory;
 
 namespace {
 
@@ -100,8 +108,18 @@ void MostVisitedSitesBridge::Observer::OnPopularURLsAvailable(
 }
 
 MostVisitedSitesBridge::MostVisitedSitesBridge(Profile* profile)
-    : most_visited_(profile,
-                    g_browser_process->variations_service()) {}
+    : most_visited_(profile->GetPrefs(),
+                    TemplateURLServiceFactory::GetForProfile(profile),
+                    g_browser_process->variations_service(),
+                    profile->GetRequestContext(),
+                    TopSitesFactory::GetForProfile(profile),
+                    SuggestionsServiceFactory::GetForProfile(profile),
+                    profile->IsChild(),
+                    profile) {
+  // Register the thumbnails debugging page.
+  // TODO(sfiera): find thumbnails a home. They don't belong here.
+  content::URLDataSource::Add(profile, new ThumbnailListSource(profile));
+}
 
 MostVisitedSitesBridge::~MostVisitedSitesBridge() {}
 

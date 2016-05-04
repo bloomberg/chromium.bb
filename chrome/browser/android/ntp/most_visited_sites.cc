@@ -16,14 +16,9 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "chrome/browser/history/top_sites_factory.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search/suggestions/suggestions_service_factory.h"
-#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_url_filter.h"
-#include "chrome/browser/thumbnails/thumbnail_list_source.h"
 #include "components/history/core/browser/top_sites.h"
 #include "components/ntp_tiles/pref_names.h"
 #include "components/ntp_tiles/switches.h"
@@ -31,7 +26,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/url_data_source.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "url/gurl.h"
@@ -40,7 +34,7 @@ using content::BrowserThread;
 using history::TopSites;
 using suggestions::ChromeSuggestion;
 using suggestions::SuggestionsProfile;
-using suggestions::SuggestionsServiceFactory;
+using suggestions::SuggestionsService;
 
 namespace {
 
@@ -178,18 +172,23 @@ MostVisitedSites::Suggestion&
 MostVisitedSites::Suggestion::operator=(Suggestion&&) = default;
 
 MostVisitedSites::MostVisitedSites(
-    Profile* profile,
-    variations::VariationsService* variations_service)
-    : profile_(profile), variations_service_(variations_service),
-      top_sites_(TopSitesFactory::GetForProfile(profile)),
-      suggestions_service_(SuggestionsServiceFactory::GetForProfile(profile_)),
-      observer_(nullptr), num_sites_(0),
-      received_most_visited_sites_(false), received_popular_sites_(false),
-      recorded_uma_(false), scoped_observer_(this),
-      mv_source_(SUGGESTIONS_SERVICE), weak_ptr_factory_(this) {
-  // Register the thumbnails debugging page.
-  content::URLDataSource::Add(profile_, new ThumbnailListSource(profile_));
-
+    PrefService* prefs,
+    const TemplateURLService* template_url_service,
+    variations::VariationsService* variations_service,
+    net::URLRequestContextGetter* download_context,
+    scoped_refptr<history::TopSites> top_sites,
+    SuggestionsService* suggestions,
+    bool is_child_profile,
+    Profile* profile)
+    : profile_(profile), prefs_(prefs),
+      template_url_service_(template_url_service),
+      variations_service_(variations_service),
+      download_context_(download_context), top_sites_(top_sites),
+      suggestions_service_(suggestions), is_child_profile_(is_child_profile),
+      observer_(nullptr), num_sites_(0), received_most_visited_sites_(false),
+      received_popular_sites_(false), recorded_uma_(false),
+      scoped_observer_(this), mv_source_(SUGGESTIONS_SERVICE),
+      weak_ptr_factory_(this) {
   SupervisedUserService* supervised_user_service =
       SupervisedUserServiceFactory::GetForProfile(profile_);
   supervised_user_service->AddObserver(this);
@@ -208,12 +207,12 @@ void MostVisitedSites::SetMostVisitedURLsObserver(
   num_sites_ = num_sites;
 
   if (ShouldShowPopularSites() &&
-      NeedPopularSites(profile_->GetPrefs(), num_sites_)) {
+      NeedPopularSites(prefs_, num_sites_)) {
     popular_sites_.reset(new PopularSites(
-        profile_->GetPrefs(),
-        TemplateURLServiceFactory::GetForProfile(profile_),
+        prefs_,
+        template_url_service_,
         variations_service_,
-        profile_->GetRequestContext(),
+        download_context_,
         GetPopularSitesCountry(),
         GetPopularSitesVersion(),
         false,
@@ -519,7 +518,7 @@ MostVisitedSites::CreatePopularSitesSuggestions(
     const MostVisitedSites::SuggestionsPtrVector& personal_suggestions,
     const MostVisitedSites::SuggestionsPtrVector& whitelist_suggestions) {
   // For child accounts popular sites suggestions will not be added.
-  if (profile_->IsChild())
+  if (is_child_profile_)
     return MostVisitedSites::SuggestionsPtrVector();
 
   size_t num_suggestions =
@@ -642,11 +641,10 @@ void MostVisitedSites::GetPreviousNTPSites(
     size_t num_tiles,
     std::vector<std::string>* old_sites_url,
     std::vector<bool>* old_sites_is_personal) const {
-  const PrefService* prefs = profile_->GetPrefs();
-  const base::ListValue* url_list = prefs->GetList(
+  const base::ListValue* url_list = prefs_->GetList(
       ntp_tiles::prefs::kNTPSuggestionsURL);
   const base::ListValue* source_list =
-      prefs->GetList(ntp_tiles::prefs::kNTPSuggestionsIsPersonal);
+      prefs_->GetList(ntp_tiles::prefs::kNTPSuggestionsIsPersonal);
   DCHECK_EQ(url_list->GetSize(), source_list->GetSize());
   if (url_list->GetSize() < num_tiles)
     num_tiles = url_list->GetSize();
@@ -675,9 +673,8 @@ void MostVisitedSites::SaveCurrentNTPSites() {
     url_list.AppendString(suggestion.url.spec());
     source_list.AppendBoolean(suggestion.source != MostVisitedSites::POPULAR);
   }
-  PrefService* prefs = profile_->GetPrefs();
-  prefs->Set(ntp_tiles::prefs::kNTPSuggestionsIsPersonal, source_list);
-  prefs->Set(ntp_tiles::prefs::kNTPSuggestionsURL, url_list);
+  prefs_->Set(ntp_tiles::prefs::kNTPSuggestionsIsPersonal, source_list);
+  prefs_->Set(ntp_tiles::prefs::kNTPSuggestionsURL, url_list);
 }
 
 // static

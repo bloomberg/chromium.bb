@@ -25,6 +25,10 @@
 #include "components/suggestions/suggestions_service.h"
 #include "url/gurl.h"
 
+namespace history {
+class TopSites;
+}
+
 namespace suggestions {
 class SuggestionsService;
 }
@@ -86,8 +90,14 @@ class MostVisitedSites : public history::TopSitesObserver,
     DISALLOW_COPY_AND_ASSIGN(Suggestion);
   };
 
-  MostVisitedSites(Profile* profile,
-                   variations::VariationsService* variations_service);
+  MostVisitedSites(PrefService* prefs,
+                   const TemplateURLService* template_url_service,
+                   variations::VariationsService* variations_service,
+                   net::URLRequestContextGetter* download_context,
+                   scoped_refptr<history::TopSites> top_sites,
+                   suggestions::SuggestionsService* suggestions,
+                   bool is_child_profile,
+                   Profile* profile);
 
   ~MostVisitedSites() override;
 
@@ -214,9 +224,19 @@ class MostVisitedSites : public history::TopSitesObserver,
   // The profile whose most visited sites will be queried.
   Profile* profile_;
 
+  PrefService* prefs_;
+  const TemplateURLService* template_url_service_;
   variations::VariationsService* variations_service_;
+  net::URLRequestContextGetter* download_context_;
   scoped_refptr<history::TopSites> top_sites_;
   suggestions::SuggestionsService* suggestions_service_;
+
+  // Children will not be shown popular sites as suggestions.
+  // TODO(sfiera): enable/disable suggestions if the profile is marked or
+  // unmarked as a child profile during the lifetime of the object. For now, it
+  // doesn't matter, because a MostVisitedSites is instantiated for each NTP,
+  // but a longer-lived object would need to update.
+  bool is_child_profile_;
 
   Observer* observer_;
 
