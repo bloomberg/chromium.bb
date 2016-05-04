@@ -273,7 +273,12 @@ class IPCChannelProxyTest : public IPCTestBase {
   std::unique_ptr<QuitListener> listener_;
 };
 
-TEST_F(IPCChannelProxyTest, MessageClassFilters) {
+#if defined(OS_ANDROID)
+#define MAYBE_MessageClassFilters DISABLED_MessageClassFilters
+#else
+#define MAYBE_MessageClassFilters MessageClassFilters
+#endif
+TEST_F(IPCChannelProxyTest, MAYBE_MessageClassFilters) {
   // Construct a filter per message class.
   std::vector<scoped_refptr<MessageCountFilter> > class_filters;
   class_filters.push_back(make_scoped_refptr(
@@ -297,7 +302,12 @@ TEST_F(IPCChannelProxyTest, MessageClassFilters) {
     EXPECT_EQ(1U, class_filters[i]->messages_received());
 }
 
-TEST_F(IPCChannelProxyTest, GlobalAndMessageClassFilters) {
+#if defined(OS_ANDROID)
+#define MAYBE_GlobalAndMessageClassFilters DISABLED_GlobalAndMessageClassFilters
+#else
+#define MAYBE_GlobalAndMessageClassFilters GlobalAndMessageClassFilters
+#endif
+TEST_F(IPCChannelProxyTest, MAYBE_GlobalAndMessageClassFilters) {
   // Add a class and global filter.
   scoped_refptr<MessageCountFilter> class_filter(
       new MessageCountFilter(TestMsgStart));
@@ -326,7 +336,12 @@ TEST_F(IPCChannelProxyTest, GlobalAndMessageClassFilters) {
   EXPECT_EQ(3U, global_filter->messages_received());
 }
 
-TEST_F(IPCChannelProxyTest, FilterRemoval) {
+#if defined(OS_ANDROID)
+#define MAYBE_FilterRemoval DISABLED_FilterRemoval
+#else
+#define MAYBE_FilterRemoval FilterRemoval
+#endif
+TEST_F(IPCChannelProxyTest, MAYBE_FilterRemoval) {
   // Add a class and global filter.
   scoped_refptr<MessageCountFilter> class_filter(
       new MessageCountFilter(TestMsgStart));

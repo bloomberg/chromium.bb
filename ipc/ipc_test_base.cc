@@ -144,13 +144,8 @@ bool IPCTestBase::WaitForClientShutdown() {
   DCHECK(client_process_.IsValid());
 
   int exit_code;
-#if defined(OS_ANDROID)
-  bool rv = AndroidWaitForChildExitWithTimeout(
-      client_process_, base::TimeDelta::FromSeconds(5), &exit_code);
-#else
   bool rv = client_process_.WaitForExitWithTimeout(
       base::TimeDelta::FromSeconds(5), &exit_code);
-#endif  // defined(OS_ANDROID)
   client_process_.Close();
   return rv;
 }

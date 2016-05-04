@@ -176,7 +176,6 @@ test("ipc_tests") {
     "ipc_test_message_generator.cc",
     "ipc_test_message_generator.h",
     "ipc_test_messages.h",
-    "run_all_unittests.cc",
     "sync_socket_unittest.cc",
     "unix_domain_socket_util_unittest.cc",
   ]
@@ -200,6 +199,7 @@ test("ipc_tests") {
     ":test_support",
     "//base",
     "//base:i18n",
+    "//base/test:run_all_unittests",
     "//base/test:test_support",
     "//crypto",
     "//testing/gtest",

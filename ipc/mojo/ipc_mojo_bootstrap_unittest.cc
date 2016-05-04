@@ -59,7 +59,13 @@ void TestingDelegate::OnBootstrapError() {
   quit_callback_.Run();
 }
 
-TEST_F(IPCMojoBootstrapTest, Connect) {
+// Times out on Android; see http://crbug.com/502290
+#if defined(OS_ANDROID)
+#define MAYBE_Connect DISABLED_Connect
+#else
+#define MAYBE_Connect Connect
+#endif
+TEST_F(IPCMojoBootstrapTest, MAYBE_Connect) {
   base::MessageLoop message_loop;
   base::RunLoop run_loop;
   TestingDelegate delegate(run_loop.QuitClosure());
