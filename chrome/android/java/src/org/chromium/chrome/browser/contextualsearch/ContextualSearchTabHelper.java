@@ -118,6 +118,11 @@ public class ContextualSearchTabHelper extends EmptyTabObserver {
         }
     }
 
+    @Override
+    public void onReparentingFinished(Tab tab) {
+        updateHooksForNewContentViewCore(tab);
+    }
+
     /**
      * Should be called whenever the Tab's ContentViewCore changes. Removes hooks from the
      * existing ContentViewCore, if necessary and then adds hooks for the new ContentViewCore.

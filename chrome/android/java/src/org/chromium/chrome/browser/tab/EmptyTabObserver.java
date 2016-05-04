@@ -129,4 +129,7 @@ public class EmptyTabObserver implements TabObserver {
     @Override
     public void webContentsCreated(Tab tab, WebContents sourceWebContents, long openerRenderFrameId,
             String frameName, String targetUrl, WebContents newWebContents) { }
+
+    @Override
+    public void onReparentingFinished(Tab tab) { }
 }

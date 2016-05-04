@@ -316,4 +316,10 @@ public interface TabObserver {
      */
     public void webContentsCreated(Tab tab, WebContents sourceWebContents, long openerRenderFrameId,
             String frameName, String targetUrl, WebContents newWebContents);
+
+    /**
+     * Called when the tab reparenting process has finished.
+     * @param tab The notifying {@link Tab}.
+     */
+    public void onReparentingFinished(Tab tab);
 }
