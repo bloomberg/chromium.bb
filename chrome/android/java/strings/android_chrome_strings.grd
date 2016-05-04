@@ -1949,14 +1949,8 @@ You are signing in with a managed account and giving its administrator control o
       <message name="IDS_BOOKMARK_PAGE_FAILED" desc="Message shown when the user tries to add a bookmark but the browser fails to save it.">
         Failed to add bookmark.
       </message>
-      <message name="IDS_BOOKMARK_DRAWER_ALL_ITEMS" desc="Menu item for showing all bookmark items in the bookmarks UI [CHAR-LIMIT=24]">
-        All bookmarks
-      </message>
       <message name="IDS_BOOKMARK_DRAWER_FOLDERS" desc="Title for the list of folders in the drawer view. [CHAR-LIMIT=32]">
         Folders
-      </message>
-      <message name="IDS_BOOKMARK_TITLE_BAR_ALL_ITEMS" desc="Title bar text for showing all bookmark items in the bookmarks UI [CHAR-LIMIT=32]">
-        Bookmarks
       </message>
       <message name="IDS_BOOKMARK_PARENT_FOLDER" desc="Header text for title of parent folder of the bookmark [CHAR-LIMIT=32]">
         Parent folder

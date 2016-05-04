@@ -11111,7 +11111,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="EnhancedBookmarks.AllBookmarksCount">
   <owner>ianwen@chromium.org</owner>
-  <owner>kkimlabs@chromium.org</owner>
+  <obsolete>
+    Removed 4/2016 after we no longer show &quot;all bookamrks&quot; in bookmark
+    manager.
+  </obsolete>
   <summary>Number of bookmarks the user has. Android only.</summary>
 </histogram>
 

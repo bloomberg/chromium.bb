@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Stack;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -58,37 +57,6 @@ public class BookmarkModelTest extends NativeLibraryTestBase {
                 mOtherNode = mBookmarkModel.getOtherFolderId();
             }
         });
-    }
-
-    @UiThreadTest
-    @SmallTest
-    @Feature({"Bookmark"})
-    public void testGetAllBookmarkIDsOrderedByCreationDate() throws InterruptedException {
-        BookmarkId folderA = mBookmarkModel.addFolder(mMobileNode, 0, "a");
-        BookmarkId folderB = mBookmarkModel.addFolder(mDesktopNode, 0, "b");
-
-        Stack<BookmarkId> stack = new Stack<BookmarkId>();
-        stack.push(addBookmark(folderA, 0, "a", "http://www.medium.com"));
-        // If add bookmarks too fast, eventually some bookmarks will have the same timestamp, which
-        // confuses the bookmark model.
-        Thread.sleep(20);
-        stack.push(addBookmark(folderB, 0, "b", "http://aurimas.com"));
-        Thread.sleep(20);
-        stack.push(addBookmark(mMobileNode, 0, "c", "http://www.aurimas.com"));
-        Thread.sleep(20);
-        stack.push(addBookmark(mDesktopNode, 0, "d", "http://www.aurimas.org"));
-        Thread.sleep(20);
-        stack.push(addBookmark(mOtherNode, 0, "e", "http://www.google.com"));
-        Thread.sleep(20);
-        stack.push(addBookmark(folderA, 0, "f", "http://www.newt.com"));
-        Thread.sleep(20);
-        stack.push(addBookmark(folderB, 0, "g", "http://kkimlabs.com"));
-
-        List<BookmarkId> bookmarks = mBookmarkModel.getAllBookmarkIDsOrderedByCreationDate();
-        assertEquals(stack.size(), bookmarks.size());
-        for (BookmarkId returnedBookmark : bookmarks) {
-            assertEquals(stack.pop(), returnedBookmark);
-        }
     }
 
     @UiThreadTest

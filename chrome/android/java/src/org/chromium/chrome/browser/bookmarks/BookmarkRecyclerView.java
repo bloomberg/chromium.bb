@@ -100,11 +100,6 @@ public class BookmarkRecyclerView extends RecyclerView implements BookmarkUIObse
     }
 
     @Override
-    public void onAllBookmarksStateSet() {
-        scrollToPosition(0);
-    }
-
-    @Override
     public void onFolderStateSet(BookmarkId folder) {
         scrollToPosition(0);
     }

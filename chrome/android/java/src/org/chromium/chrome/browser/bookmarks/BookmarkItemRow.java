@@ -50,9 +50,6 @@ public class BookmarkItemRow extends BookmarkRow implements LargeIconCallback {
     public void onClick() {
         int launchLocation = -1;
         switch (mDelegate.getCurrentState()) {
-            case BookmarkUIState.STATE_ALL_BOOKMARKS:
-                launchLocation = BookmarkLaunchLocation.ALL_ITEMS;
-                break;
             case BookmarkUIState.STATE_FOLDER:
                 launchLocation = BookmarkLaunchLocation.FOLDER;
                 break;
