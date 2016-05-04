@@ -128,10 +128,16 @@ gfx::Size IconLabelBubbleView::GetPreferredSize() const {
   return GetSizeForLabelWidth(label_->GetPreferredSize().width());
 }
 
+bool IconLabelBubbleView::OnKeyPressed(const ui::KeyEvent& event) {
+  if (event.key_code() == ui::VKEY_RETURN)
+    return OnActivate();
+  return false;
+}
+
 bool IconLabelBubbleView::OnKeyReleased(const ui::KeyEvent& event) {
-  if (event.key_code() != ui::VKEY_RETURN && event.key_code() != ui::VKEY_SPACE)
-    return false;
-  return OnActivate();
+  if (event.key_code() == ui::VKEY_SPACE)
+    return OnActivate();
+  return false;
 }
 
 void IconLabelBubbleView::Layout() {

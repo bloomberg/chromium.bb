@@ -30,7 +30,6 @@ class LocationIconView : public IconLabelBubbleView {
   bool OnMousePressed(const ui::MouseEvent& event) override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;
-  bool OnKeyPressed(const ui::KeyEvent& event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
   bool GetTooltipText(const gfx::Point& p,
                       base::string16* tooltip) const override;

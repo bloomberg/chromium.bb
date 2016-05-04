@@ -98,11 +98,22 @@ void BubbleIconView::OnMouseReleased(const ui::MouseEvent& event) {
     ExecuteCommand(EXECUTE_SOURCE_MOUSE);
 }
 
-bool BubbleIconView::OnKeyReleased(const ui::KeyEvent& event) {
-  if (event.key_code() != ui::VKEY_SPACE && event.key_code() != ui::VKEY_RETURN)
+bool BubbleIconView::OnKeyPressed(const ui::KeyEvent& event) {
+  if (event.key_code() != ui::VKEY_RETURN && event.key_code() != ui::VKEY_SPACE)
     return false;
 
   ink_drop_delegate_->OnAction(views::InkDropState::ACTIVATED);
+  // As with CustomButton, return activates on key down and space activates on
+  // key up.
+  if (event.key_code() == ui::VKEY_RETURN)
+    ExecuteCommand(EXECUTE_SOURCE_KEYBOARD);
+  return true;
+}
+
+bool BubbleIconView::OnKeyReleased(const ui::KeyEvent& event) {
+  if (event.key_code() != ui::VKEY_SPACE)
+    return false;
+
   ExecuteCommand(EXECUTE_SOURCE_KEYBOARD);
   return true;
 }

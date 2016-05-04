@@ -78,10 +78,6 @@ bool LocationIconView::OnMouseDragged(const ui::MouseEvent& event) {
   return false;
 }
 
-bool LocationIconView::OnKeyPressed(const ui::KeyEvent& event) {
-  return false;
-}
-
 void LocationIconView::OnGestureEvent(ui::GestureEvent* event) {
   if (event->type() != ui::ET_GESTURE_TAP)
     return;

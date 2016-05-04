@@ -81,6 +81,7 @@ class IconLabelBubbleView : public views::InkDropHostView {
   // views::View:
   gfx::Size GetPreferredSize() const override;
   void Layout() override;
+  bool OnKeyPressed(const ui::KeyEvent& event) override;
   bool OnKeyReleased(const ui::KeyEvent& event) override;
   void OnNativeThemeChanged(const ui::NativeTheme* native_theme) override;
   void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
