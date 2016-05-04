@@ -17,8 +17,8 @@
 #include "chrome/common/safe_browsing/zip_analyzer_results.h"
 #include "chrome/utility/chrome_content_utility_ipc_whitelist.h"
 #include "chrome/utility/image_decoder_impl.h"
-#include "chrome/utility/safe_json_parser_handler.h"
 #include "chrome/utility/utility_message_handler.h"
+#include "components/safe_json/utility/safe_json_parser_mojo_impl.h"
 #include "content/public/child/image_decoder_utils.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_registry.h"
@@ -128,8 +128,6 @@ ChromeContentUtilityClient::ChromeContentUtilityClient()
 #if defined(OS_WIN)
   handlers_.push_back(new ShellHandler());
 #endif
-
-  handlers_.push_back(new SafeJsonParserHandler());
 }
 
 ChromeContentUtilityClient::~ChromeContentUtilityClient() {
@@ -200,6 +198,7 @@ void ChromeContentUtilityClient::RegisterMojoServices(
   registry->AddService(base::Bind(CreateResourceUsageReporter));
 #endif
   registry->AddService(base::Bind(&CreateImageDecoder));
+  registry->AddService(base::Bind(&safe_json::SafeJsonParserMojoImpl::Create));
 }
 
 void ChromeContentUtilityClient::AddHandler(

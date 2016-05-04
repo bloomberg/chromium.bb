@@ -12,11 +12,10 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/tuple.h"
 #include "base/values.h"
-#include "components/safe_json/safe_json_parser_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/utility_process_host.h"
+#include "content/public/common/service_registry.h"
 #include "grit/components_strings.h"
-#include "ipc/ipc_message_macros.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;
@@ -29,37 +28,54 @@ SafeJsonParserImpl::SafeJsonParserImpl(const std::string& unsafe_json,
                                        const ErrorCallback& error_callback)
     : unsafe_json_(unsafe_json),
       success_callback_(success_callback),
-      error_callback_(error_callback) {}
+      error_callback_(error_callback) {
+  io_thread_checker_.DetachFromThread();
+}
 
 SafeJsonParserImpl::~SafeJsonParserImpl() {
 }
 
 void SafeJsonParserImpl::StartWorkOnIOThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  UtilityProcessHost* host = UtilityProcessHost::Create(
-      this, base::ThreadTaskRunnerHandle::Get().get());
-  host->SetName(
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(io_thread_checker_.CalledOnValidThread());
+  // TODO(amistry): This UtilityProcessHost dance is likely to be done multiple
+  // times as more tasks are migrated to Mojo. Create some sort of helper class
+  // to eliminate the code duplication.
+  utility_process_host_ = UtilityProcessHost::Create(
+      this, base::ThreadTaskRunnerHandle::Get().get())->AsWeakPtr();
+  utility_process_host_->SetName(
       l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_JSON_PARSER_NAME));
-  host->Send(new SafeJsonParserMsg_ParseJSON(unsafe_json_));
-}
+  if (!utility_process_host_->Start()) {
+    ReportResults();
+    return;
+  }
 
-void SafeJsonParserImpl::OnJSONParseSucceeded(const base::ListValue& wrapper) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  const base::Value* value = NULL;
-  CHECK(wrapper.Get(0, &value));
+  content::ServiceRegistry* service_registry =
+      utility_process_host_->GetServiceRegistry();
+  service_registry->ConnectToRemoteService(mojo::GetProxy(&service_));
+  service_.set_connection_error_handler(
+      base::Bind(&SafeJsonParserImpl::ReportResults, this));
 
-  parsed_json_.reset(value->DeepCopy());
-  ReportResults();
-}
-
-void SafeJsonParserImpl::OnJSONParseFailed(const std::string& error_message) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  error_ = error_message;
-  ReportResults();
+  service_->Parse(unsafe_json_,
+                  base::Bind(&SafeJsonParserImpl::OnParseDone, this));
 }
 
 void SafeJsonParserImpl::ReportResults() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  // There should be a DCHECK_CURRENTLY_ON(BrowserThread::IO) here. However, if
+  // the parser process is still alive on shutdown, this might run on the IO
+  // thread while the IO thread message loop is shutting down. This happens
+  // after the IO thread has unregistered from the BrowserThread list, causing
+  // the DCHECK to fail.
+  DCHECK(io_thread_checker_.CalledOnValidThread());
+  io_thread_checker_.DetachFromThread();
+
+  // Maintain a reference to |this| since either |utility_process_host_| or
+  // |service_| may have the last reference and destroying those might delete
+  // |this|.
+  scoped_refptr<SafeJsonParserImpl> ref(this);
+  // Shut down the utility process if it's still running.
+  delete utility_process_host_.get();
+  service_.reset();
 
   caller_task_runner_->PostTask(
       FROM_HERE,
@@ -78,15 +94,20 @@ void SafeJsonParserImpl::ReportResultsOnOriginThread() {
 }
 
 bool SafeJsonParserImpl::OnMessageReceived(const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(SafeJsonParserImpl, message)
-    IPC_MESSAGE_HANDLER(SafeJsonParserHostMsg_ParseJSON_Succeeded,
-                        OnJSONParseSucceeded)
-    IPC_MESSAGE_HANDLER(SafeJsonParserHostMsg_ParseJSON_Failed,
-                        OnJSONParseFailed)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
+  return false;
+}
+
+void SafeJsonParserImpl::OnParseDone(const base::ListValue& wrapper,
+                                     mojo::String error) {
+  DCHECK(io_thread_checker_.CalledOnValidThread());
+  if (!wrapper.empty()) {
+    const base::Value* value = NULL;
+    CHECK(wrapper.Get(0, &value));
+    parsed_json_.reset(value->DeepCopy());
+  } else {
+    error_ = error.get();
+  }
+  ReportResults();
 }
 
 void SafeJsonParserImpl::Start() {

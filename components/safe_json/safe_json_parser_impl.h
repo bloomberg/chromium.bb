@@ -10,6 +10,9 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
+#include "base/threading/thread_checker.h"
+#include "components/safe_json/public/interfaces/safe_json.mojom.h"
 #include "components/safe_json/safe_json_parser.h"
 #include "content/public/browser/utility_process_host_client.h"
 
@@ -17,6 +20,10 @@ namespace base {
 class ListValue;
 class SequencedTaskRunner;
 class Value;
+}
+
+namespace content {
+class UtilityProcessHost;
 }
 
 namespace IPC {
@@ -37,9 +44,6 @@ class SafeJsonParserImpl : public content::UtilityProcessHostClient,
 
   void StartWorkOnIOThread();
 
-  void OnJSONParseSucceeded(const base::ListValue& wrapper);
-  void OnJSONParseFailed(const std::string& error_message);
-
   void ReportResults();
   void ReportResultsOnOriginThread();
 
@@ -49,6 +53,9 @@ class SafeJsonParserImpl : public content::UtilityProcessHostClient,
   // SafeJsonParser implementation.
   void Start() override;
 
+  // mojom::SafeJsonParser::Parse callback.
+  void OnParseDone(const base::ListValue& wrapper, mojo::String error);
+
   const std::string unsafe_json_;
   SuccessCallback success_callback_;
   ErrorCallback error_callback_;
@@ -56,6 +63,14 @@ class SafeJsonParserImpl : public content::UtilityProcessHostClient,
 
   std::unique_ptr<base::Value> parsed_json_;
   std::string error_;
+
+  base::WeakPtr<content::UtilityProcessHost> utility_process_host_;
+
+  mojom::SafeJsonParserPtr service_;
+
+  // To ensure the UtilityProcessHost and Mojo service are only accessed on the
+  // IO thread.
+  base::ThreadChecker io_thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeJsonParserImpl);
 };

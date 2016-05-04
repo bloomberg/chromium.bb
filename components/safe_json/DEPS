@@ -3,7 +3,7 @@ include_rules = [
   "+content/public/common",
   "+content/public/utility",
   "+grit",  # For generated headers
-  "+ipc",
   "+jni",
+  "+mojo/public/cpp",
   "+ui/base",
 ]
