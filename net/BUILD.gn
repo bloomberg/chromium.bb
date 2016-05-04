@@ -197,7 +197,7 @@ component("net") {
     }
 
     if (use_glib && use_gconf && !is_chromeos) {
-      deps += [ "//build/linux:gio" ]
+      deps += [ "//build/linux/libgio" ]
     }
 
     if (!use_nss_certs) {
@@ -950,7 +950,7 @@ if (!is_ios && !is_android) {
           "//build/config/linux/gconf",
           "//build/config/linux:glib",
         ]
-        deps += [ "//build/linux:gio" ]
+        deps += [ "//build/linux/libgio" ]
       }
     }
   }

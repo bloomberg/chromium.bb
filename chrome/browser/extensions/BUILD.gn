@@ -171,7 +171,7 @@ source_set("extensions") {
   }
 
   if (use_brlapi) {
-    deps += [ "//build/linux:libbrlapi" ]
+    deps += [ "//build/linux/libbrlapi" ]
     sources += rebase_path(gypi_values.chrome_browser_extensions_brlapi_sources,
                            ".",
                            "//chrome")

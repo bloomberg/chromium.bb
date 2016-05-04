@@ -109,7 +109,7 @@ static_library("libusb") {
       "HAVE_LIBUDEV=1",
       "USE_UDEV=1",
     ]
-    deps += [ "//build/linux:udev" ]
+    deps += [ "//build/linux/libudev" ]
   }
 
   if (is_linux && !use_udev) {

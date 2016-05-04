@@ -98,7 +98,7 @@ source_set("config_sources") {
   }
   if (use_libpci) {
     defines = [ "USE_LIBPCI=1" ]
-    deps += [ "//build/linux:libpci" ]
+    deps += [ "//build/linux/libpci" ]
   }
   if (is_linux && use_x11) {
     configs += [

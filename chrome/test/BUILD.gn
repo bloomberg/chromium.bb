@@ -1316,7 +1316,7 @@ if (!is_android) {
       sources += [ "../browser/ui/webui/local_discovery/local_discovery_ui_browsertest.cc" ]
     }
     if (use_brlapi) {
-      deps += [ "//build/linux:libbrlapi" ]
+      deps += [ "//build/linux/libbrlapi" ]
     } else {
       sources -= [ "../browser/extensions/api/braille_display_private/braille_display_private_apitest.cc" ]
     }
@@ -1837,7 +1837,7 @@ test("unit_tests") {
   }
   if (!is_chromeos && !use_ozone && is_linux) {
     deps += [
-      "//build/linux:gio",
+      "//build/linux/libgio",
       "//chrome/browser/ui/libgtk2ui",
     ]
   }
