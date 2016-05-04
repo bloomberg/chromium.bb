@@ -150,7 +150,7 @@ class WebUIScreenLocker : public WebUILoginView,
   void ResetAndFocusUserPod();
 
   // The screen locker window.
-  views::Widget* lock_window_;
+  views::Widget* lock_window_ = nullptr;
 
   // Sign-in Screen controller instance (owns login screens).
   std::unique_ptr<SignInScreenController> signin_screen_controller_;
@@ -159,18 +159,18 @@ class WebUIScreenLocker : public WebUILoginView,
   std::unique_ptr<WebUILoginDisplay> login_display_;
 
   // Tracks when the lock window is displayed and ready.
-  bool lock_ready_;
+  bool lock_ready_ = false;
 
   // Tracks when the WebUI finishes loading.
-  bool webui_ready_;
+  bool webui_ready_ = false;
 
   // Time when lock was initiated, required for metrics.
   base::TimeTicks lock_time_;
 
   std::unique_ptr<login::NetworkStateHelper> network_state_helper_;
 
-  // True is subscribed as keyboard controller observer.
-  bool is_observing_keyboard_;
+  // True iff this object is observing a keyboard controller.
+  bool is_observing_keyboard_ = false;
 
   base::WeakPtrFactory<WebUIScreenLocker> weak_factory_;
 

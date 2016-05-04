@@ -62,10 +62,7 @@ namespace chromeos {
 
 WebUIScreenLocker::WebUIScreenLocker(ScreenLocker* screen_locker)
     : ScreenLockerDelegate(screen_locker),
-      lock_ready_(false),
-      webui_ready_(false),
       network_state_helper_(new login::NetworkStateHelper),
-      is_observing_keyboard_(false),
       weak_factory_(this) {
   set_should_emit_login_prompt_visible(false);
   ash::Shell::GetInstance()->lock_state_controller()->AddObserver(this);
