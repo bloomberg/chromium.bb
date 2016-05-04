@@ -645,7 +645,7 @@ static CSSValue* consumeSpacing(CSSParserTokenRange& range, CSSParserMode cssPar
 {
     if (range.peek().id() == CSSValueNormal)
         return consumeIdent(range);
-    // TODO(timloh): Don't allow unitless values, and allow <percentage>s in word-spacing.
+    // TODO(timloh): allow <percentage>s in word-spacing.
     return consumeLength(range, cssParserMode, ValueRangeAll, UnitlessQuirk::Allow);
 }
 
