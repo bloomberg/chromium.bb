@@ -54,7 +54,6 @@ public class SnippetArticleViewHolder extends NewTabPageViewHolder implements Vi
 
     private AsyncTask<String, Void, Bitmap> mThumbnailFetchingTask;
     public String mUrl;
-    public String mAmpUrl;
     public int mPosition;
 
     /**
@@ -97,7 +96,7 @@ public class SnippetArticleViewHolder extends NewTabPageViewHolder implements Vi
 
     @Override
     public void onClick(View v) {
-        mNewTabPageManager.open(mAmpUrl.isEmpty() ? mUrl : mAmpUrl);
+        mNewTabPageManager.open(mUrl);
         RecordUserAction.record("MobileNTP.Snippets.Click");
         RecordHistogram.recordSparseSlowlyHistogram("NewTabPage.Snippets.CardClicked", mPosition);
         NewTabPageUma.recordSnippetAction(NewTabPageUma.SNIPPETS_ACTION_CLICKED);
@@ -115,7 +114,6 @@ public class SnippetArticleViewHolder extends NewTabPageViewHolder implements Vi
 
         mArticleSnippetTextView.setText(item.mPreviewText);
         mUrl = item.mUrl;
-        mAmpUrl = item.mAmpUrl;
         mPosition = item.mPosition;
 
         updateThumbnail(item);
