@@ -63,7 +63,7 @@ interface HTMLInputElement : HTMLElement
     attribute mojo
     attribute gamepadController
     attribute GCController
-    attribute speechSynthesis
+    getter speechSynthesis
     method gc
     method webkitResolveLocalFileSystemURL
     method onerror
