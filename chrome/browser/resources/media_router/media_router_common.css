@@ -10,7 +10,7 @@
 }
 
 .button {
-  color: var(--paper-blue-500);
+  color: var(--paper-blue-700);
   cursor: pointer;
   text-align: center;
 }

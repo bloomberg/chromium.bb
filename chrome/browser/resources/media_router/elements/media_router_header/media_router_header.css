@@ -75,7 +75,7 @@ paper-icon-button {
 
 .route-details,
 .sink-list {
-  background-color: var(--paper-blue-500);
+  background-color: var(--paper-blue-700);
 }
 
 #user-email-container {

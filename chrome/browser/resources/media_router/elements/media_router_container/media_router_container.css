@@ -3,7 +3,7 @@
  * found in the LICENSE file. */
 
 .active-sink {
-  color: var(--paper-blue-500);
+  color: var(--paper-blue-700);
 }
 
 .cast-mode-icon,
@@ -37,7 +37,7 @@
 }
 
 #device-missing a {
-  color: rgb(25, 118, 210);
+  color: var(--paper-blue-700);
   margin: 8px 0;
   text-decoration: none;
 }
@@ -71,7 +71,7 @@
 }
 
 #first-run-flow {
-  background-color: var(--paper-blue-500);
+  background-color: var(--paper-blue-700);
   box-sizing: border-box;
   padding: 24px 16px 4px 16px;
   position: fixed;
@@ -118,7 +118,7 @@
 
 paper-checkbox {
   --paper-checkbox-checked-color: white;
-  --paper-checkbox-checkmark-color: var(--paper-blue-500);
+  --paper-checkbox-checkmark-color: var(--paper-blue-700);
   --paper-checkbox-unchecked-color: white;
 }
 
