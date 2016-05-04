@@ -8,22 +8,8 @@
   <template>
     <style include="shared-styles">
       #container {
-        padding-bottom: 12px;
-        padding-top: 12px;
-      }
-
-      paper-button {
-        border-radius: 2px;
-        color: var(--paper-grey-600);
-        font-weight: 500;
-        line-height: 32px;
-        margin: 0;
-        min-width: 52px;
-        padding: 0 16px;
-      }
-
-      #addUser {
-        margin: 0 8px;
+        min-height: 32px;
+        padding: 12px 8px;
       }
 
       #logo {
@@ -43,9 +29,10 @@
     </style>
     <div id="container" class="layout horizontal end-justified">
       <div id="logo"></div>
-      <paper-button id="launchGuest" on-tap="onLaunchGuestTap_"
+      <paper-button id="launchGuest" class="action secondary"
+          on-tap="onLaunchGuestTap_"
           i18n-content="browseAsGuest" hidden="[[!showGuest]]"></paper-button>
-      <paper-button id="addUser" on-tap="onAddUserTap_"
+      <paper-button id="addUser" class="action secondary" on-tap="onAddUserTap_"
           i18n-content="addUser" hidden="[[!showAddPerson]]"></paper-button>
     </div>
   </template>

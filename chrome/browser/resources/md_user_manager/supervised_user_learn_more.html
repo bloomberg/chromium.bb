@@ -12,9 +12,9 @@
       }
 
       #container {
-        color: var(--paper-grey-800);
+        color: var(--main-text-color);
         line-height: 20px;
-        width: 624px;
+        width: var(--page-width);
       }
 
       #title-area {
@@ -26,7 +26,7 @@
       #title-area iron-icon {
         --iron-icon-height: 20px;
         --iron-icon-width: 20px;
-        color: var(--google-grey-500);
+        color: var(--title-icon-color);
       }
 
       .content-area {
@@ -45,20 +45,6 @@
         left: 16px;
         right: auto;
       }
-
-      #actions paper-button {
-        border-radius: 2px;
-        font-weight: 500;
-        line-height: 32px;
-        margin: 0;
-        min-width: 52px;
-        padding: 0 16px;
-      }
-
-      #actions #done {
-        background: var(--google-blue-500);
-        color: white;
-      }
     </style>
     <div id="container">
       <div id="title-area" class="horizontal justified layout">
@@ -69,7 +55,7 @@
           i18n-values=".innerHTML:supervisedUserLearnMoreText">
       </div>
       <div id="actions">
-        <paper-button id="done" on-tap="onDoneTap_"
+        <paper-button id="done" class="action primary" on-tap="onDoneTap_"
             i18n-content="supervisedUserLearnMoreDone">
         </paper-button>
       </div>

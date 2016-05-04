@@ -1,9 +1,58 @@
 <dom-module id="shared-styles">
   <template>
     <style>
-      a {
+      :root {
+        --main-text-color: var(--paper-grey-800);
+        --page-width: 624px;
+        --title-icon-color: var(--paper-grey-500);
+      }
+
+      a,
+      a:active,
+      a:hover,
+      a:visited {
         color: var(--google-blue-700);
+        cursor: pointer;
         text-decoration: none;
+      }
+
+      paper-button.action {
+        border-radius: 2px;
+        line-height: 32px;
+        margin: 0;
+        min-width: 52px;
+        padding: 0 16px;
+      }
+
+      paper-button.action.primary {
+        --paper-button: {
+          background: var(--google-blue-500);
+          color: white;
+          font-weight: 500;
+        };
+        --paper-button-flat-keyboard-focus: {
+          background: rgb(58, 117, 215);
+          font-weight: 500;
+        };
+        --paper-button-disabled: {
+          background: rgba(66, 133, 244, .5);
+          color: white;
+        };
+      }
+
+      paper-button.action.secondary {
+        --paper-button: {
+          color: var(--paper-grey-600);
+          font-weight: 500;
+        };
+        --paper-button-flat-keyboard-focus: {
+          background: rgba(0, 0, 0, .12);
+          font-weight: 500;
+        };
+      }
+
+      paper-button.action + paper-button.action {
+        -webkit-margin-start: 8px;
       }
     </style>
   </template>

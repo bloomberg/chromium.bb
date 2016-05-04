@@ -17,13 +17,11 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner.html">
 
 <dom-module id="create-profile">
-  <link rel="import" type="css" href="chrome://resources/css/action_link.css">
   <template>
     <style include="shared-styles">
       .container {
-        color: var(--paper-grey-800);
-        margin: 0 auto;
-        width: 624px;
+        color: var(--main-text-color);
+        width: var(--page-width);
       }
 
       #message-container {
@@ -72,7 +70,7 @@
         width: 300px;
       }
 
-      #icons #wrapper {
+      #icons {
         display: flex;
         flex-wrap: wrap;
         margin: -12px;
@@ -97,7 +95,7 @@
       paper-checkbox {
         --paper-checkbox-label-spacing: 16px;
         --paper-checkbox-size: 20px;
-        --primary-text-color: var(--paper-grey-800);
+        --primary-text-color: var(--main-text-color);
         margin-top: 24px;
       }
 
@@ -151,33 +149,10 @@
         right: auto;
       }
 
-      #actions paper-button {
-        border-radius: 2px;
-        font-weight: 500;
-        line-height: 32px;
-        margin: 0;
-        min-width: 52px;
-        padding: 0 16px;
-      }
-
       #actions paper-spinner {
         align-self: center;
         height: 20px;
         width: 20px;
-      }
-
-      #actions #cancel {
-        color: var(--paper-grey-600);
-      }
-
-      #actions #save {
-        -webkit-margin-start: 8px;
-        background: var(--google-blue-500);
-        color: white;
-      }
-
-      #actions #save[disabled] {
-        background: rgba(66, 133, 244, .5);
       }
     </style>
     <div id="message-container" hidden="[[!message_]]">
@@ -190,14 +165,12 @@
           no-label-float auto-validate>
       </paper-input>
       <div id="icons">
-        <div id="wrapper">
         <template is="dom-repeat" items="[[availableIconUrls_]]">
           <paper-button toggles on-tap="onIconTap_" data-icon-url$="[[item]]"
               active="[[isActiveIcon_(item, profileIconUrl_)]]">
             <img src="[[item]]">
           </paper-button>
         </template>
-        </div>
       </div>
       <paper-checkbox checked="{{isSupervised_}}">
         [[i18n('manageProfilesSupervisedSignedInLabel')]]
@@ -236,9 +209,10 @@
       </div>
       <div id="actions">
         <paper-spinner active="[[createInProgress_]]"></paper-spinner>
-        <paper-button id="cancel" on-tap="onCancelTap_" i18n-content="cancel">
+        <paper-button id="cancel" class="action secondary" i18n-content="cancel"
+            on-tap="onCancelTap_">
         </paper-button>
-        <paper-button id="save" on-tap="onSaveTap_"
+        <paper-button id="save" class="action primary" on-tap="onSaveTap_"
             i18n-content="createProfileConfirm"
             disabled="[[isSaveDisabled_(createInProgress_, profileName_)]]">
         </paper-button>

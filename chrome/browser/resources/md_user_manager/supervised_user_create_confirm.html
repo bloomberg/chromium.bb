@@ -15,9 +15,9 @@
       }
 
       #container {
-        color: var(--paper-grey-800);
+        color: var(--main-text-color);
         line-height: 20px;
-        width: 624px;
+        width: var(--page-width);
       }
 
       #title-area {
@@ -29,7 +29,7 @@
       #title-area iron-icon {
         --iron-icon-height: 20px;
         --iron-icon-width: 20px;
-        color: var(--google-grey-500);
+        color: var(--title-icon-color);
       }
 
       .content-area {
@@ -65,25 +65,6 @@
         left: 16px;
         right: auto;
       }
-
-      #actions paper-button {
-        border-radius: 2px;
-        font-weight: 500;
-        line-height: 32px;
-        margin: 0;
-        min-width: 52px;
-        padding: 0 16px;
-      }
-
-      #actions #ok {
-        color: var(--paper-grey-600);
-      }
-
-      #actions #switchUser {
-        -webkit-margin-start: 8px;
-        background: var(--google-blue-500);
-        color: white;
-      }
     </style>
     <div id="container">
       <div id="title-area" class="horizontal justified layout">
@@ -101,10 +82,11 @@
         </div>
       </div>
       <div id="actions">
-        <paper-button id="ok" on-tap="onOkTap_"
+        <paper-button id="ok" class="action secondary" on-tap="onOkTap_"
             i18n-content="supervisedUserCreatedDone">
         </paper-button>
-        <paper-button id="switchUser" on-tap="onSwitchUserTap_">
+        <paper-button id="switchUser" class="action primary"
+            on-tap="onSwitchUserTap_">
           [[switchUserText_(profileInfo)]]
         </paper-button>
       </div>
