@@ -469,59 +469,6 @@ class NoNavigationsObserver : public WebContentsObserver {
   }
 };
 
-}  // namespace
-
-// Some pages create a popup, then write an iframe into it. This causes a
-// subframe navigation without having any committed entry. Such navigations
-// just get thrown on the ground, but we shouldn't crash.
-//
-// This test actually hits NAVIGATION_TYPE_NAV_IGNORE three times. Two of them,
-// the initial window.open() and the iframe creation, don't try to create
-// navigation entries, and the third, the new navigation, tries to.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, SubframeOnEmptyPage) {
-  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
-  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
-
-  FrameTreeNode* root =
-      static_cast<WebContentsImpl*>(shell()->web_contents())->
-          GetFrameTree()->root();
-
-  // Pop open a new window.
-  ShellAddedObserver new_shell_observer;
-  std::string script = "window.open()";
-  EXPECT_TRUE(ExecuteScript(root->current_frame_host(), script));
-  Shell* new_shell = new_shell_observer.GetShell();
-  ASSERT_NE(new_shell->web_contents(), shell()->web_contents());
-  FrameTreeNode* new_root =
-      static_cast<WebContentsImpl*>(new_shell->web_contents())->
-          GetFrameTree()->root();
-
-  // Make a new iframe in it.
-  NoNavigationsObserver observer(new_shell->web_contents());
-  script = "var iframe = document.createElement('iframe');"
-           "iframe.src = 'data:text/html,<p>some page</p>';"
-           "document.body.appendChild(iframe);";
-  EXPECT_TRUE(ExecuteScript(new_root->current_frame_host(), script));
-  // The success check is of the last-committed entry, and there is none.
-  WaitForLoadStopWithoutSuccessCheck(new_shell->web_contents());
-
-  ASSERT_EQ(1U, new_root->child_count());
-  ASSERT_NE(nullptr, new_root->child_at(0));
-
-  // Navigate it.
-  GURL frame_url = embedded_test_server()->GetURL(
-      "/navigation_controller/simple_page_2.html");
-  script = "location.assign('" + frame_url.spec() + "')";
-  EXPECT_TRUE(
-      ExecuteScript(new_root->child_at(0)->current_frame_host(), script));
-
-  // Success is not crashing, and not navigating.
-  EXPECT_EQ(nullptr,
-            new_shell->web_contents()->GetController().GetLastCommittedEntry());
-}
-
-namespace {
-
 class FrameNavigateParamsCapturer : public WebContentsObserver {
  public:
   // Observes navigation for the specified |node|.
@@ -679,6 +626,79 @@ class LoadCommittedCapturer : public WebContentsObserver {
 };
 
 }  // namespace
+
+// Some pages create a popup, then write an iframe into it. This causes a
+// subframe navigation without having any committed entry. Such navigations
+// just get thrown on the ground, but we shouldn't crash.
+//
+// This test actually hits NAVIGATION_TYPE_NAV_IGNORE four times. Two of them,
+// the initial window.open() and the iframe creation, don't try to create
+// navigation entries, and the third and fourth, the new navigations, try to.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, SubframeOnEmptyPage) {
+  // Navigate to a page to force the renderer process to start.
+  EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  // Pop open a new window with no last committed entry.
+  ShellAddedObserver new_shell_observer;
+  {
+    std::string script = "window.open()";
+    EXPECT_TRUE(ExecuteScript(root->current_frame_host(), script));
+  }
+  Shell* new_shell = new_shell_observer.GetShell();
+  ASSERT_NE(new_shell->web_contents(), shell()->web_contents());
+  FrameTreeNode* new_root =
+      static_cast<WebContentsImpl*>(new_shell->web_contents())
+          ->GetFrameTree()
+          ->root();
+  EXPECT_FALSE(
+      new_shell->web_contents()->GetController().GetLastCommittedEntry());
+
+  // Make a new iframe in it.
+  NoNavigationsObserver observer(new_shell->web_contents());
+  {
+    LoadCommittedCapturer capturer(new_shell->web_contents());
+    std::string script = "var iframe = document.createElement('iframe');"
+                         "iframe.src = 'data:text/html,<p>some page</p>';"
+                         "document.body.appendChild(iframe);";
+    EXPECT_TRUE(ExecuteScript(new_root->current_frame_host(), script));
+    capturer.Wait();
+  }
+  ASSERT_EQ(1U, new_root->child_count());
+  ASSERT_NE(nullptr, new_root->child_at(0));
+
+  // Navigate it cross-site.
+  GURL frame_url = embedded_test_server()->GetURL(
+      "foo.com", "/navigation_controller/simple_page_2.html");
+  {
+    LoadCommittedCapturer capturer(new_shell->web_contents());
+    std::string script = "location.assign('" + frame_url.spec() + "')";
+    EXPECT_TRUE(
+        ExecuteScript(new_root->child_at(0)->current_frame_host(), script));
+    capturer.Wait();
+  }
+
+  // Success is not crashing, and not navigating.
+  EXPECT_EQ(nullptr,
+            new_shell->web_contents()->GetController().GetLastCommittedEntry());
+
+  // A nested iframe with a cross-site URL should also be able to commit.
+  GURL grandchild_url(embedded_test_server()->GetURL(
+      "bar.com", "/navigation_controller/simple_page_1.html"));
+  {
+    LoadCommittedCapturer capturer(new_shell->web_contents());
+    std::string script = "var iframe = document.createElement('iframe');"
+                         "iframe.src = '" + grandchild_url.spec() + "';"
+                         "document.body.appendChild(iframe);";
+    EXPECT_TRUE(
+        ExecuteScript(new_root->child_at(0)->current_frame_host(), script));
+    capturer.Wait();
+  }
+  ASSERT_EQ(1U, new_root->child_at(0)->child_count());
+  EXPECT_EQ(grandchild_url, new_root->child_at(0)->child_at(0)->current_url());
+}
 
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
                        ErrorPageReplacement) {
@@ -1569,6 +1589,198 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
         "      B = http://foo.com/",
         visualizer.DepictFrameTree(root));
   }
+}
+
+// Verify the tree of FrameNavigationEntries when a nested iframe commits inside
+// the initial blank page of a loading iframe.  Prevents regression of
+// https://crbug.com/600743.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       FrameNavigationEntry_SlowNestedAutoSubframe) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "/navigation_controller/simple_page_1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  // 1. Create a iframe with a URL that doesn't commit.
+  GURL slow_url(embedded_test_server()->GetURL(
+      "/navigation_controller/simple_page_2.html"));
+  TestNavigationManager subframe_delayer(shell()->web_contents(), slow_url);
+  {
+    std::string script = "var iframe = document.createElement('iframe');"
+                         "iframe.src = '" + slow_url.spec() + "';"
+                         "document.body.appendChild(iframe);";
+    EXPECT_TRUE(ExecuteScript(root->current_frame_host(), script));
+  }
+  subframe_delayer.WaitForWillStartRequest();
+
+  // Stop the request so that we can wait for load stop below, without ending up
+  // with a commit for this frame.
+  shell()->web_contents()->Stop();
+
+  // 2. A nested iframe with a cross-site URL should be able to commit.
+  GURL foo_url(embedded_test_server()->GetURL(
+      "foo.com", "/navigation_controller/simple_page_1.html"));
+  {
+    std::string script = "var iframe = document.createElement('iframe');"
+                         "iframe.src = '" + foo_url.spec() + "';"
+                         "document.body.appendChild(iframe);";
+    EXPECT_TRUE(ExecuteScript(root->child_at(0)->current_frame_host(), script));
+    WaitForLoadStopWithoutSuccessCheck(shell()->web_contents());
+  }
+
+  // TODO(creis): Check subframe entries once we create them in this case.
+  // See https://crbug.com/608402.
+  EXPECT_EQ(foo_url, root->child_at(0)->child_at(0)->current_url());
+}
+
+// Verify the tree of FrameNavigationEntries when a nested iframe commits inside
+// the initial blank page of an iframe with no committed entry.  Prevents
+// regression of https://crbug.com/600743.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       FrameNavigationEntry_NoCommitNestedAutoSubframe) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "/navigation_controller/simple_page_1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  // 1. Create a iframe with a URL that doesn't commit.
+  GURL no_commit_url(embedded_test_server()->GetURL("/nocontent"));
+  {
+    std::string script = "var iframe = document.createElement('iframe');"
+                         "iframe.src = '" + no_commit_url.spec() + "';"
+                         "document.body.appendChild(iframe);";
+    EXPECT_TRUE(ExecuteScript(root->current_frame_host(), script));
+  }
+  EXPECT_EQ(GURL(), root->child_at(0)->current_url());
+
+  // 2. A nested iframe with a cross-site URL should be able to commit.
+  GURL foo_url(embedded_test_server()->GetURL(
+      "foo.com", "/navigation_controller/simple_page_1.html"));
+  {
+    LoadCommittedCapturer capturer(shell()->web_contents());
+    std::string script = "var iframe = document.createElement('iframe');"
+                         "iframe.src = '" + foo_url.spec() + "';"
+                         "document.body.appendChild(iframe);";
+    EXPECT_TRUE(ExecuteScript(root->child_at(0)->current_frame_host(), script));
+    capturer.Wait();
+    EXPECT_EQ(ui::PAGE_TRANSITION_AUTO_SUBFRAME, capturer.transition_type());
+  }
+
+  // TODO(creis): Check subframe entries once we create them in this case.
+  // See https://crbug.com/608402.
+  EXPECT_EQ(foo_url, root->child_at(0)->child_at(0)->current_url());
+}
+
+// Verify the tree of FrameNavigationEntries when a nested iframe commits after
+// going back in-page, in which case its parent might not have been in the
+// NavigationEntry.  Prevents regression of https://crbug.com/600743.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       FrameNavigationEntry_BackNestedAutoSubframe) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "/navigation_controller/simple_page_1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  // 1. Navigate in-page.
+  {
+    FrameNavigateParamsCapturer capturer(root);
+    std::string script = "history.pushState({}, 'foo', 'foo')";
+    EXPECT_TRUE(ExecuteScript(root->current_frame_host(), script));
+    capturer.Wait();
+    EXPECT_EQ(NAVIGATION_TYPE_NEW_PAGE, capturer.details().type);
+    EXPECT_TRUE(capturer.details().is_in_page);
+  }
+
+  // 2. Create an iframe.
+  GURL child_url(embedded_test_server()->GetURL(
+      "/navigation_controller/simple_page_2.html"));
+  {
+    LoadCommittedCapturer capturer(shell()->web_contents());
+    std::string script = "var iframe = document.createElement('iframe');"
+                         "iframe.src = '" + child_url.spec() + "';"
+                         "document.body.appendChild(iframe);";
+    EXPECT_TRUE(ExecuteScript(root->current_frame_host(), script));
+    capturer.Wait();
+    EXPECT_EQ(ui::PAGE_TRANSITION_AUTO_SUBFRAME, capturer.transition_type());
+  }
+
+  // 3. Go back in-page.
+  {
+    TestNavigationObserver back_load_observer(shell()->web_contents());
+    shell()->web_contents()->GetController().GoBack();
+    back_load_observer.Wait();
+  }
+
+  // 4. A nested iframe with a cross-site URL should be able to commit.
+  GURL grandchild_url(embedded_test_server()->GetURL(
+      "foo.com", "/navigation_controller/simple_page_1.html"));
+  {
+    LoadCommittedCapturer capturer(shell()->web_contents());
+    std::string script = "var iframe = document.createElement('iframe');"
+                         "iframe.src = '" + grandchild_url.spec() + "';"
+                         "document.body.appendChild(iframe);";
+    EXPECT_TRUE(ExecuteScript(root->child_at(0)->current_frame_host(), script));
+    capturer.Wait();
+    EXPECT_EQ(ui::PAGE_TRANSITION_AUTO_SUBFRAME, capturer.transition_type());
+  }
+
+  // TODO(creis): Check subframe entries once we create them in this case.
+  // See https://crbug.com/608402.
+  EXPECT_EQ(grandchild_url, root->child_at(0)->child_at(0)->current_url());
+}
+
+// Verify the tree of FrameNavigationEntries when a nested iframe commits after
+// its parent changes its name, in which case we might not find the parent
+// FrameNavigationEntry.  Prevents regression of https://crbug.com/600743.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       FrameNavigationEntry_RenameNestedAutoSubframe) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "/navigation_controller/simple_page_1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  // 1. Create an iframe.
+  GURL child_url(embedded_test_server()->GetURL(
+      "/navigation_controller/simple_page_2.html"));
+  {
+    LoadCommittedCapturer capturer(shell()->web_contents());
+    std::string script = "var iframe = document.createElement('iframe');"
+                         "iframe.src = '" + child_url.spec() + "';"
+                         "document.body.appendChild(iframe);";
+    EXPECT_TRUE(ExecuteScript(root->current_frame_host(), script));
+    capturer.Wait();
+    EXPECT_EQ(ui::PAGE_TRANSITION_AUTO_SUBFRAME, capturer.transition_type());
+  }
+
+  // 2. Change the iframe's name.
+  EXPECT_TRUE(ExecuteScript(root->child_at(0)->current_frame_host(),
+                            "window.name = 'foo';"));
+
+  // 3. A nested iframe with a cross-site URL should be able to commit.
+  GURL bar_url(embedded_test_server()->GetURL(
+      "bar.com", "/navigation_controller/simple_page_1.html"));
+  {
+    LoadCommittedCapturer capturer(shell()->web_contents());
+    std::string script = "var iframe = document.createElement('iframe');"
+                         "iframe.src = '" + bar_url.spec() + "';"
+                         "document.body.appendChild(iframe);";
+    EXPECT_TRUE(ExecuteScript(root->child_at(0)->current_frame_host(), script));
+
+    capturer.Wait();
+    EXPECT_EQ(ui::PAGE_TRANSITION_AUTO_SUBFRAME, capturer.transition_type());
+  }
+
+  // TODO(creis): Check subframe entries once we create them in this case.
+  // See https://crbug.com/608402.
+  EXPECT_EQ(bar_url, root->child_at(0)->child_at(0)->current_url());
 }
 
 // Verify the tree of FrameNavigationEntries after NAVIGATION_TYPE_AUTO_SUBFRAME
