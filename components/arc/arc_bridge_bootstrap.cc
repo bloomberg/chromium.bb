@@ -128,7 +128,7 @@ ArcBridgeBootstrapImpl::ArcBridgeBootstrapImpl() : weak_factory_(this) {}
 
 ArcBridgeBootstrapImpl::~ArcBridgeBootstrapImpl() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(state_ == State::STOPPED);
+  DCHECK(state_ == State::STOPPED || state_ == State::STOPPING);
 }
 
 void ArcBridgeBootstrapImpl::Start() {
@@ -329,13 +329,10 @@ void ArcBridgeBootstrapImpl::SetState(State state) {
   // DCHECK on enum classes not supported.
   DCHECK(state_ != state);
   state_ = state;
+  VLOG(2) << "State: " << static_cast<uint32_t>(state_);
 }
 
 }  // namespace
-
-ArcBridgeBootstrap::ArcBridgeBootstrap() {}
-
-ArcBridgeBootstrap::~ArcBridgeBootstrap() {}
 
 // static
 std::unique_ptr<ArcBridgeBootstrap> ArcBridgeBootstrap::Create() {

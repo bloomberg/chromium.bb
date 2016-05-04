@@ -358,8 +358,12 @@ void ArcNetHostImpl::StartScan() {
 }
 
 void ArcNetHostImpl::ScanCompleted(const chromeos::DeviceState* /*unused*/) {
+  if (!arc_bridge_service()->net_instance()) {
+    VLOG(2) << "NetInstance not ready yet";
+    return;
+  }
   if (arc_bridge_service()->net_version() < 1) {
-    VLOG(1) << "ArcBridgeService does not support ScanCompleted.";
+    VLOG(1) << "NetInstance does not support ScanCompleted.";
     return;
   }
 

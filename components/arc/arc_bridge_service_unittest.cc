@@ -128,6 +128,7 @@ TEST_F(ArcBridgeTest, Restart) {
   ASSERT_EQ(1, instance_->init_calls());
 
   // Simulate a connection loss.
+  service_->DisableReconnectDelayForTesting();
   service_->OnChannelClosed();
   instance_->WaitForInitCall();
   ASSERT_EQ(ArcBridgeService::State::READY, state());

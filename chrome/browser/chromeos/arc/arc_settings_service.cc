@@ -323,7 +323,7 @@ void ArcSettingsServiceImpl::SyncProxySettings() const {
     case ProxyPrefs::MODE_DIRECT:
       break;
     case ProxyPrefs::MODE_SYSTEM:
-      LOG(WARNING) << "The system mode is not translated.";
+      VLOG(1) << "The system mode is not translated.";
       return;
     case ProxyPrefs::MODE_AUTO_DETECT:
       extras.SetString("pacUrl", "http://wpad/wpad.dat");

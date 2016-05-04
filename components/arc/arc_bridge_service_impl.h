@@ -36,6 +36,11 @@ class ArcBridgeServiceImpl : public ArcBridgeService,
 
   void Shutdown() override;
 
+  // Normally, reconnecting after connection shutdown happens after a short
+  // delay. When testing, however, we'd like it to happen immediately to avoid
+  // adding unnecessary delays.
+  void DisableReconnectDelayForTesting();
+
  private:
   friend class ArcBridgeTest;
   FRIEND_TEST_ALL_PREFIXES(ArcBridgeTest, Restart);
@@ -68,6 +73,9 @@ class ArcBridgeServiceImpl : public ArcBridgeService,
   // If the instance had already been started but the connection to it was
   // lost. This should make the instance restart.
   bool reconnect_ = false;
+
+  // Delay the reconnection.
+  bool use_delay_before_reconnecting_ = true;
 
   // WeakPtrFactory to use callbacks.
   base::WeakPtrFactory<ArcBridgeServiceImpl> weak_factory_;

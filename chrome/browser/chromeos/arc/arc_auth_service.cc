@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/arc/arc_auth_service.h"
 
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -224,9 +225,12 @@ void ArcAuthService::OnPrimaryUserProfilePrepared(Profile* profile) {
 
   user_manager::User const* const user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
-  if (profile->IsLegacySupervised() || !user->HasGaiaAccount()) {
-    VLOG(2) << "Supervised users and users without GAIA accounts are not "
-               "supported in Arc.";
+  if (profile->IsLegacySupervised()) {
+    VLOG(1) << "Supervised users are not supported in ARC.";
+    return;
+  }
+  if (!user->HasGaiaAccount()) {
+    VLOG(1) << "Users without GAIA accounts are not supported in ARC.";
     return;
   }
 
@@ -363,27 +367,28 @@ void ArcAuthService::OnOptInPreferenceChanged() {
   DCHECK(thread_checker.Get().CalledOnValidThread());
   DCHECK(profile_);
 
-  if (profile_->GetPrefs()->GetBoolean(prefs::kArcEnabled)) {
-    if (state_ != State::ACTIVE) {
-      CloseUI();
-      auth_code_.clear();
-
-      if (!profile_->GetPrefs()->GetBoolean(prefs::kArcSignedIn)) {
-        // Need pre-fetch auth code and show OptIn UI if needed.
-        initial_opt_in_ = true;
-        StartUI();
-      } else {
-        // Ready to start Arc.
-        StartArc();
-      }
-
-      UpdateEnabledStateUMA(true);
-    }
-  } else {
+  if (!profile_->GetPrefs()->GetBoolean(prefs::kArcEnabled)) {
     if (state_ != State::STOPPED)
       UpdateEnabledStateUMA(false);
     ShutdownBridgeAndCloseUI();
+    return;
   }
+
+  if (state_ == State::ACTIVE)
+    return;
+  CloseUI();
+  auth_code_.clear();
+
+  if (!profile_->GetPrefs()->GetBoolean(prefs::kArcSignedIn)) {
+    // Need pre-fetch auth code and show OptIn UI if needed.
+    initial_opt_in_ = true;
+    StartUI();
+  } else {
+    // Ready to start Arc.
+    StartArc();
+  }
+
+  UpdateEnabledStateUMA(true);
 }
 
 void ArcAuthService::ShutdownBridge() {

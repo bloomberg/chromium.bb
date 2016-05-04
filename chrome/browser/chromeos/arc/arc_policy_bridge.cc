@@ -137,7 +137,7 @@ std::string GetFilteredJSONPolicies(const policy::PolicyMap& policy_map) {
 
 ArcPolicyBridge::ArcPolicyBridge(ArcBridgeService* bridge_service)
     : ArcService(bridge_service), binding_(this) {
-  VLOG(1) << "ArcPolicyBridge::ArcPolicyBridge";
+  VLOG(2) << "ArcPolicyBridge::ArcPolicyBridge";
   arc_bridge_service()->AddObserver(this);
 }
 
@@ -146,12 +146,12 @@ ArcPolicyBridge::ArcPolicyBridge(ArcBridgeService* bridge_service,
     : ArcService(bridge_service),
       binding_(this),
       policy_service_(policy_service) {
-  VLOG(1) << "ArcPolicyBridge::ArcPolicyBridge(bridge_service, policy_service)";
+  VLOG(2) << "ArcPolicyBridge::ArcPolicyBridge(bridge_service, policy_service)";
   arc_bridge_service()->AddObserver(this);
 }
 
 ArcPolicyBridge::~ArcPolicyBridge() {
-  VLOG(1) << "ArcPolicyBridge::~ArcPolicyBridge";
+  VLOG(2) << "ArcPolicyBridge::~ArcPolicyBridge";
   arc_bridge_service()->RemoveObserver(this);
 }
 

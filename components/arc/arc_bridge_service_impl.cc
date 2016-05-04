@@ -9,10 +9,12 @@
 
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
+#include "base/message_loop/message_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/sys_info.h"
 #include "base/task_runner_util.h"
 #include "base/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -21,6 +23,10 @@
 #include "components/prefs/pref_service.h"
 
 namespace arc {
+
+namespace {
+constexpr int64_t kReconnectDelayInSeconds = 5;
+}  // namespace
 
 ArcBridgeServiceImpl::ArcBridgeServiceImpl(
     std::unique_ptr<ArcBridgeBootstrap> bootstrap)
@@ -31,31 +37,46 @@ ArcBridgeServiceImpl::ArcBridgeServiceImpl(
   bootstrap_->set_delegate(this);
 }
 
-ArcBridgeServiceImpl::~ArcBridgeServiceImpl() {
-}
+ArcBridgeServiceImpl::~ArcBridgeServiceImpl() {}
 
 void ArcBridgeServiceImpl::HandleStartup() {
   DCHECK(CalledOnValidThread());
+  if (session_started_)
+    return;
+  VLOG(1) << "Session started";
   session_started_ = true;
   PrerequisitesChanged();
 }
 
 void ArcBridgeServiceImpl::Shutdown() {
   DCHECK(CalledOnValidThread());
+  if (!session_started_)
+    return;
+  VLOG(1) << "Session ended";
   session_started_ = false;
   PrerequisitesChanged();
 }
 
+void ArcBridgeServiceImpl::DisableReconnectDelayForTesting() {
+  use_delay_before_reconnecting_ = false;
+}
+
 void ArcBridgeServiceImpl::PrerequisitesChanged() {
   DCHECK(CalledOnValidThread());
+  VLOG(1) << "Prerequisites changed. "
+          << "state=" << static_cast<uint32_t>(state())
+          << ", available=" << available()
+          << ", session_started=" << session_started_;
   if (state() == State::STOPPED) {
     if (!available() || !session_started_)
       return;
+    VLOG(0) << "Prerequisites met, starting ARC";
     SetState(State::CONNECTING);
     bootstrap_->Start();
   } else {
     if (available() && session_started_)
       return;
+    VLOG(0) << "Prerequisites stopped being met, stopping ARC";
     StopInstance();
   }
 }
@@ -67,6 +88,7 @@ void ArcBridgeServiceImpl::StopInstance() {
     return;
   }
 
+  VLOG(1) << "Stopping ARC";
   SetState(State::STOPPING);
   instance_ptr_.reset();
   if (binding_.is_bound())
@@ -78,6 +100,7 @@ void ArcBridgeServiceImpl::SetDetectedAvailability(bool arc_available) {
   DCHECK(CalledOnValidThread());
   if (available() == arc_available)
     return;
+  VLOG(1) << "ARC available: " << arc_available;
   SetAvailable(arc_available);
   PrerequisitesChanged();
 }
@@ -96,17 +119,31 @@ void ArcBridgeServiceImpl::OnConnectionEstablished(
 
   instance_ptr_->Init(binding_.CreateInterfacePtrAndBind());
 
+  VLOG(0) << "ARC ready";
   SetState(State::READY);
 }
 
 void ArcBridgeServiceImpl::OnStopped() {
   DCHECK(CalledOnValidThread());
   SetState(State::STOPPED);
+  VLOG(0) << "ARC stopped";
   if (reconnect_) {
     // There was a previous invocation and it crashed for some reason. Try
     // starting the container again.
     reconnect_ = false;
-    PrerequisitesChanged();
+    VLOG(0) << "ARC reconnecting";
+    if (use_delay_before_reconnecting_) {
+      // Instead of immediately trying to restart the container, give it some
+      // time to finish tearing down in case it is still in the process of
+      // stopping.
+      base::MessageLoop::current()->task_runner()->PostDelayedTask(
+          FROM_HERE, base::Bind(&ArcBridgeServiceImpl::PrerequisitesChanged,
+                                weak_factory_.GetWeakPtr()),
+          base::TimeDelta::FromSeconds(kReconnectDelayInSeconds));
+    } else {
+      // Restart immediately.
+      PrerequisitesChanged();
+    }
   }
 }
 

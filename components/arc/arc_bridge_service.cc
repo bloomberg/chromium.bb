@@ -499,6 +499,7 @@ void ArcBridgeService::SetState(State state) {
   // DCHECK on enum classes not supported.
   DCHECK(state_ != state);
   state_ = state;
+  VLOG(2) << "State: " << static_cast<uint32_t>(state_);
   FOR_EACH_OBSERVER(Observer, observer_list(), OnStateChanged(state_));
 }
 
