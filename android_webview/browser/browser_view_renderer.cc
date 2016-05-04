@@ -120,6 +120,8 @@ void BrowserViewRenderer::SetCompositorFrameConsumer(
   }
   if (compositor_frame_consumer_) {
     compositor_frame_consumer_->DeleteHardwareRendererOnUI();
+    ReturnUnusedResource(
+        compositor_frame_consumer_->PassUncommittedFrameOnUI());
     ReturnResourceFromParent(compositor_frame_consumer_);
     compositor_frame_consumer_->SetCompositorFrameProducer(nullptr);
   }

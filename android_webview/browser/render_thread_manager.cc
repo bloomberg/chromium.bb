@@ -288,7 +288,7 @@ void RenderThreadManager::DrawGL(AwDrawGLInfo* draw_info) {
   // require a correctly bound FBO. The FBO remains until the next kModeDraw.
   // So kModeProcess between kModeDraws has correctly bound FBO, too.
   if (draw_info->mode == AwDrawGLInfo::kModeDraw && !hardware_renderer_ &&
-      HasFrameForHardwareRendererOnRT()) {
+      !IsInsideHardwareRelease() && HasFrameForHardwareRendererOnRT()) {
     hardware_renderer_.reset(new HardwareRenderer(this));
     hardware_renderer_->CommitFrame();
   }
