@@ -26,7 +26,6 @@
 #include "core/html/parser/HTMLResourcePreloader.h"
 
 #include "core/dom/Document.h"
-#include "core/fetch/CSSStyleSheetResource.h"
 #include "core/fetch/FetchInitiatorInfo.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/loader/DocumentLoader.h"
@@ -47,13 +46,6 @@ HTMLResourcePreloader* HTMLResourcePreloader::create(Document& document)
 DEFINE_TRACE(HTMLResourcePreloader)
 {
     visitor->trace(m_document);
-}
-
-int HTMLResourcePreloader::countPreloads()
-{
-    if (m_document->loader())
-        return m_document->loader()->fetcher()->countPreloads();
-    return 0;
 }
 
 static void preconnectHost(PreloadRequest* request, const NetworkHintsInterface& networkHintsInterface)
@@ -83,12 +75,7 @@ void HTMLResourcePreloader::preload(PassOwnPtr<PreloadRequest> preload, const Ne
     if (preload->resourceType() == Resource::Script || preload->resourceType() == Resource::CSSStyleSheet || preload->resourceType() == Resource::ImportResource)
         request.setCharset(preload->charset().isEmpty() ? m_document->characterSet().getString() : preload->charset());
     request.setForPreload(true);
-    Resource* resource = m_document->loader()->startPreload(preload->resourceType(), request);
-    if (resource && preload->resourceType() == Resource::CSSStyleSheet && RuntimeEnabledFeatures::cssPreloadImportEnabled()) {
-        OwnPtr<CSSPreloaderResourceClient> client = adoptPtr(new CSSPreloaderResourceClient(resource, this));
-        resource->addClient(client.get());
-        m_cssPreloaders.add(client.release());
-    }
+    m_document->loader()->startPreload(preload->resourceType(), request);
 }
 
 } // namespace blink

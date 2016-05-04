@@ -55,7 +55,6 @@ CSSHyphens status=test
 CSSIndependentTransformProperties status=experimental
 CSSMaskSourceType status=experimental
 CSSOMSmoothScroll status=experimental
-CSSPreloadImport status=experimental
 CSSPaintAPI status=test, depends_on=Worklet
 CSSPropertyD status=stable
 CSSSnapSize status=experimental

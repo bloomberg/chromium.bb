@@ -39,7 +39,6 @@
 #include "core/html/parser/BackgroundHTMLParser.h"
 #include "core/html/parser/HTMLParserScheduler.h"
 #include "core/html/parser/HTMLParserThread.h"
-#include "core/html/parser/HTMLResourcePreloader.h"
 #include "core/html/parser/HTMLScriptRunner.h"
 #include "core/html/parser/HTMLTreeBuilder.h"
 #include "core/inspector/InspectorInstrumentation.h"

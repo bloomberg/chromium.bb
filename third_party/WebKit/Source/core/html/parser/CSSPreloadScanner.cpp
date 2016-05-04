@@ -27,11 +27,8 @@
 
 #include "core/html/parser/CSSPreloadScanner.h"
 
-#include "core/fetch/CSSStyleSheetResource.h"
 #include "core/fetch/FetchInitiatorTypeNames.h"
 #include "core/html/parser/HTMLParserIdioms.h"
-#include "core/html/parser/HTMLResourcePreloader.h"
-#include "platform/Histogram.h"
 #include "platform/text/SegmentedString.h"
 
 namespace blink {
@@ -234,41 +231,6 @@ void CSSPreloadScanner::emitRule(const SegmentedString& source)
         m_state = DoneParsingImportRules;
     m_rule.clear();
     m_ruleValue.clear();
-}
-
-CSSPreloaderResourceClient::CSSPreloaderResourceClient(Resource* resource, HTMLResourcePreloader* preloader)
-    : m_resource(resource)
-    , m_preloader(preloader)
-{
-}
-
-void CSSPreloaderResourceClient::notifyFinished(Resource* resource)
-{
-    resource->removeClient(this);
-    m_resource.clear();
-}
-
-// Only attach for one appendData call, as that's where most imports will likely
-// be (according to spec).
-void CSSPreloaderResourceClient::didAppendFirstData(const CSSStyleSheetResource* resource)
-{
-    const String& chunk = resource->decodedText();
-    if (!chunk.isNull() && m_preloader) {
-        CSSPreloadScanner cssPreloadScanner;
-        PreloadRequestStream preloads;
-        // Passing an empty SegmentedString here results in PreloadRequests
-        // with no file/line information.
-        // TODO(csharrison): If this becomes an issue the CSSPreloadScanner
-        // may be augmented to take care of this case without performing an
-        // additional copy.
-        cssPreloadScanner.scan(chunk, SegmentedString(), preloads, resource->response().url());
-        int currentPreloadCount = m_preloader->countPreloads();
-        m_preloader->takeAndPreload(preloads);
-        DEFINE_STATIC_LOCAL(CustomCountHistogram, cssImportHistogram, ("PreloadScanner.ExternalCSS.PreloadCount", 1, 100, 50));
-        cssImportHistogram.count(m_preloader->countPreloads() - currentPreloadCount);
-    }
-    m_resource->removeClient(this);
-    m_resource.clear();
 }
 
 } // namespace blink
