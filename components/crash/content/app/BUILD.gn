@@ -128,10 +128,6 @@ source_set("app_non_mac_win") {
     "//content/public/common:result_codes",
   ]
 
-  if (is_android) {
-    defines += [ "CHROME_BUILD_ID=\"$android_chrome_build_id\"" ]
-  }
-
   # Clang's -mstackrealign doesn't work well with
   # linux_syscall_support.h hand written asm syscalls.
   # See https://crbug.com/556393

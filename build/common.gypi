@@ -4727,11 +4727,6 @@
     # Android-specific options; note that most are set above with Linux.
     ['OS=="android"', {
       'variables': {
-        # This is a unique identifier for a given build. It's used for
-        # identifying various build artifacts corresponding to a particular
-        # build of chrome (e.g. where to find archived symbols).
-        'chrome_build_id%': '',
-
         # Placing this variable here prevents from forking libvpx, used
         # by remoting.  Remoting is off, so it needn't built,
         # so forking it's deps seems like overkill.
@@ -4821,7 +4816,6 @@
             'defines': [
               'ANDROID',
               '__GNU_SOURCE=1',  # Necessary for clone()
-              'CHROME_BUILD_ID="<(chrome_build_id)"',
               # The NDK has these things, but doesn't define the constants
               # to say that it does. Define them here instead.
               'HAVE_SYS_UIO_H',

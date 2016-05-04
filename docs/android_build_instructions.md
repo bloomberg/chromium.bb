@@ -341,6 +341,8 @@ out/Default/bin/install_chrome_public_apk_incremental -v --uninstall
 
 #### Rebuilding libchrome.so for a particular release
 
+These instructions are only necessary for Chrome 51 and earlier.
+
 In the case where you want to modify the native code for an existing
 release of Chrome for Android (v25+) you can do the following steps.
 Note that in order to get your changes into the official release, you'll

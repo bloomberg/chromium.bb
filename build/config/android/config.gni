@@ -73,11 +73,6 @@ if (is_android) {
     # The password for the keystore to use for signing builds.
     android_keystore_password = default_android_keystore_password
 
-    # This is a unique identifier for a given build. It's used for
-    # identifying various build artifacts corresponding to a particular build of
-    # chrome (e.g. where to find archived symbols).
-    android_chrome_build_id = "\"\""
-
     # Set to true to run findbugs on JAR targets.
     run_findbugs = false
 

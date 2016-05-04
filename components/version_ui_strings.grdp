@@ -44,9 +44,4 @@
   <message name="IDS_VERSION_UI_VARIATIONS" desc="label for the variations list on the about:version page">
     Variations
   </message>
-<if expr="is_android">
-  <message name="IDS_VERSION_UI_BUILD_ID" desc="label for the build identifier on the about:version page">
-    Build ID
-  </message>
-</if>
 </grit-part>

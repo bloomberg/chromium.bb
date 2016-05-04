@@ -388,8 +388,6 @@ source_set("ui") {
   if (is_android) {
     deps += [ "//crypto:platform" ]
 
-    defines += [ "CHROME_BUILD_ID=\"$android_chrome_build_id\"" ]
-
     if (android_java_ui) {
       sources +=
           rebase_path(gypi_values.chrome_browser_ui_android_java_ui_sources,

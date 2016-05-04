@@ -24,8 +24,6 @@ extern const char kReturnVariationInfo[];
 extern const char kApplicationLabel[];
 extern const char kARC[];
 extern const char kBlinkVersion[];
-extern const char kBuildID[];
-extern const char kBuildIDName[];
 extern const char kCL[];
 extern const char kCommandLine[];
 extern const char kCommandLineName[];

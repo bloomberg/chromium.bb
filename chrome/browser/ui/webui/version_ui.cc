@@ -69,9 +69,6 @@ WebUIDataSource* CreateVersionUIDataSource() {
 #if defined(OS_ANDROID)
   html_source->AddString(version_ui::kOSVersion,
                          AndroidAboutAppInfo::GetOsInfo());
-  html_source->AddLocalizedString(version_ui::kBuildIDName,
-                                  IDS_VERSION_UI_BUILD_ID);
-  html_source->AddString(version_ui::kBuildID, CHROME_BUILD_ID);
 #else
   html_source->AddString(version_ui::kOSVersion, std::string());
   html_source->AddString(version_ui::kFlashPlugin, "Flash");
