@@ -209,7 +209,9 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             PaymentApp app = mApps.get(i);
             Set<String> appMethods = app.getSupportedMethodNames();
             appMethods.retainAll(mSupportedMethods);
-            if (!appMethods.isEmpty()) {
+            if (appMethods.isEmpty()) {
+                mPendingApps.remove(app);
+            } else {
                 isGettingInstruments = true;
                 app.getInstruments(mPaymentItems, this);
             }
