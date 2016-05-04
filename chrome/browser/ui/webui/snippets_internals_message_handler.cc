@@ -36,14 +36,14 @@ std::unique_ptr<base::DictionaryValue> PrepareSnippet(
     bool discarded) {
   std::unique_ptr<base::DictionaryValue> entry(new base::DictionaryValue);
   entry->SetString("title", snippet.title());
-  entry->SetString("siteTitle", snippet.site_title());
+  entry->SetString("siteTitle", snippet.best_source().publisher_name);
   entry->SetString("snippet", snippet.snippet());
   entry->SetString("published",
                    TimeFormatShortDateAndTime(snippet.publish_date()));
   entry->SetString("expires",
                    TimeFormatShortDateAndTime(snippet.expiry_date()));
   entry->SetString("url", snippet.url().spec());
-  entry->SetString("faviconUrl", snippet.favicon_url().spec());
+  entry->SetString("ampUrl", snippet.best_source().amp_url.spec());
   entry->SetString("salientImageUrl", snippet.salient_image_url().spec());
 
   if (discarded)

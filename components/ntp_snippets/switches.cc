@@ -18,5 +18,9 @@ const char kFetchingIntervalFallbackSeconds[] =
 // suggestions.
 const char kDontRestrict[] = "ntp-snippets-dont-restrict";
 
+// If this flag is set, we will add downloaded snippets that are missing some
+// critical data to the list.
+const char kAddIncompleteSnippets[] = "ntp-snippets-add-incomplete";
+
 }  // namespace switches
 }  // namespace ntp_snippets

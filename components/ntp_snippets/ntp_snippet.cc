@@ -5,18 +5,20 @@
 #include "components/ntp_snippets/ntp_snippet.h"
 
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/values.h"
 
 namespace {
 
 const char kUrl[] = "url";
-const char kSiteTitle[] = "site_title";
 const char kTitle[] = "title";
-const char kFaviconUrl[] = "favicon_url";
 const char kSalientImageUrl[] = "thumbnailUrl";
 const char kSnippet[] = "snippet";
 const char kPublishDate[] = "creationTimestampSec";
 const char kExpiryDate[] = "expiryTimestampSec";
+const char kSiteTitle[] = "sourceName";
+const char kPublisherData[] = "publisherData";
+const char kCorpusId[] = "corpusId";
 const char kSourceCorpusInfo[] = "sourceCorpusInfo";
 const char kAmpUrl[] = "ampUrl";
 
@@ -24,7 +26,7 @@ const char kAmpUrl[] = "ampUrl";
 
 namespace ntp_snippets {
 
-NTPSnippet::NTPSnippet(const GURL& url) : url_(url) {
+NTPSnippet::NTPSnippet(const GURL& url) : url_(url), best_source_index_(0) {
   DCHECK(url_.is_valid());
 }
 
@@ -43,15 +45,9 @@ std::unique_ptr<NTPSnippet> NTPSnippet::CreateFromDictionary(
 
   std::unique_ptr<NTPSnippet> snippet(new NTPSnippet(url));
 
-  std::string site_title;
-  if (dict.GetString(kSiteTitle, &site_title))
-    snippet->set_site_title(site_title);
   std::string title;
   if (dict.GetString(kTitle, &title))
     snippet->set_title(title);
-  std::string favicon_url;
-  if (dict.GetString(kFaviconUrl, &favicon_url))
-    snippet->set_favicon_url(GURL(favicon_url));
   std::string salient_image_url;
   if (dict.GetString(kSalientImageUrl, &salient_image_url))
     snippet->set_salient_image_url(GURL(salient_image_url));
@@ -67,17 +63,77 @@ std::unique_ptr<NTPSnippet> NTPSnippet::CreateFromDictionary(
     snippet->set_expiry_date(TimeFromJsonString(expiry_timestamp_str));
 
   const base::ListValue* corpus_infos_list = nullptr;
-  if (dict.GetList(kSourceCorpusInfo, &corpus_infos_list)) {
-    for (base::Value* value : *corpus_infos_list) {
-      const base::DictionaryValue* dict_value = nullptr;
-      if (value->GetAsDictionary(&dict_value)) {
-        std::string amp_url;
-        if (dict_value->GetString(kAmpUrl, &amp_url)) {
-          snippet->set_amp_url(GURL(amp_url));
-          break;
-        }
+  if (!dict.GetList(kSourceCorpusInfo, &corpus_infos_list)) {
+    DLOG(WARNING) << "No sources found for article " << title;
+    return nullptr;
+  }
+
+  for (base::Value* value : *corpus_infos_list) {
+    const base::DictionaryValue* dict_value = nullptr;
+    if (!value->GetAsDictionary(&dict_value)) {
+      DLOG(WARNING) << "Invalid source info for article " << url_str;
+      continue;
+    }
+
+    std::string corpus_id_str;
+    GURL corpus_id;
+    if (dict_value->GetString(kCorpusId, &corpus_id_str))
+      corpus_id = GURL(corpus_id_str);
+
+    if (!corpus_id.is_valid()) {
+      // We must at least have a valid source URL.
+      DLOG(WARNING) << "Invalid article url " << corpus_id_str;
+      continue;
+    }
+
+    const base::DictionaryValue* publisher_data = nullptr;
+    std::string site_title;
+    if (dict_value->GetDictionary(kPublisherData, &publisher_data)) {
+      if (!publisher_data->GetString(kSiteTitle, &site_title)) {
+        // It's possible but not desirable to have no publisher data.
+        DLOG(WARNING) << "No publisher name for article " << corpus_id.spec();
+      }
+    } else {
+      DLOG(WARNING) << "No publisher data for article " << corpus_id.spec();
+    }
+
+    std::string amp_url_str;
+    GURL amp_url;
+    // Expected to not have AMP url sometimes.
+    if (dict_value->GetString(kAmpUrl, &amp_url_str)) {
+      amp_url = GURL(amp_url_str);
+      DLOG_IF(WARNING, !amp_url.is_valid()) << "Invalid AMP url "
+                                            << amp_url_str;
+    }
+    SnippetSource source(corpus_id, site_title,
+                         amp_url.is_valid() ? amp_url : GURL());
+    snippet->add_source(source);
+  }
+  // The previous url we have saved can be one of several sources for the
+  // article. For example, the same article can be hosted by nytimes.com,
+  // cnn.com, etc. We need to parse the list of sources for this article and
+  // find the best match. In order of preference:
+  //  1) A source that has url, publisher name, AMP url
+  //  2) A source that has url, publisher name
+  //  3) A source that has url and AMP url, or url only (since we won't show
+  //  the snippet to users if the article does not have a publisher name, it
+  //  doesn't matter whether the snippet has the AMP url or not)
+  size_t best_source_index = 0;
+  for (size_t i = 0; i < snippet->sources_.size(); ++i) {
+    const SnippetSource& source = snippet->sources_[i];
+    if (!source.publisher_name.empty()) {
+      best_source_index = i;
+      if (!source.amp_url.is_empty()) {
+        // This is the best possible source, stop looking.
+        break;
       }
     }
+  }
+  snippet->set_source_index(best_source_index);
+
+  if (snippet->sources_.empty()) {
+    DLOG(WARNING) << "No sources found for article " << url_str;
+    return nullptr;
   }
 
   return snippet;
@@ -87,12 +143,8 @@ std::unique_ptr<base::DictionaryValue> NTPSnippet::ToDictionary() const {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
 
   dict->SetString(kUrl, url_.spec());
-  if (!site_title_.empty())
-    dict->SetString(kSiteTitle, site_title_);
   if (!title_.empty())
     dict->SetString(kTitle, title_);
-  if (favicon_url_.is_valid())
-    dict->SetString(kFaviconUrl, favicon_url_.spec());
   if (salient_image_url_.is_valid())
     dict->SetString(kSalientImageUrl, salient_image_url_.spec());
   if (!snippet_.empty())
@@ -101,14 +153,25 @@ std::unique_ptr<base::DictionaryValue> NTPSnippet::ToDictionary() const {
     dict->SetString(kPublishDate, TimeToJsonString(publish_date_));
   if (!expiry_date_.is_null())
     dict->SetString(kExpiryDate, TimeToJsonString(expiry_date_));
-  if (amp_url_.is_valid()) {
-    std::unique_ptr<base::ListValue> corpus_infos_list(new base::ListValue);
+
+  std::unique_ptr<base::ListValue> corpus_infos_list(new base::ListValue);
+  for (const SnippetSource& source : sources_) {
     std::unique_ptr<base::DictionaryValue> corpus_info_dict(
         new base::DictionaryValue);
-    corpus_info_dict->SetString(kAmpUrl, amp_url_.spec());
-    corpus_infos_list->Set(0, std::move(corpus_info_dict));
-    dict->Set(kSourceCorpusInfo, std::move(corpus_infos_list));
+
+    corpus_info_dict->SetString(kCorpusId, source.url.spec());
+    if (!source.amp_url.is_empty())
+      corpus_info_dict->SetString(kAmpUrl, source.amp_url.spec());
+    if (!source.publisher_name.empty())
+      corpus_info_dict->SetString(
+          base::StringPrintf("%s.%s", kPublisherData, kSiteTitle),
+          source.publisher_name);
+
+    corpus_infos_list->Append(std::move(corpus_info_dict));
   }
+
+  dict->Set(kSourceCorpusInfo, std::move(corpus_infos_list));
+
   return dict;
 }
 

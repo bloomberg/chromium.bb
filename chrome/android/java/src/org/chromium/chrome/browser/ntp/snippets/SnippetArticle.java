@@ -16,6 +16,7 @@ public class SnippetArticle implements NewTabPageListItem {
     public final String mPublisher;
     public final String mPreviewText;
     public final String mUrl;
+    public final String mAmpUrl;
     public final String mThumbnailUrl;
     public final long mTimestamp;
     public final int mPosition;
@@ -29,16 +30,18 @@ public class SnippetArticle implements NewTabPageListItem {
      * @param publisher the canonical publisher name (e.g., New York Times)
      * @param previewText the snippet preview text
      * @param url the URL of the article
+     * @param mAmpUrl the AMP url for the article (possible for this to be empty)
      * @param thumbnailUrl the URL of the thumbnail
      * @param timestamp the time in ms when this article was published
      * @param position the position of this article in the list of snippets
      */
     public SnippetArticle(String title, String publisher, String previewText, String url,
-            String thumbnailUrl, long timestamp, int position) {
+            String ampUrl, String thumbnailUrl, long timestamp, int position) {
         mTitle = title;
         mPublisher = publisher;
         mPreviewText = previewText;
         mUrl = url;
+        mAmpUrl = ampUrl;
         mThumbnailUrl = thumbnailUrl;
         mTimestamp = timestamp;
         mPosition = position;
@@ -61,14 +64,14 @@ public class SnippetArticle implements NewTabPageListItem {
     }
 
     /**
-     * Returns this article's tumbnail as a {@link Bitmap}. Can return {@code null} as it is
+     * Returns this article's thumbnail as a {@link Bitmap}. Can return {@code null} as it is
      * initially unset.
      */
     public Bitmap getThumbnailBitmap() {
         return mThumbnailBitmap;
     }
 
-    /** Sets the tumbnail bitmap for this article. */
+    /** Sets the thumbnail bitmap for this article. */
     public void setThumbnailBitmap(Bitmap bitmap) {
         mThumbnailBitmap = bitmap;
     }

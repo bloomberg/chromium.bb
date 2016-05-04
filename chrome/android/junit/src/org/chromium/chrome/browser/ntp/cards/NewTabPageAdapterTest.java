@@ -64,9 +64,12 @@ public class NewTabPageAdapterTest {
         assertEquals(NewTabPageListItem.VIEW_TYPE_ABOVE_THE_FOLD, ntpa.getItemViewType(0));
 
         List<SnippetArticle> snippets = Arrays.asList(new SnippetArticle[] {
-                new SnippetArticle("title1", "pub1", "txt1", "https://site.com/url1", null, 0, 0),
-                new SnippetArticle("title2", "pub2", "txt2", "https://site.com/url2", null, 0, 0),
-                new SnippetArticle("title3", "pub3", "txt3", "https://site.com/url3", null, 0, 0)});
+                new SnippetArticle("title1", "pub1", "txt1", "https://site.com/url1",
+                        "https://amp.site.com/url1", null, 0, 0),
+                new SnippetArticle("title2", "pub2", "txt2", "https://site.com/url2",
+                        "https://amp.site.com/url1", null, 0, 0),
+                new SnippetArticle("title3", "pub3", "txt3", "https://site.com/url3",
+                        "https://amp.site.com/url1", null, 0, 0)});
         mSnippetsObserver.onSnippetsReceived(snippets);
 
         List<NewTabPageListItem> loadedItems = ntpa.getItemsForTesting();
@@ -93,8 +96,10 @@ public class NewTabPageAdapterTest {
 
         // We should load new snippets when we get notified about them.
         List<SnippetArticle> snippets = Arrays.asList(new SnippetArticle[] {
-                new SnippetArticle("title1", "pub1", "txt1", "https://site.com/url1", null, 0, 0),
-                new SnippetArticle("title2", "pub2", "txt2", "https://site.com/url2", null, 0, 0)});
+                new SnippetArticle("title1", "pub1", "txt1", "https://site.com/url1",
+                        "https://amp.site.com/url1", null, 0, 0),
+                new SnippetArticle("title2", "pub2", "txt2", "https://site.com/url2",
+                        "https://amp.site.com/url1", null, 0, 0)});
         mSnippetsObserver.onSnippetsReceived(snippets);
         List<NewTabPageListItem> loadedItems = ntpa.getItemsForTesting();
         assertEquals(NewTabPageListItem.VIEW_TYPE_ABOVE_THE_FOLD, ntpa.getItemViewType(0));

@@ -39,9 +39,10 @@
         android:id="@+id/article_publisher"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/article_snippet"
-        android:layout_toStartOf="@+id/article_thumbnail"
         android:layout_marginTop="16dp"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/article_snippet"
+        android:drawablePadding="8dp"
         android:maxLines="1"
         android:ellipsize="end"
         android:textSize="12sp"
@@ -57,5 +58,5 @@
         android:layout_marginStart="16dp"
         android:scaleType="centerCrop"
         android:contentDescription="@null"
-        android:src="@null"/>
+        android:src="@null" />
 </RelativeLayout>

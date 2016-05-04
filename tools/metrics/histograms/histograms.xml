@@ -33271,6 +33271,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="NewTabPage.Snippets.IncompleteSnippetsAfterFetch"
+    enum="Boolean">
+  <owner>maybelle@chromium.org</owner>
+  <summary>
+    Whether we discarded any of the snippets after fetching them due to having
+    incomplete metadata.
+  </summary>
+</histogram>
+
 <histogram name="NewTabPage.Snippets.Interactions" enum="SnippetsInteractions">
   <owner>knn@chromium.org</owner>
   <summary>
@@ -33302,6 +33311,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Android: The number of snippet articles discarded by the user, logged every
     time the list is updated resulting in an empty list (all articles
     discarded).
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.Snippets.NumIncompleteSnippets" units="snippets">
+  <owner>maybelle@chromium.org</owner>
+  <summary>
+    The number of snippets that we discard per fetch due to having incomplete
+    data.
   </summary>
 </histogram>
 

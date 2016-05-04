@@ -111,25 +111,37 @@ void NTPSnippetsBridge::NTPSnippetsServiceLoaded() {
     return;
 
   std::vector<std::string> titles;
+  // URL for the article. This will also be used to find the favicon for the
+  // article.
   std::vector<std::string> urls;
+  // URL for the AMP version of the article if it exists. This will be used as
+  // the URL to direct the user to on tap.
+  std::vector<std::string> amp_urls;
   std::vector<std::string> thumbnail_urls;
   std::vector<std::string> snippets;
   std::vector<int64_t> timestamps;
+  std::vector<std::string> publishers;
   for (const ntp_snippets::NTPSnippet& snippet : *ntp_snippets_service_) {
+    // The url from source_info is a url for a site that is one of the
+    // HOST_RESTRICT parameters, so this is preferred.
+    urls.push_back(snippet.best_source().url.spec());
+    amp_urls.push_back(snippet.best_source().amp_url.spec());
     titles.push_back(snippet.title());
-    urls.push_back(snippet.url().spec());
     thumbnail_urls.push_back(snippet.salient_image_url().spec());
     snippets.push_back(snippet.snippet());
     timestamps.push_back(snippet.publish_date().ToJavaTime());
+    publishers.push_back(snippet.best_source().publisher_name);
   }
 
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_SnippetsBridge_onSnippetsAvailable(
       env, observer_.obj(), ToJavaArrayOfStrings(env, titles).obj(),
       ToJavaArrayOfStrings(env, urls).obj(),
+      ToJavaArrayOfStrings(env, amp_urls).obj(),
       ToJavaArrayOfStrings(env, thumbnail_urls).obj(),
       ToJavaArrayOfStrings(env, snippets).obj(),
-      ToJavaLongArray(env, timestamps).obj());
+      ToJavaLongArray(env, timestamps).obj(),
+      ToJavaArrayOfStrings(env, publishers).obj());
 }
 
 void NTPSnippetsBridge::NTPSnippetsServiceShutdown() {

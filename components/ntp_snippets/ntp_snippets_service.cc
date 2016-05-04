@@ -290,7 +290,8 @@ std::set<std::string> NTPSnippetsService::GetSuggestionsHosts() const {
 bool NTPSnippetsService::DiscardSnippet(const GURL& url) {
   auto it = std::find_if(snippets_.begin(), snippets_.end(),
                          [&url](const std::unique_ptr<NTPSnippet>& snippet) {
-                           return snippet->url() == url;
+                           return snippet->url() == url ||
+                                  snippet->best_source().url == url;
                          });
   if (it == snippets_.end())
     return false;
@@ -347,7 +348,6 @@ void NTPSnippetsService::OnSuggestionsChanged(
 
 void NTPSnippetsService::OnSnippetsDownloaded(
     const std::string& snippets_json, const std::string& status) {
-
   if (!snippets_json.empty()) {
     DCHECK(status.empty());
 
@@ -429,6 +429,26 @@ bool NTPSnippetsService::MergeSnippets(NTPSnippetStorage new_snippets) {
     }
   }
 
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAddIncompleteSnippets)) {
+    int num_new_snippets = new_snippets.size();
+    // Remove snippets that do not have all the info we need to display it to
+    // the user.
+    new_snippets.erase(
+        std::remove_if(new_snippets.begin(), new_snippets.end(),
+                       [](const std::unique_ptr<NTPSnippet>& snippet) {
+                         return !snippet->is_complete();
+                       }),
+        new_snippets.end());
+    int num_snippets_discarded = num_new_snippets - new_snippets.size();
+    UMA_HISTOGRAM_BOOLEAN("NewTabPage.Snippets.IncompleteSnippetsAfterFetch",
+                          num_snippets_discarded > 0);
+    if (num_snippets_discarded > 0) {
+      UMA_HISTOGRAM_SPARSE_SLOWLY("NewTabPage.Snippets.NumIncompleteSnippets",
+                                  num_snippets_discarded);
+    }
+  }
+
   // Insert the new snippets at the front.
   snippets_.insert(snippets_.begin(),
                    std::make_move_iterator(new_snippets.begin()),
@@ -454,8 +474,7 @@ void NTPSnippetsService::StoreSnippetsToPrefs() {
 void NTPSnippetsService::LoadDiscardedSnippetsFromPrefs() {
   discarded_snippets_.clear();
   bool success = AddSnippetsFromListValue(
-      *pref_service_->GetList(prefs::kDiscardedSnippets),
-      &discarded_snippets_);
+      *pref_service_->GetList(prefs::kDiscardedSnippets), &discarded_snippets_);
   DCHECK(success) << "Failed to parse discarded snippets from prefs";
 }
 

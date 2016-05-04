@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/time/time.h"
@@ -17,6 +18,16 @@ class DictionaryValue;
 }
 
 namespace ntp_snippets {
+
+struct SnippetSource {
+  SnippetSource(const GURL& url,
+                const std::string& publisher_name,
+                const GURL& amp_url)
+      : url(url), publisher_name(publisher_name), amp_url(amp_url) {}
+  GURL url;
+  std::string publisher_name;
+  GURL amp_url;
+};
 
 // Stores and vend fresh content data for the NTP. This is a dumb class with no
 // smarts at all, all the logic is in the service.
@@ -38,16 +49,6 @@ class NTPSnippet {
 
   // URL of the page described by this snippet.
   const GURL& url() const { return url_; }
-
-  // Subtitle to identify the site the snippet is from.
-  const std::string& site_title() const { return site_title_; }
-  void set_site_title(const std::string& site_title) {
-    site_title_ = site_title;
-  }
-
-  // Favicon for the site. Do not use to directly retrieve the favicon.
-  const GURL& favicon_url() const { return favicon_url_; }
-  void set_favicon_url(const GURL& favicon_url) { favicon_url_ = favicon_url; }
 
   // Title of the snippet.
   const std::string& title() const { return title_; }
@@ -79,23 +80,41 @@ class NTPSnippet {
     expiry_date_ = expiry_date;
   }
 
-  const GURL& amp_url() const { return amp_url_; }
-  void set_amp_url(const GURL& amp_url) { amp_url_ = amp_url; }
+  size_t source_index() const { return best_source_index_; }
+  void set_source_index(size_t index) { best_source_index_ = index; }
+
+  // We should never construct an NTPSnippet object if we don't have any sources
+  // so this should never fail
+  const SnippetSource& best_source() const {
+    return sources_[best_source_index_];
+  }
+
+  const std::vector<SnippetSource>& sources() const { return sources_; }
+  void add_source(const SnippetSource& source) { sources_.push_back(source); }
+
+  // If this snippet has all the data we need to show a full card to the user
+  bool is_complete() const {
+    return url().is_valid() && !sources().empty() && !title().empty() &&
+           !snippet().empty() && salient_image_url().is_valid() &&
+           !publish_date().is_null() && !expiry_date().is_null() &&
+           !best_source().publisher_name.empty();
+  }
 
   // Public for testing.
   static base::Time TimeFromJsonString(const std::string& timestamp_str);
   static std::string TimeToJsonString(const base::Time& time);
 
  private:
-  const GURL url_;
-  std::string site_title_;
+  GURL url_;
   std::string title_;
-  GURL favicon_url_;
   GURL salient_image_url_;
   std::string snippet_;
   base::Time publish_date_;
   base::Time expiry_date_;
   GURL amp_url_;
+  size_t best_source_index_;
+
+  std::vector<SnippetSource> sources_;
 
   DISALLOW_COPY_AND_ASSIGN(NTPSnippet);
 };
