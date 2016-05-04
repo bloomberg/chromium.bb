@@ -379,7 +379,9 @@ class DevToolsConnection(object):
       if target_descriptor['type'] == 'page':
         self._target_descriptor = target_descriptor
         break
-    assert self._target_descriptor['url'] == 'about:blank'
+    if self._target_descriptor['url'] != 'about:blank':
+      raise DevToolsConnectionException(
+          'Looks like devtools connection was made to a different instance.')
     self._ws = inspector_websocket.InspectorWebsocket()
     self._ws.Connect(self._target_descriptor['webSocketDebuggerUrl'],
                      timeout=_WEBSOCKET_TIMEOUT_SECONDS)

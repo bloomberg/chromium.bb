@@ -248,13 +248,14 @@ class Worker(object):
           chrome_ctl.SetNetworkEmulation(emulate_network)
 
         # Record and write the trace.
-        with chrome_ctl.OpenWithRedirection(sys.stdout,
-                                            sys.stderr) as connection:
+        with chrome_ctl.Open() as connection:
           connection.ClearCache()
           trace = loading_trace.LoadingTrace.RecordUrlNavigation(
               url, connection, chrome_ctl.ChromeMetadata())
           trace_metadata['succeeded'] = True
           trace_metadata.update(trace.ToJsonDict()[trace._METADATA_KEY])
+      except controller.ChromeControllerError as e:
+        e.Dump(sys.stderr)
       except Exception as e:
         sys.stderr.write(str(e))
 

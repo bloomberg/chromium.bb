@@ -21,21 +21,70 @@ import subprocess
 import sys
 import tempfile
 import time
-
-_SRC_DIR = os.path.abspath(os.path.join(
-    os.path.dirname(__file__), '..', '..', '..'))
+import traceback
 
 import chrome_cache
 import common_util
 import device_setup
 import devtools_monitor
 import emulation
-import options
+from options import OPTIONS
 
-sys.path.append(os.path.join(_SRC_DIR, 'third_party', 'catapult', 'devil'))
+_SRC_DIR = os.path.abspath(os.path.join(
+    os.path.dirname(__file__), '..', '..', '..'))
+_CATAPULT_DIR = os.path.join(_SRC_DIR, 'third_party', 'catapult')
+
+sys.path.append(os.path.join(_CATAPULT_DIR, 'devil'))
 from devil.android.sdk import intent
 
-OPTIONS = options.OPTIONS
+sys.path.append(
+    os.path.join(_CATAPULT_DIR, 'telemetry', 'third_party', 'websocket-client'))
+import websocket
+
+
+class ChromeControllerInternalError(Exception):
+  pass
+
+
+class ChromeControllerError(Exception):
+  """Chrome error with detailed log.
+
+  Note:
+    Some of these errors might be known intermittent errors that can usually be
+    retried by the caller after re-doing any specific setup again.
+  """
+  _INTERMITTENT_WHITE_LIST = {websocket.WebSocketTimeoutException}
+
+  def __init__(self, log):
+    """Constructor
+
+    Args:
+      log: String containing the log of the running Chrome instance that was
+          running. It will be interleaved with xvfb with headless desktop or
+          interleaved with any other running Android package.
+    """
+    self.error_type, self.error_value, self.error_traceback = sys.exc_info()
+    super(ChromeControllerError, self).__init__(repr(self.error_value))
+    self.parent_stack = traceback.extract_stack()
+    self.log = log
+
+  def Dump(self, output):
+    """Dumps the entire error's infos into file-like object."""
+    output.write('-' * 60 + ' {}:\n'.format(self.__class__.__name__))
+    output.write(repr(self) + '\n')
+    output.write('{} is {}known as intermittent.\n'.format(
+        self.error_type.__name__, '' if self.IsIntermittent() else 'NOT '))
+    output.write(
+        '-' * 60 + ' {}\'s full traceback:\n'.format(self.error_type.__name__))
+    output.write(''.join(traceback.format_list(self.parent_stack)))
+    traceback.print_tb(self.error_traceback, file=output)
+    output.write('-' * 60 + ' Begin log\n')
+    output.write(self.log)
+    output.write('-' * 60 + ' End log\n')
+
+  def IsIntermittent(self):
+    """Returns whether the error is an known intermittent error."""
+    return self.error_type in self._INTERMITTENT_WHITE_LIST
 
 
 class ChromeControllerBase(object):
@@ -67,6 +116,10 @@ class ChromeControllerBase(object):
         # Tests & dev-tools related stuff.
         '--enable-test-events',
         '--remote-debugging-port=%d' % OPTIONS.devtools_port,
+
+        # Detailed log.
+        '--enable-logging=stderr',
+        '--v=1',
     ]
     self._wpr_attributes = None
     self._metadata = {}
@@ -240,6 +293,7 @@ class RemoteChromeController(ChromeControllerBase):
       start_intent = intent.Intent(
           package=package_info.package, activity=package_info.activity,
           data='about:blank')
+      self._device.adb.Logcat(clear=True, dump=True)
       self._device.StartActivity(start_intent, blocking=True)
       try:
         for attempt_id in xrange(self.DEVTOOLS_CONNECTION_ATTEMPTS):
@@ -262,8 +316,12 @@ class RemoteChromeController(ChromeControllerBase):
               time.sleep(self.TIME_TO_IDLE_SECONDS)
             break
         else:
-          raise RuntimeError('Failed to connect to chrome devtools after {} '
-                             'attempts.'.format(attempt_id))
+          raise ChromeControllerInternalError(
+              'Failed to connect to Chrome devtools after {} '
+              'attempts.'.format(self.DEVTOOLS_CONNECTION_ATTEMPTS))
+      except:
+        logcat = ''.join([l + '\n' for l in self._device.adb.Logcat(dump=True)])
+        raise ChromeControllerError(log=logcat)
       finally:
         self._device.ForceStop(package_info.package)
 
@@ -319,47 +377,50 @@ class LocalChromeController(ChromeControllerBase):
     self._headless = headless
 
   @contextlib.contextmanager
-  def OpenWithRedirection(self, stdout, stderr):
-    """Override for connection context. stdout and stderr are passed to the
-       child processes used to run Chrome and XVFB."""
+  def Open(self):
+    """Overridden connection creation."""
     chrome_cmd = [OPTIONS.LocalBinary('chrome')]
     chrome_cmd.extend(self._GetChromeArguments())
     # Force use of simple cache.
     chrome_cmd.append('--use-simple-cache-backend=on')
     chrome_cmd.append('--user-data-dir=%s' % self._profile_dir)
-    chrome_cmd.extend(['--enable-logging=stderr', '--v=1'])
     # Navigates to about:blank for couples of reasons:
     #   - To find the correct target descriptor at devtool connection;
     #   - To avoid cache and WPR pollution by the NTP.
     chrome_cmd.append('about:blank')
 
-    chrome_env_override = {}
-    if self._wpr_attributes:
-      chrome_env_override.update(self._wpr_attributes.chrome_env_override)
-
-    if self._headless:
-      assert 'DISPLAY' not in chrome_env_override, \
-          'DISPLAY environment variable is reserved for headless.'
-      chrome_env_override['DISPLAY'] = 'localhost:99'
-      xvfb_cmd = ['Xvfb', ':99', '-screen', '0', '1600x1200x24']
-      logging.info(common_util.GetCommandLineForLogging(xvfb_cmd))
-      xvfb_process = subprocess.Popen(xvfb_cmd, stdout=stdout, stderr=stderr)
-
-    # Launch chrome.
-    logging.info(
-        common_util.GetCommandLineForLogging(chrome_cmd, chrome_env_override))
-    chrome_env = os.environ.copy()
-    chrome_env.update(chrome_env_override)
-    chrome_process = subprocess.Popen(chrome_cmd, stdout=stdout, stderr=stderr,
-                                      env=chrome_env)
-    connection = None
+    tmp_log = \
+        tempfile.NamedTemporaryFile(prefix="chrome_controller_", suffix='.log')
+    chrome_process = None
     try:
+      chrome_env_override = {}
+      if self._wpr_attributes:
+        chrome_env_override.update(self._wpr_attributes.chrome_env_override)
+
+      if self._headless:
+        assert 'DISPLAY' not in chrome_env_override, \
+            'DISPLAY environment variable is reserved for headless.'
+        chrome_env_override['DISPLAY'] = 'localhost:99'
+        xvfb_cmd = ['Xvfb', ':99', '-screen', '0', '1600x1200x24']
+        logging.info(common_util.GetCommandLineForLogging(xvfb_cmd))
+        xvfb_process = \
+            subprocess.Popen(xvfb_cmd, stdout=tmp_log.file, stderr=tmp_log.file)
+
+      chrome_env = os.environ.copy()
+      chrome_env.update(chrome_env_override)
+
+      # Launch Chrome.
+      logging.info(common_util.GetCommandLineForLogging(chrome_cmd,
+                                                        chrome_env_override))
+      chrome_process = subprocess.Popen(chrome_cmd, stdout=tmp_log.file,
+                                        stderr=tmp_log.file, env=chrome_env)
       # Attempt to connect to Chrome's devtools
       for attempt_id in xrange(self.DEVTOOLS_CONNECTION_ATTEMPTS):
         logging.info('Devtools connection attempt %d' % attempt_id)
         process_result = chrome_process.poll()
         if process_result is not None:
-          raise RuntimeError('Unexpected Chrome exit: %s', process_result)
+          raise ChromeControllerInternalError(
+              'Unexpected Chrome exit: {}'.format(process_result))
         try:
           connection = devtools_monitor.DevToolsConnection(
               OPTIONS.devtools_hostname, OPTIONS.devtools_port)
@@ -369,8 +430,9 @@ class LocalChromeController(ChromeControllerBase):
             raise
           time.sleep(self.DEVTOOLS_CONNECTION_ATTEMPT_INTERVAL_SECONDS)
       else:
-        raise RuntimeError('Failed to connect to Chrome devtools after {} '
-                           'attempts.'.format(attempt_id))
+        raise ChromeControllerInternalError(
+            'Failed to connect to Chrome devtools after {} '
+            'attempts.'.format(self.DEVTOOLS_CONNECTION_ATTEMPTS))
       # Start and yield the devtool connection.
       self._StartConnection(connection)
       yield connection
@@ -378,18 +440,16 @@ class LocalChromeController(ChromeControllerBase):
         connection.Close()
         chrome_process.wait()
         chrome_process = None
+    except:
+      raise ChromeControllerError(log=open(tmp_log.name).read())
     finally:
+      if OPTIONS.local_noisy:
+        sys.stderr.write(open(tmp_log.name).read())
+      del tmp_log
       if chrome_process:
         chrome_process.kill()
       if self._headless:
         xvfb_process.kill()
-
-  def Open(self):
-    """Wrapper around the more-specialized version of Open() above that sets
-    the value of stdout/stderr based on the value of OPTIONS.local_noisy."""
-    stdout = None if OPTIONS.local_noisy else file('/dev/null', 'w')
-    stderr = stdout
-    return self.OpenWithRedirection(stdout, stderr)
 
   def PushBrowserCache(self, cache_path):
     """Override for chrome cache pushing."""
