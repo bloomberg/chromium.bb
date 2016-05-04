@@ -119,6 +119,7 @@ class SandwichTaskBuilder(task_manager.Builder):
       runner.wpr_archive_path = BuildPatchedWpr.path
       runner.cache_archive_path = BuildReferenceCache.path
       runner.cache_operation = 'save'
+      runner.trace_output_directory = BuildReferenceCache.path[:-4] + '-run'
       runner.Run()
 
     @self.RegisterTask('common/subresources-for-urls-run/',

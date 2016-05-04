@@ -191,7 +191,9 @@ def VerifyBenchmarkOutputDirectory(benchmark_setup_path,
   # TODO(gabadie): What's the best way of propagating errors happening in here?
   benchmark_setup = json.load(open(benchmark_setup_path))
   cache_whitelist = set(benchmark_setup['cache_whitelist'])
-  url_resources = set(benchmark_setup['url_resources'])
+  original_requests = set(benchmark_setup['url_resources'])
+  original_cached_requests = original_requests.intersection(cache_whitelist)
+  original_uncached_requests = original_requests.difference(cache_whitelist)
   all_sent_url_requests = set()
 
   # Verify requests from traces.
@@ -207,16 +209,29 @@ def VerifyBenchmarkOutputDirectory(benchmark_setup_path,
       continue
     trace = LoadingTrace.FromJsonFile(trace_path)
     logging.info('verifying %s from %s' % (trace.url, trace_path))
-    _PrintUrlSetComparison(url_resources,
-        ListUrlRequests(trace, RequestOutcome.All), 'All resources')
-    _PrintUrlSetComparison(url_resources.intersection(cache_whitelist),
-        ListUrlRequests(trace, RequestOutcome.ServedFromCache),
-        'Cached resources')
-    sent_url_requests = \
+
+    effective_requests = ListUrlRequests(trace, RequestOutcome.All)
+    effective_cached_requests = \
+        ListUrlRequests(trace, RequestOutcome.ServedFromCache)
+    effective_uncached_requests = \
         ListUrlRequests(trace, RequestOutcome.NotServedFromCache)
-    _PrintUrlSetComparison(url_resources.difference(cache_whitelist),
-        sent_url_requests, 'Non cached resources')
-    all_sent_url_requests.update(sent_url_requests)
+
+    missing_requests = original_requests.difference(effective_requests)
+    unexpected_requests = effective_requests.difference(original_requests)
+    expected_cached_requests = \
+        original_cached_requests.difference(missing_requests)
+    missing_cached_requests = \
+        expected_cached_requests.difference(effective_cached_requests)
+    expected_uncached_requests = original_uncached_requests.union(
+        unexpected_requests).union(missing_cached_requests)
+    all_sent_url_requests.update(effective_uncached_requests)
+
+    _PrintUrlSetComparison(original_requests, effective_requests,
+                           'All resources')
+    _PrintUrlSetComparison(expected_cached_requests, effective_cached_requests,
+                           'Cached resources')
+    _PrintUrlSetComparison(expected_uncached_requests,
+                           effective_uncached_requests, 'Non cached resources')
 
   # Verify requests from WPR.
   wpr_log_path = os.path.join(
@@ -241,7 +256,7 @@ def VerifyBenchmarkOutputDirectory(benchmark_setup_path,
   _PrintUrlSetComparison(set(), wpr_command_colliding_urls,
                          'Distinct resources colliding to WPR commands')
   _PrintUrlSetComparison(all_wpr_urls, all_sent_url_requests,
-                         'Distinct resources requests to WPR')
+                         'Distinct resource requests to WPR')
 
 
 def ReadSubresourceMapFromBenchmarkOutput(benchmark_output_directory_path):
