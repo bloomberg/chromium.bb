@@ -19,32 +19,34 @@ class BluetoothLowEnergyCentralManagerBridge {
       BluetoothAdapterMac* adapter)
       : discovery_manager_(discovery_manager), adapter_(adapter) {}
 
-  virtual ~BluetoothLowEnergyCentralManagerBridge() {}
+  ~BluetoothLowEnergyCentralManagerBridge() {}
 
-  virtual void DiscoveredPeripheral(CBPeripheral* peripheral,
-                                    NSDictionary* advertisementData,
-                                    int rssi) {
+  void DiscoveredPeripheral(CBPeripheral* peripheral,
+                            NSDictionary* advertisementData,
+                            int rssi) {
     discovery_manager_->DiscoveredPeripheral(peripheral, advertisementData,
                                              rssi);
   }
 
-  virtual void UpdatedState() {
+  void UpdatedState() {
     discovery_manager_->TryStartDiscovery();
     adapter_->LowEnergyCentralManagerUpdatedState();
   }
 
-  virtual void DidConnectPeripheral(CBPeripheral* peripheral) {
+  void DidConnectPeripheral(CBPeripheral* peripheral) {
     adapter_->DidConnectPeripheral(peripheral);
   }
 
-  virtual void DidFailToConnectPeripheral(CBPeripheral* peripheral,
-                                          NSError* error) {
+  void DidFailToConnectPeripheral(CBPeripheral* peripheral, NSError* error) {
     adapter_->DidFailToConnectPeripheral(peripheral, error);
   }
 
-  virtual void DidDisconnectPeripheral(CBPeripheral* peripheral,
-                                       NSError* error) {
+  void DidDisconnectPeripheral(CBPeripheral* peripheral, NSError* error) {
     adapter_->DidDisconnectPeripheral(peripheral, error);
+  }
+
+  CBCentralManager* GetCentralManager() {
+    return adapter_->low_energy_central_manager_;
   }
 
  private:
@@ -64,6 +66,11 @@ class BluetoothLowEnergyCentralManagerBridge {
         discovery_manager, adapter));
   }
   return self;
+}
+
+- (void)dealloc {
+  [bridge_->GetCentralManager() setDelegate:nil];
+  [super dealloc];
 }
 
 - (void)centralManager:(CBCentralManager*)central

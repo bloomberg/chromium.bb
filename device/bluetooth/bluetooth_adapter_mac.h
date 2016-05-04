@@ -122,7 +122,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterMac
   // |low_energy_central_manager_delegate_| as the manager's delegate. Should
   // be called only when |IsLowEnergyAvailable()|.
   void SetCentralManagerForTesting(CBCentralManager* central_manager);
-  CBCentralManager* GetCentralManagerForTesting();
+
+  // Returns the CBCentralManager instance.
+  CBCentralManager* GetCentralManager();
 
   // The length of time that must elapse since the last Inquiry response (on
   // Classic devices) or call to BluetoothLowEnergyDevice::Update() (on Low

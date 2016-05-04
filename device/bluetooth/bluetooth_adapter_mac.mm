@@ -253,7 +253,7 @@ void BluetoothAdapterMac::SetCentralManagerForTesting(
       low_energy_central_manager_.get());
 }
 
-CBCentralManager* BluetoothAdapterMac::GetCentralManagerForTesting() {
+CBCentralManager* BluetoothAdapterMac::GetCentralManager() {
   return low_energy_central_manager_;
 }
 
