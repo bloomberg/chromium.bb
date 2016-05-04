@@ -124,9 +124,6 @@ const char kEafePath[] = "eafe-path";
 // Enables starting the ARC instance upon session start.
 const char kEnableArc[] = "enable-arc";
 
-// Enable ARC memory management in user space.
-const char kEnableArcMemoryManagement[] = "enable-arc-memory-management";
-
 // Enables consumer management, which allows user to enroll, remotely lock and
 // locate the device.
 const char kEnableConsumerManagement[] = "enable-consumer-management";

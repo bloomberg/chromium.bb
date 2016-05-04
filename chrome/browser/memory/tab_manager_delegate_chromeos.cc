@@ -26,7 +26,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_constants.h"
-#include "chromeos/chromeos_switches.h"
+#include "chrome/common/chrome_features.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/common/process.mojom.h"
 #include "components/exo/shell_surface.h"
@@ -129,8 +129,7 @@ int TabStatsToPriority(const TabStats& tab) {
 }
 
 bool IsArcMemoryManagementEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kEnableArcMemoryManagement);
+  return base::FeatureList::IsEnabled(features::kArcMemoryManagement);
 }
 
 }  // namespace
@@ -274,8 +273,8 @@ void TabManagerDelegate::OnProcessInstanceReady() {
                "support DisableBuiltinOomAdjustment() yet.";
     return;
   }
-  // If --enable-arc-memory-management is on, stop Android system-wide
-  // oom_adj adjustment since this class will take over oom_score_adj settings.
+  // Stop Android system-wide oom_adj adjustment since this class will
+  // take over oom_score_adj settings.
   arc_process_instance_->DisableBuiltinOomAdjustment();
 
   if (arc_process_instance_version_ < 3) {
@@ -477,8 +476,7 @@ void TabManagerDelegate::AdjustOomPriorities(const TabStatsList& tab_list) {
       return;
     }
   }
-  // Pass in a dummy list if unable to get ARC processes or
-  // --enable-arc-memory-management is off.
+  // Pass in a dummy list if unable to get ARC processes.
   AdjustOomPrioritiesImpl(tab_list, std::vector<arc::ArcProcess>());
 }
 

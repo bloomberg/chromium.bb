@@ -56,7 +56,6 @@
 #include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "chrome/browser/memory/tab_manager_delegate_chromeos.h"
-#include "chromeos/chromeos_switches.h"
 #endif
 
 using base::TimeDelta;
@@ -282,10 +281,8 @@ bool TabManager::IsTabDiscarded(content::WebContents* contents) const {
 
 void TabManager::DiscardTab() {
 #if defined(OS_CHROMEOS)
-  // If --enable-arc-memory-management is on, call Chrome OS specific low memory
-  // handling process.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kEnableArcMemoryManagement)) {
+  // Call Chrome OS specific low memory handling process.
+  if (base::FeatureList::IsEnabled(features::kArcMemoryManagement)) {
     delegate_->LowMemoryKill(GetUnsortedTabStats());
     return;
   }

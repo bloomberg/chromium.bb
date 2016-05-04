@@ -8,6 +8,12 @@ namespace features {
 
 // All features in alphabetical order.
 
+#if defined(OS_CHROMEOS)
+// Whether to handle low memory kill of ARC apps by Chrome.
+const base::Feature kArcMemoryManagement{
+    "ArcMemoryManagement", base::FEATURE_ENABLED_BY_DEFAULT};
+#endif  // defined(OS_CHROMEOS)
+
 #if defined(OS_WIN) || defined(OS_MACOSX)
 // Enables automatic tab discarding, when the system is in low memory state.
 const base::Feature kAutomaticTabDiscarding{"AutomaticTabDiscarding",
