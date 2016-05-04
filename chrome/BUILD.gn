@@ -21,6 +21,7 @@ if (is_android) {
 } else if (is_mac) {
   import("//build/compiled_action.gni")
   import("//build/config/mac/rules.gni")
+  import("//build/mac/tweak_info_plist.gni")
   import("//build/util/branding.gni")
   import("//build/util/version.gni")
   import("//build_overrides/v8.gni")
@@ -94,8 +95,6 @@ if (!is_android && !is_mac) {
     }
 
     data_deps = []
-
-    # TODO(GYP) mac_bundle_resources, xcode_settings
 
     if (is_win) {
       sources += [
@@ -415,10 +414,22 @@ if (is_win) {
     ]
   }
 
+  tweak_info_plist("chrome_app_plist") {
+    info_plist = "app/app-Info.plist"
+    args = [
+      "--breakpad=0",
+
+      #"--keystone=???",  # TODO(rsesek): Keystone.
+
+      "--scm=1",
+      "--bundle_id=$chrome_mac_bundle_id",
+    ]
+  }
+
   mac_app_bundle("chrome_app") {
     output_name = chrome_product_full_name
 
-    info_plist = "app/app-Info.plist"
+    info_plist_target = ":chrome_app_plist"
     extra_substitutions = [
       "CHROMIUM_BUNDLE_ID=$chrome_mac_bundle_id",
       "CHROMIUM_SHORT_NAME=$chrome_product_short_name",
@@ -535,10 +546,19 @@ if (is_win) {
     ]
   }
 
+  tweak_info_plist("chrome_helper_plist") {
+    info_plist = "app/helper-Info.plist"
+    args = [
+      "--breakpad=0",
+      "--keystone=0",
+      "--scm=0",
+    ]
+  }
+
   mac_app_bundle("chrome_helper_app") {
     output_name = chrome_helper_name
 
-    info_plist = "app/helper-Info.plist"
+    info_plist_target = ":chrome_helper_plist"
     extra_substitutions = [
       "CHROMIUM_BUNDLE_ID=$chrome_mac_bundle_id",
       "CHROMIUM_SHORT_NAME=$chrome_product_short_name",
@@ -633,6 +653,20 @@ if (is_win) {
     }
   }
 
+  tweak_info_plist("chrome_framework_plist") {
+    info_plist = "app/framework-Info.plist"
+    args = [
+      "--breakpad=1",
+
+      #"--breakpad_uploads=???",  # TODO(rsesek): Breakpad uploads.
+
+      "--keystone=0",
+      "--scm=1",
+      "--branding",
+      chrome_product_short_name,
+    ]
+  }
+
   mac_framework_bundle("chrome_framework") {
     output_name = chrome_framework_name
 
@@ -651,7 +685,7 @@ if (is_win) {
       "app/chrome_main_mac.mm",
     ]
 
-    info_plist = "app/framework-Info.plist"
+    info_plist_target = ":chrome_framework_plist"
     extra_substitutions = [
       "CHROMIUM_BUNDLE_ID=$chrome_mac_bundle_id",
       "CHROMIUM_SHORT_NAME=$chrome_product_short_name",
