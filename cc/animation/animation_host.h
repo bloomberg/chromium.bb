@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "cc/animation/animation.h"
+#include "cc/animation/scroll_offset_animations_impl.h"
 #include "cc/base/cc_export.h"
 #include "cc/trees/mutator_host_client.h"
 #include "ui/gfx/geometry/box_f.h"
@@ -188,8 +189,7 @@ class CC_EXPORT AnimationHost {
 
   MutatorHostClient* mutator_host_client_;
 
-  class ScrollOffsetAnimations;
-  std::unique_ptr<ScrollOffsetAnimations> scroll_offset_animations_;
+  std::unique_ptr<ScrollOffsetAnimationsImpl> scroll_offset_animations_impl_;
 
   const ThreadInstance thread_instance_;
 

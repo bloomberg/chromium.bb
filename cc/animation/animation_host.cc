@@ -23,129 +23,6 @@
 
 namespace cc {
 
-class AnimationHost::ScrollOffsetAnimations : public AnimationDelegate {
- public:
-  explicit ScrollOffsetAnimations(AnimationHost* animation_host)
-      : animation_host_(animation_host),
-        scroll_offset_timeline_(
-            AnimationTimeline::Create(AnimationIdProvider::NextTimelineId())),
-        scroll_offset_animation_player_(
-            AnimationPlayer::Create(AnimationIdProvider::NextPlayerId())) {
-    scroll_offset_timeline_->set_is_impl_only(true);
-    scroll_offset_animation_player_->set_animation_delegate(this);
-
-    animation_host_->AddAnimationTimeline(scroll_offset_timeline_.get());
-    scroll_offset_timeline_->AttachPlayer(
-        scroll_offset_animation_player_.get());
-  }
-
-  ~ScrollOffsetAnimations() override {
-    scroll_offset_timeline_->DetachPlayer(
-        scroll_offset_animation_player_.get());
-    animation_host_->RemoveAnimationTimeline(scroll_offset_timeline_.get());
-  }
-
-  void ScrollAnimationCreate(ElementId element_id,
-                             const gfx::ScrollOffset& target_offset,
-                             const gfx::ScrollOffset& current_offset) {
-    std::unique_ptr<ScrollOffsetAnimationCurve> curve =
-        ScrollOffsetAnimationCurve::Create(
-            target_offset, EaseInOutTimingFunction::Create(),
-            ScrollOffsetAnimationCurve::DurationBehavior::INVERSE_DELTA);
-    curve->SetInitialValue(current_offset);
-
-    std::unique_ptr<Animation> animation = Animation::Create(
-        std::move(curve), AnimationIdProvider::NextAnimationId(),
-        AnimationIdProvider::NextGroupId(), TargetProperty::SCROLL_OFFSET);
-    animation->set_is_impl_only(true);
-
-    DCHECK(scroll_offset_animation_player_);
-    DCHECK(scroll_offset_animation_player_->animation_timeline());
-
-    ReattachScrollOffsetPlayerIfNeeded(element_id);
-
-    scroll_offset_animation_player_->AddAnimation(std::move(animation));
-  }
-
-  bool ScrollAnimationUpdateTarget(ElementId element_id,
-                                   const gfx::Vector2dF& scroll_delta,
-                                   const gfx::ScrollOffset& max_scroll_offset,
-                                   base::TimeTicks frame_monotonic_time) {
-    DCHECK(scroll_offset_animation_player_);
-    if (!scroll_offset_animation_player_->element_animations())
-      return false;
-
-    DCHECK_EQ(element_id, scroll_offset_animation_player_->element_id());
-
-    Animation* animation = scroll_offset_animation_player_->element_animations()
-                               ->GetAnimation(TargetProperty::SCROLL_OFFSET);
-    if (!animation) {
-      scroll_offset_animation_player_->DetachElement();
-      return false;
-    }
-
-    ScrollOffsetAnimationCurve* curve =
-        animation->curve()->ToScrollOffsetAnimationCurve();
-
-    gfx::ScrollOffset new_target =
-        gfx::ScrollOffsetWithDelta(curve->target_value(), scroll_delta);
-    new_target.SetToMax(gfx::ScrollOffset());
-    new_target.SetToMin(max_scroll_offset);
-
-    curve->UpdateTarget(animation->TrimTimeToCurrentIteration(
-                                       frame_monotonic_time).InSecondsF(),
-                        new_target);
-
-    return true;
-  }
-
-  void ScrollAnimationAbort(bool needs_completion) {
-    DCHECK(scroll_offset_animation_player_);
-    scroll_offset_animation_player_->AbortAnimations(
-        TargetProperty::SCROLL_OFFSET, needs_completion);
-  }
-
-  // AnimationDelegate implementation.
-  void NotifyAnimationStarted(base::TimeTicks monotonic_time,
-                              TargetProperty::Type target_property,
-                              int group) override {}
-  void NotifyAnimationFinished(base::TimeTicks monotonic_time,
-                               TargetProperty::Type target_property,
-                               int group) override {
-    DCHECK_EQ(target_property, TargetProperty::SCROLL_OFFSET);
-    DCHECK(animation_host_->mutator_host_client());
-    animation_host_->mutator_host_client()->ScrollOffsetAnimationFinished();
-  }
-  void NotifyAnimationAborted(base::TimeTicks monotonic_time,
-                              TargetProperty::Type target_property,
-                              int group) override {}
-  void NotifyAnimationTakeover(base::TimeTicks monotonic_time,
-                               TargetProperty::Type target_property,
-                               double animation_start_time,
-                               std::unique_ptr<AnimationCurve> curve) override {
-  }
-
- private:
-  void ReattachScrollOffsetPlayerIfNeeded(ElementId element_id) {
-    if (scroll_offset_animation_player_->element_id() != element_id) {
-      if (scroll_offset_animation_player_->element_id())
-        scroll_offset_animation_player_->DetachElement();
-      if (element_id)
-        scroll_offset_animation_player_->AttachElement(element_id);
-    }
-  }
-
-  AnimationHost* animation_host_;
-  scoped_refptr<AnimationTimeline> scroll_offset_timeline_;
-
-  // We have just one player for impl-only scroll offset animations.
-  // I.e. only one element can have an impl-only scroll offset animation at
-  // any given time.
-  scoped_refptr<AnimationPlayer> scroll_offset_animation_player_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScrollOffsetAnimations);
-};
-
 std::unique_ptr<AnimationHost> AnimationHost::Create(
     ThreadInstance thread_instance) {
   return base::WrapUnique(new AnimationHost(thread_instance));
@@ -157,12 +34,12 @@ AnimationHost::AnimationHost(ThreadInstance thread_instance)
       supports_scroll_animations_(false),
       animation_waiting_for_deletion_(false) {
   if (thread_instance_ == ThreadInstance::IMPL)
-    scroll_offset_animations_ =
-        base::WrapUnique(new ScrollOffsetAnimations(this));
+    scroll_offset_animations_impl_ =
+        base::WrapUnique(new ScrollOffsetAnimationsImpl(this));
 }
 
 AnimationHost::~AnimationHost() {
-  scroll_offset_animations_ = nullptr;
+  scroll_offset_animations_impl_ = nullptr;
 
   ClearTimelines();
   DCHECK(!mutator_host_client());
@@ -641,9 +518,9 @@ void AnimationHost::ImplOnlyScrollAnimationCreate(
     ElementId element_id,
     const gfx::ScrollOffset& target_offset,
     const gfx::ScrollOffset& current_offset) {
-  DCHECK(scroll_offset_animations_);
-  scroll_offset_animations_->ScrollAnimationCreate(element_id, target_offset,
-                                                   current_offset);
+  DCHECK(scroll_offset_animations_impl_);
+  scroll_offset_animations_impl_->ScrollAnimationCreate(
+      element_id, target_offset, current_offset);
 }
 
 bool AnimationHost::ImplOnlyScrollAnimationUpdateTarget(
@@ -651,14 +528,14 @@ bool AnimationHost::ImplOnlyScrollAnimationUpdateTarget(
     const gfx::Vector2dF& scroll_delta,
     const gfx::ScrollOffset& max_scroll_offset,
     base::TimeTicks frame_monotonic_time) {
-  DCHECK(scroll_offset_animations_);
-  return scroll_offset_animations_->ScrollAnimationUpdateTarget(
+  DCHECK(scroll_offset_animations_impl_);
+  return scroll_offset_animations_impl_->ScrollAnimationUpdateTarget(
       element_id, scroll_delta, max_scroll_offset, frame_monotonic_time);
 }
 
 void AnimationHost::ScrollAnimationAbort(bool needs_completion) {
-  DCHECK(scroll_offset_animations_);
-  return scroll_offset_animations_->ScrollAnimationAbort(needs_completion);
+  DCHECK(scroll_offset_animations_impl_);
+  return scroll_offset_animations_impl_->ScrollAnimationAbort(needs_completion);
 }
 
 void AnimationHost::DidActivateElementAnimations(
