@@ -110,6 +110,11 @@ public:
         return m_helper->isEligible();
     }
 
+    bool meetsVisibilityRequirements()
+    {
+        return m_helper->meetsVisibilityRequirements();
+    }
+
     void setInterface(MockAutoplayClient* client)
     {
         m_client = client;
@@ -454,6 +459,18 @@ TEST_F(AutoplayExperimentTest, WithoutSameOriginTests)
     EXPECT_TRUE(isEligible());
     ON_CALL(*m_client, isCrossOrigin()).WillByDefault(Return(true));
     EXPECT_TRUE(isEligible());
+}
+
+TEST_F(AutoplayExperimentTest, AudioPageVisibility)
+{
+    setInterface(new NiceMock<MockAutoplayClient>("enabled-foraudio-ifpagevisible", MockAutoplayClient::Audio));
+    ON_CALL(*m_client, pageVisibilityState()).WillByDefault(Return(PageVisibilityStateVisible));
+    EXPECT_TRUE(isEligible());
+    EXPECT_TRUE(meetsVisibilityRequirements());
+
+    ON_CALL(*m_client, pageVisibilityState()).WillByDefault(Return(PageVisibilityStateHidden));
+    EXPECT_TRUE(isEligible());
+    EXPECT_FALSE(meetsVisibilityRequirements());
 }
 
 }

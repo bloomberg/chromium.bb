@@ -497,7 +497,7 @@ void AutoplayExperimentHelper::loadingStarted()
 
 bool AutoplayExperimentHelper::requiresViewportVisibility() const
 {
-    return enabled(IfViewport) || enabled(IfPartialViewport);
+    return client().isHTMLVideoElement() && (enabled(IfViewport) || enabled(IfPartialViewport));
 }
 
 bool AutoplayExperimentHelper::isExperimentEnabled()
