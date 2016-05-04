@@ -784,7 +784,6 @@ crbug.com/377696 printing/width-overflow.html [ Skip ]
 crbug.com/397255 [ Linux ] css3/masking/clip-path-reference-userSpaceOnUse.html [ Failure ]
 crbug.com/396940 ietestcenter/css3/multicolumn/column-containing-block-001.htm [ Failure ]
 crbug.com/396940 ietestcenter/css3/multicolumn/column-containing-block-002.htm [ Failure ]
-crbug.com/396941 ietestcenter/css3/multicolumn/column-width-applies-to-010.htm [ Failure ]
 crbug.com/378610 [ Win ] svg/custom/focus-ring-text.svg [ Failure ]
 crbug.com/378610 [ Mac ] svg/custom/focus-ring-text.svg [ Failure Pass ]
 
