@@ -12,6 +12,7 @@ import android.preference.PreferenceFragment;
 import android.widget.ListView;
 
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BrowsingDataType;
 import org.chromium.chrome.browser.TimePeriod;
@@ -127,6 +128,10 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
 
     /** The tag used for logging. */
     public static final String TAG = "ClearBrowsingDataPreferences";
+
+    /** The histogram for the dialog about other forms of browsing history. */
+    private static final String DIALOG_HISTOGRAM =
+            "History.ClearBrowsingData.ShownHistoryNoticeAfterClearing";
 
     /** The web history URL. */
     private static final String WEB_HISTORY_URL =
@@ -296,9 +301,11 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
             mDialogAboutOtherFormsOfBrowsingHistory =
                     OtherFormsOfHistoryDialogFragment.show(getActivity());
             dismissProgressDialog();
+            RecordHistogram.recordBooleanHistogram(DIALOG_HISTOGRAM, true);
         } else {
             dismissProgressDialog();
             getActivity().finish();
+            RecordHistogram.recordBooleanHistogram(DIALOG_HISTOGRAM, false);
         }
     }
 

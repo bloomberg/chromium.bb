@@ -17,6 +17,7 @@
 #include "base/android/jni_weak_ref.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/scoped_observer.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
@@ -662,6 +663,8 @@ static void ShowNoticeAboutOtherFormsOfBrowsingHistory(
     ScopedJavaGlobalRef<jobject>* listener,
     bool show) {
   JNIEnv* env = AttachCurrentThread();
+  UMA_HISTOGRAM_BOOLEAN(
+      "History.ClearBrowsingData.HistoryNoticeShownInFooterWhenUpdated", show);
   if (!show)
     return;
   Java_OtherFormsOfBrowsingHistoryListener_showNoticeAboutOtherFormsOfBrowsingHistory(

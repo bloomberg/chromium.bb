@@ -157,6 +157,12 @@ void GetDeviceNameAndType(const ProfileSyncService* sync_service,
   *type = kDeviceTypeLaptop;
 }
 
+void RecordMetricsForNoticeAboutOtherFormsOfBrowsingHistory(bool shown) {
+  UMA_HISTOGRAM_BOOLEAN(
+      "History.ShownHeaderAboutOtherFormsOfBrowsingHistory",
+      shown);
+}
+
 }  // namespace
 
 BrowsingHistoryHandler::HistoryEntry::HistoryEntry(
@@ -429,6 +435,9 @@ void BrowsingHistoryHandler::QueryHistory(
         base::Bind(
             &BrowsingHistoryHandler::OtherFormsOfBrowsingHistoryQueryComplete,
             weak_factory_.GetWeakPtr()));
+  } else {
+    // The notice could not have been shown, because there is no web history.
+    RecordMetricsForNoticeAboutOtherFormsOfBrowsingHistory(false);
   }
 }
 
@@ -849,6 +858,10 @@ void BrowsingHistoryHandler::WebHistoryQueryComplete(
 void BrowsingHistoryHandler::OtherFormsOfBrowsingHistoryQueryComplete(
     bool found_other_forms_of_browsing_history) {
   has_other_forms_of_browsing_history_ = found_other_forms_of_browsing_history;
+
+  RecordMetricsForNoticeAboutOtherFormsOfBrowsingHistory(
+      has_other_forms_of_browsing_history_);
+
   web_ui()->CallJavascriptFunction(
       "showNotification",
       base::FundamentalValue(has_synced_results_),

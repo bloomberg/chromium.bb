@@ -199,6 +199,10 @@ void ClearBrowsingDataHandler::RefreshHistoryNotice() {
 void ClearBrowsingDataHandler::UpdateHistoryNotice(bool show) {
   should_show_history_footer_ = show;
   OnStateChanged();
+
+  UMA_HISTOGRAM_BOOLEAN(
+      "History.ClearBrowsingData.HistoryNoticeShownInFooterWhenUpdated",
+      should_show_history_footer_);
 }
 
 }  // namespace settings

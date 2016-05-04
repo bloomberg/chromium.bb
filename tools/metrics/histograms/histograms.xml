@@ -16810,11 +16810,31 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram
+    name="History.ClearBrowsingData.HistoryNoticeShownInFooterWhenUpdated"
+    enum="BooleanShown">
+  <owner>msramek@chromium.org</owner>
+  <summary>
+    Whether a notice about other forms of browsing history was shown in the
+    footer of the Clear Browsing Data dialog. This is recorded every time the
+    dialog is opened.
+  </summary>
+</histogram>
+
+<histogram
     name="History.ClearBrowsingData.PasswordsDeletion.AdditionalDatatypesCount">
   <owner>msramek@chromium.org</owner>
   <summary>
     Recorded when the user deletes their passwords in the ClearBrowsingData
     dialog. Counts how many other data types were selected for deletion.
+  </summary>
+</histogram>
+
+<histogram name="History.ClearBrowsingData.ShownHistoryNoticeAfterClearing"
+    enum="BooleanShown">
+  <owner>msramek@chromium.org</owner>
+  <summary>
+    Whether a dialog with a notice about other forms of browsing history was
+    shown after the user deleted data from the Clear Browsing Data dialog.
   </summary>
 </histogram>
 
@@ -17149,6 +17169,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     The total number of touch icons being tracked in a user's Favicon database.
     This is a subset of History.NumFaviconsInDB, which includes all icon types
     in its count. Logged on initialization of the Favicon DB on 1% of starts.
+  </summary>
+</histogram>
+
+<histogram name="History.ShownHeaderAboutOtherFormsOfBrowsingHistory"
+    enum="BooleanShown">
+  <owner>msramek@chromium.org</owner>
+  <summary>
+    Whether the notice about other forms of browsing history was shown in the
+    header of the History page when the header was displayed. The header is
+    refreshed with every history query.
   </summary>
 </histogram>
 

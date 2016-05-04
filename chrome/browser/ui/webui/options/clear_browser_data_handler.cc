@@ -350,6 +350,9 @@ void ClearBrowserDataHandler::OnBrowsingDataRemoverDone() {
                       notice_shown_times + 1);
   }
 
+  UMA_HISTOGRAM_BOOLEAN(
+      "History.ClearBrowsingData.ShownHistoryNoticeAfterClearing", show_notice);
+
   web_ui()->CallJavascriptFunction(
       "ClearBrowserDataOverlay.doneClearing",
       base::FundamentalValue(show_notice));
@@ -413,6 +416,10 @@ void ClearBrowserDataHandler::RefreshHistoryNotice() {
 void ClearBrowserDataHandler::UpdateHistoryNotice(bool show) {
   should_show_history_notice_ = show;
   OnStateChanged();
+
+  UMA_HISTOGRAM_BOOLEAN(
+      "History.ClearBrowsingData.HistoryNoticeShownInFooterWhenUpdated",
+      should_show_history_notice_);
 }
 
 void ClearBrowserDataHandler::UpdateHistoryDeletionDialog(bool show) {
