@@ -1931,6 +1931,7 @@
     'modules_testing_dependency_idl_files' : [
       'accessibility/testing/InternalsAccessibility.idl',
       'geolocation/testing/InternalsGeolocation.idl',
+      'mediastream/testing/InternalsRTCCertificate.idl',
       'navigatorcontentutils/testing/InternalsNavigatorContentUtils.idl',
       'serviceworkers/testing/InternalsServiceWorker.idl',
       'speech/testing/InternalsSpeechSynthesis.idl',
@@ -1944,6 +1945,8 @@
       'geolocation/testing/GeolocationClientMock.h',
       'geolocation/testing/InternalsGeolocation.cpp',
       'geolocation/testing/InternalsGeolocation.h',
+      'mediastream/testing/InternalsRTCCertificate.cpp',
+      'mediastream/testing/InternalsRTCCertificate.h',
       'navigatorcontentutils/testing/InternalsNavigatorContentUtils.cpp',
       'navigatorcontentutils/testing/InternalsNavigatorContentUtils.h',
       'navigatorcontentutils/testing/NavigatorContentUtilsClientMock.cpp',

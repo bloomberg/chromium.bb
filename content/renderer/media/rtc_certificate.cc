@@ -32,6 +32,11 @@ uint64_t RTCCertificate::expires() const {
   return certificate_->Expires();
 }
 
+bool RTCCertificate::equals(const blink::WebRTCCertificate& other) const {
+  return *certificate_ ==
+         *static_cast<const RTCCertificate&>(other).certificate_;
+}
+
 const rtc::scoped_refptr<rtc::RTCCertificate>&
 RTCCertificate::rtcCertificate() const {
   return certificate_;

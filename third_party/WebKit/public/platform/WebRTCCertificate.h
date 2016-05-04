@@ -31,6 +31,10 @@ public:
     // Returns the expiration time in ms relative to epoch, 1970-01-01T00:00:00Z.
     virtual uint64_t expires() const = 0;
 
+    // Checks if the two certificate objects represent the same certificate value,
+    // as should be the case for a clone and the original.
+    virtual bool equals(const WebRTCCertificate& other) const = 0;
+
 private:
     WebRTCCertificate(const WebRTCCertificate&) = delete;
     WebRTCCertificate& operator=(const WebRTCCertificate&) = delete;

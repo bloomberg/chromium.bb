@@ -49,6 +49,7 @@ public:
 
     // Returns a new WebRTCCertificate shallow copy.
     std::unique_ptr<WebRTCCertificate> certificateShallowCopy() const;
+    const WebRTCCertificate& certificate() const { return *m_certificate; }
 
     DEFINE_INLINE_TRACE() {}
 

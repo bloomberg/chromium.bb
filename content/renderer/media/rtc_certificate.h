@@ -28,6 +28,7 @@ class RTCCertificate : public blink::WebRTCCertificate {
   std::unique_ptr<blink::WebRTCCertificate> shallowCopy() const override;
   const blink::WebRTCKeyParams& keyParams() const override;
   uint64_t expires() const override;
+  bool equals(const blink::WebRTCCertificate& other) const override;
 
   const rtc::scoped_refptr<rtc::RTCCertificate>& rtcCertificate() const;
 
