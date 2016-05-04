@@ -18,29 +18,16 @@
       background: var(--md-background-color);
       display: flex;
       flex-direction: column;
-      min-width: 800px;
-    }
-
-    #toolbar {
-      flex: 0 0 56px;
-    }
-
-    #history-list,
-    #history-synced-device-manager {
-      flex: 1 0 0;
-    }
-
-    #main-container {
-      display: flex;
-      flex: 1 0 0;
-      overflow: hidden;
     }
 
     /* Minimal styling required to display app shim. */
-    .loading #main-container,
-    .loading history-toolbar,
+    .loading history-app,
     .app-shim {
       display: none;
+    }
+
+    history-app {
+      flex: 1;
     }
 
     .loading .app-shim {
@@ -57,7 +44,6 @@
       height: 56px;
     }
 
-    history-toolbar,
     .loading #loading-toolbar {
       background: var(--md-toolbar-color);
     }
@@ -73,15 +59,7 @@
 </head>
 
 <body class="loading">
-  <history-toolbar class="paper-header" id="toolbar"></history-toolbar>
-
-  <div id="main-container">
-    <history-side-bar id="history-side-bar"></history-side-bar>
-    <history-list id="history-list"></history-list>
-    <history-synced-device-manager id="history-synced-device-manager" hidden>
-    </history-synced-device-manager>
-  </div>
-
+  <history-app id="history-app"></history-app>
   <span class="app-shim" id="loading-toolbar">$i18n{title}</span>
   <span class="app-shim" id="loading-message">$i18n{loading}</span>
 
@@ -92,7 +70,7 @@
   <script src="strings.js"></script>
   <script src="history.js"></script>
 
-  <link rel="import" href="chrome://history/elements.html" async id="bundle">
+  <link rel="import" href="chrome://history/app.html" async id="bundle">
 </body>
 
 </html>

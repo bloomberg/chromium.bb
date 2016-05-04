@@ -10,8 +10,8 @@ cr.define('md_history.history_toolbar_test', function() {
       var TEST_HISTORY_RESULTS;
 
       suiteSetup(function() {
-        element = $('history-list');
-        toolbar = $('toolbar');
+        element = $('history-app').$['history-list'];
+        toolbar = $('history-app').$['toolbar'];
         TEST_HISTORY_RESULTS =
             [createHistoryEntry('2016-03-15', 'https://google.com')];
       });

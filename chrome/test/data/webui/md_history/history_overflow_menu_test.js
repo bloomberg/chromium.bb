@@ -21,7 +21,7 @@ cr.define('md_history.history_overflow_menu_test', function() {
       var element;
 
       suiteSetup(function() {
-        element = $('history-list');
+        element = $('history-app').$['history-list'];
 
         var element1 = document.createElement('div');
         var element2 = document.createElement('div');

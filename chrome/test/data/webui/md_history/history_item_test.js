@@ -10,7 +10,7 @@ cr.define('md_history.history_item_test', function() {
       var SEARCH_HISTORY_RESULTS;
 
       suiteSetup(function() {
-        element = $('history-list');
+        element = $('history-app').$['history-list'];
         TEST_HISTORY_RESULTS = [
           createHistoryEntry('2016-03-16 10:00', 'http://www.google.com'),
           createHistoryEntry('2016-03-16 9:00', 'http://www.example.com'),

@@ -58,9 +58,10 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile) {
   bool allow_deleting_history =
       prefs->GetBoolean(prefs::kAllowDeletingBrowserHistory);
   source->AddBoolean("allowDeletingHistory", allow_deleting_history);
+  source->AddResourcePath("app.html", IDR_MD_HISTORY_APP_HTML);
+  source->AddResourcePath("app.js", IDR_MD_HISTORY_APP_JS);
   source->AddResourcePath("constants.html", IDR_MD_HISTORY_CONSTANTS_HTML);
   source->AddResourcePath("constants.js", IDR_MD_HISTORY_CONSTANTS_JS);
-  source->AddResourcePath("elements.html", IDR_MD_HISTORY_ELEMENTS_HTML);
   source->AddResourcePath("history_item.html",
                           IDR_MD_HISTORY_HISTORY_ITEM_HTML);
   source->AddResourcePath("history_item.js", IDR_MD_HISTORY_HISTORY_ITEM_JS);

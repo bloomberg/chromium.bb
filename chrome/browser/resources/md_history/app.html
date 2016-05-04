@@ -1,0 +1,59 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-pages/iron-pages.html">
+<link rel="import" href="chrome://history/history_list.html">
+<link rel="import" href="chrome://history/history_toolbar.html">
+<link rel="import" href="chrome://history/synced_device_manager.html">
+<link rel="import" href="chrome://history/side_bar.html">
+<link rel="import" href="chrome://history/shared_style.html">
+
+<dom-module id="history-app">
+  <!-- TODO(calamity): work around this deprecated import style -->
+  <link rel="import" type="css" href="chrome://resources/css/md_colors.css">
+  <template>
+    <style include="shared-style">
+      :host {
+        display: flex;
+        flex-direction: column;
+        min-width: 800px;
+      }
+
+      #main-container {
+        display: flex;
+        flex: 1 0 0;
+        overflow: hidden;
+      }
+
+      #toolbar {
+        flex: 0 0 56px;
+      }
+
+      history-list,
+      #history-synced-device-manager {
+        flex: 1 0 0;
+      }
+
+      #content {
+        display: flex;
+        flex: 1 0 0;
+      }
+
+      history-toolbar {
+        background: var(--md-toolbar-color);
+      }
+    </style>
+    <history-toolbar class="paper-header" id="toolbar"></history-toolbar>
+
+    <div id="main-container">
+      <history-side-bar id="history-side-bar" selected-page="{{selectedPage}}">
+      </history-side-bar>
+      <iron-pages id="content" attr-for-selected="id"
+          selected="{{selectedPage}}">
+        <history-list id="history-list"></history-list>
+        <history-synced-device-manager id="history-synced-device-manager">
+        </history-synced-device-manager>
+      </iron-pages>
+    </div>
+  </template>
+  <script src="chrome://history/app.js"></script>
+</dom-module>

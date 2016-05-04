@@ -41,12 +41,8 @@ MaterialHistoryBrowserTest.prototype = {
     PolymerTest.prototype.setUp.call(this);
 
     suiteSetup(function() {
-      // Wait for each of the top-level elements to be upgraded.
-      return Promise.all([
-        waitForUpgrade($('history-list')),
-        waitForUpgrade($('toolbar')),
-        waitForUpgrade($('history-synced-device-manager')),
-      ]);
+      // Wait for the top-level app element to be upgraded.
+      return waitForUpgrade($('history-app'));
     });
   },
 };

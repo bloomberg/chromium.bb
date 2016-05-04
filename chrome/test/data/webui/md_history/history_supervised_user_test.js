@@ -6,10 +6,12 @@ cr.define('md_history.history_supervised_user_test', function() {
   function registerTests() {
     suite('history-list supervised-user', function() {
       var element;
+      var toolbar;
       var TEST_HISTORY_RESULTS;
 
       suiteSetup(function() {
-        element = $('history-list');
+        element = $('history-app').$['history-list'];
+        toolbar = $('history-app').$['toolbar'];
         TEST_HISTORY_RESULTS =
             [createHistoryEntry('2016-03-15', 'https://www.google.com')];
       });
@@ -19,8 +21,6 @@ cr.define('md_history.history_supervised_user_test', function() {
       });
 
       test('checkboxes disabled for supervised user', function(done) {
-        var toolbar = $('toolbar');
-
         flush(function() {
           var items =
               Polymer.dom(element.root).querySelectorAll('history-item');
@@ -40,7 +40,7 @@ cr.define('md_history.history_supervised_user_test', function() {
         });
 
         element.historyData[0].selected = true;
-        $('toolbar').onDeleteTap_();
+        toolbar.onDeleteTap_();
       });
 
       teardown(function() {

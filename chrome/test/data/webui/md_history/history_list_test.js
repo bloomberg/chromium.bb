@@ -11,8 +11,8 @@ cr.define('md_history.history_list_test', function() {
       var ADDITIONAL_RESULTS;
 
       suiteSetup(function() {
-        element = $('history-list');
-        toolbar = $('toolbar');
+        element = $('history-app').$['history-list'];
+        toolbar = $('history-app').$['toolbar'];
 
         TEST_HISTORY_RESULTS = [
           createHistoryEntry('2016-03-15', 'https://www.google.com'),
