@@ -29,6 +29,11 @@ public class DualControlLayoutTest extends InstrumentationTestCase {
     private static final int STACKED_MARGIN = 4;
     private static final int INFOBAR_WIDTH = 3200;
 
+    private static final int PADDING_LEFT = 8;
+    private static final int PADDING_TOP = 16;
+    private static final int PADDING_RIGHT = 32;
+    private static final int PADDING_BOTTOM = 64;
+
     private int mTinyControlWidth;
     private Context mContext;
 
@@ -43,25 +48,43 @@ public class DualControlLayoutTest extends InstrumentationTestCase {
     @SmallTest
     @UiThreadTest
     public void testAlignSideBySide() {
-        runLayoutTest(ALIGN_START, false, false);
-        runLayoutTest(ALIGN_START, false, true);
-        runLayoutTest(ALIGN_START, true, false);
-        runLayoutTest(ALIGN_START, true, true);
+        runLayoutTest(ALIGN_START, false, false, false);
+        runLayoutTest(ALIGN_START, false, true, false);
+        runLayoutTest(ALIGN_START, true, false, false);
+        runLayoutTest(ALIGN_START, true, true, false);
 
-        runLayoutTest(ALIGN_APART, false, false);
-        runLayoutTest(ALIGN_APART, false, true);
-        runLayoutTest(ALIGN_APART, true, false);
-        runLayoutTest(ALIGN_APART, true, true);
+        runLayoutTest(ALIGN_APART, false, false, false);
+        runLayoutTest(ALIGN_APART, false, true, false);
+        runLayoutTest(ALIGN_APART, true, false, false);
+        runLayoutTest(ALIGN_APART, true, true, false);
 
-        runLayoutTest(ALIGN_END, false, false);
-        runLayoutTest(ALIGN_END, false, true);
-        runLayoutTest(ALIGN_END, true, false);
-        runLayoutTest(ALIGN_END, true, true);
+        runLayoutTest(ALIGN_END, false, false, false);
+        runLayoutTest(ALIGN_END, false, true, false);
+        runLayoutTest(ALIGN_END, true, false, false);
+        runLayoutTest(ALIGN_END, true, true, false);
+
+        // Test the padding.
+        runLayoutTest(ALIGN_START, false, false, true);
+        runLayoutTest(ALIGN_START, false, true, true);
+        runLayoutTest(ALIGN_START, true, false, true);
+        runLayoutTest(ALIGN_START, true, true, true);
+
+        runLayoutTest(ALIGN_APART, false, false, true);
+        runLayoutTest(ALIGN_APART, false, true, true);
+        runLayoutTest(ALIGN_APART, true, false, true);
+        runLayoutTest(ALIGN_APART, true, true, true);
+
+        runLayoutTest(ALIGN_END, false, false, true);
+        runLayoutTest(ALIGN_END, false, true, true);
+        runLayoutTest(ALIGN_END, true, false, true);
+        runLayoutTest(ALIGN_END, true, true, true);
     }
 
     /** Lays out two controls that fit on the same line. */
-    private void runLayoutTest(int alignment, boolean isRtl, boolean addSecondView) {
+    private void runLayoutTest(
+            int alignment, boolean isRtl, boolean addSecondView, boolean addPadding) {
         DualControlLayout layout = new DualControlLayout(mContext, null);
+        if (addPadding) layout.setPadding(PADDING_LEFT, PADDING_TOP, PADDING_RIGHT, PADDING_BOTTOM);
         layout.setAlignment(alignment);
         layout.setLayoutDirection(isRtl ? View.LAYOUT_DIRECTION_RTL : View.LAYOUT_DIRECTION_LTR);
         layout.setLayoutParams(
@@ -89,10 +112,16 @@ public class DualControlLayoutTest extends InstrumentationTestCase {
         // Confirm that the primary View is in the correct place.
         if ((isRtl && alignment == ALIGN_START)
                 || (!isRtl && (alignment == ALIGN_APART || alignment == ALIGN_END))) {
-            assertEquals("Primary should be on the right.", INFOBAR_WIDTH, primary.getRight());
+            int expectedRight = INFOBAR_WIDTH - (addPadding ? PADDING_RIGHT : 0);
+            assertEquals("Primary should be on the right.", expectedRight, primary.getRight());
         } else {
-            assertEquals("Primary should be on the left.", 0, primary.getLeft());
+            int expectedLeft = addPadding ? PADDING_LEFT : 0;
+            assertEquals("Primary should be on the left.", expectedLeft, primary.getLeft());
         }
+        int expectedTop = addPadding ? PADDING_TOP : 0;
+        int expectedBottom = expectedTop + PRIMARY_HEIGHT;
+        assertEquals("Primary top in wrong location", expectedTop, primary.getTop());
+        assertEquals("Primary bottom in wrong location", expectedBottom, primary.getBottom());
         assertEquals(mTinyControlWidth, primary.getMeasuredWidth());
         assertEquals(PRIMARY_HEIGHT, primary.getMeasuredHeight());
         MoreAsserts.assertNotEqual(primary.getLeft(), primary.getRight());
@@ -116,11 +145,13 @@ public class DualControlLayoutTest extends InstrumentationTestCase {
                 if (isRtl) {
                     // Secondary View is on the far right.
                     assertTrue(primary.getRight() < secondary.getLeft());
-                    assertEquals(INFOBAR_WIDTH, secondary.getRight());
+                    int expectedRight = INFOBAR_WIDTH - (addPadding ? PADDING_RIGHT : 0);
+                    assertEquals(expectedRight, secondary.getRight());
                 } else {
                     // Secondary View is on the far left.
                     assertTrue(secondary.getRight() < primary.getLeft());
-                    assertEquals(0, secondary.getLeft());
+                    int expectedLeft = addPadding ? PADDING_LEFT : 0;
+                    assertEquals(expectedLeft, secondary.getLeft());
                 }
             } else {
                 assertEquals(ALIGN_END, alignment);
@@ -141,23 +172,35 @@ public class DualControlLayoutTest extends InstrumentationTestCase {
             assertEquals(primaryCenter, secondaryCenter);
         }
 
-        assertEquals(layout.getMeasuredHeight(), primary.getMeasuredHeight());
+        int expectedLayoutHeight =
+                primary.getMeasuredHeight() + (addPadding ? PADDING_TOP + PADDING_BOTTOM : 0);
+        assertEquals(expectedLayoutHeight, layout.getMeasuredHeight());
     }
 
     @SmallTest
     @UiThreadTest
     public void testStacked() {
-        runStackedLayoutTest(ALIGN_START, false);
-        runStackedLayoutTest(ALIGN_START, true);
-        runStackedLayoutTest(ALIGN_APART, false);
-        runStackedLayoutTest(ALIGN_APART, true);
-        runStackedLayoutTest(ALIGN_END, false);
-        runStackedLayoutTest(ALIGN_END, true);
+        runStackedLayoutTest(ALIGN_START, false, false);
+        runStackedLayoutTest(ALIGN_START, true, false);
+        runStackedLayoutTest(ALIGN_APART, false, false);
+        runStackedLayoutTest(ALIGN_APART, true, false);
+        runStackedLayoutTest(ALIGN_END, false, false);
+        runStackedLayoutTest(ALIGN_END, true, false);
+
+        // Test the padding.
+        runStackedLayoutTest(ALIGN_START, false, true);
+        runStackedLayoutTest(ALIGN_START, true, true);
+        runStackedLayoutTest(ALIGN_APART, false, true);
+        runStackedLayoutTest(ALIGN_APART, true, true);
+        runStackedLayoutTest(ALIGN_END, false, true);
+        runStackedLayoutTest(ALIGN_END, true, true);
     }
 
-    /** Runs a test where the controls don't fit on the same line. */
-    private void runStackedLayoutTest(int alignment, boolean isRtl) {
+    /** Runs a test where the controls don't fit on the same line.
+     * @param addPadding TODO(dfalcantara):*/
+    private void runStackedLayoutTest(int alignment, boolean isRtl, boolean addPadding) {
         DualControlLayout layout = new DualControlLayout(mContext, null);
+        if (addPadding) layout.setPadding(PADDING_LEFT, PADDING_TOP, PADDING_RIGHT, PADDING_BOTTOM);
         layout.setAlignment(alignment);
         layout.setStackedMargin(STACKED_MARGIN);
         layout.setLayoutDirection(isRtl ? View.LAYOUT_DIRECTION_RTL : View.LAYOUT_DIRECTION_LTR);
@@ -181,17 +224,27 @@ public class DualControlLayoutTest extends InstrumentationTestCase {
         layout.measure(parentWidthSpec, parentHeightSpec);
         layout.layout(0, 0, layout.getMeasuredWidth(), layout.getMeasuredHeight());
 
-        assertEquals(0, primary.getLeft());
-        assertEquals(0, secondary.getLeft());
+        assertEquals(addPadding ? PADDING_LEFT : 0, primary.getLeft());
+        assertEquals(addPadding ? PADDING_LEFT : 0, secondary.getLeft());
 
-        assertEquals(INFOBAR_WIDTH, primary.getRight());
-        assertEquals(INFOBAR_WIDTH, secondary.getRight());
+        assertEquals(INFOBAR_WIDTH - (addPadding ? PADDING_RIGHT : 0), primary.getRight());
+        assertEquals(INFOBAR_WIDTH - (addPadding ? PADDING_RIGHT : 0), secondary.getRight());
 
-        assertEquals(INFOBAR_WIDTH, primary.getMeasuredWidth());
-        assertEquals(INFOBAR_WIDTH, secondary.getMeasuredWidth());
+        int expectedControlWidth = INFOBAR_WIDTH - (addPadding ? PADDING_LEFT + PADDING_RIGHT : 0);
+        assertEquals(expectedControlWidth, primary.getMeasuredWidth());
+        assertEquals(expectedControlWidth, secondary.getMeasuredWidth());
         assertEquals(INFOBAR_WIDTH, layout.getMeasuredWidth());
 
-        assertEquals(primary.getBottom() + STACKED_MARGIN, secondary.getTop());
+        int expectedPrimaryTop = addPadding ? PADDING_TOP : 0;
+        int expectedPrimaryBottom = expectedPrimaryTop + primary.getHeight();
+        int expectedSecondaryTop = expectedPrimaryBottom + STACKED_MARGIN;
+        int expectedSecondaryBottom = expectedSecondaryTop + secondary.getHeight();
+        int expectedLayoutHeight = expectedSecondaryBottom + (addPadding ? PADDING_BOTTOM : 0);
+        assertEquals(expectedPrimaryTop, primary.getTop());
+        assertEquals(expectedPrimaryBottom, primary.getBottom());
+        assertEquals(expectedSecondaryTop, secondary.getTop());
+        assertEquals(expectedSecondaryBottom, secondary.getBottom());
+        assertEquals(expectedLayoutHeight, layout.getMeasuredHeight());
         MoreAsserts.assertNotEqual(layout.getMeasuredHeight(), primary.getMeasuredHeight());
     }
 }

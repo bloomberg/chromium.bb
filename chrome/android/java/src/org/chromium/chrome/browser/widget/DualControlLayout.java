@@ -128,10 +128,12 @@ public final class DualControlLayout extends ViewGroup {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         mIsStacked = false;
+        int sidePadding = getPaddingLeft() + getPaddingRight();
+        int verticalPadding = getPaddingTop() + getPaddingBottom();
 
         // Measure the primary View, allowing it to be as wide as the Layout.
         int maxWidth = MeasureSpec.getMode(widthMeasureSpec) == MeasureSpec.UNSPECIFIED
-                ? Integer.MAX_VALUE : MeasureSpec.getSize(widthMeasureSpec);
+                ? Integer.MAX_VALUE : (MeasureSpec.getSize(widthMeasureSpec) - sidePadding);
         int unspecifiedSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
         measureChild(mPrimaryView, unspecifiedSpec, unspecifiedSpec);
 
@@ -161,6 +163,8 @@ public final class DualControlLayout extends ViewGroup {
                 layoutHeight = Math.max(layoutHeight, mSecondaryView.getMeasuredHeight());
             }
         }
+        layoutWidth += sidePadding;
+        layoutHeight += verticalPadding;
 
         setMeasuredDimension(resolveSize(layoutWidth, widthMeasureSpec),
                 resolveSize(layoutHeight, heightMeasureSpec));
@@ -168,26 +172,31 @@ public final class DualControlLayout extends ViewGroup {
 
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+        int leftPadding = getPaddingLeft();
+        int rightPadding = getPaddingRight();
+
         int width = right - left;
         boolean isRtl = ApiCompatibilityUtils.isLayoutRtl(this);
         boolean isPrimaryOnRight = (isRtl && mAlignment == ALIGN_START)
                 || (!isRtl && (mAlignment == ALIGN_APART || mAlignment == ALIGN_END));
 
-        int primaryRight = isPrimaryOnRight ? width : mPrimaryView.getMeasuredWidth();
+        int primaryRight = isPrimaryOnRight
+                ? (width - rightPadding) : (mPrimaryView.getMeasuredWidth() + leftPadding);
         int primaryLeft = primaryRight - mPrimaryView.getMeasuredWidth();
-        int primaryHeight = mPrimaryView.getMeasuredHeight();
-        mPrimaryView.layout(primaryLeft, 0, primaryRight, primaryHeight);
+        int primaryTop = getPaddingTop();
+        int primaryBottom = primaryTop + mPrimaryView.getMeasuredHeight();
+        mPrimaryView.layout(primaryLeft, primaryTop, primaryRight, primaryBottom);
 
         if (mIsStacked) {
             // Fill out the row.  onMeasure() should have already applied the correct width.
-            int secondaryTop = primaryHeight + mStackedMargin;
+            int secondaryTop = primaryBottom + mStackedMargin;
             int secondaryBottom = secondaryTop + mSecondaryView.getMeasuredHeight();
-            mSecondaryView.layout(
-                    0, secondaryTop, mSecondaryView.getMeasuredWidth(), secondaryBottom);
+            mSecondaryView.layout(leftPadding, secondaryTop,
+                    leftPadding + mSecondaryView.getMeasuredWidth(), secondaryBottom);
         } else if (mSecondaryView != null) {
             // Center the secondary View vertically with the primary View.
             int secondaryHeight = mSecondaryView.getMeasuredHeight();
-            int primaryCenter = primaryHeight / 2;
+            int primaryCenter = (primaryTop + primaryBottom) / 2;
             int secondaryTop = primaryCenter - (secondaryHeight / 2);
             int secondaryBottom = secondaryTop + secondaryHeight;
 
@@ -196,7 +205,8 @@ public final class DualControlLayout extends ViewGroup {
             int secondaryRight;
             if (mAlignment == ALIGN_APART) {
                 // Put the second View on the other side of the Layout from the primary View.
-                secondaryLeft = isPrimaryOnRight ? 0 : width - mSecondaryView.getMeasuredWidth();
+                secondaryLeft = isPrimaryOnRight
+                        ? leftPadding : width - rightPadding - mSecondaryView.getMeasuredWidth();
                 secondaryRight = secondaryLeft + mSecondaryView.getMeasuredWidth();
             } else if (isPrimaryOnRight) {
                 // Sit to the left of the primary View.
