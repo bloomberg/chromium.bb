@@ -20,6 +20,8 @@ import android.widget.LinearLayout.LayoutParams;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
+import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.preferences.PrefServiceBridge.AboutVersionStrings;
 import org.chromium.ui.widget.Toast;
 
 /**
@@ -34,6 +36,9 @@ public class DataReductionPromoScreen extends Dialog implements View.OnClickList
     private static final String SHARED_PREF_DISPLAYED_PROMO = "displayed_data_reduction_promo";
     private static final String SHARED_PREF_DISPLAYED_PROMO_TIME_MS =
             "displayed_data_reduction_promo_time_ms";
+    private static final String SHARED_PREF_DISPLAYED_PROMO_VERSION =
+            "displayed_data_reduction_promo_version";
+    private static final String SHARED_PREF_FRE_PROMO_OPT_OUT = "fre_promo_opt_out";
 
     private int mState;
 
@@ -167,10 +172,28 @@ public class DataReductionPromoScreen extends Dialog implements View.OnClickList
      * @param context An Android context.
      */
     public static void saveDataReductionPromoDisplayed(Context context) {
+        AboutVersionStrings versionStrings =
+                PrefServiceBridge.getInstance().getAboutVersionStrings();
         PreferenceManager.getDefaultSharedPreferences(context)
                 .edit()
                 .putBoolean(SHARED_PREF_DISPLAYED_PROMO, true)
                 .putLong(SHARED_PREF_DISPLAYED_PROMO_TIME_MS, System.currentTimeMillis())
+                .putString(SHARED_PREF_DISPLAYED_PROMO_VERSION,
+                           versionStrings.getApplicationVersion())
+                .apply();
+    }
+
+    /**
+     * Saves shared prefs indicating that the Data Reduction Proxy First Run Experience promo screen
+     * was displayed and the user opted out.
+     *
+     * @param context An Android context.
+     * @param boolean Whether the user opted out of using the Data Reduction Proxy.
+     */
+    public static void saveDataReductionFrePromoOptOut(Context context, boolean optOut) {
+        PreferenceManager.getDefaultSharedPreferences(context)
+                .edit()
+                .putBoolean(SHARED_PREF_FRE_PROMO_OPT_OUT, optOut)
                 .apply();
     }
 }

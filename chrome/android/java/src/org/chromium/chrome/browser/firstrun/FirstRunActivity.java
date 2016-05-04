@@ -306,9 +306,13 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
             if (DataReductionProxySettings.getInstance().isDataReductionProxyEnabled()) {
                 DataReductionProxyUma
                         .dataReductionProxyUIAction(DataReductionProxyUma.ACTION_FRE_ENABLED);
+                DataReductionPromoScreen
+                        .saveDataReductionFrePromoOptOut(getApplicationContext(), false);
             } else {
                 DataReductionProxyUma
                         .dataReductionProxyUIAction(DataReductionProxyUma.ACTION_FRE_DISABLED);
+                DataReductionPromoScreen
+                        .saveDataReductionFrePromoOptOut(getApplicationContext(), true);
             }
         }
 
