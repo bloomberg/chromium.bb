@@ -267,10 +267,15 @@ void MultiColumnFragmentainerGroup::collectLayerFragments(PaintLayerFragments& f
 
 LayoutRect MultiColumnFragmentainerGroup::calculateOverflow() const
 {
-    unsigned columnCount = actualColumnCount();
-    if (!columnCount)
-        return LayoutRect();
-    return columnRectAt(columnCount - 1);
+    // Note that we just return the bounding rectangle of the column boxes here. We currently don't
+    // examine overflow caused by the actual content that ends up in each column.
+    LayoutRect overflowRect;
+    if (unsigned columnCount = actualColumnCount()) {
+        overflowRect = columnRectAt(0);
+        if (columnCount > 1)
+            overflowRect.uniteEvenIfEmpty(columnRectAt(columnCount - 1));
+    }
+    return overflowRect;
 }
 
 unsigned MultiColumnFragmentainerGroup::actualColumnCount() const
