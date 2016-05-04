@@ -169,7 +169,7 @@ paper-menu {
 
 #share-screen-text {
   -webkit-padding-start: var(--dialog-padding-start);
-  color: var(--subtext-color);
+  color: var(--paper-grey-600);
   cursor: default;
   font-weight: normal;
   padding-bottom: 4px;
@@ -189,7 +189,7 @@ paper-menu {
 
 .sink-domain {
   -webkit-padding-start: 6px;
-  color: var(--subtext-color);
+  color: var(--paper-grey-600);
   /* TODO(crbug/589697): Handle overflow of very long domain names. */
 }
 
@@ -235,7 +235,7 @@ paper-menu {
 }
 
 .sink-subtext {
-  color: var(--subtext-color);
+  color: var(--paper-grey-600);
   padding-top: 8px;
 }
 
