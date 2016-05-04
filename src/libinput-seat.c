@@ -39,9 +39,6 @@
 #include "libinput-device.h"
 #include "shared/helpers.h"
 
-static const char default_seat[] = "seat0";
-static const char default_seat_name[] = "default";
-
 static void
 process_events(struct udev_input *input);
 static struct udev_seat *
