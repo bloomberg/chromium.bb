@@ -96,6 +96,7 @@ public class AutoSigninFirstRunDialog
         builder.setView(view);
 
         mDialog = builder.create();
+        mDialog.setCanceledOnTouchOutside(false);
         return mDialog;
     }
 
