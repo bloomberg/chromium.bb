@@ -136,6 +136,11 @@ public:
 
     RootInlineBox* createAndAppendRootInlineBox();
 
+    // Return the number of lines in *this* block flow. Does not recurse into block flow children.
+    // Will start counting from the first line, and stop counting right after |stopRootInlineBox|,
+    // if specified.
+    int lineCount(const RootInlineBox* stopRootInlineBox = nullptr) const;
+
     void removeFloatingObjectsFromDescendants();
     void markAllDescendantsWithFloatsForLayout(LayoutBox* floatToRemove = nullptr, bool inLayout = true);
     void markSiblingsWithFloatsForLayout(LayoutBox* floatToRemove = nullptr);

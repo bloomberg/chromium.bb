@@ -1934,6 +1934,23 @@ void LayoutBlockFlow::deleteLineBoxTree()
     m_lineBoxes.deleteLineBoxTree();
 }
 
+int LayoutBlockFlow::lineCount(const RootInlineBox* stopRootInlineBox) const
+{
+#ifndef NDEBUG
+    ASSERT(!stopRootInlineBox || stopRootInlineBox->block().debugPointer() == this);
+#endif
+    if (!childrenInline())
+        return 0;
+
+    int count = 0;
+    for (const RootInlineBox* box = firstRootBox(); box; box = box->nextRootBox()) {
+        count++;
+        if (box == stopRootInlineBox)
+            break;
+    }
+    return count;
+}
+
 void LayoutBlockFlow::removeFloatingObjectsFromDescendants()
 {
     if (!containsFloats())
