@@ -44,6 +44,8 @@ public class BlimpRendererActivity
     private TabControlFeature mTabControlFeature;
     private WebInputBox mWebInputBox;
 
+    private boolean mFirstUrlLoadDone = false;
+
     @Override
     @SuppressFBWarnings("DM_EXIT")  // FindBugs doesn't like System.exit().
     protected void onCreate(Bundle savedInstanceState) {
@@ -159,13 +161,13 @@ public class BlimpRendererActivity
 
         mTabControlFeature = new TabControlFeature(mBlimpClientSession, mBlimpView);
 
-        handleUrl(getUrlFromIntent(getIntent()));
+        handleUrlFromIntent(getIntent());
     }
 
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
-        handleUrl(getUrlFromIntent(intent));
+        handleUrlFromIntent(intent);
     }
 
     /**
@@ -184,19 +186,21 @@ public class BlimpRendererActivity
     }
 
     /**
-     * Loads the url in the browser.
-     * @param url URL to load. If null, browser loads a default page.
+     * Retrieves an URL from an Intent and loads it in the browser.
+     * If the toolbar already has an URL and the new intent doesn't have an URL (e.g. bringing back
+     * from background), the intent gets ignored.
+     * @param intent Intent that contains the URL.
      */
-    private void handleUrl(String url) {
+    private void handleUrlFromIntent(Intent intent) {
         // TODO(shaktisahu): On a slow device, this might happen. Load the correct URL once the
         // toolbar loading is complete (crbug/601226)
         if (mToolbar == null) return;
 
-        if (url == null) {
-            mToolbar.loadUrl("http://www.google.com/");
-        } else {
-            mToolbar.loadUrl(url);
-        }
+        String url = getUrlFromIntent(intent);
+        if (mFirstUrlLoadDone && url == null) return;
+        mFirstUrlLoadDone = true;
+
+        mToolbar.loadUrl(url == null ? "http://www.google.com/" : url);
     }
 
     // TokenSource.Callback implementation.
