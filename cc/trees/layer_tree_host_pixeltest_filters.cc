@@ -226,6 +226,31 @@ TEST_F(LayerTreeHostFiltersScaledPixelTest, HiDpi_Software) {
   RunPixelTestType(50, 2.f, PIXEL_TEST_SOFTWARE);
 }
 
+class LayerTreeHostNullFilterPixelTest : public LayerTreeHostFiltersPixelTest {
+  void InitializeSettings(LayerTreeSettings* settings) override {}
+
+ protected:
+  void RunPixelTestType(PixelTestType test_type) {
+    scoped_refptr<SolidColorLayer> foreground =
+        CreateSolidColorLayer(gfx::Rect(0, 0, 200, 200), SK_ColorGREEN);
+
+    FilterOperations filters;
+    filters.Append(FilterOperation::CreateReferenceFilter(nullptr));
+    foreground->SetFilters(filters);
+
+    RunPixelTest(test_type, foreground,
+                 base::FilePath(FILE_PATH_LITERAL("green.png")));
+  }
+};
+
+TEST_F(LayerTreeHostNullFilterPixelTest, GL) {
+  RunPixelTestType(PIXEL_TEST_GL);
+}
+
+TEST_F(LayerTreeHostNullFilterPixelTest, Software) {
+  RunPixelTestType(PIXEL_TEST_SOFTWARE);
+}
+
 class ImageFilterClippedPixelTest : public LayerTreeHostFiltersPixelTest {
  protected:
   void RunPixelTestType(PixelTestType test_type) {
