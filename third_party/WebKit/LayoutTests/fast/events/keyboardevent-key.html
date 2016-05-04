@@ -1,103 +1,85 @@
 <!DOCTYPE html>
-<link rel="help" href="http://www.w3.org/TR/DOM-Level-3-Events/#events-KeyboardEvent-key" />
-<script src="../../resources/js-test.js"></script>-
-<textarea id="textarea"></textarea>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 <script>
-description('Tests KeyboardEvent.key attribute');
-var textarea = document.getElementById('textarea');
-textarea.addEventListener('keydown', recordKeyEvent, false);
-textarea.addEventListener('keyup', recordKeyEvent, false);
-textarea.addEventListener('keypress', recordKeyEvent, false);
-textarea.focus();
-
-var lastKeyboardDownEvent, lastKeyboardPressEvent, lastKeyboardUpEvent;
-
-function recordKeyEvent(ev) {
-    if (window.eventSender) {
-        if (ev.type === "keydown")
-            lastKeyboardDownEvent = ev;
-        else if (ev.type === "keyup")
-            lastKeyboardUpEvent = ev;
-        else if (ev.type === "keypress")
-            lastKeyboardPressEvent = ev;
-    } else {
-        debug('Type=' + ev.type + ',' + 'key=' + ev.key);
+// Note: This test is only testing synthetic DomKey for eventSender, for real
+// DomKey generated on each platform please refer to individual tests.
+// e.g. platform_key_map_win_unittest.cc, web_input_event_builders_mac_unittest.mm
+test(function() {
+    if (!window.eventSender) {
+        document.write('This test requires eventSender');
+        return;
     }
-}
 
-if (window.eventSender) {
-    debug('Modifier Keys');
-    eventSender.keyDown('leftControl');
-    shouldEvaluateTo('lastKeyboardUpEvent.key', '\'Control\'');
-    eventSender.keyDown('rightControl');
-    shouldEvaluateTo('lastKeyboardDownEvent.key', '\'Control\'');
-    eventSender.keyDown('leftShift');
-    shouldEvaluateTo('lastKeyboardDownEvent.key', '\'Shift\'');
-    eventSender.keyDown('rightShift');
-    shouldEvaluateTo('lastKeyboardDownEvent.key', '\'Shift\'');
-    eventSender.keyDown('leftAlt');
-    shouldEvaluateTo('lastKeyboardDownEvent.key', '\'Alt\'');
-    eventSender.keyDown('rightAlt');
-    shouldEvaluateTo('lastKeyboardDownEvent.key', '\'AltGraph\'');
-    eventSender.keyDown('numLock');
-    shouldEvaluateTo('lastKeyboardDownEvent.key', '\'NumLock\'');
-    shouldEvaluateTo('lastKeyboardUpEvent.key', '\'NumLock\'');
+    var lastKeyDown, lastKeyPress, lastKeyUp;
+    function recordKeyEvent(event) {
+        if (event.type === "keydown")
+            lastKeyDown = event;
+        else if (event.type === "keypress")
+            lastKeyPress = event;
+        else if (event.type === "keyup")
+            lastKeyUp = event;
+    }
+    document.addEventListener('keydown', recordKeyEvent, false);
+    document.addEventListener('keypress', recordKeyEvent, false);
+    document.addEventListener('keyup', recordKeyEvent, false);
 
-    debug('Whitespace Keys');
-    eventSender.keyDown('\n');
-    shouldEvaluateTo('lastKeyboardDownEvent.key', '\'Enter\'');
-    eventSender.keyDown('\t');
-    shouldEvaluateTo('lastKeyboardDownEvent.key', '\'Tab\'');
-    shouldEvaluateTo('lastKeyboardUpEvent.key', '\'Tab\'');
+
+    function testDomKey(keyString, expectedDomKey, shouldTestKeyPress, modifiers) {
+        lastKeyDown = null;
+        lastKeyPress = null;
+        lastKeyUp = null;
+        eventSender.keyDown(keyString, modifiers);
+        assert_equals(lastKeyDown.key, expectedDomKey);
+        assert_equals(lastKeyUp.key, expectedDomKey);
+        if (shouldTestKeyPress)
+            assert_equals(lastKeyPress.key, expectedDomKey);
+    }
+    // Alpha&Numeric Keys
+    testDomKey('A', 'A', true, ['shiftKey']);
+    testDomKey('g', 'g', true);
+    testDomKey('h', 'h', true);
+    testDomKey('1', '1', true);
+    testDomKey('(', '(', true, ['shiftKey']);
+
+    // Modifier Keys
+    testDomKey('leftControl', 'Control', false);
+    testDomKey('rightControl', 'Control', false);
+    testDomKey('leftShift', 'Shift', false);
+    testDomKey('rightShift', 'Shift', false);
+    testDomKey('leftAlt', 'Alt', false);
+    testDomKey('rightAlt', 'Alt', false);
+    testDomKey('numLock', 'NumLock', false);
+
+    // Whitespace Keys
+    testDomKey('\n', 'Enter', true);
+    testDomKey('\t', 'Tab', false);
     
-    debug('Navigation keys');
-    eventSender.keyDown('rightArrow');
-    shouldEvaluateTo('lastKeyboardDownEvent.key', '\'ArrowRight\'');
-    shouldEvaluateTo('lastKeyboardUpEvent.key', '\'ArrowRight\'');
-    eventSender.keyDown('downArrow');
-    shouldEvaluateTo('lastKeyboardDownEvent.key', '\'ArrowDown\'');
-    eventSender.keyDown('leftArrow');
-    shouldEvaluateTo('lastKeyboardDownEvent.key', '\'ArrowLeft\'');
-    eventSender.keyDown('upArrow');
-    shouldEvaluateTo('lastKeyboardDownEvent.key', '\'ArrowUp\'');
-    shouldEvaluateTo('lastKeyboardUpEvent.key', '\'ArrowUp\'');
-    eventSender.keyDown('home');
-    shouldEvaluateTo('lastKeyboardDownEvent.key', '\'Home\'');
-    eventSender.keyDown('end');
-    shouldEvaluateTo('lastKeyboardDownEvent.key', '\'End\'');
-    eventSender.keyDown('pageUp');
-    shouldEvaluateTo('lastKeyboardDownEvent.key', '\'PageUp\'');
-    eventSender.keyDown('pageDown');
-    shouldEvaluateTo('lastKeyboardDownEvent.key', '\'PageDown\'');
-    shouldEvaluateTo('lastKeyboardUpEvent.key', '\'PageDown\'');
+    // Navigation keys
+    testDomKey('rightArrow', 'ArrowRight', false);
+    testDomKey('downArrow', 'ArrowDown', false);
+    testDomKey('leftArrow', 'ArrowLeft', false);
+    testDomKey('upArrow', 'ArrowUp', false);
+    testDomKey('home', 'Home', false);
+    testDomKey('end', 'End', false);
+    testDomKey('pageUp', 'PageUp', false);
+    testDomKey('pageDown', 'PageDown', false);
     
-    debug('Editing Keys');
-    eventSender.keyDown('backspace');
-    shouldEvaluateTo('lastKeyboardDownEvent.code', '\'Backspace\'');
-    eventSender.keyDown('insert');
-    shouldEvaluateTo('lastKeyboardDownEvent.key', '\'Insert\'');
-    shouldEvaluateTo('lastKeyboardUpEvent.key', '\'Insert\'');
-    eventSender.keyDown('delete');
-    shouldEvaluateTo('lastKeyboardDownEvent.key', '\'Delete\'');
+    // Editing Keys
+    testDomKey('backspace', 'Backspace', false);
+    testDomKey('insert', 'Insert', false);
+    testDomKey('delete', 'Delete', false);
       
-    debug('Device Keys');
-    eventSender.keyDown('printScreen');
-    shouldEvaluateTo('lastKeyboardDownEvent.key', '\'PrintScreen\'');
-    shouldEvaluateTo('lastKeyboardUpEvent.key', '\'PrintScreen\'');
+    // Device Keys
+    testDomKey('printScreen', 'PrintScreen', false);
     
-    debug('General Purpose Function Section');
-    eventSender.keyDown('F1');
-    shouldEvaluateTo('lastKeyboardDownEvent.key', '\'F1\'');
-    eventSender.keyDown('F6');
-    shouldEvaluateTo('lastKeyboardDownEvent.key', '\'F6\'');
-    eventSender.keyDown('F12');
-    shouldEvaluateTo('lastKeyboardDownEvent.key', '\'F12\'');
+    // General Purpose Function Section
+    testDomKey('F1', 'F1', false);
+    testDomKey('F6', 'F6', false);
+    testDomKey('F12', 'F12', false);
     
-    debug('UI Keys');
-    eventSender.keyDown('escape');
-    shouldEvaluateTo('lastKeyboardDownEvent.key', '\'Escape\'');
-    shouldEvaluateTo('lastKeyboardUpEvent.key', '\'Escape\'');
-    eventSender.keyDown('menu');
-    shouldEvaluateTo('lastKeyboardDownEvent.key', '\'MediaApps\'');    
-}
+    // UI Keys
+    testDomKey('escape', 'Escape', false);
+    testDomKey('menu', 'ContextMenu', false);
+}, 'Testing synthetic DomKey for eventSender.');
 </script>

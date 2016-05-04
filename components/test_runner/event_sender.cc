@@ -1395,81 +1395,104 @@ void EventSender::KeyDown(const std::string& code_str,
   int code = 0;
   int text = 0;
   bool needs_shift_key_modifier = false;
-  std::string domString;
+  std::string domKeyString;
+  std::string domCodeString;
 
   if ("\n" == code_str) {
     generate_char = true;
     text = code = ui::VKEY_RETURN;
-    domString.assign("Enter");
+    domKeyString.assign("Enter");
+    domCodeString.assign("Enter");
   } else if ("rightArrow" == code_str) {
     code = ui::VKEY_RIGHT;
-    domString.assign("ArrowRight");
+    domKeyString.assign("ArrowRight");
+    domCodeString.assign("ArrowRight");
   } else if ("downArrow" == code_str) {
     code = ui::VKEY_DOWN;
-    domString.assign("ArrowDown");
+    domKeyString.assign("ArrowDown");
+    domCodeString.assign("ArrowDown");
   } else if ("leftArrow" == code_str) {
     code = ui::VKEY_LEFT;
-    domString.assign("ArrowLeft");
+    domKeyString.assign("ArrowLeft");
+    domCodeString.assign("ArrowLeft");
   } else if ("upArrow" == code_str) {
     code = ui::VKEY_UP;
-    domString.assign("ArrowUp");
+    domKeyString.assign("ArrowUp");
+    domCodeString.assign("ArrowUp");
   } else if ("insert" == code_str) {
     code = ui::VKEY_INSERT;
-    domString.assign("Insert");
+    domKeyString.assign("Insert");
+    domCodeString.assign("Insert");
   } else if ("delete" == code_str) {
     code = ui::VKEY_DELETE;
-    domString.assign("Delete");
+    domKeyString.assign("Delete");
+    domCodeString.assign("Delete");
   } else if ("pageUp" == code_str) {
     code = ui::VKEY_PRIOR;
-    domString.assign("PageUp");
+    domKeyString.assign("PageUp");
+    domCodeString.assign("PageUp");
   } else if ("pageDown" == code_str) {
     code = ui::VKEY_NEXT;
-    domString.assign("PageDown");
+    domKeyString.assign("PageDown");
+    domCodeString.assign("PageDown");
   } else if ("home" == code_str) {
     code = ui::VKEY_HOME;
-    domString.assign("Home");
+    domKeyString.assign("Home");
+    domCodeString.assign("Home");
   } else if ("end" == code_str) {
     code = ui::VKEY_END;
-    domString.assign("End");
+    domKeyString.assign("End");
+    domCodeString.assign("End");
   } else if ("printScreen" == code_str) {
     code = ui::VKEY_SNAPSHOT;
-    domString.assign("PrintScreen");
+    domKeyString.assign("PrintScreen");
+    domCodeString.assign("PrintScreen");
   } else if ("menu" == code_str) {
     code = ui::VKEY_APPS;
-    domString.assign("ContextMenu");
+    domKeyString.assign("ContextMenu");
+    domCodeString.assign("ContextMenu");
   } else if ("leftControl" == code_str) {
     code = ui::VKEY_CONTROL;
-    domString.assign("ControlLeft");
+    domKeyString.assign("Control");
+    domCodeString.assign("ControlLeft");
     location = DOMKeyLocationLeft;
   } else if ("rightControl" == code_str) {
     code = ui::VKEY_CONTROL;
-    domString.assign("ControlRight");
+    domKeyString.assign("Control");
+    domCodeString.assign("ControlRight");
     location = DOMKeyLocationRight;
   } else if ("leftShift" == code_str) {
     code = ui::VKEY_SHIFT;
-    domString.assign("ShiftLeft");
+    domKeyString.assign("Shift");
+    domCodeString.assign("ShiftLeft");
     location = DOMKeyLocationLeft;
   } else if ("rightShift" == code_str) {
     code = ui::VKEY_SHIFT;
-    domString.assign("ShiftRight");
+    domKeyString.assign("Shift");
+    domCodeString.assign("ShiftRight");
     location = DOMKeyLocationRight;
   } else if ("leftAlt" == code_str) {
     code = ui::VKEY_MENU;
-    domString.assign("AltLeft");
+    domKeyString.assign("Alt");
+    domCodeString.assign("AltLeft");
     location = DOMKeyLocationLeft;
   } else if ("rightAlt" == code_str) {
     code = ui::VKEY_MENU;
-    domString.assign("AltRight");
+    domKeyString.assign("Alt");
+    domCodeString.assign("AltRight");
     location = DOMKeyLocationRight;
   } else if ("numLock" == code_str) {
     code = ui::VKEY_NUMLOCK;
-    domString.assign("NumLock");
+    domKeyString.assign("NumLock");
+    domCodeString.assign("NumLock");
   } else if ("backspace" == code_str) {
     code = ui::VKEY_BACK;
-    domString.assign("Backspace");
+    domKeyString.assign("Backspace");
+    domCodeString.assign("Backspace");
   } else if ("escape" == code_str) {
     code = ui::VKEY_ESCAPE;
-    domString.assign("Escape");
+    domKeyString.assign("Escape");
+    domCodeString.assign("Escape");
   } else {
     // Compare the input string with the function-key names defined by the
     // DOM spec (i.e. "F1",...,"F24"). If the input string is a function-key
@@ -1478,7 +1501,8 @@ void EventSender::KeyDown(const std::string& code_str,
       std::string function_key_name = base::StringPrintf("F%d", i);
       if (function_key_name == code_str) {
         code = ui::VKEY_F1 + (i - 1);
-        domString = function_key_name;
+        domKeyString = function_key_name;
+        domCodeString = function_key_name;
         break;
       }
     }
@@ -1495,16 +1519,20 @@ void EventSender::KeyDown(const std::string& code_str,
       if (base::IsAsciiLower(code & 0xFF))
         code -= 'a' - 'A';
       if (base::IsAsciiAlpha(code)) {
-        domString.assign("Key");
-        domString.push_back(
+        domKeyString.assign(code_str);
+        domCodeString.assign("Key");
+        domCodeString.push_back(
             base::ToUpperASCII(static_cast<base::char16>(code)));
       } else if (base::IsAsciiDigit(code)) {
-        domString.assign("Digit");
-        domString.push_back(code);
+        domKeyString.assign(code_str);
+        domCodeString.assign("Digit");
+        domCodeString.push_back(code);
       } else if (code == ' ') {
-        domString.assign("Space");
+        domKeyString.assign(code_str);
+        domCodeString.assign("Space");
       } else if (code == 9) {
-        domString.assign("Tab");
+        domKeyString.assign("Tab");
+        domCodeString.assign("Tab");
       }
       generate_char = true;
     }
@@ -1512,6 +1540,8 @@ void EventSender::KeyDown(const std::string& code_str,
     if ("(" == code_str) {
       code = '9';
       needs_shift_key_modifier = true;
+      domKeyString.assign("(");
+      domCodeString.assign("Digit9");
     }
   }
 
@@ -1525,8 +1555,10 @@ void EventSender::KeyDown(const std::string& code_str,
   event_down.type = WebInputEvent::RawKeyDown;
   event_down.modifiers = modifiers;
   event_down.windowsKeyCode = code;
+  event_down.domKey = static_cast<int>(
+      ui::KeycodeConverter::KeyStringToDomKey(domKeyString));
   event_down.domCode = static_cast<int>(
-      ui::KeycodeConverter::CodeStringToDomCode(domString));
+      ui::KeycodeConverter::CodeStringToDomCode(domCodeString));
 
   if (generate_char) {
     event_down.text[0] = text;
