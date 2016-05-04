@@ -23,6 +23,24 @@ cr.define('extensions', function() {
     setItemAllowedIncognito: assertNotReached,
 
     /**
+     * @param {string} id
+     * @param {boolean} isAllowedOnFileUrls
+     */
+    setItemAllowedOnFileUrls: assertNotReached,
+
+    /**
+     * @param {string} id
+     * @param {boolean} isAllowedOnAllSites
+     */
+    setItemAllowedOnAllSites: assertNotReached,
+
+    /**
+     * @param {string} id
+     * @param {boolean} collectsErrors
+     */
+    setItemCollectsErrors: assertNotReached,
+
+    /**
      * @param {string} id,
      * @param {chrome.developerPrivate.ExtensionView} view
      */

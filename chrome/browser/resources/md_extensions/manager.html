@@ -24,7 +24,7 @@
             filter="[[filter]]"
             hidden$="[[computeListHidden_(extensions, extensions.splices, apps, apps.splices)]]">
         </extensions-item-list>
-        <extensions-detail-view id="details-view"
+        <extensions-detail-view id="details-view" delegate="[[itemDelegate]]"
             on-close="onDetailsViewClose_">
         </extensions-detail-view>
       </neon-animated-pages>

@@ -8,7 +8,7 @@ cr.define('extensions', function() {
   var DetailView = Polymer({
     is: 'extensions-detail-view',
 
-    behaviors: [Polymer.NeonAnimatableBehavior, I18nBehavior],
+    behaviors: [Polymer.NeonAnimatableBehavior],
 
     properties: {
       animationConfig: {
@@ -35,9 +35,10 @@ cr.define('extensions', function() {
        * The underlying ExtensionInfo for the details being displayed.
        * @type {chrome.developerPrivate.ExtensionInfo}
        */
-      data: {
-        type: Object,
-      }
+      data: Object,
+
+      /** @type {!extensions.ItemDelegate} */
+      delegate: Object,
     },
 
     ready: function() {
@@ -62,8 +63,34 @@ cr.define('extensions', function() {
      * @private
      */
     shouldShowOptionsSection_: function() {
-      // TODO(devlin): Also include run on all urls, file access, etc.
-      return this.data.incognitoAccess.isEnabled;
+      return this.data.incognitoAccess.isEnabled ||
+             this.data.fileAccess.isEnabled ||
+             this.data.runOnAllUrls.isEnabled ||
+             this.data.errorCollection.isEnabled;
+    },
+
+    /** @private */
+    onAllowIncognitoChange_: function() {
+      this.delegate.setItemAllowedIncognito(
+          this.data.id, this.$$('#allow-incognito').checked);
+    },
+
+    /** @private */
+    onAllowOnFileUrlsChange_: function() {
+      this.delegate.setItemAllowedOnFileUrls(
+          this.data.id, this.$$('#allow-on-file-urls').checked);
+    },
+
+    /** @private */
+    onAllowOnAllSitesChange_: function() {
+      this.delegate.setItemAllowedOnAllSites(
+          this.data.id, this.$$('#allow-on-all-sites').checked);
+    },
+
+    /** @private */
+    onCollectErrorsChange_: function() {
+      this.delegate.setItemCollectsErrors(
+          this.data.id, this.$$('#collect-errors').checked);
     },
   });
 

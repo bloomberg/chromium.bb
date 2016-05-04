@@ -5,30 +5,6 @@
 /** @fileoverview Suite of tests for extension-item. */
 cr.define('extension_item_tests', function() {
   /**
-   * A mock delegate for the item, capable of testing functionality.
-   * @constructor
-   * @extends {extension_test_util.ClickMock}
-   * @implements {extensions.ItemDelegate}
-   */
-  function MockDelegate() {}
-
-  MockDelegate.prototype = {
-    __proto__: extension_test_util.ClickMock.prototype,
-
-    /** @override */
-    deleteItem: function(id) {},
-
-    /** @override */
-    setItemEnabled: function(id, enabled) {},
-
-    /** @override */
-    setItemAllowedIncognito: function(id, enabled) {},
-
-    /** @override: */
-    inspectItemView: function(id, view) {},
-  };
-
-  /**
    * The data used to populate the extension item.
    * @type {chrome.developerPrivate.ExtensionInfo}
    */
@@ -104,7 +80,7 @@ cr.define('extension_item_tests', function() {
        */
       var item;
 
-      /** @type {MockDelegate} */
+      /** @type {extension_test_util.MockItemDelegate} */
       var mockDelegate;
 
       suiteSetup(function() {
@@ -114,7 +90,7 @@ cr.define('extension_item_tests', function() {
       // Initialize an extension item before each test.
       setup(function() {
         PolymerTest.clearBody();
-        mockDelegate = new MockDelegate();
+        mockDelegate = new extension_test_util.MockItemDelegate();
         item = new extensions.Item();
         item.set('data', extensionData);
         item.set('delegate', mockDelegate);

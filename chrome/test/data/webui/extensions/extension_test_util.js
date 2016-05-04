@@ -29,6 +29,42 @@ cr.define('extension_test_util', function() {
   };
 
   /**
+   * A mock delegate for the item, capable of testing functionality.
+   * @constructor
+   * @extends {ClickMock}
+   * @implements {extensions.ItemDelegate}
+   */
+  function MockItemDelegate() {}
+
+  MockItemDelegate.prototype = {
+    __proto__: ClickMock.prototype,
+
+    /** @override */
+    deleteItem: function(id) {},
+
+    /** @override */
+    setItemEnabled: function(id, enabled) {},
+
+    /** @override */
+    showItemDetails: function(id) {},
+
+    /** @override */
+    setItemAllowedIncognito: function(id, enabled) {},
+
+    /** @override */
+    setItemAllowedOnFileUrls: function(id, enabled) {},
+
+    /** @override */
+    setItemAllowedOnAllSites: function(id, enabled) {},
+
+    /** @override */
+    setItemCollectsErrors: function(id, enabled) {},
+
+    /** @override: */
+    inspectItemView: function(id, view) {},
+  };
+
+  /**
    * Returns whether or not the element specified is visible.
    * @param {!HTMLElement} parentEl
    * @param {string} selector
@@ -69,6 +105,7 @@ cr.define('extension_test_util', function() {
         opt_properties[id] : 'a'.repeat(32);
     var baseUrl = 'chrome-extension://' + id + '/';
     return Object.assign({
+      dependentExtensions: [],
       description: 'This is an extension',
       disableReasons: {
         suspiciousInstall: false,
@@ -89,6 +126,7 @@ cr.define('extension_test_util', function() {
 
   return {
     ClickMock: ClickMock,
+    MockItemDelegate: MockItemDelegate,
     isVisible: isVisible,
     testVisible: testVisible,
     createExtensionInfo: createExtensionInfo,

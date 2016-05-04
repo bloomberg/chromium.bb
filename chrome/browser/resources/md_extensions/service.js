@@ -116,6 +116,30 @@ cr.define('extensions', function() {
     },
 
     /** @override */
+    setItemAllowedOnFileUrls: function(id, isAllowedOnFileUrls) {
+      chrome.developerPrivate.updateExtensionConfiguration({
+        extensionId: id,
+        fileAccess: isAllowedOnFileUrls,
+      });
+    },
+
+    /** @override */
+    setItemAllowedOnAllSites: function(id, isAllowedOnAllSites) {
+      chrome.developerPrivate.updateExtensionConfiguration({
+        extensionId: id,
+        runOnAllUrls: isAllowedOnAllSites,
+      });
+    },
+
+    /** @override */
+    setItemCollectsErrors: function(id, collectsErrors) {
+      chrome.developerPrivate.updateExtensionConfiguration({
+        extensionId: id,
+        errorCollection: collectsErrors,
+      });
+    },
+
+    /** @override */
     inspectItemView: function(id, view) {
       chrome.developerPrivate.openDevTools({
         extensionId: id,

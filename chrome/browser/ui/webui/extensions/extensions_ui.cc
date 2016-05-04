@@ -70,6 +70,12 @@ content::WebUIDataSource* CreateMdExtensionsSource() {
                              IDS_MD_EXTENSIONS_ITEM_SOURCE);
   source->AddLocalizedString("itemVersion",
                              IDS_MD_EXTENSIONS_ITEM_SOURCE);
+  source->AddLocalizedString("itemAllowOnFileUrls",
+                             IDS_EXTENSIONS_ALLOW_FILE_ACCESS);
+  source->AddLocalizedString("itemAllowOnAllSites",
+                             IDS_EXTENSIONS_ALLOW_ON_ALL_URLS);
+  source->AddLocalizedString("itemCollectErrors",
+                             IDS_EXTENSIONS_ENABLE_ERROR_COLLECTION);
   source->AddLocalizedString("itemCorruptInstall",
                              IDS_EXTENSIONS_CORRUPTED_EXTENSION);
   source->AddString(

@@ -1,6 +1,6 @@
 <link rel="import" href="chrome://resources/html/cr.html">
-<link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
@@ -40,7 +40,12 @@
       .section-content {
         color: var(--paper-grey-600);
       }
-      .checkbox {
+      .section paper-checkbox {
+        align-items: center;
+        display: flex;
+        min-height: 40px;
+      }
+      paper-checkbox {
         --paper-checkbox-checked-color: var(--google-blue-500);
         --primary-text-color: var(--paper-grey-800);
       }
@@ -75,12 +80,33 @@
         </div>
       </template>
       <template is="dom-if" if="[[shouldShowOptionsSection_(data.*)]]">
-        <div class="section">
+        <div class="section layout vertical">
           <template is="dom-if" if="[[data.incognitoAccess.isEnabled]]">
             <paper-checkbox id="allow-incognito" class="checkbox"
                 checked="[[data.incognitoAccess.isActive]]"
                 on-change="onAllowIncognitoChange_">
               $i18n{itemAllowIncognito}
+            </paper-checkbox>
+          </template>
+          <template is="dom-if" if="[[data.fileAccess.isEnabled]]">
+            <paper-checkbox id="allow-on-file-urls" class="checkbox"
+                checked="[[data.fileAccess.isActive]]"
+                on-change="onAllowOnFileUrlsChange_">
+              $i18n{itemAllowOnFileUrls}
+            </paper-checkbox>
+          </template>
+          <template is="dom-if" if="[[data.runOnAllUrls.isEnabled]]">
+            <paper-checkbox id="allow-on-all-sites" class="checkbox"
+                checked="[[data.runOnAllUrls.isActive]]"
+                on-change="onAllowOnAllSitesChange_">
+              $i18n{itemAllowOnAllSites}
+            </paper-checkbox>
+          </template>
+          <template is="dom-if" if="[[data.errorCollection.isEnabled]]">
+            <paper-checkbox id="collect-errors" class="checkbox"
+                checked="[[data.errorCollection.isActive]]"
+                on-change="onCollectErrorsChange_">
+              $i18n{itemCollectErrors}
             </paper-checkbox>
           </template>
         </div>
