@@ -14,13 +14,9 @@
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/country_data.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_ui.h"
 #include "ui/base/l10n/l10n_util_collator.h"
 #include "ui/base/models/combobox_model_observer.h"
-
-// TODO(rouslan): Remove this check. http://crbug.com/337587
-#if defined(ENABLE_AUTOFILL_DIALOG)
-#include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_ui.h"
-#endif
 
 namespace autofill {
 
@@ -52,7 +48,6 @@ void CountryComboboxModel::SetCountries(
   const std::vector<std::string>* available_countries =
       &CountryDataMap::GetInstance()->country_codes();
 
-#if defined(ENABLE_AUTOFILL_DIALOG)
   // Filter out the countries that do not have rules for address input and
   // validation.
   const std::vector<std::string>& addressinput_countries =
@@ -64,7 +59,6 @@ void CountryComboboxModel::SetCountries(
       addressinput_countries.begin(), addressinput_countries.end(),
       std::back_inserter(filtered_countries));
   available_countries = &filtered_countries;
-#endif
 
   std::vector<AutofillCountry*> sorted_countries;
   for (const auto& country_code : *available_countries) {

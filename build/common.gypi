@@ -580,9 +580,6 @@
       # disabling depends on the platform.
       'enable_themes%': 1,
 
-      # Enables autofill dialog and associated features; disabled by default.
-      'enable_autofill_dialog%' : 0,
-
       # Defaults Wallet integration in Autofill dialog to use production
       # servers. Unofficial builds won't have the proper API keys.
       'enable_prod_wallet_service%': 0,
@@ -835,11 +832,6 @@
           'proprietary_codecs%': 1,
         }, {
           'proprietary_codecs%': 0,
-        }],
-
-        # Enable autofill dialog when not on iOS.
-        ['OS!="ios"', {
-          'enable_autofill_dialog%': 1,
         }],
 
         ['buildtype=="Official"', {
@@ -1242,7 +1234,6 @@
     'enable_plugins%': '<(enable_plugins)',
     'enable_session_service%': '<(enable_session_service)',
     'enable_themes%': '<(enable_themes)',
-    'enable_autofill_dialog%': '<(enable_autofill_dialog)',
     'enable_prod_wallet_service%': '<(enable_prod_wallet_service)',
     'linux_use_bundled_gold%': '<(linux_use_bundled_gold)',
     'linux_use_bundled_binutils%': '<(linux_use_bundled_binutils)',
@@ -2959,9 +2950,6 @@
       }],
       ['enable_themes==1', {
         'defines': ['ENABLE_THEMES=1'],
-      }],
-      ['enable_autofill_dialog==1', {
-        'defines': ['ENABLE_AUTOFILL_DIALOG=1'],
       }],
       ['enable_prod_wallet_service==1', {
         # In GN, this is set on the autofill tagets only. See

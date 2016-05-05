@@ -99,10 +99,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "net/http/http_server_properties_manager.h"
 
-#if defined(ENABLE_AUTOFILL_DIALOG)
-#include "chrome/browser/ui/autofill/autofill_dialog_controller.h"
-#endif
-
 #if BUILDFLAG(ENABLE_BACKGROUND)
 #include "chrome/browser/background/background_mode_manager.h"
 #endif
@@ -318,10 +314,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   update_client::RegisterPrefs(registry);
   web_resource::PromoResourceService::RegisterPrefs(registry);
 
-#if defined(ENABLE_AUTOFILL_DIALOG)
-  autofill::AutofillDialogController::RegisterPrefs(registry);
-#endif
-
   policy::BrowserPolicyConnector::RegisterPrefs(registry);
   policy::PolicyStatisticsCollector::RegisterPrefs(registry);
 
@@ -454,10 +446,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 
 #if defined(ENABLE_APP_LIST)
   app_list::AppListPrefs::RegisterProfilePrefs(registry);
-#endif
-
-#if defined(ENABLE_AUTOFILL_DIALOG)
-  autofill::AutofillDialogController::RegisterProfilePrefs(registry);
 #endif
 
   policy::URLBlacklistManager::RegisterProfilePrefs(registry);

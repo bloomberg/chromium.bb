@@ -1112,7 +1112,6 @@ void Browser::ActiveTabChanged(WebContents* old_contents,
   if (instant_controller_)
     instant_controller_->ActiveTabChanged();
 
-  autofill::ChromeAutofillClient::FromWebContents(new_contents)->TabActivated();
   SearchTabHelper::FromWebContents(new_contents)->OnTabActivated();
 }
 

@@ -533,34 +533,6 @@ class AutofillMetrics {
 
   static void LogUserHappinessMetric(UserHappinessMetric metric);
 
-  // Logs |state| to the dismissal states histogram.
-  static void LogDialogDismissalState(DialogDismissalState state);
-
-  // This should be called as soon as the user's signed-in status and Wallet
-  // item count is known.  Records that a user starting out in |user_state| is
-  // interacting with a dialog.
-  static void LogDialogInitialUserState(DialogInitialUserStateMetric user_type);
-
-  // Logs the time elapsed between the dialog being shown and when it is ready
-  // for user interaction.
-  static void LogDialogLatencyToShow(const base::TimeDelta& duration);
-
-  // Logs |event| to the popup events histogram.
-  static void LogDialogPopupEvent(DialogPopupEvent event);
-
-  // Logs |metric| to the security metrics histogram.
-  static void LogDialogSecurityMetric(DialogSecurityMetric metric);
-
-  // This should be called when the Autofill dialog is closed.  |duration|
-  // should be the time elapsed between the dialog being shown and it being
-  // closed.  |dismissal_action| should indicate whether the user dismissed
-  // the dialog by submitting the form data or by canceling.
-  static void LogDialogUiDuration(const base::TimeDelta& duration,
-                                  DialogDismissalAction dismissal_action);
-
-  // Logs |event| to the UI events histogram.
-  static void LogDialogUiEvent(DialogUiEvent event);
-
   // Logs |event| to the unmask prompt events histogram.
   static void LogUnmaskPromptEvent(UnmaskPromptEvent event);
 
@@ -584,23 +556,6 @@ class AutofillMetrics {
   // Logs |result| to the get real pan result histogram.
   static void LogUnmaskingDuration(const base::TimeDelta& duration,
                                    AutofillClient::PaymentsRpcResult result);
-
-  // Logs |metric| to the Wallet errors histogram.
-  static void LogWalletErrorMetric(WalletErrorMetric metric);
-
-  // Logs the network request time of Wallet API calls.
-  static void LogWalletApiCallDuration(WalletApiCallMetric metric,
-                                       const base::TimeDelta& duration);
-
-  // Logs that the Wallet API call corresponding to |metric| was malformed.
-  static void LogWalletMalformedResponseMetric(WalletApiCallMetric metric);
-
-  // Logs |required_action| to the required actions histogram.
-  static void LogWalletRequiredActionMetric(
-      WalletRequiredActionMetric required_action);
-
-  // Logs HTTP response codes recieved by wallet client.
-  static void LogWalletResponseCode(int response_code);
 
   // This should be called when a form that has been Autofilled is submitted.
   // |duration| should be the time elapsed between form load and submission.

@@ -10,7 +10,6 @@
 #include <string>
 
 #include "base/supports_user_data.h"
-#include "components/autofill/content/browser/request_autocomplete_manager.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "content/public/browser/web_contents_observer.h"
 

@@ -53,14 +53,6 @@ class AutofillRendererTest : public ChromeRenderViewTest {
     ChromeRenderViewTest::SetUp();
   }
 
-  void SimulateRequestAutocompleteResult(
-      blink::WebFrame* invoking_frame,
-      const blink::WebFormElement::AutocompleteResult& result,
-      const base::string16& message) {
-    AutofillMsg_RequestAutocompleteResult msg(0, result, message, FormData());
-    content::RenderFrame::FromWebFrame(invoking_frame)->OnMessageReceived(msg);
-  }
-
  private:
   DISALLOW_COPY_AND_ASSIGN(AutofillRendererTest);
 };
@@ -268,83 +260,6 @@ TEST_F(AutofillRendererTest, IgnoreNonUserGestureTextFieldChanges) {
   SimulateUserInputChangeForElement(&full_name, "Alice");
   ASSERT_NE(nullptr, render_thread_->sink().GetFirstMessageMatching(
                          AutofillHostMsg_TextFieldDidChange::ID));
-}
-
-class RequestAutocompleteRendererTest : public AutofillRendererTest {
- public:
-  RequestAutocompleteRendererTest()
-      : invoking_frame_(NULL), sibling_frame_(NULL) {}
-  ~RequestAutocompleteRendererTest() override {}
-
- protected:
-  void SetUp() override {
-    AutofillRendererTest::SetUp();
-
-    // Bypass the HTTPS-only restriction to show requestAutocomplete.
-    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-    command_line->AppendSwitch(::switches::kReduceSecurityForTesting);
-
-    GURL url("data:text/html;charset=utf-8,"
-             "<form><input autocomplete=cc-number></form>");
-    const char kDoubleIframeHtml[] = "<iframe id=subframe src='%s'></iframe>"
-                                     "<iframe id=sibling></iframe>";
-    LoadHTML(base::StringPrintf(kDoubleIframeHtml, url.spec().c_str()).c_str());
-
-    WebElement subframe = GetMainFrame()->document().getElementById("subframe");
-    ASSERT_FALSE(subframe.isNull());
-    invoking_frame_ = WebLocalFrame::fromFrameOwnerElement(subframe);
-    ASSERT_TRUE(invoking_frame());
-    ASSERT_EQ(GetMainFrame(), invoking_frame()->parent());
-
-    WebElement sibling = GetMainFrame()->document().getElementById("sibling");
-    ASSERT_FALSE(sibling.isNull());
-    sibling_frame_ = WebLocalFrame::fromFrameOwnerElement(sibling);
-    ASSERT_TRUE(sibling_frame());
-
-    WebVector<WebFormElement> forms;
-    invoking_frame()->document().forms(forms);
-    ASSERT_EQ(1U, forms.size());
-    invoking_form_ = forms[0];
-    ASSERT_FALSE(invoking_form().isNull());
-
-    render_thread_->sink().ClearMessages();
-
-    // Invoke requestAutocomplete to show the dialog.
-    invoking_frame_->autofillClient()->didRequestAutocomplete(invoking_form());
-    ASSERT_TRUE(render_thread_->sink().GetFirstMessageMatching(
-        AutofillHostMsg_RequestAutocomplete::ID));
-
-    render_thread_->sink().ClearMessages();
-  }
-
-  void TearDown() override {
-    invoking_form_.reset();
-    AutofillRendererTest::TearDown();
-  }
-
-  void NavigateFrame(WebFrame* frame) {
-    frame->loadRequest(WebURLRequest(GURL("about:blank")));
-    ProcessPendingMessages();
-  }
-
-  const WebFormElement& invoking_form() const { return invoking_form_; }
-  WebLocalFrame* invoking_frame() { return invoking_frame_; }
-  WebFrame* sibling_frame() { return sibling_frame_; }
-
- protected:
-  WebFormElement invoking_form_;
-  WebLocalFrame* invoking_frame_;
-  WebFrame* sibling_frame_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(RequestAutocompleteRendererTest);
-};
-
-TEST_F(RequestAutocompleteRendererTest, InvokingTwiceOnlyShowsOnce) {
-  // Attempting to show the requestAutocomplete dialog again should be ignored.
-  invoking_frame_->autofillClient()->didRequestAutocomplete(invoking_form());
-  EXPECT_FALSE(render_thread_->sink().GetFirstMessageMatching(
-      AutofillHostMsg_RequestAutocomplete::ID));
 }
 
 }  // namespace autofill

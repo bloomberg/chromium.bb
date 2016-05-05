@@ -134,9 +134,6 @@ class AutofillManager : public AutofillDownloadManager::Observer,
   // Returns the present form structures seen by Autofill manager.
   const std::vector<FormStructure*>& GetFormStructures();
 
-  // Happens when the autocomplete dialog runs its callback when being closed.
-  void RequestAutocompleteDialogClosed();
-
   AutofillClient* client() { return client_; }
 
   AutofillDownloadManager* download_manager() {

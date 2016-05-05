@@ -27,7 +27,6 @@ class WebContents;
 
 namespace autofill {
 
-class AutofillDialogController;
 class AutofillPopupControllerImpl;
 class CreditCardScannerController;
 struct FormData;
@@ -41,9 +40,6 @@ class ChromeAutofillClient
  public:
   ~ChromeAutofillClient() override;
 
-  // Called when the tab corresponding to |this| instance is activated.
-  void TabActivated();
-
   // AutofillClient:
   PersonalDataManager* GetPersonalDataManager() override;
   scoped_refptr<AutofillWebDataService> GetDatabase() override;
@@ -51,7 +47,6 @@ class ChromeAutofillClient
   sync_driver::SyncService* GetSyncService() override;
   IdentityProvider* GetIdentityProvider() override;
   rappor::RapporService* GetRapporService() override;
-  void HideRequestAutocompleteDialog() override;
   void ShowAutofillSettings() override;
   void ShowUnmaskPrompt(const CreditCard& card,
                         UnmaskCardReason reason,
@@ -67,10 +62,6 @@ class ChromeAutofillClient
       const base::Callback<void(const std::string&)>& callback) override;
   bool HasCreditCardScanFeature() override;
   void ScanCreditCard(const CreditCardScanCallback& callback) override;
-  void ShowRequestAutocompleteDialog(
-      const FormData& form,
-      content::RenderFrameHost* render_frame_host,
-      const ResultCallback& callback) override;
   void ShowAutofillPopup(
       const gfx::RectF& element_bounds,
       base::i18n::TextDirection text_direction,
@@ -90,11 +81,6 @@ class ChromeAutofillClient
   bool IsContextSecure(const GURL& form_origin) override;
 
   // content::WebContentsObserver implementation.
-  void RenderFrameDeleted(content::RenderFrameHost* rfh) override;
-  void DidNavigateAnyFrame(
-      content::RenderFrameHost* render_frame_host,
-      const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) override;
   void MainFrameWasResized(bool width_changed) override;
   void WebContentsDestroyed() override;
 
@@ -102,25 +88,12 @@ class ChromeAutofillClient
   void OnZoomChanged(
       const ui_zoom::ZoomController::ZoomChangedEventData& data) override;
 
-  // Exposed for testing.
-  AutofillDialogController* GetDialogControllerForTesting() {
-    return dialog_controller_.get();
-  }
-  void SetDialogControllerForTesting(
-      const base::WeakPtr<AutofillDialogController>& dialog_controller) {
-    dialog_controller_ = dialog_controller;
-  }
-
  private:
   explicit ChromeAutofillClient(content::WebContents* web_contents);
   friend class content::WebContentsUserData<ChromeAutofillClient>;
 
-  base::WeakPtr<AutofillDialogController> dialog_controller_;
   base::WeakPtr<AutofillPopupControllerImpl> popup_controller_;
   CardUnmaskPromptControllerImpl unmask_controller_;
-
-  // The last render frame that called requestAutocomplete.
-  content::RenderFrameHost* last_rfh_to_rac_;
 
   // The identity provider, used for Payments integration.
   std::unique_ptr<IdentityProvider> identity_provider_;

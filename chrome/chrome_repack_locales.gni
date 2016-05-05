@@ -62,19 +62,17 @@ template("_repack_one_locale") {
       sources += [
         "${root_gen_dir}/content/app/strings/content_strings_${locale}.pak",
         "${root_gen_dir}/device/bluetooth/strings/bluetooth_strings_${locale}.pak",
+        "${root_gen_dir}/third_party/libaddressinput/address_input_strings_${locale}.pak",
         "${root_gen_dir}/ui/strings/app_locale_settings_${locale}.pak",
         "${root_gen_dir}/ui/strings/ui_strings_${locale}.pak",
       ]
       deps += [
         "//content/app/strings",
         "//device/bluetooth/strings",
+        "//third_party/libaddressinput:strings",
         "//ui/strings:app_locale_settings",
         "//ui/strings:ui_strings",
       ]
-    }
-    if (enable_autofill_dialog) {
-      sources += [ "${root_gen_dir}/third_party/libaddressinput/address_input_strings_${locale}.pak" ]
-      deps += [ "//third_party/libaddressinput:strings" ]
     }
     if (enable_extensions) {
       sources += [

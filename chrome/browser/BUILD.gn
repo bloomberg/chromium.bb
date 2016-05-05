@@ -934,7 +934,7 @@ source_set("browser") {
     sources +=
         rebase_path(gypi_values.chrome_browser_mdns_sources, ".", "//chrome")
   }
-  if (!enable_autofill_dialog || is_android || is_ios) {
+  if (is_android || is_ios) {
     sources -= [
       "autofill/validation_rules_storage_factory.cc",
       "autofill/validation_rules_storage_factory.h",

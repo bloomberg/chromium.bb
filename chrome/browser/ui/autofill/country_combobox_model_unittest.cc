@@ -65,7 +65,7 @@ TEST_F(CountryComboboxModelTest, AllCountriesHaveComponents) {
     std::vector< ::i18n::addressinput::AddressUiComponent> components =
         ::i18n::addressinput::BuildComponents(
             country_code, localization, std::string(), &unused);
-    EXPECT_FALSE(components.empty());
+    EXPECT_FALSE(components.empty()) << " for country " << country_code;
   }
 }
 

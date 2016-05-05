@@ -261,7 +261,6 @@
       'browser/ui/android/tab_model/tab_model_list_unittest.cc',
       'browser/ui/android/tab_model/tab_model_unittest.cc',
       'browser/ui/autofill/autofill_dialog_models_unittest.cc',
-      'browser/ui/autofill/autofill_dialog_types_unittest.cc',
       'browser/ui/autofill/autofill_popup_layout_model_unittest.cc',
       'browser/ui/autofill/popup_view_common_unittest.cc',
       'browser/ui/bookmarks/bookmark_editor_unittest.cc',
@@ -355,6 +354,7 @@
       'browser/renderer_context_menu/render_view_context_menu_test_util.cc',
       'browser/renderer_context_menu/render_view_context_menu_test_util.h',
       'browser/ui/autofill/save_card_bubble_controller_impl_unittest.cc',
+      'browser/ui/autofill/country_combobox_model_unittest.cc',
       'browser/ui/passwords/manage_passwords_ui_controller_unittest.cc',
       'browser/ui/website_settings/mock_permission_bubble_factory.cc',
       'browser/ui/website_settings/mock_permission_bubble_factory.h',
@@ -834,18 +834,6 @@
       'utility/safe_browsing/mac/read_stream_unittest.cc',
       'utility/safe_browsing/mac/udif_unittest.cc',
     ],
-    # These are the enable_autofill_dialog = 1 sources. Some autofill tests
-    # are always compiled.
-    'chrome_unit_tests_autofill_dialog_sources': [
-      'browser/ui/autofill/autofill_dialog_controller_unittest.cc',
-      'browser/ui/autofill/autofill_dialog_i18n_input_unittest.cc',
-      'browser/ui/autofill/country_combobox_model_unittest.cc',
-      'browser/ui/autofill/data_model_wrapper_unittest.cc',
-      'browser/ui/autofill/mock_address_validator.cc',
-      'browser/ui/autofill/mock_address_validator.h',
-      'browser/ui/autofill/mock_autofill_dialog_view_delegate.cc',
-      'browser/ui/autofill/mock_autofill_dialog_view_delegate.h',
-    ],
     'chrome_unit_tests_plugins_sources': [
       'browser/component_updater/component_installers_unittest.cc',
       'browser/metrics/chrome_stability_metrics_provider_unittest.cc',
@@ -1172,14 +1160,7 @@
       'browser/ui/cocoa/applescript/bookmark_folder_applescript_unittest.mm',
       'browser/ui/cocoa/applescript/bookmark_item_applescript_unittest.mm',
       'browser/ui/cocoa/autofill/autofill_bubble_controller_unittest.mm',
-      'browser/ui/cocoa/autofill/autofill_details_container_unittest.mm',
-      'browser/ui/cocoa/autofill/autofill_main_container_unittest.mm',
-      'browser/ui/cocoa/autofill/autofill_notification_container_unittest.mm',
-      'browser/ui/cocoa/autofill/autofill_notification_controller_unittest.mm',
       'browser/ui/cocoa/autofill/autofill_pop_up_button_unittest.mm',
-      'browser/ui/cocoa/autofill/autofill_section_container_unittest.mm',
-      'browser/ui/cocoa/autofill/autofill_section_view_unittest.mm',
-      'browser/ui/cocoa/autofill/autofill_suggestion_container_unittest.mm',
       'browser/ui/cocoa/autofill/autofill_textfield_unittest.mm',
       'browser/ui/cocoa/autofill/autofill_tooltip_controller_unittest.mm',
       'browser/ui/cocoa/autofill/down_arrow_popup_menu_cell_unittest.mm',
@@ -1366,7 +1347,6 @@
       # Views implies app list is enabled (only disabled on mobile).
       'browser/ui/views/app_list/win/app_list_win_unittest.cc',
       'browser/ui/views/apps/shaped_app_window_targeter_unittest.cc',
-      'browser/ui/views/autofill/autofill_dialog_views_unittest.cc',
       'browser/ui/views/bookmarks/bookmark_bar_view_unittest.cc',
       'browser/ui/views/bookmarks/bookmark_bubble_view_unittest.cc',
       'browser/ui/views/bookmarks/bookmark_context_menu_unittest.cc',
@@ -2488,9 +2468,6 @@
         }],
         ['safe_browsing==2', {
           'sources': [ '<@(chrome_unit_tests_shared_safe_browsing_sources)' ],
-        }],
-        ['enable_autofill_dialog==1 and OS!="android"', {
-          'sources': [ '<@(chrome_unit_tests_autofill_dialog_sources)' ],
         }],
         ['enable_plugins==1', {
           'sources': [ '<@(chrome_unit_tests_plugins_sources)' ],

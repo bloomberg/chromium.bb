@@ -124,13 +124,6 @@ void AutofillClientIOS::ScanCreditCard(const CreditCardScanCallback& callback) {
   NOTREACHED();
 }
 
-void AutofillClientIOS::ShowRequestAutocompleteDialog(
-    const FormData& form,
-    content::RenderFrameHost* render_frame_host,
-    const ResultCallback& callback) {
-  NOTREACHED();
-}
-
 void AutofillClientIOS::ShowAutofillPopup(
     const gfx::RectF& element_bounds,
     base::i18n::TextDirection text_direction,
@@ -146,10 +139,6 @@ void AutofillClientIOS::HideAutofillPopup() {
 bool AutofillClientIOS::IsAutocompleteEnabled() {
   // For browser, Autocomplete is always enabled as part of Autofill.
   return GetPrefs()->GetBoolean(prefs::kAutofillEnabled);
-}
-
-void AutofillClientIOS::HideRequestAutocompleteDialog() {
-  NOTREACHED();
 }
 
 void AutofillClientIOS::UpdateAutofillPopupDataListValues(

@@ -20,7 +20,6 @@
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/ui/autofill/autofill_dialog_controller.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller_impl.h"
 #include "chrome/browser/ui/autofill/create_card_unmask_prompt_view.h"
 #include "chrome/browser/ui/autofill/credit_card_scanner_controller.h"
@@ -71,8 +70,7 @@ ChromeAutofillClient::ChromeAutofillClient(content::WebContents* web_contents)
       unmask_controller_(
           user_prefs::UserPrefs::Get(web_contents->GetBrowserContext()),
           Profile::FromBrowserContext(web_contents->GetBrowserContext())
-              ->IsOffTheRecord()),
-      last_rfh_to_rac_(nullptr) {
+              ->IsOffTheRecord()) {
   DCHECK(web_contents);
 
 #if !BUILDFLAG(ANDROID_JAVA_UI)
@@ -95,11 +93,6 @@ ChromeAutofillClient::~ChromeAutofillClient() {
   // this point (in particular, the WebContentsImpl destructor has already
   // finished running and we are now in the base class destructor).
   DCHECK(!popup_controller_);
-}
-
-void ChromeAutofillClient::TabActivated() {
-  if (dialog_controller_.get())
-    dialog_controller_->TabActivated();
 }
 
 PersonalDataManager* ChromeAutofillClient::GetPersonalDataManager() {
@@ -225,25 +218,6 @@ void ChromeAutofillClient::ScanCreditCard(
   CreditCardScannerController::ScanCreditCard(web_contents(), callback);
 }
 
-void ChromeAutofillClient::ShowRequestAutocompleteDialog(
-    const FormData& form,
-    content::RenderFrameHost* render_frame_host,
-    const ResultCallback& callback) {
-  HideRequestAutocompleteDialog();
-  last_rfh_to_rac_ = render_frame_host;
-  GURL frame_url = render_frame_host->GetLastCommittedURL();
-  dialog_controller_ = AutofillDialogController::Create(web_contents(), form,
-                                                        frame_url, callback);
-  if (dialog_controller_) {
-    dialog_controller_->Show();
-  } else {
-    callback.Run(AutofillClient::AutocompleteResultErrorDisabled,
-                 base::string16(),
-                 NULL);
-    NOTIMPLEMENTED();
-  }
-}
-
 void ChromeAutofillClient::ShowAutofillPopup(
     const gfx::RectF& element_bounds,
     base::i18n::TextDirection text_direction,
@@ -288,25 +262,6 @@ void ChromeAutofillClient::HideAutofillPopup() {
 bool ChromeAutofillClient::IsAutocompleteEnabled() {
   // For browser, Autocomplete is always enabled as part of Autofill.
   return GetPrefs()->GetBoolean(prefs::kAutofillEnabled);
-}
-
-void ChromeAutofillClient::HideRequestAutocompleteDialog() {
-  if (dialog_controller_)
-    dialog_controller_->Hide();
-}
-
-void ChromeAutofillClient::RenderFrameDeleted(
-    content::RenderFrameHost* render_frame_host) {
-  if (dialog_controller_ && render_frame_host == last_rfh_to_rac_)
-    HideRequestAutocompleteDialog();
-}
-
-void ChromeAutofillClient::DidNavigateAnyFrame(
-    content::RenderFrameHost* render_frame_host,
-    const content::LoadCommittedDetails& details,
-    const content::FrameNavigateParams& params) {
-  if (dialog_controller_ && render_frame_host == last_rfh_to_rac_)
-    HideRequestAutocompleteDialog();
 }
 
 void ChromeAutofillClient::MainFrameWasResized(bool width_changed) {

@@ -207,10 +207,6 @@ void AwAutofillClient::SuggestionSelected(JNIEnv* env,
   }
 }
 
-void AwAutofillClient::HideRequestAutocompleteDialog() {
-  NOTIMPLEMENTED();
-}
-
 void AwAutofillClient::ShowAutofillSettings() {
   NOTIMPLEMENTED();
 }
@@ -249,13 +245,6 @@ bool AwAutofillClient::HasCreditCardScanFeature() {
 }
 
 void AwAutofillClient::ScanCreditCard(const CreditCardScanCallback& callback) {
-  NOTIMPLEMENTED();
-}
-
-void AwAutofillClient::ShowRequestAutocompleteDialog(
-    const autofill::FormData& form,
-    content::RenderFrameHost* rfh,
-    const ResultCallback& callback) {
   NOTIMPLEMENTED();
 }
 

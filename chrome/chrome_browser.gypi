@@ -1892,8 +1892,6 @@
       'android/java/src/org/chromium/chrome/browser/ApplicationLifetime.java',
       'android/java/src/org/chromium/chrome/browser/accessibility/FontSizePrefs.java',
       'android/java/src/org/chromium/chrome/browser/appmenu/AppMenuDragHelper.java',
-      'android/java/src/org/chromium/chrome/browser/autofill/AutofillDialogControllerAndroid.java',
-      'android/java/src/org/chromium/chrome/browser/autofill/AutofillDialogResult.java',
       'android/java/src/org/chromium/chrome/browser/autofill/AutofillKeyboardAccessoryBridge.java',
       'android/java/src/org/chromium/chrome/browser/autofill/AutofillLogger.java',
       'android/java/src/org/chromium/chrome/browser/autofill/AutofillPopupBridge.java',
@@ -3996,7 +3994,7 @@
         ['enable_mdns==1', {
           'sources' : [ '<@(chrome_browser_mdns_sources)' ]
         }],
-        ['enable_autofill_dialog!=1 or OS=="android" or OS=="ios"', {
+        ['OS=="android" or OS=="ios"', {
           'sources!': [
             'browser/autofill/validation_rules_storage_factory.cc',
             'browser/autofill/validation_rules_storage_factory.h',

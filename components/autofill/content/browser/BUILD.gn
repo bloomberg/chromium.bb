@@ -11,14 +11,8 @@ static_library("browser") {
     "content_autofill_driver.h",
     "content_autofill_driver_factory.cc",
     "content_autofill_driver_factory.h",
-    "request_autocomplete_manager.cc",
-    "request_autocomplete_manager.h",
     "risk/fingerprint.cc",
     "risk/fingerprint.h",
-    "wallet/full_wallet.cc",
-    "wallet/full_wallet.h",
-    "wallet/wallet_address.cc",
-    "wallet/wallet_address.h",
     "wallet/wallet_service_url.cc",
     "wallet/wallet_service_url.h",
   ]
@@ -70,17 +64,13 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "content_autofill_driver_unittest.cc",
-    "request_autocomplete_manager_unittest.cc",
-    "wallet/full_wallet_unittest.cc",
     "wallet/payments_client_unittest.cc",
-    "wallet/wallet_address_unittest.cc",
     "wallet/wallet_service_url_unittest.cc",
   ]
 
   deps = [
     ":browser",
     "//base",
-    "//components/autofill/content/browser/wallet:test_support",
     "//components/autofill/content/common",
     "//components/autofill/core/browser",
     "//components/autofill/core/browser:test_support",

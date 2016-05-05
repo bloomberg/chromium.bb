@@ -467,12 +467,8 @@
       'browser/translate/standalone_cld_data_harness.h',
       'browser/translate/translate_browsertest.cc',
       'browser/translate/translate_manager_browsertest.cc',
-      'browser/ui/autofill/autofill_dialog_controller_browsertest.cc',
-      'browser/ui/autofill/autofill_dialog_view_tester.h',
       'browser/ui/autofill/card_unmask_prompt_view_browsertest.cc',
       'browser/ui/autofill/card_unmask_prompt_view_tester.h',
-      'browser/ui/autofill/mock_address_validator.cc',
-      'browser/ui/autofill/mock_address_validator.h',
       'browser/ui/autofill/password_generation_popup_view_browsertest.cc',
       'browser/ui/autofill/password_generation_popup_view_tester.h',
       'browser/ui/blocked_content/popup_blocker_browsertest.cc',
@@ -612,9 +608,6 @@
       'browser/ui/cocoa/applescript/window_applescript_test.mm',
       'browser/ui/cocoa/apps/app_shim_menu_controller_mac_browsertest.mm',
       'browser/ui/cocoa/apps/native_app_window_cocoa_browsertest.mm',
-      'browser/ui/cocoa/autofill/autofill_dialog_cocoa_browsertest.mm',
-      'browser/ui/cocoa/autofill/autofill_dialog_view_tester_cocoa.h',
-      'browser/ui/cocoa/autofill/autofill_dialog_view_tester_cocoa.mm',
       'browser/ui/cocoa/browser_window_controller_browsertest.mm',
       'browser/ui/cocoa/certificate_viewer_mac_browsertest.mm',
       'browser/ui/cocoa/constrained_window/constrained_window_mac_browsertest.mm',
@@ -675,8 +668,6 @@
       # TODO(tapted): Move these to chrome_browser_tests_views_sources when the
       # the corresponding files are moved in chrome_browser_ui.gypi (i.e. out of
       # chrome_browser_ui_views_non_mac_sources). http://crbug.com/404979.
-      'browser/ui/views/autofill/autofill_dialog_view_tester_views.cc',
-      'browser/ui/views/autofill/autofill_dialog_view_tester_views.h',
       'browser/ui/views/autofill/autofill_popup_base_view_browsertest.cc',
       'browser/ui/views/autofill/card_unmask_prompt_view_tester_views.cc',
       'browser/ui/views/autofill/card_unmask_prompt_view_tester_views.h',
@@ -2301,11 +2292,6 @@
             'browser/ui/sync/one_click_signin_links_delegate_impl_browsertest.cc',
           ]
         }],
-        ['enable_autofill_dialog==0', {
-          'sources!': [
-            'browser/ui/autofill/autofill_dialog_controller_browsertest.cc',
-          ]
-        }],
         ['disable_nacl==0', {
           'sources':[
             'browser/extensions/extension_nacl_browsertest.cc',
@@ -2710,7 +2696,7 @@
             'renderer/safe_browsing/phishing_classifier_delegate_browsertest.cc',
           ]
         }],
-        ['enable_autofill_dialog!=1 or OS=="android" or OS=="ios"', {
+        ['OS=="android" or OS=="ios"', {
           'dependencies!': [
             '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput',
           ],

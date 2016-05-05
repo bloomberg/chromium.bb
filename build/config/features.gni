@@ -61,8 +61,6 @@ declare_args() {
 
   enable_supervised_users = !is_ios
 
-  enable_autofill_dialog = !is_ios
-
   enable_remoting = !is_ios && !is_chromecast
 
   # Enable hole punching for the protected video.

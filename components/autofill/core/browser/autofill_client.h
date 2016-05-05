@@ -58,14 +58,6 @@ struct Suggestion;
 // for the tab the AutofillManager is attached to).
 class AutofillClient {
  public:
-  // Copy of blink::WebFormElement::AutocompleteResult.
-  enum RequestAutocompleteResult {
-    AutocompleteResultSuccess,
-    AutocompleteResultErrorDisabled,
-    AutocompleteResultErrorCancel,
-    AutocompleteResultErrorInvalid,
-  };
-
   enum PaymentsRpcResult {
     // Empty result. Used for initializing variables and should generally
     // not be returned nor passed as arguments unless explicitly allowed by
@@ -94,10 +86,6 @@ class AutofillClient {
     UNMASK_FOR_AUTOFILL,
   };
 
-  typedef base::Callback<void(RequestAutocompleteResult,
-                              const base::string16&,
-                              const FormStructure*)> ResultCallback;
-
   typedef base::Callback<void(const base::string16& /* card number */,
                               int /* exp month */,
                               int /* exp year */)> CreditCardScanCallback;
@@ -121,9 +109,6 @@ class AutofillClient {
 
   // Gets the RapporService associated with the client (for metrics).
   virtual rappor::RapporService* GetRapporService() = 0;
-
-  // Hides the associated request autocomplete dialog (if it exists).
-  virtual void HideRequestAutocompleteDialog() = 0;
 
   // Causes the Autofill settings UI to be shown.
   virtual void ShowAutofillSettings() = 0;
@@ -159,12 +144,6 @@ class AutofillClient {
   // when a credit card is scanned successfully. Should be called only if
   // HasCreditCardScanFeature() returns true.
   virtual void ScanCreditCard(const CreditCardScanCallback& callback) = 0;
-
-  // Causes the dialog for request autocomplete feature to be shown.
-  virtual void ShowRequestAutocompleteDialog(
-      const FormData& form,
-      content::RenderFrameHost* render_frame_host,
-      const ResultCallback& callback) = 0;
 
   // Shows an Autofill popup with the given |values|, |labels|, |icons|, and
   // |identifiers| for the element at |element_bounds|. |delegate| will be

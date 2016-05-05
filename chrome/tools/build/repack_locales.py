@@ -33,7 +33,6 @@ OS = None
 CHROMEOS = False
 
 USE_ASH = False
-ENABLE_AUTOFILL_DIALOG = False
 ENABLE_EXTENSIONS = False
 
 WHITELIST = None
@@ -126,6 +125,11 @@ def calc_inputs(locale):
     inputs.append(os.path.join(SHARE_INT_DIR, 'ui', 'strings',
                   'app_locale_settings_%s.pak' % locale))
 
+    #e.g. '<(SHARED_INTERMEDIATE_DIR)/third_party/libaddressinput/
+    # address_input_strings_da.pak',
+    inputs.append(os.path.join(SHARE_INT_DIR, 'third_party', 'libaddressinput',
+                               'address_input_strings_%s.pak' % locale))
+
   else:
     #e.g. '<(SHARED_INTERMEDIATE_DIR)/ios/chrome/ios_locale_settings_da.pak'
     inputs.append(os.path.join(SHARE_INT_DIR, 'ios', 'chrome',
@@ -140,12 +144,6 @@ def calc_inputs(locale):
     # ios_google_chrome_strings_da.pak'
     inputs.append(os.path.join(SHARE_INT_DIR, 'ios', 'chrome',
                   'ios_%s_strings_%s.pak' % (BRANDING, locale)))
-
-  if ENABLE_AUTOFILL_DIALOG:
-    #e.g. '<(SHARED_INTERMEDIATE_DIR)/third_party/libaddressinput/
-    # address_input_strings_da.pak',
-    inputs.append(os.path.join(SHARE_INT_DIR, 'third_party', 'libaddressinput',
-                               'address_input_strings_%s.pak' % locale))
 
   if ENABLE_EXTENSIONS:
     # For example:

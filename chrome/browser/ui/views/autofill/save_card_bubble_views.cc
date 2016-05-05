@@ -8,7 +8,6 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "chrome/browser/ui/autofill/autofill_dialog_types.h"
 #include "chrome/browser/ui/autofill/save_card_bubble_controller.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/legal_message_line.h"
@@ -187,7 +186,7 @@ std::unique_ptr<views::View> SaveCardBubbleViews::CreateMainContentView() {
           .AsImageSkia());
   card_type_icon->SetTooltipText(card.TypeForDisplay());
   card_type_icon->SetBorder(
-      views::Border::CreateSolidBorder(1, kSubtleBorderColor));
+      views::Border::CreateSolidBorder(1, SkColorSetA(SK_ColorBLACK, 10)));
   description_view->AddChildView(card_type_icon);
 
   description_view->AddChildView(new views::Label(

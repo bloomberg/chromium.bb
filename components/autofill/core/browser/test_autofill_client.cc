@@ -42,9 +42,6 @@ rappor::RapporService* TestAutofillClient::GetRapporService() {
   return rappor_service_.get();
 }
 
-void TestAutofillClient::HideRequestAutocompleteDialog() {
-}
-
 void TestAutofillClient::ShowAutofillSettings() {
 }
 
@@ -80,12 +77,6 @@ bool TestAutofillClient::HasCreditCardScanFeature() {
 
 void TestAutofillClient::ScanCreditCard(
     const CreditCardScanCallback& callback) {
-}
-
-void TestAutofillClient::ShowRequestAutocompleteDialog(
-    const FormData& form,
-    content::RenderFrameHost* rfh,
-    const ResultCallback& callback) {
 }
 
 void TestAutofillClient::ShowAutofillPopup(

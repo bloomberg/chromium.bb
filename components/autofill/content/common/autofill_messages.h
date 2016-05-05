@@ -198,15 +198,6 @@ IPC_MESSAGE_ROUTED0(AutofillMsg_UserTriggeredGeneratePassword)
 IPC_MESSAGE_ROUTED1(AutofillMsg_FormNotBlacklisted,
                     autofill::PasswordForm /* form checked */)
 
-// Sent when requestAutocomplete() finishes (either succesfully or with an
-// error). If it was a success, the renderer fills the form that requested
-// autocomplete with the |form_data| values input by the user. |message|
-// is printed to the console if non-empty.
-IPC_MESSAGE_ROUTED3(AutofillMsg_RequestAutocompleteResult,
-                    blink::WebFormElement::AutocompleteResult /* result */,
-                    base::string16 /* message */,
-                    autofill::FormData /* form_data */)
-
 // Sent when Autofill manager gets the query response from the Autofill server
 // and there are fields classified for password generation in the response.
 IPC_MESSAGE_ROUTED1(
@@ -298,10 +289,6 @@ IPC_MESSAGE_ROUTED0(AutofillHostMsg_FocusNoLongerOnForm)
 IPC_MESSAGE_ROUTED2(AutofillHostMsg_DidFillAutofillFormData,
                     autofill::FormData /* the form */,
                     base::TimeTicks /* timestamp */)
-
-// Sent when a form receives a request to do interactive autocomplete.
-IPC_MESSAGE_ROUTED1(AutofillHostMsg_RequestAutocomplete,
-                    autofill::FormData /* form_data */)
 
 // Send when a text field is done editing.
 IPC_MESSAGE_ROUTED0(AutofillHostMsg_DidEndTextFieldEditing)

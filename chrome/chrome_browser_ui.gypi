@@ -19,12 +19,8 @@
       'browser/ui/app_list/app_list_util.h',
       # All other browser/ui/app_list files go in chrome_browser_ui_app_list_sources.
       'browser/ui/app_modal/chrome_javascript_native_dialog_factory.h',
-      'browser/ui/autofill/autofill_dialog_controller.cc',
-      'browser/ui/autofill/autofill_dialog_controller.h',
-      'browser/ui/autofill/autofill_dialog_models.cc',
       'browser/ui/autofill/autofill_dialog_models.h',
-      'browser/ui/autofill/autofill_dialog_types.cc',
-      'browser/ui/autofill/autofill_dialog_types.h',
+      'browser/ui/autofill/autofill_dialog_models.cc',
       'browser/ui/autofill/autofill_popup_controller.h',
       'browser/ui/autofill/autofill_popup_controller_impl.cc',
       'browser/ui/autofill/autofill_popup_controller_impl.h',
@@ -42,8 +38,6 @@
       'browser/ui/autofill/credit_card_scanner_view.cc',
       'browser/ui/autofill/credit_card_scanner_view.h',
       'browser/ui/autofill/credit_card_scanner_view_delegate.h',
-      'browser/ui/autofill/loading_animation.cc',
-      'browser/ui/autofill/loading_animation.h',
       'browser/ui/autofill/password_generation_popup_controller.h',
       'browser/ui/autofill/password_generation_popup_controller_impl.cc',
       'browser/ui/autofill/password_generation_popup_controller_impl.h',
@@ -413,10 +407,6 @@
       'browser/ui/zoom/chrome_zoom_level_prefs.h',
     ],
     'chrome_browser_ui_android_java_ui_sources': [
-      'browser/ui/android/autofill/autofill_dialog_controller_android.cc',
-      'browser/ui/android/autofill/autofill_dialog_controller_android.h',
-      'browser/ui/android/autofill/autofill_dialog_result.cc',
-      'browser/ui/android/autofill/autofill_dialog_result.h',
       'browser/ui/android/autofill/autofill_keyboard_accessory_view.cc',
       'browser/ui/android/autofill/autofill_keyboard_accessory_view.h',
       'browser/ui/android/autofill/autofill_logger_android.cc',
@@ -806,22 +796,7 @@
       'browser/ui/cocoa/apps/native_app_window_cocoa.mm',
       'browser/ui/cocoa/autofill/autofill_bubble_controller.h',
       'browser/ui/cocoa/autofill/autofill_bubble_controller.mm',
-      'browser/ui/cocoa/autofill/autofill_details_container.h',
-      'browser/ui/cocoa/autofill/autofill_details_container.mm',
-      'browser/ui/cocoa/autofill/autofill_dialog_cocoa.h',
-      'browser/ui/cocoa/autofill/autofill_dialog_cocoa.mm',
-      'browser/ui/cocoa/autofill/autofill_dialog_constants.h',
-      'browser/ui/cocoa/autofill/autofill_dialog_window_controller.h',
-      'browser/ui/cocoa/autofill/autofill_dialog_window_controller.mm',
-      'browser/ui/cocoa/autofill/autofill_header.h',
-      'browser/ui/cocoa/autofill/autofill_header.mm',
       'browser/ui/cocoa/autofill/autofill_layout.h',
-      'browser/ui/cocoa/autofill/autofill_main_container.h',
-      'browser/ui/cocoa/autofill/autofill_main_container.mm',
-      'browser/ui/cocoa/autofill/autofill_notification_container.h',
-      'browser/ui/cocoa/autofill/autofill_notification_container.mm',
-      'browser/ui/cocoa/autofill/autofill_notification_controller.h',
-      'browser/ui/cocoa/autofill/autofill_notification_controller.mm',
       'browser/ui/cocoa/autofill/autofill_pop_up_button.h',
       'browser/ui/cocoa/autofill/autofill_pop_up_button.mm',
       'browser/ui/cocoa/autofill/autofill_popup_base_view_cocoa.h',
@@ -830,12 +805,6 @@
       'browser/ui/cocoa/autofill/autofill_popup_view_bridge.mm',
       'browser/ui/cocoa/autofill/autofill_popup_view_cocoa.h',
       'browser/ui/cocoa/autofill/autofill_popup_view_cocoa.mm',
-      'browser/ui/cocoa/autofill/autofill_section_container.h',
-      'browser/ui/cocoa/autofill/autofill_section_container.mm',
-      'browser/ui/cocoa/autofill/autofill_section_view.h',
-      'browser/ui/cocoa/autofill/autofill_section_view.mm',
-      'browser/ui/cocoa/autofill/autofill_suggestion_container.h',
-      'browser/ui/cocoa/autofill/autofill_suggestion_container.mm',
       'browser/ui/cocoa/autofill/autofill_textfield.h',
       'browser/ui/cocoa/autofill/autofill_textfield.mm',
       'browser/ui/cocoa/autofill/autofill_tooltip_controller.h',
@@ -2196,8 +2165,6 @@
       'browser/ui/views/apps/glass_app_window_frame_view_win.h',
       'browser/ui/views/apps/shaped_app_window_targeter.cc',
       'browser/ui/views/apps/shaped_app_window_targeter.h',
-      'browser/ui/views/autofill/autofill_dialog_views.cc',
-      'browser/ui/views/autofill/autofill_dialog_views.h',
       'browser/ui/views/autofill/autofill_popup_base_view.cc',
       'browser/ui/views/autofill/autofill_popup_base_view.h',
       'browser/ui/views/autofill/autofill_popup_view_views.cc',
@@ -2725,23 +2692,6 @@
     # Used when the app list is disabled.
     'chrome_browser_ui_non_app_list_sources': [
       'browser/ui/app_list/app_list_service_disabled.cc',
-    ],
-    # Autofill sources used everywhere autofill dialog is enabled.
-    'chrome_browser_ui_autofill_dialog_sources': [
-      'browser/ui/autofill/autofill_dialog_common.cc',
-      'browser/ui/autofill/autofill_dialog_common.h',
-    ],
-    # Autofill sources used on desktop and ChromeOS.
-    'chrome_browser_ui_autofill_dialog_non_mobile_sources': [
-      'browser/ui/autofill/autofill_dialog_controller_impl.cc',
-      'browser/ui/autofill/autofill_dialog_controller_impl.h',
-      'browser/ui/autofill/autofill_dialog_i18n_input.cc',
-      'browser/ui/autofill/autofill_dialog_i18n_input.h',
-      'browser/ui/autofill/autofill_dialog_view.cc',
-      'browser/ui/autofill/autofill_dialog_view.h',
-      'browser/ui/autofill/autofill_dialog_view_delegate.h',
-      'browser/ui/autofill/data_model_wrapper.cc',
-      'browser/ui/autofill/data_model_wrapper.h',
     ],
     'chrome_browser_ui_extensions_sources': [
       'browser/ui/extensions/accelerator_priority.cc',
@@ -3315,20 +3265,6 @@
         }, {
           'sources': [ '<@(chrome_browser_ui_non_app_list_sources)' ],
         }],
-        ['enable_autofill_dialog==1', {
-          'sources': [ '<@(chrome_browser_ui_autofill_dialog_sources)' ],
-          'conditions': [
-            ['OS!="android" and OS!="ios"', {
-              'sources': [
-                '<@(chrome_browser_ui_autofill_dialog_non_mobile_sources)',
-              ],
-              'dependencies': [
-                '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput',
-                '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput_strings',
-              ],
-            }],
-          ],
-        }],
         ['enable_extensions==1', {
           'dependencies': [
             'browser_extensions',
@@ -3375,6 +3311,8 @@
             '../components/components.gyp:bubble',
             '../components/components.gyp:feedback_proto',
             '../device/bluetooth/bluetooth.gyp:device_bluetooth',
+            '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput',
+            '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput_strings',
             'chrome_features.gyp:chrome_common_features',
             'profile_reset_report_proto',
           ],

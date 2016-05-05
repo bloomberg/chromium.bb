@@ -17,10 +17,7 @@
     ],
     'autofill_unittest_sources': [
       'autofill/content/browser/content_autofill_driver_unittest.cc',
-      'autofill/content/browser/request_autocomplete_manager_unittest.cc',
-      'autofill/content/browser/wallet/full_wallet_unittest.cc',
       'autofill/content/browser/wallet/payments_client_unittest.cc',
-      'autofill/content/browser/wallet/wallet_address_unittest.cc',
       'autofill/content/browser/wallet/wallet_service_url_unittest.cc',
       'autofill/content/renderer/renderer_save_password_progress_logger_unittest.cc',
       'autofill/core/browser/address_field_unittest.cc',

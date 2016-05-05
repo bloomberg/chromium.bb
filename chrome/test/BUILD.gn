@@ -902,7 +902,6 @@ if (!is_android) {
       "//chrome/common/extensions/api",
       "//chrome/renderer",
       "//components/autofill/content/browser:risk_proto",
-      "//components/autofill/content/browser/wallet:test_support",
       "//components/autofill/content/renderer:test_support",
       "//components/captive_portal:test_support",
       "//components/dom_distiller/content/browser",
@@ -937,7 +936,6 @@ if (!is_android) {
       "//third_party/cld_2:cld2_platform_impl",
       "//third_party/icu",
       "//third_party/leveldatabase",
-      "//third_party/libaddressinput",
       "//third_party/libjingle",
       "//third_party/safe_browsing:test_support",
       "//third_party/webrtc/modules/desktop_capture",
@@ -1275,7 +1273,10 @@ if (!is_android) {
     if (!is_android && !is_ios) {
       sources +=
           [ "../browser/copresence/chrome_whispernet_client_browsertest.cc" ]
-      deps += [ "//components/copresence" ]
+      deps += [
+        "//components/copresence",
+        "//third_party/libaddressinput",
+      ]
     }
     if (enable_app_list) {
       sources += rebase_path(
@@ -1334,8 +1335,7 @@ if (!is_android) {
         "../renderer/safe_browsing/phishing_classifier_delegate_browsertest.cc",
       ]
     }
-    if (!enable_autofill_dialog || is_android || is_ios) {
-      deps -= [ "//third_party/libaddressinput" ]
+    if (is_android || is_ios) {
     }
     if (enable_remoting) {
       sources += rebase_path(
@@ -1671,7 +1671,6 @@ test("unit_tests") {
 
   if (!is_ios) {
     deps += [
-      "//components/autofill/content/browser/wallet:test_support",
       "//components/autofill/content/renderer:test_support",
       "//components/data_reduction_proxy/core/browser:test_support",
       "//components/data_use_measurement/core",
@@ -1900,12 +1899,6 @@ test("unit_tests") {
   } else if (safe_browsing_mode == 2) {
     sources += rebase_path(
             chrome_tests_unit_gypi_values.chrome_unit_tests_shared_safe_browsing_sources,
-            ".",
-            "//chrome")
-  }
-  if (enable_autofill_dialog && !is_android) {
-    sources += rebase_path(
-            chrome_tests_unit_gypi_values.chrome_unit_tests_autofill_dialog_sources,
             ".",
             "//chrome")
   }
@@ -2278,7 +2271,6 @@ if (is_win || (is_linux && !is_chromeos)) {
       "//chrome/browser",
       "//chrome/renderer",
       "//components/about_handler",
-      "//components/autofill/content/browser/wallet:test_support",
       "//components/autofill/content/renderer:test_support",
       "//content/test:browsertest_base",
       "//media/cast:test_support",

@@ -178,29 +178,6 @@ int GetFieldTypeGroupMetric(ServerFieldType field_type,
 
 namespace {
 
-std::string WalletApiMetricToString(
-    AutofillMetrics::WalletApiCallMetric metric) {
-  switch (metric) {
-    case AutofillMetrics::ACCEPT_LEGAL_DOCUMENTS:
-      return "AcceptLegalDocuments";
-    case AutofillMetrics::AUTHENTICATE_INSTRUMENT:
-      return "AuthenticateInstrument";
-    case AutofillMetrics::GET_FULL_WALLET:
-      return "GetFullWallet";
-    case AutofillMetrics::GET_WALLET_ITEMS:
-      return "GetWalletItems";
-    case AutofillMetrics::SAVE_TO_WALLET:
-      return "SaveToWallet";
-    case AutofillMetrics::UNKNOWN_API_CALL:
-    case AutofillMetrics::NUM_WALLET_API_CALLS:
-      NOTREACHED();
-      return "UnknownApiCall";
-  }
-
-  NOTREACHED();
-  return "UnknownApiCall";
-}
-
 // A version of the UMA_HISTOGRAM_ENUMERATION macro that allows the |name|
 // to vary over the program's runtime.
 void LogUMAHistogramEnumeration(const std::string& name,
@@ -217,21 +194,6 @@ void LogUMAHistogramEnumeration(const std::string& name,
           boundary_value + 1,
           base::HistogramBase::kUmaTargetedHistogramFlag);
   histogram->Add(sample);
-}
-
-// A version of the UMA_HISTOGRAM_TIMES macro that allows the |name|
-// to vary over the program's runtime.
-void LogUMAHistogramTimes(const std::string& name,
-                          const base::TimeDelta& duration) {
-  // Note: This leaks memory, which is expected behavior.
-  base::HistogramBase* histogram =
-      base::Histogram::FactoryTimeGet(
-          name,
-          base::TimeDelta::FromMilliseconds(1),
-          base::TimeDelta::FromSeconds(10),
-          50,
-          base::HistogramBase::kUmaTargetedHistogramFlag);
-  histogram->AddTime(duration);
 }
 
 // A version of the UMA_HISTOGRAM_LONG_TIMES macro that allows the |name|
@@ -317,62 +279,6 @@ void AutofillMetrics::LogScanCreditCardCompleted(
   LogUMAHistogramLongTimes("Autofill.ScanCreditCard.Duration_" + suffix,
                            duration);
   UMA_HISTOGRAM_BOOLEAN("Autofill.ScanCreditCard.Completed", completed);
-}
-
-// static
-void AutofillMetrics::LogDialogDismissalState(DialogDismissalState state) {
-  UMA_HISTOGRAM_ENUMERATION("RequestAutocomplete.DismissalState",
-                            state, NUM_DIALOG_DISMISSAL_STATES);
-}
-
-// static
-void AutofillMetrics::LogDialogInitialUserState(
-    DialogInitialUserStateMetric user_type) {
-  UMA_HISTOGRAM_ENUMERATION("RequestAutocomplete.InitialUserState",
-                            user_type, NUM_DIALOG_INITIAL_USER_STATE_METRICS);
-}
-
-// static
-void AutofillMetrics::LogDialogLatencyToShow(const base::TimeDelta& duration) {
-  LogUMAHistogramTimes("RequestAutocomplete.UiLatencyToShow", duration);
-}
-
-// static
-void AutofillMetrics::LogDialogPopupEvent(DialogPopupEvent event) {
-  UMA_HISTOGRAM_ENUMERATION("RequestAutocomplete.PopupInDialog",
-                            event, NUM_DIALOG_POPUP_EVENTS);
-}
-
-// static
-void AutofillMetrics::LogDialogSecurityMetric(DialogSecurityMetric metric) {
-  UMA_HISTOGRAM_ENUMERATION("RequestAutocomplete.Security",
-                            metric, NUM_DIALOG_SECURITY_METRICS);
-}
-
-// static
-void AutofillMetrics::LogDialogUiDuration(
-    const base::TimeDelta& duration,
-    DialogDismissalAction dismissal_action) {
-  std::string suffix;
-  switch (dismissal_action) {
-    case DIALOG_ACCEPTED:
-      suffix = "Submit";
-      break;
-
-    case DIALOG_CANCELED:
-      suffix = "Cancel";
-      break;
-  }
-
-  LogUMAHistogramLongTimes("RequestAutocomplete.UiDuration", duration);
-  LogUMAHistogramLongTimes("RequestAutocomplete.UiDuration." + suffix,
-                           duration);
-}
-
-// static
-void AutofillMetrics::LogDialogUiEvent(DialogUiEvent event) {
-  UMA_HISTOGRAM_ENUMERATION("RequestAutocomplete.UiEvents", event,
-                            NUM_DIALOG_UI_EVENTS);
 }
 
 // static
@@ -491,39 +397,6 @@ void AutofillMetrics::LogUnmaskingDuration(
   LogUMAHistogramLongTimes("Autofill.UnmaskPrompt.UnmaskingDuration", duration);
   LogUMAHistogramLongTimes("Autofill.UnmaskPrompt.UnmaskingDuration." + suffix,
                            duration);
-}
-
-// static
-void AutofillMetrics::LogWalletErrorMetric(WalletErrorMetric metric) {
-  UMA_HISTOGRAM_ENUMERATION("RequestAutocomplete.WalletErrors", metric,
-                            NUM_WALLET_ERROR_METRICS);
-}
-
-// static
-void AutofillMetrics::LogWalletApiCallDuration(
-    WalletApiCallMetric metric,
-    const base::TimeDelta& duration) {
-  LogUMAHistogramTimes("Wallet.ApiCallDuration." +
-                       WalletApiMetricToString(metric), duration);
-}
-
-// static
-void AutofillMetrics::LogWalletMalformedResponseMetric(
-    WalletApiCallMetric metric) {
-  UMA_HISTOGRAM_ENUMERATION("Wallet.MalformedResponse", metric,
-                            NUM_WALLET_API_CALLS);
-}
-
-// static
-void AutofillMetrics::LogWalletRequiredActionMetric(
-    WalletRequiredActionMetric required_action) {
-  UMA_HISTOGRAM_ENUMERATION("RequestAutocomplete.WalletRequiredActions",
-                            required_action, NUM_WALLET_REQUIRED_ACTIONS);
-}
-
-// static
-void AutofillMetrics::LogWalletResponseCode(int response_code) {
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Wallet.ResponseCode", response_code);
 }
 
 // static

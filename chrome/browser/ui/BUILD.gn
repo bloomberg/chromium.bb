@@ -531,21 +531,11 @@ source_set("ui") {
                            ".",
                            "//chrome")
   }
-  if (enable_autofill_dialog) {
-    sources +=
-        rebase_path(gypi_values.chrome_browser_ui_autofill_dialog_sources,
-                    ".",
-                    "//chrome")
-    if (!android_java_ui && !is_ios) {
-      sources += rebase_path(
-              gypi_values.chrome_browser_ui_autofill_dialog_non_mobile_sources,
-              ".",
-              "//chrome")
-      deps += [
-        "//third_party/libaddressinput",
-        "//third_party/libaddressinput:strings",
-      ]
-    }
+  if (!android_java_ui && !is_ios) {
+    deps += [
+      "//third_party/libaddressinput",
+      "//third_party/libaddressinput:strings",
+    ]
   }
   if (enable_extensions) {
     deps += [

@@ -145,7 +145,6 @@ class AutofillAgent : public content::RenderFrameObserver,
   void textFieldDidReceiveKeyDown(
       const blink::WebInputElement& element,
       const blink::WebKeyboardEvent& event) override;
-  void didRequestAutocomplete(const blink::WebFormElement& form) override;
   void setIgnoreTextChanges(bool ignore) override;
   void didAssociateFormControls(
       const blink::WebVector<blink::WebNode>& nodes) override;
@@ -176,17 +175,6 @@ class AutofillAgent : public content::RenderFrameObserver,
 
   // Called when a same-page navigation is detected.
   void OnSamePageNavigationCompleted();
-
-  // Called when interactive autocomplete finishes. |message| is printed to
-  // the console if non-empty.
-  void OnRequestAutocompleteResult(
-      blink::WebFormElement::AutocompleteResult result,
-      const base::string16& message,
-      const FormData& form_data);
-
-  // Called when an autocomplete request succeeds or fails with the |result|.
-  void FinishAutocompleteRequest(
-      blink::WebFormElement::AutocompleteResult result);
 
   // Called in a posted task by textFieldDidChange() to work-around a WebKit bug
   // http://bugs.webkit.org/show_bug.cgi?id=16976

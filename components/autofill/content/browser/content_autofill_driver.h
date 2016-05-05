@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/supports_user_data.h"
-#include "components/autofill/content/browser/request_autocomplete_manager.h"
 #include "components/autofill/content/public/interfaces/autofill_agent.mojom.h"
 #include "components/autofill/content/public/interfaces/autofill_driver.mojom.h"
 #include "components/autofill/core/browser/autofill_driver.h"
@@ -113,9 +112,6 @@ class ContentAutofillDriver : public AutofillDriver,
   // AutofillExternalDelegate instance that this object instantiates in the
   // case where the Autofill native UI is enabled.
   AutofillExternalDelegate autofill_external_delegate_;
-
-  // Driver for the interactive autocomplete dialog.
-  RequestAutocompleteManager request_autocomplete_manager_;
 
   mojo::BindingSet<mojom::AutofillDriver> bindings_;
 

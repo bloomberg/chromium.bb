@@ -568,7 +568,7 @@
             '<(DEPTH)/ui/chromeos/ui_chromeos.gyp:ui_chromeos_strings',
           ],
         }],
-        ['enable_autofill_dialog==1 and OS!="android"', {
+        ['OS != "android" and OS != "ios"', {
           'dependencies': [  # Update duplicate logic in repack_locales.py
             '<(DEPTH)/third_party/libaddressinput/libaddressinput.gyp:libaddressinput_strings',
           ],
