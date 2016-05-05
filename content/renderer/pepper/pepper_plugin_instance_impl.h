@@ -207,6 +207,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   // Callback when the compositor is finished consuming the committed texture.
   void FinishedConsumingCommittedTexture(
       const cc::TextureMailbox& texture_mailbox,
+      scoped_refptr<PPB_Graphics3D_Impl> graphics_3d,
       const gpu::SyncToken& sync_token,
       bool is_lost);
 
@@ -967,6 +968,9 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   // The most recently committed texture. This is kept around in case the layer
   // needs to be regenerated.
   cc::TextureMailbox committed_texture_;
+
+  // The Graphics3D that produced the most recently committed texture.
+  scoped_refptr<PPB_Graphics3D_Impl> committed_texture_graphics_3d_;
 
   gpu::SyncToken committed_texture_consumed_sync_token_;
 
