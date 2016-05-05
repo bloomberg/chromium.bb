@@ -89,7 +89,7 @@ public:
     bool isInEffect() const { return ensureCalculated().isInEffect; }
     bool isInPlay() const { return ensureCalculated().isInPlay; }
     double currentIteration() const { return ensureCalculated().currentIteration; }
-    double timeFraction() const { return ensureCalculated().timeFraction; }
+    double progress() const { return ensureCalculated().progress; }
     double timeToForwardsEffectChange() const { return ensureCalculated().timeToForwardsEffectChange; }
     double timeToReverseEffectChange() const { return ensureCalculated().timeToReverseEffectChange; }
 
@@ -103,8 +103,8 @@ public:
     AnimationEffectTiming* timing();
     void updateSpecifiedTiming(const Timing&);
 
-    void computedTiming(ComputedTimingProperties&);
-    ComputedTimingProperties computedTiming();
+    void getComputedTiming(ComputedTimingProperties&);
+    ComputedTimingProperties getComputedTiming();
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -145,7 +145,7 @@ protected:
         DISALLOW_NEW();
         Phase phase;
         double currentIteration;
-        double timeFraction;
+        double progress;
         bool isCurrent;
         bool isInEffect;
         bool isInPlay;

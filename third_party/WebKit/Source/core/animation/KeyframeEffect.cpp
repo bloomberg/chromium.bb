@@ -183,10 +183,10 @@ void KeyframeEffect::applyEffects()
     ASSERT(iteration >= 0);
     bool changed = false;
     if (m_sampledEffect) {
-        changed = m_model->sample(clampTo<int>(iteration, 0), timeFraction(), iterationDuration(), m_sampledEffect->mutableInterpolations());
+        changed = m_model->sample(clampTo<int>(iteration, 0), progress(), iterationDuration(), m_sampledEffect->mutableInterpolations());
     } else {
         Vector<RefPtr<Interpolation>> interpolations;
-        m_model->sample(clampTo<int>(iteration, 0), timeFraction(), iterationDuration(), interpolations);
+        m_model->sample(clampTo<int>(iteration, 0), progress(), iterationDuration(), interpolations);
         if (!interpolations.isEmpty()) {
             SampledEffect* sampledEffect = SampledEffect::create(this);
             sampledEffect->mutableInterpolations().swap(interpolations);

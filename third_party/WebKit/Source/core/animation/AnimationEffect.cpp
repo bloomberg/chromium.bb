@@ -94,19 +94,20 @@ void AnimationEffect::updateSpecifiedTiming(const Timing& timing)
     specifiedTimingChanged();
 }
 
-void AnimationEffect::computedTiming(ComputedTimingProperties& computedTiming)
+void AnimationEffect::getComputedTiming(ComputedTimingProperties& computedTiming)
 {
     // ComputedTimingProperties members.
-    computedTiming.setStartTime(0);
     computedTiming.setEndTime(endTimeInternal() * 1000);
     computedTiming.setActiveDuration(activeDurationInternal() * 1000);
 
-    // FIXME: These should be null if not in effect, but current dictionary API
-    // will treat these as undefined.
     if (ensureCalculated().isInEffect) {
         computedTiming.setLocalTime(ensureCalculated().localTime * 1000);
-        computedTiming.setTimeFraction(ensureCalculated().timeFraction);
+        computedTiming.setProgress(ensureCalculated().progress);
         computedTiming.setCurrentIteration(ensureCalculated().currentIteration);
+    } else {
+        computedTiming.setLocalTimeToNull();
+        computedTiming.setProgressToNull();
+        computedTiming.setCurrentIterationToNull();
     }
 
     // KeyframeEffectOptions members.
@@ -125,10 +126,10 @@ void AnimationEffect::computedTiming(ComputedTimingProperties& computedTiming)
     computedTiming.setEasing(specifiedTiming().timingFunction->toString());
 }
 
-ComputedTimingProperties AnimationEffect::computedTiming()
+ComputedTimingProperties AnimationEffect::getComputedTiming()
 {
     ComputedTimingProperties result;
-    computedTiming(result);
+    getComputedTiming(result);
     return result;
 }
 
@@ -150,7 +151,7 @@ void AnimationEffect::updateInheritedTime(double inheritedTime, TimingUpdateReas
         const double activeTime = calculateActiveTime(activeDuration, resolvedFillMode(m_timing.fillMode, isKeyframeEffect()), localTime, parentPhase, currentPhase, m_timing);
 
         double currentIteration;
-        double timeFraction;
+        double progress;
         if (const double iterationDuration = this->iterationDuration()) {
             const double startOffset = multiplyZeroAlwaysGivesZero(m_timing.iterationStart, iterationDuration);
             ASSERT(startOffset >= 0);
@@ -165,9 +166,9 @@ void AnimationEffect::updateInheritedTime(double inheritedTime, TimingUpdateReas
             // There is an open issue against the spec to fix this:
             // https://github.com/w3c/web-animations/issues/142
             if (!std::isfinite(iterationDuration))
-                timeFraction = fmod(m_timing.iterationStart, 1.0);
+                progress = fmod(m_timing.iterationStart, 1.0);
             else
-                timeFraction = transformedTime / iterationDuration;
+                progress = transformedTime / iterationDuration;
 
             if (!isNull(iterationTime)) {
                 timeToNextIteration = (iterationDuration - iterationTime) / std::abs(m_timing.playbackRate);
@@ -189,11 +190,11 @@ void AnimationEffect::updateInheritedTime(double inheritedTime, TimingUpdateReas
             const double iterationTime = calculateIterationTime(localIterationDuration, localRepeatedDuration, scaledActiveTime, startOffset, m_timing);
 
             currentIteration = calculateCurrentIteration(localIterationDuration, iterationTime, scaledActiveTime, m_timing);
-            timeFraction = calculateTransformedTime(currentIteration, localIterationDuration, iterationTime, m_timing);
+            progress = calculateTransformedTime(currentIteration, localIterationDuration, iterationTime, m_timing);
         }
 
         m_calculated.currentIteration = currentIteration;
-        m_calculated.timeFraction = timeFraction;
+        m_calculated.progress = progress;
 
         m_calculated.phase = currentPhase;
         m_calculated.isInEffect = !isNull(activeTime);

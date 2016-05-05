@@ -33,9 +33,9 @@ interface AnalyserNode : AudioNode
     setter smoothingTimeConstant
 interface AnimationEffectReadOnly
     attribute @@toStringTag
-    getter computedTiming
     getter timing
     method constructor
+    method getComputedTiming
 interface AnimationEffectTiming
     attribute @@toStringTag
     getter delay

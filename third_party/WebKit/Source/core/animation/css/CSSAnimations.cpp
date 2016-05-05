@@ -539,12 +539,12 @@ void CSSAnimations::calculateTransitionUpdateForProperty(CSSPropertyID id, const
     AnimatableValue* reversingAdjustedStartValue = from.get();
     double reversingShorteningFactor = 1;
     if (interruptedTransition) {
-        const double interruptedTimeFraction = interruptedTransition->animation->effect()->timeFraction();
-        if (!std::isnan(interruptedTimeFraction)) {
+        const double interruptedProgress = interruptedTransition->animation->effect()->progress();
+        if (!std::isnan(interruptedProgress)) {
             // const_cast because we need to take a ref later when passing to startTransition.
             reversingAdjustedStartValue = const_cast<AnimatableValue*>(interruptedTransition->to);
             reversingShorteningFactor = clampTo(
-                (interruptedTimeFraction * interruptedTransition->reversingShorteningFactor) +
+                (interruptedProgress * interruptedTransition->reversingShorteningFactor) +
                 (1 - interruptedTransition->reversingShorteningFactor), 0.0, 1.0);
             timing.iterationDuration *= reversingShorteningFactor;
             if (timing.startDelay < 0) {

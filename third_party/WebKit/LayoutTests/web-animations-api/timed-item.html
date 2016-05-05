@@ -12,55 +12,53 @@ var keyframes = [{opacity: '1', offset: 0}, {opacity: '0', offset: 1}];
 
 test(function() {
     var keyframeEffect = new KeyframeEffect(element, keyframes);
-    assert_equals(keyframeEffect.computedTiming.localTime, null);
-    assert_equals(keyframeEffect.computedTiming.currentIteration, null);
+    assert_equals(keyframeEffect.getComputedTiming().localTime, null);
+    assert_equals(keyframeEffect.getComputedTiming().currentIteration, null);
 }, 'localTime and currentIteration are null when the KeyframeEffect is not associated with an Animation');
 
 test(function() {
     var animation = element.animate(keyframes, {fill: 'both', duration: 2000, iterations: 3});
     var keyframeEffect = animation.effect;
     animation.currentTime = -1000;
-    assert_equals(keyframeEffect.computedTiming.localTime, -1000, 'localTime');
-    assert_equals(keyframeEffect.computedTiming.currentIteration, 0);
+    assert_equals(keyframeEffect.getComputedTiming().localTime, -1000, 'localTime');
+    assert_equals(keyframeEffect.getComputedTiming().currentIteration, 0);
     animation.currentTime = 1000;
-    assert_equals(keyframeEffect.computedTiming.localTime, 1000);
-    assert_equals(keyframeEffect.computedTiming.currentIteration, 0);
+    assert_equals(keyframeEffect.getComputedTiming().localTime, 1000);
+    assert_equals(keyframeEffect.getComputedTiming().currentIteration, 0);
     animation.currentTime = 5000;
-    assert_equals(keyframeEffect.computedTiming.localTime, 5000);
-    assert_equals(keyframeEffect.computedTiming.currentIteration, 2);
+    assert_equals(keyframeEffect.getComputedTiming().localTime, 5000);
+    assert_equals(keyframeEffect.getComputedTiming().currentIteration, 2);
     animation.currentTime = 7000;
-    assert_equals(keyframeEffect.computedTiming.localTime, 7000);
-    assert_equals(keyframeEffect.computedTiming.currentIteration, 2);
+    assert_equals(keyframeEffect.getComputedTiming().localTime, 7000);
+    assert_equals(keyframeEffect.getComputedTiming().currentIteration, 2);
 }, 'TimedItem.localTime and TimedItem.currentIteration return reasonable values when an keyframeEffect is in effect');
 
 test(function() {
     var animation = element.animate(keyframes);
     var keyframeEffect = animation.effect;
     animation.currentTime = -1;
-    assert_equals(keyframeEffect.computedTiming.currentIteration, null);
+    assert_equals(keyframeEffect.getComputedTiming().currentIteration, null);
     animation.currentTime = 1;
-    assert_equals(keyframeEffect.computedTiming.currentIteration, null);
+    assert_equals(keyframeEffect.getComputedTiming().currentIteration, null);
 }, 'TimedItem.currentIteration is null when keyframeEffect is not in effect');
 
 test(function() {
     var keyframeEffect = new KeyframeEffect(element, keyframes, 2);
-    assert_equals(keyframeEffect.computedTiming.startTime, 0);
-    assert_equals(keyframeEffect.computedTiming.endTime, 2);
-    assert_equals(keyframeEffect.computedTiming.duration, 2);
-    assert_equals(keyframeEffect.computedTiming.activeDuration, 2);
+    assert_equals(keyframeEffect.getComputedTiming().endTime, 2);
+    assert_equals(keyframeEffect.getComputedTiming().duration, 2);
+    assert_equals(keyframeEffect.getComputedTiming().activeDuration, 2);
 }, 'TimedItem startTime, endTime, duration, activeDuration are sensible for a simple keyframeEffect');
 
 test(function() {
   var keyframeEffect = new KeyframeEffect(element, keyframes, {duration: 3, iterations: 4, delay: 5});
-  assert_equals(keyframeEffect.computedTiming.startTime, 0);
-  assert_equals(keyframeEffect.computedTiming.endTime, 17);
-  assert_equals(keyframeEffect.computedTiming.duration, 3);
-  assert_equals(keyframeEffect.computedTiming.activeDuration, 12);
+  assert_equals(keyframeEffect.getComputedTiming().endTime, 17);
+  assert_equals(keyframeEffect.getComputedTiming().duration, 3);
+  assert_equals(keyframeEffect.getComputedTiming().activeDuration, 12);
 }, 'TimedItem startTime, endTime, duration, activeDuration are sensible for keyframeEffects with delays and iterations');
 
 test(function() {
   var keyframeEffect = new KeyframeEffect(element, keyframes, {delay: 1});
-  assert_equals(keyframeEffect.computedTiming.duration, 0);
+  assert_equals(keyframeEffect.getComputedTiming().duration, 0);
 }, 'TimedItem duration is calculated when no duration is specified');
 
 test(function() {

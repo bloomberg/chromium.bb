@@ -1,40 +1,40 @@
 This is a testharness.js-based test.
-FAIL Test currentIteration during before and after phase when fill is none anim.effect.getComputedTiming is not a function
-FAIL Test zero iterations: iterations:0 iterationStart:0 duration:0 delay:1 fill:both anim.effect.getComputedTiming is not a function
-FAIL Test zero iterations: iterations:0 iterationStart:0 duration:100 delay:1 fill:both anim.effect.getComputedTiming is not a function
-FAIL Test zero iterations: iterations:0 iterationStart:0 duration:Infinity delay:1 fill:both anim.effect.getComputedTiming is not a function
-FAIL Test zero iterations: iterations:0 iterationStart:2.5 duration:0 delay:1 fill:both anim.effect.getComputedTiming is not a function
-FAIL Test zero iterations: iterations:0 iterationStart:2.5 duration:100 delay:1 fill:both anim.effect.getComputedTiming is not a function
-FAIL Test zero iterations: iterations:0 iterationStart:2.5 duration:Infinity delay:1 fill:both anim.effect.getComputedTiming is not a function
-FAIL Test zero iterations: iterations:0 iterationStart:3 duration:0 delay:1 fill:both anim.effect.getComputedTiming is not a function
-FAIL Test zero iterations: iterations:0 iterationStart:3 duration:100 delay:1 fill:both anim.effect.getComputedTiming is not a function
-FAIL Test zero iterations: iterations:0 iterationStart:3 duration:Infinity delay:1 fill:both anim.effect.getComputedTiming is not a function
-FAIL Test integer iterations: iterations:3 iterationStart:0 duration:0 delay:1 fill:both anim.effect.getComputedTiming is not a function
-FAIL Test integer iterations: iterations:3 iterationStart:0 duration:100 delay:1 fill:both anim.effect.getComputedTiming is not a function
-FAIL Test integer iterations: iterations:3 iterationStart:0 duration:Infinity delay:1 fill:both anim.effect.getComputedTiming is not a function
-FAIL Test integer iterations: iterations:3 iterationStart:2.5 duration:0 delay:1 fill:both anim.effect.getComputedTiming is not a function
-FAIL Test integer iterations: iterations:3 iterationStart:2.5 duration:100 delay:1 fill:both anim.effect.getComputedTiming is not a function
-FAIL Test integer iterations: iterations:3 iterationStart:2.5 duration:Infinity delay:1 fill:both anim.effect.getComputedTiming is not a function
-FAIL Test integer iterations: iterations:3 iterationStart:3 duration:0 delay:1 fill:both anim.effect.getComputedTiming is not a function
-FAIL Test integer iterations: iterations:3 iterationStart:3 duration:100 delay:1 fill:both anim.effect.getComputedTiming is not a function
-FAIL Test integer iterations: iterations:3 iterationStart:3 duration:Infinity delay:1 fill:both anim.effect.getComputedTiming is not a function
-FAIL Test fractional iterations: iterations:3.5 iterationStart:0 duration:0 delay:1 fill:both anim.effect.getComputedTiming is not a function
-FAIL Test fractional iterations: iterations:3.5 iterationStart:0 duration:100 delay:1 fill:both anim.effect.getComputedTiming is not a function
-FAIL Test fractional iterations: iterations:3.5 iterationStart:0 duration:Infinity delay:1 fill:both anim.effect.getComputedTiming is not a function
-FAIL Test fractional iterations: iterations:3.5 iterationStart:2.5 duration:0 delay:1 fill:both anim.effect.getComputedTiming is not a function
-FAIL Test fractional iterations: iterations:3.5 iterationStart:2.5 duration:100 delay:1 fill:both anim.effect.getComputedTiming is not a function
-FAIL Test fractional iterations: iterations:3.5 iterationStart:2.5 duration:Infinity delay:1 fill:both anim.effect.getComputedTiming is not a function
-FAIL Test fractional iterations: iterations:3.5 iterationStart:3 duration:0 delay:1 fill:both anim.effect.getComputedTiming is not a function
-FAIL Test fractional iterations: iterations:3.5 iterationStart:3 duration:100 delay:1 fill:both anim.effect.getComputedTiming is not a function
-FAIL Test fractional iterations: iterations:3.5 iterationStart:3 duration:Infinity delay:1 fill:both anim.effect.getComputedTiming is not a function
-FAIL Test infinity iterations: iterations:Infinity iterationStart:0 duration:0 delay:1 fill:both anim.effect.getComputedTiming is not a function
-FAIL Test infinity iterations: iterations:Infinity iterationStart:0 duration:100 delay:1 fill:both anim.effect.getComputedTiming is not a function
-FAIL Test infinity iterations: iterations:Infinity iterationStart:0 duration:Infinity delay:1 fill:both anim.effect.getComputedTiming is not a function
-FAIL Test infinity iterations: iterations:Infinity iterationStart:2.5 duration:0 delay:1 fill:both anim.effect.getComputedTiming is not a function
-FAIL Test infinity iterations: iterations:Infinity iterationStart:2.5 duration:100 delay:1 fill:both anim.effect.getComputedTiming is not a function
-FAIL Test infinity iterations: iterations:Infinity iterationStart:2.5 duration:Infinity delay:1 fill:both anim.effect.getComputedTiming is not a function
-FAIL Test infinity iterations: iterations:Infinity iterationStart:3 duration:0 delay:1 fill:both anim.effect.getComputedTiming is not a function
-FAIL Test infinity iterations: iterations:Infinity iterationStart:3 duration:100 delay:1 fill:both anim.effect.getComputedTiming is not a function
-FAIL Test infinity iterations: iterations:Infinity iterationStart:3 duration:Infinity delay:1 fill:both anim.effect.getComputedTiming is not a function
+FAIL Test currentIteration during before and after phase when fill is none assert_equals: expected (object) null but got (undefined) undefined
+PASS Test zero iterations: iterations:0 iterationStart:0 duration:0 delay:1 fill:both 
+PASS Test zero iterations: iterations:0 iterationStart:0 duration:100 delay:1 fill:both 
+PASS Test zero iterations: iterations:0 iterationStart:0 duration:Infinity delay:1 fill:both 
+PASS Test zero iterations: iterations:0 iterationStart:2.5 duration:0 delay:1 fill:both 
+PASS Test zero iterations: iterations:0 iterationStart:2.5 duration:100 delay:1 fill:both 
+FAIL Test zero iterations: iterations:0 iterationStart:2.5 duration:Infinity delay:1 fill:both assert_equals: expected 2 but got 1.5
+PASS Test zero iterations: iterations:0 iterationStart:3 duration:0 delay:1 fill:both 
+PASS Test zero iterations: iterations:0 iterationStart:3 duration:100 delay:1 fill:both 
+FAIL Test zero iterations: iterations:0 iterationStart:3 duration:Infinity delay:1 fill:both assert_equals: expected 3 but got 2
+PASS Test integer iterations: iterations:3 iterationStart:0 duration:0 delay:1 fill:both 
+PASS Test integer iterations: iterations:3 iterationStart:0 duration:100 delay:1 fill:both 
+PASS Test integer iterations: iterations:3 iterationStart:0 duration:Infinity delay:1 fill:both 
+PASS Test integer iterations: iterations:3 iterationStart:2.5 duration:0 delay:1 fill:both 
+PASS Test integer iterations: iterations:3 iterationStart:2.5 duration:100 delay:1 fill:both 
+FAIL Test integer iterations: iterations:3 iterationStart:2.5 duration:Infinity delay:1 fill:both assert_equals: expected 2 but got 4.5
+PASS Test integer iterations: iterations:3 iterationStart:3 duration:0 delay:1 fill:both 
+PASS Test integer iterations: iterations:3 iterationStart:3 duration:100 delay:1 fill:both 
+FAIL Test integer iterations: iterations:3 iterationStart:3 duration:Infinity delay:1 fill:both assert_equals: expected 3 but got 5
+PASS Test fractional iterations: iterations:3.5 iterationStart:0 duration:0 delay:1 fill:both 
+PASS Test fractional iterations: iterations:3.5 iterationStart:0 duration:100 delay:1 fill:both 
+PASS Test fractional iterations: iterations:3.5 iterationStart:0 duration:Infinity delay:1 fill:both 
+PASS Test fractional iterations: iterations:3.5 iterationStart:2.5 duration:0 delay:1 fill:both 
+FAIL Test fractional iterations: iterations:3.5 iterationStart:2.5 duration:100 delay:1 fill:both assert_equals: expected 5 but got 6
+FAIL Test fractional iterations: iterations:3.5 iterationStart:2.5 duration:Infinity delay:1 fill:both assert_equals: expected 2 but got 5
+PASS Test fractional iterations: iterations:3.5 iterationStart:3 duration:0 delay:1 fill:both 
+PASS Test fractional iterations: iterations:3.5 iterationStart:3 duration:100 delay:1 fill:both 
+FAIL Test fractional iterations: iterations:3.5 iterationStart:3 duration:Infinity delay:1 fill:both assert_equals: expected 3 but got 5.5
+PASS Test infinity iterations: iterations:Infinity iterationStart:0 duration:0 delay:1 fill:both 
+PASS Test infinity iterations: iterations:Infinity iterationStart:0 duration:100 delay:1 fill:both 
+PASS Test infinity iterations: iterations:Infinity iterationStart:0 duration:Infinity delay:1 fill:both 
+PASS Test infinity iterations: iterations:Infinity iterationStart:2.5 duration:0 delay:1 fill:both 
+PASS Test infinity iterations: iterations:Infinity iterationStart:2.5 duration:100 delay:1 fill:both 
+FAIL Test infinity iterations: iterations:Infinity iterationStart:2.5 duration:Infinity delay:1 fill:both assert_equals: expected 2 but got Infinity
+PASS Test infinity iterations: iterations:Infinity iterationStart:3 duration:0 delay:1 fill:both 
+PASS Test infinity iterations: iterations:Infinity iterationStart:3 duration:100 delay:1 fill:both 
+FAIL Test infinity iterations: iterations:Infinity iterationStart:3 duration:Infinity delay:1 fill:both assert_equals: expected 3 but got Infinity
 Harness: the test ran to completion.
 

@@ -2,7 +2,7 @@ This is a testharness.js-based test.
 PASS Test exceptions when finishing non-running animation 
 PASS Test exceptions when finishing infinite animation 
 PASS Test finishing of animation 
-FAIL Test finishing of animation with a current time past the effect end animation.effect.getComputedTiming is not a function
+PASS Test finishing of animation with a current time past the effect end 
 PASS Test finishing of reversed animation 
 PASS Test finishing of reversed animation with a current time less than zero 
 FAIL Test finish() while paused promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'currentTime' of undefined"

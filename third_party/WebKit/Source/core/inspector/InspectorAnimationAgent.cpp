@@ -91,8 +91,7 @@ void InspectorAnimationAgent::didCommitLoadForLocalFrame(LocalFrame* frame)
 
 static PassOwnPtr<protocol::Animation::AnimationEffect> buildObjectForAnimationEffect(KeyframeEffect* effect, bool isTransition)
 {
-    ComputedTimingProperties computedTiming;
-    effect->computedTiming(computedTiming);
+    ComputedTimingProperties computedTiming = effect->getComputedTiming();
     double delay = computedTiming.delay();
     double duration = computedTiming.duration().getAsUnrestrictedDouble();
     String easing = effect->specifiedTiming().timingFunction->toString();

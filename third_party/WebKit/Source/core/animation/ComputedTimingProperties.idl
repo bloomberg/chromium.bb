@@ -5,13 +5,9 @@
 // https://w3c.github.io/web-animations/#the-computedtimingproperties-dictionary
 
 dictionary ComputedTimingProperties : KeyframeEffectOptions {
-    // TODO(dstockwell): There is no startTime member in the spec.
-    double              startTime;
-    unrestricted double endTime;
-    unrestricted double activeDuration;
-    double?             localTime;
-    // TODO(dstockwell): The timeFraction and currentIteration members should
-    // both be of type unrestricted double? (nullable).
-    unrestricted double timeFraction;
-    unsigned long?      currentIteration;
+    unrestricted double  endTime;
+    unrestricted double  activeDuration;
+    double?              localTime;
+    double?              progress;
+    unrestricted double? currentIteration;
 };

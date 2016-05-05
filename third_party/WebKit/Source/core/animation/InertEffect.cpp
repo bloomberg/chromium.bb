@@ -57,7 +57,7 @@ void InertEffect::sample(Vector<RefPtr<Interpolation>>& result) const
 
     double iteration = currentIteration();
     ASSERT(iteration >= 0);
-    m_model->sample(clampTo<int>(iteration, 0), timeFraction(), iterationDuration(), result);
+    m_model->sample(clampTo<int>(iteration, 0), progress(), iterationDuration(), result);
 }
 
 double InertEffect::calculateTimeToEffectChange(bool, double, double) const

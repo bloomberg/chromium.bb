@@ -1,7 +1,0 @@
-This is a testharness.js-based test.
-FAIL set fill none anim.effect.getComputedTiming is not a function
-FAIL set fill forwards anim.effect.getComputedTiming is not a function
-FAIL set fill backwards anim.effect.getComputedTiming is not a function
-FAIL set fill both anim.effect.getComputedTiming is not a function
-Harness: the test ran to completion.
-

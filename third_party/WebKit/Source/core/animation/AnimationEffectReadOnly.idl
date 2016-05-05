@@ -35,5 +35,5 @@
     ImplementedAs=AnimationEffect,
 ] interface AnimationEffectReadOnly {
     readonly attribute AnimationEffectTiming timing;
-    readonly attribute ComputedTimingProperties computedTiming;
+    ComputedTimingProperties getComputedTiming();
 };
