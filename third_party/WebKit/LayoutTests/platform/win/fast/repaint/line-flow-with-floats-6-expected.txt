@@ -19,7 +19,7 @@
         {
           "object": "LayoutText #text",
           "rect": [27, 353, 22, 18],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "InlineTextBox 'The players all played at once without waiting'",
@@ -35,7 +35,7 @@
         },
         {
           "object": "InlineTextBox 'foo'",
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "InlineTextBox 'for the hedgehogs; and in\n'",

@@ -19,12 +19,12 @@
         {
           "object": "LayoutBlockFlow DIV id='target'",
           "rect": [200, 146, 100, 100],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV id='target'",
           "rect": [200, 100, 100, 100],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "InlineBox",

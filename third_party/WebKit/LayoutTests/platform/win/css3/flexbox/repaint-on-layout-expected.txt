@@ -9,7 +9,7 @@
         {
           "object": "LayoutBlockFlow (floating) DIV class='state'",
           "rect": [712, 8, 80, 23],
-          "reason": "location change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutBlockFlow DIV id='badge'",
@@ -22,7 +22,7 @@
         },
         {
           "object": "LayoutText #text",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "RootInlineBox",

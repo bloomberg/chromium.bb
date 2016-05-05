@@ -89,37 +89,37 @@
         {
           "object": "LayoutSVGForeignObject foreignObject",
           "rect": [210, 13, 100, 100],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutSVGForeignObject foreignObject",
           "rect": [210, 113, 100, 87],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow P",
           "rect": [210, 113, 100, 47],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow P",
           "rect": [210, 13, 100, 47],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [310, 114, 92, 45],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutSVGText text",
           "rect": [310, 114, 92, 45],
-          "reason": "location change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutSVGViewportContainer svg",
           "rect": [310, 114, 92, 45],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutSVGText text",
@@ -129,27 +129,27 @@
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [310, 14, 92, 45],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutSVGText text",
           "rect": [310, 14, 92, 45],
-          "reason": "location change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutSVGViewportContainer svg",
           "rect": [310, 14, 92, 45],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
           "rect": [210, 114, 92, 45],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
           "rect": [210, 14, 92, 45],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutSVGContainer g id='text3g'",
@@ -184,37 +184,37 @@
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [9, 3, 5, 2],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutSVGText text",
           "rect": [9, 3, 5, 2],
-          "reason": "location change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutSVGViewportContainer svg",
           "rect": [9, 3, 5, 2],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutSVGForeignObject foreignObject",
           "rect": [6, 3, 4, 4],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow P",
           "rect": [6, 3, 4, 2],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
           "rect": [6, 3, 4, 2],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow P",
           "rect": [0, 0, 1, 1],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutSVGContainer g id='text1g'",
@@ -224,12 +224,12 @@
         {
           "object": "LayoutSVGForeignObject foreignObject",
           "rect": [0, 0, 1, 1],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
           "rect": [0, 0, 1, 1],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "InlineFlowBox",
@@ -305,19 +305,19 @@
         },
         {
           "object": "InlineTextBox 'PASS'",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "InlineTextBox 'PASS'",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "InlineTextBox 'PASS'",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "InlineTextBox 'PASS'",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "RootInlineBox",

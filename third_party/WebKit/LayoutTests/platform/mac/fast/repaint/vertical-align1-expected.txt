@@ -19,22 +19,22 @@
         {
           "object": "LayoutBlockFlow DIV class='other'",
           "rect": [120, 80, 20, 20],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV class='other'",
           "rect": [120, 34, 20, 20],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV class='other'",
           "rect": [0, 80, 20, 20],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV class='other'",
           "rect": [0, 34, 20, 20],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "InlineBox",

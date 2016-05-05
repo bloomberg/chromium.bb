@@ -14,11 +14,11 @@
         {
           "object": "LayoutText #text",
           "rect": [17, 45, 54, 13],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "InlineTextBox 'some text'",
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "RootInlineBox",

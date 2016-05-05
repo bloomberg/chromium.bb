@@ -9,17 +9,17 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV",
           "rect": [176, 218, 394, 185],
-          "reason": "location change"
+          "reason": "style change"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV",
           "rect": [176, 218, 388, 203],
-          "reason": "location change"
+          "reason": "style change"
         },
         {
           "object": "LayoutBlockFlow (relative positioned) DIV id='box'",
           "rect": [76, 118, 266, 266],
-          "reason": "location change"
+          "reason": "style change"
         }
       ]
     }

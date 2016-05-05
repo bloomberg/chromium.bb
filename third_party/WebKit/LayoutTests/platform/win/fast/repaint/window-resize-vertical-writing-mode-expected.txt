@@ -19,12 +19,12 @@
         {
           "object": "LayoutBlockFlow HTML",
           "rect": [148, 0, 52, 200],
-          "reason": "location change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutBlockFlow BODY",
           "rect": [156, 8, 36, 184],
-          "reason": "location change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
@@ -34,12 +34,12 @@
         {
           "object": "LayoutBlockFlow HTML",
           "rect": [166, 0, 34, 300],
-          "reason": "location change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutBlockFlow BODY",
           "rect": [174, 8, 18, 284],
-          "reason": "location change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
@@ -95,36 +95,36 @@
         {
           "object": "LayoutBlockFlow HTML",
           "rect": [266, 0, 34, 300],
-          "reason": "location change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutBlockFlow HTML",
           "rect": [166, 0, 34, 300],
-          "reason": "location change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutBlockFlow BODY",
           "rect": [274, 8, 18, 284],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow BODY",
           "rect": [174, 8, 18, 284],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
           "rect": [275, 8, 17, 248],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
           "rect": [175, 8, 17, 248],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "InlineTextBox 'AAAA AAAA AAAA AAAA AAAA'",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "RootInlineBox",
@@ -155,12 +155,12 @@
         {
           "object": "LayoutBlockFlow HTML",
           "rect": [248, 0, 52, 250],
-          "reason": "location change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutBlockFlow BODY",
           "rect": [256, 8, 36, 234],
-          "reason": "location change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
@@ -170,12 +170,12 @@
         {
           "object": "LayoutBlockFlow HTML",
           "rect": [266, 0, 34, 300],
-          "reason": "location change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutBlockFlow BODY",
           "rect": [274, 8, 18, 284],
-          "reason": "location change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
@@ -222,12 +222,12 @@
         {
           "object": "LayoutBlockFlow HTML",
           "rect": [248, 0, 52, 250],
-          "reason": "location change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutBlockFlow HTML",
           "rect": [198, 0, 52, 250],
-          "reason": "location change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutView #document",
@@ -237,30 +237,30 @@
         {
           "object": "LayoutBlockFlow BODY",
           "rect": [256, 8, 36, 234],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow BODY",
           "rect": [206, 8, 36, 234],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
           "rect": [257, 8, 35, 197],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
           "rect": [207, 8, 35, 197],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "InlineTextBox 'AAAA AAAA AAAA AAAA'",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "InlineTextBox 'AAAA'",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "RootInlineBox",

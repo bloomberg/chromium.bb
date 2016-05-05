@@ -1,0 +1,70 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow div id='contentBox'",
+          "rect": [8, 50, 402, 404],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutSVGContainer use",
+          "rect": [45, 85, 328, 328],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGPath path",
+          "rect": [45, 85, 328, 328],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [45, 85, 328, 328],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg id='gamesBorder'",
+          "rect": [45, 85, 328, 328],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer use",
+          "rect": [18, 209, 82, 83],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGPath path",
+          "rect": [18, 209, 82, 83],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [18, 209, 82, 83],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg id='gamesBorder'",
+          "rect": [18, 209, 82, 83],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineBox",
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "reason": "full"
+        }
+      ]
+    }
+  ]
+}
+

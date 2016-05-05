@@ -14,17 +14,17 @@
         {
           "object": "LayoutSVGContainer g id='targetUse'",
           "rect": [209, 269, 200, 200],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutSVGContainer use",
           "rect": [209, 269, 200, 200],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutSVGRect rect id='targetRect'",
           "rect": [209, 269, 200, 200],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutSVGRoot svg",
@@ -34,12 +34,12 @@
         {
           "object": "LayoutSVGContainer use id='targetUse'",
           "rect": [109, 169, 200, 200],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutSVGRect rect id='targetRect'",
           "rect": [109, 169, 200, 200],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutSVGRect rect id='targetRect'",
@@ -49,17 +49,17 @@
         {
           "object": "LayoutSVGContainer g id='targetUse'",
           "rect": [59, 269, 50, 200],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutSVGContainer use",
           "rect": [59, 269, 50, 200],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutSVGRect rect id='targetRect'",
           "rect": [59, 269, 50, 200],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutSVGRoot svg",
@@ -69,12 +69,12 @@
         {
           "object": "LayoutSVGContainer use id='targetUse'",
           "rect": [34, 169, 50, 200],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutSVGRect rect id='targetRect'",
           "rect": [34, 169, 50, 200],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "InlineBox",

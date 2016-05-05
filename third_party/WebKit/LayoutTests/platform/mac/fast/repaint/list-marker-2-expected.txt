@@ -24,12 +24,12 @@
         {
           "object": "LayoutListMarker (anonymous)",
           "rect": [31, 180, 7, 18],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutListMarker (anonymous)",
           "rect": [31, 130, 7, 18],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "InlineBox",

@@ -17,12 +17,8 @@
           "reason": "location change"
         },
         {
-          "object": "LayoutBlockFlow (relative positioned) DIV id='shiftMe'",
-          "reason": "location change"
-        },
-        {
           "object": "LayoutText #text",
-          "reason": "location change"
+          "reason": "none"
         },
         {
           "object": "RootInlineBox",

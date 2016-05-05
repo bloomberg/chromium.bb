@@ -9,12 +9,12 @@
         {
           "object": "LayoutSVGContainer g id='use'",
           "rect": [210, 58, 44, 64],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGContainer g id='use'",
           "rect": [210, 58, 44, 64],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGContainer g id='use'",
@@ -24,17 +24,17 @@
         {
           "object": "LayoutSVGContainer use",
           "rect": [210, 58, 44, 37],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGContainer use",
           "rect": [210, 58, 44, 37],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGContainer use",
           "rect": [210, 58, 44, 37],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGContainer use",
@@ -54,17 +54,17 @@
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [210, 58, 44, 37],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [210, 58, 44, 37],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [210, 58, 44, 37],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGInlineText #text",
@@ -84,17 +84,17 @@
         {
           "object": "LayoutSVGText text id='use_text'",
           "rect": [210, 58, 44, 37],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGText text id='use_text'",
           "rect": [210, 58, 44, 37],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGText text id='use_text'",
           "rect": [210, 58, 44, 37],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGText text id='use_text'",
@@ -114,17 +114,17 @@
         {
           "object": "LayoutSVGContainer use",
           "rect": [218, 94, 28, 28],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGContainer use",
           "rect": [218, 94, 28, 28],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGContainer use",
           "rect": [218, 94, 28, 28],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGContainer use",
@@ -144,17 +144,17 @@
         {
           "object": "LayoutSVGEllipse circle id='use_circle'",
           "rect": [218, 94, 28, 28],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGEllipse circle id='use_circle'",
           "rect": [218, 94, 28, 28],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGEllipse circle id='use_circle'",
           "rect": [218, 94, 28, 28],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGEllipse circle id='use_circle'",
@@ -185,19 +185,19 @@
         },
         {
           "object": "InlineTextBox 'use'",
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "InlineTextBox 'use'",
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "InlineTextBox 'use'",
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGHiddenContainer g id='use'",
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGHiddenContainer g id='use'",

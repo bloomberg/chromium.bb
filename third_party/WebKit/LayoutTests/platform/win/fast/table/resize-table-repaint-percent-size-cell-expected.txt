@@ -14,7 +14,7 @@
         {
           "object": "LayoutTableRow TR",
           "rect": [0, 292, 106, 236],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableRow TR",
@@ -24,7 +24,7 @@
         {
           "object": "LayoutTableRow TR",
           "rect": [0, 102, 106, 46],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableCell TD",
@@ -34,17 +34,17 @@
         {
           "object": "LayoutTableCell TD",
           "rect": [2, 292, 102, 236],
-          "reason": "location change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutTableCell TD",
           "rect": [2, 102, 102, 46],
-          "reason": "location change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
           "rect": [3, 401, 46, 17],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
@@ -54,7 +54,7 @@
         {
           "object": "LayoutText #text",
           "rect": [3, 116, 46, 17],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
@@ -75,7 +75,7 @@
         },
         {
           "object": "InlineTextBox 'ROW2'",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "RootInlineBox",

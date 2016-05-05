@@ -9,104 +9,104 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV id='box'",
           "rect": [66, 85, 168, 192],
-          "reason": "location change"
+          "reason": "style change"
         },
         {
           "object": "LayoutInline (relative positioned) SPAN id='child'",
           "rect": [139, 359, 151, 181],
-          "reason": "location change"
+          "reason": "style change"
         },
         {
           "object": "LayoutText #text",
           "rect": [139, 359, 151, 181],
-          "reason": "location change"
+          "reason": "style change"
         },
         {
           "object": "LayoutInline (relative positioned) SPAN id='child'",
           "rect": [300, 300, 80, 162],
-          "reason": "location change"
+          "reason": "style change"
         },
         {
           "object": "LayoutText #text",
           "rect": [300, 301, 80, 161],
-          "reason": "location change"
+          "reason": "style change"
         },
         {
           "object": "LayoutText #text",
           "rect": [147, 85, 1, 1],
-          "reason": "location change"
+          "reason": "style change"
         },
         {
           "object": "InlineFlowBox",
-          "reason": "location change"
+          "reason": "style change"
         },
         {
           "object": "InlineFlowBox",
-          "reason": "location change"
+          "reason": "style change"
         },
         {
           "object": "InlineFlowBox",
-          "reason": "location change"
+          "reason": "style change"
         },
         {
           "object": "InlineFlowBox",
-          "reason": "location change"
+          "reason": "style change"
         },
         {
           "object": "InlineFlowBox",
-          "reason": "location change"
+          "reason": "style change"
         },
         {
           "object": "InlineFlowBox",
-          "reason": "location change"
+          "reason": "style change"
         },
         {
           "object": "InlineFlowBox",
-          "reason": "location change"
+          "reason": "style change"
         },
         {
           "object": "InlineFlowBox",
-          "reason": "location change"
+          "reason": "style change"
         },
         {
           "object": "InlineFlowBox",
-          "reason": "location change"
+          "reason": "style change"
         },
         {
           "object": "InlineTextBox 'A B C'",
-          "reason": "location change"
+          "reason": "style change"
         },
         {
           "object": "InlineTextBox 'D E F'",
-          "reason": "location change"
+          "reason": "style change"
         },
         {
           "object": "InlineTextBox 'G H I'",
-          "reason": "location change"
+          "reason": "style change"
         },
         {
           "object": "InlineTextBox 'J K L'",
-          "reason": "location change"
+          "reason": "style change"
         },
         {
           "object": "InlineTextBox 'M N O'",
-          "reason": "location change"
+          "reason": "style change"
         },
         {
           "object": "InlineTextBox 'P Q R'",
-          "reason": "location change"
+          "reason": "style change"
         },
         {
           "object": "InlineTextBox 'S T U'",
-          "reason": "location change"
+          "reason": "style change"
         },
         {
           "object": "InlineTextBox 'V W X'",
-          "reason": "location change"
+          "reason": "style change"
         },
         {
           "object": "InlineTextBox 'Y Z'",
-          "reason": "location change"
+          "reason": "style change"
         },
         {
           "object": "RootInlineBox",

@@ -9,7 +9,7 @@
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [80, 0, 551, 114],
-          "reason": "location change"
+          "reason": "style change"
         },
         {
           "object": "LayoutSVGRoot svg",
@@ -19,12 +19,12 @@
         {
           "object": "LayoutSVGText text id='bounce'",
           "rect": [80, 0, 551, 114],
-          "reason": "location change"
+          "reason": "full"
         },
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [30, 0, 404, 58],
-          "reason": "location change"
+          "reason": "style change"
         },
         {
           "object": "LayoutSVGRoot svg",
@@ -34,7 +34,7 @@
         {
           "object": "LayoutSVGText text id='bounce'",
           "rect": [30, 0, 404, 58],
-          "reason": "location change"
+          "reason": "full"
         },
         {
           "object": "InlineTextBox 'Repaint me!'",
@@ -42,7 +42,7 @@
         },
         {
           "object": "InlineTextBox 'Repaint me!'",
-          "reason": "location change"
+          "reason": "style change"
         },
         {
           "object": "RootInlineBox",

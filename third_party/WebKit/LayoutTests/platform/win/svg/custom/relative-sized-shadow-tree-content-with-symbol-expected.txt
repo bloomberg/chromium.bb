@@ -24,22 +24,22 @@
         {
           "object": "LayoutSVGViewportContainer svg id='targetSymbol'",
           "rect": [9, 69, 400, 400],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutSVGRect rect",
           "rect": [209, 269, 200, 200],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutSVGRect rect",
           "rect": [9, 69, 200, 200],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutSVGRect rect",
           "rect": [59, 269, 50, 50],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "InlineBox",

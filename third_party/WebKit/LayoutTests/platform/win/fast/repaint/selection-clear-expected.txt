@@ -14,12 +14,12 @@
         {
           "object": "LayoutBlockFlow (anonymous)",
           "rect": [8, 208, 100, 100],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (anonymous)",
           "rect": [8, 108, 100, 100],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
@@ -29,11 +29,11 @@
         {
           "object": "LayoutText #text",
           "rect": [8, 49, 4, 17],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "InlineTextBox '\n'",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "InlineTextBox '\n'",
@@ -49,15 +49,15 @@
         },
         {
           "object": "InlineTextBox '\u00A0'",
-          "reason": "location change"
-        },
-        {
-          "object": "InlineTextBox '\u00A0'",
           "reason": "selection"
         },
         {
+          "object": "InlineTextBox '\u00A0'",
+          "reason": "layoutObject insertion"
+        },
+        {
           "object": "LayoutBR BR",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBR BR",

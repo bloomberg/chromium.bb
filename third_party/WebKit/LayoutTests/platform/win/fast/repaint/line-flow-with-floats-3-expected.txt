@@ -24,12 +24,12 @@
         {
           "object": "LayoutBlockFlow (floating) SPAN id='greenFloat'",
           "rect": [356, 389, 64, 81],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (floating) SPAN id='greenFloat'",
           "rect": [372, 371, 48, 81],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",

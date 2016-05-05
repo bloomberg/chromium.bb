@@ -14,16 +14,16 @@
         {
           "object": "LayoutBlockFlow (floating) DIV",
           "rect": [8, 204, 100, 100],
-          "reason": "location change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutBlockFlow (floating) DIV",
           "rect": [8, 104, 100, 100],
-          "reason": "location change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutBlockFlow DIV id='s'",
-          "reason": "location change"
+          "reason": "bounds change"
         }
       ]
     }

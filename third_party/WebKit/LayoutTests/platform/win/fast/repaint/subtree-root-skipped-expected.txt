@@ -19,7 +19,7 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV id='div'",
           "rect": [8, 288, 10, 20],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "InlineTextBox ''",

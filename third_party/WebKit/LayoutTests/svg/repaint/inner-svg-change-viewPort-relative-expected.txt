@@ -44,12 +44,12 @@
         {
           "object": "LayoutSVGContainer use",
           "rect": [180, 120, 20, 20],
-          "reason": "location change"
+          "reason": "full"
         },
         {
           "object": "LayoutSVGPath polygon id='triangle'",
           "rect": [180, 120, 20, 20],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutSVGRect rect",
@@ -59,12 +59,12 @@
         {
           "object": "LayoutSVGContainer use",
           "rect": [80, 120, 20, 20],
-          "reason": "location change"
+          "reason": "full"
         },
         {
           "object": "LayoutSVGPath polygon id='triangle'",
           "rect": [80, 120, 20, 20],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutSVGRect rect",

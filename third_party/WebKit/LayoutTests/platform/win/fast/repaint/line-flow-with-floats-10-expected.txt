@@ -19,12 +19,12 @@
         {
           "object": "LayoutBlockFlow (floating) SPAN id='blueFloat'",
           "rect": [14, 353, 48, 65],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (floating) SPAN id='blueFloat'",
           "rect": [14, 364, 48, 64],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "InlineTextBox ' was in a furious passion, and went\n'",

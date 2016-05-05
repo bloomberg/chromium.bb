@@ -14,7 +14,7 @@
         {
           "object": "LayoutReplica (anonymous)",
           "rect": [0, 0, 100, 220],
-          "reason": "location change"
+          "reason": "style change"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='positioned'",

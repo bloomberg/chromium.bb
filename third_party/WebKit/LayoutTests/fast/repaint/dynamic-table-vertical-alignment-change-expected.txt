@@ -24,24 +24,24 @@
         {
           "object": "LayoutTableCell TD",
           "rect": [114, 70, 2, 102],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableCell TD",
           "rect": [14, 70, 2, 3],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV",
-          "reason": "location change"
+          "reason": "bounds change"
         }
       ]
     }

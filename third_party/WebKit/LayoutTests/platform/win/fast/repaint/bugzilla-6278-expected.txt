@@ -14,7 +14,7 @@
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [10, 281, 292, 50],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV",
@@ -29,7 +29,7 @@
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [10, 317, 242, 50],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableCell TD id='col1'",
@@ -44,7 +44,7 @@
         {
           "object": "LayoutTableCell TD id='target'",
           "rect": [254, 132, 52, 235],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableCell TD id='col1'",

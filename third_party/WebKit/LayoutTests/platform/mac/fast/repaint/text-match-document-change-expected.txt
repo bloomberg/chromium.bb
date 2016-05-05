@@ -14,7 +14,7 @@
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [18, 146, 269, 356],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV id='to-be-changed'",
@@ -29,7 +29,7 @@
         {
           "object": "LayoutText #text",
           "rect": [18, 128, 84, 18],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutView #document",
@@ -38,7 +38,7 @@
         },
         {
           "object": "InlineTextBox 'After change'",
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "InlineTextBox 'Find-in-page 'findme', then click here)'",

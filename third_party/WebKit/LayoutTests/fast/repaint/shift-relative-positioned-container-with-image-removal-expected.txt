@@ -19,22 +19,22 @@
         {
           "object": "LayoutBlockFlow (relative positioned) DIV class='relative paddingTop'",
           "rect": [8, 184, 769, 641],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (relative positioned) DIV class='relative'",
           "rect": [8, 184, 769, 641],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (relative positioned) DIV class='relative paddingTop'",
           "rect": [8, 86, 769, 641],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (relative positioned) DIV class='relative'",
           "rect": [8, 86, 769, 641],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (anonymous)",
@@ -49,12 +49,12 @@
         {
           "object": "LayoutImage IMG",
           "rect": [58, 234, 489, 537],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutImage IMG",
           "rect": [58, 136, 489, 537],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "InlineBox",
@@ -62,7 +62,7 @@
         },
         {
           "object": "LayoutText #text",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
