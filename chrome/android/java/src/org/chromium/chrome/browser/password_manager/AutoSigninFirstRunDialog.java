@@ -110,6 +110,8 @@ public class AutoSigninFirstRunDialog
     public void onClick(DialogInterface dialog, int whichButton) {
         if (whichButton == DialogInterface.BUTTON_NEGATIVE) {
             nativeOnTurnOffClicked(mNativeAutoSigninFirstRunDialog);
+        } else if (whichButton == DialogInterface.BUTTON_POSITIVE) {
+            nativeOnOkClicked(mNativeAutoSigninFirstRunDialog);
         }
     }
 
