@@ -289,7 +289,8 @@ void ContextualSearchLayer::SetProperties(
     // default and adjusted (moved up by the size of the caption and margin).
     float bar_text_height = bar_text_->bounds().height();
     float search_caption_height = search_caption_resource->size.height();
-    float text_margin = floor(bar_text_height / 10);
+    float text_margin = floor(
+        (search_bar_height - bar_text_height - search_caption_height) / 5);
     float search_caption_top =
         search_bar_top + bar_text_height + text_margin * 2;
     // Get the current centered position set up by the OverlayPanelLayer.
