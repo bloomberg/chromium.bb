@@ -373,13 +373,11 @@ static void timeFunction(const v8::FunctionCallbackInfo<v8::Value>& info, bool t
 {
     ConsoleHelper helper(info);
     if (V8DebuggerClient* client = helper.ensureDebuggerClient()) {
-        String16 protocolTitle = helper.firstArgToString(String16());
+        String16 protocolTitle = helper.firstArgToString("default");
         if (timelinePrefix)
             protocolTitle = "Timeline '" + protocolTitle + "'";
         client->consoleTime(protocolTitle);
 
-        if (info.Length() < 1)
-            return;
         v8::Local<v8::Map> timeMap;
         if (!helper.privateMap("V8Console#timeMap").ToLocal(&timeMap))
             return;
@@ -391,13 +389,11 @@ static void timeEndFunction(const v8::FunctionCallbackInfo<v8::Value>& info, boo
 {
     ConsoleHelper helper(info);
     if (V8DebuggerClient* client = helper.ensureDebuggerClient()) {
-        String16 protocolTitle = helper.firstArgToString(String16());
+        String16 protocolTitle = helper.firstArgToString("default");
         if (timelinePrefix)
             protocolTitle = "Timeline '" + protocolTitle + "'";
         client->consoleTimeEnd(protocolTitle);
 
-        if (info.Length() < 1)
-            return;
         v8::Local<v8::Map> timeMap;
         if (!helper.privateMap("V8Console#timeMap").ToLocal(&timeMap))
             return;
