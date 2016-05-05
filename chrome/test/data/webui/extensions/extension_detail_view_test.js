@@ -80,6 +80,16 @@ cr.define('extension_detail_view_tests', function() {
           expectTrue(extension_test_util.isVisible(item, option.id));
           expectTrue(isChecked(option.id));
         }
+
+        expectFalse(testIsVisible('#dependent-extensions-list'));
+        item.set('data.dependentExtensions',
+                 [{id: 'aaa', name: 'Dependent1'},
+                  {id: 'bbb', name: 'Dependent2'}]);
+        Polymer.dom.flush();
+        expectTrue(testIsVisible('#dependent-extensions-list'));
+        expectEquals(2,
+                     item.$$('#dependent-extensions-list').querySelectorAll(
+                         'li').length);
       });
 
       test(assert(TestNames.ClickableElements), function() {

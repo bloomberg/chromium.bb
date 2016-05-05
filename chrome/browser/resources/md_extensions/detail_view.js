@@ -92,6 +92,14 @@ cr.define('extensions', function() {
       this.delegate.setItemCollectsErrors(
           this.data.id, this.$$('#collect-errors').checked);
     },
+
+    /**
+     * @param {!chrome.developerPrivate.DependentExtension} item
+     * @private
+     */
+    computeDependentEntry_: function(item) {
+      return loadTimeData.getStringF('itemDependentEntry', item.name, item.id);
+    },
   });
 
   return {DetailView: DetailView};

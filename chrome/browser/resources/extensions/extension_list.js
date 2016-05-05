@@ -836,17 +836,7 @@ cr.define('extensions', function() {
                              hasDependents, function(item) {
         var dependentList = item.querySelector('ul');
         dependentList.textContent = '';
-        extension.dependentExtensions.forEach(function(dependentId) {
-          var dependentExtension = null;
-          for (var i = 0; i < this.extensions_.length; ++i) {
-            if (this.extensions_[i].id == dependentId) {
-              dependentExtension = this.extensions_[i];
-              break;
-            }
-          }
-          if (!dependentExtension)
-            return;
-
+        extension.dependentExtensions.forEach(function(dependentExtension) {
           var depNode = cloneTemplate('dependent-list-item');
           depNode.querySelector('.dep-extension-title').textContent =
               dependentExtension.name;

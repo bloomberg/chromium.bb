@@ -4475,6 +4475,9 @@ Even if you have downloaded files from this website before, the website might ha
         <message name="IDS_MD_EXTENSIONS_ITEM_DEPENDENCIES" desc="The label above a list of any extensions that depend on this extension.">
           The following extensions depend on this extension:
         </message>
+        <message name="IDS_MD_EXTENSIONS_DEPENDENT_ENTRY" desc="An item in the list of extensions that depend on this extension. 'NAME_PH' is the name of the extension that depends on this extension, and 'ID_PH' is the id of the extension that depends on this extension">
+          <ph name="NAME_PH">$1<ex>AdBlock</ex></ph> (ID: <ph name="ID_PH">$2<ex>cfhdojbkjhnklbpkdaibdccddilifddb</ex></ph>)
+        </message>
         <message name="IDS_MD_EXTENSIONS_ITEM_DESCRIPTION" desc="The label above the description for a given item.">
           Description
         </message>

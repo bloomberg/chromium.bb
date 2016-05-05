@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -90,13 +90,14 @@ chrome.developerPrivate.Location = {
 chrome.developerPrivate.ViewType = {
   APP_WINDOW: 'APP_WINDOW',
   BACKGROUND_CONTENTS: 'BACKGROUND_CONTENTS',
+  COMPONENT: 'COMPONENT',
   EXTENSION_BACKGROUND_PAGE: 'EXTENSION_BACKGROUND_PAGE',
   EXTENSION_DIALOG: 'EXTENSION_DIALOG',
+  EXTENSION_GUEST: 'EXTENSION_GUEST',
   EXTENSION_POPUP: 'EXTENSION_POPUP',
   LAUNCHER_PAGE: 'LAUNCHER_PAGE',
   PANEL: 'PANEL',
   TAB_CONTENTS: 'TAB_CONTENTS',
-  VIRTUAL_KEYBOARD: 'VIRTUAL_KEYBOARD',
 };
 
 /**
@@ -267,11 +268,20 @@ chrome.developerPrivate.Command;
 
 /**
  * @typedef {{
+ *   id: string,
+ *   name: string
+ * }}
+ * @see https://developer.chrome.com/extensions/developerPrivate#type-DependentExtension
+ */
+chrome.developerPrivate.DependentExtension;
+
+/**
+ * @typedef {{
  *   actionButtonHidden: boolean,
  *   blacklistText: (string|undefined),
  *   commands: !Array<!chrome.developerPrivate.Command>,
  *   controlledInfo: (!chrome.developerPrivate.ControlledInfo|undefined),
- *   dependentExtensions: !Array<string>,
+ *   dependentExtensions: !Array<!chrome.developerPrivate.DependentExtension>,
  *   description: string,
  *   disableReasons: !chrome.developerPrivate.DisableReasons,
  *   errorCollection: !chrome.developerPrivate.AccessModifier,
@@ -544,8 +554,8 @@ chrome.developerPrivate.autoUpdate = function(callback) {};
  * Returns information of all the extensions and apps installed.
  * @param {!chrome.developerPrivate.GetExtensionsInfoOptions=} options Options
  *     to restrict the items returned.
- * @param {function(!Array<!chrome.developerPrivate.ExtensionInfo>):void=} callback Called with extensions
- *     info.
+ * @param {function(!Array<!chrome.developerPrivate.ExtensionInfo>):void=}
+ *     callback Called with extensions info.
  * @see https://developer.chrome.com/extensions/developerPrivate#method-getExtensionsInfo
  */
 chrome.developerPrivate.getExtensionsInfo = function(options, callback) {};
@@ -649,8 +659,8 @@ chrome.developerPrivate.choosePath = function(selectType, fileType, callback) {}
  * @param {string} path
  * @param {string=} privateKeyPath The path of the private key, if one is given.
  * @param {number=} flags Special flags to apply to the loading process, if any.
- * @param {function(!chrome.developerPrivate.PackDirectoryResponse):void=} callback called with the success result
- *     string.
+ * @param {function(!chrome.developerPrivate.PackDirectoryResponse):void=}
+ *     callback called with the success result string.
  * @see https://developer.chrome.com/extensions/developerPrivate#method-packDirectory
  */
 chrome.developerPrivate.packDirectory = function(path, privateKeyPath, flags, callback) {};
@@ -666,7 +676,8 @@ chrome.developerPrivate.isProfileManaged = function(callback) {};
  * Reads and returns the contents of a file related to an extension which caused
  * an error.
  * @param {!chrome.developerPrivate.RequestFileSourceProperties} properties
- * @param {function(!chrome.developerPrivate.RequestFileSourceResponse):void} callback
+ * @param {function(!chrome.developerPrivate.RequestFileSourceResponse):void}
+ *     callback
  * @see https://developer.chrome.com/extensions/developerPrivate#method-requestFileSource
  */
 chrome.developerPrivate.requestFileSource = function(properties, callback) {};

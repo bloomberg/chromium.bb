@@ -49,6 +49,10 @@
         --paper-checkbox-checked-color: var(--google-blue-500);
         --primary-text-color: var(--paper-grey-800);
       }
+      #dependent-extensions-list {
+        -webkit-padding-start: 20px;
+        margin: 0;
+      }
     </style>
     <div id="main">
       <div id="top-bar">
@@ -76,7 +80,13 @@
           if="[[hasDependentExtensions_(data.dependentExtensions.splices)]]">
         <div class="section">
           <div class="section-title">$i18n{itemDependencies}</div>
-          <div class="section-content">TODO</div>
+          <div class="section-content">
+            <ul id="dependent-extensions-list">
+              <template is="dom-repeat" items="[[data.dependentExtensions]]">
+                <li>[[computeDependentEntry_(item)]]</li>
+              </template>
+            </ul>
+          </div>
         </div>
       </template>
       <template is="dom-if" if="[[shouldShowOptionsSection_(data.*)]]">

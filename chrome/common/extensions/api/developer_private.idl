@@ -179,12 +179,17 @@ namespace developerPrivate {
     boolean isExtensionAction;
   };
 
+  dictionary DependentExtension {
+    DOMString id;
+    DOMString name;
+  };
+
   dictionary ExtensionInfo {
     boolean actionButtonHidden;
     DOMString? blacklistText;
     Command[] commands;
     ControlledInfo? controlledInfo;
-    DOMString[] dependentExtensions;
+    DependentExtension[] dependentExtensions;
     DOMString description;
     DisableReasons disableReasons;
     AccessModifier errorCollection;

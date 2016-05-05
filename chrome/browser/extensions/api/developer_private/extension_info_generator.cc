@@ -368,8 +368,12 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
             ->shared_module_service()
             ->GetDependentExtensions(&extension);
     for (const scoped_refptr<const Extension>& dependent :
-             *dependent_extensions)
-      info->dependent_extensions.push_back(dependent->id());
+             *dependent_extensions) {
+      developer::DependentExtension extension;
+      extension.id = dependent->id();
+      extension.name = dependent->name();
+      info->dependent_extensions.push_back(std::move(extension));
+    }
   }
 
   info->description = extension.description();
