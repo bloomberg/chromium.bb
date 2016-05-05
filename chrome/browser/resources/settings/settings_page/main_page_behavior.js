@@ -331,17 +331,24 @@ var RoutableBehaviorImpl = {
     },
   },
 
-  /**
-   * @param {string} section Name of the item to scroll into view.
-   */
-  scrollToSection: function(section) {
-    if (section) {
-      // TODO(dschuyler): Determine whether this setTimeout can be removed.
-      // See also: https://github.com/Polymer/polymer/issues/3629
-      setTimeout(function() {
-        this.getSection_(section).scrollIntoView();
-      }.bind(this));
-    }
+  /** @private */
+  scrollToSection_: function() {
+    // TODO(dschuyler): Determine whether this setTimeout can be removed.
+    // See also: https://github.com/Polymer/polymer/issues/3629
+    setTimeout(function pollForScrollHeight() {
+      // If the current section changes while we are waiting for the page to be
+      // ready, scroll to the newest requested section.
+      var element = this.getSection_(this.currentRoute.section);
+      if (!element)
+        return;
+
+      if (element.parentNode.host.scrollHeight == 0) {
+        setTimeout(pollForScrollHeight.bind(this), 100);
+        return;
+      }
+
+      element.scrollIntoView();
+    }.bind(this));
   },
 
   /** @private */
@@ -370,7 +377,7 @@ var RoutableBehaviorImpl = {
       if (section)
         this.expandSection(section);
     } else if (newRoute && newRoute.section) {
-      this.scrollToSection(newRoute.section);
+      this.scrollToSection_();
     }
   },
 
