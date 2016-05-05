@@ -6,66 +6,33 @@
 
 #include "base/logging.h"
 #include "base/i18n/rtl.h"
-#include "dwmapi.h"
 #include "ui/base/win/shell.h"
 #include "ui/display/win/dpi.h"
-#include "ui/display/win/screen_win.h"
 
 namespace {
 
-using display::win::ScreenWin;
+int GetMinimizeButtonOffsetForWindow(HWND hwnd) {
+  // The WM_GETTITLEBARINFOEX message can fail if we are not active/visible. By
+  // fail we get a location of 0; the return status code is always the same and
+  // similarly the state never seems to change (titlebar_info.rgstate).
+  TITLEBARINFOEX titlebar_info = {0};
+  titlebar_info.cbSize = sizeof(TITLEBARINFOEX);
+  SendMessage(hwnd, WM_GETTITLEBARINFOEX, 0,
+              reinterpret_cast<WPARAM>(&titlebar_info));
 
-int GetMinimizeButtonOffsetForWindow(HWND hwnd, bool was_activated) {
-  bool dwm_button_pos = false;
-  POINT minimize_button_corner = {0};
-  RECT button_bounds = {0};
-  if (SUCCEEDED(DwmGetWindowAttribute(hwnd, DWMWA_CAPTION_BUTTON_BOUNDS,
-                                      &button_bounds, sizeof(button_bounds)))) {
-    if (button_bounds.left != button_bounds.right) {
-      // This converts the button coordinate into screen coordinates
-      // thus, ensuring that the identity switcher is placed in the
-      // same location as before.
-      RECT window_bounds = {0};
-      if (GetWindowRect(hwnd, &window_bounds)) {
-        minimize_button_corner = {button_bounds.left + window_bounds.left, 0};
-        dwm_button_pos = true;
-      }
-    }
-  }
-  if (!dwm_button_pos) {
-    // Fallback to using the message for the titlebar info only if the above
-    // code fails. It can fail if DWM is disabled globally or only for the
-    // given HWND. The WM_GETTITLEBARINFOEX message can fail if we are not
-    // active/visible. By fail we get a location of 0; the return status
-    // code is always the same and similarly the state never seems to change
-    // (titlebar_info.rgstate).
-    TITLEBARINFOEX titlebar_info = {0};
-    titlebar_info.cbSize = sizeof(TITLEBARINFOEX);
-    SendMessage(hwnd, WM_GETTITLEBARINFOEX, 0,
-                reinterpret_cast<WPARAM>(&titlebar_info));
-
-    // Under DWM WM_GETTITLEBARINFOEX won't return the right thing until after
-    // WM_NCACTIVATE (maybe it returns classic values?). In an attempt to
-    // return a consistant value we cache the last value across instances and
-    // use it until we get the activate.
-    if (!was_activated ||
-        titlebar_info.rgrect[2].left == titlebar_info.rgrect[2].right ||
-        (titlebar_info.rgstate[2] &
-         (STATE_SYSTEM_INVISIBLE | STATE_SYSTEM_OFFSCREEN |
-          STATE_SYSTEM_UNAVAILABLE))) {
-      return 0;
-    }
-    minimize_button_corner = {titlebar_info.rgrect[2].left, 0};
+  if (titlebar_info.rgrect[2].left == titlebar_info.rgrect[2].right ||
+      (titlebar_info.rgstate[2] & (STATE_SYSTEM_INVISIBLE |
+                                   STATE_SYSTEM_OFFSCREEN |
+                                   STATE_SYSTEM_UNAVAILABLE))) {
+    return 0;
   }
 
   // WM_GETTITLEBARINFOEX returns rects in screen coordinates in pixels.
-  // DWMNA_CAPTION_BUTTON_BOUNDS is in window (not client) coordinates,
-  // but it has been converted to screen coordinates above. We need to
-  // convert the minimize button corner offset to DIP before returning it.
+  // We need to convert the minimize button corner offset to DIP before
+  // returning it.
+  POINT minimize_button_corner = { titlebar_info.rgrect[2].left, 0 };
   MapWindowPoints(HWND_DESKTOP, hwnd, &minimize_button_corner, 1);
-  gfx::Point pixel_point = {minimize_button_corner.x, 0};
-  gfx::Point dip_point = ScreenWin::ClientToDIPPoint(hwnd, pixel_point);
-  return dip_point.x();
+  return minimize_button_corner.x / display::win::GetDPIScale();
 }
 
 }  // namespace
@@ -89,19 +56,24 @@ void MinimizeButtonMetrics::Init(HWND hwnd) {
 
 void MinimizeButtonMetrics::OnHWNDActivated() {
   was_activated_ = true;
-  // NOTE: we don't cache here as it seems only after the activate is the
-  // value correct.
+  // NOTE: we don't cache here as it seems only after the activate is the value
+  // correct.
 }
 
 int MinimizeButtonMetrics::GetMinimizeButtonOffsetX() const {
-  if (!ui::win::IsAeroGlassEnabled() || cached_minimize_button_x_delta_ == 0) {
+  // Under DWM WM_GETTITLEBARINFOEX won't return the right thing until after
+  // WM_NCACTIVATE (maybe it returns classic values?). In an attempt to return a
+  // consistant value we cache the last value across instances and use it until
+  // we get the activate.
+  if (was_activated_ || !ui::win::IsAeroGlassEnabled() ||
+      cached_minimize_button_x_delta_ == 0) {
     const int minimize_button_offset = GetAndCacheMinimizeButtonOffsetX();
     if (minimize_button_offset > 0)
       return minimize_button_offset;
   }
 
   // If we fail to get the minimize button offset via the WM_GETTITLEBARINFOEX
-  // message or DwmGetWindowAttribute then calculate and return this via the
+  // message then calculate and return this via the
   // cached_minimize_button_x_delta_ member value. Please see
   // CacheMinimizeButtonDelta() for more details.
   DCHECK(cached_minimize_button_x_delta_);
@@ -115,8 +87,7 @@ int MinimizeButtonMetrics::GetMinimizeButtonOffsetX() const {
 }
 
 int MinimizeButtonMetrics::GetAndCacheMinimizeButtonOffsetX() const {
-  const int minimize_button_offset =
-      GetMinimizeButtonOffsetForWindow(hwnd_, was_activated_);
+  const int minimize_button_offset = GetMinimizeButtonOffsetForWindow(hwnd_);
   if (minimize_button_offset <= 0)
     return 0;
 
