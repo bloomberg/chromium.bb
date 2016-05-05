@@ -276,10 +276,12 @@ void LaunchHelper::StartProcessInHelper(const StartProcessRequest* request,
       }
     }
 
-    std::unique_ptr<char*[]> argv(new char*[args.size()]);
+    // argv has argc+1 elements, where the last element is NULL.
+    std::unique_ptr<char*[]> argv(new char*[args.size() + 1]);
     for (size_t i = 0; i < args.size(); i++) {
       argv[i] = const_cast<char*>(args[i].c_str());
     }
+    argv[args.size()] = nullptr;
     _exit(main_(args.size(), argv.get()));
     NOTREACHED();
   }
