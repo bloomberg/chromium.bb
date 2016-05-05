@@ -715,15 +715,16 @@ void RTCVideoEncoder::Impl::ReturnEncodedImage(
 RTCVideoEncoder::RTCVideoEncoder(
     webrtc::VideoCodecType type,
     media::GpuVideoAcceleratorFactories* gpu_factories)
-    : gpu_factories_(gpu_factories),
-      gpu_task_runner_(gpu_factories->GetTaskRunner()),
-      impl_(new Impl(gpu_factories_, type)) {
+    : video_codec_type_(type),
+      gpu_factories_(gpu_factories),
+      gpu_task_runner_(gpu_factories->GetTaskRunner()) {
   DVLOG(1) << "RTCVideoEncoder(): codec type=" << type;
 }
 
 RTCVideoEncoder::~RTCVideoEncoder() {
   DVLOG(3) << "~RTCVideoEncoder";
   Release();
+  DCHECK(!impl_.get());
 }
 
 int32_t RTCVideoEncoder::InitEncode(const webrtc::VideoCodec* codec_settings,
@@ -733,7 +734,9 @@ int32_t RTCVideoEncoder::InitEncode(const webrtc::VideoCodec* codec_settings,
            << ", width=" << codec_settings->width
            << ", height=" << codec_settings->height
            << ", startBitrate=" << codec_settings->startBitrate;
+  DCHECK(!impl_.get());
 
+  impl_ = new Impl(gpu_factories_, video_codec_type_);
   const media::VideoCodecProfile profile = WebRTCVideoCodecToVideoCodecProfile(
       impl_->video_codec_type(), codec_settings);
 
@@ -760,6 +763,10 @@ int32_t RTCVideoEncoder::Encode(
     const webrtc::CodecSpecificInfo* codec_specific_info,
     const std::vector<webrtc::FrameType>* frame_types) {
   DVLOG(3) << "Encode()";
+  if (!impl_.get()) {
+    DVLOG(3) << "Encoder is not initialized";
+    return WEBRTC_VIDEO_CODEC_UNINITIALIZED;
+  }
 
   const bool want_key_frame = frame_types && frame_types->size() &&
                               frame_types->front() == webrtc::kVideoFrameKey;
@@ -783,6 +790,11 @@ int32_t RTCVideoEncoder::Encode(
 int32_t RTCVideoEncoder::RegisterEncodeCompleteCallback(
     webrtc::EncodedImageCallback* callback) {
   DVLOG(3) << "RegisterEncodeCompleteCallback()";
+  if (!impl_.get()) {
+    DVLOG(3) << "Encoder is not initialized";
+    return WEBRTC_VIDEO_CODEC_UNINITIALIZED;
+  }
+
   base::WaitableEvent register_waiter(true, false);
   int32_t register_retval = WEBRTC_VIDEO_CODEC_UNINITIALIZED;
   gpu_task_runner_->PostTask(
@@ -795,12 +807,15 @@ int32_t RTCVideoEncoder::RegisterEncodeCompleteCallback(
 
 int32_t RTCVideoEncoder::Release() {
   DVLOG(3) << "Release()";
+  if (!impl_.get())
+    return WEBRTC_VIDEO_CODEC_OK;
 
   base::WaitableEvent release_waiter(true, false);
   gpu_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&RTCVideoEncoder::Impl::Destroy, impl_, &release_waiter));
   release_waiter.Wait();
+  impl_ = NULL;
   return WEBRTC_VIDEO_CODEC_OK;
 }
 
@@ -815,6 +830,11 @@ int32_t RTCVideoEncoder::SetChannelParameters(uint32_t packet_loss,
 int32_t RTCVideoEncoder::SetRates(uint32_t new_bit_rate, uint32_t frame_rate) {
   DVLOG(3) << "SetRates(): new_bit_rate=" << new_bit_rate
            << ", frame_rate=" << frame_rate;
+  if (!impl_.get()) {
+    DVLOG(3) << "Encoder is not initialized";
+    return WEBRTC_VIDEO_CODEC_UNINITIALIZED;
+  }
+
   const int32_t retval = impl_->GetStatus();
   if (retval != WEBRTC_VIDEO_CODEC_OK) {
     DVLOG(3) << "SetRates(): returning " << retval;

@@ -63,6 +63,9 @@ class CONTENT_EXPORT RTCVideoEncoder
   void RecordInitEncodeUMA(int32_t init_retval,
                            media::VideoCodecProfile profile);
 
+  // The video codec type, as reported to WebRTC.
+  const webrtc::VideoCodecType video_codec_type_;
+
   // Factory for creating VEAs, shared memory buffers, etc.
   media::GpuVideoAcceleratorFactories* gpu_factories_;
 
