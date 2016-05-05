@@ -8,6 +8,8 @@
 #include "core/dom/DOMURL.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/fileapi/Blob.h"
+#include "core/frame/Deprecation.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/PublicURLManager.h"
 
 namespace blink {
@@ -17,6 +19,9 @@ String URLFileAPI::createObjectURL(ExecutionContext* executionContext, Blob* blo
 {
     DCHECK(blob);
     DCHECK(executionContext);
+
+    if (executionContext->isServiceWorkerGlobalScope())
+        Deprecation::countDeprecation(executionContext, UseCounter::URLMethodCreateObjectURLServiceWorker);
 
     if (blob->isClosed()) {
         exceptionState.throwDOMException(InvalidStateError, String(blob->isFile() ? "File" : "Blob") + " has been closed.");
@@ -29,6 +34,9 @@ String URLFileAPI::createObjectURL(ExecutionContext* executionContext, Blob* blo
 void URLFileAPI::revokeObjectURL(ExecutionContext* executionContext, const String& urlString)
 {
     DCHECK(executionContext);
+
+    if (executionContext->isServiceWorkerGlobalScope())
+        Deprecation::countDeprecation(executionContext, UseCounter::URLMethodRevokeObjectURLServiceWorker);
 
     KURL url(KURL(), urlString);
     executionContext->removeURLFromMemoryCache(url);

@@ -72271,6 +72271,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1336" label="During_Microtask_Print"/>
   <int value="1337" label="During_Microtask_Prompt"/>
   <int value="1338" label="During_Microtask_SyncXHR"/>
+  <int value="1339" label="URLMethodCreateObjectURLServiceWorker"/>
+  <int value="1340" label="URLMethodRevokeObjectURLServiceWorker"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

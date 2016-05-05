@@ -1154,6 +1154,8 @@ public:
         During_Microtask_Print = 1336,
         During_Microtask_Prompt = 1337,
         During_Microtask_SyncXHR = 1338,
+        URLMethodCreateObjectURLServiceWorker = 1339,
+        URLMethodRevokeObjectURLServiceWorker = 1340,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

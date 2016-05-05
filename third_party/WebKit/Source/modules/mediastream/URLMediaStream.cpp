@@ -31,6 +31,8 @@
 #include "modules/mediastream/URLMediaStream.h"
 
 #include "core/dom/DOMURL.h"
+#include "core/frame/Deprecation.h"
+#include "core/frame/UseCounter.h"
 #include "modules/mediastream/MediaStream.h"
 
 namespace blink {
@@ -39,6 +41,9 @@ String URLMediaStream::createObjectURL(ExecutionContext* executionContext, Media
 {
     // Since WebWorkers cannot obtain Stream objects, we should be on the main thread.
     DCHECK(isMainThread());
+
+    if (executionContext && executionContext->isServiceWorkerGlobalScope())
+        Deprecation::countDeprecation(executionContext, UseCounter::URLMethodCreateObjectURLServiceWorker);
 
     if (!executionContext || !stream)
         return String();
