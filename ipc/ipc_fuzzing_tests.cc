@@ -271,14 +271,9 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(FuzzServerClient) {
 class IPCFuzzingTest : public IPCTestBase {
 };
 
-#if defined(OS_ANDROID)
-#define MAYBE_SanityTest DISABLED_SanityTest
-#else
-#define MAYBE_SanityTest SanityTest
-#endif
 // This test makes sure that the FuzzerClientListener and FuzzerServerListener
 // are working properly by generating two well formed IPC calls.
-TEST_F(IPCFuzzingTest, MAYBE_SanityTest) {
+TEST_F(IPCFuzzingTest, SanityTest) {
   Init("FuzzServerClient");
 
   FuzzerClientListener listener;
@@ -301,17 +296,12 @@ TEST_F(IPCFuzzingTest, MAYBE_SanityTest) {
   DestroyChannel();
 }
 
-#if defined(OS_ANDROID)
-#define MAYBE_MsgBadPayloadShort DISABLED_MsgBadPayloadShort
-#else
-#define MAYBE_MsgBadPayloadShort MsgBadPayloadShort
-#endif
 // This test uses a payload that is smaller than expected. This generates an
 // error while unpacking the IPC buffer which in debug trigger an assertion and
 // in release is ignored (!). Right after we generate another valid IPC to make
 // sure framing is working properly.
 #if defined(NDEBUG) && !defined(DCHECK_ALWAYS_ON)
-TEST_F(IPCFuzzingTest, MAYBE_MsgBadPayloadShort) {
+TEST_F(IPCFuzzingTest, MsgBadPayloadShort) {
   Init("FuzzServerClient");
 
   FuzzerClientListener listener;
@@ -335,16 +325,11 @@ TEST_F(IPCFuzzingTest, MAYBE_MsgBadPayloadShort) {
 }
 #endif
 
-#if defined(OS_ANDROID)
-#define MAYBE_MsgBadPayloadArgs DISABLED_MsgBadPayloadArgs
-#else
-#define MAYBE_MsgBadPayloadArgs MsgBadPayloadArgs
-#endif
 // This test uses a payload that has too many arguments, but so the payload size
 // is big enough so the unpacking routine does not generate an error as in the
 // case of MsgBadPayloadShort test. This test does not pinpoint a flaw (per se)
 // as by design we don't carry type information on the IPC message.
-TEST_F(IPCFuzzingTest, MAYBE_MsgBadPayloadArgs) {
+TEST_F(IPCFuzzingTest, MsgBadPayloadArgs) {
   Init("FuzzServerClient");
 
   FuzzerClientListener listener;

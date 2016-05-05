@@ -114,6 +114,15 @@ class IPCChannelPosixTest : public base::MultiProcessTest {
   static const std::string GetConnectionSocketName();
   static const std::string GetChannelDirName();
 
+  bool WaitForExit(base::Process& process, int* exit_code) {
+#if defined(OS_ANDROID)
+    return AndroidWaitForChildExitWithTimeout(
+        process, base::TimeDelta::Max(), exit_code);
+#else
+    return process.WaitForExit(exit_code);
+#endif  // defined(OS_ANDROID)
+  }
+
  protected:
   void SetUp() override;
   void TearDown() override;
@@ -258,12 +267,7 @@ TEST_F(IPCChannelPosixTest, AcceptHangTest) {
   ASSERT_EQ(IPCChannelPosixTestListener::CHANNEL_ERROR, out_listener.status());
 }
 
-#if defined(OS_ANDROID)
-#define MAYBE_AdvancedConnected DISABLED_AdvancedConnected
-#else
-#define MAYBE_AdvancedConnected AdvancedConnected
-#endif
-TEST_F(IPCChannelPosixTest, MAYBE_AdvancedConnected) {
+TEST_F(IPCChannelPosixTest, AdvancedConnected) {
   // Test creating a connection to an external process.
   IPCChannelPosixTestListener listener(false);
   IPC::ChannelHandle chan_handle(GetConnectionSocketName());
@@ -285,19 +289,14 @@ TEST_F(IPCChannelPosixTest, MAYBE_AdvancedConnected) {
   channel->Send(message);
   SpinRunLoop(TestTimeouts::action_timeout());
   int exit_code = 0;
-  EXPECT_TRUE(process.WaitForExit(&exit_code));
+  EXPECT_TRUE(WaitForExit(process, &exit_code));
   EXPECT_EQ(0, exit_code);
   ASSERT_EQ(IPCChannelPosixTestListener::CHANNEL_ERROR, listener.status());
   ASSERT_FALSE(channel->HasAcceptedConnection());
   unlink(chan_handle.name.c_str());
 }
 
-#if defined(OS_ANDROID)
-#define MAYBE_ResetState DISABLED_ResetState
-#else
-#define MAYBE_ResetState ResetState
-#endif
-TEST_F(IPCChannelPosixTest, MAYBE_ResetState) {
+TEST_F(IPCChannelPosixTest, ResetState) {
   // Test creating a connection to an external process. Close the connection,
   // but continue to listen and make sure another external process can connect
   // to us.
@@ -330,7 +329,7 @@ TEST_F(IPCChannelPosixTest, MAYBE_ResetState) {
   SpinRunLoop(TestTimeouts::action_timeout());
   EXPECT_TRUE(process.Terminate(0, false));
   int exit_code = 0;
-  EXPECT_TRUE(process2.WaitForExit(&exit_code));
+  EXPECT_TRUE(WaitForExit(process2, &exit_code));
   EXPECT_EQ(0, exit_code);
   ASSERT_EQ(IPCChannelPosixTestListener::CHANNEL_ERROR, listener.status());
   ASSERT_FALSE(channel->HasAcceptedConnection());
@@ -359,12 +358,7 @@ TEST_F(IPCChannelPosixTest, BadChannelName) {
   EXPECT_FALSE(channel2->Connect());
 }
 
-#if defined(OS_ANDROID)
-#define MAYBE_MultiConnection DISABLED_MultiConnection
-#else
-#define MAYBE_MultiConnection MultiConnection
-#endif
-TEST_F(IPCChannelPosixTest, MAYBE_MultiConnection) {
+TEST_F(IPCChannelPosixTest, MultiConnection) {
   // Test setting up a connection to an external process, and then have
   // another external process attempt to connect to us.
   IPCChannelPosixTestListener listener(false);
@@ -385,7 +379,7 @@ TEST_F(IPCChannelPosixTest, MAYBE_MultiConnection) {
   ASSERT_TRUE(process2.IsValid());
   SpinRunLoop(TestTimeouts::action_max_timeout());
   int exit_code = 0;
-  EXPECT_TRUE(process2.WaitForExit(&exit_code));
+  EXPECT_TRUE(WaitForExit(process2, &exit_code));
   EXPECT_EQ(exit_code, 0);
   ASSERT_EQ(IPCChannelPosixTestListener::DENIED, listener.status());
   ASSERT_TRUE(channel->HasAcceptedConnection());
@@ -394,7 +388,7 @@ TEST_F(IPCChannelPosixTest, MAYBE_MultiConnection) {
                                            IPC::Message::PRIORITY_NORMAL);
   channel->Send(message);
   SpinRunLoop(TestTimeouts::action_timeout());
-  EXPECT_TRUE(process.WaitForExit(&exit_code));
+  EXPECT_TRUE(WaitForExit(process, &exit_code));
   EXPECT_EQ(exit_code, 0);
   ASSERT_EQ(IPCChannelPosixTestListener::CHANNEL_ERROR, listener.status());
   ASSERT_FALSE(channel->HasAcceptedConnection());

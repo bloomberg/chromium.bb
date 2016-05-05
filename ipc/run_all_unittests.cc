@@ -4,6 +4,7 @@
 
 #include "base/bind.h"
 #include "base/test/launcher/unit_test_launcher.h"
+#include "base/test/multiprocess_test.h"
 #include "base/test/test_suite.h"
 #include "build/build_config.h"
 
@@ -14,6 +15,8 @@
 
 int main(int argc, char** argv) {
 #if defined(OS_ANDROID)
+  base::InitAndroidMultiProcessTestHelper(main);
+
   JNIEnv* env = base::android::AttachCurrentThread();
   base::RegisterContentUriTestUtils(env);
 #endif
