@@ -792,17 +792,13 @@ void GraphicsContext::drawHighlightForText(const Font& font, const TextRun& run,
     fillRect(font.selectionRectForText(run, point, h, from, to), backgroundColor);
 }
 
-void GraphicsContext::drawImage(Image* image, const IntRect& r, SkXfermode::Mode op, RespectImageOrientationEnum shouldRespectImageOrientation)
-{
-    if (!image)
-        return;
-    drawImage(image, FloatRect(r), FloatRect(FloatPoint(), FloatSize(image->size())), op, shouldRespectImageOrientation);
-}
-
-void GraphicsContext::drawImage(Image* image, const FloatRect& dest, const FloatRect& src, SkXfermode::Mode op, RespectImageOrientationEnum shouldRespectImageOrientation)
+void GraphicsContext::drawImage(Image* image, const FloatRect& dest, const FloatRect* srcPtr,
+    SkXfermode::Mode op, RespectImageOrientationEnum shouldRespectImageOrientation)
 {
     if (contextDisabled() || !image)
         return;
+
+    const FloatRect src = srcPtr ? *srcPtr : image->rect();
 
     SkPaint imagePaint = immutableState()->fillPaint();
     imagePaint.setXfermodeMode(op);
@@ -843,13 +839,6 @@ void GraphicsContext::drawTiledImage(Image* image, const FloatRect& destRect, co
     image->drawTiled(*this, destRect, srcPoint, tileSize, op, repeatSpacing);
 }
 
-void GraphicsContext::drawTiledImage(Image* image, const IntRect& destRect, const IntPoint& srcPoint, const IntSize& tileSize, SkXfermode::Mode op, const IntSize& repeatSpacing)
-{
-    if (contextDisabled() || !image)
-        return;
-    image->drawTiled(*this, destRect, srcPoint, FloatSize(tileSize), op, FloatSize(repeatSpacing));
-}
-
 void GraphicsContext::drawTiledImage(Image* image, const FloatRect& dest, const FloatRect& srcRect,
     const FloatSize& tileScaleFactor, Image::TileRule hRule, Image::TileRule vRule, SkXfermode::Mode op)
 {
@@ -858,7 +847,7 @@ void GraphicsContext::drawTiledImage(Image* image, const FloatRect& dest, const 
 
     if (hRule == Image::StretchTile && vRule == Image::StretchTile) {
         // Just do a scale.
-        drawImage(image, dest, srcRect, op);
+        drawImage(image, dest, &srcRect, op);
         return;
     }
 

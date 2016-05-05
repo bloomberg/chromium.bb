@@ -160,13 +160,10 @@ public:
     void drawPicture(const SkPicture*);
     void compositePicture(PassRefPtr<SkPicture>, const FloatRect& dest, const FloatRect& src, SkXfermode::Mode);
 
-    void drawImage(Image*, const IntRect&, SkXfermode::Mode = SkXfermode::kSrcOver_Mode, RespectImageOrientationEnum = DoNotRespectImageOrientation);
-    void drawImage(Image*, const FloatRect& destRect, const FloatRect& srcRect, SkXfermode::Mode = SkXfermode::kSrcOver_Mode, RespectImageOrientationEnum = DoNotRespectImageOrientation);
-
+    void drawImage(Image*, const FloatRect& destRect, const FloatRect* srcRect = nullptr,
+        SkXfermode::Mode = SkXfermode::kSrcOver_Mode, RespectImageOrientationEnum = DoNotRespectImageOrientation);
     void drawTiledImage(Image*, const FloatRect& destRect, const FloatPoint& srcPoint, const FloatSize& tileSize,
         SkXfermode::Mode = SkXfermode::kSrcOver_Mode, const FloatSize& repeatSpacing = FloatSize());
-    void drawTiledImage(Image*, const IntRect& destRect, const IntPoint& srcPoint, const IntSize& tileSize,
-        SkXfermode::Mode = SkXfermode::kSrcOver_Mode, const IntSize& repeatSpacing = IntSize());
     void drawTiledImage(Image*, const FloatRect& destRect, const FloatRect& srcRect,
         const FloatSize& tileScaleFactor, Image::TileRule hRule = Image::StretchTile, Image::TileRule vRule = Image::StretchTile,
         SkXfermode::Mode = SkXfermode::kSrcOver_Mode);

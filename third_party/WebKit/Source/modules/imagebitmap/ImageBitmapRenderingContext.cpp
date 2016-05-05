@@ -53,7 +53,7 @@ bool ImageBitmapRenderingContext::paint(GraphicsContext& gc, const IntRect& r)
 
     // With impl-side painting, it is unsafe to use a gpu-backed SkImage
     ASSERT(!m_image->imageForCurrentFrame()->isTextureBacked());
-    gc.drawImage(m_image.get(), r, m_hasAlpha ? SkXfermode::kSrcOver_Mode : SkXfermode::kSrc_Mode);
+    gc.drawImage(m_image.get(), r, nullptr, m_hasAlpha ? SkXfermode::kSrcOver_Mode : SkXfermode::kSrc_Mode);
 
     return true;
 }

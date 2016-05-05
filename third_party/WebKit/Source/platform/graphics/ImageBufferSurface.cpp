@@ -75,7 +75,7 @@ void ImageBufferSurface::draw(GraphicsContext& context, const FloatRect& destRec
         return;
 
     RefPtr<Image> image = StaticBitmapImage::create(snapshot.release());
-    context.drawImage(image.get(), destRect, srcRect, op);
+    context.drawImage(image.get(), destRect, &srcRect, op);
 }
 
 void ImageBufferSurface::flush(FlushReason)

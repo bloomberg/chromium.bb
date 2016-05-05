@@ -122,7 +122,7 @@ static bool paintMediaButton(GraphicsContext& context, const IntRect& rect, Imag
     if (!isEnabled)
         context.beginLayer(kDisabledAlpha);
 
-    context.drawImage(image, drawRect, FloatRect(FloatPoint(), FloatSize(image->size())));
+    context.drawImage(image, drawRect);
 
     if (!isEnabled)
         context.endLayer();

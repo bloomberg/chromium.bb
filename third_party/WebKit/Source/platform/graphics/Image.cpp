@@ -119,7 +119,7 @@ void Image::drawTiled(GraphicsContext& ctxt, const FloatRect& destRect, const Fl
         visibleSrcRect.setY((destRect.y() - oneTileRect.y()) / scale.height());
         visibleSrcRect.setWidth(destRect.width() / scale.width());
         visibleSrcRect.setHeight(destRect.height() / scale.height());
-        ctxt.drawImage(this, destRect, visibleSrcRect, op, DoNotRespectImageOrientation);
+        ctxt.drawImage(this, destRect, &visibleSrcRect, op, DoNotRespectImageOrientation);
         return;
     }
 
