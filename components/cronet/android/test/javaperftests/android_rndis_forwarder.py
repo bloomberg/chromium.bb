@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import atexit
+import logging
 import os
 import re
 import socket
@@ -10,7 +11,9 @@ import struct
 import subprocess
 
 from telemetry.core import platform
+from telemetry.core import util
 from telemetry.internal.platform import android_device
+from telemetry.internal.util import binary_manager
 
 from devil.android import device_errors
 from devil.android import device_utils
@@ -413,8 +416,8 @@ doit &
         'The IP address configuration %s of %s is not unique!\n'
         'Check your /etc/network/interfaces. If this overlap is intended,\n'
         'you might need to use: ip rule add from <device_ip> lookup <table>\n'
-        'or add the interface to a bridge in order to route to this network.'
-        % (host_address, host_iface)
+        'or add the interface to a bridge in order to route to this network.',
+        host_address, host_iface
       )
 
     # Find unused IP address.

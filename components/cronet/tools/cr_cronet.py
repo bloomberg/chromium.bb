@@ -129,7 +129,8 @@ def main():
     if (options.command=='debug'):
       return install(release_arg) or debug(extra_options)
     if (options.command=='build-debug'):
-      return build(out_dir) or install(release_arg) or debug(extra_options)
+      return build(out_dir, test_target) or install(release_arg) or \
+          debug(extra_options)
   else:
     if (options.command=='test'):
       return test_ios(out_dir, extra_options)

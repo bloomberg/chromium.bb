@@ -109,7 +109,9 @@ BENCHMARK_CONFIG = {
 }
 # Add benchmark config to global state for easy access.
 globals().update(BENCHMARK_CONFIG)
-
+# Pylint doesn't really interpret the file, so it won't find the definitions
+# added from BENCHMARK_CONFIG, so suppress the undefined variable warning.
+#pylint: disable=undefined-variable
 
 def GetDevice():
   devices = device_utils.DeviceUtils.HealthyDevices()
@@ -208,7 +210,7 @@ class CronetPerfTestBenchmark(benchmark.Benchmark):
     return CronetPerfTestStorySet(self._device)
 
 
-class QuicServer:
+class QuicServer(object):
 
   def __init__(self, quic_server_doc_root):
     self._process = None
@@ -253,7 +255,7 @@ def GenerateHttpTestResources():
   large_file_name = os.path.join(http_server_doc_root, LARGE_RESOURCE)
   large_file = open(large_file_name, 'wb')
   large_file.write('<html><body>');
-  for i in range(0, 1000000):
+  for _ in range(0, 1000000):
     large_file.write('1234567890');
   large_file.write('</body></html>');
   large_file.close()
