@@ -125,6 +125,60 @@ const media::VideoCaptureSessionId kFakeSessionId = -1;
 
 namespace content {
 
+// This class owns a pair VideoCaptureDevice - VideoCaptureController.
+// VideoCaptureManager owns all such pairs and is responsible for deleting the
+// instances when they are not used any longer.
+class VideoCaptureManager::DeviceEntry {
+ public:
+  DeviceEntry(MediaStreamType stream_type,
+              const std::string& id,
+              std::unique_ptr<VideoCaptureController> controller,
+              const media::VideoCaptureParams& params);
+  ~DeviceEntry();
+
+  const int serial_id;
+  const MediaStreamType stream_type;
+  const std::string id;
+  const media::VideoCaptureParams parameters;
+
+  VideoCaptureController* video_capture_controller() const;
+  media::VideoCaptureDevice* video_capture_device() const;
+
+  void SetVideoCaptureDevice(std::unique_ptr<media::VideoCaptureDevice> device);
+  std::unique_ptr<media::VideoCaptureDevice> ReleaseVideoCaptureDevice();
+
+ private:
+  const std::unique_ptr<VideoCaptureController> video_capture_controller_;
+
+  std::unique_ptr<media::VideoCaptureDevice> video_capture_device_;
+
+  base::ThreadChecker thread_checker_;
+};
+
+// Class used for queuing request for starting a device.
+class VideoCaptureManager::CaptureDeviceStartRequest {
+ public:
+  CaptureDeviceStartRequest(int serial_id,
+                            media::VideoCaptureSessionId session_id,
+                            const media::VideoCaptureParams& params);
+  int serial_id() const { return serial_id_; }
+  media::VideoCaptureSessionId session_id() const { return session_id_; }
+  media::VideoCaptureParams params() const { return params_; }
+
+  // Set to true if the device should be stopped before it has successfully
+  // been started.
+  bool abort_start() const { return abort_start_; }
+  void set_abort_start() { abort_start_ = true; }
+
+ private:
+  const int serial_id_;
+  const media::VideoCaptureSessionId session_id_;
+  const media::VideoCaptureParams params_;
+  // Set to true if the device should be stopped before it has successfully
+  // been started.
+  bool abort_start_;
+};
+
 VideoCaptureManager::DeviceEntry::DeviceEntry(
     MediaStreamType stream_type,
     const std::string& id,
@@ -157,13 +211,13 @@ VideoCaptureManager::DeviceEntry::ReleaseVideoCaptureDevice() {
 }
 
 VideoCaptureController*
-VideoCaptureManager::DeviceEntry::video_capture_controller() {
+VideoCaptureManager::DeviceEntry::video_capture_controller() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return video_capture_controller_.get();
 }
 
 media::VideoCaptureDevice*
-VideoCaptureManager::DeviceEntry::video_capture_device() {
+VideoCaptureManager::DeviceEntry::video_capture_device() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return video_capture_device_.get();
 }

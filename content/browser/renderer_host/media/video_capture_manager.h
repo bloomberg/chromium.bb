@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+  // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -157,8 +157,9 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
     return device_task_runner_;
   }
  private:
-  ~VideoCaptureManager() override;
   class DeviceEntry;
+
+  ~VideoCaptureManager() override;
 
   // Checks to see if |entry| has no clients left on its controller. If so,
   // remove it from the list of devices, and delete it asynchronously. |entry|
@@ -270,11 +271,9 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
 #endif
 
 #if defined(OS_ANDROID)
-  // On Android, we used to stop the video device when the host tab is hidden.
-  // This caused problems on some devices when the device was stopped and
-  // restarted quickly. See http://crbug/582295.  Now instead, the device is
-  // only stopped when Chrome goes to background. When a tab is hidden, it will
-  // not receive video frames but the device is not stopped.
+  // Some devices had troubles when stopped and restarted quickly, so the device
+  // is only stopped when Chrome is sent to background and not when, e.g., a tab
+  // is hidden, see http://crbug.com/582295.
   void OnApplicationStateChange(base::android::ApplicationState state);
   void ReleaseDevices();
   void ResumeDevices();
@@ -290,79 +289,19 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
   MediaStreamProviderListener* listener_;
   media::VideoCaptureSessionId new_capture_session_id_;
 
-  typedef std::map<media::VideoCaptureSessionId, MediaStreamDevice> SessionMap;
   // An entry is kept in this map for every session that has been created via
   // the Open() entry point. The keys are session_id's. This map is used to
   // determine which device to use when StartCaptureForClient() occurs. Used
   // only on the IO thread.
+  typedef std::map<media::VideoCaptureSessionId, MediaStreamDevice> SessionMap;
   SessionMap sessions_;
 
-  // An entry, kept in a map, that owns a VideoCaptureDevice and its associated
-  // VideoCaptureController. VideoCaptureManager owns all VideoCaptureDevices
-  // and VideoCaptureControllers and is responsible for deleting the instances
-  // when they are not used any longer.
-  //
-  // The set of currently started VideoCaptureDevice and VideoCaptureController
-  // objects is only accessed from IO thread.
-  class DeviceEntry {
-   public:
-    DeviceEntry(MediaStreamType stream_type,
-                const std::string& id,
-                std::unique_ptr<VideoCaptureController> controller,
-                const media::VideoCaptureParams& params);
-    ~DeviceEntry();
-
-    const int serial_id;
-    const MediaStreamType stream_type;
-    const std::string id;
-    const media::VideoCaptureParams parameters;
-
-    VideoCaptureController* video_capture_controller();
-    media::VideoCaptureDevice* video_capture_device();
-
-    void SetVideoCaptureDevice(
-        std::unique_ptr<media::VideoCaptureDevice> device);
-    std::unique_ptr<media::VideoCaptureDevice> ReleaseVideoCaptureDevice();
-
-   private:
-    // The controller.
-    std::unique_ptr<VideoCaptureController> video_capture_controller_;
-
-    // The capture device.
-    std::unique_ptr<media::VideoCaptureDevice> video_capture_device_;
-
-    base::ThreadChecker thread_checker_;
-  };
-
+  // Currently opened devices. The device may or may not be started. This member
+  // is only accessed on IO tbhread.
   typedef ScopedVector<DeviceEntry> DeviceEntries;
-  // Currently opened devices. The device may or may not be started.
   DeviceEntries devices_;
 
-  // Class used for queuing request for starting a device.
-  class CaptureDeviceStartRequest {
-   public:
-    CaptureDeviceStartRequest(
-        int serial_id,
-        media::VideoCaptureSessionId session_id,
-        const media::VideoCaptureParams& params);
-    int serial_id() const { return serial_id_;}
-    media::VideoCaptureSessionId session_id() const { return session_id_; }
-    media::VideoCaptureParams params() const { return params_; }
-
-    // Set to true if the device should be stopped before it has successfully
-    // been started.
-    bool abort_start() const { return abort_start_; }
-    void set_abort_start() { abort_start_ = true; }
-
-   private:
-    const int serial_id_;
-    const media::VideoCaptureSessionId session_id_;
-    const media::VideoCaptureParams params_;
-    // Set to true if the device should be stopped before it has successfully
-    // been started.
-    bool abort_start_;
-  };
-
+  class CaptureDeviceStartRequest;
   typedef std::list<CaptureDeviceStartRequest> DeviceStartQueue;
   DeviceStartQueue device_start_queue_;
 
