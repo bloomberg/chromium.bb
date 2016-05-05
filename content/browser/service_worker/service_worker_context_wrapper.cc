@@ -70,6 +70,17 @@ void StartActiveWorkerOnIO(
                           base::Bind(callback, SERVICE_WORKER_ERROR_NOT_FOUND));
 }
 
+void SkipWaitingWorkerOnIO(
+    ServiceWorkerStatusCode status,
+    const scoped_refptr<ServiceWorkerRegistration>& registration) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (status != SERVICE_WORKER_OK || !registration->waiting_version())
+    return;
+
+  registration->waiting_version()->set_skip_waiting(true);
+  registration->ActivateWaitingVersionWhenReady();
+}
+
 }  // namespace
 
 void ServiceWorkerContext::AddExcludedHeadersForFetchEvent(
@@ -289,6 +300,20 @@ void ServiceWorkerContextWrapper::StartServiceWorker(
   context_core_->storage()->FindRegistrationForPattern(
       net::SimplifyUrlForRequest(pattern),
       base::Bind(&StartActiveWorkerOnIO, callback));
+}
+
+void ServiceWorkerContextWrapper::SkipWaitingWorker(const GURL& pattern) {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&ServiceWorkerContextWrapper::SkipWaitingWorker, this,
+                   pattern));
+    return;
+  }
+  if (!context_core_)
+    return;
+  context_core_->storage()->FindRegistrationForPattern(
+      net::SimplifyUrlForRequest(pattern), base::Bind(&SkipWaitingWorkerOnIO));
 }
 
 void ServiceWorkerContextWrapper::SetForceUpdateOnPageLoad(

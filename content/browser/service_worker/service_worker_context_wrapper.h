@@ -172,6 +172,9 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   // be called on the UI thread.
   void StartServiceWorker(const GURL& pattern, const StatusCallback& callback);
 
+  // This function can be called from any thread.
+  void SkipWaitingWorker(const GURL& pattern);
+
   // These methods can be called from any thread.
   void UpdateRegistration(const GURL& pattern);
   void SetForceUpdateOnPageLoad(bool force_update_on_page_load);

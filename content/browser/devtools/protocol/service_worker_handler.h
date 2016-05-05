@@ -54,6 +54,7 @@ class ServiceWorkerHandler : public DevToolsAgentHostClient,
   Response Stop(const std::string& worker_id);
   Response Unregister(const std::string& scope_url);
   Response StartWorker(const std::string& scope_url);
+  Response SkipWaiting(const std::string& scope_url);
   Response StopWorker(const std::string& version_id);
   Response UpdateRegistration(const std::string& scope_url);
   Response InspectWorker(const std::string& version_id);

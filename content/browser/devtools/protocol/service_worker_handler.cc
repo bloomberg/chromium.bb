@@ -426,6 +426,15 @@ Response ServiceWorkerHandler::StartWorker(const std::string& scope_url) {
   return Response::OK();
 }
 
+Response ServiceWorkerHandler::SkipWaiting(const std::string& scope_url) {
+  if (!enabled_)
+    return Response::OK();
+  if (!context_)
+    return CreateContextErrorResponse();
+  context_->SkipWaitingWorker(GURL(scope_url));
+  return Response::OK();
+}
+
 Response ServiceWorkerHandler::StopWorker(const std::string& version_id) {
   if (!enabled_)
     return Response::OK();

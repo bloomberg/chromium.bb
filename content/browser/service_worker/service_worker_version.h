@@ -172,6 +172,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // This returns OK (success) if the worker is already stopped.
   void StopWorker(const StatusCallback& callback);
 
+  // Skips waiting and forces this version to become activated.
+  void SkipWaitingFromDevTools();
+
   // Schedules an update to be run 'soon'.
   void ScheduleUpdate();
 
