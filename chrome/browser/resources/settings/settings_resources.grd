@@ -151,9 +151,6 @@
       <structure name="IDR_SETTINGS_CR_SETTINGS_PAGE_VISIBILITY_JS"
                  file="settings_page/settings_page_visibility.js"
                  type="chrome_html" />
-      <structure name="IDR_SETTINGS_CR_SETTINGS_SECTION_CSS"
-                 file="settings_page/settings_section.css"
-                 type="chrome_html" />
       <structure name="IDR_SETTINGS_CR_SETTINGS_SECTION_HTML"
                  file="settings_page/settings_section.html"
                  type="chrome_html" />

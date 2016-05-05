@@ -1,16 +1,56 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animation-runner-behavior.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-material/paper-material.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/shadow.html">
 
 <dom-module id="settings-section">
-  <link rel="import" type="css" href="settings_section.css">
   <template>
+    <style>
+      :host {
+        display: flex;
+        flex-direction: column;
+        position: relative;
+      }
+
+      #header {
+        margin-bottom: 12px;
+      }
+
+      #header .title {
+        color: rgb(104, 113, 116);  /* Custom color from bettes@ */
+        font-size: 13px;
+        font-weight: 500;
+      }
+
+      #card {
+        @apply(--shadow-elevation-2dp);
+        background-color: white;
+        flex: 1;
+        overflow: hidden;
+      }
+
+      :host(.expanded) {
+        margin-bottom: 0;
+      }
+
+      :host(.expanded) #header {
+        display: none;
+      }
+
+      :host(.frozen) #card {
+        position: fixed;
+        width: 100%;
+      }
+
+      :host(.expanded.frozen) #card {
+        position: relative;
+      }
+    </style>
     <div id="header">
       <div class="title">{{pageTitle}}</div>
     </div>
-    <paper-material id="card" animated>
+    <div id="card">
       <content id="content"></content>
-    </paper-material>
+    </div>
   </template>
   <script src="settings_section.js"></script>
 </dom-module>
