@@ -15,4 +15,8 @@ source_set("win") {
     "//media:media_config",
     "//media:media_implementation",
   ]
+  deps = [
+    "//base",
+    "//media:shared_memory_support",
+  ]
 }
