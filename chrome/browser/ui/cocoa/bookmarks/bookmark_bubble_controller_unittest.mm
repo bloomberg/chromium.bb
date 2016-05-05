@@ -26,6 +26,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
+#include "ui/base/material_design/material_design_controller.h"
 
 using base::ASCIIToUTF16;
 using bookmarks::BookmarkBubbleObserver;
@@ -119,16 +120,22 @@ class BookmarkBubbleControllerTest : public CocoaProfileTest {
 // static
 int BookmarkBubbleControllerTest::edits_;
 
-// Confirm basics about the bubble window (e.g. that it is inside the
-// parent window)
+// Confirm basics about the bubble window (e.g. that its frame fits inside, or
+// almost completely fits inside, its parent window's frame).
 TEST_F(BookmarkBubbleControllerTest, TestBubbleWindow) {
   const BookmarkNode* node = CreateTestBookmark();
   BookmarkBubbleController* controller = ControllerForNode(node);
   EXPECT_TRUE(controller);
   NSWindow* window = [controller window];
   EXPECT_TRUE(window);
-  EXPECT_TRUE(NSContainsRect([browser()->window()->GetNativeWindow() frame],
-                             [window frame]));
+  NSRect browser_window_frame = [browser()->window()->GetNativeWindow() frame];
+  // The metrics have changed slightly under Material Design, so that in this
+  // test case the bookmarks bubble's window frame extendeds slightly beyond its
+  // parent window's frame.
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    browser_window_frame.size.width += 1;
+  }
+  EXPECT_TRUE(NSContainsRect(browser_window_frame, [window frame]));
 }
 
 // Test that we can handle closing the parent window

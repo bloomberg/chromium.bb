@@ -36,7 +36,13 @@ const CGFloat kRightDecorationXOffset = 5.0;
 
 // The amount of padding on either side reserved for drawing
 // decorations.  [Views has |kItemPadding| == 3.]
-const CGFloat kDecorationHorizontalPad = 3.0;
+CGFloat DecorationsHorizontalPad() {
+  const CGFloat kDecorationHorizontalPad = 3.0;
+  const CGFloat kMaterialDecorationHorizontalPad = 4.0;
+  return ui::MaterialDesignController::IsModeMaterial()
+      ? kMaterialDecorationHorizontalPad
+      : kDecorationHorizontalPad;
+}
 
 const ui::NinePartImageIds kPopupBorderImageIds =
     IMAGE_GRID(IDR_OMNIBOX_POPUP_BORDER_AND_SHADOW);
@@ -71,6 +77,7 @@ void CalculatePositionsHelper(
   // The initial padding depends on whether the first visible decoration is
   // a button or not.
   bool is_first_visible_decoration = true;
+  const CGFloat kDecorationHorizontalPad = DecorationsHorizontalPad();
 
   for (size_t i = 0; i < all_decorations.size(); ++i) {
     if (all_decorations[i]->IsVisible()) {
@@ -272,6 +279,7 @@ size_t CalculatePositionsInFrame(
 
   // Determine the left-most extent for the i-beam cursor.
   CGFloat minX = NSMinX(textFrame);
+  const CGFloat kDecorationHorizontalPad = DecorationsHorizontalPad();
   for (size_t index = left_count; index--; ) {
     if (decorations[index]->AcceptsMousePress())
       break;
@@ -430,6 +438,7 @@ size_t CalculatePositionsInFrame(
                             &decorations, &decorationFrames, &workingFrame);
 
   // Draw the decorations.
+  const CGFloat kDecorationHorizontalPad = DecorationsHorizontalPad();
   for (size_t i = 0; i < decorations.size(); ++i) {
     if (decorations[i]) {
       NSRect background_frame = NSInsetRect(
