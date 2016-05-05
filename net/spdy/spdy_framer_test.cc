@@ -3232,6 +3232,39 @@ TEST_P(SpdyFramerTest, CreateContinuationUncompressed) {
   CompareFrame(kDescription, frame, kFrameData, arraysize(kFrameData));
 }
 
+// Test that if we send an unexpected CONTINUATION
+// we signal an error (but don't crash).
+TEST_P(SpdyFramerTest, SendUnexpectedContinuation) {
+  if (!IsHttp2()) {
+    return;
+  }
+
+  testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
+  SpdyFramer framer(spdy_version_);
+  framer.set_visitor(&visitor);
+
+  char kH2FrameData[] = {
+      0x00, 0x00, 0x12,        // Length
+      0x09,                    // Type (CONTINUATION)
+      0x04,                    // Flags (end_headers)
+      0x00, 0x00, 0x00, 0x2a,  // Stream 42
+      0x00, 0x03, 0x62,        // @.b
+      0x61, 0x72, 0x03, 0x66,  // ar.f
+      0x6f, 0x6f, 0x00, 0x03,  // oo@.
+      0x66, 0x6f, 0x6f, 0x03,  // foo.
+      0x62, 0x61, 0x72,        // bar
+  };
+
+  SpdySerializedFrame frame(kH2FrameData, sizeof(kH2FrameData), false);
+
+  // We shouldn't have to read the whole frame before we signal an error.
+  EXPECT_CALL(visitor, OnError(testing::Eq(&framer)));
+  EXPECT_GT(frame.size(), framer.ProcessInput(frame.data(), frame.size()));
+  EXPECT_TRUE(framer.HasError());
+  EXPECT_EQ(SpdyFramer::SPDY_UNEXPECTED_FRAME, framer.error_code())
+      << SpdyFramer::ErrorCodeToString(framer.error_code());
+}
+
 TEST_P(SpdyFramerTest, CreatePushPromiseThenContinuationUncompressed) {
   if (!IsHttp2()) {
     return;
@@ -4172,26 +4205,73 @@ TEST_P(SpdyFramerTest, ReadPushPromiseWithContinuation) {
                   testing::Pair("name", "value")));
 }
 
-TEST_P(SpdyFramerTest, ReadContinuationWithWrongStreamId) {
+// Receiving an unknown frame when a continuation is expected should
+// result in a SPDY_UNEXPECTED_FRAME error
+TEST_P(SpdyFramerTest, ReceiveUnknownMidContinuation) {
   if (!IsHttp2()) {
     return;
   }
 
   const unsigned char kInput[] = {
-    0x00, 0x00, 0x10, 0x01, 0x00,  // HEADERS
-    0x00, 0x00, 0x00, 0x01,  // Stream 1
-    0x00, 0x06, 0x63, 0x6f,
-    0x6f, 0x6b, 0x69, 0x65,
-    0x07, 0x66, 0x6f, 0x6f,
-    0x3d, 0x62, 0x61, 0x72,
+      0x00, 0x00, 0x10,        // Length
+      0x01,                    // Type (HEADERS)
+      0x00,                    // Flags (none, thus expect CONTINUATION)
+      0x00, 0x00, 0x00, 0x01,  // Stream 1
+      0x00, 0x06, 0x63, 0x6f,  // Header block fragment
+      0x6f, 0x6b, 0x69, 0x65,  // Header block fragment
+      0x07, 0x66, 0x6f, 0x6f,  // Header block fragment
+      0x3d, 0x62, 0x61, 0x72,  // Header block fragment
 
-    0x00, 0x00, 0x14, 0x09, 0x00,  // CONTINUATION
-    0x00, 0x00, 0x00, 0x02,  // Stream 2
-    0x00, 0x06, 0x63, 0x6f,
-    0x6f, 0x6b, 0x69, 0x65,
-    0x08, 0x62, 0x61, 0x7a,
-    0x3d, 0x62, 0x69, 0x6e,
-    0x67, 0x00, 0x06, 0x63,
+      0x00, 0x00, 0x14,        // Length
+      0xa9,                    // Type (UNKNOWN)
+      0x00,                    // Flags (none)
+      0x00, 0x00, 0x00, 0x01,  // Stream 1
+      0x00, 0x06, 0x63, 0x6f,  // Payload
+      0x6f, 0x6b, 0x69, 0x65,  // Payload
+      0x08, 0x62, 0x61, 0x7a,  // Payload
+      0x3d, 0x62, 0x69, 0x6e,  // Payload
+      0x67, 0x00, 0x06, 0x63,  // Payload
+  };
+
+  SpdyFramer framer(spdy_version_);
+  TestSpdyVisitor visitor(spdy_version_);
+  // Assume the unknown frame is allowed
+  visitor.on_unknown_frame_result_ = true;
+  framer.set_visitor(&visitor);
+  visitor.SimulateInFramer(kInput, sizeof(kInput));
+
+  EXPECT_EQ(1, visitor.error_count_);
+  EXPECT_EQ(SpdyFramer::SPDY_UNEXPECTED_FRAME, visitor.framer_.error_code())
+      << SpdyFramer::ErrorCodeToString(visitor.framer_.error_code());
+  EXPECT_EQ(1, visitor.headers_frame_count_);
+  EXPECT_EQ(0, visitor.continuation_count_);
+  EXPECT_EQ(0u, visitor.header_buffer_length_);
+}
+
+TEST_P(SpdyFramerTest, ReceiveContinuationOnWrongStream) {
+  if (!IsHttp2()) {
+    return;
+  }
+
+  const unsigned char kInput[] = {
+      0x00, 0x00, 0x10,        // Length
+      0x01,                    // Type (HEADERS)
+      0x00,                    // Flags (none, thus expect CONTINUATION)
+      0x00, 0x00, 0x00, 0x01,  // Stream 1
+      0x00, 0x06, 0x63, 0x6f,  // Header block fragment
+      0x6f, 0x6b, 0x69, 0x65,  // Header block fragment
+      0x07, 0x66, 0x6f, 0x6f,  // Header block fragment
+      0x3d, 0x62, 0x61, 0x72,  // Header block fragment
+
+      0x00, 0x00, 0x14,        // Length
+      0x09,                    // Type (CONTINUATION)
+      0x00,                    // Flags (none)
+      0x00, 0x00, 0x00, 0x02,  // Stream 2
+      0x00, 0x06, 0x63, 0x6f,  // Header block fragment
+      0x6f, 0x6b, 0x69, 0x65,  // Header block fragment
+      0x08, 0x62, 0x61, 0x7a,  // Header block fragment
+      0x3d, 0x62, 0x69, 0x6e,  // Header block fragment
+      0x67, 0x00, 0x06, 0x63,  // Header block fragment
   };
 
   SpdyFramer framer(spdy_version_);
@@ -4200,9 +4280,8 @@ TEST_P(SpdyFramerTest, ReadContinuationWithWrongStreamId) {
   visitor.SimulateInFramer(kInput, sizeof(kInput));
 
   EXPECT_EQ(1, visitor.error_count_);
-  EXPECT_EQ(SpdyFramer::SPDY_INVALID_CONTROL_FRAME,
-            visitor.framer_.error_code())
-      << SpdyFramer::ErrorCodeToString(framer.error_code());
+  EXPECT_EQ(SpdyFramer::SPDY_UNEXPECTED_FRAME, visitor.framer_.error_code())
+      << SpdyFramer::ErrorCodeToString(visitor.framer_.error_code());
   EXPECT_EQ(1, visitor.headers_frame_count_);
   EXPECT_EQ(0, visitor.continuation_count_);
   EXPECT_EQ(0u, visitor.header_buffer_length_);
