@@ -44,8 +44,8 @@ from webkitpy.common.system.executive import ScriptError
 from webkitpy.layout_tests.controllers.test_result_writer import TestResultWriter
 from webkitpy.layout_tests.models import test_failures
 from webkitpy.layout_tests.models.test_expectations import TestExpectations, BASELINE_SUFFIX_LIST, SKIP
-from webkitpy.layout_tests.port import builders
 from webkitpy.layout_tests.port import factory
+from webkitpy.layout_tests.builders import Builders
 from webkitpy.tool.multicommandtool import AbstractDeclarativeCommand
 
 
@@ -103,7 +103,7 @@ class BaseInternalRebaselineCommand(AbstractRebaseliningCommand):
 
     def _baseline_directory(self, builder_name):
         port = self._tool.port_factory.get_from_builder_name(builder_name)
-        override_dir = builders.rebaseline_override_dir(builder_name)
+        override_dir = self._tool.builders.rebaseline_override_dir(builder_name)
         if override_dir:
             return self._tool.filesystem.join(port.layout_tests_dir(), 'platform', override_dir)
         return port.baseline_version_dir()
@@ -345,7 +345,7 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
     # The release builders cycle much faster than the debug ones and cover all the platforms.
     def _release_builders(self):
         release_builders = []
-        for builder_name in builders.all_builder_names():
+        for builder_name in self._tool.builders.all_builder_names():
             if builder_name.find('ASAN') != -1:
                 continue
             port = self._tool.port_factory.get_from_builder_name(builder_name)
@@ -600,7 +600,7 @@ class RebaselineExpectations(AbstractParallelRebaselineCommand):
         return tests_to_rebaseline
 
     def _add_tests_to_rebaseline_for_port(self, port_name):
-        builder_name = builders.builder_name_for_port_name(port_name)
+        builder_name = self._tool.builders.builder_name_for_port_name(port_name)
         if not builder_name:
             return
         tests = self._tests_to_rebaseline(self._tool.port_factory.get(port_name)).items()
@@ -806,7 +806,7 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
         lines_to_remove = {}
 
         for builder_name in self._release_builders():
-            port_name = builders.port_name_for_builder_name(builder_name)
+            port_name = self._tool.builders.port_name_for_builder_name(builder_name)
             port = self._tool.port_factory.get(port_name)
             expectations = TestExpectations(port, include_overrides=True)
             for test in expectations.get_needs_rebaseline_failures():

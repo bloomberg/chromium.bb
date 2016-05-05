@@ -33,8 +33,6 @@ import optparse
 import re
 
 from webkitpy.common.webkit_finder import WebKitFinder
-from webkitpy.layout_tests.port import builders
-
 
 def platform_options(use_globs=False):
     return [
@@ -186,9 +184,9 @@ class PortFactory(object):
 
         If platform is not specified, we will glob-match all ports"""
         platform = platform or '*'
-        return fnmatch.filter(builders.all_port_names(), platform)
+        return fnmatch.filter(self._host.builders.all_port_names(), platform)
 
     def get_from_builder_name(self, builder_name):
-        port_name = builders.port_name_for_builder_name(builder_name)
+        port_name = self._host.builders.port_name_for_builder_name(builder_name)
         assert port_name, "unrecognized builder name '%s'" % builder_name
         return self.get(port_name, _builder_options(builder_name))

@@ -28,7 +28,7 @@
 
 import unittest
 
-import builders
+from builders import Builders
 
 
 class BuildersTest(unittest.TestCase):
@@ -39,5 +39,6 @@ class BuildersTest(unittest.TestCase):
             'Mac 10.6 (dbg)(1)': 'Mac_10_6__dbg__1_',
             '(.) ': '____',
         }
+        builders = Builders()
         for name, expected in tests.items():
             self.assertEqual(expected, builders.builder_path_from_name(name))

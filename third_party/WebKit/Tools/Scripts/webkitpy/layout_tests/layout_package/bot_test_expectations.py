@@ -35,7 +35,7 @@ import os.path
 import urllib
 import urllib2
 
-from webkitpy.layout_tests.port import builders
+from webkitpy.layout_tests.builders import Builders
 from webkitpy.layout_tests.models.test_expectations import TestExpectations, PASS
 from webkitpy.layout_tests.models.test_expectations import TestExpectationLine
 
@@ -108,8 +108,11 @@ class ResultsJSON(object):
 class BotTestExpectationsFactory(object):
     RESULTS_URL_PREFIX = 'http://test-results.appspot.com/testfile?master=ChromiumWebkit&testtype=webkit_tests&name=results-small.json&builder='
 
+    def __init__(self, builders):
+        self.builders = builders
+
     def _results_json_for_port(self, port_name, builder_category):
-        builder = builders.builder_name_for_port_name(port_name)
+        builder = self.builders.builder_name_for_port_name(port_name)
         if not builder:
             return None
         return self._results_json_for_builder(builder)
@@ -132,13 +135,13 @@ class BotTestExpectationsFactory(object):
         results_json = self._results_json_for_port(port_name, builder_category)
         if not results_json:
             return None
-        return BotTestExpectations(results_json)
+        return BotTestExpectations(results_json, self.builders)
 
     def expectations_for_builder(self, builder):
         results_json = self._results_json_for_builder(builder)
         if not results_json:
             return None
-        return BotTestExpectations(results_json)
+        return BotTestExpectations(results_json, self.builders)
 
 
 class BotTestExpectations(object):
@@ -150,7 +153,7 @@ class BotTestExpectations(object):
     NON_RESULT_TYPES = ['S', 'X']  # SLOW, SKIP
 
     # specifiers arg is used in unittests to avoid the static dependency on builders.
-    def __init__(self, results_json, specifiers=None):
+    def __init__(self, results_json, builders, specifiers=None):
         self.results_json = results_json
         self.specifiers = specifiers or set(builders.specifiers_for_builder(results_json.builder_name))
 

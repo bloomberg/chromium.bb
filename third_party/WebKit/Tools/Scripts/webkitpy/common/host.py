@@ -35,6 +35,7 @@ from webkitpy.common.checkout.scm.detection import SCMDetector
 from webkitpy.common.memoized import memoized
 from webkitpy.common.net import buildbot, web
 from webkitpy.common.system.systemhost import SystemHost
+from webkitpy.layout_tests.builders import Builders
 from webkitpy.layout_tests.port.factory import PortFactory
 
 
@@ -59,6 +60,8 @@ class Host(SystemHost):
         self.port_factory = PortFactory(self)
 
         self._engage_awesome_locale_hacks()
+
+        self.builders = Builders()
 
     # We call this from the Host constructor, as it's one of the
     # earliest calls made for all webkitpy-based programs.

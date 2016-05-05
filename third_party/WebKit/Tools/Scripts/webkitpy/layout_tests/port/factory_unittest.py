@@ -29,7 +29,7 @@
 import unittest
 
 from webkitpy.tool.mocktool import MockOptions
-from webkitpy.common.system.systemhost_mock import MockSystemHost
+from webkitpy.common.host_mock import MockHost
 from webkitpy.common.webkit_finder import WebKitFinder
 
 from webkitpy.layout_tests.port import android
@@ -49,7 +49,7 @@ class FactoryTest(unittest.TestCase):
         self.webkit_options = MockOptions(pixel_tests=False)
 
     def assert_port(self, port_name=None, os_name=None, os_version=None, options=None, cls=None):
-        host = MockSystemHost(os_name=os_name, os_version=os_version)
+        host = MockHost(os_name=os_name, os_version=os_version)
         port = factory.PortFactory(host).get(port_name, options=options)
         self.assertIsInstance(port, cls)
 
@@ -71,17 +71,17 @@ class FactoryTest(unittest.TestCase):
                          cls=win.WinPort)
 
     def test_unknown_specified(self):
-        self.assertRaises(NotImplementedError, factory.PortFactory(MockSystemHost()).get, port_name='unknown')
+        self.assertRaises(NotImplementedError, factory.PortFactory(MockHost()).get, port_name='unknown')
 
     def test_unknown_default(self):
-        self.assertRaises(NotImplementedError, factory.PortFactory(MockSystemHost(os_name='vms')).get)
+        self.assertRaises(NotImplementedError, factory.PortFactory(MockHost(os_name='vms')).get)
 
     def test_get_from_builder_name(self):
-        self.assertEqual(factory.PortFactory(MockSystemHost()).get_from_builder_name('WebKit Mac10.11').name(),
+        self.assertEqual(factory.PortFactory(MockHost()).get_from_builder_name('WebKit Mac10.11').name(),
                          'mac-mac10.11')
 
     def get_port(self, target=None, configuration=None, files=None):
-        host = MockSystemHost()
+        host = MockHost()
         wkf = WebKitFinder(host.filesystem)
         files = files or {}
         for path, contents in files.items():

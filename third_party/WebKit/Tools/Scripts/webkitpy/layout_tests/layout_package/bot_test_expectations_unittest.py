@@ -30,7 +30,16 @@ import unittest
 
 from webkitpy.layout_tests.layout_package import bot_test_expectations
 from webkitpy.layout_tests.models import test_expectations
-from webkitpy.layout_tests.port import builders
+from webkitpy.layout_tests.builders import Builders
+
+
+class FakeBuilders(Builders):
+
+    def __init__(self):
+        super(FakeBuilders, self).__init__()
+        self._exact_matches = {
+            "Dummy builder name": {"port_name": "dummy-port", "specifiers": []},
+        }
 
 
 class BotTestExpectationsFactoryTest(unittest.TestCase):
@@ -39,32 +48,16 @@ class BotTestExpectationsFactoryTest(unittest.TestCase):
         return bot_test_expectations.ResultsJSON(builder, 'Dummy content')
 
     def test_expectations_for_builder(self):
-        factory = bot_test_expectations.BotTestExpectationsFactory()
+        factory = bot_test_expectations.BotTestExpectationsFactory(FakeBuilders())
         factory._results_json_for_builder = self.fake_results_json_for_builder
 
-        old_builders = builders._exact_matches
-        builders._exact_matches = {
-            "Dummy builder name": {"port_name": "dummy-port", "specifiers": []},
-        }
-
-        try:
-            self.assertIsNotNone(factory.expectations_for_builder('Dummy builder name'))
-        finally:
-            builders._exact_matches = old_builders
+        self.assertIsNotNone(factory.expectations_for_builder('Dummy builder name'))
 
     def test_expectations_for_port(self):
-        factory = bot_test_expectations.BotTestExpectationsFactory()
+        factory = bot_test_expectations.BotTestExpectationsFactory(FakeBuilders())
         factory._results_json_for_builder = self.fake_results_json_for_builder
 
-        old_builders = builders._exact_matches
-        builders._exact_matches = {
-            "Dummy builder name": {"port_name": "dummy-port", "specifiers": []},
-        }
-
-        try:
-            self.assertIsNotNone(factory.expectations_for_port('dummy-port'))
-        finally:
-            builders._exact_matches = old_builders
+        self.assertIsNotNone(factory.expectations_for_port('dummy-port'))
 
 
 class BotTestExpectationsTest(unittest.TestCase):
@@ -77,7 +70,7 @@ class BotTestExpectationsTest(unittest.TestCase):
 
     def _assert_is_flaky(self, results_string, should_be_flaky, only_ignore_very_flaky, expected=None):
         results_json = self._results_json_from_test_data({})
-        expectations = bot_test_expectations.BotTestExpectations(results_json, set('test'))
+        expectations = bot_test_expectations.BotTestExpectations(results_json, Builders(), set('test'))
 
         results_entry = self._results_from_string(results_string)
         if expected:
@@ -120,12 +113,12 @@ class BotTestExpectationsTest(unittest.TestCase):
 
     def _assert_expectations(self, test_data, expectations_string, only_ignore_very_flaky):
         results_json = self._results_json_from_test_data(test_data)
-        expectations = bot_test_expectations.BotTestExpectations(results_json, set('test'))
+        expectations = bot_test_expectations.BotTestExpectations(results_json, Builders(), set('test'))
         self.assertEqual(expectations.flakes_by_path(only_ignore_very_flaky), expectations_string)
 
     def _assert_unexpected_results(self, test_data, expectations_string):
         results_json = self._results_json_from_test_data(test_data)
-        expectations = bot_test_expectations.BotTestExpectations(results_json, set('test'))
+        expectations = bot_test_expectations.BotTestExpectations(results_json, Builders(), set('test'))
         self.assertEqual(expectations.unexpected_results_by_path(), expectations_string)
 
     def test_basic(self):

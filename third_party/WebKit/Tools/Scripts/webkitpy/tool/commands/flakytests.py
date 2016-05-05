@@ -32,7 +32,6 @@ import optparse
 from webkitpy.tool.multicommandtool import AbstractDeclarativeCommand
 from webkitpy.layout_tests.layout_package.bot_test_expectations import BotTestExpectationsFactory
 from webkitpy.layout_tests.models.test_expectations import TestExpectationParser, TestExpectationsModel, TestExpectations
-from webkitpy.layout_tests.port import builders
 from webkitpy.common.net import sheriff_calendar
 
 
@@ -107,8 +106,8 @@ Flakiness dashboard: %s
         return final_model._test_to_expectation_line.values()
 
     def execute(self, options, args, tool):
-        factory = self.expectations_factory()
-        lines = self._collect_expectation_lines(builders.all_builder_names(), factory)
+        factory = self.expectations_factory(tool.builders)
+        lines = self._collect_expectation_lines(tool.builders.all_builder_names(), factory)
         lines.sort(key=lambda line: line.path)
 
         port = tool.port_factory.get()

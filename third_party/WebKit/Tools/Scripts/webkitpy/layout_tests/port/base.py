@@ -1307,7 +1307,7 @@ class Port(object):
 
         full_port_name = self.determine_full_port_name(self.host, self._options, self.port_name)
         builder_category = self.get_option('ignore_builder_category', 'layout')
-        factory = BotTestExpectationsFactory()
+        factory = BotTestExpectationsFactory(self.host.builders)
         # FIXME: This only grabs release builder's flakiness data. If we're running debug,
         # when we should grab the debug builder's data.
         expectations = factory.expectations_for_port(full_port_name, builder_category)
