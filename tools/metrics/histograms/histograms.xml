@@ -43501,6 +43501,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="RequestAutocomplete.DismissalState"
     enum="AutofillDialogDismissalState">
+  <obsolete>
+    Deprecated as of 5/5/2016.
+  </obsolete>
   <owner>estade@chromium.org</owner>
   <summary>
     The state of the requestAutocomplete() dialog when it was dismissed.
@@ -43509,6 +43512,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="RequestAutocomplete.InitialUserState"
     enum="AutofillDialogInitialUserState">
+  <obsolete>
+    Deprecated as of 5/5/2016.
+  </obsolete>
   <owner>estade@chromium.org</owner>
   <summary>
     The initial state of a user that's interacting with a freshly shown
@@ -43518,6 +43524,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="RequestAutocomplete.PopupInDialog"
     enum="AutofillDialogPopupEvent">
+  <obsolete>
+    Deprecated as of 5/5/2016.
+  </obsolete>
   <owner>estade@chromium.org</owner>
   <summary>
     User interactions with the Autofill popup shown while filling an
@@ -43526,6 +43535,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="RequestAutocomplete.Security" enum="AutofillDialogSecurity">
+  <obsolete>
+    Deprecated as of 5/5/2016.
+  </obsolete>
   <owner>estade@chromium.org</owner>
   <summary>
     Measures the frequency of security warnings and errors in the
@@ -43534,6 +43546,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="RequestAutocomplete.UiDuration" units="ms">
+  <obsolete>
+    Deprecated as of 5/5/2016.
+  </obsolete>
   <owner>estade@chromium.org</owner>
   <summary>
     Measures the duration for which an requestAutocomplete() dialog was shown.
@@ -43541,6 +43556,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="RequestAutocomplete.UiDuration.Cancel" units="ms">
+  <obsolete>
+    Deprecated as of 5/5/2016.
+  </obsolete>
   <owner>estade@chromium.org</owner>
   <summary>
     Measures the duration for which an requestAutocomplete() dialog was shown,
@@ -43549,6 +43567,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="RequestAutocomplete.UiDuration.Submit" units="ms">
+  <obsolete>
+    Deprecated as of 5/5/2016.
+  </obsolete>
   <owner>estade@chromium.org</owner>
   <summary>
     Measures the duration for which an requestAutocomplete() dialog was shown,
@@ -43557,6 +43578,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="RequestAutocomplete.UiEvents" enum="AutofillDialogUiEvents">
+  <obsolete>
+    Deprecated as of 5/5/2016.
+  </obsolete>
   <owner>estade@chromium.org</owner>
   <summary>
     Measures how users are interacting with the requestAutocomplete() dialog UI.
@@ -43564,6 +43588,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="RequestAutocomplete.UiLatencyToShow" units="ms">
+  <obsolete>
+    Deprecated as of 5/5/2016.
+  </obsolete>
   <owner>estade@chromium.org</owner>
   <summary>
     Measures the duration of time it takes for the requestAutocomplete() UI to
@@ -43572,6 +43599,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="RequestAutocomplete.WalletErrors" enum="WalletErrors">
+  <obsolete>
+    Deprecated as of 5/5/2016.
+  </obsolete>
   <owner>estade@chromium.org</owner>
   <summary>
     Measures the frequency of errors in communicating with the Google Online
@@ -43581,6 +43611,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="RequestAutocomplete.WalletRequiredActions"
     enum="WalletRequiredActions">
+  <obsolete>
+    Deprecated as of 5/5/2016.
+  </obsolete>
   <owner>estade@chromium.org</owner>
   <summary>
     Measures the frequency of required user actions returned by the Google
