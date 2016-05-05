@@ -2605,15 +2605,4 @@ void LayoutBlock::checkPositionedObjectsNeedLayout()
 
 #endif
 
-#ifndef NDEBUG
-
-void LayoutBlock::showLineTreeAndMark(const InlineBox* markedBox1, const char* markedLabel1, const InlineBox* markedBox2, const char* markedLabel2, const LayoutObject* obj) const
-{
-    showLayoutObject();
-    for (const RootInlineBox* root = firstRootBox(); root; root = root->nextRootBox())
-        root->showLineTreeAndMark(markedBox1, markedLabel1, markedBox2, markedLabel2, obj, 1);
-}
-
-#endif
-
 } // namespace blink

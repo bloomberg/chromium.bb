@@ -289,6 +289,10 @@ public:
     void simplifiedNormalFlowInlineLayout();
     bool recalcInlineChildrenOverflowAfterStyleChange();
 
+#ifndef NDEBUG
+    void showLineTreeAndMark(const InlineBox* = nullptr, const char* = nullptr, const InlineBox* = nullptr, const char* = nullptr, const LayoutObject* = nullptr) const;
+#endif
+
 protected:
     void rebuildFloatsFromIntruding();
     void layoutInlineChildren(bool relayoutChildren, LayoutUnit& paintInvalidationLogicalTop, LayoutUnit& paintInvalidationLogicalBottom, LayoutUnit afterEdge);

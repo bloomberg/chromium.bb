@@ -1657,8 +1657,10 @@ void LayoutObject::showLayoutTreeForThis() const
 
 void LayoutObject::showLineTreeForThis() const
 {
-    if (containingBlock())
-        containingBlock()->showLineTreeAndMark(0, 0, 0, 0, this);
+    if (LayoutBlock* cb = containingBlock()) {
+        if (cb->isLayoutBlockFlow())
+            toLayoutBlockFlow(cb)->showLineTreeAndMark(nullptr, nullptr, nullptr, nullptr, this);
+    }
 }
 
 void LayoutObject::showLayoutObject() const

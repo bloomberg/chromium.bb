@@ -256,9 +256,6 @@ public:
 #if ENABLE(ASSERT)
     void checkPositionedObjectsNeedLayout();
 #endif
-#ifndef NDEBUG
-    void showLineTreeAndMark(const InlineBox* = nullptr, const char* = nullptr, const InlineBox* = nullptr, const char* = nullptr, const LayoutObject* = nullptr) const;
-#endif
 
 protected:
     bool recalcNormalFlowChildOverflowIfNeeded(LayoutObject*);
