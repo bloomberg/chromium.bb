@@ -716,6 +716,7 @@ class GPU_EXPORT TextureManager : public base::trace_event::MemoryDumpProvider {
                  GLsizei max_cube_map_texture_size,
                  GLsizei max_rectangle_texture_size,
                  GLsizei max_3d_texture_size,
+                 GLsizei max_array_texture_layers,
                  bool use_default_textures);
   ~TextureManager() override;
 
@@ -759,6 +760,10 @@ class GPU_EXPORT TextureManager : public base::trace_event::MemoryDumpProvider {
       default:
         return max_cube_map_texture_size_;
     }
+  }
+
+  GLsizei max_array_texture_layers() const {
+    return max_array_texture_layers_;
   }
 
   // Returns the maxium number of levels a texture of the given size can have.
@@ -1111,6 +1116,7 @@ class GPU_EXPORT TextureManager : public base::trace_event::MemoryDumpProvider {
   GLsizei max_cube_map_texture_size_;
   GLsizei max_rectangle_texture_size_;
   GLsizei max_3d_texture_size_;
+  GLsizei max_array_texture_layers_;
   GLint max_levels_;
   GLint max_cube_map_levels_;
   GLint max_3d_levels_;

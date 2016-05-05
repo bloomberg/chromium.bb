@@ -79,6 +79,7 @@ const GLint TestHelper::kMaxTextureSize;
 const GLint TestHelper::kMaxCubeMapTextureSize;
 const GLint TestHelper::kMaxRectangleTextureSize;
 const GLint TestHelper::kMax3DTextureSize;
+const GLint TestHelper::kMaxArrayTextureLayers;
 const GLint TestHelper::kNumVertexAttribs;
 const GLint TestHelper::kNumTextureUnits;
 const GLint TestHelper::kMaxTextureImageUnits;
@@ -388,6 +389,11 @@ void TestHelper::SetupContextGroupInitExpectations(
   if (gl_info.IsES3Capable()) {
     EXPECT_CALL(*gl, GetIntegerv(GL_MAX_3D_TEXTURE_SIZE, _))
         .WillOnce(SetArgumentPointee<1>(kMax3DTextureSize))
+        .RetiresOnSaturation();
+  }
+  if (gl_info.IsES3Capable()) {
+    EXPECT_CALL(*gl, GetIntegerv(GL_MAX_ARRAY_TEXTURE_LAYERS, _))
+        .WillOnce(SetArgumentPointee<1>(kMaxArrayTextureLayers))
         .RetiresOnSaturation();
   }
   if (strstr(extensions, "GL_ARB_texture_rectangle")) {

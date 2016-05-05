@@ -1705,6 +1705,7 @@ TextureManager::TextureManager(MemoryTracker* memory_tracker,
                                GLint max_cube_map_texture_size,
                                GLint max_rectangle_texture_size,
                                GLint max_3d_texture_size,
+                               GLint max_array_texture_layers,
                                bool use_default_textures)
     : memory_type_tracker_(new MemoryTypeTracker(memory_tracker)),
       memory_tracker_(memory_tracker),
@@ -1714,14 +1715,15 @@ TextureManager::TextureManager(MemoryTracker* memory_tracker,
       max_cube_map_texture_size_(max_cube_map_texture_size),
       max_rectangle_texture_size_(max_rectangle_texture_size),
       max_3d_texture_size_(max_3d_texture_size),
+      max_array_texture_layers_(max_array_texture_layers),
       max_levels_(ComputeMipMapCount(GL_TEXTURE_2D,
                                      max_texture_size,
                                      max_texture_size,
-                                     max_texture_size)),
+                                     0)),
       max_cube_map_levels_(ComputeMipMapCount(GL_TEXTURE_CUBE_MAP,
                                               max_cube_map_texture_size,
                                               max_cube_map_texture_size,
-                                              max_cube_map_texture_size)),
+                                              0)),
       max_3d_levels_(ComputeMipMapCount(GL_TEXTURE_3D,
                                         max_3d_texture_size,
                                         max_3d_texture_size,
@@ -1841,15 +1843,17 @@ scoped_refptr<TextureRef>
 
 bool TextureManager::ValidForTarget(
     GLenum target, GLint level, GLsizei width, GLsizei height, GLsizei depth) {
+  if (level < 0 || level >= MaxLevelsForTarget(target))
+    return false;
   GLsizei max_size = MaxSizeForTarget(target) >> level;
-  return level >= 0 &&
-         width >= 0 &&
+  GLsizei max_depth =
+      (target == GL_TEXTURE_2D_ARRAY ? max_array_texture_layers() : max_size);
+  return width >= 0 &&
          height >= 0 &&
          depth >= 0 &&
-         level < MaxLevelsForTarget(target) &&
          width <= max_size &&
          height <= max_size &&
-         depth <= max_size &&
+         depth <= max_depth &&
          (level == 0 || feature_info_->feature_flags().npot_ok ||
           (!GLES2Util::IsNPOT(width) &&
            !GLES2Util::IsNPOT(height) &&
