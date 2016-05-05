@@ -50,6 +50,14 @@ class CrosGenerateOsReleaseTest(cros_test_lib.TempDirTestCase):
     osutils.WriteFile(os.path.join(self.osreleased, "TEST1"), "hello")
     osutils.WriteFile(self.osrelease, "TEST2=bonjour")
 
-    cros_generate_os_release.GenerateOsRelease(self.tempdir)
-    self.assertEquals("TEST1=hello\nTEST2=bonjour\n",
-                      osutils.ReadFile(self.osrelease))
+    default_params = {"TEST1": "hello2",
+                      "TEST3": "hola"}
+
+    cros_generate_os_release.GenerateOsRelease(self.tempdir,
+                                               default_params=default_params)
+    output = osutils.ReadFile(self.osrelease).splitlines()
+    output.sort()
+    self.assertEquals(["TEST1=hello",
+                       "TEST2=bonjour",
+                       "TEST3=hola"],
+                      output)
