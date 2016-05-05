@@ -374,11 +374,12 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
   // Instantiates a CookieMonster, adds multiple cookies (to http_www_google_)
   // with priorities specified by |coded_priority_str|, and tests priority-aware
   // domain cookie eviction.
-  // |coded_priority_str| specifies a run-length-encoded string of priorities.
-  // Example: "2M 3L M 4H" means "MMLLLMHHHH", and speicifies sequential (i.e.,
-  // from least- to most-recently accessed) insertion of 2 medium-priority
-  // cookies, 3 low-priority cookies, 1 medium-priority cookie, and 4
-  // high-priority cookies.
+  //
+  // Example: |coded_priority_string| of "2MN 3LS MN 4HN" specifies sequential
+  // (i.e., from least- to most-recently accessed) insertion of 2
+  // medium-priority non-secure cookies, 3 low-priority secure cookies, 1
+  // medium-priority non-secure cookie, and 4 high-priority non-secure cookies.
+  //
   // Within each priority, only the least-accessed cookies should be evicted.
   // Thus, to describe expected suriving cookies, it suffices to specify the
   // expected population of surviving cookies per priority, i.e.,
@@ -387,42 +388,55 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
                               const std::string& coded_priority_str,
                               size_t expected_low_count,
                               size_t expected_medium_count,
-                              size_t expected_high_count) {
+                              size_t expected_high_count,
+                              size_t expected_nonsecure,
+                              size_t expected_secure) {
     SCOPED_TRACE(coded_priority_str);
     this->DeleteAll(cm);
     int next_cookie_id = 0;
-    std::vector<CookiePriority> priority_list;
-    std::vector<int> id_list[3];  // Indexed by CookiePriority.
+    // A list of cookie IDs, indexed by secure status, then by priority.
+    std::vector<int> id_list[2][3];
+    // A list of all the cookies stored, along with their properties.
+    std::vector<std::pair<bool, CookiePriority>> cookie_data;
 
     // Parse |coded_priority_str| and add cookies.
     for (const std::string& token :
          base::SplitString(coded_priority_str, " ", base::TRIM_WHITESPACE,
                            base::SPLIT_WANT_ALL)) {
       DCHECK(!token.empty());
-      // Take last character as priority.
-      CookiePriority priority = CharToPriority(token.back());
-      std::string priority_str = CookiePriorityToString(priority);
-      // The rest of the string (possibly empty) specifies repetition.
+
+      bool is_secure = token[token.size() - 1] == 'S';
+
+      // The second-to-last character is the priority. Grab and discard it.
+      CookiePriority priority = CharToPriority(token[token.size() - 2]);
+
+      // Discard the security status and priority tokens. The rest of the string
+      // (possibly empty) specifies repetition.
       int rep = 1;
       if (!token.empty()) {
         bool result = base::StringToInt(
-            base::StringPiece(token.begin(), token.end() - 1), &rep);
+            base::StringPiece(token.begin(), token.end() - 2), &rep);
         DCHECK(result);
       }
       for (; rep > 0; --rep, ++next_cookie_id) {
-        std::string cookie = base::StringPrintf(
-            "a%d=b;priority=%s", next_cookie_id, priority_str.c_str());
-        EXPECT_TRUE(SetCookie(cm, http_www_google_.url(), cookie));
-        priority_list.push_back(priority);
-        id_list[priority].push_back(next_cookie_id);
+        std::string cookie =
+            base::StringPrintf("a%d=b;priority=%s;%s", next_cookie_id,
+                               CookiePriorityToString(priority).c_str(),
+                               is_secure ? "secure" : "");
+        EXPECT_TRUE(SetCookie(cm, https_www_google_.url(), cookie));
+        cookie_data.push_back(std::make_pair(is_secure, priority));
+        id_list[is_secure][priority].push_back(next_cookie_id);
       }
     }
 
-    int num_cookies = static_cast<int>(priority_list.size());
-    std::vector<int> surviving_id_list[3];  // Indexed by CookiePriority.
+    int num_cookies = static_cast<int>(cookie_data.size());
+    // A list of cookie IDs, indexed by secure status, then by priority.
+    std::vector<int> surviving_id_list[2][3];
 
     // Parse the list of cookies
-    std::string cookie_str = this->GetCookies(cm, http_www_google_.url());
+    std::string cookie_str = this->GetCookies(cm, https_www_google_.url());
+    size_t num_nonsecure = 0;
+    size_t num_secure = 0;
     for (const std::string& token : base::SplitString(
              cookie_str, ";", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
       // Assuming *it is "a#=b", so extract and parse "#" portion.
@@ -432,22 +446,40 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
       DCHECK(result);
       DCHECK_GE(id, 0);
       DCHECK_LT(id, num_cookies);
-      surviving_id_list[priority_list[id]].push_back(id);
+      surviving_id_list[cookie_data[id].first][cookie_data[id].second]
+          .push_back(id);
+      if (cookie_data[id].first)
+        num_secure += 1;
+      else
+        num_nonsecure += 1;
     }
+
+    EXPECT_EQ(expected_nonsecure, num_nonsecure);
+    EXPECT_EQ(expected_secure, num_secure);
 
     // Validate each priority.
     size_t expected_count[3] = {
         expected_low_count, expected_medium_count, expected_high_count};
     for (int i = 0; i < 3; ++i) {
-      DCHECK_LE(surviving_id_list[i].size(), id_list[i].size());
-      EXPECT_EQ(expected_count[i], surviving_id_list[i].size());
+      size_t num_for_priority =
+          surviving_id_list[0][i].size() + surviving_id_list[1][i].size();
+      EXPECT_EQ(expected_count[i], num_for_priority);
       // Verify that the remaining cookies are the most recent among those
       // with the same priorities.
-      if (expected_count[i] == surviving_id_list[i].size()) {
-        std::sort(surviving_id_list[i].begin(), surviving_id_list[i].end());
-        EXPECT_TRUE(std::equal(surviving_id_list[i].begin(),
-                               surviving_id_list[i].end(),
-                               id_list[i].end() - expected_count[i]));
+      if (expected_count[i] == num_for_priority) {
+        // Non-secure:
+        std::sort(surviving_id_list[0][i].begin(),
+                  surviving_id_list[0][i].end());
+        EXPECT_TRUE(std::equal(
+            surviving_id_list[0][i].begin(), surviving_id_list[0][i].end(),
+            id_list[0][i].end() - surviving_id_list[0][i].size()));
+
+        // Secure:
+        std::sort(surviving_id_list[1][i].begin(),
+                  surviving_id_list[1][i].end());
+        EXPECT_TRUE(std::equal(
+            surviving_id_list[1][i].begin(), surviving_id_list[1][i].end(),
+            id_list[1][i].end() - surviving_id_list[1][i].size()));
       }
     }
   }
@@ -514,54 +546,197 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
     EXPECT_EQ(expected_non_secure_cookies, total_non_secure_cookies);
   }
 
-  void TestPriorityAwareGarbageCollectHelper() {
+  void TestPriorityAwareGarbageCollectHelperNonSecure() {
     // Hard-coding limits in the test, but use DCHECK_EQ to enforce constraint.
     DCHECK_EQ(180U, CookieMonster::kDomainMaxCookies);
     DCHECK_EQ(150U, CookieMonster::kDomainMaxCookies -
                         CookieMonster::kDomainPurgeCookies);
-    DCHECK_EQ(30U, CookieMonster::kDomainCookiesQuotaLow);
-    DCHECK_EQ(50U, CookieMonster::kDomainCookiesQuotaMedium);
-    DCHECK_EQ(70U, CookieMonster::kDomainCookiesQuotaHigh);
+
+    std::unique_ptr<CookieMonster> cm(new CookieMonster(NULL, NULL));
+
+    // Each test case adds 181 cookies, so 31 cookies are evicted.
+    // Cookie same priority, repeated for each priority.
+    TestPriorityCookieCase(cm.get(), "181LN", 150U, 0U, 0U, 150U, 0U);
+    TestPriorityCookieCase(cm.get(), "181MN", 0U, 150U, 0U, 150U, 0U);
+    TestPriorityCookieCase(cm.get(), "181HN", 0U, 0U, 150U, 150U, 0U);
+
+    // Pairwise scenarios.
+    // Round 1 => none; round2 => 31M; round 3 => none.
+    TestPriorityCookieCase(cm.get(), "10HN 171MN", 0U, 140U, 10U, 150U, 0U);
+    // Round 1 => 10L; round2 => 21M; round 3 => none.
+    TestPriorityCookieCase(cm.get(), "141MN 40LN", 30U, 120U, 0U, 150U, 0U);
+    // Round 1 => none; round2 => none; round 3 => 31H.
+    TestPriorityCookieCase(cm.get(), "101HN 80MN", 0U, 80U, 70U, 150U, 0U);
+
+    // For {low, medium} priorities right on quota, different orders.
+    // Round 1 => 1L; round 2 => none, round3 => 30L.
+    TestPriorityCookieCase(cm.get(), "31LN 50MN 100HN", 0U, 50U, 100U, 150U,
+                           0U);
+    // Round 1 => none; round 2 => 1M, round3 => 30M.
+    TestPriorityCookieCase(cm.get(), "51MN 100HN 30LN", 30U, 20U, 100U, 150U,
+                           0U);
+    // Round 1 => none; round 2 => none; round3 => 31H.
+    TestPriorityCookieCase(cm.get(), "101HN 50MN 30LN", 30U, 50U, 70U, 150U,
+                           0U);
+
+    // Round 1 => 10L; round 2 => 10M; round3 => 11H.
+    TestPriorityCookieCase(cm.get(), "81HN 60MN 40LN", 30U, 50U, 70U, 150U, 0U);
+
+    // More complex scenarios.
+    // Round 1 => 10L; round 2 => 10M; round 3 => 11H.
+    TestPriorityCookieCase(cm.get(), "21HN 60MN 40LN 60HN", 30U, 50U, 70U, 150U,
+                           0U);
+    // Round 1 => 10L; round 2 => 11M, 10L; round 3 => none.
+    TestPriorityCookieCase(cm.get(), "11HN 10MN 20LN 110MN 20LN 10HN", 20U,
+                           109U, 21U, 150U, 0U);
+    // Round 1 => none; round 2 => none; round 3 => 11L, 10M, 10H.
+    TestPriorityCookieCase(cm.get(), "11LN 10MN 140HN 10MN 10LN", 10U, 10U,
+                           130U, 150U, 0U);
+    // Round 1 => none; round 2 => 1M; round 3 => 10L, 10M, 10H.
+    TestPriorityCookieCase(cm.get(), "11MN 10HN 10LN 60MN 90HN", 0U, 60U, 90U,
+                           150U, 0U);
+    // Round 1 => none; round 2 => 10L, 21M; round 3 => none.
+    TestPriorityCookieCase(cm.get(), "11MN 10HN 10LN 90MN 60HN", 0U, 80U, 70U,
+                           150U, 0U);
+
+    // TODO(jww): According to
+    // https://tools.ietf.org/html/draft-west-cookie-priority#section-3, it
+    // seems that quotas are a mechanism for preventing another application on
+    // the same doman from DoS'ing an application by constantly evicting *all*
+    // lower priority cookies.
+    //
+    // Unfortunately, this has never strictly worked in our implementation. Take
+    // the following test as an example:
+    // TestPriorityCookieCase(cm.get(), "50LN 131HN", 30U, 0U, 120U, 150U, 0U);
+    //
+    // According to this theory, we would expect eviction to proceed as:
+    // Round 1 => 20L; round 2 => 0; round 3 => 11H
+    // thus resulting in 30L and 120H at the end.
+    //
+    // However, what happens in practice is that the cookies left are 19L and
+    // 131H. This is because the quotas are accumulated over the rounds and what
+    // priority they apply to is lost information. Since in the last round all
+    // that is known is a total quota, and the low-priority cookies are least
+    // recently accessed, they are evicted first to get down to 150 cookies.
+    //
+    // We should address this and uncomment the test below when it is fixed.
+    //
+    // See https://crbug.com/609550
+    //
+    // Round 1 => 20L; round 2 => 0; round 3 => 11H
+    // TestPriorityCookieCase(cm.get(), "50LN 131HN", 30U, 0U, 120U, 150U, 0U);
+    // Round 1 => 20L; round 2 => 0; round 3 => 11H
+    TestPriorityCookieCase(cm.get(), "131HN 50LN", 30U, 0U, 120U, 150U, 0U);
+    // Round 1 => 20L; round 2 => none; round 3 => 11H.
+    TestPriorityCookieCase(cm.get(), "50HN 50LN 81HN", 30U, 0U, 120U, 150U, 0U);
+    // Round 1 => 20L; round 2 => none; round 3 => 11H.
+    TestPriorityCookieCase(cm.get(), "81HN 50LN 50HN", 30U, 0U, 120U, 150U, 0U);
+  }
+
+  void TestPriorityAwareGarbageCollectHelperSecure() {
+    // Hard-coding limits in the test, but use DCHECK_EQ to enforce constraint.
+    DCHECK_EQ(180U, CookieMonster::kDomainMaxCookies);
+    DCHECK_EQ(150U, CookieMonster::kDomainMaxCookies -
+                        CookieMonster::kDomainPurgeCookies);
 
     std::unique_ptr<CookieMonster> cm(new CookieMonster(nullptr, nullptr));
 
     // Each test case adds 181 cookies, so 31 cookies are evicted.
     // Cookie same priority, repeated for each priority.
-    TestPriorityCookieCase(cm.get(), "181L", 150U, 0U, 0U);
-    TestPriorityCookieCase(cm.get(), "181M", 0U, 150U, 0U);
-    TestPriorityCookieCase(cm.get(), "181H", 0U, 0U, 150U);
+    TestPriorityCookieCase(cm.get(), "181LS", 150U, 0U, 0U, 0U, 150U);
+    TestPriorityCookieCase(cm.get(), "181MS", 0U, 150U, 0U, 0U, 150U);
+    TestPriorityCookieCase(cm.get(), "181HS", 0U, 0U, 150U, 0U, 150U);
 
     // Pairwise scenarios.
     // Round 1 => none; round2 => 31M; round 3 => none.
-    TestPriorityCookieCase(cm.get(), "10H 171M", 0U, 140U, 10U);
+    TestPriorityCookieCase(cm.get(), "10HS 171MS", 0U, 140U, 10U, 0U, 150U);
     // Round 1 => 10L; round2 => 21M; round 3 => none.
-    TestPriorityCookieCase(cm.get(), "141M 40L", 30U, 120U, 0U);
+    TestPriorityCookieCase(cm.get(), "141MS 40LS", 30U, 120U, 0U, 0U, 150U);
     // Round 1 => none; round2 => none; round 3 => 31H.
-    TestPriorityCookieCase(cm.get(), "101H 80M", 0U, 80U, 70U);
+    TestPriorityCookieCase(cm.get(), "101HS 80MS", 0U, 80U, 70U, 0U, 150U);
 
     // For {low, medium} priorities right on quota, different orders.
     // Round 1 => 1L; round 2 => none, round3 => 30L.
-    TestPriorityCookieCase(cm.get(), "31L 50M 100H", 0U, 50U, 100U);
+    TestPriorityCookieCase(cm.get(), "31LS 50MS 100HS", 0U, 50U, 100U, 0U,
+                           150U);
     // Round 1 => none; round 2 => 1M, round3 => 30M.
-    TestPriorityCookieCase(cm.get(), "51M 100H 30L", 30U, 20U, 100U);
+    TestPriorityCookieCase(cm.get(), "51MS 100HS 30LS", 30U, 20U, 100U, 0U,
+                           150U);
     // Round 1 => none; round 2 => none; round3 => 31H.
-    TestPriorityCookieCase(cm.get(), "101H 50M 30L", 30U, 50U, 70U);
+    TestPriorityCookieCase(cm.get(), "101HS 50MS 30LS", 30U, 50U, 70U, 0U,
+                           150U);
 
     // Round 1 => 10L; round 2 => 10M; round3 => 11H.
-    TestPriorityCookieCase(cm.get(), "81H 60M 40L", 30U, 50U, 70U);
+    TestPriorityCookieCase(cm.get(), "81HS 60MS 40LS", 30U, 50U, 70U, 0U, 150U);
 
     // More complex scenarios.
     // Round 1 => 10L; round 2 => 10M; round 3 => 11H.
-    TestPriorityCookieCase(cm.get(), "21H 60M 40L 60H", 30U, 50U, 70U);
+    TestPriorityCookieCase(cm.get(), "21HS 60MS 40LS 60HS", 30U, 50U, 70U, 0U,
+                           150U);
     // Round 1 => 10L; round 2 => 11M, 10L; round 3 => none.
-    TestPriorityCookieCase(cm.get(), "11H 10M 20L 110M 20L 10H", 20U, 109U,
-                           21U);
+    TestPriorityCookieCase(cm.get(), "11HS 10MS 20LS 110MS 20LS 10HS", 20U,
+                           109U, 21U, 0U, 150U);
     // Round 1 => none; round 2 => none; round 3 => 11L, 10M, 10H.
-    TestPriorityCookieCase(cm.get(), "11L 10M 140H 10M 10L", 10U, 10U, 130U);
+    TestPriorityCookieCase(cm.get(), "11LS 10MS 140HS 10MS 10LS", 10U, 10U,
+                           130U, 0U, 150U);
     // Round 1 => none; round 2 => 1M; round 3 => 10L, 10M, 10H.
-    TestPriorityCookieCase(cm.get(), "11M 10H 10L 60M 90H", 0U, 60U, 90U);
+    TestPriorityCookieCase(cm.get(), "11MS 10HS 10LS 60MS 90HS", 0U, 60U, 90U,
+                           0U, 150U);
     // Round 1 => none; round 2 => 10L, 21M; round 3 => none.
-    TestPriorityCookieCase(cm.get(), "11M 10H 10L 90M 60H", 0U, 80U, 70U);
+    TestPriorityCookieCase(cm.get(), "11MS 10HS 10LS 90MS 60HS", 0U, 80U, 70U,
+                           0U, 150U);
+  }
+
+  void TestPriorityAwareGarbageCollectHelperMixed() {
+    // Hard-coding limits in the test, but use DCHECK_EQ to enforce constraint.
+    DCHECK_EQ(180U, CookieMonster::kDomainMaxCookies);
+    DCHECK_EQ(150U, CookieMonster::kDomainMaxCookies -
+                        CookieMonster::kDomainPurgeCookies);
+
+    std::unique_ptr<CookieMonster> cm(new CookieMonster(NULL, NULL));
+
+    // Each test case adds 180 secure cookies, and some non-secure cookie. The
+    // secure cookies take priority, so the non-secure cookie is removed, along
+    // with 30 secure cookies. Repeated for each priority, and with the
+    // non-secure cookie as older and newer.
+    TestPriorityCookieCase(cm.get(), "1LN 180LS", 150U, 0U, 0U, 0U, 150U);
+    TestPriorityCookieCase(cm.get(), "1MN 180MS", 0U, 150U, 0U, 0U, 150U);
+    TestPriorityCookieCase(cm.get(), "1HN 180HS", 0U, 0U, 150U, 0U, 150U);
+    TestPriorityCookieCase(cm.get(), "180LS 1LN", 150U, 0U, 0U, 0U, 150U);
+    TestPriorityCookieCase(cm.get(), "180MS 1MN", 0U, 150U, 0U, 0U, 150U);
+    TestPriorityCookieCase(cm.get(), "180HS 1HN", 0U, 0U, 150U, 0U, 150U);
+
+    // Low-priority secure cookies are removed before higher priority non-secure
+    // cookies.
+    TestPriorityCookieCase(cm.get(), "180LS 1MN", 149U, 1U, 0U, 1U, 149U);
+    TestPriorityCookieCase(cm.get(), "180LS 1HN", 149U, 0U, 1U, 1U, 149U);
+    TestPriorityCookieCase(cm.get(), "1MN 180LS", 149U, 1U, 0U, 1U, 149U);
+    TestPriorityCookieCase(cm.get(), "1HN 180LS", 149U, 0U, 1U, 1U, 149U);
+
+    // Higher-priority non-secure cookies are removed before any secure cookie
+    // with greater than low-priority.
+    TestPriorityCookieCase(cm.get(), "180MS 1HN", 0U, 150U, 0U, 0U, 150U);
+    TestPriorityCookieCase(cm.get(), "1HN 180MS", 0U, 150U, 0U, 0U, 150U);
+
+    // Pairwise:
+    TestPriorityCookieCase(cm.get(), "1LS 180LN", 150U, 0U, 0U, 149U, 1U);
+    TestPriorityCookieCase(cm.get(), "100LS 81LN", 150U, 0U, 0U, 50U, 100U);
+    TestPriorityCookieCase(cm.get(), "150LS 31LN", 150U, 0U, 0U, 0U, 150U);
+    TestPriorityCookieCase(cm.get(), "1LS 180HN", 0U, 0U, 150U, 150U, 0U);
+    TestPriorityCookieCase(cm.get(), "100LS 81HN", 69U, 0U, 81U, 81U, 69U);
+    TestPriorityCookieCase(cm.get(), "150LS 31HN", 119U, 0U, 31U, 31U, 119U);
+
+    // Quota calculations inside non-secure/secure blocks remain in place:
+    // Round 1 => 20LS; round 2 => none; round 3 => 11HN.
+    TestPriorityCookieCase(cm.get(), "50HN 50LS 81HS", 30U, 0U, 120U, 39U,
+                           111U);
+    // Round 1 => none; round 2 => 10LS, 21MN; round 3 => none.
+    TestPriorityCookieCase(cm.get(), "11MS 10HN 10LS 90MN 60HN", 0U, 80U, 70U,
+                           139U, 11U);
+
+    // Multiple GC rounds end up with consistent behavior:
+    TestPriorityCookieCase(cm.get(), "100HS 100LN 100MN", 0, 76U, 100U, 76U,
+                           100U);
   }
 
   // Function for creating a CM with a number of cookies in it,
@@ -1377,8 +1552,16 @@ TEST_F(CookieMonsterTest, TestHostGarbageCollection) {
   TestHostGarbageCollectHelper();
 }
 
-TEST_F(CookieMonsterTest, TestPriorityAwareGarbageCollection) {
-  TestPriorityAwareGarbageCollectHelper();
+TEST_F(CookieMonsterTest, TestPriorityAwareGarbageCollectionNonSecure) {
+  TestPriorityAwareGarbageCollectHelperNonSecure();
+}
+
+TEST_F(CookieMonsterTest, TestPriorityAwareGarbageCollectionSecure) {
+  TestPriorityAwareGarbageCollectHelperSecure();
+}
+
+TEST_F(CookieMonsterStrictSecureTest, TestPriorityAwareGarbageCollectionMixed) {
+  TestPriorityAwareGarbageCollectHelperMixed();
 }
 
 TEST_F(CookieMonsterTest, SetCookieableSchemes) {
@@ -2901,13 +3084,13 @@ TEST_F(CookieMonsterStrictSecureTest, EvictSecureCookies) {
   // non-secure cookie will not evict them (and, in fact, the non-secure cookie
   // will be removed right after creation).
   const CookiesEntry test1[] = {{180U, true}, {1U, false}};
-  TestSecureCookieEviction(test1, arraysize(test1), 180U, 0U, nullptr);
+  TestSecureCookieEviction(test1, arraysize(test1), 150U, 0U, nullptr);
 
   // If non-secure cookies for one domain hit the per domain limit (180), the
-  // creation of secure cookies will evict all of the non-secure cookies, and
-  // the secure cookies will still be created.
+  // creation of secure cookies will evict the non-secure cookies first, making
+  // room for the secure cookies.
   const CookiesEntry test2[] = {{180U, false}, {20U, true}};
-  TestSecureCookieEviction(test2, arraysize(test2), 20U, 0U, nullptr);
+  TestSecureCookieEviction(test2, arraysize(test2), 20U, 149U, nullptr);
 
   // If secure cookies for one domain go past the per domain limit (180), they
   // will be evicted as normal by the per domain purge amount (30) down to a
@@ -2919,9 +3102,9 @@ TEST_F(CookieMonsterStrictSecureTest, EvictSecureCookies) {
   // If a non-secure cookie is created, and a number of secure cookies exceeds
   // the per domain limit (18), the total cookies will be evicted down to a
   // lower amount (150), enforcing the eviction of the non-secure cookie, and
-  // the remaining secure cookies will be created (another 18 to 168).
+  // the remaining secure cookies will be created (another 19 to 169).
   const CookiesEntry test4[] = {{1U, false}, {199U, true}};
-  TestSecureCookieEviction(test4, arraysize(test4), 168U, 0U, nullptr);
+  TestSecureCookieEviction(test4, arraysize(test4), 169U, 0U, nullptr);
 
   // If an even number of non-secure and secure cookies are created below the
   // per-domain limit (180), all will be created and none evicted.
@@ -2930,38 +3113,40 @@ TEST_F(CookieMonsterStrictSecureTest, EvictSecureCookies) {
 
   // If the same number of secure and non-secure cookies are created (50 each)
   // below the per domain limit (180), and then another set of secure cookies
-  // are created to bring the total above the per-domain limit, all of the
-  // non-secure cookies will be evicted but none of the secure ones will be
-  // evicted.
+  // are created to bring the total above the per-domain limit, all secure
+  // cookies will be retained, and the non-secure cookies will be culled down
+  // to the limit.
   const CookiesEntry test6[] = {{50U, true}, {50U, false}, {81U, true}};
-  TestSecureCookieEviction(test6, arraysize(test6), 131U, 0U, nullptr);
+  TestSecureCookieEviction(test6, arraysize(test6), 131U, 19U, nullptr);
 
   // If the same number of non-secure and secure cookies are created (50 each)
   // below the per domain limit (180), and then another set of non-secure
-  // cookies are created to bring the total above the per-domain limit, all of
-  // the non-secure cookies will be evicted but none of the secure ones will be
-  // evicted.
+  // cookies are created to bring the total above the per-domain limit, all
+  // secure cookies will be retained, and the non-secure cookies will be culled
+  // down to the limit.
   const CookiesEntry test7[] = {{50U, false}, {50U, true}, {81U, false}};
-  TestSecureCookieEviction(test7, arraysize(test7), 50U, 0U, nullptr);
+  TestSecureCookieEviction(test7, arraysize(test7), 50U, 100U, nullptr);
 
   // If the same number of non-secure and secure cookies are created (50 each)
   // below the per domain limit (180), and then another set of non-secure
-  // cookies are created to bring the total above the per-domain limit, all of
-  // the non-secure cookies will be evicted but none of the secure ones will be
-  // evicted, and then the remaining non-secure cookies will be created (9).
+  // cookies are created to bring the total above the per-domain limit, all
+  // secure cookies will be retained, and the non-secure cookies will be culled
+  // down to the limit, then the remaining non-secure cookies will be created
+  // (9).
   const CookiesEntry test8[] = {{50U, false}, {50U, true}, {90U, false}};
-  TestSecureCookieEviction(test8, arraysize(test8), 50U, 9U, nullptr);
+  TestSecureCookieEviction(test8, arraysize(test8), 50U, 109U, nullptr);
 
   // If a number of non-secure cookies are created on other hosts (20) and are
   // past the global 'safe' date, and then the number of non-secure cookies for
   // a single domain are brought to the per-domain limit (180), followed by
-  // another set of secure cookies on that same domain (20), all of the
-  // non-secure cookies for that domain should be evicted, but the non-secure
-  // cookies for other domains should remain, as should the secure cookies for
-  // that domain.
+  // another set of secure cookies on that same domain (20), all the secure
+  // cookies for that domain should be retained, while the non-secure should be
+  // culled down to the per-domain limit. The non-secure cookies for other
+  // domains should remain untouched.
   const CookiesEntry test9[] = {{180U, false}, {20U, true}};
   const AltHosts test9_alt_hosts(0, 20);
-  TestSecureCookieEviction(test9, arraysize(test9), 20U, 20U, &test9_alt_hosts);
+  TestSecureCookieEviction(test9, arraysize(test9), 20U, 169U,
+                           &test9_alt_hosts);
 
   // If a number of secure cookies are created on other hosts and hit the global
   // cookie limit (3300) and are past the global 'safe' date, and then a single

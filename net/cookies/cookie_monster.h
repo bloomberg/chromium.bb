@@ -549,6 +549,8 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // Helper for GarbageCollect(). Deletes up to |purge_goal| cookies with a
   // priority less than or equal to |priority| from |cookies|, while ensuring
   // that at least the |to_protect| most-recent cookies are retained.
+  // |protected_secure_cookies| specifies whether or not secure cookies should
+  // be protected from deletion.
   //
   // |cookies| must be sorted from least-recent to most-recent.
   //
@@ -556,7 +558,8 @@ class NET_EXPORT CookieMonster : public CookieStore {
   size_t PurgeLeastRecentMatches(CookieItVector* cookies,
                                  CookiePriority priority,
                                  size_t to_protect,
-                                 size_t purge_goal);
+                                 size_t purge_goal,
+                                 bool protect_secure_cookies);
 
   // Helper for GarbageCollect(); can be called directly as well.  Deletes all
   // expired cookies in |itpair|.  If |cookie_its| is non-NULL, all the
@@ -566,14 +569,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
   size_t GarbageCollectExpired(const base::Time& current,
                                const CookieMapItPair& itpair,
                                CookieItVector* cookie_its);
-
-  // Helper for GarbageCollect(). Deletes all cookies not marked Secure in
-  // |valid_cookies_its|.  If |cookie_its| is non-NULL, all the Secure cookies
-  // from |itpair| are appended to |cookie_its|.
-  //
-  // Returns the numeber of cookies deleted.
-  size_t GarbageCollectNonSecure(const CookieItVector& valid_cookies,
-                                 CookieItVector* cookie_its);
 
   // Helper for GarbageCollect(). Deletes all cookies in the range specified by
   // [|it_begin|, |it_end|). Returns the number of cookies deleted.
