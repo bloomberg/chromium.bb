@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "8.63",
+  "version": "8.64",
   "entries": [
     {
       "id": 1,
@@ -1967,6 +1967,31 @@ LONG_STRING_CONST(
       },
       "features": [
         "disable_discard_framebuffer"
+      ]
+    },
+    {
+      "id": 163,
+      "cr_bugs": [607130],
+      "description": "Multisample renderbuffers with format GL_RGB8 have performance issues on Intel GPUs.",
+      "os": {
+        "type": "macosx"
+      },
+      "vendor_id": "0x8086",
+      "features": [
+        "disable_webgl_rgb_multisampling_usage"
+      ]
+    },
+    {
+      "id": 164,
+      "cr_bugs": [595948],
+      "description": "glColorMask does not work for multisample renderbuffers on old AMD GPUs.",
+      "os": {
+        "type": "macosx"
+      },
+      "vendor_id": "0x1002",
+      "device_id": ["0x68b8"],
+      "features": [
+        "disable_webgl_multisampling_color_mask_usage"
       ]
     }
   ]

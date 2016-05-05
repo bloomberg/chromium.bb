@@ -3348,6 +3348,11 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
       feature_info_->feature_flags().occlusion_query_boolean;
   caps.timer_queries =
       query_manager_->GPUTimingAvailable();
+  caps.disable_webgl_multisampling_color_mask_usage =
+      feature_info_->workarounds().disable_webgl_multisampling_color_mask_usage;
+  caps.disable_webgl_rgb_multisampling_usage =
+      feature_info_->workarounds().disable_webgl_rgb_multisampling_usage;
+
   return caps;
 }
 

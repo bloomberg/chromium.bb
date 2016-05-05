@@ -58,6 +58,10 @@
          disable_texture_storage)                            \
   GPU_OP(DISABLE_TIMESTAMP_QUERIES,                          \
          disable_timestamp_queries)                          \
+  GPU_OP(DISABLE_WEBGL_MULTISAMPLING_COLOR_MASK_USAGE,       \
+         disable_webgl_multisampling_color_mask_usage)       \
+  GPU_OP(DISABLE_WEBGL_RGB_MULTISAMPLING_USAGE,              \
+         disable_webgl_rgb_multisampling_usage)              \
   GPU_OP(ETC1_POWER_OF_TWO_ONLY,                             \
          etc1_power_of_two_only)                             \
   GPU_OP(EXIT_ON_CONTEXT_LOST,                               \
