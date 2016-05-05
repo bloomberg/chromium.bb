@@ -20,7 +20,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/test_switches.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_switches.h"
 #include "ui/message_center/message_center_types.h"
@@ -146,13 +145,6 @@ IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest, RetrieveBaseParts) {
 }
 
 IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest, BasicAddCancel) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
-    return;
-#endif
-
   // Someone may create system notifications like "you're in multi-profile
   // mode..." or something which may change the expectation.
   // TODO(mukai): move this to SetUpOnMainThread() after fixing the side-effect
@@ -165,13 +157,6 @@ IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest, BasicAddCancel) {
 }
 
 IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest, BasicDelegate) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
-    return;
-#endif
-
   TestDelegate* delegate;
   manager()->Add(CreateTestNotification("hey", &delegate), profile());
   // Verify that delegate accumulated correct log of events.
@@ -183,13 +168,6 @@ IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest, BasicDelegate) {
 }
 
 IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest, ButtonClickedDelegate) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
-    return;
-#endif
-
   TestDelegate* delegate;
   manager()->Add(CreateTestNotification("n", &delegate), profile());
   const std::string notification_id =
@@ -202,13 +180,6 @@ IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest, ButtonClickedDelegate) {
 
 IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest,
                        UpdateExistingNotification) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
-    return;
-#endif
-
   TestDelegate* delegate;
   manager()->Add(CreateTestNotification("n", &delegate), profile());
   TestDelegate* delegate2;

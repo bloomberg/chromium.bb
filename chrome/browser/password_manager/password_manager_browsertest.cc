@@ -30,7 +30,6 @@
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/content/common/autofill_messages.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
@@ -433,12 +432,6 @@ IN_PROC_BROWSER_TEST_F(
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase, PromptForXHRSubmit) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          ::switches::kAshBrowserTests))
-    return;
-#endif
   NavigateToFile("/password/password_xhr_submit.html");
 
   // Verify that we show the save password prompt if a form returns false
@@ -611,12 +604,6 @@ IN_PROC_BROWSER_TEST_F(
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase, PromptForFetchSubmit) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          ::switches::kAshBrowserTests))
-    return;
-#endif
   NavigateToFile("/password/password_fetch_submit.html");
 
   // Verify that we show the save password prompt if a form returns false

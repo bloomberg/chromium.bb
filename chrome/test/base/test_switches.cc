@@ -10,11 +10,6 @@ namespace switches {
 // Also emit full event trace logs for successful tests.
 const char kAlsoEmitSuccessLogs[] = "also-emit-success-logs";
 
-#if defined(OS_WIN)
-// Force browser tests to run in Ash/Metro on Windows 8.
-const char kAshBrowserTests[] = "ash-browsertests";
-#endif
-
 #if defined(ENABLE_PLUGINS)
 // Makes browser pixel tests overwrite the reference if it does not match.
 const char kRebaselinePixelTests[] = "rebaseline-pixel-tests";

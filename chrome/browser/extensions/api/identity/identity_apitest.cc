@@ -41,7 +41,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/identity.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/test_switches.h"
 #include "components/crx_file/id_util.h"
 #include "components/guest_view/browser/guest_view_base.h"
 #include "components/signin/core/browser/account_tracker_service.h"
@@ -891,13 +890,6 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
                        NoOptionsSuccess) {
   SignIn("primary@example.com");
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
-    return;
-#endif
-
   scoped_refptr<FakeGetAuthTokenFunction> func(new FakeGetAuthTokenFunction());
   scoped_refptr<const Extension> extension(CreateExtension(CLIENT_ID | SCOPES));
   func->set_extension(extension.get());
@@ -916,13 +908,6 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
                        NonInteractiveSuccess) {
   SignIn("primary@example.com");
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
-    return;
-#endif
-
   scoped_refptr<FakeGetAuthTokenFunction> func(new FakeGetAuthTokenFunction());
   scoped_refptr<const Extension> extension(CreateExtension(CLIENT_ID | SCOPES));
   func->set_extension(extension.get());
@@ -1851,13 +1836,6 @@ IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTest, LoadFailed) {
 }
 
 IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTest, NonInteractiveSuccess) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
-    return;
-#endif
-
   scoped_refptr<IdentityLaunchWebAuthFlowFunction> function(
       new IdentityLaunchWebAuthFlowFunction());
   scoped_refptr<Extension> empty_extension(test_util::CreateEmptyExtension());
@@ -1878,13 +1856,6 @@ IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTest, NonInteractiveSuccess) {
 
 IN_PROC_BROWSER_TEST_F(
     LaunchWebAuthFlowFunctionTest, InteractiveFirstNavigationSuccess) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
-    return;
-#endif
-
   scoped_refptr<IdentityLaunchWebAuthFlowFunction> function(
       new IdentityLaunchWebAuthFlowFunction());
   scoped_refptr<Extension> empty_extension(test_util::CreateEmptyExtension());

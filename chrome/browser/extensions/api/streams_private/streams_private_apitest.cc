@@ -14,7 +14,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/api/streams_private.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/download_item.h"
@@ -245,13 +244,6 @@ class StreamsPrivateApiTest : public ExtensionApiTest {
 // installed, white-listed extension invokes the extension's
 // onExecuteContentHandler event (and does not start a download).
 IN_PROC_BROWSER_TEST_F(StreamsPrivateApiTest, Navigate) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
-    return;
-#endif
-
   ASSERT_TRUE(LoadTestExtension()) << message_;
 
   ResultCatcher catcher;
@@ -276,13 +268,6 @@ IN_PROC_BROWSER_TEST_F(StreamsPrivateApiTest, Navigate) {
 // Tests that navigating to a file URL also intercepts despite there being no
 // HTTP headers. This is a regression test for https://crbug.com/416433.
 IN_PROC_BROWSER_TEST_F(StreamsPrivateApiTest, FileURL) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
-    return;
-#endif
-
   ASSERT_TRUE(LoadTestExtension()) << message_;
 
   ResultCatcher catcher;
@@ -307,13 +292,6 @@ IN_PROC_BROWSER_TEST_F(StreamsPrivateApiTest, FileURL) {
 // onExecuteContentHandler event (and does not start a download).
 // Regression test for http://crbug.com/342999.
 IN_PROC_BROWSER_TEST_F(StreamsPrivateApiTest, NavigateCrossSite) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
-    return;
-#endif
-
   ASSERT_TRUE(LoadTestExtension()) << message_;
 
   ResultCatcher catcher;
@@ -438,13 +416,6 @@ IN_PROC_BROWSER_TEST_F(StreamsPrivateApiTest, DirectDownload) {
 // Tests that response headers are correctly passed to the API and that multiple
 // repsonse headers with the same name are merged correctly.
 IN_PROC_BROWSER_TEST_F(StreamsPrivateApiTest, Headers) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
-    return;
-#endif
-
   ASSERT_TRUE(LoadTestExtension()) << message_;
 
   ResultCatcher catcher;
@@ -468,13 +439,6 @@ IN_PROC_BROWSER_TEST_F(StreamsPrivateApiTest, Headers) {
 
 // Tests that chrome.streamsPrivate.abort() works correctly.
 IN_PROC_BROWSER_TEST_F(StreamsPrivateApiTest, Abort) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
-    return;
-#endif
-
   ASSERT_TRUE(LoadTestExtension()) << message_;
 
   ResultCatcher catcher;

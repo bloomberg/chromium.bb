@@ -42,7 +42,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -700,13 +699,6 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
 
 #if !defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, StartupURLsForTwoProfiles) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
-    return;
-#endif
-
   Profile* default_profile = browser()->profile();
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
@@ -835,13 +827,6 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, PRE_UpdateWithTwoProfiles) {
 // Disabled because it's flaky. http://crbug.com/379579
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
                        DISABLED_UpdateWithTwoProfiles) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
-    return;
-#endif
-
   // Make StartupBrowserCreator::WasRestarted() return true.
   StartupBrowserCreator::was_restarted_read_ = false;
   PrefService* pref_service = g_browser_process->local_state();
@@ -896,12 +881,6 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
 
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
                        ProfilesWithoutPagesNotLaunched) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
-    return;
-#endif
   ASSERT_TRUE(embedded_test_server()->Start());
 
   Profile* default_profile = browser()->profile();
@@ -1018,13 +997,6 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
 }
 
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, ProfilesLaunchedAfterCrash) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
-    return;
-#endif
-
   // After an unclean exit, all profiles will be launched. However, they won't
   // open any pages automatically.
 

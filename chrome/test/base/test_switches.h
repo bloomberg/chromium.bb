@@ -13,10 +13,6 @@ namespace switches {
 // alongside the definition of their values in the .cc file.
 extern const char kAlsoEmitSuccessLogs[];
 
-#if defined(OS_WIN)
-extern const char kAshBrowserTests[];
-#endif
-
 #if defined(ENABLE_PLUGINS)
 extern const char kRebaselinePixelTests[];
 #endif

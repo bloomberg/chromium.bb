@@ -67,7 +67,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/favicon/content/content_favicon_driver.h"
@@ -4007,13 +4006,6 @@ class PrerenderBrowserTestWithNaCl : public PrerenderBrowserTest {
 // Check that NaCl plugins work when enabled, with prerendering.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithNaCl,
                        MAYBE_PrerenderNaClPluginEnabled) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
-    return;
-#endif
-
   PrerenderTestURL("/prerender/prerender_plugin_nacl_enabled.html",
                    FINAL_STATUS_USED, 1);
   NavigateToDestURL();

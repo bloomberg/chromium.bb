@@ -36,7 +36,6 @@ class ChromeTestLauncherDelegate : public content::TestLauncherDelegate {
       base::CommandLine* command_line,
       const base::FilePath& temp_data_dir) override;
   content::ContentMainDelegate* CreateContentMainDelegate() override;
-  void AdjustDefaultParallelJobs(int* default_jobs) override;
 
  private:
   ChromeTestSuiteRunner* runner_;

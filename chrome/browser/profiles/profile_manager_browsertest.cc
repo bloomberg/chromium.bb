@@ -20,7 +20,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/password_store.h"
@@ -300,13 +299,6 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest,
                        SwitchToProfile) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
-    return;
-#endif
-
   // If multiprofile mode is not enabled, you can't switch between profiles.
   if (!profiles::IsMultipleProfilesEnabled())
     return;
@@ -367,13 +359,6 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest,
 #define MAYBE_EphemeralProfile EphemeralProfile
 #endif
 IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, MAYBE_EphemeralProfile) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
-    return;
-#endif
-
   // If multiprofile mode is not enabled, you can't switch between profiles.
   if (!profiles::IsMultipleProfilesEnabled())
     return;

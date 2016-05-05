@@ -66,7 +66,6 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/history/content/browser/download_constants_utils.h"
 #include "components/history/core/browser/download_constants.h"
@@ -1829,12 +1828,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadHistoryCheck) {
 
 // Make sure a dangerous file shows up properly in the history.
 IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadHistoryDangerCheck) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
-    return;
-#endif
   // Disable SafeBrowsing so that danger will be determined by downloads system.
   browser()->profile()->GetPrefs()->SetBoolean(prefs::kSafeBrowsingEnabled,
                                                false);
@@ -2788,13 +2781,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, TestMultipleDownloadsInfobar) {
 }
 #else
 IN_PROC_BROWSER_TEST_F(DownloadTest, TestMultipleDownloadsBubble) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
-    return;
-#endif
-
   // Create a downloads observer.
   std::unique_ptr<content::DownloadTestObserver> downloads_observer(
       CreateWaiter(browser(), 2));

@@ -18,7 +18,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
@@ -317,13 +316,6 @@ IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest, MAYBE_WindowOpenPanelDetached) {
 #endif
 IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest,
                        MAYBE_CloseNonExtensionPanelsOnUninstall) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
-    return;
-#endif
-
 #if defined(USE_ASH_PANELS)
   // On Ash, new panel windows open as popup windows instead.
   int num_popups, num_panels;

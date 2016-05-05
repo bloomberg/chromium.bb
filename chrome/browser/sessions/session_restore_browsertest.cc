@@ -38,7 +38,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/sessions/content/content_live_tab.h"
 #include "components/sessions/core/serialized_navigation_entry_test_helper.h"
@@ -1100,13 +1099,6 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, ActiveIndexUpdatedAtInsert) {
 // If this test flakes, use http://crbug.com/29110
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest,
                        RestoreAfterClosingTabbedBrowserWithAppAndLaunching) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
-    return;
-#endif
-
   ui_test_utils::NavigateToURL(browser(), url1_);
 
   // Launch an app.

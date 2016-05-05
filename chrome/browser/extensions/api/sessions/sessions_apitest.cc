@@ -24,7 +24,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/browser_sync/browser/profile_sync_service_mock.h"
@@ -380,13 +379,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionSessionsTest, GetRecentlyClosedIncognito) {
 
 // http://crbug.com/251199
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_SessionsApis) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
-    return;
-#endif
-
   ASSERT_TRUE(RunExtensionSubtest("sessions",
                                   "sessions.html")) << message_;
 }

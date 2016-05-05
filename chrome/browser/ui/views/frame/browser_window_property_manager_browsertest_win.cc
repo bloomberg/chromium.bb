@@ -36,7 +36,6 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/test_switches.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -184,11 +183,6 @@ class BrowserTestWithProfileShortcutManager : public InProcessBrowserTest {
 // http://crbug.com/396344
 IN_PROC_BROWSER_TEST_F(BrowserTestWithProfileShortcutManager,
                        DISABLED_WindowProperties) {
-  // Disable this test in Metro+Ash where Windows window properties aren't used.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
-    return;
-
   // This test checks HWND properties that are only available on Win7+.
   if (base::win::GetVersion() < base::win::VERSION_WIN7)
     return;
@@ -236,13 +230,6 @@ IN_PROC_BROWSER_TEST_F(BrowserTestWithProfileShortcutManager,
 
 // http://crbug.com/396344
 IN_PROC_BROWSER_TEST_F(BrowserWindowPropertyManagerTest, DISABLED_HostedApp) {
-#if defined(USE_ASH)
-  // Disable this test in Metro+Ash where Windows window properties aren't used.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
-    return;
-#endif
-
   // This test checks HWND properties that are only available on Win7+.
   if (base::win::GetVersion() < base::win::VERSION_WIN7)
     return;

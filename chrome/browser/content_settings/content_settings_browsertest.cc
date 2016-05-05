@@ -19,7 +19,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -493,12 +492,6 @@ class PepperContentSettingsSpecialCasesJavaScriptBlockedTest
 // A sanity check to verify that the plugin that is used as a baseline below
 // can be loaded.
 IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesTest, Baseline) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
-    return;
-#endif
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
       ->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
                                  CONTENT_SETTING_ALLOW);
@@ -514,24 +507,12 @@ IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesTest, Baseline) {
 // The plugin successfully loaded above is blocked.
 IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesPluginsBlockedTest,
                        Normal) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
-    return;
-#endif
   RunLoadPepperPluginTest(kExternalClearKeyMimeType, false);
 }
 
 #if defined(WIDEVINE_CDM_AVAILABLE) && !defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesPluginsBlockedTest,
                        WidevineCdm) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
-    return;
-#endif
   RunLoadPepperPluginTest(kWidevineCdmPluginMimeType, true);
 }
 #endif  // defined(WIDEVINE_CDM_AVAILABLE) && !defined(OS_CHROMEOS)
@@ -540,12 +521,6 @@ IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesPluginsBlockedTest,
 #if !defined(DISABLE_NACL)
 IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesPluginsBlockedTest,
                        NaCl) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
-    return;
-#endif
   RunLoadPepperPluginTest("application/x-nacl", true);
 }
 #endif  // !defined(DISABLE_NACL)
@@ -557,24 +532,12 @@ IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesPluginsBlockedTest,
 // A plugin with no special behavior is not blocked when JavaScript is blocked.
 IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesJavaScriptBlockedTest,
                        Normal) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
-    return;
-#endif
   RunJavaScriptBlockedTest("load_clearkey_no_js.html", false);
 }
 
 #if defined(WIDEVINE_CDM_AVAILABLE)
 IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesJavaScriptBlockedTest,
                        WidevineCdm) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
-    return;
-#endif
   RunJavaScriptBlockedTest("load_widevine_no_js.html", true);
 }
 #endif  // defined(WIDEVINE_CDM_AVAILABLE)
@@ -583,12 +546,6 @@ IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesJavaScriptBlockedTest,
 #if !defined(DISABLE_NACL)
 IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesJavaScriptBlockedTest,
                        NaCl) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
-    return;
-#endif
   RunJavaScriptBlockedTest("load_nacl_no_js.html", true);
 }
 #endif  // !defined(DISABLE_NACL)

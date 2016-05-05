@@ -18,7 +18,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
@@ -392,13 +391,6 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTestWithCommandLine,
 // process when --process-per-tab is set. See crbug.com/69873.
 IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest,
                        DevToolsOnSelfInOwnProcessPPT) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
-    return;
-#endif
-
   base::CommandLine& parsed_command_line =
       *base::CommandLine::ForCurrentProcess();
   parsed_command_line.AppendSwitch(switches::kProcessPerTab);
@@ -444,13 +436,6 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest,
 // process. See crbug.com/69873.
 IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest,
                        DevToolsOnSelfInOwnProcess) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
-    return;
-#endif
-
   int tab_count = 1;
   int host_count = 1;
 

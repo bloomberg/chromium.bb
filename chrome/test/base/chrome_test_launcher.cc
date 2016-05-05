@@ -20,7 +20,6 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/chrome_test_suite.h"
-#include "chrome/test/base/test_switches.h"
 #include "components/crash/content/app/crashpad.h"
 #include "content/public/app/content_main.h"
 #include "content/public/common/content_switches.h"
@@ -94,17 +93,6 @@ bool ChromeTestLauncherDelegate::AdjustChildProcessCommandLine(
 content::ContentMainDelegate*
 ChromeTestLauncherDelegate::CreateContentMainDelegate() {
   return new ChromeMainDelegate();
-}
-
-void ChromeTestLauncherDelegate::AdjustDefaultParallelJobs(int* default_jobs) {
-#if defined(OS_WIN)
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests)) {
-    *default_jobs = 1;
-    fprintf(stdout, "Disabling test parallelization for --ash-browsertests.\n");
-    fflush(stdout);
-  }
-#endif  // defined(OS_WIN)
 }
 
 int LaunchChromeTests(int default_jobs,

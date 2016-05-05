@@ -19,7 +19,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/test_switches.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "ui/aura/client/aura_constants.h"
@@ -61,13 +60,6 @@ typedef InProcessBrowserTest AcceleratorCommandsBrowserTest;
 
 // Confirm that toggling window miximized works properly
 IN_PROC_BROWSER_TEST_F(AcceleratorCommandsBrowserTest, ToggleMaximized) {
-#if defined(OS_WIN)
-  // Run the test on Win Ash only.
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
-    return;
-#endif
-
   ASSERT_TRUE(ash::Shell::HasInstance()) << "No Instance";
   ash::wm::WindowState* window_state = ash::wm::GetActiveWindowState();
   ASSERT_TRUE(window_state);
@@ -129,13 +121,6 @@ class AcceleratorCommandsFullscreenBrowserTest
 // Test that toggling window fullscreen works properly.
 IN_PROC_BROWSER_TEST_P(AcceleratorCommandsFullscreenBrowserTest,
                        ToggleFullscreen) {
-#if defined(OS_WIN)
-  // Run the test on Win Ash only.
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
-    return;
-#endif
-
   ASSERT_TRUE(ash::Shell::HasInstance()) << "No Instance";
 
   // 1) Browser windows.
@@ -266,13 +251,6 @@ class AcceleratorCommandsPlatformAppFullscreenBrowserTest
 // Test the behavior of platform apps when ToggleFullscreen() is called.
 IN_PROC_BROWSER_TEST_P(AcceleratorCommandsPlatformAppFullscreenBrowserTest,
                        ToggleFullscreen) {
-#if defined(OS_WIN)
-  // Run the test on Win Ash only.
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
-    return;
-#endif
-
   ASSERT_TRUE(ash::Shell::HasInstance()) << "No Instance";
   const extensions::Extension* extension = LoadAndLaunchPlatformApp("minimal",
                                                                     "Launched");

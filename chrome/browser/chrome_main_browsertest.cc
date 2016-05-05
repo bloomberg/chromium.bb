@@ -13,7 +13,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -36,13 +35,6 @@ class ChromeMainTest : public InProcessBrowserTest {
 
 // Make sure that the second invocation creates a new window.
 IN_PROC_BROWSER_TEST_F(ChromeMainTest, SecondLaunch) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
-    return;
-#endif
-
   ui_test_utils::BrowserAddedObserver observer;
   Relaunch(GetCommandLineForRelaunch());
   observer.WaitForSingleNewBrowser();
@@ -50,13 +42,6 @@ IN_PROC_BROWSER_TEST_F(ChromeMainTest, SecondLaunch) {
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeMainTest, ReuseBrowserInstanceWhenOpeningFile) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
-    return;
-#endif
-
   base::FilePath test_file_path = ui_test_utils::GetTestFilePath(
       base::FilePath(), base::FilePath().AppendASCII("empty.html"));
   base::CommandLine new_command_line(GetCommandLineForRelaunch());
@@ -103,13 +88,6 @@ IN_PROC_BROWSER_TEST_F(ChromeMainTest, MAYBE_SecondLaunchWithIncognitoUrl) {
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeMainTest, SecondLaunchFromIncognitoWithNormalUrl) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
-    return;
-#endif
-
   // We should start with one normal window.
   ASSERT_EQ(1u, chrome::GetTabbedBrowserCount(browser()->profile()));
 

@@ -67,7 +67,6 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/app_modal/app_modal_dialog.h"
 #include "components/app_modal/app_modal_dialog_queue.h"
@@ -503,13 +502,6 @@ class BrowserTest : public ExtensionBrowserTest {
 // Launch the app on a page with no title, check that the app title was set
 // correctly.
 IN_PROC_BROWSER_TEST_F(BrowserTest, NoTitle) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
-    return;
-#endif
-
   ui_test_utils::NavigateToURL(
       browser(), ui_test_utils::GetTestUrl(
                      base::FilePath(base::FilePath::kCurrentDirectory),
@@ -527,13 +519,6 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NoTitle) {
 // character in them. This is a regression test for
 // https://crbug.com/503003.
 IN_PROC_BROWSER_TEST_F(BrowserTest, NoTitleFileUrl) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
-    return;
-#endif
-
   // Note that the host names used and the order of these cases are by design.
   // There must be unique query parameters and references per case (i.e. the
   // indexed foo*.com hosts) because if the same query parameter is repeated in
@@ -575,13 +560,6 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NoTitleFileUrl) {
 // Launch the app, navigate to a page with a title, check that the app title
 // was set correctly.
 IN_PROC_BROWSER_TEST_F(BrowserTest, Title) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
-    return;
-#endif
-
   ui_test_utils::NavigateToURL(
       browser(), ui_test_utils::GetTestUrl(
                      base::FilePath(base::FilePath::kCurrentDirectory),
@@ -2247,13 +2225,6 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, WindowOpenClose) {
 #if !defined(OS_MACOSX) && \
     !(defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA))
 IN_PROC_BROWSER_TEST_F(BrowserTest, FullscreenBookmarkBar) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
-    return;
-#endif
-
   chrome::ToggleBookmarkBar(browser());
   EXPECT_EQ(BookmarkBar::SHOW, browser()->bookmark_bar_state());
   chrome::ToggleFullscreenMode(browser());
@@ -2417,13 +2388,6 @@ class NoStartupWindowTest : public BrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(NoStartupWindowTest, NoStartupWindowBasicTest) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // kNoStartupWindow doesn't make sense in Metro+Ash.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
-    return;
-#endif
-
   // No browser window should be started by default.
   EXPECT_EQ(0u, chrome::GetTotalBrowserCount());
 
@@ -2439,13 +2403,6 @@ IN_PROC_BROWSER_TEST_F(NoStartupWindowTest, NoStartupWindowBasicTest) {
 // session state.
 #if !defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(NoStartupWindowTest, DontInitSessionServiceForApps) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // kNoStartupWindow doesn't make sense in Metro+Ash.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
-    return;
-#endif
-
   Profile* profile = ProfileManager::GetActiveUserProfile();
 
   SessionService* session_service =
@@ -2476,13 +2433,6 @@ class AppModeTest : public BrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(AppModeTest, EnableAppModeTest) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
-    return;
-#endif
-
   // Test that an application browser window loads correctly.
 
   // Verify the browser is in application mode.

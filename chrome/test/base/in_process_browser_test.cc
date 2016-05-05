@@ -47,7 +47,6 @@
 #include "chrome/renderer/chrome_content_renderer_client.h"
 #include "chrome/test/base/chrome_test_suite.h"
 #include "chrome/test/base/test_launcher_utils.h"
-#include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/os_crypt/os_crypt.h"
@@ -238,18 +237,6 @@ void InProcessBrowserTest::SetUp() {
       chrome_browser_net::NetErrorTabHelper::TESTING_FORCE_DISABLED);
 
   google_util::SetMockLinkDoctorBaseURLForTesting();
-
-#if defined(OS_WIN)
-  base::win::Version version = base::win::GetVersion();
-  // Although Ash officially is only supported for users on Win7+, we still run
-  // ash_unittests on Vista builders, so we still need to initialize COM.
-  if (version >= base::win::VERSION_VISTA &&
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests)) {
-    com_initializer_.reset(new base::win::ScopedCOMInitializer());
-    ui::win::CreateATLModuleIfNeeded();
-  }
-#endif
 
   BrowserTestBase::SetUp();
 }

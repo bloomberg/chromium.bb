@@ -19,7 +19,6 @@
 #include "chrome/browser/ui/user_manager.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "content/public/test/test_utils.h"
 
@@ -101,14 +100,6 @@ IN_PROC_BROWSER_TEST_F(ProfileListDesktopBrowserTest, MAYBE_SignOut) {
 #define MAYBE_SwitchToProfile SwitchToProfile
 #endif
 IN_PROC_BROWSER_TEST_F(ProfileListDesktopBrowserTest, MAYBE_SwitchToProfile) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests)) {
-    return;
-  }
-#endif
-
   if (!profiles::IsMultipleProfilesEnabled())
     return;
 
