@@ -19,6 +19,8 @@ static_library("offline_pages") {
     "offline_page_metadata_store.h",
     "offline_page_metadata_store_impl.cc",
     "offline_page_metadata_store_impl.h",
+    "offline_page_metadata_store_sql.cc",
+    "offline_page_metadata_store_sql.h",
     "offline_page_model.cc",
     "offline_page_model.h",
     "snapshot_controller.cc",
@@ -33,6 +35,7 @@ static_library("offline_pages") {
     "//components/leveldb_proto",
     "//components/offline_pages/proto:offline_pages_proto",
     "//net",
+    "//sql:sql",
     "//third_party/leveldatabase",
     "//url",
   ]

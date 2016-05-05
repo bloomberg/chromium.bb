@@ -94560,6 +94560,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="DomainBoundCerts" label="DomainBoundCerts"/>
   <suffix name="DOMStorageDatabase" label="DOMStorageDatabase"/>
   <suffix name="History" label="History"/>
+  <suffix name="OfflinePageMetadata" label="OfflinePageMetadata"/>
   <suffix name="Passwords" label="Passwords"/>
   <suffix name="Predictor" label="Predictor"/>
   <suffix name="Quota" label="Quota"/>

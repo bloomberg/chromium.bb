@@ -15,6 +15,7 @@
         '../base/base.gyp:base',
         '../net/net.gyp:net',
         '../url/url.gyp:url_lib',
+        '../sql/sql.gyp:sql',
         '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
         'components.gyp:leveldb_proto',
         'keyed_service_core',
@@ -34,6 +35,8 @@
         'offline_pages/offline_page_metadata_store_impl.h',
         'offline_pages/snapshot_controller.cc',
         'offline_pages/snapshot_controller.h',
+        'offline_pages/offline_page_metadata_store_sql.cc',
+        'offline_pages/offline_page_metadata_store_sql.h',
       ],
     },
     {

@@ -3,5 +3,6 @@ include_rules = [
   "+components/leveldb_proto",
   "+components/version_info",
   "+net",
+  "+sql",
   "+third_party/leveldatabase",
 ]
