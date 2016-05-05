@@ -147,7 +147,7 @@ void AndroidDeferredRenderingBackingStrategy::SetImageForPicture(
         shared_state_->surface_texture_service_id());
 
     static_cast<AVDACodecImage*>(image.get())
-        ->SetTexture(texture_ref->texture());
+        ->set_texture(texture_ref->texture());
   } else {
     // Clear the unowned service_id, so that this texture is no longer going
     // to depend on the surface texture at all.
@@ -183,8 +183,8 @@ void AndroidDeferredRenderingBackingStrategy::UseCodecBufferForPictureBuffer(
   // Note that this is not a race, since we do not re-use a PictureBuffer
   // until after the CC is done drawing it.
   pictures_out_for_display_.push_back(picture_buffer.id());
-  avda_image->SetMediaCodecBufferIndex(codec_buf_index);
-  avda_image->SetSize(state_provider_->GetSize());
+  avda_image->set_media_codec_buffer_index(codec_buf_index);
+  avda_image->set_size(state_provider_->GetSize());
 
   MaybeRenderEarly();
 }
@@ -246,46 +246,58 @@ void AndroidDeferredRenderingBackingStrategy::ReleaseCodecBuffers(
 }
 
 void AndroidDeferredRenderingBackingStrategy::MaybeRenderEarly() {
-  // See if we can consume the front buffer / render to the SurfaceView.
-  if (pictures_out_for_display_.size() == 1u) {
-    AVDACodecImage* avda_image =
-        shared_state_->GetImageForPicture(*pictures_out_for_display_.begin());
-    RETURN_IF_NULL(avda_image);
-    avda_image->UpdateSurface(
-        AVDACodecImage::UpdateMode::RENDER_TO_FRONT_BUFFER);
-    return;
-  }
-
-  // Back buffer rendering is only available for surface textures.
-  if (!surface_texture_)
+  if (pictures_out_for_display_.empty())
     return;
 
-  // See if the back buffer is free. If so, then render the earliest frame.  The
-  // listing is in render order, so we can just use the first unrendered frame
-  // if there is back buffer space.
+  // See if we can consume the front buffer / render to the SurfaceView. Iterate
+  // in reverse to find the most recent front buffer. If none is found, the
+  // |front_index| will point to the beginning of the array.
+  size_t front_index = pictures_out_for_display_.size() - 1;
   AVDACodecImage* first_renderable_image = nullptr;
-  for (int id : pictures_out_for_display_) {
+  for (int i = front_index; i >= 0; --i) {
+    const int id = pictures_out_for_display_[i];
     AVDACodecImage* avda_image = shared_state_->GetImageForPicture(id);
     if (!avda_image)
       continue;
 
-    // If the back buffer is unavailable, there's nothing left to do.
-    if (avda_image->is_rendered_to_back_buffer())
-      return;
+    // Update the front buffer index as we move along to shorten the number of
+    // candidate images we look at for back buffer rendering.
+    front_index = i;
+    first_renderable_image = avda_image;
 
-    // If the image is rendered to the front buffer or has been dropped, it is
-    // not valid for rendering.
-    if (avda_image->is_rendered())
-      continue;
-
-    if (!first_renderable_image)
-      first_renderable_image = avda_image;
+    // If we find a front buffer, stop and indicate that front buffer rendering
+    // is not possible since another image is already in the front buffer.
+    if (avda_image->was_rendered_to_front_buffer()) {
+      first_renderable_image = nullptr;
+      break;
+    }
   }
 
   if (first_renderable_image) {
     first_renderable_image->UpdateSurface(
-        AVDACodecImage::UpdateMode::RENDER_TO_BACK_BUFFER);
+        AVDACodecImage::UpdateMode::RENDER_TO_FRONT_BUFFER);
   }
+
+  // Back buffer rendering is only available for surface textures. We'll always
+  // have at least one front buffer, so the next buffer must be the backbuffer.
+  size_t backbuffer_index = front_index + 1;
+  if (!surface_texture_ || backbuffer_index >= pictures_out_for_display_.size())
+    return;
+
+  // See if the back buffer is free. If so, then render the frame adjacent to
+  // the front buffer.  The listing is in render order, so we can just use the
+  // first unrendered frame if there is back buffer space.
+  first_renderable_image = shared_state_->GetImageForPicture(
+      pictures_out_for_display_[backbuffer_index]);
+  if (!first_renderable_image ||
+      first_renderable_image->was_rendered_to_back_buffer()) {
+    return;
+  }
+
+  // Due to the loop in the beginning this should never be true.
+  DCHECK(!first_renderable_image->was_rendered_to_front_buffer());
+  first_renderable_image->UpdateSurface(
+      AVDACodecImage::UpdateMode::RENDER_TO_BACK_BUFFER);
 }
 
 void AndroidDeferredRenderingBackingStrategy::CodecChanged(

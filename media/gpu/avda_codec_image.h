@@ -50,12 +50,6 @@ class AVDACodecImage : public gpu::gles2::GLStreamTextureImage {
   // gpu::gles2::GLStreamTextureMatrix implementation
   void GetTextureMatrix(float xform[16]) override;
 
-  // Decoded buffer index that has the image for us to display.
-  void SetMediaCodecBufferIndex(int buffer_index);
-
-  // Set the size of the current image.
-  void SetSize(const gfx::Size& size);
-
   enum class UpdateMode {
     // Discards the codec buffer, no UpdateTexImage().
     DISCARD_CODEC_BUFFER,
@@ -78,25 +72,30 @@ class AVDACodecImage : public gpu::gles2::GLStreamTextureImage {
   // Updates the MediaCodec for this image; clears |codec_buffer_index_|.
   void CodecChanged(media::MediaCodecBridge* codec);
 
-  void SetTexture(gpu::gles2::Texture* texture);
+  void set_texture(gpu::gles2::Texture* texture) { texture_ = texture; }
+
+  // Decoded buffer index that has the image for us to display.
+  void set_media_codec_buffer_index(int buffer_index) {
+    codec_buffer_index_ = buffer_index;
+  }
+
+  // Set the size of the current image.
+  void set_size(const gfx::Size& size) { size_ = size; }
 
   // Indicates if the codec buffer has been released to the back buffer.
-  bool is_rendered_to_back_buffer() const {
+  bool was_rendered_to_back_buffer() const {
     return codec_buffer_index_ == kUpdateOnly;
   }
 
-  // Indicates if the codec buffer has been released to the front or back
-  // buffer.
-  bool is_rendered() const {
-    return codec_buffer_index_ <= kInvalidCodecBufferIndex;
+  // Indicates if the codec buffer has been released to the front buffer.
+  bool was_rendered_to_front_buffer() const {
+    return codec_buffer_index_ == kRendered;
   }
 
  protected:
   ~AVDACodecImage() override;
 
  private:
-  enum { kInvalidCodecBufferIndex = -1, kUpdateOnly = -2 };
-
   // Make sure that the surface texture's front buffer is current.  This will
   // save / restore the current context.  It will optionally restore the texture
   // bindings in the surface texture's context, based on |mode|.  This is
@@ -133,8 +132,9 @@ class AVDACodecImage : public gpu::gles2::GLStreamTextureImage {
   // Shared state between the AVDA and all AVDACodecImages.
   scoped_refptr<AVDASharedState> shared_state_;
 
-  // The MediaCodec buffer index that we should render. Only valid if not equal
-  // to |kInvalidCodecBufferIndex|.
+  // The MediaCodec buffer index that we should render. Must be >= 0 or one of
+  // the enum values below.
+  enum { kUpdateOnly = -1, kRendered = -2, kInvalidCodecBufferIndex = -3 };
   int codec_buffer_index_;
 
   // Our image size.

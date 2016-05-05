@@ -125,7 +125,7 @@ void AVDACodecImage::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
 void AVDACodecImage::UpdateSurfaceTexture(RestoreBindingsMode mode) {
   DCHECK(surface_texture_);
   DCHECK_EQ(codec_buffer_index_, kUpdateOnly);
-  codec_buffer_index_ = kInvalidCodecBufferIndex;
+  codec_buffer_index_ = kRendered;
 
   // Swap the rendered image to the front.
   std::unique_ptr<ui::ScopedMakeCurrent> scoped_make_current =
@@ -149,14 +149,6 @@ void AVDACodecImage::UpdateSurfaceTexture(RestoreBindingsMode mode) {
   surface_texture_->GetTransformMatrix(gl_matrix_);
 }
 
-void AVDACodecImage::SetMediaCodecBufferIndex(int buffer_index) {
-  codec_buffer_index_ = buffer_index;
-}
-
-void AVDACodecImage::SetSize(const gfx::Size& size) {
-  size_ = size;
-}
-
 void AVDACodecImage::UpdateSurface(UpdateMode update_mode) {
   UpdateSurfaceInternal(update_mode, kDoRestoreBindings);
 }
@@ -164,10 +156,6 @@ void AVDACodecImage::UpdateSurface(UpdateMode update_mode) {
 void AVDACodecImage::CodecChanged(media::MediaCodecBridge* codec) {
   media_codec_ = codec;
   codec_buffer_index_ = kInvalidCodecBufferIndex;
-}
-
-void AVDACodecImage::SetTexture(gpu::gles2::Texture* texture) {
-  texture_ = texture;
 }
 
 void AVDACodecImage::UpdateSurfaceInternal(
@@ -217,6 +205,9 @@ void AVDACodecImage::ReleaseOutputBuffer(UpdateMode update_mode) {
   if (update_mode == UpdateMode::DISCARD_CODEC_BUFFER) {
     if (codec_buffer_index_ != kUpdateOnly)
       media_codec_->ReleaseOutputBuffer(codec_buffer_index_, false);
+
+    // Note: No need to wait for the frame to be available in the kUpdateOnly
+    // case since it will be or has been waited on by another release call.
     codec_buffer_index_ = kInvalidCodecBufferIndex;
     return;
   }
@@ -228,7 +219,7 @@ void AVDACodecImage::ReleaseOutputBuffer(UpdateMode update_mode) {
     DCHECK(update_mode == UpdateMode::RENDER_TO_FRONT_BUFFER);
     DCHECK_GE(codec_buffer_index_, 0);
     media_codec_->ReleaseOutputBuffer(codec_buffer_index_, true);
-    codec_buffer_index_ = kInvalidCodecBufferIndex;
+    codec_buffer_index_ = kRendered;
     return;
   }
 
@@ -285,7 +276,10 @@ void AVDACodecImage::GetTextureMatrix(float matrix[16]) {
 }
 
 bool AVDACodecImage::IsCodecBufferOutstanding() const {
-  return codec_buffer_index_ != kInvalidCodecBufferIndex && media_codec_;
+  static_assert(kUpdateOnly < 0 && kUpdateOnly > kRendered &&
+                    kRendered > kInvalidCodecBufferIndex,
+                "Codec buffer index enum values are not ordered correctly.");
+  return codec_buffer_index_ > kRendered && media_codec_;
 }
 
 }  // namespace media
