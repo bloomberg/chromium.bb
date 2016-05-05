@@ -294,12 +294,11 @@ void GpuProcessTransportFactory::CreateOutputSurface(
   const bool create_gpu_output_surface =
       ShouldCreateGpuOutputSurface(compositor.get());
   if (create_gpu_output_surface && !use_vulkan) {
-    CauseForGpuLaunch cause =
-        CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE;
     BrowserGpuChannelHostFactory::instance()->EstablishGpuChannel(
-        cause, base::Bind(&GpuProcessTransportFactory::EstablishedGpuChannel,
-                          callback_factory_.GetWeakPtr(), compositor,
-                          create_gpu_output_surface, 0));
+        CAUSE_FOR_GPU_LAUNCH_SHARED_WORKER_THREAD_CONTEXT,
+        base::Bind(&GpuProcessTransportFactory::EstablishedGpuChannel,
+                   callback_factory_.GetWeakPtr(), compositor,
+                   create_gpu_output_surface, 0));
   } else {
     EstablishedGpuChannel(compositor, create_gpu_output_surface, 0);
   }
@@ -409,12 +408,11 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
 
     if (!created_gpu_browser_compositor) {
       // Try again.
-      CauseForGpuLaunch cause =
-          CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE;
       BrowserGpuChannelHostFactory::instance()->EstablishGpuChannel(
-          cause, base::Bind(&GpuProcessTransportFactory::EstablishedGpuChannel,
-                            callback_factory_.GetWeakPtr(), compositor,
-                            create_gpu_output_surface, num_attempts + 1));
+          CAUSE_FOR_GPU_LAUNCH_SHARED_WORKER_THREAD_CONTEXT,
+          base::Bind(&GpuProcessTransportFactory::EstablishedGpuChannel,
+                     callback_factory_.GetWeakPtr(), compositor,
+                     create_gpu_output_surface, num_attempts + 1));
       return;
     }
   }
@@ -696,10 +694,9 @@ GpuProcessTransportFactory::SharedMainThreadContextProvider() {
 
   if (!GpuDataManagerImpl::GetInstance()->CanUseGpuBrowserCompositor())
     return nullptr;
-  CauseForGpuLaunch cause =
-      CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE;
   scoped_refptr<gpu::GpuChannelHost> gpu_channel_host(
-      BrowserGpuChannelHostFactory::instance()->EstablishGpuChannelSync(cause));
+      BrowserGpuChannelHostFactory::instance()->EstablishGpuChannelSync(
+          CAUSE_FOR_GPU_LAUNCH_BROWSER_SHARED_MAIN_THREAD_CONTEXT));
   if (!gpu_channel_host)
     return nullptr;
 

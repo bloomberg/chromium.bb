@@ -476,7 +476,7 @@ void CompositorImpl::RequestNewOutputSurface() {
       BrowserGpuChannelHostFactory::instance();
   if (!factory->GetGpuChannel() || factory->GetGpuChannel()->IsLost()) {
     factory->EstablishGpuChannel(
-        CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE,
+        CAUSE_FOR_GPU_LAUNCH_DISPLAY_COMPOSITOR_CONTEXT,
         base::Bind(&CompositorImpl::OnGpuChannelEstablished,
                    weak_factory_.GetWeakPtr()));
     establish_gpu_channel_timeout_.Start(

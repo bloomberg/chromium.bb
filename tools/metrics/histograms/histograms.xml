@@ -74211,6 +74211,25 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     CAUSE_FOR_GPU_LAUNCH_JPEGDECODEACCELERATOR_INITIALIZE
   </int>
   <int value="13" label="Mojo Setup">CAUSE_FOR_GPU_LAUNCH_MOJO_SETUP</int>
+  <int value="14" label="Get Gpu Service Registry">
+    CAUSE_FOR_GPU_LAUNCH_GET_GPU_SERVICE_REGISTRY
+  </int>
+  <int value="15" label="Browser shared main thread context">
+    CAUSE_FOR_GPU_LAUNCH_BROWSER_SHARED_MAIN_THREAD_CONTEXT
+  </int>
+  <int value="16" label="Renderer shared main thread context">
+    CAUSE_FOR_GPU_LAUNCH_RENDERER_SHARED_MAIN_THREAD_CONTEXT
+  </int>
+  <int value="17" label="WebGL context">CAUSE_FOR_GPU_LAUNCH_WEBGL_CONTEXT</int>
+  <int value="18" label="Shared worker thread context">
+    CAUSE_FOR_GPU_LAUNCH_SHARED_WORKER_THREAD_CONTEXT
+  </int>
+  <int value="19" label="Renderer verify GPU compositing">
+    CAUSE_FOR_GPU_LAUNCH_RENDERER_VERIFY_GPU_COMPOSITING
+  </int>
+  <int value="20" label="Display compositor context">
+    CAUSE_FOR_GPU_LAUNCH_DISPLAY_COMPOSITOR_CONTEXT
+  </int>
 </enum>
 
 <enum name="GzipEncodingFixupResult" type="int">

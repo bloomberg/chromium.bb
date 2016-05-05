@@ -21,9 +21,8 @@
 
 namespace {
 
-const content::CauseForGpuLaunch kInitCause =
-    content::
-        CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE;
+constexpr content::CauseForGpuLaunch kInitCause =
+    content::CAUSE_FOR_GPU_LAUNCH_BROWSER_STARTUP;
 
 scoped_refptr<content::ContextProviderCommandBuffer> CreateContext(
     scoped_refptr<gpu::GpuChannelHost> gpu_channel_host) {

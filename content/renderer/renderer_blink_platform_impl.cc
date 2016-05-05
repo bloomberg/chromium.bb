@@ -1024,7 +1024,7 @@ RendererBlinkPlatformImpl::createOffscreenGraphicsContext3DProvider(
 
   scoped_refptr<gpu::GpuChannelHost> gpu_channel_host(
       RenderThreadImpl::current()->EstablishGpuChannelSync(
-          CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE));
+          CAUSE_FOR_GPU_LAUNCH_WEBGL_CONTEXT));
   if (!gpu_channel_host) {
     std::string error_message(
         "OffscreenContext Creation failed, GpuChannelHost creation failed");

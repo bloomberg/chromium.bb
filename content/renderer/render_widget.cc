@@ -715,12 +715,24 @@ std::unique_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(
   }
 #endif
 
+  uint32_t output_surface_id = next_output_surface_id_++;
+
+  if (command_line.HasSwitch(switches::kEnableVulkan)) {
+    scoped_refptr<cc::VulkanContextProvider> vulkan_context_provider =
+        cc::VulkanInProcessContextProvider::Create();
+    if (vulkan_context_provider) {
+      return base::WrapUnique(new DelegatedCompositorOutputSurface(
+          routing_id(), output_surface_id, nullptr, nullptr,
+          vulkan_context_provider, frame_swap_message_queue_));
+    }
+  }
+
+  // Create a gpu process channel and verify we want to use GPU compositing
+  // before creating any context providers.
   scoped_refptr<gpu::GpuChannelHost> gpu_channel_host;
   if (!use_software) {
-    CauseForGpuLaunch cause =
-        CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE;
-    gpu_channel_host =
-        RenderThreadImpl::current()->EstablishGpuChannelSync(cause);
+    gpu_channel_host = RenderThreadImpl::current()->EstablishGpuChannelSync(
+        CAUSE_FOR_GPU_LAUNCH_RENDERER_VERIFY_GPU_COMPOSITING);
     if (!gpu_channel_host) {
       // Cause the compositor to wait and try again.
       return nullptr;
@@ -731,96 +743,71 @@ std::unique_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(
       use_software = true;
   }
 
-  scoped_refptr<cc::VulkanContextProvider> vulkan_context_provider;
-  scoped_refptr<ContextProviderCommandBuffer> context_provider;
-  scoped_refptr<ContextProviderCommandBuffer> worker_context_provider;
-  if (!use_software) {
-    if (command_line.HasSwitch(switches::kEnableVulkan)) {
-      vulkan_context_provider = cc::VulkanInProcessContextProvider::Create();
-      if (vulkan_context_provider) {
-        uint32_t output_surface_id = next_output_surface_id_++;
-        return base::WrapUnique(new DelegatedCompositorOutputSurface(
-            routing_id(), output_surface_id, context_provider,
-            worker_context_provider, vulkan_context_provider,
-            frame_swap_message_queue_));
-      }
-    }
-
-    gpu::SharedMemoryLimits limits;
-    // The renderer compositor context doesn't do a lot of stuff, so we don't
-    // expect it to need a lot of space for commands or transfer. Raster and
-    // uploads happen on the worker context instead.
-    limits.command_buffer_size = 64 * 1024;
-    limits.start_transfer_buffer_size = 64 * 1024;
-    limits.min_transfer_buffer_size = 64 * 1024;
-
-    worker_context_provider =
-        RenderThreadImpl::current()->SharedWorkerContextProvider();
-    if (!worker_context_provider) {
-      // Cause the compositor to wait and try again.
-      return nullptr;
-    }
-
-    // This is for an offscreen context for the compositor. So the default
-    // framebuffer doesn't need alpha, depth, stencil, antialiasing.
-    gpu::gles2::ContextCreationAttribHelper attributes;
-    attributes.alpha_size = -1;
-    attributes.depth_size = 0;
-    attributes.stencil_size = 0;
-    attributes.samples = 0;
-    attributes.sample_buffers = 0;
-    attributes.bind_generates_resource = false;
-    attributes.lose_context_when_out_of_memory = true;
-
-    bool automatic_flushes = false;
-
-    // The compositor context shares resources with the worker context.
-    context_provider = new ContextProviderCommandBuffer(
-        std::move(gpu_channel_host), gpu::kNullSurfaceHandle,
-        GetURLForGraphicsContext3D(), gfx::PreferIntegratedGpu,
-        automatic_flushes, limits, attributes, worker_context_provider.get(),
-        command_buffer_metrics::RENDER_COMPOSITOR_CONTEXT);
-
-#if defined(OS_ANDROID)
-    if (RenderThreadImpl::current() &&
-        RenderThreadImpl::current()->sync_compositor_message_filter()) {
-      uint32_t output_surface_id = next_output_surface_id_++;
-      return base::WrapUnique(new SynchronousCompositorOutputSurface(
-          context_provider, worker_context_provider, routing_id(),
-          output_surface_id,
-          RenderThreadImpl::current()->sync_compositor_message_filter(),
-          frame_swap_message_queue_));
-    }
-#endif
-  }
-
-  uint32_t output_surface_id = next_output_surface_id_++;
-  // Composite-to-mailbox is currently used for layout tests in order to cause
-  // them to draw inside in the renderer to do the readback there. This should
-  // no longer be the case when crbug.com/311404 is fixed.
-  if (!RenderThreadImpl::current() ||
-      !RenderThreadImpl::current()->layout_test_mode()) {
-    DCHECK(compositor_deps_->GetCompositorImplThreadTaskRunner());
+  if (use_software) {
     return base::WrapUnique(new DelegatedCompositorOutputSurface(
-        routing_id(), output_surface_id, std::move(context_provider),
-        std::move(worker_context_provider),
-        vulkan_context_provider,
+        routing_id(), output_surface_id, nullptr, nullptr, nullptr,
         frame_swap_message_queue_));
   }
 
-  if (!context_provider) {
-    std::unique_ptr<cc::SoftwareOutputDevice> software_device(
-        new cc::SoftwareOutputDevice());
-
-    return base::WrapUnique(new CompositorOutputSurface(
-        routing_id(), output_surface_id, nullptr, nullptr, nullptr,
-        std::move(software_device), frame_swap_message_queue_, true));
+  scoped_refptr<ContextProviderCommandBuffer> worker_context_provider =
+      RenderThreadImpl::current()->SharedWorkerContextProvider();
+  if (!worker_context_provider) {
+    // Cause the compositor to wait and try again.
+    return nullptr;
   }
 
-  return base::WrapUnique(new MailboxOutputSurface(
+  gpu::SharedMemoryLimits limits;
+  // The renderer compositor context doesn't do a lot of stuff, so we don't
+  // expect it to need a lot of space for commands or transfer. Raster and
+  // uploads happen on the worker context instead.
+  limits.command_buffer_size = 64 * 1024;
+  limits.start_transfer_buffer_size = 64 * 1024;
+  limits.min_transfer_buffer_size = 64 * 1024;
+
+  // This is for an offscreen context for the compositor. So the default
+  // framebuffer doesn't need alpha, depth, stencil, antialiasing.
+  gpu::gles2::ContextCreationAttribHelper attributes;
+  attributes.alpha_size = -1;
+  attributes.depth_size = 0;
+  attributes.stencil_size = 0;
+  attributes.samples = 0;
+  attributes.sample_buffers = 0;
+  attributes.bind_generates_resource = false;
+  attributes.lose_context_when_out_of_memory = true;
+
+  constexpr bool automatic_flushes = false;
+
+  // The compositor context shares resources with the worker context.
+  scoped_refptr<ContextProviderCommandBuffer> context_provider(
+      new ContextProviderCommandBuffer(
+          std::move(gpu_channel_host), gpu::kNullSurfaceHandle,
+          GetURLForGraphicsContext3D(), gfx::PreferIntegratedGpu,
+          automatic_flushes, limits, attributes, worker_context_provider.get(),
+          command_buffer_metrics::RENDER_COMPOSITOR_CONTEXT));
+
+#if defined(OS_ANDROID)
+  if (RenderThreadImpl::current()->sync_compositor_message_filter()) {
+    return base::WrapUnique(new SynchronousCompositorOutputSurface(
+        context_provider, worker_context_provider, routing_id(),
+        output_surface_id,
+        RenderThreadImpl::current()->sync_compositor_message_filter(),
+        frame_swap_message_queue_));
+  }
+#endif
+
+  // Composite-to-mailbox is currently used for layout tests in order to cause
+  // them to draw inside in the renderer to do the readback there. This should
+  // no longer be the case when crbug.com/311404 is fixed.
+  if (RenderThreadImpl::current()->layout_test_mode()) {
+    return base::WrapUnique(new MailboxOutputSurface(
+        routing_id(), output_surface_id, std::move(context_provider),
+        std::move(worker_context_provider), frame_swap_message_queue_,
+        cc::RGBA_8888));
+  }
+
+  return base::WrapUnique(new DelegatedCompositorOutputSurface(
       routing_id(), output_surface_id, std::move(context_provider),
-      std::move(worker_context_provider), frame_swap_message_queue_,
-      cc::RGBA_8888));
+      std::move(worker_context_provider), nullptr, frame_swap_message_queue_));
 }
 
 std::unique_ptr<cc::BeginFrameSource>

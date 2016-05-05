@@ -1439,7 +1439,7 @@ RenderThreadImpl::SharedMainThreadContextProvider() {
     return shared_main_thread_contexts_;
 
   scoped_refptr<gpu::GpuChannelHost> gpu_channel_host(EstablishGpuChannelSync(
-      CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE));
+      CAUSE_FOR_GPU_LAUNCH_RENDERER_SHARED_MAIN_THREAD_CONTEXT));
   if (!gpu_channel_host) {
     shared_main_thread_contexts_ = nullptr;
     return nullptr;
@@ -1786,11 +1786,9 @@ RenderThreadImpl::GetPeerConnectionDependencyFactory() {
 
 gpu::GpuChannelHost* RenderThreadImpl::GetGpuChannel() {
   if (!gpu_channel_)
-    return NULL;
-
+    return nullptr;
   if (gpu_channel_->IsLost())
-    return NULL;
-
+    return nullptr;
   return gpu_channel_.get();
 }
 
@@ -1948,7 +1946,7 @@ RenderThreadImpl::SharedWorkerContextProvider() {
   }
 
   scoped_refptr<gpu::GpuChannelHost> gpu_channel_host(EstablishGpuChannelSync(
-      CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE));
+      CAUSE_FOR_GPU_LAUNCH_SHARED_WORKER_THREAD_CONTEXT));
   if (!gpu_channel_host) {
     shared_worker_context_provider_ = nullptr;
     return shared_worker_context_provider_;
