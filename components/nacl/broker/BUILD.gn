@@ -100,6 +100,7 @@ if (current_cpu == "x86") {
       ":nacl64_crash_reporter_client",
       "//base",
       "//breakpad:breakpad_handler",
+      "//build/win:default_exe_manifest",
       "//chrome:nacl64_exe_version",
       "//components/crash/content/app:app_breakpad_mac_win_to_be_deleted",
       "//components/nacl/loader:nacl_helper_win_64",
