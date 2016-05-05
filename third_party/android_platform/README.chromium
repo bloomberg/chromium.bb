@@ -39,6 +39,7 @@ Used multiprocessing to pre-process logcat before symbolizing it
 Added code address adjustment for the debuggerd output from pre-M Android
     where relocations are packed.
 Added code to capture java stderr for better handling of native->java crashes.
+Fixed invalid using decl in logging header debug.h
 
 Android relocation packing tool details:
     Copy sources from AOSP bionic/tools/relocation_packer
