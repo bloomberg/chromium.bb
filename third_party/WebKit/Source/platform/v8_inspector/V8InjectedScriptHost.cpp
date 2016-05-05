@@ -45,7 +45,6 @@ v8::Local<v8::Object> V8InjectedScriptHost::create(v8::Local<v8::Context> contex
     v8::Local<v8::External> debuggerExternal = v8::External::New(isolate, debugger);
     setFunctionProperty(context, injectedScriptHost, "internalConstructorName", V8InjectedScriptHost::internalConstructorNameCallback, debuggerExternal);
     setFunctionProperty(context, injectedScriptHost, "formatAccessorsAsProperties", V8InjectedScriptHost::formatAccessorsAsProperties, debuggerExternal);
-    setFunctionProperty(context, injectedScriptHost, "isTypedArray", V8InjectedScriptHost::isTypedArrayCallback, debuggerExternal);
     setFunctionProperty(context, injectedScriptHost, "subtype", V8InjectedScriptHost::subtypeCallback, debuggerExternal);
     setFunctionProperty(context, injectedScriptHost, "collectionEntries", V8InjectedScriptHost::collectionEntriesCallback, debuggerExternal);
     setFunctionProperty(context, injectedScriptHost, "getInternalProperties", V8InjectedScriptHost::getInternalPropertiesCallback, debuggerExternal);
@@ -54,6 +53,8 @@ v8::Local<v8::Object> V8InjectedScriptHost::create(v8::Local<v8::Context> contex
     setFunctionProperty(context, injectedScriptHost, "setNonEnumProperty", V8InjectedScriptHost::setNonEnumPropertyCallback, debuggerExternal);
     setFunctionProperty(context, injectedScriptHost, "bind", V8InjectedScriptHost::bindCallback, debuggerExternal);
     setFunctionProperty(context, injectedScriptHost, "proxyTargetValue", V8InjectedScriptHost::proxyTargetValueCallback, debuggerExternal);
+    setFunctionProperty(context, injectedScriptHost, "ownPropertyNames", V8InjectedScriptHost::ownPropertyNamesCallback, debuggerExternal);
+    setFunctionProperty(context, injectedScriptHost, "prototype", V8InjectedScriptHost::prototypeCallback, debuggerExternal);
     return injectedScriptHost;
 }
 
@@ -72,14 +73,6 @@ void V8InjectedScriptHost::formatAccessorsAsProperties(const v8::FunctionCallbac
         return;
 
     info.GetReturnValue().Set(unwrapDebugger(info)->client()->formatAccessorsAsProperties(info[0]));
-}
-
-void V8InjectedScriptHost::isTypedArrayCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    if (info.Length() < 1)
-        return;
-
-    info.GetReturnValue().Set(info[0]->IsTypedArray());
 }
 
 void V8InjectedScriptHost::subtypeCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -268,6 +261,71 @@ void V8InjectedScriptHost::proxyTargetValueCallback(const v8::FunctionCallbackIn
     while (target->IsProxy())
         target = v8::Local<v8::Proxy>::Cast(target)->GetTarget();
     info.GetReturnValue().Set(target);
+}
+
+static uint32_t objectLength(v8::Local<v8::Object> object)
+{
+    if (object->IsString()) {
+        int length = object.As<v8::String>()->Length();
+        return length > 0 ? static_cast<uint32_t>(object.As<v8::String>()->Length()) : 0;
+    }
+    if (object->IsArray())
+        return object.As<v8::Array>()->Length();
+    if (object->IsTypedArray())
+        return object.As<v8::TypedArray>()->Length();
+    return 0;
+}
+
+void V8InjectedScriptHost::ownPropertyNamesCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ASSERT(info.Length() > 0 && info[0]->IsObject());
+
+    v8::Isolate* isolate = info.GetIsolate();
+    v8::Local<v8::Context> context = isolate->GetCurrentContext();
+    info.GetReturnValue().Set(v8::Array::New(isolate));
+    v8::Local<v8::Object> object = info[0].As<v8::Object>();
+
+    if (object->IsProxy())
+        return;
+
+    size_t length = objectLength(object);
+    const int kMaxIndexPropertyCount = 9999;
+    if (length > kMaxIndexPropertyCount) {
+        v8::Local<v8::Array> indexes = v8::Array::New(isolate, kMaxIndexPropertyCount);
+        for (size_t i = 0; i < kMaxIndexPropertyCount; ++i) {
+            if (!indexes->Set(context, i, v8::Integer::NewFromUnsigned(isolate, i)).FromMaybe(false))
+                return;
+        }
+        info.GetReturnValue().Set(indexes);
+        return;
+    }
+
+    v8::PropertyFilter filters[] = {
+        static_cast<v8::PropertyFilter>(v8::PropertyFilter::ONLY_ENUMERABLE | v8::PropertyFilter::SKIP_SYMBOLS),
+        static_cast<v8::PropertyFilter>(v8::PropertyFilter::ALL_PROPERTIES | v8::PropertyFilter::SKIP_SYMBOLS),
+        v8::PropertyFilter::ALL_PROPERTIES
+    };
+
+    v8::Local<v8::Set> output = v8::Set::New(isolate);
+    for (size_t i = 0; i < WTF_ARRAY_LENGTH(filters); ++i) {
+        v8::Local<v8::Array> properties;
+        if (!object->GetOwnPropertyNames(context, filters[i]).ToLocal(&properties))
+            return;
+        for (size_t i = 0; i < properties->Length(); ++i) {
+            v8::Local<v8::Value> value;
+            if (!properties->Get(context, i).ToLocal(&value))
+                return;
+            if (!output->Add(context, value).ToLocal(&output))
+                return;
+        }
+    }
+    info.GetReturnValue().Set(output->AsArray());
+}
+
+void V8InjectedScriptHost::prototypeCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ASSERT(info.Length() > 0 && info[0]->IsObject());
+    info.GetReturnValue().Set(info[0].As<v8::Object>()->GetPrototype());
 }
 
 v8::Local<v8::Private> V8Debugger::scopeExtensionPrivate(v8::Isolate* isolate)

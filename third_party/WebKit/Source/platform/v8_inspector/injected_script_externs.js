@@ -27,12 +27,6 @@ InjectedScriptHostClass.prototype.formatAccessorsAsProperties = function(obj) {}
 
 /**
  * @param {*} obj
- * @return {boolean}
- */
-InjectedScriptHostClass.prototype.isTypedArray = function(obj) {}
-
-/**
- * @param {*} obj
  * @return {string}
  */
 InjectedScriptHostClass.prototype.subtype = function(obj) {}
@@ -82,6 +76,17 @@ InjectedScriptHostClass.prototype.bind = function(value, groupName) {}
  * @return {!Object}
  */
 InjectedScriptHostClass.prototype.proxyTargetValue = function(object) {}
+
+/**
+ * @return {!Array<string>}
+ */
+InjectedScriptHostClass.prototype.ownPropertyNames = function(object) {}
+
+/**
+ * @param {!Object} object
+ * @return {Object|undefined}
+ */
+InjectedScriptHostClass.prototype.prototype = function(object) {}
 
 /** @type {!InjectedScriptHostClass} */
 var InjectedScriptHost;

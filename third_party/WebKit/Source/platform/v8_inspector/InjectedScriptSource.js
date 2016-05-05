@@ -446,17 +446,19 @@ InjectedScript.prototype = {
 
         /**
          * @param {?Object} o
-         * @param {!Iterable.<string|symbol>|!Array.<string|symbol>} properties
+         * @param {!Iterable<string|symbol|number>|!Array<string|number|symbol>} properties
          */
         function* process(o, properties)
         {
             for (var property of properties) {
-                if (propertyProcessed[property])
-                    continue;
-
-                var name = property;
+                var name;
                 if (isSymbol(property))
                     name = /** @type {string} */ (injectedScript._describe(property));
+                else
+                    name = typeof property === "number" ? ("" + property) : /** @type {string} */(property);
+
+                if (propertyProcessed[property])
+                    continue;
 
                 try {
                     propertyProcessed[property] = true;
@@ -465,7 +467,7 @@ InjectedScript.prototype = {
                         if (accessorPropertiesOnly && !("get" in descriptor || "set" in descriptor))
                             continue;
                         if ("get" in descriptor && "set" in descriptor && name != "__proto__" && InjectedScriptHost.formatAccessorsAsProperties(object) && !doesAttributeHaveObservableSideEffectOnGet(object, name)) {
-                            descriptor.value = InjectedScriptHost.suppressWarningsAndCallFunction(function(attribute) { return this[attribute]; }, object, [name]);
+                            descriptor.value = InjectedScriptHost.suppressWarningsAndCallFunction(function(attribute) { return this[attribute]; }, object, [property]);
                             descriptor.isOwn = true;
                             delete descriptor.get;
                             delete descriptor.set;
@@ -501,19 +503,10 @@ InjectedScript.prototype = {
             }
         }
 
-        /**
-         * @param {number} length
-         */
-        function* arrayIndexNames(length)
-        {
-            for (var i = 0; i < length; ++i)
-                yield "" + i;
-        }
-
         if (propertyNamesOnly) {
             for (var i = 0; i < propertyNamesOnly.length; ++i) {
                 var name = propertyNamesOnly[i];
-                for (var o = object; this._isDefined(o); o = o.__proto__) {
+                for (var o = object; this._isDefined(o); o = InjectedScriptHost.prototype(o)) {
                     if (InjectedScriptHost.suppressWarningsAndCallFunction(Object.prototype.hasOwnProperty, o, [name])) {
                         for (var descriptor of process(o, [name]))
                             yield descriptor;
@@ -526,31 +519,13 @@ InjectedScript.prototype = {
             return;
         }
 
-        var skipGetOwnPropertyNames;
-        try {
-            skipGetOwnPropertyNames = InjectedScriptHost.isTypedArray(object) && object.length > 500000;
-        } catch (e) {
-        }
-
-        for (var o = object; this._isDefined(o); o = o.__proto__) {
-            if (skipGetOwnPropertyNames && o === object) {
-                // Avoid OOM crashes from getting all own property names of a large TypedArray.
-                for (var descriptor of process(o, arrayIndexNames(o.length)))
-                    yield descriptor;
-            } else {
-                // First call Object.keys() to enforce ordering of the property descriptors.
-                for (var descriptor of process(o, Object.keys(/** @type {!Object} */ (o))))
-                    yield descriptor;
-                for (var descriptor of process(o, Object.getOwnPropertyNames(/** @type {!Object} */ (o))))
-                    yield descriptor;
-            }
-            if (Object.getOwnPropertySymbols) {
-                for (var descriptor of process(o, Object.getOwnPropertySymbols(/** @type {!Object} */ (o))))
-                    yield descriptor;
-            }
+        for (var o = object; this._isDefined(o); o = InjectedScriptHost.prototype(o)) {
+            for (var property of process(o, InjectedScriptHost.ownPropertyNames(o)))
+                yield property;
             if (ownProperties) {
-                if (object.__proto__ && !accessorPropertiesOnly)
-                    yield { name: "__proto__", value: object.__proto__, writable: true, configurable: true, enumerable: false, isOwn: true, __proto__: null };
+                var proto = InjectedScriptHost.prototype(o);
+                if (proto && !accessorPropertiesOnly)
+                    yield { name: "__proto__", value: proto, writable: true, configurable: true, enumerable: false, isOwn: true, __proto__: null };
                 break;
             }
         }
