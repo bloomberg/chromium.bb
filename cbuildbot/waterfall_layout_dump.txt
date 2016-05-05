@@ -1,239 +1,209 @@
 == chromeos ==
 amd64-generic-chromium-pfq
 amd64-generic-goofy-release
+arkham-release
 arm-generic-chromium-pfq
 arm-generic_freon-chromium-pfq
-[auron-b-release-group]
-  buddy-release
-  gandof-release
-  lulu-cheets-release
-  lulu-release
+asuka-release
 auron-paladin
-[auron-release-group]
-  auron-release
-  auron_paine-release
-  auron_yuna-release
-  samus-cheets-release
+auron-release
+auron_paine-release
+auron_yuna-release
+banjo-release
+banon-release
 beaglebone-paladin
 [beaglebone-release-group]
   beaglebone-release
   beaglebone_servo-release
-[beltino-a-release-group]
-  mccloud-release
-  panther-release
-[beltino-b-release-group]
-  monroe-release
-  tricky-release
-  zako-release
+buddy-release
 butterfly-paladin
+butterfly-release
+candy-release
+cave-release
+celes-cheets-release
+celes-release
+chell-cheets-release
+chell-release
 clapper-release
 cyan-cheets-android-pfq
 cyan-cheets-chrome-pfq
 cyan-cheets-paladin
+cyan-cheets-release
+cyan-release
 daisy-chromium-pfq
 daisy-paladin
-[daisy-release-group]
-  daisy-release
-  daisy_skate-release
-  daisy_spring-release
+daisy-release
 daisy_skate-chrome-pfq
 daisy_skate-paladin
+daisy_skate-release
 daisy_spring-paladin
+daisy_spring-release
+edgar-release
+elm-release
 enguarde-release
 expresso-release
 falco-chrome-pfq
 falco-full-compile-paladin
 falco-paladin
+falco-release
+falco_li-release
 gale-release
+gandof-release
 [gcc-toolchain-group]
   daisy-toolchain-gcc
   peppy-toolchain-gcc
   x86-alex-toolchain-gcc
-[glados-b-release-group]
-  asuka-release
-  cave-release
-  chell-cheets-release
 glados-cheets-android-pfq
+glados-cheets-release
 glados-paladin
-[glados-release-group]
-  chell-release
-  glados-cheets-release
-  glados-release
-[gru-release-group]
-  gru-release
-  kevin-release
+glados-release
+glimmer-release
+gnawty-release
+gru-release
+guado-release
 guado_moblab-paladin
 guado_moblab-release
-[ivybridge-release-group]
-  link-release
-  parrot_ivb-release
-  stout-release
-[jecht-release-group]
-  guado-release
-  jecht-release
-  rikku-release
-  tidus-release
-[kunimitsu-release-group]
-  kunimitsu-release
-  lars-release
-  sentry-release
+heli-release
+jecht-release
+kefka-release
+kevin-release
+kip-release
+kunimitsu-release
 lakitu-incremental
 lakitu-paladin
 lakitu-release
 lakitu_next-incremental
 lakitu_next-paladin
 lakitu_next-release
+lars-release
 leon-paladin
+leon-release
 link-depthcharge-full-firmware
 link-paladin
+link-release
 [llvm-toolchain-group]
   daisy-toolchain-llvm
   peppy-toolchain-llvm
   x86-alex-toolchain-llvm
+lulu-cheets-release
+lulu-release
 lumpy-chrome-pfq
 lumpy-incremental-paladin
 lumpy-paladin
+lumpy-release
 mario-incremental
 master-android-pfq
 master-chromium-pfq
 master-paladin
 master-release
 master-toolchain
+mccloud-release
 monroe-paladin
+monroe-release
+ninja-release
 nyan-chrome-pfq
 nyan-full-compile-paladin
 nyan-paladin
 nyan-release
-[nyan-release-group]
-  nyan_big-release
-  nyan_blaze-release
-  nyan_kitty-release
+nyan_big-release
+nyan_blaze-release
 nyan_freon-paladin
 nyan_freon-release
+nyan_kitty-release
+oak-cheets-release
 oak-paladin
-[oak-release-group]
-  elm-release
-  oak-cheets-release
-  oak-release
+oak-release
+orco-release
 panther-paladin
+panther-release
 panther_embedded-minimal-release
 parrot-paladin
-[peach-release-group]
-  peach_pi-release
-  peach_pit-release
+parrot-release
+parrot_ivb-release
+peach_pi-release
 peach_pit-chrome-pfq
 peach_pit-paladin
+peach_pit-release
 peppy-chrome-pfq
 peppy-paladin
-[pineview-release-group]
-  x86-alex-release
-  x86-alex_he-release
-  x86-mario-release
-  x86-zgb-release
-  x86-zgb_he-release
+peppy-release
 pre-cq-launcher
-[rambi-b-release-group]
-  glimmer-release
-  gnawty-release
-  kip-release
-  quawks-release
-[rambi-c-release-group]
-  candy-release
-  squawks-release
-  swanky-release
-  winky-release
-[rambi-d-release-group]
-  banjo-release
-  ninja-release
-  sumo-release
-[rambi-e-release-group]
-  heli-release
-  orco-release
+quawks-release
 rambi-paladin
 rambi-release
+reks-release
+relm-release
+rikku-release
 samus-cheets-android-pfq
+samus-cheets-release
 samus-paladin
 samus-release
-[sandybridge-release-group]
-  butterfly-release
-  lumpy-release
-  parrot-release
-  stumpy-release
-[slippy-release-group]
-  falco-release
-  falco_li-release
-  leon-release
-  peppy-release
-  wolf-release
+sentry-release
+setzer-release
 smaug-cheets-release
 smaug-kasan-kernel-3_18
 smaug-paladin
 smaug-release
+squawks-release
 storm-paladin
-[storm-release-group]
-  arkham-release
-  storm-release
-  whirlwind-release
+storm-release
 stout-paladin
-[strago-b-release-group]
-  cyan-cheets-release
-  reks-release
-  terra-release
-  wizpig-release
-[strago-c-release-group]
-  banon-release
-  edgar-release
-  setzer-release
-  umaro-release
-[strago-d-release-group]
-  celes-cheets-release
-  kefka-release
-  relm-release
+stout-release
 strago-paladin
-[strago-release-group]
-  celes-release
-  cyan-release
-  strago-release
-  ultima-release
+strago-release
 stumpy-paladin
+stumpy-release
+sumo-release
+swanky-release
+terra-release
+tidus-release
 tricky-chrome-pfq
 tricky-paladin
-[veyron-b-release-group]
-  veyron_gus-release
-  veyron_jaq-release
-  veyron_minnie-release
-  veyron_rialto-release
-[veyron-c-release-group]
-  veyron_mickey-release
-  veyron_tiger-release
-[veyron-d-release-group]
-  veyron_fievel-release
-  veyron_minnie-cheets-release
-  veyron_shark-release
-[veyron-release-group]
-  veyron_jerry-release
-  veyron_mighty-release
-  veyron_pinky-release
-  veyron_speedy-release
+tricky-release
+ultima-release
+umaro-release
+veyron_fievel-release
+veyron_gus-release
+veyron_jaq-release
+veyron_jerry-release
+veyron_mickey-release
 veyron_mighty-paladin
+veyron_mighty-release
 veyron_minnie-cheets-android-pfq
 veyron_minnie-cheets-chrome-pfq
 veyron_minnie-cheets-paladin
+veyron_minnie-cheets-release
 veyron_minnie-chromium-pfq
+veyron_minnie-release
 veyron_pinky-chrome-pfq
 veyron_pinky-paladin
+veyron_pinky-release
 veyron_rialto-chrome-pfq
 veyron_rialto-paladin
+veyron_rialto-release
+veyron_shark-release
 veyron_speedy-paladin
+veyron_speedy-release
+veyron_tiger-release
 whirlwind-paladin
+whirlwind-release
+winky-release
+wizpig-release
 wolf-paladin
+wolf-release
 wolf-tot-paladin
 x86-alex-chrome-pfq
 x86-alex-paladin
+x86-alex-release
+x86-alex_he-release
 x86-generic-chromium-pfq
 x86-mario-nowithdebug-paladin
 x86-mario-paladin
+x86-mario-release
 x86-zgb-paladin
+x86-zgb-release
+x86-zgb_he-release
+zako-release
 
 == chromeos_release ==
 lumpy-pre-flight-branch

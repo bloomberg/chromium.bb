@@ -627,18 +627,41 @@ _waterfall_config_map = {
         'veyron_minnie-cheets-chrome-pfq',
         'veyron_rialto-chrome-pfq',
 
-        # Experimental Canaries (Group)
-        'auron-b-release-group',
-        'glados-release-group',
-        'glados-b-release-group',
-        'gru-release-group',
-        'oak-release-group',
-        'storm-release-group',
-        'strago-d-release-group',
-        'veyron-c-release-group',
-        'veyron-d-release-group',
-
         # Experimental Canaries
+        # auron
+        'lulu-release',
+        'gandof-release',
+        'buddy-release',
+        'lulu-cheets-release',
+        # glados
+        'glados-release',
+        'chell-release',
+        'glados-cheets-release',
+        'cave-release',
+        'chell-cheets-release',
+        'asuka-release',
+        # gru
+        'gru-release',
+        'kevin-release',
+        # oak
+        'oak-release',
+        'elm-release',
+        'oak-cheets-release',
+        # storm
+        'storm-release',
+        'arkham-release',
+        'whirlwind-release',
+        # strago
+        'celes-cheets-release',
+        'kefka-release',
+        'relm-release',
+        # veyron
+        'veyron_mickey-release',
+        'veyron_tiger-release',
+        'veyron_shark-release',
+        'veyron_minnie-cheets-release',
+        'veyron_fievel-release',
+        # other
         'amd64-generic-goofy-release',
         'gale-release',
         'lakitu_next-release',
@@ -2718,8 +2741,8 @@ def GetConfig():
       )
 
   # pineview chipset boards
-  _AddGroupConfig(
-      'pineview', 'x86-mario', (
+  _AdjustLeaderFollowerReleaseConfigs(
+      'x86-mario', (
           'x86-alex',
           'x86-zgb',
       ), (
@@ -2729,8 +2752,8 @@ def GetConfig():
   )
 
   # sandybridge chipset boards
-  _AddGroupConfig(
-      'sandybridge', 'parrot', (
+  _AdjustLeaderFollowerReleaseConfigs(
+      'parrot', (
           'lumpy',
           'butterfly',
           'stumpy',
@@ -2738,122 +2761,89 @@ def GetConfig():
   )
 
   # ivybridge chipset boards
-  _AddGroupConfig(
-      'ivybridge', 'stout', (
+  _AdjustLeaderFollowerReleaseConfigs(
+      'stout', (
           'link',
       ), (
           'parrot_ivb',
       )
   )
 
-  # slippy-based haswell boards
-  # TODO(davidjames): Combine slippy and beltino into haswell canary, once we've
-  # optimized our builders more.
-  # slippy itself is deprecated in favor of the below boards, so we don't bother
-  # building it.
-  # TODO(dnj): Re-add peppy canary once builders are allocated.
-  _AddGroupConfig(
-      'slippy', 'peppy', (
+  # slippy, and beltino haswell boards
+  _AdjustLeaderFollowerReleaseConfigs(
+      'peppy', (
           'falco',
           'leon',
           'wolf',
+          'panther',
+          'mccloud',
+          'monroe',
+          'tricky',
+          'zako',
       ), (
           'falco_li',
       )
   )
 
-  # beltino-based haswell boards
-  # beltino itself is deprecated in favor of the below boards, so we don't
-  # bother building it.
-
-  _AddGroupConfig(
-      'beltino-a', 'panther', (
-          'mccloud',
-      )
-  )
-
-  _AddGroupConfig(
-      'beltino-b', 'monroe', (
-          'tricky',
-          'zako',
-      )
-  )
-
   # rambi-based boards
   _AdjustLeaderFollowerReleaseConfigs(
-      'clapper',
-      ('rambi', 'expresso', 'enguarde'),
-  )
-
-  _AddGroupConfig(
-      'rambi-b', 'glimmer', (
+      'clapper', (
+          'rambi',
+          'expresso',
+          'enguarde',
+          'glimmer',
           'gnawty',
           'kip',
           'quawks',
-      )
-  )
-
-  _AddGroupConfig(
-      'rambi-c', 'squawks', (
           'swanky',
           'winky',
           'candy',
+          'squawks',
+          'banjo',
+          'ninja',
+          'sumo',
+          'orco',
+          'heli',
       )
   )
 
-  _AddGroupConfig(
-      'rambi-d', 'banjo', (
-          'ninja',
-          'sumo',
-      ),
-  )
-
-  _AddGroupConfig(
-      'rambi-e', 'orco', (
-          'heli',
-      ),
-  )
-
   # daisy-based boards
-  _AddGroupConfig(
-      'daisy', 'daisy', (
+  _AdjustLeaderFollowerReleaseConfigs(
+      'daisy', (
           'daisy_spring',
           'daisy_skate',
       ),
   )
 
   # peach-based boards
-  _AddGroupConfig(
-      'peach', 'peach_pit', (
+  _AdjustLeaderFollowerReleaseConfigs(
+      'peach_pit', (
           'peach_pi',
       )
   )
 
-  # Nyan-based boards (no leader, yet)
+  # Nyan-based boards
   _AdjustLeaderFollowerReleaseConfigs(
-      [],
-      ('nyan',),
-  )
-
-  # nyan-based boards
-  _AddGroupConfig(
-      'nyan', 'nyan_big', (
+      'nyan_big', (
+          'nyan',
           'nyan_blaze',
           'nyan_kitty',
-      )
+      ),
   )
 
   # auron-based boards
-  _AddGroupConfig(
-      'auron', 'auron', (
+  _AdjustLeaderFollowerReleaseConfigs(
+      'auron', (
           'auron_yuna',
           'auron_paine',
           'samus-cheets',
       ),
   )
 
-  _AddGroupConfig(
-      'auron-b', 'lulu', (
+  # auron-based boards that are not important.
+  _AdjustLeaderFollowerReleaseConfigs(
+       [], (
+          'lulu',
           'gandof',
           'buddy',
           'lulu-cheets',
@@ -2862,31 +2852,24 @@ def GetConfig():
   )
 
   # veyron-based boards
-  _AddGroupConfig(
-      'veyron', 'veyron_pinky', (
+  _AdjustLeaderFollowerReleaseConfigs(
+      'veyron_pinky', (
           'veyron_jerry',
           'veyron_mighty',
           'veyron_speedy',
-      ),
-  )
-
-  _AddGroupConfig(
-      'veyron-b', 'veyron_gus', (
+          'veyron_gus',
           'veyron_jaq',
           'veyron_minnie',
           'veyron_rialto',
       ),
   )
 
-  _AddGroupConfig(
-      'veyron-c', 'veyron_mickey', (
+  # veyron-based boards, not important
+  _AdjustLeaderFollowerReleaseConfigs(
+      [], (
+          'veyron_mickey',
           'veyron_tiger',
-      ),
-      important=False,
-  )
-
-  _AddGroupConfig(
-      'veyron-d', 'veyron_shark', (
+          'veyron_shark',
           'veyron_minnie-cheets',
           'veyron_fievel',
       ),
@@ -2894,8 +2877,8 @@ def GetConfig():
   )
 
   # jecht-based boards
-  _AddGroupConfig(
-      'jecht', 'jecht', (
+  _AdjustLeaderFollowerReleaseConfigs(
+      'jecht', (
           'guado',
           'tidus',
           'rikku',
@@ -2903,32 +2886,26 @@ def GetConfig():
   )
 
   # strago-based boards
-  _AddGroupConfig(
-      'strago', 'strago', (
+  _AdjustLeaderFollowerReleaseConfigs(
+      'strago', (
           'cyan',
           'celes',
           'ultima',
-      ),
-  )
-
-  _AddGroupConfig(
-      'strago-b', 'reks', (
+          'reks',
           'cyan-cheets',
           'wizpig',
           'terra',
-      ),
-  )
-
-  _AddGroupConfig(
-      'strago-c', 'edgar', (
+          'edgar',
           'setzer',
           'umaro',
           'banon',
       ),
   )
 
-  _AddGroupConfig(
-      'strago-d', 'celes-cheets', (
+  # strago-based boards, not important.
+  _AdjustLeaderFollowerReleaseConfigs(
+      [], (
+          'celes-cheets',
           'kefka',
           'relm',
       ),
@@ -2936,8 +2913,8 @@ def GetConfig():
   )
 
   # oak-based boards
-  _AddGroupConfig(
-      'oak', 'oak', (
+  _AdjustLeaderFollowerReleaseConfigs(
+      'oak', (
           'elm',
           'oak-cheets',
       ),
@@ -2945,16 +2922,11 @@ def GetConfig():
   )
 
   # glados-based boards
-  _AddGroupConfig(
-      'glados', 'glados', (
+  _AdjustLeaderFollowerReleaseConfigs(
+      'glados', (
           'chell',
           'glados-cheets',
-      ),
-      important=False,
-  )
-
-  _AddGroupConfig(
-      'glados-b', 'cave', (
+          'cave',
           'chell-cheets',
           'asuka',
       ),
@@ -2962,8 +2934,8 @@ def GetConfig():
   )
 
   # storm-based boards
-  _AddGroupConfig(
-      'storm', 'storm', (
+  _AdjustLeaderFollowerReleaseConfigs(
+      'storm', (
           'arkham',
           'whirlwind',
       ),
@@ -2971,16 +2943,16 @@ def GetConfig():
   )
 
   # kunimitsu-based boards
-  _AddGroupConfig(
-      'kunimitsu', 'kunimitsu', (
+  _AdjustLeaderFollowerReleaseConfigs(
+      'kunimitsu', (
           'lars',
           'sentry',
       ),
   )
 
   # gru-based boards
-  _AddGroupConfig(
-      'gru', 'gru', (
+  _AdjustLeaderFollowerReleaseConfigs(
+      'gru', (
           'kevin',
       ),
       important=False,
