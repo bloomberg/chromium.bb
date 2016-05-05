@@ -80,6 +80,7 @@ source_set("unit_tests") {
     "mock_translate_driver.h",
     "translate_browser_metrics_unittest.cc",
     "translate_language_list_unittest.cc",
+    "translate_manager_unittest.cc",
     "translate_prefs_unittest.cc",
     "translate_script_unittest.cc",
   ]

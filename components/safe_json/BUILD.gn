@@ -51,6 +51,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "json_sanitizer_unittest.cc",
+    "testing_json_parser_unittest.cc",
   ]
 
   deps = [
