@@ -209,10 +209,8 @@ public:
     {
         OwnPtr<Extensions3DUtil> extensionsUtil = Extensions3DUtil::create(contextProvider->contextGL());
         RefPtr<DrawingBufferForTests> drawingBuffer = adoptRef(new DrawingBufferForTests(std::move(contextProvider), extensionsUtil.release(), preserve));
-        bool wantDepthBuffer = false;
-        bool wantStencilBuffer = false;
         bool multisampleExtensionSupported = false;
-        if (!drawingBuffer->initialize(size, wantDepthBuffer, wantStencilBuffer, multisampleExtensionSupported)) {
+        if (!drawingBuffer->initialize(size, multisampleExtensionSupported)) {
             drawingBuffer->beginDestruction();
             return nullptr;
         }
@@ -220,7 +218,7 @@ public:
     }
 
     DrawingBufferForTests(PassOwnPtr<WebGraphicsContext3DProvider> contextProvider, PassOwnPtr<Extensions3DUtil> extensionsUtil, PreserveDrawingBuffer preserve)
-        : DrawingBuffer(std::move(contextProvider), std::move(extensionsUtil), false /* discardFramebufferSupported */, true /* wantAlphaChannel */, false /* premultipliedAlpha */, preserve)
+        : DrawingBuffer(std::move(contextProvider), std::move(extensionsUtil), false /* discardFramebufferSupported */, true /* wantAlphaChannel */, false /* premultipliedAlpha */, preserve, false /* wantDepth */, false /* wantStencil */)
         , m_live(0)
     { }
 
@@ -282,7 +280,7 @@ TEST_F(DrawingBufferTest, verifyResizingProperlyAffectsMailboxes)
     EXPECT_EQ(initialSize, m_gl->mostRecentlyProducedSize());
 
     // Resize to 100x50.
-    m_drawingBuffer->reset(IntSize(initialWidth, alternateHeight), false);
+    m_drawingBuffer->reset(IntSize(initialWidth, alternateHeight));
     m_drawingBuffer->mailboxReleased(mailbox, false);
 
     // Produce a mailbox at this size.
@@ -291,7 +289,7 @@ TEST_F(DrawingBufferTest, verifyResizingProperlyAffectsMailboxes)
     EXPECT_EQ(alternateSize, m_gl->mostRecentlyProducedSize());
 
     // Reset to initial size.
-    m_drawingBuffer->reset(IntSize(initialWidth, initialHeight), false);
+    m_drawingBuffer->reset(IntSize(initialWidth, initialHeight));
     m_drawingBuffer->mailboxReleased(mailbox, false);
 
     // Prepare another mailbox and verify that it's the correct size.
@@ -521,7 +519,7 @@ TEST_F(DrawingBufferImageChromiumTest, verifyResizingReallocatesImages)
     EXPECT_CALL(*m_gl, DestroyImageMock(m_imageId0)).Times(1);
     EXPECT_CALL(*m_gl, ReleaseTexImage2DMock(m_imageId0)).Times(1);
     // Resize to 100x50.
-    m_drawingBuffer->reset(IntSize(initialWidth, alternateHeight), false);
+    m_drawingBuffer->reset(IntSize(initialWidth, alternateHeight));
     m_drawingBuffer->mailboxReleased(mailbox, false);
     testing::Mock::VerifyAndClearExpectations(m_gl);
 
@@ -541,7 +539,7 @@ TEST_F(DrawingBufferImageChromiumTest, verifyResizingReallocatesImages)
     EXPECT_CALL(*m_gl, DestroyImageMock(m_imageId2)).Times(1);
     EXPECT_CALL(*m_gl, ReleaseTexImage2DMock(m_imageId2)).Times(1);
     // Reset to initial size.
-    m_drawingBuffer->reset(IntSize(initialWidth, initialHeight), false);
+    m_drawingBuffer->reset(IntSize(initialWidth, initialHeight));
     m_drawingBuffer->mailboxReleased(mailbox, false);
     testing::Mock::VerifyAndClearExpectations(m_gl);
 
@@ -694,7 +692,7 @@ TEST(DrawingBufferDepthStencilTest, packedDepthStencilSupported)
             EXPECT_EQ(0u, trackingGL->stencilAttachment());
         }
 
-        drawingBuffer->reset(IntSize(10, 20), false);
+        drawingBuffer->reset(IntSize(10, 20));
         EXPECT_EQ(cases[i].requestDepth || cases[i].requestStencil, drawingBuffer->hasDepthBuffer());
         EXPECT_EQ(cases[i].requestDepth || cases[i].requestStencil, drawingBuffer->hasStencilBuffer());
         EXPECT_EQ(cases[i].expectedRenderBuffers, trackingGL->numAllocatedRenderBuffer());

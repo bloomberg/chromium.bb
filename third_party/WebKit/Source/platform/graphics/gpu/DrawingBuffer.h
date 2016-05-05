@@ -104,7 +104,14 @@ public:
 
     // Given the desired buffer size, provides the largest dimensions that will fit in the pixel budget.
     static IntSize adjustSize(const IntSize& desiredSize, const IntSize& curSize, int maxTextureSize);
-    bool reset(const IntSize&, bool wantDepthOrStencilBuffer);
+
+    // Resizes (or allocates if necessary) all buffers attached to the default
+    // framebuffer. Returns whether the operation was successful. Leaves GL
+    // bindings dirtied.
+    bool reset(const IntSize&);
+
+    // Bind the default framebuffer to |target|. |target| must be
+    // GL_FRAMEBUFFER, GL_READ_FRAMEBUFFER, or GL_DRAW_FRAMEBUFFER.
     void bind(GLenum target);
     IntSize size() const { return m_size; }
 
@@ -175,11 +182,11 @@ public:
     void setIsHidden(bool);
     void setFilterQuality(SkFilterQuality);
 
-    // Indicates that the currently bound framebuffer has internalformat
-    // GL_RGBA, but is emulating GL_RGB. This happens to the backbuffer when the
-    // client requests alpha:False, but GL_RGB textures are unusable because of
-    // driver bugs.
-    bool requiresRGBEmulation();
+    // Whether the target for draw operations has format GL_RGBA, but is
+    // emulating format GL_RGB. When the target's storage is first
+    // allocated, its alpha channel must be cleared to 1. All future drawing
+    // operations must use a color mask with alpha=GL_FALSE.
+    bool requiresAlphaChannelToBePreserved();
 
     WebLayer* platformLayer();
 
@@ -205,6 +212,8 @@ public:
     // Otherwise, bind to the default FBO.
     void restoreFramebufferBindings();
 
+    void restoreTextureBindings();
+
     void addNewMailboxCallback(PassOwnPtr<SameThreadClosure> closure) { m_newMailboxCallback = std::move(closure); }
 
 protected: // For unittests
@@ -214,46 +223,35 @@ protected: // For unittests
         bool discardFramebufferSupported,
         bool wantAlphaChannel,
         bool premultipliedAlpha,
-        PreserveDrawingBuffer);
+        PreserveDrawingBuffer,
+        bool wantsDepth,
+        bool wantsStencil);
 
-    bool initialize(const IntSize&, bool wantDepthBuffer, bool wantStencilBuffer, bool useMultisampling);
+    bool initialize(const IntSize&, bool useMultisampling);
 
 private:
+    // All parameters necessary to generate the texture that will be passed to
+    // prepareMailbox.
     struct TextureParameters {
         DISALLOW_NEW();
-        GLenum target;
-        GLenum internalColorFormat;
+        GLenum target = 0;
+        GLenum internalColorFormat = 0;
 
         // The internal color format used when allocating storage for the
         // texture. This may be different from internalColorFormat if RGB
         // emulation is required.
-        GLenum creationInternalColorFormat;
-        GLenum colorFormat;
-        GLenum internalRenderbufferFormat;
-
-        TextureParameters()
-            : target(0)
-            , internalColorFormat(0)
-            , creationInternalColorFormat(0)
-            , colorFormat(0)
-            , internalRenderbufferFormat(0)
-        {
-        }
+        GLenum creationInternalColorFormat = 0;
+        GLenum colorFormat = 0;
+        GLenum internalRenderbufferFormat = 0;
     };
 
     // If we used CHROMIUM_image as the backing storage for our buffers,
     // we need to know the mapping from texture id to image.
     struct TextureInfo {
         DISALLOW_NEW();
-        GLuint textureId;
-        GLuint imageId;
+        GLuint textureId = 0;
+        GLuint imageId = 0;
         TextureParameters parameters;
-
-        TextureInfo()
-            : textureId(0)
-            , imageId(0)
-        {
-        }
     };
 
     struct MailboxInfo : public RefCounted<MailboxInfo> {
@@ -286,10 +284,12 @@ private:
     GLuint createColorTexture(const TextureParameters&);
 
     // Create the depth/stencil and multisample buffers, if needed.
-    void createSecondaryBuffers();
-    bool resizeFramebuffer(const IntSize&, bool wantDepthOrStencilBuffer);
-    bool resizeMultisampleFramebuffer(const IntSize&, bool wantDepthOrStencilBuffer);
+    bool resizeMultisampleFramebuffer(const IntSize&);
     void resizeDepthStencil(const IntSize&);
+
+    // Attempts to allocator storage for, or resize all buffers. Returns whether
+    // the operation was successful.
+    bool resizeDefaultFramebuffer(const IntSize&);
 
     void clearPlatformLayer();
 
@@ -335,15 +335,25 @@ private:
 
     void resizeTextureMemory(TextureInfo*, const IntSize&);
 
-    void attachColorBufferToCurrentFBO();
+    // Attaches |m_colorBuffer| to |m_fbo|, which is always the source for read
+    // operations.
+    void attachColorBufferToReadFramebuffer();
+
+    // Whether the WebGL client desires an explicit resolve. This is
+    // implemented by forwarding all draw operations to a multisample
+    // renderbuffer, which is resolved before any read operations or swaps.
+    bool wantExplicitResolve();
+
+    // Whether the WebGL client wants a depth or stencil buffer.
+    bool wantDepthOrStencil();
 
     const PreserveDrawingBuffer m_preserveDrawingBuffer;
-    bool m_scissorEnabled;
-    GLuint m_texture2DBinding;
-    GLuint m_drawFramebufferBinding;
-    GLuint m_readFramebufferBinding;
-    GLuint m_renderbufferBinding;
-    GLenum m_activeTextureUnit;
+    bool m_scissorEnabled = false;
+    GLuint m_texture2DBinding = 0;
+    GLuint m_drawFramebufferBinding = 0;
+    GLuint m_readFramebufferBinding = 0;
+    GLuint m_renderbufferBinding = 0;
+    GLenum m_activeTextureUnit = GL_TEXTURE0;
     GLfloat m_clearColor[4];
     GLboolean m_colorMask[4];
 
@@ -351,14 +361,11 @@ private:
     // Lifetime is tied to the m_contextProvider.
     gpu::gles2::GLES2Interface* m_gl;
     OwnPtr<Extensions3DUtil> m_extensionsUtil;
-    IntSize m_size;
+    IntSize m_size = { -1, -1 };
     const bool m_discardFramebufferSupported;
     const bool m_wantAlphaChannel;
     const bool m_premultipliedAlpha;
-    bool m_hasImplicitStencilBuffer;
-    GLuint m_fbo;
-    // DrawingBuffer's output is double-buffered. m_colorBuffer is the back buffer.
-    TextureInfo m_colorBuffer;
+    bool m_hasImplicitStencilBuffer = false;
     struct FrontBufferInfo {
         TextureInfo texInfo;
         WebExternalTextureMailbox mailbox;
@@ -368,20 +375,38 @@ private:
     OwnPtr<SameThreadClosure> m_newMailboxCallback;
 
     // This is used when the user requests either a depth or stencil buffer.
-    GLuint m_depthStencilBuffer;
+    GLuint m_depthStencilBuffer = 0;
 
-    // For multisampling.
-    GLuint m_multisampleFBO;
-    GLuint m_intermediateFBO;
-    GLuint m_intermediateRenderbuffer;
-    GLuint m_multisampleColorBuffer;
+    // For explicit resolve.
+    GLuint m_intermediateFBO = 0;
+    GLuint m_intermediateRenderbuffer = 0;
+
+    // When wantsExplicitResolve() returns true, the target of all draw
+    // operations.
+    GLuint m_multisampleFBO = 0;
+
+    // The id of the renderbuffer storage for |m_multisampleFBO|.
+    GLuint m_multisampleRenderbuffer = 0;
+
+    // When wantsExplicitResolve() returns false, the target of all draw and
+    // read operations. When wantsExplicitResolve() returns true, the target of
+    // all read operations. A swap is performed by exchanging |m_colorBuffer|
+    // with |m_frontColorBuffer|.
+    GLuint m_fbo = 0;
+
+    // All information about the texture storage for |m_fbo|.
+    TextureInfo m_colorBuffer;
 
     // True if our contents have been modified since the last presentation of this buffer.
-    bool m_contentsChanged;
+    bool m_contentsChanged = true;
 
     // True if commit() has been called since the last time markContentsChanged() had been called.
-    bool m_contentsChangeCommitted;
-    bool m_bufferClearNeeded;
+    bool m_contentsChangeCommitted = false;
+    bool m_bufferClearNeeded = false;
+
+    // Whether the client wants a depth or stencil buffer.
+    const bool m_wantDepth;
+    const bool m_wantStencil;
 
     enum AntialiasingMode {
         None,
@@ -390,14 +415,14 @@ private:
         ScreenSpaceAntialiasing,
     };
 
-    AntialiasingMode m_antiAliasingMode;
+    AntialiasingMode m_antiAliasingMode = None;
 
-    int m_maxTextureSize;
-    int m_sampleCount;
-    int m_packAlignment;
-    bool m_destructionInProgress;
-    bool m_isHidden;
-    SkFilterQuality m_filterQuality;
+    int m_maxTextureSize = 0;
+    int m_sampleCount = 0;
+    int m_packAlignment = 4;
+    bool m_destructionInProgress = false;
+    bool m_isHidden = false;
+    SkFilterQuality m_filterQuality = kLow_SkFilterQuality;
 
     OwnPtr<WebExternalTextureLayer> m_layer;
 

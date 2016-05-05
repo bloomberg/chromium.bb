@@ -127,7 +127,7 @@ WebGLRenderingContextBaseMap& forciblyEvictedContexts()
 
 ScopedRGBEmulationColorMask::ScopedRGBEmulationColorMask(gpu::gles2::GLES2Interface* contextGL, GLboolean* colorMask, DrawingBuffer* drawingBuffer)
     : m_contextGL(contextGL)
-    , m_requiresEmulation(drawingBuffer->requiresRGBEmulation())
+    , m_requiresEmulation(drawingBuffer->requiresAlphaChannelToBePreserved())
 {
     if (m_requiresEmulation) {
         memcpy(m_colorMask, colorMask, 4 * sizeof(GLboolean));
@@ -1164,7 +1164,7 @@ WebGLRenderingContextBase::HowToClear WebGLRenderingContextBase::clearIfComposit
     } else {
         contextGL()->ClearColor(0, 0, 0, 0);
     }
-    contextGL()->ColorMask(true, true, true, !drawingBuffer()->requiresRGBEmulation());
+    contextGL()->ColorMask(true, true, true, !drawingBuffer()->requiresAlphaChannelToBePreserved());
     GLbitfield clearMask = GL_COLOR_BUFFER_BIT;
     if (contextAttributes.get().depth()) {
         if (!combinedClear || !m_depthMask || !(mask & GL_DEPTH_BUFFER_BIT))
@@ -1304,8 +1304,7 @@ void WebGLRenderingContextBase::reshape(int width, int height)
 
     // We don't have to mark the canvas as dirty, since the newly created image buffer will also start off
     // clear (and this matches what reshape will do).
-    bool wantDepthOrStencilBuffer = m_requestedAttributes.depth() || m_requestedAttributes.stencil();
-    drawingBuffer()->reset(IntSize(width, height), wantDepthOrStencilBuffer);
+    drawingBuffer()->reset(IntSize(width, height));
     restoreStateAfterClear();
 
     contextGL()->BindTexture(GL_TEXTURE_2D, objectOrZero(m_textureUnits[m_activeTextureUnit].m_texture2DBinding.get()));
@@ -2594,7 +2593,7 @@ ScriptValue WebGLRenderingContextBase::getParameter(ScriptState* scriptState, GL
     case GL_ALIASED_POINT_SIZE_RANGE:
         return getWebGLFloatArrayParameter(scriptState, pname);
     case GL_ALPHA_BITS:
-        if (m_drawingBuffer->requiresRGBEmulation())
+        if (m_drawingBuffer->requiresAlphaChannelToBePreserved())
             return WebGLAny(scriptState, 0);
         return getIntParameter(scriptState, pname);
     case GL_ARRAY_BUFFER_BINDING:

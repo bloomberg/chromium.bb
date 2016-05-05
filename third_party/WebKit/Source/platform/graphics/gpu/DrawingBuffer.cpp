@@ -110,8 +110,8 @@ PassRefPtr<DrawingBuffer> DrawingBuffer::create(PassOwnPtr<WebGraphicsContext3DP
     if (discardFramebufferSupported)
         extensionsUtil->ensureExtensionEnabled("GL_EXT_discard_framebuffer");
 
-    RefPtr<DrawingBuffer> drawingBuffer = adoptRef(new DrawingBuffer(std::move(contextProvider), extensionsUtil.release(), discardFramebufferSupported, wantAlphaChannel, premultipliedAlpha, preserve));
-    if (!drawingBuffer->initialize(size, wantDepthBuffer, wantStencilBuffer, multisampleSupported)) {
+    RefPtr<DrawingBuffer> drawingBuffer = adoptRef(new DrawingBuffer(std::move(contextProvider), extensionsUtil.release(), discardFramebufferSupported, wantAlphaChannel, premultipliedAlpha, preserve, wantDepthBuffer, wantStencilBuffer));
+    if (!drawingBuffer->initialize(size, multisampleSupported)) {
         drawingBuffer->beginDestruction();
         return PassRefPtr<DrawingBuffer>();
     }
@@ -129,38 +129,18 @@ DrawingBuffer::DrawingBuffer(
     bool discardFramebufferSupported,
     bool wantAlphaChannel,
     bool premultipliedAlpha,
-    PreserveDrawingBuffer preserve)
+    PreserveDrawingBuffer preserve,
+    bool wantDepth,
+    bool wantStencil)
     : m_preserveDrawingBuffer(preserve)
-    , m_scissorEnabled(false)
-    , m_texture2DBinding(0)
-    , m_drawFramebufferBinding(0)
-    , m_readFramebufferBinding(0)
-    , m_renderbufferBinding(0)
-    , m_activeTextureUnit(GL_TEXTURE0)
     , m_contextProvider(std::move(contextProvider))
     , m_gl(m_contextProvider->contextGL())
     , m_extensionsUtil(std::move(extensionsUtil))
-    , m_size(-1, -1)
     , m_discardFramebufferSupported(discardFramebufferSupported)
     , m_wantAlphaChannel(wantAlphaChannel)
     , m_premultipliedAlpha(premultipliedAlpha)
-    , m_hasImplicitStencilBuffer(false)
-    , m_fbo(0)
-    , m_depthStencilBuffer(0)
-    , m_multisampleFBO(0)
-    , m_intermediateFBO(0)
-    , m_intermediateRenderbuffer(0)
-    , m_multisampleColorBuffer(0)
-    , m_contentsChanged(true)
-    , m_contentsChangeCommitted(false)
-    , m_bufferClearNeeded(false)
-    , m_antiAliasingMode(None)
-    , m_maxTextureSize(0)
-    , m_sampleCount(0)
-    , m_packAlignment(4)
-    , m_destructionInProgress(false)
-    , m_isHidden(false)
-    , m_filterQuality(kLow_SkFilterQuality)
+    , m_wantDepth(wantDepth)
+    , m_wantStencil(wantStencil)
 {
     memset(m_colorMask, 0, 4 * sizeof(GLboolean));
     memset(m_clearColor, 0, 4 * sizeof(GLfloat));
@@ -224,7 +204,7 @@ void DrawingBuffer::setFilterQuality(SkFilterQuality filterQuality)
     }
 }
 
-bool DrawingBuffer::requiresRGBEmulation()
+bool DrawingBuffer::requiresAlphaChannelToBePreserved()
 {
     // When an explicit resolve is required, clients draw into a render buffer
     // which is never backed by an IOSurface.
@@ -285,16 +265,11 @@ bool DrawingBuffer::prepareMailbox(WebExternalTextureMailbox* outMailbox, WebExt
 
     if (m_preserveDrawingBuffer == Discard) {
         std::swap(frontColorBufferMailbox->textureInfo, m_colorBuffer);
-        // It appears safe to overwrite the context's framebuffer binding in the Discard case since there will always be a
-        // WebGLRenderingContext::clearIfComposited() call made before the next draw call which restores the framebuffer binding.
-        // If this stops being true at some point, we should track the current framebuffer binding in the DrawingBuffer and restore
-        // it after attaching the new back buffer here.
-        m_gl->BindFramebuffer(GL_FRAMEBUFFER, m_fbo);
-        attachColorBufferToCurrentFBO();
+        attachColorBufferToReadFramebuffer();
 
         if (m_discardFramebufferSupported) {
             // Explicitly discard framebuffer to save GPU memory bandwidth for tile-based GPU arch.
-            const GLenum attachments[3] = { GL_COLOR_ATTACHMENT0, GL_DEPTH_ATTACHMENT, GL_STENCIL_ATTACHMENT};
+            const GLenum attachments[3] = { GL_COLOR_ATTACHMENT0, GL_DEPTH_ATTACHMENT, GL_STENCIL_ATTACHMENT };
             m_gl->DiscardFramebufferEXT(GL_FRAMEBUFFER, 3, attachments);
         }
     } else {
@@ -462,7 +437,7 @@ void DrawingBuffer::deleteMailbox(const WebExternalTextureMailbox& mailbox)
     ASSERT_NOT_REACHED();
 }
 
-bool DrawingBuffer::initialize(const IntSize& size, bool wantDepthBuffer, bool wantStencilBuffer, bool useMultisampling)
+bool DrawingBuffer::initialize(const IntSize& size, bool useMultisampling)
 {
     if (m_gl->GetGraphicsResetStatusKHR() != GL_NO_ERROR) {
         // Need to try to restore the context again later.
@@ -485,15 +460,18 @@ bool DrawingBuffer::initialize(const IntSize& size, bool wantDepthBuffer, bool w
     m_sampleCount = std::min(4, maxSampleCount);
 
     m_gl->GenFramebuffers(1, &m_fbo);
-
     m_gl->BindFramebuffer(GL_FRAMEBUFFER, m_fbo);
-    createSecondaryBuffers();
-    if (!reset(size, wantDepthBuffer || wantStencilBuffer))
+    if (wantExplicitResolve()) {
+        m_gl->GenFramebuffers(1, &m_multisampleFBO);
+        m_gl->BindFramebuffer(GL_FRAMEBUFFER, m_multisampleFBO);
+        m_gl->GenRenderbuffers(1, &m_multisampleRenderbuffer);
+    }
+    if (!reset(size))
         return false;
 
     if (m_depthStencilBuffer) {
-        DCHECK(wantDepthBuffer || wantStencilBuffer);
-        m_hasImplicitStencilBuffer = !wantStencilBuffer;
+        DCHECK(wantDepthOrStencil());
+        m_hasImplicitStencilBuffer = !m_wantStencil;
     }
 
     if (m_gl->GetGraphicsResetStatusKHR() != GL_NO_ERROR) {
@@ -607,8 +585,8 @@ void DrawingBuffer::beginDestruction()
     if (m_fbo)
         m_gl->DeleteFramebuffers(1, &m_fbo);
 
-    if (m_multisampleColorBuffer)
-        m_gl->DeleteRenderbuffers(1, &m_multisampleColorBuffer);
+    if (m_multisampleRenderbuffer)
+        m_gl->DeleteRenderbuffers(1, &m_multisampleRenderbuffer);
 
     if (m_intermediateFBO)
         m_gl->DeleteFramebuffers(1, &m_intermediateFBO);
@@ -628,7 +606,7 @@ void DrawingBuffer::beginDestruction()
 
     m_colorBuffer = TextureInfo();
     m_frontColorBuffer = FrontBufferInfo();
-    m_multisampleColorBuffer = 0;
+    m_multisampleRenderbuffer = 0;
     m_depthStencilBuffer = 0;
     m_multisampleFBO = 0;
     m_fbo = 0;
@@ -649,65 +627,38 @@ GLuint DrawingBuffer::createColorTexture(const TextureParameters& parameters)
     return offscreenColorTexture;
 }
 
-void DrawingBuffer::createSecondaryBuffers()
+bool DrawingBuffer::resizeMultisampleFramebuffer(const IntSize& size)
 {
-    // create a multisample FBO
-    if (m_antiAliasingMode == MSAAExplicitResolve) {
-        m_gl->GenFramebuffers(1, &m_multisampleFBO);
-        m_gl->BindFramebuffer(GL_FRAMEBUFFER, m_multisampleFBO);
-        m_gl->GenRenderbuffers(1, &m_multisampleColorBuffer);
-    }
-}
+    DCHECK(wantExplicitResolve());
+    m_gl->BindFramebuffer(GL_FRAMEBUFFER, m_multisampleFBO);
+    m_gl->BindRenderbuffer(GL_RENDERBUFFER, m_multisampleRenderbuffer);
+    m_gl->RenderbufferStorageMultisampleCHROMIUM(GL_RENDERBUFFER, m_sampleCount, m_colorBuffer.parameters.internalRenderbufferFormat, size.width(), size.height());
 
-bool DrawingBuffer::resizeFramebuffer(const IntSize& size, bool wantDepthOrStencilBuffer)
-{
-    m_gl->BindFramebuffer(GL_FRAMEBUFFER, m_fbo);
-    if (m_antiAliasingMode != MSAAExplicitResolve && wantDepthOrStencilBuffer)
-        resizeDepthStencil(size);
-    if (m_gl->CheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+    if (m_gl->GetError() == GL_OUT_OF_MEMORY)
         return false;
 
-    return true;
-}
+    m_gl->FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, m_multisampleRenderbuffer);
 
-bool DrawingBuffer::resizeMultisampleFramebuffer(const IntSize& size, bool wantDepthOrStencilBuffer)
-{
-    if (m_antiAliasingMode == MSAAExplicitResolve) {
-        m_gl->BindFramebuffer(GL_FRAMEBUFFER, m_multisampleFBO);
-
-        m_gl->BindRenderbuffer(GL_RENDERBUFFER, m_multisampleColorBuffer);
-        m_gl->RenderbufferStorageMultisampleCHROMIUM(GL_RENDERBUFFER, m_sampleCount, m_colorBuffer.parameters.internalRenderbufferFormat, size.width(), size.height());
+    if (m_intermediateFBO) {
+        m_gl->BindFramebuffer(GL_FRAMEBUFFER, m_intermediateFBO);
+        m_gl->BindRenderbuffer(GL_RENDERBUFFER, m_intermediateRenderbuffer);
+        m_gl->RenderbufferStorage(GL_RENDERBUFFER, m_colorBuffer.parameters.internalRenderbufferFormat, size.width(), size.height());
 
         if (m_gl->GetError() == GL_OUT_OF_MEMORY)
             return false;
 
-        m_gl->FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, m_multisampleColorBuffer);
-        if (wantDepthOrStencilBuffer)
-            resizeDepthStencil(size);
+        m_gl->FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, m_intermediateRenderbuffer);
         if (m_gl->CheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
             return false;
 
-        if (m_intermediateFBO) {
-            m_gl->BindFramebuffer(GL_FRAMEBUFFER, m_intermediateFBO);
-            m_gl->BindRenderbuffer(GL_RENDERBUFFER, m_intermediateRenderbuffer);
-            m_gl->RenderbufferStorage(GL_RENDERBUFFER, m_colorBuffer.parameters.internalRenderbufferFormat, size.width(), size.height());
-
-            if (m_gl->GetError() == GL_OUT_OF_MEMORY)
-                return false;
-
-            m_gl->FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, m_intermediateRenderbuffer);
-            if (m_gl->CheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-                return false;
-
-            m_gl->BindFramebuffer(GL_FRAMEBUFFER, m_multisampleFBO);
-        }
+        m_gl->BindFramebuffer(GL_FRAMEBUFFER, m_multisampleFBO);
     }
-
     return true;
 }
 
 void DrawingBuffer::resizeDepthStencil(const IntSize& size)
 {
+    m_gl->BindFramebuffer(GL_FRAMEBUFFER, m_multisampleFBO ? m_multisampleFBO : m_fbo);
     if (!m_depthStencilBuffer)
         m_gl->GenRenderbuffers(1, &m_depthStencilBuffer);
     m_gl->BindRenderbuffer(GL_RENDERBUFFER, m_depthStencilBuffer);
@@ -723,7 +674,34 @@ void DrawingBuffer::resizeDepthStencil(const IntSize& size)
     m_gl->BindRenderbuffer(GL_RENDERBUFFER, 0);
 }
 
+bool DrawingBuffer::resizeDefaultFramebuffer(const IntSize& size)
+{
+    // Resize or create m_colorBuffer.
+    if (m_colorBuffer.textureId) {
+        resizeTextureMemory(&m_colorBuffer, size);
+    } else {
+        m_colorBuffer = createTextureAndAllocateMemory(size);
+    }
 
+    attachColorBufferToReadFramebuffer();
+
+    if (wantExplicitResolve()) {
+        if (!resizeMultisampleFramebuffer(size))
+            return false;
+    }
+
+    if (wantDepthOrStencil())
+        resizeDepthStencil(size);
+
+    if (wantExplicitResolve()) {
+        m_gl->BindFramebuffer(GL_FRAMEBUFFER, m_multisampleFBO);
+        if (m_gl->CheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+            return false;
+    }
+
+    m_gl->BindFramebuffer(GL_FRAMEBUFFER, m_fbo);
+    return m_gl->CheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
+}
 
 void DrawingBuffer::clearFramebuffers(GLbitfield clearMask)
 {
@@ -759,7 +737,7 @@ IntSize DrawingBuffer::adjustSize(const IntSize& desiredSize, const IntSize& cur
     return adjustedSize;
 }
 
-bool DrawingBuffer::reset(const IntSize& newSize, bool wantDepthOrStencilBuffer)
+bool DrawingBuffer::reset(const IntSize& newSize)
 {
     ASSERT(!newSize.isEmpty());
     IntSize adjustedSize = adjustSize(newSize, m_size, m_maxTextureSize);
@@ -768,18 +746,7 @@ bool DrawingBuffer::reset(const IntSize& newSize, bool wantDepthOrStencilBuffer)
 
     if (adjustedSize != m_size) {
         do {
-            if (m_colorBuffer.textureId) {
-                resizeTextureMemory(&m_colorBuffer, adjustedSize);
-            } else {
-                m_colorBuffer = createTextureAndAllocateMemory(adjustedSize);
-            }
-
-            m_gl->BindFramebuffer(GL_FRAMEBUFFER, m_fbo);
-            attachColorBufferToCurrentFBO();
-
-            // resize multisample FBO
-            if (!resizeMultisampleFramebuffer(adjustedSize, wantDepthOrStencilBuffer)
-                || !resizeFramebuffer(adjustedSize, wantDepthOrStencilBuffer)) {
+            if (!resizeDefaultFramebuffer(adjustedSize)) {
                 adjustedSize.scale(s_resourceAdjustedRatio);
                 continue;
             }
@@ -794,7 +761,7 @@ bool DrawingBuffer::reset(const IntSize& newSize, bool wantDepthOrStencilBuffer)
 
     m_gl->Disable(GL_SCISSOR_TEST);
     m_gl->ClearColor(0, 0, 0, 0);
-    m_gl->ColorMask(true, true, true, !requiresRGBEmulation());
+    m_gl->ColorMask(true, true, true, !requiresAlphaChannelToBePreserved());
 
     GLbitfield clearMask = GL_COLOR_BUFFER_BIT;
     if (!!m_depthStencilBuffer) {
@@ -814,7 +781,7 @@ bool DrawingBuffer::reset(const IntSize& newSize, bool wantDepthOrStencilBuffer)
 
 void DrawingBuffer::commit()
 {
-    if (m_multisampleFBO && !m_contentsChangeCommitted) {
+    if (wantExplicitResolve() && !m_contentsChangeCommitted) {
         m_gl->BindFramebuffer(GL_READ_FRAMEBUFFER_ANGLE, m_multisampleFBO);
         m_gl->BindFramebuffer(GL_DRAW_FRAMEBUFFER_ANGLE, m_fbo);
 
@@ -897,10 +864,7 @@ bool DrawingBuffer::multisample() const
 
 void DrawingBuffer::bind(GLenum target)
 {
-    if (target != GL_READ_FRAMEBUFFER)
-        m_gl->BindFramebuffer(target, m_multisampleFBO ? m_multisampleFBO : m_fbo);
-    else
-        m_gl->BindFramebuffer(target, m_fbo);
+    m_gl->BindFramebuffer(target, wantExplicitResolve() ? m_multisampleFBO : m_fbo);
 }
 
 void DrawingBuffer::setPackAlignment(GLint param)
@@ -1086,17 +1050,39 @@ void DrawingBuffer::resizeTextureMemory(TextureInfo* info, const IntSize& size)
     texImage2DResourceSafe(info->parameters.target, 0, info->parameters.creationInternalColorFormat, size.width(), size.height(), 0, info->parameters.colorFormat, GL_UNSIGNED_BYTE);
 }
 
-void DrawingBuffer::attachColorBufferToCurrentFBO()
+void DrawingBuffer::attachColorBufferToReadFramebuffer()
 {
-    GLenum target = m_colorBuffer.parameters.target;
+    m_gl->BindFramebuffer(GL_FRAMEBUFFER, m_fbo);
 
-    m_gl->BindTexture(target, m_colorBuffer.textureId);
+    GLenum target = m_colorBuffer.parameters.target;
+    GLenum id = m_colorBuffer.textureId;
+
+    m_gl->BindTexture(target, id);
 
     if (m_antiAliasingMode == MSAAImplicitResolve)
-        m_gl->FramebufferTexture2DMultisampleEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, target, m_colorBuffer.textureId, 0, m_sampleCount);
+        m_gl->FramebufferTexture2DMultisampleEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, target, id, 0, m_sampleCount);
     else
-        m_gl->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, target, m_colorBuffer.textureId, 0);
+        m_gl->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, target, id, 0);
 
+    restoreTextureBindings();
+    restoreFramebufferBindings();
+}
+
+bool DrawingBuffer::wantExplicitResolve()
+{
+    return m_antiAliasingMode == MSAAExplicitResolve;
+}
+
+bool DrawingBuffer::wantDepthOrStencil()
+{
+    return m_wantDepth || m_wantStencil;
+}
+
+void DrawingBuffer::restoreTextureBindings()
+{
+    // This class potentially modifies the bindings for GL_TEXTURE_2D and
+    // GL_TEXTURE_RECTANGLE. Only GL_TEXTURE_2D needs to be restored since
+    // the public interface for WebGL does not support GL_TEXTURE_RECTANGLE.
     m_gl->BindTexture(GL_TEXTURE_2D, m_texture2DBinding);
 }
 
