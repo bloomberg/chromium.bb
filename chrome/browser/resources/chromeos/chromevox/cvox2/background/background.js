@@ -679,7 +679,12 @@ Background.prototype = {
 
     if (pred) {
       var node = AutomationUtil.findNextNode(
-          current.getBound(dir).node, dir, pred);
+          current.getBound(dir).node, dir, pred, {skipInitialAncestry: true});
+
+      if (node) {
+        node = AutomationUtil.findNodePre(
+            node, dir, AutomationPredicate.element) || node;
+      }
 
       if (node) {
         current = cursors.Range.fromNode(node);

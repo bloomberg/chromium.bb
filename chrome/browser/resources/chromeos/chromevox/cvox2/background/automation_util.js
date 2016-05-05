@@ -103,6 +103,7 @@ AutomationUtil.findNextNode = function(cur, dir, pred, opt_restrictions) {
 
   restrictions.root = opt_restrictions.root || AutomationUtil.isTraversalRoot;
   restrictions.skipInitialSubtree = opt_restrictions.skipInitialSubtree;
+  restrictions.skipInitialAncestry = opt_restrictions.skipInitialAncestry;
 
   restrictions.visit = function(node) {
     if (pred(node) && !AutomationPredicate.shouldIgnoreLeaf(node))

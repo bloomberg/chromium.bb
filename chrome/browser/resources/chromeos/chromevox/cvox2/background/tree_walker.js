@@ -32,6 +32,7 @@ AutomationTreeWalkerPhase = {
  * @typedef {{leaf: (AutomationPredicate.Unary|undefined),
  *          root: (AutomationPredicate.Unary|undefined),
  *          visit: (AutomationPredicate.Unary|undefined),
+ *          skipInitialAncestry: (boolean|undefined),
  *          skipInitialSubtree: (boolean|undefined)}}
  */
 var AutomationTreeWalkerRestriction;
@@ -53,6 +54,9 @@ var AutomationTreeWalkerRestriction;
  * tree.
  * leaf: this predicate determines if a node should end downward movement in the
  * tree.
+ *
+ * |skipInitialAncestry| skips visiting ancestor nodes of the start node for
+ * multiple invokations of next when moving backward.
  *
  * Finally, a boolean, |skipInitialSubtree|, makes the first invocation of
  * |next| skip the initial node's subtree when finding a match. This is useful
@@ -87,14 +91,29 @@ AutomationTreeWalker = function(node, dir, opt_restrictions) {
   this.backwardAncestor_ = node.parent;
   var restrictions = opt_restrictions || {};
 
-  this.visitPred_ =
-      restrictions.visit ? restrictions.visit : function() { return true; };
+  this.visitPred_ = function(node) {
+    if (this.skipInitialAncestry_ &&
+        this.phase_ == AutomationTreeWalkerPhase.ANCESTOR)
+      return false;
+
+    if (this.skipInitialSubtree_ &&
+        this.phase != AutomationTreeWalkerPhase.ANCESTOR &&
+        this.phase != AutomationTreeWalkerPhase.OTHER)
+      return false;
+
+    if (restrictions.visit)
+      return restrictions.visit(node);
+
+    return true;
+  };
   /** @type {AutomationPredicate.Unary} @private */
   this.leafPred_ = restrictions.leaf ? restrictions.leaf :
       AutomationTreeWalker.falsePredicate_;
   /** @type {AutomationPredicate.Unary} @private */
   this.rootPred_ = restrictions.root ? restrictions.root :
       AutomationTreeWalker.falsePredicate_;
+  /** @const {boolean} @private */
+  this.skipInitialAncestry_ = restrictions.skipInitialAncestry || false;
   /** @const {boolean} @private */
   this.skipInitialSubtree_ = restrictions.skipInitialSubtree || false;
 };
@@ -149,6 +168,7 @@ AutomationTreeWalker.prototype = {
     if (!this.leafPred_(node) && node.firstChild) {
       if (this.phase_ == AutomationTreeWalkerPhase.INITIAL)
         this.phase_ = AutomationTreeWalkerPhase.DESCENDANT;
+
       if (!this.skipInitialSubtree_ ||
           this.phase != AutomationTreeWalkerPhase.DESCENDANT) {
         this.node_ = node.firstChild;

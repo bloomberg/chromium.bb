@@ -136,6 +136,25 @@ TEST_F('AutomationTreeWalkerTest', 'RootLeafRestriction', function() {
       while (walker.next().node) {}
       assertEquals('532', visited);
 
+      // Test not visiting ancestors of initial node.
+      var node5 = r.firstChild.firstChild.lastChild;
+      assertEquals('5', node5.name);
+      restrictions.root = function(n) { return n.name == '1'; };
+      restrictions.leaf = function(n) { return !n.firstChild; };
+
+      visited = '';
+      restrictions.skipInitialAncestry = false;
+      walker = new AutomationTreeWalker(node5, 'backward', restrictions);
+      while (walker.next().node) {}
+      assertEquals('4321', visited);
+
+      // 2 and 1 are ancestors; check they get skipped.
+      visited = '';
+      restrictions.skipInitialAncestry = true;
+      walker = new AutomationTreeWalker(node5, 'backward', restrictions);
+      while (walker.next().node) {}
+      assertEquals('43', visited);
+
       // We should skip node 2's subtree.
       walker = new AutomationTreeWalker(
           node2, 'forward', {skipInitialSubtree: true});
