@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/image-encoders/skia/WEBPImageEncoder.h"
+#include "platform/image-encoders/WEBPImageEncoder.h"
 
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/ImageBuffer.h"

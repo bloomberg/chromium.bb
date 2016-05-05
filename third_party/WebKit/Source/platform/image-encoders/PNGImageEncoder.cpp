@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/image-encoders/skia/PNGImageEncoder.h"
+#include "platform/image-encoders/PNGImageEncoder.h"
 
 #include "platform/graphics/ImageBuffer.h"
 #include "wtf/OwnPtr.h"
@@ -70,8 +70,7 @@ PassOwnPtr<PNGImageEncoderState> PNGImageEncoderState::create(const IntSize& ima
     png_set_filter(png, PNG_FILTER_TYPE_BASE, PNG_FILTER_SUB);
 
     png_set_write_fn(png, output, writeOutput, 0);
-    png_set_IHDR(png, info, imageSize.width(), imageSize.height(),
-                 8, PNG_COLOR_TYPE_RGB_ALPHA, 0, 0, 0);
+    png_set_IHDR(png, info, imageSize.width(), imageSize.height(), 8, PNG_COLOR_TYPE_RGB_ALPHA, 0, 0, 0);
     png_write_info(png, info);
 
     return adoptPtr(new PNGImageEncoderState(png, info));

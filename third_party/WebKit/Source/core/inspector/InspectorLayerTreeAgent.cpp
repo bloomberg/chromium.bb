@@ -50,7 +50,7 @@
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/PictureSnapshot.h"
 #include "platform/graphics/paint/SkPictureBuilder.h"
-#include "platform/image-encoders/skia/PNGImageEncoder.h"
+#include "platform/image-encoders/PNGImageEncoder.h"
 #include "platform/inspector_protocol/Parser.h"
 #include "platform/transforms/TransformationMatrix.h"
 #include "public/platform/WebFloatPoint.h"

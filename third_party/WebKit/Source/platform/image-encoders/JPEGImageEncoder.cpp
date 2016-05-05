@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/image-encoders/skia/JPEGImageEncoder.h"
+#include "platform/image-encoders/JPEGImageEncoder.h"
 
 #include "SkColorPriv.h"
 #include "platform/geometry/IntSize.h"
