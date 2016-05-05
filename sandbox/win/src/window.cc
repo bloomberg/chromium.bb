@@ -38,10 +38,13 @@ namespace sandbox {
 ResultCode CreateAltWindowStation(HWINSTA* winsta) {
   // Get the security attributes from the current window station; we will
   // use this as the base security attributes for the new window station.
+  HWINSTA current_winsta = ::GetProcessWindowStation();
+  if (!current_winsta)
+    return SBOX_ERROR_CANNOT_GET_WINSTATION;
+
   SECURITY_ATTRIBUTES attributes = {0};
-  if (!GetSecurityAttributes(::GetProcessWindowStation(), &attributes)) {
-    return SBOX_ERROR_CANNOT_CREATE_WINSTATION;
-  }
+  if (!GetSecurityAttributes(current_winsta, &attributes))
+    return SBOX_ERROR_CANNOT_QUERY_WINSTATION_SECURITY;
 
   // Create the window station using NULL for the name to ask the os to
   // generate it.
@@ -64,13 +67,16 @@ ResultCode CreateAltDesktop(HWINSTA winsta, HDESK* desktop) {
                ::GetCurrentProcessId());
   desktop_name += buffer;
 
+  HDESK current_desktop = GetThreadDesktop(GetCurrentThreadId());
+
+  if (!current_desktop)
+    return SBOX_ERROR_CANNOT_GET_DESKTOP;
+
   // Get the security attributes from the current desktop, we will use this as
   // the base security attributes for the new desktop.
   SECURITY_ATTRIBUTES attributes = {0};
-  if (!GetSecurityAttributes(GetThreadDesktop(GetCurrentThreadId()),
-                             &attributes)) {
-    return SBOX_ERROR_CANNOT_CREATE_DESKTOP;
-  }
+  if (!GetSecurityAttributes(current_desktop, &attributes))
+    return SBOX_ERROR_CANNOT_QUERY_DESKTOP_SECURITY;
 
   // Back up the current window station, in case we need to switch it.
   HWINSTA current_winsta = ::GetProcessWindowStation();

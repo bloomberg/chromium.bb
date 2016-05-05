@@ -85,6 +85,14 @@ enum ResultCode : int {
   SBOX_ERROR_SETUP_NTDLL_IMPORTS = 32,
   // Could not setup the handle closer in target process.
   SBOX_ERROR_SETUP_HANDLE_CLOSER = 33,
+  // Cannot get the current Window Station.
+  SBOX_ERROR_CANNOT_GET_WINSTATION = 34,
+  // Cannot query the security attributes of the current Window Station.
+  SBOX_ERROR_CANNOT_QUERY_WINSTATION_SECURITY = 35,
+  // Cannot get the current Desktop.
+  SBOX_ERROR_CANNOT_GET_DESKTOP = 36,
+  // Cannot query the security attributes of the current Desktop.
+  SBOX_ERROR_CANNOT_QUERY_DESKTOP_SECURITY = 37,
   // Placeholder for last item of the enum.
   SBOX_ERROR_LAST
 };
