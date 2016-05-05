@@ -2910,6 +2910,20 @@ paper-button {
   
   
   </dom-module>
+<style>
+/* Copyright 2016 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+:root {
+  /* These are custom, Chrome-specific colors that don't have --paper or
+   * --google equivalents. Blame bettes@. http://crbug.com/598451 */
+  --md-background-color: rgb(236, 239, 241);
+  --md-toolbar-color: rgb(52, 73, 94);
+}
+
+</style>
+
 <dom-module id="downloads-manager" assetpath="chrome://downloads/">
   <template><style>
 /* Copyright 2015 The Chromium Authors. All rights reserved.
@@ -2974,19 +2988,6 @@ paper-button {
   font-weight: 500;
   margin: 0;
   min-width: auto;
-}
-
-</style>
-    <style>
-/* Copyright 2016 The Chromium Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file. */
-
-:root {
-  /* These are custom, Chrome-specific colors that don't have --paper or
-   * --google equivalents. Blame bettes@. http://crbug.com/598451 */
-  --md-background-color: rgb(236, 239, 241);
-  --md-toolbar-color: rgb(52, 73, 94);
 }
 
 </style>
