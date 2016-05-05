@@ -279,5 +279,16 @@ void DeferredTaskHandler::clearHandlersToBeDeleted()
     m_deletableOrphanHandlers.clear();
 }
 
+void DeferredTaskHandler::setAudioThreadToCurrentThread()
+{
+    ASSERT(!isMainThread());
+    if (m_audioThread) {
+        ASSERT(m_audioThread == currentThread());
+        return;
+    }
+    ThreadIdentifier thread = currentThread();
+    releaseStore(&m_audioThread, thread);
+}
+
 } // namespace blink
 

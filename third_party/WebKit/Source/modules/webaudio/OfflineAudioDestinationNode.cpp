@@ -253,7 +253,7 @@ bool OfflineAudioDestinationHandler::renderIfNotSuspended(AudioBus* sourceBus, A
     if (!context())
         return false;
 
-    context()->deferredTaskHandler().setAudioThread(currentThread());
+    context()->deferredTaskHandler().setAudioThreadToCurrentThread();
 
     // If the destination node is not initialized, pass the silence to the final
     // audio destination (one step before the FIFO). This check is for the case

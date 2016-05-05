@@ -99,7 +99,7 @@ public:
     //
     // Thread Safety and Graph Locking:
     //
-    void setAudioThread(ThreadIdentifier thread) { releaseStore(&m_audioThread, thread); } // FIXME: check either not initialized or the same
+    void setAudioThreadToCurrentThread();
     ThreadIdentifier audioThread() const { return acquireLoad(&m_audioThread); }
 
     // TODO(hongchan): Use no-barrier load here. (crbug.com/247328)
