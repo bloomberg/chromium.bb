@@ -57,7 +57,6 @@ StringToUnitTable createStringToUnitTable()
     table.set(String("in"), CSSPrimitiveValue::UnitType::Inches);
     table.set(String("pt"), CSSPrimitiveValue::UnitType::Points);
     table.set(String("pc"), CSSPrimitiveValue::UnitType::Picas);
-    table.set(String(""), CSSPrimitiveValue::UnitType::UserUnits);
     table.set(String("deg"), CSSPrimitiveValue::UnitType::Degrees);
     table.set(String("rad"), CSSPrimitiveValue::UnitType::Radians);
     table.set(String("grad"), CSSPrimitiveValue::UnitType::Gradians);
