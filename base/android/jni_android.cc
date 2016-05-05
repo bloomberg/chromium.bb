@@ -119,7 +119,9 @@ ScopedJavaLocalRef<jclass> GetClass(JNIEnv* env, const char* class_name) {
   } else {
     clazz = env->FindClass(class_name);
   }
-  CHECK(!ClearException(env) && clazz) << "Failed to find class " << class_name;
+  if (ClearException(env) || !clazz) {
+    LOG(FATAL) << "Failed to find class " << class_name;
+  }
   return ScopedJavaLocalRef<jclass>(env, clazz);
 }
 
@@ -156,10 +158,11 @@ jmethodID MethodID::Get(JNIEnv* env,
   jmethodID id = type == TYPE_STATIC ?
       env->GetStaticMethodID(clazz, method_name, jni_signature) :
       env->GetMethodID(clazz, method_name, jni_signature);
-  CHECK(base::android::ClearException(env) || id) <<
-      "Failed to find " <<
-      (type == TYPE_STATIC ? "static " : "") <<
-      "method " << method_name << " " << jni_signature;
+  if (base::android::ClearException(env) || !id) {
+    LOG(FATAL) << "Failed to find " <<
+        (type == TYPE_STATIC ? "static " : "") <<
+        "method " << method_name << " " << jni_signature;
+  }
   return id;
 }
 
@@ -230,7 +233,7 @@ void CheckException(JNIEnv* env) {
   }
 
   // Now, feel good about it and die.
-  CHECK(false) << "Please include Java exception stack in crash report";
+  LOG(FATAL) << "Please include Java exception stack in crash report";
 }
 
 std::string GetJavaExceptionInfo(JNIEnv* env, jthrowable java_throwable) {
