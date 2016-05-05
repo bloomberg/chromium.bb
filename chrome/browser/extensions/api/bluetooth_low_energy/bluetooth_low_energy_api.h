@@ -538,6 +538,10 @@ class BluetoothLowEnergyRegisterServiceFunction
 
   // BluetoothLowEnergyPeripheralExtensionFunction override.
   void DoWork() override;
+
+ private:
+  void SuccessCallback();
+  void ErrorCallback(BluetoothLowEnergyEventRouter::Status status);
 };
 
 class BluetoothLowEnergyUnregisterServiceFunction
@@ -552,6 +556,12 @@ class BluetoothLowEnergyUnregisterServiceFunction
 
   // BluetoothLowEnergyPeripheralExtensionFunction override.
   void DoWork() override;
+
+ private:
+  // Success and error callbacks, called by
+  // BluetoothLowEnergyEventRouter::RegisterService.
+  void SuccessCallback();
+  void ErrorCallback(BluetoothLowEnergyEventRouter::Status status);
 };
 
 class BluetoothLowEnergySendRequestResponseFunction

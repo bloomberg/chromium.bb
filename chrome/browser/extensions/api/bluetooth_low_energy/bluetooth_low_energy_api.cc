@@ -123,6 +123,8 @@ std::string StatusToString(BluetoothLowEnergyEventRouter::Status status) {
       return kErrorTimeout;
     case BluetoothLowEnergyEventRouter::kStatusErrorUnsupportedDevice:
       return kErrorUnsupportedDevice;
+    case BluetoothLowEnergyEventRouter::kStatusErrorInvalidServiceId:
+      return kErrorInvalidServiceId;
     case BluetoothLowEnergyEventRouter::kStatusSuccess:
       NOTREACHED();
       break;
@@ -1138,6 +1140,8 @@ void BluetoothLowEnergyUnregisterAdvertisementFunction::ErrorCallback(
   SendResponse(false);
 }
 
+// createService:
+
 template class BLEPeripheralExtensionFunction<apibtle::CreateService::Params>;
 
 void BluetoothLowEnergyCreateServiceFunction::DoWork() {
@@ -1151,7 +1155,7 @@ void BluetoothLowEnergyCreateServiceFunction::DoWork() {
       device::BluetoothLocalGattService::Create(
           event_router_->adapter(),
           device::BluetoothUUID(params_->service.uuid),
-          params_->service.is_primary, nullptr, nullptr);
+          params_->service.is_primary, nullptr, event_router_);
 
   Respond(ArgumentList(
       apibtle::CreateService::Results::Create(service->GetIdentifier())));
@@ -1159,6 +1163,8 @@ void BluetoothLowEnergyCreateServiceFunction::DoWork() {
   Respond(Error(kErrorPlatformNotSupported));
 #endif
 }
+
+// createCharacteristic:
 
 template class BLEPeripheralExtensionFunction<
     apibtle::CreateCharacteristic::Params>;
@@ -1186,6 +1192,8 @@ void BluetoothLowEnergyCreateCharacteristicFunction::DoWork() {
       characteristic->GetIdentifier())));
 }
 
+// createDescriptor:
+
 template class BLEPeripheralExtensionFunction<
     apibtle::CreateDescriptor::Params>;
 
@@ -1206,28 +1214,64 @@ void BluetoothLowEnergyCreateDescriptorFunction::DoWork() {
       apibtle::CreateDescriptor::Results::Create(descriptor->GetIdentifier())));
 }
 
+// registerService:
+
 template class BLEPeripheralExtensionFunction<apibtle::RegisterService::Params>;
 
 void BluetoothLowEnergyRegisterServiceFunction::DoWork() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  event_router_->RegisterGattService(
+      extension(), params_->service_id,
+      base::Bind(&BluetoothLowEnergyRegisterServiceFunction::SuccessCallback,
+                 this),
+      base::Bind(&BluetoothLowEnergyRegisterServiceFunction::ErrorCallback,
+                 this));
+}
+
+void BluetoothLowEnergyRegisterServiceFunction::SuccessCallback() {
   Respond(ArgumentList(apibtle::RegisterService::Results::Create(
       apibtle::SERVICE_RESULT_SUCCESS)));
 }
+
+void BluetoothLowEnergyRegisterServiceFunction::ErrorCallback(
+    BluetoothLowEnergyEventRouter::Status status) {
+  Respond(Error(StatusToString(status)));
+}
+
+// unregisterService:
 
 template class BLEPeripheralExtensionFunction<
     apibtle::UnregisterService::Params>;
 
 void BluetoothLowEnergyUnregisterServiceFunction::DoWork() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  event_router_->UnregisterGattService(
+      extension(), params_->service_id,
+      base::Bind(&BluetoothLowEnergyUnregisterServiceFunction::SuccessCallback,
+                 this),
+      base::Bind(&BluetoothLowEnergyUnregisterServiceFunction::ErrorCallback,
+                 this));
+}
+
+void BluetoothLowEnergyUnregisterServiceFunction::SuccessCallback() {
   Respond(ArgumentList(apibtle::UnregisterService::Results::Create(
       apibtle::SERVICE_RESULT_SUCCESS)));
 }
+
+void BluetoothLowEnergyUnregisterServiceFunction::ErrorCallback(
+    BluetoothLowEnergyEventRouter::Status status) {
+  Respond(Error(StatusToString(status)));
+}
+
+// sendRequestResponse:
 
 template class BLEPeripheralExtensionFunction<
     apibtle::SendRequestResponse::Params>;
 
 void BluetoothLowEnergySendRequestResponseFunction::DoWork() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  std::vector<uint8_t> uint8_vector(params_->response.value->begin(),
+                                    params_->response.value->end());
+  event_router_->HandleRequestResponse(
+      extension(), params_->response.request_id, params_->response.is_error,
+      uint8_vector);
   Respond(NoArguments());
 }
 

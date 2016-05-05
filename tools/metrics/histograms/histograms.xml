@@ -69081,6 +69081,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="394" label="INPUT_METHOD_PRIVATE_ON_IME_MENU_ACTIVATION_CHANGED"/>
   <int value="395" label="INPUT_METHOD_PRIVATE_ON_IME_MENU_LIST_CHANGED"/>
   <int value="396" label="INPUT_METHOD_PRIVATE_ON_IME_MENU_ITEMS_CHANGED"/>
+  <int value="397" label="BLUETOOTH_LOW_ENERGY_ON_CHARACTERISTIC_READ_REQUEST"/>
+  <int value="398"
+      label="BLUETOOTH_LOW_ENERGY_ON_CHARACTERISTIC_WRITE_REQUEST"/>
+  <int value="399" label="BLUETOOTH_LOW_ENERGY_ON_DESCRIPTOR_READ_REQUEST"/>
+  <int value="400" label="BLUETOOTH_LOW_ENERGY_ON_DESCRIPTOR_WRITE_REQUEST"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult" type="int">

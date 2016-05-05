@@ -19,6 +19,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
+#include "device/bluetooth/bluetooth_local_gatt_service.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service.h"
 #include "extensions/browser/extension_event_histogram_value.h"
 
@@ -50,8 +51,28 @@ class Extension;
 // The BluetoothLowEnergyEventRouter is used by the bluetoothLowEnergy API to
 // interface with the internal Bluetooth API in device/bluetooth.
 class BluetoothLowEnergyEventRouter
-    : public device::BluetoothAdapter::Observer {
+    : public device::BluetoothAdapter::Observer,
+      public device::BluetoothLocalGattService::Delegate {
  public:
+  struct AttributeValueRequest {
+   public:
+    enum RequestType { ATTRIBUTE_READ_REQUEST, ATTRIBUTE_WRITE_REQUEST };
+
+    AttributeValueRequest(const Delegate::ValueCallback& value_callback,
+                          const Delegate::ErrorCallback& error_callback);
+    AttributeValueRequest(const base::Closure& success_callback,
+                          const Delegate::ErrorCallback& error_callback);
+    ~AttributeValueRequest();
+
+    RequestType type;
+    Delegate::ValueCallback value_callback;
+    base::Closure success_callback;
+    Delegate::ErrorCallback error_callback;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(AttributeValueRequest);
+  };
+
   explicit BluetoothLowEnergyEventRouter(content::BrowserContext* context);
   ~BluetoothLowEnergyEventRouter() override;
 
@@ -80,10 +101,11 @@ class BluetoothLowEnergyEventRouter
     kStatusErrorRequestNotSupported,
     kStatusErrorTimeout,
     kStatusErrorUnsupportedDevice,
+    kStatusErrorInvalidServiceId,
   };
 
   // Error callback is used by asynchronous methods to report failures.
-  typedef base::Callback<void(Status)> ErrorCallback;
+  using ErrorCallback = base::Callback<void(Status)>;
 
   // Returns true if Bluetooth is supported on the current platform or if the
   // internal |adapter_| instance has been initialized for testing.
@@ -278,6 +300,36 @@ class BluetoothLowEnergyEventRouter
       device::BluetoothRemoteGattDescriptor* descriptor,
       const std::vector<uint8_t>& value) override;
 
+  // device::BluetoothLocalGattService::Delegate overrides.
+  void OnCharacteristicReadRequest(
+      const device::BluetoothLocalGattService* service,
+      const device::BluetoothLocalGattCharacteristic* characteristic,
+      int offset,
+      const Delegate::ValueCallback& value_callback,
+      const Delegate::ErrorCallback& error_callback) override;
+  void OnCharacteristicWriteRequest(
+      const device::BluetoothLocalGattService* service,
+      const device::BluetoothLocalGattCharacteristic* characteristic,
+      const std::vector<uint8_t>& value,
+      int offset,
+      const base::Closure& callback,
+      const Delegate::ErrorCallback& error_callback) override;
+
+  void OnDescriptorReadRequest(
+      const device::BluetoothLocalGattService* service,
+      const device::BluetoothLocalGattDescriptor* descriptor,
+      int offset,
+      const Delegate::ValueCallback& value_callback,
+      const Delegate::ErrorCallback& error_callback) override;
+
+  void OnDescriptorWriteRequest(
+      const device::BluetoothLocalGattService* service,
+      const device::BluetoothLocalGattDescriptor* descriptor,
+      const std::vector<uint8_t>& value,
+      int offset,
+      const base::Closure& callback,
+      const Delegate::ErrorCallback& error_callback) override;
+
   // Adds a mapping for a local characteristic ID to its service ID
   void AddLocalCharacteristic(const std::string& id,
                               const std::string& service_id);
@@ -285,6 +337,24 @@ class BluetoothLowEnergyEventRouter
   // Returns NULL, if the characteristic cannot be found.
   device::BluetoothLocalGattCharacteristic* GetLocalCharacteristic(
       const std::string& id) const;
+
+  // Register a local GATT service.
+  void RegisterGattService(const Extension* extension,
+                           const std::string& service_id,
+                           const base::Closure& callback,
+                           const ErrorCallback& error_callback);
+
+  // Unregister a local GATT service.
+  void UnregisterGattService(const Extension* extension,
+                             const std::string& service_id,
+                             const base::Closure& callback,
+                             const ErrorCallback& error_callback);
+
+  // Handle a response from the app for the given request id.
+  void HandleRequestResponse(const Extension* extension,
+                             size_t request_id,
+                             bool is_error,
+                             const std::vector<uint8_t>& value);
 
   device::BluetoothAdapter* adapter() { return adapter_.get(); }
 
@@ -309,6 +379,11 @@ class BluetoothLowEnergyEventRouter
       const device::BluetoothUUID& uuid,
       const std::string& characteristic_id,
       std::unique_ptr<base::ListValue> args);
+
+  void DispatchEventToExtension(const std::string& extension_id,
+                                events::HistogramValue histogram_value,
+                                const std::string& event_name,
+                                std::unique_ptr<base::ListValue> args);
 
   // Returns a BluetoothRemoteGattService by its instance ID |instance_id|.
   // Returns
@@ -340,6 +415,16 @@ class BluetoothLowEnergyEventRouter
       const std::string& device_address,
       const base::Closure& callback,
       std::unique_ptr<device::BluetoothGattConnection> connection);
+
+  // Called by BluetoothGattService in response to Register().
+  void OnRegisterGattServiceSuccess(const std::string& service_id,
+                                    const std::string& extension_id,
+                                    const base::Closure& callback);
+
+  // Called by BluetoothGattService in response to Unregister().
+  void OnUnregisterGattServiceSuccess(const std::string& service_id,
+                                      const std::string& extension_id,
+                                      const base::Closure& callback);
 
   // Called by BluetoothRemoteGattCharacteristic and
   // BluetoothRemoteGattDescriptor in
@@ -402,6 +487,13 @@ class BluetoothLowEnergyEventRouter
   bool RemoveNotifySession(const std::string& extension_id,
                            const std::string& characteristic_id);
 
+  // Stores a request associated with an app and returns the ID of the request.
+  // When an app sends a request to an app for getting/setting an attribute
+  // value, we store that request so when the response comes in, we know where
+  // to forward the results of the request.
+  size_t StoreSentRequest(const std::string& extension_id,
+                          std::unique_ptr<AttributeValueRequest> request);
+
   // Mapping from instance ids to identifiers of owning instances. The keys are
   // used to identify individual instances of GATT objects and are used by
   // bluetoothLowEnergy API functions to obtain the correct GATT object to
@@ -415,10 +507,14 @@ class BluetoothLowEnergyEventRouter
   // obtain
   // a pointer to the associated device::BluetoothDevice, and then to the
   // device::BluetoothRemoteGattService that owns the characteristic.
-  typedef std::map<std::string, std::string> InstanceIdMap;
+  using InstanceIdMap = std::map<std::string, std::string>;
   InstanceIdMap service_id_to_device_address_;
   InstanceIdMap chrc_id_to_service_id_;
   InstanceIdMap desc_id_to_chrc_id_;
+
+  // Map of which services are registered by which app. Used to route attribute
+  // read/write events.
+  InstanceIdMap service_id_to_extension_id_;
 
   // Pointer to the current BluetoothAdapter instance. This represents a local
   // Bluetooth adapter of the system.
@@ -432,6 +528,16 @@ class BluetoothLowEnergyEventRouter
   // Set of extension ID + characteristic ID to which a request to start a
   // notify session is currently pending.
   std::set<std::string> pending_session_calls_;
+
+  using RequestIdToRequestMap =
+      std::map<size_t, std::unique_ptr<AttributeValueRequest>>;
+  using ExtensionToRequestsMap =
+      std::map<std::string, std::unique_ptr<RequestIdToRequestMap>>;
+  // Map of callback requests sent to the app for attribute value read/write
+  // requests.
+  ExtensionToRequestsMap requests_;
+  // The last request ID we used.
+  size_t last_callback_request_id_;
 
   // BrowserContext passed during initialization.
   content::BrowserContext* browser_context_;

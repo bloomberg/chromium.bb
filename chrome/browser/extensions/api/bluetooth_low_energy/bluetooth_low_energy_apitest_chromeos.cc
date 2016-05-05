@@ -130,5 +130,23 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTestChromeOs, CreateDescriptor) {
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTestChromeOs, RegisterService) {
+  ASSERT_TRUE(
+      RunPlatformAppTest("api_test/bluetooth_low_energy/"
+                         "register_service"))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTestChromeOs, UnregisterService) {
+  ASSERT_TRUE(
+      RunPlatformAppTest("api_test/bluetooth_low_energy/"
+                         "unregister_service"))
+      << message_;
+}
+
+// TODO(rkc): Figure out how to integrate with BluetoothTestBlueZ and write
+// comprehensive tests for GATT server events. See http://crbug.com/607395 for
+// details.
+
 }  // namespace
 }  // namespace extensions
