@@ -71,7 +71,7 @@ connected" is not enough to indicate a problem. For each disconnected machine,
 you can also check the "Last heard from" column to ensure that it's been gone
 for at least an hour. To get it running again,
 [file a bug](https://bugs.chromium.org/p/chromium/issues/entry?labels=Pri-1,Performance-BotHealth,Infra-Troopers,OS-?&comment=Hostname:&summary=Buildslave+offline+on+chromium.perf)
-against the current trooper.
+against the current trooper and read [go/bug-a-trooper](http://go/bug-a-trooper) for contacting troopers.
 
 ###<a name="purplebots"></a> Purple bots
 
@@ -84,7 +84,7 @@ If the bot goes purple and you believe it's an infrastructure issue, file a bug
 with
 [this template](https://bugs.chromium.org/p/chromium/issues/entry?labels=Pri-1,Performance-BotHealth,Infra-Troopers,OS-?&comment=Link+to+buildbot+status+page:&summary=Purple+Bot+on+chromium.perf),
 which will automatically add the bug to the trooper queue. Be sure to note
-which step is failing, and paste any relevant info from the logs into the bug.
+which step is failing, and paste any relevant info from the logs into the bug. Also be sure to read [go/bug-a-trooper](http://go/bug-a-trooper) for contacting troopers.
 
 ###<a name="devicefailures"></a> Android Device failures
 
@@ -101,7 +101,7 @@ There are two types of device failures:
     failure.
 
 For both types of failures, please file a bug with
-[this template](https://bugs.chromium.org/p/chromium/issues/entry?labels=Pri-1,Performance-BotHealth,Infra-Labs,OS-Android&comment=Link+to+buildbot+status+page:&summary=Device+offline+on+chromium.perf)
+[this template](https://bugs.chromium.org/p/chromium/issues/entry?components=Infra>Labs&labels=Pri-1,Performance-BotHealth,OS-Android&comment=Link+to+buildbot+status+page:&summary=Device+offline+on+chromium.perf)
 which will add an issue to the infra labs queue.
 
 If you need help triaging, here are the common labels you should use:
@@ -111,7 +111,11 @@ If you need help triaging, here are the common labels you should use:
 *   **Infra-Troopers** adds the bug to the trooper queue. This is for high
     priority issues, like a build breakage. Please add a comment explaining what
     you want the trooper to do.
-*   **Infra-Labs** adds the bug to the labs queue. If there is a hardware
+
+
+Here are the common components you should also use:
+
+*   **Infra>Labs** adds the bug to the labs queue. If there is a hardware
     problem, like an android device not responding or a bot that likely needs a
     restart, please use this label. Make sure you set the **OS-** label
     correctly as well, and add a comment explaining what you want the labs team
@@ -121,8 +125,8 @@ If you need help triaging, here are the common labels you should use:
     is weird or we are getting some infra-related log spam. The infra team works
     to triage these bugs within 24 hours, so you should ping if you do not get a
     response.
-*   **Cr-Tests-Telemetry** for telemetry failures.
-*   **Cr-Tests-AutoBisect** for bisect and perf try job failures.
+*   **Tests>Telemetry** for telemetry failures.
+*   **Tests>AutoBisect** for bisect and perf try job failures.
 
  If you still need help, ask the speed infra chat, or escalate to sullivan@.
 
