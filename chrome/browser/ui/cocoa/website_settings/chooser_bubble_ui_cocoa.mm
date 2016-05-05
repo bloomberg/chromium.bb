@@ -454,11 +454,11 @@ std::unique_ptr<BubbleUi> ChooserBubbleController::BuildBubbleUi() {
   [titleView setBezeled:NO];
   [titleView setEditable:NO];
   [titleView setSelectable:NO];
-  [titleView setStringValue:l10n_util::GetNSStringF(
-                                IDS_CHOOSER_BUBBLE_PROMPT,
-                                base::ASCIIToUTF16(
-                                    chooserBubbleController_->GetOrigin()
-                                        .Serialize()))];
+  [titleView
+      setStringValue:l10n_util::GetNSStringF(
+                         IDS_CHOOSER_BUBBLE_PROMPT,
+                         base::ASCIIToUTF16(
+                             chooserBubbleController_->GetOrigin().host()))];
   [titleView setFont:[NSFont systemFontOfSize:[NSFont systemFontSize]]];
   // The height is arbitrary as it will be adjusted later.
   [titleView setFrameSize:NSMakeSize(kChooserBubbleWidth - 2 * kMarginX, 0.0f)];
