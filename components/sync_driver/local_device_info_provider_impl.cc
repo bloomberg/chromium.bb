@@ -40,16 +40,20 @@ LocalDeviceInfoProviderImpl::LocalDeviceInfoProviderImpl(
     : channel_(channel),
       version_(version),
       is_tablet_(is_tablet),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+  DCHECK(CalledOnValidThread());
+}
 
 LocalDeviceInfoProviderImpl::~LocalDeviceInfoProviderImpl() {}
 
 const sync_driver::DeviceInfo* LocalDeviceInfoProviderImpl::GetLocalDeviceInfo()
     const {
+  DCHECK(CalledOnValidThread());
   return local_device_info_.get();
 }
 
 std::string LocalDeviceInfoProviderImpl::GetSyncUserAgent() const {
+  DCHECK(CalledOnValidThread());
 #if defined(OS_CHROMEOS)
   return MakeUserAgentForSync("CROS ", channel_);
 #elif defined(OS_ANDROID)
@@ -70,12 +74,14 @@ std::string LocalDeviceInfoProviderImpl::GetSyncUserAgent() const {
 }
 
 std::string LocalDeviceInfoProviderImpl::GetLocalSyncCacheGUID() const {
+  DCHECK(CalledOnValidThread());
   return cache_guid_;
 }
 
 std::unique_ptr<sync_driver::LocalDeviceInfoProvider::Subscription>
 LocalDeviceInfoProviderImpl::RegisterOnInitializedCallback(
     const base::Closure& callback) {
+  DCHECK(CalledOnValidThread());
   DCHECK(!local_device_info_.get());
   return callback_list_.Add(callback);
 }
@@ -84,6 +90,7 @@ void LocalDeviceInfoProviderImpl::Initialize(
     const std::string& cache_guid,
     const std::string& signin_scoped_device_id,
     const scoped_refptr<base::TaskRunner>& blocking_task_runner) {
+  DCHECK(CalledOnValidThread());
   DCHECK(!cache_guid.empty());
   cache_guid_ = cache_guid;
 
@@ -98,12 +105,24 @@ void LocalDeviceInfoProviderImpl::InitializeContinuation(
     const std::string& guid,
     const std::string& signin_scoped_device_id,
     const std::string& session_name) {
+  DCHECK(CalledOnValidThread());
+  if (guid != cache_guid_) {
+    // Clear() happened before this callback; abort.
+    return;
+  }
+
   local_device_info_.reset(new sync_driver::DeviceInfo(
       guid, session_name, version_, GetSyncUserAgent(),
       GetLocalDeviceType(is_tablet_), signin_scoped_device_id));
 
   // Notify observers.
   callback_list_.Notify();
+}
+
+void LocalDeviceInfoProviderImpl::Clear() {
+  DCHECK(CalledOnValidThread());
+  cache_guid_ = "";
+  local_device_info_.reset();
 }
 
 }  // namespace browser_sync

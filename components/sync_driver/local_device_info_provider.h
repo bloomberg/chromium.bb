@@ -26,11 +26,10 @@ class LocalDeviceInfoProvider {
 
   virtual ~LocalDeviceInfoProvider() {}
 
-  // Returns sync's representation of the local device info;
-  // NULL if the device info is unavailable.
-  // The returned object is fully owned by LocalDeviceInfoProvider (must not
-  // be freed by the caller). It remains valid until LocalDeviceInfoProvider
-  // is destroyed.
+  // Returns sync's representation of the local device info, or nullptr if the
+  // device info is unavailable. The returned object is fully owned by
+  // LocalDeviceInfoProvider; it must not be freed by the caller and should not
+  // be stored.
   virtual const DeviceInfo* GetLocalDeviceInfo() const = 0;
 
   // Constructs a user agent string (ASCII) suitable for use by the syncapi
@@ -55,6 +54,9 @@ class LocalDeviceInfoProvider {
   // CallbackList is destroyed.
   virtual std::unique_ptr<Subscription> RegisterOnInitializedCallback(
       const base::Closure& callback) = 0;
+
+  // Clears all cached data, returning to an uninitialized state.
+  virtual void Clear() = 0;
 };
 
 }  // namespace sync_driver

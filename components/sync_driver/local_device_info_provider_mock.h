@@ -36,6 +36,7 @@ class LocalDeviceInfoProviderMock
       const scoped_refptr<base::TaskRunner>& blocking_task_runner) override;
   std::unique_ptr<Subscription> RegisterOnInitializedCallback(
       const base::Closure& callback) override;
+  void Clear() override;
 
   void Initialize(std::unique_ptr<DeviceInfo> local_device_info);
   void SetInitialized(bool is_initialized);

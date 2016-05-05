@@ -30,7 +30,7 @@ LocalDeviceInfoProviderMock::LocalDeviceInfoProviderMock(
 LocalDeviceInfoProviderMock::~LocalDeviceInfoProviderMock() {}
 
 const DeviceInfo* LocalDeviceInfoProviderMock::GetLocalDeviceInfo() const {
-  return is_initialized_ ? local_device_info_.get() : NULL;
+  return is_initialized_ ? local_device_info_.get() : nullptr;
 }
 
 std::string LocalDeviceInfoProviderMock::GetSyncUserAgent() const {
@@ -45,7 +45,10 @@ void LocalDeviceInfoProviderMock::Initialize(
     const std::string& cache_guid,
     const std::string& signin_scoped_device_id,
     const scoped_refptr<base::TaskRunner>& blocking_task_runner) {
-  // Ignored for the mock provider.
+  local_device_info_.reset(new DeviceInfo(
+      cache_guid, "client_name", "chrome_version", GetSyncUserAgent(),
+      sync_pb::SyncEnums_DeviceType_TYPE_LINUX, signin_scoped_device_id));
+  SetInitialized(true);
 }
 
 void LocalDeviceInfoProviderMock::Initialize(
@@ -59,6 +62,11 @@ LocalDeviceInfoProviderMock::RegisterOnInitializedCallback(
     const base::Closure& callback) {
   DCHECK(!is_initialized_);
   return callback_list_.Add(callback);
+}
+
+void LocalDeviceInfoProviderMock::Clear() {
+  local_device_info_.reset();
+  is_initialized_ = false;
 }
 
 void LocalDeviceInfoProviderMock::SetInitialized(bool is_initialized) {

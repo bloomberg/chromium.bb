@@ -807,6 +807,12 @@ void ProfileSyncService::ShutdownImpl(syncer::ShutdownReason reason) {
 
   startup_controller_->Reset(GetRegisteredDataTypes());
 
+  // If the sync DB is getting destroyed, the local DeviceInfo is no longer
+  // valid and should be cleared from the cache.
+  if (reason == syncer::ShutdownReason::DISABLE_SYNC) {
+    local_device_->Clear();
+  }
+
   // Clear various flags.
   expect_sync_configuration_aborted_ = false;
   is_auth_in_progress_ = false;
