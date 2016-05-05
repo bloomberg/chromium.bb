@@ -487,27 +487,6 @@ NPCTRL.dll!DllGetClassObject
 NPCTRL.dll!DllGetClassObject
 
 HANDLE LEAK
-name=http://crbug.com/373333
-system call NtGdiCreateCompatibleDC
-*!CreateCompatibleDC
-*!SkScalerContext_GDI::SkScalerContext_GDI
-*!LogFontTypeface::onCreateScalerContext
-*!SkTypeface::createScalerContext
-*!SkGlyphCache::VisitCache
-...
-*!SkPaint::descriptorProc
-...
-*!blink::RenderBlockFlow::layoutBlockFlow
-*!blink::RenderBlockFlow::layoutBlock
-*!blink::RenderBlock::layout
-
-HANDLE LEAK
-name=https://github.com/DynamoRIO/drmemory/issues/1545
-system call NtGdiCreateCompatibleDC
-GDI32.dll!CreateCompatibleDC
-skia.dll!LogFontTypeface::onGetTableData
-
-HANDLE LEAK
 name=http://crbug.com/379000
 system call NtCreate*
 ...

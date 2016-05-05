@@ -1581,13 +1581,6 @@ skia.dll!SkCanvas::drawBitmap
 content.dll!content::ScreenshotData::EncodeOnWorker
 
 UNINITIALIZED READ
-name=bug_363487
-blink_web.dll!blink::RenderLayerCompositor::updateIfNeeded
-blink_web.dll!blink::RenderLayerCompositor::updateIfNeededRecursive
-blink_web.dll!blink::FrameView::updateLayoutAndStyleForPainting
-blink_web.dll!blink::PageAnimator::updateLayoutAndStyleForPainting
-
-UNINITIALIZED READ
 name=bug_365101
 *!device::BluetoothAdapterWin::AdapterStateChanged
 
@@ -1610,13 +1603,6 @@ UNINITIALIZED READ
 name=bug_42043
 ...
 QuickTime.qts!*
-
-UNINITIALIZED READ
-name=bug_369141
-...
-*!blink::RenderLayerClipper::updateClipRects
-*!blink::RenderLayerClipper::parentClipRects
-*!blink::RenderLayerClipper::backgroundClipRect
 
 HANDLE LEAK
 name=bug_370178
