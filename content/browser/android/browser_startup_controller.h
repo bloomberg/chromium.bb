@@ -11,6 +11,7 @@ namespace content {
 
 bool BrowserMayStartAsynchronously();
 void BrowserStartupComplete(int result);
+bool ShouldStartGpuProcessOnBrowserStartup();
 
 bool RegisterBrowserStartupController(JNIEnv* env);
 

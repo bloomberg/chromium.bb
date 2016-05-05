@@ -108,7 +108,7 @@ public class BrowserStartupControllerTest extends InstrumentationTestCase {
             @Override
             public void run() {
                 try {
-                    mController.startBrowserProcessesAsync(callback);
+                    mController.startBrowserProcessesAsync(true, callback);
                 } catch (Exception e) {
                     fail("Browser should have started successfully");
                 }
@@ -142,7 +142,7 @@ public class BrowserStartupControllerTest extends InstrumentationTestCase {
             @Override
             public void run() {
                 try {
-                    mController.startBrowserProcessesAsync(callback1);
+                    mController.startBrowserProcessesAsync(true, callback1);
                 } catch (Exception e) {
                     fail("Browser should have started successfully");
                 }
@@ -152,7 +152,7 @@ public class BrowserStartupControllerTest extends InstrumentationTestCase {
             @Override
             public void run() {
                 try {
-                    mController.startBrowserProcessesAsync(callback2);
+                    mController.startBrowserProcessesAsync(true, callback2);
                 } catch (Exception e) {
                     fail("Browser should have started successfully");
                 }
@@ -197,7 +197,7 @@ public class BrowserStartupControllerTest extends InstrumentationTestCase {
             @Override
             public void run() {
                 try {
-                    mController.startBrowserProcessesAsync(callback1);
+                    mController.startBrowserProcessesAsync(true, callback1);
                 } catch (Exception e) {
                     fail("Browser should have started successfully");
                 }
@@ -231,7 +231,7 @@ public class BrowserStartupControllerTest extends InstrumentationTestCase {
             @Override
             public void run() {
                 try {
-                    mController.startBrowserProcessesAsync(callback3);
+                    mController.startBrowserProcessesAsync(true, callback3);
                 } catch (Exception e) {
                     fail("Browser should have started successfully");
                 }
@@ -268,7 +268,7 @@ public class BrowserStartupControllerTest extends InstrumentationTestCase {
             @Override
             public void run() {
                 try {
-                    mController.startBrowserProcessesAsync(callback);
+                    mController.startBrowserProcessesAsync(true, callback);
                 } catch (Exception e) {
                     fail("Browser should have started successfully");
                 }
@@ -299,7 +299,7 @@ public class BrowserStartupControllerTest extends InstrumentationTestCase {
             @Override
             public void run() {
                 try {
-                    mController.startBrowserProcessesAsync(callback1);
+                    mController.startBrowserProcessesAsync(true, callback1);
                 } catch (Exception e) {
                     fail("Browser should have started successfully");
                 }
@@ -333,7 +333,7 @@ public class BrowserStartupControllerTest extends InstrumentationTestCase {
             @Override
             public void run() {
                 try {
-                    mController.startBrowserProcessesAsync(callback3);
+                    mController.startBrowserProcessesAsync(true, callback3);
                 } catch (Exception e) {
                     fail("Browser should have started successfully");
                 }
@@ -388,7 +388,7 @@ public class BrowserStartupControllerTest extends InstrumentationTestCase {
             @Override
             public void run() {
                 try {
-                    mController.startBrowserProcessesAsync(callback);
+                    mController.startBrowserProcessesAsync(true, callback);
                 } catch (Exception e) {
                     fail("Browser should have started successfully");
                 }
@@ -443,7 +443,7 @@ public class BrowserStartupControllerTest extends InstrumentationTestCase {
             @Override
             public void run() {
                 try {
-                    mController.startBrowserProcessesAsync(callback);
+                    mController.startBrowserProcessesAsync(true, callback);
                 } catch (Exception e) {
                     fail("Browser should have started successfully");
                 }
@@ -472,7 +472,7 @@ public class BrowserStartupControllerTest extends InstrumentationTestCase {
             @Override
             public void run() {
                 try {
-                    mController.startBrowserProcessesAsync(callback);
+                    mController.startBrowserProcessesAsync(true, callback);
                     fail("Browser should not have started successfully");
                 } catch (Exception e) {
                     // Exception expected, ignore.

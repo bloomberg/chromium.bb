@@ -50,4 +50,9 @@ public class EmptyBrowserParts implements BrowserParts {
     public boolean isActivityFinishing() {
         return false;
     }
+
+    @Override
+    public boolean shouldStartGpuProcess() {
+        return true;
+    }
 }

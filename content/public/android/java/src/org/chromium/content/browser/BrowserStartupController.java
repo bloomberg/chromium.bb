@@ -61,9 +61,14 @@ public class BrowserStartupController {
     private static BrowserStartupController sInstance;
 
     private static boolean sBrowserMayStartAsynchronously = false;
+    private static boolean sShouldStartGpuProcessOnBrowserStartup = true;
 
     private static void setAsynchronousStartup(boolean enable) {
         sBrowserMayStartAsynchronously = enable;
+    }
+
+    private static void setShouldStartGpuProcessOnBrowserStartup(boolean enable) {
+        sShouldStartGpuProcessOnBrowserStartup = enable;
     }
 
     @VisibleForTesting
@@ -78,6 +83,11 @@ public class BrowserStartupController {
         if (sInstance != null) {
             sInstance.executeEnqueuedCallbacks(result, NOT_ALREADY_STARTED);
         }
+    }
+
+    @CalledByNative
+    static boolean shouldStartGpuProcessOnBrowserStartup() {
+        return sShouldStartGpuProcessOnBrowserStartup;
     }
 
     // A list of callbacks that should be called when the async startup of the browser process is
@@ -146,9 +156,10 @@ public class BrowserStartupController {
      * <p/>
      * Note that this can only be called on the UI thread.
      *
+     * @param startGpuProcess Whether to start the GPU process if it is not started.
      * @param callback the callback to be called when browser startup is complete.
      */
-    public void startBrowserProcessesAsync(final StartupCallback callback)
+    public void startBrowserProcessesAsync(boolean startGpuProcess, final StartupCallback callback)
             throws ProcessInitException {
         assert ThreadUtils.runningOnUiThread() : "Tried to start the browser on the wrong thread.";
         if (mStartupDone) {
@@ -167,6 +178,7 @@ public class BrowserStartupController {
             mHasStartedInitializingBrowserProcess = true;
 
             setAsynchronousStartup(true);
+            setShouldStartGpuProcessOnBrowserStartup(startGpuProcess);
             prepareToStartBrowserProcess(false, new Runnable() {
                 @Override
                 public void run() {
@@ -290,7 +302,6 @@ public class BrowserStartupController {
                 if (!mPostResourceExtractionTasksCompleted) {
                     // TODO(yfriedman): Remove dependency on a command line flag for this.
                     DeviceUtils.addDeviceSpecificUserAgentSwitch(mContext);
-
                     nativeSetCommandLineFlags(
                             singleProcess, nativeIsPluginEnabled() ? getPlugins() : null);
                     mPostResourceExtractionTasksCompleted = true;

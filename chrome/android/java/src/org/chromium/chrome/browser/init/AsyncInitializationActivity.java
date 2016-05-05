@@ -323,6 +323,11 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
     }
 
     @Override
+    public boolean shouldStartGpuProcess() {
+        return true;
+    }
+
+    @Override
     public final void onFirstDrawComplete() {
         mHandler.post(new Runnable() {
             @Override

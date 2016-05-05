@@ -320,6 +320,11 @@ public class DownloadNotificationService extends Service {
                 entry == null ? false : entry.canDownloadWhileMetered;
         BrowserParts parts = new EmptyBrowserParts() {
             @Override
+            public boolean shouldStartGpuProcess() {
+                return false;
+            }
+
+            @Override
             public void finishNativeInitialization() {
                 DownloadManagerService service =
                         DownloadManagerService.getDownloadManagerService(getApplicationContext());
