@@ -219,7 +219,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
 
         if (!isGettingInstruments) mPaymentMethods = new SectionInformation();
 
-        mUI = new PaymentRequestUI(mContext, this, requestShipping, mMerchantName, mOrigin);
+        mUI = PaymentRequestUI.show(mContext, this, requestShipping, mMerchantName, mOrigin);
         if (mFavicon != null) mUI.setTitleBitmap(mFavicon);
         mFavicon = null;
     }
