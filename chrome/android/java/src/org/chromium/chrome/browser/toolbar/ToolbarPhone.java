@@ -1287,6 +1287,11 @@ public class ToolbarPhone extends ToolbarLayout
             mDelayedTabSwitcherModeAnimation.end();
             mDelayedTabSwitcherModeAnimation = null;
         }
+
+        // The Android framework calls onAnimationEnd() on listeners before Animator#isRunning()
+        // returns false. Sometimes this causes the progress bar visibility to be set incorrectly.
+        // Update the visibility now that animations are set to null. (see crbug.com/606419)
+        updateProgressBarVisibility(mIsInTabSwitcherMode);
     }
 
     @Override
@@ -1436,10 +1441,14 @@ public class ToolbarPhone extends ToolbarLayout
         if (mShowMenuBadge) {
             setMenuButtonContentDescription(!isInTabSwitcherMode);
         }
+
+        updateProgressBarVisibility(isInTabSwitcherMode);
+        updateVisualsForToolbarState(isInTabSwitcherMode);
+    }
+
+    private void updateProgressBarVisibility(boolean isInTabSwitcherMode) {
         getProgressBar().setVisibility(
                 isInTabSwitcherMode || isTabSwitcherAnimationRunning() ? INVISIBLE : VISIBLE);
-        updateVisualsForToolbarState(isInTabSwitcherMode);
-
     }
 
     @Override
