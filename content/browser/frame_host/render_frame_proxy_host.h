@@ -39,11 +39,7 @@ class RenderWidgetHostView;
 // references valid over cross-process navigations and route cross-site
 // asynchronous JavaScript calls, such as postMessage.
 //
-// For now, RenderFrameProxyHost is created when a RenderFrameHost is swapped
-// out and acts just as a wrapper. It is destroyed when the RenderFrameHost is
-// swapped back in or is no longer referenced and is therefore deleted.
-//
-// Long term, RenderFrameProxyHost will be created whenever a cross-site
+// RenderFrameProxyHost is created whenever a cross-site
 // navigation occurs and a reference to the frame navigating needs to be kept
 // alive. A RenderFrameProxyHost and a RenderFrameHost for the same SiteInstance
 // can exist at the same time, but only one will be "active" at a time.
