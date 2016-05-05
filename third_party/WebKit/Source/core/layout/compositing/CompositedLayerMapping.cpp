@@ -803,9 +803,6 @@ void CompositedLayerMapping::updateAncestorClippingLayerGeometry(const PaintLaye
     if (!compositingContainer || !m_ancestorClippingLayer)
         return;
 
-    if (scrollParent())
-        compositingContainer = scrollParent();
-
     ClipRectsContext clipRectsContext(compositingContainer, PaintingClipRectsIgnoringOverflowClip, IgnoreOverlayScrollbarSize);
     IntRect parentClipRect = pixelSnappedIntRect(m_owningLayer.clipper().backgroundClipRect(clipRectsContext).rect());
     ASSERT(parentClipRect != LayoutRect::infiniteIntRect());
