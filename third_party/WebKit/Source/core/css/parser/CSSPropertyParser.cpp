@@ -2382,16 +2382,13 @@ static CSSValue* consumeCounterContent(CSSParserTokenRange args, bool counters)
     if (!identifier)
         return nullptr;
 
-    // TODO(timloh): Make this a CSSStringValue.
-    CSSCustomIdentValue* separator = nullptr;
+    CSSStringValue* separator = nullptr;
     if (!counters) {
-        separator = CSSCustomIdentValue::create(String());
+        separator = CSSStringValue::create(String());
     } else {
-        if (!consumeCommaIncludingWhitespace(args))
+        if (!consumeCommaIncludingWhitespace(args) || args.peek().type() != StringToken)
             return nullptr;
-        if (args.peek().type() != StringToken)
-            return nullptr;
-        separator = CSSCustomIdentValue::create(args.consumeIncludingWhitespace().value());
+        separator = CSSStringValue::create(args.consumeIncludingWhitespace().value());
     }
 
     CSSPrimitiveValue* listStyle = nullptr;

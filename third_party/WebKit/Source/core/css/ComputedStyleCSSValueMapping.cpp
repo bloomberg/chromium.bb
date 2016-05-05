@@ -1137,7 +1137,7 @@ static CSSValue* valueForContentData(const ComputedStyle& style)
             const CounterContent* counter = toCounterContentData(contentData)->counter();
             ASSERT(counter);
             CSSCustomIdentValue* identifier = CSSCustomIdentValue::create(counter->identifier());
-            CSSCustomIdentValue* separator = CSSCustomIdentValue::create(counter->separator());
+            CSSStringValue* separator = CSSStringValue::create(counter->separator());
             CSSValueID listStyleIdent = CSSValueNone;
             if (counter->listStyle() != NoneListStyle)
                 listStyleIdent = static_cast<CSSValueID>(CSSValueDisc + counter->listStyle());

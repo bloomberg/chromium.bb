@@ -20,7 +20,7 @@ String CSSCounterValue::customCSSText() const
     result.append(identifier());
     if (!separator().isEmpty()) {
         result.appendLiteral(", ");
-        result.append(serializeString(separator()));
+        result.append(m_separator->cssText());
     }
     bool isDefaultListStyle = listStyle() == CSSValueDecimal;
     if (!isDefaultListStyle) {
