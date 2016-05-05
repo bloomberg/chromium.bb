@@ -1408,7 +1408,8 @@ TEST_F(MediaCodecPlayerTest, DISABLED_VideoSeekAndRelease) {
   EXPECT_LE(seek_position, manager_.pts_stat_.min());
 }
 
-TEST_F(MediaCodecPlayerTest, VideoReleaseWhileWaitingForSeek) {
+// Flaky test: https://crbug.com/609444
+TEST_F(MediaCodecPlayerTest, DISABLED_VideoReleaseWhileWaitingForSeek) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   base::TimeDelta duration = base::TimeDelta::FromMilliseconds(2000);
