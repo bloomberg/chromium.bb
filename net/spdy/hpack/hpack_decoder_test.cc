@@ -391,6 +391,85 @@ TEST_P(HpackDecoderTest, ContextUpdateMaximumSize) {
   }
 }
 
+// Two HeaderTableSizeUpdates may appear at the beginning of the block
+TEST_P(HpackDecoderTest, TwoTableSizeUpdates) {
+  string input;
+  {
+    // Should accept two table size updates, update to second one
+    HpackOutputStream output_stream;
+    output_stream.AppendPrefix(kHeaderTableSizeUpdateOpcode);
+    output_stream.AppendUint32(0);
+    output_stream.AppendPrefix(kHeaderTableSizeUpdateOpcode);
+    output_stream.AppendUint32(122);
+
+    output_stream.TakeString(&input);
+    EXPECT_TRUE(DecodeHeaderBlock(StringPiece(input)));
+    EXPECT_EQ(122u, decoder_peer_.header_table()->max_size());
+  }
+}
+
+// Three HeaderTableSizeUpdates should result in an error
+TEST_P(HpackDecoderTest, ThreeTableSizeUpdatesError) {
+  string input;
+  {
+    // Should reject three table size updates, update to second one
+    HpackOutputStream output_stream;
+    output_stream.AppendPrefix(kHeaderTableSizeUpdateOpcode);
+    output_stream.AppendUint32(5);
+    output_stream.AppendPrefix(kHeaderTableSizeUpdateOpcode);
+    output_stream.AppendUint32(10);
+    output_stream.AppendPrefix(kHeaderTableSizeUpdateOpcode);
+    output_stream.AppendUint32(15);
+
+    output_stream.TakeString(&input);
+
+    EXPECT_FALSE(DecodeHeaderBlock(StringPiece(input)));
+    EXPECT_EQ(10u, decoder_peer_.header_table()->max_size());
+  }
+}
+
+// HeaderTableSizeUpdates may only appear at the beginning of the block
+// Any other updates should result in an error
+TEST_P(HpackDecoderTest, TableSizeUpdateSecondError) {
+  string input;
+  {
+    // Should reject a table size update appearing after a different entry
+    // The table size should remain as the default
+    HpackOutputStream output_stream;
+    output_stream.AppendBytes("\x82\x85");
+    output_stream.AppendPrefix(kHeaderTableSizeUpdateOpcode);
+    output_stream.AppendUint32(123);
+
+    output_stream.TakeString(&input);
+
+    EXPECT_FALSE(DecodeHeaderBlock(StringPiece(input)));
+    EXPECT_EQ(kDefaultHeaderTableSizeSetting,
+              decoder_peer_.header_table()->max_size());
+  }
+}
+
+// HeaderTableSizeUpdates may only appear at the beginning of the block
+// Any other updates should result in an error
+TEST_P(HpackDecoderTest, TableSizeUpdateFirstThirdError) {
+  string input;
+  {
+    // Should reject the second table size update
+    // if a different entry appears after the first update
+    // The table size should update to the first but not the second
+    HpackOutputStream output_stream;
+    output_stream.AppendPrefix(kHeaderTableSizeUpdateOpcode);
+    output_stream.AppendUint32(60);
+    output_stream.AppendBytes("\x82\x85");
+    output_stream.AppendPrefix(kHeaderTableSizeUpdateOpcode);
+    output_stream.AppendUint32(125);
+
+    output_stream.TakeString(&input);
+
+    EXPECT_FALSE(DecodeHeaderBlock(StringPiece(input)));
+    EXPECT_EQ(60u, decoder_peer_.header_table()->max_size());
+  }
+}
+
 // Decoding two valid encoded literal headers with no indexing should
 // work.
 TEST_P(HpackDecoderTest, LiteralHeaderNoIndexing) {
