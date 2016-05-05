@@ -1,28 +1,15 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-
-        <script src=../media-file.js></script>
-        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=../video-test.js></script>
-        <script>
-
-            function trackError()
-            {
-                consoleWrite("EVENT(error)");
-                track = document.getElementById('testTrackError');
-                testExpected("track.readyState", HTMLTrackElement.ERROR);
-                endTest();
-            }
-
-        </script>
-    </head>
-    <body>
-        <p>Tests the error event on HTMLTrackElement and ERROR readyState on TextTrack.</p>
-        <video id="videotests">
-            <track id="testTrackError" src="junk" onerror="trackError()" default>
-        </video>
-    </body>
-</html>
+<title>Tests the error event on HTMLTrackElement and ERROR readyState on TextTrack.</title>
+<video>
+    <track src="junk" default>
+</video>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script>
+async_test(function(t) {
+    var track = document.querySelector("track");
+    track.onerror = t.step_func_done(function() {
+        assert_equals(track.readyState, HTMLTrackElement.ERROR);
+    });
+});
+</script>

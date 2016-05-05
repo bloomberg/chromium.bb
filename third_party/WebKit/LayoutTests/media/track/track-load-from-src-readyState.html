@@ -1,33 +1,20 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Tests the load event on HTMLTrackElement and LOADED readyState on TextTrack when src is set from JavaScript.</title>
+<video>
+    <track>
+</video>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script>
+async_test(function(t) {
+    var track = document.querySelector("track");
+    assert_equals(track.readyState, HTMLTrackElement.NONE);
 
-        <script src=../media-file.js></script>
-        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=../video-test.js></script>
-    </head>
-    <body>
-        <p>Tests the load event on HTMLTrackElement and LOADED readyState on TextTrack when src is set from JavaScript.</p>
-        <video>
-            <track id="testTrackEmpty">
-        </video>
-        <script>
+    track.onload = t.step_func_done(function () {
+        assert_equals(track.readyState, HTMLTrackElement.LOADED);
+    });
 
-            function trackLoaded()
-            {
-                consoleWrite("EVENT(load)");
-                testExpected("track.readyState", HTMLTrackElement.LOADED);
-                endTest();
-            }
-
-            track = document.getElementById('testTrackEmpty');
-            testExpected("track.readyState", HTMLTrackElement.NONE);
-            track.addEventListener("load", function () { trackLoaded(); }, true);
-            track.src = "captions-webvtt/tc004-webvtt-file.vtt";
-            track.track.mode = "hidden";
-
-        </script>
-    </body>
-</html>
+    track.src = "captions-webvtt/tc004-webvtt-file.vtt";
+    track.track.mode = "hidden";
+});
+</script>
