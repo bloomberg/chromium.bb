@@ -307,7 +307,7 @@ NotifierSettingsView::NotifierButton::NotifierButton(
     learn_more_ = new views::ImageButton(this);
     learn_more_->SetFocusPainter(CreateFocusPainter());
     learn_more_->set_request_focus_on_press(false);
-    learn_more_->SetFocusBehavior(FocusBehavior::ALWAYS);
+    views::Button::ConfigureDefaultFocus(learn_more_);
 
     ui::ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     learn_more_->SetImage(
@@ -583,7 +583,7 @@ void NotifierSettingsView::UpdateContentsView(
         new views::LabelButtonAssetBorder(views::Button::STYLE_BUTTON)));
     notifier_group_selector_->SetFocusPainter(nullptr);
     notifier_group_selector_->set_animate_on_state_change(false);
-    notifier_group_selector_->SetFocusBehavior(FocusBehavior::ALWAYS);
+    views::Button::ConfigureDefaultFocus(notifier_group_selector_);
     contents_title_view->AddChildView(notifier_group_selector_);
   }
 

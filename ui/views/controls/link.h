@@ -64,6 +64,8 @@ class VIEWS_EXPORT Link : public Label {
 
   void RecalculateFont();
 
+  void ConfigureFocus();
+
   SkColor GetEnabledColor();
   SkColor GetPressedColor();
 

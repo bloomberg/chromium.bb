@@ -32,6 +32,9 @@ using views::MenuController;
 
 namespace {
 
+NSString* const kFullKeyboardAccessChangedNotification =
+    @"com.apple.KeyboardUIModeDidChange";
+
 // Returns true if all four corners of |rect| are contained inside |path|.
 bool IsRectInsidePath(NSRect rect, NSBezierPath* path) {
   return [path containsPoint:rect.origin] &&
@@ -185,6 +188,9 @@ gfx::Rect GetFirstRectForRangeHelper(const ui::TextInputClient* client,
              domCode:(ui::DomCode)domCode
           eventFlags:(int)eventFlags;
 
+// Notification handler invoked when the Full Keyboard Access mode is changed.
+- (void)onFullKeyboardAccessModeChanged:(NSNotification*)notification;
+
 // Menu action handlers.
 - (void)undo:(id)sender;
 - (void)redo:(id)sender;
@@ -221,6 +227,17 @@ gfx::Rect GetFirstRectForRangeHelper(const ui::TextInputClient* client,
                owner:self
             userInfo:nil]);
     [self addTrackingArea:cursorTrackingArea_.get()];
+
+    // Get notified whenever Full Keyboard Access mode is changed.
+    [[NSDistributedNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(onFullKeyboardAccessModeChanged:)
+               name:kFullKeyboardAccessChangedNotification
+             object:nil];
+
+    // Initialize the focus manager with the correct keyboard accessibility
+    // setting.
+    [self updateFullKeyboardAccess];
   }
   return self;
 }
@@ -228,6 +245,7 @@ gfx::Rect GetFirstRectForRangeHelper(const ui::TextInputClient* client,
 - (void)clearView {
   textInputClient_ = nullptr;
   hostedView_ = nullptr;
+  [[NSDistributedNotificationCenter defaultCenter] removeObserver:self];
   [cursorTrackingArea_.get() clearOwner];
   [self removeTrackingArea:cursorTrackingArea_.get()];
 }
@@ -293,6 +311,16 @@ gfx::Rect GetFirstRectForRangeHelper(const ui::TextInputClient* client,
   [windowMask_ transformUsingAffineTransform:flipTransform];
 }
 
+- (void)updateFullKeyboardAccess {
+  if (!hostedView_)
+    return;
+
+  views::FocusManager* focusManager =
+      hostedView_->GetWidget()->GetFocusManager();
+  if (focusManager)
+    focusManager->SetKeyboardAccessible([NSApp isFullKeyboardAccessEnabled]);
+}
+
 // BridgedContentView private implementation.
 
 - (void)handleKeyEvent:(NSEvent*)theEvent {
@@ -326,6 +354,12 @@ gfx::Rect GetFirstRectForRangeHelper(const ui::TextInputClient* client,
   // Generate a synthetic event with the keycode toolkit-views expects.
   ui::KeyEvent event(ui::ET_KEY_PRESSED, keyCode, domCode, eventFlags);
   hostedView_->GetWidget()->GetInputMethod()->DispatchKeyEvent(&event);
+}
+
+- (void)onFullKeyboardAccessModeChanged:(NSNotification*)notification {
+  DCHECK([[notification name]
+      isEqualToString:kFullKeyboardAccessChangedNotification]);
+  [self updateFullKeyboardAccess];
 }
 
 - (void)undo:(id)sender {

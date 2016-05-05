@@ -6,6 +6,7 @@
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/focus/focus_search.h"
 #include "ui/views/view.h"
+#include "ui/views/widget/widget.h"
 
 namespace views {
 
@@ -13,6 +14,12 @@ FocusSearch::FocusSearch(View* root, bool cycle, bool accessibility_mode)
     : root_(root),
       cycle_(cycle),
       accessibility_mode_(accessibility_mode) {
+#if defined(OS_MACOSX)
+  // On Mac, only the keyboard accessibility mode defined in FocusManager is
+  // used. No special accessibility mode should be applicable for a
+  // FocusTraversable.
+  accessibility_mode_ = false;
+#endif
 }
 
 View* FocusSearch::FindNextFocusableView(View* starting_view,
@@ -99,7 +106,13 @@ bool FocusSearch::IsViewFocusableCandidate(View* v, int skip_group_id) {
 }
 
 bool FocusSearch::IsFocusable(View* v) {
-  if (accessibility_mode_)
+  DCHECK(root_);
+  // Sanity Check. Currently the FocusManager keyboard accessibility mode is
+  // only used on Mac, for which |accessibility_mode_| is false.
+  DCHECK(!(accessibility_mode_ &&
+           root_->GetWidget()->GetFocusManager()->keyboard_accessible()));
+  if (accessibility_mode_ ||
+      root_->GetWidget()->GetFocusManager()->keyboard_accessible())
     return v && v->IsAccessibilityFocusable();
   return v && v->IsFocusable();
 }

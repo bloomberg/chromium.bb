@@ -76,7 +76,7 @@ MdTextButton::MdTextButton(ButtonListener* listener)
   set_ink_drop_delegate(&ink_drop_delegate_);
   set_has_ink_drop_action_on_click(true);
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
-  SetFocusBehavior(FocusBehavior::ALWAYS);
+  Button::ConfigureDefaultFocus(this);
   SetMinSize(gfx::Size(kMinWidth, 0));
   SetFocusPainter(nullptr);
   UseMdFocusRing();

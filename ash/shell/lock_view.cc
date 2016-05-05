@@ -30,7 +30,7 @@ class LockView : public views::WidgetDelegateView,
                                   this, base::ASCIIToUTF16("Unlock"))) {
     unlock_button_->SetStyle(views::Button::STYLE_BUTTON);
     AddChildView(unlock_button_);
-    unlock_button_->SetFocusBehavior(FocusBehavior::ALWAYS);
+    views::Button::ConfigureDefaultFocus(unlock_button_);
   }
   ~LockView() override {}
 

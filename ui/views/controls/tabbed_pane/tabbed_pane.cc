@@ -277,7 +277,12 @@ TabbedPane::TabbedPane()
     tab_strip_(new TabStrip(this)),
     contents_(new View()),
     selected_tab_index_(-1) {
+#if defined(OS_MACOSX)
+  SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
+#else
   SetFocusBehavior(FocusBehavior::ALWAYS);
+#endif
+
   AddChildView(tab_strip_);
   AddChildView(contents_);
 }

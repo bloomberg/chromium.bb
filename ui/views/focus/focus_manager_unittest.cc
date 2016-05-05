@@ -741,20 +741,64 @@ TEST_F(FocusManagerArrowKeyTraversalTest, ArrowKeyTraversal) {
 }
 
 TEST_F(FocusManagerTest, StoreFocusedView) {
-  View view;
-  GetFocusManager()->SetFocusedView(&view);
+  View* view = new View;
+  // Add view to the view hierarchy and make it focusable.
+  GetWidget()->GetRootView()->AddChildView(view);
+  view->SetFocusBehavior(View::FocusBehavior::ALWAYS);
+
+  GetFocusManager()->SetFocusedView(view);
   GetFocusManager()->StoreFocusedView(false);
   EXPECT_EQ(NULL, GetFocusManager()->GetFocusedView());
   EXPECT_TRUE(GetFocusManager()->RestoreFocusedView());
-  EXPECT_EQ(&view, GetFocusManager()->GetStoredFocusView());
+  EXPECT_EQ(view, GetFocusManager()->GetStoredFocusView());
 
   // Repeat with |true|.
-  GetFocusManager()->SetFocusedView(&view);
+  GetFocusManager()->SetFocusedView(view);
   GetFocusManager()->StoreFocusedView(true);
   EXPECT_EQ(NULL, GetFocusManager()->GetFocusedView());
   EXPECT_TRUE(GetFocusManager()->RestoreFocusedView());
-  EXPECT_EQ(&view, GetFocusManager()->GetStoredFocusView());
+  EXPECT_EQ(view, GetFocusManager()->GetStoredFocusView());
 }
+
+#if defined(OS_MACOSX)
+// Test that the correct view is restored if full keyboard access is changed.
+TEST_F(FocusManagerTest, StoreFocusedViewFullKeyboardAccess) {
+  View* view1 = new View;
+  View* view2 = new View;
+  View* view3 = new View;
+
+  // Make view1 focusable in accessibility mode, view2 not focusable and view3
+  // always focusable.
+  view1->SetFocusBehavior(View::FocusBehavior::ACCESSIBLE_ONLY);
+  view2->SetFocusBehavior(View::FocusBehavior::NEVER);
+  view3->SetFocusBehavior(View::FocusBehavior::ALWAYS);
+
+  // Add views to the view hierarchy
+  GetWidget()->GetRootView()->AddChildView(view1);
+  GetWidget()->GetRootView()->AddChildView(view2);
+  GetWidget()->GetRootView()->AddChildView(view3);
+
+  view1->RequestFocus();
+  EXPECT_EQ(view1, GetFocusManager()->GetFocusedView());
+  GetFocusManager()->StoreFocusedView(true);
+  EXPECT_EQ(nullptr, GetFocusManager()->GetFocusedView());
+
+  // Turn off full keyboard access mode and restore focused view. Since view1 is
+  // no longer focusable, view3 should have focus.
+  GetFocusManager()->SetKeyboardAccessible(false);
+  EXPECT_FALSE(GetFocusManager()->RestoreFocusedView());
+  EXPECT_EQ(view3, GetFocusManager()->GetFocusedView());
+
+  GetFocusManager()->StoreFocusedView(false);
+  EXPECT_EQ(nullptr, GetFocusManager()->GetFocusedView());
+
+  // Turn on full keyboard access mode and restore focused view. Since view3 is
+  // still focusable, view3 should have focus.
+  GetFocusManager()->SetKeyboardAccessible(true);
+  EXPECT_TRUE(GetFocusManager()->RestoreFocusedView());
+  EXPECT_EQ(view3, GetFocusManager()->GetFocusedView());
+}
+#endif
 
 namespace {
 

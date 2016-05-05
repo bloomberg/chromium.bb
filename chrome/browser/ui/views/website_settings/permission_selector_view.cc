@@ -71,7 +71,7 @@ PermissionMenuButton::PermissionMenuButton(const base::string16& text,
   // be available, and the button would get native GTK styling on Linux.
   UpdateThemedBorder();
 
-  SetFocusBehavior(FocusBehavior::ALWAYS);
+  Button::ConfigureDefaultFocus(this);
   is_rtl_display_ =
       base::i18n::RIGHT_TO_LEFT == base::i18n::GetStringDirection(text);
 }

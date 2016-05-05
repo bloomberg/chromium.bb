@@ -23,7 +23,7 @@ NotificationButton::NotificationButton(views::ButtonListener* listener)
       focus_painter_(views::Painter::CreateSolidFocusPainter(
           message_center::kFocusBorderColor,
           gfx::Insets(1, 2, 2, 2))) {
-  SetFocusBehavior(FocusBehavior::ALWAYS);
+  Button::ConfigureDefaultFocus(this);
   // Create a background so that it does not change when the MessageView
   // background changes to show touch feedback
   set_background(views::Background::CreateSolidBackground(

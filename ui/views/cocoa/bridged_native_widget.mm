@@ -799,6 +799,9 @@ void BridgedNativeWidget::OnWindowKeyStatusChangedTo(bool is_key) {
   if ([window_ contentView] == [window_ firstResponder]) {
     if (is_key) {
       widget->OnNativeFocus();
+      // Explicitly set the keyboard accessibility state on regaining key
+      // window status.
+      [bridged_view_ updateFullKeyboardAccess];
       widget->GetFocusManager()->RestoreFocusedView();
     } else {
       widget->OnNativeBlur();

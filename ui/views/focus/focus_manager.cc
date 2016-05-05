@@ -35,7 +35,8 @@ FocusManager::FocusManager(Widget* widget, FocusManagerDelegate* delegate)
       accelerator_manager_(new ui::AcceleratorManager),
       shortcut_handling_suspended_(false),
       focus_change_reason_(kReasonDirectFocusChange),
-      is_changing_focus_(false) {
+      is_changing_focus_(false),
+      keyboard_accessible_(false) {
   DCHECK(widget_);
   stored_focused_view_storage_id_ =
       ViewStorage::GetInstance()->CreateStorageID();
@@ -297,6 +298,16 @@ View* FocusManager::GetNextFocusableView(View* original_starting_view,
   return NULL;
 }
 
+void FocusManager::SetKeyboardAccessible(bool keyboard_accessible) {
+  if (keyboard_accessible == keyboard_accessible_)
+    return;
+
+  keyboard_accessible_ = keyboard_accessible;
+  // Disabling keyboard accessibility may cause the focused view to become not
+  // focusable. Hence advance focus if necessary.
+  AdvanceFocusIfNecessary();
+}
+
 void FocusManager::SetFocusedViewWithReason(
     View* view, FocusChangeReason reason) {
   if (focused_view_ == view)
@@ -341,9 +352,9 @@ void FocusManager::AdvanceFocusIfNecessary() {
 
   // If widget is active and focused view is not focusable, advance focus or,
   // if not possible, clear focus.
-  if (focused_view_ && !focused_view_->IsAccessibilityFocusable()) {
+  if (focused_view_ && !IsFocusable(focused_view_)) {
     AdvanceFocus(false);
-    if (focused_view_ && !focused_view_->IsAccessibilityFocusable())
+    if (focused_view_ && !IsFocusable(focused_view_))
       ClearFocus();
   }
 }
@@ -376,26 +387,21 @@ void FocusManager::StoreFocusedView(bool clear_native_focus) {
 
 bool FocusManager::RestoreFocusedView() {
   View* view = GetStoredFocusView();
-  if (view) {
-    if (ContainsView(view)) {
-      if (!view->IsFocusable() && view->IsAccessibilityFocusable()) {
-        // RequestFocus would fail, but we want to restore focus to controls
-        // that had focus in accessibility mode.
-        SetFocusedViewWithReason(view, kReasonFocusRestore);
-      } else {
-        // This usually just sets the focus if this view is focusable, but
-        // let the view override RequestFocus if necessary.
-        view->RequestFocus();
+  if (view && ContainsView(view)) {
+    // This usually just sets the focus if this view is accessibility
+    // focusable, but let the view override RequestFocus if necessary.
+    view->RequestFocus();
 
-        // If it succeeded, the reason would be incorrect; set it to
-        // focus restore.
-        if (focused_view_ == view)
-          focus_change_reason_ = kReasonFocusRestore;
-      }
-    }
-    return true;
+    // If it succeeded, the reason would be incorrect; set it to
+    // focus restore.
+    if (focused_view_ == view)
+      focus_change_reason_ = kReasonFocusRestore;
+
+    // The |keyboard_accessible_| mode may have changed while the widget was
+    // inactive.
+    AdvanceFocusIfNecessary();
   }
-  return false;
+  return view && view == focused_view_;
 }
 
 void FocusManager::SetStoredFocusView(View* focus_view) {
@@ -531,6 +537,18 @@ bool FocusManager::ProcessArrowKeyTraversal(const ui::KeyEvent& event) {
   }
 
   return false;
+}
+
+bool FocusManager::IsFocusable(View* view) const {
+  DCHECK(view);
+
+// |keyboard_accessible_| is only used on Mac.
+#if defined(OS_MACOSX)
+  return keyboard_accessible_ ? view->IsAccessibilityFocusable()
+                              : view->IsFocusable();
+#else
+  return view->IsAccessibilityFocusable();
+#endif
 }
 
 }  // namespace views

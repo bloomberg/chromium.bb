@@ -159,10 +159,7 @@ void Link::SetFontList(const gfx::FontList& font_list) {
 
 void Link::SetText(const base::string16& text) {
   Label::SetText(text);
-  // Disable focusability for empty links.  Otherwise Label::GetInsets() will
-  // give them an unconditional 1-px. inset on every side to allow for a focus
-  // border, when in this case we probably wanted zero width.
-  SetFocusBehavior(text.empty() ? FocusBehavior::NEVER : FocusBehavior::ALWAYS);
+  ConfigureFocus();
 }
 
 void Link::OnNativeThemeChanged(const ui::NativeTheme* theme) {
@@ -198,10 +195,9 @@ void Link::Init() {
 
   // Label::Init() calls SetText(), but if that's being called from Label(), our
   // SetText() override will not be reached (because the constructed class is
-  // only a Label at the moment, not yet a Link).  So set the focus behavior
-  // here as well
-  SetFocusBehavior(text().empty() ? FocusBehavior::NEVER
-                                  : FocusBehavior::ALWAYS);
+  // only a Label at the moment, not yet a Link).  So explicitly configure focus
+  // here.
+  ConfigureFocus();
 }
 
 void Link::SetPressed(bool pressed) {
@@ -220,6 +216,21 @@ void Link::RecalculateFont() {
       (style | gfx::Font::UNDERLINE) : (style & ~gfx::Font::UNDERLINE);
   if (style != intended_style)
     Label::SetFontList(font_list().DeriveWithStyle(intended_style));
+}
+
+void Link::ConfigureFocus() {
+  // Disable focusability for empty links.  Otherwise Label::GetInsets() will
+  // give them an unconditional 1-px. inset on every side to allow for a focus
+  // border, when in this case we probably wanted zero width.
+  if (text().empty()) {
+    SetFocusBehavior(FocusBehavior::NEVER);
+  } else {
+#if defined(OS_MACOSX)
+    SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
+#else
+    SetFocusBehavior(FocusBehavior::ALWAYS);
+#endif
+  }
 }
 
 SkColor Link::GetEnabledColor() {

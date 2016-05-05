@@ -354,7 +354,12 @@ Combobox::Combobox(ui::ComboboxModel* model)
       arrow_button_(new TransparentButton(this)),
       weak_ptr_factory_(this) {
   ModelChanged();
+#if defined(OS_MACOSX)
+  SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
+#else
   SetFocusBehavior(FocusBehavior::ALWAYS);
+#endif
+
   UpdateBorder();
   // set_background() takes ownership but takes a raw pointer.
   std::unique_ptr<Background> b = PlatformStyle::CreateComboboxBackground();

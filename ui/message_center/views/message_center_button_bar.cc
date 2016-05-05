@@ -76,7 +76,7 @@ NotificationCenterButton::NotificationCenterButton(
   if (text_id)
     SetTooltipText(resource_bundle.GetLocalizedString(text_id));
 
-  SetFocusBehavior(FocusBehavior::ALWAYS);
+  Button::ConfigureDefaultFocus(this);
   set_request_focus_on_press(false);
 
   SetFocusPainter(views::Painter::CreateSolidFocusPainter(

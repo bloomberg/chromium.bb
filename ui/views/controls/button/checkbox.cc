@@ -28,7 +28,7 @@ Checkbox::Checkbox(const base::string16& label)
   // Inset the trailing side by a couple pixels for the focus border.
   button_border->set_insets(gfx::Insets(0, 0, 0, 2));
   SetBorder(std::move(button_border));
-  SetFocusBehavior(FocusBehavior::ALWAYS);
+  Button::ConfigureDefaultFocus(this);
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 

@@ -12,6 +12,7 @@
 
 namespace ui {
 namespace test {
+class ScopedFakeFullKeyboardAccess;
 class ScopedFakeNSWindowFocus;
 class ScopedFakeNSWindowFullscreen;
 }
@@ -45,6 +46,13 @@ class ViewsTestHelperMac : public ViewsTestHelper {
   // time. In non-interactive/sharded tests, |faked_fullscreen_| is initialized,
   // permitting a unit test to 'fake' toggling fullscreen mode.
   std::unique_ptr<ui::test::ScopedFakeNSWindowFullscreen> faked_fullscreen_;
+
+  // Enable fake full keyboard access by default, so that tests don't depend on
+  // system setting of the test machine. Also, this helps to make tests on Mac
+  // more consistent with other platforms, where most views are focusable by
+  // default.
+  std::unique_ptr<ui::test::ScopedFakeFullKeyboardAccess>
+      faked_full_keyboard_access_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewsTestHelperMac);
 };

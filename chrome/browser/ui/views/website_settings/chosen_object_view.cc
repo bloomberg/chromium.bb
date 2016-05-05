@@ -45,7 +45,7 @@ ChosenObjectView::ChosenObjectView(
                   views::GridLayout::CENTER);
   // Create the delete button.
   delete_button_ = new views::ImageButton(this);
-  delete_button_->SetFocusBehavior(FocusBehavior::ALWAYS);
+  views::Button::ConfigureDefaultFocus(delete_button_);
   delete_button_->SetTooltipText(
       l10n_util::GetStringUTF16(info_->ui_info.delete_tooltip_string_id));
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();

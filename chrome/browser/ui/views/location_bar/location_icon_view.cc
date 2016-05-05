@@ -35,7 +35,13 @@ LocationIconView::LocationIconView(const gfx::FontList& font_list,
       suppress_mouse_released_action_(false),
       location_bar_(location_bar) {
   set_id(VIEW_ID_LOCATION_ICON);
+
+#if defined(OS_MACOSX)
+  SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
+#else
   SetFocusBehavior(FocusBehavior::ALWAYS);
+#endif
+
   SetBackground(false);
 }
 

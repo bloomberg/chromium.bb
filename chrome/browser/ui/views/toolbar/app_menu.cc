@@ -284,6 +284,8 @@ class InMenuButton : public LabelButton {
   ~InMenuButton() override {}
 
   void Init(InMenuButtonBackground::ButtonType type) {
+    // An InMenuButton should always be focusable regardless of the platform.
+    // Hence we don't use Button::ConfigureDefaultFocus().
     SetFocusBehavior(FocusBehavior::ALWAYS);
     set_request_focus_on_press(false);
     SetHorizontalAlignment(gfx::ALIGN_CENTER);
@@ -553,6 +555,8 @@ class AppMenu::ZoomView : public AppMenuView {
             IDR_FULLSCREEN_MENU_BUTTON);
     fullscreen_button_->SetImage(ImageButton::STATE_NORMAL, full_screen_image);
 
+    // Since |fullscreen_button_| will reside in a menu, make it ALWAYS
+    // focusable regardless of the platform.
     fullscreen_button_->SetFocusBehavior(FocusBehavior::ALWAYS);
     fullscreen_button_->set_request_focus_on_press(false);
     fullscreen_button_->set_tag(fullscreen_index);

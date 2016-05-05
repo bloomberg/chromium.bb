@@ -269,7 +269,7 @@ void WimaxConfigView::Init() {
   } else {
     // Password visible button.
     passphrase_visible_button_ = new views::ToggleImageButton(this);
-    passphrase_visible_button_->SetFocusBehavior(FocusBehavior::ALWAYS);
+    views::Button::ConfigureDefaultFocus(passphrase_visible_button_);
     passphrase_visible_button_->SetTooltipText(
         l10n_util::GetStringUTF16(
             IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PASSPHRASE_SHOW));

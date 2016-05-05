@@ -18,9 +18,9 @@ class ScopedObjCClassSwizzler;
 namespace ui {
 namespace test {
 
-// Simulates key and main status by listening for -makeKeyWindow and
-// -makeMainWindow. This allows test coverage of code relying on window focus
-// changes without resorting to an interactive_ui_test.
+// Simulates key and main status by listening for -makeKeyWindow,
+// -makeMainWindow and -orderOut:. This allows test coverage of code relying on
+// window focus changes without resorting to an interactive_ui_test.
 class ScopedFakeNSWindowFocus {
  public:
   ScopedFakeNSWindowFocus();
@@ -31,6 +31,7 @@ class ScopedFakeNSWindowFocus {
   std::unique_ptr<base::mac::ScopedObjCClassSwizzler> make_main_swizzler_;
   std::unique_ptr<base::mac::ScopedObjCClassSwizzler> is_key_swizzler_;
   std::unique_ptr<base::mac::ScopedObjCClassSwizzler> make_key_swizzler_;
+  std::unique_ptr<base::mac::ScopedObjCClassSwizzler> order_out_swizzler_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedFakeNSWindowFocus);
 };

@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/focus/focus_manager.h"
-
 #include <stddef.h>
 
 #include "base/macros.h"
@@ -23,6 +21,7 @@
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/tabbed_pane/tabbed_pane.h"
 #include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/focus/focus_manager.h"
 #include "ui/views/test/focus_manager_test.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
@@ -202,6 +201,24 @@ class FocusTraversalTest : public FocusManagerTest {
   }
 
  protected:
+  // Helper function to advance focus multiple times in a loop. |traversal_ids|
+  // is an array of view ids of length |N|. |reverse| denotes the direction in
+  // which focus should be advanced.
+  template <size_t N>
+  void AdvanceEntireFocusLoop(const int (&traversal_ids)[N], bool reverse) {
+    for (size_t i = 0; i < 3; ++i) {
+      for (size_t j = 0; j < N; j++) {
+        SCOPED_TRACE(testing::Message() << "reverse:" << reverse << " i:" << i
+                                        << " j:" << j);
+        GetFocusManager()->AdvanceFocus(reverse);
+        View* focused_view = GetFocusManager()->GetFocusedView();
+        EXPECT_NE(nullptr, focused_view);
+        if (focused_view)
+          EXPECT_EQ(traversal_ids[reverse ? N - j - 1 : j], focused_view->id());
+      }
+    }
+  }
+
   TabbedPane* style_tab_;
   BorderView* search_border_view_;
   DummyComboboxModel combobox_model_;
@@ -577,31 +594,73 @@ TEST_F(FocusTraversalTest, NormalTraversal) {
       kSearchTextfieldID, kSearchButtonID, kHelpLinkID,
       kThumbnailContainerID, kThumbnailStarID, kThumbnailSuperStarID };
 
+  SCOPED_TRACE("NormalTraversal");
+
   // Let's traverse the whole focus hierarchy (several times, to make sure it
   // loops OK).
   GetFocusManager()->ClearFocus();
-  for (int i = 0; i < 3; ++i) {
-    for (size_t j = 0; j < arraysize(kTraversalIDs); j++) {
-      GetFocusManager()->AdvanceFocus(false);
-      View* focused_view = GetFocusManager()->GetFocusedView();
-      EXPECT_TRUE(focused_view != NULL);
-      if (focused_view)
-        EXPECT_EQ(kTraversalIDs[j], focused_view->id());
-    }
-  }
+  AdvanceEntireFocusLoop(kTraversalIDs, false);
 
   // Let's traverse in reverse order.
   GetFocusManager()->ClearFocus();
-  for (int i = 0; i < 3; ++i) {
-    for (int j = arraysize(kTraversalIDs) - 1; j >= 0; --j) {
-      GetFocusManager()->AdvanceFocus(true);
-      View* focused_view = GetFocusManager()->GetFocusedView();
-      EXPECT_TRUE(focused_view != NULL);
-      if (focused_view)
-        EXPECT_EQ(kTraversalIDs[j], focused_view->id());
-    }
-  }
+  AdvanceEntireFocusLoop(kTraversalIDs, true);
 }
+
+#if defined(OS_MACOSX)
+// Test focus traversal with full keyboard access off on Mac.
+TEST_F(FocusTraversalTest, NormalTraversalMac) {
+  GetFocusManager()->SetKeyboardAccessible(false);
+
+  // Now only views with FocusBehavior of ALWAYS will be focusable.
+  const int kTraversalIDs[] = {kAppleTextfieldID,    kOrangeTextfieldID,
+                               kBananaTextfieldID,   kKiwiTextfieldID,
+                               kStyleTextEditID,     kSearchTextfieldID,
+                               kThumbnailContainerID};
+
+  SCOPED_TRACE("NormalTraversalMac");
+
+  // Let's traverse the whole focus hierarchy (several times, to make sure it
+  // loops OK).
+  GetFocusManager()->ClearFocus();
+  AdvanceEntireFocusLoop(kTraversalIDs, false);
+
+  // Let's traverse in reverse order.
+  GetFocusManager()->ClearFocus();
+  AdvanceEntireFocusLoop(kTraversalIDs, true);
+}
+
+// Test toggling full keyboard access correctly changes the focused view on Mac.
+TEST_F(FocusTraversalTest, FullKeyboardToggle) {
+  // Give focus to kTopCheckBoxID .
+  FindViewByID(kTopCheckBoxID)->RequestFocus();
+  EXPECT_EQ(kTopCheckBoxID, GetFocusManager()->GetFocusedView()->id());
+
+  // Turn off full keyboard access. Focus should move to next view with ALWAYS
+  // focus behavior.
+  GetFocusManager()->SetKeyboardAccessible(false);
+  EXPECT_EQ(kAppleTextfieldID, GetFocusManager()->GetFocusedView()->id());
+
+  // Turning on full keyboard access should not change the focused view.
+  GetFocusManager()->SetKeyboardAccessible(true);
+  EXPECT_EQ(kAppleTextfieldID, GetFocusManager()->GetFocusedView()->id());
+
+  // Give focus to kSearchButtonID.
+  FindViewByID(kSearchButtonID)->RequestFocus();
+  EXPECT_EQ(kSearchButtonID, GetFocusManager()->GetFocusedView()->id());
+
+  // Turn off full keyboard access. Focus should move to next view with ALWAYS
+  // focus behavior.
+  GetFocusManager()->SetKeyboardAccessible(false);
+  EXPECT_EQ(kThumbnailContainerID, GetFocusManager()->GetFocusedView()->id());
+
+  // See focus advances correctly in both directions.
+  GetFocusManager()->AdvanceFocus(false);
+  EXPECT_EQ(kAppleTextfieldID, GetFocusManager()->GetFocusedView()->id());
+
+  GetFocusManager()->AdvanceFocus(true);
+  EXPECT_EQ(kThumbnailContainerID, GetFocusManager()->GetFocusedView()->id());
+}
+#endif  // OS_MACOSX
 
 TEST_F(FocusTraversalTest, TraversalWithNonEnabledViews) {
   const int kDisabledIDs[] = {
@@ -619,6 +678,8 @@ TEST_F(FocusTraversalTest, TraversalWithNonEnabledViews) {
       kSearchButtonID, kThumbnailContainerID, kThumbnailStarID,
       kThumbnailSuperStarID };
 
+  SCOPED_TRACE("TraversalWithNonEnabledViews");
+
   // Let's disable some views.
   for (size_t i = 0; i < arraysize(kDisabledIDs); i++) {
     View* v = FindViewByID(kDisabledIDs[i]);
@@ -626,30 +687,13 @@ TEST_F(FocusTraversalTest, TraversalWithNonEnabledViews) {
     v->SetEnabled(false);
   }
 
-  View* focused_view;
   // Let's do one traversal (several times, to make sure it loops ok).
   GetFocusManager()->ClearFocus();
-  for (int i = 0; i < 3; ++i) {
-    for (size_t j = 0; j < arraysize(kTraversalIDs); j++) {
-      GetFocusManager()->AdvanceFocus(false);
-      focused_view = GetFocusManager()->GetFocusedView();
-      EXPECT_TRUE(focused_view != NULL);
-      if (focused_view)
-        EXPECT_EQ(kTraversalIDs[j], focused_view->id());
-    }
-  }
+  AdvanceEntireFocusLoop(kTraversalIDs, false);
 
   // Same thing in reverse.
   GetFocusManager()->ClearFocus();
-  for (int i = 0; i < 3; ++i) {
-    for (int j = arraysize(kTraversalIDs) - 1; j >= 0; --j) {
-      GetFocusManager()->AdvanceFocus(true);
-      focused_view = GetFocusManager()->GetFocusedView();
-      EXPECT_TRUE(focused_view != NULL);
-      if (focused_view)
-        EXPECT_EQ(kTraversalIDs[j], focused_view->id());
-    }
-  }
+  AdvanceEntireFocusLoop(kTraversalIDs, true);
 }
 
 TEST_F(FocusTraversalTest, TraversalWithInvisibleViews) {
@@ -666,6 +710,7 @@ TEST_F(FocusTraversalTest, TraversalWithInvisibleViews) {
       kItalicCheckBoxID, kUnderlinedCheckBoxID, kStyleHelpLinkID,
       kStyleTextEditID, kSearchTextfieldID, kSearchButtonID, kHelpLinkID };
 
+  SCOPED_TRACE("TraversalWithInvisibleViews");
 
   // Let's make some views invisible.
   for (size_t i = 0; i < arraysize(kInvisibleIDs); i++) {
@@ -674,30 +719,13 @@ TEST_F(FocusTraversalTest, TraversalWithInvisibleViews) {
     v->SetVisible(false);
   }
 
-  View* focused_view;
   // Let's do one traversal (several times, to make sure it loops ok).
   GetFocusManager()->ClearFocus();
-  for (int i = 0; i < 3; ++i) {
-    for (size_t j = 0; j < arraysize(kTraversalIDs); j++) {
-      GetFocusManager()->AdvanceFocus(false);
-      focused_view = GetFocusManager()->GetFocusedView();
-      EXPECT_TRUE(focused_view != NULL);
-      if (focused_view)
-        EXPECT_EQ(kTraversalIDs[j], focused_view->id());
-    }
-  }
+  AdvanceEntireFocusLoop(kTraversalIDs, false);
 
   // Same thing in reverse.
   GetFocusManager()->ClearFocus();
-  for (int i = 0; i < 3; ++i) {
-    for (int j = arraysize(kTraversalIDs) - 1; j >= 0; --j) {
-      GetFocusManager()->AdvanceFocus(true);
-      focused_view = GetFocusManager()->GetFocusedView();
-      EXPECT_TRUE(focused_view != NULL);
-      if (focused_view)
-        EXPECT_EQ(kTraversalIDs[j], focused_view->id());
-    }
-  }
+  AdvanceEntireFocusLoop(kTraversalIDs, true);
 }
 
 TEST_F(FocusTraversalTest, PaneTraversal) {
@@ -710,32 +738,18 @@ TEST_F(FocusTraversalTest, PaneTraversal) {
     kOrangeTextfieldID, kBananaTextfieldID, kKiwiTextfieldID,
     kFruitButtonID, kFruitCheckBoxID, kComboboxID };
 
+  SCOPED_TRACE("PaneTraversal");
+
   FocusSearch focus_search_left(left_container_, true, false);
   left_container_->EnablePaneFocus(&focus_search_left);
   FindViewByID(kComboboxID)->RequestFocus();
 
   // Traverse the focus hierarchy within the pane several times.
-  for (int i = 0; i < 3; ++i) {
-    for (size_t j = 0; j < arraysize(kLeftTraversalIDs); j++) {
-      GetFocusManager()->AdvanceFocus(false);
-      View* focused_view = GetFocusManager()->GetFocusedView();
-      EXPECT_TRUE(focused_view != NULL);
-      if (focused_view)
-        EXPECT_EQ(kLeftTraversalIDs[j], focused_view->id());
-    }
-  }
+  AdvanceEntireFocusLoop(kLeftTraversalIDs, false);
 
   // Traverse in reverse order.
   FindViewByID(kAppleTextfieldID)->RequestFocus();
-  for (int i = 0; i < 3; ++i) {
-    for (int j = arraysize(kLeftTraversalIDs) - 1; j >= 0; --j) {
-      GetFocusManager()->AdvanceFocus(true);
-      View* focused_view = GetFocusManager()->GetFocusedView();
-      EXPECT_TRUE(focused_view != NULL);
-      if (focused_view)
-        EXPECT_EQ(kLeftTraversalIDs[j], focused_view->id());
-    }
-  }
+  AdvanceEntireFocusLoop(kLeftTraversalIDs, true);
 
   // Now test the right container, but this time with accessibility mode.
   // Make some links not focusable, but mark one of them as
@@ -755,27 +769,11 @@ TEST_F(FocusTraversalTest, PaneTraversal) {
   FindViewByID(kAsterixLinkID)->RequestFocus();
 
   // Traverse the focus hierarchy within the pane several times.
-  for (int i = 0; i < 3; ++i) {
-    for (size_t j = 0; j < arraysize(kRightTraversalIDs); j++) {
-      GetFocusManager()->AdvanceFocus(false);
-      View* focused_view = GetFocusManager()->GetFocusedView();
-      EXPECT_TRUE(focused_view != NULL);
-      if (focused_view)
-        EXPECT_EQ(kRightTraversalIDs[j], focused_view->id());
-    }
-  }
+  AdvanceEntireFocusLoop(kRightTraversalIDs, false);
 
   // Traverse in reverse order.
   FindViewByID(kBroccoliButtonID)->RequestFocus();
-  for (int i = 0; i < 3; ++i) {
-    for (int j = arraysize(kRightTraversalIDs) - 1; j >= 0; --j) {
-      GetFocusManager()->AdvanceFocus(true);
-      View* focused_view = GetFocusManager()->GetFocusedView();
-      EXPECT_TRUE(focused_view != NULL);
-      if (focused_view)
-        EXPECT_EQ(kRightTraversalIDs[j], focused_view->id());
-    }
-  }
+  AdvanceEntireFocusLoop(kRightTraversalIDs, true);
 }
 
 class FocusTraversalNonFocusableTest : public FocusManagerTest {

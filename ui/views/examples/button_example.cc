@@ -44,7 +44,7 @@ void ButtonExample::CreateExampleView(View* container) {
   container->SetLayoutManager(layout);
 
   label_button_ = new LabelButton(this, ASCIIToUTF16(kLabelButton));
-  label_button_->SetFocusBehavior(View::FocusBehavior::ALWAYS);
+  Button::ConfigureDefaultFocus(label_button_);
   container->AddChildView(label_button_);
 
   styled_button_ = new LabelButton(this, ASCIIToUTF16("Styled Button"));
@@ -71,7 +71,7 @@ void ButtonExample::CreateExampleView(View* container) {
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   image_button_ = new ImageButton(this);
-  image_button_->SetFocusBehavior(View::FocusBehavior::ALWAYS);
+  Button::ConfigureDefaultFocus(image_button_);
   image_button_->SetImage(ImageButton::STATE_NORMAL,
                           rb.GetImageNamed(IDR_CLOSE).ToImageSkia());
   image_button_->SetImage(ImageButton::STATE_HOVERED,
@@ -103,9 +103,10 @@ void ButtonExample::LabelButtonPressed(LabelButton* label_button,
     }
   } else if (event.IsShiftDown()) {
     if (event.IsAltDown()) {
-      label_button->SetFocusBehavior(label_button->IsFocusable()
-                                         ? View::FocusBehavior::NEVER
-                                         : View::FocusBehavior::ALWAYS);
+      // Toggle focusability.
+      label_button_->IsAccessibilityFocusable()
+          ? label_button_->SetFocusBehavior(View::FocusBehavior::NEVER)
+          : Button::ConfigureDefaultFocus(label_button_);
     } else {
       label_button->SetStyle(static_cast<Button::ButtonStyle>(
           (label_button->style() + 1) % Button::STYLE_COUNT));

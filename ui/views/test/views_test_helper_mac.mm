@@ -7,6 +7,7 @@
 #import <Cocoa/Cocoa.h>
 
 #import "base/mac/scoped_nsautorelease_pool.h"
+#include "ui/base/test/scoped_fake_full_keyboard_access.h"
 #include "ui/base/test/scoped_fake_nswindow_focus.h"
 #include "ui/base/test/scoped_fake_nswindow_fullscreen.h"
 #include "ui/base/test/ui_controls.h"
@@ -46,6 +47,7 @@ void ViewsTestHelperMac::SetUp() {
     faked_focus_.reset(new ui::test::ScopedFakeNSWindowFocus);
     faked_fullscreen_.reset(new ui::test::ScopedFakeNSWindowFullscreen);
   }
+  faked_full_keyboard_access_.reset(new ui::test::ScopedFakeFullKeyboardAccess);
 }
 
 void ViewsTestHelperMac::TearDown() {

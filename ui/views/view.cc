@@ -1226,7 +1226,7 @@ const FocusManager* View::GetFocusManager() const {
 
 void View::RequestFocus() {
   FocusManager* focus_manager = GetFocusManager();
-  if (focus_manager && IsFocusable())
+  if (focus_manager && IsAccessibilityFocusable())
     focus_manager->SetFocusedView(this);
 }
 

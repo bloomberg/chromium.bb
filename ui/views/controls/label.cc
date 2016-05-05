@@ -213,7 +213,7 @@ base::string16 Label::GetDisplayTextForTesting() {
 
 gfx::Insets Label::GetInsets() const {
   gfx::Insets insets = View::GetInsets();
-  if (focus_behavior() == FocusBehavior::ALWAYS) {
+  if (focus_behavior() != FocusBehavior::NEVER) {
     insets += gfx::Insets(kFocusBorderPadding, kFocusBorderPadding,
                           kFocusBorderPadding, kFocusBorderPadding);
   }
@@ -435,7 +435,7 @@ void Label::MaybeBuildRenderTextLines() {
     return;
 
   gfx::Rect rect = GetContentsBounds();
-  if (focus_behavior() == FocusBehavior::ALWAYS)
+  if (focus_behavior() != FocusBehavior::NEVER)
     rect.Inset(kFocusBorderPadding, kFocusBorderPadding);
   if (rect.IsEmpty())
     return;

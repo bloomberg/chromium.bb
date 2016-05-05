@@ -19,10 +19,12 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #import "ui/base/cocoa/constrained_window/constrained_window_animation.h"
 #import "ui/base/cocoa/window_size_constants.h"
+#import "ui/base/test/scoped_fake_full_keyboard_access.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
 #include "ui/events/test/event_generator.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
+#import "ui/views/cocoa/bridged_content_view.h"
 #import "ui/views/cocoa/bridged_native_widget.h"
 #import "ui/views/cocoa/native_widget_mac_nswindow.h"
 #include "ui/views/controls/button/label_button.h"
@@ -1371,6 +1373,79 @@ TEST_F(NativeWidgetMacTest, ChangeFocusOnChangeFirstResponder) {
   EXPECT_EQ(manager->GetFocusedView(), widget->GetRootView());
 
   widget->CloseNow();
+}
+
+// Test class for Full Keyboard Access related tests.
+class NativeWidgetMacFullKeyboardAccessTest : public NativeWidgetMacTest {
+ public:
+  NativeWidgetMacFullKeyboardAccessTest() {}
+
+ protected:
+  // testing::Test:
+  void SetUp() override {
+    NativeWidgetMacTest::SetUp();
+
+    widget_ = CreateTopLevelPlatformWidget();
+    bridge_ =
+        NativeWidgetMac::GetBridgeForNativeWindow(widget_->GetNativeWindow());
+    fake_full_keyboard_access_ =
+        ui::test::ScopedFakeFullKeyboardAccess::GetInstance();
+    DCHECK(fake_full_keyboard_access_);
+    widget_->Show();
+  }
+
+  void TearDown() override {
+    widget_->CloseNow();
+    NativeWidgetMacTest::TearDown();
+  }
+
+  Widget* widget_ = nullptr;
+  BridgedNativeWidget* bridge_ = nullptr;
+  ui::test::ScopedFakeFullKeyboardAccess* fake_full_keyboard_access_ = nullptr;
+};
+
+// Test that updateFullKeyboardAccess method on BridgedContentView correctly
+// sets the keyboard accessibility mode on the associated focus manager.
+TEST_F(NativeWidgetMacFullKeyboardAccessTest, FullKeyboardToggle) {
+  EXPECT_TRUE(widget_->GetFocusManager()->keyboard_accessible());
+  fake_full_keyboard_access_->set_full_keyboard_access_state(false);
+  [bridge_->ns_view() updateFullKeyboardAccess];
+  EXPECT_FALSE(widget_->GetFocusManager()->keyboard_accessible());
+  fake_full_keyboard_access_->set_full_keyboard_access_state(true);
+  [bridge_->ns_view() updateFullKeyboardAccess];
+  EXPECT_TRUE(widget_->GetFocusManager()->keyboard_accessible());
+}
+
+// Test that a Widget's associated FocusManager is initialized with the correct
+// keyboard accessibility value.
+TEST_F(NativeWidgetMacFullKeyboardAccessTest, Initialization) {
+  EXPECT_TRUE(widget_->GetFocusManager()->keyboard_accessible());
+
+  fake_full_keyboard_access_->set_full_keyboard_access_state(false);
+  Widget* widget2 = CreateTopLevelPlatformWidget();
+  EXPECT_FALSE(widget2->GetFocusManager()->keyboard_accessible());
+  widget2->CloseNow();
+}
+
+// Test that the correct keyboard accessibility mode is set when the window
+// becomes active.
+TEST_F(NativeWidgetMacFullKeyboardAccessTest, Activation) {
+  EXPECT_TRUE(widget_->GetFocusManager()->keyboard_accessible());
+
+  widget_->Hide();
+  fake_full_keyboard_access_->set_full_keyboard_access_state(false);
+  // [bridge_->ns_view() updateFullKeyboardAccess] is not explicitly called
+  // since we may not receive full keyboard access toggle notifications when our
+  // application is inactive.
+
+  widget_->Show();
+  EXPECT_FALSE(widget_->GetFocusManager()->keyboard_accessible());
+
+  widget_->Hide();
+  fake_full_keyboard_access_->set_full_keyboard_access_state(true);
+
+  widget_->Show();
+  EXPECT_TRUE(widget_->GetFocusManager()->keyboard_accessible());
 }
 
 class NativeWidgetMacViewsOrderTest : public WidgetTest {

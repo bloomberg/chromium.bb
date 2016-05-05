@@ -145,6 +145,7 @@ TableView::TableView(ui::TableModel* model,
     visible_column.column = columns[i];
     visible_columns_.push_back(visible_column);
   }
+  // Always focusable, even on Mac (consistent with NSTableView).
   SetFocusBehavior(FocusBehavior::ALWAYS);
   SetModel(model);
 }

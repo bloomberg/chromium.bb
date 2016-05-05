@@ -79,6 +79,10 @@ class View;
 // Update windowMask_ depending on the current view bounds.
 - (void)updateWindowMask;
 
+// Notifies the associated FocusManager whether full keyboard access is enabled
+// or not.
+- (void)updateFullKeyboardAccess;
+
 @end
 
 #endif  // UI_VIEWS_COCOA_BRIDGED_CONTENT_VIEW_H_
