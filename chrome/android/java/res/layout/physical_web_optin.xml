@@ -35,11 +35,13 @@
                 android:textSize="24sp"
                 android:textColor="@android:color/black" />
             <TextView
+                android:id="@+id/physical_web_optin_description"
                 android:layout_height="wrap_content"
                 android:layout_width="match_parent"
                 android:text="@string/physical_web_optin_description"
                 android:textSize="16sp"
-                android:textColor="@color/light_normal_color" />
+                android:textColor="@color/light_normal_color"
+                android:textColorLink="@color/light_active_color" />
 
         </LinearLayout>
 

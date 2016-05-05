@@ -450,7 +450,6 @@ by a child template that "extends" this file.
         <activity android:name="org.chromium.chrome.browser.physicalweb.PhysicalWebOptInActivity"
             android:label="@string/physical_web_list_urls_activity_title"
             android:theme="@style/PhysicalWebOptInStyle"
-            android:autoRemoveFromRecents="true"
             android:exported="false">
         </activity>
 

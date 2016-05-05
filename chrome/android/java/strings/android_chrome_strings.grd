@@ -2283,6 +2283,8 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
         Devices nearby you are broadcasting web pages over Bluetooth. Chrome will scan for pages and display them when you wake up your device. These pages will go through a Google service to improve the quality of page results.
 
 You can control the Physical Web in Chrome Settings.
+
+<ph name="BEGIN_LINK">&lt;learnmore&gt;</ph>Learn more<ph name="END_LINK">&lt;/learnmore&gt;</ph>
       </message>
       <message name="IDS_PHYSICAL_WEB_LIST_URLS_ACTIVITY_TITLE" desc="The title for a dialog that shows a list of URLs broadcasted from nearby devices.">
         The Physical Web
