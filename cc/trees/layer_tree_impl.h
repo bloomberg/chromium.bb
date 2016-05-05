@@ -161,9 +161,7 @@ class CC_EXPORT LayerTreeImpl {
   LayerListReverseIterator<LayerImpl> rbegin();
   LayerListReverseIterator<LayerImpl> rend();
 
-  // TODO(thakis): Consider marking this CC_EXPORT once we understand
-  // http://crbug.com/575700 better.
-  struct ElementLayers {
+  struct CC_EXPORT ElementLayers {
     // Transform and opacity mutations apply to this layer.
     LayerImpl* main = nullptr;
     // Scroll mutations apply to this layer.
