@@ -85,6 +85,8 @@ class CONTENT_EXPORT DOMStorageNamespace
   // Adds memory statistics to |pmd| for chrome://tracing.
   void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd);
 
+  void GetOriginsWithAreas(std::vector<GURL>* origins) const;
+
  private:
   friend class base::RefCountedThreadSafe<DOMStorageNamespace>;
 

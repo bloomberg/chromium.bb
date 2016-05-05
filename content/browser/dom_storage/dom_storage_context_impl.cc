@@ -108,8 +108,18 @@ DOMStorageNamespace* DOMStorageContextImpl::GetStorageNamespace(
 void DOMStorageContextImpl::GetLocalStorageUsage(
     std::vector<LocalStorageUsageInfo>* infos,
     bool include_file_info) {
-  if (localstorage_directory_.empty())
+  if (localstorage_directory_.empty()) {
+    DOMStorageNamespace* local = GetStorageNamespace(kLocalStorageNamespaceId);
+    std::vector<GURL> origins;
+    local->GetOriginsWithAreas(&origins);
+    for (const GURL& origin : origins) {
+      LocalStorageUsageInfo info;
+      info.origin = origin;
+      infos->push_back(info);
+    }
     return;
+  }
+
   base::FileEnumerator enumerator(localstorage_directory_, false,
                                   base::FileEnumerator::FILES);
   for (base::FilePath path = enumerator.Next(); !path.empty();
@@ -129,8 +139,20 @@ void DOMStorageContextImpl::GetLocalStorageUsage(
 
 void DOMStorageContextImpl::GetSessionStorageUsage(
     std::vector<SessionStorageUsageInfo>* infos) {
-  if (!session_storage_database_.get())
+  if (!session_storage_database_.get()) {
+    for (const auto& entry : namespaces_) {
+      std::vector<GURL> origins;
+      entry.second->GetOriginsWithAreas(&origins);
+      for (const GURL& origin : origins) {
+        SessionStorageUsageInfo info;
+        info.persistent_namespace_id = entry.second->persistent_namespace_id();
+        info.origin = origin;
+        infos->push_back(info);
+      }
+    }
     return;
+  }
+
   std::map<std::string, std::vector<GURL> > namespaces_and_origins;
   session_storage_database_->ReadNamespacesAndOrigins(
       &namespaces_and_origins);
