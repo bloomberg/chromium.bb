@@ -5,7 +5,7 @@ Running: testSimpleSchedule
 Throttler is in IDLE state (doesn't have any timers set up)
 SCHEDULED: 'operation #1' asSoonAsPossible: false
 SCHEDULED: 'operation #2' asSoonAsPossible: undefined
-Throttler is in TIMEOUT state. Scheduled timers timeouts: [0]
+Throttler is in TIMEOUT state. Scheduled timers timeouts: [1989]
 Process 'operation #2' STARTED.
 Process 'operation #2' FINISHED.
 
@@ -30,7 +30,7 @@ Process 'operation #3' FINISHED.
 Running: testSimpleScheduleDuringProcess
 Throttler is in IDLE state (doesn't have any timers set up)
 SCHEDULED: 'long operation' asSoonAsPossible: undefined
-Throttler is in TIMEOUT state. Scheduled timers timeouts: [0]
+Throttler is in TIMEOUT state. Scheduled timers timeouts: [1989]
 Process 'long operation' STARTED.
 Throttler is in IDLE state (doesn't have any timers set up)
 SCHEDULED: 'operation #1' asSoonAsPossible: false
@@ -43,7 +43,7 @@ Process 'operation #2' FINISHED.
 Running: testAsSoonAsPossibleOverrideDuringProcess
 Throttler is in IDLE state (doesn't have any timers set up)
 SCHEDULED: 'long operation' asSoonAsPossible: undefined
-Throttler is in TIMEOUT state. Scheduled timers timeouts: [0]
+Throttler is in TIMEOUT state. Scheduled timers timeouts: [1989]
 Process 'long operation' STARTED.
 Throttler is in IDLE state (doesn't have any timers set up)
 SCHEDULED: 'operation #1' asSoonAsPossible: undefined
@@ -56,7 +56,7 @@ Process 'operation #2' FINISHED.
 Running: testAlwaysExecuteLastScheduledDuringProcess
 Throttler is in IDLE state (doesn't have any timers set up)
 SCHEDULED: 'long operation' asSoonAsPossible: undefined
-Throttler is in TIMEOUT state. Scheduled timers timeouts: [0]
+Throttler is in TIMEOUT state. Scheduled timers timeouts: [1989]
 Process 'long operation' STARTED.
 Throttler is in IDLE state (doesn't have any timers set up)
 SCHEDULED: 'operation #0' asSoonAsPossible: true
@@ -71,7 +71,7 @@ Process 'operation #3' FINISHED.
 Running: testScheduleFromProcess
 Throttler is in IDLE state (doesn't have any timers set up)
 SCHEDULED: 'operation #1' asSoonAsPossible: undefined
-Throttler is in TIMEOUT state. Scheduled timers timeouts: [0]
+Throttler is in TIMEOUT state. Scheduled timers timeouts: [1989]
 Process 'operation #1' STARTED.
 SCHEDULED: 'operation #2' asSoonAsPossible: false
 Process 'operation #1' FINISHED.

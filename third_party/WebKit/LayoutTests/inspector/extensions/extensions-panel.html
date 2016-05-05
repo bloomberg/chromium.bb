@@ -69,6 +69,7 @@ function initialize_extensionsPanelTest()
         function consoleMessageAdded()
         {
             WebInspector.multitargetConsoleModel.removeEventListener(WebInspector.ConsoleModel.Events.MessageAdded, wrappedConsoleMessageAdded);
+            WebInspector.ConsoleView.instance()._viewportThrottler.flush();
             InspectorTest.deprecatedRunAfterPendingDispatches(clickOnMessage)
         }
 
