@@ -15889,6 +15889,7 @@ var keyboardOverlayData = {
     'l<>ALT<>SHIFT': 'keyboardOverlayFocusShelf',
     'l<>CTRL': 'keyboardOverlayFocusAddressBar',
     'l<>SEARCH': 'keyboardOverlayLockScreen',
+    'l<>SEARCH<>SHIFT': 'keyboardOverlaySuspend',
     'left<>ALT': 'keyboardOverlayGoBack',
     'left<>CTRL': 'keyboardOverlayPreviousWord',
     'left<>CTRL<>SHIFT': 'keyboardOverlaySelectWordAtATime',

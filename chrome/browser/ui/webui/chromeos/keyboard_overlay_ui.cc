@@ -247,6 +247,7 @@ struct I18nContentToMessage {
   { "keyboardOverlayShowStatusMenu", IDS_KEYBOARD_OVERLAY_SHOW_STATUS_MENU },
   { "keyboardOverlayShowWrenchMenu", IDS_KEYBOARD_OVERLAY_SHOW_WRENCH_MENU },
   { "keyboardOverlaySignOut", IDS_KEYBOARD_OVERLAY_SIGN_OUT },
+  { "keyboardOverlaySuspend", IDS_KEYBOARD_OVERLAY_SUSPEND },
   { "keyboardOverlaySwapPrimaryMonitor",
     IDS_KEYBOARD_OVERLAY_SWAP_PRIMARY_MONITOR },
   { "keyboardOverlayTakeScreenshot", IDS_KEYBOARD_OVERLAY_TAKE_SCREENSHOT },

@@ -80,6 +80,8 @@
 #include "ash/display/display_configuration_controller.h"
 #include "ash/system/chromeos/keyboard_brightness_controller.h"
 #include "base/sys_info.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/power_manager_client.h"
 #include "ui/base/ime/chromeos/ime_keyboard.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #endif  // defined(OS_CHROMEOS)
@@ -616,6 +618,11 @@ void HandleLock() {
   Shell::GetInstance()->session_state_delegate()->LockScreen();
 }
 
+void HandleSuspend() {
+  base::RecordAction(UserMetricsAction("Accel_Suspend"));
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RequestSuspend();
+}
+
 void HandleCrosh() {
   base::RecordAction(UserMetricsAction("Accel_Open_Crosh"));
 
@@ -1106,6 +1113,7 @@ bool AcceleratorController::CanPerformAction(
     case OPEN_GET_HELP:
     case POWER_PRESSED:
     case POWER_RELEASED:
+    case SUSPEND:
     case TOGGLE_MIRROR_MODE:
     case TOGGLE_SPOKEN_FEEDBACK:
     case TOGGLE_WIFI:
@@ -1345,6 +1353,9 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
       // (power button events are reported to us from powerm via
       // D-BUS), but we consume them to prevent them from getting
       // passed to apps -- see http://crbug.com/146609.
+      break;
+    case SUSPEND:
+      HandleSuspend();
       break;
     case SWAP_PRIMARY_DISPLAY:
       HandleSwapPrimaryDisplay();

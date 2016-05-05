@@ -4799,6 +4799,9 @@ Battery full
   <message name="IDS_KEYBOARD_OVERLAY_SIGN_OUT" desc="The text in the keyboard overlay to explain the shortcut.">
     Sign out
   </message>
+  <message name="IDS_KEYBOARD_OVERLAY_SUSPEND" desc="The text in the keyboard overlay to explain the shortcut.">
+    Suspend
+  </message>
   <message name="IDS_KEYBOARD_OVERLAY_SWAP_PRIMARY_MONITOR" desc="The text in the keyboard overlay to explain the shortcut (swap primary monitor).">
     Swap primary monitor
   </message>

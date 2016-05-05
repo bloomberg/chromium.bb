@@ -689,6 +689,13 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Accel_Suspend">
+  <owner>afakhry@chromium.org</owner>
+  <description>
+    Metric recorded when the user suspends the machine using keyboard shortcut.
+  </description>
+</action>
+
 <action name="Accel_Swap_Primary_Display">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

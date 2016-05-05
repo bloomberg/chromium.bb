@@ -47,6 +47,7 @@ const AcceleratorData kAcceleratorData[] = {
   { true, ui::VKEY_BRIGHTNESS_UP, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
     MAGNIFY_SCREEN_ZOOM_IN},
   { true, ui::VKEY_L, ui::EF_COMMAND_DOWN, LOCK_SCREEN },
+  { true, ui::VKEY_L, ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN, SUSPEND },
   // The lock key on Chrome OS keyboards produces F13 scancodes.
   { true, ui::VKEY_F13, ui::EF_NONE, LOCK_PRESSED },
   { false, ui::VKEY_F13, ui::EF_NONE, LOCK_RELEASED },
@@ -328,6 +329,7 @@ const AcceleratorAction kReservedActions[] = {
 #if defined(OS_CHROMEOS)
   POWER_PRESSED,
   POWER_RELEASED,
+  SUSPEND,
 #else
   DUMMY_FOR_RESERVED,
 #endif
@@ -384,6 +386,9 @@ const size_t kActionsAllowedAtLoginOrLockScreenLength =
 
 const AcceleratorAction kActionsAllowedAtLockScreen[] = {
   EXIT,
+#if defined(OS_CHROMEOS)
+  SUSPEND,
+#endif  // defined(OS_CHROMEOS)
 };
 
 const size_t kActionsAllowedAtLockScreenLength =
@@ -421,6 +426,7 @@ const AcceleratorAction kActionsAllowedAtModalWindow[] = {
   LOCK_SCREEN,
   POWER_PRESSED,
   POWER_RELEASED,
+  SUSPEND,
   SWAP_PRIMARY_DISPLAY,
   TOGGLE_CAPS_LOCK,
   TOGGLE_MIRROR_MODE,
@@ -458,6 +464,7 @@ const AcceleratorAction kNonrepeatableActions[] = {
     DEBUG_TOGGLE_TOUCH_PAD,
     DEBUG_TOGGLE_TOUCH_SCREEN,
     LOCK_SCREEN,
+    SUSPEND,
 #endif
 };
 
