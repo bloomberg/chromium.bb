@@ -13,7 +13,7 @@ diff --git a/components-chromium/polymer/polymer-extracted.js b/components-chrom
 index baf9ab3..985fe6c 100644
 --- a/components-chromium/polymer/polymer-extracted.js
 +++ b/components-chromium/polymer/polymer-extracted.js
-@@ -2157,8 +2157,7 @@ _hasMixinRules: function (rules) {
+@@ -2444,8 +2444,7 @@ _hasMixinRules: function (rules) {
  return rules[0].selector.indexOf(this.VAR_START) >= 0;
  },
  removeCustomProps: function (cssText) {
@@ -23,3 +23,16 @@ index baf9ab3..985fe6c 100644
  },
  removeCustomPropAssignment: function (cssText) {
  return cssText.replace(this._rx.customProp, '').replace(this._rx.mixinProp, '');
+diff --git a/components-chromium/polymer/polymer-extracted.js b/components-chromium/polymer/polymer-extracted.js
+index 8446e8a..3f679f6 100644
+--- a/components-chromium/polymer/polymer-extracted.js
++++ b/components-chromium/polymer/polymer-extracted.js
+@@ -2475,7 +2475,7 @@ AT_START: '@'
+ }();
+ Polymer.StyleUtil = function () {
+ return {
+-MODULE_STYLES_SELECTOR: 'style, link[rel=import][type~=css], template',
++MODULE_STYLES_SELECTOR: 'style:not([no-process]), link[rel=import][type~=css], template',
+ INCLUDE_ATTR: 'include',
+ toCssText: function (rules, callback, preserveProperties) {
+ if (typeof rules === 'string') {
