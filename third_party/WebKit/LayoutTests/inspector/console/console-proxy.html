@@ -33,7 +33,6 @@ function test()
         var consoleView = WebInspector.ConsoleView.instance();
         consoleView._viewport.invalidate()
         var element = consoleView._visibleViewMessages[0].contentElement();
-        dumpNoteVisible(element, "warning-note");
         dumpNoteVisible(element, "info-note");
 
         InspectorTest.dumpConsoleMessages(false, true);
@@ -49,7 +48,6 @@ function test()
     function dumpExpandedConsoleMessages()
     {
         var element = WebInspector.ConsoleView.instance()._visibleViewMessages[0].contentElement();
-        dumpNoteVisible(element, "warning-note");
         dumpNoteVisible(element, "info-note");
 
         InspectorTest.dumpConsoleMessages(false, true);

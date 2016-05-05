@@ -1325,8 +1325,6 @@ crbug.com/606302 [ Win7 ] transforms/3d/point-mapping/3d-point-mapping-preserve-
 
 crbug.com/606649 fast/dom/gc-dom-tree-lifetime.html [ Pass Timeout ]
 
-crbug.com/588705 inspector/console/console-proxy.html [ NeedsManualRebaseline ]
-
 # TODO(jlebel): Remove when methods are implemented.
 crbug.com/609065 [ Mac ] bluetooth/characteristicProperties.html [ Skip ]
 crbug.com/609064 [ Mac ] bluetooth/getCharacteristic/blacklisted-characteristic.html [ Skip ]
