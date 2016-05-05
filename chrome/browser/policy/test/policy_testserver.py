@@ -290,8 +290,7 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     # device_management_backend.proto.
     if (self.GetUniqueParam('devicetype') != '2' or
         self.GetUniqueParam('apptype') != 'Chrome' or
-        (self.GetUniqueParam('deviceid') is not None and
-         len(self.GetUniqueParam('deviceid')) >= 64)):
+        len(self.GetUniqueParam('deviceid')) >= 64):
       return (400, 'Invalid request parameter')
     if request_type == 'register':
       response = self.ProcessRegister(rmsg.register_request)
@@ -315,10 +314,6 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       response = self.ProcessDeviceAttributeUpdateRequest()
     elif request_type == 'remote_commands':
       response = self.ProcessRemoteCommandsRequest()
-    elif request_type == 'check_android_management':
-      response = self.ProcessCheckAndroidManagementRequest(
-          rmsg.check_android_management_request,
-          str(self.GetUniqueParam('oauth_token')))
     else:
       return (400, 'Invalid request parameter')
 
@@ -628,24 +623,6 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       A tuple of HTTP status code and response data to send to the client.
     """
     return (200, '')
-
-  def ProcessCheckAndroidManagementRequest(self, msg, oauth_token):
-    """Handles a check Android management request.
-
-    Returns:
-      A tuple of HTTP status code and response data to send to the client.
-    """
-    check_android_management_response = dm.CheckAndroidManagementResponse()
-
-    response = dm.DeviceManagementResponse()
-    response.check_android_management_response.CopyFrom(
-        check_android_management_response)
-    if oauth_token == 'managed-auth-token':
-      return (409, response)
-    elif oauth_token == 'unmanaged-auth-token':
-      return (200, response)
-    else:
-      return (403, response)
 
   def SetProtobufMessageField(self, group_message, field, field_value):
     """Sets a field in a protobuf message.
