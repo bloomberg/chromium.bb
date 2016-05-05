@@ -1878,6 +1878,21 @@ void NavigationControllerImpl::FindFramesToNavigate(
         new_item->document_sequence_number() ==
             old_item->document_sequence_number()) {
       same_document_loads->push_back(std::make_pair(frame, new_item));
+
+      // TODO(avi, creis): This is a bug; we should not return here. Rather, we
+      // should continue on and navigate all child frames which have also
+      // changed. This bug is the cause of <https://crbug.com/542299>, which is
+      // a NC_IN_PAGE_NAVIGATION renderer kill.
+      //
+      // However, this bug is a bandaid over a deeper and worse problem. Doing a
+      // pushState immediately after loading a subframe is a race, one that no
+      // web page author expects. If we fix this bug, many large websites break.
+      // For example, see <https://crbug.com/598043> and the spec discussion at
+      // <https://github.com/whatwg/html/issues/1191>.
+      //
+      // For now, we accept this bug, and hope to resolve the race in a
+      // different way that will one day allow us to fix this.
+      return;
     } else {
       different_document_loads->push_back(std::make_pair(frame, new_item));
       // For a different document, the subframes will be destroyed, so there's

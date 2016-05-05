@@ -3715,6 +3715,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, ReloadOriginalRequest) {
 // navigation history of a subframe when it is loaded, and 2) that that initial
 // "about:blank" returns if it is navigated to as part of a history navigation.
 // See http://crbug.com/542299 and https://github.com/whatwg/html/issues/546 .
+// TODO(avi, creis): This test is partially neutered; fix it.
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
                        BackToAboutBlankIframe) {
   GURL original_url(embedded_test_server()->GetURL(
@@ -3774,6 +3775,13 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
   EXPECT_EQ(frame_url, frame->current_url());
 
+  // At this point the rest of the test is inapplicable. The bug that it tests
+  // to be gone had to be reintroduced.
+  //
+  // See the discussion in NavigationControllerImpl::FindFramesToNavigate for
+  // more information.
+
+#if 0
   // Go back. Because the old state had an empty frame, that should be restored
   // even though it was replaced in the second navigation entry.
 
@@ -3787,12 +3795,14 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
 
   EXPECT_EQ(GURL(url::kAboutBlankURL), frame->current_url());
+#endif
 }
 
 // This test is similar to "BackToAboutBlankIframe" above, except that a
 // fragment navigation is used rather than pushState (both create an in-page
 // navigation, so we need to test both), and an initial 'src' is given to the
 // iframe to test proper restoration in that case.
+// TODO(avi, creis): This test is partially neutered; fix it.
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
                        BackToIframeWithContent) {
   GURL links_url(embedded_test_server()->GetURL(
@@ -3857,6 +3867,13 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
   EXPECT_EQ(frame_url_2, frame->current_url());
 
+  // At this point the rest of the test is inapplicable. The bug that it tests
+  // to be gone had to be reintroduced.
+  //
+  // See the discussion in NavigationControllerImpl::FindFramesToNavigate for
+  // more information.
+
+#if 0
   // Go back two entries. The original frame URL should be back.
 
   TestFrameNavigationObserver observer(frame);
@@ -3869,6 +3886,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
 
   EXPECT_EQ(frame_url_1, frame->current_url());
+#endif
 }
 
 // Ensure that we do not corrupt a NavigationEntry's PageState if a subframe

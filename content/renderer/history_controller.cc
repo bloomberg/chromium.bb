@@ -146,6 +146,11 @@ void HistoryController::RecursiveGoToEntry(
         new_item.documentSequenceNumber() ==
             old_item.documentSequenceNumber()) {
       same_document_loads.push_back(std::make_pair(frame, new_item));
+
+      // Returning here (and omitting child frames which have also changed) is
+      // wrong, but not returning here is worse. See the discussion in
+      // NavigationControllerImpl::FindFramesToNavigate for more information.
+      return;
     } else {
       different_document_loads.push_back(std::make_pair(frame, new_item));
       // For a different document, the subframes will be destroyed, so there's
