@@ -73,6 +73,9 @@ http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_cro
 http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_cross_origin_resource_request.html [ Timeout ]
 http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_timing_allow_cross_origin_resource_request.html [ Timeout ]
 
+# https://crbug.com/585501 - csp directives are not replicated to OOPIFs
+http/tests/security/contentSecurityPolicy/frame-src-child-frame-navigates-to-blocked-origin.html [ Failure ]
+
 # TODO(alexmos,lukasza): Triage these failures and assign more specific bugs.
 # Uninvestigated failures under http/tests/security:
 http/tests/security/cross-origin-shared-worker-allowed.html [ Failure Timeout ]

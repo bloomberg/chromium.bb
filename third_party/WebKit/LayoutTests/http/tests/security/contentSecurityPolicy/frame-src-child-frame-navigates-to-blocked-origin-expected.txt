@@ -1,0 +1,8 @@
+CONSOLE ERROR: Refused to frame 'http://localhost:8000/security/contentSecurityPolicy/resources/target-for-frame-that-navigates-itself.html' because it violates the following Content Security Policy directive: "frame-src https://localhost:8443".
+
+The test verifies that Content-Security-Policy from the main frame restricts child frame's location even when the location is changed as a result of a navigation trigerred from within the child frame (which might reside in another renderer process due to --site-per-process).  
+
+--------
+Frame: '<!--framePath //<!--frame0-->-->'
+--------
+Frame that navigates itself to an origin other than https://localhost:8443. Automatically clicked link.
