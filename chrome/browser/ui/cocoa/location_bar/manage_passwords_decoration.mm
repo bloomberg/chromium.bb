@@ -92,8 +92,10 @@ void ManagePasswordsDecoration::UpdateUIState() {
     SetImage(OmniboxViewMac::ImageForResource(icon_->icon_id()));
     return;
   }
-  bool location_bar_is_dark = [[location_bar_->GetAutocompleteTextField()
-                                    window] inIncognitoModeWithSystemTheme];
+  // |location_bar_| can be NULL in tests.
+  bool location_bar_is_dark = location_bar_ &&
+      [[location_bar_->GetAutocompleteTextField() window]
+           inIncognitoModeWithSystemTheme];
   SetImage(GetMaterialIcon(location_bar_is_dark));
 }
 
@@ -108,5 +110,7 @@ void ManagePasswordsDecoration::HideBubble() {
 }
 
 gfx::VectorIconId ManagePasswordsDecoration::GetMaterialVectorIconId() const {
+  // Note: update unit tests if this vector id ever changes (it's hard-coded
+  // there).
   return gfx::VectorIconId::AUTOLOGIN;
 }

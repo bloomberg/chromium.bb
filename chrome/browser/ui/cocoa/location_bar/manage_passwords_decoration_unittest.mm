@@ -17,7 +17,12 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+#include "ui/base/material_design/material_design_controller.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia_util_mac.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icons_public.h"
 
 namespace {
 
@@ -96,10 +101,24 @@ TEST_P(ManagePasswordsDecorationStateTest, TestState) {
   decoration()->icon()->SetState(GetParam().state);
   decoration()->icon()->SetActive(GetParam().active);
   EXPECT_EQ(GetParam().visible, decoration()->IsVisible());
-  EXPECT_TRUE(ImagesEqual(
-      GetParam().image ? OmniboxViewMac::ImageForResource(GetParam().image)
-                       : nil,
-      decoration()->GetImage()));
+  NSImage* expected_image = nil;
+  if (GetParam().image) {
+    if (ui::MaterialDesignController::IsModeMaterial()) {
+      // IDR_SAVE_PASSWORD_ACTIVE and IDR_SAVE_PASSWORD_INACTIVE map to
+      // gfx::VectorIconId::AUTOLOGIN in Material Design - fail the test if
+      // somehow some other value is present.
+      EXPECT_TRUE(GetParam().image == IDR_SAVE_PASSWORD_ACTIVE ||
+                  GetParam().image == IDR_SAVE_PASSWORD_INACTIVE);
+      const int kIconSize = 16;
+      expected_image = NSImageFromImageSkia(
+          gfx::CreateVectorIcon(gfx::VectorIconId::AUTOLOGIN,
+                                kIconSize,
+                                gfx::kChromeIconGrey));
+    } else {
+      expected_image = OmniboxViewMac::ImageForResource(GetParam().image);
+    }
+  }
+  EXPECT_TRUE(ImagesEqual(expected_image, decoration()->GetImage()));
   EXPECT_NSEQ(GetParam().toolTip
                   ? l10n_util::GetNSStringWithFixup(GetParam().toolTip)
                   : nil,
