@@ -14,7 +14,7 @@
         {
           "object": "LayoutBlockFlow DIV id='target'",
           "rect": [8, 8, 100, 100],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "InlineBox",

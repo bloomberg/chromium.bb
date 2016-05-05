@@ -14,26 +14,26 @@
         {
           "object": "LayoutBlockFlow (relative positioned) P",
           "rect": [8, 152, 784, 20],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (relative positioned) P",
           "rect": [8, 136, 784, 20],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
           "rect": [8, 152, 69, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
           "rect": [8, 136, 69, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "InlineTextBox 'SUCCESS'",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "RootInlineBox",

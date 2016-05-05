@@ -19,17 +19,17 @@
         {
           "object": "LayoutBlockFlow BODY",
           "rect": [1, 1, 400, 200],
-          "reason": "location change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutBlockFlow HTML",
           "rect": [1, 1, 400, 200],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutEmbeddedObject OBJECT",
           "rect": [1, 1, 400, 200],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutView #document",
@@ -39,42 +39,42 @@
         {
           "object": "LayoutView #document",
           "rect": [1, 1, 400, 200],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutView #document",
           "rect": [1, 1, 400, 200],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutSVGRoot svg",
           "rect": [11, 11, 380, 180],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow BODY",
           "rect": [0, 0, 285, 135],
-          "reason": "location change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutBlockFlow HTML",
           "rect": [0, 0, 285, 135],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutEmbeddedObject OBJECT",
           "rect": [0, 0, 285, 135],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutView #document",
           "rect": [0, 0, 285, 135],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutView #document",
           "rect": [0, 0, 285, 135],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutView #document",
@@ -84,27 +84,27 @@
         {
           "object": "LayoutSVGRoot svg",
           "rect": [10, 10, 275, 125],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutSVGRect rect",
           "rect": [211, 11, 180, 180],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutSVGRect rect",
           "rect": [11, 11, 180, 180],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutSVGRect rect",
           "rect": [10, 10, 180, 125],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutSVGRect rect",
           "rect": [210, 10, 75, 125],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutView #document",
@@ -134,7 +134,7 @@
         },
         {
           "object": "LayoutText #text",
-          "reason": "location change"
+          "reason": "none"
         },
         {
           "object": "LayoutView #document",

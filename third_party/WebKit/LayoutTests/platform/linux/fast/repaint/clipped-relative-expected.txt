@@ -9,7 +9,7 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV id='inner'",
           "rect": [8, 74, 204, 232],
-          "reason": "location change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutImage IMG",
@@ -21,12 +21,8 @@
           "reason": "full"
         },
         {
-          "object": "LayoutBlockFlow (relative positioned) DIV id='i'",
-          "reason": "location change"
-        },
-        {
           "object": "LayoutText #text",
-          "reason": "location change"
+          "reason": "none"
         },
         {
           "object": "RootInlineBox",

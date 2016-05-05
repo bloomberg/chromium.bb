@@ -9,32 +9,32 @@
         {
           "object": "LayoutBlockFlow (positioned) UL id='submenu'",
           "rect": [48, 94, 40, 20],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (positioned) UL id='submenu'",
           "rect": [48, -156, 40, 20],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutListItem LI",
           "rect": [70, 94, 18, 20],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutListItem LI",
           "rect": [70, -156, 18, 20],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutListMarker (anonymous)",
           "rect": [70, 94, 7, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutListMarker (anonymous)",
           "rect": [70, -156, 7, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "RootInlineBox",

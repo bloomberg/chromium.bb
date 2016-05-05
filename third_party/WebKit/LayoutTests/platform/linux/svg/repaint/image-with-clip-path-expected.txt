@@ -19,78 +19,62 @@
         {
           "object": "LayoutSVGRect rect id='r'",
           "rect": [0, 0, 100, 100],
-          "reason": "location change"
+          "reason": "full"
         },
         {
           "object": "LayoutSVGRect rect id='r'",
           "rect": [0, 0, 100, 100],
-          "reason": "location change"
+          "reason": "full"
         },
         {
           "object": "LayoutSVGContainer g id='g'",
           "rect": [20, 20, 60, 60],
-          "reason": "location change"
+          "reason": "full"
         },
         {
           "object": "LayoutSVGContainer g id='g'",
           "rect": [20, 20, 60, 60],
-          "reason": "location change"
+          "reason": "full"
         },
         {
           "object": "LayoutSVGImage image",
           "rect": [20, 20, 60, 60],
-          "reason": "location change"
+          "reason": "full"
         },
         {
           "object": "LayoutSVGImage image",
           "rect": [20, 20, 60, 60],
-          "reason": "location change"
+          "reason": "full"
         },
         {
           "object": "LayoutSVGContainer g id='g'",
           "rect": [175, 25, 50, 50],
-          "reason": "location change"
+          "reason": "full"
         },
         {
           "object": "LayoutSVGImage image",
           "rect": [175, 25, 50, 50],
-          "reason": "location change"
+          "reason": "full"
         },
         {
           "object": "LayoutSVGRect rect id='r'",
           "rect": [175, 25, 50, 50],
-          "reason": "location change"
+          "reason": "full"
         },
         {
           "object": "LayoutSVGContainer g id='g'",
           "rect": [0, 0, 10, 10],
-          "reason": "location change"
+          "reason": "full"
         },
         {
           "object": "LayoutSVGImage image",
           "rect": [0, 0, 10, 10],
-          "reason": "location change"
+          "reason": "full"
         },
         {
           "object": "LayoutSVGRoot svg",
           "rect": [222, 0, 3, 75],
           "reason": "incremental"
-        },
-        {
-          "object": "LayoutSVGHiddenContainer defs",
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGHiddenContainer defs",
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGResourceClipper clipPath id='p'",
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGResourceClipper clipPath id='p'",
-          "reason": "location change"
         }
       ]
     }

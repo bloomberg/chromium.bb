@@ -9,7 +9,7 @@
         {
           "object": "LayoutBlockFlow DIV id='inner-target'",
           "rect": [8, 187, 784, 20],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutBlockFlow BODY",
@@ -29,7 +29,7 @@
         {
           "object": "LayoutText #text",
           "rect": [8, 187, 22, 19],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "InlineTextBox 'abc'",
@@ -37,7 +37,7 @@
         },
         {
           "object": "InlineTextBox 'abc'",
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "RootInlineBox",

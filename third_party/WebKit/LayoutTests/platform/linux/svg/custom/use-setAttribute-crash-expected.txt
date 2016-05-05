@@ -24,7 +24,7 @@
         {
           "object": "LayoutSVGEllipse svg:circle id='circle'",
           "rect": [33, 33, 50, 50],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGRoot svg:svg id='svg'",
@@ -34,7 +34,7 @@
         {
           "object": "LayoutSVGViewportContainer svg id='symbol'",
           "rect": [33, 33, 50, 50],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGEllipse svg:circle id='circle'",

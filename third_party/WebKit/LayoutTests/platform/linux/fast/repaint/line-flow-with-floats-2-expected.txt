@@ -104,22 +104,22 @@
         {
           "object": "LayoutBlockFlow (floating) SPAN id='greenFloat'",
           "rect": [372, 384, 48, 81],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (floating) SPAN id='greenFloat'",
           "rect": [372, 383, 48, 81],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (floating) SPAN id='blueFloat'",
           "rect": [14, 364, 48, 65],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (floating) SPAN id='blueFloat'",
           "rect": [14, 363, 48, 65],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",

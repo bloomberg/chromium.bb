@@ -41,12 +41,12 @@
                 {
                   "object": "LayoutBlockFlow DIV id='thumb'",
                   "rect": [599, 493, 24, 24],
-                  "reason": "location change"
+                  "reason": "full"
                 },
                 {
                   "object": "LayoutBlockFlow DIV id='thumb'",
                   "rect": [570, 493, 24, 24],
-                  "reason": "location change"
+                  "reason": "full"
                 }
               ]
             }

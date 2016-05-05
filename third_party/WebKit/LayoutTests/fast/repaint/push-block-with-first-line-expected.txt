@@ -9,31 +9,31 @@
         {
           "object": "LayoutBlockFlow DIV id='spacer'",
           "rect": [8, 8, 784, 60],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutBlockFlow DIV class='test'",
           "rect": [8, 68, 784, 20],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV class='test'",
           "rect": [8, 8, 784, 20],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
           "rect": [8, 68, 140, 20],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
           "rect": [8, 8, 140, 20],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "InlineTextBox 'JOCULAR'",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "RootInlineBox",

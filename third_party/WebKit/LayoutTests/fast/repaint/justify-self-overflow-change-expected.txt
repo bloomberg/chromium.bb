@@ -24,22 +24,22 @@
         {
           "object": "LayoutBlockFlow DIV class='item1'",
           "rect": [0, 52, 150, 300],
-          "reason": "location change"
+          "reason": "style change"
         },
         {
           "object": "LayoutBlockFlow DIV class='item1'",
           "rect": [-50, 52, 150, 300],
-          "reason": "location change"
+          "reason": "style change"
         },
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [0, 52, 150, 150],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [-50, 52, 150, 150],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV class='item2'",

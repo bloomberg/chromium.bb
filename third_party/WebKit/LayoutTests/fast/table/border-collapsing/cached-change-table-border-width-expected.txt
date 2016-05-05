@@ -19,22 +19,22 @@
         {
           "object": "LayoutTableRow TR",
           "rect": [10, 10, 54, 50],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableSection TBODY",
           "rect": [10, 10, 54, 50],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableRow TR",
           "rect": [9, 9, 54, 50],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableSection TBODY",
           "rect": [9, 9, 54, 50],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableCell TD",

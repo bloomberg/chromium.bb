@@ -9,12 +9,12 @@
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [108, 8, 100, 100],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutSVGForeignObject foreignObject",
           "rect": [108, 8, 100, 100],
-          "reason": "location change"
+          "reason": "style change"
         },
         {
           "object": "LayoutSVGRoot svg",
@@ -24,12 +24,12 @@
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [8, 8, 100, 100],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutSVGForeignObject foreignObject",
           "rect": [8, 8, 100, 100],
-          "reason": "location change"
+          "reason": "style change"
         },
         {
           "object": "LayoutSVGRoot svg",

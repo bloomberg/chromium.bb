@@ -9,7 +9,7 @@
         {
           "object": "LayoutTableCell TD",
           "rect": [63, 8, 60, 54],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutTable TABLE",

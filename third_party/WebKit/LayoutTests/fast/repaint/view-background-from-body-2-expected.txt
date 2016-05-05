@@ -15,7 +15,7 @@
         {
           "object": "LayoutBlockFlow BODY",
           "rect": [50, 50, 700, 500],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         }
       ]
     }

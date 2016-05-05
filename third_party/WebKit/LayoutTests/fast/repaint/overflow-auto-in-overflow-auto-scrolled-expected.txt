@@ -14,12 +14,12 @@
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [8, 8, 300, 300],
-          "reason": "location change"
+          "reason": "full"
         },
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [8, 8, 300, 300],
-          "reason": "location change"
+          "reason": "full"
         },
         {
           "object": "LayoutBlockFlow DIV id='innerDiv'",

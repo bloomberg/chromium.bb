@@ -14,7 +14,7 @@
         {
           "object": "LayoutBlockFlow DIV id='inner2'",
           "rect": [100, 200, 600, 100],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         }
       ]
     }

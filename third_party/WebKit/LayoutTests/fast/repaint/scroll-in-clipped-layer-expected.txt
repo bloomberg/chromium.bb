@@ -9,7 +9,7 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV class='absolute red'",
           "rect": [100, 150, 100, 100],
-          "reason": "location change"
+          "reason": "full"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='moveMe' class='absolute clipped'",
@@ -19,7 +19,7 @@
         {
           "object": "LayoutBlockFlow (relative positioned) DIV class='relative green'",
           "rect": [100, 150, 100, 100],
-          "reason": "location change"
+          "reason": "full"
         }
       ]
     }

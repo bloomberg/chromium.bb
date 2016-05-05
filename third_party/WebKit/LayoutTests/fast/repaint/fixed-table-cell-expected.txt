@@ -19,7 +19,7 @@
         {
           "object": "LayoutTableCell (anonymous)",
           "rect": [200, 200, 100, 100],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutTableCell TD id='moveMe' class='fixed'",
@@ -29,7 +29,7 @@
         {
           "object": "LayoutBlockFlow (positioned) TD id='moveMe' class='fixed'",
           "rect": [50, 200, 100, 100],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutTableCell (anonymous)",

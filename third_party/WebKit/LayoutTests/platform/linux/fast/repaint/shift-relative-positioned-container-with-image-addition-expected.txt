@@ -19,32 +19,32 @@
         {
           "object": "LayoutBlockFlow (relative positioned) DIV class='relative paddingTop'",
           "rect": [8, 186, 769, 642],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (relative positioned) DIV class='relative'",
           "rect": [8, 186, 769, 642],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (relative positioned) DIV class='relative paddingTop'",
           "rect": [8, 92, 769, 642],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (relative positioned) DIV class='relative'",
           "rect": [8, 92, 769, 642],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutIFrame IFRAME id='iframe'",
           "rect": [8, 92, 732, 94],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutBlockFlow HTML",
           "rect": [10, 94, 728, 90],
-          "reason": "location change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutView #document",
@@ -54,26 +54,26 @@
         {
           "object": "LayoutView #document",
           "rect": [10, 94, 728, 90],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow BODY",
           "rect": [18, 102, 712, 74],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutImage IMG",
           "rect": [58, 236, 489, 537],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutImage IMG",
           "rect": [58, 142, 489, 537],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutView #document",

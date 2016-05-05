@@ -9,82 +9,82 @@
         {
           "object": "LayoutTableSection TBODY",
           "rect": [8, 218, 60, 60],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableSection TBODY",
           "rect": [8, 188, 60, 60],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableSection TBODY",
           "rect": [8, 128, 60, 60],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableSection TBODY",
           "rect": [8, 98, 60, 60],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableSection TBODY",
           "rect": [8, 38, 60, 60],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableSection TBODY",
           "rect": [8, 8, 60, 60],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableCell TD class='half'",
           "rect": [8, 353, 60, 38],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableCell TD class='half'",
           "rect": [8, 338, 60, 38],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableCell TD class='half'",
           "rect": [8, 323, 60, 38],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableCell TD class='half'",
           "rect": [8, 308, 60, 38],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableCell TD class='red half'",
           "rect": [8, 248, 60, 30],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableRow TR",
           "rect": [8, 248, 60, 30],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableCell TD class='green half'",
           "rect": [8, 218, 60, 30],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableCell TD class='red half'",
           "rect": [8, 218, 60, 30],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableRow TR",
           "rect": [8, 218, 60, 30],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableRow TR",
           "rect": [8, 218, 60, 30],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow CAPTION id='caption2' class='zero'",
@@ -94,42 +94,42 @@
         {
           "object": "LayoutTableCell TD class='green half'",
           "rect": [8, 188, 60, 30],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableRow TR",
           "rect": [8, 188, 60, 30],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableCell TD class='green half'",
           "rect": [8, 158, 60, 30],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableRow TR",
           "rect": [8, 158, 60, 30],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableCell TD class='green half'",
           "rect": [8, 128, 60, 30],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableCell TD class='red half'",
           "rect": [8, 128, 60, 30],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableRow TR",
           "rect": [8, 128, 60, 30],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableRow TR",
           "rect": [8, 128, 60, 30],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV id='top' class='blue half'",
@@ -144,42 +144,42 @@
         {
           "object": "LayoutTableCell TD class='red half'",
           "rect": [8, 98, 60, 30],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableRow TR",
           "rect": [8, 98, 60, 30],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableCell TD class='green half'",
           "rect": [8, 68, 60, 30],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableRow TR",
           "rect": [8, 68, 60, 30],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableCell TD class='green half'",
           "rect": [8, 38, 60, 30],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableCell TD class='red half'",
           "rect": [8, 38, 60, 30],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableRow TR",
           "rect": [8, 38, 60, 30],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableRow TR",
           "rect": [8, 38, 60, 30],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow CAPTION id='caption1' class='blue half'",
@@ -189,12 +189,12 @@
         {
           "object": "LayoutTableCell TD class='red half'",
           "rect": [8, 8, 60, 30],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableRow TR",
           "rect": [8, 8, 60, 30],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTable TABLE",
@@ -209,32 +209,32 @@
         {
           "object": "LayoutTableSection TBODY",
           "rect": [12, 327, 52, 60],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableSection TBODY",
           "rect": [12, 312, 52, 60],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableRow TR",
           "rect": [12, 357, 52, 30],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableRow TR",
           "rect": [12, 342, 52, 30],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableRow TR",
           "rect": [12, 327, 52, 30],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableRow TR",
           "rect": [12, 312, 52, 30],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV id='innerDiv'",

@@ -52,12 +52,12 @@
                 {
                   "object": "LayoutBlockFlow DIV id='child'",
                   "rect": [0, 0, 100, 100],
-                  "reason": "location change"
+                  "reason": "style change"
                 },
                 {
                   "object": "LayoutBlockFlow DIV id='target'",
                   "rect": [0, 0, 100, 100],
-                  "reason": "location change"
+                  "reason": "style change"
                 }
               ]
             }

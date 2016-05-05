@@ -9,30 +9,30 @@
         {
           "object": "LayoutBlockFlow (positioned) SPAN",
           "rect": [162, 37, 279, 20],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutText #text",
           "rect": [162, 37, 279, 19],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutBlockFlow (floating) SPAN",
           "rect": [324, 37, 278, 20],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutText #text",
           "rect": [324, 37, 278, 19],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "InlineTextBox 'the quick brown fox jumped over the lazy dog'",
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "InlineTextBox 'the quick brown fox jumped over the lazy dog'",
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "RootInlineBox",

@@ -14,7 +14,7 @@
         {
           "object": "LayoutBlockFlow DIV id='div'",
           "rect": [8, 84, 784, 20],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutBlockFlow DIV id='div'",
@@ -28,11 +28,11 @@
         },
         {
           "object": "InlineTextBox '\n'",
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutBR BR",
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "RootInlineBox",

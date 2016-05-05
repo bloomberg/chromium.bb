@@ -14,12 +14,12 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV",
           "rect": [0, 260, 20, 20],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV",
           "rect": [0, 160, 20, 20],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow HTML",
@@ -71,12 +71,12 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV",
           "rect": [0, 260, 20, 20],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV",
           "rect": [0, 210, 20, 20],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow HTML",

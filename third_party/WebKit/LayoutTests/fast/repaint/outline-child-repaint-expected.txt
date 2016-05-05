@@ -9,22 +9,22 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV id='container'",
           "rect": [0, 240, 220, 60],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='container'",
           "rect": [0, 140, 220, 60],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV class='outlined'",
           "rect": [0, 240, 220, 50],
-          "reason": "location change"
+          "reason": "outline"
         },
         {
           "object": "LayoutBlockFlow DIV class='outlined'",
           "rect": [0, 140, 220, 50],
-          "reason": "location change"
+          "reason": "outline"
         }
       ]
     }

@@ -14,7 +14,7 @@
         {
           "object": "LayoutBlockFlow (floating) SPAN id='yellowFloat'",
           "rect": [372, 243, 48, 49],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutText #text",

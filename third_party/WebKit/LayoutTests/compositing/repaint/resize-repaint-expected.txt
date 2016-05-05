@@ -24,12 +24,12 @@
             {
               "object": "LayoutBlockFlow DIV",
               "rect": [2, 155, 398, 50],
-              "reason": "location change"
+              "reason": "layoutObject insertion"
             },
             {
               "object": "LayoutBlockFlow DIV",
               "rect": [2, 104, 398, 50],
-              "reason": "location change"
+              "reason": "layoutObject insertion"
             }
           ]
         }

@@ -14,7 +14,7 @@
         {
           "object": "LayoutTableCell TD",
           "rect": [61, 7, 57, 53],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableCell TD",
@@ -29,7 +29,7 @@
         {
           "object": "LayoutTableCell TD",
           "rect": [62, 59, 56, 52],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableCell TD",

@@ -19,7 +19,7 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV class='absolute green'",
           "rect": [100, 100, 100, 100],
-          "reason": "location change"
+          "reason": "style change"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='container' class='fixed blue'",
@@ -29,7 +29,7 @@
         {
           "object": "LayoutBlockFlow DIV id='container' class='fixed blue'",
           "rect": [8, 8, 100, 100],
-          "reason": "location change"
+          "reason": "style change"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV class='absolute green'",

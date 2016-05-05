@@ -14,12 +14,12 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV class='absolute green'",
           "rect": [1114, 1314, 435, 450],
-          "reason": "location change"
+          "reason": "full"
         },
         {
           "object": "LayoutBlockFlow (relative positioned) DIV class='relative red'",
           "rect": [1114, 1314, 435, 450],
-          "reason": "location change"
+          "reason": "full"
         },
         {
           "object": "LayoutTableCell (relative positioned) TD id='cellToScroll' class='relative'",

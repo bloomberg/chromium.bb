@@ -14,17 +14,17 @@
         {
           "object": "LayoutBlockFlow DIV class='item1'",
           "rect": [0, 52, 100, 300],
-          "reason": "location change"
+          "reason": "style change"
         },
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [0, 302, 100, 50],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [0, 52, 100, 50],
-          "reason": "location change"
+          "reason": "bounds change"
         }
       ]
     }

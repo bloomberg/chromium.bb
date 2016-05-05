@@ -9,37 +9,37 @@
         {
           "object": "LayoutBlockFlow (floating) DIV",
           "rect": [8, 8, 600, 100],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (floating) DIV",
           "rect": [308, 8, 300, 100],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [308, 8, 300, 100],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (floating) DIV",
           "rect": [8, 8, 300, 100],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [8, 8, 300, 100],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [308, 8, 100, 100],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [8, 8, 100, 100],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (floating) DIV id='node'",

@@ -9,40 +9,40 @@
         {
           "object": "LayoutBlockFlow (relative positioned) DIV",
           "rect": [428, 38, 300, 20],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='container'",
           "rect": [408, 18, 300, 20],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (relative positioned) DIV",
           "rect": [28, 38, 300, 20],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='container'",
           "rect": [8, 18, 300, 20],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
           "rect": [428, 38, 256, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
           "rect": [28, 38, 256, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "InlineTextBox 'There should only be one copy of this text.'",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "RootInlineBox",

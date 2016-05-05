@@ -29,7 +29,7 @@
         {
           "object": "LayoutBlockFlow (floating) SPAN id='greenFloat'",
           "rect": [356, 383, 64, 81],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",

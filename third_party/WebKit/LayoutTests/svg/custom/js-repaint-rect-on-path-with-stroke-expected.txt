@@ -19,12 +19,12 @@
         {
           "object": "LayoutSVGPath path id='path'",
           "rect": [200, 50, 100, 50],
-          "reason": "location change"
+          "reason": "full"
         },
         {
           "object": "LayoutSVGPath path id='path'",
           "rect": [50, 50, 100, 50],
-          "reason": "location change"
+          "reason": "full"
         }
       ]
     }

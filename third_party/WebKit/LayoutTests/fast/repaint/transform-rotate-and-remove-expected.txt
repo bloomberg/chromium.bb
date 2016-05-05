@@ -9,7 +9,7 @@
         {
           "object": "LayoutBlockFlow DIV id='rel'",
           "rect": [8, 8, 220, 70],
-          "reason": "location change"
+          "reason": "style change"
         },
         {
           "object": "LayoutBlockFlow DIV id='rel'",

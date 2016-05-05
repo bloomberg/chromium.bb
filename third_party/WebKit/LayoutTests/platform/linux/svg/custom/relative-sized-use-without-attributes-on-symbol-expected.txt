@@ -19,7 +19,7 @@
         {
           "object": "LayoutSVGPath path",
           "rect": [27, 69, 364, 364],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutSVGRoot svg",
@@ -29,7 +29,7 @@
         {
           "object": "LayoutSVGViewportContainer svg id='gamesBorder'",
           "rect": [27, 69, 364, 364],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutSVGContainer use",
@@ -39,7 +39,7 @@
         {
           "object": "LayoutSVGPath path",
           "rect": [13, 207, 92, 91],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutSVGRoot svg",
@@ -49,7 +49,7 @@
         {
           "object": "LayoutSVGViewportContainer svg id='gamesBorder'",
           "rect": [13, 207, 92, 91],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "InlineBox",

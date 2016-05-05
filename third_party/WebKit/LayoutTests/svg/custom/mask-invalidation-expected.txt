@@ -9,12 +9,12 @@
         {
           "object": "LayoutSVGRect rect id='maskRect'",
           "rect": [100, 100, 460, 316],
-          "reason": "location change"
+          "reason": "full"
         },
         {
           "object": "LayoutSVGRect rect id='maskRect'",
           "rect": [50, 50, 460, 316],
-          "reason": "location change"
+          "reason": "full"
         },
         {
           "object": "LayoutSVGContainer g id='root'",

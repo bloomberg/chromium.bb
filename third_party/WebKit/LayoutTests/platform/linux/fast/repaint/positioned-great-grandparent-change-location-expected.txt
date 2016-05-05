@@ -9,38 +9,38 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV",
           "rect": [100, 200, 100, 100],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV",
           "rect": [100, 100, 100, 100],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
           "rect": [100, 200, 38, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
           "rect": [100, 100, 38, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "InlineTextBox 'Target'",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='great-grandparent'",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "RootInlineBox",

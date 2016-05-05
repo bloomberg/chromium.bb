@@ -9,12 +9,12 @@
         {
           "object": "LayoutBlockFlow (anonymous)",
           "rect": [8, 118, 1410, 55],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (anonymous)",
           "rect": [8, 63, 1410, 55],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV id='container'",
@@ -28,11 +28,11 @@
         },
         {
           "object": "LayoutText #text",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "RootInlineBox",
@@ -72,7 +72,7 @@
                 {
                   "object": "LayoutBlockFlow (relative positioned) DIV class='mv-tile'",
                   "rect": [0, 55, 1000, 50],
-                  "reason": "location change"
+                  "reason": "compositing update"
                 },
                 {
                   "object": "LayoutBlockFlow (relative positioned) DIV class='mv-tile'",
@@ -82,7 +82,7 @@
                 {
                   "object": "LayoutBlockFlow (relative positioned) DIV class='mv-tile'",
                   "rect": [0, 0, 100, 50],
-                  "reason": "location change"
+                  "reason": "compositing update"
                 },
                 {
                   "object": "LayoutBlockFlow (relative positioned) DIV id='foo' class='mv-tile'",

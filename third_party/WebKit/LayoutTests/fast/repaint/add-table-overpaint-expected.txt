@@ -9,27 +9,27 @@
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [0, 312, 800, 156],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutTable TABLE",
           "rect": [0, 312, 156, 156],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutTableSection TBODY",
           "rect": [0, 312, 156, 156],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutTableRow TR",
           "rect": [0, 314, 156, 152],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutTableCell TD",
           "rect": [2, 314, 152, 152],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutTableCell TD",

@@ -9,22 +9,22 @@
         {
           "object": "LayoutTableRow TR",
           "rect": [50, 306, 412, 104],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableRow TR",
           "rect": [50, 156, 412, 104],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableCell TD",
           "rect": [256, 306, 204, 104],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableCell TD",
           "rect": [256, 156, 204, 104],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableCell TD id='target'",
@@ -34,12 +34,12 @@
         {
           "object": "LayoutTableCell TD",
           "rect": [52, 306, 202, 104],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableCell TD",
           "rect": [52, 156, 202, 104],
-          "reason": "location change"
+          "reason": "bounds change"
         }
       ]
     }

@@ -9,42 +9,42 @@
         {
           "object": "LayoutBlockFlow DIV id='content'",
           "rect": [138, 128, 654, 100],
-          "reason": "location change"
+          "reason": "style change"
         },
         {
           "object": "LayoutBlockFlow P",
           "rect": [138, 128, 654, 100],
-          "reason": "location change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
           "rect": [138, 128, 651, 99],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV id='content'",
           "rect": [148, 128, 644, 100],
-          "reason": "location change"
+          "reason": "style change"
         },
         {
           "object": "LayoutBlockFlow P",
           "rect": [148, 128, 644, 100],
-          "reason": "location change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
           "rect": [148, 128, 640, 99],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV id='content'",
           "rect": [400, 128, 392, 160],
-          "reason": "location change"
+          "reason": "style change"
         },
         {
           "object": "LayoutBlockFlow P",
           "rect": [400, 128, 392, 160],
-          "reason": "location change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutBlockFlow DIV id='left'",
@@ -54,7 +54,7 @@
         {
           "object": "LayoutText #text",
           "rect": [400, 128, 389, 159],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV id='left'",
@@ -76,11 +76,11 @@
         },
         {
           "object": "InlineTextBox 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean laoreet dolor id urna eleifend aliquet. Nulla'",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "InlineTextBox 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean laoreet dolor id urna eleifend aliquet. Nulla'",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "InlineTextBox 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean'",
@@ -92,7 +92,7 @@
         },
         {
           "object": "InlineTextBox 'Pellentesque erat lectus, ultricies a lobortis id, faucibus id quam.'",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "InlineTextBox 'Sed congue magna vitae dolor feugiat vehicula. Sed volutpat,'",
@@ -108,7 +108,7 @@
         },
         {
           "object": "InlineTextBox 'elit. Pellentesque erat lectus, ultricies a lobortis id, faucibus id quam.'",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "InlineTextBox 'laoreet dolor id urna eleifend aliquet. Nulla vel dolor ipsum.'",
@@ -116,7 +116,7 @@
         },
         {
           "object": "InlineTextBox 'parturient montes, nascetur ridiculus mus. Sed congue magna vitae dolor feugiat vehicula. Sed volutpat, tellus'",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "InlineTextBox 'parturient montes, nascetur ridiculus mus. Sed congue magna vitae dolor feugiat vehicula. Sed volutpat,'",
@@ -124,7 +124,7 @@
         },
         {
           "object": "InlineTextBox 'parturient montes, nascetur ridiculus mus. Sed congue magna vitae dolor feugiat vehicula. Sed volutpat,'",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "InlineTextBox 'penatibus et magnis dis parturient montes, nascetur ridiculus mus.'",
@@ -136,7 +136,7 @@
         },
         {
           "object": "InlineTextBox 'tellus vel varius vestibulum, purus quam mollis sapien, in condimentum leo neque sed nulla. Nunc quis porta'",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "InlineTextBox 'tellus vel varius vestibulum, purus quam mollis sapien, in'",
@@ -148,15 +148,15 @@
         },
         {
           "object": "InlineTextBox 'vel dolor ipsum. Aliquam ut turpis nisl, in vulputate sapien. Cum sociis natoque penatibus et magnis dis'",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "InlineTextBox 'vel dolor ipsum. Aliquam ut turpis nisl, in vulputate sapien. Cum sociis natoque penatibus et magnis dis'",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "InlineTextBox 'vel varius vestibulum, purus quam mollis sapien, in condimentum leo neque sed nulla. Nunc quis porta elit.'",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "RootInlineBox",

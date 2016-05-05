@@ -14,12 +14,12 @@
         {
           "object": "LayoutTable TABLE id='table' class='green'",
           "rect": [8, 8, 132, 149],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutTableCell TD",
           "rect": [8, 75, 132, 82],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutTableCell TD",
@@ -29,7 +29,7 @@
         {
           "object": "LayoutTableCell TD",
           "rect": [8, 8, 132, 82],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutTableCell TD",
@@ -39,7 +39,7 @@
         {
           "object": "LayoutTableSection TBODY",
           "rect": [15, 15, 117, 134],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutTableSection TBODY",
@@ -49,7 +49,7 @@
         {
           "object": "LayoutTableRow TR",
           "rect": [15, 82, 117, 67],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutTableRow TR",
@@ -59,7 +59,7 @@
         {
           "object": "LayoutTableRow TR",
           "rect": [15, 15, 117, 67],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutTableRow TR",

@@ -9,7 +9,7 @@
         {
           "object": "LayoutSVGPath polygon id='polygon'",
           "rect": [265, 219, 162, 105],
-          "reason": "location change"
+          "reason": "full"
         },
         {
           "object": "LayoutSVGRoot svg",

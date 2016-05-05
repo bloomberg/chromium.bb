@@ -24,12 +24,12 @@
         {
           "object": "LayoutGrid DIV id='container'",
           "rect": [0, 52, 200, 300],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutBlockFlow DIV class='item1'",
           "rect": [0, 52, 160, 300],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutBlockFlow DIV class='item1'",
@@ -39,7 +39,7 @@
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [0, 52, 160, 50],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutBlockFlow DIV",
@@ -49,7 +49,7 @@
         {
           "object": "LayoutBlockFlow DIV class='item2'",
           "rect": [150, 52, 50, 300],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutBlockFlow DIV class='item2'",
@@ -59,7 +59,7 @@
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [150, 52, 50, 50],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutBlockFlow DIV",

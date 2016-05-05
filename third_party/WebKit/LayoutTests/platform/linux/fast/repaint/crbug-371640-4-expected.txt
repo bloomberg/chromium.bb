@@ -9,17 +9,17 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV class='abs_pos'",
           "rect": [408, 88, 100, 100],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (relative positioned) (floating) DIV id='keep_inner' class='inner'",
           "rect": [408, 88, 100, 100],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (relative positioned) (floating) DIV id='keep_outer' class='outer'",
           "rect": [408, 88, 100, 100],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (relative positioned) (floating) DIV id='node' class='outer'",
@@ -34,7 +34,7 @@
         {
           "object": "LayoutBlockFlow DIV id='keep' class='item'",
           "rect": [408, 88, 100, 100],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV id='to_remove' class='item'",
@@ -44,27 +44,27 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV class='abs_pos'",
           "rect": [208, 88, 100, 100],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (relative positioned) (floating) DIV id='keep_inner' class='inner'",
           "rect": [208, 88, 100, 100],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (relative positioned) (floating) DIV id='keep_outer' class='outer'",
           "rect": [208, 88, 100, 100],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV id='keep' class='item'",
           "rect": [208, 88, 100, 100],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
           "rect": [408, 88, 4, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
@@ -74,7 +74,7 @@
         {
           "object": "LayoutText #text",
           "rect": [208, 88, 4, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "InlineTextBox '\u00A0'",
@@ -82,7 +82,7 @@
         },
         {
           "object": "InlineTextBox '\u00A0'",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "RootInlineBox",

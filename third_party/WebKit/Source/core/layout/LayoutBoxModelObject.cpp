@@ -394,13 +394,14 @@ void LayoutBoxModelObject::invalidateTreeIfNeeded(const PaintInvalidationState& 
         return;
 
     LayoutRect previousPaintInvalidationRect = this->previousPaintInvalidationRect();
+    LayoutPoint previousPosition = previousPositionFromPaintInvalidationBacking();
     PaintInvalidationReason reason = invalidatePaintIfNeeded(newPaintInvalidationState);
     clearPaintInvalidationFlags(newPaintInvalidationState);
 
     if (reason == PaintInvalidationDelayedFull)
         paintInvalidationState.pushDelayedPaintInvalidationTarget(*this);
 
-    if (reason == PaintInvalidationLocationChange)
+    if (previousPosition != previousPositionFromPaintInvalidationBacking())
         newPaintInvalidationState.setForceSubtreeInvalidationWithinContainer();
 
     // TODO(wangxianzhu): Combine this function into LayoutObject::invalidateTreeIfNeeded() when removing the following workarounds.

@@ -14,32 +14,32 @@
         {
           "object": "LayoutTable TABLE",
           "rect": [8, 8, 306, 300],
-          "reason": "location change"
+          "reason": "full"
         },
         {
           "object": "LayoutTableRow TR",
           "rect": [8, 8, 306, 300],
-          "reason": "location change"
+          "reason": "full"
         },
         {
           "object": "LayoutTableRow TR",
           "rect": [8, 8, 306, 300],
-          "reason": "location change"
+          "reason": "full"
         },
         {
           "object": "LayoutTableSection TBODY",
           "rect": [8, 8, 306, 300],
-          "reason": "location change"
+          "reason": "full"
         },
         {
           "object": "LayoutTableCell TD",
           "rect": [10, 8, 302, 300],
-          "reason": "location change"
+          "reason": "full"
         },
         {
           "object": "LayoutTableCell TD",
           "rect": [10, 8, 302, 300],
-          "reason": "location change"
+          "reason": "full"
         },
         {
           "object": "LayoutBlockFlow DIV id='innerDiv'",

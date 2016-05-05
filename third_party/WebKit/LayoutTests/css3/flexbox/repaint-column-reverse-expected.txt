@@ -9,12 +9,12 @@
         {
           "object": "LayoutBlockFlow DIV id='blue' class='flex-item'",
           "rect": [8, 68, 200, 30],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV id='blue' class='flex-item'",
           "rect": [9, 69, 198, 30],
-          "reason": "location change"
+          "reason": "bounds change"
         }
       ]
     }

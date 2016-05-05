@@ -9,7 +9,7 @@
         {
           "object": "LayoutTableCell TD",
           "rect": [8, 8, 56, 54],
-          "reason": "location change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutTableCell TD",
@@ -29,32 +29,32 @@
         {
           "object": "LayoutTableSection TBODY",
           "rect": [9, 9, 54, 100],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableRow TR",
           "rect": [9, 59, 54, 50],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableRow TR id='row'",
           "rect": [9, 9, 54, 50],
-          "reason": "location change"
+          "reason": "style change"
         },
         {
           "object": "LayoutTableSection TBODY",
           "rect": [10, 10, 52, 100],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableRow TR",
           "rect": [10, 60, 52, 50],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableRow TR id='row'",
           "rect": [10, 10, 52, 50],
-          "reason": "location change"
+          "reason": "style change"
         },
         {
           "object": "LayoutTableCell TD",

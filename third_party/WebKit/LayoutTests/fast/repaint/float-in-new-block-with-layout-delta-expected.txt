@@ -9,11 +9,11 @@
         {
           "object": "LayoutBlockFlow (floating) DIV",
           "rect": [8, 108, 100, 100],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutBlockFlow DIV id='target'",
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         }
       ]
     }

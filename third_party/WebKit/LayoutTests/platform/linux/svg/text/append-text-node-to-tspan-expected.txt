@@ -9,7 +9,7 @@
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [10, 63, 307, 377],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGText text",
@@ -50,7 +50,7 @@
         },
         {
           "object": "InlineTextBox 'SS'",
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "RootInlineBox",

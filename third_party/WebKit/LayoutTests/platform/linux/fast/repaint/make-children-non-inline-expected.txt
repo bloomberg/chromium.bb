@@ -14,22 +14,22 @@
         {
           "object": "LayoutBlockFlow (anonymous)",
           "rect": [8, 64, 784, 100],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutBlockFlow (anonymous)",
           "rect": [8, 264, 784, 80],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutText #text",
           "rect": [8, 264, 105, 19],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutText #text",
           "rect": [8, 164, 105, 19],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutText #text",
@@ -44,22 +44,22 @@
         {
           "object": "LayoutText #text",
           "rect": [8, 284, 65, 19],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutText #text",
           "rect": [8, 184, 65, 19],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutText #text",
           "rect": [8, 324, 61, 19],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutText #text",
           "rect": [8, 224, 61, 19],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutText #text",
@@ -79,17 +79,17 @@
         {
           "object": "LayoutText #text",
           "rect": [8, 304, 27, 19],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutText #text",
           "rect": [8, 204, 27, 19],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutBlockFlow DIV id='target'",
           "rect": [8, 164, 10, 100],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "InlineTextBox '\n'",
@@ -125,15 +125,15 @@
         },
         {
           "object": "InlineTextBox '\n'",
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "InlineTextBox '\n'",
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "InlineTextBox '\n'",
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "InlineTextBox '\n'",
@@ -177,7 +177,7 @@
         },
         {
           "object": "InlineTextBox 'about all the stuff'",
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "InlineTextBox 'after'",
@@ -185,7 +185,7 @@
         },
         {
           "object": "InlineTextBox 'after'",
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "InlineTextBox 'more words.'",
@@ -201,7 +201,7 @@
         },
         {
           "object": "InlineTextBox 'that comes'",
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "InlineTextBox 'the break.'",
@@ -209,7 +209,7 @@
         },
         {
           "object": "InlineTextBox 'the break.'",
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "InlineTextBox 'words,'",
@@ -229,15 +229,15 @@
         },
         {
           "object": "LayoutBR BR",
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutBR BR",
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutBR BR",
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutBR BR",

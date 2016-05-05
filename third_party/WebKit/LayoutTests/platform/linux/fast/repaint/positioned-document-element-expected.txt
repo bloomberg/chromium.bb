@@ -15,42 +15,42 @@
         {
           "object": "LayoutBlockFlow (positioned) HTML class='changed'",
           "rect": [0, 0, 800, 52],
-          "reason": "location change"
+          "reason": "style change"
         },
         {
           "object": "LayoutBlockFlow BODY",
           "rect": [8, 16, 784, 20],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow P",
           "rect": [8, 16, 784, 20],
-          "reason": "location change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutBlockFlow (positioned) HTML class='changed'",
           "rect": [100, 100, 418, 52],
-          "reason": "location change"
+          "reason": "style change"
         },
         {
           "object": "LayoutBlockFlow BODY",
           "rect": [108, 116, 402, 20],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow P",
           "rect": [108, 116, 402, 20],
-          "reason": "location change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
           "rect": [108, 116, 402, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
           "rect": [8, 16, 402, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "InlineTextBox 'Tests that the entire viewport is painted with a floated html element.'",
@@ -58,7 +58,7 @@
         },
         {
           "object": "InlineTextBox 'Tests that the entire viewport is painted with a floated html element.'",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "RootInlineBox",

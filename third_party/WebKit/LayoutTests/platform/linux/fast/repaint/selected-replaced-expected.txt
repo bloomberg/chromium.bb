@@ -14,12 +14,12 @@
         {
           "object": "LayoutImage (relative positioned) IMG id='test' class='moved'",
           "rect": [8, 132, 214, 232],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutImage (relative positioned) IMG id='test' class='moved'",
           "rect": [8, 52, 214, 232],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "InlineBox",

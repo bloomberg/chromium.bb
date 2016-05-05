@@ -14,7 +14,7 @@
         {
           "object": "LayoutText #text",
           "rect": [488, 8, 80, 20],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "InlineTextBox '\n'",
@@ -30,7 +30,7 @@
         },
         {
           "object": "InlineTextBox 'PASS'",
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "RootInlineBox",

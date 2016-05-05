@@ -19,12 +19,12 @@
         {
           "object": "LayoutSVGContainer use",
           "rect": [209, 273, 200, 200],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutSVGRect rect id='targetRect'",
           "rect": [209, 273, 200, 200],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutSVGRect rect id='targetRect'",
@@ -64,12 +64,12 @@
         {
           "object": "LayoutSVGContainer use",
           "rect": [59, 273, 50, 200],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutSVGRect rect id='targetRect'",
           "rect": [59, 273, 50, 200],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "InlineBox",

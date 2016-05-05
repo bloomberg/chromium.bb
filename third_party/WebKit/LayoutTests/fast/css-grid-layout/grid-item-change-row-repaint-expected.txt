@@ -9,12 +9,12 @@
         {
           "object": "LayoutBlockFlow DIV class='sizedToGridArea'",
           "rect": [8, 88, 100, 100],
-          "reason": "location change"
+          "reason": "style change"
         },
         {
           "object": "LayoutBlockFlow DIV class='sizedToGridArea'",
           "rect": [8, 38, 100, 50],
-          "reason": "location change"
+          "reason": "style change"
         }
       ]
     }

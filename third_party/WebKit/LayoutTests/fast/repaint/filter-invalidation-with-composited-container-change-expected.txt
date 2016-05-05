@@ -23,7 +23,7 @@
             {
               "object": "LayoutBlockFlow DIV id='box' class='green box blurry'",
               "rect": [-29, -29, 258, 258],
-              "reason": "location change"
+              "reason": "style change"
             }
           ]
         }

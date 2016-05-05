@@ -9,884 +9,884 @@
         {
           "object": "LayoutBlockFlow (anonymous)",
           "rect": [11, 366, 778, 28],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (anonymous)",
           "rect": [11, 360, 778, 28],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV class='outer'",
           "rect": [57, 93, 66, 25],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV class='outer'",
           "rect": [57, 87, 66, 25],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV class='outer'",
           "rect": [57, 54, 66, 25],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV class='outer'",
           "rect": [57, 48, 66, 25],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV class='outer'",
           "rect": [59, 537, 64, 37],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV class='outer'",
           "rect": [59, 531, 64, 37],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV class='outer'",
           "rect": [59, 498, 64, 25],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV class='outer'",
           "rect": [59, 492, 64, 25],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV class='outer'",
           "rect": [59, 459, 64, 25],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV class='outer'",
           "rect": [59, 453, 64, 25],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutDeprecatedFlexibleBox DIV class='outer box'",
           "rect": [59, 249, 64, 25],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutDeprecatedFlexibleBox DIV class='outer box'",
           "rect": [59, 243, 64, 25],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutDeprecatedFlexibleBox DIV class='outer box'",
           "rect": [59, 210, 64, 25],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutDeprecatedFlexibleBox DIV class='outer box'",
           "rect": [59, 204, 64, 25],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV class='outer'",
           "rect": [59, 171, 64, 25],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV class='outer'",
           "rect": [59, 165, 64, 25],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV class='outer'",
           "rect": [59, 132, 64, 25],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV class='outer'",
           "rect": [59, 126, 64, 25],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV class='outer'",
           "rect": [61, 15, 62, 25],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV class='outer'",
           "rect": [61, 9, 62, 25],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV class='outer'",
           "rect": [61, 420, 62, 22],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV class='outer'",
           "rect": [61, 414, 62, 22],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTable TABLE class='outer'",
           "rect": [58, 366, 61, 28],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTable TABLE class='outer'",
           "rect": [58, 360, 61, 28],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTable TABLE class='outer'",
           "rect": [58, 327, 61, 28],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTable TABLE class='outer'",
           "rect": [58, 321, 61, 28],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [57, 99, 60, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [57, 93, 60, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [57, 60, 60, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [57, 54, 60, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTable TABLE class='outer'",
           "rect": [61, 288, 58, 28],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTable TABLE class='outer'",
           "rect": [61, 282, 58, 28],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [59, 504, 58, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [59, 498, 58, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [59, 465, 58, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [59, 459, 58, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [59, 216, 58, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [59, 210, 58, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [59, 177, 58, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [59, 171, 58, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [59, 138, 58, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [59, 132, 58, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableSection TBODY",
           "rect": [58, 372, 55, 22],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableSection TBODY",
           "rect": [58, 366, 55, 22],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableSection TBODY",
           "rect": [58, 333, 55, 22],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableSection TBODY",
           "rect": [58, 327, 55, 22],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [63, 21, 54, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [63, 15, 54, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableCell TD",
           "rect": [58, 374, 53, 20],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableCell TD",
           "rect": [58, 368, 53, 20],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableCell TD",
           "rect": [58, 335, 53, 20],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableCell TD",
           "rect": [58, 329, 53, 20],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (floating) DIV",
           "rect": [58, 375, 52, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (floating) DIV",
           "rect": [58, 369, 52, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (floating) DIV",
           "rect": [58, 336, 52, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (floating) DIV",
           "rect": [58, 330, 52, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [67, 426, 50, 10],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [67, 420, 50, 10],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (floating) DIV",
           "rect": [59, 138, 48, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (floating) DIV",
           "rect": [59, 132, 48, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (floating) DIV",
           "rect": [57, 60, 48, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (floating) DIV",
           "rect": [57, 54, 48, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableSection TBODY",
           "rect": [66, 294, 47, 22],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableSection TBODY",
           "rect": [66, 288, 47, 22],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableRow TR",
           "rect": [67, 374, 46, 12],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableRow TR",
           "rect": [67, 368, 46, 12],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableRow TR",
           "rect": [67, 335, 46, 12],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableRow TR",
           "rect": [67, 329, 46, 12],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableRow TR",
           "rect": [67, 296, 46, 12],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableRow TR",
           "rect": [67, 290, 46, 12],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableCell TD",
           "rect": [66, 296, 45, 20],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableCell TD",
           "rect": [66, 290, 45, 20],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (floating) DIV",
           "rect": [66, 297, 44, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (floating) DIV",
           "rect": [66, 291, 44, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (floating) DIV",
           "rect": [63, 21, 42, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (floating) DIV",
           "rect": [63, 15, 42, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (floating) DIV",
           "rect": [57, 99, 42, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (floating) DIV",
           "rect": [57, 93, 42, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [59, 543, 40, 20],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [59, 537, 40, 20],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (floating) DIV",
           "rect": [59, 543, 40, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (floating) DIV",
           "rect": [59, 537, 40, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (floating) DIV",
           "rect": [59, 504, 40, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (floating) DIV",
           "rect": [59, 498, 40, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (floating) DIV",
           "rect": [59, 465, 40, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (floating) DIV",
           "rect": [59, 459, 40, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (floating) DIV",
           "rect": [59, 426, 40, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (floating) DIV",
           "rect": [59, 420, 40, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (floating) DIV",
           "rect": [59, 255, 40, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [59, 255, 40, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (floating) DIV",
           "rect": [59, 249, 40, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [59, 249, 40, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (floating) DIV",
           "rect": [59, 216, 40, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (floating) DIV",
           "rect": [59, 210, 40, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (floating) DIV",
           "rect": [59, 177, 40, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (floating) DIV",
           "rect": [59, 171, 40, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
           "rect": [66, 297, 16, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
           "rect": [66, 291, 16, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
           "rect": [63, 21, 16, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
           "rect": [63, 15, 16, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
           "rect": [59, 543, 16, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
           "rect": [59, 537, 16, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
           "rect": [59, 504, 16, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
           "rect": [59, 498, 16, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
           "rect": [59, 465, 16, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
           "rect": [59, 459, 16, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
           "rect": [59, 426, 16, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
           "rect": [59, 420, 16, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
           "rect": [59, 255, 16, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
           "rect": [59, 249, 16, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
           "rect": [59, 216, 16, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
           "rect": [59, 210, 16, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
           "rect": [59, 177, 16, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
           "rect": [59, 171, 16, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
           "rect": [59, 138, 16, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
           "rect": [59, 132, 16, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
           "rect": [58, 375, 16, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
           "rect": [58, 369, 16, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
           "rect": [58, 336, 16, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
           "rect": [58, 330, 16, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
           "rect": [57, 99, 16, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
           "rect": [57, 93, 16, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
           "rect": [57, 60, 16, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
           "rect": [57, 54, 16, 19],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
           "rect": [66, 299, 16, 16],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
           "rect": [66, 293, 16, 16],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
           "rect": [63, 23, 16, 16],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
           "rect": [63, 17, 16, 16],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
           "rect": [59, 545, 16, 16],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
           "rect": [59, 539, 16, 16],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
           "rect": [59, 506, 16, 16],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
           "rect": [59, 500, 16, 16],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
           "rect": [59, 467, 16, 16],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
           "rect": [59, 461, 16, 16],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
           "rect": [59, 428, 16, 16],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
           "rect": [59, 422, 16, 16],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
           "rect": [59, 257, 16, 16],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
           "rect": [59, 251, 16, 16],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
           "rect": [59, 218, 16, 16],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
           "rect": [59, 212, 16, 16],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
           "rect": [59, 179, 16, 16],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
           "rect": [59, 173, 16, 16],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
           "rect": [59, 140, 16, 16],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
           "rect": [59, 134, 16, 16],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
           "rect": [58, 377, 16, 16],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
           "rect": [58, 371, 16, 16],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
           "rect": [58, 338, 16, 16],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
           "rect": [58, 332, 16, 16],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
           "rect": [57, 101, 16, 16],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
           "rect": [57, 95, 16, 16],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
           "rect": [57, 62, 16, 16],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
           "rect": [57, 56, 16, 16],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "InlineFlowBox",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "InlineFlowBox",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "InlineFlowBox",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "InlineFlowBox",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "InlineFlowBox",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "InlineFlowBox",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "InlineFlowBox",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "InlineFlowBox",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "InlineFlowBox",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "InlineFlowBox",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "InlineFlowBox",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "InlineFlowBox",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "InlineFlowBox",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "InlineFlowBox",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "InlineTextBox 'x'",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "InlineTextBox 'x'",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "InlineTextBox 'x'",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "InlineTextBox 'x'",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "InlineTextBox 'x'",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "InlineTextBox 'x'",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "InlineTextBox 'x'",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "InlineTextBox 'x'",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "InlineTextBox 'x'",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "InlineTextBox 'x'",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "InlineTextBox 'x'",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "InlineTextBox 'x'",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "InlineTextBox 'x'",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "InlineTextBox 'x'",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV id='spacer1' class='spacer'",
@@ -946,67 +946,67 @@
         },
         {
           "object": "LayoutText #text",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "RootInlineBox",

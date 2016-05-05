@@ -14,7 +14,7 @@
         {
           "object": "LayoutSVGPath path",
           "rect": [27, 69, 364, 364],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutSVGRoot svg",
@@ -24,12 +24,12 @@
         {
           "object": "LayoutSVGViewportContainer svg",
           "rect": [27, 69, 364, 364],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutSVGPath path",
           "rect": [13, 207, 92, 91],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutSVGRoot svg",
@@ -39,7 +39,7 @@
         {
           "object": "LayoutSVGViewportContainer svg",
           "rect": [13, 207, 92, 91],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "InlineBox",

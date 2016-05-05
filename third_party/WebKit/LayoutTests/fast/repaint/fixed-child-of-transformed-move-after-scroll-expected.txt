@@ -9,12 +9,12 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV id='toMove'",
           "rect": [158, 278, 100, 100],
-          "reason": "location change"
+          "reason": "style change"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='toMove'",
           "rect": [18, 278, 100, 100],
-          "reason": "location change"
+          "reason": "style change"
         }
       ]
     }

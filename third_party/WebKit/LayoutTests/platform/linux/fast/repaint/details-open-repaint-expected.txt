@@ -9,17 +9,17 @@
         {
           "object": "LayoutBlockFlow DIV id='details-content'",
           "rect": [8, 72, 784, 22],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutTextControl INPUT",
           "rect": [8, 72, 154, 22],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutBlockFlow DIV id='inner-editor'",
           "rect": [10, 75, 150, 16],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutDetailsMarker DIV id='details-marker'",
@@ -36,11 +36,11 @@
         },
         {
           "object": "LayoutText #text",
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutText #text",
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "RootInlineBox",

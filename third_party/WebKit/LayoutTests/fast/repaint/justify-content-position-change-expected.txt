@@ -9,42 +9,42 @@
         {
           "object": "LayoutBlockFlow DIV class='item'",
           "rect": [100, 52, 52, 300],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV class='item'",
           "rect": [52, 52, 52, 300],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV class='item'",
           "rect": [48, 52, 52, 300],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV class='item'",
           "rect": [0, 52, 52, 300],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [101, 53, 50, 50],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [53, 53, 50, 50],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [49, 53, 50, 50],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [1, 53, 50, 50],
-          "reason": "location change"
+          "reason": "bounds change"
         }
       ]
     }

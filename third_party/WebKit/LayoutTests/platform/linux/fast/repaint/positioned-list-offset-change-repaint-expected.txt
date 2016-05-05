@@ -9,7 +9,7 @@
         {
           "object": "LayoutListItem (positioned) LI",
           "rect": [8, 64, 214, 237],
-          "reason": "location change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutImage IMG",
@@ -25,16 +25,12 @@
           "reason": "full"
         },
         {
-          "object": "LayoutBlockFlow (positioned) UL id='list'",
-          "reason": "location change"
-        },
-        {
           "object": "LayoutListMarker (anonymous)",
-          "reason": "location change"
+          "reason": "none"
         },
         {
           "object": "LayoutText #text",
-          "reason": "location change"
+          "reason": "none"
         },
         {
           "object": "RootInlineBox",

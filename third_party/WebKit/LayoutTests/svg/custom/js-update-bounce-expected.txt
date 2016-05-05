@@ -9,7 +9,7 @@
         {
           "object": "LayoutSVGEllipse circle id='bounce'",
           "rect": [102, 102, 66, 66],
-          "reason": "location change"
+          "reason": "full"
         },
         {
           "object": "LayoutSVGRoot svg",
@@ -19,7 +19,7 @@
         {
           "object": "LayoutSVGEllipse circle id='bounce'",
           "rect": [2, 2, 66, 66],
-          "reason": "location change"
+          "reason": "full"
         },
         {
           "object": "LayoutSVGRoot svg",

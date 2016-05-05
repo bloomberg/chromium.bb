@@ -24,37 +24,37 @@
         {
           "object": "LayoutTableSection TBODY",
           "rect": [10, 10, 107, 100],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableSection TBODY",
           "rect": [9, 9, 107, 100],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableRow TR",
           "rect": [10, 60, 107, 50],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableRow TR",
           "rect": [10, 10, 107, 50],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableRow TR",
           "rect": [9, 59, 107, 50],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableRow TR",
           "rect": [9, 9, 107, 50],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableCell TD",
           "rect": [8, 59, 58, 53],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableCell TD",
@@ -64,7 +64,7 @@
         {
           "object": "LayoutTableCell TD",
           "rect": [62, 59, 56, 53],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableCell TD",
@@ -74,7 +74,7 @@
         {
           "object": "LayoutTableCell TD",
           "rect": [8, 58, 56, 52],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTable TABLE",

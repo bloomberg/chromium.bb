@@ -9,12 +9,12 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV class='absolute green reflected'",
           "rect": [250, 280, 100, 100],
-          "reason": "location change"
+          "reason": "full"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV class='absolute red'",
           "rect": [250, 280, 100, 100],
-          "reason": "location change"
+          "reason": "full"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='moveMe' class='fixed clipped'",
@@ -24,7 +24,7 @@
         {
           "object": "LayoutReplica (anonymous)",
           "rect": [250, 280, 100, 100],
-          "reason": "location change"
+          "reason": "bounds change"
         }
       ]
     }

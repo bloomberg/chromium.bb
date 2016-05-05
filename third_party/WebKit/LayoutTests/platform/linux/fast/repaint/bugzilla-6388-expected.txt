@@ -14,11 +14,7 @@
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [8, 136, 100, 100],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV id='outside'",
-          "reason": "location change"
+          "reason": "bounds change"
         }
       ]
     }

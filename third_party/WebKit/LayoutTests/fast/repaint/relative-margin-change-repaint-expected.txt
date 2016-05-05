@@ -9,32 +9,32 @@
         {
           "object": "LayoutBlockFlow BODY",
           "rect": [0, 20, 800, 400],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow BODY",
           "rect": [0, 0, 800, 400],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (relative positioned) DIV id='container'",
           "rect": [0, 60, 200, 400],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (relative positioned) DIV id='container'",
           "rect": [0, 40, 200, 400],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (relative positioned) DIV id='test'",
           "rect": [0, 60, 100, 100],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (relative positioned) DIV id='test'",
           "rect": [0, 40, 100, 100],
-          "reason": "location change"
+          "reason": "bounds change"
         }
       ]
     }

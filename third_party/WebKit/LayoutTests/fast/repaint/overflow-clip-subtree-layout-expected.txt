@@ -8,7 +8,7 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow DIV",
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         }
       ]
     }

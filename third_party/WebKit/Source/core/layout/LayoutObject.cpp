@@ -1484,12 +1484,6 @@ PaintInvalidationReason LayoutObject::getPaintInvalidationReason(const LayoutBox
     const LayoutRect& oldBounds, const LayoutPoint& oldPositionFromPaintInvalidationBacking,
     const LayoutRect& newBounds, const LayoutPoint& newPositionFromPaintInvalidationBacking) const
 {
-    // First check for InvalidationLocationChange to avoid it from being hidden by other
-    // invalidation reasons because we'll need to force check for paint invalidation for
-    // children when location of this object changed.
-    if (newPositionFromPaintInvalidationBacking != oldPositionFromPaintInvalidationBacking)
-        return PaintInvalidationLocationChange;
-
     if (shouldDoFullPaintInvalidation())
         return m_bitfields.fullPaintInvalidationReason();
 
@@ -1499,11 +1493,12 @@ PaintInvalidationReason LayoutObject::getPaintInvalidationReason(const LayoutBox
     if (styleRef().hasOutline())
         return PaintInvalidationOutline;
 
+    bool locationChanged = newPositionFromPaintInvalidationBacking != oldPositionFromPaintInvalidationBacking;
+
     // If the bounds are the same then we know that none of the statements below
-    // can match, so we can early out since we will not need to do any
-    // invalidation.
+    // can match, so we can early out.
     if (oldBounds == newBounds)
-        return PaintInvalidationNone;
+        return locationChanged && !oldBounds.isEmpty() ? PaintInvalidationLocationChange : PaintInvalidationNone;
 
     // If we shifted, we don't know the exact reason so we are conservative and trigger a full invalidation. Shifting could
     // be caused by some layout property (left / top) or some in-flow layoutObject inserted / removed before us in the tree.
@@ -1525,6 +1520,9 @@ PaintInvalidationReason LayoutObject::getPaintInvalidationReason(const LayoutBox
         return PaintInvalidationBecameVisible;
     if (newBounds.isEmpty())
         return PaintInvalidationBecameInvisible;
+
+    if (locationChanged)
+        return PaintInvalidationLocationChange;
 
     return PaintInvalidationIncremental;
 }

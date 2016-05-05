@@ -10,58 +10,58 @@ Hi!
         {
           "object": "LayoutBlockFlow (positioned) DIV id='abs'",
           "rect": [425, 980, 360, 90],
-          "reason": "location change"
+          "reason": "full"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='abs'",
           "rect": [425, 980, 360, 90],
-          "reason": "location change"
+          "reason": "full"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='abs'",
           "rect": [425, 480, 360, 90],
-          "reason": "location change"
+          "reason": "full"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='abs'",
           "rect": [425, 480, 360, 90],
-          "reason": "location change"
+          "reason": "full"
         },
         {
           "object": "LayoutText #text",
           "rect": [425, 980, 19, 19],
-          "reason": "location change"
+          "reason": "full"
         },
         {
           "object": "LayoutText #text",
           "rect": [425, 980, 19, 19],
-          "reason": "location change"
+          "reason": "full"
         },
         {
           "object": "LayoutText #text",
           "rect": [425, 480, 19, 19],
-          "reason": "location change"
+          "reason": "full"
         },
         {
           "object": "LayoutText #text",
           "rect": [425, 480, 19, 19],
-          "reason": "location change"
+          "reason": "full"
         },
         {
           "object": "InlineTextBox 'Hi!'",
-          "reason": "location change"
+          "reason": "full"
         },
         {
           "object": "InlineTextBox 'Hi!'",
-          "reason": "location change"
+          "reason": "full"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='fixed'",
-          "reason": "location change"
+          "reason": "full"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='fixed'",
-          "reason": "location change"
+          "reason": "full"
         },
         {
           "object": "RootInlineBox",

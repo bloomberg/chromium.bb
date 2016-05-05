@@ -15,12 +15,12 @@
             {
               "object": "LayoutBlockFlow (positioned) DIV id='block'",
               "rect": [300, 100, 120, 50],
-              "reason": "location change"
+              "reason": "bounds change"
             },
             {
               "object": "LayoutBlockFlow (positioned) DIV id='block'",
               "rect": [50, 100, 120, 50],
-              "reason": "location change"
+              "reason": "bounds change"
             }
           ],
           "children": [
@@ -35,12 +35,12 @@
                     {
                       "object": "LayoutBlockFlow (positioned) DIV id='block'",
                       "rect": [300, 200, 120, 50],
-                      "reason": "location change"
+                      "reason": "bounds change"
                     },
                     {
                       "object": "LayoutBlockFlow (positioned) DIV id='block'",
                       "rect": [50, 200, 120, 50],
-                      "reason": "location change"
+                      "reason": "bounds change"
                     }
                   ]
                 }
