@@ -6,12 +6,16 @@
 #define COMPONENTS_OFFLINE_PAGES_BACKGROUND_REQUEST_QUEUE_H_
 
 #include <stdint.h>
+
+#include <memory>
 #include <vector>
 
 #include "base/callback.h"
+#include "base/macros.h"
 
 namespace offline_pages {
 
+class RequestQueueStore;
 class SavePageRequest;
 
 // Class responsible for managing save page requests.
@@ -48,6 +52,9 @@ class RequestQueue {
   // Callback used by |UdpateRequest| and |RemoveRequest|.
   typedef base::Callback<void(UpdateRequestResult)> UpdateRequestCallback;
 
+  explicit RequestQueue(std::unique_ptr<RequestQueueStore> store);
+  ~RequestQueue();
+
   // Gets all of the active requests from the store. Calling this method may
   // schedule purging of the request queue.
   void GetRequests(const GetRequestsCallback& callback);
@@ -78,6 +85,10 @@ class RequestQueue {
   // expired request. Result is returned through |callback| carries the number
   // of removed requests.
   void PurgeRequests(const PurgeRequestsCallback& callback);
+
+  std::unique_ptr<RequestQueueStore> store_;
+
+  DISALLOW_COPY_AND_ASSIGN(RequestQueue);
 };
 
 }  // namespace offline_pages
