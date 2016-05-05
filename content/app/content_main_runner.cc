@@ -137,8 +137,6 @@ void InitializeFieldTrialAndFeatureList(
     std::unique_ptr<base::FieldTrialList>* field_trial_list) {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
-  std::string process_type =
-      command_line.GetSwitchValueASCII(switches::kProcessType);
 
   // Initialize statistical testing infrastructure.  We set the entropy
   // provider to nullptr to disallow non-browser processes from creating
