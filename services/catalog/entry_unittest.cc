@@ -60,6 +60,11 @@ TEST_F(EntryTest, Simple) {
   EXPECT_EQ("Foo", entry->display_name());
 }
 
+TEST_F(EntryTest, NoWildcardInInterfaces) {
+  std::unique_ptr<Entry> entry = ReadEntry("wildcard_interfaces", nullptr);
+  EXPECT_EQ(nullptr, entry.get());
+}
+
 TEST_F(EntryTest, Instance) {
   std::unique_ptr<Entry> entry = ReadEntry("instance", nullptr);
   EXPECT_EQ("mojo:foo", entry->name());

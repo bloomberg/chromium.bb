@@ -4,8 +4,7 @@
   "display_name": "Views Mus Unittests",
   "capabilities": {
     "required": {
-      "mojo:desktop_wm": { "interfaces": [ "*" ] },
-      "mojo:mus": { "classes": [ "app" ] }
+      "*": { "classes": [ "app" ] }
     }
   }
 }

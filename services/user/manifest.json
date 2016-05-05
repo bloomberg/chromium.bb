@@ -5,7 +5,7 @@
   "display_name": "User Service",
   "capabilities": {
     "required": {
-      "mojo:tracing": { "interfaces": [ "*" ] }
+      "*": { "classes": [ "app" ] }
     }
   }
 }

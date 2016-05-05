@@ -4,8 +4,8 @@
   "display_name": "Shell Unittest: Driver",
   "capabilities": {
     "required": {
-      "*": { "interfaces": [ "*" ] },
-      "mojo:shell": { "classes":  ["shell:client_process"] }
+      "exe:shell_unittest_target": { },
+      "mojo:shell": { "classes": [ "shell:client_process" ] }
     }
   }
 }

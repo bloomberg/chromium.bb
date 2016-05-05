@@ -4,10 +4,14 @@
   "display_name": "Mash Unittests",
   "capabilities": {
     "required": {
-      "mojo:desktop_wm": { "interfaces": [ "*" ] },
-      "mojo:quick_launch": { "interfaces": [ "*" ] },
+      "*": { "classes": [ "app" ] },
+      "mojo:desktop_wm": {
+        "interfaces": [
+          "mus::mojom::AcceleratorRegistrar",
+          "mash::wm::mojom::UserWindowController"
+        ]
+      },
       "mojo:mus": {
-        "classes": [ "app" ],
         "interfaces": [ "mus::mojom::WindowServerTest" ]
       }
     }

@@ -24,7 +24,6 @@ void Init::Initialize(shell::Connector* connector,
   connector_ = connector;
   connector_->Connect("mojo:mus");
   StartTracing();
-  StartResourceProvider();
   StartLogin();
 }
 
@@ -63,10 +62,6 @@ void Init::UserServiceQuit(const std::string& user_id) {
 
 void Init::StartTracing() {
   connector_->Connect("mojo:tracing");
-}
-
-void Init::StartResourceProvider() {
-  connector_->Connect("mojo:resource_provider");
 }
 
 void Init::StartLogin() {

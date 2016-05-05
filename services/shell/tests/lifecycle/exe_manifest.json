@@ -2,5 +2,5 @@
   "manifest_version":  1,
   "name": "exe:lifecycle_unittest_exe",
   "display_name": "Lifecycle Unittest Exe",
-  "capabilities": { "*": [ "*" ] }
+  "capabilities": {}
 }

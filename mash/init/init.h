@@ -48,7 +48,6 @@ class Init : public shell::ShellClient,
   void UserServiceQuit(const std::string& user_id);
 
   void StartTracing();
-  void StartResourceProvider();
   void StartLogin();
 
   shell::Connector* connector_;

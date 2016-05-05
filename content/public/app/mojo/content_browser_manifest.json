@@ -5,14 +5,13 @@
   "display_name": "Content Browser",
   "capabilities": {
     "required": {
-      "*": { "interfaces": [ "*" ] },
+      "*": { "classes": [ "app" ] },
       "mojo:shell": {
         "classes": [
           "shell:client_process",
           "shell:instance_name",
           "shell:user_id"
-        ],
-        "interfaces": [ "*" ]
+        ]
       }
     }
   }

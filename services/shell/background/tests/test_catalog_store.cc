@@ -35,7 +35,7 @@ std::unique_ptr<base::DictionaryValue> BuildPermissiveSerializedAppInfo(
   std::unique_ptr<base::DictionaryValue> interfaces_dictionary(
       new base::DictionaryValue);
   std::unique_ptr<base::ListValue> interfaces_list(new base::ListValue);
-  interfaces_list->AppendString("*");
+  interfaces_list->AppendString("shell::mojom::TestService");
   interfaces_dictionary->Set("interfaces", std::move(interfaces_list));
   required_capabilities->Set("*", std::move(interfaces_dictionary));
   capabilities->Set(Store::kCapabilities_RequiredKey,

@@ -4,7 +4,9 @@
   "display_name": "Connect Test App",
   "capabilities": {
     "required": {
-      "mojo:connect_test_a": { "interfaces": ["*"] },
+      "mojo:connect_test_a": {
+        "interfaces": [ "shell::test::mojom::ConnectTestService" ]
+      },
       "mojo:connect_test_class_app": {
         "classes": [ "class" ],
         "interfaces": ["shell::test::mojom::ConnectTestService"]

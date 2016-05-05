@@ -98,13 +98,21 @@ bool BuildCapabilities(const base::DictionaryValue& value,
                    << "capabilities dictionary.";
         return false;
       }
+      shell::Interfaces interfaces;
       if (!ReadStringSetFromDictionary(*entry_value,
                                        Store::kCapabilities_InterfacesKey,
-                                       &spec.interfaces)) {
+                                       &interfaces)) {
         LOG(ERROR) << "Entry::Deserialize: Invalid interfaces list in required "
                    << "capabilities dictionary.";
         return false;
       }
+      if (interfaces.count("*") > 0) {
+        LOG(ERROR) << "Entry::Deserializer: Wildcard not valid in interfaces "
+                   << "list.";
+        return false;
+      }
+      spec.interfaces = interfaces;
+
       capabilities->required[it.key()] = spec;
     }
   }
