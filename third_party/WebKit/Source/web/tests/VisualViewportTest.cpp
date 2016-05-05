@@ -168,7 +168,6 @@ public:
     static void configureSettings(WebSettings* settings)
     {
         settings->setJavaScriptEnabled(true);
-        settings->setAcceleratedCompositingEnabled(true);
         settings->setPreferCompositingToLCDTextEnabled(true);
     }
 
@@ -415,24 +414,22 @@ TEST_P(ParameterizedVisualViewportTest, TestResizeAfterHorizontalScroll)
     EXPECT_FLOAT_POINT_EQ(FloatPoint(150, 0), visualViewport.location());
 }
 
-static void disableAcceleratedCompositing(WebSettings* settings)
-{
-    VisualViewportTest::configureSettings(settings);
-    // FIXME: This setting is being removed, so this test needs to be rewritten to
-    // do something else. crbug.com/173949
-    settings->setAcceleratedCompositingEnabled(false);
-}
-
 // Test that the container layer gets sized properly if the WebView is resized
 // prior to the VisualViewport being attached to the layer tree.
 TEST_P(ParameterizedVisualViewportTest, TestWebViewResizedBeforeAttachment)
 {
-    initializeWithDesktopSettings(disableAcceleratedCompositing);
+    initializeWithDesktopSettings();
+    FrameView& frameView = *webViewImpl()->mainFrameImpl()->frameView();
+    GraphicsLayer* rootGraphicsLayer =
+        frameView.layoutView()->compositor()->rootGraphicsLayer();
+
+    // Make sure that a resize that comes in while there's no root layer is
+    // honoured when we attach to the layer tree.
+    webViewImpl()->setRootGraphicsLayer(nullptr);
     webViewImpl()->resize(IntSize(320, 240));
+    webViewImpl()->setRootGraphicsLayer(rootGraphicsLayer);
 
     navigateTo("about:blank");
-    forceFullCompositingUpdate();
-    webViewImpl()->settings()->setAcceleratedCompositingEnabled(true);
     webViewImpl()->updateAllLifecyclePhases();
 
     VisualViewport& visualViewport = frame()->page()->frameHost().visualViewport();
