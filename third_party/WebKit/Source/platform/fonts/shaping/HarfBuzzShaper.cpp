@@ -221,8 +221,6 @@ void HarfBuzzShaper::setFontFeatures()
         feature.end = static_cast<unsigned>(-1);
         m_features.append(feature);
     }
-
-    DLOG(ERROR) << "features size: " << m_features.size();
 }
 
 HarfBuzzShaper::CapsFeatureSettingsScopedOverlay::CapsFeatureSettingsScopedOverlay(
