@@ -204,6 +204,7 @@ source_set("browser") {
     "//content/public/common:features",
     "//courgette:courgette_lib",
     "//crypto",
+    "//crypto:platform",
     "//google_apis",
     "//gpu/config",
     "//skia",

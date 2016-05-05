@@ -3262,6 +3262,7 @@
         '../skia/skia.gyp:skia',
         '../sql/sql.gyp:sql',
         '../sync/sync.gyp:sync',
+        '../third_party/boringssl/boringssl.gyp:boringssl',
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_proto_cpp',
         '../third_party/icu/icu.gyp:icui18n',

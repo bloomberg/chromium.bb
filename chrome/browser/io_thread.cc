@@ -19,6 +19,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -125,6 +126,11 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/net/cert_verify_proc_chromeos.h"
 #include "chromeos/network/host_resolver_impl_chromeos.h"
+#endif
+
+#if defined(OS_ANDROID) && defined(ARCH_CPU_ARMEL)
+#include <openssl/cpu.h>
+#include "crypto/openssl_util.h"
 #endif
 
 using content::BrowserThread;
@@ -860,6 +866,13 @@ void IOThread::Init() {
                           FROM_HERE,
                           base::Bind(&IOThread::InitSystemRequestContext,
                                      weak_factory_.GetWeakPtr()));
+
+#if defined(OS_ANDROID) && defined(ARCH_CPU_ARMEL)
+  // Record how common CPUs with broken NEON units are. See
+  // https://crbug.com/341598.
+  crypto::EnsureOpenSSLInit();
+  UMA_HISTOGRAM_BOOLEAN("Net.HasBrokenNEON", CRYPTO_has_broken_NEON());
+#endif
 }
 
 void IOThread::CleanUp() {

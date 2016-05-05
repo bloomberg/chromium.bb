@@ -26649,6 +26649,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.HasBrokenNEON" enum="BooleanBroken">
+  <owner>davidben@chromium.org</owner>
+  <summary>
+    Records, on startup, for ARM devices running Android, whether the CPU is
+    known to have a broken NEON unit. See https://crbug.com/341598.
+  </summary>
+</histogram>
+
 <histogram name="Net.Http2SSLCipherSuite" enum="SSLCipherSuite">
   <owner>davidben@chromium.org</owner>
   <summary>
