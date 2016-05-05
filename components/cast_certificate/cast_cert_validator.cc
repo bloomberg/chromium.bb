@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/common/cast/cast_cert_validator.h"
+#include "components/cast_certificate/cast_cert_validator.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -23,9 +23,7 @@
 #include "net/cert/internal/verify_signed_data.h"
 #include "net/der/input.h"
 
-namespace extensions {
-namespace api {
-namespace cast_crypto {
+namespace cast_certificate {
 namespace {
 
 // -------------------------------------------------------------------------
@@ -39,8 +37,8 @@ namespace {
 //
 // These constants are defined by the files included next:
 
-#include "extensions/common/cast/cast_root_ca_cert_der-inc.h"
-#include "extensions/common/cast/eureka_root_ca_der-inc.h"
+#include "components/cast_certificate/cast_root_ca_cert_der-inc.h"
+#include "components/cast_certificate/eureka_root_ca_der-inc.h"
 
 // Singleton for the Cast trust store.
 class CastTrustStore {
@@ -242,7 +240,6 @@ WARN_UNUSED_RESULT bool CheckTargetCertificate(
   return true;
 }
 
-
 // Converts a base::Time::Exploded to a net::der::GeneralizedTime.
 net::der::GeneralizedTime ConvertExplodedTime(
     const base::Time::Exploded& exploded) {
@@ -297,6 +294,4 @@ bool AddTrustAnchorForTest(const uint8_t* data, size_t length) {
                                                                    length);
 }
 
-}  // namespace cast_crypto
-}  // namespace api
-}  // namespace extensions
+}  // namespace cast_certificate

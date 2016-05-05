@@ -14,15 +14,15 @@
 
 #include "base/logging.h"
 #include "base/strings/string_util.h"
+#include "components/cast_certificate/cast_cert_validator.h"
 #include "crypto/openssl_util.h"
 #include "crypto/rsa_private_key.h"
 #include "crypto/scoped_openssl_types.h"
-#include "extensions/common/cast/cast_cert_validator.h"
 #include "net/cert/pem_tokenizer.h"
 
 namespace {
 
-namespace cast_crypto = ::extensions::api::cast_crypto;
+namespace cast_crypto = ::cast_certificate;
 
 // Parses |pem_data| for a PEM block of |pem_type|.
 // Returns true if a |pem_type| block is found, storing the decoded result in

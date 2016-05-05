@@ -2,26 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/common/cast/cast_cert_validator_test_helpers.h"
+#include "components/cast_certificate/cast_cert_validator_test_helpers.h"
 
 #include "base/files/file_util.h"
 #include "base/path_service.h"
-#include "extensions/common/extension_paths.h"
 #include "net/cert/pem_tokenizer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace cast_test_helpers {
+namespace cast_certificate {
+
+namespace testing {
 
 namespace {
 
-// Reads a file from the extensions test data directory
-// (//src/extensions/test/data/)
+// Reads a file from the test data directory
+// (//src/components/test/data/cast_certificate)
 std::string ReadTestFileToString(const base::StringPiece& file_name) {
   base::FilePath filepath;
-  if (!PathService::Get(extensions::DIR_TEST_DATA, &filepath)) {
-    ADD_FAILURE() << "Couldn't retrieve test data root";
-    return std::string();
-  }
+  PathService::Get(base::DIR_SOURCE_ROOT, &filepath);
+  filepath = filepath.Append(FILE_PATH_LITERAL("components"));
+  filepath = filepath.Append(FILE_PATH_LITERAL("test"));
+  filepath = filepath.Append(FILE_PATH_LITERAL("data"));
+  filepath = filepath.Append(FILE_PATH_LITERAL("cast_certificate"));
   filepath = filepath.AppendASCII(file_name);
 
   // Read the full contents of the file.
@@ -84,4 +86,6 @@ SignatureTestData ReadSignatureTestData(const base::StringPiece& file_name) {
   return result;
 }
 
-}  // namespace cast_test_helpers
+}  // namespace testing
+
+}  // namespace cast_certificate

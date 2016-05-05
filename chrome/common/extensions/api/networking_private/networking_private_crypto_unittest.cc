@@ -8,12 +8,9 @@
 #include "base/base64.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
-#include "extensions/common/cast/cast_cert_validator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
-
-namespace cast_crypto = ::extensions::api::cast_crypto;
 
 }  // namespace
 
@@ -37,8 +34,8 @@ class NetworkingPrivateCryptoTest : public testing::Test {
 TEST_F(NetworkingPrivateCryptoTest, VerifyCredentials) {
   // This certificate chain and signature are duplicated from:
   //
-  //   extensions/test/data/cast_certificates/chromecast_gen1.pem
-  //   extensions/test/data/cast_signeddata/2ZZBG9_FA8FCA3EF91A.pem
+  //   components/test/data/cast_certificate/certificates/chromecast_gen1.pem
+  //   components/test/data/cast_certificate/signeddata/2ZZBG9_FA8FCA3EF91A.pem
   //
   // TODO(eroman): Avoid duplicating the data.
   static const char kCertData[] =

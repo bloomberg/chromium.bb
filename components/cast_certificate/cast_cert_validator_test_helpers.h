@@ -2,18 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_COMMON_CAST_CAST_CERT_VALIDATOR_TEST_HELPERS_H_
-#define EXTENSIONS_COMMON_CAST_CAST_CERT_VALIDATOR_TEST_HELPERS_H_
+#ifndef COMPONENTS_CAST_CERTIFICATE_CAST_CERT_VALIDATOR_TEST_HELPERS_H_
+#define COMPONENTS_CAST_CERTIFICATE_CAST_CERT_VALIDATOR_TEST_HELPERS_H_
 
 #include <string>
 #include <vector>
 
 #include "base/strings/string_piece.h"
 
-namespace cast_test_helpers {
+namespace cast_certificate {
+
+namespace testing {
 
 // Reads a PEM file containing certificates to a vector of their DER data.
-// |file_name| should be relative to //src/extensions/test/data/
+// |file_name| should be relative to //components/test/data/cast_certificate
 std::vector<std::string> ReadCertificateChainFromFile(
     const base::StringPiece& file_name);
 
@@ -30,9 +32,11 @@ struct SignatureTestData {
 
 // Reads a PEM file that contains "MESSAGE", "SIGNATURE SHA1" and
 // "SIGNATURE SHA256" blocks.
-// |file_name| should be relative to //src/extensions/test/data/
+// |file_name| should be relative to //components/test/data/cast_certificate
 SignatureTestData ReadSignatureTestData(const base::StringPiece& file_name);
 
-}  // namespace cast_test_helpers
+}  // namespace testing
 
-#endif  // EXTENSIONS_COMMON_CAST_CAST_CERT_VALIDATOR_TEST_HELPERS_H_
+}  // namespace cast_certificate
+
+#endif  // COMPONENTS_CAST_CERTIFICATE_CAST_CERT_VALIDATOR_TEST_HELPERS_H_

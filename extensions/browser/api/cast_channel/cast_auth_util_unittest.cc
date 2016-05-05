@@ -7,8 +7,8 @@
 #include <string>
 
 #include "base/macros.h"
+#include "components/cast_certificate/cast_cert_validator_test_helpers.h"
 #include "extensions/common/api/cast_channel/cast_channel.pb.h"
-#include "extensions/common/cast/cast_cert_validator_test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
@@ -25,12 +25,12 @@ class CastAuthUtilTest : public testing::Test {
 
  protected:
   static AuthResponse CreateAuthResponse(std::string* signed_data) {
-    auto chain = cast_test_helpers::ReadCertificateChainFromFile(
-        "cast_certificates/chromecast_gen1.pem");
+    auto chain = cast_certificate::testing::ReadCertificateChainFromFile(
+        "certificates/chromecast_gen1.pem");
     CHECK(!chain.empty());
 
-    auto signature_data = cast_test_helpers::ReadSignatureTestData(
-        "cast_signeddata/2ZZBG9_FA8FCA3EF91A.pem");
+    auto signature_data = cast_certificate::testing::ReadSignatureTestData(
+        "signeddata/2ZZBG9_FA8FCA3EF91A.pem");
 
     AuthResponse response;
 

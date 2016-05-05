@@ -11,6 +11,7 @@ source_set("browser") {
 
   deps = [
     "//base:i18n",
+    "//components/cast_certificate",
     "//components/guest_view/browser",
     "//components/keyed_service/content",
     "//components/keyed_service/core",

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_COMMON_CAST_CAST_CERT_VALIDATOR_H_
-#define EXTENSIONS_COMMON_CAST_CAST_CERT_VALIDATOR_H_
+#ifndef COMPONENTS_CAST_CERTIFICATE_CAST_CERT_VALIDATOR_H_
+#define COMPONENTS_CAST_CERTIFICATE_CAST_CERT_VALIDATOR_H_
 
 #include <memory>
 #include <string>
@@ -14,9 +14,7 @@
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 
-namespace extensions {
-namespace api {
-namespace cast_crypto {
+namespace cast_certificate {
 
 // Describes the policy for a Device certificate.
 enum class CastDeviceCertPolicy {
@@ -96,8 +94,6 @@ std::unique_ptr<CertVerificationContext> CertVerificationContextImplForTest(
 bool AddTrustAnchorForTest(const uint8_t* data,
                            size_t length) WARN_UNUSED_RESULT;
 
-}  // namespace cast_crypto
-}  // namespace api
-}  // namespace extensions
+}  // namespace cast_certificate
 
-#endif  // EXTENSIONS_COMMON_CAST_CAST_CERT_VALIDATOR_H_
+#endif  // COMPONENTS_CAST_CERTIFICATE_CAST_CERT_VALIDATOR_H_

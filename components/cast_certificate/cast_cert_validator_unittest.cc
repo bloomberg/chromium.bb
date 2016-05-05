@@ -2,16 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/common/cast/cast_cert_validator.h"
+#include "components/cast_certificate/cast_cert_validator.h"
 
-#include "extensions/common/cast/cast_cert_validator_test_helpers.h"
+#include "components/cast_certificate/cast_cert_validator_test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace extensions {
-
-namespace api {
-
-namespace cast_crypto {
+namespace cast_certificate {
 
 namespace {
 
@@ -45,7 +41,8 @@ void RunTest(TestResult expected_result,
              const std::string& certs_file_name,
              const base::Time::Exploded& time,
              const std::string& optional_signed_data_file_name) {
-  auto certs = cast_test_helpers::ReadCertificateChainFromFile(certs_file_name);
+  auto certs =
+      cast_certificate::testing::ReadCertificateChainFromFile(certs_file_name);
 
   std::unique_ptr<CertVerificationContext> context;
   CastDeviceCertPolicy policy;
@@ -73,7 +70,7 @@ void RunTest(TestResult expected_result,
 
   // If valid signatures are known for this device certificate, test them.
   if (!optional_signed_data_file_name.empty()) {
-    auto signature_data = cast_test_helpers::ReadSignatureTestData(
+    auto signature_data = cast_certificate::testing::ReadSignatureTestData(
         optional_signed_data_file_name);
 
     // Test verification of a valid SHA1 signature.
@@ -130,8 +127,8 @@ base::Time::Exploded MarchFirst2040() {
 //   Eureka Root CA    (not included)
 TEST(VerifyCastDeviceCertTest, ChromecastGen1) {
   RunTest(RESULT_SUCCESS, "2ZZBG9 FA8FCA3EF91A", CastDeviceCertPolicy::NONE,
-          "cast_certificates/chromecast_gen1.pem", AprilFirst2016(),
-          "cast_signeddata/2ZZBG9_FA8FCA3EF91A.pem");
+          "certificates/chromecast_gen1.pem", AprilFirst2016(),
+          "signeddata/2ZZBG9_FA8FCA3EF91A.pem");
 }
 
 // Tests verifying a valid certificate chain of length 2:
@@ -143,8 +140,8 @@ TEST(VerifyCastDeviceCertTest, ChromecastGen1) {
 //   Cast Root CA     (not included)
 TEST(VerifyCastDeviceCertTest, ChromecastGen1Reissue) {
   RunTest(RESULT_SUCCESS, "2ZZBG9 FA8FCA3EF91A", CastDeviceCertPolicy::NONE,
-          "cast_certificates/chromecast_gen1_reissue.pem", AprilFirst2016(),
-          "cast_signeddata/2ZZBG9_FA8FCA3EF91A.pem");
+          "certificates/chromecast_gen1_reissue.pem", AprilFirst2016(),
+          "signeddata/2ZZBG9_FA8FCA3EF91A.pem");
 }
 
 // Tests verifying a valid certificate chain of length 2:
@@ -156,7 +153,7 @@ TEST(VerifyCastDeviceCertTest, ChromecastGen1Reissue) {
 //   Cast Root CA     (not included)
 TEST(VerifyCastDeviceCertTest, ChromecastGen2) {
   RunTest(RESULT_SUCCESS, "3ZZAK6 FA8FCA3F0D35", CastDeviceCertPolicy::NONE,
-          "cast_certificates/chromecast_gen2.pem", AprilFirst2016(), "");
+          "certificates/chromecast_gen2.pem", AprilFirst2016(), "");
 }
 
 // Tests verifying a valid certificate chain of length 3:
@@ -169,7 +166,7 @@ TEST(VerifyCastDeviceCertTest, ChromecastGen2) {
 //   Cast Root CA     (not included)
 TEST(VerifyCastDeviceCertTest, Fugu) {
   RunTest(RESULT_SUCCESS, "-6394818897508095075", CastDeviceCertPolicy::NONE,
-          "cast_certificates/fugu.pem", AprilFirst2016(), "");
+          "certificates/fugu.pem", AprilFirst2016(), "");
 }
 
 // Tests verifying an invalid certificate chain of length 1:
@@ -182,7 +179,7 @@ TEST(VerifyCastDeviceCertTest, Fugu) {
 // This is invalid because it does not chain to a trust anchor.
 TEST(VerifyCastDeviceCertTest, Unchained) {
   RunTest(RESULT_FAIL, "", CastDeviceCertPolicy::NONE,
-          "cast_certificates/unchained.pem", AprilFirst2016(), "");
+          "certificates/unchained.pem", AprilFirst2016(), "");
 }
 
 // Tests verifying one of the self-signed trust anchors (chain of length 1):
@@ -197,7 +194,7 @@ TEST(VerifyCastDeviceCertTest, Unchained) {
 // certificate*.
 TEST(VerifyCastDeviceCertTest, CastRootCa) {
   RunTest(RESULT_FAIL, "", CastDeviceCertPolicy::NONE,
-          "cast_certificates/cast_root_ca.pem", AprilFirst2016(), "");
+          "certificates/cast_root_ca.pem", AprilFirst2016(), "");
 }
 
 // Tests verifying a valid certificate chain of length 2:
@@ -212,8 +209,8 @@ TEST(VerifyCastDeviceCertTest, CastRootCa) {
 // devices.
 TEST(VerifyCastDeviceCertTest, ChromecastAudio) {
   RunTest(RESULT_SUCCESS, "4ZZDZJ FA8FCA7EFE3C",
-          CastDeviceCertPolicy::AUDIO_ONLY,
-          "cast_certificates/chromecast_audio.pem", AprilFirst2016(), "");
+          CastDeviceCertPolicy::AUDIO_ONLY, "certificates/chromecast_audio.pem",
+          AprilFirst2016(), "");
 }
 
 // Tests verifying a valid certificate chain of length 3:
@@ -229,8 +226,8 @@ TEST(VerifyCastDeviceCertTest, ChromecastAudio) {
 // devices.
 TEST(VerifyCastDeviceCertTest, MtkAudioDev) {
   RunTest(RESULT_SUCCESS, "MediaTek Audio Dev Test",
-          CastDeviceCertPolicy::AUDIO_ONLY,
-          "cast_certificates/mtk_audio_dev.pem", JanuaryFirst2015(), "");
+          CastDeviceCertPolicy::AUDIO_ONLY, "certificates/mtk_audio_dev.pem",
+          JanuaryFirst2015(), "");
 }
 
 // Tests verifying a valid certificate chain of length 2:
@@ -242,13 +239,13 @@ TEST(VerifyCastDeviceCertTest, MtkAudioDev) {
 //   Cast Root CA     (not included)
 TEST(VerifyCastDeviceCertTest, Vizio) {
   RunTest(RESULT_SUCCESS, "9V0000VB FA8FCA784D01", CastDeviceCertPolicy::NONE,
-          "cast_certificates/vizio.pem", AprilFirst2016(), "");
+          "certificates/vizio.pem", AprilFirst2016(), "");
 }
 
 // Tests verifying a valid certificate chain of length 2 using expired
 // time points.
 TEST(VerifyCastDeviceCertTest, ChromecastGen2InvalidTime) {
-  const char* kCertsFile = "cast_certificates/chromecast_gen2.pem";
+  const char* kCertsFile = "certificates/chromecast_gen2.pem";
 
   // Control test - certificate should be valid at some time otherwise
   // this test is pointless.
@@ -278,8 +275,8 @@ TEST(VerifyCastDeviceCertTest, ChromecastGen2InvalidTime) {
 TEST(VerifyCastDeviceCertTest, AudioRefDevTestChain3) {
   RunTest(RESULT_SUCCESS, "Audio Reference Dev Test",
           CastDeviceCertPolicy::AUDIO_ONLY,
-          "cast_certificates/audio_ref_dev_test_chain_3.pem", AprilFirst2016(),
-          "cast_signeddata/AudioReferenceDevTest.pem");
+          "certificates/audio_ref_dev_test_chain_3.pem", AprilFirst2016(),
+          "signeddata/AudioReferenceDevTest.pem");
 }
 
 // ------------------------------------------------------
@@ -416,8 +413,4 @@ TEST(VerifyCastDeviceCertTest, VerifySignature2048BitRsa) {
 
 }  // namespace
 
-}  // namespace cast_crypto
-
-}  // namespace api
-
-}  // namespace extensions
+}  // namespace cast_certificate

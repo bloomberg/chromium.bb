@@ -81,6 +81,7 @@ source_set("test_support") {
   deps = [
     ":extensions_resources",
     "//base",
+    "//components/cast_certificate:test_support",
     "//components/guest_view/browser:test_support",
     "//components/pref_registry:test_support",
     "//components/prefs:test_support",
@@ -155,6 +156,7 @@ test("extensions_unittests") {
   data = [
     "test/data/",
     "//chrome/test/data/extensions/",
+    "//components/test/data/cast_certificate/",
     "$root_out_dir/extensions_shell_and_test.pak",
   ]
 

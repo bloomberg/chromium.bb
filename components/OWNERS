@@ -24,6 +24,8 @@ per-file browsing_data.gypi=file://components/browsing_data/OWNERS
 
 per-file bubble.gypi=file://components/bubble/OWNERS
 
+per-file cast_certificate.gypi=file://components/cast_certificate/OWNERS
+
 per-file cdm.gypi=file://components/cdm/OWNERS
 
 per-file chrome_apps.gypi=file://components/chrome_apps/OWNERS

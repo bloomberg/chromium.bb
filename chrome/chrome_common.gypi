@@ -324,6 +324,7 @@
         '<(DEPTH)/chrome/chrome_resources.gyp:theme_resources',
         '<(DEPTH)/chrome/common_constants.gyp:common_constants',
         '<(DEPTH)/chrome/common/variations/fieldtrial_testing_config.gyp:fieldtrial_testing_config',
+        '<(DEPTH)/components/components.gyp:cast_certificate',
         '<(DEPTH)/components/components.gyp:cloud_devices_common',
         '<(DEPTH)/components/components.gyp:component_updater',
         '<(DEPTH)/components/components.gyp:content_settings_core_common',

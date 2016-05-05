@@ -18,6 +18,7 @@
     'browsing_data_ui.gypi',
     'bubble.gypi',
     'captive_portal.gypi',
+    'cast_certificate.gypi',
     'certificate_reporting.gypi',
     'client_update_protocol.gypi',
     'cloud_devices.gypi',

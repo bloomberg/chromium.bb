@@ -10,9 +10,9 @@
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "components/cast_certificate/cast_cert_validator.h"
 #include "extensions/browser/api/cast_channel/cast_message_util.h"
 #include "extensions/common/api/cast_channel/cast_channel.pb.h"
-#include "extensions/common/cast/cast_cert_validator.h"
 #include "net/cert/x509_certificate.h"
 #include "net/der/parse_values.h"
 
@@ -26,7 +26,7 @@ const char* const kParseErrorPrefix = "Failed to parse auth message: ";
 // The maximum number of days a cert can live for.
 const int kMaxSelfSignedCertLifetimeInDays = 4;
 
-namespace cast_crypto = ::extensions::api::cast_crypto;
+namespace cast_crypto = ::cast_certificate;
 
 // Extracts an embedded DeviceAuthMessage payload from an auth challenge reply
 // message.

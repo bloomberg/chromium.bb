@@ -158,6 +158,7 @@ test("components_unittests") {
     deps += [
       "//components/autofill/content/browser:unit_tests",
       "//components/autofill/content/renderer:unit_tests",
+      "//components/cast_certificate:unit_tests",
       "//components/certificate_transparency:unit_tests",
       "//components/data_reduction_proxy/content/browser:unit_tests",
       "//components/data_use_measurement/content:unit_tests",
