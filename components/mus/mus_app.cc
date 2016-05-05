@@ -24,8 +24,8 @@
 #include "components/mus/ws/window_tree_binding.h"
 #include "components/mus/ws/window_tree_factory.h"
 #include "components/mus/ws/window_tree_host_factory.h"
-#include "components/resource_provider/public/cpp/resource_loader.h"
 #include "mojo/public/c/system/main.h"
+#include "services/catalog/public/cpp/resource_loader.h"
 #include "services/shell/public/cpp/connection.h"
 #include "services/shell/public/cpp/connector.h"
 #include "services/tracing/public/cpp/tracing_impl.h"
@@ -91,19 +91,21 @@ void MandolineUIServicesApp::InitializeResources(shell::Connector* connector) {
   resource_paths.insert(kResourceFile100);
   resource_paths.insert(kResourceFile200);
 
-  resource_provider::ResourceLoader loader(connector, resource_paths);
-  if (!loader.BlockUntilLoaded())
-    return;
+  catalog::ResourceLoader loader;
+  filesystem::DirectoryPtr directory;
+  connector->ConnectToInterface("mojo:catalog", &directory);
+  CHECK(loader.OpenFiles(std::move(directory), resource_paths));
+
   ui::RegisterPathProvider();
 
   // Initialize resource bundle with 1x and 2x cursor bitmaps.
   ui::ResourceBundle::InitSharedInstanceWithPakFileRegion(
-      loader.ReleaseFile(kResourceFileStrings),
+      loader.TakeFile(kResourceFileStrings),
       base::MemoryMappedFile::Region::kWholeFile);
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  rb.AddDataPackFromFile(loader.ReleaseFile(kResourceFile100),
+  rb.AddDataPackFromFile(loader.TakeFile(kResourceFile100),
                          ui::SCALE_FACTOR_100P);
-  rb.AddDataPackFromFile(loader.ReleaseFile(kResourceFile200),
+  rb.AddDataPackFromFile(loader.TakeFile(kResourceFile200),
                          ui::SCALE_FACTOR_200P);
 }
 

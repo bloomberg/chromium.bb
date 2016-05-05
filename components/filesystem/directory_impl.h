@@ -44,6 +44,8 @@ class DirectoryImpl : public Directory {
   void OpenFileHandle(const mojo::String& path,
                       uint32_t open_flags,
                       const OpenFileHandleCallback& callback) override;
+  void OpenFileHandles(mojo::Array<FileOpenDetailsPtr> details,
+                       const OpenFileHandlesCallback& callback) override;
   void OpenDirectory(const mojo::String& path,
                      mojo::InterfaceRequest<Directory> directory,
                      uint32_t open_flags,
@@ -69,6 +71,10 @@ class DirectoryImpl : public Directory {
                  const WriteFileCallback& callback) override;
 
  private:
+  mojo::ScopedHandle OpenFileHandleImpl(const mojo::String& raw_path,
+                                        uint32_t open_flags,
+                                        FileError* error);
+
   mojo::StrongBinding<Directory> binding_;
   base::FilePath directory_path_;
   scoped_refptr<SharedTempDir> temp_dir_;

@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "build/build_config.h"
-#include "components/resource_provider/public/cpp/resource_loader.h"
+#include "services/catalog/public/cpp/resource_loader.h"
 #include "services/shell/public/cpp/connector.h"
 #include "ui/aura/env.h"
 #include "ui/base/ime/input_method_initializer.h"
@@ -77,12 +77,13 @@ AuraInit::~AuraInit() {
 void AuraInit::InitializeResources(shell::Connector* connector) {
   if (ui::ResourceBundle::HasSharedInstance())
     return;
-  resource_provider::ResourceLoader resource_loader(
-      connector, GetResourcePaths(resource_file_));
-  CHECK(resource_loader.BlockUntilLoaded());
-  CHECK(resource_loader.loaded());
+  catalog::ResourceLoader loader;
+  filesystem::DirectoryPtr directory;
+  connector->ConnectToInterface("mojo:catalog", &directory);
+  CHECK(loader.OpenFiles(std::move(directory),
+        GetResourcePaths(resource_file_)));
   ui::RegisterPathProvider();
-  base::File pak_file = resource_loader.ReleaseFile(resource_file_);
+  base::File pak_file = loader.TakeFile(resource_file_);
   base::File pak_file_2 = pak_file.Duplicate();
   ui::ResourceBundle::InitSharedInstanceWithPakFileRegion(
       std::move(pak_file), base::MemoryMappedFile::Region::kWholeFile);

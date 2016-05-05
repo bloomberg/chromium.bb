@@ -984,9 +984,6 @@
         "test": "remoting_unittests"
       },
       {
-        "test": "resource_provider_unittests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },

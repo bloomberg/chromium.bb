@@ -1781,9 +1781,6 @@
         "test": "mus_ws_unittests"
       },
       {
-        "test": "resource_provider_unittests"
-      },
-      {
         "test": "ui_touch_selection_unittests"
       }
     ]

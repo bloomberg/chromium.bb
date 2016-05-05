@@ -649,7 +649,6 @@ group("gn_only") {
     deps += [
       "//components/mus/demo",
       "//components/mus/ws:tests",
-      "//components/resource_provider:resource_provider_unittests",
       "//mash:all",
       "//media/mojo/services:media_mojo_shell_unittests",
       "//mojo",

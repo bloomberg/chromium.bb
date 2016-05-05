@@ -26,9 +26,10 @@
 #include "base/path_service.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "components/mus/public/cpp/property_type_converters.h"
-#include "components/resource_provider/public/cpp/resource_loader.h"
 #include "mash/wm/public/interfaces/ash_window_type.mojom.h"
 #include "mash/wm/public/interfaces/container.mojom.h"
+#include "services/catalog/public/cpp/resource_loader.h"
+#include "services/shell/public/cpp/connector.h"
 #include "ui/aura/env.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
@@ -247,19 +248,20 @@ class AshInit {
     resource_paths.insert(kResourceFile100);
     resource_paths.insert(kResourceFile200);
 
-    resource_provider::ResourceLoader loader(connector, resource_paths);
-    if (!loader.BlockUntilLoaded())
-      return;
+    catalog::ResourceLoader loader;
+    filesystem::DirectoryPtr directory;
+    connector->ConnectToInterface("mojo:catalog", &directory);
+    CHECK(loader.OpenFiles(std::move(directory), resource_paths));
 
     // Load ash resources and en-US strings; not 'common' (Chrome) resources.
     // TODO(msw): Check ResourceBundle::IsScaleFactorSupported; load 300% etc.
     ui::ResourceBundle::InitSharedInstanceWithPakFileRegion(
-        loader.ReleaseFile(kResourceFileStrings),
+        loader.TakeFile(kResourceFileStrings),
         base::MemoryMappedFile::Region::kWholeFile);
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    rb.AddDataPackFromFile(loader.ReleaseFile(kResourceFile100),
+    rb.AddDataPackFromFile(loader.TakeFile(kResourceFile100),
                            ui::SCALE_FACTOR_100P);
-    rb.AddDataPackFromFile(loader.ReleaseFile(kResourceFile200),
+    rb.AddDataPackFromFile(loader.TakeFile(kResourceFile200),
                            ui::SCALE_FACTOR_200P);
   }
 

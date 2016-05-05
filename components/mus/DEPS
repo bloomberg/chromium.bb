@@ -1,10 +1,10 @@
 include_rules = [
   "+cc",
-  "+components/resource_provider",
   "+ipc",
   "+mojo/common",
   "+mojo/converters",
   "+mojo/public",
+  "+services/catalog/public",
   "+services/shell",
   "+services/tracing/public",
   "+third_party/skia/include",

@@ -81,8 +81,8 @@ source_set("lib") {
     "//components/mus/surfaces",
     "//components/mus/ws:lib",
     "//components/mus/ws:test_interface",
-    "//components/resource_provider/public/cpp",
     "//mojo/common:common_base",
+    "//services/catalog/public/cpp",
     "//services/shell/public/cpp",
     "//services/tracing/public/cpp",
     "//ui/events",
@@ -90,10 +90,6 @@ source_set("lib") {
     "//ui/gl:gl",
     "//ui/platform_window:platform_impls",
     "//ui/platform_window:platform_window",
-  ]
-
-  data_deps = [
-    "//components/resource_provider",
   ]
 
   if (use_x11) {

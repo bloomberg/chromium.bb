@@ -33,8 +33,14 @@ source_set("lib") {
 
   deps = [
     "//base",
+    "//components/filesystem:lib",
     "//services/catalog/public/interfaces",
     "//services/shell/public/cpp",
+  ]
+
+  public_deps = [
+    # directory.mojom.h is #included by catalog.h
+    "//components/filesystem/public/interfaces",
   ]
 
   data_deps = [

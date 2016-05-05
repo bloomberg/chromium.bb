@@ -64,6 +64,7 @@ source_set("common") {
     "//media/midi",
     "//mojo/common:common_base",
     "//mojo/edk/system",
+    "//mojo/platform_handle:platform_handle_impl",
     "//net",
     "//sandbox",
     "//services/shell",

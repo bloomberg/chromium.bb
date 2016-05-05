@@ -50,6 +50,7 @@
       'dependencies': [
         'filesystem_bindings_mojom',
       ],
+      'hard_dependency': 1,
     },
     {
       'target_name': 'filesystem_bindings_mojom',

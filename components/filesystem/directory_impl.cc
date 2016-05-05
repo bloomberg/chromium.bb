@@ -18,8 +18,6 @@
 #include "mojo/common/common_type_converters.h"
 #include "mojo/platform_handle/platform_handle_functions.h"
 
-using mojo::ScopedHandle;
-
 namespace filesystem {
 
 DirectoryImpl::DirectoryImpl(mojo::InterfaceRequest<Directory> request,
@@ -91,36 +89,24 @@ void DirectoryImpl::OpenFile(const mojo::String& raw_path,
 void DirectoryImpl::OpenFileHandle(const mojo::String& raw_path,
                                    uint32_t open_flags,
                                    const OpenFileHandleCallback& callback) {
-  base::FilePath path;
-  FileError error = ValidatePath(raw_path, directory_path_, &path);
-  if (error != FileError::OK) {
-    callback.Run(error, ScopedHandle());
-    return;
-  }
+  FileError error = FileError::OK;
+  mojo::ScopedHandle handle = OpenFileHandleImpl(raw_path, open_flags, &error);
+  callback.Run(error, std::move(handle));
+}
 
-  if (base::DirectoryExists(path)) {
-    // We must not return directories as files. In the file abstraction, we can
-    // fetch raw file descriptors over mojo pipes, and passing a file
-    // descriptor to a directory is a sandbox escape on Windows.
-    callback.Run(FileError::NOT_A_FILE, ScopedHandle());
-    return;
+void DirectoryImpl::OpenFileHandles(mojo::Array<FileOpenDetailsPtr> details,
+                                    const OpenFileHandlesCallback& callback) {
+  mojo::Array<FileOpenResultPtr> results(
+      mojo::Array<FileOpenResultPtr>::New(details.size()));
+  size_t i = 0;
+  for (const auto& detail : details) {
+    FileOpenResultPtr result(FileOpenResult::New());
+    result->path = detail->path;
+    result->file_handle =
+        OpenFileHandleImpl(detail->path, detail->open_flags, &result->error);
+    results[i++] = std::move(result);
   }
-
-  base::File base_file(path, open_flags);
-  if (!base_file.IsValid()) {
-    callback.Run(GetError(base_file), ScopedHandle());
-    return;
-  }
-
-  MojoHandle mojo_handle;
-  MojoResult create_result = MojoCreatePlatformHandleWrapper(
-      base_file.TakePlatformFile(), &mojo_handle);
-  if (create_result != MOJO_RESULT_OK) {
-    callback.Run(FileError::FAILED, ScopedHandle());
-    return;
-  }
-
-  callback.Run(FileError::OK, ScopedHandle(mojo::Handle(mojo_handle)));
+  callback.Run(std::move(results));
 }
 
 void DirectoryImpl::OpenDirectory(const mojo::String& raw_path,
@@ -337,6 +323,41 @@ void DirectoryImpl::WriteFile(const mojo::String& raw_path,
   }
 
   callback.Run(FileError::OK);
+}
+
+mojo::ScopedHandle DirectoryImpl::OpenFileHandleImpl(
+    const mojo::String& raw_path,
+    uint32_t open_flags,
+    FileError* error) {
+  base::FilePath path;
+  *error = ValidatePath(raw_path, directory_path_, &path);
+  if (*error != FileError::OK)
+    return mojo::ScopedHandle();
+
+  if (base::DirectoryExists(path)) {
+    // We must not return directories as files. In the file abstraction, we
+    // can fetch raw file descriptors over mojo pipes, and passing a file
+    // descriptor to a directory is a sandbox escape on Windows.
+    *error = FileError::NOT_A_FILE;
+    return mojo::ScopedHandle();
+  }
+
+  base::File base_file(path, open_flags);
+  if (!base_file.IsValid()) {
+    *error = GetError(base_file);
+    return mojo::ScopedHandle();
+  }
+
+  MojoHandle mojo_handle;
+  MojoResult create_result = MojoCreatePlatformHandleWrapper(
+      base_file.TakePlatformFile(), &mojo_handle);
+  if (create_result != MOJO_RESULT_OK) {
+    *error = FileError::FAILED;
+    return mojo::ScopedHandle();
+  }
+
+  *error = FileError::OK;
+  return mojo::ScopedHandle(mojo::Handle(mojo_handle));
 }
 
 }  // namespace filesystem

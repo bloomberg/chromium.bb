@@ -14,7 +14,6 @@ source_set("mash") {
     "//ash/resources",
     "//base:i18n",
     "//components/mus:lib",
-    "//components/resource_provider:lib",
     "//content/public/common",
     "//mash/browser_driver:lib",
     "//mash/quick_launch:lib",
@@ -46,7 +45,6 @@ mojo_application_manifest("manifest") {
   deps = [
     "//ash/mus:manifest",
     "//components/mus:manifest",
-    "//components/resource_provider:manifest",
     "//mash/browser_driver:manifest",
     "//mash/quick_launch:manifest",
     "//mash/session:manifest",
@@ -60,7 +58,6 @@ mojo_application_manifest("manifest") {
     "mash_session",
     "mus",
     "quick_launch",
-    "resource_provider",
     "task_viewer",
   ]
 

@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/filesystem/public/interfaces/directory.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/catalog/public/interfaces/catalog.mojom.h"
 #include "services/catalog/types.h"
@@ -21,6 +22,10 @@
 namespace base {
 class SequencedWorkerPool;
 class SingleThreadTaskRunner;
+}
+
+namespace filesystem {
+class LockTable;
 }
 
 namespace shell {
@@ -38,6 +43,7 @@ class Store;
 // can be passed to the Shell, potentially in a different process.
 class Catalog : public shell::ShellClient,
                 public shell::InterfaceFactory<mojom::Catalog>,
+                public shell::InterfaceFactory<filesystem::Directory>,
                 public shell::InterfaceFactory<shell::mojom::ShellResolver> {
  public:
   // |manifest_provider| may be null.
@@ -68,6 +74,10 @@ class Catalog : public shell::ShellClient,
   void Create(shell::Connection* connection,
               mojom::CatalogRequest request) override;
 
+  // shell::InterfaceFactory<filesystem::Directory>:
+  void Create(shell::Connection* connection,
+              filesystem::DirectoryRequest request) override;
+
   Instance* GetInstanceForUserId(const std::string& user_id);
 
   void SystemPackageDirScanned();
@@ -82,6 +92,8 @@ class Catalog : public shell::ShellClient,
   std::unique_ptr<Reader> system_reader_;
   EntryCache system_cache_;
   bool loaded_ = false;
+
+  scoped_refptr<filesystem::LockTable> lock_table_;
 
   base::WeakPtrFactory<Catalog> weak_factory_;
 

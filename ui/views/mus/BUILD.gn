@@ -58,8 +58,6 @@ component("mus") {
     "//components/mus/gles2:lib",
     "//components/mus/public/cpp",
     "//components/mus/public/interfaces",
-    "//components/resource_provider/public/cpp",
-    "//components/resource_provider/public/interfaces",
     "//mojo/converters/geometry",
     "//mojo/converters/ime",
     "//mojo/converters/input_events",
@@ -67,6 +65,7 @@ component("mus") {
     "//mojo/platform_handle:for_component",
     "//mojo/public/c/system:for_component",
     "//mojo/public/cpp/bindings",
+    "//services/catalog/public/cpp",
     "//services/shell/public/cpp",
     "//services/shell/public/interfaces",
     "//skia",
@@ -87,13 +86,11 @@ component("mus") {
     "//ui/wm",
   ]
 
-  data_deps = [
-    "//components/resource_provider",
-  ]
-
   if (is_linux && !is_android) {
     deps += [ "//components/font_service/public/cpp" ]
-    data_deps += [ "//components/font_service" ]
+    data_deps = [
+      "//components/font_service",
+    ]
   }
 }
 

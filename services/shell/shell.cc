@@ -40,8 +40,6 @@ const char kCapabilityClass_InstanceName[] = "shell:instance_name";
 const char kCapabilityClass_AllUsers[] = "shell:all_users";
 const char kCapabilityClass_ExplicitClass[] = "shell:explicit_class";
 
-void EmptyResolverCallback(mojom::ResolveResultPtr result) {}
-
 }  // namespace
 
 Identity CreateShellIdentity() {
@@ -546,18 +544,17 @@ bool Shell::AcceptConnection(Connection* connection) {
 // Shell, private:
 
 void Shell::InitCatalog(mojom::ShellClientPtr catalog) {
+  // TODO(beng): It'd be great to build this from the manifest, however there's
+  //             a bit of a chicken-and-egg problem.
+  CapabilitySpec spec;
+  Interfaces interfaces;
+  interfaces.insert("filesystem::Directory");
+  spec.provided["app"] = interfaces;
   Instance* instance = CreateInstance(CreateShellIdentity(),
                                       CreateCatalogIdentity(),
-                                      CapabilitySpec());
+                                      spec);
   singletons_.insert(kCatalogName);
   instance->StartWithClient(std::move(catalog));
-
-  // TODO(beng): this doesn't work anymore.
-  // Seed the catalog with manifest info for the shell & catalog.
-  mojom::ShellResolverPtr resolver;
-  shell_connection_->connector()->ConnectToInterface(kCatalogName, &resolver);
-  resolver->ResolveMojoName(kCatalogName, base::Bind(&EmptyResolverCallback));
-  resolver->ResolveMojoName(kShellName, base::Bind(&EmptyResolverCallback));
 }
 
 mojom::ShellResolver* Shell::GetResolver(const Identity& identity) {

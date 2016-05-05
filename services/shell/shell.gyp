@@ -102,10 +102,13 @@
       'shell_public',
       '<(DEPTH)/base/base.gyp:base',
       '<(DEPTH)/base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+      '<(DEPTH)/components/filesystem/filesystem.gyp:filesystem_bindings',
+      '<(DEPTH)/components/filesystem/filesystem.gyp:filesystem_lib',
       '<(DEPTH)/mojo/mojo_base.gyp:mojo_common_lib',
     ],
     'export_dependent_settings': [
       'shell_public',
+      '<(DEPTH)/components/filesystem/filesystem.gyp:filesystem_bindings',
     ],
     'variables': {
       'mojom_typemaps': [

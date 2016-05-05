@@ -15,7 +15,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/process/launch.h"
 #include "components/mus/mus_app.h"
-#include "components/resource_provider/resource_provider_app.h"
 #include "content/public/common/content_switches.h"
 #include "mash/browser_driver/browser_driver_application_delegate.h"
 #include "mash/quick_launch/quick_launch_application.h"
@@ -95,10 +94,6 @@ class DefaultShellClient : public shell::ShellClient,
       return base::WrapUnique(new mus::MandolineUIServicesApp);
     if (name == "mojo:quick_launch")
       return base::WrapUnique(new mash::quick_launch::QuickLaunchApplication);
-    if (name == "mojo:resource_provider") {
-      return base::WrapUnique(
-          new resource_provider::ResourceProviderApp("mojo:resource_provider"));
-    }
     if (name == "mojo:task_viewer")
       return base::WrapUnique(new mash::task_viewer::TaskViewer);
 #if defined(OS_LINUX)

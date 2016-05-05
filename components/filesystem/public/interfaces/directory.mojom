@@ -7,6 +7,17 @@ module filesystem;
 import "components/filesystem/public/interfaces/file.mojom";
 import "components/filesystem/public/interfaces/types.mojom";
 
+struct FileOpenDetails {
+  string path;
+  uint32 open_flags;
+};
+
+struct FileOpenResult {
+  string path;
+  FileError error;
+  handle file_handle;
+};
+
 // This interface provides access to a directory in a "file system", providing
 // operations such as creating/opening/removing/renaming files/directories
 // within it. Note that all relative |path| arguments are relative to "this"
@@ -36,6 +47,11 @@ interface Directory {
   [Sync]
   OpenFileHandle(string path, uint32 open_flags)
       => (FileError error, handle file_handle);
+
+  // Like OpenFileHandle, but opens multiple files.
+  [Sync]
+  OpenFileHandles(array<FileOpenDetails> files)
+      => (array<FileOpenResult> results);
 
   // Opens the directory specified by |path|. |directory| is optional, so that
   // this may be used as a simple "mkdir()" with |kOpenFlagCreate|.
