@@ -1805,9 +1805,6 @@ def GetConfig():
         customizations.update(
             hw_tests=[
                 config_lib.HWTestConfig(
-                    constants.HWTEST_COMMIT_SUITE,
-                    pool=constants.HWTEST_PALADIN_POOL),
-                config_lib.HWTestConfig(
                     constants.HWTEST_ARC_COMMIT_SUITE,
                     pool=constants.HWTEST_PALADIN_POOL)
             ])
@@ -2517,9 +2514,6 @@ def GetConfig():
       _release,
       description='Cheets release builders',
       hw_tests=[
-          config_lib.HWTestConfig(
-              constants.HWTEST_COMMIT_SUITE, num=1,
-              timeout=config_lib.HWTestConfig.ASYNC_HW_TEST_TIMEOUT),
           config_lib.HWTestConfig(constants.HWTEST_ARC_COMMIT_SUITE, num=1),
           config_lib.HWTestConfig(constants.HWTEST_AU_SUITE,
                                   warn_only=True, num=1)],
