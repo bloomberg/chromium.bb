@@ -1046,6 +1046,7 @@ void WebMediaPlayerAndroid::OnDidExitFullscreen() {
     player_manager_->RequestExternalSurface(player_id_, last_computed_rect_);
 #endif  // defined(VIDEO_HOLE)
   is_fullscreen_ = false;
+  ReallocateVideoFrame();
   client_->repaint();
 }
 
@@ -1206,6 +1207,8 @@ void WebMediaPlayerAndroid::DrawRemotePlaybackText(
 
 void WebMediaPlayerAndroid::ReallocateVideoFrame() {
   DCHECK(main_thread_checker_.CalledOnValidThread());
+
+  if (is_fullscreen_) return;
   if (needs_external_surface_) {
     // VideoFrame::CreateHoleFrame is only defined under VIDEO_HOLE.
 #if defined(VIDEO_HOLE)
@@ -1636,6 +1639,16 @@ void WebMediaPlayerAndroid::enteredFullscreen() {
   SetNeedsEstablishPeer(false);
   is_fullscreen_ = true;
   suppress_deleting_texture_ = false;
+
+  // Create a transparent video frame. Blink will already have made the
+  // background transparent because we returned true from
+  // supportsOverlayFullscreenVideo(). By making the video frame transparent,
+  // as well, everything in the LayerTreeView will be transparent except for
+  // media controls. The video will be on visible on the underlaid surface.
+  if (!fullscreen_frame_)
+    fullscreen_frame_ = VideoFrame::CreateTransparentFrame(gfx::Size(1, 1));
+  SetCurrentFrameInternal(fullscreen_frame_);
+  client_->repaint();
 }
 
 bool WebMediaPlayerAndroid::IsHLSStream() const {

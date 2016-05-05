@@ -347,6 +347,9 @@ class WebMediaPlayerAndroid
   scoped_refptr<media::VideoFrame> current_frame_;
   base::Lock current_frame_lock_;
 
+  // A lazily created transparent video frame to be displayed in fullscreen.
+  scoped_refptr<media::VideoFrame> fullscreen_frame_;
+
   base::ThreadChecker main_thread_checker_;
 
   // Message loop for media thread.
