@@ -242,7 +242,6 @@ private:
         // emulation is required.
         GLenum creationInternalColorFormat = 0;
         GLenum colorFormat = 0;
-        GLenum internalRenderbufferFormat = 0;
     };
 
     // If we used CHROMIUM_image as the backing storage for our buffers,
@@ -347,6 +346,13 @@ private:
     // Whether the WebGL client wants a depth or stencil buffer.
     bool wantDepthOrStencil();
 
+    // The format to use when creating a multisampled renderbuffer.
+    GLenum getMultisampledRenderbufferFormat();
+
+    // Similar to requiresAlphaChannelToBePreserved(), but always targets the
+    // default framebuffer.
+    bool defaultBufferRequiresAlphaChannelToBePreserved();
+
     const PreserveDrawingBuffer m_preserveDrawingBuffer;
     bool m_scissorEnabled = false;
     GLuint m_texture2DBinding = 0;
@@ -377,19 +383,15 @@ private:
     // This is used when the user requests either a depth or stencil buffer.
     GLuint m_depthStencilBuffer = 0;
 
-    // For explicit resolve.
-    GLuint m_intermediateFBO = 0;
-    GLuint m_intermediateRenderbuffer = 0;
-
-    // When wantsExplicitResolve() returns true, the target of all draw
+    // When wantExplicitResolve() returns true, the target of all draw
     // operations.
     GLuint m_multisampleFBO = 0;
 
     // The id of the renderbuffer storage for |m_multisampleFBO|.
     GLuint m_multisampleRenderbuffer = 0;
 
-    // When wantsExplicitResolve() returns false, the target of all draw and
-    // read operations. When wantsExplicitResolve() returns true, the target of
+    // When wantExplicitResolve() returns false, the target of all draw and
+    // read operations. When wantExplicitResolve() returns true, the target of
     // all read operations. A swap is performed by exchanging |m_colorBuffer|
     // with |m_frontColorBuffer|.
     GLuint m_fbo = 0;

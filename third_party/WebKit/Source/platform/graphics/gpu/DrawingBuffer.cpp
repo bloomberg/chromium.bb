@@ -206,11 +206,16 @@ void DrawingBuffer::setFilterQuality(SkFilterQuality filterQuality)
 
 bool DrawingBuffer::requiresAlphaChannelToBePreserved()
 {
-    // When an explicit resolve is required, clients draw into a render buffer
-    // which is never backed by an IOSurface.
-    if (m_antiAliasingMode == MSAAExplicitResolve)
-        return false;
-    return !m_drawFramebufferBinding && !m_wantAlphaChannel && m_colorBuffer.imageId && contextProvider()->getCapabilities().chromium_image_rgb_emulation;
+    return !m_drawFramebufferBinding && defaultBufferRequiresAlphaChannelToBePreserved();
+}
+
+bool DrawingBuffer::defaultBufferRequiresAlphaChannelToBePreserved()
+{
+    if (wantExplicitResolve()) {
+        return !m_wantAlphaChannel && getMultisampledRenderbufferFormat() == GL_RGBA8_OES;
+    }
+
+    return !m_wantAlphaChannel && m_colorBuffer.imageId && contextProvider()->getCapabilities().chromium_image_rgb_emulation;
 }
 
 void DrawingBuffer::freeRecycledMailboxes()
@@ -330,15 +335,12 @@ DrawingBuffer::TextureParameters DrawingBuffer::chromiumImageTextureParameters()
     if (m_wantAlphaChannel) {
         parameters.creationInternalColorFormat = GL_RGBA;
         parameters.internalColorFormat = GL_RGBA;
-        parameters.internalRenderbufferFormat = GL_RGBA8_OES;
     } else if (contextProvider()->getCapabilities().chromium_image_rgb_emulation) {
         parameters.creationInternalColorFormat = GL_RGB;
         parameters.internalColorFormat = GL_RGBA;
-        parameters.internalRenderbufferFormat = GL_RGB8_OES;
     } else {
         parameters.creationInternalColorFormat = GL_RGB;
         parameters.internalColorFormat = GL_RGB;
-        parameters.internalRenderbufferFormat = GL_RGB8_OES;
     }
 
     // Unused when CHROMIUM_image is being used.
@@ -357,12 +359,10 @@ DrawingBuffer::TextureParameters DrawingBuffer::defaultTextureParameters()
         parameters.internalColorFormat = GL_RGBA;
         parameters.creationInternalColorFormat = GL_RGBA;
         parameters.colorFormat = GL_RGBA;
-        parameters.internalRenderbufferFormat = GL_RGBA8_OES;
     } else {
         parameters.internalColorFormat = GL_RGB;
         parameters.creationInternalColorFormat = GL_RGB;
         parameters.colorFormat = GL_RGB;
-        parameters.internalRenderbufferFormat = GL_RGB8_OES;
     }
     return parameters;
 }
@@ -588,12 +588,6 @@ void DrawingBuffer::beginDestruction()
     if (m_multisampleRenderbuffer)
         m_gl->DeleteRenderbuffers(1, &m_multisampleRenderbuffer);
 
-    if (m_intermediateFBO)
-        m_gl->DeleteFramebuffers(1, &m_intermediateFBO);
-
-    if (m_intermediateRenderbuffer)
-        m_gl->DeleteRenderbuffers(1, &m_intermediateRenderbuffer);
-
     if (m_depthStencilBuffer)
         m_gl->DeleteRenderbuffers(1, &m_depthStencilBuffer);
 
@@ -632,27 +626,13 @@ bool DrawingBuffer::resizeMultisampleFramebuffer(const IntSize& size)
     DCHECK(wantExplicitResolve());
     m_gl->BindFramebuffer(GL_FRAMEBUFFER, m_multisampleFBO);
     m_gl->BindRenderbuffer(GL_RENDERBUFFER, m_multisampleRenderbuffer);
-    m_gl->RenderbufferStorageMultisampleCHROMIUM(GL_RENDERBUFFER, m_sampleCount, m_colorBuffer.parameters.internalRenderbufferFormat, size.width(), size.height());
+    m_gl->RenderbufferStorageMultisampleCHROMIUM(GL_RENDERBUFFER, m_sampleCount, getMultisampledRenderbufferFormat(), size.width(), size.height());
 
     if (m_gl->GetError() == GL_OUT_OF_MEMORY)
         return false;
 
     m_gl->FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, m_multisampleRenderbuffer);
 
-    if (m_intermediateFBO) {
-        m_gl->BindFramebuffer(GL_FRAMEBUFFER, m_intermediateFBO);
-        m_gl->BindRenderbuffer(GL_RENDERBUFFER, m_intermediateRenderbuffer);
-        m_gl->RenderbufferStorage(GL_RENDERBUFFER, m_colorBuffer.parameters.internalRenderbufferFormat, size.width(), size.height());
-
-        if (m_gl->GetError() == GL_OUT_OF_MEMORY)
-            return false;
-
-        m_gl->FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, m_intermediateRenderbuffer);
-        if (m_gl->CheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-            return false;
-
-        m_gl->BindFramebuffer(GL_FRAMEBUFFER, m_multisampleFBO);
-    }
     return true;
 }
 
@@ -760,8 +740,8 @@ bool DrawingBuffer::reset(const IntSize& newSize)
     }
 
     m_gl->Disable(GL_SCISSOR_TEST);
-    m_gl->ClearColor(0, 0, 0, 0);
-    m_gl->ColorMask(true, true, true, !requiresAlphaChannelToBePreserved());
+    m_gl->ClearColor(0, 0, 0, defaultBufferRequiresAlphaChannelToBePreserved() ? 1 : 0);
+    m_gl->ColorMask(true, true, true, true);
 
     GLbitfield clearMask = GL_COLOR_BUFFER_BIT;
     if (!!m_depthStencilBuffer) {
@@ -793,34 +773,20 @@ void DrawingBuffer::commit()
         // Use NEAREST, because there is no scale performed during the blit.
         GLuint filter = GL_NEAREST;
 
-        // If the destination has a different color format than the source, then
-        // first resolve to an intermediary renderbuffer with the same color
-        // format.
-        // If this extra blit proves to be a performance problem, it can be
-        // bypassed on most GPUs by performing client side GL_RGBA emulation on
-        // the source renderbuffer.
-        // https://bugs.chromium.org/p/chromium/issues/detail?id=595948#c30
-        if (m_colorBuffer.parameters.internalColorFormat == GL_RGBA && m_colorBuffer.parameters.internalRenderbufferFormat == GL_RGB8_OES) {
-            if (!m_intermediateFBO) {
-                DCHECK(!m_intermediateRenderbuffer);
-                m_gl->GenRenderbuffers(1, &m_intermediateRenderbuffer);
-                m_gl->BindRenderbuffer(GL_RENDERBUFFER, m_intermediateRenderbuffer);
-                m_gl->RenderbufferStorage(GL_RENDERBUFFER, GL_RGB8, width, height);
-
-                m_gl->GenFramebuffers(1, &m_intermediateFBO);
-                m_gl->BindFramebuffer(GL_DRAW_FRAMEBUFFER_ANGLE, m_intermediateFBO);
-                m_gl->FramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER_ANGLE, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, m_intermediateRenderbuffer);
-                m_gl->BindRenderbuffer(GL_RENDERBUFFER, m_renderbufferBinding);
-            }
-
-            m_gl->BindFramebuffer(GL_DRAW_FRAMEBUFFER_ANGLE, m_intermediateFBO);
-            m_gl->BlitFramebufferCHROMIUM(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, filter);
-
-            m_gl->BindFramebuffer(GL_READ_FRAMEBUFFER_ANGLE, m_intermediateFBO);
-            m_gl->BindFramebuffer(GL_DRAW_FRAMEBUFFER_ANGLE, m_fbo);
-        }
-
         m_gl->BlitFramebufferCHROMIUM(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, filter);
+
+        // On old AMD GPUs on OS X, glColorMask doesn't work correctly for
+        // multisampled renderbuffers and the alpha channel can be overwritten.
+        // Clear the alpha channel of |m_fbo|.
+        if (defaultBufferRequiresAlphaChannelToBePreserved()
+            && contextProvider()->getCapabilities().disable_webgl_multisampling_color_mask_usage) {
+            m_gl->ClearColor(0, 0, 0, 1);
+            m_gl->ColorMask(false, false, false, true);
+            m_gl->Clear(GL_COLOR_BUFFER_BIT);
+
+            m_gl->ClearColor(m_clearColor[0], m_clearColor[1], m_clearColor[2], m_clearColor[3]);
+            m_gl->ColorMask(m_colorMask[0], m_colorMask[1], m_colorMask[2], m_colorMask[3]);
+        }
 
         if (m_scissorEnabled)
             m_gl->Enable(GL_SCISSOR_TEST);
@@ -1076,6 +1042,16 @@ bool DrawingBuffer::wantExplicitResolve()
 bool DrawingBuffer::wantDepthOrStencil()
 {
     return m_wantDepth || m_wantStencil;
+}
+
+GLenum DrawingBuffer::getMultisampledRenderbufferFormat()
+{
+    DCHECK(wantExplicitResolve());
+    if (m_wantAlphaChannel)
+        return GL_RGBA8_OES;
+    if (m_colorBuffer.imageId && contextProvider()->getCapabilities().chromium_image_rgb_emulation)
+        return GL_RGBA8_OES;
+    return GL_RGB8_OES;
 }
 
 void DrawingBuffer::restoreTextureBindings()
