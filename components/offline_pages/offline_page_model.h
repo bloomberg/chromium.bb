@@ -232,8 +232,8 @@ class OfflinePageModel : public KeyedService, public base::SupportsUserData {
   const OfflinePageItem* MaybeGetPageByOfflineURL(
       const GURL& offline_url) const;
 
-  // Returns the offline pages that are stored under |offline_url|.
-  void GetPagesByOnlineURL(const GURL& offline_url,
+  // Returns the offline pages that are stored under |online_url|.
+  void GetPagesByOnlineURL(const GURL& online_url,
                            const MultipleOfflinePageItemCallback& callback);
 
   // Returns an offline page saved for |online_url|. A nullptr is returned if
