@@ -38,7 +38,12 @@ public class DataUseSnackbarController implements SnackbarManager.SnackbarContro
         mContext = context;
     }
 
+    /**
+     * Shows the data use tracking started snackbar. This should be called only after checking if
+     * the UI elements are not disabled to be shown.
+     */
     public void showDataUseTrackingStartedBar() {
+        assert DataUseTabUIManager.shouldShowDataUseStartedUI();
         mSnackbarManager.showSnackbar(
                 Snackbar.make(DataUseTabUIManager.getDataUseUIString(
                                       DataUseUIMessage.DATA_USE_TRACKING_STARTED_SNACKBAR_MESSAGE),
@@ -49,7 +54,13 @@ public class DataUseSnackbarController implements SnackbarManager.SnackbarContro
         DataUseTabUIManager.recordDataUseUIAction(DataUsageUIAction.STARTED_SNACKBAR_SHOWN);
     }
 
+    /**
+     * Shows the data use tracking ended snackbar. This should be called only after checking if the
+     * UI elements are not disabled to be shown.
+     */
     public void showDataUseTrackingEndedBar() {
+        assert DataUseTabUIManager.shouldShowDataUseEndedUI();
+        assert DataUseTabUIManager.shouldShowDataUseEndedSnackbar(mContext);
         mSnackbarManager.showSnackbar(
                 Snackbar.make(DataUseTabUIManager.getDataUseUIString(
                                       DataUseUIMessage.DATA_USE_TRACKING_ENDED_SNACKBAR_MESSAGE),

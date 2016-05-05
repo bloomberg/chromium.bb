@@ -503,9 +503,11 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         mTabModelSelectorTabObserver = new TabModelSelectorTabObserver(tabModelSelector) {
             @Override
             public void didFirstVisuallyNonEmptyPaint(Tab tab) {
-                if (DataUseTabUIManager.checkAndResetDataUseTrackingStarted(tab)) {
+                if (DataUseTabUIManager.checkAndResetDataUseTrackingStarted(tab)
+                        && DataUseTabUIManager.shouldShowDataUseStartedUI()) {
                     mDataUseSnackbarController.showDataUseTrackingStartedBar();
-                } else if (DataUseTabUIManager.shouldShowDataUseEndedSnackbar(
+                } else if (DataUseTabUIManager.shouldShowDataUseEndedUI()
+                        && DataUseTabUIManager.shouldShowDataUseEndedSnackbar(
                                    getApplicationContext())
                         && DataUseTabUIManager.checkAndResetDataUseTrackingEnded(tab)) {
                     mDataUseSnackbarController.showDataUseTrackingEndedBar();

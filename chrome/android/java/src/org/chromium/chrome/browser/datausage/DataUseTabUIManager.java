@@ -34,12 +34,25 @@ public class DataUseTabUIManager {
     private static final String FIELD_TRIAL_NAME = "ExternalDataUseObserver";
 
     /**
+     * Data use started UI snackbar will not be shown if {@link DISABLE_DATA_USE_STARTED_UI_PARAM}
+     * fieldtrial parameter is set to {@value DISABLE_DATA_USE_UI_PARAM_VALUE}.
+     */
+    private static final String DISABLE_DATA_USE_STARTED_UI_PARAM = "disable_data_use_started_ui";
+
+    /**
+     * Data use ended UI snackbar/dialog will not be shown if {@link
+     * DISABLE_DATA_USE_ENDED_UI_PARAM} fieldtrial parameter is set to
+     * {@value DISABLE_DATA_USE_UI_PARAM_VALUE}.
+     */
+    private static final String DISABLE_DATA_USE_ENDED_UI_PARAM = "disable_data_use_ended_ui";
+
+    /**
      * Data use ended dialog will not be shown if {@link DISABLE_DATA_USE_ENDED_DIALOG_PARAM}
-     * fieldtrial parameter is set to {@value DISABLE_DATA_USE_ENDED_DIALOG_PARAM_VALUE}.
+     * fieldtrial parameter is set to {@value DISABLE_DATA_USE_UI_PARAM_VALUE}.
      */
     private static final String DISABLE_DATA_USE_ENDED_DIALOG_PARAM =
             "disable_data_use_ended_dialog";
-    private static final String DISABLE_DATA_USE_ENDED_DIALOG_PARAM_VALUE = "true";
+    private static final String DISABLE_DATA_USE_UI_PARAM_VALUE = "true";
 
     /**
      * Represents the possible user actions with the data use snackbars and dialog. This must
@@ -136,7 +149,7 @@ public class DataUseTabUIManager {
     public static boolean shouldOverrideUrlLoading(Activity activity,
             final Tab tab, final String url, final int pageTransitionType,
             final String referrerUrl) {
-        if (!shouldShowDataUseEndedSnackbar(activity)
+        if (shouldShowDataUseEndedUI() && !shouldShowDataUseEndedSnackbar(activity)
                 && wouldDataUseTrackingEnd(tab, url, pageTransitionType)) {
             startDataUseDialog(activity, tab, url, pageTransitionType, referrerUrl);
             return true;
@@ -207,6 +220,24 @@ public class DataUseTabUIManager {
     }
 
     /**
+     * @return true if the data use tracking started UI (snackbar) should be shown.
+     */
+    public static boolean shouldShowDataUseStartedUI() {
+        return !DISABLE_DATA_USE_UI_PARAM_VALUE.equals(
+                VariationsAssociatedData.getVariationParamValue(
+                        FIELD_TRIAL_NAME, DISABLE_DATA_USE_STARTED_UI_PARAM));
+    }
+
+    /**
+     * @return true if the data use tracking ended UI (snackbar or interstitial) should be shown.
+     */
+    public static boolean shouldShowDataUseEndedUI() {
+        return !DISABLE_DATA_USE_UI_PARAM_VALUE.equals(
+                VariationsAssociatedData.getVariationParamValue(
+                        FIELD_TRIAL_NAME, DISABLE_DATA_USE_ENDED_UI_PARAM));
+    }
+
+    /**
      * Returns true if the data use ended snackbar should be shown instead of the dialog. The
      * snackbar will be shown if the user has opted out of seeing the data use ended dialog or if
      * the dialog is diabled by the fieldtrial.
@@ -215,9 +246,10 @@ public class DataUseTabUIManager {
      * @return true If the data use ended snackbar should be shown.
      */
     public static boolean shouldShowDataUseEndedSnackbar(Context context) {
+        assert shouldShowDataUseEndedUI();
         return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(
                        SHARED_PREF_DATA_USE_DIALOG_OPT_OUT, false)
-                || DISABLE_DATA_USE_ENDED_DIALOG_PARAM_VALUE.equals(
+                || DISABLE_DATA_USE_UI_PARAM_VALUE.equals(
                            VariationsAssociatedData.getVariationParamValue(
                                    FIELD_TRIAL_NAME, DISABLE_DATA_USE_ENDED_DIALOG_PARAM));
     }
