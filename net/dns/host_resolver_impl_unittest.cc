@@ -244,6 +244,13 @@ class Request {
     return resolver_->ResolveFromCache(info_, &list_, BoundNetLog());
   }
 
+  void ChangePriority(RequestPriority priority) {
+    DCHECK(resolver_);
+    DCHECK(handle_);
+    resolver_->ChangeRequestPriority(handle_, priority);
+    priority_ = priority;
+  }
+
   void Cancel() {
     DCHECK(resolver_);
     DCHECK(handle_);
@@ -1189,6 +1196,41 @@ TEST_F(HostResolverImplTest, HigherPriorityRequestsStartedFirst) {
   EXPECT_EQ("req2", capture_list[4].hostname);
   EXPECT_EQ("req3", capture_list[5].hostname);
   EXPECT_EQ("req6", capture_list[6].hostname);
+}
+
+// Test that changing a job's priority affects the dequeueing order.
+TEST_F(HostResolverImplTest, ChangePriority) {
+  CreateSerialResolver();
+
+  CreateRequest("req0", 80, MEDIUM);
+  CreateRequest("req1", 80, LOW);
+  CreateRequest("req2", 80, LOWEST);
+
+  ASSERT_EQ(3u, requests_.size());
+
+  // req0 starts immediately; without ChangePriority, req1 and then req2 should
+  // run.
+  EXPECT_EQ(ERR_IO_PENDING, requests_[0]->Resolve());
+  EXPECT_EQ(ERR_IO_PENDING, requests_[1]->Resolve());
+  EXPECT_EQ(ERR_IO_PENDING, requests_[2]->Resolve());
+
+  // Changing req2 to HIGH should make it run before req1.
+  // (It can't run before req0, since req0 started immediately.)
+  requests_[2]->ChangePriority(HIGHEST);
+
+  // Let all 3 requests finish.
+  proc_->SignalMultiple(3u);
+
+  EXPECT_EQ(OK, requests_[0]->WaitForResult());
+  EXPECT_EQ(OK, requests_[1]->WaitForResult());
+  EXPECT_EQ(OK, requests_[2]->WaitForResult());
+
+  MockHostResolverProc::CaptureList capture_list = proc_->GetCaptureList();
+  ASSERT_EQ(3u, capture_list.size());
+
+  EXPECT_EQ("req0", capture_list[0].hostname);
+  EXPECT_EQ("req2", capture_list[1].hostname);
+  EXPECT_EQ("req1", capture_list[2].hostname);
 }
 
 // Try cancelling a job which has not started yet.

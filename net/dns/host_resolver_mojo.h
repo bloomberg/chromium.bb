@@ -32,6 +32,7 @@ class HostResolverMojo : public HostResolver {
   ~HostResolverMojo() override;
 
   // HostResolver overrides.
+  // Note: |Resolve()| currently ignores |priority|.
   int Resolve(const RequestInfo& info,
               RequestPriority priority,
               AddressList* addresses,
@@ -41,6 +42,8 @@ class HostResolverMojo : public HostResolver {
   int ResolveFromCache(const RequestInfo& info,
                        AddressList* addresses,
                        const BoundNetLog& source_net_log) override;
+  void ChangeRequestPriority(RequestHandle req,
+                             RequestPriority priority) override;
   void CancelRequest(RequestHandle req) override;
   HostCache* GetHostCache() override;
 

@@ -92,6 +92,11 @@ int HostResolverMojo::ResolveFromCache(const RequestInfo& info,
   return ResolveFromCacheInternal(info, CacheKeyForRequest(info), addresses);
 }
 
+void HostResolverMojo::ChangeRequestPriority(RequestHandle req,
+                                             RequestPriority priority) {
+  // Do nothing, since Resolve() discarded the priority anyway.
+}
+
 void HostResolverMojo::CancelRequest(RequestHandle req) {
   DCHECK(thread_checker_.CalledOnValidThread());
   // Deleting the Job closes the HostResolverRequestClient connection,
