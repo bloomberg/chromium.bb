@@ -10,6 +10,8 @@ if (is_android) {
 static_library("background_offliner") {
   sources = [
     "offliner.h",
+    "offliner_factory.h",
+    "offliner_policy.h",
     "request_coordinator.cc",
     "request_coordinator.h",
     "request_queue.cc",
@@ -24,6 +26,7 @@ static_library("background_offliner") {
 
   deps = [
     "//base",
+    "//components/keyed_service/core",
     "//components/offline_pages:offline_pages",
     "//net",
     "//url",

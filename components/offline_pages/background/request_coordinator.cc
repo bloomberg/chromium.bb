@@ -4,18 +4,24 @@
 
 #include "components/offline_pages/background/request_coordinator.h"
 
+#include <utility>
+
+#include "components/offline_pages/background/offliner_factory.h"
+#include "components/offline_pages/background/offliner_policy.h"
 #include "components/offline_pages/background/save_page_request.h"
 
 namespace offline_pages {
 
-// TODO(dougarnett): How to inject Offliner factories and policy objects.
-RequestCoordinator::RequestCoordinator() {
+RequestCoordinator::RequestCoordinator(
+    std::unique_ptr<OfflinerPolicy> policy,
+    std::unique_ptr<OfflinerFactory> factory) {
   // Do setup as needed.
+  // TODO(petewil): Assert policy not null.
+  policy_ = std::move(policy);
+  factory_ = std::move(factory);
 }
 
-RequestCoordinator::~RequestCoordinator() {
-  // Do cleanup as needed.
-}
+RequestCoordinator::~RequestCoordinator() {}
 
 bool RequestCoordinator::SavePageLater(const SavePageRequest& request) {
   return true;

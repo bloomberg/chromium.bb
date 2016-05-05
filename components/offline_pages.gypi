@@ -48,9 +48,12 @@
         '../base/base.gyp:base',
         '../net/net.gyp:net',
         '../url/url.gyp:url_lib',
+        'keyed_service_core',
       ],
       'sources': [
         'offline_pages/background/offliner.h',
+        'offline_pages/background/offliner_factory.h',
+        'offline_pages/background/offliner_policy.h',
         'offline_pages/background/request_coordinator.cc',
         'offline_pages/background/request_coordinator.h',
         'offline_pages/background/request_queue.cc',

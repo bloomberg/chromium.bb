@@ -17,12 +17,15 @@ class WebContents;
 
 namespace offline_pages {
 
+class OfflinerPolicy;
+
 // An Offliner implementation that attempts client-side rendering and saving
 // of an offline page. It uses the PrerenderingLoader to load the page and
 // the OfflinePageModel to save it.
 class PrerenderingOffliner : public Offliner {
  public:
-  PrerenderingOffliner(PrerenderManager* prerender_manager,
+  PrerenderingOffliner(const OfflinerPolicy* policy,
+                       PrerenderManager* prerender_manager,
                        OfflinePageModel* offline_page_model);
   ~PrerenderingOffliner() override;
 

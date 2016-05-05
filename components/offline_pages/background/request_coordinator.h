@@ -5,22 +5,29 @@
 #ifndef COMPONENTS_OFFLINE_PAGES_BACKGROUND_REQUEST_COORDINATOR_H_
 #define COMPONENTS_OFFLINE_PAGES_BACKGROUND_REQUEST_COORDINATOR_H_
 
+#include <memory>
+
 #include "base/callback.h"
+#include "base/macros.h"
+#include "components/keyed_service/core/keyed_service.h"
 
 namespace offline_pages {
 
+class OfflinerPolicy;
+class OfflinerFactory;
+class Offliner;
 class SavePageRequest;
 
 // Coordinates queueing and processing save page later requests.
-class RequestCoordinator {
+class RequestCoordinator : public KeyedService {
  public:
   // Callback to report when the processing of a triggered task is complete.
   typedef base::Callback<void()> ProcessingDoneCallback;
 
-  // TODO(dougarnett): How to inject Offliner factories and policy objects.
-  RequestCoordinator();
+  RequestCoordinator(std::unique_ptr<OfflinerPolicy> policy,
+                     std::unique_ptr<OfflinerFactory> factory);
 
-  ~RequestCoordinator();
+  ~RequestCoordinator() override;
 
   // Queues |request| to later load and save when system conditions allow.
   // Returns true if the page could be queued successfully.
@@ -37,7 +44,13 @@ class RequestCoordinator {
   // is stopped or complete.
   void StopProcessing();
 
-  // TODO(dougarnett): add policy support methods.
+ private:
+  // RequestCoordinator takes over ownership of the policy
+  std::unique_ptr<OfflinerPolicy> policy_;
+  // Factory is owned by the RequestCoordinator.
+  std::unique_ptr<OfflinerFactory> factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(RequestCoordinator);
 };
 
 }  // namespace offline_pages

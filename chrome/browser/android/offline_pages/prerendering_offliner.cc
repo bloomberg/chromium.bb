@@ -6,7 +6,8 @@
 
 namespace offline_pages {
 
-PrerenderingOffliner::PrerenderingOffliner(PrerenderManager* prerender_manager,
+PrerenderingOffliner::PrerenderingOffliner(const OfflinerPolicy* policy,
+                                           PrerenderManager* prerender_manager,
                                            OfflinePageModel* offline_page_model)
     : loader_(new PrerenderingLoader(prerender_manager)) {}
 
