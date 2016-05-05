@@ -32,6 +32,9 @@ class InterstitialUITest : public InProcessBrowserTest {
   }
 };
 
+// The following test is disabled due to flakiness:
+// https://crbug.com/405869,
+// https://crbug.com/400503.
 IN_PROC_BROWSER_TEST_F(InterstitialUITest, DISABLED_OpenInterstitial) {
   TestInterstitial(
       GURL("chrome://interstitials"),

@@ -218,7 +218,7 @@ safe_browsing::SafeBrowsingBlockingPage* CreateSafeBrowsingBlockingPage(
   resource.threat_type = threat_type;
   resource.render_process_host_id =
       web_contents->GetRenderProcessHost()->GetID();
-  resource.render_frame_id = web_contents->GetFocusedFrame()->GetRoutingID();
+  resource.render_frame_id = web_contents->GetMainFrame()->GetRoutingID();
   resource.threat_source = safe_browsing::ThreatSource::LOCAL_PVER3;
 
   // Normally safebrowsing interstitial types which block the main page load
