@@ -4,6 +4,7 @@
 
 #include "content/shell/browser/layout_test/secondary_test_window_observer.h"
 
+#include "content/public/browser/render_frame_host.h"
 #include "content/shell/browser/layout_test/blink_test_controller.h"
 #include "content/shell/common/shell_messages.h"
 
@@ -13,7 +14,17 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(SecondaryTestWindowObserver);
 
 SecondaryTestWindowObserver::SecondaryTestWindowObserver(
     WebContents* web_contents)
-    : WebContentsObserver(web_contents) {}
+    : WebContentsObserver(web_contents) {
+  BlinkTestController* blink_test_controller = BlinkTestController::Get();
+  DCHECK(!blink_test_controller->IsMainWindow(web_contents));
+
+  // Ensure that any preexisting frames (likely just the main frame) are handled
+  // as well.
+  for (RenderFrameHost* frame : web_contents->GetAllFrames()) {
+    if (frame->IsRenderFrameLive())
+      blink_test_controller->HandleNewRenderFrameHost(frame);
+  }
+}
 
 SecondaryTestWindowObserver::~SecondaryTestWindowObserver() {}
 

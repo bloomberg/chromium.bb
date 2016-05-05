@@ -4,19 +4,6 @@
 # https://crbug.com/582494 - [sigsegv / av] blink::Document::styleEngine.
 http/tests/security/mixedContent/insecure-plugin-in-iframe.html [ Crash ]
 
-# https://crbug.com/584984 - Check failed: bindings_ == kInvalidBindings || bindings_ == bindings
-http/tests/inspector-enabled/console-log-before-frame-navigation.html [ Crash ]
-http/tests/inspector/change-iframe-src.html [ Crash ]
-http/tests/navigation/cross-origin-fragment-navigation-is-async.html [ Crash Failure ]
-http/tests/security/frameNavigation/xss-ALLOWED-targeted-subframe-navigation-change.html [ Crash Timeout ]
-http/tests/security/xssAuditor/anchor-url-dom-write-location-inline-event-null-char.html [ Crash Timeout ]
-http/tests/security/xssAuditor/anchor-url-dom-write-location-inline-event.html [ Crash ]
-http/tests/security/xssAuditor/dom-write-location-inline-event.html [ Crash ]
-http/tests/serviceworker/windowclient-navigate.html [ Crash ]
-
-# Uninvestigated timeouts (possibly variants of https://crbug.com/584984)
-http/tests/history/cross-origin-redirect-on-back.html [ Timeout Crash ]
-
 # https://crbug.com/582245 - no exception, b/c BindingSecurity::shouldAllowAccessTo exits early when |!target|.
 http/tests/security/xss-DENIED-getSVGDocument-iframe.html [ Failure ]
 http/tests/security/xss-DENIED-getSVGDocument-object.html [ Failure ]
@@ -60,10 +47,8 @@ http/tests/security/mixedContent/insecure-iframe-in-main-frame-allowed.html [ Fa
 http/tests/misc/resource-timing-iframe-restored-from-history.html [ Failure Timeout ]
 
 # https://crbug.com/585194 - back/forward lists look different with --site-per-process
-http/tests/history/push-state-in-grandchild-after-reload.html [ Failure ]
 http/tests/navigation/back-to-dynamic-iframe.html [ Failure Timeout ]
 http/tests/navigation/back-to-redirect-with-frame.php [ Failure ]
-http/tests/navigation/success200-frames-loadsame.html [ Failure ]
 
 # https://crbug.com/585188 - testRunner.addOriginAccessWhitelistEntry is not replicated to OOPIFs.
 http/tests/xmlhttprequest/origin-whitelisting-all.html [ Failure ]
@@ -96,9 +81,11 @@ http/tests/security/frameNavigation/not-opener.html [ Timeout ]
 http/tests/security/frameNavigation/xss-DENIED-targeted-link-navigation.html [ Timeout ]
 http/tests/security/referrer-policy-redirect-link.html [ Timeout ]
 # Uninvestigated failures under http/tests (but outside of http/tests/security):
+http/tests/history/cross-origin-redirect-on-back.html [ Timeout ]
 http/tests/inspector-protocol/request-mixed-content-status-blockable.html [ Timeout ]
 http/tests/inspector-protocol/request-mixed-content-status-none.html [ Timeout ]
 http/tests/inspector-protocol/request-mixed-content-status-optionally-blockable.html [ Timeout ]
+http/tests/inspector/change-iframe-src.html [ Timeout ]
 http/tests/inspector/console-cross-origin-iframe-logging.html [ Timeout ]
 http/tests/inspector/extensions-headers.html [ Timeout ]
 http/tests/inspector/extensions-iframe-eval.html [ Timeout ]
@@ -109,6 +96,5 @@ http/tests/inspector/indexeddb/resources-panel.html [ Timeout ]
 http/tests/inspector/inspect-iframe-from-different-domain.html [ Timeout ]
 http/tests/intersection-observer/iframe-cross-origin.html [ Timeout ]
 http/tests/local/drag-over-remote-content.html [ Crash Timeout ]
-http/tests/navigation/redirect-on-back-updates-history-item.html [ Timeout ]
-http/tests/navigation/redirect-on-reload-updates-history-item.html [ Timeout ]
+http/tests/navigation/cross-origin-fragment-navigation-is-async.html [ Failure ]
 http/tests/serviceworker/http-to-https-redirect-and-register.html [ Timeout ]

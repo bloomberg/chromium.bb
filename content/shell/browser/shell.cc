@@ -24,7 +24,6 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/webrtc_ip_handling_policy.h"
@@ -456,12 +455,6 @@ gfx::Size Shell::GetShellDefaultSize() {
       kDefaultTestWindowWidthDip, kDefaultTestWindowHeightDip);
   }
   return default_shell_size;
-}
-
-void Shell::RenderViewCreated(RenderViewHost* render_view_host) {
-  // All RenderViewHosts in layout tests should get Mojo bindings.
-  if (switches::IsRunLayoutTestSwitchPresent())
-    render_view_host->AllowBindings(BINDINGS_POLICY_MOJO);
 }
 
 void Shell::TitleWasSet(NavigationEntry* entry, bool explicit_set) {

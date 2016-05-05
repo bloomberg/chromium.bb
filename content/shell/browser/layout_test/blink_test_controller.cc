@@ -37,6 +37,7 @@
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/shell/browser/layout_test/layout_test_bluetooth_chooser_factory.h"
@@ -577,6 +578,11 @@ void BlinkTestController::DiscardMainWindow() {
 }
 
 void BlinkTestController::HandleNewRenderFrameHost(RenderFrameHost* frame) {
+  // All RenderViewHosts in layout tests should get Mojo bindings.
+  RenderViewHost* rvh = frame->GetRenderViewHost();
+  if (!(rvh->GetEnabledBindings() & BINDINGS_POLICY_MOJO))
+    rvh->AllowBindings(BINDINGS_POLICY_MOJO);
+
   RenderProcessHost* process = frame->GetProcess();
   bool main_window =
       WebContents::FromRenderFrameHost(frame) == main_window_->web_contents();
