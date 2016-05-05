@@ -326,7 +326,8 @@ def main():
   running_as_hook = '--running-as-hook'
   if (running_as_hook in args and
       os.environ.get('GYP_CHROMIUM_NO_ACTION', None) != '0' and
-      (sys.platform.startswith('linux') and not gyp_vars_dict)):
+      ((sys.platform.startswith('linux') and not gyp_vars_dict)) or
+       (gyp_vars_dict.get('OS') == 'android')):
     print 'GYP is now disabled in this configuration by default in runhooks.\n'
     print 'If you really want to run this, either run '
     print '`python build/gyp_chromium.py` explicitly by hand'
