@@ -878,6 +878,16 @@ void ContentSettingsHandler::UpdateSettingDefaultFromModel(
 
   web_ui()->CallJavascriptFunction(
       "ContentSettings.setContentFilterSettingsValue", filter_settings);
+
+  // We assume that special cases covered above to get |provider_id| are not
+  // needed in AreUserExceptionsAllowedForType().
+  bool maybe_enable_exceptions =
+      GetContentSettingsMap()->AreUserExceptionsAllowedForType(type);
+
+  web_ui()->CallJavascriptFunction(
+      "ContentSettings.setUserExceptionsAllowed",
+      base::StringValue(ContentSettingsTypeToGroupName(type)),
+      base::FundamentalValue(maybe_enable_exceptions));
 }
 
 void ContentSettingsHandler::UpdateMediaSettingsFromPrefs(
@@ -963,8 +973,7 @@ void ContentSettingsHandler::UpdateGeolocationExceptionsView() {
     // Don't add default settings.
     if (i->primary_pattern == ContentSettingsPattern::Wildcard() &&
         i->secondary_pattern == ContentSettingsPattern::Wildcard() &&
-        i
-          ->source != site_settings::kPreferencesSource) {
+        i->source != site_settings::kPreferencesSource) {
       continue;
     }
     all_patterns_settings[std::make_pair(i->primary_pattern, i->source)]
@@ -1475,6 +1484,12 @@ void ContentSettingsHandler::RemoveException(const base::ListValue* args) {
   std::string type_string;
   CHECK(args->GetString(0, &type_string));
 
+  ContentSettingsType type = ContentSettingsTypeFromGroupName(type_string);
+
+  // If user exceptions are disabled for |type|, don't remove.
+  if (!GetContentSettingsMap()->AreUserExceptionsAllowedForType(type))
+    return;
+
   // Zoom levels are no actual content type so we need to handle them
   // separately. They would not be recognized by
   // ContentSettingsTypeFromGroupName.
@@ -1490,7 +1505,6 @@ void ContentSettingsHandler::RemoveException(const base::ListValue* args) {
     return;
   }
 
-  ContentSettingsType type = ContentSettingsTypeFromGroupName(type_string);
   RemoveExceptionFromHostContentSettingsMap(args, type);
 
   WebSiteSettingsUmaUtil::LogPermissionChange(
@@ -1514,6 +1528,10 @@ void ContentSettingsHandler::SetException(const base::ListValue* args) {
       type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA) {
     NOTREACHED();
   } else {
+    // If user exceptions are disabled for |type|, don't set.
+    if (!GetContentSettingsMap()->AreUserExceptionsAllowedForType(type))
+      return;
+
     HostContentSettingsMap* settings_map =
         mode == "normal" ? GetContentSettingsMap() :
                            GetOTRContentSettingsMap();

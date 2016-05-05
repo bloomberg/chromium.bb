@@ -478,6 +478,12 @@ cr.define('options.contentSettings', function() {
     __proto__: InlineEditableItemList.prototype,
 
     /**
+     * True if user may set preference exceptions.
+     * @private {boolean}
+     */
+    allowEdit_: true,
+
+    /**
      * Called when an element is decorated as a list.
      */
     decorate: function() {
@@ -520,6 +526,40 @@ cr.define('options.contentSettings', function() {
     },
 
     /**
+     * Updates visibility of each row, depending on content.
+     */
+    updateRowVisibility: function() {
+      // Rows with user exceptions are visible iff this.isEditable().
+      // All other rows are visible.
+      var isEditable = this.isEditable();
+      for (var index = 0; index < this.dataModel.length; ++index) {
+        var item = this.getListItemByIndex(index);
+        if (item.dataItem.source == 'preference')
+          item.hidden = !isEditable;
+      }
+    },
+
+    /**
+     * Sets whether user is allowed to set preference exceptions. Updates UI.
+     *
+     * @param {boolean} allowEdit New value for this.allowEdit_.
+     */
+    setAllowEdit: function(allowEdit) {
+      var oldIsEditable = this.isEditable();
+      this.allowEdit_ = allowEdit;
+      var newIsEditable = this.isEditable();
+
+      // If visibility changed, add or remove the Add New Exception row.
+      if (oldIsEditable != newIsEditable) {
+        if (newIsEditable)
+          this.dataModel.push(null);
+        else
+          this.dataModel.pop();
+        this.updateRowVisibility();
+      }
+    },
+
+    /**
      * Sets the exceptions in the js model.
      *
      * @param {Array<options.Exception>} entries A list of dictionaries of
@@ -536,6 +576,7 @@ cr.define('options.contentSettings', function() {
       var args = [0, deleteCount];
       args.push.apply(args, entries);
       this.dataModel.splice.apply(this.dataModel, args);
+      this.updateRowVisibility();
     },
 
     /**
@@ -562,14 +603,14 @@ cr.define('options.contentSettings', function() {
      * Returns whether the rows are editable in this list.
      */
     isEditable: function() {
-      // Exceptions of the following lists are not editable for now.
-      return isEditableType(this.contentType);
+      return this.allowEdit_ && isEditableType(this.contentType);
     },
 
     /**
      * Removes all exceptions from the js model.
      */
     reset: function() {
+      this.allowEdit_ = true;
       if (this.isEditable()) {
         // The null creates the Add New Exception row.
         this.dataModel = new ArrayDataModel([null]);

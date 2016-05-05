@@ -222,6 +222,17 @@ cr.define('cr.ui', function() {
     },
 
     /**
+     * Removes and returns the last item of the model.
+     *
+     * This dispatches a splice event.
+     *
+     * @return {*} The last item, or undefined if model has no more items.
+     */
+    pop: function() {
+      return this.splice(this.array_.length - 1, 1)[0];
+    },
+
+    /**
      * Updates the existing item with the new item.
      *
      * The existing item and the new item are regarded as the same item and the
