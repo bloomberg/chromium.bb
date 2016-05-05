@@ -987,7 +987,7 @@ class MetaBuildWrapper(object):
     cmdline = []
     extra_files = []
 
-    if android:
+    if android and test_type != "script":
       # TODO(jbudorick): This won't work with instrumentation test targets.
       # Revisit this logic when those are added to gn_isolate_map.pyl.
       cmdline = [self.PathJoin('bin', 'run_%s' % target_name)]

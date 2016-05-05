@@ -244,6 +244,39 @@ source_set("test_support") {
   }
 }
 
+# TODO(GYP): Delete this after we've converted everything to GN.
+# The _run targets exist only for compatibility w/ GYP.
+group("telemetry_gpu_test_run") {
+  testonly = true
+  deps = [
+    ":telemetry_gpu_test",
+  ]
+}
+
+group("telemetry_gpu_test") {
+  testonly = true
+  deps = [
+    "//tools/perf/chrome_telemetry_build:telemetry_chrome_test",
+  ]
+
+  data = [
+    # For isolate contract.
+    "//testing/scripts/common.py",
+    "//testing/xvfb.py",
+    "//testing/scripts/run_telemetry_benchmark_as_googletest.py",
+
+    "//content/test/gpu/",
+    "//content/test/data/gpu/",
+
+    # For GpuProcess.video
+    "//content/test/data/media/bear.ogv",
+
+    # For webgl_conformance
+    "//third_party/webgl/",
+    "//content/test/gpu/run_gpu_test.py",
+  ]
+}
+
 if (!is_android) {
   # GYP version: chrome/chrome_tests.gypi:test_support_ui
   source_set("test_support_ui") {
@@ -692,6 +725,7 @@ if (!is_android) {
   }
 
   group("telemetry_perf_unittests") {
+    testonly = true
     deps = [
       "//tools/perf:perf",
     ]
@@ -714,6 +748,7 @@ if (!is_android) {
   }
 
   group("telemetry_unittests") {
+    testonly = true
     deps = [
       "//tools/perf/chrome_telemetry_build:telemetry_chrome_test",
     ]
@@ -725,38 +760,6 @@ if (!is_android) {
       "//testing/scripts/common.py",
       "//testing/xvfb.py",
       "//testing/scripts/run_telemetry_as_googletest.py",
-    ]
-  }
-
-  # TODO(GYP): Delete this after we've converted everything to GN.
-  # The _run targets exist only for compatibility w/ GYP.
-  group("telemetry_gpu_test_run") {
-    testonly = true
-    deps = [
-      ":telemetry_gpu_test",
-    ]
-  }
-
-  group("telemetry_gpu_test") {
-    deps = [
-      "//tools/perf/chrome_telemetry_build:telemetry_chrome_test",
-    ]
-
-    data = [
-      # For isolate contract.
-      "//testing/scripts/common.py",
-      "//testing/xvfb.py",
-      "//testing/scripts/run_telemetry_benchmark_as_googletest.py",
-
-      "//content/test/gpu/",
-      "//content/test/data/gpu/",
-
-      # For GpuProcess.video
-      "//content/test/data/media/bear.ogv",
-
-      # For webgl_conformance
-      "//third_party/webgl/",
-      "//content/test/gpu/run_gpu_test.py",
     ]
   }
 

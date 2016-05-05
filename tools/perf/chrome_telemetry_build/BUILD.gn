@@ -24,12 +24,20 @@ if (is_win) {
 }
 
 group("telemetry_chrome_test") {
-  data_deps = [
-    # TODO(kbr): this used to be "//chrome". Had to change this to
-    # chrome_initial temporarily to work around crbug.com/536192.
-    "//chrome:chrome_initial",
-    "//third_party/catapult/telemetry:bitmaptools",
-  ]
+  testonly = true
+
+  if (is_android) {
+    data_deps = [
+      "//content/shell:content_shell",
+    ]
+  } else {
+    data_deps = [
+      # TODO(kbr): this used to be "//chrome". Had to change this to
+      # chrome_initial temporarily to work around crbug.com/536192.
+      "//chrome:chrome_initial",
+      "//third_party/catapult/telemetry:bitmaptools",
+    ]
+  }
 
   data = [
     "//tools/perf/chrome_telemetry_build/",
