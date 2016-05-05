@@ -254,7 +254,18 @@
         "test": "gl_tests"
       },
       {
-        "override_isolate_target": "gpu_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_os": "KTU84P",
+              "device_type": "hammerhead"
+            }
+          ]
+        },
+        "test": "gpu_ipc_service_unittests"
+      },
+      {
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -443,6 +454,9 @@
         "test": "gl_unittests"
       },
       {
+        "test": "gpu_ipc_service_unittests"
+      },
+      {
         "test": "gpu_unittests"
       },
       {
@@ -542,6 +556,9 @@
       },
       {
         "test": "gl_unittests"
+      },
+      {
+        "test": "gpu_ipc_service_unittests"
       },
       {
         "test": "gpu_unittests"
@@ -648,6 +665,9 @@
         "test": "gl_unittests"
       },
       {
+        "test": "gpu_ipc_service_unittests"
+      },
+      {
         "test": "gpu_unittests"
       },
       {
@@ -750,6 +770,9 @@
       },
       {
         "test": "gl_unittests"
+      },
+      {
+        "test": "gpu_ipc_service_unittests"
       },
       {
         "test": "gpu_unittests"
@@ -856,6 +879,9 @@
         "test": "gl_unittests"
       },
       {
+        "test": "gpu_ipc_service_unittests"
+      },
+      {
         "test": "gpu_unittests"
       },
       {
@@ -958,6 +984,9 @@
       },
       {
         "test": "gl_unittests"
+      },
+      {
+        "test": "gpu_ipc_service_unittests"
       },
       {
         "test": "gpu_unittests"
@@ -1070,6 +1099,9 @@
         "test": "gl_unittests"
       },
       {
+        "test": "gpu_ipc_service_unittests"
+      },
+      {
         "test": "gpu_unittests"
       },
       {
@@ -1172,6 +1204,9 @@
       },
       {
         "test": "gl_unittests"
+      },
+      {
+        "test": "gpu_ipc_service_unittests"
       },
       {
         "test": "gpu_unittests"

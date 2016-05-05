@@ -310,6 +310,10 @@
     "label": "//google_apis:google_apis_unittests",
     "type": "console_test_launcher",
   },
+  "gpu_ipc_service_unittests": {
+    "label": "//gpu/ipc/service:gpu_ipc_service_unittests",
+    "type": "windowed_test_launcher",
+  },
   "gpu_unittests": {
     "label": "//gpu:gpu_unittests",
     "type": "windowed_test_launcher",

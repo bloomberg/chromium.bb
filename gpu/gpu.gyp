@@ -959,6 +959,17 @@
           ],
         },
         {
+          'target_name': 'gpu_ipc_service_unittests_apk',
+          'type': 'none',
+          'dependencies': [
+            'gpu_ipc_service_unittests',
+          ],
+          'variables': {
+            'test_suite_name': 'gpu_ipc_service_unittests',
+          },
+          'includes': [ '../build/apk_test.gypi' ],
+        },
+        {
           'target_name': 'gpu_unittests_apk',
           'type': 'none',
           'dependencies': [
@@ -1036,6 +1047,19 @@
     }],
     ['test_isolation_mode != "noop"', {
       'targets': [
+        {
+          'target_name': 'gpu_ipc_service_unittests_run',
+          'type': 'none',
+          'dependencies': [
+            'gpu_ipc_service_unittests',
+          ],
+          'includes': [
+            '../build/isolate.gypi',
+          ],
+          'sources': [
+            'gpu_ipc_service_unittests.isolate',
+          ],
+        },
         {
           'target_name': 'gpu_unittests_run',
           'type': 'none',
@@ -1143,6 +1167,19 @@
             ],
             'sources': [
               'gl_tests_apk.isolate',
+            ],
+          },
+          {
+            'target_name': 'gpu_ipc_service_unittests_apk_run',
+            'type': 'none',
+            'dependencies': [
+              'gpu_ipc_service_unittests_apk',
+            ],
+            'includes': [
+              '../build/isolate.gypi',
+            ],
+            'sources': [
+              'gpu_ipc_service_unittests_apk.isolate',
             ],
           },
           {
