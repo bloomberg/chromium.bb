@@ -60,6 +60,29 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeA
         assertWaitForPageScaleFactorMatch(1);
         DOMUtils.waitForNonZeroNodeBounds(mWebContentsRef.get(), "buy");
         DOMUtils.clickNode(this, mViewCoreRef.get(), "buy");
+
+        waitForDialogToAllowUserInput();
+    }
+
+    /** Waits for the dialog to allow user input. */
+    protected void waitForDialogToAllowUserInput() throws InterruptedException {
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                PaymentRequestUI ui = PaymentRequestUI.getCurrentUIForTest();
+                if (ui == null) {
+                    updateFailureReason("Payment UI was not shown");
+                    return false;
+                }
+
+                if (!ui.isAcceptingUserInput()) {
+                    updateFailureReason("Dialog took too long to become clickable");
+                    return false;
+                }
+
+                return true;
+            }
+        });
     }
 
     protected void clickClosePaymentUIButton() throws InterruptedException {
@@ -78,6 +101,11 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeA
                 PaymentRequestUI ui = PaymentRequestUI.getCurrentUIForTest();
                 if (ui == null) {
                     updateFailureReason("Payment UI was not shown");
+                    return false;
+                }
+
+                if (!ui.isAcceptingUserInput()) {
+                    updateFailureReason("Dialog took too long to become clickable");
                     return false;
                 }
 

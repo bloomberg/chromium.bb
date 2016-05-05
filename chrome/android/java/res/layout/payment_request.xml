@@ -98,7 +98,7 @@
             android:id="@+id/buttonBar"
             android:layout_height="wrap_content"
             android:layout_width="match_parent"
-            android:layout_margin="@dimen/payments_section_large_spacing"
+            android:padding="@dimen/payments_section_large_spacing"
             android:background="@android:color/white" />
 
         <!-- Processing dialog. -->

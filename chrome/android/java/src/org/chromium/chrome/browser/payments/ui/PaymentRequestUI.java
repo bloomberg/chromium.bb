@@ -4,6 +4,12 @@
 
 package org.chromium.chrome.browser.payments.ui;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
+import android.animation.ValueAnimator.AnimatorUpdateListener;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
@@ -12,10 +18,12 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Handler;
+import android.support.v4.view.animation.LinearOutSlowInInterpolator;
 import android.text.TextUtils.TruncateAt;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnLayoutChangeListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.view.Window;
@@ -108,6 +116,9 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
      */
     private static final int SHOW_RESULT_DELAY_MS = 3000;
 
+    /** Length of the animation to either show the UI or expand it to full height. */
+    private static final int DIALOG_ENTER_ANIMATION_MS = 225;
+
     private static PaymentRequestUI sCurrentUIForTest;
 
     private final Context mContext;
@@ -147,6 +158,9 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     private SectionInformation mShippingAddressSectionInformation;
     private SectionInformation mShippingOptionsSectionInformation;
 
+    private AnimatorSet mCurrentAnimator;
+    private int mAnimatorTranslation;
+
     /**
      * Builds and shows the UI for PaymentRequest.
      *
@@ -182,6 +196,8 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         mClient = client;
         mDismissCallback = dismissCallback;
         mRequestShipping = requestShipping;
+        mAnimatorTranslation = activity.getResources().getDimensionPixelSize(
+                R.dimen.payments_ui_translation);
 
         mFullContainer =
                 (ViewGroup) LayoutInflater.from(mContext).inflate(R.layout.payment_request, null);
@@ -242,6 +258,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         }
         mPaymentContainerLayout.addView(mPaymentMethodSection, new LinearLayout.LayoutParams(
                 LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+        mContainer.addOnLayoutChangeListener(new PeekingAnimator());
 
         // Enabled in updatePayButtonEnabled() when the user has selected all payment options.
         mPayButton.setEnabled(false);
@@ -415,6 +432,8 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
      */
     @Override
     public void onClick(View v) {
+        if (!isAcceptingUserInput()) return;
+
         if (v == mCloseButton) {
             mDialog.dismiss();
             return;
@@ -475,10 +494,17 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         }
     }
 
+    /** @return Whether or not the dialog is accepting user input. */
+    public boolean isAcceptingUserInput() {
+        // Don't allow any input while the dialog is moving around.
+        return mCurrentAnimator == null;
+    }
+
     private void expand(ViewGroup section) {
         if (!mIsShowingEditDialog) {
-            // Container now takes the full height of the screen.
+            // Container now takes the full height of the screen, animating towards it.
             mContainer.getLayoutParams().height = LayoutParams.MATCH_PARENT;
+            mContainer.addOnLayoutChangeListener(new FullSheetAnimator());
 
             // Swap out Views that combine multiple fields with individual fields.
             if (mRequestShipping && mShippingSummarySection.getParent() != null) {
@@ -586,5 +612,118 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     @VisibleForTesting
     public Dialog getDialogForTest() {
         return mDialog;
+    }
+
+    /** Animates the initial UI coming in from below and darkening everything else on screen. */
+    private class PeekingAnimator
+            extends AnimatorListenerAdapter implements OnLayoutChangeListener {
+        @Override
+        public void onLayoutChange(View v, int left, int top, int right, int bottom,
+                int oldLeft, int oldTop, int oldRight, int oldBottom) {
+            mContainer.removeOnLayoutChangeListener(this);
+
+            mCurrentAnimator = new AnimatorSet();
+            mCurrentAnimator.setDuration(DIALOG_ENTER_ANIMATION_MS);
+            mCurrentAnimator.setInterpolator(new LinearOutSlowInInterpolator());
+            mCurrentAnimator.playTogether(
+                    ObjectAnimator.ofFloat(mScrim, View.ALPHA, 0f, 1f),
+                    ObjectAnimator.ofFloat(mContainer, View.ALPHA, 0f, 1f),
+                    ObjectAnimator.ofFloat(
+                            mContainer, View.TRANSLATION_Y, mAnimatorTranslation, 0));
+            mCurrentAnimator.addListener(this);
+            mCurrentAnimator.start();
+        }
+
+        @Override
+        public void onAnimationStart(Animator animation) {
+            mScrim.setAlpha(0f);
+            mContainer.setAlpha(0f);
+            mContainer.setTranslationY(mAnimatorTranslation);
+        }
+
+        @Override
+        public void onAnimationEnd(Animator animation) {
+            mCurrentAnimator = null;
+            mScrim.setAlpha(1f);
+            mContainer.setAlpha(1f);
+            mContainer.setTranslationY(0);
+        }
+    }
+
+    /** Animates the initial UI expanding to the full dialog. */
+    private class FullSheetAnimator implements OnLayoutChangeListener {
+        private final int mOriginalPaymentContainerTop;
+        private final int mOriginalPaymentContainerBottom;
+        private final int mOriginalPaymentContainerHeight;
+
+        private int mContainerHeightDifference;
+        private int mPaymentHeightDifference;
+
+        private FullSheetAnimator() {
+            mOriginalPaymentContainerTop = mPaymentContainer.getTop();
+            mOriginalPaymentContainerBottom = mPaymentContainer.getBottom();
+            mOriginalPaymentContainerHeight = mPaymentContainer.getMeasuredHeight();
+        }
+
+        /**
+         * Updates the animation.
+         *
+         * + The dialog container initially starts off translated downward, gradually decreasing the
+         *   translation until it is in the right place on screen.
+         *
+         * + The buttons are laid out so that they look like they're constantly at the bottom of
+         *   the screen, when in reality they start off way above where they're supposed to be in
+         *   the dialog and translate downward towards their final spot.
+         *
+         * + The payment sections expand to their full height by animating where its top and bottom
+         *   are.  This allows the shadows to appear and disappear correctly.
+         *
+         * @param progress How far along the animation is.  In the range [0,1], with 1 being done.
+         */
+        private void update(float progress) {
+            float containerTranslation = mContainerHeightDifference * progress;
+            mContainer.setTranslationY(containerTranslation);
+            mButtonBar.setTranslationY(-containerTranslation);
+
+            int paymentAddition = (int) (mPaymentHeightDifference * (1.0 - progress));
+            mPaymentContainer.setTop(mOriginalPaymentContainerTop);
+            mPaymentContainer.setBottom(mOriginalPaymentContainerBottom + paymentAddition);
+        }
+
+        @Override
+        public void onLayoutChange(View v, int left, int top, int right, int bottom,
+                int oldLeft, int oldTop, int oldRight, int oldBottom) {
+            mContainer.removeOnLayoutChangeListener(this);
+            mContainerHeightDifference = (bottom - top) - (oldBottom - oldTop);
+            mPaymentHeightDifference =
+                    mPaymentContainer.getMeasuredHeight() - mOriginalPaymentContainerHeight;
+
+            ValueAnimator containerAnimator = ValueAnimator.ofFloat(1f, 0f);
+            containerAnimator.addUpdateListener(new AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(ValueAnimator animation) {
+                    float alpha = (Float) animation.getAnimatedValue();
+                    update(alpha);
+                }
+            });
+
+            mCurrentAnimator = new AnimatorSet();
+            mCurrentAnimator.setDuration(DIALOG_ENTER_ANIMATION_MS);
+            mCurrentAnimator.setInterpolator(new LinearOutSlowInInterpolator());
+            mCurrentAnimator.playTogether(containerAnimator);
+            mCurrentAnimator.addListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationStart(Animator animation) {
+                    update(1.0f);
+                }
+
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    mCurrentAnimator = null;
+                    update(0.0f);
+                }
+            });
+            mCurrentAnimator.start();
+        }
     }
 }
