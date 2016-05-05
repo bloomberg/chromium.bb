@@ -55,7 +55,15 @@ template("msvc_toolchain") {
 
   env = invoker.environment
 
-  cl = invoker.cl
+  if (invoker.is_clang && host_os != "win") {
+    # This toolchain definition uses response files for compilations.  GN uses
+    # the quoting rules of the host OS, while clang-cl always defaults to
+    # cmd.exe quoting rules for parsing response files.  Tell clang-cl to use
+    # POSIX quoting rules, so it can understand what GN generates.
+    cl = "${invoker.cl} --rsp-quoting=posix"
+  } else {
+    cl = invoker.cl
+  }
 
   if (use_lld) {
     if (host_os == "win") {
