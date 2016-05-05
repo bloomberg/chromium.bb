@@ -2,18 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_SHELL_TEST_WEB_SHELL_TEST_UTIL_H_
-#define IOS_WEB_SHELL_TEST_WEB_SHELL_TEST_UTIL_H_
+#import "ios/web/shell/test/app/web_shell_test_util.h"
+
+#import <UIKit/UIKit.h>
 
 #import "ios/web/shell/view_controller.h"
 
 namespace web {
 namespace web_shell_test_util {
 
-// Gets the current ViewController for the web shell.
-ViewController* GetCurrentViewController();
+web::WebState* GetCurrentWebState() {
+  ViewController* view_controller = static_cast<ViewController*>([[
+      [[UIApplication sharedApplication] delegate] window] rootViewController]);
+  return view_controller.webState;
+}
 
 }  // namespace web_shell_test_util
 }  // namespace web
-
-#endif  // IOS_WEB_SHELL_TEST_WEB_SHELL_TEST_UTIL_H_

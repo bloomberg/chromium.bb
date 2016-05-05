@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web/shell/test/web_view_matchers.h"
+#import "ios/web/public/test/earl_grey/web_view_matchers.h"
 
 #import <WebKit/WebKit.h>
 
@@ -11,9 +11,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/ios/wait_util.h"
 #include "base/values.h"
-#include "ios/web/public/web_state/web_state.h"
-#include "ios/web/shell/test/navigation_test_util.h"
-#include "ios/web/shell/test/web_shell_test_util.h"
 
 namespace {
 
@@ -30,23 +27,24 @@ char kGetDocumentBodyJavaScript[] =
 
 namespace web {
 
-id<GREYMatcher> webViewContainingText(NSString* text) {
-  return [GREYMatchers matcherForWebViewContainingText:text];
+id<GREYMatcher> webViewContainingText(NSString* text, web::WebState* webState) {
+  return
+      [GREYMatchers matcherForWebViewContainingText:text inWebState:webState];
 }
 
 }  // namespace web
 
 @implementation GREYMatchers (WebViewAdditions)
 
-+ (id<GREYMatcher>)matcherForWebViewContainingText:(NSString*)text {
++ (id<GREYMatcher>)matcherForWebViewContainingText:(NSString*)text
+                                        inWebState:(web::WebState*)webState {
   MatchesBlock matches = ^BOOL(UIView* view) {
     if (![view isKindOfClass:[WKWebView class]]) {
       return NO;
     }
-
-    ViewController* viewController =
-        web::web_shell_test_util::GetCurrentViewController();
-    web::WebState* webState = [viewController webState];
+    if (![view isDescendantOfView:webState->GetView()]) {
+      return NO;
+    }
 
     __block BOOL didSucceed = NO;
     NSDate* deadline =

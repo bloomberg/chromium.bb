@@ -11,9 +11,9 @@
 #include "base/strings/sys_string_conversions.h"
 #import "ios/web/public/test/http_server.h"
 #include "ios/web/public/test/http_server_util.h"
-#include "ios/web/shell/test/navigation_test_util.h"
-#import "ios/web/shell/test/shell_matchers.h"
-#import "ios/web/shell/test/web_view_matchers.h"
+#include "ios/web/public/test/navigation_test_util.h"
+#include "ios/web/shell/test/app/web_shell_test_util.h"
+#import "ios/web/shell/test/earl_grey/shell_matchers.h"
 
 // Navigation test cases for the web shell. These are Earl Grey integration
 // tests, which are based on XCTest.
@@ -62,12 +62,14 @@
 
   web::test::SetUpSimpleHttpServer(responses);
 
-  web::navigation_test_util::LoadUrl(URL1);
+  web::WebState* webState = web::web_shell_test_util::GetCurrentWebState();
+
+  web::navigation_test_util::LoadUrl(webState, URL1);
 
   [[EarlGrey selectElementWithMatcher:web::webViewContainingText(response1)]
       assertWithMatcher:grey_notNil()];
 
-  web::navigation_test_util::LoadUrl(URL2);
+  web::navigation_test_util::LoadUrl(webState, URL2);
 
   [[EarlGrey selectElementWithMatcher:web::webViewContainingText(response2)]
       assertWithMatcher:grey_notNil()];
