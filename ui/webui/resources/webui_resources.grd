@@ -194,7 +194,9 @@ without changes to the corresponding grd file. -->
       <include name="IDR_WEBUI_IMAGES_TRASH"
                file="images/trash.png" type="BINDATA" />
 
-      <part file="cr_elements_images.grdp" />
+      <if expr="chromeos">
+        <part file="cr_elements_images_chromeos.grdp" />
+      </if>
     </includes>
     <structures>
       <structure name="IDR_WEBUI_CSS_ACTION_LINK"
