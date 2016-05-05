@@ -75,6 +75,7 @@ void StatusAreaWidget::CreateTrayViews() {
   virtual_keyboard_tray_->Initialize();
 #endif
   overview_button_tray_->Initialize();
+  SetShelfAlignment(system_tray_->shelf_alignment());
   UpdateAfterLoginStatusChange(delegate->GetUserLoginStatus());
 }
 
