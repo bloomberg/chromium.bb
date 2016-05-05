@@ -124,6 +124,11 @@
       ],
     }],
     ['use_v4lplugin==1 and chromeos==1', {
+      'direct_dependent_settings': {
+        'defines': [
+          'USE_LIBV4L2'
+        ],
+      },
       'defines': [
         'USE_LIBV4L2'
       ],

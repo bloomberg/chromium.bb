@@ -126,6 +126,13 @@ if (is_mac) {
   }
 }
 
+config("gpu_config") {
+  defines = []
+  if (is_chromeos && use_v4lplugin) {
+    defines += [ "USE_LIBV4L2" ]
+  }
+}
+
 component("gpu") {
   output_name = "media_gpu"
 
@@ -166,6 +173,8 @@ component("gpu") {
   ]
   libs = []
   ldflags = []
+
+  configs += [ ":gpu_config" ]
 
   if (is_mac) {
     sources += [
@@ -235,7 +244,6 @@ component("gpu") {
       "vp9_picture.h",
     ]
     if (use_v4lplugin) {
-      defines += [ "USE_LIBV4L2" ]
       sources += get_target_outputs(":libv4l2_generate_stubs")
       deps += [ ":libv4l2_generate_stubs" ]
     }
