@@ -21,6 +21,8 @@ namespace offline_pages {
 //   the new attempts to start a snapshot are ignored until it does.
 // - Some signals prevent more snapshots to be taken.
 //   OnLoad is currently such signal.
+// - Once Reset() is called on the SnapshotController, the delayed tasks are
+//   reset so no StartSnapshot calls is made 'cross-session'.
 class SnapshotController {
  public:
   // kStateReady - listening to input, will start snapshot when needed.
@@ -36,8 +38,7 @@ class SnapshotController {
     // PreviousSnapshotCompleted() before the next StatrSnapshot().
     // Client should overwrite the result of previous snapshot with the new one,
     // it is assumed that later snapshots are better then previous.
-    // Returns true if the snapshot actually started.
-    virtual bool StartSnapshot() = 0;
+    virtual void StartSnapshot() = 0;
 
    protected:
     virtual ~Client() {}

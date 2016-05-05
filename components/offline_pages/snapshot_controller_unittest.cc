@@ -22,7 +22,6 @@ class SnapshotControllerTest
   ~SnapshotControllerTest() override;
 
   SnapshotController* controller() { return controller_.get(); }
-  void set_snapshot_started(bool started) { snapshot_started_ = started; }
   int snapshot_count() { return snapshot_count_; }
 
   // testing::Test
@@ -30,7 +29,7 @@ class SnapshotControllerTest
   void TearDown() override;
 
   // SnapshotController::Client
-  bool StartSnapshot() override;
+  void StartSnapshot() override;
 
   // Utility methods.
   // Runs until all of the tasks that are not delayed are gone from the task
@@ -65,9 +64,8 @@ void SnapshotControllerTest::TearDown() {
   controller_.reset();
 }
 
-bool SnapshotControllerTest::StartSnapshot() {
+void SnapshotControllerTest::StartSnapshot() {
   snapshot_count_++;
-  return snapshot_started_;
 }
 
 void SnapshotControllerTest::PumpLoop() {
@@ -144,16 +142,22 @@ TEST_F(SnapshotControllerTest, Stop) {
   EXPECT_EQ(0, snapshot_count());
 }
 
-TEST_F(SnapshotControllerTest, ClientDidntStartSnapshot) {
-  // This will tell that Client did not start the snapshot
-  set_snapshot_started(false);
+TEST_F(SnapshotControllerTest, ClientReset) {
+  controller()->DocumentAvailableInMainFrame();
+
+  controller()->Reset();
+  FastForwardBy(base::TimeDelta::FromMilliseconds(
+      controller()->GetDelayAfterDocumentAvailableForTest()));
+  // No snapshot since session was reset.
+  EXPECT_EQ(0, snapshot_count());
+  controller()->DocumentOnLoadCompletedInMainFrame();
+  EXPECT_EQ(1, snapshot_count());
+
+  controller()->Reset();
   controller()->DocumentAvailableInMainFrame();
   FastForwardBy(base::TimeDelta::FromMilliseconds(
       controller()->GetDelayAfterDocumentAvailableForTest()));
-  // Should have one snapshot requested, but not reported started.
-  EXPECT_EQ(1, snapshot_count());
-  // Should start another snapshot since previous did not start
-  controller()->DocumentOnLoadCompletedInMainFrame();
+  // No snapshot since session was reset.
   EXPECT_EQ(2, snapshot_count());
 }
 

@@ -31,6 +31,8 @@ SnapshotController::SnapshotController(
 SnapshotController::~SnapshotController() {}
 
 void SnapshotController::Reset() {
+  // Cancel potentially delayed tasks that relate to the previous 'session'.
+  weak_ptr_factory_.InvalidateWeakPtrs();
   state_ = State::kReady;
 }
 
@@ -67,8 +69,8 @@ void SnapshotController::DocumentOnLoadCompletedInMainFrame() {
 void SnapshotController::MaybeStartSnapshot() {
   if (state_ != State::kReady)
     return;
-  if (client_->StartSnapshot())
-    state_ = State::kSnapshotPending;
+  state_ = State::kSnapshotPending;
+  client_->StartSnapshot();
 }
 
 size_t SnapshotController::GetDelayAfterDocumentAvailableForTest() {
