@@ -341,9 +341,6 @@ class CC_EXPORT LayerImpl {
   gfx::Rect visible_layer_rect() const {
     return draw_properties_.visible_layer_rect;
   }
-  size_t num_unclipped_descendants() const {
-    return draw_properties_.num_unclipped_descendants;
-  }
 
   // The client should be responsible for setting bounds, content bounds and
   // contents scale to appropriate values. LayerImpl doesn't calculate any of

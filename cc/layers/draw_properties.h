@@ -10,12 +10,10 @@
 #include <memory>
 
 #include "cc/trees/occlusion.h"
-#include "third_party/skia/include/core/SkXfermode.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/transform.h"
 
 namespace cc {
-class RenderSurfaceImpl;
 
 // Container for properties that layers need to compute before they can be
 // drawn.
@@ -61,10 +59,6 @@ struct CC_EXPORT DrawProperties {
   // In target surface space, the original rect that clipped this layer. This
   // value is used to avoid unnecessarily changing GL scissor state.
   gfx::Rect clip_rect;
-
-  // Number of descendants with a clip parent that is our ancestor. NB - this
-  // does not include our clip children because they are clipped by us.
-  size_t num_unclipped_descendants;
 
   // The maximum scale during the layers current animation at which content
   // should be rastered at to be crisp.

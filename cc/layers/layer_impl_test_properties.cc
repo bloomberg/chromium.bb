@@ -13,6 +13,7 @@ LayerImplTestProperties::LayerImplTestProperties()
       should_flatten_transform(true),
       hide_layer_and_subtree(false),
       num_descendants_that_draw_content(0),
+      num_unclipped_descendants(0),
       scroll_parent(nullptr),
       clip_parent(nullptr) {}
 

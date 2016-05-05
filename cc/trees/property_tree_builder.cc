@@ -176,7 +176,7 @@ static void PreCalculateMetaInformationInternalForTesting(
   if (!layer->touch_event_handler_region().IsEmpty())
     recursive_data->num_layer_or_descendants_with_touch_handler++;
 
-  layer->draw_properties().num_unclipped_descendants =
+  layer->test_properties()->num_unclipped_descendants =
       recursive_data->num_unclipped_descendants;
   layer->set_layer_or_descendant_has_touch_handler(
       (recursive_data->num_layer_or_descendants_with_touch_handler != 0));
@@ -211,6 +211,14 @@ static Layer* ClipParent(Layer* layer) {
 
 static LayerImpl* ClipParent(LayerImpl* layer) {
   return layer->test_properties()->clip_parent;
+}
+
+static size_t NumUnclippedDescendants(Layer* layer) {
+  return layer->num_unclipped_descendants();
+}
+
+static size_t NumUnclippedDescendants(LayerImpl* layer) {
+  return layer->test_properties()->num_unclipped_descendants;
 }
 
 template <typename LayerType>
@@ -267,7 +275,7 @@ void AddClipNodeIfNeeded(const DataForRecursion<LayerType>& data_from_ancestor,
     // However, if the surface has unclipped descendants (layers that aren't
     // affected by the ancestor clip), we cannot clip the surface itself, and
     // must instead apply clips to the clipped descendants.
-    if (ancestor_clips_subtree && layer->num_unclipped_descendants() > 0) {
+    if (ancestor_clips_subtree && NumUnclippedDescendants(layer) > 0) {
       layers_are_clipped = true;
     } else if (!ancestor_clips_subtree) {
       // When there are no ancestor clips that need to be applied to a render
@@ -281,7 +289,7 @@ void AddClipNodeIfNeeded(const DataForRecursion<LayerType>& data_from_ancestor,
     // clip at draw time since the unclipped descendants aren't affected by the
     // ancestor clip.
     data_for_children->target_is_clipped =
-        ancestor_clips_subtree && !layer->num_unclipped_descendants();
+        ancestor_clips_subtree && !NumUnclippedDescendants(layer);
   } else {
     // Without a new render surface, layer clipping state from ancestors needs
     // to continue to propagate.
@@ -328,7 +336,7 @@ void AddClipNodeIfNeeded(const DataForRecursion<LayerType>& data_from_ancestor,
       // Surfaces reset the rect used for layer clipping. At other nodes, layer
       // clipping state from ancestors must continue to get propagated.
       node.data.layer_clipping_uses_only_local_clip =
-          (created_render_surface && layer->num_unclipped_descendants() == 0) ||
+          (created_render_surface && NumUnclippedDescendants(layer) == 0) ||
           !ancestor_clips_subtree;
     } else {
       // Otherwise, we're either unclipped, or exist only in order to apply our
