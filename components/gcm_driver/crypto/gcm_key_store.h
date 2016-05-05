@@ -66,15 +66,12 @@ class GCMKeyStore {
   void DidLoadKeys(bool success,
                    std::unique_ptr<std::vector<EncryptionData>> entries);
 
-  void DidStoreKeys(const std::string& app_id,
-                    const KeyPair& pair,
+  void DidStoreKeys(const KeyPair& pair,
                     const std::string& auth_secret,
                     const KeysCallback& callback,
                     bool success);
 
-  void DidRemoveKeys(const std::string& app_id,
-                     const base::Closure& callback,
-                     bool success);
+  void DidRemoveKeys(const base::Closure& callback, bool success);
 
   // Private implementations of the API that will be executed when the database
   // has either been successfully loaded, or failed to load.

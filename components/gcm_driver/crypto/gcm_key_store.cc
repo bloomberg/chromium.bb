@@ -113,6 +113,11 @@ void GCMKeyStore::CreateKeysAfterInitialize(const std::string& app_id,
   pair->set_public_key_x509(public_key_x509);
   pair->set_public_key(public_key);
 
+  // Write them immediately to our cache, so subsequent calls to
+  // {Get/Create/Remove}Keys can see them.
+  key_pairs_[app_id] = *pair;
+  auth_secrets_[app_id] = auth_secret;
+
   using EntryVectorType =
       leveldb_proto::ProtoDatabase<EncryptionData>::KeyEntryVector;
 
@@ -124,28 +129,27 @@ void GCMKeyStore::CreateKeysAfterInitialize(const std::string& app_id,
 
   database_->UpdateEntries(
       std::move(entries_to_save), std::move(keys_to_remove),
-      base::Bind(&GCMKeyStore::DidStoreKeys, weak_factory_.GetWeakPtr(), app_id,
-                 *pair, auth_secret, callback));
+      base::Bind(&GCMKeyStore::DidStoreKeys, weak_factory_.GetWeakPtr(), *pair,
+                 auth_secret, callback));
 }
 
-void GCMKeyStore::DidStoreKeys(const std::string& app_id,
-                               const KeyPair& pair,
+void GCMKeyStore::DidStoreKeys(const KeyPair& pair,
                                const std::string& auth_secret,
                                const KeysCallback& callback,
                                bool success) {
   UMA_HISTOGRAM_BOOLEAN("GCM.Crypto.CreateKeySuccessRate", success);
-  DCHECK_EQ(0u, key_pairs_.count(app_id));
 
   if (!success) {
-    DVLOG(1) << "Unable to store the created key in the GCM Key Store.";
+    LOG(ERROR) << "Unable to store the created key in the GCM Key Store.";
+
+    // Our cache is now inconsistent. Reject requests until restarted.
+    state_ = State::FAILED;
+
     callback.Run(KeyPair(), std::string() /* auth_secret */);
     return;
   }
 
-  key_pairs_[app_id] = pair;
-  auth_secrets_[app_id] = auth_secret;
-
-  callback.Run(key_pairs_[app_id], auth_secret);
+  callback.Run(pair, auth_secret);
 }
 
 void GCMKeyStore::RemoveKeys(const std::string& app_id,
@@ -163,6 +167,11 @@ void GCMKeyStore::RemoveKeysAfterInitialize(const std::string& app_id,
     return;
   }
 
+  // Clear them immediately from our cache, so subsequent calls to
+  // {Get/Create/Remove}Keys don't see them.
+  key_pairs_.erase(app_id);
+  auth_secrets_.erase(app_id);
+
   using EntryVectorType =
       leveldb_proto::ProtoDatabase<EncryptionData>::KeyEntryVector;
 
@@ -170,22 +179,20 @@ void GCMKeyStore::RemoveKeysAfterInitialize(const std::string& app_id,
   std::unique_ptr<std::vector<std::string>> keys_to_remove(
       new std::vector<std::string>(1, app_id));
 
-  database_->UpdateEntries(
-      std::move(entries_to_save), std::move(keys_to_remove),
-      base::Bind(&GCMKeyStore::DidRemoveKeys, weak_factory_.GetWeakPtr(),
-                 app_id, callback));
+  database_->UpdateEntries(std::move(entries_to_save),
+                           std::move(keys_to_remove),
+                           base::Bind(&GCMKeyStore::DidRemoveKeys,
+                                      weak_factory_.GetWeakPtr(), callback));
 }
 
-void GCMKeyStore::DidRemoveKeys(const std::string& app_id,
-                                const base::Closure& callback,
-                                bool success) {
+void GCMKeyStore::DidRemoveKeys(const base::Closure& callback, bool success) {
   UMA_HISTOGRAM_BOOLEAN("GCM.Crypto.RemoveKeySuccessRate", success);
 
-  if (success) {
-    key_pairs_.erase(app_id);
-    auth_secrets_.erase(app_id);
-  } else {
-    DVLOG(1) << "Unable to delete a key from the GCM Key Store.";
+  if (!success) {
+    LOG(ERROR) << "Unable to delete a key from the GCM Key Store.";
+
+    // Our cache is now inconsistent. Reject requests until restarted.
+    state_ = State::FAILED;
   }
 
   callback.Run();

@@ -211,6 +211,37 @@ TEST_F(GCMKeyStoreTest, CreateAndRemoveKeys) {
   ASSERT_FALSE(read_pair.IsInitialized());
 }
 
+TEST_F(GCMKeyStoreTest, CreateAndRemoveKeysSynchronously) {
+  KeyPair pair;
+  std::string auth_secret;
+  gcm_key_store()->CreateKeys(kFakeAppId,
+                              base::Bind(&GCMKeyStoreTest::GotKeys,
+                                         base::Unretained(this), &pair,
+                                         &auth_secret));
+
+  // Continue synchronously, without running RunUntilIdle first.
+  gcm_key_store()->RemoveKeys(kFakeAppId, base::Bind(&base::DoNothing));
+
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_TRUE(pair.IsInitialized());
+  EXPECT_TRUE(pair.has_type());
+
+  histogram_tester()->ExpectBucketCount(
+      "GCM.Crypto.RemoveKeySuccessRate", 1, 1);  // success
+
+  KeyPair read_pair;
+  std::string read_auth_secret;
+  gcm_key_store()->GetKeys(kFakeAppId,
+                           base::Bind(&GCMKeyStoreTest::GotKeys,
+                                      base::Unretained(this), &read_pair,
+                                      &read_auth_secret));
+
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_FALSE(read_pair.IsInitialized());
+}
+
 TEST_F(GCMKeyStoreTest, GetKeysMultipleAppIds) {
   KeyPair pair;
   std::string auth_secret;
