@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <string>
 
+#include "base/strings/string_piece.h"
 #include "content/common/content_export.h"
 
 class GURL;
@@ -39,6 +40,14 @@ class CONTENT_EXPORT NotificationIdGenerator {
   NotificationIdGenerator(BrowserContext* browser_context,
                           int render_process_id);
   ~NotificationIdGenerator();
+
+  // Returns whether |notification_id| belongs to a persistent notification.
+  static bool IsPersistentNotification(
+      const base::StringPiece& notification_id);
+
+  // Returns whether |notification_id| belongs to a non-persistent notification.
+  static bool IsNonPersistentNotification(
+      const base::StringPiece& notification_id);
 
   // Generates an id for a persistent notification given the notification's
   // origin, tag and persistent notification id. The persistent notification id

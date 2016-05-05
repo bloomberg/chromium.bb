@@ -253,6 +253,26 @@ TEST_F(NotificationIdGeneratorTest, OriginPortAmbiguity) {
                 origin_8051, "7", kNonPersistentNotificationId));
 }
 
+// Verifies that the static Is(Non)PersistentNotification helpers can correctly
+// identify persistent and non-persistent notification IDs.
+TEST_F(NotificationIdGeneratorTest, DetectIdFormat) {
+  std::string persistent_id = generator()->GenerateForPersistentNotification(
+      origin(), "" /* tag */, kPersistentNotificationId);
+
+  std::string non_persistent_id =
+      generator()->GenerateForNonPersistentNotification(
+          origin(), "" /* tag */, kNonPersistentNotificationId);
+
+  EXPECT_TRUE(NotificationIdGenerator::IsPersistentNotification(persistent_id));
+  EXPECT_FALSE(
+      NotificationIdGenerator::IsNonPersistentNotification(persistent_id));
+
+  EXPECT_TRUE(
+      NotificationIdGenerator::IsNonPersistentNotification(non_persistent_id));
+  EXPECT_FALSE(
+      NotificationIdGenerator::IsPersistentNotification(non_persistent_id));
+}
+
 // -----------------------------------------------------------------------------
 // Persistent notifications
 //

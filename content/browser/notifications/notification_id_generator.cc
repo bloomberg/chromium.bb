@@ -17,6 +17,9 @@
 namespace content {
 namespace {
 
+const char kPersistentPrefix[] = "p:";
+const char kNonPersistentPrefix[] = "n:";
+
 const char kSeparator = '#';
 
 // Computes a hash based on the path in which the |browser_context| is stored.
@@ -42,6 +45,18 @@ NotificationIdGenerator::NotificationIdGenerator(
 
 NotificationIdGenerator::~NotificationIdGenerator() {}
 
+// static
+bool NotificationIdGenerator::IsPersistentNotification(
+    const base::StringPiece& notification_id) {
+  return notification_id.starts_with(kPersistentPrefix);
+}
+
+// static
+bool NotificationIdGenerator::IsNonPersistentNotification(
+    const base::StringPiece& notification_id) {
+  return notification_id.starts_with(kNonPersistentPrefix);
+}
+
 std::string NotificationIdGenerator::GenerateForPersistentNotification(
     const GURL& origin,
     const std::string& tag,
@@ -51,6 +66,7 @@ std::string NotificationIdGenerator::GenerateForPersistentNotification(
 
   std::stringstream stream;
 
+  stream << kPersistentPrefix;
   stream << ComputeBrowserContextHash(browser_context_);
   stream << browser_context_->IsOffTheRecord();
   stream << origin;
@@ -76,6 +92,7 @@ std::string NotificationIdGenerator::GenerateForNonPersistentNotification(
 
   std::stringstream stream;
 
+  stream << kNonPersistentPrefix;
   stream << ComputeBrowserContextHash(browser_context_);
   stream << browser_context_->IsOffTheRecord();
   stream << origin;
