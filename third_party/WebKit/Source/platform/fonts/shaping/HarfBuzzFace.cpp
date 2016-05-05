@@ -30,16 +30,6 @@
 
 #include "platform/fonts/shaping/HarfBuzzFace.h"
 
-#include "hb-ot.h"
-#include "hb.h"
-#if OS(MACOSX)
-#include "hb-coretext.h"
-#endif
-#include "SkPaint.h"
-#include "SkPath.h"
-#include "SkPoint.h"
-#include "SkRect.h"
-#include "SkTypeface.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/FontPlatformData.h"
 #include "platform/fonts/SimpleFontData.h"
@@ -48,64 +38,20 @@
 #include "wtf/HashMap.h"
 #include "wtf/MathExtras.h"
 
+#include <hb-ot.h>
+#include <hb.h>
+#if OS(MACOSX)
+#include <hb-coretext.h>
+#endif
+
+#include <SkPaint.h>
+#include <SkPath.h>
+#include <SkPoint.h>
+#include <SkRect.h>
+#include <SkTypeface.h>
+
+
 namespace blink {
-
-// Though we have FontCache class, which provides the cache mechanism for
-// WebKit's font objects, we also need additional caching layer for HarfBuzz
-// to reduce the memory consumption because hb_face_t should be associated with
-// underling font data (e.g. CTFontRef, FTFace).
-
-class FaceCacheEntry : public RefCounted<FaceCacheEntry> {
-public:
-    static PassRefPtr<FaceCacheEntry> create(hb_face_t* face)
-    {
-        ASSERT(face);
-        return adoptRef(new FaceCacheEntry(face));
-    }
-    ~FaceCacheEntry()
-    {
-        hb_face_destroy(m_face);
-    }
-
-    hb_face_t* face() { return m_face; }
-
-private:
-    explicit FaceCacheEntry(hb_face_t* face)
-        : m_face(face)
-    { }
-
-    hb_face_t* m_face;
-};
-
-typedef HashMap<uint64_t, RefPtr<FaceCacheEntry>, WTF::IntHash<uint64_t>, WTF::UnsignedWithZeroKeyHashTraits<uint64_t>> HarfBuzzFaceCache;
-
-static HarfBuzzFaceCache* harfBuzzFaceCache()
-{
-    DEFINE_STATIC_LOCAL(HarfBuzzFaceCache, s_harfBuzzFaceCache, ());
-    return &s_harfBuzzFaceCache;
-}
-
-HarfBuzzFace::HarfBuzzFace(FontPlatformData* platformData, uint64_t uniqueID)
-    : m_platformData(platformData)
-    , m_uniqueID(uniqueID)
-{
-    HarfBuzzFaceCache::AddResult result = harfBuzzFaceCache()->add(m_uniqueID, nullptr);
-    if (result.isNewEntry)
-        result.storedValue->value = FaceCacheEntry::create(createFace());
-    result.storedValue->value->ref();
-    m_face = result.storedValue->value->face();
-    prepareHarfBuzzFontData();
-}
-
-HarfBuzzFace::~HarfBuzzFace()
-{
-    HarfBuzzFaceCache::iterator result = harfBuzzFaceCache()->find(m_uniqueID);
-    ASSERT_WITH_SECURITY_IMPLICATION(result != harfBuzzFaceCache()->end());
-    ASSERT(result.get()->value->refCount() > 1);
-    result.get()->value->deref();
-    if (result.get()->value->refCount() == 1)
-        harfBuzzFaceCache()->remove(m_uniqueID);
-}
 
 // struct to carry user-pointer data for hb_font_t callback functions.
 struct HarfBuzzFontData {
@@ -113,20 +59,79 @@ struct HarfBuzzFontData {
     WTF_MAKE_NONCOPYABLE(HarfBuzzFontData);
 public:
 
-    HarfBuzzFontData() {}
-    HarfBuzzFontData(WTF::HashMap<uint32_t, uint16_t>* glyphCacheForFaceCacheEntry, hb_face_t* face, PassRefPtr<UnicodeRangeSet> rangeSet)
-        : m_face(face)
-        , m_hbOpenTypeFont(nullptr)
-        , m_rangeSet(rangeSet)
+    HarfBuzzFontData()
+        : m_paint()
+        , m_simpleFontData(nullptr)
+        , m_rangeSet(nullptr)
     {
     }
 
     SkPaint m_paint;
     RefPtr<SimpleFontData> m_simpleFontData;
-    hb_face_t* m_face;
-    hb_font_t* m_hbOpenTypeFont;
     RefPtr<UnicodeRangeSet> m_rangeSet;
 };
+
+// Though we have FontCache class, which provides the cache mechanism for
+// WebKit's font objects, we also need additional caching layer for HarfBuzz to
+// reduce the number of hb_font_t objects created. Without it, we would create
+// an hb_font_t object for every FontPlatformData object. But insted, we only
+// need one for each unique SkTypeface.
+// FIXME, crbug.com/609099: We should fix the FontCache to only keep one
+// FontPlatformData object independent of size, then consider using this here.
+class HbFontCacheEntry : public RefCounted<HbFontCacheEntry> {
+public:
+    static PassRefPtr<HbFontCacheEntry> create(hb_font_t* hbFont)
+    {
+        ASSERT(hbFont);
+        return adoptRef(new HbFontCacheEntry(hbFont));
+    }
+
+    hb_font_t* hbFont() { return m_hbFont.get(); }
+    HarfBuzzFontData* hbFontData() { return m_hbFontData.get(); }
+
+private:
+    explicit HbFontCacheEntry(hb_font_t* font)
+        : m_hbFont(adoptPtr(font))
+        , m_hbFontData(adoptPtr(new HarfBuzzFontData()))
+    { };
+
+    OwnPtr<hb_font_t> m_hbFont;
+    OwnPtr<HarfBuzzFontData> m_hbFontData;
+};
+
+typedef HashMap<uint64_t, RefPtr<HbFontCacheEntry>, WTF::IntHash<uint64_t>, WTF::UnsignedWithZeroKeyHashTraits<uint64_t>> HarfBuzzFontCache;
+
+static HarfBuzzFontCache* harfBuzzFontCache()
+{
+    DEFINE_STATIC_LOCAL(HarfBuzzFontCache, s_harfBuzzFontCache, ());
+    return &s_harfBuzzFontCache;
+}
+
+static PassRefPtr<HbFontCacheEntry> createHbFontCacheEntry(hb_face_t*);
+
+HarfBuzzFace::HarfBuzzFace(FontPlatformData* platformData, uint64_t uniqueID)
+    : m_platformData(platformData)
+    , m_uniqueID(uniqueID)
+{
+    HarfBuzzFontCache::AddResult result = harfBuzzFontCache()->add(m_uniqueID, nullptr);
+    if (result.isNewEntry) {
+        OwnPtr<hb_face_t> face = adoptPtr(createFace());
+        result.storedValue->value = createHbFontCacheEntry(face.get());
+    }
+    result.storedValue->value->ref();
+    m_unscaledFont = result.storedValue->value->hbFont();
+    m_harfBuzzFontData = result.storedValue->value->hbFontData();
+}
+
+HarfBuzzFace::~HarfBuzzFace()
+{
+    HarfBuzzFontCache::iterator result = harfBuzzFontCache()->find(m_uniqueID);
+    ASSERT_WITH_SECURITY_IMPLICATION(result != harfBuzzFontCache()->end());
+    ASSERT(result.get()->value->refCount() > 1);
+    result.get()->value->deref();
+    if (result.get()->value->refCount() == 1)
+        harfBuzzFontCache()->remove(m_uniqueID);
+}
 
 static hb_position_t SkiaScalarToHarfBuzzPosition(SkScalar value)
 {
@@ -280,7 +285,6 @@ static hb_blob_t* harfBuzzSkiaGetTable(hb_face_t* face, hb_tag_t tag, void* user
         WTF::Partitions::fastFree(buffer);
         return nullptr;
     }
-
     return hb_blob_create(const_cast<char*>(buffer), tableSize, HB_MEMORY_MODE_WRITABLE, buffer, WTF::Partitions::fastFree);
 }
 #endif
@@ -296,26 +300,27 @@ hb_face_t* HarfBuzzFace::createFace()
     return face;
 }
 
-void HarfBuzzFace::prepareHarfBuzzFontData()
+PassRefPtr<HbFontCacheEntry> createHbFontCacheEntry(hb_face_t* face)
 {
-    m_harfBuzzFontData = adoptPtr(new HarfBuzzFontData());
-    m_harfBuzzFontData->m_simpleFontData = FontCache::fontCache()->fontDataFromFontPlatformData(m_platformData);
-    ASSERT(m_harfBuzzFontData->m_simpleFontData);
-    OwnPtr<hb_font_t> otFont = adoptPtr(hb_font_create(m_face));
+    OwnPtr<hb_font_t> otFont = adoptPtr(hb_font_create(face));
     hb_ot_font_set_funcs(otFont.get());
     // Creating a sub font means that non-available functions
     // are found from the parent.
-    m_unscaledFont = adoptPtr(hb_font_create_sub_font(otFont.get()));
-    hb_font_set_funcs(m_unscaledFont.get(), harfBuzzSkiaGetFontFuncs(), m_harfBuzzFontData.get(), nullptr);
+    hb_font_t* unscaledFont = hb_font_create_sub_font(otFont.get());
+    RefPtr<HbFontCacheEntry> cacheEntry = HbFontCacheEntry::create(unscaledFont);
+    hb_font_set_funcs(unscaledFont, harfBuzzSkiaGetFontFuncs(), cacheEntry->hbFontData(), nullptr);
+    return cacheEntry;
 }
 
-hb_font_t* HarfBuzzFace::getScaledFont(PassRefPtr<UnicodeRangeSet> rangeSet)
+hb_font_t* HarfBuzzFace::getScaledFont(PassRefPtr<UnicodeRangeSet> rangeSet) const
 {
     m_platformData->setupPaint(&m_harfBuzzFontData->m_paint);
     m_harfBuzzFontData->m_rangeSet = rangeSet;
+    m_harfBuzzFontData->m_simpleFontData = FontCache::fontCache()->fontDataFromFontPlatformData(m_platformData);
+    ASSERT(m_harfBuzzFontData->m_simpleFontData);
     int scale = SkiaScalarToHarfBuzzPosition(m_platformData->size());
-    hb_font_set_scale(m_unscaledFont.get(), scale, scale);
-    return m_unscaledFont.get();
+    hb_font_set_scale(m_unscaledFont, scale, scale);
+    return m_unscaledFont;
 }
 
 } // namespace blink

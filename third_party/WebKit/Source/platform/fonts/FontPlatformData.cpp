@@ -267,10 +267,10 @@ bool FontPlatformData::hasSpaceInLigaturesOrKerning(
     if (!hbFace)
         return false;
 
-    hb_face_t* face = hbFace->face();
-    ASSERT(face);
     hb_font_t* font = hbFace->getScaledFont();
     ASSERT(font);
+    hb_face_t* face = hb_font_get_face(font);
+    ASSERT(face);
 
     hb_codepoint_t space;
     // If the space glyph isn't present in the font then each space character

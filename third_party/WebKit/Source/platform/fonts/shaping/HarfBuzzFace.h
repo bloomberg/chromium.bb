@@ -60,8 +60,7 @@ public:
     // In order to support the restricting effect of unicode-range optionally a
     // range restriction can be passed in, which will restrict which glyphs we
     // return in the harfBuzzGetGlyph function.
-    hb_font_t* getScaledFont(PassRefPtr<UnicodeRangeSet> = nullptr);
-    hb_face_t* face() const { return m_face; }
+    hb_font_t* getScaledFont(PassRefPtr<UnicodeRangeSet> = nullptr) const;
 
 private:
     HarfBuzzFace(FontPlatformData*, uint64_t);
@@ -71,9 +70,8 @@ private:
 
     FontPlatformData* m_platformData;
     uint64_t m_uniqueID;
-    hb_face_t* m_face;
-    OwnPtr<hb_font_t> m_unscaledFont;
-    OwnPtr<HarfBuzzFontData> m_harfBuzzFontData;
+    hb_font_t* m_unscaledFont;
+    HarfBuzzFontData* m_harfBuzzFontData;
 };
 
 } // namespace blink
@@ -87,6 +85,16 @@ template<> struct OwnedPtrDeleter<hb_font_t> {
     {
         if (font)
             hb_font_destroy(font);
+    }
+};
+
+template<typename T> struct OwnedPtrDeleter;
+template<> struct OwnedPtrDeleter<hb_face_t> {
+    STATIC_ONLY(OwnedPtrDeleter);
+    static void deletePtr(hb_face_t* face)
+    {
+        if (face)
+            hb_face_destroy(face);
     }
 };
 
