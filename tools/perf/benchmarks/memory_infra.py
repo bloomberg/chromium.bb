@@ -54,16 +54,16 @@ class _MemoryInfra(perf_benchmark.PerfBenchmark):
     return tbm_options
 
 
-# TODO(bashi): Workaround for http://crbug.com/532075
-# @benchmark.Enabled('android') shouldn't be needed.
-@benchmark.Enabled('android')
-class MemoryHealthQuick(_MemoryInfra):
-  """Timeline based benchmark for the Memory Health Plan (1 iteration)."""
+# TODO(crbug.com/606361): Remove benchmark when replaced by the TBMv2 version.
+@benchmark.Disabled('all')
+class MemoryHealthPlan(_MemoryInfra):
+  """Timeline based benchmark for the Memory Health Plan."""
   page_set = page_sets.MemoryHealthStory
+  options = {'pageset_repeat': 5}
 
   @classmethod
   def Name(cls):
-    return 'memory.memory_health_quick'
+    return 'memory.memory_health_plan'
 
   @classmethod
   def ShouldDisable(cls, possible_browser):
@@ -72,19 +72,8 @@ class MemoryHealthQuick(_MemoryInfra):
         'com.google.android.deskclock')
 
 
-# Benchmark is disabled by default because it takes too long to run.
-@benchmark.Disabled('all')
-class MemoryHealthPlan(MemoryHealthQuick):
-  """Timeline based benchmark for the Memory Health Plan (5 iterations)."""
-  options = {'pageset_repeat': 5}
-
-  @classmethod
-  def Name(cls):
-    return 'memory.memory_health_plan'
-
-
 @benchmark.Enabled('android')
-class TBMv2MemoryBenchmarkTop10Mobile(MemoryHealthQuick):
+class TBMv2MemoryBenchmarkTop10Mobile(MemoryHealthPlan):
   """Timeline based benchmark for the Memory Health Plan based on TBMv2.
 
   This is a temporary benchmark to compare the new TBMv2 memory metric
