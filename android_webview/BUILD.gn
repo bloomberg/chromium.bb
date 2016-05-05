@@ -375,7 +375,7 @@ shared_library("libwebviewchromium") {
 }
 
 if (defined(webview_only_libmonochrome) && webview_only_libmonochrome) {
-  shared_library("libmonochrome") {
+  shared_library("monochrome") {
     deps = [
       ":webview_entry_point",
     ]
