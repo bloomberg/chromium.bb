@@ -20,7 +20,6 @@
 #include "ppapi/c/ppb_var.h"
 #include "ppapi/shared_impl/ppb_var_shared.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
-#include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "third_party/WebKit/public/web/WebPluginScriptForbiddenScope.h"
@@ -264,7 +263,7 @@ PP_Var CallDeprecatedInternal(PP_Var var,
   blink::WebPluginContainer* container = accessor.instance()->container();
   blink::WebLocalFrame* frame = NULL;
   if (container)
-    frame = container->element().document().frame();
+    frame = container->document().frame();
 
   if (!frame) {
     try_catch.SetException("No frame to execute script in.");

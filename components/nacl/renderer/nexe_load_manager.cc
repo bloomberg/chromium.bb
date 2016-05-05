@@ -37,7 +37,6 @@
 #include "ppapi/shared_impl/var_tracker.h"
 #include "ppapi/thunk/enter.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
-#include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "v8/include/v8.h"
@@ -100,7 +99,7 @@ NexeLoadManager::NexeLoadManager(
   HistogramEnumerateOsArch(GetSandboxArch());
   if (plugin_instance_) {
     plugin_base_url_ =
-        plugin_instance_->GetContainer()->element().document().url();
+        plugin_instance_->GetContainer()->document().url();
   }
 }
 

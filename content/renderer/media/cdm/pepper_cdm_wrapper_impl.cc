@@ -59,7 +59,7 @@ std::unique_ptr<PepperCdmWrapper> PepperCdmWrapperImpl::Create(
   if (!plugin_instance.get())
     return std::unique_ptr<PepperCdmWrapper>();
 
-  GURL plugin_url(plugin_instance->container()->element().document().url());
+  GURL plugin_url(plugin_instance->container()->document().url());
   GURL plugin_security_origin = plugin_url.GetOrigin();
   CHECK_EQ(security_origin, plugin_security_origin)
       << "Pepper instance has a different origin than the EME call.";

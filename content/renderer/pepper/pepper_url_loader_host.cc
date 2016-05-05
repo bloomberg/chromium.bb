@@ -385,7 +385,7 @@ blink::WebLocalFrame* PepperURLLoaderHost::GetFrame() {
           renderer_ppapi_host_->GetPluginInstance(pp_instance()));
   if (!instance_object || instance_object->is_deleted())
     return NULL;
-  return instance_object->GetContainer()->element().document().frame();
+  return instance_object->GetContainer()->document().frame();
 }
 
 void PepperURLLoaderHost::SetDefersLoading(bool defers_loading) {

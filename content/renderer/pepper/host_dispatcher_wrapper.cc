@@ -15,7 +15,6 @@
 #include "content/renderer/pepper/renderer_restrict_dispatch_group.h"
 #include "content/renderer/render_frame_impl.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
-#include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 
 namespace content {
@@ -93,8 +92,7 @@ void HostDispatcherWrapper::AddInstance(PP_Instance instance) {
     blink::WebString unused;
     bool is_privileged_context =
         plugin_instance->GetContainer()
-            ->element()
-            .document()
+            ->document()
             .isSecureContext(unused) &&
         content::IsOriginSecure(plugin_instance->GetPluginURL());
     render_frame->Send(new FrameHostMsg_DidCreateOutOfProcessPepperInstance(

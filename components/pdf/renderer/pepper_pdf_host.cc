@@ -21,7 +21,6 @@
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_image_data_api.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
-#include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "third_party/WebKit/public/web/WebView.h"
@@ -133,7 +132,7 @@ int32_t PepperPDFHost::OnHostMsgHasUnsupportedFeature(
     return PP_ERROR_FAILED;
 
   blink::WebView* view =
-      instance->GetContainer()->element().document().frame()->view();
+      instance->GetContainer()->document().frame()->view();
   content::RenderView* render_view = content::RenderView::FromWebView(view);
   render_view->Send(
       new PDFHostMsg_PDFHasUnsupportedFeature(render_view->GetRoutingID()));

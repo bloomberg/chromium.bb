@@ -181,9 +181,7 @@ bool TestPlugin::initialize(blink::WebPluginContainer* container) {
 
   blink::Platform::ContextAttributes attrs;
   attrs.webGLVersion = 1;  // We are creating a context through the WebGL APIs.
-  DCHECK(!container->element().isNull());
-  DCHECK(!container->element().document().isNull());
-  blink::WebURL url = container->element().document().url();
+  blink::WebURL url = container->document().url();
   blink::Platform::GraphicsInfo gl_info;
   context_provider_ = base::WrapUnique(
       blink::Platform::current()->createOffscreenGraphicsContext3DProvider(

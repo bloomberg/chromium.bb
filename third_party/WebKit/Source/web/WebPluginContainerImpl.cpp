@@ -90,6 +90,7 @@
 #include "public/platform/WebURLError.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/web/WebDOMMessageEvent.h"
+#include "public/web/WebDocument.h"
 #include "public/web/WebElement.h"
 #include "public/web/WebInputEvent.h"
 #include "public/web/WebPlugin.h"
@@ -392,6 +393,11 @@ bool WebPluginContainerImpl::executeEditCommand(const WebString& name, const Web
 WebElement WebPluginContainerImpl::element()
 {
     return WebElement(m_element);
+}
+
+WebDocument WebPluginContainerImpl::document()
+{
+    return WebDocument(&m_element->document());
 }
 
 void WebPluginContainerImpl::dispatchProgressEvent(const WebString& type, bool lengthComputable, unsigned long long loaded, unsigned long long total, const WebString& url)

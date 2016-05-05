@@ -39,6 +39,7 @@ struct NPObject;
 
 namespace blink {
 
+class WebDocument;
 class WebElement;
 class WebPlugin;
 class WebString;
@@ -59,6 +60,9 @@ public:
 
     // Returns the element containing this plugin.
     virtual WebElement element() = 0;
+
+    // Returns the owning document for the plugin.
+    virtual WebDocument document() = 0;
 
     // Synchronously dispatches the progress event.
     virtual void dispatchProgressEvent(const WebString& type, bool lengthComputable, unsigned long long loaded, unsigned long long total, const WebString& url) = 0;

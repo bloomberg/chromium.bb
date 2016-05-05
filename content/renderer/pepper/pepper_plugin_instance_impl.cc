@@ -295,8 +295,7 @@ bool SecurityOriginForInstance(PP_Instance instance_id,
   if (!instance)
     return false;
 
-  WebElement plugin_element = instance->container()->element();
-  *security_origin = plugin_element.document().getSecurityOrigin();
+  *security_origin = instance->container()->document().getSecurityOrigin();
   return true;
 }
 
@@ -485,7 +484,7 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
       layer_bound_to_fullscreen_(false),
       layer_is_hardware_(false),
       plugin_url_(plugin_url),
-      document_url_(container ? GURL(container->element().document().url())
+      document_url_(container ? GURL(container->document().url())
                               : GURL()),
       is_flash_plugin_(module->name() == kFlashPluginName),
       has_been_clicked_(false),
@@ -647,17 +646,12 @@ v8::Local<v8::Context> PepperPluginInstanceImpl::GetMainWorldContext() {
   if (!container_)
     return v8::Local<v8::Context>();
 
-  if (container_->element().isNull())
+  WebLocalFrame* frame = container_->document().frame();
+
+  if (!frame)
     return v8::Local<v8::Context>();
 
-  if (container_->element().document().isNull())
-    return v8::Local<v8::Context>();
-
-  if (!container_->element().document().frame())
-    return v8::Local<v8::Context>();
-
-  v8::Local<v8::Context> context =
-      container_->element().document().frame()->mainWorldScriptContext();
+  v8::Local<v8::Context> context = frame->mainWorldScriptContext();
   DCHECK(context->GetIsolate() == isolate_);
   return context;
 }
@@ -924,7 +918,7 @@ bool PepperPluginInstanceImpl::HandleDocumentLoad(
 
   if (module()->is_crashed()) {
     // Don't create a resource for a crashed plugin.
-    container()->element().document().frame()->stopLoading();
+    container()->document().frame()->stopLoading();
     return false;
   }
 
@@ -1308,7 +1302,7 @@ void PepperPluginInstanceImpl::ViewChanged(
   view_data_.device_scale /= viewport_to_dip_scale_;
 
   gfx::Size scroll_offset =
-      container_->element().document().frame()->scrollOffset();
+      container_->document().frame()->scrollOffset();
   view_data_.scroll_offset = PP_MakePoint(scroll_offset.width(),
                                           scroll_offset.height());
 
@@ -1975,7 +1969,7 @@ bool PepperPluginInstanceImpl::SetFullscreen(bool fullscreen) {
     SetSizeAttributesForFullscreen();
     container_->element().requestFullScreen();
   } else {
-    container_->element().document().cancelFullScreen();
+    container_->document().cancelFullScreen();
   }
   return true;
 }
@@ -2017,7 +2011,7 @@ bool PepperPluginInstanceImpl::IsViewAccelerated() {
   if (!container_)
     return false;
 
-  WebDocument document = container_->element().document();
+  WebDocument document = container_->document();
   WebLocalFrame* frame = document.frame();
   if (!frame)
     return false;
@@ -2197,7 +2191,7 @@ void PepperPluginInstanceImpl::HandleMouseLockedInputEvent(
 
 void PepperPluginInstanceImpl::SimulateInputEvent(
     const InputEventData& input_event) {
-  WebView* web_view = container()->element().document().frame()->view();
+  WebView* web_view = container()->document().frame()->view();
   if (!web_view) {
     NOTREACHED();
     return;
@@ -2385,7 +2379,7 @@ PP_Var PepperPluginInstanceImpl::GetWindowObject(PP_Instance instance) {
   RecordFlashJavaScriptUse();
   V8VarConverter converter(pp_instance_, V8VarConverter::kAllowObjectVars);
   PepperTryCatchVar try_catch(this, &converter, NULL);
-  WebLocalFrame* frame = container_->element().document().frame();
+  WebLocalFrame* frame = container_->document().frame();
   if (!frame) {
     try_catch.SetException("No frame exists for window object.");
     return PP_MakeUndefined();
@@ -2428,7 +2422,7 @@ PP_Var PepperPluginInstanceImpl::ExecuteScript(PP_Instance instance,
   if (try_catch.HasException())
     return PP_MakeUndefined();
 
-  WebLocalFrame* frame = container_->element().document().frame();
+  WebLocalFrame* frame = container_->document().frame();
   if (!frame) {
     try_catch.SetException("No frame to execute script in.");
     return PP_MakeUndefined();
@@ -2874,8 +2868,7 @@ PP_Var PepperPluginInstanceImpl::ResolveRelativeToDocument(
   if (!relative_string)
     return PP_MakeNull();
 
-  WebElement plugin_element = container()->element();
-  GURL document_url = plugin_element.document().baseURL();
+  GURL document_url = container()->document().baseURL();
   return ppapi::PPB_URLUtil_Shared::GenerateURLReturn(
       document_url.Resolve(relative_string->value()), components);
 }
@@ -2914,7 +2907,7 @@ PP_Bool PepperPluginInstanceImpl::DocumentCanAccessDocument(
 PP_Var PepperPluginInstanceImpl::GetDocumentURL(
     PP_Instance instance,
     PP_URLComponents_Dev* components) {
-  blink::WebDocument document = container()->element().document();
+  blink::WebDocument document = container()->document();
   return ppapi::PPB_URLUtil_Shared::GenerateURLReturn(document.url(),
                                                       components);
 }
@@ -2928,7 +2921,7 @@ PP_Var PepperPluginInstanceImpl::GetPluginInstanceURL(
 PP_Var PepperPluginInstanceImpl::GetPluginReferrerURL(
     PP_Instance instance,
     PP_URLComponents_Dev* components) {
-  blink::WebDocument document = container()->element().document();
+  blink::WebDocument document = container()->document();
   if (!full_frame_)
     return ppapi::PPB_URLUtil_Shared::GenerateURLReturn(document.url(),
                                                         components);
@@ -3105,7 +3098,7 @@ void PepperPluginInstanceImpl::DoSetCursor(WebCursorInfo* cursor) {
 }
 
 bool PepperPluginInstanceImpl::IsFullPagePlugin() {
-  WebLocalFrame* frame = container()->element().document().frame();
+  WebLocalFrame* frame = container()->document().frame();
   return frame->view()->mainFrame()->isWebLocalFrame() &&
          frame->view()->mainFrame()->document().isPluginDocument();
 }
@@ -3170,7 +3163,7 @@ int32_t PepperPluginInstanceImpl::Navigate(
   if (!container_)
     return PP_ERROR_FAILED;
 
-  WebDocument document = container_->element().document();
+  WebDocument document = container_->document();
   WebLocalFrame* frame = document.frame();
   if (!frame)
     return PP_ERROR_FAILED;
@@ -3229,7 +3222,7 @@ void PepperPluginInstanceImpl::SetEmbedProperty(PP_Var key, PP_Var value) {
 bool PepperPluginInstanceImpl::CanAccessMainFrame() const {
   if (!container_)
     return false;
-  blink::WebDocument containing_document = container_->element().document();
+  blink::WebDocument containing_document = container_->document();
 
   if (!containing_document.frame() || !containing_document.frame()->view() ||
       !containing_document.frame()->view()->mainFrame()) {

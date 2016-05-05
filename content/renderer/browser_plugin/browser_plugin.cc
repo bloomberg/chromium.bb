@@ -153,7 +153,7 @@ void BrowserPlugin::Attach() {
   attach_params.view_rect = view_rect();
   attach_params.is_full_page_plugin = false;
   if (container()) {
-    blink::WebLocalFrame* frame = container()->element().document().frame();
+    blink::WebLocalFrame* frame = container()->document().frame();
     attach_params.is_full_page_plugin =
         frame->view()->mainFrame()->isWebLocalFrame() &&
         frame->view()->mainFrame()->document().isPluginDocument();
@@ -365,7 +365,7 @@ void BrowserPlugin::updateGeometry(const WebRect& plugin_rect_in_viewport,
   gfx::Rect old_view_rect = view_rect_;
   // Convert the plugin_rect_in_viewport to window coordinates, which is css.
   WebRect rect_in_css(plugin_rect_in_viewport);
-  blink::WebView* webview = container()->element().document().frame()->view();
+  blink::WebView* webview = container()->document().frame()->view();
   RenderView::FromWebView(webview)->GetWidget()->convertViewportToWindow(
       &rect_in_css);
   view_rect_ = rect_in_css;

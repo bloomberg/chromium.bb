@@ -18,7 +18,6 @@
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebArrayBuffer.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
-#include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebPepperSocket.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 
@@ -257,9 +256,7 @@ int32_t PepperWebSocketHost::OnHostMsgConnect(
       renderer_ppapi_host_->GetContainerForInstance(pp_instance());
   if (!container)
     return PP_ERROR_BADARGUMENT;
-  // TODO(toyoshim) Remove following WebDocument object copy.
-  WebDocument document = container->element().document();
-  websocket_.reset(WebPepperSocket::create(document, this));
+  websocket_.reset(WebPepperSocket::create(container->document(), this));
   DCHECK(websocket_.get());
   if (!websocket_)
     return PP_ERROR_NOTSUPPORTED;

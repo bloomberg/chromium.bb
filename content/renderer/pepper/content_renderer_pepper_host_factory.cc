@@ -39,7 +39,6 @@
 #include "ppapi/shared_impl/ppb_image_data_shared.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
-#include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 
 #if defined(OS_WIN)
@@ -60,7 +59,7 @@ bool CanUseMediaStreamAPI(const RendererPpapiHost* host, PP_Instance instance) {
   if (!container)
     return false;
 
-  GURL document_url = container->element().document().url();
+  GURL document_url = container->document().url();
   ContentRendererClient* content_renderer_client =
       GetContentClient()->renderer();
   return content_renderer_client->AllowPepperMediaStreamAPI(document_url);
@@ -74,7 +73,7 @@ static bool CanUseCameraDeviceAPI(const RendererPpapiHost* host,
   if (!container)
     return false;
 
-  GURL document_url = container->element().document().url();
+  GURL document_url = container->document().url();
   ContentRendererClient* content_renderer_client =
       GetContentClient()->renderer();
   return content_renderer_client->IsPluginAllowedToUseCameraDeviceAPI(
@@ -87,7 +86,7 @@ bool CanUseCompositorAPI(const RendererPpapiHost* host, PP_Instance instance) {
   if (!container)
     return false;
 
-  GURL document_url = container->element().document().url();
+  GURL document_url = container->document().url();
   ContentRendererClient* content_renderer_client =
       GetContentClient()->renderer();
   return content_renderer_client->IsPluginAllowedToUseCompositorAPI(

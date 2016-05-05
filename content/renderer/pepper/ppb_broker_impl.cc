@@ -16,7 +16,6 @@
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/shared_impl/platform_file.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
-#include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 
 using ppapi::PlatformFileToInt;
@@ -104,7 +103,7 @@ int32_t PPB_Broker_Impl::GetHandle(int32_t* handle) {
 GURL PPB_Broker_Impl::GetDocumentUrl() {
   PepperPluginInstanceImpl* plugin_instance =
       HostGlobals::Get()->GetInstance(pp_instance());
-  return plugin_instance->container()->element().document().url();
+  return plugin_instance->container()->document().url();
 }
 
 // Transfers ownership of the handle to the plugin.

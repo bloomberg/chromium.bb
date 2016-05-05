@@ -66,7 +66,6 @@
 #include "third_party/WebKit/public/platform/WebURLLoader.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
-#include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "third_party/WebKit/public/web/WebURLLoaderOptions.h"
@@ -111,7 +110,7 @@ bool CanOpenViaFastPath(content::PepperPluginInstance* plugin_instance,
   // same-origin policy which prevents the app from requesting resources from
   // another app.
   blink::WebSecurityOrigin security_origin =
-      plugin_instance->GetContainer()->element().document().getSecurityOrigin();
+      plugin_instance->GetContainer()->document().getSecurityOrigin();
   return security_origin.canRequest(gurl);
 }
 
@@ -1027,7 +1026,7 @@ void DownloadManifestToBuffer(PP_Instance instance,
                    static_cast<int32_t>(PP_ERROR_FAILED)));
   }
   const blink::WebDocument& document =
-      plugin_instance->GetContainer()->element().document();
+      plugin_instance->GetContainer()->document();
 
   const GURL& gurl = load_manager->manifest_base_url();
   std::unique_ptr<blink::WebURLLoader> url_loader(
@@ -1382,7 +1381,7 @@ void PPBNaClPrivate::DownloadNexe(PP_Instance instance,
                    static_cast<int32_t>(PP_ERROR_FAILED)));
   }
   const blink::WebDocument& document =
-      plugin_instance->GetContainer()->element().document();
+      plugin_instance->GetContainer()->document();
   std::unique_ptr<blink::WebURLLoader> url_loader(
       CreateWebURLLoader(document, gurl));
   blink::WebURLRequest url_request = CreateWebURLRequest(document, gurl);
@@ -1533,7 +1532,7 @@ void DownloadFile(PP_Instance instance,
                               kInvalidNaClFileInfo));
   }
   const blink::WebDocument& document =
-      plugin_instance->GetContainer()->element().document();
+      plugin_instance->GetContainer()->document();
   std::unique_ptr<blink::WebURLLoader> url_loader(
       CreateWebURLLoader(document, gurl));
   blink::WebURLRequest url_request = CreateWebURLRequest(document, gurl);
@@ -1736,7 +1735,7 @@ void PPBNaClPrivate::StreamPexe(PP_Instance instance,
 
   GURL gurl(pexe_url);
   const blink::WebDocument& document =
-      plugin_instance->GetContainer()->element().document();
+      plugin_instance->GetContainer()->document();
   std::unique_ptr<blink::WebURLLoader> url_loader(
       CreateWebURLLoader(document, gurl));
   PexeDownloader* downloader =
