@@ -29,7 +29,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/views/bubble/bubble_frame_view.h"
-#include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
@@ -152,17 +152,14 @@ bool BookmarkBubbleView::AcceleratorPressed(
 }
 
 void BookmarkBubbleView::Init() {
-  remove_button_ = new views::LabelButton(this, l10n_util::GetStringUTF16(
-      IDS_BOOKMARK_BUBBLE_REMOVE_BOOKMARK));
-  remove_button_->SetStyle(views::Button::STYLE_BUTTON);
+  remove_button_ = views::MdTextButton::CreateSecondaryUiButton(
+      this, l10n_util::GetStringUTF16(IDS_BOOKMARK_BUBBLE_REMOVE_BOOKMARK));
 
-  edit_button_ = new views::LabelButton(
+  edit_button_ = views::MdTextButton::CreateSecondaryUiButton(
       this, l10n_util::GetStringUTF16(IDS_BOOKMARK_BUBBLE_OPTIONS));
-  edit_button_->SetStyle(views::Button::STYLE_BUTTON);
 
-  close_button_ = new views::LabelButton(
+  close_button_ = views::MdTextButton::CreateSecondaryUiButton(
       this, l10n_util::GetStringUTF16(IDS_DONE));
-  close_button_->SetStyle(views::Button::STYLE_BUTTON);
   close_button_->SetIsDefault(true);
 
   views::Label* combobox_label = new views::Label(

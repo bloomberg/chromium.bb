@@ -76,6 +76,10 @@ const char kTopChromeMDMaterialHybrid[] = "material-hybrid";
 
 // Classic, non-material, mode for the |kTopChromeMD| switch.
 const char kTopChromeMDNonMaterial[] = "non-material";
+
+// Applies the material design mode passed via --top-chrome-md to elements
+// throughout Chrome (not just top Chrome).
+const char kExtendMdToSecondaryUi[] = "secondary-ui-md";
 #endif  // defined(ENABLE_TOPCHROME_MD)
 
 }  // namespace switches

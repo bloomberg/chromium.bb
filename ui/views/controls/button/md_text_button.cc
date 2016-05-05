@@ -23,19 +23,34 @@ const int kVerticalPadding = 6;
 // Minimum size to reserve for the button contents.
 const int kMinWidth = 48;
 
+LabelButton* CreateButton(ButtonListener* listener,
+                          const base::string16& text,
+                          bool md) {
+  if (md)
+    return MdTextButton::CreateMdButton(listener, text);
+
+  LabelButton* button = new LabelButton(listener, text);
+  button->SetStyle(CustomButton::STYLE_BUTTON);
+  return button;
+}
+
 }  // namespace
 
 // static
 LabelButton* MdTextButton::CreateStandardButton(ButtonListener* listener,
                                                 const base::string16& text) {
-  if (ui::MaterialDesignController::IsModeMaterial())
-    return CreateMdButton(listener, text);
-
-  LabelButton* button = new LabelButton(listener, text);
-  button->SetStyle(STYLE_BUTTON);
-  return button;
+  return CreateButton(listener, text,
+                      ui::MaterialDesignController::IsModeMaterial());
 }
 
+// static
+LabelButton* MdTextButton::CreateSecondaryUiButton(ButtonListener* listener,
+                                                   const base::string16& text) {
+  return CreateButton(listener, text,
+                      ui::MaterialDesignController::IsSecondaryUiMaterial());
+}
+
+// static
 MdTextButton* MdTextButton::CreateMdButton(ButtonListener* listener,
                                            const base::string16& text) {
   MdTextButton* button = new MdTextButton(listener);
@@ -67,6 +82,15 @@ SkColor MdTextButton::GetInkDropBaseColor() const {
 
 void MdTextButton::SetText(const base::string16& text) {
   LabelButton::SetText(base::i18n::ToUpper(text));
+}
+
+void MdTextButton::UpdateStyleToIndicateDefaultStatus() {
+  // Update the call to action state to reflect defaultness. Don't change strong
+  // call to action to weak.
+  if (!is_default())
+    SetCallToAction(NO_CALL_TO_ACTION);
+  else if (cta_ == NO_CALL_TO_ACTION)
+    SetCallToAction(WEAK_CALL_TO_ACTION);
 }
 
 MdTextButton::MdTextButton(ButtonListener* listener)

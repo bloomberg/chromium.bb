@@ -131,6 +131,10 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   // Resets colors from the NativeTheme, explicitly set colors are unchanged.
   virtual void ResetColorsFromNativeTheme();
 
+  // Changes the visual styling of this button to reflect the state of
+  // |is_default()|.
+  virtual void UpdateStyleToIndicateDefaultStatus();
+
   // Updates the image view to contain the appropriate button state image.
   void UpdateImage();
 

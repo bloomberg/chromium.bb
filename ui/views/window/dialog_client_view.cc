@@ -7,10 +7,12 @@
 #include <algorithm>
 
 #include "build/build_config.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/blue_button.h"
 #include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
@@ -308,10 +310,15 @@ LabelButton* DialogClientView::CreateDialogButton(ui::DialogButton type) {
   if (GetDialogDelegate()->UseNewStyleForThisDialog() &&
       GetDialogDelegate()->GetDefaultDialogButton() == type &&
       GetDialogDelegate()->ShouldDefaultButtonBeBlue()) {
-    button = new BlueButton(this, title);
+    if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+      MdTextButton* md_button = MdTextButton::CreateMdButton(this, title);
+      md_button->SetCallToAction(MdTextButton::STRONG_CALL_TO_ACTION);
+      button = md_button;
+    } else {
+      button = new BlueButton(this, title);
+    }
   } else {
-    button = new LabelButton(this, title);
-    button->SetStyle(Button::STYLE_BUTTON);
+    button = MdTextButton::CreateSecondaryUiButton(this, title);
   }
   Button::ConfigureDefaultFocus(button);
 

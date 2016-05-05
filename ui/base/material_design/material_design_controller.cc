@@ -28,25 +28,27 @@ namespace ui {
 bool MaterialDesignController::is_mode_initialized_ = false;
 
 MaterialDesignController::Mode MaterialDesignController::mode_ =
-    MaterialDesignController::Mode::NON_MATERIAL;
+    MaterialDesignController::NON_MATERIAL;
+
+bool MaterialDesignController::include_secondary_ui_ = false;
 
 // static
 void MaterialDesignController::Initialize() {
   TRACE_EVENT0("startup", "MaterialDesignController::InitializeMode");
   CHECK(!is_mode_initialized_);
 #if !defined(ENABLE_TOPCHROME_MD)
-  SetMode(Mode::NON_MATERIAL);
+  SetMode(NON_MATERIAL);
 #else
   const std::string switch_value =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kTopChromeMD);
 
   if (switch_value == switches::kTopChromeMDMaterial) {
-    SetMode(Mode::MATERIAL_NORMAL);
+    SetMode(MATERIAL_NORMAL);
   } else if (switch_value == switches::kTopChromeMDMaterialHybrid) {
-    SetMode(Mode::MATERIAL_HYBRID);
+    SetMode(MATERIAL_HYBRID);
   } else if (switch_value == switches::kTopChromeMDNonMaterial) {
-    SetMode(Mode::NON_MATERIAL);
+    SetMode(NON_MATERIAL);
   } else {
     if (!switch_value.empty()) {
       LOG(ERROR) << "Invalid value='" << switch_value
@@ -55,6 +57,9 @@ void MaterialDesignController::Initialize() {
     }
     SetMode(DefaultMode());
   }
+
+  include_secondary_ui_ = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kExtendMdToSecondaryUi);
 #endif  // !defined(ENABLE_TOPCHROME_MD)
 }
 
@@ -66,8 +71,12 @@ MaterialDesignController::Mode MaterialDesignController::GetMode() {
 
 // static
 bool MaterialDesignController::IsModeMaterial() {
-  return GetMode() == Mode::MATERIAL_NORMAL ||
-         GetMode() == Mode::MATERIAL_HYBRID;
+  return GetMode() == MATERIAL_NORMAL || GetMode() == MATERIAL_HYBRID;
+}
+
+// static
+bool MaterialDesignController::IsSecondaryUiMaterial() {
+  return IsModeMaterial() && include_secondary_ui_;
 }
 
 // static
@@ -75,8 +84,9 @@ MaterialDesignController::Mode MaterialDesignController::DefaultMode() {
 #if defined(OS_CHROMEOS)
   if (DeviceDataManager::HasInstance() &&
       DeviceDataManager::GetInstance()->device_lists_complete()) {
-    return GetTouchScreensAvailability() == TouchScreensAvailability::ENABLED ?
-        Mode::MATERIAL_HYBRID : Mode::MATERIAL_NORMAL;
+    return GetTouchScreensAvailability() == TouchScreensAvailability::ENABLED
+               ? MATERIAL_HYBRID
+               : MATERIAL_NORMAL;
   }
 
 #if defined(USE_OZONE)
@@ -90,17 +100,17 @@ MaterialDesignController::Mode MaterialDesignController::DefaultMode() {
     if (fd >= 0) {
       if (devinfo.Initialize(fd, path) && devinfo.HasTouchscreen()) {
         close(fd);
-        return Mode::MATERIAL_HYBRID;
+        return MATERIAL_HYBRID;
       }
       close(fd);
     }
   }
 #endif  // defined(USE_OZONE)
-  return Mode::MATERIAL_NORMAL;
+  return MATERIAL_NORMAL;
 #elif defined(OS_LINUX)
-  return Mode::MATERIAL_NORMAL;
+  return MATERIAL_NORMAL;
 #else
-  return Mode::NON_MATERIAL;
+  return NON_MATERIAL;
 #endif  // defined(OS_CHROMEOS)
 }
 

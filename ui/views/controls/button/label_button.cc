@@ -201,10 +201,7 @@ void LabelButton::SetIsDefault(bool is_default) {
   ui::Accelerator accel(ui::VKEY_RETURN, ui::EF_NONE);
   is_default_ ? AddAccelerator(accel) : RemoveAccelerator(accel);
 
-  const bool bold = PlatformStyle::kDefaultLabelButtonHasBoldFont && is_default;
-  label_->SetFontList(bold ? cached_bold_font_list_ : cached_normal_font_list_);
-  InvalidateLayout();
-  ResetLabelEnabledColor();
+  UpdateStyleToIndicateDefaultStatus();
 }
 
 void LabelButton::SetStyle(ButtonStyle style) {
@@ -491,6 +488,14 @@ void LabelButton::ResetColorsFromNativeTheme() {
       explicitly_set_colors_[state] = false;
     }
   }
+}
+
+void LabelButton::UpdateStyleToIndicateDefaultStatus() {
+  const bool bold =
+      PlatformStyle::kDefaultLabelButtonHasBoldFont && is_default_;
+  label_->SetFontList(bold ? cached_bold_font_list_ : cached_normal_font_list_);
+  InvalidateLayout();
+  ResetLabelEnabledColor();
 }
 
 void LabelButton::UpdateImage() {

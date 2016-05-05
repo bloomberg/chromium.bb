@@ -948,14 +948,14 @@ void DownloadItemViewMd::ShowWarningDialog() {
 
   dropdown_state_ = NORMAL;
   if (mode_ == DANGEROUS_MODE) {
-    save_button_ = views::MdTextButton::CreateStandardButton(
+    save_button_ = views::MdTextButton::CreateMdButton(
         this, model_.GetWarningConfirmButtonText());
     save_button_->SetStyle(views::Button::STYLE_BUTTON);
     AddChildView(save_button_);
   }
   int discard_button_message =
       model_.IsMalicious() ? IDS_DISMISS_DOWNLOAD : IDS_DISCARD_DOWNLOAD;
-  discard_button_ = views::MdTextButton::CreateStandardButton(
+  discard_button_ = views::MdTextButton::CreateMdButton(
       this, l10n_util::GetStringUTF16(discard_button_message));
   discard_button_->SetStyle(views::Button::STYLE_BUTTON);
   AddChildView(discard_button_);
