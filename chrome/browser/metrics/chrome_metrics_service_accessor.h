@@ -99,6 +99,7 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   friend class safe_browsing::SafeBrowsingService;
   friend class safe_browsing::SafeBrowsingUIManager;
   friend class settings::SystemHandler;
+  friend void SyzyASANRegisterExperiment(const char*, const char*);
 
   FRIEND_TEST_ALL_PREFIXES(ChromeMetricsServiceAccessorTest,
                            MetricsReportingEnabled);
