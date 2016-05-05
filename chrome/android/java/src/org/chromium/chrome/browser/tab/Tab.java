@@ -28,6 +28,7 @@ import android.widget.FrameLayout;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.FieldTrialList;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ObserverList.RewindableIterator;
 import org.chromium.base.ThreadUtils;
@@ -1427,28 +1428,33 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      */
     public boolean detachAndStartReparenting(Intent intent, Bundle startActivityOptions,
             Runnable finalizeCallback) {
-        mIsDetachedForReparenting = true;
         ChromeActivity activity = getActivity();
         if (activity == null) return false;
-        TabModelSelector tabModelSelector = getTabModelSelector();
-        if (tabModelSelector == null) return false;
-        tabModelSelector.getModel(mIncognito).removeTab(this);
-
-        if (mContentViewCore != null) mContentViewCore.updateWindowAndroid(null);
-        attachTabContentManager(null);
 
         if (intent == null) intent = new Intent();
         intent.setPackage(activity.getPackageName());
         intent.setAction(Intent.ACTION_VIEW);
         if (TextUtils.isEmpty(intent.getDataString())) intent.setData(Uri.parse(getUrl()));
-        intent.putExtra(IntentHandler.EXTRA_TAB_ID, mId);
         if (isIncognito()) {
             intent.putExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, true);
         }
         IntentHandler.addTrustedIntentExtras(intent, activity);
 
-        AsyncTabParamsManager.add(mId,
-                new TabReparentingParams(this, intent, finalizeCallback));
+        boolean disabled = FieldTrialList.trialExists("TabReparenting")
+                && FieldTrialList.findFullName("TabReparenting").startsWith("Disabled");
+        if (!disabled) {
+            TabModelSelector tabModelSelector = getTabModelSelector();
+            if (tabModelSelector == null) return false;
+            mIsDetachedForReparenting = true;
+            tabModelSelector.getModel(mIncognito).removeTab(this);
+
+            if (mContentViewCore != null) mContentViewCore.updateWindowAndroid(null);
+            attachTabContentManager(null);
+
+            intent.putExtra(IntentHandler.EXTRA_TAB_ID, mId);
+            AsyncTabParamsManager.add(mId,
+                    new TabReparentingParams(this, intent, finalizeCallback));
+        }
 
         activity.startActivity(intent, startActivityOptions);
         return true;
