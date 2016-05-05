@@ -49,14 +49,13 @@
           vertical-align="top">
         <div class="dropdown-content">
           <paper-item on-tap="onMakeDefaultTap_"
-              i18n-content="searchEnginesMakeDefault"
-              hidden$="[[!engine.canBeDefault]]" id="makeDefault"></paper-item>
-          <paper-item on-tap="onEditTap_"
-              i18n-content="searchEnginesEdit"
-              hidden$="[[!engine.canBeEdited]]" id="edit"></paper-item>
-          <paper-item on-tap="onDeleteTap_"
-              i18n-content="searchEnginesRemoveFromList"
-              hidden$="[[!engine.canBeRemoved]]" id="delete"></paper-item>
+              hidden$="[[!engine.canBeDefault]]" id="makeDefault">
+            $i18n{searchEnginesMakeDefault}
+          </paper-item>
+          <paper-item on-tap="onEditTap_" hidden$="[[!engine.canBeEdited]]"
+              id="edit">$i18n{searchEnginesEdit}</paper-item>
+          <paper-item on-tap="onDeleteTap_" hidden$="[[!engine.canBeRemoved]]"
+              id="delete">$i18n{searchEnginesRemoveFromList}</paper-item>
         <div>
       </iron-dropdown>
     </div>

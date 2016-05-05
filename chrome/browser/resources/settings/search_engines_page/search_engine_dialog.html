@@ -12,23 +12,26 @@
       <div class="title">[[dialogTitle_]]</div>
       <div class="body">
         <paper-input always-float-label id="searchEngine"
-            i18n-values="label:searchEnginesSearchEngine;error-message:searchEnginesNotValid"
+            label="$i18n{searchEnginesSearchEngine}"
+            error-message="$i18n{searchEnginesNotValid}"
             value="{{searchEngine_}}" on-focus="validate_"
             on-input="validate_">
         </paper-input>
         <paper-input always-float-label id="keyword"
-            i18n-values="label:searchEnginesKeyword;error-message:searchEnginesNotValid"
+            label="$i18n{searchEnginesKeyword}"
+            error-message="$i18n{searchEnginesNotValid}"
             value="{{keyword_}}" on-focus="validate_" on-input="validate_">
         </paper-input>
         <paper-input always-float-label id="queryUrl"
-            i18n-values="label:searchEnginesQueryURLExplanation;error-message:searchEnginesNotValid"
+            label="$i18n{searchEnginesQueryURLExplanation}"
+            error-message="$i18n{searchEnginesNotValid}"
             value="{{queryUrl_}}" on-focus="validate_" on-input="validate_"
             disabled$="[[model.urlLocked]]">
         </paper-input>
       </div>
       <div class="button-container">
-        <paper-button class="cancel-button" on-tap="cancel_"
-            i18n-content="cancel" id="cancel"></paper-button>
+        <paper-button class="cancel-button" on-tap="cancel_" id="cancel">
+            $i18n{cancel}</paper-button>
         <paper-button id="actionButton" class="action-button"
             on-tap="onActionButtonTap_">
           [[actionButtonText_]]

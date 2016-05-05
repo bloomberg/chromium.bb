@@ -30,10 +30,10 @@
         <iron-dropdown opened="{{editMenuOpened}}" horizontal-align="right"
             vertical-align="top">
           <div class="dropdown-content">
-            <paper-item on-tap="onManageTap_" id="manage"
-                i18n-content="searchEnginesManageExtension"></paper-item>
-            <paper-item on-tap="onDisableTap_"  id="disable"
-                i18n-content="disable"></paper-item>
+            <paper-item on-tap="onManageTap_" id="manage">
+                $i18n{searchEnginesManageExtension}</paper-item>
+            <paper-item on-tap="onDisableTap_" id="disable">
+                $i18n{disable}</paper-item>
           <div>
         </iron-dropdown>
     </div>

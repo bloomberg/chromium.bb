@@ -25,7 +25,7 @@
       }
     </style>
     <div>
-      <div class="label" i18n-content="searchEnginesDefault"></div>
+      <div class="label">$i18n{searchEnginesDefault}</div>
       <settings-search-engines-list engines="[[defaultEngines]]">
       </settings-search-engines-list>
     </div>
@@ -33,16 +33,16 @@
       <settings-search-engine-dialog></settings-search-engine-dialog>
     </template>
     <div>
-      <div class="label" i18n-content="searchEnginesOther"></div>
+      <div class="label">$i18n{searchEnginesOther}</div>
       <!-- TODO(dbeam): why does on-click work with keyboard but on-tap
            doesn't? -->
       <settings-search-engines-list engines="[[otherEngines]]">
-        <a is="action-link" i18n-content="searchEnginesAddSearchEngine"
-            on-tap="onAddSearchEngineTap_" id="addSearchEngine"></a>
+        <a is="action-link" on-tap="onAddSearchEngineTap_" id="addSearchEngine">
+            $i18n{searchEnginesAddSearchEngine}</a>
       </settings-search-engines-list>
 
       <template is="dom-if" if="[[showExtensionsList_]]">
-        <div class="label" i18n-content="searchEnginesExtension"></div>
+        <div class="label">$i18n{searchEnginesExtension}</div>
         <div class="extension-engines">
           <template is="dom-repeat" items="[[extensions]]">
             <settings-omnibox-extension-entry engine="[[item]]">
