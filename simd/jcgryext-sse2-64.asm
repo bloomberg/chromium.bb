@@ -37,7 +37,7 @@
 
         align   16
 
-        global  EXTN(jsimd_rgb_gray_convert_sse2)
+        global  EXTN(jsimd_rgb_gray_convert_sse2) PRIVATE
 
 EXTN(jsimd_rgb_gray_convert_sse2):
         push    rbp

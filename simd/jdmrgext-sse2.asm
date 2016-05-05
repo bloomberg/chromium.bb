@@ -41,7 +41,7 @@
 %define gotptr          wk(0)-SIZEOF_POINTER    ; void * gotptr
 
         align   16
-        global  EXTN(jsimd_h2v1_merged_upsample_sse2)
+        global  EXTN(jsimd_h2v1_merged_upsample_sse2) PRIVATE
 
 EXTN(jsimd_h2v1_merged_upsample_sse2):
         push    ebp
@@ -464,7 +464,7 @@ EXTN(jsimd_h2v1_merged_upsample_sse2):
 %define output_buf(b)           (b)+20          ; JSAMPARRAY output_buf
 
         align   16
-        global  EXTN(jsimd_h2v2_merged_upsample_sse2)
+        global  EXTN(jsimd_h2v2_merged_upsample_sse2) PRIVATE
 
 EXTN(jsimd_h2v2_merged_upsample_sse2):
         push    ebp

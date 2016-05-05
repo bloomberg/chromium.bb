@@ -368,6 +368,16 @@ const_base:
 
 %endif
 
+; Begin chromium edits
+%ifdef MACHO ; ----(nasm -fmacho -DMACHO ...)--------
+%define PRIVATE :private_extern
+%elifdef ELF ; ----(nasm -felf[64] -DELF ...)------------
+%define PRIVATE :hidden
+%else
+%define PRIVATE
+%endif
+; End chromium edits
+
 ; --------------------------------------------------------------------------
 ;  Defines picked up from the C headers
 ;
