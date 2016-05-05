@@ -458,12 +458,14 @@ bool Webm2Pes::WritePesPacket(const mkvparser::Block::Frame& vpx_frame,
   ///
   printf("-FRAME TOTAL LENGTH %ld--\n", vpx_frame.len);
   for (const Range& frame_range : frame_ranges) {
-    printf("--frame range: off:%lu len:%lu\n", frame_range.offset,
-           frame_range.length);
+    printf("--frame range: off:%u len:%u\n",
+           static_cast<unsigned int>(frame_range.offset),
+           static_cast<unsigned int>(frame_range.length));
   }
   for (const Range& payload_range : packet_payload_ranges) {
-    printf("---payload range: off:%lu len:%lu\n", payload_range.offset,
-           payload_range.length);
+    printf("---payload range: off:%u len:%u\n",
+           static_cast<unsigned int>(payload_range.offset),
+           static_cast<unsigned int>(payload_range.length));
   }
 
   const std::int64_t khz90_pts =
