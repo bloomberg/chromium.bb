@@ -227,10 +227,8 @@
       'GPU Mac Builder (dbg)': 'swarming_gpu_tests_gyp_debug_trybot',
       'GPU Linux Builder (dbg)': 'swarming_gpu_tests_gn_debug_trybot',
       'GPU Linux Builder': 'swarming_gpu_tests_gn_release_trybot',
-      'GPU Win Builder':
-        'swarming_gpu_tests_gyp_release_trybot_minimal_symbols_x86',
-      'GPU Win Builder (dbg)':
-        'swarming_gpu_tests_gyp_debug_trybot_minimal_symbols_x86',
+      'GPU Win Builder': 'swarming_gpu_tests_gyp_release_trybot_x86',
+      'GPU Win Builder (dbg)': 'swarming_gpu_tests_gyp_debug_trybot_x86',
       'Linux Debug (NVIDIA)': 'none',
       'Linux Release (NVIDIA)': 'none',
       'Mac 10.10 Debug (Intel)': 'none',
@@ -250,16 +248,15 @@
       'GPU Linux Builder': 'swarming_gpu_fyi_tests_gn_release_trybot',
       'GPU Mac Builder': 'swarming_gpu_fyi_tests_gyp_release_trybot',
       'GPU Mac Builder (dbg)': 'swarming_gpu_fyi_tests_gyp_debug_trybot',
-      'GPU Win Builder':
-        'swarming_gpu_tests_deqp_gles_gyp_release_trybot_minimal_symbols_x86',
+      'GPU Win Builder': 'swarming_gpu_tests_deqp_gles_gyp_release_trybot_x86',
       'GPU Win Builder (dbg)':
-        'swarming_gpu_tests_deqp_gles_gyp_debug_trybot_minimal_symbols_x86',
+        'swarming_gpu_tests_deqp_gles_gyp_debug_trybot_x86',
       'GPU Win Clang Builder (dbg)':
         'swarming_gpu_fyi_tests_gyp_clang_debug_trybot_x86',
       'GPU Win x64 Builder':
-        'swarming_gpu_tests_deqp_gles_gyp_release_trybot_minimal_symbols_x64',
+        'swarming_gpu_tests_deqp_gles_gyp_release_trybot_x64',
       'GPU Win x64 Builder (dbg)':
-        'swarming_gpu_tests_deqp_gles_gyp_debug_trybot_minimal_symbols_x64',
+        'swarming_gpu_tests_deqp_gles_gyp_debug_trybot_x64',
       'Linux ChromiumOS Builder':
         'swarming_gpu_fyi_tests_chromeos_gyp_release_trybot',
       'Linux Debug (NVIDIA)': 'none',
@@ -513,8 +510,7 @@
       'Mac Builder-Trybot': 'swarming_gpu_tests_gyp_release_bot',
       'Win Builder':
         'swarming_gpu_tests_gyp_release_bot_minimal_symbols_x86',
-      'Win Builder-Trybot':
-        'swarming_gpu_tests_gyp_release_trybot_minimal_symbols_x86',
+      'Win Builder-Trybot': 'swarming_gpu_tests_gyp_release_bot_x86',
     },
 
     'client.v8.fyi': {
@@ -530,24 +526,24 @@
     'chromium.webkit': {
       'Android Builder': 'android_gn_release_bot_minimal_symbols',
       'WebKit Android (Nexus4)': 'none',
-      'WebKit Linux (dbg)': 'swarming_gn_debug_bot_x64',
-      'WebKit Linux ASAN': 'swarming_gn_asan_lsan_release_bot_x64',
-      'WebKit Linux Leak': 'swarming_gn_release_bot_x64',
-      'WebKit Linux MSAN': 'swarming_gn_msan_release_bot_x64',
-      'WebKit Linux Trusty': 'swarming_gn_release_bot_x64',
-      'WebKit Linux': 'swarming_gn_release_bot_x64',
+      'WebKit Linux (dbg)': 'swarming_gn_debug_bot',
+      'WebKit Linux ASAN': 'swarming_gn_asan_lsan_release_bot',
+      'WebKit Linux Leak': 'swarming_gn_release_bot',
+      'WebKit Linux MSAN': 'swarming_gn_msan_release_bot',
+      'WebKit Linux Trusty': 'swarming_gn_release_bot',
+      'WebKit Linux': 'swarming_gn_release_bot',
       'WebKit Mac Builder (dbg)': 'swarming_gyp_debug_bot',
-      'WebKit Mac Builder': 'swarming_gyp_release_bot_x64',
+      'WebKit Mac Builder': 'swarming_gyp_release_bot',
       'WebKit Mac10.10': 'none',
       'WebKit Mac10.11 (dbg)': 'none',
-      'WebKit Mac10.11 (retina)': 'swarming_gyp_release_bot_x64',
+      'WebKit Mac10.11 (retina)': 'swarming_gyp_release_bot',
       'WebKit Mac10.11': 'none',
-      'WebKit Mac10.9': 'swarming_gyp_release_bot_x64',
+      'WebKit Mac10.9': 'swarming_gyp_release_bot',
       'WebKit Win Builder (dbg)': 'swarming_gyp_debug_bot_minimal_symbols_x86',
       'WebKit Win Builder': 'swarming_gyp_release_bot_minimal_symbols_x86',
       'WebKit Win x64 Builder (dbg)':
-        'swarming_gyp_debug_bot_minimal_symbols_x64',
-      'WebKit Win x64 Builder': 'swarming_gyp_release_bot_minimal_symbols_x64',
+        'swarming_gn_debug_bot_minimal_symbols_x64',
+      'WebKit Win x64 Builder': 'swarming_gn_release_bot_minimal_symbols_x64',
       'WebKit Win10': 'none',
       'WebKit Win7 (dbg)': 'none',
       'WebKit Win7': 'none',
@@ -621,26 +617,23 @@
     },
 
     'tryserver.blink': {
-      'linux_blink_compile_dbg':
-        'swarming_gn_debug_bot_minimal_symbols_x64',
-      'linux_blink_compile_rel':
-        'swarming_gn_release_trybot_minimal_symbols_x64',
-      'linux_blink_dbg':
-        'swarming_gn_debug_bot_minimal_symbols_x64',
-      'linux_blink_rel':
-        'swarming_gn_release_trybot_minimal_symbols_x64',
-      'mac_blink_compile_dbg':
-        'swarming_gyp_debug_bot_minimal_symbols_x64',
-      'mac_blink_compile_rel':
-        'swarming_gyp_release_bot_minimal_symbols_x64',
-      'mac_blink_dbg':
-        'swarming_gyp_debug_bot_minimal_symbols_x64',
-      'mac_blink_rel': 'swarming_gyp_release_trybot_minimal_symbols_x64',
-      'win_blink_compile_dbg': 'swarming_gyp_debug_bot_minimal_symbols_x86',
-      'win_blink_compile_rel':
-        'swarming_gyp_release_trybot_minimal_symbols_x86',
-      'win_blink_dbg': 'swarming_gyp_debug_bot_minimal_symbols_x86',
-      'win_blink_rel': 'swarming_gyp_release_trybot_minimal_symbols_x86',
+      # Most tryservers should have '_trybot' in their config names, but
+      # 'release_trybot' includes 'dcheck_always_on', and the blink 
+      # release trybots must *not* enable dchecks, because that could
+      # cause them to produce different baselines than the release
+      # waterfall bots, and run-webkit-tests can't handle that (by design).
+      'linux_blink_compile_dbg': 'swarming_gn_debug_trybot',
+      'linux_blink_compile_rel': 'swarming_gn_release_bot_minimal_symbols',
+      'linux_blink_dbg': 'swarming_gn_debug_trybot',
+      'linux_blink_rel': 'swarming_gn_release_bot_minimal_symbols',
+      'mac_blink_compile_dbg': 'swarming_gyp_debug_trybot',
+      'mac_blink_compile_rel': 'swarming_gyp_release_bot_minimal_symbols',
+      'mac_blink_dbg': 'swarming_gyp_debug_trybot',
+      'mac_blink_rel': 'swarming_gyp_release_bot_minimal_symbols',
+      'win_blink_compile_dbg': 'swarming_gyp_debug_trybot_x86',
+      'win_blink_compile_rel': 'swarming_gyp_release_bot_minimal_symbols_x86',
+      'win_blink_dbg': 'swarming_gyp_debug_trybot_x86',
+      'win_blink_rel': 'swarming_gyp_release_bot_minimal_symbols_x86',
     },
 
     'tryserver.chromium.android': {
@@ -678,14 +671,12 @@
       'linux_angle_rel_ng': 'swarming_gpu_fyi_tests_gn_release_trybot',
       'mac_angle_dbg_ng': 'swarming_gpu_fyi_tests_gyp_debug_trybot',
       'mac_angle_rel_ng': 'swarming_gpu_fyi_tests_gyp_release_trybot',
-      'win_angle_dbg_ng':
-        'swarming_gpu_tests_deqp_gles_gyp_debug_trybot_minimal_symbols_x86',
-      'win_angle_rel_ng':
-        'swarming_gpu_tests_deqp_gles_gyp_release_trybot_minimal_symbols_x86',
+      'win_angle_dbg_ng': 'swarming_gpu_tests_deqp_gles_gyp_debug_trybot_x86',
+      'win_angle_rel_ng': 'swarming_gpu_tests_deqp_gles_gyp_release_trybot_x86',
       'win_angle_x64_dbg_ng':
-        'swarming_gpu_tests_deqp_gles_gyp_debug_trybot_minimal_symbols_x64',
+        'swarming_gpu_tests_deqp_gles_gyp_debug_trybot_x64',
       'win_angle_x64_rel_ng':
-        'swarming_gpu_tests_deqp_gles_gyp_release_trybot_minimal_symbols_x64',
+        'swarming_gpu_tests_deqp_gles_gyp_release_trybot_x64',
     },
 
     'tryserver.chromium.linux': {
@@ -830,25 +821,19 @@
     },
 
     'tryserver.chromium.win': {
-      'win10_chromium_x64_rel_ng':
-        'swarming_gn_release_trybot_minimal_symbols_x64',
-      'win10_chromium_x64_rel_ng_exp':
-        'swarming_gn_release_trybot_minimal_symbols_x64',
-      'win8_chromium_gn_dbg': 'gn_debug_bot_minimal_symbols_x86',
+      'win10_chromium_x64_rel_ng': 'swarming_gn_release_trybot_x64',
+      'win10_chromium_x64_rel_ng_exp': 'swarming_gn_release_trybot_x64',
+      'win8_chromium_gn_dbg': 'swarming_gn_debug_trybot_x86',
       'win8_chromium_gn_upload': 'gn_release_bot_minimal_symbols_x86',
       'win8_chromium_ng': 'gn_release_trybot_x86',
-      'win_x64_archive':
-        'noswarming_gyp_release_trybot_minimal_symbols_x64',
-      'win_archive': 'noswarming_gyp_release_trybot_minimal_symbols_x86',
-      'win_chromium_compile_dbg_ng':
-        'swarming_gyp_debug_bot_minimal_symbols_x86',
+      'win_x64_archive': 'noswarming_gyp_release_trybot_x64',
+      'win_archive': 'noswarming_gyp_release_trybot_x86',
+      'win_chromium_compile_dbg_ng': 'swarming_gyp_debug_trybot_x86',
       'win_chromium_compile_rel_ng':
-        'swarming_gpu_tests_gyp_release_trybot_minimal_symbols_x86',
-      'win_chromium_dbg_ng': 'swarming_gyp_debug_bot_minimal_symbols_x86',
-      'win_chromium_rel_ng':
-        'swarming_gpu_tests_gyp_release_trybot_minimal_symbols_x86',
-      'win_chromium_syzyasan_rel':
-        'swarming_gyp_syzyasan_release_trybot_minimal_symbols_x86',
+        'swarming_gpu_tests_gyp_release_trybot_x86',
+      'win_chromium_dbg_ng': 'swarming_gyp_debug_trybot_x86',
+      'win_chromium_rel_ng': 'swarming_gpu_tests_gyp_release_trybot_x86',
+      'win_chromium_syzyasan_rel': 'swarming_gyp_syzyasan_release_trybot_x86',
       'win_chromium_variable': 'findit',
       'win_chromium_variable_archive': 'findit',
       'win_chromium_variable_chrome': 'findit',
@@ -857,19 +842,16 @@
       'win_chromium_variable_webkit_layout': 'findit',
       'win_chromium_variable_webkit_win7_builder': 'findit',
       'win_chromium_variable_webkit_win7_builder_x64': 'findit',
-      'win_chromium_x64_rel_ng':
-        'swarming_gn_release_trybot_minimal_symbols_x64',
+      'win_chromium_x64_rel_ng': 'swarming_gn_release_trybot_x64',
       'win_clang': 'win_clang_debug_bot',
-      'win_clang_dbg': 'swarming_gyp_clang_debug_bot_minimal_symbols_x86',
-      'win_clang_rel':
-        'swarming_gyp_clang_official_release_trybot_minimal_symbols_x86',
+      'win_clang_dbg': 'swarming_gyp_clang_debug_trybot_x86',
+      'win_clang_rel': 'swarming_gyp_clang_official_release_trybot_x86',
       'win_clang_x64_dbg': 'win_clang_debug_bot',
-      'win_clang_x64_rel':
-        'swarming_gyp_clang_official_release_trybot_minimal_symbols_x64',
+      'win_clang_x64_rel': 'swarming_gyp_clang_official_release_trybot_x64',
       'win_nacl_sdk': 'nacl_annotator',
       'win_nacl_sdk_build': 'nacl_annotator',
       'win_optional_gpu_tests_rel':
-        'swarming_gpu_tests_deqp_gles_gyp_release_trybot_minimal_symbols_x86',
+        'swarming_gpu_tests_deqp_gles_gyp_release_trybot_x86',
       'win_pgo': 'gyp_official_winpgo',
       'win_upload_clang': 'gn_release_bot',
       'win_chrome_official': 'gyp_official_goma_minimal_symbols_x86',
@@ -877,7 +859,7 @@
 
     'tryserver.v8': {
       'v8_android_chromium_gn_dbg': 'android_gn_debug_bot',
-      'v8_linux_blink_rel': 'swarming_gn_release_trybot_minimal_symbols_x64',
+      'v8_linux_blink_rel': 'swarming_gn_release_trybot_x64',
       'v8_linux_chromium_gn_rel': 'gn_release_trybot',
     },
   },
@@ -1424,12 +1406,12 @@
       'noswarming', 'gyp', 'release_trybot',
     ],
 
-    'noswarming_gyp_release_trybot_minimal_symbols_x64': [
-      'noswarming', 'gyp', 'release_trybot', 'minimal_symbols', 'x64',
+    'noswarming_gyp_release_trybot_x64': [
+      'noswarming', 'gyp', 'release_trybot', 'x64',
     ],
 
-    'noswarming_gyp_release_trybot_minimal_symbols_x86': [
-      'noswarming', 'gyp', 'release_trybot', 'minimal_symbols', 'x86',
+    'noswarming_gyp_release_trybot_x86': [
+      'noswarming', 'gyp', 'release_trybot', 'x86',
     ],
 
     'swarming_android_gn_release_bot_minimal_symbols': [
@@ -1612,12 +1594,12 @@
       'swarming', 'chromeos', 'msan', 'gyp', 'release_trybot',
     ],
 
-    'swarming_gn_asan_lsan_release_bot_x64': [
-      'swarming', 'gn', 'asan', 'lsan', 'release_bot', 'x64',
+    'swarming_gn_asan_lsan_release_bot': [
+      'swarming', 'gn', 'asan', 'lsan', 'release_bot',
     ],
 
-    'swarming_gn_msan_release_bot_x64': [
-      'swarming', 'gn', 'msan', 'release_bot', 'x64',
+    'swarming_gn_msan_release_bot': [
+      'swarming', 'gn', 'msan', 'release_bot',
     ],
 
     'swarming_gpu_fyi_tests_chromeos_gyp_release_trybot': [
@@ -1650,40 +1632,34 @@
       'clang', 'debug_trybot', 'x86',
     ],
 
-    'swarming_gpu_tests_deqp_gles_gyp_debug_trybot_minimal_symbols_x64': [
+    'swarming_gpu_tests_deqp_gles_gyp_debug_trybot_x64': [
       'swarming', 'gpu_tests', 'angle_deqp_tests',
-      'internal_gles2_conform_tests', 'gyp', 'debug_trybot',
-      'minimal_symbols', 'x64',
+      'internal_gles2_conform_tests', 'gyp', 'debug_trybot', 'x64',
     ],
 
-    'swarming_gpu_tests_deqp_gles_gyp_debug_trybot_minimal_symbols_x86': [
+    'swarming_gpu_tests_deqp_gles_gyp_debug_trybot_x86': [
       'swarming', 'gpu_tests', 'angle_deqp_tests',
-      'internal_gles2_conform_tests', 'gyp', 'debug_trybot',
-      'minimal_symbols', 'x86',
+      'internal_gles2_conform_tests', 'gyp', 'debug_trybot', 'x86',
     ],
 
-    'swarming_gpu_tests_deqp_gles_gyp_release_trybot_minimal_symbols_x64': [
+    'swarming_gpu_tests_deqp_gles_gyp_release_trybot_x64': [
       'swarming', 'gpu_tests', 'angle_deqp_tests',
-      'internal_gles2_conform_tests', 'gyp', 'release_trybot',
-      'minimal_symbols', 'x64',
+      'internal_gles2_conform_tests', 'gyp', 'release_trybot', 'x64',
     ],
 
-    'swarming_gpu_tests_deqp_gles_gyp_release_trybot_minimal_symbols_x86': [
+    'swarming_gpu_tests_deqp_gles_gyp_release_trybot_x86': [
       'swarming', 'gpu_tests', 'angle_deqp_tests',
-      'internal_gles2_conform_tests', 'gyp', 'release_trybot',
-      'minimal_symbols', 'x86',
+      'internal_gles2_conform_tests', 'gyp', 'release_trybot', 'x86',
     ],
 
-    'swarming_gpu_tests_deqp_gles_gyp_release_trybot_minimal_symbols_x64': [
+    'swarming_gpu_tests_deqp_gles_gyp_release_trybot_x64': [
       'swarming', 'gpu_tests', 'angle_deqp_tests',
-      'internal_gles2_conform_tests', 'gyp', 'release_trybot',
-      'minimal_symbols', 'x64',
+      'internal_gles2_conform_tests', 'gyp', 'release_trybot', 'x64',
     ],
 
-    'swarming_gpu_tests_deqp_gles_gyp_release_trybot_minimal_symbols_x86': [
+    'swarming_gpu_tests_deqp_gles_gyp_release_trybot_x86': [
       'swarming', 'gpu_tests', 'angle_deqp_tests',
-      'internal_gles2_conform_tests', 'gyp', 'release_trybot',
-      'minimal_symbols', 'x86',
+      'internal_gles2_conform_tests', 'gyp', 'release_trybot', 'x86',
     ],
 
     'swarming_gpu_tests_gn_debug_trybot': [
@@ -1694,11 +1670,15 @@
       'swarming', 'gpu_tests', 'gn', 'release_trybot',
     ],
 
-    'swarming_gpu_tests_gyp_debug_trybot_minimal_symbols_x86': [
-      'swarming', 'gpu_tests', 'gyp', 'debug_trybot', 'minimal_symbols', 'x86',
+    'swarming_gpu_tests_gyp_debug_trybot_x86': [
+      'swarming', 'gpu_tests', 'gyp', 'debug_trybot', 'x86',
     ],
 
     'swarming_gpu_tests_gyp_release_bot': [
+      'swarming', 'gpu_tests', 'gyp', 'release_bot',
+    ],
+
+    'swarming_gpu_tests_gyp_release_bot_x86': [
       'swarming', 'gpu_tests', 'gyp', 'release_bot',
     ],
 
@@ -1710,9 +1690,8 @@
       'swarming', 'gpu_tests', 'gyp', 'release_bot', 'minimal_symbols', 'x86',
     ],
 
-    'swarming_gpu_tests_gyp_release_trybot_minimal_symbols_x86': [
-      'swarming', 'gpu_tests', 'gyp', 'release_trybot', 'minimal_symbols',
-      'x86',
+    'swarming_gpu_tests_gyp_release_trybot_x86': [
+      'swarming', 'gpu_tests', 'gyp', 'release_trybot', 'x86',
     ],
 
     'swarming_gn_debug_bot': [
@@ -1723,12 +1702,12 @@
       'swarming', 'gn', 'debug_bot_minimal_symbols', 'x64',
     ],
 
-    'swarming_gn_debug_bot_x64': [
-      'swarming', 'gn', 'debug_bot', 'x64',
-    ],
-
     'swarming_gn_debug_trybot': [
       'swarming', 'gn', 'debug_trybot',
+    ],
+
+    'swarming_gn_debug_trybot_x86': [
+      'swarming', 'gn', 'debug_trybot', 'x86',
     ],
 
     'swarming_gn_release_bot': [
@@ -1737,6 +1716,10 @@
 
     'swarming_gn_release_bot_arm': [
       'swarming', 'gn', 'release_bot', 'arm', 'crosscompile',
+    ],
+
+    'swarming_gn_release_bot_minimal_symbols': [
+      'swarming', 'gn', 'release_bot_minimal_symbols',
     ],
 
     'swarming_gn_release_bot_minimal_symbols_x64': [
@@ -1751,8 +1734,8 @@
       'swarming', 'gn', 'release_bot',
     ],
 
-    'swarming_gn_release_trybot_minimal_symbols_x64': [
-      'swarming', 'gn', 'release_trybot', 'minimal_symbols', 'x64',
+    'swarming_gn_release_trybot_x64': [
+      'swarming', 'gn', 'release_trybot', 'x64',
     ],
 
     'swarming_gyp_chromeos_msan_release_bot': [
@@ -1761,6 +1744,10 @@
 
     'swarming_gyp_clang_debug_bot_minimal_symbols_x86': [
       'swarming', 'gyp', 'clang', 'debug_bot', 'minimal_symbols', 'x86',
+    ],
+
+    'swarming_gyp_clang_debug_trybot_x86': [
+      'swarming', 'gyp', 'clang', 'debug_trybot', 'x86',
     ],
 
     'swarming_gyp_clang_official_release_bot_minimal_symbols_x64': [
@@ -1773,14 +1760,12 @@
       'minimal_symbols', 'x86',
     ],
 
-    'swarming_gyp_clang_official_release_trybot_minimal_symbols_x64': [
-      'swarming', 'gyp', 'clang', 'official', 'release_trybot',
-      'minimal_symbols', 'x64',
+    'swarming_gyp_clang_official_release_trybot_x64': [
+      'swarming', 'gyp', 'clang', 'official', 'release_trybot', 'x64',
     ],
 
-    'swarming_gyp_clang_official_release_trybot_minimal_symbols_x86': [
-      'swarming', 'gyp', 'clang', 'official', 'release_trybot',
-      'minimal_symbols', 'x86',
+    'swarming_gyp_clang_official_release_trybot_x86': [
+      'swarming', 'gyp', 'clang', 'official', 'release_trybot', 'x86',
     ],
 
     'swarming_gyp_clang_shared_release_bot_minimal_symbols_x86': [
@@ -1790,10 +1775,6 @@
 
     'swarming_gyp_debug_bot': [
       'swarming', 'gyp', 'debug_bot',
-    ],
-
-    'swarming_gyp_debug_bot_minimal_symbols_x64': [
-      'swarming', 'gyp', 'debug_bot_minimal_symbols', 'x64',
     ],
 
     'swarming_gyp_debug_bot_minimal_symbols_x86': [
@@ -1812,33 +1793,24 @@
       'swarming', 'gyp', 'msan', 'release_bot',
     ],
 
-    'swarming_gyp_release_bot_minimal_symbols_x64': [
-      'swarming', 'gyp', 'release_bot_minimal_symbols', 'x64',
+    'swarming_gyp_release_bot': [
+      'swarming', 'gyp', 'release_bot',
+    ],
+
+    'swarming_gyp_release_bot_minimal_symbols': [
+      'swarming', 'gyp', 'release_bot_minimal_symbols',
     ],
 
     'swarming_gyp_release_bot_minimal_symbols_x86': [
       'swarming', 'gyp', 'release_bot_minimal_symbols', 'x86',
     ],
 
-    'swarming_gyp_release_bot_x64': [
-      'swarming', 'gyp', 'release_bot', 'x64',
-    ],
-
     'swarming_gyp_release_trybot_arm': [
       'swarming', 'gyp', 'release_trybot', 'arm', 'crosscompile',
     ],
 
-    'swarming_gyp_release_trybot_minimal_symbols_x64': [
-      'swarming', 'gyp', 'release_trybot', 'minimal_symbols', 'x64',
-    ],
-
-    'swarming_gyp_release_trybot_minimal_symbols_x86': [
-      'swarming', 'gyp', 'release_trybot', 'minimal_symbols', 'x86',
-    ],
-
-    'swarming_gyp_syzyasan_release_trybot_minimal_symbols_x86': [
-      'swarming', 'gyp', 'syzyasan', 'release_trybot', 'minimal_symbols',
-      'x86',
+    'swarming_gyp_syzyasan_release_trybot_x86': [
+      'swarming', 'gyp', 'syzyasan', 'release_trybot', 'x86',
     ],
 
     'swarming_gyp_tsan_disable_nacl_release_bot': [
