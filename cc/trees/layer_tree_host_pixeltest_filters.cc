@@ -577,6 +577,20 @@ class RotatedDropShadowFilterTest : public LayerTreeHostFiltersPixelTest {
 
     background->AddChild(child);
 
+#if defined(OS_WIN)
+    // Windows has 2 pixels off by 1: crbug.com/259915
+    float percentage_pixels_large_error = 0.00222223f;  // 1px / (300*300)
+    float percentage_pixels_small_error = 0.0f;
+    float average_error_allowed_in_bad_pixels = 1.f;
+    int large_error_allowed = 1;
+    int small_error_allowed = 0;
+    pixel_comparator_.reset(new FuzzyPixelComparator(
+        true,  // discard_alpha
+        percentage_pixels_large_error, percentage_pixels_small_error,
+        average_error_allowed_in_bad_pixels, large_error_allowed,
+        small_error_allowed));
+#endif
+
     RunPixelTest(test_type, background, image_name);
   }
 };

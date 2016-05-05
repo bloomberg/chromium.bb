@@ -141,6 +141,16 @@ BlendMode BlendModeFromSkXfermode(SkXfermode::Mode mode) {
   }
 }
 
+void RoundUpToPow2(gfx::RectF* rect) {
+  float w, h;
+  for (w = 1.f; w < rect->width(); w *= 2.f) {
+  }
+  for (h = 1.f; h < rect->height(); h *= 2.f) {
+  }
+  rect->set_width(w);
+  rect->set_height(h);
+}
+
 // Smallest unit that impact anti-aliasing output. We use this to
 // determine when anti-aliasing is unnecessary.
 const float kAntiAliasingEpsilon = 1.0f / 1024.0f;
@@ -1032,6 +1042,9 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
         if (dst_rect.IsEmpty()) {
           return;
         }
+        // Expand dst_rect size to the nearest power of 2, in order to get
+        // more cache hits in Skia's texture cache.
+        RoundUpToPow2(&dst_rect);
         filter_image = ApplyImageFilter(
             ScopedUseGrContext::Create(this, frame), resource_provider_, rect,
             dst_rect, scale, std::move(filter), contents_texture);

@@ -1289,6 +1289,8 @@ crbug.com/571710 http/tests/inspector/search/source-frame-search.html [ Timeout 
 
 crbug.com/571721 inspector/console/console-xpath.html [ Timeout Pass ]
 
+crbug.com/602785 css3/filters/effect-reference-subregion-hw.html [ NeedsManualRebaseline ]
+
 crbug.com/580378 [ Mac ] fast/replaced/width100percent-searchfield.html [ Failure Pass ]
 
 crbug.com/551843 fast/text/fallback-traits-fixup.html [ NeedsManualRebaseline ]
