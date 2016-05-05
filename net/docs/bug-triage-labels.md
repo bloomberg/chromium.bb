@@ -84,6 +84,9 @@ they fall largely outside the purview of the network stack team:
 **Blink>Network>XHR**
 : Generic issues with sync/async XHR requests.
 
+**Blink>WebRTC>Network**
+: Anything WebRTC-related does not use the net stack and should go here.
+
 **Services>Sync**
 : Sharing data/tabs/history/passwords/etc between machines not working.
 
