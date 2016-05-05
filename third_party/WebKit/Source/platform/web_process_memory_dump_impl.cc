@@ -176,8 +176,7 @@ void WebProcessMemoryDumpImpl::dumpHeapUsage(
     scoped_refptr<base::trace_event::MemoryDumpSessionState> session_state =
         process_memory_dump_->session_state();
     std::unique_ptr<base::trace_event::TracedValue> heap_dump = ExportHeapDump(
-        metrics_by_context, session_state->stack_frame_deduplicator(),
-        session_state->type_name_deduplicator());
+        metrics_by_context, *session_state);
     process_memory_dump_->AddHeapDump(allocator_name, std::move(heap_dump));
   }
 
