@@ -190,6 +190,10 @@ bool WmWindowAura::IsVisible() const {
   return window_->IsVisible();
 }
 
+bool WmWindowAura::IsSystemModal() const {
+  return window_->GetProperty(aura::client::kModalKey) == ui::MODAL_TYPE_SYSTEM;
+}
+
 bool WmWindowAura::GetBoolProperty(WmWindowProperty key) {
   switch (key) {
     case WmWindowProperty::SNAP_CHILDREN_TO_PIXEL_BOUDARY:

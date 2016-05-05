@@ -95,9 +95,6 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   // Returns the RootWindowController of the target root window.
   static RootWindowController* ForTargetRootWindow();
 
-  // Returns container which contains a given |window|.
-  static aura::Window* GetContainerForWindow(aura::Window* window);
-
   ~RootWindowController() override;
 
   AshWindowTreeHost* ash_host() { return ash_host_.get(); }

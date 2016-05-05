@@ -74,6 +74,10 @@ bool WmGlobalsAura::IsForceMaximizeOnFirstRun() {
   return Shell::GetInstance()->delegate()->IsForceMaximizeOnFirstRun();
 }
 
+bool WmGlobalsAura::IsUserSessionBlocked() {
+  return Shell::GetInstance()->session_state_delegate()->IsUserSessionBlocked();
+}
+
 bool WmGlobalsAura::IsScreenLocked() {
   return Shell::GetInstance()->session_state_delegate()->IsScreenLocked();
 }

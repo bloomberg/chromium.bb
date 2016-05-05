@@ -28,8 +28,8 @@ const int kShellWindowId_LockScreenContainersContainer = 1;
 const int kShellWindowId_LockScreenRelatedContainersContainer = 2;
 
 // A container used for windows of WINDOW_TYPE_CONTROL that have no parent.
-// This container is not visible.
-const int kShellWindowId_UnparentedControlContainer = 3;
+// This container is not visible. Defined in wm_shell_window_ids.
+// kShellWindowId_UnparentedControlContainer = 3;
 
 // The desktop background window.
 const int kShellWindowId_DesktopBackgroundContainer = 4;
@@ -59,17 +59,19 @@ const int kShellWindowId_ShelfBubbleContainer = 10;
 // The container for the app list. Defined in wm_shell_window_ids.
 // kShellWindowId_AppListContainer = 12;
 
-// The container for user-specific modal windows.
-const int kShellWindowId_SystemModalContainer = 13;
+// The container for user-specific modal windows. Defined in
+// wm_shell_window_ids
+// kShellWindowId_SystemModalContainer = 13;
 
 // The container for the lock screen background.
 const int kShellWindowId_LockScreenBackgroundContainer = 14;
 
-// The container for the lock screen.
-const int kShellWindowId_LockScreenContainer = 15;
+// The container for the lock screen. Defined in wm_shell_window_ids.
+// kShellWindowId_LockScreenContainer = 15;
 
-// The container for the lock screen modal windows.
-const int kShellWindowId_LockSystemModalContainer = 16;
+// The container for the lock screen modal windows. Defined in
+// wm_shell_window_ids.
+// kShellWindowId_LockSystemModalContainer = 16;
 
 // The container for the status area.
 const int kShellWindowId_StatusContainer = 17;
@@ -79,11 +81,12 @@ const int kShellWindowId_StatusContainer = 17;
 // above most containers but below the mouse cursor and the power off animation.
 const int kShellWindowId_ImeWindowParentContainer = 18;
 
-// The container for menus.
-const int kShellWindowId_MenuContainer = 19;
+// The container for menus. Defined in wm_shell_window_ids.
+// kShellWindowId_MenuContainer = 19;
 
-// The container for drag/drop images and tooltips.
-const int kShellWindowId_DragImageAndTooltipContainer = 20;
+// The container for drag/drop images and tooltips. Defined in
+// wm_shell_window_ids.
+// const int kShellWindowId_DragImageAndTooltipContainer = 20;
 
 // The container for bubbles briefly overlaid onscreen to show settings changes
 // (volume, brightness, input method bubbles, etc.).
@@ -102,6 +105,13 @@ const int kShellWindowId_MouseCursorContainer = 24;
 
 // The topmost container, used for power off animation.
 const int kShellWindowId_PowerButtonAnimationContainer = 25;
+
+static_assert((kShellWindowId_UnparentedControlContainer - 1 ==
+               kShellWindowId_LockScreenRelatedContainersContainer) &&
+                  (kShellWindowId_UnparentedControlContainer + 1 ==
+                   kShellWindowId_DesktopBackgroundContainer),
+              "unparented-control between lock-screen-related and "
+              "desktop-background");
 
 static_assert((kShellWindowId_DefaultContainer - 1 ==
                kShellWindowId_VirtualKeyboardContainer) &&
@@ -138,6 +148,37 @@ static_assert((kShellWindowId_AppListContainer - 1 ==
                   (kShellWindowId_AppListContainer + 1 ==
                    kShellWindowId_SystemModalContainer),
               "app-list between panel and system-modal");
+
+static_assert((kShellWindowId_SystemModalContainer - 1 ==
+               kShellWindowId_AppListContainer) &&
+                  (kShellWindowId_SystemModalContainer + 1 ==
+                   kShellWindowId_LockScreenBackgroundContainer),
+              "system-modal between app-list and lock-screen-background");
+
+static_assert((kShellWindowId_LockScreenContainer - 1 ==
+               kShellWindowId_LockScreenBackgroundContainer) &&
+                  (kShellWindowId_LockScreenContainer + 1 ==
+                   kShellWindowId_LockSystemModalContainer),
+              "lock-screen between lock-screen-background and "
+              "lock-screen-system-modal");
+
+static_assert((kShellWindowId_LockSystemModalContainer - 1 ==
+               kShellWindowId_LockScreenContainer) &&
+                  (kShellWindowId_LockSystemModalContainer + 1 ==
+                   kShellWindowId_StatusContainer),
+              "lock-screen-system-modal between lock-screen and status");
+
+static_assert((kShellWindowId_MenuContainer - 1 ==
+               kShellWindowId_ImeWindowParentContainer) &&
+                  (kShellWindowId_MenuContainer + 1 ==
+                   kShellWindowId_DragImageAndTooltipContainer),
+              "app-list between panel and system-modal");
+
+static_assert((kShellWindowId_DragImageAndTooltipContainer - 1 ==
+               kShellWindowId_MenuContainer) &&
+                  (kShellWindowId_DragImageAndTooltipContainer + 1 ==
+                   kShellWindowId_SettingBubbleContainer),
+              "drag-image-and-tooltip between menu and settings-bubble");
 
 static_assert((kShellWindowId_PhantomWindow - 1 ==
                kShellWindowId_OverlayContainer) &&

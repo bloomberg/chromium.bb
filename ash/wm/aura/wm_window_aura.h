@@ -60,6 +60,7 @@ class ASH_EXPORT WmWindowAura : public WmWindow, public aura::WindowObserver {
   gfx::Size GetMaximumSize() const override;
   bool GetTargetVisibility() const override;
   bool IsVisible() const override;
+  bool IsSystemModal() const override;
   bool GetBoolProperty(WmWindowProperty key) override;
   int GetIntProperty(WmWindowProperty key) override;
   const WindowState* GetWindowState() const override;

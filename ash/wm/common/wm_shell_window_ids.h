@@ -14,6 +14,10 @@ namespace ash {
 // NOTE: while the value of these is not necessarily important, the ordering
 // is and is enforced in ash/shell_window_ids.h.
 
+// A container used for windows of WINDOW_TYPE_CONTROL that have no parent.
+// This container is not visible.
+const int kShellWindowId_UnparentedControlContainer = 3;
+
 // The container for standard top-level windows.
 const int kShellWindowId_DefaultContainer = 6;
 
@@ -32,6 +36,21 @@ const int kShellWindowId_PanelContainer = 11;
 // TODO(sky): this seems unnecessary. Perhaps it should be injected?
 // The container for the app list.
 const int kShellWindowId_AppListContainer = 12;
+
+// The container for user-specific modal windows.
+const int kShellWindowId_SystemModalContainer = 13;
+
+// The container for the lock screen.
+const int kShellWindowId_LockScreenContainer = 15;
+
+// The container for the lock screen modal windows.
+const int kShellWindowId_LockSystemModalContainer = 16;
+
+// The container for menus.
+const int kShellWindowId_MenuContainer = 19;
+
+// The container for drag/drop images and tooltips.
+const int kShellWindowId_DragImageAndTooltipContainer = 20;
 
 // ID of the window created by PhantomWindowController or DragWindowController.
 const int kShellWindowId_PhantomWindow = 23;

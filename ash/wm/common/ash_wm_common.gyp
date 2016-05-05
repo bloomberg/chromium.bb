@@ -30,6 +30,8 @@
         'always_on_top_controller.h',
         'background_animator.cc',
         'background_animator.h',
+        'container_finder.cc',
+        'container_finder.h',
         'default_state.cc',
         'default_state.h',
         'default_window_resizer.cc',

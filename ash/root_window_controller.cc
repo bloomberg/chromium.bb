@@ -35,6 +35,7 @@
 #include "ash/wm/aura/wm_shelf_aura.h"
 #include "ash/wm/aura/wm_window_aura.h"
 #include "ash/wm/common/always_on_top_controller.h"
+#include "ash/wm/common/container_finder.h"
 #include "ash/wm/common/dock/docked_window_layout_manager.h"
 #include "ash/wm/common/fullscreen_window_finder.h"
 #include "ash/wm/common/panels/panel_layout_manager.h"
@@ -321,15 +322,6 @@ RootWindowController* RootWindowController::ForTargetRootWindow() {
   return GetRootWindowController(Shell::GetTargetRootWindow());
 }
 
-// static
-aura::Window* RootWindowController::GetContainerForWindow(
-    aura::Window* window) {
-  aura::Window* container = window->parent();
-  while (container && container->type() != ui::wm::WINDOW_TYPE_UNKNOWN)
-    container = container->parent();
-  return container;
-}
-
 RootWindowController::~RootWindowController() {
   Shutdown();
   ash_host_.reset();
@@ -409,7 +401,8 @@ SystemModalContainerLayoutManager*
 RootWindowController::GetSystemModalLayoutManager(aura::Window* window) {
   aura::Window* modal_container = NULL;
   if (window) {
-    aura::Window* window_container = GetContainerForWindow(window);
+    aura::Window* window_container = wm::WmWindowAura::GetAuraWindow(
+        wm::GetContainerForWindow(wm::WmWindowAura::Get(window)));
     if (window_container &&
         window_container->id() >= kShellWindowId_LockScreenContainer) {
       modal_container = GetContainer(kShellWindowId_LockSystemModalContainer);

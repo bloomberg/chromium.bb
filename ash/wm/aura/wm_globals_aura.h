@@ -36,6 +36,7 @@ class ASH_EXPORT WmGlobalsAura : public WmGlobals,
   WmWindow* GetRootWindowForNewWindows() override;
   std::vector<WmWindow*> GetMruWindowListIgnoreModals() override;
   bool IsForceMaximizeOnFirstRun() override;
+  bool IsUserSessionBlocked() override;
   bool IsScreenLocked() override;
   void LockCursor() override;
   void UnlockCursor() override;

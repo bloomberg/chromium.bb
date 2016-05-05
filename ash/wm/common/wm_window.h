@@ -87,6 +87,8 @@ class ASH_WM_COMMON_EXPORT WmWindow {
 
   virtual bool IsVisible() const = 0;
 
+  virtual bool IsSystemModal() const = 0;
+
   virtual bool GetBoolProperty(WmWindowProperty key) = 0;
   virtual int GetIntProperty(WmWindowProperty key) = 0;
 

@@ -59,6 +59,7 @@ class ASH_WM_COMMON_EXPORT WmGlobals {
   // the window size.
   virtual bool IsForceMaximizeOnFirstRun() = 0;
 
+  virtual bool IsUserSessionBlocked() = 0;
   virtual bool IsScreenLocked() = 0;
 
   // See aura::client::CursorClient for details on these.
