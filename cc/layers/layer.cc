@@ -1134,7 +1134,6 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->SetScrollTreeIndex(scroll_tree_index());
   layer->set_offset_to_transform_parent(offset_to_transform_parent_);
   layer->SetDrawsContent(DrawsContent());
-  layer->SetHideLayerAndSubtree(hide_layer_and_subtree_);
   // subtree_property_changed_ is propagated to all descendants while building
   // property trees. So, it is enough to check it only for the current layer.
   if (subtree_property_changed_)

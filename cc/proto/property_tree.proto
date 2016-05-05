@@ -84,7 +84,7 @@ message ClipNodeData {
 }
 
 // Proto for struct EffectNodeData.
-// NEXT ID: 15
+// NEXT ID: 16
 message EffectNodeData {
   optional float opacity = 1;
   optional float screen_space_opacity = 2;
@@ -94,6 +94,7 @@ message EffectNodeData {
   optional bool hidden_by_backface_visibility = 14;
   optional bool double_sided = 13;
   optional bool is_drawn = 6;
+  optional bool subtree_hidden = 15;
   optional bool has_animated_opacity = 7;
   optional bool effect_changed = 11;
   optional int64 num_copy_requests_in_subtree = 8;

@@ -499,6 +499,7 @@ EffectNodeData::EffectNodeData()
       hidden_by_backface_visibility(false),
       double_sided(false),
       is_drawn(true),
+      subtree_hidden(false),
       has_animated_opacity(false),
       effect_changed(false),
       num_copy_requests_in_subtree(0),
@@ -516,6 +517,7 @@ bool EffectNodeData::operator==(const EffectNodeData& other) const {
          has_background_filters == other.has_background_filters &&
          hidden_by_backface_visibility == other.hidden_by_backface_visibility &&
          double_sided == other.double_sided && is_drawn == other.is_drawn &&
+         subtree_hidden == other.subtree_hidden &&
          has_animated_opacity == other.has_animated_opacity &&
          effect_changed == other.effect_changed &&
          num_copy_requests_in_subtree == other.num_copy_requests_in_subtree &&
@@ -534,6 +536,7 @@ void EffectNodeData::ToProtobuf(proto::TreeNode* proto) const {
   data->set_hidden_by_backface_visibility(hidden_by_backface_visibility);
   data->set_double_sided(double_sided);
   data->set_is_drawn(is_drawn);
+  data->set_subtree_hidden(subtree_hidden);
   data->set_has_animated_opacity(has_animated_opacity);
   data->set_effect_changed(effect_changed);
   data->set_num_copy_requests_in_subtree(num_copy_requests_in_subtree);
@@ -554,6 +557,7 @@ void EffectNodeData::FromProtobuf(const proto::TreeNode& proto) {
   hidden_by_backface_visibility = data.hidden_by_backface_visibility();
   double_sided = data.double_sided();
   is_drawn = data.is_drawn();
+  subtree_hidden = data.subtree_hidden();
   has_animated_opacity = data.has_animated_opacity();
   effect_changed = data.effect_changed();
   num_copy_requests_in_subtree = data.num_copy_requests_in_subtree();
@@ -1297,8 +1301,12 @@ void TransformTree::FromProtobuf(const proto::PropertyTree& proto) {
   }
 }
 
+float EffectTree::EffectiveOpacity(const EffectNode* node) const {
+  return node->data.subtree_hidden ? 0.f : node->data.opacity;
+}
+
 void EffectTree::UpdateOpacities(EffectNode* node, EffectNode* parent_node) {
-  node->data.screen_space_opacity = node->data.opacity;
+  node->data.screen_space_opacity = EffectiveOpacity(node);
 
   if (parent_node)
     node->data.screen_space_opacity *= parent_node->data.screen_space_opacity;
@@ -1314,7 +1322,7 @@ void EffectTree::UpdateIsDrawn(EffectNode* node, EffectNode* parent_node) {
   //    are drawn if their parent is drawn irrespective of their opacity.
   if (node->data.has_copy_request)
     node->data.is_drawn = true;
-  else if (node->data.opacity == 0.f &&
+  else if (EffectiveOpacity(node) == 0.f &&
            (!node->data.has_animated_opacity || property_trees()->is_active) &&
            !node->data.has_background_filters)
     node->data.is_drawn = false;

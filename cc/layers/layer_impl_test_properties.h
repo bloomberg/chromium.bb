@@ -23,6 +23,7 @@ struct CC_EXPORT LayerImplTestProperties {
   bool force_render_surface;
   bool is_container_for_fixed_position_layers;
   bool should_flatten_transform;
+  bool hide_layer_and_subtree;
   int num_descendants_that_draw_content;
   LayerPositionConstraint position_constraint;
   gfx::Point3F transform_origin;

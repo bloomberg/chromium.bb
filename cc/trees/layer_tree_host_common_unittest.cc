@@ -5520,7 +5520,7 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHidden_SingleLayerImpl) {
                                gfx::Point3F(), gfx::PointF(), gfx::Size(30, 30),
                                true, false, false);
   grand_child->SetDrawsContent(true);
-  grand_child->SetHideLayerAndSubtree(true);
+  grand_child->test_properties()->hide_layer_and_subtree = true;
 
   child->AddChild(std::move(grand_child));
   root->AddChild(std::move(child));
@@ -5564,7 +5564,7 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHidden_TwoLayersImpl) {
                                gfx::PointF(), gfx::Size(40, 40), true, false,
                                false);
   child->SetDrawsContent(true);
-  child->SetHideLayerAndSubtree(true);
+  child->test_properties()->hide_layer_and_subtree = true;
 
   std::unique_ptr<LayerImpl> grand_child =
       LayerImpl::Create(host_impl.pending_tree(), 3);
@@ -5679,10 +5679,12 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHiddenWithCopyRequest) {
   // Hide the copy_grand_parent and its subtree. But make a copy request in that
   // hidden subtree on copy_layer. Also hide the copy grand child and its
   // subtree.
-  copy_grand_parent_layer->SetHideLayerAndSubtree(true);
-  copy_grand_parent_sibling_before_layer->SetHideLayerAndSubtree(true);
-  copy_grand_parent_sibling_after_layer->SetHideLayerAndSubtree(true);
-  copy_grand_child_layer->SetHideLayerAndSubtree(true);
+  copy_grand_parent_layer->test_properties()->hide_layer_and_subtree = true;
+  copy_grand_parent_sibling_before_layer->test_properties()
+      ->hide_layer_and_subtree = true;
+  copy_grand_parent_sibling_after_layer->test_properties()
+      ->hide_layer_and_subtree = true;
+  copy_grand_child_layer->test_properties()->hide_layer_and_subtree = true;
 
   std::vector<std::unique_ptr<CopyOutputRequest>> copy_requests;
   copy_requests.push_back(
@@ -8820,10 +8822,10 @@ TEST_F(LayerTreeHostCommonTest, SkippingLayerImpl) {
   EXPECT_EQ(gfx::Rect(0, 0), grandchild_ptr->visible_layer_rect());
   child_ptr->SetTransform(identity);
 
-  child_ptr->SetHideLayerAndSubtree(true);
+  child_ptr->test_properties()->hide_layer_and_subtree = true;
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root_ptr);
   EXPECT_EQ(gfx::Rect(0, 0), grandchild_ptr->visible_layer_rect());
-  child_ptr->SetHideLayerAndSubtree(false);
+  child_ptr->test_properties()->hide_layer_and_subtree = false;
 
   child_ptr->SetOpacity(0.f);
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root_ptr);
@@ -9044,11 +9046,11 @@ TEST_F(LayerTreeHostCommonTest, SkippingLayer) {
   EXPECT_EQ(gfx::Rect(10, 10), child->visible_layer_rect());
   child->set_visible_layer_rect(gfx::Rect());
 
-  child->SetHideLayerAndSubtree(true);
+  child->test_properties()->hide_layer_and_subtree = true;
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   ExecuteCalculateDrawProperties(root);
   EXPECT_EQ(gfx::Rect(0, 0), child->visible_layer_rect());
-  child->SetHideLayerAndSubtree(false);
+  child->test_properties()->hide_layer_and_subtree = false;
 
   child->SetBounds(gfx::Size());
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
@@ -9673,11 +9675,11 @@ TEST_F(LayerTreeHostCommonTest, SubtreeIsHiddenTest) {
                                gfx::PointF(), gfx::Size(30, 30), true, false,
                                true);
 
-  hidden->SetHideLayerAndSubtree(true);
+  hidden->test_properties()->hide_layer_and_subtree = true;
   ExecuteCalculateDrawProperties(root);
   EXPECT_TRUE(test->IsHidden());
 
-  hidden->SetHideLayerAndSubtree(false);
+  hidden->test_properties()->hide_layer_and_subtree = false;
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   ExecuteCalculateDrawProperties(root);
   EXPECT_FALSE(test->IsHidden());

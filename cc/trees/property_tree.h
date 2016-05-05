@@ -282,6 +282,9 @@ struct CC_EXPORT EffectNodeData {
   bool hidden_by_backface_visibility;
   bool double_sided;
   bool is_drawn;
+  // TODO(jaydasika) : Delete this after implementation of
+  // SetHideLayerAndSubtree is cleaned up. (crbug.com/595843)
+  bool subtree_hidden;
   bool has_animated_opacity;
   // We need to track changes to effects on the compositor to compute damage
   // rect.
@@ -563,6 +566,8 @@ class CC_EXPORT ClipTree final : public PropertyTree<ClipNode> {
 class CC_EXPORT EffectTree final : public PropertyTree<EffectNode> {
  public:
   bool operator==(const EffectTree& other) const;
+
+  float EffectiveOpacity(const EffectNode* node) const;
 
   void UpdateEffects(int id);
 

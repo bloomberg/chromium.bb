@@ -66,7 +66,6 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
       should_check_backface_visibility_(false),
       draws_content_(false),
       is_drawn_render_surface_layer_list_member_(false),
-      hide_layer_and_subtree_(false),
       is_affected_by_page_scale_(true),
       was_ever_ready_since_last_transform_animation_(true),
       background_color_(0),
@@ -441,7 +440,6 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->SetSafeOpaqueBackgroundColor(safe_opaque_background_color_);
   layer->SetBounds(bounds_);
   layer->SetDrawsContent(DrawsContent());
-  layer->SetHideLayerAndSubtree(hide_layer_and_subtree_);
   // If whether layer has render surface changes, we need to update draw
   // properties.
   // TODO(weiliangc): Should be safely removed after impl side is able to
@@ -710,10 +708,9 @@ void LayerImpl::UpdatePropertyTreeOpacity() {
     // corresponding Layer at the time of the last commit. For example, an
     // opacity animation might have been in progress at the time the last commit
     // started, but might have finished since then on the compositor thread.
-    float effective_opacity = EffectiveOpacity();
-    if (node->owner_id != id() || node->data.opacity == effective_opacity)
+    if (node->owner_id != id() || node->data.opacity == opacity_)
       return;
-    node->data.opacity = effective_opacity;
+    node->data.opacity = opacity_;
     node->data.effect_changed = true;
     layer_tree_impl()->property_trees()->changed = true;
     effect_tree.set_needs_update(true);
@@ -754,13 +751,9 @@ void LayerImpl::OnFilterAnimated(const FilterOperations& filters) {
 
 void LayerImpl::OnOpacityAnimated(float opacity) {
   SetOpacity(opacity);
-  // When hide_layer_and_subtree is true, the effective opacity is zero and we
-  // need not update the opacity on property trees.
-  if (!hide_layer_and_subtree_) {
-    UpdatePropertyTreeOpacity();
-    SetNeedsPushProperties();
-    layer_tree_impl()->set_needs_update_draw_properties();
-  }
+  UpdatePropertyTreeOpacity();
+  SetNeedsPushProperties();
+  layer_tree_impl()->set_needs_update_draw_properties();
 }
 
 void LayerImpl::OnTransformAnimated(const gfx::Transform& transform) {
@@ -918,13 +911,6 @@ void LayerImpl::SetDrawsContent(bool draws_content) {
   NoteLayerPropertyChanged();
 }
 
-void LayerImpl::SetHideLayerAndSubtree(bool hide) {
-  if (hide_layer_and_subtree_ == hide)
-    return;
-
-  hide_layer_and_subtree_ = hide;
-}
-
 void LayerImpl::SetBackgroundColor(SkColor background_color) {
   if (background_color_ == background_color)
     return;
@@ -997,10 +983,6 @@ void LayerImpl::SetOpacity(float opacity) {
     return;
 
   opacity_ = opacity;
-}
-
-float LayerImpl::EffectiveOpacity() const {
-  return hide_layer_and_subtree_ ? 0.f : opacity_;
 }
 
 bool LayerImpl::OpacityIsAnimating() const {

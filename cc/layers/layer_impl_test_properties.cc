@@ -11,6 +11,7 @@ LayerImplTestProperties::LayerImplTestProperties()
       force_render_surface(false),
       is_container_for_fixed_position_layers(false),
       should_flatten_transform(true),
+      hide_layer_and_subtree(false),
       num_descendants_that_draw_content(0),
       scroll_parent(nullptr),
       clip_parent(nullptr) {}

@@ -667,6 +667,23 @@ static inline int NumDescendantsThatDrawContent(LayerImpl* layer) {
   return layer->test_properties()->num_descendants_that_draw_content;
 }
 
+static inline float EffectiveOpacity(Layer* layer) {
+  return layer->EffectiveOpacity();
+}
+
+static inline float EffectiveOpacity(LayerImpl* layer) {
+  return layer->test_properties()->hide_layer_and_subtree ? 0.f
+                                                          : layer->opacity();
+}
+
+static inline bool HideLayerAndSubtree(Layer* layer) {
+  return layer->hide_layer_and_subtree();
+}
+
+static inline bool HideLayerAndSubtree(LayerImpl* layer) {
+  return layer->test_properties()->hide_layer_and_subtree;
+}
+
 template <typename LayerType>
 bool ShouldCreateRenderSurface(LayerType* layer,
                                gfx::Transform current_transform,
@@ -742,7 +759,7 @@ bool ShouldCreateRenderSurface(LayerType* layer,
       num_descendants_that_draw_content > 0 &&
       (layer->DrawsContent() || num_descendants_that_draw_content > 1);
 
-  if (layer->EffectiveOpacity() != 1.f && ShouldFlattenTransform(layer) &&
+  if (EffectiveOpacity(layer) != 1.f && ShouldFlattenTransform(layer) &&
       at_least_two_layers_in_subtree_draw_content) {
     TRACE_EVENT_INSTANT0(
         "cc", "PropertyTreeBuilder::ShouldCreateRenderSurface opacity",
@@ -779,7 +796,7 @@ bool AddEffectNodeIfNeeded(
     LayerType* layer,
     DataForRecursion<LayerType>* data_for_children) {
   const bool is_root = !layer->parent();
-  const bool has_transparency = layer->EffectiveOpacity() != 1.f;
+  const bool has_transparency = EffectiveOpacity(layer) != 1.f;
   const bool has_animated_opacity = IsAnimatingOpacity(layer);
   const bool should_create_render_surface = ShouldCreateRenderSurface(
       layer, data_from_ancestor.compound_transform_since_render_target,
@@ -802,12 +819,13 @@ bool AddEffectNodeIfNeeded(
 
   EffectNode node;
   node.owner_id = layer->id();
-  node.data.opacity = layer->EffectiveOpacity();
+  node.data.opacity = layer->opacity();
   node.data.has_render_surface = should_create_render_surface;
   node.data.has_copy_request = layer->HasCopyRequest();
   node.data.has_background_filters = !layer->background_filters().IsEmpty();
   node.data.has_animated_opacity = has_animated_opacity;
   node.data.double_sided = DoubleSided(layer);
+  node.data.subtree_hidden = HideLayerAndSubtree(layer);
 
   if (!is_root) {
     // The effect node's transform id is used only when we create a render

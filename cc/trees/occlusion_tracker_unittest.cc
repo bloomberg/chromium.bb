@@ -2073,7 +2073,7 @@ class OcclusionTrackerTestHiddenCopyRequestDoesNotOcclude
 
     // The |copy| layer is hidden but since it is being copied, it will be
     // drawn.
-    hide->SetHideLayerAndSubtree(true);
+    hide->test_properties()->hide_layer_and_subtree = true;
 
     this->CalcDrawEtc(root);
 

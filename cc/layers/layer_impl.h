@@ -208,9 +208,6 @@ class CC_EXPORT LayerImpl {
   void SetDrawsContent(bool draws_content);
   bool DrawsContent() const { return draws_content_; }
 
-  void SetHideLayerAndSubtree(bool hide);
-  bool hide_layer_and_subtree() const { return hide_layer_and_subtree_; }
-
   LayerImplTestProperties* test_properties() {
     if (!test_properties_)
       test_properties_.reset(new LayerImplTestProperties());
@@ -243,7 +240,6 @@ class CC_EXPORT LayerImpl {
 
   void SetOpacity(float opacity);
   float opacity() const { return opacity_; }
-  float EffectiveOpacity() const;
   bool OpacityIsAnimating() const;
   bool HasPotentiallyRunningOpacityAnimation() const;
   bool OpacityIsAnimatingOnImplOnly() const;
@@ -602,7 +598,6 @@ class CC_EXPORT LayerImpl {
   bool should_check_backface_visibility_ : 1;
   bool draws_content_ : 1;
   bool is_drawn_render_surface_layer_list_member_ : 1;
-  bool hide_layer_and_subtree_ : 1;
 
   bool is_affected_by_page_scale_ : 1;
 
