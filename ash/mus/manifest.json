@@ -10,7 +10,8 @@
           "mash::wm::mojom::ShelfLayout",
           "mash::wm::mojom::UserWindowController"
         ]
-      }
+      },
+      "exe:chrome" : { "classes": [ "app_list:presenter" ] }
     }
   }
 }

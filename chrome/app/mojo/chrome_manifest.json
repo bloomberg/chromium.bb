@@ -7,7 +7,8 @@
       "*": { "classes": [ "app" ] }
     },
     "provided": {
-      "mash:launchable": [ "mash::mojom::Launchable" ]
+      "mash:launchable": [ "mash::mojom::Launchable" ],
+      "app_list:presenter": [ "app_list::mojom::AppListPresenter" ]
     }
   }
 }
