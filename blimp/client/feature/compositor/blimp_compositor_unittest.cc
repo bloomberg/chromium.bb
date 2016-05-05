@@ -6,7 +6,7 @@
 
 #include "base/thread_task_runner_handle.h"
 #include "blimp/client/feature/compositor/blimp_gpu_memory_buffer_manager.h"
-#include "blimp/common/compositor/blimp_image_serialization_processor.h"
+#include "blimp/client/feature/compositor/client_image_serialization_processor.h"
 #include "blimp/common/compositor/blimp_task_graph_runner.h"
 #include "cc/proto/compositor_message.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -19,10 +19,7 @@ namespace client {
 
 class MockBlimpCompositorClient : public BlimpCompositorClient {
  public:
-  MockBlimpCompositorClient()
-  : compositor_thread_("Compositor"),
-    image_serialization_processor_(
-       BlimpImageSerializationProcessor::Mode::DESERIALIZATION) {
+  MockBlimpCompositorClient() : compositor_thread_("Compositor") {
     compositor_thread_.Start();
   }
   ~MockBlimpCompositorClient() override { compositor_thread_.Stop(); }
@@ -58,7 +55,7 @@ class MockBlimpCompositorClient : public BlimpCompositorClient {
   base::Thread compositor_thread_;
   BlimpTaskGraphRunner task_graph_runner_;
   BlimpGpuMemoryBufferManager gpu_memory_buffer_manager_;
-  BlimpImageSerializationProcessor image_serialization_processor_;
+  ClientImageSerializationProcessor image_serialization_processor_;
 };
 
 class BlimpCompositorForTesting : public BlimpCompositor {

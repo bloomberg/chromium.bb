@@ -14,7 +14,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "blimp/common/blob_cache/id_util.h"
-#include "blimp/common/compositor/webp_decoder.h"
 #include "blimp/common/proto/blob_cache.pb.h"
 #include "content/public/renderer/render_frame.h"
 #include "third_party/libwebp/webp/encode.h"

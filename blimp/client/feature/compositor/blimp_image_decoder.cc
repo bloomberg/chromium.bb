@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "blimp/common/compositor/webp_decoder.h"
+#include "blimp/client/feature/compositor/blimp_image_decoder.h"
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -25,7 +25,9 @@ static base::LazyInstance<InMemoryBlobCache> g_blob_cache =
 
 }  // namespace
 
-bool WebPDecoder(const void* input, size_t input_size, SkBitmap* bitmap) {
+namespace client {
+
+bool BlimpImageDecoder(const void* input, size_t input_size, SkBitmap* bitmap) {
   DCHECK(bitmap);
 
   // Initialize an empty WebPDecoderConfig.
@@ -135,4 +137,5 @@ bool WebPDecoder(const void* input, size_t input_size, SkBitmap* bitmap) {
   return true;
 }
 
+}  // namespace client
 }  // namespace blimp

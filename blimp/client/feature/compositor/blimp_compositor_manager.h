@@ -14,6 +14,8 @@
 namespace blimp {
 namespace client {
 
+class ClientImageSerializationProcessor;
+
 class BlimpCompositorManagerClient {
  public:
   virtual void OnSwapBuffersCompleted() = 0;
@@ -90,7 +92,7 @@ class BlimpCompositorManager
   std::unique_ptr<BlimpGpuMemoryBufferManager> gpu_memory_buffer_manager_;
 
   // Provides the functionality to deserialize images in SkPicture.
-  std::unique_ptr<BlimpImageSerializationProcessor>
+  std::unique_ptr<ClientImageSerializationProcessor>
       image_serialization_processor_;
 
   // A map of render_widget_ids to the BlimpCompositor instance.

@@ -33,7 +33,6 @@ class LayerTreeHost;
 
 namespace blimp {
 
-class BlimpImageSerializationProcessor;
 class BlimpMessage;
 
 namespace client {

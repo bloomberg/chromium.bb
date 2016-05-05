@@ -4,7 +4,6 @@
 
 #include "blimp/engine/renderer/blimp_content_renderer_client.h"
 
-#include "blimp/common/compositor/blimp_image_serialization_processor.h"
 #include "blimp/engine/mojo/blob_channel.mojom.h"
 #include "blimp/engine/renderer/engine_image_serialization_processor.h"
 #include "components/web_cache/renderer/web_cache_render_thread_observer.h"
