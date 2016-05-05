@@ -115,23 +115,42 @@ void FullCardRequest::OnDidGetRealPan(AutofillClient::PaymentsRpcResult result,
   AutofillMetrics::LogRealPanDuration(
       base::Time::Now() - real_pan_request_timestamp_, result);
 
-  if (!real_pan.empty()) {
-    DCHECK_EQ(AutofillClient::SUCCESS, result);
-    request_->card.set_record_type(CreditCard::FULL_SERVER_CARD);
-    request_->card.SetNumber(base::UTF8ToUTF16(real_pan));
-    request_->card.SetServerStatus(CreditCard::OK);
+  switch (result) {
+    // Wait for user retry.
+    case AutofillClient::TRY_AGAIN_FAILURE:
+      break;
 
-    if (request_->user_response.should_store_pan)
-      personal_data_manager_->UpdateServerCreditCard(request_->card);
+    // Neither PERMANENT_FAILURE nor NETWORK_ERROR allow retry.
+    case AutofillClient::PERMANENT_FAILURE:
+    // Intentional fall through.
+    case AutofillClient::NETWORK_ERROR: {
+      if (delegate_)
+        delegate_->OnFullCardError();
+      Reset();
+      break;
+    }
 
-    if (delegate_)
-      delegate_->OnFullCardDetails(request_->card, request_->user_response.cvc);
-  } else {
-    if (delegate_)
-      delegate_->OnFullCardError();
+    case AutofillClient::SUCCESS: {
+      DCHECK(!real_pan.empty());
+      request_->card.set_record_type(CreditCard::FULL_SERVER_CARD);
+      request_->card.SetNumber(base::UTF8ToUTF16(real_pan));
+      request_->card.SetServerStatus(CreditCard::OK);
+
+      if (request_->user_response.should_store_pan)
+        personal_data_manager_->UpdateServerCreditCard(request_->card);
+
+      if (delegate_)
+        delegate_->OnFullCardDetails(request_->card,
+                                     request_->user_response.cvc);
+      Reset();
+      break;
+    }
+
+    case AutofillClient::NONE:
+      NOTREACHED();
+      break;
   }
 
-  Reset();
   autofill_client_->OnUnmaskVerificationResult(result);
 }
 

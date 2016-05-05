@@ -290,9 +290,9 @@ TEST_F(FullCardRequestTest, ClosePromptWithoutUserInput) {
   ui_delegate()->OnUnmaskPromptClosed();
 }
 
-// If the server provides an empty PAN,
+// If the server provides an empty PAN with PERMANENT_FAILURE error,
 // FullCardRequest::Delegate::OnFullCardError() should be invoked.
-TEST_F(FullCardRequestTest, EmptyFullPan) {
+TEST_F(FullCardRequestTest, PermanentFailure) {
   EXPECT_CALL(*delegate(), OnFullCardError());
   EXPECT_CALL(*client(), ShowUnmaskPrompt(_, _, _));
   EXPECT_CALL(*client(),
@@ -305,6 +305,68 @@ TEST_F(FullCardRequestTest, EmptyFullPan) {
   response.cvc = base::ASCIIToUTF16("123");
   ui_delegate()->OnUnmaskResponse(response);
   OnDidGetRealPan(AutofillClient::PERMANENT_FAILURE, "");
+  ui_delegate()->OnUnmaskPromptClosed();
+}
+
+// If the server provides an empty PAN with NETWORK_ERROR error,
+// FullCardRequest::Delegate::OnFullCardError() should be invoked.
+TEST_F(FullCardRequestTest, NetworkError) {
+  EXPECT_CALL(*delegate(), OnFullCardError());
+  EXPECT_CALL(*client(), ShowUnmaskPrompt(_, _, _));
+  EXPECT_CALL(*client(),
+              OnUnmaskVerificationResult(AutofillClient::NETWORK_ERROR));
+
+  request()->GetFullCard(
+      CreditCard(CreditCard::MASKED_SERVER_CARD, "server_id"),
+      AutofillClient::UNMASK_FOR_AUTOFILL, delegate()->AsWeakPtr());
+  CardUnmaskDelegate::UnmaskResponse response;
+  response.cvc = base::ASCIIToUTF16("123");
+  ui_delegate()->OnUnmaskResponse(response);
+  OnDidGetRealPan(AutofillClient::NETWORK_ERROR, "");
+  ui_delegate()->OnUnmaskPromptClosed();
+}
+
+// If the server provides an empty PAN with TRY_AGAIN_FAILURE, the user can
+// manually cancel out of the dialog.
+TEST_F(FullCardRequestTest, TryAgainFailureGiveUp) {
+  EXPECT_CALL(*delegate(), OnFullCardError());
+  EXPECT_CALL(*client(), ShowUnmaskPrompt(_, _, _));
+  EXPECT_CALL(*client(),
+              OnUnmaskVerificationResult(AutofillClient::TRY_AGAIN_FAILURE));
+
+  request()->GetFullCard(
+      CreditCard(CreditCard::MASKED_SERVER_CARD, "server_id"),
+      AutofillClient::UNMASK_FOR_AUTOFILL, delegate()->AsWeakPtr());
+  CardUnmaskDelegate::UnmaskResponse response;
+  response.cvc = base::ASCIIToUTF16("123");
+  ui_delegate()->OnUnmaskResponse(response);
+  OnDidGetRealPan(AutofillClient::TRY_AGAIN_FAILURE, "");
+  ui_delegate()->OnUnmaskPromptClosed();
+}
+
+// If the server provides an empty PAN with TRY_AGAIN_FAILURE, the user can
+// correct their mistake and resubmit.
+TEST_F(FullCardRequestTest, TryAgainFailureRetry) {
+  EXPECT_CALL(*delegate(), OnFullCardError()).Times(0);
+  EXPECT_CALL(
+      *delegate(),
+      OnFullCardDetails(CardMatches(CreditCard::FULL_SERVER_CARD, "4111"),
+                        base::ASCIIToUTF16("123")));
+  EXPECT_CALL(*client(), ShowUnmaskPrompt(_, _, _));
+  EXPECT_CALL(*client(),
+              OnUnmaskVerificationResult(AutofillClient::TRY_AGAIN_FAILURE));
+  EXPECT_CALL(*client(), OnUnmaskVerificationResult(AutofillClient::SUCCESS));
+
+  request()->GetFullCard(
+      CreditCard(CreditCard::MASKED_SERVER_CARD, "server_id"),
+      AutofillClient::UNMASK_FOR_AUTOFILL, delegate()->AsWeakPtr());
+  CardUnmaskDelegate::UnmaskResponse response;
+  response.cvc = base::ASCIIToUTF16("789");
+  ui_delegate()->OnUnmaskResponse(response);
+  OnDidGetRealPan(AutofillClient::TRY_AGAIN_FAILURE, "");
+  response.cvc = base::ASCIIToUTF16("123");
+  ui_delegate()->OnUnmaskResponse(response);
+  OnDidGetRealPan(AutofillClient::SUCCESS, "4111");
   ui_delegate()->OnUnmaskPromptClosed();
 }
 
