@@ -4,6 +4,80 @@
 <script src="inspector-test.js"></script>
 <script>
 
+window.counter = 0;
+var handler = {
+    get: function(target, name){
+        window.counter++;
+        return Reflect.get.apply(this, arguments);
+    },
+    set: function(target, name){
+        window.counter++;
+        return Reflect.set.apply(this, arguments);
+    },
+    getPrototypeOf: function(target) {
+        window.counter++;
+        return Reflect.getPrototypeOf.apply(this, arguments);
+    },
+    setPrototypeOf: function(target) {
+        window.counter++;
+        return Reflect.setPrototypeOf.apply(this, arguments);
+    },
+    isExtensible: function(target) {
+        window.counter++;
+        return Reflect.isExtensible.apply(this, arguments);
+    },
+    isExtensible: function(target) {
+        window.counter++;
+        return Reflect.isExtensible.apply(this, arguments);
+    },
+    isExtensible: function(target) {
+        window.counter++;
+        return Reflect.isExtensible.apply(this, arguments);
+    },
+    preventExtensions: function() {
+        window.counter++;
+        return Reflect.preventExtensions.apply(this, arguments);
+    },
+    getOwnPropertyDescriptor: function() {
+        window.counter++;
+        return Reflect.getOwnPropertyDescriptor.apply(this, arguments);
+    },
+    defineProperty: function() {
+        window.counter++;
+        return Reflect.defineProperty.apply(this, arguments);
+    },
+    has: function() {
+        window.counter++;
+        return Reflect.has.apply(this, arguments);
+    },
+    get: function() {
+        window.counter++;
+        return Reflect.get.apply(this, arguments);
+    },
+    set: function() {
+        window.counter++;
+        return Reflect.set.apply(this, arguments);
+    },
+    deleteProperty: function() {
+        window.counter++;
+        return Reflect.deleteProperty.apply(this, arguments);
+    },
+    ownKeys: function() {
+        window.counter++;
+        return Reflect.ownKeys.apply(this, arguments);
+    },
+    apply: function() {
+        window.counter++;
+        return Reflect.apply.apply(this, arguments);
+    },
+    construct: function() {
+        window.counter++;
+        return Reflect.construct.apply(this, arguments);
+    }
+};
+window.proxy1 = new Proxy({ a : 1}, handler);
+window.proxy2 = new Proxy(window.proxy1, handler);
+
 function test()
 {
     InspectorTest.changeExecutionContext("myIFrame");
@@ -11,13 +85,8 @@ function test()
     WebInspector.context.flavor(WebInspector.ExecutionContext).completionsForExpression("", "myGlob", 6, "myGlob", false, checkCompletions.bind(this));
     function checkCompletions(completions)
     {
-        var expected = ["myGlobalVar", "myGlobalFunction"];
-        for (var i = 0; i < expected.length; ++i) {
-            if (completions.indexOf(expected[i]) !== -1)
-                InspectorTest.addResult(expected[i]);
-            else
-                InspectorTest.addResult("NOT FOUND: " + expected[i]);
-        }
+        InspectorTest.addResult("myGlob completions:")
+        dumpCompletions(completions, ["myGlobalVar", "myGlobalFunction"]);
         requestIFrameCompletions();
     }
 
@@ -29,17 +98,40 @@ function test()
 
     function checkIframeCompletions(completions)
     {
-        var completionSet = new Set(completions);
-        var expected = ["self", "top", "window"];
         InspectorTest.addResult("myIFrame completions:")
+        dumpCompletions(completions, ["self", "top", "window"]);
+        requestProxyCompletions();
+    }
+
+    function requestProxyCompletions()
+    {
+        InspectorTest.changeExecutionContext("top");
+        WebInspector.context.flavor(WebInspector.ExecutionContext).completionsForExpression("window.proxy2.", "window.proxy2.", 0, "", false, checkProxyCompletions.bind(this));
+    }
+
+    function checkProxyCompletions(completions)
+    {
+        InspectorTest.addResult("proxy completions:")
+        dumpCompletions(completions, ["a"]);
+        InspectorTest.evaluateInPage("window.counter", dumpCounter);
+    }
+
+    function dumpCounter(result)
+    {
+        InspectorTest.addResult("window.counter = " + result.value);
+        InspectorTest.dumpConsoleMessages();
+        InspectorTest.completeTest();
+    }
+
+    function dumpCompletions(completions, expected)
+    {
+        var completionSet = new Set(completions);
         for (var completion of expected) {
             if (completionSet.has(completion))
                 InspectorTest.addResult(completion);
             else
                 InspectorTest.addResult("NOT FOUND: " + completion);
         }
-        InspectorTest.dumpConsoleMessages();
-        InspectorTest.completeTest();
     }
 }
 
