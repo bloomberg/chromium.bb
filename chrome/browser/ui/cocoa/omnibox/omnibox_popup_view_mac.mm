@@ -260,7 +260,7 @@ void OmniboxPopupViewMac::PositionPopup(const CGFloat matrixHeight) {
   // In Material Design, the table is the width of the window. In non-MD,
   // calculate the width of the table based on backing out the popup's border
   // from the width of the field.
-  CGFloat table_width = NSWidth([background_view_ bounds]);
+  CGFloat table_width = NSWidth([[[field_ window] contentView] bounds]);
   bool is_mode_material = ui::MaterialDesignController::IsModeMaterial();
   if (!is_mode_material) {
     table_width = NSWidth([field_ bounds]);
