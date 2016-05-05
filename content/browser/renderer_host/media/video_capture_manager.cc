@@ -180,7 +180,7 @@ VideoCaptureManager::CaptureDeviceStartRequest::CaptureDeviceStartRequest(
 
 VideoCaptureManager::VideoCaptureManager(
     std::unique_ptr<media::VideoCaptureDeviceFactory> factory)
-    : listener_(NULL),
+    : listener_(nullptr),
       new_capture_session_id_(1),
       video_capture_device_factory_(std::move(factory)) {}
 
@@ -206,7 +206,7 @@ void VideoCaptureManager::Register(
 
 void VideoCaptureManager::Unregister() {
   DCHECK(listener_);
-  listener_ = NULL;
+  listener_ = nullptr;
 }
 
 void VideoCaptureManager::EnumerateDevices(MediaStreamType stream_type) {
@@ -886,28 +886,22 @@ VideoCaptureManager::GetDeviceEntryForMediaStreamDevice(
     const MediaStreamDevice& device_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  for (DeviceEntries::iterator it = devices_.begin();
-       it != devices_.end(); ++it) {
-    DeviceEntry* device = *it;
-    if (device_info.type == device->stream_type &&
-        device_info.id == device->id) {
+  for (DeviceEntry* device : devices_) {
+    if (device_info.type == device->stream_type && device_info.id == device->id)
       return device;
-    }
   }
-  return NULL;
+  return nullptr;
 }
 
 VideoCaptureManager::DeviceEntry*
 VideoCaptureManager::GetDeviceEntryForController(
     const VideoCaptureController* controller) const {
   // Look up |controller| in |devices_|.
-  for (DeviceEntries::const_iterator it = devices_.begin();
-       it != devices_.end(); ++it) {
-    if ((*it)->video_capture_controller() == controller) {
-      return *it;
-    }
+  for (DeviceEntry* device : devices_) {
+    if (device->video_capture_controller() == controller)
+      return device;
   }
-  return NULL;
+  return nullptr;
 }
 
 void VideoCaptureManager::DestroyDeviceEntryIfNoClients(DeviceEntry* entry) {
@@ -936,9 +930,8 @@ VideoCaptureManager::DeviceEntry* VideoCaptureManager::GetOrCreateDeviceEntry(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   SessionMap::iterator session_it = sessions_.find(capture_session_id);
-  if (session_it == sessions_.end()) {
-    return NULL;
-  }
+  if (session_it == sessions_.end())
+    return nullptr;
   const MediaStreamDevice& device_info = session_it->second;
 
   // Check if another session has already opened this device. If so, just
@@ -968,7 +961,7 @@ media::VideoCaptureDeviceInfo* VideoCaptureManager::FindDeviceInfoById(
     if (it.name.id() == id)
       return &(it);
   }
-  return NULL;
+  return nullptr;
 }
 
 void VideoCaptureManager::SetDesktopCaptureWindowIdOnDeviceThread(
