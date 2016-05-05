@@ -4,6 +4,8 @@
 
 #import "ios/web/shell/view_controller.h"
 
+#import <MobileCoreServices/MobileCoreServices.h>
+
 #include <stdint.h>
 
 #include <memory>
@@ -18,9 +20,11 @@
 #import "ios/net/request_tracker.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/referrer.h"
+#import "ios/web/public/web_state/context_menu_params.h"
 #include "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_delegate_bridge.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
+#import "net/base/mac/url_conversions.h"
 #include "ui/base/page_transition_types.h"
 
 NSString* const kWebShellBackButtonAccessibilityLabel = @"Back";
@@ -260,6 +264,45 @@ using web::NavigationManager;
 - (void)webStateDidLoadPage:(web::WebState*)webState {
   DCHECK_EQ(_webState.get(), webState);
   [self updateToolbar];
+}
+
+// -----------------------------------------------------------------------
+// WebStateDelegate implementation.
+
+- (BOOL)webState:(web::WebState*)webState
+    handleContextMenu:(const web::ContextMenuParams&)params {
+  GURL link = params.link_url;
+  if (!link.is_valid()) {
+    return NO;
+  }
+
+  UIAlertController* alert = [UIAlertController
+      alertControllerWithTitle:SysUTF16ToNSString(params.menu_title)
+                       message:nil
+                preferredStyle:UIAlertControllerStyleActionSheet];
+  alert.popoverPresentationController.sourceView = params.view;
+  alert.popoverPresentationController.sourceRect =
+      CGRectMake(params.location.x, params.location.y, 1.0, 1.0);
+
+  void (^handler)(UIAlertAction*) = ^(UIAlertAction*) {
+    NSDictionary* item = @{
+      static_cast<NSString*>(kUTTypeURL) : net::NSURLWithGURL(link),
+      static_cast<NSString*>(kUTTypeUTF8PlainText) : [base::SysUTF8ToNSString(
+          link.spec()) dataUsingEncoding:NSUTF8StringEncoding],
+    };
+    [[UIPasteboard generalPasteboard] setItems:@[ item ]];
+  };
+  [alert addAction:[UIAlertAction actionWithTitle:@"Copy"
+                                            style:UIAlertActionStyleDefault
+                                          handler:handler]];
+
+  [alert addAction:[UIAlertAction actionWithTitle:@"Cancel"
+                                            style:UIAlertActionStyleCancel
+                                          handler:nil]];
+
+  [self presentViewController:alert animated:YES completion:nil];
+
+  return YES;
 }
 
 @end
