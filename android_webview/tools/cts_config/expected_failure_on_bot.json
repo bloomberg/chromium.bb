@@ -1,37 +1,12 @@
 {
-  "android.webkit.cts.WebSettingsTest":[
-    {
-      "name": "testUserAgentString_default"
-    }
-  ],
-  "android.webkit.cts.WebChromeClientTest":[
-    {
-      "name": "testOnJsBeforeUnload",
-      "_bug_id": "crbug.com/594573"
-    }
-  ],
   "android.webkit.cts.WebViewTest":[
     {
       "name": "testPageScroll",
       "_bug_id": "crbug.com/534643"
     },
     {
-      "name": "testStopLoading",
-      "_bug_id": "crbug.com/514474"
-    },
-    {
-      "name": "testJavascriptInterfaceForClientPopup",
-      "_bug_id": "crbug.com/563493"
-    },
-    {
       "name": "testRequestImageRef",
-      "_bug_id": "crbug.com/563493"
-    }
-  ],
-  "android.webkit.cts.WebViewSslTest":[
-    {
-      "name": "testSslErrorProceedResponseNotReusedForDifferentHost",
-      "_bug_id": "crbug.com/514473"
+      "_bug_id": "crbug.com/563691"
     }
   ]
 }
