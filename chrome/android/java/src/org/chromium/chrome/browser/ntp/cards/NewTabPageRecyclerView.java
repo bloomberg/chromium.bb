@@ -74,4 +74,8 @@ public class NewTabPageRecyclerView extends RecyclerView {
         outAttrs.imeOptions = EditorInfo.IME_FLAG_NO_FULLSCREEN;
         return super.onCreateInputConnection(outAttrs);
     }
+
+    public LinearLayoutManager getLinearLayoutManager() {
+        return mLayoutManager;
+    }
 }

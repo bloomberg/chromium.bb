@@ -17,7 +17,10 @@ public class SnippetItemDecoration extends RecyclerView.ItemDecoration {
     @Override
     public void getItemOffsets(Rect outRect, View view, RecyclerView parent,
             RecyclerView.State state) {
+        // Reset the bounds of the outRect.
         outRect.setEmpty();
+
+        // Do not add a vertical space to the last item.
         if (parent.getChildAdapterPosition(view) != parent.getAdapter().getItemCount() - 1) {
             outRect.bottom = VERTICAL_SPACE;
         }

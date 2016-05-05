@@ -42,8 +42,6 @@ public class NewTabPageScrollView extends ScrollView {
     private GestureDetector mGestureDetector;
     private OnScrollListener mOnScrollListener;
 
-    private NewTabPageLayout mNewTabPageLayout;
-
     private FadingShadow mFadingShadow;
 
     /**
@@ -73,23 +71,6 @@ public class NewTabPageScrollView extends ScrollView {
     public void enableBottomShadow(int shadowColor) {
         mFadingShadow = new FadingShadow(shadowColor);
         setFadingEdgeLength(getResources().getDimensionPixelSize(R.dimen.ntp_shadow_height));
-    }
-
-    @Override
-    protected void onFinishInflate() {
-        super.onFinishInflate();
-
-        View child = getChildAt(0);
-        if (child instanceof NewTabPageLayout) mNewTabPageLayout = (NewTabPageLayout) child;
-    }
-
-    @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        if (mNewTabPageLayout != null) {
-            mNewTabPageLayout.setParentScrollViewportHeight(
-                    MeasureSpec.getSize(heightMeasureSpec));
-        }
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
 
     @Override

@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.ntp;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -34,6 +35,7 @@ public class NewTabPageLayout extends LinearLayout {
 
     private int mParentScrollViewportHeight;
 
+    private boolean mCardsUiEnabled;
     private View mTopSpacer;
     private View mMiddleSpacer;
     private View mBottomSpacer;
@@ -82,10 +84,32 @@ public class NewTabPageLayout extends LinearLayout {
         mParentScrollViewportHeight = height;
     }
 
+    /**
+     * Sets whether the cards UI is enabled.
+     */
+    public void setUseCardsUiEnabled(boolean useCardsUi) {
+        mCardsUiEnabled = useCardsUi;
+    }
+
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         mScrollCompensationSpacer.getLayoutParams().height = 0;
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+
+        // Check if we are showing snippets. If Most Likely is fully rendered on the initial page
+        // load and has enough space for the peeking card, push snippets to the bottom of the page
+        // to show the peeking card.
+        if (mCardsUiEnabled) {
+            int peekingCardHeight = getContext().getResources().getDimensionPixelSize(
+                    R.dimen.snippets_padding_and_peeking_card_height);
+            if (mParentScrollViewportHeight >= getMeasuredHeight() + peekingCardHeight) {
+                RecyclerView.LayoutParams params = (RecyclerView.LayoutParams) getLayoutParams();
+                params.height = mParentScrollViewportHeight - peekingCardHeight;
+            }
+        }
+        // TODO(https://crbug.com/609487): Push snippets below the fold when most likely
+        // is not fully rendered.
+
         distributeExtraSpace(mTopSpacer.getMeasuredHeight());
 
         int minScrollAmountRequired = 0;
