@@ -51,6 +51,11 @@ dependencies. From time to time, this list may need to be updated. Use
 Be sure to review the generated manifest and remove any false runtime
 dependencies.
 
+For all entries listed in the manifest that are not from
+`//third_party/blimp_fonts`, ensure that the target that generate that artifact
+is manually listed as a dependency of `//blimp/engine:blimp_engine_bundle` to
+ensure that it is built before the bundle step happens.
+
 ## Build Docker Image
 
 Using the tarfile you can create a Docker image:

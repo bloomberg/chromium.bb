@@ -415,7 +415,16 @@ if (is_linux) {
 
     # Detail the target & "source"-file dependencies, and output, for GN.
     deps = [
+      # Other than //blimp/engine, the deps are listed here to ensure that the
+      # bundle generation has all required files available, because some of
+      # these are transitive data_deps which are not guaranteed to be available
+      # at build time.
+      ":blimp_engine_app",  # blimp_engine_app from manifest.
+      ":pak",  # blimp_engine.pak
       "//blimp/engine",
+      "//sandbox/linux:chrome_sandbox",  # chrome_sandbox from manifest.
+      "//third_party/icu:icudata",  # icudtl.dat
+      "//v8",  # natives_blob.bin
     ]
     sources = [
       _rebased_dockerfile,
