@@ -8,6 +8,8 @@
 
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/common/extensions/extension_constants.h"
+#include "components/mus/public/cpp/property_type_converters.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "ui/views/mus/window_manager_connection.h"
@@ -26,6 +28,9 @@ mus::Window* CreateMusWindow(BrowserView* browser_view) {
   std::map<std::string, std::vector<uint8_t>> properties;
   views::NativeWidgetMus::ConfigurePropertiesForNewWindow(
       GetWidgetParamsImpl(browser_view), &properties);
+  const std::string chrome_app_id(extension_misc::kChromeAppId);
+  properties[mus::mojom::WindowManager::kAppID_Property] =
+      mojo::ConvertTo<std::vector<uint8_t>>(chrome_app_id);
   return views::WindowManagerConnection::Get()->NewWindow(properties);
 }
 
