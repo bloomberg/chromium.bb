@@ -17,7 +17,7 @@
 }
 
 #header .title {
-  color: rgb(104, 113, 116);
+  color: rgb(104, 113, 116);  /* Custom color from bettes@ */
   font-size: 13px;
   font-weight: 500;
 }
