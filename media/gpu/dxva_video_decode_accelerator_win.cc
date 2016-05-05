@@ -967,6 +967,9 @@ void DXVAVideoDecodeAccelerator::ReusePictureBuffer(int32_t picture_buffer_id) {
   if (it->second->available() || it->second->waiting_to_reuse())
     return;
 
+  RETURN_AND_NOTIFY_ON_FAILURE(make_context_current_cb_.Run(),
+                               "Failed to make context current",
+                               PLATFORM_FAILURE, );
   if (use_keyed_mutex_ || using_angle_device_) {
     RETURN_AND_NOTIFY_ON_FAILURE(it->second->ReusePictureBuffer(),
                                  "Failed to reuse picture buffer",
@@ -979,9 +982,6 @@ void DXVAVideoDecodeAccelerator::ReusePictureBuffer(int32_t picture_buffer_id) {
                                 base::Unretained(this)));
     }
   } else {
-    RETURN_AND_NOTIFY_ON_FAILURE(make_context_current_cb_.Run(),
-                                 "Failed to make context current",
-                                 PLATFORM_FAILURE, );
     it->second->ResetReuseFence();
 
     WaitForOutputBuffer(picture_buffer_id, 0);
