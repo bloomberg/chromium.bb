@@ -392,6 +392,30 @@ TEST_F('CrSettingsDevicePageTest', 'DevicePage', function() {
 });
 GEN('#endif');
 
+/**
+ * Test fixture for chrome/browser/resources/settings/settings_menu/.
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+*/
+function CrSettingsMenuTest() {}
+
+CrSettingsMenuTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://md-settings/settings_menu/settings_menu.html',
+
+  /** @override */
+  extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
+    'settings_menu_test.js',
+  ]),
+};
+
+TEST_F('CrSettingsMenuTest', 'SettingsMenu', function() {
+  settings_menu.registerTests();
+  mocha.run();
+});
+
 GEN('#if !defined(OS_CHROMEOS)');
 /**
  * @constructor
