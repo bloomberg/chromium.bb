@@ -138,8 +138,6 @@ class ASH_WM_COMMON_EXPORT WmWindow {
   virtual void SetRestoreBoundsInScreen(const gfx::Rect& bounds) = 0;
   virtual gfx::Rect GetRestoreBoundsInScreen() const = 0;
 
-  virtual void OnWMEvent(const wm::WMEvent* event) = 0;
-
   virtual bool Contains(const WmWindow* other) const = 0;
 
   virtual void SetShowState(ui::WindowShowState show_state) = 0;

@@ -90,7 +90,6 @@ class ASH_EXPORT WmWindowAura : public WmWindow, public aura::WindowObserver {
   void ClearRestoreBounds() override;
   void SetRestoreBoundsInScreen(const gfx::Rect& bounds) override;
   gfx::Rect GetRestoreBoundsInScreen() const override;
-  void OnWMEvent(const wm::WMEvent* event) override;
   bool Contains(const WmWindow* other) const override;
   void SetShowState(ui::WindowShowState show_state) override;
   ui::WindowShowState GetShowState() const override;

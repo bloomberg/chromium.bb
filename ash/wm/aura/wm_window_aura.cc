@@ -357,10 +357,6 @@ gfx::Rect WmWindowAura::GetRestoreBoundsInScreen() const {
   return *window_->GetProperty(aura::client::kRestoreBoundsKey);
 }
 
-void WmWindowAura::OnWMEvent(const wm::WMEvent* event) {
-  ash::wm::GetWindowState(window_)->OnWMEvent(event);
-}
-
 bool WmWindowAura::Contains(const WmWindow* other) const {
   return other
              ? window_->Contains(
