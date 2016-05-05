@@ -50,7 +50,6 @@
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/CullRect.h"
-#include "platform/graphics/paint/DisplayItemCacheSkipper.h"
 #include "platform/inspector_protocol/Values.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebData.h"
@@ -114,8 +113,6 @@ public:
         if (m_overlay->isEmpty())
             return;
 
-        // Skip cache because the following paint may conflict with the view's real painting.
-        DisplayItemCacheSkipper cacheSkipper(graphicsContext);
         FrameView* view = m_overlay->overlayMainFrame()->view();
         DCHECK(!view->needsLayout());
         view->paint(graphicsContext, CullRect(IntRect(0, 0, view->width(), view->height())));
