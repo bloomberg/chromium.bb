@@ -59,6 +59,8 @@ cr.define('extension_sidebar_tests', function() {
       });
 
       test(assert(TestNames.Layout), function() {
+        extension_test_util.testIronIcons(sidebar);
+
         var testVisible = extension_test_util.testVisible.bind(null, sidebar);
         testVisible('#load-unpacked', false);
         testVisible('#pack-extensions', false);

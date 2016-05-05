@@ -124,11 +124,25 @@ cr.define('extension_test_util', function() {
     }, opt_properties);
   }
 
+  /**
+   * Tests that any iron-icon child of an HTML element has a corresponding
+   * non-empty svg element.
+   * @param {HTMLElement} e The element to check the iron icons in.
+   */
+  function testIronIcons(e) {
+    e.querySelectorAll('* /deep/ iron-icon').forEach(function(icon) {
+      var svg = icon.$$('svg');
+      expectTrue(!!svg && svg.innerHTML != '',
+                 'icon "' + icon.icon + '" is not present');
+    });
+  }
+
   return {
     ClickMock: ClickMock,
     MockItemDelegate: MockItemDelegate,
     isVisible: isVisible,
     testVisible: testVisible,
     createExtensionInfo: createExtensionInfo,
+    testIronIcons: testIronIcons,
   };
 });
