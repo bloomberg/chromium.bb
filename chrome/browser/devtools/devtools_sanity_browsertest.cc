@@ -1330,7 +1330,6 @@ IN_PROC_BROWSER_TEST_F(DevToolsPixelOutputTests,
                        MAYBE_TestLatencyInfoInstrumentation) {
   WebContents* web_contents = GetInspectedTab();
   OpenDevToolsWindow(kLatencyInfoTestPage, false);
-  RunTestMethod("enableExperiment", "timelineLatencyInfo");
   DispatchAndWait("startTimeline");
 
   for (int i = 0; i < 3; ++i) {
