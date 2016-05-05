@@ -17,6 +17,22 @@ cr.define('settings_menu', function() {
 
       teardown(function() { settingsMenu.remove(); });
 
+      test('upAndDownIcons', function() {
+        // There should be different icons for a top level menu being open
+        // vs. being closed. E.g. arrow-drop-up and arrow-drop-down.
+        settingsMenu.currentRoute = {
+          page: 'advanced', section: 'reset', subpage: []
+        };
+        var ironIconElement = settingsMenu.$.advancedPage.querySelector(
+            '.menu-trigger iron-icon');
+        assertTrue(!!ironIconElement);
+        var openIcon = ironIconElement.icon;
+        assertTrue(!!openIcon);
+        // Changing to basic will close advanced.
+        settingsMenu.currentRoute = {page: 'basic', section: '', subpage: []};
+        assertNotEquals(openIcon, ironIconElement.icon);
+      });
+
       test('defaultToBasic', function() {
         settingsMenu.currentRoute = {page: 'basic', section: '', subpage: []};
         assertFalse(settingsMenu.$.advancedPage.opened);
