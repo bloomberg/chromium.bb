@@ -327,11 +327,7 @@ CARendererLayerTree::ContentLayer::ContentLayer(
   if (IOSurfaceGetPixelFormat(io_surface) ==
           kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange &&
       contents_rect == gfx::RectF(0, 0, 1, 1)) {
-    // Enable only for hardware decoded frames, to see if flashing bugs are
-    // particular to software IOSurfaces.
-    // https://crbug.com/598269
-    if (cv_pixel_buffer)
-      use_av_layer = true;
+    use_av_layer = true;
   }
 }
 
@@ -649,15 +645,15 @@ void CARendererLayerTree::ContentLayer::CommitToCA(CALayer* superlayer,
     base::ScopedCFTypeRef<CGColorRef> color;
     if (update_anything) {
       if (use_av_layer) {
-        // Green represents an AV layer that changed this frame.
-        color.reset(CGColorCreateGenericRGB(0, 1, 0, 1));
+        // Yellow represents an AV layer that changed this frame.
+        color.reset(CGColorCreateGenericRGB(1, 1, 0, 1));
       } else {
         // Pink represents a CALayer that changed this frame.
         color.reset(CGColorCreateGenericRGB(1, 0, 1, 1));
       }
     } else {
       // Grey represents a CALayer that has not changed.
-      color.reset(CGColorCreateGenericRGB(0, 0, 0, 0.1));
+      color.reset(CGColorCreateGenericRGB(0.5, 0.5, 0.5, 1));
     }
     [ca_layer setBorderWidth:1];
     [ca_layer setBorderColor:color];

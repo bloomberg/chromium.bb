@@ -172,6 +172,21 @@ IOSurfaceRef CreateIOSurface(const gfx::Size& size, gfx::BufferFormat format) {
     DCHECK_EQ(kIOReturnSuccess, r);
   }
 
+  // Displaying an IOSurface that does not have a color space using an
+  // AVSampleBufferDisplayLayer can result in a black screen. Specify the
+  // main display's color profile by default, which will result in no color
+  // correction being done for the main monitor (which is the behavior of not
+  // specifying a color space).
+  // https://crbug.com/608879
+  if (format == gfx::BufferFormat::YUV_420_BIPLANAR) {
+    base::ScopedCFTypeRef<CGColorSpaceRef> color_space(
+        CGDisplayCopyColorSpace(CGMainDisplayID()));
+    base::ScopedCFTypeRef<CFDataRef> color_space_icc(
+        CGColorSpaceCopyICCProfile(color_space));
+    // Note that nullptr is an acceptable input to IOSurfaceSetValue.
+    IOSurfaceSetValue(surface, CFSTR("IOSurfaceColorSpace"), color_space_icc);
+  }
+
   return surface;
 }
 
