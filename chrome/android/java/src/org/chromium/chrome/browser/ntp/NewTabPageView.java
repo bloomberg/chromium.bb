@@ -449,23 +449,37 @@ public class NewTabPageView extends FrameLayout
                 // computeVerticalScrollOffset only takes into account visible items).
                 // Luckily, we only need to perform the calculations if the first item is visible.
                 if (!mRecyclerView.isFirstItemVisible()) return;
-                int currentScroll = mRecyclerView.computeVerticalScrollOffset();
+                final int currentScroll = mRecyclerView.computeVerticalScrollOffset();
 
-                // Scroll to hide all of content view off the top of the page.
-                // We subtract mContentView.getPaddingTop() to offset the contents below the
-                // search box.
-                int targetScroll = mContentView.getHeight() - mContentView.getPaddingTop();
+                // If snapping to Most Likely or to Articles, the omnibox will be at the top of the
+                // page, so offset the scroll so the scroll targets appear below it.
+                final int omniBoxHeight = mContentView.getPaddingTop();
+                final int topOfMostLikelyScroll = mMostVisitedLayout.getTop() - omniBoxHeight;
+                final int topOfSnippetsScroll = mContentView.getHeight() - omniBoxHeight;
 
-                if (currentScroll > 0 && currentScroll < targetScroll) {
-                    if (currentScroll < mSearchBoxView.getTop()) {
-                        // Scroll to the top.
-                        mRecyclerView.smoothScrollBy(0, -currentScroll);
-                    } else {
-                        // Scroll to the articles.
-                        mRecyclerView.smoothScrollBy(0, targetScroll - currentScroll);
-                    }
+                assert currentScroll >= 0;
+                // Do not do any scrolling if the user is currently viewing articles.
+                if (currentScroll > topOfSnippetsScroll) return;
+
+                // If Most Likely is fully visible when we are scrolled to the top, we have two
+                // snap points: the Top and Articles.
+                // If not, we have three snap points, the Top, Most Likely and Articles.
+                boolean snapToMostLikely =
+                        mRecyclerView.getHeight() < mMostVisitedLayout.getBottom();
+
+                int targetScroll;
+                if (currentScroll < mContentView.getHeight() / 3) {
+                    // In either case, if in the top 1/3 of the original NTP, snap to the top.
+                    targetScroll = 0;
+                } else if (snapToMostLikely && currentScroll < mContentView.getHeight() * 2 / 3) {
+                    // If in the middle 1/3 and we are snapping to Most Likely, snap to it.
+                    targetScroll = topOfMostLikelyScroll;
+                } else {
+                    // Otherwise, snap to the Articles.
+                    targetScroll = topOfSnippetsScroll;
                 }
 
+                mRecyclerView.smoothScrollBy(0, targetScroll - currentScroll);
                 mPendingSnapScroll = false;
             }
         };
