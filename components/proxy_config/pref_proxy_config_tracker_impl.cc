@@ -8,82 +8,15 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
-#include "base/strings/string_util.h"
 #include "base/values.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/proxy_config/proxy_config_dictionary.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
-#include "net/proxy/proxy_list.h"
 #include "net/proxy/proxy_server.h"
 #include "url/gurl.h"
-
-namespace {
-
-// Determine if |proxy| is of the form "*.googlezip.net".
-bool IsGooglezipDataReductionProxy(const net::ProxyServer& proxy) {
-  return proxy.is_valid() && !proxy.is_direct() &&
-         base::EndsWith(proxy.host_port_pair().host(), ".googlezip.net",
-                        base::CompareCase::SENSITIVE);
-}
-
-// Removes any Data Reduction Proxies like *.googlezip.net from |proxy_list|.
-// Returns the number of proxies that were removed from |proxy_list|.
-size_t RemoveGooglezipDataReductionProxiesFromList(net::ProxyList* proxy_list) {
-  bool found_googlezip_proxy = false;
-  for (const net::ProxyServer& proxy : proxy_list->GetAll()) {
-    if (IsGooglezipDataReductionProxy(proxy)) {
-      found_googlezip_proxy = true;
-      break;
-    }
-  }
-  if (!found_googlezip_proxy)
-    return 0;
-
-  size_t num_removed_proxies = 0;
-  net::ProxyList replacement_list;
-  for (const net::ProxyServer& proxy : proxy_list->GetAll()) {
-    if (!IsGooglezipDataReductionProxy(proxy))
-      replacement_list.AddProxyServer(proxy);
-    else
-      ++num_removed_proxies;
-  }
-
-  if (replacement_list.IsEmpty())
-    replacement_list.AddProxyServer(net::ProxyServer::Direct());
-  *proxy_list = replacement_list;
-  return num_removed_proxies;
-}
-
-// Remove any Data Reduction Proxies like *.googlezip.net from |proxy_rules|.
-// This is to prevent a Data Reduction Proxy from being activated in an
-// unsupported way, such as from a proxy pref, which could cause Chrome to use
-// the Data Reduction Proxy without adding any of the necessary authentication
-// headers or applying the Data Reduction Proxy bypass logic. See
-// http://crbug.com/476610.
-// TODO(sclittle): This method should be removed once the UMA indicates that
-// *.googlezip.net proxies are no longer present in the |proxy_rules|.
-void RemoveGooglezipDataReductionProxies(
-    net::ProxyConfig::ProxyRules* proxy_rules) {
-  size_t num_removed_proxies =
-      RemoveGooglezipDataReductionProxiesFromList(
-          &proxy_rules->fallback_proxies) +
-      RemoveGooglezipDataReductionProxiesFromList(
-          &proxy_rules->proxies_for_ftp) +
-      RemoveGooglezipDataReductionProxiesFromList(
-          &proxy_rules->proxies_for_http) +
-      RemoveGooglezipDataReductionProxiesFromList(
-          &proxy_rules->proxies_for_https) +
-      RemoveGooglezipDataReductionProxiesFromList(&proxy_rules->single_proxies);
-
-  UMA_HISTOGRAM_COUNTS_100("Net.PrefProxyConfig.GooglezipProxyRemovalCount",
-                           num_removed_proxies);
-}
-
-}  // namespace
 
 //============================= ProxyConfigServiceImpl =======================
 
@@ -249,37 +182,25 @@ net::ProxyConfigService::ConfigAvailability
         bool ignore_fallback_config,
         ProxyPrefs::ConfigState* effective_config_state,
         net::ProxyConfig* effective_config) {
-  net::ProxyConfigService::ConfigAvailability rv;
   *effective_config_state = pref_state;
 
   if (PrefPrecedes(pref_state)) {
     *effective_config = pref_config;
-    rv = net::ProxyConfigService::CONFIG_VALID;
-  } else if (system_availability == net::ProxyConfigService::CONFIG_UNSET) {
+    return net::ProxyConfigService::CONFIG_VALID;
+  }
+
+  if (system_availability == net::ProxyConfigService::CONFIG_UNSET) {
     // If there's no system proxy config, fall back to prefs or default.
     if (pref_state == ProxyPrefs::CONFIG_FALLBACK && !ignore_fallback_config)
       *effective_config = pref_config;
     else
       *effective_config = net::ProxyConfig::CreateDirect();
-    rv = net::ProxyConfigService::CONFIG_VALID;
-  } else {
-    *effective_config_state = ProxyPrefs::CONFIG_SYSTEM;
-    *effective_config = system_config;
-    rv = system_availability;
+    return net::ProxyConfigService::CONFIG_VALID;
   }
 
-  // Remove any Data Reduction Proxies like *.googlezip.net from the proxy
-  // config rules, since specifying a DRP in the proxy rules is not a supported
-  // means of activating the DRP, and could cause requests to be sent to the DRP
-  // without the appropriate authentication headers and without using any of the
-  // DRP bypass logic. This prevents the Data Reduction Proxy from being
-  // improperly activated via the proxy pref.
-  // TODO(sclittle): This is a temporary fix for http://crbug.com/476610, and
-  // should be removed once that bug is fixed and verified.
-  if (rv == net::ProxyConfigService::CONFIG_VALID)
-    RemoveGooglezipDataReductionProxies(&effective_config->proxy_rules());
-
-  return rv;
+  *effective_config_state = ProxyPrefs::CONFIG_SYSTEM;
+  *effective_config = system_config;
+  return system_availability;
 }
 
 // static
