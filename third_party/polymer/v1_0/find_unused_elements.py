@@ -22,8 +22,6 @@ class UnusedElementsDetector(object):
   __WHITELIST = (
     # TODO(dschuyler): Use element or remove from whitelist.
     'carbon-route',
-    # TODO(tsergeant): Use element or remove from whitelist.
-    'iron-scroll-threshold',
     # Necessary for closure.
     'polymer-externs',
   )

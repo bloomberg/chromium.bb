@@ -221,6 +221,12 @@
   <structure name="IDR_POLYMER_1_0_IRON_SCROLL_TARGET_BEHAVIOR_IRON_SCROLL_TARGET_BEHAVIOR_HTML"
              file="../../../third_party/polymer/v1_0/components-chromium/iron-scroll-target-behavior/iron-scroll-target-behavior.html"
              type="chrome_html" />
+  <structure name="IDR_POLYMER_1_0_IRON_SCROLL_THRESHOLD_IRON_SCROLL_THRESHOLD_EXTRACTED_JS"
+             file="../../../third_party/polymer/v1_0/components-chromium/iron-scroll-threshold/iron-scroll-threshold-extracted.js"
+             type="chrome_html" />
+  <structure name="IDR_POLYMER_1_0_IRON_SCROLL_THRESHOLD_IRON_SCROLL_THRESHOLD_HTML"
+             file="../../../third_party/polymer/v1_0/components-chromium/iron-scroll-threshold/iron-scroll-threshold.html"
+             type="chrome_html" />
   <structure name="IDR_POLYMER_1_0_IRON_SELECTOR_IRON_MULTI_SELECTABLE_EXTRACTED_JS"
              file="../../../third_party/polymer/v1_0/components-chromium/iron-selector/iron-multi-selectable-extracted.js"
              type="chrome_html" />

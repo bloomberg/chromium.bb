@@ -89,6 +89,8 @@ Polymer({
    */
   addNewResults: function(historyResults, searchTerm) {
     this.loading_ = false;
+    /** @type {IronScrollThresholdElement} */(this.$['scroll-threshold'])
+        .clearTriggers();
 
     if (this.searchTerm != searchTerm) {
       this.resultLoadingDisabled_ = false;
@@ -207,24 +209,16 @@ Polymer({
   },
 
   /**
-   * Called when the card manager is scrolled.
+   * Called when the page is scrolled to near the bottom of the list.
    * @private
    */
-  scrollHandler_: function() {
-    if (this.resultLoadingDisabled_)
+  loadMoreData_: function() {
+    if (this.resultLoadingDisabled_ || this.loading_)
       return;
 
-    // Requests the next list of results when the scrollbar is near the bottom
-    // of the window.
-    var scrollOffset = 10;
-    var scrollElem = this.$['infinite-list'];
-
-    if (!this.loading_ && scrollElem.scrollHeight <=
-        scrollElem.scrollTop + scrollElem.clientHeight + scrollOffset) {
-      this.loading_ = true;
-      chrome.send('queryHistory',
-          [this.searchTerm, 0, 0, this.lastVisitedTime, RESULTS_PER_PAGE]);
-    }
+    this.loading_ = true;
+    chrome.send('queryHistory',
+        [this.searchTerm, 0, 0, this.lastVisitedTime, RESULTS_PER_PAGE]);
   },
 
   /**
