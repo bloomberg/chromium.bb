@@ -24,6 +24,18 @@ const float kHiddenOpacity = 0.0f;
 
 }  // namespace
 
+std::string ToString(InkDropHover::AnimationType animation_type) {
+  switch (animation_type) {
+    case InkDropHover::FADE_IN:
+      return std::string("FADE_IN");
+    case InkDropHover::FADE_OUT:
+      return std::string("FADE_OUT");
+  }
+  NOTREACHED()
+      << "Should never be reached but is necessary for some compilers.";
+  return std::string("UNKNOWN");
+}
+
 InkDropHover::InkDropHover(const gfx::Size& size,
                            int corner_radius,
                            const gfx::Point& center_point,

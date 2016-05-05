@@ -499,6 +499,7 @@
       'animation/test/ink_drop_impl_test_api.h',
       'animation/test/ink_drop_hover_test_api.cc',
       'animation/test/ink_drop_hover_test_api.h',
+      'animation/test/ink_drop_utils.cc',
       'animation/test/square_ink_drop_ripple_test_api.cc',
       'animation/test/square_ink_drop_ripple_test_api.h',
       'animation/test/test_ink_drop_ripple_observer.cc',

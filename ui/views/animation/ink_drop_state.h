@@ -5,6 +5,7 @@
 #ifndef UI_VIEWS_ANIMATION_INK_DROP_STATE_H_
 #define UI_VIEWS_ANIMATION_INK_DROP_STATE_H_
 
+#include <iosfwd>
 #include <string>
 
 #include "ui/views/views_export.h"
@@ -36,7 +37,12 @@ enum class InkDropState {
 };
 
 // Returns a human readable string for |state|.  Useful for logging.
-std::string ToString(InkDropState state);
+VIEWS_EXPORT std::string ToString(InkDropState state);
+
+// This is declared here for use in gtest-based unit tests but is defined in
+// the views_test_support target. Depend on that to use this in your unit test.
+// This should not be used in production code - call ToString() instead.
+void PrintTo(InkDropState ink_drop_state, ::std::ostream* os);
 
 }  // namespace views
 
