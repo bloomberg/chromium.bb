@@ -189,6 +189,34 @@ TEST_F(MediaRouterWebUIMessageHandlerTest, UpdateSinksWithIdentity) {
   EXPECT_EQ(kUserEmailForTesting, value);
 }
 
+TEST_F(MediaRouterWebUIMessageHandlerTest,
+       UpdateSinksWithIdentityAndPseudoSink) {
+  MediaSink::Id sink_id("pseudo:sinkId123");
+  std::string sink_name("The sink");
+
+  std::vector<MediaSinkWithCastModes> media_sink_with_cast_modes_list;
+  MediaSinkWithCastModes media_sink_with_cast_modes(
+      MediaSink(sink_id, sink_name, MediaSink::IconType::CAST));
+  media_sink_with_cast_modes.sink.set_domain(kUserDomainForTesting);
+  media_sink_with_cast_modes.cast_modes.insert(MediaCastMode::TAB_MIRROR);
+  media_sink_with_cast_modes_list.push_back(media_sink_with_cast_modes);
+
+  handler_->UpdateSinks(media_sink_with_cast_modes_list);
+  EXPECT_EQ(1u, web_ui_->call_data().size());
+  const content::TestWebUI::CallData& call_data = *web_ui_->call_data()[0];
+  EXPECT_EQ("media_router.ui.setSinkListAndIdentity",
+            call_data.function_name());
+  const base::Value* arg1 = call_data.arg1();
+  const base::DictionaryValue* sinks_with_identity_value = nullptr;
+  ASSERT_TRUE(arg1->GetAsDictionary(&sinks_with_identity_value));
+
+  bool show_email = false;
+  bool actual_show_email = true;
+  EXPECT_TRUE(
+      sinks_with_identity_value->GetBoolean("showEmail", &actual_show_email));
+  EXPECT_EQ(show_email, actual_show_email);
+}
+
 TEST_F(MediaRouterWebUIMessageHandlerTest, UpdateSinksWithIdentityAndDomain) {
   MediaSink::Id sink_id("sinkId123");
   std::string sink_name("The sink");

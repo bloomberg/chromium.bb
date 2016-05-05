@@ -101,6 +101,8 @@ std::unique_ptr<base::DictionaryValue> SinksAndIdentityToValue(
     if (!sink.description().empty())
       sink_val->SetString("description", sink.description());
 
+    bool is_pseudo_sink =
+        base::StartsWith(sink.id(), "pseudo:", base::CompareCase::SENSITIVE);
     if (!user_domain.empty() && !sink.domain().empty()) {
       std::string domain = sink.domain();
       // Convert default domains to user domain
@@ -114,9 +116,10 @@ std::unique_ptr<base::DictionaryValue> SinksAndIdentityToValue(
 
       sink_val->SetString("domain", domain);
 
-      show_email = true;
-      if (!domain.empty() && domain != user_domain)
+      show_email = show_email || !is_pseudo_sink;
+      if (!domain.empty() && domain != user_domain) {
         show_domain = true;
+      }
     }
 
     int cast_mode_bits = 0;
@@ -124,9 +127,7 @@ std::unique_ptr<base::DictionaryValue> SinksAndIdentityToValue(
       cast_mode_bits |= cast_mode;
 
     sink_val->SetInteger("castModes", cast_mode_bits);
-    sink_val->SetBoolean(
-        "isPseudoSink",
-        base::StartsWith(sink.id(), "pseudo:", base::CompareCase::SENSITIVE));
+    sink_val->SetBoolean("isPseudoSink", is_pseudo_sink);
     sinks_val->Append(sink_val.release());
   }
 
