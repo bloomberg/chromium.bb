@@ -50,6 +50,9 @@ class BookmarkDrawerListView extends ListView implements BookmarkUIObserver {
                     case BookmarkDrawerListViewAdapter.TYPE_FOLDER:
                         mDelegate.openFolder(item.mFolderId);
                         break;
+                    case BookmarkDrawerListViewAdapter.TYPE_ALL_ITEMS:
+                        mDelegate.openAllBookmarks();
+                        break;
                     default:
                         assert false;
                 }
@@ -77,6 +80,13 @@ class BookmarkDrawerListView extends ListView implements BookmarkUIObserver {
     public void onDestroy() {
         mDelegate.getModel().removeObserver(mBookmarkModelObserver);
         mDelegate.removeUIObserver(this);
+    }
+
+    @Override
+    public void onAllBookmarksStateSet() {
+        mAdapter.updateList();
+        setItemChecked(mAdapter.getItemPosition(BookmarkUIState.STATE_ALL_BOOKMARKS, null),
+                true);
     }
 
     @Override

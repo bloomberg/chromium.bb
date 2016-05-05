@@ -10,7 +10,7 @@ package org.chromium.chrome.browser.bookmarks;
  * Please sync with the corresponding histograms.xml.
  */
 class BookmarkLaunchLocation {
-    public static final int ALL_ITEMS = 0; // Deprecated.
+    public static final int ALL_ITEMS = 0;
     public static final int UNCATEGORIZED = 1;  // Deprecated.
     public static final int FOLDER = 2;
     public static final int FILTER = 3;

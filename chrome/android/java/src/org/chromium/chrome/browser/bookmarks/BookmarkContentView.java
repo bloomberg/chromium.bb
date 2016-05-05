@@ -91,6 +91,11 @@ public class BookmarkContentView extends RelativeLayout implements
     }
 
     @Override
+    public void onAllBookmarksStateSet() {
+        mLoadingView.hideLoadingUI();
+    }
+
+    @Override
     public void onFolderStateSet(BookmarkId folder) {
         mLoadingView.hideLoadingUI();
     }

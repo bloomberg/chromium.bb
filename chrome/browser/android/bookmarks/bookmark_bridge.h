@@ -111,6 +111,11 @@ class BookmarkBridge : public bookmarks::BaseBookmarkModelObserver,
       jint type,
       jint index);
 
+  void GetAllBookmarkIDsOrderedByCreationDate(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobject>& j_result_obj);
+
   void SetBookmarkTitle(JNIEnv* env,
                         const base::android::JavaParamRef<jobject>& obj,
                         jlong id,

@@ -52,6 +52,13 @@ using content::BrowserThread;
 
 namespace {
 
+class BookmarkNodeCreationTimeCompareFunctor {
+ public:
+  bool operator()(const BookmarkNode* lhs, const BookmarkNode* rhs) {
+    return lhs->date_added().ToJavaTime() > rhs->date_added().ToJavaTime();
+  }
+};
+
 class BookmarkTitleComparer {
  public:
   explicit BookmarkTitleComparer(BookmarkBridge* bookmark_bridge,
@@ -442,6 +449,53 @@ ScopedJavaLocalRef<jobject> BookmarkBridge::GetChildAt(
   const BookmarkNode* child = parent->GetChild(index);
   return JavaBookmarkIdCreateBookmarkId(
       env, child->id(), GetBookmarkType(child));
+}
+
+void BookmarkBridge::GetAllBookmarkIDsOrderedByCreationDate(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& j_result_obj) {
+  DCHECK(IsLoaded());
+  std::list<const BookmarkNode*> folders;
+  std::vector<const BookmarkNode*> result;
+  folders.push_back(bookmark_model_->root_node());
+
+  for (std::list<const BookmarkNode*>::iterator folder_iter = folders.begin();
+      folder_iter != folders.end(); ++folder_iter) {
+    if (*folder_iter == NULL)
+      continue;
+
+    std::list<const BookmarkNode*>::iterator insert_iter = folder_iter;
+    ++insert_iter;
+
+    for (int i = 0; i < (*folder_iter)->child_count(); ++i) {
+      const BookmarkNode* child = (*folder_iter)->GetChild(i);
+      if (!IsReachable(child) ||
+          bookmarks::IsDescendantOf(
+              child, managed_bookmark_service_->managed_node()) ||
+          bookmarks::IsDescendantOf(
+              child, managed_bookmark_service_->supervised_node())) {
+        continue;
+      }
+
+      if (child->is_folder()) {
+        insert_iter = folders.insert(insert_iter, child);
+      } else {
+        result.push_back(child);
+      }
+    }
+  }
+
+  std::sort(
+      result.begin(), result.end(), BookmarkNodeCreationTimeCompareFunctor());
+
+  for (std::vector<const BookmarkNode*>::const_iterator iter = result.begin();
+       iter != result.end();
+       ++iter) {
+    const BookmarkNode* bookmark = *iter;
+    Java_BookmarkBridge_addToBookmarkIdList(
+        env, j_result_obj, bookmark->id(), GetBookmarkType(bookmark));
+  }
 }
 
 void BookmarkBridge::SetBookmarkTitle(JNIEnv* env,

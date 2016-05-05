@@ -15,8 +15,11 @@ import org.chromium.components.bookmarks.BookmarkId;
  * states can be uniquely identified by a URL.
  */
 class BookmarkUIState {
+    static final String URI_PERSIST_QUERY_NAME = "persist";
+
     static final int STATE_LOADING = 1;
-    static final int STATE_FOLDER = 2;
+    static final int STATE_ALL_BOOKMARKS = 2;
+    static final int STATE_FOLDER = 3;
     private static final int STATE_INVALID = 0;
 
     /**
@@ -31,6 +34,10 @@ class BookmarkUIState {
         state.mState = STATE_LOADING;
         state.mUrl = "";
         return state;
+    }
+
+    static BookmarkUIState createAllBookmarksState(BookmarkModel bookmarkModel) {
+        return createStateFromUrl(Uri.parse(UrlConstants.BOOKMARKS_URL), bookmarkModel);
     }
 
     static BookmarkUIState createFolderState(BookmarkId folder,
@@ -55,7 +62,7 @@ class BookmarkUIState {
         state.mUrl = uri.toString();
 
         if (state.mUrl.equals(UrlConstants.BOOKMARKS_URL)) {
-            return createFolderState(bookmarkModel.getDefaultFolder(), bookmarkModel);
+            state.mState = STATE_ALL_BOOKMARKS;
         } else if (state.mUrl.startsWith(UrlConstants.BOOKMARKS_FOLDER_URL)) {
             String path = uri.getLastPathSegment();
             if (!path.isEmpty()) {
@@ -65,7 +72,8 @@ class BookmarkUIState {
         }
 
         if (!state.isValid(bookmarkModel)) {
-            state = createFolderState(bookmarkModel.getDefaultFolder(), bookmarkModel);
+            state.mState = STATE_ALL_BOOKMARKS;
+            state.mUrl = UrlConstants.BOOKMARKS_URL;
         }
 
         return state;

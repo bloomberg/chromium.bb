@@ -478,6 +478,17 @@ public class BookmarkBridge {
     }
 
     /**
+     * @return All bookmark IDs ordered by descending creation date. Partner/managed bookmarks are
+     *         not included.
+     */
+    public List<BookmarkId> getAllBookmarkIDsOrderedByCreationDate() {
+        assert mIsNativeBookmarkModelLoaded;
+        List<BookmarkId> result = new ArrayList<BookmarkId>();
+        nativeGetAllBookmarkIDsOrderedByCreationDate(mNativeBookmarkBridge, result);
+        return result;
+    }
+
+    /**
      * Synchronously gets a list of bookmarks that match the specified search query.
      * @param query Keyword used for searching bookmarks.
      * @param maxNumberOfResult Maximum number of result to fetch.
@@ -886,6 +897,8 @@ public class BookmarkBridge {
             boolean getFolders, boolean getBookmarks, List<BookmarkId> bookmarksList);
     private native BookmarkId nativeGetChildAt(long nativeBookmarkBridge, long id, int type,
             int index);
+    private native void nativeGetAllBookmarkIDsOrderedByCreationDate(long nativeBookmarkBridge,
+            List<BookmarkId> result);
     private native void nativeSetBookmarkTitle(long nativeBookmarkBridge, long id, int type,
             String title);
     private native void nativeSetBookmarkUrl(long nativeBookmarkBridge, long id, int type,

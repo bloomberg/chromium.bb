@@ -23,8 +23,9 @@ import java.util.Set;
  */
 class BookmarkDrawerListViewAdapter extends BaseAdapter {
     static final int TYPE_FOLDER = 0;
-    static final int TYPE_DIVIDER = -1;
-    static final int TYPE_FOLDERS_TITLE = -2;
+    static final int TYPE_ALL_ITEMS = -1;
+    static final int TYPE_DIVIDER = -2;
+    static final int TYPE_FOLDERS_TITLE = -3;
 
     static final int VIEW_TYPE_ITEM = 0;
     static final int VIEW_TYPE_DIVIDER = 1;
@@ -32,9 +33,10 @@ class BookmarkDrawerListViewAdapter extends BaseAdapter {
 
     private BookmarkDelegate mDelegate;
     private List<Item> mTopSection = new ArrayList<Item>();
+    private List<Item> mMiddleSection = new ArrayList<Item>();
     private List<Item> mBottomSection = new ArrayList<Item>();
     // array containing the order of sections
-    private List<?>[] mSections = {mTopSection, mBottomSection};
+    private List<?>[] mSections = {mTopSection, mMiddleSection, mBottomSection};
 
     private BookmarkId mDesktopNodeId = null;
     private BookmarkId mMobileNodeId = null;
@@ -89,6 +91,8 @@ class BookmarkDrawerListViewAdapter extends BaseAdapter {
 
     private void repopulateTopSection() {
         mTopSection.clear();
+        mTopSection.add(new Item(TYPE_ALL_ITEMS));
+
         if (mDelegate.getModel().isFolderVisible(mMobileNodeId)) {
             mTopSection.add(new Item(mMobileNodeId));
         }
@@ -98,6 +102,7 @@ class BookmarkDrawerListViewAdapter extends BaseAdapter {
         if (mDelegate.getModel().isFolderVisible(mOthersNodeId)) {
             mTopSection.add(new Item(mOthersNodeId));
         }
+
         if (mManagedAndPartnerFolderIds != null) {
             for (BookmarkId id : mManagedAndPartnerFolderIds) {
                 mTopSection.add(new Item(id));
@@ -120,17 +125,17 @@ class BookmarkDrawerListViewAdapter extends BaseAdapter {
      * Sets folders to show.
      */
     void setTopFolders(List<BookmarkId> folders) {
-        mBottomSection.clear();
+        mMiddleSection.clear();
 
         if (folders.size() > 0) {
             // Add a divider and title to the top of the section.
-            mBottomSection.add(new Item(TYPE_DIVIDER));
-            mBottomSection.add(new Item(TYPE_FOLDERS_TITLE));
+            mMiddleSection.add(new Item(TYPE_DIVIDER));
+            mMiddleSection.add(new Item(TYPE_FOLDERS_TITLE));
         }
 
         // Add the rest of the items.
         for (BookmarkId id : folders) {
-            mBottomSection.add(new Item(id));
+            mMiddleSection.add(new Item(id));
         }
     }
 
@@ -139,6 +144,7 @@ class BookmarkDrawerListViewAdapter extends BaseAdapter {
      */
     void clear() {
         mTopSection.clear();
+        mMiddleSection.clear();
         mBottomSection.clear();
     }
 
@@ -178,7 +184,9 @@ class BookmarkDrawerListViewAdapter extends BaseAdapter {
      * Get item position of the given mode.
      */
     int getItemPosition(int state, Object modeDetail) {
-        if (state == BookmarkUIState.STATE_FOLDER) {
+        if (state == BookmarkUIState.STATE_ALL_BOOKMARKS) {
+            return 0;
+        } else if (state == BookmarkUIState.STATE_FOLDER) {
             Set<BookmarkId> topLevelFolderParents = new HashSet<>();
             topLevelFolderParents.addAll(mDelegate.getModel().getTopLevelFolderParentIDs());
             topLevelFolderParents.add(mDesktopNodeId);
@@ -295,6 +303,11 @@ class BookmarkDrawerListViewAdapter extends BaseAdapter {
         int iconDrawableId;
 
         switch (item.mType) {
+            case TYPE_ALL_ITEMS:
+                title = listItemView.getContext().getResources().getString(
+                        R.string.bookmark_drawer_all_items);
+                iconDrawableId = R.drawable.btn_star;
+                break;
             case TYPE_FOLDER:
                 title = mDelegate.getModel().getBookmarkById(item.mFolderId).getTitle();
                 if (mManagedAndPartnerFolderIds != null

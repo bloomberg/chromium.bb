@@ -278,6 +278,10 @@ abstract class BookmarkRow extends FrameLayout implements BookmarkUIObserver,
     }
 
     @Override
+    public void onAllBookmarksStateSet() {
+    }
+
+    @Override
     public void onFolderStateSet(BookmarkId folder) {
     }
 

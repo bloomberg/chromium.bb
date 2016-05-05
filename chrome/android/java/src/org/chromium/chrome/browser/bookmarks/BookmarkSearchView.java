@@ -359,6 +359,10 @@ public class BookmarkSearchView extends LinearLayout implements OnItemClickListe
     }
 
     @Override
+    public void onAllBookmarksStateSet() {
+    }
+
+    @Override
     public void onFolderStateSet(BookmarkId folder) {
     }
 

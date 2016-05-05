@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkModelObserve
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.partnerbookmarks.PartnerBookmarksShim;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarManageable;
 import org.chromium.components.bookmarks.BookmarkId;
 
@@ -68,7 +69,7 @@ public class BookmarkManager implements BookmarkDelegate {
                     && node.getId().equals(mStateStack.peek().mFolder)) {
                 if (mBookmarkModel.getTopLevelFolderIDs(true, true).contains(
                         node.getId())) {
-                    openFolder(mBookmarkModel.getDefaultFolder());
+                    openAllBookmarks();
                 } else {
                     openFolder(parent.getId());
                 }
@@ -253,8 +254,7 @@ public class BookmarkManager implements BookmarkDelegate {
      */
     private void setState(BookmarkUIState state) {
         if (!state.isValid(mBookmarkModel)) {
-            state = BookmarkUIState.createFolderState(mBookmarkModel.getDefaultFolder(),
-                    mBookmarkModel);
+            state = BookmarkUIState.createAllBookmarksState(mBookmarkModel);
         }
 
         if (!mStateStack.isEmpty() && mStateStack.peek().equals(state)) return;
@@ -297,6 +297,12 @@ public class BookmarkManager implements BookmarkDelegate {
     }
 
     @Override
+    public void openAllBookmarks() {
+        closeSearchUI();
+        setState(BookmarkUIState.createAllBookmarksState(mBookmarkModel));
+    }
+
+    @Override
     public void clearSelection() {
         mSelectedBookmarks.clear();
         for (BookmarkUIObserver observer : mUIObservers) {
@@ -336,6 +342,9 @@ public class BookmarkManager implements BookmarkDelegate {
     public void notifyStateChange(BookmarkUIObserver observer) {
         int state = getCurrentState();
         switch (state) {
+            case BookmarkUIState.STATE_ALL_BOOKMARKS:
+                observer.onAllBookmarksStateSet();
+                break;
             case BookmarkUIState.STATE_FOLDER:
                 observer.onFolderStateSet(mStateStack.peek().mFolder);
                 break;
@@ -412,5 +421,10 @@ public class BookmarkManager implements BookmarkDelegate {
     @Override
     public LargeIconBridge getLargeIconBridge() {
         return mLargeIconBridge;
+    }
+
+    @Override
+    public SnackbarManager getSnackbarManager() {
+        return ((SnackbarManageable) mActivity).getSnackbarManager();
     }
 }
