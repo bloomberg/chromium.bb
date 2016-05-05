@@ -1614,43 +1614,6 @@ bool LayoutTableSection::nodeAtPoint(HitTestResult& result, const HitTestLocatio
     return false;
 }
 
-void LayoutTableSection::removeCachedCollapsedBorders(const LayoutTableCell* cell)
-{
-    if (!table()->collapseBorders())
-        return;
-
-    for (int side = CBSBefore; side <= CBSEnd; ++side)
-        m_cellsCollapsedBorders.remove(std::make_pair(cell, side));
-}
-
-bool LayoutTableSection::setCachedCollapsedBorder(const LayoutTableCell* cell, CollapsedBorderSide side, const CollapsedBorderValue& border)
-{
-    ASSERT(table()->collapseBorders());
-    CellsCollapsedBordersMap::iterator it = m_cellsCollapsedBorders.find(std::make_pair(cell, side));
-    if (it == m_cellsCollapsedBorders.end()) {
-        if (!border.isVisible())
-            return false;
-        m_cellsCollapsedBorders.add(std::make_pair(cell, side), border);
-        return true;
-    }
-    if (!border.isVisible()) {
-        m_cellsCollapsedBorders.remove(it);
-        return true;
-    }
-    if (!it->value.equals(border)) {
-        it->value = border;
-        return true;
-    }
-    return false;
-}
-
-const CollapsedBorderValue* LayoutTableSection::cachedCollapsedBorder(const LayoutTableCell* cell, CollapsedBorderSide side) const
-{
-    ASSERT(table()->collapseBorders());
-    CellsCollapsedBordersMap::const_iterator it = m_cellsCollapsedBorders.find(std::make_pair(cell, side));
-    return it == m_cellsCollapsedBorders.end() ? nullptr : &it->value;
-}
-
 LayoutTableSection* LayoutTableSection::createAnonymousWithParent(const LayoutObject* parent)
 {
     RefPtr<ComputedStyle> newStyle = ComputedStyle::createAnonymousStyleWithDisplay(parent->styleRef(), TABLE_ROW_GROUP);

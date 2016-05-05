@@ -43,6 +43,7 @@ using namespace HTMLNames;
 struct SameSizeAsLayoutTableCell : public LayoutBlockFlow {
     unsigned bitfields;
     int paddings[2];
+    void* pointer;
 };
 
 static_assert(sizeof(LayoutTableCell) == sizeof(SameSizeAsLayoutTableCell), "LayoutTableCell should stay small");
@@ -65,7 +66,6 @@ void LayoutTableCell::willBeRemovedFromTree()
     LayoutBlockFlow::willBeRemovedFromTree();
 
     section()->setNeedsCellRecalc();
-    section()->removeCachedCollapsedBorders(this);
 }
 
 unsigned LayoutTableCell::parseColSpanFromDOM() const
@@ -908,25 +908,40 @@ static void addBorderStyle(LayoutTable::CollapsedBorderValues& borderValues,
 
 void LayoutTableCell::collectBorderValues(LayoutTable::CollapsedBorderValues& borderValues)
 {
-    CollapsedBorderValue startBorder = computeCollapsedStartBorder();
-    CollapsedBorderValue endBorder = computeCollapsedEndBorder();
-    CollapsedBorderValue beforeBorder = computeCollapsedBeforeBorder();
-    CollapsedBorderValue afterBorder = computeCollapsedAfterBorder();
-    LayoutTableSection* section = this->section();
-    bool changed = section->setCachedCollapsedBorder(this, CBSStart, startBorder);
-    changed |= section->setCachedCollapsedBorder(this, CBSEnd, endBorder);
-    changed |= section->setCachedCollapsedBorder(this, CBSBefore, beforeBorder);
-    changed |= section->setCachedCollapsedBorder(this, CBSAfter, afterBorder);
+    CollapsedBorderValues newValues = {
+        computeCollapsedStartBorder(),
+        computeCollapsedEndBorder(),
+        computeCollapsedBeforeBorder(),
+        computeCollapsedAfterBorder()
+    };
 
-    // In slimming paint mode, we need to invalidate all cells with collapsed border changed.
-    // FIXME: Need a way to invalidate/repaint the borders only. crbug.com/451090#c5.
+    bool changed = false;
+    if (!newValues.startBorder.isVisible() && !newValues.endBorder.isVisible() && !newValues.beforeBorder.isVisible() && !newValues.afterBorder.isVisible()) {
+        changed = !!m_collapsedBorderValues;
+        m_collapsedBorderValues = nullptr;
+    } else if (!m_collapsedBorderValues) {
+        changed = true;
+        m_collapsedBorderValues = adoptPtr(new CollapsedBorderValues(newValues));
+    } else {
+        // We check visuallyEquals so that the table cell is invalidated only if a changed
+        // collapsed border is visible in the first place.
+        changed = !m_collapsedBorderValues->startBorder.visuallyEquals(newValues.startBorder)
+            || !m_collapsedBorderValues->endBorder.visuallyEquals(newValues.endBorder)
+            || !m_collapsedBorderValues->beforeBorder.visuallyEquals(newValues.beforeBorder)
+            || !m_collapsedBorderValues->afterBorder.visuallyEquals(newValues.afterBorder);
+        if (changed)
+            *m_collapsedBorderValues = newValues;
+    }
+
+    // If collapsed borders changed, invalidate the cell's display item client on the table's backing.
+    // TODO(crbug.com/451090#c5): Need a way to invalidate/repaint the borders only.
     if (changed)
         table()->invalidateDisplayItemClient(*this);
 
-    addBorderStyle(borderValues, startBorder);
-    addBorderStyle(borderValues, endBorder);
-    addBorderStyle(borderValues, beforeBorder);
-    addBorderStyle(borderValues, afterBorder);
+    addBorderStyle(borderValues, newValues.startBorder);
+    addBorderStyle(borderValues, newValues.endBorder);
+    addBorderStyle(borderValues, newValues.beforeBorder);
+    addBorderStyle(borderValues, newValues.afterBorder);
 }
 
 void LayoutTableCell::sortBorderValues(LayoutTable::CollapsedBorderValues& borderValues)

@@ -34,13 +34,6 @@ namespace blink {
 // This variable is used to balance the memory consumption vs the paint invalidation time on big tables.
 const float gMaxAllowedOverflowingCellRatioForFastPaintPath = 0.1f;
 
-enum CollapsedBorderSide {
-    CBSBefore,
-    CBSAfter,
-    CBSStart,
-    CBSEnd
-};
-
 // Helper class for paintObject.
 class CellSpan {
     STACK_ALLOCATED();
@@ -280,12 +273,6 @@ public:
 
     void rowLogicalHeightChanged(LayoutTableRow*);
 
-    void removeCachedCollapsedBorders(const LayoutTableCell*);
-    // Returns true if any collapsed borders of the cell changed.
-    bool setCachedCollapsedBorder(const LayoutTableCell*, CollapsedBorderSide, const CollapsedBorderValue&);
-    // Returns null if the border is not cached (there is no such collapsed border or the border is invisible).
-    const CollapsedBorderValue* cachedCollapsedBorder(const LayoutTableCell*, CollapsedBorderSide) const;
-
     // distributeExtraLogicalHeightToRows methods return the *consumed* extra logical height.
     // FIXME: We may want to introduce a structure holding the in-flux layout information.
     int distributeExtraLogicalHeightToRows(int extraLogicalHeight);
@@ -412,12 +399,6 @@ private:
     // The use is to disable a painting optimization where we just paint the
     // invalidated cells.
     bool m_hasMultipleCellLevels;
-
-    // This map holds the collapsed border values for cells with collapsed borders.
-    // It is held at LayoutTableSection level to spare memory consumption by table cells.
-    // Invisible borders are never stored in this map.
-    using CellsCollapsedBordersMap = HashMap<std::pair<const LayoutTableCell*, int>, CollapsedBorderValue>;
-    CellsCollapsedBordersMap m_cellsCollapsedBorders;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutTableSection, isTableSection());

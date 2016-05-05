@@ -65,8 +65,10 @@ public:
         return width() == o.width() && style() == o.style() && precedence() == o.precedence();
     }
 
-    bool equals(const CollapsedBorderValue& o) const
+    bool visuallyEquals(const CollapsedBorderValue& o) const
     {
+        if (!isVisible() && !o.isVisible())
+            return true;
         return color() == o.color() && isTransparent() == o.isTransparent() && isSameIgnoringColor(o);
     }
 
@@ -77,9 +79,7 @@ public:
 
     bool shouldPaint(const CollapsedBorderValue& tableCurrentBorderValue) const
     {
-        // Invisible borders are not cached so painters see visible borders only.
-        ASSERT(isVisible());
-        return isSameIgnoringColor(tableCurrentBorderValue);
+        return isVisible() && isSameIgnoringColor(tableCurrentBorderValue);
     }
 
 private:

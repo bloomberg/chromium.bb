@@ -272,6 +272,14 @@ public:
 
     bool backgroundIsKnownToBeOpaqueInRect(const LayoutRect&) const override;
 
+    struct CollapsedBorderValues {
+        CollapsedBorderValue startBorder;
+        CollapsedBorderValue endBorder;
+        CollapsedBorderValue beforeBorder;
+        CollapsedBorderValue afterBorder;
+    };
+    const CollapsedBorderValues* collapsedBorderValues() const { return m_collapsedBorderValues.get(); }
+
 protected:
     void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
     void computePreferredLogicalWidths() override;
@@ -357,6 +365,8 @@ private:
     // because we don't do fractional arithmetic on tables.
     int m_intrinsicPaddingBefore;
     int m_intrinsicPaddingAfter;
+
+    OwnPtr<CollapsedBorderValues> m_collapsedBorderValues;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutTableCell, isTableCell());
