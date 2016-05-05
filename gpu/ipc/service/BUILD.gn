@@ -151,6 +151,7 @@ test("gpu_ipc_service_unittests") {
   libs = []
   if (is_android) {
     sources += [ "gpu_memory_buffer_factory_surface_texture_unittest.cc" ]
+    deps += [ "//ui/android:ui_java" ]
   }
   if (is_mac) {
     sources += [ "gpu_memory_buffer_factory_io_surface_unittest.cc" ]

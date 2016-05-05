@@ -22,6 +22,12 @@ class GpuChannelTest : public GpuChannelTestCommon {
   GpuChannelTest() : GpuChannelTestCommon() {}
   ~GpuChannelTest() override {}
 
+  void SetUp() override {
+    // We need GL bindings to actually initialize command buffers.
+    gfx::SetGLGetProcAddressProc(gfx::MockGLInterface::GetGLProcAddress);
+    gfx::GLSurfaceTestSupport::InitializeOneOffWithMockBindings();
+  }
+
   GpuChannel* CreateChannel(int32_t client_id,
                             bool allow_view_command_buffers,
                             bool allow_real_time_streams) {
@@ -70,10 +76,6 @@ const SurfaceHandle kFakeSurfaceHandle = 1;
 #endif
 
 TEST_F(GpuChannelTest, CreateViewCommandBufferAllowed) {
-  // We need GL bindings to actually initialize command buffers.
-  gfx::SetGLGetProcAddressProc(gfx::MockGLInterface::GetGLProcAddress);
-  gfx::GLSurfaceTestSupport::InitializeOneOffWithMockBindings();
-
   int32_t kClientId = 1;
   bool allow_view_command_buffers = true;
   GpuChannel* channel =
@@ -301,10 +303,6 @@ TEST_F(GpuChannelTest, RealTimeStreamsAllowed) {
 }
 
 TEST_F(GpuChannelTest, CreateFailsIfSharedContextIsLost) {
-  // We need GL bindings to actually initialize command buffers.
-  gfx::SetGLGetProcAddressProc(gfx::MockGLInterface::GetGLProcAddress);
-  gfx::GLSurfaceTestSupport::InitializeOneOffWithMockBindings();
-
   // This GLInterface is a stub for the gl driver.
   std::unique_ptr<gfx::MockGLInterface> gl_interface(
       new testing::NiceMock<gfx::MockGLInterface>);
