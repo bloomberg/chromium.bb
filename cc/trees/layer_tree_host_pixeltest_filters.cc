@@ -251,6 +251,37 @@ TEST_F(LayerTreeHostNullFilterPixelTest, Software) {
   RunPixelTestType(PIXEL_TEST_SOFTWARE);
 }
 
+class LayerTreeHostCroppedFilterPixelTest
+    : public LayerTreeHostFiltersPixelTest {
+  void InitializeSettings(LayerTreeSettings* settings) override {}
+
+ protected:
+  void RunPixelTestType(PixelTestType test_type) {
+    scoped_refptr<SolidColorLayer> foreground =
+        CreateSolidColorLayer(gfx::Rect(0, 0, 200, 200), SK_ColorGREEN);
+
+    // Check that a filter with a zero-height crop rect crops out its
+    // result completely.
+    FilterOperations filters;
+    SkImageFilter::CropRect cropRect(SkRect::MakeXYWH(0, 0, 100, 0));
+    sk_sp<SkImageFilter> offset(
+        SkOffsetImageFilter::Make(0, 0, nullptr, &cropRect));
+    filters.Append(FilterOperation::CreateReferenceFilter(offset));
+    foreground->SetFilters(filters);
+
+    RunPixelTest(test_type, foreground,
+                 base::FilePath(FILE_PATH_LITERAL("white.png")));
+  }
+};
+
+TEST_F(LayerTreeHostCroppedFilterPixelTest, GL) {
+  RunPixelTestType(PIXEL_TEST_GL);
+}
+
+TEST_F(LayerTreeHostCroppedFilterPixelTest, Software) {
+  RunPixelTestType(PIXEL_TEST_SOFTWARE);
+}
+
 class ImageFilterClippedPixelTest : public LayerTreeHostFiltersPixelTest {
  protected:
   void RunPixelTestType(PixelTestType test_type) {

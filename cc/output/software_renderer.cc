@@ -498,16 +498,23 @@ void SoftwareRenderer::DrawRenderPassQuad(const DrawingFrame* frame,
   if (!quad->filters.IsEmpty()) {
     sk_sp<SkImageFilter> filter = RenderSurfaceFilters::BuildImageFilter(
         quad->filters, gfx::SizeF(content_texture->size()));
-    SkIRect result_rect;
-    // TODO(ajuma): Apply the filter in the same pass as the content where
-    // possible (e.g. when there's no origin offset). See crbug.com/308201.
-    filter_image = ApplyImageFilter(filter.get(), quad, *content, &result_rect);
-    if (filter_image) {
-      gfx::RectF rect = gfx::SkRectToRectF(SkRect::Make(result_rect));
-      dest_rect = dest_visible_rect =
-          gfx::RectFToSkRect(MathUtil::ScaleRectProportional(
-              QuadVertexRect(), gfx::RectF(quad->rect), rect));
-      content_rect = SkRect::MakeWH(result_rect.width(), result_rect.height());
+    if (filter) {
+      SkIRect result_rect;
+      // TODO(ajuma): Apply the filter in the same pass as the content where
+      // possible (e.g. when there's no origin offset). See crbug.com/308201.
+      filter_image =
+          ApplyImageFilter(filter.get(), quad, *content, &result_rect);
+      if (result_rect.isEmpty()) {
+        return;
+      }
+      if (filter_image) {
+        gfx::RectF rect = gfx::SkRectToRectF(SkRect::Make(result_rect));
+        dest_rect = dest_visible_rect =
+            gfx::RectFToSkRect(MathUtil::ScaleRectProportional(
+                QuadVertexRect(), gfx::RectF(quad->rect), rect));
+        content_rect =
+            SkRect::MakeWH(result_rect.width(), result_rect.height());
+      }
     }
   }
 
@@ -662,6 +669,10 @@ sk_sp<SkImage> SoftwareRenderer::ApplyImageFilter(
   SkImageInfo dst_info =
       SkImageInfo::MakeN32Premul(dst_rect.width(), dst_rect.height());
   sk_sp<SkSurface> surface = SkSurface::MakeRaster(dst_info);
+
+  if (!surface) {
+    return nullptr;
+  }
 
   SkPaint paint;
   paint.setImageFilter(filter->makeWithLocalMatrix(local_matrix));
