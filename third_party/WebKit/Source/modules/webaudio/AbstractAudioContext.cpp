@@ -60,6 +60,7 @@
 #include "modules/webaudio/OscillatorNode.h"
 #include "modules/webaudio/PannerNode.h"
 #include "modules/webaudio/PeriodicWave.h"
+#include "modules/webaudio/PeriodicWaveConstraints.h"
 #include "modules/webaudio/ScriptProcessorNode.h"
 #include "modules/webaudio/StereoPannerNode.h"
 #include "modules/webaudio/WaveShaperNode.h"
@@ -578,7 +579,7 @@ PeriodicWave* AbstractAudioContext::createPeriodicWave(DOMFloat32Array* real, DO
     return PeriodicWave::create(sampleRate(), real, imag, false);
 }
 
-PeriodicWave* AbstractAudioContext::createPeriodicWave(DOMFloat32Array* real, DOMFloat32Array* imag, const Dictionary& options, ExceptionState& exceptionState)
+PeriodicWave* AbstractAudioContext::createPeriodicWave(DOMFloat32Array* real, DOMFloat32Array* imag, const PeriodicWaveConstraints& options, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
 
@@ -596,10 +597,9 @@ PeriodicWave* AbstractAudioContext::createPeriodicWave(DOMFloat32Array* real, DO
         return nullptr;
     }
 
-    bool isNormalizationDisabled = false;
-    DictionaryHelper::getWithUndefinedOrNullCheck(options, "disableNormalization", isNormalizationDisabled);
+    bool disable = options.hasDisableNormalization() ? options.disableNormalization() : false;
 
-    return PeriodicWave::create(sampleRate(), real, imag, isNormalizationDisabled);
+    return PeriodicWave::create(sampleRate(), real, imag, disable);
 }
 
 IIRFilterNode* AbstractAudioContext::createIIRFilter(Vector<double> feedforwardCoef, Vector<double> feedbackCoef,  ExceptionState& exceptionState)

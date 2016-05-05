@@ -71,6 +71,7 @@ class MediaStreamAudioSourceNode;
 class OscillatorNode;
 class PannerNode;
 class PeriodicWave;
+class PeriodicWaveConstraints;
 class ScriptProcessorNode;
 class ScriptPromiseResolver;
 class ScriptState;
@@ -172,7 +173,7 @@ public:
     ChannelMergerNode* createChannelMerger(size_t numberOfInputs, ExceptionState&);
     OscillatorNode* createOscillator(ExceptionState&);
     PeriodicWave* createPeriodicWave(DOMFloat32Array* real, DOMFloat32Array* imag, ExceptionState&);
-    PeriodicWave* createPeriodicWave(DOMFloat32Array* real, DOMFloat32Array* imag, const Dictionary&, ExceptionState&);
+    PeriodicWave* createPeriodicWave(DOMFloat32Array* real, DOMFloat32Array* imag, const PeriodicWaveConstraints&, ExceptionState&);
 
     // Close
     virtual ScriptPromise closeContext(ScriptState*) = 0;

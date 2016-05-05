@@ -79,7 +79,7 @@ enum AudioContextState {
     [RaisesException, MeasureAs=AudioContextCreateScriptProcessor] ScriptProcessorNode createScriptProcessor(optional unsigned long bufferSize, optional unsigned long numberOfInputChannels, optional unsigned long numberOfOutputChannels);
     [RaisesException, MeasureAs=AudioContextCreateStereoPanner] StereoPannerNode createStereoPanner();
     [RaisesException, MeasureAs=AudioContextCreateOscillator] OscillatorNode createOscillator();
-    [RaisesException, MeasureAs=AudioContextCreatePeriodicWave] PeriodicWave createPeriodicWave(Float32Array real, Float32Array imag, optional Dictionary options);
+    [RaisesException, MeasureAs=AudioContextCreatePeriodicWave] PeriodicWave createPeriodicWave(Float32Array real, Float32Array imag, optional PeriodicWaveConstraints options);
 
     // Channel splitting and merging
     [RaisesException, MeasureAs=AudioContextCreateChannelSplitter] ChannelSplitterNode createChannelSplitter(optional unsigned long numberOfOutputs);
