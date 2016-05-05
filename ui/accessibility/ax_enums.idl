@@ -32,6 +32,7 @@
     children_changed,
     clicked,
     document_selection_changed,
+    expanded_changed,          // Web
     focus,
     hide,                      // Remove: http://crbug.com/392502
     hover,

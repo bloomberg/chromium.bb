@@ -62,6 +62,7 @@ public:
         AXChildrenChanged,
         AXClicked,
         AXDocumentSelectionChanged,
+        AXExpandedChanged,
         AXFocusedUIElementChanged,
         AXHide,
         AXHover,

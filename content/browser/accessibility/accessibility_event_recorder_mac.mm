@@ -83,6 +83,7 @@ AccessibilityEventRecorderMac::AccessibilityEventRecorderMac(
   AddNotification(NSAccessibilitySelectedRowsChangedNotification);
   AddNotification(NSAccessibilitySelectedTextChangedNotification);
   AddNotification(NSAccessibilityValueChangedNotification);
+  AddNotification(@"AXExpandedChanged");
   AddNotification(@"AXLayoutComplete");
   AddNotification(@"AXLiveRegionChanged");
   AddNotification(@"AXLoadComplete");

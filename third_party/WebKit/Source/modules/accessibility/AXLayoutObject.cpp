@@ -2022,6 +2022,8 @@ void AXLayoutObject::handleAriaExpandedChanged()
             notification = AXObjectCacheImpl::AXRowCollapsed;
 
         axObjectCache().postNotification(this, notification);
+    } else {
+        axObjectCache().postNotification(this, AXObjectCacheImpl::AXExpandedChanged);
     }
 }
 

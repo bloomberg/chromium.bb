@@ -67,6 +67,8 @@ NSString* const NSAccessibilityInvalidStatusChangedNotification =
     @"AXInvalidStatusChanged";
 NSString* const NSAccessibilityLiveRegionChangedNotification =
     @"AXLiveRegionChanged";
+NSString* const NSAccessibilityExpandedChanged =
+    @"AXExpandedChanged";
 NSString* const NSAccessibilityMenuItemSelectedNotification =
     @"AXMenuItemSelected";
 
@@ -272,7 +274,10 @@ void BrowserAccessibilityManagerMac::NotifyAccessibilityEvent(
     case ui::AX_EVENT_ROW_COLLAPSED:
       mac_notification = NSAccessibilityRowCollapsedNotification;
       break;
-    // TODO(nektar): Add events for busy and expanded changed.
+    // TODO(nektar): Add events for busy.
+    case ui::AX_EVENT_EXPANDED_CHANGED:
+      mac_notification = NSAccessibilityExpandedChanged;
+      break;
     // TODO(nektar): Support menu open/close notifications.
     case ui::AX_EVENT_MENU_LIST_ITEM_SELECTED:
       mac_notification = NSAccessibilityMenuItemSelectedNotification;

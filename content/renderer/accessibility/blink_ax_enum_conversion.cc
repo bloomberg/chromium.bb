@@ -358,6 +358,8 @@ ui::AXEvent AXEventFromBlink(blink::WebAXEvent event) {
       return ui::AX_EVENT_CLICKED;
     case blink::WebAXEventDocumentSelectionChanged:
       return ui::AX_EVENT_DOCUMENT_SELECTION_CHANGED;
+    case blink::WebAXEventExpandedChanged:
+      return ui::AX_EVENT_EXPANDED_CHANGED;
     case blink::WebAXEventFocus:
       return ui::AX_EVENT_FOCUS;
     case blink::WebAXEventHover:
