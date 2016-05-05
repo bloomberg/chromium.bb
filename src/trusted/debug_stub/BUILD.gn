@@ -46,6 +46,7 @@ executable("gdb_rsp_unittest") {
 
   deps = [
     "//build/config/nacl:nacl_base",
+    "//build/win:default_exe_manifest",
     ":debug_stub",
   ]
 }

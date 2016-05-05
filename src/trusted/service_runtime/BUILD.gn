@@ -336,6 +336,7 @@ executable("sel_ldr") {
   ]
   deps = [
     ":sel_main",
+    "//build/win:default_exe_manifest",
   ]
   if (is_linux) {
     configs -= [ "//build/config:default_libs" ]

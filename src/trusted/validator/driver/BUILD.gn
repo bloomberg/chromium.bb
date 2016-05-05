@@ -21,6 +21,7 @@ executable("ncval_new") {
 
   deps = [
     "//build/config/nacl:nacl_base",
+    "//build/win:default_exe_manifest",
     ":elf_load",
     "//native_client/src/shared/platform:platform",
     "//native_client/src/trusted/cpu_features:cpu_features",
