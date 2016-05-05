@@ -193,7 +193,11 @@ TEST(DnsConfigServicePosixTest, DestroyWhileJobsWorking) {
 namespace internal {
 
 const char kTempHosts1[] = "127.0.0.1 localhost";
+// kTempHosts2 is only used by SeenChangeSinceHostsChange, which doesn't run
+// on Android.
+#if !defined(OS_ANDROID)
 const char kTempHosts2[] = "127.0.0.2 localhost";
+#endif  // !defined(OS_ANDROID)
 
 class DnsConfigServicePosixTest : public testing::Test {
  public:
@@ -274,19 +278,13 @@ class DnsConfigServicePosixTest : public testing::Test {
   DnsConfig test_config_;
 };
 
-TEST_F(DnsConfigServicePosixTest, SeenChangeSince) {
+TEST_F(DnsConfigServicePosixTest, SeenChangeSinceNetworkChange) {
   // Verify SeenChangeSince() returns false if no changes
   StartWatching();
   EXPECT_FALSE(service_->SeenChangeSince(creation_time_));
   // Verify SeenChangeSince() returns true if network change
   MockDNSConfig("8.8.4.4");
   service_->OnNetworkChanged(NetworkChangeNotifier::CONNECTION_WIFI);
-  EXPECT_TRUE(service_->SeenChangeSince(creation_time_));
-  ExpectChange();
-  // Verify SeenChangeSince() returns true if hosts file changes
-  StartWatching();
-  EXPECT_FALSE(service_->SeenChangeSince(creation_time_));
-  WriteMockHostsFile(kTempHosts2);
   EXPECT_TRUE(service_->SeenChangeSince(creation_time_));
   ExpectChange();
 }
