@@ -414,7 +414,6 @@ template("gcc_toolchain") {
                              [
                                "use_allocator",
                                "use_gold",
-                               "symbol_level",
                              ])
 
       if (defined(invoker.is_clang)) {
@@ -425,6 +424,9 @@ template("gcc_toolchain") {
       }
       if (defined(invoker.is_nacl_glibc)) {
         is_nacl_glibc = invoker.is_nacl_glibc
+      }
+      if (defined(invoker.symbol_level)) {
+        symbol_level = invoker.symbol_level
       }
 
       if (defined(invoker.clear_sanitizers) && invoker.clear_sanitizers) {

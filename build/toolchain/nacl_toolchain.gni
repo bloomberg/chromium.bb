@@ -43,7 +43,6 @@ template("nacl_toolchain") {
                              "nm",
                              "readelf",
                              "strip",
-                             "symbol_level",
                              "toolchain_cpu",
                            ])
 
@@ -52,6 +51,9 @@ template("nacl_toolchain") {
     }
     if (defined(invoker.is_nacl_glibc)) {
       is_nacl_glibc = invoker.is_nacl_glibc
+    }
+    if (defined(invoker.symbol_level)) {
+      symbol_level = invoker.symbol_level
     }
 
     # We do not support component builds or sanitizers with the NaCl toolchains.
