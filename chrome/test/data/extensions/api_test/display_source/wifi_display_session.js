@@ -7,16 +7,13 @@ var errorReported = false;
 var testStartSessionErrorReport = function() {
   function onSessionError(errorSinkId, errorMessage){
     chrome.test.assertEq(1, errorSinkId);
-    chrome.test.assertEq('media_pipeline_error', errorMessage.type);
-    chrome.test.assertEq('Failed to initialize media pipeline for the session',
-        errorMessage.description);
     errorReported = true;
   };
   chrome.displaySource.onSessionErrorOccured.addListener(onSessionError);
 
   function onSessionTerminated(terminatedSink) {
     chrome.test.assertEq(1, terminatedSink);
-    chrome.test.assertTrue(errorReported);
+    chrome.test.assertFalse(errorReported);
     chrome.test.succeed("SessionTerminated Received");
   };
   chrome.displaySource.onSessionTerminated.addListener(onSessionTerminated);

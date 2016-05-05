@@ -8,6 +8,8 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "net/base/net_errors.h"
+#include "net/udp/udp_socket.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
@@ -80,6 +82,12 @@ class MockDisplaySourceConnectionDelegate
   void CheckSourceMessageContent(std::string pattern,
                                  const std::string& message);
 
+  void BindToUdpSocket();
+
+  void ReceiveMediaPacket();
+
+  void OnMediaPacketReceived(int net_result);
+
   DisplaySourceSinkInfoList sinks_;
   DisplaySourceSinkInfo* active_sink_;
   std::map<int, std::pair<AuthenticationMethod, std::string>> auth_infos_;
@@ -100,12 +108,24 @@ class MockDisplaySourceConnectionDelegate
 
   std::list<Message> messages_list_;
   std::string session_id_;
+
+  std::unique_ptr<net::UDPSocket,
+      content::BrowserThread::DeleteOnIOThread> socket_;
+  scoped_refptr<net::IOBuffer> recvfrom_buffer_;
+  net::IPEndPoint end_point_;
+  std::string udp_port_;
 };
 
 namespace {
 
 const size_t kSessionIdLength = 8;
+const size_t kUdpPortLength = 5;
+const char kClientPortKey[] = "client_port=";
+const char kLocalHost[] = "127.0.0.1";
 const char kSessionKey[] = "Session: ";
+const char kUnicastKey[] = "unicast ";
+const int kPortStart = 10000;
+const int kPortEnd = 65535;
 
 DisplaySourceSinkInfo CreateSinkInfo(int id, const std::string& name) {
   DisplaySourceSinkInfo ptr;
@@ -120,6 +140,16 @@ std::unique_ptr<KeyedService> CreateMockDelegate(
     content::BrowserContext* profile) {
   return base::WrapUnique<KeyedService>(
       new MockDisplaySourceConnectionDelegate());
+}
+
+void AdaptMessagePattern(std::size_t key_pos,
+                         const char *key,
+                         std::size_t substr_len,
+                         const std::string& replace_with,
+                         std::string& pattern) {
+  const std::size_t position = key_pos +
+             std::char_traits<char>::length(key);
+  pattern.replace(position, substr_len, replace_with);
 }
 
 }  // namespace
@@ -163,21 +193,21 @@ const char kM3MessageReply[] = "RTSP/1.0 200 OK\r\n"
                                "Content-Type: text/parameters\r\n"
                                "Content-Length: 145\r\n\r\n"
                                "wfd_video_formats: "
-                               "40 00 02 10 0001FFFF 1FFFFFFF 00000FFF 00 0000 "
+                               "00 00 01 01 0001FFFF 1FFFFFFF 00000FFF 00 0000 "
                                "0000 00 none none\r\n"
                                "wfd_client_rtp_ports: RTP/AVP/UDP;"
-                               "unicast 41657 0 mode=play\r\n";
+                               "unicast 00000 0 mode=play\r\n";
 
 const char kM4Message[] = "SET_PARAMETER rtsp://localhost/wfd1.0 RTSP/1.0\r\n"
                           "CSeq: 3\r\n"
                           "Content-Type: text/parameters\r\n"
                           "Content-Length: 209\r\n\r\n"
                           "wfd_client_rtp_ports: "
-                          "RTP/AVP/UDP;unicast 41657 0 mode=play\r\n"
+                          "RTP/AVP/UDP;unicast 00000 0 mode=play\r\n"
                           "wfd_presentation_URL: "
                           "rtsp://127.0.0.1/wfd1.0/streamid=0 none\r\n"
                           "wfd_video_formats: "
-                          "00 00 02 10 00000001 00000000 00000000 00 0000 0000 "
+                          "00 00 01 01 00000001 00000000 00000000 00 0000 0000 "
                           "00 none none\r\n";
 
 const char kM4MessageReply[] = "RTSP/1.0 200 OK\r\n"
@@ -196,13 +226,13 @@ const char kM6Message[] = "SETUP rtsp://localhost/wfd1.0/streamid=0 "
                           "RTSP/1.0\r\n"
                           "CSeq: 3\r\n"
                           "Transport: RTP/AVP/UDP;unicast;"
-                          "client_port=41657\r\n\r\n";
+                          "client_port=00000\r\n\r\n";
 
 const char kM6MessageReply[] = "RTSP/1.0 200 OK\r\n"
                                "CSeq: 3\r\n"
                                "Session: 00000000;timeout=60\r\n"
                                "Transport: RTP/AVP/UDP;unicast;"
-                               "client_port=41657\r\n\r\n";
+                               "client_port=00000\r\n\r\n";
 
 const char kM7Message[] = "PLAY rtsp://localhost/wfd1.0/streamid=0 RTSP/1.0\r\n"
                           "CSeq: 4\r\n"
@@ -213,6 +243,22 @@ const char kM7MessageReply[] = "RTSP/1.0 200 OK\r\n"
 
 const char kM8Message[] = "GET_PARAMETER rtsp://localhost/wfd1.0 RTSP/1.0\r\n"
                           "CSeq: 5\r\n\r\n";
+
+const char kM8MessageReply[] = "RTSP/1.0 200 OK\r\n"
+                               "CSeq: 5\r\n\r\n";
+
+const char kM9Message[] = "GET_PARAMETER rtsp://localhost/wfd1.0 RTSP/1.0\r\n"
+                          "CSeq: 6\r\n\r\n";
+
+const char kM9MessageReply[] = "RTSP/1.0 200 OK\r\n"
+                               "CSeq: 6\r\n\r\n";
+
+const char kM10Message[] = "GET_PARAMETER rtsp://localhost/wfd1.0 RTSP/1.0\r\n"
+                           "CSeq: 7\r\n\r\n";
+
+const char kM10MessageReply[] = "RTSP/1.0 200 OK\r\n"
+                                "CSeq: 7\r\n\r\n";
+
 } // namespace
 MockDisplaySourceConnectionDelegate::MockDisplaySourceConnectionDelegate()
     : active_sink_(nullptr) {
@@ -231,6 +277,11 @@ MockDisplaySourceConnectionDelegate::MockDisplaySourceConnectionDelegate()
   messages_list_.push_back(Message(kM7Message, Message::SinkToSource));
   messages_list_.push_back(Message(kM7MessageReply, Message::SourceToSink));
   messages_list_.push_back(Message(kM8Message, Message::SourceToSink));
+  messages_list_.push_back(Message(kM8MessageReply, Message::SinkToSource));
+  messages_list_.push_back(Message(kM9Message, Message::SourceToSink));
+  messages_list_.push_back(Message(kM9MessageReply, Message::SinkToSource));
+  messages_list_.push_back(Message(kM10Message, Message::SourceToSink));
+  messages_list_.push_back(Message(kM10MessageReply, Message::SinkToSource));
 
   AddSink(CreateSinkInfo(1, "sink 1"), AUTHENTICATION_METHOD_PIN, "1234");
 }
@@ -267,25 +318,29 @@ void MockDisplaySourceConnectionDelegate::Connect(
   ASSERT_EQ(it->second.first, auth_info.method);
   ASSERT_STREQ(it->second.second.c_str(), auth_info.data->c_str());
 
-  auto found = std::find_if(
-    sinks_.begin(), sinks_.end(),
-      [sink_id](const DisplaySourceSinkInfo& sink) {
-        return sink.id == sink_id;
-      });
+  auto found = std::find_if(sinks_.begin(), sinks_.end(),
+                            [sink_id](const DisplaySourceSinkInfo& sink) {
+                              return sink.id == sink_id;
+                            });
 
   ASSERT_NE(found, sinks_.end());
   active_sink_ = sinks_.data() + (found - sinks_.begin());
   active_sink_->state = SINK_STATE_CONNECTING;
   NotifySinksUpdated();
 
+  // Bind sink to udp socket at this stage
+  // And store udp port to udp_port_ string in order to be used
+  // In a message exchange. Then make a BrowserThread::PostTask
+  // on UI thread and call OnSinkConnected() to proceed with the test
   BrowserThread::PostTask(
-    BrowserThread::UI, FROM_HERE,
-      base::Bind(&MockDisplaySourceConnectionDelegate::OnSinkConnected,
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&MockDisplaySourceConnectionDelegate::BindToUdpSocket,
                  base::Unretained(this)));
 }
 
 void MockDisplaySourceConnectionDelegate::Disconnect(
     const StringCallback& failure_callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CHECK(active_sink_);
   ASSERT_EQ(active_sink_->state, SINK_STATE_CONNECTED);
   active_sink_->state = SINK_STATE_DISCONNECTED;
@@ -342,6 +397,7 @@ void MockDisplaySourceConnectionDelegate::AddSink(
 }
 
 void MockDisplaySourceConnectionDelegate::OnSinkConnected() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CHECK(active_sink_);
   active_sink_->state = SINK_STATE_CONNECTED;
   NotifySinksUpdated();
@@ -354,14 +410,23 @@ void MockDisplaySourceConnectionDelegate::NotifySinksUpdated() {
 
 void MockDisplaySourceConnectionDelegate::
 EnqueueSinkMessage(std::string message) {
-  const std::size_t found = message.find(kSessionKey);
-  if (found != std::string::npos) {
-    const std::size_t session_id_pos = found +
-        std::char_traits<char>::length(kSessionKey);
-    message.replace(session_id_pos, kSessionIdLength, session_id_);
-  }
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE, base::Bind(message_received_cb_, message));
+  const std::size_t found_session_key = message.find(kSessionKey);
+  if (found_session_key != std::string::npos)
+    AdaptMessagePattern(found_session_key, kSessionKey, kSessionIdLength,
+                        session_id_, message);
+
+  const std::size_t found_unicast_key = message.find(kUnicastKey);
+  if (found_unicast_key != std::string::npos)
+    AdaptMessagePattern(found_unicast_key, kUnicastKey, kUdpPortLength,
+                        udp_port_, message);
+
+  const std::size_t found_clientport_key = message.find(kClientPortKey);
+  if (found_clientport_key != std::string::npos)
+    AdaptMessagePattern(found_clientport_key, kClientPortKey, kUdpPortLength,
+                        udp_port_, message);
+
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(message_received_cb_, message));
 }
 
 void MockDisplaySourceConnectionDelegate::
@@ -374,16 +439,95 @@ CheckSourceMessageContent(std::string pattern,
   // If not, assert the message normally.
   // If yes, find the session id, add it to the pattern and to the sink message
   // that has Session: substring inside.
-  const std::size_t found = message.find(kSessionKey);
-
-  if (found != std::string::npos) {
-    const std::size_t session_id_pos = found +
+  const std::size_t found_session_key = message.find(kSessionKey);
+  if (found_session_key != std::string::npos) {
+    const std::size_t session_id_pos = found_session_key +
         std::char_traits<char>::length(kSessionKey);
     session_id_ = message.substr(session_id_pos, kSessionIdLength);
-
-    pattern.replace(session_id_pos, kSessionIdLength, session_id_);
+    AdaptMessagePattern(found_session_key, kSessionKey, kSessionIdLength,
+                        session_id_, pattern);
   }
+
+  const std::size_t found_unicast_key = message.find(kUnicastKey);
+  if (found_unicast_key != std::string::npos)
+    AdaptMessagePattern(found_unicast_key, kUnicastKey, kUdpPortLength,
+                        udp_port_, pattern);
+
+  const std::size_t found_clientport_key = message.find(kClientPortKey);
+  if (found_clientport_key != std::string::npos)
+    AdaptMessagePattern(found_clientport_key, kClientPortKey, kUdpPortLength,
+                        udp_port_, pattern);
+
   ASSERT_EQ(pattern, message);
+}
+
+void MockDisplaySourceConnectionDelegate::BindToUdpSocket() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  socket_.reset(new net::UDPSocket(
+      net::DatagramSocket::DEFAULT_BIND, net::RandIntCallback(), nullptr,
+      net::NetLog::Source()));
+
+  net::IPAddress address;
+  ASSERT_TRUE(address.AssignFromIPLiteral(kLocalHost));
+
+  int net_result;
+  net_result = socket_->Open(net::ADDRESS_FAMILY_IPV4);
+  ASSERT_EQ(net_result, net::OK);
+
+  for (uint16_t port = kPortStart; port < kPortEnd; ++port) {
+    net::IPEndPoint local_point(address, port);
+    net_result = socket_->Bind(local_point);
+    if (net_result == net::OK) {
+      udp_port_ = std::to_string(port);
+      // When we got an udp socket established and udp port is known
+      // Change sink's status to connected and proceed with the test.
+      BrowserThread::PostTask(
+            BrowserThread::UI, FROM_HERE,
+            base::Bind(&MockDisplaySourceConnectionDelegate::OnSinkConnected,
+                       base::Unretained(this)));
+      break;
+    }
+  }
+
+  ReceiveMediaPacket();
+}
+
+void MockDisplaySourceConnectionDelegate::ReceiveMediaPacket() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(socket_.get());
+  const int kBufferSize = 512;
+
+  recvfrom_buffer_ = new net::IOBuffer(kBufferSize);
+
+  int net_result = socket_->RecvFrom(
+      recvfrom_buffer_.get(), kBufferSize, &end_point_,
+      base::Bind(&MockDisplaySourceConnectionDelegate::OnMediaPacketReceived,
+                 base::Unretained(this)));
+
+  if (net_result != net::ERR_IO_PENDING)
+    OnMediaPacketReceived(net_result);
+}
+
+void MockDisplaySourceConnectionDelegate::OnMediaPacketReceived(
+    int net_result) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(recvfrom_buffer_.get());
+  recvfrom_buffer_ = NULL;
+
+  if (net_result > 0) {
+    // We received at least one media packet.
+    // Test is completed.
+    socket_->Close();
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&MockDisplaySourceConnectionDelegate::Disconnect,
+                   base::Unretained(this), StringCallback()));
+    return;
+   }
+
+  DCHECK(socket_.get());
+  ReceiveMediaPacket();
 }
 
 }  // namespace extensions
