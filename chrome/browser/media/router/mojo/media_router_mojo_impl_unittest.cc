@@ -1226,56 +1226,32 @@ TEST_F(MediaRouterMojoImplTest, QueuedWhileAsleep) {
   ProcessEventLoop();
 }
 
-TEST_F(MediaRouterMojoImplTest, SearchSinksAndCreateRoute) {
+TEST_F(MediaRouterMojoImplTest, SearchSinks) {
   std::string search_input("input");
   std::string domain("google.com");
   MediaSource media_source(kSource);
-  MediaRoute expected_route(kRouteId, media_source, kSinkId2, "", false, "",
-                            false);
-  auto& media_router_proxy = media_router_proxy_;
 
-  EXPECT_CALL(mock_media_route_provider_,
-              SearchSinksAndCreateRoute_(
-                  mojo::String(kSinkId), mojo::String(kSource), _, _,
-                  mojo::String(kOrigin), kInvalidTabId, _, false, _))
-      .WillOnce(Invoke([&search_input, &domain, &media_router_proxy](
+  EXPECT_CALL(
+      mock_media_route_provider_,
+      SearchSinks_(mojo::String(kSinkId), mojo::String(kSource), _, _))
+      .WillOnce(Invoke([&search_input, &domain](
           const mojo::String& sink_id, const mojo::String& source,
           const interfaces::SinkSearchCriteriaPtr& search_criteria,
-          const mojo::String& presentation_id, const mojo::String& origin,
-          int32_t tab_id, int64_t timeout_millis, bool off_the_record,
-          const interfaces::MediaRouteProvider::
-              SearchSinksAndCreateRouteCallback& cb) {
-        interfaces::MediaRoutePtr route = CreateMojoRoute();
-        route->media_source = source;
-        route->media_sink_id = kSinkId2;
-        route->off_the_record = off_the_record;
+          const interfaces::MediaRouteProvider::SearchSinksCallback& cb) {
         EXPECT_EQ(search_input, search_criteria->input);
         EXPECT_EQ(domain, search_criteria->domain);
-        media_router_proxy->OnSearchSinkIdReceived(sink_id, kSinkId2);
-        cb.Run(std::move(route), mojo::String(),
-               interfaces::RouteRequestResultCode::OK);
+        cb.Run(kSinkId2);
       }));
 
-  base::RunLoop run_loop;
-  base::RunLoop run_loop2;
   SinkResponseCallbackHandler sink_handler;
-  EXPECT_CALL(sink_handler, Invoke(kSinkId2))
-      .WillOnce(InvokeWithoutArgs([&run_loop] { run_loop.Quit(); }));
-  RouteResponseCallbackHandler route_handler;
-  EXPECT_CALL(route_handler, DoInvoke(Pointee(Equals(expected_route)), Not(""),
-                                      "", RouteRequestResult::OK))
-      .WillOnce(InvokeWithoutArgs([&run_loop2] { run_loop2.Quit(); }));
-  std::vector<MediaRouteResponseCallback> route_response_callbacks;
+  EXPECT_CALL(sink_handler, Invoke(kSinkId2)).Times(1);
   MediaSinkSearchResponseCallback sink_callback = base::Bind(
       &SinkResponseCallbackHandler::Invoke, base::Unretained(&sink_handler));
-  route_response_callbacks.push_back(base::Bind(
-      &RouteResponseCallbackHandler::Invoke, base::Unretained(&route_handler)));
-  router()->SearchSinksAndCreateRoute(
-      kSinkId, kSource, search_input, domain, GURL(kOrigin), nullptr,
-      route_response_callbacks, sink_callback,
-      base::TimeDelta::FromMilliseconds(kTimeoutMillis), false);
-  run_loop.Run();
-  run_loop2.Run();
+
+  router()->SearchSinks(kSinkId, kSource, search_input, domain, sink_callback);
+
+  base::RunLoop run_loop;
+  run_loop.RunUntilIdle();
 }
 
 class MediaRouterMojoExtensionTest : public ::testing::Test {

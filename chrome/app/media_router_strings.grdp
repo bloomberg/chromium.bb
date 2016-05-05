@@ -115,6 +115,9 @@
   <message name="IDS_MEDIA_ROUTER_ISSUE_PENDING_ROUTE" desc="Title of an issue to show when the user attempts to create more than one route at a time.">
     Only one session can be created at a time.
   </message>
+  <message name="IDS_MEDIA_ROUTER_ISSUE_UNABLE_TO_CAST_DESKTOP" desc="Title of an issue to show when creating a route for desktop mirroring fails for a reason other than timeout.">
+    Unable to cast desktop.
+  </message>
 
   <!-- Route Details -->
   <message name="IDS_MEDIA_ROUTER_CASTING_ACTIVITY_STATUS" desc="Label of activity status, which describes the media that is currently being casted.">

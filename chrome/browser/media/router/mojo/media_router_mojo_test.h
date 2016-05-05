@@ -85,30 +85,18 @@ class MockMediaRouteProvider : public interfaces::MediaRouteProvider {
   MOCK_METHOD1(StopObservingMediaRoutes, void(const mojo::String& source));
   MOCK_METHOD0(EnableMdnsDiscovery, void());
   MOCK_METHOD1(UpdateMediaSinks, void(const mojo::String& source));
-  void SearchSinksAndCreateRoute(
+  void SearchSinks(
       const mojo::String& sink_id,
       const mojo::String& media_source,
       interfaces::SinkSearchCriteriaPtr search_criteria,
-      const mojo::String& presentation_id,
-      const mojo::String& origin,
-      int32_t tab_id,
-      int64_t timeout_millis,
-      bool off_the_record,
-      const SearchSinksAndCreateRouteCallback& callback) override {
-    SearchSinksAndCreateRoute_(sink_id, media_source, search_criteria,
-                               presentation_id, origin, tab_id, timeout_millis,
-                               off_the_record, callback);
+      const SearchSinksCallback& callback) override {
+    SearchSinks_(sink_id, media_source, search_criteria, callback);
   }
-  MOCK_METHOD9(SearchSinksAndCreateRoute_,
+  MOCK_METHOD4(SearchSinks_,
                void(const mojo::String& sink_id,
                     const mojo::String& media_source,
                     interfaces::SinkSearchCriteriaPtr& search_criteria,
-                    const mojo::String& presentation_id,
-                    const mojo::String& origin,
-                    int32_t tab_id,
-                    int64_t timeout_millis,
-                    bool off_the_record,
-                    const SearchSinksAndCreateRouteCallback& callback));
+                    const SearchSinksCallback& callback));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockMediaRouteProvider);

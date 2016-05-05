@@ -478,8 +478,6 @@ void MediaRouterWebUIMessageHandler::OnCreateRoute(
   // e.g. low-fps-mirror, user-override. (crbug.com/490364)
   if (!media_router_ui->CreateRoute(
           sink_id, static_cast<MediaCastMode>(cast_mode_num))) {
-    // TODO(imcheng): Need to add an issue if failed to initiate a CreateRoute
-    // request.
     DVLOG(1) << "Error initiating route request.";
   }
 }
@@ -567,8 +565,6 @@ void MediaRouterWebUIMessageHandler::OnJoinRoute(const base::ListValue* args) {
   }
 
   if (!media_router_ui_->ConnectRoute(sink_id, route_id)) {
-    // TODO(boetger): Need to add an issue if failed to initiate a JoinRoute
-    // request.
     DVLOG(1) << "Error initiating route join request.";
   }
 }
@@ -779,7 +775,6 @@ void MediaRouterWebUIMessageHandler::OnSearchSinksAndCreateRoute(
     return;
   }
 
-  // TODO(btolsch): Check result and add an issue if it failed.
   media_router_ui_->SearchSinksAndCreateRoute(
       sink_id, search_criteria, domain,
       static_cast<MediaCastMode>(cast_mode_num));

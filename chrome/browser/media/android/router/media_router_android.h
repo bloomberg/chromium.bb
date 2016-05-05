@@ -67,17 +67,12 @@ class MediaRouterAndroid : public MediaRouterBase {
   void AddIssue(const Issue& issue) override;
   void ClearIssue(const Issue::Id& issue_id) override;
   void OnUserGesture() override;
-  void SearchSinksAndCreateRoute(
-      const MediaSource::Id& source_id,
+  void SearchSinks(
       const MediaSink::Id& sink_id,
+      const MediaSource::Id& source_id,
       const std::string& search_input,
       const std::string& domain,
-      const GURL& origin,
-      content::WebContents* web_contents,
-      const std::vector<MediaRouteResponseCallback>& route_callbacks,
-      const MediaSinkSearchResponseCallback& sink_callback,
-      base::TimeDelta timeout,
-      bool off_the_record) override;
+      const MediaSinkSearchResponseCallback& sink_callback) override;
 
   // The methods called by the Java counterpart.
 

@@ -120,7 +120,7 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
   // Calls MediaRouter to search route providers for sinks matching
   // |search_criteria| with the source that is currently associated with
   // |cast_mode|. The user's domain |domain| is also used.
-  bool SearchSinksAndCreateRoute(const MediaSink::Id& sink_id,
+  void SearchSinksAndCreateRoute(const MediaSink::Id& sink_id,
                                  const std::string& search_criteria,
                                  const std::string& domain,
                                  MediaCastMode cast_mode);
@@ -218,12 +218,16 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
 
   // Callback passed to MediaRouter to receive the sink ID of the sink found by
   // SearchSinksAndCreateRoute().
-  void OnSearchSinkResponseReceived(const std::string& sink_id);
+  void OnSearchSinkResponseReceived(MediaCastMode cast_mode,
+                                    const MediaSink::Id& found_sink_id);
 
   // Creates and sends an issue if route creation timed out.
   void SendIssueForRouteTimeout(
       MediaCastMode cast_mode,
       const base::string16& presentation_request_source_name);
+
+  // Creates and sends an issue if casting fails for any other reason.
+  void SendIssueForUnableToCast(MediaCastMode cast_mode);
 
   // Initializes the dialog with mirroring sources derived from |initiator|.
   void InitCommon(content::WebContents* initiator);

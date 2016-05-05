@@ -353,6 +353,7 @@ bool MediaRouterUI::CreateRoute(const MediaSink::Id& sink_id,
   if (!SetRouteParameters(sink_id, cast_mode, &source_id, &origin,
                           &route_response_callbacks, &timeout,
                           &off_the_record)) {
+    SendIssueForUnableToCast(cast_mode);
     return false;
   }
   router_->CreateRoute(source_id, sink_id, origin, initiator_,
@@ -444,6 +445,7 @@ bool MediaRouterUI::ConnectRoute(const MediaSink::Id& sink_id,
   if (!SetRouteParameters(sink_id, MediaCastMode::DEFAULT, &source_id, &origin,
                           &route_response_callbacks, &timeout,
                           &off_the_record)) {
+    SendIssueForUnableToCast(MediaCastMode::DEFAULT);
     return false;
   }
   router_->ConnectRouteByRouteId(source_id, route_id, origin, initiator_,
@@ -462,29 +464,18 @@ void MediaRouterUI::ClearIssue(const std::string& issue_id) {
   router_->ClearIssue(issue_id);
 }
 
-bool MediaRouterUI::SearchSinksAndCreateRoute(
+void MediaRouterUI::SearchSinksAndCreateRoute(
     const MediaSink::Id& sink_id,
     const std::string& search_criteria,
     const std::string& domain,
     MediaCastMode cast_mode) {
-  MediaSource::Id source_id;
-  GURL origin;
-  std::vector<MediaRouteResponseCallback> route_response_callbacks;
-  base::TimeDelta timeout;
-  bool off_the_record;
-  if (!SetRouteParameters(sink_id, cast_mode, &source_id, &origin,
-                          &route_response_callbacks, &timeout,
-                          &off_the_record)) {
-    return false;
-  }
-  router_->SearchSinksAndCreateRoute(
-      sink_id, query_result_manager_->GetSourceForCastMode(cast_mode).id(),
-      search_criteria, domain, origin, initiator_,
-      route_response_callbacks,
+  auto source_id = query_result_manager_->GetSourceForCastMode(cast_mode).id();
+  // The CreateRoute() part of the function is accomplished in the callback
+  // OnSearchSinkResponseReceived().
+  router_->SearchSinks(
+      sink_id, source_id, search_criteria, domain,
       base::Bind(&MediaRouterUI::OnSearchSinkResponseReceived,
-                 weak_factory_.GetWeakPtr()),
-      timeout, off_the_record);
-  return true;
+                 weak_factory_.GetWeakPtr(), cast_mode));
 }
 
 void MediaRouterUI::OnResultsUpdated(
@@ -552,8 +543,25 @@ void MediaRouterUI::OnRouteResponseReceived(
     SendIssueForRouteTimeout(cast_mode, presentation_request_source_name);
 }
 
-void MediaRouterUI::OnSearchSinkResponseReceived(const std::string& sink_id) {
-  handler_->ReturnSearchResult(sink_id);
+void MediaRouterUI::OnSearchSinkResponseReceived(
+    MediaCastMode cast_mode,
+    const MediaSink::Id& found_sink_id) {
+  DVLOG(1) << "OnSearchSinkResponseReceived";
+  handler_->ReturnSearchResult(found_sink_id);
+
+  MediaSource::Id source_id;
+  GURL origin;
+  std::vector<MediaRouteResponseCallback> route_response_callbacks;
+  base::TimeDelta timeout;
+  bool off_the_record;
+  if (!SetRouteParameters(found_sink_id, cast_mode, &source_id, &origin,
+                          &route_response_callbacks, &timeout,
+                          &off_the_record)) {
+    SendIssueForUnableToCast(cast_mode);
+    return;
+  }
+  router_->CreateRoute(source_id, found_sink_id, origin, initiator_,
+                       route_response_callbacks, timeout, off_the_record);
 }
 
 void MediaRouterUI::SendIssueForRouteTimeout(
@@ -585,6 +593,21 @@ void MediaRouterUI::SendIssueForRouteTimeout(
               std::vector<IssueAction>(), std::string(), Issue::NOTIFICATION,
               false, std::string());
   AddIssue(issue);
+}
+
+void MediaRouterUI::SendIssueForUnableToCast(MediaCastMode cast_mode) {
+  // For a generic error, claim a tab error unless it was specifically desktop
+  // mirroring.
+  std::string issue_title =
+      (cast_mode == MediaCastMode::DESKTOP_MIRROR)
+          ? l10n_util::GetStringUTF8(
+                IDS_MEDIA_ROUTER_ISSUE_UNABLE_TO_CAST_DESKTOP)
+          : l10n_util::GetStringUTF8(
+                IDS_MEDIA_ROUTER_ISSUE_CREATE_ROUTE_TIMEOUT_FOR_TAB);
+  AddIssue(Issue(issue_title, std::string(),
+                 IssueAction(IssueAction::TYPE_DISMISS),
+                 std::vector<IssueAction>(), std::string(), Issue::WARNING,
+                 false, std::string()));
 }
 
 GURL MediaRouterUI::GetFrameURL() const {

@@ -1479,10 +1479,6 @@ Polymer({
       return;
     }
 
-    if (this.pseudoSinkSearchState_) {
-      sinkId = this.pseudoSinkSearchState_.mapRouteSinkId(sinkId);
-    }
-
     // Check that |sinkId| exists and corresponds to |currentLaunchingSinkId_|.
     if (!this.sinkMap_[sinkId] || this.currentLaunchingSinkId_ != sinkId) {
       this.fire('report-resolved-route', {

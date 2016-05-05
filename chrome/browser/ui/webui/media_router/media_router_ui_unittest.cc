@@ -138,6 +138,21 @@ TEST_F(MediaRouterUITest, RouteCreationTimeoutForPresentation) {
     callback.Run(*result);
 }
 
+TEST_F(MediaRouterUITest, RouteCreationParametersCantBeCreated) {
+  CreateMediaRouterUI(&profile_);
+  MediaSinkSearchResponseCallback sink_callback;
+  EXPECT_CALL(mock_router_, SearchSinks(_, _, _, _, _))
+      .WillOnce(SaveArg<4>(&sink_callback));
+
+  // Use DEFAULT mode without setting a PresentationRequest.
+  media_router_ui_->SearchSinksAndCreateRoute("sinkId", "search input",
+                                              "domain", MediaCastMode::DEFAULT);
+  std::string expected_title = l10n_util::GetStringUTF8(
+      IDS_MEDIA_ROUTER_ISSUE_CREATE_ROUTE_TIMEOUT_FOR_TAB);
+  EXPECT_CALL(mock_router_, AddIssue(IssueTitleEquals(expected_title)));
+  sink_callback.Run("foundSinkId");
+}
+
 TEST_F(MediaRouterUITest, RouteRequestFromIncognito) {
   CreateMediaRouterUI(profile_.GetOffTheRecordProfile());
 

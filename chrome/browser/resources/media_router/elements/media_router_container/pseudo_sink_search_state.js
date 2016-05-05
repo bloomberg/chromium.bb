@@ -71,15 +71,3 @@ PseudoSinkSearchState.prototype.checkForRealSink = function(sinkList) {
 PseudoSinkSearchState.prototype.getPseudoSink = function() {
   return this.pseudoSink_;
 };
-
-/**
- * Returns the real sink ID produced by the search if we are given the pseudo
- * sink ID that started the search. This is needed for
- * onCreateRouteResponseReceived().
- * @param {string} sinkId Sink ID of a newly-created route.
- * @return {string} The sink ID that should be used by
- *     onCreateRouteResponseReceived() to check the created route.
- */
-PseudoSinkSearchState.prototype.mapRouteSinkId = function(sinkId) {
-  return (sinkId == this.pseudoSink_.id) ? this.realSinkId_ : sinkId;
-};

@@ -331,7 +331,7 @@ cr.define('media_router_container_search', function() {
           MockInteractions.tap(searchResults[0]);
           container.allSinks = fakeSinkListWithPseudoSink.concat([foundSink]);
           container.onReceiveSearchResult(foundSink.id);
-          container.onCreateRouteResponseReceived(pseudoSink.id, route, true);
+          container.onCreateRouteResponseReceived(foundSink.id, route, true);
           assertEquals(null, container.pseudoSinkSearchState_);
           setTimeout(function() {
             checkCurrentView(media_router.MediaRouterView.ROUTE_DETAILS);
@@ -385,7 +385,7 @@ cr.define('media_router_container_search', function() {
               container.onReceiveSearchResult(foundSink.id);
               MockInteractions.tap(sink);
               container.onCreateRouteResponseReceived(
-                  pseudoSink.id, route, true);
+                  foundSink.id, route, true);
               chainOnAnimationPromise(function() {
                 checkCurrentView(media_router.MediaRouterView.ROUTE_DETAILS);
                 MockInteractions.tap(
@@ -459,17 +459,6 @@ cr.define('media_router_container_search', function() {
             foundSink.id,
             searchState.checkForRealSink(fakeSinkList.concat([foundSink])));
         assertEquals(foundSink.id, searchState.checkForRealSink(fakeSinkList));
-      });
-
-      test('pseudo sink search state map sink id', function() {
-        var searchState = new PseudoSinkSearchState(pseudoSink);
-        var someId = 'some sink id';
-
-        assertEquals(someId, searchState.mapRouteSinkId(someId));
-        assertEquals('', searchState.mapRouteSinkId(pseudoSink.id));
-        searchState.receiveSinkResponse(foundSink.id);
-        assertEquals(someId, searchState.mapRouteSinkId(someId));
-        assertEquals(foundSink.id, searchState.mapRouteSinkId(pseudoSink.id));
       });
     });
   }
