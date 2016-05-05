@@ -143,7 +143,10 @@ TEST_F(SyncConfirmationHandlerTest, TestSetImageIfPrimaryAccountReady) {
   base::ListValue args;
   args.Set(0, new base::FundamentalValue(kDefaultDialogHeight));
   handler()->HandleInitializedWithSize(&args);
-  EXPECT_EQ(1U, web_ui()->call_data().size());
+  EXPECT_EQ(2U, web_ui()->call_data().size());
+
+  // When the primary account is ready, setUserImageURL happens before
+  // clearFocus since the image URL is known before showing the dialog.
   EXPECT_EQ("sync.confirmation.setUserImageURL",
             web_ui()->call_data()[0]->function_name());
   EXPECT_TRUE(
@@ -151,6 +154,9 @@ TEST_F(SyncConfirmationHandlerTest, TestSetImageIfPrimaryAccountReady) {
   std::string passed_picture_url;
   EXPECT_TRUE(
       web_ui()->call_data()[0]->arg1()->GetAsString(&passed_picture_url));
+
+  EXPECT_EQ("sync.confirmation.clearFocus",
+            web_ui()->call_data()[1]->function_name());
 
   std::string original_picture_url =
       AccountTrackerServiceFactory::GetForProfile(profile())->
@@ -169,7 +175,7 @@ TEST_F(SyncConfirmationHandlerTest, TestSetImageIfPrimaryAccountReadyLater) {
   base::ListValue args;
   args.Set(0, new base::FundamentalValue(kDefaultDialogHeight));
   handler()->HandleInitializedWithSize(&args);
-  EXPECT_EQ(0U, web_ui()->call_data().size());
+  EXPECT_EQ(1U, web_ui()->call_data().size());
 
   account_fetcher_service()->FakeUserInfoFetchSuccess(
       "gaia",
@@ -181,14 +187,20 @@ TEST_F(SyncConfirmationHandlerTest, TestSetImageIfPrimaryAccountReadyLater) {
       "locale",
       "http://picture.example.com/picture.jpg");
 
-  EXPECT_EQ(1U, web_ui()->call_data().size());
-  EXPECT_EQ("sync.confirmation.setUserImageURL",
+  EXPECT_EQ(2U, web_ui()->call_data().size());
+
+  // When the primary account isn't yet ready when the dialog is shown,
+  // clearFocus is called before setUserImageURL.
+  EXPECT_EQ("sync.confirmation.clearFocus",
             web_ui()->call_data()[0]->function_name());
+
+  EXPECT_EQ("sync.confirmation.setUserImageURL",
+            web_ui()->call_data()[1]->function_name());
   EXPECT_TRUE(
-      web_ui()->call_data()[0]->arg1()->IsType(base::Value::TYPE_STRING));
+      web_ui()->call_data()[1]->arg1()->IsType(base::Value::TYPE_STRING));
   std::string passed_picture_url;
   EXPECT_TRUE(
-      web_ui()->call_data()[0]->arg1()->GetAsString(&passed_picture_url));
+      web_ui()->call_data()[1]->arg1()->GetAsString(&passed_picture_url));
 
   std::string original_picture_url =
       AccountTrackerServiceFactory::GetForProfile(profile())->

@@ -26,6 +26,10 @@ cr.define('sync.confirmation', function() {
     chrome.send('initializedWithSize', [document.body.scrollHeight]);
   }
 
+  function clearFocus() {
+    document.activeElement.blur();
+  }
+
   function setUserImageURL(url) {
     $('profile-picture').src = url;
   }
@@ -46,6 +50,7 @@ cr.define('sync.confirmation', function() {
   }
 
   return {
+    clearFocus: clearFocus,
     initialize: initialize,
     setUserImageURL: setUserImageURL
   };
