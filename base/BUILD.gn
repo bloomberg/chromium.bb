@@ -1528,64 +1528,61 @@ component("i18n") {
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 }
 
-if (is_ios || is_android || is_win || (is_linux && !is_chromeos)) {
-  # TODO(GYP): Figure out which of these work and are needed on other platforms.
-  test("base_perftests") {
-    sources = [
-      "message_loop/message_pump_perftest.cc",
+test("base_perftests") {
+  sources = [
+    "message_loop/message_pump_perftest.cc",
 
-      # "test/run_all_unittests.cc",
-      "threading/thread_perftest.cc",
+    # "test/run_all_unittests.cc",
+    "threading/thread_perftest.cc",
+  ]
+  deps = [
+    ":base",
+    "//base/test:test_support",
+    "//base/test:test_support_perf",
+    "//testing/gtest",
+    "//testing/perf",
+  ]
+
+  if (is_android) {
+    deps += [ "//testing/android/native_test:native_test_native_code" ]
+  }
+}
+
+test("base_i18n_perftests") {
+  sources = [
+    "i18n/streaming_utf8_validator_perftest.cc",
+  ]
+  deps = [
+    ":base",
+    ":i18n",
+    "//base/test:test_support",
+    "//base/test:test_support_perf",
+    "//testing/gtest",
+  ]
+}
+
+if (!is_ios) {
+  executable("build_utf8_validator_tables") {
+    sources = [
+      "i18n/build_utf8_validator_tables.cc",
     ]
     deps = [
       ":base",
-      "//base/test:test_support",
-      "//base/test:test_support_perf",
-      "//testing/gtest",
-      "//testing/perf",
+      "//build/config/sanitizers:deps",
+      "//build/win:default_exe_manifest",
+      "//third_party/icu:icuuc",
     ]
-
-    if (is_android) {
-      deps += [ "//testing/android/native_test:native_test_native_code" ]
-    }
   }
 
-  test("base_i18n_perftests") {
+  executable("check_example") {
     sources = [
-      "i18n/streaming_utf8_validator_perftest.cc",
+      "check_example.cc",
     ]
     deps = [
       ":base",
-      ":i18n",
-      "//base/test:test_support",
-      "//base/test:test_support_perf",
-      "//testing/gtest",
+      "//build/config/sanitizers:deps",
+      "//build/win:default_exe_manifest",
     ]
-  }
-
-  if (!is_ios) {
-    executable("build_utf8_validator_tables") {
-      sources = [
-        "i18n/build_utf8_validator_tables.cc",
-      ]
-      deps = [
-        ":base",
-        "//build/config/sanitizers:deps",
-        "//build/win:default_exe_manifest",
-        "//third_party/icu:icuuc",
-      ]
-    }
-
-    executable("check_example") {
-      sources = [
-        "check_example.cc",
-      ]
-      deps = [
-        ":base",
-        "//build/config/sanitizers:deps",
-        "//build/win:default_exe_manifest",
-      ]
-    }
   }
 }
 

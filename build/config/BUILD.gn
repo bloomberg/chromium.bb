@@ -13,7 +13,7 @@ import("//build/toolchain/goma.gni")
 
 # One common error that happens is that GYP-generated headers within gen/ get
 # included rather than the GN-generated ones within gen/ subdirectories.
-# TODO(agrieve): Remove once GYP is gone (as well as exec_script exception).
+# TODO(GYP_GONE): Remove once GYP is gone (as well as exec_script exception).
 assert(
     exec_script("//build/dir_exists.py", [ "obj.host" ], "string") == "False",
     "GYP artifacts detected in $root_build_dir.$0x0A" +
@@ -48,8 +48,8 @@ declare_args() {
 #
 # For now we define these globally to match the current GYP build.
 config("feature_flags") {
-  # TODO(brettw) this probably needs to be parameterized.
-  defines = [ "V8_DEPRECATION_WARNINGS" ]  # Don't use deprecated V8 APIs anywhere.
+  # Don't use deprecated V8 APIs anywhere.
+  defines = [ "V8_DEPRECATION_WARNINGS" ]
   if (enable_mdns) {
     defines += [ "ENABLE_MDNS=1" ]
   }
@@ -288,8 +288,6 @@ config("release") {
   defines = [ "NDEBUG" ]
 
   # Sanitizers.
-  # TODO(GYP) The GYP build has "release_valgrind_build == 0" for this
-  # condition. When Valgrind is set up, we need to do the same here.
   if (is_tsan) {
     defines += [
       "DYNAMIC_ANNOTATIONS_ENABLED=1",

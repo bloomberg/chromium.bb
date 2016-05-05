@@ -54,9 +54,9 @@ declare_args() {
 # will build with "all". For more on how "all" works and the differences in how
 # GYP and GN determine "all", see crbug.com/503241.
 #
-# TODO(GYP): crbug.com/481694. Make sure that the above is true and there are
-# scripts run on the bots that enforce this. Once the GYP migration is over, we
-# can collapse all of these targets as desired.
+# TODO(GYP_GONE): crbug.com/481694. Make sure that the above is true and there
+# are scripts run on the bots that enforce this. Once the GYP migration is
+# over, we can collapse all of these targets as desired.
 
 group("gn_all") {
   testonly = true
@@ -68,7 +68,7 @@ group("gn_all") {
   ]
 }
 
-# TODO(GYP): This target exists for compatibility with GYP, specifically
+# TODO(GYP_GONE): This target exists for compatibility with GYP, specifically
 # for the iOS bots and the official builders.
 group("All") {
   testonly = true
@@ -78,8 +78,9 @@ group("All") {
   ]
 }
 
-# TODO(GYP): This target exists for compatibility with GYP for the builders.
-# For now, this builds everything. We should decide if we want to build less.
+# TODO(GYP_GONE): This target exists for compatibility with GYP for the
+# builders. For now, this builds everything. We should decide if we want to
+# build less.
 group("chromium_builder_tests") {
   testonly = true
 
@@ -112,8 +113,6 @@ if (is_chromeos) {
 # The "both_gn_and_gyp" target should reflect every target that is built
 # in both the GN and GYP builds, and ideally it should match the
 # "both_gn_and_gyp" target in build/gn_migration.gypi line-for-line.
-#
-# TODO(GYP): Add build steps that check and enforce this on the bots.
 group("both_gn_and_gyp") {
   testonly = true
   deps = [
@@ -361,11 +360,11 @@ group("both_gn_and_gyp") {
     }
 
     if (has_chrome_android_internal) {
-      deps += [ "//clank" ]  # TODO(GYP) ??
+      deps += [ "//clank" ]
     }
   }
 
-  if (is_linux || is_android) {  # TODO(GYP): || is_bsd?
+  if (is_linux || is_android) {
     deps += [
       "//breakpad:breakpad_unittests",
       "//breakpad:core-2-minidump",
@@ -507,8 +506,6 @@ group("both_gn_and_gyp") {
 
   if (is_android || (is_linux && !is_chromeos)) {
     deps += [
-      # TODO(GYP): Figure out which of these should (and can) build
-      # under which other conditions.
       "//breakpad:dump_syms($host_toolchain)",
       "//breakpad:microdump_stackwalk($host_toolchain)",
       "//breakpad:minidump_dump($host_toolchain)",
@@ -516,9 +513,6 @@ group("both_gn_and_gyp") {
       "//components/network_hints/browser",
       "//content/public/app:browser",
       "//content/public/app:child",
-
-      # TODO(GYP): Remove this when the gles2 tests work
-      "//gpu/command_buffer/client:gles2_implementation_no_check",
       "//mojo/edk/test:mojo_public_system_perftests",
       "//services/shell/public/cpp",
       "//testing/gmock:gmock_main",
@@ -529,7 +523,7 @@ group("both_gn_and_gyp") {
       deps += [
         "//build/sanitizers:copy_llvm_symbolizer",
         "//chrome/test:chrome_app_unittests",
-        "//gpu/khronos_glcts_support:khronos_glcts_test",  # TODO(GYP) crbug.com/471903 to make this complete.
+        "//gpu/khronos_glcts_support:khronos_glcts_test",
         "//media/cast:cast_benchmarks",
         "//media/cast:tap_proxy",
         "//skia:filter_fuzz_stub",

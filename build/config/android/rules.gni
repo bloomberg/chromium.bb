@@ -2080,7 +2080,7 @@ template("instrumentation_test_apk") {
     }
   }
 
-  # TODO(GYP): Delete once recipes no longer use this target.
+  # TODO: Delete once recipes no longer use this target.
   group("${target_name}_run") {
     public_deps = [
       ":${invoker.target_name}",

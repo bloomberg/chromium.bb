@@ -14,9 +14,6 @@
 #
 # 'gyp_remaining' lists all of the targets that still need to be converted,
 # i.e., all of the other (non-empty) targets that a GYP build will build.
-#
-# TODO(GYP): crbug.com/481694. Add a build step to the bot that enforces the
-# above contracts.
 
 {
   'includes': [

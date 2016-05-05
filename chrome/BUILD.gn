@@ -119,8 +119,6 @@ if (!is_android && !is_mac) {
         ":chrome_dll",
         ":chrome_exe_version",
         ":file_pre_reader",
-
-        # 'chrome_nacl_win64" TODO(GYP) bug 512869
         "//base",
         "//breakpad:breakpad_handler",
         "//breakpad:breakpad_sender",
@@ -1354,7 +1352,7 @@ if (is_linux) {
 
       args = [
         "./" + rebase_path(dump_syms_binary, root_build_dir),
-        "0",  # TODO(GYP) This is linux_strip_binary if it is needed.
+        "0",  # strip_binary = false
         rebase_path(chrome_binary, root_build_dir),
         rebase_path(symbol_file, root_build_dir),
       ]

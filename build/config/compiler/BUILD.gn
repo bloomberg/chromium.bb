@@ -45,7 +45,7 @@ declare_args() {
   # Requires profiling to be set to true.
   enable_full_stack_frames_for_profiling = false
 
-  # TODO(GYP): We should be using 64-bit gold for linking on both 64-bit Linux
+  # TODO: We should be using 64-bit gold for linking on both 64-bit Linux
   # and 32-bit linux; 32-bit Gold runs out of address-space on 32-bit builds.
   # However, something isn't quite working right on the 32-bit builds.
   use_gold =
@@ -1328,9 +1328,6 @@ config("optimize_max") {
 
       # TODO(thakis): Remove is_clang here, https://crbug.com/598772
       if (is_official_build && !is_clang) {
-        # TODO(GYP): TODO(dpranke): Should these only be on in an official
-        # build, or on all the time? For now we'll require official build so
-        # that the compile is clean.
         cflags += [
           "/GL",  # Whole program optimization.
 

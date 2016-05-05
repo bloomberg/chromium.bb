@@ -814,13 +814,6 @@ source_set("browser") {
     deps += [ ":rlz" ]
   }
 
-  # TODO(GYP)
-  # Temporary fix to break the browser target into smaller chunks so it
-  # will link with goma builds.
-  #["OS=="win" and chromium_win_pch==0", {
-  #  "msvs_shard": 4,
-  #}],
-
   if (is_win) {
     sources +=
         rebase_path(gypi_values.chrome_browser_win_sources, ".", "//chrome")

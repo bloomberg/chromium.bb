@@ -894,7 +894,7 @@ if (is_win) {
 }
 
 if (is_android) {
-  # TODO(GYP) Delete this after we've converted everything to GN.
+  # TODO(GYP_GONE) Delete this after we've converted everything to GN.
   group("breakpad_unittests_deps") {
     testonly = true
     deps = [

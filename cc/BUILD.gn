@@ -751,16 +751,13 @@ source_set("test_support") {
     "//skia",
     "//testing/gmock",
     "//testing/gtest",
+    "//third_party/mesa:osmesa",
     "//ui/gfx",
     "//ui/gfx:test_support",
     "//ui/gfx/geometry",
     "//ui/gl",
     "//ui/gl:test_support",
   ]
-
-  if (!is_android) {  # TODO(GYP) Enable on Android when osmesa links.
-    deps += [ "//third_party/mesa:osmesa" ]
-  }
 }
 
 test("cc_unittests") {

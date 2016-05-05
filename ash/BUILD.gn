@@ -412,9 +412,6 @@ test("ash_unittests") {
       "virtual_keyboard_controller_unittest.cc",
       "wm/workspace/workspace_window_resizer_unittest.cc",
     ]
-    sources += [
-      #'<(SHARED_INTERMEDIATE_DIR)/ui/resources/ui_unscaled_resources.rc',  TODO(GYP)
-    ]
   }
 
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]

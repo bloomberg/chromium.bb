@@ -31,6 +31,11 @@ grit("ui_unscaled_resources_grd") {
   use_qualified_include = true
   outputs = [
     "grit/ui_unscaled_resources.h",
+
+    # TODO(GYP_GONE) when GYP is gone, this line should be deleted, and the grit
+    # file updated to no longer list this as an output. We use resource bundles
+    # rather than .rc files, but the GYP build still expects this file to
+    # exist.
     "ui_unscaled_resources.rc",
   ]
 }
