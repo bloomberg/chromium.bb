@@ -26,7 +26,6 @@ namespace ash {
 
 namespace {
 
-const char kResetGammaAction[] = "*set_color_correction(id=123)";
 const char kSetGammaAction[] =
     "set_color_correction(id=123,gamma[0]*gamma[255]=???????????\?)";
 const char kSetFullCTMAction[] =
@@ -192,9 +191,8 @@ TEST_F(DisplayColorManagerTest, VCGTOnly) {
 
   configurator_.OnConfigurationChanged();
   EXPECT_TRUE(test_api_.TriggerConfigureTimeout());
-  EXPECT_TRUE(
-      base::MatchPattern(log_->GetActionsAndClear(), kResetGammaAction));
 
+  log_->GetActionsAndClear();
   WaitOnColorCalibration();
   EXPECT_TRUE(base::MatchPattern(log_->GetActionsAndClear(), kSetGammaAction));
 }
@@ -216,12 +214,10 @@ TEST_F(DisplayColorManagerTest, VCGTOnlyWithPlatformCTM) {
   outputs.push_back(&snapshot);
   native_display_delegate_->set_outputs(outputs);
 
-  log_->GetActionsAndClear();
   configurator_.OnConfigurationChanged();
   EXPECT_TRUE(test_api_.TriggerConfigureTimeout());
-  EXPECT_TRUE(
-      base::MatchPattern(log_->GetActionsAndClear(), kResetGammaAction));
 
+  log_->GetActionsAndClear();
   WaitOnColorCalibration();
   EXPECT_TRUE(base::MatchPattern(log_->GetActionsAndClear(), kSetGammaAction));
 }
@@ -245,9 +241,8 @@ TEST_F(DisplayColorManagerTest, FullWithPlatformCTM) {
 
   configurator_.OnConfigurationChanged();
   EXPECT_TRUE(test_api_.TriggerConfigureTimeout());
-  EXPECT_TRUE(
-      base::MatchPattern(log_->GetActionsAndClear(), kResetGammaAction));
 
+  log_->GetActionsAndClear();
   WaitOnColorCalibration();
   EXPECT_TRUE(
       base::MatchPattern(log_->GetActionsAndClear(), kSetFullCTMAction));
@@ -272,9 +267,8 @@ TEST_F(DisplayColorManagerTest, FullWithoutPlatformCTM) {
 
   configurator_.OnConfigurationChanged();
   EXPECT_TRUE(test_api_.TriggerConfigureTimeout());
-  EXPECT_TRUE(
-      base::MatchPattern(log_->GetActionsAndClear(), kResetGammaAction));
 
+  log_->GetActionsAndClear();
   WaitOnColorCalibration();
   EXPECT_STREQ("", log_->GetActionsAndClear().c_str());
 }
@@ -298,9 +292,8 @@ TEST_F(DisplayColorManagerTest, NoMatchProductID) {
 
   configurator_.OnConfigurationChanged();
   EXPECT_TRUE(test_api_.TriggerConfigureTimeout());
-  EXPECT_TRUE(
-      base::MatchPattern(log_->GetActionsAndClear(), kResetGammaAction));
 
+  log_->GetActionsAndClear();
   WaitOnColorCalibration();
   EXPECT_STREQ("", log_->GetActionsAndClear().c_str());
 }
@@ -324,9 +317,8 @@ TEST_F(DisplayColorManagerTest, NoVCGT) {
 
   configurator_.OnConfigurationChanged();
   EXPECT_TRUE(test_api_.TriggerConfigureTimeout());
-  EXPECT_TRUE(
-      base::MatchPattern(log_->GetActionsAndClear(), kResetGammaAction));
 
+  log_->GetActionsAndClear();
   WaitOnColorCalibration();
   EXPECT_STREQ("", log_->GetActionsAndClear().c_str());
 }

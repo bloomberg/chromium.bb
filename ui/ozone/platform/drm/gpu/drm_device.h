@@ -160,6 +160,9 @@ class DrmDevice : public base::RefCountedThreadSafe<DrmDevice> {
                                 uint32_t crtc_count,
                                 const PageFlipCallback& callback);
 
+  // Set the gamma ramp for |crtc_id| to reflect the ramps in |lut|.
+  virtual bool SetGammaRamp(uint32_t crtc_id,
+                            const std::vector<GammaRampRGBEntry>& lut);
   virtual bool SetColorCorrection(
       uint32_t crtc_id,
       const std::vector<GammaRampRGBEntry>& degamma_lut,
@@ -188,9 +191,6 @@ class DrmDevice : public base::RefCountedThreadSafe<DrmDevice> {
  private:
   class IOWatcher;
   class PageFlipManager;
-
-  bool SetGammaRamp(uint32_t crtc_id,
-                    const std::vector<GammaRampRGBEntry>& lut);
 
   // Path to the DRM device (in sysfs).
   const base::FilePath device_path_;

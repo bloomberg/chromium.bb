@@ -174,10 +174,17 @@ void DrmDisplay::SetColorCorrection(
     const std::vector<GammaRampRGBEntry>& degamma_lut,
     const std::vector<GammaRampRGBEntry>& gamma_lut,
     const std::vector<float>& correction_matrix) {
-  if (!drm_->SetColorCorrection(crtc_, degamma_lut, gamma_lut,
-                                correction_matrix)) {
-    LOG(ERROR) << "Failed to set color correction for display: crtc_id = "
-               << crtc_;
+  if (degamma_lut.empty()) {
+    if (!drm_->SetGammaRamp(crtc_, gamma_lut)) {
+      LOG(ERROR) << "Failed to set gamma ramp for display: crtc_id = " << crtc_
+                 << " size = " << gamma_lut.size();
+    }
+  } else {
+    if (!drm_->SetColorCorrection(crtc_, degamma_lut, gamma_lut,
+                                  correction_matrix)) {
+      LOG(ERROR) << "Failed to set color correction for display: crtc_id = "
+                 << crtc_;
+    }
   }
 }
 
