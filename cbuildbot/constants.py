@@ -258,8 +258,8 @@ INTERNAL_GERRIT_URL = 'https://%s' % INTERNAL_GERRIT_HOST
 ANDROID_BUCKET_URL = 'gs://android-build-chromeos/builds'
 ANDROID_BUILD_BRANCH = 'git_mnc-dr-arc-dev'
 ANDROID_BUILD_TARGETS = {
-    'ARM': 'linux-cheets_arm-user',
-    'X86': 'linux-cheets_x86-user',
+    'ARM': 'linux-cheets_arm-userdebug',
+    'X86': 'linux-cheets_x86-userdebug',
     'CTS': 'linux-cts',
 }
 ARC_BUCKET_URL = 'gs://chromeos-arc-images/builds'
