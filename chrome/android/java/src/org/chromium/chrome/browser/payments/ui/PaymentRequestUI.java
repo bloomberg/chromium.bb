@@ -9,6 +9,8 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Handler;
 import android.text.TextUtils.TruncateAt;
 import android.view.Gravity;
@@ -17,8 +19,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.view.Window;
-import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -114,7 +116,9 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     private final boolean mRequestShipping;
 
     private final Dialog mDialog;
+    private final ViewGroup mFullContainer;
     private final ViewGroup mContainer;
+    private final View mScrim;
     private final View mPaymentContainer;
     private final ViewGroup mPaymentContainerLayout;
     private final DualControlLayout mButtonBar;
@@ -179,8 +183,9 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         mDismissCallback = dismissCallback;
         mRequestShipping = requestShipping;
 
-        mContainer =
+        mFullContainer =
                 (ViewGroup) LayoutInflater.from(mContext).inflate(R.layout.payment_request, null);
+        mContainer = (ViewGroup) mFullContainer.findViewById(R.id.dialogContainer);
         ((TextView) mContainer.findViewById(R.id.pageTitle)).setText(title);
         ((TextView) mContainer.findViewById(R.id.hostname)).setText(origin);
 
@@ -190,10 +195,14 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         mWaitingSuccess = mContainer.findViewById(R.id.waitingSuccess);
         mWaitingMessage = (TextView) mContainer.findViewById(R.id.waitingMessage);
 
-        mCloseButton = mContainer.findViewById(R.id.close_button);
-        mCloseButton.setOnClickListener(this);
+        // Setting the container as clickable prevents the scrim from acknowledging the event.
+        mContainer.setClickable(true);
+        mScrim = mFullContainer.findViewById(R.id.scrim);
+        mScrim.setOnClickListener(this);
 
         // Set up the buttons.
+        mCloseButton = mContainer.findViewById(R.id.close_button);
+        mCloseButton.setOnClickListener(this);
         mPayButton = DualControlLayout.createButtonForLayout(
                 activity, true, activity.getString(R.string.payments_pay_button), this);
         mEditButton = DualControlLayout.createButtonForLayout(
@@ -243,15 +252,13 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         // Set up the dialog.
         mDialog = new AlwaysDismissedDialog(activity, R.style.DialogWhenLarge);
         mDialog.setOnDismissListener(this);
-        mDialog.addContentView(
-                mContainer, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                                    ViewGroup.LayoutParams.MATCH_PARENT));
+        mDialog.addContentView(mFullContainer,
+                new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+
         Window dialogWindow = mDialog.getWindow();
-        dialogWindow.setGravity(Gravity.BOTTOM);
-        dialogWindow.setLayout(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        dialogWindow.setDimAmount(0.5f);
-        dialogWindow.addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+        dialogWindow.setGravity(Gravity.CENTER);
+        dialogWindow.setLayout(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+        dialogWindow.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         mDialog.show();
 
         mClient.getDefaultPaymentInformation(new Callback<PaymentInformation>() {
@@ -397,6 +404,9 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
             mClient.onPaymentMethodChanged(option);
         }
 
+        // Collapse all sections after an option is selected.
+        expand(null);
+
         updatePayButtonEnabled();
     }
 
@@ -425,10 +435,11 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
             mPaymentContainer.setVisibility(View.GONE);
             mButtonBar.setVisibility(View.GONE);
             mWaitingOverlay.setVisibility(View.VISIBLE);
-            Window dialogWindow = mDialog.getWindow();
-            dialogWindow.setGravity(Gravity.CENTER);
-            dialogWindow.setLayout(
-                    ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+
+            // The container transitions into a floating dialog.
+            mContainer.getLayoutParams().width = LayoutParams.WRAP_CONTENT;
+            mContainer.getLayoutParams().height = LayoutParams.WRAP_CONTENT;
+            ((FrameLayout.LayoutParams) mContainer.getLayoutParams()).gravity = Gravity.CENTER;
 
             mClient.onPayClicked(
                     mShippingAddressSectionInformation == null
@@ -437,11 +448,14 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                             ? null : mShippingOptionsSectionInformation.getSelectedItem(),
                     mPaymentMethodSectionInformation.getSelectedItem());
         } else if (v == mEditButton) {
-            if (mSelectedSection == null) {
-                expand(mOrderSummarySection);
-            } else {
+            if (mIsShowingEditDialog) {
                 mDialog.dismiss();
+            } else {
+                expand(mOrderSummarySection);
             }
+        } else if (v == mScrim) {
+            mDialog.dismiss();
+            return;
         }
 
         updatePayButtonEnabled();
@@ -463,6 +477,9 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
 
     private void expand(ViewGroup section) {
         if (!mIsShowingEditDialog) {
+            // Container now takes the full height of the screen.
+            mContainer.getLayoutParams().height = LayoutParams.MATCH_PARENT;
+
             // Swap out Views that combine multiple fields with individual fields.
             if (mRequestShipping && mShippingSummarySection.getParent() != null) {
                 int summaryIndex = mPaymentContainerLayout.indexOfChild(mShippingSummarySection);
@@ -477,6 +494,10 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                         new LinearLayout.LayoutParams(
                                 LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
             }
+
+            // New separators appear at the top and bottom of the list.
+            mSectionSeparators.add(new SectionSeparator(mPaymentContainerLayout, 0));
+            mSectionSeparators.add(new SectionSeparator(mPaymentContainerLayout, -1));
 
             // Expand all the dividers.
             for (int i = 0; i < mSectionSeparators.size(); i++) mSectionSeparators.get(i).expand();

@@ -179,6 +179,7 @@
     <color name="bottom_bar_shadow_color">#1d000000</color>
 
     <!-- Payments UI colors -->
+    <color name="payments_ui_scrim">#7f000000</color>
     <color name="payments_section_edit_background">#f5f5f5</color>
     <color name="payments_section_chevron">#b2b2b2</color>
     <color name="payments_section_separator">#e0e0e0</color>

@@ -1,125 +1,138 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-   Copyright 2016 The Chromium Authors. All rights reserved.
+<!-- Copyright 2016 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
 
-   Use of this source code is governed by a BSD-style license that can be
-   found in the LICENSE file.
--->
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical">
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android" >
 
-    <FrameLayout
-        android:layout_height="wrap_content"
-        android:layout_width="match_parent"
-        android:minHeight="64dp">
-        <ImageView
-            android:id="@+id/pageFavIcon"
-            android:layout_height="match_parent"
-            android:layout_width="24dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_gravity="start|center_vertical"
-            android:importantForAccessibility="no"
-            android:scaleType="centerInside" />
-
-        <LinearLayout
-            android:layout_height="wrap_content"
-            android:layout_width="wrap_content"
-            android:layout_marginStart="56dp"
-            android:layout_marginEnd="56dp"
-            android:layout_gravity="center_vertical"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/pageTitle"
-                android:layout_height="wrap_content"
-                android:layout_width="wrap_content"
-                android:ellipsize="end"
-                android:maxLines="1"
-                android:singleLine="true"
-                android:textColor="@color/default_text_color"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                />
-
-            <TextView
-                android:id="@+id/hostname"
-                android:layout_height="wrap_content"
-                android:layout_width="wrap_content"
-                android:ellipsize="start"
-                android:maxLines="1"
-                android:singleLine="true"
-                android:textColor="@color/descriptive_text_color"
-                android:textSize="14sp"
-                />
-        </LinearLayout>
-
-        <ImageView
-            android:id="@+id/close_button"
-            android:layout_gravity="end|center_vertical"
-            android:layout_height="56dp"
-            android:layout_width="56dp"
-            android:src="@drawable/btn_close"
-            android:contentDescription="@string/close"
-            android:background="?attr/selectableItemBackground"
-            android:scaleType="center"
-            />
-    </FrameLayout>
-
-    <org.chromium.chrome.browser.payments.ui.FadingEdgeScrollView
-        android:id="@+id/paymentContainer"
-        android:layout_height="0dp"
-        android:layout_width="match_parent"
-        android:layout_weight="1"
-        android:fadingEdgeLength="9dp">
-
-        <LinearLayout
-            android:id="@+id/paymentContainerLayout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-        </LinearLayout>
-    </org.chromium.chrome.browser.payments.ui.FadingEdgeScrollView>
-
-    <org.chromium.chrome.browser.widget.DualControlLayout
-        android:id="@+id/buttonBar"
-        android:layout_height="wrap_content"
-        android:layout_width="match_parent"
-        android:layout_marginStart="@dimen/payments_section_large_spacing"
-        android:layout_marginEnd="@dimen/payments_section_large_spacing"
-        android:layout_marginTop="@dimen/payments_section_large_spacing"
-        android:layout_marginBottom="@dimen/payments_section_large_spacing" >
-    </org.chromium.chrome.browser.widget.DualControlLayout>
-
-    <LinearLayout
-        android:id="@+id/waitingOverlay"
-        android:layout_width="match_parent"
+    <!-- Dimming scrim. -->
+    <View
+        android:id="@+id/scrim"
+        android:background="@color/payments_ui_scrim"
         android:layout_height="match_parent"
-        android:gravity="center"
+        android:layout_width="match_parent" />
+
+    <!-- Payments fields dialog. -->
+    <LinearLayout
+        android:id="@+id/dialogContainer"
         android:orientation="vertical"
-        android:padding="36dp"
-        android:visibility="gone">
+        android:background="@android:color/white"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:layout_gravity="bottom|center_horizontal" >
 
-        <ProgressBar
-            android:id="@+id/waitingProgressBar"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
-            android:layout_marginBottom="8dp" />
+        <!-- Box header. -->
+        <FrameLayout
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:minHeight="64dp" >
+            <ImageView
+                android:id="@+id/pageFavIcon"
+                android:layout_height="match_parent"
+                android:layout_width="24dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:layout_gravity="start|center_vertical"
+                android:importantForAccessibility="no"
+                android:scaleType="centerInside" />
 
-        <ImageView
-            android:id="@+id/waitingSuccess"
+            <LinearLayout
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:layout_marginStart="56dp"
+                android:layout_marginEnd="56dp"
+                android:layout_gravity="center_vertical"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/pageTitle"
+                    android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:singleLine="true"
+                    android:textColor="@color/default_text_color"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/hostname"
+                    android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"
+                    android:ellipsize="start"
+                    android:maxLines="1"
+                    android:singleLine="true"
+                    android:textColor="@color/descriptive_text_color"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+            <ImageView
+                android:id="@+id/close_button"
+                android:layout_gravity="end|center_vertical"
+                android:layout_height="56dp"
+                android:layout_width="56dp"
+                android:src="@drawable/btn_close"
+                android:contentDescription="@string/close"
+                android:background="?attr/selectableItemBackground"
+                android:scaleType="center" />
+        </FrameLayout>
+
+        <!-- Payment information. -->
+        <org.chromium.chrome.browser.payments.ui.FadingEdgeScrollView
+            android:id="@+id/paymentContainer"
+            android:layout_height="0dp"
+            android:layout_width="match_parent"
+            android:layout_weight="1"
+            android:fadingEdgeLength="9dp">
+
+            <LinearLayout
+                android:id="@+id/paymentContainerLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+
+        </org.chromium.chrome.browser.payments.ui.FadingEdgeScrollView>
+
+        <!-- Edit/Cancel and Pay buttons. -->
+        <org.chromium.chrome.browser.widget.DualControlLayout
+            android:id="@+id/buttonBar"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_margin="@dimen/payments_section_large_spacing"
+            android:background="@android:color/white" />
+
+        <!-- Processing dialog. -->
+        <LinearLayout
+            android:id="@+id/waitingOverlay"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/verify_checkmark"
-            android:visibility="gone"
-            android:contentDescription="@null" />
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="36dp"
+            android:visibility="gone">
 
-        <TextView
-            android:id="@+id/waitingMessage"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/payments_processing_message"
-            android:textColor="@color/light_active_color"
-            android:textSize="20sp" />
+            <ProgressBar
+                android:id="@+id/waitingProgressBar"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_marginBottom="8dp" />
+
+            <ImageView
+                android:id="@+id/waitingSuccess"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/verify_checkmark"
+                android:visibility="gone"
+                android:contentDescription="@null" />
+
+            <TextView
+                android:id="@+id/waitingMessage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/payments_processing_message"
+                android:textColor="@color/light_active_color"
+                android:textSize="20sp" />
+        </LinearLayout>
     </LinearLayout>
-</LinearLayout>
+</FrameLayout>

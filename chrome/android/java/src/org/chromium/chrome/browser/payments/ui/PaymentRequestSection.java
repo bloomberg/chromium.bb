@@ -19,7 +19,6 @@ import android.widget.GridLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
-import android.widget.RadioGroup;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -132,8 +131,8 @@ public abstract class PaymentRequestSection extends LinearLayout {
 
         // Create the main content.
         mMainSection = prepareMainSection(sectionName);
-        mLogoView = isLogoNecessary() ? createAndAddImageView(null) : null;
-        mChevronView = createAndAddImageView(chevron);
+        mLogoView = isLogoNecessary() ? createAndAddLogoView(this, 0, 0, mLargeSpacing) : null;
+        mChevronView = createAndAddImageView(this, chevron, 0, mLargeSpacing);
         setDisplayMode(DISPLAY_MODE_NORMAL);
     }
 
@@ -281,13 +280,33 @@ public abstract class PaymentRequestSection extends LinearLayout {
         return mainSectionLayout;
     }
 
-    private ImageView createAndAddImageView(@Nullable Drawable drawable) {
-        ImageView view = new ImageView(getContext());
+    private static ImageView createAndAddLogoView(
+            ViewGroup parent, int resourceId, int startMargin, int endMargin) {
+        ImageView view = new ImageView(parent.getContext());
+        view.setBackgroundResource(R.drawable.payments_ui_logo_bg);
+        if (resourceId != 0) view.setImageResource(resourceId);
+
+        // The logo has a pre-defined height and width.
+        LayoutParams params = new LayoutParams(
+                parent.getResources().getDimensionPixelSize(R.dimen.payments_section_logo_width),
+                parent.getResources().getDimensionPixelSize(R.dimen.payments_section_logo_height));
+        ApiCompatibilityUtils.setMarginStart(params, startMargin);
+        ApiCompatibilityUtils.setMarginEnd(params, endMargin);
+        parent.addView(view, params);
+        return view;
+    }
+
+    private static ImageView createAndAddImageView(
+            ViewGroup parent, @Nullable Drawable drawable, int startMargin, int endMargin) {
+        ImageView view = new ImageView(parent.getContext());
         view.setImageDrawable(drawable);
+
+        // Wrap whatever image is passed in.
         LayoutParams params =
                 new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-        ApiCompatibilityUtils.setMarginEnd(params, mLargeSpacing);
-        addView(view, params);
+        ApiCompatibilityUtils.setMarginStart(params, startMargin);
+        ApiCompatibilityUtils.setMarginEnd(params, endMargin);
+        parent.addView(view, params);
         return view;
     }
 
@@ -519,14 +538,7 @@ public abstract class PaymentRequestSection extends LinearLayout {
 
                 // If there's an icon to display, it floats to the right of everything.
                 int resourceId = item.getDrawableIconId();
-                if (resourceId != 0) {
-                    ImageView iconView = new ImageView(context);
-                    iconView.setImageResource(resourceId);
-                    LinearLayout.LayoutParams logoParams = new LinearLayout.LayoutParams(
-                            LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-                    ApiCompatibilityUtils.setMarginStart(logoParams, mLargeSpacing);
-                    addView(iconView, logoParams);
-                }
+                if (resourceId != 0) createAndAddLogoView(this, resourceId, mLargeSpacing, 0);
 
                 // Clicking on either the radio button or the row itself should toggle its option.
                 mRadioButton.setOnClickListener(OptionSection.this);
@@ -547,11 +559,11 @@ public abstract class PaymentRequestSection extends LinearLayout {
         /** Text to display in the summary when there is no selected option. */
         private final CharSequence mEmptyLabel;
 
-        /** How much space is between each option. */
-        private final int mTopMargin;
+        /** Top and bottom margins for each item. */
+        private final int mVerticalMargin;
 
         /** Layout containing all the {@link OptionRow}s. */
-        private RadioGroup mOptionLayout;
+        private LinearLayout mOptionLayout;
 
         /**
          * Constructs an OptionSection.
@@ -564,7 +576,7 @@ public abstract class PaymentRequestSection extends LinearLayout {
         public OptionSection(Context context, String sectionName, @Nullable CharSequence emptyLabel,
                 PaymentsSectionListener listener) {
             super(context, sectionName, listener);
-            mTopMargin = context.getResources().getDimensionPixelSize(
+            mVerticalMargin = context.getResources().getDimensionPixelSize(
                     R.dimen.payments_section_small_spacing);
             mEmptyLabel = emptyLabel;
             setSummaryText(emptyLabel, null);
@@ -587,7 +599,7 @@ public abstract class PaymentRequestSection extends LinearLayout {
         protected void createMainSectionContent(LinearLayout mainSectionLayout) {
             Context context = mainSectionLayout.getContext();
 
-            mOptionLayout = new RadioGroup(context);
+            mOptionLayout = new LinearLayout(context);
             mOptionLayout.setOrientation(VERTICAL);
             mainSectionLayout.addView(mOptionLayout, new LinearLayout.LayoutParams(
                     LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
@@ -636,12 +648,14 @@ public abstract class PaymentRequestSection extends LinearLayout {
                 OptionRow row = new OptionRow(getContext(), item, item == selectedItem);
                 LinearLayout.LayoutParams rowParams = new LinearLayout.LayoutParams(
                         LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
-                rowParams.topMargin = mTopMargin;
+                rowParams.topMargin = mVerticalMargin;
+                rowParams.bottomMargin = mVerticalMargin;
                 mOptionLayout.addView(row, rowParams);
             }
         }
 
         private CharSequence convertOptionToString(PaymentOption item) {
+            if (TextUtils.isEmpty(item.getSublabel())) return item.getLabel();
             return new StringBuilder(item.getLabel()).append("\n").append(item.getSublabel());
         }
     }
