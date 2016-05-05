@@ -105,6 +105,21 @@
       ],
     },
     {
+      'target_name': 'image_decode_bench',
+      'type': 'executable',
+      'dependencies': [
+        '../config.gyp:config',
+        '../wtf/wtf.gyp:wtf',
+        'blink_platform.gyp:blink_platform',
+      ],
+      'defines': [
+        'INSIDE_BLINK',
+      ],
+      'sources': [
+        'testing/ImageDecodeBench.cpp',
+      ],
+    },
+    {
       'target_name': 'blink_platform_test_support',
       'type': 'static_library',
       'dependencies': [

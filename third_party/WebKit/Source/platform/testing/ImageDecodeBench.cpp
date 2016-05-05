@@ -7,7 +7,7 @@
 // clocks to measure image decode time. Optionally applies color correction
 // during image decoding on supported platforms (default off). Usage:
 //
-//   % ninja -C /out/Release image_decode_bench &&
+//   % ninja -C out/Release image_decode_bench &&
 //      ./out/Release/image_decode_bench file [iterations]
 //
 // TODO(noel): Consider adding md5 checksum support to WTF. Use it to compute
@@ -17,18 +17,14 @@
 // using the image corpii used to assess Blink image decode performance. Refer
 // to http://crbug.com/398235#c103 and http://crbug.com/258324#c5
 
+#include "base/command_line.h"
 #include "platform/SharedBuffer.h"
 #include "platform/image-decoders/ImageDecoder.h"
-#include "platform/testing/TestingPlatformSupport.h"
 #include "public/platform/Platform.h"
-#include "public/web/WebKit.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
 
 #if defined(_WIN32)
-#if defined(WIN32_LEAN_AND_MEAN)
-#error Fix: WIN32_LEAN_AND_MEAN disables timeBeginPeriod/TimeEndPeriod.
-#endif
 #include <mmsystem.h>
 #include <sys/stat.h>
 #include <time.h>
@@ -280,12 +276,12 @@ bool decodeImageData(SharedBuffer* data, bool colorCorrection, size_t packetSize
     }
 
     RefPtr<SharedBuffer> packetData = SharedBuffer::create();
-    unsigned position = 0;
+    size_t position = 0;
     while (true) {
         const char* packet;
-        unsigned length = data->getSomeData(packet, position);
+        size_t length = data->getSomeData(packet, position);
 
-        length = std::min(static_cast<size_t>(length), packetSize);
+        length = std::min(length, packetSize);
         packetData->append(packet, length);
         position += length;
 
@@ -307,7 +303,7 @@ bool decodeImageData(SharedBuffer* data, bool colorCorrection, size_t packetSize
 
 int main(int argc, char* argv[])
 {
-    char* name = argv[0];
+    base::CommandLine::Init(argc, argv);
 
     // If the platform supports color correction, allow it to be controlled.
 
@@ -318,12 +314,12 @@ int main(int argc, char* argv[])
         applyColorCorrection = (--argc, ++argv, true);
 
     if (argc < 2) {
-        fprintf(stderr, "Usage: %s [--color-correct] file [iterations] [packetSize]\n", name);
+        fprintf(stderr, "Usage: %s [--color-correct] file [iterations] [packetSize]\n", argv[0]);
         exit(1);
     }
 #else
     if (argc < 2) {
-        fprintf(stderr, "Usage: %s file [iterations] [packetSize]\n", name);
+        fprintf(stderr, "Usage: %s file [iterations] [packetSize]\n", argv[0]);
         exit(1);
     }
 #endif
@@ -355,7 +351,7 @@ int main(int argc, char* argv[])
 
     // Create a web platform without V8.
 
-    class WebPlatform : public TestingPlatformSupport {
+    class WebPlatform : public blink::Platform {
     public:
         void screenColorProfile(WebVector<char>* profile) override
         {
@@ -365,13 +361,8 @@ int main(int argc, char* argv[])
 
     Platform::initialize(new WebPlatform());
 
-    // Set image decoding Platform options.
-
-#if USE(QCMSLIB)
-    ImageDecoder::qcmsOutputDeviceProfile(); // Initialize screen colorProfile.
-#endif
-
-    // Read entire file content to data.
+    // Read entire file content to data, and consolidate the SharedBuffer data
+    // segments into one, contiguous block of memory.
 
     RefPtr<SharedBuffer> data = readFile(argv[1]);
     if (!data.get() || !data->size()) {
@@ -379,8 +370,14 @@ int main(int argc, char* argv[])
         exit(2);
     }
 
-    // Consolidate the SharedBuffer data segments into one, contiguous block of memory.
     data->data();
+
+    // Warm-up: throw out the first iteration for more consistent results.
+
+    if (!decodeImageData(data.get(), applyColorCorrection, packetSize)) {
+        fprintf(stderr, "Image decode failed [%s]\n", argv[1]);
+        exit(3);
+    }
 
     // Image decode bench for iterations.
 
