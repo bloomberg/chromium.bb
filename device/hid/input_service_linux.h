@@ -67,7 +67,7 @@ class InputServiceLinux : public base::MessageLoop::DestructionObserver {
   void RemoveObserver(Observer* observer);
 
   // Returns list of all currently connected input/hid devices.
-  void GetDevices(std::vector<InputDeviceInfo>* devices);
+  virtual void GetDevices(std::vector<InputDeviceInfo>* devices);
 
   // Returns an info about input device identified by |id|. When there're
   // no input or hid device with such id, returns false and doesn't

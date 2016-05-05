@@ -33,6 +33,7 @@ source_set("pairing") {
     "//base",
     "//chromeos",
     "//device/bluetooth",
+    "//device/hid",
     "//net",
   ]
 }

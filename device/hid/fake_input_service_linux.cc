@@ -27,4 +27,9 @@ void FakeInputServiceLinux::ClearDeviceList() {
   devices_.clear();
 }
 
+void FakeInputServiceLinux::GetDevices(std::vector<InputDeviceInfo>* devices) {
+  for (const auto& device : devices_)
+    devices->push_back(device.second);
+}
+
 }  // namespace device

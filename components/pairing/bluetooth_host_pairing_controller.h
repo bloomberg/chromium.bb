@@ -19,6 +19,7 @@
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_socket.h"
+#include "device/hid/input_service_linux.h"
 
 namespace device {
 class BluetoothAdapter;
@@ -36,9 +37,11 @@ class BluetoothHostPairingController
       public device::BluetoothAdapter::Observer,
       public device::BluetoothDevice::PairingDelegate {
  public:
-  typedef HostPairingController::Observer Observer;
+  using Observer = HostPairingController::Observer;
+  using InputDeviceInfo = device::InputServiceLinux::InputDeviceInfo;
 
-  BluetoothHostPairingController();
+  explicit BluetoothHostPairingController(
+      const scoped_refptr<base::SingleThreadTaskRunner>& file_task_runner);
   ~BluetoothHostPairingController() override;
 
  private:
@@ -63,6 +66,7 @@ class BluetoothHostPairingController
   void OnSendError(const std::string& error_message);
   void OnReceiveError(device::BluetoothSocket::ErrorReason reason,
                       const std::string& error_message);
+  void PowerOffAdapterIfApplicable(const std::vector<InputDeviceInfo>& devices);
 
   // HostPairingController:
   void AddObserver(Observer* observer) override;
@@ -118,6 +122,7 @@ class BluetoothHostPairingController
   scoped_refptr<device::BluetoothSocket> controller_socket_;
   std::unique_ptr<ProtoDecoder> proto_decoder_;
 
+  scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
   base::ThreadChecker thread_checker_;
   base::ObserverList<Observer> observers_;
   base::WeakPtrFactory<BluetoothHostPairingController> ptr_factory_;

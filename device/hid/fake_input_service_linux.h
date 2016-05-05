@@ -13,7 +13,6 @@
 namespace device {
 
 class FakeInputServiceLinux : public InputServiceLinux {
-
  public:
   FakeInputServiceLinux();
   ~FakeInputServiceLinux() override;
@@ -21,6 +20,10 @@ class FakeInputServiceLinux : public InputServiceLinux {
   void AddDeviceForTesting(const InputDeviceInfo& info);
   void RemoveDeviceForTesting(const std::string& id);
   void ClearDeviceList();
+
+ private:
+  // InputServiceLinux override:
+  void GetDevices(std::vector<InputDeviceInfo>* devices) override;
 
   DISALLOW_COPY_AND_ASSIGN(FakeInputServiceLinux);
 };

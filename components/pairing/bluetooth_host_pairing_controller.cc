@@ -8,6 +8,7 @@
 #include "base/hash.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
+#include "base/task_runner_util.h"
 #include "chromeos/system/devicetype.h"
 #include "components/pairing/bluetooth_pairing_constants.h"
 #include "components/pairing/pairing_api.pb.h"
@@ -88,14 +89,23 @@ pairing_api::HostStatusParameters::EnrollmentStatus PairingApiEnrollmentStatus(
   }
 }
 
+std::vector<BluetoothHostPairingController::InputDeviceInfo> GetDevices() {
+  std::vector<BluetoothHostPairingController::InputDeviceInfo> devices;
+  if (device::InputServiceLinux::HasInstance())
+    device::InputServiceLinux::GetInstance()->GetDevices(&devices);
+  return devices;
+}
+
 }  // namespace
 
-BluetoothHostPairingController::BluetoothHostPairingController()
+BluetoothHostPairingController::BluetoothHostPairingController(
+    const scoped_refptr<base::SingleThreadTaskRunner>& file_task_runner)
     : current_stage_(STAGE_NONE),
       connectivity_status_(CONNECTIVITY_UNTESTED),
       update_status_(UPDATE_STATUS_UNKNOWN),
       enrollment_status_(ENROLLMENT_STATUS_UNKNOWN),
       proto_decoder_(new ProtoDecoder(this)),
+      file_task_runner_(file_task_runner),
       ptr_factory_(this) {}
 
 BluetoothHostPairingController::~BluetoothHostPairingController() {
@@ -145,12 +155,12 @@ void BluetoothHostPairingController::SendHostStatus() {
 void BluetoothHostPairingController::Reset() {
   if (controller_socket_.get()) {
     controller_socket_->Close();
-    controller_socket_ = NULL;
+    controller_socket_ = nullptr;
   }
 
   if (service_socket_.get()) {
     service_socket_->Close();
-    service_socket_ = NULL;
+    service_socket_ = nullptr;
   }
 
   if (adapter_.get()) {
@@ -158,12 +168,11 @@ void BluetoothHostPairingController::Reset() {
       adapter_->SetDiscoverable(false, base::Bind(&base::DoNothing),
                                 base::Bind(&base::DoNothing));
     }
-    if (!was_powered_) {
-      adapter_->SetPowered(false, base::Bind(&base::DoNothing),
-                           base::Bind(&base::DoNothing));
-    }
-    adapter_->RemoveObserver(this);
-    adapter_ = NULL;
+
+    base::PostTaskAndReplyWithResult(
+        file_task_runner_.get(), FROM_HERE, base::Bind(&GetDevices),
+        base::Bind(&BluetoothHostPairingController::PowerOffAdapterIfApplicable,
+                   ptr_factory_.GetWeakPtr()));
   }
   ChangeStage(STAGE_NONE);
 }
@@ -259,7 +268,7 @@ void BluetoothHostPairingController::OnAccept(
                  ptr_factory_.GetWeakPtr()));
 
   controller_socket_ = socket;
-  service_socket_ = NULL;
+  service_socket_ = nullptr;
 
   SendHostStatus();
 
@@ -320,6 +329,23 @@ void BluetoothHostPairingController::OnSendError(
       enrollment_status_ != ENROLLMENT_STATUS_SUCCESS) {
     ChangeStage(STAGE_CONTROLLER_CONNECTION_ERROR);
   }
+}
+
+void BluetoothHostPairingController::PowerOffAdapterIfApplicable(
+    const std::vector<InputDeviceInfo>& devices) {
+  bool use_bluetooth = false;
+  for (const auto& device : devices) {
+    if (device.type == InputDeviceInfo::TYPE_BLUETOOTH) {
+      use_bluetooth = true;
+      break;
+    }
+  }
+  if (!was_powered_ && !use_bluetooth) {
+    adapter_->SetPowered(false, base::Bind(&base::DoNothing),
+                         base::Bind(&base::DoNothing));
+  }
+  adapter_->RemoveObserver(this);
+  adapter_ = nullptr;
 }
 
 void BluetoothHostPairingController::OnReceiveError(

@@ -12,6 +12,10 @@
 #include "base/macros.h"
 #include "components/pairing/host_pairing_controller.h"
 
+namespace base {
+class SingleThreadTaskRunner;
+}
+
 namespace pairing_chromeos {
 
 // Listens for incoming connection from shark controller. If connection
@@ -22,7 +26,9 @@ class SharkConnectionListener : public HostPairingController::Observer {
   using OnConnectedCallback =
       base::Callback<void(std::unique_ptr<HostPairingController>)>;
 
-  explicit SharkConnectionListener(OnConnectedCallback callback);
+  SharkConnectionListener(
+      const scoped_refptr<base::SingleThreadTaskRunner>& file_task_runner,
+      OnConnectedCallback callback);
   ~SharkConnectionListener() override;
 
  private:
