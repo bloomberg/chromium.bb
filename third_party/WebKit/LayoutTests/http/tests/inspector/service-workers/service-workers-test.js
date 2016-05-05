@@ -34,31 +34,10 @@ InspectorTest.waitForServiceWorker = function(callback)
     });
 }
 
-function replaceInnerTextAll(rootElement, selectors, replacementString)
-{
-    var elements = rootElement.querySelectorAll(selectors);
-    for (var i = 0; i < elements.length; i++)
-        elements[i].textContent = replacementString;
-}
-
-function modifyTestUnfriendlyText(rootElement)
-{
-    replaceInnerTextAll(rootElement, ".service-worker-script-last-modified", "LAST-MODIFIED");
-    replaceInnerTextAll(rootElement, ".service-worker-script-response-time", "RESPONSE-TIME");
-    replaceInnerTextAll(rootElement, ".service-worker-client", "CLIENT");
-}
-
-InspectorTest.dumpServiceWorkersView = function(scopes)
+InspectorTest.dumpServiceWorkersView = function()
 {
     var swView = WebInspector.panels.resources.visibleView;
-    modifyTestUnfriendlyText(swView._root);
-    var results = [];
-    var expectedTitles = scopes.map(function(scope) {return "Scope: " + (new URL(scope).pathname)});
-    results.push("==== ServiceWorkersView ====");
-    for (var childView of swView.children())
-        results.push(childView.element.innerText);
-    results.push("============================");
-    return results;
+    return swView._reportView._sectionList.childTextNodes().map(function(node) { return node.textContent.replace(/Last modified.*/, "Last modified"); }).join("\n");
 }
 
 InspectorTest.deleteServiceWorkerRegistration = function(scope)

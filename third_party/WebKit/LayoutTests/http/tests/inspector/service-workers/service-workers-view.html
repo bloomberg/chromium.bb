@@ -10,8 +10,8 @@ function test()
     var scriptURL = "http://127.0.0.1:8000/inspector/service-workers/resources/service-worker-empty.js";
     var scope1 = "http://127.0.0.1:8000/inspector/service-workers/resources/scope1/";
     var scope2 = "http://127.0.0.1:8000/inspector/service-workers/resources/scope2/";
-    var scopes = [scope1, scope2];
     var step = 0;
+    WebInspector.ServiceWorkersView._noThrottle = true;
 
     InspectorTest.addSniffer(WebInspector.ServiceWorkersView.prototype, "_updateRegistration", updateRegistration, true);
     function updateRegistration(registration)
@@ -19,17 +19,17 @@ function test()
         for (var version of registration.versions.values()) {
             if (step == 0 && registration.scopeURL == scope1 && version.isActivated() && version.isRunning()) {
                 ++step;
-                InspectorTest.addResults(InspectorTest.dumpServiceWorkersView(scopes));
+                InspectorTest.addResult(InspectorTest.dumpServiceWorkersView());
                 InspectorTest.addResult("Register ServiceWorker for scope2");
                 InspectorTest.registerServiceWorker(scriptURL, scope2);
             } else if (step == 1 && registration.scopeURL == scope2 && version.isActivated() && version.isRunning()) {
                 ++step;
-                InspectorTest.addResults(InspectorTest.dumpServiceWorkersView(scopes));
+                InspectorTest.addResult(InspectorTest.dumpServiceWorkersView());
                 InspectorTest.addResult("Unegister ServiceWorker for scope1");
                 InspectorTest.unregisterServiceWorker(scope1);
             } else if (step == 2 && registration.scopeURL == scope1 && version.isRedundant() && version.isRunning()) {
                 ++step;
-                InspectorTest.addResults(InspectorTest.dumpServiceWorkersView(scopes));
+                InspectorTest.addResult(InspectorTest.dumpServiceWorkersView());
                 InspectorTest.addResult("Unegister ServiceWorker for scope1");
                 InspectorTest.unregisterServiceWorker(scope2);
             } else if (step == 3 && registration.scopeURL == scope2 && version.isRedundant()) {
