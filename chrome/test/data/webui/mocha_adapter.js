@@ -47,7 +47,10 @@ function BrowserTestReporter(runner) {
   // Report the results to the test API.
   runner.on('end', function() {
     if (failures == 0) {
-      testDone();
+      if (passes > 0)
+        testDone();
+      else
+        testDone([false, 'Failure: Mocha ran, but no mocha tests were run!']);
       return;
     }
     testDone([

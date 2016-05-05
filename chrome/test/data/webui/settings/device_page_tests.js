@@ -116,7 +116,7 @@ cr.define('settings_device_page', function() {
       };
 
       // First, wait for the initial call to getInfo.
-      var promise = fakeSystemDisplay.getInfoCalled.promise.then(function() {
+      return fakeSystemDisplay.getInfoCalled.promise.then(function() {
         expectTrue(!!displayPage.displays);
         expectEquals(0, displayPage.displays.length);
 
@@ -188,7 +188,7 @@ cr.define('settings_device_page', function() {
             });
           });
         });
-        return promise;
       });
     });
+  });
 });
