@@ -92,16 +92,15 @@ Polymer({
    * @param {boolean} isTabSyncEnabled Is tab sync enabled for this profile?
    */
   setForeignSessions: function(sessionList, isTabSyncEnabled) {
+    if (!isTabSyncEnabled)
+      return;
+
     // TODO(calamity): Add a 'no synced devices' message when sessions are
     // empty.
-    this.$['history-side-bar'].hidden = !isTabSyncEnabled;
     var syncedDeviceElem = this.$['history-synced-device-manager'];
     var syncedDeviceManager =
         /** @type {HistorySyncedDeviceManagerElement} */(syncedDeviceElem);
-    if (isTabSyncEnabled) {
-      syncedDeviceManager.setSyncedHistory(sessionList);
-      /** @type {HistoryToolbarElement} */(this.$.toolbar).hasSidebar = true;
-    }
+    syncedDeviceManager.setSyncedHistory(sessionList);
   },
 
   deleteComplete: function() {

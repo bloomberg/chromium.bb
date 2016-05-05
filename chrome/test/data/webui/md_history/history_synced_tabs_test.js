@@ -38,19 +38,6 @@ cr.define('md_history.history_synced_tabs_test', function() {
         sidebarElement = app.$['history-side-bar'];
       });
 
-      test('sidebar displayed', function(done) {
-        setForeignSessions([], true);
-        flush(function() {
-          assertFalse(sidebarElement.hidden);
-          setForeignSessions([], false);
-          flush(function() {
-            assertTrue(sidebarElement.hidden);
-            done();
-          });
-        });
-
-      });
-
       test('single card, single window', function(done) {
         var sessionList = [
           createSession(

@@ -37,12 +37,11 @@
         font-weight: 400;
       }
 
-      #left-content,
       #right-content {
         flex: 1 0 0;
       }
 
-      :host([has-sidebar]) #left-content {
+      #left-content {
         flex: 1 0 var(--side-bar-width);
       }
 
@@ -76,7 +75,7 @@
         padding: 0 var(--card-padding-side);
       }
 
-      :host([has-sidebar]) #overlay-wrapper {
+      #overlay-wrapper {
         -webkit-margin-start: var(--side-bar-width);
       }
 

@@ -48,14 +48,6 @@ Polymer({
       type: Boolean,
       value: false
     },
-
-    // True if the page has a sidebar that we need to account for when
-    // positioning toolbar items.
-    hasSidebar: {
-      type: Boolean,
-      value: false,
-      reflectToAttribute: true
-    }
   },
 
   /**
