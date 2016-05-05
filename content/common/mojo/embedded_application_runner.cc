@@ -64,6 +64,7 @@ class EmbeddedApplicationRunner::Instance
   }
 
   void Quit() {
+    shell_connections_.clear();
     shell_client_.reset();
     quit_task_runner_->PostTask(FROM_HERE, quit_closure_);
   }
