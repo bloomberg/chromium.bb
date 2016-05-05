@@ -5,6 +5,7 @@
 #include <windows.h>
 
 #include "base/win/scoped_handle.h"
+#include "sandbox/win/src/nt_internals.h"
 #include "sandbox/win/src/win_utils.h"
 #include "sandbox/win/tests/common/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -108,4 +109,14 @@ TEST(WinUtils, IsPipe) {
 
   pipe_name = L"\\Device\\NamedPipe\\mypipe";
   EXPECT_FALSE(IsPipe(pipe_name));
+}
+
+TEST(WinUtils, NtStatusToWin32Error) {
+  using sandbox::GetLastErrorFromNtStatus;
+  EXPECT_EQ(static_cast<DWORD>(ERROR_SUCCESS),
+            GetLastErrorFromNtStatus(STATUS_SUCCESS));
+  EXPECT_EQ(static_cast<DWORD>(ERROR_NOT_SUPPORTED),
+            GetLastErrorFromNtStatus(STATUS_NOT_SUPPORTED));
+  EXPECT_EQ(static_cast<DWORD>(ERROR_ACCESS_DENIED),
+            GetLastErrorFromNtStatus(STATUS_ACCESS_DENIED));
 }

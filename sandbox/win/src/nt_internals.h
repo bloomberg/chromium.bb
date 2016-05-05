@@ -30,6 +30,7 @@ typedef LONG NTSTATUS;
 #define STATUS_PROCEDURE_NOT_FOUND    ((NTSTATUS)0xC000007AL)
 #define STATUS_INVALID_IMAGE_FORMAT   ((NTSTATUS)0xC000007BL)
 #define STATUS_NO_TOKEN               ((NTSTATUS)0xC000007CL)
+#define STATUS_NOT_SUPPORTED          ((NTSTATUS)0xC00000BBL)
 
 #define CURRENT_PROCESS ((HANDLE) -1)
 #define CURRENT_THREAD  ((HANDLE) -2)
@@ -643,6 +644,8 @@ typedef LONG (WINAPI *RtlCompareUnicodeStringFunction)(
 typedef VOID (WINAPI *RtlInitUnicodeStringFunction) (
   IN OUT PUNICODE_STRING DestinationString,
   IN PCWSTR SourceString);
+
+typedef ULONG (WINAPI* RtlNtStatusToDosErrorFunction)(NTSTATUS status);
 
 typedef enum _EVENT_TYPE {
   NotificationEvent,

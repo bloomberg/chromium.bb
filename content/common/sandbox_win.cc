@@ -806,18 +806,10 @@ sandbox::ResultCode StartSandboxedProcess(
   TRACE_EVENT_END0("startup", "StartProcessWithAccess::LAUNCHPROCESS");
 
   if (sandbox::SBOX_ALL_OK != result) {
+    UMA_HISTOGRAM_SPARSE_SLOWLY("Process.Sandbox.Launch.Error", last_error);
     if (result == sandbox::SBOX_ERROR_GENERIC)
       DPLOG(ERROR) << "Failed to launch process";
-    else if (result == sandbox::SBOX_ERROR_CREATE_PROCESS) {
-      // TODO(shrikant): Remove this special case handling after determining
-      // cause for lowbox/createprocess errors.
-      sandbox::PolicyBase* policy_base =
-          static_cast<sandbox::PolicyBase*>(policy);
-      UMA_HISTOGRAM_SPARSE_SLOWLY(policy_base->GetLowBoxSid() ?
-                                      "Process.Sandbox.Lowbox.Launch.Error" :
-                                      "Process.Sandbox.Launch.Error",
-                                  last_error);
-    } else
+    else
       DLOG(ERROR) << "Failed to launch process. Error: " << result;
 
     return result;

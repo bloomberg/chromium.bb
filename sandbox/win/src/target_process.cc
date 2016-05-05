@@ -225,7 +225,7 @@ ResultCode TargetProcess::Create(
         static_cast<PROCESS_INFORMATION_CLASS>(NtProcessInformationAccessToken),
         &process_access_token, sizeof(process_access_token));
     if (!NT_SUCCESS(status)) {
-      *win_error = ERROR_INVALID_TOKEN;
+      *win_error = GetLastErrorFromNtStatus(status);
       ::TerminateProcess(process_info.process_handle(), 0);  // exit code
       return SBOX_ERROR_SET_LOW_BOX_TOKEN;
     }

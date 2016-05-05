@@ -404,6 +404,12 @@ bool WriteProtectedChildMemory(HANDLE child_process, void* address,
   return ok;
 }
 
+DWORD GetLastErrorFromNtStatus(NTSTATUS status) {
+  RtlNtStatusToDosErrorFunction NtStatusToDosError = nullptr;
+  ResolveNTFunctionPtr("RtlNtStatusToDosError", &NtStatusToDosError);
+  return NtStatusToDosError(status);
+}
+
 };  // namespace sandbox
 
 void ResolveNTFunctionPtr(const char* name, void* ptr) {
