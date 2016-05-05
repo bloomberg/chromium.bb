@@ -44,21 +44,27 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {H2} at (3.19,86.56) size 777.63x18
         LayoutText {#text} at (0,0) size 153x18
           text run at (0,0) width 153: "Providing meter styles"
-      LayoutBlockFlow {DIV} at (0,107.75) size 784x112.75 [bgcolor=#EEEEEE]
-        LayoutBlockFlow {UL} at (3.19,0) size 777.63x112.75
+      LayoutBlockFlow {DIV} at (0,107.75) size 784x111.75 [bgcolor=#EEEEEE]
+        LayoutBlockFlow {UL} at (3.19,0) size 777.63x111.75
           LayoutListItem {LI} at (43.19,0) size 731.25x18
             LayoutBlockFlow {METER} at (0,1.19) size 80x16 [border: (5px solid #222244) (20px solid #222244) (5px solid #222244) (10px solid #222244)]
-              LayoutBlockFlow {DIV} at (10,5) size 50x0
+              LayoutBlockFlow {DIV} at (10,5) size 50x6
+                LayoutBlockFlow {DIV} at (0,0) size 50x6
+                  LayoutBlockFlow {DIV} at (0,0) size 40x6
             LayoutText {#text} at (80,0) size 72x18
               text run at (80,0) width 72: " has border"
           LayoutListItem {LI} at (43.19,21.19) size 731.25x18
             LayoutBlockFlow {METER} at (0,1.19) size 80x16
-              LayoutBlockFlow {DIV} at (10,5) size 50x0
+              LayoutBlockFlow {DIV} at (10,5) size 50x6
+                LayoutBlockFlow {DIV} at (0,0) size 50x6
+                  LayoutBlockFlow {DIV} at (0,0) size 40x6
             LayoutText {#text} at (80,0) size 81x18
               text run at (80,0) width 81: " has padding"
           LayoutListItem {LI} at (43.19,42.38) size 731.25x27
             LayoutBlockFlow {METER} at (10,5.19) size 80x16
-              LayoutBlockFlow {DIV} at (0,0) size 80x0
+              LayoutBlockFlow {DIV} at (0,0) size 80x16
+                LayoutBlockFlow {DIV} at (0,0) size 80x16
+                  LayoutBlockFlow {DIV} at (0,0) size 64x16
             LayoutText {#text} at (110,9) size 75x18
               text run at (110,9) width 75: " has margin"
           LayoutListItem {LI} at (43.19,72.56) size 731.25x18
@@ -68,17 +74,17 @@ layer at (0,0) size 800x600
                   LayoutBlockFlow {DIV} at (0,0) size 0x16
             LayoutText {#text} at (80,0) size 108x18
               text run at (80,0) width 108: " has box-shadow"
-          LayoutListItem {LI} at (43.19,93.75) size 731.25x19
-            LayoutBlockFlow {METER} at (0,3.19) size 80x16 [color=#FFFFFF] [bgcolor=#0000FF]
-              LayoutBlockFlow {DIV} at (0,0) size 80x18
-                LayoutText {#text} at (0,0) size 16x18
-                  text run at (0,0) width 16: "50"
-            LayoutText {#text} at (80,0) size 447x18
-              text run at (80,0) width 447: " Background CSS property disables -webkit-apparance automatically."
-      LayoutBlockFlow {H2} at (3.19,223.69) size 777.63x18
+          LayoutListItem {LI} at (43.19,93.75) size 731.25x18
+            LayoutBlockFlow {METER} at (0,1.19) size 80x16 [color=#FFFFFF] [bgcolor=#0000FF]
+              LayoutBlockFlow {DIV} at (0,0) size 80x16
+                LayoutBlockFlow {DIV} at (0,0) size 80x16
+                  LayoutBlockFlow {DIV} at (0,0) size 80x16
+            LayoutText {#text} at (80,0) size 415x18
+              text run at (80,0) width 415: " Background CSS property does not disable -webkit-appearance."
+      LayoutBlockFlow {H2} at (3.19,222.69) size 777.63x18
         LayoutText {#text} at (0,0) size 227x18
           text run at (0,0) width 227: "Providing bar and/or value styles"
-      LayoutBlockFlow {DIV} at (0,244.88) size 784x81.56 [bgcolor=#EEEEEE]
+      LayoutBlockFlow {DIV} at (0,243.88) size 784x81.56 [bgcolor=#EEEEEE]
         LayoutBlockFlow {UL} at (3.19,0) size 777.63x81.56
           LayoutBlockFlow (anonymous) at (40,0) size 737.63x18
             LayoutText {#text} at (0,0) size 473x18
@@ -104,10 +110,10 @@ layer at (0,0) size 800x600
                   LayoutBlockFlow {DIV} at (2,2) size 60.80x12 [bgcolor=#008000] [border: (2px solid #77CC77)]
             LayoutText {#text} at (80,0) size 255x18
               text run at (80,0) width 255: " has both styles but should ignore them."
-      LayoutBlockFlow {H2} at (3.19,329.63) size 777.63x18
+      LayoutBlockFlow {H2} at (3.19,328.63) size 777.63x18
         LayoutText {#text} at (0,0) size 157x18
           text run at (0,0) width 157: "Providing appearances"
-      LayoutBlockFlow {DIV} at (0,350.81) size 784x19 [bgcolor=#EEEEEE]
+      LayoutBlockFlow {DIV} at (0,349.81) size 784x19 [bgcolor=#EEEEEE]
         LayoutBlockFlow {UL} at (3.19,0) size 777.63x19
           LayoutListItem {LI} at (43.19,0) size 731.25x19
             LayoutBlockFlow {METER} at (0,3.19) size 80x16
@@ -116,10 +122,10 @@ layer at (0,0) size 800x600
                   text run at (0,0) width 16: "80"
             LayoutText {#text} at (80,0) size 359x18
               text run at (80,0) width 359: " has \"none\" appearance, should render METER content."
-      LayoutBlockFlow {H2} at (3.19,373) size 777.63x18
+      LayoutBlockFlow {H2} at (3.19,372) size 777.63x18
         LayoutText {#text} at (0,0) size 162x18
           text run at (0,0) width 162: "Providing bar paddings"
-      LayoutBlockFlow {DIV} at (0,394.19) size 784x18 [bgcolor=#EEEEEE]
+      LayoutBlockFlow {DIV} at (0,393.19) size 784x18 [bgcolor=#EEEEEE]
         LayoutBlockFlow {METER} at (0,1.19) size 80x16
           LayoutBlockFlow {DIV} at (0,0) size 80x16
             LayoutBlockFlow {DIV} at (0,0) size 80x16
