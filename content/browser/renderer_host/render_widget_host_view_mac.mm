@@ -1269,6 +1269,13 @@ void RenderWidgetHostViewMac::EndFrameSubscription() {
   delegated_frame_host_->EndFrameSubscription();
 }
 
+ui::AcceleratedWidgetMac* RenderWidgetHostViewMac::GetAcceleratedWidgetMac()
+    const {
+  if (browser_compositor_)
+    return browser_compositor_->accelerated_widget_mac();
+  return nullptr;
+}
+
 void RenderWidgetHostViewMac::ForwardMouseEvent(const WebMouseEvent& event) {
   if (render_widget_host_)
     render_widget_host_->ForwardMouseEvent(event);

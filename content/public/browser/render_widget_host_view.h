@@ -25,6 +25,7 @@ class Size;
 
 namespace ui {
 class TextInputClient;
+class AcceleratedWidgetMac;
 }
 
 namespace content {
@@ -160,6 +161,10 @@ class CONTENT_EXPORT RenderWidgetHostView {
   virtual void EndFrameSubscription() = 0;
 
 #if defined(OS_MACOSX)
+  // Return the accelerated widget which hosts the CALayers that draw the
+  // content of the view in GetNativeView. This may be null.
+  virtual ui::AcceleratedWidgetMac* GetAcceleratedWidgetMac() const = 0;
+
   // Set the view's active state (i.e., tint state of controls).
   virtual void SetActive(bool active) = 0;
 

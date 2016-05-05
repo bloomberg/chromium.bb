@@ -265,6 +265,11 @@ gfx::Rect RenderWidgetHostViewMus::GetBoundsInRootWindow() {
 }
 
 #if defined(OS_MACOSX)
+ui::AcceleratedWidgetMac* RenderWidgetHostViewMus::GetAcceleratedWidgetMac()
+    const {
+  return nullptr;
+}
+
 void RenderWidgetHostViewMus::SetActive(bool active) {
 }
 

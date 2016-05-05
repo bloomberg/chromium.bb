@@ -311,6 +311,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void BeginFrameSubscription(
       std::unique_ptr<RenderWidgetHostViewFrameSubscriber> subscriber) override;
   void EndFrameSubscription() override;
+  ui::AcceleratedWidgetMac* GetAcceleratedWidgetMac() const override;
   void OnSwapCompositorFrame(
       uint32_t output_surface_id,
       std::unique_ptr<cc::CompositorFrame> frame) override;
