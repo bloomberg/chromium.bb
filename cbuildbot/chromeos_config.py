@@ -623,8 +623,6 @@ _waterfall_config_map = {
         'veyron_rialto-paladin',
 
         # Experimental PFQs.
-        'cyan-cheets-chrome-pfq',
-        'veyron_minnie-cheets-chrome-pfq',
         'veyron_rialto-chrome-pfq',
 
         # Experimental Canaries
@@ -1302,7 +1300,6 @@ def GetConfig():
       'cyan-cheets-chrome-pfq', chrome_pfq,
       _base_configs['cyan-cheets'],
       hw_tests=HWTestList.SharedPoolAndroidPFQ(),
-      important=False,
   )
 
   site_config.Add(
@@ -1321,7 +1318,6 @@ def GetConfig():
       'veyron_minnie-cheets-chrome-pfq', chrome_pfq,
       _base_configs['veyron_minnie-cheets'],
       hw_tests=HWTestList.SharedPoolAndroidPFQ(),
-      important=False,
   )
 
   site_config.Add(
