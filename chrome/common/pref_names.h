@@ -346,15 +346,6 @@ extern const char kContentSettingsPluginWhitelist[];
 #endif
 extern const char kPartitionDefaultZoomLevel[];
 extern const char kPartitionPerHostZoomLevels[];
-extern const char kAutofillDialogAutofillDefault[];
-extern const char kAutofillDialogPayWithoutWallet[];
-extern const char kAutofillDialogWalletLocationAcceptance[];
-extern const char kAutofillDialogSaveData[];
-extern const char kAutofillDialogWalletShippingSameAsBilling[];
-extern const char kAutofillGeneratedCardBubbleTimesShown[];
-#if BUILDFLAG(ANDROID_JAVA_UI)
-extern const char kAutofillDialogDefaults[];
-#endif
 
 #if !defined(OS_ANDROID)
 extern const char kPinnedTabs[];

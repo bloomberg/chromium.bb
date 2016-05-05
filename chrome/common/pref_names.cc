@@ -1012,38 +1012,6 @@ const char kPartitionDefaultZoomLevel[] = "partition.default_zoom_level";
 // be displayed at the default zoom level.
 const char kPartitionPerHostZoomLevels[] = "partition.per_host_zoom_levels";
 
-// A dictionary that tracks the default data model to use for each section of
-// the dialog.
-const char kAutofillDialogAutofillDefault[] = "autofill.data_model_default";
-
-// Whether a user opted out of making purchases with Google Wallet; changed via
-// the autofill dialog's account chooser and set explicitly on dialog submission
-// (but not cancel). If this isn't set, the dialog assumes it's the first run.
-const char kAutofillDialogPayWithoutWallet[] = "autofill.pay_without_wallet";
-
-// Which GAIA users have accepted that use of Google Wallet implies their
-// location will be shared with fraud protection services.
-const char kAutofillDialogWalletLocationAcceptance[] =
-    "autofill.wallet_location_disclosure";
-
-// Whether a user wants to save data locally in Autofill.
-const char kAutofillDialogSaveData[] = "autofill.save_data";
-
-// Whether the user has selected "Same as billing" for the shipping address when
-// using Google Wallet.
-const char kAutofillDialogWalletShippingSameAsBilling[] =
-    "autofill.wallet_shipping_same_as_billing";
-
-// The number of times the generated credit card bubble has been shown.
-const char kAutofillGeneratedCardBubbleTimesShown[] =
-    "autofill.generated_card_bubble_times_shown";
-
-#if BUILDFLAG(ANDROID_JAVA_UI)
-// A dictionary that tracks the defaults to be set on the next invocation
-// of the requestAutocomplete dialog.
-const char kAutofillDialogDefaults[] = "autofill.rac_dialog_defaults";
-#endif
-
 #if !defined(OS_ANDROID)
 const char kPinnedTabs[] = "pinned_tabs";
 #endif
