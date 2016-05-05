@@ -279,7 +279,11 @@ DownloadsListTracker::CreateDownloadItemValue(
       if (download_item->CanResume())
         percent = download_item->PercentComplete();
 
-      last_reason_text = download_model.GetInterruptReasonText();
+      // TODO(asanka): last_reason_text should be set via
+      // download_model.GetInterruptReasonText(). But we are using
+      // GetStatusText() as a temporary measure until the layout is fixed to
+      // accommodate the longer string. http://crbug.com/609255
+      last_reason_text = download_model.GetStatusText();
       if (content::DOWNLOAD_INTERRUPT_REASON_CRASH ==
           download_item->GetLastReason() && !download_item->CanResume()) {
         retry = true;
