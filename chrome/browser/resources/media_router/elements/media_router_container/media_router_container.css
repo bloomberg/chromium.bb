@@ -193,6 +193,10 @@ paper-menu {
   /* TODO(crbug/589697): Handle overflow of very long domain names. */
 }
 
+#sink-list-view {
+  position: relative;
+}
+
 .sink-name {
   min-width: 10%;
   overflow: hidden;

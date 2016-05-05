@@ -1621,7 +1621,6 @@ Polymer({
     var resultsContainer = this.$$('#search-results-container');
     var search = this.$['sink-search'];
     search.className = 'bottom';
-    search.style['margin-top'] = '-' + search.offsetHeight + 'px';
     search.style['top'] = '';
     if (resultsContainer) {
       resultsContainer.style['position'] = '';
@@ -1631,6 +1630,7 @@ Polymer({
     this.hideSinkListForAnimation_ = false;
     var hasList = this.hasConditionalElement_(list);
     if (hasList) {
+      search.style['margin-top'] = '-' + search.offsetHeight + 'px';
       list.style['padding-bottom'] = search.offsetHeight + 'px';
       list.style['opacity'] = '';
     } else {
