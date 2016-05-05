@@ -48,8 +48,8 @@ layer at (0,0) size 785x620 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           LayoutText {#text} at (0,0) size 661x17
             text run at (0,0) width 661: "font-stretch: extra-expanded - Back in June we delivered oxygen equipment of the same size."
         LayoutBlockFlow {DIV} at (0,190.91) size 769x18
-          LayoutText {#text} at (0,0) size 652x17
-            text run at (0,0) width 652: "font-stretch: ulta-expanded - Back in June we delivered oxygen equipment of the same size."
+          LayoutText {#text} at (0,0) size 657x17
+            text run at (0,0) width 657: "font-stretch: ultra-expanded - Back in June we delivered oxygen equipment of the same size."
       LayoutBlockFlow {SECTION} at (0,383.63) size 769x208.91
         LayoutBlockFlow {H2} at (0,0) size 769x27
           LayoutText {#text} at (0,0) size 296x26
@@ -79,5 +79,5 @@ layer at (0,0) size 785x620 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           LayoutText {#text} at (0,0) size 661x17
             text run at (0,0) width 661: "font-stretch: extra-expanded - Back in June we delivered oxygen equipment of the same size."
         LayoutBlockFlow {DIV} at (0,190.91) size 769x18
-          LayoutText {#text} at (0,0) size 652x17
-            text run at (0,0) width 652: "font-stretch: ulta-expanded - Back in June we delivered oxygen equipment of the same size."
+          LayoutText {#text} at (0,0) size 657x17
+            text run at (0,0) width 657: "font-stretch: ultra-expanded - Back in June we delivered oxygen equipment of the same size."
