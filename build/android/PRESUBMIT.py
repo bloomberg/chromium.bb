@@ -27,8 +27,7 @@ def CommonChecks(input_api, output_api):
       input_api,
       output_api,
       pylintrc='pylintrc',
-      # symbols has their own PRESUBMIT.py
-      black_list=build_pys + [r'pylib/symbols/.*\.py$'],
+      black_list=build_pys,
       extra_paths_list=[
           J(),
           J('buildbot'),
@@ -61,6 +60,7 @@ def CommonChecks(input_api, output_api):
           J('pylib', 'instrumentation',
             'instrumentation_test_instance_test.py'),
           J('pylib', 'results', 'json_results_test.py'),
+          J('pylib', 'symbols', 'elf_symbolizer_unittest.py'),
       ],
       env=pylib_test_env))
 
