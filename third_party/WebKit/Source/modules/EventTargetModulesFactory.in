@@ -17,6 +17,7 @@ modules/mediarecorder/MediaRecorder
 modules/mediasource/MediaSource
 modules/mediasource/SourceBuffer
 modules/mediasource/SourceBufferList
+modules/mediastream/MediaDevices
 modules/mediastream/MediaStream
 modules/mediastream/MediaStreamTrack
 modules/mediastream/RTCDTMFSender

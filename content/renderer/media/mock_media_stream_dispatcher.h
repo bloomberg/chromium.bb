@@ -56,6 +56,9 @@ class MockMediaStreamDispatcher : public MediaStreamDispatcher {
     return audio_output_array_;
   }
   const StreamDeviceInfoArray& video_array() const { return video_array_; }
+  size_t NumDeviceChangeSubscribers() const {
+    return MediaStreamDispatcher::NumDeviceChangeSubscribers();
+  }
 
  private:
   void AddAudioInputDeviceToArray(bool matched_output);

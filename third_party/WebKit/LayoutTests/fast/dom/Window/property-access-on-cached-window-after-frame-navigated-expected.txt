@@ -52,6 +52,7 @@ PASS oldChildWindow.navigator.doNotTrack is newChildWindow.navigator.doNotTrack
 PASS oldChildWindow.navigator.hardwareConcurrency is newChildWindow.navigator.hardwareConcurrency
 PASS oldChildWindow.navigator.language is newChildWindow.navigator.language
 PASS oldChildWindow.navigator.maxTouchPoints is newChildWindow.navigator.maxTouchPoints
+PASS oldChildWindow.navigator.mediaDevices.ondevicechange is newChildWindow.navigator.mediaDevices.ondevicechange
 PASS oldChildWindow.navigator.onLine is newChildWindow.navigator.onLine
 PASS oldChildWindow.navigator.platform is newChildWindow.navigator.platform
 PASS oldChildWindow.navigator.presentation.defaultRequest is newChildWindow.navigator.presentation.defaultRequest

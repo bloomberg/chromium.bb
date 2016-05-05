@@ -32,6 +32,7 @@
 
 #include "public/platform/WebMediaStreamTrackSourcesRequest.h"
 #include "public/web/WebFrameClient.h"
+#include "public/web/WebMediaDeviceChangeObserver.h"
 #include "public/web/WebMediaDevicesRequest.h"
 #include "public/web/WebUserMediaClient.h"
 #include "public/web/WebUserMediaRequest.h"
@@ -73,6 +74,12 @@ void UserMediaClientImpl::requestSources(MediaStreamTrackSourcesRequest* request
 {
     if (m_client)
         m_client->requestSources(request);
+}
+
+void UserMediaClientImpl::setMediaDeviceChangeObserver(MediaDevices* observer)
+{
+    if (m_client)
+        m_client->setMediaDeviceChangeObserver(WebMediaDeviceChangeObserver(observer));
 }
 
 } // namespace blink

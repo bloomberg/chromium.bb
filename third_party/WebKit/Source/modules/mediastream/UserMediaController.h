@@ -31,6 +31,7 @@
 
 namespace blink {
 
+class MediaDevices;
 class MediaDevicesRequest;
 class UserMediaRequest;
 
@@ -50,6 +51,8 @@ public:
     void cancelMediaDevicesRequest(MediaDevicesRequest*);
 
     void requestSources(MediaStreamTrackSourcesRequest*);
+
+    void setMediaDeviceChangeObserver(MediaDevices*);
 
     static const char* supplementName();
     static UserMediaController* from(LocalFrame* frame) { return static_cast<UserMediaController*>(Supplement<LocalFrame>::from(frame, supplementName())); }
@@ -83,6 +86,11 @@ inline void UserMediaController::cancelMediaDevicesRequest(MediaDevicesRequest* 
 inline void UserMediaController::requestSources(MediaStreamTrackSourcesRequest* request)
 {
     m_client->requestSources(request);
+}
+
+inline void UserMediaController::setMediaDeviceChangeObserver(MediaDevices* observer)
+{
+    m_client->setMediaDeviceChangeObserver(observer);
 }
 
 } // namespace blink

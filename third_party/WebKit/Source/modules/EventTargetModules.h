@@ -12,6 +12,7 @@
 namespace blink {
 
 class IDBRequest;
+class MediaDevices;
 class MediaRecorder;
 class MediaStream;
 

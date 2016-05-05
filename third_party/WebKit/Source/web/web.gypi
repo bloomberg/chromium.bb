@@ -172,6 +172,7 @@
       'WebLocalFrameImpl.cpp',
       'WebLocalFrameImpl.h',
       'WebMIDIPermissionRequest.cpp',
+      'WebMediaDeviceChangeObserver.cpp',
       'WebMediaDevicesRequest.cpp',
       'WebMediaStreamRegistry.cpp',
       'WebMetaElement.cpp',

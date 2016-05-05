@@ -36,6 +36,7 @@
 
 namespace blink {
 
+class MediaDevices;
 class MediaDevicesRequest;
 class UserMediaRequest;
 class WebUserMediaClient;
@@ -51,7 +52,7 @@ public:
     void requestMediaDevices(MediaDevicesRequest*) override;
     void cancelMediaDevicesRequest(MediaDevicesRequest*) override;
     void requestSources(MediaStreamTrackSourcesRequest*) override;
-
+    void setMediaDeviceChangeObserver(MediaDevices*) override;
 private:
     UserMediaClientImpl();
 

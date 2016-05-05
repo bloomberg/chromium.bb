@@ -104,6 +104,9 @@ class CONTENT_EXPORT MediaStreamDispatcher
 
  protected:
   int GetNextIpcIdForTest() { return next_ipc_id_; }
+  size_t NumDeviceChangeSubscribers() const {
+    return device_change_subscribers_.size();
+  }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(MediaStreamDispatcherTest, BasicVideoDevice);

@@ -10,6 +10,7 @@
 
 namespace blink {
 
+class ExecutionContext;
 class Navigator;
 class MediaDevices;
 
@@ -20,7 +21,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    NavigatorUserMedia();
+    explicit NavigatorUserMedia(ExecutionContext*);
     MediaDevices* getMediaDevices();
     static const char* supplementName();
     static NavigatorUserMedia& from(Navigator&);

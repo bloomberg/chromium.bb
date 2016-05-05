@@ -4,14 +4,17 @@
 
 #include "modules/mediastream/NavigatorUserMedia.h"
 
+#include "core/dom/Document.h"
+#include "core/dom/ExecutionContext.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/Navigator.h"
 #include "modules/mediastream/MediaDevices.h"
 #include "platform/Logging.h"
 
 namespace blink {
 
-NavigatorUserMedia::NavigatorUserMedia()
-    : m_mediaDevices(MediaDevices::create())
+NavigatorUserMedia::NavigatorUserMedia(ExecutionContext* context)
+    : m_mediaDevices(MediaDevices::create(context))
 {
 }
 
@@ -24,7 +27,8 @@ NavigatorUserMedia& NavigatorUserMedia::from(Navigator& navigator)
 {
     NavigatorUserMedia* supplement = static_cast<NavigatorUserMedia*>(Supplement<Navigator>::from(navigator, supplementName()));
     if (!supplement) {
-        supplement = new NavigatorUserMedia();
+        ExecutionContext* context = navigator.frame() ? navigator.frame()->document() : nullptr;
+        supplement = new NavigatorUserMedia(context);
         provideTo(navigator, supplementName(), supplement);
     }
     return *supplement;

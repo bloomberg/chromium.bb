@@ -42,7 +42,9 @@ class MockExtraData : public WebMediaStream::ExtraData {
 };
 
 MockWebUserMediaClient::MockWebUserMediaClient(WebTestDelegate* delegate)
-    : delegate_(delegate), weak_factory_(this) {}
+    : delegate_(delegate),
+      should_enumerate_extra_device_(false),
+      weak_factory_(this) {}
 
 MockWebUserMediaClient::~MockWebUserMediaClient() {}
 
@@ -120,13 +122,22 @@ void MockWebUserMediaClient::requestMediaDevices(
     {
       "device3",
       WebMediaDeviceInfo::MediaDeviceKindVideoInput,
-      "Build-in webcam",
+      "Built-in webcam",
       "group2",
+    },
+    {
+      "device4",
+      WebMediaDeviceInfo::MediaDeviceKindAudioInput,
+      "Extra microphone",
+      "group3",
     },
   };
 
-  WebVector<WebMediaDeviceInfo> devices(arraysize(test_devices));
-  for (size_t i = 0; i < arraysize(test_devices); ++i) {
+  size_t num_devices = should_enumerate_extra_device_
+                           ? arraysize(test_devices)
+                           : arraysize(test_devices) - 1;
+  WebVector<WebMediaDeviceInfo> devices(num_devices);
+  for (size_t i = 0; i < num_devices; ++i) {
     devices[i].initialize(WebString::fromUTF8(test_devices[i].device_id),
                           test_devices[i].kind,
                           WebString::fromUTF8(test_devices[i].label),
@@ -136,6 +147,10 @@ void MockWebUserMediaClient::requestMediaDevices(
   delegate_->PostTask(new WebCallbackTask(
       base::Bind(&WebMediaDevicesRequest::requestSucceeded,
                  base::Owned(new WebMediaDevicesRequest(request)), devices)));
+
+  should_enumerate_extra_device_ = !should_enumerate_extra_device_;
+  if (!media_device_change_observer_.isNull())
+    media_device_change_observer_.didChangeMediaDevices();
 }
 
 void MockWebUserMediaClient::cancelMediaDevicesRequest(
@@ -175,6 +190,11 @@ void MockWebUserMediaClient::requestSources(
   delegate_->PostTask(new WebCallbackTask(base::Bind(
       &WebMediaStreamTrackSourcesRequest::requestSucceeded,
       base::Owned(new WebMediaStreamTrackSourcesRequest(request)), sources)));
+}
+
+void MockWebUserMediaClient::setMediaDeviceChangeObserver(
+    const blink::WebMediaDeviceChangeObserver& observer) {
+  media_device_change_observer_ = observer;
 }
 
 }  // namespace test_runner

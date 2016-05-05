@@ -4,6 +4,9 @@
 
 // http://w3c.github.io/mediacapture-main/#navigatorusermedia
 
+[
+    ConstructorCallWith=ExecutionContext,
+]
 partial interface Navigator {
     [RuntimeEnabled=MediaDevices] readonly attribute MediaDevices mediaDevices;
 };

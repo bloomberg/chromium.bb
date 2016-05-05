@@ -7,10 +7,14 @@
 // http://w3c.github.io/mediacapture-main/#mediadevices-interface-extensions
 
 [
+    ActiveScriptWrappable,
+    DependentLifetime,
+    ConstructorCallWith=ExecutionContext,
     RuntimeEnabled=MediaDevices
 ]
-interface MediaDevices {
+interface MediaDevices : EventTarget {
     [CallWith=ScriptState, MeasureAs=MediaDevicesEnumerateDevices] Promise<sequence<MediaDeviceInfo>> enumerateDevices();
     [RuntimeEnabled=MediaConstraints] MediaTrackSupportedConstraints getSupportedConstraints();
     [RuntimeEnabled=GetUserMedia, CallWith=ScriptState, RaisesException] Promise<MediaStream> getUserMedia(MediaStreamConstraints options);
+    [RuntimeEnabled=OnDeviceChange] attribute EventHandler ondevicechange;
 };

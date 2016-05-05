@@ -145,6 +145,7 @@ NotificationExperimental status=test
 NotificationBadge status=experimental
 NotificationInlineReplies status=experimental
 Notifications status=stable
+OnDeviceChange status=experimental
 OrientationEvent
 // For simulating Android's overlay fullscreen video in layout tests on Linux.
 ForceOverlayFullscreenVideo

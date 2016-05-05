@@ -40,6 +40,7 @@
 namespace blink {
 
 class LocalFrame;
+class MediaDevices;
 
 class UserMediaClient {
     USING_FAST_MALLOC(UserMediaClient);
@@ -49,6 +50,7 @@ public:
     virtual void requestMediaDevices(MediaDevicesRequest*) = 0;
     virtual void cancelMediaDevicesRequest(MediaDevicesRequest*) = 0;
     virtual void requestSources(MediaStreamTrackSourcesRequest*) = 0;
+    virtual void setMediaDeviceChangeObserver(MediaDevices*) = 0;
 
 protected:
     virtual ~UserMediaClient() { }

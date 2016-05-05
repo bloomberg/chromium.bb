@@ -401,6 +401,7 @@
       "web/WebLeakDetector.h",
       "web/WebLocalFrame.h",
       "web/WebMeaningfulLayout.h",
+      "web/WebMediaDeviceChangeObserver.h",
       "web/WebMediaDevicesRequest.h",
       "web/WebMediaPlayerAction.h",
       "web/WebMediaStreamRegistry.h",

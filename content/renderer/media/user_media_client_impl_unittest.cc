@@ -86,6 +86,15 @@ class UserMediaClientImplUnderTest : public UserMediaClientImpl {
     requestSources(sources_request);
   }
 
+  void SetMediaDeviceChangeObserver() {
+    blink::WebMediaDeviceChangeObserver observer(true);
+    setMediaDeviceChangeObserver(observer);
+  }
+
+  void RemoveMediaDeviceChangeObserver() {
+    setMediaDeviceChangeObserver(blink::WebMediaDeviceChangeObserver());
+  }
+
   void GetUserMediaRequestSucceeded(
       const blink::WebMediaStream& stream,
       blink::WebUserMediaRequest request_info) override {
@@ -636,6 +645,17 @@ TEST_F(UserMediaClientImplTest, RenderToAssociatedSinkConstraint) {
   factory.basic().renderToAssociatedSink.setExact(false);
   EXPECT_FALSE(AudioRequestHasAutomaticDeviceSelection(
       factory.CreateWebMediaConstraints()));
+}
+
+TEST_F(UserMediaClientImplTest, ObserveMediaDeviceChanges) {
+  // For a null UserMediaRequest (no audio requested), we expect false.
+  EXPECT_EQ(0U, ms_dispatcher_->NumDeviceChangeSubscribers());
+  used_media_impl_->SetMediaDeviceChangeObserver();
+  EXPECT_EQ(1U, ms_dispatcher_->NumDeviceChangeSubscribers());
+  used_media_impl_->OnDevicesChanged();
+  used_media_impl_->RemoveMediaDeviceChangeObserver();
+  EXPECT_EQ(0U, ms_dispatcher_->NumDeviceChangeSubscribers());
+  used_media_impl_->OnDevicesChanged();
 }
 
 // This test what happens if the audio stream has same id with video stream.

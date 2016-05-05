@@ -1,0 +1,19 @@
+<!DOCTYPE HTML>
+<title>Test devicechange event</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script>
+
+// The test runner simulates a device change upon every enumeration.
+async_test(test => {
+  assert_idl_attribute(navigator, 'mediaDevices');
+  assert_idl_attribute(navigator.mediaDevices, 'enumerateDevices');
+  assert_idl_attribute(navigator.mediaDevices, 'ondevicechange');
+
+  navigator.mediaDevices.addEventListener("devicechange", test.step_func_done(function() {}));
+
+  // force device change after enumeration
+  navigator.mediaDevices.enumerateDevices().then(function() {});
+});
+
+</script>

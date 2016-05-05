@@ -3560,12 +3560,14 @@ interface Matrix : TransformComponent
     getter m43
     getter m44
     method constructor
-interface MediaDevices
+interface MediaDevices : EventTarget
     attribute @@toStringTag
+    getter ondevicechange
     method constructor
     method enumerateDevices
     method getSupportedConstraints
     method getUserMedia
+    setter ondevicechange
 interface MediaElementAudioSourceNode : AudioSourceNode
     attribute @@toStringTag
     getter mediaElement

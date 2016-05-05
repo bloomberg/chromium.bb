@@ -52,6 +52,7 @@ PASS childWindow.navigator.doNotTrack is null
 PASS childWindow.navigator.hardwareConcurrency is window.navigator.hardwareConcurrency
 PASS childWindow.navigator.language is window.navigator.language
 PASS childWindow.navigator.maxTouchPoints is 0
+PASS childWindow.navigator.mediaDevices.ondevicechange is null
 PASS childWindow.navigator.onLine is window.navigator.onLine
 PASS childWindow.navigator.platform is window.navigator.platform
 FAIL childWindow.navigator.presentation.defaultRequest should be null. Threw exception TypeError: Cannot read property 'defaultRequest' of null

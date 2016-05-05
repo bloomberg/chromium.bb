@@ -3070,7 +3070,7 @@ interface MIDIPort : EventTarget
     method constructor
     method open
     setter onstatechange
-interface MediaDevices
+interface MediaDevices : EventTarget
     attribute @@toStringTag
     method constructor
     method enumerateDevices

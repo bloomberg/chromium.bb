@@ -10,6 +10,7 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/events/Event.h"
 #include "modules/mediastream/MediaErrorState.h"
 #include "modules/mediastream/MediaStream.h"
 #include "modules/mediastream/MediaStreamConstraints.h"
@@ -19,17 +20,6 @@
 #include "modules/mediastream/UserMediaController.h"
 
 namespace blink {
-
-ScriptPromise MediaDevices::enumerateDevices(ScriptState* scriptState)
-{
-    Document* document = toDocument(scriptState->getExecutionContext());
-    UserMediaController* userMedia = UserMediaController::from(document->frame());
-    if (!userMedia)
-        return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(NotSupportedError, "No media device controller available; is this a detached window?"));
-
-    MediaDevicesRequest* request = MediaDevicesRequest::create(scriptState, userMedia);
-    return request->start();
-}
 
 namespace {
 
@@ -87,6 +77,38 @@ private:
 
 } // namespace
 
+MediaDevices* MediaDevices::create(ExecutionContext* context)
+{
+    MediaDevices* mediaDevices = new MediaDevices(context);
+    mediaDevices->suspendIfNeeded();
+    return mediaDevices;
+}
+
+MediaDevices::MediaDevices(ExecutionContext* context)
+    : ActiveScriptWrappable(this)
+    , ActiveDOMObject(context)
+    , m_observing(false)
+    , m_stopped(false)
+    , m_dispatchScheduledEventRunner(AsyncMethodRunner<MediaDevices>::create(this, &MediaDevices::dispatchScheduledEvent))
+{
+    ThreadState::current()->registerPreFinalizer(this);
+}
+
+MediaDevices::~MediaDevices()
+{
+}
+
+ScriptPromise MediaDevices::enumerateDevices(ScriptState* scriptState)
+{
+    Document* document = toDocument(scriptState->getExecutionContext());
+    UserMediaController* userMedia = UserMediaController::from(document->frame());
+    if (!userMedia)
+        return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(NotSupportedError, "No media device controller available; is this a detached window?"));
+
+    MediaDevicesRequest* request = MediaDevicesRequest::create(scriptState, userMedia);
+    return request->start();
+}
+
 ScriptPromise MediaDevices::getUserMedia(ScriptState* scriptState, const MediaStreamConstraints& options, ExceptionState& exceptionState)
 {
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
@@ -119,6 +141,137 @@ ScriptPromise MediaDevices::getUserMedia(ScriptState* scriptState, const MediaSt
 
     request->start();
     return resolver->promise();
+}
+
+void MediaDevices::didChangeMediaDevices()
+{
+    Document* document = toDocument(getExecutionContext());
+    DCHECK(document);
+
+    if (RuntimeEnabledFeatures::onDeviceChangeEnabled())
+        scheduleDispatchEvent(Event::create(EventTypeNames::devicechange));
+}
+
+const AtomicString& MediaDevices::interfaceName() const
+{
+    return EventTargetNames::MediaDevices;
+}
+
+ExecutionContext* MediaDevices::getExecutionContext() const
+{
+    return ActiveDOMObject::getExecutionContext();
+}
+
+void MediaDevices::removeAllEventListeners()
+{
+    EventTargetWithInlineData::removeAllEventListeners();
+    DCHECK(!hasEventListeners());
+    stopObserving();
+}
+
+bool MediaDevices::addEventListenerInternal(const AtomicString& eventType, EventListener* listener, const EventListenerOptions& options)
+{
+    if (!EventTargetWithInlineData::addEventListenerInternal(eventType, listener, options))
+        return false;
+    startObserving();
+    return true;
+}
+
+bool MediaDevices::removeEventListenerInternal(const AtomicString& eventType, EventListener* listener, const EventListenerOptions& options)
+{
+    if (!EventTargetWithInlineData::removeEventListenerInternal(eventType, listener, options))
+        return false;
+    if (!hasEventListeners())
+        stopObserving();
+    return true;
+}
+
+bool MediaDevices::hasPendingActivity() const
+{
+    DCHECK(m_stopped || m_observing == hasEventListeners());
+    return m_observing;
+}
+
+void MediaDevices::stop()
+{
+    if (m_stopped)
+        return;
+
+    m_stopped = true;
+    stopObserving();
+}
+
+void MediaDevices::suspend()
+{
+    m_dispatchScheduledEventRunner->suspend();
+}
+
+void MediaDevices::resume()
+{
+    m_dispatchScheduledEventRunner->resume();
+}
+
+void MediaDevices::scheduleDispatchEvent(Event* event)
+{
+    m_scheduledEvents.append(event);
+    m_dispatchScheduledEventRunner->runAsync();
+}
+
+void MediaDevices::dispatchScheduledEvent()
+{
+    HeapVector<Member<Event>> events;
+    events.swap(m_scheduledEvents);
+
+    for (const auto& event : events)
+        dispatchEvent(event);
+}
+
+void MediaDevices::startObserving()
+{
+    if (m_observing || m_stopped)
+        return;
+
+    UserMediaController* userMedia = getUserMediaController();
+    if (!userMedia)
+        return;
+
+    userMedia->setMediaDeviceChangeObserver(this);
+    m_observing = true;
+}
+
+void MediaDevices::stopObserving()
+{
+    if (!m_observing)
+        return;
+
+    UserMediaController* userMedia = getUserMediaController();
+    if (!userMedia)
+        return;
+
+    userMedia->setMediaDeviceChangeObserver(nullptr);
+    m_observing = false;
+}
+
+UserMediaController* MediaDevices::getUserMediaController()
+{
+    Document* document = toDocument(getExecutionContext());
+    if (!document)
+        return nullptr;
+
+    return UserMediaController::from(document->frame());
+}
+
+void MediaDevices::dispose()
+{
+    stopObserving();
+}
+
+DEFINE_TRACE(MediaDevices)
+{
+    visitor->trace(m_dispatchScheduledEventRunner);
+    visitor->trace(m_scheduledEvents);
+    EventTargetWithInlineData::trace(visitor);
+    ActiveDOMObject::trace(visitor);
 }
 
 } // namespace blink
