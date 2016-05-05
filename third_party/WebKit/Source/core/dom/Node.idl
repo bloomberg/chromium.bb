@@ -52,7 +52,7 @@
     [PerWorldBindings] readonly attribute Node? lastChild;
     [PerWorldBindings] readonly attribute Node? previousSibling;
     [PerWorldBindings] readonly attribute Node? nextSibling;
-    [MeasureAs=NodeRootNode, ImplementedAs=treeRoot] readonly attribute Node rootNode;
+    [RuntimeEnabled=ShadowDOMV1, MeasureAs=NodeRootNode, ImplementedAs=treeRoot] readonly attribute Node rootNode;
 
     [CustomElementCallbacks] attribute DOMString? nodeValue;
     // FIXME: textContent should not have [TreatUndefinedAs=NullString].
