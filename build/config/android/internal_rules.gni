@@ -245,9 +245,8 @@ template("java_binary_script") {
     if (emma_coverage) {
       args += [
         "--classpath",
-        rebase_path(
-            "//third_party/android_tools_internal/sdk/tools/lib/emma.jar",
-            root_build_dir),
+        rebase_path("//third_party/android_tools/sdk/tools/lib/emma.jar",
+                    root_build_dir),
       ]
       args += [ "--noverify" ]
     }
