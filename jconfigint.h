@@ -4,17 +4,13 @@
 
 /* How to obtain function inlining. */
 #ifndef INLINE
-  #ifndef TURBO_FOR_WINDOWS
-    #define INLINE inline __attribute__((always_inline))
-  #else
-    #if defined(__GNUC__)
-      #define INLINE inline __attribute__((always_inline))
-    #elif defined(_MSC_VER)
-      #define INLINE __forceinline
-    #else
-      #define INLINE
-    #endif
-  #endif
+#if defined(__GNUC__)
+#define INLINE inline __attribute__((always_inline))
+#elif defined(_MSC_VER)
+#define INLINE __forceinline
+#else
+#define INLINE
+#endif
 #endif
 
 /* Define to the full name of this package. */

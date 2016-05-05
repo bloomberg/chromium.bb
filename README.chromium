@@ -35,6 +35,9 @@ following changes which are not merged to upstream:
   http://crbug.com/398235
 * Fixed an issue with the ARM NEON build.
   http://crbug.com/451035
+* Configuration files jconfig.h and jconfigint.h were written manually to be
+  compatible on all of Chromium's platforms.
+  http://crbug.com/608347
 
 Refer to working-with-nested-repos [1] for details of how to setup your git
 svn client to update the code (for making local changes, cherry picking from
