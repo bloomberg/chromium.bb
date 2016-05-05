@@ -91,7 +91,7 @@ struct SuddenMotionSensor::SensorDescriptor {
   // Prefix of model to be tested.
   const char* model_name;
 
-  // Board id of model, or NULL if it doesn't matter.
+  // Board id of model, or nullptr if it doesn't matter.
   const char* board_id;
 
   // Axis-specific data (x,y,z order).
@@ -112,38 +112,39 @@ const SuddenMotionSensor::GenericMacbookSensor
 const SuddenMotionSensor::SensorDescriptor
     SuddenMotionSensor::kSupportedSensors[] = {
   // Tested by tommyw on a 13" MacBook.
-  { "MacBook1,1",    NULL, { { 0, true  }, { 2, true  }, { 4, false } } },
+  { "MacBook1,1",    nullptr, { { 0, true  }, { 2, true  }, { 4, false } } },
 
   // Tested by S.Selz. (via avi) on a 13" MacBook.
-  { "MacBook2,1",    NULL, { { 0, true  }, { 2, false }, { 4, true  } } },
+  { "MacBook2,1",    nullptr, { { 0, true  }, { 2, false }, { 4, true  } } },
 
   // Tested by verhees on a 13" MacBook.
-  { "MacBook3,1",    NULL, { { 0, true  }, { 2, true  }, { 4, false } } },
+  { "MacBook3,1",    nullptr, { { 0, true  }, { 2, true  }, { 4, false } } },
 
   // Tested by adlr on a 13" MacBook.
-  { "MacBook4,1",    NULL, { { 0, true  }, { 2, true  }, { 4, false } } },
+  { "MacBook4,1",    nullptr, { { 0, true  }, { 2, true  }, { 4, false } } },
 
   // Tested by thakis on a 13" MacBook.
-  { "MacBook5,1",    NULL, { { 0, true  }, { 2, true  }, { 4, false } } },
+  { "MacBook5,1",    nullptr, { { 0, true  }, { 2, true  }, { 4, false } } },
 
   // Tested by Adam Gerson (via avi) on a 13" MacBook.
-  { "MacBook5,2",    NULL, { { 0, false }, { 2, true  }, { 4, true  } } },
+  { "MacBook5,2",    nullptr, { { 0, false }, { 2, true  }, { 4, true  } } },
 
   // Tested by tommyw on a 13" MacBook.
-  { "MacBook6,1",    NULL, { { 0, true  }, { 2, true  }, { 4, false } } },
+  { "MacBook6,1",    nullptr, { { 0, true  }, { 2, true  }, { 4, false } } },
 
   // Tested by avi on a 13" MacBook.
-  { "MacBook7,1",    NULL, { { 0, true  }, { 2, true  }, { 4, false } } },
+  { "MacBook7,1",    nullptr, { { 0, true  }, { 2, true  }, { 4, false } } },
 
   // Note:
   // - MacBook8,1 (12" MacBook, early 2015)
-  // has no accelerometer sensors.
+  // - MacBook9,1 (12" MacBook, early 2016)
+  // have no accelerometer sensors.
 
   // Tested by crc on a 13" MacBook Air.
-  { "MacBookAir1,1", NULL, { { 0, true  }, { 2, true  }, { 4, false } } },
+  { "MacBookAir1,1", nullptr, { { 0, true  }, { 2, true  }, { 4, false } } },
 
   // Tested by sfiera, pjw on a 13" MacBook Air.
-  { "MacBookAir2,1", NULL, { { 0, true  }, { 2, true  }, { 4, false } } },
+  { "MacBookAir2,1", nullptr, { { 0, true  }, { 2, true  }, { 4, false } } },
 
   // Note:
   // - MacBookAir3,1 (11" MacBook Air, late 2010)
@@ -159,27 +160,27 @@ const SuddenMotionSensor::SensorDescriptor
   // have no accelerometer sensors.
 
   // Tested by crc on a 15" MacBook Pro.
-  { "MacBookPro1,1", NULL, { { 0, true  }, { 2, true  }, { 4, false } } },
+  { "MacBookPro1,1", nullptr, { { 0, true  }, { 2, true  }, { 4, false } } },
 
   // Tested by Raul Cuza (via avi) on a 17" MacBook Pro.
-  { "MacBookPro1,2", NULL, { { 0, true  }, { 2, true  }, { 4, false } } },
+  { "MacBookPro1,2", nullptr, { { 0, true  }, { 2, true  }, { 4, false } } },
 
   // Tested by L.V. (via avi) on a 17" MacBook Pro.
-  { "MacBookPro2,1", NULL, { { 0, true  }, { 2, false }, { 4, true  } } },
+  { "MacBookPro2,1", nullptr, { { 0, true  }, { 2, false }, { 4, true  } } },
 
   // Tested by leandrogracia on a 15" MacBook Pro.
-  { "MacBookPro2,2", NULL, { { 0, true  }, { 2, true  }, { 4, false } } },
+  { "MacBookPro2,2", nullptr, { { 0, true  }, { 2, true  }, { 4, false } } },
 
   // Tested by S.Som. (via avi) on a 17" MacBook Pro.
   { "MacBookPro3,1", "Mac-F42388C8",
-                           { { 0, true  }, { 2, false }, { 4, true  } } },
+                              { { 0, true  }, { 2, false }, { 4, true  } } },
 
   // Tested by leandrogracia on a 15" MacBook Pro.
-  { "MacBookPro3,1", NULL, { { 0, false }, { 2, true  }, { 4, true  } } },
+  { "MacBookPro3,1", nullptr, { { 0, false }, { 2, true  }, { 4, true  } } },
 
   // Tested by leandrogracia on a 15" MacBook Pro.
   // Tested by Eric Shapiro (via avi) on a 17" MacBook Pro.
-  { "MacBookPro4,1", NULL, { { 0, true  }, { 2, true  }, { 4, false } } },
+  { "MacBookPro4,1", nullptr, { { 0, true  }, { 2, true  }, { 4, false } } },
 
   // MacBookPro5,1 handled by the generic case below.
   // Tested by leandrogracia on a 15" MacBook Pro.
@@ -188,22 +189,22 @@ const SuddenMotionSensor::SensorDescriptor
   // Tested by S.Selz. (via avi) on a 17" MacBook Pro.
 
   // Tested by dmaclach on a 15" MacBook Pro.
-  { "MacBookPro5,3", NULL, { { 2, false }, { 0, false }, { 4, true  } } },
+  { "MacBookPro5,3", nullptr, { { 2, false }, { 0, false }, { 4, true  } } },
 
   // MacBookPro5,4 handled by the generic case below.
   // Tested by leandrogracia on a 15" MacBook Pro.
 
   // Tested by leandrogracia on a 13" MacBook Pro.
-  { "MacBookPro5,5", NULL, { { 0, true  }, { 2, true  }, { 4, false } } },
+  { "MacBookPro5,5", nullptr, { { 0, true  }, { 2, true  }, { 4, false } } },
 
   // MacBookPro6,1 handled by the generic case below.
   // Tested by khom, leadpipe on a 17" MacBook Pro.
 
   // Tested by leandrogracia on a 15" MacBook Pro.
-  { "MacBookPro6,2", NULL, { { 0, true  }, { 2, false }, { 4, true  } } },
+  { "MacBookPro6,2", nullptr, { { 0, true  }, { 2, false }, { 4, true  } } },
 
   // Tested by leandrogracia on a 13" MacBook Pro.
-  { "MacBookPro7,1", NULL, { { 0, true  }, { 2, true  }, { 4, false } } },
+  { "MacBookPro7,1", nullptr, { { 0, true  }, { 2, true  }, { 4, false } } },
 
   // MacBookPro8,1 handled by the generic case below.
   // Tested by avi on a 13" MacBook Pro.
@@ -239,13 +240,14 @@ const SuddenMotionSensor::SensorDescriptor
   // as well as models for which it is verified to be correct. Note that this
   // configuration may have problems with inverted axes when used generically
   // for untested models.
-  { "",              NULL, { { 0, false }, { 2, false }, { 4, false } } }
+  { "",              nullptr, { { 0, false }, { 2, false }, { 4, false } } }
 };
 
-// Create a SuddenMotionSensor object and return NULL if no valid sensor found.
+// Create a SuddenMotionSensor object and return nullptr if no valid sensor
+// found.
 SuddenMotionSensor* SuddenMotionSensor::Create() {
   std::unique_ptr<SuddenMotionSensor> accelerometer(new SuddenMotionSensor);
-  return accelerometer->Init() ? accelerometer.release() : NULL;
+  return accelerometer->Init() ? accelerometer.release() : nullptr;
 }
 
 SuddenMotionSensor::~SuddenMotionSensor() {
@@ -253,7 +255,7 @@ SuddenMotionSensor::~SuddenMotionSensor() {
 }
 
 SuddenMotionSensor::SuddenMotionSensor()
-    : sensor_(NULL),
+    : sensor_(nullptr),
       io_connection_(0) {
 }
 
@@ -321,10 +323,10 @@ bool SuddenMotionSensor::Init() {
   char local_model[32];  // size from SMSLib
   size_t local_model_size = sizeof(local_model);
   int params[2] = { CTL_HW, HW_MODEL };
-  if (sysctl(params, 2, local_model, &local_model_size, NULL, 0) != 0)
+  if (sysctl(params, 2, local_model, &local_model_size, nullptr, 0) != 0)
     return false;
 
-  const SensorDescriptor* sensor_candidate = NULL;
+  const SensorDescriptor* sensor_candidate = nullptr;
 
   // Look for the current model in the supported sensor list.
   base::ScopedCFTypeRef<CFDataRef> board_id_data;
@@ -395,7 +397,7 @@ bool SuddenMotionSensor::Init() {
     break;
   }
 
-  if (sensor_ == NULL)
+  if (sensor_ == nullptr)
     return false;
 
   // Allocate and initialize input/output records.
