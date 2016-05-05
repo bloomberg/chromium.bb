@@ -6,7 +6,7 @@
 #define CompositorMutation_h
 
 #include "platform/graphics/CompositorMutableProperties.h"
-#include "third_party/skia/include/utils/SkMatrix44.h"
+#include "third_party/skia/include/core/SkMatrix44.h"
 #include "wtf/HashMap.h"
 
 namespace blink {

@@ -7,7 +7,7 @@
 #include "cc/layers/layer.h"
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
-#include "third_party/skia/include/utils/SkMatrix44.h"
+#include "third_party/skia/include/core/SkMatrix44.h"
 
 using cc::Layer;
 

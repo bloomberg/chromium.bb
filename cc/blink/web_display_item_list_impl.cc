@@ -21,8 +21,8 @@
 #include "third_party/WebKit/public/platform/WebFloatRect.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
+#include "third_party/skia/include/core/SkMatrix44.h"
 #include "third_party/skia/include/core/SkPicture.h"
-#include "third_party/skia/include/utils/SkMatrix44.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/transform.h"
 

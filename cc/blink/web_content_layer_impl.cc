@@ -17,7 +17,7 @@
 #include "third_party/WebKit/public/platform/WebFloatRect.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
-#include "third_party/skia/include/utils/SkMatrix44.h"
+#include "third_party/skia/include/core/SkMatrix44.h"
 
 using cc::PictureLayer;
 

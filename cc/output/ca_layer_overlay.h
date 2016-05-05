@@ -7,7 +7,7 @@
 
 #include "cc/quads/render_pass.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "third_party/skia/include/utils/SkMatrix44.h"
+#include "third_party/skia/include/core/SkMatrix44.h"
 #include "ui/gfx/geometry/rect_f.h"
 
 namespace cc {
