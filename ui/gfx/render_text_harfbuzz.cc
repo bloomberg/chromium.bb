@@ -404,9 +404,10 @@ class HarfBuzzLineBreaker {
       // Merge segments that belong to the same run.
       if (last_segment.run == segment.run) {
         DCHECK_EQ(last_segment.char_range.end(), segment.char_range.start());
+        // Check there is less than a pixel between one run and the next.
         DCHECK_LE(
             std::abs(last_segment.x_range.end() - segment.x_range.start()),
-            std::numeric_limits<float>::epsilon());
+            1.0f);
         last_segment.char_range.set_end(segment.char_range.end());
         last_segment.x_range.set_end(SkScalarToFloat(text_x_) +
                                      segment.width());
