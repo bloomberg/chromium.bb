@@ -519,6 +519,12 @@ source_set("ui") {
                              ".",
                              "//chrome")
     }
+    if (!is_mac) {
+      sources +=
+          rebase_path(gypi_values.chrome_browser_ui_app_list_views_sources,
+                      ".",
+                      "//chrome")
+    }
     deps += [ "//ui/app_list" ]
   } else {
     sources += rebase_path(gypi_values.chrome_browser_ui_non_app_list_sources,

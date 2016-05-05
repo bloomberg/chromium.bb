@@ -50,18 +50,9 @@ const char kDisableNewAppListMixer[] = "disable-new-app-list-mixer";
 // list hasn't been enabled (as in kEnableAppList) yet.
 const char kResetAppListInstallState[] = "reset-app-list-install-state";
 
-#if defined(OS_MACOSX)
-// Enables use of the toolkit-views app list on Mac.
-const char kEnableMacViewsAppList[] = "enable-mac-views-app-list";
-#endif
-
 bool IsAppListSyncEnabled() {
 #if defined(OS_MACOSX)
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(kEnableSyncAppList))
-    return true;
-
-  if (!IsMacViewsAppListEnabled())
-    return false;
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(kEnableSyncAppList);
 #endif
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(
       kDisableSyncAppList);
@@ -132,16 +123,6 @@ bool IsDriveSearchInChromeLauncherEnabled() {
   return false;
 #endif
 }
-
-#if defined(OS_MACOSX)
-bool IsMacViewsAppListEnabled() {
-#if defined(TOOLKIT_VIEWS)
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      kEnableMacViewsAppList);
-#endif
-  return false;
-}
-#endif  // defined(OS_MACOSX)
 
 }  // namespace switches
 }  // namespace app_list

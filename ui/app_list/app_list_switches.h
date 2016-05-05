@@ -26,10 +26,6 @@ APP_LIST_EXPORT extern const char kEnableDriveSearchInChromeLauncher[];
 APP_LIST_EXPORT extern const char kDisableDriveSearchInChromeLauncher[];
 APP_LIST_EXPORT extern const char kResetAppListInstallState[];
 
-#if defined(OS_MACOSX)
-APP_LIST_EXPORT extern const char kEnableMacViewsAppList[];
-#endif
-
 bool APP_LIST_EXPORT IsAppListSyncEnabled();
 
 bool APP_LIST_EXPORT IsFolderUIEnabled();
@@ -50,10 +46,6 @@ bool APP_LIST_EXPORT ShouldNotDismissOnBlur();
 bool APP_LIST_EXPORT IsDriveAppsInAppListEnabled();
 
 bool APP_LIST_EXPORT IsDriveSearchInChromeLauncherEnabled();
-
-#if defined(OS_MACOSX)
-bool APP_LIST_EXPORT IsMacViewsAppListEnabled();
-#endif
 
 }  // namespace switches
 }  // namespace app_list

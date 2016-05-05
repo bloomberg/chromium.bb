@@ -88,8 +88,7 @@ bool AppListControllerDelegate::UserMayModifySettings(
 bool AppListControllerDelegate::CanDoShowAppInfoFlow() {
 #if defined(OS_MACOSX)
   // Cocoa app list doesn't yet support the app info dialog.
-  if (!app_list::switches::IsMacViewsAppListEnabled())
-    return false;
+  return false;
 #endif
   return CanShowAppInfoDialog();
 }

@@ -2088,12 +2088,6 @@
     ],
     # Cross-platform views sources also ready for toolkit-views on Mac.
     'chrome_browser_ui_views_sources': [
-      'browser/ui/app_list/app_list_controller_delegate_views.cc',
-      'browser/ui/app_list/app_list_controller_delegate_views.h',
-      'browser/ui/app_list/app_list_service_views.cc',
-      'browser/ui/app_list/app_list_service_views.h',
-      'browser/ui/app_list/app_list_shower_views.cc',
-      'browser/ui/app_list/app_list_shower_views.h',
       'browser/ui/autofill/save_card_bubble_controller.h',
       'browser/ui/autofill/save_card_bubble_controller_impl.cc',
       'browser/ui/autofill/save_card_bubble_controller_impl.h',
@@ -2720,6 +2714,14 @@
       'browser/ui/webui/app_list/start_page_ui.cc',
       'browser/ui/webui/app_list/start_page_ui.h',
     ],
+    'chrome_browser_ui_app_list_views_sources': [
+      'browser/ui/app_list/app_list_controller_delegate_views.cc',
+      'browser/ui/app_list/app_list_controller_delegate_views.h',
+      'browser/ui/app_list/app_list_service_views.cc',
+      'browser/ui/app_list/app_list_service_views.h',
+      'browser/ui/app_list/app_list_shower_views.cc',
+      'browser/ui/app_list/app_list_shower_views.h',
+    ],
     # Used when the app list is disabled.
     'chrome_browser_ui_non_app_list_sources': [
       'browser/ui/app_list/app_list_service_disabled.cc',
@@ -3302,6 +3304,13 @@
           'sources': [ '<@(chrome_browser_ui_app_list_sources)' ],
           'dependencies': [
             '../ui/app_list/app_list.gyp:app_list',
+          ],
+          'conditions': [
+            ['OS!="mac"', {
+              'sources': [
+                '<@(chrome_browser_ui_app_list_views_sources)',
+              ],
+            }],
           ],
         }, {
           'sources': [ '<@(chrome_browser_ui_non_app_list_sources)' ],

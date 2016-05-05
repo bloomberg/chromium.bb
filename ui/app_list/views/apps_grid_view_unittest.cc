@@ -110,14 +110,6 @@ class AppsGridViewTest : public views::ViewsTestBase {
   }
 
  protected:
-  void EnsureFoldersEnabled() {
-#if defined(OS_MACOSX)
-    // Folders require toolkit-views app list to be enabled.
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableMacViewsAppList);
-#endif
-  }
-
   AppListItemView* GetItemViewAt(int index) {
     return static_cast<AppListItemView*>(
         test_api_->GetViewAtModelIndex(index));
@@ -320,8 +312,6 @@ TEST_F(AppsGridViewTest, MouseDragWithFolderDisabled) {
 }
 
 TEST_F(AppsGridViewTest, MouseDragItemIntoFolder) {
-  EnsureFoldersEnabled();
-
   size_t kTotalItems = 3;
   model_->PopulateApps(kTotalItems);
   EXPECT_EQ(model_->top_level_item_list()->item_count(), kTotalItems);
@@ -369,8 +359,6 @@ TEST_F(AppsGridViewTest, MouseDragItemIntoFolder) {
 }
 
 TEST_F(AppsGridViewTest, MouseDragMaxItemsInFolder) {
-  EnsureFoldersEnabled();
-
   // Create and add a folder with 15 items in it.
   size_t kTotalItems = kMaxFolderItems - 1;
   model_->CreateAndPopulateFolderWithApps(kTotalItems);
@@ -416,8 +404,6 @@ TEST_F(AppsGridViewTest, MouseDragMaxItemsInFolder) {
 // Check that moving items around doesn't allow a drop to happen into a full
 // folder.
 TEST_F(AppsGridViewTest, MouseDragMaxItemsInFolderWithMovement) {
-  EnsureFoldersEnabled();
-
   // Create and add a folder with 16 items in it.
   size_t kTotalItems = kMaxFolderItems;
   model_->CreateAndPopulateFolderWithApps(kTotalItems);
@@ -466,9 +452,6 @@ TEST_F(AppsGridViewTest, MouseDragMaxItemsInFolderWithMovement) {
 }
 
 TEST_F(AppsGridViewTest, MouseDragItemReorder) {
-  // This test assumes Folders are enabled.
-  EnsureFoldersEnabled();
-
   model_->PopulateApps(4);
   EXPECT_EQ(4u, model_->top_level_item_list()->item_count());
   EXPECT_EQ(std::string("Item 0,Item 1,Item 2,Item 3"),
@@ -525,8 +508,6 @@ TEST_F(AppsGridViewTest, MouseDragItemReorder) {
 }
 
 TEST_F(AppsGridViewTest, MouseDragFolderReorder) {
-  EnsureFoldersEnabled();
-
   size_t kTotalItems = 2;
   model_->CreateAndPopulateFolderWithApps(kTotalItems);
   model_->PopulateAppWithId(kTotalItems);
@@ -659,8 +640,6 @@ TEST_F(AppsGridViewTest, SimultaneousDragWithFolderDisabled) {
 }
 
 TEST_F(AppsGridViewTest, UpdateFolderBackgroundOnCancelDrag) {
-  EnsureFoldersEnabled();
-
   const int kTotalItems = 4;
   TestAppsGridViewFolderDelegate folder_delegate;
   apps_grid_view_->set_folder_delegate(&folder_delegate);

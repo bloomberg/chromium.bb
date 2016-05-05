@@ -1644,14 +1644,11 @@
     ],
     # ChromeOS only sources of app_list.
     'chrome_unit_tests_app_list_chromeos_sources': [
-      'browser/ui/app_list/search/launcher_search/launcher_search_icon_image_loader_unittest.cc',
-      'browser/ui/views/apps/app_info_dialog/app_info_dialog_ash_unittest.cc',
-    ],
-    # ARC only sources of app_list.
-    'chrome_unit_tests_app_list_chromeos_arc_sources': [
       'browser/ui/app_list/arc/arc_app_test.cc',
       'browser/ui/app_list/arc/arc_app_test.h',
       'browser/ui/app_list/arc/arc_app_unittest.cc',
+      'browser/ui/app_list/search/launcher_search/launcher_search_icon_image_loader_unittest.cc',
+      'browser/ui/views/apps/app_info_dialog/app_info_dialog_ash_unittest.cc',
     ],
     'chrome_unit_tests_arc_sources': [
       'browser/chromeos/arc/arc_auth_service_unittest.cc',
@@ -2752,14 +2749,20 @@
           'dependencies': [
             '../ui/app_list/app_list.gyp:app_list_test_support',
           ],
-        }],
-        ['enable_app_list==1 and chromeos==1', {
-          'sources': [ '<@(chrome_unit_tests_app_list_chromeos_sources)' ],
-        }],
-        ['enable_app_list==1 and chromeos==1', {
-          'sources': [ '<@(chrome_unit_tests_app_list_chromeos_arc_sources)' ],
-          'dependencies': [
-            '../components/components.gyp:arc_test_support',
+          'conditions': [
+            ['chromeos==1', {
+              'sources': [ '<@(chrome_unit_tests_app_list_chromeos_sources)' ],
+              'dependencies': [
+                '../components/components.gyp:arc_test_support',
+              ],
+            }],
+            ['OS=="mac"', {
+              'sources!': [
+                # This assumes the AppList is views-based, but Mac only links
+                # browser parts for the Cocoa implementation.
+                'browser/ui/app_list/app_list_shower_views_unittest.cc',
+              ],
+            }],
           ],
         }],
         ['chromeos==1', {

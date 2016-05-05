@@ -266,17 +266,6 @@ void GetAppListWindowOrigins(
                                      start_origin);
 }
 
-AppListServiceMac* GetActiveInstance() {
-  if (app_list::switches::IsMacViewsAppListEnabled()) {
-#if defined(TOOLKIT_VIEWS)
-    // TODO(tapted): Return AppListServiceViewsMac instance.
-#else
-    NOTREACHED();
-#endif
-  }
-  return AppListServiceCocoaMac::GetInstance();
-}
-
 }  // namespace
 
 AppListServiceMac::AppListServiceMac() {
@@ -512,13 +501,14 @@ void AppListServiceMac::WindowAnimationDidEnd() {
 
 // static
 AppListService* AppListService::Get() {
-  return GetActiveInstance();
+  return AppListServiceCocoaMac::GetInstance();
 }
 
 // static
 void AppListService::InitAll(Profile* initial_profile,
                              const base::FilePath& profile_path) {
-  GetActiveInstance()->InitWithProfilePath(initial_profile, profile_path);
+  AppListServiceCocoaMac::GetInstance()->InitWithProfilePath(initial_profile,
+                                                             profile_path);
 }
 
 @implementation AppListAnimationController
@@ -583,10 +573,9 @@ void AppListService::InitAll(Profile* initial_profile,
 
 - (void)animationDidEnd:(NSAnimation*)animation {
   content::BrowserThread::PostTask(
-      content::BrowserThread::UI,
-      FROM_HERE,
+      content::BrowserThread::UI, FROM_HERE,
       base::Bind(&AppListServiceMac::WindowAnimationDidEnd,
-                 base::Unretained(GetActiveInstance())));
+                 base::Unretained(AppListServiceCocoaMac::GetInstance())));
 }
 
 @end
