@@ -45,7 +45,6 @@
       'file_system.idl',
       'font_settings.json',
       'gcm.json',
-      'hangouts_private.idl',
       'history.json',
       'hotword_private.idl',
       'i18n.json',

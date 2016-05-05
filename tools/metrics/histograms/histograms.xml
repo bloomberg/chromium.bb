@@ -68816,7 +68816,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="132" label="GCM_ON_MESSAGE"/>
   <int value="133" label="GCM_ON_MESSAGES_DELETED"/>
   <int value="134" label="GCM_ON_SEND_ERROR"/>
-  <int value="135" label="HANGOUTS_PRIVATE_ON_HANGOUT_REQUESTED"/>
+  <int value="135" label="HANGOUTS_PRIVATE_ON_HANGOUT_REQUESTED_DEPRECATED"/>
   <int value="136" label="HID_ON_DEVICE_ADDED"/>
   <int value="137" label="HID_ON_DEVICE_REMOVED"/>
   <int value="138" label="HISTORY_ON_VISITED"/>

@@ -507,20 +507,6 @@
     "dependencies": ["permission:gcm"],
     "contexts": ["blessed_extension"]
   },
-  "hangoutsPrivate": {
-    "channel": "stable",
-    "contexts": ["blessed_extension"],
-    "whitelist": [
-      // http://crbug.com/309737.
-      // Keep this list in sync with extensions_misc::kHangoutsExtensionIds.
-      "nckgahadagoaajjgafhacjanaoiihapd",  // Hangouts Production.
-      "ljclpkphhpbpinifbeabbhlfddcpfdde",  // Hangouts Debug.
-      "ppleadejekpmccmnpjdimmlfljlkdfej",  // Hangouts Alpha.
-      "eggnbpckecmjlblplehfpjjdhhidfdoj",  // Hangouts Beta.
-      "jfjjdfefebklmdbmenmlehlopoocnoeh",  // Hangouts Packaged App Debug.
-      "knipolnnllmklapflnccelgolnpehhpl"   // Hangouts Packaged App Prod.
-    ]
-  },
   "history": {
     "dependencies": ["permission:history"],
     "contexts": ["blessed_extension"]

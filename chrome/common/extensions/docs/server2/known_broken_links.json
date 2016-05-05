@@ -930,12 +930,6 @@
   [
     302,
     "apps/private_apis.html",
-    "apps/hangoutsPrivate.html",
-    "redirects to /extensions/hangoutsPrivate.html"
-  ],
-  [
-    302,
-    "apps/private_apis.html",
     "apps/history.html",
     "redirects to /extensions/history.html"
   ],
