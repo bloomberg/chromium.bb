@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "content/common/mojo/embedded_application_runner.h"
 #include "content/public/common/content_client.h"
 
 namespace content {
@@ -25,14 +26,15 @@ void ProcessControlImpl::LoadApplication(
   // Only register apps on first run.
   if (!has_registered_apps_) {
     DCHECK(apps_.empty());
-    ApplicationFactoryMap app_factories;
-    RegisterApplicationFactories(&app_factories);
-    for (const auto& factory : app_factories) {
+    ApplicationMap apps;
+    RegisterApplications(&apps);
+    for (const auto& app : apps) {
       std::unique_ptr<EmbeddedApplicationRunner> runner(
-          new EmbeddedApplicationRunner(factory.second, nullptr));
+          new EmbeddedApplicationRunner(app.second.application_factory,
+                                        app.second.application_task_runner));
       runner->SetQuitClosure(base::Bind(&ProcessControlImpl::OnApplicationQuit,
                                         base::Unretained(this)));
-      apps_.insert(std::make_pair(factory.first, std::move(runner)));
+      apps_.insert(std::make_pair(app.first, std::move(runner)));
     }
     has_registered_apps_ = true;
   }

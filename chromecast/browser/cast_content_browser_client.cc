@@ -394,9 +394,11 @@ bool CastContentBrowserClient::CanCreateWindow(
 void CastContentBrowserClient::RegisterInProcessMojoApplications(
     StaticMojoApplicationMap* apps) {
 #if defined(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
-  apps->insert(std::make_pair(
-      "mojo:media",
-      base::Bind(&CreateCastMojoMediaApplication, base::Unretained(this))));
+  content::MojoApplicationInfo app_info;
+  app_info.application_factory =
+      base::Bind(&CreateCastMojoMediaApplication, base::Unretained(this));
+  app_info.application_task_runner = GetMediaTaskRunner();
+  apps->insert(std::make_pair("mojo:media", app_info));
 #endif
 }
 

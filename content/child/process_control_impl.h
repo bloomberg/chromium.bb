@@ -5,28 +5,27 @@
 #ifndef CONTENT_CHILD_PROCESS_CONTROL_IMPL_H_
 #define CONTENT_CHILD_PROCESS_CONTROL_IMPL_H_
 
+#include <map>
 #include <memory>
-#include <unordered_map>
 
 #include "base/macros.h"
-#include "content/common/mojo/embedded_application_runner.h"
 #include "content/common/process_control.mojom.h"
+#include "content/public/common/mojo_application_info.h"
 #include "services/shell/public/interfaces/shell_client.mojom.h"
 
 namespace content {
 
+class EmbeddedApplicationRunner;
+
 // Default implementation of the mojom::ProcessControl interface.
 class ProcessControlImpl : public mojom::ProcessControl {
  public:
-  using ApplicationFactoryMap =
-      std::unordered_map<std::string,
-                         EmbeddedApplicationRunner::FactoryCallback>;
+  using ApplicationMap = std::map<std::string, MojoApplicationInfo>;
 
   ProcessControlImpl();
   ~ProcessControlImpl() override;
 
-  virtual void RegisterApplicationFactories(
-      ApplicationFactoryMap* factories) = 0;
+  virtual void RegisterApplications(ApplicationMap* apps) = 0;
   virtual void OnApplicationQuit() {}
 
   // ProcessControl:

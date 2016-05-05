@@ -20,16 +20,13 @@ UtilityProcessControlImpl::UtilityProcessControlImpl() {}
 
 UtilityProcessControlImpl::~UtilityProcessControlImpl() {}
 
-void UtilityProcessControlImpl::RegisterApplicationFactories(
-    ApplicationFactoryMap* factories) {
-  ContentUtilityClient::StaticMojoApplicationMap apps;
-  GetContentClient()->utility()->RegisterMojoApplications(&apps);
-  for (const auto& entry : apps)
-    factories->insert(std::make_pair(entry.first, entry.second));
+void UtilityProcessControlImpl::RegisterApplications(ApplicationMap* apps) {
+  GetContentClient()->utility()->RegisterMojoApplications(apps);
 
 #if defined(ENABLE_MOJO_MEDIA_IN_UTILITY_PROCESS)
-  factories->insert(std::make_pair(
-      "mojo:media", base::Bind(&media::CreateMojoMediaApplication)));
+  MojoApplicationInfo app_info;
+  app_info.application_factory = base::Bind(&media::CreateMojoMediaApplication);
+  apps->insert(std::make_pair("mojo:media", app_info));
 #endif
 }
 

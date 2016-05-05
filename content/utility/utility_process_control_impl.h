@@ -18,7 +18,7 @@ class UtilityProcessControlImpl : public ProcessControlImpl {
   ~UtilityProcessControlImpl() override;
 
   // ProcessControlImpl:
-  void RegisterApplicationFactories(ApplicationFactoryMap* factories) override;
+  void RegisterApplications(ApplicationMap* apps) override;
   void OnApplicationQuit() override;
 
  private:

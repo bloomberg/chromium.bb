@@ -20,16 +20,16 @@ GpuProcessControlImpl::GpuProcessControlImpl() {}
 
 GpuProcessControlImpl::~GpuProcessControlImpl() {}
 
-void GpuProcessControlImpl::RegisterApplicationFactories(
-    ApplicationFactoryMap* factories) {
+void GpuProcessControlImpl::RegisterApplications(ApplicationMap* apps) {
 #if defined(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
 #if defined(OS_ANDROID)
   // Only set once per process instance.
   media::SetMediaClientAndroid(GetContentClient()->GetMediaClientAndroid());
 #endif
 
-  factories->insert(std::make_pair(
-      "mojo:media", base::Bind(&media::CreateMojoMediaApplication)));
+  MojoApplicationInfo app_info;
+  app_info.application_factory = base::Bind(&media::CreateMojoMediaApplication);
+  apps->insert(std::make_pair("mojo:media", app_info));
 #endif
 }
 

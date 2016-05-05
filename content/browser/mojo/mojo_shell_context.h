@@ -30,11 +30,6 @@ namespace content {
 // app registration and interconnection.
 class CONTENT_EXPORT MojoShellContext {
  public:
-  using StaticApplicationMap =
-      std::map<std::string,
-               base::Callback<std::unique_ptr<shell::ShellClient>(
-                   const base::Closure& quit_closure)>>;
-
   MojoShellContext();
   ~MojoShellContext();
 
@@ -49,8 +44,6 @@ class CONTENT_EXPORT MojoShellContext {
       shell::mojom::InterfaceProviderRequest request,
       shell::mojom::InterfaceProviderPtr exposed_services,
       const shell::mojom::Connector::ConnectCallback& callback);
-
-  static void SetApplicationsForTest(const StaticApplicationMap* apps);
 
  private:
   class BuiltinManifestProvider;

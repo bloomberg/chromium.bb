@@ -10,6 +10,7 @@
 
 #include "base/callback_forward.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/mojo_application_info.h"
 
 class GURL;
 
@@ -24,10 +25,7 @@ class ServiceRegistry;
 // Embedder API for participating in renderer logic.
 class CONTENT_EXPORT ContentUtilityClient {
  public:
-  using StaticMojoApplicationMap =
-      std::map<std::string,
-               base::Callback<std::unique_ptr<shell::ShellClient>(
-                   const base::Closure& quit_closure)>>;
+  using StaticMojoApplicationMap = std::map<std::string, MojoApplicationInfo>;
 
   virtual ~ContentUtilityClient() {}
 

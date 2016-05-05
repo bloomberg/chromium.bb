@@ -48,9 +48,6 @@ namespace content {
 
 namespace {
 
-// An extra set of apps to register on initialization, if set by a test.
-const MojoShellContext::StaticApplicationMap* g_applications_for_test;
-
 void StartUtilityProcessOnIOThread(
     mojo::InterfaceRequest<mojom::ProcessControl> request,
     const base::string16& process_name,
@@ -222,11 +219,6 @@ class ShellConnectionListener : public MojoShellConnection::Listener {
 base::LazyInstance<std::unique_ptr<MojoShellContext::Proxy>>
     MojoShellContext::proxy_ = LAZY_INSTANCE_INITIALIZER;
 
-void MojoShellContext::SetApplicationsForTest(
-    const StaticApplicationMap* apps) {
-  g_applications_for_test = apps;
-}
-
 MojoShellContext::MojoShellContext() {
   proxy_.Get().reset(new Proxy(this));
 
@@ -260,17 +252,12 @@ MojoShellContext::MojoShellContext() {
   std::unique_ptr<BrowserShellConnection> browser_shell_connection(
       new BrowserShellConnection);
 
-  StaticApplicationMap apps;
+  ContentBrowserClient::StaticMojoApplicationMap apps;
   GetContentClient()->browser()->RegisterInProcessMojoApplications(&apps);
-  if (g_applications_for_test) {
-    // Add testing apps to the map, potentially overwriting whatever the
-    // browser client registered.
-    for (const auto& entry : *g_applications_for_test)
-      apps[entry.first] = entry.second;
-  }
   for (const auto& entry : apps) {
     browser_shell_connection->AddEmbeddedApplication(
-        entry.first, entry.second, nullptr);
+        entry.first, entry.second.application_factory,
+        entry.second.application_task_runner);
   }
 
   ContentBrowserClient::OutOfProcessMojoApplicationMap sandboxed_apps;

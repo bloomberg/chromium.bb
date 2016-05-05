@@ -21,6 +21,7 @@
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/media_stream_request.h"
+#include "content/public/common/mojo_application_info.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/socket_permission_request.h"
 #include "content/public/common/window_container_type.h"
@@ -650,10 +651,7 @@ class CONTENT_EXPORT ContentBrowserClient {
       ServiceRegistry* registry,
       RenderFrameHost* render_frame_host) {}
 
-  using StaticMojoApplicationMap =
-      std::map<std::string,
-               base::Callback<std::unique_ptr<shell::ShellClient>(
-                   const base::Closure& quit_closure)>>;
+  using StaticMojoApplicationMap = std::map<std::string, MojoApplicationInfo>;
 
   // Registers Mojo applications to be loaded in the browser process by the
   // browser's global Mojo shell.
