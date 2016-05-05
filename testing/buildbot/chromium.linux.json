@@ -251,6 +251,9 @@
         "test": "media_unittests"
       },
       {
+        "test": "mojo_system_unittests"
+      },
+      {
         "test": "net_unittests"
       },
       {

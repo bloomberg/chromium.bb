@@ -193,7 +193,7 @@
     {
       # GN version: //mojo/edk/system:mojo_system_unittests
       'target_name': 'mojo_system_unittests',
-      'type': 'executable',
+      'type': '<(gtest_target_type)',
       'dependencies': [
         '../base/base.gyp:base',
         '../testing/gtest.gyp:gtest',
@@ -227,6 +227,11 @@
         ['OS=="ios"', {
           'sources!': [
             'edk/system/multiprocess_message_pipe_unittest.cc',
+          ],
+        }],
+        ['OS == "android"', {
+          'dependencies': [
+            '../testing/android/native_test.gyp:native_test_native_code',
           ],
         }],
       ],
@@ -362,6 +367,21 @@
           'sources': [
             'mojo_system_unittests.isolate',
           ],
+        },
+      ],
+    }],
+    ['OS == "android"', {
+      'targets': [
+        {
+          'target_name': 'mojo_system_unittests_apk',
+          'type': 'none',
+          'dependencies': [
+            'mojo_system_unittests',
+          ],
+          'variables': {
+            'test_suite_name': 'mojo_system_unittests',
+          },
+          'includes': [ '../build/apk_test.gypi' ],
         },
       ],
     }],
