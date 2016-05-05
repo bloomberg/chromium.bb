@@ -56,7 +56,6 @@ class LayerTreeHostTestRemoteServer : public testing::Test,
   void DidCommitAndDrawFrame() override {}
   void DidCompleteSwapBuffers() override {}
   void DidCompletePageScaleAnimation() override {}
-  void SendBeginFramesToChildren(const BeginFrameArgs& args) override {}
 
   // RemoteProtoChannel implementation
   void SetProtoReceiver(RemoteProtoChannel::ProtoReceiver* receiver) override {
