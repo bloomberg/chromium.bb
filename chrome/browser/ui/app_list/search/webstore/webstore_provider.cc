@@ -15,6 +15,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
+#include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/search/common/json_response_fetcher.h"
 #include "chrome/browser/ui/app_list/search/search_webstore_result.h"
 #include "chrome/browser/ui/app_list/search/webstore/webstore_result.h"
@@ -169,6 +170,10 @@ std::unique_ptr<SearchResult> WebstoreProvider::CreateResult(
       !dict.GetBoolean(kKeyIsPaid, &is_paid)) {
     return std::unique_ptr<SearchResult>();
   }
+
+  // If an app is already installed, don't show it in results.
+  if (controller_->IsExtensionInstalled(profile_, app_id))
+    return std::unique_ptr<SearchResult>();
 
   GURL icon_url(icon_url_string);
   if (!icon_url.is_valid())

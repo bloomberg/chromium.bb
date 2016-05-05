@@ -159,7 +159,8 @@ class AppListControllerDelegate {
       extensions::LaunchType launch_type);
 
   // Returns true if the given extension is installed.
-  bool IsExtensionInstalled(Profile* profile, const std::string& app_id);
+  virtual bool IsExtensionInstalled(Profile* profile,
+                                    const std::string& app_id);
 
   extensions::InstallTracker* GetInstallTrackerFor(Profile* profile);
 

@@ -38,6 +38,9 @@ class WebstoreResult : public SearchResult,
                  AppListControllerDelegate* controller);
   ~WebstoreResult() override;
 
+  static std::string GetResultIdFromExtensionId(
+      const std::string& extension_id);
+
   const std::string& app_id() const { return app_id_; }
   const GURL& icon_url() const { return icon_url_; }
   extensions::Manifest::Type item_type() const { return item_type_; }

@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <memory>
+#include <set>
 #include <string>
 #include <utility>
 
@@ -17,10 +18,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/search/webstore/webstore_result.h"
+#include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/browser_thread.h"
-#include "extensions/common/extension.h"
+#include "extensions/common/extension_urls.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -36,6 +38,8 @@ using net::test_server::HttpResponse;
 namespace app_list {
 namespace test {
 namespace {
+
+const char kWebstoreUrlPlaceholder[] = "[webstore_url]";
 
 // Mock results.
 const char kOneResult[] =
@@ -94,6 +98,13 @@ ParsedSearchResult kParsedOneResult[] = {{"app1_id",
                                           Manifest::TYPE_UNKNOWN,
                                           1}};
 
+ParsedSearchResult kParsedOneStoreSearchResult[] = {{kWebstoreUrlPlaceholder,
+                                                     "fun",
+                                                     "http://host/icon",
+                                                     false,
+                                                     Manifest::TYPE_UNKNOWN,
+                                                     0}};
+
 // Expected results from a search for "app" on kThreeResults.
 ParsedSearchResult kParsedThreeResultsApp[] = {
     {"app1_id",
@@ -129,6 +140,22 @@ ParsedSearchResult kParsedThreeResultsMyst[] = {{"app1_id",
                                                  Manifest::TYPE_HOSTED_APP,
                                                  1}};
 
+class AppListControllerDelegateForTest
+    : public ::test::TestAppListControllerDelegate {
+ public:
+  AppListControllerDelegateForTest() {}
+  ~AppListControllerDelegateForTest() override {}
+
+  void MockInstallApp(const std::string& id) { installed_ids_.insert(id); }
+
+  bool IsExtensionInstalled(Profile*, const std::string& app_id) override {
+    return installed_ids_.find(app_id) != installed_ids_.end();
+  }
+
+ private:
+  std::set<std::string> installed_ids_;
+};
+
 }  // namespace
 
 class WebstoreProviderTest : public InProcessBrowserTest {
@@ -147,8 +174,9 @@ class WebstoreProviderTest : public InProcessBrowserTest {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableExperimentalAppList);
 
+    mock_controller_.reset(new AppListControllerDelegateForTest);
     webstore_provider_.reset(new WebstoreProvider(
-        ProfileManager::GetActiveUserProfile(), nullptr));
+        ProfileManager::GetActiveUserProfile(), mock_controller_.get()));
     webstore_provider_->set_webstore_search_fetched_callback(
         base::Bind(&WebstoreProviderTest::OnSearchResultsFetched,
                    base::Unretained(this)));
@@ -191,23 +219,33 @@ class WebstoreProviderTest : public InProcessBrowserTest {
     ASSERT_EQ(expected_result_size, webstore_provider_->results().size());
     for (size_t i = 0; i < expected_result_size; ++i) {
       const SearchResult* result = webstore_provider_->results()[i];
-      EXPECT_EQ(extensions::Extension::GetBaseURLFromExtensionId(
-                    expected_results[i].id).spec(),
-                result->id());
+      // A search for an installed app will return a general webstore search
+      // instead of an app in the webstore.
+      if (!strcmp(expected_results[i].id, kWebstoreUrlPlaceholder)) {
+        EXPECT_EQ(
+            extension_urls::GetWebstoreSearchPageUrl(expected_results[i].title)
+                .spec(),
+            result->id());
+      } else {
+        EXPECT_EQ(
+            WebstoreResult::GetResultIdFromExtensionId(expected_results[i].id),
+            result->id());
+
+        const WebstoreResult* webstore_result =
+            static_cast<const WebstoreResult*>(result);
+        EXPECT_EQ(expected_results[i].id, webstore_result->app_id());
+        EXPECT_EQ(expected_results[i].icon_url,
+                  webstore_result->icon_url().spec());
+        EXPECT_EQ(expected_results[i].is_paid, webstore_result->is_paid());
+        EXPECT_EQ(expected_results[i].item_type, webstore_result->item_type());
+      }
+
       EXPECT_EQ(std::string(expected_results[i].title),
                 app_list::SearchResult::TagsDebugString(
                     base::UTF16ToUTF8(result->title()), result->title_tags()));
 
       // Ensure the number of action buttons is appropriate for the item type.
       EXPECT_EQ(expected_results[i].num_actions, result->actions().size());
-
-      const WebstoreResult* webstore_result =
-          static_cast<const WebstoreResult*>(result);
-      EXPECT_EQ(expected_results[i].id, webstore_result->app_id());
-      EXPECT_EQ(expected_results[i].icon_url,
-                webstore_result->icon_url().spec());
-      EXPECT_EQ(expected_results[i].is_paid, webstore_result->is_paid());
-      EXPECT_EQ(expected_results[i].item_type, webstore_result->item_type());
     }
   }
 
@@ -220,6 +258,9 @@ class WebstoreProviderTest : public InProcessBrowserTest {
   }
 
   WebstoreProvider* webstore_provider() { return webstore_provider_.get(); }
+  AppListControllerDelegateForTest* mock_controller() {
+    return mock_controller_.get();
+  }
 
  private:
   std::unique_ptr<HttpResponse> HandleRequest(const HttpRequest& request) {
@@ -249,6 +290,8 @@ class WebstoreProviderTest : public InProcessBrowserTest {
   std::string mock_server_response_;
 
   std::unique_ptr<WebstoreProvider> webstore_provider_;
+
+  std::unique_ptr<AppListControllerDelegateForTest> mock_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(WebstoreProviderTest);
 };
@@ -339,6 +382,11 @@ IN_PROC_BROWSER_TEST_F(WebstoreProviderTest, SearchCache) {
 
   // No result is provided but the provider gets the result from the cache.
   RunQueryAndVerify("fun", "", kParsedOneResult, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(WebstoreProviderTest, IgnoreInstalledApps) {
+  mock_controller()->MockInstallApp("app1_id");
+  RunQueryAndVerify("fun", kOneResult, kParsedOneStoreSearchResult, 1);
 }
 
 }  // namespace test
