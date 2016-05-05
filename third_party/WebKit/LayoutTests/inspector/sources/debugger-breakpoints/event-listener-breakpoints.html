@@ -4,7 +4,7 @@
 <script src="../../../http/tests/inspector/debugger-test.js"></script>
 <script>
 
-function testElementClicked()
+function testElementEventListener()
 {
     return 0;
 }
@@ -12,8 +12,15 @@ function testElementClicked()
 function addListenerAndClick()
 {
     var element = document.getElementById("test");
-    element.addEventListener("click", testElementClicked, true);
+    element.addEventListener("click", testElementEventListener, true);
     element.click();
+}
+
+function addListenerAndPointerDown()
+{
+    var element = document.getElementById("test");
+    element.addEventListener("pointerdown", testElementEventListener, true);
+    element.dispatchEvent(new PointerEvent("pointerdown"));
 }
 
 function timerFired()
@@ -59,7 +66,7 @@ function onVideoPlay()
 function test()
 {
     var pane = WebInspector.panels.sources.sidebarPanes.eventListenerBreakpoints;
-    InspectorTest.runDebuggerTestSuite([
+    var testFunctions = [
         function testClickBreakpoint(next)
         {
             pane._setBreakpoint("listener:click");
@@ -130,7 +137,33 @@ function test()
                 InspectorTest.resumeExecution(next);
             }
         }
-    ]);
+    ];
+
+    if (window.PointerEvent) {
+        testFunctions.push(
+            function testPointerEventBreakpoint(next)
+            {
+                pane._setBreakpoint("listener:pointerdown");
+                InspectorTest.waitUntilPaused(paused);
+                InspectorTest.evaluateInPageWithTimeout("addListenerAndPointerDown()");
+
+                function paused(callFrames, reason, breakpointIds, asyncStackTrace, auxData)
+                {
+                    InspectorTest.captureStackTrace(callFrames);
+                    printEventTargetName(auxData);
+                    pane._removeBreakpoint("listener:pointerdown");
+                    InspectorTest.resumeExecution(resumed);
+                }
+
+                function resumed()
+                {
+                    InspectorTest.evaluateInPage("addListenerAndPointerDown()", next);
+                }
+            }
+        );
+    }
+
+    InspectorTest.runDebuggerTestSuite(testFunctions);
 
     function printEventTargetName(auxData)
     {

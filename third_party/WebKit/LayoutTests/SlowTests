@@ -97,6 +97,7 @@ crbug.com/451577 [ Win ] http/tests/inspector/network/network-datareceived.html 
 
 # Debugger and profiler tests are slow in Release as well.
 crbug.com/450493 inspector/sources/ [ Slow ]
+crbug.com/450493 virtual/pointerevent/inspector/sources/ [ Slow ]
 crbug.com/450493 inspector-enabled/sources/ [ Slow ]
 crbug.com/450493 http/tests/inspector/sources/ [ Slow ]
 crbug.com/450493 http/tests/inspector/stacktraces/ [ Slow ]
