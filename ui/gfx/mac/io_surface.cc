@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/mach_logging.h"
@@ -16,6 +17,9 @@
 namespace gfx {
 
 namespace {
+
+const base::Feature kIOSurfaceClearYosemite{"IOSurfaceClearYosemite",
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
 void AddIntegerValue(CFMutableDictionaryRef dictionary,
                      const CFStringRef key,
@@ -155,7 +159,11 @@ IOSurfaceRef CreateIOSurface(const gfx::Size& size, gfx::BufferFormat format) {
   // causes PDFs to render incorrectly. Hopefully this check can be removed once
   // pdfium switches to a Skia backend on Mac.
   // https://crbug.com/594343.
-  if (!base::mac::IsOSMavericks()) {
+  bool should_clear = !base::mac::IsOSMavericks();
+  if (base::mac::IsOSYosemite())
+    should_clear = base::FeatureList::IsEnabled(kIOSurfaceClearYosemite);
+
+  if (should_clear) {
     // Zero-initialize the IOSurface. Calling IOSurfaceLock/IOSurfaceUnlock
     // appears to be sufficient. https://crbug.com/584760#c17
     IOReturn r = IOSurfaceLock(surface, 0, nullptr);
