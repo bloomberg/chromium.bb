@@ -300,7 +300,7 @@ PaymentRequest::PaymentRequest(ScriptState* scriptState, const Vector<String>& s
 
 void PaymentRequest::contextDestroyed()
 {
-    cleanUp();
+    stopResolversAndCloseMojoConnection();
 }
 
 void PaymentRequest::OnShippingAddressChange(mojom::blink::ShippingAddressPtr address)
@@ -311,7 +311,7 @@ void PaymentRequest::OnShippingAddressChange(mojom::blink::ShippingAddressPtr ad
     String errorMessage;
     if (!PaymentsValidators::isValidShippingAddress(address, &errorMessage)) {
         m_showResolver->reject(DOMException::create(SyntaxError, errorMessage));
-        cleanUp();
+        stopResolversAndCloseMojoConnection();
         return;
     }
 
@@ -340,7 +340,7 @@ void PaymentRequest::OnPaymentResponse(mojom::blink::PaymentResponsePtr response
         String errorMessage;
         if (!PaymentsValidators::isValidShippingAddress(response->shipping_address, &errorMessage)) {
             m_showResolver->reject(DOMException::create(SyntaxError, errorMessage));
-            cleanUp();
+            stopResolversAndCloseMojoConnection();
             return;
         }
 
@@ -349,6 +349,11 @@ void PaymentRequest::OnPaymentResponse(mojom::blink::PaymentResponsePtr response
     }
 
     m_showResolver->resolve(new PaymentResponse(std::move(response), this));
+
+    // Do not close the mojo connection here. The merchant website should call
+    // PaymentResponse::complete(boolean), which will be forwarded over the mojo
+    // connection to display a success or failure message to the user.
+    m_showResolver.clear();
 }
 
 void PaymentRequest::OnError()
@@ -357,20 +362,26 @@ void PaymentRequest::OnError()
         m_completeResolver->reject(DOMException::create(SyntaxError, "Request cancelled"));
     if (m_showResolver)
         m_showResolver->reject(DOMException::create(SyntaxError, "Request cancelled"));
-    cleanUp();
+    stopResolversAndCloseMojoConnection();
 }
 
 void PaymentRequest::OnComplete()
 {
     DCHECK(m_completeResolver);
     m_completeResolver->resolve();
-    cleanUp();
+    stopResolversAndCloseMojoConnection();
 }
 
-void PaymentRequest::cleanUp()
+void PaymentRequest::stopResolversAndCloseMojoConnection()
 {
+    if (m_completeResolver)
+        m_completeResolver->stop();
     m_completeResolver.clear();
+
+    if (m_showResolver)
+        m_showResolver->stop();
     m_showResolver.clear();
+
     if (m_clientBinding.is_bound())
         m_clientBinding.Close();
     m_paymentProvider.reset();

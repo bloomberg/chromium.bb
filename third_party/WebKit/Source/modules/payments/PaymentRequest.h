@@ -74,8 +74,7 @@ private:
     void OnError() override;
     void OnComplete() override;
 
-    // Clears the promise resolvers and closes the Mojo connection.
-    void cleanUp();
+    void stopResolversAndCloseMojoConnection();
 
     Vector<String> m_supportedMethods;
     PaymentDetails m_details;
