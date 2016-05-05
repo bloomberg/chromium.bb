@@ -14,7 +14,9 @@ class DesktopFrame;
 }  // namespace webrtc
 
 namespace remoting {
-
+namespace protocol {
+class SessionConfig;
+}  // namespace protocol
 class VideoPacket;
 
 // A class to perform the task of encoding a continuous stream of images. The
@@ -34,6 +36,9 @@ class VideoEncoder {
   // there is no work to do.
   virtual std::unique_ptr<VideoPacket> Encode(const webrtc::DesktopFrame& frame,
                                               uint32_t flags) = 0;
+
+  static std::unique_ptr<VideoEncoder> Create(
+      const protocol::SessionConfig& config);
 };
 
 }  // namespace remoting

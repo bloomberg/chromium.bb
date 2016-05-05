@@ -9,9 +9,13 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/single_thread_task_runner.h"
 #include "remoting/protocol/connection_to_client.h"
+#include "remoting/protocol/video_feedback_stub.h"
 #include "remoting/protocol/video_stream.h"
+#include "remoting/protocol/video_stub.h"
 
 namespace remoting {
 namespace protocol {
@@ -67,11 +71,18 @@ class FakeConnectionToClient : public ConnectionToClient {
 
   void set_audio_stub(AudioStub* audio_stub) { audio_stub_ = audio_stub; }
   void set_client_stub(ClientStub* client_stub) { client_stub_ = client_stub; }
+  void set_video_stub(VideoStub* video_stub) { video_stub_ = video_stub; }
+  void set_video_encode_task_runner(
+      scoped_refptr<base::SingleThreadTaskRunner> runner) {
+    video_encode_task_runner_ = runner;
+  }
 
   EventHandler* event_handler() { return event_handler_; }
   ClipboardStub* clipboard_stub() { return clipboard_stub_; }
   HostStub* host_stub() { return host_stub_; }
   InputStub* input_stub() { return input_stub_; }
+  VideoStub* video_stub() { return video_stub_; }
+  VideoFeedbackStub* video_feedback_stub() { return video_feedback_stub_; }
 
   bool is_connected() { return is_connected_; }
   ErrorCode disconnect_error() { return disconnect_error_; }
@@ -88,6 +99,10 @@ class FakeConnectionToClient : public ConnectionToClient {
   ClipboardStub* clipboard_stub_ = nullptr;
   HostStub* host_stub_ = nullptr;
   InputStub* input_stub_ = nullptr;
+  VideoStub* video_stub_ = nullptr;
+  VideoFeedbackStub* video_feedback_stub_ = nullptr;
+
+  scoped_refptr<base::SingleThreadTaskRunner> video_encode_task_runner_;
 
   bool is_connected_ = true;
   ErrorCode disconnect_error_ = OK;

@@ -33,6 +33,7 @@ source_set("codec") {
       "audio_encoder_opus.h",
       "audio_encoder_verbatim.cc",
       "audio_encoder_verbatim.h",
+      "video_encoder.cc",
       "video_encoder.h",
       "video_encoder_helper.cc",
       "video_encoder_helper.h",

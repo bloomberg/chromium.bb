@@ -246,6 +246,7 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
       "fake_oauth_token_getter.cc",
       "fake_oauth_token_getter.h",
       "host_mock_objects.cc",
+      "host_mock_objects.h",
       "security_key/fake_ipc_gnubby_auth_handler.cc",
       "security_key/fake_ipc_gnubby_auth_handler.h",
       "security_key/fake_remote_security_key_ipc_client.cc",
@@ -269,6 +270,7 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
     ]
     public_deps = [
       ":host",
+      "//third_party/protobuf:protobuf_lite",
     ]
 
     if (enable_webrtc) {

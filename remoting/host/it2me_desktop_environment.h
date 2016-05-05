@@ -30,7 +30,8 @@ class It2MeDesktopEnvironment : public BasicDesktopEnvironment {
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
       base::WeakPtr<ClientSessionControl> client_session_control,
-      bool supports_touch_events);
+      bool supports_touch_events,
+      bool enable_user_interface);
 
  private:
   // Presents the continue window to the local user.
@@ -59,7 +60,13 @@ class It2MeDesktopEnvironmentFactory : public BasicDesktopEnvironmentFactory {
   std::unique_ptr<DesktopEnvironment> Create(
       base::WeakPtr<ClientSessionControl> client_session_control) override;
 
+  void set_enable_user_interface(bool enabled) {
+    enable_user_interface_ = enabled;
+  }
+
  private:
+  bool enable_user_interface_ = true;
+
   DISALLOW_COPY_AND_ASSIGN(It2MeDesktopEnvironmentFactory);
 };
 

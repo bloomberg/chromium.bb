@@ -143,6 +143,55 @@ executable("ar_sample_test_driver") {
   ]
 }
 
+static_library("fake_connection_event_logger") {
+  testonly = true
+
+  sources = [
+    "fake_connection_event_logger.cc",
+    "fake_connection_event_logger.h",
+  ]
+
+  deps = [
+    "//remoting/host",
+    "//remoting/protocol:test_support",
+  ]
+}
+
+static_library("it2me_standalone_host") {
+  testonly = true
+
+  sources = [
+    "it2me_standalone_host.cc",
+    "it2me_standalone_host.h",
+  ]
+
+  deps = [
+    ":fake_connection_event_logger",
+    "//third_party/webrtc/modules/desktop_capture",
+  ]
+
+  public_deps = [
+    "//remoting/host:test_support",
+    "//testing/gmock",
+  ]
+}
+
+executable("it2me_standalone_host_main") {
+  testonly = true
+
+  sources = [
+    "it2me_standalone_host_main.cc",
+  ]
+
+  deps = [
+    ":it2me_standalone_host",
+  ]
+
+  if (is_desktop_linux) {
+    deps += [ "//build/config/linux/gtk2" ]
+  }
+}
+
 source_set("unit_tests") {
   testonly = true
 

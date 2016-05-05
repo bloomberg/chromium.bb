@@ -11,8 +11,6 @@
 #include "base/memory/ptr_util.h"
 #include "net/base/io_buffer.h"
 #include "remoting/codec/video_encoder.h"
-#include "remoting/codec/video_encoder_verbatim.h"
-#include "remoting/codec/video_encoder_vpx.h"
 #include "remoting/protocol/audio_writer.h"
 #include "remoting/protocol/clipboard_stub.h"
 #include "remoting/protocol/host_control_dispatcher.h"
@@ -25,26 +23,6 @@
 
 namespace remoting {
 namespace protocol {
-
-namespace {
-
-std::unique_ptr<VideoEncoder> CreateVideoEncoder(
-    const protocol::SessionConfig& config) {
-  const protocol::ChannelConfig& video_config = config.video_config();
-
-  if (video_config.codec == protocol::ChannelConfig::CODEC_VP8) {
-    return VideoEncoderVpx::CreateForVP8();
-  } else if (video_config.codec == protocol::ChannelConfig::CODEC_VP9) {
-    return VideoEncoderVpx::CreateForVP9();
-  } else if (video_config.codec == protocol::ChannelConfig::CODEC_VERBATIM) {
-    return base::WrapUnique(new VideoEncoderVerbatim());
-  }
-
-  NOTREACHED();
-  return nullptr;
-}
-
-}  // namespace
 
 IceConnectionToClient::IceConnectionToClient(
     std::unique_ptr<protocol::Session> session,
@@ -92,7 +70,7 @@ std::unique_ptr<VideoStream> IceConnectionToClient::StartVideoStream(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   std::unique_ptr<VideoEncoder> video_encoder =
-      CreateVideoEncoder(session_->config());
+      VideoEncoder::Create(session_->config());
 
   std::unique_ptr<VideoFramePump> pump(
       new VideoFramePump(video_encode_task_runner_, std::move(desktop_capturer),

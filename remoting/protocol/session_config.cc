@@ -164,6 +164,14 @@ std::unique_ptr<SessionConfig> SessionConfig::ForTest() {
   return result;
 }
 
+std::unique_ptr<SessionConfig> SessionConfig::ForTestWithAudio() {
+  std::unique_ptr<SessionConfig> result(ForTest());
+  result->audio_config_ = ChannelConfig(ChannelConfig::TRANSPORT_STREAM,
+                                        kDefaultStreamVersion,
+                                        ChannelConfig::CODEC_OPUS);
+  return result;
+}
+
 std::unique_ptr<SessionConfig> SessionConfig::ForTestWithVerbatimVideo() {
   std::unique_ptr<SessionConfig> result = ForTest();
   result->video_config_ = ChannelConfig(ChannelConfig::TRANSPORT_STREAM,

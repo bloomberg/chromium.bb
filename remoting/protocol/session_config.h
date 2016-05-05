@@ -89,6 +89,7 @@ class SessionConfig {
 
   // Returns a suitable session configuration for use in tests.
   static std::unique_ptr<SessionConfig> ForTest();
+  static std::unique_ptr<SessionConfig> ForTestWithAudio();
   static std::unique_ptr<SessionConfig> ForTestWithVerbatimVideo();
   static std::unique_ptr<SessionConfig> ForTestWithWebrtc();
 
