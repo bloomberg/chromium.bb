@@ -12,6 +12,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -103,6 +104,7 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
      */
     @SmallTest
     @Feature({"Preferences"})
+    @FlakyTest(message = "https://crbug.com/609226")
     public void testSetAllowLocationEnabled() throws Exception {
         setAllowLocation(true);
         InfoBarTestAnimationListener listener = setInfoBarAnimationListener();
@@ -120,6 +122,7 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
      */
     @SmallTest
     @Feature({"Preferences"})
+    @FlakyTest(message = "https://crbug.com/609226")
     public void testSetAllowLocationNotEnabled() throws Exception {
         setAllowLocation(false);
 
@@ -502,6 +505,7 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
     @SmallTest
     @Feature({"Preferences"})
     @CommandLineFlags.Add(ChromeSwitches.USE_FAKE_DEVICE_FOR_MEDIA_STREAM)
+    @FlakyTest(message = "https://crbug.com/609226")
     public void testMicBlocked() throws Exception {
         setEnableMic(false);
 
@@ -520,6 +524,7 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
     @SmallTest
     @Feature({"Preferences"})
     @CommandLineFlags.Add(ChromeSwitches.USE_FAKE_DEVICE_FOR_MEDIA_STREAM)
+    @FlakyTest(message = "https://crbug.com/609226")
     public void testCameraNotBlocked() throws Exception {
         setEnableCamera(true);
 
@@ -540,6 +545,7 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
     @SmallTest
     @Feature({"Preferences"})
     @CommandLineFlags.Add(ChromeSwitches.USE_FAKE_DEVICE_FOR_MEDIA_STREAM)
+    @FlakyTest(message = "https://crbug.com/609226")
     public void testMicNotBlocked() throws Exception {
         setEnableCamera(true);
 
