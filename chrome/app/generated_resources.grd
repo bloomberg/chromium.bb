@@ -5641,10 +5641,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
         User gesture requirement for playing media elements. Disabling this will allow autoplay to work.
       </message>
       <if expr="is_android">
-          <message name="IDS_FLAGS_MEDIA_STYLE_NOTIFICATION_NAME" desc="Title for the flag for using media style notification">
-              Media style notification
+          <message name="IDS_FLAGS_MEDIA_STYLE_NOTIFICATION_NAME" desc="Title for the flag for using Android MediaStyle notification">
+              Android MediaStyle notification
           </message>
-          <message name="IDS_FLAGS_MEDIA_STYLE_NOTIFICATION_DESCRIPTION" desc="Description for the flag for using media style notification">
+          <message name="IDS_FLAGS_MEDIA_STYLE_NOTIFICATION_DESCRIPTION" desc="Description for the flag for using Android MediaStyle notification">
               Use Android MediaStyle notifications for Chrome media notifications.
           </message>
           <message name="IDS_FLAGS_IMPORTANT_SITES_IN_CBD_NAME" desc="Title for the flag for including important sites whitelisting in the clear browsing dialog.">
