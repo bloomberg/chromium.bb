@@ -827,6 +827,12 @@ void InterstitialPageImpl::TakeActionOnResourceDispatcher(
 
   RenderFrameHostImpl* rfh =
       static_cast<RenderFrameHostImpl*>(rvh->GetMainFrame());
+  // Note, the RenderViewHost can lose its main frame if a new RenderFrameHost
+  // commits with a new RenderViewHost. Additionally, RenderViewHosts for OOPIF
+  // don't have main frames.
+  if (!rfh)
+    return;
+
   switch (action) {
     case BLOCK:
       ResourceDispatcherHost::BlockRequestsForFrameFromUI(rfh);

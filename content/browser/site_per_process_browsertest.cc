@@ -22,6 +22,7 @@
 #include "build/build_config.h"
 #include "content/browser/frame_host/cross_process_frame_connector.h"
 #include "content/browser/frame_host/frame_tree.h"
+#include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/frame_host/render_widget_host_view_child_frame.h"
@@ -37,6 +38,7 @@
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/cert_store.h"
+#include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -595,6 +597,12 @@ class MockCertStore : public CertStore {
   std::map<int, scoped_refptr<net::X509Certificate>> certs_;
 
   DISALLOW_COPY_AND_ASSIGN(MockCertStore);
+};
+
+class TestInterstitialDelegate : public InterstitialPageDelegate {
+ private:
+  // InterstitialPageDelegate:
+  std::string GetHTMLContents() override { return "<p>Interstitial</p>"; }
 };
 
 }  // namespace
@@ -3474,6 +3482,41 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, SubframePostMessage) {
   EXPECT_EQ(1, GetReceivedMessages(root->child_at(0)));
   EXPECT_EQ(2, GetReceivedMessages(root->child_at(1)));
   EXPECT_EQ(1, GetReceivedMessages(root));
+}
+
+// Check that renderer initiated navigations which commit a new RenderFrameHost
+// do not crash if the original RenderFrameHost was being covered by an
+// interstitial. See crbug.com/607964.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       NavigateOpenerWithInterstitial) {
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("a.com", "/title1.html")));
+
+  // Open a popup and navigate it to bar.com.
+  ShellAddedObserver new_shell_observer;
+  EXPECT_TRUE(ExecuteScript(web_contents(), "window.open('about:blank');"));
+  Shell* popup = new_shell_observer.GetShell();
+  EXPECT_TRUE(NavigateToURL(popup, embedded_test_server()->GetURL(
+                                       "bar.com", "/navigate_opener.html")));
+
+  // Show an interstitial in the opener.
+  TestInterstitialDelegate* delegate = new TestInterstitialDelegate;
+  WebContentsImpl* opener_contents =
+      static_cast<WebContentsImpl*>(web_contents());
+  GURL interstitial_url("http://interstitial");
+  InterstitialPageImpl* interstitial = new InterstitialPageImpl(
+      opener_contents, static_cast<RenderWidgetHostDelegate*>(opener_contents),
+      true, interstitial_url, delegate);
+  interstitial->Show();
+  WaitForInterstitialAttach(opener_contents);
+
+  // Now, navigate the opener cross-process using the popup while it still has
+  // an interstitial. This should not crash.
+  TestNavigationObserver navigation_observer(opener_contents);
+  EXPECT_TRUE(
+      ExecuteScript(popup->web_contents(),
+                    "window.domAutomationController.send(navigateOpener());"));
+  navigation_observer.Wait();
 }
 
 // Check that postMessage can be sent from a subframe on a cross-process opener
