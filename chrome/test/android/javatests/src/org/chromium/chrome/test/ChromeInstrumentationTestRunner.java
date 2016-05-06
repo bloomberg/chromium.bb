@@ -25,6 +25,7 @@ import org.chromium.chrome.test.util.DisableInTabbedMode;
 import org.chromium.policy.test.annotations.Policies;
 import org.chromium.ui.base.DeviceFormFactor;
 
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
 
 /**
@@ -102,7 +103,8 @@ public class ChromeInstrumentationTestRunner extends BaseInstrumentationTestRunn
             try {
                 if (!FeatureUtilities.isDocumentMode(getTargetContext())) {
                     Method testMethod = testClass.getMethod(testCase.getName());
-                    if (testMethod.isAnnotationPresent(DisableInTabbedMode.class)
+                    if (((AnnotatedElement) testMethod)
+                            .isAnnotationPresent(DisableInTabbedMode.class)
                             || testClass.isAnnotationPresent(DisableInTabbedMode.class)) {
                         Log.i(TAG, "Test " + testClass.getName() + "#" + testCase.getName()
                                 + " is disabled in non-document mode.");

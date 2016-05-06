@@ -73,6 +73,7 @@ import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.PageTransition;
 
 import java.io.File;
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
 import java.util.LinkedList;
 import java.util.List;
@@ -517,7 +518,7 @@ public abstract class ChromeActivityTestCaseBase<T extends ChromeActivity>
 
         try {
             Method method = getClass().getMethod(getName(), (Class[]) null);
-            if (method.isAnnotationPresent(RenderProcessLimit.class)) {
+            if (((AnnotatedElement) method).isAnnotationPresent(RenderProcessLimit.class)) {
                 RenderProcessLimit limit = method.getAnnotation(RenderProcessLimit.class);
                 intent.putExtra(ChromeTabbedActivity.INTENT_EXTRA_TEST_RENDER_PROCESS_LIMIT,
                         limit.value());
