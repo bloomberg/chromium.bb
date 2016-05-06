@@ -46,6 +46,7 @@
       'target_name': 'i18n_behavior',
       'dependencies': [
         'load_time_data',
+        'parse_html_subset',
       ],
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
     },

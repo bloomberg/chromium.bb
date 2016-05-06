@@ -98,17 +98,6 @@ Polymer({
   },
 
   /**
-   * Sanitizes HTML so that insecure HTML/Javascript won't be set as innerHTML.
-   * @param {string} html
-   * @return {string}
-   * @private
-   */
-  sanitizeHtml_: function(html) {
-    return parseHtmlSubset('<div>' + html + '<div>', ['A', 'DIV'])
-        .firstChild.innerHTML;
-  },
-
-  /**
    * Computed binding returning the part 1 of the confirmation message. Returns
    * sanitized HTML that is safe to set as innerHTML.
    * @param {?ProfileInfo} profileInfo
@@ -116,9 +105,8 @@ Polymer({
    * @private
    */
   htmlMessage1_: function(profileInfo) {
-    return this.sanitizeHtml_(
-        this.i18n('supervisedUserCreatedTextPart1',
-                  HTMLEscape(this.elideProfileName_(profileInfo))));
+    return this.i18n('supervisedUserCreatedTextPart1',
+                     HTMLEscape(this.elideProfileName_(profileInfo)));
   },
 
   /**
@@ -129,10 +117,9 @@ Polymer({
    * @private
    */
   htmlMessage2_: function(profileInfo) {
-    return this.sanitizeHtml_(
-        this.i18n('supervisedUserCreatedTextPart2',
-                  this.elideProfileName_(profileInfo),
-                  this.elideCustodianUsername_(profileInfo)));
+    return this.i18n('supervisedUserCreatedTextPart2',
+                     this.elideProfileName_(profileInfo),
+                     this.elideCustodianUsername_(profileInfo));
   },
 
   /**

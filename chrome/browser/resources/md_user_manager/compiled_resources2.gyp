@@ -41,7 +41,6 @@
       'target_name': 'supervised_user_create_confirm',
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
-        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:parse_html_subset',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:util',
         'profile_browser_proxy',
       ],

@@ -282,10 +282,28 @@ Polymer({
         }
       }
 
+      var opts = {
+        'substitutions':
+          [HTMLEscape(elide(this.profileName_, /* maxLength */ 50))],
+        'attrs': {
+          'id': function(node, value) {
+            return node.tagName == 'A';
+          },
+          'is': function(node, value) {
+            return node.tagName == 'A' && value == 'action-link';
+          },
+          'role': function(node, value) {
+            return node.tagName == 'A' && value == 'link';
+          },
+          'tabindex': function(node, value) {
+            return node.tagName == 'A';
+          }
+        }
+      };
+
       this.handleMessage_(allOnCurrentDevice ?
           this.i18n('managedProfilesExistingLocalSupervisedUser') :
-          this.i18n('manageProfilesExistingSupervisedUser',
-               HTMLEscape(elide(this.profileName_, /* maxLength */ 50))));
+          this.i18nAdvanced('manageProfilesExistingSupervisedUser', opts));
       return;
     }
     // No existing supervised user's name matches the entered profile name.
@@ -380,6 +398,24 @@ Polymer({
   handleMessage_: function(message) {
     this.createInProgress_ = false;
     this.message_ = '' + message;
+  },
+
+  /**
+   * Returns a translated message that contains link elements with the 'id'
+   * attribute.
+   * @param {string} id The ID of the string to translate.
+   * @private
+   */
+  i18nAllowIDAttr_: function(id) {
+    var opts = {
+      'attrs': {
+        'id' : function(node, value) {
+          return node.tagName == 'A';
+        }
+      }
+    };
+
+    return this.i18nAdvanced(id, opts);
   },
 
   /**
