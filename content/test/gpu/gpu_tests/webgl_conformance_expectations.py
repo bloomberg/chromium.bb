@@ -385,6 +385,14 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # Nexus 9 failures
     self.Skip('conformance/extensions/oes-texture-float-with-video.html',
               ['android', 'nvidia'], bug=499555) # flaky
+    self.Fail('conformance/glsl/bugs/multiplication-assignment.html',
+              ['android', 'nvidia'], bug=606096)
+    self.Fail('conformance/glsl/constructors/glsl-construct-mat2.html',
+              ['android', 'nvidia'], bug=606096)
+    self.Fail('conformance/glsl/constructors/glsl-construct-mat3.html',
+              ['android', 'nvidia'], bug=606096)
+    self.Fail('conformance/glsl/constructors/glsl-construct-mat4.html',
+              ['android', 'nvidia'], bug=606096)
 
     # The following test is very slow and therefore times out on Android bot.
     self.Skip('conformance/rendering/multisample-corruption.html',

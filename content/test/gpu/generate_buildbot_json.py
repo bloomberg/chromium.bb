@@ -742,9 +742,26 @@ TELEMETRY_TESTS = {
       },
     ],
   },
-  'screenshot_sync': {},
-  'trace_test': {},
+  'screenshot_sync': {
+    'tester_configs': [
+      {
+        'allow_on_android': True,
+      },
+    ],
+  },
+  'trace_test': {
+    'tester_configs': [
+      {
+        'allow_on_android': True,
+      },
+    ],
+  },
   'webgl_conformance': {
+    'tester_configs': [
+      {
+        'allow_on_android': True,
+      },
+    ],
   },
   'webgl_conformance_d3d9_tests': {
     'tester_configs': [
