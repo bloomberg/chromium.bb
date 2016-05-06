@@ -325,6 +325,8 @@ protected:
     void setLogicalTopForChild(LayoutBox& child, LayoutUnit logicalTop);
     void determineLogicalLeftPositionForChild(LayoutBox& child);
 
+    void addOutlineRects(Vector<LayoutRect>&, const LayoutPoint& additionalOffset, IncludeBlockVisualOverflowOrNot) const override;
+
     PaintInvalidationReason invalidatePaintIfNeeded(const PaintInvalidationState&) override;
 
 private:
