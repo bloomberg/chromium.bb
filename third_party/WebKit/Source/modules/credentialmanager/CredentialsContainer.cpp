@@ -87,6 +87,7 @@ public:
         }
 
         ASSERT(credential->isPasswordCredential() || credential->isFederatedCredential());
+        UseCounter::count(m_resolver->getScriptState()->getExecutionContext(), UseCounter::CredentialManagerGetReturnedCredential);
         if (credential->isPasswordCredential())
             m_resolver->resolve(PasswordCredential::create(static_cast<WebPasswordCredential*>(credential.get())));
         else

@@ -1157,6 +1157,7 @@ public:
         URLMethodCreateObjectURLServiceWorker = 1339,
         URLMethodRevokeObjectURLServiceWorker = 1340,
         DocumentCreateEventPaymentRequestUpdateEvent = 1341,
+        CredentialManagerGetReturnedCredential = 1342,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
