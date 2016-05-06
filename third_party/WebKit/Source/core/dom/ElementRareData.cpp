@@ -40,7 +40,7 @@ struct SameSizeAsElementRareData : NodeRareData {
     short indices[1];
     LayoutSize sizeForResizing;
     IntSize scrollOffset;
-    void* pointers[13];
+    void* pointers[10];
     Member<void*> persistentMember[3];
 };
 
@@ -76,11 +76,8 @@ DEFINE_TRACE_AFTER_DISPATCH(ElementRareData)
     visitor->trace(m_elementAnimations);
     visitor->trace(m_cssomWrapper);
     visitor->trace(m_cssomMapWrapper);
+    visitor->trace(m_pseudoElementData);
     visitor->trace(m_customElementDefinition);
-    visitor->trace(m_generatedBefore);
-    visitor->trace(m_generatedAfter);
-    visitor->trace(m_generatedFirstLetter);
-    visitor->trace(m_backdrop);
     visitor->trace(m_intersectionObserverData);
     NodeRareData::traceAfterDispatch(visitor);
 }

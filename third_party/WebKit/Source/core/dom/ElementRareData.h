@@ -31,6 +31,7 @@
 #include "core/dom/NodeIntersectionObserverData.h"
 #include "core/dom/NodeRareData.h"
 #include "core/dom/PseudoElement.h"
+#include "core/dom/PseudoElementData.h"
 #include "core/dom/custom/V0CustomElementDefinition.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/html/ClassList.h"
@@ -163,10 +164,7 @@ private:
     RefPtr<ComputedStyle> m_computedStyle;
     Member<V0CustomElementDefinition> m_customElementDefinition;
 
-    Member<PseudoElement> m_generatedBefore;
-    Member<PseudoElement> m_generatedAfter;
-    Member<PseudoElement> m_generatedFirstLetter;
-    Member<PseudoElement> m_backdrop;
+    Member<PseudoElementData> m_pseudoElementData;
 
     explicit ElementRareData(LayoutObject*);
 };
@@ -187,67 +185,34 @@ inline ElementRareData::ElementRareData(LayoutObject* layoutObject)
 
 inline ElementRareData::~ElementRareData()
 {
-    DCHECK(!m_generatedBefore);
-    DCHECK(!m_generatedAfter);
-    DCHECK(!m_generatedFirstLetter);
-    DCHECK(!m_backdrop);
+    DCHECK(!m_pseudoElementData);
 }
 
 inline bool ElementRareData::hasPseudoElements() const
 {
-    return m_generatedBefore || m_generatedAfter || m_backdrop || m_generatedFirstLetter;
+    return (m_pseudoElementData && m_pseudoElementData->hasPseudoElements());
 }
 
 inline void ElementRareData::clearPseudoElements()
 {
-    setPseudoElement(PseudoIdBefore, nullptr);
-    setPseudoElement(PseudoIdAfter, nullptr);
-    setPseudoElement(PseudoIdBackdrop, nullptr);
-    setPseudoElement(PseudoIdFirstLetter, nullptr);
+    if (m_pseudoElementData) {
+        m_pseudoElementData->clearPseudoElements();
+        m_pseudoElementData.clear();
+    }
 }
 
 inline void ElementRareData::setPseudoElement(PseudoId pseudoId, PseudoElement* element)
 {
-    switch (pseudoId) {
-    case PseudoIdBefore:
-        if (m_generatedBefore)
-            m_generatedBefore->dispose();
-        m_generatedBefore = element;
-        break;
-    case PseudoIdAfter:
-        if (m_generatedAfter)
-            m_generatedAfter->dispose();
-        m_generatedAfter = element;
-        break;
-    case PseudoIdBackdrop:
-        if (m_backdrop)
-            m_backdrop->dispose();
-        m_backdrop = element;
-        break;
-    case PseudoIdFirstLetter:
-        if (m_generatedFirstLetter)
-            m_generatedFirstLetter->dispose();
-        m_generatedFirstLetter = element;
-        break;
-    default:
-        ASSERT_NOT_REACHED();
-    }
+    if (!m_pseudoElementData)
+        m_pseudoElementData = PseudoElementData::create();
+    m_pseudoElementData->setPseudoElement(pseudoId, element);
 }
 
 inline PseudoElement* ElementRareData::pseudoElement(PseudoId pseudoId) const
 {
-    switch (pseudoId) {
-    case PseudoIdBefore:
-        return m_generatedBefore.get();
-    case PseudoIdAfter:
-        return m_generatedAfter.get();
-    case PseudoIdBackdrop:
-        return m_backdrop.get();
-    case PseudoIdFirstLetter:
-        return m_generatedFirstLetter.get();
-    default:
-        return 0;
-    }
+    if (!m_pseudoElementData)
+        return nullptr;
+    return m_pseudoElementData->pseudoElement(pseudoId);
 }
 
 inline void ElementRareData::incrementCompositorProxiedProperties(uint32_t properties)

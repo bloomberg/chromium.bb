@@ -2563,6 +2563,7 @@
             'dom/CompositorProxiedPropertySet.cpp',
             'dom/CompositorProxiedPropertySet.h',
             'dom/PseudoElement.cpp',
+            'dom/PseudoElementData.h',
             'dom/QualifiedName.cpp',
             'dom/Range.cpp',
             'dom/RawDataDocumentParser.h',
