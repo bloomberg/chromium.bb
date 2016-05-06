@@ -135,7 +135,8 @@ PassRefPtr<Image> createTransparentImage(const IntSize& size)
 
 inline HTMLCanvasElement::HTMLCanvasElement(Document& document)
     : HTMLElement(canvasTag, document)
-    , DocumentVisibilityObserver(document)
+    , ContextLifecycleObserver(&document)
+    , PageLifecycleObserver(document.page())
     , m_size(DefaultWidth, DefaultHeight)
     , m_ignoreReset(false)
     , m_externallyAllocatedMemory(0)
@@ -838,7 +839,8 @@ DEFINE_TRACE(HTMLCanvasElement)
 {
     visitor->trace(m_listeners);
     visitor->trace(m_context);
-    DocumentVisibilityObserver::trace(visitor);
+    ContextLifecycleObserver::trace(visitor);
+    PageLifecycleObserver::trace(visitor);
     HTMLElement::trace(visitor);
 }
 
@@ -957,12 +959,12 @@ AffineTransform HTMLCanvasElement::baseTransform() const
     return m_imageBuffer->baseTransform();
 }
 
-void HTMLCanvasElement::didChangeVisibilityState(PageVisibilityState visibility)
+void HTMLCanvasElement::pageVisibilityChanged()
 {
     if (!m_context)
         return;
 
-    bool hidden = visibility != PageVisibilityStateVisible;
+    bool hidden = !page()->isPageVisible();
     m_context->setIsHidden(hidden);
     if (hidden) {
         clearCopiedImage();
@@ -972,7 +974,7 @@ void HTMLCanvasElement::didChangeVisibilityState(PageVisibilityState visibility)
     }
 }
 
-void HTMLCanvasElement::willDetachDocument()
+void HTMLCanvasElement::contextDestroyed()
 {
     if (m_context)
         m_context->stop();
@@ -986,7 +988,8 @@ void HTMLCanvasElement::styleDidChange(const ComputedStyle* oldStyle, const Comp
 
 void HTMLCanvasElement::didMoveToNewDocument(Document& oldDocument)
 {
-    setObservedDocument(document());
+    ContextLifecycleObserver::setContext(&document());
+    PageLifecycleObserver::setContext(document().page());
     HTMLElement::didMoveToNewDocument(oldDocument);
 }
 

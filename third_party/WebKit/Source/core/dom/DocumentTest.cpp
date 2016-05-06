@@ -30,7 +30,6 @@
 
 #include "core/dom/Document.h"
 
-#include "core/dom/DocumentVisibilityObserver.h"
 #include "core/frame/FrameView.h"
 #include "core/html/HTMLHeadElement.h"
 #include "core/html/HTMLLinkElement.h"
@@ -71,85 +70,6 @@ void DocumentTest::setHtmlInnerHTML(const char* htmlContent)
 {
     document().documentElement()->setInnerHTML(String::fromUTF8(htmlContent), ASSERT_NO_EXCEPTION);
     document().view()->updateAllLifecyclePhases();
-}
-
-class MockDocumentVisibilityObserver
-    : public GarbageCollectedFinalized<MockDocumentVisibilityObserver>
-    , public DocumentVisibilityObserver {
-    USING_GARBAGE_COLLECTED_MIXIN(MockDocumentVisibilityObserver);
-public:
-    static MockDocumentVisibilityObserver* create(Document& document)
-    {
-        return new MockDocumentVisibilityObserver(document);
-    }
-
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        DocumentVisibilityObserver::trace(visitor);
-    }
-
-    MOCK_METHOD1(didChangeVisibilityState, void(PageVisibilityState));
-    MOCK_METHOD0(willDetachDocument, void());
-
-private:
-    MockDocumentVisibilityObserver(Document& document) : DocumentVisibilityObserver(document) { }
-};
-
-TEST_F(DocumentTest, VisibilityOberver)
-{
-    page().setVisibilityState(PageVisibilityStateVisible, true); // initial state
-    MockDocumentVisibilityObserver* observer1 = MockDocumentVisibilityObserver::create(document());
-
-    {
-        MockDocumentVisibilityObserver* observer2 = MockDocumentVisibilityObserver::create(document());
-        EXPECT_CALL(*observer1, didChangeVisibilityState(PageVisibilityStateHidden)).Times(0);
-        EXPECT_CALL(*observer1, didChangeVisibilityState(PageVisibilityStateVisible)).Times(0);
-        EXPECT_CALL(*observer2, didChangeVisibilityState(PageVisibilityStateHidden)).Times(0);
-        EXPECT_CALL(*observer2, didChangeVisibilityState(PageVisibilityStateVisible)).Times(0);
-        ::testing::Mock::VerifyAndClearExpectations(observer1);
-        ::testing::Mock::VerifyAndClearExpectations(observer2);
-
-        EXPECT_CALL(*observer1, didChangeVisibilityState(PageVisibilityStateHidden)).Times(1);
-        EXPECT_CALL(*observer1, didChangeVisibilityState(PageVisibilityStateVisible)).Times(0);
-        EXPECT_CALL(*observer2, didChangeVisibilityState(PageVisibilityStateHidden)).Times(1);
-        EXPECT_CALL(*observer2, didChangeVisibilityState(PageVisibilityStateVisible)).Times(0);
-        page().setVisibilityState(PageVisibilityStateHidden, false);
-        ::testing::Mock::VerifyAndClearExpectations(observer1);
-        ::testing::Mock::VerifyAndClearExpectations(observer2);
-
-        EXPECT_CALL(*observer1, didChangeVisibilityState(PageVisibilityStateHidden)).Times(0);
-        EXPECT_CALL(*observer1, didChangeVisibilityState(PageVisibilityStateVisible)).Times(0);
-        EXPECT_CALL(*observer2, didChangeVisibilityState(PageVisibilityStateHidden)).Times(0);
-        EXPECT_CALL(*observer2, didChangeVisibilityState(PageVisibilityStateVisible)).Times(0);
-        page().setVisibilityState(PageVisibilityStateHidden, false);
-        ::testing::Mock::VerifyAndClearExpectations(observer1);
-        ::testing::Mock::VerifyAndClearExpectations(observer2);
-
-        EXPECT_CALL(*observer1, didChangeVisibilityState(PageVisibilityStateHidden)).Times(0);
-        EXPECT_CALL(*observer1, didChangeVisibilityState(PageVisibilityStateVisible)).Times(1);
-        EXPECT_CALL(*observer2, didChangeVisibilityState(PageVisibilityStateHidden)).Times(0);
-        EXPECT_CALL(*observer2, didChangeVisibilityState(PageVisibilityStateVisible)).Times(0);
-        OwnPtr<DummyPageHolder> alternatePage = DummyPageHolder::create(IntSize(800, 600));
-        Document& alternateDocument = alternatePage->document();
-        observer2->setObservedDocument(alternateDocument);
-        page().setVisibilityState(PageVisibilityStateVisible, false);
-        ::testing::Mock::VerifyAndClearExpectations(observer1);
-        ::testing::Mock::VerifyAndClearExpectations(observer2);
-
-        EXPECT_CALL(*observer1, didChangeVisibilityState(PageVisibilityStateHidden)).Times(1);
-        EXPECT_CALL(*observer1, didChangeVisibilityState(PageVisibilityStateVisible)).Times(0);
-        EXPECT_CALL(*observer2, didChangeVisibilityState(PageVisibilityStateHidden)).Times(1);
-        EXPECT_CALL(*observer2, didChangeVisibilityState(PageVisibilityStateVisible)).Times(0);
-        observer2->setObservedDocument(document());
-        page().setVisibilityState(PageVisibilityStateHidden, false);
-        ::testing::Mock::VerifyAndClearExpectations(observer1);
-        ::testing::Mock::VerifyAndClearExpectations(observer2);
-    }
-
-    // observer2 destroyed
-    EXPECT_CALL(*observer1, didChangeVisibilityState(PageVisibilityStateHidden)).Times(0);
-    EXPECT_CALL(*observer1, didChangeVisibilityState(PageVisibilityStateVisible)).Times(1);
-    page().setVisibilityState(PageVisibilityStateVisible, false);
 }
 
 // This tests that we properly resize and re-layout pages for printing in the presence of

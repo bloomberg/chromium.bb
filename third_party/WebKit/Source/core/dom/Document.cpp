@@ -1357,27 +1357,11 @@ void Document::didChangeVisibilityState()
     // Also send out the deprecated version until it can be removed.
     dispatchEvent(Event::createBubble(EventTypeNames::webkitvisibilitychange));
 
-    PageVisibilityState state = pageVisibilityState();
-    for (DocumentVisibilityObserver* observer : m_visibilityObservers)
-        observer->didChangeVisibilityState(state);
-
-    if (state == PageVisibilityStateVisible)
+    if (pageVisibilityState() == PageVisibilityStateVisible)
         timeline().setAllCompositorPending();
 
     if (hidden() && m_canvasFontCache)
         m_canvasFontCache->pruneAll();
-}
-
-void Document::registerVisibilityObserver(DocumentVisibilityObserver* observer)
-{
-    DCHECK(!m_visibilityObservers.contains(observer));
-    m_visibilityObservers.add(observer);
-}
-
-void Document::unregisterVisibilityObserver(DocumentVisibilityObserver* observer)
-{
-    DCHECK(m_visibilityObservers.contains(observer));
-    m_visibilityObservers.remove(observer);
 }
 
 String Document::nodeName() const
@@ -2187,8 +2171,6 @@ void Document::detach(const AttachContext& context)
     if (m_frame->loader().client()->sharedWorkerRepositoryClient())
         m_frame->loader().client()->sharedWorkerRepositoryClient()->documentDetached(this);
 
-    for (DocumentVisibilityObserver* observer : m_visibilityObservers)
-        observer->willDetachDocument();
     stopActiveDOMObjects();
 
     // FIXME: consider using ActiveDOMObject.
@@ -5959,7 +5941,6 @@ DEFINE_TRACE(Document)
     visitor->trace(m_timers);
     visitor->trace(m_templateDocument);
     visitor->trace(m_templateDocumentHost);
-    visitor->trace(m_visibilityObservers);
     visitor->trace(m_userActionElements);
     visitor->trace(m_svgExtensions);
     visitor->trace(m_timeline);

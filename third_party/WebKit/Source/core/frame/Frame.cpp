@@ -296,6 +296,15 @@ bool Frame::isCrossOrigin() const
     return top && !securityOrigin->canAccess(top->securityContext()->getSecurityOrigin());
 }
 
+void Frame::didChangeVisibilityState()
+{
+    HeapVector<Member<Frame>> childFrames;
+    for (Frame* child = tree().firstChild(); child; child = child->tree().nextSibling())
+        childFrames.append(child);
+    for (size_t i = 0; i < childFrames.size(); ++i)
+        childFrames[i]->didChangeVisibilityState();
+}
+
 Frame::Frame(FrameClient* client, FrameHost* host, FrameOwner* owner)
     : m_treeNode(this)
     , m_host(host)

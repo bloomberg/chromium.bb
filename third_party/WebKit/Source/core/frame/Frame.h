@@ -134,6 +134,8 @@ public:
 
     virtual WindowProxyManager* getWindowProxyManager() const = 0;
 
+    virtual void didChangeVisibilityState();
+
 protected:
     Frame(FrameClient*, FrameHost*, FrameOwner*);
 

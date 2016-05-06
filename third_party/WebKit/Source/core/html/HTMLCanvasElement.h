@@ -31,14 +31,15 @@
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/UnionTypesCore.h"
 #include "core/CoreExport.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/DOMTypedArray.h"
 #include "core/dom/Document.h"
-#include "core/dom/DocumentVisibilityObserver.h"
 #include "core/fileapi/BlobCallback.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/canvas/CanvasDrawListener.h"
 #include "core/html/canvas/CanvasImageSource.h"
 #include "core/imagebitmap/ImageBitmapSource.h"
+#include "core/page/PageLifecycleObserver.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/GraphicsTypes.h"
@@ -66,10 +67,12 @@ class IntSize;
 class CanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextOrImageBitmapRenderingContext;
 typedef CanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextOrImageBitmapRenderingContext RenderingContext;
 
-class CORE_EXPORT HTMLCanvasElement final : public HTMLElement, public DocumentVisibilityObserver, public CanvasImageSource, public ImageBufferClient, public ImageBitmapSource {
+class CORE_EXPORT HTMLCanvasElement final : public HTMLElement, public ContextLifecycleObserver, public PageLifecycleObserver, public CanvasImageSource, public ImageBufferClient, public ImageBitmapSource {
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(HTMLCanvasElement);
 public:
+    using Node::getExecutionContext;
+
     DECLARE_NODE_FACTORY(HTMLCanvasElement);
     ~HTMLCanvasElement() override;
 
@@ -152,9 +155,11 @@ public:
 
     InsertionNotificationRequest insertedInto(ContainerNode*) override;
 
-    // DocumentVisibilityObserver implementation
-    void didChangeVisibilityState(PageVisibilityState) override;
-    void willDetachDocument() override;
+    // ContextLifecycleObserver (and PageLifecycleObserver!!!) implementation
+    void contextDestroyed() override;
+
+    // PageLifecycleObserver implementation
+    void pageVisibilityChanged() override;
 
     // CanvasImageSource implementation
     PassRefPtr<Image> getSourceImageForCanvas(SourceImageStatus*, AccelerationHint, SnapshotReason, const FloatSize&) const override;

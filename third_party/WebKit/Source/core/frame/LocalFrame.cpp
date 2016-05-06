@@ -450,14 +450,7 @@ void LocalFrame::didChangeVisibilityState()
     if (document())
         document()->didChangeVisibilityState();
 
-    HeapVector<Member<LocalFrame>> childFrames;
-    for (Frame* child = tree().firstChild(); child; child = child->tree().nextSibling()) {
-        if (child->isLocalFrame())
-            childFrames.append(toLocalFrame(child));
-    }
-
-    for (size_t i = 0; i < childFrames.size(); ++i)
-        childFrames[i]->didChangeVisibilityState();
+    Frame::didChangeVisibilityState();
 }
 
 LocalFrame* LocalFrame::localFrameRoot()

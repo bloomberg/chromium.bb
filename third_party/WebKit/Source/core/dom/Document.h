@@ -92,7 +92,6 @@ class DocumentNameCollection;
 class DocumentParser;
 class DocumentState;
 class DocumentType;
-class DocumentVisibilityObserver;
 class Element;
 class ElementDataCache;
 class ElementRegistrationOptions;
@@ -1011,9 +1010,6 @@ public:
     bool hasViewportUnits() const { return m_hasViewportUnits; }
     void notifyResizeForViewportUnits();
 
-    void registerVisibilityObserver(DocumentVisibilityObserver*);
-    void unregisterVisibilityObserver(DocumentVisibilityObserver*);
-
     void updateStyleInvalidationIfNeeded();
 
     DECLARE_VIRTUAL_TRACE();
@@ -1374,9 +1370,6 @@ private:
     DOMTimerCoordinator m_timers;
 
     bool m_hasViewportUnits;
-
-    using DocumentVisibilityObserverSet = HeapHashSet<WeakMember<DocumentVisibilityObserver>>;
-    DocumentVisibilityObserverSet m_visibilityObservers;
 
     ParserSynchronizationPolicy m_parserSyncPolicy;
 

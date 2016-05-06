@@ -102,6 +102,7 @@ public:
     SecurityContext* securityContext() const override;
     void printNavigationErrorMessage(const Frame&, const char* reason) override;
     bool prepareForCommit() override;
+    void didChangeVisibilityState() override;
 
     void willDetachFrameHost();
 
@@ -124,8 +125,6 @@ public:
     ScriptController& script() const;
     SpellChecker& spellChecker() const;
     FrameConsole& console() const;
-
-    void didChangeVisibilityState();
 
     // This method is used to get the highest level LocalFrame in this
     // frame's in-process subtree.
