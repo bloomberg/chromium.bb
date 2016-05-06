@@ -108,7 +108,8 @@ include_rules = [
 
   # Until we define where mojo interfaces should live in blink we whitelist each
   # one separately.
-  "+third_party/WebKit/public/platform/modules/bluetooth/web_bluetooth.mojom.h"
+  "+third_party/WebKit/public/platform/modules/bluetooth/web_bluetooth.mojom.h",
+  "+third_party/WebKit/public/platform/modules/vr/vr_service.mojom.h"
 
   # DO NOT ADD ANY CHROME OR COMPONENTS INCLUDES HERE!!!
   # See https://sites.google.com/a/chromium.org/dev/developers/content-module

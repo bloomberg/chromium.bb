@@ -46,7 +46,7 @@ VRDeviceManager::~VRDeviceManager() {
 }
 
 void VRDeviceManager::BindRequest(
-    mojo::InterfaceRequest<mojom::VRService> request) {
+    mojo::InterfaceRequest<blink::mojom::VRService> request) {
   VRDeviceManager* device_manager = GetInstance();
   device_manager->bindings_.AddBinding(device_manager, std::move(request));
 }
@@ -78,7 +78,7 @@ bool VRDeviceManager::HasInstance() {
   return !!g_vr_device_manager;
 }
 
-mojo::Array<mojom::VRDeviceInfoPtr> VRDeviceManager::GetVRDevices() {
+mojo::Array<blink::mojom::VRDeviceInfoPtr> VRDeviceManager::GetVRDevices() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   InitializeProviders();
@@ -87,7 +87,7 @@ mojo::Array<mojom::VRDeviceInfoPtr> VRDeviceManager::GetVRDevices() {
   for (const auto& provider : providers_)
     provider->GetDevices(&devices);
 
-  mojo::Array<mojom::VRDeviceInfoPtr> out_devices;
+  mojo::Array<blink::mojom::VRDeviceInfoPtr> out_devices;
   for (const auto& device : devices) {
     if (device->id() == VR_DEVICE_LAST_ID)
       continue;
@@ -95,7 +95,7 @@ mojo::Array<mojom::VRDeviceInfoPtr> VRDeviceManager::GetVRDevices() {
     if (devices_.find(device->id()) == devices_.end())
       devices_[device->id()] = device;
 
-    mojom::VRDeviceInfoPtr vr_device_info = device->GetVRDevice();
+    blink::mojom::VRDeviceInfoPtr vr_device_info = device->GetVRDevice();
     if (vr_device_info.is_null())
       continue;
 

@@ -911,14 +911,6 @@
     ['use_seccomp_bpf==1', {
       'defines': ['USE_SECCOMP_BPF'],
     }],
-    ['enable_webvr==1', {
-      'sources': [
-        'renderer/vr/vr_dispatcher.cc',
-        'renderer/vr/vr_dispatcher.h',
-        'renderer/vr/vr_type_converters.cc',
-        'renderer/vr/vr_type_converters.h',
-      ]
-    }],
   ],
   'target_conditions': [
     ['OS=="android"', {

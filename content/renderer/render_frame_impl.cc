@@ -239,10 +239,6 @@
 #include "media/mojo/services/mojo_decoder_factory.h"  // nogncheck
 #endif
 
-#if defined(ENABLE_WEBVR)
-#include "content/renderer/vr/vr_dispatcher.h"
-#endif
-
 using blink::WebCachePolicy;
 using blink::WebContentDecryptionModule;
 using blink::WebContextMenuData;
@@ -4288,15 +4284,6 @@ blink::WebBluetooth* RenderFrameImpl::bluetooth() {
 
   return bluetooth_.get();
 }
-
-#if defined(ENABLE_WEBVR)
-blink::WebVRClient* RenderFrameImpl::webVRClient() {
-  if (!vr_dispatcher_)
-    vr_dispatcher_.reset(new VRDispatcher(GetServiceRegistry()));
-
-  return vr_dispatcher_.get();
-}
-#endif
 
 void RenderFrameImpl::didSerializeDataForFrame(
     const WebCString& data,

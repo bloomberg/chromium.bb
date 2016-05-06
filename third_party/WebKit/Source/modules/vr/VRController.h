@@ -5,13 +5,19 @@
 #ifndef VRController_h
 #define VRController_h
 
+
 #include "core/frame/LocalFrameLifecycleObserver.h"
 #include "modules/ModulesExport.h"
+#include "modules/vr/VRTypeConverters.h"
 #include "platform/Supplementable.h"
-#include "public/platform/modules/vr/WebVR.h"
-#include "public/platform/modules/vr/WebVRClient.h"
+#include "wtf/Deque.h"
+
+#include <memory>
 
 namespace blink {
+
+class ServiceRegistry;
+class VRGetDevicesCallback;
 
 class MODULES_EXPORT VRController final
     : public GarbageCollectedFinalized<VRController>
@@ -22,25 +28,29 @@ class MODULES_EXPORT VRController final
 public:
     virtual ~VRController();
 
-    void getDevices(WebVRGetDevicesCallback*);
+    void getDevices(std::unique_ptr<VRGetDevicesCallback>);
 
     void getSensorState(unsigned index, WebHMDSensorState& into);
 
     void resetSensor(unsigned index);
 
-    static void provideTo(LocalFrame&, WebVRClient*);
+    static void provideTo(LocalFrame&, ServiceRegistry*);
     static VRController* from(LocalFrame&);
     static const char* supplementName();
 
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    VRController(LocalFrame&, WebVRClient*);
+    VRController(LocalFrame&, ServiceRegistry*);
 
     // Inherited from LocalFrameLifecycleObserver.
     void willDetachFrameHost() override;
 
-    WebVRClient* m_client;
+    // Binding callbacks.
+    void OnGetDevices(const mojo::Array<mojom::VRDeviceInfoPtr>&);
+
+    Deque<std::unique_ptr<VRGetDevicesCallback>> m_pendingGetDevicesCallbacks;
+    mojom::VRServicePtr m_service;
 };
 
 } // namespace blink

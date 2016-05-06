@@ -187,6 +187,7 @@ mojom("mojo_bindings") {
     "platform/modules/notifications/notification.mojom",
     "platform/modules/permissions/permission.mojom",
     "platform/modules/permissions/permission_status.mojom",
+    "platform/modules/vr/vr_service.mojom",
     "platform/modules/wake_lock/wake_lock_service.mojom",
   ]
   public_deps = [

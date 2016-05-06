@@ -230,7 +230,6 @@ mojom("mojo_bindings") {
     "render_widget_window_tree_client_factory.mojom",
     "service_worker/embedded_worker_setup.mojom",
     "storage_partition_service.mojom",
-    "vr_service.mojom",
   ]
 
   import_dirs = [ "//mojo/services" ]

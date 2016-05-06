@@ -159,7 +159,6 @@ struct RequestNavigationParams;
 struct ResourceResponseHead;
 struct StartNavigationParams;
 struct StreamOverrideParameters;
-class VRDispatcher;
 
 class CONTENT_EXPORT RenderFrameImpl
     : public RenderFrame,
@@ -619,10 +618,6 @@ class CONTENT_EXPORT RenderFrameImpl
       const blink::WebSecurityOrigin& security_origin,
       blink::WebSetSinkIdCallbacks* web_callbacks) override;
   blink::ServiceRegistry* serviceRegistry() override;
-
-#if defined(ENABLE_WEBVR)
-  blink::WebVRClient* webVRClient() override;
-#endif
 
   // WebFrameSerializerClient implementation:
   void didSerializeDataForFrame(
@@ -1201,11 +1196,6 @@ class CONTENT_EXPORT RenderFrameImpl
   // is necessary because modal dialogs have a ScopedPageLoadDeferrer on the
   // stack that interferes with swapping out.
   bool suppress_further_dialogs_;
-
-#if defined(ENABLE_WEBVR)
-  // The VR dispatcher attached to the frame, lazily initialized.
-  std::unique_ptr<VRDispatcher> vr_dispatcher_;
-#endif
 
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
   // The external popup for the currently showing select popup.

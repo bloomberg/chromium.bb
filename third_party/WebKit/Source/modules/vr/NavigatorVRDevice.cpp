@@ -19,6 +19,7 @@
 #include "modules/vr/VRHardwareUnit.h"
 #include "modules/vr/VRHardwareUnitCollection.h"
 #include "modules/vr/VRPositionState.h"
+#include "wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -58,7 +59,7 @@ ScriptPromise NavigatorVRDevice::getVRDevices(ScriptState* scriptState)
         return promise;
     }
 
-    controller()->getDevices(new VRGetDevicesCallback(resolver, m_hardwareUnits.get()));
+    controller()->getDevices(WTF::wrapUnique(new VRGetDevicesCallback(resolver, m_hardwareUnits.get())));
 
     return promise;
 }

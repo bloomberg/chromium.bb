@@ -1596,6 +1596,8 @@
       'vr/VRHardwareUnitCollection.h',
       'vr/VRPositionState.cpp',
       'vr/VRPositionState.h',
+      'vr/VRTypeConverters.cc',
+      'vr/VRTypeConverters.h',
       'wake_lock/ScreenWakeLock.cpp',
       'wake_lock/ScreenWakeLock.h',
       'webaudio/AbstractAudioContext.cpp',

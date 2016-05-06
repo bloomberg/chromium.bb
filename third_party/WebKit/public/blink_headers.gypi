@@ -313,7 +313,6 @@
       "platform/modules/serviceworker/WebServiceWorkerSkipWaitingCallbacks.h",
       "platform/modules/serviceworker/WebServiceWorkerState.h",
       "platform/modules/vr/WebVR.h",
-      "platform/modules/vr/WebVRClient.h",
       "platform/modules/webmidi/WebMIDIAccessor.h",
       "platform/modules/webmidi/WebMIDIAccessorClient.h",
       "platform/modules/websockets/WebSocketHandle.h",

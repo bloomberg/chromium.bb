@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module content.mojom;
+module blink.mojom;
 
 struct VRVector3 {
   float x;
@@ -68,6 +68,7 @@ struct VRDeviceInfo {
 
 interface VRService {
   GetDevices() => (array<VRDeviceInfo> devices);
+  [Sync]
   GetSensorState(uint32 index) => (VRSensorState state);
   ResetSensor(uint32 index);
 };

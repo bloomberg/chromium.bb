@@ -20,7 +20,6 @@
           'common/render_frame_setup.mojom',
           'common/service_worker/embedded_worker_setup.mojom',
           'common/storage_partition_service.mojom',
-          'common/vr_service.mojom',
 
           # NOTE: Sources duplicated in
           # //content/public/common/BUILD.gn:mojo_bindings.

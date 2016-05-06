@@ -50,6 +50,7 @@ component("modules") {
     "//device/usb/public/interfaces:interfaces_blink",
     "//mojo/public/c/system:for_component",
     "//third_party/WebKit/Source/core",
+    "//third_party/WebKit/public:mojo_bindings",
     "//third_party/WebKit/public:mojo_bindings_blink",
     "//third_party/icu",
     "//third_party/sqlite",

@@ -6,7 +6,7 @@
 #define CONTENT_BROWSER_VR_VR_DEVICE_H
 
 #include "base/macros.h"
-#include "content/common/vr_service.mojom.h"
+#include "third_party/WebKit/public/platform/modules/vr/vr_service.mojom.h"
 
 namespace blink {
 struct WebHMDSensorState;
@@ -30,8 +30,8 @@ class VRDevice {
   VRDeviceProvider* provider() const { return provider_; }
   unsigned int id() const { return id_; }
 
-  virtual mojom::VRDeviceInfoPtr GetVRDevice() = 0;
-  virtual mojom::VRSensorStatePtr GetSensorState() = 0;
+  virtual blink::mojom::VRDeviceInfoPtr GetVRDevice() = 0;
+  virtual blink::mojom::VRSensorStatePtr GetSensorState() = 0;
   virtual void ResetSensor() = 0;
 
  private:

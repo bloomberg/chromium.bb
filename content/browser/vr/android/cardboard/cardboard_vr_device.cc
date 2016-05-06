@@ -40,9 +40,9 @@ CardboardVRDevice::~CardboardVRDevice() {
                                       j_cardboard_device_.obj());
 }
 
-mojom::VRDeviceInfoPtr CardboardVRDevice::GetVRDevice() {
+blink::mojom::VRDeviceInfoPtr CardboardVRDevice::GetVRDevice() {
   TRACE_EVENT0("input", "CardboardVRDevice::GetVRDevice");
-  mojom::VRDeviceInfoPtr device = mojom::VRDeviceInfo::New();
+  blink::mojom::VRDeviceInfoPtr device = blink::mojom::VRDeviceInfo::New();
 
   JNIEnv* env = AttachCurrentThread();
 
@@ -58,15 +58,15 @@ mojom::VRDeviceInfoPtr CardboardVRDevice::GetVRDevice() {
   std::vector<float> fov;
   base::android::JavaFloatArrayToFloatVector(env, j_fov.obj(), &fov);
 
-  device->hmdInfo = mojom::VRHMDInfo::New();
-  mojom::VRHMDInfoPtr& hmdInfo = device->hmdInfo;
+  device->hmdInfo = blink::mojom::VRHMDInfo::New();
+  blink::mojom::VRHMDInfoPtr& hmdInfo = device->hmdInfo;
 
-  hmdInfo->leftEye = mojom::VREyeParameters::New();
-  hmdInfo->rightEye = mojom::VREyeParameters::New();
-  mojom::VREyeParametersPtr& left_eye = hmdInfo->leftEye;
-  mojom::VREyeParametersPtr& right_eye = hmdInfo->rightEye;
+  hmdInfo->leftEye = blink::mojom::VREyeParameters::New();
+  hmdInfo->rightEye = blink::mojom::VREyeParameters::New();
+  blink::mojom::VREyeParametersPtr& left_eye = hmdInfo->leftEye;
+  blink::mojom::VREyeParametersPtr& right_eye = hmdInfo->rightEye;
 
-  left_eye->recommendedFieldOfView = mojom::VRFieldOfView::New();
+  left_eye->recommendedFieldOfView = blink::mojom::VRFieldOfView::New();
   left_eye->recommendedFieldOfView->upDegrees = fov[0];
   left_eye->recommendedFieldOfView->downDegrees = fov[1];
   left_eye->recommendedFieldOfView->leftDegrees = fov[2];
@@ -74,7 +74,7 @@ mojom::VRDeviceInfoPtr CardboardVRDevice::GetVRDevice() {
 
   // Cardboard devices always assume a mirrored FOV, so this is just the left
   // eye FOV with the left and right degrees swapped.
-  right_eye->recommendedFieldOfView = mojom::VRFieldOfView::New();
+  right_eye->recommendedFieldOfView = blink::mojom::VRFieldOfView::New();
   right_eye->recommendedFieldOfView->upDegrees = fov[0];
   right_eye->recommendedFieldOfView->downDegrees = fov[1];
   right_eye->recommendedFieldOfView->leftDegrees = fov[3];
@@ -88,12 +88,12 @@ mojom::VRDeviceInfoPtr CardboardVRDevice::GetVRDevice() {
 
   float ipd = Java_CardboardVRDevice_getIpd(env, j_cardboard_device_.obj());
 
-  left_eye->eyeTranslation = mojom::VRVector3::New();
+  left_eye->eyeTranslation = blink::mojom::VRVector3::New();
   left_eye->eyeTranslation->x = ipd * -0.5f;
   left_eye->eyeTranslation->y = 0.0f;
   left_eye->eyeTranslation->z = 0.0f;
 
-  right_eye->eyeTranslation = mojom::VRVector3::New();
+  right_eye->eyeTranslation = blink::mojom::VRVector3::New();
   right_eye->eyeTranslation->x = ipd * 0.5f;
   right_eye->eyeTranslation->y = 0.0f;
   right_eye->eyeTranslation->z = 0.0f;
@@ -106,13 +106,13 @@ mojom::VRDeviceInfoPtr CardboardVRDevice::GetVRDevice() {
   base::android::JavaIntArrayToIntVector(env, j_screen_size.obj(),
                                          &screen_size);
 
-  left_eye->renderRect = mojom::VRRect::New();
+  left_eye->renderRect = blink::mojom::VRRect::New();
   left_eye->renderRect->x = 0;
   left_eye->renderRect->y = 0;
   left_eye->renderRect->width = screen_size[0] / 2.0;
   left_eye->renderRect->height = screen_size[1];
 
-  right_eye->renderRect = mojom::VRRect::New();
+  right_eye->renderRect = blink::mojom::VRRect::New();
   right_eye->renderRect->x = screen_size[0] / 2.0;
   right_eye->renderRect->y = 0;
   right_eye->renderRect->width = screen_size[0] / 2.0;
@@ -121,9 +121,9 @@ mojom::VRDeviceInfoPtr CardboardVRDevice::GetVRDevice() {
   return device;
 }
 
-mojom::VRSensorStatePtr CardboardVRDevice::GetSensorState() {
+blink::mojom::VRSensorStatePtr CardboardVRDevice::GetSensorState() {
   TRACE_EVENT0("input", "CardboardVRDevice::GetSensorState");
-  mojom::VRSensorStatePtr state = mojom::VRSensorState::New();
+  blink::mojom::VRSensorStatePtr state = blink::mojom::VRSensorState::New();
 
   state->timestamp = base::Time::Now().ToJsTime();
   state->frameIndex = frame_index_++;
@@ -145,13 +145,13 @@ mojom::VRSensorStatePtr CardboardVRDevice::GetSensorState() {
   gfx::DecomposedTransform decomposed_transform;
   gfx::DecomposeTransform(&decomposed_transform, transform);
 
-  state->orientation = mojom::VRVector4::New();
+  state->orientation = blink::mojom::VRVector4::New();
   state->orientation->x = decomposed_transform.quaternion[0];
   state->orientation->y = decomposed_transform.quaternion[1];
   state->orientation->z = decomposed_transform.quaternion[2];
   state->orientation->w = decomposed_transform.quaternion[3];
 
-  state->position = mojom::VRVector3::New();
+  state->position = blink::mojom::VRVector3::New();
   state->position->x = decomposed_transform.translate[0];
   state->position->y = decomposed_transform.translate[1];
   state->position->z = decomposed_transform.translate[2];

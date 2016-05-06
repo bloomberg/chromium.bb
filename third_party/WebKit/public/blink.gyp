@@ -39,6 +39,7 @@
             'platform/modules/notifications/notification.mojom',
             'platform/modules/permissions/permission.mojom',
             'platform/modules/permissions/permission_status.mojom',
+            'platform/modules/vr/vr_service.mojom',
             'platform/modules/wake_lock/wake_lock_service.mojom',
         ],
         'blink_android_mojo_sources': [
@@ -125,6 +126,7 @@
             ],
         },
         {
+            # GN version: //third_party/WebKit/public:mojo_bindings
             'target_name': 'mojo_bindings',
             'type': 'static_library',
             'dependencies': [

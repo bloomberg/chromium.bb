@@ -1482,7 +1482,7 @@ void WebLocalFrameImpl::setCoreFrame(LocalFrame* frame)
     if (RuntimeEnabledFeatures::permissionsEnabled())
         PermissionController::provideTo(*m_frame, m_client ? m_client->permissionClient() : nullptr);
     if (RuntimeEnabledFeatures::webVREnabled())
-        VRController::provideTo(*m_frame, m_client ? m_client->webVRClient() : nullptr);
+        VRController::provideTo(*m_frame, m_client ? m_client->serviceRegistry() : nullptr);
     if (RuntimeEnabledFeatures::wakeLockEnabled())
         ScreenWakeLock::provideTo(*m_frame, m_client ? m_client->serviceRegistry(): nullptr);
     if (RuntimeEnabledFeatures::audioOutputDevicesEnabled())
