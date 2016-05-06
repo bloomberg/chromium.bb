@@ -22,8 +22,12 @@ namespace extensions {
 
 AppWindowCustomBindings::AppWindowCustomBindings(ScriptContext* context)
     : ObjectBackedNativeHandler(context) {
-  RouteFunction("GetFrame", base::Bind(&AppWindowCustomBindings::GetFrame,
-                                       base::Unretained(this)));
+  // The input.ime API also creates an app window (for the ime window), and so
+  // uses these natives.
+  RouteFunction("GetFrame",
+                std::vector<std::string>({"app.window", "input.ime"}),
+                base::Bind(&AppWindowCustomBindings::GetFrame,
+                           base::Unretained(this)));
 
   RouteFunction("GetWindowControlsHtmlTemplate",
       base::Bind(&AppWindowCustomBindings::GetWindowControlsHtmlTemplate,

@@ -33,6 +33,7 @@ SetIconNatives::SetIconNatives(ScriptContext* context)
     : ObjectBackedNativeHandler(context) {
   RouteFunction(
       "SetIconCommon",
+      {"declarativeContent", "pageAction", "browserAction", "systemIndicator"},
       base::Bind(&SetIconNatives::SetIconCommon, base::Unretained(this)));
 }
 

@@ -32,10 +32,10 @@ class ObjectBackedNativeHandler : public NativeHandler {
 
   v8::Isolate* GetIsolate() const;
 
- protected:
   typedef base::Callback<void(const v8::FunctionCallbackInfo<v8::Value>&)>
       HandlerFunction;
 
+ protected:
   // Installs a new 'route' from |name| to |handler_function|. This means that
   // NewInstance()s of this ObjectBackedNativeHandler will have a property
   // |name| which will be handled by |handler_function|.
@@ -44,7 +44,7 @@ class ObjectBackedNativeHandler : public NativeHandler {
   // and are never called back into, therefore it's safe for |handler_function|
   // to bind to base::Unretained.
   //
-  // |feature_name| corresponds to the api feature the native handler is used
+  // |feature_name[s]| corresponds to the api feature the native handler is used
   // for. If the associated ScriptContext does not have access to that feature,
   // the |handler_function| is not invoked.
   // TODO(devlin): Deprecate the version that doesn't take a |feature_name|.
@@ -52,6 +52,9 @@ class ObjectBackedNativeHandler : public NativeHandler {
                      const HandlerFunction& handler_function);
   void RouteFunction(const std::string& name,
                      const std::string& feature_name,
+                     const HandlerFunction& handler_function);
+  void RouteFunction(const std::string& name,
+                     const std::vector<std::string>& feature_names,
                      const HandlerFunction& handler_function);
 
   ScriptContext* context() const { return context_; }
