@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/mojo-helpers.js"></script>
+<script src="resources/payment-request-mock.js"></script>
+<script>
+var details = {
+  items: [
+    {
+      id: 'bar',
+      label: 'Sub-total',
+      amount: { currencyCode: 'USD', value : '55.00' }, // US$55.00
+    },
+    {
+      id: 'foo',
+      label: 'Sales Tax',
+      amount: { currencyCode: 'USD', value : '5.00' }, // US$5.00
+    }
+  ]
+};
+
+var response_data = {
+  method_name: 'visa',
+  stringified_details: '{}'
+};
+
+promise_test(t => {
+    var mock;
+    var completeResult;
+    return paymentRequestMock
+      .then(m => {
+          mock = m;
+          var result = new PaymentRequest(['visa'], details).show();
+          gc();
+          mock.onPaymentResponse(response_data);
+          return result;
+        })
+      .then(response => {
+          completeResult = response.complete(true);
+          // Return before calling gc() to make sure reference to response
+          // is gone.
+        })
+      .then(() => {
+          gc();
+          mock.onComplete();
+          return completeResult;
+        });
+  }, 'Promises resolve even without references to request or response.');
+</script>

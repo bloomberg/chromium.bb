@@ -119,7 +119,10 @@
             'target_name': 'mojo_bindings_mojom',
             'type': 'none',
             'variables': {
-                'mojom_files': ['<@(blink_mojo_sources)'],
+                'mojom_files': [
+                    '<@(blink_mojo_sources)',
+                    '<@(blink_android_mojo_sources)',
+                ],
             },
             'includes': [
                 '../../../mojo/mojom_bindings_generator_explicit.gypi',
