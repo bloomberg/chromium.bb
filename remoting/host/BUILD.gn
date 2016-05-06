@@ -757,7 +757,7 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
         "--define",
         "IT2ME_HOST_PATH=$it2me_host_path",
         "--variables",
-        branding_path,
+        rebase_path(branding_path),
         "--template",
         "{{source}}",
         "--locale_output",

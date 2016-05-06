@@ -29,9 +29,9 @@ if (is_win) {
 remoting_rdp_session = 1
 
 if (is_chrome_branded) {
-  branding_path = rebase_path("//remoting/branding_Chrome", root_build_dir)
+  branding_path = "//remoting/branding_Chrome"
 } else {
-  branding_path = rebase_path("//remoting/branding_Chromium", root_build_dir)
+  branding_path = "//remoting/branding_Chromium"
 }
 
 # The ar_service_environment variable is used to define the target

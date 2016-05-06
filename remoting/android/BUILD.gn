@@ -79,7 +79,7 @@ remoting_localize("remoting_apk_manifest") {
   } else {
     defines = [ "ENABLE_CARDBOARD=0" ]
   }
-  variables = [ branding_path ]
+  variables = [ rebase_path(branding_path) ]
   output = "$root_gen_dir/remoting/android/{{source_name_part}}"
 }
 
@@ -132,7 +132,7 @@ remoting_localize("remoting_test_apk_manifest") {
     "javatests/AndroidManifest.xml.jinja2",
   ]
   locales = [ "en" ]
-  variables = [ branding_path ]
+  variables = [ rebase_path(branding_path) ]
   output = "$root_gen_dir/remoting/android_test/{{source_name_part}}"
 }
 
