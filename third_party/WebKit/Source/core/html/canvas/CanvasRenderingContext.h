@@ -119,7 +119,7 @@ public:
     // ImageBitmap-specific interface
     virtual bool paint(GraphicsContext&, const IntRect&) { return false; }
 
-    bool wouldTaintOrigin(CanvasImageSource*);
+    bool wouldTaintOrigin(CanvasImageSource*, SecurityOrigin* = nullptr);
     void didMoveToNewDocument(Document*);
 
     // OffscreenCanvas-specific methods

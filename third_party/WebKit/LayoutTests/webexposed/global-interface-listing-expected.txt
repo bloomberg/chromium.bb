@@ -4064,6 +4064,7 @@ interface OffscreenCanvasRenderingContext2D
     method closePath
     method constructor
     method createLinearGradient
+    method createPattern
     method createRadialGradient
     method ellipse
     method fill
