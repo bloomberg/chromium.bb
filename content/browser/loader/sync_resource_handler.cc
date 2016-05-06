@@ -5,7 +5,7 @@
 #include "content/browser/loader/sync_resource_handler.h"
 
 #include "base/logging.h"
-#include "content/browser/devtools/devtools_netlog_observer.h"
+#include "content/browser/loader/netlog_observer.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_message_filter.h"
 #include "content/browser/loader/resource_request_info_impl.h"
@@ -51,7 +51,7 @@ bool SyncResourceHandler::OnRequestRedirected(
         response);
   }
 
-  DevToolsNetLogObserver::PopulateResponseInfo(request(), response);
+  NetLogObserver::PopulateResponseInfo(request(), response);
   // TODO(darin): It would be much better if this could live in WebCore, but
   // doing so requires API changes at all levels.  Similar code exists in
   // WebCore/platform/network/cf/ResourceHandleCFNet.cpp :-(
@@ -77,7 +77,7 @@ bool SyncResourceHandler::OnResponseStarted(
         request(), info->GetContext(), response, info->filter());
   }
 
-  DevToolsNetLogObserver::PopulateResponseInfo(request(), response);
+  NetLogObserver::PopulateResponseInfo(request(), response);
 
   // We don't care about copying the status here.
   result_.headers = response->head.headers;

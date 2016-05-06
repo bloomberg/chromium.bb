@@ -5,8 +5,8 @@
 #include "content/browser/loader/navigation_resource_handler.h"
 
 #include "base/logging.h"
-#include "content/browser/devtools/devtools_netlog_observer.h"
 #include "content/browser/loader/navigation_url_loader_impl_core.h"
+#include "content/browser/loader/netlog_observer.h"
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/resource_context_impl.h"
 #include "content/browser/streams/stream.h"
@@ -64,7 +64,7 @@ bool NavigationResourceHandler::OnRequestRedirected(
 
   // TODO(davidben): Perform a CSP check here, and anything else that would have
   // been done renderer-side.
-  DevToolsNetLogObserver::PopulateResponseInfo(request(), response);
+  NetLogObserver::PopulateResponseInfo(request(), response);
   core_->NotifyRequestRedirected(redirect_info, response);
   *defer = true;
   return true;
@@ -91,7 +91,7 @@ bool NavigationResourceHandler::OnResponseStarted(ResourceResponse* response,
   writer_.InitializeStream(stream_context->registry(),
                            request()->url().GetOrigin());
 
-  DevToolsNetLogObserver::PopulateResponseInfo(request(), response);
+  NetLogObserver::PopulateResponseInfo(request(), response);
   core_->NotifyResponseStarted(response, writer_.stream()->CreateHandle());
   *defer = true;
   return true;

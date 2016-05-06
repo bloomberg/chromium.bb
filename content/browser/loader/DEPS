@@ -11,6 +11,7 @@ specific_include_rules = {
   "async_resource_handler\.(cc|h)": [
     "-content",
     "+content/browser/loader/async_resource_handler.h",
+    "+content/browser/loader/netlog_observer.h",
     "+content/browser/loader/resource_buffer.h",
     "+content/browser/loader/resource_dispatcher_host_impl.h",
     "+content/browser/loader/resource_handler.h",
@@ -22,7 +23,6 @@ specific_include_rules = {
     "+content/public/common/resource_response.h",
 
     # TODO: these all have to be removed.
-    "+content/browser/devtools/devtools_netlog_observer.h",
     "+content/browser/host_zoom_map_impl.h",
     "+content/browser/resource_context_impl.h",
     "+content/public/common/content_features.h",
@@ -75,6 +75,17 @@ specific_include_rules = {
     "+content/browser/loader/layered_resource_handler.h",
     "+content/browser/loader/resource_handler.h",
     "+content/common/content_export.h",
+  ],
+  "netlog_observer\.(cc|h)": [
+    "-content",
+    "+content/browser/loader/netlog_observer.h",
+    "+content/browser/loader/resource_request_info_impl.h",
+    "+content/public/common/resource_response.h",
+
+    # TODO: These all have to be removed.
+    "+content/public/browser/browser_thread.h",  # Only for DCHECK.
+    "+content/public/browser/content_browser_client.h",  # To get NetLog.
+    "+content/public/common/resource_devtools_info.h",
   ],
   "power_save_block_resource_throttle\.(cc|h)": [
     "-content",
@@ -252,6 +263,7 @@ specific_include_rules = {
   ],
   "sync_resource_handler\.(cc|h)": [
     "-content",
+    "+content/browser/loader/netlog_observer.h",
     "+content/browser/loader/resource_dispatcher_host_impl.h",
     "+content/browser/loader/resource_handler.h",
     "+content/browser/loader/resource_message_filter.h",
@@ -261,8 +273,6 @@ specific_include_rules = {
     "+content/public/browser/resource_request_info.h",
     "+content/public/common/resource_response.h",
 
-    # TODO: These all have to be removed.
-    "+content/browser/devtools/devtools_netlog_observer.h",
 
     # TODO: To be replaced by mojo.
     "+content/common/resource_messages.h",

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_DEVTOOLS_DEVTOOLS_NETLOG_OBSERVER_H_
-#define CONTENT_BROWSER_DEVTOOLS_DEVTOOLS_NETLOG_OBSERVER_H_
+#ifndef CONTENT_BROWSER_LOADER_NETLOG_OBSERVER_H_
+#define CONTENT_BROWSER_LOADER_NETLOG_OBSERVER_H_
 
 #include <stdint.h>
 
@@ -20,14 +20,14 @@ class URLRequest;
 namespace content {
 struct ResourceResponse;
 
-// DevToolsNetLogObserver watches the NetLog event stream and collects the
-// stuff that may be of interest to DevTools. Currently, this only includes
-// actual HTTP/SPDY headers sent and received over the network.
+// NetLogObserver watches the NetLog event stream and collects the stuff that
+// may be of interest to the client. Currently, this only includes actual
+// HTTP/SPDY headers sent and received over the network.
 //
-// As DevToolsNetLogObserver shares live data with objects that live on the
-// IO Thread, it must also reside on the IO Thread.  Only OnAddEntry can be
-// called from other threads.
-class DevToolsNetLogObserver : public net::NetLog::ThreadSafeObserver {
+// As NetLogObserver shares live data with objects that live on the IO Thread,
+// it must also reside on the IO Thread.  Only OnAddEntry can be called from
+// other threads.
+class NetLogObserver : public net::NetLog::ThreadSafeObserver {
   typedef ResourceDevToolsInfo ResourceInfo;
 
  public:
@@ -41,15 +41,14 @@ class DevToolsNetLogObserver : public net::NetLog::ThreadSafeObserver {
 
   // Must be called on the IO thread. May return NULL if no observers
   // are active.
-  static DevToolsNetLogObserver* GetInstance();
-  static void PopulateResponseInfo(net::URLRequest*,
-                                   ResourceResponse*);
+  static NetLogObserver* GetInstance();
+  static void PopulateResponseInfo(net::URLRequest*, ResourceResponse*);
 
  private:
-  static DevToolsNetLogObserver* instance_;
+  static NetLogObserver* instance_;
 
-  DevToolsNetLogObserver();
-  ~DevToolsNetLogObserver() override;
+  NetLogObserver();
+  ~NetLogObserver() override;
 
   ResourceInfo* GetResourceInfo(uint32_t id);
 
@@ -57,9 +56,9 @@ class DevToolsNetLogObserver : public net::NetLog::ThreadSafeObserver {
       RequestToInfoMap;
   RequestToInfoMap request_to_info_;
 
-  DISALLOW_COPY_AND_ASSIGN(DevToolsNetLogObserver);
+  DISALLOW_COPY_AND_ASSIGN(NetLogObserver);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_DEVTOOLS_DEVTOOLS_NETLOG_OBSERVER_H_
+#endif  // CONTENT_BROWSER_LOADER_NETLOG_OBSERVER_H_

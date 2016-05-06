@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/devtools/devtools_netlog_observer.h"
+#include "content/browser/loader/netlog_observer.h"
 
 #include <stddef.h>
 
@@ -22,23 +22,20 @@
 namespace content {
 const size_t kMaxNumEntries = 1000;
 
-DevToolsNetLogObserver* DevToolsNetLogObserver::instance_ = NULL;
+NetLogObserver* NetLogObserver::instance_ = NULL;
 
-DevToolsNetLogObserver::DevToolsNetLogObserver() {
-}
+NetLogObserver::NetLogObserver() {}
 
-DevToolsNetLogObserver::~DevToolsNetLogObserver() {
-}
+NetLogObserver::~NetLogObserver() {}
 
-DevToolsNetLogObserver::ResourceInfo* DevToolsNetLogObserver::GetResourceInfo(
-    uint32_t id) {
+NetLogObserver::ResourceInfo* NetLogObserver::GetResourceInfo(uint32_t id) {
   RequestToInfoMap::iterator it = request_to_info_.find(id);
   if (it != request_to_info_.end())
     return it->second.get();
   return NULL;
 }
 
-void DevToolsNetLogObserver::OnAddEntry(const net::NetLog::Entry& entry) {
+void NetLogObserver::OnAddEntry(const net::NetLog::Entry& entry) {
   // The events that the Observer is interested in only occur on the IO thread.
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO))
     return;
@@ -47,8 +44,7 @@ void DevToolsNetLogObserver::OnAddEntry(const net::NetLog::Entry& entry) {
     OnAddURLRequestEntry(entry);
 }
 
-void DevToolsNetLogObserver::OnAddURLRequestEntry(
-    const net::NetLog::Entry& entry) {
+void NetLogObserver::OnAddURLRequestEntry(const net::NetLog::Entry& entry) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   bool is_begin = entry.phase() == net::NetLog::PHASE_BEGIN;
@@ -82,9 +78,8 @@ void DevToolsNetLogObserver::OnAddURLRequestEntry(
       std::string request_line;
       net::HttpRequestHeaders request_headers;
 
-      if (!net::HttpRequestHeaders::FromNetLogParam(event_params.get(),
-                                                    &request_headers,
-                                                    &request_line)) {
+      if (!net::HttpRequestHeaders::FromNetLogParam(
+              event_params.get(), &request_headers, &request_line)) {
         NOTREACHED();
       }
 
@@ -158,17 +153,17 @@ void DevToolsNetLogObserver::OnAddURLRequestEntry(
   }
 }
 
-void DevToolsNetLogObserver::Attach() {
+void NetLogObserver::Attach() {
   DCHECK(!instance_);
   net::NetLog* net_log = GetContentClient()->browser()->GetNetLog();
   if (net_log) {
-    instance_ = new DevToolsNetLogObserver();
+    instance_ = new NetLogObserver();
     net_log->DeprecatedAddObserver(
         instance_, net::NetLogCaptureMode::IncludeCookiesAndCredentials());
   }
 }
 
-void DevToolsNetLogObserver::Detach() {
+void NetLogObserver::Detach() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (instance_) {
@@ -180,24 +175,22 @@ void DevToolsNetLogObserver::Detach() {
   }
 }
 
-DevToolsNetLogObserver* DevToolsNetLogObserver::GetInstance() {
+NetLogObserver* NetLogObserver::GetInstance() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   return instance_;
 }
 
 // static
-void DevToolsNetLogObserver::PopulateResponseInfo(
-    net::URLRequest* request,
-    ResourceResponse* response) {
+void NetLogObserver::PopulateResponseInfo(net::URLRequest* request,
+                                          ResourceResponse* response) {
   const ResourceRequestInfoImpl* request_info =
       ResourceRequestInfoImpl::ForRequest(request);
   if (!request_info || !request_info->ShouldReportRawHeaders())
     return;
 
   uint32_t source_id = request->net_log().source().id;
-  DevToolsNetLogObserver* dev_tools_net_log_observer =
-      DevToolsNetLogObserver::GetInstance();
+  NetLogObserver* dev_tools_net_log_observer = NetLogObserver::GetInstance();
   if (dev_tools_net_log_observer == NULL)
     return;
   response->head.devtools_info =

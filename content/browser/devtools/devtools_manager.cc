@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "content/browser/devtools/devtools_agent_host_impl.h"
-#include "content/browser/devtools/devtools_netlog_observer.h"
+#include "content/browser/loader/netlog_observer.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 
@@ -34,7 +34,7 @@ void DevToolsManager::AgentHostStateChanged(
       BrowserThread::PostTask(
           BrowserThread::IO,
           FROM_HERE,
-          base::Bind(&DevToolsNetLogObserver::Attach));
+          base::Bind(&NetLogObserver::Attach));
     }
     ++attached_hosts_count_;
   } else {
@@ -43,7 +43,7 @@ void DevToolsManager::AgentHostStateChanged(
       BrowserThread::PostTask(
           BrowserThread::IO,
           FROM_HERE,
-          base::Bind(&DevToolsNetLogObserver::Detach));
+          base::Bind(&NetLogObserver::Detach));
     }
   }
 }
