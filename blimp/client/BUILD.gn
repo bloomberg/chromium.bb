@@ -282,6 +282,10 @@ if (is_linux && !is_chromeos && use_x11) {
       "//base",
       "//blimp/net",
       "//net",
+
+      # TODO(khushalsagar|scottmg): Remove this dependency from browser to
+      # blink. See https://crbug.com/608114.
+      "//third_party/WebKit/public:blink",
       "//ui/events/platform/x11",
       "//ui/platform_window",
       "//ui/platform_window/x11",

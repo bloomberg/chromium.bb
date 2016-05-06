@@ -26,11 +26,17 @@ component("blink_common") {
   visibility = []  # Allow re-assignment of list.
   visibility = [ "//third_party/WebKit/*" ]
   sources = [
+    "../web/WebInputEvent.cpp",
     "exported/FilePathConversion.cpp",
     "exported/URLConversion.cpp",
     "exported/WebCString.cpp",
     "exported/WebString.cpp",
+    "exported/linux/WebFontRenderStyle.cpp",
   ]
+  if (is_android) {
+    set_sources_assignment_filter([])
+    sources += [ "exported/linux/WebFontRenderStyle.cpp" ]
+  }
 
   defines = [
     "BLINK_COMMON_IMPLEMENTATION=1",
@@ -47,6 +53,10 @@ component("blink_common") {
     "//base",
     "//third_party/WebKit/Source/wtf",
     "//url",
+  ]
+
+  public_deps = [
+    "//skia",
   ]
 }
 
@@ -346,6 +356,7 @@ component("platform") {
     "//v8",
   ]
   deps = [
+    ":blink_common",
     "//mojo/public/c/system:for_component",
     "//mojo/public/cpp/bindings:callback",
     "//mojo/public/cpp/bindings:wtf_support",
@@ -409,7 +420,6 @@ component("platform") {
     # Add in some Linux files also shared with Android.
     set_sources_assignment_filter([])
     sources += [
-      "exported/linux/WebFontRenderStyle.cpp",
       "fonts/linux/FontPlatformDataLinux.cpp",
       "fonts/linux/FontRenderStyle.h",
     ]

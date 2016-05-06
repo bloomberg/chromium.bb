@@ -163,7 +163,6 @@
       'WebImageCache.cpp',
       'WebImageDecoder.cpp',
       'WebInputElement.cpp',
-      'WebInputEvent.cpp',
       'WebInputEventConversion.cpp',
       'WebInputEventConversion.h',
       'WebKit.cpp',

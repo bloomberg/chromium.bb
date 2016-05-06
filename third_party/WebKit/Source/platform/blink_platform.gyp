@@ -63,10 +63,19 @@
       '<(SHARED_INTERMEDIATE_DIR)/blink',
     ],
     'sources': [
+      '../web/WebInputEvent.cpp',
       'exported/FilePathConversion.cpp',
       'exported/URLConversion.cpp',
       'exported/WebCString.cpp',
       'exported/WebString.cpp',
+      'exported/linux/WebFontRenderStyle.cpp',
+    ],
+    'target_conditions': [
+      ['OS=="android"', {
+        'sources/': [
+          ['include', 'exported/linux/WebFontRenderStyle\\.cpp$'],
+        ],
+      }],
     ],
   },
   {
@@ -377,8 +386,7 @@
     'target_conditions': [
       ['OS=="android"', {
         'sources/': [
-            ['include', 'exported/linux/WebFontRenderStyle\\.cpp$'],
-            ['include', 'fonts/linux/FontPlatformDataLinux\\.cpp$'],
+          ['include', 'fonts/linux/FontPlatformDataLinux\\.cpp$'],
         ],
       }],
     ],

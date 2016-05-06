@@ -86,11 +86,6 @@ source_set("browser") {
     "//sql",
     "//storage/browser",
     "//storage/common",
-
-    # TODO(brettw) bug 582206: Blink should not be used in the browser
-    # process. This is required by devtools' input_handler.cc which calls
-    # WebKeyboardEvent::setKeyIdentifierFromWindowsKeyCode
-    "//third_party/WebKit/public:blink",
     "//third_party/WebKit/public:blink_headers",
     "//third_party/WebKit/public:image_resources",
     "//third_party/WebKit/public:resources",

@@ -331,7 +331,7 @@ public:
 
     // Sets keyIdentifier based on the value of windowsKeyCode.  This is
     // handy for generating synthetic keyboard events.
-    BLINK_EXPORT void setKeyIdentifierFromWindowsKeyCode();
+    BLINK_COMMON_EXPORT void setKeyIdentifierFromWindowsKeyCode();
 };
 
 // WebMouseEvent --------------------------------------------------------------
