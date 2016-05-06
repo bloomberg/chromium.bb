@@ -65,7 +65,7 @@
       ],
       'sources': [
         # Note: sources list duplicated in GN build.
-        'safe_browsing_db/remote_database_managerh',
+        'safe_browsing_db/remote_database_manager.h',
         'safe_browsing_db/remote_database_manager.cc',
         'safe_browsing_db/safe_browsing_api_handler.h',
         'safe_browsing_db/safe_browsing_api_handler.cc',
