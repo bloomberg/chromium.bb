@@ -125,6 +125,10 @@ const CGFloat kContentWidth = kWindowWidth - 2 * kFramePadding;
                                             backing:NSBackingStoreBuffered
                                               defer:NO]);
 
+  // Disable animations - otherwise, the window/controller will outlive the web
+  // contents it's associated with.
+  [window setAllowedAnimations:info_bubble::kAnimateNone];
+
   if ((self = [super initWithWindow:window
                        parentWindow:parentWindow
                          anchoredAt:NSZeroPoint])) {
