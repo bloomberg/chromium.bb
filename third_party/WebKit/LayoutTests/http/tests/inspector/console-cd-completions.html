@@ -78,6 +78,16 @@ var handler = {
 window.proxy1 = new Proxy({ a : 1}, handler);
 window.proxy2 = new Proxy(window.proxy1, handler);
 
+
+var MyClass = function () {},
+    mixin = function () {
+        this.myMethod = console.log.bind(console, 'myMethod called');
+    };
+MyClass.prototype = Object.create(null);
+mixin.call(MyClass.prototype);
+window.x = new MyClass();
+
+
 function test()
 {
     InspectorTest.changeExecutionContext("myIFrame");
@@ -103,6 +113,7 @@ function test()
         requestProxyCompletions();
     }
 
+
     function requestProxyCompletions()
     {
         InspectorTest.changeExecutionContext("top");
@@ -119,9 +130,24 @@ function test()
     function dumpCounter(result)
     {
         InspectorTest.addResult("window.counter = " + result.value);
+        requestMyClassWithMixinCompletions();
+    }
+
+
+    function requestMyClassWithMixinCompletions()
+    {
+        InspectorTest.changeExecutionContext("top");
+        WebInspector.context.flavor(WebInspector.ExecutionContext).completionsForExpression("window.x.", "window.x.", 0, "", false, checkMyClassWithMixinCompletions.bind(this));
+    }
+
+    function checkMyClassWithMixinCompletions(completions)
+    {
+        InspectorTest.addResult("MyClass with mixin completions:")
+        dumpCompletions(completions, ["myMethod"]);
         InspectorTest.dumpConsoleMessages();
         InspectorTest.completeTest();
     }
+
 
     function dumpCompletions(completions, expected)
     {

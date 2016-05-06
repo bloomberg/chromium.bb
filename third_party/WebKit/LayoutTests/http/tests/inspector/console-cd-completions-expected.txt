@@ -11,4 +11,6 @@ window
 proxy completions:
 a
 window.counter = 0
+MyClass with mixin completions:
+myMethod
 
