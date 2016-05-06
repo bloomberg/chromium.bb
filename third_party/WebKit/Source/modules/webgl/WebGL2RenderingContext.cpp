@@ -97,7 +97,7 @@ ImageBitmap* WebGL2RenderingContext::transferToImageBitmap(ExceptionState& excep
 void WebGL2RenderingContext::registerContextExtensions()
 {
     // Register extensions.
-    registerExtension<EXTColorBufferFloat>(m_extColorBufferFloat, DraftExtension);
+    registerExtension<EXTColorBufferFloat>(m_extColorBufferFloat);
     registerExtension<EXTDisjointTimerQuery>(m_extDisjointTimerQuery);
     registerExtension<EXTTextureFilterAnisotropic>(m_extTextureFilterAnisotropic);
     registerExtension<OESTextureFloatLinear>(m_oesTextureFloatLinear);

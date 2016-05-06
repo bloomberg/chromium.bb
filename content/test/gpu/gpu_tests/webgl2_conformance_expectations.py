@@ -16,8 +16,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # It's expected that not all extensions will be available on all platforms.
     # Having a test listed here is not necessarily a problem.
 
-    self.Fail('WebglExtension.EXT_color_buffer_float',
-        ['win', 'mac', 'linux'])
     self.Fail('WebglExtension.WEBGL_compressed_texture_astc',
         ['win', 'mac', 'linux'])
     self.Fail('WebglExtension.WEBGL_compressed_texture_atc',
