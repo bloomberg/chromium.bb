@@ -23,6 +23,12 @@ import time
 import urllib2
 import zipfile
 
+root = os.path.dirname(os.path.dirname(os.path.dirname(
+    os.path.dirname(__file__))))
+sys.path.append(os.path.join(root, 'build'))
+import mac_toolchain
+
+
 # Do NOT CHANGE this if you don't know what you're doing -- see
 # https://chromium.googlesource.com/chromium/src/+/master/docs/updating_clang.md
 # Reverting problematic clang rolls is safe, though.
@@ -166,6 +172,9 @@ def WriteStampFile(s, path=STAMP_FILE):
 
 def GetSvnRevision(svn_repo):
   """Returns current revision of the svn repo at svn_repo."""
+  if sys.platform == 'darwin':
+    # mac_files toolchain must be set for hermetic builds.
+    mac_toolchain.SetToolchainEnvironment()
   svn_info = subprocess.check_output('svn info ' + svn_repo, shell=True)
   m = re.search(r'Revision: (\d+)', svn_info)
   return m.group(1)
