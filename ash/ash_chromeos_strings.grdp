@@ -439,6 +439,9 @@ Press Shift + Alt to switch.
   <message name="IDS_ASH_DISPLAY_FAILURE_ON_NON_MIRRORING" desc="An error message to show that the system failed to enter the extended desktop mode or unknown status. Please translate the parentized text.">
     Dear Monitor, it's not working out between us. (That monitor is not supported. Click to send a feedback report.)
   </message>
+  <message name="IDS_ASH_DISPLAY_MIRRORING_NOT_SUPPORTED" desc="A message used to explain that mirroring with more than two displays is not supported.">
+    Mirroring with more than two displays is not supported.
+  </message>
   <message name="IDS_ASH_DISPLAY_RESOLUTION_CHANGE_ACCEPT" desc="A button label shown in the notification for the resolution change to accept the change">
     Accept
   </message>

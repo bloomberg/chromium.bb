@@ -6,6 +6,7 @@
 
 #include "ash/display/display_animator.h"
 #include "ash/display/display_manager.h"
+#include "ash/display/display_util.h"
 #include "ash/rotator/screen_rotation_animator.h"
 #include "ash/screen_util.h"
 #include "base/time/time.h"
@@ -14,6 +15,7 @@
 #if defined(OS_CHROMEOS)
 #include "ash/display/display_animator_chromeos.h"
 #include "base/sys_info.h"
+#include "grit/ash_strings.h"
 #endif
 
 namespace {
@@ -81,6 +83,13 @@ void DisplayConfigurationController::SetDisplayLayout(
 
 void DisplayConfigurationController::SetMirrorMode(bool mirror,
                                                    bool user_action) {
+  if (display_manager_->num_connected_displays() > 2) {
+#if defined(OS_CHROMEOS)
+    if (user_action)
+      ShowDisplayErrorNotification(IDS_ASH_DISPLAY_MIRRORING_NOT_SUPPORTED);
+#endif
+    return;
+  }
   if (display_manager_->num_connected_displays() <= 1 ||
       display_manager_->IsInMirrorMode() == mirror || IsLimited()) {
     return;

@@ -6,6 +6,7 @@
 
 #include "ash/accelerators/accelerator_commands.h"
 #include "ash/ash_switches.h"
+#include "ash/display/display_configuration_controller.h"
 #include "ash/display/display_info.h"
 #include "ash/display/display_layout_store.h"
 #include "ash/display/display_util.h"
@@ -22,10 +23,12 @@
 #include "base/format_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "grit/ash_strings.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/display/display.h"
 #include "ui/display/display_observer.h"
 #include "ui/display/manager/display_layout_builder.h"
@@ -453,9 +456,14 @@ TEST_F(DisplayManagerTest, NoMirrorInThreeDisplays) {
     return;
 
   UpdateDisplay("640x480,320x200,400x300");
-  display_manager()->SetMirrorMode(true);
+  ash::Shell::GetInstance()->display_configuration_controller()->SetMirrorMode(
+      true, true);
   EXPECT_FALSE(display_manager()->IsInMirrorMode());
   EXPECT_EQ(3u, display_manager()->GetNumDisplays());
+#if defined(OS_CHROMEOS)
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_ASH_DISPLAY_MIRRORING_NOT_SUPPORTED),
+            GetDisplayErrorNotificationMessageForTest());
+#endif
 }
 
 TEST_F(DisplayManagerTest, OverscanInsetsTest) {

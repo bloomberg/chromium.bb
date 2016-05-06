@@ -4,6 +4,7 @@
 
 #include "ash/display/display_error_observer_chromeos.h"
 
+#include "ash/display/display_util.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "grit/ash_strings.h"
@@ -31,7 +32,7 @@ class DisplayErrorObserverTest : public test::AshTestBase {
   DisplayErrorObserver* observer() { return observer_.get(); }
 
   base::string16 GetMessageContents() {
-    return observer_->GetDisplayErrorNotificationMessageForTest();
+    return GetDisplayErrorNotificationMessageForTest();
   }
 
  private:
