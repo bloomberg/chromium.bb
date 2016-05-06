@@ -57,6 +57,10 @@ uint32_t GbmBufferBase::GetFramebufferPixelFormat() const {
   return framebuffer_pixel_format_;
 }
 
+const DrmDevice* GbmBufferBase::GetDrmDevice() const {
+  return drm_.get();
+}
+
 bool GbmBufferBase::RequiresGlFinish() const {
   return !drm_->is_primary_device();
 }

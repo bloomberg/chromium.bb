@@ -335,7 +335,9 @@ OverlayPlane ScreenManager::GetModesetBuffer(
   DrmWindow* window = FindWindowAt(bounds);
   if (window) {
     const OverlayPlane* primary = window->GetLastModesetBuffer();
-    if (primary && primary->buffer->GetSize() == bounds.size())
+    const DrmDevice* drm = controller->GetAllocationDrmDevice().get();
+    if (primary && primary->buffer->GetSize() == bounds.size() &&
+        primary->buffer->GetDrmDevice() == drm)
       return *primary;
   }
 

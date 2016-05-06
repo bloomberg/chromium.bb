@@ -123,6 +123,18 @@ void DrmWindow::MoveCursor(const gfx::Point& location) {
 
 void DrmWindow::SchedulePageFlip(const std::vector<OverlayPlane>& planes,
                                  const SwapCompletionCallback& callback) {
+  if (controller_) {
+    const DrmDevice* drm = controller_->GetAllocationDrmDevice().get();
+    for (const auto& plane : planes) {
+      if (plane.buffer && plane.buffer->GetDrmDevice() != drm) {
+        // Although |force_buffer_reallocation_| is set to true during window
+        // bounds update, this may still be needed because of in-flight buffers.
+        force_buffer_reallocation_ = true;
+        break;
+      }
+    }
+  }
+
   if (force_buffer_reallocation_) {
     force_buffer_reallocation_ = false;
     callback.Run(gfx::SwapResult::SWAP_NAK_RECREATE_BUFFERS);

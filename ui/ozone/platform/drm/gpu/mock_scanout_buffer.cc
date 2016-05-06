@@ -27,6 +27,10 @@ uint32_t MockScanoutBuffer::GetFramebufferPixelFormat() const {
   return format_;
 }
 
+const DrmDevice* MockScanoutBuffer::GetDrmDevice() const {
+  return nullptr;
+}
+
 bool MockScanoutBuffer::RequiresGlFinish() const {
   return false;
 }

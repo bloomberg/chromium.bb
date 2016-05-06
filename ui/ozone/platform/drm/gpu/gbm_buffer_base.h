@@ -30,6 +30,7 @@ class GbmBufferBase : public ScanoutBuffer {
   uint32_t GetHandle() const override;
   gfx::Size GetSize() const override;
   uint32_t GetFramebufferPixelFormat() const override;
+  const DrmDevice* GetDrmDevice() const override;
   bool RequiresGlFinish() const override;
 
  protected:

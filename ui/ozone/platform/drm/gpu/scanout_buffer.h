@@ -32,6 +32,9 @@ class ScanoutBuffer : public base::RefCountedThreadSafe<ScanoutBuffer> {
   // Size of the buffer.
   virtual gfx::Size GetSize() const = 0;
 
+  // Device on which the buffer was created.
+  virtual const DrmDevice* GetDrmDevice() const = 0;
+
   virtual bool RequiresGlFinish() const = 0;
 
  protected:

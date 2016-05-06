@@ -106,6 +106,10 @@ gfx::Size DrmBuffer::GetSize() const {
   return gfx::Size(surface_->width(), surface_->height());
 }
 
+const DrmDevice* DrmBuffer::GetDrmDevice() const {
+  return drm_.get();
+}
+
 bool DrmBuffer::RequiresGlFinish() const {
   return false;
 }
