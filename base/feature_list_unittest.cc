@@ -393,6 +393,19 @@ TEST_F(FeatureListTest, GetFeatureOverrides_UseDefault) {
   EXPECT_EQ("D", SortFeatureListString(disable_features));
 }
 
+TEST_F(FeatureListTest, GetFieldTrial) {
+  ClearFeatureListInstance();
+  FieldTrialList field_trial_list(nullptr);
+  FieldTrial* trial = FieldTrialList::CreateFieldTrial("Trial", "Group");
+  std::unique_ptr<FeatureList> feature_list(new FeatureList);
+  feature_list->RegisterFieldTrialOverride(
+      kFeatureOnByDefaultName, FeatureList::OVERRIDE_USE_DEFAULT, trial);
+  RegisterFeatureListInstance(std::move(feature_list));
+
+  EXPECT_EQ(trial, FeatureList::GetFieldTrial(kFeatureOnByDefault));
+  EXPECT_EQ(nullptr, FeatureList::GetFieldTrial(kFeatureOffByDefault));
+}
+
 TEST_F(FeatureListTest, InitializeFromCommandLine_WithFieldTrials) {
   ClearFeatureListInstance();
   FieldTrialList field_trial_list(nullptr);

@@ -4,6 +4,7 @@
 
 #include "components/variations/variations_associated_data.h"
 
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -31,6 +32,16 @@ scoped_refptr<base::FieldTrial> CreateFieldTrial(
       trial_name, total_probability, default_group_name,
       base::FieldTrialList::kNoExpirationYear, 1, 1,
       base::FieldTrial::SESSION_RANDOMIZED, default_group_number);
+}
+
+void CreateFeatureWithTrial(const base::Feature& feature,
+                            base::FeatureList::OverrideState override_state,
+                            base::FieldTrial* trial) {
+  base::FeatureList::ClearInstanceForTesting();
+  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
+  feature_list->RegisterFieldTrialOverride(feature.name, override_state,
+                                           trial);
+  base::FeatureList::SetInstance(std::move(feature_list));
 }
 
 }  // namespace
@@ -344,6 +355,79 @@ TEST_F(VariationsAssociatedDataTest, GetVariationParamValue_ActivatesTrial) {
   std::map<std::string, std::string> params;
   EXPECT_EQ(std::string(), GetVariationParamValue(kTrialName, "x"));
   ASSERT_TRUE(base::FieldTrialList::IsTrialActive(kTrialName));
+}
+
+TEST_F(VariationsAssociatedDataTest, GetVariationParamsByFeature) {
+  const std::string kTrialName = "GetVariationParamsByFeature";
+  const base::Feature kFeature{"TestFeature",
+                               base::FEATURE_DISABLED_BY_DEFAULT};
+
+  std::map<std::string, std::string> params;
+  params["x"] = "1";
+  variations::AssociateVariationParams(kTrialName, "A", params);
+  scoped_refptr<base::FieldTrial> trial(
+      CreateFieldTrial(kTrialName, 100, "A", NULL));
+
+  CreateFeatureWithTrial(kFeature, base::FeatureList::OVERRIDE_ENABLE_FEATURE,
+                         trial.get());
+
+  std::map<std::string, std::string> actualParams;
+  EXPECT_TRUE(GetVariationParamsByFeature(kFeature, &actualParams));
+  EXPECT_EQ(params, actualParams);
+}
+
+TEST_F(VariationsAssociatedDataTest, GetVariationParamValueByFeature) {
+  const std::string kTrialName = "GetVariationParamsByFeature";
+  const base::Feature kFeature{"TestFeature",
+                               base::FEATURE_DISABLED_BY_DEFAULT};
+
+  std::map<std::string, std::string> params;
+  params["x"] = "1";
+  variations::AssociateVariationParams(kTrialName, "A", params);
+  scoped_refptr<base::FieldTrial> trial(
+      CreateFieldTrial(kTrialName, 100, "A", NULL));
+
+  CreateFeatureWithTrial(kFeature, base::FeatureList::OVERRIDE_ENABLE_FEATURE,
+                         trial.get());
+
+  std::map<std::string, std::string> actualParams;
+  EXPECT_EQ(params["x"], GetVariationParamValueByFeature(kFeature, "x"));
+}
+
+TEST_F(VariationsAssociatedDataTest, GetVariationParamsByFeature_Disable) {
+  const std::string kTrialName = "GetVariationParamsByFeature";
+  const base::Feature kFeature{"TestFeature",
+                               base::FEATURE_DISABLED_BY_DEFAULT};
+
+  std::map<std::string, std::string> params;
+  params["x"] = "1";
+  variations::AssociateVariationParams(kTrialName, "A", params);
+  scoped_refptr<base::FieldTrial> trial(
+      CreateFieldTrial(kTrialName, 100, "A", NULL));
+
+  CreateFeatureWithTrial(kFeature, base::FeatureList::OVERRIDE_DISABLE_FEATURE,
+                         trial.get());
+
+  std::map<std::string, std::string> actualParams;
+  EXPECT_FALSE(GetVariationParamsByFeature(kFeature, &actualParams));
+}
+
+TEST_F(VariationsAssociatedDataTest, GetVariationParamValueByFeature_Disable) {
+  const std::string kTrialName = "GetVariationParamsByFeature";
+  const base::Feature kFeature{"TestFeature",
+                               base::FEATURE_DISABLED_BY_DEFAULT};
+
+  std::map<std::string, std::string> params;
+  params["x"] = "1";
+  variations::AssociateVariationParams(kTrialName, "A", params);
+  scoped_refptr<base::FieldTrial> trial(
+      CreateFieldTrial(kTrialName, 100, "A", NULL));
+
+  CreateFeatureWithTrial(kFeature, base::FeatureList::OVERRIDE_DISABLE_FEATURE,
+                         trial.get());
+
+  std::map<std::string, std::string> actualParams;
+  EXPECT_EQ(std::string(), GetVariationParamValueByFeature(kFeature, "x"));
 }
 
 }  // namespace variations
