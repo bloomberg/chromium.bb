@@ -17,7 +17,7 @@ namespace android {
 
 base::Time GetMainEntryPointTime() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  int64_t startTimeUnixMs = Java_UmaUtils_getMainEntryPointTime(env);
+  int64_t startTimeUnixMs = Java_UmaUtils_getMainEntryPointWallTime(env);
   return base::Time::UnixEpoch() +
          base::TimeDelta::FromMilliseconds(startTimeUnixMs);
 }

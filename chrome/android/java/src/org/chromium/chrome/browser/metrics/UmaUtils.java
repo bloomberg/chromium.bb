@@ -15,6 +15,7 @@ import org.chromium.base.annotations.JNINamespace;
 @JNINamespace("chrome::android")
 public class UmaUtils {
     private static long sApplicationStartWallClockMs;
+    private static long sApplicationStartUptimeMs;
 
     private static boolean sRunningApplicationStart;
 
@@ -27,7 +28,8 @@ public class UmaUtils {
         // isn't initialized until we start the native content browser component, and we
         // then need the start time in the C++ side before we return to Java. As such we
         // save it in a static that the C++ can fetch once it has initialized the JNI.
-        sApplicationStartWallClockMs = SystemClock.uptimeMillis();
+        sApplicationStartWallClockMs = System.currentTimeMillis();
+        sApplicationStartUptimeMs = SystemClock.uptimeMillis();
     }
 
     /**
@@ -59,8 +61,12 @@ public class UmaUtils {
     }
 
     @CalledByNative
-    public static long getMainEntryPointTime() {
+    public static long getMainEntryPointWallTime() {
         return sApplicationStartWallClockMs;
+    }
+
+    public static long getMainEntryPointTime() {
+        return sApplicationStartUptimeMs;
     }
 
     private static native void nativeRecordMetricsReportingDefaultOptIn(boolean optIn);
