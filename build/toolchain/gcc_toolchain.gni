@@ -410,12 +410,6 @@ template("gcc_toolchain") {
       target_os = target_os
       target_cpu = target_cpu
 
-      forward_variables_from(invoker,
-                             [
-                               "use_allocator",
-                               "use_gold",
-                             ])
-
       if (defined(invoker.is_clang)) {
         is_clang = invoker.is_clang
       }
@@ -427,6 +421,12 @@ template("gcc_toolchain") {
       }
       if (defined(invoker.symbol_level)) {
         symbol_level = invoker.symbol_level
+      }
+      if (defined(invoker.use_allocator)) {
+        use_allocator = invoker.use_allocator
+      }
+      if (defined(invoker.use_gold)) {
+        use_gold = invoker.use_gold
       }
 
       if (defined(invoker.clear_sanitizers) && invoker.clear_sanitizers) {
