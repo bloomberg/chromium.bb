@@ -104,6 +104,7 @@ OfflineAudioContext::OfflineAudioContext(Document* document, unsigned numberOfCh
     // Throw an exception if the render target is not ready.
     if (m_renderTarget) {
         m_destinationNode = OfflineAudioDestinationNode::create(this, m_renderTarget.get());
+        initialize();
     } else {
         exceptionState.throwRangeError(ExceptionMessages::failedToConstruct(
             "OfflineAudioContext",
@@ -112,8 +113,6 @@ OfflineAudioContext::OfflineAudioContext(Document* document, unsigned numberOfCh
             String::number(numberOfFrames) + ", " +
             String::number(sampleRate) + ")"));
     }
-
-    initialize();
 }
 
 OfflineAudioContext::~OfflineAudioContext()

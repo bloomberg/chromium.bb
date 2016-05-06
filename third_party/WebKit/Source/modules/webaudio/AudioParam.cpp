@@ -35,6 +35,19 @@ namespace blink {
 const double AudioParamHandler::DefaultSmoothingConstant = 0.05;
 const double AudioParamHandler::SnapThreshold = 0.001;
 
+AudioParamHandler::AudioParamHandler(AbstractAudioContext& context, AudioParamType paramType, double defaultValue)
+    : AudioSummingJunction(context.deferredTaskHandler())
+    , m_paramType(paramType)
+    , m_intrinsicValue(defaultValue)
+    , m_defaultValue(defaultValue)
+    , m_smoothedValue(defaultValue)
+{
+    // The destination MUST exist because we need the destination handler for the AudioParam.
+    RELEASE_ASSERT(context.destination());
+
+    m_destinationHandler = &context.destination()->audioDestinationHandler();
+}
+
 AudioDestinationHandler& AudioParamHandler::destinationHandler() const
 {
     return *m_destinationHandler;

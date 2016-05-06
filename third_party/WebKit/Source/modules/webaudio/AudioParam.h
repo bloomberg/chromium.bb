@@ -128,14 +128,7 @@ public:
 
     float intrinsicValue() const { return noBarrierLoad(&m_intrinsicValue); }
 private:
-    AudioParamHandler(AbstractAudioContext& context, AudioParamType paramType, double defaultValue)
-        : AudioSummingJunction(context.deferredTaskHandler())
-        , m_paramType(paramType)
-        , m_intrinsicValue(defaultValue)
-        , m_defaultValue(defaultValue)
-        , m_smoothedValue(defaultValue)
-        , m_destinationHandler(context.destination()->audioDestinationHandler())
-    { }
+    AudioParamHandler(AbstractAudioContext&, AudioParamType, double defaultValue);
 
     // sampleAccurate corresponds to a-rate (audio rate) vs. k-rate in the Web Audio specification.
     void calculateFinalValues(float* values, unsigned numberOfValues, bool sampleAccurate);
