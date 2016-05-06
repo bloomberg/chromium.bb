@@ -54,11 +54,12 @@ NewTaskManagerView::~NewTaskManagerView() {
 }
 
 // static
-void NewTaskManagerView::Show(Browser* browser) {
+task_management::TaskManagerTableModel* NewTaskManagerView::Show(
+    Browser* browser) {
   if (g_task_manager_view) {
     // If there's a Task manager window open already, just activate it.
     g_task_manager_view->GetWidget()->Activate();
-    return;
+    return g_task_manager_view->table_model_.get();
   }
 
   g_task_manager_view = new NewTaskManagerView();
@@ -102,6 +103,7 @@ void NewTaskManagerView::Show(Browser* browser) {
                                           IDR_ASH_SHELF_ICON_TASK_MANAGER,
                                           native_window->title());
 #endif
+  return g_task_manager_view->table_model_.get();
 }
 
 // static

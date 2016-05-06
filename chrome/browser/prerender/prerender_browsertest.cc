@@ -1380,10 +1380,6 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
     check_load_events_ = false;
   }
 
-  TaskManagerModel* GetModel() const {
-    return TaskManager::GetInstance()->model();
-  }
-
   PrerenderManager* GetPrerenderManager() const {
     PrerenderManager* prerender_manager =
         PrerenderManagerFactory::GetForProfile(current_browser()->profile());
@@ -2494,11 +2490,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderAbortPendingOnCancel) {
   EXPECT_TRUE(IsEmptyPrerenderLinkManager());
 }
 
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, OpenTaskManagerBeforePrerender) {
-  // This test is for the old implementation of the task manager. We must
-  // explicitly disable the new one.
-  task_manager::browsertest_util::EnableOldTaskManager();
+#if defined(ENABLE_TASK_MANAGER)
 
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, OpenTaskManagerBeforePrerender) {
   const base::string16 any_prerender = MatchTaskManagerPrerender("*");
   const base::string16 any_tab = MatchTaskManagerTab("*");
   const base::string16 original = MatchTaskManagerTab("Preloader");
@@ -2534,10 +2528,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, OpenTaskManagerBeforePrerender) {
 }
 
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, OpenTaskManagerAfterPrerender) {
-  // This test is for the old implementation of the task manager. We must
-  // explicitly disable the new one.
-  task_manager::browsertest_util::EnableOldTaskManager();
-
   const base::string16 any_prerender = MatchTaskManagerPrerender("*");
   const base::string16 any_tab = MatchTaskManagerTab("*");
   const base::string16 original = MatchTaskManagerTab("Preloader");
@@ -2572,10 +2562,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, OpenTaskManagerAfterPrerender) {
 }
 
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, OpenTaskManagerAfterSwapIn) {
-  // This test is for the old implementation of the task manager. We must
-  // explicitly disable the new one.
-  task_manager::browsertest_util::EnableOldTaskManager();
-
   const base::string16 any_prerender = MatchTaskManagerPrerender("*");
   const base::string16 any_tab = MatchTaskManagerTab("*");
   const base::string16 final = MatchTaskManagerTab("Prerender Page");
@@ -2594,6 +2580,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, OpenTaskManagerAfterSwapIn) {
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, any_tab));
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, any_prerender));
 }
+
+#endif  // defined(ENABLE_TASK_MANAGER)
 
 // Checks that audio loads are deferred on prerendering.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHTML5Audio) {
@@ -4021,67 +4009,5 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithNaCl,
   ASSERT_TRUE(display_test_result);
 }
 #endif  // !defined(DISABLE_NACL)
-
-#if defined(ENABLE_TASK_MANAGER)
-
-namespace {
-
-base::string16 GetPrerenderTitlePrefix() {
-  return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_PRERENDER_PREFIX,
-                                    base::string16());
-}
-
-const std::vector<task_management::WebContentsTag*>& GetTrackedTags() {
-  return task_management::WebContentsTagsManager::GetInstance()->
-      tracked_tags();
-}
-
-// Tests the correct recording of tags for the prerender WebContents.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, TaskManagementTagsBasic) {
-  // Browser tests start with a single tab.
-  EXPECT_EQ(1U, GetTrackedTags().size());
-
-  // Start prerendering a page and make sure it's correctly tagged.
-  PrerenderTestURL("/prerender/prerender_page.html", FINAL_STATUS_USED, 1);
-  EXPECT_EQ(2U, GetTrackedTags().size());
-
-  // Swap in the prerendered content and make sure its tag is removed.
-  NavigateToDestURL();
-  EXPECT_EQ(1U, GetTrackedTags().size());
-}
-
-// Tests that the task manager will be provided by tasks that correspond to
-// prerendered WebContents.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, TaskManagementTasksProvided) {
-  task_management::MockWebContentsTaskManager task_manager;
-  // Browser tests start with a single tab.
-  EXPECT_EQ(1U, GetTrackedTags().size());
-
-  task_manager.StartObserving();
-
-  // The pre-existing tab is provided.
-  EXPECT_EQ(1U, task_manager.tasks().size());
-
-  // Start prerendering a page.
-  PrerenderTestURL("/prerender/prerender_page.html", FINAL_STATUS_USED, 1);
-
-  EXPECT_EQ(2U, GetTrackedTags().size());
-  ASSERT_EQ(2U, task_manager.tasks().size());
-
-  const task_management::Task* task = task_manager.tasks().back();
-  EXPECT_EQ(task_management::Task::RENDERER, task->GetType());
-  const base::string16 title = task->title();
-  const base::string16 expected_prefix = GetPrerenderTitlePrefix();
-  EXPECT_TRUE(base::StartsWith(title,
-                               expected_prefix,
-                               base::CompareCase::INSENSITIVE_ASCII));
-
-  NavigateToDestURL();
-  EXPECT_EQ(1U, task_manager.tasks().size());
-}
-
-}  // namespace
-
-#endif  // defined(ENABLE_TASK_MANAGER)
 
 }  // namespace prerender

@@ -7,14 +7,58 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/strings/string16.h"
 
+namespace content {
+class WebContents;
+}
+
+// TODO(nick): Move everything here (except for LegacyTaskManagerTesterImpl)
+// into the task_management namespace.
 namespace task_manager {
 namespace browsertest_util {
 
-// For the old task manager browser tests, we must call this to disable the
-// use of the new implementation and revert back to the old one.
-void EnableOldTaskManager();
+// Specifies some integer-valued column of numeric data reported by the task
+// manager model. Please add more here as needed by tests.
+enum ColumnSpecifier {
+  V8_MEMORY,
+  V8_MEMORY_USED,
+  SQLITE_MEMORY_USED,
+
+  COLUMN_NONE,  // Default value.
+};
+
+// An adapter that abstracts away the difference of old vs. new task manager.
+class TaskManagerTester {
+ public:
+  virtual ~TaskManagerTester() {}
+
+  // Get the number of rows currently in the task manager.
+  virtual int GetRowCount() = 0;
+
+  // Get the title text of a particular |row|.
+  virtual base::string16 GetRowTitle(int row) = 0;
+
+  // Hide or show a column. If a column is not visible its stats are not
+  // necessarily gathered.
+  virtual void ToggleColumnVisibility(ColumnSpecifier column) = 0;
+
+  // Get the value of a column as an int64. Memory values are in bytes.
+  virtual int64_t GetColumnValue(ColumnSpecifier column, int row) = 0;
+
+  // If |row| is associated with a WebContents, return its SessionID. Otherwise,
+  // return -1.
+  virtual int32_t GetTabId(int row) = 0;
+
+  // Kill the process of |row|.
+  virtual void Kill(int row) = 0;
+};
+
+// Creates a TaskManagerTester backed by the current task manager. The task
+// manager should already be visible when you call this function.
+std::unique_ptr<TaskManagerTester> GetTaskManagerTester();
 
 // Runs the message loop, observing the task manager, until there are exactly
 // |resource_count| many resources whose titles match the pattern
@@ -27,15 +71,8 @@ void EnableOldTaskManager();
 void WaitForTaskManagerRows(int resource_count,
                             const base::string16& title_pattern);
 
-// Specifies some integer-valued column of numeric data reported by the task
-// manager model. Please add more here as needed by tests.
-enum ColumnSpecifier {
-  V8_MEMORY,
-  V8_MEMORY_USED,
-  SQLITE_MEMORY_USED,
-
-  COLUMN_NONE,  // Default value.
-};
+// Make the indicated TaskManager column be visible.
+void ShowColumn(ColumnSpecifier column_specifier);
 
 // Waits for the row identified by |title_pattern| to be showing a numeric data
 // value of at least |min_column_value| in the task manager column identified by

@@ -44,7 +44,7 @@ class NewTaskManagerView
   ~NewTaskManagerView() override;
 
   // Shows the Task Manager window, or re-activates an existing one.
-  static void Show(Browser* browser);
+  static task_management::TaskManagerTableModel* Show(Browser* browser);
 
   // Hides the Task Manager if it is showing.
   static void Hide();

@@ -308,9 +308,6 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, NoJsBackgroundPage) {
   // Keep the task manager up through this test to verify that a crash doesn't
   // happen when window.open creates a background page that switches
   // RenderViewHosts. See http://crbug.com/165138.
-  // This test is for the old implementation of the task manager. We must
-  // explicitly disable the new one.
-  task_manager::browsertest_util::EnableOldTaskManager();
   chrome::ShowTaskManager(browser());
 
   // Make sure that no BackgroundContentses get deleted (a signal that repeated

@@ -46,11 +46,11 @@ void ShowBookmarkBubbleViewsAtPoint(const gfx::Point& anchor_point,
                                  browser->profile(), url, already_bookmarked);
 }
 
-void ShowTaskManagerViews(Browser* browser) {
+ui::TableModel* ShowTaskManagerViews(Browser* browser) {
   // On platforms other than Mac, the new task manager is shown unless
   // explicitly disabled. Assume that running with ToolkitViewsDialogsEnabled()
   // on Mac also means the new task manager is desired.
-  task_management::NewTaskManagerView::Show(browser);
+  return task_management::NewTaskManagerView::Show(browser);
 }
 
 void HideTaskManagerViews() {

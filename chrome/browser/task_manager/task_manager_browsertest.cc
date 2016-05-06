@@ -62,6 +62,7 @@ using task_manager::browsertest_util::MatchExtension;
 using task_manager::browsertest_util::MatchSubframe;
 using task_manager::browsertest_util::MatchTab;
 using task_manager::browsertest_util::MatchUtility;
+using task_manager::browsertest_util::TaskManagerTester;
 using task_manager::browsertest_util::WaitForTaskManagerRows;
 using task_manager::browsertest_util::WaitForTaskManagerStatToExceed;
 
@@ -71,36 +72,34 @@ const base::FilePath::CharType* kTitle1File = FILE_PATH_LITERAL("title1.html");
 
 }  // namespace
 
+// TODO(nick): Move this file into task_management. https://crbug.com/606963
 class TaskManagerBrowserTest : public ExtensionBrowserTest {
  public:
   TaskManagerBrowserTest() {}
   ~TaskManagerBrowserTest() override {}
 
-  TaskManagerModel* model() const {
-    return TaskManager::GetInstance()->model();
-  }
+  TaskManagerTester* model() { return model_.get(); }
 
   void ShowTaskManager() {
-    EXPECT_EQ(0, model()->ResourceCount());
-
     // Show the task manager. This populates the model, and helps with debugging
     // (you see the task manager).
     chrome::ShowTaskManager(browser());
+    model_ = task_manager::browsertest_util::GetTaskManagerTester();
   }
 
   void HideTaskManager() {
-    // Hide the task manager, and wait for the model to be depopulated.
+    model_.reset();
+
+    // Hide the task manager, and wait for it to go.
     chrome::HideTaskManager();
     base::RunLoop().RunUntilIdle();  // OnWindowClosed happens asynchronously.
-    EXPECT_EQ(0, model()->ResourceCount());
   }
 
   void Refresh() {
-    model()->Refresh();
-  }
-
-  int GetUpdateTimeMs() {
-    return TaskManagerModel::kUpdateTimeMs;
+    // Refresh() isn't ever needed on the new task manager.
+    if (switches::NewTaskManagerEnabled())
+      return;
+    TaskManager::GetInstance()->model()->Refresh();
   }
 
   GURL GetTestURL() {
@@ -110,26 +109,31 @@ class TaskManagerBrowserTest : public ExtensionBrowserTest {
   }
 
   int FindResourceIndex(const base::string16& title) {
-    for (int i = 0; i < model()->ResourceCount(); ++i) {
-      if (title == model()->GetResourceTitle(i))
+    for (int i = 0; i < model_->GetRowCount(); ++i) {
+      if (title == model_->GetRowTitle(i))
         return i;
     }
     return -1;
+  }
+
+  // TODO(nick, afakhry): Remove this function. https://crbug.com/606963
+  void DisableNewTaskManagerForBrokenTest() {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kDisableNewTaskManager);
   }
 
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionBrowserTest::SetUpCommandLine(command_line);
 
-    // These tests are for the old implementation of the task manager. We must
-    // explicitly disable the new one.
-    task_manager::browsertest_util::EnableOldTaskManager();
-
     // Do not launch device discovery process.
     command_line->AppendSwitch(switches::kDisableDeviceDiscoveryNotifications);
   }
 
+  void TearDownOnMainThread() override { model_.reset(); }
+
  private:
+  std::unique_ptr<TaskManagerTester> model_;
   DISALLOW_COPY_AND_ASSIGN(TaskManagerBrowserTest);
 };
 
@@ -222,9 +226,8 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, KillTab) {
   // Killing the tab via task manager should remove the row.
   int tab = FindResourceIndex(MatchTab("title1.html"));
   ASSERT_NE(-1, tab);
-  ASSERT_TRUE(model()->GetResourceWebContents(tab) != NULL);
-  ASSERT_TRUE(model()->CanActivate(tab));
-  TaskManager::GetInstance()->KillProcess(tab);
+  ASSERT_NE(-1, model()->GetTabId(tab));
+  model()->Kill(tab);
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, MatchTab("title1.html")));
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
 
@@ -234,9 +237,8 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, KillTab) {
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(2, MatchAnyTab()));
 }
 
-// Test for http://crbug.com/444945, which is not fixed yet.
-IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest,
-                       DISABLED_NavigateAwayFromHungRenderer) {
+// Regression test for http://crbug.com/444945.
+IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NavigateAwayFromHungRenderer) {
   host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(embedded_test_server()->Start());
   ShowTaskManager();
@@ -256,15 +258,18 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest,
   WebContents* tab1 = browser()->tab_strip_model()->GetActiveWebContents();
 
   // Initiate a navigation that will create a new WebContents in the same
-  // SiteInstace...
+  // SiteInstance. Then immediately hang the renderer so that title3.html can't
+  // load in this process.
   content::WebContentsAddedObserver web_contents_added_observer;
-  tab1->GetMainFrame()->ExecuteJavaScriptWithUserGestureForTests(
-      base::ASCIIToUTF16("window.open('title3.html', '_blank');"));
-  // ... then immediately hang the renderer so that title3.html can't load.
-  tab1->GetMainFrame()->ExecuteJavaScriptForTests(
-      base::ASCIIToUTF16("while(1);"));
+  int dummy_value = 0;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
+      tab1->GetMainFrame(),
+      "window.open('title3.html', '_blank');\n"
+      "window.domAutomationController.send(55);\n"
+      "while(1);",
+      &dummy_value));
 
-  // Blocks until a new WebContents appears.
+  // Blocks until a new WebContents appears as a result of window.open().
   WebContents* tab2 = web_contents_added_observer.GetWebContents();
 
   // Make sure the new WebContents is in tab1's hung renderer process.
@@ -423,9 +428,8 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, KillPanelViaExtensionResource) {
   // the background page and the panel go away from the task manager.
   int background_page = FindResourceIndex(MatchExtension("My extension 1"));
   ASSERT_NE(-1, background_page);
-  ASSERT_TRUE(model()->GetResourceWebContents(background_page) == NULL);
-  ASSERT_FALSE(model()->CanActivate(background_page));
-  TaskManager::GetInstance()->KillProcess(background_page);
+  ASSERT_EQ(-1, model()->GetTabId(background_page));
+  model()->Kill(background_page);
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, MatchAnyExtension()));
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
 }
@@ -466,8 +470,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, KillPanelViaPanelResource) {
 
   int background_page = FindResourceIndex(MatchExtension("My extension 1"));
   ASSERT_NE(-1, background_page);
-  ASSERT_TRUE(model()->GetResourceWebContents(background_page) == NULL);
-  ASSERT_FALSE(model()->CanActivate(background_page));
+  ASSERT_EQ(-1, model()->GetTabId(background_page));
 
   // Kill the process via the PANEL RESOURCE (not the background page). Verify
   // that both the background page and the panel go away from the task manager.
@@ -475,9 +478,8 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, KillPanelViaPanelResource) {
       "chrome-extension://behllobkkfkfnphdnhnkndlbkcpglgmj/"
       "french_sentence.html"));
   ASSERT_NE(-1, panel);
-  ASSERT_TRUE(model()->GetResourceWebContents(panel) != NULL);
-  ASSERT_TRUE(model()->CanActivate(panel));
-  TaskManager::GetInstance()->KillProcess(panel);
+  ASSERT_NE(-1, model()->GetTabId(panel));
+  model()->Kill(panel);
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, MatchAnyExtension()));
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
 }
@@ -513,13 +515,11 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeExtensionTabChanges) {
 
   int extension_tab = FindResourceIndex(MatchExtension("Foobar"));
   ASSERT_NE(-1, extension_tab);
-  ASSERT_TRUE(model()->GetResourceWebContents(extension_tab) != NULL);
-  ASSERT_TRUE(model()->CanActivate(extension_tab));
+  ASSERT_NE(-1, model()->GetTabId(extension_tab));
 
   int background_page = FindResourceIndex(MatchExtension("My extension 1"));
   ASSERT_NE(-1, background_page);
-  ASSERT_TRUE(model()->GetResourceWebContents(background_page) == NULL);
-  ASSERT_FALSE(model()->CanActivate(background_page));
+  ASSERT_EQ(-1, model()->GetTabId(background_page));
 }
 
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeExtensionTab) {
@@ -545,16 +545,18 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeExtensionTab) {
 
   int extension_tab = FindResourceIndex(MatchExtension("Foobar"));
   ASSERT_NE(-1, extension_tab);
-  ASSERT_TRUE(model()->GetResourceWebContents(extension_tab) != NULL);
-  ASSERT_TRUE(model()->CanActivate(extension_tab));
+  ASSERT_NE(-1, model()->GetTabId(extension_tab));
 
   int background_page = FindResourceIndex(MatchExtension("My extension 1"));
   ASSERT_NE(-1, background_page);
-  ASSERT_TRUE(model()->GetResourceWebContents(background_page) == NULL);
-  ASSERT_FALSE(model()->CanActivate(background_page));
+  ASSERT_EQ(-1, model()->GetTabId(background_page));
 }
 
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeAppTabChanges) {
+  // TODO(nick, afakhry): Broken on new task manager because we show
+  // "Extension: Packaged App Test" instead of "App: Packaged App Test".
+  DisableNewTaskManagerForBrokenTest();
+
   ShowTaskManager();
 
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("packaged_app")));
@@ -584,10 +586,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeAppTabChanges) {
   // a tab contents and an extension.
   int app_tab = FindResourceIndex(MatchApp("Packaged App Test"));
   ASSERT_NE(-1, app_tab);
-  ASSERT_TRUE(model()->GetResourceWebContents(app_tab) != NULL);
-  ASSERT_TRUE(model()->CanActivate(app_tab));
-  ASSERT_EQ(task_manager::Resource::EXTENSION,
-            model()->GetResourceType(app_tab));
+  ASSERT_NE(-1, model()->GetTabId(app_tab));
   ASSERT_EQ(2, browser()->tab_strip_model()->count());
 
   // Unload extension to make sure the tab goes away.
@@ -601,6 +600,10 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeAppTabChanges) {
 }
 
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeAppTab) {
+  // TODO(nick, afakhry): Broken on new task manager because we show
+  // "Extension: Packaged App Test" instead of "App: Packaged App Test".
+  DisableNewTaskManagerForBrokenTest();
+
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("packaged_app")));
   ExtensionService* service = extensions::ExtensionSystem::Get(
@@ -624,13 +627,14 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeAppTab) {
   // a tab contents and an extension.
   int app_tab = FindResourceIndex(MatchApp("Packaged App Test"));
   ASSERT_NE(-1, app_tab);
-  ASSERT_TRUE(model()->GetResourceWebContents(app_tab) != NULL);
-  ASSERT_TRUE(model()->CanActivate(app_tab));
-  ASSERT_EQ(task_manager::Resource::EXTENSION,
-            model()->GetResourceType(app_tab));
+  ASSERT_NE(-1, model()->GetTabId(app_tab));
 }
 
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeHostedAppTabChanges) {
+  // TODO(nick, afakhry): Broken on new task manager because we show
+  // "Tab: Unmodified" instead of "App: ".
+  DisableNewTaskManagerForBrokenTest();
+
   ShowTaskManager();
 
   // The app under test acts on URLs whose host is "localhost",
@@ -697,6 +701,10 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeHostedAppTabChanges) {
 }
 
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeHostedAppTabAfterReload) {
+  // TODO(nick, afakhry): This fails on the new task manager (we never
+  // reclassify the tab as an app). Remove when fixed.
+  DisableNewTaskManagerForBrokenTest();
+
   // The app under test acts on URLs whose host is "localhost",
   // so the URLs we navigate to must have host "localhost".
   host_resolver()->AddRule("*", "127.0.0.1");
@@ -787,31 +795,11 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, ReloadExtension) {
   }
 }
 
-// Crashy, http://crbug.com/42301.
-IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest,
-                       DISABLED_PopulateWebCacheFields) {
-  ShowTaskManager();
-  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
-
-  int resource_count = TaskManager::GetInstance()->model()->ResourceCount();
-
-  // Open a new tab and make sure we notice that.
-  AddTabAtIndex(0, GetTestURL(), ui::PAGE_TRANSITION_TYPED);
-  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(2, MatchAnyTab()));
-
-  // Check that we get some value for the cache columns.
-  DCHECK_NE(model()->GetResourceWebCoreImageCacheSize(resource_count),
-            l10n_util::GetStringUTF16(IDS_TASK_MANAGER_NA_CELL_TEXT));
-  DCHECK_NE(model()->GetResourceWebCoreScriptsCacheSize(resource_count),
-            l10n_util::GetStringUTF16(IDS_TASK_MANAGER_NA_CELL_TEXT));
-  DCHECK_NE(model()->GetResourceWebCoreCSSCacheSize(resource_count),
-            l10n_util::GetStringUTF16(IDS_TASK_MANAGER_NA_CELL_TEXT));
-}
-
 // Checks that task manager counts a worker thread JS heap size.
 // http://crbug.com/241066
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, WebWorkerJSHeapMemory) {
   ShowTaskManager();
+  model()->ToggleColumnVisibility(task_manager::browsertest_util::V8_MEMORY);
   ui_test_utils::NavigateToURL(browser(), GetTestURL());
   size_t minimal_heap_size = 4 * 1024 * 1024 * sizeof(void*);
   std::string test_js = base::StringPrintf(
@@ -860,6 +848,8 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, JSHeapMemory) {
       browser()->tab_strip_model()->GetActiveWebContents(), test_js, &ok));
   ASSERT_EQ("okay", ok);
 
+  model()->ToggleColumnVisibility(task_manager::browsertest_util::V8_MEMORY);
+
   // The page's js has allocated objects of at least |minimal_heap_size| bytes.
   // Wait for the heap stats to reflect this.
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerStatToExceed(
@@ -876,26 +866,29 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, JSHeapMemory) {
 IN_PROC_BROWSER_TEST_F(TaskManagerUtilityProcessBrowserTest,
                        UtilityJSHeapMemory) {
   ShowTaskManager();
+  model()->ToggleColumnVisibility(task_manager::browsertest_util::V8_MEMORY);
+
+  auto proxy_resolver_name =
+      l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_PROXY_RESOLVER_NAME);
   ui_test_utils::NavigateToURL(browser(), GetTestURL());
   // The PAC script is trivial, so don't expect a large heap.
   size_t minimal_heap_size = 1024;
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerStatToExceed(
-      MatchUtility(
-          l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_PROXY_RESOLVER_NAME)),
-      task_manager::browsertest_util::V8_MEMORY,
-      minimal_heap_size));
+      MatchUtility(proxy_resolver_name),
+      task_manager::browsertest_util::V8_MEMORY, minimal_heap_size));
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerStatToExceed(
-      MatchUtility(
-          l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_PROXY_RESOLVER_NAME)),
-      task_manager::browsertest_util::V8_MEMORY_USED,
-      minimal_heap_size));
+      MatchUtility(proxy_resolver_name),
+      task_manager::browsertest_util::V8_MEMORY_USED, minimal_heap_size));
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyUtility()));
-  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(
-      1, MatchUtility(l10n_util::GetStringUTF16(
-          IDS_UTILITY_PROCESS_PROXY_RESOLVER_NAME))));
+  ASSERT_NO_FATAL_FAILURE(
+      WaitForTaskManagerRows(1, MatchUtility(proxy_resolver_name)));
 }
 
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, DevToolsNewDockedWindow) {
+  // TODO(nick, afakhry): Broken on new task manager because we show
+  // a long chrome-devtools:// URL without a prefix (expecting "Tab: *").
+  DisableNewTaskManagerForBrokenTest();
+
   ShowTaskManager();  // Task manager shown BEFORE dev tools window.
 
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
@@ -907,6 +900,10 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, DevToolsNewDockedWindow) {
 }
 
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, DevToolsNewUndockedWindow) {
+  // TODO(nick, afakhry): Broken on new task manager because we show
+  // a long chrome-devtools:// URL without a prefix (expecting "Tab: *").
+  DisableNewTaskManagerForBrokenTest();
+
   ShowTaskManager();  // Task manager shown BEFORE dev tools window.
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
   DevToolsWindow* devtools =
@@ -917,6 +914,10 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, DevToolsNewUndockedWindow) {
 }
 
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, DevToolsOldDockedWindow) {
+  // TODO(nick, afakhry): Broken on new task manager because we show
+  // a long chrome-devtools:// URL without a prefix (expecting "Tab: *").
+  DisableNewTaskManagerForBrokenTest();
+
   DevToolsWindow* devtools =
       DevToolsWindowTesting::OpenDevToolsWindowSync(browser(), true);
   ShowTaskManager();  // Task manager shown AFTER dev tools window.
@@ -925,7 +926,11 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, DevToolsOldDockedWindow) {
   DevToolsWindowTesting::CloseDevToolsWindowSync(devtools);
 }
 
-IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, DevToolsOldUnockedWindow) {
+IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, DevToolsOldUndockedWindow) {
+  // TODO(nick, afakhry): Broken on new task manager because we show
+  // a long chrome-devtools:// URL without a prefix (expecting "Tab: *").
+  DisableNewTaskManagerForBrokenTest();
+
   DevToolsWindow* devtools =
       DevToolsWindowTesting::OpenDevToolsWindowSync(browser(), false);
   ShowTaskManager();  // Task manager shown AFTER dev tools window.
@@ -961,10 +966,9 @@ IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest, KillSubframe) {
     ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(2, MatchAnySubframe()));
     int subframe_b = FindResourceIndex(MatchSubframe("http://b.com/"));
     ASSERT_NE(-1, subframe_b);
-    ASSERT_TRUE(model()->GetResourceWebContents(subframe_b) != NULL);
-    ASSERT_TRUE(model()->CanActivate(subframe_b));
+    ASSERT_NE(-1, model()->GetTabId(subframe_b));
 
-    TaskManager::GetInstance()->KillProcess(subframe_b);
+    model()->Kill(subframe_b);
 
     ASSERT_NO_FATAL_FAILURE(
         WaitForTaskManagerRows(0, MatchSubframe("http://b.com/")));
@@ -993,12 +997,7 @@ IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest, KillSubframe) {
 
 // Tests what happens when a tab navigates to a site (a.com) that it previously
 // has a cross-process subframe into (b.com).
-//
-// TODO(nick): http://crbug.com/442532. Disabled because the second navigation
-// hits an ASSERT(frame()) in WebLocalFrameImpl::loadRequest under --site-per-
-// process.
-IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest,
-                       DISABLED_NavigateToSubframeProcess) {
+IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest, NavigateToSubframeProcess) {
   ShowTaskManager();
 
   host_resolver()->AddRule("*", "127.0.0.1");
@@ -1046,10 +1045,8 @@ IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest,
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, MatchAnySubframe()));
 }
 
-// TODO(nick): Fails flakily under OOPIF due to a ASSERT_NOT_REACHED in
-// WebRemoteFrame, at least under debug OSX. http://crbug.com/437956
 IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest,
-                       DISABLED_NavigateToSiteWithSubframeToOriginalSite) {
+                       NavigateToSiteWithSubframeToOriginalSite) {
   ShowTaskManager();
 
   host_resolver()->AddRule("*", "127.0.0.1");
@@ -1172,16 +1169,8 @@ IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest,
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
 }
 
-// Tests what happens when a tab does a same-site navigation away from a page
-// with cross-site iframes.
-// Flaky on Windows. http://crbug.com/528282.
-#if defined(OS_WIN)
-#define MAYBE_LeavePageWithCrossSiteIframes DISABLED_LeavePageWithCrossSiteIframes
-#else
-#define MAYBE_LeavePageWithCrossSiteIframes LeavePageWithCrossSiteIframes
-#endif
 IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest,
-                       MAYBE_LeavePageWithCrossSiteIframes) {
+                       LeavePageWithCrossSiteIframes) {
   ShowTaskManager();
 
   host_resolver()->AddRule("*", "127.0.0.1");

@@ -1483,10 +1483,6 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, NoPrerenderer) {
 // Verify that existing <webview>'s are detected when the task manager starts
 // up.
 IN_PROC_BROWSER_TEST_P(WebViewTest, TaskManagerExistingWebView) {
-  // This test is for the old implementation of the task manager. We must
-  // explicitly disable the new one.
-  task_manager::browsertest_util::EnableOldTaskManager();
-
   ASSERT_TRUE(StartEmbeddedTestServer());
 
   LoadGuest("/extensions/platform_apps/web_view/task_manager/guest.html",
@@ -1509,10 +1505,6 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, TaskManagerExistingWebView) {
 
 // Verify that the task manager notices the creation of new <webview>'s.
 IN_PROC_BROWSER_TEST_P(WebViewTest, TaskManagerNewWebView) {
-  // This test is for the old implementation of the task manager. We must
-  // explicitly disable the new one.
-  task_manager::browsertest_util::EnableOldTaskManager();
-
   ASSERT_TRUE(StartEmbeddedTestServer());
 
   chrome::ShowTaskManager(browser());  // Show task manager BEFORE guest loads.
@@ -3012,95 +3004,3 @@ IN_PROC_BROWSER_TEST_P(WebViewFocusTest, TouchFocusesEmbedder) {
   EXPECT_TRUE(aura_webview->HasFocus());
 }
 #endif
-
-#if defined(ENABLE_TASK_MANAGER)
-
-namespace {
-
-base::string16 GetExpectedPrefix(content::WebContents* web_contents) {
-  DCHECK(web_contents);
-  guest_view::GuestViewBase* guest =
-      guest_view::GuestViewBase::FromWebContents(web_contents);
-  DCHECK(guest);
-
-  return l10n_util::GetStringFUTF16(guest->GetTaskPrefix(), base::string16());
-}
-
-const std::vector<task_management::WebContentsTag*>& GetTrackedTags() {
-  return task_management::WebContentsTagsManager::GetInstance()->
-      tracked_tags();
-}
-
-bool HasExpectedGuestTask(
-    const task_management::MockWebContentsTaskManager& task_manager,
-    content::WebContents* guest_contents) {
-  bool found = false;
-  for (auto* task: task_manager.tasks()) {
-    if (task->GetType() != task_management::Task::GUEST)
-      continue;
-    EXPECT_FALSE(found);
-    found = true;
-    const base::string16 title = task->title();
-    const base::string16 expected_prefix = GetExpectedPrefix(guest_contents);
-    EXPECT_TRUE(base::StartsWith(title, expected_prefix,
-                                 base::CompareCase::INSENSITIVE_ASCII));
-  }
-  return found;
-}
-
-}  // namespace
-
-// Tests that the pre-existing WebViews are provided to the task manager.
-IN_PROC_BROWSER_TEST_P(WebViewTest, TaskManagementPreExistingWebViews) {
-  ASSERT_TRUE(StartEmbeddedTestServer());
-
-  // Browser tests start with a single tab.
-  EXPECT_EQ(1U, GetTrackedTags().size());
-
-  content::WebContents* guest_contents =
-      LoadGuest("/extensions/platform_apps/web_view/task_manager/guest.html",
-                "web_view/task_manager");
-
-  task_management::MockWebContentsTaskManager task_manager;
-  task_manager.StartObserving();
-
-  // The pre-existing tab and guest tasks are provided.
-  // 4 tasks expected. The order is arbitrary.
-  // Tab: about:blank,
-  // Background Page: <webview> task manager test,
-  // App: <webview> task manager test,
-  // Webview: WebViewed test content.
-  EXPECT_EQ(4U, task_manager.tasks().size());
-  EXPECT_TRUE(HasExpectedGuestTask(task_manager, guest_contents));
-}
-
-// Tests that the post-existing WebViews are provided to the task manager.
-IN_PROC_BROWSER_TEST_P(WebViewTest, TaskManagementPostExistingWebViews) {
-  ASSERT_TRUE(StartEmbeddedTestServer());
-
-  // Browser tests start with a single tab.
-  EXPECT_EQ(1U, GetTrackedTags().size());
-
-  task_management::MockWebContentsTaskManager task_manager;
-  task_manager.StartObserving();
-
-  // Only the "about:blank" tab shows at the moment.
-  ASSERT_EQ(1U, task_manager.tasks().size());
-  const task_management::Task* about_blank_task = task_manager.tasks().back();
-  EXPECT_EQ(task_management::Task::RENDERER, about_blank_task->GetType());
-  EXPECT_EQ(base::UTF8ToUTF16("Tab: about:blank"), about_blank_task->title());
-
-  // Now load a guest web view.
-  content::WebContents* guest_contents =
-      LoadGuest("/extensions/platform_apps/web_view/task_manager/guest.html",
-                "web_view/task_manager");
-  // 4 tasks expected. The order is arbitrary.
-  // Tab: about:blank,
-  // Background Page: <webview> task manager test,
-  // App: <webview> task manager test,
-  // Webview: WebViewed test content.
-  EXPECT_EQ(4U, task_manager.tasks().size());
-  EXPECT_TRUE(HasExpectedGuestTask(task_manager, guest_contents));
-}
-
-#endif  // defined(ENABLE_TASK_MANAGER)

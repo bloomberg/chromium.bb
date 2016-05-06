@@ -42,13 +42,16 @@ class URLRequest;
 }
 
 namespace ui {
+class TableModel;
 class WebDialogDelegate;
 }
 
 namespace chrome {
 
 // Shows or hides the Task Manager. |browser| can be NULL when called from Ash.
-void ShowTaskManager(Browser* browser);
+// Returns a pointer to the underlying TableModel, which can be ignored, or used
+// for testing.
+ui::TableModel* ShowTaskManager(Browser* browser);
 void HideTaskManager();
 
 #if !defined(OS_MACOSX)
@@ -109,7 +112,7 @@ void ShowBookmarkBubbleViewsAtPoint(const gfx::Point& anchor_point,
                                     bool newly_bookmarked);
 
 // Bridging methods that show/hide the toolkit-views based Task Manager on Mac.
-void ShowTaskManagerViews(Browser* browser);
+ui::TableModel* ShowTaskManagerViews(Browser* browser);
 void HideTaskManagerViews();
 
 #endif  // OS_MACOSX

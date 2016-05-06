@@ -14,6 +14,12 @@
 #include "chrome/browser/task_management/task_manager_observer.h"
 #include "ui/base/models/table_model.h"
 
+namespace task_manager {
+namespace browsertest_util {
+class TaskManagerTesterImpl;
+}
+}
+
 namespace task_management {
 
 class TaskManagerValuesStringifier;
@@ -101,6 +107,8 @@ class TaskManagerTableModel
   void ToggleColumnVisibility(int column_id);
 
  private:
+  friend class task_manager::browsertest_util::TaskManagerTesterImpl;
+
   // Start / stop observing the task manager.
   void StartUpdating();
   void StopUpdating();
