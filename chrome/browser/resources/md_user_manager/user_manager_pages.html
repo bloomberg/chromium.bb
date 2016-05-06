@@ -2,8 +2,9 @@
 <link rel="import" href="chrome://md-user-manager/supervised_user_create_confirm.html">
 <link rel="import" href="chrome://md-user-manager/supervised_user_learn_more.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/animations/slide-from-left-animation.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/animations/slide-right-animation.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/animations/fade-in-animation.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/animations/fade-out-animation.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animated-pages.html">
 
 <dom-module id="user-manager-pages">
@@ -13,43 +14,43 @@
         height: 100%;
       }
 
-      neon-animated-pages > div {
+      neon-animatable {
         display: flex;
         justify-content: center;
       }
 
       /* neon-animated-pages does not automatically hide what's under content */
-      neon-animated-pages > div:not(.iron-selected) > ::content > * {
+      neon-animatable:not(.iron-selected) > ::content > * {
         display: none !important;
       }
     </style>
     <neon-animated-pages id="animatedPages" attr-for-selected="id"
-        selected="[[selectedPage_]]" entry-animation="slide-from-left-animation"
-        exit-animation="slide-right-animation">
-      <div id="create-user-page">
+        selected="[[selectedPage_]]" entry-animation="fade-in-animation"
+        exit-animation="fade-out-animation">
+      <neon-animatable id="create-user-page">
         <template is="dom-if"
             if="[[isPageVisible_(selectedPage_, 'create-user-page')]]" restamp>
           <create-profile></create-profile>
         </template>
-      </div>
-      <div id="user-pods-page">
-        <content></content>
-      </div>
-      <div id="supervised-learn-more-page">
+      </neon-animatable>
+      <neon-animatable id="user-pods-page">
+          <content></content>
+      </neon-animatable>
+      <neon-animatable id="supervised-learn-more-page">
         <template is="dom-if"
             if="[[isPageVisible_(selectedPage_,
                                  'supervised-learn-more-page')]]">
           <supervised-user-learn-more></supervised-user-learn-more>
         </template>
-      </div>
-      <div id="supervised-create-confirm-page">
+      </neon-animatable>
+      <neon-animatable id="supervised-create-confirm-page">
         <template is="dom-if"
             if="[[isPageVisible_(selectedPage_,
                                  'supervised-create-confirm-page')]]">
           <supervised-user-create-confirm profile-info="[[pageData_]]">
           </supervised-user-create-confirm>
         </template>
-      </div>
+      </neon-animatable>
     </neon-animated-pages>
   </template>
   <script src="chrome://md-user-manager/user_manager_pages.js"></script>
