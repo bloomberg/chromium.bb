@@ -4,6 +4,14 @@
 from page_sets.login_helpers import login_utils
 
 
+# JavaScript conditions which are true when the email and password inputs on
+# the Google Login page are visible respectively.
+_EMAIL_INPUT_VISIBLE_CONDITION = (
+    'document.querySelector("#Email:not(.hidden)") !== null')
+_PASSWORD_INPUT_VISIBLE_CONDITION = (
+    'document.querySelector("#Passwd:not(.hidden)") !== null')
+
+
 def LoginGoogleAccount(action_runner, credential,
                        credentials_path=login_utils.DEFAULT_CREDENTIAL_PATH):
   """Logs in into Google account.
@@ -32,9 +40,19 @@ def LoginGoogleAccount(action_runner, credential,
   action_runner.Navigate(
        'https://accounts.google.com/ServiceLogin?continue='
        'https%3A%2F%2Faccounts.google.com%2FManageAccount')
-  login_utils.InputForm(action_runner, account_name, input_id='Email',
-                        form_id='gaia_firstform')
-  action_runner.ClickElement(selector='#gaia_firstform #next')
+
+  # Wait until either the email or password input is visible.
+  action_runner.WaitForJavaScriptCondition('%s || %s' % (
+      _EMAIL_INPUT_VISIBLE_CONDITION, _PASSWORD_INPUT_VISIBLE_CONDITION))
+
+  # If the email input is visible, this is the first Google login within the
+  # browser session, so we must enter both email and password. Otherwise, only
+  # password is required.
+  if action_runner.EvaluateJavaScript(_EMAIL_INPUT_VISIBLE_CONDITION):
+    login_utils.InputForm(action_runner, account_name, input_id='Email',
+                          form_id='gaia_firstform')
+    action_runner.ClickElement(selector='#gaia_firstform #next')
+
   login_utils.InputForm(action_runner, password, input_id='Passwd')
   action_runner.ClickElement(selector='#signIn')
   action_runner.WaitForElement(text='My Account')
