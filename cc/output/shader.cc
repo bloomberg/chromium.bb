@@ -133,7 +133,8 @@ static std::string SetFragmentSamplerType(SamplerType requested_type,
     case SAMPLER_TYPE_EXTERNAL_OES:
       DCHECK_NE(shader_string.find("SamplerType"), std::string::npos);
       DCHECK_NE(shader_string.find("TextureLookup"), std::string::npos);
-      return "#extension GL_OES_EGL_image_external : require\n"
+      return "#extension GL_OES_EGL_image_external : enable\n"
+             "#extension GL_NV_EGL_stream_consumer_external : enable\n"
              "#define SamplerType samplerExternalOES\n"
              "#define TextureLookup texture2D\n" +
              shader_string;

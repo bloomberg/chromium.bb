@@ -61,9 +61,15 @@ VideoFrameExternalResources::ResourceType ResourceTypeForVideoFrame(
       return VideoFrameExternalResources::YUV_RESOURCE;
       break;
     case media::PIXEL_FORMAT_NV12:
-      DCHECK_EQ(static_cast<uint32_t>(GL_TEXTURE_RECTANGLE_ARB),
-                video_frame->mailbox_holder(0).texture_target);
-      return VideoFrameExternalResources::IO_SURFACE;
+      switch (video_frame->mailbox_holder(0).texture_target) {
+        case GL_TEXTURE_EXTERNAL_OES:
+          return VideoFrameExternalResources::YUV_RESOURCE;
+        case GL_TEXTURE_RECTANGLE_ARB:
+          return VideoFrameExternalResources::IO_SURFACE;
+        default:
+          NOTREACHED();
+          break;
+      }
       break;
     case media::PIXEL_FORMAT_YV12:
     case media::PIXEL_FORMAT_YV16:
