@@ -14,7 +14,7 @@ if (window.internals && internals.dictionaryTest) {
     dict = dictionaryTest.get();
     shouldBeUndefined('dict.longMember');
     shouldBe('dict.longMemberWithDefault', '42');
-    shouldBeUndefined('dict.longOrNullMember');
+    shouldBeNull('dict.longOrNullMember');
     shouldBeNull('dict.longOrNullMemberWithDefault');
     shouldBeUndefined('dict.booleanMember');
     shouldBeUndefined('dict.doubleMember');
@@ -25,13 +25,13 @@ if (window.internals && internals.dictionaryTest) {
     shouldBeUndefined('dict.usvStringMember');
     shouldBeUndefined('dict.stringSequenceMember');
     shouldBe('dict.stringSequenceMemberWithDefault', '[]');
-    shouldBeUndefined('dict.stringSequenceOrNullMember');
+    shouldBeNull('dict.stringSequenceOrNullMember');
     shouldBeUndefined('dict.elementMember');
-    shouldBeUndefined('dict.elementOrNullMember');
+    shouldBeNull('dict.elementOrNullMember');
     shouldBeUndefined('dict.enumMember');
     shouldBeUndefined('dict.enumArrayMember');
     shouldBeEqualToString('dict.enumMemberWithDefault', 'foo');
-    shouldBeUndefined('dict.enumOrNullMember');
+    shouldBeNull('dict.enumOrNullMember');
     shouldBeUndefined('dict.objectMember');
     shouldBeNull('dict.objectOrNullMemberWithDefault');
     shouldBeUndefined('dict.doubleOrStringMember');
@@ -44,7 +44,7 @@ if (window.internals && internals.dictionaryTest) {
     dict = dictionaryTest.get();
     shouldBeUndefined('dict.longMember');
     shouldBe('dict.longMemberWithDefault', '42');
-    shouldBeUndefined('dict.longOrNullMember');
+    shouldBeNull('dict.longOrNullMember');
     shouldBeNull('dict.longOrNullMemberWithDefault');
     shouldBeUndefined('dict.booleanMember');
     shouldBeUndefined('dict.doubleMember');
@@ -55,9 +55,9 @@ if (window.internals && internals.dictionaryTest) {
     shouldBeEqualToString('dict.stringMemberWithDefault', 'defaultStringValue');
     shouldBeUndefined('dict.stringSequenceMember');
     shouldBe('dict.stringSequenceMemberWithDefault', '[]');
-    shouldBeUndefined('dict.stringSequenceOrNullMember');
+    shouldBeNull('dict.stringSequenceOrNullMember');
     shouldBeUndefined('dict.elementMember');
-    shouldBeUndefined('dict.elementOrNullMember');
+    shouldBeNull('dict.elementOrNullMember');
     shouldBeUndefined('dict.objectMember');
     shouldBeNull('dict.objectOrNullMemberWithDefault');
     shouldBeNull('dict.eventTargetOrNullMember');
@@ -110,7 +110,7 @@ if (window.internals && internals.dictionaryTest) {
     shouldBe('dict.stringSequenceOrNullMember', '[]');
     shouldBe('dict.elementMember', 'element1');
     // This will be undefined as the spec says
-    shouldBeUndefined('dict.elementOrNullMember');
+    shouldBeNull('dict.elementOrNullMember');
     shouldBeEqualToString('dict.enumMember', 'foo');
     shouldBeEqualToString('dict.enumMemberWithDefault', 'bar');
     shouldBeEqualToString('dict.enumOrNullMember', 'baz');
@@ -163,7 +163,7 @@ if (window.internals && internals.dictionaryTest) {
     // ToNumber(null) results in 0.
     shouldBe('dict.longMemberWithDefault', '0');
     // Passing undefined shouldn't invoke any conversion.
-    shouldBeUndefined('dict.longOrNullMember');
+    shouldBeNull('dict.longOrNullMember');
     // Nullable and its default value is null
     shouldBeNull('dict.longOrNullMemberWithDefault');
     debug('');
@@ -273,7 +273,7 @@ if (window.internals && internals.dictionaryTest) {
     derived = dictionaryTest.getDerived();
     shouldBeUndefined('derived.longMember');
     shouldBe('derived.longMemberWithDefault', '42');
-    shouldBeUndefined('derived.longOrNullMember');
+    shouldBeNull('derived.longOrNullMember');
     shouldBeNull('derived.longOrNullMemberWithDefault');
     shouldBeUndefined('derived.booleanMember');
     shouldBeUndefined('derived.doubleMember');
@@ -281,12 +281,12 @@ if (window.internals && internals.dictionaryTest) {
     shouldBeEqualToString('derived.stringMemberWithDefault', 'defaultStringValue');
     shouldBeUndefined('derived.stringSequenceMember');
     shouldBe('derived.stringSequenceMemberWithDefault', '[]');
-    shouldBeUndefined('derived.stringSequenceOrNullMember');
+    shouldBeNull('derived.stringSequenceOrNullMember');
     shouldBeUndefined('derived.elementMember');
-    shouldBeUndefined('derived.elementOrNullMember');
+    shouldBeNull('derived.elementOrNullMember');
     shouldBeUndefined('derived.enumMember');
     shouldBeEqualToString('derived.enumMemberWithDefault', 'foo');
-    shouldBeUndefined('derived.enumOrNullMember');
+    shouldBeNull('derived.enumOrNullMember');
     shouldBeUndefined('derived.objectMember');
     shouldBeNull('derived.objectOrNullMemberWithDefault');
     shouldBeUndefined('derived.derivedStringMember');

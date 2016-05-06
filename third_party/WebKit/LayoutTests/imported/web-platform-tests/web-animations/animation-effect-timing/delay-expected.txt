@@ -1,8 +1,0 @@
-This is a testharness.js-based test.
-PASS set delay 100 
-PASS set delay -100 
-FAIL Test adding a positive delay to an animation without a backwards fill makes it no longer active assert_equals: expected (object) null but got (undefined) undefined
-PASS Test seeking an animation by setting a negative delay 
-PASS Test finishing an animation using a large negative delay 
-Harness: the test ran to completion.
-

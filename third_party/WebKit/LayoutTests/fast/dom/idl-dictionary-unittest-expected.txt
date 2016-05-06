@@ -7,7 +7,7 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 Test for setting an empty dictionary
 PASS dict.longMember is undefined.
 PASS dict.longMemberWithDefault is 42
-PASS dict.longOrNullMember is undefined.
+PASS dict.longOrNullMember is null
 PASS dict.longOrNullMemberWithDefault is null
 PASS dict.booleanMember is undefined.
 PASS dict.doubleMember is undefined.
@@ -18,13 +18,13 @@ PASS dict.byteStringMember is undefined.
 PASS dict.usvStringMember is undefined.
 PASS dict.stringSequenceMember is undefined.
 PASS dict.stringSequenceMemberWithDefault is []
-PASS dict.stringSequenceOrNullMember is undefined.
+PASS dict.stringSequenceOrNullMember is null
 PASS dict.elementMember is undefined.
-PASS dict.elementOrNullMember is undefined.
+PASS dict.elementOrNullMember is null
 PASS dict.enumMember is undefined.
 PASS dict.enumArrayMember is undefined.
 PASS dict.enumMemberWithDefault is "foo"
-PASS dict.enumOrNullMember is undefined.
+PASS dict.enumOrNullMember is null
 PASS dict.objectMember is undefined.
 PASS dict.objectOrNullMemberWithDefault is null
 PASS dict.doubleOrStringMember is undefined.
@@ -34,7 +34,7 @@ PASS dict.eventTargetOrNullMember is null
 Test for setting undefined
 PASS dict.longMember is undefined.
 PASS dict.longMemberWithDefault is 42
-PASS dict.longOrNullMember is undefined.
+PASS dict.longOrNullMember is null
 PASS dict.longOrNullMemberWithDefault is null
 PASS dict.booleanMember is undefined.
 PASS dict.doubleMember is undefined.
@@ -45,9 +45,9 @@ PASS dict.usvStringMember is undefined.
 PASS dict.stringMemberWithDefault is "defaultStringValue"
 PASS dict.stringSequenceMember is undefined.
 PASS dict.stringSequenceMemberWithDefault is []
-PASS dict.stringSequenceOrNullMember is undefined.
+PASS dict.stringSequenceOrNullMember is null
 PASS dict.elementMember is undefined.
-PASS dict.elementOrNullMember is undefined.
+PASS dict.elementOrNullMember is null
 PASS dict.objectMember is undefined.
 PASS dict.objectOrNullMemberWithDefault is null
 PASS dict.eventTargetOrNullMember is null
@@ -68,7 +68,7 @@ PASS dict.stringSequenceMember is ["foo", "bar", "baz"]
 PASS dict.stringSequenceMemberWithDefault is ["foo", "bar", "baz"]
 PASS dict.stringSequenceOrNullMember is []
 PASS dict.elementMember is element1
-PASS dict.elementOrNullMember is undefined.
+PASS dict.elementOrNullMember is null
 PASS dict.enumMember is "foo"
 PASS dict.enumMemberWithDefault is "bar"
 PASS dict.enumOrNullMember is "baz"
@@ -89,7 +89,7 @@ PASS dict.doubleOrStringMember is undefined.
 Test for explicit undefined or null, and missing members
 PASS dict.longMember is undefined.
 PASS dict.longMemberWithDefault is 0
-PASS dict.longOrNullMember is undefined.
+PASS dict.longOrNullMember is null
 PASS dict.longOrNullMemberWithDefault is null
 
 Test for setting invalid member
@@ -152,7 +152,7 @@ PASS dictionaryTest.set({dictionaryMember: 'foo'}) threw exception TypeError: Fa
 Test for derived dictionary
 PASS derived.longMember is undefined.
 PASS derived.longMemberWithDefault is 42
-PASS derived.longOrNullMember is undefined.
+PASS derived.longOrNullMember is null
 PASS derived.longOrNullMemberWithDefault is null
 PASS derived.booleanMember is undefined.
 PASS derived.doubleMember is undefined.
@@ -160,12 +160,12 @@ PASS derived.stringMember is undefined.
 PASS derived.stringMemberWithDefault is "defaultStringValue"
 PASS derived.stringSequenceMember is undefined.
 PASS derived.stringSequenceMemberWithDefault is []
-PASS derived.stringSequenceOrNullMember is undefined.
+PASS derived.stringSequenceOrNullMember is null
 PASS derived.elementMember is undefined.
-PASS derived.elementOrNullMember is undefined.
+PASS derived.elementOrNullMember is null
 PASS derived.enumMember is undefined.
 PASS derived.enumMemberWithDefault is "foo"
-PASS derived.enumOrNullMember is undefined.
+PASS derived.enumOrNullMember is null
 PASS derived.objectMember is undefined.
 PASS derived.objectOrNullMemberWithDefault is null
 PASS derived.derivedStringMember is undefined.

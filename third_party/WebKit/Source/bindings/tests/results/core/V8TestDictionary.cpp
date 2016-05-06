@@ -669,6 +669,9 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     if (impl.hasElementOrNullMember()) {
         if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8String(isolate, "elementOrNullMember"), toV8(impl.elementOrNullMember(), creationContext, isolate))))
             return false;
+    } else {
+        if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8String(isolate, "elementOrNullMember"), v8::Null(isolate))))
+            return false;
     }
 
     if (impl.hasEnumMember()) {
@@ -711,6 +714,9 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     if (impl.hasObjectOrNullMember()) {
         ASSERT(impl.objectOrNullMember().isObject());
         if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8String(isolate, "objectOrNullMember"), impl.objectOrNullMember().v8Value())))
+            return false;
+    } else {
+        if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8String(isolate, "objectOrNullMember"), v8::Null(isolate))))
             return false;
     }
 
@@ -774,6 +780,9 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     if (impl.hasTestInterfaceGarbageCollectedOrNullMember()) {
         if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8String(isolate, "testInterfaceGarbageCollectedOrNullMember"), toV8(impl.testInterfaceGarbageCollectedOrNullMember(), creationContext, isolate))))
             return false;
+    } else {
+        if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8String(isolate, "testInterfaceGarbageCollectedOrNullMember"), v8::Null(isolate))))
+            return false;
     }
 
     if (impl.hasTestInterfaceGarbageCollectedSequenceMember()) {
@@ -791,6 +800,9 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
 
     if (impl.hasTestInterfaceOrNullMember()) {
         if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8String(isolate, "testInterfaceOrNullMember"), toV8(impl.testInterfaceOrNullMember(), creationContext, isolate))))
+            return false;
+    } else {
+        if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8String(isolate, "testInterfaceOrNullMember"), v8::Null(isolate))))
             return false;
     }
 

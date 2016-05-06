@@ -117,6 +117,10 @@ bool toV8{{cpp_class}}(const {{cpp_class}}& impl, v8::Local<v8::Object> dictiona
     } else {
         if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8String(isolate, "{{member.name}}"), {{member.v8_default_value}})))
             return false;
+    {% elif member.is_nullable %}
+    } else {
+        if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8String(isolate, "{{member.name}}"), v8::Null(isolate))))
+            return false;
     {% elif member.is_required %}
     } else {
         ASSERT_NOT_REACHED();

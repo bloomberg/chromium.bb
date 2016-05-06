@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-FAIL Test progress during before and after phase when fill is none assert_equals: expected (object) null but got (undefined) undefined
+PASS Test progress during before and after phase when fill is none 
 PASS Test zero iterations: iterations:0 iterationStart:0 duration:0 delay:1 fill:both 
 PASS Test zero iterations: iterations:0 iterationStart:0 duration:100 delay:1 fill:both 
 PASS Test zero iterations: iterations:0 iterationStart:0 duration:Infinity delay:1 fill:both 
