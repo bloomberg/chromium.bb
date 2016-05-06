@@ -582,7 +582,6 @@ protected:
     OwnPtr<FloatingObjects> m_floatingObjects;
 
     friend class MarginInfo;
-    friend class LineBreaker;
     friend class LineWidth; // needs to know FloatingObject
 
 // FIXME-BLOCKFLOW: These methods have implementations in

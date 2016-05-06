@@ -497,8 +497,6 @@ protected:
     // LayoutRubyBase objects need to be able to split and merge, moving their children around
     // (calling moveChildTo, moveAllChildrenTo, and makeChildrenNonInline).
     friend class LayoutRubyBase;
-    // FIXME-BLOCKFLOW: Remove this when the line layout stuff has all moved out of LayoutBlock
-    friend class LineBreaker;
 
     // FIXME: This is temporary as we move code that accesses block flow
     // member variables out of LayoutBlock and into LayoutBlockFlow.
