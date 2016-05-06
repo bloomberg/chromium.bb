@@ -41,7 +41,7 @@ import codecs
 import webkitpy.common.version_check
 
 from webkitpy.common.system.logutils import configure_logging
-from webkitpy.tool.main import WebKitPatch
+from webkitpy.tool.webkit_patch import WebKitPatch
 
 # A StreamWriter will by default try to encode all objects passed
 # to write(), so when passed a raw string already encoded as utf8,
