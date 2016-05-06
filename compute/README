@@ -1,9 +1,0 @@
-To run the GCE commands, you need to install the gcloud tool:
-  curl https://sdk.cloud.google.com | bash
-
-Please run `gcloud auth login` to authenticate your account.
-
-When running `gcloud compute ssh` for the first time, you will be
-prompted to generate ssh keys. The scripts in this directory require
-you having an empty passphrase, so that you will not be prompted to
-enter the passphrase for every command.
