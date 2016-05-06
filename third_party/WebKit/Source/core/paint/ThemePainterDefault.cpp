@@ -269,10 +269,10 @@ void ThemePainterDefault::setupMenuListArrow(const LayoutBox& box, const IntRect
         extraParams.menuList.arrowSize = rect.height() - spacingBottom - spacingTop;
     } else {
         const int arrowSize = 6;
-        const int arrowPadding = 7;
+        const int arrowPadding = 6;
         extraParams.menuList.arrowX = (box.styleRef().direction() == RTL)
-            ? rect.x() + arrowPadding * box.styleRef().effectiveZoom()
-            : right - (arrowSize + arrowPadding) * box.styleRef().effectiveZoom();
+            ? rect.x() + arrowPadding * box.styleRef().effectiveZoom() + box.borderLeft()
+            : right - (arrowSize + arrowPadding) * box.styleRef().effectiveZoom() - box.borderRight();
         extraParams.menuList.arrowSize = arrowSize * box.styleRef().effectiveZoom();
     }
     extraParams.menuList.arrowColor = box.resolveColor(CSSPropertyColor).rgb();
