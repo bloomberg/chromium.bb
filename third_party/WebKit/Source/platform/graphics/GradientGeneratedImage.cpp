@@ -32,15 +32,18 @@ namespace blink {
 
 void GradientGeneratedImage::draw(SkCanvas* canvas, const SkPaint& paint, const FloatRect& destRect, const FloatRect& srcRect, RespectImageOrientationEnum, ImageClampingMode)
 {
-    SkAutoCanvasRestore ar(canvas, true);
-    canvas->clipRect(destRect);
-    canvas->translate(destRect.x(), destRect.y());
-    if (destRect.size() != srcRect.size())
-        canvas->scale(destRect.width() / srcRect.width(), destRect.height() / srcRect.height());
-    canvas->translate(-srcRect.x(), -srcRect.y());
+    SkRect visibleRect = srcRect;
+    if (!visibleRect.intersect(SkRect::MakeIWH(m_size.width(), m_size.height())))
+        return;
+
+    SkMatrix transform = SkMatrix::MakeRectToRect(srcRect, destRect, SkMatrix::kFill_ScaleToFit);
+    SkAutoCanvasRestore autoRestore(canvas, !transform.isIdentity());
+    canvas->concat(transform);
+
     SkPaint gradientPaint(paint);
     m_gradient->applyToPaint(gradientPaint);
-    canvas->drawRect(SkRect::MakeWH(m_size.width(), m_size.height()), gradientPaint);
+
+    canvas->drawRect(visibleRect, gradientPaint);
 }
 
 void GradientGeneratedImage::drawTile(GraphicsContext& context, const FloatRect& srcRect)

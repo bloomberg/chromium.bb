@@ -429,6 +429,10 @@ crbug.com/589265 virtual/spv2/fast/overflow/scroll-nested-positioned-layer-in-ov
 crbug.com/589265 virtual/spv2/fast/overflow/scrollbar-position-update.html [ Failure ]
 crbug.com/589265 virtual/spv2/compositing/geometry/root-layer-update.html [ Failure ]
 
+# https://codereview.chromium.org/1955683002
+crbug.com/603966 fast/css/transformed-mask.html [ NeedsRebaseline ]
+crbug.com/603966 fast/reflections/reflection-with-zoom.html [ NeedsRebaseline ]
+
 # Implement scrollbars in FramePainter for SPv2
 crbug.com/589279 virtual/spv2/fast/overflow/006.html [ Failure ]
 crbug.com/589279 virtual/spv2/fast/overflow/hidden-viewport-x.html [ Failure ]
