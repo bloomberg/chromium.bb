@@ -358,9 +358,7 @@ void QuicHeadersStream::OnControlFrameHeaderData(SpdyStreamId stream_id,
       spdy_session_->OnPromiseHeadersComplete(stream_id_, promised_stream_id_,
                                               frame_len_);
     }
-    if (uncompressed_frame_len_ == 0) {
-      QUIC_BUG << "Zero uncompressed frame length.";
-    } else {
+    if (uncompressed_frame_len_ != 0) {
       int compression_pct = 100 - (100 * frame_len_) / uncompressed_frame_len_;
       DVLOG(1) << "Net.QuicHpackDecompressionPercentage: " << compression_pct;
       UMA_HISTOGRAM_PERCENTAGE("Net.QuicHpackDecompressionPercentage",
