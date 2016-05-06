@@ -789,6 +789,8 @@ if (!is_android) {
       "//tools/perf/chrome_telemetry_build/",
 
       # From telemetry_gpu_unittests.isolate
+      "//third_party/pylint/",
+      "//third_party/logilab/",
       "//testing/scripts/common.py",
       "//testing/xvfb.py",
       "//testing/scripts/run_telemetry_as_googletest.py",

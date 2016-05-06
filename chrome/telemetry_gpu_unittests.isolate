@@ -7,8 +7,10 @@
       'variables': {
         'files': [
           # Other dependencies of the tests and their harness.
-          '../third_party/typ/',
           '../third_party/catapult/',
+          '../third_party/logilab/',
+          '../third_party/pylint/',
+          '../third_party/typ/',
           '../testing/test_env.py',
           '../testing/xvfb.py',
           '../testing/scripts/common.py',

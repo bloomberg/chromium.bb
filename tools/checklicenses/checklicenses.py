@@ -652,6 +652,25 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
         # https://sourceforge.net/p/pyserial/feature-requests/35/
         'UNKNOWN',
     ],
+    # Not shipped, GPL license but some header files contain no licensing info.
+    'third_party/logilab/logilab/astroid': [
+        'GPL (v2 or later)',
+        # https://github.com/PyCQA/astroid/issues/336
+        'UNKNOWN',
+    ],
+    # Not shipped, GPL license but some header files contain no licensing info.
+    'third_party/logilab/logilab/common': [
+        'GPL (v2 or later)',
+        # Look for email by nednguyen@google.com in May 5th in
+        # https://lists.logilab.org/pipermail/python-projects/
+        'UNKNOWN',
+    ],
+    # Not shipped, GPL license but some header files contain no licensing info.
+    'third_party/pylint': [
+        'GPL (v2 or later)',
+        # https://github.com/PyCQA/pylint/issues/894
+        'UNKNOWN',
+    ],
 }
 
 EXCLUDED_PATHS = [
