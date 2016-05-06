@@ -62,14 +62,6 @@ WebString WebFormElement::method() const
     return constUnwrap<HTMLFormElement>()->method();
 }
 
-void WebFormElement::getNamedElements(const WebString& name,
-                                      WebVector<WebNode>& result)
-{
-    HeapVector<Member<Element>> tempVector;
-    unwrap<HTMLFormElement>()->getNamedElements(name, tempVector);
-    result.assign(tempVector);
-}
-
 void WebFormElement::getFormControlElements(WebVector<WebFormControlElement>& result) const
 {
     const HTMLFormElement* form = constUnwrap<HTMLFormElement>();
