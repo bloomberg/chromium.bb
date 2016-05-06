@@ -128,6 +128,11 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
 void AddAboutStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
       {"aboutPageTitle", IDS_SETTINGS_ABOUT_PROGRAM},
+#if defined(OS_CHROMEOS)
+      {"aboutProductTitle", IDS_PRODUCT_OS_NAME},
+#else
+      {"aboutProductTitle", IDS_PRODUCT_NAME},
+#endif
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));

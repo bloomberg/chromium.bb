@@ -1,0 +1,54 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://md-settings/settings_page/settings_section.html">
+<link rel="import" href="chrome://md-settings/settings_shared_css.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+
+<dom-module id="settings-about-page">
+  <link rel="import" type="css" href="chrome://md-settings/settings_page.css">
+  <template>
+    <style include="settings-shared">
+      span {
+        font-size: 20px;
+        margin-top: auto;
+        margin-bottom: auto;
+      }
+
+      img {
+        -webkit-margin-end: 10px;
+      }
+    </style>
+    <settings-section page-title="$i18n{aboutPageTitle}"
+        current-route="[[currentRoute]]">
+      <div class="settings-box">
+        <img id="product-logo"
+            srcset="chrome://theme/current-channel-logo@1x 1x,
+                    chrome://theme/current-channel-logo@2x 2x" alt="">
+        <span>$i18n{aboutProductTitle}</span>
+      </div>
+      <div class="settings-box two-line">
+        <!-- TODO(dpapad): Implement this. -->
+        <div class="start">
+          <div>Your device is up to date</div>
+          <div class="secondary">Version Foo.bar.baz</div>
+        </div>
+        <paper-button class="secondary-action">Check for update</paper-button>
+      </div>
+      <div class="settings-box two-line">
+        <!-- TODO(dpapad): Implement this. -->
+        <div class="start">
+          <div>Get help with Chrome</div>
+          <div class="secondary">Open the Help Center</div>
+        </div>
+      </div>
+      <div class="settings-box">
+        <!-- TODO(dpapad): Implement this. -->
+        Report an issue
+      </div>
+      <div class="settings-box">
+        <!-- TODO(dpapad): Implement this. -->
+        Other info here
+      </div>
+    </settings-section>
+  </template>
+  <script src="about_page.js"></script>
+</dom-module>

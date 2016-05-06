@@ -1,4 +1,5 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://md-settings/about_page/about_page.html">
 <link rel="import" href="chrome://md-settings/advanced_page/advanced_page.html">
 <link rel="import" href="chrome://md-settings/basic_page/basic_page.html">
 
@@ -17,9 +18,7 @@
         </settings-advanced-page>
       </template>
       <template is="dom-if" if="[[showAboutPage_]]">
-        <!-- TODO(dpapad): Replace this with <settings-about-page>
-            implementation -->
-        <div>$i18n{aboutPageTitle}</div>
+        <settings-about-page></settings-about-page>
       </template>
     </div>
   </template>

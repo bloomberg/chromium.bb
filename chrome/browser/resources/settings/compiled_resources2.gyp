@@ -7,6 +7,7 @@
       'target_name': 'settings_resources',
       'type': 'none',
       'dependencies': [
+        'about_page/compiled_resources2.gyp:*',
         'advanced_page/compiled_resources2.gyp:*',
         'appearance_page/compiled_resources2.gyp:*',
         'basic_page/compiled_resources2.gyp:*',
