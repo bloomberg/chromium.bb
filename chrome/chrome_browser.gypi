@@ -1171,8 +1171,6 @@
       'browser/banners/app_banner_infobar_delegate_desktop.h',
       'browser/banners/app_banner_manager_desktop.cc',
       'browser/banners/app_banner_manager_desktop.h',
-      'browser/banners/app_banner_manager_emulation.cc',
-      'browser/banners/app_banner_manager_emulation.h',
       'browser/bookmarks/bookmark_html_writer.cc',
       'browser/bookmarks/bookmark_html_writer.h',
       'browser/certificate_viewer.cc',
