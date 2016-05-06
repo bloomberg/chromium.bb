@@ -40,10 +40,6 @@ android_java_prebuilt("emma_device") {
   jar_path = "$android_sdk_root/tools/lib/emma_device.jar"
 }
 
-android_java_prebuilt("uiautomator_java") {
-  jar_path = "$android_sdk/uiautomator.jar"
-}
-
 android_java_prebuilt("android_support_annotations_javalib") {
   jar_path = "$android_sdk_root/extras/android/support/annotations/android-support-annotations.jar"
 }

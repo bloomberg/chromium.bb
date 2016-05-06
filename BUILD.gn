@@ -314,7 +314,6 @@ group("both_gn_and_gyp") {
       "//media/gpu:video_decode_accelerator_unittest",
       "//net/android:net_junit_tests",
       "//testing/android/junit:junit_unit_tests",
-      "//third_party/android_tools:uiautomator_java",
       "//third_party/errorprone:chromium_errorprone",
       "//third_party/smhasher:murmurhash3",
       "//tools/android:android_tools",
