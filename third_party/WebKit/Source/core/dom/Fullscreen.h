@@ -29,8 +29,8 @@
 #define Fullscreen_h
 
 #include "core/CoreExport.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/Document.h"
-#include "core/dom/DocumentLifecycleObserver.h"
 #include "core/dom/Element.h"
 #include "platform/Supplementable.h"
 #include "platform/Timer.h"
@@ -47,7 +47,7 @@ class ComputedStyle;
 class CORE_EXPORT Fullscreen final
     : public GarbageCollectedFinalized<Fullscreen>
     , public Supplement<Document>
-    , public DocumentLifecycleObserver {
+    , public ContextLifecycleObserver {
     USING_GARBAGE_COLLECTED_MIXIN(Fullscreen);
 public:
     virtual ~Fullscreen();
@@ -86,7 +86,8 @@ public:
     // Mozilla API
     Element* webkitCurrentFullScreenElement() const { return m_fullScreenElement.get(); }
 
-    void documentWasDetached() override;
+    // ContextLifecycleObserver:
+    void contextDestroyed() override;
 
     DECLARE_VIRTUAL_TRACE();
 

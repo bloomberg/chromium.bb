@@ -29,7 +29,6 @@
 #include "core/css/MediaValuesCached.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/DocumentFragment.h"
-#include "core/dom/DocumentLifecycleObserver.h"
 #include "core/dom/Element.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/frame/LocalFrame.h"
@@ -86,29 +85,6 @@ static HTMLTokenizer::State tokenizerStateForContextElement(Element* contextElem
         return HTMLTokenizer::PLAINTEXTState;
     return HTMLTokenizer::DataState;
 }
-
-class ParserDataReceiver final : public GarbageCollectedFinalized<ParserDataReceiver>, public DocumentLifecycleObserver {
-    USING_GARBAGE_COLLECTED_MIXIN(ParserDataReceiver);
-public:
-    static ParserDataReceiver* create(WeakPtr<BackgroundHTMLParser> backgroundParser, Document* document)
-    {
-        return new ParserDataReceiver(backgroundParser, document);
-    }
-
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        DocumentLifecycleObserver::trace(visitor);
-    }
-
-private:
-    ParserDataReceiver(WeakPtr<BackgroundHTMLParser> backgroundParser, Document* document)
-        : DocumentLifecycleObserver(document)
-        , m_backgroundParser(backgroundParser)
-    {
-    }
-
-    WeakPtr<BackgroundHTMLParser> m_backgroundParser;
-};
 
 HTMLDocumentParser::HTMLDocumentParser(HTMLDocument& document, bool reportErrors, ParserSynchronizationPolicy syncPolicy)
     : ScriptableDocumentParser(document)

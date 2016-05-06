@@ -59,7 +59,7 @@ PrerenderHandle* PrerenderHandle::create(Document& document, PrerenderClient* cl
 }
 
 PrerenderHandle::PrerenderHandle(Document& document, Prerender* prerender)
-    : DocumentLifecycleObserver(&document)
+    : ContextLifecycleObserver(&document)
     , m_prerender(prerender)
 {
 }
@@ -74,9 +74,10 @@ PrerenderHandle::~PrerenderHandle()
 
 void PrerenderHandle::cancel()
 {
-    // Avoid both abandoning and canceling the same prerender. In the abandon case, the LinkLoader cancels the
-    // PrerenderHandle as the Document is destroyed, even through the DocumentLifecycleObserver has already abandoned
-    // it.
+    // Avoid both abandoning and canceling the same prerender. In the abandon
+    // case, the LinkLoader cancels the PrerenderHandle as the Document is
+    // destroyed, even through the ContextLifecycleObserver has already
+    // abandoned it.
     if (!m_prerender)
         return;
     m_prerender->cancel();
@@ -88,13 +89,12 @@ const KURL& PrerenderHandle::url() const
     return m_prerender->url();
 }
 
-void PrerenderHandle::documentWasDetached()
+void PrerenderHandle::contextDestroyed()
 {
-    // In Oilpan, a PrerenderHandle is not removed from
-    // LifecycleNotifier::m_observers until a next GC is triggered.
-    // Thus documentWasDetached() can be called for a PrerenderHandle
-    // that is already canceled (and thus detached). In that case,
-    // we should not detach the PrerenderHandle again, so we need this check.
+    // A PrerenderHandle is not removed from LifecycleNotifier::m_observers
+    // until the next GC runs. Thus contextDestroyed() can be called for a
+    // PrerenderHandle that is already cancelled (and thus detached). In that
+    // case, we should not detach the PrerenderHandle again.
     if (!m_prerender)
         return;
     m_prerender->abandon();
@@ -110,7 +110,7 @@ void PrerenderHandle::detach()
 DEFINE_TRACE(PrerenderHandle)
 {
     visitor->trace(m_prerender);
-    DocumentLifecycleObserver::trace(visitor);
+    ContextLifecycleObserver::trace(visitor);
 }
 
 } // namespace blink

@@ -33,7 +33,6 @@
 #include "bindings/core/v8/V0CustomElementConstructorBuilder.h"
 #include "core/HTMLNames.h"
 #include "core/SVGNames.h"
-#include "core/dom/DocumentLifecycleObserver.h"
 #include "core/dom/custom/V0CustomElementException.h"
 #include "core/dom/custom/V0CustomElementRegistrationContext.h"
 

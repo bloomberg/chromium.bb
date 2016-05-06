@@ -31,7 +31,7 @@
 #ifndef PrerenderHandle_h
 #define PrerenderHandle_h
 
-#include "core/dom/DocumentLifecycleObserver.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/Noncopyable.h"
@@ -44,7 +44,7 @@ class Document;
 class Prerender;
 class PrerenderClient;
 
-class PrerenderHandle final : public GarbageCollectedFinalized<PrerenderHandle>, public DocumentLifecycleObserver {
+class PrerenderHandle final : public GarbageCollectedFinalized<PrerenderHandle>, public ContextLifecycleObserver {
     USING_GARBAGE_COLLECTED_MIXIN(PrerenderHandle);
     WTF_MAKE_NONCOPYABLE(PrerenderHandle);
 public:
@@ -55,8 +55,8 @@ public:
     void cancel();
     const KURL& url() const;
 
-    // From DocumentLifecycleObserver:
-    void documentWasDetached() override;
+    // ContextLifecycleObserver:
+    void contextDestroyed() override;
 
     DECLARE_VIRTUAL_TRACE();
     EAGERLY_FINALIZE();

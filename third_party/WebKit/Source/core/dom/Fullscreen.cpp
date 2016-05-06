@@ -170,7 +170,7 @@ bool Fullscreen::isFullScreen(Document& document)
 }
 
 Fullscreen::Fullscreen(Document& document)
-    : DocumentLifecycleObserver(&document)
+    : ContextLifecycleObserver(&document)
     , m_fullScreenLayoutObject(nullptr)
     , m_eventQueueTimer(this, &Fullscreen::eventQueueTimerFired)
 {
@@ -183,10 +183,10 @@ Fullscreen::~Fullscreen()
 
 inline Document* Fullscreen::document()
 {
-    return lifecycleContext();
+    return toDocument(lifecycleContext());
 }
 
-void Fullscreen::documentWasDetached()
+void Fullscreen::contextDestroyed()
 {
     m_eventQueue.clear();
 
@@ -231,7 +231,7 @@ void Fullscreen::requestFullscreen(Element& element, RequestType requestType)
         if (!UserGestureIndicator::utilizeUserGesture()) {
             String message = ExceptionMessages::failedToExecute("requestFullScreen",
                 "Element", "API can only be initiated by a user gesture.");
-            document()->getExecutionContext()->addConsoleMessage(
+            document()->addConsoleMessage(
                 ConsoleMessage::create(JSMessageSource, WarningMessageLevel, message));
             break;
         }
@@ -610,7 +610,7 @@ DEFINE_TRACE(Fullscreen)
     visitor->trace(m_fullScreenElementStack);
     visitor->trace(m_eventQueue);
     Supplement<Document>::trace(visitor);
-    DocumentLifecycleObserver::trace(visitor);
+    ContextLifecycleObserver::trace(visitor);
 }
 
 } // namespace blink
