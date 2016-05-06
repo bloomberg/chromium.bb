@@ -67,10 +67,7 @@ LayoutProgress* HTMLProgressElement::layoutProgress() const
 {
     if (layoutObject() && layoutObject()->isProgress())
         return toLayoutProgress(layoutObject());
-
-    LayoutObject* layoutObject = userAgentShadowRoot()->firstChild()->layoutObject();
-    ASSERT_WITH_SECURITY_IMPLICATION(!layoutObject || layoutObject->isProgress());
-    return toLayoutProgress(layoutObject);
+    return nullptr;
 }
 
 void HTMLProgressElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)

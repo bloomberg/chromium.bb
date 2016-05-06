@@ -32,7 +32,7 @@
 
 #include "core/HTMLNames.h"
 #include "core/html/HTMLProgressElement.h"
-#include "core/layout/LayoutProgress.h"
+#include "core/layout/LayoutObject.h"
 
 namespace blink {
 
@@ -60,11 +60,6 @@ inline ProgressInnerElement::ProgressInnerElement(Document& document)
 }
 
 DEFINE_NODE_FACTORY(ProgressInnerElement)
-
-LayoutObject* ProgressInnerElement::createLayoutObject(const ComputedStyle&)
-{
-    return new LayoutProgress(this);
-}
 
 bool ProgressInnerElement::layoutObjectIsNeeded(const ComputedStyle& style)
 {

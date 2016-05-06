@@ -30,7 +30,7 @@ class HTMLProgressElement;
 
 class CORE_EXPORT LayoutProgress final : public LayoutBlockFlow {
 public:
-    explicit LayoutProgress(HTMLElement*);
+    explicit LayoutProgress(HTMLProgressElement*);
     ~LayoutProgress() override;
 
     double position() const { return m_position; }

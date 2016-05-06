@@ -897,7 +897,6 @@ progress {
 }
 
 progress::-webkit-progress-inner-element {
-    -webkit-appearance: inherit;
     box-sizing: inherit;
     -webkit-user-modify: read-only;
     height: 100%;
