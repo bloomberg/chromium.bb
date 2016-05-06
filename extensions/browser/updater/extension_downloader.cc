@@ -193,7 +193,6 @@ ExtensionDownloader::ExtensionDownloader(
                         base::Bind(&ExtensionDownloader::CreateExtensionFetcher,
                                    base::Unretained(this))),
       extension_cache_(NULL),
-      enable_extra_update_metrics_(false),
       weak_ptr_factory_(this) {
   DCHECK(delegate_);
   DCHECK(request_context_.get());
@@ -343,52 +342,41 @@ bool ExtensionDownloader::AddExtensionData(const std::string& id,
       break;
   }
 
-  std::vector<GURL> update_urls;
-  update_urls.push_back(update_url);
-  // If metrics are enabled, also add to ManifestFetchData for the
-  // webstore update URL.
-  if (!extension_urls::IsWebstoreUpdateUrl(update_url) &&
-      enable_extra_update_metrics_) {
-    update_urls.push_back(extension_urls::GetWebstoreUpdateUrl());
+  DCHECK(!update_url.is_empty());
+  DCHECK(update_url.is_valid());
+
+  std::string install_source = extension_urls::IsWebstoreUpdateUrl(update_url)
+                                   ? kDefaultInstallSource
+                                   : kNotFromWebstoreInstallSource;
+
+  ManifestFetchData::PingData ping_data;
+  ManifestFetchData::PingData* optional_ping_data = NULL;
+  if (delegate_->GetPingDataForExtension(id, &ping_data))
+    optional_ping_data = &ping_data;
+
+  // Find or create a ManifestFetchData to add this extension to.
+  bool added = false;
+  FetchMap::iterator existing_iter =
+      fetches_preparing_.find(std::make_pair(request_id, update_url));
+  if (existing_iter != fetches_preparing_.end() &&
+      !existing_iter->second.empty()) {
+    // Try to add to the ManifestFetchData at the end of the list.
+    ManifestFetchData* existing_fetch = existing_iter->second.back().get();
+    if (existing_fetch->AddExtension(id, version.GetString(),
+                                     optional_ping_data, update_url_data,
+                                     install_source)) {
+      added = true;
+    }
   }
-
-  for (size_t i = 0; i < update_urls.size(); ++i) {
-    DCHECK(!update_urls[i].is_empty());
-    DCHECK(update_urls[i].is_valid());
-
-    std::string install_source =
-        i == 0 ? kDefaultInstallSource : kNotFromWebstoreInstallSource;
-
-    ManifestFetchData::PingData ping_data;
-    ManifestFetchData::PingData* optional_ping_data = NULL;
-    if (delegate_->GetPingDataForExtension(id, &ping_data))
-      optional_ping_data = &ping_data;
-
-    // Find or create a ManifestFetchData to add this extension to.
-    bool added = false;
-    FetchMap::iterator existing_iter =
-        fetches_preparing_.find(std::make_pair(request_id, update_urls[i]));
-    if (existing_iter != fetches_preparing_.end() &&
-        !existing_iter->second.empty()) {
-      // Try to add to the ManifestFetchData at the end of the list.
-      ManifestFetchData* existing_fetch = existing_iter->second.back().get();
-      if (existing_fetch->AddExtension(id, version.GetString(),
-                                       optional_ping_data, update_url_data,
-                                       install_source)) {
-        added = true;
-      }
-    }
-    if (!added) {
-      // Otherwise add a new element to the list, if the list doesn't exist or
-      // if its last element is already full.
-      linked_ptr<ManifestFetchData> fetch(
-          CreateManifestFetchData(update_urls[i], request_id));
-      fetches_preparing_[std::make_pair(request_id, update_urls[i])].push_back(
-          fetch);
-      added = fetch->AddExtension(id, version.GetString(), optional_ping_data,
-                                  update_url_data, install_source);
-      DCHECK(added);
-    }
+  if (!added) {
+    // Otherwise add a new element to the list, if the list doesn't exist or
+    // if its last element is already full.
+    linked_ptr<ManifestFetchData> fetch(
+        CreateManifestFetchData(update_url, request_id));
+    fetches_preparing_[std::make_pair(request_id, update_url)].push_back(fetch);
+    added = fetch->AddExtension(id, version.GetString(), optional_ping_data,
+                                update_url_data, install_source);
+    DCHECK(added);
   }
 
   return true;

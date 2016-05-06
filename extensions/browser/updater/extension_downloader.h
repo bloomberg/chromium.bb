@@ -112,10 +112,6 @@ class ExtensionDownloader : public net::URLFetcherDelegate,
     ping_enabled_domain_ = domain;
   }
 
-  void set_enable_extra_update_metrics(bool enable) {
-    enable_extra_update_metrics_ = enable;
-  }
-
   // Sets a test delegate to use by any instances of this class. The |delegate|
   // should outlive all instances.
   static void set_test_delegate(ExtensionDownloaderTestDelegate* delegate);
@@ -329,10 +325,6 @@ class ExtensionDownloader : public net::URLFetcherDelegate,
   // Domain to enable ping data. Ping data will be sent with manifest fetches
   // to update URLs which match this domain. Defaults to empty (no domain).
   std::string ping_enabled_domain_;
-
-  // Indicates whether or not extra metrics should be included with ping data.
-  // Defaults to |false|.
-  bool enable_extra_update_metrics_;
 
   // Used to create WeakPtrs to |this|.
   base::WeakPtrFactory<ExtensionDownloader> weak_ptr_factory_;

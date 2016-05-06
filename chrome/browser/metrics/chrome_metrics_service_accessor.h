@@ -14,7 +14,6 @@
 #include "components/metrics/metrics_service_accessor.h"
 
 class BrowserProcessImpl;
-class ChromeExtensionDownloaderFactory;
 class Profile;
 
 namespace {
@@ -77,7 +76,6 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   friend class ::FlashDOMHandler;
   friend class BrowserProcessImpl;
   friend void chrome_browser::SetupPreReadFieldTrial();
-  friend class ChromeExtensionDownloaderFactory;
   friend class ChromeMetricsServicesManagerClient;
   friend class ChromeRenderMessageFilter;
   friend class DataReductionProxyChromeSettings;

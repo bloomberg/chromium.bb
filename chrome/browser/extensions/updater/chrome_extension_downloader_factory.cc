@@ -10,7 +10,6 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/google/google_brand.h"
-#include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -50,8 +49,6 @@ ChromeExtensionDownloaderFactory::CreateForRequestContext(
   }
   downloader->set_manifest_query_params(manifest_query_params);
   downloader->set_ping_enabled_domain("google.com");
-  downloader->set_enable_extra_update_metrics(
-      ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled());
   return downloader;
 }
 

@@ -302,8 +302,7 @@ class MockService : public TestExtensionService {
   explicit MockService(TestExtensionPrefs* prefs)
       : prefs_(prefs),
         pending_extension_manager_(&profile_),
-        downloader_delegate_override_(NULL),
-        enable_metrics_(false) {}
+        downloader_delegate_override_(NULL) {}
 
   ~MockService() override {}
 
@@ -326,10 +325,6 @@ class MockService : public TestExtensionService {
   FakeOAuth2TokenService* fake_token_service() {
     return fake_token_service_.get();
   }
-
-  // Controls whether metrics (enable/disabled state, etc.) are sent in the
-  // autoupdate ping requests.
-  void set_enable_metrics(bool enable) { enable_metrics_ = enable; }
 
   // Creates test extensions and inserts them into list. The name and
   // version are all based on their index. If |update_url| is non-null, it
@@ -381,8 +376,6 @@ class MockService : public TestExtensionService {
             request_context(), downloader_delegate_override_
                                    ? downloader_delegate_override_
                                    : delegate);
-    if (enable_metrics_)
-      downloader->set_enable_extra_update_metrics(true);
     return downloader;
   }
 
@@ -404,8 +397,6 @@ class MockService : public TestExtensionService {
   std::unique_ptr<FakeOAuth2TokenService> fake_token_service_;
 
   ExtensionDownloaderDelegate* downloader_delegate_override_;
-
-  bool enable_metrics_;
 
   DISALLOW_COPY_AND_ASSIGN(MockService);
 };
