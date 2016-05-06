@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "components/mus/public/interfaces/display.mojom.h"
 #include "components/mus/public/interfaces/gpu.mojom.h"
 #include "components/mus/public/interfaces/user_access_manager.mojom.h"
@@ -31,6 +32,10 @@
 #include "ui/ozone/public/client_native_pixmap_factory.h"
 #endif
 
+namespace gfx {
+class Rect;
+}
+
 namespace shell {
 class Connector;
 }
@@ -42,6 +47,7 @@ class PlatformEventSource;
 namespace mus {
 namespace ws {
 class ForwardingWindowManager;
+class PlatformScreen;
 class WindowServer;
 }
 
@@ -117,6 +123,12 @@ class MandolineUIServicesApp
   void Create(shell::Connection* connection,
               mojom::GpuRequest request) override;
 
+  // Callback for display configuration. |id| is the identifying token for the
+  // configured display that will identify a specific physical display across
+  // configuration changes. |bounds| is the bounds of the display in screen
+  // coordinates.
+  void OnCreatedPhysicalDisplay(int64_t id, const gfx::Rect& bounds);
+
   ws::PlatformDisplayInitParams platform_display_init_params_;
   std::unique_ptr<ws::WindowServer> window_server_;
   std::unique_ptr<ui::PlatformEventSource> event_source_;
@@ -130,6 +142,10 @@ class MandolineUIServicesApp
 #if defined(USE_OZONE)
   std::unique_ptr<ui::ClientNativePixmapFactory> client_native_pixmap_factory_;
 #endif
+
+  std::unique_ptr<ws::PlatformScreen> platform_screen_;
+
+  base::WeakPtrFactory<MandolineUIServicesApp> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MandolineUIServicesApp);
 };

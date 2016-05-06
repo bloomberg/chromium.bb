@@ -10,7 +10,9 @@
 namespace mus {
 namespace ws {
 
-PlatformDisplayInitParams::PlatformDisplayInitParams() {}
+PlatformDisplayInitParams::PlatformDisplayInitParams()
+    : display_bounds(gfx::Rect(0, 0, 1024, 768)), display_id(1) {}
+
 PlatformDisplayInitParams::PlatformDisplayInitParams(
     const PlatformDisplayInitParams& other) = default;
 PlatformDisplayInitParams::~PlatformDisplayInitParams() {}

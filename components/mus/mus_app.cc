@@ -17,6 +17,7 @@
 #include "components/mus/ws/display.h"
 #include "components/mus/ws/display_binding.h"
 #include "components/mus/ws/display_manager.h"
+#include "components/mus/ws/platform_screen.h"
 #include "components/mus/ws/user_display_manager.h"
 #include "components/mus/ws/window_server.h"
 #include "components/mus/ws/window_server_test_impl.h"
@@ -33,6 +34,7 @@
 #include "ui/base/ui_base_paths.h"
 #include "ui/events/event_switches.h"
 #include "ui/events/platform/platform_event_source.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gl/gl_surface.h"
 
 #if defined(USE_X11)
@@ -70,7 +72,10 @@ struct MandolineUIServicesApp::UserState {
   std::unique_ptr<ws::WindowTreeHostFactory> window_tree_host_factory;
 };
 
-MandolineUIServicesApp::MandolineUIServicesApp() : test_config_(false) {}
+MandolineUIServicesApp::MandolineUIServicesApp()
+    : test_config_(false),
+      platform_screen_(ws::PlatformScreen::Create()),
+      weak_ptr_factory_(this) {}
 
 MandolineUIServicesApp::~MandolineUIServicesApp() {
   // Destroy |window_server_| first, since it depends on |event_source_|.
@@ -172,6 +177,9 @@ void MandolineUIServicesApp::Initialize(shell::Connector* connector,
   // TODO(rjkroege): It is possible that we might want to generalize the
   // GpuState object.
   platform_display_init_params_.gpu_state = new GpuState();
+
+  // Gpu must be running before the PlatformScreen can be initialized.
+  platform_screen_->Init();
   window_server_.reset(
       new ws::WindowServer(this, platform_display_init_params_.surfaces_state));
 }
@@ -206,10 +214,11 @@ bool MandolineUIServicesApp::IsTestConfig() const {
 }
 
 void MandolineUIServicesApp::CreateDefaultDisplays() {
-  // Display manages its own lifetime.
-  ws::Display* host_impl =
-      new ws::Display(window_server_.get(), platform_display_init_params_);
-  host_impl->Init(nullptr);
+  // An asynchronous callback will create the Displays once the physical
+  // displays are ready.
+  platform_screen_->ConfigurePhysicalDisplay(
+      base::Bind(&MandolineUIServicesApp::OnCreatedPhysicalDisplay,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void MandolineUIServicesApp::Create(shell::Connection* connection,
@@ -273,6 +282,17 @@ void MandolineUIServicesApp::Create(shell::Connection* connection,
                                     mojom::GpuRequest request) {
   DCHECK(platform_display_init_params_.gpu_state);
   new GpuImpl(std::move(request), platform_display_init_params_.gpu_state);
+}
+
+void MandolineUIServicesApp::OnCreatedPhysicalDisplay(int64_t id,
+                                                      const gfx::Rect& bounds) {
+  platform_display_init_params_.display_bounds = bounds;
+  platform_display_init_params_.display_id = id;
+
+  // Display manages its own lifetime.
+  ws::Display* host_impl =
+      new ws::Display(window_server_.get(), platform_display_init_params_);
+  host_impl->Init(nullptr);
 }
 
 }  // namespace mus

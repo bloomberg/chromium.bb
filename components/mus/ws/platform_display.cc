@@ -177,8 +177,9 @@ DefaultPlatformDisplay::DefaultPlatformDisplay(
 #endif
       weak_factory_(this) {
   metrics_.size_in_pixels = mojo::Size::New();
-  metrics_.size_in_pixels->width = 1024;
-  metrics_.size_in_pixels->height = 768;
+  metrics_.size_in_pixels->width = init_params.display_bounds.width();
+  metrics_.size_in_pixels->height = init_params.display_bounds.height();
+  // TODO(rjkroege): Preserve the display_id when Ozone platform can use it.
 }
 
 void DefaultPlatformDisplay::Init(PlatformDisplayDelegate* delegate) {
@@ -309,6 +310,7 @@ void DefaultPlatformDisplay::WantToDraw() {
   if (draw_timer_.IsRunning() || frame_pending_)
     return;
 
+  // TODO(rjkroege): Use vblank to kick off Draw.
   draw_timer_.Start(
       FROM_HERE, base::TimeDelta(),
       base::Bind(&DefaultPlatformDisplay::Draw, weak_factory_.GetWeakPtr()));

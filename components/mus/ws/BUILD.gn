@@ -39,6 +39,9 @@ source_set("lib") {
     "platform_display_factory.h",
     "platform_display_init_params.cc",
     "platform_display_init_params.h",
+    "platform_screen.h",
+    "platform_screen_impl.cc",
+    "platform_screen_impl.h",
     "server_window.cc",
     "server_window.h",
     "server_window_delegate.h",
@@ -115,6 +118,14 @@ source_set("lib") {
   ]
 
   if (use_ozone) {
+    sources -= [
+      "platform_screen_impl.cc",
+      "platform_screen_impl.h",
+    ]
+    sources += [
+      "platform_screen_impl_ozone.cc",
+      "platform_screen_impl_ozone.h",
+    ]
     deps += [ "//ui/ozone:ozone" ]
   }
 }
