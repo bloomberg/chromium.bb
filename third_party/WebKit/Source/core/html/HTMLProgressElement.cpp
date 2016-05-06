@@ -75,12 +75,15 @@ LayoutProgress* HTMLProgressElement::layoutProgress() const
 
 void HTMLProgressElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)
 {
-    if (name == valueAttr)
+    if (name == valueAttr) {
+        if (oldValue.isNull() != value.isNull())
+            pseudoStateChanged(CSSSelector::PseudoIndeterminate);
         didElementStateChange();
-    else if (name == maxAttr)
+    } else if (name == maxAttr) {
         didElementStateChange();
-    else
+    } else {
         LabelableElement::parseAttribute(name, oldValue, value);
+    }
 }
 
 void HTMLProgressElement::attach(const AttachContext& context)
@@ -136,12 +139,8 @@ bool HTMLProgressElement::isDeterminate() const
 void HTMLProgressElement::didElementStateChange()
 {
     m_value->setWidthPercentage(position() * 100);
-    if (LayoutProgressItem layoutItem = LayoutProgressItem(layoutProgress())) {
-        bool wasDeterminate = layoutItem.isDeterminate();
+    if (LayoutProgressItem layoutItem = LayoutProgressItem(layoutProgress()))
         layoutItem.updateFromElement();
-        if (wasDeterminate != isDeterminate())
-            pseudoStateChanged(CSSSelector::PseudoIndeterminate);
-    }
 }
 
 void HTMLProgressElement::didAddUserAgentShadowRoot(ShadowRoot& root)
