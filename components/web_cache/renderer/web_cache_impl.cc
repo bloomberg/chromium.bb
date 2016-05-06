@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/web_cache/renderer/web_cache_render_thread_observer.h"
+#include "components/web_cache/renderer/web_cache_impl.h"
 
 #include <limits>
 
@@ -14,23 +14,21 @@
 
 namespace web_cache {
 
-WebCacheRenderThreadObserver::WebCacheRenderThreadObserver()
-    : clear_cache_state_(kInit) {
+WebCacheImpl::WebCacheImpl() : clear_cache_state_(kInit) {
   content::ServiceRegistry* service_registry =
       content::RenderThread::Get()->GetServiceRegistry();
-  service_registry->AddService(base::Bind(
-      &WebCacheRenderThreadObserver::BindRequest, base::Unretained(this)));
+  service_registry->AddService(
+      base::Bind(&WebCacheImpl::BindRequest, base::Unretained(this)));
 }
 
-WebCacheRenderThreadObserver::~WebCacheRenderThreadObserver() {
-}
+WebCacheImpl::~WebCacheImpl() {}
 
-void WebCacheRenderThreadObserver::BindRequest(
+void WebCacheImpl::BindRequest(
     mojo::InterfaceRequest<mojom::WebCache> web_cache_request) {
   bindings_.AddBinding(this, std::move(web_cache_request));
 }
 
-void WebCacheRenderThreadObserver::ExecutePendingClearCache() {
+void WebCacheImpl::ExecutePendingClearCache() {
   switch (clear_cache_state_) {
     case kInit:
       clear_cache_state_ = kNavigate_Pending;
@@ -44,10 +42,9 @@ void WebCacheRenderThreadObserver::ExecutePendingClearCache() {
   }
 }
 
-void WebCacheRenderThreadObserver::SetCacheCapacities(
-    uint64_t min_dead_capacity,
-    uint64_t max_dead_capacity,
-    uint64_t capacity64) {
+void WebCacheImpl::SetCacheCapacities(uint64_t min_dead_capacity,
+                                      uint64_t max_dead_capacity,
+                                      uint64_t capacity64) {
   size_t min_dead_capacity2 = base::checked_cast<size_t>(min_dead_capacity);
   size_t max_dead_capacity2 = base::checked_cast<size_t>(max_dead_capacity);
   size_t capacity = base::checked_cast<size_t>(capacity64);
@@ -56,7 +53,7 @@ void WebCacheRenderThreadObserver::SetCacheCapacities(
                                  capacity);
 }
 
-void WebCacheRenderThreadObserver::ClearCache(bool on_navigation) {
+void WebCacheImpl::ClearCache(bool on_navigation) {
   if (!on_navigation) {
     blink::WebCache::clear();
     return;

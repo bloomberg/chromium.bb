@@ -5,7 +5,7 @@
 #include "content/shell/renderer/shell_content_renderer_client.h"
 
 #include "base/command_line.h"
-#include "components/web_cache/renderer/web_cache_render_thread_observer.h"
+#include "components/web_cache/renderer/web_cache_impl.h"
 #include "content/shell/renderer/shell_render_view_observer.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "v8/include/v8.h"
@@ -22,7 +22,7 @@ ShellContentRendererClient::~ShellContentRendererClient() {
 }
 
 void ShellContentRendererClient::RenderThreadStarted() {
-  web_cache_observer_.reset(new web_cache::WebCacheRenderThreadObserver());
+  web_cache_impl_.reset(new web_cache::WebCacheImpl());
 }
 
 void ShellContentRendererClient::RenderViewCreated(RenderView* render_view) {

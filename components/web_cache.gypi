@@ -40,8 +40,8 @@
         'web_cache_mojo_bindings',
       ],
       'sources': [
-        'web_cache/renderer/web_cache_render_thread_observer.cc',
-        'web_cache/renderer/web_cache_render_thread_observer.h',
+        'web_cache/renderer/web_cache_impl.cc',
+        'web_cache/renderer/web_cache_impl.h',
       ],
     },
   ],

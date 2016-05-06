@@ -59,7 +59,7 @@ class VisitedLinkSlave;
 }
 
 namespace web_cache {
-class WebCacheRenderThreadObserver;
+class WebCacheImpl;
 }
 
 namespace blink {
@@ -200,7 +200,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
 #endif
 
   std::unique_ptr<ChromeRenderThreadObserver> chrome_observer_;
-  std::unique_ptr<web_cache::WebCacheRenderThreadObserver> web_cache_observer_;
+  std::unique_ptr<web_cache::WebCacheImpl> web_cache_impl_;
 
   std::unique_ptr<network_hints::PrescientNetworkingDispatcher>
       prescient_networking_dispatcher_;

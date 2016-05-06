@@ -11,7 +11,7 @@
 #include "content/public/renderer/content_renderer_client.h"
 
 namespace web_cache {
-class WebCacheRenderThreadObserver;
+class WebCacheImpl;
 }
 
 namespace blimp {
@@ -27,8 +27,8 @@ class BlimpContentRendererClient : public content::ContentRendererClient {
   cc::ImageSerializationProcessor* GetImageSerializationProcessor() override;
 
  private:
-  // This observer manages the process-global web cache.
-  std::unique_ptr<web_cache::WebCacheRenderThreadObserver> web_cache_observer_;
+  // Manages the process-global web cache.
+  std::unique_ptr<web_cache::WebCacheImpl> web_cache_impl_;
 
   // Provides the functionality to serialize images in SkPicture.
   std::unique_ptr<cc::ImageSerializationProcessor>

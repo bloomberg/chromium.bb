@@ -4,8 +4,8 @@
 
 source_set("renderer") {
   sources = [
-    "web_cache_render_thread_observer.cc",
-    "web_cache_render_thread_observer.h",
+    "web_cache_impl.cc",
+    "web_cache_impl.h",
   ]
 
   deps = [

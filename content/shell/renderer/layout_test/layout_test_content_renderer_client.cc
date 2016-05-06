@@ -12,7 +12,7 @@
 #include "components/test_runner/web_test_interfaces.h"
 #include "components/test_runner/web_test_proxy.h"
 #include "components/test_runner/web_test_runner.h"
-#include "components/web_cache/renderer/web_cache_render_thread_observer.h"
+#include "components/web_cache/renderer/web_cache_impl.h"
 #include "content/common/input/input_event_utils.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"

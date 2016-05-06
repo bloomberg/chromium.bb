@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_WEB_CACHE_RENDERER_WEB_CACHE_RENDER_THREAD_OBSERVER_H_
-#define COMPONENTS_WEB_CACHE_RENDERER_WEB_CACHE_RENDER_THREAD_OBSERVER_H_
+#ifndef COMPONENTS_WEB_CACHE_RENDERER_WEB_CACHE_IMPL_H_
+#define COMPONENTS_WEB_CACHE_RENDERER_WEB_CACHE_IMPL_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -16,10 +16,10 @@
 namespace web_cache {
 
 // This class implements the Mojo interface mojom::WebCache.
-class WebCacheRenderThreadObserver : public mojom::WebCache {
+class WebCacheImpl : public mojom::WebCache {
  public:
-  WebCacheRenderThreadObserver();
-  ~WebCacheRenderThreadObserver() override;
+  WebCacheImpl();
+  ~WebCacheImpl() override;
 
   void BindRequest(mojo::InterfaceRequest<mojom::WebCache> web_cache_request);
 
@@ -49,10 +49,9 @@ class WebCacheRenderThreadObserver : public mojom::WebCache {
 
   mojo::BindingSet<mojom::WebCache> bindings_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebCacheRenderThreadObserver);
+  DISALLOW_COPY_AND_ASSIGN(WebCacheImpl);
 };
 
 }  // namespace web_cache
 
-#endif  // COMPONENTS_WEB_CACHE_RENDERER_WEB_CACHE_RENDER_THREAD_OBSERVER_H_
-
+#endif  // COMPONENTS_WEB_CACHE_RENDERER_WEB_CACHE_IMPL_H_

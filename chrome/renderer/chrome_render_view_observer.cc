@@ -22,7 +22,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/prerender/prerender_helper.h"
 #include "chrome/renderer/web_apps.h"
-#include "components/web_cache/renderer/web_cache_render_thread_observer.h"
+#include "components/web_cache/renderer/web_cache_impl.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/render_frame.h"
@@ -41,9 +41,9 @@ using blink::WebWindowFeatures;
 
 ChromeRenderViewObserver::ChromeRenderViewObserver(
     content::RenderView* render_view,
-    web_cache::WebCacheRenderThreadObserver* web_cache_render_thread_observer)
+    web_cache::WebCacheImpl* web_cache_impl)
     : content::RenderViewObserver(render_view),
-      web_cache_render_thread_observer_(web_cache_render_thread_observer),
+      web_cache_impl_(web_cache_impl),
       webview_visually_deemphasized_(false) {}
 
 ChromeRenderViewObserver::~ChromeRenderViewObserver() {
@@ -138,8 +138,8 @@ void ChromeRenderViewObserver::OnSetWindowFeatures(
 void ChromeRenderViewObserver::Navigate(const GURL& url) {
   // Execute cache clear operations that were postponed until a navigation
   // event (including tab reload).
-  if (web_cache_render_thread_observer_)
-    web_cache_render_thread_observer_->ExecutePendingClearCache();
+  if (web_cache_impl_)
+    web_cache_impl_->ExecutePendingClearCache();
 }
 
 #if defined(ENABLE_EXTENSIONS)

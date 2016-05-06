@@ -77,7 +77,7 @@
 #include "components/startup_metric_utils/common/startup_metric_messages.h"
 #include "components/version_info/version_info.h"
 #include "components/visitedlink/renderer/visitedlink_slave.h"
-#include "components/web_cache/renderer/web_cache_render_thread_observer.h"
+#include "components/web_cache/renderer/web_cache_impl.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
@@ -332,7 +332,7 @@ void ChromeContentRendererClient::RenderThreadStarted() {
       main_entry_time_));
 
   chrome_observer_.reset(new ChromeRenderThreadObserver());
-  web_cache_observer_.reset(new web_cache::WebCacheRenderThreadObserver());
+  web_cache_impl_.reset(new web_cache::WebCacheImpl());
 
 #if defined(ENABLE_EXTENSIONS)
   ChromeExtensionsRendererClient::GetInstance()->RenderThreadStarted();
@@ -536,7 +536,7 @@ void ChromeContentRendererClient::RenderViewCreated(
   if (command_line->HasSwitch(switches::kInstantProcess))
     new SearchBox(render_view);
 
-  new ChromeRenderViewObserver(render_view, web_cache_observer_.get());
+  new ChromeRenderViewObserver(render_view, web_cache_impl_.get());
 
   new password_manager::CredentialManagerClient(render_view);
 }
