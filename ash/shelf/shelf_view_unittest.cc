@@ -393,6 +393,19 @@ class ShelfViewTest : public AshTestBase {
     return id;
   }
 
+  void SetShelfItemTypeToAppShortcut(ShelfID id) {
+    int index = model_->ItemIndexByID(id);
+    DCHECK_GE(index, 0);
+
+    ShelfItem item = model_->items()[index];
+
+    if (item.type == TYPE_PLATFORM_APP || item.type == TYPE_WINDOWED_APP) {
+      item.type = TYPE_APP_SHORTCUT;
+      model_->Set(index, item);
+    }
+    test_api_->RunMessageLoopUntilAnimationsDone();
+  }
+
   void RemoveByID(ShelfID id) {
     model_->RemoveItemAt(model_->ItemIndexByID(id));
     test_api_->RunMessageLoopUntilAnimationsDone();
@@ -1814,6 +1827,22 @@ TEST_F(ShelfViewTest, CheckDragAndDropFromOverflowBubbleToShelf) {
 
   TestDraggingAnItemFromOverflowToShelf(false);
   TestDraggingAnItemFromOverflowToShelf(true);
+}
+
+// Checks creating app shortcut for an opened platform app in overflow bubble
+// should be invisible to the shelf. See crbug.com/605793.
+TEST_F(ShelfViewTest, CheckOverflowStatusPinOpenedAppToShelf) {
+  AddButtonsUntilOverflow();
+
+  // Add a running Platform app.
+  ShelfID platform_app_id = AddPlatformApp();
+  EXPECT_FALSE(GetButtonByID(platform_app_id)->visible());
+
+  // Make the added running platform app to be an app shortcut.
+  // This app shortcut should be a swapped view in overflow bubble, which is
+  // invisible.
+  SetShelfItemTypeToAppShortcut(platform_app_id);
+  EXPECT_FALSE(GetButtonByID(platform_app_id)->visible());
 }
 
 // Tests that the AppListButton renders as active in response to touches.
