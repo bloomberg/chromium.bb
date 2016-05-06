@@ -101,7 +101,6 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
   DCHECK(params.parent || params.context);
 
   ownership_ = params.ownership;
-  name_ = params.name;
 
   RegisterNativeWidgetForWindow(this, window_);
   window_->SetType(GetAuraWindowTypeForWidgetType(params.type));
@@ -111,6 +110,8 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
   window_->SetTransparent(
       params.opacity == Widget::InitParams::TRANSLUCENT_WINDOW);
   window_->Init(params.layer_type);
+  // Set name after layer init so it propagates to layer.
+  window_->SetName(params.name);
   if (params.shadow_type == Widget::InitParams::SHADOW_TYPE_NONE)
     SetShadowType(window_, wm::SHADOW_TYPE_NONE);
   else if (params.shadow_type == Widget::InitParams::SHADOW_TYPE_DROP)
@@ -748,7 +749,7 @@ void NativeWidgetAura::RepostNativeEvent(gfx::NativeEvent native_event) {
 }
 
 std::string NativeWidgetAura::GetName() const {
-  return name_;
+  return window_ ? window_->name() : std::string();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

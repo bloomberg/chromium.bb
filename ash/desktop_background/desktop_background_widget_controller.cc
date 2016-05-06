@@ -115,7 +115,6 @@ void DesktopBackgroundWidgetController::StartAnimating(
     // show animation's initial values.
     settings.SetTransitionDuration(base::TimeDelta());
     widget_->Show();
-    widget_->GetNativeView()->SetName("DesktopBackgroundView");
   }
 }
 

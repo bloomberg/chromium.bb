@@ -215,6 +215,7 @@ views::Widget* CreateDesktopBackground(aura::Window* root_window,
   views::Widget* desktop_widget = new views::Widget;
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+  params.name = "DesktopBackgroundView";
   if (controller->GetWallpaper().isNull())
     params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.parent = root_window->GetChildById(container_id);

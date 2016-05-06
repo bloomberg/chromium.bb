@@ -209,9 +209,6 @@ class VIEWS_EXPORT NativeWidgetAura
   // See class documentation for Widget in widget.h for a note about ownership.
   Widget::InitParams::Ownership ownership_;
 
-  // Internal name.
-  std::string name_;
-
   // Are we in the destructor?
   bool destroying_;
 
