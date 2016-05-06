@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/test/multiprocess_test.h"
 #include "base/test/perf_test_suite.h"
 #include "base/test/test_io_thread.h"
 #include "mojo/edk/embedder/embedder.h"
@@ -12,6 +13,10 @@
 #include "mojo/public/tests/test_support_private.h"
 
 int main(int argc, char** argv) {
+#if defined(OS_ANDROID)
+  base::InitAndroidMultiProcessTestHelper(main);
+#endif
+
   base::PerfTestSuite test(argc, argv);
 
   mojo::edk::Init();

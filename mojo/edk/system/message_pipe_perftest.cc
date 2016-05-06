@@ -159,13 +159,7 @@ DEFINE_TEST_CLIENT_WITH_PIPE(PingPongClient, MessagePipePerfTest, h) {
 // Repeatedly sends messages as previous one got replied by the child.
 // Waits for the child to close its end before quitting once specified
 // number of messages has been sent.
-#if defined(OS_ANDROID)
-// Android multi-process tests are not executing the new process. This is flaky.
-#define MAYBE_MultiprocessPingPong DISABLED_MultiprocessPingPong
-#else
-#define MAYBE_MultiprocessPingPong MultiprocessPingPong
-#endif  // defined(OS_ANDROID)
-TEST_F(MessagePipePerfTest, MAYBE_MultiprocessPingPong) {
+TEST_F(MessagePipePerfTest, MultiprocessPingPong) {
   RUN_CHILD_ON_PIPE(PingPongClient, h)
     RunPingPongServer(h);
   END_CHILD()
