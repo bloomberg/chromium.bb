@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <sstream>
+
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/range/range.h"
 #include "ui/gfx/range/range_f.h"
@@ -251,4 +253,14 @@ TEST(RangeTest, RangeFConverterTest) {
   range = range_f.Round();
   EXPECT_EQ(0U, range.start());
   EXPECT_EQ(0U, range.end());
+}
+
+TEST(RangeTest, ToString) {
+  gfx::Range range(4, 7);
+  EXPECT_EQ("{4,7}", range.ToString());
+
+  range = gfx::Range::InvalidRange();
+  std::ostringstream expected;
+  expected << "{" << range.start() << "," << range.end() << "}";
+  EXPECT_EQ(expected.str(), range.ToString());
 }

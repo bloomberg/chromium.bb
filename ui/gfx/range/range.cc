@@ -4,6 +4,8 @@
 
 #include "ui/gfx/range/range.h"
 
+#include <inttypes.h>
+
 #include <algorithm>
 #include <limits>
 
@@ -77,7 +79,7 @@ Range Range::Intersect(const Range& range) const {
 }
 
 std::string Range::ToString() const {
-  return base::StringPrintf("{%d,%d}", start(), end());
+  return base::StringPrintf("{%" PRIu32 ",%" PRIu32 "}", start(), end());
 }
 
 std::ostream& operator<<(std::ostream& os, const Range& range) {
