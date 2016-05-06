@@ -1,7 +1,0 @@
-Tests that removing track nodes while their parent is being deleted doesn't crash
-
-
-No crash. PASS.
-
-END OF TEST
-

@@ -1,52 +1,35 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Tests that removing an active cue does not crash the browser.</title>
+<script src="../media-file.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<video></video>
+<script>
+async_test(function(t) {
+    var video = document.querySelector("video");
+    video.src = findMediaFile("video", "../content/test");
 
-        <script src=../media-file.js></script>
-        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=../video-test.js></script>
-        <script>
-        function removeActiveCue()
-        {
-            testExpected("video.textTracks[0].activeCues.length", 1);
+    // Add a text track to the video element.
+    video.addTextTrack("captions", "regular captions track", "en");
 
-            consoleWrite("");
-            consoleWrite("** Remove the cue while it is active **");
-            video.textTracks[0].removeCue(video.textTracks[0].activeCues[0]);
+    // Add a cue to the track with enter event listener.
+    var cue = new VTTCue(0, 4, "Random");
+    cue.onenter = t.step_func_done(removeActiveCue);
 
-            consoleWrite("");
-            consoleWrite("No crash. PASS.");
-            consoleWrite("");
+    var track = video.textTracks[0];
+    track.addCue(cue);
 
-            endTest();
-        }
+    function removeActiveCue() {
+        assert_equals(track.activeCues.length, 1);
 
-        function startTest()
-        {
-            findMediaElement();
-            video.src = findMediaFile('video', '../content/test');
+        // Remove the cue while it is active.
+        track.removeCue(track.activeCues[0]);
 
-            consoleWrite("** Add a text track to the video element **");
-            video.addTextTrack("captions", "regular captions track", "en");
+        // No crash. PASS.
+    }
 
-            consoleWrite("** Add a cue to the track with enter event listener. **");
-            var cue = new VTTCue(0.00, 4.00, "Random");
-            cue.addEventListener("enter", removeActiveCue);
-            video.textTracks[0].addCue(cue);
-
-            consoleWrite("");
-            consoleWrite("** Play the video and remove cue when it becomes active.  **");
-            run("video.play()");
-
-            video.textTracks[0].mode = "showing";
-          }
-        </script>
-    </head>
-
-    <body onload="startTest()">
-        <p>Tests that removing an active cue does not crash the browser.</p>
-        <video controls />
-    </body>
-</html>
+    // Play the video and remove cue when it becomes active.
+    video.play();
+    track.mode = "showing";
+});
+</script>
