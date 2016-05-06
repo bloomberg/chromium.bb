@@ -53,7 +53,10 @@ if (current_cpu == "x86" || current_cpu == "x64") {
         "simd/jquanti-sse2.asm",
         "simd/jsimdcpu.asm",
       ]
-      defines += [ "__x86__" ]
+      defines += [
+        "__x86__",
+        "PIC",
+      ]
     } else if (current_cpu == "x64") {
       sources = [
         "simd/jccolor-sse2-64.asm",
@@ -73,7 +76,10 @@ if (current_cpu == "x86" || current_cpu == "x64") {
         "simd/jquantf-sse2-64.asm",
         "simd/jquanti-sse2-64.asm",
       ]
-      defines += [ "__x86_64__" ]
+      defines += [
+        "__x86_64__",
+        "PIC",
+      ]
     }
 
     if (is_win) {
