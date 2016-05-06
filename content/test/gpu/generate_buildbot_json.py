@@ -711,7 +711,13 @@ TELEMETRY_TESTS = {
   'maps_pixel_test': {
     'target_name': 'maps',
   },
-  'memory_test': {},
+  'memory_test': {
+    'tester_configs': [
+      {
+        'allow_on_android': True,
+      },
+    ],
+  },
   'pixel_test': {
     'target_name': 'pixel',
     'args': [
