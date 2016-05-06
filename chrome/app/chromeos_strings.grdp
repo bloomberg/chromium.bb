@@ -723,7 +723,7 @@ Press any key to continue exploring.
     1 file selected
   </message>
   <message name="IDS_FILE_BROWSER_ONE_DIRECTORY_SELECTED" desc="One directory selected.">
-    1 directory selected
+    1 folder selected
   </message>
   <message name="IDS_FILE_BROWSER_MANY_FILES_SELECTED" desc="Many files selected.">
     <ph name="SELCTED_FILE_COUNT">$1<ex>13</ex></ph> files selected
