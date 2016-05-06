@@ -26,6 +26,7 @@
 #include "core/xmlhttprequest/XMLHttpRequest.h"
 #include "platform/TracedValue.h"
 #include "platform/graphics/GraphicsLayer.h"
+#include "platform/network/ResourceLoadPriority.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/network/ResourceResponse.h"
 #include "platform/v8_inspector/V8StringUtil.h"
@@ -181,6 +182,20 @@ const char InspectorScheduleStyleInvalidationTrackingEvent::Attribute[] = "attri
 const char InspectorScheduleStyleInvalidationTrackingEvent::Class[] = "class";
 const char InspectorScheduleStyleInvalidationTrackingEvent::Id[] = "id";
 const char InspectorScheduleStyleInvalidationTrackingEvent::Pseudo[] = "pseudo";
+
+const char* resourcePriorityString(ResourceLoadPriority priority)
+{
+    const char* priorityString = 0;
+    switch (priority) {
+    case ResourceLoadPriorityVeryLow: priorityString = "VeryLow"; break;
+    case ResourceLoadPriorityLow: priorityString = "Low"; break;
+    case ResourceLoadPriorityMedium: priorityString = "Medium"; break;
+    case ResourceLoadPriorityHigh: priorityString = "High"; break;
+    case ResourceLoadPriorityVeryHigh: priorityString = "VeryHigh"; break;
+    case ResourceLoadPriorityUnresolved: break;
+    }
+    return priorityString;
+}
 
 PassOwnPtr<TracedValue> InspectorScheduleStyleInvalidationTrackingEvent::idChange(Element& element, const InvalidationSet& invalidationSet, const AtomicString& id)
 {
@@ -400,6 +415,16 @@ PassOwnPtr<TracedValue> InspectorScrollInvalidationTrackingEvent::data(const Lay
     return value.release();
 }
 
+PassOwnPtr<TracedValue> InspectorChangeResourcePriorityEvent::data(unsigned long identifier, const ResourceLoadPriority& loadPriority)
+{
+    String requestId = IdentifiersFactory::requestId(identifier);
+
+    OwnPtr<TracedValue> value = TracedValue::create();
+    value->setString("requestId", requestId);
+    value->setString("priority", resourcePriorityString(loadPriority));
+    return value.release();
+}
+
 PassOwnPtr<TracedValue> InspectorSendRequestEvent::data(unsigned long identifier, LocalFrame* frame, const ResourceRequest& request)
 {
     String requestId = IdentifiersFactory::requestId(identifier);
@@ -409,15 +434,7 @@ PassOwnPtr<TracedValue> InspectorSendRequestEvent::data(unsigned long identifier
     value->setString("frame", toHexString(frame));
     value->setString("url", request.url().getString());
     value->setString("requestMethod", request.httpMethod());
-    const char* priority = 0;
-    switch (request.priority()) {
-    case ResourceLoadPriorityVeryLow: priority = "VeryLow"; break;
-    case ResourceLoadPriorityLow: priority = "Low"; break;
-    case ResourceLoadPriorityMedium: priority = "Medium"; break;
-    case ResourceLoadPriorityHigh: priority = "High"; break;
-    case ResourceLoadPriorityVeryHigh: priority = "VeryHigh"; break;
-    case ResourceLoadPriorityUnresolved: break;
-    }
+    const char* priority = resourcePriorityString(request.priority());
     if (priority)
         value->setString("priority", priority);
     setCallStack(value.get());

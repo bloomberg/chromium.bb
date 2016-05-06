@@ -63,7 +63,6 @@
 #include "platform/inspector_protocol/Values.h"
 #include "platform/network/HTTPHeaderMap.h"
 #include "platform/network/ResourceError.h"
-#include "platform/network/ResourceLoadPriority.h"
 #include "platform/network/ResourceLoadTiming.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/network/ResourceResponse.h"
@@ -466,6 +465,12 @@ void InspectorResourceAgent::didBlockRequest(LocalFrame* frame, const ResourceRe
     String requestId = IdentifiersFactory::requestId(identifier);
     String protocolReason = buildBlockedReason(reason);
     frontend()->loadingFailed(requestId, monotonicallyIncreasingTime(), InspectorPageAgent::resourceTypeJson(m_resourcesData->resourceType(requestId)), String(), false, protocolReason);
+}
+
+void InspectorResourceAgent::didChangeResourcePriority(unsigned long identifier, ResourceLoadPriority loadPriority)
+{
+    String requestId = IdentifiersFactory::requestId(identifier);
+    frontend()->resourceChangedPriority(requestId, resourcePriorityJSON(loadPriority), monotonicallyIncreasingTime());
 }
 
 void InspectorResourceAgent::willSendRequestInternal(LocalFrame* frame, unsigned long identifier, DocumentLoader* loader, const ResourceRequest& request, const ResourceResponse& redirectResponse, const FetchInitiatorInfo& initiatorInfo)

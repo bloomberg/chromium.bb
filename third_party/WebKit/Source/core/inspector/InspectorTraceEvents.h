@@ -53,6 +53,8 @@ class StyleImage;
 class WorkerThread;
 class XMLHttpRequest;
 
+enum ResourceLoadPriority : int;
+
 namespace InspectorLayoutEvent {
 PassOwnPtr<TracedValue> beginData(FrameView*);
 PassOwnPtr<TracedValue> endData(LayoutObject* rootForThisLayout);
@@ -167,6 +169,10 @@ PassOwnPtr<TracedValue> data(const LayoutObject*, const LayoutObject& paintConta
 
 namespace InspectorScrollInvalidationTrackingEvent {
 PassOwnPtr<TracedValue> data(const LayoutObject&);
+}
+
+namespace InspectorChangeResourcePriorityEvent {
+PassOwnPtr<TracedValue> data(unsigned long identifier, const ResourceLoadPriority&);
 }
 
 namespace InspectorSendRequestEvent {
