@@ -42,5 +42,5 @@ class ContextLostExpectations(GpuTestExpectations):
               ['android'], bug=609629)
     self.Fail('ContextLost.WebGLContextLostFromGPUProcessExit',
               ['android'], bug=609629)
-    self.Fail('ContextLost.WebGLContextListInHiddenTab',
+    self.Fail('ContextLost.WebGLContextLostInHiddenTab',
               ['android'], bug=609629)
