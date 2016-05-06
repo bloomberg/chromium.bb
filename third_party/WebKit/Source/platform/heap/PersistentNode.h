@@ -150,8 +150,11 @@ public:
 #endif
     }
 
+    static bool shouldTracePersistentNode(Visitor*, PersistentNode*) { return true; }
+
     void releasePersistentNode(PersistentNode*, ThreadState::PersistentClearCallback);
-    void tracePersistentNodes(Visitor*);
+    using ShouldTraceCallback = bool (*)(Visitor*, PersistentNode*);
+    void tracePersistentNodes(Visitor*, ShouldTraceCallback = PersistentRegion::shouldTracePersistentNode);
     int numberOfPersistents();
 
 private:
@@ -186,10 +189,12 @@ public:
     void tracePersistentNodes(Visitor* visitor)
     {
         MutexLocker lock(m_mutex);
-        m_persistentRegion->tracePersistentNodes(visitor);
+        m_persistentRegion->tracePersistentNodes(visitor, CrossThreadPersistentRegion::shouldTracePersistentNode);
     }
 
     void prepareForThreadStateTermination(ThreadState*);
+
+    static bool shouldTracePersistentNode(Visitor*, PersistentNode*);
 
 private:
     // We don't make CrossThreadPersistentRegion inherit from PersistentRegion
