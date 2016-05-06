@@ -1386,6 +1386,8 @@ bool LayoutBox::foregroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect, u
 
 bool LayoutBox::computeBackgroundIsKnownToBeObscured() const
 {
+    if (scrollsOverflow())
+        return false;
     // Test to see if the children trivially obscure the background.
     // FIXME: This test can be much more comprehensive.
     if (!hasBackground())
