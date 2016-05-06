@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 <include src="keyboard_overlay_data.js">
-<include src="keyboard_overlay_accessibility_helper.js">
 
 var BASE_KEYBOARD = {
   top: 0,
@@ -531,13 +530,6 @@ function getKeyTextValue(keyData) {
  *                between right and left keys.
  */
 function update(modifiers, normModifiers) {
-  var instructions = $('instructions');
-  if (modifiers.length == 0) {
-    instructions.style.visibility = 'visible';
-  } else {
-    instructions.style.visibility = 'hidden';
-  }
-
   var keyboardGlyphData = getKeyboardGlyphData();
   var shortcutData = getShortcutData();
   var layout = getLayout();
@@ -615,7 +607,14 @@ function handleKeyEvent(e) {
 
   var normModifiers = normalizeModifiers(modifiers);
   update(modifiers, normModifiers);
-  KeyboardOverlayAccessibilityHelper.maybeSpeakAllShortcuts(normModifiers);
+
+  var instructions = $('instructions');
+  if (modifiers.length == 0) {
+    instructions.style.visibility = 'visible';
+  } else {
+    instructions.style.visibility = 'hidden';
+  }
+
   e.preventDefault();
 }
 
@@ -641,6 +640,40 @@ function initLayout() {
   var keyMargin = 7;
   var offsetX = 10;
   var offsetY = 7;
+
+  var instructions = document.createElement('div');
+  instructions.id = 'instructions';
+  instructions.className = 'keyboard-overlay-instructions';
+  instructions.setAttribute('aria-live', 'polite');
+  // Postpone showing the instructions a delay after the widget has been shown,
+  // so that chrome vox behaves correctly.
+  instructions.style.visibility = 'hidden';
+  instructions.tabIndex = '0';
+  var instructionsText = document.createElement('div');
+  instructionsText.id = 'instructions-text';
+  instructionsText.className = 'keyboard-overlay-instructions-text';
+  instructionsText.innerHTML =
+      loadTimeData.getString('keyboardOverlayInstructions');
+  instructions.appendChild(instructionsText);
+  var instructionsHideText = document.createElement('div');
+  instructionsHideText.id = 'instructions-hide-text';
+  instructionsHideText.className = 'keyboard-overlay-instructions-hide-text';
+  instructionsHideText.innerHTML =
+      loadTimeData.getString('keyboardOverlayInstructionsHide');
+  instructions.appendChild(instructionsHideText);
+  var learnMoreLinkText = document.createElement('div');
+  learnMoreLinkText.id = 'learn-more-text';
+  learnMoreLinkText.className = 'keyboard-overlay-learn-more-text';
+  learnMoreLinkText.addEventListener('click', learnMoreClicked);
+  var learnMoreLinkAnchor = document.createElement('a');
+  learnMoreLinkAnchor.href =
+      loadTimeData.getString('keyboardOverlayLearnMoreURL');
+  learnMoreLinkAnchor.textContent =
+      loadTimeData.getString('keyboardOverlayLearnMore');
+  learnMoreLinkText.appendChild(learnMoreLinkAnchor);
+  instructions.appendChild(learnMoreLinkText);
+  keyboard.appendChild(instructions);
+
   for (var i = 0; i < layout.length; i++) {
     var array = layout[i];
     var identifier = remapIdentifier(array[0]);
@@ -681,42 +714,14 @@ function initLayout() {
   keyboard.style.width = (width + 2 * (minX + 1)) + 'px';
   keyboard.style.height = (height + 2 * (minY + 1)) + 'px';
 
-  var instructions = document.createElement('div');
-  instructions.id = 'instructions';
-  instructions.className = 'keyboard-overlay-instructions';
   instructions.style.left = ((BASE_INSTRUCTIONS.left - BASE_KEYBOARD.left) *
-                             width / BASE_KEYBOARD.width + minX) + 'px';
+      width / BASE_KEYBOARD.width + minX) + 'px';
   instructions.style.top = ((BASE_INSTRUCTIONS.top - BASE_KEYBOARD.top) *
-                            height / BASE_KEYBOARD.height + minY) + 'px';
+       height / BASE_KEYBOARD.height + minY) + 'px';
   instructions.style.width = (width * BASE_INSTRUCTIONS.width /
-                              BASE_KEYBOARD.width) + 'px';
+         BASE_KEYBOARD.width) + 'px';
   instructions.style.height = (height * BASE_INSTRUCTIONS.height /
-                               BASE_KEYBOARD.height) + 'px';
-
-  var instructionsText = document.createElement('div');
-  instructionsText.id = 'instructions-text';
-  instructionsText.className = 'keyboard-overlay-instructions-text';
-  instructionsText.innerHTML =
-      loadTimeData.getString('keyboardOverlayInstructions');
-  instructions.appendChild(instructionsText);
-  var instructionsHideText = document.createElement('div');
-  instructionsHideText.id = 'instructions-hide-text';
-  instructionsHideText.className = 'keyboard-overlay-instructions-hide-text';
-  instructionsHideText.innerHTML =
-      loadTimeData.getString('keyboardOverlayInstructionsHide');
-  instructions.appendChild(instructionsHideText);
-  var learnMoreLinkText = document.createElement('div');
-  learnMoreLinkText.id = 'learn-more-text';
-  learnMoreLinkText.className = 'keyboard-overlay-learn-more-text';
-  learnMoreLinkText.addEventListener('click', learnMoreClicked);
-  var learnMoreLinkAnchor = document.createElement('a');
-  learnMoreLinkAnchor.href =
-      loadTimeData.getString('keyboardOverlayLearnMoreURL');
-  learnMoreLinkAnchor.textContent =
-      loadTimeData.getString('keyboardOverlayLearnMore');
-  learnMoreLinkText.appendChild(learnMoreLinkAnchor);
-  instructions.appendChild(learnMoreLinkText);
-  keyboard.appendChild(instructions);
+          BASE_KEYBOARD.height) + 'px';
 }
 
 /**
@@ -854,6 +859,18 @@ function learnMoreClicked(e) {
   chrome.send('openLearnMorePage');
   chrome.send('dialogClose');
   e.preventDefault();
+}
+
+/**
+ * Called from C++ when the widget is shown.
+ */
+function onWidgetShown() {
+  setTimeout(function() {
+    // Show and focus the instructions div after a delay so that chrome vox
+    // speaks it correctly.
+    $('instructions').style.visibility = 'visible';
+    $('instructions').focus();
+  }, 500);
 }
 
 document.addEventListener('DOMContentLoaded', init);
