@@ -80,6 +80,7 @@ content::WebUIDataSource* CreateMdExtensionsSource() {
                              IDS_EXTENSIONS_ENABLE_ERROR_COLLECTION);
   source->AddLocalizedString("itemCorruptInstall",
                              IDS_EXTENSIONS_CORRUPTED_EXTENSION);
+  source->AddLocalizedString("itemRepair", IDS_EXTENSIONS_REPAIR_CORRUPTED);
   source->AddString(
       "itemSuspiciousInstall",
       l10n_util::GetStringFUTF16(

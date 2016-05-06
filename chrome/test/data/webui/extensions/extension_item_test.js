@@ -137,6 +137,11 @@ cr.define('extension_item_tests', function() {
         MockInteractions.tap(item.$$('#details-button'));
         expectTrue(satisfied);
         item.removeEventListener('extension-item-show-details', listener);
+
+        item.set('data.disableReasons.corruptInstall', true);
+        Polymer.dom.flush();
+        mockDelegate.testClickingCalls(
+            item.$$('#repair-button'), 'repairItem', [item.data.id]);
       });
 
       test(assert(TestNames.Warnings), function() {
@@ -150,34 +155,30 @@ cr.define('extension_item_tests', function() {
           return extension_test_util.isVisible(item, '#blacklisted-warning');
         };
 
-        extension_test_util.testVisible(item, '#warnings-container', false);
+        expectFalse(hasCorruptedWarning());
+        expectFalse(hasSuspiciousWarning());
+        expectFalse(hasBlacklistedWarning());
+
         item.set('data.disableReasons.corruptInstall', true);
         Polymer.dom.flush();
-        extension_test_util.testVisible(item, '#warnings-container', true);
-
-        var warnings = assert(item.$$('#warnings-container'));
-        expectEquals('mild', warnings.className);
         expectTrue(hasCorruptedWarning());
         expectFalse(hasSuspiciousWarning());
         expectFalse(hasBlacklistedWarning());
 
         item.set('data.disableReasons.suspiciousInstall', true);
         Polymer.dom.flush();
-        expectEquals('mild', warnings.className);
         expectTrue(hasCorruptedWarning());
         expectTrue(hasSuspiciousWarning());
         expectFalse(hasBlacklistedWarning());
 
         item.set('data.blacklistText', 'This item is blacklisted');
         Polymer.dom.flush();
-        expectEquals('severe', warnings.className);
         expectTrue(hasCorruptedWarning());
         expectTrue(hasSuspiciousWarning());
         expectTrue(hasBlacklistedWarning());
 
         item.set('data.blacklistText', undefined);
         Polymer.dom.flush();
-        expectEquals('mild', warnings.className);
         expectTrue(hasCorruptedWarning());
         expectTrue(hasSuspiciousWarning());
         expectFalse(hasBlacklistedWarning());
@@ -185,7 +186,9 @@ cr.define('extension_item_tests', function() {
         item.set('data.disableReasons.corruptInstall', false);
         item.set('data.disableReasons.suspiciousInstall', false);
         Polymer.dom.flush();
-        extension_test_util.testVisible(item, '#warnings-container', false);
+        expectFalse(hasCorruptedWarning());
+        expectFalse(hasSuspiciousWarning());
+        expectFalse(hasBlacklistedWarning());
       });
     });
   }

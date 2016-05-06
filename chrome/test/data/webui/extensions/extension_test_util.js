@@ -60,8 +60,11 @@ cr.define('extension_test_util', function() {
     /** @override */
     setItemCollectsErrors: function(id, enabled) {},
 
-    /** @override: */
+    /** @override */
     inspectItemView: function(id, view) {},
+
+    /** @override */
+    repairItem: function(id) {},
   };
 
   /**

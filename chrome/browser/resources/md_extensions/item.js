@@ -45,6 +45,9 @@ cr.define('extensions', function() {
      * @param {chrome.developerPrivate.ExtensionView} view
      */
     inspectItemView: assertNotReached,
+
+    /** @param {string} id */
+    repairItem: assertNotReached,
   };
 
   var Item = Polymer({
@@ -117,6 +120,11 @@ cr.define('extensions', function() {
      */
     onInspectTap_: function(e) {
       this.delegate.inspectItemView(this.data.id, e.model.item);
+    },
+
+    /** @private */
+    onRepairTap_: function() {
+      this.delegate.repairItem(this.data.id);
     },
 
     /**

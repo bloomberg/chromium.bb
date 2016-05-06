@@ -52,21 +52,20 @@
         </div>
       </div>
       <template is="dom-if" if="[[hasWarnings_(data.*)]]">
-        <div id="warnings-container"
-            class$="[[computeWarningsClasses_(data.blacklistText)]]">
-          <iron-icon icon="warning"></iron-icon>
-          <div>
-            <div id="corrupted-warning"
-                hidden="[[!data.disableReasons.corruptInstall]]">
-              $i18n{itemCorruptInstall}
-            </div>
-            <div id="suspicious-warning"
-                hidden="[[!data.disableReasons.suspiciousInstall]]">
-              $i18n{itemSuspiciousInstall}
-            </div>
-            <div id="blacklisted-warning">[[data.blacklistText]]</div>
-          </div>
+        <div id="suspicious-warning" class="warning mild"
+            hidden$="[[!data.disableReasons.suspiciousInstall]]">
+          $i18n{itemSuspiciousInstall}
         </div>
+        <div id="corrupted-warning" class="warning severe"
+            hidden$="[[!data.disableReasons.corruptInstall]]">
+          <span>$i18n{itemCorruptInstall}</span>
+          <paper-button id="repair-button" on-tap="onRepairTap_">
+            $i18n{itemRepair}
+          </paper-button>
+        </div>
+        <div id="blacklisted-warning" class="warning severe"><!-- No whitespace
+          -->[[data.blacklistText]]<!-- ... so we can use :empty in css
+        --></div>
       </template>
     </div>
   </template>

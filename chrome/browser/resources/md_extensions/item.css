@@ -95,27 +95,29 @@ paper-toggle-button {
   -webkit-margin-end: 16px;
 }
 
-#warnings-container {
-  border-top: 1px solid #C5C5C5;
+.warning {
+  align-items: center;
   display: flex;
-  padding: 10px;
+  font-size: 13px;
+  justify-content: space-between;
+  padding: 12px 16px;
 }
 
-#warnings-container div {
-  color: #333;
+.warning paper-button {
+  -webkit-margin-start: 12px;
+  align-items: center;
+  display: flex;
+  text-transform: uppercase;
 }
 
-#warnings-container iron-icon {
-  -webkit-margin-end: 10px;
-  flex-shrink: 0;
+.severe.warning {
+  background-color: var(--paper-red-50);
+  color: var(--paper-red-700);
 }
 
-#warnings-container.severe iron-icon {
-  color: rgb(219, 68, 55);
-}
-
-#warnings-container.mild iron-icon {
-  color: rgb(240, 147, 0);
+.mild.warning {
+  background-color: var(--paper-yellow-50);
+  color: var(--paper-grey-600);
 }
 
 #blacklisted-warning:empty {

@@ -150,6 +150,11 @@ cr.define('extensions', function() {
     },
 
     /** @override */
+    repairItem: function(id) {
+      chrome.developerPrivate.repairExtension(id);
+    },
+
+    /** @override */
     setProfileInDevMode: function(inDevMode) {
       chrome.developerPrivate.updateProfileConfiguration(
           {inDeveloperMode: inDevMode});
