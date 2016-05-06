@@ -4950,6 +4950,7 @@ void GLES2DecoderImpl::BindIndexedBufferImpl(
       NOTREACHED();
       break;
   }
+  state_.SetBoundBuffer(target, buffer);
 }
 
 void GLES2DecoderImpl::DoBindBufferBase(GLenum target, GLuint index,
