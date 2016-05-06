@@ -135,7 +135,7 @@ bool HTMLProgressElement::isDeterminate() const
 
 void HTMLProgressElement::didElementStateChange()
 {
-    m_value->setWidthPercentage(position() * 100);
+    setValueWidthPercentage(position() * 100);
     if (LayoutProgressItem layoutItem = LayoutProgressItem(layoutProgress()))
         layoutItem.updateFromElement();
 }
@@ -144,16 +144,15 @@ void HTMLProgressElement::didAddUserAgentShadowRoot(ShadowRoot& root)
 {
     ASSERT(!m_value);
 
-    ProgressInnerElement* inner = ProgressInnerElement::create(document());
+    ProgressShadowElement* inner = ProgressShadowElement::create(document());
     inner->setShadowPseudoId(AtomicString("-webkit-progress-inner-element"));
     root.appendChild(inner);
 
-    ProgressBarElement* bar = ProgressBarElement::create(document());
+    ProgressShadowElement* bar = ProgressShadowElement::create(document());
     bar->setShadowPseudoId(AtomicString("-webkit-progress-bar"));
-    ProgressValueElement* value = ProgressValueElement::create(document());
-    m_value = value;
+    m_value = ProgressShadowElement::create(document());
     m_value->setShadowPseudoId(AtomicString("-webkit-progress-value"));
-    m_value->setWidthPercentage(HTMLProgressElement::IndeterminatePosition * 100);
+    setValueWidthPercentage(HTMLProgressElement::IndeterminatePosition * 100);
     bar->appendChild(m_value);
 
     inner->appendChild(bar);
@@ -168,6 +167,11 @@ DEFINE_TRACE(HTMLProgressElement)
 {
     visitor->trace(m_value);
     LabelableElement::trace(visitor);
+}
+
+void HTMLProgressElement::setValueWidthPercentage(double width) const
+{
+    m_value->setInlineStyleProperty(CSSPropertyWidth, width, CSSPrimitiveValue::UnitType::Percentage);
 }
 
 } // namespace blink
