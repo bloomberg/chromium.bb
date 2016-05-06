@@ -18,6 +18,7 @@
 #include "av1/common/alloccommon.h"
 #if CONFIG_CLPF
 #include "av1/common/clpf.h"
+#include "av1/encoder/clpf_rdo.h"
 #endif
 #if CONFIG_DERING
 #include "av1/common/dering.h"
@@ -2478,6 +2479,47 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
       av1_loop_filter_frame(cm->frame_to_show, cm, xd, lf->filter_level, 0, 0);
   }
 
+#if CONFIG_CLPF
+  cm->clpf_strength = 0;
+  cm->clpf_size = 2;
+  CHECK_MEM_ERROR(
+      cm, cm->clpf_blocks,
+      aom_malloc(((cm->frame_to_show->y_crop_width + 31) & ~31) *
+                     ((cm->frame_to_show->y_crop_height + 31) & ~31) >>
+                 10));
+  if (!is_lossless_requested(&cpi->oxcf)) {
+    // Test CLPF
+    int i, hq = 1;
+    // TODO(yaowu): investigate per-segment CLPF decision and
+    // an optimal threshold, use 80 for now.
+    for (i = 0; i < MAX_SEGMENTS; i++)
+      hq &= av1_get_qindex(&cm->seg, i, cm->base_qindex) < 80;
+
+    // Don't try filter if the entire image is nearly losslessly encoded
+    if (!hq) {
+      // Find the best strength and block size for the entire frame
+      int fb_size_log2, strength;
+      av1_clpf_test_frame(&cpi->last_frame_uf, cpi->Source, cm, &strength,
+                          &fb_size_log2);
+
+      if (!fb_size_log2) fb_size_log2 = get_msb(MAX_FB_SIZE);
+
+      if (!strength) {  // Better to disable for the whole frame?
+        cm->clpf_strength = 0;
+      } else {
+        // Apply the filter using the chosen strength
+        cm->clpf_strength = strength - (strength == 4);
+        cm->clpf_size =
+            fb_size_log2 ? fb_size_log2 - get_msb(MAX_FB_SIZE) + 3 : 0;
+        aom_yv12_copy_frame(cm->frame_to_show, &cpi->last_frame_uf);
+        cm->clpf_numblocks =
+            av1_clpf_frame(cm->frame_to_show, &cpi->last_frame_uf, cpi->Source,
+                           cm, !!cm->clpf_size, strength, 4 + cm->clpf_size,
+                           cm->clpf_blocks, av1_clpf_decision);
+      }
+    }
+  }
+#endif
 #if CONFIG_DERING
   if (is_lossless_requested(&cpi->oxcf)) {
     cm->dering_level = 0;
@@ -2487,65 +2529,6 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
     av1_dering_frame(cm->frame_to_show, cm, xd, cm->dering_level);
   }
 #endif  // CONFIG_DERING
-
-#if CONFIG_CLPF
-  cm->clpf = 0;
-  if (!is_lossless_requested(&cpi->oxcf)) {
-    // Test CLPF
-    int i, hq = 1;
-    uint64_t before, after;
-    // TODO(yaowu): investigate per-segment CLPF decision and
-    // an optimal threshold, use 80 for now.
-    for (i = 0; i < MAX_SEGMENTS; i++)
-      hq &= av1_get_qindex(&cm->seg, i, cm->base_qindex) < 80;
-
-    if (!hq) {  // Don't try filter if the entire image is nearly losslessly
-                // encoded
-#if CLPF_FILTER_ALL_PLANES
-      aom_yv12_copy_frame(cm->frame_to_show, &cpi->last_frame_uf);
-      before =
-          get_sse(cpi->Source->y_buffer, cpi->Source->y_stride,
-                  cm->frame_to_show->y_buffer, cm->frame_to_show->y_stride,
-                  cpi->Source->y_crop_width, cpi->Source->y_crop_height) +
-          get_sse(cpi->Source->u_buffer, cpi->Source->uv_stride,
-                  cm->frame_to_show->u_buffer, cm->frame_to_show->uv_stride,
-                  cpi->Source->uv_crop_width, cpi->Source->uv_crop_height) +
-          get_sse(cpi->Source->v_buffer, cpi->Source->uv_stride,
-                  cm->frame_to_show->v_buffer, cm->frame_to_show->uv_stride,
-                  cpi->Source->uv_crop_width, cpi->Source->uv_crop_height);
-      av1_clpf_frame(cm->frame_to_show, cm, xd);
-      after = get_sse(cpi->Source->y_buffer, cpi->Source->y_stride,
-                      cm->frame_to_show->y_buffer, cm->frame_to_show->y_stride,
-                      cpi->Source->y_crop_width, cpi->Source->y_crop_height) +
-              get_sse(cpi->Source->u_buffer, cpi->Source->uv_stride,
-                      cm->frame_to_show->u_buffer, cm->frame_to_show->uv_stride,
-                      cpi->Source->uv_crop_width, cpi->Source->uv_crop_height) +
-              get_sse(cpi->Source->v_buffer, cpi->Source->uv_stride,
-                      cm->frame_to_show->v_buffer, cm->frame_to_show->uv_stride,
-                      cpi->Source->uv_crop_width, cpi->Source->uv_crop_height);
-#else
-      aom_yv12_copy_y(cm->frame_to_show, &cpi->last_frame_uf);
-      before = get_sse(cpi->Source->y_buffer, cpi->Source->y_stride,
-                       cm->frame_to_show->y_buffer, cm->frame_to_show->y_stride,
-                       cpi->Source->y_crop_width, cpi->Source->y_crop_height);
-      av1_clpf_frame(cm->frame_to_show, cm, xd);
-      after = get_sse(cpi->Source->y_buffer, cpi->Source->y_stride,
-                      cm->frame_to_show->y_buffer, cm->frame_to_show->y_stride,
-                      cpi->Source->y_crop_width, cpi->Source->y_crop_height);
-#endif
-      if (before < after) {
-// No improvement, restore original
-#if CLPF_FILTER_ALL_PLANES
-        aom_yv12_copy_frame(&cpi->last_frame_uf, cm->frame_to_show);
-#else
-        aom_yv12_copy_y(&cpi->last_frame_uf, cm->frame_to_show);
-#endif
-      } else {
-        cm->clpf = 1;
-      }
-    }
-  }
-#endif
 
   aom_extend_frame_inner_borders(cm->frame_to_show);
 }
@@ -3648,6 +3631,10 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
     cpi->existing_fb_idx_to_show = cpi->bwd_fb_idx;
   }
 #endif  // CONFIG_EXT_REFS
+
+#if CONFIG_CLPF
+  aom_free(cm->clpf_blocks);
+#endif
 
   if (cm->seg.update_map) update_reference_segmentation_map(cpi);
 
