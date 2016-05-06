@@ -75,3 +75,27 @@ source_set("browser") {
     data_deps += [ "//components/nacl/broker:nacl64" ]
   }
 }
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "nacl_file_host_unittest.cc",
+    "nacl_process_host_unittest.cc",
+    "nacl_validation_cache_unittest.cc",
+    "pnacl_host_unittest.cc",
+    "pnacl_translation_cache_unittest.cc",
+    "test_nacl_browser_delegate.cc",
+  ]
+
+  deps = [
+    ":browser",
+    "//base",
+    "//components/nacl/common",
+    "//content/test:test_support",
+    "//net:test_support",
+  ]
+
+  if (is_linux) {
+    sources += [ "../zygote/nacl_fork_delegate_linux_unittest.cc" ]
+  }
+}

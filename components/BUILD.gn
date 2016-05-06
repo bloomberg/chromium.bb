@@ -144,6 +144,10 @@ test("components_unittests") {
     "//ui/resources:ui_test_pak",
   ]
 
+  if (enable_nacl) {
+    deps += [ "//components/nacl/browser:unit_tests" ]
+  }
+
   if (is_ios) {
     deps += [
       "//components/signin/ios/browser:unit_tests",
