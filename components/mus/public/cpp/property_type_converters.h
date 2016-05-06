@@ -82,6 +82,15 @@ struct TypeConverter<SkBitmap, std::vector<uint8_t>> {
   static SkBitmap Convert(const std::vector<uint8_t>& input);
 };
 
+template <>
+struct TypeConverter<std::vector<uint8_t>, bool> {
+  static std::vector<uint8_t> Convert(bool input);
+};
+template <>
+struct TypeConverter<bool, std::vector<uint8_t>> {
+  static bool Convert(const std::vector<uint8_t>& input);
+};
+
 }  // namespace mojo
 
 #endif  // COMPONENTS_MUS_PUBLIC_CPP_PROPERTY_TYPE_CONVERTERS_H_

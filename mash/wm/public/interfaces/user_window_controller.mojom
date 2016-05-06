@@ -10,6 +10,7 @@ struct UserWindow {
   bool window_has_focus;  // A flag; true if the window is currently focused.
   array<uint8> window_app_icon;  // A serialized SkBitmap.
   string window_app_id;  // The window application ID (ie. 'mojo:foo').
+  bool ignored_by_shelf; // A flag; true to avoid showing a shelf item.
 };
 
 // An observer of user windows within mojom::Container::USER_WINDOWS.

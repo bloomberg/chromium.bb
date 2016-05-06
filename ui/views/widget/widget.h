@@ -5,9 +5,11 @@
 #ifndef UI_VIEWS_WIDGET_WIDGET_H_
 #define UI_VIEWS_WIDGET_WIDGET_H_
 
+#include <map>
 #include <memory>
 #include <set>
 #include <stack>
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
@@ -288,6 +290,9 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     // Used if widget is not activatable to do determine if mouse events should
     // be sent to the widget.
     bool wants_mouse_events_when_inactive = false;
+
+    // A map of properties applied to windows when running in mus.
+    std::map<std::string, std::vector<uint8_t>> mus_properties;
   };
 
   Widget();

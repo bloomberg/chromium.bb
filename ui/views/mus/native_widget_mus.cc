@@ -435,6 +435,8 @@ void NativeWidgetMus::UpdateClientArea() {
 void NativeWidgetMus::ConfigurePropertiesForNewWindow(
     const Widget::InitParams& init_params,
     std::map<std::string, std::vector<uint8_t>>* properties) {
+  properties->insert(init_params.mus_properties.begin(),
+                     init_params.mus_properties.end());
   if (!init_params.bounds.IsEmpty()) {
     (*properties)[mus::mojom::WindowManager::kUserSetBounds_Property] =
         mojo::ConvertTo<std::vector<uint8_t>>(init_params.bounds);

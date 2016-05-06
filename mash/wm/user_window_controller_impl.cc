@@ -39,6 +39,7 @@ mojom::UserWindowPtr GetUserWindow(mus::Window* window) {
   user_window->window_title = mojo::String::From(GetWindowTitle(window));
   user_window->window_app_icon = GetWindowAppIcon(window);
   user_window->window_app_id = mojo::String::From(GetAppID(window));
+  user_window->ignored_by_shelf = GetWindowIgnoredByShelf(window);
   mus::Window* focused = window->connection()->GetFocusedWindow();
   focused = GetTopLevelWindow(focused, window->parent());
   user_window->window_has_focus = focused == window;

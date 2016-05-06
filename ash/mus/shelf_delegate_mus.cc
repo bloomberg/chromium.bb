@@ -347,6 +347,9 @@ void ShelfDelegateMus::OnUserWindowAdded(
     mash::wm::mojom::UserWindowPtr user_window) {
   DCHECK(!window_id_to_shelf_id_.count(user_window->window_id));
 
+  if (user_window->ignored_by_shelf)
+    return;
+
   std::string app_id(user_window->window_app_id.To<std::string>());
   if (app_id_to_shelf_id_.count(app_id)) {
     ShelfID shelf_id = app_id_to_shelf_id_[app_id];
@@ -380,7 +383,8 @@ void ShelfDelegateMus::OnUserWindowAdded(
 }
 
 void ShelfDelegateMus::OnUserWindowRemoved(uint32_t window_id) {
-  DCHECK(window_id_to_shelf_id_.count(window_id));
+  if (!window_id_to_shelf_id_.count(window_id))
+    return;
   ShelfID shelf_id = window_id_to_shelf_id_[window_id];
   ShelfItemDelegateMus* item_delegate = GetShelfItemDelegate(shelf_id);
   item_delegate->RemoveWindow(window_id);
@@ -396,7 +400,8 @@ void ShelfDelegateMus::OnUserWindowRemoved(uint32_t window_id) {
 void ShelfDelegateMus::OnUserWindowTitleChanged(
     uint32_t window_id,
     const mojo::String& window_title) {
-  DCHECK(window_id_to_shelf_id_.count(window_id));
+  if (!window_id_to_shelf_id_.count(window_id))
+    return;
   ShelfID shelf_id = window_id_to_shelf_id_[window_id];
   ShelfItemDelegateMus* item_delegate = GetShelfItemDelegate(shelf_id);
   item_delegate->SetWindowTitle(window_id, window_title.To<base::string16>());
@@ -414,8 +419,9 @@ void ShelfDelegateMus::OnUserWindowTitleChanged(
 void ShelfDelegateMus::OnUserWindowAppIconChanged(
     uint32_t window_id,
     mojo::Array<uint8_t> app_icon) {
+  if (!window_id_to_shelf_id_.count(window_id))
+    return;
   // Find the shelf ID for this window.
-  DCHECK(window_id_to_shelf_id_.count(window_id));
   ShelfID shelf_id = window_id_to_shelf_id_[window_id];
   DCHECK_GT(shelf_id, 0);
 
@@ -429,7 +435,8 @@ void ShelfDelegateMus::OnUserWindowAppIconChanged(
 
 void ShelfDelegateMus::OnUserWindowFocusChanged(uint32_t window_id,
                                                 bool has_focus) {
-  DCHECK(window_id_to_shelf_id_.count(window_id));
+  if (!window_id_to_shelf_id_.count(window_id))
+    return;
   ShelfID shelf_id = window_id_to_shelf_id_[window_id];
   int index = model_->ItemIndexByID(shelf_id);
   DCHECK_GE(index, 0);

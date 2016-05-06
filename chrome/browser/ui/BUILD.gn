@@ -302,6 +302,12 @@ source_set("ui") {
           rebase_path(gypi_values.chrome_browser_ui_views_non_mac_sources,
                       ".",
                       "//chrome")
+      if (use_aura) {
+        deps += [
+          "//components/mus/public/cpp",
+          "//components/mus/public/interfaces",
+        ]
+      }
       if (enable_extensions) {
         sources += rebase_path(
                 gypi_values.chrome_browser_ui_views_extensions_non_mac_sources,

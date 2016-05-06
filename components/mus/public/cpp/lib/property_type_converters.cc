@@ -189,4 +189,19 @@ SkBitmap TypeConverter<SkBitmap, std::vector<uint8_t>>::Convert(
   return bitmap;
 }
 
+// static
+std::vector<uint8_t> TypeConverter<std::vector<uint8_t>, bool>::Convert(
+    bool input) {
+  std::vector<uint8_t> vec(1);
+  vec[0] = input ? 1 : 0;
+  return vec;
+}
+
+// static
+bool TypeConverter<bool, std::vector<uint8_t>>::Convert(
+    const std::vector<uint8_t>& input) {
+  // Empty vectors are interpreted as false.
+  return !input.empty() && (input[0] == 1);
+}
+
 }  // namespace mojo

@@ -170,5 +170,12 @@ base::string16 GetAppID(const mus::Window* window) {
       mus::mojom::WindowManager::kAppID_Property);
 }
 
+bool GetWindowIgnoredByShelf(mus::Window* window) {
+  return window->HasSharedProperty(
+             mus::mojom::WindowManager::kWindowIgnoredByShelf_Property) &&
+         window->GetSharedProperty<bool>(
+             mus::mojom::WindowManager::kWindowIgnoredByShelf_Property);
+}
+
 }  // namespace wm
 }  // namespace mash
