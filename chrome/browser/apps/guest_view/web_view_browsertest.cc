@@ -2421,13 +2421,7 @@ class WebViewCaptureTest : public WebViewTest {
 INSTANTIATE_TEST_CASE_P(WebViewTests, WebViewCaptureTest, testing::Bool());
 
 IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestZoomAPI) {
-  // TODO(wjmaclean): This test is broken, but only when the
-  // --use-cross-process-frames-for-guests flag is specified. This needs to be
-  // fixed. See also comment in
-  // CrossProcessFrameConnector::OnFrameRectChanged().
-  // http://crbug.com/607978
-  if (!GetParam())
-    TestHelper("testZoomAPI", "web_view/shim", NO_TEST_SERVER);
+  TestHelper("testZoomAPI", "web_view/shim", NO_TEST_SERVER);
 }
 
 IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestFindAPI) {

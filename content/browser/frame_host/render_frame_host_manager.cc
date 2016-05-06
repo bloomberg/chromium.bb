@@ -2501,8 +2501,14 @@ void RenderFrameHostManager::SendPageMessage(IPC::Message* msg) {
     sender->Send(copy);
   };
 
-  for (const auto& pair : proxy_hosts_)
-    send_msg(pair.second.get(), pair.second->GetRoutingID(), msg);
+  // When sending a PageMessage for an inner WebContents, we don't want to also
+  // send it to the outer WebContent's frame as well.
+  RenderFrameProxyHost* outer_delegate_proxy =
+      ForInnerDelegate() ? GetProxyToOuterDelegate() : nullptr;
+  for (const auto& pair : proxy_hosts_) {
+    if (outer_delegate_proxy != pair.second.get())
+      send_msg(pair.second.get(), pair.second->GetRoutingID(), msg);
+  }
 
   if (speculative_render_frame_host_) {
     send_msg(speculative_render_frame_host_.get(),
