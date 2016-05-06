@@ -31,15 +31,21 @@ class ASH_EXPORT BaseDateTimeView : public ActionableView {
   // Updates the displayed text for the current time and calls SetTimer().
   void UpdateText();
 
+  // views::View overrides:
+  void GetAccessibleState(ui::AXViewState* state) override;
+
  protected:
   BaseDateTimeView();
+
+  // Updates labels to display the current time.
+  virtual void UpdateTextInternal(const base::Time& now);
+
+  // Time format (12/24hr) used for accessibility string.
+  base::HourClockType hour_type_;
 
  private:
   // Starts |timer_| to schedule the next update.
   void SetTimer(const base::Time& now);
-
-  // Updates labels to display the current time.
-  virtual void UpdateTextInternal(const base::Time& now) = 0;
 
   // Overridden from views::View.
   void ChildPreferredSizeChanged(views::View* child) override;
@@ -84,9 +90,6 @@ class ASH_EXPORT DateView : public BaseDateTimeView {
 
   views::Label* date_label_;
 
-  // Time format (12/24hr) used for accessibility string.
-  base::HourClockType hour_type_;
-
   TrayDate::DateAction action_;
 
   DISALLOW_COPY_AND_ASSIGN(DateView);
@@ -129,8 +132,6 @@ class ASH_EXPORT TimeView : public BaseDateTimeView {
   // The time label is split into two lines for the vertical shelf.
   std::unique_ptr<views::Label> vertical_label_hours_;
   std::unique_ptr<views::Label> vertical_label_minutes_;
-
-  base::HourClockType hour_type_;
 
   DISALLOW_COPY_AND_ASSIGN(TimeView);
 };

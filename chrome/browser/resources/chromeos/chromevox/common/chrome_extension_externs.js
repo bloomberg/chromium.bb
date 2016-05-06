@@ -570,6 +570,12 @@ chrome.automation.AutomationNode.prototype.liveBusy;
 chrome.automation.AutomationNode.prototype.find = function(findParams) {};
 
 /**
+ * @param {Object} findParams
+ * @return {Array<chrome.automation.AutomationNode>}
+ */
+chrome.automation.AutomationNode.prototype.findAll = function(findParams) {};
+
+/**
  * @type {string}
  */
 chrome.automation.AutomationNode.prototype.inputType;

@@ -635,11 +635,29 @@ Background.prototype = {
                        cvox.QueueMode.FLUSH);
         return false;
       case 'speakTimeAndDate':
-        var output = new Output();
-        var dateTime = new Date();
-        output.withString(
-            dateTime.toLocaleTimeString() +
-                ', ' + dateTime.toLocaleDateString()).go();
+        chrome.automation.getDesktop(function(d) {
+          // First, try speaking the on-screen time.
+          var allTime = d.findAll({role: RoleType.time});
+          allTime.filter(function(t) {
+            return t.root.role == RoleType.desktop;
+          });
+
+          var timeString = '';
+          allTime.forEach(function(t) {
+            if (t.name)
+              timeString = t.name;
+          });
+          if (timeString) {
+            cvox.ChromeVox.tts.speak(timeString, cvox.QueueMode.FLUSH);
+          } else {
+            // Fallback to the old way of speaking time.
+            var output = new Output();
+            var dateTime = new Date();
+            output.withString(
+                dateTime.toLocaleTimeString() +
+                    ', ' + dateTime.toLocaleDateString()).go();
+          }
+        });
         return false;
       case 'readCurrentTitle':
         var target = this.currentRange_.start.node;

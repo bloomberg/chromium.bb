@@ -17,6 +17,7 @@
 #include "third_party/icu/source/i18n/unicode/datefmt.h"
 #include "third_party/icu/source/i18n/unicode/dtptngen.h"
 #include "third_party/icu/source/i18n/unicode/smpdtfmt.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/views/border.h"
@@ -92,7 +93,15 @@ void BaseDateTimeView::UpdateText() {
   SetTimer(now);
 }
 
-BaseDateTimeView::BaseDateTimeView() {
+void BaseDateTimeView::GetAccessibleState(ui::AXViewState* state) {
+  ActionableView::GetAccessibleState(state);
+  state->role = ui::AX_ROLE_TIME;
+}
+
+BaseDateTimeView::BaseDateTimeView()
+    : hour_type_(ash::Shell::GetInstance()
+                     ->system_tray_delegate()
+                     ->GetHourClockType()) {
   SetTimer(base::Time::Now());
   SetFocusBehavior(FocusBehavior::NEVER);
 }
@@ -120,6 +129,15 @@ void BaseDateTimeView::SetTimer(const base::Time& now) {
       this, &BaseDateTimeView::UpdateText);
 }
 
+void BaseDateTimeView::UpdateTextInternal(const base::Time& now) {
+  SetAccessibleName(base::TimeFormatTimeOfDayWithHourClockType(
+                        now, hour_type_, base::kKeepAmPm) +
+                    base::ASCIIToUTF16(", ") +
+                    base::TimeFormatFriendlyDate(now));
+
+  NotifyAccessibilityEvent(ui::AX_EVENT_TEXT_CHANGED, true);
+}
+
 void BaseDateTimeView::ChildPreferredSizeChanged(views::View* child) {
   PreferredSizeChanged();
 }
@@ -128,10 +146,7 @@ void BaseDateTimeView::OnLocaleChanged() {
   UpdateText();
 }
 
-DateView::DateView()
-    : hour_type_(ash::Shell::GetInstance()->system_tray_delegate()->
-                 GetHourClockType()),
-      action_(TrayDate::NONE) {
+DateView::DateView() : action_(TrayDate::NONE) {
   SetLayoutManager(
       new views::BoxLayout(
           views::BoxLayout::kVertical, 0, 0, 0));
@@ -175,11 +190,7 @@ void DateView::SetActive(bool active) {
 }
 
 void DateView::UpdateTextInternal(const base::Time& now) {
-  SetAccessibleName(
-      base::TimeFormatFriendlyDate(now) +
-      base::ASCIIToUTF16(", ") +
-      base::TimeFormatTimeOfDayWithHourClockType(
-          now, hour_type_, base::kKeepAmPm));
+  BaseDateTimeView::UpdateTextInternal(now);
   date_label_->SetText(
       l10n_util::GetStringFUTF16(
           IDS_ASH_STATUS_TRAY_DATE, FormatDayOfWeek(now), FormatDate(now)));
@@ -221,9 +232,7 @@ void DateView::OnGestureEvent(ui::GestureEvent* event) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-TimeView::TimeView(TrayDate::ClockLayout clock_layout)
-    : hour_type_(ash::Shell::GetInstance()->system_tray_delegate()->
-                 GetHourClockType()) {
+TimeView::TimeView(TrayDate::ClockLayout clock_layout) {
   SetupLabels();
   UpdateTextInternal(base::Time::Now());
   UpdateClockLayout(clock_layout);
@@ -251,6 +260,7 @@ void TimeView::UpdateTextInternal(const base::Time& now) {
     return;
   }
 
+  BaseDateTimeView::UpdateTextInternal(now);
   base::string16 current_time = base::TimeFormatTimeOfDayWithHourClockType(
       now, hour_type_, base::kDropAmPm);
   horizontal_label_->SetText(current_time);
