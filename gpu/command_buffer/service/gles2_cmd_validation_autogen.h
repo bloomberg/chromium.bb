@@ -253,12 +253,7 @@ class QueryTargetValidator {
 };
 QueryTargetValidator query_target;
 
-class ReadBufferValidator {
- public:
-  bool IsValid(const GLenum value) const;
-};
-ReadBufferValidator read_buffer;
-
+ValueValidator<GLenum> read_buffer;
 ValueValidator<GLenum> read_pixel_format;
 ValueValidator<GLenum> read_pixel_type;
 ValueValidator<GLenum> render_buffer_format;

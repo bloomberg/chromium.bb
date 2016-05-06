@@ -994,7 +994,6 @@ _NAMED_TYPE_INFO = {
   },
   'ReadBuffer': {
     'type': 'GLenum',
-    'is_complete': True,
     'valid': [
       'GL_NONE',
       'GL_BACK',
@@ -2891,6 +2890,7 @@ _FUNCTION_INFO = {
   'FramebufferTextureLayer': {
     'decoder_func': 'DoFramebufferTextureLayer',
     'unsafe': True,
+    'unit_test': False,
     'trace_level': 1,
   },
   'GenerateMipmap': {
@@ -3087,13 +3087,19 @@ _FUNCTION_INFO = {
   'GetInteger64i_v': {
     'type': 'GETn',
     'result': ['SizedResult<GLint64>'],
+    'decoder_func': 'DoGetInteger64i_v',
+    'shadowed': True,
     'client_test': False,
+    'unit_test': False,
     'unsafe': True
   },
   'GetIntegeri_v': {
     'type': 'GETn',
     'result': ['SizedResult<GLint>'],
+    'decoder_func': 'DoGetIntegeri_v',
+    'shadowed': True,
     'client_test': False,
+    'unit_test': False,
     'unsafe': True
   },
   'GetInternalformativ': {
@@ -8994,8 +9000,6 @@ class EnumBaseArgument(Argument):
     return self.named_type.GetConstantValue()
 
   def WriteValidationCode(self, f, func):
-    if func.IsUnsafe():
-      return
     if self.named_type.IsConstant():
       return
     f.write("  if (!validators_->%s.IsValid(%s)) {\n" %

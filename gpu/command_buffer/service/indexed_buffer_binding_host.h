@@ -46,6 +46,9 @@ class GPU_EXPORT IndexedBufferBindingHost :
   GLsizeiptr GetBufferSize(GLuint index) const;
   GLintptr GetBufferStart(GLuint index) const;
 
+  // This is used only for UNIFORM_BUFFER bindings in context switching.
+  void RestoreBindings(IndexedBufferBindingHost* prev);
+
  protected:
   friend class base::RefCounted<IndexedBufferBindingHost>;
 
@@ -72,6 +75,8 @@ class GPU_EXPORT IndexedBufferBindingHost :
     IndexedBufferBinding(const IndexedBufferBinding& other);
     ~IndexedBufferBinding();
 
+    bool operator==(const IndexedBufferBinding& other) const;
+
     void SetBindBufferBase(Buffer* _buffer);
     void SetBindBufferRange(
         Buffer* _buffer, GLintptr _offset, GLsizeiptr _size);
@@ -84,9 +89,14 @@ class GPU_EXPORT IndexedBufferBindingHost :
       GLenum target, GLuint index, GLuint service_id, GLintptr offset,
       GLsizeiptr size, GLsizeiptr full_buffer_size);
 
+  void UpdateMaxNonNullBindingIndex(size_t changed_index);
+
   std::vector<IndexedBufferBinding> buffer_bindings_;
 
   bool needs_emulation_;
+
+  // This is used for optimization purpose in context switching.
+  size_t max_non_null_binding_index_plus_one_;
 };
 
 }  // namespace gles2

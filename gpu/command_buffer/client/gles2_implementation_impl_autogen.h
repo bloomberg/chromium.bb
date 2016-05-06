@@ -228,7 +228,7 @@ void GLES2Implementation::ClearBufferfi(GLenum buffer,
                                         GLint stencil) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glClearBufferfi("
-                     << GLES2Util::GetStringBufferfv(buffer) << ", "
+                     << GLES2Util::GetStringBufferfi(buffer) << ", "
                      << drawbuffers << ", " << depth << ", " << stencil << ")");
   helper_->ClearBufferfi(buffer, drawbuffers, depth, stencil);
   CheckGLError();

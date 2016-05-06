@@ -26,6 +26,7 @@ class ErrorState;
 class ErrorStateClient;
 class FeatureInfo;
 class Framebuffer;
+class IndexedBufferBindingHost;
 class Logger;
 class Program;
 class Renderbuffer;
@@ -190,6 +191,7 @@ struct GPU_EXPORT ContextState {
   void RestoreProgramBindings() const;
   void RestoreRenderbufferBindings();
   void RestoreTransformFeedbackBindings(const ContextState* prev_state);
+  void RestoreIndexedUniformBufferBindings(const ContextState* prev_state);
   void RestoreTextureUnitBindings(
       GLuint unit, const ContextState* prev_state) const;
 
@@ -282,6 +284,8 @@ struct GPU_EXPORT ContextState {
   scoped_refptr<TransformFeedback> default_transform_feedback;
 
   scoped_refptr<TransformFeedback> bound_transform_feedback;
+
+  scoped_refptr<IndexedBufferBindingHost> indexed_uniform_buffer_bindings;
 
   // The values for each attrib.
   std::vector<Vec4> attrib_values;

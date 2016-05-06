@@ -1317,6 +1317,9 @@ void FeatureInfo::EnableES3Validators() {
     validators_.attachment.RemoveValues(
         kColorAttachments + max_color_attachments,
         kTotalColorAttachmentEnums - max_color_attachments);
+    validators_.read_buffer.RemoveValues(
+        kColorAttachments + max_color_attachments,
+        kTotalColorAttachmentEnums - max_color_attachments);
   }
 
   GLint max_draw_buffers = 0;

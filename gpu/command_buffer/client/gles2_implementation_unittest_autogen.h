@@ -200,9 +200,9 @@ TEST_F(GLES2ImplementationTest, ClearBufferfi) {
     cmds::ClearBufferfi cmd;
   };
   Cmds expected;
-  expected.cmd.Init(GL_COLOR, 2, 3, 4);
+  expected.cmd.Init(GL_DEPTH_STENCIL, 2, 3, 4);
 
-  gl_->ClearBufferfi(GL_COLOR, 2, 3, 4);
+  gl_->ClearBufferfi(GL_DEPTH_STENCIL, 2, 3, 4);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 

@@ -28,6 +28,19 @@ IndexedBufferBindingHost::IndexedBufferBinding::IndexedBufferBinding(
 IndexedBufferBindingHost::IndexedBufferBinding::~IndexedBufferBinding() {
 }
 
+bool IndexedBufferBindingHost::IndexedBufferBinding::operator==(
+    const IndexedBufferBindingHost::IndexedBufferBinding& other) const {
+  if (type == kBindBufferNone && other.type == kBindBufferNone) {
+    // This should be the most common case so an early out.
+    return true;
+  }
+  return (type == other.type &&
+          buffer.get() == other.buffer.get() &&
+          offset == other.offset &&
+          size == other.size &&
+          effective_full_buffer_size == other.effective_full_buffer_size);
+}
+
 void IndexedBufferBindingHost::IndexedBufferBinding::SetBindBufferBase(
     Buffer* _buffer) {
   if (!_buffer) {
@@ -65,7 +78,8 @@ void IndexedBufferBindingHost::IndexedBufferBinding::Reset() {
 
 IndexedBufferBindingHost::IndexedBufferBindingHost(
     uint32_t max_bindings, bool needs_emulation)
-    : needs_emulation_(needs_emulation) {
+    : needs_emulation_(needs_emulation),
+      max_non_null_binding_index_plus_one_(0u) {
   buffer_bindings_.resize(max_bindings);
 }
 
@@ -79,6 +93,7 @@ void IndexedBufferBindingHost::DoBindBufferBase(
   glBindBufferBase(target, index, service_id);
 
   buffer_bindings_[index].SetBindBufferBase(buffer);
+  UpdateMaxNonNullBindingIndex(index);
 }
 
 void IndexedBufferBindingHost::DoBindBufferRange(
@@ -94,6 +109,7 @@ void IndexedBufferBindingHost::DoBindBufferRange(
   }
 
   buffer_bindings_[index].SetBindBufferRange(buffer, offset, size);
+  UpdateMaxNonNullBindingIndex(index);
 }
 
 // static
@@ -164,6 +180,7 @@ void IndexedBufferBindingHost::RemoveBoundBuffer(Buffer* buffer) {
   for (size_t ii = 0; ii < buffer_bindings_.size(); ++ii) {
     if (buffer_bindings_[ii].buffer.get() == buffer) {
       buffer_bindings_[ii].Reset();
+      UpdateMaxNonNullBindingIndex(ii);
     }
   }
 }
@@ -181,6 +198,50 @@ GLsizeiptr IndexedBufferBindingHost::GetBufferSize(GLuint index) const {
 GLintptr IndexedBufferBindingHost::GetBufferStart(GLuint index) const {
   DCHECK_LT(index, buffer_bindings_.size());
   return buffer_bindings_[index].offset;
+}
+
+void IndexedBufferBindingHost::RestoreBindings(
+    IndexedBufferBindingHost* prev) {
+  size_t limit = max_non_null_binding_index_plus_one_;
+  if (prev && prev->max_non_null_binding_index_plus_one_ > limit) {
+    limit = prev->max_non_null_binding_index_plus_one_;
+  }
+  for (size_t ii = 0; ii < limit; ++ii) {
+    if (prev && buffer_bindings_[ii] == prev->buffer_bindings_[ii]) {
+      continue;
+    }
+    switch (buffer_bindings_[ii].type) {
+      case kBindBufferBase:
+      case kBindBufferNone:
+        DoBindBufferBase(
+            GL_UNIFORM_BUFFER, ii, buffer_bindings_[ii].buffer.get());
+        break;
+      case kBindBufferRange:
+        DoBindBufferRange(
+            GL_UNIFORM_BUFFER, ii, buffer_bindings_[ii].buffer.get(),
+            buffer_bindings_[ii].offset, buffer_bindings_[ii].size);
+        break;
+    }
+  }
+}
+
+void IndexedBufferBindingHost::UpdateMaxNonNullBindingIndex(
+    size_t changed_index) {
+  size_t plus_one = changed_index + 1;
+  DCHECK_LT(changed_index, buffer_bindings_.size());
+  if (buffer_bindings_[changed_index].buffer.get()) {
+    max_non_null_binding_index_plus_one_ =
+        std::max(max_non_null_binding_index_plus_one_, plus_one);
+  } else {
+    if (plus_one == max_non_null_binding_index_plus_one_) {
+      for (size_t ii = changed_index; ii > 0; --ii) {
+        if (buffer_bindings_[ii - 1].buffer.get()) {
+          max_non_null_binding_index_plus_one_ = ii;
+          break;
+        }
+      }
+    }
+  }
 }
 
 }  // namespace gles2

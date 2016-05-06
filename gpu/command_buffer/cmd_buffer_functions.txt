@@ -24,7 +24,7 @@ GL_APICALL void         GL_APIENTRY glBufferData (GLenumBufferTarget target, GLs
 GL_APICALL void         GL_APIENTRY glBufferSubData (GLenumBufferTarget target, GLintptrNotNegative offset, GLsizeiptr size, const void* data);
 GL_APICALL GLenum       GL_APIENTRY glCheckFramebufferStatus (GLenumFrameBufferTarget target);
 GL_APICALL void         GL_APIENTRY glClear (GLbitfield mask);
-GL_APICALL void         GL_APIENTRY glClearBufferfi (GLenumBufferfv buffer, GLint drawbuffers, GLfloat depth, GLint stencil);
+GL_APICALL void         GL_APIENTRY glClearBufferfi (GLenumBufferfi buffer, GLint drawbuffers, GLfloat depth, GLint stencil);
 GL_APICALL void         GL_APIENTRY glClearBufferfv (GLenumBufferfv buffer, GLint drawbuffers, const GLfloat* value);
 GL_APICALL void         GL_APIENTRY glClearBufferiv (GLenumBufferiv buffer, GLint drawbuffers, const GLint* value);
 GL_APICALL void         GL_APIENTRY glClearBufferuiv (GLenumBufferuiv buffer, GLint drawbuffers, const GLuint* value);

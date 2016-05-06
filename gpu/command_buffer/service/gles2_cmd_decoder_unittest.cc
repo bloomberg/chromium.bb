@@ -1558,6 +1558,36 @@ TEST_P(GLES3DecoderTest, GenTransformFeedbacksImmediateInvalidArgs) {
             ExecuteImmediateCmd(*cmd, sizeof(&client_transformfeedback_id_)));
 }
 
+TEST_P(GLES3DecoderTest, GetIntegeri_vValidArgs) {
+  EXPECT_CALL(*gl_, GetIntegeri_v(_, _, _)).Times(0);
+  typedef cmds::GetIntegeri_v::Result Result;
+  Result* result = static_cast<Result*>(shared_memory_address_);
+  result->size = 0;
+  cmds::GetIntegeri_v cmd;
+  cmd.Init(GL_TRANSFORM_FEEDBACK_BUFFER_BINDING, 2, shared_memory_id_,
+           shared_memory_offset_);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(decoder_->GetGLES2Util()->GLGetNumValuesReturned(
+                GL_TRANSFORM_FEEDBACK_BUFFER_BINDING),
+            result->GetNumResults());
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+TEST_P(GLES3DecoderTest, GetInteger64i_vValidArgs) {
+  EXPECT_CALL(*gl_, GetInteger64i_v(_, _, _)).Times(0);
+  typedef cmds::GetInteger64i_v::Result Result;
+  Result* result = static_cast<Result*>(shared_memory_address_);
+  result->size = 0;
+  cmds::GetInteger64i_v cmd;
+  cmd.Init(GL_UNIFORM_BUFFER_SIZE, 2, shared_memory_id_,
+           shared_memory_offset_);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(decoder_->GetGLES2Util()->GLGetNumValuesReturned(
+                GL_UNIFORM_BUFFER_SIZE),
+            result->GetNumResults());
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
 // Test that processing with 0 entries does nothing.
 TEST_P(GLES2DecoderDoCommandsTest, DoCommandsOneOfZero) {
   int num_processed = -1;

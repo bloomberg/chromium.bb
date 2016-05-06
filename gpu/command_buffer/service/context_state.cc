@@ -315,6 +315,14 @@ void ContextState::RestoreTransformFeedbackBindings(
   }
 }
 
+void ContextState::RestoreIndexedUniformBufferBindings(
+    const ContextState* prev_state) {
+  if (!feature_info_->IsES3Capable())
+    return;
+  indexed_uniform_buffer_bindings->RestoreBindings(
+      prev_state ? prev_state->indexed_uniform_buffer_bindings.get() : nullptr);
+}
+
 void ContextState::RestoreActiveTexture() const {
   glActiveTexture(GL_TEXTURE0 + active_texture_unit);
 }
@@ -449,6 +457,7 @@ void ContextState::RestoreState(const ContextState* prev_state) {
   RestoreRenderbufferBindings();
   RestoreProgramBindings();
   RestoreTransformFeedbackBindings(prev_state);
+  RestoreIndexedUniformBufferBindings(prev_state);
   RestoreGlobalState(prev_state);
 }
 

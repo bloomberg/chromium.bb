@@ -722,20 +722,6 @@ TEST_P(GLES2DecoderTest1, FramebufferRenderbufferInvalidArgs2_0) {
   EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
 }
 
-TEST_P(GLES2DecoderTest1, FramebufferTextureLayerValidArgs) {
-  EXPECT_CALL(*gl_,
-              FramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                                      kServiceTextureId, 4, 5));
-  SpecializedSetup<cmds::FramebufferTextureLayer, 0>(true);
-  cmds::FramebufferTextureLayer cmd;
-  cmd.Init(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, client_texture_id_, 4, 5);
-  decoder_->set_unsafe_es3_apis_enabled(true);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  decoder_->set_unsafe_es3_apis_enabled(false);
-  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
-}
-
 TEST_P(GLES2DecoderTest1, FrontFaceValidArgs) {
   EXPECT_CALL(*gl_, FrontFace(GL_CW));
   SpecializedSetup<cmds::FrontFace, 0>(true);
@@ -1176,48 +1162,6 @@ TEST_P(GLES2DecoderTest1, GetInteger64vValidArgs) {
   decoder_->set_unsafe_es3_apis_enabled(true);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(decoder_->GetGLES2Util()->GLGetNumValuesReturned(GL_ACTIVE_TEXTURE),
-            result->GetNumResults());
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  decoder_->set_unsafe_es3_apis_enabled(false);
-  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
-}
-
-TEST_P(GLES2DecoderTest1, GetIntegeri_vValidArgs) {
-  EXPECT_CALL(*gl_, GetError()).WillRepeatedly(Return(GL_NO_ERROR));
-  SpecializedSetup<cmds::GetIntegeri_v, 0>(true);
-  typedef cmds::GetIntegeri_v::Result Result;
-  Result* result = static_cast<Result*>(shared_memory_address_);
-  EXPECT_CALL(*gl_, GetIntegeri_v(GL_TRANSFORM_FEEDBACK_BUFFER_BINDING, 2,
-                                  result->GetData()));
-  result->size = 0;
-  cmds::GetIntegeri_v cmd;
-  cmd.Init(GL_TRANSFORM_FEEDBACK_BUFFER_BINDING, 2, shared_memory_id_,
-           shared_memory_offset_);
-  decoder_->set_unsafe_es3_apis_enabled(true);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(decoder_->GetGLES2Util()->GLGetNumValuesReturned(
-                GL_TRANSFORM_FEEDBACK_BUFFER_BINDING),
-            result->GetNumResults());
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  decoder_->set_unsafe_es3_apis_enabled(false);
-  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
-}
-
-TEST_P(GLES2DecoderTest1, GetInteger64i_vValidArgs) {
-  EXPECT_CALL(*gl_, GetError()).WillRepeatedly(Return(GL_NO_ERROR));
-  SpecializedSetup<cmds::GetInteger64i_v, 0>(true);
-  typedef cmds::GetInteger64i_v::Result Result;
-  Result* result = static_cast<Result*>(shared_memory_address_);
-  EXPECT_CALL(*gl_, GetInteger64i_v(GL_TRANSFORM_FEEDBACK_BUFFER_BINDING, 2,
-                                    result->GetData()));
-  result->size = 0;
-  cmds::GetInteger64i_v cmd;
-  cmd.Init(GL_TRANSFORM_FEEDBACK_BUFFER_BINDING, 2, shared_memory_id_,
-           shared_memory_offset_);
-  decoder_->set_unsafe_es3_apis_enabled(true);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(decoder_->GetGLES2Util()->GLGetNumValuesReturned(
-                GL_TRANSFORM_FEEDBACK_BUFFER_BINDING),
             result->GetNumResults());
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
   decoder_->set_unsafe_es3_apis_enabled(false);

@@ -113,6 +113,55 @@ TEST_F(IndexedBufferBindingHostTest, DoBindBufferRangeBufferWithoutEnoughSize) {
   host_->OnBufferData(kTarget, buffer_.get());
 }
 
+TEST_F(IndexedBufferBindingHostTest, RestoreBindings) {
+  const GLenum kTarget = GL_UNIFORM_BUFFER;
+  const GLuint kIndex = 2;
+  const GLuint kOtherIndex = 10;
+  const GLintptr kOffset = 4;
+  const GLsizeiptr kSize = 8;
+  const GLsizeiptr kBufferSize = kOffset + kSize - 2;
+
+  GLsizeiptr clamped_size = ((kBufferSize - kOffset) >> 2) << 2;
+
+  SetBufferSize(kTarget, kBufferSize);
+  // Set up host
+  EXPECT_CALL(*gl_, BindBufferBase(kTarget, kIndex, kBufferServiceId))
+      .Times(1)
+      .RetiresOnSaturation();
+  host_->DoBindBufferBase(kTarget, kIndex, buffer_.get());
+  // Set up the second host
+  scoped_refptr<IndexedBufferBindingHost> other =
+      new IndexedBufferBindingHost(kMaxBindings, true);
+  EXPECT_CALL(*gl_, BindBufferRange(kTarget, kOtherIndex, kBufferServiceId,
+                                    kOffset, clamped_size))
+      .Times(1)
+      .RetiresOnSaturation();
+  other->DoBindBufferRange(kTarget, kOtherIndex, buffer_.get(), kOffset, kSize);
+
+  {
+    // Switching from |other| to |host_|.
+    EXPECT_CALL(*gl_, BindBufferBase(kTarget, kIndex, kBufferServiceId))
+        .Times(1)
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, BindBufferBase(kTarget, kOtherIndex, 0))
+        .Times(1)
+        .RetiresOnSaturation();
+    host_->RestoreBindings(other.get());
+  }
+
+  {
+    // Switching from |host_| to |other|.
+    EXPECT_CALL(*gl_, BindBufferBase(kTarget, kIndex, 0))
+        .Times(1)
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, BindBufferRange(kTarget, kOtherIndex, kBufferServiceId,
+                                      kOffset, clamped_size))
+        .Times(1)
+        .RetiresOnSaturation();
+    other->RestoreBindings(host_.get());
+  }
+}
+
 }  // namespace gles2
 }  // namespace gpu
 

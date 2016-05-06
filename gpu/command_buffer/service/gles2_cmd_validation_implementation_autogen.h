@@ -745,29 +745,25 @@ bool Validators::QueryTargetValidator::IsValid(const GLenum value) const {
   return false;
 };
 
-bool Validators::ReadBufferValidator::IsValid(const GLenum value) const {
-  switch (value) {
-    case GL_NONE:
-    case GL_BACK:
-    case GL_COLOR_ATTACHMENT0:
-    case GL_COLOR_ATTACHMENT1:
-    case GL_COLOR_ATTACHMENT2:
-    case GL_COLOR_ATTACHMENT3:
-    case GL_COLOR_ATTACHMENT4:
-    case GL_COLOR_ATTACHMENT5:
-    case GL_COLOR_ATTACHMENT6:
-    case GL_COLOR_ATTACHMENT7:
-    case GL_COLOR_ATTACHMENT8:
-    case GL_COLOR_ATTACHMENT9:
-    case GL_COLOR_ATTACHMENT10:
-    case GL_COLOR_ATTACHMENT11:
-    case GL_COLOR_ATTACHMENT12:
-    case GL_COLOR_ATTACHMENT13:
-    case GL_COLOR_ATTACHMENT14:
-    case GL_COLOR_ATTACHMENT15:
-      return true;
-  }
-  return false;
+static const GLenum valid_read_buffer_table[] = {
+    GL_NONE,
+    GL_BACK,
+    GL_COLOR_ATTACHMENT0,
+    GL_COLOR_ATTACHMENT1,
+    GL_COLOR_ATTACHMENT2,
+    GL_COLOR_ATTACHMENT3,
+    GL_COLOR_ATTACHMENT4,
+    GL_COLOR_ATTACHMENT5,
+    GL_COLOR_ATTACHMENT6,
+    GL_COLOR_ATTACHMENT7,
+    GL_COLOR_ATTACHMENT8,
+    GL_COLOR_ATTACHMENT9,
+    GL_COLOR_ATTACHMENT10,
+    GL_COLOR_ATTACHMENT11,
+    GL_COLOR_ATTACHMENT12,
+    GL_COLOR_ATTACHMENT13,
+    GL_COLOR_ATTACHMENT14,
+    GL_COLOR_ATTACHMENT15,
 };
 
 static const GLenum valid_read_pixel_format_table[] = {
@@ -1393,6 +1389,7 @@ Validators::Validators()
       index_type(valid_index_type_table, arraysize(valid_index_type_table)),
       pixel_store(valid_pixel_store_table, arraysize(valid_pixel_store_table)),
       pixel_type(valid_pixel_type_table, arraysize(valid_pixel_type_table)),
+      read_buffer(valid_read_buffer_table, arraysize(valid_read_buffer_table)),
       read_pixel_format(valid_read_pixel_format_table,
                         arraysize(valid_read_pixel_format_table)),
       read_pixel_type(valid_read_pixel_type_table,
