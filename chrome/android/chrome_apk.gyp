@@ -101,7 +101,7 @@
     },
     {
       # The base library used in both ChromePublic and ChromeSyncShell.
-      'target_name': 'libchrome_public_base',
+      'target_name': 'libchrome_base',
       'type': 'none',
       'dependencies': [
         '../../chrome/chrome.gyp:chrome_android_core',
@@ -126,14 +126,13 @@
     },
     {
       # GN: //chrome/android:chrome_public
-      # TODO(yfriedman): Replace with libchrome.
-      'target_name': 'libchrome_public',
+      'target_name': 'libchrome',
       'type': 'shared_library',
       'sources': [
         '<@(chrome_app_native_sources)',
       ],
       'dependencies': [
-        'libchrome_public_base',
+        'libchrome_base',
       ],
     },
     {
@@ -144,7 +143,7 @@
         '<@(chrome_sync_shell_app_native_sources)',
       ],
       'dependencies': [
-        'libchrome_public_base',
+        'libchrome_base',
         '../../sync/sync.gyp:sync',
         '../../sync/sync.gyp:test_support_sync_fake_server_android',
       ],
@@ -188,7 +187,7 @@
       'variables': {
         'android_manifest_path': '<(chrome_public_apk_manifest)',
         'apk_name': 'ChromePublic',
-        'native_lib_target': 'libchrome_public',
+        'native_lib_target': 'libchrome',
         'java_in_dir': 'java',
         'resource_dir': '../../chrome/android/java/res_chromium',
         'enable_multidex': 1,
@@ -205,7 +204,7 @@
       'dependencies': [
         'chrome_android_paks_copy',
         'chrome_public_apk_template_resources',
-        'libchrome_public',
+        'libchrome',
         '../chrome.gyp:chrome_java',
       ],
       'includes': [ 'chrome_apk.gypi' ],

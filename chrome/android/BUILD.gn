@@ -427,16 +427,6 @@ jinja_template_resources("chrome_sync_shell_apk_template_resources") {
   variables = chrome_sync_shell_jinja_variables
 }
 
-# GYP: //chrome/android/chrome_apk.gyp:libchrome_public
-# TODO(yfriedman): Remove and re-use chrome target.
-shared_library("chrome_public") {
-  deps = [
-    "//build/config/sanitizers:deps",
-    "//chrome:chrome_android_core",
-  ]
-  sources = chrome_apk_gypi.chrome_app_native_sources
-}
-
 # GYP: none
 shared_library("chrome") {
   sources = chrome_apk_gypi.chrome_app_native_sources
@@ -503,10 +493,10 @@ chrome_public_apk_tmpl_shared("chrome_public_apk") {
   android_manifest = get_target_outputs(":chrome_public_apk_manifest")
   android_manifest = android_manifest[1]
   apk_name = "ChromePublic"
-  native_libs = [ "libchrome_public.so" ]
+  native_libs = [ "libchrome.so" ]
 
   deps = [
-    ":chrome_public",
+    ":chrome",
     ":chrome_public_apk_manifest",
     ":chrome_public_apk_template_resources",
   ]
