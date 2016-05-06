@@ -1135,6 +1135,8 @@ def apply_rietveld_issue(issue, patchset, root, server, _rev_map, _revision,
 def apply_gerrit_ref(gerrit_repo, gerrit_ref, root, gerrit_reset):
   gerrit_repo = gerrit_repo or 'origin'
   assert gerrit_ref
+  print '===Applying gerrit ref==='
+  print 'Repo is %r, ref is %r, root is %r' % (gerrit_repo, gerrit_ref, root)
   try:
     base_rev = git('rev-parse', 'HEAD', cwd=root).strip()
     git('retry', 'fetch', gerrit_repo, gerrit_ref, cwd=root, tries=1)
@@ -1311,13 +1313,17 @@ def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
   if patch_url:
     patches = get_svn_patch(patch_url)
 
+  print '===Processing patch solutions==='
   already_patched = []
   patch_root = patch_root or ''
+  print 'Patch root is %r' % patch_root
   for solution in solutions:
+    print 'Processing solution %r' % solution['name']
     if (patch_root == solution['name'] or
         solution['name'].startswith(patch_root + '/')):
       relative_root = solution['name'][len(patch_root) + 1:]
       target = '/'.join([relative_root, 'DEPS']).lstrip('/')
+      print '  relative root is %r, target is %r' % (relative_root, target)
       if patches:
         apply_svn_patch(patch_root, patches, whitelist=[target])
         already_patched.append(target)
