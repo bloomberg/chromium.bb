@@ -155,6 +155,14 @@ void Geolocation::recordOriginTypeAccess() const
     if (document->isSecureContext(insecureOriginMsg)) {
         UseCounter::count(document, UseCounter::GeolocationSecureOrigin);
         UseCounter::countCrossOriginIframe(*document, UseCounter::GeolocationSecureOriginIframe);
+    } else if (frame()->settings()->allowGeolocationOnInsecureOrigins()) {
+        // TODO(jww): This should be removed after WebView is fixed so that it
+        // disallows geolocation in insecure contexts.
+        //
+        // See https://crbug.com/603574.
+        Deprecation::countDeprecation(document, UseCounter::GeolocationInsecureOriginDeprecatedNotRemoved);
+        Deprecation::countDeprecationCrossOriginIframe(*document, UseCounter::GeolocationInsecureOriginIframeDeprecatedNotRemoved);
+        OriginsUsingFeatures::countAnyWorld(*document, OriginsUsingFeatures::Feature::GeolocationInsecureOrigin);
     } else {
         Deprecation::countDeprecation(document, UseCounter::GeolocationInsecureOrigin);
         Deprecation::countDeprecationCrossOriginIframe(*document, UseCounter::GeolocationInsecureOriginIframe);

@@ -292,10 +292,10 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature)
 
     case UseCounter::GeolocationInsecureOrigin:
     case UseCounter::GeolocationInsecureOriginIframe:
-        // TODO(jww): This message should be made less ambigous after WebView
-        // is fixed so geolocation can be removed there. After that, this
-        // should be updated to read similarly to GetUserMediaInsecureOrigin's
-        // message.
+        return "getCurrentPosition() and watchPosition() no longer work on insecure origins. To use this feature, you should consider switching your application to a secure origin, such as HTTPS. See https://goo.gl/rStTGz for more details.";
+
+    case UseCounter::GeolocationInsecureOriginDeprecatedNotRemoved:
+    case UseCounter::GeolocationInsecureOriginIframeDeprecatedNotRemoved:
         return "getCurrentPosition() and watchPosition() are deprecated on insecure origins. To use this feature, you should consider switching your application to a secure origin, such as HTTPS. See https://goo.gl/rStTGz for more details.";
 
     case UseCounter::GetUserMediaInsecureOrigin:

@@ -72277,6 +72277,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1340" label="URLMethodRevokeObjectURLServiceWorker"/>
   <int value="1341" label="DocumentCreateEventPaymentRequestUpdateEvent"/>
   <int value="1342" label="CredentialManagerGetReturnedCredential"/>
+  <int value="1343" label="GeolocationInsecureOriginDeprecatedNotRemoved"/>
+  <int value="1344"
+      label="GeolocationInsecureOriginIframeDeprecatedNotRemoved"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">
