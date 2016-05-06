@@ -111,6 +111,26 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     }
 
     /**
+     * A test-only observer for PaymentRequest UI.
+     */
+    public interface PaymentRequestObserverForTest {
+        /**
+         * Called when clicks on the UI are possible.
+         */
+        void onPaymentRequestReadyForInput(PaymentRequestUI ui);
+
+        /**
+         * Called when clicks on the X close button are possible.
+         */
+        void onPaymentRequestReadyToClose(PaymentRequestUI ui);
+
+        /**
+         * Called when the UI is gone.
+         */
+        void onPaymentRequestDismiss();
+    }
+
+    /**
      * The number of milliseconds to display "Payment processed" or "Error processing payment"
      * message.
      */
@@ -119,11 +139,11 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     /** Length of the animation to either show the UI or expand it to full height. */
     private static final int DIALOG_ENTER_ANIMATION_MS = 225;
 
-    private static PaymentRequestUI sCurrentUIForTest;
+    private static PaymentRequestObserverForTest sObseverForTest;
 
     private final Context mContext;
     private final Client mClient;
-    private final Runnable mDismissCallback;
+    private final PaymentRequestObserverForTest mObserverForTest;
     private final boolean mRequestShipping;
 
     private final Dialog mDialog;
@@ -160,6 +180,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
 
     private AnimatorSet mCurrentAnimator;
     private int mAnimatorTranslation;
+    private boolean mIsInitialLayoutComplete;
 
     /**
      * Builds and shows the UI for PaymentRequest.
@@ -178,23 +199,17 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
      */
     public static PaymentRequestUI show(Activity activity, Client client, boolean requestShipping,
             String title, String origin) {
-        assert sCurrentUIForTest == null;
         PaymentRequestUI ui = new PaymentRequestUI(activity, client, requestShipping, title, origin,
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        sCurrentUIForTest = null;
-                    }
-                });
-        sCurrentUIForTest = ui;
+                sObseverForTest);
+        sObseverForTest = null;
         return ui;
     }
 
     private PaymentRequestUI(Activity activity, Client client, boolean requestShipping,
-            String title, String origin, Runnable dismissCallback) {
+            String title, String origin, PaymentRequestObserverForTest observerForTest) {
         mContext = activity;
         mClient = client;
-        mDismissCallback = dismissCallback;
+        mObserverForTest = observerForTest;
         mRequestShipping = requestShipping;
         mAnimatorTranslation = activity.getResources().getDimensionPixelSize(
                 R.dimen.payments_ui_translation);
@@ -263,9 +278,6 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         // Enabled in updatePayButtonEnabled() when the user has selected all payment options.
         mPayButton.setEnabled(false);
 
-        // Enabled in getDefaultPaymentInformation() callback.
-        mEditButton.setEnabled(false);
-
         // Set up the dialog.
         mDialog = new AlwaysDismissedDialog(activity, R.style.DialogWhenLarge);
         mDialog.setOnDismissListener(this);
@@ -313,7 +325,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
 
                 updatePaymentMethodSection(result.getPaymentMethods());
                 updatePayButtonEnabled();
-                mEditButton.setEnabled(true);
+                notifyReadyForInput();
             }
         });
     }
@@ -433,15 +445,14 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
      */
     @Override
     public void onClick(View v) {
-        if (!isAcceptingUserInput()) return;
+        if (!isAcceptingCloseButton()) return;
 
         if (v == mCloseButton) {
             mDialog.dismiss();
             return;
         }
 
-        // Disable UI interaction until getDefaultPaymentInformation() callback fires.
-        if (mPaymentMethodSectionInformation == null) return;
+        if (!isAcceptingUserInput()) return;
 
         if (v == mOrderSummarySection) {
             expand(mOrderSummarySection);
@@ -495,10 +506,14 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         }
     }
 
+    /** @return Whether or not the dialog can be closed via the X close button. */
+    private boolean isAcceptingCloseButton() {
+        return mCurrentAnimator == null && mIsInitialLayoutComplete;
+    }
+
     /** @return Whether or not the dialog is accepting user input. */
-    public boolean isAcceptingUserInput() {
-        // Don't allow any input while the dialog is moving around.
-        return mCurrentAnimator == null;
+    private boolean isAcceptingUserInput() {
+        return isAcceptingCloseButton() && mPaymentMethodSectionInformation != null;
     }
 
     private void expand(ViewGroup section) {
@@ -601,18 +616,8 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
      */
     @Override
     public void onDismiss(DialogInterface dialog) {
-        mDismissCallback.run();
+        if (mObserverForTest != null) mObserverForTest.onPaymentRequestDismiss();
         if (!mIsClientClosing) mClient.onDismiss();
-    }
-
-    @VisibleForTesting
-    public static PaymentRequestUI getCurrentUIForTest() {
-        return sCurrentUIForTest;
-    }
-
-    @VisibleForTesting
-    public Dialog getDialogForTest() {
-        return mDialog;
     }
 
     /** Animates the initial UI coming in from below and darkening everything else on screen. */
@@ -648,6 +653,9 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
             mScrim.setAlpha(1f);
             mContainer.setAlpha(1f);
             mContainer.setTranslationY(0);
+            mIsInitialLayoutComplete = true;
+            notifyReadyToClose();
+            notifyReadyForInput();
         }
     }
 
@@ -722,9 +730,33 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                 public void onAnimationEnd(Animator animation) {
                     mCurrentAnimator = null;
                     update(0.0f);
+                    notifyReadyToClose();
+                    notifyReadyForInput();
                 }
             });
             mCurrentAnimator.start();
+        }
+    }
+
+    @VisibleForTesting
+    public static void setObserverForTest(PaymentRequestObserverForTest observerForTest) {
+        sObseverForTest = observerForTest;
+    }
+
+    @VisibleForTesting
+    public Dialog getDialogForTest() {
+        return mDialog;
+    }
+
+    private void notifyReadyForInput() {
+        if (isAcceptingUserInput() && mObserverForTest != null) {
+            mObserverForTest.onPaymentRequestReadyForInput(this);
+        }
+    }
+
+    private void notifyReadyToClose() {
+        if (isAcceptingCloseButton() && mObserverForTest != null) {
+            mObserverForTest.onPaymentRequestReadyToClose(this);
         }
     }
 }

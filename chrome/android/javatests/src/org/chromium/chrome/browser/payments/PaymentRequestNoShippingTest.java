@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.payments;
 
 import android.test.suitebuilder.annotation.MediumTest;
 
+import org.chromium.chrome.R;
+
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
@@ -22,28 +24,28 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
             throws InterruptedException, ExecutionException, TimeoutException {}
 
     @MediumTest
-    public void testCloseDialog()
-            throws InterruptedException, ExecutionException, TimeoutException {
-        triggerPaymentUI();
-        clickClosePaymentUIButton();
+    public void testCloseDialog() throws InterruptedException, ExecutionException,
+            TimeoutException {
+        triggerUIAndWait(mReadyToClose);
+        clickAndWait(R.id.close_button, mDismissed);
         expectResultContains(new String[] {"Request cancelled"});
     }
 
     @MediumTest
-    public void testEditAndCloseDialog()
-            throws InterruptedException, ExecutionException, TimeoutException {
-        triggerPaymentUI();
-        clickSecondaryPaymentUIButton();
-        clickClosePaymentUIButton();
+    public void testEditAndCloseDialog() throws InterruptedException, ExecutionException,
+            TimeoutException {
+        triggerUIAndWait(mReadyForInput);
+        clickAndWait(R.id.button_secondary, mReadyToClose);
+        clickAndWait(R.id.close_button, mDismissed);
         expectResultContains(new String[] {"Request cancelled"});
     }
 
     @MediumTest
-    public void testEditAndCancelDialog()
-            throws InterruptedException, ExecutionException, TimeoutException {
-        triggerPaymentUI();
-        clickSecondaryPaymentUIButton();
-        clickSecondaryPaymentUIButton();
+    public void testEditAndCancelDialog() throws InterruptedException, ExecutionException,
+            TimeoutException {
+        triggerUIAndWait(mReadyForInput);
+        clickAndWait(R.id.button_secondary, mReadyForInput);
+        clickAndWait(R.id.button_secondary, mDismissed);
         expectResultContains(new String[] {"Request cancelled"});
     }
 }
