@@ -317,6 +317,12 @@
                    type="chrome_html" />
       </if>
       <if expr="chromeos">
+        <structure name="IDR_SETTINGS_DEVICE_BROWSER_PROXY_HTML"
+                   file="device_page/device_page_browser_proxy.html"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_DEVICE_BROWSER_PROXY_JS"
+                   file="device_page/device_page_browser_proxy.js"
+                   type="chrome_html" />
         <structure name="IDR_SETTINGS_DEVICE_DISPLAY_HTML"
                    file="device_page/display.html"
                    type="chrome_html" />

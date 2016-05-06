@@ -22,11 +22,13 @@
         <paper-radio-button name="false">
           $i18n{traditionalScrollLabel}
         </paper-radio-button>
-        <!-- TODO(michaelpg): Make link inside label clickable.
-             https://github.com/PolymerElements/paper-radio-button/issues/86
-             -->
         <paper-radio-button name="true">
-          $i18nRaw{naturalScrollLabel}
+          $i18n{naturalScrollLabel}
+          <a href="$i18n{naturalScrollLearnMoreLink}" target="_blank"
+              on-tap="onLearnMoreLinkActivated_"
+              on-keydown="onLearnMoreLinkActivated_">
+            $i18n{naturalScrollLearnMore}
+          </a>
         </paper-radio-button>
       </settings-radio-group>
     </div>

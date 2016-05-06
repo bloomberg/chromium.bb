@@ -341,6 +341,8 @@ void AddDeviceStrings(content::WebUIDataSource* html_source) {
       {"devicePageTitle", IDS_SETTINGS_DEVICE_TITLE},
       {"scrollLabel", IDS_SETTINGS_SCROLL_LABEL},
       {"traditionalScrollLabel", IDS_SETTINGS_TRADITIONAL_SCROLL_LABEL},
+      {"naturalScrollLabel", IDS_SETTINGS_NATURAL_SCROLL_LABEL},
+      {"naturalScrollLearnMore", IDS_SETTINGS_NATURAL_SCROLL_LEARN_MORE},
   };
   AddLocalizedStringsBulk(html_source, device_strings,
                           arraysize(device_strings));
@@ -387,10 +389,8 @@ void AddDeviceStrings(content::WebUIDataSource* html_source) {
                           arraysize(display_strings));
 
   html_source->AddString(
-      "naturalScrollLabel",
-      l10n_util::GetStringFUTF16(
-          IDS_SETTINGS_NATURAL_SCROLL_LABEL,
-          base::ASCIIToUTF16(chrome::kNaturalScrollHelpURL)));
+      "naturalScrollLearnMoreLink",
+      base::ASCIIToUTF16(chrome::kNaturalScrollHelpURL));
 }
 #endif
 

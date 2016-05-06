@@ -16,4 +16,13 @@ Polymer({
       notify: true,
     },
   },
+
+  /**
+   * Prevents the link from activating its parent paper-radio-button.
+   * @param {!Event} e
+   * @private
+   */
+  onLearnMoreLinkActivated_: function(e) {
+    settings.DevicePageBrowserProxyImpl.getInstance().handleLinkEvent(e);
+  },
 });

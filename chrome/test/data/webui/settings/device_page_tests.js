@@ -3,44 +3,76 @@
 // found in the LICENSE file.
 
 cr.define('settings_device_page', function() {
+  /**
+   * @constructor
+   * @implements {settings.DevicePageBrowserProxy}
+   */
+  function TestDevicePageBrowserProxy() {}
+
+  TestDevicePageBrowserProxy.prototype = {
+    /** @override */
+    handleLinkEvent: function(e) {
+      settings.DevicePageBrowserProxyImpl.prototype.handleLinkEvent.call(
+          this, e);
+      // Prevent opening the link, which can block the test.
+      e.preventDefault();
+    },
+  };
+
   suite('SettingsDevicePage', function() {
-    var fakePrefs = [{
-      key: 'settings.touchpad.enable_tap_to_click',
-      type: chrome.settingsPrivate.PrefType.BOOLEAN,
-      value: true,
-    }, {
-      key: 'settings.touchpad.enable_tap_dragging',
-      type: chrome.settingsPrivate.PrefType.BOOLEAN,
-      value: true,
-    }, {
-      key: 'settings.touchpad.natural_scroll',
-      type: chrome.settingsPrivate.PrefType.BOOLEAN,
-      value: false,
-    }, {
-      key: 'settings.language.xkb_remap_search_key_to',
-      type: chrome.settingsPrivate.PrefType.NUMBER,
-      value: 0,
-    }, {
-      key: 'settings.language.xkb_remap_control_key_to',
-      type: chrome.settingsPrivate.PrefType.NUMBER,
-      value: 1,
-    }, {
-      key: 'settings.language.xkb_remap_alt_key_to',
-      type: chrome.settingsPrivate.PrefType.NUMBER,
-      value: 2,
-    }, {
-      key: 'settings.language.remap_caps_lock_key_to',
-      type: chrome.settingsPrivate.PrefType.NUMBER,
-      value: 4,
-    }, {
-      key: 'settings.language.remap_diamond_key_to',
-      type: chrome.settingsPrivate.PrefType.NUMBER,
-      value: 3,
-    }, {
-      key: 'settings.language.send_function_keys',
-      type: chrome.settingsPrivate.PrefType.BOOLEAN,
-      value: false,
-    }];
+    var fakePrefs = {
+      settings: {
+        touchpad: {
+          enable_tap_to_click: {
+            key: 'settings.touchpad.enable_tap_to_click',
+            type: chrome.settingsPrivate.PrefType.BOOLEAN,
+            value: true,
+          },
+          enable_tap_dragging: {
+            key: 'settings.touchpad.enable_tap_dragging',
+            type: chrome.settingsPrivate.PrefType.BOOLEAN,
+            value: true,
+          },
+          natural_scroll: {
+            key: 'settings.touchpad.natural_scroll',
+            type: chrome.settingsPrivate.PrefType.BOOLEAN,
+            value: false,
+          },
+        },
+        language: {
+          xkb_remap_search_key_to: {
+            key: 'settings.language.xkb_remap_search_key_to',
+            type: chrome.settingsPrivate.PrefType.NUMBER,
+            value: 0,
+          },
+          xkb_remap_control_key_to: {
+            key: 'settings.language.xkb_remap_control_key_to',
+            type: chrome.settingsPrivate.PrefType.NUMBER,
+            value: 1,
+          },
+          xkb_remap_alt_key_to: {
+            key: 'settings.language.xkb_remap_alt_key_to',
+            type: chrome.settingsPrivate.PrefType.NUMBER,
+            value: 2,
+          },
+          remap_caps_lock_key_to: {
+            key: 'settings.language.remap_caps_lock_key_to',
+            type: chrome.settingsPrivate.PrefType.NUMBER,
+            value: 4,
+          },
+          remap_diamond_key_to: {
+            key: 'settings.language.remap_diamond_key_to',
+            type: chrome.settingsPrivate.PrefType.NUMBER,
+            value: 3,
+          },
+          send_function_keys: {
+            key: 'settings.language.send_function_keys',
+            type: chrome.settingsPrivate.PrefType.BOOLEAN,
+            value: false,
+          }
+        }
+      }
+    };
 
     /** @type {!SettingsDevicePage|undefined} */
     var devicePage;
@@ -56,6 +88,8 @@ cr.define('settings_device_page', function() {
       devicePage = document.createElement('settings-device-page');
       devicePage.currentRoute = {page: 'basic', section: '', subpage: []};
       devicePage.prefs = fakePrefs;
+      settings.DevicePageBrowserProxyImpl.instance_ =
+          new TestDevicePageBrowserProxy();
       document.body.appendChild(devicePage);
     });
 
@@ -71,6 +105,61 @@ cr.define('settings_device_page', function() {
       assertTrue(!!page);
       return page;
     };
+
+    /**
+     * @param {!HTMLElement} touchpadPage
+     * @param {Boolean} expected
+     */
+    function expectNaturalScrollValue(touchpadPage, expected) {
+      var naturalScrollOff =
+          touchpadPage.$$('paper-radio-button[name="false"]');
+      var naturalScrollOn =
+          touchpadPage.$$('paper-radio-button[name="true"]');
+      assertTrue(!!naturalScrollOff);
+      assertTrue(!!naturalScrollOn);
+
+      expectEquals(!expected, naturalScrollOff.checked);
+      expectEquals(expected, naturalScrollOn.checked);
+      expectEquals(expected,
+                   devicePage.prefs.settings.touchpad.natural_scroll.value);
+    }
+
+    test('touchpad subpage', function(done) {
+      // Open the touchpad subpage.
+      var touchpadPage = showAndGetDeviceSubpage('touchpad');
+      assertTrue(!!touchpadPage);
+
+      expectNaturalScrollValue(touchpadPage, false);
+
+      // Tapping the link shouldn't enable the radio button.
+      var naturalScrollOn = touchpadPage.$$('paper-radio-button[name="true"]');
+      var a = naturalScrollOn.querySelector('a');
+
+      MockInteractions.tap(a);
+      expectNaturalScrollValue(touchpadPage, false);
+
+      MockInteractions.tap(naturalScrollOn);
+      expectNaturalScrollValue(touchpadPage, true);
+
+      devicePage.set('prefs.settings.touchpad.natural_scroll.value', false);
+      expectNaturalScrollValue(touchpadPage, false);
+
+      // Enter on the link shouldn't enable the radio button either.
+      MockInteractions.pressEnter(a);
+
+      // Annoyingly, we have to schedule an async event with a timeout greater
+      // than or equal to the timeout used by IronButtonState (1).
+      // https://github.com/PolymerElements/iron-behaviors/issues/54
+      Polymer.Base.async(function() {
+        expectNaturalScrollValue(touchpadPage, false);
+
+        MockInteractions.pressEnter(naturalScrollOn);
+        Polymer.Base.async(function() {
+          expectNaturalScrollValue(touchpadPage, true);
+          done();
+        }, 1);
+      }, 1);
+    });
 
     test('keyboard subpage', function() {
       // Open the keyboard subpage.

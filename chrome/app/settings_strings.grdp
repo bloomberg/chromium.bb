@@ -1174,10 +1174,13 @@
       Scrolling
     </message>
     <message name="IDS_SETTINGS_NATURAL_SCROLL_LABEL" desc="In Device Settings, the text next to the radio button that enables natural scrolling.">
-      Australian <ph name="BEGIN_LINK">&lt;a href="$1" target="_blank"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;</ph>
+      Australian
     </message>
     <message name="IDS_SETTINGS_TRADITIONAL_SCROLL_LABEL" desc="In Device Settings, the text next to the radio button that enables traditional scrolling.">
       Traditional
+    </message>
+    <message name="IDS_SETTINGS_NATURAL_SCROLL_LEARN_MORE" desc="In Device Settings, the text for the link next to the Australian (natural) scrolling option; opens a page to learn more about natural scrolling.">
+      Learn more
     </message>
     <!-- Keyboard -->
     <message name="IDS_SETTINGS_KEYBOARD_TITLE" desc="In Device Settings, the title for keyboard settings.">

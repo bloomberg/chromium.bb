@@ -4,6 +4,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/image-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
 <link rel="import" href="chrome://md-settings/controls/settings_dropdown_menu.html">
+<link rel="import" href="chrome://md-settings/device_page/device_page_browser_proxy.html">
 <link rel="import" href="chrome://md-settings/device_page/display.html">
 <link rel="import" href="chrome://md-settings/device_page/keyboard.html">
 <link rel="import" href="chrome://md-settings/device_page/touchpad.html">
@@ -18,7 +19,8 @@
     <settings-animated-pages id="pages" section="device"
         current-route="{{currentRoute}}">
       <neon-animatable id="main">
-        <div class="settings-box first" on-tap="onTouchpadTap_">
+        <div id="touchpadRow" class="settings-box first"
+            on-tap="onTouchpadTap_">
           <!-- TODO(michaelpg): Get a touchpad icon. -->
           <iron-icon icon="image:brightness-1"></iron-icon>
           <div class="middle">$i18n{touchpadTitle}</div>
