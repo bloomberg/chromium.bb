@@ -856,6 +856,7 @@ bool DXVAVideoDecodeAccelerator::CreateDX11DevManager() {
 
 void DXVAVideoDecodeAccelerator::Decode(
     const media::BitstreamBuffer& bitstream_buffer) {
+  TRACE_EVENT0("media", "DXVAVideoDecodeAccelerator::Decode");
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
 
   // SharedMemory will take over the ownership of handle.
@@ -934,6 +935,7 @@ void DXVAVideoDecodeAccelerator::AssignPictureBuffers(
 }
 
 void DXVAVideoDecodeAccelerator::ReusePictureBuffer(int32_t picture_buffer_id) {
+  TRACE_EVENT0("media", "DXVAVideoDecodeAccelerator::ReusePictureBuffer");
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
 
   State state = GetState();
@@ -990,6 +992,7 @@ void DXVAVideoDecodeAccelerator::ReusePictureBuffer(int32_t picture_buffer_id) {
 
 void DXVAVideoDecodeAccelerator::WaitForOutputBuffer(int32_t picture_buffer_id,
                                                      int count) {
+  TRACE_EVENT0("media", "DXVAVideoDecodeAccelerator::WaitForOutputBuffer");
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
   OutputBuffers::iterator it = output_picture_buffers_.find(picture_buffer_id);
   if (it == output_picture_buffers_.end())
@@ -1598,6 +1601,7 @@ bool DXVAVideoDecodeAccelerator::GetStreamsInfoAndBufferReqs() {
 }
 
 void DXVAVideoDecodeAccelerator::DoDecode() {
+  TRACE_EVENT0("media", "DXVAVideoDecodeAccelerator::DoDecode");
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
   // This function is also called from FlushInternal in a loop which could
   // result in the state transitioning to kStopped due to no decoded output.
@@ -1694,6 +1698,7 @@ bool DXVAVideoDecodeAccelerator::ProcessOutputSample(IMFSample* sample) {
 }
 
 void DXVAVideoDecodeAccelerator::ProcessPendingSamples() {
+  TRACE_EVENT0("media", "DXVAVideoDecodeAccelerator::ProcessPendingSamples");
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
 
   if (!output_picture_buffers_.size())
@@ -1911,6 +1916,8 @@ void DXVAVideoDecodeAccelerator::NotifyInputBuffersDropped() {
 }
 
 void DXVAVideoDecodeAccelerator::DecodePendingInputBuffers() {
+  TRACE_EVENT0("media",
+               "DXVAVideoDecodeAccelerator::DecodePendingInputBuffers");
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
   State state = GetState();
   RETURN_AND_NOTIFY_ON_FAILURE((state != kUninitialized),
@@ -1929,6 +1936,7 @@ void DXVAVideoDecodeAccelerator::DecodePendingInputBuffers() {
 }
 
 void DXVAVideoDecodeAccelerator::FlushInternal() {
+  TRACE_EVENT0("media", "DXVAVideoDecodeAccelerator::FlushInternal");
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
 
   // We allow only one output frame to be present at any given time. If we have
@@ -1977,6 +1985,7 @@ void DXVAVideoDecodeAccelerator::FlushInternal() {
 
 void DXVAVideoDecodeAccelerator::DecodeInternal(
     const base::win::ScopedComPtr<IMFSample>& sample) {
+  TRACE_EVENT0("media", "DXVAVideoDecodeAccelerator::DecodeInternal");
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
 
   if (GetState() == kUninitialized)
@@ -2163,6 +2172,7 @@ void DXVAVideoDecodeAccelerator::CopySurface(IDirect3DSurface9* src_surface,
                                              IDirect3DSurface9* dest_surface,
                                              int picture_buffer_id,
                                              int input_buffer_id) {
+  TRACE_EVENT0("media", "DXVAVideoDecodeAccelerator::CopySurface");
   if (!decoder_thread_task_runner_->BelongsToCurrentThread()) {
     decoder_thread_task_runner_->PostTask(
         FROM_HERE, base::Bind(&DXVAVideoDecodeAccelerator::CopySurface,
@@ -2205,6 +2215,7 @@ void DXVAVideoDecodeAccelerator::CopySurfaceComplete(
     IDirect3DSurface9* dest_surface,
     int picture_buffer_id,
     int input_buffer_id) {
+  TRACE_EVENT0("media", "DXVAVideoDecodeAccelerator::CopySurfaceComplete");
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
 
   // The output buffers may have changed in the following scenarios:-
@@ -2255,6 +2266,8 @@ void DXVAVideoDecodeAccelerator::BindPictureBufferToSample(
     base::win::ScopedComPtr<IMFSample> sample,
     int picture_buffer_id,
     int input_buffer_id) {
+  TRACE_EVENT0("media",
+               "DXVAVideoDecodeAccelerator::BindPictureBufferToSample");
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
 
   // The output buffers may have changed in the following scenarios:-
@@ -2309,6 +2322,7 @@ void DXVAVideoDecodeAccelerator::CopyTexture(
     IMFSample* video_frame,
     int picture_buffer_id,
     int input_buffer_id) {
+  TRACE_EVENT0("media", "DXVAVideoDecodeAccelerator::CopyTexture");
   HRESULT hr = E_FAIL;
 
   DCHECK(use_dx11_);
@@ -2447,6 +2461,7 @@ void DXVAVideoDecodeAccelerator::FlushDecoder(int iterations,
                                               IDirect3DSurface9* dest_surface,
                                               int picture_buffer_id,
                                               int input_buffer_id) {
+  TRACE_EVENT0("media", "DXVAVideoDecodeAccelerator::FlushDecoder");
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
 
   // The DXVA decoder has its own device which it uses for decoding. ANGLE
