@@ -157,6 +157,7 @@ crbug.com/594309 [ Linux ] imported/csswg-test/vendor-imports/mozilla/mozilla-ce
 # -----------------------------------------------------------------
 crbug.com/595155 http/tests/intersection-observer/iframe-cross-origin.html [ Leak ]
 crbug.com/595155 intersection-observer/containing-block.html [ Leak ]
+crbug.com/606491 intersection-observer/edge-inclusive-intersection.html [ Leak ]
 crbug.com/595155 intersection-observer/iframe-no-root.html [ Leak ]
 crbug.com/595155 intersection-observer/multiple-thresholds.html [ Leak ]
 crbug.com/595155 intersection-observer/observer-without-js-reference.html [ Leak ]
