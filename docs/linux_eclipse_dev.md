@@ -118,6 +118,13 @@ tries to do these too often and gets confused:
 1.  Turn off "Refresh using native hooks or polling"
 1.  Click "Apply"
 
+Chromium uses C++11, so tell the indexer about it. Otherwise it will get
+confused about things like std::unique_ptr.
+
+1.  Open Window > Preferences > C/C++ > Build > Settings > Discovery >
+    CDT GCC Build-in Compiler Settings
+1.  In the text box entitled Command to get compiler specs append "-std=c++11"
+
 Create a single Eclipse project for everything:
 
 1.  From the File menu, select New > Project...
