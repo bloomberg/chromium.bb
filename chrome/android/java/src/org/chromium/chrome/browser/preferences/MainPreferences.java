@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.preferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.Preference;
-import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceFragment;
 
 import org.chromium.chrome.R;
@@ -16,11 +15,8 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionPreferences;
-import org.chromium.chrome.browser.signin.AccountSigninActivity;
-import org.chromium.chrome.browser.signin.SigninAccessPoint;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
-import org.chromium.sync.signin.ChromeSigninController;
 
 /**
  * The main settings screen, shown when the user first opens Settings.
@@ -126,32 +122,12 @@ public class MainPreferences extends PreferenceFragment implements SignInStateOb
     private void setupSignInPref() {
         mSignInPreference = (SignInPreference) findPreference(PREF_SIGN_IN);
         mSignInPreference.registerForUpdates();
-
-        mSignInPreference.setOnPreferenceClickListener(new OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-                if (ChromeSigninController.get(getActivity()).isSignedIn()) return false;
-                if (!SigninManager.get(getActivity()).isSignInAllowed()) {
-                    if (SigninManager.get(getActivity()).isSigninDisabledByPolicy()) {
-                        ManagedPreferencesUtils.showManagedByAdministratorToast(getActivity());
-                    }
-                    return false;
-                }
-
-                mSignInPreference.setEnabled(false);
-                AccountSigninActivity
-                        .startAccountSigninActivity(getActivity(), SigninAccessPoint.SETTINGS);
-                return true;
-            }
-        });
         mSignInPreference.setEnabled(true);
     }
 
     private void clearSignInPref() {
         if (mSignInPreference != null) {
             mSignInPreference.unregisterForUpdates();
-            // Set the setOnPreferenceClickListener since it uses mSignInPreference
-            mSignInPreference.setOnPreferenceClickListener(null);
             mSignInPreference = null;
         }
     }

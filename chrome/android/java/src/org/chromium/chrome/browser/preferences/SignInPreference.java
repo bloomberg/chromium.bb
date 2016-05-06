@@ -19,6 +19,8 @@ import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileDownloader;
 import org.chromium.chrome.browser.signin.AccountManagementFragment;
+import org.chromium.chrome.browser.signin.AccountSigninActivity;
+import org.chromium.chrome.browser.signin.SigninAccessPoint;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInAllowedObserver;
 import org.chromium.sync.AndroidSyncSettings;
@@ -114,6 +116,24 @@ public class SignInPreference extends Preference implements SignInAllowedObserve
                     signinController.getSignedInAccountName(), resources);
             setIcon(new BitmapDrawable(resources, bitmap));
         }
+
+        setOnPreferenceClickListener(new OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                if (ChromeSigninController.get(getContext()).isSignedIn()) return false;
+                if (!SigninManager.get(getContext()).isSignInAllowed()) {
+                    if (SigninManager.get(getContext()).isSigninDisabledByPolicy()) {
+                        ManagedPreferencesUtils.showManagedByAdministratorToast(getContext());
+                    }
+                    return false;
+                }
+
+                setEnabled(false);
+                AccountSigninActivity.startAccountSigninActivity(
+                        getContext(), SigninAccessPoint.SETTINGS);
+                return true;
+            }
+        });
     }
 
     private static String getSyncSummaryString(Context context, String accountName) {
