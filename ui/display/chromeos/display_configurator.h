@@ -300,12 +300,14 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
   typedef std::map<ContentProtectionClientId, ContentProtections>
       ProtectionRequests;
 
+  // Updates |pending_*| members and applies the passed-in state. |callback| is
+  // invoked (perhaps synchronously) on completion.
+  void SetDisplayPowerInternal(chromeos::DisplayPowerState power_state,
+                               int flags,
+                               const ConfigurationCallback& callback);
+
   // Configures displays. Invoked by |configure_timer_|.
   void ConfigureDisplays();
-
-  // Restores |requested_power_state_| after the system has resumed,
-  // additionally forcing a probe. Invoked by |configure_timer_|.
-  void RestoreRequestedPowerStateAfterResume();
 
   // Notifies observers about an attempted state change.
   void NotifyDisplayStateObservers(bool success,
@@ -394,11 +396,15 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
   // Stores the requested power state.
   chromeos::DisplayPowerState requested_power_state_;
 
-  // True if |requested_power_state_| has been changed due to a user request.
-  bool requested_power_state_change_;
+  // The power state used by RunPendingConfiguration(). May be
+  // |requested_power_state_| or DISPLAY_POWER_ALL_OFF for suspend.
+  chromeos::DisplayPowerState pending_power_state_;
+
+  // True if |pending_power_state_| has been changed.
+  bool has_pending_power_state_;
 
   // Bitwise-or value of the |kSetDisplayPower*| flags defined above.
-  int requested_power_flags_;
+  int pending_power_flags_;
 
   // List of callbacks from callers waiting for the display configuration to
   // start/finish. Note these callbacks belong to the pending request, not a
