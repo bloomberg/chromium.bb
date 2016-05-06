@@ -852,6 +852,11 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
             return defaultSmsPackageName;
         }
 
+        @Override
+        public boolean maybeDelegateToAppLink(Intent intent) {
+            return false;
+        }
+
         public void reset() {
             startActivityIntent = null;
             startIncognitoIntentCalled = false;

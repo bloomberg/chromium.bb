@@ -335,6 +335,10 @@ public class ExternalNavigationHandler {
             IntentHandler.setPendingReferrer(intent, params.getReferrerUrl());
         }
 
+        if (!params.isIncognito() && mDelegate.maybeDelegateToAppLink(intent)) {
+            return OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT;
+        }
+
         // Make sure webkit can handle it internally before checking for specialized
         // handlers. If webkit can't handle it internally, we need to call
         // startActivityIfNeeded or startActivity.
@@ -383,6 +387,7 @@ public class ExternalNavigationHandler {
                         params.shouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent());
                 return OverrideUrlLoadingResult.OVERRIDE_WITH_ASYNC_ACTION;
             } else {
+
                 // Some third-party app launched Chrome with an intent, and the URL got redirected.
                 // The user has explicitly chosen Chrome over other intent handlers, so stay in
                 // Chrome unless there was a new intent handler after redirection or Chrome cannot
@@ -398,6 +403,7 @@ public class ExternalNavigationHandler {
                 if (params.hasUserGesture()) {
                     IntentWithGesturesHandler.getInstance().onNewIntentWithGesture(intent);
                 }
+
                 if (mDelegate.startActivityIfNeeded(intent)) {
                     return OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT;
                 } else {

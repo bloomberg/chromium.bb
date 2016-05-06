@@ -226,6 +226,9 @@ public abstract class ChromeSwitches {
     public static final String HERB_FLAVOR_DILL = "Dill";
     public static final String HERB_FLAVOR_ELDERBERRY = "Elderberry";
 
+    public static final String DISABLE_APP_LINK = "disable-app-link";
+    public static final String ENABLE_APP_LINK = "enable-app-link";
+
     /**
      * Enable tab switcher in document mode (merged tabs and apps option).
      */
