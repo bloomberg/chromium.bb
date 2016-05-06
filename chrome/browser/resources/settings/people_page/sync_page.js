@@ -54,8 +54,9 @@ Polymer({
      * Whether the "create passphrase" inputs should be shown. These inputs
      * give the user the opportunity to use a custom passphrase instead of
      * authenticating with his Google credentials.
+     * @private
      */
-    creatingNewPassphrase: {
+    creatingNewPassphrase_: {
       type: Boolean,
       value: false,
     },
@@ -120,7 +121,7 @@ Polymer({
     this.askOldGooglePassphrase =
         this.syncPrefs.showPassphrase && !this.syncPrefs.usePassphrase;
 
-    this.creatingNewPassphrase = false;
+    this.creatingNewPassphrase_ = false;
 
     this.$.pages.selected = 'main';
   },
@@ -163,30 +164,41 @@ Polymer({
   },
 
   /**
-   * TODO(tommycli): Hook this up to a password submit button.
-   * Sends the entered password to the browser.
+   * Sends the newly created custom sync passphrase to the browser.
    * @private
    */
-  onPasswordSubmitTap_: function() {
-    if (this.creatingNewPassphrase) {
-      // If a new password has been entered but it is invalid, do not send the
-      // sync state to the API.
-      if (!this.validateCreatedPassphrases_())
-        return;
+  onSaveNewPassphraseTap_: function() {
+    assert(this.creatingNewPassphrase_);
 
-      this.syncPrefs.encryptAllData = true;
-    }
+    // If a new password has been entered but it is invalid, do not send the
+    // sync state to the API.
+    if (!this.validateCreatedPassphrases_())
+      return;
 
+    this.syncPrefs.encryptAllData = true;
+    this.syncPrefs.usePassphrase = true;
+    // Custom created passphrases are never Google passphrases.
+    this.syncPrefs.isGooglePassphrase = false;
+    this.syncPrefs.passphrase = this.$$('#passphraseInput').value;
+
+    this.browserProxy_.setSyncPrefs(this.syncPrefs).then(
+        this.handlePageStatusChanged_.bind(this));
+  },
+
+  /**
+   * Sends the user-entered existing password to re-enable sync.
+   * @private
+   */
+  onSubmitExistingPassphraseTap_: function() {
+    assert(!this.creatingNewPassphrase_);
+
+    this.syncPrefs.usePassphrase = true;
     this.syncPrefs.isGooglePassphrase = this.askOldGooglePassphrase;
-    this.syncPrefs.usePassphrase =
-        this.creatingNewPassphrase || this.syncPrefs.showPassphrase;
 
-    if (this.syncPrefs.usePassphrase) {
-      var field = this.creatingNewPassphrase ?
-          this.$$('#passphraseInput') : this.$$('#existingPassphraseInput');
-      this.syncPrefs.passphrase = field.value;
-      field.value = '';
-    }
+    var existingPassphraseInput = this.$$('#existingPassphraseInput');
+    this.syncPrefs.passphrase = existingPassphraseInput.value;
+
+    existingPassphraseInput.value = '';
 
     this.browserProxy_.setSyncPrefs(this.syncPrefs).then(
         this.handlePageStatusChanged_.bind(this));
@@ -217,7 +229,7 @@ Polymer({
    * @private
    */
   onEncryptionRadioSelectionChanged_: function(event) {
-    this.creatingNewPassphrase =
+    this.creatingNewPassphrase_ =
         event.target.selected == RadioButtonNames.ENCRYPT_WITH_PASSPHRASE;
   },
 

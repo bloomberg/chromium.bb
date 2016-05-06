@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-pages/iron-pages.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-dropdown-menu/paper-dropdown-menu.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
@@ -13,7 +14,16 @@
 
 <dom-module id="settings-sync-page">
   <template>
-    <style include="settings-shared"></style>
+    <style include="settings-shared">
+      #password-box {
+        /* 72px lines the password fields up with encryption radio box text. */
+        -webkit-margin-start: 72px;
+      }
+
+      paper-input {
+        width: var(--paper-input-max-width);
+      }
+    </style>
     <iron-pages id="pages" selected="loading" attr-for-selected="id">
       <div id="loading" i18n-content="syncLoading"></div>
       <div id="timeout" i18n-content="syncTimeout"></div>
@@ -110,28 +120,38 @@
           </div>
         </template>
 
-        <template is="dom-if" if="[[creatingNewPassphrase]]">
-          <div>[[i18n('passphraseExplanationText')]]</div>
-          <paper-input id="passphraseInput" type="password"
-              placeholder="[[i18n('passphrasePlaceholder')]]">
-          </paper-input>
-          <paper-input id="passphraseConfirmationInput" type="password"
-              placeholder="[[i18n('passphraseConfirmationPlaceholder')]]">
-          </paper-input>
-          <div id="emptyPassphraseError" hidden>[[i18n('emptyPassphraseError')]]</div>
-          <div id="mismatchedPassphraseError" hidden>[[i18n('mismatchedPassphraseError')]]</div>
-        </template>
+        <div id="password-box">
+          <template is="dom-if" if="[[creatingNewPassphrase_]]">
+            <div>[[i18n('passphraseExplanationText')]]</div>
+            <paper-input id="passphraseInput" type="password"
+                placeholder="[[i18n('passphrasePlaceholder')]]">
+            </paper-input>
+            <paper-input id="passphraseConfirmationInput" type="password"
+                placeholder="[[i18n('passphraseConfirmationPlaceholder')]]">
+            </paper-input>
+            <div id="emptyPassphraseError" hidden>[[i18n('emptyPassphraseError')]]</div>
+            <div id="mismatchedPassphraseError" hidden>[[i18n('mismatchedPassphraseError')]]</div>
+            <paper-button on-tap="onSaveNewPassphraseTap_"
+                class="action-button">
+              $i18n{save}
+            </paper-button>
+          </template>
 
-        <template is="dom-if" if="[[syncPrefs.showPassphrase]]">
-          <div id="askCustomPassphraseMessage"
-              hidden="[[askOldGooglePassphrase]]">[[syncPrefs.enterPassphraseBody]]</div>
-          <div id="askOldGooglePassphraseMessage"
-              hidden="[[!askOldGooglePassphrase]]">[[syncPrefs.enterGooglePassphraseBody]]</div>
-          <paper-input id="existingPassphraseInput" type="password"
-              placeholder="[[i18n('passphrasePlaceholder')]]">
-          </paper-input>
-          <div id="incorrectPassphraseError" hidden>[[i18n('incorrectPassphraseError')]]</div>
-        </template>
+          <template is="dom-if" if="[[syncPrefs.showPassphrase]]">
+            <div id="askCustomPassphraseMessage"
+                hidden="[[askOldGooglePassphrase]]">[[syncPrefs.enterPassphraseBody]]</div>
+            <div id="askOldGooglePassphraseMessage"
+                hidden="[[!askOldGooglePassphrase]]">[[syncPrefs.enterGooglePassphraseBody]]</div>
+            <paper-input id="existingPassphraseInput" type="password"
+                placeholder="[[i18n('passphrasePlaceholder')]]">
+            </paper-input>
+            <div id="incorrectPassphraseError" hidden>[[i18n('incorrectPassphraseError')]]</div>
+            <paper-button on-tap="onSubmitExistingPassphraseTap_"
+                class="action-button">
+              $i18n{submitPassphraseButton}
+            </paper-button>
+          </template>
+        </div>
       </div>
     </iron-pages>
   </template>

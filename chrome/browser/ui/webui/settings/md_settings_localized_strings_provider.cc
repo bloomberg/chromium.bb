@@ -456,9 +456,9 @@ void AddDateTimeStrings(content::WebUIDataSource* html_source) {
 void AddEasyUnlockStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
       {"easyUnlockSectionTitle", IDS_SETTINGS_EASY_UNLOCK_SECTION_TITLE},
-      {"easyUnlockSetupButton", IDS_SETTINGS_EASY_UNLOCK_SETUP_BUTTON},
+      {"easyUnlockSetupButton", IDS_SETTINGS_EASY_UNLOCK_SETUP},
       // Easy Unlock turn-off dialog.
-      {"easyUnlockTurnOffButton", IDS_SETTINGS_EASY_UNLOCK_TURN_OFF_BUTTON},
+      {"easyUnlockTurnOffButton", IDS_SETTINGS_EASY_UNLOCK_TURN_OFF},
       {"easyUnlockTurnOffOfflineTitle",
        IDS_SETTINGS_EASY_UNLOCK_TURN_OFF_OFFLINE_TITLE},
       {"easyUnlockTurnOffOfflineMessage",
@@ -468,7 +468,7 @@ void AddEasyUnlockStrings(content::WebUIDataSource* html_source) {
       {"easyUnlockTurnOffErrorMessage",
        IDS_SETTINGS_EASY_UNLOCK_TURN_OFF_ERROR_MESSAGE},
       {"easyUnlockTurnOffRetryButton",
-       IDS_SETTINGS_EASY_UNLOCK_TURN_OFF_RETRY_BUTTON},
+       IDS_SETTINGS_EASY_UNLOCK_TURN_OFF_RETRY},
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
@@ -675,7 +675,7 @@ void AddPeopleStrings(content::WebUIDataSource* html_source) {
      IDS_SETTINGS_ENCRYPT_WITH_SYNC_PASSPHRASE_LABEL},
     {"encryptWithSyncPassphraseLearnMoreLink",
      IDS_SETTINGS_ENCRYPT_WITH_SYNC_PASSPHRASE_LEARN_MORE_LINK},
-    {"useDefaultSettingsButton", IDS_SETTINGS_USE_DEFAULT_SETTINGS_BUTTON},
+    {"useDefaultSettingsButton", IDS_SETTINGS_USE_DEFAULT_SETTINGS},
     {"passphraseExplanationText", IDS_SETTINGS_PASSPHRASE_EXPLANATION_TEXT},
     {"emptyPassphraseError", IDS_SETTINGS_EMPTY_PASSPHRASE_ERROR},
     {"mismatchedPassphraseError", IDS_SETTINGS_MISMATCHED_PASSPHRASE_ERROR},
@@ -683,6 +683,7 @@ void AddPeopleStrings(content::WebUIDataSource* html_source) {
     {"passphrasePlaceholder", IDS_SETTINGS_PASSPHRASE_PLACEHOLDER},
     {"passphraseConfirmationPlaceholder",
      IDS_SETTINGS_PASSPHRASE_CONFIRMATION_PLACEHOLDER},
+    {"submitPassphraseButton", IDS_SETTINGS_SUBMIT_PASSPHRASE},
     {"personalizeGoogleServicesTitle",
      IDS_SETTINGS_PERSONALIZE_GOOGLE_SERVICES_TITLE},
     {"personalizeGoogleServicesText",
