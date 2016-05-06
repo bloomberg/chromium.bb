@@ -312,6 +312,11 @@ public class ReaderModePanel extends OverlayPanel {
         }
     }
 
+    @Override
+    protected float calculateBasePageDesiredOffset() {
+        return -getToolbarHeight();
+    }
+
     // ============================================================================================
     // ReaderModeBarControl
     // ============================================================================================
