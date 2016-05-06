@@ -2827,8 +2827,7 @@ TEST_F(WebViewTest, PreferredSizeDirtyLayout)
     EXPECT_EQ(100, size.width);
     EXPECT_EQ(100, size.height);
 
-    bool setStyle = documentElement.setAttribute("style", "display: none");
-    EXPECT_TRUE(setStyle);
+    documentElement.setAttribute("style", "display: none");
 
     size = webView->contentsPreferredMinimumSize();
     EXPECT_EQ(0, size.width);

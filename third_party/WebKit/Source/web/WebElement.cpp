@@ -30,7 +30,7 @@
 
 #include "public/web/WebElement.h"
 
-#include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/HTMLNames.h"
 #include "core/dom/Element.h"
 #include "core/dom/Fullscreen.h"
@@ -98,14 +98,12 @@ WebString WebElement::getAttribute(const WebString& attrName) const
     return constUnwrap<Element>()->getAttribute(attrName);
 }
 
-bool WebElement::setAttribute(const WebString& attrName, const WebString& attrValue)
+void WebElement::setAttribute(const WebString& attrName, const WebString& attrValue)
 {
     // TODO: Custom element callbacks need to be called on WebKit API methods that
     // mutate the DOM in any way.
     V0CustomElementProcessingStack::CallbackDeliveryScope deliverCustomElementCallbacks;
-    TrackExceptionState exceptionState;
-    unwrap<Element>()->setAttribute(attrName, attrValue, exceptionState);
-    return !exceptionState.hadException();
+    unwrap<Element>()->setAttribute(attrName, attrValue, IGNORE_EXCEPTION);
 }
 
 unsigned WebElement::attributeCount() const

@@ -60,7 +60,7 @@ public:
     BLINK_EXPORT bool hasHTMLTagName(const WebString&) const;
     BLINK_EXPORT bool hasAttribute(const WebString&) const;
     BLINK_EXPORT WebString getAttribute(const WebString&) const;
-    BLINK_EXPORT bool setAttribute(const WebString& name, const WebString& value);
+    BLINK_EXPORT void setAttribute(const WebString& name, const WebString& value);
     BLINK_EXPORT WebString textContent() const;
     BLINK_EXPORT void requestFullScreen();
     BLINK_EXPORT WebString attributeLocalName(unsigned index) const;
