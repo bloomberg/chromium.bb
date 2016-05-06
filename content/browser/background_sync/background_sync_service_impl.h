@@ -17,13 +17,13 @@
 
 namespace content {
 
-class BackgroundSyncContextImpl;
+class BackgroundSyncContext;
 
 class CONTENT_EXPORT BackgroundSyncServiceImpl
     : public NON_EXPORTED_BASE(mojom::BackgroundSyncService) {
  public:
   BackgroundSyncServiceImpl(
-      BackgroundSyncContextImpl* background_sync_context,
+      BackgroundSyncContext* background_sync_context,
       mojo::InterfaceRequest<mojom::BackgroundSyncService> request);
 
   ~BackgroundSyncServiceImpl() override;
@@ -50,7 +50,7 @@ class CONTENT_EXPORT BackgroundSyncServiceImpl
   void OnConnectionError();
 
   // background_sync_context_ owns this.
-  BackgroundSyncContextImpl* background_sync_context_;
+  BackgroundSyncContext* background_sync_context_;
 
   mojo::Binding<mojom::BackgroundSyncService> binding_;
 

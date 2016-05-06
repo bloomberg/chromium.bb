@@ -1038,7 +1038,7 @@ void RenderProcessHostImpl::RegisterMojoServices() {
       base::Bind(&ImageCaptureImpl::Create));
 
   mojo_application_host_->service_registry()->AddService(base::Bind(
-      &BackgroundSyncContextImpl::CreateService,
+      &BackgroundSyncContext::CreateService,
       base::Unretained(storage_partition_impl_->GetBackgroundSyncContext())));
 
   mojo_application_host_->service_registry()->AddService(

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_BACKGROUND_SYNC_BACKGROUND_SYNC_CONTEXT_IMPL_H_
-#define CONTENT_BROWSER_BACKGROUND_SYNC_BACKGROUND_SYNC_CONTEXT_IMPL_H_
+#ifndef CONTENT_BROWSER_BACKGROUND_SYNC_BACKGROUND_SYNC_CONTEXT_H_
+#define CONTENT_BROWSER_BACKGROUND_SYNC_BACKGROUND_SYNC_CONTEXT_H_
 
 #include <memory>
 #include <set>
@@ -12,7 +12,6 @@
 #include "base/memory/ref_counted.h"
 #include "content/common/background_sync_service.mojom.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/background_sync_context.h"
 
 namespace content {
 
@@ -20,13 +19,13 @@ class BackgroundSyncManager;
 class BackgroundSyncServiceImpl;
 class ServiceWorkerContextWrapper;
 
-// Implements the BackgroundSyncContext. One instance of this exists per
-// StoragePartition, and services multiple child processes/origins. Most logic
-// is delegated to the owned BackgroundSyncManager instance, which is only
-// accessed on the IO thread.
-class CONTENT_EXPORT BackgroundSyncContextImpl : public BackgroundSyncContext {
+// One instance of this exists per StoragePartition, and services multiple child
+// processes/origins. Most logic is delegated to the owned BackgroundSyncManager
+// instance, which is only accessed on the IO thread.
+class CONTENT_EXPORT BackgroundSyncContext
+    : public base::RefCountedThreadSafe<BackgroundSyncContext> {
  public:
-  BackgroundSyncContextImpl();
+  BackgroundSyncContext();
 
   // Init and Shutdown are for use on the UI thread when the
   // StoragePartition is being setup and torn down.
@@ -45,10 +44,11 @@ class CONTENT_EXPORT BackgroundSyncContextImpl : public BackgroundSyncContext {
   void ServiceHadConnectionError(BackgroundSyncServiceImpl* service);
 
   // Call on the IO thread.
-  BackgroundSyncManager* background_sync_manager() const override;
+  BackgroundSyncManager* background_sync_manager() const;
 
  protected:
-  ~BackgroundSyncContextImpl() override;
+  friend class base::RefCountedThreadSafe<BackgroundSyncContext>;
+  virtual ~BackgroundSyncContext();
 
   void set_background_sync_manager_for_testing(
       std::unique_ptr<BackgroundSyncManager> manager);
@@ -72,9 +72,9 @@ class CONTENT_EXPORT BackgroundSyncContextImpl : public BackgroundSyncContext {
   // ServiceHadConnectionError. Only accessed on the IO thread.
   std::set<BackgroundSyncServiceImpl*> services_;
 
-  DISALLOW_COPY_AND_ASSIGN(BackgroundSyncContextImpl);
+  DISALLOW_COPY_AND_ASSIGN(BackgroundSyncContext);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_BACKGROUND_SYNC_BACKGROUND_SYNC_CONTEXT_IMPL_H_
+#endif  // CONTENT_BROWSER_BACKGROUND_SYNC_BACKGROUND_SYNC_CONTEXT_H_

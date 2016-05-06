@@ -13,14 +13,14 @@
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_runner_util.h"
+#include "content/browser/background_sync/background_sync_context.h"
 #include "content/browser/background_sync/background_sync_manager.h"
 #include "content/browser/background_sync/background_sync_network_observer.h"
 #include "content/browser/background_sync/background_sync_status.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_registration.h"
-#include "content/public/browser/background_sync_context.h"
+#include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/background_sync_test_util.h"
@@ -135,10 +135,11 @@ class BackgroundSyncBrowserTest : public ContentBrowserTest {
     shell_ = incognito ? CreateOffTheRecordBrowser() : shell();
   }
 
-  StoragePartition* GetStorage() {
+  StoragePartitionImpl* GetStorage() {
     WebContents* web_contents = shell_->web_contents();
-    return BrowserContext::GetStoragePartition(
-        web_contents->GetBrowserContext(), web_contents->GetSiteInstance());
+    return static_cast<StoragePartitionImpl*>(
+        BrowserContext::GetStoragePartition(web_contents->GetBrowserContext(),
+                                            web_contents->GetSiteInstance()));
   }
 
   BackgroundSyncContext* GetSyncContext() {
@@ -217,7 +218,7 @@ bool BackgroundSyncBrowserTest::RegistrationPending(const std::string& tag) {
   bool is_pending;
   base::RunLoop run_loop;
 
-  StoragePartition* storage = GetStorage();
+  StoragePartitionImpl* storage = GetStorage();
   BackgroundSyncContext* sync_context = storage->GetBackgroundSyncContext();
   ServiceWorkerContextWrapper* service_worker_context =
       static_cast<ServiceWorkerContextWrapper*>(
@@ -242,7 +243,7 @@ bool BackgroundSyncBrowserTest::RegistrationPending(const std::string& tag) {
 void BackgroundSyncBrowserTest::SetMaxSyncAttempts(int max_sync_attempts) {
   base::RunLoop run_loop;
 
-  StoragePartition* storage = GetStorage();
+  StoragePartitionImpl* storage = GetStorage();
   BackgroundSyncContext* sync_context = storage->GetBackgroundSyncContext();
 
   BrowserThread::PostTaskAndReply(
@@ -257,7 +258,7 @@ void BackgroundSyncBrowserTest::SetMaxSyncAttempts(int max_sync_attempts) {
 void BackgroundSyncBrowserTest::ClearStoragePartitionData() {
   // Clear data from the storage partition.  Parameters are set to clear data
   // for service workers, for all origins, for an unbounded time range.
-  StoragePartition* storage = GetStorage();
+  StoragePartitionImpl* storage = GetStorage();
 
   uint32_t storage_partition_mask =
       StoragePartition::REMOVE_DATA_MASK_SERVICE_WORKERS;

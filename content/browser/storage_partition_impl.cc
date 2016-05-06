@@ -372,7 +372,7 @@ StoragePartitionImpl::StoragePartitionImpl(
     GeofencingManager* geofencing_manager,
     HostZoomLevelContext* host_zoom_level_context,
     PlatformNotificationContextImpl* platform_notification_context,
-    BackgroundSyncContextImpl* background_sync_context)
+    BackgroundSyncContext* background_sync_context)
     : partition_path_(partition_path),
       quota_manager_(quota_manager),
       appcache_service_(appcache_service),
@@ -518,8 +518,8 @@ StoragePartitionImpl* StoragePartitionImpl::Create(
                                           service_worker_context);
   platform_notification_context->Initialize();
 
-  scoped_refptr<BackgroundSyncContextImpl> background_sync_context =
-      new BackgroundSyncContextImpl();
+  scoped_refptr<BackgroundSyncContext> background_sync_context =
+      new BackgroundSyncContext();
   background_sync_context->Init(service_worker_context);
 
   StoragePartitionImpl* storage_partition = new StoragePartitionImpl(
@@ -604,7 +604,7 @@ StoragePartitionImpl::GetPlatformNotificationContext() {
   return platform_notification_context_.get();
 }
 
-BackgroundSyncContextImpl* StoragePartitionImpl::GetBackgroundSyncContext() {
+BackgroundSyncContext* StoragePartitionImpl::GetBackgroundSyncContext() {
   return background_sync_context_.get();
 }
 

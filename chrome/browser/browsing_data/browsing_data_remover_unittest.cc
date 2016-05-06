@@ -222,9 +222,6 @@ class TestStoragePartition : public StoragePartition {
       override {
     return nullptr;
   }
-  content::BackgroundSyncContext* GetBackgroundSyncContext() override {
-    return nullptr;
-  }
   content::HostZoomMap* GetHostZoomMap() override { return nullptr; }
   content::HostZoomLevelContext* GetHostZoomLevelContext() override {
     return nullptr;

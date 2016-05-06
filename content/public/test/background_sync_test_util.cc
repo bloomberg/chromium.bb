@@ -6,12 +6,12 @@
 
 #include "base/run_loop.h"
 #include "base/task_runner_util.h"
+#include "content/browser/background_sync/background_sync_context.h"
 #include "content/browser/background_sync/background_sync_manager.h"
 #include "content/browser/background_sync/background_sync_network_observer.h"
-#include "content/public/browser/background_sync_context.h"
+#include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/network_change_notifier.h"
 
@@ -37,9 +37,9 @@ void SetOnlineOnIOThread(
   }
 }
 
-StoragePartition* GetStoragePartition(WebContents* web_contents) {
-  return BrowserContext::GetStoragePartition(web_contents->GetBrowserContext(),
-                                             web_contents->GetSiteInstance());
+StoragePartitionImpl* GetStoragePartition(WebContents* web_contents) {
+  return static_cast<StoragePartitionImpl*>(BrowserContext::GetStoragePartition(
+      web_contents->GetBrowserContext(), web_contents->GetSiteInstance()));
 }
 
 }  // namespace

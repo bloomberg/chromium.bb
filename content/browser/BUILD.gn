@@ -97,7 +97,6 @@ source_set("browser") {
     "//third_party/angle:angle_common",
     "//third_party/icu",
     "//third_party/kasko:kasko_features",
-    "//third_party/leveldatabase",
     "//third_party/libyuv",
     "//third_party/re2",
     "//third_party/zlib",
@@ -119,6 +118,10 @@ source_set("browser") {
     "//ui/snapshot",
     "//ui/surface",
     "//ui/touch_selection",
+  ]
+
+  public_deps = [
+    "//third_party/leveldatabase",
   ]
 
   sources = rebase_path(content_browser_gypi_values.private_browser_sources,
@@ -539,6 +542,10 @@ group("for_content_tests") {
   if (!is_component_build) {
     public_deps = [
       ":browser",
+    ]
+  } else {
+    public_deps = [
+      "//third_party/leveldatabase",
     ]
   }
 }

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/background_sync/background_sync_context_impl.h"
+#include "content/browser/background_sync/background_sync_context.h"
 
 #include <utility>
 
@@ -15,44 +15,44 @@
 
 namespace content {
 
-BackgroundSyncContextImpl::BackgroundSyncContextImpl() {
+BackgroundSyncContext::BackgroundSyncContext() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
-BackgroundSyncContextImpl::~BackgroundSyncContextImpl() {
+BackgroundSyncContext::~BackgroundSyncContext() {
   DCHECK(!background_sync_manager_);
   DCHECK(services_.empty());
 }
 
-void BackgroundSyncContextImpl::Init(
+void BackgroundSyncContext::Init(
     const scoped_refptr<ServiceWorkerContextWrapper>& context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&BackgroundSyncContextImpl::CreateBackgroundSyncManager, this,
+      base::Bind(&BackgroundSyncContext::CreateBackgroundSyncManager, this,
                  context));
 }
 
-void BackgroundSyncContextImpl::Shutdown() {
+void BackgroundSyncContext::Shutdown() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&BackgroundSyncContextImpl::ShutdownOnIO, this));
+      base::Bind(&BackgroundSyncContext::ShutdownOnIO, this));
 }
 
-void BackgroundSyncContextImpl::CreateService(
+void BackgroundSyncContext::CreateService(
     mojo::InterfaceRequest<mojom::BackgroundSyncService> request) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&BackgroundSyncContextImpl::CreateServiceOnIOThread, this,
+      base::Bind(&BackgroundSyncContext::CreateServiceOnIOThread, this,
                  base::Passed(&request)));
 }
 
-void BackgroundSyncContextImpl::ServiceHadConnectionError(
+void BackgroundSyncContext::ServiceHadConnectionError(
     BackgroundSyncServiceImpl* service) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(ContainsValue(services_, service));
@@ -61,21 +61,20 @@ void BackgroundSyncContextImpl::ServiceHadConnectionError(
   delete service;
 }
 
-BackgroundSyncManager* BackgroundSyncContextImpl::background_sync_manager()
-    const {
+BackgroundSyncManager* BackgroundSyncContext::background_sync_manager() const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   return background_sync_manager_.get();
 }
 
-void BackgroundSyncContextImpl::set_background_sync_manager_for_testing(
+void BackgroundSyncContext::set_background_sync_manager_for_testing(
     std::unique_ptr<BackgroundSyncManager> manager) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   background_sync_manager_ = std::move(manager);
 }
 
-void BackgroundSyncContextImpl::CreateBackgroundSyncManager(
+void BackgroundSyncContext::CreateBackgroundSyncManager(
     scoped_refptr<ServiceWorkerContextWrapper> context) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!background_sync_manager_);
@@ -83,14 +82,14 @@ void BackgroundSyncContextImpl::CreateBackgroundSyncManager(
   background_sync_manager_ = BackgroundSyncManager::Create(context);
 }
 
-void BackgroundSyncContextImpl::CreateServiceOnIOThread(
+void BackgroundSyncContext::CreateServiceOnIOThread(
     mojo::InterfaceRequest<mojom::BackgroundSyncService> request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(background_sync_manager_);
   services_.insert(new BackgroundSyncServiceImpl(this, std::move(request)));
 }
 
-void BackgroundSyncContextImpl::ShutdownOnIO() {
+void BackgroundSyncContext::ShutdownOnIO() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   STLDeleteElements(&services_);

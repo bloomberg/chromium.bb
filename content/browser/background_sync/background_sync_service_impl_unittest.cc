@@ -12,7 +12,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/run_loop.h"
-#include "content/browser/background_sync/background_sync_context_impl.h"
+#include "content/browser/background_sync/background_sync_context.h"
 #include "content/browser/background_sync/background_sync_network_observer.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
@@ -23,7 +23,7 @@
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/test/mock_permission_manager.h"
-#include "content/test/test_background_sync_context_impl.h"
+#include "content/test/test_background_sync_context.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "net/base/network_change_notifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -143,7 +143,7 @@ class BackgroundSyncServiceImplTest : public testing::Test {
   void CreateBackgroundSyncContext() {
     // Registering for background sync includes a check for having a same-origin
     // main frame. Use a test context that allows control over that check.
-    background_sync_context_ = new TestBackgroundSyncContextImpl();
+    background_sync_context_ = new TestBackgroundSyncContext();
     background_sync_context_->Init(embedded_worker_helper_->context_wrapper());
 
     // Tests do not expect the sync event to fire immediately after
@@ -208,7 +208,7 @@ class BackgroundSyncServiceImplTest : public testing::Test {
   std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   std::unique_ptr<EmbeddedWorkerTestHelper> embedded_worker_helper_;
   std::unique_ptr<StoragePartitionImpl> storage_partition_impl_;
-  scoped_refptr<BackgroundSyncContextImpl> background_sync_context_;
+  scoped_refptr<BackgroundSyncContext> background_sync_context_;
   int64_t sw_registration_id_;
   scoped_refptr<ServiceWorkerRegistration> sw_registration_;
   mojom::BackgroundSyncServicePtr service_ptr_;

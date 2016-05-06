@@ -54,6 +54,7 @@ source_set("test_support") {
     "//components/scheduler:scheduler",
     "//components/scheduler:test_support",
     "//content/app:both_for_content_tests",
+    "//content/browser:for_content_tests",
     "//content/browser/speech/proto",
     "//content/child:for_content_tests",
     "//content/gpu",

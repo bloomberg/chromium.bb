@@ -89,6 +89,7 @@
     # have to export the blink header settings so that relative paths in these
     # headers resolve correctly.
     '../third_party/WebKit/public/blink_headers.gyp:blink_headers',
+    '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
     # The public render_widget_host.h needs to re-export skia defines.
     '../skia/skia.gyp:skia',
     'content_common_mojo_bindings.gyp:content_common_mojo_bindings',
@@ -118,7 +119,6 @@
       'public/browser/appcache_service.h',
       'public/browser/ax_event_notification_details.cc',
       'public/browser/ax_event_notification_details.h',
-      'public/browser/background_sync_context.h',
       'public/browser/background_sync_controller.h',
       'public/browser/background_sync_parameters.cc',
       'public/browser/background_sync_parameters.h',
@@ -462,8 +462,8 @@
       'browser/appcache/appcache_working_set.h',
       'browser/appcache/chrome_appcache_service.cc',
       'browser/appcache/chrome_appcache_service.h',
-      'browser/background_sync/background_sync_context_impl.cc',
-      'browser/background_sync/background_sync_context_impl.h',
+      'browser/background_sync/background_sync_context.cc',
+      'browser/background_sync/background_sync_context.h',
       'browser/background_sync/background_sync_manager.cc',
       'browser/background_sync/background_sync_manager.h',
       'browser/background_sync/background_sync_metrics.cc',
