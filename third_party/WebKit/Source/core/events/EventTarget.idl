@@ -24,7 +24,7 @@
     CheckSecurity=Receiver,
     Exposed=(Window,Worker)
 ] interface EventTarget {
-    [Custom] void addEventListener(DOMString type, EventListener? listener, optional (EventListenerOptions or boolean) options);
+    [Custom] void addEventListener(DOMString type, EventListener? listener, optional (AddEventListenerOptions or boolean) options);
     [Custom] void removeEventListener(DOMString type, EventListener? listener, optional (EventListenerOptions or boolean) options);
     [ImplementedAs=dispatchEventForBindings, RaisesException] boolean dispatchEvent(Event event);
 };

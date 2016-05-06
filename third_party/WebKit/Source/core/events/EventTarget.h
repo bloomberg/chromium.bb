@@ -114,8 +114,8 @@ public:
     virtual MessagePort* toMessagePort();
 
     bool addEventListener(const AtomicString& eventType, EventListener*, bool useCapture = false);
-    bool addEventListener(const AtomicString& eventType, EventListener*, const EventListenerOptionsOrBoolean&);
-    bool addEventListener(const AtomicString& eventType, EventListener*, EventListenerOptions&);
+    bool addEventListener(const AtomicString& eventType, EventListener*, const AddEventListenerOptionsOrBoolean&);
+    bool addEventListener(const AtomicString& eventType, EventListener*, AddEventListenerOptions&);
 
     bool removeEventListener(const AtomicString& eventType, const EventListener*, bool useCapture = false);
     bool removeEventListener(const AtomicString& eventType, const EventListener*, const EventListenerOptionsOrBoolean&);
@@ -151,7 +151,7 @@ public:
 protected:
     EventTarget();
 
-    virtual bool addEventListenerInternal(const AtomicString& eventType, EventListener*, const EventListenerOptions&);
+    virtual bool addEventListenerInternal(const AtomicString& eventType, EventListener*, const AddEventListenerOptions&);
     virtual bool removeEventListenerInternal(const AtomicString& eventType, const EventListener*, const EventListenerOptions&);
 
     // Called when an event listener has been successfully added.

@@ -50,8 +50,8 @@ function testTwoHandlers() {
   assert_true(passive_called);
   assert_true(blocking_called);
   assert_true(event.defaultPrevented);
-  document.removeEventListener('test', passive_handler, {"passive" : true});
-  document.removeEventListener('test', blocking_handler, {"passive" : false});
+  document.removeEventListener('test', passive_handler, {});
+  document.removeEventListener('test', blocking_handler, {});
 }
 
 test(testTwoArgumentRegister, "Two argument register");

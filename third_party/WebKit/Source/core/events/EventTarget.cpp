@@ -52,6 +52,11 @@ namespace {
 void setDefaultEventListenerOptionsLegacy(EventListenerOptions& options, bool useCapture)
 {
     options.setCapture(useCapture);
+}
+
+void setDefaultAddEventListenerOptionsLegacy(AddEventListenerOptions& options, bool useCapture)
+{
+    setDefaultEventListenerOptionsLegacy(options, useCapture);
     options.setPassive(false);
 }
 
@@ -64,6 +69,11 @@ void setDefaultEventListenerOptions(EventListenerOptions& options)
     // capture is true; with the setting on capture is false.
     if (!options.hasCapture())
         options.setCapture(!RuntimeEnabledFeatures::eventListenerOptionsEnabled());
+}
+
+void setDefaultAddEventListenerOptions(AddEventListenerOptions& options)
+{
+    setDefaultEventListenerOptions(options);
     if (!options.hasPassive())
         options.setPassive(false);
 }
@@ -125,29 +135,29 @@ inline LocalDOMWindow* EventTarget::executingWindow()
 
 bool EventTarget::addEventListener(const AtomicString& eventType, EventListener* listener, bool useCapture)
 {
-    EventListenerOptions options;
-    setDefaultEventListenerOptionsLegacy(options, useCapture);
+    AddEventListenerOptions options;
+    setDefaultAddEventListenerOptionsLegacy(options, useCapture);
     return addEventListenerInternal(eventType, listener, options);
 }
 
-bool EventTarget::addEventListener(const AtomicString& eventType, EventListener* listener, const EventListenerOptionsOrBoolean& optionsUnion)
+bool EventTarget::addEventListener(const AtomicString& eventType, EventListener* listener, const AddEventListenerOptionsOrBoolean& optionsUnion)
 {
     if (optionsUnion.isBoolean())
         return addEventListener(eventType, listener, optionsUnion.getAsBoolean());
-    if (optionsUnion.isEventListenerOptions()) {
-        EventListenerOptions options = optionsUnion.getAsEventListenerOptions();
+    if (optionsUnion.isAddEventListenerOptions()) {
+        AddEventListenerOptions options = optionsUnion.getAsAddEventListenerOptions();
         return addEventListener(eventType, listener, options);
     }
     return addEventListener(eventType, listener);
 }
 
-bool EventTarget::addEventListener(const AtomicString& eventType, EventListener* listener, EventListenerOptions& options)
+bool EventTarget::addEventListener(const AtomicString& eventType, EventListener* listener, AddEventListenerOptions& options)
 {
-    setDefaultEventListenerOptions(options);
+    setDefaultAddEventListenerOptions(options);
     return addEventListenerInternal(eventType, listener, options);
 }
 
-bool EventTarget::addEventListenerInternal(const AtomicString& eventType, EventListener* listener, const EventListenerOptions& options)
+bool EventTarget::addEventListenerInternal(const AtomicString& eventType, EventListener* listener, const AddEventListenerOptions& options)
 {
     if (!listener)
         return false;

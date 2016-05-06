@@ -24,6 +24,7 @@
 #ifndef RegisteredEventListener_h
 #define RegisteredEventListener_h
 
+#include "core/events/AddEventListenerOptions.h"
 #include "core/events/EventListener.h"
 #include "wtf/RefPtr.h"
 
@@ -38,7 +39,7 @@ public:
     {
     }
 
-    RegisteredEventListener(EventListener* listener, const EventListenerOptions& options)
+    RegisteredEventListener(EventListener* listener, const AddEventListenerOptions& options)
         : m_listener(listener)
         , m_useCapture(options.capture())
         , m_passive(options.passive())
@@ -50,9 +51,9 @@ public:
         visitor->trace(m_listener);
     }
 
-    EventListenerOptions options() const
+    AddEventListenerOptions options() const
     {
-        EventListenerOptions result;
+        AddEventListenerOptions result;
         result.setCapture(m_useCapture);
         result.setPassive(m_passive);
         return result;
@@ -80,14 +81,18 @@ public:
 
     bool matches(const EventListener* listener, const EventListenerOptions& options) const
     {
-        return *m_listener == *listener && static_cast<bool>(m_useCapture) == options.capture() && static_cast<bool>(m_passive) == options.passive();
+        // Equality is soley based on the listener and useCapture flags.
+        ASSERT(m_listener);
+        ASSERT(listener);
+        return *m_listener == *listener && static_cast<bool>(m_useCapture) == options.capture();
     }
 
     bool operator==(const RegisteredEventListener& other) const
     {
+        // Equality is soley based on the listener and useCapture flags.
         ASSERT(m_listener);
         ASSERT(other.m_listener);
-        return *m_listener == *other.m_listener && m_useCapture == other.m_useCapture && m_passive == other.m_passive;
+        return *m_listener == *other.m_listener && m_useCapture == other.m_useCapture;
     }
 
 private:

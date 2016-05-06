@@ -22,9 +22,6 @@ test(function(t) {
 
     document.addEventListener('test_event', query_function, query_options);
     assert_equals(supportsPassive, internals.runtimeFlags.passiveEventListenersEnabled);
-    supportsPassive = false;
-    document.removeEventListener('test_event', query_function, query_options);
-    assert_equals(supportsPassive, internals.runtimeFlags.passiveEventListenersEnabled);
     t.done();
 }, "Supports Passive");
 </script>

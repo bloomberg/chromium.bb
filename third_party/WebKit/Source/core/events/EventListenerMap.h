@@ -34,6 +34,7 @@
 #define EventListenerMap_h
 
 #include "core/CoreExport.h"
+#include "core/events/AddEventListenerOptions.h"
 #include "core/events/EventListenerOptions.h"
 #include "core/events/RegisteredEventListener.h"
 #include "wtf/Noncopyable.h"
@@ -57,7 +58,7 @@ public:
     bool containsCapturing(const AtomicString& eventType) const;
 
     void clear();
-    bool add(const AtomicString& eventType, EventListener*, const EventListenerOptions&, RegisteredEventListener* registeredListener);
+    bool add(const AtomicString& eventType, EventListener*, const AddEventListenerOptions&, RegisteredEventListener* registeredListener);
     bool remove(const AtomicString& eventType, const EventListener*, const EventListenerOptions&, size_t* indexOfRemovedListener, RegisteredEventListener* registeredListener);
     EventListenerVector* find(const AtomicString& eventType);
     Vector<AtomicString> eventTypes() const;

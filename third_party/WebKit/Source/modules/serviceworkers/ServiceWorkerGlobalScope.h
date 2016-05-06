@@ -91,7 +91,7 @@ public:
 protected:
     // EventTarget
     DispatchEventResult dispatchEventInternal(Event*) override;
-    bool addEventListenerInternal(const AtomicString& eventType, EventListener*, const EventListenerOptions&) override;
+    bool addEventListenerInternal(const AtomicString& eventType, EventListener*, const AddEventListenerOptions&) override;
 
 private:
     ServiceWorkerGlobalScope(const KURL&, const String& userAgent, ServiceWorkerThread*, double timeOrigin, PassOwnPtr<SecurityOrigin::PrivilegeData>, WorkerClients*);

@@ -11,8 +11,8 @@
 
 namespace blink {
 
+class AddEventListenerOptions;
 class Document;
-class EventListenerOptions;
 class EventTarget;
 
 typedef HashCountedSet<UntracedMember<EventTarget>> EventTargetSet;
@@ -49,9 +49,9 @@ public:
     const EventTargetSet* eventHandlerTargets(EventHandlerClass) const;
 
     // Registration and management of event handlers attached to EventTargets.
-    void didAddEventHandler(EventTarget&, const AtomicString& eventType, const EventListenerOptions&);
+    void didAddEventHandler(EventTarget&, const AtomicString& eventType, const AddEventListenerOptions&);
     void didAddEventHandler(EventTarget&, EventHandlerClass);
-    void didRemoveEventHandler(EventTarget&, const AtomicString& eventType, const EventListenerOptions&);
+    void didRemoveEventHandler(EventTarget&, const AtomicString& eventType, const AddEventListenerOptions&);
     void didRemoveEventHandler(EventTarget&, EventHandlerClass);
     void didRemoveAllEventHandlers(EventTarget&);
 
@@ -76,7 +76,7 @@ private:
     };
 
     // Returns true if |eventType| belongs to a class this registry tracks.
-    static bool eventTypeToClass(const AtomicString& eventType, const EventListenerOptions&, EventHandlerClass* result);
+    static bool eventTypeToClass(const AtomicString& eventType, const AddEventListenerOptions&, EventHandlerClass* result);
 
     // Returns true if the operation actually added a new target or completely
     // removed an existing one.
@@ -95,7 +95,7 @@ private:
 
     // Record a change operation to a given event handler class and notify any
     // parent registry and other clients accordingly.
-    void updateEventHandlerOfType(ChangeOperation, const AtomicString& eventType, const EventListenerOptions&, EventTarget*);
+    void updateEventHandlerOfType(ChangeOperation, const AtomicString& eventType, const AddEventListenerOptions&, EventTarget*);
 
     void updateEventHandlerInternal(ChangeOperation, EventHandlerClass, EventTarget*);
 

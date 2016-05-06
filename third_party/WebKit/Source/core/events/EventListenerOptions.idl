@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://github.com/RByers/EventListenerOptions
+// https://dom.spec.whatwg.org/#dictdef-eventlisteneroptions
 
 dictionary EventListenerOptions {
     // TODO: |capture| is runtime enabled and its value actually
@@ -11,5 +11,4 @@ dictionary EventListenerOptions {
     // whether it was set manually or by default. See EventTarget.cpp
     // where it is populated. crbug.com/543685
     [RuntimeEnabled=EventListenerOptions] boolean capture;
-    [RuntimeEnabled=PassiveEventListeners] boolean passive;
 };

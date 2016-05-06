@@ -95,7 +95,7 @@ void V8EventTarget::addEventListenerMethodCustom(const v8::FunctionCallbackInfo<
     if (!type.prepare())
         return;
     EventListener* listener = V8EventListenerList::getEventListener(ScriptState::current(info.GetIsolate()), info[1], false, ListenerFindOrCreate);
-    EventListenerOptionsOrBoolean options;
+    AddEventListenerOptionsOrBoolean options;
     // TODO(dtapuska): This custom binding code can be eliminated once
     // EventListenerOptions runtime enabled feature is removed.
     // http://crbug.com/545163
@@ -105,7 +105,7 @@ void V8EventTarget::addEventListenerMethodCustom(const v8::FunctionCallbackInfo<
         addEventListenerMethodEpilogueCustom(info, impl);
         return;
     }
-    V8EventListenerOptionsOrBoolean::toImpl(info.GetIsolate(), info[2], options, UnionTypeConversionMode::NotNullable, exceptionState);
+    V8AddEventListenerOptionsOrBoolean::toImpl(info.GetIsolate(), info[2], options, UnionTypeConversionMode::NotNullable, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     addEventListenerMethodPrologueCustom(info, impl);

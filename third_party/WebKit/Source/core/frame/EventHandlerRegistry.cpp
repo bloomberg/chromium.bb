@@ -53,7 +53,7 @@ EventHandlerRegistry::~EventHandlerRegistry()
     checkConsistency();
 }
 
-bool EventHandlerRegistry::eventTypeToClass(const AtomicString& eventType, const EventListenerOptions& options, EventHandlerClass* result)
+bool EventHandlerRegistry::eventTypeToClass(const AtomicString& eventType, const AddEventListenerOptions& options, EventHandlerClass* result)
 {
     if (eventType == EventTypeNames::scroll) {
         *result = ScrollEvent;
@@ -129,7 +129,7 @@ void EventHandlerRegistry::updateEventHandlerInternal(ChangeOperation op, EventH
         notifyDidAddOrRemoveEventHandlerTarget(handlerClass);
 }
 
-void EventHandlerRegistry::updateEventHandlerOfType(ChangeOperation op, const AtomicString& eventType, const EventListenerOptions& options, EventTarget* target)
+void EventHandlerRegistry::updateEventHandlerOfType(ChangeOperation op, const AtomicString& eventType, const AddEventListenerOptions& options, EventTarget* target)
 {
     EventHandlerClass handlerClass;
     if (!eventTypeToClass(eventType, options, &handlerClass))
@@ -137,12 +137,12 @@ void EventHandlerRegistry::updateEventHandlerOfType(ChangeOperation op, const At
     updateEventHandlerInternal(op, handlerClass, target);
 }
 
-void EventHandlerRegistry::didAddEventHandler(EventTarget& target, const AtomicString& eventType, const EventListenerOptions& options)
+void EventHandlerRegistry::didAddEventHandler(EventTarget& target, const AtomicString& eventType, const AddEventListenerOptions& options)
 {
     updateEventHandlerOfType(Add, eventType, options, &target);
 }
 
-void EventHandlerRegistry::didRemoveEventHandler(EventTarget& target, const AtomicString& eventType, const EventListenerOptions& options)
+void EventHandlerRegistry::didRemoveEventHandler(EventTarget& target, const AtomicString& eventType, const AddEventListenerOptions& options)
 {
     updateEventHandlerOfType(Remove, eventType, options, &target);
 }

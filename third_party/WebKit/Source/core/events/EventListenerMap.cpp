@@ -106,7 +106,7 @@ Vector<AtomicString> EventListenerMap::eventTypes() const
     return types;
 }
 
-static bool addListenerToVector(EventListenerVector* vector, EventListener* listener, const EventListenerOptions& options, RegisteredEventListener* registeredListener)
+static bool addListenerToVector(EventListenerVector* vector, EventListener* listener, const AddEventListenerOptions& options, RegisteredEventListener* registeredListener)
 {
     *registeredListener = RegisteredEventListener(listener, options);
 
@@ -117,7 +117,7 @@ static bool addListenerToVector(EventListenerVector* vector, EventListener* list
     return true;
 }
 
-bool EventListenerMap::add(const AtomicString& eventType, EventListener* listener, const EventListenerOptions& options, RegisteredEventListener* registeredListener)
+bool EventListenerMap::add(const AtomicString& eventType, EventListener* listener, const AddEventListenerOptions& options, RegisteredEventListener* registeredListener)
 {
     assertNoActiveIterators();
 
@@ -185,7 +185,7 @@ static void copyListenersNotCreatedFromMarkupToTarget(const AtomicString& eventT
         // Event listeners created from markup have already been transfered to the shadow tree during cloning.
         if (eventListener.listener()->wasCreatedFromMarkup())
             continue;
-        EventListenerOptions options = eventListener.options();
+        AddEventListenerOptions options = eventListener.options();
         target->addEventListener(eventType, eventListener.listener(), options);
     }
 }
