@@ -1,6 +1,7 @@
 == chromeos ==
 amd64-generic-chromium-pfq
 amd64-generic-goofy-release
+amenia-release
 arkham-release
 arm-generic-chromium-pfq
 arm-generic_freon-chromium-pfq
@@ -131,6 +132,7 @@ pre-cq-launcher
 quawks-release
 rambi-paladin
 rambi-release
+reef-release
 reks-release
 relm-release
 rikku-release

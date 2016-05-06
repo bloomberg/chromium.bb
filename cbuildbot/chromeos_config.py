@@ -396,6 +396,7 @@ _arm_external_boards = frozenset([
 
 _x86_internal_release_boards = frozenset([
     'amd64-generic-goofy',
+    'amenia',
     'asuka',
     'auron',
     'auron_paine',
@@ -454,6 +455,7 @@ _x86_internal_release_boards = frozenset([
     'peppy',
     'quawks',
     'rambi',
+    'reef',
     'reks',
     'relm',
     'rikku',
@@ -645,6 +647,9 @@ _waterfall_config_map = {
         'oak-release',
         'elm-release',
         'oak-cheets-release',
+        # reef
+        'reef-release',
+        'amenia-release',
         # storm
         'storm-release',
         'arkham-release',
@@ -2951,6 +2956,14 @@ def GetConfig():
   # gale-based boards
   _AdjustLeaderFollowerReleaseConfigs(
       'gale',
+      important=False,
+  )
+
+  # reef-based boards
+  _AdjustLeaderFollowerReleaseConfigs(
+      'reef', (
+          'amenia',
+      ),
       important=False,
   )
 
