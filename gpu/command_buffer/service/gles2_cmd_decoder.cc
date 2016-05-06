@@ -23,6 +23,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_math.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_synthetic_delay.h"
 #include "build/build_config.h"
@@ -11724,8 +11725,10 @@ void GLES2DecoderImpl::DoCompressedTexSubImage3D(
   Texture* texture = texture_ref->texture();
   GLenum type = 0, internal_format = 0;
   if (!texture->GetLevelType(target, level, &type, &internal_format)) {
+    std::string msg = base::StringPrintf(
+        "level %d does not exist", level);
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glCompressedTexSubImage3D",
-        "level does not exist");
+                       msg.c_str());
     return;
   }
   if (internal_format != format) {
@@ -11995,9 +11998,10 @@ void GLES2DecoderImpl::DoCompressedTexSubImage2D(
   GLenum type = 0;
   GLenum internal_format = 0;
   if (!texture->GetLevelType(target, level, &type, &internal_format)) {
+    std::string msg = base::StringPrintf(
+        "level %d does not exist", level);
     LOCAL_SET_GL_ERROR(
-        GL_INVALID_OPERATION,
-        "glCompressedTexSubImage2D", "level does not exist.");
+        GL_INVALID_OPERATION, "glCompressedTexSubImage2D", msg.c_str());
     return;
   }
   if (internal_format != format) {

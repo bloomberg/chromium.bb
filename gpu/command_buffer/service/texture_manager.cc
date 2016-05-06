@@ -2154,15 +2154,18 @@ bool TextureManager::ValidateTextureParameters(
   // So the validation is not necessary for TexSubImage.
   if (tex_image_call &&
       !validators->texture_internal_format.IsValid(internal_format)) {
-    ERRORSTATE_SET_GL_ERROR(
-        error_state, GL_INVALID_VALUE, function_name,
-        "invalid internal_format");
+    std::string msg = base::StringPrintf("invalid internal_format 0x%x",
+                                         internal_format);
+    ERRORSTATE_SET_GL_ERROR(error_state, GL_INVALID_VALUE, function_name,
+                             msg.c_str());
     return false;
   }
   if (!g_format_type_validator.Get().IsValid(internal_format, format, type)) {
-    ERRORSTATE_SET_GL_ERROR(
-        error_state, GL_INVALID_OPERATION, function_name,
-        "invalid internalformat/format/type combination");
+    std::string msg = base::StringPrintf(
+        "invalid internalformat/format/type combination 0x%x/0x%x/0x%x",
+        internal_format, format, type);
+    ERRORSTATE_SET_GL_ERROR(error_state, GL_INVALID_OPERATION, function_name,
+                            msg.c_str());
     return false;
   }
   if (!feature_info_->IsES3Enabled()) {
@@ -2448,8 +2451,10 @@ bool TextureManager::ValidateTexSubImage(ContextState* state,
   GLenum internal_format = 0;
   if (!texture->GetLevelType(args.target, args.level, &current_type,
                              &internal_format)) {
+    std::string msg = base::StringPrintf(
+        "level %d does not exist", args.level);
     ERRORSTATE_SET_GL_ERROR(error_state, GL_INVALID_OPERATION, function_name,
-                            "level does not exist.");
+                            msg.c_str());
     return false;
   }
   if (!ValidateTextureParameters(error_state, function_name, false, args.format,
