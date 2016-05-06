@@ -1496,19 +1496,6 @@ UNINITIALIZED READ
 name=bug_343663
 blink_web.dll!blink::RenderBlock::computeInlinePreferredLogicalWidths
 
-UNINITIALIZED READ
-name=bug_343797
-...
-blink_web.dll!blink::MediaQueryExp::create
-blink_web.dll!blink::BisonCSSParser::createFloatingMediaQueryExp
-blink_web.dll!cssyyparse
-
-UNINITIALIZED READ
-name=bug_343915
-blink_web.dll!blink::BisonCSSParser::parseFlex
-blink_web.dll!blink::BisonCSSParser::parseValue
-blink_web.dll!cssyyparse
-
 UNADDRESSABLE ACCESS
 name=BUG_343958
 blink_web.dll!blink::Node::getFlag
@@ -1820,26 +1807,6 @@ aura.dll!aura::WindowTreeHostPlatform::WindowTreeHostPlatform
 aura.dll!aura::WindowTreeHost::Create
 
 UNINITIALIZED READ
-name=bug_492821
-*!blink::CSSPropertyParser::validUnit
-...
-*!blink::CSSPropertyParser::parseValue
-*!blink::CSSPropertyParser::parseValue
-*!blink::CSSParserImpl::consumeDeclarationValue
-*!blink::CSSParserImpl::consumeDeclaration
-*!blink::CSSParserImpl::consumeDeclarationList
-*!blink::CSSParserImpl::consumeStyleRule
-*!blink::CSSParserImpl::consumeQualifiedRule
-*!blink::CSSParserImpl::consumeRuleList<>
-*!blink::CSSParserImpl::parseStyleSheet
-*!blink::CSSParser::parseSheet
-*!blink::StyleSheetContents::parseStringAtPosition
-*!blink::StyleEngine::parseSheet
-*!blink::StyleEngine::createSheet
-*!blink::StyleElement::createSheet
-*!blink::StyleElement::process
-
-UNINITIALIZED READ
 name=bug_493167
 system call NtWriteFile parameter #5
 KERNELBASE.dll!WriteFile
@@ -2081,17 +2048,6 @@ content.dll!content::PPB_ImageData_Impl::Init
 content.dll!content::PepperGraphics2DHost::Init
 content.dll!content::PepperGraphics2DHost::Create
 content.dll!content::ContentRendererPepperHostFactory::CreateResourceHost
-
-UNINITIALIZED READ
-name=bug_591092
-webcore_shared.dll!std::_Equal<>
-webcore_shared.dll!WTF::operator==<>
-webcore_shared.dll!blink::CSSVariableData::operator==
-webcore_shared.dll!blink::dataEquivalent<>
-webcore_shared.dll!blink::dataEquivalent<>
-...
-webcore_shared.dll!blink::Document::updateStyle
-webcore_shared.dll!blink::Document::updateLayoutTree
 
 UNINITIALIZED READ
 name=bug_593594

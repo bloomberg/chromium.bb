@@ -2704,16 +2704,6 @@
    fun:_ZN7content26ResourceDispatcherHostImpl23OnRenderViewHostCreatedEiibb
 }
 {
-   bug_492821
-   Memcheck:Uninitialized
-   fun:_ZN5blink17CSSPropertyParser9validUnitEPNS_14CSSParserValueENS0_5UnitsENS_13CSSParserModeENS0_31ReleaseParsedCalcValueConditionE
-   fun:_ZN5blink17CSSPropertyParser9validUnitEPNS_14CSSParserValueENS0_5UnitsENS0_31ReleaseParsedCalcValueConditionE
-   ...
-   fun:_ZN5blink17CSSPropertyParser10parseValueENS_13CSSPropertyIDEb
-   fun:_ZN5blink17CSSPropertyParser10parseValueENS_13CSSPropertyID*
-   fun:_ZN5blink13CSSParserImpl23consumeDeclarationValueENS_19CSSParserTokenRangeENS_13CSSPropertyIDEbNS_13StyleRuleBase4TypeE
-}
-{
    bug_514434
    Memcheck:Leak
    fun:malloc
