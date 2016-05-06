@@ -44,9 +44,9 @@
 #include "ui/base/layout.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/display/test/test_screen.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/size_conversions.h"
-#include "ui/gfx/test/test_screen.h"
 
 namespace content {
 namespace {
@@ -767,7 +767,7 @@ class MAYBE_WebContentsVideoCaptureDeviceTest : public testing::Test {
   }
 
  private:
-  gfx::test::TestScreen test_screen_;
+  display::test::TestScreen test_screen_;
 
   StubClientObserver client_observer_;
 

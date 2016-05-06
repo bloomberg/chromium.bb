@@ -11,7 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/screen.h"
-#include "ui/gfx/test/test_screen.h"
+#include "ui/display/test/test_screen.h"
 
 namespace {
 const int DEFAULT_PREFERRED_ICON_SIZE = 48;
@@ -70,7 +70,7 @@ class ManifestIconSelectorTest : public testing::Test  {
   }
 
  private:
-  gfx::test::TestScreen test_screen_;
+  display::test::TestScreen test_screen_;
   int preferred_icon_size_ = DEFAULT_PREFERRED_ICON_SIZE;
 
   DISALLOW_COPY_AND_ASSIGN(ManifestIconSelectorTest);

@@ -11,9 +11,9 @@
 #include "base/test/histogram_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/screen.h"
+#include "ui/display/test/test_screen.h"
 #include "ui/events/test/device_data_manager_test_api.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/gfx/test/test_screen.h"
 
 namespace {
 
@@ -36,7 +36,7 @@ class ChromeBrowserMainExtraPartsMetricsTest : public testing::Test {
   base::MessageLoop message_loop_;
 
   // Dummy screen required by a ChromeBrowserMainExtraPartsMetrics test target.
-  gfx::test::TestScreen test_screen_;
+  display::test::TestScreen test_screen_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainExtraPartsMetricsTest);
 };

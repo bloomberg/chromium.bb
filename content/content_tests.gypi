@@ -1070,6 +1070,7 @@
         '../third_party/WebKit/public/blink.gyp:blink',
         '../ui/accessibility/accessibility.gyp:accessibility',
         '../ui/base/ui_base.gyp:ui_base',
+        '../ui/display/display.gyp:display_test_support',
         '../ui/events/blink/events_blink.gyp:events_blink',
         '../ui/gfx/gfx.gyp:gfx',
         '../ui/gfx/gfx.gyp:gfx_geometry',

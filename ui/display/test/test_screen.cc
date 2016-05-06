@@ -4,9 +4,9 @@
 
 #include <vector>
 
-#include "ui/gfx/test/test_screen.h"
+#include "ui/display/test/test_screen.h"
 
-namespace gfx {
+namespace display {
 namespace test {
 
 TestScreen::TestScreen() {
@@ -31,31 +31,31 @@ int TestScreen::GetNumDisplays() const {
   return 1;
 }
 
-std::vector<gfx::Display> TestScreen::GetAllDisplays() const {
-  return std::vector<gfx::Display>(1, display_);
+std::vector<Display> TestScreen::GetAllDisplays() const {
+  return std::vector<Display>(1, display_);
 }
 
-gfx::Display TestScreen::GetDisplayNearestWindow(gfx::NativeView view) const {
+Display TestScreen::GetDisplayNearestWindow(gfx::NativeView view) const {
   return display_;
 }
 
-gfx::Display TestScreen::GetDisplayNearestPoint(const gfx::Point& point) const {
+Display TestScreen::GetDisplayNearestPoint(const gfx::Point& point) const {
   return display_;
 }
 
-gfx::Display TestScreen::GetDisplayMatching(const gfx::Rect& match_rect) const {
+Display TestScreen::GetDisplayMatching(const gfx::Rect& match_rect) const {
   return display_;
 }
 
-gfx::Display TestScreen::GetPrimaryDisplay() const {
+Display TestScreen::GetPrimaryDisplay() const {
   return display_;
 }
 
-void TestScreen::AddObserver(gfx::DisplayObserver* observer) {
+void TestScreen::AddObserver(DisplayObserver* observer) {
 }
 
-void TestScreen::RemoveObserver(gfx::DisplayObserver* observer) {
+void TestScreen::RemoveObserver(DisplayObserver* observer) {
 }
 
 }  // namespace test
-}  // namespace gfx
+}  // namespace display

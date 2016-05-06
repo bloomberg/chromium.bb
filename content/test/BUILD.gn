@@ -689,6 +689,7 @@ test("content_unittests") {
     "//ui/base:test_support",
     "//ui/compositor:test_support",
     "//ui/display",
+    "//ui/display:test_support",
     "//ui/events/blink",
     "//ui/gfx:test_support",
     "//ui/gfx/geometry",

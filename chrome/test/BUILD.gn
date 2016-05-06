@@ -1660,6 +1660,7 @@ test("unit_tests") {
     "//third_party/icu",
     "//third_party/libxml",
     "//ui/base:test_support",
+    "//ui/display:test_support",
     "//ui/gfx:test_support",
     "//ui/resources",
   ]

@@ -2231,6 +2231,7 @@
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/libxml/libxml.gyp:libxml',
         '../ui/base/ui_base.gyp:ui_base_test_support',
+        '../ui/display/display.gyp:display_test_support',
         '../ui/gfx/gfx.gyp:gfx_test_support',
         '../ui/resources/ui_resources.gyp:ui_resources',
         'chrome_features.gyp:chrome_common_features',

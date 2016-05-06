@@ -193,6 +193,8 @@
         'chromeos/test/test_display_layout_manager.h',
         'chromeos/test/test_native_display_delegate.cc',
         'chromeos/test/test_native_display_delegate.h',
+        'test/test_screen.cc',
+        'test/test_screen.h',
       ],
     },
     {
