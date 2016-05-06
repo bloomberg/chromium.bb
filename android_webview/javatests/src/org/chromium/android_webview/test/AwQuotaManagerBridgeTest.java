@@ -4,7 +4,6 @@
 
 package org.chromium.android_webview.test;
 
-import android.test.suitebuilder.annotation.LargeTest;
 import android.util.Pair;
 import android.webkit.ValueCallback;
 
@@ -12,7 +11,7 @@ import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwQuotaManagerBridge;
 import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.test.util.AwQuotaManagerBridgeTestUtil;
-import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.net.test.util.TestWebServer;
 
@@ -158,8 +157,12 @@ public class AwQuotaManagerBridgeTest extends AwTestBase {
                 "window.applicationCache.update();");
     }
 
+    /*
     @LargeTest
     @Feature({"AndroidWebView", "WebStore"})
+    Too flaky. See crbug.com/609977.
+    */
+    @DisabledTest
     public void testDeleteAllWithAppCache() throws Exception {
         final long initialUsage = getUsageForOrigin(mOrigin);
 
@@ -180,8 +183,12 @@ public class AwQuotaManagerBridgeTest extends AwTestBase {
         });
     }
 
+    /*
     @LargeTest
     @Feature({"AndroidWebView", "WebStore"})
+    Too flaky. See crbug.com/609977.
+    */
+    @DisabledTest
     public void testDeleteOriginWithAppCache() throws Exception {
         final long initialUsage = getUsageForOrigin(mOrigin);
 
@@ -202,8 +209,12 @@ public class AwQuotaManagerBridgeTest extends AwTestBase {
         });
     }
 
+    /*
     @LargeTest
     @Feature({"AndroidWebView", "WebStore"})
+    Too flaky. See crbug.com/609977.
+    */
+    @DisabledTest
     public void testGetResultsMatch() throws Exception {
         useAppCache();
 
