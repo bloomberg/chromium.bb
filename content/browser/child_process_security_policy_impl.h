@@ -6,12 +6,10 @@
 #define CONTENT_BROWSER_CHILD_PROCESS_SECURITY_POLICY_IMPL_H_
 
 #include <map>
-#include <memory>
 #include <set>
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "base/debug/crash_logging.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
@@ -78,10 +76,6 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   bool HasWebUIBindings(int child_id) override;
   void GrantSendMidiSysExMessage(int child_id) override;
   bool CanAccessDataForOrigin(int child_id, const GURL& url) override;
-
-  // TODO(nick): Remove this once we understand http://crbug.com/600441
-  std::unique_ptr<base::debug::ScopedCrashKey> GetOriginLockCrashKey(
-      int child_id);
 
   // Pseudo schemes are treated differently than other schemes because they
   // cannot be requested like normal URLs.  There is no mechanism for revoking

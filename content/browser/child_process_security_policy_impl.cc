@@ -10,7 +10,6 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -237,9 +236,6 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
     GURL site_gurl = SiteInstanceImpl::GetSiteForURL(NULL, gurl);
     return origin_lock_ == site_gurl;
   }
-
-  // TODO(nick): Remove this once we understand http://crbug.com/600441
-  GURL GetOriginLock() { return origin_lock_; }
 
   void LockToOrigin(const GURL& gurl) {
     origin_lock_ = gurl;
@@ -827,18 +823,6 @@ bool ChildProcessSecurityPolicyImpl::CanAccessDataForOrigin(int child_id,
     return true;
   }
   return state->second->CanAccessDataForOrigin(gurl);
-}
-
-// TODO(nick): Remove this once we understand http://crbug.com/600441
-std::unique_ptr<base::debug::ScopedCrashKey>
-ChildProcessSecurityPolicyImpl::GetOriginLockCrashKey(int child_id) {
-  base::AutoLock lock(lock_);
-  SecurityStateMap::iterator state = security_state_.find(child_id);
-  return base::WrapUnique(new base::debug::ScopedCrashKey(
-      "security_policy_origin_lock",
-      state == security_state_.end()
-          ? "not-found"
-          : state->second->GetOriginLock().possibly_invalid_spec()));
 }
 
 void ChildProcessSecurityPolicyImpl::LockToOrigin(int child_id,

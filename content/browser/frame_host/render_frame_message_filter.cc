@@ -5,8 +5,6 @@
 #include "content/browser/frame_host/render_frame_message_filter.h"
 
 #include "base/command_line.h"
-#include "base/debug/crash_logging.h"
-#include "base/debug/dump_without_crashing.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_util.h"
@@ -251,16 +249,6 @@ void RenderFrameMessageFilter::OnSetCookie(int render_frame_id,
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
   if (!policy->CanAccessDataForOrigin(render_process_id_, url)) {
-    {
-      // TODO(nick): Remove this once we understand http://crbug.com/600441
-      auto origin_lock = policy->GetOriginLockCrashKey(render_process_id_);
-      base::debug::ScopedCrashKey("cookie_url", url.possibly_invalid_spec());
-      base::debug::ScopedCrashKey(
-          "cookie_first_party",
-          first_party_for_cookies.possibly_invalid_spec());
-      base::debug::DumpWithoutCrashing();
-    }
-
     bad_message::ReceivedBadMessage(this,
                                     bad_message::RFMF_SET_COOKIE_BAD_ORIGIN);
     return;
@@ -294,16 +282,6 @@ void RenderFrameMessageFilter::OnGetCookies(int render_frame_id,
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
   if (!policy->CanAccessDataForOrigin(render_process_id_, url)) {
-    {
-      // TODO(nick): Remove this once we understand http://crbug.com/600441
-      auto origin_lock = policy->GetOriginLockCrashKey(render_process_id_);
-      base::debug::ScopedCrashKey("cookie_url", url.possibly_invalid_spec());
-      base::debug::ScopedCrashKey(
-          "cookie_first_party",
-          first_party_for_cookies.possibly_invalid_spec());
-      base::debug::DumpWithoutCrashing();
-    }
-
     bad_message::ReceivedBadMessage(this,
                                     bad_message::RFMF_GET_COOKIES_BAD_ORIGIN);
     delete reply_msg;

@@ -65,11 +65,6 @@ size_t RegisterEngineCrashKeys() {
         crash_keys::kSmallSize},
       { "initrf_root_process_is_live", crash_keys::kSmallSize},
       { "initrf_root_proxy_is_live", crash_keys::kSmallSize},
-
-      // Temporary for https://crbug.com/600441
-      { "cookie_url", crash_keys::kSmallSize },
-      { "cookie_first_party", crash_keys::kSmallSize },
-      { "security_policy_origin_lock", crash_keys::kSmallSize },
     };
 
   return base::debug::InitCrashKeys(engine_keys, arraysize(engine_keys),
