@@ -47,11 +47,12 @@ class MdFocusRing : public views::View {
   MdFocusRing() {
     SetPaintToLayer(true);
     layer()->SetFillsBoundsOpaquely(false);
-
-    // Don't accept input events.
-    SetEnabled(false);
   }
   ~MdFocusRing() override {}
+
+  bool CanProcessEventsWithinSubtree() const override {
+    return false;
+  }
 
   void OnPaint(gfx::Canvas* canvas) override {
     CustomButton::PaintMdFocusRing(canvas, this);
