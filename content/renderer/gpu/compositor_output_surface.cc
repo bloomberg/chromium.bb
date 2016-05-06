@@ -83,10 +83,11 @@ bool CompositorOutputSurface::BindToClient(
 void CompositorOutputSurface::DetachFromClient() {
   if (!HasClient())
     return;
-  if (output_surface_proxy_.get())
+  if (output_surface_proxy_) {
     output_surface_proxy_->ClearOutputSurface();
-  output_surface_filter_->RemoveHandlerOnCompositorThread(
-      routing_id_, output_surface_filter_handler_);
+    output_surface_filter_->RemoveHandlerOnCompositorThread(
+        routing_id_, output_surface_filter_handler_);
+  }
   cc::OutputSurface::DetachFromClient();
 }
 

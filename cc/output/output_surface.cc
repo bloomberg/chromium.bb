@@ -213,13 +213,10 @@ bool OutputSurface::BindToClient(OutputSurfaceClient* client) {
     }
   }
 
-  if (!success)
-    client_ = NULL;
-
   // In certain cases, ThreadTaskRunnerHandle isn't set (Android Webview).
   // Don't register a dump provider in these cases.
   // TODO(ericrk): Get this working in Android Webview. crbug.com/517156
-  if (client_ && base::ThreadTaskRunnerHandle::IsSet()) {
+  if (base::ThreadTaskRunnerHandle::IsSet()) {
     // Now that we are on the context thread, register a dump provider with this
     // thread's task runner. This will overwrite any previous dump provider
     // registered.
@@ -227,6 +224,8 @@ bool OutputSurface::BindToClient(OutputSurfaceClient* client) {
         this, "OutputSurface", base::ThreadTaskRunnerHandle::Get());
   }
 
+  if (!success)
+    DetachFromClient();
   return success;
 }
 
