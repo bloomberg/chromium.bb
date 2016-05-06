@@ -401,6 +401,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     public void updateShippingOptionsSection(SectionInformation section) {
         mShippingOptionsSectionInformation = section;
         mShippingOptionSection.update(section);
+        updatePayButtonEnabled();
     }
 
     private void updatePaymentMethodSection(SectionInformation section) {

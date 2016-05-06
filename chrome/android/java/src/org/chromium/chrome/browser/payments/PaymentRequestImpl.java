@@ -154,19 +154,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             return;
         }
 
-        mLineItems = getValidatedLineItems(details);
-        if (mLineItems == null) {
-            disconnectFromClientWithDebugMessage("Invalid line items");
-            return;
-        }
-        mPaymentItems = Arrays.asList(details.items);
-
-        mShippingOptions =
-                getValidatedShippingOptions(details.items[0].amount.currencyCode, details);
-        if (mShippingOptions == null) {
-            disconnectFromClientWithDebugMessage("Invalid shipping options");
-            return;
-        }
+        if (!setLineItemsAndShippingOptionsOrDisconnectFromClient(details)) return;
 
         // If the merchant requests shipping and does not provide shipping options here, then the
         // merchant needs the shipping address to calculate shipping price and availability.
@@ -222,6 +210,51 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         mUI = PaymentRequestUI.show(mContext, this, requestShipping, mMerchantName, mOrigin);
         if (mFavicon != null) mUI.setTitleBitmap(mFavicon);
         mFavicon = null;
+    }
+
+    /**
+     * Called by merchant to update the shipping options and line items after the user has selected
+     * their shipping address or shipping option.
+     */
+    @Override
+    public void updateWith(PaymentDetails details) {
+        if (mClient == null) return;
+
+        if (mUI == null) {
+            disconnectFromClientWithDebugMessage(
+                    "PaymentRequestUpdateEvent.updateWith() called without PaymentRequest.show()");
+            return;
+        }
+
+        if (!setLineItemsAndShippingOptionsOrDisconnectFromClient(details)) return;
+
+        // Empty shipping options means the merchant cannot ship to the user's selected shipping
+        // address.
+        if (mShippingOptions.isEmpty() && !mMerchantNeedsShippingAddress) {
+            disconnectFromClientWithDebugMessage("Merchant indicates inablity to ship although "
+                    + "originally indicated that can ship anywhere");
+        }
+
+        mUI.updateOrderSummarySection(mLineItems);
+        mUI.updateShippingOptionsSection(mShippingOptions);
+    }
+
+    private boolean setLineItemsAndShippingOptionsOrDisconnectFromClient(PaymentDetails details) {
+        mLineItems = getValidatedLineItems(details);
+        if (mLineItems == null) {
+            disconnectFromClientWithDebugMessage("Invalid line items");
+            return false;
+        }
+        mPaymentItems = Arrays.asList(details.items);
+
+        mShippingOptions =
+                getValidatedShippingOptions(details.items[0].amount.currencyCode, details);
+        if (mShippingOptions == null) {
+            disconnectFromClientWithDebugMessage("Invalid shipping options");
+            return false;
+        }
+
+        return true;
     }
 
     private HashSet<String> getValidatedSupportedMethods(String[] methods) {

@@ -14,6 +14,7 @@
 #include "modules/payments/PaymentCompleter.h"
 #include "modules/payments/PaymentDetails.h"
 #include "modules/payments/PaymentOptions.h"
+#include "modules/payments/PaymentUpdater.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/modules/payments/payment_request.mojom-blink.h"
@@ -31,7 +32,7 @@ class ScriptState;
 class ShippingAddress;
 
 // TODO(thakis): Make this class final again once https://crbug.com/608705 is fixed.
-class MODULES_EXPORT PaymentRequest /* final */ : public EventTargetWithInlineData, WTF_NON_EXPORTED_BASE(public mojom::blink::PaymentRequestClient), public PaymentCompleter, public ContextLifecycleObserver {
+class MODULES_EXPORT PaymentRequest /* final */ : public EventTargetWithInlineData, WTF_NON_EXPORTED_BASE(public mojom::blink::PaymentRequestClient), public PaymentCompleter, public PaymentUpdater, public ContextLifecycleObserver {
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(PaymentRequest)
     WTF_MAKE_NONCOPYABLE(PaymentRequest);
@@ -58,6 +59,10 @@ public:
 
     // PaymentCompleter:
     ScriptPromise complete(ScriptState*, bool success) override;
+
+    // PaymentUpdater:
+    void onUpdatePaymentDetails(const ScriptValue& detailsScriptValue) override;
+    void onUpdatePaymentDetailsFailure(const ScriptValue& error) override;
 
     DECLARE_TRACE();
 

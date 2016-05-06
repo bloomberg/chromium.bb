@@ -8,6 +8,7 @@
 #include "bindings/core/v8/JSONValuesForV8.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
+#include "bindings/modules/v8/V8PaymentDetails.h"
 #include "core/EventTypeNames.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
@@ -15,6 +16,7 @@
 #include "core/events/EventQueue.h"
 #include "modules/EventTargetModulesNames.h"
 #include "modules/payments/PaymentItem.h"
+#include "modules/payments/PaymentRequestUpdateEvent.h"
 #include "modules/payments/PaymentResponse.h"
 #include "modules/payments/PaymentsValidators.h"
 #include "modules/payments/ShippingAddress.h"
@@ -145,6 +147,26 @@ void validateShippingOptionsOrPaymentItems(HeapVector<T> items, ExceptionState& 
     }
 }
 
+void validatePaymentDetails(const PaymentDetails& details, ExceptionState& exceptionState)
+{
+    if (!details.hasItems()) {
+        exceptionState.throwTypeError("Must specify items");
+        return;
+    }
+
+    if (details.items().isEmpty()) {
+        exceptionState.throwTypeError("Must specify at least one item");
+        return;
+    }
+
+    validateShippingOptionsOrPaymentItems(details.items(), exceptionState);
+    if (exceptionState.hadException())
+        return;
+
+    if (details.hasShippingOptions())
+        validateShippingOptionsOrPaymentItems(details.shippingOptions(), exceptionState);
+}
+
 } // namespace
 
 PaymentRequest* PaymentRequest::create(ScriptState* scriptState, const Vector<String>& supportedMethods, const PaymentDetails& details, ExceptionState& exceptionState)
@@ -209,10 +231,50 @@ ScriptPromise PaymentRequest::complete(ScriptState* scriptState, bool success)
     if (m_completeResolver)
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(InvalidStateError, "Already called complete() once"));
 
-    m_completeResolver = ScriptPromiseResolver::create(scriptState);
+    // The payment provider should respond in PaymentRequest::OnComplete().
     m_paymentProvider->Complete(success);
 
+    m_completeResolver = ScriptPromiseResolver::create(scriptState);
     return m_completeResolver->promise();
+}
+
+void PaymentRequest::onUpdatePaymentDetails(const ScriptValue& detailsScriptValue)
+{
+    if (!m_showResolver || !m_paymentProvider)
+        return;
+
+    PaymentDetails details;
+    TrackExceptionState exceptionState;
+    V8PaymentDetails::toImpl(detailsScriptValue.isolate(), detailsScriptValue.v8Value(), details, exceptionState);
+    if (exceptionState.hadException()) {
+        m_showResolver->reject(DOMException::create(SyntaxError, exceptionState.message()));
+        stopResolversAndCloseMojoConnection();
+        return;
+    }
+
+    validatePaymentDetails(details, exceptionState);
+    if (exceptionState.hadException()) {
+        m_showResolver->reject(DOMException::create(SyntaxError, exceptionState.message()));
+        stopResolversAndCloseMojoConnection();
+        return;
+    }
+
+    // Set the currently selected option if only one option was passed.
+    if (details.hasShippingOptions() && details.shippingOptions().size() == 1)
+        m_shippingOption = details.shippingOptions().begin()->id();
+    else
+        m_shippingOption = String();
+
+    m_paymentProvider->UpdateWith(mojom::blink::PaymentDetails::From(details));
+}
+
+void PaymentRequest::onUpdatePaymentDetailsFailure(const ScriptValue& error)
+{
+    if (m_showResolver)
+        m_showResolver->reject(error);
+    if (m_completeResolver)
+        m_completeResolver->reject(error);
+    stopResolversAndCloseMojoConnection();
 }
 
 DEFINE_TRACE(PaymentRequest)
@@ -228,8 +290,6 @@ DEFINE_TRACE(PaymentRequest)
 
 PaymentRequest::PaymentRequest(ScriptState* scriptState, const Vector<String>& supportedMethods, const PaymentDetails& details, const PaymentOptions& options, const ScriptValue& data, ExceptionState& exceptionState)
     : ContextLifecycleObserver(scriptState->getExecutionContext())
-    , m_supportedMethods(supportedMethods)
-    , m_details(details)
     , m_options(options)
     , m_clientBinding(this)
 {
@@ -244,26 +304,12 @@ PaymentRequest::PaymentRequest(ScriptState* scriptState, const Vector<String>& s
         exceptionState.throwTypeError("Must specify at least one payment method identifier");
         return;
     }
+    m_supportedMethods = supportedMethods;
 
-    if (!details.hasItems()) {
-        exceptionState.throwTypeError("Must specify items");
-        return;
-    }
-
-    if (details.items().isEmpty()) {
-        exceptionState.throwTypeError("Must specify at least one item");
-        return;
-    }
-
-    validateShippingOptionsOrPaymentItems(details.items(), exceptionState);
+    validatePaymentDetails(details, exceptionState);
     if (exceptionState.hadException())
         return;
-
-    if (details.hasShippingOptions()) {
-        validateShippingOptionsOrPaymentItems(details.shippingOptions(), exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    m_details = details;
 
     if (!data.isEmpty()) {
         RefPtr<JSONValue> value = toJSONValue(data.context(), data.v8Value());
@@ -316,9 +362,12 @@ void PaymentRequest::OnShippingAddressChange(mojom::blink::ShippingAddressPtr ad
     }
 
     m_shippingAddress = new ShippingAddress(std::move(address));
-    Event* event = Event::create(EventTypeNames::shippingaddresschange);
+    PaymentRequestUpdateEvent* event = PaymentRequestUpdateEvent::create(EventTypeNames::shippingaddresschange);
     event->setTarget(this);
-    getExecutionContext()->getEventQueue()->enqueueEvent(event);
+    event->setPaymentDetailsUpdater(this);
+    bool success = getExecutionContext()->getEventQueue()->enqueueEvent(event);
+    DCHECK(success);
+    ALLOW_UNUSED_LOCAL(success);
 }
 
 void PaymentRequest::OnShippingOptionChange(const String& shippingOptionId)
@@ -326,9 +375,12 @@ void PaymentRequest::OnShippingOptionChange(const String& shippingOptionId)
     DCHECK(m_showResolver);
     DCHECK(!m_completeResolver);
     m_shippingOption = shippingOptionId;
-    Event* event = Event::create(EventTypeNames::shippingoptionchange);
+    PaymentRequestUpdateEvent* event = PaymentRequestUpdateEvent::create(EventTypeNames::shippingoptionchange);
     event->setTarget(this);
-    getExecutionContext()->getEventQueue()->enqueueEvent(event);
+    event->setPaymentDetailsUpdater(this);
+    bool success = getExecutionContext()->getEventQueue()->enqueueEvent(event);
+    DCHECK(success);
+    ALLOW_UNUSED_LOCAL(success);
 }
 
 void PaymentRequest::OnPaymentResponse(mojom::blink::PaymentResponsePtr response)

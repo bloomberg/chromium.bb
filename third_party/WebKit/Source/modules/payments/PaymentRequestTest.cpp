@@ -5,6 +5,7 @@
 #include "modules/payments/PaymentRequest.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/JSONValuesForV8.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/testing/DummyPageHolder.h"
@@ -225,6 +226,19 @@ TEST_F(PaymentRequestTest, RejectShowPromiseOnInvalidShippingAddress)
     static_cast<mojom::blink::PaymentRequestClient*>(request)->OnShippingAddressChange(mojom::blink::ShippingAddress::New());
 }
 
+TEST_F(PaymentRequestTest, RejectShowPromiseOnInvalidShippingAddressInResponse)
+{
+    ScriptState::Scope scope(getScriptState());
+    PaymentRequest* request = PaymentRequest::create(getScriptState(), Vector<String>(1, "foo"), buildPaymentDetailsForTest(), getExceptionState());
+    EXPECT_FALSE(getExceptionState().hadException());
+    mojom::blink::PaymentResponsePtr response = mojom::blink::PaymentResponse::New();
+    response->shipping_address = mojom::blink::ShippingAddress::New();
+
+    request->show(getScriptState()).then(MockFunction::expectNoCall(getScriptState()), MockFunction::expectCall(getScriptState()));
+
+    static_cast<mojom::blink::PaymentRequestClient*>(request)->OnPaymentResponse(std::move(response));
+}
+
 TEST_F(PaymentRequestTest, DontRejectShowPromiseForValidShippingAddress)
 {
     ScriptState::Scope scope(getScriptState());
@@ -238,6 +252,22 @@ TEST_F(PaymentRequestTest, DontRejectShowPromiseForValidShippingAddress)
     request->show(getScriptState()).then(MockFunction::expectNoCall(getScriptState()), MockFunction::expectNoCall(getScriptState()));
 
     static_cast<mojom::blink::PaymentRequestClient*>(request)->OnShippingAddressChange(std::move(shippingAddress));
+}
+
+TEST_F(PaymentRequestTest, ResolveShowPromiseWithValidShippingAddressInResponse)
+{
+    ScriptState::Scope scope(getScriptState());
+    PaymentRequest* request = PaymentRequest::create(getScriptState(), Vector<String>(1, "foo"), buildPaymentDetailsForTest(), getExceptionState());
+    EXPECT_FALSE(getExceptionState().hadException());
+    mojom::blink::PaymentResponsePtr response = mojom::blink::PaymentResponse::New();
+    response->shipping_address = mojom::blink::ShippingAddress::New();
+    response->shipping_address->region_code = "US";
+    response->shipping_address->language_code = "en";
+    response->shipping_address->script_code = "Latn";
+
+    request->show(getScriptState()).then(MockFunction::expectCall(getScriptState()), MockFunction::expectNoCall(getScriptState()));
+
+    static_cast<mojom::blink::PaymentRequestClient*>(request)->OnPaymentResponse(std::move(response));
 }
 
 TEST_F(PaymentRequestTest, ResolveShowPromiseWithoutShippingAddressInResponse)
@@ -330,6 +360,123 @@ TEST_F(PaymentRequestTest, ContextDestroyedBeforePromiseResolved)
     static_cast<ContextLifecycleObserver*>(request)->contextDestroyed();
 
     ThreadHeap::collectAllGarbage();
+}
+
+TEST_F(PaymentRequestTest, RejectShowPromiseOnUpdateDetailsFailure)
+{
+    ScriptState::Scope scope(getScriptState());
+    PaymentRequest* request = PaymentRequest::create(getScriptState(), Vector<String>(1, "foo"), buildPaymentDetailsForTest(), getExceptionState());
+    EXPECT_FALSE(getExceptionState().hadException());
+
+    request->show(getScriptState()).then(MockFunction::expectNoCall(getScriptState()), MockFunction::expectCall(getScriptState()));
+
+    request->onUpdatePaymentDetailsFailure(ScriptValue::from(getScriptState(), "oops"));
+}
+
+TEST_F(PaymentRequestTest, RejectCompletePromiseOnUpdateDetailsFailure)
+{
+    ScriptState::Scope scope(getScriptState());
+    PaymentRequest* request = PaymentRequest::create(getScriptState(), Vector<String>(1, "foo"), buildPaymentDetailsForTest(), getExceptionState());
+    EXPECT_FALSE(getExceptionState().hadException());
+    request->show(getScriptState()).then(MockFunction::expectCall(getScriptState()), MockFunction::expectNoCall(getScriptState()));
+    static_cast<mojom::blink::PaymentRequestClient*>(request)->OnPaymentResponse(mojom::blink::PaymentResponse::New());
+
+    request->complete(getScriptState(), true).then(MockFunction::expectNoCall(getScriptState()), MockFunction::expectCall(getScriptState()));
+
+    request->onUpdatePaymentDetailsFailure(ScriptValue::from(getScriptState(), "oops"));
+}
+
+TEST_F(PaymentRequestTest, IgnoreUpdatePaymentDetailsAfterShowPromiseResolved)
+{
+    ScriptState::Scope scope(getScriptState());
+    PaymentRequest* request = PaymentRequest::create(getScriptState(), Vector<String>(1, "foo"), buildPaymentDetailsForTest(), getExceptionState());
+    EXPECT_FALSE(getExceptionState().hadException());
+    request->show(getScriptState()).then(MockFunction::expectCall(getScriptState()), MockFunction::expectNoCall(getScriptState()));
+    static_cast<mojom::blink::PaymentRequestClient*>(request)->OnPaymentResponse(mojom::blink::PaymentResponse::New());
+
+    request->onUpdatePaymentDetails(ScriptValue::from(getScriptState(), "foo"));
+}
+
+TEST_F(PaymentRequestTest, RejectShowPromiseOnNonPaymentDetailsUpdate)
+{
+    ScriptState::Scope scope(getScriptState());
+    PaymentRequest* request = PaymentRequest::create(getScriptState(), Vector<String>(1, "foo"), buildPaymentDetailsForTest(), getExceptionState());
+    EXPECT_FALSE(getExceptionState().hadException());
+
+    request->show(getScriptState()).then(MockFunction::expectNoCall(getScriptState()), MockFunction::expectCall(getScriptState()));
+
+    request->onUpdatePaymentDetails(ScriptValue::from(getScriptState(), "NotPaymentDetails"));
+}
+
+TEST_F(PaymentRequestTest, RejectShowPromiseOnInvalidPaymentDetailsUpdate)
+{
+    ScriptState::Scope scope(getScriptState());
+    PaymentRequest* request = PaymentRequest::create(getScriptState(), Vector<String>(1, "foo"), buildPaymentDetailsForTest(), getExceptionState());
+    EXPECT_FALSE(getExceptionState().hadException());
+
+    request->show(getScriptState()).then(MockFunction::expectNoCall(getScriptState()), MockFunction::expectCall(getScriptState()));
+
+    request->onUpdatePaymentDetails(ScriptValue::from(getScriptState(), fromJSONString(getScriptState(), "{}", getExceptionState())));
+    EXPECT_FALSE(getExceptionState().hadException());
+}
+
+TEST_F(PaymentRequestTest, ClearShippingOptionOnPaymentDetailsUpdateWithoutShippingOptions)
+{
+    ScriptState::Scope scope(getScriptState());
+    PaymentDetails details;
+    details.setItems(HeapVector<PaymentItem>(1, buildPaymentItemForTest()));
+    PaymentOptions options;
+    options.setRequestShipping(true);
+    PaymentRequest* request = PaymentRequest::create(getScriptState(), Vector<String>(1, "foo"), details, options, getExceptionState());
+    EXPECT_FALSE(getExceptionState().hadException());
+    EXPECT_TRUE(request->shippingOption().isNull());
+    request->show(getScriptState()).then(MockFunction::expectNoCall(getScriptState()), MockFunction::expectNoCall(getScriptState()));
+    String detailWithShippingOptions = "{\"items\": [{\"id\": \"total\", \"label\": \"Total\", \"amount\": {\"currencyCode\": \"USD\", \"value\": \"5.00\"}}],"
+        "\"shippingOptions\": [{\"id\": \"standardShippingOption\", \"label\": \"Standard shipping\", \"amount\": {\"currencyCode\": \"USD\", \"value\": \"5.00\"}}]}";
+    request->onUpdatePaymentDetails(ScriptValue::from(getScriptState(), fromJSONString(getScriptState(), detailWithShippingOptions, getExceptionState())));
+    EXPECT_FALSE(getExceptionState().hadException());
+    EXPECT_EQ("standardShippingOption", request->shippingOption());
+    String detailWithoutShippingOptions = "{\"items\": [{\"id\": \"total\", \"label\": \"Total\", \"amount\": {\"currencyCode\": \"USD\", \"value\": \"5.00\"}}]}";
+
+    request->onUpdatePaymentDetails(ScriptValue::from(getScriptState(), fromJSONString(getScriptState(), detailWithoutShippingOptions, getExceptionState())));
+
+    EXPECT_FALSE(getExceptionState().hadException());
+    EXPECT_TRUE(request->shippingOption().isNull());
+}
+
+TEST_F(PaymentRequestTest, ClearShippingOptionOnPaymentDetailsUpdateWithMultipleShippingOptions)
+{
+    ScriptState::Scope scope(getScriptState());
+    PaymentOptions options;
+    options.setRequestShipping(true);
+    PaymentRequest* request = PaymentRequest::create(getScriptState(), Vector<String>(1, "foo"), buildPaymentDetailsForTest(), options, getExceptionState());
+    EXPECT_FALSE(getExceptionState().hadException());
+    request->show(getScriptState()).then(MockFunction::expectNoCall(getScriptState()), MockFunction::expectNoCall(getScriptState()));
+    String detail = "{\"items\": [{\"id\": \"total\", \"label\": \"Total\", \"amount\": {\"currencyCode\": \"USD\", \"value\": \"5.00\"}}],"
+        "\"shippingOptions\": [{\"id\": \"slow\", \"label\": \"Slow\", \"amount\": {\"currencyCode\": \"USD\", \"value\": \"5.00\"}},"
+        "{\"id\": \"fast\", \"label\": \"Fast\", \"amount\": {\"currencyCode\": \"USD\", \"value\": \"50.00\"}}]}";
+
+    request->onUpdatePaymentDetails(ScriptValue::from(getScriptState(), fromJSONString(getScriptState(), detail, getExceptionState())));
+    EXPECT_FALSE(getExceptionState().hadException());
+
+    EXPECT_TRUE(request->shippingOption().isNull());
+}
+
+TEST_F(PaymentRequestTest, UseTheSingleShippingOptionFromPaymentDetailsUpdate)
+{
+    ScriptState::Scope scope(getScriptState());
+    PaymentOptions options;
+    options.setRequestShipping(true);
+    PaymentRequest* request = PaymentRequest::create(getScriptState(), Vector<String>(1, "foo"), buildPaymentDetailsForTest(), options, getExceptionState());
+    EXPECT_FALSE(getExceptionState().hadException());
+    request->show(getScriptState()).then(MockFunction::expectNoCall(getScriptState()), MockFunction::expectNoCall(getScriptState()));
+    String detail = "{\"items\": [{\"id\": \"total\", \"label\": \"Total\", \"amount\": {\"currencyCode\": \"USD\", \"value\": \"5.00\"}}],"
+        "\"shippingOptions\": [{\"id\": \"standardShippingOption\", \"label\": \"Standard shipping\", \"amount\": {\"currencyCode\": \"USD\", \"value\": \"5.00\"}}]}";
+
+    request->onUpdatePaymentDetails(ScriptValue::from(getScriptState(), fromJSONString(getScriptState(), detail, getExceptionState())));
+    EXPECT_FALSE(getExceptionState().hadException());
+
+    EXPECT_EQ("standardShippingOption", request->shippingOption());
 }
 
 } // namespace

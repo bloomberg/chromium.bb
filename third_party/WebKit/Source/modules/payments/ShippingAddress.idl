@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 // https://w3c.github.io/browser-payment-api/specs/paymentrequest.html#shippingaddress-interface
-// https://github.com/w3c/browser-payment-api/issues/6
 
 [
     RuntimeEnabled=PaymentRequest,

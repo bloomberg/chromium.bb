@@ -4146,6 +4146,10 @@ interface PaymentRequest : EventTarget
     method show
     setter onshippingaddresschange
     setter onshippingoptionchange
+interface PaymentRequestUpdateEvent : Event
+    attribute @@toStringTag
+    method constructor
+    method updateWith
 interface PaymentResponse
     attribute @@toStringTag
     getter details

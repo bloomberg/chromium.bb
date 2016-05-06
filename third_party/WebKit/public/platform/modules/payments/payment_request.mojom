@@ -103,6 +103,7 @@ interface PaymentRequest {
        //
        // {"https://android.com/pay": {"gateway": "stripe"}}
        string stringified_data);
+  UpdateWith(PaymentDetails details);
   Abort();
   Complete(bool success);
 };
