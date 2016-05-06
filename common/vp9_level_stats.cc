@@ -47,10 +47,6 @@ void Vp9LevelStats::AddFrame(const Vp9HeaderParser& parser, int64_t time_ns) {
 
   total_compressed_size_ += parser.frame_size();
 
-  // TODO(fgalligan): Add support for other color formats. Currently assuming
-  // 420.
-  total_uncompressed_bits_ += (luma_picture_size * parser.bit_depth() * 3) / 2;
-
   while (!luma_window_.empty() &&
          luma_window_.front().first <
              (time_ns - (libwebm::kNanosecondsPerSecondi - 1))) {
@@ -97,6 +93,10 @@ void Vp9LevelStats::AddFrame(const Vp9HeaderParser& parser, int64_t time_ns) {
   } else {
     ++frames_since_last_altref;
     ++displayed_frames;
+    // TODO(fgalligan): Add support for other color formats. Currently assuming
+    // 420.
+    total_uncompressed_bits_ +=
+        (luma_picture_size * parser.bit_depth() * 3) / 2;
   }
 
   // Count max reference frames.
