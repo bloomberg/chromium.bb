@@ -12,6 +12,90 @@
 #include "media/base/video_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace {
+
+// Helper function used to verify the data in the coded region after copying the
+// visible region and padding the remaining area.
+bool VerifyPlanCopyWithPadding(const uint8_t* src,
+                               size_t src_stride,
+                               // Size of visible region.
+                               const gfx::Size& src_size,
+                               const uint8_t* dst,
+                               size_t dst_stride,
+                               // Coded size of |dst|.
+                               const gfx::Size& dst_size) {
+  if (!src || !dst)
+    return false;
+
+  const size_t src_width = src_size.width();
+  const size_t src_height = src_size.height();
+  const size_t dst_width = dst_size.width();
+  const size_t dst_height = dst_size.height();
+  if (src_width > dst_width || src_width > src_stride ||
+      src_height > dst_height || src_size.IsEmpty() || dst_size.IsEmpty())
+    return false;
+
+  const uint8_t *src_ptr = src, *dst_ptr = dst;
+  for (size_t i = 0; i < src_height;
+       ++i, src_ptr += src_stride, dst_ptr += dst_stride) {
+    if (memcmp(src_ptr, dst_ptr, src_width))
+      return false;
+    for (size_t j = src_width; j < dst_width; ++j) {
+      if (src_ptr[src_width - 1] != dst_ptr[j])
+        return false;
+    }
+  }
+  if (src_height < dst_height) {
+    src_ptr = dst + (src_height - 1) * dst_stride;
+    if (memcmp(src_ptr, dst_ptr, dst_width))
+      return false;
+  }
+  return true;
+}
+
+bool VerifyCopyWithPadding(const media::VideoFrame& src_frame,
+                           const media::VideoFrame& dst_frame) {
+  if (!src_frame.IsMappable() || !dst_frame.IsMappable() ||
+      src_frame.visible_rect().size() != dst_frame.visible_rect().size())
+    return false;
+
+  if (!VerifyPlanCopyWithPadding(
+          src_frame.visible_data(media::VideoFrame::kYPlane),
+          src_frame.stride(media::VideoFrame::kYPlane),
+          src_frame.visible_rect().size(),
+          dst_frame.data(media::VideoFrame::kYPlane),
+          dst_frame.stride(media::VideoFrame::kYPlane), dst_frame.coded_size()))
+    return false;
+  if (!VerifyPlanCopyWithPadding(
+          src_frame.visible_data(media::VideoFrame::kUPlane),
+          src_frame.stride(media::VideoFrame::kUPlane),
+          media::VideoFrame::PlaneSize(media::PIXEL_FORMAT_I420,
+                                       media::VideoFrame::kUPlane,
+                                       src_frame.visible_rect().size()),
+          dst_frame.data(media::VideoFrame::kUPlane),
+          dst_frame.stride(media::VideoFrame::kUPlane),
+          media::VideoFrame::PlaneSize(media::PIXEL_FORMAT_I420,
+                                       media::VideoFrame::kUPlane,
+                                       dst_frame.coded_size())))
+    return false;
+  if (!VerifyPlanCopyWithPadding(
+          src_frame.visible_data(media::VideoFrame::kVPlane),
+          src_frame.stride(media::VideoFrame::kVPlane),
+          media::VideoFrame::PlaneSize(media::PIXEL_FORMAT_I420,
+                                       media::VideoFrame::kVPlane,
+                                       src_frame.visible_rect().size()),
+          dst_frame.data(media::VideoFrame::kVPlane),
+          dst_frame.stride(media::VideoFrame::kVPlane),
+          media::VideoFrame::PlaneSize(media::PIXEL_FORMAT_I420,
+                                       media::VideoFrame::kVPlane,
+                                       dst_frame.coded_size())))
+    return false;
+
+  return true;
+}
+
+}  // namespace
+
 namespace media {
 
 class VideoUtilTest : public testing::Test {
@@ -360,6 +444,38 @@ TEST_F(VideoUtilTest, LetterboxYUV) {
       }
     }
   }
+}
+
+TEST_F(VideoUtilTest, I420CopyWithPadding) {
+  gfx::Size visible_size(40, 30);
+  scoped_refptr<VideoFrame> src_frame(VideoFrame::CreateFrame(
+      PIXEL_FORMAT_I420, visible_size, gfx::Rect(visible_size), visible_size,
+      base::TimeDelta()));
+  // Expect to return false when copying to an empty buffer.
+  EXPECT_FALSE(I420CopyWithPadding(*src_frame, nullptr));
+
+  scoped_refptr<VideoFrame> dst_frame(VideoFrame::CreateFrame(
+      PIXEL_FORMAT_I420, visible_size, gfx::Rect(visible_size), visible_size,
+      base::TimeDelta()));
+  EXPECT_TRUE(I420CopyWithPadding(*src_frame, dst_frame.get()));
+  EXPECT_TRUE(VerifyCopyWithPadding(*src_frame, *dst_frame));
+
+  gfx::Size coded_size(60, 40);
+  dst_frame = VideoFrame::CreateFrame(PIXEL_FORMAT_I420, coded_size,
+                                      gfx::Rect(visible_size), coded_size,
+                                      base::TimeDelta());
+  EXPECT_TRUE(I420CopyWithPadding(*src_frame, dst_frame.get()));
+  EXPECT_TRUE(VerifyCopyWithPadding(*src_frame, *dst_frame));
+
+  gfx::Size odd_size(39, 31);
+  src_frame =
+      VideoFrame::CreateFrame(PIXEL_FORMAT_I420, odd_size, gfx::Rect(odd_size),
+                              odd_size, base::TimeDelta());
+  dst_frame = VideoFrame::CreateFrame(PIXEL_FORMAT_I420, coded_size,
+                                      gfx::Rect(odd_size), coded_size,
+                                      base::TimeDelta());
+  EXPECT_TRUE(I420CopyWithPadding(*src_frame, dst_frame.get()));
+  EXPECT_TRUE(VerifyCopyWithPadding(*src_frame, *dst_frame));
 }
 
 }  // namespace media

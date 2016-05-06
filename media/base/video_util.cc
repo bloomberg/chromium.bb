@@ -11,6 +11,7 @@
 #include "base/numerics/safe_math.h"
 #include "media/base/video_frame.h"
 #include "media/base/yuv_convert.h"
+#include "third_party/libyuv/include/libyuv.h"
 
 namespace media {
 
@@ -18,6 +19,35 @@ namespace {
 
 // Empty method used for keeping a reference to the original media::VideoFrame.
 void ReleaseOriginalFrame(const scoped_refptr<media::VideoFrame>& frame) {}
+
+// Helper to apply padding to the region outside visible rect up to the coded
+// size with the repeated last column / row of the visible rect.
+void FillRegionOutsideVisibleRect(uint8_t* data,
+                                  size_t stride,
+                                  const gfx::Size& coded_size,
+                                  const gfx::Size& visible_size) {
+  if (visible_size.IsEmpty()) {
+    if (!coded_size.IsEmpty())
+      memset(data, 0, coded_size.height() * stride);
+    return;
+  }
+
+  const int coded_width = coded_size.width();
+  if (visible_size.width() < coded_width) {
+    const int pad_length = coded_width - visible_size.width();
+    uint8_t* dst = data + visible_size.width();
+    for (int i = 0; i < visible_size.height(); ++i, dst += stride)
+      std::memset(dst, *(dst - 1), pad_length);
+  }
+
+  if (visible_size.height() < coded_size.height()) {
+    uint8_t* dst = data + visible_size.height() * stride;
+    uint8_t* src = dst - stride;
+    for (int i = visible_size.height(); i < coded_size.height();
+         ++i, dst += stride)
+      std::memcpy(dst, src, coded_width);
+  }
+}
 
 }  // namespace
 
@@ -337,6 +367,55 @@ scoped_refptr<VideoFrame> WrapAsI420VideoFrame(
   wrapped_frame->AddDestructionObserver(
       base::Bind(&ReleaseOriginalFrame, frame));
   return wrapped_frame;
+}
+
+bool I420CopyWithPadding(const VideoFrame& src_frame, VideoFrame* dst_frame) {
+  if (!dst_frame || !dst_frame->IsMappable())
+    return false;
+
+  DCHECK_GE(dst_frame->coded_size().width(), src_frame.visible_rect().width());
+  DCHECK_GE(dst_frame->coded_size().height(),
+            src_frame.visible_rect().height());
+  DCHECK(dst_frame->visible_rect().origin().IsOrigin());
+
+  if (libyuv::I420Copy(src_frame.visible_data(VideoFrame::kYPlane),
+                       src_frame.stride(VideoFrame::kYPlane),
+                       src_frame.visible_data(VideoFrame::kUPlane),
+                       src_frame.stride(VideoFrame::kUPlane),
+                       src_frame.visible_data(VideoFrame::kVPlane),
+                       src_frame.stride(VideoFrame::kVPlane),
+                       dst_frame->data(VideoFrame::kYPlane),
+                       dst_frame->stride(VideoFrame::kYPlane),
+                       dst_frame->data(VideoFrame::kUPlane),
+                       dst_frame->stride(VideoFrame::kUPlane),
+                       dst_frame->data(VideoFrame::kVPlane),
+                       dst_frame->stride(VideoFrame::kVPlane),
+                       src_frame.visible_rect().width(),
+                       src_frame.visible_rect().height()))
+    return false;
+
+  // Padding the region outside the visible rect with the repeated last
+  // column / row of the visible rect. This can improve the coding efficiency.
+  FillRegionOutsideVisibleRect(dst_frame->data(VideoFrame::kYPlane),
+                               dst_frame->stride(VideoFrame::kYPlane),
+                               dst_frame->coded_size(),
+                               src_frame.visible_rect().size());
+  FillRegionOutsideVisibleRect(
+      dst_frame->data(VideoFrame::kUPlane),
+      dst_frame->stride(VideoFrame::kUPlane),
+      VideoFrame::PlaneSize(PIXEL_FORMAT_I420, VideoFrame::kUPlane,
+                            dst_frame->coded_size()),
+      VideoFrame::PlaneSize(PIXEL_FORMAT_I420, VideoFrame::kUPlane,
+                            src_frame.visible_rect().size()));
+  FillRegionOutsideVisibleRect(
+      dst_frame->data(VideoFrame::kVPlane),
+      dst_frame->stride(VideoFrame::kVPlane),
+      VideoFrame::PlaneSize(PIXEL_FORMAT_I420, VideoFrame::kVPlane,
+                            dst_frame->coded_size()),
+      VideoFrame::PlaneSize(PIXEL_FORMAT_I420, VideoFrame::kVPlane,
+                            src_frame.visible_rect().size()));
+
+  return true;
 }
 
 }  // namespace media

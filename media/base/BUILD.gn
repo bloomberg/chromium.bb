@@ -246,6 +246,7 @@ source_set("base") {
     "//media:media_features",
     "//media:shared_memory_support",
     "//skia",
+    "//third_party/libyuv",
     "//ui/events:events_base",
     "//url:url",
   ]
