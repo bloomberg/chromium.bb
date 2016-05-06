@@ -44,6 +44,10 @@ class OfflinePageUtils {
   static bool HasOfflinePageForOnlineURL(
       content::BrowserContext* browser_context,
       const GURL& online_url);
+
+  // Marks that the offline page related to the |offline_url| has been accessed.
+  static void MarkPageAccessed(content::BrowserContext* browser_context,
+                               const GURL& offline_url);
 };
 
 }  // namespace offline_pages

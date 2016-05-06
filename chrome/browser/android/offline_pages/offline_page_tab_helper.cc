@@ -37,11 +37,6 @@ void OfflinePageTabHelper::DidStartNavigation(
   if (!navigation_handle->IsInMainFrame())
     return;
 
-  // Redirecting to online version will only take effect when there is network
-  // connection.
-  if (net::NetworkChangeNotifier::IsOffline())
-    return;
-
   // Ignore navigations that are forward or back transitions in the nav stack
   // which are not at the head of the stack.
   const content::NavigationController& controller =
@@ -52,16 +47,27 @@ void OfflinePageTabHelper::DidStartNavigation(
     return;
   }
 
-  // Skips if not loading an offline copy of saved page.
-  GURL online_url = offline_pages::OfflinePageUtils::GetOnlineURLForOfflineURL(
+  GURL redirect_url;
+  if (net::NetworkChangeNotifier::IsOffline()) {
+    // When the network is disconnected, loading online page will result in
+    // immediate redirection to offline copy.
+    redirect_url = offline_pages::OfflinePageUtils::GetOfflineURLForOnlineURL(
       web_contents()->GetBrowserContext(), navigation_handle->GetURL());
-  if (!online_url.is_valid())
+  } else {
+    // When the network is connected, loading offline copy will result in
+    // immediate redirection to online page.
+    redirect_url = offline_pages::OfflinePageUtils::GetOnlineURLForOfflineURL(
+      web_contents()->GetBrowserContext(), navigation_handle->GetURL());
+  }
+
+  // Bails out if no redirection is needed.
+  if (!redirect_url.is_valid())
     return;
 
   // Avoids looping between online and offline redirections.
   content::NavigationEntry* entry = controller.GetPendingEntry();
   if (entry && !entry->GetRedirectChain().empty() &&
-      entry->GetRedirectChain().back() == online_url) {
+      entry->GetRedirectChain().back() == redirect_url) {
     return;
   }
 
@@ -69,7 +75,7 @@ void OfflinePageTabHelper::DidStartNavigation(
       FROM_HERE,
       base::Bind(&OfflinePageTabHelper::Redirect,
                  weak_ptr_factory_.GetWeakPtr(),
-                 navigation_handle->GetURL(), online_url));
+                 navigation_handle->GetURL(), redirect_url));
 }
 
 void OfflinePageTabHelper::DidFinishNavigation(
@@ -78,8 +84,16 @@ void OfflinePageTabHelper::DidFinishNavigation(
   if (!navigation_handle->IsInMainFrame())
     return;
 
-  // Skips load failure other than no network.
+  // If the offline page is being loaded successfully, set the access record.
   net::Error error_code = navigation_handle->GetNetErrorCode();
+  if (error_code == net::OK &&
+      OfflinePageUtils::IsOfflinePage(
+          web_contents()->GetBrowserContext(), navigation_handle->GetURL())) {
+    OfflinePageUtils::MarkPageAccessed(
+        web_contents()->GetBrowserContext(), navigation_handle->GetURL());
+  }
+
+  // Skips load failure other than no network.
   if (error_code != net::ERR_INTERNET_DISCONNECTED &&
       error_code != net::ERR_NAME_NOT_RESOLVED &&
       error_code != net::ERR_ADDRESS_UNREACHABLE &&
@@ -93,7 +107,11 @@ void OfflinePageTabHelper::DidFinishNavigation(
     return;
   }
 
-  // Skips if not loading an online version of saved page.
+  // When the navigation starts, we redirect immediately from online page to
+  // offline version on the case that there is no network connection. If there
+  // is still network connection but with no or poor network connectivity, the
+  // navigation will eventually fail and we want to redirect to offline copy
+  // in this case.
   GURL offline_url = offline_pages::OfflinePageUtils::GetOfflineURLForOnlineURL(
       web_contents()->GetBrowserContext(), navigation_handle->GetURL());
   if (!offline_url.is_valid())
@@ -108,10 +126,11 @@ void OfflinePageTabHelper::DidFinishNavigation(
 
 void OfflinePageTabHelper::Redirect(
     const GURL& from_url, const GURL& to_url) {
-  if (to_url.SchemeIsFile())
+  if (to_url.SchemeIsFile()) {
     UMA_HISTOGRAM_COUNTS("OfflinePages.RedirectToOfflineCount", 1);
-  else
+  } else {
     UMA_HISTOGRAM_COUNTS("OfflinePages.RedirectToOnlineCount", 1);
+  }
 
   content::NavigationController::LoadURLParams load_params(to_url);
   load_params.transition_type = ui::PAGE_TRANSITION_CLIENT_REDIRECT;
