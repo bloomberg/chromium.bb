@@ -34,6 +34,7 @@ class CONTENT_EXPORT FrameNavigationEntry
                        int64_t item_sequence_number,
                        int64_t document_sequence_number,
                        scoped_refptr<SiteInstanceImpl> site_instance,
+                       scoped_refptr<SiteInstanceImpl> source_site_instance,
                        const GURL& url,
                        const Referrer& referrer,
                        const std::string& method,
@@ -48,6 +49,7 @@ class CONTENT_EXPORT FrameNavigationEntry
                    int64_t item_sequence_number,
                    int64_t document_sequence_number,
                    SiteInstanceImpl* site_instance,
+                   scoped_refptr<SiteInstanceImpl> source_site_instance,
                    const GURL& url,
                    const Referrer& referrer,
                    const PageState& page_state,
@@ -86,6 +88,18 @@ class CONTENT_EXPORT FrameNavigationEntry
   }
   SiteInstanceImpl* site_instance() const { return site_instance_.get(); }
 
+  // The |source_site_instance| is used to identify the SiteInstance of the
+  // frame that initiated the navigation. It is present only for
+  // renderer-initiated navigations and is cleared once the navigation has
+  // committed.
+  void set_source_site_instance(
+      scoped_refptr<SiteInstanceImpl> source_site_instance) {
+    source_site_instance_ = std::move(source_site_instance);
+  }
+  SiteInstanceImpl* source_site_instance() const {
+    return source_site_instance_.get();
+  }
+
   // The actual URL loaded in the frame.  This is in contrast to the virtual
   // URL, which is shown to the user.
   void set_url(const GURL& url) { url_ = url; }
@@ -122,6 +136,8 @@ class CONTENT_EXPORT FrameNavigationEntry
   int64_t item_sequence_number_;
   int64_t document_sequence_number_;
   scoped_refptr<SiteInstanceImpl> site_instance_;
+  // This member is cleared at commit time and is not persisted.
+  scoped_refptr<SiteInstanceImpl> source_site_instance_;
   GURL url_;
   Referrer referrer_;
   // TODO(creis): Change this to FrameState.

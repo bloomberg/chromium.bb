@@ -204,9 +204,7 @@ RenderFrameHostImpl* RenderFrameHostManager::Navigate(
                "FrameTreeNode id", frame_tree_node_->frame_tree_node_id());
   // Create a pending RenderFrameHost to use for the navigation.
   RenderFrameHostImpl* dest_render_frame_host = UpdateStateForNavigate(
-      dest_url,
-      // TODO(creis): Move source_site_instance to FNE.
-      entry.source_site_instance(), frame_entry.site_instance(),
+      dest_url, frame_entry.source_site_instance(), frame_entry.site_instance(),
       entry.GetTransitionType(),
       entry.restore_type() != NavigationEntryImpl::RESTORE_NONE,
       entry.IsViewSourceMode(), entry.transferred_global_request_id(),

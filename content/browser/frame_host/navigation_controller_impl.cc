@@ -736,8 +736,10 @@ void NavigationControllerImpl::LoadURLWithParams(const LoadURLParams& params) {
       if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
         entry = GetLastCommittedEntry()->Clone();
         entry->SetPageID(-1);
-        entry->AddOrUpdateFrameEntry(node, -1, -1, nullptr, params.url,
-                                     params.referrer, PageState(), "GET", -1);
+        entry->AddOrUpdateFrameEntry(
+            node, -1, -1, nullptr,
+            static_cast<SiteInstanceImpl*>(params.source_site_instance.get()),
+            params.url, params.referrer, PageState(), "GET", -1);
       }
     }
   }
@@ -747,11 +749,12 @@ void NavigationControllerImpl::LoadURLWithParams(const LoadURLParams& params) {
     entry = NavigationEntryImpl::FromNavigationEntry(CreateNavigationEntry(
         params.url, params.referrer, params.transition_type,
         params.is_renderer_initiated, params.extra_headers, browser_context_));
+    entry->set_source_site_instance(
+        static_cast<SiteInstanceImpl*>(params.source_site_instance.get()));
   }
+
   // Set the FTN ID (only used in non-site-per-process, for tests).
   entry->set_frame_tree_node_id(frame_tree_node_id);
-  entry->set_source_site_instance(
-      static_cast<SiteInstanceImpl*>(params.source_site_instance.get()));
   if (params.redirect_chain.size() > 0)
     entry->SetRedirectChain(params.redirect_chain);
   // Don't allow an entry replacement if there is no entry to replace.
@@ -888,10 +891,11 @@ bool NavigationControllerImpl::RendererDidNavigate(
   NavigationEntryImpl* active_entry = GetLastCommittedEntry();
   active_entry->SetTimestamp(timestamp);
   active_entry->SetHttpStatusCode(params.http_status_code);
+
+  FrameNavigationEntry* frame_entry =
+      active_entry->GetFrameEntry(rfh->frame_tree_node());
   if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
     // Update the frame-specific PageState.
-    FrameNavigationEntry* frame_entry =
-        active_entry->GetFrameEntry(rfh->frame_tree_node());
     // We may not find a frame_entry in some cases; ignore the PageState if so.
     // TODO(creis): Remove the "if" once https://crbug.com/522193 is fixed.
     if (frame_entry)
@@ -911,7 +915,7 @@ bool NavigationControllerImpl::RendererDidNavigate(
 
   // Once it is committed, we no longer need to track several pieces of state on
   // the entry.
-  active_entry->ResetForCommit();
+  active_entry->ResetForCommit(frame_entry);
 
   // The active entry's SiteInstance should match our SiteInstance.
   // TODO(creis): This check won't pass for subframes until we create entries
@@ -1278,8 +1282,8 @@ void NavigationControllerImpl::RendererDidNavigateNewSubframe(
     // Make sure we don't leak frame_entry if new_entry doesn't take ownership.
     scoped_refptr<FrameNavigationEntry> frame_entry(new FrameNavigationEntry(
         params.frame_unique_name, params.item_sequence_number,
-        params.document_sequence_number, rfh->GetSiteInstance(), params.url,
-        params.referrer, params.method, params.post_id));
+        params.document_sequence_number, rfh->GetSiteInstance(), nullptr,
+        params.url, params.referrer, params.method, params.post_id));
     new_entry = GetLastCommittedEntry()->CloneAndReplace(rfh->frame_tree_node(),
                                                          frame_entry.get());
 
@@ -1339,8 +1343,9 @@ bool NavigationControllerImpl::RendererDidNavigateAutoSubframe(
     NavigationEntryImpl* last_committed = GetLastCommittedEntry();
     last_committed->AddOrUpdateFrameEntry(
         rfh->frame_tree_node(), params.item_sequence_number,
-        params.document_sequence_number, rfh->GetSiteInstance(), params.url,
-        params.referrer, params.page_state, params.method, params.post_id);
+        params.document_sequence_number, rfh->GetSiteInstance(), nullptr,
+        params.url, params.referrer, params.page_state, params.method,
+        params.post_id);
 
     // Cross-process subframe navigations may leave a pending entry around.
     // Clear it if it's actually for the subframe.

@@ -773,19 +773,20 @@ void NavigatorImpl::RequestTransferURL(
     }
     // TODO(creis): Handle POST submissions.  See https://crbug.com/582211 and
     // https://crbug.com/101395.
-    entry->AddOrUpdateFrameEntry(node, -1, -1, nullptr, dest_url,
-                                 referrer_to_use, PageState(), "GET", -1);
+    entry->AddOrUpdateFrameEntry(
+        node, -1, -1, nullptr,
+        static_cast<SiteInstanceImpl*>(source_site_instance), dest_url,
+        referrer_to_use, PageState(), "GET", -1);
   } else {
     // Main frame case.
     entry = NavigationEntryImpl::FromNavigationEntry(
         controller_->CreateNavigationEntry(
             dest_url, referrer_to_use, page_transition, is_renderer_initiated,
             std::string(), controller_->GetBrowserContext()));
+    entry->root_node()->frame_entry->set_source_site_instance(
+        static_cast<SiteInstanceImpl*>(source_site_instance));
   }
 
-  // The source_site_instance may matter for navigations via RenderFrameProxy.
-  entry->set_source_site_instance(
-      static_cast<SiteInstanceImpl*>(source_site_instance));
   entry->SetRedirectChain(redirect_chain);
   // Don't allow an entry replacement if there is no entry to replace.
   // http://crbug.com/457149
@@ -806,9 +807,10 @@ void NavigatorImpl::RequestTransferURL(
   scoped_refptr<FrameNavigationEntry> frame_entry(entry->GetFrameEntry(node));
   if (!frame_entry) {
     // TODO(creis): Handle POST submissions here, as above.
-    frame_entry =
-        new FrameNavigationEntry(node->unique_name(), -1, -1, nullptr, dest_url,
-                                 referrer_to_use, "GET", -1);
+    frame_entry = new FrameNavigationEntry(
+        node->unique_name(), -1, -1, nullptr,
+        static_cast<SiteInstanceImpl*>(source_site_instance), dest_url,
+        referrer_to_use, "GET", -1);
   }
   NavigateToEntry(node, *frame_entry, *entry.get(),
                   NavigationController::NO_RELOAD, false, false);

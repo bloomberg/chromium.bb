@@ -166,9 +166,10 @@ NavigationRequest::NavigationRequest(
       associated_site_instance_type_(AssociatedSiteInstanceType::NONE) {
   DCHECK(!browser_initiated || (entry != nullptr && frame_entry != nullptr));
   if (browser_initiated) {
-    // TODO(clamy): use the FrameNavigationEntry for the source SiteInstance
-    // once it has been moved from the NavigationEntry.
-    source_site_instance_ = entry->source_site_instance();
+    FrameNavigationEntry* frame_entry = entry->GetFrameEntry(frame_tree_node);
+    if (frame_entry)
+      source_site_instance_ = frame_entry->source_site_instance();
+
     dest_site_instance_ = frame_entry->site_instance();
     restore_type_ = entry->restore_type();
     is_view_source_ = entry->IsViewSourceMode();

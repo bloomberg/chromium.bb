@@ -40,7 +40,8 @@ void RecursivelyGenerateFrameEntries(const ExplodedFrameState& state,
                                      NavigationEntryImpl::TreeNode* node) {
   node->frame_entry = new FrameNavigationEntry(
       UTF16ToUTF8(state.target.string()), state.item_sequence_number,
-      state.document_sequence_number, nullptr, GURL(state.url_string.string()),
+      state.document_sequence_number, nullptr, nullptr,
+      GURL(state.url_string.string()),
       Referrer(GURL(state.referrer.string()), state.referrer_policy), "GET",
       -1);
 
@@ -172,6 +173,7 @@ NavigationEntryImpl::NavigationEntryImpl(
                                                         -1,
                                                         -1,
                                                         std::move(instance),
+                                                        nullptr,
                                                         url,
                                                         referrer,
                                                         "GET",
@@ -331,11 +333,6 @@ void NavigationEntryImpl::set_site_instance(
     scoped_refptr<SiteInstanceImpl> site_instance) {
   // TODO(creis): Update all callers and remove this method.
   frame_tree_->frame_entry->set_site_instance(std::move(site_instance));
-}
-
-void NavigationEntryImpl::set_source_site_instance(
-    SiteInstanceImpl* source_site_instance) {
-  source_site_instance_ = source_site_instance;
 }
 
 void NavigationEntryImpl::SetBindings(int bindings) {
@@ -554,7 +551,6 @@ std::unique_ptr<NavigationEntryImpl> NavigationEntryImpl::CloneAndReplace(
   // ResetForCommit: browser_initiated_post_data_
   copy->screenshot_ = screenshot_;
   copy->extra_headers_ = extra_headers_;
-  // ResetForCommit: source_site_instance_
   copy->base_url_for_data_url_ = base_url_for_data_url_;
 #if defined(OS_ANDROID)
   copy->data_url_as_string_ = data_url_as_string_;
@@ -663,19 +659,21 @@ RequestNavigationParams NavigationEntryImpl::ConstructRequestNavigationParams(
   return request_params;
 }
 
-void NavigationEntryImpl::ResetForCommit() {
+void NavigationEntryImpl::ResetForCommit(FrameNavigationEntry* frame_entry) {
   // Any state that only matters when a navigation entry is pending should be
   // cleared here.
   // TODO(creis): This state should be moved to NavigationRequest once
   // PlzNavigate is enabled.
   SetBrowserInitiatedPostData(nullptr);
-  set_source_site_instance(nullptr);
   set_is_renderer_initiated(false);
   set_transferred_global_request_id(GlobalRequestID());
   set_should_replace_entry(false);
 
   set_should_clear_history_list(false);
   set_frame_tree_node_id(-1);
+
+  if (frame_entry)
+    frame_entry->set_source_site_instance(nullptr);
 
 #if defined(OS_ANDROID)
   // Reset the time stamp so that the metrics are not reported if this entry is
@@ -689,6 +687,7 @@ void NavigationEntryImpl::AddOrUpdateFrameEntry(
     int64_t item_sequence_number,
     int64_t document_sequence_number,
     SiteInstanceImpl* site_instance,
+    scoped_refptr<SiteInstanceImpl> source_site_instance,
     const GURL& url,
     const Referrer& referrer,
     const PageState& page_state,
@@ -710,9 +709,10 @@ void NavigationEntryImpl::AddOrUpdateFrameEntry(
   for (TreeNode* child : parent_node->children) {
     if (child->frame_entry->frame_unique_name() == unique_name) {
       // Update the existing FrameNavigationEntry (e.g., for replaceState).
-      child->frame_entry->UpdateEntry(
-          unique_name, item_sequence_number, document_sequence_number,
-          site_instance, url, referrer, page_state, method, post_id);
+      child->frame_entry->UpdateEntry(unique_name, item_sequence_number,
+                                      document_sequence_number, site_instance,
+                                      std::move(source_site_instance), url,
+                                      referrer, page_state, method, post_id);
       return;
     }
   }
@@ -722,7 +722,8 @@ void NavigationEntryImpl::AddOrUpdateFrameEntry(
   // or unique name.
   FrameNavigationEntry* frame_entry = new FrameNavigationEntry(
       unique_name, item_sequence_number, document_sequence_number,
-      site_instance, url, referrer, method, post_id);
+      site_instance, std::move(source_site_instance), url, referrer, method,
+      post_id);
   frame_entry->set_page_state(page_state);
   parent_node->children.push_back(
       new NavigationEntryImpl::TreeNode(frame_entry));

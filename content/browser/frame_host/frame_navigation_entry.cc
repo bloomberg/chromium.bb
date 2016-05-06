@@ -16,6 +16,7 @@ FrameNavigationEntry::FrameNavigationEntry(
     int64_t item_sequence_number,
     int64_t document_sequence_number,
     scoped_refptr<SiteInstanceImpl> site_instance,
+    scoped_refptr<SiteInstanceImpl> source_site_instance,
     const GURL& url,
     const Referrer& referrer,
     const std::string& method,
@@ -24,6 +25,7 @@ FrameNavigationEntry::FrameNavigationEntry(
       item_sequence_number_(item_sequence_number),
       document_sequence_number_(document_sequence_number),
       site_instance_(std::move(site_instance)),
+      source_site_instance_(std::move(source_site_instance)),
       url_(url),
       referrer_(referrer),
       method_(method),
@@ -34,25 +36,30 @@ FrameNavigationEntry::~FrameNavigationEntry() {
 
 FrameNavigationEntry* FrameNavigationEntry::Clone() const {
   FrameNavigationEntry* copy = new FrameNavigationEntry();
+
+  // Omit any fields cleared at commit time.
   copy->UpdateEntry(frame_unique_name_, item_sequence_number_,
-                    document_sequence_number_, site_instance_.get(), url_,
-                    referrer_, page_state_, method_, post_id_);
+                    document_sequence_number_, site_instance_.get(), nullptr,
+                    url_, referrer_, page_state_, method_, post_id_);
   return copy;
 }
 
-void FrameNavigationEntry::UpdateEntry(const std::string& frame_unique_name,
-                                       int64_t item_sequence_number,
-                                       int64_t document_sequence_number,
-                                       SiteInstanceImpl* site_instance,
-                                       const GURL& url,
-                                       const Referrer& referrer,
-                                       const PageState& page_state,
-                                       const std::string& method,
-                                       int64_t post_id) {
+void FrameNavigationEntry::UpdateEntry(
+    const std::string& frame_unique_name,
+    int64_t item_sequence_number,
+    int64_t document_sequence_number,
+    SiteInstanceImpl* site_instance,
+    scoped_refptr<SiteInstanceImpl> source_site_instance,
+    const GURL& url,
+    const Referrer& referrer,
+    const PageState& page_state,
+    const std::string& method,
+    int64_t post_id) {
   frame_unique_name_ = frame_unique_name;
   item_sequence_number_ = item_sequence_number;
   document_sequence_number_ = document_sequence_number;
   site_instance_ = site_instance;
+  source_site_instance_ = std::move(source_site_instance);
   url_ = url;
   referrer_ = referrer;
   page_state_ = page_state;

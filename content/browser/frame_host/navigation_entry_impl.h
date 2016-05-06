@@ -177,7 +177,9 @@ class CONTENT_EXPORT NavigationEntryImpl
 
   // Once a navigation entry is committed, we should no longer track several
   // pieces of non-persisted state, as documented on the members below.
-  void ResetForCommit();
+  // |frame_entry| is the FrameNavigationEntry for the frame that committed
+  // the navigation. It can be null.
+  void ResetForCommit(FrameNavigationEntry* frame_entry);
 
   // Exposes the tree of FrameNavigationEntries that make up this joint session
   // history item.
@@ -194,15 +196,17 @@ class CONTENT_EXPORT NavigationEntryImpl
   // NavigationEntries) is updated with the given parameters.
   // Does nothing if there is no entry already and |url| is about:blank, since
   // that does not count as a real commit.
-  void AddOrUpdateFrameEntry(FrameTreeNode* frame_tree_node,
-                             int64_t item_sequence_number,
-                             int64_t document_sequence_number,
-                             SiteInstanceImpl* site_instance,
-                             const GURL& url,
-                             const Referrer& referrer,
-                             const PageState& page_state,
-                             const std::string& method,
-                             int64_t post_id);
+  void AddOrUpdateFrameEntry(
+      FrameTreeNode* frame_tree_node,
+      int64_t item_sequence_number,
+      int64_t document_sequence_number,
+      SiteInstanceImpl* site_instance,
+      scoped_refptr<SiteInstanceImpl> source_site_instance,
+      const GURL& url,
+      const Referrer& referrer,
+      const PageState& page_state,
+      const std::string& method,
+      int64_t post_id);
 
   // Returns the FrameNavigationEntry corresponding to |frame_tree_node|, if
   // there is one in this NavigationEntry.
@@ -224,10 +228,12 @@ class CONTENT_EXPORT NavigationEntryImpl
   }
 
   // The |source_site_instance| is used to identify the SiteInstance of the
-  // frame that initiated the navigation.
-  void set_source_site_instance(SiteInstanceImpl* source_site_instance);
-  SiteInstanceImpl* source_site_instance() const {
-    return source_site_instance_.get();
+  // frame that initiated the navigation. It is set on the
+  // FrameNavigationEntry for the main frame.
+  void set_source_site_instance(
+      scoped_refptr<SiteInstanceImpl> source_site_instance) {
+    root_node()->frame_entry->set_source_site_instance(
+        source_site_instance.get());
   }
 
   // Remember the set of bindings granted to this NavigationEntry at the time
@@ -417,9 +423,6 @@ class CONTENT_EXPORT NavigationEntryImpl
 
   // This member is not persisted with session restore.
   std::string extra_headers_;
-
-  // This member is cleared in |ResetForCommit| and not persisted.
-  scoped_refptr<SiteInstanceImpl> source_site_instance_;
 
   // Used for specifying base URL for pages loaded via data URLs. Only used and
   // persisted by Android WebView.
