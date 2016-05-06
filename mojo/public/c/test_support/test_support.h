@@ -9,8 +9,6 @@
 
 #include <stdio.h>
 
-#include "mojo/public/c/test_support/test_support_export.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -21,14 +19,14 @@ extern "C" {
 // When the perf data is visualized by the performance dashboard, data with
 // different |sub_test_name|s (but the same |test_name|) are depicted as
 // different traces on the same chart.
-MOJO_TEST_SUPPORT_EXPORT void MojoTestSupportLogPerfResult(
+void MojoTestSupportLogPerfResult(
     const char* test_name,
     const char* sub_test_name,
     double value,
     const char* units);
 
 // Opens a "/"-delimited file path relative to the source root.
-MOJO_TEST_SUPPORT_EXPORT FILE* MojoTestSupportOpenSourceRootRelativeFile(
+FILE* MojoTestSupportOpenSourceRootRelativeFile(
     const char* source_root_relative_path);
 
 // Enumerates a "/"-delimited directory path relative to the source root.
@@ -44,7 +42,6 @@ MOJO_TEST_SUPPORT_EXPORT FILE* MojoTestSupportOpenSourceRootRelativeFile(
 //   ...
 //   rv[N] = NULL;
 //
-MOJO_TEST_SUPPORT_EXPORT
 char** MojoTestSupportEnumerateSourceRootRelativeDirectory(
     const char* source_root_relative_path);
 

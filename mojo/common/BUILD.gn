@@ -97,12 +97,6 @@ test("mojo_common_unittests") {
     "common_custom_types_unittest.cc",
     "common_type_converters_unittest.cc",
   ]
-
-  if (is_linux && !is_component_build) {
-    # This tests dynamically loads libmojo_test_support even in non-component
-    # builds.
-    configs += [ "//build/config/gcc:rpath_for_built_shared_libraries" ]
-  }
 }
 
 test("mojo_common_perftests") {
@@ -113,10 +107,4 @@ test("mojo_common_perftests") {
     "//mojo/public/cpp/test_support:test_utils",
     "//testing/gtest",
   ]
-
-  if (is_linux && !is_component_build) {
-    # This test dynamically loads libmojo_test_support even in non-component
-    # builds.
-    configs += [ "//build/config/gcc:rpath_for_built_shared_libraries" ]
-  }
 }
