@@ -162,6 +162,11 @@ void USB::onGetPermission(ScriptPromiseResolver* resolver, usb::DeviceInfoPtr de
         return;
     m_chooserServiceRequests.remove(requestEntry);
 
+    if (!m_deviceManager) {
+        resolver->reject(DOMException::create(NotFoundError, kNoServiceError));
+        return;
+    }
+
     if (deviceInfo) {
         usb::DevicePtr device;
         m_deviceManager->GetDevice(deviceInfo->guid, mojo::GetProxy(&device));
