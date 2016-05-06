@@ -201,7 +201,7 @@ class InputInjectorWin : public InputInjector {
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
     std::unique_ptr<Clipboard> clipboard_;
-    TouchInjectorWin touch_injector_;
+    std::unique_ptr<TouchInjectorWin> touch_injector_;
 
     DISALLOW_COPY_AND_ASSIGN(Core);
   };
@@ -315,7 +315,8 @@ void InputInjectorWin::Core::Start(
   }
 
   clipboard_->Start(std::move(client_clipboard));
-  touch_injector_.Init();
+  touch_injector_.reset(new TouchInjectorWin());
+  touch_injector_->Init();
 }
 
 void InputInjectorWin::Core::Stop() {
@@ -325,7 +326,7 @@ void InputInjectorWin::Core::Stop() {
   }
 
   clipboard_.reset();
-  touch_injector_.Deinitialize();
+  touch_injector_->Deinitialize();
 }
 
 InputInjectorWin::Core::~Core() {}
@@ -378,7 +379,8 @@ void InputInjectorWin::Core::HandleMouse(const MouseEvent& event) {
 }
 
 void InputInjectorWin::Core::HandleTouch(const TouchEvent& event) {
-  touch_injector_.InjectTouchEvent(event);
+  DCHECK(touch_injector_);
+  touch_injector_->InjectTouchEvent(event);
 }
 
 }  // namespace
