@@ -4962,6 +4962,12 @@ void Document::initSecurityContext(const DocumentInit& initializer)
     // https://mikewest.github.io/cors-rfc1918/#csp).
     if (initializer.isHostedInReservedIPRange()) {
         setAddressSpace(getSecurityOrigin()->isLocalhost() ? WebAddressSpaceLocal : WebAddressSpacePrivate);
+    } else if (getSecurityOrigin()->isLocal()) {
+        // "Local" security origins (like 'file://...') are treated as having
+        // a local address space.
+        //
+        // TODO(mkwst): It's not entirely clear that this is a good idea.
+        setAddressSpace(WebAddressSpaceLocal);
     } else {
         setAddressSpace(WebAddressSpacePublic);
     }

@@ -61,6 +61,7 @@ CORE_EXPORT ResourceRequest createAccessControlPreflightRequest(const ResourceRe
 
 bool passesAccessControlCheck(const ResourceResponse&, StoredCredentials, SecurityOrigin*, String& errorDescription, WebURLRequest::RequestContext requestType);
 bool passesPreflightStatusCheck(const ResourceResponse&, String& errorDescription);
+bool passesExternalPreflightCheck(const ResourceResponse&, String& errorDescription);
 CORE_EXPORT void parseAccessControlExposeHeadersAllowList(const String& headerValue, HTTPHeaderSet&);
 
 } // namespace blink

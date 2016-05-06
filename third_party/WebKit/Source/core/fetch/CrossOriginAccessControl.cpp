@@ -81,6 +81,9 @@ ResourceRequest createAccessControlPreflightRequest(const ResourceRequest& reque
     preflightRequest.setRequestContext(request.requestContext());
     preflightRequest.setSkipServiceWorker(true);
 
+    if (request.isExternalRequest())
+        preflightRequest.setHTTPHeaderField(HTTPNames::Access_Control_Request_External, "true");
+
     const HTTPHeaderMap& requestHeaderFields = request.httpHeaderFields();
 
     if (requestHeaderFields.size() > 0) {
@@ -224,6 +227,20 @@ bool passesPreflightStatusCheck(const ResourceResponse& response, String& errorD
         return false;
     }
 
+    return true;
+}
+
+bool passesExternalPreflightCheck(const ResourceResponse& response, String& errorDescription)
+{
+    AtomicString result = response.httpHeaderField(HTTPNames::Access_Control_Allow_External);
+    if (result.isNull()) {
+        errorDescription = "No 'Access-Control-Allow-External' header was present in the preflight response for this external request (This is an experimental header which is defined in 'https://mikewest.github.io/cors-rfc1918/').";
+        return false;
+    }
+    if (!equalIgnoringCase(result, "true")) {
+        errorDescription = "The 'Access-Control-Allow-External' header in the preflight response for this external request had a value of '" + result + "',  not 'true' (This is an experimental header which is defined in 'https://mikewest.github.io/cors-rfc1918/').";
+        return false;
+    }
     return true;
 }
 

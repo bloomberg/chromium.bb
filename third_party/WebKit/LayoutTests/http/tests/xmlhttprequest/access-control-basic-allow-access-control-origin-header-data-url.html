@@ -27,7 +27,7 @@ window.addEventListener("message", function(evt) {
     var xhr = new XMLHttpRequest;
 
     try {
-        xhr.open("GET", "http://localhost:8000/xmlhttprequest/resources/access-control-basic-allow-access-control-origin-header.cgi", false);
+        xhr.open("GET", "http://example.test:8000/xmlhttprequest/resources/access-control-basic-allow-access-control-origin-header.cgi", false);
     } catch(e) {
         parent.postMessage("FAIL: Exception thrown. Cross-domain access is not allowed in open. [" + e.message + "].", "*");
         return;

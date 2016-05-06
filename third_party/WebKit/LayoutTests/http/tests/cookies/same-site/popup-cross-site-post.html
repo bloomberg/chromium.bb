@@ -5,7 +5,9 @@
 <script>
 // Set cookies on ORIGINAL_HOST, then move ourselves to TEST_ROOT so
 // we can verify cross-origin behavior.
-if (window.location.hostname == ORIGINAL_HOST) {
+if (window.location.hostname == "127.0.0.1") {
+    window.location.hostname = ORIGINAL_HOST;
+} else if (window.location.hostname == ORIGINAL_HOST) {
     clearKnownCookies();
     document.cookie = STRICT_DOM + "=1; SameSite=Strict; Max-Age=100; path=/";
     document.cookie = LAX_DOM + "=1; SameSite=Lax; Max-Age=100; path=/";

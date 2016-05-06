@@ -235,13 +235,13 @@ void DocumentThreadableLoader::start(const ResourceRequest& request)
 
 void DocumentThreadableLoader::dispatchInitialRequest(const ResourceRequest& request)
 {
-    if (m_sameOriginRequest || m_options.crossOriginRequestPolicy == AllowCrossOriginRequests) {
+    if (!request.isExternalRequest() && (m_sameOriginRequest || m_options.crossOriginRequestPolicy == AllowCrossOriginRequests)) {
         loadRequest(request, m_resourceLoaderOptions);
         // |this| may be dead here in async mode.
         return;
     }
 
-    ASSERT(m_options.crossOriginRequestPolicy == UseAccessControl);
+    ASSERT(m_options.crossOriginRequestPolicy == UseAccessControl || request.isExternalRequest());
 
     makeCrossOriginAccessRequest(request);
     // |this| may be dead here in async mode.
@@ -249,7 +249,7 @@ void DocumentThreadableLoader::dispatchInitialRequest(const ResourceRequest& req
 
 void DocumentThreadableLoader::makeCrossOriginAccessRequest(const ResourceRequest& request)
 {
-    ASSERT(m_options.crossOriginRequestPolicy == UseAccessControl);
+    ASSERT(m_options.crossOriginRequestPolicy == UseAccessControl || request.isExternalRequest());
     ASSERT(m_client);
     ASSERT(!resource());
 
@@ -266,11 +266,20 @@ void DocumentThreadableLoader::makeCrossOriginAccessRequest(const ResourceReques
         return;
     }
 
+    // Non-secure origins may not make "external requests": https://mikewest.github.io/cors-rfc1918/#integration-fetch
+    if (!document().isSecureContext() && request.isExternalRequest()) {
+        ThreadableLoaderClient* client = m_client;
+        clear();
+        client->didFailAccessControlCheck(ResourceError(errorDomainBlinkInternal, 0, request.url().getString(), "Requests to internal network resources are not allowed from non-secure contexts (see https://goo.gl/Y0ZkNV). This is an experimental restriction which is part of 'https://mikewest.github.io/cors-rfc1918/'."));
+        // |this| may be dead here in async mode.
+        return;
+    }
+
     // We use isSimpleOrForbiddenRequest() here since |request| may have been
     // modified in the process of loading (not from the user's input). For
     // example, referrer. We need to accept them. For security, we must reject
     // forbidden headers/methods at the point we accept user's input. Not here.
-    if ((m_options.preflightPolicy == ConsiderPreflight && FetchUtils::isSimpleOrForbiddenRequest(request.httpMethod(), request.httpHeaderFields())) || m_options.preflightPolicy == PreventPreflight) {
+    if (!request.isExternalRequest() && ((m_options.preflightPolicy == ConsiderPreflight && FetchUtils::isSimpleOrForbiddenRequest(request.httpMethod(), request.httpHeaderFields())) || m_options.preflightPolicy == PreventPreflight)) {
         ResourceRequest crossOriginRequest(request);
         ResourceLoaderOptions crossOriginOptions(m_resourceLoaderOptions);
         updateRequestForAccessControl(crossOriginRequest, getSecurityOrigin(), effectiveAllowCredentials());
@@ -292,7 +301,7 @@ void DocumentThreadableLoader::makeCrossOriginAccessRequest(const ResourceReques
         m_actualRequest = crossOriginRequest;
         m_actualOptions = crossOriginOptions;
 
-        bool shouldForcePreflight = InspectorInstrumentation::shouldForceCORSPreflight(m_document);
+        bool shouldForcePreflight = request.isExternalRequest() || InspectorInstrumentation::shouldForceCORSPreflight(m_document);
         bool canSkipPreflight = CrossOriginPreflightResultCache::shared().canSkipPreflight(getSecurityOrigin()->toString(), m_actualRequest.url(), effectiveAllowCredentials(), m_actualRequest.httpMethod(), m_actualRequest.httpHeaderFields());
         if (canSkipPreflight && !shouldForcePreflight) {
             loadActualRequest();
@@ -593,6 +602,12 @@ void DocumentThreadableLoader::handlePreflightResponse(const ResourceResponse& r
     }
 
     if (!passesPreflightStatusCheck(response, accessControlErrorDescription)) {
+        handlePreflightFailure(response.url().getString(), accessControlErrorDescription);
+        // |this| may be dead here in async mode.
+        return;
+    }
+
+    if (m_actualRequest.isExternalRequest() && !passesExternalPreflightCheck(response, accessControlErrorDescription)) {
         handlePreflightFailure(response.url().getString(), accessControlErrorDescription);
         // |this| may be dead here in async mode.
         return;
