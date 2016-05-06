@@ -307,7 +307,7 @@ void BodyStreamBuffer::closeAndLockAndDisturb()
         ScriptState::Scope scope(m_scriptState.get());
         NonThrowableExceptionState exceptionState;
         ScriptValue reader = ReadableStreamOperations::getReader(m_scriptState.get(), stream(), exceptionState);
-        ReadableStreamOperations::read(m_scriptState.get(), reader);
+        ReadableStreamOperations::defaultReaderRead(m_scriptState.get(), reader);
     } else {
         NonThrowableExceptionState exceptionState;
         m_stream->getBytesReader(m_scriptState->getExecutionContext(), exceptionState);

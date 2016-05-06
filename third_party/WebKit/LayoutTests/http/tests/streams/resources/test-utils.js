@@ -40,4 +40,4 @@ self.garbageCollect = () => {
   }
 };
 
-self.delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+self.delay = ms => new Promise(resolve => step_timeout(resolve, ms));

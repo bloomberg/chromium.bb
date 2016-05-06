@@ -30,7 +30,7 @@ public:
     // createBuiltInCountQueuingStrategy
     static ScriptValue createCountQueuingStrategy(ScriptState*, size_t highWaterMark);
 
-    // AcquireReadableStreamReader
+    // AcquireReadableStreamDefaultReader
     // This function assumes |isReadableStream(stream)|.
     // Returns an empty value and throws an error via the ExceptionState when
     // errored.
@@ -59,12 +59,12 @@ public:
     // This function assumes |isReadableStream(stream)|.
     static bool isErrored(ScriptState*, ScriptValue stream);
 
-    // IsReadableStreamReader
-    static bool isReadableStreamReader(ScriptState*, ScriptValue);
+    // IsReadableStreamDefaultReader
+    static bool isReadableStreamDefaultReader(ScriptState*, ScriptValue);
 
-    // ReadFromReadableStreamReader
-    // This function assumes |isReadableStreamReader(reader)|.
-    static ScriptPromise read(ScriptState*, ScriptValue reader);
+    // ReadableStreamDefaultReaderRead
+    // This function assumes |isReadableStreamDefaultReader(reader)|.
+    static ScriptPromise defaultReaderRead(ScriptState*, ScriptValue reader);
 };
 
 } // namespace blink

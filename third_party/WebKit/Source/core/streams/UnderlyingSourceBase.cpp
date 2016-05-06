@@ -12,15 +12,12 @@
 
 namespace blink {
 
-ScriptPromise UnderlyingSourceBase::startWrapper(ScriptState* scriptState, ScriptValue stream)
+ScriptPromise UnderlyingSourceBase::startWrapper(ScriptState* scriptState, ScriptValue jsController)
 {
     // Cannot call start twice (e.g., cannot use the same UnderlyingSourceBase to construct multiple streams)
     ASSERT(!m_controller);
 
-    // In ReadableStream.js, we special-case externally-controlled streams by having them pass themselves to start
-    // as the first argument. This allows us to create a ReadableStreamController.
-
-    m_controller = new ReadableStreamController(stream);
+    m_controller = new ReadableStreamController(jsController);
 
     return start(scriptState);
 }

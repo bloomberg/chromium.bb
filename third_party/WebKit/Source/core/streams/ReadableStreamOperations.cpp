@@ -40,7 +40,7 @@ ScriptValue ReadableStreamOperations::getReader(ScriptState* scriptState, Script
 
     v8::TryCatch block(scriptState->isolate());
     v8::Local<v8::Value> args[] = { stream.v8Value() };
-    ScriptValue result(scriptState, V8ScriptRunner::callExtra(scriptState, "AcquireReadableStreamReader", args));
+    ScriptValue result(scriptState, V8ScriptRunner::callExtra(scriptState, "AcquireReadableStreamDefaultReader", args));
     if (block.HasCaught())
         es.rethrowV8Exception(block.Exception());
     return result;
@@ -97,7 +97,7 @@ bool ReadableStreamOperations::isErrored(ScriptState* scriptState, ScriptValue s
     return V8ScriptRunner::callExtraOrCrash(scriptState, "IsReadableStreamErrored", args)->ToBoolean()->Value();
 }
 
-bool ReadableStreamOperations::isReadableStreamReader(ScriptState* scriptState, ScriptValue value)
+bool ReadableStreamOperations::isReadableStreamDefaultReader(ScriptState* scriptState, ScriptValue value)
 {
     ASSERT(!value.isEmpty());
 
@@ -105,16 +105,15 @@ bool ReadableStreamOperations::isReadableStreamReader(ScriptState* scriptState, 
         return false;
 
     v8::Local<v8::Value> args[] = { value.v8Value() };
-    return V8ScriptRunner::callExtraOrCrash(scriptState, "IsReadableStreamReader", args)->ToBoolean()->Value();
+    return V8ScriptRunner::callExtraOrCrash(scriptState, "IsReadableStreamDefaultReader", args)->ToBoolean()->Value();
 }
 
-ScriptPromise ReadableStreamOperations::read(ScriptState* scriptState, ScriptValue reader)
+ScriptPromise ReadableStreamOperations::defaultReaderRead(ScriptState* scriptState, ScriptValue reader)
 {
-    ASSERT(isReadableStreamReader(scriptState, reader));
+    ASSERT(isReadableStreamDefaultReader(scriptState, reader));
 
     v8::Local<v8::Value> args[] = { reader.v8Value() };
-    return ScriptPromise::cast(scriptState, V8ScriptRunner::callExtraOrCrash(scriptState, "ReadFromReadableStreamReader", args));
+    return ScriptPromise::cast(scriptState, V8ScriptRunner::callExtraOrCrash(scriptState, "ReadableStreamDefaultReaderRead", args));
 }
 
 } // namespace blink
-

@@ -159,9 +159,10 @@ public:
                 m_isReading = false;
                 return WebDataConsumerHandle::UnexpectedError;
             }
-            ReadableStreamOperations::read(m_scriptState.get(), reader).then(
-                OnFulfilled::createFunction(m_scriptState.get(), this),
-                OnRejected::createFunction(m_scriptState.get(), this));
+            ReadableStreamOperations::defaultReaderRead(
+                m_scriptState.get(), reader).then(
+                    OnFulfilled::createFunction(m_scriptState.get(), this),
+                    OnRejected::createFunction(m_scriptState.get(), this));
         }
         return WebDataConsumerHandle::ShouldWait;
     }
@@ -277,4 +278,3 @@ FetchDataConsumerHandle::Reader* ReadableStreamDataConsumerHandle::obtainReaderI
 }
 
 } // namespace blink
-
