@@ -490,8 +490,6 @@ class Browser : public TabStripModelObserver,
   void RequestAppBannerFromDevTools(
       content::WebContents* web_contents) override;
 
-  bool RequestAppBanner(content::WebContents* web_contents);
-
   bool is_type_tabbed() const { return type_ == TYPE_TABBED; }
   bool is_type_popup() const { return type_ == TYPE_POPUP; }
 

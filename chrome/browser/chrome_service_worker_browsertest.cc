@@ -273,8 +273,8 @@ class ChromeServiceWorkerManifestFetchTest
   }
 
   std::string RequestAppBannerAndGetIssuedRequests() {
-    EXPECT_TRUE(browser()->RequestAppBanner(
-        browser()->tab_strip_model()->GetActiveWebContents()));
+    browser()->RequestAppBannerFromDevTools(
+        browser()->tab_strip_model()->GetActiveWebContents());
     return ExecuteScriptAndExtractString(
         "if (issuedRequests.length != 0) reportRequests();"
         "else reportOnFetch = true;");
