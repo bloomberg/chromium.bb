@@ -7,7 +7,7 @@
 #include "content/shell/browser/shell_browser_context.h"
 #include "ui/aura/test/test_screen.h"
 #include "ui/aura/window.h"
-#include "ui/gfx/screen.h"
+#include "ui/display/screen.h"
 #include "ui/views_content_client/views_content_client.h"
 #include "ui/views_content_client/views_content_client_main_parts_aura.h"
 #include "ui/wm/test/wm_test_helper.h"
@@ -30,7 +30,7 @@ class ViewsContentClientMainPartsChromeOS
 
  private:
   // Enable a minimal set of views::corewm to be initialized.
-  std::unique_ptr<gfx::Screen> test_screen_;
+  std::unique_ptr<display::Screen> test_screen_;
   std::unique_ptr<::wm::WMTestHelper> wm_test_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewsContentClientMainPartsChromeOS);
@@ -47,7 +47,7 @@ void ViewsContentClientMainPartsChromeOS::PreMainMessageLoopRun() {
 
   gfx::Size host_size(800, 600);
   test_screen_.reset(aura::TestScreen::Create(host_size));
-  gfx::Screen::SetScreenInstance(test_screen_.get());
+  display::Screen::SetScreenInstance(test_screen_.get());
   // Set up basic pieces of views::corewm.
   wm_test_helper_.reset(
       new ::wm::WMTestHelper(host_size, content::GetContextFactory()));

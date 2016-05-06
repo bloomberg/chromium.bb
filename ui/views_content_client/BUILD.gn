@@ -28,6 +28,7 @@ component("views_content_client") {
     "//content/shell:content_shell_lib",
     "//third_party/icu",
     "//ui/base",
+    "//ui/display",
     "//ui/events",
     "//ui/gfx",
     "//ui/gfx/geometry",

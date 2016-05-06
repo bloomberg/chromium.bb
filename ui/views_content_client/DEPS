@@ -3,6 +3,7 @@ include_rules = [
   "+content/shell",
   "+ui/aura",
   "+ui/base",
+  "+ui/display",
   "+ui/gfx",
   "+ui/views",
   "+ui/wm",

@@ -18,6 +18,7 @@
         '../../third_party/icu/icu.gyp:icui18n',
         '../../third_party/icu/icu.gyp:icuuc',
         '../base/ui_base.gyp:ui_base',
+        '../display/display.gyp:display',
         '../events/events.gyp:events',
         '../gfx/gfx.gyp:gfx',
         '../gfx/gfx.gyp:gfx_geometry',

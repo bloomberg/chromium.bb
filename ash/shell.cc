@@ -170,7 +170,7 @@ using views::Widget;
 int64_t GetDisplayIdForWindow(aura::Window* window) {
   if (!window)
     return Shell::GetTargetDisplayId();
-  return gfx::Screen::GetScreen()->GetDisplayNearestWindow(window).id();
+  return display::Screen::GetScreen()->GetDisplayNearestWindow(window).id();
 }
 
 // A Corewm VisibilityController subclass that calls the Ash animation routine
@@ -264,7 +264,7 @@ aura::Window* Shell::GetTargetRootWindow() {
 
 // static
 int64_t Shell::GetTargetDisplayId() {
-  return gfx::Screen::GetScreen()
+  return display::Screen::GetScreen()
       ->GetDisplayNearestWindow(GetTargetRootWindow())
       .id();
 }

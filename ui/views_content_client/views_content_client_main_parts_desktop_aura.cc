@@ -4,7 +4,7 @@
 
 #include "base/macros.h"
 #include "content/shell/browser/shell_browser_context.h"
-#include "ui/gfx/screen.h"
+#include "ui/display/screen.h"
 #include "ui/views/widget/desktop_aura/desktop_screen.h"
 #include "ui/views_content_client/views_content_client.h"
 #include "ui/views_content_client/views_content_client_main_parts_aura.h"
@@ -37,7 +37,7 @@ ViewsContentClientMainPartsDesktopAura::ViewsContentClientMainPartsDesktopAura(
 void ViewsContentClientMainPartsDesktopAura::PreMainMessageLoopRun() {
   ViewsContentClientMainPartsAura::PreMainMessageLoopRun();
 
-  gfx::Screen::SetScreenInstance(views::CreateDesktopScreen());
+  display::Screen::SetScreenInstance(views::CreateDesktopScreen());
 
   views_content_client()->task().Run(browser_context(), NULL);
 }
