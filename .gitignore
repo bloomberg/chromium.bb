@@ -329,6 +329,7 @@ vs-chromium-project.txt
 /third_party/ffmpeg
 /third_party/findbugs
 /third_party/flac
+/third_party/flatbuffers/src
 /third_party/fontconfig/src
 /third_party/freetype-android/src
 /third_party/freetype2/src

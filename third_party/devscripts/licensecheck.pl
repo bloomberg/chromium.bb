@@ -460,7 +460,7 @@ sub parselicense($) {
 	$extrainfo = " (with Qt exception)$extrainfo"
     }
 
-    if ($licensetext =~ /(All changes made in this file will be lost|DO NOT (EDIT|delete this file)|Generated (automatically|by|from)|generated.*file)/i) {
+    if ($licensetext =~ /(All changes made in this file will be lost|DO NOT (EDIT|delete this file)|Generated (automatically|by|from)|generated.*file|automatically generated)/i) {
 	$license = "GENERATED FILE";
     }
 

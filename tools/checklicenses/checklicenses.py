@@ -376,6 +376,10 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
         'GPL (v3 or later)',
         'UNKNOWN',  # http://crbug.com/98123
     ],
+    'third_party/flatbuffers': [
+        # https://github.com/google/flatbuffers/issues/3872
+        'UNKNOWN',
+    ],
     'third_party/fontconfig': [
         # https://bugs.freedesktop.org/show_bug.cgi?id=73401
         'UNKNOWN',

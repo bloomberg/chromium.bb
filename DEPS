@@ -209,6 +209,9 @@ deps = {
   'src/third_party/flac':
    Var('chromium_git') + '/chromium/deps/flac.git' + '@' + '2c4b86af352b23498315c016dc207e3fb2733fc0',
 
+  'src/third_party/flatbuffers/src':
+   Var('chromium_git') + '/external/github.com/google/flatbuffers.git' + '@' + '6f751d5d26fd566f8c9060358101a2596677f9cf',
+
   'src/third_party/pyftpdlib/src':
     Var('chromium_git') + '/external/pyftpdlib.git' + '@' + '2be6d65e31c7ee6320d059f581f05ae8d89d7e45',
 
