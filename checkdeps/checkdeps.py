@@ -107,7 +107,7 @@ class DepsChecker(DepsBuilder):
       where rule_type is one of Rule.DISALLOW or Rule.TEMP_ALLOW and
       rule_description is human-readable. Empty if no problems.
     """
-    cpp = cpp_checker.CppChecker(self.verbose)
+    cpp = cpp_checker.CppChecker(self.verbose, self._resolve_dotdot)
     problems = []
     for file_path, include_lines in added_includes:
       if not cpp.IsCppFile(file_path):
