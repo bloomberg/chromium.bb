@@ -48,11 +48,6 @@ import javax.annotation.Nullable;
 public class MediaNotificationManager {
     private static final String TAG = "MediaNotification";
 
-    // The background notification size on Android Wear. See:
-    // http://developer.android.com/training/wearables/notifications/creating.html
-    private static final int WEARABLE_NOTIFICATION_BACKGROUND_WIDTH = 400;
-    private static final int WEARABLE_NOTIFICATION_BACKGROUND_HEIGHT = 400;
-
     // We're always used on the UI thread but the LOCK is required by lint when creating the
     // singleton.
     private static final Object LOCK = new Object();
@@ -500,11 +495,6 @@ public class MediaNotificationManager {
             metadataBuilder.putString(MediaMetadataCompat.METADATA_KEY_ARTIST,
                     mMediaNotificationInfo.origin);
         }
-        if (mMediaNotificationInfo.largeIcon != null) {
-            metadataBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_ART,
-                    scaleBitmapForWearable(mMediaNotificationInfo.largeIcon));
-        }
-
         if (!TextUtils.isEmpty(mMediaNotificationInfo.metadata.getArtist())) {
             metadataBuilder.putString(MediaMetadataCompat.METADATA_KEY_ARTIST,
                     mMediaNotificationInfo.metadata.getArtist());
@@ -724,21 +714,6 @@ public class MediaNotificationManager {
         }
 
         return contentView;
-    }
-
-    /**
-     * Scales the Bitmap to make the notification background on Wearable devices look better.
-     * The returned Bitmap size will be exactly 400x400.
-     * According to http://developer.android.com/training/wearables/notifications/creating.html,
-     * the background image of Android Wear notifications should be of size 400x400 or 640x400.
-     * Otherwise, it will be scaled to fit the desired size. However for some reason (maybe battery
-     * concern), the smoothing filter is not applied when scaling the image, so we need to manually
-     * scale the image with filter applied before sending to Android Wear.
-     */
-    private Bitmap scaleBitmapForWearable(Bitmap original) {
-        Bitmap result = Bitmap.createScaledBitmap(original, WEARABLE_NOTIFICATION_BACKGROUND_WIDTH,
-                WEARABLE_NOTIFICATION_BACKGROUND_HEIGHT, true);
-        return result;
     }
 
     private Bitmap drawableToBitmap(Drawable drawable) {

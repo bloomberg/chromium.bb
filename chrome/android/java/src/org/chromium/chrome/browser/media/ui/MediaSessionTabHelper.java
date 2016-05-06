@@ -8,7 +8,6 @@ import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.media.AudioManager;
-import android.os.Build;
 import android.text.TextUtils;
 
 import org.chromium.base.ApplicationStatus;
@@ -37,6 +36,7 @@ public class MediaSessionTabHelper {
     private static final String TAG = "MediaSession";
 
     private static final String UNICODE_PLAY_CHARACTER = "\u25B6";
+    private static final int MINIMAL_FAVICON_SIZE = 114;
 
     private Tab mTab;
     private Bitmap mFavicon = null;
@@ -296,16 +296,7 @@ public class MediaSessionTabHelper {
     private boolean updateFavicon(Bitmap icon) {
         if (icon == null) return false;
 
-        int largeIconSizeInDp = 0;
-        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.M) {
-            largeIconSizeInDp = 128;
-        } else {
-            // TODO(zqzhang): Get this value via Resource.getDimension() if N has a resource id.
-            largeIconSizeInDp = 96;
-        }
-        int minimalIconSizeInPx = Math.round(largeIconSizeInDp * 0.75f);
-
-        if (icon.getWidth() < minimalIconSizeInPx || icon.getHeight() < minimalIconSizeInPx) {
+        if (icon.getWidth() < MINIMAL_FAVICON_SIZE || icon.getHeight() < MINIMAL_FAVICON_SIZE) {
             return false;
         }
         if (mFavicon != null && (icon.getWidth() < mFavicon.getWidth()
