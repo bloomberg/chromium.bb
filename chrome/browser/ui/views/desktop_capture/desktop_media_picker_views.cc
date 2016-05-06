@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/desktop_media_picker_views.h"
+#include "chrome/browser/ui/views/desktop_capture/desktop_media_picker_views.h"
 
 #include <stddef.h>
 #include <utility>
@@ -14,13 +14,17 @@
 #include "chrome/browser/media/combined_desktop_media_list.h"
 #include "chrome/browser/media/desktop_media_list.h"
 #include "chrome/browser/ui/ash/ash_util.h"
+#include "chrome/browser/ui/views/desktop_media_picker_views_deprecated.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/grit/google_chrome_strings.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "extensions/common/switches.h"
 #include "grit/components_strings.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -34,6 +38,7 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/scroll_view.h"
+#include "ui/views/controls/tabbed_pane/tabbed_pane.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
@@ -74,14 +79,13 @@ int GetMediaListViewHeightForRows(size_t rows) {
 
 }  // namespace
 
-DesktopMediaSourceView::DesktopMediaSourceView(
-    DesktopMediaListView* parent,
-    DesktopMediaID source_id)
+DesktopMediaSourceView::DesktopMediaSourceView(DesktopMediaListView* parent,
+                                               DesktopMediaID source_id)
     : parent_(parent),
       source_id_(source_id),
       image_view_(new views::ImageView()),
       label_(new views::Label()),
-      selected_(false)  {
+      selected_(false) {
   AddChildView(image_view_);
   AddChildView(label_);
   SetFocusBehavior(FocusBehavior::ALWAYS);
@@ -132,8 +136,8 @@ const char* DesktopMediaSourceView::GetClassName() const {
 }
 
 void DesktopMediaSourceView::Layout() {
-  image_view_->SetBounds(kThumbnailMargin, kThumbnailMargin,
-                         kThumbnailWidth, kThumbnailHeight);
+  image_view_->SetBounds(kThumbnailMargin, kThumbnailMargin, kThumbnailWidth,
+                         kThumbnailHeight);
   label_->SetBounds(kThumbnailMargin, kThumbnailHeight + kThumbnailMargin,
                     kThumbnailWidth, kLabelHeight);
 }
@@ -244,7 +248,8 @@ DesktopMediaSourceView* DesktopMediaListView::GetSelection() {
 
 gfx::Size DesktopMediaListView::GetPreferredSize() const {
   int total_rows = (child_count() + kListColumns - 1) / kListColumns;
-  return gfx::Size(kTotalListWidth, GetMediaListViewHeightForRows(total_rows));
+  return gfx::Size(kTotalListWidth,
+                   GetMediaListViewHeightForRows(total_rows));
 }
 
 void DesktopMediaListView::Layout() {
@@ -264,7 +269,6 @@ void DesktopMediaListView::Layout() {
   }
 
   y += kListItemHeight;
-  SetSize(gfx::Size(kTotalListWidth, y));
 }
 
 bool DesktopMediaListView::OnKeyPressed(const ui::KeyEvent& event) {
@@ -327,6 +331,10 @@ void DesktopMediaListView::OnSourceAdded(DesktopMediaList* list, int index) {
 
   if (child_count() % kListColumns == 1)
     parent_->OnMediaListRowsChanged();
+
+  // Auto select the first screen.
+  if (index == 0 && source.id.type == DesktopMediaID::TYPE_SCREEN)
+    source_view->RequestFocus();
 
   std::string autoselect_source =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
@@ -401,33 +409,66 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
     std::unique_ptr<DesktopMediaList> tab_list,
     bool request_audio)
     : parent_(parent),
-      app_name_(app_name),
       description_label_(new views::Label()),
       audio_share_checkbox_(nullptr),
-      audio_share_checked_(true),
-      sources_scroll_view_(views::ScrollView::CreateScrollViewWithBorder()) {
-  std::vector<std::unique_ptr<DesktopMediaList>> media_lists;
-  if (screen_list)
-    media_lists.push_back(std::move(screen_list));
-  if (window_list)
-    media_lists.push_back(std::move(window_list));
-  if (tab_list)
-    media_lists.push_back(std::move(tab_list));
-
-  std::unique_ptr<DesktopMediaList> media_list;
-  if (media_lists.size() > 1)
-    media_list.reset(new CombinedDesktopMediaList(media_lists));
-  else
-    media_list = std::move(media_lists[0]);
-
-  DCHECK(media_list != nullptr);
-  sources_list_view_ = new DesktopMediaListView(this, std::move(media_list));
-
-  // TODO(estade): we should be getting the inside-border spacing by default as
-  // a DialogDelegateView subclass, via default BubbleFrameView content margins.
+      pane_(new views::TabbedPane()) {
   SetLayoutManager(new views::BoxLayout(
-      views::BoxLayout::kVertical, views::kButtonHEdgeMarginNew,
-      views::kPanelVertMargin, views::kLabelToControlVerticalSpacing));
+        views::BoxLayout::kVertical, views::kButtonHEdgeMarginNew,
+        views::kPanelVertMargin, views::kLabelToControlVerticalSpacing));
+
+  description_label_->SetMultiLine(true);
+  description_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  AddChildView(description_label_);
+
+  if (screen_list) {
+    source_types_.push_back(DesktopMediaID::TYPE_SCREEN);
+
+    views::ScrollView* screen_scroll_view =
+        views::ScrollView::CreateScrollViewWithBorder();
+    list_views_.push_back(
+        new DesktopMediaListView(this, std::move(screen_list)));
+
+    screen_scroll_view->SetContents(list_views_.back());
+    screen_scroll_view->ClipHeightTo(GetMediaListViewHeightForRows(1),
+                                     GetMediaListViewHeightForRows(2));
+    pane_->AddTab(
+        l10n_util::GetStringUTF16(IDS_DESKTOP_MEDIA_PICKER_SOURCE_TYPE_SCREEN),
+        screen_scroll_view);
+    pane_->set_listener(this);
+  }
+
+  if (window_list) {
+    source_types_.push_back(DesktopMediaID::TYPE_WINDOW);
+    views::ScrollView* window_scroll_view =
+        views::ScrollView::CreateScrollViewWithBorder();
+    list_views_.push_back(
+        new DesktopMediaListView(this, std::move(window_list)));
+
+    window_scroll_view->SetContents(list_views_.back());
+    window_scroll_view->ClipHeightTo(GetMediaListViewHeightForRows(1),
+                                     GetMediaListViewHeightForRows(2));
+
+    pane_->AddTab(
+        l10n_util::GetStringUTF16(IDS_DESKTOP_MEDIA_PICKER_SOURCE_TYPE_WINDOW),
+        window_scroll_view);
+    pane_->set_listener(this);
+  }
+
+  if (tab_list) {
+    source_types_.push_back(DesktopMediaID::TYPE_WEB_CONTENTS);
+    views::ScrollView* tab_scroll_view =
+        views::ScrollView::CreateScrollViewWithBorder();
+    list_views_.push_back(new DesktopMediaListView(this, std::move(tab_list)));
+
+    tab_scroll_view->SetContents(list_views_.back());
+    tab_scroll_view->ClipHeightTo(GetMediaListViewHeightForRows(1),
+                                  GetMediaListViewHeightForRows(2));
+
+    pane_->AddTab(
+        l10n_util::GetStringUTF16(IDS_DESKTOP_MEDIA_PICKER_SOURCE_TYPE_TAB),
+        tab_scroll_view);
+    pane_->set_listener(this);
+  }
 
   if (app_name == target_name) {
     description_label_->SetText(
@@ -436,23 +477,18 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
     description_label_->SetText(l10n_util::GetStringFUTF16(
         IDS_DESKTOP_MEDIA_PICKER_TEXT_DELEGATED, app_name, target_name));
   }
-  description_label_->SetMultiLine(true);
-  description_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  AddChildView(description_label_);
 
-  sources_scroll_view_->SetContents(sources_list_view_);
-  sources_scroll_view_->ClipHeightTo(GetMediaListViewHeightForRows(1),
-                                     GetMediaListViewHeightForRows(2));
-  AddChildView(sources_scroll_view_);
+  DCHECK(!source_types_.empty());
+  AddChildView(pane_);
 
   if (request_audio) {
     audio_share_checkbox_ = new views::Checkbox(
         l10n_util::GetStringUTF16(IDS_DESKTOP_MEDIA_PICKER_AUDIO_SHARE));
-    AddChildView(audio_share_checkbox_);
-    audio_share_checkbox_->SetEnabled(false);
-    audio_share_checkbox_->SetTooltipText(l10n_util::GetStringUTF16(
-        IDS_DESKTOP_MEDIA_PICKER_AUDIO_SHARE_TOOLTIP_NONE));
+    audio_share_checkbox_->SetChecked(true);
   }
+
+  // Focus on the first non-null media_list.
+  SwitchSourceType(0);
 
   // If |parent_web_contents| is set and it's not a background page then the
   // picker will be shown modal to the web contents. Otherwise the picker is
@@ -462,8 +498,8 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
       parent_web_contents &&
       !parent_web_contents->GetDelegate()->IsNeverVisible(parent_web_contents);
   if (modal_dialog) {
-    widget = constrained_window::ShowWebModalDialogViews(this,
-                                                         parent_web_contents);
+    widget =
+        constrained_window::ShowWebModalDialogViews(this, parent_web_contents);
   } else {
     widget = DialogDelegate::CreateDialogWidget(this, context, NULL);
     widget->Show();
@@ -490,10 +526,40 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
     }
   }
 
-  sources_list_view_->StartUpdating(dialog_window_id);
+  for (auto& list_view : list_views_)
+    list_view->StartUpdating(dialog_window_id);
 }
 
 DesktopMediaPickerDialogView::~DesktopMediaPickerDialogView() {}
+
+void DesktopMediaPickerDialogView::TabSelectedAt(int index) {
+  SwitchSourceType(index);
+  GetDialogClientView()->UpdateDialogButtons();
+}
+
+void DesktopMediaPickerDialogView::SwitchSourceType(int index) {
+  // Set whether the checkbox is visible based on the source type.
+  if (audio_share_checkbox_) {
+    switch (source_types_[index]) {
+      case DesktopMediaID::TYPE_SCREEN:
+#if defined(USE_CRAS) || defined(OS_WIN)
+        audio_share_checkbox_->SetVisible(true);
+#else
+        audio_share_checkbox_->SetVisible(false);
+#endif
+        break;
+      case DesktopMediaID::TYPE_WINDOW:
+        audio_share_checkbox_->SetVisible(false);
+        break;
+      case DesktopMediaID::TYPE_WEB_CONTENTS:
+        audio_share_checkbox_->SetVisible(true);
+        break;
+      case DesktopMediaID::TYPE_NONE:
+        NOTREACHED();
+        break;
+    }
+  }
+}
 
 void DesktopMediaPickerDialogView::DetachParent() {
   parent_ = NULL;
@@ -509,34 +575,44 @@ ui::ModalType DesktopMediaPickerDialogView::GetModalType() const {
 }
 
 base::string16 DesktopMediaPickerDialogView::GetWindowTitle() const {
-  return l10n_util::GetStringFUTF16(IDS_DESKTOP_MEDIA_PICKER_TITLE, app_name_);
+  return l10n_util::GetStringUTF16(IDS_DESKTOP_MEDIA_PICKER_TITLE);
 }
 
 bool DesktopMediaPickerDialogView::IsDialogButtonEnabled(
     ui::DialogButton button) const {
   if (button == ui::DIALOG_BUTTON_OK)
-    return sources_list_view_->GetSelection() != NULL;
+    return list_views_[pane_->selected_tab_index()]->GetSelection() != NULL;
   return true;
 }
 
 views::View* DesktopMediaPickerDialogView::GetInitiallyFocusedView() {
-  return sources_list_view_;
+  return list_views_[0];
 }
 
 base::string16 DesktopMediaPickerDialogView::GetDialogButtonLabel(
     ui::DialogButton button) const {
-  return l10n_util::GetStringUTF16(button == ui::DIALOG_BUTTON_OK ?
-      IDS_DESKTOP_MEDIA_PICKER_SHARE : IDS_CANCEL);
+  return l10n_util::GetStringUTF16(button == ui::DIALOG_BUTTON_OK
+                                       ? IDS_DESKTOP_MEDIA_PICKER_SHARE
+                                       : IDS_CANCEL);
+}
+
+bool DesktopMediaPickerDialogView::ShouldDefaultButtonBeBlue() const {
+  return true;
+}
+
+views::View* DesktopMediaPickerDialogView::CreateExtraView() {
+  return audio_share_checkbox_;
 }
 
 bool DesktopMediaPickerDialogView::Accept() {
-  DesktopMediaSourceView* selection = sources_list_view_->GetSelection();
+  DesktopMediaSourceView* selection =
+      list_views_[pane_->selected_tab_index()]->GetSelection();
 
   // Ok button should only be enabled when a source is selected.
   DCHECK(selection);
   DesktopMediaID source = selection->source_id();
   source.audio_share = audio_share_checkbox_ &&
-                       audio_share_checkbox_->enabled() &&
+                       audio_share_checkbox_->visible() &&
                        audio_share_checkbox_->checked();
 
   // If the media source is an tab, activate it.
@@ -565,34 +641,6 @@ void DesktopMediaPickerDialogView::DeleteDelegate() {
 
 void DesktopMediaPickerDialogView::OnSelectionChanged() {
   GetDialogClientView()->UpdateDialogButtons();
-
-  // Disable the checkbox if we cannot support audio for the selected source.
-  if (audio_share_checkbox_) {
-    DesktopMediaSourceView* selection = sources_list_view_->GetSelection();
-
-    DesktopMediaID source;
-    if (selection)
-      source = selection->source_id();
-
-    if (source.type == DesktopMediaID::TYPE_SCREEN ||
-        source.type == DesktopMediaID::TYPE_WEB_CONTENTS) {
-      if (!audio_share_checkbox_->enabled()) {
-        audio_share_checkbox_->SetEnabled(true);
-        audio_share_checkbox_->SetChecked(audio_share_checked_);
-      }
-      audio_share_checkbox_->SetTooltipText(base::string16());
-    } else if (source.type == DesktopMediaID::TYPE_WINDOW) {
-      if (audio_share_checkbox_->enabled()) {
-        audio_share_checkbox_->SetEnabled(false);
-        audio_share_checked_ = audio_share_checkbox_->checked();
-        audio_share_checkbox_->SetChecked(false);
-      }
-      audio_share_checkbox_->SetTooltipText(l10n_util::GetStringUTF16(
-          IDS_DESKTOP_MEDIA_PICKER_AUDIO_SHARE_TOOLTIP_WINDOW));
-    } else {
-      NOTREACHED();
-    }
-  }
 }
 
 void DesktopMediaPickerDialogView::OnDoubleClick() {
@@ -603,28 +651,44 @@ void DesktopMediaPickerDialogView::OnDoubleClick() {
 void DesktopMediaPickerDialogView::OnMediaListRowsChanged() {
   gfx::Rect widget_bound = GetWidget()->GetWindowBoundsInScreen();
 
-  int new_height = widget_bound.height() - sources_scroll_view_->height() +
-                   sources_scroll_view_->GetPreferredSize().height();
+  int new_height = widget_bound.height() - pane_->height() +
+                   pane_->GetPreferredSize().height();
 
   GetWidget()->CenterWindow(gfx::Size(widget_bound.width(), new_height));
 }
 
 DesktopMediaListView* DesktopMediaPickerDialogView::GetMediaListViewForTesting()
     const {
-  return sources_list_view_;
+  return list_views_[pane_->selected_tab_index()];
 }
 
 DesktopMediaSourceView*
 DesktopMediaPickerDialogView::GetMediaSourceViewForTesting(int index) const {
-  if (sources_list_view_->child_count() <= index)
+  if (list_views_[pane_->selected_tab_index()]->child_count() <= index)
     return NULL;
 
   return reinterpret_cast<DesktopMediaSourceView*>(
-      sources_list_view_->child_at(index));
+      list_views_[pane_->selected_tab_index()]->child_at(index));
 }
 
-DesktopMediaPickerViews::DesktopMediaPickerViews() : dialog_(NULL) {
+views::Checkbox* DesktopMediaPickerDialogView::GetCheckboxForTesting() const {
+  return audio_share_checkbox_;
 }
+
+int DesktopMediaPickerDialogView::GetIndexOfSourceTypeForTesting(
+    DesktopMediaID::Type source_type) const {
+  for (size_t i = 0; i < source_types_.size(); i++) {
+    if (source_types_[i] == source_type)
+      return i;
+  }
+  return -1;
+}
+
+views::TabbedPane* DesktopMediaPickerDialogView::GetPaneForTesting() const {
+  return pane_;
+}
+
+DesktopMediaPickerViews::DesktopMediaPickerViews() : dialog_(NULL) {}
 
 DesktopMediaPickerViews::~DesktopMediaPickerViews() {
   if (dialog_) {
@@ -660,13 +724,17 @@ void DesktopMediaPickerViews::NotifyDialogResult(DesktopMediaID source) {
 
   // Notify the |callback_| asynchronously because it may need to destroy
   // DesktopMediaPicker.
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
-      base::Bind(callback_, source));
+  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+                                   base::Bind(callback_, source));
   callback_.Reset();
 }
 
 // static
 std::unique_ptr<DesktopMediaPicker> DesktopMediaPicker::Create() {
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          extensions::switches::kDisableDesktopCapturePickerOldUI)) {
+    return std::unique_ptr<DesktopMediaPicker>(
+        new deprecated::DesktopMediaPickerViews());
+  }
   return std::unique_ptr<DesktopMediaPicker>(new DesktopMediaPickerViews());
 }
