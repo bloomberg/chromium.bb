@@ -4,11 +4,15 @@
 
 package org.chromium.chrome.browser.ntp.cards;
 
+import android.graphics.Canvas;
+import android.support.v4.view.animation.FastOutLinearInInterpolator;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.Adapter;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.support.v7.widget.helper.ItemTouchHelper;
+import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Interpolator;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.ntp.NewTabPageLayout;
@@ -36,6 +40,8 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
     private final List<NewTabPageListItem> mNewTabPageListItems;
     private final ItemTouchCallbacks mItemTouchCallbacks;
 
+    private static final Interpolator FADE_INTERPOLATOR = new FastOutLinearInInterpolator();
+
     private class ItemTouchCallbacks extends ItemTouchHelper.Callback {
         @Override
         public void onSwiped(ViewHolder viewHolder, int direction) {
@@ -59,6 +65,16 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
             }
 
             return makeMovementFlags(0 /* dragFlags */, swipeFlags);
+        }
+
+        @Override
+        public void onChildDraw(Canvas c, RecyclerView recyclerView, ViewHolder viewHolder,
+                float dX, float dY, int actionState, boolean isCurrentlyActive) {
+            View itemView = viewHolder.itemView;
+            float input = Math.abs(dX) / itemView.getMeasuredWidth();
+            float alpha = 1 - FADE_INTERPOLATOR.getInterpolation(input);
+            itemView.setAlpha(alpha);
+            super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
         }
     }
 
