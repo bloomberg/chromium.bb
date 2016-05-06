@@ -1354,21 +1354,30 @@ class LayerTreeHostScrollTestLayerStructureChange
 
     Layer* root_scroll_layer =
         CreateScrollLayer(outer_scroll_layer, &root_scroll_layer_client_);
-    CreateScrollLayer(outer_scroll_layer, &sibling_scroll_layer_client_);
-    CreateScrollLayer(root_scroll_layer, &child_scroll_layer_client_);
+    Layer* sibling_scroll_layer =
+        CreateScrollLayer(outer_scroll_layer, &sibling_scroll_layer_client_);
+    Layer* child_scroll_layer =
+        CreateScrollLayer(root_scroll_layer, &child_scroll_layer_client_);
+    root_scroll_layer_id_ = root_scroll_layer->id();
+    sibling_scroll_layer_id_ = sibling_scroll_layer->id();
+    child_scroll_layer_id_ = child_scroll_layer->id();
     fake_content_layer_client_.set_bounds(root_layer->bounds());
   }
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
-    LayerImpl* root = impl->OuterViewportScrollLayer();
     switch (impl->active_tree()->source_frame_number()) {
       case 0:
-        SetScrollOffsetDelta(root->child_at(0), gfx::Vector2dF(5, 5));
-        SetScrollOffsetDelta(root->child_at(0)->child_at(0),
-                             gfx::Vector2dF(5, 5));
-        SetScrollOffsetDelta(root->child_at(1), gfx::Vector2dF(5, 5));
+        SetScrollOffsetDelta(
+            impl->active_tree()->LayerById(root_scroll_layer_id_),
+            gfx::Vector2dF(5, 5));
+        SetScrollOffsetDelta(
+            impl->active_tree()->LayerById(child_scroll_layer_id_),
+            gfx::Vector2dF(5, 5));
+        SetScrollOffsetDelta(
+            impl->active_tree()->LayerById(sibling_scroll_layer_id_),
+            gfx::Vector2dF(5, 5));
         PostSetNeedsCommitToMainThread();
         break;
       case 1:
@@ -1429,6 +1438,9 @@ class LayerTreeHostScrollTestLayerStructureChange
   FakeLayerScrollClient root_scroll_layer_client_;
   FakeLayerScrollClient sibling_scroll_layer_client_;
   FakeLayerScrollClient child_scroll_layer_client_;
+  int root_scroll_layer_id_;
+  int sibling_scroll_layer_id_;
+  int child_scroll_layer_id_;
 
   FakeContentLayerClient fake_content_layer_client_;
 
