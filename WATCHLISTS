@@ -1171,6 +1171,7 @@
     },
     'blink_out_of_process_frames': {
       'filepath': 'third_party/WebKit/Source/core/frame/FrameOwner' \
+                  '|third_party/WebKit/Source/core/frame/Frame\.' \
                   '|third_party/WebKit/Source/web/WebFrame' \
                   '|third_party/WebKit/Source/web/WebRemoteFrameImpl'
     },
