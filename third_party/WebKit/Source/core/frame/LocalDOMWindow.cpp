@@ -1329,17 +1329,14 @@ CustomElementsRegistry* LocalDOMWindow::customElements() const
     return m_customElements.get();
 }
 
-bool LocalDOMWindow::addEventListenerInternal(const AtomicString& eventType, EventListener* listener, const EventListenerOptions& options)
+void LocalDOMWindow::addedEventListener(const AtomicString& eventType, RegisteredEventListener& registeredListener)
 {
-    if (!EventTarget::addEventListenerInternal(eventType, listener, options))
-        return false;
-
+    DOMWindow::addedEventListener(eventType, registeredListener);
     if (frame() && frame()->host())
-        frame()->host()->eventHandlerRegistry().didAddEventHandler(*this, eventType, options);
+        frame()->host()->eventHandlerRegistry().didAddEventHandler(*this, eventType, registeredListener.options());
 
-    if (Document* document = this->document()) {
+    if (Document* document = this->document())
         document->addListenerTypeIfNeeded(eventType);
-    }
 
     notifyAddEventListener(this, eventType);
 
@@ -1358,17 +1355,13 @@ bool LocalDOMWindow::addEventListenerInternal(const AtomicString& eventType, Eve
             UseCounter::count(document(), UseCounter::SubFrameBeforeUnloadRegistered);
         }
     }
-
-    return true;
 }
 
-bool LocalDOMWindow::removeEventListenerInternal(const AtomicString& eventType, EventListener* listener, const EventListenerOptions& options)
+void LocalDOMWindow::removedEventListener(const AtomicString& eventType, const RegisteredEventListener& registeredListener)
 {
-    if (!EventTarget::removeEventListenerInternal(eventType, listener, options))
-        return false;
-
+    DOMWindow::removedEventListener(eventType, registeredListener);
     if (frame() && frame()->host())
-        frame()->host()->eventHandlerRegistry().didRemoveEventHandler(*this, eventType, options);
+        frame()->host()->eventHandlerRegistry().didRemoveEventHandler(*this, eventType, registeredListener.options());
 
     notifyRemoveEventListener(this, eventType);
 
@@ -1377,8 +1370,6 @@ bool LocalDOMWindow::removeEventListenerInternal(const AtomicString& eventType, 
     } else if (eventType == EventTypeNames::beforeunload && allowsBeforeUnloadListeners(this)) {
         removeBeforeUnloadEventListener(this);
     }
-
-    return true;
 }
 
 void LocalDOMWindow::dispatchLoadEvent()

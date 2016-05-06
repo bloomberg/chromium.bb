@@ -92,15 +92,15 @@ ExecutionContext* BluetoothRemoteGATTCharacteristic::getExecutionContext() const
     return ActiveDOMObject::getExecutionContext();
 }
 
-bool BluetoothRemoteGATTCharacteristic::addEventListenerInternal(const AtomicString& eventType, EventListener* listener, const EventListenerOptions& options)
+void BluetoothRemoteGATTCharacteristic::addedEventListener(const AtomicString& eventType, RegisteredEventListener& registeredListener)
 {
+    EventTargetWithInlineData::addedEventListener(eventType, registeredListener);
     // We will also need to unregister a characteristic once all the event
     // listeners have been removed. See http://crbug.com/541390
     if (eventType == EventTypeNames::characteristicvaluechanged) {
         WebBluetooth* webbluetooth = BluetoothSupplement::fromExecutionContext(getExecutionContext());
         webbluetooth->registerCharacteristicObject(m_webCharacteristic->characteristicInstanceID, this);
     }
-    return EventTarget::addEventListenerInternal(eventType, listener, options);
 }
 
 class ReadValueCallback : public WebBluetoothReadValueCallbacks {

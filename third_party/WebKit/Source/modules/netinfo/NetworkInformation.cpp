@@ -103,21 +103,17 @@ ExecutionContext* NetworkInformation::getExecutionContext() const
     return ActiveDOMObject::getExecutionContext();
 }
 
-bool NetworkInformation::addEventListenerInternal(const AtomicString& eventType, EventListener* listener, const EventListenerOptions& options)
+void NetworkInformation::addedEventListener(const AtomicString& eventType, RegisteredEventListener& registeredListener)
 {
-    if (!EventTargetWithInlineData::addEventListenerInternal(eventType, listener, options))
-        return false;
+    EventTargetWithInlineData::addedEventListener(eventType, registeredListener);
     startObserving();
-    return true;
 }
 
-bool NetworkInformation::removeEventListenerInternal(const AtomicString& eventType, EventListener* listener, const EventListenerOptions& options)
+void NetworkInformation::removedEventListener(const AtomicString& eventType, const RegisteredEventListener& registeredListener)
 {
-    if (!EventTargetWithInlineData::removeEventListenerInternal(eventType, listener, options))
-        return false;
+    EventTargetWithInlineData::removedEventListener(eventType, registeredListener);
     if (!hasEventListeners())
         stopObserving();
-    return true;
 }
 
 void NetworkInformation::removeAllEventListeners()

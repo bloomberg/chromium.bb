@@ -64,12 +64,11 @@ ExecutionContext* PresentationAvailability::getExecutionContext() const
     return ActiveDOMObject::getExecutionContext();
 }
 
-bool PresentationAvailability::addEventListenerInternal(const AtomicString& eventType, EventListener* listener, const EventListenerOptions& options)
+void PresentationAvailability::addedEventListener(const AtomicString& eventType, RegisteredEventListener& registeredListener)
 {
+    EventTargetWithInlineData::addedEventListener(eventType, registeredListener);
     if (eventType == EventTypeNames::change)
         UseCounter::count(getExecutionContext(), UseCounter::PresentationAvailabilityChangeEventListener);
-
-    return EventTarget::addEventListenerInternal(eventType, listener, options);
 }
 
 void PresentationAvailability::availabilityChanged(bool value)

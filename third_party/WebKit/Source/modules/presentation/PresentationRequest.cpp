@@ -71,12 +71,11 @@ ExecutionContext* PresentationRequest::getExecutionContext() const
     return ActiveDOMObject::getExecutionContext();
 }
 
-bool PresentationRequest::addEventListenerInternal(const AtomicString& eventType, EventListener* listener, const EventListenerOptions& options)
+void PresentationRequest::addedEventListener(const AtomicString& eventType, RegisteredEventListener& registeredListener)
 {
+    EventTargetWithInlineData::addedEventListener(eventType, registeredListener);
     if (eventType == EventTypeNames::connectionavailable)
         UseCounter::count(getExecutionContext(), UseCounter::PresentationRequestConnectionAvailableEventListener);
-
-    return EventTarget::addEventListenerInternal(eventType, listener, options);
 }
 
 bool PresentationRequest::hasPendingActivity() const

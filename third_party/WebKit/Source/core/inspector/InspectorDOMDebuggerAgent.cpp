@@ -92,7 +92,7 @@ void InspectorDOMDebuggerAgent::eventListenersInfoForTarget(v8::Isolate* isolate
         if (!listeners)
             continue;
         for (size_t k = 0; k < listeners->size(); ++k) {
-            EventListener* eventListener = listeners->at(k).listener;
+            EventListener* eventListener = listeners->at(k).listener();
             if (eventListener->type() != EventListener::JSEventListenerType)
                 continue;
             V8AbstractEventListener* v8Listener = static_cast<V8AbstractEventListener*>(eventListener);
@@ -106,7 +106,7 @@ void InspectorDOMDebuggerAgent::eventListenersInfoForTarget(v8::Isolate* isolate
             v8::Local<v8::Object> handler = v8Listener->getListenerObject(executionContext);
             if (handler.IsEmpty())
                 continue;
-            eventInformation.append(V8EventListenerInfo(type, listeners->at(k).useCapture, listeners->at(k).passive, handler));
+            eventInformation.append(V8EventListenerInfo(type, listeners->at(k).capture(), listeners->at(k).passive(), handler));
         }
     }
 }

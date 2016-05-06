@@ -156,11 +156,6 @@ void ImageCapture::onServiceConnectionError()
     m_serviceRequests.clear();
 }
 
-bool ImageCapture::addEventListenerInternal(const AtomicString& eventType, EventListener* listener, const EventListenerOptions& options)
-{
-    return EventTarget::addEventListenerInternal(eventType, listener, options);
-}
-
 DEFINE_TRACE(ImageCapture)
 {
     visitor->trace(m_streamTrack);

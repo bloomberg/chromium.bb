@@ -1872,29 +1872,21 @@ void Node::didMoveToNewDocument(Document& oldDocument)
     }
 }
 
-bool Node::addEventListenerInternal(const AtomicString& eventType, EventListener* listener, const EventListenerOptions& options)
+void Node::addedEventListener(const AtomicString& eventType, RegisteredEventListener& registeredListener)
 {
-    if (!EventTarget::addEventListenerInternal(eventType, listener, options))
-        return false;
-
+    EventTarget::addedEventListener(eventType, registeredListener);
     document().addListenerTypeIfNeeded(eventType);
     if (FrameHost* frameHost = document().frameHost())
-        frameHost->eventHandlerRegistry().didAddEventHandler(*this, eventType, options);
-
-    return true;
+        frameHost->eventHandlerRegistry().didAddEventHandler(*this, eventType, registeredListener.options());
 }
 
-bool Node::removeEventListenerInternal(const AtomicString& eventType, EventListener* listener, const EventListenerOptions& options)
+void Node::removedEventListener(const AtomicString& eventType, const RegisteredEventListener& registeredListener)
 {
-    if (!EventTarget::removeEventListenerInternal(eventType, listener, options))
-        return false;
-
+    EventTarget::removedEventListener(eventType, registeredListener);
     // FIXME: Notify Document that the listener has vanished. We need to keep track of a number of
     // listeners for each type, not just a bool - see https://bugs.webkit.org/show_bug.cgi?id=33861
     if (FrameHost* frameHost = document().frameHost())
-        frameHost->eventHandlerRegistry().didRemoveEventHandler(*this, eventType, options);
-
-    return true;
+        frameHost->eventHandlerRegistry().didRemoveEventHandler(*this, eventType, registeredListener.options());
 }
 
 void Node::removeAllEventListeners()

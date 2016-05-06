@@ -85,7 +85,7 @@ public:
 
 protected:
     // EventTarget overrides.
-    bool addEventListenerInternal(const AtomicString& eventType, EventListener*, const EventListenerOptions&) override;
+    void addedEventListener(const AtomicString& eventType, RegisteredEventListener&) override;
 
 private:
     OwnPtr<WebBluetoothRemoteGATTCharacteristicInit> m_webCharacteristic;

@@ -56,9 +56,6 @@ private:
     void onTakePhoto(ScriptPromiseResolver*, const String& mimeType, mojo::WTFArray<uint8_t> data);
     void onServiceConnectionError();
 
-    // EventTarget implementation.
-    bool addEventListenerInternal(const AtomicString& eventType, EventListener*, const EventListenerOptions&) override;
-
     Member<MediaStreamTrack> m_streamTrack;
     OwnPtr<WebImageCaptureFrameGrabber> m_frameGrabber;
     mojom::blink::ImageCapturePtr m_service;

@@ -214,8 +214,9 @@ ExecutionContext* PresentationConnection::getExecutionContext() const
     return frame()->document();
 }
 
-bool PresentationConnection::addEventListenerInternal(const AtomicString& eventType, EventListener* listener, const EventListenerOptions& options)
+void PresentationConnection::addedEventListener(const AtomicString& eventType, RegisteredEventListener& registeredListener)
 {
+    EventTargetWithInlineData::addedEventListener(eventType, registeredListener);
     if (eventType == EventTypeNames::connect)
         UseCounter::count(getExecutionContext(), UseCounter::PresentationConnectionConnectEventListener);
     else if (eventType == EventTypeNames::close)
@@ -224,8 +225,6 @@ bool PresentationConnection::addEventListenerInternal(const AtomicString& eventT
         UseCounter::count(getExecutionContext(), UseCounter::PresentationConnectionTerminateEventListener);
     else if (eventType == EventTypeNames::message)
         UseCounter::count(getExecutionContext(), UseCounter::PresentationConnectionMessageEventListener);
-
-    return EventTarget::addEventListenerInternal(eventType, listener, options);
 }
 
 DEFINE_TRACE(PresentationConnection)

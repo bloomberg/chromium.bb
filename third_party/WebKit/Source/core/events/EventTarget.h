@@ -117,9 +117,9 @@ public:
     bool addEventListener(const AtomicString& eventType, EventListener*, const EventListenerOptionsOrBoolean&);
     bool addEventListener(const AtomicString& eventType, EventListener*, EventListenerOptions&);
 
-    bool removeEventListener(const AtomicString& eventType, EventListener*, bool useCapture = false);
-    bool removeEventListener(const AtomicString& eventType, EventListener*, const EventListenerOptionsOrBoolean&);
-    bool removeEventListener(const AtomicString& eventType, EventListener*, EventListenerOptions&);
+    bool removeEventListener(const AtomicString& eventType, const EventListener*, bool useCapture = false);
+    bool removeEventListener(const AtomicString& eventType, const EventListener*, const EventListenerOptionsOrBoolean&);
+    bool removeEventListener(const AtomicString& eventType, const EventListener*, EventListenerOptions&);
     virtual void removeAllEventListeners();
 
     DispatchEventResult dispatchEvent(Event*);
@@ -152,7 +152,15 @@ protected:
     EventTarget();
 
     virtual bool addEventListenerInternal(const AtomicString& eventType, EventListener*, const EventListenerOptions&);
-    virtual bool removeEventListenerInternal(const AtomicString& eventType, EventListener*, const EventListenerOptions&);
+    virtual bool removeEventListenerInternal(const AtomicString& eventType, const EventListener*, const EventListenerOptions&);
+
+    // Called when an event listener has been successfully added.
+    virtual void addedEventListener(const AtomicString& eventType, RegisteredEventListener&);
+
+    // Called when an event listener is removed. The original registration parameters of this
+    // event listener are available to be queried.
+    virtual void removedEventListener(const AtomicString& eventType, const RegisteredEventListener&);
+
     virtual DispatchEventResult dispatchEventInternal(Event*);
 
     // Subclasses should likely not override these themselves; instead, they should subclass EventTargetWithInlineData.

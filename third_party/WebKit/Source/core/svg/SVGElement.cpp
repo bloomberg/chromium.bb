@@ -731,39 +731,36 @@ static inline void collectInstancesForSVGElement(SVGElement* element, HeapHashSe
     instances = element->instancesForElement();
 }
 
-bool SVGElement::addEventListenerInternal(const AtomicString& eventType, EventListener* listener, const EventListenerOptions& options)
+void SVGElement::addedEventListener(const AtomicString& eventType, RegisteredEventListener& registeredListener)
 {
     // Add event listener to regular DOM element
-    if (!Node::addEventListenerInternal(eventType, listener, options))
-        return false;
+    Node::addedEventListener(eventType, registeredListener);
 
     // Add event listener to all shadow tree DOM element instances
     HeapHashSet<WeakMember<SVGElement>> instances;
     collectInstancesForSVGElement(this, instances);
+    EventListenerOptions options = registeredListener.options();
+    EventListener* listener = registeredListener.listener();
     for (SVGElement* element : instances) {
         bool result = element->Node::addEventListenerInternal(eventType, listener, options);
         ASSERT_UNUSED(result, result);
     }
-
-    return true;
 }
 
-bool SVGElement::removeEventListenerInternal(const AtomicString& eventType, EventListener* listener, const EventListenerOptions& options)
+void SVGElement::removedEventListener(const AtomicString& eventType, const RegisteredEventListener& registeredListener)
 {
-    // Remove event listener from regular DOM element
-    if (!Node::removeEventListenerInternal(eventType, listener, options))
-        return false;
+    Node::removedEventListener(eventType, registeredListener);
 
     // Remove event listener from all shadow tree DOM element instances
     HeapHashSet<WeakMember<SVGElement>> instances;
     collectInstancesForSVGElement(this, instances);
+    EventListenerOptions options = registeredListener.options();
+    const EventListener* listener = registeredListener.listener();
     for (SVGElement* shadowTreeElement : instances) {
         ASSERT(shadowTreeElement);
 
         shadowTreeElement->Node::removeEventListenerInternal(eventType, listener, options);
     }
-
-    return true;
 }
 
 static bool hasLoadListener(Element* element)
@@ -776,7 +773,7 @@ static bool hasLoadListener(Element* element)
         if (!entry)
             continue;
         for (size_t i = 0; i < entry->size(); ++i) {
-            if (entry->at(i).useCapture)
+            if (entry->at(i).capture())
                 return true;
         }
     }

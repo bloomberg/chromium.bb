@@ -160,17 +160,25 @@ bool EventTarget::addEventListenerInternal(const AtomicString& eventType, EventL
         activityLogger->logEvent("blinkAddEventListener", argv.size(), argv.data());
     }
 
-    return ensureEventTargetData().eventListenerMap.add(eventType, listener, options);
+    RegisteredEventListener registeredListener;
+    bool added = ensureEventTargetData().eventListenerMap.add(eventType, listener, options, &registeredListener);
+    if (added)
+        addedEventListener(eventType, registeredListener);
+    return added;
 }
 
-bool EventTarget::removeEventListener(const AtomicString& eventType, EventListener* listener, bool useCapture)
+void EventTarget::addedEventListener(const AtomicString& eventType, RegisteredEventListener& registeredListener)
+{
+}
+
+bool EventTarget::removeEventListener(const AtomicString& eventType, const EventListener* listener, bool useCapture)
 {
     EventListenerOptions options;
     setDefaultEventListenerOptionsLegacy(options, useCapture);
     return removeEventListenerInternal(eventType, listener, options);
 }
 
-bool EventTarget::removeEventListener(const AtomicString& eventType, EventListener* listener, const EventListenerOptionsOrBoolean& optionsUnion)
+bool EventTarget::removeEventListener(const AtomicString& eventType, const EventListener* listener, const EventListenerOptionsOrBoolean& optionsUnion)
 {
     if (optionsUnion.isBoolean())
         return removeEventListener(eventType, listener, optionsUnion.getAsBoolean());
@@ -181,13 +189,13 @@ bool EventTarget::removeEventListener(const AtomicString& eventType, EventListen
     return removeEventListener(eventType, listener);
 }
 
-bool EventTarget::removeEventListener(const AtomicString& eventType, EventListener* listener, EventListenerOptions& options)
+bool EventTarget::removeEventListener(const AtomicString& eventType, const EventListener* listener, EventListenerOptions& options)
 {
     setDefaultEventListenerOptions(options);
     return removeEventListenerInternal(eventType, listener, options);
 }
 
-bool EventTarget::removeEventListenerInternal(const AtomicString& eventType, EventListener* listener, const EventListenerOptions& options)
+bool EventTarget::removeEventListenerInternal(const AtomicString& eventType, const EventListener* listener, const EventListenerOptions& options)
 {
     if (!listener)
         return false;
@@ -197,32 +205,37 @@ bool EventTarget::removeEventListenerInternal(const AtomicString& eventType, Eve
         return false;
 
     size_t indexOfRemovedListener;
+    RegisteredEventListener registeredListener;
 
-    if (!d->eventListenerMap.remove(eventType, listener, options, indexOfRemovedListener))
+    if (!d->eventListenerMap.remove(eventType, listener, options, &indexOfRemovedListener, &registeredListener))
         return false;
 
     // Notify firing events planning to invoke the listener at 'index' that
     // they have one less listener to invoke.
-    if (!d->firingEventIterators)
-        return true;
-    for (size_t i = 0; i < d->firingEventIterators->size(); ++i) {
-        FiringEventIterator& firingIterator = d->firingEventIterators->at(i);
-        if (eventType != firingIterator.eventType)
-            continue;
+    if (d->firingEventIterators) {
+        for (size_t i = 0; i < d->firingEventIterators->size(); ++i) {
+            FiringEventIterator& firingIterator = d->firingEventIterators->at(i);
+            if (eventType != firingIterator.eventType)
+                continue;
 
-        if (indexOfRemovedListener >= firingIterator.end)
-            continue;
+            if (indexOfRemovedListener >= firingIterator.end)
+                continue;
 
-        --firingIterator.end;
-        // Note that when firing an event listener,
-        // firingIterator.iterator indicates the next event listener
-        // that would fire, not the currently firing event
-        // listener. See EventTarget::fireEventListeners.
-        if (indexOfRemovedListener < firingIterator.iterator)
-            --firingIterator.iterator;
+            --firingIterator.end;
+            // Note that when firing an event listener,
+            // firingIterator.iterator indicates the next event listener
+            // that would fire, not the currently firing event
+            // listener. See EventTarget::fireEventListeners.
+            if (indexOfRemovedListener < firingIterator.iterator)
+                --firingIterator.iterator;
+        }
     }
-
+    removedEventListener(eventType, registeredListener);
     return true;
+}
+
+void EventTarget::removedEventListener(const AtomicString& eventType, const RegisteredEventListener& registeredListener)
+{
 }
 
 bool EventTarget::setAttributeEventListener(const AtomicString& eventType, EventListener* listener)
@@ -238,8 +251,8 @@ EventListener* EventTarget::getAttributeEventListener(const AtomicString& eventT
     EventListenerVector* listenerVector = getEventListeners(eventType);
     if (!listenerVector)
         return nullptr;
-    for (const auto& eventListener : *listenerVector) {
-        EventListener* listener = eventListener.listener.get();
+    for (auto& eventListener : *listenerVector) {
+        EventListener* listener = eventListener.listener();
         if (listener->isAttribute() && listener->belongsToTheCurrentWorld())
             return listener;
     }
@@ -429,9 +442,9 @@ void EventTarget::fireEventListeners(Event* event, EventTargetData* d, EventList
         // EventTarget::removeEventListener.
         ++i;
 
-        if (event->eventPhase() == Event::CAPTURING_PHASE && !registeredListener.useCapture)
+        if (event->eventPhase() == Event::CAPTURING_PHASE && !registeredListener.capture())
             continue;
-        if (event->eventPhase() == Event::BUBBLING_PHASE && registeredListener.useCapture)
+        if (event->eventPhase() == Event::BUBBLING_PHASE && registeredListener.capture())
             continue;
 
         // If stopImmediatePropagation has been called, we just break out immediately, without
@@ -443,13 +456,13 @@ void EventTarget::fireEventListeners(Event* event, EventTargetData* d, EventList
         if (!context)
             break;
 
-        event->setHandlingPassive(registeredListener.passive);
+        event->setHandlingPassive(registeredListener.passive());
 
         InspectorInstrumentation::NativeBreakpoint nativeBreakpoint(context, this, event);
 
         // To match Mozilla, the AT_TARGET phase fires both capturing and bubbling
         // event listeners, even though that violates some versions of the DOM spec.
-        registeredListener.listener->handleEvent(context, event);
+        registeredListener.listener()->handleEvent(context, event);
         event->setHandlingPassive(false);
 
         RELEASE_ASSERT(i <= size);

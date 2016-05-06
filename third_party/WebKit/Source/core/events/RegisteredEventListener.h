@@ -32,38 +32,69 @@ namespace blink {
 class RegisteredEventListener {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
+    RegisteredEventListener()
+        : m_useCapture(false)
+        , m_passive(false)
+    {
+    }
+
     RegisteredEventListener(EventListener* listener, const EventListenerOptions& options)
-        : listener(listener)
-        , useCapture(options.capture())
-        , passive(options.passive())
+        : m_listener(listener)
+        , m_useCapture(options.capture())
+        , m_passive(options.passive())
     {
     }
 
     DEFINE_INLINE_TRACE()
     {
-        visitor->trace(listener);
+        visitor->trace(m_listener);
     }
 
     EventListenerOptions options() const
     {
         EventListenerOptions result;
-        result.setCapture(useCapture);
-        result.setPassive(passive);
+        result.setCapture(m_useCapture);
+        result.setPassive(m_passive);
         return result;
     }
 
-    Member<EventListener> listener;
-    unsigned useCapture : 1;
-    unsigned passive : 1;
+    const EventListener* listener() const
+    {
+        return m_listener;
+    }
+
+    EventListener* listener()
+    {
+        return m_listener;
+    }
+
+    bool passive() const
+    {
+        return m_passive;
+    }
+
+    bool capture() const
+    {
+        return m_useCapture;
+    }
+
+    bool matches(const EventListener* listener, const EventListenerOptions& options) const
+    {
+        return *m_listener == *listener && static_cast<bool>(m_useCapture) == options.capture() && static_cast<bool>(m_passive) == options.passive();
+    }
+
+    bool operator==(const RegisteredEventListener& other) const
+    {
+        ASSERT(m_listener);
+        ASSERT(other.m_listener);
+        return *m_listener == *other.m_listener && m_useCapture == other.m_useCapture && m_passive == other.m_passive;
+    }
+
+private:
+    Member<EventListener> m_listener;
+    unsigned m_useCapture : 1;
+    unsigned m_passive : 1;
 };
-
-inline bool operator==(const RegisteredEventListener& a, const RegisteredEventListener& b)
-{
-
-    ASSERT(a.listener);
-    ASSERT(b.listener);
-    return *a.listener == *b.listener && a.useCapture == b.useCapture && a.passive == b.passive;
-}
 
 } // namespace blink
 
