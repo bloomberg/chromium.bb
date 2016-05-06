@@ -66,10 +66,8 @@ class SpdyFramerVisitor : public BufferedSpdyFramerVisitorInterface {
                     bool fin,
                     const SpdyHeaderBlock& headers));
   MOCK_METHOD3(OnDataFrameHeader, void(SpdyStreamId, size_t, bool));
-  MOCK_METHOD4(OnStreamFrameData, void(SpdyStreamId,
-                                       const char*,
-                                       size_t,
-                                       bool));
+  MOCK_METHOD3(OnStreamFrameData, void(SpdyStreamId, const char*, size_t));
+  MOCK_METHOD1(OnStreamEnd, void(SpdyStreamId));
   MOCK_METHOD2(OnStreamPadding, void(SpdyStreamId, size_t));
   MOCK_METHOD1(OnHeaderFrameStart,
                SpdyHeadersHandlerInterface*(SpdyStreamId stream_id));
@@ -257,7 +255,7 @@ TEST_P(SpdySMProxyTest, OnStreamFrameData) {
 
   visitor->OnSynStream(stream_id, associated_id, 0, false, false, block);
   checkpoint.Call(0);
-  visitor->OnStreamFrameData(stream_id, frame->data(), frame->size(), true);
+  visitor->OnStreamFrameData(stream_id, frame->data(), frame->size());
 }
 
 TEST_P(SpdySMProxyTest, OnRstStream) {
@@ -388,12 +386,11 @@ TEST_P(SpdySMProxyTest, SendErrorNotFound) {
     EXPECT_CALL(checkpoint, Call(0));
     EXPECT_CALL(*spdy_framer_visitor_,
                 OnDataFrameHeader(stream_id, _, true));
-    EXPECT_CALL(*spdy_framer_visitor_,
-                OnStreamFrameData(stream_id, _, _, false)).Times(1)
-        .WillOnce(DoAll(SaveArg<1>(&actual_data),
-                        SaveArg<2>(&actual_size)));
-    EXPECT_CALL(*spdy_framer_visitor_,
-                OnStreamFrameData(stream_id, NULL, 0, true)).Times(1);
+    EXPECT_CALL(*spdy_framer_visitor_, OnStreamFrameData(stream_id, _, _))
+        .Times(1)
+        .WillOnce(DoAll(SaveArg<1>(&actual_data), SaveArg<2>(&actual_size)));
+    EXPECT_CALL(*spdy_framer_visitor_, OnStreamFrameData(stream_id, NULL, 0))
+        .Times(1);
   }
 
   std::list<DataFrame*>::const_iterator i = connection_->output_list()->begin();
@@ -491,8 +488,7 @@ TEST_P(SpdySMProxyTest, SendDataFrame) {
     InSequence s;
     EXPECT_CALL(*spdy_framer_visitor_,
                 OnDataFrameHeader(stream_id, _, false));
-    EXPECT_CALL(*spdy_framer_visitor_,
-                OnStreamFrameData(stream_id, _, _, false))
+    EXPECT_CALL(*spdy_framer_visitor_, OnStreamFrameData(stream_id, _, _))
         .WillOnce(DoAll(SaveArg<1>(&actual_data), SaveArg<2>(&actual_size)));
   }
 
@@ -516,10 +512,9 @@ TEST_P(SpdySMProxyTest, SendLongDataFrame) {
     for (int i = 0; i < 3; ++i) {
         EXPECT_CALL(*spdy_framer_visitor_,
                     OnDataFrameHeader(stream_id, _, false));
-        EXPECT_CALL(*spdy_framer_visitor_,
-                    OnStreamFrameData(stream_id, _, _, false))
-            .WillOnce(DoAll(SaveArg<1>(&actual_data),
-                            SaveArg<2>(&actual_size)));
+        EXPECT_CALL(*spdy_framer_visitor_, OnStreamFrameData(stream_id, _, _))
+            .WillOnce(
+                DoAll(SaveArg<1>(&actual_data), SaveArg<2>(&actual_size)));
     }
   }
 
@@ -595,12 +590,11 @@ TEST_P(SpdySMServerTest, NewStreamError) {
     EXPECT_CALL(checkpoint, Call(0));
     EXPECT_CALL(*spdy_framer_visitor_,
                 OnDataFrameHeader(stream_id, _, true));
-    EXPECT_CALL(*spdy_framer_visitor_,
-                OnStreamFrameData(stream_id, _, _, false)).Times(1)
-        .WillOnce(DoAll(SaveArg<1>(&actual_data),
-                        SaveArg<2>(&actual_size)));
-    EXPECT_CALL(*spdy_framer_visitor_,
-                OnStreamFrameData(stream_id, NULL, 0, true)).Times(1);
+    EXPECT_CALL(*spdy_framer_visitor_, OnStreamFrameData(stream_id, _, _))
+        .Times(1)
+        .WillOnce(DoAll(SaveArg<1>(&actual_data), SaveArg<2>(&actual_size)));
+    EXPECT_CALL(*spdy_framer_visitor_, OnStreamFrameData(stream_id, NULL, 0))
+        .Times(1);
   }
 
   std::list<DataFrame*>::const_iterator i = connection_->output_list()->begin();

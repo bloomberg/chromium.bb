@@ -2188,8 +2188,8 @@ size_t SpdyFramer::ProcessDataFramePayload(const char* data, size_t len) {
     if (amount_to_forward && state_ != SPDY_IGNORE_REMAINING_PAYLOAD) {
       // Only inform the visitor if there is data.
       if (amount_to_forward) {
-        visitor_->OnStreamFrameData(
-            current_frame_stream_id_, data, amount_to_forward, false);
+        visitor_->OnStreamFrameData(current_frame_stream_id_, data,
+                                    amount_to_forward);
       }
     }
     data += amount_to_forward;

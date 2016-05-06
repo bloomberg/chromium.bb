@@ -203,8 +203,7 @@ int SpdySM::SpdyHandleNewStream(SpdyStreamId stream_id,
 
 void SpdySM::OnStreamFrameData(SpdyStreamId stream_id,
                                const char* data,
-                               size_t len,
-                               bool fin) {
+                               size_t len) {
   VLOG(2) << ACCEPTOR_CLIENT_IDENT << "SpdySM: StreamData(" << stream_id
           << ", [" << len << "])";
   StreamToSmif::iterator it = stream_to_smif_.find(stream_id);
@@ -218,6 +217,21 @@ void SpdySM::OnStreamFrameData(SpdyStreamId stream_id,
   SMInterface* interface = it->second;
   if (acceptor_->flip_handler_type_ == FLIP_HANDLER_PROXY)
     interface->ProcessWriteInput(data, len);
+}
+
+void SpdySM::OnStreamEnd(SpdyStreamId stream_id) {
+  VLOG(2) << ACCEPTOR_CLIENT_IDENT << "SpdySM: StreamEnd(" << stream_id << ")";
+  StreamToSmif::iterator it = stream_to_smif_.find(stream_id);
+  if (it == stream_to_smif_.end()) {
+    VLOG(2) << "Dropping frame from unknown stream " << stream_id;
+    if (!valid_spdy_session_)
+      close_on_error_ = true;
+    return;
+  }
+
+  SMInterface* interface = it->second;
+  if (acceptor_->flip_handler_type_ == FLIP_HANDLER_PROXY)
+    interface->ProcessWriteInput(nullptr, 0);
 }
 
 void SpdySM::OnStreamPadding(SpdyStreamId stream_id, size_t len) {

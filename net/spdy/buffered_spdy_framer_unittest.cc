@@ -80,9 +80,12 @@ class TestBufferedSpdyVisitor : public BufferedSpdyFramerVisitorInterface {
 
   void OnStreamFrameData(SpdyStreamId stream_id,
                          const char* data,
-                         size_t len,
-                         bool fin) override {
+                         size_t len) override {
     LOG(FATAL) << "Unexpected OnStreamFrameData call.";
+  }
+
+  void OnStreamEnd(SpdyStreamId stream_id) override {
+    LOG(FATAL) << "Unexpected OnStreamEnd call.";
   }
 
   void OnStreamPadding(SpdyStreamId stream_id, size_t len) override {

@@ -95,8 +95,7 @@ class SpdyFramerTestUtil {
     }
     void OnStreamFrameData(SpdyStreamId stream_id,
                            const char* data,
-                           size_t len,
-                           bool fin) override {
+                           size_t len) override {
       LOG(FATAL);
     }
 
@@ -312,10 +311,9 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
 
   void OnStreamFrameData(SpdyStreamId stream_id,
                          const char* data,
-                         size_t len,
-                         bool fin) override {
+                         size_t len) override {
     VLOG(1) << "OnStreamFrameData(" << stream_id << ", data, " << len << ", "
-            << fin << ")   data:\n"
+            << ")   data:\n"
             << base::HexEncode(data, len);
     EXPECT_EQ(header_stream_id_, stream_id);
     data_bytes_ += len;
@@ -866,7 +864,7 @@ TEST_P(SpdyFramerTest, CorrectlySizedDataPaddingNoError) {
     EXPECT_CALL(visitor, OnDataFrameHeader(1, 5, false));
     EXPECT_CALL(visitor, OnStreamPadding(1, 1));
     EXPECT_CALL(visitor, OnError(testing::Eq(&framer))).Times(0);
-    // Note that OnStreamFrameData(1, _, 1, false)) is never called
+    // Note that OnStreamFrameData(1, _, 1)) is never called
     // since there is no data, only padding
     EXPECT_CALL(visitor, OnStreamPadding(1, 4));
   }
@@ -4049,14 +4047,14 @@ TEST_P(SpdyFramerTest, ProcessDataFrameWithPadding) {
   bytes_consumed += 1;
 
   // Send the first two bytes of the data payload, i.e., "he".
-  EXPECT_CALL(visitor, OnStreamFrameData(1, _, 2, false));
+  EXPECT_CALL(visitor, OnStreamFrameData(1, _, 2));
   CHECK_EQ(2u, framer.ProcessInput(frame.data() + bytes_consumed, 2));
   CHECK_EQ(framer.state(), SpdyFramer::SPDY_FORWARD_STREAM_FRAME);
   CHECK_EQ(framer.error_code(), SpdyFramer::SPDY_NO_ERROR);
   bytes_consumed += 2;
 
   // Send the rest three bytes of the data payload, i.e., "llo".
-  EXPECT_CALL(visitor, OnStreamFrameData(1, _, 3, false));
+  EXPECT_CALL(visitor, OnStreamFrameData(1, _, 3));
   CHECK_EQ(3u, framer.ProcessInput(frame.data() + bytes_consumed, 3));
   CHECK_EQ(framer.state(), SpdyFramer::SPDY_CONSUME_PADDING);
   CHECK_EQ(framer.error_code(), SpdyFramer::SPDY_NO_ERROR);
@@ -4691,7 +4689,7 @@ TEST_P(SpdyFramerTest, DataFrameFlagsV2V3) {
       EXPECT_CALL(visitor, OnError(_));
     } else {
       EXPECT_CALL(visitor, OnDataFrameHeader(1, 5, flags & DATA_FLAG_FIN));
-      EXPECT_CALL(visitor, OnStreamFrameData(_, _, 5, false));
+      EXPECT_CALL(visitor, OnStreamFrameData(_, _, 5));
       if (flags & DATA_FLAG_FIN) {
         EXPECT_CALL(visitor, OnStreamEnd(_));
       }
@@ -4739,7 +4737,7 @@ TEST_P(SpdyFramerTest, DataFrameFlagsV4) {
         // Expect Error since the frame ends prematurely.
         EXPECT_CALL(visitor, OnError(_));
       } else {
-        EXPECT_CALL(visitor, OnStreamFrameData(_, _, 5, false));
+        EXPECT_CALL(visitor, OnStreamFrameData(_, _, 5));
         if (flags & DATA_FLAG_FIN) {
           EXPECT_CALL(visitor, OnStreamEnd(_));
         }

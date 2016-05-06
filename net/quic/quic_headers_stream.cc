@@ -55,14 +55,7 @@ class QuicHeadersStream::SpdyFramerVisitor
 
   void OnStreamFrameData(SpdyStreamId stream_id,
                          const char* data,
-                         size_t len,
-                         bool fin) override {
-    if (fin && len == 0) {
-      // The framer invokes OnStreamFrameData with zero-length data and
-      // fin = true after processing a SYN_STREAM or SYN_REPLY frame
-      // that had the fin bit set.
-      return;
-    }
+                         size_t len) override {
     CloseConnection("SPDY DATA frame received.");
   }
 

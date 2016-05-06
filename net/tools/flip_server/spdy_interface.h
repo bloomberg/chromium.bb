@@ -100,12 +100,13 @@ class SpdySM : public BufferedSpdyFramerVisitorInterface, public SMInterface {
   // |stream_id| The stream receiving data.
   // |data| A buffer containing the data received.
   // |len| The length of the data buffer.
-  // When the other side has finished sending data on this stream,
-  // this method will be called with a zero-length buffer.
   void OnStreamFrameData(SpdyStreamId stream_id,
                          const char* data,
-                         size_t len,
-                         bool fin) override;
+                         size_t len) override;
+
+  // Called when the other side has finished sending data on this stream.
+  // |stream_id| The stream that was receivin data.
+  void OnStreamEnd(SpdyStreamId stream_id) override;
 
   // Called when padding is received (padding length field or padding octets).
   // |stream_id| The stream receiving data.
