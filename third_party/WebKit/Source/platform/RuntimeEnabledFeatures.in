@@ -114,8 +114,6 @@ InputModeAttribute status=experimental
 InputMultipleFieldsUI status=stable
 InstalledApp status=experimental
 IntersectionObserver status=stable
-KeyboardEventCode status=stable
-KeyboardEventKey status=stable
 LangAttributeAwareFormControlUI
 LinkPreconnect status=stable
 LinkPreload status=stable
