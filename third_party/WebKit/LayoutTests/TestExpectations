@@ -788,8 +788,6 @@ crbug.com/517449 [ Android ] css3/images/optimize-contrast-image.html [ Failure 
 crbug.com/602268 [ Android ] svg/overflow/overflow-on-outermost-svg-element-in-xhtml-defaults.xhtml [ Pass Failure ]
 
 crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html [ Failure ]
-crbug.com/609687 fast/dom/HTMLProgressElement/indeterminate-progress-001.html [ NeedsRebaseline ]
-crbug.com/609687 fast/dom/HTMLProgressElement/progress-bar-value-pseudo-element.html [ NeedsRebaseline ]
 crbug.com/245556 compositing/transitions/transform-on-large-layer.html [ Failure ]
 
 crbug.com/253763 fast/text-autosizing/first-line-scale-factor.html [ Failure ]
