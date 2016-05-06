@@ -6,6 +6,7 @@
 
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -29,6 +30,7 @@
 #include "chromeos/dbus/power_policy_controller.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "components/syncable_prefs/pref_service_syncable.h"
 #include "components/syncable_prefs/testing_pref_service_syncable.h"
 #include "content/public/browser/notification_details.h"
@@ -237,48 +239,77 @@ TEST_F(PowerPrefsTest, LoginScreen) {
             GetCurrentPowerPolicy());
 }
 
-TEST_F(PowerPrefsTest, UserSession) {
-  FakeChromeUserManager* user_manager = new FakeChromeUserManager();
-  ScopedUserManagerEnabler user_manager_enabler(user_manager);
+class PowerPrefsUserSessionTest : public PowerPrefsTest {
+ public:
+  PowerPrefsUserSessionTest();
 
-  // Set up user profile.
+ protected:
+  // PowerPrefsTest:
+  void SetUp() override;
+
+  std::vector<power_manager::PowerManagementPolicy_Action>
+  GetCurrentPowerPolicyActions() const {
+    return {fake_power_manager_client_->policy().ac_idle_action(),
+            fake_power_manager_client_->policy().battery_idle_action(),
+            fake_power_manager_client_->policy().lid_closed_action()};
+  }
+
+  TestingProfile* user_profile_ = nullptr;
+  TestingProfile* second_user_profile_ = nullptr;
+
+ private:
+  FakeChromeUserManager* user_manager_;
+  ScopedUserManagerEnabler user_manager_enabler_;
+
+  DISALLOW_COPY_AND_ASSIGN(PowerPrefsUserSessionTest);
+};
+
+PowerPrefsUserSessionTest::PowerPrefsUserSessionTest()
+    : user_manager_(new FakeChromeUserManager),
+      user_manager_enabler_(user_manager_) {}
+
+void PowerPrefsUserSessionTest::SetUp() {
+  PowerPrefsTest::SetUp();
+
   const char test_user1[] = "test-user1@example.com";
   const AccountId test_account_id1(AccountId::FromUserEmail(test_user1));
-  user_manager->AddUser(test_account_id1);
-  user_manager->LoginUser(test_account_id1);
-  TestingProfile* user_profile =
+  user_manager_->AddUser(test_account_id1);
+  user_manager_->LoginUser(test_account_id1);
+  user_profile_ =
       profile_manager_.CreateTestingProfile(test_account_id1.GetUserEmail());
 
-  profile_manager_.SetLoggedIn(true);
+  const char test_user2[] = "test-user2@example.com";
+  const AccountId test_account_id2(AccountId::FromUserEmail(test_user2));
+  user_manager_->AddUser(test_account_id2);
+  user_manager_->LoginUser(test_account_id2);
+  second_user_profile_ =
+      profile_manager_.CreateTestingProfile(test_account_id2.GetUserEmail());
 
+  profile_manager_.SetLoggedIn(true);
+}
+
+TEST_F(PowerPrefsUserSessionTest, Basic) {
   // Inform power_prefs_ that a session has started.
   power_prefs_->Observe(chrome::NOTIFICATION_SESSION_STARTED,
                         content::Source<PowerPrefsTest>(this),
                         content::NotificationService::NoDetails());
 
-  EXPECT_EQ(user_profile, GetProfile());
-  EXPECT_EQ(GetExpectedPowerPolicyForProfile(user_profile, UNLOCKED),
+  EXPECT_EQ(user_profile_, GetProfile());
+  EXPECT_EQ(GetExpectedPowerPolicyForProfile(user_profile_, UNLOCKED),
             GetCurrentPowerPolicy());
-  EXPECT_EQ(GetExpectedAllowScreenWakeLocksForProfile(user_profile),
+  EXPECT_EQ(GetExpectedAllowScreenWakeLocksForProfile(user_profile_),
             GetCurrentAllowScreenWakeLocks());
-
-  const char test_user2[] = "test-user2@example.com";
-  const AccountId test_account_id2(AccountId::FromUserEmail(test_user2));
-  user_manager->AddUser(test_account_id2);
-  user_manager->LoginUser(test_account_id2);
-  TestingProfile* other_profile =
-      profile_manager_.CreateTestingProfile(test_account_id2.GetUserEmail());
 
   // Inform power_prefs_ that an unrelated profile has been destroyed.
   power_prefs_->Observe(chrome::NOTIFICATION_PROFILE_DESTROYED,
-                        content::Source<Profile>(other_profile),
+                        content::Source<Profile>(second_user_profile_),
                         content::NotificationService::NoDetails());
 
   // Verify that the user profile's power prefs are still being used.
-  EXPECT_EQ(user_profile, GetProfile());
-  EXPECT_EQ(GetExpectedPowerPolicyForProfile(user_profile, UNLOCKED),
+  EXPECT_EQ(user_profile_, GetProfile());
+  EXPECT_EQ(GetExpectedPowerPolicyForProfile(user_profile_, UNLOCKED),
             GetCurrentPowerPolicy());
-  EXPECT_EQ(GetExpectedAllowScreenWakeLocksForProfile(user_profile),
+  EXPECT_EQ(GetExpectedAllowScreenWakeLocksForProfile(user_profile_),
             GetCurrentAllowScreenWakeLocks());
 
   // Simulate the login screen coming up as part of screen locking.
@@ -287,22 +318,58 @@ TEST_F(PowerPrefsTest, UserSession) {
                         content::NotificationService::NoDetails());
 
   // Verify that power policy didn't revert to login screen settings.
-  EXPECT_EQ(user_profile, GetProfile());
-  EXPECT_EQ(GetExpectedPowerPolicyForProfile(user_profile, UNLOCKED),
+  EXPECT_EQ(user_profile_, GetProfile());
+  EXPECT_EQ(GetExpectedPowerPolicyForProfile(user_profile_, UNLOCKED),
             GetCurrentPowerPolicy());
-  EXPECT_EQ(GetExpectedAllowScreenWakeLocksForProfile(user_profile),
+  EXPECT_EQ(GetExpectedAllowScreenWakeLocksForProfile(user_profile_),
             GetCurrentAllowScreenWakeLocks());
 
   // Inform power_prefs_ that the session has ended and the user profile has
   // been destroyed.
   power_prefs_->Observe(chrome::NOTIFICATION_PROFILE_DESTROYED,
-                        content::Source<Profile>(user_profile),
+                        content::Source<Profile>(user_profile_),
                         content::NotificationService::NoDetails());
 
   // The user profile's prefs should still be used.
   EXPECT_FALSE(GetProfile());
-  EXPECT_EQ(GetExpectedPowerPolicyForProfile(user_profile, UNLOCKED),
+  EXPECT_EQ(GetExpectedPowerPolicyForProfile(user_profile_, UNLOCKED),
             GetCurrentPowerPolicy());
+}
+
+TEST_F(PowerPrefsUserSessionTest, DisabledLockScreen) {
+  // Inform power_prefs_ that a session has started.
+  power_prefs_->Observe(chrome::NOTIFICATION_SESSION_STARTED,
+                        content::Source<PowerPrefsTest>(this),
+                        content::NotificationService::NoDetails());
+
+  EXPECT_EQ(user_profile_, GetProfile());
+
+  // Verify that the power policy actions are set to default values initially.
+  EXPECT_EQ(std::vector<power_manager::PowerManagementPolicy_Action>(
+                3, power_manager::PowerManagementPolicy_Action_SUSPEND),
+            GetCurrentPowerPolicyActions());
+
+  // The automatic screen locking is enabled, but, as the lock screen is
+  // allowed, the power policy actions still have the default values.
+  user_profile_->GetPrefs()->SetBoolean(prefs::kEnableAutoScreenLock, true);
+  EXPECT_EQ(std::vector<power_manager::PowerManagementPolicy_Action>(
+                3, power_manager::PowerManagementPolicy_Action_SUSPEND),
+            GetCurrentPowerPolicyActions());
+
+  // The lock screen is disabled, but, as automatic screen locking is not
+  // enabled, the power policy actions still have the default values.
+  user_profile_->GetPrefs()->ClearPref(prefs::kEnableAutoScreenLock);
+  user_profile_->GetPrefs()->SetBoolean(prefs::kAllowScreenLock, false);
+  EXPECT_EQ(std::vector<power_manager::PowerManagementPolicy_Action>(
+                3, power_manager::PowerManagementPolicy_Action_SUSPEND),
+            GetCurrentPowerPolicyActions());
+
+  // The automatic screen locking is enabled and the lock screen is disabled, so
+  // the power policy actions are set now to stop the user session.
+  user_profile_->GetPrefs()->SetBoolean(prefs::kEnableAutoScreenLock, true);
+  EXPECT_EQ(std::vector<power_manager::PowerManagementPolicy_Action>(
+                3, power_manager::PowerManagementPolicy_Action_STOP_SESSION),
+            GetCurrentPowerPolicyActions());
 }
 
 }  // namespace chromeos

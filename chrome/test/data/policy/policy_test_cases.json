@@ -2454,6 +2454,14 @@
     "test_policy": { "ArcPolicy": "" }
   },
 
+  "AllowScreenLock": {
+    "os": ["chromeos"],
+    "test_policy": { "AllowScreenLock": true },
+    "pref_mappings": [
+      { "pref": "allow_screen_lock"}
+    ]
+  },
+
   "----- Chrome OS device policies ---------------------------------------": {},
 
   "DevicePolicyRefreshRate": {

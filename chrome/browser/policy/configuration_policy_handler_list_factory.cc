@@ -565,6 +565,10 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kTaskManagerEndProcessEnabled,
     prefs::kTaskManagerEndProcessEnabled,
     base::Value::TYPE_BOOLEAN },
+
+#if defined(OS_CHROMEOS)
+  { key::kAllowScreenLock, prefs::kAllowScreenLock, base::Value::TYPE_BOOLEAN },
+#endif
 };
 
 class ForceSafeSearchPolicyHandler : public TypeCheckingPolicyHandler {

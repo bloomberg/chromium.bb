@@ -127,6 +127,22 @@ void ResolveLocale(const std::string& raw_locale,
   ignore_result(l10n_util::CheckAndResolveLocale(raw_locale, resolved_locale));
 }
 
+bool GetUserLockAttributes(const user_manager::User* user,
+                           bool* can_lock,
+                           std::string* multi_profile_behavior) {
+  Profile* const profile = ProfileHelper::Get()->GetProfileByUser(user);
+  if (!profile)
+    return false;
+  PrefService* const prefs = profile->GetPrefs();
+  if (can_lock)
+    *can_lock = user->can_lock() && prefs->GetBoolean(prefs::kAllowScreenLock);
+  if (multi_profile_behavior) {
+    *multi_profile_behavior =
+        prefs->GetString(prefs::kMultiProfileUserBehavior);
+  }
+  return true;
+}
+
 }  // namespace
 
 // static
@@ -305,29 +321,31 @@ user_manager::UserList ChromeUserManagerImpl::GetUnlockUsers() const {
   if (logged_in_users.empty())
     return user_manager::UserList();
 
+  bool can_primary_lock = false;
+  std::string primary_behavior;
+  if (!GetUserLockAttributes(GetPrimaryUser(), &can_primary_lock,
+                             &primary_behavior)) {
+    // Locking is not allowed until the primary user profile is created.
+    return user_manager::UserList();
+  }
+
   user_manager::UserList unlock_users;
-  Profile* profile =
-      ProfileHelper::Get()->GetProfileByUserUnsafe(GetPrimaryUser());
-  std::string primary_behavior =
-      profile->GetPrefs()->GetString(prefs::kMultiProfileUserBehavior);
 
   // Specific case: only one logged in user or
   // primary user has primary-only multi-profile policy.
   if (logged_in_users.size() == 1 ||
       primary_behavior == MultiProfileUserController::kBehaviorPrimaryOnly) {
-    if (GetPrimaryUser()->can_lock())
+    if (can_primary_lock)
       unlock_users.push_back(primary_user_);
   } else {
     // Fill list of potential unlock users based on multi-profile policy state.
-    for (user_manager::UserList::const_iterator it = logged_in_users.begin();
-         it != logged_in_users.end();
-         ++it) {
-      user_manager::User* user = (*it);
-      Profile* profile = ProfileHelper::Get()->GetProfileByUserUnsafe(user);
-      const std::string behavior =
-          profile->GetPrefs()->GetString(prefs::kMultiProfileUserBehavior);
+    for (user_manager::User* user : logged_in_users) {
+      bool can_lock = false;
+      std::string behavior;
+      if (!GetUserLockAttributes(user, &can_lock, &behavior))
+        continue;
       if (behavior == MultiProfileUserController::kBehaviorUnrestricted &&
-          user->can_lock()) {
+          can_lock) {
         unlock_users.push_back(user);
       } else if (behavior == MultiProfileUserController::kBehaviorPrimaryOnly) {
         NOTREACHED()
@@ -524,8 +542,14 @@ void ChromeUserManagerImpl::OnDeviceLocalAccountsChanged() {
 }
 
 bool ChromeUserManagerImpl::CanCurrentUserLock() const {
-  return ChromeUserManager::CanCurrentUserLock() &&
-         GetCurrentUserFlow()->CanLockScreen();
+  if (!ChromeUserManager::CanCurrentUserLock() ||
+      !GetCurrentUserFlow()->CanLockScreen()) {
+    return false;
+  }
+  bool can_lock = false;
+  if (!GetUserLockAttributes(active_user_, &can_lock, nullptr))
+    return false;
+  return can_lock;
 }
 
 bool ChromeUserManagerImpl::IsUserNonCryptohomeDataEphemeral(

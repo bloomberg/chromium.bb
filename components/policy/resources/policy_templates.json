@@ -137,7 +137,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 328
+#   For your editing convenience: highest ID currently used: 329
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -8501,6 +8501,23 @@
       capture devices will be granted on SAML login pages.  If no match is
       found, access will be automatically denied.  Wildcard patterns are not
       allowed.'''
+    },
+    {
+      'name': 'AllowScreenLock',
+      'caption': '''Permit locking the screen''',
+      'desc': '''Permit locking the screen.
+
+      If this policy is set to false, users will not be able to lock the screen (only signing out from the user session will be possible). If this setting is set to true or not set, users who authenticated with a password can lock the screen.''',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:52-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': False,
+      'tags': [],
+      'id': 329,
     },
   ],
   'messages': {

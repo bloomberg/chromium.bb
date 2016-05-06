@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/power/power_prefs.h"
 
+#include <string>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -101,6 +103,35 @@ void PowerPrefs::Observe(int type,
   }
 }
 
+namespace {
+
+PowerPolicyController::Action GetPowerPolicyAction(
+    const PrefService* prefs,
+    const std::string& pref_name) {
+  const PowerPolicyController::Action pref_value =
+      static_cast<PowerPolicyController::Action>(prefs->GetInteger(pref_name));
+
+  // Transform the power policy action when the lock screen is disabled and
+  // power preferences request to lock the screen: the session stop should be
+  // requested instead.
+  //
+  // This resolves potential privacy issues when the device could suspend
+  // before the session stop is fully finished and the login screen is shown.
+  //
+  // Note that the power policy prefs related to showing the lock screen on idle
+  // don't have to be adjusted accordingly, as Chrome itself will perform
+  // session stop instead of screen lock when the latter one is not available.
+  if (pref_value == PowerPolicyController::ACTION_SUSPEND &&
+      prefs->GetBoolean(prefs::kEnableAutoScreenLock) &&
+      !prefs->GetBoolean(prefs::kAllowScreenLock)) {
+    return PowerPolicyController::ACTION_STOP_SESSION;
+  }
+
+  return pref_value;
+}
+
+}  // namespace
+
 void PowerPrefs::UpdatePowerPolicyFromPrefs() {
   if (!pref_change_registrar_ || !pref_change_registrar_->prefs()) {
     NOTREACHED();
@@ -133,12 +164,12 @@ void PowerPrefs::UpdatePowerPolicyFromPrefs() {
       prefs->GetInteger(prefs::kPowerBatteryIdleWarningDelayMs);
   values.battery_idle_delay_ms =
       prefs->GetInteger(prefs::kPowerBatteryIdleDelayMs);
-  values.ac_idle_action = static_cast<PowerPolicyController::Action>(
-      prefs->GetInteger(prefs::kPowerAcIdleAction));
-  values.battery_idle_action = static_cast<PowerPolicyController::Action>(
-      prefs->GetInteger(prefs::kPowerBatteryIdleAction));
-  values.lid_closed_action = static_cast<PowerPolicyController::Action>(
-      prefs->GetInteger(prefs::kPowerLidClosedAction));
+  values.ac_idle_action =
+      GetPowerPolicyAction(prefs, prefs::kPowerAcIdleAction);
+  values.battery_idle_action =
+      GetPowerPolicyAction(prefs, prefs::kPowerBatteryIdleAction);
+  values.lid_closed_action =
+      GetPowerPolicyAction(prefs, prefs::kPowerLidClosedAction);
   values.use_audio_activity =
       prefs->GetBoolean(prefs::kPowerUseAudioActivity);
   values.use_video_activity =
@@ -245,6 +276,7 @@ void PowerPrefs::SetProfile(Profile* profile) {
                               update_callback);
   pref_change_registrar_->Add(
       prefs::kPowerForceNonzeroBrightnessForUserActivity, update_callback);
+  pref_change_registrar_->Add(prefs::kAllowScreenLock, update_callback);
 
   UpdatePowerPolicyFromPrefs();
 }

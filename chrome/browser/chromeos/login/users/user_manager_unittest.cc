@@ -14,8 +14,11 @@
 #include "chrome/browser/chromeos/login/users/chrome_user_manager_impl.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -213,6 +216,28 @@ TEST_F(UserManagerTest, RegularUserLoggedInAsEphemeral) {
       &user_manager::UserManager::Get()->GetUsers();
   EXPECT_EQ(1U, users->size());
   EXPECT_EQ((*users)[0]->GetAccountId(), owner_account_id_at_invalid_domain_);
+}
+
+TEST_F(UserManagerTest, ScreenLockAvailability) {
+  // Log in the user and create the profile.
+  user_manager::UserManager::Get()->UserLoggedIn(
+      owner_account_id_at_invalid_domain_,
+      owner_account_id_at_invalid_domain_.GetUserEmail(), false);
+  user_manager::User* const user =
+      user_manager::UserManager::Get()->GetActiveUser();
+  Profile* const profile =
+      ProfileHelper::GetProfileByUserIdHash(user->username_hash());
+
+  // Verify that the user is allowed to lock the screen.
+  EXPECT_TRUE(user_manager::UserManager::Get()->CanCurrentUserLock());
+  EXPECT_EQ(1U, user_manager::UserManager::Get()->GetUnlockUsers().size());
+
+  // The user is not allowed to lock the screen.
+  profile->GetPrefs()->SetBoolean(prefs::kAllowScreenLock, false);
+  EXPECT_FALSE(user_manager::UserManager::Get()->CanCurrentUserLock());
+  EXPECT_EQ(0U, user_manager::UserManager::Get()->GetUnlockUsers().size());
+
+  ResetUserManager();
 }
 
 }  // namespace chromeos

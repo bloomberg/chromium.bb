@@ -287,6 +287,7 @@ extern const char kCaptivePortalAuthenticationIgnoresProxy[];
 extern const char kForceMaximizeOnFirstRun[];
 extern const char kPlatformKeys[];
 extern const char kUnifiedDesktopEnabledByDefault[];
+extern const char kAllowScreenLock[];
 #endif  // defined(OS_CHROMEOS)
 extern const char kShowHomeButton[];
 extern const char kRecentlySelectedEncoding[];

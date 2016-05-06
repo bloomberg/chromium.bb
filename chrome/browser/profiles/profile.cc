@@ -166,6 +166,10 @@ void Profile::RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
       false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 #endif
+
+#if defined(OS_CHROMEOS)
+  registry->RegisterBooleanPref(prefs::kAllowScreenLock, true);
+#endif
 }
 
 std::string Profile::GetDebugName() {
