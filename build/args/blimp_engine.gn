@@ -5,10 +5,9 @@
 # echo "import(\"//build/args/blimp_engine.gn\")" > out/foo/args.gn
 # gn gen out/foo
 #
+# This file contains Blimp engine build args common to both
+# official builds and personal development builds.
 # Use gn args to add your own build preference args.
-#
-# This list must be kept in sync with the blimp list in
-# //tools/mb/mb_config.pyl.
 
 use_aura = true
 use_ozone = true

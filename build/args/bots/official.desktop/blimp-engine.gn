@@ -1,2 +1,7 @@
 import("//build/args/blimp_engine.gn")
-is_debug = true
+
+# Use release build to improve engine performance, especially WebP encoding.
+is_debug = false
+
+# Turn on DCHECK to find bugs.
+dcheck_always_on = true
