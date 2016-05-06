@@ -7,12 +7,17 @@
 #include <memory>
 #include <string>
 
+#include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "blimp/engine/app/switches.h"
+#include "cc/base/switches.h"
+#include "content/public/common/content_switches.h"
+#include "ui/gl/gl_switches.h"
+#include "ui/native_theme/native_theme_switches.h"
 
 namespace blimp {
 namespace engine {
@@ -30,6 +35,18 @@ std::string GetClientToken(const base::CommandLine& cmd_line) {
   return base::CollapseWhitespaceASCII(file_contents, true);
 }
 }  // namespace
+
+void SetCommandLineDefaults(base::CommandLine* command_line) {
+  command_line->AppendSwitch(::switches::kEnableOverlayScrollbar);
+  command_line->AppendSwitch(cc::switches::kDisableCachedPictureRaster);
+  command_line->AppendSwitch(::switches::kDisableGpu);
+  command_line->AppendSwitch(
+      "disable-remote-fonts");  // switches::kDisableRemoteFonts is not visible.
+  command_line->AppendSwitch(::switches::kUseRemoteCompositing);
+  command_line->AppendSwitchASCII(
+      ::switches::kUseGL,
+      "osmesa");  // Avoid invoking gpu::CollectDriverVersionNVidia.
+}
 
 BlimpEngineConfig::~BlimpEngineConfig() {}
 

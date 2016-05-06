@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "blimp/client/feature/mock_navigation_feature_delegate.h"
 #include "blimp/common/create_blimp_message.h"
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/net/test_common.h"
@@ -22,17 +23,6 @@ using testing::_;
 
 namespace blimp {
 namespace client {
-
-class MockNavigationFeatureDelegate
-    : public NavigationFeature::NavigationFeatureDelegate {
- public:
-  // NavigationFeatureDelegate implementation.
-  MOCK_METHOD2(OnUrlChanged, void(int tab_id, const GURL& url));
-  MOCK_METHOD2(OnFaviconChanged, void(int tab_id, const SkBitmap& favicon));
-  MOCK_METHOD2(OnTitleChanged, void(int tab_id, const std::string& title));
-  MOCK_METHOD2(OnLoadingChanged, void(int tab_id, bool loading));
-  MOCK_METHOD2(OnPageLoadStatusUpdate, void(int tab_id, bool completed));
-};
 
 void SendMockNavigationStateChangedMessage(BlimpMessageProcessor* processor,
                                            int tab_id,

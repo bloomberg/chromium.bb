@@ -27,6 +27,7 @@ class NavigationFeature : public BlimpMessageProcessor {
   // a particular tab.
   class NavigationFeatureDelegate {
    public:
+    virtual ~NavigationFeatureDelegate() {}
     virtual void OnUrlChanged(int tab_id, const GURL& url) = 0;
     virtual void OnFaviconChanged(int tab_id, const SkBitmap& favicon) = 0;
     virtual void OnTitleChanged(int tab_id, const std::string& title) = 0;

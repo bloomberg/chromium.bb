@@ -91,6 +91,10 @@ source_set("app_config") {
   deps = [
     ":app_switches",
     "//base",
+    "//cc",
+    "//content/public/common",
+    "//ui/gl",
+    "//ui/native_theme",
   ]
 }
 
@@ -311,6 +315,20 @@ mojom("blob_channel_mojo") {
   ]
 }
 
+source_set("test_support") {
+  testonly = true
+
+  sources = [
+    "app/test_content_main_delegate.cc",
+    "app/test_content_main_delegate.h",
+  ]
+
+  deps = [
+    ":app",
+    "//base",
+  ]
+}
+
 source_set("app_unit_tests") {
   testonly = true
 
@@ -381,6 +399,7 @@ if (is_linux) {
 
     deps = [
       ":app",
+      ":app_config",
       ":pak",
       "//base",
       "//blimp/net",

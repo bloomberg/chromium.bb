@@ -42,6 +42,7 @@ class RenderWidgetFeature : public BlimpMessageProcessor {
   // A delegate to be notified of specific RenderWidget related incoming events.
   class RenderWidgetFeatureDelegate {
    public:
+    virtual ~RenderWidgetFeatureDelegate() {}
     virtual void OnRenderWidgetCreated(int render_widget_id) = 0;
 
     // Called when the engine's RenderWidget has changed for a particular

@@ -102,9 +102,8 @@ uint16_t GetListeningPort() {
           &port_parsed)) {
     return kDefaultPort;
   }
-  if (port_parsed == 0 ||
-      port_parsed > 65535) {
-    LOG(FATAL) << "--engine-port must be a value between 1 and 65535.";
+  if (port_parsed > 65535) {
+    LOG(FATAL) << "--engine-port must be a value between 0 and 65535.";
     return kDefaultPort;
   }
   return port_parsed;
@@ -129,6 +128,8 @@ class EngineNetworkComponents : public ConnectionHandler,
   // received messages can be properly handled.
   void Initialize(const std::string& client_token);
 
+  uint16_t GetPortForTesting() { return port_; }
+
   BrowserConnectionHandler* GetBrowserConnectionHandler();
 
  private:
@@ -142,6 +143,7 @@ class EngineNetworkComponents : public ConnectionHandler,
 
   net::NetLog* net_log_;
   base::Closure quit_closure_;
+  uint16_t port_ = 0;
 
   std::unique_ptr<BrowserConnectionHandler> connection_handler_;
   std::unique_ptr<EngineAuthenticationHandler> authentication_handler_;
@@ -176,8 +178,11 @@ void EngineNetworkComponents::Initialize(const std::string& client_token) {
 
   // Adds BlimpTransports to connection_manager_.
   net::IPEndPoint address(GetIPv4AnyAddress(), GetListeningPort());
-  connection_manager_->AddTransport(
-      base::WrapUnique(new TCPEngineTransport(address, net_log_)));
+  TCPEngineTransport* transport = new TCPEngineTransport(address, net_log_);
+  connection_manager_->AddTransport(base::WrapUnique(transport));
+
+  transport->GetLocalAddress(&address);
+  port_ = address.port();
 }
 
 void EngineNetworkComponents::HandleConnection(
@@ -267,6 +272,15 @@ void BlimpEngineSession::Initialize() {
       base::Bind(&EngineNetworkComponents::Initialize,
                  base::Unretained(net_components_.get()),
                  engine_config_->client_token()));
+}
+
+void BlimpEngineSession::GetEnginePortForTesting(
+    const GetPortCallback& callback) {
+  content::BrowserThread::PostTaskAndReplyWithResult(
+      content::BrowserThread::IO, FROM_HERE,
+      base::Bind(&EngineNetworkComponents::GetPortForTesting,
+                 base::Unretained(net_components_.get())),
+      callback);
 }
 
 void BlimpEngineSession::RegisterFeatures() {

@@ -19,6 +19,10 @@ class BlimpContentBrowserClient : public content::ContentBrowserClient {
   BlimpContentBrowserClient();
   ~BlimpContentBrowserClient() override;
 
+  BlimpBrowserMainParts* blimp_browser_main_parts() {
+    return blimp_browser_main_parts_;
+  }
+
   // content::ContentBrowserClient implementation.
   content::BrowserMainParts* CreateBrowserMainParts(
       const content::MainFunctionParams& parameters) override;

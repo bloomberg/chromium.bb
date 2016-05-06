@@ -1,0 +1,40 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//testing/test.gni")
+
+test("engine_browsertests") {
+  sources = [
+    "browser_tests/blimp_browser_test.cc",
+    "browser_tests/blimp_browser_test.h",
+    "browser_tests/blimp_test_launcher.cc",
+    "browser_tests/engine_browsertest.cc",
+  ]
+
+  defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
+
+  deps = [
+    "//base",
+    "//blimp/client:feature",
+    "//blimp/client:session",
+    "//blimp/client:switches",
+    "//blimp/client:test_support",
+    "//blimp/engine:app",
+    "//blimp/engine:app_config",
+    "//blimp/engine:app_switches",
+    "//blimp/engine:pak",
+    "//blimp/engine:session",
+    "//blimp/engine:test_support",
+    "//blimp/net",
+    "//content/public/app:both",
+    "//content/test:browsertest_base",
+    "//content/test:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+
+  data = [
+    "data/test_client_token",
+  ]
+}

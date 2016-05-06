@@ -48,6 +48,10 @@ group("blimp_tests") {
   if (is_android) {
     deps += [ "//blimp/client:blimp_test_apk" ]
   }
+
+  if (is_linux) {
+    deps += [ "//blimp/test:engine_browsertests" ]
+  }
 }
 
 test("blimp_unittests") {

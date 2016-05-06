@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <blimp/client/feature/ime_feature.h>
+#include "blimp/client/feature/ime_feature.h"
+
 #include <string>
 
 #include "blimp/common/create_blimp_message.h"

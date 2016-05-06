@@ -60,5 +60,9 @@ SettingsManager* BlimpBrowserMainParts::GetSettingsManager() {
   return settings_manager_.get();
 }
 
+BlimpEngineSession* BlimpBrowserMainParts::GetBlimpEngineSession() {
+  return engine_session_.get();
+}
+
 }  // namespace engine
 }  // namespace blimp

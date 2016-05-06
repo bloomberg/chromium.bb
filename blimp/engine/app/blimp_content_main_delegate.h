@@ -22,6 +22,8 @@ class BlimpContentMainDelegate : public content::ContentMainDelegate {
   BlimpContentMainDelegate();
   ~BlimpContentMainDelegate() override;
 
+  BlimpContentBrowserClient* browser_client() { return browser_client_.get(); }
+
   // content::ContentMainDelegate implementation.
   bool BasicStartupComplete(int* exit_code) override;
   void PreSandboxStartup() override;

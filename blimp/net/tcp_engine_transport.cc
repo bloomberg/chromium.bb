@@ -67,8 +67,7 @@ const char* TCPEngineTransport::GetName() const {
   return "TCP";
 }
 
-int TCPEngineTransport::GetLocalAddressForTesting(
-    net::IPEndPoint* address) const {
+int TCPEngineTransport::GetLocalAddress(net::IPEndPoint* address) const {
   DCHECK(server_socket_);
   return server_socket_->GetLocalAddress(address);
 }

@@ -9,14 +9,8 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
-source_set("client") {
+source_set("session") {
   sources = [
-    "app/blimp_client_switches.cc",
-    "app/blimp_client_switches.h",
-    "app/blimp_discardable_memory_allocator.cc",
-    "app/blimp_discardable_memory_allocator.h",
-    "app/blimp_startup.cc",
-    "app/blimp_startup.h",
     "session/assignment_source.cc",
     "session/assignment_source.h",
     "session/blimp_client_session.cc",
@@ -24,13 +18,41 @@ source_set("client") {
   ]
 
   public_deps = [
+    ":feature",
+    ":switches",
+    "//components/safe_json",
+    "//ui/events",
+  ]
+
+  deps = [
+    "//base",
+    "//blimp/common",
+    "//blimp/common/proto",
+    "//blimp/net",
+    "//net",
+    "//ui/gfx/geometry",
+    "//url:url",
+  ]
+}
+
+source_set("client") {
+  sources = [
+    "app/blimp_discardable_memory_allocator.cc",
+    "app/blimp_discardable_memory_allocator.h",
+    "app/blimp_startup.cc",
+    "app/blimp_startup.h",
+  ]
+
+  public_deps = [
+    ":compositor",
+    ":session",
+    ":switches",
     "//components/safe_json",
     "//components/url_formatter",
     "//ui/events",
   ]
 
   deps = [
-    ":feature",
     "//base",
     "//blimp/common",
     "//blimp/common/proto",
@@ -46,6 +68,13 @@ source_set("client") {
   ]
 }
 
+source_set("switches") {
+  sources = [
+    "app/blimp_client_switches.cc",
+    "app/blimp_client_switches.h",
+  ]
+}
+
 source_set("blimp_client_unit_tests") {
   testonly = true
 
@@ -53,6 +82,8 @@ source_set("blimp_client_unit_tests") {
 
   deps = [
     ":client",
+    ":session",
+    ":switches",
     "//base",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
@@ -94,6 +125,60 @@ source_set("app_unit_tests") {
 
 source_set("feature") {
   sources = [
+    "feature/ime_feature.cc",
+    "feature/ime_feature.h",
+    "feature/navigation_feature.cc",
+    "feature/navigation_feature.h",
+    "feature/render_widget_feature.cc",
+    "feature/render_widget_feature.h",
+    "feature/settings_feature.cc",
+    "feature/settings_feature.h",
+    "feature/tab_control_feature.cc",
+    "feature/tab_control_feature.h",
+  ]
+
+  deps = [
+    "//base:base",
+    "//blimp/common",
+    "//blimp/net",
+    "//cc",
+    "//cc/proto",
+    "//components/url_formatter",
+    "//net:net",
+    "//skia",
+    "//ui/base/ime:text_input_types",
+    "//ui/gfx/geometry:geometry",
+  ]
+
+  public_deps = [
+    "//blimp/common/proto",
+  ]
+}
+
+source_set("test_support") {
+  testonly = true
+
+  sources = [
+    "feature/mock_ime_feature_delegate.cc",
+    "feature/mock_ime_feature_delegate.h",
+    "feature/mock_navigation_feature_delegate.cc",
+    "feature/mock_navigation_feature_delegate.h",
+    "feature/mock_render_widget_feature_delegate.cc",
+    "feature/mock_render_widget_feature_delegate.h",
+    "session/test_client_session.cc",
+    "session/test_client_session.h",
+  ]
+
+  deps = [
+    ":session",
+    "//skia",
+    "//testing/gmock",
+    "//url",
+  ]
+}
+
+source_set("compositor") {
+  sources = [
     "feature/compositor/blimp_compositor.cc",
     "feature/compositor/blimp_compositor.h",
     "feature/compositor/blimp_compositor_manager.cc",
@@ -116,16 +201,6 @@ source_set("feature") {
     "feature/compositor/client_image_serialization_processor.h",
     "feature/compositor/decoding_image_generator.cc",
     "feature/compositor/decoding_image_generator.h",
-    "feature/ime_feature.cc",
-    "feature/ime_feature.h",
-    "feature/navigation_feature.cc",
-    "feature/navigation_feature.h",
-    "feature/render_widget_feature.cc",
-    "feature/render_widget_feature.h",
-    "feature/settings_feature.cc",
-    "feature/settings_feature.h",
-    "feature/tab_control_feature.cc",
-    "feature/tab_control_feature.h",
   ]
 
   deps = [
@@ -133,7 +208,6 @@ source_set("feature") {
     "//blimp/net",
     "//cc",
     "//cc/proto",
-    "//components/url_formatter",
     "//gpu/command_buffer/client",
     "//gpu/command_buffer/client:gl_in_process_context",
     "//gpu/command_buffer/client:gles2_c_lib",
@@ -152,6 +226,7 @@ source_set("feature") {
   ]
 
   public_deps = [
+    ":feature",
     "//blimp/common/proto",
   ]
 }
@@ -167,7 +242,8 @@ source_set("feature_unit_tests") {
   ]
 
   deps = [
-    ":feature",
+    ":compositor",
+    ":test_support",
     "//base",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
@@ -203,7 +279,6 @@ if (is_linux && !is_chromeos && use_x11) {
 
     deps = [
       ":client",
-      ":feature",
       "//base",
       "//blimp/net",
       "//net",
@@ -375,7 +450,6 @@ if (is_android) {
   shared_library("blimp_client_android") {
     deps = [
       ":client",
-      ":feature",
       ":jni_headers",
       "//base",
       "//blimp/common",

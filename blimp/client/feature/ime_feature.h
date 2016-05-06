@@ -33,6 +33,7 @@ class ImeFeature : public BlimpMessageProcessor {
   // A delegate to be notified of text input requests.
   class Delegate {
    public:
+    virtual ~Delegate() {}
     virtual void OnShowImeRequested(ui::TextInputType input_type,
                                     const std::string& text) = 0;
     virtual void OnHideImeRequested() = 0;

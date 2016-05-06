@@ -25,7 +25,7 @@ class FakeNavigationFeatureDelegate
     : public NavigationFeature::NavigationFeatureDelegate {
  public:
   FakeNavigationFeatureDelegate();
-  ~FakeNavigationFeatureDelegate();
+  ~FakeNavigationFeatureDelegate() override;
 
   // NavigationFeatureDelegate implementation.
   void OnUrlChanged(int tab_id, const GURL& url) override;

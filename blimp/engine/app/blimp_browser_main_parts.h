@@ -39,6 +39,7 @@ class BlimpBrowserMainParts : public content::BrowserMainParts {
 
   BlimpBrowserContext* GetBrowserContext();
   SettingsManager* GetSettingsManager();
+  BlimpEngineSession* GetBlimpEngineSession();
 
  private:
   std::unique_ptr<BlimpEngineConfig> engine_config_;

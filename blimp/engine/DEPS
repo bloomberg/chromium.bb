@@ -17,6 +17,8 @@ include_rules = [
   "+ui/display",
   "+ui/events",
   "+ui/gfx",
+  "+ui/gl",
+  "+ui/native_theme",
   "+ui/platform_window",
   "+ui/resources",
   "+ui/wm",

@@ -1,0 +1,8 @@
+include_rules = [
+  "+base",
+  "+cc",
+  "-chrome",
+  "+content/public",
+  "+net",
+  "+ui/gfx",
+]

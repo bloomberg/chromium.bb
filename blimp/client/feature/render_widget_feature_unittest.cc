@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "blimp/client/feature/mock_render_widget_feature_delegate.h"
 #include "blimp/common/create_blimp_message.h"
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/common/proto/compositor.pb.h"
@@ -27,33 +28,6 @@ namespace blimp {
 namespace client {
 
 namespace {
-
-class MockRenderWidgetFeatureDelegate
-    : public RenderWidgetFeature::RenderWidgetFeatureDelegate {
- public:
-  // RenderWidgetFeatureDelegate implementation.
-  void OnRenderWidgetCreated(int render_widget_id) override {
-    MockableOnRenderWidgetCreated(render_widget_id);
-  }
-  void OnRenderWidgetInitialized(int render_widget_id) override {
-    MockableOnRenderWidgetInitialized(render_widget_id);
-  }
-  void OnRenderWidgetDeleted(int render_widget_id) override {
-    MockableOnRenderWidgetDeleted(render_widget_id);
-  }
-  void OnCompositorMessageReceived(
-      int render_widget_id,
-      std::unique_ptr<cc::proto::CompositorMessage> message) override {
-    MockableOnCompositorMessageReceived(render_widget_id, *message);
-  }
-
-  MOCK_METHOD1(MockableOnRenderWidgetCreated, void(int render_widget_id));
-  MOCK_METHOD1(MockableOnRenderWidgetInitialized, void(int render_widget_id));
-  MOCK_METHOD1(MockableOnRenderWidgetDeleted, void(int render_widget_id));
-  MOCK_METHOD2(MockableOnCompositorMessageReceived,
-               void(int render_widget_id,
-                    const cc::proto::CompositorMessage& message));
-};
 
 MATCHER_P2(CompMsgEquals, tab_id, rw_id, "") {
   return arg.compositor().render_widget_id() == rw_id &&
@@ -116,11 +90,11 @@ class RenderWidgetFeatureTest : public testing::Test {
 };
 
 TEST_F(RenderWidgetFeatureTest, DelegateCallsOK) {
-  EXPECT_CALL(delegate1_, MockableOnRenderWidgetCreated(1));
+  EXPECT_CALL(delegate1_, OnRenderWidgetCreated(1));
   EXPECT_CALL(delegate1_, MockableOnCompositorMessageReceived(1, _));
-  EXPECT_CALL(delegate1_, MockableOnRenderWidgetInitialized(1));
-  EXPECT_CALL(delegate2_, MockableOnRenderWidgetCreated(2));
-  EXPECT_CALL(delegate1_, MockableOnRenderWidgetDeleted(1));
+  EXPECT_CALL(delegate1_, OnRenderWidgetInitialized(1));
+  EXPECT_CALL(delegate2_, OnRenderWidgetCreated(2));
+  EXPECT_CALL(delegate1_, OnRenderWidgetDeleted(1));
 
   SendRenderWidgetMessage(&feature_, 1, 1, RenderWidgetMessage::CREATED);
   SendCompositorMessage(&feature_, 1, 1);

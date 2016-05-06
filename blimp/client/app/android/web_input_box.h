@@ -41,7 +41,7 @@ class WebInputBox : public ImeFeature::Delegate {
                         const base::android::JavaParamRef<jstring>& text);
 
  private:
-  virtual ~WebInputBox();
+  ~WebInputBox() override;
 
   // Reference to the Java object which owns this class.
   base::android::ScopedJavaGlobalRef<jobject> java_obj_;

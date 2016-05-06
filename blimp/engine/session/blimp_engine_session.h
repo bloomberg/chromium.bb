@@ -74,6 +74,8 @@ class BlimpEngineSession
       public ui::InputMethodObserver,
       public EngineRenderWidgetFeature::RenderWidgetMessageDelegate {
  public:
+  using GetPortCallback = base::Callback<void(uint16_t)>;
+
   BlimpEngineSession(std::unique_ptr<BlimpBrowserContext> browser_context,
                      net::NetLog* net_log,
                      BlimpEngineConfig* config,
@@ -86,6 +88,9 @@ class BlimpEngineSession
   void Initialize();
 
   BlimpBrowserContext* browser_context() { return browser_context_.get(); }
+
+  // Gets Engine's listening port. Invokes callback with the allocated port.
+  void GetEnginePortForTesting(const GetPortCallback& callback);
 
   // BlimpMessageProcessor implementation.
   // This object handles incoming TAB_CONTROL and NAVIGATION messages directly.

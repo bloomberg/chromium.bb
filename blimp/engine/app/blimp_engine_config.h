@@ -17,6 +17,9 @@ class CommandLine;
 namespace blimp {
 namespace engine {
 
+// Set internal command line switches for Blimp engine.
+void SetCommandLineDefaults(base::CommandLine* command_line);
+
 // Class to hold all of the configuration bits necessary for the Blimp engine.
 //
 // The BlimpEngineConfig class is initialized from parameters provided on the
