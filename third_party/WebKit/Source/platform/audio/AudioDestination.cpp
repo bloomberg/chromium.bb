@@ -58,7 +58,7 @@ AudioDestination::AudioDestination(AudioIOCallback& callback, const String& inpu
 {
     // Histogram for audioHardwareBufferSize
     DEFINE_STATIC_LOCAL(SparseHistogram, hardwareBufferSizeHistogram,
-        ("WebAudio.AudioDestination.HardwareBuffersize"));
+        ("WebAudio.AudioDestination.HardwareBufferSize"));
     // Histogram for the actual callback size used.  Typically, this is the same as
     // audioHardwareBufferSize, but can be adjusted depending on some heuristics below.
     DEFINE_STATIC_LOCAL(SparseHistogram, callbackBufferSizeHistogram,
