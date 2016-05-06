@@ -381,25 +381,25 @@ Polymer({
       subpage: ['manage-autofill'],
     },
     {
-      url: '/pw',  // TODO(dschuyler): find a better url.
+      url: '/passwords',
       page: 'advanced',
       section: 'passwordsAndForms',
       subpage: [],
     },
     {
-      url: '/passwords',
+      url: '/managePasswords',
       page: 'advanced',
       section: 'passwordsAndForms',
       subpage: ['manage-passwords'],
     },
     {
-      url: '/ln',  // TODO(dschuyler): find a better url.
+      url: '/languages',
       page: 'advanced',
       section: 'languages',
       subpage: [],
     },
     {
-      url: '/languages',
+      url: '/manageLanguages',
       page: 'advanced',
       section: 'languages',
       subpage: ['manage-languages'],
